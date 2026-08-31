@@ -1,0 +1,363 @@
+08 HARDWARE ABSTRACTION
+=======================
+
+8.1 Hardware-Abstraction Model
+8.2 Hardware-Independent and Hardware-Dependent Boundaries
+8.3 Console and Character Devices
+8.4 Storage Devices
+8.5 Logical and Physical Storage
+8.6 Hardware Initialization and Configuration
+8.7 Hardware-Abstraction Interface
+8.8 Platform Implementation
+8.9 Compatibility
+8.10 Future Hardware Support
+
+8.1 HARDWARE-ABSTRACTION MODEL
+------------------------------
+
+Hardware Abstraction separates hardware-independent BetterCP/M
+behavior from operations that depend upon the implementation of a
+particular machine.
+
+It performs the general architectural role historically provided by
+the CP/M BIOS.
+
+BetterCP/M is not required to reproduce the internal organization of
+a Digital Research CP/M BIOS except where a BIOS interface or behavior
+is itself compatibility-visible.
+
+Hardware-independent components shall request machine-dependent
+operations through defined hardware-abstraction interfaces rather
+than unnecessarily depending upon the characteristics of individual
+devices.
+
+Hardware Abstraction is intended to isolate machine dependence, not
+to create a generalized modern device-driver architecture.
+
+The initial implementation need provide only the hardware support
+required by its target platform.
+
+
+8.2 HARDWARE-INDEPENDENT AND HARDWARE-DEPENDENT BOUNDARIES
+----------------------------------------------------------
+
+A function belongs on the hardware-dependent side of the
+hardware-abstraction boundary when its implementation requires
+knowledge of the particular machine or device being used.
+
+Such knowledge may include:
+
+  * I/O port assignments.
+  * Memory-mapped device registers.
+  * Controller command protocols.
+  * Device status representation.
+  * Physical storage geometry.
+  * Character-device implementation.
+  * Machine-specific initialization requirements.
+  * Other properties that vary between target systems.
+
+Hardware-independent operating-system components should instead
+operate in terms of logical services appropriate to their
+responsibilities.
+
+The boundary shall be placed where it provides useful separation
+without introducing unnecessary layers or indirection.
+
+A mechanism shall not be moved behind Hardware Abstraction merely
+because it interacts indirectly with hardware.  Logical
+operating-system policy remains the responsibility of the
+appropriate hardware-independent subsystem.
+
+
+8.3 CONSOLE AND CHARACTER DEVICES
+---------------------------------
+
+Hardware Abstraction shall provide the machine-dependent operations
+required to implement CP/M-compatible console and character-device
+services.
+
+These may include operations for:
+
+  * Obtaining console input.
+  * Producing console output.
+  * Determining console input status.
+  * Accessing other character devices required by the CP/M
+    environment.
+
+System Services are responsible for the CP/M-visible semantics of
+console and character operations.
+
+Hardware Abstraction is responsible for translating the required
+physical operations into interactions with the devices provided by
+the target machine.
+
+The hardware-independent system shall not unnecessarily assume that
+the console is implemented by a serial terminal, memory-mapped
+display, particular keyboard interface, emulator console, or any
+other specific device.
+
+
+8.4 STORAGE DEVICES
+-------------------
+
+Hardware Abstraction shall provide the physical storage operations
+required by the Storage and File-System subsystem.
+
+These operations shall expose sufficient functionality for
+BetterCP/M to access supported storage without requiring
+hardware-independent file-system code to know the implementation of
+the storage controller or device.
+
+Hardware-dependent storage responsibilities may include:
+
+  * Device initialization.
+  * Device selection.
+  * Physical or device-level read operations.
+  * Physical or device-level write operations.
+  * Device-status handling.
+  * Translation required by a particular controller.
+  * Other operations necessary to access the physical medium.
+
+The precise interface shall be determined by the requirements of the
+storage architecture rather than by automatically duplicating the
+entry points of a traditional CP/M BIOS.
+
+Where CP/M compatibility requires BIOS-level behavior to remain
+visible, that behavior shall be provided at the appropriate
+compatibility boundary.
+
+
+8.5 LOGICAL AND PHYSICAL STORAGE
+--------------------------------
+
+BetterCP/M shall distinguish the logical storage environment
+presented by the operating system from the physical devices used to
+store its data.
+
+A CP/M logical drive need not correspond directly to one physical
+device.
+
+Likewise, the logical track, sector, record, allocation, and
+directory structures required by a CP/M disk format need not
+correspond directly to the native organization of the underlying
+storage medium.
+
+The Storage and File-System subsystem owns the interpretation of the
+logical CP/M storage environment.
+
+Hardware Abstraction owns the machine-dependent operations required
+to access the underlying storage.
+
+The interface between these responsibilities shall permit logical
+storage formats to be defined without unnecessarily embedding their
+properties in device-specific code.
+
+This distinction is particularly important for storage devices whose
+native organization differs substantially from traditional floppy
+disks.
+
+
+8.6 HARDWARE INITIALIZATION AND CONFIGURATION
+---------------------------------------------
+
+Hardware-dependent components shall perform or participate in the
+initialization required to make their devices available to
+BetterCP/M.
+
+Initialization requirements shall be explicit for each supported
+platform.
+
+Where practical, machine-dependent settings and device policy that
+may reasonably vary without rebuilding BetterCP/M shall be represented
+as documented mutable runtime configuration data rather than
+assembly-time constants or hard-coded executable behavior.
+
+Hardware Abstraction defines the capabilities provided by the target
+machine and the machine-specific mechanisms required to operate them.
+System State records the currently selected configuration or policy
+where runtime selection is appropriate.
+
+Hardware-dependent code shall, where practical, consume the current
+configuration data rather than maintain independent hard-coded copies
+of values that are intended to be configurable.
+
+This requirement does not imply that every hardware characteristic or
+system parameter must be runtime-configurable.  The platform
+implementation determines which capabilities and settings can
+reasonably be changed while the system is running.
+
+Where changing configuration data is sufficient to alter subsequent
+hardware behavior, no additional mechanism is required.
+
+Where a runtime configuration change requires physical hardware to be
+initialized or reinitialized, the machine-specific BIOS or
+hardware-abstraction implementation may provide a compact callable
+operation that applies the current configuration values to the device.
+
+Where practical, such an operation should reuse initialization code
+already required during system startup rather than duplicate
+machine-dependent hardware knowledge.
+
+Such operations are machine-specific hardware mechanisms, not a
+generalized configuration-management service.  BetterCP/M need not
+monitor configuration tables for changes or compensate for callers
+that modify documented configuration state without performing any
+required follow-up operation.
+
+The distinction between machine capability, device configuration, and
+logical operating-system configuration shall be maintained.
+
+
+8.7 HARDWARE-ABSTRACTION INTERFACE
+----------------------------------
+
+Hardware Abstraction shall expose defined entry points or equivalent
+interfaces for the machine-dependent operations required by
+BetterCP/M.
+
+Each interface shall define:
+
+  * The requested operation.
+  * Required input parameters.
+  * Returned information.
+  * Registers or memory affected by the operation where relevant.
+  * State modified by the operation.
+  * Error or status behavior.
+  * Preconditions and postconditions required by the caller.
+
+Where machine-specific configuration state is intended to be examined
+or changed by transient programs, the relevant structures and any
+required hardware-application operations shall be documented through
+stable architectural representations.
+
+Such representations may use direct tables, pointers, vectors, or
+other compact CP/M-style mechanisms.  They do not require a resident
+configuration API or generalized dispatcher.
+
+The interface should be no more general than required to support the
+operating system.
+
+Architectural separation does not require expensive runtime
+indirection.  An interface may be implemented through direct
+assembly-language calls, vectors, tables, or other compact mechanisms
+appropriate to the Z80.
+
+The distinction between the internal hardware-abstraction interface
+and a compatibility-visible CP/M BIOS interface does not require two
+complete hardware interfaces, duplicate device implementations, or an
+additional adapter layer.
+
+Where a CP/M-shaped interface also provides a suitable internal
+hardware boundary, BetterCP/M may use or share that interface rather
+than introduce a separate abstraction solely for architectural
+purity.
+
+Where the requirements differ sufficiently to justify separate
+interfaces, they should share implementation and state wherever
+practical, and the additional resident-memory and execution costs
+shall be justified.
+
+The choice of mechanism shall consider memory cost, execution cost,
+clarity, portability requirements, and compatibility.
+
+
+8.8 PLATFORM IMPLEMENTATION
+---------------------------
+
+Each supported machine shall provide the hardware-dependent
+implementation required to satisfy the BetterCP/M hardware-
+abstraction interface.
+
+A platform implementation may include:
+
+  * Boot-related machine code.
+  * Console-device code.
+  * Storage-device code.
+  * Machine initialization and reinitialization operations.
+  * Platform capability definitions.
+  * Machine-specific configuration data.
+  * Other machine-specific operations required by BetterCP/M.
+
+Platform-specific code shall not redefine hardware-independent
+BetterCP/M semantics.
+
+A new platform should, as far as practical, be brought up by
+implementing the required hardware-dependent interfaces, capability
+definitions, initialization behavior, and configuration data rather
+than by modifying unrelated operating-system components.
+
+The platform implementation defines what the hardware can do and how
+machine-specific operations are performed.  Runtime configuration
+state selects among or parameterizes those capabilities where
+appropriate.
+
+This is an architectural objective rather than a requirement that
+the initial BetterCP/M release support multiple machines.
+
+
+8.9 COMPATIBILITY
+-----------------
+
+CP/M software normally interacts with hardware through operating-
+system services, but some software may access BIOS entry points,
+memory locations, or physical hardware directly.
+
+BetterCP/M shall distinguish among:
+
+  * CP/M system-service compatibility.
+  * Compatibility-visible BIOS behavior.
+  * Platform-specific hardware compatibility.
+
+Where the CP/M 2.2 environment defines or exposes a BIOS interface
+upon which software depends, BetterCP/M shall provide the required
+compatible behavior.
+
+Such compatibility does not require the internal BetterCP/M
+hardware-abstraction interface to be identical to the compatibility-
+visible BIOS interface.
+
+Software that directly accesses hardware belonging to a particular
+CP/M machine may require that hardware or an explicit emulation of it.
+Such requirements do not automatically become properties of the
+general BetterCP/M architecture.
+
+The Compatibility Architecture shall define which hardware-related
+interfaces form part of the BetterCP/M compatibility contract.
+
+
+8.10 FUTURE HARDWARE SUPPORT
+----------------------------
+
+Future BetterCP/M versions may support Z80-family machines whose
+hardware differs substantially from the initial target system.
+
+Possible differences may include:
+
+  * Console hardware.
+  * Storage controllers.
+  * Storage media.
+  * Boot mechanisms.
+  * Memory organization.
+  * Peripheral devices.
+  * Processor-family extensions.
+
+The initial architecture should preserve reasonable paths toward such
+support where doing so imposes little or no significant cost.
+
+In particular, hardware-independent BetterCP/M code should not
+unnecessarily assume the continued use of floppy-disk controllers or
+traditional floppy media.
+
+Future storage may include SD, CompactFlash, or other block-oriented
+devices whose physical organization bears little resemblance to a
+CP/M floppy disk.
+
+Such devices should be accommodated by mapping the logical storage
+environment required by BetterCP/M onto the capabilities of the
+physical device rather than by forcing hardware-independent
+components to depend upon the device's native organization.
+
+Support for additional hardware remains a deferred capability.  The
+initial implementation shall not contain unused generalized driver
+frameworks or speculative device mechanisms solely to anticipate
+future platforms.

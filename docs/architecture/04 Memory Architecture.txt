@@ -1,0 +1,202 @@
+04 MEMORY ARCHITECTURE
+======================
+
+4.1 Memory Model
+4.2 Address-Space Organization
+4.3 Transient Program Area
+4.4 Resident System
+4.5 Compatibility-Visible Memory
+4.6 Memory Ownership and Use
+4.7 Future Memory Expansion
+
+4.1 MEMORY MODEL
+----------------
+
+The initial BetterCP/M implementation operates within the 16-bit
+address space of the Z80 and presents applications with a memory
+environment compatible with CP/M 2.2.
+
+The initial architecture assumes a single active address space.  The
+Command Environment, resident operating-system components, system
+data, and the currently executing transient program occupy portions
+of that address space according to the system memory layout.
+
+BetterCP/M shall preserve memory characteristics upon which compatible
+CP/M 2.2 software depends while remaining free to reorganize memory
+that is private to the operating system.
+
+The initial memory architecture does not require bank switching,
+memory protection, virtual memory, or multiple simultaneous program
+address spaces.
+
+Memory shall remain a constrained system resource.  Resident memory
+consumed by BetterCP/M directly reduces the memory available to
+transient programs and shall therefore be justified by an identified
+system requirement.
+
+
+4.2 ADDRESS-SPACE ORGANIZATION
+------------------------------
+
+The BetterCP/M address space is divided conceptually into regions
+serving different architectural purposes.
+
+These include:
+
+  * Compatibility-visible low memory.
+  * The Transient Program Area.
+  * Resident operating-system code and data.
+  * Hardware-dependent resident code and data.
+
+The precise boundaries and addresses of these regions are determined
+by the memory configuration of the implementation and by CP/M 2.2
+compatibility requirements.
+
+BetterCP/M shall not assume that every target system provides the
+same amount of usable memory.  Where practical, the organization of
+the resident system should permit the operating system to be located
+appropriately for the available memory while preserving the
+compatibility-visible relationships expected by CP/M software.
+
+Private implementation details within resident memory may differ
+from Digital Research CP/M.
+
+
+4.3 TRANSIENT PROGRAM AREA
+--------------------------
+
+The Transient Program Area, or TPA, is the portion of memory made
+available for execution of transient applications.
+
+BetterCP/M shall provide a TPA compatible with the CP/M 2.2 program
+execution model.
+
+Transient programs are loaded and executed within this area according
+to the compatibility-visible conventions defined by CP/M 2.2.
+
+The TPA should be made as large as reasonably possible.  Because
+resident operating-system growth reduces available TPA, memory cost
+shall be considered when evaluating new resident functionality.
+
+BetterCP/M shall not use TPA memory for persistent operating-system
+state when doing so would unnecessarily reduce the memory available
+to applications or create dependencies upon application memory.
+
+Temporary use of otherwise available memory may be permitted where
+its ownership and lifetime are explicitly defined and CP/M
+compatibility is preserved.
+
+Detailed program loading, entry, termination, and execution
+requirements are defined by the Program Execution Model.
+
+
+4.4 RESIDENT SYSTEM
+-------------------
+
+The resident system consists of BetterCP/M code and data that must
+remain available while a transient program is executing.
+
+Resident memory may contain:
+
+  * System-service code and data.
+  * Hardware-dependent code and data.
+  * Compatibility-visible operating-system structures.
+  * Persistent system state.
+  * Other code or data whose continued presence is required during
+    application execution.
+
+The Command Environment need not necessarily remain wholly resident
+while a transient program executes if part of its memory can safely
+be made available to the application and subsequently restored.
+
+Whether a component is architecturally part of the resident system
+shall be determined by its required lifetime and availability rather
+than by the organization of the original CP/M source.
+
+Resident components should be kept compact in order to preserve the
+largest practical TPA.
+
+
+4.5 COMPATIBILITY-VISIBLE MEMORY
+--------------------------------
+
+Some locations and structures within the CP/M memory environment are
+visible to applications and therefore form part of the compatibility
+boundary.
+
+BetterCP/M shall preserve memory locations, entry points, vectors,
+control structures, conventions, and initial values upon which
+CP/M 2.2-compatible software is entitled or in practice required to
+depend.
+
+Compatibility-visible memory shall be distinguished from
+implementation-private operating-system memory.
+
+An address or structure shall not be considered private merely
+because applications normally access the associated function through
+a higher-level interface.  Existing software may inspect, modify, or
+invoke portions of the CP/M memory environment directly.
+
+Conversely, BetterCP/M need not preserve the internal placement or
+representation of operating-system data that cannot be observed by
+compatible software.
+
+The precise set of compatibility-visible memory locations and their
+required semantics shall be established through compatibility
+investigation and documented by the Compatibility Architecture and
+supporting engineering specifications.
+
+
+4.6 MEMORY OWNERSHIP AND USE
+----------------------------
+
+Every region of memory used by BetterCP/M shall have a defined owner,
+purpose, and lifetime.
+
+Memory belonging to a transient application may be modified by that
+application except where particular locations are reserved by the
+CP/M execution environment.
+
+Resident operating-system memory shall not be treated as application
+workspace unless an interface or compatibility convention explicitly
+permits such use.
+
+Operating-system components should avoid depending directly upon the
+private memory of another component.  Shared data shall have defined
+ownership and defined rules governing access and modification.
+
+Temporary memory use shall not leave persistent system state dependent
+upon data whose lifetime has ended.
+
+These rules are intended primarily to make memory relationships
+explicit and comprehensible.  They do not require hardware memory
+protection, which is not part of the initial BetterCP/M architecture.
+
+
+4.7 FUTURE MEMORY EXPANSION
+---------------------------
+
+The initial BetterCP/M memory architecture is limited to the ordinary
+Z80 address space and does not require bank-switched memory.
+
+Future versions may investigate bank switching or other mechanisms
+for making additional physical memory available to BetterCP/M.
+
+The initial architecture shall not reserve memory, add indirection,
+or introduce bank-management mechanisms solely in anticipation of
+such development.
+
+Where an architectural choice can avoid unnecessarily assuming that
+all future system code, data, and applications must permanently share
+one physical 64K memory space without imposing significant cost on
+the initial implementation, the less restrictive choice should be
+preferred.
+
+Any future memory-expansion architecture must define how additional
+memory interacts with the CP/M-compatible address space.  Existing
+applications shall continue to see the memory environment required by
+the applicable compatibility specification unless an explicitly
+different execution environment is selected.
+
+Bank-switched memory remains a deferred design possibility rather
+than a requirement of the initial BetterCP/M implementation.

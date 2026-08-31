@@ -1,0 +1,311 @@
+09 PROGRAM EXECUTION MODEL
+==========================
+
+9.1 Execution Model
+9.2 Transient Program Loading
+9.3 Initial Program State
+9.4 Compatibility-Visible Execution Environment
+9.5 Program Memory
+9.6 System-Service Access
+9.7 Command Information
+9.8 Program Termination
+9.9 Return to the Command Environment
+9.10 Compatibility and Extension
+
+9.1 EXECUTION MODEL
+-------------------
+
+BetterCP/M provides a single-tasking execution environment compatible
+with CP/M 2.2 transient programs.
+
+The Program Execution Model is an architectural description of the
+conditions, interfaces, state, and transitions that define transient
+program execution.  It does not imply the existence of a separate
+resident Program Execution subsystem or runtime manager.  Its
+responsibilities may be realized by the Command Environment, System
+Services, loader, compatibility-visible memory structures, and other
+appropriate parts of the implementation.
+
+At most one transient application executes at a time.
+
+A transient program executes directly on the processor within the
+memory environment established by BetterCP/M.  The initial
+implementation does not require process isolation, memory protection,
+virtual memory, or scheduling between multiple applications.
+
+While an application is executing, it may use the memory made
+available to it and request operating-system services through the
+CP/M-compatible interfaces provided by BetterCP/M.
+
+Execution continues until the application terminates, invokes a
+system operation that causes termination or restart, or another
+defined condition returns control to the operating system.
+
+BetterCP/M then reestablishes the Command Environment and resumes the
+command-processing cycle.
+
+
+9.2 TRANSIENT PROGRAM LOADING
+-----------------------------
+
+When the Command Environment selects a transient program for
+execution, BetterCP/M shall locate and load the program according to
+the requirements of the CP/M 2.2 execution environment.
+
+The program shall be placed at the compatibility-defined location
+within the Transient Program Area.
+
+Loading shall establish the program image expected by an ordinary
+CP/M transient program without requiring the program to contain
+BetterCP/M-specific loading information.
+
+The initial execution model shall support the CP/M transient program
+format required for CP/M 2.2 compatibility.
+
+The loader is responsible for transferring the program image into
+memory.  File-system interpretation and storage access remain the
+responsibilities of their respective subsystems.
+
+The precise loading algorithm, load address, maximum program size,
+failure conditions, and handling of partially loaded programs shall
+be defined by the engineering specification.
+
+
+9.3 INITIAL PROGRAM STATE
+-------------------------
+
+Before transferring control to a transient program, BetterCP/M shall
+establish the processor and memory state required by the CP/M 2.2
+program execution environment.
+
+Initial state may include:
+
+  * The required program entry address.
+  * Compatibility-visible low-memory contents.
+  * System-service entry mechanisms.
+  * Command information.
+  * Default File Control Blocks.
+  * The default DMA area.
+  * Required register state.
+  * Stack conditions where defined by the compatibility contract.
+  * Other state upon which CP/M 2.2 programs may depend.
+
+Only state defined or established through compatibility investigation
+as relevant to program execution shall be guaranteed.
+
+BetterCP/M-private state shall not unnecessarily become part of the
+application execution contract.
+
+
+9.4 COMPATIBILITY-VISIBLE EXECUTION ENVIRONMENT
+-----------------------------------------------
+
+A transient program shall encounter the memory structures, entry
+points, conventions, and operating-system behavior required by the
+CP/M 2.2 execution environment.
+
+Compatibility-visible elements may include:
+
+  * Low-memory vectors and entry points.
+  * The system-service entry mechanism.
+  * Program origin.
+  * Command-tail representation.
+  * Default File Control Blocks.
+  * Default DMA location.
+  * Warm-start and termination mechanisms.
+  * Other memory locations or conventions used by compatible
+    software.
+
+BetterCP/M shall distinguish these externally visible structures from
+its private internal organization.
+
+A compatibility-visible entry point need not correspond directly to
+the internal component that ultimately performs the requested
+operation.
+
+BetterCP/M may therefore use compatibility stubs, vectors, or other
+mechanisms where necessary to preserve the CP/M execution environment
+while allowing a different internal architecture.
+
+
+9.5 PROGRAM MEMORY
+------------------
+
+The transient application may use the memory assigned to the
+Transient Program Area subject to the restrictions of the CP/M 2.2
+execution environment.
+
+Resident operating-system memory and other reserved regions remain
+outside ordinary application ownership.
+
+BetterCP/M does not initially provide hardware enforcement of these
+boundaries.  A transient program executing on the Z80 may therefore
+be physically capable of reading or modifying memory outside its
+intended area.
+
+The absence of hardware protection does not make all addressable
+memory part of the supported application interface.
+
+Programs that intentionally inspect or modify compatibility-visible
+system locations may do so where CP/M conventions permit or require
+it.
+
+Programs that depend upon BetterCP/M-private memory representations
+are outside the ordinary compatibility contract.
+
+The upper limit of application memory shall be determined by the
+resident-system configuration and the compatibility-visible memory
+layout.
+
+
+9.6 SYSTEM-SERVICE ACCESS
+-------------------------
+
+Transient programs shall request CP/M-compatible operating-system
+services through the entry mechanism and calling conventions required
+by CP/M 2.2.
+
+The compatibility interface shall translate the application's request
+into the appropriate BetterCP/M System Service.
+
+Conceptually:
+
+    Transient Program
+          |
+          v
+    CP/M-Compatible Service Interface
+          |
+          v
+    BetterCP/M System Services
+
+The internal System-Service interface need not be identical to the
+application-facing interface.
+
+Registers, memory structures, return values, and side effects visible
+to the application shall conform to the applicable CP/M compatibility
+requirements.
+
+Applications shall not be required to know which BetterCP/M component
+ultimately performs a requested operation.
+
+
+9.7 COMMAND INFORMATION
+-----------------------
+
+The Command Environment shall provide a newly invoked transient
+program with command information in the form required by CP/M 2.2.
+
+This information may include:
+
+  * The command tail.
+  * Command-tail length and termination conventions.
+  * Default File Control Blocks derived from command arguments.
+  * Other invocation state required by the CP/M execution model.
+
+BetterCP/M shall reproduce the compatibility-visible parsing and
+representation rules required by existing programs.
+
+The representation supplied to the program is part of the execution
+interface even where the Command Environment internally uses a
+different representation while parsing the command.
+
+Detailed formats and initialization rules shall be defined by the
+Program Execution engineering specification.
+
+
+9.8 PROGRAM TERMINATION
+-----------------------
+
+A transient program may terminate through the mechanisms provided by
+the CP/M 2.2 execution environment.
+
+Termination transfers control from the application back to
+BetterCP/M.
+
+Termination may occur through:
+
+  * Normal return or other conventional CP/M termination behavior.
+  * A system service that terminates the program.
+  * Warm-start behavior.
+  * Other compatibility-defined mechanisms.
+
+BetterCP/M shall reproduce termination behavior upon which compatible
+software depends.
+
+The operating system shall not assume that every program terminates
+through one preferred BetterCP/M mechanism if CP/M permits multiple
+termination paths.
+
+Program termination ends the application's ownership of transient
+execution state unless particular state is defined to survive the
+transition.
+
+
+9.9 RETURN TO THE COMMAND ENVIRONMENT
+-------------------------------------
+
+Following transient program termination, BetterCP/M shall restore or
+reenter the Command Environment.
+
+This process shall establish the state required to accept the next
+command.
+
+Where portions of the Command Environment were overwritten or reused
+during transient execution, they may be reloaded or reconstructed.
+
+Operating-system state defined to persist across program execution
+shall be preserved or reestablished as required.
+
+Application-private state need not be preserved after termination.
+
+The transition conceptually follows:
+
+    Command Environment
+            |
+            | invoke
+            v
+    Transient Program
+            |
+            | system calls
+            v
+       System Services
+            |
+            | return
+            v
+    Transient Program
+            |
+            | terminate
+            v
+    Command Environment
+
+The detailed relationship between termination, warm start, command
+environment restoration, and persistent system state shall be
+specified by their respective engineering specifications.
+
+
+9.10 COMPATIBILITY AND EXTENSION
+--------------------------------
+
+The initial Program Execution Model shall reproduce the environment
+required by CP/M 2.2 transient applications.
+
+A CP/M-compatible application shall not require knowledge that it is
+executing under BetterCP/M rather than Digital Research CP/M.
+
+BetterCP/M-specific extensions shall not unnecessarily alter the
+memory layout, entry conditions, service conventions, or termination
+behavior presented to ordinary CP/M applications.
+
+Future BetterCP/M versions may define additional execution
+environments or facilities.
+
+Such extensions might eventually make use of additional memory,
+additional system services, debugging facilities, or other
+BetterCP/M capabilities.
+
+These possibilities shall not require speculative machinery in the
+initial Program Execution Model.
+
+Where future execution facilities are introduced, the ordinary
+CP/M 2.2 execution environment should remain available as a defined
+compatibility environment.

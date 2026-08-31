@@ -1,0 +1,343 @@
+01 ARCHITECTURAL PRINCIPLES
+===========================
+
+1.1 Philosophy
+1.2 Design Goals
+1.3 CP/M 2.2 Compatibility
+1.4 Simplicity and Comprehensibility
+1.5 Modularity
+1.6 Evolution and Extensibility
+1.7 Deferred Design Goals
+
+1.1 PHILOSOPHY
+--------------
+
+BetterCP/M is a new implementation of the CP/M operating-system
+environment for the Z80.
+
+The initial objective of BetterCP/M is not to redesign CP/M, but to
+reproduce CP/M 2.2 faithfully enough that existing CP/M 2.2 software
+can operate without requiring modification or special accommodation.
+
+Compatibility, however, does not require duplication of the internal
+implementation of CP/M 2.2.  The original implementation is an
+important source for understanding the behavior and architecture of
+CP/M, but its internal organization is not itself the compatibility
+target.
+
+BetterCP/M therefore distinguishes between the externally observable
+CP/M environment and the particular mechanisms by which Digital
+Research implemented that environment.
+
+Where CP/M 2.2 exposes an interface, convention, data structure, or
+behavior upon which software may depend, BetterCP/M shall preserve it
+unless an incompatibility is explicitly introduced by a later design.
+
+Where an implementation detail is not compatibility-visible,
+BetterCP/M may replace it with an implementation better suited to the
+Z80, to the requirements of the project, or to future development.
+
+BetterCP/M shall nevertheless remain a small and comprehensible
+operating system.  New abstraction, modularity, or generality shall
+not be introduced merely because it would be considered desirable in
+a modern operating system.  Architectural mechanisms must solve an
+identified problem, preserve a required boundary, or provide a
+reasonable foundation for anticipated development.
+
+The initial implementation shall favor a complete and understandable
+CP/M 2.2-compatible system over the immediate addition of new
+capabilities.  Establishing this compatible baseline is intended both
+to provide a usable operating system and to produce a sufficiently
+detailed understanding of CP/M that later changes can be made
+deliberately rather than speculatively.
+
+At the same time, the initial architecture shall avoid unnecessary
+decisions that would make foreseeable extensions difficult.  Future
+capabilities need not be implemented in the initial system, but the
+design should preserve reasonable paths toward extension where doing
+so does not materially complicate the compatible baseline.
+
+BetterCP/M should also, where practical, be suitable for educational
+use.  Its architecture, source organization, interfaces, and
+documentation should make the operation of the system reasonably
+accessible to someone studying CP/M, operating-system design, or Z80
+systems programming.
+
+Educational value is a design preference rather than a compatibility
+or implementation requirement.  BetterCP/M shall not introduce
+artificial mechanisms or accept significant technical disadvantages
+merely to make the system easier to teach.  Where technically sound
+alternatives satisfy the same compatibility and engineering
+requirements, however, the simpler, clearer, and more readily
+explained design should generally be preferred.
+
+The objective is not to create a pedagogical operating-system model,
+but to create a real and usable operating system whose architecture
+and implementation are sufficiently clear that they can also serve
+as objects of study.
+
+BetterCP/M is therefore neither a source-level rewrite of Digital
+Research CP/M nor an attempt to design a modern operating system
+behind a CP/M compatibility layer.  It is a new Z80 operating system
+whose initial specification is defined by the CP/M 2.2 environment,
+whose implementation is free to improve upon the mechanisms used to
+provide that environment, and whose architecture is intended to
+support careful evolution beyond it.
+
+1.2 DESIGN GOALS
+----------------
+
+The initial BetterCP/M implementation shall provide a complete and
+usable CP/M 2.2-compatible operating environment implemented natively
+for the Z80.
+
+The principal design goals are:
+
+  * CP/M 2.2 compatibility.
+
+    Existing software written for CP/M 2.2 should operate under
+    BetterCP/M without modification or special accommodation except
+    where dependence upon machine-specific hardware or undocumented
+    implementation details makes such compatibility impractical.
+
+  * Native Z80 implementation.
+
+    BetterCP/M shall be designed specifically for the Z80 instruction
+    set.  Compatibility with Intel 8080 processors is not a design
+    requirement.
+
+  * Small system size.
+
+    BetterCP/M should retain the compact character of CP/M and avoid
+    consuming memory for mechanisms that do not provide sufficient
+    benefit to justify their cost.
+
+    Once the baseline target and memory organization are established,
+    resident system size and available TPA shall be governed by explicit
+    quantitative budgets.  These budgets shall be measured and reviewed
+    as the implementation develops rather than treated only as qualitative
+    design preferences.
+
+  * Simplicity and comprehensibility.
+
+    The architecture and implementation should remain sufficiently
+    simple that the operation of the complete system can be
+    understood, documented, investigated, and maintained.
+
+  * Clear architectural boundaries.
+
+    Responsibilities and interfaces between major parts of the
+    system should be explicitly defined rather than depending upon
+    accidental characteristics of their implementations.
+
+  * Data-driven configuration.
+
+    Where practical, machine-dependent settings and system policy that
+    may reasonably vary without rebuilding BetterCP/M should be
+    represented as documented mutable runtime data rather than
+    unnecessarily hard-coded executable behavior.
+
+    Platform implementations define the capabilities and mechanisms
+    provided by the target hardware.  Configuration state selects among
+    or parameterizes those capabilities where runtime selection is
+    appropriate.
+
+  * Implementation freedom.
+
+    BetterCP/M should reproduce required CP/M behavior without
+    unnecessarily reproducing the internal mechanisms by which
+    Digital Research CP/M provided that behavior.
+
+  * Extensibility.
+
+    The initial design should avoid unnecessary assumptions that
+    would prevent technically reasonable future improvements.
+
+  * Engineering completeness.
+
+    Architectural and engineering specifications should ultimately
+    define the system with sufficient precision that implementation
+    decisions are largely resolved before assembly-language coding
+    begins.
+
+These goals are not all equal constraints.  CP/M 2.2 compatibility
+defines the initial operating environment and takes precedence where
+a competing design preference would make otherwise compatible
+software fail.
+
+
+1.3 CP/M 2.2 COMPATIBILITY
+--------------------------
+
+CP/M 2.2 defines the compatibility target for the initial BetterCP/M
+implementation.
+
+Compatibility shall be defined primarily in terms of behavior
+observable by software rather than duplication of the internal
+implementation of Digital Research CP/M 2.2.
+
+Interfaces, conventions, memory locations, data structures, calling
+conventions, file-system behavior, command behavior, and other system
+characteristics upon which CP/M 2.2 software can legitimately depend
+shall be treated as compatibility-visible unless investigation
+establishes otherwise.
+
+The original Digital Research documentation defines the documented
+CP/M interface.  The original source code provides additional
+evidence concerning the implementation and behavior of the system.
+Neither source shall automatically be treated as establishing that
+every internal implementation detail is a compatibility requirement.
+
+During design, CP/M characteristics shall therefore be distinguished
+as far as practical between:
+
+  * Documented behavior.
+  * Observed implementation behavior.
+  * Architectural consequences inferred from that behavior.
+  * Implementation-private details.
+
+Where compatibility requirements are uncertain, the uncertainty
+shall be recorded and investigated rather than silently converted
+into a BetterCP/M design assumption.
+
+BetterCP/M may provide additional capabilities in later versions,
+provided that their introduction does not unnecessarily invalidate
+the CP/M 2.2-compatible environment.
+
+Detailed compatibility requirements and exceptions shall be defined
+by the Compatibility Architecture and supporting specifications.
+
+
+1.4 SIMPLICITY AND COMPREHENSIBILITY
+------------------------------------
+
+BetterCP/M shall remain a small and comprehensible operating system.
+
+Simplicity does not require reproducing the structure of Digital
+Research CP/M.  A redesigned mechanism may be preferable when it
+provides the required behavior more clearly, efficiently, or
+consistently.
+
+Conversely, abstraction and generality have costs.  BetterCP/M shall
+not introduce layers, frameworks, interfaces, or mechanisms merely
+because similar structures are common in larger or more modern
+operating systems.
+
+Complexity should be introduced only when it serves an identified
+requirement, establishes a useful architectural boundary, materially
+improves the implementation, or preserves a reasonable path toward
+anticipated development.
+
+Where technically sound alternatives satisfy the same requirements,
+the simpler and more readily understood design should generally be
+preferred.
+
+Source organization and documentation should make important system
+state, control flow, interfaces, and data structures explicit.  A
+reader studying the system should, as far as practical, be able to
+trace how an operation passes through BetterCP/M without having to
+infer essential relationships from undocumented implementation
+details.
+
+This principle also supports the educational value of BetterCP/M.
+Educational clarity remains subordinate to correct operation and
+sound engineering, but unnecessary obscurity should not be accepted
+where an equally sound and clearer implementation is available.
+
+
+1.5 MODULARITY
+--------------
+
+BetterCP/M shall separate major system responsibilities through
+defined architectural boundaries and interfaces.
+
+Modularity is intended to make the system easier to understand,
+implement, test, maintain, replace, and extend.  It is not an end in
+itself.
+
+A component should own a responsibility when doing so creates a
+meaningful architectural boundary.  Responsibilities should not be
+divided into separate components merely to increase the apparent
+modularity of the system.
+
+Interfaces between components should expose the information and
+services required by their users while avoiding unnecessary
+dependence upon implementation-private state.
+
+Hardware-dependent mechanisms should, where practical, be separated
+from hardware-independent operating-system behavior.  Likewise,
+command-environment behavior, system services, storage mechanisms,
+and program execution should have explicitly defined responsibilities
+even where the compact size of the implementation causes some of
+their code or data to reside closely together.
+
+Modularity does not require that every architectural component
+occupy a separate binary, memory region, source file, or runtime
+layer.  Architectural separation concerns responsibility and
+interface; physical organization may be chosen according to the
+requirements of the implementation.
+
+Likewise, an architectural boundary does not by itself require a
+separate runtime dispatch mechanism, adapter, jump table, or duplicated
+interface.  Where responsibilities can remain clearly separated while
+sharing a compact implementation or direct calling convention, that
+approach may be preferred when it reduces memory use or complexity.
+
+
+1.6 EVOLUTION AND EXTENSIBILITY
+-------------------------------
+
+The initial BetterCP/M implementation establishes a CP/M
+2.2-compatible baseline rather than the final limits of the system.
+
+The architecture should permit later improvement without requiring
+the initial implementation to contain mechanisms for capabilities
+that do not yet exist.
+
+Known possibilities for future development may therefore influence
+architectural boundaries where accommodating them imposes little or
+no significant cost upon the initial system.
+
+They shall not, however, be allowed to turn speculative future needs
+into present requirements.
+
+Where a design choice would unnecessarily make a foreseeable
+extension difficult or impossible, and an equally suitable
+alternative preserves that possibility, the extensible alternative
+should generally be preferred.
+
+This principle is intended to preserve architectural freedom, not to
+predict the eventual form of BetterCP/M.  Future capabilities remain
+subject to separate investigation and design before becoming part of
+the system.
+
+
+1.7 DEFERRED DESIGN GOALS
+-------------------------
+
+A number of capabilities have been identified as potentially
+desirable for later BetterCP/M development but are not requirements
+of the initial implementation.
+
+These include, among others:
+
+  * Bank-switched memory architectures.
+  * Storage based upon technologies such as SD and CompactFlash.
+  * Improved support for bringing BetterCP/M up on different Z80-
+    family hardware.
+  * Additional debugging facilities for system development.
+  * Debugging facilities available to application developers.
+
+Identification of a deferred capability does not imply a commitment
+to implement it.
+
+Deferred capabilities may be considered when evaluating an
+architectural decision if doing so helps avoid an unnecessary future
+restriction.  They shall not require additional complexity, memory
+consumption, interfaces, or implementation work in the initial
+system unless that work is independently justified by a current
+requirement.
+
+The authoritative record of proposed capabilities that have not yet
+entered the BetterCP/M design is maintained separately in Future
+Ideas.

@@ -1,0 +1,253 @@
+06 COMMAND ENVIRONMENT
+======================
+
+6.1 Command Environment Model
+6.2 User Interaction
+6.3 Command Input and Interpretation
+6.4 Resident Commands
+6.5 Transient Commands
+6.6 Program Loading and Invocation
+6.7 Command Environment State
+6.8 Reentry and Restoration
+6.9 Compatibility and Extension
+
+6.1 COMMAND ENVIRONMENT MODEL
+-----------------------------
+
+The BetterCP/M Command Environment provides the principal direct
+user interface to the operating system.
+
+It performs the architectural role provided by the CP/M 2.2 Console
+Command Processor, or CCP, while remaining free to use a different
+internal implementation where compatibility permits.
+
+The Command Environment is intentionally small.  Its primary purpose
+is to accept commands, perform a limited set of resident operations,
+and initiate transient programs.
+
+General operating-system services do not belong to the Command
+Environment merely because they can be initiated by commands.  Such
+services shall be provided by the appropriate system component and
+used by the Command Environment through defined interfaces.
+
+The initial Command Environment shall reproduce the
+compatibility-visible behavior required by the CP/M 2.2 command
+environment.
+
+Future command-environment improvements may be considered separately
+provided that the CP/M 2.2-compatible environment can be preserved.
+
+
+6.2 USER INTERACTION
+--------------------
+
+The Command Environment is the normal point of direct interaction
+between the user and BetterCP/M.
+
+It shall present the command prompt, accept command input, report
+command-related results or errors as required, and return to the
+prompt when command processing is complete.
+
+BetterCP/M does not require a continuously resident graphical,
+menu-driven, or otherwise expanded user environment.
+
+Most user-facing functionality is expected to reside in transient
+applications rather than in the operating system itself.
+
+The Command Environment shall therefore remain focused upon the
+functions required to manage the command-execution cycle rather than
+accumulating application-like functionality.
+
+
+6.3 COMMAND INPUT AND INTERPRETATION
+------------------------------------
+
+The Command Environment shall accept and interpret command lines
+according to the compatibility-visible conventions of CP/M 2.2.
+
+Command interpretation shall determine whether the requested command
+is:
+
+  * A resident command implemented by the Command Environment.
+  * A request to locate and execute a transient program.
+  * Invalid or otherwise unable to be executed.
+
+Parsing behavior visible to the user or relied upon by software shall
+be reproduced where required for CP/M 2.2 compatibility.
+
+The internal representation and parsing mechanism need not reproduce
+the Digital Research CCP implementation.
+
+Command interpretation should remain separate from general file,
+storage, console, and program-execution mechanisms.  The Command
+Environment shall request those operations through the appropriate
+BetterCP/M interfaces.
+
+
+6.4 RESIDENT COMMANDS
+---------------------
+
+BetterCP/M shall provide the resident commands required by the CP/M
+2.2-compatible command environment.
+
+A resident command is implemented within the Command Environment or
+otherwise made available without loading an ordinary transient
+command program.
+
+The initial set and behavior of resident commands shall reproduce the
+CP/M 2.2 command environment.
+
+Resident commands should remain limited to operations for which
+residency is justified by compatibility, frequent use, system
+operation, or significant implementation advantage.
+
+A resident command shall not contain a private duplicate of a general
+operating-system service where the same operation properly belongs to
+System Services.
+
+For example, a resident command that manipulates files should use the
+same underlying file-system services available elsewhere in the
+system rather than implementing an independent file-system mechanism.
+
+The exact syntax, semantics, error behavior, and compatibility
+requirements of individual resident commands shall be defined by the
+Command Environment engineering specification.
+
+
+6.5 TRANSIENT COMMANDS
+----------------------
+
+Commands not recognized as resident commands may identify transient
+programs to be located, loaded, and executed.
+
+The Command Environment is responsible for initiating this process
+but shall not itself own the general mechanisms for file access,
+program loading, or establishment of the execution environment.
+
+A transient command shall execute within the CP/M-compatible Program
+Execution Environment.
+
+The Command Environment shall supply command information to the
+transient program in the form required by the CP/M 2.2 execution
+environment.
+
+The rules governing command-name interpretation, program lookup,
+default file types, command tails, File Control Blocks, and other
+compatibility-visible invocation state shall reproduce CP/M 2.2
+behavior where required.
+
+Detailed loading and execution behavior is defined by the Program
+Execution Model.
+
+
+6.6 PROGRAM LOADING AND INVOCATION
+----------------------------------
+
+When a transient command is selected for execution, the Command
+Environment shall request the operations required to locate and load
+the program and establish its initial execution state.
+
+Conceptually, command invocation proceeds as follows:
+
+  * Interpret the command line.
+  * Determine the transient program to be executed.
+  * Locate the program using the required CP/M-compatible rules.
+  * Establish compatibility-visible command information.
+  * Prepare the Program Execution Environment.
+  * Load the transient program.
+  * Transfer processor control to the program.
+
+These steps define responsibilities and required results rather than
+requiring that every step be implemented directly by the Command
+Environment.
+
+File access shall use the appropriate System Services.  Memory and
+execution preparation shall be performed according to the Program
+Execution Model.
+
+The Command Environment shall not depend upon the private internal
+representation of those mechanisms.
+
+
+6.7 COMMAND ENVIRONMENT STATE
+-----------------------------
+
+The Command Environment may maintain state required for command
+processing and interaction with the user.
+
+Such state may include:
+
+  * Command input under construction.
+  * Information required during command interpretation.
+  * State associated with resident command execution.
+  * Information required to initiate a transient program.
+  * Other command-environment state required by CP/M compatibility.
+
+System-wide state such as the current logical drive or user area
+shall have clearly defined ownership even where the Command
+Environment can examine or modify it.
+
+The Command Environment shall not maintain an independent private
+copy of system state where doing so could cause its view of the
+operating environment to diverge from that used by applications or
+System Services.
+
+Command-environment state that need not survive transient program
+execution may be discarded or overwritten when doing so increases
+the memory available to applications.
+
+
+6.8 REENTRY AND RESTORATION
+---------------------------
+
+When transient program execution ends, BetterCP/M shall reestablish
+a usable Command Environment and resume the command-processing cycle.
+
+The Command Environment need not remain completely resident while a
+transient program executes.
+
+Code or data that can safely be reconstructed or reloaded may occupy
+memory made available to transient programs during execution.
+
+The mechanism used to restore the Command Environment need not
+duplicate the Digital Research CCP mechanism, provided that required
+CP/M 2.2 behavior is preserved.
+
+Reentry shall establish the command-processing state required for the
+next command while preserving system state that is required to
+survive program execution.
+
+Warm-start behavior and its relationship to Command Environment
+restoration are defined jointly by the Boot Architecture, Program
+Execution Model, and Compatibility Architecture.
+
+
+6.9 COMPATIBILITY AND EXTENSION
+-------------------------------
+
+The initial BetterCP/M Command Environment shall provide the command
+environment required for CP/M 2.2 compatibility.
+
+Compatibility includes behavior visible through command syntax,
+resident commands, transient program invocation, command information
+passed to applications, error handling where software or established
+use depends upon it, and other observable command-environment
+conventions.
+
+BetterCP/M is not required to reproduce implementation-private
+characteristics of the Digital Research CCP.
+
+Future versions may provide additional command capabilities or an
+alternative command environment.
+
+Such extensions shall not require the initial implementation to
+contain unused command-processing frameworks or generalized shell
+mechanisms.
+
+Where future command environments are introduced, the architecture
+should preserve the ability to provide the CP/M 2.2-compatible
+environment when compatibility requires it.
+
+The Command Environment shall therefore be treated as a defined
+operating-system component rather than as an inseparable property of
+all other BetterCP/M services.

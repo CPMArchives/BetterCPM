@@ -1,0 +1,412 @@
+10 STORAGE AND FILE-SYSTEM ARCHITECTURE
+=======================================
+
+10.1 Storage Model
+10.2 Logical Drives
+10.3 CP/M Disk Formats
+10.4 File-System Model
+10.5 Directory and Allocation
+10.6 Record and Extent Model
+10.7 Logical-to-Physical Translation
+10.8 Disk Format Description and Configuration
+10.9 Storage State
+10.10 Compatibility
+10.11 Future Storage Technologies
+
+10.1 STORAGE MODEL
+------------------
+
+BetterCP/M shall present applications with a storage environment
+compatible with CP/M 2.2 while separating that logical environment,
+where practical, from the physical devices upon which data is stored.
+
+The storage architecture distinguishes among:
+
+  * The CP/M file-system environment visible to applications.
+  * Logical disk formats used to organize CP/M storage.
+  * The mapping between logical storage and device-level storage.
+  * The hardware-dependent mechanisms used to access physical media.
+
+These layers describe responsibilities rather than requiring a
+particular number of runtime software layers.
+
+The initial implementation may use traditional disk-image or floppy-
+like storage.  The hardware-independent storage architecture shall
+not unnecessarily depend upon floppy-disk hardware.
+
+A physical storage device need not correspond directly to one CP/M
+logical drive, and a CP/M logical drive need not expose the native
+organization of its underlying physical device.
+
+
+10.2 LOGICAL DRIVES
+-------------------
+
+BetterCP/M shall provide the logical drive environment required by
+CP/M 2.2.
+
+Applications shall interact with logical drives through the
+compatibility-visible CP/M interfaces rather than through the
+physical storage devices that contain them.
+
+Each available logical drive shall have sufficient configuration
+information to determine:
+
+  * The logical disk format associated with the drive.
+  * The storage resource backing the drive.
+  * The translation required between logical and physical storage.
+  * State required for normal CP/M disk operations.
+
+Where these relationships may reasonably change without rebuilding
+BetterCP/M, the corresponding drive configuration shall be represented
+as documented mutable runtime data in accordance with the System State
+architecture.
+
+The relationship between logical drives and physical devices shall
+not unnecessarily be one-to-one.
+
+Multiple logical drives may eventually reside upon one physical
+device, and different logical drives may use different CP/M disk
+formats where the implementation supports such configurations.
+
+The initial implementation need support only the logical-drive
+arrangement required by its target environment.
+
+
+10.3 CP/M DISK FORMATS
+----------------------
+
+A CP/M disk format defines the logical organization required to
+interpret a disk as a CP/M file system.
+
+Format information may describe such characteristics as:
+
+  * Logical sector organization.
+  * Logical track organization.
+  * Reserved system area.
+  * Directory size and location.
+  * Allocation-block organization.
+  * Disk capacity.
+  * Extent-related parameters.
+  * Sector translation requirements.
+  * Other parameters required by the CP/M disk organization.
+
+These characteristics belong to the logical disk format unless they
+are inherently properties of the physical device.
+
+BetterCP/M shall avoid embedding the characteristics of one disk
+format throughout the file-system implementation.
+
+File-system operations should instead obtain the format information
+required to interpret the currently selected logical drive.
+
+The precise representation of disk-format parameters shall be
+defined by the Storage engineering specification.
+
+
+10.4 FILE-SYSTEM MODEL
+----------------------
+
+The initial BetterCP/M file system shall reproduce the file-system
+environment required by CP/M 2.2.
+
+This includes the compatibility-visible behavior associated with:
+
+  * File names and file types.
+  * Directory entries.
+  * File Control Blocks.
+  * User areas.
+  * Extents.
+  * Allocation blocks.
+  * Sequential records.
+  * Random access where defined by CP/M 2.2.
+  * File creation and deletion.
+  * Opening and closing files.
+  * File searching and directory operations.
+  * File reading and writing.
+  * Renaming and other required file operations.
+
+The file system shall retain the CP/M logical model even where the
+underlying storage technology uses a substantially different native
+organization.
+
+BetterCP/M shall not replace the CP/M file system with a modern file
+system hidden behind an incomplete compatibility translation in the
+initial implementation.
+
+Implementation-private algorithms may nevertheless differ from those
+used by Digital Research CP/M where the resulting observable behavior
+remains compatible.
+
+
+10.5 DIRECTORY AND ALLOCATION
+-----------------------------
+
+BetterCP/M shall interpret and maintain CP/M-compatible directory and
+allocation information according to the logical format of each drive.
+
+Directory processing shall provide the semantics required by the
+CP/M 2.2 file-system interface.
+
+Allocation management shall determine which logical storage blocks
+belong to files and which remain available for allocation.
+
+The representation of directory entries and allocation information
+that is visible through CP/M disk structures forms part of the
+compatibility boundary.
+
+Internal working structures used to interpret or manage this
+information need not duplicate those used by Digital Research CP/M.
+
+The implementation shall avoid assuming fixed directory or
+allocation parameters where those values properly belong to the
+logical disk-format description.
+
+
+10.6 RECORD AND EXTENT MODEL
+----------------------------
+
+BetterCP/M shall preserve the CP/M 2.2 record-oriented file model.
+
+Applications shall observe files through the record and extent
+semantics required by the CP/M system-service interface.
+
+The file-system implementation is responsible for translating those
+operations into the appropriate directory, allocation, logical disk,
+and physical storage operations.
+
+Record numbers, extent information, allocation information, and File
+Control Block state shall be interpreted according to CP/M 2.2
+requirements.
+
+The implementation may internally organize calculations or temporary
+state differently from Digital Research CP/M provided that
+compatibility-visible results are preserved.
+
+Detailed record, extent, and File Control Block behavior shall be
+defined by the Storage and Compatibility engineering specifications.
+
+
+10.7 LOGICAL-TO-PHYSICAL TRANSLATION
+------------------------------------
+
+BetterCP/M shall distinguish the storage addresses used by the CP/M
+logical environment from the addressing mechanism used by the
+underlying physical device.
+
+Conceptually:
+
+    CP/M File Operation
+            |
+            v
+    File-System Interpretation
+            |
+            v
+    Logical Disk Address
+            |
+            v
+    Storage Translation
+            |
+            v
+    Device-Level Address
+            |
+            v
+    Hardware Abstraction
+            |
+            v
+    Physical Storage
+
+On a traditional floppy implementation, portions of this translation
+may correspond closely to physical tracks and sectors.
+
+On other storage technologies, logical CP/M tracks and sectors may be
+representations used solely to provide the required CP/M disk
+organization.
+
+Hardware-independent file-system code shall not unnecessarily depend
+upon the native addressing scheme of the physical device.
+
+Likewise, device-level code shall not own CP/M file-system policy
+merely because it ultimately stores the sectors containing the file
+system.
+
+
+10.8 DISK FORMAT DESCRIPTION AND CONFIGURATION
+----------------------------------------------
+
+The storage architecture shall permit the logical characteristics of
+a drive to be described separately from the general file-system
+implementation.
+
+This separation is intended to permit BetterCP/M to support multiple
+CP/M disk formats without requiring a separately modified operating
+system for each format.
+
+A disk-format description shall contain the parameters required by
+the operating system to interpret the logical organization of that
+format.
+
+Disk-format characteristics that can reasonably be parameterized
+shall be represented as format data rather than duplicated or
+embedded as assumptions in general file-system logic.
+
+Where practical, disk-format descriptions and logical-drive mappings
+that may reasonably change without rebuilding BetterCP/M shall be
+represented as documented mutable runtime data.
+
+Such data shall be discoverable through the System State architecture
+without requiring transient programs to depend upon private absolute
+addresses.
+
+The mechanism used by a transient utility to display, edit, save,
+load, or otherwise manage disk-format or drive configuration is
+separate from the storage architecture.
+
+Changing the logical format associated with a drive, changing the
+storage resource backing a drive, or otherwise altering its
+interpretation may invalidate login state, directory working state,
+allocation working state, translation state, or other cached
+information.
+
+The documented programming contract for such configuration data shall
+therefore identify any required disk reset, relogin, state
+invalidation, reconstruction, or other follow-up operation before the
+drive is used under the new configuration.
+
+BetterCP/M need not monitor disk-configuration tables for changes or
+automatically compensate for a transient program that modifies them
+without performing a required follow-up operation.
+
+Early implementation should validate the separation between general
+file-system logic and format data using substantially different
+logical disk formats where practical, so that hidden dependencies upon
+a single geometry, allocation scheme, directory organization, or
+sector-translation model can be discovered.
+
+Such validation does not require a user-facing multiple-format utility
+in the baseline implementation.
+
+The initial architecture shall avoid compiling assumptions about one
+particular disk geometry into unrelated file-system code where those
+assumptions can reasonably be represented as disk-format parameters.
+
+This requirement does not imply that every possible CP/M disk format
+must be supported.
+
+10.9 STORAGE STATE
+------------------
+
+BetterCP/M shall maintain the state required to operate the current
+logical storage environment.
+
+Such state may include:
+
+  * Current logical drive.
+  * Current user area.
+  * Current DMA address where relevant to storage operations.
+  * Drive-selection state.
+  * Login or initialization state.
+  * Allocation working state.
+  * Directory working state.
+  * Current disk-format information.
+  * Other state required by CP/M-compatible disk services.
+
+Persistent storage-related state shall have defined ownership.
+
+Changing drives, changing media, performing warm starts, changing
+the storage resource backing a logical drive, or changing its disk
+format may require some storage state to be invalidated or
+reconstructed.
+
+The rules governing such transitions shall be explicitly defined so
+that stale information cannot silently be applied to a different
+disk, backing resource, or disk format.
+
+Where a documented runtime configuration change requires a disk
+reset, relogin, or other follow-up operation, correct performance of
+that operation is the responsibility of the program making the
+change.
+
+The general ownership and lifetime of operating-system state is
+defined by the System State architecture.
+
+
+10.10 COMPATIBILITY
+-------------------
+
+BetterCP/M shall reproduce the storage and file-system behavior
+required for CP/M 2.2 compatibility.
+
+Compatibility may exist at more than one level.
+
+Application-level compatibility includes the behavior visible through
+System Services, File Control Blocks, records, file names, user
+areas, and other CP/M programming interfaces.
+
+Disk-level compatibility includes on-media structures that must be
+interpretable as the applicable CP/M disk format.
+
+Hardware-level compatibility concerns the ability to access a
+particular physical storage device and is distinct from CP/M
+file-system compatibility.
+
+BetterCP/M shall not assume that compatibility with one physical disk
+controller or medium is required merely because the logical disk
+format originated on that hardware.
+
+Conversely, support for a storage device does not imply support for
+every CP/M logical disk format that might theoretically be stored on
+it.
+
+The precise compatibility requirements for supported disk formats
+shall be documented individually.
+
+
+10.11 FUTURE STORAGE TECHNOLOGIES
+---------------------------------
+
+Future BetterCP/M implementations may use storage devices whose
+organization differs substantially from traditional CP/M floppy
+disks.
+
+Possible storage technologies include SD, CompactFlash, and other
+block-addressable media.
+
+Such storage may eventually provide backing resources such as
+partitions, regions, or disk-image files while BetterCP/M continues to
+present ordinary CP/M logical drives above them.
+
+Such devices may contain:
+
+  * A single BetterCP/M logical drive.
+  * Multiple logical drives.
+  * Logical storage regions using different CP/M disk formats.
+  * Collections of disk-image files representing different CP/M disk
+    formats.
+  * Configuration or system information outside the CP/M-visible
+    logical drives.
+
+No particular arrangement is required by the initial architecture.
+
+Disk-image browsing, image-container support, automatic format
+detection, and user-facing mounting utilities are not baseline storage
+requirements.  They may be added later without changing the
+architectural separation among logical drive, disk format, backing
+storage resource, and physical device.
+
+Future support for such devices should preserve the CP/M logical
+storage environment at the application compatibility boundary while
+allowing the physical medium to be used in a manner appropriate to
+its capabilities.
+
+Logical CP/M tracks and sectors need not correspond to physical
+tracks and sectors where the underlying device has no such
+organization.
+
+The initial implementation shall not contain speculative partitioning
+systems, generalized volume managers, or unused device frameworks
+solely to anticipate these possibilities.
+
+It shall, however, avoid unnecessary assumptions that would make
+their later introduction require fundamental redesign of the CP/M
+file-system implementation.

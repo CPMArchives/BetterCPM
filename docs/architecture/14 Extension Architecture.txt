@@ -1,0 +1,360 @@
+14 EXTENSION ARCHITECTURE
+=========================
+
+14.1 Extension Model
+14.2 Extension Principles
+14.3 Compatibility-Preserving Extensions
+14.4 System-Service Extensions
+14.5 Storage Extensions
+14.6 Hardware Extensions
+14.7 Memory Extensions
+14.8 Command-Environment Extensions
+14.9 Development and Debugging Extensions
+14.10 Extension Discovery and Identification
+14.11 Resource and Complexity Constraints
+14.12 Future Architectural Evolution
+
+14.1 EXTENSION MODEL
+--------------------
+
+BetterCP/M is intended to begin as a CP/M 2.2-compatible operating
+system while permitting later development beyond the capabilities of
+CP/M 2.2.
+
+An extension is a capability that is not required by the initial
+CP/M 2.2-compatible environment but is subsequently added to
+BetterCP/M.
+
+Extensions may add capabilities to existing components, introduce new
+components, support additional hardware, or define new interfaces.
+
+The initial architecture shall provide reasonable architectural
+boundaries through which such development can occur.
+
+It shall not attempt to predict the detailed requirements of future
+extensions or implement a generalized extension framework before one
+is required.
+
+Extension capability shall therefore result primarily from clear
+component responsibilities and interfaces rather than from
+speculative infrastructure.
+
+
+14.2 EXTENSION PRINCIPLES
+-------------------------
+
+BetterCP/M extensions shall follow the same architectural principles
+as the initial system.
+
+In particular:
+
+  * Existing CP/M 2.2 compatibility shall be preserved where the
+    extension is intended to coexist with the compatible
+    environment.
+
+  * New functionality shall be placed with the component whose
+    responsibilities naturally include it.
+
+  * Hardware-independent functionality shall not unnecessarily
+    become dependent upon particular hardware.
+
+  * Extensions shall not duplicate existing system mechanisms when
+    those mechanisms can reasonably provide the required service.
+
+  * Resident-memory, code-size, execution-time, and complexity costs
+    shall remain relevant.
+
+  * An extension shall solve an identified requirement rather than
+    exist solely to provide theoretical generality.
+
+  * Extension interfaces shall be no more general than their actual
+    requirements justify.
+
+The existence of an Extension Architecture does not imply that every
+BetterCP/M component must be dynamically replaceable or extensible.
+
+
+14.3 COMPATIBILITY-PRESERVING EXTENSIONS
+----------------------------------------
+
+An extension intended for use within the ordinary CP/M 2.2-compatible
+environment shall not silently alter behavior required by compatible
+software.
+
+Existing CP/M interfaces shall retain their established semantics.
+
+Where an extension provides additional behavior through an existing
+operation, ordinary CP/M software shall continue to receive the
+behavior required by the compatibility contract.
+
+Where incompatible semantics are desirable, they shall be exposed
+through an explicitly different interface, mode, environment, or
+other clearly defined mechanism.
+
+BetterCP/M-specific functionality shall not require modification of
+ordinary CP/M applications unless those applications explicitly wish
+to use that functionality.
+
+Compatibility-preserving extensions may use BetterCP/M-private
+interfaces and state that are invisible to ordinary CP/M software.
+
+
+14.4 SYSTEM-SERVICE EXTENSIONS
+------------------------------
+
+Future BetterCP/M versions may provide System Services beyond those
+defined by CP/M 2.2.
+
+Additional services shall use an extension mechanism that can be
+distinguished from ordinary CP/M service requests.
+
+The mechanism shall avoid changing the meaning of existing CP/M
+function numbers or calling conventions.
+
+The precise mechanism for extended System Services is not defined by
+the initial architecture.
+
+Possible mechanisms shall be evaluated when an actual extended
+service is required.
+
+The initial implementation shall not reserve substantial resident
+code, tables, or interface machinery solely for hypothetical future
+System Services.
+
+Once an extension mechanism is defined and published for application
+use, its interface becomes part of the BetterCP/M compatibility
+contract applicable to that extension.
+
+
+14.5 STORAGE EXTENSIONS
+-----------------------
+
+The storage architecture shall permit additional logical disk formats
+and physical storage technologies to be introduced without requiring
+fundamental changes to the CP/M file-system interface.
+
+Future storage extensions may include:
+
+  * Additional CP/M logical disk formats.
+  * User-selectable disk-format configuration.
+  * Additional physical storage devices.
+  * Multiple logical drives on a single physical device.
+  * Storage arrangements appropriate to SD or CompactFlash media.
+  * Other mappings between logical CP/M storage and physical media.
+
+Disk-format extensions shall operate through the logical disk-format
+and translation boundaries defined by the Storage and File-System
+Architecture.
+
+Physical-device extensions shall operate through the appropriate
+Hardware-Abstraction boundary.
+
+The distinction between logical disk format and physical storage
+shall remain intact as storage capabilities evolve.
+
+A future configuration facility analogous in purpose to Montezuma
+Micro CP/M's CONFIG may permit disk-format parameters to be selected
+or changed without requiring a separately assembled operating system
+for each supported format.
+
+The precise configuration mechanism is deferred until its
+requirements are investigated and specified.
+
+
+14.6 HARDWARE EXTENSIONS
+------------------------
+
+Future BetterCP/M implementations may support additional Z80-family
+hardware platforms and peripheral devices.
+
+New platform support should primarily require implementation of the
+machine-dependent operations defined by Hardware Abstraction.
+
+Hardware-independent operating-system components should not require
+modification merely because the implementation of a console,
+storage device, or other hardware facility has changed.
+
+This objective does not require every possible hardware difference
+to be representable through the initial Hardware-Abstraction
+interface.
+
+When a new platform exposes a requirement not anticipated by the
+existing interface, the interface may be extended deliberately.
+
+Such extension should preserve existing platform implementations
+where practical and shall not move machine-specific policy into
+hardware-independent components merely to accommodate one target.
+
+
+14.7 MEMORY EXTENSIONS
+----------------------
+
+Future BetterCP/M versions may investigate use of memory beyond the
+ordinary 16-bit Z80 address space.
+
+Such development may include bank-switched memory or other
+processor-family memory facilities.
+
+The initial architecture does not define a bank-management interface.
+
+If additional memory is introduced, its architecture shall define:
+
+  * Which system components may use additional memory.
+  * How memory banks or equivalent resources are selected.
+  * Which state remains permanently addressable.
+  * How additional memory interacts with System Services.
+  * How additional memory interacts with hardware operations.
+  * Whether applications may explicitly request or use additional
+    memory.
+  * How the ordinary CP/M-compatible address space is preserved.
+
+Ordinary CP/M 2.2 applications shall continue to receive their
+required execution environment.
+
+Additional memory shall not require existing applications to become
+bank-aware unless they explicitly use a BetterCP/M extension that
+provides such access.
+
+
+14.8 COMMAND-ENVIRONMENT EXTENSIONS
+-----------------------------------
+
+Future BetterCP/M versions may extend or supplement the initial
+CP/M-compatible Command Environment.
+
+Possible extensions may include:
+
+  * Additional resident commands.
+  * Improved command editing.
+  * Additional command syntax.
+  * Alternative command processors.
+  * BetterCP/M-specific management commands.
+
+Additional functionality shall not automatically be made resident.
+
+The memory cost of each resident command or command-environment
+facility shall be justified against the benefit it provides.
+
+Where functionality can reasonably be implemented as a transient
+program, that approach should be considered before increasing the
+resident Command Environment.
+
+An alternative command environment shall not require removal of the
+CP/M 2.2-compatible environment where the latter remains part of the
+supported compatibility contract.
+
+
+14.9 DEVELOPMENT AND DEBUGGING EXTENSIONS
+-----------------------------------------
+
+BetterCP/M may eventually provide facilities intended to assist
+operating-system development, diagnosis, and application debugging.
+
+Development facilities for BetterCP/M itself may include hooks or
+instrumentation useful during implementation without becoming
+permanent user-visible system services.
+
+Such facilities should be removable or disableable where their
+resident-memory or execution cost is inappropriate for a production
+system.
+
+Future application-facing debugging facilities may provide defined
+access to capabilities useful to program developers.
+
+The architecture shall not require those facilities in the initial
+implementation.
+
+Implementation choices should nevertheless avoid unnecessarily
+consuming or closing interfaces that could later provide clean
+debugging hooks.
+
+Debug facilities shall use defined interfaces to observe or control
+system behavior rather than requiring application developers to
+depend upon BetterCP/M-private data structures.
+
+
+14.10 EXTENSION DISCOVERY AND IDENTIFICATION
+--------------------------------------------
+
+If BetterCP/M eventually provides application-visible extensions,
+software may require a means to determine whether a particular
+extension is available.
+
+The initial implementation does not require a generalized extension-
+discovery mechanism.
+
+When the first application-visible extension requiring discovery is
+defined, BetterCP/M shall establish a mechanism sufficient to identify
+that capability.
+
+The mechanism should permit software to distinguish supported
+BetterCP/M functionality from ordinary CP/M 2.2 behavior without
+depending upon accidental implementation characteristics.
+
+Version identification and capability identification should be
+distinguished where necessary.
+
+A program should not be required to infer the presence of a feature
+solely from a BetterCP/M version number if individual capabilities
+can vary independently.
+
+The precise discovery mechanism is deferred until concrete extension
+requirements exist.
+
+
+14.11 RESOURCE AND COMPLEXITY CONSTRAINTS
+-----------------------------------------
+
+Extension mechanisms consume resources and shall be evaluated under
+the same constraints as other BetterCP/M functionality.
+
+The possibility of future extension does not by itself justify:
+
+  * Permanent resident dispatch machinery.
+  * Large reserved tables.
+  * Generalized driver frameworks.
+  * Dynamic module systems.
+  * Complex configuration databases.
+  * Additional memory indirection.
+  * Interfaces substantially broader than current requirements.
+
+Where a future capability can be preserved by choosing a clean
+boundary today at little or no runtime cost, that boundary should be
+preferred.
+
+Where preserving a hypothetical capability would impose substantial
+cost or complexity upon the initial implementation, the future
+capability should normally remain deferred.
+
+BetterCP/M shall remain an operating system for a resource-
+constrained Z80 environment even as its capabilities grow.
+
+
+14.12 FUTURE ARCHITECTURAL EVOLUTION
+------------------------------------
+
+Not every future BetterCP/M capability can or should be implemented
+as an extension to the initial architecture.
+
+Experience gained through implementation may reveal requirements
+that justify architectural revision.
+
+Future versions may therefore revise component boundaries,
+interfaces, memory organization, storage organization, or other
+architectural properties when there is sufficient reason to do so.
+
+Such evolution shall be deliberate and documented.
+
+Where an established interface can be preserved while its internal
+implementation changes, compatibility should normally be maintained.
+
+Where a new capability requires an incompatible environment, that
+difference should be explicitly identified rather than hidden behind
+a claim of unchanged compatibility.
+
+The purpose of the initial architecture is not to predict the final
+form of BetterCP/M.
+
+Its purpose is to provide a simple, comprehensible, CP/M-compatible
+foundation that can evolve without having made unnecessary early
+decisions that prevent reasonable future development.

@@ -1,0 +1,250 @@
+05 BOOT ARCHITECTURE
+====================
+
+5.1 Boot Model
+5.2 Boot Responsibilities
+5.3 Initial Machine State
+5.4 System Loading
+5.5 System Initialization
+5.6 Cold and Warm Start
+5.7 Boot Interface Boundary
+5.8 Portability and Future Boot Methods
+
+5.1 BOOT MODEL
+--------------
+
+Booting is the process by which the machine is brought from an
+implementation-defined initial state to a functioning BetterCP/M
+command environment.
+
+BetterCP/M distinguishes between the mechanism that initially obtains
+and loads the operating system and the initialization performed by
+the operating system after sufficient code is available for
+execution.
+
+The mechanism used to begin this process is hardware-dependent.  It
+may involve firmware, ROM, a disk bootstrap, an emulator, or another
+facility provided by the target machine.
+
+The hardware-independent portions of BetterCP/M shall not depend
+unnecessarily upon the particular mechanism by which the operating
+system was loaded.
+
+The initial implementation may support only the boot mechanism
+required by its target platform.
+
+
+5.2 BOOT RESPONSIBILITIES
+-------------------------
+
+The boot process is responsible for establishing all conditions
+required before normal BetterCP/M operation begins.
+
+These responsibilities include:
+
+  * Establishing sufficient processor and machine state to execute
+    BetterCP/M.
+  * Making the required operating-system components available in
+    memory.
+  * Establishing initial authoritative configuration state where
+    required by the platform.
+  * Initializing hardware-dependent facilities according to the
+    current configuration state.
+  * Establishing the required memory organization.
+  * Initializing operating-system state.
+  * Establishing the initial storage environment.
+  * Establishing the initial command environment.
+  * Transferring control to normal command processing.
+
+Responsibility for these operations may be divided between bootstrap
+code, firmware, hardware-dependent BetterCP/M code, and the resident
+operating system.
+
+The division shall be explicit for each supported platform.
+
+
+5.3 INITIAL MACHINE STATE
+-------------------------
+
+BetterCP/M shall define the machine state that must exist at the
+point where its own initialization begins.
+
+The boot mechanism shall not require BetterCP/M to infer machine
+conditions that can instead be established or communicated
+explicitly.
+
+Relevant initial state may include:
+
+  * Processor state.
+  * Memory availability and organization.
+  * Stack availability.
+  * Required hardware initialization.
+  * Availability of console facilities.
+  * Availability of the initial storage device.
+  * Location of loaded BetterCP/M components.
+  * Platform-specific configuration information.
+
+Only conditions actually required by BetterCP/M shall form part of
+the boot interface.
+
+Requirements that belong solely to a particular bootstrap mechanism
+or machine shall remain outside the hardware-independent
+architecture.
+
+
+5.4 SYSTEM LOADING
+------------------
+
+The initial BetterCP/M code and data may be obtained by any mechanism
+capable of establishing the required system image in memory.
+
+BetterCP/M shall therefore distinguish the logical operating-system
+image from the physical medium or mechanism used to load it.
+
+A target implementation may load BetterCP/M from floppy disk, fixed
+storage, ROM, firmware, an emulator facility, or another appropriate
+source.
+
+The initial implementation is not required to support multiple
+loading mechanisms.
+
+The organization of the operating-system image should not
+unnecessarily assume a particular physical storage geometry or
+bootstrap device.
+
+Where relocation, configuration, generation, or other preparation of
+the system image is required, those operations shall be defined
+separately from normal runtime operation.
+
+A prepared system image may contain the initial values of documented
+configuration state.  Once BetterCP/M is running, those values form
+part of the normal authoritative runtime configuration rather than a
+separate boot-only copy.
+
+
+5.5 SYSTEM INITIALIZATION
+-------------------------
+
+Once the required BetterCP/M components are available for execution,
+the operating system shall initialize the state required for normal
+operation.
+
+Initialization may include:
+
+  * Establishing resident system data.
+  * Establishing compatibility-visible memory state.
+  * Establishing or locating the authoritative configuration state.
+  * Initializing hardware-dependent services from the current
+    configuration state.
+  * Initializing storage-related state.
+  * Establishing the initial drive and user area.
+  * Establishing required system-service state.
+  * Initializing or entering the Command Environment.
+
+Hardware-dependent initialization shall not maintain separate
+authoritative boot-only copies of settings that are defined as
+runtime-configurable state.
+
+Where the same hardware must be reinitialized after a later runtime
+configuration change, the platform implementation should, where
+practical, make the applicable machine-specific initialization logic
+callable or reusable rather than duplicating separate boot-time and
+runtime implementations.
+
+Such reuse is part of the machine-specific BIOS or Hardware
+Abstraction implementation.  It does not imply a generalized
+configuration-management service.
+
+Initialization shall occur in a defined order where one operation
+depends upon another.
+
+System components shall not assume that another component has been
+initialized unless the boot sequence guarantees that condition.
+
+State established during initialization shall be distinguished from
+state preserved across later program execution or warm starts.
+
+
+5.6 COLD AND WARM START
+-----------------------
+
+BetterCP/M shall preserve the CP/M distinction between initial system
+startup and reentry into the operating environment following
+execution or termination conditions that do not require the complete
+machine to be initialized again.
+
+A cold start establishes the operating environment from an initial
+or otherwise uninitialized system state.
+
+A warm start reestablishes the operating environment while preserving
+those portions of machine and system state whose defined lifetime
+continues across the warm start.
+
+Runtime configuration state shall not be reset merely because a warm
+start occurs unless the definition of that state or a compatibility
+requirement explicitly requires reinitialization.
+
+The compatibility-visible behavior of cold and warm start shall
+conform to the requirements of the CP/M 2.2 environment.
+
+BetterCP/M need not reproduce the internal implementation of the
+Digital Research cold-boot and warm-boot mechanisms where their
+internal behavior is not compatibility-visible.
+
+The precise state preserved, discarded, reconstructed, or reloaded
+during each form of startup shall be defined by the engineering
+specification.
+
+
+5.7 BOOT INTERFACE BOUNDARY
+---------------------------
+
+The boot interface boundary separates the requirements of BetterCP/M
+from the mechanisms used by a particular machine to satisfy them.
+
+BetterCP/M shall define what must be provided at this boundary rather
+than requiring one universal bootstrap implementation.
+
+Platform-specific boot code is responsible for satisfying the
+requirements of the boundary on its target machine.
+
+Information crossing the boot boundary should be limited to that
+required to establish the operating system.  Hardware-independent
+components shall not depend upon private details of bootstrap code.
+
+A machine may perform substantially more initialization than
+BetterCP/M requires.  Such additional behavior does not become part
+of the BetterCP/M architecture unless the operating system depends
+upon it.
+
+
+5.8 PORTABILITY AND FUTURE BOOT METHODS
+---------------------------------------
+
+Portability to additional hardware is not a requirement of the
+initial BetterCP/M implementation.
+
+The boot architecture shall nevertheless avoid unnecessary
+dependencies that would make later bring-up on another suitable
+Z80-family system substantially more difficult.
+
+In particular, the architecture should not require that BetterCP/M
+always:
+
+  * Boot from a floppy disk.
+  * Be loaded from a particular track or sector arrangement.
+  * Be loaded by a particular firmware implementation.
+  * Be stored in writable media.
+  * Enter memory through a single universal bootstrap procedure.
+
+Future systems may obtain BetterCP/M from storage technologies or
+firmware environments substantially different from those used by
+traditional CP/M machines.
+
+Support for such mechanisms shall be introduced through
+platform-specific boot and hardware interfaces rather than by
+changing the fundamental CP/M-compatible operating environment.
+
+Preserving this possibility shall not require the initial
+implementation to contain unused boot mechanisms, device support, or
+general-purpose loading frameworks.

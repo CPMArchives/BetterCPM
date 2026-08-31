@@ -1,0 +1,255 @@
+2. OVERALL SYSTEM ARCHITECTURE
+=============================
+
+2.1 Architectural Model
+2.2 Major Components
+2.3 Component Relationships
+2.4 Control and Service Flow
+2.5 Boot Overview
+
+This section defines the high-level organization of BetterCP/M and
+the relationships among the major parts of the operating system.
+
+The architecture described here defines responsibilities and
+interfaces rather than requiring that each architectural component
+correspond to a separate binary module, source file, or contiguous
+region of memory.
+
+Detailed internal organization is defined by the specifications for
+the individual subsystems.
+
+
+2.1 ARCHITECTURAL MODEL
+-----------------------
+
+BetterCP/M is a small, single-user, single-tasking operating system
+for Z80-based computers.
+
+The initial system provides an execution environment compatible with
+CP/M 2.2.  At any given time, control belongs either to the operating
+system, to the command environment, or to a single executing
+application.
+
+The system is organized conceptually into four principal areas:
+
+  * Command environment.
+
+    Provides the user's direct interactive environment, interprets
+    commands, implements resident commands, and initiates execution
+    of transient programs.
+
+  * System services.
+
+    Provide the operating-system functions used by applications and
+    by other parts of BetterCP/M, including file and record
+    operations, console services, program-support services, and
+    management of operating-system state.
+
+  * Hardware abstraction.
+
+    Provides the hardware-dependent operations required by the
+    hardware-independent portions of BetterCP/M.
+
+  * Program execution environment.
+
+    Provides the memory, entry conventions, system-service interface,
+    and other compatibility-visible conditions expected by CP/M 2.2
+    transient programs.
+
+These areas describe architectural responsibilities.  Their eventual
+implementation need not reproduce the CCP, BDOS, and BIOS
+organization of Digital Research CP/M except where that organization
+is itself compatibility-visible.
+
+The initial BetterCP/M system contains one operating-system instance,
+one command environment, and at most one executing transient program.
+Multitasking and multiple simultaneous operating environments are not
+part of the initial architectural model.
+
+
+2.2 MAJOR COMPONENTS
+--------------------
+
+The major components of the initial BetterCP/M architecture are:
+
+  * Boot system.
+  * Command environment.
+  * System-service subsystem.
+  * Hardware-abstraction subsystem.
+  * Program execution environment.
+  * Storage and file-system subsystem.
+  * System-state subsystem.
+
+The Boot System establishes the machine state required by BetterCP/M,
+loads or initializes the operating system as required by the target
+platform, establishes the initial hardware and system configuration,
+and transfers control to the operating system.
+
+The Command Environment provides the principal user-facing operating-
+system interface.  It accepts commands, performs resident command
+functions, locates and initiates transient programs, and regains
+control when transient execution terminates.
+
+The System-Service Subsystem provides the operating-system services
+required by applications and other system components.  It presents
+the compatibility-visible system-call environment required by CP/M
+2.2 while remaining free to organize its internal implementation
+differently from the Digital Research BDOS.
+
+The Hardware-Abstraction Subsystem contains hardware-dependent
+operations and provides defined interfaces through which the
+hardware-independent portions of BetterCP/M interact with the
+underlying machine.  It fulfills the architectural role historically
+associated with the CP/M BIOS without requiring internal duplication
+of the Digital Research BIOS design.
+
+The Program Execution Environment establishes and maintains the
+conditions under which transient programs execute.  These include
+compatibility-visible memory organization, program entry conditions,
+access to system services, termination behavior, and return to the
+command environment.
+
+The Storage and File-System Subsystem implements the logical storage
+environment presented by BetterCP/M.  It is responsible for the
+CP/M-compatible file-system behavior required by software while
+separating that logical behavior, where practical, from the physical
+characteristics of storage devices.
+
+The System-State Subsystem comprises operating-system information
+that persists across individual service calls and program execution,
+including state required to represent the current operating
+environment.
+
+These components may overlap physically in memory or implementation.
+Their separation here defines responsibility rather than requiring a
+particular memory layout.
+
+
+2.3 COMPONENT RELATIONSHIPS
+---------------------------
+
+BetterCP/M components interact through defined responsibilities and
+interfaces.
+
+The Command Environment uses System Services to perform operations
+that do not belong specifically to command interpretation.  It uses
+the Program Execution Environment to initiate transient programs.
+
+Applications execute within the Program Execution Environment and
+request operating-system functions through the CP/M-compatible
+system-service interface.
+
+System Services implement hardware-independent operating-system
+behavior.  When an operation requires interaction with machine-
+specific hardware, System Services use Hardware Abstraction rather
+than depending directly upon the implementation of a particular
+machine.
+
+Storage and File-System services translate compatibility-visible file
+and record operations into the logical and physical storage
+operations required to perform them.  Physical device operations are
+performed through the appropriate hardware-dependent interfaces.
+
+System State is shared only through interfaces defined by the
+component responsible for that state.  Components should not depend
+unnecessarily upon the private representation of state owned by
+another component.
+
+The Boot System precedes normal operation.  It establishes the
+environment required by the remaining components and then transfers
+control into the normal BetterCP/M execution cycle.
+
+These relationships establish architectural direction rather than
+requiring a rigid layered implementation.  Direct interaction may be
+permitted where required for compatibility, efficiency, or hardware
+operation, but such exceptions should be explicit rather than
+accidental.
+
+
+2.4 CONTROL AND SERVICE FLOW
+----------------------------
+
+Normal BetterCP/M operation follows a simple control cycle.
+
+After initialization, control passes to the Command Environment.
+
+The Command Environment accepts user input and determines whether the
+requested operation is a resident command or requires execution of a
+transient program.
+
+For a resident command, the Command Environment performs the command,
+using System Services and Hardware Abstraction as required, and then
+returns to command input.
+
+For a transient command, the system locates the requested program,
+establishes the required Program Execution Environment, loads the
+program, and transfers processor control to it.
+
+While executing, an application may request operating-system services
+through the CP/M-compatible system-service interface.
+
+A typical service request therefore follows the conceptual path:
+
+    Application
+        |
+        v
+    System Services
+        |
+        +----> Storage and File-System Services
+        |
+        +----> Hardware Abstraction
+        |
+        +----> System State
+
+The exact path depends upon the requested operation.  A service that
+can be completed entirely within the operating system need not
+descend to hardware-dependent code.
+
+When the service completes, control returns to the requesting
+application according to the compatibility-visible calling
+conventions.
+
+When the application terminates, control returns to the operating
+system.  The required command environment is restored or reentered,
+and the system resumes accepting commands.
+
+BetterCP/M therefore does not normally schedule independent execution
+contexts.  Control is transferred synchronously among the command
+environment, applications, and operating-system services.
+
+
+2.5 BOOT OVERVIEW
+-----------------
+
+Booting establishes the environment from which normal BetterCP/M
+operation can begin.
+
+The exact mechanism by which BetterCP/M initially enters memory is
+hardware-dependent and is not required to be identical on all target
+systems.
+
+Conceptually, the boot process performs the following operations:
+
+  * Establish sufficient machine state to execute BetterCP/M.
+  * Locate or obtain the required operating-system image or
+    components.
+  * Place or initialize those components as required.
+  * Initialize hardware-dependent services.
+  * Initialize operating-system state.
+  * Establish the initial storage and command environment.
+  * Transfer control to the Command Environment.
+
+The boundary between firmware, bootstrap code, hardware abstraction,
+and the operating system may vary between machines.  BetterCP/M shall
+therefore distinguish the requirements for entering the operating
+system from the particular mechanism used by an individual platform
+to satisfy those requirements.
+
+The initial implementation need not provide a universal boot
+mechanism or support arbitrary hardware.  The architecture should,
+however, avoid making the hardware-specific loading mechanism an
+unnecessary dependency of the hardware-independent operating system.
+
+The complete boot sequence, required machine state, initialization
+order, failure behavior, and interfaces between boot code and the
+resident operating system are defined by the Boot Architecture.

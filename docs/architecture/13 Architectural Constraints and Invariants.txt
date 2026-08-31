@@ -1,0 +1,356 @@
+13 ARCHITECTURAL CONSTRAINTS AND INVARIANTS
+===========================================
+
+13.1 Purpose of Constraints and Invariants
+13.2 CP/M Compatibility Invariants
+13.3 Execution Invariants
+13.4 Memory Invariants
+13.5 Component and Interface Invariants
+13.6 Storage Invariants
+13.7 Hardware-Abstraction Invariants
+13.8 State Invariants
+13.9 Resource Constraints
+13.10 Simplicity and Implementation Constraints
+13.11 Extension Constraints
+13.12 Changing Architectural Invariants
+
+13.1 PURPOSE OF CONSTRAINTS AND INVARIANTS
+------------------------------------------
+
+Architectural constraints and invariants define properties that must
+remain true across the BetterCP/M implementation.
+
+A constraint limits the design choices available to an implementation.
+
+An invariant describes a property that the architecture requires to
+remain true while the system is operating or while a particular
+condition applies.
+
+These requirements provide boundaries within which implementation
+details may change without altering the fundamental architecture of
+BetterCP/M.
+
+They are intended to prevent local implementation decisions from
+silently violating compatibility requirements, component boundaries,
+memory assumptions, storage abstractions, or future architectural
+possibilities.
+
+Not every implementation detail is an architectural invariant.
+
+Only requirements important to the correctness, compatibility,
+comprehensibility, or intended evolution of BetterCP/M should be
+defined at this level.
+
+
+13.2 CP/M COMPATIBILITY INVARIANTS
+----------------------------------
+
+The initial BetterCP/M implementation shall preserve the operating
+environment required by compatible CP/M 2.2 applications.
+
+The following principles shall remain true:
+
+  * CP/M-compatible applications shall execute without requiring
+    BetterCP/M-specific modification.
+
+  * Compatibility-visible interfaces shall retain their required
+    CP/M 2.2 semantics.
+
+  * BetterCP/M extensions shall not silently redefine existing
+    CP/M-compatible behavior.
+
+  * Implementation-private changes shall not alter observable
+    behavior upon which compatible applications depend.
+
+  * Compatibility requirements shall be determined by documented
+    interfaces and deliberately adopted de facto requirements rather
+    than by source-code similarity alone.
+
+BetterCP/M is not required to preserve implementation details of
+Digital Research CP/M that do not form part of the compatibility
+contract.
+
+Compatibility requirements take precedence over internal elegance
+where the two genuinely conflict in the CP/M 2.2-compatible
+environment.
+
+
+13.3 EXECUTION INVARIANTS
+-------------------------
+
+The initial BetterCP/M execution environment shall remain
+single-tasking.
+
+At most one transient application shall execute at a time.
+
+A transient application shall execute within the CP/M-compatible
+Program Execution Environment and shall receive the required initial
+memory, processor, command, and system-service state.
+
+Transient program execution shall not require the application to know
+the private internal organization of BetterCP/M.
+
+When transient execution terminates, BetterCP/M shall be capable of
+reestablishing a usable Command Environment.
+
+The Command Environment need not remain completely resident while a
+transient application executes.
+
+No future execution mechanism shall silently change the execution
+environment presented to an ordinary CP/M 2.2-compatible program.
+
+
+13.4 MEMORY INVARIANTS
+----------------------
+
+The initial BetterCP/M implementation shall operate within the
+ordinary 16-bit Z80 address space.
+
+The memory environment visible to CP/M-compatible applications shall
+preserve required CP/M 2.2 locations, vectors, structures, and
+relationships.
+
+Memory used by resident BetterCP/M components shall reduce the memory
+available to transient applications and shall therefore be treated as
+a constrained resource.
+
+Every BetterCP/M memory region shall have a defined purpose and
+lifetime.
+
+Application memory shall not be used to hold persistent
+operating-system state after application ownership of that memory has
+ended.
+
+The initial architecture shall not require bank switching, memory
+protection, virtual memory, or multiple simultaneous application
+address spaces.
+
+Future memory expansion shall not be allowed to invalidate the
+ordinary CP/M-compatible memory environment for applications that
+require it.
+
+
+13.5 COMPONENT AND INTERFACE INVARIANTS
+---------------------------------------
+
+Each major BetterCP/M component shall have defined responsibilities.
+
+Components shall interact through defined architectural boundaries
+where those boundaries are necessary to separate responsibilities or
+implementation dependencies.
+
+Hardware-independent components shall not unnecessarily depend upon
+machine-specific implementation details.
+
+The Command Environment shall not become the private owner of general
+operating-system services merely because those services can be
+invoked by commands.
+
+System Services shall define operating-system operations independently
+of the hardware mechanisms used to perform them.
+
+Hardware Abstraction shall provide machine-dependent mechanisms
+without becoming the owner of hardware-independent operating-system
+policy.
+
+The application-visible CP/M interfaces and BetterCP/M's private
+internal interfaces need not be identical.
+
+Architectural separation shall not require expensive runtime
+indirection where a simpler mechanism preserves the same boundary.
+
+
+13.6 STORAGE INVARIANTS
+-----------------------
+
+BetterCP/M shall preserve the CP/M logical file-system environment
+required by compatible applications.
+
+The logical CP/M storage environment shall remain conceptually
+distinct from the physical storage devices used to contain it.
+
+A logical drive shall not be architecturally required to correspond
+one-to-one with a physical device.
+
+Logical CP/M tracks and sectors shall not be assumed to represent
+physical tracks and sectors.
+
+Disk-format parameters that may legitimately vary between supported
+CP/M disk formats shall not unnecessarily be embedded as fixed
+assumptions throughout the file-system implementation.
+
+The interpretation of a logical disk shall be determined by its
+applicable disk-format description.
+
+Changing a disk, medium, or logical disk format shall invalidate any
+cached or working state whose validity depended upon the previous
+storage interpretation.
+
+The storage architecture shall not require traditional floppy
+hardware as a permanent property of BetterCP/M.
+
+
+13.7 HARDWARE-ABSTRACTION INVARIANTS
+------------------------------------
+
+Machine-specific hardware knowledge shall be confined, where
+practical, to hardware-dependent components.
+
+Hardware-independent components shall not directly depend upon I/O
+ports, controller protocols, memory-mapped device registers, or
+similar machine-specific details except where an explicitly defined
+requirement makes such dependence necessary.
+
+A platform implementation shall satisfy the hardware operations
+required by BetterCP/M without redefining hardware-independent
+operating-system semantics.
+
+The Hardware-Abstraction boundary shall remain sufficiently small and
+explicit to be practical on a resource-constrained Z80 system.
+
+Portability shall not require a generalized modern device-driver
+framework.
+
+The initial implementation may support only one target platform, but
+its hardware-independent components shall avoid unnecessary
+dependencies upon that platform.
+
+
+13.8 STATE INVARIANTS
+---------------------
+
+Every item of persistent BetterCP/M state shall have a defined owner,
+purpose, and lifetime.
+
+There shall be one authoritative value for each item of shared system
+state.
+
+Components shall not maintain independent authoritative copies of
+shared state that may become inconsistent.
+
+State shall remain valid only while the assumptions upon which it
+depends remain true.
+
+A transition that invalidates those assumptions shall invalidate,
+replace, or reconstruct the affected state.
+
+The continued presence of a value in memory shall not by itself imply
+that the value remains valid.
+
+Compatibility-visible state shall preserve the representation and
+behavior required by the CP/M 2.2 environment.
+
+BetterCP/M-private state may use whatever representation best serves
+the implementation within the other architectural constraints.
+
+
+13.9 RESOURCE CONSTRAINTS
+-------------------------
+
+BetterCP/M is intended for resource-constrained Z80 systems.
+
+Memory consumption, code size, storage requirements, and execution
+cost shall therefore remain relevant architectural considerations.
+
+Resident functionality shall be justified because every byte of
+resident memory may reduce the Transient Program Area available to
+applications.
+
+Architectural cleanliness shall not be pursued through unnecessary
+runtime layers, indirection, tables, or generalized mechanisms whose
+cost substantially exceeds their practical benefit.
+
+Likewise, small resource savings shall not justify obscuring major
+architectural boundaries or making the implementation unnecessarily
+difficult to understand and maintain.
+
+Resource use shall be evaluated in relation to the purpose served by
+the mechanism rather than minimized without regard to design quality.
+
+
+13.10 SIMPLICITY AND IMPLEMENTATION CONSTRAINTS
+-----------------------------------------------
+
+BetterCP/M shall favor simple, explicit mechanisms over generalized
+mechanisms where both satisfy the actual requirements.
+
+The architecture shall not introduce facilities solely because they
+are common in larger or more modern operating systems.
+
+BetterCP/M is not intended to become a pedagogical toy or simplified
+simulation of an operating system.
+
+Its architecture shall be driven by the requirements of a practical
+CP/M-compatible operating system.
+
+Where multiple technically reasonable designs satisfy those
+requirements, preference should be given to designs that make the
+system easier to understand, investigate, document, test, and teach.
+
+Educational value shall result from clarity of genuine operating-
+system design rather than from artificial mechanisms introduced
+solely for demonstration.
+
+Implementation in Z80 assembly may take advantage of Z80 facilities
+where doing so improves size, clarity, or operation without violating
+the required CP/M-compatible environment.
+
+
+13.11 EXTENSION CONSTRAINTS
+---------------------------
+
+The initial BetterCP/M implementation shall not contain speculative
+machinery solely to implement possible future features.
+
+At the same time, implementation choices should avoid unnecessarily
+foreclosing reasonable future development where preserving that
+possibility imposes little or no significant present cost.
+
+Possible future developments include:
+
+  * Additional target hardware.
+  * Configurable logical disk formats.
+  * SD, CompactFlash, and other storage technologies.
+  * Bank-switched memory.
+  * Additional System Services.
+  * Development and debugging facilities.
+  * Application-development debugging hooks.
+  * Enhanced or alternative command environments.
+
+These possibilities are not requirements of the initial
+implementation unless separately specified.
+
+Future extensions shall respect existing compatibility boundaries or
+explicitly define a different environment when they cannot do so.
+
+No speculative extension shall be permitted to impose a significant
+resident-memory or complexity cost upon the initial system without a
+current requirement justifying that cost.
+
+
+13.12 CHANGING ARCHITECTURAL INVARIANTS
+---------------------------------------
+
+Architectural invariants may be revised when investigation,
+implementation experience, compatibility testing, or new
+requirements demonstrate that a change is necessary.
+
+Such changes shall be deliberate.
+
+An implementation shall not silently violate an architectural
+invariant merely because doing so is convenient for a particular
+component or feature.
+
+Where an invariant must change, the effect upon other architectural
+sections, compatibility requirements, engineering specifications,
+tests, and future plans shall be examined.
+
+A requirement that applies only to the initial implementation may be
+relaxed in a later architecture when the new architecture explicitly
+defines the replacement behavior.
+
+CP/M 2.2 compatibility requirements shall not be discarded merely
+because a future BetterCP/M capability would be easier to implement
+without them.  Where incompatible behavior is desirable, it should
+be provided as an explicitly different or extended environment rather
+than silently changing the established compatibility contract.

@@ -1,0 +1,389 @@
+12 COMPATIBILITY ARCHITECTURE
+=============================
+
+12.1 Compatibility Model
+12.2 Application Compatibility
+12.3 System-Service Compatibility
+12.4 Command-Environment Compatibility
+12.5 Memory and Execution Compatibility
+12.6 File-System and Disk Compatibility
+12.7 BIOS and Hardware Compatibility
+12.8 Documented and De Facto Compatibility
+12.9 Implementation Freedom
+12.10 Compatibility Testing
+12.11 Extensions and Compatibility
+12.12 Compatibility Limits
+
+12.1 COMPATIBILITY MODEL
+------------------------
+
+CP/M 2.2 compatibility is a primary requirement of the initial
+BetterCP/M implementation.
+
+BetterCP/M shall provide an operating environment in which ordinary
+CP/M 2.2 applications can execute without modification and encounter
+the behavior they require from the operating system.
+
+Compatibility is defined principally by observable behavior rather
+than by duplication of the internal implementation of Digital
+Research CP/M.
+
+An implementation detail becomes a compatibility requirement when
+software can observe it and compatible operation reasonably depends
+upon it.
+
+Conversely, BetterCP/M is free to change internal organization,
+algorithms, data structures, component boundaries, and implementation
+techniques where those changes do not alter required
+compatibility-visible behavior.
+
+Compatibility shall therefore be treated as an interface and
+behavioral contract rather than as a requirement for source-level or
+binary identity with Digital Research CP/M.
+
+
+12.2 APPLICATION COMPATIBILITY
+------------------------------
+
+The initial BetterCP/M implementation shall aim to execute CP/M 2.2
+transient applications without modification.
+
+An application that confines itself to the supported CP/M 2.2
+execution environment and operating-system interfaces should not need
+to know that it is running under BetterCP/M.
+
+Application compatibility may depend upon:
+
+  * Program loading and entry conditions.
+  * Memory layout visible to the application.
+  * System-Service calling conventions.
+  * File Control Blocks and related structures.
+  * Command-tail and invocation information.
+  * Console behavior.
+  * File-system behavior.
+  * Program termination and warm-start behavior.
+  * Other observable CP/M conventions.
+
+Compatibility does not imply that software written for every
+CP/M-based machine will necessarily operate on every BetterCP/M
+platform.
+
+Programs that depend upon machine-specific hardware may additionally
+require compatible hardware or explicit emulation of that hardware.
+
+
+12.3 SYSTEM-SERVICE COMPATIBILITY
+---------------------------------
+
+BetterCP/M shall provide the application-visible system-service
+interface required by CP/M 2.2.
+
+Function numbers, calling conventions, parameters, return values,
+memory structures, side effects, and error behavior shall be
+reproduced where required for compatibility.
+
+A CP/M application shall be able to request operating-system
+functions through the conventional CP/M system-service entry
+mechanism.
+
+The compatibility-visible interface need not be identical to the
+internal interface used among BetterCP/M components.
+
+BetterCP/M may translate a CP/M system-service request into a
+different internal representation before performing the operation.
+
+Such translation shall not alter the behavior visible to the
+application.
+
+
+12.4 COMMAND-ENVIRONMENT COMPATIBILITY
+--------------------------------------
+
+The initial BetterCP/M Command Environment shall reproduce the
+behavior of the CP/M 2.2 command environment to the degree required
+for compatibility.
+
+Relevant behavior may include:
+
+  * Prompt and command-entry conventions.
+  * Command parsing.
+  * Resident commands.
+  * Transient command lookup.
+  * Default program file-type behavior.
+  * Command-tail construction.
+  * Default File Control Block construction.
+  * Error behavior.
+  * Return to command processing following program execution.
+
+BetterCP/M need not reproduce the internal implementation of the
+Digital Research CCP.
+
+Where command behavior is relied upon by existing usage or software,
+that behavior shall be considered part of the compatibility
+environment even when it is not exposed through a formal
+programming interface.
+
+
+12.5 MEMORY AND EXECUTION COMPATIBILITY
+---------------------------------------
+
+BetterCP/M shall provide the memory and execution environment
+required by CP/M 2.2 transient programs.
+
+Compatibility-visible elements may include:
+
+  * Low-memory locations.
+  * Entry vectors.
+  * Program origin.
+  * System-Service entry points.
+  * Warm-start mechanisms.
+  * Command information.
+  * Default File Control Blocks.
+  * Default DMA location.
+  * Other established execution conventions.
+
+The precise set of memory locations whose contents or behavior must
+be preserved shall be determined through compatibility investigation.
+
+The fact that a memory location was intended as an internal CP/M
+implementation detail does not by itself make it irrelevant to
+compatibility if existing software observes or modifies it.
+
+BetterCP/M-private memory that is not part of the compatibility
+environment may use representations different from Digital Research
+CP/M.
+
+
+12.6 FILE-SYSTEM AND DISK COMPATIBILITY
+---------------------------------------
+
+BetterCP/M shall preserve the CP/M 2.2 file-system model required by
+compatible applications.
+
+This includes applicable behavior involving:
+
+  * File names and file types.
+  * File Control Blocks.
+  * Directory entries.
+  * User areas.
+  * Records and extents.
+  * Allocation.
+  * File searching.
+  * Sequential and random file access.
+  * File creation, deletion, renaming, and other supported
+    operations.
+
+File-system compatibility shall be distinguished from compatibility
+with a particular physical disk format.
+
+BetterCP/M may support multiple logical CP/M disk formats.
+
+A supported disk format shall be interpreted according to the
+on-media organization applicable to that format.
+
+Physical storage compatibility is a separate concern.  A logical
+CP/M disk may eventually be stored on media whose native organization
+does not resemble a traditional floppy disk.
+
+Applications using ordinary CP/M file services shall not be required
+to know how the logical disk is physically stored.
+
+
+12.7 BIOS AND HARDWARE COMPATIBILITY
+------------------------------------
+
+BetterCP/M shall distinguish operating-system compatibility from
+machine-specific hardware compatibility.
+
+Software using ordinary CP/M System Services should normally remain
+independent of the underlying hardware.
+
+Some CP/M software, however, may call BIOS entry points directly,
+inspect BIOS-related structures, or access physical machine hardware.
+
+Where BIOS interfaces form part of the compatibility requirements
+adopted by BetterCP/M, the required observable behavior shall be
+provided.
+
+The internal BetterCP/M Hardware-Abstraction interface need not be
+identical to the compatibility-visible BIOS interface.
+
+Software that directly accesses hardware specific to another machine
+cannot be assumed to operate on a BetterCP/M platform lacking that
+hardware.
+
+BetterCP/M shall not incorporate machine-specific hardware behavior
+into its general compatibility contract merely because some CP/M
+software was written for that machine.
+
+
+12.8 DOCUMENTED AND DE FACTO COMPATIBILITY
+------------------------------------------
+
+Compatibility requirements may arise from both documented CP/M 2.2
+interfaces and established behavior upon which existing software
+depends.
+
+Documented interfaces provide the starting point for defining the
+BetterCP/M compatibility contract.
+
+Compatibility investigation shall also examine actual CP/M behavior
+and representative software to identify significant dependencies not
+fully described by the formal documentation.
+
+Such dependencies may include:
+
+  * Memory locations treated as implementation details.
+  * Register preservation or modification.
+  * Particular return values.
+  * Error behavior.
+  * Initialization state.
+  * Command-processing conventions.
+  * BIOS behavior.
+  * Other observable characteristics.
+
+Not every accidental behavior of Digital Research CP/M shall
+automatically become a BetterCP/M requirement.
+
+Undocumented or implementation-specific behavior shall therefore be
+evaluated rather than automatically preserved or rejected.  The
+evaluation should distinguish, where evidence permits:
+
+  * Behavior required by CP/M 2.2 documentation.
+  * Behavior observed in reference CP/M 2.2 implementations.
+  * Behavior upon which representative existing software demonstrably
+    depends.
+  * Behavior whose compatibility significance remains unresolved.
+
+A de facto behavior should be adopted as a compatibility requirement
+when there is sufficient reason to believe that preserving it is
+important for useful CP/M 2.2 software compatibility.
+
+Compatibility decisions arising from this investigation shall record
+the available evidence, the BetterCP/M compatibility decision, and,
+where practical, an executable test that preserves the decision as
+part of the conformance and regression suite.
+
+Such decisions should be documented rather than left as accidental
+properties of the BetterCP/M implementation.
+
+
+12.9 IMPLEMENTATION FREEDOM
+---------------------------
+
+BetterCP/M is a new implementation and is not required to reproduce
+the internal structure of Digital Research CP/M.
+
+Subject to compatibility requirements, BetterCP/M may:
+
+  * Reorganize operating-system components.
+  * Use different algorithms.
+  * Use different private data structures.
+  * Introduce clearer internal interfaces.
+  * Separate responsibilities that were combined in CP/M.
+  * Combine operations where doing so remains architecturally clear.
+  * Use Z80 instructions and facilities unavailable to an
+    8080-oriented implementation.
+  * Improve internal consistency and comprehensibility.
+
+Implementation freedom shall not be used as justification for
+unnecessarily changing compatibility-visible behavior.
+
+Likewise, compatibility shall not be used as justification for
+preserving internal CP/M implementation details that have no
+observable compatibility significance.
+
+The boundary between these two concerns shall be documented as it is
+established through implementation and testing.
+
+
+12.10 COMPATIBILITY TESTING
+---------------------------
+
+Compatibility shall be verified by testing rather than assumed from
+similarity of implementation.
+
+Testing should examine both individual interfaces and the behavior of
+complete applications.
+
+Compatibility testing may include:
+
+  * System-Service tests.
+  * Memory-environment tests.
+  * File-system tests.
+  * Command-environment tests.
+  * Program loading and termination tests.
+  * Disk-format tests.
+  * BIOS-interface tests where applicable.
+  * Tests using representative existing CP/M applications.
+  * Comparison with reference CP/M 2.2 behavior.
+
+Tests should distinguish required compatibility from behavior that is
+merely observed in one CP/M implementation.
+
+Where a discrepancy is discovered, the expected behavior and the
+reason for preserving or rejecting it should be documented.
+
+The resulting compatibility test suite should become part of the
+BetterCP/M engineering process and serve as a regression suite as the
+system evolves.
+
+
+12.11 EXTENSIONS AND COMPATIBILITY
+----------------------------------
+
+BetterCP/M may eventually provide capabilities beyond those available
+in CP/M 2.2.
+
+Extensions shall be designed so that ordinary CP/M 2.2 applications
+continue to encounter the compatible environment unless they
+explicitly make use of BetterCP/M-specific facilities.
+
+Potential future extensions may include:
+
+  * Additional System Services.
+  * Additional disk-format configuration facilities.
+  * Additional storage technologies.
+  * Bank-switched memory.
+  * Development and debugging facilities.
+  * Alternative or enhanced command environments.
+  * Additional hardware capabilities.
+
+The initial architecture shall not implement speculative extension
+mechanisms solely because these facilities may eventually exist.
+
+It shall, however, avoid consuming compatibility-visible interfaces
+or establishing unnecessary architectural assumptions that would
+make reasonable future extensions difficult to introduce.
+
+Where a future extension cannot coexist transparently with CP/M 2.2
+behavior, the difference shall be explicit rather than silently
+changing the compatibility environment.
+
+
+12.12 COMPATIBILITY LIMITS
+--------------------------
+
+BetterCP/M shall define the limits of its compatibility claims.
+
+The initial goal is compatibility with the CP/M 2.2 operating-system
+environment, not universal compatibility with every system,
+extension, replacement component, or hardware platform historically
+associated with CP/M.
+
+Compatibility with CP/M 3, MP/M, vendor-specific operating-system
+extensions, replacement command processors, modified BDOS
+implementations, and machine-specific hardware is not implied unless
+separately specified.
+
+Likewise, compatibility with one supported logical disk format does
+not imply support for every historical CP/M disk format.
+
+Where software depends upon undocumented or machine-specific
+behavior, compatibility shall be evaluated individually.
+
+Known incompatibilities should be documented explicitly.
+
+BetterCP/M should make narrow, testable compatibility claims rather
+than claiming compatibility beyond what the implementation and
+conformance testing can demonstrate.

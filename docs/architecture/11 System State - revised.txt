@@ -1,0 +1,409 @@
+11 SYSTEM STATE
+===============
+
+11.1 System-State Model
+11.2 State Ownership
+11.3 Global System State
+11.4 Command and Program State
+11.5 Storage State
+11.6 Hardware-Dependent State
+11.7 Configurable System State
+11.8 State Lifetime
+11.9 State Transitions
+11.10 Compatibility-Visible State
+11.11 Future Extension
+
+11.1 SYSTEM-STATE MODEL
+-----------------------
+
+System state is information maintained by BetterCP/M that describes
+the current operating environment or is required for continued
+operation of the system.
+
+The System-State Model is an architectural description of state
+ownership, lifetime, visibility, and transitions.  It does not imply
+the existence of a separate resident System State subsystem,
+centralized state manager, or common state repository.  State should
+normally remain with the component that naturally owns it.
+
+BetterCP/M shall distinguish persistent operating-system state from
+temporary working data used while performing an individual
+operation.
+
+System state may be maintained by different components, but each
+item of state shall have a defined owner, purpose, and lifetime.
+
+Components that require access to state owned elsewhere shall use
+defined interfaces or explicitly shared representations rather than
+maintaining independent copies that may become inconsistent.
+
+The organization of system state should remain simple and explicit.
+
+BetterCP/M shall not introduce a generalized state-management
+framework where ordinary variables, structures, and defined
+interfaces are sufficient.
+
+
+11.2 STATE OWNERSHIP
+--------------------
+
+Each item of BetterCP/M system state shall have one component or
+subsystem responsible for its authoritative value.
+
+Ownership determines responsibility for:
+
+  * Establishing the initial value.
+  * Validating changes where required.
+  * Maintaining consistency.
+  * Determining the lifetime of the state.
+  * Invalidating or reconstructing the state when necessary.
+  * Providing access to other components where appropriate.
+
+Ownership does not require that only the owning component can
+physically access the memory containing the state.
+
+The initial BetterCP/M architecture does not provide hardware memory
+protection, and compact implementation may justify directly shared
+data in some cases.
+
+Where state is shared directly, its ownership and permitted uses
+shall nevertheless remain defined.
+
+Documented configurable state may be modified directly by transient
+programs without transferring ownership of that state.  The owning
+component remains responsible for interpreting and using the current
+value and for defining any consistency requirements associated with
+changes to that state.
+
+No component shall maintain an independent authoritative version of
+state owned by another component.
+
+
+11.3 GLOBAL SYSTEM STATE
+------------------------
+
+Some state describes the operating environment as a whole rather
+than an individual command or temporary operation.
+
+Global state may include:
+
+  * Current logical drive.
+  * Current user area.
+  * Current DMA address.
+  * System initialization state.
+  * Information describing available logical drives.
+  * Configuration required by multiple system components.
+  * Other persistent state required by the CP/M-compatible
+    environment.
+
+The exact set of global state shall be determined by implementation
+and compatibility requirements.
+
+Global state shall remain available for as long as its defined
+lifetime requires.
+
+The fact that a value is globally relevant does not require it to be
+stored in one centralized global-state structure.
+
+State should reside with the subsystem that naturally owns it unless
+a different organization provides a clear architectural advantage.
+
+
+11.4 COMMAND AND PROGRAM STATE
+------------------------------
+
+The Command Environment and currently executing transient program
+may require state whose lifetime is associated with the command-
+execution cycle.
+
+Command-related state may include:
+
+  * Command input.
+  * Parsed command information.
+  * Default File Control Blocks.
+  * Command-tail information.
+  * Temporary information required to invoke a program.
+
+Program-related state may include:
+
+  * Compatibility-visible execution information.
+  * Current program-related System-Service state.
+  * Temporary file-operation state.
+  * Other information required only while the transient program is
+    executing.
+
+State whose purpose ends when the command or program terminates need
+not be preserved afterward.
+
+Where the Command Environment is overwritten during transient
+execution, state required after program termination shall either
+remain elsewhere or be capable of reconstruction.
+
+Persistent operating-system state shall not depend upon application
+memory after ownership of that memory has ended.
+
+
+11.5 STORAGE STATE
+------------------
+
+The storage subsystem shall maintain the state required to interpret
+and operate the currently available logical drives.
+
+Storage state may include:
+
+  * Drive-selection information.
+  * Disk login or initialization state.
+  * Disk-format information.
+  * Directory working information.
+  * Allocation working information.
+  * Information associated with removable or changed media.
+  * Translation state required to access logical storage.
+  * Other information required by CP/M-compatible disk operations.
+
+Storage state associated with a particular logical disk shall not
+remain valid after the underlying disk or its interpretation has
+changed unless the architecture explicitly guarantees that it
+remains applicable.
+
+Operations such as changing media or changing the configured logical
+disk format may therefore require storage state to be invalidated and
+reconstructed.
+
+The storage subsystem shall define which state belongs to the
+logical drive, which belongs to the current medium, and which belongs
+to the physical device.
+
+This distinction shall prevent device state, logical-format state,
+and file-system state from becoming unnecessarily coupled.
+
+
+11.6 HARDWARE-DEPENDENT STATE
+-----------------------------
+
+Hardware-dependent components may maintain state required to operate
+the target machine and its devices.
+
+Such state may include:
+
+  * Device initialization status.
+  * Current device selection.
+  * Controller state.
+  * Hardware translation information.
+  * Machine-specific configuration.
+  * Other information required by the platform implementation.
+
+Hardware-dependent state shall remain behind the Hardware Abstraction
+boundary unless a hardware-independent component has a defined need
+for particular information.
+
+Hardware-independent components shall not depend upon private
+representations of device state.
+
+Where hardware state affects a logical operating-system condition,
+the relevant information shall cross the abstraction boundary through
+a defined interface.
+
+
+11.7 CONFIGURABLE SYSTEM STATE
+------------------------------
+
+Where practical, machine-dependent settings and system policy that
+may reasonably vary without rebuilding BetterCP/M shall be represented
+as documented, mutable runtime data rather than assembly-time constants
+or hard-coded executable behavior.
+
+Such configurable state may include:
+
+  * Logical-device assignments.
+  * Keyboard and display translations.
+  * Printer behavior.
+  * Serial-device parameters.
+  * Storage-device assignments.
+  * Drive definitions.
+  * Disk-format definitions.
+  * Other machine-dependent settings whose values may reasonably
+    change while the system is running.
+
+This requirement does not imply that every hardware characteristic or
+system parameter must be runtime-configurable.
+
+The machine-specific implementation defines the capabilities provided
+by the target hardware.  Configurable state selects among those
+capabilities or supplies operating parameters where runtime selection
+is appropriate.
+
+Configurable state shall have defined ownership, representation, and
+lifetime in accordance with the System-State Model.
+
+Configuration structures intended for use by transient programs shall
+be documented and discoverable through stable architectural
+information.  Transient programs shall not be required to depend upon
+fixed absolute addresses of individual configuration tables or private
+implementation details.
+
+A stable documented pointer, table, or equivalent CP/M-style
+representation may be used to locate configurable structures whose
+physical addresses may vary between BetterCP/M implementations or
+versions.
+
+Transient programs may directly inspect and modify documented
+configuration structures where permitted.  BetterCP/M need not provide
+a generalized resident configuration-management service or
+System-Service API solely for this purpose.
+
+BetterCP/M is not required to monitor configuration tables for changes,
+maintain dirty flags, protect configuration state from erroneous
+programs, or automatically compensate for a program that modifies
+configuration state incorrectly.
+
+Where changing configuration data is sufficient to change subsequent
+behavior, no additional mechanism is required.
+
+Where a configuration change requires physical hardware to be
+initialized or reinitialized, the machine-specific BIOS may provide a
+documented callable operation that applies the current configuration
+values to that hardware.  Where practical, such an operation should
+reuse initialization code already required during system startup rather
+than duplicate machine-dependent hardware knowledge.
+
+Where a configuration change invalidates other operating-system state,
+the required reset, relogin, reconstruction, reinitialization, or other
+operation shall be part of the documented programming contract for that
+configuration state.
+
+Correct manipulation of documented configuration state, including
+performing any required follow-up operation, is the responsibility of
+the program making the change.  BetterCP/M need not detect or repair
+incorrect use of these structures.
+
+Configuration editing, interactive menus, validation, configuration-
+file handling, named profiles, persistence mechanisms, and creation of
+configured system or ROM images are functions of transient utilities
+and are not responsibilities of the System-State architecture.
+
+
+11.8 STATE LIFETIME
+-------------------
+
+Every item of system state shall have a defined lifetime.
+
+Useful lifetime categories include:
+
+  * Operation state, existing only during one system operation.
+  * Command state, existing during processing of one command.
+  * Program state, existing during one transient program execution.
+  * Warm-start-persistent state, surviving return to or restoration
+    of the Command Environment.
+  * Boot-lifetime state, remaining valid until system
+    reinitialization.
+  * Storage-associated state, remaining valid while the associated
+    logical disk or medium remains unchanged.
+
+These categories describe expected lifetimes and need not correspond
+to separate memory regions or generalized runtime mechanisms.
+
+State shall not be preserved merely because its previous value
+happens to remain in memory.
+
+Likewise, state shall not be destroyed merely because control passes
+between components if its defined lifetime has not ended.
+
+
+11.9 STATE TRANSITIONS
+----------------------
+
+BetterCP/M shall explicitly define the important events that create,
+modify, preserve, invalidate, or reconstruct system state.
+
+Such events may include:
+
+  * Cold start.
+  * Warm start.
+  * Command entry.
+  * Transient program invocation.
+  * Transient program termination.
+  * Logical drive selection.
+  * User-area selection.
+  * Disk reset.
+  * Media change.
+  * Runtime configuration change.
+  * Hardware reinitialization.
+  * Other operations that alter the operating environment.
+
+Each transition shall preserve state whose lifetime continues across
+the transition and invalidate state whose assumptions are no longer
+valid.
+
+A runtime configuration change may require dependent working state to
+be invalidated or reconstructed, or physical hardware to be explicitly
+reinitialized, before the new configuration can take full effect.
+
+The required follow-up behavior shall be defined by the programming
+contract for the affected configuration state.  BetterCP/M need not
+detect or compensate for a caller that changes documented configuration
+data without performing a required follow-up operation.
+
+Where state can be reconstructed safely and economically, BetterCP/M
+may reconstruct it rather than preserve it.
+
+State-transition behavior visible to applications shall conform to
+CP/M 2.2 compatibility requirements.
+
+
+11.10 COMPATIBILITY-VISIBLE STATE
+---------------------------------
+
+Some BetterCP/M state is visible to CP/M applications through memory,
+System Services, File Control Blocks, return values, or other
+interfaces.
+
+Such state forms part of the CP/M compatibility environment.
+
+BetterCP/M shall preserve the representation and behavior of
+compatibility-visible state where required by CP/M 2.2 software.
+
+Internally maintained state that cannot be observed through the
+compatibility environment need not reproduce the representation used
+by Digital Research CP/M.
+
+The distinction between private and compatibility-visible state shall
+be based upon observable behavior and established software
+dependencies rather than solely upon the intended abstraction of the
+original CP/M design.
+
+Compatibility investigation may therefore identify historically
+implementation-specific state that must nevertheless be preserved
+because existing software depends upon it.
+
+
+11.11 FUTURE EXTENSION
+----------------------
+
+Future BetterCP/M capabilities may introduce additional configurable
+or other persistent system state.
+
+The configurable-state architecture defined above is intended to allow
+new machine and system parameters to be represented without requiring
+a new configuration-management mechanism or restructuring unrelated
+components.
+
+Possible future facilities requiring additional state may include:
+
+  * Bank-switched memory management.
+  * Debugging facilities.
+  * Additional System Services.
+  * Alternative or extended command environments.
+
+The initial System State architecture shall not allocate structures
+or introduce generalized mechanisms solely to anticipate such
+features.
+
+It shall, however, avoid making unrelated components depend directly
+upon private state representations where a simple architectural
+boundary can preserve the ability to change or extend them later.
+
+New state introduced by future facilities shall have explicitly
+defined ownership, lifetime, visibility, and transition behavior.
+
+CP/M-compatible applications shall not be required to understand
+BetterCP/M-private state introduced by such extensions.

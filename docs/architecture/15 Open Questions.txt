@@ -1,0 +1,433 @@
+15 OPEN QUESTIONS
+=================
+
+15.1 Purpose
+15.2 Compatibility Questions
+15.3 Memory Questions
+15.4 Command-Environment Questions
+15.5 System-Service Questions
+15.6 Storage Questions
+15.7 Hardware-Abstraction Questions
+15.8 Boot Questions
+15.9 Development and Debugging Questions
+15.10 Extension Questions
+15.11 Implementation Questions
+15.12 Resolution of Open Questions
+
+15.1 PURPOSE
+------------
+
+This section records architectural questions that remain unresolved
+during the initial design of BetterCP/M.
+
+An open question identifies a matter requiring investigation,
+experimentation, implementation experience, or a later design
+decision.
+
+The presence of an open question does not imply that the initial
+implementation must solve every possible form of the problem.
+
+Questions should remain open when prematurely selecting an answer
+would unnecessarily constrain the architecture or when insufficient
+information exists to make a justified decision.
+
+As questions are resolved, the resulting decisions shall be
+incorporated into the appropriate architectural or engineering
+documents rather than remaining only in this section.
+
+
+15.2 COMPATIBILITY QUESTIONS
+----------------------------
+
+The precise boundary of required CP/M 2.2 compatibility remains to be
+established through investigation and testing.
+
+Questions include:
+
+  * Which documented CP/M 2.2 behaviors must be reproduced exactly?
+
+  * Which undocumented behaviors are relied upon by significant
+    existing software?
+
+  * Which implementation details of Digital Research CP/M have
+    become de facto programming interfaces?
+
+  * Which register values or preservation conventions are relied
+    upon even where they are not formally documented?
+
+  * Which low-memory locations and system structures must be
+    reproduced exactly?
+
+  * To what degree must direct BIOS calls by applications be
+    supported?
+
+  * Which error behaviors must be reproduced for compatibility?
+
+  * Which apparent CP/M quirks can safely be omitted or improved?
+
+These questions shall be answered by the CP/M investigation and
+compatibility-testing process rather than by assuming that either
+the documentation or the original implementation alone completely
+defines the compatibility contract.
+
+
+15.3 MEMORY QUESTIONS
+---------------------
+
+The detailed BetterCP/M memory layout remains to be determined.
+
+Questions include:
+
+  * What shall be the precise organization and size of the resident
+    operating system?
+
+  * How large a Transient Program Area can the initial
+    implementation provide?
+
+  * Which portions of the Command Environment should remain resident
+    during transient execution?
+
+  * Which portions, if any, should be overwritten and subsequently
+    reloaded or reconstructed?
+
+  * Which BetterCP/M data structures require permanent residency?
+
+  * Which compatibility-visible memory locations must reproduce the
+    exact CP/M 2.2 representation?
+
+  * Can temporary memory reuse materially increase available TPA
+    without making ownership or lifetime difficult to understand?
+
+The initial architecture does not require bank-switched memory.
+
+The possible later use of bank-switched memory remains a future
+design question rather than a requirement to be solved by the
+initial memory layout.
+
+
+15.4 COMMAND-ENVIRONMENT QUESTIONS
+----------------------------------
+
+The detailed implementation of the BetterCP/M Command Environment
+remains to be determined.
+
+Questions include:
+
+  * How closely should its internal organization resemble the
+    Digital Research CCP?
+
+  * Which command-parsing behaviors are required for compatibility?
+
+  * What is the smallest practical resident portion of the Command
+    Environment?
+
+  * Which command-environment state must survive transient program
+    execution?
+
+  * Should restoration following program execution use reloading,
+    reconstruction, preserved memory, or a combination of these
+    techniques?
+
+  * Which error messages and command-line behaviors form part of the
+    compatibility contract?
+
+The initial implementation shall remain focused upon the CP/M
+2.2-compatible command environment.
+
+Enhanced or alternative command environments are deferred.
+
+
+15.5 SYSTEM-SERVICE QUESTIONS
+-----------------------------
+
+The application-visible System-Service interface is constrained by
+CP/M 2.2 compatibility, but the internal BetterCP/M service
+organization remains open.
+
+Questions include:
+
+  * Should internal BetterCP/M components invoke services through the
+    CP/M-compatible BDOS interface or through separate internal
+    entry points?
+
+  * Which System Services naturally belong together in the internal
+    implementation?
+
+  * Which internal state should be shared among System Services?
+
+  * How should internal errors be represented before translation
+    into CP/M-compatible results?
+
+  * Which CP/M service behaviors require experimental verification
+    against a reference implementation?
+
+  * Can clearer internal service boundaries be introduced without
+    increasing resident code significantly?
+
+The internal implementation should be chosen for simplicity,
+compactness, clarity, and compatibility rather than for similarity
+to the original BDOS source.
+
+
+15.6 STORAGE QUESTIONS
+----------------------
+
+The storage architecture intentionally leaves several implementation
+and configuration decisions unresolved.
+
+Questions include:
+
+  * What logical disk format or formats should the initial
+    implementation support?
+
+  * How shall disk-format descriptions be represented internally?
+
+  * Which disk parameters can be represented generically and which
+    require format-specific handling?
+
+  * Where should logical-sector translation occur?
+
+  * How should disk-format information be associated with logical
+    drives?
+
+  * Which storage state must be reconstructed when a disk format or
+    medium changes?
+
+  * How closely should the initial disk-parameter representation
+    resemble traditional CP/M DPB and DPH structures?
+
+  * Which disk-format characteristics are compatibility-visible to
+    applications or utilities?
+
+  * How should a future CONFIG-style utility communicate disk-format
+    changes to the operating system?
+
+  * Which aspects of Montezuma Micro CP/M's configurable disk-format
+    system are appropriate to adopt, adapt, or avoid?
+
+The architecture requires that variable logical disk characteristics
+not be unnecessarily embedded throughout the file-system code.
+
+It does not yet specify the format-description or configuration
+mechanism.
+
+
+15.7 HARDWARE-ABSTRACTION QUESTIONS
+-----------------------------------
+
+The precise Hardware-Abstraction interface remains to be designed.
+
+Questions include:
+
+  * Which machine-dependent operations should form the minimum
+    BetterCP/M hardware interface?
+
+  * Should the internal interface resemble the traditional CP/M BIOS
+    or use a cleaner BetterCP/M-specific organization?
+
+  * If the internal interface differs from the CP/M BIOS, how should
+    compatibility-visible BIOS entry points be provided?
+
+  * Which operations should be direct calls and which, if any,
+    benefit from vectors or tables?
+
+  * Where should sector translation and other storage mapping
+    responsibilities reside?
+
+  * What configuration information must be supplied by a platform
+    implementation?
+
+  * How much platform independence can be obtained without imposing
+    unnecessary memory or execution overhead?
+
+These questions should initially be answered in the context of the
+first target system while preserving the architectural separation
+needed for reasonable future portability.
+
+
+15.8 BOOT QUESTIONS
+-------------------
+
+The detailed BetterCP/M boot process remains to be specified for the
+initial target platform.
+
+Questions include:
+
+  * What mechanism shall load the initial BetterCP/M system image?
+
+  * Which initialization belongs to bootstrap code and which belongs
+    to BetterCP/M itself?
+
+  * What machine state shall the bootstrap guarantee before entering
+    BetterCP/M?
+
+  * What portions of the operating system must initially be loaded
+    together?
+
+  * How shall platform or storage configuration required during boot
+    be obtained?
+
+  * What is the precise relationship between cold start, warm start,
+    and Command Environment restoration?
+
+  * Which portions of system state survive a warm start?
+
+The initial boot mechanism may be platform-specific.
+
+The architecture shall nevertheless avoid making that mechanism an
+unnecessary dependency of hardware-independent BetterCP/M code.
+
+
+15.9 DEVELOPMENT AND DEBUGGING QUESTIONS
+----------------------------------------
+
+BetterCP/M development will require mechanisms for observing and
+diagnosing operating-system behavior.
+
+The permanent architecture of those mechanisms remains unresolved.
+
+Questions include:
+
+  * Which debugging facilities are most useful during initial system
+    development?
+
+  * Which facilities can be provided by the emulator or development
+    environment rather than by resident BetterCP/M code?
+
+  * Which internal events or state should be observable through
+    development hooks?
+
+  * Can development instrumentation be conditionally assembled or
+    otherwise removed from production builds?
+
+  * What minimum hooks should be designed into component boundaries
+    so that debugging does not require invasive modifications?
+
+  * Should any development debugging facilities remain available in
+    normal BetterCP/M systems?
+
+  * What application-facing debugging facilities might eventually
+    be useful to CP/M programmers?
+
+Development debugging and future application debugging are separate
+requirements and need not use the same mechanisms.
+
+The initial priority is debugging BetterCP/M itself while avoiding
+unnecessary permanent resident-memory cost.
+
+
+15.10 EXTENSION QUESTIONS
+-------------------------
+
+The architecture preserves several possible directions for later
+BetterCP/M development without selecting their detailed designs.
+
+Questions include:
+
+  * How should future BetterCP/M-specific System Services be
+    invoked?
+
+  * How should applications discover BetterCP/M and individual
+    optional capabilities?
+
+  * What configuration mechanism should eventually support
+    selectable logical disk formats?
+
+  * How should SD, CompactFlash, or other block storage be divided
+    into BetterCP/M logical storage?
+
+  * Should bank-switched memory initially benefit the operating
+    system, applications, or both?
+
+  * What facilities would be required for applications explicitly to
+    use additional memory?
+
+  * Should future command-environment enhancements extend the
+    CP/M-compatible environment or exist as an alternative command
+    environment?
+
+  * Which debugging facilities, if any, should eventually become
+    public BetterCP/M services?
+
+These questions shall not cause speculative mechanisms to be added to
+the initial implementation.
+
+They are recorded so that early implementation decisions can be
+evaluated for unnecessary conflicts with plausible future
+development.
+
+
+15.11 IMPLEMENTATION QUESTIONS
+------------------------------
+
+Several implementation choices should remain unresolved until the
+architecture is exercised through actual code.
+
+Questions include:
+
+  * Which Z80 assembler should be used for BetterCP/M development?
+
+  * How should the source tree be organized?
+
+  * Which component should be implemented first?
+
+  * What build process should produce the system image?
+
+  * Which portions of the system should be separately assembled?
+
+  * Which interfaces should use direct calls, jump tables, vectors,
+    or shared data?
+
+  * What conventions should BetterCP/M source use for registers,
+    symbols, modules, comments, and public interfaces?
+
+  * How should debugging and diagnostic builds differ from normal
+    builds?
+
+  * How should automated compatibility and regression tests be
+    organized?
+
+  * Which reference CP/M 2.2 environment or environments should be
+    used when comparing behavior?
+
+These are engineering questions rather than fundamental properties of
+the BetterCP/M architecture.
+
+They should be resolved when implementation requirements provide
+enough information to make the choices meaningful.
+
+
+15.12 RESOLUTION OF OPEN QUESTIONS
+----------------------------------
+
+Open questions shall be resolved deliberately as the BetterCP/M
+project progresses.
+
+A question may be resolved through:
+
+  * Examination of CP/M documentation and source material.
+  * Investigation of reference CP/M behavior.
+  * Examination of existing CP/M software.
+  * Prototype implementation.
+  * Measurement of memory or execution cost.
+  * Compatibility testing.
+  * Hardware experimentation.
+  * Comparison of alternative designs.
+
+When an answer establishes an architectural requirement, the
+appropriate section of the Architecture Specification shall be
+updated.
+
+When an answer establishes an implementation requirement, it shall be
+recorded in the appropriate engineering specification or development
+documentation.
+
+When investigation shows that a question does not require a project
+decision, it may simply be closed with the reason documented.
+
+The Open Questions section shall therefore change throughout
+development.
+
+Its purpose is not to accumulate unresolved issues indefinitely, but
+to make uncertainty explicit until sufficient evidence exists to
+replace it with a deliberate design decision.

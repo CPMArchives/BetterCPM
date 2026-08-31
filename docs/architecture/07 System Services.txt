@@ -1,0 +1,299 @@
+07 SYSTEM SERVICES
+==================
+
+7.1 System-Service Model
+7.2 Service Interface
+7.3 Console and Character Services
+7.4 File and Record Services
+7.5 Drive and User Services
+7.6 Program-Support Services
+7.7 System State and Service State
+7.8 Hardware Interaction
+7.9 Error and Return Behavior
+7.10 Compatibility and Extension
+
+7.1 SYSTEM-SERVICE MODEL
+------------------------
+
+System Services provide the general operating-system functions used
+by transient applications, the Command Environment, and other
+BetterCP/M components.
+
+For CP/M 2.2-compatible applications, System Services present the
+system-call environment historically provided by the BDOS.
+
+BetterCP/M shall reproduce the compatibility-visible behavior of that
+environment without requiring the internal implementation or
+organization of the Digital Research BDOS to be duplicated.
+
+A system service represents an operating-system operation rather than
+the hardware mechanism by which that operation is performed.
+
+System Services should therefore remain independent, where practical,
+of particular console devices, storage controllers, physical media,
+and other machine-specific implementation details.
+
+The initial set of application-visible System Services shall be
+defined by the requirements of CP/M 2.2 compatibility.
+
+
+7.2 SERVICE INTERFACE
+---------------------
+
+Applications shall request CP/M-compatible System Services through
+the entry mechanism and calling conventions required by CP/M 2.2.
+
+The compatibility-visible service interface shall define:
+
+  * The mechanism used to request a service.
+  * The function identifier associated with each service.
+  * Input parameters.
+  * Output values.
+  * Registers or memory locations whose contents have defined
+    significance.
+  * Required effects upon operating-system state.
+  * Error and exceptional behavior.
+  * Conditions that exist upon return to the caller.
+
+BetterCP/M components may use internal service interfaces where doing
+so provides a clearer or more efficient implementation.
+
+Internal interfaces need not reproduce the application-visible
+CP/M calling convention unless compatibility or implementation
+requirements justify doing so.
+
+The application-visible interface shall remain distinct from the
+private implementation of the service provider.
+
+
+7.3 CONSOLE AND CHARACTER SERVICES
+----------------------------------
+
+System Services shall provide the console and character-oriented
+operations required by the CP/M 2.2 system-service interface.
+
+These services may include operations for:
+
+  * Console input.
+  * Console output.
+  * Direct console interaction.
+  * Console status.
+  * String output.
+  * Buffered console input.
+  * Other character-oriented devices or functions defined by the
+    CP/M 2.2 interface.
+
+System Services are responsible for the compatibility-visible
+semantics of these operations.
+
+Actual interaction with physical or emulated console hardware shall
+be performed through Hardware Abstraction where hardware-dependent
+behavior is required.
+
+The System-Service implementation shall not unnecessarily assume a
+particular terminal, serial interface, display device, keyboard, or
+other console implementation.
+
+
+7.4 FILE AND RECORD SERVICES
+----------------------------
+
+System Services shall provide the file and record operations required
+by the CP/M 2.2 environment.
+
+These services include the operations required to locate, create,
+open, close, read, write, rename, and delete files and to perform
+other file-system functions defined by the CP/M 2.2 interface.
+
+The compatibility-visible file interface shall preserve the CP/M
+model of files, File Control Blocks, records, extents, directory
+operations, and associated state where required by compatible
+software.
+
+System Services shall translate these logical operations into the
+storage and file-system operations required to perform them.
+
+Applications shall not be required to know the physical storage
+geometry or device mechanism used to satisfy an ordinary CP/M file
+operation.
+
+The detailed organization of files, directories, allocation,
+records, extents, and logical storage is defined by the Storage and
+File-System Architecture.
+
+
+7.5 DRIVE AND USER SERVICES
+---------------------------
+
+System Services shall provide the logical drive and user-area
+operations required by CP/M 2.2.
+
+These include services for selecting, examining, and manipulating the
+current logical storage environment and other drive-related state
+visible through the CP/M system-service interface.
+
+Logical drives are operating-system abstractions and shall not
+unnecessarily be equated with individual physical storage devices.
+
+A logical drive may depend upon hardware-specific storage operations,
+but applications using ordinary CP/M services shall interact with the
+logical CP/M drive environment rather than with the underlying
+physical device.
+
+The mapping between logical drives and physical or virtual storage
+shall be defined by the Storage and File-System Architecture and the
+applicable hardware-dependent implementation.
+
+User areas shall be represented according to the requirements of the
+CP/M 2.2-compatible environment.
+
+
+7.6 PROGRAM-SUPPORT SERVICES
+----------------------------
+
+System Services shall provide the operations required by CP/M 2.2 to
+support transient program execution and interaction with the
+operating system.
+
+Such services may include operations concerned with:
+
+  * Program termination.
+  * Reset or warm-start behavior.
+  * Establishment or examination of program-related system state.
+  * Direct memory access configuration.
+  * Other execution-support functions defined by the CP/M 2.2
+    system-service interface.
+
+Responsibilities shall be divided between System Services and the
+Program Execution Environment according to the nature of the
+operation.
+
+System Services own callable operating-system operations.  The
+Program Execution Environment owns the conditions under which the
+transient program itself is loaded and executed.
+
+Where a CP/M service affects both areas, the interface and ownership
+of the resulting state shall be explicitly defined.
+
+
+7.7 SYSTEM STATE AND SERVICE STATE
+----------------------------------
+
+System Services may examine or modify operating-system state required
+to perform their functions.
+
+Such state may include:
+
+  * Current logical drive.
+  * Current user area.
+  * Current DMA address.
+  * File-system working state.
+  * Storage-selection state.
+  * Other state required by CP/M-compatible services.
+
+Each item of persistent state shall have a defined owner even when it
+is accessible through multiple system services.
+
+System Services shall not maintain independent copies of shared state
+where those copies could become inconsistent.
+
+Temporary state used only during execution of a service shall remain
+private to that service or subsystem unless another component has a
+defined requirement to access it.
+
+The complete organization and ownership of persistent operating-
+system state is defined by the System State architecture.
+
+
+7.8 HARDWARE INTERACTION
+------------------------
+
+System Services shall not directly depend upon machine-specific
+hardware except where an explicitly defined architectural requirement
+makes such dependence necessary.
+
+When a requested service requires physical input, output, or storage
+access, the required operation shall normally be requested through
+Hardware Abstraction.
+
+Conceptually:
+
+    Application
+        |
+        v
+    System Services
+        |
+        v
+    Hardware Abstraction
+        |
+        v
+    Hardware
+
+Not every service request reaches hardware.  Operations involving
+only memory or operating-system state may be completed entirely
+within System Services.
+
+Similarly, file operations may pass through the Storage and
+File-System subsystem before hardware access becomes necessary.
+
+The purpose of this boundary is to prevent machine-specific
+mechanisms from becoming unnecessary properties of the
+hardware-independent system-service implementation.
+
+
+7.9 ERROR AND RETURN BEHAVIOR
+-----------------------------
+
+System Services shall return results according to the
+compatibility-visible conventions of CP/M 2.2.
+
+Return behavior may include:
+
+  * Register values.
+  * Modified memory structures.
+  * Updated operating-system state.
+  * Console messages.
+  * Program termination or system reentry.
+  * Other effects defined by the applicable service.
+
+Errors shall be reproduced with sufficient fidelity to preserve
+CP/M 2.2 compatibility where applications or established system
+behavior depend upon them.
+
+BetterCP/M shall not assume that an error can be represented by a
+single generalized error mechanism if the CP/M-compatible interface
+defines different behavior.
+
+Internally, BetterCP/M may use clearer or more systematic error
+representations provided that they are translated into the required
+compatibility-visible result at the service boundary.
+
+
+7.10 COMPATIBILITY AND EXTENSION
+--------------------------------
+
+The initial application-visible System Services shall implement the
+CP/M 2.2 service environment.
+
+The existence of that interface does not require all future
+BetterCP/M services to be constrained to the original CP/M 2.2
+function set or calling convention.
+
+Future versions may introduce additional services where a defined
+need exists.
+
+New services shall be designed so that their presence does not
+unnecessarily alter the behavior of existing CP/M-compatible service
+calls.
+
+The initial implementation shall not reserve large amounts of code,
+data, or interface space solely for speculative future services.
+
+Where practical, internal organization should permit additional
+services to be introduced without requiring the existing
+compatibility interface to be redesigned.
+
+Potential future debugging or system-development services may make
+use of such extension mechanisms, but no application-facing
+BetterCP/M service extension is required by the initial
+implementation.

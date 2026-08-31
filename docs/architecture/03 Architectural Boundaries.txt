@@ -1,0 +1,246 @@
+03 ARCHITECTURAL BOUNDARIES
+===========================
+
+3.1 Operating-System Responsibilities
+3.2 Command Environment Responsibilities
+3.3 System-Service Responsibilities
+3.4 Hardware-Dependent Responsibilities
+3.5 Application Responsibilities
+3.6 Interface Boundaries
+3.7 Compatibility Boundaries
+
+3.1 OPERATING-SYSTEM RESPONSIBILITIES
+-------------------------------------
+
+BetterCP/M is responsible for establishing and maintaining the
+operating environment required by CP/M 2.2-compatible software.
+
+At the architectural level, operating-system responsibilities include:
+
+  * Establishing the environment in which applications execute.
+  * Providing the command environment through which the user invokes
+    programs and resident commands.
+  * Providing the system services required by applications and other
+    operating-system components.
+  * Managing files and the logical storage environment.
+  * Maintaining operating-system state.
+  * Providing defined access to hardware-dependent services.
+  * Loading, initiating, and terminating transient programs.
+  * Preserving compatibility-visible CP/M 2.2 behavior.
+
+BetterCP/M shall distinguish operating-system responsibilities from
+the mechanisms used to implement them.  A responsibility belonging
+to the operating system does not imply that it must be implemented
+by a component corresponding directly to a Digital Research CP/M
+component.
+
+The operating system shall not assume responsibility for functions
+that properly belong to applications merely because such functions
+might be provided by a larger or more modern operating system.
+
+In particular, the initial BetterCP/M environment remains centered
+upon executing applications rather than providing a broad collection
+of continuously resident user-facing facilities.
+
+
+3.2 COMMAND ENVIRONMENT RESPONSIBILITIES
+----------------------------------------
+
+The Command Environment provides the principal direct interaction
+between the user and BetterCP/M.
+
+Its responsibilities include:
+
+  * Presenting the command prompt.
+  * Accepting command input.
+  * Parsing commands according to the required command syntax.
+  * Recognizing and executing resident commands.
+  * Identifying requests to execute transient programs.
+  * Initiating the loading and execution of transient programs.
+  * Reestablishing the command environment following program
+    termination.
+
+The Command Environment may use System Services to perform file,
+console, storage, and other operating-system operations.
+
+The Command Environment shall not own general operating-system
+services merely because those services are used while processing a
+command.  Functions required independently by applications belong to
+the appropriate system-service or other operating-system component.
+
+Compatibility with the CP/M 2.2 command environment does not require
+the internal implementation of the Digital Research CCP to be
+duplicated.  Compatibility-visible command behavior shall be
+preserved while implementation-private command-processing mechanisms
+may be redesigned.
+
+
+3.3 SYSTEM-SERVICE RESPONSIBILITIES
+-----------------------------------
+
+System Services provide the operating-system functions requested by
+applications, the Command Environment, and other BetterCP/M
+components.
+
+Their responsibilities include the CP/M-compatible services required
+for:
+
+  * Console and character I/O.
+  * File and record operations.
+  * Drive and user-area operations.
+  * Program-support operations.
+  * Access to compatibility-visible operating-system state.
+  * Other services defined by the CP/M 2.2 system-call interface.
+
+System Services shall implement the compatibility-visible semantics
+of the CP/M 2.2 service interface while remaining independent, where
+practical, of the physical hardware used to perform those services.
+
+Operations requiring hardware access shall use defined
+hardware-dependent interfaces rather than embedding machine-specific
+assumptions within otherwise hardware-independent system services.
+
+The System-Service architecture need not reproduce the internal
+organization of the Digital Research BDOS.  BDOS behavior that forms
+part of the CP/M compatibility contract shall be preserved; its
+implementation-private organization may be redesigned.
+
+
+3.4 HARDWARE-DEPENDENT RESPONSIBILITIES
+---------------------------------------
+
+Hardware-dependent responsibilities comprise those operations whose
+implementation depends upon the characteristics of the target
+machine.
+
+These responsibilities may include:
+
+  * Console input and output.
+  * Physical storage-device operations.
+  * Device selection and initialization.
+  * Hardware-specific boot support.
+  * Machine-specific initialization.
+  * Other operations that cannot reasonably be implemented without
+    knowledge of the underlying hardware.
+
+Hardware-dependent code shall provide defined services to the
+hardware-independent portions of BetterCP/M.
+
+Hardware-independent components should not depend directly upon
+device registers, I/O ports, controller protocols, physical storage
+geometry, or other machine-specific implementation details except
+where such dependence is explicitly required.
+
+The hardware-dependent boundary fulfills the general portability
+role historically served by the CP/M BIOS, but BetterCP/M is not
+required to duplicate the internal structure of a Digital Research
+BIOS.
+
+The initial implementation may target a specific machine or
+emulated machine.  Separation of hardware-dependent responsibilities
+is nevertheless intended to prevent unnecessary machine assumptions
+from becoming properties of the operating system as a whole.
+
+
+3.5 APPLICATION RESPONSIBILITIES
+--------------------------------
+
+Applications execute within the environment established by
+BetterCP/M but remain distinct from the operating system.
+
+An application is responsible for its own program-specific behavior,
+data, user interface, and internal state.
+
+Applications may request operating-system functions through the
+CP/M-compatible system-service interface and may depend upon other
+compatibility-visible characteristics of the CP/M 2.2 execution
+environment.
+
+BetterCP/M shall not require an otherwise compatible application to
+be aware that it is executing under BetterCP/M rather than Digital
+Research CP/M 2.2.
+
+Applications that directly access machine-specific hardware,
+undocumented operating-system internals, or other implementation-
+specific facilities may impose requirements beyond ordinary CP/M 2.2
+compatibility.  Such cases shall be investigated individually rather
+than automatically defining the architecture of BetterCP/M.
+
+
+3.6 INTERFACE BOUNDARIES
+------------------------
+
+Interactions between major BetterCP/M components shall occur through
+defined interfaces wherever a meaningful architectural boundary
+exists.
+
+An interface shall specify the information, services, and conditions
+required for interaction without unnecessarily exposing the private
+implementation of the component providing them.
+
+Interface boundaries should make it possible to determine:
+
+  * Which component owns a responsibility.
+  * Which component may request the associated service.
+  * What information crosses the boundary.
+  * What system state may be examined or modified.
+  * What conditions exist before and after the interaction.
+  * Which aspects of the interface are compatibility-visible.
+
+Architectural interfaces do not necessarily require runtime
+indirection or additional software layers.  Where two components are
+implemented together, a defined architectural interface may
+correspond to an assembly-language calling convention, shared data
+structure, entry point, or other simple mechanism.
+
+Interfaces shall not be made more elaborate merely to enforce a
+conceptual separation that can be maintained more simply through
+documented conventions.
+
+Where an interface is exposed to CP/M software, compatibility
+requirements take precedence over BetterCP/M's preferred internal
+organization.
+
+
+3.7 COMPATIBILITY BOUNDARIES
+----------------------------
+
+The compatibility boundary separates characteristics of the CP/M 2.2
+environment that BetterCP/M must reproduce from implementation
+details that BetterCP/M is free to redesign.
+
+Characteristics visible to ordinary CP/M software form the primary
+compatibility boundary.
+
+These may include:
+
+  * System-call entry mechanisms and calling conventions.
+  * Service semantics and return values.
+  * Compatibility-visible memory locations and data structures.
+  * Program loading and execution conventions.
+  * File-system behavior and representations visible to software.
+  * Command-environment behavior.
+  * Error and termination behavior upon which software may depend.
+
+The precise compatibility status of a CP/M characteristic shall be
+determined through investigation rather than solely from the location
+of that characteristic within the original implementation.
+
+An undocumented behavior may nevertheless be compatibility-visible
+if existing software depends upon it.  Conversely, an internal
+mechanism used by Digital Research CP/M need not be reproduced merely
+because it appears in the original source code.
+
+Machine-specific behavior presents a separate compatibility question.
+Software that bypasses CP/M interfaces and accesses particular
+hardware directly may be compatible only with machines providing that
+hardware environment.  BetterCP/M shall distinguish such hardware
+compatibility from compatibility with the CP/M operating-system
+environment itself.
+
+Where the status of a behavior is uncertain, the issue shall be
+recorded for investigation rather than resolved by silently copying
+the original implementation.
+
+Detailed definitions of the CP/M compatibility contract are provided
+by the Compatibility Architecture.
