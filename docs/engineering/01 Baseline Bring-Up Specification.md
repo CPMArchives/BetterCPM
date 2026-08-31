@@ -162,6 +162,8 @@ Generated binaries and disk images should be placed in a build directory exclude
 
 The assembler and build runner remain to be selected by the Source and Build Conventions specification. The selection shall be made before implementation begins and shall support automated, non-interactive builds with symbol listings or maps sufficient to verify addresses and sizes.
 
+The assembler shall be freely redistributable. Its license shall permit the project to redistribute the assembler with BetterCP/M development materials and shall not impose noncommercial-use, per-user licensing, or similar field-of-use restrictions. Any runtime components required to execute the redistributed assembler shall satisfy the same requirement. License texts and required notices shall be preserved with redistributed copies.
+
 ## 12. Diagnostic behavior
 
 Development diagnostics may be conditionally assembled or omitted from later production images.
@@ -212,7 +214,7 @@ Those decisions shall be made in later Phase 2 specifications using evidence fro
 
 The following narrow items must be resolved before code is committed for this milestone:
 
-1. Select and pin the Z80 assembler and its version.
+1. Select and pin a freely redistributable Z80 assembler and its version, and record its license and redistribution obligations.
 2. Select the build runner and host-language tool used to construct `drivea.dsk`.
 3. Confirm the pinned `cpmsim` disk-status success and error encodings from source or a deterministic experiment.
 4. Choose the bring-up-only stage-one stack, scratch buffer, and verification sector values.
