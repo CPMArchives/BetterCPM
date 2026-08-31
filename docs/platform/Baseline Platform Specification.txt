@@ -1,0 +1,439 @@
+BETTERCP/M BASELINE PLATFORM SPECIFICATION
+
+Draft 0.1
+
+1. PURPOSE AND SCOPE
+
+The BetterCP/M Baseline Platform Specification defines the initial
+machine environment used to develop, test, and bring up BetterCP/M.
+
+The baseline platform is a development target, not a definition of the
+hardware on which BetterCP/M may ultimately run. Machine-specific
+facilities described here shall remain behind the appropriate hardware-
+abstraction boundaries so that they do not become accidental
+requirements of the operating system as a whole.
+
+This specification records the cpmsim machine interface required by
+BetterCP/M and the development facilities adopted for the initial
+implementation. It does not define CP/M-compatible system services,
+file-system behavior, command processing, or other operating-system
+facilities supplied by BetterCP/M itself.
+
+2. BASELINE PLATFORM
+
+2.1 z80pack cpmsim
+
+The initial BetterCP/M development platform shall be z80pack cpmsim.
+
+cpmsim provides a Z80 execution environment with memory, console I/O,
+raw disk I/O, interrupt facilities, and a simple boot mechanism. It does
+not provide the CP/M operating-system environment unless optional
+host-service facilities are deliberately invoked.
+
+BetterCP/M shall own its boot process, hardware abstraction, system
+services, file system, command environment, program execution, and other
+operating-system behavior.
+
+2.2 Pinned Reference Version
+
+The reference version for initial BetterCP/M development is:
+
+z80pack Release 1.39 Repository revision:
+91fd28eb04e675c2127df88ed3f40675e15282e2 Revision date: 2025-06-17
+
+The pinned revision establishes a reproducible reference machine. Later
+z80pack revisions may be evaluated and adopted deliberately, but changes
+in emulator behavior shall not silently redefine the BetterCP/M baseline
+platform.
+
+2.3 Role of the Baseline Platform
+
+cpmsim is selected because its machine interface is small, observable,
+scriptable, and sufficient for bare-metal operating-system development.
+
+The simplicity of cpmsim is a development advantage. It shall not be
+taken as evidence that historical or future BetterCP/M targets will
+provide equally simple hardware.
+
+The baseline platform shall therefore be treated as the first concrete
+implementation of the BetterCP/M hardware boundary, not as the hardware
+architecture of BetterCP/M itself.
+
+3. PROCESSOR ENVIRONMENT
+
+3.1 Processor
+
+The baseline processor is the Zilog Z80 as emulated by z80pack.
+
+Initial validation exercised alternate registers, IX and IY indexed
+operations, block operations, relevant arithmetic flags, HALT,
+interrupt-mode instructions, and maskable interrupt delivery.
+
+This validation does not constitute exhaustive certification of every
+Z80 instruction, undocumented behavior, flag side effect, or timing
+characteristic.
+
+3.2 Initial Processor State
+
+BetterCP/M shall not depend upon arbitrary register values present when
+the boot record begins execution.
+
+Startup code shall explicitly initialize all processor state upon which
+it depends, including the stack pointer before stack operations are
+used.
+
+3.3 Interrupt Facilities
+
+cpmsim supports Z80 maskable interrupts.
+
+A host timer controlled through I/O port 27 can provide a periodic
+maskable interrupt. Initial validation demonstrated delivery of such an
+interrupt to an IM 1 handler at address 0038h.
+
+Use of the cpmsim timer is optional. Its existence, frequency, and
+control mechanism are machine-specific and shall not become general
+BetterCP/M architectural requirements.
+
+4. MEMORY ENVIRONMENT
+
+4.1 Address Space
+
+The baseline machine provides the Z80 16-bit address space from 0000h
+through FFFFh.
+
+The initial BetterCP/M implementation shall operate within this
+64-kilobyte address space.
+
+4.2 Initial Memory State
+
+The cpmsim development invocation may use the -m 00 option to initialize
+memory deterministically to zero for testing.
+
+This is a development convenience only. BetterCP/M shall not require RAM
+other than explicitly loaded boot contents to contain any particular
+value at startup.
+
+4.3 Memory Ownership
+
+Apart from the boot record supplied by the platform, BetterCP/M is
+responsible for defining and managing its own memory layout.
+
+The final placement of resident operating-system components, command
+environment, buffers, system state, and Transient Program Area is not
+defined by this platform specification.
+
+5. BOOT INTERFACE
+
+5.1 Boot Disk
+
+Normal cpmsim disk boot uses the file drivea.dsk as drive A.
+
+The baseline BetterCP/M development environment shall use separate test
+and development disk images rather than modifying unrelated or reference
+CP/M disk images.
+
+5.2 Boot Record
+
+On normal disk boot, cpmsim reads exactly 128 bytes from the beginning
+of drivea.dsk.
+
+These 128 bytes constitute the baseline platform boot record.
+
+5.3 Initial Load Address
+
+cpmsim copies the boot record into memory addresses 0000h through 007Fh.
+Execution begins at address 0000h.
+
+The BetterCP/M boot record therefore owns execution from 0000h and is
+responsible for establishing the processor state required to continue
+system startup.
+
+5.4 Stage-Zero Loader
+
+The initial boot record may contain a stage-zero loader that uses the
+machine-specific raw disk interface to load additional BetterCP/M code.
+
+The 128-byte boot-record limit is a cpmsim boot-interface constraint. It
+shall not be generalized into a requirement that all BetterCP/M
+platforms use 128-byte boot records or begin execution at address 0000h.
+
+6. CONSOLE INTERFACE
+
+6.1 Console Status
+
+I/O port 0 provides console input status.
+
+The cpmsim-specific console implementation may poll this port to
+determine whether input is available.
+
+6.2 Console Data
+
+I/O port 1 provides console data.
+
+Bare-metal BetterCP/M code may use this port for console input and
+output through the cpmsim hardware-abstraction implementation.
+
+6.3 Portability Boundary
+
+The use of ports 0 and 1 is specific to cpmsim.
+
+Higher BetterCP/M components shall obtain console services through the
+appropriate hardware-abstraction interface and shall not depend directly
+upon these port numbers.
+
+7. STORAGE INTERFACE
+
+7.1 General Model
+
+cpmsim provides a simple raw-sector disk interface.
+
+The interface operates on 128-byte sectors and uses explicit drive,
+track, sector, DMA-address, command, and status registers.
+
+This interface is machine-specific. BetterCP/M logical disk formats,
+file-system structures, allocation policies, and CP/M-compatible disk
+behavior shall not be defined in terms of cpmsim’s controller
+implementation.
+
+7.2 Disk Ports
+
+The baseline cpmsim disk interface uses:
+
+Port 10 Drive selection Port 11 Track selection Port 12 Sector number,
+low byte Port 13 Disk command Port 14 Disk status Port 15 DMA address,
+low byte Port 16 DMA address, high byte Port 17 Sector number, high byte
+
+For port 13:
+
+0 Read sector 1 Write sector
+
+7.3 Sector Transfer
+
+A disk operation transfers one 128-byte sector between the selected disk
+sector and the memory address specified by the DMA registers.
+
+The DMA mechanism is a cpmsim hardware characteristic. BetterCP/M shall
+not require other hardware targets to provide DMA or to expose storage
+through the same programming model.
+
+7.4 Baseline Drive Geometry
+
+The validated drive-A geometry is:
+
+Tracks: 77 Sectors per track: 26 Sector size: 128 bytes Image size:
+256256 bytes
+
+For this geometry, cpmsim maps a selected track and sector to the raw
+image according to:
+
+((track * sectors_per_track) + sector - 1) * 128
+
+Initial validation independently confirmed this mapping for tested
+sectors.
+
+The physical image geometry described here does not by itself define the
+BetterCP/M logical file-system format to be placed on the disk.
+
+7.5 Storage Portability Rule
+
+The idealized cpmsim disk device shall not become the BetterCP/M storage
+abstraction.
+
+In particular, higher operating-system components shall not assume that
+other storage devices:
+
+-   transfer exactly one 128-byte sector per operation;
+-   provide synchronous completion;
+-   use DMA into arbitrary memory;
+-   expose drive, track, and sector registers;
+-   lack controller timing or state constraints; or
+-   share cpmsim’s error and status behavior.
+
+Such assumptions shall remain confined to the cpmsim-specific hardware
+implementation.
+
+8. DEVELOPMENT AND DIAGNOSTIC FACILITIES
+
+8.1 ICE Debug Build
+
+BetterCP/M development shall maintain a reproducible ICE-enabled cpmsim
+debug build.
+
+The validated debug configuration enables:
+
+WANT_ICE WANT_TIM HISIZE 256 SBSIZE 16 WANT_HB
+
+The validated build command is:
+
+make DEBUG=1 build
+
+ICE provides facilities useful for early BetterCP/M diagnosis, including
+processor-register inspection, memory inspection, disassembly,
+stepping/tracing, and instruction history.
+
+BetterCP/M shall not depend at runtime upon ICE or any other emulator
+debugging facility.
+
+8.2 Controlled Test Termination
+
+cpmsim I/O port 160 is a locked hardware-control port.
+
+Writing AAh unlocks the port. A following control value with bit 7 set
+requests a controlled emulator halt.
+
+BetterCP/M production behavior shall not depend upon this facility. It
+may be used by machine-specific development and conformance tests to
+terminate a test run predictably.
+
+8.3 Timer
+
+I/O port 27 controls a 10-millisecond host timer capable of generating a
+pending maskable Z80 interrupt.
+
+This timer may be used for development or for cpmsim-specific
+experimentation. It is not part of the portable BetterCP/M hardware
+contract.
+
+8.4 Automated Test Runner
+
+Direct cpmsim process exit status is not a reliable indication of guest
+test success or failure. Both successful guest termination and
+deliberately induced guest failure may return host status zero.
+
+Automated BetterCP/M testing shall therefore use an external
+pseudo-terminal runner capable of:
+
+-   recognizing guest test records;
+-   injecting console input;
+-   enforcing a deadline;
+-   capturing and retaining the session transcript;
+-   distinguishing PASS, FAIL, and timeout; and
+-   returning a corresponding host process status.
+
+A PTY/Expect runner has been validated for this purpose on the initial
+macOS development environment.
+
+Automated guest tests should emit distinctive, line-oriented,
+machine-readable records, for example:
+
+BCPM-TEST:PASS: BCPM-TEST:FAIL:
+
+The runner shall explicitly terminate and reap cpmsim when a timeout
+occurs.
+
+8.5 Debug and Release Configurations
+
+The ICE-enabled build is a development configuration.
+
+BetterCP/M shall also be tested periodically with an ordinary non-ICE
+cpmsim build so that emulator diagnostic facilities do not become hidden
+runtime dependencies.
+
+9. PLATFORM-SPECIFIC AND OPTIONAL FACILITIES
+
+9.1 Machine-Specific Boundary
+
+Direct use of cpmsim ports, boot-record conventions, disk DMA,
+hardware-control facilities, and timer controls shall be confined to
+machine-specific BetterCP/M code or development tooling.
+
+Portable system components shall depend upon BetterCP/M-defined
+interfaces rather than cpmsim implementation details.
+
+9.2 Optional Host Services
+
+cpmsim provides optional host BDOS/file conveniences through I/O port
+161.
+
+The baseline BetterCP/M implementation shall not use these facilities to
+provide operating-system functionality that BetterCP/M is intended to
+implement itself.
+
+Use of such host conveniences during baseline boot, storage,
+file-system, system-service, or program-execution implementation would
+invalidate the intended bare-metal development boundary.
+
+9.3 Emulator Modifications
+
+The baseline does not require a private BetterCP/M fork of cpmsim.
+
+Development tooling should prefer external automation and documented
+machine facilities where practical.
+
+If a future emulator modification would materially improve testing or
+diagnosis, it shall be considered explicitly rather than introduced
+silently as a dependency of BetterCP/M.
+
+10. PORTABILITY AND VALIDATION
+
+10.1 Development Platform Versus Target Architecture
+
+cpmsim is the initial BetterCP/M development platform, not the
+definition of a universal BetterCP/M machine.
+
+The architecture shall remain capable of supporting machine-specific
+implementations for substantially different Z80 systems.
+
+10.2 Historical-Hardware Assumptions
+
+cpmsim intentionally provides a simple and idealized development
+environment. It does not expose many characteristics of historical
+hardware, including controller timing, boot-ROM behavior, complex device
+state, media peculiarities, and other machine-specific constraints.
+
+Successful operation under cpmsim therefore establishes baseline
+functionality but does not by itself establish hardware portability.
+
+10.3 Later Validation
+
+After the baseline system and hardware boundary are sufficiently
+developed, BetterCP/M should be ported to one or more substantially
+different emulated machines.
+
+High-fidelity historical-machine emulation may then be used to expose
+assumptions hidden by cpmsim’s simplicity. Community testing on physical
+hardware may later provide additional validation.
+
+The purpose of these later ports is not merely to increase the number of
+supported machines. They shall test whether the BetterCP/M
+hardware-abstraction boundaries are genuine.
+
+11. REFERENCE DEVELOPMENT CONFIGURATION
+
+The initial reference development configuration is:
+
+Platform: z80pack cpmsim z80pack release: 1.39 Repository revision:
+91fd28eb04e675c2127df88ed3f40675e15282e2 Processor: Z80 Address space:
+64K Boot source: drive A raw image Boot record: 128 bytes Boot address:
+0000h Console: cpmsim ports 0 and 1 Disk interface: cpmsim ports 10
+through 17 Baseline geometry: 77 tracks, 26 sectors/track, 128
+bytes/sector Debug environment: ICE-enabled cpmsim build Test
+automation: PTY/Expect runner Host environment: macOS
+
+This configuration establishes the reproducible starting point for
+BetterCP/M implementation. Changes to the reference configuration shall
+be deliberate and documented.
+
+12. STATUS OF THE BASELINE
+
+The cpmsim baseline has been validated by bare-metal experiments
+demonstrating:
+
+-   execution from the normal 128-byte disk boot record;
+-   direct console output without CP/M services;
+-   raw disk read, write, reread, and host-image verification;
+-   useful ICE diagnosis of a deliberately induced failure;
+-   automated prompt recognition, input injection, timeout handling,
+    transcript capture, and host PASS/FAIL status;
+-   representative documented Z80 instruction facilities;
+-   HALT behavior; and
+-   delivery of a real maskable interrupt to an IM 1 handler.
+
+The platform is therefore accepted as suitable for initial BetterCP/M
+development subject to maintaining the required external test runner and
+reproducible ICE-enabled debug build.
+
+This acceptance does not imply that cpmsim behavior is itself a
+BetterCP/M compatibility requirement. CP/M compatibility remains an
+operating-system requirement defined independently of the baseline
+development machine.

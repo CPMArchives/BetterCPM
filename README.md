@@ -2,7 +2,7 @@
 
 BetterCP/M is an effort to design a compact, maintainable successor to CP/M 2.2 while preserving a rigorously defined CP/M-compatible environment.
 
-The project is currently in its architectural definition phase. No implementation is included yet.
+The project has entered its engineering-specification phase. No implementation is included yet.
 
 ## Design direction
 
@@ -20,6 +20,8 @@ The current work emphasizes:
 ## Documents
 
 The initial architecture material is in [`docs/architecture`](docs/architecture). It covers architectural principles and boundaries, memory and boot design, the command environment, system services, hardware abstraction, program execution, storage, system state, compatibility, constraints, extensions, and open questions.
+
+The initial development target is defined in the [`Baseline Platform Specification`](docs/platform/Baseline%20Platform%20Specification.txt). The [`Architecture Readiness Review`](docs/reviews/Architecture%20Readiness%20Review.md) records the decision to begin Phase 2, and [`Engineering Specification 01`](docs/engineering/01%20Baseline%20Bring-Up%20Specification.md) defines the first diagnostic boot milestone.
 
 These are working engineering documents. They record the present design thinking and may change as project goals and requirements are refined.
 
