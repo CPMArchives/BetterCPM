@@ -10,6 +10,7 @@ DIRECTORY = ROOT / "build/bdos/directory.bin"
 DIR_BASE = 0xE800
 DIR_BUFFER = 0xE900
 FIXTURE = 0x7500
+QUERY = 0x7600
 
 
 def main() -> None:
@@ -25,6 +26,11 @@ def main() -> None:
     require(len(read_calls) >= 2, "BIOS physical-read call was not found")
     platform_read = cpu.word(read_calls[1] + 1)
     read_success = bytes((
+        0xF5,
+        0x3A, 0x03, 0x73,                         # count physical reads
+        0x3C,
+        0x32, 0x03, 0x73,
+        0xF1,
         0x32, 0x00, 0x73,                         # cylinder
         0x78, 0x32, 0x01, 0x73,                   # side
         0x79, 0x32, 0x02, 0x73,                   # sector ID
@@ -36,7 +42,7 @@ def main() -> None:
     cpu.mem[platform_read:platform_read + len(read_success)] = read_success
 
     # Empty CP/M record: four deleted entries and no match.
-    cpu.mem[FIXTURE:FIXTURE + 128] = bytes((0xE5,)) * 128
+    cpu.mem[FIXTURE:FIXTURE + 512] = bytes((0xE5,)) * 512
     cpu.run(DIR_BASE)
     require(cpu.a == 0 and cpu.hl == DIR_BUFFER, "directory record did not load")
     require(bytes(cpu.mem[0x7300:0x7303]) == bytes((2, 0, 1)),
@@ -45,7 +51,7 @@ def main() -> None:
     require(cpu.a == 0xFF, "empty directory produced an ordinary entry")
 
     # Reserved metadata in slot zero must be skipped; slot two is user 7.
-    cpu.mem[FIXTURE:FIXTURE + 128] = bytes((0xE5,)) * 128
+    cpu.mem[FIXTURE:FIXTURE + 512] = bytes((0xE5,)) * 512
     cpu.mem[FIXTURE] = 0x21
     cpu.mem[FIXTURE + 64:FIXTURE + 76] = bytes((7,)) + b"TEST    COM"
     cpu.run(DIR_BASE + 3)
@@ -54,12 +60,35 @@ def main() -> None:
     require(cpu.mem[cpu.hl] == 7 and bytes(cpu.mem[cpu.hl + 1:cpu.hl + 12]) == b"TEST    COM",
             "directory entry fields were not preserved")
 
+    # Exact search masks CP/M attribute bits but requires both user and name.
+    cpu.mem[FIXTURE + 65] |= 0x80
+    cpu.mem[FIXTURE + 72] |= 0x80
+    cpu.mem[QUERY:QUERY + 11] = b"TEST    COM"
+    cpu.a, cpu.de = 7, QUERY
+    cpu.run(DIR_BASE + 9, limit=20000)
+    require(cpu.a == 0 and cpu.hl == DIR_BUFFER + 64,
+            "exact user/name search did not find the entry")
+
+    cpu.mem[0x7303] = 0
+    cpu.mem[QUERY:QUERY + 11] = b"OTHER   COM"
+    cpu.a, cpu.de = 7, QUERY
+    cpu.run(DIR_BASE + 9, limit=20000)
+    require(cpu.a == 0xFF, "nonmatching name was falsely found")
+    require(cpu.mem[0x7303] == 32, "search did not examine all 32 directory records")
+    require(bytes(cpu.mem[0x7300:0x7303]) == bytes((2, 0, 6)),
+            "last directory record mapped to the wrong physical sector")
+
+    cpu.mem[QUERY:QUERY + 11] = b"TEST    COM"
+    cpu.a, cpu.de = 6, QUERY
+    cpu.run(DIR_BASE + 9, limit=20000)
+    require(cpu.a == 0xFF, "wrong user number was falsely matched")
+
     cpu.mem[platform_read:platform_read + 4] = bytes((0x3E, 0x05, 0xB7, 0xC9))
     cpu.run(DIR_BASE)
     require(cpu.a == 5, "directory reader did not propagate the BIOS error")
 
-    print("first directory record loaded through BIOS")
-    print("deleted, reserved-metadata, and ordinary entries classified")
+    print("all 128 directory entries searched through BIOS")
+    print("exact user/8.3 matching and attribute masking passed")
 
 
 if __name__ == "__main__":

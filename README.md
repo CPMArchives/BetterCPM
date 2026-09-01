@@ -29,6 +29,7 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Engineering Specification 11`](docs/engineering/11%20Write-Through%20Logical%20Disk%20Path.md) adds verified 128-byte read-modify-write behavior and physical write/readback.
 [`Engineering Specification 12`](docs/engineering/12%20Bounded%20Disk%20Errors.md) bounds every floppy-controller wait and defines verified BIOS failure behavior.
 [`Engineering Specification 13`](docs/engineering/13%20First%20Directory%20Record.md) adds the first filesystem-facing System Services component and reads and classifies a CP/M directory record through the BIOS.
+[`Engineering Specification 14`](docs/engineering/14%20Exact%20Directory%20Search.md) searches all 128 directory entries for an exact CP/M user-number and 8.3 filename match.
 
 ## First boot
 

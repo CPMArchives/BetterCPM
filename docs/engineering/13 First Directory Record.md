@@ -67,3 +67,6 @@ Generalize the reader across all directory records described by `DRM`, then
 implement an exact 8.3 name and user-number match without yet interpreting or
 opening extents.
 
+This increment was completed by Engineering Specification 14. The current
+implementation uses the MM 790K `DRM`-derived record count explicitly; deriving
+it dynamically from the selected DPH/DPB is the following drive-login step.

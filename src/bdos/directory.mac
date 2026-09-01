@@ -18,12 +18,24 @@ BIOREAD         EQU     BIOSBASE+39
 
 ; Provisional internal service vectors keep callers independent of routine size.
 DIRSERV:
-        JP      DIR_LOAD0
+        JP      DIR_LD0
         JP      DIR_FIRST
+        JP      DIR_LOAD
+        JP      DIR_FIND
 
 ; Read the first 128-byte directory record for drive A.
 ; Returns A=0/Z and HL=DIRBUF, or the BIOS/nonexistent-drive error in A/NZ.
-DIR_LOAD0:
+DIR_LD0:
+        LD      C,0
+        JP      DIR_LOAD
+
+; Read directory record C (0..31) for the current 128-entry MM 790K format.
+; The format-specific bounds belong here, above the geometry-neutral BIOS.
+DIR_LOAD:
+        LD      A,C
+        CP      32
+        JR      NC,DIR_NODRV
+        LD      (DIR_RECORD),A
         LD      C,0
         CALL    BIOSELDS
         LD      A,H
@@ -31,7 +43,9 @@ DIR_LOAD0:
         JR      Z,DIR_NODRV
         LD      BC,2            ; DPB OFF: first directory logical track
         CALL    BIOSETTR
-        LD      BC,0
+        LD      A,(DIR_RECORD)
+        LD      C,A
+        LD      B,0
         CALL    BIOSETSE
         LD      BC,DIRBUF
         CALL    BIOSETDM
@@ -50,7 +64,7 @@ DIR_NODRV:
 ; are reserved metadata and are skipped rather than rejected.
 ; Returns A=0/Z with HL at the 32-byte entry, or A=FFh/NZ if none exists.
 DIR_FIRST:
-        CALL    DIR_LOAD0
+        CALL    DIR_LD0
         RET     NZ
         LD      B,4
 DIR_SCAN:
@@ -66,6 +80,77 @@ DIR_SCAN:
 DIR_FOUND:
         XOR     A
         RET
+
+; Find an exact user/name match across all 128 directory entries.
+; Input: A=user 0..15, DE=11-byte blank-padded CP/M name and extension.
+; Attribute bits (bit 7) do not participate in the comparison.
+; Return: A=0/Z and HL=entry, FFh/NZ if absent, or BIOS error/NZ.
+DIR_FIND:
+        CP      16
+        JR      NC,DIR_NOTF
+        LD      (DIR_USER),A
+        LD      A,E
+        LD      (DIR_NAMP),A
+        LD      A,D
+        LD      (DIR_NAMP+1),A
+        XOR     A
+        LD      (DIR_RECORD),A
+DIR_FRECD:
+        LD      A,(DIR_RECORD)
+        CP      32
+        JR      NC,DIR_NOTF
+        LD      C,A
+        CALL    DIR_LOAD
+        RET     NZ
+        LD      B,4
+DIR_FENT:
+        LD      A,(DIR_USER)
+        CP      (HL)
+        JR      NZ,DIR_FNEXT
+        PUSH    BC
+        PUSH    HL
+        INC     HL
+        LD      A,(DIR_NAMP)
+        LD      E,A
+        LD      A,(DIR_NAMP+1)
+        LD      D,A
+        LD      B,11
+DIR_FCHAR:
+        LD      A,(DE)
+        AND     07FH
+        LD      C,A
+        LD      A,(HL)
+        AND     07FH
+        CP      C
+        JR      NZ,DIR_FMISS
+        INC     DE
+        INC     HL
+        DJNZ    DIR_FCHAR
+        POP     HL
+        POP     BC
+        XOR     A
+        RET
+DIR_FMISS:
+        POP     HL
+        POP     BC
+DIR_FNEXT:
+        LD      DE,32
+        ADD     HL,DE
+        DJNZ    DIR_FENT
+        LD      HL,DIR_RECORD
+        INC     (HL)
+        JR      DIR_FRECD
+DIR_NOTF:
+        LD      A,0FFH
+        OR      A
+        RET
+
+DIR_USER:
+        DB      0
+DIR_RECORD:
+        DB      0
+DIR_NAMP:
+        DW      0
 
         .DEPHASE
         END
