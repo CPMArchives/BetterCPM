@@ -117,6 +117,19 @@ def main() -> None:
             "CALL 0005h Direct Console I/O output changed the byte")
     cpu.mem[platform_const:platform_const + 2] = bytes((0xAF, 0xC9))
 
+    cpu.mem[platform_conin:platform_conin + 3] = bytes((0x3E, 0x41, 0xC9))
+    cpu.mem[0x7000] = 0
+    cpu.c = 1
+    cpu.run(CALLER)
+    require(cpu.a == cpu.l == 0x41 and cpu.mem[0x7000] == 0x41,
+            "CALL 0005h Console Input did not echo and return its character")
+    cpu.mem[platform_conin:platform_conin + 3] = bytes((0x3E, 0x01, 0xC9))
+    cpu.mem[0x7000] = 0
+    cpu.c = 1
+    cpu.run(CALLER)
+    require(cpu.a == 1 and cpu.mem[0x7000] == 0,
+            "CALL 0005h Console Input echoed an ordinary control byte")
+
     cpu.mem[FCB:FCB + 33] = bytes(33)
     cpu.mem[FCB + 1:FCB + 12] = b"GATEWAY DAT"
     original_sp = cpu.sp
@@ -355,7 +368,7 @@ def main() -> None:
             "failed initialization published page-zero vectors")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
-    print("application CALL 0005h reached functions 6, 11-37, and 40")
+    print("application CALL 0005h reached functions 1, 6, 11-37, and 40")
 
 
 if __name__ == "__main__":

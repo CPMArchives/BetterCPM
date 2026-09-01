@@ -46,5 +46,6 @@ byte-identical BDOS and resident-system binaries.
 
 ## Next increment
 
-Implement BDOS function 1 (Console Input), adding the first cooked-console
-operation: blocking input with echo through the portable BIOS vectors.
+Implemented by [Engineering Specification 46](46%20Cooked%20Console%20Input.md).
+Function 1 adds blocking input, CP/M echo rules, tab expansion, and console
+control interception through the portable BIOS vectors.

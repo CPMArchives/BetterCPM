@@ -19,10 +19,12 @@ DATA = 0x7900
 
 def symbol(name: str) -> int:
     listing = (ROOT / "build/bdos/bdos.lst").read_text(encoding="ascii")
-    match = re.search(rf"^([0-9a-f]{{4}})\s+.*\b{name}:?\s*$",
-                      listing, re.MULTILINE | re.IGNORECASE)
-    require(match is not None, f"BDOS listing lacks {name}")
-    return int(match.group(1), 16)
+    matches = re.findall(rf"^([0-9a-f]{{4}})\s+.*\b{name}:?\s*$",
+                         listing, re.MULTILINE | re.IGNORECASE)
+    require(matches, f"BDOS listing lacks {name}")
+    # The defining label follows its forward references in this source. Taking
+    # the last exact-line match avoids mistaking `LD HL,SYMBOL` for the label.
+    return int(matches[-1], 16)
 
 
 def main() -> None:
@@ -74,6 +76,34 @@ def main() -> None:
     require(cpu.a == 0 and cpu.mem[0x7000] == 0xC2,
             "Direct Console I/O did not pass output byte unchanged")
     cpu.mem[platform_const:platform_const + 2] = bytes((0xAF, 0xC9))
+
+    console_column = symbol("BDOS_COLUMN")
+    cpu.mem[platform_conin:platform_conin + 3] = bytes((0x3E, 0x41, 0xC9))
+    cpu.mem[0x7000] = 0
+    cpu.c = 1
+    cpu.run(BDOS_BASE)
+    require(cpu.a == cpu.l == 0x41 and cpu.mem[0x7000] == 0x41 and
+            cpu.mem[console_column] == 1,
+            f"Console Input graphic failed: A={cpu.a:02X} L={cpu.l:02X} "
+            f"out={cpu.mem[0x7000]:02X} col={cpu.mem[console_column]:02X}")
+    cpu.mem[platform_conin:platform_conin + 3] = bytes((0x3E, 0x01, 0xC9))
+    cpu.mem[0x7000] = 0
+    cpu.c = 1
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 1 and cpu.mem[0x7000] == 0 and
+            cpu.mem[console_column] == 1,
+            "Console Input echoed an ordinary control character")
+    cpu.mem[platform_conin:platform_conin + 3] = bytes((0x3E, 0x09, 0xC9))
+    cpu.c = 1
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 9 and cpu.mem[0x7000] == 0x20 and
+            cpu.mem[console_column] == 8,
+            "Console Input did not expand tab to the next eight-column stop")
+    cpu.mem[platform_conin:platform_conin + 3] = bytes((0x3E, 0x0D, 0xC9))
+    cpu.c = 1
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 13 and cpu.mem[console_column] == 0,
+            "Console Input carriage return did not reset the column")
 
     read_impl = cpu.word(BIOS_BASE + 13 * 3 + 1)
     calls = [address for address in range(read_impl, read_impl + 48)
@@ -873,7 +903,7 @@ def main() -> None:
             f"provisional BDOS storage failure was confused with slot success: "
             f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS functions 6, 11-37, and 40 passed")
+    print("BDOS functions 1, 6, 11-37, and 40 passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 

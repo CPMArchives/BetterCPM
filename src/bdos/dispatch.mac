@@ -6,6 +6,8 @@ BDOSBASE        EQU     0C100H
 BIOCONST        EQU     0F006H  ; CP/M BIOS console-status vector
 BIOCONIN        EQU     0F009H  ; CP/M BIOS console-input vector
 BIOCONOT        EQU     0F00CH  ; CP/M BIOS console-output vector
+BIOLIST         EQU     0F00FH  ; CP/M BIOS list-output vector
+BIOWBOOT        EQU     0F003H  ; CP/M BIOS warm-boot vector
 DIROPEN         EQU     0D812H  ; seventh directory-service vector
 DIRINVAL        EQU     0D80FH  ; sixth directory-service vector
 DIRLOGIN        EQU     0D80CH  ; fifth directory-service vector
@@ -34,6 +36,8 @@ BDOS:
         LD      (BDOS_PARM),DE
         LD      (BDOS_OLDSP),SP
         LD      SP,BDOS_STKTOP
+        CP      1
+        JP      Z,BF_CONIN
         CP      6
         JP      Z,BF_DCIO
         CP      11
@@ -94,6 +98,99 @@ BDOS:
         JP      Z,BF_RZERO
         LD      A,0FFH          ; unsupported returning function
         JP      BDOS_RETURN
+
+; Cooked, blocking console input. CP/M flow/printer controls are consumed;
+; ordinary control bytes are returned without echo.
+BF_CONIN:
+BF_CINLP:
+        CALL    BIOCONIN
+        CP      013H            ; ^S pauses until ^Q
+        JR      Z,BF_PAUSE
+        CP      011H            ; stray ^Q is invisible
+        JR      Z,BF_CINLP
+        CP      010H            ; ^P toggles printer echo
+        JR      Z,BF_TOGPR
+        CP      003H            ; ^C aborts to the CCP through warm boot
+        JP      Z,BIOWBOOT
+        LD      (BDOS_CHAR),A
+        CALL    BF_ECHO
+        LD      A,(BDOS_CHAR)
+        JP      BDOS_RETURN
+BF_TOGPR:
+        LD      A,(BDOS_LISTE)
+        CPL
+        LD      (BDOS_LISTE),A
+        JR      BF_CINLP
+BF_PAUSE:
+        CALL    BIOCONIN
+        CP      011H
+        JR      Z,BF_CINLP
+        CP      003H
+        JP      Z,BIOWBOOT
+        CP      010H
+        JR      Z,BF_PTOG
+        LD      C,7             ; reject other paused input with a bell
+        CALL    BF_PUTCH
+        JR      BF_PAUSE
+BF_PTOG:
+        LD      A,(BDOS_LISTE)
+        CPL
+        LD      (BDOS_LISTE),A
+        JR      BF_PAUSE
+
+; Echo the saved character using CP/M's cooked single-character rules.
+BF_ECHO:
+        LD      A,(BDOS_CHAR)
+        CP      9
+        JR      Z,BF_TAB
+        CP      13
+        JR      Z,BF_CR
+        CP      10
+        JR      Z,BF_EPLAIN
+        CP      8
+        JR      Z,BF_BS
+        CP      32
+        RET     C
+        CP      127
+        RET     NC
+        LD      C,A
+        CALL    BF_PUTCH
+        LD      HL,BDOS_COLUMN
+        INC     (HL)
+        RET
+BF_CR:
+        XOR     A
+        LD      (BDOS_COLUMN),A
+        LD      C,13
+        JP      BF_PUTCH
+BF_BS:
+        LD      HL,BDOS_COLUMN
+        LD      A,(HL)
+        OR      A
+        JR      Z,BF_EPLAIN
+        DEC     (HL)
+BF_EPLAIN:
+        LD      A,(BDOS_CHAR)
+        LD      C,A
+        JP      BF_PUTCH
+BF_TAB:
+        LD      C,' '
+        CALL    BF_PUTCH
+        LD      HL,BDOS_COLUMN
+        INC     (HL)
+        LD      A,(HL)
+        AND     7
+        JR      NZ,BF_TAB
+        RET
+
+BF_PUTCH:
+        PUSH    BC
+        CALL    BIOCONOT
+        POP     BC
+        LD      A,(BDOS_LISTE)
+        OR      A
+        RET     Z
+        JP      BIOLIST
 
 ; Direct console I/O bypasses echo and all cooked-console interpretation.
 ; E=FFh polls for one input byte; every other value is output directly.
@@ -442,6 +539,12 @@ RET_SP:
         RET
 
 BDOS_FUNC:
+        DB      0
+BDOS_CHAR:
+        DB      0
+BDOS_COLUMN:
+        DB      0
+BDOS_LISTE:
         DB      0
 BDOS_PARM:
         DW      0
