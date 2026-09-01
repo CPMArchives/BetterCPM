@@ -57,5 +57,7 @@ byte-identical System Services and BDOS binaries.
 
 ## Next increment
 
-Implement BDOS function 23 (Rename File) with the same two-pass protection and
-wildcard discipline, duplicate-target rejection, and multi-extent handling.
+Engineering Specification 36 implements exact-name, multi-extent Rename File
+with duplicate-target and protection preflight. Wildcard destination
+substitution remains separate; the next core increment is function 30 (Set
+File Attributes).

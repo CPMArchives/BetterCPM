@@ -40,6 +40,192 @@ DIRSERV:
         JP      DIR_WRITE
         JP      DIR_MAKE
         JP      DIR_DELETE
+        JP      DIR_RENAME
+
+; Rename all extents of one exact filename. Old name is FCB+1, new name FCB+17.
+; A=user, DE=rename FCB, B=software protection. Wildcards are deferred.
+DIR_RENAME:
+        LD      (DIR_NUSER),A
+        LD      (DIR_NFCB),DE
+        LD      A,B
+        OR      A
+        JP      NZ,DIR_NNO
+        LD      A,(DE)
+        CP      2
+        JP      NC,DIR_NNO
+        LD      HL,16
+        ADD     HL,DE
+        LD      A,(HL)          ; new-name drive byte
+        CP      2
+        JP      NC,DIR_NNO
+        CALL    DIR_JEMPTY
+        JP      NZ,DIR_NNO
+        LD      HL,(DIR_NFCB)
+        INC     HL
+        LD      DE,16
+        LD      B,11
+DIR_NWC:
+        LD      A,(HL)
+        AND     07FH
+        CP      '?'
+        JP      Z,DIR_NNO
+        ADD     HL,DE
+        LD      A,(HL)
+        AND     07FH
+        CP      '?'
+        JP      Z,DIR_NNO
+        OR      A
+        SBC     HL,DE
+        INC     HL
+        DJNZ    DIR_NWC
+        CALL    DIR_GALV
+        JP      NZ,DIR_NERR
+        LD      DE,(DIR_NFCB)
+        LD      HL,17
+        ADD     HL,DE
+        EX      DE,HL
+        LD      A,(DIR_NUSER)
+        CALL    DIR_FIND
+        CP      0FFH
+        JR      Z,DIR_NTARGET
+        OR      A
+        JP      Z,DIR_NNO       ; target already exists
+        JP      DIR_NERR
+DIR_NTARGET:
+        XOR     A
+        LD      (DIR_NFOUND),A
+        LD      (DIR_RECORD),A
+DIR_NPRE:
+        LD      A,(DIR_RECORD)
+        LD      HL,DIR_RECS
+        CP      (HL)
+        JR      NC,DIR_NPOK
+        LD      C,A
+        CALL    DIR_LOAD
+        JP      NZ,DIR_NERR
+        LD      B,4
+DIR_NPENT:
+        CALL    DIR_NMAT
+        JR      NZ,DIR_NPNEXT
+        LD      A,0FFH
+        LD      (DIR_NFOUND),A
+        PUSH    HL
+        LD      DE,9
+        ADD     HL,DE
+        LD      A,(HL)
+        POP     HL
+        AND     080H
+        JP      NZ,DIR_NNO
+DIR_NPNEXT:
+        LD      DE,32
+        ADD     HL,DE
+        DJNZ    DIR_NPENT
+        LD      HL,DIR_RECORD
+        INC     (HL)
+        JR      DIR_NPRE
+DIR_NPOK:
+        LD      A,(DIR_NFOUND)
+        OR      A
+        JP      Z,DIR_NNO
+        XOR     A
+        LD      (DIR_RECORD),A
+DIR_NPASS:
+        LD      A,(DIR_RECORD)
+        LD      HL,DIR_RECS
+        CP      (HL)
+        JR      NC,DIR_NDONE
+        LD      C,A
+        CALL    DIR_LOAD
+        JP      NZ,DIR_NERR
+        XOR     A
+        LD      (DIR_NDIRTY),A
+        LD      B,4
+DIR_NENT:
+        CALL    DIR_NMAT
+        JR      NZ,DIR_NNEXT
+        PUSH    BC
+        PUSH    HL
+        INC     HL
+        LD      DE,(DIR_NFCB)
+        LD      BC,17
+        EX      DE,HL
+        ADD     HL,BC
+        EX      DE,HL           ; DE=new eleven-byte name
+        LD      B,11
+DIR_NCOPY:
+        LD      A,(HL)
+        AND     080H
+        LD      C,A
+        LD      A,(DE)
+        AND     07FH
+        OR      C
+        LD      (HL),A
+        INC     HL
+        INC     DE
+        DJNZ    DIR_NCOPY
+        POP     HL
+        POP     BC
+        LD      A,0FFH
+        LD      (DIR_NDIRTY),A
+DIR_NNEXT:
+        LD      DE,32
+        ADD     HL,DE
+        DJNZ    DIR_NENT
+        LD      A,(DIR_NDIRTY)
+        OR      A
+        JR      Z,DIR_NADV
+        LD      C,1
+        CALL    BIOWRITE
+        JR      NZ,DIR_NERR
+DIR_NADV:
+        LD      HL,DIR_RECORD
+        INC     (HL)
+        JR      DIR_NPASS
+DIR_NDONE:
+        CALL    DIR_INVAL
+        XOR     A
+        RET
+DIR_NERR:
+        CALL    DIR_INVAL
+        SCF
+        RET
+DIR_NNO:
+        LD      A,0FFH
+        OR      A
+        RET
+
+DIR_NMAT:
+        PUSH    BC
+        PUSH    DE
+        PUSH    HL
+        LD      A,(DIR_NUSER)
+        CP      (HL)
+        JR      NZ,DIR_NMNO
+        INC     HL
+        LD      DE,(DIR_NFCB)
+        INC     DE
+        LD      B,11
+DIR_NMCMP:
+        LD      A,(DE)
+        AND     07FH
+        LD      C,A
+        LD      A,(HL)
+        AND     07FH
+        CP      C
+        JR      NZ,DIR_NMNO
+        INC     DE
+        INC     HL
+        DJNZ    DIR_NMCMP
+        XOR     A
+        JR      DIR_NMRET
+DIR_NMNO:
+        LD      A,1
+        OR      A
+DIR_NMRET:
+        POP     HL
+        POP     DE
+        POP     BC
+        RET
 
 ; Delete every extent matching an FCB pattern. A=user, DE=FCB, B=software RO.
 ; A preflight pass prevents read-only multi-extent files from partial deletion.
@@ -1991,6 +2177,14 @@ DIR_DFCB:
 DIR_DFOUND:
         DB      0
 DIR_DDIRTY:
+        DB      0
+DIR_NUSER:
+        DB      0
+DIR_NFCB:
+        DW      0
+DIR_NFOUND:
+        DB      0
+DIR_NDIRTY:
         DB      0
 DIR_WPRO:
         DB      0

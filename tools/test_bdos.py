@@ -189,6 +189,51 @@ def main() -> None:
     cpu.mem[delete0:delete1 + 32] = bytes((0xE5,)) * 64
     cpu.run(DIR_BASE + 15)
 
+    # Function 23 renames every exact-name extent while preserving attributes.
+    cpu.mem[delete0:delete0 + 32] = (bytes((0,)) + b"OLDNAME DAT" +
+                                     bytes((0, 0, 0, 1)) + bytes(16))
+    cpu.mem[delete1:delete1 + 32] = (bytes((0,)) + b"OLDNAME DAT" +
+                                     bytes((1, 0, 0, 1)) + bytes(16))
+    cpu.mem[delete0 + 10] |= 0x80
+    cpu.run(DIR_BASE + 15)
+    cpu.mem[FCB:FCB + 33] = bytes(33)
+    cpu.mem[FCB + 1:FCB + 12] = b"OLDNAME DAT"
+    cpu.mem[FCB + 16] = 0
+    cpu.mem[FCB + 17:FCB + 28] = b"NEWNAME DAT"
+    cpu.c, cpu.de = 23, FCB
+    cpu.run(BDOS_BASE, limit=200000)
+    require(cpu.a == 0 and
+            bytes(cpu.mem[delete0 + 1:delete0 + 12]) ==
+            b"NEWNAME D" + bytes((ord('A') | 0x80,)) + b"T" and
+            bytes(cpu.mem[delete1 + 1:delete1 + 12]) == b"NEWNAME DAT",
+            "Rename did not update all extents while preserving attributes")
+
+    # Existing target and a read-only source extent both reject before writes.
+    cpu.mem[delete0:delete0 + 32] = (bytes((0,)) + b"SOURCE  DAT" +
+                                     bytes((0, 0, 0, 1)) + bytes(16))
+    cpu.mem[delete1:delete1 + 32] = (bytes((0,)) + b"TARGET  DAT" +
+                                     bytes((0, 0, 0, 1)) + bytes(16))
+    cpu.run(DIR_BASE + 15)
+    rename_media = bytes(cpu.mem[FIXTURE:FIXTURE + 512])
+    cpu.mem[FCB + 1:FCB + 12] = b"SOURCE  DAT"
+    cpu.mem[FCB + 17:FCB + 28] = b"TARGET  DAT"
+    cpu.c, cpu.de = 23, FCB
+    cpu.run(BDOS_BASE, limit=200000)
+    require(cpu.a == 0xFF and bytes(cpu.mem[FIXTURE:FIXTURE + 512]) == rename_media,
+            "Rename overwrote an existing target")
+    cpu.mem[delete1:delete1 + 32] = (bytes((0,)) + b"SOURCE  DAT" +
+                                     bytes((1, 0, 0, 1)) + bytes(16))
+    cpu.mem[delete1 + 9] |= 0x80
+    cpu.run(DIR_BASE + 15)
+    rename_media = bytes(cpu.mem[FIXTURE:FIXTURE + 512])
+    cpu.mem[FCB + 17:FCB + 28] = b"RENAMED DAT"
+    cpu.c, cpu.de = 23, FCB
+    cpu.run(BDOS_BASE, limit=200000)
+    require(cpu.a == 0xFF and bytes(cpu.mem[FIXTURE:FIXTURE + 512]) == rename_media,
+            "read-only preflight allowed partial multi-extent Rename")
+    cpu.mem[delete0:delete1 + 32] = bytes((0xE5,)) * 64
+    cpu.run(DIR_BASE + 15)
+
     # Function 22 creates one canonical empty first extent and activates it.
     post_close_fcb = bytes(cpu.mem[FCB:FCB + 33])
     cpu.mem[FCB:FCB + 33] = bytes((0,)) + b"MAKE    DAT" + bytes((0xA5,)) * 21
@@ -566,7 +611,7 @@ def main() -> None:
             f"provisional BDOS storage failure was confused with slot success: "
             f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS functions 12-22, 24-29, 31, and 32 passed")
+    print("BDOS functions 12-29, 31, and 32 passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 
