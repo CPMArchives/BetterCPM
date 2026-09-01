@@ -31,6 +31,7 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Engineering Specification 13`](docs/engineering/13%20First%20Directory%20Record.md) adds the first filesystem-facing System Services component and reads and classifies a CP/M directory record through the BIOS.
 [`Engineering Specification 14`](docs/engineering/14%20Exact%20Directory%20Search.md) searches all 128 directory entries for an exact CP/M user-number and 8.3 filename match.
 [`Engineering Specification 15`](docs/engineering/15%20DPH-DPB%20Drive%20Login.md) derives directory geometry and allocation-vector initialization from the selected drive's DPH and DPB, with explicit invalidation and re-login.
+[`Engineering Specification 16`](docs/engineering/16%20Allocation%20Reconstruction.md) completes drive login by reconstructing file-owned blocks from both 8-bit and 16-bit CP/M directory extents.
 
 ## First boot
 

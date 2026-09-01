@@ -75,3 +75,6 @@ file-owned allocation block in the allocation vector. Add duplicate,
 out-of-range, deleted-entry, and reserved-metadata tests before permitting any
 file-creation or block-allocation operation.
 
+Engineering Specification 16 completed allocation reconstruction for both
+8-bit and 16-bit CP/M allocation entries. File mutation remains deferred until
+FCB and extent semantics are implemented and tested.

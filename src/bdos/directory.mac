@@ -5,10 +5,10 @@
 ; values.  It deliberately reaches disk only through the CP/M BIOS vectors.
 
 DIRBASE         EQU     0E800H
-; Patch 2026-09-01: DIRBUF was E900H through specification 14. DPB-driven
-; login enlarged the provisional component, so the separate buffer moved
-; intact rather than allowing new code to grow silently into it.
-DIRBUF          EQU     0EA00H
+; Patch 2026-09-01: DIRBUF was E900H through specification 14, then EA00H
+; for specification 15. Allocation reconstruction moved it intact again;
+; the old placements remain recorded rather than hidden by the patch.
+DIRBUF          EQU     0EC00H
 BIOSBASE        EQU     0F000H
 BIOSELDS        EQU     BIOSBASE+27
 BIOSETTR        EQU     BIOSBASE+30
@@ -29,8 +29,8 @@ DIRSERV:
         JP      DIR_INVAL
 
 ; Establish drive state from its DPH and DPB. Input C=drive.
-; The allocation vector is cleared and its DPB directory-reservation bytes
-; installed. File-owned allocation bits are reconstructed in the next phase.
+; The allocation vector is cleared, seeded from AL0/AL1, and reconstructed
+; from every live ordinary directory extent before login becomes valid.
 DIR_LOGIN:
         XOR     A
         LD      (DIR_VALID),A
@@ -126,6 +126,8 @@ DIR_ACLR:
         INC     HL
         LD      A,(DIR_AL1)
         LD      (HL),A
+        CALL    DIR_ALSCN
+        RET     NZ
         LD      A,0FFH
         LD      (DIR_VALID),A
         XOR     A
@@ -283,6 +285,127 @@ DIR_NOTF:
         LD      A,0FFH
         OR      A
         RET
+
+; Reconstruct file-owned allocation bits from all live ordinary extents.
+; MM 790K has DSM>255, hence eight 16-bit block numbers at entry bytes 16..31.
+DIR_ALSCN:
+        XOR     A
+        LD      (DIR_RECORD),A
+DIR_ARECD:
+        LD      A,(DIR_RECORD)
+        LD      HL,DIR_RECS
+        CP      (HL)
+        JR      NC,DIR_ADONE
+        LD      C,A
+        CALL    DIR_LDOK
+        RET     NZ
+        LD      B,4
+DIR_AENT:
+        LD      A,(HL)
+        CP      16
+        JR      NC,DIR_ANEXT
+        PUSH    BC
+        PUSH    HL
+        LD      DE,16
+        ADD     HL,DE
+        LD      A,(DIR_DSM+1)
+        OR      A
+        JR      Z,DIR_8BIT
+        LD      B,8
+DIR_ABLOCK:
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        LD      A,D
+        OR      E
+        JR      Z,DIR_ABNEXT
+        CALL    DIR_AMARK
+        JR      NZ,DIR_ABAD
+DIR_ABNEXT:
+        DJNZ    DIR_ABLOCK
+        JR      DIR_AUNW
+DIR_8BIT:
+        LD      B,16
+DIR_8LOOP:
+        LD      E,(HL)
+        INC     HL
+        LD      D,0
+        LD      A,E
+        OR      A
+        JR      Z,DIR_8NEXT
+        CALL    DIR_AMARK
+        JR      NZ,DIR_ABAD
+DIR_8NEXT:
+        DJNZ    DIR_8LOOP
+DIR_AUNW:
+        POP     HL
+        POP     BC
+DIR_ANEXT:
+        LD      DE,32
+        ADD     HL,DE
+        DJNZ    DIR_AENT
+        LD      HL,DIR_RECORD
+        INC     (HL)
+        JR      DIR_ARECD
+DIR_ABAD:
+        POP     HL
+        POP     BC
+        RET
+DIR_ADONE:
+        XOR     A
+        RET
+
+; Mark 16-bit allocation block DE. Zero is an unused slot. Out-of-range block
+; numbers fail login instead of indexing beyond the BIOS allocation vector.
+DIR_AMARK:
+        PUSH    BC
+        PUSH    DE
+        PUSH    HL
+        LD      HL,(DIR_DSM)
+        LD      A,D
+        CP      H
+        JR      C,DIR_AMVAL
+        JR      NZ,DIR_AMBAD
+        LD      A,E
+        CP      L
+        JR      C,DIR_AMVAL
+        JR      Z,DIR_AMVAL
+DIR_AMBAD:
+        LD      A,1
+        OR      A
+        JR      DIR_AMRET
+DIR_AMVAL:
+        LD      A,E
+        AND     7
+        LD      C,A
+        LD      H,D
+        LD      L,E
+        SRL     H
+        RR      L
+        SRL     H
+        RR      L
+        SRL     H
+        RR      L
+        LD      DE,(DIR_ALVP)
+        ADD     HL,DE
+        PUSH    HL
+        LD      B,0
+        LD      HL,DIR_AMASK
+        ADD     HL,BC
+        LD      A,(HL)
+        POP     HL
+        OR      (HL)
+        LD      (HL),A
+        XOR     A
+DIR_AMRET:
+        POP     HL
+        POP     DE
+        POP     BC
+        RET
+
+DIR_AMASK:
+        DB      080H,040H,020H,010H,008H,004H,002H,001H
 
 DIR_USER:
         DB      0

@@ -99,6 +99,10 @@ class Z80:
                 self.push(self.hl)
             elif op == 0xE1:            # POP HL
                 self.hl = self.pop()
+            elif op == 0xD5:            # PUSH DE
+                self.push(self.de)
+            elif op == 0xD1:            # POP DE
+                self.de = self.pop()
             elif op == 0xC8:            # RET Z
                 if self.z:
                     self.pc = self.pop()
@@ -233,8 +237,12 @@ class Z80:
                 self.pc += 1
             elif op == 0x60:            # LD H,B
                 self.h = self.b
+            elif op == 0x62:            # LD H,D
+                self.h = self.d
             elif op == 0x69:            # LD L,C
                 self.l = self.c
+            elif op == 0x6B:            # LD L,E
+                self.l = self.e
             elif op == 0x6E:            # LD L,(HL)
                 self.l = self.mem[self.hl]
             elif op == 0x4E:            # LD C,(HL)
@@ -247,9 +255,16 @@ class Z80:
                 self.mem[self.hl] = self.a
             elif op == 0xB9:            # CP C
                 self.z, self.carry = self.a == self.c, self.a < self.c
+            elif op == 0xBC:            # CP H
+                self.z, self.carry = self.a == self.h, self.a < self.h
+            elif op == 0xBD:            # CP L
+                self.z, self.carry = self.a == self.l, self.a < self.l
             elif op == 0xBE:            # CP (HL)
                 value = self.mem[self.hl]
                 self.z, self.carry = self.a == value, self.a < value
+            elif op == 0xB6:            # OR (HL)
+                self.a |= self.mem[self.hl]
+                self.z = self.a == 0
             elif op == 0xEB:            # EX DE,HL
                 value = self.de
                 self.de = self.hl

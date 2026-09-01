@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 BIOS = ROOT / "build/bios/bios.bin"
 DIRECTORY = ROOT / "build/bdos/directory.bin"
 DIR_BASE = 0xE800
-DIR_BUFFER = 0xEA00
+DIR_BUFFER = 0xEC00
 FIXTURE = 0x7500
 QUERY = 0x7600
 
@@ -48,16 +48,33 @@ def main() -> None:
     alv = cpu.word(dph + 14)
     cpu.mem[alv:alv + 50] = bytes((0xA5,)) * 50
 
+    # Login reconstructs live 16-bit blocks. Duplicate block 5 is idempotent;
+    # impossible blocks in deleted/metadata entries must be ignored.
+    cpu.mem[FIXTURE:FIXTURE + 512] = bytes((0xE5,)) * 512
+    cpu.mem[FIXTURE] = 3
+    cpu.mem[FIXTURE + 16:FIXTURE + 32] = bytes(16)
+    cpu.mem[FIXTURE + 16:FIXTURE + 22] = bytes((5, 0, 1, 1, 5, 0))
+    cpu.mem[FIXTURE + 32] = 0x21
+    cpu.mem[FIXTURE + 48:FIXTURE + 50] = bytes((0xFF, 0xFF))
+    cpu.mem[FIXTURE + 80:FIXTURE + 82] = bytes((0xFF, 0xFF))
+    cpu.c = 0
+    cpu.run(DIR_BASE + 12, limit=50000)
+    require(cpu.a == 0 and cpu.mem[0x7303] == 32,
+            f"drive login scan failed: A={cpu.a:02X} reads={cpu.mem[0x7303]}")
+    require(cpu.mem[alv] == 0xC4 and cpu.mem[alv + 32] == 0x40,
+            "live 16-bit allocation blocks were not reconstructed")
+    require(cpu.mem[alv + 1:alv + 32] == bytes(31) and
+            cpu.mem[alv + 33:alv + 50] == bytes(17),
+            "allocation scan marked an unexpected block")
+
     # Empty CP/M record: four deleted entries and no match.
     cpu.mem[FIXTURE:FIXTURE + 512] = bytes((0xE5,)) * 512
+    cpu.mem[0x7303] = 0
     cpu.run(DIR_BASE, limit=2000)
     require(cpu.a == 0 and cpu.hl == DIR_BUFFER,
             f"directory record did not load: A={cpu.a:02X} HL={cpu.hl:04X}")
     require(bytes(cpu.mem[0x7300:0x7303]) == bytes((2, 0, 1)),
             "directory reader did not map track 2, sector 0 correctly")
-    require(bytes(cpu.mem[alv:alv + 2]) == bytes((0xC0, 0x00)) and
-            cpu.mem[alv + 2:alv + 50] == bytes(48),
-            "drive login did not initialize the allocation vector")
     cpu.run(DIR_BASE + 3)
     require(cpu.a == 0xFF, "empty directory produced an ordinary entry")
 
@@ -96,12 +113,18 @@ def main() -> None:
 
     # Invalidation forces a fresh DPH/DPB login. Altered test DPB values prove
     # that directory bounds and OFF are derived state rather than constants.
+    cpu.mem[FIXTURE:FIXTURE + 512] = bytes((0xE5,)) * 512
     cpu.run(DIR_BASE + 15)
+    cpu.setword(dpb + 5, 127)    # small DPB: sixteen 8-bit block slots
     cpu.setword(dpb + 7, 7)      # DRM=7: eight entries, two records
     cpu.setword(dpb + 13, 3)     # directory begins at logical track 3
+    cpu.mem[FIXTURE] = 2
+    cpu.mem[FIXTURE + 16:FIXTURE + 32] = bytes((5,)) + bytes(15)
     cpu.c = 0
     cpu.run(DIR_BASE + 12, limit=2000)
     require(cpu.a == 0, "explicit drive re-login failed")
+    require(cpu.mem[alv] == 0xC4,
+            "8-bit allocation entries were not reconstructed")
     cpu.mem[0x7303] = 0
     cpu.mem[QUERY:QUERY + 11] = b"ABSENT  COM"
     cpu.a, cpu.de = 7, QUERY
@@ -111,11 +134,20 @@ def main() -> None:
     require(bytes(cpu.mem[0x7300:0x7303]) == bytes((3, 0, 1)),
             "directory reader did not use the reloaded DPB OFF value")
 
+    cpu.mem[FIXTURE:FIXTURE + 512] = bytes((0xE5,)) * 512
+    cpu.mem[FIXTURE] = 1
+    cpu.mem[FIXTURE + 16:FIXTURE + 18] = bytes((0xFF, 0xFF))
+    cpu.run(DIR_BASE + 15)
+    cpu.c = 0
+    cpu.run(DIR_BASE + 12, limit=5000)
+    require(cpu.a == 1, "out-of-range live allocation block did not fail login")
+
+    cpu.mem[FIXTURE:FIXTURE + 512] = bytes((0xE5,)) * 512
     cpu.mem[platform_read:platform_read + 4] = bytes((0x3E, 0x05, 0xB7, 0xC9))
     cpu.run(DIR_BASE, limit=2000)
     require(cpu.a == 5, "directory reader did not propagate the BIOS error")
 
-    print("DPH/DPB drive login and allocation-vector initialization passed")
+    print("DPH/DPB login and complete allocation reconstruction passed")
     print("all 128 directory entries searched through BIOS")
     print("invalidation, exact user/8.3 matching, and attribute masking passed")
 
