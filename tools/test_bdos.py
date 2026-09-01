@@ -101,10 +101,19 @@ def main() -> None:
     cpu.run(BDOS_BASE)
     require(cpu.hl == 0x0022 and cpu.a == 0x22 and cpu.b == 0,
             "BDOS version did not return CP/M 2.2 aliases")
+    cpu.c, cpu.e = 14, 0
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0, "selecting drive A did not complete login")
     cpu.c = 25
     cpu.run(BDOS_BASE)
     require(cpu.a == cpu.l == 0 and cpu.b == cpu.h == 0,
             "current-drive query did not return drive A")
+    cpu.c, cpu.e = 14, 1
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 0xFF, "unsupported drive B was not rejected")
+    cpu.c = 25
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 0, "failed drive selection changed the current drive")
     cpu.c, cpu.de = 26, 0x7345
     cpu.run(BDOS_BASE)
     require(cpu.word(dma_state) == 0x7345,
@@ -122,13 +131,19 @@ def main() -> None:
 
     cpu.run(DIR_BASE + 15)       # invalidate, forcing storage on next Open
     cpu.mem[platform_read:platform_read + 4] = bytes((0x3E, 0x05, 0xB7, 0xC9))
+    cpu.c, cpu.e = 14, 0
+    cpu.run(BDOS_BASE, limit=5000)
+    require(cpu.a == 0xFF, "drive login storage failure was not reported")
+    cpu.c = 25
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 0, "failed drive-A relogin changed current-drive state")
     cpu.mem[FCB + 1:FCB + 12] = b"OPEN    DAT"
     cpu.c, cpu.de = 15, FCB
     cpu.run(BDOS_BASE, limit=5000)
     require(cpu.a == 0xFF and cpu.l == 0xFF,
             "provisional BDOS storage failure was confused with slot success")
 
-    print("BDOS functions 12, 15, 25, 26, and 32 passed")
+    print("BDOS functions 12, 14, 15, 25, 26, and 32 passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 

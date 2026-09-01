@@ -4,6 +4,7 @@
 
 BDOSBASE        EQU     0E600H
 DIROPEN         EQU     0E812H  ; seventh directory-service vector
+DIRLOGIN        EQU     0E80CH  ; fifth directory-service vector
 
         CSEG
         .PHASE  BDOSBASE
@@ -16,6 +17,8 @@ BDOS:
         LD      SP,BDOS_STKTOP
         CP      12
         JR      Z,BDOS_VERS
+        CP      14
+        JR      Z,BDOS_SELDR
         CP      15
         JR      Z,BDOS_OPEN
         CP      25
@@ -29,6 +32,22 @@ BDOS:
 
 BDOS_VERS:
         LD      A,022H          ; CP/M 2.2 identity, returned as HL=0022h
+        JR      BDOS_RETURN
+
+BDOS_SELDR:
+        LD      A,E
+        CP      1               ; current provisional BIOS exposes A only
+        JR      NC,BDOS_BADRV
+        LD      C,A
+        CALL    DIRLOGIN        ; commit BDOS state only after valid login
+        JR      NZ,BDOS_BADRV
+        LD      HL,(BDOS_PARM)
+        LD      A,L
+        LD      (BDOS_DRIVE),A
+        XOR     A               ; function 14 has no defined normal result
+        JR      BDOS_RETURN
+BDOS_BADRV:
+        LD      A,0FFH          ; deliberate provisional failure result
         JR      BDOS_RETURN
 
 BDOS_GETDR:

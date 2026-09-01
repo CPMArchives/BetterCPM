@@ -61,6 +61,15 @@ def main() -> None:
     cpu.c = 25
     cpu.run(CALLER)
     require(cpu.a == cpu.l == 0, "CALL 0005h current drive was not A")
+    cpu.c, cpu.e = 14, 0
+    cpu.run(CALLER, limit=50000)
+    require(cpu.a == 0, "CALL 0005h could not select and log in drive A")
+    cpu.c, cpu.e = 14, 1
+    cpu.run(CALLER)
+    require(cpu.a == 0xFF, "CALL 0005h accepted unavailable drive B")
+    cpu.c = 25
+    cpu.run(CALLER)
+    require(cpu.a == 0, "failed CALL 0005h drive selection changed drive A")
     cpu.c, cpu.de = 26, 0x7345
     cpu.run(CALLER)
     cpu.c, cpu.e = 32, 0x3F
@@ -80,7 +89,7 @@ def main() -> None:
             "failed initialization published page-zero vectors")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
-    print("application CALL 0005h reached functions 12, 15, 25, 26, and 32")
+    print("application CALL 0005h reached functions 12, 14, 15, 25, 26, and 32")
 
 
 if __name__ == "__main__":

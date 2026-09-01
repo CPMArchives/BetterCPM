@@ -63,7 +63,6 @@ login-vector reporting, and disk reset also remain unimplemented.
 
 ## Next increment
 
-Implement function 14 (select disk) and the minimum drive-state transition
-needed to keep function 25, directory login, and failure behavior coherent.
-This should precede additional file operations because explicit-drive FCBs and
-multi-drive configuration depend upon correct default-drive ownership.
+Engineering Specification 22 completes this increment with function 14,
+login-before-commit selection of the available drive A, and coherent function
+25 reporting. The next increment can define disk reset and login-vector state.

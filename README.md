@@ -37,6 +37,7 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Engineering Specification 19`](docs/engineering/19%20Initial%20BDOS%20Dispatcher.md) introduces the first CP/M-callable BDOS dispatcher and exposes function 15 through the standard C/DE register boundary.
 [`Engineering Specification 20`](docs/engineering/20%20Page-Zero%20System%20Call%20Gateway.md) composes the provisional resident image, logs in the default drive, installs the conventional page-zero vectors, and executes function 15 through `CALL 0005h`.
 [`Engineering Specification 21`](docs/engineering/21%20Basic%20BDOS%20State%20Functions.md) adds version, current-drive, persistent DMA-address, and modulo-32 current-user services through the public call path.
+[`Engineering Specification 22`](docs/engineering/22%20Default%20Drive%20Selection.md) adds function 14 with login-before-commit default-drive selection and coherent function-25 reporting.
 
 ## First boot
 
