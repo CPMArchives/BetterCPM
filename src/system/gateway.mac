@@ -1,0 +1,33 @@
+; BetterCP/M initial resident-system initialization and page-zero gateway.
+;
+; Provisional placement. This component establishes the standard CP/M entry
+; addresses only after the default drive has logged in successfully.
+
+SYSBASE         EQU     0E500H
+BDOS            EQU     0E600H
+DIRLOGIN        EQU     0E80CH
+BIOWBOOT        EQU     0F003H
+
+        CSEG
+        .PHASE  SYSBASE
+
+SYS_INIT:
+        LD      C,0             ; initial default drive A
+        CALL    DIRLOGIN
+        RET     NZ              ; do not publish a half-initialized system
+
+; Patch 2026-09-01: page zero is installed only after drive login succeeds.
+; Earlier isolated BDOS tests called E600h directly; retaining this boundary
+; makes the transition to the conventional CALL 0005h interface explicit.
+        LD      A,0C3H          ; JP opcode
+        LD      (0000H),A
+        LD      (0005H),A
+        LD      HL,BIOWBOOT
+        LD      (0001H),HL
+        LD      HL,BDOS
+        LD      (0006H),HL
+        XOR     A
+        RET
+
+        .DEPHASE
+        END

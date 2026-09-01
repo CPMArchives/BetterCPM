@@ -35,6 +35,7 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Engineering Specification 17`](docs/engineering/17%20Read-Only%20FCB%20Open.md) adds the first exact, read-only FCB Open result with extent selection and compatible FCB activation.
 [`Engineering Specification 18`](docs/engineering/18%20Grouped%20and%20Wildcard%20Open.md) adds DPB `EXM` grouping, RC adjustment, and first-match `?` wildcard activation.
 [`Engineering Specification 19`](docs/engineering/19%20Initial%20BDOS%20Dispatcher.md) introduces the first CP/M-callable BDOS dispatcher and exposes function 15 through the standard C/DE register boundary.
+[`Engineering Specification 20`](docs/engineering/20%20Page-Zero%20System%20Call%20Gateway.md) composes the provisional resident image, logs in the default drive, installs the conventional page-zero vectors, and executes function 15 through `CALL 0005h`.
 
 ## First boot
 
@@ -53,6 +54,9 @@ python3 tools/build_native_directory.py
 python3 tools/build_bdos.py
 python3 tools/test_bdos.py
 python3 tools/build_native_bdos.py
+python3 tools/build_system.py
+python3 tools/test_system.py
+python3 tools/build_native_system.py
 ```
 
 The native build runs ZSM4 and Digital Research LINK under CP/M and must match the cross-assembled binaries byte for byte. The emulator test boots the generated 790K DMK, verifies the stage-one display, proves a raw-sector read, and injects and echoes a Model 4 matrix-level keypress through the platform interface.

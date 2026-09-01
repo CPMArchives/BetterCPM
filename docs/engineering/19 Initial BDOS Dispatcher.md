@@ -64,7 +64,7 @@ page zero, or a bootable resident system containing this BDOS.
 
 ## Next increment
 
-Define and test the page-zero `CALL 0005h` gateway, resident component layout,
-and initialization transfer that logs in the default drive before applications
-can enter BDOS. This will turn the isolated dispatcher into a system-call path
-without prematurely implementing the full BDOS function set.
+Engineering Specification 20 completes this increment with a composed resident
+layout, login-before-publication initialization, and an executable application
+`CALL 0005h` path. The next increment can add the minimum non-file BDOS
+state/query functions without prematurely implementing disk mutation.
