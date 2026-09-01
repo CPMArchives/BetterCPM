@@ -34,7 +34,6 @@ and Make, and read-only protection against Delete and Rename.
 The latter two cases also verify that the protected directory entries remain
 searchable after the rejected mutation.
 
-Diagnostics 0359 and 0365 remain to be observed. They characterize
-non-guaranteed exact-match and unchanged-byte behavior rather than adding
-requirements to the CP/M 2.2 contract.
-
+Engineering Specification 81 records diagnostics 0359 and 0365. They
+characterize non-guaranteed reserved-bit and exact-match behavior rather than
+adding requirements to the CP/M 2.2 contract.
