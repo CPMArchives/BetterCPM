@@ -246,6 +246,28 @@ def main() -> None:
     cpu.c = 29
     cpu.run(CALLER)
     require(cpu.hl == 1, "CALL 0005h did not protect current drive A")
+    cpu.c, cpu.de = 37, 0x0002
+    cpu.run(CALLER)
+    cpu.c = 29
+    cpu.run(CALLER)
+    require(cpu.hl == 1, "CALL 0005h Reset Drive changed unselected A")
+    cpu.c, cpu.de = 37, 0x0001
+    cpu.run(CALLER)
+    cpu.c = 24
+    cpu.run(CALLER)
+    require(cpu.a == 0 and cpu.hl == 0,
+            "CALL 0005h Reset Drive did not remove A from the login vector")
+    cpu.c = 29
+    cpu.run(CALLER)
+    require(cpu.hl == 0, "CALL 0005h Reset Drive left A write-protected")
+    cpu.c = 25
+    cpu.run(CALLER)
+    require(cpu.a == 0, "CALL 0005h Reset Drive changed current drive A")
+    cpu.c, cpu.e = 14, 0
+    cpu.run(CALLER, limit=50000)
+    cpu.c = 24
+    cpu.run(CALLER)
+    require(cpu.hl == 1, "CALL 0005h could not relog A after Reset Drive")
     cpu.mem[FCB:FCB + 36] = bytes(36)
     cpu.mem[FCB + 1:FCB + 12] = b"ABSENT  DAT"
     cpu.mem[FCB + 33:FCB + 36] = bytes((0xA5,)) * 3
@@ -293,7 +315,7 @@ def main() -> None:
             "failed initialization published page-zero vectors")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
-    print("application CALL 0005h reached functions 12-36 and 40")
+    print("application CALL 0005h reached functions 12-37 and 40")
 
 
 if __name__ == "__main__":

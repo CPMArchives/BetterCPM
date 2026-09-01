@@ -4,6 +4,7 @@
 
 BDOSBASE        EQU     0C100H
 DIROPEN         EQU     0D812H  ; seventh directory-service vector
+DIRINVAL        EQU     0D80FH  ; sixth directory-service vector
 DIRLOGIN        EQU     0D80CH  ; fifth directory-service vector
 DIRGALV         EQU     0D815H  ; eighth directory-service vector
 DIRGDPB         EQU     0D818H  ; ninth directory-service vector
@@ -80,6 +81,8 @@ BDOS:
         JP      Z,BDOS_SIZE
         CP      36
         JP      Z,BDOS_SETRR
+        CP      37
+        JP      Z,BF_RSTDR
         CP      40
         JP      Z,BF_RZERO
         LD      A,0FFH          ; unsupported returning function
@@ -203,6 +206,24 @@ BF_RZERO:
         CALL    DIRRZERO
         JP      NC,BDOS_RETURN
         LD      A,0FFH
+        JP      BDOS_RETURN
+
+; Selectively return drives to the not-logged-in, read/write state. The
+; provisional BIOS exposes only A:, but all other vector bits remain harmless.
+BF_RSTDR:
+        LD      HL,(BDOS_PARM)
+        LD      A,L
+        AND     1
+        JR      Z,BF_RSTDONE
+        LD      A,(STATE_LV)
+        AND     0FEH
+        LD      (STATE_LV),A
+        LD      A,(STATE_RO)
+        AND     0FEH
+        LD      (STATE_RO),A
+        CALL    DIRINVAL
+BF_RSTDONE:
+        XOR     A               ; required for CP/M/MP/M compatibility
         JP      BDOS_RETURN
 
 BDOS_OPEN:

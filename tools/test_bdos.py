@@ -785,6 +785,23 @@ def main() -> None:
             "write protect did not set drive A in the read-only vector")
     require(bytes(cpu.mem[FIXTURE:FIXTURE + 512]) == media_before_protect,
             "software write protection modified the disk image")
+    cpu.c, cpu.de = 37, 0x0002
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 0 and cpu.word(login_state) == 1 and
+            cpu.word(readonly_state) == 1,
+            "Reset Drive changed A for an unsupported-drive-only mask")
+    cpu.c, cpu.de = 37, 0x0001
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 0 and cpu.word(login_state) == 0 and
+            cpu.word(readonly_state) == 0,
+            "Reset Drive did not log off and make drive A read/write")
+    cpu.c = 25
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 0, "Reset Drive changed the current drive")
+    cpu.c, cpu.e = 14, 0
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0 and cpu.word(login_state) == 1,
+            "drive A did not rebuild cleanly after selective reset")
     cpu.c = 13
     cpu.run(BDOS_BASE, limit=50000)
     require(cpu.a == 0 and cpu.word(dma_state) == 0x0080 and
@@ -817,7 +834,7 @@ def main() -> None:
             f"provisional BDOS storage failure was confused with slot success: "
             f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS functions 12-36 and 40 passed")
+    print("BDOS functions 12-37 and 40 passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 

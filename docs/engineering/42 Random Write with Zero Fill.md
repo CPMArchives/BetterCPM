@@ -53,5 +53,6 @@ a previously unallocated block is filled with zeros before the data is written.
 
 ## Next increment
 
-Implement BDOS function 37 (Reset Drive), completing the remaining CP/M 2.2
-disk-state operation before moving to functions 0 through 11 and the CCP.
+Implemented by [Engineering Specification 43](43%20Selective%20Drive%20Reset.md),
+completing the remaining CP/M 2.2 disk-state operation before functions 0
+through 11 and the CCP.
