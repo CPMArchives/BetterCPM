@@ -324,7 +324,10 @@ DIR_ORECD:
         JP      NC,DIR_ONOTF
         LD      C,A
         CALL    DIR_LOAD
-        RET     NZ
+        JR      Z,DIR_OLOK
+        SCF                     ; internal storage failure, not a slot result
+        RET
+DIR_OLOK:
         LD      B,4
         XOR     A
         LD      (DIR_SLOT),A

@@ -131,8 +131,12 @@ class Z80:
                     self.pc = (self.pc + displacement) & 0xFFFF
             elif op == 0xAF:            # XOR A
                 self.a, self.z = 0, True
+                self.carry = False
+            elif op == 0x37:            # SCF
+                self.carry = True
             elif op == 0xB7:            # OR A
                 self.z = self.a == 0
+                self.carry = False
             elif op == 0xB3:            # OR E
                 self.a |= self.e
                 self.z = self.a == 0
@@ -143,6 +147,7 @@ class Z80:
                 self.a &= self.mem[self.pc]
                 self.pc += 1
                 self.z = self.a == 0
+                self.carry = False
             elif op == 0xA1:            # AND C
                 self.a &= self.c
                 self.z = self.a == 0
@@ -191,6 +196,9 @@ class Z80:
             elif op == 0x16:            # LD D,n
                 self.d = self.mem[self.pc]
                 self.pc += 1
+            elif op == 0x31:            # LD SP,nn
+                self.sp = self.word(self.pc)
+                self.pc += 2
             elif op == 0x79:            # LD A,C
                 self.a = self.c
             elif op == 0x78:            # LD A,B
@@ -199,6 +207,8 @@ class Z80:
                 self.b = self.a
             elif op == 0x45:            # LD B,L
                 self.b = self.l
+            elif op == 0x44:            # LD B,H
+                self.b = self.h
             elif op == 0x4F:            # LD C,A
                 self.c = self.a
             elif op == 0x7A:            # LD A,D
@@ -207,6 +217,8 @@ class Z80:
                 self.a = self.e
             elif op == 0x7C:            # LD A,H
                 self.a = self.h
+            elif op == 0x7D:            # LD A,L
+                self.a = self.l
             elif op == 0x7E:            # LD A,(HL)
                 self.a = self.mem[self.hl]
             elif op == 0x5F:            # LD E,A
@@ -249,6 +261,8 @@ class Z80:
                 self.h = self.d
             elif op == 0x69:            # LD L,C
                 self.l = self.c
+            elif op == 0x6F:            # LD L,A
+                self.l = self.a
             elif op == 0x6B:            # LD L,E
                 self.l = self.e
             elif op == 0x6E:            # LD L,(HL)
@@ -261,6 +275,9 @@ class Z80:
                 self.d = self.mem[self.hl]
             elif op == 0x77:            # LD (HL),A
                 self.mem[self.hl] = self.a
+            elif op == 0x36:            # LD (HL),n
+                self.mem[self.hl] = self.mem[self.pc]
+                self.pc += 1
             elif op == 0xB9:            # CP C
                 self.z, self.carry = self.a == self.c, self.a < self.c
             elif op == 0xBC:            # CP H
@@ -317,6 +334,16 @@ class Z80:
                 target = self.word(self.pc)
                 self.pc += 2
                 self.setword(target, self.de)
+            elif op == 0xED and self.mem[self.pc] == 0x73:  # LD (nn),SP
+                self.pc += 1
+                target = self.word(self.pc)
+                self.pc += 2
+                self.setword(target, self.sp)
+            elif op == 0xED and self.mem[self.pc] == 0x7B:  # LD SP,(nn)
+                self.pc += 1
+                target = self.word(self.pc)
+                self.pc += 2
+                self.sp = self.word(target)
             elif op == 0xED and self.mem[self.pc] == 0x4B:  # LD BC,(nn)
                 self.pc += 1
                 target = self.word(self.pc)

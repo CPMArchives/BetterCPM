@@ -53,20 +53,20 @@ Native CP/M ZSM4/Digital Research LINK and the host cross assembler produce
 the same 866-byte component. All allocation, directory, BIOS, boot, and
 physical disk regressions continue to pass.
 
-## Remaining function-15 boundary work
+## Function-15 boundary status
 
-This remains an internal Open engine rather than a public BDOS function-15
-entry. The public boundary still needs:
+Engineering Specification 19 now places this engine behind an independently
+buildable BDOS function-15 dispatcher for the initialized current-user,
+drive-A case. The wider public boundary still needs:
 
 - BDOS call dispatch through address `0005h` conventions;
-- current user and current/default drive state;
+- mutable current user and current/default drive state;
 - temporary explicit-drive selection and restoration;
-- function-15 register/result encoding; and
-- CP/M-compatible disk-error presentation distinct from directory slot codes.
+- and final CP/M-compatible disk-error presentation distinct from directory
+  slot codes.
 
 ## Next increment
 
-Create the first independently buildable BDOS dispatcher and expose this Open
-engine as function 15 for current-user drive A, with unsupported functions and
-storage errors returning deliberately specified results. Explicit-drive
-restoration can then be widened without restructuring the Open engine.
+Install the public page-zero call gateway and define the minimum resident-image
+composition and initialization path. Explicit-drive restoration can then be
+widened without restructuring the Open engine.

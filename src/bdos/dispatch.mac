@@ -1,0 +1,60 @@
+; BetterCP/M initial CP/M-compatible BDOS dispatcher.
+;
+; Provisional resident placement. Page-zero address 0005h is not installed yet.
+
+BDOSBASE        EQU     0E600H
+DIROPEN         EQU     0E812H  ; seventh directory-service vector
+
+        CSEG
+        .PHASE  BDOSBASE
+
+BDOS:
+        LD      A,C
+        LD      (BDOS_FUNC),A
+        LD      (BDOS_PARM),DE
+        LD      (BDOS_OLDSP),SP
+        LD      SP,BDOS_STKTOP
+        CP      15
+        JR      Z,BDOS_OPEN
+        LD      A,0FFH          ; unsupported returning function
+        JR      BDOS_RETURN
+
+BDOS_OPEN:
+        LD      DE,(BDOS_PARM)
+        LD      HL,14
+        ADD     HL,DE
+        LD      (HL),0          ; CP/M caller supplies S2 zero on Open
+        LD      A,(BDOS_USER)
+        CALL    DIROPEN
+        JR      NC,BDOS_RETURN
+        LD      A,0FFH          ; provisional storage-error presentation
+
+; CP/M normal-return aliases: A=L and B=H.
+BDOS_RETURN:
+        LD      L,A
+        LD      H,0
+        LD      B,H
+        LD      A,L
+        LD      SP,(BDOS_OLDSP)
+        RET
+
+BDOS_FUNC:
+        DB      0
+BDOS_PARM:
+        DW      0
+BDOS_OLDSP:
+        DW      0
+BDOS_USER:
+        DB      0               ; initial current user
+
+; Patch 2026-09-01: the first public-call boundary receives its own stack now,
+; before more BDOS functions deepen the call graph. The exact size and address
+; remain provisional; only balanced restoration is compatibility-visible.
+BDOS_STACK:
+        REPT    64
+        DB      0
+        ENDM
+BDOS_STKTOP:
+
+        .DEPHASE
+        END
