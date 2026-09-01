@@ -2,7 +2,7 @@
 
 BetterCP/M is an effort to design a compact, maintainable successor to CP/M 2.2 while preserving a rigorously defined CP/M-compatible environment.
 
-The project has entered implementation. Its reproducibly generated TRS-80 Model 4 disks now load the resident BetterCP/M BIOS, BDOS, directory services, and CCP; boot to an `A>` prompt under `trs80gp`; list the physical directory with resident `DIR`; load transient `.COM` programs with CP/M command tails and default FCBs; and complete the independent physical compatibility passes for `ENTRYTST /SAFE` (25 passes) and two-drive `BDOSTEST /SAFE` (56 passes), with no failures or errors.
+The project has entered implementation. Its reproducibly generated TRS-80 Model 4 disks now load the resident BetterCP/M BIOS, BDOS, directory services, and CCP; boot to an `A>` prompt under `trs80gp`; list the physical directory with resident `DIR`; load transient `.COM` programs with CP/M command tails and default FCBs; and complete clean independent physical compatibility passes for `ENTRYTST /SAFE` (25 passes), two-drive `BDOSTEST /SAFE` (56 passes), and the first `FILETEST` Open slice (26 passes, with two optional C: cases not run).
 
 ## Design direction
 
@@ -93,6 +93,7 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Engineering Specification 62`](docs/engineering/62%20Delete%20of%20Unclosed%20Allocations.md) makes same-FCB Delete retire its pending allocations transactionally, enabling repeated Function 40 scratch-file lifecycles.
 [`Engineering Specification 63`](docs/engineering/63%20BDOSTEST%20Introduction.md) installs the next compatibility executable, adds reliable Model 4 command automation, records its first physical baseline, and corrects unsupported-selector return semantics.
 [`Engineering Specification 64`](docs/engineering/64%20Model%204%20Two-Drive%20Conformance.md) adds physical A:/B: support, explicit FCB drive selection, independent drive workspaces, paired conformance images, and a clean 56-case `BDOSTEST /SAFE` physical pass.
+[`Engineering Specification 65`](docs/engineering/65%20FILETEST%20Open%20Slice.md) installs FILETEST and its canonical runtime fixtures and records a clean 26-case physical Function 15/Open pass, with only the two unavailable C: fixture cases reported as not-run.
 [`Engineering Specification 25`](docs/engineering/25%20Allocation%20and%20DPB%20Pointers.md) exposes the current drive's reconstructed allocation vector and live 15-byte disk parameter block.
 [`Engineering Specification 26`](docs/engineering/26%20Directory%20Search%20and%20DMA.md) adds Search First/Search Next continuation, wildcard and all-user matching, and complete directory-record transfer to the selected DMA address.
 [`Engineering Specification 27`](docs/engineering/27%20Unchanged%20FCB%20Close.md) adds the non-mutating Close File boundary for unchanged activated FCBs and safely rejects dirty commits until writeback exists.

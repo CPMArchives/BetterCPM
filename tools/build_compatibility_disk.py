@@ -20,17 +20,24 @@ def main() -> None:
     args = parser.parse_args()
     entry = args.suite / "suite/build/ENTRYTST.COM"
     bdos = args.suite / "suite/build/BDOSTEST.COM"
+    filetest = args.suite / "suite/build/FILETEST.COM"
+    payload = args.suite / "suite/runtime-payload"
     mdir = ROOT / "third_party/montezuma/MDIR.COM"
-    for path in (entry, bdos, mdir):
+    fixtures = sorted(payload.glob("BT*.DAT"))
+    for path in (entry, bdos, filetest, mdir, *fixtures):
         if not path.is_file():
             raise SystemExit(f"missing compatibility input: {path}")
-    subprocess.run([
+    command = [
         "python3", str(ROOT / "tools/build_trs80_boot.py"),
         "--include", str(entry),
         "--include", str(bdos),
+        "--include", str(filetest),
         "--include", str(mdir),
-        "--output", str(args.output),
-    ], cwd=ROOT, check=True)
+    ]
+    for fixture in fixtures:
+        command.extend(("--include", str(fixture)))
+    command.extend(("--output", str(args.output)))
+    subprocess.run(command, cwd=ROOT, check=True)
     # BDOSTEST's multi-drive cases expect these conventional scratch fixtures.
     subprocess.run([
         "python3", str(ROOT / "tools/build_trs80_boot.py"),
