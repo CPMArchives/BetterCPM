@@ -2,7 +2,7 @@
 
 BetterCP/M is an effort to design a compact, maintainable successor to CP/M 2.2 while preserving a rigorously defined CP/M-compatible environment.
 
-The project has entered implementation. Its reproducibly generated TRS-80 Model 4 disks now load the resident BetterCP/M BIOS, BDOS, directory services, and CCP; expose physical floppy drives A: through D:; boot to an `A>` prompt under `trs80gp`; list the physical directory with resident `DIR`; load transient `.COM` programs with CP/M command tails and default FCBs; and complete clean independent physical compatibility passes for `ENTRYTST /SAFE` (25 passes), `BDOSTEST /SAFE` (56 passes), `FILETEST /SAFE` (28 passes with no omissions), and the separate FILETEST Close, Sequential Read, and Sequential Write groups. `RANDTEST.COM` is now installed and its numbered random-I/O qualification has begun.
+The project has entered implementation. Its reproducibly generated TRS-80 Model 4 disks now load the resident BetterCP/M BIOS, BDOS, directory services, and CCP; expose physical floppy drives A: through D:; boot to an `A>` prompt under `trs80gp`; list the physical directory with resident `DIR`; load transient `.COM` programs with CP/M command tails and default FCBs; and complete clean independent physical compatibility passes for `ENTRYTST /SAFE` (25 passes), `BDOSTEST /SAFE` (56 passes), `FILETEST /SAFE` (28 passes with no omissions), and the separate FILETEST Close, Sequential Read, and Sequential Write groups. `RANDTEST.COM` is installed, and its first eight required random-record and Function 36 cases pass physically.
 
 ## Design direction
 

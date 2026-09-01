@@ -51,6 +51,8 @@ def main() -> None:
     parser.add_argument("--boot-delay", type=int, default=1200)
     parser.add_argument("--run-delay", type=int, default=8000)
     parser.add_argument("--snapshot", type=Path)
+    parser.add_argument("--in-place", action="store_true",
+                        help="allow the emulator to modify the supplied images")
     args = parser.parse_args()
     inputs = [args.emulator, args.image]
     if args.drive_b:
@@ -65,6 +67,22 @@ def main() -> None:
     drive_c = args.drive_c.resolve() if args.drive_c else None
 
     with tempfile.TemporaryDirectory(prefix="bettercpm-command-") as temporary:
+        # Compatibility programs deliberately create, extend, and delete files.
+        # Give every automated run private media so an interrupted emulator can
+        # neither alter a reproducible build artifact nor collide with a later
+        # run.  --in-place remains available for explicit persistence testing.
+        if not args.in_place:
+            isolated = Path(temporary, "drive-a.dmk")
+            shutil.copy2(image, isolated)
+            image = isolated
+            if drive_b:
+                isolated = Path(temporary, "drive-b.dmk")
+                shutil.copy2(drive_b, isolated)
+                drive_b = isolated
+            if drive_c:
+                isolated = Path(temporary, "drive-c.dmk")
+                shutil.copy2(drive_c, isolated)
+                drive_c = isolated
         command = [str(args.emulator), "-m4", "-batch", "-turbo",
                    "-d0", str(image), "-id", str(args.boot_delay)]
         if drive_b:
