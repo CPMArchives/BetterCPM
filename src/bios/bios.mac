@@ -5,6 +5,8 @@
 
 BIOSBASE        EQU     0F000H
 BIO_PHYBF       EQU     0EE00H  ; provisional external 512-byte buffer
+SYS_BOOT        EQU     0C020H
+SYS_WBOOT       EQU     0C023H
 
         CSEG
         .PHASE  BIOSBASE
@@ -31,12 +33,11 @@ BIOS:
         JP      BIOLSTST
         JP      BIOSECTR
 
-; BOOT and WBOOT are non-returning contracts.  Until CCP/BDOS integration,
-; entering either one stops here rather than returning into an invalid caller.
+; BOOT and WBOOT enter portable system reconstruction before the CCP.
 BIOBOOT:
-        JR      BIOBOOT
+        JP      SYS_BOOT
 BIOWBOOT:
-        JR      BIOWBOOT
+        JP      SYS_WBOOT
 
 ; CONST must return exactly 00h or FFh and must not consume the character.
 BIOCONST:

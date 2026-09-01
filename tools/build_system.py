@@ -15,10 +15,11 @@ COMPONENTS = (
     (0xC000, "gateway.bin"),
     (0xC100, "../bdos/bdos.bin"),
     (0xD800, "../bdos/directory.bin"),
+    (0xEB00, "../ccp/ccp.bin"),
     (0xF000, "../bios/bios.bin"),
 )
 RESIDENT_BASE = 0xBF00       # includes the reserved 128-byte DIRBUF workspace
-LIMITS = (0xC100, 0xD800, 0xEE00, 0x10000)
+LIMITS = (0xC100, 0xD800, 0xEB00, 0xEE00, 0x10000)
 
 
 def main() -> None:

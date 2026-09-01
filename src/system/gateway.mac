@@ -10,6 +10,7 @@ SYSBASE         EQU     0C000H
 BDOS            EQU     0C100H
 DIRLOGIN        EQU     0D80CH
 BIOWBOOT        EQU     0F003H
+CCP             EQU     0EB00H
 
         CSEG
         .PHASE  SYSBASE
@@ -32,6 +33,35 @@ SYS_INIT:
         LD      (0006H),HL
         XOR     A
         RET
+
+        REPT    SYSBASE+020H-$  ; explicit bytes keep native/cross images equal
+        DB      0
+        ENDM
+
+; Stable targets used by the BIOS BOOT and WBOOT implementations.
+SYS_BOOT:
+        JP      SYS_COLD
+SYS_WBOOT:
+        JP      SYS_WARM
+SYS_COLD:
+SYS_WARM:
+; Patch 2026-09-01: Function 0 arrives on the BDOS private stack. Calling BDOS
+; again during reconstruction reused that stack and destroyed WBOOT's return
+; frames. Establish a distinct system stack before invoking any service.
+        LD      SP,SYS_STKTOP
+        CALL    SYS_INIT
+        JR      NZ,SYS_STOP
+        LD      C,13            ; default drive A, DMA 0080h, fresh disk state
+        CALL    BDOS
+        JP      CCP
+SYS_STOP:
+        JR      SYS_STOP
+
+SYS_STACK:
+        REPT    32
+        DB      0
+        ENDM
+SYS_STKTOP:
 
         .DEPHASE
         END

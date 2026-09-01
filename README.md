@@ -2,7 +2,7 @@
 
 BetterCP/M is an effort to design a compact, maintainable successor to CP/M 2.2 while preserving a rigorously defined CP/M-compatible environment.
 
-The project has entered implementation. Its first TRS-80 Model 4 loader now boots a BetterCP/M-owned stage-one diagnostic from a reproducibly generated system disk.
+The project has entered implementation. Its resident execution harness now reaches a BetterCP/M CCP prompt through real BOOT/WBOOT reconstruction, while the reproducible TRS-80 disk still boots the earlier stage-one hardware diagnostic pending resident-image loading.
 
 ## Design direction
 
@@ -82,6 +82,7 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Engineering Specification 51`](docs/engineering/51%20Print%20String.md) adds dollar-terminated string output through the shared cooked-console path.
 [`Engineering Specification 52`](docs/engineering/52%20Read%20Console%20Buffer.md) adds the counted-buffer line editor and completes the CP/M 2.2 console-service group.
 [`Engineering Specification 53`](docs/engineering/53%20System%20Reset.md) completes the 39 defined CP/M 2.2 BDOS functions by routing program termination through BIOS WBOOT.
+[`Engineering Specification 54`](docs/engineering/54%20Initial%20CCP%20and%20WBOOT.md) adds the first resident command loop, real BOOT/WBOOT reconstruction, and verified Function-0 return to the prompt.
 [`Engineering Specification 25`](docs/engineering/25%20Allocation%20and%20DPB%20Pointers.md) exposes the current drive's reconstructed allocation vector and live 15-byte disk parameter block.
 [`Engineering Specification 26`](docs/engineering/26%20Directory%20Search%20and%20DMA.md) adds Search First/Search Next continuation, wildcard and all-user matching, and complete directory-record transfer to the selected DMA address.
 [`Engineering Specification 27`](docs/engineering/27%20Unchanged%20FCB%20Close.md) adds the non-mutating Close File boundary for unchanged activated FCBs and safely rejects dirty commits until writeback exists.
@@ -103,6 +104,8 @@ python3 tools/test_trs80_physical_write.py
 python3 tools/build_directory.py
 python3 tools/test_directory.py
 python3 tools/build_native_directory.py
+python3 tools/build_ccp.py
+python3 tools/build_native_ccp.py
 python3 tools/build_bdos.py
 python3 tools/test_bdos.py
 python3 tools/build_native_bdos.py

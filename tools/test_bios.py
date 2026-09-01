@@ -211,6 +211,9 @@ class Z80:
             elif op == 0x0E:            # LD C,n
                 self.c = self.mem[self.pc]
                 self.pc += 1
+            elif op == 0x1E:            # LD E,n
+                self.e = self.mem[self.pc]
+                self.pc += 1
             elif op == 0x16:            # LD D,n
                 self.d = self.mem[self.pc]
                 self.pc += 1
@@ -415,6 +418,11 @@ class Z80:
                 total = self.a + (self.c if op == 0x81 else self.d)
                 self.a = total & 0xFF
                 self.z, self.carry = self.a == 0, total > 0xFF
+            elif op == 0xC6:            # ADD A,n
+                total = self.a + self.mem[self.pc]
+                self.pc += 1
+                self.a = total & 0xFF
+                self.z, self.carry = self.a == 0, total > 0xFF
             elif op == 0xB1:            # OR C
                 self.a |= self.c
                 self.z, self.carry = self.a == 0, False
@@ -456,10 +464,10 @@ def main() -> None:
 
     entries = [entry(index) for index in range(COUNT)]
 
-    for index in (0, 1):
+    for index, system_target in ((0, 0xC020), (1, 0xC023)):
         target = cpu.word(entries[index] + 1)
-        require(cpu.mem[target] == 0x18 and cpu.mem[target + 1] == 0xFE,
-                f"entry {index} is not the explicit stop loop")
+        require(cpu.mem[target] == 0xC3 and cpu.word(target + 1) == system_target,
+                f"entry {index} does not enter portable system reconstruction")
 
     const_impl = cpu.word(entries[2] + 1)
     platform_const = cpu.word(const_impl + 1)

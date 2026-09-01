@@ -463,8 +463,38 @@ def main() -> None:
     require(failed.a == 5 and bytes(failed.mem[0:8]) == bytes(8),
             "failed initialization published page-zero vectors")
 
+    # Exercise the real WBOOT -> CCP path. WARM invokes Function 0, after which
+    # the reconstructed CCP accepts VER and prints its version banner.
+    cpu.mem[0x7060:0x7069] = bytes((0x2A, 0x80, 0x70, 0x7E, 0x23,
+                                    0x22, 0x80, 0x70, 0xC9))
+    cpu.mem[0x7070:0x7079] = bytes((0x2A, 0x90, 0x70, 0x71, 0x23,
+                                    0x22, 0x90, 0x70, 0xC9))
+    cpu.mem[0x7080:0x7082] = bytes((0x00, 0x71))
+    cpu.mem[0x7090:0x7092] = bytes((0x00, 0x90))
+    cpu.mem[0x7100:0x7109] = b"WARM\rVER\r"
+    cpu.mem[BIOS_BASE + 9:BIOS_BASE + 12] = bytes((0xC3, 0x60, 0x70))
+    cpu.mem[BIOS_BASE + 12:BIOS_BASE + 15] = bytes((0xC3, 0x70, 0x70))
+    cpu.c, cpu.de = 26, 0x7345
+    cpu.run(CALLER)
+    cpu.mem[0:8] = bytes((0xCC,)) * 8
+    try:
+        cpu.run(0xC023, limit=200000)
+    except AssertionError as error:
+        require("execution limit reached" in str(error),
+                f"CCP execution failed unexpectedly: {error}")
+    transcript = bytes(cpu.mem[0x9000:cpu.word(0x7090)])
+    require(transcript.count(b"A>") >= 3 and b"BetterCP/M 0.1" in transcript,
+            f"WBOOT/Function-0 CCP transcript is incomplete at PC={cpu.pc:04X}: "
+            f"in={cpu.word(0x7080):04X} out={cpu.word(0x7090):04X} "
+            f"ccp={bytes(cpu.mem[0xEB00:0xEB20]).hex()} {transcript[:160]!r}")
+    require(bytes(cpu.mem[0:3]) == bytes((0xC3, 0x03, 0xF0)) and
+            bytes(cpu.mem[5:8]) == bytes((0xC3, 0x00, 0xC1)) and
+            cpu.word(bdos_symbol("BDOS_DMA")) == 0x0080,
+            "WBOOT did not reconstruct gateways and default DMA state")
+
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
     print("application CALL 0005h reached all 39 defined BDOS functions")
+    print("WBOOT entered CCP; WARM returned through Function 0; VER responded")
 
 
 if __name__ == "__main__":

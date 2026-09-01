@@ -1,0 +1,116 @@
+; BetterCP/M initial resident command processor.
+;
+; This first milestone deliberately provides only a command loop and two
+; built-ins. Transient loading and the conventional command set follow later.
+
+CCPBASE         EQU     0EB00H
+BDOS            EQU     0C100H
+
+        CSEG
+        .PHASE  CCPBASE
+
+CCP_ENTRY:
+        LD      SP,CCP_STKTOP
+CCP_LOOP:
+        LD      DE,CCP_PROMPT
+        LD      C,9
+        CALL    BDOS
+        LD      C,25
+        CALL    BDOS
+        ADD     A,'A'
+        LD      E,A
+        LD      C,2
+        CALL    BDOS
+        LD      E,'>'
+        LD      C,2
+        CALL    BDOS
+        LD      DE,CCP_BUFFER
+        LD      C,10
+        CALL    BDOS
+        LD      A,(CCP_COUNT)
+        OR      A
+        JR      Z,CCP_LOOP
+        CALL    CCP_UPPER
+        LD      A,(CCP_COUNT)
+        CP      3
+        JR      Z,CCP_TRYVER
+        CP      4
+        JR      Z,CCP_TRYWARM
+CCP_BAD:
+        LD      DE,CCP_UNKNOWN
+        LD      C,9
+        CALL    BDOS
+        JR      CCP_LOOP
+CCP_TRYVER:
+        LD      HL,CCP_DATA
+        LD      DE,CCP_VERKEY
+        LD      B,3
+        CALL    CCP_EQUAL
+        JR      NZ,CCP_BAD
+        LD      DE,CCP_VERSION
+        LD      C,9
+        CALL    BDOS
+        JR      CCP_LOOP
+CCP_TRYWARM:
+        LD      HL,CCP_DATA
+        LD      DE,CCP_WARMKEY
+        LD      B,4
+        CALL    CCP_EQUAL
+        JR      NZ,CCP_BAD
+        LD      C,0
+        JP      BDOS
+
+CCP_UPPER:
+        LD      HL,CCP_DATA
+        LD      A,(CCP_COUNT)
+        LD      B,A
+CCP_UPLOOP:
+        LD      A,(HL)
+        CP      'a'
+        JR      C,CCP_UPNEXT
+        CP      'z'+1
+        JR      NC,CCP_UPNEXT
+        AND     05FH
+        LD      (HL),A
+CCP_UPNEXT:
+        INC     HL
+        DJNZ    CCP_UPLOOP
+        RET
+
+CCP_EQUAL:
+        LD      A,(DE)
+        CP      (HL)
+        RET     NZ
+        INC     DE
+        INC     HL
+        DJNZ    CCP_EQUAL
+        RET
+
+CCP_PROMPT:
+        DB      10,'$'
+CCP_UNKNOWN:
+        DB      10,'?','$'
+CCP_VERSION:
+        DB      10,'BetterCP/M 0.1','$'
+CCP_VERKEY:
+        DB      'VER'
+CCP_WARMKEY:
+        DB      'WARM'
+
+CCP_BUFFER:
+        DB      127
+CCP_COUNT:
+        DB      0
+CCP_DATA:
+        REPT    127
+        DB      0
+        ENDM
+
+CCP_STACK:
+        REPT    64
+        DB      0
+        ENDM
+CCP_STKTOP:
+
+        .DEPHASE
+        END

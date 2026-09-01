@@ -17,12 +17,12 @@ calling a platform implementation directly. Reconstruction of the command
 environment, page-zero gateways, and default DMA state belongs to WBOOT and the
 future CCP integration, not to the BDOS dispatcher.
 
-## Present limitation
+## Integration status
 
-The provisional BIOS WBOOT entry remains a non-returning stop loop because the
-BetterCP/M CCP has not yet been implemented. Function 0 therefore reaches the
-correct architectural boundary but cannot yet resume an interactive command
-environment. That becomes the next system-level development phase.
+The provisional stop-loop limitation was removed by Engineering Specification
+54. BIOS WBOOT now enters portable reconstruction and a resident CCP command
+loop. The physical TRS-80 boot image still enters its stage-one diagnostic;
+loading the resident image from that disk remains a separate boot milestone.
 
 ## Verification
 
@@ -36,5 +36,4 @@ byte-identical BDOS and resident-system binaries.
 
 ## Next increment
 
-Define and implement the first CCP command-loop milestone so WBOOT can
-reconstruct and enter a usable BetterCP/M command environment.
+Implemented by [`Engineering Specification 54`](54%20Initial%20CCP%20and%20WBOOT.md).
