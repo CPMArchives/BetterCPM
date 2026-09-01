@@ -33,7 +33,6 @@ result was printed. A preserved disposable disk showed no leaked temporary
 entries, and an extended capture produced the clean result above. This was a
 test-runner timing limit, not a BDOS hang or correctness failure.
 
-Diagnostic 0565 and the separate CCP-integration case 0567 remain. Case 0567
-must establish user one through the CCP before DIRTEST checks the shared BDOS
-state; it is therefore not included in this direct-selector slice.
-
+Engineering Specification 85 adds the resident `USER` command and records the
+successful CCP-integration workflow for case 0567. Diagnostic 0565 remains to
+close the User Areas group.

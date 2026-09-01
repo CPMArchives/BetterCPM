@@ -15,11 +15,11 @@ COMPONENTS = (
     (0xC000, "gateway.bin"),
     (0xC100, "../bdos/bdos.bin"),
     (0xD600, "../bdos/directory.bin"),
-    (0xE940, "../ccp/ccp.bin"),
+    (0xE8C0, "../ccp/ccp.bin"),
     (0xEF00, "../bios/bios.bin"),
 )
 RESIDENT_BASE = 0xBF00       # includes the reserved multi-drive DPH workspace
-LIMITS = (0xC100, 0xD600, 0xE940, 0xED00, 0x10000)
+LIMITS = (0xC100, 0xD600, 0xE8C0, 0xED00, 0x10000)
 
 
 def main() -> None:

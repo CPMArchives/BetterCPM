@@ -83,18 +83,23 @@ def cpm_name(name: str) -> tuple[bytes, bytes]:
     return stem.ljust(8).encode("ascii"), suffix.ljust(3).encode("ascii")
 
 
-def install_files(raw: bytearray, files: list[tuple[str, bytes]]) -> None:
-    """Install arbitrary user-zero files in the active 2K/16-bit CP/M layout."""
+def install_files(raw: bytearray,
+                  files: list[tuple[str, bytes] | tuple[str, bytes, int]]) -> None:
+    """Install files in the active 2K/16-bit CP/M layout."""
     directory = FILESYSTEM_FIRST_SECTOR * SECTOR_SIZE
     next_entry = 0
     next_block = FIRST_DATA_BLOCK
     expanded = []
-    for filename, content in files:
-        expanded.append((filename, content, 0))
+    for item in files:
+        filename, content = item[:2]
+        user = item[2] if len(item) == 3 else 0
+        if not 0 <= user <= 15:
+            raise ValueError(f"invalid CP/M file user: {user}")
+        expanded.append((filename, content, user))
         # DIRTEST requires the same controlled name to exist independently in
         # users zero and one. Allocate a real second copy; sharing allocation
         # blocks would make user-scoped Delete corrupt the surviving fixture.
-        if filename.upper() == "BTUSR.DAT":
+        if user == 0 and filename.upper() == "BTUSR.DAT":
             expanded.append((filename, content, 1))
     for filename, content, user in expanded:
         name, suffix = cpm_name(filename)
@@ -158,6 +163,9 @@ def main() -> None:
                         help="additional user-zero file to install (repeatable)")
     parser.add_argument("--include-as", action="append", default=[], metavar="NAME=PATH",
                         help="install PATH under a chosen CP/M 8.3 NAME")
+    parser.add_argument("--include-user-as", action="append", default=[],
+                        metavar="USER:NAME=PATH",
+                        help="install PATH under NAME in CP/M user 0..15")
     parser.add_argument("--cross-fixture", action="store_true",
                         help="install the canonical one-record BTBFILE.DAT fixture")
     parser.add_argument("--full-fixture", action="store_true",
@@ -183,6 +191,19 @@ def main() -> None:
             raise SystemExit(f"invalid included-file alias: {specification}")
         cpm_name(name)            # validate before doing any image work
         extras.append((name, path.read_bytes()))
+    for specification in args.include_user_as:
+        user_text, colon, remainder = specification.partition(":")
+        name, separator, source_name = remainder.partition("=")
+        path = Path(source_name)
+        try:
+            user = int(user_text, 10)
+        except ValueError:
+            user = -1
+        if (not colon or not separator or not name or not path.is_file()
+                or not 0 <= user <= 15):
+            raise SystemExit(f"invalid user included-file alias: {specification}")
+        cpm_name(name)
+        extras.append((name, path.read_bytes(), user))
     if args.cross_fixture:
         extras.append(("BTBFILE.DAT", CROSS_FIXTURE))
     if args.full_fixture:

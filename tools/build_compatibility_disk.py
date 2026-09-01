@@ -40,6 +40,7 @@ def main() -> None:
         "--include", str(filetest),
         "--include", str(randtest),
         "--include", str(dirtest),
+        "--include-user-as", f"1:DIRTEST.COM={dirtest}",
         "--include", str(mdir),
     ]
     for fixture in fixtures:

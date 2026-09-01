@@ -3,8 +3,10 @@
 ; The original EA40H placement left too little room for resident commands.
 ; Patch 2026-09-01: move the CCP into the unused E940H..ECFFH region so DIR
 ; can remain resident without taking space from transient programs.
+; Patch 2026-09-02: USER exhausted that exact-fit region.  Move the base down
+; into the verified gap after Directory Services; ED00H remains untouched.
 
-CCPBASE         EQU     0E940H
+CCPBASE         EQU     0E8C0H
 BDOS            EQU     0C100H
 
         CSEG
@@ -33,6 +35,10 @@ CCP_LOOP:
         JR      Z,CCP_LOOP
         CALL    CCP_UPPER
         LD      A,(CCP_COUNT)
+        CP      6
+        JR      Z,CCP_TRYUSER
+        CP      7
+        JR      Z,CCP_TRYUSER
         CP      3
         JR      Z,CCP_TRYVER
         CP      4
@@ -59,7 +65,7 @@ CCP_TRYDIR:
         LD      DE,CCP_DIRKEY
         LD      B,3
         CALL    CCP_EQUAL
-        JR      NZ,CCP_BAD
+        JP      NZ,CCP_BAD
         CALL    CCP_DIR
         JR      CCP_LOOP
 CCP_TRYWARM:
@@ -70,6 +76,47 @@ CCP_TRYWARM:
         JR      NZ,CCP_BAD
         LD      C,0
         JP      BDOS
+
+; Patch 2026-09-02: keep the resident USER command deliberately thin.  The
+; CCP parses only its decimal operand; BDOS Function 32 remains the owner of
+; current-user state, so transient programs and the command environment can
+; never acquire divergent copies.
+CCP_TRYUSER:
+        LD      HL,CCP_DATA
+        LD      DE,CU_KEY
+        LD      B,5
+        CALL    CCP_EQUAL
+        JR      NZ,CCP_BAD
+        LD      A,(HL)
+        SUB     '0'
+        JP      C,CCP_BAD
+        CP      10
+        JP      NC,CCP_BAD
+        LD      E,A
+        LD      A,(CCP_COUNT)
+        CP      6
+        JR      Z,CCP_USERSET
+        LD      A,E
+        ADD     A,A
+        LD      D,A             ; D=first digit times two
+        ADD     A,A
+        ADD     A,A
+        ADD     A,D             ; A=first digit times ten
+        LD      E,A
+        INC     HL
+        LD      A,(HL)
+        SUB     '0'
+        JP      C,CCP_BAD
+        CP      10
+        JP      NC,CCP_BAD
+        ADD     A,E
+        CP      32
+        JP      NC,CCP_BAD
+        LD      E,A
+CCP_USERSET:
+        LD      C,32
+        CALL    BDOS
+        JP      CCP_LOOP
 
 CCP_UPPER:
         LD      HL,CCP_DATA
@@ -439,6 +486,8 @@ CCP_DIRKEY:
         DB      'DIR'
 CCP_WARMKEY:
         DB      'WARM'
+CU_KEY:
+        DB      'USER '
 CCP_COM:
         DB      'COM'
 
