@@ -67,7 +67,13 @@ def main() -> None:
     require(bytes(machine.mem[0x006C:0x0078]) == b"\x00SECOND  BIN",
             "second default FCB is not drive-zero SECOND.BIN")
 
-    print("CCP lookup names with arguments and two ordinary default FCBs passed")
+    # Model 4 LF preserves the current column. DIR must issue CR/LF or its
+    # one-name-per-row display becomes a diagonal staircase across the screen.
+    dir_nl = symbol("CCP_DIRNL")
+    require(bytes(machine.mem[dir_nl:dir_nl + 3]) == b"\r\n$",
+            "resident DIR line separator is not CP/M CR/LF")
+
+    print("CCP parsing and resident DIR line formatting passed")
 
 
 if __name__ == "__main__":

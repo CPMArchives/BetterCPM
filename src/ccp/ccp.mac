@@ -520,8 +520,12 @@ CCP_DFCNT:
         DB      0
 CCP_DFOUND:
         DB      0
+; Patch 2026-09-02: the first resident DIR used LF alone. The Model 4 console
+; correctly preserves the horizontal cursor position on LF, which made each
+; successive filename march diagonally across the screen. CP/M text output
+; needs an explicit carriage return before line feed.
 CCP_DIRNL:
-        DB      10,'$'
+        DB      13,10,'$'
 CCP_DIRFCB:
         REPT    36
         DB      0
