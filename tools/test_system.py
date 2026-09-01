@@ -41,9 +41,12 @@ def main() -> None:
                    if cpu.mem[address] == 0xC3]
     require(write_jumps, "BIOS physical-write jump was not found")
     platform_write = cpu.word(write_jumps[-1] + 1)
-    cpu.mem[platform_write:platform_write + 13] = bytes((
-        0x21, 0x00, 0xEE,
+    cpu.mem[platform_write:platform_write + 23] = bytes((
+        0x79, 0xFE, 0x08, 0x20, 0x05,
+        0x11, DATA & 0xFF, DATA >> 8,
+        0x18, 0x03,
         0x11, FIXTURE & 0xFF, FIXTURE >> 8,
+        0x21, 0x00, 0xEE,
         0x01, 0x00, 0x02,
         0xED, 0xB0, 0xAF, 0xC9,
     ))
@@ -139,6 +142,14 @@ def main() -> None:
             bytes(cpu.mem[FCB + 33:FCB + 36]) == bytes((1, 0, 0)) and
             bytes(cpu.mem[0x7100:0x7180]) == bytes((0xA1,)) * 128,
             "CALL 0005h Read Random did not preserve CP/M FCB semantics")
+    cpu.mem[0x7100:0x7180] = bytes((0xB6,)) * 128
+    cpu.c, cpu.de = 34, FCB
+    cpu.run(CALLER, limit=150000)
+    require(cpu.a == 0 and cpu.mem[FCB + 32] == 1 and
+            bytes(cpu.mem[FCB + 33:FCB + 36]) == bytes((1, 0, 0)) and
+            bytes(cpu.mem[DATA + 128:DATA + 256]) == bytes((0xB6,)) * 128,
+            "CALL 0005h Write Random did not preserve CP/M FCB semantics")
+    cpu.mem[DATA + 128:DATA + 256] = bytes((0xA1,)) * 128
     cpu.mem[FIXTURE:FIXTURE + 12] = bytes((0,)) + b"READ    DAT"
     cpu.mem[FIXTURE + 12:FIXTURE + 16] = bytes((1, 0, 0, 1))
     cpu.mem[FIXTURE + 16:FIXTURE + 32] = bytes((2, 0)) + bytes(14)
@@ -254,7 +265,7 @@ def main() -> None:
             "failed initialization published page-zero vectors")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
-    print("application CALL 0005h reached functions 12-33 and 35-36")
+    print("application CALL 0005h reached functions 12-36")
 
 
 if __name__ == "__main__":

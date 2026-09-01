@@ -514,6 +514,64 @@ def main() -> None:
     cpu.c, cpu.de = 33, FCB
     cpu.run(BDOS_BASE, limit=50000)
     require(cpu.a == 9, "Read Random accepted a wildcard FCB")
+
+    # Function 34 writes both an allocated record and a newly created extent,
+    # while preserving the random field and positioning sequential I/O on the
+    # record just written.
+    random_media = bytes(cpu.mem[FIXTURE:FIXTURE + 512])
+    random_data = bytes(cpu.mem[DATA:DATA + 512])
+    cpu.mem[FCB + 1:FCB + 12] = b"READ    DAT"
+    cpu.mem[FCB + 33:FCB + 36] = bytes((1, 0, 0))
+    cpu.mem[0x7000:0x7080] = bytes((0xB4,)) * 128
+    cpu.c, cpu.de = 26, 0x7000
+    cpu.run(BDOS_BASE)
+    cpu.c, cpu.de = 34, FCB
+    cpu.run(BDOS_BASE, limit=150000)
+    require(cpu.a == 0 and cpu.mem[FCB + 12] == 0 and
+            cpu.mem[FCB + 14] == 0 and cpu.mem[FCB + 32] == 1 and
+            bytes(cpu.mem[FCB + 33:FCB + 36]) == bytes((1, 0, 0)) and
+            bytes(cpu.mem[DATA + 128:DATA + 256]) == bytes((0xB4,)) * 128,
+            "Write Random existing-record data or FCB semantics failed")
+    cpu.mem[expected_alv:expected_alv + 50] = bytes((0xFF,)) * 50
+    cpu.mem[FCB + 33:FCB + 36] = bytes((16, 0, 0))
+    cpu.c, cpu.de = 34, FCB
+    cpu.run(BDOS_BASE, limit=100000)
+    require(cpu.a == 2, "Write Random did not distinguish data-block exhaustion")
+    cpu.run(DIR_BASE + 15)
+    cpu.c = 13
+    cpu.run(BDOS_BASE, limit=50000)
+    cpu.mem[FCB + 33:FCB + 36] = bytes((0x80, 0, 0))
+    cpu.mem[0x7000:0x7080] = bytes((0xB5,)) * 128
+    cpu.c, cpu.de = 34, FCB
+    cpu.run(BDOS_BASE, limit=200000)
+    require(cpu.a == 0 and cpu.mem[FCB + 12] == 1 and
+            cpu.mem[FCB + 15] == 1 and cpu.mem[FCB + 32] == 0 and
+            bytes(cpu.mem[FCB + 33:FCB + 36]) == bytes((0x80, 0, 0)),
+            "Write Random did not create and write a missing extent")
+    cpu.mem[FCB + 35] = 1
+    stable_random_fcb = bytes(cpu.mem[FCB:FCB + 36])
+    cpu.c, cpu.de = 34, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 6 and bytes(cpu.mem[FCB:FCB + 36]) == stable_random_fcb,
+            "Write Random accepted nonzero R2 or changed the FCB")
+    cpu.mem[FIXTURE:FIXTURE + 512] = random_media
+    for offset in range(0, 512, 32):
+        if cpu.mem[FIXTURE + offset] == 0xE5:
+            cpu.mem[FIXTURE + offset:FIXTURE + offset + 32] = (
+                bytes((0,)) + b"FULL    DAT" + bytes(20))
+    cpu.run(DIR_BASE + 15)
+    cpu.c = 13
+    cpu.run(BDOS_BASE, limit=50000)
+    cpu.mem[FCB + 1:FCB + 12] = b"READ    DAT"
+    cpu.mem[FCB + 33:FCB + 36] = bytes((0x80, 0, 0))
+    cpu.c, cpu.de = 34, FCB
+    cpu.run(BDOS_BASE, limit=200000)
+    require(cpu.a == 5, "Write Random did not distinguish directory overflow")
+    cpu.mem[FIXTURE:FIXTURE + 512] = random_media
+    cpu.mem[DATA:DATA + 512] = random_data
+    cpu.run(DIR_BASE + 15)
+    cpu.c = 13
+    cpu.run(BDOS_BASE, limit=50000)
     cpu.mem[FCB + 1:FCB + 12] = b"READ    DAT"
     cpu.mem[FCB + 12] = cpu.mem[FCB + 14] = 0
     cpu.mem[FCB + 33:FCB + 36] = bytes(3)
@@ -734,7 +792,7 @@ def main() -> None:
             f"provisional BDOS storage failure was confused with slot success: "
             f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS functions 12-33 and 35-36 passed")
+    print("BDOS functions 12-36 passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 

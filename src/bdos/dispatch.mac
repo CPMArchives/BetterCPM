@@ -18,6 +18,7 @@ DIRRENAME       EQU     0D830H  ; seventeenth directory-service vector
 DIRATTR         EQU     0D833H  ; eighteenth directory-service vector
 DIRSIZE         EQU     0D836H  ; nineteenth directory-service vector
 DIRRREAD        EQU     0D839H  ; twentieth directory-service vector
+DIRRWRIT        EQU     0D83CH  ; twenty-first directory-service vector
 
         CSEG
         .PHASE  BDOSBASE
@@ -72,6 +73,8 @@ BDOS:
         JP      Z,BF_USER
         CP      33
         JP      Z,BF_RREAD
+        CP      34
+        JP      Z,BF_RWRIT
         CP      35
         JP      Z,BDOS_SIZE
         CP      36
@@ -173,6 +176,18 @@ BF_RREAD:
         CALL    DIRRREAD
         JP      NC,BDOS_RETURN
         LD      A,0FFH          ; provisional physical-storage presentation
+        JP      BDOS_RETURN
+
+BF_RWRIT:
+        LD      DE,(BDOS_PARM)
+        LD      BC,(BDOS_DMA)
+        LD      A,(STATE_RO)
+        AND     01H
+        LD      H,A
+        LD      A,(BDOS_USER)
+        CALL    DIRRWRIT
+        JP      NC,BDOS_RETURN
+        LD      A,0FFH          ; protection or physical-storage failure
         JP      BDOS_RETURN
 
 BDOS_OPEN:

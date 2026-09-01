@@ -57,6 +57,6 @@ contract and error definitions.
 
 ## Next increment
 
-Implement BDOS function 34 (Write Random), using the same decoder while adding
-transactional block allocation, extent creation, protection checks, and the
-random-write FCB positioning rules.
+Implemented by [Engineering Specification 41](41%20Random%20Write.md), including
+automatic extent and block allocation, distinct exhaustion results, protection,
+and the CP/M random-write FCB positioning rules.

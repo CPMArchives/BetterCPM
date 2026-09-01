@@ -44,6 +44,138 @@ DIRSERV:
         JP      DIR_ATTR
         JP      DIR_SIZE
         JP      DIR_RREAD
+        JP      DIR_RWRITE
+
+; Write the 128-byte record named by FCB R0/R1. Missing extents are created
+; before the ordinary transactional data allocator is entered. H is nonzero
+; when the selected drive is software protected.
+DIR_RWRITE:
+        LD      (DIR_QUSER),A
+        LD      (DIR_QFCB),DE
+        LD      (DIR_QDMA),BC
+        LD      A,H
+        OR      A
+        JP      NZ,DQ_WFAIL
+        LD      A,(DE)
+        CP      2
+        JP      NC,DIR_QBAD
+        PUSH    DE
+        INC     DE
+        LD      B,11
+DIR_QWNAME:
+        LD      A,(DE)
+        AND     07FH
+        CP      '?'
+        JP      Z,DIR_QWPOP
+        INC     DE
+        DJNZ    DIR_QWNAME
+        POP     DE
+        LD      HL,9
+        ADD     HL,DE
+        LD      A,(HL)
+        AND     080H
+        JP      NZ,DQ_WFAIL
+        LD      HL,35
+        ADD     HL,DE
+        LD      A,(HL)
+        OR      A
+        JP      NZ,DIR_QRANGE
+        DEC     HL
+        LD      A,(HL)
+        LD      C,A
+        AND     0F0H
+        SRL     A
+        SRL     A
+        SRL     A
+        SRL     A
+        LD      (DIR_QS2),A
+        LD      A,C
+        AND     00FH
+        ADD     A,A
+        LD      C,A
+        DEC     HL
+        LD      A,(HL)
+        LD      B,A
+        AND     080H
+        SRL     A
+        SRL     A
+        SRL     A
+        SRL     A
+        SRL     A
+        SRL     A
+        SRL     A
+        OR      C
+        LD      (DIR_QEX),A
+        LD      A,B
+        AND     07FH
+        LD      (DIR_QCR),A
+        LD      HL,(DIR_QFCB)
+        LD      DE,12
+        ADD     HL,DE
+        LD      A,(DIR_QEX)
+        LD      (HL),A
+        INC     HL
+        INC     HL
+        LD      A,(DIR_QS2)
+        LD      (HL),A
+        LD      HL,(DIR_QFCB)
+        LD      DE,32
+        ADD     HL,DE
+        LD      A,(DIR_QCR)
+        LD      (HL),A
+        LD      A,(DIR_QUSER)
+        LD      DE,(DIR_QFCB)
+        CALL    DIR_OPEN
+        JP      C,DQ_WFAIL
+        CP      0FFH
+        JR      NZ,DIR_QWDO
+        LD      HL,(DIR_QFCB)   ; initialize a canonical empty target extent
+        LD      DE,15
+        ADD     HL,DE
+        LD      (HL),0
+        INC     HL
+        LD      B,16
+DIR_QWZERO:
+        LD      (HL),0
+        INC     HL
+        DJNZ    DIR_QWZERO
+        LD      A,(DIR_QUSER)
+        LD      DE,(DIR_QFCB)
+        CALL    DIR_CREATE
+        JP      C,DQ_WFAIL
+        CP      0FFH
+        JR      Z,DQ_NODIR
+DIR_QWDO:
+        LD      A,(DIR_QUSER)
+        LD      DE,(DIR_QFCB)
+        LD      BC,(DIR_QDMA)
+        LD      H,0
+        CALL    DIR_WRITE
+        JP      C,DQ_WFAIL
+        OR      A
+        JR      NZ,DQ_NOBLK
+        LD      HL,(DIR_QFCB)
+        LD      DE,32
+        ADD     HL,DE
+        LD      A,(HL)
+        DEC     A
+        LD      (HL),A          ; sequential I/O must address this record again
+        XOR     A
+        RET
+DIR_QWPOP:
+        POP     DE
+        JP      DIR_QBAD
+DQ_NOBLK:
+        LD      A,2             ; no free data block
+        OR      A
+        RET
+DQ_NODIR:
+        LD      A,5             ; no free directory entry for target extent
+        OR      A
+        RET
+DQ_WFAIL:
+        SCF
+        RET
 
 ; Read the 128-byte record named by FCB R0/R1. CP/M 2.2 reserves R2 and
 ; reports a range error when it is nonzero. On success EX/S2/CR identify the
