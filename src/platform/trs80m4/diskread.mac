@@ -1,0 +1,53 @@
+; Standalone hardware test for arbitrary Model 4 physical-sector reads.
+
+        INCLUDE hardware.inc
+        CSEG
+        .PHASE  STAGE1BASE
+START:
+        DI
+        LD      SP,STAGE1STACK
+        CALL    M4_INIT
+        LD      A,2
+        LD      B,1
+        LD      C,10
+        LD      HL,DISKBUFFER
+        CALL    M4_READ
+        JR      NZ,FAILED
+        LD      HL,DISKBUFFER
+        LD      DE,SIGNATURE
+        LD      B,SIGLEN
+CHECK:
+        LD      A,(DE)
+        CP      (HL)
+        JR      NZ,FAILED
+        INC     DE
+        INC     HL
+        DJNZ    CHECK
+        LD      HL,PASSMSG
+        JR      PRINT
+FAILED:
+        LD      HL,FAILMSG
+PRINT:
+        LD      A,(HL)
+        OR      A
+        JR      Z,STOP
+        LD      C,A
+        PUSH    HL
+        CALL    M4_OUT
+        POP     HL
+        INC     HL
+        JR      PRINT
+STOP:
+        JR      STOP
+PASSMSG:
+        DB      'BIOS physical read verified',0
+FAILMSG:
+        DB      'BIOS physical read failed',0
+SIGNATURE:
+        DB      'BetterCP/M C2 H1 S10'
+SIGLEN  EQU     $-SIGNATURE
+
+        INCLUDE m4cons.inc
+        INCLUDE m4disk.inc
+        .DEPHASE
+        END

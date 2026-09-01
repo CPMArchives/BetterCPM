@@ -4,6 +4,7 @@
 ; BIOSBASE is a test placement, not a final resident-memory decision.
 
 BIOSBASE        EQU     0F000H
+BIO_PHYBF       EQU     0EE00H  ; provisional external 512-byte buffer
 
         CSEG
         .PHASE  BIOSBASE
@@ -85,8 +86,61 @@ BIO_NODSK:
         LD      HL,0
         RET
 
-; A nonzero result reports the deliberately unavailable disk implementation.
 BIOREAD:
+        LD      A,(BIO_DRIVE)
+        OR      A
+        JR      NZ,BIO_RDERR
+        LD      A,(BIO_TRACK+1)
+        OR      A
+        JR      NZ,BIO_RDERR
+        LD      A,(BIO_TRACK)
+        CP      80
+        JR      NC,BIO_RDERR
+        LD      A,(BIO_SECTOR+1)
+        OR      A
+        JR      NZ,BIO_RDERR
+        LD      A,(BIO_SECTOR)
+        CP      80
+        JR      NC,BIO_RDERR
+        LD      E,A
+        AND     3
+        LD      (BIO_QUART),A
+        LD      A,E
+        SRL     A
+        SRL     A
+        LD      B,0
+        CP      10
+        JR      C,BIO_SIDE0
+        SUB     10
+        INC     B
+BIO_SIDE0:
+        LD      E,A
+        LD      D,0
+        LD      HL,BIO_ORDER
+        ADD     HL,DE
+        LD      C,(HL)
+        LD      A,(BIO_TRACK)
+        LD      HL,BIO_PHYBF
+        CALL    PL_READ
+        RET     NZ
+        LD      A,(BIO_QUART)
+        LD      HL,BIO_PHYBF
+        OR      A
+        JR      Z,BIO_COPY
+        LD      DE,128
+BIO_QADD:
+        ADD     HL,DE
+        DEC     A
+        JR      NZ,BIO_QADD
+BIO_COPY:
+        LD      DE,(BIO_DMA)
+        LD      BC,128
+        LDIR
+        XOR     A
+        RET
+BIO_RDERR:
+        LD      A,1
+        RET
 BIOWRITE:
         LD      A,1
         RET
@@ -119,6 +173,10 @@ BIO_SECTOR:
         DW      0
 BIO_DMA:
         DW      0080H
+BIO_QUART:
+        DB      0
+BIO_ORDER:
+        DB      1,3,5,7,9,2,4,6,8,10
 
 ; Patch 2026-09-01: one CP/M logical track spans both sides of a cylinder.
 ; 20 physical sectors * four 128-byte records gives SPT=80; OFF=2 therefore

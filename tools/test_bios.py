@@ -113,6 +113,10 @@ class Z80:
                 target = self.word(self.pc)
                 self.pc += 2
                 self.mem[target] = self.a
+            elif op == 0x3A:            # LD A,(nn)
+                target = self.word(self.pc)
+                self.pc += 2
+                self.a = self.mem[target]
             elif op == 0x01:            # LD BC,nn
                 self.bc = self.word(self.pc)
                 self.pc += 2

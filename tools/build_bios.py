@@ -33,6 +33,7 @@ def main() -> None:
         shutil.copy2(SOURCE / "biosplat.inc", staged / "biosplat.inc")
         shutil.copy2(PLATFORM / "hardware.inc", staged / "hardware.inc")
         shutil.copy2(PLATFORM / "m4cons.inc", staged / "m4cons.inc")
+        shutil.copy2(PLATFORM / "m4disk.inc", staged / "m4disk.inc")
         subprocess.run([str(args.assembler), "-fb", f"-o{output}", "bios.mac"],
                        check=True, cwd=staged)
     data = output.read_bytes()
