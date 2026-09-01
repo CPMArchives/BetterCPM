@@ -86,8 +86,7 @@ fixture.
 
 ## Next increment
 
-Implement BDOS function 21 (Write Sequential) using the same record mapper.
-It must enforce software and file read-only state, allocate a free block when
-the target allocation entry is empty, update the ALV and FCB only around a
-successful BIOS write, advance `CR`, and leave dirty extent metadata for the
-transactional Close path.
+Engineering Specification 31 implements BDOS function 21 (Write Sequential)
+through the same record mapper, including protected-write rejection and
+failure-safe first-block allocation. Transactional Close must next learn to
+validate and commit allocation-map changes made by that trusted path.

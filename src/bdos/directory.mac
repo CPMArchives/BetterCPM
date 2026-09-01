@@ -37,6 +37,236 @@ DIRSERV:
         JP      DIR_SNXT
         JP      DIR_CLOSE
         JP      DIR_READ
+        JP      DIR_WRITE
+
+; Write one sequential 128-byte record. A=current user, DE=activated FCB,
+; BC=current DMA, H=nonzero when the selected drive is software protected.
+; The allocation vector and FCB are changed only after BIOS accepts the data.
+DIR_WRITE:
+        LD      (DIR_WUSER),A
+        LD      (DIR_WFCB),DE
+        LD      (DIR_WDMA),BC
+        LD      A,H
+        OR      A
+        JP      NZ,DIR_WFAIL
+        LD      A,(DE)
+        CP      2
+        JP      NC,DIR_WFAIL
+        LD      HL,9            ; CP/M read-only attribute is T1 bit 7
+        ADD     HL,DE
+        LD      A,(HL)
+        AND     080H
+        JP      NZ,DIR_WFAIL
+        CALL    DIR_GALV
+        JP      NZ,DIR_WFAIL
+        LD      HL,(DIR_WFCB)
+        LD      DE,32
+        ADD     HL,DE
+        LD      A,(HL)
+        CP      128
+        JP      NC,DIR_WFULL    ; new-extent creation is a later increment
+        LD      (DIR_WCR),A
+
+        LD      HL,(DIR_WFCB)
+        LD      DE,12
+        ADD     HL,DE
+        LD      A,(HL)
+        LD      C,A
+        LD      A,(DIR_EXM)
+        AND     C
+        LD      H,A
+        LD      L,0
+        SRL     H
+        RR      L
+        LD      A,(DIR_WCR)
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE
+        LD      A,L
+        LD      C,A
+        LD      A,(DIR_BLM)
+        AND     C
+        LD      (DIR_WREM),A
+        LD      A,(DIR_BSH)
+DIR_WBIX:
+        OR      A
+        JR      Z,DIR_WBOK
+        SRL     H
+        RR      L
+        DEC     A
+        JR      DIR_WBIX
+DIR_WBOK:
+        LD      A,H
+        OR      A
+        JP      NZ,DIR_WFULL
+        LD      A,L
+        LD      (DIR_WBNO),A
+        LD      HL,(DIR_WFCB)
+        LD      DE,16
+        ADD     HL,DE
+        LD      A,(DIR_DSM+1)
+        OR      A
+        LD      A,(DIR_WBNO)
+        JR      Z,DIR_W8BIT
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE
+        LD      (DIR_WAEP),HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        JR      DIR_WGOT
+DIR_W8BIT:
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE
+        LD      (DIR_WAEP),HL
+        LD      E,(HL)
+        LD      D,0
+DIR_WGOT:
+        LD      A,D
+        OR      E
+        JR      NZ,DIR_WHAVE
+        CALL    DIR_WFREE
+        JP      NZ,DIR_WFULL
+        LD      (DIR_WNEW),HL
+        LD      A,1
+        LD      (DIR_WALLOC),A
+        LD      D,H
+        LD      E,L
+        JR      DIR_WMAP
+DIR_WHAVE:
+        XOR     A
+        LD      (DIR_WALLOC),A
+        LD      HL,(DIR_DSM)
+        LD      A,D
+        CP      H
+        JP      C,DIR_WMAP
+        JP      NZ,DIR_WFAIL
+        LD      A,E
+        CP      L
+        JP      C,DIR_WMAP
+        JP      NZ,DIR_WFAIL
+DIR_WMAP:
+        EX      DE,HL           ; HL=allocation block
+        LD      A,(DIR_BSH)
+DIR_WSHFT:
+        OR      A
+        JR      Z,DIR_WSHOK
+        ADD     HL,HL
+        DEC     A
+        JR      DIR_WSHFT
+DIR_WSHOK:
+        LD      A,(DIR_WREM)
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE
+        LD      DE,(DIR_SPT)
+        LD      BC,(DIR_OFF)
+DIR_WDIV:
+        OR      A
+        SBC     HL,DE
+        JR      C,DIR_WDONE
+        INC     BC
+        JR      DIR_WDIV
+DIR_WDONE:
+        ADD     HL,DE
+        PUSH    HL
+        CALL    BIOSETTR
+        POP     HL
+        LD      C,L
+        LD      B,0
+        CALL    BIOSETSE
+        LD      BC,(DIR_WDMA)
+        CALL    BIOSETDM
+        LD      C,0              ; ordinary data write
+        CALL    BIOWRITE
+        JP      NZ,DIR_WFAIL
+
+        LD      A,(DIR_WALLOC)
+        OR      A
+        JR      Z,DIR_WMETA
+        LD      DE,(DIR_WNEW)
+        CALL    DIR_AMARK
+        JP      NZ,DIR_WFAIL     ; range was already checked by allocator
+        LD      HL,(DIR_WAEP)
+        LD      (HL),E
+        LD      A,(DIR_DSM+1)
+        OR      A
+        JR      Z,DIR_WMETA
+        INC     HL
+        LD      (HL),D
+DIR_WMETA:
+        LD      HL,(DIR_WFCB)
+        LD      DE,32
+        ADD     HL,DE
+        INC     (HL)
+        LD      A,(HL)
+        LD      C,A
+        LD      DE,0FFEFH         ; from CR byte 32 to RC byte 15
+        ADD     HL,DE
+        LD      A,(HL)
+        CP      C
+        JR      NC,DIR_WOK
+        LD      (HL),C
+DIR_WOK:
+        XOR     A
+        RET
+DIR_WFULL:
+        LD      A,1              ; CP/M-compatible directory/disk-full result
+        OR      A
+        RET
+DIR_WFAIL:
+        SCF
+        RET
+
+; Find the first clear allocation bit. Reserved directory blocks are already
+; represented in the reconstructed ALV, so this remains geometry-independent.
+DIR_WFREE:
+        LD      HL,0
+DIR_WFLOOP:
+        PUSH    HL
+        LD      A,L
+        AND     7
+        LD      C,A
+        LD      H,0
+        LD      L,C
+        LD      DE,DIR_AMASK
+        ADD     HL,DE
+        LD      A,(HL)
+        LD      B,A
+        POP     HL
+        PUSH    HL
+        SRL     H
+        RR      L
+        SRL     H
+        RR      L
+        SRL     H
+        RR      L
+        LD      DE,(DIR_ALVP)
+        ADD     HL,DE
+        LD      A,(HL)
+        AND     B
+        POP     HL
+        JR      Z,DIR_WFOUND
+        INC     HL
+        LD      DE,(DIR_DSM)
+        LD      A,H
+        CP      D
+        JR      C,DIR_WFLOOP
+        JR      NZ,DIR_WFNONE
+        LD      A,L
+        CP      E
+        JR      C,DIR_WFLOOP
+        JR      Z,DIR_WFLOOP
+DIR_WFNONE:
+        LD      A,1
+        OR      A
+        RET
+DIR_WFOUND:
+        XOR     A
+        RET
 
 ; Read one sequential 128-byte record. A=current user, DE=activated FCB,
 ; BC=current DMA. Returns A=0 success, A=1 EOF, or carry set on storage error.
@@ -1158,6 +1388,24 @@ DIR_RBNO:
 DIR_ROEX:
         DB      0
 DIR_ROS2:
+        DB      0
+DIR_WUSER:
+        DB      0
+DIR_WFCB:
+        DW      0
+DIR_WDMA:
+        DW      0
+DIR_WCR:
+        DB      0
+DIR_WREM:
+        DB      0
+DIR_WBNO:
+        DB      0
+DIR_WAEP:
+        DW      0
+DIR_WNEW:
+        DW      0
+DIR_WALLOC:
         DB      0
 
         .DEPHASE

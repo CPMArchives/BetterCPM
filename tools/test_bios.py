@@ -397,6 +397,19 @@ class Z80:
                     if displacement & 0x80:
                         displacement -= 0x100
                     self.pc = (self.pc + displacement) & 0xFFFF
+            elif op == 0xA0:            # AND B
+                self.a &= self.b
+                self.z, self.carry = self.a == 0, False
+            elif op in (0xBA, 0xBB):    # CP D / CP E
+                value = self.d if op == 0xBA else self.e
+                self.z, self.carry = self.a == value, self.a < value
+            elif op == 0x54:            # LD D,H
+                self.d = self.h
+            elif op == 0x5D:            # LD E,L
+                self.e = self.l
+            elif op in (0x71, 0x72, 0x73):  # LD (HL),C / D / E
+                self.mem[self.hl] = {0x71: self.c, 0x72: self.d,
+                                     0x73: self.e}[op]
             else:
                 raise AssertionError(f"unsupported opcode {op:02X} at {self.pc - 1:04X}")
         raise AssertionError(f"execution limit reached from {address:04X}")

@@ -16,6 +16,7 @@ FCB = 0x7700
 
 def main() -> None:
     cpu = Z80(BIOS.read_bytes())
+    cpu.sp = 0xE800          # System Services now legitimately crosses E000h
     component = DIRECTORY.read_bytes()
     cpu.mem[DIR_BASE:DIR_BASE + len(component)] = component
 

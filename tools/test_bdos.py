@@ -27,6 +27,7 @@ def symbol(name: str) -> int:
 
 def main() -> None:
     cpu = Z80(BIOS.read_bytes())
+    cpu.sp = 0xE800          # direct pre-BDOS calls must avoid resident code
     directory = DIRECTORY.read_bytes()
     bdos = BDOS.read_bytes()
     cpu.mem[DIR_BASE:DIR_BASE + len(directory)] = directory
@@ -56,8 +57,11 @@ def main() -> None:
     require(write_jumps, "BIOS physical-write jump was not found")
     platform_write = cpu.word(write_jumps[-1] + 1)
     write_success = bytes((
-        0x21, 0x00, 0xEE,
+        0x79, 0xFE, 0x08, 0x20, 0x05,
+        0x11, DATA & 0xFF, DATA >> 8,
+        0x18, 0x03,
         0x11, FIXTURE & 0xFF, FIXTURE >> 8,
+        0x21, 0x00, 0xEE,
         0x01, 0x00, 0x02,
         0xED, 0xB0, 0xAF, 0xC9,
     ))
@@ -282,11 +286,72 @@ def main() -> None:
             cpu.mem[FCB + 32] == 1 and
             bytes(cpu.mem[0x7180:0x7200]) == bytes((0xA0,)) * 128,
             "automatic sequential extent transition failed")
+
+    # Return to extent zero and verify Function 21 through the BDOS boundary.
+    cpu.mem[FCB + 12] = cpu.mem[FCB + 14] = cpu.mem[FCB + 32] = 0
+    cpu.mem[FCB + 15] = 2
+    cpu.mem[FCB + 16:FCB + 32] = bytes((2, 0)) + bytes(14)
+    cpu.mem[0x7000:0x7080] = bytes((0xB0,)) * 128
+    cpu.c, cpu.de = 26, 0x7000
+    cpu.run(BDOS_BASE)
+    cpu.c, cpu.de = 21, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0 and cpu.mem[FCB + 32] == 1 and
+            cpu.mem[FCB + 15] == 2 and
+            bytes(cpu.mem[DATA:DATA + 128]) == bytes((0xB0,)) * 128,
+            "sequential overwrite or FCB position advancement failed")
+
+    # An empty allocation entry receives the first genuinely free block.
+    cpu.mem[FCB:FCB + 33] = bytes(33)
+    cpu.mem[FCB + 1:FCB + 12] = b"NEW     DAT"
+    alv_before = bytes(cpu.mem[expected_alv:expected_alv + 50])
+    cpu.mem[0x7000:0x7080] = bytes((0xB1,)) * 128
+    cpu.c, cpu.de = 21, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0 and cpu.mem[FCB + 16] == 3 and
+            cpu.mem[FCB + 17] == 0 and cpu.mem[FCB + 15] == 1 and
+            cpu.mem[FCB + 32] == 1 and
+            cpu.mem[expected_alv] == (alv_before[0] | 0x10),
+            "first sequential write did not allocate block 3 transactionally")
+
+    # Software and FCB attribute protection must precede all mutation.
+    cpu.c = 28
+    cpu.run(BDOS_BASE)
+    protected_fcb = bytes(cpu.mem[FCB:FCB + 33])
+    protected_alv = bytes(cpu.mem[expected_alv:expected_alv + 50])
+    protected_data = bytes(cpu.mem[DATA:DATA + 512])
+    cpu.c, cpu.de = 21, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0xFF and bytes(cpu.mem[FCB:FCB + 33]) == protected_fcb and
+            bytes(cpu.mem[expected_alv:expected_alv + 50]) == protected_alv and
+            bytes(cpu.mem[DATA:DATA + 512]) == protected_data,
+            "software-protected sequential write changed state")
+    cpu.c = 13
+    cpu.run(BDOS_BASE, limit=50000)
+    cpu.mem[FCB + 9] |= 0x80
+    protected_fcb = bytes(cpu.mem[FCB:FCB + 33])
+    cpu.c, cpu.de = 21, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0xFF and bytes(cpu.mem[FCB:FCB + 33]) == protected_fcb,
+            "file read-only attribute did not reject sequential write")
+    cpu.mem[FCB + 9] &= 0x7F
+
+    # A failed BIOS write cannot publish a newly selected block or position.
+    cpu.mem[FCB + 15:FCB + 33] = bytes(18)
+    failed_fcb = bytes(cpu.mem[FCB:FCB + 33])
+    failed_alv = bytes(cpu.mem[expected_alv:expected_alv + 50])
+    cpu.mem[platform_write:platform_write + 4] = bytes((0x3E, 0x06, 0xB7, 0xC9))
+    cpu.c, cpu.de = 21, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0xFF and bytes(cpu.mem[FCB:FCB + 33]) == failed_fcb and
+            bytes(cpu.mem[expected_alv:expected_alv + 50]) == failed_alv,
+            "failed sequential write published allocation or FCB metadata")
+    cpu.mem[platform_write:platform_write + len(write_success)] = write_success
     cpu.c, cpu.e = 32, 0x25
     cpu.run(BDOS_BASE)
     cpu.c, cpu.e = 32, 0xFF
     cpu.run(BDOS_BASE)
-    require(cpu.a == cpu.l == 5 and cpu.word(dma_state) == 0x7180,
+    require(cpu.a == cpu.l == 5 and cpu.word(dma_state) == 0x0080,
             "user modulo-32 selection/query or DMA independence failed")
     cpu.c = 29
     cpu.run(BDOS_BASE)
@@ -332,7 +397,7 @@ def main() -> None:
             f"provisional BDOS storage failure was confused with slot success: "
             f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS functions 12-18, 20, 24-29, 31, and 32 passed")
+    print("BDOS functions 12-18, 20-21, 24-29, 31, and 32 passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 

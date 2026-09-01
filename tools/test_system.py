@@ -18,6 +18,7 @@ def main() -> None:
     resident = RESIDENT.read_bytes()
     bios_offset = BIOS_BASE - RESIDENT_BASE
     cpu = Z80(resident[bios_offset:])
+    cpu.sp = 0xE800          # System Services now legitimately crosses E000h
     cpu.mem[RESIDENT_BASE:RESIDENT_BASE + len(resident)] = resident
 
     read_impl = cpu.word(BIOS_BASE + 13 * 3 + 1)
@@ -138,6 +139,13 @@ def main() -> None:
     cpu.run(CALLER, limit=50000)
     require(cpu.a == 0 and cpu.mem[FCB + 12] == 1 and cpu.mem[FCB + 32] == 1,
             "CALL 0005h did not transition to the next sequential extent")
+    cpu.mem[FCB + 9] |= 0x80
+    protected_fcb = bytes(cpu.mem[FCB:FCB + 33])
+    cpu.c, cpu.de = 21, FCB
+    cpu.run(CALLER, limit=50000)
+    require(cpu.a == 0xFF and bytes(cpu.mem[FCB:FCB + 33]) == protected_fcb,
+            "CALL 0005h did not enforce file protection on sequential write")
+    cpu.mem[FCB + 9] &= 0x7F
 
     cpu.c = 12
     cpu.run(CALLER)
@@ -193,6 +201,7 @@ def main() -> None:
 
     # Initialization failure must not expose either conventional vector.
     failed = Z80(resident[bios_offset:])
+    failed.sp = 0xE800
     failed.mem[RESIDENT_BASE:RESIDENT_BASE + len(resident)] = resident
     failed_read = failed.word(calls[1] + 1)
     failed.mem[failed_read:failed_read + 4] = bytes((0x3E, 0x05, 0xB7, 0xC9))
@@ -201,7 +210,7 @@ def main() -> None:
             "failed initialization published page-zero vectors")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
-    print("application CALL 0005h reached functions 12-18, 20, 24-29, 31, and 32")
+    print("application CALL 0005h reached functions 12-18, 20-21, 24-29, 31, and 32")
 
 
 if __name__ == "__main__":
