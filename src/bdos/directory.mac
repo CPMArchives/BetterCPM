@@ -47,6 +47,7 @@ DIR_WRITE:
         LD      (DIR_WFCB),DE
         LD      (DIR_WDMA),BC
         LD      A,H
+        LD      (DIR_WPRO),A
         OR      A
         JP      NZ,DIR_WFAIL
         LD      A,(DE)
@@ -64,7 +65,17 @@ DIR_WRITE:
         ADD     HL,DE
         LD      A,(HL)
         CP      128
-        JP      NC,DIR_WFULL    ; new-extent creation is a later increment
+        JR      C,DIR_WCUR
+        CALL    DIR_WNEXT
+        RET     C
+        OR      A
+        RET     NZ
+        LD      A,(DIR_WUSER)
+        LD      DE,(DIR_WFCB)
+        LD      BC,(DIR_WDMA)
+        LD      H,0
+        JP      DIR_WRITE       ; first record in the new canonical extent
+DIR_WCUR:
         LD      (DIR_WCR),A
 
         LD      HL,(DIR_WFCB)
@@ -228,6 +239,150 @@ DIR_WFULL:
         RET
 DIR_WFAIL:
         SCF
+        RET
+
+; CR=128: commit the completed extent, create the next empty extent, then let
+; the ordinary write path allocate its first data block. Directory-full leaves
+; the caller at the stable old CR=128 position.
+DIR_WNEXT:
+        LD      HL,(DIR_WFCB)
+        LD      DE,DIR_WOLD
+        LD      BC,33
+        LDIR
+        LD      DE,(DIR_WFCB)
+        LD      A,(DIR_WPRO)
+        LD      B,A
+        LD      A,(DIR_WUSER)
+        CALL    DIR_CLOSE
+        JR      C,DIR_WNERR
+        CP      0FFH
+        JR      Z,DIR_WNERR
+        LD      HL,(DIR_WFCB)
+        LD      DE,12
+        ADD     HL,DE
+        LD      A,(HL)
+        INC     A
+        AND     01FH
+        LD      (HL),A
+        JR      NZ,DIR_WNZS2
+        INC     HL
+        INC     HL
+        LD      A,(HL)
+        INC     A
+        AND     03FH
+        LD      (HL),A
+DIR_WNZS2:
+        LD      HL,(DIR_WFCB)
+        LD      DE,15
+        ADD     HL,DE
+        LD      (HL),0          ; new extent RC
+        INC     HL
+        LD      B,16
+DIR_WNZAL:
+        LD      (HL),0
+        INC     HL
+        DJNZ    DIR_WNZAL
+        LD      (HL),0          ; new extent CR
+        LD      DE,(DIR_WFCB)
+        LD      A,(DIR_WUSER)
+        CALL    DIR_CREATE
+        RET     C
+        OR      A
+        JR      NZ,DIR_WNREST
+        XOR     A
+        RET
+DIR_WNERR:
+        CALL    DIR_WNLOAD
+        SCF
+        RET
+DIR_WNREST:
+        PUSH    AF
+        CALL    DIR_WNLOAD
+        POP     AF
+        OR      A
+        RET
+DIR_WNLOAD:
+        LD      HL,DIR_WOLD
+        LD      DE,(DIR_WFCB)
+        LD      BC,33
+        LDIR
+        RET
+
+; Create the FCB's current empty extent in the first deleted directory slot.
+; Input A=user, DE=FCB. Return zero success, one directory-full, carry storage.
+DIR_CREATE:
+        LD      (DIR_XUSER),A
+        LD      (DIR_XFCB),DE
+        XOR     A
+        LD      (DIR_RECORD),A
+DIR_XRECD:
+        LD      A,(DIR_RECORD)
+        LD      HL,DIR_RECS
+        CP      (HL)
+        JR      NC,DIR_XFULL
+        LD      C,A
+        CALL    DIR_LOAD
+        JR      NZ,DIR_XERR
+        LD      B,4
+        XOR     A
+        LD      (DIR_XSLOT),A
+DIR_XSCAN:
+        LD      A,(HL)
+        CP      0E5H
+        JR      Z,DIR_XFOUND
+        LD      DE,32
+        ADD     HL,DE
+        LD      A,(DIR_XSLOT)
+        INC     A
+        LD      (DIR_XSLOT),A
+        DJNZ    DIR_XSCAN
+        LD      HL,DIR_RECORD
+        INC     (HL)
+        JR      DIR_XRECD
+DIR_XFOUND:
+        PUSH    HL
+        LD      DE,DIR_XOLD
+        LD      BC,32
+        LDIR
+        POP     HL
+        LD      A,(DIR_XUSER)
+        LD      (HL),A
+        INC     HL
+        EX      DE,HL
+        LD      HL,(DIR_XFCB)
+        INC     HL
+        LD      BC,31
+        LDIR
+        LD      C,1
+        CALL    BIOWRITE
+        JR      NZ,DIR_XWERR
+        CALL    DIR_INVAL
+        XOR     A
+        RET
+DIR_XWERR:
+        PUSH    AF
+        LD      HL,DIRBUF
+        LD      A,(DIR_XSLOT)
+        OR      A
+        JR      Z,DIR_XRPOS
+        LD      DE,32
+DIR_XRADD:
+        ADD     HL,DE
+        DEC     A
+        JR      NZ,DIR_XRADD
+DIR_XRPOS:
+        EX      DE,HL
+        LD      HL,DIR_XOLD
+        LD      BC,32
+        LDIR
+        CALL    DIR_INVAL
+        POP     AF
+DIR_XERR:
+        SCF
+        RET
+DIR_XFULL:
+        LD      A,1
+        OR      A
         RET
 
 ; Find the first clear allocation bit. Reserved directory blocks are already
@@ -1601,6 +1756,22 @@ DIR_WNEW:
         DW      0
 DIR_WALLOC:
         DB      0
+DIR_WPRO:
+        DB      0
+DIR_WOLD:
+        REPT    33
+        DB      0
+        ENDM
+DIR_XUSER:
+        DB      0
+DIR_XFCB:
+        DW      0
+DIR_XSLOT:
+        DB      0
+DIR_XOLD:
+        REPT    32
+        DB      0
+        ENDM
 DIR_PEND:
         REPT    128
         DB      0

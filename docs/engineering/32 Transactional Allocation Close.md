@@ -58,6 +58,7 @@ byte-identical System Services binaries.
 
 ## Next increment
 
-Implement automatic extent creation when Write Sequential reaches `CR=128`.
-That requires locating a free directory slot, constructing the next canonical
-extent, and publishing it transactionally without losing the completed extent.
+Engineering Specification 33 implements automatic extent creation at
+`CR=128`, using this Close invariant before publishing the successor extent.
+The next increment can expose the new canonical-entry machinery through BDOS
+function 22 (Make File).

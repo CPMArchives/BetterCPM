@@ -338,6 +338,63 @@ def main() -> None:
             f"RC={cpu.mem[FIXTURE + 15]:02X} "
             f"AL={bytes(cpu.mem[FIXTURE + 16:FIXTURE + 18]).hex()}")
 
+    # A full extent is closed, followed by creation and use of the next one.
+    cpu.mem[FIXTURE:FIXTURE + 32] = (bytes((0,)) + b"CROSS   DAT" +
+                                            bytes((0, 0, 0, 128)) +
+                                            bytes((3, 0)) + bytes(14))
+    cpu.mem[FIXTURE + 64:FIXTURE + 96] = bytes((0xE5,)) * 32
+    cpu.run(DIR_BASE + 15)
+    cpu.c = 13
+    cpu.run(BDOS_BASE, limit=50000)
+    cpu.mem[FCB:FCB + 33] = bytes(33)
+    cpu.mem[FCB + 1:FCB + 12] = b"CROSS   DAT"
+    cpu.mem[FCB + 32] = 128
+    cpu.c, cpu.de = 15, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0 and cpu.mem[FCB + 15] == 128 and
+            cpu.mem[FCB + 32] == 128, "full-extent fixture did not Open")
+    cpu.mem[0x7000:0x7080] = bytes((0xB2,)) * 128
+    cpu.c, cpu.de = 26, 0x7000
+    cpu.run(BDOS_BASE)
+    cpu.c, cpu.de = 21, FCB
+    cpu.run(BDOS_BASE, limit=100000)
+    require(cpu.a == 0 and cpu.mem[FCB + 12] == 1 and
+            cpu.mem[FCB + 15] == 1 and cpu.mem[FCB + 32] == 1 and
+            bytes(cpu.mem[FCB + 16:FCB + 18]) == bytes((4, 0)) and
+            bytes(cpu.mem[FIXTURE + 65:FIXTURE + 76]) == b"CROSS   DAT" and
+            cpu.mem[FIXTURE + 76] == 1 and cpu.mem[FIXTURE + 79] == 0,
+            "Write Sequential did not create and enter the next extent")
+    next_fcb = bytes(cpu.mem[FCB:FCB + 33])
+    cpu.c, cpu.de = 16, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 2 and bytes(cpu.mem[FCB:FCB + 33]) == next_fcb and
+            cpu.mem[FIXTURE + 79] == 1 and
+            bytes(cpu.mem[FIXTURE + 80:FIXTURE + 82]) == bytes((4, 0)),
+            "Close did not commit the automatically created extent")
+
+    # With every repeated fixture slot occupied, transition reports directory
+    # full and restores the stable completed-extent FCB.
+    for offset in range(32, 512, 32):
+        cpu.mem[FIXTURE + offset:FIXTURE + offset + 32] = (
+            bytes((0,)) + b"FULL    DAT" + bytes((0, 0, 0, 1)) + bytes(16))
+    cpu.run(DIR_BASE + 15)
+    cpu.c = 13
+    cpu.run(BDOS_BASE, limit=50000)
+    cpu.mem[FCB:FCB + 33] = bytes(33)
+    cpu.mem[FCB + 1:FCB + 12] = b"CROSS   DAT"
+    cpu.mem[FCB + 32] = 128
+    cpu.c, cpu.de = 15, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    full_fcb = bytes(cpu.mem[FCB:FCB + 33])
+    full_media = bytes(cpu.mem[FIXTURE:FIXTURE + 512])
+    cpu.c, cpu.de = 21, FCB
+    cpu.run(BDOS_BASE, limit=200000)
+    require(cpu.a == 1 and bytes(cpu.mem[FCB:FCB + 33]) == full_fcb and
+            bytes(cpu.mem[FIXTURE:FIXTURE + 512]) == full_media,
+            f"directory-full transition state: A={cpu.a:02X} "
+            f"EX={cpu.mem[FCB + 12]:02X} RC={cpu.mem[FCB + 15]:02X} "
+            f"CR={cpu.mem[FCB + 32]:02X}")
+
     # Software and FCB attribute protection must precede all mutation.
     cpu.c = 28
     cpu.run(BDOS_BASE)
