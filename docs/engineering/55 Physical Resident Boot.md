@@ -50,6 +50,11 @@ clean `A>` prompt. The resident execution test separately scripts `WARM` and
 `VER`, proving command processing and WBOOT reconstruction after the physical
 loader boundary.
 
+The first manual `VER` run exposed that the following prompt used LF without CR
+and therefore inherited the version line's ending column. The CCP prompt now
+uses CR/LF so every prompt begins in column zero; this small post-milestone patch
+is retained here as part of the physical-boot history.
+
 Native CP/M ZSM4/Digital Research LINK and the host assembler must continue to
 produce byte-identical boot, stage-one, BIOS, BDOS, directory, CCP, and gateway
 components.

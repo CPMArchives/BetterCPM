@@ -87,7 +87,7 @@ CCP_EQUAL:
         RET
 
 CCP_PROMPT:
-        DB      10,'$'
+        DB      13,10,'$'
 CCP_UNKNOWN:
         DB      10,'?','$'
 CCP_VERSION:
