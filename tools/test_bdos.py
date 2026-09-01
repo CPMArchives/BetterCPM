@@ -801,28 +801,34 @@ def main() -> None:
 
     # Reproduce ENTRYTST's exact Function 40 lifecycle: Make an empty file,
     # write record 2, then read zero-filled records 0 and 1 without Close.
-    cpu.mem[FCB:FCB + 36] = bytes(36)
-    cpu.mem[FCB + 1:FCB + 12] = b"ENT40   $$$"
-    cpu.c, cpu.de = 22, FCB
-    cpu.run(BDOS_BASE, limit=100000)
-    require(cpu.a != 0xFF, "Function 40 fixture Make failed")
-    cpu.mem[0x7000:0x7080] = bytes((0xA5,)) * 128
-    cpu.c, cpu.de = 26, 0x7000
-    cpu.run(BDOS_BASE)
-    cpu.mem[FCB + 33:FCB + 36] = bytes((2, 0, 0))
-    cpu.c, cpu.de = 40, FCB
-    cpu.run(BDOS_BASE, limit=400000)
-    require(cpu.a == 0, "Function 40 rejected record 2 of a made empty file")
-    for record, expected in ((0, bytes(128)), (1, bytes(128)),
-                             (2, bytes((0xA5,)) * 128)):
-        cpu.mem[0x7180:0x7200] = bytes((0xCC,)) * 128
-        cpu.c, cpu.de = 26, 0x7180
+    for cycle in range(2):
+        cpu.mem[FCB:FCB + 36] = bytes(36)
+        cpu.mem[FCB + 1:FCB + 12] = b"ENT40   $$$"
+        cpu.c, cpu.de = 22, FCB
+        cpu.run(BDOS_BASE, limit=100000)
+        require(cpu.a != 0xFF, f"Function 40 fixture Make failed in cycle {cycle}")
+        cpu.mem[0x7000:0x7080] = bytes((0xA5,)) * 128
+        cpu.c, cpu.de = 26, 0x7000
         cpu.run(BDOS_BASE)
-        cpu.mem[FCB + 33:FCB + 36] = bytes((record, 0, 0))
-        cpu.c, cpu.de = 33, FCB
+        cpu.mem[FCB + 33:FCB + 36] = bytes((2, 0, 0))
+        cpu.c, cpu.de = 40, FCB
+        cpu.run(BDOS_BASE, limit=400000)
+        require(cpu.a == 0,
+                f"Function 40 rejected record 2 in cycle {cycle}")
+        for record, expected in ((0, bytes(128)), (1, bytes(128)),
+                                 (2, bytes((0xA5,)) * 128)):
+            cpu.mem[0x7180:0x7200] = bytes((0xCC,)) * 128
+            cpu.c, cpu.de = 26, 0x7180
+            cpu.run(BDOS_BASE)
+            cpu.mem[FCB + 33:FCB + 36] = bytes((record, 0, 0))
+            cpu.c, cpu.de = 33, FCB
+            cpu.run(BDOS_BASE, limit=200000)
+            require(cpu.a == 0 and bytes(cpu.mem[0x7180:0x7200]) == expected,
+                    f"Function 40 cycle {cycle} failed record {record}")
+        cpu.c, cpu.de = 19, FCB
         cpu.run(BDOS_BASE, limit=200000)
-        require(cpu.a == 0 and bytes(cpu.mem[0x7180:0x7200]) == expected,
-                f"Function 40 lifecycle failed reading record {record}")
+        require(cpu.a == 0,
+                f"Delete did not retire Function 40 cycle {cycle} journal")
     cpu.mem[FIXTURE:FIXTURE + 512] = random_media
     cpu.mem[DATA:DATA + 512] = random_data
     cpu.run(DIR_BASE + 15)

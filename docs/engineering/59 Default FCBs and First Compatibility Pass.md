@@ -52,6 +52,11 @@ not evidence of a slow or nonreturning test. Individual item `0001` completes
 with one pass and zero failures. Engineering Specification 60 corrects the
 console boundary before the complete compatibility run is resumed.
 
+Subsequent work completed this milestone: Engineering Specifications 61 and 62
+corrected live Function 40 FCB reads and repeated scratch-file cleanup. The
+regenerated physical disk now completes `ENTRYTST /SAFE` with 25 passes, zero
+failures, zero errors, and zero observations, then returns normally to `A>`.
+
 ## MDIR
 
 The requested `MDIR.COM` was reconstructed from `MMCPM.dmk` using its 16-bit

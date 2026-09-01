@@ -2,7 +2,7 @@
 
 BetterCP/M is an effort to design a compact, maintainable successor to CP/M 2.2 while preserving a rigorously defined CP/M-compatible environment.
 
-The project has entered implementation. Its reproducibly generated TRS-80 Model 4 disk now loads the resident BetterCP/M BIOS, BDOS, directory services, and CCP, boots to an `A>` prompt under `trs80gp`, lists the physical directory with resident `DIR`, and loads `HELLO.COM` with a CP/M command tail.
+The project has entered implementation. Its reproducibly generated TRS-80 Model 4 disk now loads the resident BetterCP/M BIOS, BDOS, directory services, and CCP, boots to an `A>` prompt under `trs80gp`, lists the physical directory with resident `DIR`, loads `HELLO.COM` with a CP/M command tail, and completes the independent `ENTRYTST /SAFE` physical pass with 25 passes and no failures or errors.
 
 ## Design direction
 
@@ -90,6 +90,7 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Engineering Specification 59`](docs/engineering/59%20Default%20FCBs%20and%20First%20Compatibility%20Pass.md) adds ordinary default FCBs, general multi-extent file installation, the first independent `ENTRYTST` evidence, and a verified original `MDIR.COM` run.
 [`Engineering Specification 60`](docs/engineering/60%20Model%204%20Console%20Scrolling.md) bounds the resident Model 4 console to 80 by 24 characters and adds verified line-feed and automatic-wrap scrolling.
 [`Engineering Specification 61`](docs/engineering/61%20Function%2040%20Live%20FCB%20Reads.md) preserves unclosed same-extent Function 40 state for Random Read and revises the Directory Services placement to `D600h`.
+[`Engineering Specification 62`](docs/engineering/62%20Delete%20of%20Unclosed%20Allocations.md) makes same-FCB Delete retire its pending allocations transactionally, enabling repeated Function 40 scratch-file lifecycles.
 [`Engineering Specification 25`](docs/engineering/25%20Allocation%20and%20DPB%20Pointers.md) exposes the current drive's reconstructed allocation vector and live 15-byte disk parameter block.
 [`Engineering Specification 26`](docs/engineering/26%20Directory%20Search%20and%20DMA.md) adds Search First/Search Next continuation, wildcard and all-user matching, and complete directory-record transfer to the selected DMA address.
 [`Engineering Specification 27`](docs/engineering/27%20Unchanged%20FCB%20Close.md) adds the non-mutating Close File boundary for unchanged activated FCBs and safely rejects dirty commits until writeback exists.

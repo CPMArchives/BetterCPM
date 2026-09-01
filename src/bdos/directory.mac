@@ -822,8 +822,8 @@ DIR_DELETE:
         LD      A,(DE)
         CP      2
         JP      NC,DIR_DNO
-        CALL    DIR_JEMPTY
-        JP      NZ,DIR_DNO       ; do not invalidate live allocation journals
+        CALL    DIR_DJOK
+        JP      NZ,DIR_DNO       ; never discard another FCB's live journal
         CALL    DIR_GALV
         JP      NZ,DIR_DERR
         XOR     A
@@ -896,6 +896,7 @@ DIR_DADV:
         JR      DIR_DPASS
 DIR_DDONE:
         CALL    DIR_INVAL
+        CALL    DJ_REM
         XOR     A
         RET
 DIR_DERR:
@@ -956,6 +957,36 @@ DIR_JELOOP:
         INC     HL
         INC     HL
         DJNZ    DIR_JELOOP
+        XOR     A
+        RET
+
+; Delete may retire allocations belonging to its own FCB, but must not cross
+; an unrelated unclosed writer. Journal removal occurs only after disk success.
+DIR_DJOK:
+        LD      HL,DIR_PEND
+        LD      B,32
+DIR_DJLOOP:
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        LD      A,D
+        OR      E
+        JR      Z,DIR_DJNEXT
+        PUSH    HL
+        LD      HL,(DIR_DFCB)
+        LD      A,H
+        CP      D
+        JR      NZ,DIR_DJBAD
+        LD      A,L
+        CP      E
+DIR_DJBAD:
+        POP     HL
+        RET     NZ
+DIR_DJNEXT:
+        INC     HL
+        INC     HL
+        DJNZ    DIR_DJLOOP
         XOR     A
         RET
 
@@ -1999,6 +2030,11 @@ DIR_CPRNEXT:
         INC     HL
         DJNZ    DIR_CPRLOP
         RET
+
+DJ_REM:
+        LD      HL,(DIR_DFCB)
+        LD      (DIR_CFP),HL
+        JP      DIR_PREM
 
 ; Begin/continue a CP/M directory enumeration. Search First receives current
 ; user in A, FCB in DE, and DMA in BC. Search Next receives the current DMA in
