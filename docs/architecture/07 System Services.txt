@@ -293,6 +293,20 @@ Where practical, internal organization should permit additional
 services to be introduced without requiring the existing
 compatibility interface to be redesigned.
 
+The internal organization of the System-Service entry and dispatch
+path shall not assume that every request must always pass directly
+and exclusively to the core BDOS implementation.  It shall preserve
+a low-cost architectural seam at which a future CP/M 3-style
+resident-system extension, or an equivalent BetterCP/M mechanism,
+could inspect, intercept, extend, or pass through a service request.
+
+This requirement does not select an extension ABI, require an extra
+resident dispatch layer in the initial implementation, or permit an
+optional module to alter CP/M-compatible behavior silently.  It
+requires only that entry, dispatch, initialization, chaining, and
+memory-layout decisions avoid making such an extension facility
+unreasonably difficult to add later.
+
 Potential future debugging or system-development services may make
 use of such extension mechanisms, but no application-facing
 BetterCP/M service extension is required by the initial

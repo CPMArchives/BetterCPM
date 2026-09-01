@@ -349,6 +349,19 @@ Questions include:
   * Which debugging facilities, if any, should eventually become
     public BetterCP/M services?
 
+  * What concrete requirements should define a future resident-
+    extension ABI?
+
+  * Should a resident extension intercept the CP/M-compatible BDOS
+    entry, an internal normalized request interface, or both?
+
+  * How should optional extensions be installed, initialized,
+    chained, discovered, removed, and assigned resident memory?
+
+  * Can foreign-filesystem translation provide the first bounded
+    implementation case for that mechanism without placing FAT or
+    other translation code permanently in the core BDOS?
+
 These questions shall not cause speculative mechanisms to be added to
 the initial implementation.
 

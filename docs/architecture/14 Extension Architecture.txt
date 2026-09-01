@@ -125,6 +125,23 @@ Once an extension mechanism is defined and published for application
 use, its interface becomes part of the BetterCP/M compatibility
 contract applicable to that extension.
 
+BetterCP/M shall avoid architectural choices that preclude a future
+CP/M 3-style Resident System Extension (RSX) mechanism or an
+equivalent resident-extension facility.  In particular, the BDOS
+entry and dispatch organization, resident memory layout,
+initialization path, and possible chaining points shall not require
+all service calls permanently to enter the core BDOS directly.
+
+The initial system need not implement RSXs.  No extension ABI,
+installer, removal mechanism, chain representation, memory manager,
+or interception dispatcher is defined by the initial architecture.
+Preserving the future capability shall impose little or no resident
+cost until an implemented extension actually requires it.
+
+A future extension facility may be compatible in purpose rather than
+binary-identical to CP/M 3 RSXs.  Its requirements and ABI shall be
+specified from concrete uses before implementation.
+
 
 14.5 STORAGE EXTENSIONS
 -----------------------
@@ -141,6 +158,7 @@ Future storage extensions may include:
   * Multiple logical drives on a single physical device.
   * Storage arrangements appropriate to SD or CompactFlash media.
   * Other mappings between logical CP/M storage and physical media.
+  * Optional foreign-filesystem translators, such as FAT12 or FAT16.
 
 Disk-format extensions shall operate through the logical disk-format
 and translation boundaries defined by the Storage and File-System
@@ -159,6 +177,15 @@ for each supported format.
 
 The precise configuration mechanism is deferred until its
 requirements are investigated and specified.
+
+A foreign-filesystem translator should not become permanently
+resident core-BDOS code merely because the filesystem might
+occasionally be mounted.  A future resident-extension facility may
+intercept file-service requests for assigned drives, translate them
+through the normal disk and hardware boundaries, and pass requests
+for ordinary BetterCP/M drives through unchanged.  Networking,
+optional device services, and other service mediation may provide
+additional concrete uses for the same facility.
 
 
 14.6 HARDWARE EXTENSIONS
