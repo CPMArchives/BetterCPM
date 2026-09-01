@@ -164,7 +164,11 @@ ZSM4 is the canonical BetterCP/M assembler. The project shall pin and redistribu
 
 Digital Research LINK 1.3 is the canonical BetterCP/M linker. It is redistributable as Digital Research CP/M development material under the nonexclusive CP/M grant clarified on 9 July 2022. The project shall preserve its Digital Research attribution, the applicable grant notice, provenance, and a cryptographic hash of the distributed binary. The selected binary shall be verified with ZSM4 `.REL` output.
 
-The build runner remains to be selected by the Source and Build Conventions specification. The selection shall be made before implementation begins and shall support automated, non-interactive builds with symbol listings or maps sufficient to verify addresses and sizes.
+The authoritative BetterCP/M build shall run ZSM4 and Digital Research LINK 1.3 under native CP/M. All canonical assembly source, include files, module names, command files, and build steps shall remain usable within the CP/M file-system, command-line, and memory constraints of that toolchain.
+
+A host-based cross-assembler may be supported as a development convenience and independent verification path. It shall not be required to build BetterCP/M, and canonical source shall not depend upon host-only syntax or features. Where both build paths cover the same component, automated comparison should require equivalent binary output or document every intentional difference.
+
+The host-side build runner used to automate the native build and construct development disk images remains to be selected by the Source and Build Conventions specification. It shall support automated, non-interactive builds with retained listings or maps sufficient to verify addresses and sizes.
 
 The assembler shall be freely redistributable. Its license shall permit the project to redistribute the assembler with BetterCP/M development materials and shall not impose noncommercial-use, per-user licensing, or similar field-of-use restrictions. Any runtime components required to execute the redistributed assembler shall satisfy the same requirement. License texts and required notices shall be preserved with redistributed copies.
 
@@ -220,7 +224,7 @@ The following narrow items must be resolved before code is committed for this mi
 
 1. Pin the verified ZSM4 source and binary version and record its GNU GPL v2 redistribution obligations.
 2. Pin the verified Digital Research LINK 1.3 binary and record its provenance, hash, attribution, and the CP/M redistribution grant clarified on 9 July 2022.
-3. Select the build runner and host-language tool used to construct `drivea.dsk`.
+3. Select the host-side automation runner and disk-image construction tool while preserving the authoritative native CP/M assembly and link path.
 4. Confirm the pinned `cpmsim` disk-status success and error encodings from source or a deterministic experiment.
 5. Choose the bring-up-only stage-one stack, scratch buffer, and verification sector values.
 6. Record the exact reference-emulator command line.
