@@ -50,6 +50,8 @@ BDOS:
         JP      Z,BF_LIST
         CP      6
         JP      Z,BF_DCIO
+        CP      7
+        JP      Z,BF_GETIO
         CP      11
         JP      Z,BF_CONST
         CP      12
@@ -123,6 +125,9 @@ BF_LIST:
         LD      C,A
         CALL    BIOLIST
         XOR     A
+        JP      BDOS_RETURN
+BF_GETIO:
+        LD      A,(0003H)       ; conventional CP/M page-zero I/O byte
         JP      BDOS_RETURN
 
 ; Cooked, blocking console input. CP/M flow/printer controls are consumed;

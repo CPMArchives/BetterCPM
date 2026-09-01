@@ -72,6 +72,7 @@ def main() -> None:
     cpu.mem[DATA:DATA + 128] = bytes((0xA0,)) * 128
     cpu.mem[DATA + 128:DATA + 256] = bytes((0xA1,)) * 128
     cpu.mem[DATA + 256:DATA + 512] = bytes((0xEE,)) * 256
+    cpu.mem[3] = 0xA5
 
     cpu.run(SYSTEM_INIT, limit=60000)
     require(cpu.a == 0, "resident initialization failed")
@@ -79,8 +80,12 @@ def main() -> None:
             "warm-boot page-zero vector is wrong")
     require(bytes(cpu.mem[5:8]) == bytes((0xC3, 0x00, 0xC1)),
             "BDOS page-zero vector is wrong")
-
     cpu.mem[CALLER:CALLER + 4] = bytes((0xCD, 0x05, 0x00, 0xC9))
+    cpu.c = 7
+    cpu.run(CALLER)
+    require(cpu.a == cpu.l == 0xA5 and cpu.mem[3] == 0xA5,
+            "CALL 0005h Get I/O Byte lost the page-zero value")
+
     cpu.c = 11
     cpu.run(CALLER)
     require(cpu.a == 0, "CALL 0005h console status reported a false key")
@@ -406,7 +411,7 @@ def main() -> None:
             "failed initialization published page-zero vectors")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
-    print("application CALL 0005h reached functions 1-6, 11-37, and 40")
+    print("application CALL 0005h reached functions 1-7, 11-37, and 40")
 
 
 if __name__ == "__main__":

@@ -36,5 +36,6 @@ byte-identical BDOS and resident-system binaries.
 
 ## Next increment
 
-Implement functions 7 and 8, Get and Set I/O Byte, preserving the conventional
-page-zero `IOBYTE` at address `0003h` for software that examines it directly.
+Function 7 is implemented by [Engineering Specification 49](49%20Get%20IO%20Byte.md),
+preserving the conventional page-zero `IOBYTE` at address `0003h`. Function 8
+remains the next increment.

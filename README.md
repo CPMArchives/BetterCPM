@@ -76,6 +76,8 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Engineering Specification 47`](docs/engineering/47%20Cooked%20Console%20Output.md) adds tab-aware console output, flow-control polling, and lossless one-character type-ahead preservation.
 
 [`Engineering Specification 48`](docs/engineering/48%20Logical%20Character%20Devices.md) adds Reader Input, Punch Output, and List Output as portable pass-throughs to BIOS logical devices.
+
+[`Engineering Specification 49`](docs/engineering/49%20Get%20IO%20Byte.md) exposes the shared conventional page-zero I/O byte without introducing private BDOS state.
 [`Engineering Specification 25`](docs/engineering/25%20Allocation%20and%20DPB%20Pointers.md) exposes the current drive's reconstructed allocation vector and live 15-byte disk parameter block.
 [`Engineering Specification 26`](docs/engineering/26%20Directory%20Search%20and%20DMA.md) adds Search First/Search Next continuation, wildcard and all-user matching, and complete directory-record transfer to the selected DMA address.
 [`Engineering Specification 27`](docs/engineering/27%20Unchanged%20FCB%20Close.md) adds the non-mutating Close File boundary for unchanged activated FCBs and safely rejects dirty commits until writeback exists.
