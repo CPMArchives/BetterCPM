@@ -69,3 +69,6 @@ Interpret CP/M extent fields (`EX`, `S1`, `S2`, and `RC`) and define the first
 FCB-open result. This will connect exact directory search and the reconstructed
 allocation map to the CP/M-visible file interface without enabling mutation.
 
+Engineering Specification 17 completed the first exact, read-only FCB Open
+service for the current `EXM=0` carrier. Grouped extents, wildcards, and the
+public BDOS function-15 dispatch remain subsequent compatibility increments.

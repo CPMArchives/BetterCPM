@@ -11,6 +11,7 @@ DIR_BASE = 0xE800
 DIR_BUFFER = 0xEC00
 FIXTURE = 0x7500
 QUERY = 0x7600
+FCB = 0x7700
 
 
 def main() -> None:
@@ -111,6 +112,43 @@ def main() -> None:
     cpu.run(DIR_BASE + 9, limit=20000)
     require(cpu.a == 0xFF, "wrong user number was falsely matched")
 
+    # Read-only FCB Open selects the requested EX/S2 extent, activates bytes
+    # 1..31 from its directory entry, and preserves drive and caller CR.
+    cpu.mem[FIXTURE + 76:FIXTURE + 80] = bytes((3, 0x55, 2, 0x22))
+    cpu.mem[FIXTURE + 80:FIXTURE + 96] = bytes(range(1, 17))
+    cpu.mem[FCB:FCB + 33] = bytes((0xA5,)) * 33
+    cpu.mem[FCB] = 0
+    cpu.mem[FCB + 1:FCB + 12] = b"TEST    COM"
+    cpu.mem[FCB + 12] = 3
+    cpu.mem[FCB + 14] = 2
+    cpu.mem[FCB + 32] = 9
+    cpu.a, cpu.de = 7, FCB
+    cpu.run(DIR_BASE + 18, limit=20000)
+    require(cpu.a == 2, "FCB Open did not return directory slot 2")
+    require(cpu.mem[FCB] == 0 and cpu.mem[FCB + 32] == 9,
+            "FCB Open changed the drive byte or caller CR")
+    require(cpu.mem[FCB + 1:FCB + 32] == cpu.mem[FIXTURE + 65:FIXTURE + 96],
+            "FCB Open did not activate directory bytes 1..31")
+
+    cpu.mem[FIXTURE + 79] = 129
+    cpu.a, cpu.de = 7, FCB
+    cpu.run(DIR_BASE + 18, limit=30000)
+    require(cpu.a == 0xFF, "FCB Open accepted an impossible RC value")
+    cpu.mem[FIXTURE + 79] = 0x22
+
+    cpu.mem[FCB:FCB + 33] = bytes((0xA5,)) * 33
+    cpu.mem[FCB] = 0
+    cpu.mem[FCB + 1:FCB + 12] = b"TEST    COM"
+    cpu.mem[FCB + 12] = 4
+    cpu.mem[FCB + 14] = 2
+    cpu.mem[FCB + 32] = 11
+    unopened = bytes(cpu.mem[FCB:FCB + 33])
+    cpu.a, cpu.de = 7, FCB
+    cpu.run(DIR_BASE + 18, limit=30000)
+    require(cpu.a == 0xFF, "FCB Open accepted the wrong extent")
+    require(cpu.mem[FCB:FCB + 33] == unopened,
+            "failed exact FCB Open modified the caller FCB")
+
     # Invalidation forces a fresh DPH/DPB login. Altered test DPB values prove
     # that directory bounds and OFF are derived state rather than constants.
     cpu.mem[FIXTURE:FIXTURE + 512] = bytes((0xE5,)) * 512
@@ -149,6 +187,7 @@ def main() -> None:
 
     print("DPH/DPB login and complete allocation reconstruction passed")
     print("all 128 directory entries searched through BIOS")
+    print("read-only exact-extent FCB Open and activation passed")
     print("invalidation, exact user/8.3 matching, and attribute masking passed")
 
 

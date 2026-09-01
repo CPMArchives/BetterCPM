@@ -27,6 +27,7 @@ DIRSERV:
         JP      DIR_FIND
         JP      DIR_LOGIN
         JP      DIR_INVAL
+        JP      DIR_OPEN
 
 ; Establish drive state from its DPH and DPB. Input C=drive.
 ; The allocation vector is cleared, seeded from AL0/AL1, and reconstructed
@@ -58,8 +59,11 @@ DIR_LOGIN:
         LD      A,E
         OR      A
         JP      Z,DIR_BADFMT
-        LD      DE,4
-        ADD     HL,DE           ; DSM at DPB+5
+        LD      DE,3
+        ADD     HL,DE           ; EXM at DPB+4
+        LD      A,(HL)
+        LD      (DIR_EXM),A
+        INC     HL              ; DSM at DPB+5
         LD      E,(HL)
         INC     HL
         LD      D,(HL)
@@ -286,6 +290,118 @@ DIR_NOTF:
         OR      A
         RET
 
+; Activate an exact existing extent in a 33-byte sequential FCB.
+; Input: A=user, DE=FCB. Return directory slot 0..3 or FFh if absent.
+; This first read-only slice supports EXM=0 and drive A/current-drive only.
+DIR_OPEN:
+        LD      (DIR_USER),A
+        LD      (DIR_FCBP),DE
+        LD      A,(DE)
+        CP      2
+        JP      NC,DIR_ONOTF
+        LD      HL,(DIR_FCBP)
+        LD      DE,12
+        ADD     HL,DE
+        LD      A,(HL)
+        AND     01FH
+        LD      (DIR_OEX),A
+        INC     HL
+        INC     HL
+        LD      A,(HL)
+        AND     03FH
+        LD      (DIR_OS2),A
+        LD      A,(DIR_EXM)
+        OR      A
+        JP      NZ,DIR_ONOTF
+        XOR     A
+        LD      (DIR_RECORD),A
+DIR_ORECD:
+        LD      A,(DIR_RECORD)
+        LD      HL,DIR_RECS
+        CP      (HL)
+        JP      NC,DIR_ONOTF
+        LD      C,A
+        CALL    DIR_LOAD
+        RET     NZ
+        LD      B,4
+        XOR     A
+        LD      (DIR_SLOT),A
+DIR_OENT:
+        LD      A,(DIR_USER)
+        CP      (HL)
+        JR      NZ,DIR_ONEXT
+        PUSH    BC
+        PUSH    HL
+        INC     HL
+        LD      DE,(DIR_FCBP)
+        INC     DE
+        LD      B,11
+DIR_OCHAR:
+        LD      A,(DE)
+        AND     07FH
+        LD      C,A
+        LD      A,(HL)
+        AND     07FH
+        CP      C
+        JR      NZ,DIR_OMISS
+        INC     DE
+        INC     HL
+        DJNZ    DIR_OCHAR
+        POP     HL
+        POP     BC
+        PUSH    HL
+        LD      DE,12
+        ADD     HL,DE
+        LD      A,(HL)
+        AND     01FH
+        LD      C,A
+        LD      A,(DIR_OEX)
+        CP      C
+        JR      NZ,DIR_OCTLN
+        INC     HL
+        INC     HL
+        LD      A,(HL)
+        AND     03FH
+        LD      C,A
+        LD      A,(DIR_OS2)
+        CP      C
+        JR      NZ,DIR_OCTLN
+        INC     HL              ; RC must remain in the documented 0..128 range
+        LD      A,(HL)
+        CP      129
+        JR      C,DIR_OFOUND
+DIR_OCTLN:
+        POP     HL
+        JR      DIR_ONEXT
+DIR_OMISS:
+        POP     HL
+        POP     BC
+        JR      DIR_ONEXT
+DIR_OFOUND:
+        POP     HL
+        INC     HL              ; directory user byte is not FCB drive byte
+        LD      DE,(DIR_FCBP)
+        INC     DE
+        LD      BC,31
+        LDIR                    ; FCB CR at byte 32 remains caller-owned
+        LD      A,(DIR_SLOT)
+        OR      A
+        RET
+DIR_ONEXT:
+        LD      DE,32
+        ADD     HL,DE
+        LD      A,(DIR_SLOT)
+        INC     A
+        LD      (DIR_SLOT),A
+        DJNZ    DIR_OENT
+        LD      HL,DIR_RECORD
+        INC     (HL)
+        JP      DIR_ORECD
+DIR_ONOTF:
+        LD      A,0FFH
+        OR      A
+        RET
+
 ; Reconstruct file-owned allocation bits from all live ordinary extents.
 ; MM 790K has DSM>255, hence eight 16-bit block numbers at entry bytes 16..31.
 DIR_ALSCN:
@@ -425,6 +541,8 @@ DIR_SPT:
         DW      0
 DIR_DSM:
         DW      0
+DIR_EXM:
+        DB      0
 DIR_DRM:
         DW      0
 DIR_OFF:
@@ -436,6 +554,14 @@ DIR_ALVP:
 DIR_AL0:
         DB      0
 DIR_AL1:
+        DB      0
+DIR_FCBP:
+        DW      0
+DIR_OEX:
+        DB      0
+DIR_OS2:
+        DB      0
+DIR_SLOT:
         DB      0
 
         .DEPHASE

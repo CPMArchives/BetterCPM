@@ -28,7 +28,8 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="bettercpm-directory-") as temporary:
         staged = Path(temporary) / SOURCE.name
         staged.write_text(text, encoding="ascii")
-        subprocess.run([str(args.assembler), "-fb", f"-o{output}", staged.name],
+        subprocess.run([str(args.assembler), "-fb", f"-o{output}",
+                        f"-l{BUILD / 'directory.lst'}", staged.name],
                        check=True, cwd=staged.parent)
     data = output.read_bytes()
     if len(data) > BASE and data[:BASE] == bytes(BASE):
