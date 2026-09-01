@@ -2,7 +2,7 @@
 
 BetterCP/M is an effort to design a compact, maintainable successor to CP/M 2.2 while preserving a rigorously defined CP/M-compatible environment.
 
-The project has entered implementation. Its reproducibly generated TRS-80 Model 4 disks now load the resident BetterCP/M BIOS, BDOS, directory services, and CCP; expose physical floppy drives A: through D:; boot to an `A>` prompt under `trs80gp`; list the physical directory with resident `DIR`; load transient `.COM` programs with CP/M command tails and default FCBs; and complete clean independent physical compatibility passes for `ENTRYTST /SAFE` (25 passes), `BDOSTEST /SAFE` (56 passes), and the applicable `FILETEST` Open, Close, Sequential Read, and Sequential Write slices (66 required passes total).
+The project has entered implementation. Its reproducibly generated TRS-80 Model 4 disks now load the resident BetterCP/M BIOS, BDOS, directory services, and CCP; expose physical floppy drives A: through D:; boot to an `A>` prompt under `trs80gp`; list the physical directory with resident `DIR`; load transient `.COM` programs with CP/M command tails and default FCBs; and complete clean independent physical compatibility passes for `ENTRYTST /SAFE` (25 passes), `BDOSTEST /SAFE` (56 passes), `FILETEST /SAFE` (28 passes with no omissions), and the separate FILETEST Close, Sequential Read, and Sequential Write groups.
 
 ## Design direction
 
@@ -96,6 +96,7 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Engineering Specification 65`](docs/engineering/65%20FILETEST%20Open%20Slice.md) installs FILETEST and its canonical runtime fixtures and records a clean 26-case physical Function 15/Open pass, with only the two unavailable C: fixture cases reported as not-run.
 [`Engineering Specification 66`](docs/engineering/66%20FILETEST%20Close%20and%20Sequential%20Read.md) records clean physical Function 16/Close and Function 20/Read Sequential slices, adding 24 applicable FILETEST passes without failures or errors.
 [`Engineering Specification 67`](docs/engineering/67%20Four-Drive%20Binding%20and%20Sequential%20Write.md) extends the Model 4 binding to A: through D:, relocates immutable drive tables into the gateway gap, adds a canonical C: fixture image, and records a clean 16-case required FILETEST Write pass.
+[`Engineering Specification 68`](docs/engineering/68%20Complete%20FILETEST%20Safe%20Profile.md) records the complete physical FILETEST safe profile with 28 passes, no failures or errors, and no unavailable cross-drive cases.
 [`Engineering Specification 25`](docs/engineering/25%20Allocation%20and%20DPB%20Pointers.md) exposes the current drive's reconstructed allocation vector and live 15-byte disk parameter block.
 [`Engineering Specification 26`](docs/engineering/26%20Directory%20Search%20and%20DMA.md) adds Search First/Search Next continuation, wildcard and all-user matching, and complete directory-record transfer to the selected DMA address.
 [`Engineering Specification 27`](docs/engineering/27%20Unchanged%20FCB%20Close.md) adds the non-mutating Close File boundary for unchanged activated FCBs and safely rejects dirty commits until writeback exists.
