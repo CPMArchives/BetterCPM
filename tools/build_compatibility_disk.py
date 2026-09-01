@@ -27,10 +27,12 @@ def main() -> None:
     filetest = args.suite / "suite/build/FILETEST.COM"
     randtest = args.suite / "suite/build/RANDTEST.COM"
     dirtest = args.suite / "suite/build/DIRTEST.COM"
+    cputest = args.suite / "suite/build/CPUTEST.COM"
     payload = args.suite / "suite/runtime-payload"
     mdir = ROOT / "third_party/montezuma/MDIR.COM"
     fixtures = sorted(payload.glob("BT*.DAT"))
-    for path in (entry, bdos, filetest, randtest, dirtest, mdir, *fixtures):
+    for path in (entry, bdos, filetest, randtest, dirtest, cputest, mdir,
+                 *fixtures):
         if not path.is_file():
             raise SystemExit(f"missing compatibility input: {path}")
     command = [
@@ -41,6 +43,7 @@ def main() -> None:
         "--include", str(randtest),
         "--include", str(dirtest),
         "--include-user-as", f"1:DIRTEST.COM={dirtest}",
+        "--include", str(cputest),
         "--include", str(mdir),
     ]
     for fixture in fixtures:
