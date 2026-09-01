@@ -205,6 +205,18 @@ Questions include:
   * Which aspects of Montezuma Micro CP/M's configurable disk-format
     system are appropriate to adopt, adapt, or avoid?
 
+  * Which cpmtools diskdefs fields map directly into BetterCP/M's
+    portable format description, and which require target-specific
+    physical-layout or controller metadata?
+
+  * Can a conversion tool safely classify and filter diskdefs entries
+    for a selected hardware or emulator target, and what cases must be
+    flagged for semi-manual review?
+
+  * Which Montezuma Micro or BetterCP/M format definitions are absent
+    from cpmtools, and which can be contributed back as conventional
+    diskdefs entries?
+
 The architecture requires that variable logical disk characteristics
 not be unnecessarily embedded throughout the file-system code.
 

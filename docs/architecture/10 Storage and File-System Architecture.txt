@@ -293,6 +293,37 @@ assumptions can reasonably be represented as disk-format parameters.
 This requirement does not imply that every possible CP/M disk format
 must be supported.
 
+cpmtools diskdefs interoperability is an architectural portability
+goal. BetterCP/M should be able to import, translate, or otherwise
+reuse as many applicable definitions from a cpmtools diskdefs file as
+the target platform and storage device can faithfully implement.
+
+This goal applies to BetterCP/M on all hardware and emulated targets;
+it is not specific to the TRS-80 Model 4 or trs80gp. The portable
+format-description model shall therefore be kept separate from each
+platform's declaration of controller and device capabilities.
+
+An eventual conversion tool may classify definitions automatically,
+discard definitions that a selected target cannot physically
+represent, preserve directly usable definitions, and compile or
+translate the remainder into BetterCP/M runtime format data. Where a
+diskdefs entry omits physical information needed by a target, or where
+the relationship cannot be determined reliably, the process may
+require explicit platform metadata or semi-manual review rather than
+guessing.
+
+Interchange should be bidirectional where practical. Formats supplied
+with BetterCP/M or recovered from historical configurable systems such
+as Montezuma Micro CP/M should be expressible as cpmtools diskdefs
+entries when the diskdefs model can describe them. This permits media
+created for BetterCP/M to remain accessible with established host
+tools and may extend cpmtools' catalogue of historical formats.
+
+Exact syntax, conversion metadata, and the boundary between automatic
+and reviewed conversion remain engineering decisions. BetterCP/M-
+specific extensions shall not needlessly make otherwise conventional
+definitions unusable by cpmtools.
+
 10.9 STORAGE STATE
 ------------------
 
