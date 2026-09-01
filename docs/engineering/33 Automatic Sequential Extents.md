@@ -56,6 +56,6 @@ produce byte-identical components.
 
 ## Next increment
 
-Implement BDOS function 22 (Make File). Automatic extent creation now contains
-the core free-directory-slot and canonical-entry machinery needed for an
-explicit application-level Create operation.
+Engineering Specification 34 exposes the canonical-entry machinery as BDOS
+function 22 (Make File). The next increment can implement function 19 (Delete
+File), completing the opposite directory lifecycle operation.

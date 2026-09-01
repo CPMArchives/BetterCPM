@@ -12,6 +12,7 @@ DIRSNXT         EQU     0D81EH  ; eleventh directory-service vector
 DIRCLOS         EQU     0D821H  ; twelfth directory-service vector
 DIRREAD         EQU     0D824H  ; thirteenth directory-service vector
 DIRWRITE        EQU     0D827H  ; fourteenth directory-service vector
+DIRMAKE         EQU     0D82AH  ; fifteenth directory-service vector
 
         CSEG
         .PHASE  BDOSBASE
@@ -40,6 +41,8 @@ BDOS:
         JP      Z,BDOS_READ
         CP      21
         JP      Z,BDOS_WRITE
+        CP      22
+        JP      Z,BDOS_MAKE
         CP      24
         JP      Z,BDOS_LOGV
         CP      25
@@ -144,7 +147,7 @@ BF_USER:
         JP      BDOS_RETURN
 BF_GETU:
         LD      A,(BDOS_USER)
-        JR      BDOS_RETURN
+        JP      BDOS_RETURN
 
 BDOS_OPEN:
         LD      DE,(BDOS_PARM)
@@ -153,11 +156,11 @@ BDOS_OPEN:
         LD      (HL),0          ; CP/M caller supplies S2 zero on Open
         LD      A,(BDOS_USER)
         CALL    DIROPEN
-        JR      NC,BDOS_RETURN
+        JP      NC,BDOS_RETURN
         LD      A,0FFH          ; provisional storage-error presentation
 ; Patch 2026-09-01: RET_HL was inserted below for function 24. Keep this
 ; explicit branch so Open errors cannot fall into the new 16-bit return path.
-        JR      BDOS_RETURN
+        JP      BDOS_RETURN
 
 BDOS_CLOSE:
         LD      DE,(BDOS_PARM)
@@ -204,6 +207,17 @@ BDOS_WRITE:
         CALL    DIRWRITE
         JR      NC,BDOS_RETURN
         LD      A,0FFH          ; protection or physical-storage failure
+        JP      BDOS_RETURN
+
+BDOS_MAKE:
+        LD      DE,(BDOS_PARM)
+        LD      A,(STATE_RO)
+        AND     01H
+        LD      B,A
+        LD      A,(BDOS_USER)
+        CALL    DIRMAKE
+        JR      NC,BDOS_RETURN
+        LD      A,0FFH
         JP      BDOS_RETURN
 
 ; CP/M normal-return aliases: A=L and B=H.

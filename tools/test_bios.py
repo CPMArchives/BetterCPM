@@ -109,6 +109,9 @@ class Z80:
             elif op == 0xD8:            # RET C
                 if self.carry:
                     self.pc = self.pop()
+            elif op == 0xD0:            # RET NC
+                if not self.carry:
+                    self.pc = self.pop()
             elif op == 0x18:            # JR e
                 displacement = self.mem[self.pc]
                 self.pc += 1

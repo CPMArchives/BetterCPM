@@ -145,11 +145,41 @@ def main() -> None:
     require(cpu.a == 1 and bytes(cpu.mem[FCB:FCB + 33]) == dirty_fcb and
             cpu.mem[entry + 15] == 2,
             "dirty Close did not commit RC while preserving the caller FCB")
+
+    # Function 22 creates one canonical empty first extent and activates it.
+    post_close_fcb = bytes(cpu.mem[FCB:FCB + 33])
+    cpu.mem[FCB:FCB + 33] = bytes((0,)) + b"MAKE    DAT" + bytes((0xA5,)) * 21
+    cpu.c, cpu.de = 22, FCB
+    cpu.run(BDOS_BASE, limit=100000)
+    require(cpu.a == 0 and bytes(cpu.mem[FCB + 12:FCB + 33]) == bytes(21) and
+            bytes(cpu.mem[FIXTURE + 128:FIXTURE + 140]) ==
+            bytes((0,)) + b"MAKE    DAT",
+            f"BDOS Make result A={cpu.a:02X} "
+            f"FCB={bytes(cpu.mem[FCB + 12:FCB + 33]).hex()} "
+            f"DIR={bytes(cpu.mem[FIXTURE + 128:FIXTURE + 140]).hex()}")
+    made_fcb = bytes(cpu.mem[FCB:FCB + 33])
+    made_media = bytes(cpu.mem[FIXTURE:FIXTURE + 512])
+    cpu.c, cpu.de = 22, FCB
+    cpu.run(BDOS_BASE, limit=100000)
+    require(cpu.a == 0xFF and bytes(cpu.mem[FCB:FCB + 33]) == made_fcb and
+            bytes(cpu.mem[FIXTURE:FIXTURE + 512]) == made_media,
+            "duplicate Make changed the FCB or directory")
+    cpu.mem[FIXTURE + 128:FIXTURE + 160] = bytes((0xE5,)) * 32
+    cpu.run(DIR_BASE + 15)       # isolate later wildcard fixtures from Make
+    cpu.mem[FCB:FCB + 33] = post_close_fcb
     cpu.c = 28
     cpu.run(BDOS_BASE)
     cpu.mem[FCB + 15] = 3
     protected_fcb = bytes(cpu.mem[FCB:FCB + 33])
     protected_media = bytes(cpu.mem[FIXTURE:FIXTURE + 512])
+    cpu.mem[FCB:FCB + 33] = bytes((0,)) + b"DENIED  DAT" + bytes(21)
+    denied_fcb = bytes(cpu.mem[FCB:FCB + 33])
+    cpu.c, cpu.de = 22, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0xFF and bytes(cpu.mem[FCB:FCB + 33]) == denied_fcb and
+            bytes(cpu.mem[FIXTURE:FIXTURE + 512]) == protected_media,
+            "software-protected Make changed the FCB or directory")
+    cpu.mem[FCB:FCB + 33] = protected_fcb
     cpu.c, cpu.de = 16, FCB
     cpu.run(BDOS_BASE, limit=50000)
     require(cpu.a == 0xFF and bytes(cpu.mem[FCB:FCB + 33]) == protected_fcb and
@@ -394,6 +424,12 @@ def main() -> None:
             f"directory-full transition state: A={cpu.a:02X} "
             f"EX={cpu.mem[FCB + 12]:02X} RC={cpu.mem[FCB + 15]:02X} "
             f"CR={cpu.mem[FCB + 32]:02X}")
+    cpu.mem[FCB:FCB + 33] = bytes((0,)) + b"NOSPACE DAT" + bytes((0xA5,)) * 21
+    make_full_fcb = bytes(cpu.mem[FCB:FCB + 33])
+    cpu.c, cpu.de = 22, FCB
+    cpu.run(BDOS_BASE, limit=200000)
+    require(cpu.a == 0xFF and bytes(cpu.mem[FCB:FCB + 33]) == make_full_fcb,
+            "directory-full Make did not restore the caller FCB")
 
     # Software and FCB attribute protection must precede all mutation.
     cpu.c = 28
@@ -478,7 +514,7 @@ def main() -> None:
             f"provisional BDOS storage failure was confused with slot success: "
             f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS functions 12-18, 20-21, 24-29, 31, and 32 passed")
+    print("BDOS functions 12-18, 20-22, 24-29, 31, and 32 passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 

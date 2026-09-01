@@ -38,6 +38,77 @@ DIRSERV:
         JP      DIR_CLOSE
         JP      DIR_READ
         JP      DIR_WRITE
+        JP      DIR_MAKE
+
+; Create an empty first extent. A=current user, DE=FCB, B=software protection.
+; Returns directory slot 0..3, FFh for duplicate/full/invalid, carry on storage.
+DIR_MAKE:
+        LD      (DIR_MUSER),A
+        LD      (DIR_MFCB),DE
+        LD      A,B
+        OR      A
+        JR      NZ,DIR_MNO
+        LD      A,(DE)
+        CP      2
+        JR      NC,DIR_MNO
+        LD      HL,(DIR_MFCB)
+        LD      DE,DIR_MOLD
+        LD      BC,33
+        LDIR
+        LD      HL,(DIR_MFCB)
+        INC     HL
+        LD      B,11
+DIR_MNAME:
+        LD      A,(HL)
+        AND     07FH
+        CP      '?'
+        JR      Z,DIR_MREST
+        INC     HL
+        DJNZ    DIR_MNAME
+        CALL    DIR_GALV
+        JR      NZ,DIR_MERR
+        LD      DE,(DIR_MFCB)
+        INC     DE
+        LD      A,(DIR_MUSER)
+        CALL    DIR_FIND
+        CP      0FFH
+        JR      Z,DIR_MNEW
+        OR      A
+        JR      Z,DIR_MREST      ; an extent of this user/name already exists
+        JR      DIR_MERR
+DIR_MNEW:
+        LD      HL,(DIR_MFCB)
+        LD      DE,12
+        ADD     HL,DE
+        LD      B,21             ; EX,S1,S2,RC,allocation map,CR
+DIR_MZERO:
+        LD      (HL),0
+        INC     HL
+        DJNZ    DIR_MZERO
+        LD      DE,(DIR_MFCB)
+        LD      A,(DIR_MUSER)
+        CALL    DIR_CREATE
+        JR      C,DIR_MERR
+        CP      0FFH
+        JR      Z,DIR_MREST
+        OR      A               ; public success must not inherit CP's carry
+        RET
+DIR_MERR:
+        CALL    DIR_MLOAD
+        SCF
+        RET
+DIR_MREST:
+        CALL    DIR_MLOAD
+DIR_MNO:
+        LD      A,0FFH
+        OR      A
+        RET
+DIR_MLOAD:
+        LD      HL,DIR_MOLD
+        LD      DE,(DIR_MFCB)
+        LD      BC,33
+        LDIR
+        RET
 
 ; Write one sequential 128-byte record. A=current user, DE=activated FCB,
 ; BC=current DMA, H=nonzero when the selected drive is software protected.
@@ -287,8 +358,8 @@ DIR_WNZAL:
         LD      A,(DIR_WUSER)
         CALL    DIR_CREATE
         RET     C
-        OR      A
-        JR      NZ,DIR_WNREST
+        CP      0FFH
+        JR      Z,DIR_WNREST
         XOR     A
         RET
 DIR_WNERR:
@@ -296,9 +367,8 @@ DIR_WNERR:
         SCF
         RET
 DIR_WNREST:
-        PUSH    AF
         CALL    DIR_WNLOAD
-        POP     AF
+        LD      A,1
         OR      A
         RET
 DIR_WNLOAD:
@@ -357,7 +427,8 @@ DIR_XFOUND:
         CALL    BIOWRITE
         JR      NZ,DIR_XWERR
         CALL    DIR_INVAL
-        XOR     A
+        LD      A,(DIR_XSLOT)
+        OR      A
         RET
 DIR_XWERR:
         PUSH    AF
@@ -381,7 +452,7 @@ DIR_XERR:
         SCF
         RET
 DIR_XFULL:
-        LD      A,1
+        LD      A,0FFH
         OR      A
         RET
 
@@ -1756,6 +1827,14 @@ DIR_WNEW:
         DW      0
 DIR_WALLOC:
         DB      0
+DIR_MUSER:
+        DB      0
+DIR_MFCB:
+        DW      0
+DIR_MOLD:
+        REPT    33
+        DB      0
+        ENDM
 DIR_WPRO:
         DB      0
 DIR_WOLD:
