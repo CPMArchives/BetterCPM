@@ -49,6 +49,6 @@ byte-identical System Services and BDOS binaries.
 
 ## Next increment
 
-Begin the CP/M random-record cluster. Function 35 (Compute File Size) is the
-best first step because it requires extent-wide record accounting and defines
-the 24-bit random-record result later consumed by random read and write.
+Engineering Specification 38 begins the random-record cluster with function 35
+(Compute File Size). The next increment is function 36 (Set Random Record),
+which converts the current sequential position into the same 24-bit form.

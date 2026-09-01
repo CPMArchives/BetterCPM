@@ -27,7 +27,7 @@ def symbol(name: str) -> int:
 
 def main() -> None:
     cpu = Z80(BIOS.read_bytes())
-    cpu.sp = 0xE800          # direct pre-BDOS calls must avoid resident code
+    cpu.sp = 0xED00          # direct pre-BDOS calls must avoid resident code
     directory = DIRECTORY.read_bytes()
     bdos = BDOS.read_bytes()
     cpu.mem[DIR_BASE:DIR_BASE + len(directory)] = directory
@@ -187,6 +187,33 @@ def main() -> None:
             bytes(cpu.mem[delete0:delete1 + 32]) == protected_extents,
             "read-only preflight allowed partial multi-extent deletion")
     cpu.mem[delete0:delete1 + 32] = bytes((0xE5,)) * 64
+    cpu.run(DIR_BASE + 15)
+
+    # Function 35 returns the maximum S2:EX/RC boundary in 24-bit R0..R2.
+    cpu.mem[delete0:delete0 + 32] = (bytes((0,)) + b"SIZE    DAT" +
+                                     bytes((0, 0, 0, 128)) + bytes(16))
+    cpu.mem[delete1:delete1 + 32] = (bytes((0,)) + b"SIZE    DAT" +
+                                     bytes((2, 0, 0, 5)) + bytes(16))
+    size2 = FIXTURE + 192
+    cpu.mem[size2:size2 + 32] = (bytes((0,)) + b"SIZE    DAT" +
+                                 bytes((0, 0, 1, 1)) + bytes(16))
+    cpu.run(DIR_BASE + 15)
+    cpu.mem[FCB:FCB + 36] = bytes(36)
+    cpu.mem[FCB + 1:FCB + 12] = b"SIZE    DAT"
+    cpu.c, cpu.de = 35, FCB
+    cpu.run(BDOS_BASE, limit=200000)
+    require(cpu.a == 0 and bytes(cpu.mem[FCB + 33:FCB + 36]) ==
+            bytes((0x01, 0x10, 0x00)),
+            f"Compute File Size result A={cpu.a:02X} "
+            f"R={bytes(cpu.mem[FCB + 33:FCB + 36]).hex()}")
+    cpu.mem[FCB + 1:FCB + 12] = b"ABSENT  DAT"
+    cpu.mem[FCB + 33:FCB + 36] = bytes((0xA5,)) * 3
+    cpu.c, cpu.de = 35, FCB
+    cpu.run(BDOS_BASE, limit=200000)
+    require(cpu.a == 0xFF and
+            bytes(cpu.mem[FCB + 33:FCB + 36]) == bytes((0xA5,)) * 3,
+            "missing Compute File Size changed the random-record field")
+    cpu.mem[delete0:size2 + 32] = bytes((0xE5,)) * 96
     cpu.run(DIR_BASE + 15)
 
     # Function 30 applies and clears high attribute bits on wildcard matches.
@@ -645,7 +672,7 @@ def main() -> None:
             f"provisional BDOS storage failure was confused with slot success: "
             f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS functions 12-32 passed")
+    print("BDOS functions 12-32 and 35 passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 

@@ -403,6 +403,10 @@ class Z80:
             elif op == 0xA0:            # AND B
                 self.a &= self.b
                 self.z, self.carry = self.a == 0, False
+            elif op in (0x81, 0x82):    # ADD A,C / ADD A,D
+                total = self.a + (self.c if op == 0x81 else self.d)
+                self.a = total & 0xFF
+                self.z, self.carry = self.a == 0, total > 0xFF
             elif op == 0xB1:            # OR C
                 self.a |= self.c
                 self.z, self.carry = self.a == 0, False

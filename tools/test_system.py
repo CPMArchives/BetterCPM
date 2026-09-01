@@ -18,7 +18,7 @@ def main() -> None:
     resident = RESIDENT.read_bytes()
     bios_offset = BIOS_BASE - RESIDENT_BASE
     cpu = Z80(resident[bios_offset:])
-    cpu.sp = 0xE800          # System Services now legitimately crosses E000h
+    cpu.sp = 0xED00          # clear of D800h..ECFFh System Services growth
     cpu.mem[RESIDENT_BASE:RESIDENT_BASE + len(resident)] = resident
 
     read_impl = cpu.word(BIOS_BASE + 13 * 3 + 1)
@@ -199,6 +199,14 @@ def main() -> None:
     cpu.c = 29
     cpu.run(CALLER)
     require(cpu.hl == 1, "CALL 0005h did not protect current drive A")
+    cpu.mem[FCB:FCB + 36] = bytes(36)
+    cpu.mem[FCB + 1:FCB + 12] = b"ABSENT  DAT"
+    cpu.mem[FCB + 33:FCB + 36] = bytes((0xA5,)) * 3
+    cpu.c, cpu.de = 35, FCB
+    cpu.run(CALLER, limit=100000)
+    require(cpu.a == 0xFF and
+            bytes(cpu.mem[FCB + 33:FCB + 36]) == bytes((0xA5,)) * 3,
+            "CALL 0005h missing Compute File Size changed R0-R2")
     cpu.c = 27
     cpu.run(CALLER)
     alv = cpu.hl
@@ -222,7 +230,7 @@ def main() -> None:
 
     # Initialization failure must not expose either conventional vector.
     failed = Z80(resident[bios_offset:])
-    failed.sp = 0xE800
+    failed.sp = 0xED00
     failed.mem[RESIDENT_BASE:RESIDENT_BASE + len(resident)] = resident
     failed_read = failed.word(calls[1] + 1)
     failed.mem[failed_read:failed_read + 4] = bytes((0x3E, 0x05, 0xB7, 0xC9))
@@ -231,7 +239,7 @@ def main() -> None:
             "failed initialization published page-zero vectors")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
-    print("application CALL 0005h reached functions 12-32")
+    print("application CALL 0005h reached functions 12-32 and 35")
 
 
 if __name__ == "__main__":

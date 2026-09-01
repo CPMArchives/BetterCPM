@@ -42,6 +42,190 @@ DIRSERV:
         JP      DIR_DELETE
         JP      DIR_RENAME
         JP      DIR_ATTR
+        JP      DIR_SIZE
+
+; Compute exact-name file size in 128-byte records and store FCB R0..R2.
+; Input A=user, DE=36-byte FCB. Return zero success, FFh missing/invalid.
+DIR_SIZE:
+        LD      (DIR_ZUSER),A
+        LD      (DIR_ZFCB),DE
+        LD      A,(DE)
+        CP      2
+        JP      NC,DIR_ZNO
+        LD      HL,(DIR_ZFCB)
+        INC     HL
+        LD      B,11
+DIR_ZNAME:
+        LD      A,(HL)
+        AND     07FH
+        CP      '?'
+        JP      Z,DIR_ZNO
+        INC     HL
+        DJNZ    DIR_ZNAME
+        CALL    DIR_GALV
+        JP      NZ,DIR_ZERR
+        XOR     A
+        LD      (DIR_ZFOUND),A
+        LD      (DIR_ZMAX),A
+        LD      (DIR_ZMAX+1),A
+        LD      (DIR_ZMAX+2),A
+        LD      (DIR_RECORD),A
+DIR_ZPASS:
+        LD      A,(DIR_RECORD)
+        LD      HL,DIR_RECS
+        CP      (HL)
+        JR      NC,DIR_ZDONE
+        LD      C,A
+        CALL    DIR_LOAD
+        JP      NZ,DIR_ZERR
+        LD      B,4
+DIR_ZENT:
+        CALL    DIR_ZMAT
+        JR      NZ,DIR_ZNEXT
+        LD      A,0FFH
+        LD      (DIR_ZFOUND),A
+        PUSH    BC
+        PUSH    HL
+        LD      DE,12
+        ADD     HL,DE
+        LD      A,(HL)          ; EX low five bits
+        AND     01FH
+        LD      E,A
+        INC     HL
+        INC     HL
+        LD      A,(HL)          ; S2 low six bits
+        AND     03FH
+        LD      H,0
+        LD      L,A
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        LD      D,0
+        ADD     HL,DE           ; HL=logical extent number
+        LD      A,L
+        AND     1
+        JR      Z,DIR_ZLZERO
+        LD      A,080H
+        JR      DIR_ZLSET
+DIR_ZLZERO:
+        XOR     A
+DIR_ZLSET:
+        LD      C,A
+        POP     DE              ; recover entry pointer into DE temporarily
+        PUSH    DE
+        PUSH    HL              ; retain the computed extent number
+        EX      DE,HL
+        LD      DE,15
+        ADD     HL,DE
+        LD      A,(HL)          ; RC
+        POP     HL              ; HL=extent, A=RC
+        ADD     A,C
+        LD      (DIR_ZCAN),A
+        LD      D,0
+        JR      NC,DIR_ZNC0
+        INC     D
+DIR_ZNC0:
+        SRL     H
+        RR      L
+        LD      A,L
+        ADD     A,D
+        LD      (DIR_ZCAN+1),A
+        LD      A,H
+        JR      NC,DIR_ZNC1
+        INC     A
+DIR_ZNC1:
+        LD      (DIR_ZCAN+2),A
+        CALL    DIR_ZCMPMAX
+        POP     HL
+        POP     BC
+DIR_ZNEXT:
+        LD      DE,32
+        ADD     HL,DE
+        DJNZ    DIR_ZENT
+        LD      HL,DIR_RECORD
+        INC     (HL)
+        JR      DIR_ZPASS
+DIR_ZDONE:
+        LD      A,(DIR_ZFOUND)
+        OR      A
+        JR      Z,DIR_ZNO
+        LD      HL,DIR_ZMAX
+        LD      DE,(DIR_ZFCB)
+        LD      BC,33
+        EX      DE,HL
+        ADD     HL,BC
+        EX      DE,HL
+        LD      BC,3
+        LDIR
+        XOR     A
+        RET
+DIR_ZERR:
+        SCF
+        RET
+DIR_ZNO:
+        LD      A,0FFH
+        OR      A
+        RET
+
+DIR_ZCMPMAX:
+        LD      A,(DIR_ZMAX+2)
+        LD      C,A
+        LD      A,(DIR_ZCAN+2)
+        CP      C
+        RET     C
+        JR      NZ,DIR_ZTAKE
+        LD      A,(DIR_ZMAX+1)
+        LD      C,A
+        LD      A,(DIR_ZCAN+1)
+        CP      C
+        RET     C
+        JR      NZ,DIR_ZTAKE
+        LD      A,(DIR_ZMAX)
+        LD      C,A
+        LD      A,(DIR_ZCAN)
+        CP      C
+        RET     C
+DIR_ZTAKE:
+        LD      HL,DIR_ZCAN
+        LD      DE,DIR_ZMAX
+        LD      BC,3
+        LDIR
+        RET
+
+DIR_ZMAT:
+        PUSH    BC
+        PUSH    DE
+        PUSH    HL
+        LD      A,(DIR_ZUSER)
+        CP      (HL)
+        JR      NZ,DIR_ZMNO
+        INC     HL
+        LD      DE,(DIR_ZFCB)
+        INC     DE
+        LD      B,11
+DIR_ZMCMP:
+        LD      A,(DE)
+        AND     07FH
+        LD      C,A
+        LD      A,(HL)
+        AND     07FH
+        CP      C
+        JR      NZ,DIR_ZMNO
+        INC     DE
+        INC     HL
+        DJNZ    DIR_ZMCMP
+        XOR     A
+        JR      DIR_ZMRET
+DIR_ZMNO:
+        LD      A,1
+        OR      A
+DIR_ZMRET:
+        POP     HL
+        POP     DE
+        POP     BC
+        RET
 
 ; Apply the high attribute bits of FCB bytes 1..11 to every matching extent.
 ; A=user, DE=FCB, B=software protection. Wildcards affect matching only.
@@ -2315,6 +2499,16 @@ DIR_AFOUND:
         DB      0
 DIR_ADIRTY:
         DB      0
+DIR_ZUSER:
+        DB      0
+DIR_ZFCB:
+        DW      0
+DIR_ZFOUND:
+        DB      0
+DIR_ZMAX:
+        DB      0,0,0
+DIR_ZCAN:
+        DB      0,0,0
 DIR_WPRO:
         DB      0
 DIR_WOLD:

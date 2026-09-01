@@ -16,6 +16,7 @@ DIRMAKE         EQU     0D82AH  ; fifteenth directory-service vector
 DIRDELETE       EQU     0D82DH  ; sixteenth directory-service vector
 DIRRENAME       EQU     0D830H  ; seventeenth directory-service vector
 DIRATTR         EQU     0D833H  ; eighteenth directory-service vector
+DIRSIZE         EQU     0D836H  ; nineteenth directory-service vector
 
         CSEG
         .PHASE  BDOSBASE
@@ -68,6 +69,8 @@ BDOS:
         JP      Z,BDOS_DPBP
         CP      32
         JP      Z,BF_USER
+        CP      35
+        JP      Z,BDOS_SIZE
         LD      A,0FFH          ; unsupported returning function
         JP      BDOS_RETURN
 
@@ -204,7 +207,7 @@ BDOS_DELETE:
         LD      B,A
         LD      A,(BDOS_USER)
         CALL    DIRDELETE
-        JR      NC,BDOS_RETURN
+        JP      NC,BDOS_RETURN
         LD      A,0FFH
         JP      BDOS_RETURN
 
@@ -247,6 +250,14 @@ BDOS_ATTR:
         LD      B,A
         LD      A,(BDOS_USER)
         CALL    DIRATTR
+        JR      NC,BDOS_RETURN
+        LD      A,0FFH
+        JP      BDOS_RETURN
+
+BDOS_SIZE:
+        LD      DE,(BDOS_PARM)
+        LD      A,(BDOS_USER)
+        CALL    DIRSIZE
         JR      NC,BDOS_RETURN
         LD      A,0FFH
         JP      BDOS_RETURN
