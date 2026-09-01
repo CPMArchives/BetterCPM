@@ -71,7 +71,6 @@ bytes for BDOS.
 
 ## Next increment
 
-Implement BDOS functions 17 and 18 (Search First and Search Next), copying
-matching 32-byte directory entries into the selected DMA buffer in directory
-order. This will make function-26 DMA state observable through a standard
-read-only file operation before any directory mutation is introduced.
+Engineering Specification 26 completes this increment with Search First,
+Search Next, directory-order continuation, and complete 128-byte DMA transfer.
+The next increment can establish Close File before mutation is introduced.

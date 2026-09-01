@@ -41,6 +41,7 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Engineering Specification 23`](docs/engineering/23%20Disk%20Reset%20and%20Login%20Vector.md) adds disk-system reset, login-vector reporting, default-DMA restoration, and current-user preservation.
 [`Engineering Specification 24`](docs/engineering/24%20Software%20Write%20Protection.md) adds transient current-drive write protection, read-only-vector reporting, and reset clearing.
 [`Engineering Specification 25`](docs/engineering/25%20Allocation%20and%20DPB%20Pointers.md) exposes the current drive's reconstructed allocation vector and live 15-byte disk parameter block.
+[`Engineering Specification 26`](docs/engineering/26%20Directory%20Search%20and%20DMA.md) adds Search First/Search Next continuation, wildcard and all-user matching, and complete directory-record transfer to the selected DMA address.
 
 ## First boot
 

@@ -5,10 +5,11 @@
 ; values.  It deliberately reaches disk only through the CP/M BIOS vectors.
 
 DIRBASE         EQU     0E800H
-; Patch 2026-09-01: DIRBUF was E900H through specification 14, then EA00H
-; for specification 15. Allocation reconstruction moved it intact again;
-; the old placements remain recorded rather than hidden by the patch.
-DIRBUF          EQU     0EC00H
+; Patch 2026-09-01: DIRBUF was E900H through specification 14, EA00H for
+; specification 15, and EC00H through specification 25. Search continuation
+; grew across EC00H, so the intact 128-byte buffer moved once more; retaining
+; the old placements here records why this provisional map evolved.
+DIRBUF          EQU     0ED00H
 BIOSBASE        EQU     0F000H
 BIOSELDS        EQU     BIOSBASE+27
 BIOSETTR        EQU     BIOSBASE+30
@@ -30,6 +31,144 @@ DIRSERV:
         JP      DIR_OPEN
         JP      DIR_GALV
         JP      DIR_GDPB
+        JP      DIR_SFIR
+        JP      DIR_SNXT
+
+; Begin/continue a CP/M directory enumeration. Search First receives current
+; user in A, FCB in DE, and DMA in BC. Search Next receives the current DMA in
+; BC and uses the retained FCB/cursor. Successful calls copy all 128 bytes of
+; the containing directory record to DMA and return its slot in A.
+DIR_SFIR:
+        LD      (DIR_USER),A
+        LD      (DIR_FCBP),DE
+        LD      (DIR_SDMA),BC
+        LD      A,(DE)
+        CP      '?'
+        JR      Z,DIR_SALL
+        CP      2
+        JP      NC,DIR_SNONE
+        XOR     A
+        LD      (S_ALLUSR),A
+        LD      HL,(DIR_FCBP)
+        LD      DE,14
+        ADD     HL,DE
+        LD      (HL),0          ; ordinary Search First clears S2
+        JR      DIR_SINIT
+DIR_SALL:
+        LD      A,0FFH
+        LD      (S_ALLUSR),A
+DIR_SINIT:
+        XOR     A
+        LD      (DIR_RECORD),A
+        LD      (DIR_SLOT),A
+        LD      A,0FFH
+        LD      (DIR_SACT),A
+        JR      DIR_SSCAN
+
+DIR_SNXT:
+        LD      (DIR_SDMA),BC
+        LD      A,(DIR_SACT)
+        OR      A
+        JP      Z,DIR_SNONE
+
+DIR_SSCAN:
+        LD      A,(DIR_RECORD)
+        LD      HL,DIR_RECS
+        CP      (HL)
+        JP      NC,DIR_SNONE
+        LD      C,A
+        CALL    DIR_LOAD
+        JR      Z,DIR_SLOK
+        SCF
+        RET
+DIR_SLOK:
+        LD      A,(DIR_SLOT)
+        OR      A
+        JR      Z,DIR_SENT
+        LD      DE,32
+DIR_SSKIP:
+        ADD     HL,DE
+        DEC     A
+        JR      NZ,DIR_SSKIP
+DIR_SENT:
+        LD      A,(HL)
+        CP      32              ; deleted and reserved metadata never match
+        JR      NC,DIR_SADV
+        LD      A,(S_ALLUSR)
+        OR      A
+        JR      NZ,DIR_SNAME
+        LD      A,(DIR_USER)
+        CP      (HL)
+        JR      NZ,DIR_SADV
+DIR_SNAME:
+        PUSH    HL
+        INC     HL
+        LD      DE,(DIR_FCBP)
+        INC     DE
+        LD      B,12            ; filename, type, and EX
+DIR_SCMP:
+        LD      A,(DE)
+        CP      '?'
+        JR      Z,DIR_SCNXT
+        AND     07FH
+        LD      C,A
+        LD      A,B
+        CP      1               ; final compared byte is five-bit EX
+        JR      NZ,DIR_SBASE
+        LD      A,C
+        AND     01FH
+        LD      C,A
+        LD      A,(HL)
+        AND     01FH
+        JR      DIR_SCOMP
+DIR_SBASE:
+        LD      A,(HL)
+        AND     07FH
+DIR_SCOMP:
+        CP      C
+        JR      NZ,DIR_SMISS
+DIR_SCNXT:
+        INC     DE
+        INC     HL
+        DJNZ    DIR_SCMP
+        POP     HL
+        LD      A,(DIR_SLOT)
+        LD      (DIR_SRET),A
+        CALL    S_ADV0          ; continuation begins after this match
+        LD      HL,DIRBUF
+        LD      DE,(DIR_SDMA)
+        LD      BC,128
+        LDIR
+        LD      A,(DIR_SRET)
+        OR      A               ; clear carry; slot zero remains Z
+        RET
+DIR_SMISS:
+        POP     HL
+DIR_SADV:
+        CALL    S_ADV0
+        JR      DIR_SSCAN
+
+S_ADV0:
+        LD      A,(DIR_SLOT)
+        INC     A
+        CP      4
+        JR      C,DIR_SSLOT
+        XOR     A
+        LD      (DIR_SLOT),A
+        LD      A,(DIR_RECORD)
+        INC     A
+        LD      (DIR_RECORD),A
+        RET
+DIR_SSLOT:
+        LD      (DIR_SLOT),A
+        RET
+
+DIR_SNONE:
+        XOR     A
+        LD      (DIR_SACT),A
+        LD      A,0FFH
+        OR      A
+        RET
 
 ; Return live current-drive state for BDOS pointer-query functions. A stale or
 ; invalidated login is rebuilt before its private pointers become public.
@@ -638,6 +777,14 @@ DIR_ORC:
 DIR_OS2:
         DB      0
 DIR_SLOT:
+        DB      0
+DIR_SDMA:
+        DW      0
+DIR_SACT:
+        DB      0
+S_ALLUSR:
+        DB      0
+DIR_SRET:
         DB      0
 
         .DEPHASE

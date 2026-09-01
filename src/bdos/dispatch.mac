@@ -7,6 +7,8 @@ DIROPEN         EQU     0E812H  ; seventh directory-service vector
 DIRLOGIN        EQU     0E80CH  ; fifth directory-service vector
 DIRGALV         EQU     0E815H  ; eighth directory-service vector
 DIRGDPB         EQU     0E818H  ; ninth directory-service vector
+DIRSFIR         EQU     0E81BH  ; tenth directory-service vector
+DIRSNXT         EQU     0E81EH  ; eleventh directory-service vector
 
         CSEG
         .PHASE  BDOSBASE
@@ -25,6 +27,10 @@ BDOS:
         JP      Z,BDOS_SELDR
         CP      15
         JP      Z,BDOS_OPEN
+        CP      17
+        JP      Z,BDOS_SFIR
+        CP      18
+        JP      Z,BDOS_SNXT
         CP      24
         JP      Z,BDOS_LOGV
         CP      25
@@ -76,10 +82,10 @@ BDOS_SELDR:
         LD      HL,0001H        ; only A exists in this provisional BIOS
         LD      (STATE_LV),HL
         XOR     A               ; function 14 has no defined normal result
-        JR      BDOS_RETURN
+        JP      BDOS_RETURN
 BDOS_BADRV:
         LD      A,0FFH          ; deliberate provisional failure result
-        JR      BDOS_RETURN
+        JP      BDOS_RETURN
 
 BDOS_GETDR:
         LD      A,(BDOS_DRIVE)
@@ -143,6 +149,21 @@ BDOS_OPEN:
 ; Patch 2026-09-01: RET_HL was inserted below for function 24. Keep this
 ; explicit branch so Open errors cannot fall into the new 16-bit return path.
         JR      BDOS_RETURN
+
+BDOS_SFIR:
+        LD      DE,(BDOS_PARM)
+        LD      BC,(BDOS_DMA)
+        LD      A,(BDOS_USER)
+        CALL    DIRSFIR
+        JR      BF_SRET
+
+BDOS_SNXT:
+        LD      BC,(BDOS_DMA)
+        CALL    DIRSNXT
+BF_SRET:
+        JR      NC,BDOS_RETURN
+        LD      A,0FFH          ; provisional storage-error presentation
+        JP      BDOS_RETURN
 
 ; CP/M normal-return aliases: A=L and B=H.
 RET_HL:

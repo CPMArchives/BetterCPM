@@ -11,7 +11,7 @@ DIRECTORY = ROOT / "build/bdos/directory.bin"
 BDOS = ROOT / "build/bdos/bdos.bin"
 BDOS_BASE = 0xE600
 DIR_BASE = 0xE800
-DIR_BUFFER = 0xEC00
+DIR_BUFFER = 0xED00
 FIXTURE = 0x7500
 FCB = 0x7700
 
@@ -56,10 +56,17 @@ def main() -> None:
     expected_alv = cpu.word(dph + 14)
 
     cpu.mem[FIXTURE:FIXTURE + 512] = bytes((0xE5,)) * 512
+    cpu.mem[FIXTURE:FIXTURE + 12] = bytes((0,)) + b"FIRST   DAT"
+    cpu.mem[FIXTURE + 12:FIXTURE + 16] = bytes((0, 0, 0, 1))
+    cpu.mem[FIXTURE + 16:FIXTURE + 32] = bytes(16)
     entry = FIXTURE + 32
     cpu.mem[entry:entry + 12] = bytes((0,)) + b"OPEN    DAT"
     cpu.mem[entry + 12:entry + 16] = bytes((0, 0x55, 0, 1))
     cpu.mem[entry + 16:entry + 32] = bytes(16)
+    other = FIXTURE + 64
+    cpu.mem[other:other + 12] = bytes((5,)) + b"OTHER   DAT"
+    cpu.mem[other + 12:other + 16] = bytes((0, 0, 0, 1))
+    cpu.mem[other + 16:other + 32] = bytes(16)
 
     cpu.mem[FCB:FCB + 33] = bytes((0xA5,)) * 33
     cpu.mem[FCB] = 0
@@ -136,11 +143,40 @@ def main() -> None:
     require(cpu.hl == expected_dpb and bytes(cpu.mem[cpu.hl:cpu.hl + 15]) ==
             bytes((80, 0, 4, 15, 0, 0x8A, 1, 0x7F, 0, 0xC0, 0, 32, 0, 2, 0)),
             "DPB pointer or 15-byte MM 790K layout is wrong")
+    cpu.mem[FCB:FCB + 33] = bytes(33)
+    cpu.mem[FCB + 1:FCB + 13] = b"????????????"
+    cpu.mem[FCB + 14] = 0xA5
+    cpu.c, cpu.de = 26, 0x7200
+    cpu.run(BDOS_BASE)
+    cpu.c, cpu.de = 17, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0 and cpu.mem[FCB + 14] == 0 and
+            bytes(cpu.mem[0x7200:0x7280]) == bytes(cpu.mem[FIXTURE:FIXTURE + 128]),
+            "Search First did not return slot 0 and the complete DMA record")
+    cpu.c, cpu.de = 26, 0x7280
+    cpu.run(BDOS_BASE)
+    cpu.c, cpu.de = 18, 0xA55A
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 1 and
+            bytes(cpu.mem[0x7280:0x7300]) == bytes(cpu.mem[FIXTURE:FIXTURE + 128]),
+            "Search Next did not continue at slot 1 using the changed DMA")
+    saved_record = bytes(cpu.mem[FIXTURE:FIXTURE + 128])
+    cpu.mem[FIXTURE:FIXTURE + 128] = bytes((0xE5,)) * 128
+    cpu.c, cpu.de = 18, 0x5AA5
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0xFF, "Search Next did not exhaust user-0 matches")
+    cpu.mem[FIXTURE:FIXTURE + 128] = saved_record
+    cpu.mem[FCB] = ord('?')
+    cpu.mem[FCB + 14] = 0xA5
+    cpu.c, cpu.de = 17, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0 and cpu.mem[FCB + 14] == 0xA5,
+            "all-user Search First did not preserve special S2 state")
     cpu.c, cpu.e = 32, 0x25
     cpu.run(BDOS_BASE)
     cpu.c, cpu.e = 32, 0xFF
     cpu.run(BDOS_BASE)
-    require(cpu.a == cpu.l == 5 and cpu.word(dma_state) == 0x7345,
+    require(cpu.a == cpu.l == 5 and cpu.word(dma_state) == 0x7280,
             "user modulo-32 selection/query or DMA independence failed")
     cpu.c = 29
     cpu.run(BDOS_BASE)
@@ -182,7 +218,7 @@ def main() -> None:
             f"provisional BDOS storage failure was confused with slot success: "
             f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS functions 12-15, 24-29, 31, and 32 passed")
+    print("BDOS functions 12-18, 24-29, 31, and 32 passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 

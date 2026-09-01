@@ -55,6 +55,24 @@ def main() -> None:
     require(cpu.sp == original_sp, "CALL 0005h did not restore caller stack")
     require(cpu.mem[FCB + 15] == 1, "CALL 0005h did not activate the FCB")
 
+    cpu.mem[FCB:FCB + 33] = bytes(33)
+    cpu.mem[FCB + 1:FCB + 13] = b"????????????"
+    cpu.c, cpu.de = 26, 0x7200
+    cpu.run(CALLER)
+    cpu.c, cpu.de = 17, FCB
+    cpu.run(CALLER, limit=50000)
+    require(cpu.a == 1 and
+            bytes(cpu.mem[0x7200:0x7280]) == bytes(cpu.mem[FIXTURE:FIXTURE + 128]),
+            "CALL 0005h Search First did not transfer its directory record")
+    saved_record = bytes(cpu.mem[FIXTURE:FIXTURE + 128])
+    cpu.mem[FIXTURE:FIXTURE + 128] = bytes((0xE5,)) * 128
+    cpu.c, cpu.de = 26, 0x7280
+    cpu.run(CALLER)
+    cpu.c, cpu.de = 18, 0xA55A
+    cpu.run(CALLER, limit=50000)
+    require(cpu.a == 0xFF, "CALL 0005h Search Next did not reach exhaustion")
+    cpu.mem[FIXTURE:FIXTURE + 128] = saved_record
+
     cpu.c = 12
     cpu.run(CALLER)
     require(cpu.hl == 0x0022, "CALL 0005h version query was not CP/M 2.2")
@@ -117,7 +135,7 @@ def main() -> None:
             "failed initialization published page-zero vectors")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
-    print("application CALL 0005h reached functions 12-15, 24-29, 31, and 32")
+    print("application CALL 0005h reached functions 12-18, 24-29, 31, and 32")
 
 
 if __name__ == "__main__":
