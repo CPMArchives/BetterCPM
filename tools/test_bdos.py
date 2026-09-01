@@ -32,6 +32,7 @@ def main() -> None:
     cpu.mem[BDOS_BASE:BDOS_BASE + len(bdos)] = bdos
     dma_state = symbol("BDOS_DMA")
     login_state = symbol("STATE_LV")
+    readonly_state = symbol("STATE_RO")
 
     read_impl = cpu.word(BIOS_BASE + 13 * 3 + 1)
     calls = [address for address in range(read_impl, read_impl + 48)
@@ -129,11 +130,23 @@ def main() -> None:
     cpu.run(BDOS_BASE)
     require(cpu.a == cpu.l == 5 and cpu.word(dma_state) == 0x7345,
             "user modulo-32 selection/query or DMA independence failed")
+    cpu.c = 29
+    cpu.run(BDOS_BASE)
+    require(cpu.hl == 0, "read-only vector was not initially clear")
+    media_before_protect = bytes(cpu.mem[FIXTURE:FIXTURE + 512])
+    cpu.c = 28
+    cpu.run(BDOS_BASE)
+    cpu.c = 29
+    cpu.run(BDOS_BASE)
+    require(cpu.hl == 1 and cpu.word(readonly_state) == 1,
+            "write protect did not set drive A in the read-only vector")
+    require(bytes(cpu.mem[FIXTURE:FIXTURE + 512]) == media_before_protect,
+            "software write protection modified the disk image")
     cpu.c = 13
     cpu.run(BDOS_BASE, limit=50000)
     require(cpu.a == 0 and cpu.word(dma_state) == 0x0080 and
-            cpu.word(login_state) == 1,
-            "disk reset did not restore DMA, drive A, and login vector")
+            cpu.word(login_state) == 1 and cpu.word(readonly_state) == 0,
+            "disk reset did not restore DMA, drive A, login, and protection")
     cpu.c, cpu.e = 32, 0xFF
     cpu.run(BDOS_BASE)
     require(cpu.a == 5, "disk reset did not preserve current user")
@@ -157,7 +170,7 @@ def main() -> None:
             f"provisional BDOS storage failure was confused with slot success: "
             f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS functions 12-15, 24-26, and 32 passed")
+    print("BDOS functions 12-15, 24-26, 28-29, and 32 passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 

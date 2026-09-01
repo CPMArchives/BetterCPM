@@ -39,6 +39,7 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Engineering Specification 21`](docs/engineering/21%20Basic%20BDOS%20State%20Functions.md) adds version, current-drive, persistent DMA-address, and modulo-32 current-user services through the public call path.
 [`Engineering Specification 22`](docs/engineering/22%20Default%20Drive%20Selection.md) adds function 14 with login-before-commit default-drive selection and coherent function-25 reporting.
 [`Engineering Specification 23`](docs/engineering/23%20Disk%20Reset%20and%20Login%20Vector.md) adds disk-system reset, login-vector reporting, default-DMA restoration, and current-user preservation.
+[`Engineering Specification 24`](docs/engineering/24%20Software%20Write%20Protection.md) adds transient current-drive write protection, read-only-vector reporting, and reset clearing.
 
 ## First boot
 

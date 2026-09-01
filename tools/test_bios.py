@@ -137,6 +137,11 @@ class Z80:
             elif op == 0xB7:            # OR A
                 self.z = self.a == 0
                 self.carry = False
+            elif op == 0xF6:            # OR n
+                self.a |= self.mem[self.pc]
+                self.pc += 1
+                self.z = self.a == 0
+                self.carry = False
             elif op == 0xB3:            # OR E
                 self.a |= self.e
                 self.z = self.a == 0

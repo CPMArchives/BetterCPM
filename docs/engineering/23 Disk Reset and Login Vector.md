@@ -71,6 +71,6 @@ same 260-byte BDOS binary.
 
 ## Next increment
 
-Implement function 28 (Write Protect Disk) and function 29 (Return Read-Only
-Vector), completing the disk-state pair that function 13 is already required
-to clear. Actual write operations can then consult coherent protection state.
+Engineering Specification 24 completes this increment with functions 28 and
+29 and explicit reset clearing. The next increment can expose the current
+drive's allocation vector and DPB through read-only pointer queries.

@@ -22,21 +22,25 @@ BDOS:
         CP      14
         JR      Z,BDOS_SELDR
         CP      15
-        JR      Z,BDOS_OPEN
+        JP      Z,BDOS_OPEN
         CP      24
         JR      Z,BDOS_LOGV
         CP      25
         JR      Z,BDOS_GETDR
         CP      26
         JR      Z,BDOS_STDMA
+        CP      28
+        JR      Z,BDOS_WRPRO
+        CP      29
+        JR      Z,BDOS_ROV
         CP      32
         JR      Z,BF_USER
         LD      A,0FFH          ; unsupported returning function
-        JR      BDOS_RETURN
+        JP      BDOS_RETURN
 
 BDOS_VERS:
         LD      A,022H          ; CP/M 2.2 identity, returned as HL=0022h
-        JR      BDOS_RETURN
+        JP      BDOS_RETURN
 
 BDOS_RESET:
         LD      C,0
@@ -48,6 +52,8 @@ BDOS_RESET:
         LD      (BDOS_DMA),HL
         LD      HL,0001H        ; after reset, only drive A is logged
         LD      (STATE_LV),HL
+        LD      HL,0000H        ; reset clears software write protection
+        LD      (STATE_RO),HL
         XOR     A               ; function 13 has no specified result
         JR      BDOS_RETURN
 
@@ -82,6 +88,17 @@ BDOS_STDMA:
         LD      (BDOS_DMA),HL
         XOR     A               ; function 26 has no specified result
         JR      BDOS_RETURN
+
+BDOS_WRPRO:
+        LD      A,(STATE_RO)    ; only current drive A is available today
+        OR      01H
+        LD      (STATE_RO),A
+        XOR     A               ; function 28 has no specified result
+        JR      BDOS_RETURN
+
+BDOS_ROV:
+        LD      HL,(STATE_RO)
+        JR      RET_HL
 
 BF_USER:
         LD      A,E
@@ -136,6 +153,8 @@ BDOS_DMA:
         DW      0080H           ; CP/M startup DMA selection
 STATE_LV:
         DW      0001H           ; gateway publishes BDOS only after A login
+STATE_RO:
+        DW      0000H           ; transient software read-only drive vector
 
 ; Patch 2026-09-01: the first public-call boundary receives its own stack now,
 ; before more BDOS functions deepen the call graph. The exact size and address
