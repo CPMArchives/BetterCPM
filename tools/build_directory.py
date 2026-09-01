@@ -11,7 +11,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/bdos/directory.mac"
 BUILD = ROOT / "build/bdos"
-BASE = 0xE800
+BASE = 0xD800
 
 
 def main() -> None:

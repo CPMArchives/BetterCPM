@@ -83,7 +83,6 @@ the bring-up placements have served their purpose.
 
 ## Next increment
 
-Revise the provisional resident memory layout before adding more BDOS or
-filesystem code. The revision must preserve component boundaries and native/
-cross parity, reserve explicit work areas and growth space, update every
-internal vector coherently, and keep the public page-zero ABI unchanged.
+Engineering Specification 29 completes this increment with explicit workspace,
+gateway, BDOS, System Services, scratch, and BIOS regions while preserving the
+page-zero ABI. The next increment can implement Read Sequential.

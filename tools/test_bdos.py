@@ -9,9 +9,9 @@ ROOT = Path(__file__).resolve().parents[1]
 BIOS = ROOT / "build/bios/bios.bin"
 DIRECTORY = ROOT / "build/bdos/directory.bin"
 BDOS = ROOT / "build/bdos/bdos.bin"
-BDOS_BASE = 0xE600
-DIR_BASE = 0xE800
-DIR_BUFFER = 0xE400
+BDOS_BASE = 0xC100
+DIR_BASE = 0xD800
+DIR_BUFFER = 0xBF00
 FIXTURE = 0x7500
 FCB = 0x7700
 

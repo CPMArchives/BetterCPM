@@ -11,7 +11,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/bdos/dispatch.mac"
 BUILD = ROOT / "build/bdos"
-BASE = 0xE600
+BASE = 0xC100
 
 
 def main() -> None:

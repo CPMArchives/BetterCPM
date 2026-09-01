@@ -6,8 +6,8 @@ from test_bios import BASE as BIOS_BASE, Z80, require
 
 ROOT = Path(__file__).resolve().parents[1]
 RESIDENT = ROOT / "build/system/resident.bin"
-RESIDENT_BASE = 0xE500
-SYSTEM_INIT = 0xE500
+RESIDENT_BASE = 0xBF00
+SYSTEM_INIT = 0xC000
 FIXTURE = 0x7500
 FCB = 0x7700
 CALLER = 0x7800
@@ -52,7 +52,7 @@ def main() -> None:
     require(cpu.a == 0, "resident initialization failed")
     require(bytes(cpu.mem[0:3]) == bytes((0xC3, 0x03, 0xF0)),
             "warm-boot page-zero vector is wrong")
-    require(bytes(cpu.mem[5:8]) == bytes((0xC3, 0x00, 0xE6)),
+    require(bytes(cpu.mem[5:8]) == bytes((0xC3, 0x00, 0xC1)),
             "BDOS page-zero vector is wrong")
 
     cpu.mem[FCB:FCB + 33] = bytes(33)

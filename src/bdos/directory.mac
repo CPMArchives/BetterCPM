@@ -4,13 +4,13 @@
 ; extension.  Its placement and the BIOS address are provisional bring-up
 ; values.  It deliberately reaches disk only through the CP/M BIOS vectors.
 
-DIRBASE         EQU     0E800H
+DIRBASE         EQU     0D800H
 ; Patch 2026-09-01: DIRBUF was E900H through specification 14, EA00H for
 ; specification 15, EC00H through specification 25, and ED00H for
 ; specifications 26-27. Dirty Close grew across ED00H, so the intact buffer
-; moved below the resident code. Retaining the old placements records why the
-; provisional map evolved and flags the need for a broader layout revision.
-DIRBUF          EQU     0E400H
+; moved below the resident code. Specification 29 gives that workspace an
+; explicit BF00H reservation while relocating this component for growth.
+DIRBUF          EQU     0BF00H
 BIOSBASE        EQU     0F000H
 BIOSELDS        EQU     BIOSBASE+27
 BIOSETTR        EQU     BIOSBASE+30

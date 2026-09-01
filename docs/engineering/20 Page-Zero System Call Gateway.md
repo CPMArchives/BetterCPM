@@ -9,6 +9,10 @@ placing that resident image into the TRS-80 boot disk.
 
 ## Provisional resident layout
 
+This original bring-up layout is superseded by Engineering Specification 29.
+It remains here as the historical placement under which the page-zero gateway
+was first proved.
+
 The independently built components occupy non-overlapping provisional ranges:
 
 | Component | Base | Current extent |

@@ -12,11 +12,13 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/system/gateway.mac"
 BUILD = ROOT / "build/system"
 COMPONENTS = (
-    (0xE500, "gateway.bin"),
-    (0xE600, "../bdos/bdos.bin"),
-    (0xE800, "../bdos/directory.bin"),
+    (0xC000, "gateway.bin"),
+    (0xC100, "../bdos/bdos.bin"),
+    (0xD800, "../bdos/directory.bin"),
     (0xF000, "../bios/bios.bin"),
 )
+RESIDENT_BASE = 0xBF00       # includes the reserved 128-byte DIRBUF workspace
+LIMITS = (0xC100, 0xD800, 0xEE00, 0x10000)
 
 
 def main() -> None:
@@ -37,22 +39,24 @@ def main() -> None:
                         f"-l{BUILD / 'gateway.lst'}", staged.name],
                        check=True, cwd=staged.parent)
     data = gateway.read_bytes()
-    if len(data) > 0xE500 and data[:0xE500] == bytes(0xE500):
-        data = data[0xE500:]
+    if len(data) > 0xC000 and data[:0xC000] == bytes(0xC000):
+        data = data[0xC000:]
         gateway.write_bytes(data)
     if not data:
         raise SystemExit("empty system-gateway output")
 
-    base = COMPONENTS[0][0]
+    base = RESIDENT_BASE
     end = base
     loaded = []
-    for address, relative in COMPONENTS:
+    for index, (address, relative) in enumerate(COMPONENTS):
         path = (BUILD / relative).resolve()
         if not path.is_file():
             raise SystemExit(f"missing resident component: {path}")
         component = path.read_bytes()
         if address < end:
             raise SystemExit(f"resident component overlap at {address:04X}h")
+        if address + len(component) > LIMITS[index]:
+            raise SystemExit(f"resident component exceeds region ending {LIMITS[index]:04X}h")
         loaded.append((address, component))
         end = address + len(component)
     image = bytearray(end - base)
