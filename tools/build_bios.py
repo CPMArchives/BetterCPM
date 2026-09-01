@@ -11,6 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/bios"
+PLATFORM = ROOT / "src/platform/trs80m4"
 BUILD = ROOT / "build/bios"
 BIOS_ADDRESS = 0xF000
 
@@ -30,6 +31,8 @@ def main() -> None:
         staged = Path(temporary)
         (staged / "bios.mac").write_text(text, encoding="ascii")
         shutil.copy2(SOURCE / "biosplat.inc", staged / "biosplat.inc")
+        shutil.copy2(PLATFORM / "hardware.inc", staged / "hardware.inc")
+        shutil.copy2(PLATFORM / "m4cons.inc", staged / "m4cons.inc")
         subprocess.run([str(args.assembler), "-fb", f"-o{output}", "bios.mac"],
                        check=True, cwd=staged)
     data = output.read_bytes()

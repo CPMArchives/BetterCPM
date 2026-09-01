@@ -160,10 +160,11 @@ def main() -> None:
         require(cpu.mem[target] == 0x18 and cpu.mem[target + 1] == 0xFE,
                 f"entry {index} is not the explicit stop loop")
 
-    cpu.run(entries[2])
-    require(cpu.a == 0, "CONST empty result is not 00h")
     const_impl = cpu.word(entries[2] + 1)
     platform_const = cpu.word(const_impl + 1)
+    cpu.mem[platform_const:platform_const + 2] = bytes((0xAF, 0xC9))
+    cpu.run(entries[2])
+    require(cpu.a == 0, "CONST empty result is not 00h")
     cpu.mem[platform_const:platform_const + 3] = bytes((0x3E, 0x01, 0xC9))
     cpu.run(entries[2])
     require(cpu.a == 0xFF, "CONST ready result is not FFh")

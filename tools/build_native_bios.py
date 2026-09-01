@@ -15,6 +15,7 @@ from build_native_trs80 import (
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/bios"
+PLATFORM = ROOT / "src/platform/trs80m4"
 BUILD = ROOT / "build/bios"
 
 
@@ -28,6 +29,7 @@ def main() -> None:
     for path in (args.cpmsim, args.system_disk, args.disk_template,
                  args.tools / "ZSM4.COM", args.tools / "LINK.COM",
                  SOURCE / "bios.mac", SOURCE / "biosplat.inc",
+                 PLATFORM / "hardware.inc", PLATFORM / "m4cons.inc",
                  BUILD / "bios.bin"):
         if not path.is_file():
             raise SystemExit(f"missing native-build input: {path}")
@@ -39,12 +41,16 @@ def main() -> None:
         shutil.copy2(args.system_disk, disks / "drivea.dsk")
         for drive in "bcd":
             blank(args.disk_template, disks / f"drive{drive}.dsk")
-        for source_name in ("bios.mac", "biosplat.inc"):
-            host = work / source_name.upper()
-            host.write_bytes(cpm_text(SOURCE / source_name))
+        source_files = ((SOURCE / "bios.mac", "BIOS.MAC"),
+                        (SOURCE / "biosplat.inc", "BIOSPLAT.INC"),
+                        (PLATFORM / "hardware.inc", "HARDWARE.INC"),
+                        (PLATFORM / "m4cons.inc", "M4CONS.INC"))
+        for source_path, cpm_name in source_files:
+            host = work / cpm_name
+            host.write_bytes(cpm_text(source_path))
             for drive in ("b", "c"):
                 run("cpmcp", "-f", "ibm-3740", str(disks / f"drive{drive}.dsk"),
-                    str(host), f"0:{source_name.upper()}")
+                    str(host), f"0:{cpm_name}")
         for tool in ("ZSM4.COM", "LINK.COM"):
             run("cpmcp", "-f", "ibm-3740", str(disks / "drived.dsk"),
                 str(args.tools / tool), f"0:{tool}")

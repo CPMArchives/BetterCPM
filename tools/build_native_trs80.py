@@ -42,7 +42,8 @@ def main() -> None:
     args = parser.parse_args()
     required = [args.cpmsim, args.system_disk, args.disk_template,
                 args.tools / "ZSM4.COM", args.tools / "LINK.COM",
-                SOURCE / "hardware.inc", SOURCE / "hal.inc", CORE / "bringup.inc",
+                SOURCE / "hardware.inc", SOURCE / "hal.inc", SOURCE / "m4cons.inc",
+                CORE / "bringup.inc",
                 SOURCE / "boot.mac", SOURCE / "stage1.mac"]
     for path in required:
         if not path.is_file():
@@ -58,6 +59,7 @@ def main() -> None:
             blank(args.disk_template, disks / f"drive{drive}.dsk")
         source_files = ((SOURCE / "hardware.inc", "HARDWARE.INC"),
                         (SOURCE / "hal.inc", "HAL.INC"),
+                        (SOURCE / "m4cons.inc", "M4CONS.INC"),
                         (CORE / "bringup.inc", "BRINGUP.INC"),
                         (SOURCE / "boot.mac", "BOOT.MAC"),
                         (SOURCE / "stage1.mac", "STAGE1.MAC"))
@@ -67,7 +69,7 @@ def main() -> None:
             run("cpmcp", "-f", "ibm-3740", str(disks / "drivec.dsk"),
                 str(host), f"0:{cpm_name}")
         # INCLUDE files are resolved on the current output drive by ZSM4.
-        for include_name in ("HARDWARE.INC", "HAL.INC", "BRINGUP.INC"):
+        for include_name in ("HARDWARE.INC", "HAL.INC", "M4CONS.INC", "BRINGUP.INC"):
             run("cpmcp", "-f", "ibm-3740", str(disks / "driveb.dsk"),
                 str(work / include_name), f"0:{include_name}")
         for tool in ("ZSM4.COM", "LINK.COM"):

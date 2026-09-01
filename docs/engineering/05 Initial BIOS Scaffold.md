@@ -58,12 +58,11 @@ Returning explicit absence or failure is important: a scaffold must not claim
 that a drive or transfer succeeded before the corresponding DPH, DPB, and
 128-byte logical-sector implementation exist.
 
-## Platform fixture
+## Platform binding
 
-`biosplat.inc` currently supplies build-only console stubs. It makes the BIOS
-artifact independently reproducible without duplicating the stage-one Model 4
-driver. A later TRS-80 resident-platform module will replace this fixture and
-share the proven physical console implementation.
+`biosplat.inc` now binds the BIOS to the shared TRS-80 Model 4 console module
+introduced by Engineering Specification 07. The BIOS remains independently
+reproducible without duplicating the stage-one driver.
 
 The compatibility-visible CP/M BIOS and BetterCP/M's internal hardware
 boundary may share implementation; they need not become two complete driver

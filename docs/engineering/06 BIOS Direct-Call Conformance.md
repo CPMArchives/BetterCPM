@@ -17,9 +17,9 @@ instruction runner deliberately implements only opcodes emitted by this small
 fixture; encountering anything else fails the test. This is a bounded test
 instrument, not a general Z80 emulator.
 
-The platform-console stubs are test instrumentation. The fixture temporarily
-changes their returned values in the isolated memory image so both status and
-parity paths can be observed without modifying the built artifact.
+The fixture temporarily substitutes controlled responses at the platform-call
+targets in its isolated memory image so both status and parity paths can be
+observed without modifying the production artifact or invoking hardware.
 
 ## Verified behavior
 

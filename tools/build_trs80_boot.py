@@ -41,6 +41,7 @@ def assemble(assembler: Path, source: Path, output: Path, origin: int) -> bytes:
         (staged / source.name).write_text(text, encoding="ascii")
         shutil.copy2(SOURCE / "hardware.inc", staged / "hardware.inc")
         shutil.copy2(SOURCE / "hal.inc", staged / "hal.inc")
+        shutil.copy2(SOURCE / "m4cons.inc", staged / "m4cons.inc")
         shutil.copy2(ROOT / "src/core/bringup.inc", staged / "bringup.inc")
         subprocess.run(
             [str(assembler), "-fb", f"-o{output}", source.name],
