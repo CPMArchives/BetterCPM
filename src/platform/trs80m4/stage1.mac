@@ -10,6 +10,11 @@ STAGE1:
         LD      SP,VIDEOBASE
         LD      A,08EH
         OUT     (OPTREG),A
+        LD      HL,VIDEOBASE
+        LD      DE,VIDEOBASE+1
+        LD      BC,2047
+        LD      (HL),020H
+        LDIR
         LD      HL,MESSAGE
         LD      DE,VIDEOBASE
         LD      BC,MESSAGELEN

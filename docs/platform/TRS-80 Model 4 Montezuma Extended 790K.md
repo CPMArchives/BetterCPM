@@ -3,7 +3,9 @@
 Status: Initial development-media definition  
 Date: 2026-09-01
 
-This is the initial BetterCP/M development and test medium for the TRS-80 Model 4. Montezuma Micro calls the format **Extend System 790K**; “Extended” is used descriptively in filenames.
+This is the initial BetterCP/M development and test carrier for the TRS-80 Model 4. Montezuma Micro calls the format **Extend System 790K**; “Extended” is used descriptively in filenames.
+
+Its use for bring-up does not select the eventual BetterCP/M native disk format or filesystem. The Model 4 ROM-facing boot record, the physical disk geometry used by the machine port, and the logical filesystem presented by BetterCP/M are separate design decisions. BetterCP/M may retain this geometry, select another conventional geometry, or define its own format once the storage specification is written.
 
 ## Physical format
 

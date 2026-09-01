@@ -45,7 +45,7 @@ The NMI handler terminates the controller data loop at command completion. The i
 
 ## Stage one
 
-Stage one selects the Model 4 video-visible mapping, writes its diagnostic message to video memory at `F800h`, and enters a stable loop. It is currently 56 bytes.
+Stage one selects the Model 4 video-visible mapping, clears all 2,048 bytes of video memory, writes its diagnostic message at `F800h`, and enters a stable loop. It is currently 69 bytes.
 
 The `5000h` address and one-sector stage-one limit are bring-up values, not final resident-system decisions.
 
@@ -61,14 +61,14 @@ python3 tools/test_trs80_boot.py
 
 The second command assembles and links both stages under CP/M using ZSM4 and Digital Research LINK 1.3, then compares them with host cross-assembled output. Any byte mismatch fails the build.
 
-The third command boots the generated DMK in `trs80gp`, captures video RAM, and requires the exact stage-one message.
+The third command boots the generated DMK in `trs80gp`, captures video RAM, requires the exact stage-one message, and rejects any residual non-space characters elsewhere on the display.
 
 Verified hashes for this milestone are:
 
 ```text
 c9d73093405f49e2545774dd2bcfabb795fa01b35e3487d8447318754fe23221  boot.bin
-b9aa226e6214d01198a654cabf391046bd60818f37e6b64c27fb9a3680d6c7d8  stage1.bin
-84c701c021c4bd52fa983d5d7c758880f0eddba99bbe9930c17cea2bfcb202fe  BetterCPM-Extended-80T-DS-System-790K.dmk
+c76b7a88e272936c218978a81a79d2a8ffc4c58fb54e93d9452820f56ad73470  stage1.bin
+e24dce75d3dd2ad3a0e2e556428f3dcef9211c712c22d004ed5f1c81a5f566fe  BetterCPM-Extended-80T-DS-System-790K.dmk
 ```
 
 Generated binaries, logs, and disk images remain under `build/` and are not committed as source.

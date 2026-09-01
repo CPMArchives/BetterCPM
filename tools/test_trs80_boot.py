@@ -29,6 +29,8 @@ def main() -> None:
         screen = Path(temporary, "trs80-text-0.bin").read_bytes()
         if not screen.startswith(EXPECTED):
             raise SystemExit(f"boot test failed; screen begins {screen[:80]!r}")
+        if screen[len(EXPECTED):] != b" " * (len(screen) - len(EXPECTED)):
+            raise SystemExit("boot test failed; residual video RAM remains after the message")
     print(EXPECTED.decode("ascii"))
     print("TRS-80 Model 4 boot test passed")
 
