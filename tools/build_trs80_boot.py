@@ -102,6 +102,11 @@ def install_files(raw: bytearray, files: list[tuple[str, bytes]]) -> None:
             records_here = min(128, max(0, records - extent * 128))
             entry = bytearray(32)
             entry[1:9], entry[9:12] = name, suffix
+            # Host files have no CP/M directory attributes. Preserve the
+            # compatibility suite's canonical file-read-only fixture when it
+            # is installed into a generated image (T1 is extension byte 0).
+            if filename.upper() == "BTRO.DAT":
+                entry[9] |= 0x80
             entry[12], entry[14], entry[15] = extent & 0x1F, extent >> 5, records_here
             for slot in range(blocks_here):
                 if next_block >= BLOCK_COUNT:

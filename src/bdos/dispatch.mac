@@ -653,6 +653,36 @@ BF_GETU:
         LD      A,(BDOS_USER)
         JP      BDOS_RETURN
 
+; CP/M 2.2 abandons the transient after an attempted write through an FCB
+; carrying the file read-only attribute. Earlier BetterCP/M revisions safely
+; returned FFh here; retain that behavior in the directory layer, but
+; interpose the compatibility-visible resident error before write dispatch.
+BF_CHFRO:
+        PUSH    DE
+        LD      HL,(BDOS_PARM)
+        LD      DE,9
+        ADD     HL,DE
+        LD      A,(HL)
+        AND     080H
+        JR      NZ,BF_FROERR
+        POP     DE
+        RET
+BF_FROERR:
+        POP     DE
+        LD      HL,BF_MSGFRO
+BF_FROLP:
+        LD      A,(HL)
+        CP      '$'
+        JP      Z,BIOWBOOT
+        INC     HL
+        PUSH    HL
+        CALL    BF_COCHAR
+        POP     HL
+        JR      BF_FROLP
+
+BF_MSGFRO:
+        DB      13,10,'File R/O',13,10,'$'
+
 BF_RREAD:
         LD      DE,(BDOS_PARM)
         CALL    BF_FSEL
@@ -668,6 +698,7 @@ BF_RWRIT:
         LD      DE,(BDOS_PARM)
         CALL    BF_FSEL
         JP      NZ,BDOS_BADRV
+        CALL    BF_CHFRO
         LD      BC,(BDOS_DMA)
         CALL    BF_ISRO
         LD      H,A
@@ -681,6 +712,7 @@ BF_RZERO:
         LD      DE,(BDOS_PARM)
         CALL    BF_FSEL
         JP      NZ,BDOS_BADRV
+        CALL    BF_CHFRO
         LD      BC,(BDOS_DMA)
         CALL    BF_ISRO
         LD      H,A
@@ -880,6 +912,7 @@ BDOS_WRITE:
         LD      DE,(BDOS_PARM)
         CALL    BF_FSEL
         JP      NZ,BDOS_BADRV
+        CALL    BF_CHFRO
         LD      BC,(BDOS_DMA)
         CALL    BF_ISRO
         LD      H,A             ; H=software-protected flag

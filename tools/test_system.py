@@ -337,10 +337,18 @@ def main() -> None:
             "CALL 0005h did not transition to the next sequential extent")
     cpu.mem[FCB + 9] |= 0x80
     protected_fcb = bytes(cpu.mem[FCB:FCB + 33])
+    warm_vector = bytes(cpu.mem[BIOS_BASE + 3:BIOS_BASE + 6])
+    cpu.mem[0x7060:0x706A] = bytes((0x3E, 0x5A, 0x32, 0x4F, 0x70,
+                                    0xED, 0x7B, old_stack & 0xFF,
+                                    old_stack >> 8, 0xC9))
+    cpu.mem[BIOS_BASE + 3:BIOS_BASE + 6] = bytes((0xC3, 0x60, 0x70))
+    cpu.mem[0x704F] = 0
     cpu.c, cpu.de = 21, FCB
     cpu.run(CALLER, limit=50000)
-    require(cpu.a == 0xFF and bytes(cpu.mem[FCB:FCB + 33]) == protected_fcb,
-            "CALL 0005h did not enforce file protection on sequential write")
+    require(cpu.mem[0x704F] == 0x5A and
+            bytes(cpu.mem[FCB:FCB + 33]) == protected_fcb,
+            "CALL 0005h file protection did not take terminal WBOOT path")
+    cpu.mem[BIOS_BASE + 3:BIOS_BASE + 6] = warm_vector
     cpu.mem[FCB + 9] &= 0x7F
 
     cpu.c = 12
