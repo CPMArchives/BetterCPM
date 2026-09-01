@@ -36,6 +36,22 @@ def main() -> None:
     login_state = symbol("STATE_LV")
     readonly_state = symbol("STATE_RO")
 
+    const_impl = cpu.word(BIOS_BASE + 2 * 3 + 1)
+    platform_const = cpu.word(const_impl + 1)
+    cpu.mem[platform_const:platform_const + 2] = bytes((0xAF, 0xC9))
+    cpu.c = 11
+    cpu.run(BDOS_BASE)
+    require(cpu.a == cpu.l == 0, "BDOS console status reported a false key")
+    cpu.mem[platform_const:platform_const + 3] = bytes((0x3E, 0x01, 0xC9))
+    cpu.c = 11
+    cpu.run(BDOS_BASE)
+    require(cpu.a == cpu.l == 0xFF,
+            "BDOS console status did not normalize ready to FFh")
+    cpu.c = 11
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 0xFF, "BDOS console status consumed the pending key")
+    cpu.mem[platform_const:platform_const + 2] = bytes((0xAF, 0xC9))
+
     read_impl = cpu.word(BIOS_BASE + 13 * 3 + 1)
     calls = [address for address in range(read_impl, read_impl + 48)
              if cpu.mem[address] == 0xCD]
@@ -834,7 +850,7 @@ def main() -> None:
             f"provisional BDOS storage failure was confused with slot success: "
             f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS functions 12-37 and 40 passed")
+    print("BDOS function 11, functions 12-37, and function 40 passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 

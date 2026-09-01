@@ -21,6 +21,10 @@ def main() -> None:
     cpu.sp = 0xED00          # clear of D800h..ECFFh System Services growth
     cpu.mem[RESIDENT_BASE:RESIDENT_BASE + len(resident)] = resident
 
+    const_impl = cpu.word(BIOS_BASE + 2 * 3 + 1)
+    platform_const = cpu.word(const_impl + 1)
+    cpu.mem[platform_const:platform_const + 2] = bytes((0xAF, 0xC9))
+
     read_impl = cpu.word(BIOS_BASE + 13 * 3 + 1)
     calls = [address for address in range(read_impl, read_impl + 48)
              if cpu.mem[address] == 0xCD]
@@ -76,9 +80,22 @@ def main() -> None:
     require(bytes(cpu.mem[5:8]) == bytes((0xC3, 0x00, 0xC1)),
             "BDOS page-zero vector is wrong")
 
+    cpu.mem[CALLER:CALLER + 4] = bytes((0xCD, 0x05, 0x00, 0xC9))
+    cpu.c = 11
+    cpu.run(CALLER)
+    require(cpu.a == 0, "CALL 0005h console status reported a false key")
+    cpu.mem[platform_const:platform_const + 3] = bytes((0x3E, 0x01, 0xC9))
+    cpu.c = 11
+    cpu.run(CALLER)
+    require(cpu.a == cpu.l == 0xFF,
+            "CALL 0005h console status did not report a pending key")
+    cpu.c = 11
+    cpu.run(CALLER)
+    require(cpu.a == 0xFF, "CALL 0005h console status consumed the key")
+    cpu.mem[platform_const:platform_const + 2] = bytes((0xAF, 0xC9))
+
     cpu.mem[FCB:FCB + 33] = bytes(33)
     cpu.mem[FCB + 1:FCB + 12] = b"GATEWAY DAT"
-    cpu.mem[CALLER:CALLER + 4] = bytes((0xCD, 0x05, 0x00, 0xC9))
     original_sp = cpu.sp
     cpu.c, cpu.de = 15, FCB
     cpu.run(CALLER, limit=50000)
@@ -315,7 +332,7 @@ def main() -> None:
             "failed initialization published page-zero vectors")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
-    print("application CALL 0005h reached functions 12-37 and 40")
+    print("application CALL 0005h reached function 11, functions 12-37, and 40")
 
 
 if __name__ == "__main__":

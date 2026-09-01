@@ -44,7 +44,6 @@ byte-identical BDOS and resident-system binaries.
 
 ## Next increment
 
-Begin the remaining CP/M 2.2 character and system-call group with function 11
-(Get Console Status), using the existing BIOS `CONST` service. This provides a
-small, testable bridge from the completed disk-focused BDOS to functions 0
-through 11.
+Implemented by [Engineering Specification 44](44%20Console%20Status.md).
+Function 11 uses the existing BIOS `CONST` service as the first bridge from the
+completed disk-focused BDOS to functions 0 through 10.
