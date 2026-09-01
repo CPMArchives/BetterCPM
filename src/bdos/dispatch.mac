@@ -1101,5 +1101,60 @@ BDOS_STACK:
         ENDM
 BDOS_STKTOP:
 
+; Patch 2026-09-02: the original DPH/DPB tables at C080h and CSV/ALV pages
+; below C100h were inside the TPA. A large transient could therefore corrupt
+; the live disk contract. Keep the historical mistake visible in the gateway
+; source, but place every descriptor and workspace above resident BDOS code.
+        REPT    0C900H-$
+        DB      0
+        ENDM
+BIO_DPH0:
+        DW      0,0,0,0,0F300H,BIO_DPB0,BIO_CSV0,BIO_ALV0
+BIO_DPH1:
+        DW      0,0,0,0,0F300H,BIO_DPB0,BIO_CSV1,BIO_ALV1
+BIO_DPH2:
+        DW      0,0,0,0,0F300H,BIO_DPB0,BIO_CSV2,BIO_ALV2
+BIO_DPH3:
+        DW      0,0,0,0,0F300H,BIO_DPB0,BIO_CSV3,BIO_ALV3
+BIO_DPB0:
+        DW      80
+        DB      4,15,0
+        DW      394,127
+        DB      0C0H,0
+        DW      32,2
+        DB      0               ; align mutable workspace at C950h
+BIO_CSV0:
+        REPT    32
+        DB      0
+        ENDM
+BIO_ALV0:
+        REPT    50
+        DB      0
+        ENDM
+BIO_CSV1:
+        REPT    32
+        DB      0
+        ENDM
+BIO_ALV1:
+        REPT    50
+        DB      0
+        ENDM
+BIO_CSV2:
+        REPT    32
+        DB      0
+        ENDM
+BIO_ALV2:
+        REPT    50
+        DB      0
+        ENDM
+BIO_CSV3:
+        REPT    32
+        DB      0
+        ENDM
+BIO_ALV3:
+        REPT    50
+        DB      0
+        ENDM
+
         .DEPHASE
         END

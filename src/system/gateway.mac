@@ -10,7 +10,7 @@ SYSBASE         EQU     0C000H
 BDOS            EQU     0C100H
 DIRLOGIN        EQU     0D60CH
 BIOWBOOT        EQU     0EF03H
-CCP             EQU     0E8C0H
+CCP             EQU     0E8E0H
 
         CSEG
         .PHASE  SYSBASE
@@ -62,26 +62,6 @@ SYS_STACK:
         DB      0
         ENDM
 SYS_STKTOP:
-
-; Patch 2026-09-01: immutable four-drive DPH/DPB tables occupy the otherwise
-; unused gateway-to-BDOS gap, leaving BIOS code clear of the F300h buffer.
-        REPT    SYSBASE+080H-$
-        DB      0
-        ENDM
-BIO_DPH0:
-        DW      0,0,0,0,0F300H,BIO_DPB0,0F380H,0F3A0H
-BIO_DPH1:
-        DW      0,0,0,0,0F300H,BIO_DPB0,0BF00H,0BF20H
-BIO_DPH2:
-        DW      0,0,0,0,0F300H,BIO_DPB0,0BF52H,0BF72H
-BIO_DPH3:
-        DW      0,0,0,0,0F300H,BIO_DPB0,0BFA4H,0BFC4H
-BIO_DPB0:
-        DW      80
-        DB      4,15,0
-        DW      394,127
-        DB      0C0H,0
-        DW      32,2
 
         .DEPHASE
         END

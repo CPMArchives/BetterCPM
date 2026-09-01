@@ -11,7 +11,8 @@ DIRBASE         EQU     0D600H
 ; moved below the resident code. Specification 29 gives that workspace an
 ; explicit BF00H reservation while relocating this component for growth.
 ; Patch 2026-09-01: the BIOS DPH directory buffer at F300h is the same
-; 128-byte workspace this service needs; sharing it frees BF00h for DPH state.
+; 128-byte workspace this service needs. The former BF00h DPH state was later
+; relocated above BDOS after compatibility testing proved BF00h is still TPA.
 DIRBUF          EQU     0F300H
 BIOSBASE        EQU     0EF00H
 BIOSELDS        EQU     BIOSBASE+27
@@ -20,6 +21,7 @@ BIOSETSE        EQU     BIOSBASE+33
 BIOSETDM        EQU     BIOSBASE+36
 BIOREAD         EQU     BIOSBASE+39
 BIOWRITE        EQU     BIOSBASE+42
+BIOSECTR        EQU     BIOSBASE+48
 
         CSEG
         .PHASE  DIRBASE
@@ -1231,13 +1233,20 @@ DIR_WDONE:
         ADD     HL,DE
         PUSH    HL
         CALL    BIOSETTR
-        POP     HL
+        POP     BC
+        LD      DE,0             ; current native format has no XLT table
+        CALL    BIOSECTR
+        LD      B,H
         LD      C,L
-        LD      B,0
         CALL    BIOSETSE
         LD      BC,(DIR_WDMA)
         CALL    BIOSETDM
+        LD      A,(DIR_WALLOC)
+        OR      A
         LD      C,0              ; ordinary data write
+        JR      Z,DIR_WTYPE
+        LD      C,2              ; first record in a newly allocated block
+DIR_WTYPE:
         CALL    BIOWRITE
         JP      NZ,DIR_WFAIL
 
@@ -1322,9 +1331,11 @@ DZ_DONE:
         ADD     HL,DE
         PUSH    HL
         CALL    BIOSETTR
-        POP     HL
+        POP     BC
+        LD      DE,0
+        CALL    BIOSECTR
+        LD      B,H
         LD      C,L
-        LD      B,0
         CALL    BIOSETSE
         LD      BC,DIRBUF
         CALL    BIOSETDM
@@ -1644,7 +1655,7 @@ DIR_RBIX:
 DIR_RBOK:
         LD      A,H
         OR      A
-        JR      NZ,DIR_REOF
+        JP      NZ,DIR_REOF
         LD      A,L
         LD      (DIR_RBNO),A
 
@@ -1706,9 +1717,11 @@ DIR_RDONE:
         ADD     HL,DE           ; HL is logical sector within track
         PUSH    HL
         CALL    BIOSETTR
-        POP     HL
+        POP     BC
+        LD      DE,0
+        CALL    BIOSECTR
+        LD      B,H
         LD      C,L
-        LD      B,0
         CALL    BIOSETSE
         LD      BC,(DIR_RDMA)
         CALL    BIOSETDM
@@ -2198,6 +2211,21 @@ DIR_GALV:
         CALL    DIR_LOGIN
         RET     NZ
 DIR_AGOK:
+; Patch 2026-09-02: a DPH publishes a live DPB, not a private immutable copy.
+; Refresh the mapping fields at each filesystem entry boundary.  Besides
+; honoring future CONFIG changes, this repairs cached geometry after software
+; deliberately exercises the public DPB (BIOSTEST 0433 does exactly that).
+        LD      HL,(DIR_DPB)
+        LD      E,(HL)          ; SPT
+        INC     HL
+        LD      D,(HL)
+        LD      (DIR_SPT),DE
+        LD      DE,12           ; from DPB+1 to OFF at DPB+13
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (DIR_OFF),DE
         LD      HL,(DIR_ALVP)
         XOR     A
         RET
@@ -2377,6 +2405,10 @@ DIR_DIVDN:
         POP     AF
         LD      C,A
         LD      B,0
+        LD      DE,0
+        CALL    BIOSECTR
+        LD      B,H
+        LD      C,L
         CALL    BIOSETSE
         LD      BC,DIRBUF
         CALL    BIOSETDM

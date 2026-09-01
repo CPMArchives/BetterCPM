@@ -6,19 +6,11 @@
 BIOSBASE        EQU     0EF00H
 BIO_PHYBF       EQU     0ED00H  ; 512-byte buffer below the resident BIOS
 BIO_DIRBF       EQU     0F300H
-BIO_CSV1        EQU     0BF00H  ; reserved DPH-state page below the gateway
-BIO_ALV1        EQU     0BF20H
-BIO_CSV2        EQU     0BF52H
-BIO_ALV2        EQU     0BF72H
-BIO_CSV3        EQU     0BFA4H
-BIO_ALV3        EQU     0BFC4H
-BIO_CSV0        EQU     0F380H
-BIO_ALV0        EQU     0F3A0H
-BIO_DPH0        EQU     0C080H
-BIO_DPH1        EQU     0C090H
-BIO_DPH2        EQU     0C0A0H
-BIO_DPH3        EQU     0C0B0H
-BIO_DPB0        EQU     0C0C0H
+BIO_DPH0        EQU     0C900H
+BIO_DPH1        EQU     0C910H
+BIO_DPH2        EQU     0C920H
+BIO_DPH3        EQU     0C930H
+BIO_DPB0        EQU     0C940H
 SYS_BOOT        EQU     0C020H
 SYS_WBOOT       EQU     0C023H
 

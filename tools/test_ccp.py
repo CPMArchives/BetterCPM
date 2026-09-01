@@ -10,7 +10,7 @@ from test_bios import Z80, require
 ROOT = Path(__file__).resolve().parents[1]
 IMAGE = ROOT / "build/ccp/ccp.bin"
 LISTING = ROOT / "build/ccp/ccp.lst"
-BASE = 0xE8C0
+BASE = 0xE8E0
 CALLER = 0x7000
 
 

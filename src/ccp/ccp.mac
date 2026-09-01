@@ -5,8 +5,12 @@
 ; can remain resident without taking space from transient programs.
 ; Patch 2026-09-02: USER exhausted that exact-fit region.  Move the base down
 ; into the verified gap after Directory Services; ED00H remains untouched.
+; Patch 2026-09-02: public SECTRAN calls grew Directory Services through
+; E8C0H. Advance the CCP by 16 bytes, retaining a guard before E8D0H.
+; Patch 2026-09-02: live-DPB refresh extended Directory Services through
+; E8D5H. Advance another 16 bytes, preserving a ten-byte guard.
 
-CCPBASE         EQU     0E8C0H
+CCPBASE         EQU     0E8E0H
 BDOS            EQU     0C100H
 
         CSEG

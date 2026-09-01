@@ -1,5 +1,9 @@
 # Engineering Specification 29: Resident Memory Layout Revision
 
+> Historical note: this was the first explicit resident map. Specification 90
+> supersedes its treatment of `BF00h..BFFFh`; memory below the `C100h` BDOS
+> entry remains TPA and no longer contains live DPH, CSV, or ALV state.
+
 ## Milestone
 
 BetterCP/M has replaced its exhausted `E500h`/`E600h`/`E800h` bring-up

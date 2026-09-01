@@ -21,11 +21,13 @@ one.
 
 The previous CCP region at `E940h..ECFFh` was exactly full before `USER` was
 added. Directory Services currently ends at `E8A0h`, leaving a verified gap
-below the CCP. The CCP base moves to `E8C0h`, preserving a 31-byte guard after
-Directory Services and retaining `ED00h..EEFFh` for the BIOS physical-sector
-buffer.
+below the CCP. The CCP base initially moved to `E8C0h`; the later addition of
+public SECTRAN calls grew Directory Services through `E8C0h`, so the base is
+was `E8D0h`; live-DPB refresh moved it again to `E8E0h`. This preserves a
+ten-byte guard after Directory Services and
+retains `ED00h..EEFFh` for the BIOS physical-sector buffer.
 
-The resulting CCP is 1,033 bytes in the 1,088-byte `E8C0h..ECFFh` region.
+The resulting CCP is 1,033 bytes in the 1,056-byte `E8E0h..ECFFh` region.
 Native CP/M and cross builds are byte-identical. The composed resident system,
 all 39 BDOS function tests, warm-boot/CCP test, native loader build, and
 physical boot test pass after the relocation.

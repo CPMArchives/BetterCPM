@@ -460,11 +460,11 @@ def require(condition: bool, message: str) -> None:
 
 def install_drive_tables(cpu: Z80) -> None:
     """Install the gateway-owned four-drive DPH/DPB contract in test memory."""
-    dpb_address = 0xC0C0
-    workspaces = ((0xF380, 0xF3A0), (0xBF00, 0xBF20),
-                  (0xBF52, 0xBF72), (0xBFA4, 0xBFC4))
+    dpb_address = 0xC940
+    workspaces = ((0xC950, 0xC970), (0xC9A2, 0xC9C2),
+                  (0xC9F4, 0xCA14), (0xCA46, 0xCA66))
     for drive, (csv, alv) in enumerate(workspaces):
-        dph = 0xC080 + drive * 16
+        dph = 0xC900 + drive * 16
         for offset, value in ((8, 0xF300), (10, dpb_address),
                               (12, csv), (14, alv)):
             cpu.mem[dph + offset:dph + offset + 2] = value.to_bytes(2, "little")

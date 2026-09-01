@@ -31,11 +31,11 @@ def main() -> None:
                         f"-l{BUILD / 'ccp.lst'}", staged.name],
                        check=True, cwd=staged.parent)
     data = output.read_bytes()
-    if len(data) > 0xE8C0 and data[:0xE8C0] == bytes(0xE8C0):
-        data = data[0xE8C0:]
+    if len(data) > 0xE8E0 and data[:0xE8E0] == bytes(0xE8E0):
+        data = data[0xE8E0:]
         output.write_bytes(data)
-    if not data or len(data) > 0x440:
-        raise SystemExit(f"CCP size outside E8C0h..ECFFh: {len(data)} bytes")
+    if not data or len(data) > 0x430:
+        raise SystemExit(f"CCP size outside E8E0h..ECFFh: {len(data)} bytes")
     print(f"{hashlib.sha256(data).hexdigest()}  {output.relative_to(ROOT)}")
     print(f"CCP bytes: {len(data)}")
 
