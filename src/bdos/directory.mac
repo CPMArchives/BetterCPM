@@ -43,6 +43,116 @@ DIRSERV:
         JP      DIR_RENAME
         JP      DIR_ATTR
         JP      DIR_SIZE
+        JP      DIR_RREAD
+
+; Read the 128-byte record named by FCB R0/R1. CP/M 2.2 reserves R2 and
+; reports a range error when it is nonzero. On success EX/S2/CR identify the
+; record just read; unlike sequential Read, CR is therefore not advanced.
+; Input A=user, DE=36-byte FCB, BC=DMA. Return CP/M random-I/O status.
+DIR_RREAD:
+        LD      (DIR_QUSER),A
+        LD      (DIR_QFCB),DE
+        LD      (DIR_QDMA),BC
+        LD      A,(DE)
+        CP      2
+        JP      NC,DIR_QBAD
+        PUSH    DE
+        INC     DE
+        LD      B,11
+DIR_QNAME:
+        LD      A,(DE)
+        AND     07FH
+        CP      '?'
+        JP      Z,DIR_QPOPB
+        INC     DE
+        DJNZ    DIR_QNAME
+        POP     DE
+        LD      HL,35
+        ADD     HL,DE
+        LD      A,(HL)          ; R2 must be zero in CP/M 2.2 random I/O
+        OR      A
+        JP      NZ,DIR_QRANGE
+        DEC     HL
+        LD      A,(HL)          ; R1 high nibble selects S2
+        LD      C,A
+        AND     0F0H
+        SRL     A
+        SRL     A
+        SRL     A
+        SRL     A
+        LD      (DIR_QS2),A
+        LD      A,C
+        AND     00FH
+        ADD     A,A
+        LD      C,A
+        DEC     HL
+        LD      A,(HL)          ; R0 bit 7 is EX bit 0
+        LD      B,A
+        AND     080H
+        SRL     A
+        SRL     A
+        SRL     A
+        SRL     A
+        SRL     A
+        SRL     A
+        SRL     A
+        OR      C
+        LD      (DIR_QEX),A
+        LD      A,B
+        AND     07FH
+        LD      (DIR_QCR),A
+        LD      HL,(DIR_QFCB)
+        LD      DE,12
+        ADD     HL,DE
+        LD      A,(DIR_QEX)
+        LD      (HL),A
+        INC     HL
+        INC     HL
+        LD      A,(DIR_QS2)
+        LD      (HL),A
+        LD      HL,(DIR_QFCB)
+        LD      DE,32
+        ADD     HL,DE
+        LD      A,(DIR_QCR)
+        LD      (HL),A
+        LD      A,(DIR_QUSER)
+        LD      DE,(DIR_QFCB)
+        CALL    DIR_OPEN
+        JR      C,DIR_QSTORE
+        CP      0FFH
+        JR      Z,DIR_QNOEX
+        LD      A,(DIR_QUSER)
+        LD      DE,(DIR_QFCB)
+        LD      BC,(DIR_QDMA)
+        CALL    DIR_READ
+        JR      C,DIR_QSTORE
+        OR      A
+        RET     NZ              ; code 1: unwritten record in this extent
+        LD      HL,(DIR_QFCB)
+        LD      DE,32
+        ADD     HL,DE
+        LD      A,(HL)
+        DEC     A               ; sequential Read advanced it; Random must not
+        LD      (HL),A
+        XOR     A
+        RET
+DIR_QPOPB:
+        POP     DE
+DIR_QBAD:
+        LD      A,9             ; invalid FCB
+        OR      A
+        RET
+DIR_QRANGE:
+        LD      A,6             ; random record number out of CP/M 2.2 range
+        OR      A
+        RET
+DIR_QNOEX:
+        LD      A,4             ; requested extent has not been written
+        OR      A
+        RET
+DIR_QSTORE:
+        SCF                     ; internal storage failure
+        RET
 
 ; Compute exact-name file size in 128-byte records and store FCB R0..R2.
 ; Input A=user, DE=36-byte FCB. Return zero success, FFh missing/invalid.
@@ -2448,6 +2558,18 @@ DIR_RBNO:
 DIR_ROEX:
         DB      0
 DIR_ROS2:
+        DB      0
+DIR_QUSER:
+        DB      0
+DIR_QFCB:
+        DW      0
+DIR_QDMA:
+        DW      0
+DIR_QCR:
+        DB      0
+DIR_QEX:
+        DB      0
+DIR_QS2:
         DB      0
 DIR_WUSER:
         DB      0

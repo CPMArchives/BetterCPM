@@ -131,6 +131,14 @@ def main() -> None:
     cpu.c, cpu.de = 20, FCB
     cpu.run(CALLER, limit=50000)
     require(cpu.a != 0, "CALL 0005h sequential read did not report EOF")
+    cpu.mem[FCB + 33:FCB + 36] = bytes((1, 0, 0))
+    cpu.c, cpu.de = 33, FCB
+    cpu.run(CALLER, limit=100000)
+    require(cpu.a == 0 and cpu.mem[FCB + 12] == 0 and
+            cpu.mem[FCB + 14] == 0 and cpu.mem[FCB + 32] == 1 and
+            bytes(cpu.mem[FCB + 33:FCB + 36]) == bytes((1, 0, 0)) and
+            bytes(cpu.mem[0x7100:0x7180]) == bytes((0xA1,)) * 128,
+            "CALL 0005h Read Random did not preserve CP/M FCB semantics")
     cpu.mem[FIXTURE:FIXTURE + 12] = bytes((0,)) + b"READ    DAT"
     cpu.mem[FIXTURE + 12:FIXTURE + 16] = bytes((1, 0, 0, 1))
     cpu.mem[FIXTURE + 16:FIXTURE + 32] = bytes((2, 0)) + bytes(14)
@@ -246,7 +254,7 @@ def main() -> None:
             "failed initialization published page-zero vectors")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
-    print("application CALL 0005h reached functions 12-32 and 35-36")
+    print("application CALL 0005h reached functions 12-33 and 35-36")
 
 
 if __name__ == "__main__":

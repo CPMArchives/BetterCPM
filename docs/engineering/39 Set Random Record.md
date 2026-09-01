@@ -42,6 +42,7 @@ byte-identical BDOS binaries.
 
 ## Next increment
 
-Implement BDOS function 33 (Read Random). It will decode `R0–R2`, activate the
-corresponding extent, reuse the DPB-driven record mapper, and transfer exactly
-one 128-byte record without advancing the random-record field.
+Implemented by [Engineering Specification 40](40%20Random%20Read.md). Function
+33 uses the strict CP/M 2.2 16-bit random-read range, activates the requested
+extent, and preserves both the random fields and documented sequential
+positioning side effect.

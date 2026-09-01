@@ -478,6 +478,47 @@ def main() -> None:
             "partial-final-extent EOF was not stable")
     cpu.run(BDOS_BASE, limit=50000)
     require(cpu.a != 0, "repeated sequential EOF fabricated a record")
+
+    # Function 33 decodes the CP/M 2.2 16-bit random-record field, activates
+    # that extent, and leaves the sequential position at the record just read.
+    cpu.mem[FCB + 33:FCB + 36] = bytes((1, 0, 0))
+    cpu.mem[0x7200:0x7280] = bytes((0xCC,)) * 128
+    cpu.c, cpu.de = 26, 0x7200
+    cpu.run(BDOS_BASE)
+    cpu.c, cpu.de = 33, FCB
+    cpu.run(BDOS_BASE, limit=100000)
+    require(cpu.a == 0 and cpu.mem[FCB + 12] == 0 and
+            cpu.mem[FCB + 14] == 0 and cpu.mem[FCB + 32] == 1 and
+            bytes(cpu.mem[FCB + 33:FCB + 36]) == bytes((1, 0, 0)) and
+            bytes(cpu.mem[0x7200:0x7280]) == bytes((0xA1,)) * 128,
+            "Read Random record 1 data, position, or R0-R2 is wrong")
+    cpu.mem[FCB + 33:FCB + 36] = bytes((2, 0, 0))
+    cpu.c, cpu.de = 33, FCB
+    cpu.run(BDOS_BASE, limit=100000)
+    require(cpu.a == 1 and cpu.mem[FCB + 32] == 2,
+            "Read Random did not report unwritten data in an existing extent")
+    cpu.mem[FCB + 33:FCB + 36] = bytes((0x80, 0, 0))
+    cpu.c, cpu.de = 33, FCB
+    cpu.run(BDOS_BASE, limit=100000)
+    require(cpu.a == 4 and cpu.mem[FCB + 12] == 1 and
+            cpu.mem[FCB + 32] == 0,
+            "Read Random did not report an unwritten extent")
+    cpu.mem[FCB + 33:FCB + 36] = bytes((0, 0, 1))
+    stable_random_fcb = bytes(cpu.mem[FCB:FCB + 36])
+    cpu.c, cpu.de = 33, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 6 and bytes(cpu.mem[FCB:FCB + 36]) == stable_random_fcb,
+            "Read Random accepted nonzero R2 or changed the FCB")
+    cpu.mem[FCB + 1] = ord('?')
+    cpu.mem[FCB + 35] = 0
+    cpu.c, cpu.de = 33, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 9, "Read Random accepted a wildcard FCB")
+    cpu.mem[FCB + 1:FCB + 12] = b"READ    DAT"
+    cpu.mem[FCB + 12] = cpu.mem[FCB + 14] = 0
+    cpu.mem[FCB + 33:FCB + 36] = bytes(3)
+    cpu.c, cpu.de = 26, 0x7180
+    cpu.run(BDOS_BASE)
     cpu.mem[FIXTURE:FIXTURE + 12] = bytes((0,)) + b"READ    DAT"
     cpu.mem[FIXTURE + 12:FIXTURE + 16] = bytes((1, 0, 0, 1))
     cpu.mem[FIXTURE + 16:FIXTURE + 32] = bytes((2, 0)) + bytes(14)
@@ -487,7 +528,9 @@ def main() -> None:
     require(cpu.a == 0 and cpu.mem[FCB + 12] == 1 and
             cpu.mem[FCB + 32] == 1 and
             bytes(cpu.mem[0x7180:0x7200]) == bytes((0xA0,)) * 128,
-            "automatic sequential extent transition failed")
+            f"automatic sequential extent transition failed: A={cpu.a:02X} "
+            f"EX={cpu.mem[FCB + 12]:02X} S2={cpu.mem[FCB + 14]:02X} "
+            f"RC={cpu.mem[FCB + 15]:02X} CR={cpu.mem[FCB + 32]:02X}")
 
     # Return to extent zero and verify Function 21 through the BDOS boundary.
     cpu.mem[FCB + 12] = cpu.mem[FCB + 14] = cpu.mem[FCB + 32] = 0
@@ -691,7 +734,7 @@ def main() -> None:
             f"provisional BDOS storage failure was confused with slot success: "
             f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS functions 12-32 and 35-36 passed")
+    print("BDOS functions 12-33 and 35-36 passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 
