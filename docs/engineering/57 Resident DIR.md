@@ -42,3 +42,7 @@ the cross builds. The physical `trs80gp` test now types `DIR`, requires
 The initial implementation scans the complete directory through BDOS and real
 disk I/O. This is intentionally correct before it is optimized; the automated
 test allows the physical scan to complete before entering the next command.
+
+## Next increment
+
+Implemented by [Engineering Specification 58](58%20Transient%20Command%20Tail.md).

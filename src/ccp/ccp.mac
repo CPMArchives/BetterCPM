@@ -122,9 +122,26 @@ CCP_FSPC:
         OR      A
         SCF
         RET     Z
-        CP      9
-        CCF
-        RET     C               ; reject names longer than eight characters
+        LD      B,A
+        LD      HL,CCP_DATA
+        XOR     A
+CCP_LNSCAN:
+        CP      8
+        JP      NC,CCP_LFAIL
+        INC     A
+        LD      C,A
+        LD      A,(HL)
+        CP      ' '
+        LD      A,C
+        JR      Z,CCP_LNSPACE
+        INC     HL
+        DJNZ    CCP_LNSCAN
+        JR      CCP_LNFOUND
+CCP_LNSPACE:
+        DEC     A
+CCP_LNFOUND:
+        JP      Z,CCP_LFAIL
+        LD      (CCP_NAMEL),A
         LD      B,A
         LD      HL,CCP_DATA
         LD      DE,CCP_FCB+1
@@ -175,9 +192,26 @@ CCP_ZPAGE:
         LD      (HL),A
         INC     HL
         DJNZ    CCP_ZPAGE
+        LD      A,(CCP_COUNT)
+        LD      HL,CCP_NAMEL
+        SUB     (HL)
         LD      (0080H),A
+        LD      B,A
+        LD      A,(CCP_NAMEL)
+        LD      E,A
+        LD      D,0
+        LD      HL,CCP_DATA
+        ADD     HL,DE
+        LD      DE,0081H
+        LD      A,B
+        OR      A
+        JR      Z,CCP_LTAIL0
+        LD      C,A
+        LD      B,0
+        LDIR
+CCP_LTAIL0:
         LD      A,13
-        LD      (0081H),A
+        LD      (DE),A
         LD      SP,CCP_RET
         JP      0100H
 CCP_LFAIL:
@@ -317,6 +351,8 @@ CCP_FCB:
         ENDM
 CLDPTR:
         DW      0100H
+CCP_NAMEL:
+        DB      0
 CCP_DIREP:
         DW      0080H
 CCP_DFPTR:

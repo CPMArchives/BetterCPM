@@ -14,8 +14,8 @@ EXPECTED_LINES = (
     b"",
     b"A>DIR",
     b"HELLO.COM",
-    b"A>HELLO",
-    b"Hello from BetterCP/M",
+    b"A>HELLO WORLD",
+    b"Hello from BetterCP/M WORLD",
     b"A>",
 )
 
@@ -41,6 +41,12 @@ def main() -> None:
             "-ik", "1", "10", "-id", "4", "-ik", "1", "0", "-id", "4",
             "-ik", "1", "10", "-id", "4", "-ik", "1", "0", "-id", "4",
             "-ik", "1", "80", "-id", "4", "-ik", "1", "0", "-id", "4",
+            "-ik", "6", "80", "-id", "4", "-ik", "6", "0", "-id", "4",
+            "-ik", "2", "80", "-id", "4", "-ik", "2", "0", "-id", "4",
+            "-ik", "1", "80", "-id", "4", "-ik", "1", "0", "-id", "4",
+            "-ik", "2", "4", "-id", "4", "-ik", "2", "0", "-id", "4",
+            "-ik", "1", "10", "-id", "4", "-ik", "1", "0", "-id", "4",
+            "-ik", "0", "10", "-id", "4", "-ik", "0", "0", "-id", "4",
             "-ik", "6", "1", "-id", "4", "-ik", "6", "0",
             "-id", "1200", "-it", "-ix",
         ], cwd=temporary, check=True)
@@ -59,7 +65,7 @@ def main() -> None:
                              f"screen begins {screen[:240]!r}")
     for line in EXPECTED_LINES:
         print(line.decode("ascii"))
-    print("TRS-80 Model 4 resident DIR and HELLO.COM load test passed")
+    print("TRS-80 Model 4 DIR, command-tail, and HELLO.COM test passed")
 
 
 if __name__ == "__main__":

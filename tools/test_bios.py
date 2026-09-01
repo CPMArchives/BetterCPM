@@ -443,6 +443,8 @@ class Z80:
             elif op in (0x71, 0x72, 0x73):  # LD (HL),C / D / E
                 self.mem[self.hl] = {0x71: self.c, 0x72: self.d,
                                      0x73: self.e}[op]
+            elif op == 0x12:            # LD (DE),A
+                self.mem[self.de] = self.a
             else:
                 raise AssertionError(f"unsupported opcode {op:02X} at {self.pc - 1:04X}")
         raise AssertionError(f"execution limit reached from {address:04X}")

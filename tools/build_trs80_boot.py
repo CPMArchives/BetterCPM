@@ -30,8 +30,14 @@ SYSTEM_FIRST_LOGICAL_INDEX = 2
 SYSTEM_SECTORS = 26
 FILESYSTEM_FIRST_SECTOR = 40   # DPB OFF=2, one logical track per cylinder
 ALLOCATION_BLOCK_BYTES = 2048
-HELLO_COM = bytes((0x11, 0x09, 0x01, 0x0E, 9, 0xCD, 5, 0, 0xC9)) + \
-    b"\nHello from BetterCP/M$"
+HELLO_COM = bytes((
+    0x11, 0x1F, 0x01,       # LD DE,011Fh: sign-on text
+    0x0E, 9, 0xCD, 5, 0,   # BDOS Print String
+    0x3A, 0x80, 0x00, 0xB7, 0xC8,  # return if command tail is empty
+    0x47, 0x21, 0x81, 0x00,         # B=length, HL=tail
+    0x5E, 0x23, 0xC5, 0xE5, 0x0E, 2, 0xCD, 5, 0,
+    0xE1, 0xC1, 0x10, 0xF3, 0xC9,  # print every tail character
+)) + b"\nHello from BetterCP/M$"
 
 
 def assemble(assembler: Path, source: Path, output: Path, origin: int) -> bytes:
