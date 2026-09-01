@@ -17,10 +17,14 @@ BDOS:
         LD      SP,BDOS_STKTOP
         CP      12
         JR      Z,BDOS_VERS
+        CP      13
+        JR      Z,BDOS_RESET
         CP      14
         JR      Z,BDOS_SELDR
         CP      15
         JR      Z,BDOS_OPEN
+        CP      24
+        JR      Z,BDOS_LOGV
         CP      25
         JR      Z,BDOS_GETDR
         CP      26
@@ -34,6 +38,19 @@ BDOS_VERS:
         LD      A,022H          ; CP/M 2.2 identity, returned as HL=0022h
         JR      BDOS_RETURN
 
+BDOS_RESET:
+        LD      C,0
+        CALL    DIRLOGIN
+        JR      NZ,BDOS_BADRV
+        XOR     A
+        LD      (BDOS_DRIVE),A  ; reset selects A but preserves current user
+        LD      HL,0080H
+        LD      (BDOS_DMA),HL
+        LD      HL,0001H        ; after reset, only drive A is logged
+        LD      (STATE_LV),HL
+        XOR     A               ; function 13 has no specified result
+        JR      BDOS_RETURN
+
 BDOS_SELDR:
         LD      A,E
         CP      1               ; current provisional BIOS exposes A only
@@ -44,6 +61,8 @@ BDOS_SELDR:
         LD      HL,(BDOS_PARM)
         LD      A,L
         LD      (BDOS_DRIVE),A
+        LD      HL,0001H        ; only A exists in this provisional BIOS
+        LD      (STATE_LV),HL
         XOR     A               ; function 14 has no defined normal result
         JR      BDOS_RETURN
 BDOS_BADRV:
@@ -53,6 +72,10 @@ BDOS_BADRV:
 BDOS_GETDR:
         LD      A,(BDOS_DRIVE)
         JR      BDOS_RETURN
+
+BDOS_LOGV:
+        LD      HL,(STATE_LV)
+        JR      RET_HL
 
 BDOS_STDMA:
         LD      HL,(BDOS_PARM)
@@ -81,13 +104,21 @@ BDOS_OPEN:
         CALL    DIROPEN
         JR      NC,BDOS_RETURN
         LD      A,0FFH          ; provisional storage-error presentation
+; Patch 2026-09-01: RET_HL was inserted below for function 24. Keep this
+; explicit branch so Open errors cannot fall into the new 16-bit return path.
+        JR      BDOS_RETURN
 
 ; CP/M normal-return aliases: A=L and B=H.
+RET_HL:
+        LD      A,L
+        LD      B,H
+        JR      RET_SP
 BDOS_RETURN:
         LD      L,A
         LD      H,0
         LD      B,H
         LD      A,L
+RET_SP:
         LD      SP,(BDOS_OLDSP)
         RET
 
@@ -103,6 +134,8 @@ BDOS_DRIVE:
         DB      0               ; initial current/default drive A
 BDOS_DMA:
         DW      0080H           ; CP/M startup DMA selection
+STATE_LV:
+        DW      0001H           ; gateway publishes BDOS only after A login
 
 ; Patch 2026-09-01: the first public-call boundary receives its own stack now,
 ; before more BDOS functions deepen the call graph. The exact size and address

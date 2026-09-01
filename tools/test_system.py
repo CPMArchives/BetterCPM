@@ -78,6 +78,17 @@ def main() -> None:
     cpu.run(CALLER)
     require(cpu.a == cpu.l == 31,
             "CALL 0005h user selection did not apply modulo 32")
+    cpu.c = 24
+    cpu.run(CALLER)
+    require(cpu.hl == 1, "CALL 0005h login vector did not contain drive A")
+    cpu.c = 13
+    cpu.run(CALLER, limit=50000)
+    cpu.c = 25
+    cpu.run(CALLER)
+    require(cpu.a == 0, "disk reset did not restore current drive A")
+    cpu.c, cpu.e = 32, 0xFF
+    cpu.run(CALLER)
+    require(cpu.a == 31, "disk reset did not preserve current user")
 
     # Initialization failure must not expose either conventional vector.
     failed = Z80(resident[bios_offset:])
@@ -89,7 +100,7 @@ def main() -> None:
             "failed initialization published page-zero vectors")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
-    print("application CALL 0005h reached functions 12, 14, 15, 25, 26, and 32")
+    print("application CALL 0005h reached functions 12-15, 24-26, and 32")
 
 
 if __name__ == "__main__":

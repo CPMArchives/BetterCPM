@@ -31,6 +31,7 @@ def main() -> None:
     cpu.mem[DIR_BASE:DIR_BASE + len(directory)] = directory
     cpu.mem[BDOS_BASE:BDOS_BASE + len(bdos)] = bdos
     dma_state = symbol("BDOS_DMA")
+    login_state = symbol("STATE_LV")
 
     read_impl = cpu.word(BIOS_BASE + 13 * 3 + 1)
     calls = [address for address in range(read_impl, read_impl + 48)
@@ -114,6 +115,10 @@ def main() -> None:
     cpu.c = 25
     cpu.run(BDOS_BASE)
     require(cpu.a == 0, "failed drive selection changed the current drive")
+    cpu.c = 24
+    cpu.run(BDOS_BASE)
+    require(cpu.hl == 1 and cpu.a == 1 and cpu.b == 0,
+            "login vector did not report drive A only")
     cpu.c, cpu.de = 26, 0x7345
     cpu.run(BDOS_BASE)
     require(cpu.word(dma_state) == 0x7345,
@@ -124,6 +129,14 @@ def main() -> None:
     cpu.run(BDOS_BASE)
     require(cpu.a == cpu.l == 5 and cpu.word(dma_state) == 0x7345,
             "user modulo-32 selection/query or DMA independence failed")
+    cpu.c = 13
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0 and cpu.word(dma_state) == 0x0080 and
+            cpu.word(login_state) == 1,
+            "disk reset did not restore DMA, drive A, and login vector")
+    cpu.c, cpu.e = 32, 0xFF
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 5, "disk reset did not preserve current user")
     cpu.c = 40
     cpu.run(BDOS_BASE)
     require(cpu.a == 0xFF and cpu.l == 0xFF,
@@ -141,9 +154,10 @@ def main() -> None:
     cpu.c, cpu.de = 15, FCB
     cpu.run(BDOS_BASE, limit=5000)
     require(cpu.a == 0xFF and cpu.l == 0xFF,
-            "provisional BDOS storage failure was confused with slot success")
+            f"provisional BDOS storage failure was confused with slot success: "
+            f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS functions 12, 14, 15, 25, 26, and 32 passed")
+    print("BDOS functions 12-15, 24-26, and 32 passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 

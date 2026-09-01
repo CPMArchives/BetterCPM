@@ -57,7 +57,6 @@ determine which drive numbers are available on each platform.
 
 ## Next increment
 
-Implement function 13 (Reset Disk System) and function 24 (Return Login
-Vector). This will make login membership observable and establish the reset
-boundary for current drive, DMA, and directory/allocation state before a
-second physical drive is introduced.
+Engineering Specification 23 completes this increment with function 13,
+function 24, observable login membership, default DMA restoration, and user
+preservation. The next increment can add software write-protection state.
