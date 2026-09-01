@@ -58,6 +58,5 @@ BDOS already uses its private stack and required no change.
 
 ## Next increment
 
-Implement function 36 (Set Random Record), converting the current sequential
-`S2:EX:CR` position into `R0–R2`. It will share the arithmetic contract needed
-before implementing Random Read and Random Write.
+Engineering Specification 39 implements function 36 (Set Random Record) using
+this arithmetic contract. The next increment is function 33 (Read Random).

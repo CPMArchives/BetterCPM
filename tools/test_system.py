@@ -207,6 +207,13 @@ def main() -> None:
     require(cpu.a == 0xFF and
             bytes(cpu.mem[FCB + 33:FCB + 36]) == bytes((0xA5,)) * 3,
             "CALL 0005h missing Compute File Size changed R0-R2")
+    cpu.mem[FCB + 12] = 2
+    cpu.mem[FCB + 14] = 1
+    cpu.mem[FCB + 32] = 5
+    cpu.c, cpu.de = 36, FCB
+    cpu.run(CALLER)
+    require(bytes(cpu.mem[FCB + 33:FCB + 36]) == bytes((0x05, 0x11, 0x00)),
+            "CALL 0005h Set Random Record returned the wrong position")
     cpu.c = 27
     cpu.run(CALLER)
     alv = cpu.hl
@@ -239,7 +246,7 @@ def main() -> None:
             "failed initialization published page-zero vectors")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
-    print("application CALL 0005h reached functions 12-32 and 35")
+    print("application CALL 0005h reached functions 12-32 and 35-36")
 
 
 if __name__ == "__main__":

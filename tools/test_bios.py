@@ -339,6 +339,11 @@ class Z80:
                 self.carry = bool(self.h & 1)
                 self.h >>= 1
                 self.z = self.h == 0
+            elif op == 0xCB and self.mem[self.pc] == 0x3A:  # SRL D
+                self.pc += 1
+                self.carry = bool(self.d & 1)
+                self.d >>= 1
+                self.z = self.d == 0
             elif op == 0xCB and self.mem[self.pc] == 0x1D:  # RR L
                 self.pc += 1
                 old_carry = self.carry
@@ -419,6 +424,9 @@ class Z80:
                 self.e = self.l
             elif op == 0x2B:            # DEC HL
                 self.hl = (self.hl - 1) & 0xFFFF
+            elif op == 0x14:            # INC D
+                self.d = (self.d + 1) & 0xFF
+                self.z = self.d == 0
             elif op in (0x71, 0x72, 0x73):  # LD (HL),C / D / E
                 self.mem[self.hl] = {0x71: self.c, 0x72: self.d,
                                      0x73: self.e}[op]

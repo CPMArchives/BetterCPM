@@ -213,6 +213,25 @@ def main() -> None:
     require(cpu.a == 0xFF and
             bytes(cpu.mem[FCB + 33:FCB + 36]) == bytes((0xA5,)) * 3,
             "missing Compute File Size changed the random-record field")
+
+    # Function 36 converts the current sequential position without disk I/O.
+    cpu.mem[FCB + 12] = 2
+    cpu.mem[FCB + 14] = 1
+    cpu.mem[FCB + 32] = 5
+    sequential = bytes(cpu.mem[FCB + 12:FCB + 33])
+    cpu.c, cpu.de = 36, FCB
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 0 and bytes(cpu.mem[FCB + 33:FCB + 36]) ==
+            bytes((0x05, 0x11, 0x00)) and
+            bytes(cpu.mem[FCB + 12:FCB + 33]) == sequential,
+            "Set Random Record mishandled S2=1 EX=2 CR=5")
+    cpu.mem[FCB + 12] = 31
+    cpu.mem[FCB + 14] = 0
+    cpu.mem[FCB + 32] = 128
+    cpu.c, cpu.de = 36, FCB
+    cpu.run(BDOS_BASE)
+    require(bytes(cpu.mem[FCB + 33:FCB + 36]) == bytes((0x00, 0x10, 0x00)),
+            "Set Random Record mishandled the EX=31 CR=128 carry")
     cpu.mem[delete0:size2 + 32] = bytes((0xE5,)) * 96
     cpu.run(DIR_BASE + 15)
 
@@ -672,7 +691,7 @@ def main() -> None:
             f"provisional BDOS storage failure was confused with slot success: "
             f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS functions 12-32 and 35 passed")
+    print("BDOS functions 12-32 and 35-36 passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 

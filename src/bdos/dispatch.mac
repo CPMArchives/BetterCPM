@@ -71,6 +71,8 @@ BDOS:
         JP      Z,BF_USER
         CP      35
         JP      Z,BDOS_SIZE
+        CP      36
+        JP      Z,BDOS_SETRR
         LD      A,0FFH          ; unsupported returning function
         JP      BDOS_RETURN
 
@@ -216,7 +218,7 @@ BDOS_READ:
         LD      BC,(BDOS_DMA)
         LD      A,(BDOS_USER)
         CALL    DIRREAD
-        JR      NC,BDOS_RETURN  ; zero success or nonzero EOF
+        JP      NC,BDOS_RETURN  ; zero success or nonzero EOF
         LD      A,0FFH          ; provisional storage-error presentation
         JP      BDOS_RETURN
 
@@ -228,7 +230,7 @@ BDOS_WRITE:
         LD      H,A             ; H=software-protected flag
         LD      A,(BDOS_USER)
         CALL    DIRWRITE
-        JR      NC,BDOS_RETURN
+        JP      NC,BDOS_RETURN
         LD      A,0FFH          ; protection or physical-storage failure
         JP      BDOS_RETURN
 
@@ -239,7 +241,7 @@ BDOS_MAKE:
         LD      B,A
         LD      A,(BDOS_USER)
         CALL    DIRMAKE
-        JR      NC,BDOS_RETURN
+        JP      NC,BDOS_RETURN
         LD      A,0FFH
         JP      BDOS_RETURN
 
@@ -250,7 +252,7 @@ BDOS_ATTR:
         LD      B,A
         LD      A,(BDOS_USER)
         CALL    DIRATTR
-        JR      NC,BDOS_RETURN
+        JP      NC,BDOS_RETURN
         LD      A,0FFH
         JP      BDOS_RETURN
 
@@ -260,6 +262,67 @@ BDOS_SIZE:
         CALL    DIRSIZE
         JR      NC,BDOS_RETURN
         LD      A,0FFH
+        JP      BDOS_RETURN
+
+; Convert S2:EX:CR to the 24-bit random-record field at FCB bytes 33..35.
+BDOS_SETRR:
+        LD      HL,(BDOS_PARM)
+        LD      DE,12
+        ADD     HL,DE
+        LD      A,(HL)
+        AND     01FH
+        LD      E,A
+        INC     HL
+        INC     HL
+        LD      A,(HL)
+        AND     03FH
+        LD      H,0
+        LD      L,A
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        LD      D,0
+        ADD     HL,DE
+        LD      (BDOS_RREX),HL
+        LD      A,L
+        AND     1
+        LD      C,0
+        JR      Z,BR_LOW
+        LD      C,080H
+BR_LOW:
+        LD      HL,(BDOS_PARM)
+        LD      DE,32
+        ADD     HL,DE
+        LD      A,(HL)
+        ADD     A,C
+        INC     HL
+        LD      (BDOS_RRP),HL
+        LD      (HL),A
+        LD      D,0
+        JR      NC,BR_NC0
+        INC     D
+BR_NC0:
+        LD      HL,(BDOS_RREX)
+        SRL     H
+        RR      L
+        LD      A,L
+        ADD     A,D
+        LD      HL,(BDOS_RRP)
+        INC     HL
+        LD      (HL),A
+        LD      C,0
+        JR      NC,BR_NC1
+        INC     C
+BR_NC1:
+        LD      DE,(BDOS_RREX)
+        SRL     D
+        LD      A,D
+        ADD     A,C
+        INC     HL
+        LD      (HL),A
+        XOR     A
         JP      BDOS_RETURN
 
 BDOS_RENAME:
@@ -303,6 +366,10 @@ STATE_LV:
         DW      0001H           ; gateway publishes BDOS only after A login
 STATE_RO:
         DW      0000H           ; transient software read-only drive vector
+BDOS_RREX:
+        DW      0000H
+BDOS_RRP:
+        DW      0000H
 
 ; Patch 2026-09-01: the first public-call boundary receives its own stack now,
 ; before more BDOS functions deepen the call graph. The exact size and address
