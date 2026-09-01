@@ -45,6 +45,7 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Engineering Specification 27`](docs/engineering/27%20Unchanged%20FCB%20Close.md) adds the non-mutating Close File boundary for unchanged activated FCBs and safely rejects dirty commits until writeback exists.
 [`Engineering Specification 28`](docs/engineering/28%20Transactional%20RC%20Close.md) adds the first guarded directory mutation: write-protected, range-checked `RC` Close commit with BIOS writeback and cache invalidation.
 [`Engineering Specification 29`](docs/engineering/29%20Resident%20Memory%20Layout%20Revision.md) replaces the exhausted bring-up addresses with enforced workspace, gateway, BDOS, System Services, scratch, and BIOS growth regions while preserving `CALL 0005h`.
+[`Engineering Specification 30`](docs/engineering/30%20Sequential%20Read.md) adds DPB-driven Read Sequential with 128-byte DMA transfer, FCB position advancement, stable EOF, and automatic extent transition.
 
 ## First boot
 

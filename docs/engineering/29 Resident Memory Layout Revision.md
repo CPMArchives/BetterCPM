@@ -89,8 +89,6 @@ verified in both build environments.
 
 ## Next increment
 
-With safe growth regions established, implement BDOS function 20 (Read
-Sequential). It should translate the activated FCB's extent and `CR` through
-the current DPB/allocation map, read one 128-byte record through BIOS into the
-function-26 DMA address, advance compatible FCB state, and distinguish EOF from
-storage failure.
+Engineering Specification 30 completes this increment with DPB-driven Read
+Sequential, DMA transfer, EOF, and automatic extent transition. The next
+increment can implement Write Sequential with allocation and protection.

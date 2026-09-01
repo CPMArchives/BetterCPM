@@ -180,6 +180,10 @@ class Z80:
             elif op == 0x3C:            # INC A
                 self.a = (self.a + 1) & 0xFF
                 self.z = self.a == 0
+            elif op == 0x87:            # ADD A,A
+                value = self.a * 2
+                self.a = value & 0xFF
+                self.z, self.carry = self.a == 0, value > 0xFF
             elif op == 0x04:            # INC B
                 self.b = (self.b + 1) & 0xFF
                 self.z = self.b == 0
@@ -204,6 +208,9 @@ class Z80:
             elif op == 0x16:            # LD D,n
                 self.d = self.mem[self.pc]
                 self.pc += 1
+            elif op == 0x2E:            # LD L,n
+                self.l = self.mem[self.pc]
+                self.pc += 1
             elif op == 0x31:            # LD SP,nn
                 self.sp = self.word(self.pc)
                 self.pc += 2
@@ -219,6 +226,8 @@ class Z80:
                 self.b = self.h
             elif op == 0x4F:            # LD C,A
                 self.c = self.a
+            elif op == 0x4D:            # LD C,L
+                self.c = self.l
             elif op == 0x7A:            # LD A,D
                 self.a = self.d
             elif op == 0x7B:            # LD A,E
@@ -267,6 +276,8 @@ class Z80:
                 self.h = self.b
             elif op == 0x62:            # LD H,D
                 self.h = self.d
+            elif op == 0x67:            # LD H,A
+                self.h = self.a
             elif op == 0x69:            # LD L,C
                 self.l = self.c
             elif op == 0x6F:            # LD L,A
@@ -286,6 +297,8 @@ class Z80:
             elif op == 0x36:            # LD (HL),n
                 self.mem[self.hl] = self.mem[self.pc]
                 self.pc += 1
+            elif op == 0x34:            # INC (HL)
+                self.mem[self.hl] = (self.mem[self.hl] + 1) & 0xFF
             elif op == 0xB9:            # CP C
                 self.z, self.carry = self.a == self.c, self.a < self.c
             elif op == 0xBC:            # CP H
@@ -306,6 +319,8 @@ class Z80:
                 self.hl = (self.hl + self.bc) & 0xFFFF
             elif op == 0x19:            # ADD HL,DE
                 self.hl = (self.hl + self.de) & 0xFFFF
+            elif op == 0x29:            # ADD HL,HL
+                self.hl = (self.hl * 2) & 0xFFFF
             elif op == 0x96:            # SUB (HL)
                 value = self.mem[self.hl]
                 self.carry = self.a < value
@@ -352,6 +367,12 @@ class Z80:
                 target = self.word(self.pc)
                 self.pc += 2
                 self.sp = self.word(target)
+            elif op == 0xED and self.mem[self.pc] == 0x52:  # SBC HL,DE
+                self.pc += 1
+                value = self.hl - self.de - (1 if self.carry else 0)
+                self.carry = value < 0
+                self.hl = value & 0xFFFF
+                self.z = self.hl == 0
             elif op == 0xED and self.mem[self.pc] == 0x4B:  # LD BC,(nn)
                 self.pc += 1
                 target = self.word(self.pc)

@@ -11,6 +11,7 @@ SYSTEM_INIT = 0xC000
 FIXTURE = 0x7500
 FCB = 0x7700
 CALLER = 0x7800
+DATA = 0x7900
 
 
 def main() -> None:
@@ -24,12 +25,16 @@ def main() -> None:
              if cpu.mem[address] == 0xCD]
     require(len(calls) >= 2, "BIOS physical-read call was not found")
     platform_read = cpu.word(calls[1] + 1)
-    cpu.mem[platform_read:platform_read + 13] = bytes((
+    read_success = bytes((
+        0x79, 0xFE, 0x08, 0x20, 0x05,
+        0x21, DATA & 0xFF, DATA >> 8,
+        0x18, 0x03,
         0x21, FIXTURE & 0xFF, FIXTURE >> 8,
         0x11, 0x00, 0xEE,
         0x01, 0x00, 0x02,
         0xED, 0xB0, 0xAF, 0xC9,
     ))
+    cpu.mem[platform_read:platform_read + len(read_success)] = read_success
     write_impl = cpu.word(BIOS_BASE + 14 * 3 + 1)
     write_jumps = [address for address in range(write_impl, write_impl + 90)
                    if cpu.mem[address] == 0xC3]
@@ -47,6 +52,13 @@ def main() -> None:
     cpu.mem[entry:entry + 12] = bytes((0,)) + b"GATEWAY DAT"
     cpu.mem[entry + 12:entry + 16] = bytes((0, 0, 0, 1))
     cpu.mem[entry + 16:entry + 32] = bytes(16)
+    read_entry = FIXTURE + 64
+    cpu.mem[read_entry:read_entry + 12] = bytes((0,)) + b"READ    DAT"
+    cpu.mem[read_entry + 12:read_entry + 16] = bytes((0, 0, 0, 2))
+    cpu.mem[read_entry + 16:read_entry + 32] = bytes((2, 0)) + bytes(14)
+    cpu.mem[DATA:DATA + 128] = bytes((0xA0,)) * 128
+    cpu.mem[DATA + 128:DATA + 256] = bytes((0xA1,)) * 128
+    cpu.mem[DATA + 256:DATA + 512] = bytes((0xEE,)) * 256
 
     cpu.run(SYSTEM_INIT, limit=60000)
     require(cpu.a == 0, "resident initialization failed")
@@ -98,6 +110,35 @@ def main() -> None:
     require(cpu.a == 0xFF, "CALL 0005h Search Next did not reach exhaustion")
     cpu.mem[FIXTURE:FIXTURE + 128] = saved_record
 
+    cpu.mem[FCB:FCB + 33] = bytes(33)
+    cpu.mem[FCB + 1:FCB + 12] = b"READ    DAT"
+    cpu.c, cpu.de = 15, FCB
+    cpu.run(CALLER, limit=50000)
+    require(cpu.a == 2, "CALL 0005h could not Open sequential-read fixture")
+    cpu.c, cpu.de = 26, 0x7100
+    cpu.run(CALLER)
+    cpu.c, cpu.de = 20, FCB
+    cpu.run(CALLER, limit=50000)
+    require(cpu.a == 0 and cpu.mem[FCB + 32] == 1 and
+            bytes(cpu.mem[0x7100:0x7180]) == bytes((0xA0,)) * 128,
+            "CALL 0005h first sequential read failed")
+    cpu.c, cpu.de = 20, FCB
+    cpu.run(CALLER, limit=50000)
+    require(cpu.a == 0 and cpu.mem[FCB + 32] == 2 and
+            bytes(cpu.mem[0x7100:0x7180]) == bytes((0xA1,)) * 128,
+            "CALL 0005h second sequential read failed")
+    cpu.c, cpu.de = 20, FCB
+    cpu.run(CALLER, limit=50000)
+    require(cpu.a != 0, "CALL 0005h sequential read did not report EOF")
+    cpu.mem[FIXTURE:FIXTURE + 12] = bytes((0,)) + b"READ    DAT"
+    cpu.mem[FIXTURE + 12:FIXTURE + 16] = bytes((1, 0, 0, 1))
+    cpu.mem[FIXTURE + 16:FIXTURE + 32] = bytes((2, 0)) + bytes(14)
+    cpu.mem[FCB + 32] = 128
+    cpu.c, cpu.de = 20, FCB
+    cpu.run(CALLER, limit=50000)
+    require(cpu.a == 0 and cpu.mem[FCB + 12] == 1 and cpu.mem[FCB + 32] == 1,
+            "CALL 0005h did not transition to the next sequential extent")
+
     cpu.c = 12
     cpu.run(CALLER)
     require(cpu.hl == 0x0022, "CALL 0005h version query was not CP/M 2.2")
@@ -132,8 +173,8 @@ def main() -> None:
     cpu.c = 27
     cpu.run(CALLER)
     alv = cpu.hl
-    require(cpu.mem[alv] == 0xC0,
-            "CALL 0005h allocation vector lacks reserved directory blocks")
+    require(cpu.mem[alv] == 0xE0,
+            "CALL 0005h allocation vector lacks directory/read-fixture blocks")
     cpu.c = 31
     cpu.run(CALLER)
     require(bytes(cpu.mem[cpu.hl:cpu.hl + 5]) == bytes((80, 0, 4, 15, 0)),
@@ -160,7 +201,7 @@ def main() -> None:
             "failed initialization published page-zero vectors")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
-    print("application CALL 0005h reached functions 12-18, 24-29, 31, and 32")
+    print("application CALL 0005h reached functions 12-18, 20, 24-29, 31, and 32")
 
 
 if __name__ == "__main__":

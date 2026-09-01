@@ -10,6 +10,7 @@ DIRGDPB         EQU     0D818H  ; ninth directory-service vector
 DIRSFIR         EQU     0D81BH  ; tenth directory-service vector
 DIRSNXT         EQU     0D81EH  ; eleventh directory-service vector
 DIRCLOS         EQU     0D821H  ; twelfth directory-service vector
+DIRREAD         EQU     0D824H  ; thirteenth directory-service vector
 
         CSEG
         .PHASE  BDOSBASE
@@ -34,6 +35,8 @@ BDOS:
         JP      Z,BDOS_SFIR
         CP      18
         JP      Z,BDOS_SNXT
+        CP      20
+        JP      Z,BDOS_READ
         CP      24
         JP      Z,BDOS_LOGV
         CP      25
@@ -176,6 +179,15 @@ BDOS_SNXT:
         CALL    DIRSNXT
 BF_SRET:
         JR      NC,BDOS_RETURN
+        LD      A,0FFH          ; provisional storage-error presentation
+        JP      BDOS_RETURN
+
+BDOS_READ:
+        LD      DE,(BDOS_PARM)
+        LD      BC,(BDOS_DMA)
+        LD      A,(BDOS_USER)
+        CALL    DIRREAD
+        JR      NC,BDOS_RETURN  ; zero success or nonzero EOF
         LD      A,0FFH          ; provisional storage-error presentation
         JP      BDOS_RETURN
 

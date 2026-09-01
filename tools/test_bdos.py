@@ -14,6 +14,7 @@ DIR_BASE = 0xD800
 DIR_BUFFER = 0xBF00
 FIXTURE = 0x7500
 FCB = 0x7700
+DATA = 0x7900
 
 
 def symbol(name: str) -> int:
@@ -40,6 +41,9 @@ def main() -> None:
     require(len(calls) >= 2, "BIOS physical-read call was not found")
     platform_read = cpu.word(calls[1] + 1)
     read_success = bytes((
+        0x79, 0xFE, 0x08, 0x20, 0x05,
+        0x21, DATA & 0xFF, DATA >> 8,
+        0x18, 0x03,
         0x21, FIXTURE & 0xFF, FIXTURE >> 8,
         0x11, 0x00, 0xEE,
         0x01, 0x00, 0x02,
@@ -79,6 +83,13 @@ def main() -> None:
     cpu.mem[other:other + 12] = bytes((5,)) + b"OTHER   DAT"
     cpu.mem[other + 12:other + 16] = bytes((0, 0, 0, 1))
     cpu.mem[other + 16:other + 32] = bytes(16)
+    read_entry = FIXTURE + 96
+    cpu.mem[read_entry:read_entry + 12] = bytes((0,)) + b"READ    DAT"
+    cpu.mem[read_entry + 12:read_entry + 16] = bytes((0, 0, 0, 2))
+    cpu.mem[read_entry + 16:read_entry + 32] = bytes((2, 0)) + bytes(14)
+    cpu.mem[DATA:DATA + 128] = bytes((0xA0,)) * 128
+    cpu.mem[DATA + 128:DATA + 256] = bytes((0xA1,)) * 128
+    cpu.mem[DATA + 256:DATA + 512] = bytes((0xEE,)) * 256
 
     cpu.mem[FCB:FCB + 33] = bytes((0xA5,)) * 33
     cpu.mem[FCB] = 0
@@ -199,8 +210,8 @@ def main() -> None:
             "set-DMA state did not retain DE")
     cpu.c = 27
     cpu.run(BDOS_BASE)
-    require(cpu.hl == expected_alv and cpu.mem[cpu.hl] == 0xC0,
-            "allocation-vector pointer or reserved bits are wrong")
+    require(cpu.hl == expected_alv and cpu.mem[cpu.hl] == 0xE0,
+            "allocation-vector pointer or fixture-owned block bits are wrong")
     cpu.c = 31
     cpu.run(BDOS_BASE)
     require(cpu.hl == expected_dpb and bytes(cpu.mem[cpu.hl:cpu.hl + 15]) ==
@@ -235,11 +246,47 @@ def main() -> None:
     cpu.run(BDOS_BASE, limit=50000)
     require(cpu.a == 0 and cpu.mem[FCB + 14] == 0xA5,
             "all-user Search First did not preserve special S2 state")
+    cpu.mem[FCB:FCB + 33] = bytes(33)
+    cpu.mem[FCB + 1:FCB + 12] = b"READ    DAT"
+    cpu.c, cpu.de = 15, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 3 and cpu.mem[FCB + 15] == 2,
+            "sequential-read fixture did not Open in slot 3")
+    cpu.c, cpu.de = 26, 0x7100
+    cpu.run(BDOS_BASE)
+    cpu.c, cpu.de = 20, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0 and cpu.mem[FCB + 32] == 1 and
+            bytes(cpu.mem[0x7100:0x7180]) == bytes((0xA0,)) * 128,
+            "first sequential record or CR advancement is wrong")
+    cpu.c, cpu.de = 26, 0x7180
+    cpu.run(BDOS_BASE)
+    cpu.c, cpu.de = 20, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0 and cpu.mem[FCB + 32] == 2 and
+            bytes(cpu.mem[0x7180:0x7200]) == bytes((0xA1,)) * 128,
+            "second sequential record or changed DMA transfer is wrong")
+    cpu.c, cpu.de = 20, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a != 0 and cpu.mem[FCB + 32] == 2,
+            "partial-final-extent EOF was not stable")
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a != 0, "repeated sequential EOF fabricated a record")
+    cpu.mem[FIXTURE:FIXTURE + 12] = bytes((0,)) + b"READ    DAT"
+    cpu.mem[FIXTURE + 12:FIXTURE + 16] = bytes((1, 0, 0, 1))
+    cpu.mem[FIXTURE + 16:FIXTURE + 32] = bytes((2, 0)) + bytes(14)
+    cpu.mem[FCB + 32] = 128
+    cpu.c, cpu.de = 20, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0 and cpu.mem[FCB + 12] == 1 and
+            cpu.mem[FCB + 32] == 1 and
+            bytes(cpu.mem[0x7180:0x7200]) == bytes((0xA0,)) * 128,
+            "automatic sequential extent transition failed")
     cpu.c, cpu.e = 32, 0x25
     cpu.run(BDOS_BASE)
     cpu.c, cpu.e = 32, 0xFF
     cpu.run(BDOS_BASE)
-    require(cpu.a == cpu.l == 5 and cpu.word(dma_state) == 0x7280,
+    require(cpu.a == cpu.l == 5 and cpu.word(dma_state) == 0x7180,
             "user modulo-32 selection/query or DMA independence failed")
     cpu.c = 29
     cpu.run(BDOS_BASE)
@@ -274,6 +321,10 @@ def main() -> None:
     cpu.c = 25
     cpu.run(BDOS_BASE)
     require(cpu.a == 0, "failed drive-A relogin changed current-drive state")
+    cpu.c, cpu.de = 20, FCB
+    cpu.run(BDOS_BASE, limit=5000)
+    require(cpu.a == 0xFF,
+            "sequential-read storage failure was confused with ordinary EOF")
     cpu.mem[FCB + 1:FCB + 12] = b"OPEN    DAT"
     cpu.c, cpu.de = 15, FCB
     cpu.run(BDOS_BASE, limit=5000)
@@ -281,7 +332,7 @@ def main() -> None:
             f"provisional BDOS storage failure was confused with slot success: "
             f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS functions 12-18, 24-29, 31, and 32 passed")
+    print("BDOS functions 12-18, 20, 24-29, 31, and 32 passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 

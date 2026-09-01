@@ -36,6 +36,211 @@ DIRSERV:
         JP      DIR_SFIR
         JP      DIR_SNXT
         JP      DIR_CLOSE
+        JP      DIR_READ
+
+; Read one sequential 128-byte record. A=current user, DE=activated FCB,
+; BC=current DMA. Returns A=0 success, A=1 EOF, or carry set on storage error.
+DIR_READ:
+        LD      (DIR_RUSER),A
+        LD      (DIR_RFCB),DE
+        LD      (DIR_RDMA),BC
+        LD      A,(DE)
+        CP      2
+        JP      NC,DIR_REOF
+        CALL    DIR_GALV
+        JR      Z,DIR_RPOS
+        SCF
+        RET
+DIR_RPOS:
+        LD      HL,(DIR_RFCB)
+        LD      DE,32
+        ADD     HL,DE
+        LD      A,(HL)          ; CR
+        CP      128
+        JR      C,DIR_RCHK
+        CALL    DIR_RNEXT       ; activate the next logical extent
+        JR      Z,DIR_RPOS
+        JP      C,DIR_RFAIL
+        JP      DIR_REOF
+DIR_RCHK:
+        LD      C,A
+        LD      HL,(DIR_RFCB)
+        LD      DE,15
+        ADD     HL,DE
+        LD      A,C
+        CP      (HL)            ; CR >= RC means no data in this extent
+        JP      NC,DIR_REOF
+        LD      (DIR_RCR),A
+
+        LD      HL,(DIR_RFCB)
+        LD      DE,12
+        ADD     HL,DE
+        LD      A,(HL)          ; logical subextent within EXM group
+        LD      C,A
+        LD      A,(DIR_EXM)
+        AND     C
+        LD      H,A
+        LD      L,0
+        SRL     H
+        RR      L               ; HL=subextent*128
+        LD      A,(DIR_RCR)
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE
+        LD      A,L
+        LD      C,A
+        LD      A,(DIR_BLM)
+        AND     C
+        LD      (DIR_RREM),A
+        LD      A,(DIR_BSH)
+DIR_RBIX:
+        OR      A
+        JR      Z,DIR_RBOK
+        SRL     H
+        RR      L
+        DEC     A
+        JR      DIR_RBIX
+DIR_RBOK:
+        LD      A,H
+        OR      A
+        JR      NZ,DIR_REOF
+        LD      A,L
+        LD      (DIR_RBNO),A
+
+        LD      HL,(DIR_RFCB)
+        LD      DE,16
+        ADD     HL,DE
+        LD      A,(DIR_DSM+1)
+        OR      A
+        LD      A,(DIR_RBNO)
+        JR      Z,DIR_R8BIT
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        JR      DIR_RBLK
+DIR_R8BIT:
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE
+        LD      L,(HL)
+        LD      H,0
+DIR_RBLK:
+        LD      A,H
+        OR      L
+        JR      Z,DIR_REOF      ; zero allocation entry has no data
+        LD      DE,(DIR_DSM)
+        OR      A
+        SBC     HL,DE
+        JR      C,DIR_RVALID
+        JR      Z,DIR_RVALID
+        JR      DIR_REOF
+DIR_RVALID:
+        ADD     HL,DE           ; restore allocation block number
+        LD      A,(DIR_BSH)
+DIR_RSHFT:
+        OR      A
+        JR      Z,DIR_RSHOK
+        ADD     HL,HL
+        DEC     A
+        JR      DIR_RSHFT
+DIR_RSHOK:
+        LD      A,(DIR_RREM)
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE           ; logical record relative to data area
+        LD      DE,(DIR_SPT)
+        LD      BC,(DIR_OFF)
+DIR_RDIV:
+        OR      A
+        SBC     HL,DE
+        JR      C,DIR_RDONE
+        INC     BC
+        JR      DIR_RDIV
+DIR_RDONE:
+        ADD     HL,DE           ; HL is logical sector within track
+        PUSH    HL
+        CALL    BIOSETTR
+        POP     HL
+        LD      C,L
+        LD      B,0
+        CALL    BIOSETSE
+        LD      BC,(DIR_RDMA)
+        CALL    BIOSETDM
+        CALL    BIOREAD
+        JR      NZ,DIR_RFAIL
+        LD      HL,(DIR_RFCB)
+        LD      DE,32
+        ADD     HL,DE
+        INC     (HL)
+        XOR     A
+        RET
+DIR_RFAIL:
+        SCF
+        RET
+DIR_REOF:
+        LD      A,1
+        OR      A
+        RET
+
+; CR=128: advance EX/S2 and activate the next extent. Missing extent is EOF.
+DIR_RNEXT:
+        LD      HL,(DIR_RFCB)
+        LD      DE,12
+        ADD     HL,DE
+        LD      A,(HL)
+        LD      (DIR_ROEX),A
+        PUSH    HL
+        INC     HL
+        INC     HL
+        LD      A,(HL)
+        LD      (DIR_ROS2),A
+        POP     HL
+        LD      A,(DIR_ROEX)
+        INC     A
+        AND     01FH
+        LD      (HL),A
+        JR      NZ,DIR_RNCR
+        INC     HL
+        INC     HL
+        LD      A,(HL)
+        INC     A
+        AND     03FH
+        LD      (HL),A
+DIR_RNCR:
+        LD      HL,(DIR_RFCB)
+        LD      DE,32
+        ADD     HL,DE
+        LD      (HL),0
+        LD      DE,(DIR_RFCB)
+        LD      A,(DIR_RUSER)
+        CALL    DIR_OPEN
+        RET     C
+        CP      0FFH
+        JR      NZ,DIR_RNOK
+        LD      HL,(DIR_RFCB)   ; restore stable exact-boundary EOF position
+        LD      DE,12
+        ADD     HL,DE
+        LD      A,(DIR_ROEX)
+        LD      (HL),A
+        INC     HL
+        INC     HL
+        LD      A,(DIR_ROS2)
+        LD      (HL),A
+        LD      HL,(DIR_RFCB)
+        LD      DE,32
+        ADD     HL,DE
+        LD      (HL),128
+        LD      A,1
+        OR      A
+        RET
+DIR_RNOK:
+        XOR     A
+        RET
 
 ; Close an activated FCB. B is nonzero when the current disk is software
 ; protected. This first commit path permits RC-only metadata changes; allocation
@@ -347,8 +552,13 @@ DIR_LOGIN:
         LD      A,E
         OR      A
         JP      Z,DIR_BADFMT
-        LD      DE,3
-        ADD     HL,DE           ; EXM at DPB+4
+        INC     HL              ; BSH at DPB+2
+        LD      A,(HL)
+        LD      (DIR_BSH),A
+        INC     HL              ; BLM at DPB+3
+        LD      A,(HL)
+        LD      (DIR_BLM),A
+        INC     HL              ; EXM at DPB+4
         LD      A,(HL)
         LD      (DIR_EXM),A
         CP      16
@@ -871,6 +1081,10 @@ DIR_DPB:
         DW      0
 DIR_SPT:
         DW      0
+DIR_BSH:
+        DB      0
+DIR_BLM:
+        DB      0
 DIR_DSM:
         DW      0
 DIR_EXM:
@@ -929,6 +1143,22 @@ DIR_COLD:
         REPT    32
         DB      0
         ENDM
+DIR_RUSER:
+        DB      0
+DIR_RFCB:
+        DW      0
+DIR_RDMA:
+        DW      0
+DIR_RCR:
+        DB      0
+DIR_RREM:
+        DB      0
+DIR_RBNO:
+        DB      0
+DIR_ROEX:
+        DB      0
+DIR_ROS2:
+        DB      0
 
         .DEPHASE
         END
