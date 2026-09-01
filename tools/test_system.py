@@ -93,6 +93,17 @@ def main() -> None:
     cpu.run(CALLER)
     require(cpu.a == cpu.l == 0x5A,
             "CALL 0005h Get I/O Byte did not observe Set I/O Byte")
+    conout_impl = cpu.word(BIOS_BASE + 4 * 3 + 1)
+    platform_conout = cpu.word(conout_impl + 1)
+    cpu.mem[platform_conout:platform_conout + 5] = bytes(
+        (0x79, 0x32, 0x00, 0x70, 0xC9))
+    cpu.mem[0x7040:0x7045] = b"A\tB$Z"
+    cpu.mem[0x7000] = 0
+    cpu.c, cpu.de = 9, 0x7040
+    cpu.run(CALLER, limit=100000)
+    require(cpu.a == cpu.l == 0 and cpu.mem[0x7000] == ord("B") and
+            bytes(cpu.mem[0x7040:0x7045]) == b"A\tB$Z",
+            "CALL 0005h Print String did not stop at dollar after cooked output")
 
     cpu.c = 11
     cpu.run(CALLER)
@@ -419,7 +430,7 @@ def main() -> None:
             "failed initialization published page-zero vectors")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
-    print("application CALL 0005h reached functions 1-8, 11-37, and 40")
+    print("application CALL 0005h reached functions 1-9, 11-37, and 40")
 
 
 if __name__ == "__main__":

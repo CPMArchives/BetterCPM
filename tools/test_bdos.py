@@ -167,6 +167,17 @@ def main() -> None:
     cpu.run(BDOS_BASE)
     require(cpu.a == cpu.l == 0x5A,
             "Get I/O Byte did not observe the value written by Set I/O Byte")
+    cpu.mem[0x7050:0x7055] = b"A\tB$Z"
+    cpu.mem[0x7000] = 0
+    cpu.mem[console_column] = 0
+    cpu.c, cpu.de = 9, 0x7050
+    cpu.run(BDOS_BASE, limit=100000)
+    require(cpu.a == cpu.l == 0 and cpu.mem[0x7000] == ord("B") and
+            cpu.mem[console_column] == 9 and
+            bytes(cpu.mem[0x7050:0x7055]) == b"A\tB$Z",
+            f"Print String failed: A={cpu.a:02X} L={cpu.l:02X} "
+            f"out={cpu.mem[0x7000]:02X} col={cpu.mem[console_column]:02X} "
+            f"source={bytes(cpu.mem[0x7050:0x7055])!r}")
 
     read_impl = cpu.word(BIOS_BASE + 13 * 3 + 1)
     calls = [address for address in range(read_impl, read_impl + 48)
@@ -967,7 +978,7 @@ def main() -> None:
             f"provisional BDOS storage failure was confused with slot success: "
             f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS functions 1-8, 11-37, and 40 passed")
+    print("BDOS functions 1-9, 11-37, and 40 passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 

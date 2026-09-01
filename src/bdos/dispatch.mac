@@ -54,6 +54,8 @@ BDOS:
         JP      Z,BF_GETIO
         CP      8
         JP      Z,BF_SETIO
+        CP      9
+        JP      Z,BF_PRINT
         CP      11
         JP      Z,BF_CONST
         CP      12
@@ -137,6 +139,23 @@ BF_SETIO:
         XOR     A               ; deterministic result for an output operation
         JP      BDOS_RETURN
 
+; Print the $-terminated string at DE through the same cooked path as
+; Function 2. Preserve the scan pointer because tab expansion uses HL.
+BF_PRINT:
+        LD      HL,(BDOS_PARM)
+BF_PRLOOP:
+        LD      A,(HL)
+        CP      '$'
+        JR      Z,BF_PREND
+        INC     HL
+        PUSH    HL
+        CALL    BF_COCHAR
+        POP     HL
+        JR      BF_PRLOOP
+BF_PREND:
+        XOR     A
+        JP      BDOS_RETURN
+
 ; Cooked, blocking console input. CP/M flow/printer controls are consumed;
 ; ordinary control bytes are returned without echo.
 BF_CONIN:
@@ -168,6 +187,10 @@ BF_GIBIOS:
 ; Cooked console output shares tab and column rules with echoed input.
 BF_CONOUT:
         LD      A,E
+        CALL    BF_COCHAR
+        XOR     A
+        JP      BDOS_RETURN
+BF_COCHAR:
         LD      (BDOS_CHAR),A
         CP      9
         JR      Z,BF_COTAB
@@ -182,8 +205,7 @@ BF_CONOUT:
         LD      HL,BDOS_COLUMN
         INC     (HL)
 BF_COEND:
-        XOR     A
-        JP      BDOS_RETURN
+        RET
 BF_COTAB:
         CALL    BF_TAB
         JR      BF_COEND

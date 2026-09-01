@@ -33,4 +33,4 @@ byte-identical BDOS and resident-system binaries.
 
 ## Next increment
 
-Implement function 9 (Print String), the first buffer-addressed console service.
+Implemented by [`Engineering Specification 51`](51%20Print%20String.md).
