@@ -85,3 +85,6 @@ Implement `EXM`-grouped extent selection and RC adjustment, then add `?`
 wildcard matching and first-match activation. Those are the remaining search
 semantics before connecting this service to a public BDOS function-15 entry.
 
+Engineering Specification 18 completed grouped extents and wildcard-first
+activation. The Open engine is now ready to be placed behind an initial BDOS
+function dispatcher.

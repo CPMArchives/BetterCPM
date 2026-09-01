@@ -33,6 +33,7 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Engineering Specification 15`](docs/engineering/15%20DPH-DPB%20Drive%20Login.md) derives directory geometry and allocation-vector initialization from the selected drive's DPH and DPB, with explicit invalidation and re-login.
 [`Engineering Specification 16`](docs/engineering/16%20Allocation%20Reconstruction.md) completes drive login by reconstructing file-owned blocks from both 8-bit and 16-bit CP/M directory extents.
 [`Engineering Specification 17`](docs/engineering/17%20Read-Only%20FCB%20Open.md) adds the first exact, read-only FCB Open result with extent selection and compatible FCB activation.
+[`Engineering Specification 18`](docs/engineering/18%20Grouped%20and%20Wildcard%20Open.md) adds DPB `EXM` grouping, RC adjustment, and first-match `?` wildcard activation.
 
 ## First boot
 

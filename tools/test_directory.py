@@ -149,10 +149,65 @@ def main() -> None:
     require(cpu.mem[FCB:FCB + 33] == unopened,
             "failed exact FCB Open modified the caller FCB")
 
+    cpu.mem[FCB:FCB + 33] = bytes(33)
+    cpu.mem[FCB + 1:FCB + 12] = b"TE?T    ?OM"
+    cpu.mem[FCB + 12] = 3
+    cpu.mem[FCB + 14] = 2
+    cpu.a, cpu.de = 7, FCB
+    cpu.run(DIR_BASE + 18, limit=20000)
+    require(cpu.a == 2 and bytes(cpu.mem[FCB + 1:FCB + 12]) ==
+            bytes(cpu.mem[FIXTURE + 65:FIXTURE + 76]),
+            "wildcard FCB Open did not activate the matching real identity")
+
+    # EXM=3 groups four logical extents in one directory entry. Directory EX=3
+    # means requested EX 0..2 are full (RC=128), while EX=3 uses stored RC.
+    cpu.mem[FIXTURE:FIXTURE + 512] = bytes((0xE5,)) * 512
+    for offset, name, rc in ((0, b"ALPHA   TXT", 10),
+                             (32, b"APPLE   TXT", 11),
+                             (64, b"GROUP   DAT", 37)):
+        cpu.mem[FIXTURE + offset:FIXTURE + offset + 12] = bytes((4,)) + name
+        cpu.mem[FIXTURE + offset + 12:FIXTURE + offset + 16] = bytes((3, 0, 1, rc))
+        cpu.mem[FIXTURE + offset + 16:FIXTURE + offset + 32] = bytes(16)
+    cpu.mem[dpb + 4] = 3
+    cpu.run(DIR_BASE + 15)
+    cpu.c = 0
+    cpu.run(DIR_BASE + 12, limit=50000)
+    require(cpu.a == 0, "EXM=3 drive login failed")
+
+    cpu.mem[FCB:FCB + 33] = bytes(33)
+    cpu.mem[FCB + 1:FCB + 12] = b"A???????TXT"
+    cpu.mem[FCB + 12] = 3
+    cpu.mem[FCB + 14] = 1
+    cpu.a, cpu.de = 4, FCB
+    cpu.run(DIR_BASE + 18, limit=20000)
+    require(cpu.a == 0 and bytes(cpu.mem[FCB + 1:FCB + 12]) == b"ALPHA   TXT",
+            "wildcard Open did not activate the first matching entry")
+
+    for requested, expected_rc in ((1, 128), (3, 37)):
+        cpu.mem[FCB:FCB + 33] = bytes(33)
+        cpu.mem[FCB + 1:FCB + 12] = b"GROUP   DAT"
+        cpu.mem[FCB + 12] = requested
+        cpu.mem[FCB + 14] = 1
+        cpu.mem[FCB + 32] = 7
+        cpu.a, cpu.de = 4, FCB
+        cpu.run(DIR_BASE + 18, limit=20000)
+        require(cpu.a == 2 and cpu.mem[FCB + 12] == requested and
+                cpu.mem[FCB + 15] == expected_rc and cpu.mem[FCB + 32] == 7,
+                f"EXM grouped Open returned wrong state for EX={requested}")
+
+    cpu.mem[FCB:FCB + 33] = bytes(33)
+    cpu.mem[FCB + 1:FCB + 12] = b"GROUP   DAT"
+    cpu.mem[FCB + 12] = 4
+    cpu.mem[FCB + 14] = 1
+    cpu.a, cpu.de = 4, FCB
+    cpu.run(DIR_BASE + 18, limit=30000)
+    require(cpu.a == 0xFF, "EXM grouped Open crossed into the wrong group")
+
     # Invalidation forces a fresh DPH/DPB login. Altered test DPB values prove
     # that directory bounds and OFF are derived state rather than constants.
     cpu.mem[FIXTURE:FIXTURE + 512] = bytes((0xE5,)) * 512
     cpu.run(DIR_BASE + 15)
+    cpu.mem[dpb + 4] = 0
     cpu.setword(dpb + 5, 127)    # small DPB: sixteen 8-bit block slots
     cpu.setword(dpb + 7, 7)      # DRM=7: eight entries, two records
     cpu.setword(dpb + 13, 3)     # directory begins at logical track 3
@@ -187,7 +242,7 @@ def main() -> None:
 
     print("DPH/DPB login and complete allocation reconstruction passed")
     print("all 128 directory entries searched through BIOS")
-    print("read-only exact-extent FCB Open and activation passed")
+    print("EXM-grouped and wildcard-first FCB Open activation passed")
     print("invalidation, exact user/8.3 matching, and attribute masking passed")
 
 

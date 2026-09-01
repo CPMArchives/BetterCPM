@@ -143,6 +143,11 @@ class Z80:
                 self.a &= self.mem[self.pc]
                 self.pc += 1
                 self.z = self.a == 0
+            elif op == 0xA1:            # AND C
+                self.a &= self.c
+                self.z = self.a == 0
+            elif op == 0x2F:            # CPL
+                self.a ^= 0xFF
             elif op == 0x3E:            # LD A,n
                 self.a = self.mem[self.pc]
                 self.pc += 1
@@ -164,6 +169,9 @@ class Z80:
                 self.z = self.a == 0
             elif op == 0x04:            # INC B
                 self.b = (self.b + 1) & 0xFF
+                self.z = self.b == 0
+            elif op == 0x05:            # DEC B
+                self.b = (self.b - 1) & 0xFF
                 self.z = self.b == 0
             elif op == 0x03:            # INC BC
                 self.bc = (self.bc + 1) & 0xFFFF

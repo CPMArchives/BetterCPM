@@ -63,6 +63,8 @@ DIR_LOGIN:
         ADD     HL,DE           ; EXM at DPB+4
         LD      A,(HL)
         LD      (DIR_EXM),A
+        CP      16
+        JP      NC,DIR_BADFMT
         INC     HL              ; DSM at DPB+5
         LD      E,(HL)
         INC     HL
@@ -292,7 +294,7 @@ DIR_NOTF:
 
 ; Activate an exact existing extent in a 33-byte sequential FCB.
 ; Input: A=user, DE=FCB. Return directory slot 0..3 or FFh if absent.
-; This first read-only slice supports EXM=0 and drive A/current-drive only.
+; This read-only slice supports EXM grouping and drive A/current-drive only.
 DIR_OPEN:
         LD      (DIR_USER),A
         LD      (DIR_FCBP),DE
@@ -303,7 +305,6 @@ DIR_OPEN:
         LD      DE,12
         ADD     HL,DE
         LD      A,(HL)
-        AND     01FH
         LD      (DIR_OEX),A
         INC     HL
         INC     HL
@@ -311,8 +312,9 @@ DIR_OPEN:
         AND     03FH
         LD      (DIR_OS2),A
         LD      A,(DIR_EXM)
-        OR      A
-        JP      NZ,DIR_ONOTF
+        CPL
+        AND     01FH
+        LD      (DIR_OMSK),A
         XOR     A
         LD      (DIR_RECORD),A
 DIR_ORECD:
@@ -329,7 +331,7 @@ DIR_ORECD:
 DIR_OENT:
         LD      A,(DIR_USER)
         CP      (HL)
-        JR      NZ,DIR_ONEXT
+        JP      NZ,DIR_ONEXT
         PUSH    BC
         PUSH    HL
         INC     HL
@@ -339,11 +341,14 @@ DIR_OENT:
 DIR_OCHAR:
         LD      A,(DE)
         AND     07FH
+        CP      '?'
+        JR      Z,DIR_OCNEXT
         LD      C,A
         LD      A,(HL)
         AND     07FH
         CP      C
         JR      NZ,DIR_OMISS
+DIR_OCNEXT:
         INC     DE
         INC     HL
         DJNZ    DIR_OCHAR
@@ -354,8 +359,18 @@ DIR_OCHAR:
         ADD     HL,DE
         LD      A,(HL)
         AND     01FH
+        LD      (DIR_ODX),A
+        LD      C,A
+        LD      A,(DIR_OMSK)
+        AND     C
+        LD      (DIR_ODG),A
+        LD      C,A
+        LD      A,(DIR_OMSK)
         LD      C,A
         LD      A,(DIR_OEX)
+        AND     C
+        LD      C,A
+        LD      A,(DIR_ODG)
         CP      C
         JR      NZ,DIR_OCTLN
         INC     HL
@@ -369,7 +384,9 @@ DIR_OCHAR:
         INC     HL              ; RC must remain in the documented 0..128 range
         LD      A,(HL)
         CP      129
-        JR      C,DIR_OFOUND
+        JR      NC,DIR_OCTLN
+        LD      (DIR_ORC),A
+        JR      DIR_OFOUND
 DIR_OCTLN:
         POP     HL
         JR      DIR_ONEXT
@@ -384,6 +401,29 @@ DIR_OFOUND:
         INC     DE
         LD      BC,31
         LDIR                    ; FCB CR at byte 32 remains caller-owned
+        LD      HL,(DIR_FCBP)
+        LD      DE,12
+        ADD     HL,DE
+        LD      A,(DIR_OEX)
+        LD      (HL),A          ; restore the caller's requested logical extent
+        LD      A,(DIR_ODX)
+        LD      C,A
+        LD      A,(DIR_OEX)
+        AND     01FH
+        CP      C
+        JR      Z,DIR_ORCDR
+        JR      C,DIR_ORCFU
+        XOR     A               ; requested subextent is beyond directory end
+        JR      DIR_ORCST
+DIR_ORCFU:
+        LD      A,128           ; an earlier subextent in the group is full
+        JR      DIR_ORCST
+DIR_ORCDR:
+        LD      A,(DIR_ORC)
+DIR_ORCST:
+        LD      DE,3
+        ADD     HL,DE           ; FCB RC at byte 15
+        LD      (HL),A
         LD      A,(DIR_SLOT)
         OR      A
         RET
@@ -393,7 +433,8 @@ DIR_ONEXT:
         LD      A,(DIR_SLOT)
         INC     A
         LD      (DIR_SLOT),A
-        DJNZ    DIR_OENT
+        DEC     B
+        JP      NZ,DIR_OENT
         LD      HL,DIR_RECORD
         INC     (HL)
         JP      DIR_ORECD
@@ -558,6 +599,14 @@ DIR_AL1:
 DIR_FCBP:
         DW      0
 DIR_OEX:
+        DB      0
+DIR_OMSK:
+        DB      0
+DIR_ODX:
+        DB      0
+DIR_ODG:
+        DB      0
+DIR_ORC:
         DB      0
 DIR_OS2:
         DB      0
