@@ -1,0 +1,121 @@
+; BetterCP/M initial CP/M 2.2 compatibility BIOS scaffold
+;
+; This artifact is independently buildable and is not yet loaded by stage zero.
+; BIOSBASE is a test placement, not a final resident-memory decision.
+
+BIOSBASE        EQU     0F000H
+
+        CSEG
+        .PHASE  BIOSBASE
+
+; Patch 2026-09-01: retain the complete historical 17-entry vector even
+; while several services are stubs.  Existing software derives this base
+; from JMP WBOOT at page zero and indexes fixed three-byte JMP entries.
+BIOS:
+        JP      BIOBOOT
+        JP      BIOWBOOT
+        JP      BIOCONST
+        JP      BIOCONIN
+        JP      BIOCONOT
+        JP      BIOLIST
+        JP      BIOPUNCH
+        JP      BIOREADR
+        JP      BIOHOME
+        JP      BIOSELDS
+        JP      BIOSETTR
+        JP      BIOSETSE
+        JP      BIOSETDM
+        JP      BIOREAD
+        JP      BIOWRITE
+        JP      BIOLSTST
+        JP      BIOSECTR
+
+; BOOT and WBOOT are non-returning contracts.  Until CCP/BDOS integration,
+; entering either one stops here rather than returning into an invalid caller.
+BIOBOOT:
+        JR      BIOBOOT
+BIOWBOOT:
+        JR      BIOWBOOT
+
+; CONST must return exactly 00h or FFh and must not consume the character.
+BIOCONST:
+        CALL    PL_CONST
+        OR      A
+        RET     Z
+        LD      A,0FFH
+        RET
+
+BIOCONIN:
+        CALL    PL_CONIN
+        AND     07FH
+        RET
+
+BIOCONOT:
+        JP      PL_CONOT
+
+; Optional logical devices are explicitly unassigned in the scaffold.
+BIOLIST:
+BIOPUNCH:
+        RET
+BIOREADR:
+        LD      A,01AH
+        RET
+
+BIOHOME:
+        LD      BC,0
+BIOSETTR:
+        LD      (BIO_TRACK),BC
+        RET
+BIOSETSE:
+        LD      (BIO_SECTOR),BC
+        RET
+BIOSETDM:
+        LD      (BIO_DMA),BC
+        RET
+
+; No DPH exists yet, so every drive is unavailable.
+BIOSELDS:
+        LD      A,C
+        LD      (BIO_DRIVE),A
+        LD      HL,0
+        RET
+
+; A nonzero result reports the deliberately unavailable disk implementation.
+BIOREAD:
+BIOWRITE:
+        LD      A,1
+        RET
+
+; LISTST encoding remains policy-pending; an unassigned list device is not
+; ready in this scaffold.
+BIOLSTST:
+        XOR     A
+        RET
+
+; BC is the zero-based logical sector; DE is XLT or zero.  Return HL.
+BIOSECTR:
+        LD      H,B
+        LD      L,C
+        LD      A,D
+        OR      E
+        RET     Z
+        EX      DE,HL
+        ADD     HL,BC
+        LD      L,(HL)
+        LD      H,0
+        RET
+
+; Persistent single-context disk state required by the CP/M BIOS boundary.
+BIO_DRIVE:
+        DB      0
+BIO_TRACK:
+        DW      0
+BIO_SECTOR:
+        DW      0
+BIO_DMA:
+        DW      0080H
+
+        INCLUDE biosplat.inc
+
+        .DEPHASE
+        END
