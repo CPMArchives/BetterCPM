@@ -84,6 +84,13 @@ class Z80:
                 if displacement & 0x80:
                     displacement -= 0x100
                 self.pc = (self.pc + displacement) & 0xFFFF
+            elif op == 0x20:            # JR NZ,e
+                displacement = self.mem[self.pc]
+                self.pc += 1
+                if not self.z:
+                    if displacement & 0x80:
+                        displacement -= 0x100
+                    self.pc = (self.pc + displacement) & 0xFFFF
             elif op == 0xAF:            # XOR A
                 self.a, self.z = 0, True
             elif op == 0xB7:            # OR A
@@ -200,9 +207,23 @@ def main() -> None:
         cpu.run(entries[index])
         require(cpu.word(state) == value, f"{name} state did not persist")
 
+    cpu.c = 0
+    cpu.run(entries[9])
+    require(cpu.hl != 0, "SELDSK did not expose drive A DPH")
+    dph = cpu.hl
+    dpb = cpu.word(dph + 10)
+    require(cpu.word(dpb) == 80, "drive A SPT is not 80")
+    require(bytes(cpu.mem[dpb + 2:dpb + 5]) == bytes((4, 15, 0)),
+            "drive A BSH/BLM/EXM mismatch")
+    require(cpu.word(dpb + 5) == 394 and cpu.word(dpb + 7) == 127,
+            "drive A DSM/DRM mismatch")
+    require(bytes(cpu.mem[dpb + 9:dpb + 11]) == bytes((0xC0, 0)),
+            "drive A allocation mask mismatch")
+    require(cpu.word(dpb + 11) == 32 and cpu.word(dpb + 13) == 2,
+            "drive A CKS/OFF mismatch")
     cpu.c = 5
     cpu.run(entries[9])
-    require(cpu.hl == 0, "SELDSK exposed a nonexistent DPH")
+    require(cpu.hl == 0, "SELDSK exposed an unavailable drive")
     for index, name in ((13, "READ"), (14, "WRITE")):
         cpu.a = 0
         cpu.run(entries[index])
