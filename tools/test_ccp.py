@@ -67,6 +67,21 @@ def main() -> None:
     require(bytes(machine.mem[0x006C:0x0078]) == b"\x00SECOND  BIN",
             "second default FCB is not drive-zero SECOND.BIN")
 
+    # A bare drive operand is how tools such as Montezuma Micro MDIR request
+    # another disk. A file-qualified prefix uses the same CP/M encoding.
+    for text, expected in (
+        (b"B:", b"\x02           "),
+        (b"D:FILE.DAT", b"\x04FILE    DAT"),
+        (b"P:LAST.BIN", b"\x10LAST    BIN"),
+    ):
+        machine = cpu()
+        source = 0x7200
+        machine.mem[source:source + len(text)] = text
+        machine.hl, machine.b, machine.de = source, len(text), 0x005C
+        call(machine, symbol("CCP_PFCB"))
+        require(bytes(machine.mem[0x005C:0x0068]) == expected,
+                f"drive-qualified default FCB is wrong for {text!r}")
+
     # Model 4 LF preserves the current column. DIR must issue CR/LF or its
     # one-name-per-row display becomes a diagonal staircase across the screen.
     dir_nl = symbol("CCP_DIRNL")

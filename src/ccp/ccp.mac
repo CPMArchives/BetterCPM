@@ -295,8 +295,7 @@ CCP_PSKIP:
         JR      CCP_PSKIP
 
 ; Build one ordinary space-padded 8.3 default FCB while leaving HL/B at the
-; following separator.  Drive prefixes and wildcard expansion follow after
-; the first booted ENTRYTST pass defines their remaining compatibility work.
+; following separator.
 CCP_PFCB:
         PUSH    HL
         PUSH    BC
@@ -314,6 +313,27 @@ PFCLRL:
         POP     BC
         POP     HL
         PUSH    DE
+; Patch 2026-09-02: the original parser deliberately deferred drive prefixes,
+; causing an argument such as B: to become the filename "B:" on drive zero.
+; This compact A:..P: prefix recognizer occupies the final 21 bytes below the
+; fixed ED00h physical-sector buffer; CCP_STKTOP now ends exactly at ED00h.
+        LD      A,(HL)
+        SUB     'A'-1
+        CP      17
+        JR      NC,PFNODRV
+        LD      C,A
+        INC     HL
+        LD      A,(HL)
+        DEC     HL
+        CP      ':'
+        JR      NZ,PFNODRV
+        LD      A,C
+        LD      (DE),A
+        INC     HL
+        INC     HL
+        DEC     B
+        DEC     B
+PFNODRV:
         INC     DE
         LD      C,8
 PFNAMEL:

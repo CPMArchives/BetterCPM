@@ -14,9 +14,10 @@ parses the first two space-separated operands into drive-zero, uppercase,
 space-padded 8.3 FCBs at `005Ch` and `006Ch`. The second FCB intentionally ends
 before the command tail at `0080h`.
 
-This increment establishes ordinary 8.3 operands. Drive prefixes and CP/M
-wildcard expansion remain required follow-up work and are reported honestly by
-the selected `ENTRYTST` procedures rather than claimed complete.
+This increment initially established ordinary 8.3 operands. Drive prefixes
+were completed later after `MDIR B:` exposed the deferred case; CP/M wildcard
+expansion remains separate compatibility work where a transient relies on the
+CCP rather than interpreting its command tail itself.
 
 Patch history: the first argument-bearing loader rejected every command because
 the `CP ' '` zero flag survived a subsequent `LD A,C`; the empty-name branch

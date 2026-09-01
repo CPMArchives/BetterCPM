@@ -123,6 +123,7 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Engineering Specification 91`](docs/engineering/91%20BIOSTEST%20Returning%20Baseline.md) closes the guarded BIOS-trace investigation, records 26 physical required passes including write-protect and logical-device control, and separates the 9 remaining manual/provider/profile procedures from core BIOS implementation.
 
 [`Engineering Specification 92`](docs/engineering/92%20ERA%20System%20Utility.md) adds a native-assemblable wildcard-aware `ERA.COM`, including confirmation before `ERA *.*`, while deferring a resident implementation until the CCP memory map is deliberately revised.
+[`Engineering Specification 93`](docs/engineering/93%20Drive-Qualified%20Default%20FCBs.md) completes A: through P: default-FCB drive prefixes and physically verifies `MDIR B:` against a separate disk.
 [`Engineering Specification 25`](docs/engineering/25%20Allocation%20and%20DPB%20Pointers.md) exposes the current drive's reconstructed allocation vector and live 15-byte disk parameter block.
 [`Engineering Specification 26`](docs/engineering/26%20Directory%20Search%20and%20DMA.md) adds Search First/Search Next continuation, wildcard and all-user matching, and complete directory-record transfer to the selected DMA address.
 [`Engineering Specification 27`](docs/engineering/27%20Unchanged%20FCB%20Close.md) adds the non-mutating Close File boundary for unchanged activated FCBs and safely rejects dirty commits until writeback exists.

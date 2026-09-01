@@ -222,7 +222,11 @@ def main() -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_bytes(image)
     for path in (BUILD / "boot.bin", BUILD / "stage1.bin", output):
-        print(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.relative_to(ROOT)}")
+        try:
+            label = path.relative_to(ROOT)
+        except ValueError:
+            label = path
+        print(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {label}")
     print(f"boot bytes: {len(boot)}; stage-one bytes: {len(stage1)}; "
           f"resident bytes: {len(resident)} in {SYSTEM_SECTORS} sectors")
 
