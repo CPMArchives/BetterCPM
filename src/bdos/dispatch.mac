@@ -870,8 +870,12 @@ BDOS_CLOSE:
 
 BDOS_SFIR:
         LD      DE,(BDOS_PARM)
+        LD      A,(DE)
+        CP      '?'
+        JR      Z,BF_SALL       ; CP/M all-user search on current drive
         CALL    BF_FSEL
         JP      NZ,BDOS_BADRV
+BF_SALL:
         LD      BC,(BDOS_DMA)
         LD      A,(BDOS_USER)
         CALL    DIRSFIR

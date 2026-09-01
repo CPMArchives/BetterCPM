@@ -88,7 +88,15 @@ def install_files(raw: bytearray, files: list[tuple[str, bytes]]) -> None:
     directory = FILESYSTEM_FIRST_SECTOR * SECTOR_SIZE
     next_entry = 0
     next_block = FIRST_DATA_BLOCK
+    expanded = []
     for filename, content in files:
+        expanded.append((filename, content, 0))
+        # DIRTEST requires the same controlled name to exist independently in
+        # users zero and one. Allocate a real second copy; sharing allocation
+        # blocks would make user-scoped Delete corrupt the surviving fixture.
+        if filename.upper() == "BTUSR.DAT":
+            expanded.append((filename, content, 1))
+    for filename, content, user in expanded:
         name, suffix = cpm_name(filename)
         records = (len(content) + 127) // 128
         padded = content + bytes((0x1A,)) * (records * 128 - len(content))
@@ -101,6 +109,7 @@ def install_files(raw: bytearray, files: list[tuple[str, bytes]]) -> None:
             blocks_here = min(8, block_total - extent * 8)
             records_here = min(128, max(0, records - extent * 128))
             entry = bytearray(32)
+            entry[0] = user
             entry[1:9], entry[9:12] = name, suffix
             # Host files have no CP/M directory attributes. Preserve the
             # compatibility suite's canonical file-read-only fixture when it
