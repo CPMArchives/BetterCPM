@@ -1,0 +1,99 @@
+; BetterCP/M TRS-80 Model 4 stage-zero diagnostic loader
+;
+; The Model 4 ROM loads sector 1 of track 0 into 4300H.  Its three-byte
+; load-module header supplies the execution address.
+; This stage establishes Model 4 RAM/video mapping, reads one 512-byte
+; stage-one sector into 5000H, and transfers control there.
+
+        INCLUDE hardware.inc
+
+        CSEG
+        .PHASE  BOOTBASE
+
+        DB      1
+        DW      BOOT
+
+BOOT:   DI
+        LD      A,082H
+        OUT     (OPTREG),A
+        XOR     A
+        OUT     (INTMASK),A
+        OUT     (NMIREG),A
+        LD      A,040H
+        OUT     (MODLATCH),A
+        LD      A,3
+        OUT     (OPTREG),A
+        LD      SP,VIDEOBASE
+
+        LD      A,0C3H
+        LD      (NMIVECTOR),A
+        LD      HL,NMIHANDLER
+        LD      (NMIVECTOR+1),HL
+
+        LD      A,STAGE1SECTOR
+        OUT     (FDCSECTOR),A
+        LD      HL,STAGE1BASE
+        CALL    READSECTOR
+        JP      NZ,BOOTERROR
+        JP      STAGE1BASE
+
+; Read the selected 512-byte sector from drive 0, track 0, side 0.
+; The controller asserts NMI at command completion.  INI repeats until
+; that NMI removes the interrupted-loop address and returns to our caller.
+READSECTOR:
+        LD      A,081H
+        OUT     (FDCSELECT),A
+WAITIDLE:
+        IN      A,(FDCSTATUS)
+        AND     1
+        JR      NZ,WAITIDLE
+
+        LD      C,FDCDATA
+        LD      DE,0C102H
+        LD      A,D
+        AND     0BFH
+        OUT     (FDCSELECT),A
+        LD      A,FDCREAD
+        OUT     (FDCCOMMAND),A
+WAITBUSY:
+        IN      A,(FDCSTATUS)
+        AND     1
+        JR      Z,WAITBUSY
+
+        LD      A,0C0H
+        OUT     (NMIREG),A
+WAITDRQ:
+        IN      A,(FDCSTATUS)
+        AND     E
+        JR      Z,WAITDRQ
+        INI
+        LD      A,D
+READLOOP:
+        OUT     (FDCSELECT),A
+        INI
+        JR      READLOOP
+
+NMIHANDLER:
+        POP     HL
+        XOR     A
+        OUT     (NMIREG),A
+        IN      A,(FDCSTATUS)
+        AND     09CH
+        RET
+
+BOOTERROR:
+        LD      A,2
+        OUT     (OPTREG),A
+        LD      HL,ERRORMSG
+        LD      DE,VIDEOBASE
+        LD      BC,ERRORLEN
+        LDIR
+ERRORLOOP:
+        JR      ERRORLOOP
+
+ERRORMSG:
+        DB      'BetterCP/M boot error'
+ERRORLEN        EQU     $-ERRORMSG
+
+        .DEPHASE
+        END

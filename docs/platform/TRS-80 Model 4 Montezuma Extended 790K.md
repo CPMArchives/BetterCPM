@@ -47,6 +47,6 @@ python3 tools/build_montezuma_extended_790k.py
 
 The generated image is placed at `build/trs80/BetterCPM-Extended-80T-DS-System-790K.dmk`. It has valid DMK address/data fields and CRCs and an empty CP/M directory and data area.
 
-The initial generated image is **system-layout media, not yet a bootable operating-system disk**. A bootable BetterCP/M image requires the TRS-80 Model 4 stage-zero loader and the BetterCP/M system image to be installed in the reserved tracks. Those bytes must be project-built outputs; the image generator shall not silently copy Montezuma Micro proprietary system code.
+The blank-media generator creates system-layout media without system content. `tools/build_trs80_boot.py` installs the BetterCP/M stage-zero loader and stage-one diagnostic, producing the first bootable development image without copying Montezuma Micro system code.
 
-Once the loader exists, the image build shall fail unless the system payload fits within the 20,480-byte reserved area and the completed image boots under the pinned TRS-80 emulator.
+The image build fails if a stage exceeds its assigned 512-byte sector. `tools/test_trs80_boot.py` boots the completed image under `trs80gp` and verifies the captured stage-one message.

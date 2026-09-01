@@ -1,0 +1,19 @@
+; BetterCP/M TRS-80 Model 4 hardware constants
+
+OPTREG          EQU     084H
+INTMASK         EQU     0E0H
+NMIREG          EQU     0E4H
+MODLATCH        EQU     0ECH
+FDCSTATUS       EQU     0F0H
+FDCCOMMAND      EQU     0F0H
+FDCSECTOR       EQU     0F2H
+FDCDATA         EQU     0F3H
+FDCSELECT       EQU     0F4H
+
+NMIVECTOR       EQU     0066H
+VIDEOBASE       EQU     0F800H
+BOOTBASE        EQU     04300H
+STAGE1BASE      EQU     05000H
+
+FDCREAD         EQU     080H
+STAGE1SECTOR    EQU     3

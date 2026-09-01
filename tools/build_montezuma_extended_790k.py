@@ -66,8 +66,11 @@ def make_track(cylinder: int, head: int, logical_data: bytes) -> bytes:
     return bytes(track)
 
 
-def build() -> bytes:
-    blank_track = bytes([0xE5]) * TRACK_DATA_SIZE
+def build(raw: bytes | None = None) -> bytes:
+    if raw is None:
+        raw = bytes([0xE5]) * RAW_SIZE
+    if len(raw) != RAW_SIZE:
+        raise ValueError(f"expected {RAW_SIZE} logical bytes, got {len(raw)}")
     header = bytearray(16)
     header[1] = CYLINDERS
     header[2:4] = TRACK_LENGTH.to_bytes(2, "little")
@@ -75,11 +78,13 @@ def build() -> bytes:
     image = bytearray(header)
     for cylinder in range(CYLINDERS):
         for head in range(SIDES):
-            image.extend(make_track(cylinder, head, blank_track))
+            track_index = cylinder * SIDES + head
+            start = track_index * TRACK_DATA_SIZE
+            image.extend(make_track(cylinder, head, raw[start:start + TRACK_DATA_SIZE]))
     return bytes(image)
 
 
-def verify(image: bytes) -> None:
+def verify(image: bytes, require_blank: bool = True) -> None:
     if len(image) != IMAGE_SIZE:
         raise ValueError(f"expected {IMAGE_SIZE} bytes, got {len(image)}")
     if image[1] != CYLINDERS or int.from_bytes(image[2:4], "little") != TRACK_LENGTH or image[4] != 0:
@@ -98,7 +103,9 @@ def verify(image: bytes) -> None:
                     raise ValueError("bad ID CRC")
                 data_mark = idam + DATA_MARK_OFFSET
                 field = track[data_mark:data_mark + 1 + SECTOR_SIZE]
-                if field != b"\xFB" + bytes([0xE5]) * SECTOR_SIZE:
+                if field[0] != 0xFB:
+                    raise ValueError("sector data mark is absent")
+                if require_blank and field[1:] != bytes([0xE5]) * SECTOR_SIZE:
                     raise ValueError("sector is not blank")
                 stored = int.from_bytes(track[data_mark + 1 + SECTOR_SIZE:data_mark + 3 + SECTOR_SIZE], "big")
                 if stored != crc16(b"\xA1\xA1\xA1" + field):

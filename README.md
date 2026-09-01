@@ -2,7 +2,7 @@
 
 BetterCP/M is an effort to design a compact, maintainable successor to CP/M 2.2 while preserving a rigorously defined CP/M-compatible environment.
 
-The project has entered its engineering-specification phase. No implementation is included yet.
+The project has entered implementation. Its first TRS-80 Model 4 loader now boots a BetterCP/M-owned stage-one diagnostic from a reproducibly generated system disk.
 
 ## Design direction
 
@@ -23,7 +23,17 @@ The initial architecture material is in [`docs/architecture`](docs/architecture)
 
 The initial development target is defined in the [`Baseline Platform Specification`](docs/platform/Baseline%20Platform%20Specification.txt). The [`Architecture Readiness Review`](docs/reviews/Architecture%20Readiness%20Review.md) records the decision to begin Phase 2, and [`Engineering Specification 01`](docs/engineering/01%20Baseline%20Bring-Up%20Specification.md) defines the first diagnostic boot milestone.
 
-TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 790K System Disk`](docs/platform/TRS-80%20Model%204%20Montezuma%20Extended%20790K.md) container. The current generator creates correctly formatted system-layout media; it will become bootable when the BetterCP/M Model 4 loader and system image are implemented.
+TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 790K System Disk`](docs/platform/TRS-80%20Model%204%20Montezuma%20Extended%20790K.md) container. [`Engineering Specification 02`](docs/engineering/02%20TRS-80%20Model%204%20Boot%20Milestone.md) records the first verified boot.
+
+## First boot
+
+```sh
+python3 tools/build_trs80_boot.py
+python3 tools/build_native_trs80.py
+python3 tools/test_trs80_boot.py
+```
+
+The native build runs ZSM4 and Digital Research LINK under CP/M and must match the cross-assembled binaries byte for byte. The emulator test boots the generated 790K DMK and verifies the stage-one display.
 
 These are working engineering documents. They record the present design thinking and may change as project goals and requirements are refined.
 

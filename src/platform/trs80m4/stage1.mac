@@ -1,0 +1,25 @@
+; BetterCP/M TRS-80 Model 4 stage-one diagnostic
+
+        INCLUDE hardware.inc
+
+        CSEG
+        .PHASE  STAGE1BASE
+
+STAGE1:
+        DI
+        LD      SP,VIDEOBASE
+        LD      A,08EH
+        OUT     (OPTREG),A
+        LD      HL,MESSAGE
+        LD      DE,VIDEOBASE
+        LD      BC,MESSAGELEN
+        LDIR
+HALTLOOP:
+        JR      HALTLOOP
+
+MESSAGE:
+        DB      'BetterCP/M stage 1 - TRS-80 Model 4'
+MESSAGELEN      EQU     $-MESSAGE
+
+        .DEPHASE
+        END
