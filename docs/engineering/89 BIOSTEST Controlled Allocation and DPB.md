@@ -13,8 +13,16 @@ is required for controlled programs that read the Model 4 keyboard only after
 different amounts of disk work; keystrokes sent before a prompt are not a
 reliable queued terminal stream.
 
-Every run mounted a private copy of `blank-790k.dmk` as B:. The reproducible
-blank image and conformance image were not modified.
+Every qualifying run mounted a private copy of
+`BetterCPM-BIOSTEST-Blank-790K.dmk` as B:. The reproducible blank image and
+conformance image were not modified.
+
+The compatibility-image build now creates this fixture directly with the raw
+790K formatter. A bootable image is not an acceptable substitute: the normal
+boot-image builder always installs `HELLO.COM`, even when no additional files
+are requested. This distinction was exposed after a misleadingly named
+`blank-790k.dmk` returned `ALV[0/1]=E000`; the extra allocation bit correctly
+described `HELLO.COM` in block 2.
 
 ## Controlled result
 
@@ -57,4 +65,3 @@ These concern persistent disk-call context, SECTRAN-to-SETSEC translation,
 DMA-address tracing, and WRITE type codes. They are not reclassified or hidden
 by the successful allocation result. Each requires focused diagnosis in the
 next disk-interface milestone.
-

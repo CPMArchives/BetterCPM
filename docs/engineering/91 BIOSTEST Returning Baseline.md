@@ -33,12 +33,12 @@ fixture. Focused guarded results are:
 - 0456 passes: both application and directory DMA addresses were observed;
 - 0458 passes: BIOS WRITE types 0, 1, and 2 were observed.
 
-Together with the earlier safe and controlled allocation/DPB passes, BIOSTEST's
-46-entry catalog is now accounted for as:
+Together with the earlier safe and controlled allocation/DPB passes and the
+completed boot procedures, BIOSTEST's 46-entry catalog is now accounted for as:
 
-- 26 physical required passes;
+- 29 physical required passes;
 - 11 non-guaranteed observations;
-- 9 manual, provider-dependent, optional-profile, or out-of-scope procedures;
+- 6 provider-dependent, optional-profile, or out-of-scope procedures;
 - zero remaining failures in the returning baseline.
 
 On 2026-09-02 item 0457 was completed manually with the blank B: fixture. The
@@ -48,8 +48,14 @@ B: was made writable again. BIOSTEST reported:
 
 > `0457  P  R  128-byte transfer passed; physical fault returned nonzero`
 
-Boot reconstruction and reader/provider procedures retain their explicit setup
-and evidence requirements.
+On 2026-09-02 the retained-evidence boot sequence also completed physically:
+
+- 0464: cold BOOT resumed the CCP with reconstructed public state;
+- 0465: WBOOT resumed the CCP on the requested drive;
+- 0466: WBOOT reconstructed both deliberately damaged gateway opcodes.
+
+`BTBOOT.DAT` retained the evidence across the nonreturning transitions. It is
+deleted only after the final aggregate report.
 
 ## Controlled console result
 
@@ -71,16 +77,18 @@ they therefore verify observable layering rather than private implementation.
 
 ## Remaining procedures
 
-The nine unrun catalog entries are now sharply bounded:
+The six unrun catalog entries are now sharply bounded:
 
-- 0464, 0465, and 0466 are required retained-evidence BOOT/WBOOT procedures;
 - 0471 is a required two-stage READER/provider procedure;
 - 0435 and 0472 are optional profiles not currently claimed by BetterCP/M;
 - 0423, 0459, and 0467 are explicitly out of scope.
 
 ## Fixture rule
 
-Controlled blank-disk checks must use `build/trs80/blank-790k.dmk`, not the
-populated cross-drive conformance image. BIOSTEST correctly reports allocation
-checks 0425 and 0426 as failures when a populated fixture is presented as blank.
-That distinction is evidence that the tests observe real allocation state.
+Controlled blank-disk checks must use
+`build/trs80/BetterCPM-BIOSTEST-Blank-790K.dmk`, not a bootable or populated
+image. BIOSTEST correctly reports allocation checks 0425 and 0426 as failures
+when a populated fixture is presented as blank. In the rejected run, its
+reported `DPB AL0/AL1=C000; ALV[0/1]=E000` precisely identified the block-2
+`HELLO.COM` allocation. That distinction is evidence that the tests observe
+real allocation state.

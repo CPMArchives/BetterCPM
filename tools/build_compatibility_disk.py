@@ -21,6 +21,8 @@ def main() -> None:
                         default=ROOT / "build/trs80/BetterCPM-Conformance-Drive-C.dmk")
     parser.add_argument("--drive-d-output", type=Path,
                         default=ROOT / "build/trs80/BetterCPM-Conformance-Drive-D-Full.dmk")
+    parser.add_argument("--blank-output", type=Path,
+                        default=ROOT / "build/trs80/BetterCPM-BIOSTEST-Blank-790K.dmk")
     args = parser.parse_args()
     entry = args.suite / "suite/build/ENTRYTST.COM"
     bdos = args.suite / "suite/build/BDOSTEST.COM"
@@ -70,6 +72,14 @@ def main() -> None:
         "python3", str(ROOT / "tools/build_trs80_boot.py"),
         "--full-fixture",
         "--output", str(args.drive_d_output),
+    ], cwd=ROOT, check=True)
+    # Patch 2026-09-02: do not use build_trs80_boot.py for the controlled
+    # BIOSTEST medium.  Every bootable image deliberately contains HELLO.COM,
+    # so an image made that way is not a blank CP/M filesystem even when no
+    # extra files are requested.  The scratch drive need not itself boot.
+    subprocess.run([
+        "python3", str(ROOT / "tools/build_montezuma_extended_790k.py"),
+        str(args.blank_output),
     ], cwd=ROOT, check=True)
 
 
