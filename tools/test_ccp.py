@@ -10,7 +10,7 @@ from test_bios import Z80, require
 ROOT = Path(__file__).resolve().parents[1]
 IMAGE = ROOT / "build/ccp/ccp.bin"
 LISTING = ROOT / "build/ccp/ccp.lst"
-BASE = 0xE8D6
+BASE = 0xB000
 CALLER = 0x7000
 
 
@@ -91,7 +91,29 @@ def main() -> None:
     require(bytes(machine.mem[dir_nl:dir_nl + 3]) == b"\r\n$",
             "resident DIR line separator is not CP/M CR/LF")
 
-    print("CCP parsing and resident DIR line formatting passed")
+    # The initial image has an empty CPX chain. Install two synthetic headers:
+    # the first declines and the second claims the command. This verifies the
+    # public ordering and carry contract without making a test CPX resident.
+    machine = cpu()
+    head, second = 0xB800, 0xB804
+    decline, accept = 0x7300, 0x7310
+    machine.mem[0xBFFE:0xC000] = head.to_bytes(2, "little")
+    machine.mem[head:head + 4] = (second.to_bytes(2, "little")
+                                  + decline.to_bytes(2, "little"))
+    machine.mem[second:second + 4] = (bytes(2)
+                                      + accept.to_bytes(2, "little"))
+    machine.mem[decline:decline + 2] = bytes((0xB7, 0xC9))  # OR A; RET
+    machine.mem[accept:accept + 5] = bytes((0x3E, 0xA5, 0x32, 0x00, 0x74))
+    machine.mem[accept + 5:accept + 7] = bytes((0x37, 0xC9))  # SCF; RET
+    command = b"IF EXIST TEST"
+    machine.mem[symbol("CCP_COUNT")] = len(command)
+    data = symbol("CCP_DATA")
+    machine.mem[data:data + len(command)] = command
+    call(machine, symbol("CPX_DISPATCH"))
+    require(machine.mem[0x7400] == 0xA5,
+            "CPX chain did not pass a declined command to its successor")
+
+    print("CCP parsing, resident DIR, and CPX dispatch passed")
 
 
 if __name__ == "__main__":

@@ -116,6 +116,18 @@ than by the organization of the original CP/M source.
 Resident components should be kept compact in order to preserve the
 largest practical TPA.
 
+The high-memory ordering shall permit the BIOS and core BDOS to remain fixed
+while optional resident extensions and the reloadable command environment
+are placed below them.  From high to low, the intended ordering is BIOS,
+core BDOS, RSXs, CPXs, reloadable CCP core, and TPA.  An RSX extends system
+services; a CPX extends the command processor.  Neither class shall be
+confused merely because both occupy the region between BDOS and CCP.
+
+The CCP location and the TPA ceiling may therefore be computed from the
+configured RSX and CPX footprint.  Warm start shall be able to reconstruct
+the command environment below resident RSXs without relocating the BIOS or
+core BDOS.
+
 
 4.5 COMPATIBILITY-VISIBLE MEMORY
 --------------------------------

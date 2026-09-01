@@ -1,4 +1,4 @@
-; BetterCP/M initial resident command processor.
+; BetterCP/M initial command processor.
 ;
 ; The original EA40H placement left too little room for resident commands.
 ; Patch 2026-09-01: move the CCP into the unused E940H..ECFFH region so DIR
@@ -9,9 +9,14 @@
 ; E8C0H. Advance the CCP by 16 bytes, retaining a guard before E8D0H.
 ; Patch 2026-09-02: live-DPB refresh extended Directory Services through
 ; E8D5H. Advance another 16 bytes, preserving a ten-byte guard.
+; Patch 2026-09-02: CPX support ends the exact-fit provisional placement.
+; Give the CCP a deliberate 2K region below the CPX/RSX extension arena
+; instead of continuing to consume incidental gaps above the BDOS.  The arena
+; remains protected until WBOOT implements true command-image restoration.
 
-CCPBASE         EQU     0E8D6H
+CCPBASE         EQU     0B000H
 BDOS            EQU     0C100H
+CPXHEAD         EQU     0BFFEH  ; zero or first CPX header in B800h..BFFDh
 
         CSEG
         .PHASE  CCPBASE
@@ -48,6 +53,8 @@ CCP_LOOP:
         CP      4
         JR      Z,CCP_TRYWARM
 CCP_BAD:
+        CALL    CPX_DISPATCH
+        JR      C,CCP_LOOP     ; extension accepted the command
         CALL    CCP_LOAD
         JR      NC,CCP_LOOP     ; successful program exits only via warm start
         LD      DE,CCP_UNKNOWN
@@ -121,6 +128,42 @@ CCP_USERSET:
         LD      C,32
         CALL    BDOS
         JP      CCP_LOOP
+
+; Command Processor Extension (CPX) chain.
+;
+; Each header contains DW next,entry.  Entry receives DE=upper-case command
+; text and B=length.  Carry set means handled; carry clear passes to the next
+; CPX.  A CPX may alter ordinary registers but must preserve SP, IX, IY and the
+; command buffer.  Core resident commands are resolved before this chain so a
+; CPX cannot accidentally replace the compatibility command set.
+CPX_DISPATCH:
+        LD      HL,(CPXHEAD)
+CPX_NEXT:
+        LD      A,H
+        OR      L
+        RET     Z
+        LD      (CPX_CUR),HL
+        INC     HL
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (CPX_CALL+1),DE
+        LD      DE,CCP_DATA
+        LD      A,(CCP_COUNT)
+        LD      B,A
+; Patch 2026-09-02: the CCP is reloadable RAM, so patching this CALL provides
+; a compact Z80 indirect-call trampoline while preserving a normal return.
+CPX_CALL:
+        CALL    0000H
+CPX_RETURN:
+        RET     C
+        LD      HL,(CPX_CUR)
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        JR      CPX_NEXT
 
 CCP_UPPER:
         LD      HL,CCP_DATA
@@ -225,7 +268,7 @@ CCP_LNEXT:
         LD      DE,128
         ADD     HL,DE
         LD      A,H
-        CP      0C1H
+        CP      0B0H           ; protect CCP/CPX until WBOOT can reload them
         JR      NC,CCP_LFAIL
         LD      (CLDPTR),HL
         JR      CCP_LNEXT
@@ -560,6 +603,8 @@ CCP_DFCNT:
         DB      0
 CCP_DFOUND:
         DB      0
+CPX_CUR:
+        DW      0
 ; Patch 2026-09-02: the first resident DIR used LF alone. The Model 4 console
 ; correctly preserves the horizontal cursor position on LF, which made each
 ; successive filename march diagonally across the screen. CP/M text output

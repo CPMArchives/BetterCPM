@@ -37,6 +37,10 @@ environment.
 Future command-environment improvements may be considered separately
 provided that the CP/M 2.2-compatible environment can be preserved.
 
+Optional Command Processor Extensions (CPXs) may supplement the reloadable
+CCP core.  CPXs are command-environment modules, not Resident System
+Extensions: they extend command processing rather than BDOS service dispatch.
+
 
 6.2 USER INTERACTION
 --------------------
@@ -69,6 +73,7 @@ Command interpretation shall determine whether the requested command
 is:
 
   * A resident command implemented by the Command Environment.
+  * A command accepted by an installed CPX.
   * A request to locate and execute a transient program.
   * Invalid or otherwise unable to be executed.
 
@@ -209,6 +214,10 @@ transient program executes.
 Code or data that can safely be reconstructed or reloaded may occupy
 memory made available to transient programs during execution.
 
+The CCP core and its configured CPXs may be reconstructed together.  RSXs
+belong to the resident system-service environment and shall not depend upon
+the continued presence of a particular CCP or CPX image.
+
 The mechanism used to restore the Command Environment need not
 duplicate the Digital Research CCP mechanism, provided that required
 CP/M 2.2 behavior is preserved.
@@ -243,6 +252,12 @@ alternative command environment.
 Such extensions shall not require the initial implementation to
 contain unused command-processing frameworks or generalized shell
 mechanisms.
+
+The implemented CPX boundary is a narrow command-dispatch chain.  Core
+compatibility commands take precedence; CPXs are then offered the upper-case
+command line in chain order; a command declined by every CPX proceeds to the
+normal transient-command lookup.  More elaborate scripting or package
+management belongs in CPX modules and their loaders, not in the CCP core.
 
 Where future command environments are introduced, the architecture
 should preserve the ability to provide the CP/M 2.2-compatible

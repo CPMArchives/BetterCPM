@@ -142,6 +142,17 @@ A future extension facility may be compatible in purpose rather than
 binary-identical to CP/M 3 RSXs.  Its requirements and ABI shall be
 specified from concrete uses before implementation.
 
+Resident System Extensions and Command Processor Extensions are distinct.
+An RSX intercepts or extends BDOS services.  It is part of the resident
+service environment and remains above the command environment when the CCP
+is overwritten and restored.
+
+A Command Processor Extension, or CPX, extends command interpretation.  A
+CPX may provide additional commands, aliases, scripting, conditional flow,
+command search, or other command-environment behavior.  It does not become
+an RSX merely because it is resident.  CPXs shall use the command processor's
+extension interface rather than intercepting BDOS calls.
+
 
 14.5 STORAGE EXTENSIONS
 -----------------------
@@ -256,6 +267,32 @@ Possible extensions may include:
   * Additional command syntax.
   * Alternative command processors.
   * BetterCP/M-specific management commands.
+  * Command Processor Extensions (CPXs).
+
+A CPX is a replaceable module associated with the Command Environment.  CPXs
+shall reside between the BDOS/RSX region and the reloadable CCP core.  They
+shall be restored as part of the command environment, independently of RSXs.
+The intended high-to-low ordering is:
+
+  * BIOS and hardware-dependent resident state.
+  * Core BDOS and System Services.
+  * Installed RSXs.
+  * Installed CPXs.
+  * Reloadable CCP core.
+  * Transient Program Area.
+
+RSX and CPX space shall be charged according to the configured modules rather
+than by permanently reserving their maximum possible sizes.  Adding either
+kind of extension may lower the CCP and TPA ceiling, but shall not require the
+BIOS or core BDOS above it to move.
+
+The initial CPX calling contract is deliberately small.  CPXs form a forward
+chain.  Each receives an upper-case command line and its length, returns carry
+set when it has handled the command, and returns carry clear to decline it.
+Core compatibility-resident commands are resolved before CPXs; an unclaimed
+command continues to ordinary transient-program lookup.  Detailed module
+loading, removal, discovery, versioning, and long-lived state rules shall be
+specified as those facilities are implemented.
 
 Additional functionality shall not automatically be made resident.
 
