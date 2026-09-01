@@ -27,8 +27,9 @@ resident-owned runtime storage.
 Directory Services refreshes the active mapping fields from the live DPB at
 filesystem entry boundaries. This preserves the intended future CONFIG model:
 the DPH/DPB is authoritative, while cached arithmetic values are disposable.
-The added code extends Directory Services through `E8D5h`; the CCP consequently
-moves to `E8E0h`, retaining a ten-byte guard before it.
+The added code extends Directory Services through `E8D5h`; the CCP initially
+moved to `E8E0h`, retaining a ten-byte guard. Specification 94 later consumes
+that verified gap and starts the CCP immediately afterward at `E8D6h`.
 
 ## Verification and remaining work
 

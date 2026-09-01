@@ -30,7 +30,7 @@ def symbol(name: str) -> int:
 def main() -> None:
     cpu = Z80(BIOS.read_bytes())
     install_drive_tables(cpu)
-    cpu.sp = 0xBC00          # below resident memory and the ED00h BIOS buffer
+    cpu.sp = 0xBC00          # below resident memory and BIOS workspaces
     directory = DIRECTORY.read_bytes()
     bdos = BDOS.read_bytes()
     cpu.mem[DIR_BASE:DIR_BASE + len(directory)] = directory

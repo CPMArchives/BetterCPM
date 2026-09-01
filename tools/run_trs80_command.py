@@ -35,6 +35,18 @@ def key_args(text: str, delay: int = 4) -> list[str]:
                                "-ik", str(row), "0", "-id", str(delay)))
                 break
         else:
+            # Model 4 punctuation uses the shift row simultaneously with its
+            # base key: '*' is Shift-minus and '?' is Shift-slash.
+            shifted = {"*": (5, 5), "?": (5, 7)}
+            if character in shifted:
+                row, column = shifted[character]
+                result.extend(("-ik", "7", "1",
+                               "-ik", str(row), f"{1 << column:X}",
+                               "-id", str(delay),
+                               "-ik", str(row), "0",
+                               "-ik", "7", "0",
+                               "-id", str(delay)))
+                continue
             raise ValueError(f"character is not on the Model 4 matrix: {character!r}")
     return result
 

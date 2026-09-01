@@ -17,7 +17,7 @@ FCB = 0x7700
 def main() -> None:
     cpu = Z80(BIOS.read_bytes())
     install_drive_tables(cpu)
-    cpu.sp = 0xBC00          # below resident memory and the ED00h BIOS buffer
+    cpu.sp = 0xBC00          # below resident memory and BIOS workspaces
     component = DIRECTORY.read_bytes()
     cpu.mem[DIR_BASE:DIR_BASE + len(component)] = component
 

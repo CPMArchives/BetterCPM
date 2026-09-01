@@ -27,7 +27,7 @@ def main() -> None:
     resident = RESIDENT.read_bytes()
     bios_offset = BIOS_BASE - RESIDENT_BASE
     cpu = Z80(resident[bios_offset:])
-    cpu.sp = 0xBC00          # below resident memory and the ED00h BIOS buffer
+    cpu.sp = 0xBC00          # below resident memory and BIOS workspaces
     cpu.mem[RESIDENT_BASE:RESIDENT_BASE + len(resident)] = resident
 
     const_impl = cpu.word(BIOS_BASE + 2 * 3 + 1)
@@ -496,7 +496,7 @@ def main() -> None:
     require(transcript.count(b"A>") >= 3 and b"BetterCP/M 0.1" in transcript,
             f"WBOOT/Function-0 CCP transcript is incomplete at PC={cpu.pc:04X}: "
             f"in={cpu.word(0x7080):04X} out={cpu.word(0x7090):04X} "
-            f"ccp={bytes(cpu.mem[0xE8E0:0xE900]).hex()} {transcript[:160]!r}")
+            f"ccp={bytes(cpu.mem[0xE8D6:0xE900]).hex()} {transcript[:160]!r}")
     require(bytes(cpu.mem[0:3]) == bytes((0xC3, 0x03, 0xEF)) and
             bytes(cpu.mem[5:8]) == bytes((0xC3, 0x00, 0xC1)) and
             cpu.word(bdos_symbol("BDOS_DMA")) == 0x0080,

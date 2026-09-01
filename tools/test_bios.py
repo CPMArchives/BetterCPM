@@ -332,6 +332,10 @@ class Z80:
                 self.hl = (self.hl + self.de) & 0xFFFF
             elif op == 0x29:            # ADD HL,HL
                 self.hl = (self.hl * 2) & 0xFFFF
+            elif op == 0x0F:            # RRCA
+                low = self.a & 1
+                self.a = (self.a >> 1) | (low << 7)
+                self.carry = bool(low)
             elif op == 0x96:            # SUB (HL)
                 value = self.mem[self.hl]
                 self.carry = self.a < value
@@ -357,6 +361,11 @@ class Z80:
                 old_carry = self.carry
                 self.carry = bool(self.l & 1)
                 self.l = (self.l >> 1) | (0x80 if old_carry else 0)
+                self.z = self.l == 0
+            elif op == 0xCB and self.mem[self.pc] == 0x25:  # SLA L
+                self.pc += 1
+                self.carry = bool(self.l & 0x80)
+                self.l = (self.l << 1) & 0xFF
                 self.z = self.l == 0
             elif op == 0xED and self.mem[self.pc] == 0x43:  # LD (nn),BC
                 self.pc += 1
@@ -505,6 +514,19 @@ def main() -> None:
     cpu.mem[platform_const:platform_const + 3] = bytes((0x3E, 0x01, 0xC9))
     cpu.run(entries[2])
     require(cpu.a == 0xFF, "CONST ready result is not FFh")
+
+    # Exercise the production matrix scanner before replacing CONIN below.
+    scan_at = platform_const - BASE + 1
+    scan = int.from_bytes(data[scan_at:scan_at + 2], "little")
+    cpu.mem[platform_const:platform_const + 3] = data[
+        platform_const - BASE:platform_const - BASE + 3]
+    cpu.mem[0xF420], cpu.mem[0xF480] = 0x20, 0x01  # Shift-minus
+    cpu.run(scan)
+    require(cpu.a == ord("*"), "matrix scanner missed Shift-minus asterisk")
+    cpu.mem[0xF420] = 0x80                         # Shift-slash
+    cpu.run(scan)
+    require(cpu.a == ord("?"), "matrix scanner missed Shift-slash question mark")
+    cpu.mem[0xF420] = cpu.mem[0xF480] = 0
 
     conin_impl = cpu.word(entries[3] + 1)
     platform_conin = cpu.word(conin_impl + 1)

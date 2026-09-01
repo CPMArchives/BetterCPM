@@ -92,6 +92,19 @@ M4_KEYBT:
         JR      M4_KEYBT
 M4_KEYFD:
         LD      A,(DE)
+        LD      C,A
+        LD      A,(KEYBASE+128) ; Model 4 modifier row: either Shift bit
+        AND     3
+        LD      A,C
+        RET     Z
+        CP      '-'
+        JR      Z,M4_KSTAR
+        CP      '/'
+        RET     NZ
+        LD      A,'?'
+        RET
+M4_KSTAR:
+        LD      A,'*'
         RET
 
 M4_KEYTAB:

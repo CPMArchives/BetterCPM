@@ -10,7 +10,7 @@ from test_bios import Z80, require
 ROOT = Path(__file__).resolve().parents[1]
 IMAGE = ROOT / "build/ccp/ccp.bin"
 LISTING = ROOT / "build/ccp/ccp.lst"
-BASE = 0xE8E0
+BASE = 0xE8D6
 CALLER = 0x7000
 
 
@@ -73,6 +73,9 @@ def main() -> None:
         (b"B:", b"\x02           "),
         (b"D:FILE.DAT", b"\x04FILE    DAT"),
         (b"P:LAST.BIN", b"\x10LAST    BIN"),
+        (b"B:*.COM", b"\x02????????COM"),
+        (b"AB*.D*", b"\x00AB??????D??"),
+        (b"Q?.BIN", b"\x00Q?      BIN"),
     ):
         machine = cpu()
         source = 0x7200

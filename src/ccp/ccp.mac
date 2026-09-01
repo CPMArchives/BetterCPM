@@ -10,7 +10,7 @@
 ; Patch 2026-09-02: live-DPB refresh extended Directory Services through
 ; E8D5H. Advance another 16 bytes, preserving a ten-byte guard.
 
-CCPBASE         EQU     0E8E0H
+CCPBASE         EQU     0E8D6H
 BDOS            EQU     0C100H
 
         CSEG
@@ -345,12 +345,22 @@ PFNAMEL:
         JR      Z,PFDONE
         CP      '.'
         JR      Z,PFDOT
+        CP      '*'
+        JR      Z,PFNSTAR
         LD      (DE),A
         INC     DE
         INC     HL
         DEC     B
         DEC     C
         JR      NZ,PFNAMEL
+        JR      PFSKPN
+PFNSTAR:
+        LD      A,'?'
+PFNSTLP:
+        LD      (DE),A
+        INC     DE
+        DEC     C
+        JR      NZ,PFNSTLP
 PFSKPN:
         LD      A,B
         OR      A
@@ -380,12 +390,22 @@ PFEXTL:
         LD      A,(HL)
         CP      ' '
         JR      Z,PFDONE
+        CP      '*'
+        JR      Z,PFESTAR
         LD      (DE),A
         INC     DE
         INC     HL
         DEC     B
         DEC     C
         JR      NZ,PFEXTL
+        JR      PFSKPE
+PFESTAR:
+        LD      A,'?'
+PFESTLP:
+        LD      (DE),A
+        INC     DE
+        DEC     C
+        JR      NZ,PFESTLP
 PFSKPE:
         LD      A,B
         OR      A
@@ -553,11 +573,11 @@ CCP_DIRFCB:
 CCP_RET:
         DW      0000H
 
-CCP_STACK:
-        REPT    16
-        DB      0
-        ENDM
-CCP_STKTOP:
+; Patch 2026-09-02: wildcard completion needed the final bytes below ED00h.
+; The private stack does not need to travel with CCP code; reserve the top of
+; the otherwise unused BDOS growth gap immediately below Directory Services.
+CCP_STACK       EQU     0D5F0H
+CCP_STKTOP      EQU     0D600H
 
         .DEPHASE
         END
