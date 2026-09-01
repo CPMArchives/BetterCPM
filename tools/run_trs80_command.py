@@ -52,6 +52,10 @@ def main() -> None:
                         help="optional DMK to mount as the fourth floppy")
     parser.add_argument("--boot-delay", type=int, default=1200)
     parser.add_argument("--run-delay", type=int, default=8000)
+    parser.add_argument("--response", action="append", default=[],
+                        help="delayed text, optionally DELAY:TEXT; repeatable")
+    parser.add_argument("--response-delay", type=int, default=1200,
+                        help="emulator delay before each interactive response")
     parser.add_argument("--snapshot", type=Path)
     parser.add_argument("--in-place", action="store_true",
                         help="allow the emulator to modify the supplied images")
@@ -101,6 +105,15 @@ def main() -> None:
         if drive_d:
             command[6:6] = ["-d3", str(drive_d)]
         command.extend(key_args(args.command + "\r"))
+        for response in args.response:
+            delay_text, separator, response_text = response.partition(":")
+            if separator and delay_text.isdigit():
+                delay = int(delay_text)
+                response = response_text
+            else:
+                delay = args.response_delay
+            command.extend(("-id", str(delay)))
+            command.extend(key_args(response))
         command.extend(("-id", str(args.run_delay), "-it", "-ix"))
         subprocess.run(command, cwd=temporary, check=True)
         capture = Path(temporary, "trs80-text-0.bin")
