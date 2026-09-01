@@ -33,6 +33,49 @@ DIRSERV:
         JP      DIR_GDPB
         JP      DIR_SFIR
         JP      DIR_SNXT
+        JP      DIR_CLOSE
+
+; Close an unchanged activated FCB without touching media. This first close
+; slice deliberately rejects any bytes 1..31 that DIR_OPEN would need to
+; refresh; later dirty-close work will replace that rejection with a commit.
+DIR_CLOSE:
+        LD      (DIR_CFP),DE
+        PUSH    AF
+        LD      HL,1
+        ADD     HL,DE
+        LD      DE,DIR_CSAV
+        LD      BC,31
+        LDIR
+        LD      DE,(DIR_CFP)
+        POP     AF
+        CALL    DIR_OPEN
+        RET     C
+        CP      0FFH
+        RET     Z
+        LD      (DIR_CRET),A
+        LD      HL,(DIR_CFP)
+        INC     HL
+        LD      DE,DIR_CSAV
+        LD      B,31
+DIR_CCMP:
+        LD      A,(DE)
+        CP      (HL)
+        JR      NZ,DIR_CDIFF
+        INC     DE
+        INC     HL
+        DJNZ    DIR_CCMP
+        LD      A,(DIR_CRET)
+        OR      A
+        RET
+DIR_CDIFF:
+        LD      HL,DIR_CSAV
+        LD      DE,(DIR_CFP)
+        INC     DE
+        LD      BC,31
+        LDIR
+        LD      A,0FFH          ; dirty commit is not implemented yet
+        OR      A
+        RET
 
 ; Begin/continue a CP/M directory enumeration. Search First receives current
 ; user in A, FCB in DE, and DMA in BC. Search Next receives the current DMA in
@@ -786,6 +829,14 @@ S_ALLUSR:
         DB      0
 DIR_SRET:
         DB      0
+DIR_CFP:
+        DW      0
+DIR_CRET:
+        DB      0
+DIR_CSAV:
+        REPT    31
+        DB      0
+        ENDM
 
         .DEPHASE
         END

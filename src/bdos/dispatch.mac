@@ -9,6 +9,7 @@ DIRGALV         EQU     0E815H  ; eighth directory-service vector
 DIRGDPB         EQU     0E818H  ; ninth directory-service vector
 DIRSFIR         EQU     0E81BH  ; tenth directory-service vector
 DIRSNXT         EQU     0E81EH  ; eleventh directory-service vector
+DIRCLOS         EQU     0E821H  ; twelfth directory-service vector
 
         CSEG
         .PHASE  BDOSBASE
@@ -27,6 +28,8 @@ BDOS:
         JP      Z,BDOS_SELDR
         CP      15
         JP      Z,BDOS_OPEN
+        CP      16
+        JP      Z,BDOS_CLOSE
         CP      17
         JP      Z,BDOS_SFIR
         CP      18
@@ -89,17 +92,17 @@ BDOS_BADRV:
 
 BDOS_GETDR:
         LD      A,(BDOS_DRIVE)
-        JR      BDOS_RETURN
+        JP      BDOS_RETURN
 
 BDOS_LOGV:
         LD      HL,(STATE_LV)
-        JR      RET_HL
+        JP      RET_HL
 
 BDOS_STDMA:
         LD      HL,(BDOS_PARM)
         LD      (BDOS_DMA),HL
         XOR     A               ; function 26 has no specified result
-        JR      BDOS_RETURN
+        JP      BDOS_RETURN
 
 BDOS_ALVP:
         CALL    DIRGALV
@@ -149,6 +152,14 @@ BDOS_OPEN:
 ; Patch 2026-09-01: RET_HL was inserted below for function 24. Keep this
 ; explicit branch so Open errors cannot fall into the new 16-bit return path.
         JR      BDOS_RETURN
+
+BDOS_CLOSE:
+        LD      DE,(BDOS_PARM)
+        LD      A,(BDOS_USER)
+        CALL    DIRCLOS
+        JR      NC,BDOS_RETURN
+        LD      A,0FFH          ; provisional storage-error presentation
+        JP      BDOS_RETURN
 
 BDOS_SFIR:
         LD      DE,(BDOS_PARM)

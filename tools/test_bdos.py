@@ -100,6 +100,21 @@ def main() -> None:
     require(cpu.mem[FCB + 14] == 0 and cpu.mem[FCB + 15] == 1 and
             cpu.mem[FCB + 32] == 7,
             "BDOS Open did not clear S2 and activate RC while preserving CR")
+    opened_fcb = bytes(cpu.mem[FCB:FCB + 33])
+    media_before_close = bytes(cpu.mem[FIXTURE:FIXTURE + 512])
+    cpu.c, cpu.de = 16, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 1 and bytes(cpu.mem[FCB:FCB + 33]) == opened_fcb and
+            bytes(cpu.mem[FIXTURE:FIXTURE + 512]) == media_before_close,
+            "unchanged Close did not return slot 1 without modifying state")
+    cpu.mem[FCB + 15] = 2
+    dirty_fcb = bytes(cpu.mem[FCB:FCB + 33])
+    cpu.c, cpu.de = 16, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0xFF and bytes(cpu.mem[FCB:FCB + 33]) == dirty_fcb and
+            bytes(cpu.mem[FIXTURE:FIXTURE + 512]) == media_before_close,
+            "provisional dirty Close did not reject without media mutation")
+    cpu.mem[FCB:FCB + 33] = opened_fcb
 
     cpu.mem[FCB + 1:FCB + 12] = b"MISSING DAT"
     cpu.mem[FCB + 14] = 0xA5
@@ -108,6 +123,9 @@ def main() -> None:
     require(cpu.a == 0xFF and cpu.l == 0xFF and cpu.b == cpu.h == 0,
             "missing BDOS Open did not return FFh aliases")
     require(cpu.mem[FCB + 14] == 0, "BDOS Open did not clear caller S2")
+    cpu.c, cpu.de = 16, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0xFF, "Close of a missing filename did not return FFh")
 
     cpu.c, cpu.de = 12, FCB
     cpu.run(BDOS_BASE)

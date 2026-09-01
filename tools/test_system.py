@@ -54,6 +54,13 @@ def main() -> None:
             "CALL 0005h did not return function-15 aliases")
     require(cpu.sp == original_sp, "CALL 0005h did not restore caller stack")
     require(cpu.mem[FCB + 15] == 1, "CALL 0005h did not activate the FCB")
+    opened_fcb = bytes(cpu.mem[FCB:FCB + 33])
+    media_before_close = bytes(cpu.mem[FIXTURE:FIXTURE + 512])
+    cpu.c, cpu.de = 16, FCB
+    cpu.run(CALLER, limit=50000)
+    require(cpu.a == 1 and bytes(cpu.mem[FCB:FCB + 33]) == opened_fcb and
+            bytes(cpu.mem[FIXTURE:FIXTURE + 512]) == media_before_close,
+            "CALL 0005h unchanged Close modified FCB or media")
 
     cpu.mem[FCB:FCB + 33] = bytes(33)
     cpu.mem[FCB + 1:FCB + 13] = b"????????????"

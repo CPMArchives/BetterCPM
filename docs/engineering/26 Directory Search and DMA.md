@@ -86,6 +86,6 @@ bytes for BDOS.
 
 ## Next increment
 
-Implement BDOS function 16 (Close File) first for an unmodified FCB, then add
-the dirty-directory path needed to commit compatible extent metadata safely.
-This establishes the close boundary before Make and Write introduce mutation.
+Engineering Specification 27 completes the unchanged-FCB portion of function
+16 without media mutation. The next increment can add the directory writeback
+and validation required for a dirty Close commit.
