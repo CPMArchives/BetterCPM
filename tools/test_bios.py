@@ -16,7 +16,7 @@ class Z80:
         self.mem = bytearray(65536)
         self.mem[BASE:BASE + len(image)] = image
         self.a = self.b = self.c = self.d = self.e = self.h = self.l = 0
-        self.pc, self.sp, self.z = 0, 0xE000, False
+        self.pc, self.sp, self.z, self.carry = 0, 0xE000, False, False
 
     def word(self, address: int) -> int:
         return self.mem[address] | self.mem[address + 1] << 8
@@ -91,6 +91,16 @@ class Z80:
                     if displacement & 0x80:
                         displacement -= 0x100
                     self.pc = (self.pc + displacement) & 0xFFFF
+            elif op in (0x28, 0x30, 0x38):  # JR Z/NC/C,e
+                displacement = self.mem[self.pc]
+                self.pc += 1
+                take = ((op == 0x28 and self.z) or
+                        (op == 0x30 and not self.carry) or
+                        (op == 0x38 and self.carry))
+                if take:
+                    if displacement & 0x80:
+                        displacement -= 0x100
+                    self.pc = (self.pc + displacement) & 0xFFFF
             elif op == 0xAF:            # XOR A
                 self.a, self.z = 0, True
             elif op == 0xB7:            # OR A
@@ -105,10 +115,38 @@ class Z80:
             elif op == 0x3E:            # LD A,n
                 self.a = self.mem[self.pc]
                 self.pc += 1
+            elif op == 0xFE:            # CP n
+                value = self.mem[self.pc]
+                self.pc += 1
+                self.z, self.carry = self.a == value, self.a < value
+            elif op == 0xD6:            # SUB n
+                value = self.mem[self.pc]
+                self.pc += 1
+                self.carry = self.a < value
+                self.a = (self.a - value) & 0xFF
+                self.z = self.a == 0
+            elif op == 0x3D:            # DEC A
+                self.a = (self.a - 1) & 0xFF
+                self.z = self.a == 0
+            elif op == 0x04:            # INC B
+                self.b = (self.b + 1) & 0xFF
+                self.z = self.b == 0
+            elif op == 0x06:            # LD B,n
+                self.b = self.mem[self.pc]
+                self.pc += 1
+            elif op == 0x16:            # LD D,n
+                self.d = self.mem[self.pc]
+                self.pc += 1
             elif op == 0x79:            # LD A,C
                 self.a = self.c
+            elif op == 0x78:            # LD A,B
+                self.a = self.b
             elif op == 0x7A:            # LD A,D
                 self.a = self.d
+            elif op == 0x7B:            # LD A,E
+                self.a = self.e
+            elif op == 0x5F:            # LD E,A
+                self.e = self.a
             elif op == 0x32:            # LD (nn),A
                 target = self.word(self.pc)
                 self.pc += 2
@@ -123,6 +161,9 @@ class Z80:
             elif op == 0x21:            # LD HL,nn
                 self.hl = self.word(self.pc)
                 self.pc += 2
+            elif op == 0x11:            # LD DE,nn
+                self.de = self.word(self.pc)
+                self.pc += 2
             elif op == 0x26:            # LD H,n
                 self.h = self.mem[self.pc]
                 self.pc += 1
@@ -132,17 +173,42 @@ class Z80:
                 self.l = self.c
             elif op == 0x6E:            # LD L,(HL)
                 self.l = self.mem[self.hl]
+            elif op == 0x4E:            # LD C,(HL)
+                self.c = self.mem[self.hl]
             elif op == 0xEB:            # EX DE,HL
                 value = self.de
                 self.de = self.hl
                 self.hl = value
             elif op == 0x09:            # ADD HL,BC
                 self.hl = (self.hl + self.bc) & 0xFFFF
+            elif op == 0x19:            # ADD HL,DE
+                self.hl = (self.hl + self.de) & 0xFFFF
+            elif op == 0xCB and self.mem[self.pc] == 0x3F:  # SRL A
+                self.pc += 1
+                self.carry = bool(self.a & 1)
+                self.a >>= 1
+                self.z = self.a == 0
             elif op == 0xED and self.mem[self.pc] == 0x43:  # LD (nn),BC
                 self.pc += 1
                 target = self.word(self.pc)
                 self.pc += 2
                 self.setword(target, self.bc)
+            elif op == 0xED and self.mem[self.pc] == 0x5B:  # LD DE,(nn)
+                self.pc += 1
+                target = self.word(self.pc)
+                self.pc += 2
+                self.de = self.word(target)
+            elif op == 0xED and self.mem[self.pc] == 0xB0:  # LDIR
+                self.pc += 1
+                count = self.bc
+                for _ in range(count):
+                    self.mem[self.de] = self.mem[self.hl]
+                    self.hl = (self.hl + 1) & 0xFFFF
+                    self.de = (self.de + 1) & 0xFFFF
+                self.bc = 0
+            elif op == 0xC0:            # RET NZ
+                if not self.z:
+                    self.pc = self.pop()
             else:
                 raise AssertionError(f"unsupported opcode {op:02X} at {self.pc - 1:04X}")
         raise AssertionError(f"execution limit reached from {address:04X}")
@@ -243,8 +309,44 @@ def main() -> None:
     cpu.run(entries[16])
     require(cpu.hl == 9, "table SECTRAN returned the wrong identifier")
 
+    # Execute every drive-A logical read with an instrumented physical layer.
+    cpu.c = 0
+    cpu.run(entries[9])
+    cpu.bc = 2
+    cpu.run(entries[10])
+    cpu.bc = 0x7200
+    cpu.run(entries[12])
+    read_impl = cpu.word(entries[13] + 1)
+    call_at = next(address for address in range(read_impl, read_impl + 100)
+                   if cpu.mem[address] == 0xCD)
+    platform_read = cpu.word(call_at + 1)
+    cpu.mem[platform_read:platform_read + 12] = bytes((
+        0x32, 0x00, 0x73,       # LD (7300h),A: cylinder
+        0x78, 0x32, 0x01, 0x73, # LD A,B / LD (7301h),A: side
+        0x79, 0x32, 0x02, 0x73, # LD A,C / LD (7302h),A: sector
+        0xAF,                    # XOR A (RET follows from original/padding)
+    ))
+    cpu.mem[platform_read + 12] = 0xC9
+    order = (1, 3, 5, 7, 9, 2, 4, 6, 8, 10)
+    for logical in range(80):
+        for quarter in range(4):
+            cpu.mem[0xEE00 + quarter * 128:0xEE80 + quarter * 128] = bytes((quarter,)) * 128
+        cpu.bc = logical
+        cpu.run(entries[11])
+        cpu.a = 0xFF
+        cpu.run(entries[13])
+        physical = logical // 4
+        require(cpu.a == 0, f"READ {logical} did not succeed")
+        require(cpu.mem[0x7300] == 2, f"READ {logical} changed cylinder")
+        require(cpu.mem[0x7301] == physical // 10,
+                f"READ {logical} selected wrong side")
+        require(cpu.mem[0x7302] == order[physical % 10],
+                f"READ {logical} selected wrong sector ID")
+        require(cpu.mem[0x7200:0x7280] == bytes((logical & 3,)) * 128,
+                f"READ {logical} copied wrong 128-byte quarter")
+
     print(f"executed {COUNT} BIOS-vector contracts from {BASE:04X}h binary")
-    print("character transport, disk state, failure paths, and SECTRAN passed")
+    print("character transport, disk state, all 80 reads, and SECTRAN passed")
 
 
 if __name__ == "__main__":

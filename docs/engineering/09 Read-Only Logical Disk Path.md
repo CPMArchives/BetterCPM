@@ -61,7 +61,7 @@ The production BIOS is 761 bytes and remains byte-identical across builds:
 
 ## Next increment
 
-Add deterministic tests for all 80 logical-sector mappings and for the
-128-byte quarter copied to DMA. Then specify and implement write-through
-read-modify-write behavior, including directory and unallocated-write type
-handling, before enabling `WRITE`.
+Engineering Specification 10 adds deterministic tests for all 80
+logical-sector mappings and every 128-byte quarter copied to DMA. The next
+step is to specify write-through read-modify-write behavior, including
+directory and unallocated-write type handling, before enabling `WRITE`.
