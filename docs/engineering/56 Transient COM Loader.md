@@ -37,7 +37,7 @@ cylinders; no private loader shortcut is used.
 
 ## Resident placement
 
-The enlarged CCP remains resident at `EA40h`. BIOS directory, checksum, and
+At this milestone the enlarged CCP remained resident at `EA40h`. BIOS directory, checksum, and
 allocation workspaces were moved to hardware-safe RAM at `F300h` through
 `F3D1h`, leaving the CCP room to grow below the physical buffer at `ED00h`.
 Those workspaces are runtime storage and do not enlarge the disk-loaded sparse
@@ -53,4 +53,4 @@ keyboard-to-CCP-to-BDOS-to-disk-to-TPA path without a private loader shortcut.
 
 ## Next increment
 
-Add resident `DIR`, as already selected for the next user-visible CCP feature.
+Implemented by [Engineering Specification 57](57%20Resident%20DIR.md).

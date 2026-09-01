@@ -4,7 +4,7 @@
 ; extension.  Its placement and the BIOS address are provisional bring-up
 ; values.  It deliberately reaches disk only through the CP/M BIOS vectors.
 
-DIRBASE         EQU     0D800H
+DIRBASE         EQU     0D700H
 ; Patch 2026-09-01: DIRBUF was E900H through specification 14, EA00H for
 ; specification 15, EC00H through specification 25, and ED00H for
 ; specifications 26-27. Dirty Close grew across ED00H, so the intact buffer

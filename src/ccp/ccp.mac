@@ -1,9 +1,10 @@
 ; BetterCP/M initial resident command processor.
 ;
-; This first milestone deliberately provides only a command loop and two
-; built-ins. Transient loading and the conventional command set follow later.
+; The original EA40H placement left too little room for resident commands.
+; Patch 2026-09-01: move the CCP into the unused E940H..ECFFH region so DIR
+; can remain resident without taking space from transient programs.
 
-CCPBASE         EQU     0EA40H
+CCPBASE         EQU     0E940H
 BDOS            EQU     0C100H
 
         CSEG
@@ -48,10 +49,18 @@ CCP_TRYVER:
         LD      DE,CCP_VERKEY
         LD      B,3
         CALL    CCP_EQUAL
-        JR      NZ,CCP_BAD
+        JR      NZ,CCP_TRYDIR
         LD      DE,CCP_VERSION
         LD      C,9
         CALL    BDOS
+        JR      CCP_LOOP
+CCP_TRYDIR:
+        LD      HL,CCP_DATA
+        LD      DE,CCP_DIRKEY
+        LD      B,3
+        CALL    CCP_EQUAL
+        JR      NZ,CCP_BAD
+        CALL    CCP_DIR
         JR      CCP_LOOP
 CCP_TRYWARM:
         LD      HL,CCP_DATA
@@ -175,6 +184,109 @@ CCP_LFAIL:
         SCF
         RET
 
+; Resident DIR deliberately uses only the public BDOS search interface.  This
+; keeps the CCP independent of the directory implementation and exercises the
+; same contract available to transient CP/M programs.
+CCP_DIR:
+        LD      HL,CCP_DIRFCB
+        LD      B,36
+        XOR     A
+CCP_DCLR:
+        LD      (HL),A
+        INC     HL
+        DJNZ    CCP_DCLR
+        LD      HL,CCP_DIRFCB+1
+        LD      B,11
+        LD      A,'?'
+CCP_DWILD:
+        LD      (HL),A
+        INC     HL
+        DJNZ    CCP_DWILD
+        LD      DE,0080H
+        LD      C,26
+        CALL    BDOS
+        XOR     A
+        LD      (CCP_DFOUND),A
+        LD      C,17
+CCP_DNEXT:
+        LD      DE,CCP_DIRFCB
+        CALL    BDOS
+        CP      0FFH
+        JR      Z,CCP_DDONE
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,080H
+        LD      L,A
+        LD      H,0
+        LD      (CCP_DIREP),HL
+        LD      DE,12
+        ADD     HL,DE
+        LD      A,(HL)
+        AND     01FH
+        JR      NZ,CCP_DMORE
+        INC     HL
+        INC     HL
+        LD      A,(HL)
+        AND     03FH
+        JR      NZ,CCP_DMORE
+        LD      A,1
+        LD      (CCP_DFOUND),A
+        LD      DE,CCP_DIRNL
+        LD      C,9
+        CALL    BDOS
+        LD      HL,(CCP_DIREP)
+        INC     HL
+        LD      B,8
+        CALL    CCP_DFIELD
+        LD      HL,(CCP_DIREP)
+        LD      DE,9
+        ADD     HL,DE
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,CCP_DMORE
+        LD      E,'.'
+        LD      C,2
+        CALL    BDOS
+        LD      HL,(CCP_DIREP)
+        LD      DE,9
+        ADD     HL,DE
+        LD      B,3
+        CALL    CCP_DFIELD
+CCP_DMORE:
+        LD      C,18
+        JR      CCP_DNEXT
+CCP_DDONE:
+        LD      A,(CCP_DFOUND)
+        OR      A
+        RET     NZ
+        LD      DE,CCP_NOFILE
+        LD      C,9
+        JP      BDOS
+
+CCP_DFIELD:
+        LD      (CCP_DFPTR),HL
+        LD      A,B
+        LD      (CCP_DFCNT),A
+CCP_DFLOOP:
+        LD      HL,(CCP_DFPTR)
+        LD      A,(HL)
+        INC     HL
+        LD      (CCP_DFPTR),HL
+        AND     07FH
+        CP      ' '
+        JR      Z,CCP_DFSKIP
+        LD      E,A
+        LD      C,2
+        CALL    BDOS
+CCP_DFSKIP:
+        LD      HL,CCP_DFCNT
+        DEC     (HL)
+        JR      NZ,CCP_DFLOOP
+        RET
+
 CCP_PROMPT:
         DB      13,10,'$'
 CCP_UNKNOWN:
@@ -183,6 +295,8 @@ CCP_VERSION:
         DB      10,'BetterCP/M 0.1','$'
 CCP_VERKEY:
         DB      'VER'
+CCP_DIRKEY:
+        DB      'DIR'
 CCP_WARMKEY:
         DB      'WARM'
 CCP_COM:
@@ -203,6 +317,22 @@ CCP_FCB:
         ENDM
 CLDPTR:
         DW      0100H
+CCP_DIREP:
+        DW      0080H
+CCP_DFPTR:
+        DW      0080H
+CCP_DFCNT:
+        DB      0
+CCP_DFOUND:
+        DB      0
+CCP_DIRNL:
+        DB      10,'$'
+CCP_NOFILE:
+        DB      10,'NO FILE','$'
+CCP_DIRFCB:
+        REPT    36
+        DB      0
+        ENDM
 CCP_RET:
         DW      0000H
 

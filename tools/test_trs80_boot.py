@@ -12,6 +12,8 @@ DEFAULT_EMULATOR = Path("/Users/nathanael/trs80/trs80gp-2/mac/trs80gp.app/Conten
 DEFAULT_IMAGE = ROOT / "build/trs80/BetterCPM-Extended-80T-DS-System-790K.dmk"
 EXPECTED_LINES = (
     b"",
+    b"A>DIR",
+    b"HELLO.COM",
     b"A>HELLO",
     b"Hello from BetterCP/M",
     b"A>",
@@ -30,6 +32,10 @@ def main() -> None:
         subprocess.run([
             str(args.emulator), "-m4", "-batch", "-turbo", "-d0", str(args.image),
             "-id", "1200",
+            "-ik", "0", "10", "-id", "4", "-ik", "0", "0", "-id", "4",
+            "-ik", "1", "2", "-id", "4", "-ik", "1", "0", "-id", "4",
+            "-ik", "2", "4", "-id", "4", "-ik", "2", "0", "-id", "4",
+            "-ik", "6", "1", "-id", "4", "-ik", "6", "0", "-id", "5000",
             "-ik", "1", "1", "-id", "4", "-ik", "1", "0", "-id", "4",
             "-ik", "0", "20", "-id", "4", "-ik", "0", "0", "-id", "4",
             "-ik", "1", "10", "-id", "4", "-ik", "1", "0", "-id", "4",
@@ -53,7 +59,7 @@ def main() -> None:
                              f"screen begins {screen[:240]!r}")
     for line in EXPECTED_LINES:
         print(line.decode("ascii"))
-    print("TRS-80 Model 4 resident CCP and HELLO.COM load test passed")
+    print("TRS-80 Model 4 resident DIR and HELLO.COM load test passed")
 
 
 if __name__ == "__main__":

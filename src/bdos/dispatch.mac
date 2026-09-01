@@ -10,24 +10,24 @@ BIOLIST         EQU     0EF0FH  ; CP/M BIOS list-output vector
 BIOPUNCH        EQU     0EF12H  ; CP/M BIOS punch-output vector
 BIOREADR        EQU     0EF15H  ; CP/M BIOS reader-input vector
 BIOWBOOT        EQU     0EF03H  ; CP/M BIOS warm-boot vector
-DIROPEN         EQU     0D812H  ; seventh directory-service vector
-DIRINVAL        EQU     0D80FH  ; sixth directory-service vector
-DIRLOGIN        EQU     0D80CH  ; fifth directory-service vector
-DIRGALV         EQU     0D815H  ; eighth directory-service vector
-DIRGDPB         EQU     0D818H  ; ninth directory-service vector
-DIRSFIR         EQU     0D81BH  ; tenth directory-service vector
-DIRSNXT         EQU     0D81EH  ; eleventh directory-service vector
-DIRCLOS         EQU     0D821H  ; twelfth directory-service vector
-DIRREAD         EQU     0D824H  ; thirteenth directory-service vector
-DIRWRITE        EQU     0D827H  ; fourteenth directory-service vector
-DIRMAKE         EQU     0D82AH  ; fifteenth directory-service vector
-DIRDELETE       EQU     0D82DH  ; sixteenth directory-service vector
-DIRRENAME       EQU     0D830H  ; seventeenth directory-service vector
-DIRATTR         EQU     0D833H  ; eighteenth directory-service vector
-DIRSIZE         EQU     0D836H  ; nineteenth directory-service vector
-DIRRREAD        EQU     0D839H  ; twentieth directory-service vector
-DIRRWRIT        EQU     0D83CH  ; twenty-first directory-service vector
-DIRRZERO        EQU     0D83FH  ; twenty-second directory-service vector
+DIROPEN         EQU     0D712H  ; seventh directory-service vector
+DIRINVAL        EQU     0D70FH  ; sixth directory-service vector
+DIRLOGIN        EQU     0D70CH  ; fifth directory-service vector
+DIRGALV         EQU     0D715H  ; eighth directory-service vector
+DIRGDPB         EQU     0D718H  ; ninth directory-service vector
+DIRSFIR         EQU     0D71BH  ; tenth directory-service vector
+DIRSNXT         EQU     0D71EH  ; eleventh directory-service vector
+DIRCLOS         EQU     0D721H  ; twelfth directory-service vector
+DIRREAD         EQU     0D724H  ; thirteenth directory-service vector
+DIRWRITE        EQU     0D727H  ; fourteenth directory-service vector
+DIRMAKE         EQU     0D72AH  ; fifteenth directory-service vector
+DIRDELETE       EQU     0D72DH  ; sixteenth directory-service vector
+DIRRENAME       EQU     0D730H  ; seventeenth directory-service vector
+DIRATTR         EQU     0D733H  ; eighteenth directory-service vector
+DIRSIZE         EQU     0D736H  ; nineteenth directory-service vector
+DIRRREAD        EQU     0D739H  ; twentieth directory-service vector
+DIRRWRIT        EQU     0D73CH  ; twenty-first directory-service vector
+DIRRZERO        EQU     0D73FH  ; twenty-second directory-service vector
 
         CSEG
         .PHASE  BDOSBASE
