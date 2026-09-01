@@ -48,6 +48,7 @@ SIGNATURE:
 SIGLEN  EQU     $-SIGNATURE
 
         INCLUDE m4cons.inc
+M4_READ_ONLY    EQU     1       ; keep this single-sector diagnostic below 512 bytes
         INCLUDE m4disk.inc
         .DEPHASE
         END

@@ -65,6 +65,7 @@ PASSLEN EQU     $-PASSMSG
 FAILMSG:
         DB      'BIOS physical write failed'
 FAILLEN EQU     $-FAILMSG
+M4_READ_ONLY   EQU     0
         INCLUDE m4disk.inc
         .DEPHASE
         END

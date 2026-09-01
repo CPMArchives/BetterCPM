@@ -337,13 +337,13 @@ def main() -> None:
     require(len(read_calls) >= 2, "READ physical-call site was not found")
     call_at = read_calls[1]
     platform_read = cpu.word(call_at + 1)
-    cpu.mem[platform_read:platform_read + 12] = bytes((
+    read_success = bytes((
         0x32, 0x00, 0x73,       # LD (7300h),A: cylinder
         0x78, 0x32, 0x01, 0x73, # LD A,B / LD (7301h),A: side
         0x79, 0x32, 0x02, 0x73, # LD A,C / LD (7302h),A: sector
-        0xAF,                    # XOR A (RET follows from original/padding)
+        0xAF, 0xC9,              # XOR A / RET
     ))
-    cpu.mem[platform_read + 12] = 0xC9
+    cpu.mem[platform_read:platform_read + len(read_success)] = read_success
     order = (1, 3, 5, 7, 9, 2, 4, 6, 8, 10)
     for logical in range(80):
         for quarter in range(4):
@@ -367,12 +367,13 @@ def main() -> None:
                    if cpu.mem[address] == 0xC3]
     require(write_jumps, "WRITE physical-jump site was not found")
     platform_write = cpu.word(write_jumps[-1] + 1)
-    cpu.mem[platform_write:platform_write + 13] = bytes((
+    write_success = bytes((
         0x32, 0x10, 0x73,
         0x78, 0x32, 0x11, 0x73,
         0x79, 0x32, 0x12, 0x73,
         0xAF, 0xC9,
     ))
+    cpu.mem[platform_write:platform_write + len(write_success)] = write_success
     for logical in range(80):
         for quarter in range(4):
             cpu.mem[0xEE00 + quarter * 128:0xEE80 + quarter * 128] = bytes((quarter,)) * 128
@@ -394,8 +395,36 @@ def main() -> None:
                     bytes((expected,)) * 128,
                     f"WRITE {logical} corrupted quarter {quarter}")
 
+    # 2026-09-01 patch: preserve the caller-visible failure contract while the
+    # physical layer evolves.  Scratch contents are deliberately not asserted.
+    cpu.bc = 7
+    cpu.run(entries[11])
+    dma_before = bytes((0xA5,)) * 128
+    cpu.mem[0x7200:0x7280] = dma_before
+    cpu.mem[platform_read:platform_read + 4] = bytes((0x3E, 0x05, 0xB7, 0xC9))
+    cpu.run(entries[13])
+    require(cpu.a == 5, "READ did not propagate the physical error status")
+    require(cpu.mem[0x7200:0x7280] == dma_before,
+            "failed READ modified the caller DMA buffer")
+
+    cpu.mem[0x7310] = 0xA5
+    cpu.c = 0
+    cpu.run(entries[14])
+    require(cpu.a == 5, "WRITE did not propagate its pre-read error status")
+    require(cpu.mem[0x7310] == 0xA5,
+            "WRITE reached the physical writer after a failed pre-read")
+    require(cpu.mem[0x7200:0x7280] == dma_before,
+            "failed WRITE modified the caller DMA buffer")
+
+    cpu.mem[platform_read:platform_read + len(read_success)] = read_success
+    cpu.mem[platform_write:platform_write + 4] = bytes((0x3E, 0x06, 0xB7, 0xC9))
+    cpu.run(entries[14])
+    require(cpu.a == 6, "WRITE did not propagate the physical write error")
+    require(cpu.mem[0x7200:0x7280] == dma_before,
+            "failed physical WRITE modified the caller DMA buffer")
+
     print(f"executed {COUNT} BIOS-vector contracts from {BASE:04X}h binary")
-    print("character transport, disk state, all 80 reads/writes, and SECTRAN passed")
+    print("character transport, disk state, all 80 reads/writes, failure paths, and SECTRAN passed")
 
 
 if __name__ == "__main__":

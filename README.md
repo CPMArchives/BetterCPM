@@ -27,6 +27,7 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 
 [`Engineering Specification 10`](docs/engineering/10%20Exhaustive%20Logical%20Read%20Conformance.md) executes all 80 logical-sector mappings and verifies every 128-byte DMA quarter.
 [`Engineering Specification 11`](docs/engineering/11%20Write-Through%20Logical%20Disk%20Path.md) adds verified 128-byte read-modify-write behavior and physical write/readback.
+[`Engineering Specification 12`](docs/engineering/12%20Bounded%20Disk%20Errors.md) bounds every floppy-controller wait and defines verified BIOS failure behavior.
 
 ## First boot
 

@@ -39,6 +39,10 @@ controller status.
 Controller waits remain unbounded pending the planned timeout, retry, and
 recovery specification.
 
+> 2026-09-01 patch note: this paragraph records the state of milestone 11.
+> Bounded waits and the resulting failure contract were added in Engineering
+> Specification 12 rather than rewriting this development-history snapshot.
+
 ## Verification
 
 The binary-level fixture executes all 80 logical writes. For every mapping it
@@ -70,3 +74,5 @@ Add fault-injection coverage for failed pre-read, failed physical write, and
 invalid mapping state. Then specify bounded controller waits, retry policy,
 error recovery, and buffer validity after failure before relying on this path
 for filesystem mutation.
+
+This increment was completed by Engineering Specification 12.
