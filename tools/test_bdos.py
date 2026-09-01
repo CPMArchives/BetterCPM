@@ -1050,8 +1050,8 @@ def main() -> None:
     require(cpu.a == 5, "disk reset did not preserve current user")
     cpu.c = 41
     cpu.run(BDOS_BASE)
-    require(cpu.a == 0xFF and cpu.l == 0xFF,
-            "unsupported BDOS function did not fail explicitly")
+    require(cpu.a == cpu.l == 0 and cpu.b == cpu.h == 0,
+            "unsupported BDOS selector did not return conventional zero")
 
     cpu.run(DIR_BASE + 15)       # invalidate, forcing storage on next Open
     cpu.mem[platform_read:platform_read + 4] = bytes((0x3E, 0x05, 0xB7, 0xC9))

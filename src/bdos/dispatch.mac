@@ -116,7 +116,8 @@ BDOS:
         JP      Z,BF_RSTDR
         CP      40
         JP      Z,BF_RZERO
-        LD      A,0FFH          ; unsupported returning function
+; Patch 2026-09-01: selectors above Function 40 conventionally return zero.
+        XOR     A
         JP      BDOS_RETURN
 
 BF_READER:
