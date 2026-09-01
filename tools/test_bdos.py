@@ -433,6 +433,14 @@ def main() -> None:
     cpu.run(BDOS_BASE)
     require(bytes(cpu.mem[FCB + 33:FCB + 36]) == bytes((0x00, 0x10, 0x00)),
             "Set Random Record mishandled the EX=31 CR=128 carry")
+    # RANDTEST 0319: the last CP/M 2.2 record is S2=15, EX=31, CR=127.
+    cpu.mem[FCB + 12] = 31
+    cpu.mem[FCB + 14] = 15
+    cpu.mem[FCB + 32] = 127
+    cpu.c, cpu.de = 36, FCB
+    cpu.run(BDOS_BASE)
+    require(bytes(cpu.mem[FCB + 33:FCB + 36]) == bytes((0xFF, 0xFF, 0x00)),
+            "Set Random Record mishandled CP/M 2.2 record 65535")
     cpu.mem[delete0:size2 + 32] = bytes((0xE5,)) * 96
     cpu.run(DIR_BASE + 15)
 
