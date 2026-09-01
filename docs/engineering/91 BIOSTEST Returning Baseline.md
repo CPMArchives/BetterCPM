@@ -36,9 +36,9 @@ fixture. Focused guarded results are:
 Together with the earlier safe and controlled allocation/DPB passes, BIOSTEST's
 46-entry catalog is now accounted for as:
 
-- 23 physical required passes;
+- 26 physical required passes;
 - 11 non-guaranteed observations;
-- 12 manual, provider-dependent, optional-profile, or out-of-scope procedures;
+- 9 manual, provider-dependent, optional-profile, or out-of-scope procedures;
 - zero remaining failures in the returning baseline.
 
 On 2026-09-02 item 0457 was completed manually with the blank B: fixture. The
@@ -54,8 +54,12 @@ and evidence requirements.
 ## Controlled console result
 
 The Model 4 virtual keyboard supplied one uppercase `K` to BIOSTEST's guarded
-console sequence. Four further public-interface requirements passed:
+console sequence. Seven further public-interface requirements passed:
 
+- 0439: BDOS Function 4 delivered graphic and control bytes to PUNCH;
+- 0445: Functions 3, 4, and 5 retained their fixed logical dispatch across
+  multiple IOBYTE values;
+- 0448: character operations preserved the DMA selection and sentinels;
 - 0468: CONST reported empty, ready twice without consuming the key, then
   empty after input;
 - 0469: CONIN returned the controlled zero-parity `K` byte;
@@ -64,6 +68,15 @@ console sequence. Four further public-interface requirements passed:
 
 These checks patch and restore the public BIOS vectors around the operation;
 they therefore verify observable layering rather than private implementation.
+
+## Remaining procedures
+
+The nine unrun catalog entries are now sharply bounded:
+
+- 0464, 0465, and 0466 are required retained-evidence BOOT/WBOOT procedures;
+- 0471 is a required two-stage READER/provider procedure;
+- 0435 and 0472 are optional profiles not currently claimed by BetterCP/M;
+- 0423, 0459, and 0467 are explicitly out of scope.
 
 ## Fixture rule
 
