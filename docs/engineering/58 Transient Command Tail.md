@@ -43,3 +43,7 @@ The physical test also exposed and prevented an important Z80 count-register
 error during development: the bounded `LDIR` count must be placed in `BC` as a
 16-bit value with a zero high byte. This history is retained because an inverted
 count would turn a short command tail into a destructive multi-page copy.
+
+## Next increment
+
+Implemented by [Engineering Specification 59](59%20Default%20FCBs%20and%20First%20Compatibility%20Pass.md).

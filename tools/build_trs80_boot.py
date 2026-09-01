@@ -30,6 +30,9 @@ SYSTEM_FIRST_LOGICAL_INDEX = 2
 SYSTEM_SECTORS = 26
 FILESYSTEM_FIRST_SECTOR = 40   # DPB OFF=2, one logical track per cylinder
 ALLOCATION_BLOCK_BYTES = 2048
+DIRECTORY_ENTRIES = 128
+FIRST_DATA_BLOCK = 2
+BLOCK_COUNT = (RAW_SIZE - FILESYSTEM_FIRST_SECTOR * SECTOR_SIZE) // ALLOCATION_BLOCK_BYTES
 HELLO_COM = bytes((
     0x11, 0x1F, 0x01,       # LD DE,011Fh: sign-on text
     0x0E, 9, 0xCD, 5, 0,   # BDOS Print String
@@ -72,7 +75,49 @@ def assemble(assembler: Path, source: Path, output: Path, origin: int) -> bytes:
     return data
 
 
-def install(boot: bytes, stage1: bytes, resident: bytes) -> bytes:
+def cpm_name(name: str) -> tuple[bytes, bytes]:
+    stem, dot, suffix = name.upper().partition(".")
+    if not stem or len(stem) > 8 or len(suffix) > 3 or (not dot and suffix):
+        raise ValueError(f"not a CP/M 8.3 name: {name}")
+    return stem.ljust(8).encode("ascii"), suffix.ljust(3).encode("ascii")
+
+
+def install_files(raw: bytearray, files: list[tuple[str, bytes]]) -> None:
+    """Install arbitrary user-zero files in the active 2K/16-bit CP/M layout."""
+    directory = FILESYSTEM_FIRST_SECTOR * SECTOR_SIZE
+    next_entry = 0
+    next_block = FIRST_DATA_BLOCK
+    for filename, content in files:
+        name, suffix = cpm_name(filename)
+        records = (len(content) + 127) // 128
+        padded = content + bytes((0x1A,)) * (records * 128 - len(content))
+        block_total = (len(padded) + ALLOCATION_BLOCK_BYTES - 1) // ALLOCATION_BLOCK_BYTES
+        extent_total = max(1, (records + 127) // 128)
+        content_at = 0
+        for extent in range(extent_total):
+            if next_entry >= DIRECTORY_ENTRIES:
+                raise ValueError("files exceed the 128-entry directory")
+            blocks_here = min(8, block_total - extent * 8)
+            records_here = min(128, max(0, records - extent * 128))
+            entry = bytearray(32)
+            entry[1:9], entry[9:12] = name, suffix
+            entry[12], entry[14], entry[15] = extent & 0x1F, extent >> 5, records_here
+            for slot in range(blocks_here):
+                if next_block >= BLOCK_COUNT:
+                    raise ValueError("files exceed the 790K disk capacity")
+                entry[16 + slot * 2:18 + slot * 2] = next_block.to_bytes(2, "little")
+                chunk = padded[content_at:content_at + ALLOCATION_BLOCK_BYTES]
+                start = directory + next_block * ALLOCATION_BLOCK_BYTES
+                raw[start:start + len(chunk)] = chunk
+                content_at += len(chunk)
+                next_block += 1
+            start = directory + next_entry * 32
+            raw[start:start + 32] = entry
+            next_entry += 1
+
+
+def install(boot: bytes, stage1: bytes, resident: bytes,
+            files: list[tuple[str, bytes]]) -> bytes:
     raw = bytearray([0xE5]) * RAW_SIZE
     for logical_index, payload in (
         (BOOT_SECTOR_LOGICAL_INDEX, boot),
@@ -85,18 +130,7 @@ def install(boot: bytes, stage1: bytes, resident: bytes) -> bytes:
         raise ValueError(f"resident image is {len(resident)} bytes; loader capacity is {capacity}")
     start = SYSTEM_FIRST_LOGICAL_INDEX * SECTOR_SIZE
     raw[start:start + capacity] = resident.ljust(capacity, b"\x00")
-    # Install the first transient fixture using the active 16-bit allocation
-    # format: directory blocks 0/1, HELLO.COM in allocation block 2.
-    directory = FILESYSTEM_FIRST_SECTOR * SECTOR_SIZE
-    entry = bytearray(32)
-    entry[0] = 0
-    entry[1:12] = b"HELLO   COM"
-    entry[15] = 1
-    entry[16:18] = bytes((2, 0))
-    raw[directory:directory + 32] = entry
-    data = directory + 2 * ALLOCATION_BLOCK_BYTES
-    record = HELLO_COM.ljust(128, b"\x1a")
-    raw[data:data + len(record)] = record
+    install_files(raw, files)
     image = build(bytes(raw))
     verify(image, require_blank=False)
     return image
@@ -105,6 +139,10 @@ def install(boot: bytes, stage1: bytes, resident: bytes) -> bytes:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--assembler", type=Path, default=Path("/Users/nathanael/bin/z80asm"))
+    parser.add_argument("--include", action="append", type=Path, default=[],
+                        help="additional user-zero file to install (repeatable)")
+    parser.add_argument("--output", type=Path,
+                        default=BUILD / "BetterCPM-Extended-80T-DS-System-790K.dmk")
     args = parser.parse_args()
     resident_path = ROOT / "build/system/resident.bin"
     if not resident_path.is_file():
@@ -112,8 +150,14 @@ def main() -> None:
     boot = assemble(args.assembler, SOURCE / "boot.mac", BUILD / "boot.bin", BOOT_ADDRESS)
     stage1 = assemble(args.assembler, SOURCE / "stage1.mac", BUILD / "stage1.bin", STAGE1_ADDRESS)
     resident = resident_path.read_bytes()
-    image = install(boot, stage1, resident)
-    output = BUILD / "BetterCPM-Extended-80T-DS-System-790K.dmk"
+    extras = []
+    for path in args.include:
+        if not path.is_file():
+            raise SystemExit(f"missing included file: {path}")
+        extras.append((path.name, path.read_bytes()))
+    image = install(boot, stage1, resident, [("HELLO.COM", HELLO_COM), *extras])
+    output = args.output.resolve()
+    output.parent.mkdir(parents=True, exist_ok=True)
     output.write_bytes(image)
     for path in (BUILD / "boot.bin", BUILD / "stage1.bin", output):
         print(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.relative_to(ROOT)}")

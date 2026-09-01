@@ -126,20 +126,19 @@ CCP_FSPC:
         LD      HL,CCP_DATA
         XOR     A
 CCP_LNSCAN:
-        CP      8
-        JP      NC,CCP_LFAIL
-        INC     A
         LD      C,A
         LD      A,(HL)
         CP      ' '
         LD      A,C
-        JR      Z,CCP_LNSPACE
+        JR      Z,CCP_LNFOUND
+        CP      8
+        JP      NC,CCP_LFAIL
+        INC     A
         INC     HL
         DJNZ    CCP_LNSCAN
         JR      CCP_LNFOUND
-CCP_LNSPACE:
-        DEC     A
 CCP_LNFOUND:
+        OR      A               ; do not retain Z from the separating-space CP
         JP      Z,CCP_LFAIL
         LD      (CCP_NAMEL),A
         LD      B,A
@@ -148,9 +147,9 @@ CCP_LNFOUND:
 CCP_FNCPY:
         LD      A,(HL)
         CP      '!'
-        JR      C,CCP_LFAIL
+        JP      C,CCP_LFAIL
         CP      '.'
-        JR      Z,CCP_LFAIL
+        JP      Z,CCP_LFAIL
         LD      (DE),A
         INC     HL
         INC     DE
@@ -159,7 +158,7 @@ CCP_FNCPY:
         LD      C,15
         CALL    BDOS
         INC     A
-        JR      Z,CCP_LFAIL
+        JP      Z,CCP_LFAIL
         LD      HL,0100H
         LD      (CLDPTR),HL
 CCP_LNEXT:
@@ -186,7 +185,7 @@ CCP_LEOF:
         LD      C,26
         CALL    BDOS
         LD      HL,005CH
-        LD      B,32
+        LD      B,36
         XOR     A
 CCP_ZPAGE:
         LD      (HL),A
@@ -212,10 +211,122 @@ CCP_ZPAGE:
 CCP_LTAIL0:
         LD      A,13
         LD      (DE),A
+        LD      A,(CCP_COUNT)
+        LD      HL,CCP_NAMEL
+        SUB     (HL)
+        LD      B,A
+        LD      A,(CCP_NAMEL)
+        LD      E,A
+        LD      D,0
+        LD      HL,CCP_DATA
+        ADD     HL,DE
+        CALL    CCP_PSKIP
+        LD      DE,005CH
+        CALL    CCP_PFCB
+        CALL    CCP_PSKIP
+        LD      DE,006CH
+        CALL    CCP_PFCB
         LD      SP,CCP_RET
         JP      0100H
 CCP_LFAIL:
         SCF
+        RET
+
+CCP_PSKIP:
+        LD      A,B
+        OR      A
+        RET     Z
+        LD      A,(HL)
+        CP      ' '
+        RET     NZ
+        INC     HL
+        DEC     B
+        JR      CCP_PSKIP
+
+; Build one ordinary space-padded 8.3 default FCB while leaving HL/B at the
+; following separator.  Drive prefixes and wildcard expansion follow after
+; the first booted ENTRYTST pass defines their remaining compatibility work.
+CCP_PFCB:
+        PUSH    HL
+        PUSH    BC
+        PUSH    DE
+        XOR     A
+        LD      (DE),A
+        INC     DE
+        LD      B,11
+        LD      A,' '
+PFCLRL:
+        LD      (DE),A
+        INC     DE
+        DJNZ    PFCLRL
+        POP     DE
+        POP     BC
+        POP     HL
+        PUSH    DE
+        INC     DE
+        LD      C,8
+PFNAMEL:
+        LD      A,B
+        OR      A
+        JR      Z,PFDONE
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,PFDONE
+        CP      '.'
+        JR      Z,PFDOT
+        LD      (DE),A
+        INC     DE
+        INC     HL
+        DEC     B
+        DEC     C
+        JR      NZ,PFNAMEL
+PFSKPN:
+        LD      A,B
+        OR      A
+        JR      Z,PFDONE
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,PFDONE
+        INC     HL
+        DEC     B
+        CP      '.'
+        JR      NZ,PFSKPN
+        JR      PFEXT0
+PFDOT:
+        INC     HL
+        DEC     B
+PFEXT0:
+        POP     DE
+        PUSH    DE
+        LD      A,E
+        ADD     A,9
+        LD      E,A
+        LD      C,3
+PFEXTL:
+        LD      A,B
+        OR      A
+        JR      Z,PFDONE
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,PFDONE
+        LD      (DE),A
+        INC     DE
+        INC     HL
+        DEC     B
+        DEC     C
+        JR      NZ,PFEXTL
+PFSKPE:
+        LD      A,B
+        OR      A
+        JR      Z,PFDONE
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,PFDONE
+        INC     HL
+        DEC     B
+        JR      PFSKPE
+PFDONE:
+        POP     DE
         RET
 
 ; Resident DIR deliberately uses only the public BDOS search interface.  This
@@ -293,12 +404,7 @@ CCP_DMORE:
         LD      C,18
         JR      CCP_DNEXT
 CCP_DDONE:
-        LD      A,(CCP_DFOUND)
-        OR      A
-        RET     NZ
-        LD      DE,CCP_NOFILE
-        LD      C,9
-        JP      BDOS
+        RET
 
 CCP_DFIELD:
         LD      (CCP_DFPTR),HL
@@ -363,8 +469,6 @@ CCP_DFOUND:
         DB      0
 CCP_DIRNL:
         DB      10,'$'
-CCP_NOFILE:
-        DB      10,'NO FILE','$'
 CCP_DIRFCB:
         REPT    36
         DB      0
@@ -373,7 +477,7 @@ CCP_RET:
         DW      0000H
 
 CCP_STACK:
-        REPT    64
+        REPT    16
         DB      0
         ENDM
 CCP_STKTOP:

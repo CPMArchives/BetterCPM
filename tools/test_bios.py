@@ -440,6 +440,9 @@ class Z80:
             elif op == 0x14:            # INC D
                 self.d = (self.d + 1) & 0xFF
                 self.z = self.d == 0
+            elif op == 0x0D:            # DEC C
+                self.c = (self.c - 1) & 0xFF
+                self.z = self.c == 0
             elif op in (0x71, 0x72, 0x73):  # LD (HL),C / D / E
                 self.mem[self.hl] = {0x71: self.c, 0x72: self.d,
                                      0x73: self.e}[op]
