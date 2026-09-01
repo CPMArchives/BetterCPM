@@ -159,6 +159,14 @@ def main() -> None:
     cpu.run(BDOS_BASE)
     require(cpu.a == cpu.l == 0xA5 and cpu.mem[3] == 0xA5,
             "Get I/O Byte did not return page-zero address 0003h unchanged")
+    cpu.c, cpu.e = 8, 0x5A
+    cpu.run(BDOS_BASE)
+    require(cpu.a == cpu.l == 0 and cpu.mem[3] == 0x5A,
+            "Set I/O Byte did not update page-zero address 0003h")
+    cpu.c = 7
+    cpu.run(BDOS_BASE)
+    require(cpu.a == cpu.l == 0x5A,
+            "Get I/O Byte did not observe the value written by Set I/O Byte")
 
     read_impl = cpu.word(BIOS_BASE + 13 * 3 + 1)
     calls = [address for address in range(read_impl, read_impl + 48)
@@ -959,7 +967,7 @@ def main() -> None:
             f"provisional BDOS storage failure was confused with slot success: "
             f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS functions 1-7, 11-37, and 40 passed")
+    print("BDOS functions 1-8, 11-37, and 40 passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 

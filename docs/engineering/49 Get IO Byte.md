@@ -32,4 +32,4 @@ byte-identical BDOS and resident-system binaries.
 
 ## Next increment
 
-Implement function 8 (Set I/O Byte), completing the paired page-zero interface.
+Implemented by [`Engineering Specification 50`](50%20Set%20IO%20Byte.md).

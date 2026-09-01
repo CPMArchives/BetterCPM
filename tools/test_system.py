@@ -85,6 +85,14 @@ def main() -> None:
     cpu.run(CALLER)
     require(cpu.a == cpu.l == 0xA5 and cpu.mem[3] == 0xA5,
             "CALL 0005h Get I/O Byte lost the page-zero value")
+    cpu.c, cpu.e = 8, 0x5A
+    cpu.run(CALLER)
+    require(cpu.a == cpu.l == 0 and cpu.mem[3] == 0x5A,
+            "CALL 0005h Set I/O Byte did not update page-zero address 0003h")
+    cpu.c = 7
+    cpu.run(CALLER)
+    require(cpu.a == cpu.l == 0x5A,
+            "CALL 0005h Get I/O Byte did not observe Set I/O Byte")
 
     cpu.c = 11
     cpu.run(CALLER)
@@ -411,7 +419,7 @@ def main() -> None:
             "failed initialization published page-zero vectors")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
-    print("application CALL 0005h reached functions 1-7, 11-37, and 40")
+    print("application CALL 0005h reached functions 1-8, 11-37, and 40")
 
 
 if __name__ == "__main__":

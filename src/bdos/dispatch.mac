@@ -52,6 +52,8 @@ BDOS:
         JP      Z,BF_DCIO
         CP      7
         JP      Z,BF_GETIO
+        CP      8
+        JP      Z,BF_SETIO
         CP      11
         JP      Z,BF_CONST
         CP      12
@@ -128,6 +130,11 @@ BF_LIST:
         JP      BDOS_RETURN
 BF_GETIO:
         LD      A,(0003H)       ; conventional CP/M page-zero I/O byte
+        JP      BDOS_RETURN
+BF_SETIO:
+        LD      A,E
+        LD      (0003H),A       ; keep direct and BDOS access to IOBYTE coherent
+        XOR     A               ; deterministic result for an output operation
         JP      BDOS_RETURN
 
 ; Cooked, blocking console input. CP/M flow/printer controls are consumed;
