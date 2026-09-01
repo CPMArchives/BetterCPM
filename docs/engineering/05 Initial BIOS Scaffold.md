@@ -1,6 +1,6 @@
 # Engineering Specification 05: Initial BIOS Scaffold
 
-Status: Implemented and structurally verified  
+Status: Implemented and executable-call verified by Engineering Specification 06
 Date: 2026-09-01
 
 ## Result
@@ -77,7 +77,9 @@ python3 tools/test_bios.py
 python3 tools/build_native_bios.py
 ```
 
-The structural test verifies all 17 opcodes, spacing, and in-image targets.
+The test verifies all 17 opcodes, spacing, and in-image targets. Engineering
+Specification 06 extends it to execute the actual character, state, failure,
+and sector-translation paths.
 The native build uses ZSM4 and Digital Research LINK 1.3 under CP/M and is
 byte-identical to the host cross-build.
 
