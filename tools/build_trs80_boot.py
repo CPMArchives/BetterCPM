@@ -24,6 +24,8 @@ BOOT_ADDRESS = 0x4300
 STAGE1_ADDRESS = 0x5000
 BOOT_SECTOR_LOGICAL_INDEX = 0
 STAGE1_SECTOR_LOGICAL_INDEX = 1  # logical order sector 3
+VERIFY_SECTOR_LOGICAL_INDEX = 2  # logical order sector 5
+VERIFY_PAYLOAD = b"BetterCP/M verify" + bytes(SECTOR_SIZE - len(b"BetterCP/M verify"))
 
 
 def assemble(assembler: Path, source: Path, output: Path, origin: int) -> bytes:
@@ -38,6 +40,8 @@ def assemble(assembler: Path, source: Path, output: Path, origin: int) -> bytes:
         staged = Path(temporary)
         (staged / source.name).write_text(text, encoding="ascii")
         shutil.copy2(SOURCE / "hardware.inc", staged / "hardware.inc")
+        shutil.copy2(SOURCE / "hal.inc", staged / "hal.inc")
+        shutil.copy2(ROOT / "src/core/bringup.inc", staged / "bringup.inc")
         subprocess.run(
             [str(assembler), "-fb", f"-o{output}", source.name],
             check=True,
@@ -59,6 +63,7 @@ def install(boot: bytes, stage1: bytes) -> bytes:
     for logical_index, payload in (
         (BOOT_SECTOR_LOGICAL_INDEX, boot),
         (STAGE1_SECTOR_LOGICAL_INDEX, stage1),
+        (VERIFY_SECTOR_LOGICAL_INDEX, VERIFY_PAYLOAD),
     ):
         start = logical_index * SECTOR_SIZE
         raw[start:start + SECTOR_SIZE] = payload.ljust(SECTOR_SIZE, b"\x00")

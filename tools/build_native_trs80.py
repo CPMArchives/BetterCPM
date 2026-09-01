@@ -10,6 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/platform/trs80m4"
+CORE = ROOT / "src/core"
 BUILD = ROOT / "build/trs80"
 DEFAULT_CPMSIM = Path("/Users/nathanael/z80pack/cpmsim/cpmsim")
 DEFAULT_SYSTEM = Path("/Users/nathanael/z80pack/cpmsim/disks/library/cpm22-62khd.dsk")
@@ -41,7 +42,8 @@ def main() -> None:
     args = parser.parse_args()
     required = [args.cpmsim, args.system_disk, args.disk_template,
                 args.tools / "ZSM4.COM", args.tools / "LINK.COM",
-                SOURCE / "hardware.inc", SOURCE / "boot.mac", SOURCE / "stage1.mac"]
+                SOURCE / "hardware.inc", SOURCE / "hal.inc", CORE / "bringup.inc",
+                SOURCE / "boot.mac", SOURCE / "stage1.mac"]
     for path in required:
         if not path.is_file():
             raise SystemExit(f"missing native-build input: {path}")
@@ -54,15 +56,20 @@ def main() -> None:
         shutil.copy2(args.system_disk, disks / "drivea.dsk")
         for drive in "bcd":
             blank(args.disk_template, disks / f"drive{drive}.dsk")
-        for source_name in ("hardware.inc", "boot.mac", "stage1.mac"):
-            host = work / source_name.upper()
-            host.write_bytes(cpm_text(SOURCE / source_name))
+        source_files = ((SOURCE / "hardware.inc", "HARDWARE.INC"),
+                        (SOURCE / "hal.inc", "HAL.INC"),
+                        (CORE / "bringup.inc", "BRINGUP.INC"),
+                        (SOURCE / "boot.mac", "BOOT.MAC"),
+                        (SOURCE / "stage1.mac", "STAGE1.MAC"))
+        for source_path, cpm_name in source_files:
+            host = work / cpm_name
+            host.write_bytes(cpm_text(source_path))
             run("cpmcp", "-f", "ibm-3740", str(disks / "drivec.dsk"),
-                str(host), f"0:{source_name.upper()}")
+                str(host), f"0:{cpm_name}")
         # INCLUDE files are resolved on the current output drive by ZSM4.
-        host_inc = work / "HARDWARE.INC"
-        run("cpmcp", "-f", "ibm-3740", str(disks / "driveb.dsk"),
-            str(host_inc), "0:HARDWARE.INC")
+        for include_name in ("HARDWARE.INC", "HAL.INC", "BRINGUP.INC"):
+            run("cpmcp", "-f", "ibm-3740", str(disks / "driveb.dsk"),
+                str(work / include_name), f"0:{include_name}")
         for tool in ("ZSM4.COM", "LINK.COM"):
             run("cpmcp", "-f", "ibm-3740", str(disks / "drived.dsk"),
                 str(args.tools / tool), f"0:{tool}")

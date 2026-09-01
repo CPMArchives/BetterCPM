@@ -1,4 +1,4 @@
-; BetterCP/M TRS-80 Model 4 stage-one diagnostic
+; BetterCP/M TRS-80 Model 4 stage-one platform wrapper
 
         INCLUDE hardware.inc
 
@@ -7,24 +7,11 @@
 
 STAGE1:
         DI
-        LD      SP,VIDEOBASE
-        LD      A,08EH
-        OUT     (OPTREG),A
-        LD      HL,VIDEOBASE
-        LD      DE,VIDEOBASE+1
-        LD      BC,2047
-        LD      (HL),020H
-        LDIR
-        LD      HL,MESSAGE
-        LD      DE,VIDEOBASE
-        LD      BC,MESSAGELEN
-        LDIR
-HALTLOOP:
-        JR      HALTLOOP
+        LD      SP,STAGE1STACK
+        JP      CORE_START
 
-MESSAGE:
-        DB      'BetterCP/M stage 1 - TRS-80 Model 4'
-MESSAGELEN      EQU     $-MESSAGE
+        INCLUDE hal.inc
+        INCLUDE bringup.inc
 
         .DEPHASE
         END

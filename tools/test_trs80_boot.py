@@ -10,7 +10,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_EMULATOR = Path("/Users/nathanael/trs80/trs80gp-2/mac/trs80gp.app/Contents/MacOS/trs80gp")
 DEFAULT_IMAGE = ROOT / "build/trs80/BetterCPM-Extended-80T-DS-System-790K.dmk"
-EXPECTED = b"BetterCP/M stage 1 - TRS-80 Model 4"
+EXPECTED_LINES = (
+    b"BetterCP/M",
+    b"TRS-80 Model 4 platform initialized",
+    b"raw disk read verified",
+)
 
 
 def main() -> None:
@@ -27,11 +31,13 @@ def main() -> None:
             "-id", "120", "-it", "-ix",
         ], cwd=temporary, check=True)
         screen = Path(temporary, "trs80-text-0.bin").read_bytes()
-        if not screen.startswith(EXPECTED):
-            raise SystemExit(f"boot test failed; screen begins {screen[:80]!r}")
-        if screen[len(EXPECTED):] != b" " * (len(screen) - len(EXPECTED)):
-            raise SystemExit("boot test failed; residual video RAM remains after the message")
-    print(EXPECTED.decode("ascii"))
+        expected = bytearray(b" " * len(screen))
+        for row, line in enumerate(EXPECTED_LINES):
+            expected[row * 80:row * 80 + len(line)] = line
+        if screen != expected:
+            raise SystemExit(f"boot test failed; screen begins {screen[:240]!r}")
+    for line in EXPECTED_LINES:
+        print(line.decode("ascii"))
     print("TRS-80 Model 4 boot test passed")
 
 
