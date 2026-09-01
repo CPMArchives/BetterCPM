@@ -189,6 +189,40 @@ def main() -> None:
     cpu.mem[delete0:delete1 + 32] = bytes((0xE5,)) * 64
     cpu.run(DIR_BASE + 15)
 
+    # Function 30 applies and clears high attribute bits on wildcard matches.
+    cpu.mem[delete0:delete0 + 32] = (bytes((0,)) + b"ATTRIB  DAT" +
+                                     bytes((0, 0, 0, 1)) + bytes(16))
+    cpu.mem[delete1:delete1 + 32] = (bytes((0,)) + b"ATTRIX  DAT" +
+                                     bytes((1, 0, 0, 1)) + bytes(16))
+    cpu.run(DIR_BASE + 15)
+    cpu.mem[FCB:FCB + 33] = bytes(33)
+    cpu.mem[FCB + 1:FCB + 12] = b"ATTRI?  DAT"
+    cpu.mem[FCB + 2] |= 0x80
+    cpu.mem[FCB + 9] |= 0x80
+    cpu.mem[FCB + 10] |= 0x80
+    cpu.c, cpu.de = 30, FCB
+    cpu.run(BDOS_BASE, limit=200000)
+    require(cpu.a == 0 and all(cpu.mem[base + 2] & 0x80 and
+                               cpu.mem[base + 9] & 0x80 and
+                               cpu.mem[base + 10] & 0x80 and
+                               not (cpu.mem[base + 11] & 0x80)
+                               for base in (delete0, delete1)) and
+            bytes((value & 0x7F for value in
+                   cpu.mem[delete0 + 1:delete0 + 12])) == b"ATTRIB  DAT" and
+            bytes((value & 0x7F for value in
+                   cpu.mem[delete1 + 1:delete1 + 12])) == b"ATTRIX  DAT",
+            "Set Attributes did not preserve names and apply wildcard matches")
+    for index in range(1, 12):
+        cpu.mem[FCB + index] &= 0x7F
+    cpu.c, cpu.de = 30, FCB
+    cpu.run(BDOS_BASE, limit=200000)
+    require(cpu.a == 0 and all(not (cpu.mem[base + index] & 0x80)
+                               for base in (delete0, delete1)
+                               for index in range(1, 12)),
+            "Set Attributes could not clear existing attribute bits")
+    cpu.mem[delete0:delete1 + 32] = bytes((0xE5,)) * 64
+    cpu.run(DIR_BASE + 15)
+
     # Function 23 renames every exact-name extent while preserving attributes.
     cpu.mem[delete0:delete0 + 32] = (bytes((0,)) + b"OLDNAME DAT" +
                                      bytes((0, 0, 0, 1)) + bytes(16))
@@ -611,7 +645,7 @@ def main() -> None:
             f"provisional BDOS storage failure was confused with slot success: "
             f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS functions 12-29, 31, and 32 passed")
+    print("BDOS functions 12-32 passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 

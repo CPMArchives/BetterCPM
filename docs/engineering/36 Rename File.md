@@ -61,6 +61,7 @@ byte-identical System Services and BDOS binaries.
 
 ## Next increment
 
-Implement BDOS function 30 (Set File Attributes), filling the remaining gap in
-the current function 12-through-32 directory API. Wildcard Rename remains a
-separate compatibility enhancement requiring derived-target collision tests.
+Engineering Specification 37 implements function 30 (Set File Attributes),
+completing the current function 12-through-32 range. Wildcard Rename remains a
+separate compatibility enhancement; the next core work begins random-record
+support with function 35 (Compute File Size).

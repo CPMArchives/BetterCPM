@@ -41,6 +41,127 @@ DIRSERV:
         JP      DIR_MAKE
         JP      DIR_DELETE
         JP      DIR_RENAME
+        JP      DIR_ATTR
+
+; Apply the high attribute bits of FCB bytes 1..11 to every matching extent.
+; A=user, DE=FCB, B=software protection. Wildcards affect matching only.
+DIR_ATTR:
+        LD      (DIR_AUSER),A
+        LD      (DIR_AFCB),DE
+        LD      A,B
+        OR      A
+        JP      NZ,DIR_ANO
+        LD      A,(DE)
+        CP      2
+        JP      NC,DIR_ANO
+        CALL    DIR_JEMPTY
+        JP      NZ,DIR_ANO
+        CALL    DIR_GALV
+        JP      NZ,DIR_AERR
+        XOR     A
+        LD      (DIR_AFOUND),A
+        LD      (DIR_RECORD),A
+DIR_APASS:
+        LD      A,(DIR_RECORD)
+        LD      HL,DIR_RECS
+        CP      (HL)
+        JR      NC,DIR_TDONE
+        LD      C,A
+        CALL    DIR_LOAD
+        JP      NZ,DIR_AERR
+        XOR     A
+        LD      (DIR_ADIRTY),A
+        LD      B,4
+DIR_TENT:
+        CALL    DIR_AMAT2
+        JR      NZ,DIR_TNEXT
+        PUSH    BC
+        PUSH    HL
+        INC     HL
+        LD      DE,(DIR_AFCB)
+        INC     DE
+        LD      B,11
+DIR_ACOPY:
+        LD      A,(HL)
+        AND     07FH
+        LD      C,A
+        LD      A,(DE)
+        AND     080H
+        OR      C
+        LD      (HL),A
+        INC     HL
+        INC     DE
+        DJNZ    DIR_ACOPY
+        POP     HL
+        POP     BC
+        LD      A,0FFH
+        LD      (DIR_AFOUND),A
+        LD      (DIR_ADIRTY),A
+DIR_TNEXT:
+        LD      DE,32
+        ADD     HL,DE
+        DJNZ    DIR_TENT
+        LD      A,(DIR_ADIRTY)
+        OR      A
+        JR      Z,DIR_AADV
+        LD      C,1
+        CALL    BIOWRITE
+        JR      NZ,DIR_AERR
+DIR_AADV:
+        LD      HL,DIR_RECORD
+        INC     (HL)
+        JR      DIR_APASS
+DIR_TDONE:
+        LD      A,(DIR_AFOUND)
+        OR      A
+        JR      Z,DIR_ANO
+        CALL    DIR_INVAL
+        XOR     A
+        RET
+DIR_AERR:
+        CALL    DIR_INVAL
+        SCF
+        RET
+DIR_ANO:
+        LD      A,0FFH
+        OR      A
+        RET
+
+DIR_AMAT2:
+        PUSH    BC
+        PUSH    DE
+        PUSH    HL
+        LD      A,(DIR_AUSER)
+        CP      (HL)
+        JR      NZ,DIR_AMNO2
+        INC     HL
+        LD      DE,(DIR_AFCB)
+        INC     DE
+        LD      B,11
+DIR_AMCMP2:
+        LD      A,(DE)
+        AND     07FH
+        CP      '?'
+        JR      Z,DIR_AMNXT2
+        LD      C,A
+        LD      A,(HL)
+        AND     07FH
+        CP      C
+        JR      NZ,DIR_AMNO2
+DIR_AMNXT2:
+        INC     DE
+        INC     HL
+        DJNZ    DIR_AMCMP2
+        XOR     A
+        JR      DIR_TMRET
+DIR_AMNO2:
+        LD      A,1
+        OR      A
+DIR_TMRET:
+        POP     HL
+        POP     DE
+        POP     BC
+        RET
 
 ; Rename all extents of one exact filename. Old name is FCB+1, new name FCB+17.
 ; A=user, DE=rename FCB, B=software protection. Wildcards are deferred.
@@ -2185,6 +2306,14 @@ DIR_NFCB:
 DIR_NFOUND:
         DB      0
 DIR_NDIRTY:
+        DB      0
+DIR_AUSER:
+        DB      0
+DIR_AFCB:
+        DW      0
+DIR_AFOUND:
+        DB      0
+DIR_ADIRTY:
         DB      0
 DIR_WPRO:
         DB      0
