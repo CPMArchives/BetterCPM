@@ -26,6 +26,7 @@ The initial development target is defined in the [`Baseline Platform Specificati
 TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 790K System Disk`](docs/platform/TRS-80%20Model%204%20Montezuma%20Extended%20790K.md) container. [`Engineering Specification 02`](docs/engineering/02%20TRS-80%20Model%204%20Boot%20Milestone.md) records the first verified boot, [`Engineering Specification 03`](docs/engineering/03%20Initial%20Hardware%20Abstraction%20Interface.md) records the first executable boundary between portable core and platform code, and [`Engineering Specification 04`](docs/engineering/04%20Console%20Input%20Milestone.md) adds verified keyboard input. [`Engineering Specification 05`](docs/engineering/05%20Initial%20BIOS%20Scaffold.md) begins the independently buildable resident-system compatibility surface, [`Engineering Specification 06`](docs/engineering/06%20BIOS%20Direct-Call%20Conformance.md) executes its raw entry contracts, [`Engineering Specification 07`](docs/engineering/07%20Shared%20Model%204%20BIOS%20Console.md) binds it to the shared Model 4 console implementation, [`Engineering Specification 08`](docs/engineering/08%20MM%20790K%20Drive%20Definition.md) adds the first DPH/DPB, and [`Engineering Specification 09`](docs/engineering/09%20Read-Only%20Logical%20Disk%20Path.md) adds physical and 128-byte logical reads.
 
 [`Engineering Specification 10`](docs/engineering/10%20Exhaustive%20Logical%20Read%20Conformance.md) executes all 80 logical-sector mappings and verifies every 128-byte DMA quarter.
+[`Engineering Specification 11`](docs/engineering/11%20Write-Through%20Logical%20Disk%20Path.md) adds verified 128-byte read-modify-write behavior and physical write/readback.
 
 ## First boot
 
@@ -37,6 +38,7 @@ python3 tools/build_bios.py
 python3 tools/test_bios.py
 python3 tools/build_native_bios.py
 python3 tools/test_trs80_physical_read.py
+python3 tools/test_trs80_physical_write.py
 ```
 
 The native build runs ZSM4 and Digital Research LINK under CP/M and must match the cross-assembled binaries byte for byte. The emulator test boots the generated 790K DMK, verifies the stage-one display, proves a raw-sector read, and injects and echoes a Model 4 matrix-level keypress through the platform interface.

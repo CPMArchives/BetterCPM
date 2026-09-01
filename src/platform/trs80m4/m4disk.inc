@@ -51,3 +51,55 @@ M4R_CYL:
         DB      0
 M4R_SEL:
         DB      081H
+
+; Write one complete 512-byte sector. Parameters and status match M4_READ.
+M4_WRITE:
+        LD      (M4W_CYL),A
+        LD      A,C
+        LD      (M4W_SEC),A
+        LD      A,B
+        AND     1
+        RLCA
+        RLCA
+        RLCA
+        RLCA
+        OR      081H
+        OUT     (FDCSELECT),A
+M4W_IDLE:
+        IN      A,(FDCSTATUS)
+        AND     1
+        JR      NZ,M4W_IDLE
+        LD      A,(M4W_CYL)
+        OUT     (FDCDATA),A
+        LD      A,FDCSEEK
+        OUT     (FDCCOMMAND),A
+M4W_SEEK:
+        IN      A,(FDCSTATUS)
+        AND     1
+        JR      NZ,M4W_SEEK
+        LD      A,(M4W_SEC)
+        OUT     (FDCSECTOR),A
+        LD      A,FDCWRITE
+        OUT     (FDCCOMMAND),A
+        LD      C,FDCDATA
+        LD      B,0
+        CALL    M4W_256
+        LD      B,0
+        CALL    M4W_256
+M4W_DONE:
+        IN      A,(FDCSTATUS)
+        BIT     0,A
+        JR      NZ,M4W_DONE
+        AND     0FCH
+        RET
+M4W_256:
+        IN      A,(FDCSTATUS)
+        AND     2
+        JR      Z,M4W_256
+        OUTI
+        JR      NZ,M4W_256
+        RET
+M4W_CYL:
+        DB      0
+M4W_SEC:
+        DB      1

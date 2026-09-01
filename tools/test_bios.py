@@ -75,6 +75,13 @@ class Z80:
                 self.pc = target
             elif op == 0xC9:            # RET
                 self.pc = self.pop()
+            elif op == 0xF5:            # PUSH AF
+                flags = (0x40 if self.z else 0) | (1 if self.carry else 0)
+                self.push(self.a << 8 | flags)
+            elif op == 0xF1:            # POP AF
+                value = self.pop()
+                self.a = value >> 8
+                self.z, self.carry = bool(value & 0x40), bool(value & 1)
             elif op == 0xC8:            # RET Z
                 if self.z:
                     self.pc = self.pop()
@@ -141,6 +148,10 @@ class Z80:
                 self.a = self.c
             elif op == 0x78:            # LD A,B
                 self.a = self.b
+            elif op == 0x47:            # LD B,A
+                self.b = self.a
+            elif op == 0x4F:            # LD C,A
+                self.c = self.a
             elif op == 0x7A:            # LD A,D
                 self.a = self.d
             elif op == 0x7B:            # LD A,E
@@ -161,6 +172,10 @@ class Z80:
             elif op == 0x21:            # LD HL,nn
                 self.hl = self.word(self.pc)
                 self.pc += 2
+            elif op == 0x2A:            # LD HL,(nn)
+                target = self.word(self.pc)
+                self.pc += 2
+                self.hl = self.word(target)
             elif op == 0x11:            # LD DE,nn
                 self.de = self.word(self.pc)
                 self.pc += 2
@@ -317,8 +332,10 @@ def main() -> None:
     cpu.bc = 0x7200
     cpu.run(entries[12])
     read_impl = cpu.word(entries[13] + 1)
-    call_at = next(address for address in range(read_impl, read_impl + 100)
-                   if cpu.mem[address] == 0xCD)
+    read_calls = [address for address in range(read_impl, read_impl + 48)
+                  if cpu.mem[address] == 0xCD]
+    require(len(read_calls) >= 2, "READ physical-call site was not found")
+    call_at = read_calls[1]
     platform_read = cpu.word(call_at + 1)
     cpu.mem[platform_read:platform_read + 12] = bytes((
         0x32, 0x00, 0x73,       # LD (7300h),A: cylinder
@@ -345,8 +362,40 @@ def main() -> None:
         require(cpu.mem[0x7200:0x7280] == bytes((logical & 3,)) * 128,
                 f"READ {logical} copied wrong 128-byte quarter")
 
+    write_impl = cpu.word(entries[14] + 1)
+    write_jumps = [address for address in range(write_impl, write_impl + 90)
+                   if cpu.mem[address] == 0xC3]
+    require(write_jumps, "WRITE physical-jump site was not found")
+    platform_write = cpu.word(write_jumps[-1] + 1)
+    cpu.mem[platform_write:platform_write + 13] = bytes((
+        0x32, 0x10, 0x73,
+        0x78, 0x32, 0x11, 0x73,
+        0x79, 0x32, 0x12, 0x73,
+        0xAF, 0xC9,
+    ))
+    for logical in range(80):
+        for quarter in range(4):
+            cpu.mem[0xEE00 + quarter * 128:0xEE80 + quarter * 128] = bytes((quarter,)) * 128
+        replacement = (0x80 | logical) & 0xFF
+        cpu.mem[0x7200:0x7280] = bytes((replacement,)) * 128
+        cpu.bc = logical
+        cpu.run(entries[11])
+        cpu.c = logical % 3       # exercise CP/M write types 0, 1, and 2
+        cpu.run(entries[14])
+        physical = logical // 4
+        require(cpu.a == 0, f"WRITE {logical} did not succeed")
+        require(cpu.mem[0x7310] == 2 and cpu.mem[0x7311] == physical // 10,
+                f"WRITE {logical} selected wrong cylinder/side")
+        require(cpu.mem[0x7312] == order[physical % 10],
+                f"WRITE {logical} selected wrong sector ID")
+        for quarter in range(4):
+            expected = replacement if quarter == (logical & 3) else quarter
+            require(cpu.mem[0xEE00 + quarter * 128:0xEE80 + quarter * 128] ==
+                    bytes((expected,)) * 128,
+                    f"WRITE {logical} corrupted quarter {quarter}")
+
     print(f"executed {COUNT} BIOS-vector contracts from {BASE:04X}h binary")
-    print("character transport, disk state, all 80 reads, and SECTRAN passed")
+    print("character transport, disk state, all 80 reads/writes, and SECTRAN passed")
 
 
 if __name__ == "__main__":

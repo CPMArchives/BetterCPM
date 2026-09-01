@@ -10,3 +10,4 @@ PL_CONOT       EQU     M4_OUT
         INCLUDE m4disk.inc
 
 PL_READ        EQU     M4_READ
+PL_WRITE       EQU     M4_WRITE

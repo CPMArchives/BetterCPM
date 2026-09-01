@@ -1,6 +1,6 @@
 # Engineering Specification 09: Read-Only Logical Disk Path
 
-Status: Implemented and verified
+Status: Implemented and verified; write support added by Engineering Specification 11
 Date: 2026-09-01
 
 ## Result
@@ -20,7 +20,8 @@ For a BIOS sector value from 0 through 79:
 
 `READ` fetches the selected 512-byte sector into a private buffer and copies
 the selected 128-byte quarter to the persistent DMA address. Invalid drive,
-track, or sector state returns nonzero. `WRITE` remains an explicit failure.
+track, or sector state returns nonzero. At this milestone `WRITE` remained an
+explicit failure; Engineering Specification 11 subsequently enabled it.
 
 ## Physical reader
 

@@ -48,10 +48,8 @@ executed 17 BIOS-vector contracts from F000h binary
 character transport, disk state, all 80 reads, and SECTRAN passed
 ```
 
-## Next increment
+## Subsequent increment
 
-Specify the write cache and read-modify-write rules. The design must define
-when a 512-byte physical sector is read before modification, how dirty data is
-flushed, how CP/M write types 0, 1, and 2 affect pre-reading, and what happens
-after controller failure. `WRITE` must remain disabled until those decisions
-and their failure tests are complete.
+Engineering Specification 11 implements conservative write-through
+read-modify-write behavior and extends the fixture across all 80 writes and
+write types 0, 1, and 2. Caching remains deferred.

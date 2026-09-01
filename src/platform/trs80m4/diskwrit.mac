@@ -1,0 +1,70 @@
+; Standalone Model 4 physical write/readback test.
+        INCLUDE hardware.inc
+        CSEG
+        .PHASE  STAGE1BASE
+START:
+        DI
+        LD      SP,STAGE1STACK
+        LD      A,2
+        LD      B,1
+        LD      C,10
+        LD      HL,DISKBUFFER
+        CALL    M4_READ
+        JR      NZ,FAILED
+        LD      HL,NEWSIG
+        LD      DE,DISKBUFFER
+        LD      BC,SIGLEN
+        LDIR
+        LD      A,2
+        LD      B,1
+        LD      C,10
+        LD      HL,DISKBUFFER
+        CALL    M4_WRITE
+        JR      NZ,FAILED
+        LD      HL,DISKBUFFER
+        LD      B,SIGLEN
+CLEAR:
+        LD      (HL),0
+        INC     HL
+        DJNZ    CLEAR
+        LD      A,2
+        LD      B,1
+        LD      C,10
+        LD      HL,DISKBUFFER
+        CALL    M4_READ
+        JR      NZ,FAILED
+        LD      HL,DISKBUFFER
+        LD      DE,NEWSIG
+        LD      B,SIGLEN
+CHECK:
+        LD      A,(DE)
+        CP      (HL)
+        JR      NZ,FAILED
+        INC     DE
+        INC     HL
+        DJNZ    CHECK
+        LD      HL,PASSMSG
+        LD      BC,PASSLEN
+        JR      SHOW
+FAILED:
+        LD      HL,FAILMSG
+        LD      BC,FAILLEN
+SHOW:
+        LD      A,08EH
+        OUT     (OPTREG),A
+        LD      DE,VIDEOBASE
+        LDIR
+STOP:
+        JR      STOP
+NEWSIG:
+        DB      'BetterCP/M physical write'
+SIGLEN  EQU     $-NEWSIG
+PASSMSG:
+        DB      'BIOS physical write verified'
+PASSLEN EQU     $-PASSMSG
+FAILMSG:
+        DB      'BIOS physical write failed'
+FAILLEN EQU     $-FAILMSG
+        INCLUDE m4disk.inc
+        .DEPHASE
+        END

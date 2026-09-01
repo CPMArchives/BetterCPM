@@ -87,6 +87,73 @@ BIO_NODSK:
         RET
 
 BIOREAD:
+        CALL    BIO_MAP
+        RET     NZ
+        LD      A,(BIO_PCYL)
+        PUSH    AF
+        LD      A,(B_PSide)
+        LD      B,A
+        LD      A,(BIO_PSEC)
+        LD      C,A
+        POP     AF
+        LD      HL,BIO_PHYBF
+        CALL    PL_READ
+        RET     NZ
+        LD      A,(BIO_QUART)
+        LD      HL,BIO_PHYBF
+        OR      A
+        JR      Z,BIO_RDCOP
+        LD      DE,128
+BIO_RDADD:
+        ADD     HL,DE
+        DEC     A
+        JR      NZ,BIO_RDADD
+BIO_RDCOP:
+        LD      DE,(BIO_DMA)
+        LD      BC,128
+        LDIR
+        XOR     A
+        RET
+
+BIOWRITE:
+        CALL    BIO_MAP
+        RET     NZ
+        LD      A,(BIO_PCYL)
+        PUSH    AF
+        LD      A,(B_PSide)
+        LD      B,A
+        LD      A,(BIO_PSEC)
+        LD      C,A
+        POP     AF
+        LD      HL,BIO_PHYBF
+        CALL    PL_READ
+        RET     NZ
+        LD      A,(BIO_QUART)
+        LD      DE,BIO_PHYBF
+        OR      A
+        JR      Z,BIO_WRCOP
+        LD      HL,128
+BIO_WRADD:
+        EX      DE,HL
+        ADD     HL,DE
+        EX      DE,HL
+        DEC     A
+        JR      NZ,BIO_WRADD
+BIO_WRCOP:
+        LD      HL,(BIO_DMA)
+        LD      BC,128
+        LDIR
+        LD      A,(BIO_PCYL)
+        PUSH    AF
+        LD      A,(B_PSide)
+        LD      B,A
+        LD      A,(BIO_PSEC)
+        LD      C,A
+        POP     AF
+        LD      HL,BIO_PHYBF
+        JP      PL_WRITE
+
+BIO_MAP:
         LD      A,(BIO_DRIVE)
         OR      A
         JR      NZ,BIO_RDERR
@@ -119,29 +186,15 @@ BIO_SIDE0:
         LD      HL,BIO_ORDER
         ADD     HL,DE
         LD      C,(HL)
+        LD      A,B
+        LD      (B_PSide),A
+        LD      A,C
+        LD      (BIO_PSEC),A
         LD      A,(BIO_TRACK)
-        LD      HL,BIO_PHYBF
-        CALL    PL_READ
-        RET     NZ
-        LD      A,(BIO_QUART)
-        LD      HL,BIO_PHYBF
-        OR      A
-        JR      Z,BIO_COPY
-        LD      DE,128
-BIO_QADD:
-        ADD     HL,DE
-        DEC     A
-        JR      NZ,BIO_QADD
-BIO_COPY:
-        LD      DE,(BIO_DMA)
-        LD      BC,128
-        LDIR
+        LD      (BIO_PCYL),A
         XOR     A
         RET
 BIO_RDERR:
-        LD      A,1
-        RET
-BIOWRITE:
         LD      A,1
         RET
 
@@ -175,6 +228,12 @@ BIO_DMA:
         DW      0080H
 BIO_QUART:
         DB      0
+BIO_PCYL:
+        DB      0
+B_PSide:
+        DB      0
+BIO_PSEC:
+        DB      1
 BIO_ORDER:
         DB      1,3,5,7,9,2,4,6,8,10
 
