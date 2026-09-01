@@ -24,7 +24,7 @@ remain separately visible, that the caller-owned search FCB remains usable
 through continuation, and that a harmless state-query BDOS call does not
 terminate the enumeration.
 
-Cases 0541, 0544, 0547, 0548, and 0549 remain to be observed. They describe
-non-guaranteed lifecycle, lowercase-FCB, enumeration-order, and invalid-drive
-behavior rather than requirements of the portable CP/M 2.2 contract.
-
+Engineering Specification 83 records cases 0541, 0544, 0547, 0548, and 0549.
+They describe non-guaranteed lifecycle, lowercase-FCB, enumeration-order, and
+invalid-drive behavior rather than requirements of the portable CP/M 2.2
+contract.
