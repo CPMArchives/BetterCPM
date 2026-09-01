@@ -140,6 +140,8 @@ class Z80:
                 self.carry = False
             elif op == 0x37:            # SCF
                 self.carry = True
+            elif op == 0x3F:            # CCF
+                self.carry = not self.carry
             elif op == 0xB7:            # OR A
                 self.z = self.a == 0
                 self.carry = False

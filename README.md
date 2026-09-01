@@ -84,6 +84,7 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Engineering Specification 53`](docs/engineering/53%20System%20Reset.md) completes the 39 defined CP/M 2.2 BDOS functions by routing program termination through BIOS WBOOT.
 [`Engineering Specification 54`](docs/engineering/54%20Initial%20CCP%20and%20WBOOT.md) adds the first resident command loop, real BOOT/WBOOT reconstruction, and verified Function-0 return to the prompt.
 [`Engineering Specification 55`](docs/engineering/55%20Physical%20Resident%20Boot.md) installs the composed resident image in the MM 790K system area and boots the physical TRS-80 disk to the CCP.
+[`Engineering Specification 56`](docs/engineering/56%20Transient%20COM%20Loader.md) adds `.COM` loading at `0100h` and installs `HELLO.COM` as the first end-to-end transient fixture.
 [`Engineering Specification 25`](docs/engineering/25%20Allocation%20and%20DPB%20Pointers.md) exposes the current drive's reconstructed allocation vector and live 15-byte disk parameter block.
 [`Engineering Specification 26`](docs/engineering/26%20Directory%20Search%20and%20DMA.md) adds Search First/Search Next continuation, wildcard and all-user matching, and complete directory-record transfer to the selected DMA address.
 [`Engineering Specification 27`](docs/engineering/27%20Unchanged%20FCB%20Close.md) adds the non-mutating Close File boundary for unchanged activated FCBs and safely rejects dirty commits until writeback exists.

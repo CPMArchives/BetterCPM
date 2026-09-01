@@ -28,6 +28,10 @@ VERIFY_SECTOR_LOGICAL_INDEX = 2  # logical order sector 5
 VERIFY_PAYLOAD = b"BetterCP/M verify" + bytes(SECTOR_SIZE - len(b"BetterCP/M verify"))
 SYSTEM_FIRST_LOGICAL_INDEX = 2
 SYSTEM_SECTORS = 26
+FILESYSTEM_FIRST_SECTOR = 40   # DPB OFF=2, one logical track per cylinder
+ALLOCATION_BLOCK_BYTES = 2048
+HELLO_COM = bytes((0x11, 0x09, 0x01, 0x0E, 9, 0xCD, 5, 0, 0xC9)) + \
+    b"\nHello from BetterCP/M$"
 
 
 def assemble(assembler: Path, source: Path, output: Path, origin: int) -> bytes:
@@ -75,6 +79,18 @@ def install(boot: bytes, stage1: bytes, resident: bytes) -> bytes:
         raise ValueError(f"resident image is {len(resident)} bytes; loader capacity is {capacity}")
     start = SYSTEM_FIRST_LOGICAL_INDEX * SECTOR_SIZE
     raw[start:start + capacity] = resident.ljust(capacity, b"\x00")
+    # Install the first transient fixture using the active 16-bit allocation
+    # format: directory blocks 0/1, HELLO.COM in allocation block 2.
+    directory = FILESYSTEM_FIRST_SECTOR * SECTOR_SIZE
+    entry = bytearray(32)
+    entry[0] = 0
+    entry[1:12] = b"HELLO   COM"
+    entry[15] = 1
+    entry[16:18] = bytes((2, 0))
+    raw[directory:directory + 32] = entry
+    data = directory + 2 * ALLOCATION_BLOCK_BYTES
+    record = HELLO_COM.ljust(128, b"\x1a")
+    raw[data:data + len(record)] = record
     image = build(bytes(raw))
     verify(image, require_blank=False)
     return image

@@ -19,7 +19,7 @@ COMPONENTS = (
     (0xEF00, "../bios/bios.bin"),
 )
 RESIDENT_BASE = 0xBF00       # includes the reserved 128-byte DIRBUF workspace
-LIMITS = (0xC100, 0xD800, 0xEA40, 0xEBC0, 0x10000)
+LIMITS = (0xC100, 0xD800, 0xEA40, 0xED00, 0x10000)
 
 
 def main() -> None:

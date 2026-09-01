@@ -12,6 +12,8 @@ DEFAULT_EMULATOR = Path("/Users/nathanael/trs80/trs80gp-2/mac/trs80gp.app/Conten
 DEFAULT_IMAGE = ROOT / "build/trs80/BetterCPM-Extended-80T-DS-System-790K.dmk"
 EXPECTED_LINES = (
     b"",
+    b"A>HELLO",
+    b"Hello from BetterCP/M",
     b"A>",
 )
 
@@ -27,9 +29,20 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="bettercpm-trs80gp-") as temporary:
         subprocess.run([
             str(args.emulator), "-m4", "-batch", "-turbo", "-d0", str(args.image),
+            "-id", "1200",
+            "-ik", "1", "1", "-id", "4", "-ik", "1", "0", "-id", "4",
+            "-ik", "0", "20", "-id", "4", "-ik", "0", "0", "-id", "4",
+            "-ik", "1", "10", "-id", "4", "-ik", "1", "0", "-id", "4",
+            "-ik", "1", "10", "-id", "4", "-ik", "1", "0", "-id", "4",
+            "-ik", "1", "80", "-id", "4", "-ik", "1", "0", "-id", "4",
+            "-ik", "6", "1", "-id", "4", "-ik", "6", "0",
             "-id", "1200", "-it", "-ix",
         ], cwd=temporary, check=True)
-        screen = Path(temporary, "trs80-text-0.bin").read_bytes()
+        snapshot = Path(temporary, "trs80-text-0.bin")
+        if not snapshot.is_file():
+            raise SystemExit(f"trs80gp produced no text snapshot; files: "
+                             f"{[path.name for path in Path(temporary).iterdir()]}")
+        screen = snapshot.read_bytes()
         expected = bytearray(b" " * len(screen))
         for row, line in enumerate(EXPECTED_LINES):
             expected[row * 80:row * 80 + len(line)] = line
@@ -40,7 +53,7 @@ def main() -> None:
                              f"screen begins {screen[:240]!r}")
     for line in EXPECTED_LINES:
         print(line.decode("ascii"))
-    print("TRS-80 Model 4 resident CCP boot test passed")
+    print("TRS-80 Model 4 resident CCP and HELLO.COM load test passed")
 
 
 if __name__ == "__main__":

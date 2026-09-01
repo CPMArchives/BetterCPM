@@ -34,8 +34,8 @@ def main() -> None:
     if len(data) > 0xEA40 and data[:0xEA40] == bytes(0xEA40):
         data = data[0xEA40:]
         output.write_bytes(data)
-    if not data or len(data) > 0x300:
-        raise SystemExit(f"CCP size outside EA40h..EBBFh: {len(data)} bytes")
+    if not data or len(data) > 0x2C0:
+        raise SystemExit(f"CCP size outside EA40h..ECFFh: {len(data)} bytes")
     print(f"{hashlib.sha256(data).hexdigest()}  {output.relative_to(ROOT)}")
     print(f"CCP bytes: {len(data)}")
 

@@ -37,6 +37,8 @@ CCP_LOOP:
         CP      4
         JR      Z,CCP_TRYWARM
 CCP_BAD:
+        CALL    CCP_LOAD
+        JR      NC,CCP_LOOP     ; successful program exits only via warm start
         LD      DE,CCP_UNKNOWN
         LD      C,9
         CALL    BDOS
@@ -86,6 +88,93 @@ CCP_EQUAL:
         DJNZ    CCP_EQUAL
         RET
 
+; First transient loader: a command containing one bare 1..8-character name
+; selects NAME.COM. Arguments and explicit extensions are later milestones.
+CCP_LOAD:
+        LD      HL,CCP_FCB
+        LD      B,36
+        XOR     A
+CCP_FCLR:
+        LD      (HL),A
+        INC     HL
+        DJNZ    CCP_FCLR
+        LD      HL,CCP_FCB+1
+        LD      B,11
+        LD      A,' '
+CCP_FSPC:
+        LD      (HL),A
+        INC     HL
+        DJNZ    CCP_FSPC
+        LD      HL,CCP_COM
+        LD      DE,CCP_FCB+9
+        LD      BC,3
+        LDIR
+        LD      A,(CCP_COUNT)
+        OR      A
+        SCF
+        RET     Z
+        CP      9
+        CCF
+        RET     C               ; reject names longer than eight characters
+        LD      B,A
+        LD      HL,CCP_DATA
+        LD      DE,CCP_FCB+1
+CCP_FNCPY:
+        LD      A,(HL)
+        CP      '!'
+        JR      C,CCP_LFAIL
+        CP      '.'
+        JR      Z,CCP_LFAIL
+        LD      (DE),A
+        INC     HL
+        INC     DE
+        DJNZ    CCP_FNCPY
+        LD      DE,CCP_FCB
+        LD      C,15
+        CALL    BDOS
+        INC     A
+        JR      Z,CCP_LFAIL
+        LD      HL,0100H
+        LD      (CLDPTR),HL
+CCP_LNEXT:
+        LD      DE,(CLDPTR)
+        LD      C,26
+        CALL    BDOS
+        LD      DE,CCP_FCB
+        LD      C,20
+        CALL    BDOS
+        OR      A
+        JR      NZ,CCP_LEOF
+        LD      HL,(CLDPTR)
+        LD      DE,128
+        ADD     HL,DE
+        LD      A,H
+        CP      0C1H
+        JR      NC,CCP_LFAIL
+        LD      (CLDPTR),HL
+        JR      CCP_LNEXT
+CCP_LEOF:
+        CP      1
+        JR      NZ,CCP_LFAIL
+        LD      DE,0080H
+        LD      C,26
+        CALL    BDOS
+        LD      HL,005CH
+        LD      B,32
+        XOR     A
+CCP_ZPAGE:
+        LD      (HL),A
+        INC     HL
+        DJNZ    CCP_ZPAGE
+        LD      (0080H),A
+        LD      A,13
+        LD      (0081H),A
+        LD      SP,CCP_RET
+        JP      0100H
+CCP_LFAIL:
+        SCF
+        RET
+
 CCP_PROMPT:
         DB      13,10,'$'
 CCP_UNKNOWN:
@@ -96,6 +185,8 @@ CCP_VERKEY:
         DB      'VER'
 CCP_WARMKEY:
         DB      'WARM'
+CCP_COM:
+        DB      'COM'
 
 CCP_BUFFER:
         DB      127
@@ -105,6 +196,15 @@ CCP_DATA:
         REPT    127
         DB      0
         ENDM
+
+CCP_FCB:
+        REPT    36
+        DB      0
+        ENDM
+CLDPTR:
+        DW      0100H
+CCP_RET:
+        DW      0000H
 
 CCP_STACK:
         REPT    64
