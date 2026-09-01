@@ -130,6 +130,31 @@ def main() -> None:
     require(cpu.a == 0x4B and cpu.mem[0x7000] == 0x4B,
             "Console Input did not recover the output-poll lookahead key")
 
+    reader_vector = bytes(cpu.mem[BIOS_BASE + 21:BIOS_BASE + 24])
+    punch_vector = bytes(cpu.mem[BIOS_BASE + 18:BIOS_BASE + 21])
+    list_vector = bytes(cpu.mem[BIOS_BASE + 15:BIOS_BASE + 18])
+    cpu.mem[0x7040:0x7043] = bytes((0x3E, 0x5A, 0xC9))
+    cpu.mem[BIOS_BASE + 21:BIOS_BASE + 24] = bytes((0xC3, 0x40, 0x70))
+    cpu.c = 3
+    cpu.run(BDOS_BASE)
+    require(cpu.a == cpu.l == 0x5A, "Reader Input did not return the BIOS byte")
+    cpu.mem[0x7040:0x7045] = bytes((0x79, 0x32, 0x48, 0x70, 0xC9))
+    cpu.mem[0x7048] = 0
+    cpu.mem[BIOS_BASE + 18:BIOS_BASE + 21] = bytes((0xC3, 0x40, 0x70))
+    cpu.c, cpu.e = 4, 0xB3
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 0 and cpu.mem[0x7048] == 0xB3,
+            "Punch Output did not pass its byte to BIOS")
+    cpu.mem[0x7048] = 0
+    cpu.mem[BIOS_BASE + 15:BIOS_BASE + 18] = bytes((0xC3, 0x40, 0x70))
+    cpu.c, cpu.e = 5, 0xC4
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 0 and cpu.mem[0x7048] == 0xC4,
+            "List Output did not pass its byte to BIOS")
+    cpu.mem[BIOS_BASE + 21:BIOS_BASE + 24] = reader_vector
+    cpu.mem[BIOS_BASE + 18:BIOS_BASE + 21] = punch_vector
+    cpu.mem[BIOS_BASE + 15:BIOS_BASE + 18] = list_vector
+
     read_impl = cpu.word(BIOS_BASE + 13 * 3 + 1)
     calls = [address for address in range(read_impl, read_impl + 48)
              if cpu.mem[address] == 0xCD]
@@ -929,7 +954,7 @@ def main() -> None:
             f"provisional BDOS storage failure was confused with slot success: "
             f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS functions 1-2, 6, 11-37, and 40 passed")
+    print("BDOS functions 1-6, 11-37, and 40 passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 

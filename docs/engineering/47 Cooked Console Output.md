@@ -41,6 +41,6 @@ byte-identical BDOS and resident-system binaries.
 
 ## Next increment
 
-Implement functions 3 through 5: Reader Input, Punch Output, and List Output.
-These are thin logical-device services over the already established BIOS
-vectors and complete the single-character device group.
+Implemented by [Engineering Specification 48](48%20Logical%20Character%20Devices.md).
+Reader Input, Punch Output, and List Output are thin services over the standard
+BIOS vectors and complete the single-character logical-device group.

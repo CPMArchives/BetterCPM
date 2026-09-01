@@ -7,6 +7,8 @@ BIOCONST        EQU     0F006H  ; CP/M BIOS console-status vector
 BIOCONIN        EQU     0F009H  ; CP/M BIOS console-input vector
 BIOCONOT        EQU     0F00CH  ; CP/M BIOS console-output vector
 BIOLIST         EQU     0F00FH  ; CP/M BIOS list-output vector
+BIOPUNCH        EQU     0F012H  ; CP/M BIOS punch-output vector
+BIOREADR        EQU     0F015H  ; CP/M BIOS reader-input vector
 BIOWBOOT        EQU     0F003H  ; CP/M BIOS warm-boot vector
 DIROPEN         EQU     0D812H  ; seventh directory-service vector
 DIRINVAL        EQU     0D80FH  ; sixth directory-service vector
@@ -40,6 +42,12 @@ BDOS:
         JP      Z,BF_CONIN
         CP      2
         JP      Z,BF_CONOUT
+        CP      3
+        JP      Z,BF_READER
+        CP      4
+        JP      Z,BF_PUNCH
+        CP      5
+        JP      Z,BF_LIST
         CP      6
         JP      Z,BF_DCIO
         CP      11
@@ -99,6 +107,22 @@ BDOS:
         CP      40
         JP      Z,BF_RZERO
         LD      A,0FFH          ; unsupported returning function
+        JP      BDOS_RETURN
+
+BF_READER:
+        CALL    BIOREADR
+        JP      BDOS_RETURN
+BF_PUNCH:
+        LD      A,E
+        LD      C,A
+        CALL    BIOPUNCH
+        XOR     A
+        JP      BDOS_RETURN
+BF_LIST:
+        LD      A,E
+        LD      C,A
+        CALL    BIOLIST
+        XOR     A
         JP      BDOS_RETURN
 
 ; Cooked, blocking console input. CP/M flow/printer controls are consumed;

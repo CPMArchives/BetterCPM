@@ -145,6 +145,29 @@ def main() -> None:
     require(cpu.a == 0x4B and cpu.mem[0x7000] == 0x4B,
             "CALL 0005h did not retain output-polled ordinary input")
 
+    reader_vector = bytes(cpu.mem[BIOS_BASE + 21:BIOS_BASE + 24])
+    punch_vector = bytes(cpu.mem[BIOS_BASE + 18:BIOS_BASE + 21])
+    list_vector = bytes(cpu.mem[BIOS_BASE + 15:BIOS_BASE + 18])
+    cpu.mem[0x7040:0x7043] = bytes((0x3E, 0x5A, 0xC9))
+    cpu.mem[BIOS_BASE + 21:BIOS_BASE + 24] = bytes((0xC3, 0x40, 0x70))
+    cpu.c = 3
+    cpu.run(CALLER)
+    require(cpu.a == 0x5A, "CALL 0005h Reader Input missed the BIOS byte")
+    cpu.mem[0x7040:0x7045] = bytes((0x79, 0x32, 0x48, 0x70, 0xC9))
+    cpu.mem[BIOS_BASE + 18:BIOS_BASE + 21] = bytes((0xC3, 0x40, 0x70))
+    cpu.mem[0x7048] = 0
+    cpu.c, cpu.e = 4, 0xB3
+    cpu.run(CALLER)
+    require(cpu.mem[0x7048] == 0xB3, "CALL 0005h Punch Output changed its byte")
+    cpu.mem[BIOS_BASE + 15:BIOS_BASE + 18] = bytes((0xC3, 0x40, 0x70))
+    cpu.mem[0x7048] = 0
+    cpu.c, cpu.e = 5, 0xC4
+    cpu.run(CALLER)
+    require(cpu.mem[0x7048] == 0xC4, "CALL 0005h List Output changed its byte")
+    cpu.mem[BIOS_BASE + 21:BIOS_BASE + 24] = reader_vector
+    cpu.mem[BIOS_BASE + 18:BIOS_BASE + 21] = punch_vector
+    cpu.mem[BIOS_BASE + 15:BIOS_BASE + 18] = list_vector
+
     cpu.mem[FCB:FCB + 33] = bytes(33)
     cpu.mem[FCB + 1:FCB + 12] = b"GATEWAY DAT"
     original_sp = cpu.sp
@@ -383,7 +406,7 @@ def main() -> None:
             "failed initialization published page-zero vectors")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
-    print("application CALL 0005h reached functions 1-2, 6, 11-37, and 40")
+    print("application CALL 0005h reached functions 1-6, 11-37, and 40")
 
 
 if __name__ == "__main__":
