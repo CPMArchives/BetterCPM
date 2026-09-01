@@ -10,7 +10,7 @@ BIOS = ROOT / "build/bios/bios.bin"
 DIRECTORY = ROOT / "build/bdos/directory.bin"
 BDOS = ROOT / "build/bdos/bdos.bin"
 BDOS_BASE = 0xC100
-DIR_BASE = 0xD700
+DIR_BASE = 0xD600
 DIR_BUFFER = 0xBF00
 FIXTURE = 0x7500
 FCB = 0x7700
@@ -798,6 +798,37 @@ def main() -> None:
     cpu.run(DIR_BASE + 15)
     cpu.c = 13
     cpu.run(BDOS_BASE, limit=50000)
+
+    # Reproduce ENTRYTST's exact Function 40 lifecycle: Make an empty file,
+    # write record 2, then read zero-filled records 0 and 1 without Close.
+    cpu.mem[FCB:FCB + 36] = bytes(36)
+    cpu.mem[FCB + 1:FCB + 12] = b"ENT40   $$$"
+    cpu.c, cpu.de = 22, FCB
+    cpu.run(BDOS_BASE, limit=100000)
+    require(cpu.a != 0xFF, "Function 40 fixture Make failed")
+    cpu.mem[0x7000:0x7080] = bytes((0xA5,)) * 128
+    cpu.c, cpu.de = 26, 0x7000
+    cpu.run(BDOS_BASE)
+    cpu.mem[FCB + 33:FCB + 36] = bytes((2, 0, 0))
+    cpu.c, cpu.de = 40, FCB
+    cpu.run(BDOS_BASE, limit=400000)
+    require(cpu.a == 0, "Function 40 rejected record 2 of a made empty file")
+    for record, expected in ((0, bytes(128)), (1, bytes(128)),
+                             (2, bytes((0xA5,)) * 128)):
+        cpu.mem[0x7180:0x7200] = bytes((0xCC,)) * 128
+        cpu.c, cpu.de = 26, 0x7180
+        cpu.run(BDOS_BASE)
+        cpu.mem[FCB + 33:FCB + 36] = bytes((record, 0, 0))
+        cpu.c, cpu.de = 33, FCB
+        cpu.run(BDOS_BASE, limit=200000)
+        require(cpu.a == 0 and bytes(cpu.mem[0x7180:0x7200]) == expected,
+                f"Function 40 lifecycle failed reading record {record}")
+    cpu.mem[FIXTURE:FIXTURE + 512] = random_media
+    cpu.mem[DATA:DATA + 512] = random_data
+    cpu.run(DIR_BASE + 15)
+    cpu.c = 13
+    cpu.run(BDOS_BASE, limit=50000)
+
     cpu.mem[FCB + 1:FCB + 12] = b"READ    DAT"
     cpu.mem[FCB + 12] = cpu.mem[FCB + 14] = 0
     cpu.mem[FCB + 33:FCB + 36] = bytes(3)

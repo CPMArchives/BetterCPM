@@ -4,7 +4,7 @@
 ; extension.  Its placement and the BIOS address are provisional bring-up
 ; values.  It deliberately reaches disk only through the CP/M BIOS vectors.
 
-DIRBASE         EQU     0D700H
+DIRBASE         EQU     0D600H
 ; Patch 2026-09-01: DIRBUF was E900H through specification 14, EA00H for
 ; specification 15, EC00H through specification 25, and ED00H for
 ; specifications 26-27. Dirty Close grew across ED00H, so the intact buffer
@@ -246,6 +246,25 @@ DIR_QNAME:
         LD      A,B
         AND     07FH
         LD      (DIR_QCR),A
+; Patch 2026-09-01: preserve an activated same-extent FCB. Reopening here
+; used to discard allocations and RC changes made by an unclosed Function 40.
+        LD      HL,(DIR_QFCB)
+        LD      DE,12
+        ADD     HL,DE
+        LD      A,(DIR_QEX)
+        CP      (HL)
+        JR      NZ,DIR_QRDIFF
+        INC     HL
+        INC     HL
+        LD      A,(DIR_QS2)
+        CP      (HL)
+        JR      NZ,DIR_QRDIFF
+        LD      A,0FFH
+        JR      DIR_QRSAV
+DIR_QRDIFF:
+        XOR     A
+DIR_QRSAV:
+        LD      (DIR_QSAME),A
         LD      HL,(DIR_QFCB)
         LD      DE,12
         ADD     HL,DE
@@ -262,10 +281,15 @@ DIR_QNAME:
         LD      (HL),A
         LD      A,(DIR_QUSER)
         LD      DE,(DIR_QFCB)
+        LD      A,(DIR_QSAME)
+        OR      A
+        JR      NZ,DIR_QROPEN
+        LD      A,(DIR_QUSER)
         CALL    DIR_OPEN
         JR      C,DIR_QSTORE
         CP      0FFH
         JR      Z,DIR_QNOEX
+DIR_QROPEN:
         LD      A,(DIR_QUSER)
         LD      DE,(DIR_QFCB)
         LD      BC,(DIR_QDMA)
@@ -2784,6 +2808,8 @@ DIR_QCR:
 DIR_QEX:
         DB      0
 DIR_QS2:
+        DB      0
+DIR_QSAME:
         DB      0
 DIR_ZFILL:
         DB      0

@@ -7,7 +7,7 @@ from test_bios import BASE as BIOS_BASE, Z80, require
 ROOT = Path(__file__).resolve().parents[1]
 BIOS = ROOT / "build/bios/bios.bin"
 DIRECTORY = ROOT / "build/bdos/directory.bin"
-DIR_BASE = 0xD700
+DIR_BASE = 0xD600
 DIR_BUFFER = 0xBF00
 FIXTURE = 0x7500
 QUERY = 0x7600

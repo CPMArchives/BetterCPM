@@ -8,7 +8,7 @@
 ; into explicit growth regions while leaving page-zero ABI addresses intact.
 SYSBASE         EQU     0C000H
 BDOS            EQU     0C100H
-DIRLOGIN        EQU     0D70CH
+DIRLOGIN        EQU     0D60CH
 BIOWBOOT        EQU     0EF03H
 CCP             EQU     0E940H
 
