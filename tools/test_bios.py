@@ -201,6 +201,9 @@ class Z80:
                 self.hl = (self.hl + 1) & 0xFFFF
             elif op == 0x34:            # INC (HL)
                 self.mem[self.hl] = (self.mem[self.hl] + 1) & 0xFF
+            elif op == 0x35:            # DEC (HL)
+                self.mem[self.hl] = (self.mem[self.hl] - 1) & 0xFF
+                self.z = self.mem[self.hl] == 0
                 self.z = self.mem[self.hl] == 0
             elif op == 0x06:            # LD B,n
                 self.b = self.mem[self.pc]

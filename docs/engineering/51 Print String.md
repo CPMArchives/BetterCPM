@@ -37,5 +37,4 @@ byte-identical BDOS and resident-system binaries.
 
 ## Next increment
 
-Implement function 10 (Read Console Buffer), completing the CP/M 2.2 console
-service group.
+Implemented by [`Engineering Specification 52`](52%20Read%20Console%20Buffer.md).

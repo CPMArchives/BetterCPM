@@ -56,6 +56,8 @@ BDOS:
         JP      Z,BF_SETIO
         CP      9
         JP      Z,BF_PRINT
+        CP      10
+        JP      Z,BF_READLN
         CP      11
         JP      Z,BF_CONST
         CP      12
@@ -155,6 +157,181 @@ BF_PRLOOP:
 BF_PREND:
         XOR     A
         JP      BDOS_RETURN
+
+; Counted-buffer line editor. The buffer is [maximum][count][data...].
+; Editing is relative to the logical column at which the caller entered.
+BF_READLN:
+        LD      HL,(BDOS_PARM)
+        LD      A,(HL)
+        LD      (BDL_MAX),A
+        INC     HL
+        XOR     A
+        LD      (HL),A
+        LD      (BDL_COUNT),A
+        INC     HL
+        LD      (BDL_BASE),HL
+        LD      (BDL_PTR),HL
+        LD      A,(BDOS_COLUMN)
+        LD      (BDL_START),A
+BF_RLLOOP:
+        LD      A,(BDL_COUNT)
+        LD      HL,BDL_MAX
+        CP      (HL)
+        JP      Z,BF_RLDONE
+        CALL    BF_GETIN
+        AND     07FH
+        CP      13
+        JP      Z,BF_RLDONE
+        CP      10
+        JP      Z,BF_RLDONE
+        CP      8
+        JR      Z,BF_RLBS
+        CP      127
+        JR      Z,BF_RLBS
+        CP      3
+        JR      Z,BF_RLCTRL
+        CP      5
+        JR      Z,BF_RLE
+        CP      18
+        JR      Z,BF_RLR
+        CP      21
+        JR      Z,BF_RLU
+        CP      24
+        JR      Z,BF_RLX
+        CP      16
+        JR      Z,BF_RLP
+BF_RLSTORE:
+        LD      HL,(BDL_PTR)
+        LD      (HL),A
+        INC     HL
+        LD      (BDL_PTR),HL
+        LD      HL,BDL_COUNT
+        INC     (HL)
+        CALL    BF_CLECHO
+        JR      BF_RLLOOP
+BF_RLCTRL:
+        LD      A,(BDL_COUNT)
+        OR      A
+        JP      Z,BIOWBOOT
+        LD      A,3
+        JR      BF_RLSTORE
+BF_RLP:
+        LD      A,(BDOS_LISTE)
+        CPL
+        LD      (BDOS_LISTE),A
+        JR      BF_RLLOOP
+BF_RLE:
+        CALL    BF_RLNEW
+        XOR     A
+        LD      (BDL_START),A
+        JR      BF_RLLOOP
+BF_RLR:
+        CALL    BF_RLHASH
+        CALL    BF_RLIND
+        CALL    BF_RLREPLAY
+        JR      BF_RLLOOP
+BF_RLU:
+        CALL    BF_RLHASH
+        CALL    BF_RLIND
+        CALL    BF_RLCLEAR
+        JR      BF_RLLOOP
+BF_RLX:
+        LD      A,(BDL_COUNT)
+        OR      A
+        JP      Z,BF_RLLOOP
+BF_RLXLP:
+        CALL    BF_RLERASE
+        LD      A,(BDL_COUNT)
+        DEC     A
+        LD      (BDL_COUNT),A
+        JR      NZ,BF_RLXLP
+        LD      HL,(BDL_BASE)
+        LD      (BDL_PTR),HL
+        JP      BF_RLLOOP
+BF_RLBS:
+        LD      A,(BDL_COUNT)
+        OR      A
+        JP      Z,BF_RLLOOP
+        DEC     A
+        LD      (BDL_COUNT),A
+        LD      HL,(BDL_PTR)
+        DEC     HL
+        LD      (BDL_PTR),HL
+        CALL    BF_RLERASE
+        JP      BF_RLLOOP
+BF_RLDONE:
+        LD      HL,(BDOS_PARM)
+        INC     HL
+        LD      A,(BDL_COUNT)
+        LD      (HL),A
+        LD      A,13
+        CALL    BF_COCHAR
+        XOR     A
+        JP      BDOS_RETURN
+
+BF_RLERASE:
+        LD      A,8
+        CALL    BF_COCHAR
+        LD      A,' '
+        CALL    BF_COCHAR
+        LD      A,8
+        JP      BF_COCHAR
+BF_RLHASH:
+        LD      A,'#'
+        CALL    BF_COCHAR
+BF_RLNEW:
+        LD      A,13
+        CALL    BF_COCHAR
+        LD      A,10
+        JP      BF_COCHAR
+BF_RLIND:
+        LD      A,(BDL_START)
+        OR      A
+        RET     Z
+        LD      B,A
+BF_RLILP:
+        PUSH    BC
+        LD      A,' '
+        CALL    BF_COCHAR
+        POP     BC
+        DJNZ    BF_RLILP
+        RET
+BF_RLREPLAY:
+        LD      HL,(BDL_BASE)
+        LD      A,(BDL_COUNT)
+        OR      A
+        RET     Z
+        LD      B,A
+BF_RLRPLP:
+        LD      A,(HL)
+        INC     HL
+        PUSH    HL
+        PUSH    BC
+        CALL    BF_CLECHO
+        POP     BC
+        POP     HL
+        DJNZ    BF_RLRPLP
+        RET
+BF_RLCLEAR:
+        XOR     A
+        LD      (BDL_COUNT),A
+        LD      HL,(BDL_BASE)
+        LD      (BDL_PTR),HL
+        RET
+
+; Accepted controls not assigned an editing action use caret notation.
+BF_CLECHO:
+        LD      (BDOS_CHAR),A
+        CP      9
+        JP      Z,BF_COCHAR
+        CP      32
+        JP      NC,BF_COCHAR
+        PUSH    AF
+        LD      A,'^'
+        CALL    BF_COCHAR
+        POP     AF
+        ADD     A,'@'
+        JP      BF_COCHAR
 
 ; Cooked, blocking console input. CP/M flow/printer controls are consumed;
 ; ordinary control bytes are returned without echo.
@@ -718,6 +895,16 @@ BDP_CHAR:
         DB      0
 BDO_CHAR:
         DB      0
+BDL_MAX:
+        DB      0
+BDL_COUNT:
+        DB      0
+BDL_START:
+        DB      0
+BDL_BASE:
+        DW      0
+BDL_PTR:
+        DW      0
 BDOS_PARM:
         DW      0
 BDOS_OLDSP:

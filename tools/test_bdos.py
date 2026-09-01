@@ -179,6 +179,45 @@ def main() -> None:
             f"out={cpu.mem[0x7000]:02X} col={cpu.mem[console_column]:02X} "
             f"source={bytes(cpu.mem[0x7050:0x7055])!r}")
 
+    # A tiny scripted CONIN implementation advances a pointer through input.
+    cpu.mem[0x7060:0x706A] = bytes((
+        0x2A, 0x70, 0x70,       # LD HL,(7070h)
+        0x7E, 0x23,             # LD A,(HL); INC HL
+        0x22, 0x70, 0x70,       # LD (7070h),HL
+        0xC9, 0x00,
+    ))
+    cpu.mem[BIOS_BASE + 9:BIOS_BASE + 12] = bytes((0xC3, 0x60, 0x70))
+
+    def read_line(script: bytes, maximum: int, address: int = 0x7200):
+        queue = 0x8000
+        cpu.mem[queue:queue + len(script)] = script
+        cpu.mem[0x7070:0x7072] = bytes((queue & 0xFF, queue >> 8))
+        cpu.mem[address:address + maximum + 2] = bytes((0xCC,)) * (maximum + 2)
+        cpu.mem[address] = maximum
+        cpu.c, cpu.de = 10, address
+        cpu.run(BDOS_BASE, limit=500000)
+        return bytes(cpu.mem[address + 2:address + 2 + cpu.mem[address + 1]])
+
+    require(read_line(bytes((0xC1, ord("B"), 13)), 8) == b"AB",
+            "Read Console Buffer did not mask, store, count, and CR-terminate")
+    require(read_line(bytes((ord("A"), ord("B"), 8, ord("C"), 127,
+                             ord("D"), 13)), 8) == b"AD",
+            "Read Console Buffer backspace/DEL editing failed")
+    require(read_line(bytes((ord("A"), 5, ord("B"), 18, ord("C"), 13)), 8)
+            == b"ABC", "Read Console Buffer continuation/redisplay failed")
+    require(read_line(bytes((ord("A"), ord("B"), 21, ord("C"), 13)), 8)
+            == b"C", "Read Console Buffer Ctrl-U deletion failed")
+    require(read_line(bytes((ord("A"), ord("B"), 24, ord("C"), 10)), 8)
+            == b"C", "Read Console Buffer Ctrl-X/LF behavior failed")
+    require(read_line(b"QZ", 1) == b"Q" and cpu.word(0x7070) == 0x8001,
+            "Read Console Buffer capacity required an extra input byte")
+    require(read_line(bytes((ord("X"),)) * 255, 255, 0x7200) ==
+            bytes((ord("X"),)) * 255,
+            "Read Console Buffer did not support the 255-byte maximum")
+    cpu.mem[BIOS_BASE + 9:BIOS_BASE + 12] = bytes((0xC3,
+                                                  conin_impl & 0xFF,
+                                                  conin_impl >> 8))
+
     read_impl = cpu.word(BIOS_BASE + 13 * 3 + 1)
     calls = [address for address in range(read_impl, read_impl + 48)
              if cpu.mem[address] == 0xCD]
@@ -978,7 +1017,7 @@ def main() -> None:
             f"provisional BDOS storage failure was confused with slot success: "
             f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS functions 1-9, 11-37, and 40 passed")
+    print("BDOS functions 1-37 and 40 passed except System Reset (0)")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 

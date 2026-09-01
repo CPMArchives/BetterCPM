@@ -125,6 +125,19 @@ def main() -> None:
     platform_conout = cpu.word(conout_impl + 1)
     cpu.mem[platform_conout:platform_conout + 5] = bytes(
         (0x79, 0x32, 0x00, 0x70, 0xC9))
+    cpu.mem[0x7060:0x7069] = bytes((0x2A, 0x70, 0x70, 0x7E, 0x23,
+                                    0x22, 0x70, 0x70, 0xC9))
+    cpu.mem[0x7070:0x7072] = bytes((0x80, 0x70))
+    cpu.mem[0x7080:0x7084] = b"ABC\r"
+    cpu.mem[BIOS_BASE + 9:BIOS_BASE + 12] = bytes((0xC3, 0x60, 0x70))
+    cpu.mem[0x7200:0x720A] = bytes((8, 0)) + bytes((0xCC,)) * 8
+    cpu.c, cpu.de = 10, 0x7200
+    cpu.run(CALLER, limit=100000)
+    require(cpu.mem[0x7201] == 3 and bytes(cpu.mem[0x7202:0x7205]) == b"ABC",
+            "CALL 0005h Read Console Buffer returned the wrong counted line")
+    cpu.mem[BIOS_BASE + 9:BIOS_BASE + 12] = bytes((0xC3,
+                                                  conin_impl & 0xFF,
+                                                  conin_impl >> 8))
     cpu.mem[0x7000] = 0
     cpu.c, cpu.e = 6, 0xFF
     cpu.run(CALLER)
@@ -430,7 +443,7 @@ def main() -> None:
             "failed initialization published page-zero vectors")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
-    print("application CALL 0005h reached functions 1-9, 11-37, and 40")
+    print("application CALL 0005h reached functions 1-37 and 40 except 0")
 
 
 if __name__ == "__main__":
