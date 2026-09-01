@@ -45,11 +45,12 @@ block reports ten passes and no failures:
 - command-tail count and leading separator;
 - entry DMA at `0080h` and its required overlap with the command tail.
 
-The monolithic physical `/SAFE` run does not yet reach its summary within the
-current fixed-time screen-capture runner. That is recorded as incomplete, not
-as a pass or failure. Individual item `0001` completes with one pass and zero
-failures. A future runner must capture scrolling output incrementally and bisect
-any genuinely nonreturning row.
+The first monolithic physical `/SAFE` run filled the 24-row display while the
+bring-up console still lacked scrolling. Subsequent output advanced beyond
+Model 4 video RAM, so that run is invalid beyond its first visible block; it was
+not evidence of a slow or nonreturning test. Individual item `0001` completes
+with one pass and zero failures. Engineering Specification 60 corrects the
+console boundary before the complete compatibility run is resumed.
 
 ## MDIR
 

@@ -54,7 +54,8 @@ def main() -> None:
         if not snapshot.is_file():
             raise SystemExit(f"trs80gp produced no text snapshot; files: "
                              f"{[path.name for path in Path(temporary).iterdir()]}")
-        screen = snapshot.read_bytes()
+        captured = snapshot.read_bytes()
+        screen = captured[:80 * 24]
         expected = bytearray(b" " * len(screen))
         for row, line in enumerate(EXPECTED_LINES):
             expected[row * 80:row * 80 + len(line)] = line
@@ -63,6 +64,8 @@ def main() -> None:
                        if byte != 0x20][:80]
             raise SystemExit(f"boot test failed; visible bytes {visible}; "
                              f"screen begins {screen[:240]!r}")
+        if any(captured[80 * 24:]):
+            raise SystemExit("boot test wrote beyond the 80x24 video region")
     for line in EXPECTED_LINES:
         print(line.decode("ascii"))
     print("TRS-80 Model 4 DIR, command-tail, and HELLO.COM test passed")

@@ -2,10 +2,11 @@
 
         INCLUDE hardware.inc
         INCLUDE m4cons.inc
+        INCLUDE m4scroll.inc
 
 PL_CONST       EQU     M4_STAT
 PL_CONIN       EQU     M4_IN
-PL_CONOT       EQU     M4_OUT
+PL_CONOT       EQU     M4_SCROLL_OUT
 
 M4_READ_ONLY   EQU     0
         INCLUDE m4disk.inc

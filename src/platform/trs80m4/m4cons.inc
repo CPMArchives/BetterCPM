@@ -8,7 +8,7 @@ M4_INIT:
         XOR     A
         LD      (M4COLUMN),A
         LD      DE,VIDEOBASE+1
-        LD      BC,2047
+        LD      BC,VIDEOSIZE-1
         LD      (HL),020H
         LDIR
         RET
@@ -25,7 +25,7 @@ M4_OUT:
         LD      (M4CURSOR),HL
         LD      A,(M4COLUMN)
         INC     A
-        CP      80
+        CP      VIDEOCOLS
         JR      C,M4_STCOL
         XOR     A
 M4_STCOL:
@@ -44,7 +44,7 @@ M4_CR:
         RET
 M4_LF:
         LD      HL,(M4CURSOR)
-        LD      DE,80
+        LD      DE,VIDEOCOLS
         ADD     HL,DE
         LD      (M4CURSOR),HL
         RET

@@ -498,6 +498,34 @@ def main() -> None:
 
     conout_impl = cpu.word(entries[4] + 1)
     platform_conout = cpu.word(conout_impl + 1)
+
+    scroll_cpu = Z80(data)
+    scroll_cpu.mem[0xF800:0xFF80] = bytes((0x20,)) * 1920
+    scroll_cpu.mem[0xFF80] = 0xA5
+    for character in range(ord("A"), ord("Z")):
+        for value in (character, 13, 10):
+            scroll_cpu.c = value
+            scroll_cpu.run(entries[4])
+    require([scroll_cpu.mem[0xF800 + row * 80] for row in range(23)] ==
+            list(range(ord("C"), ord("Z"))),
+            "CONOUT did not scroll 80x24 rows in order")
+    require(scroll_cpu.mem[0xFF30:0xFF80] == bytes((0x20,)) * 80,
+            "CONOUT did not clear the new bottom row")
+    require(scroll_cpu.mem[0xFF80] == 0xA5,
+            "CONOUT wrote beyond Model 4 video RAM")
+
+    wrap_cpu = Z80(data)
+    wrap_cpu.mem[0xF800:0xFF80] = bytes((0x20,)) * 1920
+    wrap_cpu.mem[0xFF80] = 0x5A
+    for _ in range(1920):
+        wrap_cpu.c = ord("Q")
+        wrap_cpu.run(entries[4])
+    require(wrap_cpu.mem[0xF800:0xFF30] == bytes((ord("Q"),)) * 1840 and
+            wrap_cpu.mem[0xFF30:0xFF80] == bytes((0x20,)) * 80,
+            "CONOUT did not scroll at the automatic-wrap boundary")
+    require(wrap_cpu.mem[0xFF80] == 0x5A,
+            "automatic wrap wrote beyond Model 4 video RAM")
+
     cpu.mem[platform_conout:platform_conout + 5] = bytes((0x79, 0x32, 0x00, 0x70, 0xC9))
     cpu.c = 0x09
     cpu.run(entries[4])
