@@ -42,7 +42,9 @@ def main() -> None:
     require(len(calls) >= 2, "BIOS physical-read call was not found")
     platform_read = cpu.word(calls[1] + 1)
     read_success = bytes((
-        0x79, 0xFE, 0x08, 0x20, 0x05,
+        0x78, 0xB7, 0x20, 0x07,
+        0x79, 0xFE, 0x08, 0x30, 0x02,
+        0x18, 0x05,
         0x21, DATA & 0xFF, DATA >> 8,
         0x18, 0x03,
         0x21, FIXTURE & 0xFF, FIXTURE >> 8,
@@ -57,7 +59,9 @@ def main() -> None:
     require(write_jumps, "BIOS physical-write jump was not found")
     platform_write = cpu.word(write_jumps[-1] + 1)
     write_success = bytes((
-        0x79, 0xFE, 0x08, 0x20, 0x05,
+        0x78, 0xB7, 0x20, 0x07,
+        0x79, 0xFE, 0x08, 0x30, 0x02,
+        0x18, 0x05,
         0x11, DATA & 0xFF, DATA >> 8,
         0x18, 0x03,
         0x11, FIXTURE & 0xFF, FIXTURE >> 8,
@@ -302,10 +306,19 @@ def main() -> None:
             "sequential overwrite or FCB position advancement failed")
 
     # An empty allocation entry receives the first genuinely free block.
+    cpu.mem[FIXTURE:FIXTURE + 32] = bytes((0,)) + b"NEW     DAT" + bytes(20)
+    cpu.run(DIR_BASE + 15)
+    cpu.c = 13
+    cpu.run(BDOS_BASE, limit=50000)
     cpu.mem[FCB:FCB + 33] = bytes(33)
     cpu.mem[FCB + 1:FCB + 12] = b"NEW     DAT"
+    cpu.c, cpu.de = 15, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0, "empty sequential-write fixture did not Open")
     alv_before = bytes(cpu.mem[expected_alv:expected_alv + 50])
     cpu.mem[0x7000:0x7080] = bytes((0xB1,)) * 128
+    cpu.c, cpu.de = 26, 0x7000
+    cpu.run(BDOS_BASE)
     cpu.c, cpu.de = 21, FCB
     cpu.run(BDOS_BASE, limit=50000)
     require(cpu.a == 0 and cpu.mem[FCB + 16] == 3 and
@@ -313,6 +326,17 @@ def main() -> None:
             cpu.mem[FCB + 32] == 1 and
             cpu.mem[expected_alv] == (alv_before[0] | 0x10),
             "first sequential write did not allocate block 3 transactionally")
+    require(bytes(cpu.mem[FIXTURE + 1:FIXTURE + 12]) == b"NEW     DAT",
+            f"data write reached directory fixture: C={cpu.c:02X}")
+    written_fcb = bytes(cpu.mem[FCB:FCB + 33])
+    cpu.c, cpu.de = 16, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0 and bytes(cpu.mem[FCB:FCB + 33]) == written_fcb and
+            cpu.mem[FIXTURE + 15] == 1 and
+            bytes(cpu.mem[FIXTURE + 16:FIXTURE + 18]) == bytes((3, 0)),
+            f"Close did not atomically commit trusted allocation: A={cpu.a:02X} "
+            f"RC={cpu.mem[FIXTURE + 15]:02X} "
+            f"AL={bytes(cpu.mem[FIXTURE + 16:FIXTURE + 18]).hex()}")
 
     # Software and FCB attribute protection must precede all mutation.
     cpu.c = 28

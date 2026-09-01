@@ -59,9 +59,6 @@ produce byte-identical components.
 ## Deliberate boundary and next increment
 
 Write Sequential does not yet create a new directory extent at `CR=128`.
-Furthermore, specification 28's Close still rejects allocation-map changes,
-because it predates a trusted BetterCP/M allocator. The next increment must
-extend transactional Close to validate that new FCB blocks are exactly those
-owned in the live ALV and then commit the allocation map and `RC` together.
-After that invariant is executable, automatic extent creation can be added
-without weakening directory safety.
+Engineering Specification 32 now extends Close with a pending-allocation
+journal and transactional allocation-map commit. Automatic extent creation is
+therefore the next remaining sequential-write boundary.

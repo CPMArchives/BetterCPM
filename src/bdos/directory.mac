@@ -131,6 +131,9 @@ DIR_WGOT:
         CALL    DIR_WFREE
         JP      NZ,DIR_WFULL
         LD      (DIR_WNEW),HL
+        CALL    DIR_WPCAP
+        JP      NZ,DIR_WFULL
+        LD      HL,(DIR_WNEW)
         LD      A,1
         LD      (DIR_WALLOC),A
         LD      D,H
@@ -198,6 +201,12 @@ DIR_WDONE:
         INC     HL
         LD      (HL),D
 DIR_WMETA:
+        LD      A,(DIR_WALLOC)
+        OR      A
+        JR      Z,DIR_WPOS
+        LD      DE,(DIR_WNEW)
+        CALL    DIR_WPADD
+DIR_WPOS:
         LD      HL,(DIR_WFCB)
         LD      DE,32
         ADD     HL,DE
@@ -265,6 +274,48 @@ DIR_WFNONE:
         OR      A
         RET
 DIR_WFOUND:
+        XOR     A
+        RET
+
+; Patch 2026-09-01: the original RC-only Close deliberately rejected every
+; allocation-map change. Keep that history visible: this pending journal is
+; the proof that now permits only blocks selected by BetterCP/M's allocator.
+; Each entry is FCB pointer followed by block.
+DIR_WPCAP:
+        LD      HL,DIR_PEND
+        LD      B,32
+DIR_WPCLOP:
+        LD      A,(HL)
+        INC     HL
+        OR      (HL)
+        JR      Z,DIR_WPCOK
+        INC     HL
+        INC     HL
+        INC     HL
+        DJNZ    DIR_WPCLOP
+        LD      A,1
+        OR      A
+        RET
+DIR_WPCOK:
+        XOR     A
+        RET
+
+DIR_WPADD:
+        PUSH    DE
+        CALL    DIR_WPCAP
+        POP     DE
+        RET     NZ
+        DEC     HL
+        PUSH    DE
+        LD      DE,(DIR_WFCB)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        POP     DE
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
         XOR     A
         RET
 
@@ -473,8 +524,8 @@ DIR_RNOK:
         RET
 
 ; Close an activated FCB. B is nonzero when the current disk is software
-; protected. This first commit path permits RC-only metadata changes; allocation
-; map mutation remains rejected until write functions own validated blocks.
+; protected. RC changes and allocations recorded by Write Sequential may be
+; committed together; existing canonical blocks may not be removed/replaced.
 DIR_CLOSE:
         LD      (DIR_CFP),DE
         LD      A,B
@@ -517,14 +568,85 @@ DIR_CRCEQ:
         LD      (DIR_CDIR),A
         INC     DE
         INC     HL
-        LD      B,16            ; allocation map must remain unchanged for now
-C_CMPB:
+        LD      A,(DIR_DSM+1)
+        OR      A
+        JR      Z,C_CMP8
+        LD      B,8
+C_CMP16:
+        LD      A,(HL)
+        LD      C,A
+        INC     HL
+        LD      A,(HL)
+        INC     HL
+        OR      C
+        JR      NZ,C_C16OLD
+        LD      A,(DE)
+        LD      C,A
+        LD      (DIR_CBLK),A
+        INC     DE
+        LD      A,(DE)
+        LD      (DIR_CBLK+1),A
+        INC     DE
+        OR      C
+        JR      Z,C_C16NEXT
+        PUSH    BC
+        PUSH    DE
+        PUSH    HL
+        LD      DE,(DIR_CBLK)
+        CALL    DIR_CPEND
+        POP     HL
+        POP     DE
+        POP     BC
+        JP      NZ,DIR_CNOMR
+        LD      A,0FFH
+        LD      (DIR_CDIR),A
+        JR      C_C16NEXT
+C_C16OLD:
+        DEC     HL
+        DEC     HL
         LD      A,(DE)
         CP      (HL)
         JP      NZ,DIR_CNOMR
         INC     DE
         INC     HL
-        DJNZ    C_CMPB
+        LD      A,(DE)
+        CP      (HL)
+        JP      NZ,DIR_CNOMR
+        INC     DE
+        INC     HL
+C_C16NEXT:
+        DJNZ    C_CMP16
+        JR      C_CMPDONE
+C_CMP8:
+        LD      B,16
+C_CMP8LOP:
+        LD      A,(DE)
+        LD      C,A
+        LD      A,(HL)
+        CP      C
+        JR      Z,C_C8NEXT
+        OR      A
+        JP      NZ,DIR_CNOMR
+        LD      A,C
+        OR      A
+        JP      Z,DIR_CNOMR
+        PUSH    BC
+        PUSH    DE
+        PUSH    HL
+        LD      E,C
+        LD      D,0
+        CALL    DIR_CPEND
+        POP     HL
+        POP     DE
+        POP     BC
+        JP      NZ,DIR_CNOMR
+        LD      A,0FFH
+        LD      (DIR_CDIR),A
+C_C8NEXT:
+        INC     DE
+        INC     HL
+        DJNZ    C_CMP8LOP
+C_CMPDONE:
         LD      A,(DIR_CDIR)
         OR      A
         JR      NZ,DIR_CWRITE
@@ -552,6 +674,7 @@ DIR_CWRITE:
         CALL    BIOWRITE
         JR      NZ,DIR_CWERR
         CALL    DIR_INVAL       ; rebuild allocation/login state on next use
+        CALL    DIR_PREM
         LD      A,(DIR_CRET)
         OR      A
         RET
@@ -592,6 +715,75 @@ DIR_CEADD:
         ADD     HL,DE
         DEC     A
         JR      NZ,DIR_CEADD
+        RET
+
+DIR_CPEND:
+        PUSH    BC
+        PUSH    DE
+        PUSH    HL
+        LD      HL,DIR_PEND
+        LD      B,32
+DIR_CPLOP:
+        LD      A,(DIR_CFP)
+        CP      (HL)
+        JR      NZ,DIR_CPNEXT
+        INC     HL
+        LD      A,(DIR_CFP+1)
+        CP      (HL)
+        DEC     HL
+        JR      NZ,DIR_CPNEXT
+        INC     HL
+        INC     HL
+        LD      A,E
+        CP      (HL)
+        JR      NZ,DIR_CPBAD
+        INC     HL
+        LD      A,D
+        CP      (HL)
+        JR      Z,DIR_CPYES
+        DEC     HL
+DIR_CPBAD:
+        DEC     HL
+        DEC     HL
+DIR_CPNEXT:
+        INC     HL
+        INC     HL
+        INC     HL
+        INC     HL
+        DJNZ    DIR_CPLOP
+        LD      A,1
+        OR      A
+        JR      DIR_PFRET
+DIR_CPYES:
+        XOR     A
+DIR_PFRET:
+        POP     HL
+        POP     DE
+        POP     BC
+        RET
+
+DIR_PREM:
+        LD      HL,DIR_PEND
+        LD      B,32
+DIR_CPRLOP:
+        LD      A,(DIR_CFP)
+        CP      (HL)
+        JR      NZ,DIR_CPRNEXT
+        INC     HL
+        LD      A,(DIR_CFP+1)
+        CP      (HL)
+        DEC     HL
+        JR      NZ,DIR_CPRNEXT
+        LD      (HL),0
+        INC     HL
+        LD      (HL),0
+        DEC     HL
+DIR_CPRNEXT:
+        INC     HL
+        INC     HL
+        INC     HL
+        INC     HL
+        DJNZ    DIR_CPRLOP
         RET
 
 ; Begin/continue a CP/M directory enumeration. Search First receives current
@@ -1365,6 +1557,8 @@ DIR_CDIR:
         DB      0
 DIR_CNRC:
         DB      0
+DIR_CBLK:
+        DW      0
 DIR_CSAV:
         REPT    31
         DB      0
@@ -1407,6 +1601,10 @@ DIR_WNEW:
         DW      0
 DIR_WALLOC:
         DB      0
+DIR_PEND:
+        REPT    128
+        DB      0
+        ENDM
 
         .DEPHASE
         END
