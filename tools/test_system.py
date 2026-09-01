@@ -94,6 +94,29 @@ def main() -> None:
     require(cpu.a == 0xFF, "CALL 0005h console status consumed the key")
     cpu.mem[platform_const:platform_const + 2] = bytes((0xAF, 0xC9))
 
+    conin_impl = cpu.word(BIOS_BASE + 3 * 3 + 1)
+    platform_conin = cpu.word(conin_impl + 1)
+    cpu.mem[platform_conin:platform_conin + 3] = bytes((0x3E, 0xC1, 0xC9))
+    conout_impl = cpu.word(BIOS_BASE + 4 * 3 + 1)
+    platform_conout = cpu.word(conout_impl + 1)
+    cpu.mem[platform_conout:platform_conout + 5] = bytes(
+        (0x79, 0x32, 0x00, 0x70, 0xC9))
+    cpu.mem[0x7000] = 0
+    cpu.c, cpu.e = 6, 0xFF
+    cpu.run(CALLER)
+    require(cpu.a == 0 and cpu.mem[0x7000] == 0,
+            "CALL 0005h Direct Console I/O empty poll failed")
+    cpu.mem[platform_const:platform_const + 3] = bytes((0x3E, 0x01, 0xC9))
+    cpu.c, cpu.e = 6, 0xFF
+    cpu.run(CALLER)
+    require(cpu.a == 0x41 and cpu.mem[0x7000] == 0,
+            "CALL 0005h Direct Console I/O input echoed or retained parity")
+    cpu.c, cpu.e = 6, 0xC2
+    cpu.run(CALLER)
+    require(cpu.a == 0 and cpu.mem[0x7000] == 0xC2,
+            "CALL 0005h Direct Console I/O output changed the byte")
+    cpu.mem[platform_const:platform_const + 2] = bytes((0xAF, 0xC9))
+
     cpu.mem[FCB:FCB + 33] = bytes(33)
     cpu.mem[FCB + 1:FCB + 12] = b"GATEWAY DAT"
     original_sp = cpu.sp
@@ -332,7 +355,7 @@ def main() -> None:
             "failed initialization published page-zero vectors")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
-    print("application CALL 0005h reached function 11, functions 12-37, and 40")
+    print("application CALL 0005h reached functions 6, 11-37, and 40")
 
 
 if __name__ == "__main__":

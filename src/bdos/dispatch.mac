@@ -4,6 +4,8 @@
 
 BDOSBASE        EQU     0C100H
 BIOCONST        EQU     0F006H  ; CP/M BIOS console-status vector
+BIOCONIN        EQU     0F009H  ; CP/M BIOS console-input vector
+BIOCONOT        EQU     0F00CH  ; CP/M BIOS console-output vector
 DIROPEN         EQU     0D812H  ; seventh directory-service vector
 DIRINVAL        EQU     0D80FH  ; sixth directory-service vector
 DIRLOGIN        EQU     0D80CH  ; fifth directory-service vector
@@ -32,6 +34,8 @@ BDOS:
         LD      (BDOS_PARM),DE
         LD      (BDOS_OLDSP),SP
         LD      SP,BDOS_STKTOP
+        CP      6
+        JP      Z,BF_DCIO
         CP      11
         JP      Z,BF_CONST
         CP      12
@@ -89,6 +93,23 @@ BDOS:
         CP      40
         JP      Z,BF_RZERO
         LD      A,0FFH          ; unsupported returning function
+        JP      BDOS_RETURN
+
+; Direct console I/O bypasses echo and all cooked-console interpretation.
+; E=FFh polls for one input byte; every other value is output directly.
+BF_DCIO:
+        LD      A,E
+        CP      0FFH
+        JR      Z,BF_DCIN
+        LD      C,A
+        CALL    BIOCONOT
+        XOR     A               ; output-form return is not otherwise defined
+        JP      BDOS_RETURN
+BF_DCIN:
+        CALL    BIOCONST
+        OR      A
+        JP      Z,BDOS_RETURN   ; nonblocking empty result
+        CALL    BIOCONIN
         JP      BDOS_RETURN
 
 BF_CONST:

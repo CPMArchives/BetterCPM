@@ -52,6 +52,29 @@ def main() -> None:
     require(cpu.a == 0xFF, "BDOS console status consumed the pending key")
     cpu.mem[platform_const:platform_const + 2] = bytes((0xAF, 0xC9))
 
+    conin_impl = cpu.word(BIOS_BASE + 3 * 3 + 1)
+    platform_conin = cpu.word(conin_impl + 1)
+    cpu.mem[platform_conin:platform_conin + 3] = bytes((0x3E, 0xC1, 0xC9))
+    conout_impl = cpu.word(BIOS_BASE + 4 * 3 + 1)
+    platform_conout = cpu.word(conout_impl + 1)
+    cpu.mem[platform_conout:platform_conout + 5] = bytes(
+        (0x79, 0x32, 0x00, 0x70, 0xC9))
+    cpu.mem[0x7000] = 0
+    cpu.c, cpu.e = 6, 0xFF
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 0 and cpu.mem[0x7000] == 0,
+            "Direct Console I/O empty poll blocked or produced output")
+    cpu.mem[platform_const:platform_const + 3] = bytes((0x3E, 0x01, 0xC9))
+    cpu.c, cpu.e = 6, 0xFF
+    cpu.run(BDOS_BASE)
+    require(cpu.a == cpu.l == 0x41 and cpu.mem[0x7000] == 0,
+            "Direct Console I/O input was echoed or retained parity")
+    cpu.c, cpu.e = 6, 0xC2
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 0 and cpu.mem[0x7000] == 0xC2,
+            "Direct Console I/O did not pass output byte unchanged")
+    cpu.mem[platform_const:platform_const + 2] = bytes((0xAF, 0xC9))
+
     read_impl = cpu.word(BIOS_BASE + 13 * 3 + 1)
     calls = [address for address in range(read_impl, read_impl + 48)
              if cpu.mem[address] == 0xCD]
@@ -850,7 +873,7 @@ def main() -> None:
             f"provisional BDOS storage failure was confused with slot success: "
             f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS function 11, functions 12-37, and function 40 passed")
+    print("BDOS functions 6, 11-37, and 40 passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 

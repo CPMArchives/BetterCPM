@@ -32,5 +32,6 @@ byte-identical BDOS and resident-system binaries.
 
 ## Next increment
 
-Implement BDOS function 6 (Direct Console I/O), which builds on BIOS `CONST`,
-`CONIN`, and `CONOUT` while preserving its special nonblocking input behavior.
+Implemented by [Engineering Specification 45](45%20Direct%20Console%20IO.md).
+Function 6 builds on BIOS `CONST`, `CONIN`, and `CONOUT` while preserving its
+special nonblocking and uncooked behavior.
