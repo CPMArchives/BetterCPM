@@ -29,7 +29,7 @@ renaming all extents, success and missing-source results, old/new identity
 transition, preservation of file data and user ownership, and explicit-drive
 operation without changing the default drive.
 
-Rename diagnostics 0308, 0310, 0311, and 0315 remain to be observed. Items
-0309, 0312, 0313, and 0316 describe wildcard, timestamp, private-algorithm, or
-directory-compaction behavior outside the required CP/M 2.2 contract.
-
+Engineering Specification 79 records Rename diagnostics 0308, 0310, 0311,
+and 0315. Items 0309, 0312, 0313, and 0316 describe wildcard, timestamp,
+private-algorithm, or directory-compaction behavior outside the required
+CP/M 2.2 contract.
