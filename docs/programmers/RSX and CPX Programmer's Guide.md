@@ -57,10 +57,13 @@ Extension space is to be charged according to the modules actually
 configured. BetterCP/M shall not permanently reserve the maximum possible
 RSX or CPX footprint.
 
-The current implementation uses a protected bring-up layout: the CCP begins
-at `B000h`, the initial extension arena is `B800h..BFFDh`, and the CPX chain
-head is at `BFFEh`. These addresses are not the future module ABI. They remain
-fixed only until WBOOT can reconstruct a dynamically placed command image.
+The first quantitative implementation uses `C000h` as the fixed-system
+boundary and publishes the active layout through a versioned descriptor at
+`C080h`. With no extensions, the current 1,116-byte CCP rounds to five pages
+and occupies `BB00h..BFFFh`. Its CPX head is the descriptor field at `C086h`.
+`BB00h` is a calculated default address, not the future module ABI. WBOOT now
+obtains the CCP base from the descriptor, although disk-backed reconstruction
+and relocation are not yet implemented.
 
 ## 3. Fundamental address rule
 
@@ -181,8 +184,9 @@ Ordinary registers other than those explicitly preserved may be changed.
 Core compatibility-resident commands are recognized before CPX dispatch. If
 all CPXs decline a command, the CCP performs its normal `.COM` lookup.
 
-This interface is executable and tested, but its absolute chain-head address
-and header addresses are bring-up details. There is not yet an on-disk CPX
+This interface is executable and tested, but CPX header addresses are active
+configuration details. The chain-head field has a stable location in the
+versioned descriptor. There is not yet an on-disk CPX
 loader, installer, removal command, discovery call, or ABI-version check.
 
 ### 7.2 Planned relocatable CPXs

@@ -128,6 +128,24 @@ configured RSX and CPX footprint.  Warm start shall be able to reconstruct
 the command environment below resident RSXs without relocating the BIOS or
 core BDOS.
 
+The initial 64K implementation uses `C000h` as the fixed lower boundary of
+the core resident system.  Optional regions are allocated downward from that
+boundary in this order: RSXs, CPXs, and CCP.  Each image is rounded upward to
+a 256-byte page for placement.  The lowest occupied address is published as
+the exclusive TPA ceiling.
+
+The active addresses are recorded in a fixed, versioned Extension Control
+Block at `C080h`.  The descriptor, not a compiled CCP address, is the source
+of truth for the active RSX head, CPX head, region boundaries, CCP base and
+size, TPA ceiling, and configuration generation.  Stable gateways consult
+the descriptor; movable components must not treat their current addresses as
+permanent ABI values.
+
+With no extensions, the current 1,116-byte CCP requires five pages and is
+placed at `BB00h..BFFFh`.  The resulting initial TPA is `0100h..BAFFh`.
+`BB00h` is the result of the current configuration, not a fixed architectural
+address.
+
 
 4.5 COMPATIBILITY-VISIBLE MEMORY
 --------------------------------

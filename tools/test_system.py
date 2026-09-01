@@ -6,7 +6,7 @@ from test_bios import BASE as BIOS_BASE, Z80, require
 
 ROOT = Path(__file__).resolve().parents[1]
 RESIDENT = ROOT / "build/system/resident.bin"
-RESIDENT_BASE = 0xB000
+RESIDENT_BASE = 0xBB00
 SYSTEM_INIT = 0xC000
 FIXTURE = 0x7500
 FCB = 0x7700
@@ -27,7 +27,7 @@ def main() -> None:
     resident = RESIDENT.read_bytes()
     bios_offset = BIOS_BASE - RESIDENT_BASE
     cpu = Z80(resident[bios_offset:])
-    cpu.sp = 0xBC00          # below resident memory and BIOS workspaces
+    cpu.sp = 0xA800          # below resident memory and BIOS workspaces
     cpu.mem[RESIDENT_BASE:RESIDENT_BASE + len(resident)] = resident
 
     const_impl = cpu.word(BIOS_BASE + 2 * 3 + 1)
@@ -465,7 +465,7 @@ def main() -> None:
 
     # Initialization failure must not expose either conventional vector.
     failed = Z80(resident[bios_offset:])
-    failed.sp = 0xBC00
+    failed.sp = 0xA800
     failed.mem[RESIDENT_BASE:RESIDENT_BASE + len(resident)] = resident
     failed_read = failed.word(calls[1] + 1)
     failed.mem[failed_read:failed_read + 4] = bytes((0x3E, 0x05, 0xB7, 0xC9))
@@ -496,11 +496,17 @@ def main() -> None:
     require(transcript.count(b"A>") >= 3 and b"BetterCP/M 0.1" in transcript,
             f"WBOOT/Function-0 CCP transcript is incomplete at PC={cpu.pc:04X}: "
             f"in={cpu.word(0x7080):04X} out={cpu.word(0x7090):04X} "
-            f"ccp={bytes(cpu.mem[0xB000:0xB02A]).hex()} {transcript[:160]!r}")
+            f"ccp={bytes(cpu.mem[0xBB00:0xBB2A]).hex()} {transcript[:160]!r}")
     require(bytes(cpu.mem[0:3]) == bytes((0xC3, 0x03, 0xEF)) and
             bytes(cpu.mem[5:8]) == bytes((0xC3, 0x00, 0xC1)) and
             cpu.word(bdos_symbol("BDOS_DMA")) == 0x0080,
             "WBOOT did not reconstruct gateways and default DMA state")
+    require(bytes(cpu.mem[0xC080:0xC084]) == b"BM\x01\x00" and
+            cpu.word(0xC084) == 0 and cpu.word(0xC086) == 0 and
+            cpu.word(0xC088) == 0xC000 and cpu.word(0xC08A) == 0xC000 and
+            cpu.word(0xC08C) == 0xBB00 and cpu.word(0xC08E) == 0x0500 and
+            cpu.word(0xC090) == 0xBB00,
+            "extension control block does not publish the default layout")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
     print("application CALL 0005h reached all 39 defined BDOS functions")

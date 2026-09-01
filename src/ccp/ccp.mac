@@ -9,14 +9,16 @@
 ; E8C0H. Advance the CCP by 16 bytes, retaining a guard before E8D0H.
 ; Patch 2026-09-02: live-DPB refresh extended Directory Services through
 ; E8D5H. Advance another 16 bytes, preserving a ten-byte guard.
-; Patch 2026-09-02: CPX support ends the exact-fit provisional placement.
-; Give the CCP a deliberate 2K region below the CPX/RSX extension arena
-; instead of continuing to consume incidental gaps above the BDOS.  The arena
-; remains protected until WBOOT implements true command-image restoration.
+; Patch 2026-09-02: CPX support ended the exact-fit provisional placement at
+; E8D6H and temporarily protected B000H..BFFFH.  Specification 96 introduces
+; the quantitative memory model: the no-extension CCP is page-rounded and
+; ends immediately below the C000H fixed-system boundary.  BB00H is therefore
+; this configuration's calculated base, not a permanent ABI address.
 
-CCPBASE         EQU     0B000H
+CCPBASE         EQU     0BB00H
 BDOS            EQU     0C100H
-CPXHEAD         EQU     0BFFEH  ; zero or first CPX header in B800h..BFFDh
+CPXHEAD         EQU     0C086H  ; active head in fixed extension descriptor
+TPATOP          EQU     0C090H  ; exclusive upper bound for transient loads
 
         CSEG
         .PHASE  CCPBASE
@@ -267,8 +269,14 @@ CCP_LNEXT:
         LD      HL,(CLDPTR)
         LD      DE,128
         ADD     HL,DE
-        LD      A,H
-        CP      0B0H           ; protect CCP/CPX until WBOOT can reload them
+; Patch 2026-09-02: the transient ceiling is an active-layout value, not a
+; compiled CCP address. Preserve the candidate pointer while comparing it
+; with the exclusive ceiling published by the system gateway.
+        PUSH    HL
+        LD      DE,(TPATOP)
+        OR      A
+        SBC     HL,DE
+        POP     HL
         JR      NC,CCP_LFAIL
         LD      (CLDPTR),HL
         JR      CCP_LNEXT

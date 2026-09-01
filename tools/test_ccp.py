@@ -10,7 +10,7 @@ from test_bios import Z80, require
 ROOT = Path(__file__).resolve().parents[1]
 IMAGE = ROOT / "build/ccp/ccp.bin"
 LISTING = ROOT / "build/ccp/ccp.lst"
-BASE = 0xB000
+BASE = 0xBB00
 CALLER = 0x7000
 
 
@@ -95,9 +95,9 @@ def main() -> None:
     # the first declines and the second claims the command. This verifies the
     # public ordering and carry contract without making a test CPX resident.
     machine = cpu()
-    head, second = 0xB800, 0xB804
+    head, second = 0xBFC0, 0xBFC4
     decline, accept = 0x7300, 0x7310
-    machine.mem[0xBFFE:0xC000] = head.to_bytes(2, "little")
+    machine.mem[0xC086:0xC088] = head.to_bytes(2, "little")
     machine.mem[head:head + 4] = (second.to_bytes(2, "little")
                                   + decline.to_bytes(2, "little"))
     machine.mem[second:second + 4] = (bytes(2)

@@ -10,7 +10,8 @@ SYSBASE         EQU     0C000H
 BDOS            EQU     0C100H
 DIRLOGIN        EQU     0D60CH
 BIOWBOOT        EQU     0EF03H
-CCP             EQU     0B000H
+CCP             EQU     0BB00H
+CCPSIZE         EQU     00500H  ; current image rounded to 256-byte pages
 
         CSEG
         .PHASE  SYSBASE
@@ -53,7 +54,11 @@ SYS_WARM:
         JR      NZ,SYS_STOP
         LD      C,13            ; default drive A, DMA 0080h, fresh disk state
         CALL    BDOS
-        JP      CCP
+; The CCP address is configuration state. A stable gateway must consult the
+; descriptor rather than embed a direct jump to the current default address.
+        LD      HL,(ECB_CCPBASE)
+        PUSH    HL
+        RET
 SYS_STOP:
         JR      SYS_STOP
 
@@ -62,6 +67,35 @@ SYS_STACK:
         DB      0
         ENDM
 SYS_STKTOP:
+
+        REPT    SYSBASE+080H-$
+        DB      0
+        ENDM
+
+; Extension Control Block, version 1. This fixed descriptor publishes the
+; active calculated layout while RSX, CPX, and CCP addresses remain movable.
+ECB_MAGIC:
+        DB      'B','M'
+ECB_VERSION:
+        DB      1
+ECB_FLAGS:
+        DB      0
+ECB_RSXHEAD:
+        DW      0
+ECB_CPXHEAD:
+        DW      0
+ECB_RSXLOW:
+        DW      SYSBASE
+ECB_CPXLOW:
+        DW      SYSBASE
+ECB_CCPBASE:
+        DW      CCP
+ECB_CCPSIZE:
+        DW      CCPSIZE
+ECB_TPATOP:
+        DW      CCP
+ECB_GENERATION:
+        DW      1
 
         .DEPHASE
         END
