@@ -60,12 +60,15 @@ db0b017800f50660c7c48f0cf9c7ed734b92158ded8f5f802456a97fbefcd393  BetterCPM-Exte
 ```
 
 Stage one is now 505 bytes. Only seven bytes remain in its temporary 512-byte
-sector, so the next substantial milestone must introduce the planned larger
-system-image loading mechanism rather than hiding further growth in stage one.
+sector, so this diagnostic stage is closed to substantial new functionality.
+New resident-system components will be assembled independently. Booting a
+larger combined image will eventually require the already-deferred loader
+enhancement, but that need not precede development of those components.
 
 ## Next increment
 
-Specify the platform-to-resident-system handoff and the small system-image
-descriptor needed by the future multi-sector loader. This does not alter the
-requirement that CCP and BDOS remain independently buildable as drop-in
-components behind an existing loader and BIOS.
+Specify the initial BIOS entry contract and create an independently assembled
+resident-system scaffold using the verified console semantics. CCP and BDOS
+will likewise remain independently buildable as drop-in components behind an
+existing loader and BIOS. The future complete-system loader is a separate
+integration milestone.
