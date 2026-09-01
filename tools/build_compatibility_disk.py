@@ -15,6 +15,8 @@ def main() -> None:
                         default=ROOT.parent / "cpm-compatibility")
     parser.add_argument("--output", type=Path,
                         default=ROOT / "build/trs80/BetterCPM-Conformance-First-Pass.dmk")
+    parser.add_argument("--drive-b-output", type=Path,
+                        default=ROOT / "build/trs80/BetterCPM-Conformance-Drive-B.dmk")
     args = parser.parse_args()
     entry = args.suite / "suite/build/ENTRYTST.COM"
     bdos = args.suite / "suite/build/BDOSTEST.COM"
@@ -28,6 +30,13 @@ def main() -> None:
         "--include", str(bdos),
         "--include", str(mdir),
         "--output", str(args.output),
+    ], cwd=ROOT, check=True)
+    # BDOSTEST's multi-drive cases expect these conventional scratch fixtures.
+    subprocess.run([
+        "python3", str(ROOT / "tools/build_trs80_boot.py"),
+        "--include-as", f"BDSA.TMP={bdos}",
+        "--include-as", f"BDSB.TMP={bdos}",
+        "--output", str(args.drive_b_output),
     ], cwd=ROOT, check=True)
 
 

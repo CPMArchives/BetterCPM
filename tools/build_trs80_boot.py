@@ -141,6 +141,8 @@ def main() -> None:
     parser.add_argument("--assembler", type=Path, default=Path("/Users/nathanael/bin/z80asm"))
     parser.add_argument("--include", action="append", type=Path, default=[],
                         help="additional user-zero file to install (repeatable)")
+    parser.add_argument("--include-as", action="append", default=[], metavar="NAME=PATH",
+                        help="install PATH under a chosen CP/M 8.3 NAME")
     parser.add_argument("--output", type=Path,
                         default=BUILD / "BetterCPM-Extended-80T-DS-System-790K.dmk")
     args = parser.parse_args()
@@ -155,6 +157,13 @@ def main() -> None:
         if not path.is_file():
             raise SystemExit(f"missing included file: {path}")
         extras.append((path.name, path.read_bytes()))
+    for specification in args.include_as:
+        name, separator, source_name = specification.partition("=")
+        path = Path(source_name)
+        if not separator or not name or not path.is_file():
+            raise SystemExit(f"invalid included-file alias: {specification}")
+        cpm_name(name)            # validate before doing any image work
+        extras.append((name, path.read_bytes()))
     image = install(boot, stage1, resident, [("HELLO.COM", HELLO_COM), *extras])
     output = args.output.resolve()
     output.parent.mkdir(parents=True, exist_ok=True)

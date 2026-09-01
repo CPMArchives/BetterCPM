@@ -54,8 +54,11 @@ SYSDEST:
         DW      SYSIMAGE
 SYSLEFT:
         DB      SYSSECTORS
+B_PDrive:
+        DB      1               ; stage one always loads the system from A:
 
 M4_READ_ONLY    EQU     1
+M4_MULTI_DRIVE  EQU     1
         INCLUDE m4disk.inc
 
         .DEPHASE

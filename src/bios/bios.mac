@@ -6,6 +6,8 @@
 BIOSBASE        EQU     0EF00H
 BIO_PHYBF       EQU     0ED00H  ; 512-byte buffer below the resident BIOS
 BIO_DIRBF       EQU     0F300H
+BIO_CSV1        EQU     0BF80H  ; reserved gap after DIRBUF, before gateway
+BIO_ALV1        EQU     0BFA0H
 BIO_CSV0        EQU     0F380H
 BIO_ALV0        EQU     0F3A0H
 SYS_BOOT        EQU     0C020H
@@ -79,13 +81,17 @@ BIOSETDM:
         LD      (BIO_DMA),BC
         RET
 
-; Drive A is the temporary MM Extended 790K development carrier.
+; Patch 2026-09-01: A: and B: are separate Model 4 floppy drives.  They share
+; the temporary MM Extended 790K geometry, but never BDOS scratch workspace.
 BIOSELDS:
         LD      A,C
         LD      (BIO_DRIVE),A
+        CP      2
+        JR      NC,BIO_NODSK
         OR      A
-        JR      NZ,BIO_NODSK
         LD      HL,BIO_DPH0
+        RET     Z
+        LD      HL,BIO_DPH1
         RET
 BIO_NODSK:
         LD      HL,0
@@ -160,8 +166,10 @@ BIO_WRCOP:
 
 BIO_MAP:
         LD      A,(BIO_DRIVE)
-        OR      A
-        JR      NZ,BIO_RDERR
+        CP      2
+        JR      NC,BIO_RDERR
+        INC     A               ; controller select bits: drive 0=1, drive 1=2
+        LD      (B_PDrive),A
         LD      A,(BIO_TRACK+1)
         OR      A
         JR      NZ,BIO_RDERR
@@ -237,6 +245,8 @@ BIO_PCYL:
         DB      0
 B_PSide:
         DB      0
+B_PDrive:
+        DB      1
 BIO_PSEC:
         DB      1
 BIO_ORDER:
@@ -252,6 +262,13 @@ BIO_DPH0:
         DW      BIO_DPB0
         DW      BIO_CSV0
         DW      BIO_ALV0
+BIO_DPH1:
+        DW      0               ; identity XLT
+        DW      0,0,0           ; independent BDOS scratch
+        DW      BIO_DIRBF
+        DW      BIO_DPB0
+        DW      BIO_CSV1
+        DW      BIO_ALV1
 BIO_DPB0:
         DW      80              ; SPT
         DB      4,15,0          ; BSH, BLM, EXM

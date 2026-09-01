@@ -601,15 +601,17 @@ def main() -> None:
     require(cpu.a == cpu.l == 0 and cpu.b == cpu.h == 0,
             "current-drive query did not return drive A")
     cpu.c, cpu.e = 14, 1
-    cpu.run(BDOS_BASE)
-    require(cpu.a == 0xFF, "unsupported drive B was not rejected")
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0, "selecting configured drive B failed")
     cpu.c = 25
     cpu.run(BDOS_BASE)
-    require(cpu.a == 0, "failed drive selection changed the current drive")
+    require(cpu.a == 1, "drive B selection did not change the current drive")
     cpu.c = 24
     cpu.run(BDOS_BASE)
-    require(cpu.hl == 1 and cpu.a == 1 and cpu.b == 0,
-            "login vector did not report drive A only")
+    require(cpu.hl == 3 and cpu.a == 3 and cpu.b == 0,
+            "login vector did not accumulate A and B")
+    cpu.c, cpu.e = 14, 0
+    cpu.run(BDOS_BASE, limit=50000)
     cpu.c, cpu.de = 26, 0x7345
     cpu.run(BDOS_BASE)
     require(cpu.word(dma_state) == 0x7345,

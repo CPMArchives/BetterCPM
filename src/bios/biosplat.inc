@@ -9,6 +9,7 @@ PL_CONIN       EQU     M4_IN
 PL_CONOT       EQU     M4_SCROLL_OUT
 
 M4_READ_ONLY   EQU     0
+M4_MULTI_DRIVE EQU     1
         INCLUDE m4disk.inc
 
 PL_READ        EQU     M4_READ

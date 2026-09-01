@@ -46,6 +46,19 @@ DIRSERV:
         JP      DIR_RREAD
         JP      DIR_RWRITE
         JP      DIR_RZERO
+        JP      DIR_SELECT
+
+; Select a logical drive without rebuilding its allocation state unnecessarily.
+; Input C=zero-based drive. This covers default and explicit FCB selection.
+DIR_SELECT:
+        LD      A,(DIR_VALID)
+        OR      A
+        JP      Z,DIR_LOGIN
+        LD      A,(DIR_DRIVE)
+        CP      C
+        JP      NZ,DIR_LOGIN
+        XOR     A
+        RET
 
 DIR_RZERO:
         PUSH    AF
@@ -70,7 +83,7 @@ DIR_RWCOM:
         OR      A
         JP      NZ,DQ_WFAIL
         LD      A,(DE)
-        CP      2
+        CP      3
         JP      NC,DIR_QBAD
         PUSH    DE
         INC     DE
@@ -199,7 +212,7 @@ DIR_RREAD:
         LD      (DIR_QFCB),DE
         LD      (DIR_QDMA),BC
         LD      A,(DE)
-        CP      2
+        CP      3
         JP      NC,DIR_QBAD
         PUSH    DE
         INC     DE
@@ -329,7 +342,7 @@ DIR_SIZE:
         LD      (DIR_ZUSER),A
         LD      (DIR_ZFCB),DE
         LD      A,(DE)
-        CP      2
+        CP      3
         JP      NC,DIR_ZNO
         LD      HL,(DIR_ZFCB)
         INC     HL
@@ -515,7 +528,7 @@ DIR_ATTR:
         OR      A
         JP      NZ,DIR_ANO
         LD      A,(DE)
-        CP      2
+        CP      3
         JP      NC,DIR_ANO
         CALL    DIR_JEMPTY
         JP      NZ,DIR_ANO
@@ -635,12 +648,12 @@ DIR_RENAME:
         OR      A
         JP      NZ,DIR_NNO
         LD      A,(DE)
-        CP      2
+        CP      3
         JP      NC,DIR_NNO
         LD      HL,16
         ADD     HL,DE
         LD      A,(HL)          ; new-name drive byte
-        CP      2
+        CP      3
         JP      NC,DIR_NNO
         CALL    DIR_JEMPTY
         JP      NZ,DIR_NNO
@@ -820,7 +833,7 @@ DIR_DELETE:
         OR      A
         JP      NZ,DIR_DNO
         LD      A,(DE)
-        CP      2
+        CP      3
         JP      NC,DIR_DNO
         CALL    DIR_DJOK
         JP      NZ,DIR_DNO       ; never discard another FCB's live journal
@@ -999,7 +1012,7 @@ DIR_MAKE:
         OR      A
         JR      NZ,DIR_MNO
         LD      A,(DE)
-        CP      2
+        CP      3
         JR      NC,DIR_MNO
         LD      HL,(DIR_MFCB)
         LD      DE,DIR_MOLD
@@ -1072,7 +1085,7 @@ DIR_WRITE:
         OR      A
         JP      NZ,DIR_WFAIL
         LD      A,(DE)
-        CP      2
+        CP      3
         JP      NC,DIR_WFAIL
         LD      HL,9            ; CP/M read-only attribute is T1 bit 7
         ADD     HL,DE
@@ -1571,7 +1584,7 @@ DIR_READ:
         LD      (DIR_RFCB),DE
         LD      (DIR_RDMA),BC
         LD      A,(DE)
-        CP      2
+        CP      3
         JP      NC,DIR_REOF
         CALL    DIR_GALV
         JR      Z,DIR_RPOS
@@ -2047,7 +2060,7 @@ DIR_SFIR:
         LD      A,(DE)
         CP      '?'
         JR      Z,DIR_SALL
-        CP      2
+        CP      3
         JP      NC,DIR_SNONE
         XOR     A
         LD      (S_ALLUSR),A
@@ -2469,7 +2482,7 @@ DIR_OPEN:
         LD      (DIR_USER),A
         LD      (DIR_FCBP),DE
         LD      A,(DE)
-        CP      2
+        CP      3
         JP      NC,DIR_ONOTF
         LD      HL,(DIR_FCBP)
         LD      DE,12

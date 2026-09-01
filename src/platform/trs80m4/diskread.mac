@@ -48,7 +48,10 @@ SIGNATURE:
 SIGLEN  EQU     $-SIGNATURE
 
         INCLUDE m4cons.inc
+B_PDrive:
+        DB      1               ; standalone diagnostic targets drive 0
 M4_READ_ONLY    EQU     1       ; keep this single-sector diagnostic below 512 bytes
+M4_MULTI_DRIVE  EQU     0
         INCLUDE m4disk.inc
         .DEPHASE
         END

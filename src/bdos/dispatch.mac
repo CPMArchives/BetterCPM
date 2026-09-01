@@ -28,6 +28,7 @@ DIRSIZE         EQU     0D636H  ; nineteenth directory-service vector
 DIRRREAD        EQU     0D639H  ; twentieth directory-service vector
 DIRRWRIT        EQU     0D63CH  ; twenty-first directory-service vector
 DIRRZERO        EQU     0D63FH  ; twenty-second directory-service vector
+DIRSELECT       EQU     0D642H  ; select/reuse a logical drive context
 
         CSEG
         .PHASE  BDOSBASE
@@ -580,16 +581,16 @@ BDOS_RESET:
 
 BDOS_SELDR:
         LD      A,E
-        CP      1               ; current provisional BIOS exposes A only
+        CP      2               ; Model 4 development system exposes A and B
         JR      NC,BDOS_BADRV
+        LD      (BDOS_TDRIVE),A
         LD      C,A
-        CALL    DIRLOGIN        ; commit BDOS state only after valid login
+        CALL    DIRSELECT       ; commit BDOS state only after valid login
         JR      NZ,BDOS_BADRV
         LD      HL,(BDOS_PARM)
         LD      A,L
         LD      (BDOS_DRIVE),A
-        LD      HL,0001H        ; only A exists in this provisional BIOS
-        LD      (STATE_LV),HL
+        CALL    BF_LOGCUR        ; login vector is cumulative
         XOR     A               ; function 14 has no defined normal result
         JP      BDOS_RETURN
 BDOS_BADRV:
@@ -624,9 +625,15 @@ BDOS_PTRER:
         JP      BDOS_RETURN
 
 BDOS_WRPRO:
-        LD      A,(STATE_RO)    ; only current drive A is available today
-        OR      01H
-        LD      (STATE_RO),A
+        LD      A,(BDOS_DRIVE)
+        OR      A
+        LD      A,1
+        JR      Z,BW_MASK
+        ADD     A,A
+BW_MASK:
+        LD      HL,STATE_RO
+        OR      (HL)
+        LD      (HL),A
         XOR     A               ; function 28 has no specified result
         JP      BDOS_RETURN
 
@@ -648,6 +655,8 @@ BF_GETU:
 
 BF_RREAD:
         LD      DE,(BDOS_PARM)
+        CALL    BF_FSEL
+        JP      NZ,BDOS_BADRV
         LD      BC,(BDOS_DMA)
         LD      A,(BDOS_USER)
         CALL    DIRRREAD
@@ -657,9 +666,10 @@ BF_RREAD:
 
 BF_RWRIT:
         LD      DE,(BDOS_PARM)
+        CALL    BF_FSEL
+        JP      NZ,BDOS_BADRV
         LD      BC,(BDOS_DMA)
-        LD      A,(STATE_RO)
-        AND     01H
+        CALL    BF_ISRO
         LD      H,A
         LD      A,(BDOS_USER)
         CALL    DIRRWRIT
@@ -669,9 +679,10 @@ BF_RWRIT:
 
 BF_RZERO:
         LD      DE,(BDOS_PARM)
+        CALL    BF_FSEL
+        JP      NZ,BDOS_BADRV
         LD      BC,(BDOS_DMA)
-        LD      A,(STATE_RO)
-        AND     01H
+        CALL    BF_ISRO
         LD      H,A
         LD      A,(BDOS_USER)
         CALL    DIRRZERO
@@ -679,26 +690,99 @@ BF_RZERO:
         LD      A,0FFH
         JP      BDOS_RETURN
 
-; Selectively return drives to the not-logged-in, read/write state. The
-; provisional BIOS exposes only A:, but all other vector bits remain harmless.
+; Selectively return the implemented drives to not-logged-in/read-write state.
 BF_RSTDR:
         LD      HL,(BDOS_PARM)
         LD      A,L
+        AND     3
+        LD      E,A
         AND     1
-        JR      Z,BF_RSTDONE
+        JR      Z,BF_RSTB
         LD      A,(STATE_LV)
         AND     0FEH
         LD      (STATE_LV),A
         LD      A,(STATE_RO)
         AND     0FEH
         LD      (STATE_RO),A
+BF_RSTB:
+        LD      A,E
+        AND     2
+        JR      Z,BF_RSTINV
+        LD      A,(STATE_LV)
+        AND     0FDH
+        LD      (STATE_LV),A
+        LD      A,(STATE_RO)
+        AND     0FDH
+        LD      (STATE_RO),A
+BF_RSTINV:
+        LD      A,E
+        OR      A
+        JR      Z,BF_RSTDONE
         CALL    DIRINVAL
 BF_RSTDONE:
         XOR     A               ; required for CP/M/MP/M compatibility
         JP      BDOS_RETURN
 
+; Patch 2026-09-01: resolve FCB byte zero (0=current, 1=A, 2=B) before every
+; file operation. Explicit selection changes the directory context and login
+; vector, but deliberately does not change Function 25's default drive.
+BF_FSEL:
+        PUSH    BC
+        PUSH    DE
+        LD      A,(DE)
+        CP      '?'
+        JR      Z,BF_FCUR
+        OR      A
+        JR      NZ,BF_FEXPL
+BF_FCUR:
+        LD      A,(BDOS_DRIVE)
+        JR      BF_FGOT
+BF_FEXPL:
+        DEC     A
+BF_FGOT:
+        CP      2
+        JR      NC,BF_FBAD
+        LD      (BDOS_TDRIVE),A
+        LD      C,A
+        CALL    DIRSELECT
+        JR      NZ,BF_FDONE
+        CALL    BF_LOGCUR
+        XOR     A
+BF_FDONE:
+        POP     DE
+        POP     BC
+        RET
+BF_FBAD:
+        LD      A,1
+        OR      A
+        JR      BF_FDONE
+
+BF_LOGCUR:
+        LD      A,(BDOS_TDRIVE)
+        OR      A
+        LD      A,1
+        JR      Z,BF_LMASK
+        ADD     A,A
+BF_LMASK:
+        LD      HL,STATE_LV
+        OR      (HL)
+        LD      (HL),A
+        RET
+
+BF_ISRO:
+        LD      A,(BDOS_TDRIVE)
+        OR      A
+        LD      A,(STATE_RO)
+        JR      Z,BF_ROBIT
+        RRCA
+BF_ROBIT:
+        AND     1
+        RET
+
 BDOS_OPEN:
         LD      DE,(BDOS_PARM)
+        CALL    BF_FSEL
+        JP      NZ,BDOS_BADRV
         LD      HL,14
         ADD     HL,DE
         LD      (HL),0          ; CP/M caller supplies S2 zero on Open
@@ -712,8 +796,9 @@ BDOS_OPEN:
 
 BDOS_CLOSE:
         LD      DE,(BDOS_PARM)
-        LD      A,(STATE_RO)
-        AND     01H             ; current implementation has drive A only
+        CALL    BF_FSEL
+        JP      NZ,BDOS_BADRV
+        CALL    BF_ISRO
         LD      B,A
         LD      A,(BDOS_USER)
         CALL    DIRCLOS
@@ -723,6 +808,8 @@ BDOS_CLOSE:
 
 BDOS_SFIR:
         LD      DE,(BDOS_PARM)
+        CALL    BF_FSEL
+        JP      NZ,BDOS_BADRV
         LD      BC,(BDOS_DMA)
         LD      A,(BDOS_USER)
         CALL    DIRSFIR
@@ -738,8 +825,9 @@ BF_SRET:
 
 BDOS_DELETE:
         LD      DE,(BDOS_PARM)
-        LD      A,(STATE_RO)
-        AND     01H
+        CALL    BF_FSEL
+        JP      NZ,BDOS_BADRV
+        CALL    BF_ISRO
         LD      B,A
         LD      A,(BDOS_USER)
         CALL    DIRDELETE
@@ -749,6 +837,8 @@ BDOS_DELETE:
 
 BDOS_READ:
         LD      DE,(BDOS_PARM)
+        CALL    BF_FSEL
+        JP      NZ,BDOS_BADRV
         LD      BC,(BDOS_DMA)
         LD      A,(BDOS_USER)
         CALL    DIRREAD
@@ -758,9 +848,10 @@ BDOS_READ:
 
 BDOS_WRITE:
         LD      DE,(BDOS_PARM)
+        CALL    BF_FSEL
+        JP      NZ,BDOS_BADRV
         LD      BC,(BDOS_DMA)
-        LD      A,(STATE_RO)
-        AND     01H
+        CALL    BF_ISRO
         LD      H,A             ; H=software-protected flag
         LD      A,(BDOS_USER)
         CALL    DIRWRITE
@@ -770,8 +861,9 @@ BDOS_WRITE:
 
 BDOS_MAKE:
         LD      DE,(BDOS_PARM)
-        LD      A,(STATE_RO)
-        AND     01H
+        CALL    BF_FSEL
+        JP      NZ,BDOS_BADRV
+        CALL    BF_ISRO
         LD      B,A
         LD      A,(BDOS_USER)
         CALL    DIRMAKE
@@ -781,8 +873,9 @@ BDOS_MAKE:
 
 BDOS_ATTR:
         LD      DE,(BDOS_PARM)
-        LD      A,(STATE_RO)
-        AND     01H
+        CALL    BF_FSEL
+        JP      NZ,BDOS_BADRV
+        CALL    BF_ISRO
         LD      B,A
         LD      A,(BDOS_USER)
         CALL    DIRATTR
@@ -792,6 +885,8 @@ BDOS_ATTR:
 
 BDOS_SIZE:
         LD      DE,(BDOS_PARM)
+        CALL    BF_FSEL
+        JP      NZ,BDOS_BADRV
         LD      A,(BDOS_USER)
         CALL    DIRSIZE
         JR      NC,BDOS_RETURN
@@ -861,8 +956,9 @@ BR_NC1:
 
 BDOS_RENAME:
         LD      DE,(BDOS_PARM)
-        LD      A,(STATE_RO)
-        AND     01H
+        CALL    BF_FSEL
+        JP      NZ,BDOS_BADRV
+        CALL    BF_ISRO
         LD      B,A
         LD      A,(BDOS_USER)
         CALL    DIRRENAME
@@ -916,6 +1012,8 @@ BDOS_USER:
         DB      0               ; initial current user
 BDOS_DRIVE:
         DB      0               ; initial current/default drive A
+BDOS_TDRIVE:
+        DB      0               ; target selected by the current FCB operation
 BDOS_DMA:
         DW      0080H           ; CP/M startup DMA selection
 STATE_LV:

@@ -353,11 +353,13 @@ def main() -> None:
     cpu.run(CALLER, limit=50000)
     require(cpu.a == 0, "CALL 0005h could not select and log in drive A")
     cpu.c, cpu.e = 14, 1
-    cpu.run(CALLER)
-    require(cpu.a == 0xFF, "CALL 0005h accepted unavailable drive B")
+    cpu.run(CALLER, limit=50000)
+    require(cpu.a == 0, "CALL 0005h could not select configured drive B")
     cpu.c = 25
     cpu.run(CALLER)
-    require(cpu.a == 0, "failed CALL 0005h drive selection changed drive A")
+    require(cpu.a == 1, "CALL 0005h drive B selection was not persistent")
+    cpu.c, cpu.e = 14, 0
+    cpu.run(CALLER, limit=50000)
     cpu.c, cpu.de = 26, 0x7345
     cpu.run(CALLER)
     cpu.c, cpu.e = 32, 0x3F
@@ -368,7 +370,7 @@ def main() -> None:
             "CALL 0005h user selection did not apply modulo 32")
     cpu.c = 24
     cpu.run(CALLER)
-    require(cpu.hl == 1, "CALL 0005h login vector did not contain drive A")
+    require(cpu.hl == 3, "CALL 0005h login vector did not contain A and B")
     cpu.c = 28
     cpu.run(CALLER)
     saved_fcb = bytes(cpu.mem[FCB:FCB + 33])

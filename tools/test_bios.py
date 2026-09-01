@@ -563,6 +563,16 @@ def main() -> None:
             "drive A allocation mask mismatch")
     require(cpu.word(dpb + 11) == 32 and cpu.word(dpb + 13) == 2,
             "drive A CKS/OFF mismatch")
+    dph_a = dph
+    cpu.c = 1
+    cpu.run(entries[9])
+    require(cpu.hl != 0 and cpu.hl != dph_a,
+            "SELDSK did not expose a distinct drive B DPH")
+    require(cpu.word(cpu.hl + 10) == dpb,
+            "drive B did not share the selected 790K geometry")
+    require(cpu.word(cpu.hl + 12) != cpu.word(dph_a + 12) and
+            cpu.word(cpu.hl + 14) != cpu.word(dph_a + 14),
+            "drive B reused drive A check/allocation workspace")
     cpu.c = 5
     cpu.run(entries[9])
     require(cpu.hl == 0, "SELDSK exposed an unavailable drive")
