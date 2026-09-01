@@ -51,6 +51,9 @@ def main() -> None:
     # A real cold boot does this before BDOS receives calls.
     cpu.c = 0
     cpu.run(BIOS_BASE + 9 * 3)
+    dph = cpu.hl
+    expected_dpb = cpu.word(dph + 10)
+    expected_alv = cpu.word(dph + 14)
 
     cpu.mem[FIXTURE:FIXTURE + 512] = bytes((0xE5,)) * 512
     entry = FIXTURE + 32
@@ -124,6 +127,15 @@ def main() -> None:
     cpu.run(BDOS_BASE)
     require(cpu.word(dma_state) == 0x7345,
             "set-DMA state did not retain DE")
+    cpu.c = 27
+    cpu.run(BDOS_BASE)
+    require(cpu.hl == expected_alv and cpu.mem[cpu.hl] == 0xC0,
+            "allocation-vector pointer or reserved bits are wrong")
+    cpu.c = 31
+    cpu.run(BDOS_BASE)
+    require(cpu.hl == expected_dpb and bytes(cpu.mem[cpu.hl:cpu.hl + 15]) ==
+            bytes((80, 0, 4, 15, 0, 0x8A, 1, 0x7F, 0, 0xC0, 0, 32, 0, 2, 0)),
+            "DPB pointer or 15-byte MM 790K layout is wrong")
     cpu.c, cpu.e = 32, 0x25
     cpu.run(BDOS_BASE)
     cpu.c, cpu.e = 32, 0xFF
@@ -170,7 +182,7 @@ def main() -> None:
             f"provisional BDOS storage failure was confused with slot success: "
             f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS functions 12-15, 24-26, 28-29, and 32 passed")
+    print("BDOS functions 12-15, 24-29, 31, and 32 passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 

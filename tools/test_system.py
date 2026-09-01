@@ -86,6 +86,15 @@ def main() -> None:
     cpu.c = 29
     cpu.run(CALLER)
     require(cpu.hl == 1, "CALL 0005h did not protect current drive A")
+    cpu.c = 27
+    cpu.run(CALLER)
+    alv = cpu.hl
+    require(cpu.mem[alv] == 0xC0,
+            "CALL 0005h allocation vector lacks reserved directory blocks")
+    cpu.c = 31
+    cpu.run(CALLER)
+    require(bytes(cpu.mem[cpu.hl:cpu.hl + 5]) == bytes((80, 0, 4, 15, 0)),
+            "CALL 0005h DPB does not begin with the MM 790K parameters")
     cpu.c = 13
     cpu.run(CALLER, limit=50000)
     cpu.c = 29
@@ -108,7 +117,7 @@ def main() -> None:
             "failed initialization published page-zero vectors")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
-    print("application CALL 0005h reached functions 12-15, 24-26, 28-29, and 32")
+    print("application CALL 0005h reached functions 12-15, 24-29, 31, and 32")
 
 
 if __name__ == "__main__":

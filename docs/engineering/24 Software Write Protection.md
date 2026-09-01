@@ -62,6 +62,6 @@ effect.
 
 ## Next increment
 
-Implement function 27 (Get Allocation Vector Address) and function 31 (Get
-Disk Parameter Block Address). These read-only introspection calls will expose
-the current drive's existing DPH-derived state before file mutation begins.
+Engineering Specification 25 completes this increment with functions 27 and
+31 and relogin-before-pointer publication. The next increment can implement
+Search First and Search Next using the selected DMA buffer.

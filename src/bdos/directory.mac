@@ -28,6 +28,30 @@ DIRSERV:
         JP      DIR_LOGIN
         JP      DIR_INVAL
         JP      DIR_OPEN
+        JP      DIR_GALV
+        JP      DIR_GDPB
+
+; Return live current-drive state for BDOS pointer-query functions. A stale or
+; invalidated login is rebuilt before its private pointers become public.
+DIR_GALV:
+        LD      A,(DIR_VALID)
+        OR      A
+        JR      NZ,DIR_AGOK
+        LD      A,(DIR_DRIVE)
+        LD      C,A
+        CALL    DIR_LOGIN
+        RET     NZ
+DIR_AGOK:
+        LD      HL,(DIR_ALVP)
+        XOR     A
+        RET
+
+DIR_GDPB:
+        CALL    DIR_GALV
+        RET     NZ
+        LD      HL,(DIR_DPB)
+        XOR     A
+        RET
 
 ; Establish drive state from its DPH and DPB. Input C=drive.
 ; The allocation vector is cleared, seeded from AL0/AL1, and reconstructed
