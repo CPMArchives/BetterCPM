@@ -65,8 +65,7 @@ bytes for BDOS.
 
 ## Next increment
 
-Implement the directory-record write service and dirty Close commit as one
-transactional increment: verify the matching on-disk identity, enforce the
-software read-only vector, merge the compatible FCB fields, write the complete
-128-byte directory record, and invalidate/reconstruct affected cached state on
-failure or success.
+Engineering Specification 28 completes the first bounded dirty Close commit for
+validated `RC` changes, including write protection and failure invalidation.
+The next increment must revise the provisional resident layout before further
+BDOS or filesystem growth.

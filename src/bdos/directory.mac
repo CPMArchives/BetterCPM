@@ -6,16 +6,18 @@
 
 DIRBASE         EQU     0E800H
 ; Patch 2026-09-01: DIRBUF was E900H through specification 14, EA00H for
-; specification 15, and EC00H through specification 25. Search continuation
-; grew across EC00H, so the intact 128-byte buffer moved once more; retaining
-; the old placements here records why this provisional map evolved.
-DIRBUF          EQU     0ED00H
+; specification 15, EC00H through specification 25, and ED00H for
+; specifications 26-27. Dirty Close grew across ED00H, so the intact buffer
+; moved below the resident code. Retaining the old placements records why the
+; provisional map evolved and flags the need for a broader layout revision.
+DIRBUF          EQU     0E400H
 BIOSBASE        EQU     0F000H
 BIOSELDS        EQU     BIOSBASE+27
 BIOSETTR        EQU     BIOSBASE+30
 BIOSETSE        EQU     BIOSBASE+33
 BIOSETDM        EQU     BIOSBASE+36
 BIOREAD         EQU     BIOSBASE+39
+BIOWRITE        EQU     BIOSBASE+42
 
         CSEG
         .PHASE  DIRBASE
@@ -35,11 +37,13 @@ DIRSERV:
         JP      DIR_SNXT
         JP      DIR_CLOSE
 
-; Close an unchanged activated FCB without touching media. This first close
-; slice deliberately rejects any bytes 1..31 that DIR_OPEN would need to
-; refresh; later dirty-close work will replace that rejection with a commit.
+; Close an activated FCB. B is nonzero when the current disk is software
+; protected. This first commit path permits RC-only metadata changes; allocation
+; map mutation remains rejected until write functions own validated blocks.
 DIR_CLOSE:
         LD      (DIR_CFP),DE
+        LD      A,B
+        LD      (DIR_CPRO),A
         PUSH    AF
         LD      HL,1
         ADD     HL,DE
@@ -56,25 +60,103 @@ DIR_CLOSE:
         LD      HL,(DIR_CFP)
         INC     HL
         LD      DE,DIR_CSAV
-        LD      B,31
-DIR_CCMP:
+        LD      B,14            ; identity through S2 must remain canonical
+C_CMPA:
         LD      A,(DE)
         CP      (HL)
-        JR      NZ,DIR_CDIFF
+        JP      NZ,DIR_CNOMR
         INC     DE
         INC     HL
-        DJNZ    DIR_CCMP
+        DJNZ    C_CMPA
+        LD      A,(DE)          ; saved FCB RC
+        CP      129
+        JP      NC,DIR_CNOMR
+        LD      (DIR_CNRC),A
+        LD      C,A
+        LD      A,(HL)          ; canonical on-disk RC
+        CP      C
+        LD      A,0
+        JR      Z,DIR_CRCEQ
+        DEC     A               ; FFh marks the permitted dirty-RC case
+DIR_CRCEQ:
+        LD      (DIR_CDIR),A
+        INC     DE
+        INC     HL
+        LD      B,16            ; allocation map must remain unchanged for now
+C_CMPB:
+        LD      A,(DE)
+        CP      (HL)
+        JP      NZ,DIR_CNOMR
+        INC     DE
+        INC     HL
+        DJNZ    C_CMPB
+        LD      A,(DIR_CDIR)
+        OR      A
+        JR      NZ,DIR_CWRITE
         LD      A,(DIR_CRET)
         OR      A
         RET
-DIR_CDIFF:
+
+DIR_CWRITE:
+        CALL    DIR_CREST       ; caller retains its dirty FCB exactly
+        LD      A,(DIR_CPRO)
+        OR      A
+        JR      NZ,C_NOWR
+        CALL    DIR_CENT
+        PUSH    HL
+        LD      DE,DIR_COLD
+        LD      BC,32
+        LDIR                    ; preserve buffer state for failed writeback
+        POP     HL
+        INC     HL
+        LD      DE,DIR_CSAV
+        EX      DE,HL
+        LD      BC,31
+        LDIR                    ; merge validated FCB fields into directory
+        LD      C,1             ; BIOS directory-write type
+        CALL    BIOWRITE
+        JR      NZ,DIR_CWERR
+        CALL    DIR_INVAL       ; rebuild allocation/login state on next use
+        LD      A,(DIR_CRET)
+        OR      A
+        RET
+DIR_CWERR:
+        PUSH    AF
+        CALL    DIR_CENT
+        EX      DE,HL
+        LD      HL,DIR_COLD
+        LD      BC,32
+        LDIR
+        CALL    DIR_INVAL       ; media state is uncertain after failed write
+        POP     AF
+        SCF
+        RET
+
+DIR_CNOMR:
+        CALL    DIR_CREST
+C_NOWR:
+        LD      A,0FFH          ; unsupported dirty state or protected disk
+        OR      A
+        RET
+
+DIR_CREST:
         LD      HL,DIR_CSAV
         LD      DE,(DIR_CFP)
         INC     DE
         LD      BC,31
         LDIR
-        LD      A,0FFH          ; dirty commit is not implemented yet
+        RET
+
+DIR_CENT:
+        LD      HL,DIRBUF
+        LD      A,(DIR_CRET)
         OR      A
+        RET     Z
+        LD      DE,32
+DIR_CEADD:
+        ADD     HL,DE
+        DEC     A
+        JR      NZ,DIR_CEADD
         RET
 
 ; Begin/continue a CP/M directory enumeration. Search First receives current
@@ -833,8 +915,18 @@ DIR_CFP:
         DW      0
 DIR_CRET:
         DB      0
+DIR_CPRO:
+        DB      0
+DIR_CDIR:
+        DB      0
+DIR_CNRC:
+        DB      0
 DIR_CSAV:
         REPT    31
+        DB      0
+        ENDM
+DIR_COLD:
+        REPT    32
         DB      0
         ENDM
 

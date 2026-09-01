@@ -30,6 +30,17 @@ def main() -> None:
         0x01, 0x00, 0x02,
         0xED, 0xB0, 0xAF, 0xC9,
     ))
+    write_impl = cpu.word(BIOS_BASE + 14 * 3 + 1)
+    write_jumps = [address for address in range(write_impl, write_impl + 90)
+                   if cpu.mem[address] == 0xC3]
+    require(write_jumps, "BIOS physical-write jump was not found")
+    platform_write = cpu.word(write_jumps[-1] + 1)
+    cpu.mem[platform_write:platform_write + 13] = bytes((
+        0x21, 0x00, 0xEE,
+        0x11, FIXTURE & 0xFF, FIXTURE >> 8,
+        0x01, 0x00, 0x02,
+        0xED, 0xB0, 0xAF, 0xC9,
+    ))
 
     cpu.mem[FIXTURE:FIXTURE + 512] = bytes((0xE5,)) * 512
     entry = FIXTURE + 32
@@ -61,6 +72,13 @@ def main() -> None:
     require(cpu.a == 1 and bytes(cpu.mem[FCB:FCB + 33]) == opened_fcb and
             bytes(cpu.mem[FIXTURE:FIXTURE + 512]) == media_before_close,
             "CALL 0005h unchanged Close modified FCB or media")
+    cpu.mem[FCB + 15] = 2
+    dirty_fcb = bytes(cpu.mem[FCB:FCB + 33])
+    cpu.c, cpu.de = 16, FCB
+    cpu.run(CALLER, limit=50000)
+    require(cpu.a == 1 and bytes(cpu.mem[FCB:FCB + 33]) == dirty_fcb and
+            cpu.mem[entry + 15] == 2,
+            "CALL 0005h dirty Close did not commit RC")
 
     cpu.mem[FCB:FCB + 33] = bytes(33)
     cpu.mem[FCB + 1:FCB + 13] = b"????????????"

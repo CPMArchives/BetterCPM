@@ -155,6 +155,9 @@ BDOS_OPEN:
 
 BDOS_CLOSE:
         LD      DE,(BDOS_PARM)
+        LD      A,(STATE_RO)
+        AND     01H             ; current implementation has drive A only
+        LD      B,A
         LD      A,(BDOS_USER)
         CALL    DIRCLOS
         JR      NC,BDOS_RETURN

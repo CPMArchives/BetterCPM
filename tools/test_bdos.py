@@ -11,7 +11,7 @@ DIRECTORY = ROOT / "build/bdos/directory.bin"
 BDOS = ROOT / "build/bdos/bdos.bin"
 BDOS_BASE = 0xE600
 DIR_BASE = 0xE800
-DIR_BUFFER = 0xED00
+DIR_BUFFER = 0xE400
 FIXTURE = 0x7500
 FCB = 0x7700
 
@@ -46,6 +46,18 @@ def main() -> None:
         0xED, 0xB0, 0xAF, 0xC9,
     ))
     cpu.mem[platform_read:platform_read + len(read_success)] = read_success
+    write_impl = cpu.word(BIOS_BASE + 14 * 3 + 1)
+    write_jumps = [address for address in range(write_impl, write_impl + 90)
+                   if cpu.mem[address] == 0xC3]
+    require(write_jumps, "BIOS physical-write jump was not found")
+    platform_write = cpu.word(write_jumps[-1] + 1)
+    write_success = bytes((
+        0x21, 0x00, 0xEE,
+        0x11, FIXTURE & 0xFF, FIXTURE >> 8,
+        0x01, 0x00, 0x02,
+        0xED, 0xB0, 0xAF, 0xC9,
+    ))
+    cpu.mem[platform_write:platform_write + len(write_success)] = write_success
 
     # Establish the BIOS drive state before exercising the higher-level entry.
     # A real cold boot does this before BDOS receives calls.
@@ -111,10 +123,43 @@ def main() -> None:
     dirty_fcb = bytes(cpu.mem[FCB:FCB + 33])
     cpu.c, cpu.de = 16, FCB
     cpu.run(BDOS_BASE, limit=50000)
-    require(cpu.a == 0xFF and bytes(cpu.mem[FCB:FCB + 33]) == dirty_fcb and
-            bytes(cpu.mem[FIXTURE:FIXTURE + 512]) == media_before_close,
-            "provisional dirty Close did not reject without media mutation")
+    require(cpu.a == 1 and bytes(cpu.mem[FCB:FCB + 33]) == dirty_fcb and
+            cpu.mem[entry + 15] == 2,
+            "dirty Close did not commit RC while preserving the caller FCB")
+    cpu.c = 28
+    cpu.run(BDOS_BASE)
+    cpu.mem[FCB + 15] = 3
+    protected_fcb = bytes(cpu.mem[FCB:FCB + 33])
+    protected_media = bytes(cpu.mem[FIXTURE:FIXTURE + 512])
+    cpu.c, cpu.de = 16, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0xFF and bytes(cpu.mem[FCB:FCB + 33]) == protected_fcb and
+            bytes(cpu.mem[FIXTURE:FIXTURE + 512]) == protected_media,
+            "write-protected dirty Close changed FCB or media")
+    cpu.c = 13
+    cpu.run(BDOS_BASE, limit=50000)
     cpu.mem[FCB:FCB + 33] = opened_fcb
+    cpu.mem[FCB + 15] = 2
+    cpu.mem[FCB + 16] = 1
+    unsupported_fcb = bytes(cpu.mem[FCB:FCB + 33])
+    unsupported_media = bytes(cpu.mem[FIXTURE:FIXTURE + 512])
+    cpu.c, cpu.de = 16, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0xFF and bytes(cpu.mem[FCB:FCB + 33]) == unsupported_fcb and
+            bytes(cpu.mem[FIXTURE:FIXTURE + 512]) == unsupported_media,
+            "Close accepted an allocation-map mutation it cannot validate")
+    cpu.mem[FCB + 16] = 0
+    cpu.mem[FCB + 15] = 3
+    failed_fcb = bytes(cpu.mem[FCB:FCB + 33])
+    failed_media = bytes(cpu.mem[FIXTURE:FIXTURE + 512])
+    cpu.mem[platform_write:platform_write + 4] = bytes((0x3E, 0x06, 0xB7, 0xC9))
+    cpu.c, cpu.de = 16, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0xFF and bytes(cpu.mem[FCB:FCB + 33]) == failed_fcb and
+            bytes(cpu.mem[FIXTURE:FIXTURE + 512]) == failed_media,
+            "failed dirty Close did not preserve caller and media fixtures")
+    cpu.mem[platform_write:platform_write + len(write_success)] = write_success
+    cpu.mem[FCB + 15] = 2
 
     cpu.mem[FCB + 1:FCB + 12] = b"MISSING DAT"
     cpu.mem[FCB + 14] = 0xA5
