@@ -115,6 +115,9 @@ class Z80:
             elif op == 0xB3:            # OR E
                 self.a |= self.e
                 self.z = self.a == 0
+            elif op == 0xB5:            # OR L
+                self.a |= self.l
+                self.z = self.a == 0
             elif op == 0xE6:            # AND n
                 self.a &= self.mem[self.pc]
                 self.pc += 1
@@ -141,6 +144,9 @@ class Z80:
             elif op == 0x06:            # LD B,n
                 self.b = self.mem[self.pc]
                 self.pc += 1
+            elif op == 0x0E:            # LD C,n
+                self.c = self.mem[self.pc]
+                self.pc += 1
             elif op == 0x16:            # LD D,n
                 self.d = self.mem[self.pc]
                 self.pc += 1
@@ -156,6 +162,10 @@ class Z80:
                 self.a = self.d
             elif op == 0x7B:            # LD A,E
                 self.a = self.e
+            elif op == 0x7C:            # LD A,H
+                self.a = self.h
+            elif op == 0x7E:            # LD A,(HL)
+                self.a = self.mem[self.hl]
             elif op == 0x5F:            # LD E,A
                 self.e = self.a
             elif op == 0x32:            # LD (nn),A
@@ -224,6 +234,14 @@ class Z80:
             elif op == 0xC0:            # RET NZ
                 if not self.z:
                     self.pc = self.pop()
+            elif op == 0x10:            # DJNZ e
+                displacement = self.mem[self.pc]
+                self.pc += 1
+                self.b = (self.b - 1) & 0xFF
+                if self.b:
+                    if displacement & 0x80:
+                        displacement -= 0x100
+                    self.pc = (self.pc + displacement) & 0xFFFF
             else:
                 raise AssertionError(f"unsupported opcode {op:02X} at {self.pc - 1:04X}")
         raise AssertionError(f"execution limit reached from {address:04X}")

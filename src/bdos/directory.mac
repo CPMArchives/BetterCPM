@@ -1,0 +1,71 @@
+; BetterCP/M first filesystem-facing directory reader.
+;
+; This is an independently buildable System Services component, not a BIOS
+; extension.  Its placement and the BIOS address are provisional bring-up
+; values.  It deliberately reaches disk only through the CP/M BIOS vectors.
+
+DIRBASE         EQU     0E800H
+DIRBUF          EQU     0E900H
+BIOSBASE        EQU     0F000H
+BIOSELDS        EQU     BIOSBASE+27
+BIOSETTR        EQU     BIOSBASE+30
+BIOSETSE        EQU     BIOSBASE+33
+BIOSETDM        EQU     BIOSBASE+36
+BIOREAD         EQU     BIOSBASE+39
+
+        CSEG
+        .PHASE  DIRBASE
+
+; Provisional internal service vectors keep callers independent of routine size.
+DIRSERV:
+        JP      DIR_LOAD0
+        JP      DIR_FIRST
+
+; Read the first 128-byte directory record for drive A.
+; Returns A=0/Z and HL=DIRBUF, or the BIOS/nonexistent-drive error in A/NZ.
+DIR_LOAD0:
+        LD      C,0
+        CALL    BIOSELDS
+        LD      A,H
+        OR      L
+        JR      Z,DIR_NODRV
+        LD      BC,2            ; DPB OFF: first directory logical track
+        CALL    BIOSETTR
+        LD      BC,0
+        CALL    BIOSETSE
+        LD      BC,DIRBUF
+        CALL    BIOSETDM
+        CALL    BIOREAD
+        RET     NZ
+        LD      HL,DIRBUF
+        XOR     A
+        RET
+DIR_NODRV:
+        LD      A,1
+        OR      A
+        RET
+
+; Return the first ordinary CP/M entry in the loaded record.
+; Users 0..15 are ordinary entries. E5h is deleted; other user-byte values
+; are reserved metadata and are skipped rather than rejected.
+; Returns A=0/Z with HL at the 32-byte entry, or A=FFh/NZ if none exists.
+DIR_FIRST:
+        CALL    DIR_LOAD0
+        RET     NZ
+        LD      B,4
+DIR_SCAN:
+        LD      A,(HL)
+        CP      16
+        JR      C,DIR_FOUND
+        LD      DE,32
+        ADD     HL,DE
+        DJNZ    DIR_SCAN
+        LD      A,0FFH
+        OR      A
+        RET
+DIR_FOUND:
+        XOR     A
+        RET
+
+        .DEPHASE
+        END

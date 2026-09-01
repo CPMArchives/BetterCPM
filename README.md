@@ -28,6 +28,7 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Engineering Specification 10`](docs/engineering/10%20Exhaustive%20Logical%20Read%20Conformance.md) executes all 80 logical-sector mappings and verifies every 128-byte DMA quarter.
 [`Engineering Specification 11`](docs/engineering/11%20Write-Through%20Logical%20Disk%20Path.md) adds verified 128-byte read-modify-write behavior and physical write/readback.
 [`Engineering Specification 12`](docs/engineering/12%20Bounded%20Disk%20Errors.md) bounds every floppy-controller wait and defines verified BIOS failure behavior.
+[`Engineering Specification 13`](docs/engineering/13%20First%20Directory%20Record.md) adds the first filesystem-facing System Services component and reads and classifies a CP/M directory record through the BIOS.
 
 ## First boot
 
@@ -40,6 +41,9 @@ python3 tools/test_bios.py
 python3 tools/build_native_bios.py
 python3 tools/test_trs80_physical_read.py
 python3 tools/test_trs80_physical_write.py
+python3 tools/build_directory.py
+python3 tools/test_directory.py
+python3 tools/build_native_directory.py
 ```
 
 The native build runs ZSM4 and Digital Research LINK under CP/M and must match the cross-assembled binaries byte for byte. The emulator test boots the generated 790K DMK, verifies the stage-one display, proves a raw-sector read, and injects and echoes a Model 4 matrix-level keypress through the platform interface.
