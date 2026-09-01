@@ -458,9 +458,25 @@ def require(condition: bool, message: str) -> None:
         raise AssertionError(message)
 
 
+def install_drive_tables(cpu: Z80) -> None:
+    """Install the gateway-owned four-drive DPH/DPB contract in test memory."""
+    dpb_address = 0xC0C0
+    workspaces = ((0xF380, 0xF3A0), (0xBF00, 0xBF20),
+                  (0xBF52, 0xBF72), (0xBFA4, 0xBFC4))
+    for drive, (csv, alv) in enumerate(workspaces):
+        dph = 0xC080 + drive * 16
+        for offset, value in ((8, 0xF300), (10, dpb_address),
+                              (12, csv), (14, alv)):
+            cpu.mem[dph + offset:dph + offset + 2] = value.to_bytes(2, "little")
+    cpu.mem[dpb_address:dpb_address + 15] = bytes(
+        (80, 0, 4, 15, 0, 0x8A, 1, 127, 0, 0xC0, 0, 32, 0, 2, 0)
+    )
+
+
 def main() -> None:
     data = IMAGE.read_bytes()
     cpu = Z80(data)
+    install_drive_tables(cpu)
 
     def entry(index: int) -> int:
         offset = BASE + index * 3
@@ -563,16 +579,20 @@ def main() -> None:
             "drive A allocation mask mismatch")
     require(cpu.word(dpb + 11) == 32 and cpu.word(dpb + 13) == 2,
             "drive A CKS/OFF mismatch")
-    dph_a = dph
-    cpu.c = 1
-    cpu.run(entries[9])
-    require(cpu.hl != 0 and cpu.hl != dph_a,
-            "SELDSK did not expose a distinct drive B DPH")
-    require(cpu.word(cpu.hl + 10) == dpb,
-            "drive B did not share the selected 790K geometry")
-    require(cpu.word(cpu.hl + 12) != cpu.word(dph_a + 12) and
-            cpu.word(cpu.hl + 14) != cpu.word(dph_a + 14),
-            "drive B reused drive A check/allocation workspace")
+    dphs = [dph]
+    work = {(cpu.word(dph + 12), cpu.word(dph + 14))}
+    for drive, name in ((1, "B"), (2, "C"), (3, "D")):
+        cpu.c = drive
+        cpu.run(entries[9])
+        require(cpu.hl != 0 and cpu.hl not in dphs,
+                f"SELDSK did not expose a distinct drive {name} DPH")
+        require(cpu.word(cpu.hl + 10) == dpb,
+                f"drive {name} did not share the selected 790K geometry")
+        pair = (cpu.word(cpu.hl + 12), cpu.word(cpu.hl + 14))
+        require(pair not in work,
+                f"drive {name} reused another drive's check/allocation workspace")
+        dphs.append(cpu.hl)
+        work.add(pair)
     cpu.c = 5
     cpu.run(entries[9])
     require(cpu.hl == 0, "SELDSK exposed an unavailable drive")

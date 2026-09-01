@@ -18,7 +18,7 @@ COMPONENTS = (
     (0xE940, "../ccp/ccp.bin"),
     (0xEF00, "../bios/bios.bin"),
 )
-RESIDENT_BASE = 0xBF00       # includes the reserved 128-byte DIRBUF workspace
+RESIDENT_BASE = 0xBF00       # includes the reserved multi-drive DPH workspace
 LIMITS = (0xC100, 0xD600, 0xE940, 0xED00, 0x10000)
 
 

@@ -6,10 +6,19 @@
 BIOSBASE        EQU     0EF00H
 BIO_PHYBF       EQU     0ED00H  ; 512-byte buffer below the resident BIOS
 BIO_DIRBF       EQU     0F300H
-BIO_CSV1        EQU     0BF80H  ; reserved gap after DIRBUF, before gateway
-BIO_ALV1        EQU     0BFA0H
+BIO_CSV1        EQU     0BF00H  ; reserved DPH-state page below the gateway
+BIO_ALV1        EQU     0BF20H
+BIO_CSV2        EQU     0BF52H
+BIO_ALV2        EQU     0BF72H
+BIO_CSV3        EQU     0BFA4H
+BIO_ALV3        EQU     0BFC4H
 BIO_CSV0        EQU     0F380H
 BIO_ALV0        EQU     0F3A0H
+BIO_DPH0        EQU     0C080H
+BIO_DPH1        EQU     0C090H
+BIO_DPH2        EQU     0C0A0H
+BIO_DPH3        EQU     0C0B0H
+BIO_DPB0        EQU     0C0C0H
 SYS_BOOT        EQU     0C020H
 SYS_WBOOT       EQU     0C023H
 
@@ -81,17 +90,22 @@ BIOSETDM:
         LD      (BIO_DMA),BC
         RET
 
-; Patch 2026-09-01: A: and B: are separate Model 4 floppy drives.  They share
+; Patch 2026-09-01: A: through D: are separate Model 4 floppy drives. They share
 ; the temporary MM Extended 790K geometry, but never BDOS scratch workspace.
 BIOSELDS:
         LD      A,C
         LD      (BIO_DRIVE),A
-        CP      2
+        CP      4
         JR      NC,BIO_NODSK
         OR      A
         LD      HL,BIO_DPH0
         RET     Z
+        CP      2
         LD      HL,BIO_DPH1
+        RET     C
+        LD      HL,BIO_DPH2
+        RET     Z
+        LD      HL,BIO_DPH3
         RET
 BIO_NODSK:
         LD      HL,0
@@ -166,9 +180,13 @@ BIO_WRCOP:
 
 BIO_MAP:
         LD      A,(BIO_DRIVE)
-        CP      2
+        CP      4
         JR      NC,BIO_RDERR
-        INC     A               ; controller select bits: drive 0=1, drive 1=2
+        LD      E,A
+        LD      D,0
+        LD      HL,BIO_DRMASK
+        ADD     HL,DE
+        LD      A,(HL)
         LD      (B_PDrive),A
         LD      A,(BIO_TRACK+1)
         OR      A
@@ -251,32 +269,9 @@ BIO_PSEC:
         DB      1
 BIO_ORDER:
         DB      1,3,5,7,9,2,4,6,8,10
+BIO_DRMASK:
+        DB      1,2,4,8
 
-; Patch 2026-09-01: one CP/M logical track spans both sides of a cylinder.
-; 20 physical sectors * four 128-byte records gives SPT=80; OFF=2 therefore
-; reserves two cylinders (20,480 bytes), not merely two physical sides.
-BIO_DPH0:
-        DW      0               ; identity XLT
-        DW      0,0,0           ; BDOS scratch
-        DW      BIO_DIRBF
-        DW      BIO_DPB0
-        DW      BIO_CSV0
-        DW      BIO_ALV0
-BIO_DPH1:
-        DW      0               ; identity XLT
-        DW      0,0,0           ; independent BDOS scratch
-        DW      BIO_DIRBF
-        DW      BIO_DPB0
-        DW      BIO_CSV1
-        DW      BIO_ALV1
-BIO_DPB0:
-        DW      80              ; SPT
-        DB      4,15,0          ; BSH, BLM, EXM
-        DW      394             ; DSM
-        DW      127             ; DRM
-        DB      0C0H,0          ; AL0, AL1
-        DW      32              ; CKS
-        DW      2               ; OFF
         INCLUDE biosplat.inc
 
         .DEPHASE

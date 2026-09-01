@@ -2,13 +2,13 @@
 """Execute the initial directory reader against the real BIOS vectors."""
 from pathlib import Path
 
-from test_bios import BASE as BIOS_BASE, Z80, require
+from test_bios import BASE as BIOS_BASE, Z80, install_drive_tables, require
 
 ROOT = Path(__file__).resolve().parents[1]
 BIOS = ROOT / "build/bios/bios.bin"
 DIRECTORY = ROOT / "build/bdos/directory.bin"
 DIR_BASE = 0xD600
-DIR_BUFFER = 0xBF00
+DIR_BUFFER = 0xF300
 FIXTURE = 0x7500
 QUERY = 0x7600
 FCB = 0x7700
@@ -16,6 +16,7 @@ FCB = 0x7700
 
 def main() -> None:
     cpu = Z80(BIOS.read_bytes())
+    install_drive_tables(cpu)
     cpu.sp = 0xBC00          # below resident memory and the ED00h BIOS buffer
     component = DIRECTORY.read_bytes()
     cpu.mem[DIR_BASE:DIR_BASE + len(component)] = component

@@ -26,6 +26,7 @@ BOOT_SECTOR_LOGICAL_INDEX = 0
 STAGE1_SECTOR_LOGICAL_INDEX = 1  # logical order sector 3
 VERIFY_SECTOR_LOGICAL_INDEX = 2  # logical order sector 5
 VERIFY_PAYLOAD = b"BetterCP/M verify" + bytes(SECTOR_SIZE - len(b"BetterCP/M verify"))
+CROSS_FIXTURE = (b"BFILE-000 " * 12 + b"BFILE-00")
 SYSTEM_FIRST_LOGICAL_INDEX = 2
 SYSTEM_SECTORS = 26
 FILESYSTEM_FIRST_SECTOR = 40   # DPB OFF=2, one logical track per cylinder
@@ -143,6 +144,8 @@ def main() -> None:
                         help="additional user-zero file to install (repeatable)")
     parser.add_argument("--include-as", action="append", default=[], metavar="NAME=PATH",
                         help="install PATH under a chosen CP/M 8.3 NAME")
+    parser.add_argument("--cross-fixture", action="store_true",
+                        help="install the canonical one-record BTBFILE.DAT fixture")
     parser.add_argument("--output", type=Path,
                         default=BUILD / "BetterCPM-Extended-80T-DS-System-790K.dmk")
     args = parser.parse_args()
@@ -164,6 +167,8 @@ def main() -> None:
             raise SystemExit(f"invalid included-file alias: {specification}")
         cpm_name(name)            # validate before doing any image work
         extras.append((name, path.read_bytes()))
+    if args.cross_fixture:
+        extras.append(("BTBFILE.DAT", CROSS_FIXTURE))
     image = install(boot, stage1, resident, [("HELLO.COM", HELLO_COM), *extras])
     output = args.output.resolve()
     output.parent.mkdir(parents=True, exist_ok=True)

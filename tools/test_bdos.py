@@ -3,7 +3,7 @@
 from pathlib import Path
 import re
 
-from test_bios import BASE as BIOS_BASE, Z80, require
+from test_bios import BASE as BIOS_BASE, Z80, install_drive_tables, require
 
 ROOT = Path(__file__).resolve().parents[1]
 BIOS = ROOT / "build/bios/bios.bin"
@@ -11,7 +11,7 @@ DIRECTORY = ROOT / "build/bdos/directory.bin"
 BDOS = ROOT / "build/bdos/bdos.bin"
 BDOS_BASE = 0xC100
 DIR_BASE = 0xD600
-DIR_BUFFER = 0xBF00
+DIR_BUFFER = 0xF300
 FIXTURE = 0x7500
 FCB = 0x7700
 DATA = 0x7900
@@ -29,6 +29,7 @@ def symbol(name: str) -> int:
 
 def main() -> None:
     cpu = Z80(BIOS.read_bytes())
+    install_drive_tables(cpu)
     cpu.sp = 0xBC00          # below resident memory and the ED00h BIOS buffer
     directory = DIRECTORY.read_bytes()
     bdos = BDOS.read_bytes()

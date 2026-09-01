@@ -46,6 +46,8 @@ def main() -> None:
     parser.add_argument("--image", type=Path, default=DEFAULT_IMAGE)
     parser.add_argument("--drive-b", type=Path,
                         help="optional DMK to mount as the second floppy")
+    parser.add_argument("--drive-c", type=Path,
+                        help="optional DMK to mount as the third floppy")
     parser.add_argument("--boot-delay", type=int, default=1200)
     parser.add_argument("--run-delay", type=int, default=8000)
     parser.add_argument("--snapshot", type=Path)
@@ -53,17 +55,22 @@ def main() -> None:
     inputs = [args.emulator, args.image]
     if args.drive_b:
         inputs.append(args.drive_b)
+    if args.drive_c:
+        inputs.append(args.drive_c)
     for path in inputs:
         if not path.is_file():
             raise SystemExit(f"missing test input: {path}")
     image = args.image.resolve()
     drive_b = args.drive_b.resolve() if args.drive_b else None
+    drive_c = args.drive_c.resolve() if args.drive_c else None
 
     with tempfile.TemporaryDirectory(prefix="bettercpm-command-") as temporary:
         command = [str(args.emulator), "-m4", "-batch", "-turbo",
                    "-d0", str(image), "-id", str(args.boot_delay)]
         if drive_b:
             command[6:6] = ["-d1", str(drive_b)]
+        if drive_c:
+            command[6:6] = ["-d2", str(drive_c)]
         command.extend(key_args(args.command + "\r"))
         command.extend(("-id", str(args.run_delay), "-it", "-ix"))
         subprocess.run(command, cwd=temporary, check=True)

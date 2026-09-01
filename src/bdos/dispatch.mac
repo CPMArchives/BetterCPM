@@ -581,7 +581,7 @@ BDOS_RESET:
 
 BDOS_SELDR:
         LD      A,E
-        CP      2               ; Model 4 development system exposes A and B
+        CP      4               ; Model 4 development system exposes A through D
         JR      NC,BDOS_BADRV
         LD      (BDOS_TDRIVE),A
         LD      C,A
@@ -626,11 +626,11 @@ BDOS_PTRER:
 
 BDOS_WRPRO:
         LD      A,(BDOS_DRIVE)
-        OR      A
-        LD      A,1
-        JR      Z,BW_MASK
-        ADD     A,A
-BW_MASK:
+        LD      E,A
+        LD      D,0
+        LD      HL,BF_DMASK
+        ADD     HL,DE
+        LD      A,(HL)
         LD      HL,STATE_RO
         OR      (HL)
         LD      (HL),A
@@ -694,7 +694,7 @@ BF_RZERO:
 BF_RSTDR:
         LD      HL,(BDOS_PARM)
         LD      A,L
-        AND     3
+        AND     0FH
         LD      E,A
         AND     1
         JR      Z,BF_RSTB
@@ -713,6 +713,26 @@ BF_RSTB:
         LD      (STATE_LV),A
         LD      A,(STATE_RO)
         AND     0FDH
+        LD      (STATE_RO),A
+BF_RSTC:
+        LD      A,E
+        AND     4
+        JR      Z,BF_RSTD
+        LD      A,(STATE_LV)
+        AND     0FBH
+        LD      (STATE_LV),A
+        LD      A,(STATE_RO)
+        AND     0FBH
+        LD      (STATE_RO),A
+BF_RSTD:
+        LD      A,E
+        AND     8
+        JR      Z,BF_RSTINV
+        LD      A,(STATE_LV)
+        AND     0F7H
+        LD      (STATE_LV),A
+        LD      A,(STATE_RO)
+        AND     0F7H
         LD      (STATE_RO),A
 BF_RSTINV:
         LD      A,E
@@ -740,7 +760,7 @@ BF_FCUR:
 BF_FEXPL:
         DEC     A
 BF_FGOT:
-        CP      2
+        CP      4
         JR      NC,BF_FBAD
         LD      (BDOS_TDRIVE),A
         LD      C,A
@@ -759,25 +779,35 @@ BF_FBAD:
 
 BF_LOGCUR:
         LD      A,(BDOS_TDRIVE)
-        OR      A
-        LD      A,1
-        JR      Z,BF_LMASK
-        ADD     A,A
-BF_LMASK:
+        LD      E,A
+        LD      D,0
+        LD      HL,BF_DMASK
+        ADD     HL,DE
+        LD      A,(HL)
         LD      HL,STATE_LV
         OR      (HL)
         LD      (HL),A
         RET
 
 BF_ISRO:
+        PUSH    BC
         LD      A,(BDOS_TDRIVE)
-        OR      A
+        LD      B,A
         LD      A,(STATE_RO)
+BF_ROSHIFT:
+        INC     B
+        DEC     B
         JR      Z,BF_ROBIT
         RRCA
+        DEC     B
+        JR      BF_ROSHIFT
 BF_ROBIT:
         AND     1
+        POP     BC
         RET
+
+BF_DMASK:
+        DB      1,2,4,8
 
 BDOS_OPEN:
         LD      DE,(BDOS_PARM)
