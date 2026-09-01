@@ -5,7 +5,10 @@
 ; values.  It deliberately reaches disk only through the CP/M BIOS vectors.
 
 DIRBASE         EQU     0E800H
-DIRBUF          EQU     0E900H
+; Patch 2026-09-01: DIRBUF was E900H through specification 14. DPB-driven
+; login enlarged the provisional component, so the separate buffer moved
+; intact rather than allowing new code to grow silently into it.
+DIRBUF          EQU     0EA00H
 BIOSBASE        EQU     0F000H
 BIOSELDS        EQU     BIOSBASE+27
 BIOSETTR        EQU     BIOSBASE+30
@@ -22,6 +25,120 @@ DIRSERV:
         JP      DIR_FIRST
         JP      DIR_LOAD
         JP      DIR_FIND
+        JP      DIR_LOGIN
+        JP      DIR_INVAL
+
+; Establish drive state from its DPH and DPB. Input C=drive.
+; The allocation vector is cleared and its DPB directory-reservation bytes
+; installed. File-owned allocation bits are reconstructed in the next phase.
+DIR_LOGIN:
+        XOR     A
+        LD      (DIR_VALID),A
+        LD      A,C
+        LD      (DIR_DRIVE),A
+        CALL    BIOSELDS
+        LD      A,H
+        OR      L
+        JP      Z,DIR_NODRV
+        LD      (DIR_DPH),HL
+        LD      DE,10
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (DIR_DPB),DE
+        EX      DE,HL
+        LD      E,(HL)          ; SPT
+        INC     HL
+        LD      D,(HL)
+        LD      (DIR_SPT),DE
+        LD      A,D             ; current divider requires 1..255 records/track
+        OR      A
+        JP      NZ,DIR_BADFMT
+        LD      A,E
+        OR      A
+        JP      Z,DIR_BADFMT
+        LD      DE,4
+        ADD     HL,DE           ; DSM at DPB+5
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (DIR_DSM),DE
+        INC     HL              ; DRM at DPB+7
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (DIR_DRM),DE
+        INC     HL              ; AL0/AL1 at DPB+9
+        LD      A,(HL)
+        LD      (DIR_AL0),A
+        INC     HL
+        LD      A,(HL)
+        LD      (DIR_AL1),A
+        LD      DE,3
+        ADD     HL,DE           ; OFF at DPB+13
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (DIR_OFF),DE
+
+        LD      HL,(DIR_DRM)    ; ceil((DRM+1)/4) directory records
+        LD      DE,4
+        ADD     HL,DE
+        SRL     H
+        RR      L
+        SRL     H
+        RR      L
+        LD      (DIR_RECS),HL
+        LD      A,H             ; current scanner uses an 8-bit record index
+        OR      A
+        JR      NZ,DIR_BADFMT
+
+        LD      HL,(DIR_DPH)
+        LD      DE,14
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (DIR_ALVP),DE
+        LD      HL,(DIR_DSM)    ; ceil((DSM+1)/8) allocation bytes
+        LD      DE,8
+        ADD     HL,DE
+        SRL     H
+        RR      L
+        SRL     H
+        RR      L
+        SRL     H
+        RR      L
+        LD      A,H
+        OR      A
+        JR      NZ,DIR_BADFMT
+        LD      B,L
+        LD      HL,(DIR_ALVP)
+        XOR     A
+DIR_ACLR:
+        LD      (HL),A
+        INC     HL
+        DJNZ    DIR_ACLR
+        LD      HL,(DIR_ALVP)
+        LD      A,(DIR_AL0)
+        LD      (HL),A
+        INC     HL
+        LD      A,(DIR_AL1)
+        LD      (HL),A
+        LD      A,0FFH
+        LD      (DIR_VALID),A
+        XOR     A
+        RET
+DIR_BADFMT:
+        LD      A,1
+        OR      A
+        RET
+
+DIR_INVAL:
+        XOR     A
+        LD      (DIR_VALID),A
+        RET
 
 ; Read the first 128-byte directory record for drive A.
 ; Returns A=0/Z and HL=DIRBUF, or the BIOS/nonexistent-drive error in A/NZ.
@@ -32,18 +149,39 @@ DIR_LD0:
 ; Read directory record C (0..31) for the current 128-entry MM 790K format.
 ; The format-specific bounds belong here, above the geometry-neutral BIOS.
 DIR_LOAD:
+        LD      A,(DIR_VALID)
+        OR      A
+        JR      NZ,DIR_LDOK
+        PUSH    BC
+        LD      C,0
+        CALL    DIR_LOGIN
+        POP     BC
+        RET     NZ
+DIR_LDOK:
         LD      A,C
-        CP      32
+        LD      HL,DIR_RECS
+        CP      (HL)
         JR      NC,DIR_NODRV
         LD      (DIR_RECORD),A
-        LD      C,0
+        LD      A,(DIR_DRIVE)
+        LD      C,A
         CALL    BIOSELDS
         LD      A,H
         OR      L
         JR      Z,DIR_NODRV
-        LD      BC,2            ; DPB OFF: first directory logical track
-        CALL    BIOSETTR
+        LD      BC,(DIR_OFF)
         LD      A,(DIR_RECORD)
+DIR_DIVSP:
+        LD      HL,DIR_SPT
+        CP      (HL)
+        JR      C,DIR_DIVDN
+        SUB     (HL)
+        INC     BC
+        JR      DIR_DIVSP
+DIR_DIVDN:
+        PUSH    AF
+        CALL    BIOSETTR
+        POP     AF
         LD      C,A
         LD      B,0
         CALL    BIOSETSE
@@ -97,7 +235,8 @@ DIR_FIND:
         LD      (DIR_RECORD),A
 DIR_FRECD:
         LD      A,(DIR_RECORD)
-        CP      32
+        LD      HL,DIR_RECS
+        CP      (HL)
         JR      NC,DIR_NOTF
         LD      C,A
         CALL    DIR_LOAD
@@ -151,6 +290,30 @@ DIR_RECORD:
         DB      0
 DIR_NAMP:
         DW      0
+DIR_VALID:
+        DB      0
+DIR_DRIVE:
+        DB      0
+DIR_DPH:
+        DW      0
+DIR_DPB:
+        DW      0
+DIR_SPT:
+        DW      0
+DIR_DSM:
+        DW      0
+DIR_DRM:
+        DW      0
+DIR_OFF:
+        DW      0
+DIR_RECS:
+        DW      0
+DIR_ALVP:
+        DW      0
+DIR_AL0:
+        DB      0
+DIR_AL1:
+        DB      0
 
         .DEPHASE
         END

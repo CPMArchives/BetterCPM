@@ -65,3 +65,6 @@ Introduce drive-login state derived from the DPH and DPB, including directory
 record bounds, allocation-vector initialization, and an explicit invalidation
 rule.  The exact search can then stop depending on compiled MM 790K values.
 
+Engineering Specification 15 completed the table-driven login and reserved
+allocation initialization. Reconstructing file-owned allocation bits remains
+the next step before the vector is safe for filesystem mutation.

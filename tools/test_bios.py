@@ -68,6 +68,15 @@ class Z80:
             self.pc += 1
             if op == 0xC3:              # JP nn
                 self.pc = self.word(self.pc)
+            elif op in (0xC2, 0xCA, 0xD2, 0xDA):  # JP NZ/Z/NC/C,nn
+                target = self.word(self.pc)
+                self.pc += 2
+                take = ((op == 0xC2 and not self.z) or
+                        (op == 0xCA and self.z) or
+                        (op == 0xD2 and not self.carry) or
+                        (op == 0xDA and self.carry))
+                if take:
+                    self.pc = target
             elif op == 0xCD:            # CALL nn
                 target = self.word(self.pc)
                 self.pc += 2
@@ -152,6 +161,8 @@ class Z80:
             elif op == 0x04:            # INC B
                 self.b = (self.b + 1) & 0xFF
                 self.z = self.b == 0
+            elif op == 0x03:            # INC BC
+                self.bc = (self.bc + 1) & 0xFFFF
             elif op == 0x13:            # INC DE
                 self.de = (self.de + 1) & 0xFFFF
             elif op == 0x23:            # INC HL
@@ -174,6 +185,8 @@ class Z80:
                 self.a = self.b
             elif op == 0x47:            # LD B,A
                 self.b = self.a
+            elif op == 0x45:            # LD B,L
+                self.b = self.l
             elif op == 0x4F:            # LD C,A
                 self.c = self.a
             elif op == 0x7A:            # LD A,D
@@ -208,6 +221,10 @@ class Z80:
                 target = self.word(self.pc)
                 self.pc += 2
                 self.hl = self.word(target)
+            elif op == 0x22:            # LD (nn),HL
+                target = self.word(self.pc)
+                self.pc += 2
+                self.setword(target, self.hl)
             elif op == 0x11:            # LD DE,nn
                 self.de = self.word(self.pc)
                 self.pc += 2
@@ -222,6 +239,12 @@ class Z80:
                 self.l = self.mem[self.hl]
             elif op == 0x4E:            # LD C,(HL)
                 self.c = self.mem[self.hl]
+            elif op == 0x5E:            # LD E,(HL)
+                self.e = self.mem[self.hl]
+            elif op == 0x56:            # LD D,(HL)
+                self.d = self.mem[self.hl]
+            elif op == 0x77:            # LD (HL),A
+                self.mem[self.hl] = self.a
             elif op == 0xB9:            # CP C
                 self.z, self.carry = self.a == self.c, self.a < self.c
             elif op == 0xBE:            # CP (HL)
@@ -235,11 +258,27 @@ class Z80:
                 self.hl = (self.hl + self.bc) & 0xFFFF
             elif op == 0x19:            # ADD HL,DE
                 self.hl = (self.hl + self.de) & 0xFFFF
+            elif op == 0x96:            # SUB (HL)
+                value = self.mem[self.hl]
+                self.carry = self.a < value
+                self.a = (self.a - value) & 0xFF
+                self.z = self.a == 0
             elif op == 0xCB and self.mem[self.pc] == 0x3F:  # SRL A
                 self.pc += 1
                 self.carry = bool(self.a & 1)
                 self.a >>= 1
                 self.z = self.a == 0
+            elif op == 0xCB and self.mem[self.pc] == 0x3C:  # SRL H
+                self.pc += 1
+                self.carry = bool(self.h & 1)
+                self.h >>= 1
+                self.z = self.h == 0
+            elif op == 0xCB and self.mem[self.pc] == 0x1D:  # RR L
+                self.pc += 1
+                old_carry = self.carry
+                self.carry = bool(self.l & 1)
+                self.l = (self.l >> 1) | (0x80 if old_carry else 0)
+                self.z = self.l == 0
             elif op == 0xED and self.mem[self.pc] == 0x43:  # LD (nn),BC
                 self.pc += 1
                 target = self.word(self.pc)
@@ -250,6 +289,16 @@ class Z80:
                 target = self.word(self.pc)
                 self.pc += 2
                 self.de = self.word(target)
+            elif op == 0xED and self.mem[self.pc] == 0x53:  # LD (nn),DE
+                self.pc += 1
+                target = self.word(self.pc)
+                self.pc += 2
+                self.setword(target, self.de)
+            elif op == 0xED and self.mem[self.pc] == 0x4B:  # LD BC,(nn)
+                self.pc += 1
+                target = self.word(self.pc)
+                self.pc += 2
+                self.bc = self.word(target)
             elif op == 0xED and self.mem[self.pc] == 0xB0:  # LDIR
                 self.pc += 1
                 count = self.bc

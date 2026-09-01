@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 BIOS = ROOT / "build/bios/bios.bin"
 DIRECTORY = ROOT / "build/bdos/directory.bin"
 DIR_BASE = 0xE800
-DIR_BUFFER = 0xE900
+DIR_BUFFER = 0xEA00
 FIXTURE = 0x7500
 QUERY = 0x7600
 
@@ -41,12 +41,23 @@ def main() -> None:
     ))
     cpu.mem[platform_read:platform_read + len(read_success)] = read_success
 
+    cpu.c = 0
+    cpu.run(BIOS_BASE + 9 * 3)
+    dph = cpu.hl
+    dpb = cpu.word(dph + 10)
+    alv = cpu.word(dph + 14)
+    cpu.mem[alv:alv + 50] = bytes((0xA5,)) * 50
+
     # Empty CP/M record: four deleted entries and no match.
     cpu.mem[FIXTURE:FIXTURE + 512] = bytes((0xE5,)) * 512
-    cpu.run(DIR_BASE)
-    require(cpu.a == 0 and cpu.hl == DIR_BUFFER, "directory record did not load")
+    cpu.run(DIR_BASE, limit=2000)
+    require(cpu.a == 0 and cpu.hl == DIR_BUFFER,
+            f"directory record did not load: A={cpu.a:02X} HL={cpu.hl:04X}")
     require(bytes(cpu.mem[0x7300:0x7303]) == bytes((2, 0, 1)),
             "directory reader did not map track 2, sector 0 correctly")
+    require(bytes(cpu.mem[alv:alv + 2]) == bytes((0xC0, 0x00)) and
+            cpu.mem[alv + 2:alv + 50] == bytes(48),
+            "drive login did not initialize the allocation vector")
     cpu.run(DIR_BASE + 3)
     require(cpu.a == 0xFF, "empty directory produced an ordinary entry")
 
@@ -83,12 +94,30 @@ def main() -> None:
     cpu.run(DIR_BASE + 9, limit=20000)
     require(cpu.a == 0xFF, "wrong user number was falsely matched")
 
+    # Invalidation forces a fresh DPH/DPB login. Altered test DPB values prove
+    # that directory bounds and OFF are derived state rather than constants.
+    cpu.run(DIR_BASE + 15)
+    cpu.setword(dpb + 7, 7)      # DRM=7: eight entries, two records
+    cpu.setword(dpb + 13, 3)     # directory begins at logical track 3
+    cpu.c = 0
+    cpu.run(DIR_BASE + 12, limit=2000)
+    require(cpu.a == 0, "explicit drive re-login failed")
+    cpu.mem[0x7303] = 0
+    cpu.mem[QUERY:QUERY + 11] = b"ABSENT  COM"
+    cpu.a, cpu.de = 7, QUERY
+    cpu.run(DIR_BASE + 9, limit=5000)
+    require(cpu.a == 0xFF and cpu.mem[0x7303] == 2,
+            "search did not use the reloaded DRM-derived bound")
+    require(bytes(cpu.mem[0x7300:0x7303]) == bytes((3, 0, 1)),
+            "directory reader did not use the reloaded DPB OFF value")
+
     cpu.mem[platform_read:platform_read + 4] = bytes((0x3E, 0x05, 0xB7, 0xC9))
-    cpu.run(DIR_BASE)
+    cpu.run(DIR_BASE, limit=2000)
     require(cpu.a == 5, "directory reader did not propagate the BIOS error")
 
+    print("DPH/DPB drive login and allocation-vector initialization passed")
     print("all 128 directory entries searched through BIOS")
-    print("exact user/8.3 matching and attribute masking passed")
+    print("invalidation, exact user/8.3 matching, and attribute masking passed")
 
 
 if __name__ == "__main__":
