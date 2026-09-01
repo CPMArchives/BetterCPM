@@ -50,5 +50,6 @@ byte-identical BDOS and resident-system binaries.
 
 ## Next increment
 
-Implement BDOS function 2 (Console Output) on the shared cooked-console core,
-including tab expansion and console flow-control polling.
+Implemented by [Engineering Specification 47](47%20Cooked%20Console%20Output.md).
+Function 2 uses the shared cooked-console core for tab expansion, column state,
+flow control, printer echo, and preservation of type-ahead input.

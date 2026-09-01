@@ -130,6 +130,21 @@ def main() -> None:
     require(cpu.a == 1 and cpu.mem[0x7000] == 0,
             "CALL 0005h Console Input echoed an ordinary control byte")
 
+    cpu.mem[platform_const:platform_const + 2] = bytes((0xAF, 0xC9))
+    cpu.c, cpu.e = 2, 0x42
+    cpu.run(CALLER)
+    require(cpu.a == 0 and cpu.mem[0x7000] == 0x42,
+            "CALL 0005h Console Output did not emit its character")
+    cpu.mem[platform_const:platform_const + 3] = bytes((0x3E, 0x01, 0xC9))
+    cpu.mem[platform_conin:platform_conin + 3] = bytes((0x3E, 0x4B, 0xC9))
+    cpu.c, cpu.e = 2, 0x5A
+    cpu.run(CALLER)
+    cpu.mem[platform_const:platform_const + 2] = bytes((0xAF, 0xC9))
+    cpu.c = 1
+    cpu.run(CALLER)
+    require(cpu.a == 0x4B and cpu.mem[0x7000] == 0x4B,
+            "CALL 0005h did not retain output-polled ordinary input")
+
     cpu.mem[FCB:FCB + 33] = bytes(33)
     cpu.mem[FCB + 1:FCB + 12] = b"GATEWAY DAT"
     original_sp = cpu.sp
@@ -368,7 +383,7 @@ def main() -> None:
             "failed initialization published page-zero vectors")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
-    print("application CALL 0005h reached functions 1, 6, 11-37, and 40")
+    print("application CALL 0005h reached functions 1-2, 6, 11-37, and 40")
 
 
 if __name__ == "__main__":

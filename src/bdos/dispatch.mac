@@ -38,6 +38,8 @@ BDOS:
         LD      SP,BDOS_STKTOP
         CP      1
         JP      Z,BF_CONIN
+        CP      2
+        JP      Z,BF_CONOUT
         CP      6
         JP      Z,BF_DCIO
         CP      11
@@ -103,7 +105,7 @@ BDOS:
 ; ordinary control bytes are returned without echo.
 BF_CONIN:
 BF_CINLP:
-        CALL    BIOCONIN
+        CALL    BF_GETIN
         CP      013H            ; ^S pauses until ^Q
         JR      Z,BF_PAUSE
         CP      011H            ; stray ^Q is invisible
@@ -116,6 +118,45 @@ BF_CINLP:
         CALL    BF_ECHO
         LD      A,(BDOS_CHAR)
         JP      BDOS_RETURN
+BF_GETIN:
+        LD      A,(BDP_VALID)
+        OR      A
+        JR      Z,BF_GIBIOS
+        XOR     A
+        LD      (BDP_VALID),A
+        LD      A,(BDP_CHAR)
+        RET
+BF_GIBIOS:
+        JP      BIOCONIN
+
+; Cooked console output shares tab and column rules with echoed input.
+BF_CONOUT:
+        LD      A,E
+        LD      (BDOS_CHAR),A
+        CP      9
+        JR      Z,BF_COTAB
+        CP      13
+        JR      Z,BF_COCR
+        CP      8
+        JR      Z,BF_COBS
+        LD      C,A
+        CALL    BF_CPUT
+        CP      10
+        JR      Z,BF_COEND
+        LD      HL,BDOS_COLUMN
+        INC     (HL)
+BF_COEND:
+        XOR     A
+        JP      BDOS_RETURN
+BF_COTAB:
+        CALL    BF_TAB
+        JR      BF_COEND
+BF_COCR:
+        CALL    BF_CR
+        JR      BF_COEND
+BF_COBS:
+        CALL    BF_BS
+        JR      BF_COEND
 BF_TOGPR:
         LD      A,(BDOS_LISTE)
         CPL
@@ -130,7 +171,7 @@ BF_PAUSE:
         CP      010H
         JR      Z,BF_PTOG
         LD      C,7             ; reject other paused input with a bell
-        CALL    BF_PUTCH
+        CALL    BF_CPUT
         JR      BF_PAUSE
 BF_PTOG:
         LD      A,(BDOS_LISTE)
@@ -172,16 +213,73 @@ BF_BS:
 BF_EPLAIN:
         LD      A,(BDOS_CHAR)
         LD      C,A
-        JP      BF_PUTCH
+        JP      BF_CPUT
 BF_TAB:
+        LD      A,(BDOS_COLUMN)
+        CPL
+        AND     7
+        INC     A
+        LD      B,A
+BF_TABLOP:
+        PUSH    BC
         LD      C,' '
-        CALL    BF_PUTCH
+        CALL    BF_CPUT
+        POP     BC
         LD      HL,BDOS_COLUMN
         INC     (HL)
-        LD      A,(HL)
-        AND     7
-        JR      NZ,BF_TAB
+        DJNZ    BF_TABLOP
         RET
+
+; Poll CP/M output controls. If polling encounters ordinary input, retain it
+; for the next cooked or direct input call rather than discarding the key.
+BF_CPUT:
+        LD      A,C
+        LD      (BDO_CHAR),A
+BF_FLPOLL:
+        LD      A,(BDP_VALID)
+        OR      A
+        JR      NZ,BF_FLREADY
+        CALL    BIOCONST
+        OR      A
+        JR      Z,BF_FLREADY
+        CALL    BIOCONIN
+        CP      013H
+        JR      Z,BF_FLPAUS
+        CP      011H
+        JR      Z,BF_FLPOLL
+        CP      010H
+        JR      Z,BF_FLTOG
+        CP      003H
+        JP      Z,BIOWBOOT
+        LD      (BDP_CHAR),A
+        LD      A,0FFH
+        LD      (BDP_VALID),A
+        JR      BF_FLREADY
+BF_FLTOG:
+        LD      A,(BDOS_LISTE)
+        CPL
+        LD      (BDOS_LISTE),A
+        JR      BF_FLPOLL
+BF_FLPAUS:
+        CALL    BIOCONIN
+        CP      011H
+        JR      Z,BF_FLREADY
+        CP      003H
+        JP      Z,BIOWBOOT
+        CP      010H
+        JR      Z,BP_TOG
+        LD      C,7
+        CALL    BF_PUTCH
+        JR      BF_FLPAUS
+BP_TOG:
+        LD      A,(BDOS_LISTE)
+        CPL
+        LD      (BDOS_LISTE),A
+        JR      BF_FLPAUS
+BF_FLREADY:
+        LD      A,(BDO_CHAR)
+        LD      C,A
+        JP      BF_PUTCH
 
 BF_PUTCH:
         PUSH    BC
@@ -203,14 +301,24 @@ BF_DCIO:
         XOR     A               ; output-form return is not otherwise defined
         JP      BDOS_RETURN
 BF_DCIN:
+        LD      A,(BDP_VALID)
+        OR      A
+        JR      NZ,BF_DCREAD
         CALL    BIOCONST
         OR      A
         JP      Z,BDOS_RETURN   ; nonblocking empty result
-        CALL    BIOCONIN
+BF_DCREAD:
+        CALL    BF_GETIN
         JP      BDOS_RETURN
 
 BF_CONST:
+        LD      A,(BDP_VALID)
+        OR      A
+        JR      NZ,BF_CREADY
         CALL    BIOCONST        ; BIOS already guarantees exactly 00h or FFh
+        JP      BDOS_RETURN
+BF_CREADY:
+        LD      A,0FFH
         JP      BDOS_RETURN
 
 BDOS_VERS:
@@ -545,6 +653,12 @@ BDOS_CHAR:
 BDOS_COLUMN:
         DB      0
 BDOS_LISTE:
+        DB      0
+BDP_VALID:
+        DB      0
+BDP_CHAR:
+        DB      0
+BDO_CHAR:
         DB      0
 BDOS_PARM:
         DW      0

@@ -95,7 +95,7 @@ def main() -> None:
             "Console Input echoed an ordinary control character")
     cpu.mem[platform_conin:platform_conin + 3] = bytes((0x3E, 0x09, 0xC9))
     cpu.c = 1
-    cpu.run(BDOS_BASE)
+    cpu.run(BDOS_BASE, limit=100000)
     require(cpu.a == 9 and cpu.mem[0x7000] == 0x20 and
             cpu.mem[console_column] == 8,
             "Console Input did not expand tab to the next eight-column stop")
@@ -104,6 +104,31 @@ def main() -> None:
     cpu.run(BDOS_BASE)
     require(cpu.a == 13 and cpu.mem[console_column] == 0,
             "Console Input carriage return did not reset the column")
+
+    cpu.mem[platform_const:platform_const + 2] = bytes((0xAF, 0xC9))
+    cpu.mem[0x7000] = 0
+    cpu.c, cpu.e = 2, 0x42
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 0 and cpu.mem[0x7000] == 0x42 and
+            cpu.mem[console_column] == 1,
+            "Console Output did not emit and count a graphic character")
+    cpu.c, cpu.e = 2, 9
+    cpu.run(BDOS_BASE, limit=100000)
+    require(cpu.mem[0x7000] == 0x20 and cpu.mem[console_column] == 8,
+            "Console Output did not expand tab to column eight")
+    cpu.mem[platform_const:platform_const + 3] = bytes((0x3E, 0x01, 0xC9))
+    cpu.mem[platform_conin:platform_conin + 3] = bytes((0x3E, 0x4B, 0xC9))
+    cpu.c, cpu.e = 2, 0x5A
+    cpu.run(BDOS_BASE)
+    cpu.c = 11
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 0xFF and cpu.mem[0x7000] == 0x5A,
+            "Console Output lost an ordinary key encountered while polling")
+    cpu.mem[platform_const:platform_const + 2] = bytes((0xAF, 0xC9))
+    cpu.c = 1
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 0x4B and cpu.mem[0x7000] == 0x4B,
+            "Console Input did not recover the output-poll lookahead key")
 
     read_impl = cpu.word(BIOS_BASE + 13 * 3 + 1)
     calls = [address for address in range(read_impl, read_impl + 48)
@@ -545,6 +570,7 @@ def main() -> None:
     cpu.run(BDOS_BASE, limit=50000)
     require(cpu.a != 0 and cpu.mem[FCB + 32] == 2,
             "partial-final-extent EOF was not stable")
+    cpu.c, cpu.de = 20, FCB
     cpu.run(BDOS_BASE, limit=50000)
     require(cpu.a != 0, "repeated sequential EOF fabricated a record")
 
@@ -903,7 +929,7 @@ def main() -> None:
             f"provisional BDOS storage failure was confused with slot success: "
             f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS functions 1, 6, 11-37, and 40 passed")
+    print("BDOS functions 1-2, 6, 11-37, and 40 passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 
