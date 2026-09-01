@@ -72,3 +72,23 @@ e24dce75d3dd2ad3a0e2e556428f3dcef9211c712c22d004ed5f1c81a5f566fe  BetterCPM-Exte
 ```
 
 Generated binaries, logs, and disk images remain under `build/` and are not committed as source.
+
+## Deferred boot-loader enhancements
+
+The following are useful later improvements, not requirements of the
+current one-sector diagnostic milestone:
+
+- load a multi-sector resident system across the established system tracks;
+- follow the target format's sector order and advance across sides and tracks;
+- retry failed reads and use bounded waits for controller states;
+- report distinct header, timeout, read and checksum failures;
+- validate a loader-owned system-image descriptor and checksum; and
+- optionally try a recovery copy of the complete system image.
+
+These facilities belong to the platform-specific packaging and boot path.
+They shall not become requirements of the portable CCP or BDOS image.
+BetterCP/M shall continue to produce independently linkable CCP and BDOS
+artifacts that can replace their counterparts behind an existing machine's
+boot loader and BIOS when that platform's addresses, entry points and size
+constraints are satisfied. A BetterCP/M complete-system image and a drop-in
+CCP/BDOS build are separate products of the same sources.
