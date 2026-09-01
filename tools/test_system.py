@@ -55,6 +55,21 @@ def main() -> None:
     require(cpu.sp == original_sp, "CALL 0005h did not restore caller stack")
     require(cpu.mem[FCB + 15] == 1, "CALL 0005h did not activate the FCB")
 
+    cpu.c = 12
+    cpu.run(CALLER)
+    require(cpu.hl == 0x0022, "CALL 0005h version query was not CP/M 2.2")
+    cpu.c = 25
+    cpu.run(CALLER)
+    require(cpu.a == cpu.l == 0, "CALL 0005h current drive was not A")
+    cpu.c, cpu.de = 26, 0x7345
+    cpu.run(CALLER)
+    cpu.c, cpu.e = 32, 0x3F
+    cpu.run(CALLER)
+    cpu.c, cpu.e = 32, 0xFF
+    cpu.run(CALLER)
+    require(cpu.a == cpu.l == 31,
+            "CALL 0005h user selection did not apply modulo 32")
+
     # Initialization failure must not expose either conventional vector.
     failed = Z80(resident[bios_offset:])
     failed.mem[RESIDENT_BASE:RESIDENT_BASE + len(resident)] = resident
@@ -65,7 +80,7 @@ def main() -> None:
             "failed initialization published page-zero vectors")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
-    print("application CALL 0005h reached function 15 after drive login")
+    print("application CALL 0005h reached functions 12, 15, 25, 26, and 32")
 
 
 if __name__ == "__main__":

@@ -61,7 +61,7 @@ function 15 is implemented, and stage one does not yet load this composition.
 
 ## Next increment
 
-Implement the minimum non-file BDOS state/query functions needed to make the
-public system-call boundary useful and testable without disk mutation. The
-initial candidates are function 12 (return version), function 25 (return
-current drive), function 26 (set DMA address), and function 32 (get/set user).
+Engineering Specification 21 completes this increment with functions 12, 25,
+26, and 32, verified through `CALL 0005h`. The next increment can establish
+default-drive selection and its login-state transition before widening file
+operations.

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Execute the initial BDOS function dispatcher and function-15 boundary."""
 from pathlib import Path
+import re
 
 from test_bios import BASE as BIOS_BASE, Z80, require
 
@@ -15,12 +16,21 @@ FIXTURE = 0x7500
 FCB = 0x7700
 
 
+def symbol(name: str) -> int:
+    listing = (ROOT / "build/bdos/bdos.lst").read_text(encoding="ascii")
+    match = re.search(rf"^([0-9a-f]{{4}})\s+.*\b{name}:?\s*$",
+                      listing, re.MULTILINE | re.IGNORECASE)
+    require(match is not None, f"BDOS listing lacks {name}")
+    return int(match.group(1), 16)
+
+
 def main() -> None:
     cpu = Z80(BIOS.read_bytes())
     directory = DIRECTORY.read_bytes()
     bdos = BDOS.read_bytes()
     cpu.mem[DIR_BASE:DIR_BASE + len(directory)] = directory
     cpu.mem[BDOS_BASE:BDOS_BASE + len(bdos)] = bdos
+    dma_state = symbol("BDOS_DMA")
 
     read_impl = cpu.word(BIOS_BASE + 13 * 3 + 1)
     calls = [address for address in range(read_impl, read_impl + 48)
@@ -89,6 +99,24 @@ def main() -> None:
 
     cpu.c, cpu.de = 12, FCB
     cpu.run(BDOS_BASE)
+    require(cpu.hl == 0x0022 and cpu.a == 0x22 and cpu.b == 0,
+            "BDOS version did not return CP/M 2.2 aliases")
+    cpu.c = 25
+    cpu.run(BDOS_BASE)
+    require(cpu.a == cpu.l == 0 and cpu.b == cpu.h == 0,
+            "current-drive query did not return drive A")
+    cpu.c, cpu.de = 26, 0x7345
+    cpu.run(BDOS_BASE)
+    require(cpu.word(dma_state) == 0x7345,
+            "set-DMA state did not retain DE")
+    cpu.c, cpu.e = 32, 0x25
+    cpu.run(BDOS_BASE)
+    cpu.c, cpu.e = 32, 0xFF
+    cpu.run(BDOS_BASE)
+    require(cpu.a == cpu.l == 5 and cpu.word(dma_state) == 0x7345,
+            "user modulo-32 selection/query or DMA independence failed")
+    cpu.c = 40
+    cpu.run(BDOS_BASE)
     require(cpu.a == 0xFF and cpu.l == 0xFF,
             "unsupported BDOS function did not fail explicitly")
 
@@ -100,8 +128,8 @@ def main() -> None:
     require(cpu.a == 0xFF and cpu.l == 0xFF,
             "provisional BDOS storage failure was confused with slot success")
 
-    print("BDOS function 15 returned CP/M A/L and B/H aliases")
-    print("private stack restoration, S2 clearing, Open, and failure paths passed")
+    print("BDOS functions 12, 15, 25, 26, and 32 passed")
+    print("state persistence, aliases, stack, Open, and failure paths passed")
 
 
 if __name__ == "__main__":

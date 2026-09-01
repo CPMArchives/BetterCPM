@@ -14,9 +14,43 @@ BDOS:
         LD      (BDOS_PARM),DE
         LD      (BDOS_OLDSP),SP
         LD      SP,BDOS_STKTOP
+        CP      12
+        JR      Z,BDOS_VERS
         CP      15
         JR      Z,BDOS_OPEN
+        CP      25
+        JR      Z,BDOS_GETDR
+        CP      26
+        JR      Z,BDOS_STDMA
+        CP      32
+        JR      Z,BF_USER
         LD      A,0FFH          ; unsupported returning function
+        JR      BDOS_RETURN
+
+BDOS_VERS:
+        LD      A,022H          ; CP/M 2.2 identity, returned as HL=0022h
+        JR      BDOS_RETURN
+
+BDOS_GETDR:
+        LD      A,(BDOS_DRIVE)
+        JR      BDOS_RETURN
+
+BDOS_STDMA:
+        LD      HL,(BDOS_PARM)
+        LD      (BDOS_DMA),HL
+        XOR     A               ; function 26 has no specified result
+        JR      BDOS_RETURN
+
+BF_USER:
+        LD      A,E
+        CP      0FFH
+        JR      Z,BF_GETU
+        AND     01FH            ; required CP/M 2.2 modulo-32 selection
+        LD      (BDOS_USER),A
+        XOR     A               ; set-form result is not guaranteed
+        JR      BDOS_RETURN
+BF_GETU:
+        LD      A,(BDOS_USER)
         JR      BDOS_RETURN
 
 BDOS_OPEN:
@@ -46,6 +80,10 @@ BDOS_OLDSP:
         DW      0
 BDOS_USER:
         DB      0               ; initial current user
+BDOS_DRIVE:
+        DB      0               ; initial current/default drive A
+BDOS_DMA:
+        DW      0080H           ; CP/M startup DMA selection
 
 ; Patch 2026-09-01: the first public-call boundary receives its own stack now,
 ; before more BDOS functions deepen the call graph. The exact size and address
