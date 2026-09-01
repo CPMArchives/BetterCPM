@@ -44,4 +44,4 @@ byte-identical BDOS and resident-system binaries.
 
 ## Next increment
 
-Implement function 0 (System Reset), the final defined CP/M 2.2 BDOS function.
+Implemented by [`Engineering Specification 53`](53%20System%20Reset.md).

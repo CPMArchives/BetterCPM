@@ -38,6 +38,8 @@ BDOS:
         LD      (BDOS_PARM),DE
         LD      (BDOS_OLDSP),SP
         LD      SP,BDOS_STKTOP
+        OR      A
+        JP      Z,BIOWBOOT      ; Function 0 terminates through warm start
         CP      1
         JP      Z,BF_CONIN
         CP      2

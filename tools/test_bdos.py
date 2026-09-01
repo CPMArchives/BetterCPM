@@ -37,6 +37,24 @@ def main() -> None:
     dma_state = symbol("BDOS_DMA")
     login_state = symbol("STATE_LV")
     readonly_state = symbol("STATE_RO")
+    old_stack = symbol("BDOS_OLDSP")
+
+    # WBOOT is intentionally non-returning in the provisional BIOS. Replace
+    # only its vector during this unit test with an observable recovery shim.
+    warm_vector = bytes(cpu.mem[BIOS_BASE + 3:BIOS_BASE + 6])
+    cpu.mem[0x7060:0x706A] = bytes((
+        0x3E, 0x5A,             # LD A,5Ah
+        0x32, 0x4F, 0x70,       # LD (704Fh),A
+        0xED, 0x7B, old_stack & 0xFF, old_stack >> 8,
+        0xC9,                   # RET using the restored caller stack
+    ))
+    cpu.mem[BIOS_BASE + 3:BIOS_BASE + 6] = bytes((0xC3, 0x60, 0x70))
+    cpu.mem[0x704F] = 0
+    cpu.c = 0
+    cpu.run(BDOS_BASE)
+    require(cpu.mem[0x704F] == 0x5A,
+            "System Reset did not transfer through the BIOS WBOOT vector")
+    cpu.mem[BIOS_BASE + 3:BIOS_BASE + 6] = warm_vector
 
     const_impl = cpu.word(BIOS_BASE + 2 * 3 + 1)
     platform_const = cpu.word(const_impl + 1)
@@ -1017,7 +1035,7 @@ def main() -> None:
             f"provisional BDOS storage failure was confused with slot success: "
             f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS functions 1-37 and 40 passed except System Reset (0)")
+    print("all 39 defined CP/M 2.2 BDOS functions passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 

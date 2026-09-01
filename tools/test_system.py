@@ -14,6 +14,15 @@ CALLER = 0x7800
 DATA = 0x7900
 
 
+def bdos_symbol(name: str) -> int:
+    import re
+    listing = (ROOT / "build/bdos/bdos.lst").read_text(encoding="ascii")
+    matches = re.findall(rf"^([0-9a-f]{{4}})\s+.*\b{name}:?\s*$",
+                         listing, re.MULTILINE | re.IGNORECASE)
+    require(matches, f"BDOS listing lacks {name}")
+    return int(matches[-1], 16)
+
+
 def main() -> None:
     resident = RESIDENT.read_bytes()
     bios_offset = BIOS_BASE - RESIDENT_BASE
@@ -81,6 +90,18 @@ def main() -> None:
     require(bytes(cpu.mem[5:8]) == bytes((0xC3, 0x00, 0xC1)),
             "BDOS page-zero vector is wrong")
     cpu.mem[CALLER:CALLER + 4] = bytes((0xCD, 0x05, 0x00, 0xC9))
+    old_stack = bdos_symbol("BDOS_OLDSP")
+    warm_vector = bytes(cpu.mem[BIOS_BASE + 3:BIOS_BASE + 6])
+    cpu.mem[0x7060:0x706A] = bytes((0x3E, 0x5A, 0x32, 0x4F, 0x70,
+                                    0xED, 0x7B, old_stack & 0xFF,
+                                    old_stack >> 8, 0xC9))
+    cpu.mem[BIOS_BASE + 3:BIOS_BASE + 6] = bytes((0xC3, 0x60, 0x70))
+    cpu.mem[0x704F] = 0
+    cpu.c = 0
+    cpu.run(CALLER)
+    require(cpu.mem[0x704F] == 0x5A,
+            "CALL 0005h System Reset did not enter the BIOS WBOOT vector")
+    cpu.mem[BIOS_BASE + 3:BIOS_BASE + 6] = warm_vector
     cpu.c = 7
     cpu.run(CALLER)
     require(cpu.a == cpu.l == 0xA5 and cpu.mem[3] == 0xA5,
@@ -443,7 +464,7 @@ def main() -> None:
             "failed initialization published page-zero vectors")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
-    print("application CALL 0005h reached functions 1-37 and 40 except 0")
+    print("application CALL 0005h reached all 39 defined BDOS functions")
 
 
 if __name__ == "__main__":

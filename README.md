@@ -81,6 +81,7 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Engineering Specification 50`](docs/engineering/50%20Set%20IO%20Byte.md) completes the paired IOBYTE interface while leaving logical-device routing at the BIOS/configuration boundary.
 [`Engineering Specification 51`](docs/engineering/51%20Print%20String.md) adds dollar-terminated string output through the shared cooked-console path.
 [`Engineering Specification 52`](docs/engineering/52%20Read%20Console%20Buffer.md) adds the counted-buffer line editor and completes the CP/M 2.2 console-service group.
+[`Engineering Specification 53`](docs/engineering/53%20System%20Reset.md) completes the 39 defined CP/M 2.2 BDOS functions by routing program termination through BIOS WBOOT.
 [`Engineering Specification 25`](docs/engineering/25%20Allocation%20and%20DPB%20Pointers.md) exposes the current drive's reconstructed allocation vector and live 15-byte disk parameter block.
 [`Engineering Specification 26`](docs/engineering/26%20Directory%20Search%20and%20DMA.md) adds Search First/Search Next continuation, wildcard and all-user matching, and complete directory-record transfer to the selected DMA address.
 [`Engineering Specification 27`](docs/engineering/27%20Unchanged%20FCB%20Close.md) adds the non-mutating Close File boundary for unchanged activated FCBs and safely rejects dirty commits until writeback exists.
