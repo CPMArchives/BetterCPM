@@ -9,7 +9,7 @@ fresh prompt.
 
 ## Command processor
 
-The provisional CCP resides at `EB00h`, above the current directory-services
+The provisional CCP now resides at `EA40h`, above the current directory-services
 image and below the BIOS physical buffer. Its first command loop provides:
 
 - a current-drive prompt;
@@ -51,14 +51,11 @@ nondefault DMA address. It enters WBOOT, scripts `WARM` and `VER`, and verifies:
 The CCP is independently assembled both by the host toolchain and by native
 CP/M ZSM4/Digital Research LINK, with byte-identical output required.
 
-## Physical-boot boundary
+## Physical-boot status
 
-The current TRS-80 DMK still boots the one-sector stage-one hardware diagnostic.
-It does not yet load this resident CCP/BDOS/BIOS image. The next boot milestone
-must install the resident image on disk and load it without weakening the
-project's CP/M replacement and native-build goals.
+Engineering Specification 55 replaces the stage-one diagnostic with a resident
+loader and boots this CCP from the generated physical TRS-80 disk.
 
 ## Next increment
 
-Define the resident-system disk placement and stage-one load protocol, then boot
-the composed resident image to the CCP under `trs80gp`.
+Implemented by [`Engineering Specification 55`](55%20Physical%20Resident%20Boot.md).

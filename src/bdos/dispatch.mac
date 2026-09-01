@@ -3,13 +3,13 @@
 ; Provisional resident placement. Page-zero address 0005h is not installed yet.
 
 BDOSBASE        EQU     0C100H
-BIOCONST        EQU     0F006H  ; CP/M BIOS console-status vector
-BIOCONIN        EQU     0F009H  ; CP/M BIOS console-input vector
-BIOCONOT        EQU     0F00CH  ; CP/M BIOS console-output vector
-BIOLIST         EQU     0F00FH  ; CP/M BIOS list-output vector
-BIOPUNCH        EQU     0F012H  ; CP/M BIOS punch-output vector
-BIOREADR        EQU     0F015H  ; CP/M BIOS reader-input vector
-BIOWBOOT        EQU     0F003H  ; CP/M BIOS warm-boot vector
+BIOCONST        EQU     0EF06H  ; CP/M BIOS console-status vector
+BIOCONIN        EQU     0EF09H  ; CP/M BIOS console-input vector
+BIOCONOT        EQU     0EF0CH  ; CP/M BIOS console-output vector
+BIOLIST         EQU     0EF0FH  ; CP/M BIOS list-output vector
+BIOPUNCH        EQU     0EF12H  ; CP/M BIOS punch-output vector
+BIOREADR        EQU     0EF15H  ; CP/M BIOS reader-input vector
+BIOWBOOT        EQU     0EF03H  ; CP/M BIOS warm-boot vector
 DIROPEN         EQU     0D812H  ; seventh directory-service vector
 DIRINVAL        EQU     0D80FH  ; sixth directory-service vector
 DIRLOGIN        EQU     0D80CH  ; fifth directory-service vector

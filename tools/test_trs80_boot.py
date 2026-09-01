@@ -11,10 +11,8 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_EMULATOR = Path("/Users/nathanael/trs80/trs80gp-2/mac/trs80gp.app/Contents/MacOS/trs80gp")
 DEFAULT_IMAGE = ROOT / "build/trs80/BetterCPM-Extended-80T-DS-System-790K.dmk"
 EXPECTED_LINES = (
-    b"BetterCP/M",
-    b"TRS-80 Model 4 platform initialized",
-    b"raw disk read verified",
-    b"key: K",
+    b"",
+    b"A>",
 )
 
 
@@ -29,18 +27,20 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="bettercpm-trs80gp-") as temporary:
         subprocess.run([
             str(args.emulator), "-m4", "-batch", "-turbo", "-d0", str(args.image),
-            "-id", "120", "-ik", "1", "8", "-id", "4",
-            "-ik", "1", "0", "-id", "20", "-it", "-ix",
+            "-id", "1200", "-it", "-ix",
         ], cwd=temporary, check=True)
         screen = Path(temporary, "trs80-text-0.bin").read_bytes()
         expected = bytearray(b" " * len(screen))
         for row, line in enumerate(EXPECTED_LINES):
             expected[row * 80:row * 80 + len(line)] = line
         if screen != expected:
-            raise SystemExit(f"boot test failed; screen begins {screen[:240]!r}")
+            visible = [(index, byte) for index, byte in enumerate(screen)
+                       if byte != 0x20][:80]
+            raise SystemExit(f"boot test failed; visible bytes {visible}; "
+                             f"screen begins {screen[:240]!r}")
     for line in EXPECTED_LINES:
         print(line.decode("ascii"))
-    print("TRS-80 Model 4 boot test passed")
+    print("TRS-80 Model 4 resident CCP boot test passed")
 
 
 if __name__ == "__main__":

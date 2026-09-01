@@ -26,6 +26,8 @@ BOOT_SECTOR_LOGICAL_INDEX = 0
 STAGE1_SECTOR_LOGICAL_INDEX = 1  # logical order sector 3
 VERIFY_SECTOR_LOGICAL_INDEX = 2  # logical order sector 5
 VERIFY_PAYLOAD = b"BetterCP/M verify" + bytes(SECTOR_SIZE - len(b"BetterCP/M verify"))
+SYSTEM_FIRST_LOGICAL_INDEX = 2
+SYSTEM_SECTORS = 26
 
 
 def assemble(assembler: Path, source: Path, output: Path, origin: int) -> bytes:
@@ -60,15 +62,19 @@ def assemble(assembler: Path, source: Path, output: Path, origin: int) -> bytes:
     return data
 
 
-def install(boot: bytes, stage1: bytes) -> bytes:
+def install(boot: bytes, stage1: bytes, resident: bytes) -> bytes:
     raw = bytearray([0xE5]) * RAW_SIZE
     for logical_index, payload in (
         (BOOT_SECTOR_LOGICAL_INDEX, boot),
         (STAGE1_SECTOR_LOGICAL_INDEX, stage1),
-        (VERIFY_SECTOR_LOGICAL_INDEX, VERIFY_PAYLOAD),
     ):
         start = logical_index * SECTOR_SIZE
         raw[start:start + SECTOR_SIZE] = payload.ljust(SECTOR_SIZE, b"\x00")
+    capacity = SYSTEM_SECTORS * SECTOR_SIZE
+    if len(resident) > capacity:
+        raise ValueError(f"resident image is {len(resident)} bytes; loader capacity is {capacity}")
+    start = SYSTEM_FIRST_LOGICAL_INDEX * SECTOR_SIZE
+    raw[start:start + capacity] = resident.ljust(capacity, b"\x00")
     image = build(bytes(raw))
     verify(image, require_blank=False)
     return image
@@ -78,14 +84,19 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--assembler", type=Path, default=Path("/Users/nathanael/bin/z80asm"))
     args = parser.parse_args()
+    resident_path = ROOT / "build/system/resident.bin"
+    if not resident_path.is_file():
+        raise SystemExit(f"missing resident image: {resident_path}")
     boot = assemble(args.assembler, SOURCE / "boot.mac", BUILD / "boot.bin", BOOT_ADDRESS)
     stage1 = assemble(args.assembler, SOURCE / "stage1.mac", BUILD / "stage1.bin", STAGE1_ADDRESS)
-    image = install(boot, stage1)
+    resident = resident_path.read_bytes()
+    image = install(boot, stage1, resident)
     output = BUILD / "BetterCPM-Extended-80T-DS-System-790K.dmk"
     output.write_bytes(image)
     for path in (BUILD / "boot.bin", BUILD / "stage1.bin", output):
         print(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.relative_to(ROOT)}")
-    print(f"boot bytes: {len(boot)}; stage-one bytes: {len(stage1)}")
+    print(f"boot bytes: {len(boot)}; stage-one bytes: {len(stage1)}; "
+          f"resident bytes: {len(resident)} in {SYSTEM_SECTORS} sectors")
 
 
 if __name__ == "__main__":

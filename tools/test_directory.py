@@ -16,7 +16,7 @@ FCB = 0x7700
 
 def main() -> None:
     cpu = Z80(BIOS.read_bytes())
-    cpu.sp = 0xED00          # clear of D800h..ECFFh System Services growth
+    cpu.sp = 0xBC00          # below resident memory and the ED00h BIOS buffer
     component = DIRECTORY.read_bytes()
     cpu.mem[DIR_BASE:DIR_BASE + len(component)] = component
 
@@ -37,7 +37,7 @@ def main() -> None:
         0x78, 0x32, 0x01, 0x73,                   # side
         0x79, 0x32, 0x02, 0x73,                   # sector ID
         0x21, FIXTURE & 0xFF, FIXTURE >> 8,        # LD HL,FIXTURE
-        0x11, 0x00, 0xEE,                          # LD DE,physical scratch
+        0x11, 0x00, 0xED,                          # LD DE,physical scratch
         0x01, 0x00, 0x02,                          # LD BC,512
         0xED, 0xB0, 0xAF, 0xC9,                    # LDIR / success
     ))

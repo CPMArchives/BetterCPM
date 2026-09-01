@@ -1,6 +1,10 @@
-; BetterCP/M TRS-80 Model 4 stage-one platform wrapper
+; BetterCP/M TRS-80 Model 4 resident-system loader
 
         INCLUDE hardware.inc
+
+SYSIMAGE        EQU     0BF00H
+SYSBOOT         EQU     0EF00H  ; enter BIOS BOOT, which initializes the console
+SYSSECTORS      EQU     26
 
         CSEG
         .PHASE  STAGE1BASE
@@ -8,10 +12,51 @@
 STAGE1:
         DI
         LD      SP,STAGE1STACK
-        JP      CORE_START
+        LD      HL,SYSTABLE
+        LD      (SYSTABP),HL
+        LD      HL,SYSIMAGE
+        LD      (SYSDEST),HL
+        LD      A,SYSSECTORS
+        LD      (SYSLEFT),A
+SYSLOAD:
+        LD      HL,(SYSTABP)
+        LD      A,(HL)
+        INC     HL
+        LD      B,(HL)
+        INC     HL
+        LD      C,(HL)
+        INC     HL
+        LD      (SYSTABP),HL
+        LD      HL,(SYSDEST)
+        CALL    M4_READ
+        JR      NZ,SYSERROR
+        LD      (SYSDEST),HL
+        LD      A,(SYSLEFT)
+        DEC     A
+        LD      (SYSLEFT),A
+        JR      NZ,SYSLOAD
+        JP      SYSBOOT
+SYSERROR:
+        JR      SYSERROR
 
-        INCLUDE hal.inc
-        INCLUDE bringup.inc
+; Logical sectors 2..28 in MM interleave order. Boot and stage one occupy 0/1.
+SYSTABLE:
+        DB      0,0,5,  0,0,7,  0,0,9,  0,0,2
+        DB      0,0,4,  0,0,6,  0,0,8,  0,0,10
+        DB      0,1,1,  0,1,3,  0,1,5,  0,1,7,  0,1,9
+        DB      0,1,2,  0,1,4,  0,1,6,  0,1,8,  0,1,10
+        DB      1,0,1,  1,0,3,  1,0,5,  1,0,7,  1,0,9
+        DB      1,0,2,  1,0,4,  1,0,6
+
+SYSTABP:
+        DW      0
+SYSDEST:
+        DW      SYSIMAGE
+SYSLEFT:
+        DB      SYSSECTORS
+
+M4_READ_ONLY    EQU     1
+        INCLUDE m4disk.inc
 
         .DEPHASE
         END

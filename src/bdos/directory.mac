@@ -11,7 +11,7 @@ DIRBASE         EQU     0D800H
 ; moved below the resident code. Specification 29 gives that workspace an
 ; explicit BF00H reservation while relocating this component for growth.
 DIRBUF          EQU     0BF00H
-BIOSBASE        EQU     0F000H
+BIOSBASE        EQU     0EF00H
 BIOSELDS        EQU     BIOSBASE+27
 BIOSETTR        EQU     BIOSBASE+30
 BIOSETSE        EQU     BIOSBASE+33

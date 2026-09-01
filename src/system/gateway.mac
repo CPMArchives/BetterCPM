@@ -9,8 +9,8 @@
 SYSBASE         EQU     0C000H
 BDOS            EQU     0C100H
 DIRLOGIN        EQU     0D80CH
-BIOWBOOT        EQU     0F003H
-CCP             EQU     0EB00H
+BIOWBOOT        EQU     0EF03H
+CCP             EQU     0EA40H
 
         CSEG
         .PHASE  SYSBASE

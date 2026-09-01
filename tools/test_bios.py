@@ -4,7 +4,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 IMAGE = ROOT / "build/bios/bios.bin"
-BASE = 0xF000
+BASE = 0xEF00
 COUNT = 17
 SENTINEL = 0xFFFF
 
@@ -464,10 +464,15 @@ def main() -> None:
 
     entries = [entry(index) for index in range(COUNT)]
 
-    for index, system_target in ((0, 0xC020), (1, 0xC023)):
-        target = cpu.word(entries[index] + 1)
-        require(cpu.mem[target] == 0xC3 and cpu.word(target + 1) == system_target,
-                f"entry {index} does not enter portable system reconstruction")
+    boot_target = cpu.word(entries[0] + 1)
+    require(cpu.mem[boot_target] == 0xCD and
+            cpu.mem[boot_target + 3] == 0xC3 and
+            cpu.word(boot_target + 4) == 0xC020,
+            "BOOT does not initialize the platform then enter reconstruction")
+    warm_target = cpu.word(entries[1] + 1)
+    require(cpu.mem[warm_target] == 0xC3 and
+            cpu.word(warm_target + 1) == 0xC023,
+            "WBOOT does not enter portable system reconstruction")
 
     const_impl = cpu.word(entries[2] + 1)
     platform_const = cpu.word(const_impl + 1)
@@ -564,7 +569,7 @@ def main() -> None:
     order = (1, 3, 5, 7, 9, 2, 4, 6, 8, 10)
     for logical in range(80):
         for quarter in range(4):
-            cpu.mem[0xEE00 + quarter * 128:0xEE80 + quarter * 128] = bytes((quarter,)) * 128
+            cpu.mem[0xED00 + quarter * 128:0xED80 + quarter * 128] = bytes((quarter,)) * 128
         cpu.bc = logical
         cpu.run(entries[11])
         cpu.a = 0xFF
@@ -593,7 +598,7 @@ def main() -> None:
     cpu.mem[platform_write:platform_write + len(write_success)] = write_success
     for logical in range(80):
         for quarter in range(4):
-            cpu.mem[0xEE00 + quarter * 128:0xEE80 + quarter * 128] = bytes((quarter,)) * 128
+            cpu.mem[0xED00 + quarter * 128:0xED80 + quarter * 128] = bytes((quarter,)) * 128
         replacement = (0x80 | logical) & 0xFF
         cpu.mem[0x7200:0x7280] = bytes((replacement,)) * 128
         cpu.bc = logical
@@ -608,7 +613,7 @@ def main() -> None:
                 f"WRITE {logical} selected wrong sector ID")
         for quarter in range(4):
             expected = replacement if quarter == (logical & 3) else quarter
-            require(cpu.mem[0xEE00 + quarter * 128:0xEE80 + quarter * 128] ==
+            require(cpu.mem[0xED00 + quarter * 128:0xED80 + quarter * 128] ==
                     bytes((expected,)) * 128,
                     f"WRITE {logical} corrupted quarter {quarter}")
 

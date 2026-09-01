@@ -3,7 +3,7 @@
 ; This first milestone deliberately provides only a command loop and two
 ; built-ins. Transient loading and the conventional command set follow later.
 
-CCPBASE         EQU     0EB00H
+CCPBASE         EQU     0EA40H
 BDOS            EQU     0C100H
 
         CSEG

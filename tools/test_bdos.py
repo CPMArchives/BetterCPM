@@ -29,7 +29,7 @@ def symbol(name: str) -> int:
 
 def main() -> None:
     cpu = Z80(BIOS.read_bytes())
-    cpu.sp = 0xED00          # direct pre-BDOS calls must avoid resident code
+    cpu.sp = 0xBC00          # below resident memory and the ED00h BIOS buffer
     directory = DIRECTORY.read_bytes()
     bdos = BDOS.read_bytes()
     cpu.mem[DIR_BASE:DIR_BASE + len(directory)] = directory
@@ -248,7 +248,7 @@ def main() -> None:
         0x21, DATA & 0xFF, DATA >> 8,
         0x18, 0x03,
         0x21, FIXTURE & 0xFF, FIXTURE >> 8,
-        0x11, 0x00, 0xEE,
+        0x11, 0x00, 0xED,
         0x01, 0x00, 0x02,
         0xED, 0xB0, 0xAF, 0xC9,
     ))
@@ -265,7 +265,7 @@ def main() -> None:
         0x11, DATA & 0xFF, DATA >> 8,
         0x18, 0x03,
         0x11, FIXTURE & 0xFF, FIXTURE >> 8,
-        0x21, 0x00, 0xEE,
+        0x21, 0x00, 0xED,
         0x01, 0x00, 0x02,
         0xED, 0xB0, 0xAF, 0xC9,
     ))

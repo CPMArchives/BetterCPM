@@ -27,7 +27,7 @@ def main() -> None:
     resident = RESIDENT.read_bytes()
     bios_offset = BIOS_BASE - RESIDENT_BASE
     cpu = Z80(resident[bios_offset:])
-    cpu.sp = 0xED00          # clear of D800h..ECFFh System Services growth
+    cpu.sp = 0xBC00          # below resident memory and the ED00h BIOS buffer
     cpu.mem[RESIDENT_BASE:RESIDENT_BASE + len(resident)] = resident
 
     const_impl = cpu.word(BIOS_BASE + 2 * 3 + 1)
@@ -46,7 +46,7 @@ def main() -> None:
         0x21, DATA & 0xFF, DATA >> 8,
         0x18, 0x03,
         0x21, FIXTURE & 0xFF, FIXTURE >> 8,
-        0x11, 0x00, 0xEE,
+        0x11, 0x00, 0xED,
         0x01, 0x00, 0x02,
         0xED, 0xB0, 0xAF, 0xC9,
     ))
@@ -63,7 +63,7 @@ def main() -> None:
         0x11, DATA & 0xFF, DATA >> 8,
         0x18, 0x03,
         0x11, FIXTURE & 0xFF, FIXTURE >> 8,
-        0x21, 0x00, 0xEE,
+        0x21, 0x00, 0xED,
         0x01, 0x00, 0x02,
         0xED, 0xB0, 0xAF, 0xC9,
     ))
@@ -85,7 +85,7 @@ def main() -> None:
 
     cpu.run(SYSTEM_INIT, limit=60000)
     require(cpu.a == 0, "resident initialization failed")
-    require(bytes(cpu.mem[0:3]) == bytes((0xC3, 0x03, 0xF0)),
+    require(bytes(cpu.mem[0:3]) == bytes((0xC3, 0x03, 0xEF)),
             "warm-boot page-zero vector is wrong")
     require(bytes(cpu.mem[5:8]) == bytes((0xC3, 0x00, 0xC1)),
             "BDOS page-zero vector is wrong")
@@ -455,7 +455,7 @@ def main() -> None:
 
     # Initialization failure must not expose either conventional vector.
     failed = Z80(resident[bios_offset:])
-    failed.sp = 0xED00
+    failed.sp = 0xBC00
     failed.mem[RESIDENT_BASE:RESIDENT_BASE + len(resident)] = resident
     failed_read = failed.word(calls[1] + 1)
     failed.mem[failed_read:failed_read + 4] = bytes((0x3E, 0x05, 0xB7, 0xC9))
@@ -486,8 +486,8 @@ def main() -> None:
     require(transcript.count(b"A>") >= 3 and b"BetterCP/M 0.1" in transcript,
             f"WBOOT/Function-0 CCP transcript is incomplete at PC={cpu.pc:04X}: "
             f"in={cpu.word(0x7080):04X} out={cpu.word(0x7090):04X} "
-            f"ccp={bytes(cpu.mem[0xEB00:0xEB20]).hex()} {transcript[:160]!r}")
-    require(bytes(cpu.mem[0:3]) == bytes((0xC3, 0x03, 0xF0)) and
+            f"ccp={bytes(cpu.mem[0xEA40:0xEA60]).hex()} {transcript[:160]!r}")
+    require(bytes(cpu.mem[0:3]) == bytes((0xC3, 0x03, 0xEF)) and
             bytes(cpu.mem[5:8]) == bytes((0xC3, 0x00, 0xC1)) and
             cpu.word(bdos_symbol("BDOS_DMA")) == 0x0080,
             "WBOOT did not reconstruct gateways and default DMA state")

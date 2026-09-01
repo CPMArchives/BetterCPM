@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/bios"
 PLATFORM = ROOT / "src/platform/trs80m4"
 BUILD = ROOT / "build/bios"
-BIOS_ADDRESS = 0xF000
+BIOS_ADDRESS = 0xEF00
 
 
 def main() -> None:

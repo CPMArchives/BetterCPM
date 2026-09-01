@@ -3,8 +3,11 @@
 ; This artifact is independently buildable and is not yet loaded by stage zero.
 ; BIOSBASE is a test placement, not a final resident-memory decision.
 
-BIOSBASE        EQU     0F000H
-BIO_PHYBF       EQU     0EE00H  ; provisional external 512-byte buffer
+BIOSBASE        EQU     0EF00H
+BIO_PHYBF       EQU     0ED00H  ; 512-byte buffer below the resident BIOS
+BIO_DIRBF       EQU     0EBC0H
+BIO_CSV0        EQU     0EC40H
+BIO_ALV0        EQU     0EC60H
 SYS_BOOT        EQU     0C020H
 SYS_WBOOT       EQU     0C023H
 
@@ -35,6 +38,7 @@ BIOS:
 
 ; BOOT and WBOOT enter portable system reconstruction before the CCP.
 BIOBOOT:
+        CALL    M4_INIT
         JP      SYS_BOOT
 BIOWBOOT:
         JP      SYS_WBOOT
@@ -256,19 +260,6 @@ BIO_DPB0:
         DB      0C0H,0          ; AL0, AL1
         DW      32              ; CKS
         DW      2               ; OFF
-BIO_DIRBF:
-        REPT    128
-        DB      0
-        ENDM
-BIO_CSV0:
-        REPT    32
-        DB      0
-        ENDM
-BIO_ALV0:
-        REPT    50
-        DB      0
-        ENDM
-
         INCLUDE biosplat.inc
 
         .DEPHASE
