@@ -31,9 +31,10 @@ def main() -> None:
     biostest = args.suite / "suite/build/BIOSTEST.COM"
     payload = args.suite / "suite/runtime-payload"
     mdir = ROOT / "third_party/montezuma/MDIR.COM"
+    era = ROOT / "build/utilities/ERA.COM"
     fixtures = sorted(payload.glob("BT*.DAT"))
     for path in (entry, bdos, filetest, randtest, dirtest, cputest, biostest,
-                 mdir, *fixtures):
+                 mdir, era, *fixtures):
         if not path.is_file():
             raise SystemExit(f"missing compatibility input: {path}")
     command = [
@@ -47,6 +48,7 @@ def main() -> None:
         "--include", str(cputest),
         "--include", str(biostest),
         "--include", str(mdir),
+        "--include", str(era),
     ]
     for fixture in fixtures:
         command.extend(("--include", str(fixture)))

@@ -1,0 +1,80 @@
+; BetterCP/M ERA transient utility.  Uses only the public CP/M 2.2 FCB and
+; BDOS Delete File contract, so the same binary is portable across BIOSes.
+
+BDOS    EQU     0005H
+FCB     EQU     005CH
+
+        CSEG
+; LINK places a three-byte entry transfer at 0100h; relocatable code begins at
+; 0103h. Keeping that history explicit makes native and cross COM files equal.
+        .PHASE  0103H
+
+START:
+        LD      A,(0080H)
+        OR      A
+        JR      Z,USAGE
+        LD      HL,FCB+1
+        LD      B,8
+        CALL    EXPAND
+        LD      HL,FCB+9
+        LD      B,3
+        CALL    EXPAND
+        LD      HL,FCB+1
+        LD      B,11
+ALLQ:
+        LD      A,(HL)
+        CP      '?'
+        JR      NZ,DELETE
+        INC     HL
+        DJNZ    ALLQ
+        LD      DE,CONFIRM
+        LD      C,9
+        CALL    BDOS
+        LD      C,1
+        CALL    BDOS
+        AND     05FH
+        CP      'Y'
+        JR      NZ,DONE
+DELETE:
+        LD      DE,FCB
+        LD      C,19
+        CALL    BDOS
+        CP      0FFH
+        JR      NZ,DONE
+        LD      DE,NOFILE
+        LD      C,9
+        CALL    BDOS
+DONE:
+        LD      C,0
+        JP      BDOS
+
+; Expand a CP/M star through the remainder of its current 8.3 field. Question
+; marks and ordinary characters are already prepared by the CCP default FCB.
+EXPAND:
+        LD      A,(HL)
+        CP      '*'
+        JR      Z,STAR
+        INC     HL
+        DJNZ    EXPAND
+        RET
+STAR:
+        LD      (HL),'?'
+        INC     HL
+        DJNZ    STAR
+        RET
+
+USAGE:
+        LD      DE,USEMSG
+        LD      C,9
+        CALL    BDOS
+        JR      DONE
+
+CONFIRM:
+        DB      13,10,'ALL FILES (Y/N)? $'
+NOFILE:
+        DB      13,10,'NO FILE',13,10,'$'
+USEMSG:
+        DB      13,10,'ERA filename',13,10,'$'
+
+        .DEPHASE
+        END     START
