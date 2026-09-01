@@ -36,15 +36,20 @@ fixture. Focused guarded results are:
 Together with the earlier safe and controlled allocation/DPB passes, BIOSTEST's
 46-entry catalog is now accounted for as:
 
-- 18 executable required passes;
+- 19 physical required passes;
 - 11 non-guaranteed observations;
-- 17 manual, provider-dependent, optional-profile, or out-of-scope procedures;
+- 16 manual, provider-dependent, optional-profile, or out-of-scope procedures;
 - zero remaining failures in the returning baseline.
 
-Item 0457 remains a real manual fault-injection procedure because its oracle
-requires the operator to make the mounted scratch disk write-protected during
-the run and writable again afterward. Boot reconstruction and character-device
-procedures similarly retain their explicit setup and evidence requirements.
+On 2026-09-02 item 0457 was completed manually with the blank B: fixture. The
+ordinary 128-byte transfer passed, the operator made B: write-protected, the
+protected physical write returned nonzero, and a final write succeeded after
+B: was made writable again. BIOSTEST reported:
+
+> `0457  P  R  128-byte transfer passed; physical fault returned nonzero`
+
+Boot reconstruction and character-device procedures retain their explicit
+setup and evidence requirements.
 
 ## Fixture rule
 
