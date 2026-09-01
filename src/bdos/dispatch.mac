@@ -13,6 +13,7 @@ DIRCLOS         EQU     0D821H  ; twelfth directory-service vector
 DIRREAD         EQU     0D824H  ; thirteenth directory-service vector
 DIRWRITE        EQU     0D827H  ; fourteenth directory-service vector
 DIRMAKE         EQU     0D82AH  ; fifteenth directory-service vector
+DIRDELETE       EQU     0D82DH  ; sixteenth directory-service vector
 
         CSEG
         .PHASE  BDOSBASE
@@ -37,6 +38,8 @@ BDOS:
         JP      Z,BDOS_SFIR
         CP      18
         JP      Z,BDOS_SNXT
+        CP      19
+        JP      Z,BDOS_DELETE
         CP      20
         JP      Z,BDOS_READ
         CP      21
@@ -169,7 +172,7 @@ BDOS_CLOSE:
         LD      B,A
         LD      A,(BDOS_USER)
         CALL    DIRCLOS
-        JR      NC,BDOS_RETURN
+        JP      NC,BDOS_RETURN
         LD      A,0FFH          ; provisional storage-error presentation
         JP      BDOS_RETURN
 
@@ -186,6 +189,17 @@ BDOS_SNXT:
 BF_SRET:
         JR      NC,BDOS_RETURN
         LD      A,0FFH          ; provisional storage-error presentation
+        JP      BDOS_RETURN
+
+BDOS_DELETE:
+        LD      DE,(BDOS_PARM)
+        LD      A,(STATE_RO)
+        AND     01H
+        LD      B,A
+        LD      A,(BDOS_USER)
+        CALL    DIRDELETE
+        JR      NC,BDOS_RETURN
+        LD      A,0FFH
         JP      BDOS_RETURN
 
 BDOS_READ:

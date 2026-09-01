@@ -39,6 +39,155 @@ DIRSERV:
         JP      DIR_READ
         JP      DIR_WRITE
         JP      DIR_MAKE
+        JP      DIR_DELETE
+
+; Delete every extent matching an FCB pattern. A=user, DE=FCB, B=software RO.
+; A preflight pass prevents read-only multi-extent files from partial deletion.
+DIR_DELETE:
+        LD      (DIR_DUSER),A
+        LD      (DIR_DFCB),DE
+        LD      A,B
+        OR      A
+        JP      NZ,DIR_DNO
+        LD      A,(DE)
+        CP      2
+        JP      NC,DIR_DNO
+        CALL    DIR_JEMPTY
+        JP      NZ,DIR_DNO       ; do not invalidate live allocation journals
+        CALL    DIR_GALV
+        JP      NZ,DIR_DERR
+        XOR     A
+        LD      (DIR_DFOUND),A
+        LD      (DIR_RECORD),A
+DIR_DPRE:
+        LD      A,(DIR_RECORD)
+        LD      HL,DIR_RECS
+        CP      (HL)
+        JR      NC,DIR_DPOK
+        LD      C,A
+        CALL    DIR_LOAD
+        JP      NZ,DIR_DERR
+        LD      B,4
+DIR_DPENT:
+        CALL    DIR_DMAT
+        JR      NZ,DIR_DPNEXT
+        LD      A,0FFH
+        LD      (DIR_DFOUND),A
+        PUSH    HL
+        LD      DE,9
+        ADD     HL,DE
+        LD      A,(HL)
+        POP     HL
+        AND     080H
+        JP      NZ,DIR_DNO       ; no mutations have occurred in preflight
+DIR_DPNEXT:
+        LD      DE,32
+        ADD     HL,DE
+        DJNZ    DIR_DPENT
+        LD      HL,DIR_RECORD
+        INC     (HL)
+        JR      DIR_DPRE
+DIR_DPOK:
+        LD      A,(DIR_DFOUND)
+        OR      A
+        JP      Z,DIR_DNO
+        XOR     A
+        LD      (DIR_RECORD),A
+DIR_DPASS:
+        LD      A,(DIR_RECORD)
+        LD      HL,DIR_RECS
+        CP      (HL)
+        JR      NC,DIR_DDONE
+        LD      C,A
+        CALL    DIR_LOAD
+        JP      NZ,DIR_DERR
+        XOR     A
+        LD      (DIR_DDIRTY),A
+        LD      B,4
+DIR_DENT:
+        CALL    DIR_DMAT
+        JR      NZ,DIR_DNEXT
+        LD      (HL),0E5H
+        LD      A,0FFH
+        LD      (DIR_DDIRTY),A
+DIR_DNEXT:
+        LD      DE,32
+        ADD     HL,DE
+        DJNZ    DIR_DENT
+        LD      A,(DIR_DDIRTY)
+        OR      A
+        JR      Z,DIR_DADV
+        LD      C,1
+        CALL    BIOWRITE
+        JR      NZ,DIR_DERR
+DIR_DADV:
+        LD      HL,DIR_RECORD
+        INC     (HL)
+        JR      DIR_DPASS
+DIR_DDONE:
+        CALL    DIR_INVAL
+        XOR     A
+        RET
+DIR_DERR:
+        CALL    DIR_INVAL
+        SCF
+        RET
+DIR_DNO:
+        LD      A,0FFH
+        OR      A
+        RET
+
+; Z when directory entry HL matches current user and 11-byte wildcard pattern.
+DIR_DMAT:
+        PUSH    BC
+        PUSH    DE
+        PUSH    HL
+        LD      A,(DIR_DUSER)
+        CP      (HL)
+        JR      NZ,DIR_DMNO
+        INC     HL
+        LD      DE,(DIR_DFCB)
+        INC     DE
+        LD      B,11
+DIR_DMCMP:
+        LD      A,(DE)
+        AND     07FH
+        CP      '?'
+        JR      Z,DIR_DMNEXT
+        LD      C,A
+        LD      A,(HL)
+        AND     07FH
+        CP      C
+        JR      NZ,DIR_DMNO
+DIR_DMNEXT:
+        INC     DE
+        INC     HL
+        DJNZ    DIR_DMCMP
+        XOR     A
+        JR      DIR_DMRET
+DIR_DMNO:
+        LD      A,1
+        OR      A
+DIR_DMRET:
+        POP     HL
+        POP     DE
+        POP     BC
+        RET
+
+DIR_JEMPTY:
+        LD      HL,DIR_PEND
+        LD      B,32
+DIR_JELOOP:
+        LD      A,(HL)
+        INC     HL
+        OR      (HL)
+        RET     NZ
+        INC     HL
+        INC     HL
+        INC     HL
+        DJNZ    DIR_JELOOP
+        XOR     A
+        RET
 
 ; Create an empty first extent. A=current user, DE=FCB, B=software protection.
 ; Returns directory slot 0..3, FFh for duplicate/full/invalid, carry on storage.
@@ -1835,6 +1984,14 @@ DIR_MOLD:
         REPT    33
         DB      0
         ENDM
+DIR_DUSER:
+        DB      0
+DIR_DFCB:
+        DW      0
+DIR_DFOUND:
+        DB      0
+DIR_DDIRTY:
+        DB      0
 DIR_WPRO:
         DB      0
 DIR_WOLD:

@@ -177,6 +177,10 @@ def main() -> None:
     cpu.run(CALLER)
     saved_fcb = bytes(cpu.mem[FCB:FCB + 33])
     cpu.mem[FCB:FCB + 33] = bytes((0,)) + b"DENIED  DAT" + bytes(21)
+    cpu.c, cpu.de = 19, FCB
+    cpu.run(CALLER, limit=50000)
+    require(cpu.a == 0xFF,
+            "CALL 0005h Delete ignored current-drive write protection")
     cpu.c, cpu.de = 22, FCB
     cpu.run(CALLER, limit=50000)
     require(cpu.a == 0xFF,
@@ -217,7 +221,7 @@ def main() -> None:
             "failed initialization published page-zero vectors")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
-    print("application CALL 0005h reached functions 12-18, 20-22, 24-29, 31, and 32")
+    print("application CALL 0005h reached functions 12-22, 24-29, 31, and 32")
 
 
 if __name__ == "__main__":

@@ -146,6 +146,49 @@ def main() -> None:
             cpu.mem[entry + 15] == 2,
             "dirty Close did not commit RC while preserving the caller FCB")
 
+    # Function 19 wildcard-deletes every matching extent and releases blocks
+    # when the invalidated allocation vector is rebuilt.
+    delete0 = FIXTURE + 128
+    delete1 = FIXTURE + 160
+    cpu.mem[delete0:delete0 + 32] = (bytes((0,)) + b"DELONE  DAT" +
+                                     bytes((0, 0, 0, 1)) +
+                                     bytes((5, 0)) + bytes(14))
+    cpu.mem[delete1:delete1 + 32] = (bytes((0,)) + b"DELTWO  DAT" +
+                                     bytes((1, 0, 0, 1)) +
+                                     bytes((6, 0)) + bytes(14))
+    cpu.run(DIR_BASE + 15)
+    cpu.c = 13
+    cpu.run(BDOS_BASE, limit=50000)
+    cpu.mem[FCB:FCB + 33] = bytes(33)
+    cpu.mem[FCB + 1:FCB + 12] = b"DEL?????DAT"
+    cpu.c, cpu.de = 19, FCB
+    cpu.run(BDOS_BASE, limit=200000)
+    require(cpu.a == 0 and cpu.mem[delete0] == 0xE5 and
+            cpu.mem[delete1] == 0xE5,
+            "wildcard Delete did not remove every matching extent")
+    cpu.c = 27
+    cpu.run(BDOS_BASE, limit=100000)
+    require(cpu.mem[cpu.hl] == 0xE0,
+            "Delete did not release extent blocks during ALV reconstruction")
+
+    # One read-only matching extent rejects the whole multi-extent operation.
+    cpu.mem[delete0:delete0 + 32] = (bytes((0,)) + b"PROTECT DAT" +
+                                     bytes((0, 0, 0, 1)) + bytes(16))
+    cpu.mem[delete1:delete1 + 32] = (bytes((0,)) + b"PROTECT DAT" +
+                                     bytes((1, 0, 0, 1)) + bytes(16))
+    cpu.mem[delete1 + 9] |= 0x80
+    cpu.run(DIR_BASE + 15)
+    protected_extents = bytes(cpu.mem[delete0:delete1 + 32])
+    cpu.mem[FCB:FCB + 33] = bytes(33)
+    cpu.mem[FCB + 1:FCB + 12] = b"PROTECT DAT"
+    cpu.c, cpu.de = 19, FCB
+    cpu.run(BDOS_BASE, limit=200000)
+    require(cpu.a == 0xFF and
+            bytes(cpu.mem[delete0:delete1 + 32]) == protected_extents,
+            "read-only preflight allowed partial multi-extent deletion")
+    cpu.mem[delete0:delete1 + 32] = bytes((0xE5,)) * 64
+    cpu.run(DIR_BASE + 15)
+
     # Function 22 creates one canonical empty first extent and activates it.
     post_close_fcb = bytes(cpu.mem[FCB:FCB + 33])
     cpu.mem[FCB:FCB + 33] = bytes((0,)) + b"MAKE    DAT" + bytes((0xA5,)) * 21
@@ -359,6 +402,15 @@ def main() -> None:
     require(bytes(cpu.mem[FIXTURE + 1:FIXTURE + 12]) == b"NEW     DAT",
             f"data write reached directory fixture: C={cpu.c:02X}")
     written_fcb = bytes(cpu.mem[FCB:FCB + 33])
+    pending_media = bytes(cpu.mem[FIXTURE:FIXTURE + 512])
+    cpu.mem[FCB:FCB + 33] = bytes(33)
+    cpu.mem[FCB + 1:FCB + 12] = b"FIRST   DAT"
+    cpu.c, cpu.de = 19, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    require(cpu.a == 0xFF and
+            bytes(cpu.mem[FIXTURE:FIXTURE + 512]) == pending_media,
+            "Delete invalidated a live pending-allocation journal")
+    cpu.mem[FCB:FCB + 33] = written_fcb
     cpu.c, cpu.de = 16, FCB
     cpu.run(BDOS_BASE, limit=50000)
     require(cpu.a == 0 and bytes(cpu.mem[FCB:FCB + 33]) == written_fcb and
@@ -514,7 +566,7 @@ def main() -> None:
             f"provisional BDOS storage failure was confused with slot success: "
             f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS functions 12-18, 20-22, 24-29, 31, and 32 passed")
+    print("BDOS functions 12-22, 24-29, 31, and 32 passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 

@@ -54,6 +54,6 @@ byte-identical System Services and BDOS binaries.
 
 ## Next increment
 
-Implement BDOS function 19 (Delete File). It should use wildcard-compatible
-matching, enforce drive and file protection, mark all matching extents deleted
-transactionally, and keep allocation state coherent across partial failures.
+Engineering Specification 35 implements wildcard, multi-extent Delete File
+with protection preflight and coherent ALV rebuilding. The next directory
+lifecycle operation is BDOS function 23 (Rename File).
