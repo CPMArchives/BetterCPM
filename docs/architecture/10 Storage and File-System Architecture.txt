@@ -262,6 +262,28 @@ The mechanism used by a transient utility to display, edit, save,
 load, or otherwise manage disk-format or drive configuration is
 separate from the storage architecture.
 
+A future CONFIG-style utility should support two complementary modes.
+It should allow an ordinary user to select a tested, named format
+profile in the manner of Montezuma Micro CP/M, and it should allow an
+expert to inspect and manipulate the documented format and drive
+parameters individually. The latter mode is required for developing,
+experimenting with, diagnosing, and validating disk formats that have
+not yet become pre-rolled profiles.
+
+The resident BDOS and BIOS need not own this user interface. They shall
+instead expose or consume a sufficiently complete documented format
+description, validate values that affect their own safety and address
+calculations, and provide the required apply, invalidate, reset, or
+relogin boundary. CONFIG is responsible for interactive editing,
+profile management, higher-level consistency checks, and warnings
+appropriate to experimental definitions.
+
+Field-by-field editing shall not require CONFIG to publish a partially
+edited live definition. Where practical, an experimental definition
+should be assembled and validated as a candidate before it replaces a
+drive's active configuration. A failed validation or application shall
+leave the previous usable configuration identifiable and recoverable.
+
 Changing the logical format associated with a drive, changing the
 storage resource backing a drive, or otherwise altering its
 interpretation may invalidate login state, directory working state,
