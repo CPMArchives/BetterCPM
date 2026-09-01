@@ -23,6 +23,18 @@ CCOMPARE:
         DJNZ    CCOMPARE
         LD      HL,CDISKOK
         CALL    CORE_PRINTLN
+        LD      HL,CKEYPROM
+        CALL    CPRINT
+CKEYWAIT:
+        CALL    HAL_CONST
+        JR      Z,CKEYWAIT
+        CALL    HAL_CONIN
+        LD      C,A
+        CALL    HAL_CONOUT
+        LD      C,13
+        CALL    HAL_CONOUT
+        LD      C,10
+        CALL    HAL_CONOUT
         JR      CSTOP
 CDISKERR:
         LD      HL,CDISKER
@@ -32,20 +44,21 @@ CSTOP:
 
 ; Input: HL = zero-terminated string.  Clobbers AF, C, HL.
 CORE_PRINTLN:
+        CALL    CPRINT
+        LD      C,13
+        CALL    HAL_CONOUT
+        LD      C,10
+        JP      HAL_CONOUT
+CPRINT:
         LD      A,(HL)
         OR      A
-        JR      Z,CPRNL
+        RET     Z
         LD      C,A
         PUSH    HL
         CALL    HAL_CONOUT
         POP     HL
         INC     HL
-        JR      CORE_PRINTLN
-CPRNL:
-        LD      C,13
-        CALL    HAL_CONOUT
-        LD      C,10
-        JP      HAL_CONOUT
+        JR      CPRINT
 
 CORE_TITLE:
         DB      'BetterCP/M',0
@@ -55,6 +68,8 @@ CDISKOK:
         DB      'raw disk read verified',0
 CDISKER:
         DB      'raw disk read failed',0
+CKEYPROM:
+        DB      'key: ',0
 CSIGNAT:
         DB      'BetterCP/M verify'
 CSIGLEN EQU     $-CSIGNAT

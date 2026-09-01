@@ -14,6 +14,7 @@ EXPECTED_LINES = (
     b"BetterCP/M",
     b"TRS-80 Model 4 platform initialized",
     b"raw disk read verified",
+    b"key: K",
 )
 
 
@@ -28,7 +29,8 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="bettercpm-trs80gp-") as temporary:
         subprocess.run([
             str(args.emulator), "-m4", "-batch", "-turbo", "-d0", str(args.image),
-            "-id", "120", "-it", "-ix",
+            "-id", "120", "-ik", "1", "8", "-id", "4",
+            "-ik", "1", "0", "-id", "20", "-it", "-ix",
         ], cwd=temporary, check=True)
         screen = Path(temporary, "trs80-text-0.bin").read_bytes()
         expected = bytearray(b" " * len(screen))

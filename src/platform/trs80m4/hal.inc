@@ -59,6 +59,66 @@ HLF:
         LD      (HCURSOR),HL
         RET
 
+; Return A=0/Z when no ordinary key is pressed, otherwise A=character/NZ.
+HAL_CONST:
+        CALL    HKEYSCAN
+        OR      A
+        RET
+
+; Wait for one ordinary key, then for its release.  Return its ASCII value
+; in A.  Waiting for release here prevents one physical press from being
+; reported repeatedly by a fast polling caller.
+HAL_CONIN:
+        CALL    HKEYSCAN
+        OR      A
+        JR      Z,HAL_CONIN
+        PUSH    AF
+HKEYUP:
+        CALL    HKEYSCAN
+        OR      A
+        JR      NZ,HKEYUP
+        POP     AF
+        RET
+
+; Patch 2026-09-01: the Model 4 exposes its keyboard as rows selected by
+; successive address bits at F401h..F440h.  Keep this physical scan in the
+; platform layer; modifier and configurable key policy belong above it.
+HKEYSCAN:
+        LD      HL,KEYBASE+1
+        LD      DE,HKEYTAB
+        LD      B,7
+HKEYROW:
+        LD      A,(HL)
+        OR      A
+        JR      NZ,HKEYBIT
+        SLA     L
+        LD      A,E
+        ADD     A,8
+        LD      E,A
+        JR      NC,HKEYNXT
+        INC     D
+HKEYNXT:
+        DJNZ    HKEYROW
+        XOR     A
+        RET
+HKEYBIT:
+        RRCA
+        JR      C,HKEYFND
+        INC     DE
+        JR      HKEYBIT
+HKEYFND:
+        LD      A,(DE)
+        RET
+
+HKEYTAB:
+        DB      '@ABCDEFG'
+        DB      'HIJKLMNO'
+        DB      'PQRSTUVW'
+        DB      'XYZ',0,0,0,0,0
+        DB      '01234567'
+        DB      '89:;,-./'
+        DB      13,0,0,0,0,0,0,' '
+
 ; Read a 512-byte physical sector from drive 0, track 0, side 0.
 ; Input: C = physical sector number, HL = destination.
 ; Return: Z and A=0 on success; NZ and A=controller status on failure.
