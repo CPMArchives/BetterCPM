@@ -146,6 +146,8 @@ def main() -> None:
                         help="install PATH under a chosen CP/M 8.3 NAME")
     parser.add_argument("--cross-fixture", action="store_true",
                         help="install the canonical one-record BTBFILE.DAT fixture")
+    parser.add_argument("--full-fixture", action="store_true",
+                        help="install the canonical RANDTEST full-disk fixture")
     parser.add_argument("--output", type=Path,
                         default=BUILD / "BetterCPM-Extended-80T-DS-System-790K.dmk")
     args = parser.parse_args()
@@ -169,6 +171,17 @@ def main() -> None:
         extras.append((name, path.read_bytes()))
     if args.cross_fixture:
         extras.append(("BTBFILE.DAT", CROSS_FIXTURE))
+    if args.full_fixture:
+        full = bytearray(128 * 128)
+        full[127 * 128:127 * 128 + 8] = b"FULL-127"
+        # HELLO, BTFULL, and BTREL consume ten allocation blocks after the
+        # two directory blocks. Fill every block that remains.
+        filler_blocks = BLOCK_COUNT - FIRST_DATA_BLOCK - 10
+        extras.extend((
+            ("BTFULL.DAT", bytes(full)),
+            ("BTREL.DAT", bytes(128)),
+            ("BTFILL.DAT", bytes(filler_blocks * ALLOCATION_BLOCK_BYTES)),
+        ))
     image = install(boot, stage1, resident, [("HELLO.COM", HELLO_COM), *extras])
     output = args.output.resolve()
     output.parent.mkdir(parents=True, exist_ok=True)

@@ -19,6 +19,8 @@ def main() -> None:
                         default=ROOT / "build/trs80/BetterCPM-Conformance-Drive-B.dmk")
     parser.add_argument("--drive-c-output", type=Path,
                         default=ROOT / "build/trs80/BetterCPM-Conformance-Drive-C.dmk")
+    parser.add_argument("--drive-d-output", type=Path,
+                        default=ROOT / "build/trs80/BetterCPM-Conformance-Drive-D-Full.dmk")
     args = parser.parse_args()
     entry = args.suite / "suite/build/ENTRYTST.COM"
     bdos = args.suite / "suite/build/BDOSTEST.COM"
@@ -53,6 +55,11 @@ def main() -> None:
         "python3", str(ROOT / "tools/build_trs80_boot.py"),
         "--cross-fixture",
         "--output", str(args.drive_c_output),
+    ], cwd=ROOT, check=True)
+    subprocess.run([
+        "python3", str(ROOT / "tools/build_trs80_boot.py"),
+        "--full-fixture",
+        "--output", str(args.drive_d_output),
     ], cwd=ROOT, check=True)
 
 

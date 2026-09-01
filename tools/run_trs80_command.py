@@ -48,6 +48,8 @@ def main() -> None:
                         help="optional DMK to mount as the second floppy")
     parser.add_argument("--drive-c", type=Path,
                         help="optional DMK to mount as the third floppy")
+    parser.add_argument("--drive-d", type=Path,
+                        help="optional DMK to mount as the fourth floppy")
     parser.add_argument("--boot-delay", type=int, default=1200)
     parser.add_argument("--run-delay", type=int, default=8000)
     parser.add_argument("--snapshot", type=Path)
@@ -59,12 +61,15 @@ def main() -> None:
         inputs.append(args.drive_b)
     if args.drive_c:
         inputs.append(args.drive_c)
+    if args.drive_d:
+        inputs.append(args.drive_d)
     for path in inputs:
         if not path.is_file():
             raise SystemExit(f"missing test input: {path}")
     image = args.image.resolve()
     drive_b = args.drive_b.resolve() if args.drive_b else None
     drive_c = args.drive_c.resolve() if args.drive_c else None
+    drive_d = args.drive_d.resolve() if args.drive_d else None
 
     with tempfile.TemporaryDirectory(prefix="bettercpm-command-") as temporary:
         # Compatibility programs deliberately create, extend, and delete files.
@@ -83,12 +88,18 @@ def main() -> None:
                 isolated = Path(temporary, "drive-c.dmk")
                 shutil.copy2(drive_c, isolated)
                 drive_c = isolated
+            if drive_d:
+                isolated = Path(temporary, "drive-d.dmk")
+                shutil.copy2(drive_d, isolated)
+                drive_d = isolated
         command = [str(args.emulator), "-m4", "-batch", "-turbo",
                    "-d0", str(image), "-id", str(args.boot_delay)]
         if drive_b:
             command[6:6] = ["-d1", str(drive_b)]
         if drive_c:
             command[6:6] = ["-d2", str(drive_c)]
+        if drive_d:
+            command[6:6] = ["-d3", str(drive_d)]
         command.extend(key_args(args.command + "\r"))
         command.extend(("-id", str(args.run_delay), "-it", "-ix"))
         subprocess.run(command, cwd=temporary, check=True)
