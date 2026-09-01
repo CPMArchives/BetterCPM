@@ -41,6 +41,5 @@ A>DIRTEST /0567
 Summary: 1 pass, 0 fail, 0 error, 0 observations
 ```
 
-This completes all eight required User Areas cases. Diagnostic 0565 remains
-to close the group and the DIRTEST catalog.
-
+This completes all eight required User Areas cases. Engineering Specification
+86 records diagnostic 0565 and closes the group and the DIRTEST catalog.

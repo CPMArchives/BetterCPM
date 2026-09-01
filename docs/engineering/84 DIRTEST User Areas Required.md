@@ -34,5 +34,5 @@ entries, and an extended capture produced the clean result above. This was a
 test-runner timing limit, not a BDOS hang or correctness failure.
 
 Engineering Specification 85 adds the resident `USER` command and records the
-successful CCP-integration workflow for case 0567. Diagnostic 0565 remains to
-close the User Areas group.
+successful CCP-integration workflow for case 0567. Engineering Specification
+86 records diagnostic 0565 and closes the User Areas group and DIRTEST catalog.
