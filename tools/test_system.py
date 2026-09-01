@@ -27,7 +27,9 @@ def main() -> None:
     require(len(calls) >= 2, "BIOS physical-read call was not found")
     platform_read = cpu.word(calls[1] + 1)
     read_success = bytes((
-        0x79, 0xFE, 0x08, 0x20, 0x05,
+        0x78, 0xB7, 0x20, 0x07,
+        0x79, 0xFE, 0x08, 0x30, 0x02,
+        0x18, 0x05,
         0x21, DATA & 0xFF, DATA >> 8,
         0x18, 0x03,
         0x21, FIXTURE & 0xFF, FIXTURE >> 8,
@@ -41,8 +43,10 @@ def main() -> None:
                    if cpu.mem[address] == 0xC3]
     require(write_jumps, "BIOS physical-write jump was not found")
     platform_write = cpu.word(write_jumps[-1] + 1)
-    cpu.mem[platform_write:platform_write + 23] = bytes((
-        0x79, 0xFE, 0x08, 0x20, 0x05,
+    write_success = bytes((
+        0x78, 0xB7, 0x20, 0x07,
+        0x79, 0xFE, 0x08, 0x30, 0x02,
+        0x18, 0x05,
         0x11, DATA & 0xFF, DATA >> 8,
         0x18, 0x03,
         0x11, FIXTURE & 0xFF, FIXTURE >> 8,
@@ -50,6 +54,7 @@ def main() -> None:
         0x01, 0x00, 0x02,
         0xED, 0xB0, 0xAF, 0xC9,
     ))
+    cpu.mem[platform_write:platform_write + len(write_success)] = write_success
 
     cpu.mem[FIXTURE:FIXTURE + 512] = bytes((0xE5,)) * 512
     entry = FIXTURE + 32
@@ -150,6 +155,29 @@ def main() -> None:
             bytes(cpu.mem[DATA + 128:DATA + 256]) == bytes((0xB6,)) * 128,
             "CALL 0005h Write Random did not preserve CP/M FCB semantics")
     cpu.mem[DATA + 128:DATA + 256] = bytes((0xA1,)) * 128
+    zero_media = bytes(cpu.mem[FIXTURE:FIXTURE + 512])
+    zero_data = bytes(cpu.mem[DATA:DATA + 512])
+    cpu.mem[DATA:DATA + 512] = bytes((0xCC,)) * 512
+    cpu.mem[0x7100:0x7180] = bytes((0xB8,)) * 128
+    cpu.mem[FCB + 33:FCB + 36] = bytes((16, 0, 0))
+    cpu.c, cpu.de = 40, FCB
+    cpu.run(CALLER, limit=400000)
+    require(cpu.a == 0 and cpu.mem[FCB + 32] == 16 and
+            bytes(cpu.mem[DATA:DATA + 128]) == bytes((0xB8,)) * 128 and
+            bytes(cpu.mem[DATA + 128:DATA + 512]) == bytes(384),
+            f"CALL 0005h Write Random with Zero Fill failed: A={cpu.a:02X} "
+            f"CR={cpu.mem[FCB + 32]:02X} data="
+            f"{bytes(cpu.mem[DATA:DATA + 8]).hex()}")
+    cpu.mem[FIXTURE:FIXTURE + 512] = zero_media
+    cpu.mem[DATA:DATA + 512] = zero_data
+    cpu.c = 13
+    cpu.run(CALLER, limit=50000)
+    cpu.mem[FCB:FCB + 36] = bytes(36)
+    cpu.mem[FCB + 1:FCB + 12] = b"READ    DAT"
+    cpu.c, cpu.de = 15, FCB
+    cpu.run(CALLER, limit=50000)
+    cpu.c, cpu.de = 26, 0x7100
+    cpu.run(CALLER)
     cpu.mem[FIXTURE:FIXTURE + 12] = bytes((0,)) + b"READ    DAT"
     cpu.mem[FIXTURE + 12:FIXTURE + 16] = bytes((1, 0, 0, 1))
     cpu.mem[FIXTURE + 16:FIXTURE + 32] = bytes((2, 0)) + bytes(14)
@@ -265,7 +293,7 @@ def main() -> None:
             "failed initialization published page-zero vectors")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")
-    print("application CALL 0005h reached functions 12-36")
+    print("application CALL 0005h reached functions 12-36 and 40")
 
 
 if __name__ == "__main__":

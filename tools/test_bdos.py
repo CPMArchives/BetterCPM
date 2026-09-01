@@ -562,11 +562,36 @@ def main() -> None:
     cpu.run(DIR_BASE + 15)
     cpu.c = 13
     cpu.run(BDOS_BASE, limit=50000)
+
     cpu.mem[FCB + 1:FCB + 12] = b"READ    DAT"
     cpu.mem[FCB + 33:FCB + 36] = bytes((0x80, 0, 0))
     cpu.c, cpu.de = 34, FCB
     cpu.run(BDOS_BASE, limit=200000)
-    require(cpu.a == 5, "Write Random did not distinguish directory overflow")
+    require(cpu.a == 5,
+            f"Write Random did not distinguish directory overflow: A={cpu.a:02X}")
+    cpu.mem[FIXTURE:FIXTURE + 512] = random_media
+    cpu.mem[DATA:DATA + 512] = random_data
+    cpu.run(DIR_BASE + 15)
+    cpu.c = 13
+    cpu.run(BDOS_BASE, limit=50000)
+
+    # Function 40 must clear every record of a newly allocated CP/M block
+    # before installing the caller's record. Record 16 selects the empty
+    # second allocation slot of READ.DAT's first extent.
+    cpu.mem[DATA:DATA + 512] = bytes((0xCC,)) * 512
+    cpu.mem[0x7000:0x7080] = bytes((0xB7,)) * 128
+    cpu.mem[FCB + 1:FCB + 12] = b"READ    DAT"
+    cpu.mem[FCB + 33:FCB + 36] = bytes((16, 0, 0))
+    cpu.c, cpu.de = 26, 0x7000
+    cpu.run(BDOS_BASE)
+    cpu.c, cpu.de = 40, FCB
+    cpu.run(BDOS_BASE, limit=400000)
+    require(cpu.a == 0 and cpu.mem[FCB + 12] == 0 and
+            cpu.mem[FCB + 32] == 16 and
+            bytes(cpu.mem[FCB + 33:FCB + 36]) == bytes((16, 0, 0)) and
+            bytes(cpu.mem[DATA:DATA + 128]) == bytes((0xB7,)) * 128 and
+            bytes(cpu.mem[DATA + 128:DATA + 512]) == bytes(384),
+            "Write Random with Zero Fill did not initialize the new block")
     cpu.mem[FIXTURE:FIXTURE + 512] = random_media
     cpu.mem[DATA:DATA + 512] = random_data
     cpu.run(DIR_BASE + 15)
@@ -768,7 +793,7 @@ def main() -> None:
     cpu.c, cpu.e = 32, 0xFF
     cpu.run(BDOS_BASE)
     require(cpu.a == 5, "disk reset did not preserve current user")
-    cpu.c = 40
+    cpu.c = 41
     cpu.run(BDOS_BASE)
     require(cpu.a == 0xFF and cpu.l == 0xFF,
             "unsupported BDOS function did not fail explicitly")
@@ -792,7 +817,7 @@ def main() -> None:
             f"provisional BDOS storage failure was confused with slot success: "
             f"A={cpu.a:02X} L={cpu.l:02X}")
 
-    print("BDOS functions 12-36 passed")
+    print("BDOS functions 12-36 and 40 passed")
     print("state persistence, aliases, stack, Open, and failure paths passed")
 
 

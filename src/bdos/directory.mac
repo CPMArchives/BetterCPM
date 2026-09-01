@@ -45,11 +45,24 @@ DIRSERV:
         JP      DIR_SIZE
         JP      DIR_RREAD
         JP      DIR_RWRITE
+        JP      DIR_RZERO
+
+DIR_RZERO:
+        PUSH    AF
+        LD      A,0FFH
+        LD      (DIR_ZFILL),A
+        POP     AF
+        JR      DIR_RWCOM
 
 ; Write the 128-byte record named by FCB R0/R1. Missing extents are created
 ; before the ordinary transactional data allocator is entered. H is nonzero
 ; when the selected drive is software protected.
 DIR_RWRITE:
+        PUSH    AF
+        XOR     A
+        LD      (DIR_ZFILL),A
+        POP     AF
+DIR_RWCOM:
         LD      (DIR_QUSER),A
         LD      (DIR_QFCB),DE
         LD      (DIR_QDMA),BC
@@ -1098,6 +1111,13 @@ DIR_WGOT:
         CALL    DIR_WPCAP
         JP      NZ,DIR_WFULL
         LD      HL,(DIR_WNEW)
+        LD      A,(DIR_ZFILL)
+        OR      A
+        JR      Z,DW_NOZERO
+        CALL    DIR_WZFILL
+        JP      NZ,DIR_WFAIL
+DW_NOZERO:
+        LD      HL,(DIR_WNEW)
         LD      A,1
         LD      (DIR_WALLOC),A
         LD      D,H
@@ -1192,6 +1212,68 @@ DIR_WFULL:
         RET
 DIR_WFAIL:
         SCF
+        RET
+
+; Function 40 patch: initialize every 128-byte record in a newly allocated
+; CP/M block before the caller's record is written. DIRBUF is expendable once
+; allocation reconstruction is complete, so it doubles as the zero DMA buffer.
+DIR_WZFILL:
+        LD      (DIR_ZBLOCK),HL
+        LD      HL,DIRBUF
+        LD      (HL),0
+        LD      DE,DIRBUF+1
+        LD      BC,127
+        LDIR
+        XOR     A
+        LD      (DIR_ZREC),A
+DZ_LOOP:
+        LD      HL,(DIR_ZBLOCK)
+        LD      A,(DIR_BSH)
+DZ_SHIFT:
+        OR      A
+        JR      Z,DZ_SHOK
+        ADD     HL,HL
+        DEC     A
+        JR      DZ_SHIFT
+DZ_SHOK:
+        LD      A,(DIR_ZREC)
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE
+        LD      DE,(DIR_SPT)
+        LD      BC,(DIR_OFF)
+DZ_DIV:
+        OR      A
+        SBC     HL,DE
+        JR      C,DZ_DONE
+        INC     BC
+        JR      DZ_DIV
+DZ_DONE:
+        ADD     HL,DE
+        PUSH    HL
+        CALL    BIOSETTR
+        POP     HL
+        LD      C,L
+        LD      B,0
+        CALL    BIOSETSE
+        LD      BC,DIRBUF
+        CALL    BIOSETDM
+        LD      A,(DIR_ZREC)
+        OR      A
+        LD      C,0
+        JR      NZ,DZ_WRITE
+        LD      C,2             ; first logical record of a new CP/M block
+DZ_WRITE:
+        CALL    BIOWRITE
+        RET     NZ
+        LD      HL,DIR_ZREC
+        INC     (HL)
+        LD      A,(DIR_BLM)
+        INC     A
+        CP      (HL)
+        JR      NZ,DZ_LOOP
+        XOR     A
+        LD      (DIR_VALID),A   ; zero workspace displaced cached directory
         RET
 
 ; CR=128: commit the completed extent, create the next empty extent, then let
@@ -2702,6 +2784,12 @@ DIR_QCR:
 DIR_QEX:
         DB      0
 DIR_QS2:
+        DB      0
+DIR_ZFILL:
+        DB      0
+DIR_ZBLOCK:
+        DW      0
+DIR_ZREC:
         DB      0
 DIR_WUSER:
         DB      0

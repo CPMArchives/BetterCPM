@@ -55,6 +55,6 @@ byte-identical System Services, BDOS, and resident-system binaries.
 
 ## Next increment
 
-Implement BDOS function 40 (Write Random with Zero Fill). This can reuse Random
-Write while initializing the unwritten portion of a newly allocated block to
-zero, as required by CP/M 2.2.
+Implemented by [Engineering Specification 42](42%20Random%20Write%20with%20Zero%20Fill.md).
+Function 40 reuses Random Write while initializing every record of a newly
+allocated CP/M block to zero.

@@ -62,6 +62,8 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Engineering Specification 40`](docs/engineering/40%20Random%20Read.md) adds strict CP/M 2.2 Read Random semantics, precise random-I/O status codes, and application-level verification.
 
 [`Engineering Specification 41`](docs/engineering/41%20Random%20Write.md) adds CP/M-compatible Random Write with automatic extent/block allocation and distinct disk-full and directory-overflow results.
+
+[`Engineering Specification 42`](docs/engineering/42%20Random%20Write%20with%20Zero%20Fill.md) adds Function 40 block initialization, giving newly allocated random-file records deterministic zero contents.
 [`Engineering Specification 25`](docs/engineering/25%20Allocation%20and%20DPB%20Pointers.md) exposes the current drive's reconstructed allocation vector and live 15-byte disk parameter block.
 [`Engineering Specification 26`](docs/engineering/26%20Directory%20Search%20and%20DMA.md) adds Search First/Search Next continuation, wildcard and all-user matching, and complete directory-record transfer to the selected DMA address.
 [`Engineering Specification 27`](docs/engineering/27%20Unchanged%20FCB%20Close.md) adds the non-mutating Close File boundary for unchanged activated FCBs and safely rejects dirty commits until writeback exists.

@@ -19,6 +19,7 @@ DIRATTR         EQU     0D833H  ; eighteenth directory-service vector
 DIRSIZE         EQU     0D836H  ; nineteenth directory-service vector
 DIRRREAD        EQU     0D839H  ; twentieth directory-service vector
 DIRRWRIT        EQU     0D83CH  ; twenty-first directory-service vector
+DIRRZERO        EQU     0D83FH  ; twenty-second directory-service vector
 
         CSEG
         .PHASE  BDOSBASE
@@ -79,6 +80,8 @@ BDOS:
         JP      Z,BDOS_SIZE
         CP      36
         JP      Z,BDOS_SETRR
+        CP      40
+        JP      Z,BF_RZERO
         LD      A,0FFH          ; unsupported returning function
         JP      BDOS_RETURN
 
@@ -188,6 +191,18 @@ BF_RWRIT:
         CALL    DIRRWRIT
         JP      NC,BDOS_RETURN
         LD      A,0FFH          ; protection or physical-storage failure
+        JP      BDOS_RETURN
+
+BF_RZERO:
+        LD      DE,(BDOS_PARM)
+        LD      BC,(BDOS_DMA)
+        LD      A,(STATE_RO)
+        AND     01H
+        LD      H,A
+        LD      A,(BDOS_USER)
+        CALL    DIRRZERO
+        JP      NC,BDOS_RETURN
+        LD      A,0FFH
         JP      BDOS_RETURN
 
 BDOS_OPEN:
