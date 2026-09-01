@@ -24,3 +24,11 @@ The generated conformance disk includes ERA.COM. A physical `trs80gp` test
 created `BTBOOT.DAT`, ran `ERA BTBOOT.DAT`, and then ran resident `DIR` on the
 same writable image. The directory contained `HELLO.COM` and `ERA.COM` but no
 `BTBOOT.DAT`, proving deletion through BetterCP/M's public filesystem path.
+
+`tools/add_cpm_file_to_dmk.py` supports the complementary development case:
+adding one file to an existing MM Extended 790K image without rebuilding or
+discarding its current filesystem state. It decodes and verifies the DMK,
+finds free directory entries and allocation blocks, rebuilds valid track CRCs,
+and can retain the original image as a backup. It was used to add `ERA.COM` to
+the manually exercised conformance disk while preserving its retained
+`BTBOOT.DAT` evidence.
