@@ -232,6 +232,13 @@ Provisional BetterCP/M BDOS Function 200 mediates this proof. Its current
 stable third-party ABI. A later versioned request-block interface must replace
 or formally supersede them before arbitrary CPXs are supported.
 
+`CPX LIST` also reports each known active module's command inventory and the
+live TPA available from `0100h` to the exclusive boundary published at
+`0006h`. The current BASIC inventory is built into the proof manager. The
+general metadata ABI must let arbitrary CPXs publish a name, version, and
+commands or capabilities without adding module-specific knowledge to the
+manager.
+
 The final CPX ABI must additionally define:
 
 - initialization and shutdown calls;

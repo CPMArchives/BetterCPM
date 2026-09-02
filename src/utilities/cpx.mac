@@ -48,10 +48,12 @@ TRYLIST:
         JR      NZ,LISTBAD
         LD      DE,LISTBASIC
         CALL    PRINT
-        JR      DONE
+        JR      LISTTPA
 LISTNONE:
         LD      DE,LISTEMPTY
         CALL    PRINT
+LISTTPA:
+        CALL    PRINTTPA
         JR      DONE
 LISTBAD:
         LD      DE,LISTERROR
@@ -91,13 +93,57 @@ PRINT:
         LD      C,9
         JP      BDOS
 
+; The word at 0006h is the exclusive top of the transient region. Report
+; whole kilobytes available from the conventional 0100h program origin.
+PRINTTPA:
+        LD      HL,(0006H)
+        LD      DE,0100H
+        OR      A
+        SBC     HL,DE
+        LD      A,H             ; floor(HL / 1024) = high byte / 4
+        RRCA
+        RRCA
+        AND     03FH
+        LD      B,0
+PT_DIV10:
+        CP      10
+        JR      C,PT_DIGITS
+        SUB     10
+        INC     B
+        JR      PT_DIV10
+PT_DIGITS:
+        LD      (PT_UNITS),A
+        LD      A,B
+        LD      (PT_TENS),A
+        LD      DE,TPAMSG
+        CALL    PRINT
+        LD      A,(PT_TENS)
+        OR      A
+        JR      Z,PT_UNIT
+        ADD     A,'0'
+        LD      E,A
+        LD      C,2
+        CALL    BDOS
+PT_UNIT:
+        LD      A,(PT_UNITS)
+        ADD     A,'0'
+        LD      E,A
+        LD      C,2
+        CALL    BDOS
+        LD      DE,TPAEND
+        JP      PRINT
+
 KLIST:          DB      'LIST'
 KLOAD:          DB      'LOAD BASIC'
 KUNLOAD:        DB      'UNLOAD BASIC'
-LISTBASIC:      DB      13,10,'BASIC.CPX loaded',13,10,'$'
+LISTBASIC:      DB      13,10,'BASIC : DIR, ERA, TYPE, REN',13,10,'$'
 LISTEMPTY:      DB      13,10,'No CPXs loaded',13,10,'$'
 LISTERROR:      DB      13,10,'CPX profile error',13,10,'$'
 USEMSG:         DB      13,10,'CPX LIST | LOAD BASIC | UNLOAD BASIC',13,10,'$'
+TPAMSG:         DB      'TPA available: $'
+TPAEND:         DB      'K',13,10,'$'
+PT_TENS:        DB      0
+PT_UNITS:       DB      0
 
         .DEPHASE
         END     START

@@ -30,9 +30,11 @@ def main() -> None:
         subprocess.run(invocation, cwd=temporary, check=True)
         screen = Path(temporary, "trs80-text-0.bin").read_bytes()[:80 * 24]
     ordered = (
-        b"A>CPX LIST", b"BASIC.CPX loaded", b"A>CPX UNLOAD BASIC",
-        b"No CPXs loaded", b"A>TYPE", b"?", b"A>CPX LOAD BASIC",
-        b"BASIC.CPX loaded", b"A>TYPE", b"TYPE filename",
+        b"A>CPX LIST", b"BASIC : DIR, ERA, TYPE, REN",
+        b"TPA available: 47K", b"A>CPX UNLOAD BASIC",
+        b"No CPXs loaded", b"TPA available: 47K", b"A>TYPE", b"?",
+        b"A>CPX LOAD BASIC", b"BASIC : DIR, ERA, TYPE, REN",
+        b"TPA available: 47K", b"A>TYPE", b"TYPE filename",
     )
     position = 0
     for expected in ordered:
