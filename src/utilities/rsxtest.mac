@@ -1,0 +1,28 @@
+; Invoke experimental BDOS Function 201 through CALL 0005h.
+
+; LINK's absolute COM image supplies the conventional JP 0103h transfer.
+BDOS            EQU     0005H
+        CSEG
+        .PHASE  0103H
+START:
+        LD      C,201
+        CALL    BDOS
+        LD      A,H
+        CP      052H
+        JR      NZ,RT_ABSENT
+        LD      A,L
+        CP      053H
+        JR      NZ,RT_ABSENT
+        LD      DE,RT_PRESENT
+        JR      RT_PRINT
+RT_ABSENT:
+        LD      DE,RT_MISSING
+RT_PRINT:
+        LD      C,9
+        CALL    BDOS
+        LD      C,0
+        JP      BDOS
+RT_PRESENT:    DB      'RSX function 201 returned 5253h',13,10,'$'
+RT_MISSING:    DB      13,10,'RSX function 201 unsupported',13,10,'$'
+        .DEPHASE
+        END     START

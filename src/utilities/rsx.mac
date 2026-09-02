@@ -1,0 +1,140 @@
+; BetterCP/M proof RSX manager.
+
+BDOS            EQU     0005H
+RSXFUNC         EQU     202
+
+; LINK's absolute COM image supplies the conventional JP 0103h transfer.
+        CSEG
+        .PHASE  0103H
+START:
+        LD      A,(0080H)
+        LD      B,A
+        LD      HL,0081H
+RS_SKIP:
+        LD      A,B
+        OR      A
+        JR      Z,RS_USAGE
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,RS_HAVE
+        INC     HL
+        DEC     B
+        JR      RS_SKIP
+RS_HAVE:
+        LD      (RS_ARG),HL
+        LD      A,B
+        CP      4
+        JR      Z,RS_LIST
+        CP      10
+        JR      Z,RS_LOAD
+        CP      12
+        JR      Z,RS_UNLOAD
+RS_USAGE:
+        LD      DE,RS_UMSG
+        JR      RS_PDONE
+RS_LIST:
+        LD      DE,RS_KLIST
+        LD      B,4
+        CALL    RS_MATCH
+        JR      NZ,RS_USAGE
+        LD      E,0
+        CALL    RS_CONTROL
+        OR      A
+        LD      DE,RS_NONE
+        JR      Z,RS_LISTMSG
+        LD      DE,RS_HELLO
+RS_LISTMSG:
+        CALL    RS_PRINT
+        CALL    RS_TPA
+        JR      RS_DONE
+RS_LOAD:
+        LD      DE,RS_KLOAD
+        LD      B,10
+        CALL    RS_MATCH
+        JR      NZ,RS_USAGE
+        LD      E,1
+        JR      RS_CHANGE
+RS_UNLOAD:
+        LD      DE,RS_KUNLOAD
+        LD      B,12
+        CALL    RS_MATCH
+        JR      NZ,RS_USAGE
+        LD      E,2
+RS_CHANGE:
+        CALL    RS_CONTROL
+        OR      A
+        JR      Z,RS_DONE
+        LD      DE,RS_ERROR
+RS_PDONE:
+        CALL    RS_PRINT
+RS_DONE:
+        LD      C,0
+        JP      BDOS
+RS_CONTROL:
+        LD      C,RSXFUNC
+        JP      BDOS
+RS_MATCH:
+        LD      HL,(RS_ARG)
+RS_MLOOP:
+        LD      A,(DE)
+        CP      (HL)
+        RET     NZ
+        INC     DE
+        INC     HL
+        DJNZ    RS_MLOOP
+        RET
+RS_PRINT:
+        LD      C,9
+        JP      BDOS
+RS_TPA:
+        LD      HL,(0006H)
+        LD      DE,0100H
+        OR      A
+        SBC     HL,DE
+        LD      A,H
+        RRCA
+        RRCA
+        AND     03FH
+        LD      B,0
+RS_DIV:
+        CP      10
+        JR      C,RS_DIGITS
+        SUB     10
+        INC     B
+        JR      RS_DIV
+RS_DIGITS:
+        LD      (RS_UNITS),A
+        LD      A,B
+        LD      (RS_TENS),A
+        LD      DE,RS_TPAM
+        CALL    RS_PRINT
+        LD      A,(RS_TENS)
+        OR      A
+        JR      Z,RS_UNIT
+        ADD     A,'0'
+        LD      E,A
+        LD      C,2
+        CALL    BDOS
+RS_UNIT:
+        LD      A,(RS_UNITS)
+        ADD     A,'0'
+        LD      E,A
+        LD      C,2
+        CALL    BDOS
+        LD      DE,RS_TPAE
+        JP      RS_PRINT
+
+RS_KLIST:      DB      'LIST'
+RS_KLOAD:      DB      'LOAD HELLO'
+RS_KUNLOAD:    DB      'UNLOAD HELLO'
+RS_NONE:       DB      13,10,'No RSXs loaded',13,10,'$'
+RS_HELLO:      DB      13,10,'HELLO : BDOS 201',13,10,'$'
+RS_ERROR:      DB      13,10,'RSX profile error',13,10,'$'
+RS_UMSG:       DB      13,10,'RSX LIST | LOAD/UNLOAD HELLO',13,10,'$'
+RS_TPAM:       DB      'TPA available: $'
+RS_TPAE:       DB      'K',13,10,'$'
+RS_ARG:        DW      0
+RS_TENS:       DB      0
+RS_UNITS:      DB      0
+        .DEPHASE
+        END     START

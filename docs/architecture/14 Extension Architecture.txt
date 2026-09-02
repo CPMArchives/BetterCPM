@@ -132,15 +132,15 @@ entry and dispatch organization, resident memory layout,
 initialization path, and possible chaining points shall not require
 all service calls permanently to enter the core BDOS directly.
 
-The initial system need not implement RSXs.  No extension ABI,
-installer, removal mechanism, chain representation, memory manager,
-or interception dispatcher is defined by the initial architecture.
-Preserving the future capability shall impose little or no resident
-cost until an implemented extension actually requires it.
+The first implementation includes a provisional RSX proof: a movable
+compatibility gateway, a protected chain, a relocatable HELLO.RSX, and
+runtime load/unload control.  This executable interface is intentionally
+narrow and is not yet the stable general third-party ABI.  General module
+discovery, initialization and shutdown, saved profiles, integrity metadata,
+and bypass services shall be specified from concrete uses.
 
-A future extension facility may be compatible in purpose rather than
-binary-identical to CP/M 3 RSXs.  Its requirements and ABI shall be
-specified from concrete uses before implementation.
+The eventual extension facility may be compatible in purpose rather than
+binary-identical to CP/M 3 RSXs.
 
 Resident System Extensions and Command Processor Extensions are distinct.
 An RSX intercepts or extends BDOS services.  It is part of the resident

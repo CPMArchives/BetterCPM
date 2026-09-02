@@ -32,6 +32,7 @@ DIRSELECT       EQU     0D642H  ; select/reuse a logical drive context
 CPTCOUNT        EQU     0C094H  ; active CPX reconstruction profile
 CPTFLAGS        EQU     0C095H  ; known-module membership bits
 CPTABLE         EQU     0C096H
+RSXCONTROL      EQU     0E903H
 
         CSEG
         .PHASE  BDOSBASE
@@ -122,6 +123,8 @@ BDOS:
         JP      Z,BF_RZERO
         CP      200             ; provisional BetterCP/M CPX control service
         JP      Z,BF_CPXCTL
+        CP      202             ; provisional BetterCP/M RSX control service
+        JP      Z,BF_RSXCTL
 ; Patch 2026-09-01: selectors above Function 40 conventionally return zero.
         XOR     A
         JP      BDOS_RETURN
@@ -222,6 +225,11 @@ BCX_RDONE:
         JP      BDOS_RETURN
 BCX_BAD:
         LD      A,0FFH
+        JP      BDOS_RETURN
+
+BF_RSXCTL:
+        LD      DE,(BDOS_PARM)
+        CALL    RSXCONTROL
         JP      BDOS_RETURN
 
 ; Print the $-terminated string at DE through the same cooked path as

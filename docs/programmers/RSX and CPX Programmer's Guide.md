@@ -152,9 +152,15 @@ image when it produces byte-identical results.
 
 ## 6. RSX execution model
 
-The final RSX ABI has not yet been implemented. The architecture requires the
-BDOS entry path to permit an ordered RSX chain before control reaches the
-core BDOS dispatcher.
+The first executable RSX ABI is now implemented as a deliberately narrow
+proof. The dynamic gateway jumps to the first installed RSX's dispatch entry;
+an unowned request is passed to the next header's entry, with the final link
+targeting the fixed core BDOS at `C100h`.
+
+The proof runtime header contains a two-byte next-entry address at offset zero
+and a two-byte dispatch-entry address at offset two. `HELLO.RSX` owns
+experimental Function 201, returns `HL=5253h`, and chains all other calls.
+`RSXTEST.COM` reaches it through the public `CALL 0005h` path.
 
 An RSX must be able to:
 
@@ -166,12 +172,29 @@ An RSX must be able to:
 - preserve the application-visible CP/M calling convention unless an
   explicitly BetterCP/M-specific service defines otherwise.
 
-The exact register convention, call-frame representation, chaining order,
+The normal CP/M BDOS input and result registers pass through the proof chain.
+The exact durable register convention, initialization and shutdown calls,
 reentrancy rules, error propagation, and bypass interface remain to be
-specified before the first RSX is implemented.
+specified before this becomes a stable third-party ABI.
 
 RSXs remain part of the system-service environment when the CCP and CPXs are
 reloaded. They must not depend upon private CCP or CPX data.
+
+### 6.1 Provisional runtime manager and carrier
+
+`RSX.COM` provides `LIST`, `LOAD HELLO`, and `UNLOAD HELLO`. Experimental
+BDOS Function 202 carries its query/load/unload request to fixed resident
+loader code. HELLO is intentionally absent from the default profile.
+
+The initial compact `BRX1` carrier occupies one 512-byte system slot. It
+contains the linked base, code size, page-rounded protected allocation,
+relocation count, payload offset, relocation-word offsets, and linked code.
+It is a bring-up format rather than the final general-purpose RSX file ABI.
+
+HELLO.RSX claims one KiB so the protected-memory cost is visible in the
+whole-K TPA report. Loading moves the gateway and lowers the reported TPA;
+unloading restores both. WBOOT preserves the installed RSX and rebuilds the
+reclaimable CPX/CCP command environment beneath it.
 
 ## 7. CPX execution model
 

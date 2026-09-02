@@ -188,9 +188,13 @@ def main() -> None:
     command_path = ROOT / "build/ccp/ccp.rlm"
     basic_cpx_path = ROOT / "build/cpx/BASIC.CPX"
     hello_cpx_path = ROOT / "build/cpx/HELLO.CPX"
+    hello_rsx_path = ROOT / "build/rsx/HELLO.RSX"
     cpx_utility_path = ROOT / "build/utilities/CPX.COM"
+    rsx_utility_path = ROOT / "build/utilities/RSX.COM"
+    rsxtest_path = ROOT / "build/utilities/RSXTEST.COM"
     for path in (resident_path, command_path, basic_cpx_path, hello_cpx_path,
-                 cpx_utility_path):
+                 hello_rsx_path, cpx_utility_path, rsx_utility_path,
+                 rsxtest_path):
         if not path.is_file():
             raise SystemExit(f"missing system-image input: {path}")
     boot = assemble(args.assembler, SOURCE / "boot.mac", BUILD / "boot.bin", BOOT_ADDRESS)
@@ -198,7 +202,8 @@ def main() -> None:
     resident = resident_path.read_bytes()
     command = command_path.read_bytes().ljust(4 * SECTOR_SIZE, b"\x00")
     command += basic_cpx_path.read_bytes().ljust(3 * SECTOR_SIZE, b"\x00")
-    command += hello_cpx_path.read_bytes()
+    command += hello_cpx_path.read_bytes().ljust(2 * SECTOR_SIZE, b"\x00")
+    command += hello_rsx_path.read_bytes()
     extras = []
     for path in args.include:
         if not path.is_file():
@@ -239,7 +244,9 @@ def main() -> None:
         ))
     image = install(boot, stage1, resident, command,
                     [("HELLO.COM", HELLO_COM),
-                     ("CPX.COM", cpx_utility_path.read_bytes()), *extras])
+                     ("CPX.COM", cpx_utility_path.read_bytes()),
+                     ("RSX.COM", rsx_utility_path.read_bytes()),
+                     ("RSXTEST.COM", rsxtest_path.read_bytes()), *extras])
     output = args.output.resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_bytes(image)

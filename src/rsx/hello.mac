@@ -1,0 +1,30 @@
+; BetterCP/M proof Resident System Extension.
+; Intercepts experimental BDOS Function 201 and chains every other call.
+
+RSXBASE         EQU     08000H
+BDOS            EQU     0C100H
+
+        CSEG
+        .PHASE  RSXBASE
+
+HR_NEXT:        DW      BDOS
+HR_ENTRY:       DW      HR_DISPATCH
+
+HR_DISPATCH:
+        LD      A,C
+        CP      201
+        JR      NZ,HR_CHAIN
+        LD      DE,HR_MESSAGE
+        LD      C,9
+        CALL    BDOS
+        LD      HL,05253H       ; "RS" proof signature
+        LD      A,L
+        RET
+HR_CHAIN:
+        LD      HL,(HR_NEXT)
+        JP      (HL)
+
+HR_MESSAGE:     DB      13,10,'Hello from HELLO.RSX',13,10,'$'
+
+        .DEPHASE
+        END
