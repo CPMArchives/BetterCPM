@@ -23,6 +23,12 @@ an optional filespec may follow the colon, as in `DIR B0:*.COM`.  This is
 deliberately different from a navigation command: after `DIR B:`, an `A0>`
 caller receives the `A0>` prompt again.
 
+DU selectors may also prefix a transient command name: `A:CPX LIST`,
+`5:UTILITY`, and `C3:PROGRAM ARG`.  The named `.COM` file is located in that
+DU, but the caller's default drive/user remains the command environment seen
+by the program and restored after its warm boot.  A command prefix is therefore
+a lookup qualification, not an implicit navigation command.
+
 ## State ownership
 
 Navigation does not introduce private CCP copies of the current drive or user.
@@ -40,11 +46,10 @@ filename.
 
 ## Memory result
 
-The added parser and prompt move the relocatable CCP from a 1280-byte to a
-1536-byte page-rounded allocation.  The command loader consequently calculates
-its new base at `B9FDh` in the no-extra-CPX test configuration.  No fixed CCP
-ceiling or address was changed: this downward movement is the intended behavior
-of the calculated command region.
+The evolving editor, history, and DU parsers currently place the relocatable
+CCP in a 2816-byte page-rounded allocation at calculated base `B2FDh`.  No
+fixed CCP ceiling or address was changed: this downward movement is the
+intended behavior of the calculated command region during implementation.
 
 ## Verification
 
@@ -53,4 +58,6 @@ request for an unavailable drive does not partially change the user.  Complete
 system and physical-emulator tests use the new `A0>` prompt.  A physical
 two-drive run also verifies that `DIR B0:` lists the drive-B fixtures while
 leaving the caller at `A0>`, and that `DIR B0:*.TMP` applies its wildcard in
-the selected DU.
+the selected DU.  Focused tests cover `A:CPX LIST` and `A0:CPX LIST`, including
+temporary-user restoration.  A two-drive physical run verifies the complete
+`B0>A0:CPX LIST` path and returns to `B0>` after WBOOT.

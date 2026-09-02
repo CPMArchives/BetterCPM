@@ -29,15 +29,32 @@ SYS_BOOT:
 SYS_WBOOT:
         JP      SYS_WARM
 SYS_COLD:
+        LD      SP,SYS_STKTOP
+        XOR     A               ; cold boot deliberately begins on drive A
+        JR      SYS_ENTER
 SYS_WARM:
+; Preserve the default drive across reconstruction.  Function 13 must reset
+; disk state to A internally, but CP/M warm boot resumes the command processor
+; on the drive from which the transient returned.
+        LD      SP,SYS_STKTOP
+        LD      C,25
+        CALL    BDOS
+SYS_ENTER:
+        PUSH    AF
 ; Patch 2026-09-01: Function 0 arrives on the BDOS private stack. Calling BDOS
 ; again during reconstruction reused that stack and destroyed WBOOT's return
 ; frames. Establish a distinct system stack before invoking any service.
-        LD      SP,SYS_STKTOP
         CALL    SYS_INIT
         JR      NZ,SYS_STOP
         LD      C,13            ; default drive A, DMA 0080h, fresh disk state
         CALL    BDOS
+        POP     AF
+        OR      A
+        JR      Z,SYS_RESUME
+        LD      E,A
+        LD      C,14
+        CALL    BDOS
+SYS_RESUME:
 ; The CCP address is configuration state. A stable gateway must consult the
 ; descriptor rather than embed a direct jump to the current default address.
         LD      HL,(ECB_CCPBASE)

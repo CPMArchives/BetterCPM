@@ -155,13 +155,15 @@ def main() -> None:
     calculated = 0xBDFD - allocation
     require(run_at(calculated) == relocated(module, calculated),
             "calculated-base module payload was not relocated correctly")
-    # Keep the deliberately non-page-aligned relocation proof far enough below
-    # C000h for the growing CCP image; B900h was only safe while it was smaller.
-    alternate = run_at(0xB601)
+    # Derive a deliberately non-page-aligned alternate below the live base.
+    # A fixed B601h target eventually crossed C100h as the CCP grew and tested
+    # the loader's bounds rejection rather than relocation.
+    alternate_target = calculated - 0x1EC
+    alternate = run_at(alternate_target)
     require(alternate != CCP.read_bytes(),
             "alternate-base CCP did not apply relocation records")
     print(f"disk-backed CCP restoration passed at calculated {calculated:04X}h")
-    print("relocatable CCP restoration passed at B601h")
+    print(f"relocatable CCP restoration passed at {alternate_target:04X}h")
     run_at(calculated - 0x100, with_cpx=True)
     print("one-module CPX profile restored before the calculated CCP")
     run_at(calculated - 0x500, with_two_cpx=True)

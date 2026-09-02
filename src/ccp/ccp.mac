@@ -974,12 +974,14 @@ CCP_FSPC:
         LD      DE,CCP_FCB+9
         LD      BC,3
         LDIR
-        LD      A,(CCP_COUNT)
+        CALL    CCP_LQUAL
+        LD      A,(CCP_LREML)
         OR      A
         SCF
         RET     Z
+        LD      A,(CCP_LREML)
         LD      B,A
-        LD      HL,CCP_DATA
+        LD      HL,(CCP_LPTR)
         XOR     A
 CCP_LNSCAN:
         LD      C,A
@@ -997,8 +999,14 @@ CCP_LNFOUND:
         OR      A               ; do not retain Z from the separating-space CP
         JP      Z,CCP_LFAIL
         LD      (CCP_NAMEL),A
+        LD      C,A
+        LD      A,(CCP_QLEN)
+        ADD     A,C
+        LD      (CCP_CMDLEN),A
         LD      B,A
-        LD      HL,CCP_DATA
+        LD      A,(CCP_NAMEL)
+        LD      B,A
+        LD      HL,(CCP_LPTR)
         LD      DE,CCP_FCB+1
 CCP_FNCPY:
         LD      A,(HL)
@@ -1043,6 +1051,7 @@ CCP_LNEXT:
 CCP_LEOF:
         CP      1
         JR      NZ,CCP_LFAIL
+        CALL    CCP_LURST
         LD      DE,0080H
         LD      C,26
         CALL    BDOS
@@ -1053,12 +1062,13 @@ CCP_ZPAGE:
         LD      (HL),A
         INC     HL
         DJNZ    CCP_ZPAGE
+        LD      A,(CCP_CMDLEN)
+        LD      C,A
         LD      A,(CCP_COUNT)
-        LD      HL,CCP_NAMEL
-        SUB     (HL)
+        SUB     C
         LD      (0080H),A
         LD      B,A
-        LD      A,(CCP_NAMEL)
+        LD      A,(CCP_CMDLEN)
         LD      E,A
         LD      D,0
         LD      HL,CCP_DATA
@@ -1073,11 +1083,12 @@ CCP_ZPAGE:
 CCP_LTAIL0:
         LD      A,13
         LD      (DE),A
+        LD      A,(CCP_CMDLEN)
+        LD      C,A
         LD      A,(CCP_COUNT)
-        LD      HL,CCP_NAMEL
-        SUB     (HL)
+        SUB     C
         LD      B,A
-        LD      A,(CCP_NAMEL)
+        LD      A,(CCP_CMDLEN)
         LD      E,A
         LD      D,0
         LD      HL,CCP_DATA
@@ -1091,8 +1102,118 @@ CCP_LTAIL0:
         LD      SP,CCP_RET
         JP      0100H
 CCP_LFAIL:
+        CALL    CCP_LURST
         SCF
         RET
+
+; Parse an optional DU qualifier on a transient command: A:NAME, 5:NAME, or
+; C3:NAME.  The drive is encoded in the loader FCB; a user selection is made
+; only while locating/reading the image and restored before execution.  Thus
+; B0>A:CPX LIST runs A0:CPX.COM but CPX.COM still observes B0 as its caller DU.
+CCP_LQUAL:
+        LD      HL,CCP_DATA
+        LD      (CCP_LPTR),HL
+        LD      A,(CCP_COUNT)
+        LD      (CCP_LREML),A
+        XOR     A
+        LD      (CCP_QLEN),A
+        LD      (CCP_LUACT),A
+        DEC     A
+        LD      (CCP_LDRV),A
+        LD      B,A
+        LD      A,(CCP_COUNT)
+        CP      3
+        RET     C
+        LD      B,A
+        LD      A,(HL)
+        CP      'A'
+        JR      C,CCP_LQNUM
+        CP      'P'+1
+        RET     NC
+        SUB     'A'-1
+        LD      (CCP_LDRV),A
+        INC     HL
+        DEC     B
+        LD      A,(HL)
+        CP      ':'
+        JR      Z,CCP_LQCOL
+CCP_LQNUM:
+        LD      A,(HL)
+        CP      '0'
+        RET     C
+        CP      '9'+1
+        RET     NC
+        SUB     '0'
+        LD      C,A
+        INC     HL
+        DEC     B
+        LD      A,(HL)
+        CP      '0'
+        JR      C,CCP_LQONE
+        CP      '9'+1
+        JR      NC,CCP_LQONE
+        LD      A,C
+        ADD     A,A
+        LD      D,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,D
+        LD      C,A
+        LD      A,(HL)
+        SUB     '0'
+        ADD     A,C
+        CP      32
+        RET     NC
+        LD      C,A
+        INC     HL
+        DEC     B
+CCP_LQONE:
+        LD      A,(HL)
+        CP      ':'
+        RET     NZ
+        LD      A,C
+        LD      (CCP_LUTRG),A
+        PUSH    HL
+        PUSH    BC
+        LD      E,0FFH
+        LD      C,32
+        CALL    BDOS
+        LD      (CCP_LUSAV),A
+        LD      A,(CCP_LUTRG)
+        LD      E,A
+        LD      C,32
+        CALL    BDOS
+        POP     BC
+        POP     HL
+        LD      A,1
+        LD      (CCP_LUACT),A
+CCP_LQCOL:
+        LD      A,(CCP_LDRV)
+        CP      0FFH
+        JR      Z,CCP_LQSTRP
+        LD      (CCP_FCB),A
+CCP_LQSTRP:
+        INC     HL
+        DEC     B
+        LD      (CCP_LPTR),HL
+        LD      A,B
+        LD      (CCP_LREML),A
+        LD      A,(CCP_COUNT)
+        LD      HL,CCP_LREML
+        SUB     (HL)
+        LD      (CCP_QLEN),A
+        RET
+
+CCP_LURST:
+        LD      A,(CCP_LUACT)
+        OR      A
+        RET     Z
+        XOR     A
+        LD      (CCP_LUACT),A
+        LD      A,(CCP_LUSAV)
+        LD      E,A
+        LD      C,32
+        JP      BDOS
 
 CCP_PSKIP:
         LD      A,B
@@ -1367,8 +1488,18 @@ CCP_FCB:
         ENDM
 CLDPTR:
         DW      0100H
-CCP_NAMEL:
-        DB      0
+; CCP-only loader scratch occupies the otherwise unused compatibility-page
+; workspace below the default FCBs.  Using fixed page-zero bytes here also
+; avoids spending scarce relocation-directory entries on ephemeral state.
+CCP_NAMEL      EQU     0040H
+CCP_CMDLEN     EQU     0041H
+CCP_QLEN       EQU     0042H
+CCP_LPTR       EQU     0043H
+CCP_LREML      EQU     0045H
+CCP_LUSAV      EQU     0046H
+CCP_LUTRG      EQU     0047H
+CCP_LUACT      EQU     0048H
+CCP_LDRV       EQU     0049H
 CCP_DIREP:
         DW      0080H
 CCP_DFPTR:

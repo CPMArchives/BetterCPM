@@ -13,7 +13,9 @@ IMAGE = ROOT / "build/ccp/ccp.bin"
 MODULE = ROOT / "build/ccp/ccp.rlm"
 LISTING = ROOT / "build/ccp/ccp.lst"
 LINK_BASE = 0xBB00
-BASE = 0xB700
+# Keep the focused image below both its C100h BDOS stand-in and the BE00h
+# persistent-history fixture as the relocatable CCP grows during development.
+BASE = 0xB300
 CALLER = 0x7000
 
 
@@ -53,9 +55,10 @@ def call(machine: Z80, address: int) -> None:
 def main() -> None:
     # Stub Open as "not found" so CCP_LOAD returns after constructing its
     # private lookup FCB. This directly guards the 2026-09-01 stale-Z flag bug.
-    for command, expected in (
-        (b"HELLO WORLD", b"HELLO   COM"),
-        (b"MINRET22 X", b"MINRET22COM"),
+    for command, drive, expected in (
+        (b"HELLO WORLD", 0, b"HELLO   COM"),
+        (b"MINRET22 X", 0, b"MINRET22COM"),
+        (b"A:CPX LIST", 1, b"CPX     COM"),
     ):
         machine = cpu()
         machine.mem[0xC100:0xC103] = bytes((0x3E, 0xFF, 0xC9))
@@ -64,8 +67,32 @@ def main() -> None:
         machine.mem[start:start + len(command)] = command
         call(machine, symbol("CCP_LOAD"))
         fcb = symbol("CCP_FCB")
-        require(bytes(machine.mem[fcb + 1:fcb + 12]) == expected,
+        require(machine.mem[fcb] == drive and
+                bytes(machine.mem[fcb + 1:fcb + 12]) == expected,
                 f"lookup FCB is wrong for {command!r}")
+
+    # A combined DU prefix temporarily selects its user for the file lookup,
+    # encodes its drive in the loader FCB, and restores the caller's user even
+    # when Open reports that the transient is absent.
+    machine = cpu()
+    du_bdos = bytes((
+        0x79, 0xFE, 32, 0x28, 0x03, 0x3E, 0xFF, 0xC9,
+        0x7B, 0xFE, 0xFF, 0x28, 0x05,
+        0x32, 0x01, 0x75, 0xAF, 0xC9,
+        0x3A, 0x01, 0x75, 0xC9,
+    ))
+    machine.mem[0xC100:0xC100 + len(du_bdos)] = du_bdos
+    machine.mem[0x7501] = 7
+    command = b"A0:CPX LIST"
+    machine.mem[symbol("CCP_COUNT")] = len(command)
+    start = symbol("CCP_DATA")
+    machine.mem[start:start + len(command)] = command
+    call(machine, symbol("CCP_LOAD"))
+    fcb = symbol("CCP_FCB")
+    require(machine.mem[fcb] == 1 and
+            bytes(machine.mem[fcb + 1:fcb + 12]) == b"CPX     COM" and
+            machine.mem[0x7501] == 7,
+            "combined DU command lookup did not encode drive and restore user")
 
     # History belongs to protected persistent DATA, not the reloadable CCP.
     # Store several complete variable-length commands, then retrieve both an
@@ -207,7 +234,7 @@ def main() -> None:
         require((machine.mem[0x7500], machine.mem[0x7501]) == (drive, user),
                 f"navigation state is wrong after {command!r}")
 
-    print("CCP parsing, navigation, resident DIR, and CPX dispatch passed")
+    print("CCP parsing, DU execution, navigation, resident DIR, and CPX dispatch passed")
 
 
 if __name__ == "__main__":
