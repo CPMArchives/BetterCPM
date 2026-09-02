@@ -54,8 +54,8 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
     vectors = bytes((0xC3, 0x10, 0xD0, 0xC3, 0x30, 0xD0,
                      0xC3, 0x50, 0xD0))
     open_stub = bytes((
-        0x7E, 0xFE, 0x42, 0x11, 0x00, 0x70, 0x28, 0x03,
-        0x11, 0x00, 0x80, 0xEB, 0x22, 0x00, 0xD1,
+        0x7E, 0xFE, 0x42, 0x11, 0x00, 0x90, 0x28, 0x03,
+        0x11, 0x00, 0xA0, 0xEB, 0x22, 0x00, 0xD1,
         0x22, 0x02, 0xD1, 0xAF, 0xC9,
     ))
     next_stub = bytes((
@@ -74,8 +74,8 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
     if with_two_cpx:
         basic_module = BASIC_MODULE.read_bytes()
         hello_module = HELLO_MODULE.read_bytes()
-        machine.mem[0x7000:0x7000 + len(basic_module)] = basic_module
-        machine.mem[0x8000:0x8000 + len(hello_module)] = hello_module
+        machine.mem[0x9000:0x9000 + len(basic_module)] = basic_module
+        machine.mem[0xA000:0xA000 + len(hello_module)] = hello_module
         machine.mem[0xC094] = 2
         machine.mem[0xC096:0xC09E] = b"BASIC   "
         machine.mem[0xC09E:0xC0A6] = b"HELLO   "
@@ -88,7 +88,7 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
                          0x8000, len(payload), 0x100, 0, 1)
         struct.pack_into("<H", header, 16, 2)
         file_module = bytes(header) + payload
-        machine.mem[0x7000:0x7000 + len(file_module)] = file_module
+        machine.mem[0x9000:0x9000 + len(file_module)] = file_module
         machine.mem[0xC094] = 1
         machine.mem[0xC096:0xC09E] = b"BASIC   "
         cpx_allocation = 0x100
@@ -115,8 +115,14 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
         require("execution limit reached" in str(error),
                 f"reloader failed unexpectedly: {error}")
     expected = relocated(module, target)
-    require(bytes(machine.mem[target:target + len(expected)]) == expected,
-            f"CCP was not restored and relocated at {target:04X}h")
+    actual = bytes(machine.mem[target:target + len(expected)])
+    mismatch = next((index for index, pair in enumerate(zip(actual, expected))
+                     if pair[0] != pair[1]), None)
+    require(actual == expected,
+            f"CCP was not restored and relocated at {target:04X}h; "
+            f"first mismatch={mismatch!r}; "
+            f"actual={actual[mismatch:mismatch + 16].hex() if mismatch is not None else ''} "
+            f"expected={expected[mismatch:mismatch + 16].hex() if mismatch is not None else ''}")
     if with_two_cpx:
         basic_allocation = struct.unpack_from("<H", BASIC_MODULE.read_bytes(), 10)[0]
         hello_allocation = struct.unpack_from("<H", HELLO_MODULE.read_bytes(), 10)[0]
@@ -149,11 +155,13 @@ def main() -> None:
     calculated = 0xBFFD - allocation
     require(run_at(calculated) == relocated(module, calculated),
             "calculated-base module payload was not relocated correctly")
-    alternate = run_at(0xB900)
+    # Keep the deliberately non-page-aligned relocation proof far enough below
+    # C000h for the growing CCP image; B900h was only safe while it was smaller.
+    alternate = run_at(0xB601)
     require(alternate != CCP.read_bytes(),
             "alternate-base CCP did not apply relocation records")
     print(f"disk-backed CCP restoration passed at calculated {calculated:04X}h")
-    print("relocatable CCP restoration passed at B900h")
+    print("relocatable CCP restoration passed at B601h")
     run_at(calculated - 0x100, with_cpx=True)
     print("one-module CPX profile restored before the calculated CCP")
     run_at(calculated - 0x500, with_two_cpx=True)

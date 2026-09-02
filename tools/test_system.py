@@ -481,11 +481,16 @@ def main() -> None:
     # the reconstructed CCP accepts VER and prints its version banner.
     cpu.mem[0x7060:0x7069] = bytes((0x2A, 0x80, 0x70, 0x7E, 0x23,
                                     0x22, 0x80, 0x70, 0xC9))
+    # The enhanced CCP reads through nonblocking BDOS Function 6, which checks
+    # CONST before consuming CONIN. This scripted fixture always has another
+    # byte until its final intentional execution-limit wait.
+    cpu.mem[0x7050:0x7053] = bytes((0x3E, 0xFF, 0xC9))
     cpu.mem[0x7070:0x7079] = bytes((0x2A, 0x90, 0x70, 0x71, 0x23,
                                     0x22, 0x90, 0x70, 0xC9))
     cpu.mem[0x7080:0x7082] = bytes((0x00, 0x71))
     cpu.mem[0x7090:0x7092] = bytes((0x00, 0x90))
     cpu.mem[0x7100:0x7109] = b"WARM\rVER\r"
+    cpu.mem[BIOS_BASE + 6:BIOS_BASE + 9] = bytes((0xC3, 0x50, 0x70))
     cpu.mem[BIOS_BASE + 9:BIOS_BASE + 12] = bytes((0xC3, 0x60, 0x70))
     cpu.mem[BIOS_BASE + 12:BIOS_BASE + 15] = bytes((0xC3, 0x70, 0x70))
     # The platform reloader has its own raw-sector test. This resident-core

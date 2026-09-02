@@ -100,8 +100,9 @@ M4_KEYRW:
         LD      A,E
         ADD     A,8
         LD      E,A
-        JR      NC,M4_KEYNX
-        INC     D
+; All linked users place the compact 56-byte table within one page.  Keeping
+; only the low-byte row advance saves the boot diagnostics four bytes needed
+; for Shift-Left without enlarging their single-sector carrier.
 M4_KEYNX:
         DJNZ    M4_KEYRW
         XOR     A
@@ -118,6 +119,10 @@ M4_KEYFD:
         AND     3
         LD      A,C
         RET     Z
+        CP      8              ; Shift-Left is the Model 4 delete/backspace
+        LD      A,127
+        RET     Z
+        LD      A,C
         CP      '-'
         JR      Z,M4_KSTAR
         CP      '/'
@@ -135,7 +140,12 @@ M4_KEYTAB:
         DB      'XYZ',0,0,0,0,0
         DB      '01234567'
         DB      '89:;,-./'
-        DB      13,0,0,0,0,0,0,' '
+; Patch 2026-09-02: publish the Model 4 special-key row instead of silently
+; discarding it.  These are the conventional ASCII/control representations:
+; Enter, Clear/Insert, Break, Up, Down, Left, Right, Space.  The CCP consumes
+; them as editor keys; ordinary programs continue to receive the same bytes
+; through BIOS CONIN and the BDOS console functions.
+        DB      13,31,3,11,10,8,9,' '
 M4CURSOR:
         DW      VIDEOBASE
 M4COLUMN:

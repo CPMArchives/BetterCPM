@@ -138,6 +138,7 @@ expect eof
             linked = native_com.read_bytes()
             native = linked[:len(cross)]
             if native != cross:
+                (BUILD / f"{name.lower()}-native-candidate.bin").write_bytes(native)
                 raise SystemExit(f"native/cross mismatch for {name}: linked size {len(linked)}")
             (BUILD / f"{name.lower()}-native.bin").write_bytes(native)
             print(f"{name}: {len(native)} byte-identical bytes")

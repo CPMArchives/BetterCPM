@@ -33,9 +33,7 @@ CCP_LOOP:
         LD      E,'>'
         LD      C,2
         CALL    BDOS
-        LD      DE,CCP_BUFFER
-        LD      C,10
-        CALL    BDOS
+        CALL    CCP_READLN
         LD      A,(CCP_COUNT)
         OR      A
         JR      Z,CCP_LOOP
@@ -101,6 +99,229 @@ CCP_DUPONE:
         LD      E,A
         LD      C,2
         JP      BDOS
+
+; Enhanced CCP-only command-line editor.  BDOS Function 10 deliberately keeps
+; its CP/M 2.2 contract for transient software; the command processor uses
+; direct console input so cursor motion and insert/overwrite policy do not
+; leak into the compatibility interface.
+CCP_READLN:
+        XOR     A
+        LD      (CCP_COUNT),A
+        LD      (CCP_EDCUR),A
+        INC     A               ; each new line starts in insert mode
+        LD      (CCP_EDINS),A
+CCP_EDGET:
+        LD      E,0FFH
+        LD      C,6
+        CALL    BDOS
+        OR      A
+        JR      Z,CCP_EDGET
+        AND     07FH
+        CP      13
+        JP      Z,CCP_EDFIN
+        CP      8
+        JP      Z,CCP_EDLEFT
+        CP      9
+        JP      Z,CCP_EDRIGHT
+        CP      11
+        JP      Z,CCP_EDUP
+        CP      10
+        JP      Z,CCP_EDDOWN
+        CP      31              ; Model 4 CLEAR key is the Insert toggle
+        JP      Z,CCP_EDTOG
+        CP      127
+        JP      Z,CCP_EDBS
+        CP      32
+        JR      C,CCP_EDGET
+        CP      127
+        JR      NC,CCP_EDGET
+        LD      (CCP_EDCHR),A
+        LD      A,(CCP_COUNT)
+        CP      127
+        JR      Z,CCP_EDGET
+        LD      B,A
+        LD      A,(CCP_EDCUR)
+        LD      HL,CCP_COUNT
+        CP      (HL)
+        JR      Z,CCP_EDAPP
+        LD      A,(CCP_EDINS)
+        OR      A
+        JR      Z,CCP_EDOVER
+; Insert before the cursor by moving the tail one byte to the right.
+        LD      A,(CCP_COUNT)
+        LD      C,A
+        LD      A,(CCP_EDCUR)
+        LD      E,A
+        LD      A,C
+        SUB     E
+        LD      C,A
+        LD      B,0
+        LD      HL,CCP_DATA
+        LD      A,(CCP_COUNT)
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE
+        DEC     HL
+        LD      D,H
+        LD      E,L
+        INC     DE
+        LDDR
+        LD      HL,CCP_DATA     ; LDDR finishes before the insertion point
+        LD      A,(CCP_EDCUR)
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE
+        JR      CCP_EDPUT
+CCP_EDOVER:
+        LD      HL,CCP_DATA
+        LD      A,(CCP_EDCUR)
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE
+        LD      A,(CCP_EDCHR)
+        LD      (HL),A
+        LD      HL,CCP_EDCUR
+        INC     (HL)
+        JP      CCP_EDDRAW
+CCP_EDAPP:
+        LD      HL,CCP_DATA
+        LD      A,(CCP_COUNT)
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE
+CCP_EDPUT:
+        LD      A,(CCP_EDCHR)
+        LD      (HL),A
+        LD      HL,CCP_COUNT
+        INC     (HL)
+        LD      HL,CCP_EDCUR
+        INC     (HL)
+        JR      CCP_EDDRAW
+CCP_EDLEFT:
+        LD      A,(CCP_EDCUR)
+        OR      A
+        JP      Z,CCP_EDGET
+        DEC     A
+        LD      (CCP_EDCUR),A
+        JR      CCP_EDDRAW
+CCP_EDRIGHT:
+        LD      A,(CCP_EDCUR)
+        LD      B,A
+        LD      A,(CCP_COUNT)
+        LD      HL,CCP_EDCUR
+        CP      (HL)
+        JP      Z,CCP_EDGET
+        INC     B
+        LD      A,B
+        LD      (CCP_EDCUR),A
+        JR      CCP_EDDRAW
+CCP_EDTOG:
+        LD      A,(CCP_EDINS)
+        XOR     1
+        LD      (CCP_EDINS),A
+        JP      CCP_EDGET
+CCP_EDBS:
+        LD      A,(CCP_EDCUR)
+        OR      A
+        JP      Z,CCP_EDGET
+        DEC     A
+        LD      (CCP_EDCUR),A
+        LD      E,A
+        LD      D,0
+        LD      HL,CCP_DATA
+        ADD     HL,DE
+        LD      D,H
+        LD      E,L
+        INC     HL               ; HL source, DE destination
+        LD      A,(CCP_COUNT)
+        LD      C,A
+        LD      A,(CCP_EDCUR)
+        CPL
+        INC     A
+        ADD     A,C              ; old count - new cursor - 1
+        DEC     A
+        LD      C,A
+        LD      B,0
+        LDIR
+        LD      HL,CCP_COUNT
+        DEC     (HL)
+        JR      CCP_EDDRAW
+CCP_EDUP:
+        LD      A,(CCP_HCOUNT)
+        OR      A
+        JP      Z,CCP_EDGET
+        LD      (CCP_COUNT),A
+        LD      (CCP_EDCUR),A
+        LD      C,A
+        LD      B,0
+        LD      HL,CCP_HDATA
+        LD      DE,CCP_DATA
+        LDIR
+        JR      CCP_EDDRAW
+CCP_EDDOWN:
+        XOR     A
+        LD      (CCP_COUNT),A
+        LD      (CCP_EDCUR),A
+        JR      CCP_EDDRAW
+; Redraw the whole logical line, erase one stale trailing cell, return to the
+; left margin, then print only through the logical cursor.  This needs no
+; terminal escape sequences and works with the Model 4 memory-mapped display.
+CCP_EDDRAW:
+        LD      E,13
+        LD      C,2
+        CALL    BDOS
+        CALL    CCP_DUPROMPT
+        LD      E,'>'
+        LD      C,2
+        CALL    BDOS
+        LD      A,(CCP_COUNT)
+        LD      B,A
+        LD      HL,CCP_DATA
+        CALL    CCP_EDTEXT
+        LD      E,' '
+        LD      C,2
+        CALL    BDOS
+        LD      E,13
+        LD      C,2
+        CALL    BDOS
+        CALL    CCP_DUPROMPT
+        LD      E,'>'
+        LD      C,2
+        CALL    BDOS
+        LD      A,(CCP_EDCUR)
+        LD      B,A
+        LD      HL,CCP_DATA
+        CALL    CCP_EDTEXT
+        JP      CCP_EDGET
+CCP_EDTEXT:
+        LD      A,B
+        OR      A
+        RET     Z
+CCP_EDTXLP:
+        PUSH    BC
+        PUSH    HL
+        LD      E,(HL)
+        LD      C,2
+        CALL    BDOS
+        POP     HL
+        POP     BC
+        INC     HL
+        DJNZ    CCP_EDTXLP
+        RET
+CCP_EDFIN:
+        LD      E,13             ; preserve CP/M's final-CR presentation
+        LD      C,2
+        CALL    BDOS
+        LD      A,(CCP_COUNT)
+        OR      A
+        RET     Z
+        LD      (CCP_HCOUNT),A
+        LD      C,A
+        LD      B,0
+        LD      HL,CCP_DATA
+        LD      DE,CCP_HDATA
+        LDIR
+        RET
 
 ; Carry set means that the complete input line was navigation syntax, whether
 ; the requested physical drive exists or not.  This prevents a failed B: from
@@ -719,6 +940,18 @@ CCP_BUFFER:
 CCP_COUNT:
         DB      0
 CCP_DATA:
+        REPT    127
+        DB      0
+        ENDM
+CCP_EDCUR:
+        DB      0
+CCP_EDINS:
+        DB      1
+CCP_EDCHR:
+        DB      0
+CCP_HCOUNT:
+        DB      0
+CCP_HDATA:
         REPT    127
         DB      0
         ENDM
