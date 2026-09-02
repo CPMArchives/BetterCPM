@@ -120,7 +120,7 @@ CCP_EDGET:
         AND     07FH
         CP      13
         JP      Z,CCP_EDFIN
-        CP      2               ; platform-independent cursor-left byte
+        CP      8               ; Model 4 Left arrow / ASCII Backspace byte
         JP      Z,CCP_EDLEFT
         CP      9
         JP      Z,CCP_EDRIGHT
@@ -130,8 +130,6 @@ CCP_EDGET:
         JP      Z,CCP_EDDOWN
         CP      31              ; Model 4 CLEAR key is the Insert toggle
         JP      Z,CCP_EDTOG
-        CP      8               ; Model 4 BKSPACE/Left physical key
-        JP      Z,CCP_EDBS
         CP      127             ; retain DEL as a second deletion spelling
         JP      Z,CCP_EDBS
         CP      32
@@ -243,9 +241,11 @@ CCP_EDBS:
         INC     A
         ADD     A,C              ; old count - new cursor - 1
         DEC     A
+        JR      Z,CCP_BSEND      ; LDIR with BC=0 would copy 65536 bytes
         LD      C,A
         LD      B,0
         LDIR
+CCP_BSEND:
         LD      HL,CCP_COUNT
         DEC     (HL)
         JR      CCP_EDDRAW

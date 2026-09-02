@@ -32,11 +32,10 @@ cursor position.  The marker is removed before command execution.
 
 The shared Model 4 BIOS now publishes its special-key matrix row using the
 traditional control-byte values for Enter, Clear, Break, Up, Down, Left, and
-Right.  Clear is the physical Insert/overwrite toggle.  Because the Model 4
-Left key is also its historical Backspace key, the unmodified key deletes and
-Shift-Left produces logical byte `02h` for cursor-left motion.  DEL (`7Fh`)
-remains an accepted alternate deletion byte.  This remains a platform binding;
-the CCP editor consumes logical bytes and does not inspect Model 4 hardware.
+Right.  Clear is the physical Insert/overwrite toggle.  The unmodified Left
+key moves the cursor; Shift-Left produces DEL (`7Fh`) for Backspace/Delete.
+This remains a platform binding; the CCP editor consumes logical bytes and does
+not inspect Model 4 hardware.
 
 The compact keyboard table remains within one linked page in every current
 consumer.  Its row-pointer increment is correspondingly kept eight-bit so the
