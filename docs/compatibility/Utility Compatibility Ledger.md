@@ -1,6 +1,6 @@
 # BetterCP/M Utility Compatibility Ledger
 
-Status: Initial inventory  
+Status: Verified baseline inventory
 Baseline: Standard CP/M 2.2 command environment and distribution utilities
 
 ## Purpose
@@ -14,6 +14,32 @@ The inventory is a living engineering document. `Implemented` means code
 exists; it does not mean baseline compatibility is complete. `Conformant`
 requires the applicable behavior to be specified and tested against reference
 CP/M behavior.
+
+## Canonical CP/M 2.2 distribution inventory
+
+The stock executable baseline contains eleven transient programs:
+
+```text
+ASM.COM     DDT.COM     DUMP.COM    ED.COM      LOAD.COM
+MOVCPM.COM  PIP.COM     STAT.COM    SUBMIT.COM  SYSGEN.COM
+XSUB.COM
+```
+
+The Digital Research manual's transient-command summary directly describes
+`STAT`, `ASM`, `LOAD`, `DDT`, `PIP`, `ED`, `SYSGEN`, `SUBMIT`, `DUMP`, and
+`MOVCPM`. `XSUB.COM` is the distributed companion that lets a submitted job
+supply console input to another transient program. The distinction matters:
+XSUB is part of the distribution baseline even though it is installed by a
+SUBMIT workflow rather than used like an ordinary interactive utility.
+
+The stock disk can also contain source and integration material such as
+`BIOS.ASM`, `CBIOS.ASM`, `DEBLOCK.ASM`, `DISKDEF.LIB`, and `DUMP.ASM`. These
+are distribution artifacts, not additional standard transient commands.
+
+`MOVCPM.COM` and `SYSGEN.COM` are stock executables but installation-dependent:
+their exact binaries and low-level effects depend on the target system. They
+therefore have BetterCP/M workflow-equivalence requirements rather than a
+requirement to reproduce DRI's private relocatable system image.
 
 ## Common requirements
 
@@ -54,6 +80,7 @@ not introduce private interpretations meanwhile.
 | `TYPE` | Literal sequential text display through CP/M EOF, exact-name validation, compatible errors, Ctrl-S pause and Ctrl-C abort | `BASIC.CPX`, with `TYPE.COM` transient fallback | Numeric DU and `/P` paging implemented; named DU planned | Baseline implementation complete | Physical literal/EOF/error/DU/paging/fallback tests and cooked-console control tests; named DU awaits the common resolver |
 | `SAVE` | Save 0..255 256-byte TPA pages from 0100H to an exact 8.3 file; replace an existing destination; reject wildcards; report storage exhaustion | `BASIC.CPX` (resident by necessity) | DU target is supported; explicit address ranges may be added | Implemented | Automated page-count, zero-page, replacement, drive, syntax, and full-directory error tests; allocation-full awaits DPB correction |
 | `USER` | Select and report CP/M user areas according to compatible syntax | Transitional core CCP; future command policy pending | Direct `5:` navigation and named DU make it optional interactively | Implemented, transitional | Existing DIRTEST user-area suite plus command syntax tests |
+| `CLR` | No stock CP/M counterpart | `BASIC.CPX` | Clear the configured console and home its cursor | BetterCP/M extension implemented | Physical Model 4 clear-and-prompt test; portable terminal-capability service remains future work |
 
 The minimal CCP itself remains command-processing machinery. Commands migrate
 to CPXs only after their CPX implementations and transient fallbacks are
@@ -92,6 +119,15 @@ platform configuration tools extend the distribution. Their presence does not
 remove any baseline replacement obligation above unless the compatible command
 is available through both the default command environment and a transient
 fallback.
+
+## Vendor/OEM utilities—not universal CP/M 2.2 requirements
+
+OEM disks commonly add utilities whose behavior belongs to their hardware or
+enhanced command environment. The Montezuma Micro Model 4 disk, for example,
+includes `CONFIG.COM`, `DUP.COM`, `MDIR.COM`, `EXBIOS.COM`, `KEYDEF.COM`, and
+modem/support programs in addition to the DRI baseline. BetterCP/M may recreate
+useful examples—especially CONFIG, DUP, and MDIR—but they are tracked as
+platform or distribution features, not mislabeled as stock CP/M requirements.
 
 ## Completion rule
 
