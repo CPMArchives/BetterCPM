@@ -30,3 +30,18 @@ M4_SCROLL_OUT:
         ADD     HL,DE
         LD      (M4CURSOR),HL
         RET
+
+; BetterCP/M private cursor-character operation. C=0 queries support. Any
+; other byte is written at the current console position in reverse video and
+; advances exactly like ordinary output. Model 4 mode is initialized with
+; reverse-video interpretation enabled, so bit 7 selects the inverse glyph.
+M4_CUROUT:
+        LD      A,C
+        OR      A
+        JR      Z,M4_CURQUERY
+        OR      080H
+        LD      C,A
+        CALL    M4_SCROLL_OUT
+M4_CURQUERY:
+        LD      A,1
+        RET

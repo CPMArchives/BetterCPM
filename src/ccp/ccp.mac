@@ -266,10 +266,10 @@ CCP_EDDOWN:
         LD      (CCP_COUNT),A
         LD      (CCP_EDCUR),A
         JR      CCP_EDDRAW
-; Redraw the whole logical line with a visible underscore inserted at the
-; logical cursor, erase one stale trailing cell, return to the left margin,
-; then print only through the logical cursor.  This needs no terminal escape
-; sequences and works with the Model 4 memory-mapped display.
+; Redraw the whole logical line with the character under the cursor in the
+; platform cursor presentation. Unsupported platforms get an inserted visible
+; underscore. Erase one stale trailing cell, return to the left margin, then
+; print only through the logical cursor; no terminal escapes are required.
 CCP_EDDRAW:
         LD      E,13
         LD      C,2
@@ -282,13 +282,14 @@ CCP_EDDRAW:
         LD      B,A
         LD      HL,CCP_DATA
         CALL    CCP_EDTEXT
-        LD      E,'_'
-        LD      C,2
-        CALL    BDOS
-; Function 2 does not preserve HL.  Reconstruct the tail pointer explicitly;
-; otherwise moving into a line displays bytes from page zero after the cursor.
+        CALL    CCP_CSHOW
+; Console services do not preserve HL. Reconstruct the tail pointer explicitly.
+; A is one only when reverse video consumed the character under the cursor;
+; an end-of-line cursor and the underscore fallback consume no command byte.
+        LD      C,A
         LD      HL,CCP_DATA
         LD      A,(CCP_EDCUR)
+        ADD     A,C
         LD      E,A
         LD      D,0
         ADD     HL,DE
@@ -296,6 +297,13 @@ CCP_EDDRAW:
         PUSH    HL
         LD      HL,CCP_EDCUR
         SUB     (HL)
+        LD      B,A
+        LD      A,C
+        OR      A
+        LD      A,B
+        JR      Z,CCP_CSLEN
+        DEC     A
+CCP_CSLEN:
         LD      B,A
         POP     HL
         CALL    CCP_EDTEXT
@@ -314,6 +322,37 @@ CCP_EDDRAW:
         LD      HL,CCP_DATA
         CALL    CCP_EDTEXT
         JP      CCP_EDGET
+CCP_CSHOW:
+        LD      E,0
+        LD      C,204
+        CALL    BDOS
+        OR      A
+        JR      Z,CCP_CSFALL
+        LD      A,(CCP_EDCUR)
+        LD      HL,CCP_COUNT
+        CP      (HL)
+        JR      NC,CCP_CSEND
+        LD      E,A
+        LD      D,0
+        LD      HL,CCP_DATA
+        ADD     HL,DE
+        LD      E,(HL)
+        LD      C,204
+        CALL    BDOS
+        LD      A,1             ; cursor output consumed this command byte
+        RET
+CCP_CSEND:
+        LD      E,' '           ; reverse blank is the end-of-line cursor
+        LD      C,204
+        CALL    BDOS
+        XOR     A
+        RET
+CCP_CSFALL:
+        LD      E,'_'
+        LD      C,2
+        CALL    BDOS
+        XOR     A
+        RET
 CCP_EDTEXT:
         LD      A,B
         OR      A

@@ -22,7 +22,7 @@ EXPECTED_LINES = (
     b"HELLO.RSX",
     b"A0>HELLO WORLD",
     b"Hello from BetterCP/M WORLD",
-    b"A0>_",
+    b"A0>\xA0",                 # reverse-video blank at end-of-line cursor
 )
 
 
@@ -73,7 +73,9 @@ def main() -> None:
         if any(captured[80 * 24:]):
             raise SystemExit("boot test wrote beyond the 80x24 video region")
     for line in EXPECTED_LINES:
-        print(line.decode("ascii"))
+        visible = bytes(byte & 0x7F for byte in line).decode("ascii")
+        print(visible + (" [reverse cursor]" if any(byte & 0x80 for byte in line)
+                         else ""))
     print("TRS-80 Model 4 DIR, command-tail, and HELLO.COM test passed")
 
 

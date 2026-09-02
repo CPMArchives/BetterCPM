@@ -43,9 +43,15 @@ BIOS:
 ; BIOS table. The fixed WBOOT reloader reads raw system-track sectors through
 ; this entry without importing Model 4 controller code into the portable core.
 BIOPHREAD:
+        JP      BIO_PHRD
+BIOCURSOR:
+        JP      BIO_CUROUT
+BIO_PHRD:
         LD      A,1
         LD      (B_PDrive),A
         JP      M4_READ
+BIO_CUROUT:
+        JP      PL_CURSOR
 
 ; BOOT and WBOOT enter portable system reconstruction before the CCP.
 BIOBOOT:

@@ -6,6 +6,7 @@ BDOSBASE        EQU     0C100H
 BIOCONST        EQU     0EF06H  ; CP/M BIOS console-status vector
 BIOCONIN        EQU     0EF09H  ; CP/M BIOS console-input vector
 BIOCONOT        EQU     0EF0CH  ; CP/M BIOS console-output vector
+BIOCURSOR       EQU     0EF36H  ; BetterCP/M private cursor-character vector
 BIOLIST         EQU     0EF0FH  ; CP/M BIOS list-output vector
 BIOPUNCH        EQU     0EF12H  ; CP/M BIOS punch-output vector
 BIOREADR        EQU     0EF15H  ; CP/M BIOS reader-input vector
@@ -125,6 +126,8 @@ BDOS:
         JP      Z,BF_CPXCTL
         CP      202             ; provisional BetterCP/M RSX control service
         JP      Z,BF_RSXCTL
+        CP      204             ; optional reverse-video cursor character
+        JP      Z,BF_CURSOR
 ; Patch 2026-09-01: selectors above Function 40 conventionally return zero.
         XOR     A
         JP      BDOS_RETURN
@@ -463,6 +466,24 @@ BF_CONOUT:
         CALL    BF_COCHAR
         XOR     A
         JP      BDOS_RETURN
+
+; BetterCP/M Function 204. E=0 queries the platform capability. A nonzero E
+; writes that character in the platform's cursor presentation and advances
+; the tracked console column. Unsupported platforms return zero and perform
+; no output, allowing the CCP to retain a plain-character fallback.
+BF_CURSOR:
+        LD      A,E
+        LD      C,A
+        CALL    BIOCURSOR
+        OR      A
+        JP      Z,BDOS_RETURN
+        LD      A,E
+        OR      A
+        LD      A,1
+        JP      Z,BDOS_RETURN
+        LD      HL,BDOS_COLUMN
+        INC     (HL)
+        JP      BDOS_RETURN
 BF_COCHAR:
         LD      (BDOS_CHAR),A
         CP      9
@@ -492,11 +513,11 @@ BF_TOGPR:
         LD      A,(BDOS_LISTE)
         CPL
         LD      (BDOS_LISTE),A
-        JR      BF_CINLP
+        JP      BF_CINLP
 BF_PAUSE:
         CALL    BIOCONIN
         CP      011H
-        JR      Z,BF_CINLP
+        JP      Z,BF_CINLP
         CP      003H
         JP      Z,BIOWBOOT
         CP      010H

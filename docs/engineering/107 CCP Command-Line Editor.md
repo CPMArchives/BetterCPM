@@ -22,15 +22,16 @@ Each new command starts in insert mode.  Typing at the end appends in either
 mode.  Typing inside the line shifts the tail in insert mode and replaces the
 character under the cursor in overwrite mode.
 
-The editor redraws using only carriage return and ordinary console output.  It
-does not require ANSI or terminal-specific cursor escapes: it inserts a visible
-underscore at the logical cursor position, prints the rest of the line, erases
-one stale trailing cell, returns to the margin, and reprints through the logical
-cursor position.  The marker is removed before command execution.
+The editor redraws using only carriage return, ordinary console output, and an
+optional BetterCP/M cursor-character service. On the Model 4, the character at
+the logical cursor is displayed in reverse video; at the end of a line, a blank
+cell is reversed. Platforms without attribute support receive the earlier
+visible-underscore fallback. No ANSI or terminal-specific cursor escapes are
+required, and the marker is removed before command execution.
 
 Console output is treated as destructive of working registers.  In particular,
 the redraw routine reconstructs its command-tail pointer after emitting the
-underscore rather than assuming that BDOS Function 2 preserves `HL`.  This
+cursor rather than assuming that a console service preserves `HL`. This
 prevents an interior cursor from exposing unrelated page-zero bytes as glyphs.
 
 ## Model 4 binding
@@ -49,8 +50,9 @@ include the new Shift-Left translation without exceeding one sector.
 
 ## Memory result
 
-The editor, one-command history buffer, and editing state enlarge the CCP to
-1905 bytes, with a 2048-byte page-rounded allocation.  The command loader
+The editor, one-command history buffer, editing state, and portable cursor
+fallback enlarge the CCP to 1963 bytes, with a 2048-byte page-rounded
+allocation. The command loader
 automatically calculates the new CCP base at `B7FDh`; no fixed address or
 temporary ceiling is introduced.
 

@@ -512,9 +512,17 @@ def main() -> None:
     require(cpu.mem[warm_target] == 0xC3 and
             cpu.word(warm_target + 1) == 0xE900,
             "WBOOT does not enter command-image restoration")
-    require(cpu.mem[BASE + 17 * 3] == 0x3E and
-            cpu.mem[BASE + 17 * 3 + 5] == 0xC3,
-            "private physical-read vector does not select system drive A")
+    private_read = BASE + 17 * 3
+    private_cursor = private_read + 3
+    require(cpu.mem[private_read] == 0xC3 and
+            BASE <= cpu.word(private_read + 1) < BASE + len(data),
+            "private physical-read vector is not a bounded JP")
+    require(cpu.mem[private_cursor] == 0xC3 and
+            BASE <= cpu.word(private_cursor + 1) < BASE + len(data),
+            "private cursor-character vector is not a bounded JP")
+    read_impl = cpu.word(private_read + 1)
+    require(cpu.mem[read_impl] == 0x3E and cpu.mem[read_impl + 1] == 1,
+            "private physical-read implementation does not select system drive A")
 
     const_impl = cpu.word(entries[2] + 1)
     platform_const = cpu.word(const_impl + 1)
