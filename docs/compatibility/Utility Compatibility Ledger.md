@@ -122,12 +122,20 @@ fallback.
 
 ## Vendor/OEM utilities—not universal CP/M 2.2 requirements
 
-OEM disks commonly add utilities whose behavior belongs to their hardware or
-enhanced command environment. The Montezuma Micro Model 4 disk, for example,
-includes `CONFIG.COM`, `DUP.COM`, `MDIR.COM`, `EXBIOS.COM`, `KEYDEF.COM`, and
-modem/support programs in addition to the DRI baseline. BetterCP/M may recreate
-useful examples—especially CONFIG, DUP, and MDIR—but they are tracked as
-platform or distribution features, not mislabeled as stock CP/M requirements.
+OEM disks commonly bundle utilities whose behavior belongs to their hardware,
+enhanced command environment, or the wider CP/M community. The Montezuma Micro
+Model 4 disk, for example, includes `CONFIG.COM`, `DUP.COM`, `MDIR.COM`,
+`EXBIOS.COM`, `KEYDEF.COM`, and modem/support programs in addition to the DRI
+baseline; inclusion does not imply Montezuma Micro authorship. Archived MDIR
+2.1 source identifies that line as the community-developed **CP/M-2 Master Disk
+Directory**, originally by Jeff Hammersley and derived from earlier community
+work. The version of `MDIR.COM` bundled by Montezuma Micro remains to be matched
+against that source lineage.
+
+BetterCP/M may recreate or redistribute useful examples—especially CONFIG,
+DUP, and MDIR—but they are tracked as platform or distribution features, not
+mislabeled as stock CP/M requirements or automatically attributed to the disk
+vendor.
 
 ## Completion rule
 
