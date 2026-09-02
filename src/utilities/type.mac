@@ -1,0 +1,196 @@
+; BetterCP/M TYPE transient utility with optional page-at-a-time output.
+
+BDOS    EQU     0005H
+FCB     EQU     005CH
+DMA     EQU     0080H
+
+        CSEG
+        .PHASE  0103H
+
+START:
+        CALL    OPTIONS
+        JP      Z,SYNTAX
+        LD      HL,FCB+1
+        CALL    NOQUEST
+        JP      Z,SYNTAX
+        LD      DE,FCB
+        LD      C,15
+        CALL    BDOS
+        INC     A
+        JP      Z,SYNTAX
+        LD      DE,DMA
+        LD      C,26
+        CALL    BDOS
+        XOR     A
+        LD      (LINES),A
+        LD      DE,NEWLINE
+        LD      C,9
+        CALL    BDOS
+READ:
+        LD      DE,FCB
+        LD      C,20
+        CALL    BDOS
+        OR      A
+        JR      Z,BLOCK
+        CP      1
+        JR      Z,DONE
+        LD      DE,READERR
+        JR      ERROR
+BLOCK:
+        LD      HL,DMA
+        LD      B,128
+CHAR:
+        LD      A,(HL)
+        CP      01AH
+        JR      Z,DONE
+        PUSH    HL
+        PUSH    BC
+        LD      E,A
+        LD      C,2
+        CALL    BDOS
+        POP     BC
+        POP     HL
+        LD      A,(HL)
+        CP      10
+        JR      NZ,NEXT
+        PUSH    HL
+        CALL    LINE
+        POP     HL
+NEXT:
+        INC     HL
+        DJNZ    CHAR
+        JR      READ
+
+LINE:
+        LD      A,(PAGED)
+        OR      A
+        RET     Z
+        LD      HL,LINES
+        INC     (HL)
+        LD      A,(HL)
+        CP      23
+        RET     C
+        XOR     A
+        LD      (HL),A
+        PUSH    BC
+        PUSH    DE
+        LD      DE,MORE
+        LD      C,9
+        CALL    BDOS
+WAIT:
+        LD      E,0FFH
+        LD      C,6
+        CALL    BDOS
+        OR      A
+        JR      Z,WAIT
+        CP      3
+        JR      Z,ABORT
+        CP      ' '
+        JR      NZ,WAIT
+        LD      DE,ERASE
+        LD      C,9
+        CALL    BDOS
+        POP     DE
+        POP     BC
+        RET
+ABORT:
+        LD      C,0
+        JP      BDOS
+
+DONE:
+        LD      C,0
+        JP      BDOS
+SYNTAX:
+        LD      DE,QMARK
+ERROR:
+        LD      C,9
+        CALL    BDOS
+        JR      DONE
+
+; Validate one filename followed by either nothing or the exact option /P.
+OPTIONS:
+        XOR     A
+        LD      (PAGED),A
+        LD      A,(DMA)
+        LD      B,A
+        LD      HL,DMA+1
+OSKIP:
+        LD      A,B
+        OR      A
+        RET     Z
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,ONAME
+        INC     HL
+        DEC     B
+        JR      OSKIP
+ONAME:
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,OAFTER
+        INC     HL
+        DJNZ    ONAME
+        LD      A,1
+        OR      A
+        RET
+OAFTER:
+        INC     HL
+        DEC     B
+        JR      Z,OGOOD
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,OAFTER
+        CP      '/'
+        JR      NZ,OBAD
+        INC     HL
+        DEC     B
+        JR      Z,OBAD
+        LD      A,(HL)
+        CP      'P'
+        JR      NZ,OBAD
+        INC     HL
+        DEC     B
+OTRAIL:
+        LD      A,B
+        OR      A
+        JR      Z,OPAGE
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,OBAD
+        INC     HL
+        DEC     B
+        JR      OTRAIL
+OPAGE:
+        LD      A,1
+        LD      (PAGED),A
+OGOOD:
+        LD      A,1
+        OR      A
+        RET
+OBAD:
+        XOR     A
+        RET
+
+NOQUEST:
+        LD      B,11
+NQLOOP:
+        LD      A,(HL)
+        CP      '?'
+        RET     Z
+        INC     HL
+        DJNZ    NQLOOP
+        LD      A,1
+        OR      A
+        RET
+
+NEWLINE: DB    13,10,'$'
+READERR: DB    13,10,'READ ERROR',13,10,'$'
+QMARK:   DB    13,10,'?',13,10,'$'
+MORE:    DB    '--More--$'
+ERASE:   DB    8,' ',8,8,' ',8,8,' ',8,8,' ',8
+         DB    8,' ',8,8,' ',8,8,' ',8,8,' ',8,'$'
+PAGED:   DB    0
+LINES:   DB    0
+
+        .DEPHASE
+        END     START

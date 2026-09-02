@@ -584,31 +584,87 @@ BC_ERET:
         JP      BC_DURST
 
 BC_TYPE:
+        CALL    BC_DUSEL
         LD      A,B
         OR      A
-        JR      Z,BC_USETYP
+        JP      Z,BC_TSYNTAX
+; Separate the exact filename from the optional /P extension.
+        LD      (BC_INPTR),HL
+        LD      C,0
+BC_TSCAN:
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,BC_TOPTION
+        INC     HL
+        INC     C
+        DJNZ    BC_TSCAN
+        XOR     A
+        LD      (BC_TPAGE),A
+        JR      BC_TPARSE
+BC_TOPTION:
+        PUSH    BC
+BC_TOSKIP:
+        INC     HL
+        DEC     B
+        JR      Z,BC_TSYPOP
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,BC_TOSKIP
+        LD      A,B
+        CP      2
+        JR      NZ,BC_TSYPOP
+        LD      A,(HL)
+        CP      '/'
+        JR      NZ,BC_TSYPOP
+        INC     HL
+        LD      A,(HL)
+        CP      'P'
+        JR      NZ,BC_TSYPOP
+        POP     BC
+        LD      A,1
+        LD      (BC_TPAGE),A
+        JR      BC_TPARSE
+BC_TSYPOP:
+        POP     BC
+        JP      BC_TSYNTAX
+BC_TPARSE:
+        LD      HL,(BC_INPTR)
+        LD      B,C
         LD      DE,BC_FCB
         CALL    BC_PFCB
+        LD      HL,BC_FCB+1
+        CALL    BC_RNOQ
+        JP      Z,BC_TSYNTAX
         LD      DE,BC_FCB
         LD      C,15
         CALL    BDOS
         INC     A
-        JR      Z,BC_TNOFILE
+        JP      Z,BC_TSYNTAX
         LD      DE,BC_DMA
         LD      C,26
+        CALL    BDOS
+        XOR     A
+        LD      (BC_TLCNT),A
+        LD      DE,BC_NL
+        LD      C,9
         CALL    BDOS
 BC_TREAD:
         LD      DE,BC_FCB
         LD      C,20
         CALL    BDOS
         OR      A
-        RET     NZ
+        JR      Z,BC_TBLOCK
+        CP      1
+        JP      Z,BC_DURST
+        LD      DE,BC_READERR
+        JR      BC_TERROR
+BC_TBLOCK:
         LD      HL,BC_DMA
         LD      B,128
 BC_TCHAR:
         LD      A,(HL)
         CP      01AH
-        RET     Z
+        JP      Z,BC_DURST
         PUSH    HL
         PUSH    BC
         LD      E,A
@@ -616,15 +672,58 @@ BC_TCHAR:
         CALL    BDOS
         POP     BC
         POP     HL
+        LD      A,(HL)
+        CP      10
+        JR      NZ,BC_TNEXT
+        PUSH    HL
+        CALL    BC_TLINE
+        POP     HL
+BC_TNEXT:
         INC     HL
         DJNZ    BC_TCHAR
         JR      BC_TREAD
-BC_TNOFILE:
-        LD      DE,BC_NOFILE
-        JP      BC_PRINT
-BC_USETYP:
-        LD      DE,BC_UTYPE
-        JP      BC_PRINT
+
+BC_TLINE:
+        LD      A,(BC_TPAGE)
+        OR      A
+        RET     Z
+        LD      HL,BC_TLCNT
+        INC     (HL)
+        LD      A,(HL)
+        CP      23
+        RET     C
+        XOR     A
+        LD      (HL),A
+        PUSH    BC
+        PUSH    DE
+        LD      DE,BC_MORE
+        LD      C,9
+        CALL    BDOS
+BC_TWAIT:
+        LD      E,0FFH
+        LD      C,6
+        CALL    BDOS
+        OR      A
+        JR      Z,BC_TWAIT
+        CP      3
+        JR      Z,BC_TABORT
+        CP      ' '
+        JR      NZ,BC_TWAIT
+        LD      DE,BC_MERASE
+        LD      C,9
+        CALL    BDOS
+        POP     DE
+        POP     BC
+        RET
+BC_TABORT:
+        LD      C,0
+        JP      BDOS
+BC_TSYNTAX:
+        LD      DE,BC_RQMARK
+BC_TERROR:
+        LD      C,9
+        CALL    BDOS
+        JP      BC_DURST
 
 BC_REN:
         CALL    BC_DUSEL
@@ -791,7 +890,10 @@ BC_NL:         DB      13,10,'$'
 BC_SEP:        DB      ' : ','$'
 BC_NOFILE:     DB      13,10,'NO FILE',13,10,'$'
 BC_ECONF:      DB      13,10,'ALL (Y/N)? $'
-BC_UTYPE:      DB      13,10,'TYPE filename',13,10,'$'
+BC_READERR:    DB      13,10,'READ ERROR',13,10,'$'
+BC_MORE:       DB      '--More--$'
+BC_MERASE:     DB      8,' ',8,8,' ',8,8,' ',8,8,' ',8
+                DB      8,' ',8,8,' ',8,8,' ',8,8,' ',8,'$'
 BC_REXMSG:     DB      13,10,'FILE EXISTS',13,10,'$'
 BC_RQMARK:     DB      13,10,'?',13,10,'$'
 BC_CMDPTR:     DW      0
@@ -813,6 +915,8 @@ BC_DCOL:       DB      0
 BC_DFOUND:     DB      0
 BC_EBUFFER:    DB      2,0,0,0
 BC_RDRIVE:     DB      0
+BC_TPAGE:      DB      0
+BC_TLCNT:      DB      0
 BC_FCB:
         REPT    36
         DB      0
