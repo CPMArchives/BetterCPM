@@ -177,6 +177,22 @@ CCP_EDGET:
 ; making the policy legible, relative dispatch avoids exhausting the compact
 ; one-sector relocation directory as the reloadable CCP grows.
 CCP_EDWBOOT:
+; Patch 2026-09-03: CP/M visibly acknowledges a command-line warm boot.
+; Preserve that useful feedback instead of silently replacing one prompt with
+; another: echo ^C and terminate the abandoned instruction line before the
+; normal Function 0 path resets disk state and reconstructs the environment.
+        LD      E,'^'
+        LD      C,2
+        CALL    BDOS
+        LD      E,'C'
+        LD      C,2
+        CALL    BDOS
+        LD      E,13
+        LD      C,2
+        CALL    BDOS
+        LD      E,10
+        LD      C,2
+        CALL    BDOS
         LD      C,0
         JP      BDOS
 CCP_EDNEW:

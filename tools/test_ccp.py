@@ -53,6 +53,32 @@ def call(machine: Z80, address: int) -> None:
 
 
 def main() -> None:
+    # A CCP-prompt Ctrl-C visibly acknowledges the key before invoking the
+    # non-returning warm-boot service. Four direct-output calls avoid adding a
+    # pointer to the CCP's already-full one-sector relocation directory.
+    machine = cpu()
+    machine.mem[0xC100:0xC116] = bytes((
+        0x79, 0xB7, 0x28, 0x0C,        # LD A,C / OR A / JR Z,wboot
+        0xFE, 0x02, 0xC0,              # CP 2 / RET NZ
+        0x21, 0x00, 0x76, 0x34,        # INC output-call count
+        0x7B, 0x32, 0x02, 0x76, 0xC9,  # record E / RET
+        0x3E, 0xA5, 0x32, 0x01, 0x76, 0xC9,
+    ))
+    handler = symbol("CCP_EDWBOOT")
+    expected = bytes((
+        0x1E, ord("^"), 0x0E, 0x02, 0xCD, 0x00, 0xC1,
+        0x1E, ord("C"), 0x0E, 0x02, 0xCD, 0x00, 0xC1,
+        0x1E, 13,       0x0E, 0x02, 0xCD, 0x00, 0xC1,
+        0x1E, 10,       0x0E, 0x02, 0xCD, 0x00, 0xC1,
+    ))
+    require(bytes(machine.mem[handler:handler + len(expected)]) == expected,
+            "CCP Ctrl-C acknowledgement is not ^C followed by CR/LF")
+    call(machine, handler)
+    require(machine.mem[0x7600] == 4 and
+            machine.mem[0x7602] == 10 and
+            machine.mem[0x7601] == 0xA5,
+            "CCP Ctrl-C did not echo ^C/CR/LF before Function 0")
+
     # Stub Open as "not found" so CCP_LOAD returns after constructing its
     # private lookup FCB. This directly guards the 2026-09-01 stale-Z flag bug.
     for command, drive, expected in (

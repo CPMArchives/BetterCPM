@@ -9,7 +9,7 @@ retaining non-conflicting cursor editing and persistent history.
 
 | Key | CCP action |
 |---|---|
-| `Ctrl-C` | Warm boot through BDOS Function 0. Disk maps and software read-only locks are reset by the normal WBOOT path. |
+| `Ctrl-C` | Echo `^C`, terminate the abandoned input line with CR/LF, and warm boot through BDOS Function 0. Disk maps and software read-only locks are reset by the normal WBOOT path. |
 | `Ctrl-E` | Emit a physical CR/LF and continue editing the same instruction queue without executing it. |
 | `Ctrl-H` | Destructively remove the character left of the logical cursor. |
 | `Ctrl-P` | Toggle the shared cooked-console printer-echo state. |
@@ -38,7 +38,10 @@ unpaused output polling still preserves one type-ahead byte.
 
 ## Verification
 
-Focused CCP tests verify that `Ctrl-E` retains a line and `Ctrl-U`/`Ctrl-X`
-clear it. BDOS tests verify that the CCP printer toggle changes the shared
+Focused CCP tests verify that `Ctrl-C` emits `^C` and CR/LF before reaching
+Function 0, `Ctrl-E` retains a line, and `Ctrl-U`/`Ctrl-X` clear it. BDOS tests
+verify that the CCP printer toggle changes the shared
 printer-echo state and that an ordinary key resumes paused output. Native CP/M
-and cross builds remain byte-identical.
+and cross builds remain byte-identical. `tools/test_trs80_ctrl_c.py` presses
+the physical Model 4 Control-C chord under `trs80gp` and requires a captured
+`A0>^C` line followed by a fresh `A0>` prompt.

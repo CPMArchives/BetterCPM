@@ -81,11 +81,13 @@ not introduce private interpretations meanwhile.
 | `SAVE` | Save 0..255 256-byte TPA pages from 0100H to an exact 8.3 file; replace an existing destination; reject wildcards; report storage exhaustion | `BASIC.CPX`; no transient fallback is possible because loading one would overwrite the TPA being saved | DU target is supported; explicit address ranges may be added | Implemented | Automated page-count, zero-page, replacement, drive, syntax, and full-directory error tests; allocation-full awaits DPB correction |
 | `USER` | Select and report CP/M user areas according to compatible syntax | `BASIC.CPX` plus matching `USER.COM` fallback; transitional core-CCP copy remains until migration is verified | Direct `5:` navigation and named DU make it optional interactively but do not remove the compatibility requirement | Core implementation exists; CPX and transient forms not started | Existing DIRTEST user-area suite plus CPX/transient parity and command-syntax tests |
 | `CLR` | No stock CP/M counterpart | `BASIC.CPX` plus matching `CLR.COM` fallback | Clear the configured console and home its cursor | Resident extension implemented; transient not started | CPX/transient parity, physical Model 4 clear-and-prompt test; portable terminal-capability service remains future work |
+| `VER` | No stock CP/M counterpart | `BASIC.CPX` plus matching `VER.COM` fallback | Report BetterCP/M version and eventually its platform and interface versions | Transitional core implementation exists; CPX and transient forms not started | CPX/transient parity and recovery-path tests |
+| `WARM` | No stock CP/M counterpart; `Ctrl-C` is the canonical interactive warm boot | Transient-only `WARM.COM` | Scriptable explicit warm boot | Transitional core implementation exists; transient not started | Scripted Function 0/WBOOT reconstruction test |
 
 The minimal CCP itself remains command-processing machinery. `BASIC.CPX`
 contains the complete stock resident-command set—`DIR`, `ERA`, `REN`, `SAVE`,
-`TYPE`, and `USER`—plus the BetterCP/M `CLR` extension. Matching transient
-fallbacks are required for all seven commands except `SAVE`; loading
+`TYPE`, and `USER`—plus the BetterCP/M `CLR` and `VER` extensions. Matching
+transient fallbacks are required for all eight commands except `SAVE`; loading
 `SAVE.COM` at `0100h` would destroy the TPA
 contents it is meant to preserve. A transient fallback must match its CPX
 counterpart and shall not acquire a divergent, transient-only feature set.
