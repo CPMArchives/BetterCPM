@@ -149,6 +149,29 @@ def main() -> None:
     require(cpu.a == 0x4B and cpu.mem[0x7000] == 0x4B,
             "Console Input did not recover the output-poll lookahead key")
 
+    # The CCP's private control hook reaches the same printer-echo state used
+    # by cooked transient output; two toggles must return to the initial state.
+    list_echo = symbol("BDOS_LISTE")
+    require(cpu.mem[list_echo] == 0, "printer echo did not start disabled")
+    cpu.c = 205
+    cpu.run(BDOS_BASE)
+    require(cpu.mem[list_echo] == 0xFF,
+            "CCP printer-echo control did not enable LIST duplication")
+    cpu.c = 205
+    cpu.run(BDOS_BASE)
+    require(cpu.mem[list_echo] == 0,
+            "CCP printer-echo control did not disable LIST duplication")
+
+    # CP/M's ^S pause resumes on the next key, not only ^Q. Exercise the
+    # paused-output continuation directly so the consumed key cannot be
+    # mistaken for the ordinary one-byte output lookahead path.
+    cpu.mem[platform_conin:platform_conin + 3] = bytes((0x3E, 0x4B, 0xC9))
+    cpu.mem[symbol("BDO_CHAR")] = 0x5A
+    cpu.mem[0x7000] = 0
+    cpu.run(symbol("BF_FLPAUS"))
+    require(cpu.mem[0x7000] == 0x5A,
+            "ordinary key did not resume paused cooked output")
+
     reader_vector = bytes(cpu.mem[BIOS_BASE + 21:BIOS_BASE + 24])
     punch_vector = bytes(cpu.mem[BIOS_BASE + 18:BIOS_BASE + 21])
     list_vector = bytes(cpu.mem[BIOS_BASE + 15:BIOS_BASE + 18])

@@ -130,6 +130,8 @@ CCP_EDGET:
         AND     07FH
         CP      13
         JP      Z,CCP_EDFIN
+        CP      3               ; ^C: CP/M warm boot
+        JR      Z,CCP_EDWBOOT
         CP      19              ; ^S / physical Left: character left
         JP      Z,CCP_EDLEFT
         CP      28
@@ -144,14 +146,18 @@ CCP_EDGET:
         JP      Z,CCP_EDWRIGHT
         CP      20              ; ^T: delete through next word
         JP      Z,CCP_EDDWORD
-        CP      5               ; ^E: previous history entry
-        JP      Z,CCP_EDUP
+        CP      5               ; ^E: physical new line, retain command
+        JR      Z,CCP_EDNEW
         CP      11              ; physical Up remains an alias
         JP      Z,CCP_EDUP
-        CP      24              ; ^X: next history entry
-        JP      Z,CCP_EDDOWN
         CP      10              ; physical Down remains an alias
         JP      Z,CCP_EDDOWN
+        CP      16              ; ^P: toggle cooked-console printer echo
+        JR      Z,CCP_EDPRINT
+        CP      21              ; ^U: discard the current instruction queue
+        JR      Z,CCP_EDCLEAR
+        CP      24              ; ^X: alternate CP/M line discard
+        JR      Z,CCP_EDCLEAR
         CP      22              ; ^V: Insert/overwrite toggle
         JP      Z,CCP_EDTOG
         CP      31              ; Model 4 CLEAR remains an alias
@@ -166,10 +172,34 @@ CCP_EDGET:
         JR      C,CCP_EDGET
         CP      127
         JR      NC,CCP_EDGET
+        JR      CCP_EDGRAPH
+; Keep compatibility-control handlers beside the input decoder. Besides
+; making the policy legible, relative dispatch avoids exhausting the compact
+; one-sector relocation directory as the reloadable CCP grows.
+CCP_EDWBOOT:
+        LD      C,0
+        JP      BDOS
+CCP_EDNEW:
+        LD      E,13
+        LD      C,2
+        CALL    BDOS
+        LD      E,10
+        LD      C,2
+        CALL    BDOS
+        XOR     A
+        LD      (CCP_EDOLD),A
+        JP      CCP_EDDRAW
+CCP_EDPRINT:
+        LD      C,205           ; private command-environment console control
+        CALL    BDOS
+        JP      CCP_EDGET
+CCP_EDCLEAR:
+        JP      CCP_HCLEAR
+CCP_EDGRAPH:
         LD      (CCP_EDCHR),A
         LD      A,(CCP_COUNT)
         CP      127
-        JR      Z,CCP_EDGET
+        JP      Z,CCP_EDGET
         LD      B,A
         LD      A,(CCP_EDCUR)
         LD      HL,CCP_COUNT
@@ -471,6 +501,7 @@ CCP_HCLEAR:
         XOR     A
         LD      (CCP_COUNT),A
         LD      (CCP_EDCUR),A
+        LD      (CCP_HPOS),A
         JP      CCP_EDDRAW
 ; Redraw the whole logical line with the character under the cursor in the
 ; platform cursor presentation. Unsupported platforms get an inserted visible

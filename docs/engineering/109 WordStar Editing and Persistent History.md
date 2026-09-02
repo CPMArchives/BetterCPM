@@ -12,16 +12,14 @@ changing BDOS Function 10 behavior for transient software:
 | `^A` | previous word |
 | `^F` | next word |
 | `^T` | delete the next word and adjacent spacing |
-| `^E` | previous history entry |
-| `^X` | next history entry |
 | `^V` | toggle insert/overwrite |
 | `^G` | delete character under cursor |
 | `^H` | delete character left of cursor |
 
-Physical arrows, Clear, and Shift-Left remain aliases. `^E` and `^X` were
-chosen for history navigation rather than `^R` and `^C`: they preserve the
-WordStar vertical-motion relationship and avoid CP/M's established `^C`
-abort/warm-boot association.
+Physical Left/Right, Clear, and Shift-Left remain aliases. Physical Up/Down
+navigate persistent history. `^E` and `^X` retain their stock CP/M meanings
+of physical-line continuation and complete line discard; compatibility takes
+precedence over WordStar's vertical-motion assignments.
 
 ## Model 4 keyboard boundary
 
@@ -52,7 +50,7 @@ replaced by a shorter entry or by the empty live line; stale characters are
 never merely hidden behind the logical zero-length buffer.
 
 The CCP keeps no authoritative history content in its reloadable image. It
-holds only the line currently being edited; `^E`/`^X` copy selected persistent
+holds only the line currently being edited; Up/Down copy selected persistent
 records into that buffer. The block is initialized lazily when its signature
 or version is absent, which preserves it across WBOOT while safely handling a
 cold or previously uninitialized machine.

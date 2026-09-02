@@ -21,6 +21,8 @@ The current work emphasizes:
 
 The initial architecture material is in [`docs/architecture`](docs/architecture). It covers architectural principles and boundaries, memory and boot design, the command environment, system services, hardware abstraction, program execution, storage, system state, compatibility, constraints, extensions, and open questions.
 
+The [`Utility Compatibility Ledger`](docs/compatibility/Utility%20Compatibility%20Ledger.md) inventories the standard CP/M commands and distribution utilities that BetterCP/M must replace, separates implemented prototypes from conformant replacements, and records the required evidence and planned DU extensions.
+
 The initial [`RSX and CPX Programmer's Guide`](docs/programmers/RSX%20and%20CPX%20Programmer's%20Guide.md) records the extension model, current CPX dispatcher, and planned relocatable module lifecycle. Interfaces marked provisional in that guide are not yet promised as a stable third-party binary ABI.
 
 The initial development target is defined in the [`Baseline Platform Specification`](docs/platform/Baseline%20Platform%20Specification.txt). The [`Architecture Readiness Review`](docs/reviews/Architecture%20Readiness%20Review.md) records the decision to begin Phase 2, and [`Engineering Specification 01`](docs/engineering/01%20Baseline%20Bring-Up%20Specification.md) defines the first diagnostic boot milestone.
@@ -140,6 +142,9 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Engineering Specification 105`](docs/engineering/105%20Directory-Visible%20Extension%20Files.md) replaces fixed CPX/RSX system slots with ordinary directory-visible files, adds the protected filename reader used by cold boot and WBOOT, and stores filename stems in the active reconstruction table.
 [`Engineering Specification 106`](docs/engineering/106%20Drive-User%20Navigation%20and%20Prompt.md) adds direct `B:`, `5:`, and `C3:` navigation, derives the `A0>` prompt from authoritative BDOS state, and verifies automatic downward CCP relocation after its next page of growth.
 [`Engineering Specification 107`](docs/engineering/107%20CCP%20Command-Line%20Editor.md) adds CCP-only cursor editing, insert/overwrite modes, deletion, one-command history, and the portable logical-key/Model-4 matrix boundary without changing CP/M Function 10.
+[`Engineering Specification 108`](docs/engineering/108%20Reverse-Video%20Cursor.md) adds the optional platform cursor-character service and Model 4 reverse-video cursor presentation.
+[`Engineering Specification 109`](docs/engineering/109%20WordStar%20Editing%20and%20Persistent%20History.md) adds non-conflicting WordStar editing commands and a packed warm-boot-persistent command history.
+[`Engineering Specification 110`](docs/engineering/110%20CCP%20Control-Key%20Compatibility.md) restores the documented CP/M control-key meanings, moves history to physical Up/Down, shares printer echo with cooked BDOS output, and resumes `Ctrl-S` pauses on any key.
 [`Engineering Specification 25`](docs/engineering/25%20Allocation%20and%20DPB%20Pointers.md) exposes the current drive's reconstructed allocation vector and live 15-byte disk parameter block.
 [`Engineering Specification 26`](docs/engineering/26%20Directory%20Search%20and%20DMA.md) adds Search First/Search Next continuation, wildcard and all-user matching, and complete directory-record transfer to the selected DMA address.
 [`Engineering Specification 27`](docs/engineering/27%20Unchanged%20FCB%20Close.md) adds the non-mutating Close File boundary for unchanged activated FCBs and safely rejects dirty commits until writeback exists.

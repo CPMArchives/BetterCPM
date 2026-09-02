@@ -18,7 +18,10 @@ The editor supports:
 - `^H` or DEL to remove the character left of the cursor;
 - `^G` to remove the character under the cursor;
 - `^T` to remove the next word and adjacent spacing;
-- `^E`/Up and `^X`/Down to traverse persistent command history;
+- physical Up and Down to traverse persistent command history;
+- `^E` to continue the current instruction queue on a new physical line;
+- `^U` or `^X` to discard the complete current instruction queue;
+- `^C` to warm-boot and `^P` to toggle printer echo;
 - a 127-character command limit.
 
 Each new command starts in insert mode.  Typing at the end appends in either

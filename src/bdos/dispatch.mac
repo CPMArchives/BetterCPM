@@ -128,6 +128,8 @@ BDOS:
         JP      Z,BF_RSXCTL
         CP      204             ; optional reverse-video cursor character
         JP      Z,BF_CURSOR
+        CP      205             ; CCP access to shared printer-echo toggle
+        JP      Z,BF_CCPPRN
 ; Patch 2026-09-01: selectors above Function 40 conventionally return zero.
         XOR     A
         JP      BDOS_RETURN
@@ -437,8 +439,8 @@ BF_CLECHO:
 BF_CONIN:
 BF_CINLP:
         CALL    BF_GETIN
-        CP      013H            ; ^S pauses until ^Q
-        JR      Z,BF_PAUSE
+        CP      013H            ; ^S pauses until the next key
+        JP      Z,BF_PAUSE
         CP      011H            ; stray ^Q is invisible
         JR      Z,BF_CINLP
         CP      010H            ; ^P toggles printer echo
@@ -484,6 +486,11 @@ BF_CURSOR:
         LD      HL,BDOS_COLUMN
         INC     (HL)
         JP      BDOS_RETURN
+BF_CCPPRN:
+        LD      A,(BDOS_LISTE)
+        CPL
+        LD      (BDOS_LISTE),A
+        JP      BDOS_RETURN
 BF_COCHAR:
         LD      (BDOS_CHAR),A
         CP      9
@@ -516,20 +523,15 @@ BF_TOGPR:
         JP      BF_CINLP
 BF_PAUSE:
         CALL    BIOCONIN
-        CP      011H
-        JP      Z,BF_CINLP
         CP      003H
         JP      Z,BIOWBOOT
         CP      010H
-        JR      Z,BF_PTOG
-        LD      C,7             ; reject other paused input with a bell
-        CALL    BF_CPUT
-        JR      BF_PAUSE
+        JP      NZ,BF_CINLP     ; CP/M resumes after any key
 BF_PTOG:
         LD      A,(BDOS_LISTE)
         CPL
         LD      (BDOS_LISTE),A
-        JR      BF_PAUSE
+        JP      BF_CINLP
 
 ; Echo the saved character using CP/M's cooked single-character rules.
 BF_ECHO:
@@ -614,20 +616,15 @@ BF_FLTOG:
         JR      BF_FLPOLL
 BF_FLPAUS:
         CALL    BIOCONIN
-        CP      011H
-        JR      Z,BF_FLREADY
         CP      003H
         JP      Z,BIOWBOOT
         CP      010H
-        JR      Z,BP_TOG
-        LD      C,7
-        CALL    BF_PUTCH
-        JR      BF_FLPAUS
+        JR      NZ,BF_FLREADY   ; consume any key and resume output
 BP_TOG:
         LD      A,(BDOS_LISTE)
         CPL
         LD      (BDOS_LISTE),A
-        JR      BF_FLPAUS
+        JR      BF_FLREADY
 BF_FLREADY:
         LD      A,(BDO_CHAR)
         LD      C,A

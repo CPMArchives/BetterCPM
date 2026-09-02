@@ -23,13 +23,14 @@ cooked rules.
 
 The cooked input loop also recognizes the traditional CP/M controls:
 
-- `Ctrl-S` pauses and consumes input until `Ctrl-Q`;
+- `Ctrl-S` pauses and consumes input until the next key;
 - `Ctrl-P` toggles printer echo;
 - `Ctrl-C` enters BIOS warm boot; and
 - stray `Ctrl-Q` and `Ctrl-P` do not reach the application.
 
-Unexpected characters while paused produce a bell and leave the system paused.
-When printer echo is active, echoed characters also pass through BIOS `LIST`.
+The resume key is consumed; `Ctrl-C` still warm-boots, while `Ctrl-P` toggles
+printer echo and resumes. When printer echo is active, echoed characters also
+pass through BIOS `LIST`.
 
 ## Implementation
 

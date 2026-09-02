@@ -13,6 +13,7 @@
 12.10 Compatibility Testing
 12.11 Extensions and Compatibility
 12.12 Compatibility Limits
+12.13 Distribution Utility Compatibility
 
 12.1 COMPATIBILITY MODEL
 ------------------------
@@ -387,3 +388,42 @@ Known incompatibilities should be documented explicitly.
 BetterCP/M should make narrow, testable compatibility claims rather
 than claiming compatibility beyond what the implementation and
 conformance testing can demonstrate.
+
+
+12.13 DISTRIBUTION UTILITY COMPATIBILITY
+----------------------------------------
+
+A complete BetterCP/M release shall include freely redistributable
+replacements for the standard commands, tools, and utilities supplied
+with the CP/M 2.2 operating environment.
+
+Each replacement shall reproduce the externally observable behavior
+of its CP/M counterpart sufficiently that existing manuals, command
+files, operating procedures, and reasonable user expectations remain
+valid. Required behavior includes applicable syntax, defaults, file
+effects, invocation state, interaction, termination, and error paths.
+Similar purpose or a reused command name alone does not establish
+compatibility.
+
+BetterCP/M utilities may add capabilities when ordinary CP/M syntax
+retains its original meaning. Common extensions should include
+numeric drive/user qualification, combined DU forms, and eventually
+named DU forms. Shared syntax and name resolution shall be defined by
+the Command Environment or a common System Service rather than being
+independently and inconsistently invented by each utility.
+
+Machine-construction utilities whose original behavior is inseparable
+from Digital Research or vendor-specific system images shall receive
+BetterCP/M platform-aware replacements. Such tools shall preserve the
+relevant workflow and purpose where practical without pretending that
+obsolete image-patching details are portable requirements.
+
+Original binaries are not release dependencies. Every distributed
+replacement and required build component must satisfy the project's
+redistribution policy.
+
+The Utility Compatibility Ledger records the baseline program,
+required behavior, BetterCP/M replacement, permitted extensions,
+implementation status, and conformance evidence. A utility is not
+complete until its ledger requirements have executable tests or
+explicitly documented manual evidence.

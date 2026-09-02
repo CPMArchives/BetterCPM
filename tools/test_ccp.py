@@ -124,6 +124,8 @@ def main() -> None:
         ("CCP_EDDEL", b"ABC", 1, b"AC", 1),
         ("CCP_EDBS", b"ABC", 2, b"AC", 1),
         ("CCP_EDDWORD", b"ONE  TWO X", 0, b"TWO X", 0),
+        ("CCP_EDNEW", b"KEEP", 2, b"KEEP", 2),
+        ("CCP_EDCLEAR", b"DISCARD", 4, b"", 0),
     ):
         machine = cpu()
         machine.mem[0xC100:0xC100 + len(editor_bdos)] = editor_bdos

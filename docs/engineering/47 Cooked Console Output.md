@@ -14,10 +14,14 @@ passed to the console and advance the column.
 
 Cooked output observes the traditional controls found while polling input:
 
-- `Ctrl-S` pauses output until `Ctrl-Q`;
+- `Ctrl-S` pauses output until the next key;
 - `Ctrl-P` toggles printer echo;
 - `Ctrl-C` enters warm boot; and
 - stray `Ctrl-Q` is consumed.
+
+The key which resumes a `Ctrl-S` pause is consumed rather than becoming
+type-ahead. This is distinct from an ordinary key encountered by output
+polling when the console is not paused; that byte remains preserved as below.
 
 ## Preserving typed input
 
