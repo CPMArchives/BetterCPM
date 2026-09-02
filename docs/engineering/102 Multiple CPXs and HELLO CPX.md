@@ -17,14 +17,16 @@ together.
 HELLO : HELLO
 ```
 
-Its linked payload is 62 bytes and its runtime allocation is one 256-byte
-page. The complete `BCX1` carrier occupies 574 bytes. It is stored beginning
+Its linked payload is 141 bytes and its runtime allocation is one 256-byte
+page. The complete `BCX1` carrier occupies 653 bytes. It is stored beginning
 at command-module slot seven; BASIC occupies slots four through six. Slot nine
 remains available.
 
-When active, HELLO.CPX intercepts `HELLO` before `.COM` lookup and prints
-`Hello from HELLO.CPX`. When it is absent, the same command falls through to
-the existing transient `HELLO.COM` and prints `Hello from BetterCP/M`.
+When active, HELLO.CPX intercepts `HELLO` and its optional argument tail before
+`.COM` lookup. Thus `HELLO TOM` prints `Hello from HELLO.CPX TOM`; it does not
+fall through merely because arguments are present. Unrelated command names
+such as `HELLOX` are declined. When HELLO.CPX is absent, the command falls
+through to the existing transient `HELLO.COM`.
 
 ## Active profile
 

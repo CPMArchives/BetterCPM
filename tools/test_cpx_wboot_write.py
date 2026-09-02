@@ -15,7 +15,7 @@ def main() -> None:
     for path in (DEFAULT_EMULATOR, IMAGE):
         if not path.is_file():
             raise SystemExit(f"missing CPX write test input: {path}")
-    commands = ("CPX LOAD HELLO", "CPX LIST", "HELLO TOM",
+    commands = ("CPX LOAD HELLO", "CPX LIST", "HELLOX", "HELLO TOM",
                 "ERA HELLO.COM", "DIR")
     with tempfile.TemporaryDirectory(prefix="bettercpm-cpx-write-") as temporary:
         disk = Path(temporary, IMAGE.name)
@@ -31,7 +31,8 @@ def main() -> None:
         screen = Path(temporary, "trs80-text-0.bin").read_bytes()[:80 * 24]
     ordered = (
         b"BASIC : DIR, ERA, TYPE, REN", b"HELLO : HELLO",
-        b"A>HELLO TOM", b"Hello from BetterCP/M TOM",
+        b"A>HELLOX", b"?",
+        b"A>HELLO TOM", b"Hello from HELLO.CPX TOM",
         b"A>ERA HELLO.COM", b"A>DIR", b"CPX.COM", b"A>",
     )
     position = 0

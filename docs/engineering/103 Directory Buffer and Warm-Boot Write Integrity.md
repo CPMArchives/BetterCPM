@@ -13,7 +13,8 @@ between the command reloader and the `ED00h` physical-sector/module buffer.
 All DPHs, BDOS/directory constants, and structural tests use this address.
 
 The regression sequence uses a private writable disk copy, loads HELLO.CPX,
-runs a transient command through WBOOT, deletes `HELLO.COM`, and requires a
-subsequent DIR and command prompt. The instruction-level reloader test also
+runs an argument-bearing command through HELLO.CPX, deletes the unused
+`HELLO.COM` fallback, and requires a subsequent DIR and command prompt. The
+instruction-level reloader test also
 verifies the real BASIC and HELLO payloads, relocation, non-overlap, and link
 order independently of physical emulation.

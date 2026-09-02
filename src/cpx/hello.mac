@@ -12,7 +12,10 @@ HC_ENTRY:       DW      HC_COMMAND
 HC_COMMAND:
         LD      A,B
         CP      5
-        JR      NZ,HC_DECLINE
+        JR      C,HC_DECLINE
+        SUB     5
+        LD      (HC_ARGLEN),A
+        LD      B,5
         LD      HL,HC_KEY
 HC_MATCH:
         LD      A,(DE)
@@ -21,7 +24,51 @@ HC_MATCH:
         INC     DE
         INC     HL
         DJNZ    HC_MATCH
+        LD      A,(HC_ARGLEN)
+        OR      A
+        JR      Z,HC_HANDLE
+        LD      A,(DE)
+        CP      ' '
+        JR      NZ,HC_DECLINE   ; HELLOX is not the HELLO command
+HC_HANDLE:
+        LD      (HC_ARGPTR),DE
         LD      DE,HC_MESSAGE
+        LD      C,9
+        CALL    BDOS
+        LD      HL,(HC_ARGPTR)
+        LD      A,(HC_ARGLEN)
+        LD      B,A
+HC_SKIP:
+        LD      A,B
+        OR      A
+        JR      Z,HC_DONE
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,HC_ARG
+        INC     HL
+        DEC     B
+        JR      HC_SKIP
+HC_ARG:
+        PUSH    HL
+        PUSH    BC
+        LD      E,' '
+        LD      C,2
+        CALL    BDOS
+        POP     BC
+        POP     HL
+HC_ARGLOOP:
+        LD      A,(HL)
+        INC     HL
+        PUSH    HL
+        PUSH    BC
+        LD      E,A
+        LD      C,2
+        CALL    BDOS
+        POP     BC
+        POP     HL
+        DJNZ    HC_ARGLOOP
+HC_DONE:
+        LD      DE,HC_NEWLINE
         LD      C,9
         CALL    BDOS
         SCF
@@ -31,7 +78,10 @@ HC_DECLINE:
         RET
 
 HC_KEY:         DB      'HELLO'
-HC_MESSAGE:     DB      13,10,'Hello from HELLO.CPX',13,10,'$'
+HC_MESSAGE:     DB      13,10,'Hello from HELLO.CPX','$'
+HC_NEWLINE:     DB      13,10,'$'
+HC_ARGPTR:      DW      0
+HC_ARGLEN:      DB      0
 
         .DEPHASE
         END
