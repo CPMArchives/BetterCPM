@@ -29,7 +29,7 @@ def main() -> None:
         command.extend(("-id", "2500", "-it", "-ix"))
         subprocess.run(command, cwd=temporary, check=True)
         captured = Path(temporary, "trs80-text-0.bin").read_bytes()[:80 * 24]
-    if b"A>HELLO AB" not in captured or b"Hello from BetterCP/M AB" not in captured:
+    if b"A0>HELLO AB" not in captured or b"Hello from BetterCP/M AB" not in captured:
         raise SystemExit(f"overlapping A/B input was not preserved: {captured[:320]!r}")
     print("overlapping A/B key transitions preserved both characters")
 

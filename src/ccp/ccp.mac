@@ -29,12 +29,7 @@ CCP_LOOP:
         LD      DE,CCP_PROMPT
         LD      C,9
         CALL    BDOS
-        LD      C,25
-        CALL    BDOS
-        ADD     A,'A'
-        LD      E,A
-        LD      C,2
-        CALL    BDOS
+        CALL    CCP_DUPROMPT
         LD      E,'>'
         LD      C,2
         CALL    BDOS
@@ -45,6 +40,12 @@ CCP_LOOP:
         OR      A
         JR      Z,CCP_LOOP
         CALL    CCP_UPPER
+; Patch 2026-09-02: direct drive/user navigation is command-processor syntax,
+; not a resident command.  Keep BDOS as the sole owner of both values so the
+; prompt, FCB operations, transient programs, and warm-start reconstruction
+; all observe one coherent state.  Accepted forms are B:, 5:, and C3:.
+        CALL    CCP_NAVIGATE
+        JR      C,CCP_LOOP
 ; Patch 2026-09-02: production CPXs now get first refusal.  During the BASIC
 ; proof transition, the old resident commands remain below as fallbacks; this
 ; ordering ensures ordinary DIR actually verifies BASIC.CPX when it is loaded.
@@ -52,20 +53,144 @@ CCP_LOOP:
         JR      C,CCP_LOOP
         LD      A,(CCP_COUNT)
         CP      6
-        JR      Z,CCP_TRYUSER
+        JP      Z,CCP_TRYUSER
         CP      7
-        JR      Z,CCP_TRYUSER
+        JP      Z,CCP_TRYUSER
         CP      3
-        JR      Z,CCP_TRYVER
+        JP      Z,CCP_TRYVER
         CP      4
-        JR      Z,CCP_TRYWARM
+        JP      Z,CCP_TRYWARM
 CCP_BAD:
         CALL    CCP_LOAD
         JR      NC,CCP_LOOP     ; successful program exits only via warm start
         LD      DE,CCP_UNKNOWN
         LD      C,9
         CALL    BDOS
-        JR      CCP_LOOP
+        JP      CCP_LOOP
+
+; Display the live default drive/user pair.  User numbers are deliberately
+; unpadded: A0>, A5>, A31>.  The following command-line colon belongs to the
+; navigation syntax, not to the prompt itself.
+CCP_DUPROMPT:
+        LD      C,25
+        CALL    BDOS
+        ADD     A,'A'
+        LD      E,A
+        LD      C,2
+        CALL    BDOS
+        LD      E,0FFH
+        LD      C,32
+        CALL    BDOS
+        CP      10
+        JR      C,CCP_DUPONE
+        LD      B,0
+CCP_DUPTEN:
+        SUB     10
+        INC     B
+        CP      10
+        JR      NC,CCP_DUPTEN
+        PUSH    AF
+        LD      A,B
+        ADD     A,'0'
+        LD      E,A
+        LD      C,2
+        CALL    BDOS
+        POP     AF
+CCP_DUPONE:
+        ADD     A,'0'
+        LD      E,A
+        LD      C,2
+        JP      BDOS
+
+; Carry set means that the complete input line was navigation syntax, whether
+; the requested physical drive exists or not.  This prevents a failed B: from
+; falling through into a search for the impossible transient "B:.COM".
+CCP_NAVIGATE:
+        LD      A,(CCP_COUNT)
+        CP      2
+        JR      C,CCP_NAVNO
+        CP      5
+        JR      NC,CCP_NAVNO
+        LD      B,A
+        LD      HL,CCP_DATA
+        LD      E,0FFH          ; FFh means retain current drive
+        LD      D,0FFH          ; FFh means retain current user
+        LD      A,(HL)
+        CP      'A'
+        JR      C,CCP_NAVUSER
+        CP      'P'+1
+        JR      NC,CCP_NAVNO
+        SUB     'A'
+        LD      E,A
+        INC     HL
+        DEC     B
+        LD      A,B
+        CP      1
+        JR      Z,CCP_NAVCOLON  ; drive-only form
+CCP_NAVUSER:
+        LD      A,B
+        CP      2
+        JR      Z,CCP_NVONE
+        CP      3
+        JR      NZ,CCP_NAVNO
+        LD      A,(HL)
+        SUB     '0'
+        JR      C,CCP_NAVNO
+        CP      4               ; tens digit may only be 0..3
+        JR      NC,CCP_NAVNO
+        LD      C,A
+        ADD     A,A
+        LD      D,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,D             ; ten times first digit
+        LD      D,A
+        INC     HL
+        LD      A,(HL)
+        SUB     '0'
+        JR      C,CCP_NAVNO
+        CP      10
+        JR      NC,CCP_NAVNO
+        ADD     A,D
+        CP      32
+        JR      NC,CCP_NAVNO
+        LD      D,A
+        INC     HL
+        JR      CCP_NAVCOLON
+CCP_NVONE:
+        LD      A,(HL)
+        SUB     '0'
+        JR      C,CCP_NAVNO
+        CP      10
+        JR      NC,CCP_NAVNO
+        LD      D,A
+        INC     HL
+CCP_NAVCOLON:
+        LD      A,(HL)
+        CP      ':'
+        JR      NZ,CCP_NAVNO
+        LD      A,E
+        CP      0FFH
+        JR      Z,CCP_NAVSETU
+        PUSH    DE
+        LD      C,14
+        CALL    BDOS
+        POP     DE
+        CP      0FFH
+        JR      Z,CCP_NAVDONE
+CCP_NAVSETU:
+        LD      A,D
+        CP      0FFH
+        JR      Z,CCP_NAVDONE
+        LD      E,A
+        LD      C,32
+        CALL    BDOS
+CCP_NAVDONE:
+        SCF
+        RET
+CCP_NAVNO:
+        OR      A
+        RET
 CCP_TRYVER:
         LD      HL,CCP_DATA
         LD      DE,CCP_VERKEY
@@ -75,7 +200,7 @@ CCP_TRYVER:
         LD      DE,CCP_VERSION
         LD      C,9
         CALL    BDOS
-        JR      CCP_LOOP
+        JP      CCP_LOOP
 CCP_TRYDIR:
         LD      HL,CCP_DATA
         LD      DE,CCP_DIRKEY
@@ -83,13 +208,13 @@ CCP_TRYDIR:
         CALL    CCP_EQUAL
         JP      NZ,CCP_BAD
         CALL    CCP_DIR
-        JR      CCP_LOOP
+        JP      CCP_LOOP
 CCP_TRYWARM:
         LD      HL,CCP_DATA
         LD      DE,CCP_WARMKEY
         LD      B,4
         CALL    CCP_EQUAL
-        JR      NZ,CCP_BAD
+        JP      NZ,CCP_BAD
         LD      C,0
         JP      BDOS
 
@@ -102,7 +227,7 @@ CCP_TRYUSER:
         LD      DE,CU_KEY
         LD      B,5
         CALL    CCP_EQUAL
-        JR      NZ,CCP_BAD
+        JP      NZ,CCP_BAD
         LD      A,(HL)
         SUB     '0'
         JP      C,CCP_BAD

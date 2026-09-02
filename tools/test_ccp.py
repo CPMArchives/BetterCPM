@@ -113,7 +113,43 @@ def main() -> None:
     require(machine.mem[0x7400] == 0xA5,
             "CPX chain did not pass a declined command to its successor")
 
-    print("CCP parsing, resident DIR, and CPX dispatch passed")
+    # Navigation syntax is owned by the CCP but its state is owned by BDOS.
+    # This tiny BDOS stand-in exposes four physical drives and records current
+    # drive/user state, allowing the three public forms to be checked without
+    # involving a disk image.
+    nav_bdos = bytes((
+        0x79,                   # LD A,C
+        0xFE, 14, 0x28, 0x06,  # CP 14 / JR Z,select
+        0xFE, 32, 0x28, 0x0F,  # CP 32 / JR Z,user
+        0xAF, 0xC9,             # XOR A / RET
+        0x7B, 0xFE, 4,          # select: LD A,E / CP 4
+        0x30, 0x05,             # JR NC,bad
+        0x32, 0x00, 0x75,       # LD (7500h),A
+        0xAF, 0xC9,             # XOR A / RET
+        0x3E, 0xFF, 0xC9,       # bad: LD A,FFh / RET
+        0x7B, 0xFE, 0xFF,       # user: LD A,E / CP FFh
+        0x28, 0x05,             # JR Z,get-user
+        0x32, 0x01, 0x75,       # LD (7501h),A
+        0xAF, 0xC9,             # XOR A / RET
+        0x3A, 0x01, 0x75, 0xC9  # get-user: LD A,(7501h) / RET
+    ))
+    machine = cpu()
+    machine.mem[0xC100:0xC100 + len(nav_bdos)] = nav_bdos
+    machine.mem[0x7500], machine.mem[0x7501] = 0, 0
+    for command, drive, user in (
+        (b"B:", 1, 0),
+        (b"5:", 1, 5),
+        (b"C31:", 2, 31),
+        (b"E3:", 2, 31),       # unavailable drive must not alter either
+    ):
+        machine.mem[symbol("CCP_COUNT")] = len(command)
+        start = symbol("CCP_DATA")
+        machine.mem[start:start + len(command)] = command
+        call(machine, symbol("CCP_NAVIGATE"))
+        require((machine.mem[0x7500], machine.mem[0x7501]) == (drive, user),
+                f"navigation state is wrong after {command!r}")
+
+    print("CCP parsing, navigation, resident DIR, and CPX dispatch passed")
 
 
 if __name__ == "__main__":

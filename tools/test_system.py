@@ -512,7 +512,10 @@ def main() -> None:
         require("execution limit reached" in str(error),
                 f"CCP execution failed unexpectedly: {error}")
     transcript = bytes(cpu.mem[0x9000:cpu.word(0x7090)])
-    require(transcript.count(b"A>") >= 3 and b"BetterCP/M 0.1" in transcript,
+    # Earlier BDOS coverage deliberately leaves user 31 selected. WBOOT must
+    # preserve it, and the reconstructed CCP must derive that live state for
+    # every prompt rather than silently reverting its display to user zero.
+    require(transcript.count(b"A31>") >= 3 and b"BetterCP/M 0.1" in transcript,
             f"WBOOT/Function-0 CCP transcript is incomplete at PC={cpu.pc:04X}: "
             f"in={cpu.word(0x7080):04X} out={cpu.word(0x7090):04X} "
             f"ccp={bytes(cpu.mem[ccp_base:ccp_base + 0x2A]).hex()} {transcript[:160]!r}")

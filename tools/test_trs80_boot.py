@@ -12,7 +12,7 @@ DEFAULT_EMULATOR = Path("/Users/nathanael/trs80/trs80gp-2/mac/trs80gp.app/Conten
 DEFAULT_IMAGE = ROOT / "build/trs80/BetterCPM-Extended-80T-DS-System-790K.dmk"
 EXPECTED_LINES = (
     b"",
-    b"A>DIR",
+    b"A0>DIR",
     b"HELLO.COM",
     b"CPX.COM",
     b"RSX.COM",
@@ -20,9 +20,9 @@ EXPECTED_LINES = (
     b"BASIC.CPX",
     b"HELLO.CPX",
     b"HELLO.RSX",
-    b"A>HELLO WORLD",
+    b"A0>HELLO WORLD",
     b"Hello from BetterCP/M WORLD",
-    b"A>",
+    b"A0>",
 )
 
 

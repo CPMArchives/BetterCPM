@@ -34,10 +34,10 @@ def main() -> None:
         screen = Path(temporary, "trs80-text-0.bin").read_bytes()[:80 * 24]
     ordered = (
         b"BASIC : DIR, ERA, TYPE, REN", b"HELLO : HELLO",
-        b"TPA available: 47K", b"A>HELLO", b"Hello from HELLO.CPX",
-        b"A>CPX UNLOAD BASIC.CPX", b"HELLO : HELLO", b"A>TYPE", b"?",
-        b"A>HELLO", b"Hello from HELLO.CPX", b"A>CPX UNLOAD HELLO",
-        b"No CPXs loaded", b"TPA available: 47K", b"A>HELLO",
+        b"TPA available: 47K", b"A0>HELLO", b"Hello from HELLO.CPX",
+        b"A0>CPX UNLOAD BASIC.CPX", b"HELLO : HELLO", b"A0>TYPE", b"?",
+        b"A0>HELLO", b"Hello from HELLO.CPX", b"A0>CPX UNLOAD HELLO",
+        b"No CPXs loaded", b"TPA available: 47K", b"A0>HELLO",
         b"Hello from BetterCP/M",
     )
     position = 0
