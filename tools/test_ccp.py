@@ -3,14 +3,17 @@
 from __future__ import annotations
 
 import re
+import struct
 from pathlib import Path
 
 from test_bios import Z80, require
 
 ROOT = Path(__file__).resolve().parents[1]
 IMAGE = ROOT / "build/ccp/ccp.bin"
+MODULE = ROOT / "build/ccp/ccp.rlm"
 LISTING = ROOT / "build/ccp/ccp.lst"
-BASE = 0xBB00
+LINK_BASE = 0xBB00
+BASE = 0xB700
 CALLER = 0x7000
 
 
@@ -19,12 +22,23 @@ def symbol(name: str) -> int:
                          LISTING.read_text(encoding="ascii"),
                          re.MULTILINE | re.IGNORECASE)
     require(matches, f"CCP listing lacks {name}")
-    return int(matches[-1], 16)
+    linked = int(matches[-1], 16)
+    # The CCP is relocatable and has legitimately grown across C000h at its
+    # arbitrary link origin. Focused tests must use a real safe runtime base.
+    return (linked + BASE - LINK_BASE) & 0xFFFF
 
 
 def cpu() -> Z80:
     machine = Z80(b"")
-    data = IMAGE.read_bytes()
+    module = MODULE.read_bytes()
+    _magic, _version, _header_sectors, link, size, _allocation, _entry, count = (
+        struct.unpack_from("<4sBBHHHHH", module))
+    data = bytearray(module[512:512 + size])
+    delta = BASE - link
+    for index in range(count):
+        offset = struct.unpack_from("<H", module, 16 + index * 2)[0]
+        value = int.from_bytes(data[offset:offset + 2], "little")
+        data[offset:offset + 2] = ((value + delta) & 0xFFFF).to_bytes(2, "little")
     machine.mem[BASE:BASE + len(data)] = data
     machine.sp = 0x7F00
     return machine

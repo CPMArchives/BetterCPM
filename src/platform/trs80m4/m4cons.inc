@@ -119,8 +119,8 @@ M4_KEYFD:
         AND     3
         LD      A,C
         RET     Z
-        CP      8              ; Shift-Left is the Model 4 delete/backspace
-        LD      A,127
+        CP      8              ; Shift-Left distinguishes motion from BKSPACE
+        LD      A,2            ; portable CCP logical cursor-left byte
         RET     Z
         LD      A,C
         CP      '-'

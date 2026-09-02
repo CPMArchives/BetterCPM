@@ -110,6 +110,7 @@ CCP_READLN:
         LD      (CCP_EDCUR),A
         INC     A               ; each new line starts in insert mode
         LD      (CCP_EDINS),A
+        JP      CCP_EDDRAW      ; publish the initial visible cursor
 CCP_EDGET:
         LD      E,0FFH
         LD      C,6
@@ -119,7 +120,7 @@ CCP_EDGET:
         AND     07FH
         CP      13
         JP      Z,CCP_EDFIN
-        CP      8
+        CP      2               ; platform-independent cursor-left byte
         JP      Z,CCP_EDLEFT
         CP      9
         JP      Z,CCP_EDRIGHT
@@ -129,7 +130,9 @@ CCP_EDGET:
         JP      Z,CCP_EDDOWN
         CP      31              ; Model 4 CLEAR key is the Insert toggle
         JP      Z,CCP_EDTOG
-        CP      127
+        CP      8               ; Model 4 BKSPACE/Left physical key
+        JP      Z,CCP_EDBS
+        CP      127             ; retain DEL as a second deletion spelling
         JP      Z,CCP_EDBS
         CP      32
         JR      C,CCP_EDGET
@@ -263,9 +266,10 @@ CCP_EDDOWN:
         LD      (CCP_COUNT),A
         LD      (CCP_EDCUR),A
         JR      CCP_EDDRAW
-; Redraw the whole logical line, erase one stale trailing cell, return to the
-; left margin, then print only through the logical cursor.  This needs no
-; terminal escape sequences and works with the Model 4 memory-mapped display.
+; Redraw the whole logical line with a visible underscore inserted at the
+; logical cursor, erase one stale trailing cell, return to the left margin,
+; then print only through the logical cursor.  This needs no terminal escape
+; sequences and works with the Model 4 memory-mapped display.
 CCP_EDDRAW:
         LD      E,13
         LD      C,2
@@ -274,9 +278,19 @@ CCP_EDDRAW:
         LD      E,'>'
         LD      C,2
         CALL    BDOS
-        LD      A,(CCP_COUNT)
+        LD      A,(CCP_EDCUR)
         LD      B,A
         LD      HL,CCP_DATA
+        CALL    CCP_EDTEXT
+        LD      E,'_'
+        LD      C,2
+        CALL    BDOS
+        LD      A,(CCP_COUNT)
+        PUSH    HL
+        LD      HL,CCP_EDCUR
+        SUB     (HL)
+        LD      B,A
+        POP     HL
         CALL    CCP_EDTEXT
         LD      E,' '
         LD      C,2
@@ -309,7 +323,23 @@ CCP_EDTXLP:
         DJNZ    CCP_EDTXLP
         RET
 CCP_EDFIN:
-        LD      E,13             ; preserve CP/M's final-CR presentation
+; Remove the visual cursor before command execution, then preserve CP/M's
+; final-carriage-return presentation.
+        LD      E,13
+        LD      C,2
+        CALL    BDOS
+        CALL    CCP_DUPROMPT
+        LD      E,'>'
+        LD      C,2
+        CALL    BDOS
+        LD      A,(CCP_COUNT)
+        LD      B,A
+        LD      HL,CCP_DATA
+        CALL    CCP_EDTEXT
+        LD      E,' '
+        LD      C,2
+        CALL    BDOS
+        LD      E,13
         LD      C,2
         CALL    BDOS
         LD      A,(CCP_COUNT)

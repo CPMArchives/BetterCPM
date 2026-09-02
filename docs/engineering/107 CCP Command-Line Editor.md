@@ -23,17 +23,20 @@ mode.  Typing inside the line shifts the tail in insert mode and replaces the
 character under the cursor in overwrite mode.
 
 The editor redraws using only carriage return and ordinary console output.  It
-does not require ANSI or terminal-specific cursor escapes: it prints the live
-drive/user prompt and complete line, erases one stale trailing cell, returns to
-the margin, and reprints through the logical cursor position.
+does not require ANSI or terminal-specific cursor escapes: it inserts a visible
+underscore at the logical cursor position, prints the rest of the line, erases
+one stale trailing cell, returns to the margin, and reprints through the logical
+cursor position.  The marker is removed before command execution.
 
 ## Model 4 binding
 
 The shared Model 4 BIOS now publishes its special-key matrix row using the
 traditional control-byte values for Enter, Clear, Break, Up, Down, Left, and
-Right.  Clear is the physical Insert/overwrite toggle.  Shift-Left produces
-DEL (`7Fh`) for Backspace/Delete.  This remains a platform binding; the CCP
-editor consumes logical bytes and does not inspect Model 4 hardware.
+Right.  Clear is the physical Insert/overwrite toggle.  Because the Model 4
+Left key is also its historical Backspace key, the unmodified key deletes and
+Shift-Left produces logical byte `02h` for cursor-left motion.  DEL (`7Fh`)
+remains an accepted alternate deletion byte.  This remains a platform binding;
+the CCP editor consumes logical bytes and does not inspect Model 4 hardware.
 
 The compact keyboard table remains within one linked page in every current
 consumer.  Its row-pointer increment is correspondingly kept eight-bit so the

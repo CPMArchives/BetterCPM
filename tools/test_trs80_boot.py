@@ -22,7 +22,7 @@ EXPECTED_LINES = (
     b"HELLO.RSX",
     b"A0>HELLO WORLD",
     b"Hello from BetterCP/M WORLD",
-    b"A0>",
+    b"A0>_",
 )
 
 
@@ -54,7 +54,7 @@ def main() -> None:
             "-ik", "1", "10", "-id", "4", "-ik", "1", "0", "-id", "4",
             "-ik", "0", "10", "-id", "4", "-ik", "0", "0", "-id", "4",
             "-ik", "6", "1", "-id", "4", "-ik", "6", "0",
-            "-id", "1200", "-it", "-ix",
+            "-id", "5000", "-it", "-ix",
         ], cwd=temporary, check=True)
         snapshot = Path(temporary, "trs80-text-0.bin")
         if not snapshot.is_file():
