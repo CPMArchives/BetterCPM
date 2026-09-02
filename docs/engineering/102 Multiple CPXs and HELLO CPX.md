@@ -32,6 +32,11 @@ The provisional profile flags now use bit zero for BASIC and bit one for
 HELLO. Function 200 accepts a known-module selector in `D` (`1` BASIC, `2`
 HELLO) and an operation in `E` (`0` query, `1` load, `2` unload).
 
+The cold-boot default remains BASIC alone. `HELLO.CPX` is present in the
+command image as an available module, but it is not loaded until the user
+issues `CPX LOAD HELLO`. Runtime loading does not add HELLO to the saved
+cold-boot profile.
+
 Every mutation regenerates the ordered reconstruction table. Canonical order
 is BASIC followed by HELLO, independent of the order in which the user loaded
 them. WBOOT then loads and links that table in order before relocating the
