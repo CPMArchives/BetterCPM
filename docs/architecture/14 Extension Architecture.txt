@@ -145,13 +145,16 @@ specified from concrete uses before implementation.
 Resident System Extensions and Command Processor Extensions are distinct.
 An RSX intercepts or extends BDOS services.  It is part of the resident
 service environment and remains above the command environment when the CCP
-is overwritten and restored.
+is overwritten and restored.  RSXs are dynamically loadable and unloadable,
+but an installed RSX remains protected while transient programs execute.
 
 A Command Processor Extension, or CPX, extends command interpretation.  A
 CPX may provide additional commands, aliases, scripting, conditional flow,
 command search, or other command-environment behavior.  It does not become
-an RSX merely because it is resident.  CPXs shall use the command processor's
-extension interface rather than intercepting BDOS calls.
+an RSX merely because it is temporarily loaded.  CPXs shall use the command
+processor's extension interface rather than intercepting BDOS calls.  Their
+code is reclaimable with the CCP and restored by WBOOT from the active CPX
+reconstruction table in persistent DATA.
 
 
 14.5 STORAGE EXTENSIONS
@@ -270,21 +273,32 @@ Possible extensions may include:
   * Command Processor Extensions (CPXs).
 
 A CPX is a replaceable module associated with the Command Environment.  CPXs
-shall reside between the BDOS/RSX region and the reloadable CCP core.  They
-shall be restored as part of the command environment, independently of RSXs.
+shall reside below the dynamic CP/M compatibility gateway and above the
+reloadable CCP core.  They shall be restored as part of the reclaimable
+command environment, independently of RSXs.
 The intended high-to-low ordering is:
 
   * BIOS and hardware-dependent resident state.
   * Core BDOS and System Services.
-  * Installed RSXs.
+  * Persistent system DATA and installed RSXs.
+  * Dynamic CP/M compatibility gateway.
   * Installed CPXs.
   * Reloadable CCP core.
   * Transient Program Area.
 
 RSX and CPX space shall be charged according to the configured modules rather
-than by permanently reserving their maximum possible sizes.  Adding either
-kind of extension may lower the CCP and TPA ceiling, but shall not require the
+than by permanently reserving their maximum possible sizes.  An installed
+RSX lowers the protected boundary and therefore the TPA ceiling.  A CPX uses
+reclaimable command-environment space and does not reduce the TPA available
+while a transient program executes.  Adding either kind shall not require the
 BIOS or core BDOS above it to move.
+
+RSXs are dynamically loadable and unloadable, but remain resident and
+protected while installed so transient programs can use their intercepted or
+extended services.  CPXs are dynamically loadable and unloadable overlays;
+they may be destroyed with the CCP by a transient program.  Persistent DATA
+contains the active CPX reconstruction table used by WBOOT to restore the
+ordered CPX set and CCP.
 
 The initial CPX calling contract is deliberately small.  CPXs form a forward
 chain.  Each receives an upper-case command line and its length, returns carry

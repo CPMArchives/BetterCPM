@@ -2,6 +2,12 @@
 
 Date: 2026-09-02
 
+> Historical note: This specification introduced CPXs before command-memory
+> reconstruction existed. Its fixed protected arena and statement that CPXs
+> lower the transient ceiling describe that bring-up implementation. The
+> authoritative memory architecture now protects installed RSXs while making
+> CPXs and the CCP reclaimable overlays below a movable compatibility gateway.
+
 ## Decision
 
 BetterCP/M distinguishes Resident System Extensions (RSXs) from Command
@@ -9,9 +15,12 @@ Processor Extensions (CPXs). An RSX extends or intercepts BDOS services. A
 CPX extends the command processor with facilities such as scripting,
 conditionals, aliases, search rules, or additional commands.
 
-The intended high-to-low ordering is BIOS, core BDOS, RSXs, CPXs, reloadable
-CCP, and TPA. RSXs and CPXs may move the CCP and TPA ceiling downward, but do
-not require the BIOS or core BDOS above them to be relocated.
+The intended high-to-low ordering is BIOS, core BDOS, persistent DATA, RSXs,
+the dynamic CP/M compatibility gateway, CPXs, reloadable CCP, and TPA.
+Installed RSXs lower the protected boundary and TPA ceiling. CPXs and the CCP
+are reclaimable command-environment overlays and do not lower the TPA ceiling
+seen while a transient program executes. Neither extension class requires the
+BIOS or core BDOS above it to be relocated.
 
 ## Initial CPX ABI
 

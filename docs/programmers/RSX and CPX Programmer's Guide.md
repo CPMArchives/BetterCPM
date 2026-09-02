@@ -42,20 +42,26 @@ The intended high-to-low ordering is:
 High memory
 BIOS and hardware-dependent resident state
 Core BDOS and System Services
+Persistent system DATA
 RSX chain
+Dynamic CP/M compatibility gateway
 CPX chain
 CCP core
 Transient Program Area
 Low memory
 ```
 
-The BIOS and core BDOS remain fixed for a running system configuration.
-RSXs are placed below the BDOS, CPXs below the RSXs, and the CCP below the
-CPXs. The TPA ceiling is the first byte occupied by the command environment.
+The BIOS and core BDOS remain fixed. Persistent system DATA and installed
+RSXs occupy protected memory below them. The dynamic gateway is the lowest
+protected address and therefore the exclusive TPA ceiling advertised through
+the jump at `0005h`. CPXs and the CCP occupy reclaimable command-environment
+memory below that gateway and may be overwritten by a transient program.
 
-Extension space is to be charged according to the modules actually
-configured. BetterCP/M shall not permanently reserve the maximum possible
-RSX or CPX footprint.
+Extension space is charged according to the modules actually configured.
+BetterCP/M shall not permanently reserve the maximum possible RSX or CPX
+footprint. Installed RSXs reduce the TPA because they must remain callable by
+transient programs. CPXs do not reduce the transient TPA because WBOOT can
+reconstruct them.
 
 The first quantitative implementation uses `C000h` as the fixed-system
 boundary and publishes the active layout through a versioned descriptor at
@@ -64,22 +70,28 @@ and occupies `BB00h..BFFFh`. Its CPX head is the descriptor field at `C086h`.
 `BB00h` is a calculated default address, not the future module ABI. WBOOT now
 obtains the CCP base from the descriptor and the Model 4 reloader restores and
 relocates the CCP from a command module in reserved system sectors. Because
-the current configuration has no CPXs, it publishes `C000h` as its TPA
-ceiling and allows transient programs to overwrite the reloadable CCP.
+the current configuration has no CPXs or RSXs, it publishes `C000h` as its
+TPA ceiling and allows transient programs to overwrite the reloadable CCP.
+The fixed `C000h` gateway is an implementation milestone; the completed
+architecture moves the compatibility gateway below persistent DATA and the
+active RSX chain.
 
 ## 3. Fundamental address rule
 
-The configured RSX and CPX lists are persistent; their current memory
-addresses are not.
+The saved RSX and CPX profiles are persistent configuration; their current
+memory addresses are not. Persistent DATA also contains the active RSX table
+and the active CPX reconstruction table. The latter records which CPXs WBOOT
+must restore, not where their overlay images previously happened to reside.
 
 Extension code must therefore be relocatable or position-independent. An
 extension must not publish an address that it expects to remain valid after
 the extension configuration changes. Raw pointers into an old RSX, CPX, or
 CCP image expire when the affected region is reconstructed.
 
-Loading or unloading an RSX can move every CPX and the CCP. Loading or
-unloading a CPX can move later CPXs and the CCP. Moving either class changes
-the TPA ceiling.
+Loading or unloading an RSX can move the dynamic gateway and requires the
+CPXs and CCP below it to be reconstructed. Loading or unloading a CPX can
+move later CPXs and the CCP, but does not change the transient TPA ceiling:
+the entire command environment remains reclaimable.
 
 ## 4. Dynamic configuration
 
@@ -96,8 +108,10 @@ The planned sequence is:
    altering the running system.
 4. It rejects the request if the configuration is invalid or cannot fit.
 5. Extensions that retain migratable state are asked to export that state.
-6. Warm boot reconstructs the RSX region beneath the BDOS.
-7. It relocates and loads the configured CPXs beneath the RSXs.
+6. A controlled RSX reconfiguration reconstructs the protected RSX region
+   and moves the dynamic compatibility gateway.
+7. Warm boot normally preserves the active RSXs and gateway, and relocates
+   and loads the active CPX set from its persistent reconstruction table.
 8. It reloads the CCP beneath the CPXs.
 9. It initializes the chains, imports approved state, and publishes the new
    TPA ceiling only after reconstruction succeeds.
@@ -107,8 +121,10 @@ during reconstruction must enter a defined recovery path rather than expose
 a partially linked chain.
 
 An RSX-only change necessarily reconstructs the CPX and CCP regions because
-their addresses may change. A CPX-only change need not reconstruct the RSX
-chain, but it reconstructs the affected CPXs and CCP beneath it.
+the gateway and their addresses may change. A CPX-only change leaves the RSX
+chain and gateway in place, but reconstructs the affected CPXs and CCP
+beneath it. An ordinary WBOOT preserves RSXs and restores the complete command
+environment from the active CPX reconstruction table.
 
 Configuration changes shall occur from a controlled command or warm-boot
 path. They shall not relocate the command environment while arbitrary

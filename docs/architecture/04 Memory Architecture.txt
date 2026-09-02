@@ -116,23 +116,74 @@ than by the organization of the original CP/M source.
 Resident components should be kept compact in order to preserve the
 largest practical TPA.
 
-The high-memory ordering shall permit the BIOS and core BDOS to remain fixed
-while optional resident extensions and the reloadable command environment
-are placed below them.  From high to low, the intended ordering is BIOS,
-core BDOS, RSXs, CPXs, reloadable CCP core, and TPA.  An RSX extends system
-services; a CPX extends the command processor.  Neither class shall be
-confused merely because both occupy the region between BDOS and CCP.
+BetterCP/M divides high memory into two fundamentally different resident
+classes.  From high to low, the intended 64K organization is:
 
-The CCP location and the TPA ceiling may therefore be computed from the
-configured RSX and CPX footprint.  Warm start shall be able to reconstruct
-the command environment below resident RSXs without relocating the BIOS or
-core BDOS.
+  FFFFh  Hardware-mapped or reserved memory
+         BIOS
+         BIOS buffers
+         Directory and filesystem services
+         BDOS core
+  C100h  Fixed core BDOS entry
+  C080h  Resident Extension Control Block
+  C000h  BetterCP/M system gateway
+         Persistent system DATA, growing downward
+         Installed RSXs, allocated downward
+  xxxxh  Dynamic CP/M compatibility gateway
+         CPXs, allocated downward
+         CCP, allocated downward
+         Transient Program Area
+  0100h  Transient program origin
+  0000h  Compatibility page
 
-The initial 64K implementation uses `C000h` as the fixed lower boundary of
-the core resident system.  Optional regions are allocated downward from that
-boundary in this order: RSXs, CPXs, and CCP.  Each image is rounded upward to
-a 256-byte page for placement.  The lowest occupied address is published as
-the exclusive TPA ceiling.
+The fixed/protected region contains the immutable CP/M-compatible core,
+persistent system DATA, and all currently installed RSXs.  None of this
+memory is available to a transient program.  RSXs extend or intercept
+BDOS/system services and must remain callable while a transient program is
+executing.
+
+The command environment below the dynamic compatibility gateway contains
+CPXs and the CCP.  This region is reclaimable by transient programs and may
+be completely overwritten during execution.  CPXs extend command processing
+and are not required while a transient program runs.
+
+The jump at `0005h` targets the dynamic CP/M compatibility gateway.  Its
+operand at `0006h..0007h` therefore advertises the true exclusive TPA ceiling
+expected by historical CP/M software.  The gateway always occupies the
+lowest protected resident address and dispatches through the installed RSX
+chain before reaching the fixed BDOS core at `C100h`.
+
+Installed RSXs are dynamically loadable and unloadable, but remain protected
+for as long as they are installed.  Changing the active RSX set recalculates
+the protected boundary, reconstructs the RSX layout, moves the dynamic
+gateway, updates page zero and the Extension Control Block, and reconstructs
+the CPXs and CCP beneath it.
+
+The saved RSX profile contains the cold-boot defaults maintained by CONFIG.
+The active RSX chain is the set currently installed.  A runtime change does
+not alter the saved profile unless explicitly saved.
+
+CPXs are dynamically loadable and unloadable command-processor extensions.
+Persistent system DATA holds an active CPX reconstruction table describing
+the ordered CPX set currently in effect.  This table describes what to load,
+not the modules' temporary runtime addresses.  Runtime addresses are
+calculated during reconstruction and published through the Extension Control
+Block where necessary.
+
+The saved CPX profile contains the cold-boot defaults maintained by CONFIG.
+Cold boot initializes the active CPX reconstruction table from that profile.
+The runtime CPX chain is the actual, overlayable code loaded below the
+dynamic gateway.
+
+Warm boot preserves the fixed core, persistent DATA, installed RSXs, and the
+dynamic gateway.  It reloads the active CPX set from the reconstruction
+table, reloads the CCP beneath the CPXs, rebuilds the CPX chain, and transfers
+control to the CCP.  WBOOT therefore restores the command environment, not
+merely the CCP.
+
+Cold boot initializes persistent DATA, reconstructs the saved RSX profile,
+establishes the dynamic compatibility gateway, initializes the active CPX
+reconstruction table from the saved CPX profile, and loads the CPXs and CCP.
 
 The active addresses are recorded in a fixed, versioned Extension Control
 Block at `C080h`.  The descriptor, not a compiled CCP address, is the source
@@ -145,9 +196,10 @@ With no extensions, the current 1,116-byte CCP requires five pages and is
 placed at `BB00h..BFFFh`.  The Model 4 WBOOT path can reload that image from
 the system tracks, so the active no-extension TPA ceiling is `C000h` and
 transient programs may overwrite the CCP.  `BB00h` is the result of the
-current command configuration, not a fixed architectural address.  A future
-configuration containing CPXs shall expose their memory to transients only
-when WBOOT can reconstruct those CPXs as well as the CCP.
+current command configuration, not a fixed architectural address.  This is
+an implementation milestone: the completed architecture replaces the
+fixed `C000h` compatibility boundary with the dynamic gateway below
+persistent DATA and installed RSXs, and reconstructs CPXs as well as the CCP.
 
 
 4.5 COMPATIBILITY-VISIBLE MEMORY

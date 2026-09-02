@@ -5,7 +5,11 @@ Date: 2026-09-02
 > Historical note: Specification 97 adds disk-backed CCP reconstruction and
 > raises the no-extension TPA ceiling from `BB00h` to `C000h`. The calculated
 > placement and descriptor defined here remain current; only the protected-TPA
-> limitation is superseded.
+> limitation is superseded. The architecture subsequently distinguishes
+> protected installed RSXs from reclaimable CPXs and CCP, and places a movable
+> CP/M compatibility gateway at the boundary between them. The fixed `C000h`
+> ceiling and treatment of CPXs as protected here are implementation history,
+> not the final memory contract.
 
 ## Purpose
 
