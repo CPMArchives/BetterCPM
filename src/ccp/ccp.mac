@@ -285,6 +285,13 @@ CCP_EDDRAW:
         LD      E,'_'
         LD      C,2
         CALL    BDOS
+; Function 2 does not preserve HL.  Reconstruct the tail pointer explicitly;
+; otherwise moving into a line displays bytes from page zero after the cursor.
+        LD      HL,CCP_DATA
+        LD      A,(CCP_EDCUR)
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE
         LD      A,(CCP_COUNT)
         PUSH    HL
         LD      HL,CCP_EDCUR

@@ -28,6 +28,11 @@ underscore at the logical cursor position, prints the rest of the line, erases
 one stale trailing cell, returns to the margin, and reprints through the logical
 cursor position.  The marker is removed before command execution.
 
+Console output is treated as destructive of working registers.  In particular,
+the redraw routine reconstructs its command-tail pointer after emitting the
+underscore rather than assuming that BDOS Function 2 preserves `HL`.  This
+prevents an interior cursor from exposing unrelated page-zero bytes as glyphs.
+
 ## Model 4 binding
 
 The shared Model 4 BIOS now publishes its special-key matrix row using the
@@ -45,7 +50,7 @@ include the new Shift-Left translation without exceeding one sector.
 ## Memory result
 
 The editor, one-command history buffer, and editing state enlarge the CCP to
-1836 bytes, with a 2048-byte page-rounded allocation.  The command loader
+1905 bytes, with a 2048-byte page-rounded allocation.  The command loader
 automatically calculates the new CCP base at `B7FDh`; no fixed address or
 temporary ceiling is introduced.
 
