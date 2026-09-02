@@ -36,14 +36,17 @@ def key_args(text: str, delay: int = 4) -> list[str]:
                 break
         else:
             # Model 4 punctuation uses the shift row simultaneously with its
-            # base key: '*' is Shift-minus and '?' is Shift-slash.
-            shifted = {"*": (5, 5), "?": (5, 7)}
+            # base key. The physical row contains : ; , - . /, producing
+            # * + < = > ? when shifted.
+            shifted = {"*": (5, 2), "+": (5, 3), "<": (5, 4),
+                       "=": (5, 5), ">": (5, 6), "?": (5, 7)}
             if character in shifted:
                 row, column = shifted[character]
                 result.extend(("-ik", "7", "1",
                                "-ik", str(row), f"{1 << column:X}",
                                "-id", str(delay),
                                "-ik", str(row), "0",
+                               "-id", str(delay),
                                "-ik", "7", "0",
                                "-id", str(delay)))
                 continue

@@ -166,7 +166,12 @@ def main() -> None:
     print(f"relocatable CCP restoration passed at {alternate_target:04X}h")
     run_at(calculated - 0x100, with_cpx=True)
     print("one-module CPX profile restored before the calculated CCP")
-    run_at(calculated - 0x500, with_two_cpx=True)
+    cpx_allocation = (
+        struct.unpack_from("<H", BASIC_MODULE.read_bytes(), 10)[0] +
+        struct.unpack_from("<H", HELLO_MODULE.read_bytes(), 10)[0]
+    )
+    two_cpx_target = 0xBFFD - allocation - cpx_allocation
+    run_at(two_cpx_target, with_two_cpx=True)
     print("real BASIC and HELLO modules restored, relocated, and linked")
 
 

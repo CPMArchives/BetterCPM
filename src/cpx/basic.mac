@@ -621,15 +621,16 @@ BC_TCHAR:
         JR      BC_TREAD
 BC_TNOFILE:
         LD      DE,BC_NOFILE
-        JR      BC_PRINT
+        JP      BC_PRINT
 BC_USETYP:
         LD      DE,BC_UTYPE
-        JR      BC_PRINT
+        JP      BC_PRINT
 
 BC_REN:
+        CALL    BC_DUSEL
         LD      A,B
         OR      A
-        JR      Z,BC_USEREN
+        JP      Z,BC_RSYNTAX
         LD      (BC_INPTR),HL
         LD      A,B
         LD      (BC_INLEN),A
@@ -638,16 +639,16 @@ BC_RFIND:
         LD      A,(HL)
         CP      '='
         JR      Z,BC_RFOUND
-        CP      ' '
+        CP      '_'
         JR      Z,BC_RFOUND
         INC     HL
         INC     C
         DJNZ    BC_RFIND
-        JR      BC_USEREN
+        JP      BC_RSYNTAX
 BC_RFOUND:
         LD      A,C
         OR      A
-        JR      Z,BC_USEREN
+        JP      Z,BC_RSYNTAX
         PUSH    HL
         PUSH    BC
         LD      HL,(BC_INPTR)
@@ -660,10 +661,89 @@ BC_RFOUND:
         LD      A,(BC_INLEN)
         SUB     C
         DEC     A
-        JR      Z,BC_USEREN
+        JP      Z,BC_RSYNTAX
         LD      B,A
+BC_RSKIP:
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,BC_ROLD
+        INC     HL
+        DJNZ    BC_RSKIP
+        JP      BC_RSYNTAX
+BC_ROLD:
+; The old name is the final operand. Stock CCP rejects another token rather
+; than silently ignoring it, so trim only trailing blanks.
+        PUSH    HL
+        PUSH    BC
+BC_RTAIL:
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,BC_RZ1
+        INC     HL
+        DJNZ    BC_RTAIL
+        JR      BC_RZ3
+BC_RZ1:
+        LD      A,B
+        LD      C,A
+        INC     HL
+        DEC     C
+BC_RZ2:
+        LD      A,C
+        OR      A
+        JR      Z,BC_RZ3
+        LD      A,(HL)
+        CP      ' '
+        JP      NZ,BC_RZ4
+        INC     HL
+        DEC     C
+        JR      BC_RZ2
+BC_RZ4:
+        POP     BC
+        POP     HL
+        JP      BC_RSYNTAX
+BC_RZ3:
+        POP     BC
+        POP     HL
         LD      DE,BC_FCB
         CALL    BC_PFCB
+        LD      A,(BC_NEWFCB+1)
+        CP      ' '
+        JP      Z,BC_RSYNTAX
+        LD      A,(BC_FCB+1)
+        CP      ' '
+        JP      Z,BC_RSYNTAX
+; Neither half of a CP/M rename FCB may be ambiguous.
+        LD      HL,BC_NEWFCB+1
+        CALL    BC_RNOQ
+        JP      Z,BC_RSYNTAX
+        LD      HL,BC_FCB+1
+        CALL    BC_RNOQ
+        JP      Z,BC_RSYNTAX
+; An explicit drive on the old name must denote the already selected drive.
+        LD      A,(BC_FCB)
+        OR      A
+        JR      Z,BC_RSAME
+        LD      (BC_RDRIVE),A
+        LD      C,25
+        CALL    BDOS
+        INC     A
+        LD      HL,BC_RDRIVE
+        CP      (HL)
+        JP      NZ,BC_RSYNTAX
+        XOR     A
+        LD      (BC_FCB),A
+BC_RSAME:
+; Stock REN checks the destination before checking the source.
+        LD      DE,BC_NEWFCB
+        LD      C,17
+        CALL    BDOS
+        CP      0FFH
+        JR      NZ,BC_REXISTS
+        LD      DE,BC_FCB
+        LD      C,17
+        CALL    BDOS
+        CP      0FFH
+        JR      Z,BC_RNOFILE
         LD      HL,BC_NEWFCB
         LD      DE,BC_FCB+16
         LD      BC,12
@@ -672,11 +752,32 @@ BC_RFOUND:
         LD      C,23
         CALL    BDOS
         CP      0FFH
-        RET     NZ
+        JP      NZ,BC_DURST
+BC_RNOFILE:
         LD      DE,BC_NOFILE
-        JR      BC_PRINT
-BC_USEREN:
-        LD      DE,BC_UREN
+        JR      BC_RPRINT
+BC_REXISTS:
+        LD      DE,BC_REXMSG
+        JR      BC_RPRINT
+BC_RSYNTAX:
+        LD      DE,BC_RQMARK
+BC_RPRINT:
+        LD      C,9
+        CALL    BDOS
+        JP      BC_DURST
+
+; Return NZ when the eleven-byte 8.3 field at HL contains no question mark.
+BC_RNOQ:
+        LD      B,11
+BC_RNQL:
+        LD      A,(HL)
+        CP      '?'
+        RET     Z
+        INC     HL
+        DJNZ    BC_RNQL
+        LD      A,1
+        OR      A
+        RET
 BC_PRINT:
         LD      C,9
         JP      BDOS
@@ -691,7 +792,8 @@ BC_SEP:        DB      ' : ','$'
 BC_NOFILE:     DB      13,10,'NO FILE',13,10,'$'
 BC_ECONF:      DB      13,10,'ALL (Y/N)? $'
 BC_UTYPE:      DB      13,10,'TYPE filename',13,10,'$'
-BC_UREN:       DB      13,10,'REN new=old or REN new old',13,10,'$'
+BC_REXMSG:     DB      13,10,'FILE EXISTS',13,10,'$'
+BC_RQMARK:     DB      13,10,'?',13,10,'$'
 BC_CMDPTR:     DW      0
 BC_CMDLEN:     DB      0
 BC_KEYLEN:     DB      0
@@ -710,6 +812,7 @@ BC_EXMASK:     DB      0FFH
 BC_DCOL:       DB      0
 BC_DFOUND:     DB      0
 BC_EBUFFER:    DB      2,0,0,0
+BC_RDRIVE:     DB      0
 BC_FCB:
         REPT    36
         DB      0

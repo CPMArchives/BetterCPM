@@ -1,0 +1,332 @@
+; BetterCP/M REN transient utility. The CCP prepares NEW in the first default
+; FCB and OLD in the second; BDOS 23 requires those halves in the reverse
+; order, so this utility constructs the public rename FCB explicitly.
+
+BDOS    EQU     0005H
+FCB     EQU     005CH
+DMA     EQU     0080H
+
+        CSEG
+        .PHASE  0103H
+
+START:
+        CALL    VALIDATE
+        JP      Z,SYNTAX
+; BetterCP/M's ordinary transient loader prepares space-separated default
+; FCBs; REN's equals-separated second name is therefore parsed locally.
+        LD      HL,(OPTR)
+        LD      A,(OLEN)
+        LD      B,A
+        LD      DE,FCB+16
+        CALL    PARSEFCB
+        LD      HL,FCB+1
+        CALL    NOQUEST
+        JP      Z,SYNTAX
+        LD      HL,FCB+17
+        CALL    NOQUEST
+        JP      Z,SYNTAX
+
+; Resolve zero (current) drive codes and forbid a cross-drive rename.
+        LD      C,25
+        CALL    BDOS
+        INC     A
+        LD      D,A
+        LD      A,(FCB)
+        OR      A
+        JR      NZ,HAVEOLD
+        LD      A,D
+HAVEOLD:
+        LD      B,A
+        LD      A,(FCB+16)
+        OR      A
+        JR      NZ,HAVENEW
+        LD      A,D
+HAVENEW:
+        CP      B
+        JP      NZ,SYNTAX
+        LD      A,B
+        LD      (FCB),A
+        LD      (FCB+16),A
+
+; Construct OLD/NEW in the order required by BDOS Rename File.
+        LD      HL,FCB+16
+        LD      DE,RENFCB
+        LD      B,12
+        CALL    MOVE
+        LD      HL,FCB
+        LD      DE,RENFCB+16
+        LD      B,12
+        CALL    MOVE
+; Stock REN tests the destination first, hence FILE EXISTS takes precedence
+; over a missing source. The first default FCB is already the new name.
+        LD      DE,DMA
+        LD      C,26
+        CALL    BDOS
+        LD      DE,FCB
+        LD      C,17
+        CALL    BDOS
+        CP      0FFH
+        JR      NZ,EXISTS
+        LD      DE,RENFCB
+        LD      C,17
+        CALL    BDOS
+        CP      0FFH
+        JR      Z,NOFILE
+        LD      DE,RENFCB
+        LD      C,23
+        CALL    BDOS
+        CP      0FFH
+        JR      Z,NOFILE
+DONE:
+        LD      C,0
+        JP      BDOS
+
+EXISTS:
+        LD      DE,EXMSG
+        JR      PRINT
+NOFILE:
+        LD      DE,NFMSG
+        JR      PRINT
+SYNTAX:
+        LD      DE,QMSG
+PRINT:
+        LD      C,9
+        CALL    BDOS
+        JR      DONE
+
+; Require NEW=OLD (or the historical underscore/left-arrow separator), with
+; optional blanks around the separator and no trailing operand.
+VALIDATE:
+        LD      A,(DMA)
+        LD      B,A
+        LD      HL,DMA+1
+VLEAD:
+        LD      A,B
+        OR      A
+        RET     Z
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,VNEW
+        INC     HL
+        DEC     B
+        JR      VLEAD
+VNEW:
+        LD      (NPTR),HL
+        LD      C,0
+VNEXT:
+        LD      A,(HL)
+        CP      '='
+        JR      Z,VSEP
+        CP      '_'
+        JR      Z,VSEP
+        CP      ' '
+        JR      Z,VBEFORE
+        INC     HL
+        INC     C
+        DJNZ    VNEXT
+        XOR     A
+        RET
+VBEFORE:
+        INC     HL
+        DEC     B
+        JR      Z,VBAD
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,VBEFORE
+        CP      '='
+        JR      Z,VSEP
+        CP      '_'
+        JR      Z,VSEP
+VBAD:
+        XOR     A
+        RET
+VSEP:
+        LD      A,C
+        LD      (NLEN),A
+        INC     HL
+        DEC     B
+VOSKIP:
+        JR      Z,VBAD
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,VOLD
+        INC     HL
+        DEC     B
+        JR      VOSKIP
+VOLD:
+        LD      (OPTR),HL
+        LD      C,0
+VOLDC:
+        LD      A,(HL)
+        CP      '='
+        JR      Z,VBAD
+        CP      '_'
+        JR      Z,VBAD
+        CP      ' '
+        JR      Z,VTRAIL
+        INC     HL
+        INC     C
+        DJNZ    VOLDC
+        LD      A,C
+        LD      (OLEN),A
+        LD      A,1
+        OR      A
+        RET
+VTRAIL:
+        LD      A,C
+        LD      (OLEN),A
+        INC     HL
+        DEC     B
+VTLOOP:
+        LD      A,B
+        OR      A
+        JR      Z,VGOOD
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,VBAD
+        INC     HL
+        DEC     B
+        JR      VTLOOP
+VGOOD:
+        LD      A,1
+        OR      A
+        RET
+
+NOQUEST:
+        LD      B,11
+NQLOOP:
+        LD      A,(HL)
+        CP      '?'
+        RET     Z
+        INC     HL
+        DJNZ    NQLOOP
+        LD      A,1
+        OR      A
+        RET
+
+; Parse one exact/wildcard CP/M 8.3 token from HL/B into the 12-byte FCB at
+; DE. This is deliberately local to REN.COM; the shared loader parser can
+; remain a conventional two-space-separated-default-FCB service.
+PARSEFCB:
+        PUSH    HL
+        PUSH    BC
+        PUSH    DE
+        XOR     A
+        LD      (DE),A
+        INC     DE
+        LD      C,11
+        LD      A,' '
+PFCLR:
+        LD      (DE),A
+        INC     DE
+        DEC     C
+        JR      NZ,PFCLR
+        POP     DE
+        POP     BC
+        POP     HL
+        LD      A,B
+        CP      2
+        JR      C,PFNAME
+        LD      A,(HL)
+        SUB     'A'-1
+        CP      17
+        JR      NC,PFNAME
+        LD      C,A
+        INC     HL
+        LD      A,(HL)
+        DEC     HL
+        CP      ':'
+        JR      NZ,PFNAME
+        LD      A,C
+        LD      (DE),A
+        INC     HL
+        INC     HL
+        DEC     B
+        DEC     B
+PFNAME:
+        INC     DE
+        LD      C,8
+PFNL:
+        LD      A,B
+        OR      A
+        RET     Z
+        LD      A,(HL)
+        CP      '.'
+        JR      Z,PFDOT
+        CP      '*'
+        JR      Z,PFNSTAR
+        LD      (DE),A
+        INC     DE
+        INC     HL
+        DEC     B
+        DEC     C
+        JR      NZ,PFNL
+PFSKIPN:
+        LD      A,B
+        OR      A
+        RET     Z
+        LD      A,(HL)
+        INC     HL
+        DEC     B
+        CP      '.'
+        JR      NZ,PFSKIPN
+        JR      PFEXT0
+PFNSTAR:
+        LD      A,'?'
+PFNSL:
+        LD      (DE),A
+        INC     DE
+        DEC     C
+        JR      NZ,PFNSL
+        JR      PFSKIPN
+PFDOT:
+        INC     HL
+        DEC     B
+PFEXT0:
+        LD      DE,FCB+25
+        LD      C,3
+PFEL:
+        LD      A,B
+        OR      A
+        RET     Z
+        LD      A,(HL)
+        CP      '*'
+        JR      Z,PFESTAR
+        LD      (DE),A
+        INC     DE
+        INC     HL
+        DEC     B
+        DEC     C
+        JR      NZ,PFEL
+        RET
+PFESTAR:
+        LD      A,'?'
+PFESL:
+        LD      (DE),A
+        INC     DE
+        DEC     C
+        JR      NZ,PFESL
+        RET
+
+MOVE:
+        LD      A,(HL)
+        LD      (DE),A
+        INC     HL
+        INC     DE
+        DJNZ    MOVE
+        RET
+
+EXMSG:  DB      13,10,'FILE EXISTS',13,10,'$'
+NFMSG:  DB      13,10,'NO FILE',13,10,'$'
+QMSG:   DB      13,10,'?',13,10,'$'
+NPTR:   DW      0
+OPTR:   DW      0
+NLEN:   DB      0
+OLEN:   DB      0
+RENFCB:
+        REPT    36
+        DB      0
+        ENDM
+
+        .DEPHASE
+        END     START

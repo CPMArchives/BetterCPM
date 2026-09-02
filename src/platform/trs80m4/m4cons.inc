@@ -143,14 +143,19 @@ M4_KEYSHIFT:
         LD      A,127
         RET     Z
         LD      A,C
-        CP      '-'
+        CP      ':'
         JR      Z,M4_KSTAR
+        CP      '-'
+        JR      Z,M4_KEQUAL
         CP      '/'
         RET     NZ
         LD      A,'?'
         RET
 M4_KSTAR:
         LD      A,'*'
+        RET
+M4_KEQUAL:
+        LD      A,'='
         RET
 
 M4_KEYTAB:

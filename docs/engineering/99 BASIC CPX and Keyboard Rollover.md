@@ -12,8 +12,9 @@ entering longer command sequences on the Model 4 console.
 ## BASIC.CPX
 
 `BASIC.CPX` implements `DIR`, `ERA`, `TYPE`, and `REN`. The commands use only
-public BDOS functions. `REN` accepts both `REN new=old` and `REN new old`, the
-latter being useful on the current Model 4 keyboard mapping.
+public BDOS functions. The early `REN new old` convenience syntax was removed
+when REN was brought to its stock CP/M contract; specification 113 supersedes
+that prototype behavior.
 
 The `BCX1` file contains a 512-byte metadata and relocation header followed by
 the linked image. Its allocation is rounded upward to a page. The saved CPX

@@ -554,9 +554,12 @@ def main() -> None:
     scan = int.from_bytes(data[scan_at:scan_at + 2], "little")
     cpu.mem[platform_const:platform_const + 3] = data[
         platform_const - BASE:platform_const - BASE + 3]
-    cpu.mem[0xF420], cpu.mem[0xF480] = 0x20, 0x01  # Shift-minus
+    cpu.mem[0xF420], cpu.mem[0xF480] = 0x04, 0x01  # Shift-colon
     cpu.run(scan)
-    require(cpu.a == ord("*"), "matrix scanner missed Shift-minus asterisk")
+    require(cpu.a == ord("*"), "matrix scanner missed Shift-colon asterisk")
+    cpu.mem[0xF420] = 0x20                         # Shift-minus
+    cpu.run(scan)
+    require(cpu.a == ord("="), "matrix scanner missed Shift-minus equals")
     cpu.mem[0xF420] = 0x80                         # Shift-slash
     cpu.run(scan)
     require(cpu.a == ord("?"), "matrix scanner missed Shift-slash question mark")
