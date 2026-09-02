@@ -238,10 +238,14 @@ downward, adjusts every listed word, links its four-byte runtime header, and
 may choose a different address after any reconstruction. This is an executable
 first version, not yet a frozen third-party ABI.
 
-The default `BASIC.CPX` proves the path with `DIR`, `ERA`, `TYPE`, and `REN`.
-It is reconstructed on cold and warm boot. The CCP still contains its older
-command copies during the transition; CPX-first dispatch verifies that the
-module implementations are the ones normally exercised.
+The default `BASIC.CPX` is intended to contain the complete stock CCP command
+set: `DIR`, `ERA`, `REN`, `SAVE`, `TYPE`, and `USER`. The current image has
+implemented all except `USER`; adding it is the remaining command-migration
+step. BASIC is reconstructed on cold and warm boot. The CCP still contains its
+older command copies during the transition; CPX-first dispatch verifies that
+the module implementations are the ones normally exercised. Matching
+transient fallbacks are required for every stock command except `SAVE`, whose
+operation inherently depends on not overwriting the TPA at `0100h`.
 
 CPX reconstruction records contain eight-character filename stems. The
 protected file-loader supplies the `.CPX` extension and reads the ordinary
