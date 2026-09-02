@@ -228,6 +228,7 @@ BC_PDOK:
         RET
 
 BC_DIR:
+        CALL    BC_DUSEL
         LD      A,B
         OR      A
         JR      NZ,BC_DPARSE
@@ -244,7 +245,7 @@ BC_DNEXT:
         LD      DE,BC_FCB
         CALL    BDOS
         CP      0FFH
-        RET     Z
+        JR      Z,BC_DDONE
         ADD     A,A
         ADD     A,A
         ADD     A,A
@@ -278,6 +279,127 @@ BC_DNEXT:
 BC_DMORE:
         LD      C,18
         JR      BC_DNEXT
+BC_DDONE:
+        JP      BC_DURST
+
+; DIR accepts the CCP's complete DU selector before an optional filespec:
+; A:, 5:, or C3:.  The selected DU is deliberately temporary; this preserves
+; the historical distinction between "DIR B:" and the navigation command B:.
+BC_DUSEL:
+        LD      (BC_DARGP),HL
+        LD      A,B
+        LD      (BC_DARGL),A
+        LD      C,25
+        CALL    BDOS
+        LD      (BC_DSAVE),A
+        LD      E,0FFH
+        LD      C,32
+        CALL    BDOS
+        LD      (BC_USAVE),A
+        LD      A,0FFH
+        LD      (BC_DTARG),A
+        LD      (BC_UTARG),A
+        LD      HL,(BC_DARGP)
+        LD      A,(BC_DARGL)
+        LD      B,A
+        OR      A
+        RET     Z
+        LD      A,(HL)
+        CP      'A'
+        JR      C,BC_DUNUM
+        CP      'P'+1
+        JR      NC,BC_DUNONE
+        SUB     'A'
+        LD      (BC_DTARG),A
+        INC     HL
+        DEC     B
+        LD      A,B
+        OR      A
+        JR      Z,BC_DUNONE
+        LD      A,(HL)
+        CP      ':'
+        JR      Z,BC_DUCOL
+BC_DUNUM:
+        LD      A,B
+        OR      A
+        JR      Z,BC_DUNONE
+        LD      A,(HL)
+        CP      '0'
+        JR      C,BC_DUNONE
+        CP      '9'+1
+        JR      NC,BC_DUNONE
+        SUB     '0'
+        LD      C,A
+        INC     HL
+        DEC     B
+        LD      A,B
+        OR      A
+        JR      Z,BC_DUNONE
+        LD      A,(HL)
+        CP      '0'
+        JR      C,BC_DUONE
+        CP      '9'+1
+        JR      NC,BC_DUONE
+        LD      A,C
+        ADD     A,A
+        LD      D,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,D
+        LD      C,A
+        LD      A,(HL)
+        SUB     '0'
+        ADD     A,C
+        CP      32
+        JR      NC,BC_DUNONE
+        LD      C,A
+        INC     HL
+        DEC     B
+BC_DUONE:
+        LD      A,(HL)
+        CP      ':'
+        JR      NZ,BC_DUNONE
+        LD      A,C
+        LD      (BC_UTARG),A
+BC_DUCOL:
+        INC     HL
+        DEC     B
+        LD      (BC_DARGP),HL
+        LD      A,B
+        LD      (BC_DARGL),A
+        LD      A,(BC_DTARG)
+        CP      0FFH
+        JR      Z,BC_DUUSER
+        LD      E,A
+        LD      C,14
+        CALL    BDOS
+BC_DUUSER:
+        LD      A,(BC_UTARG)
+        CP      0FFH
+        JR      Z,BC_DUOUT
+        LD      E,A
+        LD      C,32
+        CALL    BDOS
+BC_DUOUT:
+        LD      HL,(BC_DARGP)
+        LD      A,(BC_DARGL)
+        LD      B,A
+        RET
+BC_DUNONE:
+        LD      HL,(BC_DARGP)
+        LD      A,(BC_DARGL)
+        LD      B,A
+        RET
+
+BC_DURST:
+        LD      A,(BC_DSAVE)
+        LD      E,A
+        LD      C,14
+        CALL    BDOS
+        LD      A,(BC_USAVE)
+        LD      E,A
+        LD      C,32
+        JP      BDOS
 BC_FIELD:
         LD      A,(HL)
         AND     07FH
@@ -428,6 +550,12 @@ BC_INPTR:      DW      0
 BC_INLEN:      DB      0
 BC_FCBPTR:     DW      0
 BC_DIREP:      DW      0080H
+BC_DARGP:      DW      0
+BC_DARGL:      DB      0
+BC_DSAVE:      DB      0
+BC_USAVE:      DB      0
+BC_DTARG:      DB      0FFH
+BC_UTARG:      DB      0FFH
 BC_FCB:
         REPT    36
         DB      0

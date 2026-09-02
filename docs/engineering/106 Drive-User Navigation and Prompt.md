@@ -17,6 +17,12 @@ through 31.
 The CCP prompt displays the current pair without padding, for example `A0>`,
 `B5>`, or `C31>`.
 
+The same DU forms may qualify the resident `DIR` command.  `DIR B:`, `DIR 5:`,
+and `DIR C3:` search another drive/user area without changing the active DU;
+an optional filespec may follow the colon, as in `DIR B0:*.COM`.  This is
+deliberately different from a navigation command: after `DIR B:`, an `A0>`
+caller receives the `A0>` prompt again.
+
 ## State ownership
 
 Navigation does not introduce private CCP copies of the current drive or user.
@@ -44,4 +50,7 @@ of the calculated command region.
 
 The focused CCP test covers `B:`, `5:`, and `C31:` and verifies that a combined
 request for an unavailable drive does not partially change the user.  Complete
-system and physical-emulator tests use the new `A0>` prompt.
+system and physical-emulator tests use the new `A0>` prompt.  A physical
+two-drive run also verifies that `DIR B0:` lists the drive-B fixtures while
+leaving the caller at `A0>`, and that `DIR B0:*.TMP` applies its wildcard in
+the selected DU.
