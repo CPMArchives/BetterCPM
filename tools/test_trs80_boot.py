@@ -13,13 +13,9 @@ DEFAULT_IMAGE = ROOT / "build/trs80/BetterCPM-Extended-80T-DS-System-790K.dmk"
 EXPECTED_LINES = (
     b"",
     b"A0>DIR",
-    b"HELLO.COM",
-    b"CPX.COM",
-    b"RSX.COM",
-    b"RSXTEST.COM",
-    b"BASIC.CPX",
-    b"HELLO.CPX",
-    b"HELLO.RSX",
+    b"A: HELLO    COM : CPX      COM : RSX      COM : RSXTEST  COM",
+    b"A: BASIC    CPX : HELLO    CPX : HELLO    RSX",
+    b"",
     b"A0>HELLO WORLD",
     b"Hello from BetterCP/M WORLD",
     b"A0>\xA0",                 # reverse-video blank at end-of-line cursor

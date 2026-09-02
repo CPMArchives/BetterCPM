@@ -229,6 +229,19 @@ BC_PDOK:
 
 BC_DIR:
         CALL    BC_DUSEL
+        LD      C,31            ; selected drive's DPB supplies EXM
+        CALL    BDOS
+        LD      DE,4
+        ADD     HL,DE
+        LD      A,(HL)
+        CPL
+        LD      (BC_EXMASK),A
+        XOR     A
+        LD      (BC_DCOL),A
+        LD      (BC_DFOUND),A
+        LD      HL,(BC_DARGP)   ; Function 31 does not preserve arguments
+        LD      A,(BC_DARGL)
+        LD      B,A
         LD      A,B
         OR      A
         JR      NZ,BC_DPARSE
@@ -245,7 +258,7 @@ BC_DNEXT:
         LD      DE,BC_FCB
         CALL    BDOS
         CP      0FFH
-        JR      Z,BC_DDONE
+        JP      Z,BC_DDONE
         ADD     A,A
         ADD     A,A
         ADD     A,A
@@ -255,32 +268,96 @@ BC_DNEXT:
         LD      L,A
         LD      H,0
         LD      (BC_DIREP),HL
+; Patch 2026-09-02: the proof DIR printed one name per line and exposed every
+; matching extent. Preserve this old path in history here: stock CCP output is
+; a four-column directory of DIR-status filenames, once per physical extent
+; group. EXM determines which low EX bits belong to the first group.
+        LD      DE,12
+        ADD     HL,DE
+        LD      A,(HL)
+        LD      HL,BC_EXMASK
+        AND     (HL)
+        JR      NZ,BC_DSKIP
+        LD      HL,(BC_DIREP)
+        LD      DE,10
+        ADD     HL,DE
+        LD      A,(HL)
+        AND     080H            ; T2 high bit marks a SYS, not DIR, file
+        JR      NZ,BC_DSKIP
+        LD      A,(BC_DFOUND)
+        INC     A
+        LD      (BC_DFOUND),A
+        LD      A,(BC_DCOL)
+        OR      A
+        JR      NZ,BC_DSEP
         LD      DE,BC_NL
         LD      C,9
         CALL    BDOS
+        LD      A,(BC_DTARG)
+        CP      0FFH
+        JR      NZ,BC_DDRIVE
+        LD      A,(BC_DSAVE)
+BC_DDRIVE:
+        ADD     A,'A'
+        CALL    BC_PCHAR
+        LD      A,':'
+        CALL    BC_PCHAR
+        LD      A,' '
+        CALL    BC_PCHAR
+        JR      BC_DNAME
+BC_DSEP:
+        LD      DE,BC_SEP
+        LD      C,9
+        CALL    BDOS
+BC_DNAME:
         LD      HL,(BC_DIREP)
         INC     HL
         LD      B,8
-        CALL    BC_FIELD
-        LD      HL,(BC_DIREP)
-        LD      DE,9
-        ADD     HL,DE
-        LD      A,(HL)
-        CP      ' '
-        JR      Z,BC_DMORE
-        LD      E,'.'
-        LD      C,2
-        CALL    BDOS
+        CALL    BC_FFIX
+        LD      A,' '
+        CALL    BC_PCHAR
         LD      HL,(BC_DIREP)
         LD      DE,9
         ADD     HL,DE
         LD      B,3
-        CALL    BC_FIELD
+        CALL    BC_FFIX
+        LD      A,(BC_DCOL)
+        INC     A
+        AND     3
+        LD      (BC_DCOL),A
 BC_DMORE:
+BC_DSKIP:
         LD      C,18
-        JR      BC_DNEXT
+        JP      BC_DNEXT
 BC_DDONE:
+        LD      A,(BC_DFOUND)
+        OR      A
+        JR      Z,BC_DNOFILE
+        LD      DE,BC_NL
+        LD      C,9
+        CALL    BDOS
         JP      BC_DURST
+BC_DNOFILE:
+        LD      DE,BC_NOFILE
+        LD      C,9
+        CALL    BDOS
+        JP      BC_DURST
+
+BC_FFIX:
+        LD      A,(HL)
+        AND     07FH
+        PUSH    HL
+        PUSH    BC
+        CALL    BC_PCHAR
+        POP     BC
+        POP     HL
+        INC     HL
+        DJNZ    BC_FFIX
+        RET
+BC_PCHAR:
+        LD      E,A
+        LD      C,2
+        JP      BDOS
 
 ; DIR accepts the CCP's complete DU selector before an optional filespec:
 ; A:, 5:, or C3:.  The selected DU is deliberately temporary; this preserves
@@ -538,6 +615,7 @@ BC_KTYPE:      DB      'TYPE'
 BC_KREN:       DB      'REN'
 BC_ALL:        DB      '*.*'
 BC_NL:         DB      13,10,'$'
+BC_SEP:        DB      ' : ','$'
 BC_NOFILE:     DB      13,10,'NO FILE',13,10,'$'
 BC_UERA:       DB      13,10,'ERA filename',13,10,'$'
 BC_UTYPE:      DB      13,10,'TYPE filename',13,10,'$'
@@ -556,6 +634,9 @@ BC_DSAVE:      DB      0
 BC_USAVE:      DB      0
 BC_DTARG:      DB      0FFH
 BC_UTARG:      DB      0FFH
+BC_EXMASK:     DB      0FFH
+BC_DCOL:       DB      0
+BC_DFOUND:     DB      0
 BC_FCB:
         REPT    36
         DB      0
