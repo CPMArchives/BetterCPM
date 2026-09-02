@@ -22,7 +22,9 @@ An 8.3 pattern accepts CP/M `*` and `?` wildcards.
 
 Only files with Directory status are shown. The high bit of the second
 file-type byte is the CP/M System attribute and suppresses that directory
-entry. A search with no visible match reports `NO FILE`.
+entry. As in the original CP/M 2.2 CCP, `NO FILE` means that BDOS found no
+matching directory entry at all. If the pattern matches only SYS entries,
+those entries remain invisible and no `NO FILE` message is printed.
 
 ## Presentation
 
@@ -62,6 +64,12 @@ implemented by BASIC.CPX.
 ## Verification
 
 Native ZSM4 and cross assembly produce byte-identical `BASIC.CPX` payloads.
-The trs80gp boot test now requires exact four-column output. Focused physical
-runs verify `DIR *.COM` selection and `DIR B:` against the independent drive-B
-fixture while returning to `A0>`.
+The trs80gp boot test requires exact four-column output. The focused physical
+suite constructs three DMK files and verifies exact selection, an empty search,
+stock SYS-only suppression, one display for a 20K multi-extent file, temporary
+drive qualification, and combined `C3:` selection while returning to `A0>`.
+
+The ordinary no-argument form exercises the all-wildcard path on every boot.
+Explicit `*` and `?` parsing is also part of the implementation; automated
+injection of shifted Model 4 punctuation remains unsuitable as reference
+evidence because trs80gp may observe the underlying unshifted key as well.

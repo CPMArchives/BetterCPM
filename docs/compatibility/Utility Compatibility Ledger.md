@@ -48,7 +48,7 @@ not introduce private interpretations meanwhile.
 
 | CP/M command | Minimum compatible behavior | BetterCP/M placement | Extensions | Status | Required evidence |
 |---|---|---|---|---|---|
-| `DIR` | Default/current DU listing, drive qualification, wildcard selection, DIR/SYS filtering, one display per file, CP/M four-column presentation | `BASIC.CPX`, with transient fallback planned | Numeric DU implemented; named DU and optional richer listings planned | Implemented; baseline presentation and principal selection paths verified | Complete empty/SYS/multi-extent reference matrix and transient fallback remain |
+| `DIR` | Default/current DU listing, drive qualification, wildcard selection, DIR/SYS filtering, one display per file, CP/M four-column presentation | `BASIC.CPX`, with transient fallback planned | Numeric DU implemented; named DU and optional richer listings planned | Resident implementation complete | Transient fallback remains a separate distribution task; named DU awaits the common resolver |
 | `ERA` | Exact/wildcard deletion, `*.*` safety behavior, CP/M-compatible errors | `BASIC.CPX`; `ERA.COM` exists | Numeric and named DU | Implemented, partial compatibility | Reference deletion/error matrix and protected-media tests |
 | `REN` | CP/M old/new syntax, exact rename semantics and errors | `BASIC.CPX` | Numeric and named DU | Implemented, partial compatibility | Reference syntax matrix, duplicate/missing/protected cases |
 | `TYPE` | Sequential text display through CP/M EOF with compatible missing-file behavior | `BASIC.CPX` | Numeric and named DU; optional paging | Implemented, partial compatibility | Text, EOF, empty, missing, control-byte, and DU cases |

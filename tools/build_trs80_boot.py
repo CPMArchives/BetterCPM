@@ -86,7 +86,8 @@ def cpm_name(name: str) -> tuple[bytes, bytes]:
 
 
 def install_files(raw: bytearray,
-                  files: list[tuple[str, bytes] | tuple[str, bytes, int]]) -> None:
+                  files: list[tuple[str, bytes] | tuple[str, bytes, int]
+                              | tuple[str, bytes, int, int]]) -> None:
     """Install files in the active 2K/16-bit CP/M layout."""
     directory = FILESYSTEM_FIRST_SECTOR * SECTOR_SIZE
     next_entry = 0
@@ -94,16 +95,17 @@ def install_files(raw: bytearray,
     expanded = []
     for item in files:
         filename, content = item[:2]
-        user = item[2] if len(item) == 3 else 0
+        user = item[2] if len(item) >= 3 else 0
+        attributes = item[3] if len(item) >= 4 else 0
         if not 0 <= user <= 15:
             raise ValueError(f"invalid CP/M file user: {user}")
-        expanded.append((filename, content, user))
+        expanded.append((filename, content, user, attributes))
         # DIRTEST requires the same controlled name to exist independently in
         # users zero and one. Allocate a real second copy; sharing allocation
         # blocks would make user-scoped Delete corrupt the surviving fixture.
         if user == 0 and filename.upper() == "BTUSR.DAT":
-            expanded.append((filename, content, 1))
-    for filename, content, user in expanded:
+            expanded.append((filename, content, 1, attributes))
+    for filename, content, user, attributes in expanded:
         name, suffix = cpm_name(filename)
         records = (len(content) + 127) // 128
         padded = content + bytes((0x1A,)) * (records * 128 - len(content))
@@ -123,6 +125,13 @@ def install_files(raw: bytearray,
             # is installed into a generated image (T1 is extension byte 0).
             if filename.upper() == "BTRO.DAT":
                 entry[9] |= 0x80
+            # Attribute bits occupy the high bits of T1/T2/T3. Bit zero is
+            # read-only, bit one is SYS, and bit two is archive. This optional
+            # fixture path lets compatibility tests construct all three
+            # without giving host filenames private meaning.
+            for attribute in range(3):
+                if attributes & (1 << attribute):
+                    entry[9 + attribute] |= 0x80
             entry[12], entry[14], entry[15] = extent & 0x1F, extent >> 5, records_here
             for slot in range(blocks_here):
                 if next_block >= BLOCK_COUNT:
@@ -177,6 +186,9 @@ def main() -> None:
     parser.add_argument("--include-user-as", action="append", default=[],
                         metavar="USER:NAME=PATH",
                         help="install PATH under NAME in CP/M user 0..15")
+    parser.add_argument("--include-system-as", action="append", default=[],
+                        metavar="NAME=PATH",
+                        help="install PATH as a user-zero SYS file")
     parser.add_argument("--cross-fixture", action="store_true",
                         help="install the canonical one-record BTBFILE.DAT fixture")
     parser.add_argument("--full-fixture", action="store_true",
@@ -229,6 +241,13 @@ def main() -> None:
             raise SystemExit(f"invalid user included-file alias: {specification}")
         cpm_name(name)
         extras.append((name, path.read_bytes(), user))
+    for specification in args.include_system_as:
+        name, separator, source_name = specification.partition("=")
+        path = Path(source_name)
+        if not separator or not name or not path.is_file():
+            raise SystemExit(f"invalid SYS included-file alias: {specification}")
+        cpm_name(name)
+        extras.append((name, path.read_bytes(), 0, 0x02))
     if args.cross_fixture:
         extras.append(("BTBFILE.DAT", CROSS_FIXTURE))
     if args.full_fixture:

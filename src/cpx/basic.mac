@@ -268,6 +268,8 @@ BC_DNEXT:
         LD      L,A
         LD      H,0
         LD      (BC_DIREP),HL
+        LD      A,1             ; stock NO FILE depends on search, not display
+        LD      (BC_DFOUND),A   ; a matching SYS entry still counts as found
 ; Patch 2026-09-02: the proof DIR printed one name per line and exposed every
 ; matching extent. Preserve this old path in history here: stock CCP output is
 ; a four-column directory of DIR-status filenames, once per physical extent
@@ -284,9 +286,6 @@ BC_DNEXT:
         LD      A,(HL)
         AND     080H            ; T2 high bit marks a SYS, not DIR, file
         JR      NZ,BC_DSKIP
-        LD      A,(BC_DFOUND)
-        INC     A
-        LD      (BC_DFOUND),A
         LD      A,(BC_DCOL)
         OR      A
         JR      NZ,BC_DSEP
@@ -385,9 +384,50 @@ BC_DUSEL:
         CP      'A'
         JR      C,BC_DUNUM
         CP      'P'+1
-        JR      NC,BC_DUNONE
+        JP      NC,BC_DUNONE
         SUB     'A'
         LD      (BC_DTARG),A
+        INC     HL
+        DEC     B
+        LD      A,B
+        OR      A
+        JP      Z,BC_DUNONE
+        LD      A,(HL)
+        CP      ':'
+        JR      Z,BC_DUCOL
+; BetterCP/M's combined DU form is an additive extension to CP/M's D: form.
+; After a drive letter, accept one or two decimal user digits before the colon.
+        CP      '0'
+        JP      C,BC_DUNONE
+        CP      '9'+1
+        JP      NC,BC_DUNONE
+        SUB     '0'
+        LD      C,A
+        INC     HL
+        DEC     B
+        LD      A,B
+        OR      A
+        JP      Z,BC_DUNONE
+        LD      A,(HL)
+        CP      ':'
+        JR      Z,BC_DUDONE
+        CP      '0'
+        JP      C,BC_DUNONE
+        CP      '9'+1
+        JP      NC,BC_DUNONE
+        LD      A,C
+        ADD     A,A
+        LD      D,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,D
+        LD      C,A
+        LD      A,(HL)
+        SUB     '0'
+        ADD     A,C
+        CP      32
+        JR      NC,BC_DUNONE
+        LD      C,A
         INC     HL
         DEC     B
         LD      A,B
@@ -395,7 +435,11 @@ BC_DUSEL:
         JR      Z,BC_DUNONE
         LD      A,(HL)
         CP      ':'
-        JR      Z,BC_DUCOL
+        JR      NZ,BC_DUNONE
+BC_DUDONE:
+        LD      A,C
+        LD      (BC_UTARG),A
+        JR      BC_DUCOL
 BC_DUNUM:
         LD      A,B
         OR      A
