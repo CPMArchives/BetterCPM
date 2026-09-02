@@ -88,7 +88,7 @@ CPTCOUNT:
 CPTFLAGS:
         DB      1               ; default: BASIC only; bit 1 enables HELLO at runtime
 CPTABLE:
-        DB      4               ; first module slot after four-slot CCP image
+        DB      'BASIC   '      ; ordinary BASIC.CPX filename stem
 ; Patch 2026-09-02: reserve four reconstruction records during bring-up.  The
 ; earlier eight-record placeholder consumed the only fixed-page expansion
 ; space; a later variable persistent-DATA allocator will remove this ceiling.

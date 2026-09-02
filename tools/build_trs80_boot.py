@@ -200,10 +200,10 @@ def main() -> None:
     boot = assemble(args.assembler, SOURCE / "boot.mac", BUILD / "boot.bin", BOOT_ADDRESS)
     stage1 = assemble(args.assembler, SOURCE / "stage1.mac", BUILD / "stage1.bin", STAGE1_ADDRESS)
     resident = resident_path.read_bytes()
+    # Patch 2026-09-02: CPX/RSX fixed slots proved relocation and lifecycle,
+    # but hid extensions from DIR. Only the bootstrap CCP remains in reserved
+    # sectors; every extension is now an ordinary CP/M file.
     command = command_path.read_bytes().ljust(4 * SECTOR_SIZE, b"\x00")
-    command += basic_cpx_path.read_bytes().ljust(3 * SECTOR_SIZE, b"\x00")
-    command += hello_cpx_path.read_bytes().ljust(2 * SECTOR_SIZE, b"\x00")
-    command += hello_rsx_path.read_bytes()
     extras = []
     for path in args.include:
         if not path.is_file():
@@ -246,7 +246,10 @@ def main() -> None:
                     [("HELLO.COM", HELLO_COM),
                      ("CPX.COM", cpx_utility_path.read_bytes()),
                      ("RSX.COM", rsx_utility_path.read_bytes()),
-                     ("RSXTEST.COM", rsxtest_path.read_bytes()), *extras])
+                     ("RSXTEST.COM", rsxtest_path.read_bytes()),
+                     ("BASIC.CPX", basic_cpx_path.read_bytes()),
+                     ("HELLO.CPX", hello_cpx_path.read_bytes()),
+                     ("HELLO.RSX", hello_rsx_path.read_bytes()), *extras])
     output = args.output.resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_bytes(image)

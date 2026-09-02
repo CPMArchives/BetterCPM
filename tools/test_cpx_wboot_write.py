@@ -21,10 +21,10 @@ def main() -> None:
         disk = Path(temporary, IMAGE.name)
         disk.write_bytes(IMAGE.read_bytes())
         invocation = [str(DEFAULT_EMULATOR), "-m4", "-batch", "-turbo",
-                      "-d0", str(disk), "-id", "1000"]
+                      "-d0", str(disk), "-id", "3000"]
         for index, command in enumerate(commands):
             if index:
-                invocation.extend(("-id", "900"))
+                invocation.extend(("-id", "2500"))
             invocation.extend(key_args(command + "\r"))
         invocation.extend(("-id", "2200", "-it", "-ix"))
         subprocess.run(invocation, cwd=temporary, check=True)

@@ -25,11 +25,16 @@ SKIPSPACE:
 HAVELEN:
         LD      (ARGSTART),HL
         LD      A,B
+        LD      (TOTLEN),A
         CP      4
         JR      Z,TRYLIST
         CP      10
         JR      Z,TRYLOAD
+        CP      14
+        JR      Z,TRYLOAD
         CP      12
+        JP      Z,TRYUNLOAD
+        CP      16
         JP      Z,TRYUNLOAD
 USAGE:
         LD      DE,USEMSG
@@ -77,11 +82,11 @@ LISTNONE:
         CALL    PRINT
 LISTTPA:
         CALL    PRINTTPA
-        JR      DONE
+        JP      DONE
 LISTBAD:
         LD      DE,LISTERROR
         CALL    PRINT
-        JR      DONE
+        JP      DONE
 TRYLOAD:
         LD      HL,(ARGSTART)
         LD      DE,KLOADB
@@ -93,11 +98,25 @@ TRYLOAD:
         LD      B,10
         CALL    EQUAL
         JP      NZ,USAGE
-        LD      D,2
-        JR      LOADREADY
+        LD      A,2
+        JR      LOADNAME
 LOADBASIC:
-        LD      D,1
+        LD      A,1
+LOADNAME:
+        LD      (MODSEL),A
+        LD      A,(TOTLEN)
+        CP      10
+        JR      Z,LOADREADY
+        LD      HL,(ARGSTART)
+        LD      BC,10
+        ADD     HL,BC
+        LD      DE,KCPX
+        LD      B,4
+        CALL    EQUAL
+        JP      NZ,USAGE
 LOADREADY:
+        LD      A,(MODSEL)
+        LD      D,A
         LD      E,1
         JR      CHANGE
 TRYUNLOAD:
@@ -111,11 +130,25 @@ TRYUNLOAD:
         LD      B,12
         CALL    EQUAL
         JP      NZ,USAGE
-        LD      D,2
-        JR      UNLOADREADY
+        LD      A,2
+        JR      UNLOADNAME
 UNLOADBASIC:
-        LD      D,1
+        LD      A,1
+UNLOADNAME:
+        LD      (MODSEL),A
+        LD      A,(TOTLEN)
+        CP      12
+        JR      Z,UNLOADREADY
+        LD      HL,(ARGSTART)
+        LD      BC,12
+        ADD     HL,BC
+        LD      DE,KCPX
+        LD      B,4
+        CALL    EQUAL
+        JP      NZ,USAGE
 UNLOADREADY:
+        LD      A,(MODSEL)
+        LD      D,A
         LD      E,2
 CHANGE:
         LD      C,CPXFUNC
@@ -183,6 +216,7 @@ KLOADB:         DB      'LOAD BASIC'
 KLOADH:         DB      'LOAD HELLO'
 KUNLOADB:       DB      'UNLOAD BASIC'
 KUNLOADH:       DB      'UNLOAD HELLO'
+KCPX:           DB      '.CPX'
 LISTBASIC:      DB      13,10,'BASIC : DIR, ERA, TYPE, REN',13,10,'$'
 LSTHMSG:        DB      'HELLO : HELLO',13,10,'$'
 LISTEMPTY:      DB      13,10,'No CPXs loaded',13,10,'$'
@@ -193,6 +227,8 @@ TPAEND:         DB      'K',13,10,'$'
 PT_TENS:        DB      0
 PT_UNITS:       DB      0
 ARGSTART:       DW      0
+TOTLEN:         DB      0
+MODSEL:         DB      0
 LIST_ANY:       DB      0
 
         .DEPHASE

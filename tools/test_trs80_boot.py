@@ -17,6 +17,9 @@ EXPECTED_LINES = (
     b"CPX.COM",
     b"RSX.COM",
     b"RSXTEST.COM",
+    b"BASIC.CPX",
+    b"HELLO.CPX",
+    b"HELLO.RSX",
     b"A>HELLO WORLD",
     b"Hello from BetterCP/M WORLD",
     b"A>",
@@ -34,7 +37,7 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="bettercpm-trs80gp-") as temporary:
         subprocess.run([
             str(args.emulator), "-m4", "-batch", "-turbo", "-d0", str(args.image),
-            "-id", "1200",
+            "-id", "3000",
             "-ik", "0", "10", "-id", "4", "-ik", "0", "0", "-id", "4",
             "-ik", "1", "2", "-id", "4", "-ik", "1", "0", "-id", "4",
             "-ik", "2", "4", "-id", "4", "-ik", "2", "0", "-id", "4",

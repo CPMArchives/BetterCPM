@@ -23,11 +23,16 @@ RS_SKIP:
 RS_HAVE:
         LD      (RS_ARG),HL
         LD      A,B
+        LD      (RS_LEN),A
         CP      4
         JR      Z,RS_LIST
         CP      10
         JR      Z,RS_LOAD
+        CP      14
+        JR      Z,RS_LOAD
         CP      12
+        JR      Z,RS_UNLOAD
+        CP      16
         JR      Z,RS_UNLOAD
 RS_USAGE:
         LD      DE,RS_UMSG
@@ -52,6 +57,13 @@ RS_LOAD:
         LD      B,10
         CALL    RS_MATCH
         JR      NZ,RS_USAGE
+        LD      A,(RS_LEN)
+        CP      10
+        JR      Z,RS_LOADOK
+        LD      BC,10
+        CALL    RS_EXT
+        JR      NZ,RS_USAGE
+RS_LOADOK:
         LD      E,1
         JR      RS_CHANGE
 RS_UNLOAD:
@@ -59,6 +71,13 @@ RS_UNLOAD:
         LD      B,12
         CALL    RS_MATCH
         JR      NZ,RS_USAGE
+        LD      A,(RS_LEN)
+        CP      12
+        JR      Z,RS_UNLOK
+        LD      BC,12
+        CALL    RS_EXT
+        JR      NZ,RS_USAGE
+RS_UNLOK:
         LD      E,2
 RS_CHANGE:
         CALL    RS_CONTROL
@@ -82,6 +101,19 @@ RS_MLOOP:
         INC     DE
         INC     HL
         DJNZ    RS_MLOOP
+        RET
+RS_EXT:
+        LD      HL,(RS_ARG)
+        ADD     HL,BC
+        LD      DE,RS_KEXT
+        LD      B,4
+RS_EXLOOP:
+        LD      A,(DE)
+        CP      (HL)
+        RET     NZ
+        INC     DE
+        INC     HL
+        DJNZ    RS_EXLOOP
         RET
 RS_PRINT:
         LD      C,9
@@ -127,6 +159,7 @@ RS_UNIT:
 RS_KLIST:      DB      'LIST'
 RS_KLOAD:      DB      'LOAD HELLO'
 RS_KUNLOAD:    DB      'UNLOAD HELLO'
+RS_KEXT:       DB      '.RSX'
 RS_NONE:       DB      13,10,'No RSXs loaded',13,10,'$'
 RS_HELLO:      DB      13,10,'HELLO : BDOS 201',13,10,'$'
 RS_ERROR:      DB      13,10,'RSX profile error',13,10,'$'
@@ -134,6 +167,7 @@ RS_UMSG:       DB      13,10,'RSX LIST | LOAD/UNLOAD HELLO',13,10,'$'
 RS_TPAM:       DB      'TPA available: $'
 RS_TPAE:       DB      'K',13,10,'$'
 RS_ARG:        DW      0
+RS_LEN:        DB      0
 RS_TENS:       DB      0
 RS_UNITS:      DB      0
         .DEPHASE

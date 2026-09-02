@@ -186,7 +186,7 @@ reloaded. They must not depend upon private CCP or CPX data.
 BDOS Function 202 carries its query/load/unload request to fixed resident
 loader code. HELLO is intentionally absent from the default profile.
 
-The initial compact `BRX1` carrier occupies one 512-byte system slot. It
+The initial compact `BRX1` carrier is stored as an ordinary `.RSX` file. It
 contains the linked base, code size, page-rounded protected allocation,
 relocation count, payload offset, relocation-word offsets, and linked code.
 It is a bring-up format rather than the final general-purpose RSX file ABI.
@@ -243,10 +243,17 @@ It is reconstructed on cold and warm boot. The CCP still contains its older
 command copies during the transition; CPX-first dispatch verifies that the
 module implementations are the ones normally exercised.
 
+CPX reconstruction records contain eight-character filename stems. The
+protected file-loader supplies the `.CPX` extension and reads the ordinary
+file without depending on the reclaimable CCP or CPXs. Runtime addresses and
+physical allocation blocks are never persisted in the reconstruction table.
+
 ### 7.3 Provisional runtime manager
 
 `CPX.COM` currently provides `LIST` plus `LOAD` and `UNLOAD` for the known
 BASIC and HELLO proof modules.
+Names may be written with or without the `.CPX` extension. `RSX.COM` likewise
+accepts HELLO with or without `.RSX`.
 Configuration changes affect the active reconstruction table, then terminate
 through WBOOT so fixed resident code performs all relocation. The manager is
 never required to move or overwrite the environment in which it is executing.

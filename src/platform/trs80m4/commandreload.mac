@@ -1,8 +1,12 @@
 ; BetterCP/M TRS-80 Model 4 command-environment reloader.
-; Persistent table entries are eight bytes; byte zero selects a system-track
-; module slot. Slot zero holds the CCP; CPXs use slots 4 through 9.
+; Persistent CPX records are eight-character, space-padded filename stems.
+; The protected loader supplies .CPX and reads them through directory services.
 RELOADBASE      EQU     0E900H
 BIOPHREAD       EQU     0EF33H
+DIRLOGIN        EQU     0D60CH
+FLOPEN          EQU     0D000H
+FLNEXT          EQU     0D003H
+FLRESET         EQU     0D006H
 SYS_WBOOT       EQU     0C023H
 ECB_CPXHEAD     EQU     0C086H
 ECB_RSXHEAD     EQU     0C084H
@@ -19,6 +23,9 @@ MOD_SIZE        EQU     MODBUF+8
 MOD_ALLOC       EQU     MODBUF+10
 MOD_RELOCS      EQU     MODBUF+14
 MOD_TABLE       EQU     MODBUF+16
+; The directory path is substantially deeper than the old raw-sector reader.
+; Grow its private stack downward through the unused fixed-core gap.
+CRSTKTOP        EQU     0D4F0H
 
         CSEG
         .PHASE  RELOADBASE
@@ -28,6 +35,9 @@ RXENTRY:
         JP      RXCONTROL
 CRBODY:
         LD      SP,CRSTKTOP
+        LD      C,0
+        CALL    DIRLOGIN        ; protected file services precede CCP/CPX load
+        JP      NZ,CRFAIL
         LD      HL,(ECB_TPATOP)
         LD      (CRBOUND),HL
         XOR     A
@@ -46,10 +56,12 @@ CRCPXLP:
         OR      A
         JR      Z,CRCCP
         LD      HL,(CRTPTR)
-        LD      A,(HL)
-        CP      4
-        JP      C,CRFAIL
-        LD      (CRSLOT),A
+        XOR     A               ; filename extension is CPX
+        CALL    FLOPEN
+        JP      NZ,CRFAIL
+        LD      A,1
+        LD      (CRFILE),A
+        LD      HL,(CRTPTR)
         LD      DE,8
         ADD     HL,DE
         LD      (CRTPTR),HL
@@ -82,6 +94,7 @@ CRLINKD:
         JR      CRCPXLP
 CRCCP:
         XOR     A
+        LD      (CRFILE),A
         LD      (CRSLOT),A
         LD      HL,CRCCPMAG
         LD      (CRMAGPTR),HL
@@ -96,8 +109,8 @@ CRCCP:
         LD      (ECB_GENERATION),HL
         JP      SYS_WBOOT
 
-; Provisional one-module RSX control. E=0 query, E=1 load HELLO.RSX from
-; compact system slot 9, E=2 unload. A runtime change is completed by the
+; Provisional one-module RSX control. E=0 query, E=1 load HELLO.RSX as an
+; ordinary file, E=2 unload. A runtime change is completed by the
 ; caller's following WBOOT, which reconstructs CPXs/CCP below ECB_TPATOP.
 RXCONTROL:
         LD      A,E
@@ -130,11 +143,14 @@ RXLOAD:
         LD      A,H
         OR      L
         JP      NZ,RXOK
+        LD      HL,RXHELLO
+        LD      A,1             ; filename extension is RSX
+        CALL    FLOPEN
+        RET     NZ
         LD      A,1
-        LD      B,1
-        LD      C,10            ; compact HELLO.RSX carrier in slot 9
+        LD      (CRFILE),A
         LD      HL,MODBUF
-        CALL    BIOPHREAD
+        CALL    CRNEXT
         RET     NZ
         LD      HL,MODBUF
         LD      DE,RXMAGIC
@@ -221,7 +237,7 @@ RXBAD:
 ; Load one BCM1/BCX1 module below CRBOUND, then relocate it at CRBASE.
 CRLOAD:
         LD      A,(CRSLOT)
-        LD      (CRFIRST),A
+        LD      (CRFIRST),A     ; retained for the fixed-slot CCP image
         LD      HL,MODBUF
         CALL    CRNEXT
         RET     NZ
@@ -303,8 +319,8 @@ CRLAST:
         LD      (CRLEFT),HL
         JR      CRPAY
 CRRELOC:
-        LD      A,(CRFIRST)
-        LD      (CRSLOT),A
+        CALL    CRRESET
+        RET     NZ
         LD      HL,MODBUF
         CALL    CRNEXT
         RET     NZ
@@ -361,7 +377,20 @@ CRBAD:
 CRGOOD:
         XOR     A
         RET
+; Restart a module stream so its relocation directory can be reread.
+CRRESET:
+        LD      A,(CRFILE)
+        OR      A
+        JP      NZ,FLRESET
+        LD      A,(CRFIRST)
+        LD      (CRSLOT),A
+        XOR     A
+        RET
+
 CRNEXT:
+        LD      A,(CRFILE)
+        OR      A
+        JP      NZ,FLNEXT
         LD      A,(CRSLOT)
         CP      10
         JR      NC,CRBAD
@@ -377,12 +406,14 @@ CRNEXT:
         LD      A,1
         LD      B,1
         JP      BIOPHREAD
+
 CRFAIL:
         JR      CRFAIL
 
 CRCCPMAG:      DB      'B','C','M','1',1,1
 CRCPXMAG:      DB      'B','C','X','1',1,1
 RXMAGIC:       DB      'B','R','X','1'
+RXHELLO:       DB      'HELLO   '
 CRSECTS:       DB      1,3,5,7,9,2,4,6,8,10
 CRMAGPTR:      DW      0
 CRTPTR:        DW      0
@@ -395,10 +426,6 @@ CRDELTA:       DW      0
 CRCOUNT:       DB      0
 CRSLOT:        DB      0
 CRFIRST:       DB      0
-CRSTACK:
-        REPT    16
-        DB      0
-        ENDM
-CRSTKTOP:
+CRFILE:        DB      0
         .DEPHASE
         END

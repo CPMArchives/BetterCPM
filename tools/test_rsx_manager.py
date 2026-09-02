@@ -16,10 +16,10 @@ def run(commands: tuple[str, ...]) -> bytes:
         disk = Path(temporary, IMAGE.name)
         disk.write_bytes(IMAGE.read_bytes())
         invocation = [str(DEFAULT_EMULATOR), "-m4", "-batch", "-turbo",
-                      "-d0", str(disk), "-id", "1000"]
+                      "-d0", str(disk), "-id", "3000"]
         for index, command in enumerate(commands):
             if index:
-                invocation.extend(("-id", "1000"))
+                invocation.extend(("-id", "2500"))
             invocation.extend(key_args(command + "\r"))
         invocation.extend(("-id", "1800", "-it", "-ix"))
         subprocess.run(invocation, cwd=temporary, check=True)
@@ -40,7 +40,7 @@ def main() -> None:
         if not path.is_file():
             raise SystemExit(f"missing RSX manager test input: {path}")
 
-    first = run(("RSXTEST", "RSX LIST", "RSX LOAD HELLO", "RSX LIST",
+    first = run(("RSXTEST", "RSX LIST", "RSX LOAD HELLO.RSX", "RSX LIST",
                  "RSXTEST"))
     require_ordered(first, (
         b"RSX function 201 unsupported", b"No RSXs loaded",
@@ -50,7 +50,7 @@ def main() -> None:
     ))
 
     second = run(("RSX LOAD HELLO", "RSXTEST", "HELLO WARM", "RSXTEST",
-                  "RSX UNLOAD HELLO", "RSX LIST", "RSXTEST"))
+                  "RSX UNLOAD HELLO.RSX", "RSX LIST", "RSXTEST"))
     require_ordered(second, (
         b"Hello from HELLO.RSX", b"RSX function 201 returned 5253h",
         b"Hello from BetterCP/M WARM", b"Hello from HELLO.RSX",

@@ -1076,7 +1076,8 @@ def main() -> None:
             "unsupported BDOS selector did not return conventional zero")
 
     # BetterCP/M's provisional Function 200 owns active CPX-profile mutation.
-    cpu.mem[0xC094], cpu.mem[0xC095], cpu.mem[0xC096] = 1, 1, 4
+    cpu.mem[0xC094], cpu.mem[0xC095] = 1, 1
+    cpu.mem[0xC096:0xC09E] = b"BASIC   "
     cpu.c, cpu.d, cpu.e = 200, 1, 0
     cpu.run(BDOS_BASE)
     require(cpu.a == 1, "CPX control did not report BASIC.CPX loaded")
@@ -1087,13 +1088,15 @@ def main() -> None:
     cpu.c, cpu.d, cpu.e = 200, 2, 1
     cpu.run(BDOS_BASE)
     require(cpu.a == 0 and cpu.mem[0xC094] == 1 and
-            cpu.mem[0xC095] == 2 and cpu.mem[0xC096] == 7,
+            cpu.mem[0xC095] == 2 and
+            bytes(cpu.mem[0xC096:0xC09E]) == b"HELLO   ",
             "CPX control did not load the HELLO-only profile")
     cpu.c, cpu.d, cpu.e = 200, 1, 1
     cpu.run(BDOS_BASE)
     require(cpu.a == 0 and cpu.mem[0xC094] == 2 and
-            cpu.mem[0xC095] == 3 and cpu.mem[0xC096] == 4 and
-            cpu.mem[0xC09E] == 7,
+            cpu.mem[0xC095] == 3 and
+            bytes(cpu.mem[0xC096:0xC09E]) == b"BASIC   " and
+            bytes(cpu.mem[0xC09E:0xC0A6]) == b"HELLO   ",
             "CPX control did not build canonical BASIC/HELLO order")
     cpu.c, cpu.d, cpu.e = 200, 3, 0
     cpu.run(BDOS_BASE)

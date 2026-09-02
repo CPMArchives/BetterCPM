@@ -202,13 +202,13 @@ BCX_UNLOAD:
 BCX_REBUILD:
         XOR     A
         LD      (CPTCOUNT),A
-        LD      HL,CPTABLE
+        LD      DE,CPTABLE
         LD      A,(CPTFLAGS)
         AND     1
         JR      Z,BCX_RHELLO
-        LD      (HL),4
-        LD      DE,8
-        ADD     HL,DE
+        LD      HL,BCX_NBASIC
+        LD      BC,8
+        LDIR
         LD      A,(CPTCOUNT)
         INC     A
         LD      (CPTCOUNT),A
@@ -216,7 +216,9 @@ BCX_RHELLO:
         LD      A,(CPTFLAGS)
         AND     2
         JR      Z,BCX_RDONE
-        LD      (HL),7
+        LD      HL,BCX_NHELLO
+        LD      BC,8
+        LDIR
         LD      A,(CPTCOUNT)
         INC     A
         LD      (CPTCOUNT),A
@@ -226,6 +228,9 @@ BCX_RDONE:
 BCX_BAD:
         LD      A,0FFH
         JP      BDOS_RETURN
+
+BCX_NBASIC:    DB      'BASIC   '
+BCX_NHELLO:    DB      'HELLO   '
 
 BF_RSXCTL:
         LD      DE,(BDOS_PARM)

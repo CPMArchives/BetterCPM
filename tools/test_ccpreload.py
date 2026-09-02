@@ -18,6 +18,8 @@ MODULE_SOURCE = 0x6000
 DESCRIPTOR_CCP = 0xC08C
 SYSTEM_WBOOT = 0xC023
 PHYSICAL_READ = 0xEF33
+FILE_LOADER = 0xD000
+DIR_LOGIN = 0xD60C
 
 
 def relocated(module: bytes, target: int) -> bytes:
@@ -47,15 +49,36 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
             machine.mem[source:source + 512] = padded[offset:offset + 512]
 
     install_slots(0, module)
+    # Protected filename-loader test double. OPEN selects BASIC/HELLO from the
+    # first stem byte; NEXT copies a 512-byte unit and advances; RESET rewinds.
+    vectors = bytes((0xC3, 0x10, 0xD0, 0xC3, 0x30, 0xD0,
+                     0xC3, 0x50, 0xD0))
+    open_stub = bytes((
+        0x7E, 0xFE, 0x42, 0x11, 0x00, 0x70, 0x28, 0x03,
+        0x11, 0x00, 0x80, 0xEB, 0x22, 0x00, 0xD1,
+        0x22, 0x02, 0xD1, 0xAF, 0xC9,
+    ))
+    next_stub = bytes((
+        0xE5, 0x2A, 0x00, 0xD1, 0xD1,
+        0x01, 0x00, 0x02, 0xED, 0xB0, 0xEB, 0xE5,
+        0x2A, 0x00, 0xD1, 0x11, 0x00, 0x02, 0x19,
+        0x22, 0x00, 0xD1, 0xE1, 0xAF, 0xC9,
+    ))
+    reset_stub = bytes((0x2A, 0x02, 0xD1, 0x22, 0x00, 0xD1, 0xAF, 0xC9))
+    machine.mem[FILE_LOADER:FILE_LOADER + len(vectors)] = vectors
+    machine.mem[0xD010:0xD010 + len(open_stub)] = open_stub
+    machine.mem[0xD030:0xD030 + len(next_stub)] = next_stub
+    machine.mem[0xD050:0xD050 + len(reset_stub)] = reset_stub
+    machine.mem[DIR_LOGIN:DIR_LOGIN + 2] = bytes((0xAF, 0xC9))
     cpx_allocation = 0
     if with_two_cpx:
         basic_module = BASIC_MODULE.read_bytes()
         hello_module = HELLO_MODULE.read_bytes()
-        install_slots(4, basic_module)
-        install_slots(7, hello_module)
+        machine.mem[0x7000:0x7000 + len(basic_module)] = basic_module
+        machine.mem[0x8000:0x8000 + len(hello_module)] = hello_module
         machine.mem[0xC094] = 2
-        machine.mem[0xC096] = 4
-        machine.mem[0xC09E] = 7
+        machine.mem[0xC096:0xC09E] = b"BASIC   "
+        machine.mem[0xC09E:0xC0A6] = b"HELLO   "
         cpx_allocation = (struct.unpack_from("<H", basic_module, 10)[0] +
                           struct.unpack_from("<H", hello_module, 10)[0])
     elif with_cpx:
@@ -64,9 +87,10 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
         struct.pack_into("<4sBBHHHHH", header, 0, b"BCX1", 1, 1,
                          0x8000, len(payload), 0x100, 0, 1)
         struct.pack_into("<H", header, 16, 2)
-        install_slots(4, bytes(header) + payload)
+        file_module = bytes(header) + payload
+        machine.mem[0x7000:0x7000 + len(file_module)] = file_module
         machine.mem[0xC094] = 1
-        machine.mem[0xC096] = 4
+        machine.mem[0xC096:0xC09E] = b"BASIC   "
         cpx_allocation = 0x100
 
     gateway = target + allocation + cpx_allocation

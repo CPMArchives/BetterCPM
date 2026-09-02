@@ -1,0 +1,120 @@
+; Protected 512-byte stream reader for CPX/RSX module files.
+; This service is usable before the CCP exists and after transient execution.
+
+FLBASE          EQU     0D000H
+DIROPEN         EQU     0D612H
+DIRREAD         EQU     0D624H
+
+        CSEG
+        .PHASE  FLBASE
+
+FL_OPEN:        JP      FL_OPBODY       ; HL=8-byte stem, A=0 CPX / nonzero RSX
+FL_NEXT:        JP      FL_NXBODY       ; HL=destination; return HL advanced 512
+FL_RESET:       JP      FL_REOPEN       ; reopen current name/type at record zero
+
+FL_OPBODY:
+        LD      (FL_TYPE),A
+        LD      DE,FL_NAME
+        LD      BC,8
+        LDIR
+FL_REOPEN:
+        LD      HL,FL_FCB
+        LD      (HL),0
+        INC     HL
+        LD      DE,FL_NAME
+        LD      B,8
+FL_NAMLP:
+        LD      A,(DE)
+        LD      (HL),A
+        INC     DE
+        INC     HL
+        DJNZ    FL_NAMLP
+        LD      DE,FL_CPXEXT
+        LD      A,(FL_TYPE)
+        OR      A
+        JR      Z,FL_EXT
+        LD      DE,FL_RSXEXT
+FL_EXT:
+        LD      B,3
+FL_EXLP:
+        LD      A,(DE)
+        LD      (HL),A
+        INC     DE
+        INC     HL
+        DJNZ    FL_EXLP
+        LD      B,24
+        XOR     A
+FL_ZERO:
+        LD      (HL),A
+        INC     HL
+        DJNZ    FL_ZERO
+        LD      DE,FL_FCB
+        CALL    DIROPEN
+        CP      0FFH
+        JR      Z,FL_BAD
+        XOR     A
+        RET
+
+FL_NXBODY:
+        LD      (FL_DEST),HL
+        LD      A,4
+        LD      (FL_RECS),A
+        XOR     A
+        LD      (FL_HAVE),A
+FL_RLOOP:
+        LD      BC,(FL_DEST)
+        LD      DE,FL_FCB
+        XOR     A
+        CALL    DIRREAD
+        OR      A
+        JR      NZ,FL_EOF
+        LD      A,(FL_HAVE)
+        INC     A
+        LD      (FL_HAVE),A
+        LD      HL,(FL_DEST)
+        LD      DE,0080H
+        ADD     HL,DE
+        LD      (FL_DEST),HL
+        LD      A,(FL_RECS)
+        DEC     A
+        LD      (FL_RECS),A
+        JR      NZ,FL_RLOOP
+        LD      HL,(FL_DEST)
+        XOR     A
+        RET
+; A short final unit is valid once the file supplied at least one record.
+FL_EOF:
+        LD      A,(FL_HAVE)
+        OR      A
+        JR      Z,FL_BAD
+        LD      HL,(FL_DEST)
+        LD      A,(FL_RECS)
+FL_PAD:
+        OR      A
+        JR      Z,FL_OK
+        LD      DE,0080H
+        ADD     HL,DE
+        DEC     A
+        JR      FL_PAD
+FL_OK:
+        XOR     A
+        RET
+FL_BAD:
+        LD      A,1
+        OR      A
+        RET
+
+FL_CPXEXT:      DB      'CPX'
+FL_RSXEXT:      DB      'RSX'
+FL_TYPE:        DB      0
+FL_RECS:        DB      0
+FL_HAVE:        DB      0
+FL_DEST:        DW      0
+FL_NAME:        DB      '        '
+FL_FCB:
+        REPT    36
+        DB      0
+        ENDM
+
+        .DEPHASE
+        END

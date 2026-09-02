@@ -17,7 +17,7 @@ def main() -> None:
             raise SystemExit(f"missing keyboard-test input: {path}")
     with tempfile.TemporaryDirectory(prefix="bettercpm-key-overlap-") as temporary:
         command = [str(DEFAULT_EMULATOR), "-m4", "-batch", "-turbo",
-                   "-d0", str(DEFAULT_IMAGE), "-id", "1200"]
+                   "-d0", str(DEFAULT_IMAGE), "-id", "3000"]
         command.extend(key_args("HELLO "))
         # Hold A, press B before releasing A, then release them in order. The
         # former whole-matrix KEYUP loop returned A only after B had vanished.

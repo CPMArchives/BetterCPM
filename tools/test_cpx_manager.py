@@ -16,7 +16,7 @@ def main() -> None:
         if not path.is_file():
             raise SystemExit(f"missing CPX manager test input: {path}")
     commands = (
-        "CPX LOAD HELLO", "CPX LIST", "HELLO", "CPX UNLOAD BASIC",
+        "CPX LOAD HELLO.CPX", "CPX LIST", "HELLO", "CPX UNLOAD BASIC.CPX",
         "CPX LIST", "TYPE", "HELLO", "CPX UNLOAD HELLO", "CPX LIST",
         "HELLO",
     )
@@ -24,10 +24,10 @@ def main() -> None:
         disk = Path(temporary, IMAGE.name)
         disk.write_bytes(IMAGE.read_bytes())
         invocation = [str(DEFAULT_EMULATOR), "-m4", "-batch", "-turbo",
-                      "-d0", str(disk), "-id", "1000"]
+                      "-d0", str(disk), "-id", "3000"]
         for index, command in enumerate(commands):
             if index:
-                invocation.extend(("-id", "900"))
+                invocation.extend(("-id", "2500"))
             invocation.extend(key_args(command + "\r"))
         invocation.extend(("-id", "1800", "-it", "-ix"))
         subprocess.run(invocation, cwd=temporary, check=True)
@@ -35,7 +35,7 @@ def main() -> None:
     ordered = (
         b"BASIC : DIR, ERA, TYPE, REN", b"HELLO : HELLO",
         b"TPA available: 47K", b"A>HELLO", b"Hello from HELLO.CPX",
-        b"A>CPX UNLOAD BASIC", b"HELLO : HELLO", b"A>TYPE", b"?",
+        b"A>CPX UNLOAD BASIC.CPX", b"HELLO : HELLO", b"A>TYPE", b"?",
         b"A>HELLO", b"Hello from HELLO.CPX", b"A>CPX UNLOAD HELLO",
         b"No CPXs loaded", b"TPA available: 47K", b"A>HELLO",
         b"Hello from BetterCP/M",
