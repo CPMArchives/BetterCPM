@@ -429,6 +429,9 @@ class Z80:
             elif op == 0xA0:            # AND B
                 self.a &= self.b
                 self.z, self.carry = self.a == 0, False
+            elif op == 0xB0:            # OR B
+                self.a |= self.b
+                self.z, self.carry = self.a == 0, False
             elif op in (0x81, 0x82):    # ADD A,C / ADD A,D
                 total = self.a + (self.c if op == 0x81 else self.d)
                 self.a = total & 0xFF
@@ -474,10 +477,10 @@ def require(condition: bool, message: str) -> None:
 def install_drive_tables(cpu: Z80) -> None:
     """Install the gateway-owned four-drive DPH/DPB contract in test memory."""
     dpb_address = 0xC940
-    workspaces = ((0xC950, 0xC970), (0xC9A2, 0xC9C2),
-                  (0xC9F4, 0xCA14), (0xCA46, 0xCA66))
+    workspaces = ((0xCB50, 0xCB70), (0xCBA2, 0xCBC2),
+                  (0xCBF4, 0xCC14), (0xCC46, 0xCC66))
     for drive, (csv, alv) in enumerate(workspaces):
-        dph = 0xC900 + drive * 16
+        dph = 0xCB00 + drive * 16
         for offset, value in ((8, 0xF300), (10, dpb_address),
                               (12, csv), (14, alv)):
             cpu.mem[dph + offset:dph + offset + 2] = value.to_bytes(2, "little")

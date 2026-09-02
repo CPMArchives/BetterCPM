@@ -30,6 +30,7 @@ DIRRWRIT        EQU     0D63CH  ; twenty-first directory-service vector
 DIRRZERO        EQU     0D63FH  ; twenty-second directory-service vector
 DIRSELECT       EQU     0D642H  ; select/reuse a logical drive context
 CPTCOUNT        EQU     0C094H  ; active CPX reconstruction profile
+CPTFLAGS        EQU     0C095H  ; known-module membership bits
 CPTABLE         EQU     0C096H
 
         CSEG
@@ -149,11 +150,21 @@ BF_SETIO:
         XOR     A               ; deterministic result for an output operation
         JP      BDOS_RETURN
 
-; BetterCP/M Function 200, provisional CPX profile control. E=0 queries the
-; BASIC.CPX state, E=1 makes BASIC the active one-module profile, and E=2
-; removes it. The transient manager invokes Function 0 after a successful
-; change so WBOOT performs all relocation and chain reconstruction safely.
+; BetterCP/M Function 200, provisional CPX profile control. D selects the
+; known module (1 BASIC, 2 HELLO); E=0 queries it, E=1 loads it, and E=2
+; unloads it. Canonical reconstruction order is BASIC followed by HELLO.
 BF_CPXCTL:
+        LD      A,D
+        CP      1
+        JR      Z,BCX_BASIC
+        CP      2
+        JR      NZ,BCX_BAD
+        LD      A,2
+        JR      BCX_MADE
+BCX_BASIC:
+        LD      A,1
+BCX_MADE:
+        LD      (BCX_MVAL),A
         LD      A,E
         OR      A
         JR      Z,BCX_QUERY
@@ -164,26 +175,50 @@ BF_CPXCTL:
         LD      A,0FFH
         JP      BDOS_RETURN
 BCX_QUERY:
-        LD      A,(CPTCOUNT)
-        OR      A
+        LD      A,(BCX_MVAL)
+        LD      B,A
+        LD      A,(CPTFLAGS)
+        AND     B
         JP      Z,BDOS_RETURN
-        CP      1
-        JR      NZ,BCX_BAD
-        LD      A,(CPTABLE)
-        CP      4
-        JR      NZ,BCX_BAD
         LD      A,1
         JP      BDOS_RETURN
 BCX_LOAD:
-        LD      A,4
-        LD      (CPTABLE),A
-        LD      A,1
-        LD      (CPTCOUNT),A
-        XOR     A
-        JP      BDOS_RETURN
+        LD      A,(BCX_MVAL)
+        LD      B,A
+        LD      A,(CPTFLAGS)
+        OR      B
+        LD      (CPTFLAGS),A
+        JR      BCX_REBUILD
 BCX_UNLOAD:
+        LD      A,(BCX_MVAL)
+        CPL
+        LD      B,A
+        LD      A,(CPTFLAGS)
+        AND     B
+        LD      (CPTFLAGS),A
+BCX_REBUILD:
         XOR     A
         LD      (CPTCOUNT),A
+        LD      HL,CPTABLE
+        LD      A,(CPTFLAGS)
+        AND     1
+        JR      Z,BCX_RHELLO
+        LD      (HL),4
+        LD      DE,8
+        ADD     HL,DE
+        LD      A,(CPTCOUNT)
+        INC     A
+        LD      (CPTCOUNT),A
+BCX_RHELLO:
+        LD      A,(CPTFLAGS)
+        AND     2
+        JR      Z,BCX_RDONE
+        LD      (HL),7
+        LD      A,(CPTCOUNT)
+        INC     A
+        LD      (CPTCOUNT),A
+BCX_RDONE:
+        XOR     A
         JP      BDOS_RETURN
 BCX_BAD:
         LD      A,0FFH
@@ -1093,6 +1128,8 @@ RET_SP:
 
 BDOS_FUNC:
         DB      0
+BCX_MVAL:
+        DB      0
 BDOS_CHAR:
         DB      0
 BDOS_COLUMN:
@@ -1149,7 +1186,10 @@ BDOS_STKTOP:
 ; below C100h were inside the TPA. A large transient could therefore corrupt
 ; the live disk contract. Keep the historical mistake visible in the gateway
 ; source, but place every descriptor and workspace above resident BDOS code.
-        REPT    0C900H-$
+; Patch 2026-09-02: the second CPX profile made the fixed-core dispatcher
+; outgrow the old C900h descriptor boundary. Move the whole table as a unit
+; into the still-guarded gap below Directory Services.
+        REPT    0CB00H-$
         DB      0
         ENDM
 BIO_DPH0:
@@ -1166,7 +1206,7 @@ BIO_DPB0:
         DW      394,127
         DB      0C0H,0
         DW      32,2
-        DB      0               ; align mutable workspace at C950h
+        DB      0               ; align mutable workspace at CB50h
 BIO_CSV0:
         REPT    32
         DB      0

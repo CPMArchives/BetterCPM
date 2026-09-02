@@ -23,32 +23,55 @@ SKIPSPACE:
         DEC     B
         JR      SKIPSPACE
 HAVELEN:
+        LD      (ARGSTART),HL
         LD      A,B
         CP      4
         JR      Z,TRYLIST
         CP      10
         JR      Z,TRYLOAD
         CP      12
-        JR      Z,TRYUNLOAD
+        JP      Z,TRYUNLOAD
 USAGE:
         LD      DE,USEMSG
         CALL    PRINT
-        JR      DONE
+        JP      DONE
 TRYLIST:
+        LD      HL,(ARGSTART)
         LD      DE,KLIST
         LD      B,4
         CALL    EQUAL
-        JR      NZ,USAGE
+        JP      NZ,USAGE
+        XOR     A
+        LD      (LIST_ANY),A
+        LD      D,1
         LD      E,0
         LD      C,CPXFUNC
         CALL    BDOS
+        CP      0FFH
+        JR      Z,LISTBAD
         OR      A
-        JR      Z,LISTNONE
-        CP      1
-        JR      NZ,LISTBAD
+        JR      Z,LSTHCHK
         LD      DE,LISTBASIC
         CALL    PRINT
-        JR      LISTTPA
+        LD      A,1
+        LD      (LIST_ANY),A
+LSTHCHK:
+        LD      D,2
+        LD      E,0
+        LD      C,CPXFUNC
+        CALL    BDOS
+        CP      0FFH
+        JR      Z,LISTBAD
+        OR      A
+        JR      Z,LISTCHECK
+        LD      DE,LSTHMSG
+        CALL    PRINT
+        LD      A,1
+        LD      (LIST_ANY),A
+LISTCHECK:
+        LD      A,(LIST_ANY)
+        OR      A
+        JR      NZ,LISTTPA
 LISTNONE:
         LD      DE,LISTEMPTY
         CALL    PRINT
@@ -60,23 +83,45 @@ LISTBAD:
         CALL    PRINT
         JR      DONE
 TRYLOAD:
-        LD      DE,KLOAD
+        LD      HL,(ARGSTART)
+        LD      DE,KLOADB
         LD      B,10
         CALL    EQUAL
-        JR      NZ,USAGE
+        JR      Z,LOADBASIC
+        LD      HL,(ARGSTART)
+        LD      DE,KLOADH
+        LD      B,10
+        CALL    EQUAL
+        JP      NZ,USAGE
+        LD      D,2
+        JR      LOADREADY
+LOADBASIC:
+        LD      D,1
+LOADREADY:
         LD      E,1
         JR      CHANGE
 TRYUNLOAD:
-        LD      DE,KUNLOAD
+        LD      HL,(ARGSTART)
+        LD      DE,KUNLOADB
         LD      B,12
         CALL    EQUAL
-        JR      NZ,USAGE
+        JR      Z,UNLOADBASIC
+        LD      HL,(ARGSTART)
+        LD      DE,KUNLOADH
+        LD      B,12
+        CALL    EQUAL
+        JP      NZ,USAGE
+        LD      D,2
+        JR      UNLOADREADY
+UNLOADBASIC:
+        LD      D,1
+UNLOADREADY:
         LD      E,2
 CHANGE:
         LD      C,CPXFUNC
         CALL    BDOS
         OR      A
-        JR      NZ,LISTBAD
+        JP      NZ,LISTBAD
 DONE:
         LD      C,0
         JP      BDOS
@@ -134,16 +179,21 @@ PT_UNIT:
         JP      PRINT
 
 KLIST:          DB      'LIST'
-KLOAD:          DB      'LOAD BASIC'
-KUNLOAD:        DB      'UNLOAD BASIC'
+KLOADB:         DB      'LOAD BASIC'
+KLOADH:         DB      'LOAD HELLO'
+KUNLOADB:       DB      'UNLOAD BASIC'
+KUNLOADH:       DB      'UNLOAD HELLO'
 LISTBASIC:      DB      13,10,'BASIC : DIR, ERA, TYPE, REN',13,10,'$'
+LSTHMSG:        DB      'HELLO : HELLO',13,10,'$'
 LISTEMPTY:      DB      13,10,'No CPXs loaded',13,10,'$'
 LISTERROR:      DB      13,10,'CPX profile error',13,10,'$'
-USEMSG:         DB      13,10,'CPX LIST | LOAD BASIC | UNLOAD BASIC',13,10,'$'
+USEMSG:         DB      13,10,'CPX LIST | LOAD/UNLOAD BASIC/HELLO',13,10,'$'
 TPAMSG:         DB      'TPA available: $'
 TPAEND:         DB      'K',13,10,'$'
 PT_TENS:        DB      0
 PT_UNITS:       DB      0
+ARGSTART:       DW      0
+LIST_ANY:       DB      0
 
         .DEPHASE
         END     START

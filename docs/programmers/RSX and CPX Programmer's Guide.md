@@ -222,22 +222,28 @@ module implementations are the ones normally exercised.
 
 ### 7.3 Provisional runtime manager
 
-`CPX.COM` currently provides `LIST`, `LOAD BASIC`, and `UNLOAD BASIC`.
+`CPX.COM` currently provides `LIST` plus `LOAD` and `UNLOAD` for the known
+BASIC and HELLO proof modules.
 Configuration changes affect the active reconstruction table, then terminate
 through WBOOT so fixed resident code performs all relocation. The manager is
 never required to move or overwrite the environment in which it is executing.
 
-Provisional BetterCP/M BDOS Function 200 mediates this proof. Its current
-`E=0/1/2` status/load/unload operations are deliberately narrow and are not a
-stable third-party ABI. A later versioned request-block interface must replace
-or formally supersede them before arbitrary CPXs are supported.
+Provisional BetterCP/M BDOS Function 200 mediates this proof. `D` selects
+BASIC (`1`) or HELLO (`2`); `E=0/1/2` requests status/load/unload. These
+operations are deliberately narrow and are not a stable third-party ABI. A
+later versioned request-block interface must replace or formally supersede
+them before arbitrary CPXs are supported.
 
-`CPX LIST` also reports each known active module's command inventory and the
+`CPX LIST` reports each known active module's command inventory and the
 live TPA available from `0100h` to the exclusive boundary published at
 `0006h`. The current BASIC inventory is built into the proof manager. The
 general metadata ABI must let arbitrary CPXs publish a name, version, and
 commands or capabilities without adding module-specific knowledge to the
 manager.
+
+The current reconstruction table uses canonical BASIC-then-HELLO order.
+Loading a second CPX moves the CCP farther downward within reclaimable command
+memory but does not move the protected gateway or reduce the advertised TPA.
 
 The final CPX ABI must additionally define:
 

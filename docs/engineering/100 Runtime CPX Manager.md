@@ -53,3 +53,7 @@ One `trs80gp` session executes this ordered workflow:
 
 `CPX.COM`, BDOS, and the complete resident system are byte-identical between
 native CP/M and cross builds.
+
+> Subsequent note: Engineering Specification 102 generalizes this BASIC-only
+> proof to BASIC and HELLO module selectors while retaining the same safe
+> WBOOT reconstruction boundary.

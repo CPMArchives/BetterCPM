@@ -16,25 +16,27 @@ def main() -> None:
         if not path.is_file():
             raise SystemExit(f"missing CPX manager test input: {path}")
     commands = (
-        "CPX LIST", "CPX UNLOAD BASIC", "CPX LIST", "TYPE",
-        "CPX LOAD BASIC", "CPX LIST", "TYPE",
+        "CPX LOAD HELLO", "CPX LIST", "HELLO", "CPX UNLOAD BASIC",
+        "CPX LIST", "TYPE", "HELLO", "CPX UNLOAD HELLO", "CPX LIST",
+        "HELLO",
     )
     with tempfile.TemporaryDirectory(prefix="bettercpm-cpx-manager-") as temporary:
         invocation = [str(DEFAULT_EMULATOR), "-m4", "-batch", "-turbo",
-                      "-d0", str(IMAGE), "-id", "1200"]
+                      "-d0", str(IMAGE), "-id", "1000"]
         for index, command in enumerate(commands):
             if index:
-                invocation.extend(("-id", "1400"))
+                invocation.extend(("-id", "900"))
             invocation.extend(key_args(command + "\r"))
-        invocation.extend(("-id", "2500", "-it", "-ix"))
+        invocation.extend(("-id", "1800", "-it", "-ix"))
         subprocess.run(invocation, cwd=temporary, check=True)
         screen = Path(temporary, "trs80-text-0.bin").read_bytes()[:80 * 24]
     ordered = (
-        b"A>CPX LIST", b"BASIC : DIR, ERA, TYPE, REN",
-        b"TPA available: 47K", b"A>CPX UNLOAD BASIC",
-        b"No CPXs loaded", b"TPA available: 47K", b"A>TYPE", b"?",
-        b"A>CPX LOAD BASIC", b"BASIC : DIR, ERA, TYPE, REN",
-        b"TPA available: 47K", b"A>TYPE", b"TYPE filename",
+        b"BASIC : DIR, ERA, TYPE, REN", b"HELLO : HELLO",
+        b"TPA available: 47K", b"A>HELLO", b"Hello from HELLO.CPX",
+        b"A>CPX UNLOAD BASIC", b"HELLO : HELLO", b"A>TYPE", b"?",
+        b"A>HELLO", b"Hello from HELLO.CPX", b"A>CPX UNLOAD HELLO",
+        b"No CPXs loaded", b"TPA available: 47K", b"A>HELLO",
+        b"Hello from BetterCP/M",
     )
     position = 0
     for expected in ordered:

@@ -51,3 +51,6 @@ will therefore reduce the reported value.
 The physical runtime workflow now requires the command inventory and the same
 47K TPA report before unload, while no CPXs are active, and after reload.
 `CPX.COM` remains byte-identical between native CP/M and cross builds.
+
+> Subsequent note: Engineering Specification 102 adds the first second-module
+> inventory line, `HELLO : HELLO`, and verifies both modules concurrently.

@@ -86,7 +86,7 @@ ECB_GENERATION:
 CPTCOUNT:
         DB      1               ; default proof profile loads BASIC.CPX
 CPTFLAGS:
-        DB      0
+        DB      1               ; active/saved proof set: bit 0 BASIC, bit 1 HELLO
 CPTABLE:
         DB      4               ; first module slot after four-slot CCP image
         REPT    8*8-1

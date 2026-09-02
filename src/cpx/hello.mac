@@ -1,0 +1,37 @@
+; BetterCP/M second proof CPX. Intercepts the HELLO command.
+
+CPXBASE         EQU     08000H
+BDOS            EQU     0C100H
+
+        CSEG
+        .PHASE  CPXBASE
+
+HC_NEXT:        DW      0
+HC_ENTRY:       DW      HC_COMMAND
+
+HC_COMMAND:
+        LD      A,B
+        CP      5
+        JR      NZ,HC_DECLINE
+        LD      HL,HC_KEY
+HC_MATCH:
+        LD      A,(DE)
+        CP      (HL)
+        JR      NZ,HC_DECLINE
+        INC     DE
+        INC     HL
+        DJNZ    HC_MATCH
+        LD      DE,HC_MESSAGE
+        LD      C,9
+        CALL    BDOS
+        SCF
+        RET
+HC_DECLINE:
+        OR      A
+        RET
+
+HC_KEY:         DB      'HELLO'
+HC_MESSAGE:     DB      13,10,'Hello from HELLO.CPX',13,10,'$'
+
+        .DEPHASE
+        END

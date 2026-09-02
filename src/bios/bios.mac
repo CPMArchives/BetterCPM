@@ -6,11 +6,11 @@
 BIOSBASE        EQU     0EF00H
 BIO_PHYBF       EQU     0ED00H  ; 512-byte buffer below the resident BIOS
 BIO_DIRBF       EQU     0F300H
-BIO_DPH0        EQU     0C900H
-BIO_DPH1        EQU     0C910H
-BIO_DPH2        EQU     0C920H
-BIO_DPH3        EQU     0C930H
-BIO_DPB0        EQU     0C940H
+BIO_DPH0        EQU     0CB00H
+BIO_DPH1        EQU     0CB10H
+BIO_DPH2        EQU     0CB20H
+BIO_DPH3        EQU     0CB30H
+BIO_DPB0        EQU     0CB40H
 SYS_BOOT        EQU     0C020H
 CCP_RELOAD      EQU     0E900H
 

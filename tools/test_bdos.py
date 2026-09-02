@@ -1076,21 +1076,28 @@ def main() -> None:
             "unsupported BDOS selector did not return conventional zero")
 
     # BetterCP/M's provisional Function 200 owns active CPX-profile mutation.
-    cpu.mem[0xC094], cpu.mem[0xC096] = 1, 4
-    cpu.c, cpu.e = 200, 0
+    cpu.mem[0xC094], cpu.mem[0xC095], cpu.mem[0xC096] = 1, 1, 4
+    cpu.c, cpu.d, cpu.e = 200, 1, 0
     cpu.run(BDOS_BASE)
     require(cpu.a == 1, "CPX control did not report BASIC.CPX loaded")
-    cpu.c, cpu.e = 200, 2
+    cpu.c, cpu.d, cpu.e = 200, 1, 2
     cpu.run(BDOS_BASE)
-    require(cpu.a == 0 and cpu.mem[0xC094] == 0,
+    require(cpu.a == 0 and cpu.mem[0xC094] == 0 and cpu.mem[0xC095] == 0,
             "CPX control did not unload the active BASIC profile")
-    cpu.c, cpu.e = 200, 1
+    cpu.c, cpu.d, cpu.e = 200, 2, 1
     cpu.run(BDOS_BASE)
-    require(cpu.a == 0 and cpu.mem[0xC094] == 1 and cpu.mem[0xC096] == 4,
-            "CPX control did not restore the active BASIC profile")
-    cpu.c, cpu.e = 200, 3
+    require(cpu.a == 0 and cpu.mem[0xC094] == 1 and
+            cpu.mem[0xC095] == 2 and cpu.mem[0xC096] == 7,
+            "CPX control did not load the HELLO-only profile")
+    cpu.c, cpu.d, cpu.e = 200, 1, 1
     cpu.run(BDOS_BASE)
-    require(cpu.a == 0xFF, "CPX control accepted an unknown operation")
+    require(cpu.a == 0 and cpu.mem[0xC094] == 2 and
+            cpu.mem[0xC095] == 3 and cpu.mem[0xC096] == 4 and
+            cpu.mem[0xC09E] == 7,
+            "CPX control did not build canonical BASIC/HELLO order")
+    cpu.c, cpu.d, cpu.e = 200, 3, 0
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 0xFF, "CPX control accepted an unknown module")
 
     cpu.run(DIR_BASE + 15)       # invalidate, forcing storage on next Open
     cpu.mem[platform_read:platform_read + 4] = bytes((0x3E, 0x05, 0xB7, 0xC9))
