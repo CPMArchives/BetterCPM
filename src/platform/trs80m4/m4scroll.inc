@@ -6,6 +6,9 @@
 ; scrolling wrapper.
 
 M4_SCROLL_OUT:
+        LD      A,C
+        CP      01CH
+        JP      Z,M4_INIT       ; resident Model 4 clear screen and cursor home
         CALL    M4_OUT
         LD      HL,(M4CURSOR)
         LD      DE,VIDEOEND

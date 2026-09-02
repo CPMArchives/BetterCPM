@@ -30,7 +30,7 @@ def main() -> None:
         subprocess.run(invocation, cwd=temporary, check=True)
         screen = Path(temporary, "trs80-text-0.bin").read_bytes()[:80 * 24]
     ordered = (
-        b"BASIC : DIR, ERA, TYPE, REN, SAVE", b"HELLO : HELLO",
+        b"BASIC : DIR, ERA, TYPE, REN, SAVE, CLR", b"HELLO : HELLO",
         b"A0>HELLOX", b"?",
         b"A0>HELLO TOM", b"Hello from HELLO.CPX TOM",
         b"A0>ERA HELLO.COM", b"A0>DIR", b"CPX      COM", b"A0>",

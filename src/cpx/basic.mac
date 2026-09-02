@@ -1,5 +1,5 @@
 ; BetterCP/M proof-of-concept Basic Commands CPX.
-; Exports DIR, ERA, TYPE, REN, and SAVE through the common CPX command entry.
+; Exports DIR, ERA, TYPE, REN, SAVE, and CLR through the common CPX command entry.
 
 CPXBASE         EQU     08000H
 BDOS            EQU     0C100H
@@ -50,8 +50,16 @@ BC_TRYSAV:
         LD      HL,BC_KSAVE
         LD      C,4
         CALL    BC_MATCH
-        RET     NC
+        JR      NC,BC_TRYCLR
         CALL    BC_SAVE
+        SCF
+        RET
+BC_TRYCLR:
+        LD      HL,BC_KCLR
+        LD      C,3
+        CALL    BC_MATCH
+        RET     NC
+        CALL    BC_CLR
         SCF
         RET
 
@@ -1037,6 +1045,20 @@ BC_SDONE:
         LD      C,26
         CALL    BDOS
         JP      BC_DURST
+
+; CLR is currently expressed through the Model 4 console's 1CH clear-screen
+; byte. Preserve this platform fact visibly until BetterCP/M defines a
+; portable terminal-capability service for CPXs.
+BC_CLR:
+        LD      A,B
+        OR      A
+        JR      NZ,BC_CLRBAD
+        LD      E,01CH
+        LD      C,2
+        JP      BDOS
+BC_CLRBAD:
+        LD      DE,BC_RQMARK
+        JP      BC_PRINT
 BC_PRINT:
         LD      C,9
         JP      BDOS
@@ -1046,6 +1068,7 @@ BC_KERA:       DB      'ERA'
 BC_KTYPE:      DB      'TYPE'
 BC_KREN:       DB      'REN'
 BC_KSAVE:      DB      'SAVE'
+BC_KCLR:       DB      'CLR'
 BC_ALL:        DB      '*.*'
 BC_NL:         DB      13,10,'$'
 BC_SEP:        DB      ' : ','$'
