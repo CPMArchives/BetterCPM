@@ -30,10 +30,10 @@ def main() -> None:
         subprocess.run(invocation, cwd=temporary, check=True)
         screen = Path(temporary, "trs80-text-0.bin").read_bytes()[:80 * 24]
     ordered = (
-        b"BASIC : DIR, ERA, TYPE, REN", b"HELLO : HELLO",
+        b"BASIC : DIR, ERA, TYPE, REN, SAVE", b"HELLO : HELLO",
         b"A0>HELLOX", b"?",
         b"A0>HELLO TOM", b"Hello from HELLO.CPX TOM",
-        b"A0>ERA HELLO.COM", b"A0>DIR", b"CPX.COM", b"A0>",
+        b"A0>ERA HELLO.COM", b"A0>DIR", b"CPX      COM", b"A0>",
     )
     position = 0
     for expected in ordered:
@@ -41,7 +41,7 @@ def main() -> None:
         if position < 0:
             raise SystemExit(f"CPX/WBOOT write workflow lacks {expected!r}: {screen!r}")
         position += len(expected)
-    if b"HELLO.COM" in screen[screen.find(b"A0>DIR"):]:
+    if b"HELLO    COM" in screen[screen.find(b"A0>DIR"):]:
         raise SystemExit("HELLO.COM remained after ERA in CPX/WBOOT write test")
     print("runtime CPX reconstruction preserved physical directory writes")
 

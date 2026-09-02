@@ -11,7 +11,7 @@ entering longer command sequences on the Model 4 console.
 
 ## BASIC.CPX
 
-`BASIC.CPX` implements `DIR`, `ERA`, `TYPE`, and `REN`. The commands use only
+`BASIC.CPX` implements `DIR`, `ERA`, `TYPE`, `REN`, and `SAVE`. The commands use only
 public BDOS functions. The early `REN new old` convenience syntax was removed
 when REN was brought to its stock CP/M contract; specification 113 supersedes
 that prototype behavior.

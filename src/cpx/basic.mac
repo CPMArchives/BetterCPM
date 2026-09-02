@@ -1,5 +1,5 @@
 ; BetterCP/M proof-of-concept Basic Commands CPX.
-; Exports DIR, ERA, TYPE, and REN through the common CPX command entry.
+; Exports DIR, ERA, TYPE, REN, and SAVE through the common CPX command entry.
 
 CPXBASE         EQU     08000H
 BDOS            EQU     0C100H
@@ -42,8 +42,16 @@ BC_TRYREN:
         LD      HL,BC_KREN
         LD      C,3
         CALL    BC_MATCH
-        RET     NC
+        JR      NC,BC_TRYSAV
         CALL    BC_REN
+        SCF
+        RET
+BC_TRYSAV:
+        LD      HL,BC_KSAVE
+        LD      C,4
+        CALL    BC_MATCH
+        RET     NC
+        CALL    BC_SAVE
         SCF
         RET
 
@@ -877,6 +885,158 @@ BC_RNQL:
         LD      A,1
         OR      A
         RET
+
+; SAVE n file -- copy n 256-byte pages beginning at 0100H.  SAVE remains a
+; resident command deliberately: a transient SAVE.COM would destroy the low
+; TPA image merely by being loaded.  This follows the original CCP's 0..255
+; decimal range and destructive replacement semantics.
+BC_SAVE:
+        LD      A,B
+        OR      A
+        JP      Z,BC_SSYNTAX
+        LD      C,0
+        LD      D,0
+BC_SNUM:
+        LD      A,B
+        OR      A
+        JP      Z,BC_SSYNTAX
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,BC_SNAME
+        CP      '0'
+        JP      C,BC_SSYNTAX
+        CP      '9'+1
+        JP      NC,BC_SSYNTAX
+        SUB     '0'
+        LD      E,A
+        LD      A,C
+        CP      25
+        JR      C,BC_SMUL
+        JP      NZ,BC_SSYNTAX
+        LD      A,E
+        CP      6
+        JP      NC,BC_SSYNTAX
+BC_SMUL:
+        LD      A,C
+        ADD     A,A
+        LD      C,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,C
+        ADD     A,E
+        LD      C,A
+        LD      D,1
+        INC     HL
+        DEC     B
+        JR      BC_SNUM
+BC_SNAME:
+        LD      A,D
+        OR      A
+        JP      Z,BC_SSYNTAX
+        LD      A,C
+        LD      (BC_SPAGES),A
+BC_SNSKIP:
+        INC     HL
+        DEC     B
+        JP      Z,BC_SSYNTAX
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,BC_SNSKIP
+        CALL    BC_DUSEL
+        LD      A,B
+        OR      A
+        JP      Z,BC_SSYNTAX
+        PUSH    HL
+        PUSH    BC
+BC_STOKEN:
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,BC_STAIL
+        INC     HL
+        DJNZ    BC_STOKEN
+        JR      BC_SPARSE
+BC_STAIL:
+        INC     HL
+        DEC     B
+BC_SRL1:
+        LD      A,B
+        OR      A
+        JR      Z,BC_SPARSE
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,BC_SBADPOP
+        INC     HL
+        DJNZ    BC_SRL1
+BC_SPARSE:
+        POP     BC
+        POP     HL
+        LD      DE,BC_FCB
+        CALL    BC_PFCB
+        LD      A,(BC_FCB+1)
+        CP      ' '
+        JR      Z,BC_SSYNTAX
+        LD      HL,BC_FCB+1
+        CALL    BC_RNOQ
+        JR      Z,BC_SSYNTAX
+        LD      DE,BC_FCB
+        LD      C,19
+        CALL    BDOS
+        LD      DE,BC_FCB
+        LD      C,22
+        CALL    BDOS
+        CP      0FFH
+        JR      Z,BC_SSPACE
+        LD      HL,0100H
+        LD      (BC_SDMA),HL
+        LD      A,(BC_SPAGES)
+        LD      L,A
+        LD      H,0
+        ADD     HL,HL
+        LD      (BC_SRECS),HL
+BC_SWLOOP:
+        LD      HL,(BC_SRECS)
+        LD      A,H
+        OR      L
+        JR      Z,BC_SCLOSE
+        LD      DE,(BC_SDMA)
+        LD      C,26
+        CALL    BDOS
+        LD      DE,BC_FCB
+        LD      C,21
+        CALL    BDOS
+        OR      A
+        JR      NZ,BC_SSPACE
+        LD      HL,(BC_SDMA)
+        LD      DE,128
+        ADD     HL,DE
+        LD      (BC_SDMA),HL
+        LD      HL,(BC_SRECS)
+        DEC     HL
+        LD      (BC_SRECS),HL
+        JR      BC_SWLOOP
+BC_SCLOSE:
+        LD      DE,BC_FCB
+        LD      C,16
+        CALL    BDOS
+        CP      0FFH
+        JR      Z,BC_SSPACE
+        JR      BC_SDONE
+BC_SBADPOP:
+        POP     BC
+        POP     HL
+BC_SSYNTAX:
+        LD      DE,BC_RQMARK
+        JR      BC_SPRINT
+BC_SSPACE:
+        LD      DE,BC_NOSPACE
+BC_SPRINT:
+        LD      C,9
+        CALL    BDOS
+BC_SDONE:
+        LD      DE,0080H
+        LD      C,26
+        CALL    BDOS
+        JP      BC_DURST
 BC_PRINT:
         LD      C,9
         JP      BDOS
@@ -885,6 +1045,7 @@ BC_KDIR:       DB      'DIR'
 BC_KERA:       DB      'ERA'
 BC_KTYPE:      DB      'TYPE'
 BC_KREN:       DB      'REN'
+BC_KSAVE:      DB      'SAVE'
 BC_ALL:        DB      '*.*'
 BC_NL:         DB      13,10,'$'
 BC_SEP:        DB      ' : ','$'
@@ -896,6 +1057,7 @@ BC_MERASE:     DB      8,' ',8,8,' ',8,8,' ',8,8,' ',8
                 DB      8,' ',8,8,' ',8,8,' ',8,8,' ',8,'$'
 BC_REXMSG:     DB      13,10,'FILE EXISTS',13,10,'$'
 BC_RQMARK:     DB      13,10,'?',13,10,'$'
+BC_NOSPACE:    DB      13,10,'NO SPACE',13,10,'$'
 BC_CMDPTR:     DW      0
 BC_CMDLEN:     DB      0
 BC_KEYLEN:     DB      0
@@ -917,6 +1079,9 @@ BC_EBUFFER:    DB      2,0,0,0
 BC_RDRIVE:     DB      0
 BC_TPAGE:      DB      0
 BC_TLCNT:      DB      0
+BC_SPAGES:     DB      0
+BC_SDMA:       DW      0100H
+BC_SRECS:      DW      0
 BC_FCB:
         REPT    36
         DB      0

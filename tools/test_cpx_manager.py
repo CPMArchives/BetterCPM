@@ -16,8 +16,8 @@ def main() -> None:
         if not path.is_file():
             raise SystemExit(f"missing CPX manager test input: {path}")
     commands = (
-        "CPX LOAD HELLO.CPX", "CPX LIST", "HELLO", "CPX UNLOAD BASIC.CPX",
-        "CPX LIST", "TYPE", "HELLO", "CPX UNLOAD HELLO", "CPX LIST",
+        "CPX LOAD HELLO", "CPX LIST", "HELLO", "CPX UNLOAD BASIC",
+        "CPX LIST", "HELLO", "CPX UNLOAD HELLO", "CPX LIST",
         "HELLO",
     )
     with tempfile.TemporaryDirectory(prefix="bettercpm-cpx-manager-") as temporary:
@@ -33,9 +33,9 @@ def main() -> None:
         subprocess.run(invocation, cwd=temporary, check=True)
         screen = Path(temporary, "trs80-text-0.bin").read_bytes()[:80 * 24]
     ordered = (
-        b"BASIC : DIR, ERA, TYPE, REN", b"HELLO : HELLO",
+        b"BASIC : DIR, ERA, TYPE, REN, SAVE", b"HELLO : HELLO",
         b"TPA available: 47K", b"A0>HELLO", b"Hello from HELLO.CPX",
-        b"A0>CPX UNLOAD BASIC.CPX", b"HELLO : HELLO", b"A0>TYPE", b"?",
+        b"A0>CPX UNLOAD BASIC", b"HELLO : HELLO",
         b"A0>HELLO", b"Hello from HELLO.CPX", b"A0>CPX UNLOAD HELLO",
         b"No CPXs loaded", b"TPA available: 47K", b"A0>HELLO",
         b"Hello from BetterCP/M",

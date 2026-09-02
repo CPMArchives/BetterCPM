@@ -13,7 +13,7 @@ program area available to applications.
 With the default proof module installed, the manager reports:
 
 ```text
-BASIC : DIR, ERA, TYPE, REN
+BASIC : DIR, ERA, TYPE, REN, SAVE
 TPA available: 47K
 ```
 
@@ -25,9 +25,10 @@ TPA available: 47K
 ```
 
 The inventory names the commands actually implemented by the present
-`BASIC.CPX`. `SAVE` is not reported because it has not yet been moved into or
-implemented by that module. A future ZEX-style CPX will receive its own line
-only when that module exists and is active.
+`BASIC.CPX`. `SAVE` is resident rather than a transient fallback because
+loading a `SAVE.COM` at 0100H would overwrite the TPA image it was asked to
+preserve. A future ZEX-style CPX will receive its own line only when that
+module exists and is active.
 
 The first manager has a built-in catalog for BASIC because the provisional
 Function 200 interface currently recognizes only that proof module. General
