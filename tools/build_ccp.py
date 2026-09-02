@@ -14,7 +14,6 @@ SOURCE = ROOT / "src/ccp/ccp.mac"
 BUILD = ROOT / "build/ccp"
 LINK_BASE = 0xBB00
 ALTERNATE_BASE = 0xBC01
-ALLOCATION_SIZE = 0x0500
 MODULE_HEADER_SIZE = 512
 
 
@@ -78,8 +77,11 @@ def main() -> None:
     text = text.replace("        .DEPHASE\n", "")
     output = BUILD / "ccp.bin"
     data = assemble(args.assembler, text, output, BUILD / "ccp.lst", LINK_BASE)
-    if not data or len(data) > 0x500:
-        raise SystemExit(f"CCP size outside BB00h..BFFFh: {len(data)} bytes")
+    if not data:
+        raise SystemExit("empty CCP image")
+    allocation_size = (len(data) + 0xFF) & ~0xFF
+    if allocation_size > LINK_BASE - 0x0100:
+        raise SystemExit(f"CCP cannot fit above the 0100h transient origin: {len(data)} bytes")
 
     alternate_text = text.replace("CCPBASE         EQU     0BB00H",
                                   "CCPBASE         EQU     0BC01H")
@@ -91,13 +93,15 @@ def main() -> None:
         raise SystemExit("CCP relocation directory exceeds one sector")
     header = bytearray(MODULE_HEADER_SIZE)
     header[:16] = struct.pack("<4sBBHHHHH", b"BCM1", 1, 1, LINK_BASE,
-                              len(data), ALLOCATION_SIZE, 0, len(offsets))
+                              len(data), allocation_size, 0, len(offsets))
     for index, offset in enumerate(offsets):
         struct.pack_into("<H", header, 16 + index * 2, offset)
     module = BUILD / "ccp.rlm"
     module.write_bytes(header + data)
     print(f"{hashlib.sha256(data).hexdigest()}  {output.relative_to(ROOT)}")
     print(f"CCP bytes: {len(data)}")
+    print(f"CCP allocation: {allocation_size} bytes; calculated base: "
+          f"{0xBFFD - allocation_size:04X}h")
     print(f"CCP relocations: {len(offsets)}; module bytes: {module.stat().st_size}")
 
 

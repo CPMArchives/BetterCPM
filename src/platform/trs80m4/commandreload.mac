@@ -1,0 +1,275 @@
+; BetterCP/M TRS-80 Model 4 command-environment reloader.
+; Persistent table entries are eight bytes; byte zero selects a system-track
+; module slot. Slot zero holds the CCP; CPXs use slots 4 through 9.
+RELOADBASE      EQU     0E900H
+BIOPHREAD       EQU     0EF33H
+SYS_WBOOT       EQU     0C023H
+ECB_CPXHEAD     EQU     0C086H
+ECB_CCPBASE     EQU     0C08CH
+ECB_CCPSIZE     EQU     0C08EH
+ECB_TPATOP      EQU     0C090H
+ECB_GENERATION  EQU     0C092H
+CPTCOUNT        EQU     0C094H
+CPTABLE         EQU     0C096H
+MODBUF          EQU     0ED00H
+MOD_LINK        EQU     MODBUF+6
+MOD_SIZE        EQU     MODBUF+8
+MOD_ALLOC       EQU     MODBUF+10
+MOD_RELOCS      EQU     MODBUF+14
+MOD_TABLE       EQU     MODBUF+16
+
+        CSEG
+        .PHASE  RELOADBASE
+CRSTART:
+        LD      SP,CRSTKTOP
+        LD      HL,(ECB_TPATOP)
+        LD      (CRBOUND),HL
+        XOR     A
+        LD      (ECB_CPXHEAD),A
+        LD      (ECB_CPXHEAD+1),A
+        LD      (CRPREV),A
+        LD      (CRPREV+1),A
+        LD      A,(CPTCOUNT)
+        CP      9
+        JP      NC,CRFAIL
+        LD      (CRCOUNT),A
+        LD      HL,CPTABLE
+        LD      (CRTPTR),HL
+CRCPXLP:
+        LD      A,(CRCOUNT)
+        OR      A
+        JR      Z,CRCCP
+        LD      HL,(CRTPTR)
+        LD      A,(HL)
+        CP      4
+        JP      C,CRFAIL
+        LD      (CRSLOT),A
+        LD      DE,8
+        ADD     HL,DE
+        LD      (CRTPTR),HL
+        LD      HL,CRCPXMAG
+        LD      (CRMAGPTR),HL
+        CALL    CRLOAD
+        JP      NZ,CRFAIL
+        LD      HL,(CRBASE)
+        LD      (HL),0
+        INC     HL
+        LD      (HL),0
+        LD      HL,(CRPREV)
+        LD      A,H
+        OR      L
+        JR      NZ,CRLINK
+        LD      HL,(CRBASE)
+        LD      (ECB_CPXHEAD),HL
+        JR      CRLINKD
+CRLINK:
+        LD      DE,(CRBASE)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+CRLINKD:
+        LD      HL,(CRBASE)
+        LD      (CRPREV),HL
+        LD      A,(CRCOUNT)
+        DEC     A
+        LD      (CRCOUNT),A
+        JR      CRCPXLP
+CRCCP:
+        XOR     A
+        LD      (CRSLOT),A
+        LD      HL,CRCCPMAG
+        LD      (CRMAGPTR),HL
+        CALL    CRLOAD
+        JP      NZ,CRFAIL
+        LD      HL,(CRBASE)
+        LD      (ECB_CCPBASE),HL
+        LD      HL,(MOD_ALLOC)
+        LD      (ECB_CCPSIZE),HL
+        LD      HL,(ECB_GENERATION)
+        INC     HL
+        LD      (ECB_GENERATION),HL
+        JP      SYS_WBOOT
+
+; Load one BCM1/BCX1 module below CRBOUND, then relocate it at CRBASE.
+CRLOAD:
+        LD      A,(CRSLOT)
+        LD      (CRFIRST),A
+        LD      HL,MODBUF
+        CALL    CRNEXT
+        RET     NZ
+        LD      HL,MODBUF
+        LD      DE,(CRMAGPTR)
+        LD      B,6
+CRMAGLP:
+        LD      A,(DE)
+        CP      (HL)
+        RET     NZ
+        INC     DE
+        INC     HL
+        DJNZ    CRMAGLP
+        LD      HL,(MOD_SIZE)
+        LD      A,H
+        OR      L
+        JP      Z,CRBAD
+        LD      DE,(MOD_ALLOC)
+        OR      A
+        SBC     HL,DE
+        JR      C,CRSZOK
+        JR      Z,CRSZOK
+        JP      CRBAD
+CRSZOK:
+        LD      HL,(MOD_ALLOC)
+        LD      A,L
+        OR      A
+        JP      NZ,CRBAD
+        LD      A,H
+        OR      A
+        JP      Z,CRBAD
+        LD      HL,(MOD_RELOCS)
+        LD      A,H
+        OR      A
+        JP      NZ,CRBAD
+        LD      A,L
+        CP      249
+        JP      NC,CRBAD
+        LD      HL,(CRBOUND)
+        LD      DE,(MOD_ALLOC)
+        OR      A
+        SBC     HL,DE
+        JP      C,CRBAD
+        LD      A,H
+        OR      A
+        JP      Z,CRBAD
+        LD      (CRBASE),HL
+        LD      (CRBOUND),HL
+        LD      (CRDEST),HL
+        LD      HL,(MOD_SIZE)
+        LD      (CRLEFT),HL
+CRPAY:
+        LD      HL,(CRLEFT)
+        LD      A,H
+        OR      L
+        JR      Z,CRRELOC
+        LD      A,H
+        CP      2
+        JR      C,CRLAST
+        LD      HL,(CRDEST)
+        CALL    CRNEXT
+        RET     NZ
+        LD      (CRDEST),HL
+        LD      HL,(CRLEFT)
+        LD      DE,0200H
+        OR      A
+        SBC     HL,DE
+        LD      (CRLEFT),HL
+        JR      CRPAY
+CRLAST:
+        LD      HL,MODBUF
+        CALL    CRNEXT
+        RET     NZ
+        LD      HL,MODBUF
+        LD      DE,(CRDEST)
+        LD      BC,(CRLEFT)
+        LDIR
+        LD      HL,0
+        LD      (CRLEFT),HL
+        JR      CRPAY
+CRRELOC:
+        LD      A,(CRFIRST)
+        LD      (CRSLOT),A
+        LD      HL,MODBUF
+        CALL    CRNEXT
+        RET     NZ
+        LD      HL,(CRBASE)
+        LD      DE,(MOD_LINK)
+        OR      A
+        SBC     HL,DE
+        LD      (CRDELTA),HL
+        LD      BC,(MOD_RELOCS)
+        LD      HL,MOD_TABLE
+CRRLOOP:
+        LD      A,B
+        OR      C
+        JR      Z,CRGOOD
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        PUSH    HL
+        PUSH    BC
+        LD      HL,(MOD_SIZE)
+        DEC     HL
+        OR      A
+        SBC     HL,DE
+        JR      C,CRRLBAD
+        JR      Z,CRRLBAD
+        LD      HL,(CRBASE)
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        LD      BC,(CRDELTA)
+        ADD     HL,BC
+        EX      DE,HL
+        LD      (HL),D
+        DEC     HL
+        LD      (HL),E
+        POP     BC
+        POP     HL
+        LD      A,C
+        SUB     1
+        LD      C,A
+        JR      NC,CRRLOOP
+        DEC     B
+        JR      CRRLOOP
+CRRLBAD:
+        POP     BC
+        POP     HL
+CRBAD:
+        LD      A,1
+        OR      A
+        RET
+CRGOOD:
+        XOR     A
+        RET
+CRNEXT:
+        LD      A,(CRSLOT)
+        CP      10
+        JR      NC,CRBAD
+        PUSH    HL
+        LD      E,A
+        LD      D,0
+        LD      HL,CRSECTS
+        ADD     HL,DE
+        LD      C,(HL)
+        INC     A
+        LD      (CRSLOT),A
+        POP     HL
+        LD      A,1
+        LD      B,1
+        JP      BIOPHREAD
+CRFAIL:
+        JR      CRFAIL
+
+CRCCPMAG:      DB      'B','C','M','1',1,1
+CRCPXMAG:      DB      'B','C','X','1',1,1
+CRSECTS:       DB      1,3,5,7,9,2,4,6,8,10
+CRMAGPTR:      DW      0
+CRTPTR:        DW      0
+CRBOUND:       DW      0
+CRBASE:        DW      0
+CRPREV:        DW      0
+CRDEST:        DW      0
+CRLEFT:        DW      0
+CRDELTA:       DW      0
+CRCOUNT:       DB      0
+CRSLOT:        DB      0
+CRFIRST:       DB      0
+CRSTACK:
+        REPT    16
+        DB      0
+        ENDM
+CRSTKTOP:
+        .DEPHASE
+        END

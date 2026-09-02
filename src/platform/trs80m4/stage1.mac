@@ -2,7 +2,7 @@
 
         INCLUDE hardware.inc
 
-SYSIMAGE        EQU     0BB00H
+SYSIMAGE        EQU     0C000H
 SYSBOOT         EQU     0EF00H  ; enter BIOS BOOT, which initializes the console
 SYSSECTORS      EQU     28
 

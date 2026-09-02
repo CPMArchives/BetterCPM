@@ -499,8 +499,8 @@ def main() -> None:
     boot_target = cpu.word(entries[0] + 1)
     require(cpu.mem[boot_target] == 0xCD and
             cpu.mem[boot_target + 3] == 0xC3 and
-            cpu.word(boot_target + 4) == 0xC020,
-            "BOOT does not initialize the platform then enter reconstruction")
+            cpu.word(boot_target + 4) == 0xE900,
+            "BOOT does not initialize the platform then reconstruct commands")
     warm_target = cpu.word(entries[1] + 1)
     require(cpu.mem[warm_target] == 0xC3 and
             cpu.word(warm_target + 1) == 0xE900,

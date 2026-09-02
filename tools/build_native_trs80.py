@@ -49,7 +49,7 @@ def main() -> None:
                 SOURCE / "m4disk.inc",
                 CORE / "bringup.inc",
                 SOURCE / "boot.mac", SOURCE / "stage1.mac", SOURCE / "diskread.mac",
-                SOURCE / "diskwrit.mac", SOURCE / "ccpreload.mac"]
+                SOURCE / "diskwrit.mac", SOURCE / "commandreload.mac"]
     for path in required:
         if not path.is_file():
             raise SystemExit(f"missing native-build input: {path}")
@@ -71,7 +71,7 @@ def main() -> None:
                         (SOURCE / "stage1.mac", "STAGE1.MAC"))
         source_files = source_files + ((SOURCE / "diskread.mac", "DISKREAD.MAC"),)
         source_files = source_files + ((SOURCE / "diskwrit.mac", "DISKWRIT.MAC"),)
-        source_files = source_files + ((SOURCE / "ccpreload.mac", "CCPRELOD.MAC"),)
+        source_files = source_files + ((SOURCE / "commandreload.mac", "CCPRELOD.MAC"),)
         for source_path, cpm_name in source_files:
             host = work / cpm_name
             host.write_bytes(cpm_text(source_path))

@@ -1,3 +1,7 @@
+; Historical CCP-only reloader retained as patch history.
+; The build now uses commandreload.mac, which reconstructs ordered CPXs and
+; the calculated CCP. Do not add new behavior to this superseded source.
+;
 ; BetterCP/M TRS-80 Model 4 relocatable command-image reloader.
 ;
 ; The command module occupies system-track physical sectors 30..33. Its first
@@ -9,6 +13,10 @@ RELOADBASE      EQU     0E900H
 BIOPHREAD       EQU     0EF33H
 SYS_WBOOT       EQU     0C023H
 ECB_CCPBASE     EQU     0C08CH
+ECB_CCPSIZE     EQU     0C08EH
+ECB_TPATOP      EQU     0C090H
+ECB_GENERATION  EQU     0C092H
+CPX_RECON_COUNT EQU     0C094H
 MODBUF          EQU     0ED00H
 MOD_LINK        EQU     MODBUF+6
 MOD_SIZE        EQU     MODBUF+8
@@ -36,18 +44,32 @@ CRMAGLP:
         INC     DE
         INC     HL
         DJNZ    CRMAGLP
-        LD      HL,(MOD_ALLOC)
-        LD      DE,0500H
+; CPX-aware reconstruction begins with the persistent ordered table.  The
+; first implementation accepts the real empty profile; non-empty profiles are
+; rejected rather than silently booting without their requested commands.
+; The table and loop remain the next module-loading boundary, while CCP size
+; and placement are already fully calculated rather than fixed at BB00h.
+        LD      A,(CPX_RECON_COUNT)
         OR      A
-        SBC     HL,DE
         JP      NZ,CRFAIL
         LD      HL,(MOD_SIZE)
         LD      A,H
         OR      L
         JP      Z,CRFAIL
+        LD      DE,(MOD_ALLOC)
+        OR      A
+        SBC     HL,DE           ; payload must fit its page allocation
+        JP      C,CRSZOK
+        JP      Z,CRSZOK
+        JP      CRFAIL
+CRSZOK:
+        LD      HL,(MOD_ALLOC)
+        LD      A,L             ; allocation must be a nonzero page multiple
+        OR      A
+        JP      NZ,CRFAIL
         LD      A,H
-        CP      5
-        JP      NC,CRFAIL
+        OR      A
+        JP      Z,CRFAIL
         LD      HL,(MOD_RELOCS)
         LD      A,H
         OR      A
@@ -55,6 +77,22 @@ CRMAGLP:
         LD      A,L
         CP      249             ; at most 248 words fit after header byte 16
         JP      NC,CRFAIL
+; Allocate the CCP downward from the movable compatibility gateway.  There is
+; no arbitrary CCP slot: the module's rounded allocation determines its base.
+        LD      HL,(ECB_TPATOP)
+        LD      DE,(MOD_ALLOC)
+        OR      A
+        SBC     HL,DE
+        JP      C,CRFAIL
+        LD      A,H
+        OR      A
+        JP      Z,CRFAIL        ; never overlap page zero/0100h origin
+        LD      (ECB_CCPBASE),HL
+        LD      HL,(MOD_ALLOC)
+        LD      (ECB_CCPSIZE),HL
+        LD      HL,(ECB_GENERATION)
+        INC     HL
+        LD      (ECB_GENERATION),HL
         LD      HL,(MOD_SIZE)
         LD      (CRLEFT),HL
         LD      HL,(ECB_CCPBASE)

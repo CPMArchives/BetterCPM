@@ -1,5 +1,9 @@
 # Engineering Specification 97: Relocatable CCP and WBOOT Restoration
 
+> Historical note: Specification 98 replaces the CCP-only fixed-base
+> reconstruction described here with calculated CCP placement, a movable
+> compatibility gateway, and ordered CPX reconstruction.
+
 Date: 2026-09-02
 
 ## Result

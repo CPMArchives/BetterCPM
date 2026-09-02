@@ -63,18 +63,14 @@ footprint. Installed RSXs reduce the TPA because they must remain callable by
 transient programs. CPXs do not reduce the transient TPA because WBOOT can
 reconstruct them.
 
-The first quantitative implementation uses `C000h` as the fixed-system
-boundary and publishes the active layout through a versioned descriptor at
-`C080h`. With no extensions, the current 1,116-byte CCP rounds to five pages
-and occupies `BB00h..BFFFh`. Its CPX head is the descriptor field at `C086h`.
-`BB00h` is a calculated default address, not the future module ABI. WBOOT now
-obtains the CCP base from the descriptor and the Model 4 reloader restores and
-relocates the CCP from a command module in reserved system sectors. Because
-the current configuration has no CPXs or RSXs, it publishes `C000h` as its
-TPA ceiling and allows transient programs to overwrite the reloadable CCP.
-The fixed `C000h` gateway is an implementation milestone; the completed
-architecture moves the compatibility gateway below persistent DATA and the
-active RSX chain.
+The fixed system begins at `C000h` and publishes the active layout through a
+versioned descriptor at `C080h`. With no RSXs, the first movable three-byte
+compatibility gateway occupies `BFFDh..BFFFh`. The current 1,116-byte CCP
+rounds to five pages and is calculated at `BAFDh`; its address is not an ABI.
+The Model 4 WBOOT reloader reads the persistent CPX reconstruction table,
+loads and links each relocatable CPX below `BFFDh`, and then calculates,
+restores, and relocates the CCP beneath the CPXs. Page zero advertises the
+dynamic gateway at `BFFDh` as the exclusive TPA ceiling.
 
 ## 3. Fundamental address rule
 

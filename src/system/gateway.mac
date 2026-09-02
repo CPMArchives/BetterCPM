@@ -8,32 +8,15 @@
 ; into explicit growth regions while leaving page-zero ABI addresses intact.
 SYSBASE         EQU     0C000H
 BDOS            EQU     0C100H
+CPMGATE         EQU     SYSBASE-3
 DIRLOGIN        EQU     0D60CH
 BIOWBOOT        EQU     0EF03H
-CCP             EQU     0BB00H
-CCPSIZE         EQU     00500H  ; current image rounded to 256-byte pages
 
         CSEG
         .PHASE  SYSBASE
 
 SYS_INIT:
-        LD      C,0             ; initial default drive A
-        CALL    DIRLOGIN
-        RET     NZ              ; do not publish a half-initialized system
-
-; Patch 2026-09-01: page zero is installed only after drive login succeeds.
-; Earlier isolated BDOS tests called E600h and later C100h directly; retaining
-; this boundary
-; makes the transition to the conventional CALL 0005h interface explicit.
-        LD      A,0C3H          ; JP opcode
-        LD      (0000H),A
-        LD      (0005H),A
-        LD      HL,BIOWBOOT
-        LD      (0001H),HL
-        LD      HL,BDOS
-        LD      (0006H),HL
-        XOR     A
-        RET
+        JP      SINIBODY
 
         REPT    SYSBASE+020H-$  ; explicit bytes keep native/cross images equal
         DB      0
@@ -87,15 +70,51 @@ ECB_CPXHEAD:
 ECB_RSXLOW:
         DW      SYSBASE
 ECB_CPXLOW:
-        DW      SYSBASE
+        DW      CPMGATE
 ECB_CCPBASE:
-        DW      CCP
+        DW      0               ; calculated and published by WBOOT reloader
 ECB_CCPSIZE:
-        DW      CCPSIZE
+        DW      0               ; calculated from the command module
 ECB_TPATOP:
-        DW      SYSBASE         ; CCP is disk-reloadable in this configuration
+        DW      CPMGATE         ; movable gateway is the exclusive TPA ceiling
 ECB_GENERATION:
         DW      1
+
+; Persistent command-environment reconstruction state.  The current profile
+; is deliberately empty; later CPX installation records ordered module
+; sources here.  Unlike the runtime CPX chain, this table survives WBOOT.
+CPTCOUNT:
+        DB      0
+CPTFLAGS:
+        DB      0
+CPTABLE:
+        REPT    8*8
+        DB      0
+        ENDM
+
+; Patch 2026-09-02: the movable gateway setup no longer fits before the stable
+; C020h BOOT/WBOOT vectors.  Preserve those public addresses and keep the old
+; entry as a short branch into the unused tail of the fixed gateway page.
+SINIBODY:
+        LD      C,0             ; initial default drive A
+        CALL    DIRLOGIN
+        RET     NZ              ; do not publish a half-initialized system
+        LD      HL,(ECB_TPATOP)
+        LD      (HL),0C3H
+        INC     HL
+        LD      DE,BDOS
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      A,0C3H          ; JP opcode
+        LD      (0000H),A
+        LD      (0005H),A
+        LD      HL,BIOWBOOT
+        LD      (0001H),HL
+        LD      HL,(ECB_TPATOP)
+        LD      (0006H),HL
+        XOR     A
+        RET
 
         .DEPHASE
         END

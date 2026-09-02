@@ -30,20 +30,41 @@ def relocated(module: bytes, target: int) -> bytes:
     return bytes(image)
 
 
-def run_at(target: int) -> bytes:
+def run_at(target: int, with_cpx: bool = False) -> bytes:
     module = MODULE.read_bytes()
+    allocation = struct.unpack_from("<H", module, 10)[0]
     machine = Z80(b"")
     machine.mem[BASE:BASE + len(RELOADER.read_bytes())] = RELOADER.read_bytes()
-    padded = module.ljust(4 * 512, b"\x00")
-    machine.mem[MODULE_SOURCE:MODULE_SOURCE + len(padded)] = padded
-    machine.mem[DESCRIPTOR_CCP:DESCRIPTOR_CCP + 2] = target.to_bytes(2, "little")
-    machine.mem[target:target + 0x500] = bytes((0xA5,)) * 0x500
+    sectors = [1, 3, 5, 7, 9, 2, 4, 6, 8, 10]
 
-    # C=1,3,5,7 maps to consecutive 512-byte module sectors at 6000h.
+    def install_slots(first: int, content: bytes) -> None:
+        padded = content.ljust(((len(content) + 511) // 512) * 512, b"\x00")
+        for offset in range(0, len(padded), 512):
+            physical = sectors[first + offset // 512]
+            source = MODULE_SOURCE + physical * 512
+            machine.mem[source:source + 512] = padded[offset:offset + 512]
+
+    install_slots(0, module)
+    cpx_allocation = 0
+    if with_cpx:
+        payload = bytes((0, 0, 4, 0x80, 0xC9, 0))
+        header = bytearray(512)
+        struct.pack_into("<4sBBHHHHH", header, 0, b"BCX1", 1, 1,
+                         0x8000, len(payload), 0x100, 0, 1)
+        struct.pack_into("<H", header, 16, 2)
+        install_slots(4, bytes(header) + payload)
+        machine.mem[0xC094] = 1
+        machine.mem[0xC096] = 4
+        cpx_allocation = 0x100
+
+    gateway = target + allocation + cpx_allocation
+    machine.mem[0xC090:0xC092] = gateway.to_bytes(2, "little")
+    machine.mem[target:target + allocation] = bytes((0xA5,)) * allocation
+
+    # Source fixtures are indexed by the actual Model 4 sector number in C.
     reader = bytes((
         0xE5,                   # PUSH HL (destination)
-        0x79, 0x3D, 0xCB, 0x3F,  # A=(C-1)/2
-        0x67, 0x2E, 0x00, 0x29,  # HL=A*512
+        0x79, 0x87, 0x67, 0x2E, 0x00,  # HL=C*512
         0x11, 0x00, 0x60, 0x19,  # HL+=6000h
         0xD1,                   # POP DE (destination)
         0x01, 0x00, 0x02, 0xED, 0xB0,  # LDIR 512 bytes
@@ -60,17 +81,28 @@ def run_at(target: int) -> bytes:
     expected = relocated(module, target)
     require(bytes(machine.mem[target:target + len(expected)]) == expected,
             f"CCP was not restored and relocated at {target:04X}h")
+    if with_cpx:
+        cpx_base = gateway - 0x100
+        require(machine.word(0xC086) == cpx_base and
+                machine.word(cpx_base) == 0 and
+                machine.word(cpx_base + 2) == cpx_base + 4,
+                "ordered CPX profile was not restored, relocated, and linked")
     return expected
 
 
 def main() -> None:
-    require(run_at(0xBB00) == CCP.read_bytes(),
-            "default-base module payload differs from canonical CCP")
+    module = MODULE.read_bytes()
+    allocation = struct.unpack_from("<H", module, 10)[0]
+    calculated = 0xBFFD - allocation
+    require(run_at(calculated) == relocated(module, calculated),
+            "calculated-base module payload was not relocated correctly")
     alternate = run_at(0xB900)
     require(alternate != CCP.read_bytes(),
             "alternate-base CCP did not apply relocation records")
-    print("disk-backed CCP restoration passed at BB00h")
+    print(f"disk-backed CCP restoration passed at calculated {calculated:04X}h")
     print("relocatable CCP restoration passed at B900h")
+    run_at(calculated - 0x100, with_cpx=True)
+    print("one-module CPX profile restored before the calculated CCP")
 
 
 if __name__ == "__main__":

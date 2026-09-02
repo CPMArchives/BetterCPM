@@ -192,14 +192,13 @@ size, TPA ceiling, and configuration generation.  Stable gateways consult
 the descriptor; movable components must not treat their current addresses as
 permanent ABI values.
 
-With no extensions, the current 1,116-byte CCP requires five pages and is
-placed at `BB00h..BFFFh`.  The Model 4 WBOOT path can reload that image from
-the system tracks, so the active no-extension TPA ceiling is `C000h` and
-transient programs may overwrite the CCP.  `BB00h` is the result of the
-current command configuration, not a fixed architectural address.  This is
-an implementation milestone: the completed architecture replaces the
-fixed `C000h` compatibility boundary with the dynamic gateway below
-persistent DATA and installed RSXs, and reconstructs CPXs as well as the CCP.
+With no RSXs, the current implementation materializes the three-byte dynamic
+gateway immediately below the fixed system gateway at `BFFDh..BFFFh`.  The
+current 1,116-byte CCP requires five pages and is therefore calculated at
+`BAFDh`.  Transient programs may overwrite both the CCP and any CPXs below
+`BFFDh`.  WBOOT reconstructs the ordered CPX chain from persistent DATA and
+then reloads the CCP.  Neither `BFFDh` nor `BAFDh` is a permanent ABI address;
+installing RSXs moves the dynamic gateway and recalculates the command layout.
 
 
 4.5 COMPATIBILITY-VISIBLE MEMORY

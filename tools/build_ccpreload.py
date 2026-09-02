@@ -9,7 +9,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "src/platform/trs80m4/ccpreload.mac"
+SOURCE = ROOT / "src/platform/trs80m4/commandreload.mac"
 BUILD = ROOT / "build/trs80"
 BASE = 0xE900
 

@@ -50,7 +50,10 @@ BIOPHREAD:
 ; BOOT and WBOOT enter portable system reconstruction before the CCP.
 BIOBOOT:
         CALL    M4_INIT
-        JP      SYS_BOOT
+; Patch 2026-09-02: the CCP is no longer part of the stage-one resident image.
+; Cold and warm entry both reconstruct the calculated command environment
+; from the system tracks before entering the portable WBOOT path.
+        JP      CCP_RELOAD
 BIOWBOOT:
         JP      CCP_RELOAD
 
