@@ -175,7 +175,7 @@ reloaded. They must not depend upon private CCP or CPX data.
 
 ## 7. CPX execution model
 
-### 7.1 Implemented bring-up dispatcher
+### 7.1 Implemented dispatcher
 
 The current CCP implements a small forward chain. Its four-byte in-memory
 header is:
@@ -195,19 +195,30 @@ The command-entry contract is presently:
 - `SP`, `IX`, `IY`, and the command buffer must be preserved.
 
 Ordinary registers other than those explicitly preserved may be changed.
-Core compatibility-resident commands are recognized before CPX dispatch. If
-all CPXs decline a command, the CCP performs its normal `.COM` lookup.
+CPXs receive the upper-case command before the transitional core-resident
+commands. Carry clear passes through the chain and then to the CCP's resident
+command and `.COM` fallbacks. During migration this lets `BASIC.CPX` implement
+a command while the old core implementation remains as a safe fallback.
 
 This interface is executable and tested, but CPX header addresses are active
 configuration details. The chain-head field has a stable location in the
-versioned descriptor. There is not yet an on-disk CPX
-loader, installer, removal command, discovery call, or ABI-version check.
+versioned descriptor. The Model 4 has an initial on-disk relocatable loader
+and reconstruction profile. Runtime installation, removal, discovery, and ABI
+negotiation remain to be specified.
 
-### 7.2 Planned relocatable CPXs
+### 7.2 Initial relocatable CPX image
 
-A loadable CPX will use offsets in its file header and will be relocated to
-the address selected during command-environment reconstruction. A CPX must
-not assume that it will return to the same address after warm boot.
+The initial `BCX1` image occupies a 512-byte header followed by linked code.
+The header identifies the linked base, code size, page-rounded allocation,
+entry offset, and a list of 16-bit relocation sites. WBOOT allocates the image
+downward, adjusts every listed word, links its four-byte runtime header, and
+may choose a different address after any reconstruction. This is an executable
+first version, not yet a frozen third-party ABI.
+
+The default `BASIC.CPX` proves the path with `DIR`, `ERA`, `TYPE`, and `REN`.
+It is reconstructed on cold and warm boot. The CCP still contains its older
+command copies during the transition; CPX-first dispatch verifies that the
+module implementations are the ones normally exercised.
 
 The final CPX ABI must additionally define:
 
@@ -260,9 +271,8 @@ A module may declare that it:
 The loader must reject dependency cycles, unsatisfied requirements, and
 irreconcilable ordering constraints before modifying the active system.
 
-The initial CPX dispatcher gives required core CCP commands precedence over
-CPXs. A future facility that intentionally overrides core commands must be
-explicitly configured rather than arising accidentally from chain order.
+CPX chain order is explicit and command interception is therefore observable.
+Configuration tooling must eventually show and validate that order.
 
 ## 10. Resource accounting
 
@@ -303,7 +313,7 @@ permanently unbootable.
 
 The following are deliberately open:
 
-- the relocatable module-file encoding;
+- stabilization and version negotiation for the initial `BCX1` encoding;
 - the final RSX dispatch and bypass ABI;
 - the expanded, versioned CPX ABI;
 - loader and configuration command syntax;

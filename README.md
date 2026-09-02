@@ -131,6 +131,7 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Memory Architecture`](docs/architecture/04%20Memory%20Architecture.txt) defines the authoritative split between protected persistent DATA/RSXs and the reclaimable CPX/CCP command environment. A movable CP/M compatibility gateway advertises the true TPA ceiling through `0005h`; WBOOT preserves installed RSXs and reconstructs CPXs and the CCP. [`Engineering Specification 96`](docs/engineering/96%20Quantitative%20Memory%20Model.md) records the earlier fixed-`C000h` implementation milestone.
 [`Engineering Specification 97`](docs/engineering/97%20Relocatable%20CCP%20and%20WBOOT%20Restoration.md) records the CCP-only reconstruction milestone and its then-current fixed `C000h` transient ceiling.
 [`Engineering Specification 98`](docs/engineering/98%20Calculated%20Command%20Environment.md) removes the temporary CCP-size slot, establishes the movable `BFFDh` compatibility gateway, calculates the current CCP at `BAFDh`, and reconstructs an ordered persistent CPX profile before the CCP on every cold or warm boot.
+[`Engineering Specification 99`](docs/engineering/99%20BASIC%20CPX%20and%20Keyboard%20Rollover.md) installs the first production `BASIC.CPX` with `DIR`, `ERA`, `TYPE`, and `REN`, verifies native/cross relocation parity and WBOOT reconstruction, and replaces the Model 4 whole-matrix key-release wait with a rollover-safe pending-key queue.
 [`Engineering Specification 25`](docs/engineering/25%20Allocation%20and%20DPB%20Pointers.md) exposes the current drive's reconstructed allocation vector and live 15-byte disk parameter block.
 [`Engineering Specification 26`](docs/engineering/26%20Directory%20Search%20and%20DMA.md) adds Search First/Search Next continuation, wildcard and all-user matching, and complete directory-record transfer to the selected DMA address.
 [`Engineering Specification 27`](docs/engineering/27%20Unchanged%20FCB%20Close.md) adds the non-mutating Close File boundary for unchanged activated FCBs and safely rejects dirty commits until writeback exists.
@@ -156,12 +157,15 @@ python3 tools/build_ccp.py
 python3 tools/build_ccpreload.py
 python3 tools/test_ccpreload.py
 python3 tools/build_native_ccp.py
+python3 tools/build_basic_cpx.py
+python3 tools/build_native_basic_cpx.py
 python3 tools/build_system.py
 python3 tools/test_system.py
 python3 tools/build_native_system.py
 python3 tools/build_trs80_boot.py
 python3 tools/build_native_trs80.py
 python3 tools/test_trs80_boot.py
+python3 tools/test_trs80_keyboard_overlap.py
 ```
 
 The native build runs ZSM4 and Digital Research LINK under CP/M and must match the cross-assembled binaries byte for byte. The emulator test boots the generated 790K DMK through the Model 4 ROM and both loader stages, loads the composed resident image, reconstructs the system, and verifies the CCP `A>` prompt.

@@ -84,11 +84,12 @@ ECB_GENERATION:
 ; is deliberately empty; later CPX installation records ordered module
 ; sources here.  Unlike the runtime CPX chain, this table survives WBOOT.
 CPTCOUNT:
-        DB      0
+        DB      1               ; default proof profile loads BASIC.CPX
 CPTFLAGS:
         DB      0
 CPTABLE:
-        REPT    8*8
+        DB      4               ; first module slot after four-slot CCP image
+        REPT    8*8-1
         DB      0
         ENDM
 

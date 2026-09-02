@@ -45,6 +45,11 @@ CCP_LOOP:
         OR      A
         JR      Z,CCP_LOOP
         CALL    CCP_UPPER
+; Patch 2026-09-02: production CPXs now get first refusal.  During the BASIC
+; proof transition, the old resident commands remain below as fallbacks; this
+; ordering ensures ordinary DIR actually verifies BASIC.CPX when it is loaded.
+        CALL    CPX_DISPATCH
+        JR      C,CCP_LOOP
         LD      A,(CCP_COUNT)
         CP      6
         JR      Z,CCP_TRYUSER
@@ -55,8 +60,6 @@ CCP_LOOP:
         CP      4
         JR      Z,CCP_TRYWARM
 CCP_BAD:
-        CALL    CPX_DISPATCH
-        JR      C,CCP_LOOP     ; extension accepted the command
         CALL    CCP_LOAD
         JR      NC,CCP_LOOP     ; successful program exits only via warm start
         LD      DE,CCP_UNKNOWN
@@ -136,8 +139,8 @@ CCP_USERSET:
 ; Each header contains DW next,entry.  Entry receives DE=upper-case command
 ; text and B=length.  Carry set means handled; carry clear passes to the next
 ; CPX.  A CPX may alter ordinary registers but must preserve SP, IX, IY and the
-; command buffer.  Core resident commands are resolved before this chain so a
-; CPX cannot accidentally replace the compatibility command set.
+; command buffer. CPXs get first refusal; currently retained core commands are
+; transition fallbacks and disappear only after BASIC.CPX is fully verified.
 CPX_DISPATCH:
         LD      HL,(CPXHEAD)
 CPX_NEXT:

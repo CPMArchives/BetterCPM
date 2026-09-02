@@ -153,9 +153,11 @@ class Z80:
             elif op == 0xB3:            # OR E
                 self.a |= self.e
                 self.z = self.a == 0
+                self.carry = False
             elif op == 0xB5:            # OR L
                 self.a |= self.l
                 self.z = self.a == 0
+                self.carry = False
             elif op == 0xE6:            # AND n
                 self.a &= self.mem[self.pc]
                 self.pc += 1
@@ -164,6 +166,7 @@ class Z80:
             elif op == 0xA1:            # AND C
                 self.a &= self.c
                 self.z = self.a == 0
+                self.carry = False
             elif op == 0x2F:            # CPL
                 self.a ^= 0xFF
             elif op == 0x3E:            # LD A,n
@@ -322,6 +325,7 @@ class Z80:
             elif op == 0xB6:            # OR (HL)
                 self.a |= self.mem[self.hl]
                 self.z = self.a == 0
+                self.carry = False
             elif op == 0xEB:            # EX DE,HL
                 value = self.de
                 self.de = self.hl

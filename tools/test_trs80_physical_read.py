@@ -9,7 +9,7 @@ from build_trs80_boot import ROOT, SOURCE, BUILD, assemble
 
 EMULATOR = Path("/Users/nathanael/trs80/trs80gp-2/mac/trs80gp.app/Contents/MacOS/trs80gp")
 ASSEMBLER = Path("/Users/nathanael/bin/z80asm")
-EXPECTED = b"BIOS physical read verified"
+EXPECTED = b"Physical read verified"
 SIGNATURE = b"BetterCP/M C2 H1 S10"
 
 

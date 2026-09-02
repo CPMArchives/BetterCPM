@@ -40,9 +40,9 @@ PRINT:
 STOP:
         JR      STOP
 PASSMSG:
-        DB      'BIOS physical read verified',0
+        DB      'Physical read verified',0
 FAILMSG:
-        DB      'BIOS physical read failed',0
+        DB      'Physical read failed',0
 SIGNATURE:
         DB      'BetterCP/M C2 H1 S10'
 SIGLEN  EQU     $-SIGNATURE

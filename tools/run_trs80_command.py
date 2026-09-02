@@ -124,6 +124,7 @@ def main() -> None:
                 response = response_text
             else:
                 delay = args.response_delay
+            response = response.replace("\\r", "\r")
             command.extend(("-id", str(delay)))
             command.extend(key_args(response))
         command.extend(("-id", str(args.run_delay), "-it", "-ix"))

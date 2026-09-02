@@ -186,13 +186,15 @@ def main() -> None:
     args = parser.parse_args()
     resident_path = ROOT / "build/system/resident.bin"
     command_path = ROOT / "build/ccp/ccp.rlm"
-    for path in (resident_path, command_path):
+    basic_cpx_path = ROOT / "build/cpx/BASIC.CPX"
+    for path in (resident_path, command_path, basic_cpx_path):
         if not path.is_file():
             raise SystemExit(f"missing system-image input: {path}")
     boot = assemble(args.assembler, SOURCE / "boot.mac", BUILD / "boot.bin", BOOT_ADDRESS)
     stage1 = assemble(args.assembler, SOURCE / "stage1.mac", BUILD / "stage1.bin", STAGE1_ADDRESS)
     resident = resident_path.read_bytes()
-    command = command_path.read_bytes()
+    command = command_path.read_bytes().ljust(4 * SECTOR_SIZE, b"\x00")
+    command += basic_cpx_path.read_bytes()
     extras = []
     for path in args.include:
         if not path.is_file():

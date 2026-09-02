@@ -497,6 +497,11 @@ def main() -> None:
     cpu.mem[ccp_base:ccp_base + len(ccp)] = ccp
     cpu.mem[0xC08C:0xC08E] = ccp_base.to_bytes(2, "little")
     cpu.mem[0xC08E:0xC090] = allocation.to_bytes(2, "little")
+    # This portable-core fixture intentionally exercises the no-CPX layout;
+    # the platform reloader and production disk tests cover BASIC.CPX.  Keep
+    # its saved reconstruction profile explicitly empty rather than allowing
+    # the production default to interpret the fixture's dummy sectors.
+    cpu.mem[0xC094] = 0
     cpu.mem[0xE900:0xE903] = bytes((0xC3, 0x23, 0xC0))
     cpu.c, cpu.de = 26, 0x7345
     cpu.run(CALLER)

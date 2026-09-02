@@ -48,10 +48,8 @@ The reloader:
 7. advances the configuration generation; and
 8. enters portable WBOOT, which rebuilds page zero and transfers to the CCP.
 
-The current saved and active CPX profile is empty. A focused test supplies a
-synthetic one-module profile and verifies that its CPX is restored, relocated,
-and linked before the CCP. This exercises the non-empty path without making a
-temporary demonstration command part of the production system.
+At this milestone the saved profile was empty. Engineering Specification 99
+subsequently makes `BASIC.CPX` the first production default module.
 
 ## Persistent CPX table and carrier slots
 
@@ -77,8 +75,8 @@ overlap and populate the reserved table fields transactionally.
 - CCP, gateway, BIOS, boot stages, and the 511-byte reloader are byte-identical
   between native CP/M ZSM4/LINK and cross builds.
 
-## Next boundary
+## Subsequent boundary
 
-The next command-memory increment should define the production CPX module
-metadata fields and build the first real `BASIC.CPX`. Until that module is
-verified, resident commands remain in the CCP.
+Engineering Specification 99 defines the first production module encoding
+and verifies `BASIC.CPX`. The transition copies of resident commands remain in
+the CCP until transient fallbacks and the CPX replacements are both complete.

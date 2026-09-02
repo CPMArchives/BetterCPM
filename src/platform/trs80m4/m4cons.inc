@@ -54,15 +54,36 @@ M4_STAT:
         OR      A
         RET
 M4_IN:
+        LD      A,(M4_PENDING)
+        OR      A
+        JR      NZ,M4_KEYCHANGE
+M4_INWAIT:
         CALL    M4_SCAN
         OR      A
-        JR      Z,M4_IN
+        JR      Z,M4_INWAIT
+        LD      (M4_PENDING),A
+; Patch 2026-09-02: the original whole-matrix release wait could discard a
+; second key pressed before the first was released.  Retain that debounce for
+; reliable repeated letters, but queue one different overlapping key.
+M4_KEYCHANGE:
+        CALL    M4_SCAN
+        OR      A
+        JR      Z,M4_KEYDONE
+        LD      C,A
+        LD      A,(M4_PENDING)
+        CP      C
+        JR      Z,M4_KEYCHANGE
         PUSH    AF
-M4_KEYUP:
-        CALL    M4_SCAN
-        OR      A
-        JR      NZ,M4_KEYUP
+        LD      A,C
+        LD      (M4_PENDING),A
         POP     AF
+        RET
+M4_KEYDONE:
+        LD      A,(M4_PENDING)
+        LD      C,A
+        XOR     A
+        LD      (M4_PENDING),A
+        LD      A,C
         RET
 
 ; Patch 2026-09-01: rows are selected by successive address bits at
@@ -118,4 +139,6 @@ M4_KEYTAB:
 M4CURSOR:
         DW      VIDEOBASE
 M4COLUMN:
+        DB      0
+M4_PENDING:
         DB      0
