@@ -62,8 +62,10 @@ boundary and publishes the active layout through a versioned descriptor at
 `C080h`. With no extensions, the current 1,116-byte CCP rounds to five pages
 and occupies `BB00h..BFFFh`. Its CPX head is the descriptor field at `C086h`.
 `BB00h` is a calculated default address, not the future module ABI. WBOOT now
-obtains the CCP base from the descriptor, although disk-backed reconstruction
-and relocation are not yet implemented.
+obtains the CCP base from the descriptor and the Model 4 reloader restores and
+relocates the CCP from a command module in reserved system sectors. Because
+the current configuration has no CPXs, it publishes `C000h` as its TPA
+ceiling and allows transient programs to overwrite the reloadable CCP.
 
 ## 3. Fundamental address rule
 

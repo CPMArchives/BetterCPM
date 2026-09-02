@@ -12,7 +12,7 @@ BIO_DPH2        EQU     0C920H
 BIO_DPH3        EQU     0C930H
 BIO_DPB0        EQU     0C940H
 SYS_BOOT        EQU     0C020H
-SYS_WBOOT       EQU     0C023H
+CCP_RELOAD      EQU     0E900H
 
         CSEG
         .PHASE  BIOSBASE
@@ -39,12 +39,20 @@ BIOS:
         JP      BIOLSTST
         JP      BIOSECTR
 
+; BetterCP/M-private platform vector immediately after the public 17-vector
+; BIOS table. The fixed WBOOT reloader reads raw system-track sectors through
+; this entry without importing Model 4 controller code into the portable core.
+BIOPHREAD:
+        LD      A,1
+        LD      (B_PDrive),A
+        JP      M4_READ
+
 ; BOOT and WBOOT enter portable system reconstruction before the CCP.
 BIOBOOT:
         CALL    M4_INIT
         JP      SYS_BOOT
 BIOWBOOT:
-        JP      SYS_WBOOT
+        JP      CCP_RELOAD
 
 ; CONST must return exactly 00h or FFh and must not consume the character.
 BIOCONST:

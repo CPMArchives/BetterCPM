@@ -29,6 +29,8 @@ VERIFY_PAYLOAD = b"BetterCP/M verify" + bytes(SECTOR_SIZE - len(b"BetterCP/M ver
 CROSS_FIXTURE = (b"BFILE-000 " * 12 + b"BFILE-00")
 SYSTEM_FIRST_LOGICAL_INDEX = 2
 SYSTEM_SECTORS = 28
+COMMAND_FIRST_LOGICAL_INDEX = SYSTEM_FIRST_LOGICAL_INDEX + SYSTEM_SECTORS
+COMMAND_SECTORS = 4
 FILESYSTEM_FIRST_SECTOR = 40   # DPB OFF=2, one logical track per cylinder
 ALLOCATION_BLOCK_BYTES = 2048
 DIRECTORY_ENTRIES = 128
@@ -136,7 +138,7 @@ def install_files(raw: bytearray,
             next_entry += 1
 
 
-def install(boot: bytes, stage1: bytes, resident: bytes,
+def install(boot: bytes, stage1: bytes, resident: bytes, command: bytes,
             files: list[tuple[str, bytes]]) -> bytes:
     raw = bytearray([0xE5]) * RAW_SIZE
     for logical_index, payload in (
@@ -150,6 +152,15 @@ def install(boot: bytes, stage1: bytes, resident: bytes,
         raise ValueError(f"resident image is {len(resident)} bytes; loader capacity is {capacity}")
     start = SYSTEM_FIRST_LOGICAL_INDEX * SECTOR_SIZE
     raw[start:start + capacity] = resident.ljust(capacity, b"\x00")
+    command_capacity = COMMAND_SECTORS * SECTOR_SIZE
+    if len(command) > command_capacity:
+        raise ValueError(f"command module is {len(command)} bytes; "
+                         f"capacity is {command_capacity}")
+    command_start = COMMAND_FIRST_LOGICAL_INDEX * SECTOR_SIZE
+    if command_start + command_capacity > FILESYSTEM_FIRST_SECTOR * SECTOR_SIZE:
+        raise ValueError("command module overlaps the CP/M filesystem")
+    raw[command_start:command_start + command_capacity] = command.ljust(
+        command_capacity, b"\x00")
     install_files(raw, files)
     image = build(bytes(raw))
     verify(image, require_blank=False)
@@ -174,11 +185,14 @@ def main() -> None:
                         default=BUILD / "BetterCPM-Extended-80T-DS-System-790K.dmk")
     args = parser.parse_args()
     resident_path = ROOT / "build/system/resident.bin"
-    if not resident_path.is_file():
-        raise SystemExit(f"missing resident image: {resident_path}")
+    command_path = ROOT / "build/ccp/ccp.rlm"
+    for path in (resident_path, command_path):
+        if not path.is_file():
+            raise SystemExit(f"missing system-image input: {path}")
     boot = assemble(args.assembler, SOURCE / "boot.mac", BUILD / "boot.bin", BOOT_ADDRESS)
     stage1 = assemble(args.assembler, SOURCE / "stage1.mac", BUILD / "stage1.bin", STAGE1_ADDRESS)
     resident = resident_path.read_bytes()
+    command = command_path.read_bytes()
     extras = []
     for path in args.include:
         if not path.is_file():
@@ -217,7 +231,8 @@ def main() -> None:
             ("BTREL.DAT", bytes(128)),
             ("BTFILL.DAT", bytes(filler_blocks * ALLOCATION_BLOCK_BYTES)),
         ))
-    image = install(boot, stage1, resident, [("HELLO.COM", HELLO_COM), *extras])
+    image = install(boot, stage1, resident, command,
+                    [("HELLO.COM", HELLO_COM), *extras])
     output = args.output.resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_bytes(image)
@@ -228,7 +243,8 @@ def main() -> None:
             label = path
         print(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {label}")
     print(f"boot bytes: {len(boot)}; stage-one bytes: {len(stage1)}; "
-          f"resident bytes: {len(resident)} in {SYSTEM_SECTORS} sectors")
+          f"resident bytes: {len(resident)} in {SYSTEM_SECTORS} sectors; "
+          f"command module: {len(command)} bytes in {COMMAND_SECTORS} sectors")
 
 
 if __name__ == "__main__":

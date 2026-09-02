@@ -503,8 +503,11 @@ def main() -> None:
             "BOOT does not initialize the platform then enter reconstruction")
     warm_target = cpu.word(entries[1] + 1)
     require(cpu.mem[warm_target] == 0xC3 and
-            cpu.word(warm_target + 1) == 0xC023,
-            "WBOOT does not enter portable system reconstruction")
+            cpu.word(warm_target + 1) == 0xE900,
+            "WBOOT does not enter command-image restoration")
+    require(cpu.mem[BASE + 17 * 3] == 0x3E and
+            cpu.mem[BASE + 17 * 3 + 5] == 0xC3,
+            "private physical-read vector does not select system drive A")
 
     const_impl = cpu.word(entries[2] + 1)
     platform_const = cpu.word(const_impl + 1)

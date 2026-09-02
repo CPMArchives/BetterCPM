@@ -484,6 +484,9 @@ def main() -> None:
     cpu.mem[0x7100:0x7109] = b"WARM\rVER\r"
     cpu.mem[BIOS_BASE + 9:BIOS_BASE + 12] = bytes((0xC3, 0x60, 0x70))
     cpu.mem[BIOS_BASE + 12:BIOS_BASE + 15] = bytes((0xC3, 0x70, 0x70))
+    # The platform reloader has its own raw-sector test. This resident-core
+    # test bypasses only disk restoration so it can exercise portable WBOOT.
+    cpu.mem[0xE900:0xE903] = bytes((0xC3, 0x23, 0xC0))
     cpu.c, cpu.de = 26, 0x7345
     cpu.run(CALLER)
     cpu.mem[0:8] = bytes((0xCC,)) * 8
@@ -505,7 +508,7 @@ def main() -> None:
             cpu.word(0xC084) == 0 and cpu.word(0xC086) == 0 and
             cpu.word(0xC088) == 0xC000 and cpu.word(0xC08A) == 0xC000 and
             cpu.word(0xC08C) == 0xBB00 and cpu.word(0xC08E) == 0x0500 and
-            cpu.word(0xC090) == 0xBB00,
+            cpu.word(0xC090) == 0xC000,
             "extension control block does not publish the default layout")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")

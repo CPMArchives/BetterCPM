@@ -93,7 +93,7 @@ ECB_CCPBASE:
 ECB_CCPSIZE:
         DW      CCPSIZE
 ECB_TPATOP:
-        DW      CCP
+        DW      SYSBASE         ; CCP is disk-reloadable in this configuration
 ECB_GENERATION:
         DW      1
 

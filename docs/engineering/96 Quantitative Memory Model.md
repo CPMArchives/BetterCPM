@@ -2,6 +2,11 @@
 
 Date: 2026-09-02
 
+> Historical note: Specification 97 adds disk-backed CCP reconstruction and
+> raises the no-extension TPA ceiling from `BB00h` to `C000h`. The calculated
+> placement and descriptor defined here remain current; only the protected-TPA
+> limitation is superseded.
+
 ## Purpose
 
 This increment replaces the protected four-kilobyte CCP/extension bring-up

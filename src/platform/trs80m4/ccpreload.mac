@@ -1,0 +1,182 @@
+; BetterCP/M TRS-80 Model 4 relocatable command-image reloader.
+;
+; The command module occupies system-track physical sectors 30..33. Its first
+; sector is a header/relocation directory; following sectors contain the CCP
+; payload. WBOOT executes here from fixed memory, so the old CCP may be
+; overwritten safely before portable reconstruction resumes.
+
+RELOADBASE      EQU     0E900H
+BIOPHREAD       EQU     0EF33H
+SYS_WBOOT       EQU     0C023H
+ECB_CCPBASE     EQU     0C08CH
+MODBUF          EQU     0ED00H
+MOD_LINK        EQU     MODBUF+6
+MOD_SIZE        EQU     MODBUF+8
+MOD_ALLOC       EQU     MODBUF+10
+MOD_ENTRY       EQU     MODBUF+12
+MOD_RELOCS      EQU     MODBUF+14
+MOD_TABLE       EQU     MODBUF+16
+
+        CSEG
+        .PHASE  RELOADBASE
+
+CRSTART:
+        LD      SP,CRSTKTOP
+        LD      HL,MODBUF
+        LD      C,1             ; track 1, side 1, sector 1: module header
+        CALL    CRREAD
+        JP      NZ,CRFAIL
+        LD      HL,MODBUF
+        LD      DE,CRMAGIC
+        LD      B,6
+CRMAGLP:
+        LD      A,(DE)
+        CP      (HL)
+        JP      NZ,CRFAIL
+        INC     DE
+        INC     HL
+        DJNZ    CRMAGLP
+        LD      HL,(MOD_ALLOC)
+        LD      DE,0500H
+        OR      A
+        SBC     HL,DE
+        JP      NZ,CRFAIL
+        LD      HL,(MOD_SIZE)
+        LD      A,H
+        OR      L
+        JP      Z,CRFAIL
+        LD      A,H
+        CP      5
+        JP      NC,CRFAIL
+        LD      HL,(MOD_RELOCS)
+        LD      A,H
+        OR      A
+        JP      NZ,CRFAIL
+        LD      A,L
+        CP      249             ; at most 248 words fit after header byte 16
+        JP      NC,CRFAIL
+        LD      HL,(MOD_SIZE)
+        LD      (CRLEFT),HL
+        LD      HL,(ECB_CCPBASE)
+        LD      (CRDEST),HL
+        LD      HL,CRSECTS
+        LD      (CRSECTP),HL
+
+CRPAY:
+        LD      HL,(CRLEFT)
+        LD      A,H
+        OR      L
+        JR      Z,CRRELOC
+        LD      A,H
+        CP      2
+        JR      C,CRLAST
+        LD      HL,(CRDEST)
+        CALL    CRNEXT
+        JP      NZ,CRFAIL
+        LD      (CRDEST),HL
+        LD      HL,(CRLEFT)
+        LD      DE,0200H
+        OR      A
+        SBC     HL,DE
+        LD      (CRLEFT),HL
+        JR      CRPAY
+
+CRLAST:
+        LD      HL,MODBUF
+        CALL    CRNEXT
+        JP      NZ,CRFAIL
+        LD      HL,MODBUF
+        LD      DE,(CRDEST)
+        LD      BC,(CRLEFT)
+        LDIR
+        LD      HL,0
+        LD      (CRLEFT),HL
+        JR      CRPAY
+
+; Re-read the header because the final partial payload used the shared buffer.
+CRRELOC:
+        LD      HL,MODBUF
+        LD      C,1
+        CALL    CRREAD
+        JP      NZ,CRFAIL
+        LD      HL,(ECB_CCPBASE)
+        LD      DE,(MOD_LINK)
+        OR      A
+        SBC     HL,DE
+        LD      (CRDELTA),HL
+        LD      BC,(MOD_RELOCS)
+        LD      HL,MOD_TABLE
+CRRLOOP:
+        LD      A,B
+        OR      C
+        JR      Z,CRDONE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        PUSH    HL
+        PUSH    BC
+        LD      HL,(MOD_SIZE)
+        DEC     HL              ; relocation word must begin below size-1
+        OR      A
+        SBC     HL,DE
+        JP      C,CRFAIL
+        JP      Z,CRFAIL
+        LD      HL,(ECB_CCPBASE)
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        LD      BC,(CRDELTA)
+        ADD     HL,BC
+        EX      DE,HL
+        LD      (HL),D
+        DEC     HL
+        LD      (HL),E
+        POP     BC
+        POP     HL
+        LD      A,C
+        SUB     1
+        LD      C,A
+        JR      NC,CRRLOOP
+        DEC     B
+        JR      CRRLOOP
+
+CRDONE:
+        JP      SYS_WBOOT
+CRFAIL:
+        JR      CRFAIL
+
+CRNEXT:
+        PUSH    HL
+        LD      HL,(CRSECTP)
+        LD      C,(HL)
+        INC     HL
+        LD      (CRSECTP),HL
+        POP     HL
+CRREAD:
+        LD      A,1             ; cylinder 1
+        LD      B,1             ; side 1; BIOPHREAD forces system drive A
+        JP      BIOPHREAD
+
+CRMAGIC:
+        DB      'B','C','M','1',1,1
+CRSECTS:
+        DB      3,5,7
+CRSECTP:
+        DW      0
+CRDEST:
+        DW      0
+CRLEFT:
+        DW      0
+CRDELTA:
+        DW      0
+CRSTACK:
+        REPT    16
+        DB      0
+        ENDM
+CRSTKTOP:
+
+        .DEPHASE
+        END

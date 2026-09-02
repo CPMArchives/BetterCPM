@@ -129,6 +129,7 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Engineering Specification 94`](docs/engineering/94%20CCP%20Wildcards%20and%20Buffer%20Relocation.md) completes `*`/`?` default-FCB wildcard handling and moves the private CCP stack into reserved resident space without shrinking the TPA.
 [`Engineering Specification 95`](docs/engineering/95%20Command%20Processor%20Extensions.md) distinguishes CPXs from RSXs, adds the first chained CPX command-dispatch ABI, and replaces the CCP's exact-fit provisional slot with an explicit protected command region pending true WBOOT reload support.
 [`Engineering Specification 96`](docs/engineering/96%20Quantitative%20Memory%20Model.md) defines the fixed extension descriptor at `C080h`, page-rounded downward placement, the calculated `BB00h` default CCP base, descriptor-driven WBOOT entry, and a descriptor-enforced TPA ceiling.
+[`Engineering Specification 97`](docs/engineering/97%20Relocatable%20CCP%20and%20WBOOT%20Restoration.md) adds a relocatable command-module format, restores and relocates the CCP from reserved system sectors during WBOOT, and raises the no-extension transient ceiling to `C000h`.
 [`Engineering Specification 25`](docs/engineering/25%20Allocation%20and%20DPB%20Pointers.md) exposes the current drive's reconstructed allocation vector and live 15-byte disk parameter block.
 [`Engineering Specification 26`](docs/engineering/26%20Directory%20Search%20and%20DMA.md) adds Search First/Search Next continuation, wildcard and all-user matching, and complete directory-record transfer to the selected DMA address.
 [`Engineering Specification 27`](docs/engineering/27%20Unchanged%20FCB%20Close.md) adds the non-mutating Close File boundary for unchanged activated FCBs and safely rejects dirty commits until writeback exists.
@@ -151,6 +152,8 @@ python3 tools/build_bdos.py
 python3 tools/test_bdos.py
 python3 tools/build_native_bdos.py
 python3 tools/build_ccp.py
+python3 tools/build_ccpreload.py
+python3 tools/test_ccpreload.py
 python3 tools/build_native_ccp.py
 python3 tools/build_system.py
 python3 tools/test_system.py

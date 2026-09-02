@@ -19,6 +19,7 @@ DEFAULT_TOOLS = Path("/Users/nathanael/git/cpm-compatibility/suite/build-tools")
 STAGES = (("BOOT", 0x4300, "boot.bin"), ("STAGE1", 0x5000, "stage1.bin"),
           ("DISKREAD", 0x5000, "diskread.bin"))
 STAGES = STAGES + (("DISKWRIT", 0x5000, "diskwrit.bin"),)
+STAGES = STAGES + (("CCPRELOD", 0xE900, "ccpreload.bin"),)
 
 
 def run(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -48,7 +49,7 @@ def main() -> None:
                 SOURCE / "m4disk.inc",
                 CORE / "bringup.inc",
                 SOURCE / "boot.mac", SOURCE / "stage1.mac", SOURCE / "diskread.mac",
-                SOURCE / "diskwrit.mac"]
+                SOURCE / "diskwrit.mac", SOURCE / "ccpreload.mac"]
     for path in required:
         if not path.is_file():
             raise SystemExit(f"missing native-build input: {path}")
@@ -70,6 +71,7 @@ def main() -> None:
                         (SOURCE / "stage1.mac", "STAGE1.MAC"))
         source_files = source_files + ((SOURCE / "diskread.mac", "DISKREAD.MAC"),)
         source_files = source_files + ((SOURCE / "diskwrit.mac", "DISKWRIT.MAC"),)
+        source_files = source_files + ((SOURCE / "ccpreload.mac", "CCPRELOD.MAC"),)
         for source_path, cpm_name in source_files:
             host = work / cpm_name
             host.write_bytes(cpm_text(source_path))
@@ -113,13 +115,19 @@ expect "B>"
 send -- "D:LINK DISKWRIT\\[A\\]\\r"
 expect "CODE SIZE"
 expect "B>"
+send -- "D:ZSM4 B:CCPRELOD=C:CCPRELOD\\r"
+expect -re {{Errors: +0}}
+expect "B>"
+send -- "D:LINK CCPRELOD\\[A\\]\\r"
+expect "CODE SIZE"
+expect "B>"
 send "\\034"
 expect eof
 '''
         result = run("expect", "-c", commands, check=False)
         transcript = result.stdout + result.stderr
         (BUILD / "NATIVE-BUILD.LOG").write_text(transcript, encoding="utf-8")
-        if result.returncode or transcript.count("Errors: 0") != 4 or transcript.count("CODE SIZE") < 4:
+        if result.returncode or transcript.count("Errors: 0") != 5 or transcript.count("CODE SIZE") < 5:
             raise SystemExit(f"native CP/M build failed\n{transcript}")
 
         for name, _origin, cross_name in STAGES:

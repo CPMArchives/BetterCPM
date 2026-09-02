@@ -142,9 +142,12 @@ the descriptor; movable components must not treat their current addresses as
 permanent ABI values.
 
 With no extensions, the current 1,116-byte CCP requires five pages and is
-placed at `BB00h..BFFFh`.  The resulting initial TPA is `0100h..BAFFh`.
-`BB00h` is the result of the current configuration, not a fixed architectural
-address.
+placed at `BB00h..BFFFh`.  The Model 4 WBOOT path can reload that image from
+the system tracks, so the active no-extension TPA ceiling is `C000h` and
+transient programs may overwrite the CCP.  `BB00h` is the result of the
+current command configuration, not a fixed architectural address.  A future
+configuration containing CPXs shall expose their memory to transients only
+when WBOOT can reconstruct those CPXs as well as the CCP.
 
 
 4.5 COMPATIBILITY-VISIBLE MEMORY
