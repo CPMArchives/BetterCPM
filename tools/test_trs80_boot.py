@@ -14,7 +14,7 @@ EXPECTED_LINES = (
     b"",
     b"A0>DIR",
     b"A: HELLO    COM : CPX      COM : RSX      COM : RSXTEST  COM",
-    b"A: BASIC    CPX : HELLO    CPX : HELLO    RSX",
+    b"A: ERA      COM : BASIC    CPX : HELLO    CPX : HELLO    RSX",
     b"",
     b"A0>HELLO WORLD",
     b"Hello from BetterCP/M WORLD",

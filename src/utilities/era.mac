@@ -12,7 +12,7 @@ FCB     EQU     005CH
 START:
         LD      A,(0080H)
         OR      A
-        JR      Z,USAGE
+        JR      Z,NOARG
         LD      HL,FCB+1
         LD      B,8
         CALL    EXPAND
@@ -30,8 +30,15 @@ ALLQ:
         LD      DE,CONFIRM
         LD      C,9
         CALL    BDOS
-        LD      C,1
+        XOR     A
+        LD      (REPLY+1),A
+        LD      DE,REPLY
+        LD      C,10
         CALL    BDOS
+        LD      A,(REPLY+1)
+        CP      1
+        JR      NZ,DONE
+        LD      A,(REPLY+2)
         AND     05FH
         CP      'Y'
         JR      NZ,DONE
@@ -63,18 +70,18 @@ STAR:
         DJNZ    STAR
         RET
 
-USAGE:
-        LD      DE,USEMSG
+NOARG:
+        LD      DE,NOFILE
         LD      C,9
         CALL    BDOS
         JR      DONE
 
 CONFIRM:
-        DB      13,10,'ALL FILES (Y/N)? $'
+        DB      13,10,'ALL (Y/N)? $'
 NOFILE:
         DB      13,10,'NO FILE',13,10,'$'
-USEMSG:
-        DB      13,10,'ERA filename',13,10,'$'
+REPLY:
+        DB      2,0,0,0
 
         .DEPHASE
         END     START

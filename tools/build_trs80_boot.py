@@ -204,9 +204,10 @@ def main() -> None:
     cpx_utility_path = ROOT / "build/utilities/CPX.COM"
     rsx_utility_path = ROOT / "build/utilities/RSX.COM"
     rsxtest_path = ROOT / "build/utilities/RSXTEST.COM"
+    era_path = ROOT / "build/utilities/ERA.COM"
     for path in (resident_path, command_path, basic_cpx_path, hello_cpx_path,
                  hello_rsx_path, cpx_utility_path, rsx_utility_path,
-                 rsxtest_path):
+                 rsxtest_path, era_path):
         if not path.is_file():
             raise SystemExit(f"missing system-image input: {path}")
     boot = assemble(args.assembler, SOURCE / "boot.mac", BUILD / "boot.bin", BOOT_ADDRESS)
@@ -266,6 +267,7 @@ def main() -> None:
                      ("CPX.COM", cpx_utility_path.read_bytes()),
                      ("RSX.COM", rsx_utility_path.read_bytes()),
                      ("RSXTEST.COM", rsxtest_path.read_bytes()),
+                     ("ERA.COM", era_path.read_bytes()),
                      ("BASIC.CPX", basic_cpx_path.read_bytes()),
                      ("HELLO.CPX", hello_cpx_path.read_bytes()),
                      ("HELLO.RSX", hello_rsx_path.read_bytes()), *extras])

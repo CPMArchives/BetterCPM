@@ -539,21 +539,49 @@ BC_DFSKIP:
         RET
 
 BC_ERA:
+        CALL    BC_DUSEL
         LD      A,B
         OR      A
-        JR      Z,BC_USEERA
+        JR      Z,BC_ENOFILE
         LD      DE,BC_FCB
         CALL    BC_PFCB
+        LD      HL,BC_FCB+1
+        LD      B,11
+BC_EALLQ:
+        LD      A,(HL)
+        CP      '?'
+        JR      NZ,BC_EDELETE
+        INC     HL
+        DJNZ    BC_EALLQ
+; Stock CP/M asks before an all-wildcard erase. Its buffered reply must contain
+; exactly one Y; extra characters cancel just as an N or empty line does.
+        LD      DE,BC_ECONF
+        LD      C,9
+        CALL    BDOS
+        XOR     A
+        LD      (BC_EBUFFER+1),A
+        LD      DE,BC_EBUFFER
+        LD      C,10
+        CALL    BDOS
+        LD      A,(BC_EBUFFER+1)
+        CP      1
+        JR      NZ,BC_ERET
+        LD      A,(BC_EBUFFER+2)
+        AND     05FH
+        CP      'Y'
+        JR      NZ,BC_ERET
+BC_EDELETE:
         LD      DE,BC_FCB
         LD      C,19
         CALL    BDOS
         CP      0FFH
-        RET     NZ
+        JR      NZ,BC_ERET
+BC_ENOFILE:
         LD      DE,BC_NOFILE
-        JP      BC_PRINT
-BC_USEERA:
-        LD      DE,BC_UERA
-        JP      BC_PRINT
+        LD      C,9
+        CALL    BDOS
+BC_ERET:
+        JP      BC_DURST
 
 BC_TYPE:
         LD      A,B
@@ -661,7 +689,7 @@ BC_ALL:        DB      '*.*'
 BC_NL:         DB      13,10,'$'
 BC_SEP:        DB      ' : ','$'
 BC_NOFILE:     DB      13,10,'NO FILE',13,10,'$'
-BC_UERA:       DB      13,10,'ERA filename',13,10,'$'
+BC_ECONF:      DB      13,10,'ALL (Y/N)? $'
 BC_UTYPE:      DB      13,10,'TYPE filename',13,10,'$'
 BC_UREN:       DB      13,10,'REN new=old or REN new old',13,10,'$'
 BC_CMDPTR:     DW      0
@@ -681,6 +709,7 @@ BC_UTARG:      DB      0FFH
 BC_EXMASK:     DB      0FFH
 BC_DCOL:       DB      0
 BC_DFOUND:     DB      0
+BC_EBUFFER:    DB      2,0,0,0
 BC_FCB:
         REPT    36
         DB      0
