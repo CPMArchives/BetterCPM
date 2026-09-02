@@ -187,7 +187,8 @@ def main() -> None:
     resident_path = ROOT / "build/system/resident.bin"
     command_path = ROOT / "build/ccp/ccp.rlm"
     basic_cpx_path = ROOT / "build/cpx/BASIC.CPX"
-    for path in (resident_path, command_path, basic_cpx_path):
+    cpx_utility_path = ROOT / "build/utilities/CPX.COM"
+    for path in (resident_path, command_path, basic_cpx_path, cpx_utility_path):
         if not path.is_file():
             raise SystemExit(f"missing system-image input: {path}")
     boot = assemble(args.assembler, SOURCE / "boot.mac", BUILD / "boot.bin", BOOT_ADDRESS)
@@ -234,7 +235,8 @@ def main() -> None:
             ("BTFILL.DAT", bytes(filler_blocks * ALLOCATION_BLOCK_BYTES)),
         ))
     image = install(boot, stage1, resident, command,
-                    [("HELLO.COM", HELLO_COM), *extras])
+                    [("HELLO.COM", HELLO_COM),
+                     ("CPX.COM", cpx_utility_path.read_bytes()), *extras])
     output = args.output.resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_bytes(image)

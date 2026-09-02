@@ -1075,6 +1075,23 @@ def main() -> None:
     require(cpu.a == cpu.l == 0 and cpu.b == cpu.h == 0,
             "unsupported BDOS selector did not return conventional zero")
 
+    # BetterCP/M's provisional Function 200 owns active CPX-profile mutation.
+    cpu.mem[0xC094], cpu.mem[0xC096] = 1, 4
+    cpu.c, cpu.e = 200, 0
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 1, "CPX control did not report BASIC.CPX loaded")
+    cpu.c, cpu.e = 200, 2
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 0 and cpu.mem[0xC094] == 0,
+            "CPX control did not unload the active BASIC profile")
+    cpu.c, cpu.e = 200, 1
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 0 and cpu.mem[0xC094] == 1 and cpu.mem[0xC096] == 4,
+            "CPX control did not restore the active BASIC profile")
+    cpu.c, cpu.e = 200, 3
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 0xFF, "CPX control accepted an unknown operation")
+
     cpu.run(DIR_BASE + 15)       # invalidate, forcing storage on next Open
     cpu.mem[platform_read:platform_read + 4] = bytes((0x3E, 0x05, 0xB7, 0xC9))
     cpu.c, cpu.e = 14, 0

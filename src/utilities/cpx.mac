@@ -1,0 +1,103 @@
+; BetterCP/M CPX transient manager, proof interface.
+
+BDOS            EQU     0005H
+CMDLEN          EQU     0080H
+CMDDATA         EQU     0081H
+CPXFUNC         EQU     200
+
+        CSEG
+        .PHASE  0103H
+
+START:
+        LD      A,(CMDLEN)
+        LD      B,A
+        LD      HL,CMDDATA
+SKIPSPACE:
+        LD      A,B
+        OR      A
+        JR      Z,USAGE
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,HAVELEN
+        INC     HL
+        DEC     B
+        JR      SKIPSPACE
+HAVELEN:
+        LD      A,B
+        CP      4
+        JR      Z,TRYLIST
+        CP      10
+        JR      Z,TRYLOAD
+        CP      12
+        JR      Z,TRYUNLOAD
+USAGE:
+        LD      DE,USEMSG
+        CALL    PRINT
+        JR      DONE
+TRYLIST:
+        LD      DE,KLIST
+        LD      B,4
+        CALL    EQUAL
+        JR      NZ,USAGE
+        LD      E,0
+        LD      C,CPXFUNC
+        CALL    BDOS
+        OR      A
+        JR      Z,LISTNONE
+        CP      1
+        JR      NZ,LISTBAD
+        LD      DE,LISTBASIC
+        CALL    PRINT
+        JR      DONE
+LISTNONE:
+        LD      DE,LISTEMPTY
+        CALL    PRINT
+        JR      DONE
+LISTBAD:
+        LD      DE,LISTERROR
+        CALL    PRINT
+        JR      DONE
+TRYLOAD:
+        LD      DE,KLOAD
+        LD      B,10
+        CALL    EQUAL
+        JR      NZ,USAGE
+        LD      E,1
+        JR      CHANGE
+TRYUNLOAD:
+        LD      DE,KUNLOAD
+        LD      B,12
+        CALL    EQUAL
+        JR      NZ,USAGE
+        LD      E,2
+CHANGE:
+        LD      C,CPXFUNC
+        CALL    BDOS
+        OR      A
+        JR      NZ,LISTBAD
+DONE:
+        LD      C,0
+        JP      BDOS
+
+EQUAL:
+        LD      A,(DE)
+        CP      (HL)
+        RET     NZ
+        INC     DE
+        INC     HL
+        DJNZ    EQUAL
+        RET
+PRINT:
+        LD      C,9
+        JP      BDOS
+
+KLIST:          DB      'LIST'
+KLOAD:          DB      'LOAD BASIC'
+KUNLOAD:        DB      'UNLOAD BASIC'
+LISTBASIC:      DB      13,10,'BASIC.CPX loaded',13,10,'$'
+LISTEMPTY:      DB      13,10,'No CPXs loaded',13,10,'$'
+LISTERROR:      DB      13,10,'CPX profile error',13,10,'$'
+USEMSG:         DB      13,10,'CPX LIST | LOAD BASIC | UNLOAD BASIC',13,10,'$'
+
+        .DEPHASE
+        END     START

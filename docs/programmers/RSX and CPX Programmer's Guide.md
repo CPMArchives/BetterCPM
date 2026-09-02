@@ -220,6 +220,18 @@ It is reconstructed on cold and warm boot. The CCP still contains its older
 command copies during the transition; CPX-first dispatch verifies that the
 module implementations are the ones normally exercised.
 
+### 7.3 Provisional runtime manager
+
+`CPX.COM` currently provides `LIST`, `LOAD BASIC`, and `UNLOAD BASIC`.
+Configuration changes affect the active reconstruction table, then terminate
+through WBOOT so fixed resident code performs all relocation. The manager is
+never required to move or overwrite the environment in which it is executing.
+
+Provisional BetterCP/M BDOS Function 200 mediates this proof. Its current
+`E=0/1/2` status/load/unload operations are deliberately narrow and are not a
+stable third-party ABI. A later versioned request-block interface must replace
+or formally supersede them before arbitrary CPXs are supported.
+
 The final CPX ABI must additionally define:
 
 - initialization and shutdown calls;
@@ -317,6 +329,7 @@ The following are deliberately open:
 - the final RSX dispatch and bypass ABI;
 - the expanded, versioned CPX ABI;
 - loader and configuration command syntax;
+- general CPX enumeration beyond the BASIC proof profile;
 - module discovery and enumeration services;
 - persistent configuration storage;
 - state-export and state-import representation;

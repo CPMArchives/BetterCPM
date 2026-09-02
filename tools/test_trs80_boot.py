@@ -14,6 +14,7 @@ EXPECTED_LINES = (
     b"",
     b"A>DIR",
     b"HELLO.COM",
+    b"CPX.COM",
     b"A>HELLO WORLD",
     b"Hello from BetterCP/M WORLD",
     b"A>",

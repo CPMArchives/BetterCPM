@@ -2,7 +2,7 @@
 
 BetterCP/M is an effort to design a compact, maintainable successor to CP/M 2.2 while preserving a rigorously defined CP/M-compatible environment.
 
-The project has entered implementation. Its reproducibly generated TRS-80 Model 4 disks now load the resident BetterCP/M BIOS, BDOS, directory services, and CCP; expose physical floppy drives A: through D:; boot to an `A>` prompt under `trs80gp`; provide resident `DIR`, `VER`, `WARM`, and `USER` commands plus a native-assemblable `ERA.COM`; load transient `.COM` programs with CP/M command tails and default FCBs; and complete clean independent physical compatibility passes for `ENTRYTST /SAFE` (25 passes), `BDOSTEST /SAFE` (56 passes), `FILETEST /SAFE` (28 passes with no omissions), and the complete applicable RANDTEST catalog: 41 required passes and 7 diagnostic observations. The complete 72-item DIRTEST catalog is also accounted for: all 52 required cases pass physically, all 15 diagnostics are observed, and its 5 private-mechanism or otherwise out-of-scope cases are explicitly identified. CPUTEST closes its five-item processor catalog with 2 required passes, 1 observation, and 2 explicit exclusions. BIOSTEST now records 29 physical required passes, including write-protect recovery, controlled logical-device behavior, and all three retained-evidence BOOT/WBOOT procedures, plus 11 non-guaranteed observations; its remaining 6 catalog entries are explicitly provider-dependent, optional, or out of scope. The build also produces canonical cross-drive, multi-user, full-disk, and genuinely blank disposable fixtures for four-drive testing.
+The project has entered implementation. Its reproducibly generated TRS-80 Model 4 disks now load the resident BetterCP/M BIOS, BDOS, directory services, and CCP; expose physical floppy drives A: through D:; boot to an `A>` prompt under `trs80gp`; reconstruct a relocatable `BASIC.CPX` providing `DIR`, `ERA`, `TYPE`, and `REN`; and use `CPX.COM` to list, unload, and reload that extension at runtime. The system also provides transitional resident `DIR`, `VER`, `WARM`, and `USER` commands, loads transient `.COM` programs with CP/M command tails and default FCBs, and completes clean independent physical compatibility passes for `ENTRYTST /SAFE` (25 passes), `BDOSTEST /SAFE` (56 passes), `FILETEST /SAFE` (28 passes with no omissions), and the complete applicable RANDTEST catalog: 41 required passes and 7 diagnostic observations. The complete 72-item DIRTEST catalog is also accounted for: all 52 required cases pass physically, all 15 diagnostics are observed, and its 5 private-mechanism or otherwise out-of-scope cases are explicitly identified. CPUTEST closes its five-item processor catalog with 2 required passes, 1 observation, and 2 explicit exclusions. BIOSTEST now records 29 physical required passes, including write-protect recovery, controlled logical-device behavior, and all three retained-evidence BOOT/WBOOT procedures, plus 11 non-guaranteed observations; its remaining 6 catalog entries are explicitly provider-dependent, optional, or out of scope. The build also produces canonical cross-drive, multi-user, full-disk, and genuinely blank disposable fixtures for four-drive testing.
 
 ## Design direction
 
@@ -132,6 +132,7 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Engineering Specification 97`](docs/engineering/97%20Relocatable%20CCP%20and%20WBOOT%20Restoration.md) records the CCP-only reconstruction milestone and its then-current fixed `C000h` transient ceiling.
 [`Engineering Specification 98`](docs/engineering/98%20Calculated%20Command%20Environment.md) removes the temporary CCP-size slot, establishes the movable `BFFDh` compatibility gateway, calculates the current CCP at `BAFDh`, and reconstructs an ordered persistent CPX profile before the CCP on every cold or warm boot.
 [`Engineering Specification 99`](docs/engineering/99%20BASIC%20CPX%20and%20Keyboard%20Rollover.md) installs the first production `BASIC.CPX` with `DIR`, `ERA`, `TYPE`, and `REN`, verifies native/cross relocation parity and WBOOT reconstruction, and replaces the Model 4 whole-matrix key-release wait with a rollover-safe pending-key queue.
+[`Engineering Specification 100`](docs/engineering/100%20Runtime%20CPX%20Manager.md) adds `CPX.COM`, provisional fixed-core profile control, and a physical runtime proof that BASIC.CPX can be listed, unloaded, and reloaded through safe WBOOT reconstruction.
 [`Engineering Specification 25`](docs/engineering/25%20Allocation%20and%20DPB%20Pointers.md) exposes the current drive's reconstructed allocation vector and live 15-byte disk parameter block.
 [`Engineering Specification 26`](docs/engineering/26%20Directory%20Search%20and%20DMA.md) adds Search First/Search Next continuation, wildcard and all-user matching, and complete directory-record transfer to the selected DMA address.
 [`Engineering Specification 27`](docs/engineering/27%20Unchanged%20FCB%20Close.md) adds the non-mutating Close File boundary for unchanged activated FCBs and safely rejects dirty commits until writeback exists.
@@ -159,6 +160,8 @@ python3 tools/test_ccpreload.py
 python3 tools/build_native_ccp.py
 python3 tools/build_basic_cpx.py
 python3 tools/build_native_basic_cpx.py
+python3 tools/build_cpx_utility.py
+python3 tools/build_native_cpx_utility.py
 python3 tools/build_system.py
 python3 tools/test_system.py
 python3 tools/build_native_system.py
@@ -166,6 +169,7 @@ python3 tools/build_trs80_boot.py
 python3 tools/build_native_trs80.py
 python3 tools/test_trs80_boot.py
 python3 tools/test_trs80_keyboard_overlap.py
+python3 tools/test_cpx_manager.py
 ```
 
 The native build runs ZSM4 and Digital Research LINK under CP/M and must match the cross-assembled binaries byte for byte. The emulator test boots the generated 790K DMK through the Model 4 ROM and both loader stages, loads the composed resident image, reconstructs the system, and verifies the CCP `A>` prompt.

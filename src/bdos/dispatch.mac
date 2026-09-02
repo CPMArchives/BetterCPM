@@ -29,6 +29,8 @@ DIRRREAD        EQU     0D639H  ; twentieth directory-service vector
 DIRRWRIT        EQU     0D63CH  ; twenty-first directory-service vector
 DIRRZERO        EQU     0D63FH  ; twenty-second directory-service vector
 DIRSELECT       EQU     0D642H  ; select/reuse a logical drive context
+CPTCOUNT        EQU     0C094H  ; active CPX reconstruction profile
+CPTABLE         EQU     0C096H
 
         CSEG
         .PHASE  BDOSBASE
@@ -117,6 +119,8 @@ BDOS:
         JP      Z,BF_RSTDR
         CP      40
         JP      Z,BF_RZERO
+        CP      200             ; provisional BetterCP/M CPX control service
+        JP      Z,BF_CPXCTL
 ; Patch 2026-09-01: selectors above Function 40 conventionally return zero.
         XOR     A
         JP      BDOS_RETURN
@@ -143,6 +147,46 @@ BF_SETIO:
         LD      A,E
         LD      (0003H),A       ; keep direct and BDOS access to IOBYTE coherent
         XOR     A               ; deterministic result for an output operation
+        JP      BDOS_RETURN
+
+; BetterCP/M Function 200, provisional CPX profile control. E=0 queries the
+; BASIC.CPX state, E=1 makes BASIC the active one-module profile, and E=2
+; removes it. The transient manager invokes Function 0 after a successful
+; change so WBOOT performs all relocation and chain reconstruction safely.
+BF_CPXCTL:
+        LD      A,E
+        OR      A
+        JR      Z,BCX_QUERY
+        CP      1
+        JR      Z,BCX_LOAD
+        CP      2
+        JR      Z,BCX_UNLOAD
+        LD      A,0FFH
+        JP      BDOS_RETURN
+BCX_QUERY:
+        LD      A,(CPTCOUNT)
+        OR      A
+        JP      Z,BDOS_RETURN
+        CP      1
+        JR      NZ,BCX_BAD
+        LD      A,(CPTABLE)
+        CP      4
+        JR      NZ,BCX_BAD
+        LD      A,1
+        JP      BDOS_RETURN
+BCX_LOAD:
+        LD      A,4
+        LD      (CPTABLE),A
+        LD      A,1
+        LD      (CPTCOUNT),A
+        XOR     A
+        JP      BDOS_RETURN
+BCX_UNLOAD:
+        XOR     A
+        LD      (CPTCOUNT),A
+        JP      BDOS_RETURN
+BCX_BAD:
+        LD      A,0FFH
         JP      BDOS_RETURN
 
 ; Print the $-terminated string at DE through the same cooked path as
