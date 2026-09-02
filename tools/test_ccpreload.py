@@ -152,7 +152,7 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
 def main() -> None:
     module = MODULE.read_bytes()
     allocation = struct.unpack_from("<H", module, 10)[0]
-    calculated = 0xBFFD - allocation
+    calculated = 0xBDFD - allocation
     require(run_at(calculated) == relocated(module, calculated),
             "calculated-base module payload was not relocated correctly")
     # Keep the deliberately non-page-aligned relocation proof far enough below

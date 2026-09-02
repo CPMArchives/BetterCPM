@@ -12,10 +12,13 @@ can provide richer interactive behavior.
 The editor supports:
 
 - Left and Right cursor movement within the current line;
+- WordStar `^S`/`^D` character movement and `^A`/`^F` word movement;
 - insert mode and overwrite mode, toggled by Insert;
-- Backspace/Delete of the character immediately left of the cursor;
-- Up to recall the preceding command;
-- Down to dismiss recalled text and restore an empty line;
+- `^V` as an insert/overwrite alias;
+- `^H` or DEL to remove the character left of the cursor;
+- `^G` to remove the character under the cursor;
+- `^T` to remove the next word and adjacent spacing;
+- `^E`/Up and `^X`/Down to traverse persistent command history;
 - a 127-character command limit.
 
 Each new command starts in insert mode.  Typing at the end appends in either
@@ -36,12 +39,12 @@ prevents an interior cursor from exposing unrelated page-zero bytes as glyphs.
 
 ## Model 4 binding
 
-The shared Model 4 BIOS now publishes its special-key matrix row using the
-traditional control-byte values for Enter, Clear, Break, Up, Down, Left, and
-Right.  Clear is the physical Insert/overwrite toggle.  The unmodified Left
-key moves the cursor; Shift-Left produces DEL (`7Fh`) for Backspace/Delete.
-This remains a platform binding; the CCP editor consumes logical bytes and does
-not inspect Model 4 hardware.
+The shared Model 4 BIOS publishes distinct internal logical bytes for physical
+Left and Right so they do not collide with `^H` and other ASCII controls.
+Control-letter chords are translated from the modifier row. Clear remains the
+physical Insert/overwrite toggle; Shift-Left produces DEL (`7Fh`). This remains
+a platform binding: the CCP consumes logical bytes and does not inspect Model 4
+hardware.
 
 The compact keyboard table remains within one linked page in every current
 consumer.  Its row-pointer increment is correspondingly kept eight-bit so the
@@ -50,10 +53,10 @@ include the new Shift-Left translation without exceeding one sector.
 
 ## Memory result
 
-The editor, one-command history buffer, editing state, and portable cursor
-fallback enlarge the CCP to 1963 bytes, with a 2048-byte page-rounded
-allocation. The command loader
-automatically calculates the new CCP base at `B7FDh`; no fixed address or
+The editor, history client, editing state, and portable cursor fallback enlarge
+the CCP to 2361 bytes, with a 2560-byte page-rounded allocation. With the
+current 512-byte persistent history reservation, the command loader
+automatically calculates the default CCP base at `B3FDh`; no fixed CCP address or
 temporary ceiling is introduced.
 
 ## Verification

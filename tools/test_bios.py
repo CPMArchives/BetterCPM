@@ -182,6 +182,14 @@ class Z80:
                 self.carry = self.a < value
                 self.a = (self.a - value) & 0xFF
                 self.z = self.a == 0
+            elif op == 0x91:            # SUB C
+                self.carry = self.a < self.c
+                self.a = (self.a - self.c) & 0xFF
+                self.z = self.a == 0
+            elif op == 0x93:            # SUB E
+                self.carry = self.a < self.e
+                self.a = (self.a - self.e) & 0xFF
+                self.z = self.a == 0
             elif op == 0x3D:            # DEC A
                 self.a = (self.a - 1) & 0xFF
                 self.z = self.a == 0
@@ -202,6 +210,12 @@ class Z80:
                 self.bc = (self.bc + 1) & 0xFFFF
             elif op == 0x13:            # INC DE
                 self.de = (self.de + 1) & 0xFFFF
+            elif op == 0x1C:            # INC E
+                self.e = (self.e + 1) & 0xFF
+                self.z = self.e == 0
+            elif op == 0x1D:            # DEC E
+                self.e = (self.e - 1) & 0xFF
+                self.z = self.e == 0
             elif op == 0x23:            # INC HL
                 self.hl = (self.hl + 1) & 0xFFFF
             elif op == 0x34:            # INC (HL)
@@ -315,6 +329,8 @@ class Z80:
                 self.mem[self.hl] = (self.mem[self.hl] + 1) & 0xFF
             elif op == 0xB9:            # CP C
                 self.z, self.carry = self.a == self.c, self.a < self.c
+            elif op == 0xBB:            # CP E
+                self.z, self.carry = self.a == self.e, self.a < self.e
             elif op == 0xBC:            # CP H
                 self.z, self.carry = self.a == self.h, self.a < self.h
             elif op == 0xBD:            # CP L
@@ -545,6 +561,16 @@ def main() -> None:
     cpu.run(scan)
     require(cpu.a == ord("?"), "matrix scanner missed Shift-slash question mark")
     cpu.mem[0xF420] = cpu.mem[0xF480] = 0
+    cpu.mem[0xF402], cpu.mem[0xF480] = 0x01, 0x04  # Control-H
+    cpu.run(scan)
+    require(cpu.a == 8, "matrix scanner did not translate Control-H")
+    cpu.mem[0xF402], cpu.mem[0xF440], cpu.mem[0xF480] = 0, 0x20, 0
+    cpu.run(scan)
+    require(cpu.a == 28, "physical Left was not distinct from Control-H")
+    cpu.mem[0xF480] = 0x01                        # Shift-Left
+    cpu.run(scan)
+    require(cpu.a == 127, "Shift-Left did not produce DEL")
+    cpu.mem[0xF440] = cpu.mem[0xF480] = 0
 
     conin_impl = cpu.word(entries[3] + 1)
     platform_conin = cpu.word(conin_impl + 1)

@@ -2,6 +2,8 @@
 ; Persistent CPX records are eight-character, space-padded filename stems.
 ; The protected loader supplies .CPX and reads them through directory services.
 RELOADBASE      EQU     0E900H
+HISTBASE        EQU     0BE00H
+BASEGATE        EQU     HISTBASE-3
 BIOPHREAD       EQU     0EF33H
 DIRLOGIN        EQU     0D60CH
 FLOPEN          EQU     0D000H
@@ -132,9 +134,9 @@ RXQUERY:
 RXUNLOAD:
         LD      HL,0
         LD      (ECB_RSXHEAD),HL
-        LD      HL,0C000H
+        LD      HL,HISTBASE
         LD      (ECB_RSXLOW),HL
-        LD      HL,0BFFDH
+        LD      HL,BASEGATE
         LD      (ECB_TPATOP),HL
         XOR     A
         RET
@@ -169,7 +171,7 @@ RXMAGLP:
         LD      A,H
         OR      A
         JR      Z,RXBAD
-        LD      DE,0C000H
+        LD      DE,HISTBASE
         EX      DE,HL
         OR      A
         SBC     HL,DE

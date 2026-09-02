@@ -2,6 +2,7 @@
 ;
 ; This is a bring-up interface, not the CP/M BIOS ABI.
 
+M4_EDITOR_KEYS EQU     0
         INCLUDE m4cons.inc
 
 HAL_INIT:

@@ -47,6 +47,7 @@ SIGNATURE:
         DB      'BetterCP/M C2 H1 S10'
 SIGLEN  EQU     $-SIGNATURE
 
+M4_EDITOR_KEYS EQU     0       ; output-only one-sector carrier omits CCP keys
         INCLUDE m4cons.inc
 B_PDrive:
         DB      1               ; standalone diagnostic targets drive 0

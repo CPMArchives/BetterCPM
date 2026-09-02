@@ -11,6 +11,8 @@ CCP = ROOT / "build/ccp/ccp.bin"
 CCP_MODULE = ROOT / "build/ccp/ccp.rlm"
 RESIDENT_BASE = 0xC000
 SYSTEM_INIT = 0xC000
+HISTORY_BASE = 0xBE00
+DEFAULT_GATEWAY = 0xBDFD
 FIXTURE = 0x7500
 FCB = 0x7700
 CALLER = 0x7800
@@ -90,8 +92,8 @@ def main() -> None:
     require(cpu.a == 0, "resident initialization failed")
     require(bytes(cpu.mem[0:3]) == bytes((0xC3, 0x03, 0xEF)),
             "warm-boot page-zero vector is wrong")
-    require(bytes(cpu.mem[5:8]) == bytes((0xC3, 0xFD, 0xBF)) and
-            bytes(cpu.mem[0xBFFD:0xC000]) == bytes((0xC3, 0x00, 0xC1)),
+    require(bytes(cpu.mem[5:8]) == bytes((0xC3, 0xFD, 0xBD)) and
+            bytes(cpu.mem[DEFAULT_GATEWAY:HISTORY_BASE]) == bytes((0xC3, 0x00, 0xC1)),
             "BDOS page-zero vector is wrong")
     cpu.mem[CALLER:CALLER + 4] = bytes((0xCD, 0x05, 0x00, 0xC9))
     old_stack = bdos_symbol("BDOS_OLDSP")
@@ -497,7 +499,7 @@ def main() -> None:
     # test bypasses only disk restoration so it can exercise portable WBOOT.
     ccp = CCP.read_bytes()
     allocation = (len(ccp) + 0xFF) & ~0xFF
-    ccp_base = 0xBFFD - allocation
+    ccp_base = DEFAULT_GATEWAY - allocation
     ccp = relocated(CCP_MODULE.read_bytes(), ccp_base)
     cpu.mem[ccp_base:ccp_base + len(ccp)] = ccp
     cpu.mem[0xC08C:0xC08E] = ccp_base.to_bytes(2, "little")
@@ -525,15 +527,15 @@ def main() -> None:
             f"in={cpu.word(0x7080):04X} out={cpu.word(0x7090):04X} "
             f"ccp={bytes(cpu.mem[ccp_base:ccp_base + 0x2A]).hex()} {transcript[:160]!r}")
     require(bytes(cpu.mem[0:3]) == bytes((0xC3, 0x03, 0xEF)) and
-            bytes(cpu.mem[5:8]) == bytes((0xC3, 0xFD, 0xBF)) and
-            bytes(cpu.mem[0xBFFD:0xC000]) == bytes((0xC3, 0x00, 0xC1)) and
+            bytes(cpu.mem[5:8]) == bytes((0xC3, 0xFD, 0xBD)) and
+            bytes(cpu.mem[DEFAULT_GATEWAY:HISTORY_BASE]) == bytes((0xC3, 0x00, 0xC1)) and
             cpu.word(bdos_symbol("BDOS_DMA")) == 0x0080,
             "WBOOT did not reconstruct gateways and default DMA state")
     require(bytes(cpu.mem[0xC080:0xC084]) == b"BM\x01\x00" and
             cpu.word(0xC084) == 0 and cpu.word(0xC086) == 0 and
-            cpu.word(0xC088) == 0xC000 and cpu.word(0xC08A) == 0xBFFD and
+            cpu.word(0xC088) == HISTORY_BASE and cpu.word(0xC08A) == DEFAULT_GATEWAY and
             cpu.word(0xC08C) == ccp_base and cpu.word(0xC08E) == allocation and
-            cpu.word(0xC090) == 0xBFFD,
+            cpu.word(0xC090) == DEFAULT_GATEWAY,
             "extension control block does not publish the default layout")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")

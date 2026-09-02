@@ -19,6 +19,12 @@ CCPBASE         EQU     0BB00H
 BDOS            EQU     0C100H
 CPXHEAD         EQU     0C086H  ; active head in fixed extension descriptor
 TPATOP          EQU     0C090H  ; exclusive upper bound for transient loads
+HISTBASE        EQU     0BE00H  ; protected warm-boot-persistent history
+CCP_HPOS        EQU     HISTBASE+6
+CCP_HTMP        EQU     HISTBASE+7
+CCP_HSKIP       EQU     HISTBASE+8
+HISTDATA        EQU     HISTBASE+9
+HISTCAP         EQU     503
 
         CSEG
         .PHASE  CCPBASE
@@ -105,9 +111,11 @@ CCP_DUPONE:
 ; direct console input so cursor motion and insert/overwrite policy do not
 ; leak into the compatibility interface.
 CCP_READLN:
+        CALL    CCP_HINIT
         XOR     A
         LD      (CCP_COUNT),A
         LD      (CCP_EDCUR),A
+        LD      (CCP_HPOS),A
         INC     A               ; each new line starts in insert mode
         LD      (CCP_EDINS),A
         JP      CCP_EDDRAW      ; publish the initial visible cursor
@@ -120,17 +128,37 @@ CCP_EDGET:
         AND     07FH
         CP      13
         JP      Z,CCP_EDFIN
-        CP      8               ; Model 4 Left arrow / ASCII Backspace byte
+        CP      19              ; ^S / physical Left: character left
         JP      Z,CCP_EDLEFT
-        CP      9
+        CP      28
+        JP      Z,CCP_EDLEFT
+        CP      4               ; ^D / physical Right: character right
         JP      Z,CCP_EDRIGHT
-        CP      11
+        CP      29
+        JP      Z,CCP_EDRIGHT
+        CP      1               ; ^A: word left
+        JP      Z,CCP_EDWLEFT
+        CP      6               ; ^F: word right
+        JP      Z,CCP_EDWRIGHT
+        CP      20              ; ^T: delete through next word
+        JP      Z,CCP_EDDWORD
+        CP      5               ; ^E: previous history entry
         JP      Z,CCP_EDUP
-        CP      10
+        CP      11              ; physical Up remains an alias
+        JP      Z,CCP_EDUP
+        CP      24              ; ^X: next history entry
         JP      Z,CCP_EDDOWN
-        CP      31              ; Model 4 CLEAR key is the Insert toggle
+        CP      10              ; physical Down remains an alias
+        JP      Z,CCP_EDDOWN
+        CP      22              ; ^V: Insert/overwrite toggle
         JP      Z,CCP_EDTOG
-        CP      127             ; retain DEL as a second deletion spelling
+        CP      31              ; Model 4 CLEAR remains an alias
+        JP      Z,CCP_EDTOG
+        CP      7               ; ^G: delete character under cursor
+        JP      Z,CCP_EDDEL
+        CP      8               ; ^H: delete character left of cursor
+        JP      Z,CCP_EDBS
+        CP      127             ; Shift-Left / DEL
         JP      Z,CCP_EDBS
         CP      32
         JR      C,CCP_EDGET
@@ -197,14 +225,14 @@ CCP_EDPUT:
         INC     (HL)
         LD      HL,CCP_EDCUR
         INC     (HL)
-        JR      CCP_EDDRAW
+        JP      CCP_EDDRAW
 CCP_EDLEFT:
         LD      A,(CCP_EDCUR)
         OR      A
         JP      Z,CCP_EDGET
         DEC     A
         LD      (CCP_EDCUR),A
-        JR      CCP_EDDRAW
+        JP      CCP_EDDRAW
 CCP_EDRIGHT:
         LD      A,(CCP_EDCUR)
         LD      B,A
@@ -215,12 +243,178 @@ CCP_EDRIGHT:
         INC     B
         LD      A,B
         LD      (CCP_EDCUR),A
-        JR      CCP_EDDRAW
+        JP      CCP_EDDRAW
+CCP_EDWLEFT:
+        LD      A,(CCP_EDCUR)
+        OR      A
+        JP      Z,CCP_EDGET
+        LD      E,A
+        LD      D,0
+CCP_WLSpace:
+        DEC     E
+        LD      HL,CCP_DATA
+        ADD     HL,DE
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,CCP_WLWORD
+        LD      A,E
+        OR      A
+        JR      NZ,CCP_WLSpace
+        JR      CCP_WLDONE
+CCP_WLWORD:
+        LD      A,E
+        OR      A
+        JR      Z,CCP_WLDONE
+        DEC     E
+        LD      HL,CCP_DATA
+        ADD     HL,DE
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,CCP_WLWORD
+        INC     E
+CCP_WLDONE:
+        LD      A,E
+        LD      (CCP_EDCUR),A
+        JP      CCP_EDDRAW
+CCP_EDWRIGHT:
+        LD      A,(CCP_EDCUR)
+        LD      E,A
+        LD      A,(CCP_COUNT)
+        CP      E
+        JP      Z,CCP_EDGET
+CCP_WRWORD:
+        LD      D,0
+        LD      HL,CCP_DATA
+        ADD     HL,DE
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,CCP_WRSPACE
+        INC     E
+        LD      A,(CCP_COUNT)
+        CP      E
+        JR      NZ,CCP_WRWORD
+        JR      CCP_WRDONE
+CCP_WRSPACE:
+        INC     E
+        LD      A,(CCP_COUNT)
+        CP      E
+        JR      Z,CCP_WRDONE
+        LD      D,0
+        LD      HL,CCP_DATA
+        ADD     HL,DE
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,CCP_WRSPACE
+CCP_WRDONE:
+        LD      A,E
+        LD      (CCP_EDCUR),A
+        JP      CCP_EDDRAW
 CCP_EDTOG:
         LD      A,(CCP_EDINS)
         XOR     1
         LD      (CCP_EDINS),A
         JP      CCP_EDGET
+CCP_EDDEL:
+        LD      A,(CCP_EDCUR)
+        LD      HL,CCP_COUNT
+        CP      (HL)
+        JP      Z,CCP_EDGET
+        LD      E,A
+        LD      D,0
+        LD      HL,CCP_DATA
+        ADD     HL,DE
+        LD      D,H
+        LD      E,L
+        INC     HL
+        LD      A,(CCP_COUNT)
+        LD      C,A
+        LD      A,(CCP_EDCUR)
+        CPL
+        INC     A
+        ADD     A,C
+        DEC     A
+        JR      Z,CCP_DELDONE
+        LD      C,A
+        LD      B,0
+        LDIR
+CCP_DELDONE:
+        LD      HL,CCP_COUNT
+        DEC     (HL)
+        JP      CCP_EDDRAW
+CCP_EDDWORD:
+        LD      A,(CCP_EDCUR)
+        LD      E,A
+        LD      A,(CCP_COUNT)
+        CP      E
+        JP      Z,CCP_EDGET
+; Skip leading spaces, the next word, and its trailing spaces.
+CCP_DWLEAD:
+        LD      D,0
+        LD      HL,CCP_DATA
+        ADD     HL,DE
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,CCP_DWWORD
+        INC     E
+        LD      A,(CCP_COUNT)
+        CP      E
+        JR      NZ,CCP_DWLEAD
+        JR      CCP_DWMOVE
+CCP_DWWORD:
+        INC     E
+        LD      A,(CCP_COUNT)
+        CP      E
+        JR      Z,CCP_DWMOVE
+        LD      D,0
+        LD      HL,CCP_DATA
+        ADD     HL,DE
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,CCP_DWWORD
+CCP_DWTAIL:
+        INC     E
+        LD      A,(CCP_COUNT)
+        CP      E
+        JR      Z,CCP_DWMOVE
+        LD      D,0
+        LD      HL,CCP_DATA
+        ADD     HL,DE
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,CCP_DWTAIL
+CCP_DWMOVE:
+        LD      A,E
+        LD      (CCP_HTMP),A    ; end of deleted range
+        LD      A,(CCP_EDCUR)
+        LD      C,A
+        LD      A,(CCP_HTMP)
+        SUB     C
+        LD      (CCP_HSKIP),A   ; number of bytes removed
+        LD      A,(CCP_COUNT)
+        SUB     E
+        LD      C,A
+        LD      B,0
+        LD      D,0
+        LD      HL,CCP_DATA
+        ADD     HL,DE           ; source = data + end
+        LD      A,(CCP_EDCUR)
+        LD      E,A
+        LD      D,0
+        PUSH    HL
+        LD      HL,CCP_DATA
+        ADD     HL,DE
+        EX      DE,HL           ; destination
+        POP     HL
+        LD      A,B
+        OR      C
+        JR      Z,CCP_DWNOCOPY
+        LDIR
+CCP_DWNOCOPY:
+        LD      A,(CCP_COUNT)
+        LD      HL,CCP_HSKIP
+        SUB     (HL)
+        LD      (CCP_COUNT),A
+        JP      CCP_EDDRAW
 CCP_EDBS:
         LD      A,(CCP_EDCUR)
         OR      A
@@ -250,22 +444,32 @@ CCP_BSEND:
         DEC     (HL)
         JR      CCP_EDDRAW
 CCP_EDUP:
-        LD      A,(CCP_HCOUNT)
+        CALL    CCP_HINIT
+        LD      A,(HISTBASE+3)
+        LD      HL,CCP_HPOS
+        CP      (HL)
+        JP      Z,CCP_EDGET
+        INC     (HL)
+        SUB     (HL)            ; zero-based oldest-to-newest record index
+        CALL    CCP_HGET
+        JP      CCP_EDDRAW
+CCP_EDDOWN:
+        LD      A,(CCP_HPOS)
         OR      A
         JP      Z,CCP_EDGET
-        LD      (CCP_COUNT),A
-        LD      (CCP_EDCUR),A
-        LD      C,A
-        LD      B,0
-        LD      HL,CCP_HDATA
-        LD      DE,CCP_DATA
-        LDIR
-        JR      CCP_EDDRAW
-CCP_EDDOWN:
+        DEC     A
+        LD      (CCP_HPOS),A
+        JR      Z,CCP_HCLEAR
+        LD      B,A
+        LD      A,(HISTBASE+3)
+        SUB     B
+        CALL    CCP_HGET
+        JP      CCP_EDDRAW
+CCP_HCLEAR:
         XOR     A
         LD      (CCP_COUNT),A
         LD      (CCP_EDCUR),A
-        JR      CCP_EDDRAW
+        JP      CCP_EDDRAW
 ; Redraw the whole logical line with the character under the cursor in the
 ; platform cursor presentation. Unsupported platforms get an inserted visible
 ; underscore. Erase one stale trailing cell, return to the left margin, then
@@ -391,12 +595,122 @@ CCP_EDFIN:
         LD      A,(CCP_COUNT)
         OR      A
         RET     Z
-        LD      (CCP_HCOUNT),A
+        JP      CCP_HADD
+
+; Persistent packed command history. The protected 512-byte region contains a
+; nine-byte control header followed by length-prefixed complete command lines. New
+; records evict the oldest whole records only when space is required.
+CCP_HINIT:
+        LD      A,(HISTBASE)
+        CP      'B'
+        JR      NZ,CCP_HRESET
+        LD      A,(HISTBASE+1)
+        CP      'H'
+        JR      NZ,CCP_HRESET
+        LD      A,(HISTBASE+2)
+        CP      1
+        RET     Z
+CCP_HRESET:
+        LD      HL,HISTBASE
+        LD      (HL),'B'
+        INC     HL
+        LD      (HL),'H'
+        INC     HL
+        LD      (HL),1
+        INC     HL
+        XOR     A
+        LD      (HL),A          ; record count
+        INC     HL
+        LD      (HL),A          ; used byte count, little endian
+        INC     HL
+        LD      (HL),A
+        RET
+
+; A selects a zero-based record from oldest to newest. Copy the complete line
+; into the reloadable CCP edit buffer and place the logical cursor at its end.
+CCP_HGET:
+        LD      B,A
+        LD      HL,HISTDATA
+CCP_HGLOOP:
+        LD      A,B
+        OR      A
+        JR      Z,CCP_HGFOUND
+        LD      E,(HL)
+        LD      D,0
+        INC     DE
+        ADD     HL,DE
+        DJNZ    CCP_HGLOOP
+CCP_HGFOUND:
+        LD      A,(HL)
+        LD      (CCP_COUNT),A
+        LD      (CCP_EDCUR),A
         LD      C,A
         LD      B,0
-        LD      HL,CCP_DATA
-        LD      DE,CCP_HDATA
+        INC     HL
+        LD      DE,CCP_DATA
         LDIR
+        RET
+
+CCP_HADD:
+        CALL    CCP_HINIT
+        LD      A,(CCP_COUNT)
+        INC     A
+        LD      (CCP_HTMP),A    ; required length byte plus command data
+CCP_HROOM:
+        LD      HL,(HISTBASE+4)
+        LD      A,(CCP_HTMP)
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE
+        LD      DE,HISTCAP+1
+        OR      A
+        SBC     HL,DE
+        JR      C,CCP_HAPPEND
+; Evict the oldest record and compact the packed region toward HISTDATA.
+        LD      A,(HISTDATA)
+        INC     A
+        LD      (CCP_HSKIP),A
+        LD      E,A
+        LD      D,0
+        LD      HL,(HISTBASE+4)
+        OR      A
+        SBC     HL,DE
+        LD      (HISTBASE+4),HL
+        LD      B,H
+        LD      C,L
+        LD      HL,HISTDATA
+        ADD     HL,DE
+        LD      DE,HISTDATA
+        LD      A,B
+        OR      C
+        JR      Z,CCP_HEMPTY
+        LDIR
+CCP_HEMPTY:
+        LD      HL,HISTBASE+3
+        DEC     (HL)
+        JR      CCP_HROOM
+CCP_HAPPEND:
+        LD      HL,HISTDATA
+        LD      DE,(HISTBASE+4)
+        ADD     HL,DE
+        LD      A,(CCP_COUNT)
+        LD      (HL),A
+        INC     HL
+        EX      DE,HL
+        LD      HL,CCP_DATA
+        LD      C,A
+        LD      B,0
+        LDIR
+        LD      HL,(HISTBASE+4)
+        LD      A,(CCP_HTMP)
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE
+        LD      (HISTBASE+4),HL
+        LD      HL,HISTBASE+3
+        INC     (HL)
+        XOR     A
+        LD      (CCP_HPOS),A
         RET
 
 ; Carry set means that the complete input line was navigation syntax, whether
@@ -1025,12 +1339,6 @@ CCP_EDINS:
         DB      1
 CCP_EDCHR:
         DB      0
-CCP_HCOUNT:
-        DB      0
-CCP_HDATA:
-        REPT    127
-        DB      0
-        ENDM
 
 CCP_FCB:
         REPT    36

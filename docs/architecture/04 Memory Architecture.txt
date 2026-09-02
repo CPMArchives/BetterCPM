@@ -192,12 +192,13 @@ size, TPA ceiling, and configuration generation.  Stable gateways consult
 the descriptor; movable components must not treat their current addresses as
 permanent ABI values.
 
-With no RSXs, the current implementation materializes the three-byte dynamic
-gateway immediately below the fixed system gateway at `BFFDh..BFFFh`.  The
-current 1,116-byte CCP requires five pages and is therefore calculated at
-`BAFDh`.  Transient programs may overwrite both the CCP and any CPXs below
-`BFFDh`.  WBOOT reconstructs the ordered CPX chain from persistent DATA and
-then reloads the CCP.  Neither `BFFDh` nor `BAFDh` is a permanent ABI address;
+With no RSXs, the current implementation reserves `BE00h..BFFFh` for a
+512-byte persistent command-history block and materializes the three-byte
+dynamic gateway immediately below it at `BDFDh..BDFFh`. The current CCP is
+page-rounded to ten pages and calculated below any CPXs at `B3FDh`. Transient
+programs may overwrite both the CCP and any CPXs below `BDFDh`. WBOOT
+reconstructs the ordered CPX chain from persistent DATA and
+then reloads the CCP. Neither `BDFDh` nor `B3FDh` is a permanent ABI address;
 installing RSXs moves the dynamic gateway and recalculates the command layout.
 
 

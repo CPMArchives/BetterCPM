@@ -15,6 +15,7 @@ BUILD = ROOT / "build/ccp"
 LINK_BASE = 0xBB00
 ALTERNATE_BASE = 0xBC01
 MODULE_HEADER_SIZE = 512
+DEFAULT_GATEWAY = 0xBDFD
 
 
 def assemble(assembler: Path, text: str, output: Path, listing: Path,
@@ -101,7 +102,7 @@ def main() -> None:
     print(f"{hashlib.sha256(data).hexdigest()}  {output.relative_to(ROOT)}")
     print(f"CCP bytes: {len(data)}")
     print(f"CCP allocation: {allocation_size} bytes; calculated base: "
-          f"{0xBFFD - allocation_size:04X}h")
+          f"{DEFAULT_GATEWAY - allocation_size:04X}h")
     print(f"CCP relocations: {len(offsets)}; module bytes: {module.stat().st_size}")
 
 

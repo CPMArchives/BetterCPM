@@ -1,6 +1,7 @@
 ; TRS-80 Model 4 binding for the compatibility BIOS console entries.
 
         INCLUDE hardware.inc
+M4_EDITOR_KEYS EQU     1
         INCLUDE m4cons.inc
         INCLUDE m4scroll.inc
 

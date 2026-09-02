@@ -8,7 +8,8 @@
 ; into explicit growth regions while leaving page-zero ABI addresses intact.
 SYSBASE         EQU     0C000H
 BDOS            EQU     0C100H
-CPMGATE         EQU     SYSBASE-3
+HISTBASE        EQU     SYSBASE-0200H ; 512-byte warm-boot-persistent history
+CPMGATE         EQU     HISTBASE-3
 DIRLOGIN        EQU     0D60CH
 BIOWBOOT        EQU     0EF03H
 
@@ -68,7 +69,7 @@ ECB_RSXHEAD:
 ECB_CPXHEAD:
         DW      0
 ECB_RSXLOW:
-        DW      SYSBASE
+        DW      HISTBASE
 ECB_CPXLOW:
         DW      CPMGATE
 ECB_CCPBASE:

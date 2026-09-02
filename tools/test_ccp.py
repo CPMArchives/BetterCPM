@@ -67,6 +67,50 @@ def main() -> None:
         require(bytes(machine.mem[fcb + 1:fcb + 12]) == expected,
                 f"lookup FCB is wrong for {command!r}")
 
+    # History belongs to protected persistent DATA, not the reloadable CCP.
+    # Store several complete variable-length commands, then retrieve both an
+    # interior and newest record through the CCP's public history helpers.
+    machine = cpu()
+    for command in (b"DIR", b"TYPE README.TXT", b"B:", b"HELLO WORLD"):
+        machine.mem[symbol("CCP_COUNT")] = len(command)
+        start = symbol("CCP_DATA")
+        machine.mem[start:start + len(command)] = command
+        call(machine, symbol("CCP_HADD"))
+    require(bytes(machine.mem[0xBE00:0xBE04]) == b"BH\x01\x04",
+            "persistent history header or record count is wrong")
+    for index, expected in ((1, b"TYPE README.TXT"), (3, b"HELLO WORLD")):
+        machine.a = index
+        call(machine, symbol("CCP_HGET"))
+        count = machine.mem[symbol("CCP_COUNT")]
+        require(bytes(machine.mem[symbol("CCP_DATA"):symbol("CCP_DATA") + count]) == expected,
+                f"persistent history retrieval failed for record {index}")
+
+    # Invoke editing actions with an Enter-returning direct-console stub. Each
+    # action flows through the real redraw/finalization path before returning.
+    editor_bdos = bytes((
+        0x79, 0xFE, 6, 0x28, 0x02, 0xAF, 0xC9,
+        0x3A, 0x00, 0x75, 0xC9,
+    ))
+    for routine, text, cursor, expected, expected_cursor in (
+        ("CCP_EDWLEFT", b"ONE TWO", 7, b"ONE TWO", 4),
+        ("CCP_EDWRIGHT", b"ONE TWO", 0, b"ONE TWO", 4),
+        ("CCP_EDDEL", b"ABC", 1, b"AC", 1),
+        ("CCP_EDBS", b"ABC", 2, b"AC", 1),
+        ("CCP_EDDWORD", b"ONE  TWO X", 0, b"TWO X", 0),
+    ):
+        machine = cpu()
+        machine.mem[0xC100:0xC100 + len(editor_bdos)] = editor_bdos
+        machine.mem[0x7500] = 13
+        machine.mem[symbol("CCP_COUNT")] = len(text)
+        machine.mem[symbol("CCP_EDCUR")] = cursor
+        start = symbol("CCP_DATA")
+        machine.mem[start:start + len(text)] = text
+        call(machine, symbol(routine))
+        count = machine.mem[symbol("CCP_COUNT")]
+        require(bytes(machine.mem[start:start + count]) == expected and
+                machine.mem[symbol("CCP_EDCUR")] == expected_cursor,
+                f"editor action {routine} produced the wrong line or cursor")
+
     # Exercise the ordinary two-operand default-FCB parser independently of
     # disk access. The second operand is the DRI profile fixture.
     machine = cpu()

@@ -115,11 +115,31 @@ M4_KEYBT:
 M4_KEYFD:
         LD      A,(DE)
         LD      C,A
-        LD      A,(KEYBASE+128) ; Model 4 modifier row: either Shift bit
+        LD      A,(KEYBASE+128) ; shifts, Control, Caps, and F1-F3
+        IF      M4_EDITOR_KEYS EQ 1
+        LD      B,A
+        AND     4
+        JR      Z,M4_KEYSHIFT
+; Publish ordinary ASCII control-letter values. This was previously omitted,
+; making WordStar-style CCP editing keys physically impossible on the Model 4.
+        LD      A,C
+        CP      '@'
+        RET     C
+        CP      060H
+        RET     NC
+        AND     01FH
+        RET
+M4_KEYSHIFT:
+        LD      A,B
+        ENDIF
         AND     3
         LD      A,C
         RET     Z
-        CP      8              ; Shift-Left supplies DEL/Backspace distinctly
+        IF      M4_EDITOR_KEYS EQ 1
+        CP      28             ; Shift-Left supplies DEL/Backspace distinctly
+        ELSE
+        CP      8
+        ENDIF
         LD      A,127
         RET     Z
         LD      A,C
@@ -145,7 +165,11 @@ M4_KEYTAB:
 ; Enter, Clear/Insert, Break, Up, Down, Left, Right, Space.  The CCP consumes
 ; them as editor keys; ordinary programs continue to receive the same bytes
 ; through BIOS CONIN and the BDOS console functions.
+        IF      M4_EDITOR_KEYS EQ 1
+        DB      13,31,3,11,10,28,29,' '
+        ELSE
         DB      13,31,3,11,10,8,9,' '
+        ENDIF
 M4CURSOR:
         DW      VIDEOBASE
 M4COLUMN:
