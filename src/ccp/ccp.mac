@@ -23,8 +23,9 @@ HISTBASE        EQU     0BE00H  ; protected warm-boot-persistent history
 CCP_HPOS        EQU     HISTBASE+6
 CCP_HTMP        EQU     HISTBASE+7
 CCP_HSKIP       EQU     HISTBASE+8
-HISTDATA        EQU     HISTBASE+9
-HISTCAP         EQU     503
+CCP_EDOLD       EQU     HISTBASE+9
+HISTDATA        EQU     HISTBASE+10
+HISTCAP         EQU     502
 
         CSEG
         .PHASE  CCPBASE
@@ -116,6 +117,7 @@ CCP_READLN:
         LD      (CCP_COUNT),A
         LD      (CCP_EDCUR),A
         LD      (CCP_HPOS),A
+        LD      (CCP_EDOLD),A
         INC     A               ; each new line starts in insert mode
         LD      (CCP_EDINS),A
         JP      CCP_EDDRAW      ; publish the initial visible cursor
@@ -511,9 +513,28 @@ CCP_CSLEN:
         LD      B,A
         POP     HL
         CALL    CCP_EDTEXT
+; Clear every cell retained from a previously longer rendering, plus one guard
+; cell. The former single-space cleanup left recalled text visible when ^X
+; returned from history to the empty live command line.
+        LD      A,(CCP_EDOLD)
+        LD      B,A
+        LD      A,(CCP_COUNT)
+        LD      (CCP_EDOLD),A
+        LD      C,A
+        LD      A,B
+        SUB     C
+        JR      NC,CCP_CLCNT
+        XOR     A
+CCP_CLCNT:
+        INC     A
+        LD      B,A
+CCP_CLLOOP:
+        PUSH    BC
         LD      E,' '
         LD      C,2
         CALL    BDOS
+        POP     BC
+        DJNZ    CCP_CLLOOP
         LD      E,13
         LD      C,2
         CALL    BDOS

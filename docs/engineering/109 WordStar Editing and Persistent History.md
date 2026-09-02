@@ -40,11 +40,16 @@ warm-boot-persistent DATA. It is below the fixed `C000h` system gateway and
 above installed RSXs. The default dynamic compatibility gateway consequently
 moves from `BFFDh` to `BDFDh`.
 
-The block contains a versioned control header and 503 bytes of packed,
+The block contains a versioned control header and 502 bytes of packed,
 length-prefixed command records. Complete command lines are appended in
 execution order. When necessary, the oldest whole records are evicted until
 the new record fits. Thus normal short commands yield substantially more
 history entries without truncating a legal 127-character command.
+
+The control header also retains the previous rendered command width while the
+CCP is active. Redraw clears the complete difference when a recalled line is
+replaced by a shorter entry or by the empty live line; stale characters are
+never merely hidden behind the logical zero-length buffer.
 
 The CCP keeps no authoritative history content in its reloadable image. It
 holds only the line currently being edited; `^E`/`^X` copy selected persistent
