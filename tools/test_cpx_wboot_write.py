@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify runtime BASIC.CPX list, unload, and reload in one boot session."""
+"""Verify physical writes after runtime CPX reconstruction and WBOOT."""
 from __future__ import annotations
 
 import subprocess
@@ -14,13 +14,10 @@ IMAGE = ROOT / "build/trs80/BetterCPM-Extended-80T-DS-System-790K.dmk"
 def main() -> None:
     for path in (DEFAULT_EMULATOR, IMAGE):
         if not path.is_file():
-            raise SystemExit(f"missing CPX manager test input: {path}")
-    commands = (
-        "CPX LOAD HELLO", "CPX LIST", "HELLO", "CPX UNLOAD BASIC",
-        "CPX LIST", "TYPE", "HELLO", "CPX UNLOAD HELLO", "CPX LIST",
-        "HELLO",
-    )
-    with tempfile.TemporaryDirectory(prefix="bettercpm-cpx-manager-") as temporary:
+            raise SystemExit(f"missing CPX write test input: {path}")
+    commands = ("CPX LOAD HELLO", "CPX LIST", "HELLO TOM",
+                "ERA HELLO.COM", "DIR")
+    with tempfile.TemporaryDirectory(prefix="bettercpm-cpx-write-") as temporary:
         disk = Path(temporary, IMAGE.name)
         disk.write_bytes(IMAGE.read_bytes())
         invocation = [str(DEFAULT_EMULATOR), "-m4", "-batch", "-turbo",
@@ -29,24 +26,23 @@ def main() -> None:
             if index:
                 invocation.extend(("-id", "900"))
             invocation.extend(key_args(command + "\r"))
-        invocation.extend(("-id", "1800", "-it", "-ix"))
+        invocation.extend(("-id", "2200", "-it", "-ix"))
         subprocess.run(invocation, cwd=temporary, check=True)
         screen = Path(temporary, "trs80-text-0.bin").read_bytes()[:80 * 24]
     ordered = (
         b"BASIC : DIR, ERA, TYPE, REN", b"HELLO : HELLO",
-        b"TPA available: 47K", b"A>HELLO", b"Hello from HELLO.CPX",
-        b"A>CPX UNLOAD BASIC", b"HELLO : HELLO", b"A>TYPE", b"?",
-        b"A>HELLO", b"Hello from HELLO.CPX", b"A>CPX UNLOAD HELLO",
-        b"No CPXs loaded", b"TPA available: 47K", b"A>HELLO",
-        b"Hello from BetterCP/M",
+        b"A>HELLO TOM", b"Hello from BetterCP/M TOM",
+        b"A>ERA HELLO.COM", b"A>DIR", b"CPX.COM", b"A>",
     )
     position = 0
     for expected in ordered:
         position = screen.find(expected, position)
         if position < 0:
-            raise SystemExit(f"CPX manager workflow lacks {expected!r}: {screen!r}")
+            raise SystemExit(f"CPX/WBOOT write workflow lacks {expected!r}: {screen!r}")
         position += len(expected)
-    print("CPX.COM list/unload/reload and WBOOT reconstruction passed")
+    if b"HELLO.COM" in screen[screen.find(b"A>DIR"):]:
+        raise SystemExit("HELLO.COM remained after ERA in CPX/WBOOT write test")
+    print("runtime CPX reconstruction preserved physical directory writes")
 
 
 if __name__ == "__main__":

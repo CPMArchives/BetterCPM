@@ -481,7 +481,7 @@ def install_drive_tables(cpu: Z80) -> None:
                   (0xCBF4, 0xCC14), (0xCC46, 0xCC66))
     for drive, (csv, alv) in enumerate(workspaces):
         dph = 0xCB00 + drive * 16
-        for offset, value in ((8, 0xF300), (10, dpb_address),
+        for offset, value in ((8, 0xEC80), (10, dpb_address),
                               (12, csv), (14, alv)):
             cpu.mem[dph + offset:dph + offset + 2] = value.to_bytes(2, "little")
     cpu.mem[dpb_address:dpb_address + 15] = bytes(

@@ -29,7 +29,7 @@ The current fixed resident components remain:
 | `D600h..E8D5h` | directory and filesystem services |
 | `ED00h..EEFFh` | Model 4 physical-sector buffer |
 | `EF00h..F2E3h` | BIOS |
-| `F300h..F37Fh` | BIOS directory buffer |
+| `EC80h..ECFFh` | BIOS directory buffer |
 
 Hardware-mapped memory above this range remains platform-owned.
 

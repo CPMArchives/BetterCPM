@@ -10,10 +10,13 @@ DIRBASE         EQU     0D600H
 ; specifications 26-27. Dirty Close grew across ED00H, so the intact buffer
 ; moved below the resident code. Specification 29 gives that workspace an
 ; explicit BF00H reservation while relocating this component for growth.
-; Patch 2026-09-01: the BIOS DPH directory buffer at F300h is the same
+; Patch 2026-09-01: the BIOS DPH directory buffer is the same
 ; 128-byte workspace this service needs. The former BF00h DPH state was later
 ; relocated above BDOS after compatibility testing proved BF00h is still TPA.
-DIRBUF          EQU     0F300H
+; Patch 2026-09-02: F300h was eventually consumed by the growing BIOS itself.
+; Move the buffer into the protected 128-byte gap immediately below the ED00h
+; physical-sector/module buffer so directory data can never overwrite BIOS.
+DIRBUF          EQU     0EC80H
 BIOSBASE        EQU     0EF00H
 BIOSELDS        EQU     BIOSBASE+27
 BIOSETTR        EQU     BIOSBASE+30
@@ -924,7 +927,6 @@ DIR_DNO:
         LD      A,0FFH
         OR      A
         RET
-
 ; Z when directory entry HL matches current user and 11-byte wildcard pattern.
 DIR_DMAT:
         PUSH    BC

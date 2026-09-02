@@ -135,6 +135,7 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Engineering Specification 100`](docs/engineering/100%20Runtime%20CPX%20Manager.md) adds `CPX.COM`, provisional fixed-core profile control, and a physical runtime proof that BASIC.CPX can be listed, unloaded, and reloaded through safe WBOOT reconstruction.
 [`Engineering Specification 101`](docs/engineering/101%20CPX%20Inventory%20and%20TPA%20Report.md) expands `CPX LIST` with the active module's command inventory and a live TPA calculation, verifying that reclaimable CPXs do not reduce the 47K transient area.
 [`Engineering Specification 102`](docs/engineering/102%20Multiple%20CPXs%20and%20HELLO%20CPX.md) adds `HELLO.CPX`, generalizes runtime profile control to two independently selectable modules, and physically verifies concurrent chaining, selective unload, transient fallback, and unchanged TPA.
+[`Engineering Specification 103`](docs/engineering/103%20Directory%20Buffer%20and%20Warm-Boot%20Write%20Integrity.md) removes a directory-buffer/BIOS overlap exposed by runtime CPX reconstruction and verifies that physical directory writes remain sound after WBOOT.
 [`Engineering Specification 25`](docs/engineering/25%20Allocation%20and%20DPB%20Pointers.md) exposes the current drive's reconstructed allocation vector and live 15-byte disk parameter block.
 [`Engineering Specification 26`](docs/engineering/26%20Directory%20Search%20and%20DMA.md) adds Search First/Search Next continuation, wildcard and all-user matching, and complete directory-record transfer to the selected DMA address.
 [`Engineering Specification 27`](docs/engineering/27%20Unchanged%20FCB%20Close.md) adds the non-mutating Close File boundary for unchanged activated FCBs and safely rejects dirty commits until writeback exists.
@@ -174,6 +175,7 @@ python3 tools/build_native_trs80.py
 python3 tools/test_trs80_boot.py
 python3 tools/test_trs80_keyboard_overlap.py
 python3 tools/test_cpx_manager.py
+python3 tools/test_cpx_wboot_write.py
 ```
 
 The native build runs ZSM4 and Digital Research LINK under CP/M and must match the cross-assembled binaries byte for byte. The emulator test boots the generated 790K DMK through the Model 4 ROM and both loader stages, loads the composed resident image, reconstructs the system, and verifies the CCP `A>` prompt.

@@ -27,6 +27,7 @@ def main() -> None:
                         "        ASEG\n        ORG     ")
     text = text.replace("        .DEPHASE\n", "")
     output = BUILD / "bios.bin"
+    listing = BUILD / "bios.lst"
     with tempfile.TemporaryDirectory(prefix="bettercpm-bios-") as temporary:
         staged = Path(temporary)
         (staged / "bios.mac").write_text(text, encoding="ascii")
@@ -35,7 +36,8 @@ def main() -> None:
         shutil.copy2(PLATFORM / "m4cons.inc", staged / "m4cons.inc")
         shutil.copy2(PLATFORM / "m4scroll.inc", staged / "m4scroll.inc")
         shutil.copy2(PLATFORM / "m4disk.inc", staged / "m4disk.inc")
-        subprocess.run([str(args.assembler), "-fb", f"-o{output}", "bios.mac"],
+        subprocess.run([str(args.assembler), "-fb", f"-o{output}",
+                        f"-l{listing}", "bios.mac"],
                        check=True, cwd=staged)
     data = output.read_bytes()
     if len(data) > BIOS_ADDRESS and data[:BIOS_ADDRESS] == bytes(BIOS_ADDRESS):
