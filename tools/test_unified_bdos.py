@@ -175,6 +175,34 @@ def main() -> None:
     require(call(22, FCB) == 0xFF and cpu.mem[0x7304] == 1,
             "Make mutated a software write-protected drive")
 
+    # Constrain the fixture to one directory record and verify Delete's
+    # preflight/mutation passes through the same cache and iterator.
+    require(call(37, 2) == 0, "could not clear drive-B write protection")
+    dpb = 0xC9E8
+    cpu.mem[dpb + 7] = 3          # DRM=3: four entries, one directory record
+    cpu.mem[FCB:FCB + 36] = bytes(36)
+    cpu.mem[FCB + 1:FCB + 12] = b"ONE     COM"
+    writes = cpu.mem[0x7304]
+    require(call(19, FCB) == 0, "Delete missed an exact existing file")
+    require(cpu.mem[0xEC80] == 0xE5 and cpu.mem[0xEC80 + 32] == 7,
+            "Delete changed the wrong cached directory entries")
+    require(cpu.mem[0x7304] == writes + 1,
+            "Delete did not flush its dirty directory sector exactly once")
+    require(call(19, FCB) == 0xFF,
+            "Delete reported success when no matching entry remained")
+
+    # A read-only extent found during preflight must prevent every mutation.
+    cpu.mem[0xEC80] = 7
+    cpu.mem[0xEC80 + 9] |= 0x80
+    cpu.mem[FCB + 1:FCB + 12] = b"???????????"
+    snapshot = bytes(cpu.mem[0xEC80:0xED00])
+    writes = cpu.mem[0x7304]
+    require(call(19, FCB) == 0xFF,
+            "Delete accepted a set containing a read-only extent")
+    require(bytes(cpu.mem[0xEC80:0xED00]) == snapshot and
+            cpu.mem[0x7304] == writes,
+            "Delete partially mutated a set rejected during preflight")
+
     print(f"unified BDOS U01-U06 foundation passed ({len(image)} bytes)")
     print("disk state, FCB drive view, shared iterator, and one-sector cache passed")
 

@@ -43,7 +43,7 @@ UB_TABLE:
         DW      UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING
         DW      UB_MISSING,UB_VERSION
         DW      UB_RESET,UB_SELECT
-        DW      UB_OPEN,UB_MISSING,UB_SFIRST,UB_SNEXT,UB_MISSING
+        DW      UB_OPEN,UB_MISSING,UB_SFIRST,UB_SNEXT,UB_DELETE
         DW      UB_MISSING,UB_MISSING,UB_MAKE,UB_MISSING
         DW      UB_LOGINV,UB_CURDSK,UB_SETDMA,UB_GETALV,UB_WRPROT
         DW      UB_ROVEC,UB_MISSING,UB_GETDPB,UB_USER
@@ -595,6 +595,67 @@ UB_MKNAME:
         LD      A,(UB_ITRET)
         JP      UB_RETA
 
+; Function 19 uses two passes over the same wildcard iterator. The first
+; proves that every matching extent is mutable; the second marks matches E5.
+; This prevents partial deletion when a later extent carries the R/O bit.
+UB_DELETE:
+        LD      (UB_ITFCB),DE
+        CALL    UB_FCBDRV
+        JP      C,UB_BAD
+        CALL    UB_CONTEXT
+        JP      NZ,UB_BAD
+        LD      HL,UB_RDONLY
+        CALL    UB_TESTBIT
+        JP      NZ,UB_BAD
+        CALL    UB_DSETUP
+        XOR     A
+        LD      (UB_FOUND),A
+UB_DPRE:
+        CALL    UB_ITER
+        JR      C,UB_DPREOK
+        LD      A,1
+        LD      (UB_FOUND),A
+        PUSH    HL
+        LD      DE,9
+        ADD     HL,DE
+        LD      A,(HL)
+        POP     HL
+        AND     080H
+        JP      NZ,UB_BAD
+        JR      UB_DPRE
+UB_DPREOK:
+        LD      A,(UB_FOUND)
+        OR      A
+        JP      Z,UB_BAD
+        CALL    UB_DSETUP
+UB_DPASS:
+        CALL    UB_ITER
+        JR      C,UB_DDONE
+        LD      (HL),0E5H
+        LD      A,1
+        LD      (UB_DIRTY),A
+        JR      UB_DPASS
+UB_DDONE:
+        CALL    UB_DIRFLUSH
+        JP      NZ,UB_BAD
+        XOR     A
+        JP      UB_RETA
+
+; Configure an all-extent, wildcard-name scan for the caller's current user.
+UB_DSETUP:
+        LD      A,(UB_USERNO)
+        LD      (UB_ITUSER),A
+        XOR     A
+        LD      (UB_ITMODE),A
+        LD      (UB_ITALL),A
+        LD      (UB_ITREC),A
+        LD      (UB_ITSLOT),A
+        LD      A,1
+        LD      (UB_ITWILD),A
+        LD      A,11
+        LD      (UB_ITLEN),A
+        RET
+
 ; U06 -- a single cache backed by the DPH-published directory buffer. Caching
 ; state names the directory record currently represented; mutation clients
 ; will set UB_DIRTY and commit through UB_DIRFLUSH.
@@ -756,6 +817,7 @@ UB_DIRBUF:      DW      0
 UBS_CREC:       DB      0
 UBS_COK:        DB      0
 UB_DIRTY:       DB      0
+UB_FOUND:       DB      0
 
 UB_STACK:
         REPT    48
