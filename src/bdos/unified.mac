@@ -47,7 +47,7 @@ UB_TABLE:
         DW      UB_READ,UB_WRITE,UB_MAKE,UB_RENAME
         DW      UB_LOGINV,UB_CURDSK,UB_SETDMA,UB_GETALV,UB_WRPROT
         DW      UB_ROVEC,UB_ATTR,UB_GETDPB,UB_USER
-        DW      UB_RREAD,UB_MISSING,UB_SIZE,UB_SETRR,UB_RSTDRV
+        DW      UB_RREAD,UB_RWRITE,UB_SIZE,UB_SETRR,UB_RSTDRV
         DW      UB_ZERO,UB_ZERO,UB_MISSING
 
 UB_MISSING:
@@ -1065,6 +1065,9 @@ UB_REOF:
 ; satisfied through U07, installed in the caller FCB, and then mapped again.
 ; Close remains the single directory commit point for the changed RC/map.
 UB_WRITE:
+        CALL    UB_WCORE
+        JP      UB_RETA
+UB_WCORE:
         LD      (UB_RFCB),DE
         CALL    UB_FCBDRV
         JP      C,UB_BAD
@@ -1141,11 +1144,28 @@ UB_WMAPPED:
         LD      (HL),A
 UB_WDONE:
         XOR     A
-        JP      UB_RETA
+        RET
 
 ; Function 33 decodes R0..R2 into the ordinary extent position, activates
 ; that extent, and then enters the exact same read core as Function 20.
 UB_RREAD:
+        CALL    UB_RDECODE
+        LD      DE,(UB_RFCB)
+        CALL    UB_OPENCORE
+        LD      DE,(UB_RFCB)
+        CALL    UB_READCORE
+        JP      UB_RETA
+
+; Function 34 differs only in its final shared transfer core.
+UB_RWRITE:
+        CALL    UB_RDECODE
+        LD      DE,(UB_RFCB)
+        CALL    UB_OPENCORE
+        LD      DE,(UB_RFCB)
+        CALL    UB_WCORE
+        JP      UB_RETA
+
+UB_RDECODE:
         LD      (UB_RFCB),DE
         LD      HL,35
         ADD     HL,DE
@@ -1194,11 +1214,7 @@ UB_RRLOW:
         ADD     HL,DE
         LD      A,(UB_RRCR)
         LD      (HL),A
-        LD      DE,(UB_RFCB)
-        CALL    UB_OPENCORE
-        LD      DE,(UB_RFCB)
-        CALL    UB_READCORE
-        JP      UB_RETA
+        RET
 
 ; Map the current sequential record in UB_RFCB through EXM, BSH/BLM, the
 ; 8/16-bit allocation map, SPT/OFF, and BIOS sector translation.

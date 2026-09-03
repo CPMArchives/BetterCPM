@@ -403,6 +403,21 @@ def main() -> None:
     require(call(21, FCB) == 0 and cpu.word(FCB + 16) == 9 and
             cpu.mem[0x7304] == writes + 1,
             "Sequential Write reallocated an existing block")
+
+    # Random Write shares both the random-record decoder and Sequential
+    # Write's transfer core.  Activating record one of the existing extent
+    # must reuse block one rather than allocate another block.
+    cpu.mem[FCB:FCB + 36] = bytes(36)
+    cpu.mem[FCB + 1:FCB + 12] = b"ONE     COM"
+    cpu.mem[FCB + 33:FCB + 36] = bytes((1, 0, 0))
+    writes = cpu.mem[0x7304]
+    require(call(34, FCB) == 0 and cpu.word(FCB + 16) == 1,
+            "Random Write did not activate and reuse the decoded extent")
+    require(cpu.mem[FCB + 12] == 0 and cpu.mem[FCB + 14] == 0 and
+            cpu.mem[FCB + 32] == 2 and cpu.mem[FCB + 15] == 2,
+            "Random Write diverged from shared decode/write bookkeeping")
+    require(cpu.mem[0x7304] == writes + 1,
+            "Random Write did not issue exactly one physical write")
     call(28)
     writes = cpu.mem[0x7304]
     require(call(21, FCB) == 0xFF and cpu.mem[0x7304] == writes,
