@@ -16,7 +16,8 @@ class Z80:
         self.mem = bytearray(65536)
         self.mem[BASE:BASE + len(image)] = image
         self.a = self.b = self.c = self.d = self.e = self.h = self.l = 0
-        self.pc, self.sp, self.z, self.carry = 0, 0xE000, False, False
+        self.pc, self.sp, self.ix = 0, 0xE000, 0
+        self.z, self.carry = False, False
 
     def word(self, address: int) -> int:
         return self.mem[address] | self.mem[address + 1] << 8
@@ -103,6 +104,16 @@ class Z80:
                 self.push(self.de)
             elif op == 0xD1:            # POP DE
                 self.de = self.pop()
+            elif op == 0xDD:            # IX prefix (active BDOS call frame)
+                sub = self.mem[self.pc]
+                self.pc += 1
+                if sub == 0xE5:          # PUSH IX
+                    self.push(self.ix)
+                elif sub == 0xE1:        # POP IX
+                    self.ix = self.pop()
+                else:
+                    raise AssertionError(
+                        f"unsupported IX opcode {sub:02X} at {self.pc - 2:04X}")
             elif op == 0xC8:            # RET Z
                 if self.z:
                     self.pc = self.pop()

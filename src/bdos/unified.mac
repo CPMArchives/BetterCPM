@@ -22,6 +22,9 @@ UB_ENTRY:
         LD      (UB_PARM),DE
         LD      (UB_OLDSP),SP
         LD      SP,UB_STKTOP
+        PUSH    IX              ; one active FCB/parameter pointer per call
+        PUSH    DE
+        POP     IX
         LD      A,C
         CP      41
         JR      NC,UB_ZERO
@@ -61,6 +64,7 @@ UB_RETA:
 UB_RETHL:
         LD      A,L             ; CP/M normal-return aliases A=L, B=H
         LD      B,H
+        POP     IX
         LD      SP,(UB_OLDSP)
         RET
 
