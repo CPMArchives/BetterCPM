@@ -44,84 +44,24 @@ BDOS:
         LD      (BDOS_PARM),DE
         LD      (BDOS_OLDSP),SP
         LD      SP,BDOS_STKTOP
-        OR      A
-        JP      Z,BIOWBOOT      ; Function 0 terminates through warm start
-        CP      1
-        JP      Z,BF_CONIN
-        CP      2
-        JP      Z,BF_CONOUT
-        CP      3
-        JP      Z,BF_READER
-        CP      4
-        JP      Z,BF_PUNCH
-        CP      5
-        JP      Z,BF_LIST
-        CP      6
-        JP      Z,BF_DCIO
-        CP      7
-        JP      Z,BF_GETIO
-        CP      8
-        JP      Z,BF_SETIO
-        CP      9
-        JP      Z,BF_PRINT
-        CP      10
-        JP      Z,BF_READLN
-        CP      11
-        JP      Z,BF_CONST
-        CP      12
-        JP      Z,BDOS_VERS
-        CP      13
-        JP      Z,BDOS_RESET
-        CP      14
-        JP      Z,BDOS_SELDR
-        CP      15
-        JP      Z,BDOS_OPEN
-        CP      16
-        JP      Z,BDOS_CLOSE
-        CP      17
-        JP      Z,BDOS_SFIR
-        CP      18
-        JP      Z,BDOS_SNXT
-        CP      19
-        JP      Z,BDOS_DELETE
-        CP      20
-        JP      Z,BDOS_READ
-        CP      21
-        JP      Z,BDOS_WRITE
-        CP      22
-        JP      Z,BDOS_MAKE
-        CP      23
-        JP      Z,BDOS_RENAME
-        CP      24
-        JP      Z,BDOS_LOGV
-        CP      25
-        JP      Z,BDOS_GETDR
-        CP      26
-        JP      Z,BDOS_STDMA
-        CP      27
-        JP      Z,BDOS_ALVP
-        CP      28
-        JP      Z,BDOS_WRPRO
-        CP      29
-        JP      Z,BDOS_ROV
-        CP      30
-        JP      Z,BDOS_ATTR
-        CP      31
-        JP      Z,BDOS_DPBP
-        CP      32
-        JP      Z,BF_USER
-        CP      33
-        JP      Z,BF_RREAD
-        CP      34
-        JP      Z,BF_RWRIT
-        CP      35
-        JP      Z,BDOS_SIZE
-        CP      36
-        JP      Z,BDOS_SETRR
-        CP      37
-        JP      Z,BF_RSTDR
-        CP      40
-        JP      Z,BF_RZERO
+; Patch 2026-09-03: the bring-up dispatcher used a linear CP/JP chain for
+; every standard call. Retain its behavior through a compact direct table;
+; this also makes the complete 0..40 compatibility surface explicit.
+        CP      41
+        JR      NC,BDOS_EXTENDED
+        LD      L,A
+        LD      H,0
+        ADD     HL,HL
+        LD      DE,BDOS_TABLE
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        PUSH    HL
+        LD      DE,(BDOS_PARM) ; table lookup used DE; restore public argument
+        RET
+BDOS_EXTENDED:
         CP      200             ; provisional BetterCP/M CPX control service
         JP      Z,BF_CPXCTL
         CP      202             ; provisional BetterCP/M RSX control service
@@ -133,6 +73,21 @@ BDOS:
         CP      206             ; immutable subsystem-version descriptor
         JP      Z,BF_VERSION
 ; Patch 2026-09-01: selectors above Function 40 conventionally return zero.
+        XOR     A
+        JP      BDOS_RETURN
+
+BDOS_TABLE:
+        DW      BIOWBOOT,BF_CONIN,BF_CONOUT,BF_READER,BF_PUNCH
+        DW      BF_LIST,BF_DCIO,BF_GETIO,BF_SETIO,BF_PRINT
+        DW      BF_READLN,BF_CONST,BDOS_VERS,BDOS_RESET,BDOS_SELDR
+        DW      BDOS_OPEN,BDOS_CLOSE,BDOS_SFIR,BDOS_SNXT,BDOS_DELETE
+        DW      BDOS_READ,BDOS_WRITE,BDOS_MAKE,BDOS_RENAME,BDOS_LOGV
+        DW      BDOS_GETDR,BDOS_STDMA,BDOS_ALVP,BDOS_WRPRO,BDOS_ROV
+        DW      BDOS_ATTR,BDOS_DPBP,BF_USER,BF_RREAD,BF_RWRIT
+        DW      BDOS_SIZE,BDOS_SETRR,BF_RSTDR,BDOS_ZERO,BDOS_ZERO
+        DW      BF_RZERO
+
+BDOS_ZERO:
         XOR     A
         JP      BDOS_RETURN
 

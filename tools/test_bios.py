@@ -469,6 +469,8 @@ class Z80:
                 self.e = self.l
             elif op == 0x2B:            # DEC HL
                 self.hl = (self.hl - 1) & 0xFFFF
+            elif op == 0xE9:            # JP (HL)
+                self.pc = self.hl
             elif op == 0x14:            # INC D
                 self.d = (self.d + 1) & 0xFF
                 self.z = self.d == 0
@@ -495,10 +497,10 @@ def install_drive_tables(cpu: Z80) -> None:
     # Patch 2026-09-03: the original fixture repeated the bring-up CB00h
     # boundary. Keep this table explicit until the generated system-layout
     # include lands, but mirror the packed descriptor unit exactly.
-    dph_base = 0xC9FE
-    dpb_address = 0xCA3E
-    workspaces = ((0xCA4E, 0xCA6E), (0xCAA0, 0xCAC0),
-                  (0xCAF2, 0xCB12), (0xCB44, 0xCB64))
+    dph_base = 0xC9A8
+    dpb_address = 0xC9E8
+    workspaces = ((0xC9F8, 0xCA18), (0xCA4A, 0xCA6A),
+                  (0xCA9C, 0xCABC), (0xCAEE, 0xCB0E))
     for drive, (csv, alv) in enumerate(workspaces):
         dph = dph_base + drive * 16
         for offset, value in ((8, 0xEC80), (10, dpb_address),

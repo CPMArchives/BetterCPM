@@ -10,11 +10,11 @@ BIO_DIRBF       EQU     0EC80H
 ; bring-up-only 258-byte gap. They now immediately follow the current BDOS
 ; image. A later generated layout will replace these provisional physical
 ; constants without changing the BIOS SELDSK contract.
-BIO_DPH0        EQU     0C9FEH
-BIO_DPH1        EQU     0CA0EH
-BIO_DPH2        EQU     0CA1EH
-BIO_DPH3        EQU     0CA2EH
-BIO_DPB0        EQU     0CA3EH
+BIO_DPH0        EQU     0C9A8H
+BIO_DPH1        EQU     0C9B8H
+BIO_DPH2        EQU     0C9C8H
+BIO_DPH3        EQU     0C9D8H
+BIO_DPB0        EQU     0C9E8H
 SYS_BOOT        EQU     0C020H
 CCP_RELOAD      EQU     0E900H
 
