@@ -111,7 +111,11 @@ class Z80:
                     self.push(self.ix)
                 elif sub == 0xE1:        # POP IX
                     self.ix = self.pop()
-                elif sub in (0x7E, 0x4E, 0xBE, 0xA6, 0x34,
+                elif sub == 0x22:        # LD (nn),IX
+                    address = self.word(self.pc)
+                    self.pc += 2
+                    self.setword(address, self.ix)
+                elif sub in (0x7E, 0x4E, 0xBE, 0xA6, 0x34, 0x35, 0x36,
                               0x77, 0x70, 0x71):
                     displacement = self.mem[self.pc]
                     self.pc += 1
@@ -131,6 +135,12 @@ class Z80:
                     elif sub == 0x34:     # INC (IX+d)
                         self.mem[target] = (self.mem[target] + 1) & 0xFF
                         self.z = self.mem[target] == 0
+                    elif sub == 0x35:     # DEC (IX+d)
+                        self.mem[target] = (self.mem[target] - 1) & 0xFF
+                        self.z = self.mem[target] == 0
+                    elif sub == 0x36:     # LD (IX+d),n
+                        self.mem[target] = self.mem[self.pc]
+                        self.pc += 1
                     elif sub == 0x77:     # LD (IX+d),A
                         self.mem[target] = self.a
                     elif sub == 0x70:     # LD (IX+d),B
@@ -241,6 +251,8 @@ class Z80:
                 value = self.a * 2
                 self.a = value & 0xFF
                 self.z, self.carry = self.a == 0, value > 0xFF
+            elif op == 0x41:            # LD B,C
+                self.b = self.c
             elif op == 0x04:            # INC B
                 self.b = (self.b + 1) & 0xFF
                 self.z = self.b == 0
@@ -405,6 +417,10 @@ class Z80:
                 self.hl = (self.hl + self.de) & 0xFFFF
             elif op == 0x29:            # ADD HL,HL
                 self.hl = (self.hl * 2) & 0xFFFF
+            elif op == 0x07:            # RLCA
+                high = (self.a >> 7) & 1
+                self.a = ((self.a << 1) | high) & 0xFF
+                self.carry = bool(high)
             elif op == 0x0F:            # RRCA
                 low = self.a & 1
                 self.a = (self.a >> 1) | (low << 7)

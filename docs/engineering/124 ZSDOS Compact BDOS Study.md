@@ -144,3 +144,32 @@ The target is credible.  ZSDOS demonstrates that the fourteen-page limit can
 include more capability than BetterCP/M's base BDOS requires.  Reaching it,
 however, requires a compact state machine rather than further local trimming
 of the present structure.
+
+## Completed structural recovery checkpoint (2026-09-04)
+
+After functions 0 through 40 were complete, the unified image occupied 3,503
+bytes. The next pass treated 3,203 bytes as an acceptance ceiling and made the
+following cross-cutting changes:
+
+- copied the selected DPB into one packed drive context, eliminating repeated
+  DPH/DPB traversal throughout Open, mapping, allocation, and directory I/O;
+- packed directory record and slot state into one directory-entry cursor;
+- made buffered console input use the active IX parameter frame instead of
+  three duplicate pointer/length variables;
+- removed redundant saved-parameter and Rename-FCB state;
+- combined the 8-bit and 16-bit allocation-map scanners;
+- replaced table-driven bit masks with compact rotate-based generation;
+- simplified random-record decoding and removed an unused allocation-clear
+  layer in favor of authoritative allocation reconstruction after Delete;
+- separated stronger-than-CP/M Delete, Rename, Close, and validation policy
+  from the mandatory base contract.
+
+The resulting functions-0-through-40 image is 3,201 bytes, a reduction of 302
+bytes from the completed 3,503-byte baseline and 383 bytes below the fourteen-
+page hard ceiling. Native and cross assembly are byte-identical, and the
+unified console, disk, directory, allocation, extent, and record-transfer test
+suite passes.
+
+Potential stronger filesystem policy is recorded separately in Architecture
+Specification 16, `Optional Filesystem Safety RSX.txt`. That note is a design
+option, not a commitment to ship the RSX.

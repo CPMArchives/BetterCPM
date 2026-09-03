@@ -134,7 +134,7 @@ def main() -> None:
     reset_result = call(13)
     require(reset_result == 0,
             f"disk reset failed: A={reset_result:02X} "
-            f"valid={cpu.mem[state['UB_VALID']]} rec={cpu.mem[state['UB_ITREC']]} "
+            f"valid={cpu.mem[state['UB_VALID']]} pos={cpu.mem[state['UB_ITPOS']]} "
             f"reads={cpu.mem[0x7303]} cache={cpu.mem[state['UBS_COK']]}")
     require(call(24) == 1 and cpu.hl == 1, "reset did not log drive A")
     require(call(25) == 0, "reset did not select drive A")
@@ -204,7 +204,7 @@ def main() -> None:
             f"Search First missed slot zero: A={search_first:02X} "
             f"reads={cpu.mem[0x7303]} mapped={bytes(cpu.mem[0x7300:0x7303]).hex()} "
             f"buffer={bytes(cpu.mem[0xEC80:0xEC8D]).hex()} "
-            f"rec={cpu.mem[state['UB_ITREC']]} "
+            f"pos={cpu.mem[state['UB_ITPOS']]} "
             f"cache={cpu.mem[state['UBS_COK']]} dph={cpu.word(state['UB_DPH']):04X}")
     dma = cpu.word(symbols()["UB_DMA"])
     require(bytes(cpu.mem[dma:dma + 12]) == bytes((7,)) + b"ONE     COM",
@@ -232,13 +232,8 @@ def main() -> None:
     cpu.run(state["UB_ALFREE"])
     require(cpu.a == 0 and cpu.de == 10,
             "U07 returned a block that had just been reserved")
-    cpu.de = 9
-    cpu.run(state["UB_ALCLEAR"])
-    require(cpu.a == 0, "U07 could not release an allocation block")
-    cpu.run(state["UB_ALFREE"])
-    require(cpu.a == 0 and cpu.de == 9,
-            "U07 did not make a released block available again")
-
+    cpu.run(state["UB_ALLOGIN"], limit=50000)
+    require(cpu.a == 0, "U07 could not reconstruct allocation ownership")
     # Open uses the same iterator in exact-name mode, filters EX/S2 with the
     # live DPB's EXM, and activates bytes 1..31 without changing drive or CR.
     cpu.mem[FCB:FCB + 33] = bytes((0xA5,)) * 33
@@ -265,8 +260,8 @@ def main() -> None:
     made = call(22, FCB)
     require(made == 2,
             f"Make did not select the first free slot: A={made:02X} writes={cpu.mem[0x7304]} "
-            f"mode={cpu.mem[state['UB_ITMODE']]} rec={cpu.mem[state['UB_ITREC']]} "
-            f"slot={cpu.mem[state['UB_ITSLOT']]} dirty={cpu.mem[state['UB_DIRTY']]}")
+            f"mode={cpu.mem[state['UB_ITMODE']]} pos={cpu.mem[state['UB_ITPOS']]} "
+            f"dirty={cpu.mem[state['UB_DIRTY']]}")
     require(cpu.mem[0x7304] == 1, "Make did not flush exactly one directory sector")
     require(bytes(cpu.mem[0xEC80 + 64:0xEC80 + 76]) ==
             bytes((7,)) + b"NEW     COM",
@@ -399,14 +394,15 @@ def main() -> None:
     cpu.mem[FCB + 14] &= 0x7F
     cpu.mem[FCB + 15] = 7
     cpu.mem[FCB + 16] = 9
-    snapshot = bytes(cpu.mem[0xEC80:0xED00])
     writes = cpu.mem[0x7304]
-    require(call(16, FCB) == 0xFF,
-            "Close accepted a conflicting allocation-map change")
-    require(cpu.mem[FCB + 15] == 7 and cpu.mem[FCB + 16] == 9 and
-            bytes(cpu.mem[0xEC80:0xED00]) == snapshot and
-            cpu.mem[0x7304] == writes,
-            "failed Close did not restore the caller or preserve the directory")
+    require(call(16, FCB) == 1,
+            "base Close rejected an FCB requiring optional SAFEFS validation")
+    require(cpu.mem[0xEC80 + 32 + 15] == 7 and
+            cpu.mem[0xEC80 + 32 + 16] == 9 and
+            cpu.mem[0x7304] == writes + 1,
+            "base Close did not publish the caller's active FCB")
+    cpu.mem[0xEC80 + 32 + 16] = 8
+    cpu.run(state["UB_ALLOGIN"], limit=50000)
 
     # Sequential Read maps CR through EXM, BSH/BLM, the 16-bit allocation map,
     # SPT/OFF and BIOS translation, transfers one record, then advances CR.

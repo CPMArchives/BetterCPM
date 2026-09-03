@@ -1,0 +1,41 @@
+BETTERCP/M OPTIONAL FILESYSTEM SAFETY RSX
+
+Status
+
+This note records filesystem protections deliberately excluded from the
+compact CP/M-compatible BDOS. It does not commit BetterCP/M 1.0 to shipping
+the proposed RSX.
+
+Base-system boundary
+
+The fixed BDOS implements the CP/M filesystem contract. It must reject unsafe
+addresses, impossible drive selections, and physical I/O failures, but it is
+not required to turn historically single-pass operations into transactions or
+to authenticate every caller-supplied FCB field before use.
+
+Possible SAFEFS.RSX responsibilities
+
+An optional SAFEFS.RSX could intercept file mutation functions and add:
+
+* all-or-nothing preflight for wildcard Delete;
+* all-or-nothing preflight for Rename;
+* strict comparison of an altered FCB allocation map with its directory entry
+  during Close;
+* additional RC, extent, allocation-block, and directory-entry validation;
+* mutation auditing and enhanced diagnostics;
+* later recovery, undelete, or lightweight journaling support.
+
+The RSX would remain protected while installed and would intercept calls made
+by transient programs. Its stronger policy must not change the on-disk CP/M
+format or become necessary for ordinary filesystem correctness.
+
+Size and release policy
+
+These protections are candidates for an RSX only when removing them produces
+worthwhile fixed-core savings. The base system remains responsible for memory
+safety and bounded disk access. BetterCP/M must not move essential geometry,
+directory traversal, allocation, record mapping, or extent transition into
+the RSX merely to disguise core size.
+
+The decision to ship SAFEFS.RSX, and which checks it contains, remains open
+until the unified BDOS refactor has quantified each saving.
