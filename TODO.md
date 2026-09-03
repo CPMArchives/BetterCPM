@@ -103,8 +103,17 @@ directory utility unless it provides genuine additional value.
   conflicts, and cycles.
 - [ ] Keep the RSX/CPX Programmer's Guide synchronized with every stabilized
   interface before promising third-party binary compatibility.
-- [ ] Eventually supply useful optional modules, including an extended
-  SUBMIT/ZEX-like CPX, without delaying the core system.
+- [ ] Implement the 1.0 Batch Facility specified in
+  `specifications/BATCH-FLOW-CONTROL.md`: CP/M-compatible `SUBMIT.CPX`, optional
+  `FLOW.CPX`, and transient-input companion `BATCHIO.RSX`. Define the shared
+  command-source ABI, persistent batch context, command/error status,
+  dependencies, WBOOT recovery, and compatibility tests before fixing the
+  extended language.
+- [ ] Implement the persistent command-input system specified in
+  `specifications/COMMAND-INPUT-SYSTEM.md`: expand the one-byte output-time
+  pending key into a BDOS type-ahead ring, add a completed-command queue, and
+  integrate multiple commands, history, batch sources, and scripted input
+  without conflating their distinct state.
 - [ ] Maybe: on platforms with bank-switched memory, provide a `BANKMEM.RSX`
   exposing portable extended-BDOS query, allocation, and inter-bank transfer
   services over a small hardware-specific BIOS/HAL interface. This is an
