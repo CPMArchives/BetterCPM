@@ -434,6 +434,40 @@ def main() -> None:
     require(cpu.mem[0x7304] == writes + 1,
             "Random Write did not issue exactly one physical write")
 
+    # A random write to a missing extent creates it through the same free-entry
+    # service as Make. A sequential write at CR=128 then closes that dirty
+    # extent, advances, creates the next extent, and continues there.
+    cpu.mem[0xEC80 + 32] = 0xE5
+    cpu.mem[FCB:FCB + 36] = bytes(36)
+    cpu.mem[FCB + 1:FCB + 12] = b"NEW     COM"
+    cpu.mem[FCB + 33:FCB + 36] = bytes((128, 0, 0))
+    writes = cpu.mem[0x7304]
+    require(call(34, FCB) == 0 and cpu.mem[FCB + 12] == 1 and
+            cpu.mem[FCB + 32] == 1,
+            "Random Write did not create and use a missing extent")
+    require(cpu.mem[0x7304] == writes + 2,
+            "missing-extent Random Write did not create then transfer once")
+    extent1 = [offset for offset in range(0, 128, 32)
+               if bytes(cpu.mem[0xEC80 + offset + 1:0xEC80 + offset + 12]) ==
+               b"NEW     COM" and cpu.mem[0xEC80 + offset + 12] == 1]
+    require(len(extent1) == 1, "Random Write did not publish extent one")
+    cpu.mem[FCB + 32] = 128
+    writes = cpu.mem[0x7304]
+    rollover_result = call(21, FCB)
+    require(rollover_result == 0 and cpu.mem[FCB + 12] == 2 and
+            cpu.mem[FCB + 32] == 1,
+            f"Sequential Write did not roll over into a new extent: "
+            f"A={rollover_result:02X} EX={cpu.mem[FCB+12]} "
+            f"S2={cpu.mem[FCB+14]:02X} CR={cpu.mem[FCB+32]} RC={cpu.mem[FCB+15]} "
+            f"RB={cpu.mem[state['UB_RBNO']]} AL={bytes(cpu.mem[FCB+16:FCB+24]).hex()} "
+            f"AV={bytes(cpu.mem[alv:alv+8]).hex()}")
+    require(cpu.mem[0x7304] == writes + 3,
+            "extent rollover did not close, create, and transfer exactly once")
+    extent2 = [offset for offset in range(0, 128, 32)
+               if bytes(cpu.mem[0xEC80 + offset + 1:0xEC80 + offset + 12]) ==
+               b"NEW     COM" and cpu.mem[0xEC80 + offset + 12] == 2]
+    require(len(extent2) == 1, "Sequential Write did not publish extent two")
+
     # Function 40 uses the same Random Write path, but a newly allocated map
     # element first receives a complete zero-filled block.  This fixture has
     # BLM=15, so the initializer performs 16 writes plus the requested one.
@@ -442,7 +476,7 @@ def main() -> None:
     cpu.mem[FCB + 33:FCB + 36] = bytes((16, 0, 0))
     writes = cpu.mem[0x7304]
     zero_result = call(40, FCB)
-    require(zero_result == 0 and cpu.word(FCB + 18) == 10,
+    require(zero_result == 0 and cpu.word(FCB + 18) == 12,
             f"zero-fill Random Write did not allocate its target block: "
             f"A={zero_result:02X} AL={bytes(cpu.mem[FCB+16:FCB+22]).hex()} "
             f"CR={cpu.mem[FCB+32]} RC={cpu.mem[FCB+15]} writes={cpu.mem[0x7304]-writes}")

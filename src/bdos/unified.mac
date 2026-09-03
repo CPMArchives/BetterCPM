@@ -496,6 +496,7 @@ UB_ITINIT:
 ; the caller FCB while its drive byte and current-record byte remain private.
 UB_OPEN:
         CALL    UB_ACTIVATE
+        JP      C,UB_BAD
         JP      UB_RETA
 UB_ACTIVATE:
         LD      A,1
@@ -513,7 +514,7 @@ UB_OPENCORE:
         CALL    UB_ITINIT
 UB_OPNEXT:
         CALL    UB_ITER
-        JP      C,UB_BAD
+        RET     C
         LD      (UB_ITRET),A
         PUSH    HL
         LD      DE,12
@@ -579,6 +580,7 @@ UB_OPNEXT:
         LD      (HL),A
 UB_OPFOUND:
         LD      A,(UB_ITRET)
+        OR      A               ; successful lookup always clears carry
         RET
 UB_OPMISS:
         POP     HL
@@ -589,6 +591,9 @@ UB_OPMISS:
 ; canonical entry.  Existing nonzero allocation bytes must agree; zero bytes
 ; may accept allocator-produced blocks.
 UB_CLOSE:
+        CALL    UB_CCORE
+        JP      UB_RETA
+UB_CCORE:
         LD      (UB_ITFCB),DE
         LD      HL,14
         ADD     HL,DE
@@ -646,12 +651,15 @@ UB_CLNEXT:
         LD      (HL),A
 UB_CLCLEAN:
         LD      A,(UB_ITRET)
-        JP      UB_RETA
+        RET
 
 ; Function 22 uses the common exact-name scan to reject duplicates, then the
 ; same iterator in free-entry mode. The loaded cache entry is the mutation
 ; target; one dirty flush publishes the initialized extent.
 UB_MAKE:
+        CALL    UB_MAKECORE
+        JP      UB_RETA
+UB_MAKECORE:
         LD      (UB_ITFCB),DE
         CALL    UB_FCBDRV
         JP      C,UB_BAD
@@ -676,6 +684,7 @@ UB_MKNAME:
         CALL    UB_ITINIT
         CALL    UB_ITER
         JP      NC,UB_BAD       ; any existing extent makes the name duplicate
+UB_MKFREE:
         LD      A,1
         LD      B,0
         LD      C,11
@@ -702,7 +711,7 @@ UB_MKNAME:
         OR      080H
         LD      (HL),A
         LD      A,(UB_ITRET)
-        JP      UB_RETA
+        RET
 
 ; Function 19 uses two passes over the same wildcard iterator. The first
 ; proves that every matching extent is mutable; the second marks matches E5.
@@ -1039,6 +1048,13 @@ UB_READCORE:
         CALL    UB_CONTEXT
         JP      NZ,UB_BAD
         LD      A,(IX+32)
+        CP      128
+        JR      NZ,UB_RDCUR
+        XOR     A
+        CALL    UB_NEXTEX
+        JR      C,UB_REOF
+UB_RDCUR:
+        LD      A,(IX+32)
         LD      C,A
         LD      A,C
         CP      (IX+15)
@@ -1076,6 +1092,13 @@ UB_WCORE:
         LD      A,(IX+9)
         AND     080H
         JP      NZ,UB_BAD
+        LD      A,(IX+32)
+        CP      128
+        JR      NZ,UB_WCUR
+        LD      A,1
+        CALL    UB_NEXTEX
+        JP      C,UB_BAD
+UB_WCUR:
         CALL    UB_RECMAP
         JR      NC,UB_WMAPPED
         JP      NZ,UB_BAD       ; only an empty allocation element is repairable
@@ -1148,9 +1171,9 @@ UB_WDONE:
 ; that extent, and then enters the exact same read core as Function 20.
 UB_RREAD:
         CALL    UB_RDECODE
-        PUSH    IX
-        POP     DE
-        CALL    UB_ACTIVATE
+        XOR     A
+        CALL    UB_EXTENT
+        JP      C,UB_BAD
         PUSH    IX
         POP     DE
         CALL    UB_READCORE
@@ -1162,9 +1185,9 @@ UB_RWRITE:
         LD      (UB_ZMODE),A
 UB_RWCOMMON:
         CALL    UB_RDECODE
-        PUSH    IX
-        POP     DE
-        CALL    UB_ACTIVATE
+        LD      A,1
+        CALL    UB_EXTENT
+        JP      C,UB_BAD
         PUSH    IX
         POP     DE
         CALL    UB_WCORE
@@ -1263,6 +1286,65 @@ UB_RRLOW:
         LD      (IX+14),B
         LD      A,(UB_RRCR)
         LD      (IX+32),A
+        RET
+
+; Activate the requested extent, creating it only for a write. A=0 read,
+; A=1 write. This is shared by random access and sequential rollover.
+UB_EXTENT:
+        LD      (UB_IOMODE),A
+        PUSH    IX
+        POP     DE
+        CALL    UB_ACTIVATE
+        RET     NC
+        LD      A,(UB_IOMODE)
+        OR      A
+        JR      NZ,UB_EXTMAKE
+        SCF
+        RET
+UB_EXTMAKE:
+        LD      HL,UB_RDONLY
+        CALL    UB_TESTBIT
+        JP      NZ,UB_BAD
+        CALL    UB_MKFREE
+        OR      A
+        RET
+
+; Close a dirty write extent, advance EX/S2, clear CR, then use UB_EXTENT.
+UB_NEXTEX:
+        LD      (UB_IOMODE),A
+        OR      A
+        JR      Z,UB_NXCALC
+        PUSH    IX
+        POP     DE
+        CALL    UB_CCORE
+UB_NXCALC:
+        LD      A,(IX+12)
+        INC     A
+        AND     01FH
+        LD      (IX+12),A
+        JR      NZ,UB_NXOPEN
+        LD      A,(IX+14)
+        AND     03FH
+        INC     A
+        CP      64
+        JR      NC,UB_NXBAD
+        LD      (IX+14),A
+UB_NXOPEN:
+        XOR     A
+        LD      (IX+32),A
+        PUSH    IX
+        POP     HL
+        LD      DE,15
+        ADD     HL,DE
+        LD      B,17
+UB_NXCLEAR:
+        LD      (HL),A
+        INC     HL
+        DJNZ    UB_NXCLEAR
+        LD      A,(UB_IOMODE)
+        JP      UB_EXTENT
+UB_NXBAD:
+        SCF
         RET
 
 ; Map the current sequential record in UB_RFCB through EXM, BSH/BLM, the
@@ -1805,6 +1887,7 @@ UB_RLOG:        DW      0
 UB_RBNO:        DB      0
 UB_RRCR:        DB      0
 UB_ZMODE:       DB      0
+UB_IOMODE:      DB      0
 
 UB_STACK:
         REPT    48
