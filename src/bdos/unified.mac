@@ -6,6 +6,12 @@
 
 UB_BASE         EQU     0C100H
 BIO_WBOOT       EQU     0EF03H
+BIO_CONST       EQU     0EF06H
+BIO_CONIN       EQU     0EF09H
+BIO_CONOUT      EQU     0EF0CH
+BIO_LIST        EQU     0EF0FH
+BIO_PUNCH       EQU     0EF12H
+BIO_RDRIN       EQU     0EF15H
 BIO_SELDSK      EQU     0EF1BH
 BIO_SETTRK      EQU     0EF1EH
 BIO_SETSEC      EQU     0EF21H
@@ -42,9 +48,9 @@ UB_ENTRY:
 
 UB_TABLE:
         DW      BIO_WBOOT       ; 0
-        DW      UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING
-        DW      UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING
-        DW      UB_MISSING,UB_VERSION
+        DW      UB_CONIN,UB_CONOUT,UB_READER,UB_PUNCH,UB_LIST
+        DW      UB_DCIO,UB_GETIO,UB_SETIO,UB_PRINT,UB_READLN
+        DW      UB_CONST,UB_VERSION
         DW      UB_RESET,UB_SELECT
         DW      UB_OPEN,UB_CLOSE,UB_SFIRST,UB_SNEXT,UB_DELETE
         DW      UB_READ,UB_WRITE,UB_MAKE,UB_RENAME
@@ -71,6 +77,278 @@ UB_RETHL:
 UB_VERSION:
         LD      HL,0022H
         JP      UB_RETHL
+
+; U10 -- the complete CP/M 2.2 character-I/O surface.  All cooked output
+; converges here, so console echo, Function 2 and Function 9 share tab,
+; column, printer-echo and flow-control behavior without a second layer.
+UB_READER:
+        CALL    BIO_RDRIN
+        JP      UB_RETA
+UB_PUNCH:
+        LD      C,E
+        CALL    BIO_PUNCH
+        JR      UB_OUTOK
+UB_LIST:
+        LD      C,E
+        CALL    BIO_LIST
+UB_OUTOK:
+        XOR     A
+        JP      UB_RETA
+UB_GETIO:
+        LD      A,(0003H)
+        JP      UB_RETA
+UB_SETIO:
+        LD      A,E
+        LD      (0003H),A
+        JR      UB_OUTOK
+
+UB_CONST:
+        LD      A,(UB_PENDING)
+        OR      A
+        JR      NZ,UB_READY
+        CALL    BIO_CONST
+        JP      UB_RETA
+UB_READY:
+        LD      A,0FFH
+        JP      UB_RETA
+
+; Direct console I/O bypasses cooked echo and control interpretation.
+UB_DCIO:
+        LD      A,E
+        CP      0FFH
+        JR      Z,UB_DIN
+        LD      C,A
+        CALL    BIO_CONOUT
+        JR      UB_OUTOK
+UB_DIN:
+        LD      A,(UB_PENDING)
+        OR      A
+        JR      NZ,UB_DGET
+        CALL    BIO_CONST
+        OR      A
+        JP      Z,UB_RETA
+UB_DGET:
+        CALL    UB_GETIN
+        JP      UB_RETA
+
+UB_CONIN:
+        CALL    UB_GETIN
+        CP      3
+        JP      Z,BIO_WBOOT
+        CP      16              ; ^P toggles printer echo and is consumed
+        JR      Z,UB_TOGGLE
+        CP      19              ; ^S waits for one key and is consumed
+        JR      Z,UB_PAUSE
+        LD      (UB_CHAR),A
+        CALL    UB_ECHO
+        LD      A,(UB_CHAR)
+        JP      UB_RETA
+UB_TOGGLE:
+        LD      A,(UB_LISTE)
+        CPL
+        LD      (UB_LISTE),A
+        JR      UB_CONIN
+UB_PAUSE:
+        CALL    BIO_CONIN
+        CP      3
+        JP      Z,BIO_WBOOT
+        JR      UB_CONIN
+
+UB_GETIN:
+        LD      A,(UB_PENDING)
+        OR      A
+        JP      Z,BIO_CONIN
+        XOR     A
+        LD      (UB_PENDING),A
+        LD      A,(UB_PENDCH)
+        RET
+
+UB_CONOUT:
+        LD      A,E
+        CALL    UB_COCHAR
+        JP      UB_OUTOK
+UB_PRINT:
+        LD      HL,(UB_PARM)
+UB_PRLOOP:
+        LD      A,(HL)
+        CP      '$'
+        JP      Z,UB_OUTOK
+        INC     HL
+        PUSH    HL
+        CALL    UB_COCHAR
+        POP     HL
+        JR      UB_PRLOOP
+
+UB_COCHAR:
+        LD      (UB_CHAR),A
+        CP      9
+        JR      Z,UB_TAB
+        CP      13
+        JR      Z,UB_CR
+        CP      8
+        JR      Z,UB_BS
+        LD      C,A
+        CALL    UB_PUT
+        LD      A,(UB_CHAR)
+        CP      10
+        RET     Z
+        LD      HL,UB_COLUMN
+        INC     (HL)
+        RET
+UB_TAB:
+        LD      A,(UB_COLUMN)
+        CPL
+        AND     7
+        INC     A
+        LD      B,A
+UB_TABLP:
+        PUSH    BC
+        LD      C,' '
+        CALL    UB_PUT
+        POP     BC
+        LD      HL,UB_COLUMN
+        INC     (HL)
+        DJNZ    UB_TABLP
+        RET
+UB_CR:
+        XOR     A
+        LD      (UB_COLUMN),A
+        LD      C,13
+        JR      UB_PUT
+UB_BS:
+        LD      HL,UB_COLUMN
+        LD      A,(HL)
+        OR      A
+        JR      Z,UB_RAWCHAR
+        DEC     (HL)
+UB_RAWCHAR:
+        LD      A,(UB_CHAR)
+        LD      C,A
+
+; Polling during output implements ^S/^P/^C and preserves ordinary typeahead.
+UB_PUT:
+        LD      A,C
+        LD      (UB_OUTCH),A
+        LD      A,(UB_PENDING)
+        OR      A
+        JR      NZ,UB_PUTNOW
+        CALL    BIO_CONST
+        OR      A
+        JR      Z,UB_PUTNOW
+        CALL    BIO_CONIN
+        CP      3
+        JP      Z,BIO_WBOOT
+        CP      16
+        JR      Z,UB_PUTTOG
+        CP      19
+        JR      Z,UB_PUTPAUSE
+        LD      (UB_PENDCH),A
+        LD      A,0FFH
+        LD      (UB_PENDING),A
+        JR      UB_PUTNOW
+UB_PUTTOG:
+        LD      A,(UB_LISTE)
+        CPL
+        LD      (UB_LISTE),A
+        JR      UB_PUTNOW
+UB_PUTPAUSE:
+        CALL    BIO_CONIN
+        CP      3
+        JP      Z,BIO_WBOOT
+UB_PUTNOW:
+        LD      A,(UB_OUTCH)
+        LD      C,A
+        PUSH    BC
+        CALL    BIO_CONOUT
+        POP     BC
+        LD      A,(UB_LISTE)
+        OR      A
+        RET     Z
+        JP      BIO_LIST
+
+UB_ECHO:
+        LD      A,(UB_CHAR)
+        CP      32
+        RET     C
+        CP      127
+        RET     NC
+        JP      UB_COCHAR
+
+; Counted input buffer: [maximum][count][characters].  This deliberately
+; keeps only CP/M's essential editing contract in the fixed BDOS; the richer
+; interactive editor remains a reclaimable CCP facility.
+UB_READLN:
+        LD      HL,(UB_PARM)
+        LD      A,(HL)
+        LD      (UB_RLMAX),A
+        INC     HL
+        LD      (HL),0
+        INC     HL
+        LD      (UB_RLBASE),HL
+        LD      (UB_RLPTR),HL
+UB_RLLOOP:
+        LD      HL,(UB_RLPTR)
+        LD      DE,(UB_RLBASE)
+        LD      A,L
+        SUB     E
+        LD      B,A
+        LD      A,(UB_RLMAX)
+        CP      B
+        JR      Z,UB_RLDONE
+        CALL    UB_GETIN
+        AND     07FH
+        PUSH    AF
+        LD      HL,(UB_RLPTR)
+        POP     AF
+        CP      13
+        JR      Z,UB_RLDONE
+        CP      10
+        JR      Z,UB_RLDONE
+        CP      3
+        JP      Z,BIO_WBOOT
+        CP      21              ; ^U and ^X clear the current line
+        JR      Z,UB_RLCLEAR
+        CP      24
+        JR      Z,UB_RLCLEAR
+        CP      8
+        JR      Z,UB_RLBS
+        CP      127
+        JR      Z,UB_RLBS
+        LD      (HL),A
+        INC     HL
+        LD      (UB_RLPTR),HL
+        CALL    UB_COCHAR
+        JR      UB_RLLOOP
+UB_RLBS:
+        LD      DE,(UB_RLBASE)
+        LD      A,L
+        CP      E
+        JR      Z,UB_RLLOOP
+        DEC     HL
+        LD      (UB_RLPTR),HL
+        LD      A,8
+        CALL    UB_COCHAR
+        LD      A,' '
+        CALL    UB_COCHAR
+        LD      A,8
+        CALL    UB_COCHAR
+        JR      UB_RLLOOP
+UB_RLCLEAR:
+        LD      HL,(UB_RLBASE)
+        LD      (UB_RLPTR),HL
+        JR      UB_RLLOOP
+UB_RLDONE:
+        LD      DE,(UB_RLBASE)
+        LD      A,L
+        SUB     E
+        PUSH    HL
+        LD      HL,(UB_PARM)
+        INC     HL
+        LD      (HL),A
+        POP     HL
+        LD      A,13
+        CALL    UB_COCHAR
+        JP      UB_OUTOK
 
 ; U03 -- authoritative disk/user/DMA state.
 UB_RESET:
@@ -1850,6 +2128,15 @@ UB_RBNO:        DB      0
 UB_RRCR:        DB      0
 UB_ZMODE:       DB      0
 UB_IOMODE:      DB      0
+UB_CHAR:        DB      0
+UB_OUTCH:       DB      0
+UB_COLUMN:      DB      0
+UB_LISTE:       DB      0
+UB_PENDING:     DB      0
+UB_PENDCH:      DB      0
+UB_RLBASE:      DW      0
+UB_RLPTR:       DW      0
+UB_RLMAX:       DB      0
 
 UB_STACK:
         REPT    48

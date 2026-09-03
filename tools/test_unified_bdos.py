@@ -70,6 +70,65 @@ def main() -> None:
         require(cpu.sp == initial_sp, f"function {function} unbalanced stack")
         return cpu.a
 
+    # U10 character-I/O conformance.  Patch only the platform leaves beneath
+    # the BIOS vectors, exactly as the production BDOS test does.
+    const_impl = cpu.word(BIOS_BASE + 2 * 3 + 1)
+    platform_const = cpu.word(const_impl + 1)
+    conin_impl = cpu.word(BIOS_BASE + 3 * 3 + 1)
+    platform_conin = cpu.word(conin_impl + 1)
+    conout_impl = cpu.word(BIOS_BASE + 4 * 3 + 1)
+    platform_conout = cpu.word(conout_impl + 1)
+    cpu.mem[platform_const:platform_const + 2] = bytes((0xAF, 0xC9))
+    require(call(11) == 0, "function 11 reported a false key")
+    cpu.mem[platform_const:platform_const + 3] = bytes((0x3E, 1, 0xC9))
+    require(call(11) == 0xFF, "function 11 did not normalize ready to FFh")
+    cpu.mem[platform_conin:platform_conin + 3] = bytes((0x3E, 0xC1, 0xC9))
+    require(call(6, 0xFF) == 0x41, "function 6 input retained parity")
+    cpu.mem[platform_conout:platform_conout + 5] = bytes(
+        (0x79, 0x32, 0x00, 0x70, 0xC9))
+    cpu.mem[0x7000] = 0
+    require(call(6, 0xB2) == 0 and cpu.mem[0x7000] == 0xB2,
+            "function 6 output changed its byte")
+    cpu.mem[platform_const:platform_const + 2] = bytes((0xAF, 0xC9))
+    cpu.mem[state["UB_COLUMN"]] = 0
+    require(call(2, ord("A")) == 0 and cpu.mem[0x7000] == ord("A") and
+            cpu.mem[state["UB_COLUMN"]] == 1,
+            "function 2 did not emit/count a graphic")
+    call(2, 9)
+    require(cpu.mem[0x7000] == ord(" ") and cpu.mem[state["UB_COLUMN"]] == 8,
+            "function 2 did not expand tab")
+    cpu.mem[0x7050:0x7055] = b"A\tB$Z"
+    cpu.mem[state["UB_COLUMN"]] = 0
+    require(call(9, 0x7050) == 0 and cpu.mem[0x7000] == ord("B") and
+            cpu.mem[state["UB_COLUMN"]] == 9,
+            "function 9 did not use cooked output")
+    cpu.mem[3] = 0xA5
+    require(call(7) == 0xA5, "function 7 did not return IOBYTE")
+    require(call(8, 0x5A) == 0 and cpu.mem[3] == 0x5A,
+            "function 8 did not set IOBYTE")
+
+    # Scripted BIOS input verifies the fixed BDOS's bounded counted-line
+    # buffer. Rich cursor/history editing intentionally belongs to the CCP.
+    cpu.mem[0x7060:0x706A] = bytes((
+        0x2A, 0x70, 0x70, 0x7E, 0x23, 0x22, 0x70, 0x70, 0xC9, 0))
+    cpu.mem[BIOS_BASE + 9:BIOS_BASE + 12] = bytes((0xC3, 0x60, 0x70))
+
+    def read_line(script: bytes, maximum: int) -> bytes:
+        cpu.mem[0x8000:0x8000 + len(script)] = script
+        cpu.setword(0x7070, 0x8000)
+        cpu.mem[0x7200] = maximum
+        call(10, 0x7200)
+        return bytes(cpu.mem[0x7202:0x7202 + cpu.mem[0x7201]])
+
+    require(read_line(b"AB\x08C\r", 8) == b"AC",
+            "function 10 backspace failed")
+    require(read_line(b"AB\x15C\r", 8) == b"C",
+            "function 10 Ctrl-U failed")
+    require(read_line(b"QZ", 1) == b"Q" and cpu.word(0x7070) == 0x8001,
+            "function 10 consumed beyond a full buffer")
+    cpu.mem[BIOS_BASE + 9:BIOS_BASE + 12] = bytes(
+        (0xC3, conin_impl & 0xFF, conin_impl >> 8))
+
     require(call(12) == 0x22 and cpu.hl == 0x22,
             "function 12 did not return CP/M 2.2")
     reset_result = call(13)
