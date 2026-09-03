@@ -13,7 +13,8 @@ def require(condition: bool, message: str) -> None:
         raise SystemExit(message)
 
 
-def check(path: Path, name: bytes, commands: tuple[bytes, ...]) -> None:
+def check(path: Path, name: bytes, version: tuple[int, int],
+          commands: tuple[bytes, ...]) -> None:
     module = path.read_bytes()
     require(module[:8] == b"BCPX\x01\x01\x01\x00", f"{path.name}: identity/ABI")
     (linked, size, allocation, entry, init, shutdown, relocations,
@@ -28,6 +29,7 @@ def check(path: Path, name: bytes, commands: tuple[bytes, ...]) -> None:
     require(table + relocations * 2 <= header_size,
             f"{path.name}: relocation directory crosses header")
     require(module[32:40] == name.ljust(8, b" "), f"{path.name}: module name")
+    require(tuple(module[40:42]) == version, f"{path.name}: module version")
     count = module[42]
     require(count == len(commands), f"{path.name}: command count")
     observed = tuple(module[metadata + n * 8:metadata + (n + 1) * 8].rstrip()
@@ -40,9 +42,9 @@ def check(path: Path, name: bytes, commands: tuple[bytes, ...]) -> None:
 
 
 def main() -> None:
-    check(ROOT / "build/cpx/BASIC.CPX", b"BASIC",
+    check(ROOT / "build/cpx/BASIC.CPX", b"BASIC", (0, 2),
           (b"DIR", b"ERA", b"TYPE", b"REN", b"SAVE", b"USER", b"CLR", b"VER"))
-    check(ROOT / "build/cpx/HELLO.CPX", b"HELLO", (b"HELLO",))
+    check(ROOT / "build/cpx/HELLO.CPX", b"HELLO", (0, 1), (b"HELLO",))
     print("BCPX v1 identity, ABI, layout, relocation, metadata, and checksum passed")
 
 

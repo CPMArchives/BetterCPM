@@ -14,6 +14,7 @@ from build_native_trs80 import (
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/bdos/dispatch.mac"
+VERSIONS = ROOT / "src/bdos/versions.inc"
 BUILD = ROOT / "build/bdos"
 
 
@@ -26,7 +27,7 @@ def main() -> None:
     args = parser.parse_args()
     for path in (args.cpmsim, args.system_disk, args.disk_template,
                  args.tools / "ZSM4.COM", args.tools / "LINK.COM",
-                 SOURCE, BUILD / "bdos.bin"):
+                 SOURCE, VERSIONS, BUILD / "bdos.bin"):
         if not path.is_file():
             raise SystemExit(f"missing native-build input: {path}")
 
@@ -41,6 +42,12 @@ def main() -> None:
         source.write_bytes(cpm_text(SOURCE))
         run("cpmcp", "-f", "ibm-3740", str(disks / "drivec.dsk"),
             str(source), "0:BDOS.MAC")
+        version_include = work / "VERSIONS.INC"
+        version_include.write_bytes(cpm_text(VERSIONS))
+        # ZSM4 resolves INCLUDE files on the output drive (B: here), not the
+        # source drive named to the right of the command-line equals sign.
+        run("cpmcp", "-f", "ibm-3740", str(disks / "driveb.dsk"),
+            str(version_include), "0:VERSIONS.INC")
         for tool in ("ZSM4.COM", "LINK.COM"):
             run("cpmcp", "-f", "ibm-3740", str(disks / "drived.dsk"),
                 str(args.tools / tool), f"0:{tool}")

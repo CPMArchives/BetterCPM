@@ -63,7 +63,7 @@ interface and implementation versions of affected subsystems. A concise record
 may take this form:
 
 ```text
-BetterCP/M 0.3; CCP impl 1.1 / API 1.0; BDOS impl 1.0 / API 1.0;
+BetterCP/M 0.3; CCP impl 1.1 / API 1.0; BDOS impl 1.1 / API 1.1;
 BIOS impl 1.0 / API 1.0; CPX impl 1.0 / API 1.0;
 RSX manager impl 1.0 / API 1.0
 ```
@@ -73,6 +73,11 @@ The normative current assignments are maintained in
 manifests, and release notes must agree with that matrix when they expose a
 version. A change to a subsystem version and the corresponding matrix entry
 belong in the same change set.
+
+The build generates `src/bdos/versions.inc` from that matrix. BetterCP/M BDOS
+Function 206 returns a pointer to the resulting immutable version-1 runtime
+descriptor. Runtime commands consume that descriptor; they must not carry a
+second hand-maintained subsystem-version table.
 
 ## Scope
 

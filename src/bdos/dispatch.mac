@@ -130,6 +130,8 @@ BDOS:
         JP      Z,BF_CURSOR
         CP      205             ; CCP access to shared printer-echo toggle
         JP      Z,BF_CCPPRN
+        CP      206             ; immutable subsystem-version descriptor
+        JP      Z,BF_VERSION
 ; Patch 2026-09-01: selectors above Function 40 conventionally return zero.
         XOR     A
         JP      BDOS_RETURN
@@ -241,6 +243,12 @@ BF_RSXCTL:
         LD      DE,(BDOS_PARM)
         CALL    RSXCONTROL
         JP      BDOS_RETURN
+
+; BetterCP/M Function 206 returns the protected, versioned descriptor generated
+; from the normative subsystem matrix. Consumers must validate BV/version 1.
+BF_VERSION:
+        LD      HL,BCV_DESC
+        JP      RET_HL
 
 ; Print the $-terminated string at DE through the same cooked path as
 ; Function 2. Preserve the scan pointer because tab expansion uses HL.
@@ -980,9 +988,10 @@ BDOS_CLOSE:
 
 BDOS_SFIR:
         LD      DE,(BDOS_PARM)
-        LD      A,(DE)
-        CP      '?'
-        JR      Z,BF_SALL       ; CP/M all-user search on current drive
+        ; Drive '?' changes the user-matching policy, not the selected disk.
+        ; BF_FSEL already resolves it to the public current drive.  Always
+        ; reselect that drive so an earlier explicit-drive operation cannot
+        ; leave Directory Services scanning its private stale context.
         CALL    BF_FSEL
         JP      NZ,BDOS_BADRV
 BF_SALL:
@@ -1203,6 +1212,8 @@ BDOS_RREX:
         DW      0000H
 BDOS_RRP:
         DW      0000H
+
+        INCLUDE versions.inc
 
 ; Patch 2026-09-01: the first public-call boundary receives its own stack now,
 ; before more BDOS functions deepen the call graph. The exact size and address

@@ -1122,12 +1122,100 @@ BC_USERBAD:
 BC_VER:
         LD      A,B
         OR      A
-        JR      NZ,BC_VERBAD
+        JR      NZ,BC_VERLONG
+BC_VERSHORT:
         LD      DE,BC_VERSION
         JP      BC_PRINT
+BC_VERLONG:
+        CP      2
+        JR      Z,BC_VERCHECK
 BC_VERBAD:
         LD      DE,BC_RQMARK
         JP      BC_PRINT
+BC_VERCHECK:
+        LD      A,(HL)
+        CP      '/'
+        JR      NZ,BC_VERBAD
+        INC     HL
+        LD      A,(HL)
+        CP      'V'
+        JR      NZ,BC_VERBAD
+        LD      C,206
+        CALL    BDOS
+        LD      A,(HL)
+        CP      'B'
+        JR      NZ,BC_VERBAD
+        INC     HL
+        LD      A,(HL)
+        CP      'V'
+        JR      NZ,BC_VERBAD
+        INC     HL
+        LD      A,(HL)
+        CP      1
+        JR      NZ,BC_VERBAD
+        INC     HL
+        LD      A,(HL)
+        INC     HL
+        INC     HL              ; system identity is already in concise banner
+        INC     HL
+        INC     HL
+        INC     HL              ; skip system release pointer
+        PUSH    AF              ; count and cursor survive public BDOS calls
+        PUSH    HL
+        LD      DE,BC_VERSION
+        LD      C,9
+        CALL    BDOS
+        POP     HL
+        POP     AF
+BC_VLOOP:
+        OR      A
+        RET     Z
+        DEC     A
+        PUSH    AF
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        PUSH    HL
+        LD      C,9
+        CALL    BDOS
+        POP     HL
+        LD      DE,BC_VAPI
+        PUSH    HL
+        LD      C,9
+        CALL    BDOS
+        POP     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        PUSH    HL
+        LD      C,9
+        CALL    BDOS
+        POP     HL
+        LD      DE,BC_VIMPL
+        PUSH    HL
+        LD      C,9
+        CALL    BDOS
+        POP     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        PUSH    HL
+        LD      C,9
+        CALL    BDOS
+        POP     HL
+        PUSH    HL
+        LD      E,13
+        LD      C,2
+        CALL    BDOS
+        LD      E,10
+        LD      C,2
+        CALL    BDOS
+        POP     HL
+        POP     AF
+        JR      BC_VLOOP
 BC_PRINT:
         LD      C,9
         JP      BDOS
@@ -1153,6 +1241,8 @@ BC_REXMSG:     DB      13,10,'FILE EXISTS',13,10,'$'
 BC_RQMARK:     DB      13,10,'?',13,10,'$'
 BC_NOSPACE:    DB      13,10,'NO SPACE',13,10,'$'
 BC_VERSION:    DB      13,10,'BetterCP/M 0.3',13,10,'$'
+BC_VAPI:       DB      ': API ','$'
+BC_VIMPL:      DB      '; implementation ','$'
 BC_CMDPTR:     DW      0
 BC_CMDLEN:     DB      0
 BC_KEYLEN:     DB      0

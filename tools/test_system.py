@@ -21,7 +21,8 @@ DATA = 0x7900
 
 def bdos_symbol(name: str) -> int:
     import re
-    listing = (ROOT / "build/bdos/bdos.lst").read_text(encoding="ascii")
+    listing = (ROOT / "build/bdos/bdos.lst").read_text(
+        encoding="ascii", errors="replace")
     matches = re.findall(rf"^([0-9a-f]{{4}})\s+.*\b{name}:?\s*$",
                          listing, re.MULTILINE | re.IGNORECASE)
     require(matches, f"BDOS listing lacks {name}")

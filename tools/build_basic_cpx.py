@@ -37,7 +37,7 @@ def main() -> None:
                          ALTERNATE_BASE)
     offsets = relocation_offsets(data, alternate, ALTERNATE_BASE - LINK_BASE)
     module_data = make_module(
-        name="BASIC", version=(0, 1),
+        name="BASIC", version=(0, 2),
         commands=["DIR", "ERA", "TYPE", "REN", "SAVE", "USER", "CLR", "VER"],
         linked_base=LINK_BASE, code=data, relocations=offsets)
     module = BUILD / "BASIC.CPX"

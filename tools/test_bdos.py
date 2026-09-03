@@ -18,7 +18,10 @@ DATA = 0x7900
 
 
 def symbol(name: str) -> int:
-    listing = (ROOT / "build/bdos/bdos.lst").read_text(encoding="ascii")
+    # The host assembler can leave non-ASCII bytes in an INCLUDE page's
+    # decorative source-filename header; symbol rows themselves remain ASCII.
+    listing = (ROOT / "build/bdos/bdos.lst").read_text(
+        encoding="ascii", errors="replace")
     matches = re.findall(rf"^([0-9a-f]{{4}})\s+.*\b{name}:?\s*$",
                          listing, re.MULTILINE | re.IGNORECASE)
     require(matches, f"BDOS listing lacks {name}")
@@ -625,6 +628,10 @@ def main() -> None:
     cpu.run(BDOS_BASE)
     require(cpu.hl == 0x0022 and cpu.a == 0x22 and cpu.b == 0,
             "BDOS version did not return CP/M 2.2 aliases")
+    cpu.c = 206
+    cpu.run(BDOS_BASE)
+    require(bytes(cpu.mem[cpu.hl:cpu.hl + 4]) == b"BV\x01\x05",
+            "BetterCP/M version descriptor query returned invalid metadata")
     cpu.c, cpu.e = 14, 0
     cpu.run(BDOS_BASE, limit=50000)
     require(cpu.a == 0, "selecting drive A did not complete login")

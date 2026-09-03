@@ -10,6 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/bdos/dispatch.mac"
+VERSIONS = ROOT / "src/bdos/versions.inc"
 BUILD = ROOT / "build/bdos"
 BASE = 0xC100
 
@@ -28,6 +29,7 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="bettercpm-bdos-") as temporary:
         staged = Path(temporary) / SOURCE.name
         staged.write_text(text, encoding="ascii")
+        (staged.parent / VERSIONS.name).write_bytes(VERSIONS.read_bytes())
         subprocess.run([str(args.assembler), "-fb", f"-o{output}",
                         f"-l{BUILD / 'bdos.lst'}", staged.name],
                        check=True, cwd=staged.parent)
