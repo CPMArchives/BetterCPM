@@ -1048,16 +1048,91 @@ UB_ALMARK:
         PUSH    BC
         PUSH    DE
         PUSH    HL
+        CALL    UB_ALADDR
+        JR      C,UB_ALMERR
+        OR      (HL)
+        LD      (HL),A
+        XOR     A
+        JR      UB_ALRET
+UB_ALMERR:
+        LD      A,1
+        OR      A
+UB_ALRET:
+        POP     HL
+        POP     DE
+        POP     BC
+        RET
+
+; Clear allocation block DE. This is the inverse used after committed Delete
+; and by extent rollback; block zero is a normal unused allocation-map value.
+UB_ALCLEAR:
+        PUSH    BC
+        PUSH    DE
+        PUSH    HL
+        CALL    UB_ALADDR
+        JR      C,UB_ALCERR
+        CPL
+        AND     (HL)
+        LD      (HL),A
+        XOR     A
+        JR      UB_ALCRET
+UB_ALCERR:
+        LD      A,1
+        OR      A
+UB_ALCRET:
+        POP     HL
+        POP     DE
+        POP     BC
+        RET
+
+; Return DE=the first free block. Reserved directory blocks are already set.
+UB_ALFREE:
+        LD      HL,(UB_ALVP)
+        LD      DE,0
+        LD      C,080H
+UB_AFLP:
+        LD      A,(HL)
+        AND     C
+        JR      Z,UB_AFOUND
+        INC     DE
+        PUSH    HL
         LD      HL,(UB_DSM)
         LD      A,D
         CP      H
-        JR      C,UB_ALVALID
-        JR      NZ,UB_ALBAD
+        JR      C,UB_AFCONT
+        JR      NZ,UB_AFFULL
         LD      A,E
         CP      L
-        JR      C,UB_ALVALID
-        JR      NZ,UB_ALBAD
-UB_ALVALID:
+        JR      C,UB_AFCONT
+        JR      Z,UB_AFCONT
+UB_AFFULL:
+        POP     HL
+        LD      A,1
+        OR      A
+        RET
+UB_AFCONT:
+        POP     HL
+        SRL     C
+        JR      NZ,UB_AFLP
+        LD      C,080H
+        INC     HL
+        JR      UB_AFLP
+UB_AFOUND:
+        XOR     A
+        RET
+
+; Translate block DE into allocation-vector byte HL and high-first mask A.
+UB_ALADDR:
+        LD      HL,(UB_DSM)
+        LD      A,D
+        CP      H
+        JR      C,UB_AAVAL
+        JR      NZ,UB_AABAD
+        LD      A,E
+        CP      L
+        JR      C,UB_AAVAL
+        JR      NZ,UB_AABAD
+UB_AAVAL:
         LD      A,E
         AND     7
         LD      C,A
@@ -1077,17 +1152,10 @@ UB_ALVALID:
         ADD     HL,BC
         LD      A,(HL)
         POP     HL
-        OR      (HL)
-        LD      (HL),A
-        XOR     A
-        JR      UB_ALRET
-UB_ALBAD:
-        LD      A,1
-        OR      A
-UB_ALRET:
-        POP     HL
-        POP     DE
-        POP     BC
+        OR      A               ; mask is nonzero and carry is clear
+        RET
+UB_AABAD:
+        SCF
         RET
 
 UB_ALBITS:

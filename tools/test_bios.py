@@ -388,6 +388,11 @@ class Z80:
                 self.carry = bool(self.d & 1)
                 self.d >>= 1
                 self.z = self.d == 0
+            elif op == 0xCB and self.mem[self.pc] == 0x39:  # SRL C
+                self.pc += 1
+                self.carry = bool(self.c & 1)
+                self.c >>= 1
+                self.z = self.c == 0
             elif op == 0xCB and self.mem[self.pc] == 0x1D:  # RR L
                 self.pc += 1
                 old_carry = self.carry
@@ -514,15 +519,16 @@ def require(condition: bool, message: str) -> None:
         raise AssertionError(message)
 
 
-def install_drive_tables(cpu: Z80) -> None:
+def install_drive_tables(cpu: Z80, dph_base: int = 0xC9A8,
+                         dpb_address: int = 0xC9E8,
+                         workspaces=None) -> None:
     """Install the gateway-owned four-drive DPH/DPB contract in test memory."""
     # Patch 2026-09-03: the original fixture repeated the bring-up CB00h
     # boundary. Keep this table explicit until the generated system-layout
     # include lands, but mirror the packed descriptor unit exactly.
-    dph_base = 0xC9A8
-    dpb_address = 0xC9E8
-    workspaces = ((0xC9F8, 0xCA18), (0xCA4A, 0xCA6A),
-                  (0xCA9C, 0xCABC), (0xCAEE, 0xCB0E))
+    if workspaces is None:
+        workspaces = ((0xC9F8, 0xCA18), (0xCA4A, 0xCA6A),
+                      (0xCA9C, 0xCABC), (0xCAEE, 0xCB0E))
     for drive, (csv, alv) in enumerate(workspaces):
         dph = dph_base + drive * 16
         for offset, value in ((8, 0xEC80), (10, dpb_address),

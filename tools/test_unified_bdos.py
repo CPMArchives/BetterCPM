@@ -14,6 +14,8 @@ BIOS = ROOT / "build/bios/bios.bin"
 BASE = 0xC100
 FCB = 0x7000
 FIXTURE = 0x7500
+TEST_DPH = 0xD000
+TEST_DPB = 0xD040
 
 
 def symbols() -> dict[str, int]:
@@ -28,7 +30,18 @@ def symbols() -> dict[str, int]:
 
 def main() -> None:
     cpu = Z80(BIOS.read_bytes())
-    install_drive_tables(cpu)
+    workspaces = ((0xD050, 0xD070), (0xD0A2, 0xD0C2),
+                  (0xD0F4, 0xD114), (0xD146, 0xD166))
+    install_drive_tables(cpu, TEST_DPH, TEST_DPB, workspaces)
+    # The active BIOS still carries provisional descriptor literals directly
+    # after the old BDOS. Relocate those four SELDSK return constants only in
+    # this standalone replacement test until generated system layout lands.
+    select_impl = cpu.word(BIOS_BASE + 9 * 3 + 1)
+    for offset in range(48):
+        address = select_impl + offset
+        value = cpu.word(address)
+        if value in (0xC9A8, 0xC9B8, 0xC9C8, 0xC9D8):
+            cpu.setword(address, TEST_DPH + (value - 0xC9A8))
     image = IMAGE.read_bytes()
     cpu.mem[BASE:BASE + len(image)] = image
 
@@ -153,6 +166,20 @@ def main() -> None:
     cpu.de = 395                 # one beyond this fixture's DSM=394
     cpu.run(state["UB_ALMARK"])
     require(cpu.a != 0, "U07 accepted an allocation block beyond DSM")
+    cpu.run(state["UB_ALFREE"])
+    require(cpu.a == 0 and cpu.de == 9,
+            "U07 did not find the first free allocation block")
+    cpu.run(state["UB_ALMARK"])
+    require(cpu.a == 0, "U07 could not reserve the selected free block")
+    cpu.run(state["UB_ALFREE"])
+    require(cpu.a == 0 and cpu.de == 10,
+            "U07 returned a block that had just been reserved")
+    cpu.de = 9
+    cpu.run(state["UB_ALCLEAR"])
+    require(cpu.a == 0, "U07 could not release an allocation block")
+    cpu.run(state["UB_ALFREE"])
+    require(cpu.a == 0 and cpu.de == 9,
+            "U07 did not make a released block available again")
 
     # Open uses the same iterator in exact-name mode, filters EX/S2 with the
     # live DPB's EXM, and activates bytes 1..31 without changing drive or CR.
@@ -194,7 +221,7 @@ def main() -> None:
     # Constrain the fixture to one directory record and verify Delete's
     # preflight/mutation passes through the same cache and iterator.
     require(call(37, 2) == 0, "could not clear drive-B write protection")
-    dpb = 0xC9E8
+    dpb = TEST_DPB
     cpu.mem[dpb + 7] = 3          # DRM=3: four entries, one directory record
     cpu.mem[FCB:FCB + 36] = bytes(36)
     cpu.mem[FCB + 1:FCB + 12] = b"ONE     COM"
