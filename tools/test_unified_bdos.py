@@ -104,7 +104,7 @@ def main() -> None:
             "unavailable drive changed current drive")
     require(call(38) == 0 and call(39) == 0,
             "reserved standard functions did not return zero")
-    require(call(20) == 0xFF, "unfinished file call was not rejected")
+    require(call(21) == 0xFF, "unfinished file call was not rejected")
 
     fcbdrv = symbols()["UB_FCBDRV"]
     cpu.mem[FCB] = 0
@@ -346,8 +346,27 @@ def main() -> None:
             cpu.mem[0x7304] == writes,
             "failed Close did not restore the caller or preserve the directory")
 
-    print(f"unified BDOS U01-U08 foundation passed ({len(image)} bytes)")
-    print("disk state, directory/cache, allocation, and extent conversion passed")
+    # Sequential Read maps CR through EXM, BSH/BLM, the 16-bit allocation map,
+    # SPT/OFF and BIOS translation, transfers one record, then advances CR.
+    for quarter, marker in enumerate((0x10, 0x20, 0x30, 0x40)):
+        cpu.mem[FIXTURE + quarter * 128:FIXTURE + (quarter + 1) * 128] = \
+            bytes((marker,)) * 128
+    cpu.mem[FCB:FCB + 36] = bytes(36)
+    cpu.mem[FCB + 12] = 0
+    cpu.mem[FCB + 15] = 2
+    cpu.mem[FCB + 16:FCB + 18] = bytes((1, 0))
+    cpu.mem[FCB + 32] = 1
+    dma = 0x7800
+    call(26, dma)
+    require(call(20, FCB) == 0 and cpu.mem[FCB + 32] == 2,
+            "Sequential Read failed or did not advance CR")
+    require(bytes(cpu.mem[dma:dma + 128]) == bytes((0x20,)) * 128,
+            "Sequential Read mapped or transferred the wrong logical record")
+    require(call(20, FCB) == 1,
+            "Sequential Read did not report EOF when CR reached RC")
+
+    print(f"unified BDOS U01-U09 foundation passed ({len(image)} bytes)")
+    print("disk, directory, allocation, extent, and record-read mapping passed")
 
 
 if __name__ == "__main__":

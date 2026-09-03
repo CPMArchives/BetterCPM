@@ -326,6 +326,8 @@ class Z80:
                 self.l = self.mem[self.hl]
             elif op == 0x4E:            # LD C,(HL)
                 self.c = self.mem[self.hl]
+            elif op == 0x46:            # LD B,(HL)
+                self.b = self.mem[self.hl]
             elif op == 0x5E:            # LD E,(HL)
                 self.e = self.mem[self.hl]
             elif op == 0x56:            # LD D,(HL)

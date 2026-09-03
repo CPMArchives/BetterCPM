@@ -44,7 +44,7 @@ UB_TABLE:
         DW      UB_MISSING,UB_VERSION
         DW      UB_RESET,UB_SELECT
         DW      UB_OPEN,UB_CLOSE,UB_SFIRST,UB_SNEXT,UB_DELETE
-        DW      UB_MISSING,UB_MISSING,UB_MAKE,UB_RENAME
+        DW      UB_READ,UB_MISSING,UB_MAKE,UB_RENAME
         DW      UB_LOGINV,UB_CURDSK,UB_SETDMA,UB_GETALV,UB_WRPROT
         DW      UB_ROVEC,UB_ATTR,UB_GETDPB,UB_USER
         DW      UB_MISSING,UB_MISSING,UB_SIZE,UB_SETRR,UB_RSTDRV
@@ -1022,6 +1022,178 @@ UB_SETRR:
         XOR     A
         JP      UB_RETA
 
+; Function 20 is the first U09 client. EOF is an ordinary result (1); invalid
+; mapping or physical failure uses the provisional FF error result.
+UB_READ:
+        LD      (UB_RFCB),DE
+        CALL    UB_FCBDRV
+        JP      C,UB_BAD
+        CALL    UB_CONTEXT
+        JP      NZ,UB_BAD
+        LD      HL,(UB_RFCB)
+        LD      DE,32
+        ADD     HL,DE
+        LD      A,(HL)
+        LD      C,A
+        LD      HL,(UB_RFCB)
+        LD      DE,15
+        ADD     HL,DE
+        LD      A,C
+        CP      (HL)
+        JR      NC,UB_REOF
+        CALL    UB_RECMAP
+        JP      C,UB_BAD
+        LD      BC,(UB_DMA)
+        CALL    BIO_SETDMA
+        CALL    BIO_READ
+        OR      A
+        JP      NZ,UB_BAD
+        LD      HL,(UB_RFCB)
+        LD      DE,32
+        ADD     HL,DE
+        INC     (HL)
+        XOR     A
+        JP      UB_RETA
+UB_REOF:
+        LD      A,1
+        JP      UB_RETA
+
+; Map the current sequential record in UB_RFCB through EXM, BSH/BLM, the
+; 8/16-bit allocation map, SPT/OFF, and BIOS sector translation.
+UB_RECMAP:
+        LD      HL,(UB_RFCB)
+        LD      DE,12
+        ADD     HL,DE
+        LD      C,(HL)          ; EX
+        LD      HL,(UB_DPB)
+        LD      DE,4
+        ADD     HL,DE
+        LD      A,(HL)          ; EXM
+        AND     C
+        LD      H,A
+        LD      L,0
+        SRL     H
+        RR      L               ; grouped subextent * 128
+        LD      DE,(UB_RFCB)
+        EX      DE,HL
+        LD      BC,32
+        ADD     HL,BC
+        LD      C,(HL)          ; CR
+        EX      DE,HL
+        LD      B,0
+        ADD     HL,BC
+        LD      C,L
+        LD      (UB_RLOG),HL
+        LD      HL,(UB_DPB)
+        INC     HL
+        INC     HL               ; DPB+2 BSH
+        LD      B,(HL)
+        INC     HL               ; DPB+3 BLM
+        LD      A,(HL)
+        AND     C
+        LD      (UB_RREM),A
+        LD      HL,(UB_RLOG)
+        LD      A,B
+UB_RBSH:
+        OR      A
+        JR      Z,UB_RBIX
+        SRL     H
+        RR      L
+        DEC     A
+        JR      UB_RBSH
+UB_RBIX:
+        LD      A,H
+        OR      A
+        JP      NZ,UB_RMBAD
+        LD      A,L
+        LD      (UB_RBNO),A
+        LD      HL,(UB_RFCB)
+        LD      DE,16
+        ADD     HL,DE
+        LD      A,(UB_DSM+1)
+        OR      A
+        LD      A,(UB_RBNO)
+        JR      Z,UB_RGET8
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        JR      UB_RBLOCK
+UB_RGET8:
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE
+        LD      E,(HL)
+        LD      D,0
+UB_RBLOCK:
+        LD      A,D
+        OR      E
+        JR      Z,UB_RMBAD
+        EX      DE,HL
+        LD      DE,(UB_DSM)
+        OR      A
+        SBC     HL,DE
+        JR      C,UB_RMVALID
+        JR      NZ,UB_RMBAD
+UB_RMVALID:
+        ADD     HL,DE
+        LD      DE,(UB_DPB)
+        INC     DE
+        INC     DE
+        LD      A,(DE)
+UB_RMSH:
+        OR      A
+        JR      Z,UB_RMREM
+        ADD     HL,HL
+        DEC     A
+        JR      UB_RMSH
+UB_RMREM:
+        LD      A,(UB_RREM)
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE
+        PUSH    HL
+        LD      HL,(UB_DPB)
+        LD      E,(HL)           ; SPT low; supported geometry is below 256
+        LD      D,0
+        POP     HL
+        LD      BC,0
+UB_RMDIV:
+        OR      A
+        SBC     HL,DE
+        JR      C,UB_RMDONE
+        INC     BC
+        JR      UB_RMDIV
+UB_RMDONE:
+        ADD     HL,DE
+        PUSH    HL
+        LD      HL,(UB_DPB)
+        LD      DE,13
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      H,B
+        LD      L,C
+        ADD     HL,DE
+        LD      B,H
+        LD      C,L
+        CALL    BIO_SETTRK
+        POP     BC
+        LD      DE,0
+        CALL    BIO_SECTRAN
+        LD      B,H
+        LD      C,L
+        CALL    BIO_SETSEC
+        OR      A
+        RET
+UB_RMBAD:
+        SCF
+        RET
+
 UB_MAXIMUM:
         LD      HL,UB_MAXREC+2
         LD      DE,UB_CANREC+2
@@ -1431,6 +1603,10 @@ UB_CSAVE:
         REPT    31
         DB      0
         ENDM
+UB_RFCB:        DW      0
+UB_RREM:        DB      0
+UB_RLOG:        DW      0
+UB_RBNO:        DB      0
 
 UB_STACK:
         REPT    48
