@@ -48,7 +48,7 @@ UB_TABLE:
         DW      UB_LOGINV,UB_CURDSK,UB_SETDMA,UB_GETALV,UB_WRPROT
         DW      UB_ROVEC,UB_ATTR,UB_GETDPB,UB_USER
         DW      UB_RREAD,UB_RWRITE,UB_SIZE,UB_SETRR,UB_RSTDRV
-        DW      UB_ZERO,UB_ZERO,UB_MISSING
+        DW      UB_ZERO,UB_ZERO,UB_RZERO
 
 UB_MISSING:
         LD      A,0FFH          ; replacement slice not implemented yet
@@ -1065,6 +1065,8 @@ UB_REOF:
 ; satisfied through U07, installed in the caller FCB, and then mapped again.
 ; Close remains the single directory commit point for the changed RC/map.
 UB_WRITE:
+        XOR     A
+        LD      (UB_ZMODE),A
         CALL    UB_WCORE
         JP      UB_RETA
 UB_WCORE:
@@ -1125,6 +1127,11 @@ UB_WPUT8:
 UB_WREMAP:
         CALL    UB_RECMAP
         JP      C,UB_BAD
+        LD      A,(UB_ZMODE)
+        OR      A
+        JR      Z,UB_WMAPPED
+        CALL    UB_ZBLOCK
+        JP      NZ,UB_BAD
 UB_WMAPPED:
         LD      BC,(UB_DMA)
         CALL    BIO_SETDMA
@@ -1158,12 +1165,81 @@ UB_RREAD:
 
 ; Function 34 differs only in its final shared transfer core.
 UB_RWRITE:
+        XOR     A
+        LD      (UB_ZMODE),A
+UB_RWCOMMON:
         CALL    UB_RDECODE
         LD      DE,(UB_RFCB)
         CALL    UB_OPENCORE
         LD      DE,(UB_RFCB)
         CALL    UB_WCORE
         JP      UB_RETA
+
+; Function 40 zeroes every record of a newly allocated block before the
+; requested random write.  The flushed directory buffer is reusable scratch,
+; avoiding another permanent 128-byte buffer in the fixed core.
+UB_RZERO:
+        LD      A,1
+        LD      (UB_ZMODE),A
+        JR      UB_RWCOMMON
+
+UB_ZBLOCK:
+        CALL    UB_DIRFLUSH
+        RET     NZ
+        XOR     A
+        LD      (UBS_COK),A
+        LD      HL,(UB_DIRBUF)
+        LD      B,128
+UB_ZCLEAR:
+        LD      (HL),A
+        INC     HL
+        DJNZ    UB_ZCLEAR
+        LD      HL,(UB_RFCB)
+        LD      DE,32
+        ADD     HL,DE
+        LD      A,(HL)
+        LD      (UB_RRCR),A
+        LD      HL,(UB_DPB)
+        INC     HL
+        INC     HL
+        INC     HL
+        LD      C,(HL)          ; BLM
+        LD      A,C
+        CPL
+        LD      HL,(UB_RFCB)
+        LD      DE,32
+        ADD     HL,DE
+        AND     (HL)
+        LD      (HL),A          ; first record in the allocated block
+        LD      A,C
+        INC     A
+        LD      C,A
+UB_ZLOOP:
+        PUSH    BC
+        CALL    UB_RECMAP
+        JR      C,UB_ZFAIL
+        LD      BC,(UB_DIRBUF)
+        CALL    BIO_SETDMA
+        LD      C,0
+        CALL    BIO_WRITE
+        OR      A
+        JR      NZ,UB_ZFAIL
+        LD      HL,(UB_RFCB)
+        LD      DE,32
+        ADD     HL,DE
+        INC     (HL)
+        POP     BC
+        DEC     C
+        JR      NZ,UB_ZLOOP
+        LD      A,(UB_RRCR)
+        LD      (HL),A
+        CALL    UB_RECMAP
+        RET
+UB_ZFAIL:
+        POP     BC
+        LD      A,1
+        OR      A
+        RET
 
 UB_RDECODE:
         LD      (UB_RFCB),DE
@@ -1766,6 +1842,7 @@ UB_RREM:        DB      0
 UB_RLOG:        DW      0
 UB_RBNO:        DB      0
 UB_RRCR:        DB      0
+UB_ZMODE:       DB      0
 
 UB_STACK:
         REPT    48

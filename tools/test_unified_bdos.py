@@ -418,6 +418,25 @@ def main() -> None:
             "Random Write diverged from shared decode/write bookkeeping")
     require(cpu.mem[0x7304] == writes + 1,
             "Random Write did not issue exactly one physical write")
+
+    # Function 40 uses the same Random Write path, but a newly allocated map
+    # element first receives a complete zero-filled block.  This fixture has
+    # BLM=15, so the initializer performs 16 writes plus the requested one.
+    cpu.mem[FCB:FCB + 36] = bytes(36)
+    cpu.mem[FCB + 1:FCB + 12] = b"ONE     COM"
+    cpu.mem[FCB + 33:FCB + 36] = bytes((16, 0, 0))
+    writes = cpu.mem[0x7304]
+    zero_result = call(40, FCB)
+    require(zero_result == 0 and cpu.word(FCB + 18) == 10,
+            f"zero-fill Random Write did not allocate its target block: "
+            f"A={zero_result:02X} AL={bytes(cpu.mem[FCB+16:FCB+22]).hex()} "
+            f"CR={cpu.mem[FCB+32]} RC={cpu.mem[FCB+15]} writes={cpu.mem[0x7304]-writes}")
+    require(cpu.mem[FCB + 32] == 17 and cpu.mem[FCB + 15] == 17,
+            "zero-fill Random Write did not restore and advance its target record")
+    require(cpu.mem[0x7304] == writes + 17,
+            "zero-fill Random Write did not initialize exactly one full block")
+    require(cpu.mem[state["UBS_COK"]] == 0,
+            "zero-fill scratch use left the directory cache falsely valid")
     call(28)
     writes = cpu.mem[0x7304]
     require(call(21, FCB) == 0xFF and cpu.mem[0x7304] == writes,
