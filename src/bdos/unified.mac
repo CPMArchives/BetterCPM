@@ -43,7 +43,7 @@ UB_TABLE:
         DW      UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING
         DW      UB_MISSING,UB_VERSION
         DW      UB_RESET,UB_SELECT
-        DW      UB_MISSING,UB_MISSING,UB_SFIRST,UB_SNEXT,UB_MISSING
+        DW      UB_OPEN,UB_MISSING,UB_SFIRST,UB_SNEXT,UB_MISSING
         DW      UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING
         DW      UB_LOGINV,UB_CURDSK,UB_SETDMA,UB_GETALV,UB_WRPROT
         DW      UB_ROVEC,UB_MISSING,UB_GETDPB,UB_USER
@@ -309,6 +309,10 @@ UB_SFALL:
         LD      A,0FFH
         LD      (UB_ITALL),A
 UB_SFINIT:
+        LD      A,12
+        LD      (UB_ITLEN),A
+        LD      A,1
+        LD      (UB_ITWILD),A
         XOR     A
         LD      (UB_ITREC),A
         LD      (UB_ITSLOT),A
@@ -359,13 +363,23 @@ UB_ITNAME:
         INC     HL
         LD      DE,(UB_ITFCB)
         INC     DE
-        LD      B,12            ; 8.3 name plus EX, CP/M Search semantics
+        LD      A,(UB_ITLEN)
+        LD      B,A
 UB_ITCMP:
         LD      A,(DE)
         AND     07FH
         CP      '?'
-        JR      Z,UB_ITCHAR
+        JR      NZ,UB_ITLIT
+        LD      A,(UB_ITWILD)
+        OR      A
+        JR      NZ,UB_ITCHAR
+UB_ITLIT:
+        LD      A,(DE)
+        AND     07FH
         LD      C,A
+        LD      A,(UB_ITLEN)
+        CP      12
+        JR      NZ,UB_ITBASE
         LD      A,B
         CP      1
         JR      NZ,UB_ITBASE
@@ -415,6 +429,84 @@ UB_ITSTEP:
 UB_ITSAVE:
         LD      (UB_ITSLOT),A
         RET
+
+; Function 15 configures the same iterator for an exact 8.3 name, then filters
+; by the EXM-grouped logical extent. On success directory bytes 1..31 activate
+; the caller FCB while its drive byte and current-record byte remain private.
+UB_OPEN:
+        LD      (UB_ITFCB),DE
+        CALL    UB_FCBDRV
+        JP      C,UB_BAD
+        CALL    UB_CONTEXT
+        JP      NZ,UB_BAD
+        LD      A,(UB_USERNO)
+        LD      (UB_ITUSER),A
+        XOR     A
+        LD      (UB_ITALL),A
+        LD      (UB_ITWILD),A
+        LD      (UB_ITREC),A
+        LD      (UB_ITSLOT),A
+        LD      A,11
+        LD      (UB_ITLEN),A
+UB_OPNEXT:
+        CALL    UB_ITER
+        JP      C,UB_BAD
+        LD      (UB_ITRET),A
+        PUSH    HL
+        LD      DE,12
+        ADD     HL,DE
+        LD      A,(HL)
+        AND     01FH
+        LD      C,A
+        LD      HL,(UB_DPH)
+        LD      DE,10
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        LD      DE,4
+        ADD     HL,DE
+        LD      A,(HL)          ; EXM
+        CPL
+        AND     01FH
+        LD      B,A
+        LD      A,C
+        AND     B
+        LD      C,A
+        LD      HL,(UB_ITFCB)
+        LD      DE,12
+        ADD     HL,DE
+        LD      A,(HL)
+        AND     B
+        CP      C
+        JR      NZ,UB_OPMISS
+        INC     HL
+        INC     HL
+        LD      C,(HL)          ; requested S2
+        POP     HL
+        PUSH    HL
+        LD      DE,14
+        ADD     HL,DE
+        LD      A,(HL)
+        AND     03FH
+        CP      C
+        JR      NZ,UB_OPMISS
+        INC     HL
+        LD      A,(HL)          ; RC must remain within one 128-record extent
+        CP      129
+        JR      NC,UB_OPMISS
+        POP     HL
+        INC     HL
+        LD      DE,(UB_ITFCB)
+        INC     DE
+        LD      BC,31
+        LDIR
+        LD      A,(UB_ITRET)
+        JP      UB_RETA
+UB_OPMISS:
+        POP     HL
+        JR      UB_OPNEXT
 
 ; U06 -- a single cache backed by the DPH-published directory buffer. Caching
 ; state names the directory record currently represented; mutation clients
@@ -570,6 +662,8 @@ UB_ITREC:       DB      0
 UB_ITSLOT:      DB      0
 UB_ITLIVE:      DB      0
 UB_ITRET:       DB      0
+UB_ITLEN:       DB      0
+UB_ITWILD:      DB      0
 UB_DIRBUF:      DW      0
 UBS_CREC:       DB      0
 UBS_COK:        DB      0

@@ -52,7 +52,7 @@ def main() -> None:
 
     def call(function: int, parameter: int = 0) -> int:
         cpu.c, cpu.de = function, parameter
-        cpu.run(BASE, limit=10000)
+        cpu.run(BASE, limit=50000)
         require(cpu.sp == initial_sp, f"function {function} unbalanced stack")
         return cpu.a
 
@@ -86,7 +86,7 @@ def main() -> None:
             "unavailable drive changed current drive")
     require(call(38) == 0 and call(39) == 0,
             "reserved standard functions did not return zero")
-    require(call(15) == 0xFF, "unfinished file call was not rejected")
+    require(call(16) == 0xFF, "unfinished file call was not rejected")
 
     fcbdrv = symbols()["UB_FCBDRV"]
     cpu.mem[FCB] = 0
@@ -110,6 +110,8 @@ def main() -> None:
     cpu.mem[FIXTURE:FIXTURE + 12] = bytes((7,)) + b"ONE     COM"
     cpu.mem[FIXTURE + 32:FIXTURE + 44] = bytes((7,)) + b"TWO     COM"
     cpu.mem[FIXTURE + 12] = cpu.mem[FIXTURE + 44] = 0
+    cpu.mem[FIXTURE + 13:FIXTURE + 16] = bytes((0x55, 2, 0x22))
+    cpu.mem[FIXTURE + 16:FIXTURE + 32] = bytes(range(1, 17))
     cpu.mem[FCB:FCB + 36] = bytes(36)
     cpu.mem[FCB] = 0
     cpu.mem[FCB + 1:FCB + 12] = b"???????????"
@@ -135,6 +137,20 @@ def main() -> None:
     require(call(18) == 1, "Search Next did not retain slot continuation")
     require(cpu.mem[0x7303] == reads,
             "Search Next reread an already cached directory sector")
+
+    # Open uses the same iterator in exact-name mode, filters EX/S2 with the
+    # live DPB's EXM, and activates bytes 1..31 without changing drive or CR.
+    cpu.mem[FCB:FCB + 33] = bytes((0xA5,)) * 33
+    cpu.mem[FCB] = 0
+    cpu.mem[FCB + 1:FCB + 12] = b"ONE     COM"
+    cpu.mem[FCB + 12] = 0
+    cpu.mem[FCB + 14] = 2
+    cpu.mem[FCB + 32] = 9
+    require(call(15, FCB) == 0, "Open missed an exact existing extent")
+    require(cpu.mem[FCB] == 0 and cpu.mem[FCB + 32] == 9,
+            "Open changed the caller's drive byte or current record")
+    require(cpu.mem[FCB + 1:FCB + 32] == cpu.mem[FIXTURE + 1:FIXTURE + 32],
+            "Open did not activate directory bytes 1..31")
 
     print(f"unified BDOS U01-U06 foundation passed ({len(image)} bytes)")
     print("disk state, FCB drive view, shared iterator, and one-sector cache passed")
