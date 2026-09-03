@@ -136,9 +136,7 @@ UB_CONIN:
         JR      Z,UB_TOGGLE
         CP      19              ; ^S waits for one key and is consumed
         JR      Z,UB_PAUSE
-        LD      (UB_CHAR),A
         CALL    UB_ECHO
-        LD      A,(UB_CHAR)
         JR      UB_RETA
 UB_TOGGLE:
         LD      A,(UB_LISTE)
@@ -178,7 +176,6 @@ UB_PRLOOP:
         JR      UB_PRLOOP
 
 UB_COCHAR:
-        LD      (UB_CHAR),A
         CP      9
         JR      Z,UB_TAB
         CP      13
@@ -186,8 +183,9 @@ UB_COCHAR:
         CP      8
         JR      Z,UB_BS
         LD      C,A
+        PUSH    AF
         CALL    UB_PUT
-        LD      A,(UB_CHAR)
+        POP     AF
         CP      10
         RET     Z
         LD      HL,UB_COLUMN
@@ -209,9 +207,9 @@ UB_TABLP:
         DJNZ    UB_TABLP
         RET
 UB_CR:
+        LD      C,A
         XOR     A
         LD      (UB_COLUMN),A
-        LD      C,13
         JR      UB_PUT
 UB_BS:
         LD      HL,UB_COLUMN
@@ -220,7 +218,6 @@ UB_BS:
         JR      Z,UB_RAWCHAR
         DEC     (HL)
 UB_RAWCHAR:
-        LD      A,(UB_CHAR)
         LD      C,A
 
 ; Polling during output implements ^S/^P/^C and preserves ordinary typeahead.
@@ -263,12 +260,14 @@ UB_PUTNOW:
         JP      BIO_LIST
 
 UB_ECHO:
-        LD      A,(UB_CHAR)
         CP      32
         RET     C
         CP      127
         RET     NC
-        JP      UB_COCHAR
+        PUSH    AF
+        CALL    UB_COCHAR
+        POP     AF
+        RET
 
 ; Counted input buffer: [maximum][count][characters].  This deliberately
 ; keeps only CP/M's essential editing contract in the fixed BDOS; the richer
@@ -282,38 +281,90 @@ UB_READLN:
 UB_RLLOOP:
         LD      A,(IX+1)
         CP      (IX+0)
-        JR      Z,UB_RLDONE
+        JP      Z,UB_RLDONE
         PUSH    HL
         CALL    UB_GETIN
         POP     HL
         AND     07FH
         CP      13
-        JR      Z,UB_RLDONE
+        JP      Z,UB_RLDONE
         CP      10
-        JR      Z,UB_RLDONE
+        JP      Z,UB_RLDONE
         CP      3
-        JP      Z,BIO_WBOOT
+        JR      Z,UB_RLCTRL
+        CP      5               ; ^E: continue on a fresh physical line
+        JR      Z,UB_RLNEW
+        CP      18              ; ^R: redisplay retained input
+        JR      Z,UB_RLREDIS
+        CP      16              ; ^P: toggle printer echo
+        JR      Z,UB_RLP
         CP      21              ; ^U and ^X clear the current line
-        JR      Z,UB_RLCLEAR
+        JR      Z,UB_RLU
         CP      24
-        JR      Z,UB_RLCLEAR
+        JP      Z,UB_RLX
         CP      8
         JR      Z,UB_RLBS
         CP      127
         JR      Z,UB_RLBS
+UB_RLSTORE:
         LD      (HL),A
         INC     HL
         INC     (IX+1)
         PUSH    HL
-        CALL    UB_COCHAR
+        CALL    UB_CLECHO
         POP     HL
         JR      UB_RLLOOP
+UB_RLCTRL:
+        LD      A,(IX+1)
+        OR      A
+        JP      Z,BIO_WBOOT
+        LD      A,3
+        JR      UB_RLSTORE
+UB_RLP:
+        LD      A,(UB_LISTE)
+        CPL
+        LD      (UB_LISTE),A
+        JR      UB_RLLOOP
+UB_RLNEW:
+        PUSH    HL
+        CALL    UB_NEWLINE
+        POP     HL
+        JR      UB_RLLOOP
+UB_RLREDIS:
+        PUSH    HL
+        LD      A,'#'
+        CALL    UB_COCHAR
+        CALL    UB_NEWLINE
+        PUSH    IX
+        POP     HL
+        INC     HL
+        INC     HL
+        LD      A,(IX+1)
+        LD      B,A
+UB_RLRLP:
+        LD      A,B
+        OR      A
+        JR      Z,UB_RLRDONE
+        LD      A,(HL)
+        INC     HL
+        PUSH    HL
+        PUSH    BC
+        CALL    UB_CLECHO
+        POP     BC
+        POP     HL
+        DJNZ    UB_RLRLP
+UB_RLRDONE:
+        POP     HL
+        JP      UB_RLLOOP
 UB_RLBS:
         LD      A,(IX+1)
         OR      A
-        JR      Z,UB_RLLOOP
+        JP      Z,UB_RLLOOP
         DEC     HL
         DEC     (IX+1)
+        CALL    UB_RLERASE
+        JP      UB_RLLOOP
+UB_RLERASE:
         PUSH    HL
         LD      A,8
         CALL    UB_COCHAR
@@ -322,18 +373,52 @@ UB_RLBS:
         LD      A,8
         CALL    UB_COCHAR
         POP     HL
-        JR      UB_RLLOOP
+        RET
+UB_RLU:
+        PUSH    HL
+        LD      A,'#'
+        CALL    UB_COCHAR
+        CALL    UB_NEWLINE
+        POP     HL
+        JR      UB_RLCLEAR
+UB_RLX:
+        LD      A,(IX+1)
+        OR      A
+        JR      Z,UB_RLCLEAR
+        DEC     HL
+        DEC     (IX+1)
+        CALL    UB_RLERASE
+        JR      UB_RLX
 UB_RLCLEAR:
         LD      (IX+1),0
         PUSH    IX
         POP     HL
         INC     HL
         INC     HL
-        JR      UB_RLLOOP
+        JP      UB_RLLOOP
 UB_RLDONE:
         LD      A,13
         CALL    UB_COCHAR
         JP      UB_OUTOK
+
+UB_NEWLINE:
+        LD      A,13
+        CALL    UB_COCHAR
+        LD      A,10
+        JP      UB_COCHAR
+
+; Accepted, non-editing controls use CP/M caret notation.
+UB_CLECHO:
+        CP      9
+        JP      Z,UB_COCHAR
+        CP      32
+        JP      NC,UB_COCHAR
+        PUSH    AF
+        LD      A,'^'
+        CALL    UB_COCHAR
+        POP     AF
+        ADD     A,'@'
+        JP      UB_COCHAR
 
 ; U03 -- authoritative disk/user/DMA state.
 UB_RESET:
@@ -1590,34 +1675,7 @@ UB_RMREM:
         LD      E,A
         LD      D,0
         ADD     HL,DE
-        PUSH    HL
-        LD      DE,(UB_DPBC)     ; SPT
-        POP     HL
-        LD      BC,0
-UB_RMDIV:
-        OR      A
-        SBC     HL,DE
-        JR      C,UB_RMDONE
-        INC     BC
-        JR      UB_RMDIV
-UB_RMDONE:
-        ADD     HL,DE
-        PUSH    HL
-        LD      DE,(UB_DPBC+13)  ; OFF
-        LD      H,B
-        LD      L,C
-        ADD     HL,DE
-        LD      B,H
-        LD      C,L
-        CALL    BIO_SETTRK
-        POP     BC
-        LD      DE,0
-        CALL    BIO_SECTRAN
-        LD      B,H
-        LD      C,L
-        CALL    BIO_SETSEC
-        OR      A
-        RET
+        JP      UB_POSITION
 UB_RMBAD:
         SCF
         RET
@@ -1871,36 +1929,29 @@ UB_DIRCOUNT:
         LD      B,A
         RET
 
-; Position BIOS at directory record C using live SPT and OFF from the DPB.
+; Position BIOS at directory record C through the same logical-record engine
+; used for file data. This is the sole SPT/OFF division and translation path.
 UB_DIRPOS:
-        LD      DE,(UB_DPBC)    ; SPT
-        LD      A,C
-        LD      C,E             ; supported format has SPT below 256
-        LD      B,0
-UB_DIRDIV:
-        CP      C
-        JR      C,UB_DIRREM
-        SUB     C
-        INC     B
-        JR      UB_DIRDIV
-UB_DIRREM:
-        PUSH    AF
-        LD      DE,(UB_DPBC+13) ; OFF
-        LD      H,B
-        LD      L,0
-        LD      A,H
-        OR      A
-        JR      Z,UB_DIROFF
-        LD      L,H
+        LD      L,C
         LD      H,0
-UB_DIROFF:
-        ADD     HL,DE
+UB_POSITION:
+        LD      DE,(UB_DPBC)    ; SPT
+        LD      BC,0
+UB_POSDIV:
+        OR      A
+        SBC     HL,DE
+        JR      C,UB_POSDONE
+        INC     BC
+        JR      UB_POSDIV
+UB_POSDONE:
+        ADD     HL,DE           ; HL=remainder sector, BC=track
+        PUSH    HL
+        LD      HL,(UB_DPBC+13) ; OFF
+        ADD     HL,BC
         LD      B,H
         LD      C,L
         CALL    BIO_SETTRK
-        POP     AF
-        LD      C,A
-        LD      B,0
+        POP     BC
         LD      DE,0
         CALL    BIO_SECTRAN
         LD      B,H
@@ -1958,7 +2009,6 @@ UB_RBNO:        DB      0
 UB_RRCR:        DB      0
 UB_ZMODE:       DB      0
 UB_IOMODE:      DB      0
-UB_CHAR:        DB      0
 UB_COLUMN:      DB      0
 UB_LISTE:       DB      0
 UB_PENDING:     DB      0

@@ -124,6 +124,16 @@ def main() -> None:
             "function 10 backspace failed")
     require(read_line(b"AB\x15C\r", 8) == b"C",
             "function 10 Ctrl-U failed")
+    require(read_line(b"A\x05B\x12C\r", 8) == b"ABC",
+            "function 10 Ctrl-E/Ctrl-R retention failed")
+    require(read_line(b"AB\x18C\n", 8) == b"C",
+            "function 10 Ctrl-X deletion failed")
+    require(read_line(b"A\x03B\r", 8) == b"A\x03B",
+            "function 10 noninitial Ctrl-C retention failed")
+    cpu.mem[state["UB_LISTE"]] = 0
+    require(read_line(b"\x10A\r", 8) == b"A" and
+            cpu.mem[state["UB_LISTE"]] == 0xFF,
+            "function 10 Ctrl-P printer toggle failed")
     require(read_line(b"QZ", 1) == b"Q" and cpu.word(0x7070) == 0x8001,
             "function 10 consumed beyond a full buffer")
     cpu.mem[BIOS_BASE + 9:BIOS_BASE + 12] = bytes(
