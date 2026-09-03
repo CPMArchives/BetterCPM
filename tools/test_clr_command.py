@@ -26,7 +26,7 @@ def main() -> None:
         invocation.extend(("-it", "-ix"))
         subprocess.run(invocation, cwd=temporary, check=True)
         screen = Path(temporary, "trs80-text-0.bin").read_bytes()[:80 * 24]
-    if b"BetterCP/M 0.1" in screen or b"A0>CLR" in screen:
+    if b"BetterCP/M 0.3" in screen or b"A0>CLR" in screen:
         raise SystemExit(f"CLR left old screen contents visible: {screen!r}")
     if b"A0>" not in screen:
         raise SystemExit(f"CLR did not leave a fresh prompt: {screen!r}")

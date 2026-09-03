@@ -1502,7 +1502,7 @@ CCP_PROMPT:
 CCP_UNKNOWN:
         DB      10,'?','$'
 CCP_VERSION:
-        DB      10,'BetterCP/M 0.1','$'
+        DB      10,'BetterCP/M 0.3','$'
 CCP_VERKEY:
         DB      'VER'
 CCP_DIRKEY:

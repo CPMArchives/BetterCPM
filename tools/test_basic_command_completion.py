@@ -43,9 +43,9 @@ def main() -> None:
     require("A7>" in output, "transient USER.COM did not select user 7")
 
     output = run("VER")
-    require("BetterCP/M 0.1" in output, "resident VER did not report the version")
+    require("BetterCP/M 0.3" in output, "resident VER did not report the version")
     output = run("A:VER")
-    require("BetterCP/M 0.1" in output, "transient VER.COM did not match VER")
+    require("BetterCP/M 0.3" in output, "transient VER.COM did not match VER")
 
     output = run("A:DIR")
     require("DIR      COM" in output and "USER     COM" in output and
