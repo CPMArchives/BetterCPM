@@ -7,6 +7,12 @@
 UB_BASE         EQU     0C100H
 BIO_WBOOT       EQU     0EF03H
 BIO_SELDSK      EQU     0EF1BH
+BIO_SETTRK      EQU     0EF1EH
+BIO_SETSEC      EQU     0EF21H
+BIO_SETDMA      EQU     0EF24H
+BIO_READ        EQU     0EF27H
+BIO_WRITE       EQU     0EF2AH
+BIO_SECTRAN     EQU     0EF30H
 
         CSEG
         .PHASE  UB_BASE
@@ -37,7 +43,7 @@ UB_TABLE:
         DW      UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING
         DW      UB_MISSING,UB_VERSION
         DW      UB_RESET,UB_SELECT
-        DW      UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING
+        DW      UB_MISSING,UB_MISSING,UB_SFIRST,UB_SNEXT,UB_MISSING
         DW      UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING
         DW      UB_LOGINV,UB_CURDSK,UB_SETDMA,UB_GETALV,UB_WRPROT
         DW      UB_ROVEC,UB_MISSING,UB_GETDPB,UB_USER
@@ -205,6 +211,9 @@ UB_CONTEXT:
         CP      C
         RET     Z
 UB_CTXLOAD:
+        XOR     A
+        LD      (UB_VALID),A    ; a failed BIOS selection leaves no context
+        LD      (UBS_COK),A
         PUSH    BC
         CALL    BIO_SELDSK
         POP     BC
@@ -216,6 +225,8 @@ UB_CTXLOAD:
         LD      (UB_CTXDRV),A
         LD      A,1
         LD      (UB_VALID),A
+        XOR     A
+        LD      (UBS_COK),A
         LD      HL,UBS_LOGIN
         CALL    UB_SETBIT
         XOR     A
@@ -253,7 +264,10 @@ UB_BITS:
 UB_FCBDRV:
         LD      A,(DE)
         OR      A
+        JR      Z,UB_FCBCUR
+        CP      '?'
         JR      NZ,UB_FCBEXP
+UB_FCBCUR:
         LD      A,(UB_DRIVE)
         LD      C,A
         OR      A               ; clear carry
@@ -269,6 +283,276 @@ UB_FCBBAD:
         SCF
         RET
 
+; U05 -- one directory iterator. Search First/Next are the first public users;
+; Open, mutation, allocation reconstruction, and Size will configure this same
+; state instead of acquiring private scan loops.
+UB_SFIRST:
+        LD      (UB_ITFCB),DE
+        CALL    UB_FCBDRV
+        JP      C,UB_BAD
+        CALL    UB_CONTEXT
+        JP      NZ,UB_BAD
+        LD      DE,(UB_ITFCB)
+        LD      A,(DE)
+        CP      '?'
+        JR      Z,UB_SFALL
+        LD      A,(UB_USERNO)
+        LD      (UB_ITUSER),A
+        XOR     A
+        LD      (UB_ITALL),A
+        LD      HL,(UB_ITFCB)
+        LD      DE,14
+        ADD     HL,DE
+        LD      (HL),0          ; CP/M Search First clears S2
+        JR      UB_SFINIT
+UB_SFALL:
+        LD      A,0FFH
+        LD      (UB_ITALL),A
+UB_SFINIT:
+        XOR     A
+        LD      (UB_ITREC),A
+        LD      (UB_ITSLOT),A
+        LD      A,1
+        LD      (UB_ITLIVE),A
+        JR      UB_SEARCH
+
+UB_SNEXT:
+        LD      A,(UB_ITLIVE)
+        OR      A
+        JP      Z,UB_BAD
+UB_SEARCH:
+        CALL    UB_ITER
+        JP      C,UB_BAD
+        LD      (UB_ITRET),A
+        LD      HL,(UB_DIRBUF)
+        LD      DE,(UB_DMA)
+        LD      BC,128
+        LDIR
+        LD      A,(UB_ITRET)
+        JP      UB_RETA
+
+; Return A=slot and HL=entry for the next configured match. NZ means end/error.
+UB_ITER:
+        LD      A,(UB_ITREC)
+        CALL    UB_DIRLOAD
+        JR      NZ,UB_ITDONE
+        LD      A,(UB_ITSLOT)
+        LD      E,A
+        LD      D,0
+        SLA     E
+        SLA     E
+        SLA     E
+        SLA     E
+        SLA     E
+        ADD     HL,DE
+        LD      A,(HL)
+        CP      16
+        JR      NC,UB_ITADV
+        LD      A,(UB_ITALL)
+        OR      A
+        JR      NZ,UB_ITNAME
+        LD      A,(UB_ITUSER)
+        CP      (HL)
+        JR      NZ,UB_ITADV
+UB_ITNAME:
+        PUSH    HL
+        INC     HL
+        LD      DE,(UB_ITFCB)
+        INC     DE
+        LD      B,12            ; 8.3 name plus EX, CP/M Search semantics
+UB_ITCMP:
+        LD      A,(DE)
+        AND     07FH
+        CP      '?'
+        JR      Z,UB_ITCHAR
+        LD      C,A
+        LD      A,B
+        CP      1
+        JR      NZ,UB_ITBASE
+        LD      A,(HL)
+        AND     01FH
+        JR      UB_ITEQ
+UB_ITBASE:
+        LD      A,(HL)
+        AND     07FH
+UB_ITEQ:
+        CP      C
+        JR      NZ,UB_ITMISS
+UB_ITCHAR:
+        INC     HL
+        INC     DE
+        DJNZ    UB_ITCMP
+        POP     HL
+        LD      A,(UB_ITSLOT)
+        LD      (UB_ITRET),A
+        CALL    UB_ITSTEP
+        LD      A,(UB_ITRET)
+        OR      A               ; preserve slot and clear carry
+        RET
+UB_ITMISS:
+        POP     HL
+UB_ITADV:
+        CALL    UB_ITSTEP
+        JR      UB_ITER
+UB_ITDONE:
+        XOR     A
+        LD      (UB_ITLIVE),A
+        LD      A,0FFH
+        OR      A
+        SCF
+        RET
+
+UB_ITSTEP:
+        LD      A,(UB_ITSLOT)
+        INC     A
+        CP      4
+        JR      C,UB_ITSAVE
+        XOR     A
+        LD      (UB_ITSLOT),A
+        LD      HL,UB_ITREC
+        INC     (HL)
+        RET
+UB_ITSAVE:
+        LD      (UB_ITSLOT),A
+        RET
+
+; U06 -- a single cache backed by the DPH-published directory buffer. Caching
+; state names the directory record currently represented; mutation clients
+; will set UB_DIRTY and commit through UB_DIRFLUSH.
+UB_DIRLOAD:
+        LD      C,A
+        CALL    UB_DIRCOUNT
+        LD      A,C
+        CP      B
+        JR      NC,UB_DIRBAD
+        LD      A,(UBS_COK)
+        OR      A
+        JR      Z,UB_DIRMISS
+        LD      A,(UBS_CREC)
+        CP      C
+        JR      Z,UB_DIRHIT
+        CALL    UB_DIRFLUSH
+        RET     NZ
+UB_DIRMISS:
+        LD      A,C
+        LD      (UBS_CREC),A
+        LD      HL,(UB_DPH)
+        LD      DE,8
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (UB_DIRBUF),DE
+        CALL    UB_DIRPOS
+        LD      BC,(UB_DIRBUF)
+        CALL    BIO_SETDMA
+        CALL    BIO_READ
+        OR      A
+        RET     NZ
+        LD      A,1
+        LD      (UBS_COK),A
+UB_DIRHIT:
+        LD      HL,(UB_DIRBUF)
+        XOR     A
+        RET
+UB_DIRBAD:
+        LD      A,1
+        OR      A
+        RET
+
+; B=ceil((DRM+1)/4), constrained to the CP/M 2.2 8-bit search continuation.
+UB_DIRCOUNT:
+        LD      HL,(UB_DPH)
+        LD      DE,10
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)          ; DE=DPB
+        EX      DE,HL
+        LD      DE,7
+        ADD     HL,DE
+        LD      A,(HL)
+        ADD     A,4
+        SRL     A
+        SRL     A
+        LD      B,A
+        RET
+
+; Position BIOS at directory record C using live SPT and OFF from the DPB.
+UB_DIRPOS:
+        LD      HL,(UB_DPH)
+        LD      DE,10
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL           ; HL=DPB
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)          ; DE=SPT
+        LD      A,C
+        LD      C,E             ; supported format has SPT below 256
+        LD      B,0
+UB_DIRDIV:
+        CP      C
+        JR      C,UB_DIRREM
+        SUB     C
+        INC     B
+        JR      UB_DIRDIV
+UB_DIRREM:
+        PUSH    AF
+        PUSH    DE
+        LD      HL,(UB_DPH)
+        LD      DE,10
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        LD      DE,13
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)          ; DE=OFF
+        LD      H,B
+        LD      L,0
+        LD      A,H
+        OR      A
+        JR      Z,UB_DIROFF
+        LD      L,H
+        LD      H,0
+UB_DIROFF:
+        ADD     HL,DE
+        LD      B,H
+        LD      C,L
+        CALL    BIO_SETTRK
+        POP     DE
+        POP     AF
+        LD      C,A
+        LD      B,0
+        LD      DE,0
+        CALL    BIO_SECTRAN
+        LD      B,H
+        LD      C,L
+        JP      BIO_SETSEC
+
+UB_DIRFLUSH:
+        LD      A,(UB_DIRTY)
+        OR      A
+        RET     Z
+        LD      A,(UBS_CREC)
+        LD      C,A
+        CALL    UB_DIRPOS
+        LD      BC,(UB_DIRBUF)
+        CALL    BIO_SETDMA
+        LD      C,1
+        CALL    BIO_WRITE
+        OR      A
+        RET     NZ
+        XOR     A
+        LD      (UB_DIRTY),A
+        RET
+
 UB_PARM:        DW      0
 UB_OLDSP:       DW      0
 UB_DRIVE:       DB      0
@@ -279,6 +563,17 @@ UB_RDONLY:      DW      0
 UB_VALID:       DB      0
 UB_CTXDRV:      DB      0
 UB_DPH:         DW      0
+UB_ITFCB:       DW      0
+UB_ITUSER:      DB      0
+UB_ITALL:       DB      0
+UB_ITREC:       DB      0
+UB_ITSLOT:      DB      0
+UB_ITLIVE:      DB      0
+UB_ITRET:       DB      0
+UB_DIRBUF:      DW      0
+UBS_CREC:       DB      0
+UBS_COK:        DB      0
+UB_DIRTY:       DB      0
 
 UB_STACK:
         REPT    48

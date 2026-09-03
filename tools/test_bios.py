@@ -256,6 +256,8 @@ class Z80:
                 self.c = self.a
             elif op == 0x4D:            # LD C,L
                 self.c = self.l
+            elif op == 0x4B:            # LD C,E
+                self.c = self.e
             elif op == 0x7A:            # LD A,D
                 self.a = self.d
             elif op == 0x7B:            # LD A,E
@@ -387,6 +389,11 @@ class Z80:
                 self.carry = bool(self.l & 0x80)
                 self.l = (self.l << 1) & 0xFF
                 self.z = self.l == 0
+            elif op == 0xCB and self.mem[self.pc] == 0x23:  # SLA E
+                self.pc += 1
+                self.carry = bool(self.e & 0x80)
+                self.e = (self.e << 1) & 0xFF
+                self.z = self.e == 0
             elif op == 0xED and self.mem[self.pc] == 0x43:  # LD (nn),BC
                 self.pc += 1
                 target = self.word(self.pc)
@@ -460,8 +467,8 @@ class Z80:
             elif op == 0xB1:            # OR C
                 self.a |= self.c
                 self.z, self.carry = self.a == 0, False
-            elif op in (0xBA, 0xBB):    # CP D / CP E
-                value = self.d if op == 0xBA else self.e
+            elif op in (0xB8, 0xBA, 0xBB):  # CP B / CP D / CP E
+                value = {0xB8: self.b, 0xBA: self.d, 0xBB: self.e}[op]
                 self.z, self.carry = self.a == value, self.a < value
             elif op == 0x54:            # LD D,H
                 self.d = self.h

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Execute the first U01-U04 slice of the compact replacement BDOS."""
+"""Execute the U01-U06 foundation of the compact replacement BDOS."""
 from __future__ import annotations
 
 import re
@@ -13,6 +13,7 @@ LISTING = ROOT / "build/bdos/unified-bdos.lst"
 BIOS = ROOT / "build/bios/bios.bin"
 BASE = 0xC100
 FCB = 0x7000
+FIXTURE = 0x7500
 
 
 def symbols() -> dict[str, int]:
@@ -30,6 +31,23 @@ def main() -> None:
     install_drive_tables(cpu)
     image = IMAGE.read_bytes()
     cpu.mem[BASE:BASE + len(image)] = image
+
+    # Keep the production BIOS mapping and replace only its platform reader
+    # with a deterministic 512-byte physical-sector fixture.
+    read_impl = cpu.word(BIOS_BASE + 13 * 3 + 1)
+    read_calls = [address for address in range(read_impl, read_impl + 48)
+                  if cpu.mem[address] == 0xCD]
+    require(len(read_calls) >= 2, "BIOS physical-read call was not found")
+    platform_read = cpu.word(read_calls[1] + 1)
+    read_success = bytes((
+        0xF5, 0x3A, 0x03, 0x73, 0x3C, 0x32, 0x03, 0x73, 0xF1,
+        0x32, 0x00, 0x73, 0x78, 0x32, 0x01, 0x73,
+        0x79, 0x32, 0x02, 0x73,
+        0x21, FIXTURE & 0xFF, FIXTURE >> 8,
+        0x11, 0x00, 0xED, 0x01, 0x00, 0x02,
+        0xED, 0xB0, 0xAF, 0xC9,
+    ))
+    cpu.mem[platform_read:platform_read + len(read_success)] = read_success
     initial_sp = cpu.sp
 
     def call(function: int, parameter: int = 0) -> int:
@@ -85,8 +103,41 @@ def main() -> None:
     cpu.run(fcbdrv)
     require(cpu.carry, "invalid FCB drive was accepted")
 
-    print(f"unified BDOS U01-U04 slice passed ({len(image)} bytes)")
-    print("disk/user state, DPH pointers, vectors, reset, and FCB drive view passed")
+    # Shared U05 iterator and U06 DPH-backed cache: wildcard Search First/Next
+    # must retain one cursor, return containing records, and avoid rereading a
+    # cached directory sector between adjacent slots.
+    cpu.mem[FIXTURE:FIXTURE + 512] = bytes((0xE5,)) * 512
+    cpu.mem[FIXTURE:FIXTURE + 12] = bytes((7,)) + b"ONE     COM"
+    cpu.mem[FIXTURE + 32:FIXTURE + 44] = bytes((7,)) + b"TWO     COM"
+    cpu.mem[FIXTURE + 12] = cpu.mem[FIXTURE + 44] = 0
+    cpu.mem[FCB:FCB + 36] = bytes(36)
+    cpu.mem[FCB] = 0
+    cpu.mem[FCB + 1:FCB + 12] = b"???????????"
+    call(32, 7)
+    cpu.mem[0x7303] = 0
+    state = symbols()
+    cpu.run(state["UB_DIRCOUNT"])
+    require(cpu.b == 32, f"directory geometry returned {cpu.b} records")
+    cpu.a = 0
+    cpu.run(state["UB_DIRLOAD"], limit=10000)
+    require(cpu.a == 0, f"directory cache load failed with {cpu.a:02X}")
+    search_first = call(17, FCB)
+    require(search_first == 0,
+            f"Search First missed slot zero: A={search_first:02X} "
+            f"reads={cpu.mem[0x7303]} mapped={bytes(cpu.mem[0x7300:0x7303]).hex()} "
+            f"buffer={bytes(cpu.mem[0xEC80:0xEC8D]).hex()} "
+            f"live={cpu.mem[state['UB_ITLIVE']]} rec={cpu.mem[state['UB_ITREC']]} "
+            f"cache={cpu.mem[state['UBS_COK']]} dph={cpu.word(state['UB_DPH']):04X}")
+    dma = cpu.word(symbols()["UB_DMA"])
+    require(bytes(cpu.mem[dma:dma + 12]) == bytes((7,)) + b"ONE     COM",
+            "Search First did not copy the containing directory record")
+    reads = cpu.mem[0x7303]
+    require(call(18) == 1, "Search Next did not retain slot continuation")
+    require(cpu.mem[0x7303] == reads,
+            "Search Next reread an already cached directory sector")
+
+    print(f"unified BDOS U01-U06 foundation passed ({len(image)} bytes)")
+    print("disk state, FCB drive view, shared iterator, and one-sector cache passed")
 
 
 if __name__ == "__main__":
