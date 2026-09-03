@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import struct
 from pathlib import Path
+from system_layout import LAYOUT
 
 from test_bios import Z80, require
 from build_cpx_module import make_module
@@ -14,13 +15,13 @@ MODULE = ROOT / "build/ccp/ccp.rlm"
 CCP = ROOT / "build/ccp/ccp.bin"
 BASIC_MODULE = ROOT / "build/cpx/BASIC.CPX"
 HELLO_MODULE = ROOT / "build/cpx/HELLO.CPX"
-BASE = 0xE900
+BASE = LAYOUT["RELOADER"]
 MODULE_SOURCE = 0x6000
-DESCRIPTOR_CCP = 0xC08C
-SYSTEM_WBOOT = 0xC023
+DESCRIPTOR_CCP = (LAYOUT["SYSTEM"] + 0x8C)
+SYSTEM_WBOOT = (LAYOUT["SYSTEM"] + 0x23)
 PHYSICAL_READ = 0xEF33
-FILE_LOADER = 0xD000
-DIR_LOGIN = 0xD60C
+FILE_LOADER = LAYOUT["FILE"]
+DIR_LOGIN = LAYOUT["EXTENSIONS"] + 12
 
 
 def relocated(module: bytes, target: int) -> bytes:
@@ -85,9 +86,9 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
         hello_module = HELLO_MODULE.read_bytes()
         machine.mem[0x9000:0x9000 + len(basic_module)] = basic_module
         machine.mem[0xA000:0xA000 + len(hello_module)] = hello_module
-        machine.mem[0xC094] = 2
-        machine.mem[0xC096:0xC09E] = b"BASIC   "
-        machine.mem[0xC09E:0xC0A6] = b"HELLO   "
+        machine.mem[(LAYOUT["SYSTEM"] + 0x94)] = 2
+        machine.mem[(LAYOUT["SYSTEM"] + 0x96):(LAYOUT["SYSTEM"] + 0x9E)] = b"BASIC   "
+        machine.mem[(LAYOUT["SYSTEM"] + 0x9E):(LAYOUT["SYSTEM"] + 0xA6)] = b"HELLO   "
         cpx_allocation = (struct.unpack_from("<H", basic_module, 14)[0] +
                           struct.unpack_from("<H", hello_module, 14)[0])
     elif with_cpx:
@@ -96,12 +97,12 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
                                   linked_base=0x8000, code=payload,
                                   relocations=[2])
         machine.mem[0x9000:0x9000 + len(file_module)] = file_module
-        machine.mem[0xC094] = 1
-        machine.mem[0xC096:0xC09E] = b"BASIC   "
+        machine.mem[(LAYOUT["SYSTEM"] + 0x94)] = 1
+        machine.mem[(LAYOUT["SYSTEM"] + 0x96):(LAYOUT["SYSTEM"] + 0x9E)] = b"BASIC   "
         cpx_allocation = 0x100
 
     gateway = target + allocation + cpx_allocation
-    machine.mem[0xC090:0xC092] = gateway.to_bytes(2, "little")
+    machine.mem[(LAYOUT["SYSTEM"] + 0x90):(LAYOUT["SYSTEM"] + 0x92)] = gateway.to_bytes(2, "little")
     machine.mem[target:target + allocation] = bytes((0xA5,)) * allocation
 
     # Source fixtures are indexed by the actual Model 4 sector number in C.
@@ -135,7 +136,7 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
         hello_allocation = struct.unpack_from("<H", HELLO_MODULE.read_bytes(), 14)[0]
         basic_base = gateway - basic_allocation
         hello_base = basic_base - hello_allocation
-        require(machine.word(0xC086) == basic_base and
+        require(machine.word((LAYOUT["SYSTEM"] + 0x86)) == basic_base and
                 machine.word(basic_base) == hello_base and
                 machine.word(hello_base) == 0,
                 "two-module CPX chain was not restored in table order")
@@ -149,7 +150,7 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
                 "HELLO.CPX relocation or payload integrity failed")
     elif with_cpx:
         cpx_base = gateway - 0x100
-        require(machine.word(0xC086) == cpx_base and
+        require(machine.word((LAYOUT["SYSTEM"] + 0x86)) == cpx_base and
                 machine.word(cpx_base) == 0 and
                 machine.word(cpx_base + 2) == cpx_base + 4,
                 "ordered CPX profile was not restored, relocated, and linked")
@@ -159,7 +160,7 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
 def main() -> None:
     module = MODULE.read_bytes()
     allocation = struct.unpack_from("<H", module, 10)[0]
-    calculated = 0xBDFD - allocation
+    calculated = LAYOUT["TPA"] - allocation
     require(run_at(calculated) == relocated(module, calculated),
             "calculated-base module payload was not relocated correctly")
     # Derive a deliberately non-page-aligned alternate below the live base.

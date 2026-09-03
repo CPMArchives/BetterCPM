@@ -8,14 +8,17 @@ Subsystem versions evolve independently. The adopted rules are defined in
 [`SUBSYSTEM-VERSIONING.md`](specifications/SUBSYSTEM-VERSIONING.md), and the
 authoritative current assignments are maintained in
 [`subsystem-versions.tsv`](metadata/subsystem-versions.tsv). Current versions
-are CCP implementation 1.1/API 1.0, BDOS implementation 1.2/API 1.1,
-BIOS implementation 1.1/API 1.0, and CPX/RSX implementation 1.0/API 1.0.
+are CCP implementation 1.2/API 1.0, BDOS implementation 1.3/API 1.1,
+BIOS implementation 1.2/API 1.0, and CPX/RSX implementation 1.1/API 1.0.
 
 The production image now uses `src/bdos/unified.mac`, not the legacy dispatcher
 and separate directory engine. The compact core is 3,373 bytes; protected
 extension controls use another 631 bytes and BIOS disk tables/workspaces 408
 bytes. These are separately counted, not hidden in the 3.5K core claim.
 See [Unified Core Integration](docs/engineering/125%20Unified%20Core%20Integration.md).
+The packed Model 4 layout now exposes **52,989 bytes of TPA (51K + 765 bytes)**
+with no RSXs installed: 4,608 bytes recovered from the previous layout.
+See [Packed Resident Layout](docs/engineering/126%20Packed%20Resident%20Layout.md).
 Historical conformance results below refer to the earlier implementation;
 they are not a completed regression certification of this replacement.
 

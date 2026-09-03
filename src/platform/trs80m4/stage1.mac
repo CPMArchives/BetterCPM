@@ -1,10 +1,11 @@
+        INCLUDE layout.inc
 ; BetterCP/M TRS-80 Model 4 resident-system loader
 
         INCLUDE hardware.inc
 
-SYSIMAGE        EQU     0C000H
-SYSBOOT         EQU     0EF00H  ; enter BIOS BOOT, which initializes the console
-SYSSECTORS      EQU     28
+SYSIMAGE        EQU     LY_SYS
+SYSBOOT         EQU     LY_BIOS+0  ; enter BIOS BOOT, which initializes the console
+SYSSECTORS      EQU     LY_SECTS
 
         CSEG
         .PHASE  STAGE1BASE

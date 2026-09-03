@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Execute initialization and a real CP/M CALL 0005h function-15 path."""
 from pathlib import Path
+from system_layout import LAYOUT
 
 from test_bios import BASE as BIOS_BASE, Z80, require
 from test_ccpreload import relocated
@@ -9,10 +10,10 @@ ROOT = Path(__file__).resolve().parents[1]
 RESIDENT = ROOT / "build/system/resident.bin"
 CCP = ROOT / "build/ccp/ccp.bin"
 CCP_MODULE = ROOT / "build/ccp/ccp.rlm"
-RESIDENT_BASE = 0xC000
-SYSTEM_INIT = 0xC000
-HISTORY_BASE = 0xBE00
-DEFAULT_GATEWAY = 0xBDFD
+RESIDENT_BASE = (LAYOUT["SYSTEM"] + 0x00)
+SYSTEM_INIT = (LAYOUT["SYSTEM"] + 0x00)
+HISTORY_BASE = LAYOUT["HISTORY"]
+DEFAULT_GATEWAY = LAYOUT["TPA"]
 FIXTURE = 0x7500
 FCB = 0x7700
 CALLER = 0x7800
@@ -94,8 +95,8 @@ def main() -> None:
     require(cpu.a == 0, "resident initialization failed")
     require(bytes(cpu.mem[0:3]) == bytes((0xC3, 0x03, 0xEF)),
             "warm-boot page-zero vector is wrong")
-    require(bytes(cpu.mem[5:8]) == bytes((0xC3, 0xFD, 0xBD)) and
-            bytes(cpu.mem[DEFAULT_GATEWAY:HISTORY_BASE]) == bytes((0xC3, 0x00, 0xC1)),
+    require(bytes(cpu.mem[5:8]) == bytes((0xC3, LAYOUT["TPA"] & 255, LAYOUT["TPA"] >> 8)) and
+            bytes(cpu.mem[DEFAULT_GATEWAY:HISTORY_BASE]) == bytes((0xC3, LAYOUT["BDOS"] & 255, LAYOUT["BDOS"] >> 8)),
             "BDOS page-zero vector is wrong")
     cpu.mem[CALLER:CALLER + 4] = bytes((0xCD, 0x05, 0x00, 0xC9))
     old_stack = bdos_symbol("BDOS_OLDSP")
@@ -500,7 +501,7 @@ def main() -> None:
     cpu.mem[FCB:FCB + 36] = bytes((1,)) + b"READ    DAT" + bytes(24)
     cpu.de, cpu.ix = FCB, 0xA55A
     saved_sp = cpu.sp
-    cpu.run(0xD612, limit=50000)
+    cpu.run(LAYOUT["EXTENSIONS"] + 0x12, limit=50000)
     require(cpu.a != 0xFF and cpu.sp == saved_sp and cpu.ix == 0xA55A,
             "nested unified Open damaged the protected-reader call frame")
     require(cpu.mem[bdos_symbol("UB_USERNO")] == 31 and
@@ -541,19 +542,19 @@ def main() -> None:
     ccp_base = DEFAULT_GATEWAY - allocation
     ccp = relocated(CCP_MODULE.read_bytes(), ccp_base)
     cpu.mem[ccp_base:ccp_base + len(ccp)] = ccp
-    cpu.mem[0xC08C:0xC08E] = ccp_base.to_bytes(2, "little")
-    cpu.mem[0xC08E:0xC090] = allocation.to_bytes(2, "little")
+    cpu.mem[(LAYOUT["SYSTEM"] + 0x8C):(LAYOUT["SYSTEM"] + 0x8E)] = ccp_base.to_bytes(2, "little")
+    cpu.mem[(LAYOUT["SYSTEM"] + 0x8E):(LAYOUT["SYSTEM"] + 0x90)] = allocation.to_bytes(2, "little")
     # This portable-core fixture intentionally exercises the no-CPX layout;
     # the platform reloader and production disk tests cover BASIC.CPX.  Keep
     # its saved reconstruction profile explicitly empty rather than allowing
     # the production default to interpret the fixture's dummy sectors.
-    cpu.mem[0xC094] = 0
-    cpu.mem[0xE900:0xE903] = bytes((0xC3, 0x23, 0xC0))
+    cpu.mem[(LAYOUT["SYSTEM"] + 0x94)] = 0
+    cpu.mem[LAYOUT["RELOADER"]:(LAYOUT["RELOADER"] + 3)] = bytes((0xC3, (LAYOUT["SYSTEM"] + 0x23) & 255, LAYOUT["SYSTEM"] >> 8))
     cpu.c, cpu.de = 26, 0x7345
     cpu.run(CALLER)
     cpu.mem[0:8] = bytes((0xCC,)) * 8
     try:
-        cpu.run(0xC023, limit=200000)
+        cpu.run((LAYOUT["SYSTEM"] + 0x23), limit=200000)
     except AssertionError as error:
         require("execution limit reached" in str(error),
                 f"CCP execution failed unexpectedly: {error}")
@@ -566,15 +567,15 @@ def main() -> None:
             f"in={cpu.word(0x7080):04X} out={cpu.word(0x7090):04X} "
             f"ccp={bytes(cpu.mem[ccp_base:ccp_base + 0x2A]).hex()} {transcript[:160]!r}")
     require(bytes(cpu.mem[0:3]) == bytes((0xC3, 0x03, 0xEF)) and
-            bytes(cpu.mem[5:8]) == bytes((0xC3, 0xFD, 0xBD)) and
-            bytes(cpu.mem[DEFAULT_GATEWAY:HISTORY_BASE]) == bytes((0xC3, 0x00, 0xC1)) and
+            bytes(cpu.mem[5:8]) == bytes((0xC3, LAYOUT["TPA"] & 255, LAYOUT["TPA"] >> 8)) and
+            bytes(cpu.mem[DEFAULT_GATEWAY:HISTORY_BASE]) == bytes((0xC3, LAYOUT["BDOS"] & 255, LAYOUT["BDOS"] >> 8)) and
             cpu.word(bdos_symbol("BDOS_DMA")) == 0x0080,
             "WBOOT did not reconstruct gateways and default DMA state")
-    require(bytes(cpu.mem[0xC080:0xC084]) == b"BM\x01\x00" and
-            cpu.word(0xC084) == 0 and cpu.word(0xC086) == 0 and
-            cpu.word(0xC088) == HISTORY_BASE and cpu.word(0xC08A) == DEFAULT_GATEWAY and
-            cpu.word(0xC08C) == ccp_base and cpu.word(0xC08E) == allocation and
-            cpu.word(0xC090) == DEFAULT_GATEWAY,
+    require(bytes(cpu.mem[(LAYOUT["SYSTEM"] + 0x80):(LAYOUT["SYSTEM"] + 0x84)]) == b"BM\x01\x00" and
+            cpu.word((LAYOUT["SYSTEM"] + 0x84)) == 0 and cpu.word((LAYOUT["SYSTEM"] + 0x86)) == 0 and
+            cpu.word((LAYOUT["SYSTEM"] + 0x88)) == HISTORY_BASE and cpu.word((LAYOUT["SYSTEM"] + 0x8A)) == DEFAULT_GATEWAY and
+            cpu.word((LAYOUT["SYSTEM"] + 0x8C)) == ccp_base and cpu.word((LAYOUT["SYSTEM"] + 0x8E)) == allocation and
+            cpu.word((LAYOUT["SYSTEM"] + 0x90)) == DEFAULT_GATEWAY,
             "extension control block does not publish the default layout")
 
     print("resident initialization installed WBOOT and BDOS page-zero vectors")

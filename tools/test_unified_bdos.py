@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from system_layout import LAYOUT
 
 from test_bios import BASE as BIOS_BASE, Z80, install_drive_tables, require
 
@@ -11,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 IMAGE = ROOT / "build/bdos/unified-bdos.bin"
 LISTING = ROOT / "build/bdos/unified-bdos.lst"
 BIOS = ROOT / "build/bios/bios.bin"
-BASE = 0xC100
+BASE = LAYOUT["BDOS"]
 FCB = 0x7000
 FIXTURE = 0x7500
 TEST_DPH = 0xD000
@@ -30,17 +31,18 @@ def symbols() -> dict[str, int]:
 
 def main() -> None:
     cpu = Z80(BIOS.read_bytes())
+    cpu.sp = 0xA800  # caller stack below the packed protected image
     workspaces = ((0xD050, 0xD070), (0xD0A2, 0xD0C2),
                   (0xD0F4, 0xD114), (0xD146, 0xD166))
     install_drive_tables(cpu, TEST_DPH, TEST_DPB, workspaces)
     # Relocate the BIOS-owned descriptor addresses only for this standalone
-    # test's fixture tables; production uses the separate DA00h table unit.
+    # test's fixture tables; production uses the separately linked table unit.
     select_impl = cpu.word(BIOS_BASE + 9 * 3 + 1)
     for offset in range(48):
         address = select_impl + offset
         value = cpu.word(address)
-        if value in (0xDA00, 0xDA10, 0xDA20, 0xDA30):
-            cpu.setword(address, TEST_DPH + (value - 0xDA00))
+        if value in range(LAYOUT["TABLES"], LAYOUT["TABLES"] + 64, 16):
+            cpu.setword(address, TEST_DPH + value - LAYOUT["TABLES"])
     image = IMAGE.read_bytes()
     cpu.mem[BASE:BASE + len(image)] = image
 

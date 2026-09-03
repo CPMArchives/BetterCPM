@@ -1,22 +1,23 @@
+        INCLUDE layout.inc
 ; BetterCP/M compact unified CP/M BDOS. The production resident image uses
 ; this single filesystem engine. Extended controls use a separate protected
 ; stack because loading an RSX requires nested standard disk calls.
 
-UB_BASE         EQU     0C100H
-BIO_WBOOT       EQU     0EF03H
-BIO_CONST       EQU     0EF06H
-BIO_CONIN       EQU     0EF09H
-BIO_CONOUT      EQU     0EF0CH
-BIO_LIST        EQU     0EF0FH
-BIO_PUNCH       EQU     0EF12H
-BIO_RDRIN       EQU     0EF15H
-BIO_SELDSK      EQU     0EF1BH
-BIO_SETTRK      EQU     0EF1EH
-BIO_SETSEC      EQU     0EF21H
-BIO_SETDMA      EQU     0EF24H
-BIO_READ        EQU     0EF27H
-BIO_WRITE       EQU     0EF2AH
-BIO_SECTRAN     EQU     0EF30H
+UB_BASE         EQU     LY_BDOS
+BIO_WBOOT       EQU     LY_BIOS+3
+BIO_CONST       EQU     LY_BIOS+6
+BIO_CONIN       EQU     LY_BIOS+9
+BIO_CONOUT      EQU     LY_BIOS+12
+BIO_LIST        EQU     LY_BIOS+15
+BIO_PUNCH       EQU     LY_BIOS+18
+BIO_RDRIN       EQU     LY_BIOS+21
+BIO_SELDSK      EQU     LY_BIOS+27
+BIO_SETTRK      EQU     LY_BIOS+30
+BIO_SETSEC      EQU     LY_BIOS+33
+BIO_SETDMA      EQU     LY_BIOS+36
+BIO_READ        EQU     LY_BIOS+39
+BIO_WRITE       EQU     LY_BIOS+42
+BIO_SECTRAN     EQU     LY_BIOS+48
 
         CSEG
         .PHASE  UB_BASE
@@ -25,7 +26,7 @@ BIO_SECTRAN     EQU     0EF30H
 UB_ENTRY:
         LD      A,C
         CP      200
-        JP      NC,0D600H
+        JP      NC,LY_EXT
         LD      (UB_OLDSP),SP
         LD      SP,UB_STKTOP
         LD      (UB_OLDIX),IX    ; nonlocal error exits can unwind any helper depth

@@ -1,9 +1,10 @@
+        INCLUDE layout.inc
 ; Protected 512-byte stream reader for CPX/RSX module files.
 ; This service is usable before the CCP exists and after transient execution.
 
-FLBASE          EQU     0D000H
-DIROPEN         EQU     0D612H
-DIRREAD         EQU     0D624H
+FLBASE          EQU     LY_FILE
+DIROPEN         EQU     LY_EXT+012H
+DIRREAD         EQU     LY_EXT+024H
 
         CSEG
         .PHASE  FLBASE

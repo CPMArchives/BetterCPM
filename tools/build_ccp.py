@@ -8,6 +8,7 @@ import struct
 import subprocess
 import tempfile
 from pathlib import Path
+from system_layout import LAYOUT, expand_layout
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/ccp/ccp.mac"
@@ -15,14 +16,14 @@ BUILD = ROOT / "build/ccp"
 LINK_BASE = 0xBB00
 ALTERNATE_BASE = 0xBC01
 MODULE_HEADER_SIZE = 512
-DEFAULT_GATEWAY = 0xBDFD
+DEFAULT_GATEWAY = LAYOUT["TPA"]
 
 
 def assemble(assembler: Path, text: str, output: Path, listing: Path,
              origin: int) -> bytes:
     with tempfile.TemporaryDirectory(prefix="bettercpm-ccp-") as temporary:
         staged = Path(temporary) / SOURCE.name
-        staged.write_text(text, encoding="ascii")
+        staged.write_text(expand_layout(text), encoding="ascii")
         subprocess.run([str(assembler), "-fb", f"-o{output}",
                         f"-l{listing}", staged.name], check=True,
                        cwd=staged.parent)

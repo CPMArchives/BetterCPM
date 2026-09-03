@@ -1,3 +1,4 @@
+        INCLUDE layout.inc
 ; BetterCP/M initial resident-system initialization and page-zero gateway.
 ;
 ; Provisional placement. This component establishes the standard CP/M entry
@@ -6,13 +7,13 @@
 ; Patch 2026-09-01: the E500/E600/E800 bring-up map proved its boundaries by
 ; catching two workspace collisions. Specification 29 relocates components
 ; into explicit growth regions while leaving page-zero ABI addresses intact.
-SYSBASE         EQU     0C000H
-BDOS            EQU     0C100H
+SYSBASE         EQU     LY_SYS
+BDOS            EQU     LY_BDOS
 HISTBASE        EQU     SYSBASE-0200H ; 512-byte warm-boot-persistent history
 CPMGATE         EQU     HISTBASE-3
-DIRLOGIN        EQU     0D60CH
-BIOWBOOT        EQU     0EF03H
-RSTCOUNT        EQU     0D580H ; protected active-RSX reconstruction table
+DIRLOGIN        EQU     LY_EXT+00CH
+BIOWBOOT        EQU     LY_BIOS+3
+RSTCOUNT        EQU     LY_RSTA ; protected active-RSX reconstruction table
 
         CSEG
         .PHASE  SYSBASE

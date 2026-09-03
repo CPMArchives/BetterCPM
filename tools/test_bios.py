@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Execute and verify the BetterCP/M BIOS scaffold's public entries."""
 from pathlib import Path
+from system_layout import LAYOUT
 
 ROOT = Path(__file__).resolve().parents[1]
 IMAGE = ROOT / "build/bios/bios.bin"
@@ -581,14 +582,14 @@ def require(condition: bool, message: str) -> None:
         raise AssertionError(message)
 
 
-def install_drive_tables(cpu: Z80, dph_base: int = 0xDA00,
-                         dpb_address: int = 0xDA40,
+def install_drive_tables(cpu: Z80, dph_base: int = LAYOUT["TABLES"],
+                         dpb_address: int = LAYOUT["TABLES"] + 64,
                          workspaces=None) -> None:
     """Install the BIOS-owned four-drive DPH/DPB contract in test memory."""
     # Mirror the separately linked src/bios/tables.mac unit.
     if workspaces is None:
-        workspaces = ((0xDA50, 0xDA70), (0xDAA2, 0xDAC2),
-                      (0xDAF4, 0xDB14), (0xDB46, 0xDB66))
+        workspaces = tuple((dph_base + 80 + drive * 82,
+                            dph_base + 112 + drive * 82) for drive in range(4))
     for drive, (csv, alv) in enumerate(workspaces):
         dph = dph_base + drive * 16
         for offset, value in ((8, 0xEC80), (10, dpb_address),
@@ -616,11 +617,11 @@ def main() -> None:
     boot_target = cpu.word(entries[0] + 1)
     require(cpu.mem[boot_target] == 0xCD and
             cpu.mem[boot_target + 3] == 0xC3 and
-            cpu.word(boot_target + 4) == 0xE900,
+            cpu.word(boot_target + 4) == LAYOUT["RELOADER"],
             "BOOT does not initialize the platform then reconstruct commands")
     warm_target = cpu.word(entries[1] + 1)
     require(cpu.mem[warm_target] == 0xC3 and
-            cpu.word(warm_target + 1) == 0xE900,
+            cpu.word(warm_target + 1) == LAYOUT["RELOADER"],
             "WBOOT does not enter command-image restoration")
     private_read = BASE + 17 * 3
     private_cursor = private_read + 3

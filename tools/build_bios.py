@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
+from system_layout import LAYOUT, expand_layout
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/bios"
@@ -30,7 +31,7 @@ def main() -> None:
     listing = BUILD / "bios.lst"
     with tempfile.TemporaryDirectory(prefix="bettercpm-bios-") as temporary:
         staged = Path(temporary)
-        (staged / "bios.mac").write_text(text, encoding="ascii")
+        (staged / "bios.mac").write_text(expand_layout(text), encoding="ascii")
         shutil.copy2(SOURCE / "biosplat.inc", staged / "biosplat.inc")
         shutil.copy2(PLATFORM / "hardware.inc", staged / "hardware.inc")
         shutil.copy2(PLATFORM / "m4cons.inc", staged / "m4cons.inc")

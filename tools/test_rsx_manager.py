@@ -3,12 +3,20 @@
 from __future__ import annotations
 
 import subprocess
+import struct
 import tempfile
 from pathlib import Path
+from system_layout import LAYOUT
 
 from run_trs80_command import DEFAULT_EMULATOR, ROOT, key_args
 
 IMAGE = ROOT / "build/trs80/BetterCPM-Extended-80T-DS-System-790K.dmk"
+
+
+def tpa(*modules: str) -> bytes:
+    allocated = sum(struct.unpack_from("<H", (ROOT / f"build/rsx/{name}.RSX").read_bytes(), 14)[0]
+                    for name in modules)
+    return f"TPA available: {(LAYOUT['TPA'] - 0x100 - allocated) // 1024}K".encode()
 
 
 def run(commands: tuple[str, ...]) -> bytes:
@@ -44,17 +52,17 @@ def main() -> None:
                  "RSXTEST", "RSX /V"))
     require_ordered(first, (
         b"RSX function 201 unsupported", b"No RSXs loaded",
-        b"TPA available: 47K", b"HELLO : BDOS 201",
-        b"TPA available: 46K", b"Hello from HELLO.RSX",
+        f"TPA available: {(LAYOUT['TPA'] - 0x100) // 1024 - 0}K".encode(), b"HELLO : BDOS 201",
+        f"TPA available: {(LAYOUT['TPA'] - 0x100) // 1024 - 1}K".encode(), b"Hello from HELLO.RSX",
         b"RSX function 201 returned 5253h",
-        b"Resident System Extension facility: API 1.0; implementation 1.0",
+        b"Resident System Extension facility: API 1.0; implementation 1.1",
     ))
 
     second = run(("RSX LOAD HELLO", "RSX LOAD ECHO.RSX", "RSX LIST",
                   "RSX2TST"))
     require_ordered(second, (
         b"HELLO : BDOS 201", b"ECHO : BDOS 203",
-        b"TPA available: 45K", b"Hello from HELLO.RSX",
+        tpa("HELLO", "ECHO"), b"Hello from HELLO.RSX",
         b"BDOS 201: HELLO present", b"Hello from ECHO.RSX",
         b"BDOS 203: ECHO present",
     ))
@@ -65,9 +73,9 @@ def main() -> None:
     require_ordered(third, (
         b"Hello from BetterCP/M WARM", b"BDOS 201: HELLO present",
         b"BDOS 203: ECHO present", b"ECHO : BDOS 203",
-        b"TPA available: 46K", b"BDOS 201: absent",
+        tpa("ECHO"), b"BDOS 201: absent",
         b"BDOS 203: ECHO present", b"No RSXs loaded",
-        b"TPA available: 47K",
+        f"TPA available: {(LAYOUT['TPA'] - 0x100) // 1024 - 0}K".encode(),
     ))
     print("BRSX validation, ordered chaining, WBOOT, middle unload, and TPA restoration passed")
 

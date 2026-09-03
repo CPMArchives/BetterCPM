@@ -1,9 +1,10 @@
+        INCLUDE layout.inc
 ; BetterCP/M proof-of-concept Basic Commands CPX.
 ; Exports DIR, ERA, TYPE, REN, SAVE, USER, CLR, and VER through the common CPX
 ; command entry.
 
 CPXBASE         EQU     08000H
-BDOS            EQU     0C100H
+BDOS            EQU     00005H
 
         CSEG
         .PHASE  CPXBASE

@@ -1,8 +1,9 @@
+        INCLUDE layout.inc
 ; Second BRSX proof module.  Its distinct service verifies that a later
 ; extension chains correctly to an earlier extension rather than replacing it.
 
 RSXBASE         EQU     08000H
-BDOS            EQU     0C100H
+BDOS            EQU     00005H
 
         CSEG
         .PHASE  RSXBASE

@@ -1,22 +1,18 @@
+        INCLUDE layout.inc
 ; BetterCP/M initial CP/M 2.2 compatibility BIOS scaffold
 ;
-; This artifact is independently buildable and is not yet loaded by stage zero.
-; BIOSBASE is a test placement, not a final resident-memory decision.
+; Independently buildable BIOS, placed by the shared production memory map.
 
-BIOSBASE        EQU     0EF00H
-BIO_PHYBF       EQU     0ED00H  ; 512-byte buffer below the resident BIOS
-BIO_DIRBF       EQU     0EC80H
-; Patch 2026-09-03: these descriptors formerly began at CB00h after a
-; bring-up-only 258-byte gap. They now immediately follow the current BDOS
-; image. A later generated layout will replace these provisional physical
-; constants without changing the BIOS SELDSK contract.
-BIO_DPH0        EQU     0DA00H
-BIO_DPH1        EQU     0DA10H
-BIO_DPH2        EQU     0DA20H
-BIO_DPH3        EQU     0DA30H
-BIO_DPB0        EQU     0C9E8H
-SYS_BOOT        EQU     0C020H
-CCP_RELOAD      EQU     0E900H
+BIOSBASE        EQU     LY_BIOS+0
+BIO_PHYBF       EQU     LY_BUF  ; 512-byte buffer below the resident BIOS
+BIO_DIRBF       EQU     LY_DIR
+; BIOS-owned descriptors are linked separately in the shared packed map.
+BIO_DPH0        EQU     LY_TAB+0
+BIO_DPH1        EQU     LY_TAB+16
+BIO_DPH2        EQU     LY_TAB+32
+BIO_DPH3        EQU     LY_TAB+48
+SYS_BOOT        EQU     LY_SYS+020H
+CCP_RELOAD      EQU     LY_LOAD
 
         CSEG
         .PHASE  BIOSBASE

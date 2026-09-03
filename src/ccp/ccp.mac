@@ -1,3 +1,4 @@
+        INCLUDE layout.inc
 ; BetterCP/M initial command processor.
 ;
 ; The original EA40H placement left too little room for resident commands.
@@ -12,14 +13,14 @@
 ; Patch 2026-09-02: CPX support ended the exact-fit provisional placement at
 ; E8D6H and temporarily protected B000H..BFFFH.  Specification 96 introduces
 ; the quantitative memory model: the no-extension CCP is page-rounded and
-; ends immediately below the C000H fixed-system boundary.  BB00H is therefore
-; this configuration's calculated base, not a permanent ABI address.
+; originally ended below C000H. BB00H is now only the link origin; WBOOT
+; relocates this image beneath CPXs and the live compatibility gateway.
 
 CCPBASE         EQU     0BB00H
-BDOS            EQU     0C100H
-CPXHEAD         EQU     0C086H  ; active head in fixed extension descriptor
-TPATOP          EQU     0C090H  ; exclusive upper bound for transient loads
-HISTBASE        EQU     0BE00H  ; protected warm-boot-persistent history
+BDOS            EQU     LY_BDOS
+CPXHEAD         EQU     LY_SYS+086H  ; active head in fixed extension descriptor
+TPATOP          EQU     LY_SYS+090H  ; exclusive upper bound for transient loads
+HISTBASE        EQU     LY_HIST  ; protected warm-boot-persistent history
 CCP_HPOS        EQU     HISTBASE+6
 CCP_HTMP        EQU     HISTBASE+7
 CCP_HSKIP       EQU     HISTBASE+8
@@ -1570,11 +1571,10 @@ CCP_DIRFCB:
 CCP_RET:
         DW      0000H
 
-; Patch 2026-09-02: wildcard completion needed the final bytes below ED00h.
-; The private stack does not need to travel with CCP code; reserve the top of
-; the otherwise unused BDOS growth gap immediately below Directory Services.
-CCP_STACK       EQU     0D5F0H
-CCP_STKTOP      EQU     0D600H
+; The CCP uses the top of the protected reload stack after reconstruction.
+; Its stack does not travel with the reclaimable command image.
+CCP_STACK       EQU     LY_STKT-16
+CCP_STKTOP      EQU     LY_STKT
 
         .DEPHASE
         END

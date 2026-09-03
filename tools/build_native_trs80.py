@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
+from system_layout import LAYOUT, expand_layout
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/platform/trs80m4"
@@ -19,7 +20,7 @@ DEFAULT_TOOLS = Path("/Users/nathanael/git/cpm-compatibility/suite/build-tools")
 STAGES = (("BOOT", 0x4300, "boot.bin"), ("STAGE1", 0x5000, "stage1.bin"),
           ("DISKREAD", 0x5000, "diskread.bin"))
 STAGES = STAGES + (("DISKWRIT", 0x5000, "diskwrit.bin"),)
-STAGES = STAGES + (("CCPRELOD", 0xE900, "ccpreload.bin"),)
+STAGES = STAGES + (("CCPRELOD", LAYOUT["RELOADER"], "ccpreload.bin"),)
 
 
 def run(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -27,7 +28,7 @@ def run(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
 
 
 def cpm_text(path: Path) -> bytes:
-    text = path.read_text(encoding="ascii").replace("\r\n", "\n").replace("\r", "\n")
+    text = expand_layout(path.read_text(encoding="ascii")).replace("\r\n", "\n").replace("\r", "\n")
     return text.replace("\n", "\r\n").encode("ascii") + b"\x1a"
 
 

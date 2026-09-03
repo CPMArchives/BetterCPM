@@ -7,12 +7,13 @@ import hashlib
 import subprocess
 import tempfile
 from pathlib import Path
+from system_layout import LAYOUT, expand_layout
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/bdos/unified.mac"
 VERSIONS = ROOT / "src/bdos/versions.inc"
 BUILD = ROOT / "build/bdos"
-BASE = 0xC100
+BASE = LAYOUT["BDOS"]
 
 
 def main() -> None:
@@ -28,7 +29,7 @@ def main() -> None:
     output = BUILD / "bdos.bin"
     with tempfile.TemporaryDirectory(prefix="bettercpm-bdos-") as temporary:
         staged = Path(temporary) / SOURCE.name
-        staged.write_text(text, encoding="ascii")
+        staged.write_text(expand_layout(text), encoding="ascii")
         (staged.parent / VERSIONS.name).write_bytes(VERSIONS.read_bytes())
         subprocess.run([str(args.assembler), "-fb", f"-o{output}",
                         f"-l{BUILD / 'bdos.lst'}", staged.name],

@@ -7,11 +7,12 @@ import hashlib
 import subprocess
 import tempfile
 from pathlib import Path
+from system_layout import LAYOUT, expand_layout
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/platform/trs80m4/commandreload.mac"
 BUILD = ROOT / "build/trs80"
-BASE = 0xE900
+BASE = LAYOUT["RELOADER"]
 
 
 def main() -> None:
@@ -27,7 +28,7 @@ def main() -> None:
     output = BUILD / "ccpreload.bin"
     with tempfile.TemporaryDirectory(prefix="bettercpm-ccpreload-") as temporary:
         staged = Path(temporary) / SOURCE.name
-        staged.write_text(text, encoding="ascii")
+        staged.write_text(expand_layout(text), encoding="ascii")
         subprocess.run([str(args.assembler), "-fb", f"-o{output}",
                         f"-l{BUILD / 'ccpreload.lst'}", staged.name],
                        check=True, cwd=staged.parent)
@@ -35,8 +36,8 @@ def main() -> None:
     if len(data) > BASE and data[:BASE] == bytes(BASE):
         data = data[BASE:]
         output.write_bytes(data)
-    if not data or len(data) > 0x400:
-        raise SystemExit(f"CCP reloader exceeds E900h..ECFFh: {len(data)} bytes")
+    if not data or len(data) > (LAYOUT["RSX_STATE"] - BASE):
+        raise SystemExit(f"CCP reloader exceeds {BASE:04X}h..{LAYOUT['RSX_STATE']-1:04X}h: {len(data)} bytes")
     print(f"{hashlib.sha256(data).hexdigest()}  {output.relative_to(ROOT)}")
     print(f"CCP reloader bytes: {len(data)}")
 

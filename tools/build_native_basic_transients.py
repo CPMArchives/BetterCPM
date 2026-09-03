@@ -6,6 +6,7 @@ import argparse
 import shutil
 import tempfile
 from pathlib import Path
+from system_layout import expand_layout
 
 from build_basic_transients import BUILD, COMMANDS, ROOT, SOURCE, symbol, transient
 from build_native_trs80 import (
@@ -34,7 +35,7 @@ def main() -> None:
         shutil.copy2(args.system_disk, disks / "drivea.dsk")
         for drive in "bcd":
             blank(args.disk_template, disks / f"drive{drive}.dsk")
-        text = SOURCE.read_text(encoding="ascii").replace(
+        text = expand_layout(SOURCE.read_text(encoding="ascii")).replace(
             "CPXBASE         EQU     08000H", "CPXBASE         EQU     00100H")
         staged = work / "BASX.MAC"
         staged.write_bytes(text.replace("\n", "\r\n").encode("ascii") + b"\x1a")

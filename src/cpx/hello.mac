@@ -1,7 +1,8 @@
+        INCLUDE layout.inc
 ; BetterCP/M second proof CPX. Intercepts the HELLO command.
 
 CPXBASE         EQU     08000H
-BDOS            EQU     0C100H
+BDOS            EQU     00005H
 
         CSEG
         .PHASE  CPXBASE

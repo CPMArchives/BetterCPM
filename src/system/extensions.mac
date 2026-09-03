@@ -1,27 +1,28 @@
+        INCLUDE layout.inc
 ; Protected extension controls and adapters to the single unified filesystem.
-; D600 entry is called BEFORE the core takes its private stack: RSX loading
+; The extension entry is called BEFORE the core takes its private stack: RSX loading
 ; calls standard BDOS recursively, using a distinct protected control stack.
         CSEG
-        .PHASE  0D600H
+        .PHASE  LY_EXT
         JP      EX_ENTRY
-        REPT    0D60CH-$
+        REPT    LY_EXT+00CH-$
         DB      0
         ENDM
         JP      AD_LOGIN
         DB      0,0,0
         JP      AD_OPEN
-        REPT    0D624H-$
+        REPT    LY_EXT+024H-$
         DB      0
         ENDM
         JP      AD_READ
 
         INCLUDE core.inc
-CPTCOUNT        EQU     0C094H
-CPTFLAGS        EQU     0C095H
-CPTABLE         EQU     0C096H
-RSXCONTROL      EQU     0D100H
-BIOCURSOR       EQU     0EF36H
-COREBDOS        EQU     0C100H
+CPTCOUNT        EQU     LY_SYS+094H
+CPTFLAGS        EQU     LY_SYS+095H
+CPTABLE         EQU     LY_SYS+096H
+RSXCONTROL      EQU     LY_RSX
+BIOCURSOR       EQU     LY_BIOS+54
+COREBDOS        EQU     LY_BDOS
 
 EX_ENTRY:
         LD      (EX_OLDSP),SP

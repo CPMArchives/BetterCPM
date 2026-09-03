@@ -1,7 +1,7 @@
 # BetterCP/M Project Backlog
 
 Status: Living project backlog  
-Updated: 2026-09-03
+Updated: 2026-09-04
 
 This document records substantial unfinished work. Detailed behavioral
 requirements remain authoritative in the architecture, engineering
@@ -17,8 +17,9 @@ bring-up history is kept in those documents rather than repeated here.
 - [ ] Record every result as pass, failure, observation, provider-dependent,
   optional, or out of scope; leave no silent omissions.
 - [ ] Audit and compact the resident system so the production TPA returns to
-  the same general size class as stock CP/M, rather than the current 47K
-  development layout.
+  the same general size class as stock CP/M, beyond the current 51K + 765-byte TPA.
+  Packing recovered 4,608 bytes; reaching 56K still requires 4,355 bytes of
+  additional resident reduction, not more gap removal.
 - [x] Inventory functions 13 through 40 against a single set of universal
   drive, FCB, directory, extent, allocation, transfer, and recovery services.
 - [x] Replace the separate dispatcher/filesystem implementation with the
@@ -27,7 +28,9 @@ bring-up history is kept in those documents rather than repeated here.
   Integrated at 3,373 bytes with 211 bytes free; extension and BIOS support
   are separately accounted in Engineering Specification 125. Full physical
   compliance regression remains the separate task above.
-- [ ] Measure and publish the memory cost of the core, buffers, persistent
+- [x] Pack the protected layout and verify that transients can overwrite the
+  recovered memory without losing BDOS, RSXs, or WBOOT reconstruction.
+- [x] Measure and publish the memory cost of the core, buffers, persistent
   DATA, installed RSXs, CPXs, and CCP.
 
 ## Command environment and BASIC.CPX

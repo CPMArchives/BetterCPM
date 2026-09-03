@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 import struct
 from pathlib import Path
+from system_layout import LAYOUT
 
 from test_bios import Z80, require
 
@@ -57,7 +58,7 @@ def main() -> None:
     # non-returning warm-boot service. Four direct-output calls avoid adding a
     # pointer to the CCP's already-full one-sector relocation directory.
     machine = cpu()
-    machine.mem[0xC100:0xC116] = bytes((
+    machine.mem[LAYOUT["BDOS"]:(LAYOUT["BDOS"] + 0x16)] = bytes((
         0x79, 0xB7, 0x28, 0x0C,        # LD A,C / OR A / JR Z,wboot
         0xFE, 0x02, 0xC0,              # CP 2 / RET NZ
         0x21, 0x00, 0x76, 0x34,        # INC output-call count
@@ -66,10 +67,10 @@ def main() -> None:
     ))
     handler = symbol("CCP_EDWBOOT")
     expected = bytes((
-        0x1E, ord("^"), 0x0E, 0x02, 0xCD, 0x00, 0xC1,
-        0x1E, ord("C"), 0x0E, 0x02, 0xCD, 0x00, 0xC1,
-        0x1E, 13,       0x0E, 0x02, 0xCD, 0x00, 0xC1,
-        0x1E, 10,       0x0E, 0x02, 0xCD, 0x00, 0xC1,
+        0x1E, ord("^"), 0x0E, 0x02, 0xCD, LAYOUT["BDOS"] & 255, LAYOUT["BDOS"] >> 8,
+        0x1E, ord("C"), 0x0E, 0x02, 0xCD, LAYOUT["BDOS"] & 255, LAYOUT["BDOS"] >> 8,
+        0x1E, 13,       0x0E, 0x02, 0xCD, LAYOUT["BDOS"] & 255, LAYOUT["BDOS"] >> 8,
+        0x1E, 10,       0x0E, 0x02, 0xCD, LAYOUT["BDOS"] & 255, LAYOUT["BDOS"] >> 8,
     ))
     require(bytes(machine.mem[handler:handler + len(expected)]) == expected,
             "CCP Ctrl-C acknowledgement is not ^C followed by CR/LF")
@@ -87,7 +88,7 @@ def main() -> None:
         (b"A:CPX LIST", 1, b"CPX     COM"),
     ):
         machine = cpu()
-        machine.mem[0xC100:0xC103] = bytes((0x3E, 0xFF, 0xC9))
+        machine.mem[LAYOUT["BDOS"]:(LAYOUT["BDOS"] + 3)] = bytes((0x3E, 0xFF, 0xC9))
         machine.mem[symbol("CCP_COUNT")] = len(command)
         start = symbol("CCP_DATA")
         machine.mem[start:start + len(command)] = command
@@ -107,7 +108,7 @@ def main() -> None:
         0x32, 0x01, 0x75, 0xAF, 0xC9,
         0x3A, 0x01, 0x75, 0xC9,
     ))
-    machine.mem[0xC100:0xC100 + len(du_bdos)] = du_bdos
+    machine.mem[LAYOUT["BDOS"]:LAYOUT["BDOS"] + len(du_bdos)] = du_bdos
     machine.mem[0x7501] = 7
     command = b"A0:CPX LIST"
     machine.mem[symbol("CCP_COUNT")] = len(command)
@@ -129,7 +130,7 @@ def main() -> None:
         start = symbol("CCP_DATA")
         machine.mem[start:start + len(command)] = command
         call(machine, symbol("CCP_HADD"))
-    require(bytes(machine.mem[0xBE00:0xBE04]) == b"BH\x01\x04",
+    require(bytes(machine.mem[LAYOUT["HISTORY"]:(LAYOUT["HISTORY"] + 4)]) == b"BH\x01\x04",
             "persistent history header or record count is wrong")
     for index, expected in ((1, b"TYPE README.TXT"), (3, b"HELLO WORLD")):
         machine.a = index
@@ -154,7 +155,7 @@ def main() -> None:
         ("CCP_EDCLEAR", b"DISCARD", 4, b"", 0),
     ):
         machine = cpu()
-        machine.mem[0xC100:0xC100 + len(editor_bdos)] = editor_bdos
+        machine.mem[LAYOUT["BDOS"]:LAYOUT["BDOS"] + len(editor_bdos)] = editor_bdos
         machine.mem[0x7500] = 13
         machine.mem[symbol("CCP_COUNT")] = len(text)
         machine.mem[symbol("CCP_EDCUR")] = cursor
@@ -210,7 +211,7 @@ def main() -> None:
     machine = cpu()
     head, second = 0xBFC0, 0xBFC4
     decline, accept = 0x7300, 0x7310
-    machine.mem[0xC086:0xC088] = head.to_bytes(2, "little")
+    machine.mem[(LAYOUT["SYSTEM"] + 0x86):(LAYOUT["SYSTEM"] + 0x88)] = head.to_bytes(2, "little")
     machine.mem[head:head + 4] = (second.to_bytes(2, "little")
                                   + decline.to_bytes(2, "little"))
     machine.mem[second:second + 4] = (bytes(2)
@@ -247,7 +248,7 @@ def main() -> None:
         0x3A, 0x01, 0x75, 0xC9  # get-user: LD A,(7501h) / RET
     ))
     machine = cpu()
-    machine.mem[0xC100:0xC100 + len(nav_bdos)] = nav_bdos
+    machine.mem[LAYOUT["BDOS"]:LAYOUT["BDOS"] + len(nav_bdos)] = nav_bdos
     machine.mem[0x7500], machine.mem[0x7501] = 0, 0
     for command, drive, user in (
         (b"B:", 1, 0),

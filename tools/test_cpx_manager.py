@@ -5,6 +5,7 @@ from __future__ import annotations
 import subprocess
 import tempfile
 from pathlib import Path
+from system_layout import LAYOUT
 
 from run_trs80_command import DEFAULT_EMULATOR, ROOT, key_args
 
@@ -34,11 +35,11 @@ def main() -> None:
         screen = Path(temporary, "trs80-text-0.bin").read_bytes()[:80 * 24]
     ordered = (
         b"BASIC : DIR, ERA, TYPE, REN, SAVE, USER, CLR, VER", b"HELLO : HELLO",
-        b"TPA available: 47K", b"A0>HELLO", b"Hello from HELLO.CPX",
+        f"TPA available: {(LAYOUT['TPA'] - 0x100) // 1024 - 0}K".encode(), b"A0>HELLO", b"Hello from HELLO.CPX",
         b"A0>CPX UNLOAD BASIC", b"HELLO : HELLO",
         b"A0>HELLO", b"Hello from HELLO.CPX", b"A0>CPX UNLOAD HELLO",
-        b"No CPXs loaded", b"TPA available: 47K",
-        b"Command Processor Extension facility: API 1.0; implementation 1.0",
+        b"No CPXs loaded", f"TPA available: {(LAYOUT['TPA'] - 0x100) // 1024 - 0}K".encode(),
+        b"Command Processor Extension facility: API 1.0; implementation 1.1",
         b"A0>HELLO",
         b"Hello from BetterCP/M",
     )

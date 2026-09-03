@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
+from system_layout import LAYOUT, expand_layout
 
 from build_montezuma_extended_790k import (
     RAW_SIZE,
@@ -56,7 +57,7 @@ def assemble(assembler: Path, source: Path, output: Path, origin: int) -> bytes:
     text = text.replace("        .DEPHASE\n", "")
     with tempfile.TemporaryDirectory(prefix="bettercpm-cross-") as temporary:
         staged = Path(temporary)
-        (staged / source.name).write_text(text, encoding="ascii")
+        (staged / source.name).write_text(expand_layout(text), encoding="ascii")
         shutil.copy2(SOURCE / "hardware.inc", staged / "hardware.inc")
         shutil.copy2(SOURCE / "hal.inc", staged / "hal.inc")
         shutil.copy2(SOURCE / "m4cons.inc", staged / "m4cons.inc")
@@ -157,6 +158,11 @@ def install(boot: bytes, stage1: bytes, resident: bytes, command: bytes,
         start = logical_index * SECTOR_SIZE
         raw[start:start + SECTOR_SIZE] = payload.ljust(SECTOR_SIZE, b"\x00")
     capacity = SYSTEM_SECTORS * SECTOR_SIZE
+    loaded_capacity = LAYOUT["BOOT_SECTORS"] * SECTOR_SIZE
+    if LAYOUT["SYSTEM"] + loaded_capacity > LAYOUT["CEILING"]:
+        raise ValueError("resident load would overwrite hardware-mapped memory")
+    if loaded_capacity > capacity or len(resident) > loaded_capacity:
+        raise ValueError("resident image exceeds the stage-one load count")
     if len(resident) > capacity:
         raise ValueError(f"resident image is {len(resident)} bytes; loader capacity is {capacity}")
     start = SYSTEM_FIRST_LOGICAL_INDEX * SECTOR_SIZE
@@ -300,7 +306,8 @@ def main() -> None:
             label = path
         print(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {label}")
     print(f"boot bytes: {len(boot)}; stage-one bytes: {len(stage1)}; "
-          f"resident bytes: {len(resident)} in {SYSTEM_SECTORS} sectors; "
+          f"resident bytes: {len(resident)} in {LAYOUT['BOOT_SECTORS']} loaded sectors "
+          f"({SYSTEM_SECTORS} reserved on disk); "
           f"command module: {len(command)} bytes in {COMMAND_SECTORS} sectors")
 
 

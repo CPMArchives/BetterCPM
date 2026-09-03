@@ -1,22 +1,23 @@
+        INCLUDE layout.inc
 ; BetterCP/M TRS-80 Model 4 command-environment reloader.
 ; Persistent CPX records are eight-character, space-padded filename stems.
 ; The protected loader supplies .CPX and reads them through directory services.
-RELOADBASE      EQU     0E900H
-HISTBASE        EQU     0BE00H
-BIOPHREAD       EQU     0EF33H
-DIRLOGIN        EQU     0D60CH
-FLOPEN          EQU     0D000H
-FLNEXT          EQU     0D003H
-FLRESET         EQU     0D006H
-SYS_WBOOT       EQU     0C023H
-ECB_CPXHEAD     EQU     0C086H
-ECB_CCPBASE     EQU     0C08CH
-ECB_CCPSIZE     EQU     0C08EH
-ECB_TPATOP      EQU     0C090H
-ECB_GENERATION  EQU     0C092H
-CPTCOUNT        EQU     0C094H
-CPTABLE         EQU     0C096H
-MODBUF          EQU     0ED00H
+RELOADBASE      EQU     LY_LOAD
+HISTBASE        EQU     LY_HIST
+BIOPHREAD       EQU     LY_BIOS+51
+DIRLOGIN        EQU     LY_EXT+00CH
+FLOPEN          EQU     LY_FILE
+FLNEXT          EQU     LY_FILE+3
+FLRESET         EQU     LY_FILE+6
+SYS_WBOOT       EQU     LY_SYS+023H
+ECB_CPXHEAD     EQU     LY_SYS+086H
+ECB_CCPBASE     EQU     LY_SYS+08CH
+ECB_CCPSIZE     EQU     LY_SYS+08EH
+ECB_TPATOP      EQU     LY_SYS+090H
+ECB_GENERATION  EQU     LY_SYS+092H
+CPTCOUNT        EQU     LY_SYS+094H
+CPTABLE         EQU     LY_SYS+096H
+MODBUF          EQU     LY_BUF
 MOD_LINK        EQU     MODBUF+10
 MOD_SIZE        EQU     MODBUF+12
 MOD_ALLOC       EQU     MODBUF+14
@@ -27,7 +28,7 @@ MOD_PAYLOAD     EQU     MODBUF+26
 MOD_RELTABLE    EQU     MODBUF+28
 ; The directory path is substantially deeper than the old raw-sector reader.
 ; Grow its private stack downward through the unused fixed-core gap.
-CRSTKTOP        EQU     0D4F0H
+CRSTKTOP        EQU     LY_STKT
 
         CSEG
         .PHASE  RELOADBASE

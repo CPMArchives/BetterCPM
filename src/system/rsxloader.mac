@@ -1,3 +1,4 @@
+        INCLUDE layout.inc
 ; BetterCP/M protected BRSX v1 manager and ordered resident-chain loader.
 ;
 ; Function 202 passes DE -> request:
@@ -5,20 +6,20 @@
 ;   +2 enumeration index, +3 reserved, +4..+11 space-padded filename stem,
 ;   +12..+13 returned primary service number.
 
-RLBASE          EQU     0D100H
-FLOPEN          EQU     0D000H
-FLNEXT          EQU     0D003H
-FLRESET         EQU     0D006H
-MODBUF          EQU     0ED00H
-HISTBASE        EQU     0BE00H
+RLBASE          EQU     LY_RSX
+FLOPEN          EQU     LY_FILE
+FLNEXT          EQU     LY_FILE+3
+FLRESET         EQU     LY_FILE+6
+MODBUF          EQU     LY_BUF
+HISTBASE        EQU     LY_HIST
 BASEGATE        EQU     HISTBASE-3
-COREBDOS        EQU     0C100H
-ECB_RSXHEAD     EQU     0C084H
-ECB_RSXLOW      EQU     0C088H
-ECB_TPATOP      EQU     0C090H
-RSTCOUNT        EQU     0D580H
-RSTABLE         EQU     0D581H       ; four ordered eight-byte stems
-RSTSERV         EQU     0D5A1H       ; four primary-service words
+COREBDOS        EQU     LY_BDOS
+ECB_RSXHEAD     EQU     LY_SYS+084H
+ECB_RSXLOW      EQU     LY_SYS+088H
+ECB_TPATOP      EQU     LY_SYS+090H
+RSTCOUNT        EQU     LY_RSTA
+RSTABLE         EQU     LY_RSTA+1       ; four ordered eight-byte stems
+RSTSERV         EQU     LY_RSTA+021H       ; four primary-service words
 
         CSEG
         .PHASE  RLBASE
@@ -412,9 +413,9 @@ RL_LINK:
         INC     HL
         LD      (HL),D
         LD      HL,(RL_BASE)
-        LD      (HL),000H
+        LD      (HL),LOW COREBDOS
         INC     HL
-        LD      (HL),0C1H       ; default next dispatch is core BDOS C100h
+        LD      (HL),HIGH COREBDOS       ; default next dispatch is the fixed core
         LD      HL,(RL_PREV)
         LD      A,H
         OR      L

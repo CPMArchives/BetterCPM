@@ -7,6 +7,7 @@ import hashlib
 import subprocess
 import tempfile
 from pathlib import Path
+from system_layout import LAYOUT, expand_layout
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/system/fileloader.mac"
@@ -25,13 +26,13 @@ def main() -> None:
     output = BUILD / "fileloader.bin"
     with tempfile.TemporaryDirectory(prefix="bettercpm-fileloader-") as temporary:
         staged = Path(temporary) / SOURCE.name
-        staged.write_text(text, encoding="ascii")
+        staged.write_text(expand_layout(text), encoding="ascii")
         subprocess.run([str(args.assembler), "-fb", f"-o{output}",
                         f"-l{BUILD / 'fileloader.lst'}", staged.name],
                        check=True, cwd=staged.parent)
     data = output.read_bytes()
-    if len(data) > 0xD000 and data[:0xD000] == bytes(0xD000):
-        data = data[0xD000:]
+    if len(data) > LAYOUT["FILE"] and data[:LAYOUT["FILE"]] == bytes(LAYOUT["FILE"]):
+        data = data[LAYOUT["FILE"]:]
         output.write_bytes(data)
     print(f"{hashlib.sha256(data).hexdigest()}  build/system/fileloader.bin")
     print(f"file-loader bytes: {len(data)}")

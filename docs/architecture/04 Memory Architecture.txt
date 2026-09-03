@@ -124,9 +124,9 @@ classes.  From high to low, the intended 64K organization is:
          BIOS buffers
          Directory and filesystem services
          BDOS core
-  C100h  Fixed core BDOS entry
-  C080h  Resident Extension Control Block
-  C000h  BetterCP/M system gateway
+  base+100h  Fixed core BDOS entry
+  base+080h  Resident Extension Control Block
+  base       BetterCP/M system gateway
          Persistent system DATA, growing downward
          Installed RSXs, allocated downward
   xxxxh  Dynamic CP/M compatibility gateway
@@ -151,7 +151,14 @@ The jump at `0005h` targets the dynamic CP/M compatibility gateway.  Its
 operand at `0006h..0007h` therefore advertises the true exclusive TPA ceiling
 expected by historical CP/M software.  The gateway always occupies the
 lowest protected resident address and dispatches through the installed RSX
-chain before reaching the fixed BDOS core at `C100h`.
+chain before reaching the fixed BDOS core at system base + 100h.
+
+"Fixed" means fixed during a running configuration, not an architectural
+promise of C000h/C100h. The packed Model 4 build uses D200h/D300h, with its
+no-RSX compatibility gateway at CFFDh. src/system/layout.inc defines build
+addresses; application and module BDOS calls use 0005h. These private
+addresses may change between builds. Engineering Specification 126 records
+the complete packed map and measured TPA.
 
 Installed RSXs are dynamically loadable and unloadable, but remain protected
 for as long as they are installed.  Changing the active RSX set recalculates

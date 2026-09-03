@@ -1,45 +1,47 @@
 #!/usr/bin/env python3
-"""Report occupied and theoretically packed BetterCP/M resident memory."""
-from __future__ import annotations
-
+"""Report actual packed protected memory, including every reserved workspace."""
 from pathlib import Path
+from build_system import COMPONENTS, BUILD
+from system_layout import LAYOUT
 
 ROOT = Path(__file__).resolve().parents[1]
-TPA_ORIGIN = 0x0100
-MODEL4_CEILING = 0xF400
-
-COMPONENTS = (
-    ("System gateway and ECB", "build/system/gateway.bin", None),
-    ("BDOS core and private data", "build/bdos/bdos.bin", None),
-    ("Protected file loader", "build/system/fileloader.bin", None),
-    ("RSX manager", "build/system/rsxloader.bin", None),
-    ("Directory/filesystem services", "build/bdos/directory.bin", None),
-    ("Command-environment reloader", "build/trs80/ccpreload.bin", None),
-    ("BIOS", "build/bios/bios.bin", None),
-    ("Persistent command history", None, 512),
-    ("Directory transfer buffer", None, 128),
-    ("Protected module buffer", None, 512),
+RESERVATIONS = (
+    ("Persistent history", LAYOUT["HISTORY"], 512),
+    ("Dynamic gateway (no RSXs)", LAYOUT["TPA"], 3),
+    ("Active RSX table", LAYOUT["RSX_STATE"], 41),
+    ("Reload/CCP stack", LAYOUT["STACK_LOW"], LAYOUT["STACK_TOP"] - LAYOUT["STACK_LOW"]),
+    ("Directory buffer", LAYOUT["DIRBUF"], 128),
+    ("Physical/module buffer", LAYOUT["MODULEBUF"], 512),
 )
 
 
-def main() -> None:
-    total = 0
-    print("Protected component                         Bytes")
-    print("----------------------------------------  -----")
-    for name, relative, fixed in COMPONENTS:
-        size = fixed if fixed is not None else (ROOT / relative).stat().st_size
-        total += size
-        print(f"{name:40}  {size:5}")
-    packed_base = MODEL4_CEILING - total
-    packed_tpa = packed_base - TPA_ORIGIN
-    print(f"{'Total occupied/protected':40}  {total:5}")
-    print()
-    print(f"Model 4 protected ceiling: {MODEL4_CEILING:04X}h")
-    print(f"Theoretical byte-packed base: {packed_base:04X}h")
-    print(f"Theoretical byte-packed TPA:  {packed_tpa // 1024}K + {packed_tpa % 1024} bytes")
-    print("Current published TPA:        47K")
-    required = max(0, total - (MODEL4_CEILING - (TPA_ORIGIN + 56 * 1024)))
-    print(f"Reduction required for 56K:   {required} bytes")
+def ranges():
+    result = [(Path(path).name, base, (BUILD / path).stat().st_size)
+              for base, path in COMPONENTS]
+    return sorted(result + list(RESERVATIONS), key=lambda item: item[1])
+
+
+def main():
+    entries = ranges()
+    end = LAYOUT["TPA"]
+    occupied = 0
+    print("Protected range    Bytes  Component")
+    for name, base, size in entries:
+        if base < end:
+            raise SystemExit(f"overlap at {base:04X}h: {name}")
+        if base > end:
+            print(f"{end:04X}..{base-1:04X}     {base-end:4}  Padding")
+        print(f"{base:04X}..{base+size-1:04X}     {size:4}  {name}")
+        end = base + size
+        occupied += size
+    assert end <= LAYOUT["CEILING"]
+    span = LAYOUT["CEILING"] - LAYOUT["TPA"]
+    tpa = LAYOUT["TPA"] - 0x100
+    print(f"Occupied/reserved: {occupied}; protected span: {span}; padding: {span-occupied}")
+    print(f"TPA: {tpa} bytes = {tpa // 1024}K + {tpa % 1024} bytes")
+    print(f"Recovered from previous BDFDh gateway: {LAYOUT['TPA'] - 0xBDFD} bytes")
+    print(f"Further reduction for 56K TPA: {56 * 1024 - tpa} bytes")
+    print("CPXs/CCP share the TPA; installed RSXs subtract their actual allocations.")
 
 
 if __name__ == "__main__":
