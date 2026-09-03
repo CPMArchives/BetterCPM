@@ -190,6 +190,9 @@ python3 tools/build_native_directory.py
 python3 tools/build_bdos.py
 python3 tools/test_bdos.py
 python3 tools/build_native_bdos.py
+python3 tools/build_unified_bdos.py
+python3 tools/test_unified_bdos.py
+python3 tools/build_native_unified_bdos.py
 python3 tools/build_ccp.py
 python3 tools/build_ccpreload.py
 python3 tools/test_ccpreload.py

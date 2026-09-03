@@ -1,0 +1,290 @@
+; BetterCP/M compact unified BDOS -- replacement implementation in progress.
+;
+; This component is built and tested beside the historical dispatch.mac plus
+; directory.mac pair. It does not enter the boot image until functions 0..40
+; pass the same public contract within the 3.5K release ceiling.
+
+UB_BASE         EQU     0C100H
+BIO_WBOOT       EQU     0EF03H
+BIO_SELDSK      EQU     0EF1BH
+
+        CSEG
+        .PHASE  UB_BASE
+
+; U01 -- one public call frame and one 0..40 dispatch convention.
+UB_ENTRY:
+        LD      (UB_PARM),DE
+        LD      (UB_OLDSP),SP
+        LD      SP,UB_STKTOP
+        LD      A,C
+        CP      41
+        JR      NC,UB_ZERO
+        LD      L,A
+        LD      H,0
+        ADD     HL,HL
+        LD      DE,UB_TABLE
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        PUSH    DE
+        LD      DE,(UB_PARM)
+        RET
+
+UB_TABLE:
+        DW      BIO_WBOOT       ; 0
+        DW      UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING
+        DW      UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING
+        DW      UB_MISSING,UB_VERSION
+        DW      UB_RESET,UB_SELECT
+        DW      UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING
+        DW      UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING
+        DW      UB_LOGINV,UB_CURDSK,UB_SETDMA,UB_GETALV,UB_WRPROT
+        DW      UB_ROVEC,UB_MISSING,UB_GETDPB,UB_USER
+        DW      UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING,UB_RSTDRV
+        DW      UB_ZERO,UB_ZERO,UB_MISSING
+
+UB_MISSING:
+        LD      A,0FFH          ; replacement slice not implemented yet
+        JP      UB_RETA
+UB_ZERO:
+        XOR     A
+UB_RETA:
+        LD      L,A
+        LD      H,0
+UB_RETHL:
+        LD      A,L             ; CP/M normal-return aliases A=L, B=H
+        LD      B,H
+        LD      SP,(UB_OLDSP)
+        RET
+
+UB_VERSION:
+        LD      HL,0022H
+        JP      UB_RETHL
+
+; U03 -- authoritative disk/user/DMA state.
+UB_RESET:
+        LD      HL,0080H
+        LD      (UB_DMA),HL
+        XOR     A
+        LD      (UB_DRIVE),A
+        LD      (UB_VALID),A
+        LD      (UBS_LOGIN),A
+        LD      (UBS_LOGIN+1),A
+        LD      (UB_RDONLY),A
+        LD      (UB_RDONLY+1),A
+        LD      C,A
+        CALL    UB_CONTEXT
+        JP      NZ,UB_BAD
+        XOR     A
+        JP      UB_RETA
+
+UB_SELECT:
+        LD      A,E
+        CP      16
+        JP      NC,UB_BAD
+        LD      C,A
+        CALL    UB_CONTEXT
+        JP      NZ,UB_BAD
+        LD      A,C
+        LD      (UB_DRIVE),A
+        XOR     A
+        JP      UB_RETA
+
+UB_LOGINV:
+        LD      HL,(UBS_LOGIN)
+        JP      UB_RETHL
+
+UB_CURDSK:
+        LD      A,(UB_DRIVE)
+        JP      UB_RETA
+
+UB_SETDMA:
+        LD      (UB_DMA),DE
+        XOR     A
+        JP      UB_RETA
+
+UB_GETALV:
+        CALL    UB_CURRENT
+        JR      NZ,UB_PTRBAD
+        LD      HL,(UB_DPH)
+        LD      DE,14
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        JP      UB_RETHL
+
+UB_WRPROT:
+        LD      A,(UB_DRIVE)
+        LD      C,A
+        LD      HL,UB_RDONLY
+        CALL    UB_SETBIT
+        XOR     A
+        JP      UB_RETA
+
+UB_ROVEC:
+        LD      HL,(UB_RDONLY)
+        JP      UB_RETHL
+
+UB_GETDPB:
+        CALL    UB_CURRENT
+        JR      NZ,UB_PTRBAD
+        LD      HL,(UB_DPH)
+        LD      DE,10
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        JP      UB_RETHL
+
+UB_PTRBAD:
+        LD      HL,0
+        JP      UB_RETHL
+
+UB_USER:
+        LD      A,E
+        CP      0FFH
+        JR      Z,UB_GETUSR
+        CP      16
+        JP      NC,UB_BAD
+        LD      (UB_USERNO),A
+UB_GETUSR:
+        LD      A,(UB_USERNO)
+        JP      UB_RETA
+
+UB_RSTDRV:
+        LD      A,D             ; retain caller's reset mask
+        LD      B,A
+        LD      A,E
+        LD      C,A
+        LD      HL,(UBS_LOGIN)
+        LD      A,C
+        CPL
+        LD      C,A
+        LD      A,L
+        AND     C
+        LD      L,A
+        LD      A,B
+        CPL
+        LD      B,A
+        LD      A,H
+        AND     B
+        LD      H,A
+        LD      (UBS_LOGIN),HL
+        LD      HL,(UB_RDONLY)
+        LD      A,L
+        AND     C
+        LD      L,A
+        LD      A,H
+        AND     B
+        LD      H,A
+        LD      (UB_RDONLY),HL
+        XOR     A
+        LD      (UB_VALID),A    ; next file/pointer call reselects as needed
+        JP      UB_RETA
+
+UB_BAD:
+        LD      A,0FFH
+        JP      UB_RETA
+
+; U02 -- the sole drive resolver and active DPH context.
+UB_CURRENT:
+        LD      A,(UB_DRIVE)
+        LD      C,A
+UB_CONTEXT:
+        LD      A,C
+        CP      16
+        JR      NC,UB_CTXBAD
+        LD      A,(UB_VALID)
+        OR      A
+        JR      Z,UB_CTXLOAD
+        LD      A,(UB_CTXDRV)
+        CP      C
+        RET     Z
+UB_CTXLOAD:
+        PUSH    BC
+        CALL    BIO_SELDSK
+        POP     BC
+        LD      A,H
+        OR      L
+        JR      Z,UB_CTXBAD
+        LD      (UB_DPH),HL
+        LD      A,C
+        LD      (UB_CTXDRV),A
+        LD      A,1
+        LD      (UB_VALID),A
+        LD      HL,UBS_LOGIN
+        CALL    UB_SETBIT
+        XOR     A
+        RET
+UB_CTXBAD:
+        LD      A,1
+        OR      A
+        RET
+
+; Set bit C (0..15) in the two-byte vector at HL.
+UB_SETBIT:
+        LD      A,C
+        CP      8
+        JR      C,UB_BTLOW
+        INC     HL
+        SUB     8
+UB_BTLOW:
+        LD      E,A
+        LD      D,0
+        PUSH    HL
+        LD      HL,UB_BITS
+        ADD     HL,DE
+        LD      A,(HL)
+        POP     HL
+        OR      (HL)
+        LD      (HL),A
+        RET
+
+UB_BITS:
+        DB      1,2,4,8,16,32,64,128
+
+; U04 -- common FCB drive view. More accessors join this block as file calls
+; move in; no public operation receives a private FCB decoder.
+; DE=FCB. Return C=zero-based drive, carry set for an invalid drive byte.
+UB_FCBDRV:
+        LD      A,(DE)
+        OR      A
+        JR      NZ,UB_FCBEXP
+        LD      A,(UB_DRIVE)
+        LD      C,A
+        OR      A               ; clear carry
+        RET
+UB_FCBEXP:
+        DEC     A
+        CP      16
+        JR      NC,UB_FCBBAD
+        LD      C,A
+        OR      A
+        RET
+UB_FCBBAD:
+        SCF
+        RET
+
+UB_PARM:        DW      0
+UB_OLDSP:       DW      0
+UB_DRIVE:       DB      0
+UB_USERNO:      DB      0
+UB_DMA:         DW      0080H
+UBS_LOGIN:      DW      0
+UB_RDONLY:      DW      0
+UB_VALID:       DB      0
+UB_CTXDRV:      DB      0
+UB_DPH:         DW      0
+
+UB_STACK:
+        REPT    48
+        DB      0
+        ENDM
+UB_STKTOP:
+
+        .DEPHASE
+        END
