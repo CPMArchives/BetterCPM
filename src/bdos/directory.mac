@@ -496,33 +496,53 @@ DIR_ZTAKE:
         RET
 
 DIR_ZMAT:
+        LD      A,(DIR_ZUSER)
+        LD      DE,(DIR_ZFCB)
+        LD      C,0             ; exact name
+        JP      DIR_MATCH
+
+; Common directory-name predicate. Input A=user, DE=FCB, HL=directory entry,
+; and C=zero for exact matching or nonzero to recognize '?' wildcards.
+; Patch 2026-09-03: Size, Attribute, Rename, and Delete originally carried
+; four private copies of this loop. Keep the old operation-specific entry
+; labels as small adapters while sharing the compatibility-sensitive rules.
+DIR_MATCH:
         PUSH    BC
         PUSH    DE
         PUSH    HL
-        LD      A,(DIR_ZUSER)
         CP      (HL)
-        JR      NZ,DIR_ZMNO
+        JR      NZ,DMC_NO
         INC     HL
-        LD      DE,(DIR_ZFCB)
         INC     DE
         LD      B,11
-DIR_ZMCMP:
+DIR_MCMP:
         LD      A,(DE)
         AND     07FH
+        CP      '?'
+        JR      NZ,DIR_MCHAR
+        LD      A,C
+        OR      A
+        JR      NZ,DIR_MNEXT
+DIR_MCHAR:
+        LD      A,(DE)
+        AND     07FH
+        PUSH    BC
         LD      C,A
         LD      A,(HL)
         AND     07FH
         CP      C
-        JR      NZ,DIR_ZMNO
+        POP     BC
+        JR      NZ,DMC_NO
+DIR_MNEXT:
         INC     DE
         INC     HL
-        DJNZ    DIR_ZMCMP
+        DJNZ    DIR_MCMP
         XOR     A
-        JR      DIR_ZMRET
-DIR_ZMNO:
+        JR      DMC_RET
+DMC_NO:
         LD      A,1
         OR      A
-DIR_ZMRET:
+DMC_RET:
         POP     HL
         POP     DE
         POP     BC
@@ -613,40 +633,10 @@ DIR_ANO:
         RET
 
 DIR_AMAT2:
-        PUSH    BC
-        PUSH    DE
-        PUSH    HL
         LD      A,(DIR_AUSER)
-        CP      (HL)
-        JR      NZ,DIR_AMNO2
-        INC     HL
         LD      DE,(DIR_AFCB)
-        INC     DE
-        LD      B,11
-DIR_AMCMP2:
-        LD      A,(DE)
-        AND     07FH
-        CP      '?'
-        JR      Z,DIR_AMNXT2
-        LD      C,A
-        LD      A,(HL)
-        AND     07FH
-        CP      C
-        JR      NZ,DIR_AMNO2
-DIR_AMNXT2:
-        INC     DE
-        INC     HL
-        DJNZ    DIR_AMCMP2
-        XOR     A
-        JR      DIR_TMRET
-DIR_AMNO2:
-        LD      A,1
-        OR      A
-DIR_TMRET:
-        POP     HL
-        POP     DE
-        POP     BC
-        RET
+        LD      C,1             ; wildcard pattern
+        JP      DIR_MATCH
 
 ; Rename all extents of one exact filename. Old name is FCB+1, new name FCB+17.
 ; A=user, DE=rename FCB, B=software protection. Wildcards are deferred.
@@ -801,37 +791,10 @@ DIR_NNO:
         RET
 
 DIR_NMAT:
-        PUSH    BC
-        PUSH    DE
-        PUSH    HL
         LD      A,(DIR_NUSER)
-        CP      (HL)
-        JR      NZ,DIR_NMNO
-        INC     HL
         LD      DE,(DIR_NFCB)
-        INC     DE
-        LD      B,11
-DIR_NMCMP:
-        LD      A,(DE)
-        AND     07FH
-        LD      C,A
-        LD      A,(HL)
-        AND     07FH
-        CP      C
-        JR      NZ,DIR_NMNO
-        INC     DE
-        INC     HL
-        DJNZ    DIR_NMCMP
-        XOR     A
-        JR      DIR_NMRET
-DIR_NMNO:
-        LD      A,1
-        OR      A
-DIR_NMRET:
-        POP     HL
-        POP     DE
-        POP     BC
-        RET
+        LD      C,0             ; exact old name
+        JP      DIR_MATCH
 
 ; Delete every extent matching an FCB pattern. A=user, DE=FCB, B=software RO.
 ; A preflight pass prevents read-only multi-extent files from partial deletion.
@@ -931,40 +894,10 @@ DIR_DNO:
         RET
 ; Z when directory entry HL matches current user and 11-byte wildcard pattern.
 DIR_DMAT:
-        PUSH    BC
-        PUSH    DE
-        PUSH    HL
         LD      A,(DIR_DUSER)
-        CP      (HL)
-        JR      NZ,DIR_DMNO
-        INC     HL
         LD      DE,(DIR_DFCB)
-        INC     DE
-        LD      B,11
-DIR_DMCMP:
-        LD      A,(DE)
-        AND     07FH
-        CP      '?'
-        JR      Z,DIR_DMNEXT
-        LD      C,A
-        LD      A,(HL)
-        AND     07FH
-        CP      C
-        JR      NZ,DIR_DMNO
-DIR_DMNEXT:
-        INC     DE
-        INC     HL
-        DJNZ    DIR_DMCMP
-        XOR     A
-        JR      DIR_DMRET
-DIR_DMNO:
-        LD      A,1
-        OR      A
-DIR_DMRET:
-        POP     HL
-        POP     DE
-        POP     BC
-        RET
+        LD      C,1             ; wildcard pattern
+        JP      DIR_MATCH
 
 DIR_JEMPTY:
         LD      HL,DIR_PEND
