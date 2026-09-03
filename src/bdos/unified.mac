@@ -491,8 +491,12 @@ UB_ITINIT:
 ; by the EXM-grouped logical extent. On success directory bytes 1..31 activate
 ; the caller FCB while its drive byte and current-record byte remain private.
 UB_OPEN:
-        CALL    UB_OPENCORE
+        CALL    UB_ACTIVATE
         JP      UB_RETA
+UB_ACTIVATE:
+        LD      A,1
+        LD      (UB_OCOPY),A
+        JR      UB_OPENCORE
 UB_OPENCORE:
         LD      (UB_ITFCB),DE
         CALL    UB_FCBDRV
@@ -538,7 +542,9 @@ UB_OPNEXT:
         JR      NZ,UB_OPMISS
         INC     HL
         INC     HL
-        LD      C,(HL)          ; requested S2
+        LD      A,(HL)
+        AND     03FH
+        LD      C,A             ; requested S2, excluding private dirty bit
         POP     HL
         PUSH    HL
         LD      DE,14
@@ -553,85 +559,90 @@ UB_OPNEXT:
         JR      NC,UB_OPMISS
         POP     HL
         LD      (UB_OPENENT),HL
+        LD      A,(UB_OCOPY)
+        OR      A
+        JR      Z,UB_OPFOUND
         INC     HL
         LD      DE,(UB_ITFCB)
         INC     DE
         LD      BC,31
         LDIR
+        LD      HL,(UB_ITFCB)
+        LD      DE,14
+        ADD     HL,DE
+        LD      A,(HL)
+        OR      080H           ; active FCB is clean until a write changes it
+        LD      (HL),A
+UB_OPFOUND:
         LD      A,(UB_ITRET)
         RET
 UB_OPMISS:
         POP     HL
         JR      UB_OPNEXT
 
-; Function 16 currently commits RC only. It deliberately rejects allocation-
-; map changes until U09 can authenticate them as products of the allocator.
+; Function 16 commits an FCB only when a successful write cleared S2 bit 7.
+; Its non-copying Open lookup leaves the caller intact while locating the
+; canonical entry.  Existing nonzero allocation bytes must agree; zero bytes
+; may accept allocator-produced blocks.
 UB_CLOSE:
         LD      (UB_ITFCB),DE
-        LD      HL,1
+        LD      HL,14
         ADD     HL,DE
-        LD      DE,UB_CSAVE
-        LD      BC,31
-        LDIR
-        LD      DE,(UB_ITFCB)
-        CALL    UB_OPENCORE     ; activates the canonical extent in the FCB
-        LD      (UB_ITRET),A
+        LD      A,(HL)
+        AND     080H
+        JR      NZ,UB_CLCLEAN
+        XOR     A
+        LD      (UB_OCOPY),A
+        CALL    UB_OPENCORE
         LD      HL,(UB_ITFCB)
         LD      DE,16
-        ADD     HL,DE           ; HL=FCB+16
-        LD      DE,UB_CSAVE+15  ; saved allocation map (FCB bytes 16..31)
+        ADD     HL,DE
+        EX      DE,HL           ; DE=FCB allocation map
+        LD      HL,(UB_OPENENT)
+        LD      BC,16
+        ADD     HL,BC           ; HL=directory allocation map
         LD      B,16
 UB_CLCMP:
         LD      A,(DE)
-        CP      (HL)
-        JR      NZ,UB_CLBAD
+        LD      C,A
+        LD      A,(HL)
+        OR      A
+        JR      Z,UB_CLNEXT
+        CP      C
+        JP      NZ,UB_BAD
+UB_CLNEXT:
         INC     DE
         INC     HL
         DJNZ    UB_CLCMP
         LD      HL,(UB_ITFCB)
-        LD      DE,15
+        LD      DE,12
         ADD     HL,DE
-        LD      A,(UB_CSAVE+14)
-        CP      129
-        JR      NC,UB_CLBAD
-        CP      (HL)
-        JR      Z,UB_CLOK
-        LD      C,A
-        LD      A,(UB_CTXDRV)
-        PUSH    BC
-        LD      C,A
-        LD      HL,UB_RDONLY
-        CALL    UB_TESTBIT
-        POP     BC
-        JR      NZ,UB_CLBAD
+        EX      DE,HL
         LD      HL,(UB_OPENENT)
-        LD      DE,9
+        LD      BC,12
+        ADD     HL,BC
+        LD      BC,20
+        EX      DE,HL
+        LDIR
+        LD      HL,(UB_OPENENT)
+        LD      DE,14
         ADD     HL,DE
         LD      A,(HL)
-        AND     080H
-        JR      NZ,UB_CLBAD
-        LD      HL,(UB_OPENENT)
-        LD      DE,15
-        ADD     HL,DE
-        LD      (HL),C
+        AND     03FH
+        LD      (HL),A
         LD      A,1
         LD      (UB_DIRTY),A
         CALL    UB_DIRFLUSH
-        JR      NZ,UB_CLBAD
-UB_CLOK:
-        CALL    UB_CLREST
+        JP      NZ,UB_BAD
+        LD      HL,(UB_ITFCB)
+        LD      DE,14
+        ADD     HL,DE
+        LD      A,(HL)
+        OR      080H
+        LD      (HL),A
+UB_CLCLEAN:
         LD      A,(UB_ITRET)
         JP      UB_RETA
-UB_CLBAD:
-        CALL    UB_CLREST
-        JP      UB_BAD
-UB_CLREST:
-        LD      HL,UB_CSAVE
-        LD      DE,(UB_ITFCB)
-        INC     DE
-        LD      BC,31
-        LDIR
-        RET
 
 ; Function 22 uses the common exact-name scan to reject duplicates, then the
 ; same iterator in free-entry mode. The loaded cache entry is the mutation
@@ -680,6 +691,12 @@ UB_MKNAME:
         LD      (UB_DIRTY),A
         CALL    UB_DIRFLUSH
         JP      NZ,UB_BAD
+        LD      HL,(UB_ITFCB)
+        LD      DE,14
+        ADD     HL,DE
+        LD      A,(HL)
+        OR      080H
+        LD      (HL),A
         LD      A,(UB_ITRET)
         JP      UB_RETA
 
@@ -1135,6 +1152,10 @@ UB_WMAPPED:
         JR      C,UB_WDONE
         LD      (HL),A
 UB_WDONE:
+        DEC     HL              ; FCB S2: mark allocation/record state dirty
+        LD      A,(HL)
+        AND     07FH
+        LD      (HL),A
         XOR     A
         RET
 
@@ -1143,7 +1164,7 @@ UB_WDONE:
 UB_RREAD:
         CALL    UB_RDECODE
         LD      DE,(UB_RFCB)
-        CALL    UB_OPENCORE
+        CALL    UB_ACTIVATE
         LD      DE,(UB_RFCB)
         CALL    UB_READCORE
         JP      UB_RETA
@@ -1155,7 +1176,7 @@ UB_RWRITE:
 UB_RWCOMMON:
         CALL    UB_RDECODE
         LD      DE,(UB_RFCB)
-        CALL    UB_OPENCORE
+        CALL    UB_ACTIVATE
         LD      DE,(UB_RFCB)
         CALL    UB_WCORE
         JP      UB_RETA
@@ -1818,10 +1839,7 @@ UB_DPB:         DW      0
 UB_DSM:         DW      0
 UB_ALVP:        DW      0
 UB_OPENENT:     DW      0
-UB_CSAVE:
-        REPT    31
-        DB      0
-        ENDM
+UB_OCOPY:       DB      0
 UB_RFCB:        DW      0
 UB_RREM:        DB      0
 UB_RLOG:        DW      0

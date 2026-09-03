@@ -191,7 +191,9 @@ def main() -> None:
     require(call(15, FCB) == 0, "Open missed an exact existing extent")
     require(cpu.mem[FCB] == 0 and cpu.mem[FCB + 32] == 9,
             "Open changed the caller's drive byte or current record")
-    require(cpu.mem[FCB + 1:FCB + 32] == cpu.mem[FIXTURE + 1:FIXTURE + 32],
+    activated = bytearray(cpu.mem[FIXTURE + 1:FIXTURE + 32])
+    activated[13] |= 0x80
+    require(cpu.mem[FCB + 1:FCB + 32] == activated,
             "Open did not activate directory bytes 1..31")
 
     # Make is the first mutation client. Replace only the BIOS WRITE vector
@@ -318,8 +320,9 @@ def main() -> None:
             bytes(cpu.mem[FCB + 33:FCB + 36]) == bytes((0x0A, 0x12, 0x00)),
             "Set Random Record diverged from shared extent arithmetic")
 
-    # Close finds the canonical extent through U05 and currently commits RC
-    # only. Unauthenticated allocation-map edits are rejected and restored.
+    # Close uses a non-copying canonical lookup and commits a dirty FCB's
+    # extent state and allocator-produced map. Conflicting owned blocks fail
+    # without changing either the caller or directory.
     cpu.mem[0xEC80 + 41] &= 0x7F
     cpu.mem[FCB:FCB + 36] = bytes(36)
     cpu.mem[FCB + 1:FCB + 12] = b"SECOND  COM"
@@ -333,12 +336,14 @@ def main() -> None:
             "Close did not commit and preserve the caller's RC")
     require(cpu.mem[0x7304] == writes + 1,
             "Close did not flush one dirty directory sector")
+    cpu.mem[0xEC80 + 32 + 16] = 8
+    cpu.mem[FCB + 14] &= 0x7F
     cpu.mem[FCB + 15] = 7
     cpu.mem[FCB + 16] = 9
     snapshot = bytes(cpu.mem[0xEC80:0xED00])
     writes = cpu.mem[0x7304]
     require(call(16, FCB) == 0xFF,
-            "Close accepted an unauthenticated allocation-map change")
+            "Close accepted a conflicting allocation-map change")
     require(cpu.mem[FCB + 15] == 7 and cpu.mem[FCB + 16] == 9 and
             bytes(cpu.mem[0xEC80:0xED00]) == snapshot and
             cpu.mem[0x7304] == writes,
@@ -376,7 +381,7 @@ def main() -> None:
             f"Random Read failed to activate and read the decoded extent: {random_result:02X} "
             f"EX={cpu.mem[FCB+12]} S2={cpu.mem[FCB+14]} RC={cpu.mem[FCB+15]} "
             f"CR={cpu.mem[FCB+32]} AL={bytes(cpu.mem[FCB+16:FCB+20]).hex()}")
-    require(cpu.mem[FCB + 12] == 0 and cpu.mem[FCB + 14] == 0 and
+    require(cpu.mem[FCB + 12] == 0 and cpu.mem[FCB + 14] == 0x80 and
             cpu.mem[FCB + 32] == 2,
             "Random Read decoded R0..R2 or advanced CR incorrectly")
     require(bytes(cpu.mem[dma:dma + 128]) == bytes((0x20,)) * 128,
@@ -388,8 +393,10 @@ def main() -> None:
     # Sequential Write uses the same record mapper, allocating only when its
     # current map element is empty.  It advances CR and grows RC in the FCB;
     # Close is responsible for publishing those authenticated changes.
+    cpu.mem[0xEC80 + 64:0xEC80 + 96] = bytes(32)
+    cpu.mem[0xEC80 + 64:0xEC80 + 76] = bytes((7,)) + b"NEW     COM"
     cpu.mem[FCB:FCB + 36] = bytes(36)
-    cpu.mem[FCB + 1:FCB + 12] = b"ONE     COM"
+    cpu.mem[FCB + 1:FCB + 12] = b"NEW     COM"
     cpu.mem[dma:dma + 128] = bytes((0x5A,)) * 128
     writes = cpu.mem[0x7304]
     require(call(21, FCB) == 0,
@@ -403,6 +410,14 @@ def main() -> None:
     require(call(21, FCB) == 0 and cpu.word(FCB + 16) == 9 and
             cpu.mem[0x7304] == writes + 1,
             "Sequential Write reallocated an existing block")
+    writes = cpu.mem[0x7304]
+    close_result = call(16, FCB)
+    require(close_result == 2 and cpu.word(0xEC80 + 64 + 16) == 9 and
+            cpu.mem[0xEC80 + 64 + 15] == 2,
+            f"Close did not publish allocator-produced map and record state: "
+            f"A={close_result:02X} dir={bytes(cpu.mem[0xEC80+64:0xEC80+96]).hex()}")
+    require(cpu.mem[0x7304] == writes + 1 and cpu.mem[FCB + 14] & 0x80,
+            "Close did not flush once and mark the active FCB clean")
 
     # Random Write shares both the random-record decoder and Sequential
     # Write's transfer core.  Activating record one of the existing extent
