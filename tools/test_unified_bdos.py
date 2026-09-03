@@ -104,7 +104,7 @@ def main() -> None:
             "unavailable drive changed current drive")
     require(call(38) == 0 and call(39) == 0,
             "reserved standard functions did not return zero")
-    require(call(16) == 0xFF, "unfinished file call was not rejected")
+    require(call(20) == 0xFF, "unfinished file call was not rejected")
 
     fcbdrv = symbols()["UB_FCBDRV"]
     cpu.mem[FCB] = 0
@@ -162,7 +162,8 @@ def main() -> None:
     call(27)
     alv = cpu.hl
     require(bytes(cpu.mem[alv:alv + 2]) == bytes((0xFF, 0x80)),
-            "U07 did not reconstruct reserved and file-owned allocation bits")
+            f"U07 did not reconstruct reserved and file-owned allocation bits: "
+            f"{bytes(cpu.mem[alv:alv + 2]).hex()} at {alv:04X}")
     cpu.de = 395                 # one beyond this fixture's DSM=394
     cpu.run(state["UB_ALMARK"])
     require(cpu.a != 0, "U07 accepted an allocation block beyond DSM")
@@ -318,6 +319,32 @@ def main() -> None:
     require(call(36, FCB) == 0 and
             bytes(cpu.mem[FCB + 33:FCB + 36]) == bytes((0x0A, 0x12, 0x00)),
             "Set Random Record diverged from shared extent arithmetic")
+
+    # Close finds the canonical extent through U05 and currently commits RC
+    # only. Unauthenticated allocation-map edits are rejected and restored.
+    cpu.mem[0xEC80 + 41] &= 0x7F
+    cpu.mem[FCB:FCB + 36] = bytes(36)
+    cpu.mem[FCB + 1:FCB + 12] = b"SECOND  COM"
+    cpu.mem[FCB + 12] = 3
+    cpu.mem[FCB + 14] = 1
+    cpu.mem[FCB + 15] = 6
+    cpu.mem[FCB + 32] = 9
+    writes = cpu.mem[0x7304]
+    require(call(16, FCB) == 1, "Close missed the canonical extent")
+    require(cpu.mem[0xEC80 + 32 + 15] == 6 and cpu.mem[FCB + 15] == 6,
+            "Close did not commit and preserve the caller's RC")
+    require(cpu.mem[0x7304] == writes + 1,
+            "Close did not flush one dirty directory sector")
+    cpu.mem[FCB + 15] = 7
+    cpu.mem[FCB + 16] = 9
+    snapshot = bytes(cpu.mem[0xEC80:0xED00])
+    writes = cpu.mem[0x7304]
+    require(call(16, FCB) == 0xFF,
+            "Close accepted an unauthenticated allocation-map change")
+    require(cpu.mem[FCB + 15] == 7 and cpu.mem[FCB + 16] == 9 and
+            bytes(cpu.mem[0xEC80:0xED00]) == snapshot and
+            cpu.mem[0x7304] == writes,
+            "failed Close did not restore the caller or preserve the directory")
 
     print(f"unified BDOS U01-U08 foundation passed ({len(image)} bytes)")
     print("disk state, directory/cache, allocation, and extent conversion passed")

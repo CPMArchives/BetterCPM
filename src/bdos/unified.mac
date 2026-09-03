@@ -43,7 +43,7 @@ UB_TABLE:
         DW      UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING
         DW      UB_MISSING,UB_VERSION
         DW      UB_RESET,UB_SELECT
-        DW      UB_OPEN,UB_MISSING,UB_SFIRST,UB_SNEXT,UB_DELETE
+        DW      UB_OPEN,UB_CLOSE,UB_SFIRST,UB_SNEXT,UB_DELETE
         DW      UB_MISSING,UB_MISSING,UB_MAKE,UB_RENAME
         DW      UB_LOGINV,UB_CURDSK,UB_SETDMA,UB_GETALV,UB_WRPROT
         DW      UB_ROVEC,UB_ATTR,UB_GETDPB,UB_USER
@@ -479,6 +479,9 @@ UB_ITSAVE:
 ; by the EXM-grouped logical extent. On success directory bytes 1..31 activate
 ; the caller FCB while its drive byte and current-record byte remain private.
 UB_OPEN:
+        CALL    UB_OPENCORE
+        JP      UB_RETA
+UB_OPENCORE:
         LD      (UB_ITFCB),DE
         CALL    UB_FCBDRV
         JP      C,UB_BAD
@@ -543,16 +546,86 @@ UB_OPNEXT:
         CP      129
         JR      NC,UB_OPMISS
         POP     HL
+        LD      (UB_OPENENT),HL
         INC     HL
         LD      DE,(UB_ITFCB)
         INC     DE
         LD      BC,31
         LDIR
         LD      A,(UB_ITRET)
-        JP      UB_RETA
+        RET
 UB_OPMISS:
         POP     HL
         JR      UB_OPNEXT
+
+; Function 16 currently commits RC only. It deliberately rejects allocation-
+; map changes until U09 can authenticate them as products of the allocator.
+UB_CLOSE:
+        LD      (UB_ITFCB),DE
+        LD      HL,1
+        ADD     HL,DE
+        LD      DE,UB_CSAVE
+        LD      BC,31
+        LDIR
+        LD      DE,(UB_ITFCB)
+        CALL    UB_OPENCORE     ; activates the canonical extent in the FCB
+        LD      (UB_ITRET),A
+        LD      HL,(UB_ITFCB)
+        LD      DE,16
+        ADD     HL,DE           ; HL=FCB+16
+        LD      DE,UB_CSAVE+15  ; saved allocation map (FCB bytes 16..31)
+        LD      B,16
+UB_CLCMP:
+        LD      A,(DE)
+        CP      (HL)
+        JR      NZ,UB_CLBAD
+        INC     DE
+        INC     HL
+        DJNZ    UB_CLCMP
+        LD      HL,(UB_ITFCB)
+        LD      DE,15
+        ADD     HL,DE
+        LD      A,(UB_CSAVE+14)
+        CP      129
+        JR      NC,UB_CLBAD
+        CP      (HL)
+        JR      Z,UB_CLOK
+        LD      C,A
+        LD      A,(UB_CTXDRV)
+        PUSH    BC
+        LD      C,A
+        LD      HL,UB_RDONLY
+        CALL    UB_TESTBIT
+        POP     BC
+        JR      NZ,UB_CLBAD
+        LD      HL,(UB_OPENENT)
+        LD      DE,9
+        ADD     HL,DE
+        LD      A,(HL)
+        AND     080H
+        JR      NZ,UB_CLBAD
+        LD      HL,(UB_OPENENT)
+        LD      DE,15
+        ADD     HL,DE
+        LD      (HL),C
+        LD      A,1
+        LD      (UB_DIRTY),A
+        CALL    UB_DIRFLUSH
+        JR      NZ,UB_CLBAD
+UB_CLOK:
+        CALL    UB_CLREST
+        LD      A,(UB_ITRET)
+        JP      UB_RETA
+UB_CLBAD:
+        CALL    UB_CLREST
+        JP      UB_BAD
+UB_CLREST:
+        LD      HL,UB_CSAVE
+        LD      DE,(UB_ITFCB)
+        INC     DE
+        LD      BC,31
+        LDIR
+        RET
 
 ; Function 22 uses the common exact-name scan to reject duplicates, then the
 ; same iterator in free-entry mode. The loaded cache entry is the mutation
@@ -1353,6 +1426,11 @@ UB_MAXREC:      DB      0,0,0
 UB_DPB:         DW      0
 UB_DSM:         DW      0
 UB_ALVP:        DW      0
+UB_OPENENT:     DW      0
+UB_CSAVE:
+        REPT    31
+        DB      0
+        ENDM
 
 UB_STACK:
         REPT    48
