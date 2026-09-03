@@ -1,0 +1,29 @@
+function	operation	universal_services	current_entry	replacement_rule
+13	Reset Disk System	U02,U03,U10	BDOS_RESET	No private filesystem scan
+14	Select Disk	U02,U03,U10	BDOS_SELDR	Use one drive resolver
+15	Open File	U02,U04,U05,U08,U10	BDOS_OPEN/DIR_OPEN	Use shared iterator and extent activation
+16	Close File	U02,U04,U05,U06,U07,U08,U10	BDOS_CLOSE/DIR_CLOSE	Use shared mutation and allocation services
+17	Search First	U02,U03,U04,U05,U06,U10	BDOS_SFIR/DIR_SFIR	Initialize common iterator continuation
+18	Search Next	U03,U05,U06,U10	BDOS_SNXT/DIR_SNXT	Resume common iterator continuation
+19	Delete File	U02,U04,U05,U06,U07,U10	BDOS_DELETE/DIR_DELETE	Configure shared iterator for all matching extents
+20	Read Sequential	U02,U04,U07,U08,U09,U10	BDOS_READ/DIR_READ	Use common extent and record-transfer path
+21	Write Sequential	U02,U04,U06,U07,U08,U09,U10	BDOS_WRITE/DIR_WRITE	Use common extent allocation and transfer path
+22	Make File	U02,U04,U05,U06,U08,U10	BDOS_MAKE/DIR_MAKE	Use free-entry iterator mode
+23	Rename File	U02,U04,U05,U06,U10	BDOS_RENAME/DIR_RENAME	Configure shared iterator and mutation callback
+24	Return Login Vector	U03,U10	BDOS_LOGV	Direct disk-state result
+25	Return Current Disk	U03,U10	BDOS_GETDR	Direct disk-state result
+26	Set DMA Address	U03,U10	BDOS_STDMA	Direct disk-state update
+27	Get Allocation Address	U02,U03,U10	BDOS_ALVP	Return active context pointer
+28	Write Protect Disk	U03,U10	BDOS_WRPRO	Direct disk-state update
+29	Return Read-Only Vector	U03,U10	BDOS_ROV	Direct disk-state result
+30	Set File Attributes	U02,U04,U05,U06,U10	BDOS_ATTR/DIR_ATTR	Configure shared iterator and mutation callback
+31	Get DPB Address	U02,U03,U10	BDOS_DPBP	Return active context pointer
+32	Get or Set User Code	U03,U10	BF_USER	Direct call-state operation
+33	Read Random	U02,U04,U07,U08,U09,U10	BF_RREAD/DIR_RREAD	Decode random record then use common read path
+34	Write Random	U02,U04,U06,U07,U08,U09,U10	BF_RWRIT/DIR_RWRITE	Decode random record then use common write path
+35	Compute File Size	U02,U04,U05,U08,U10	BDOS_SIZE/DIR_SIZE	Reduce extents through shared iterator
+36	Set Random Record	U04,U08,U10	BDOS_SETRR	Use common extent arithmetic
+37	Reset Drive	U02,U03,U10	BF_RSTDR	Invalidate selected drive contexts
+38	Reserved	U01,U10	BDOS_ZERO	Common zero result
+39	Reserved	U01,U10	BDOS_ZERO	Common zero result
+40	Write Random with Zero Fill	U02,U04,U06,U07,U08,U09,U10	BF_RZERO/DIR_RZERO	Function 34 path with allocation-block initializer

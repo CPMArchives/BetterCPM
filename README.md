@@ -167,6 +167,8 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Engineering Specification 119`](docs/engineering/119%20BCPX%20Version%201%20Module%20Format.md) supersedes the BCX1 proof carrier with the documented, versioned BCPX format and its filename-driven loader contract.
 [`Engineering Specification 120`](docs/engineering/120%20BRSX%20Version%201%20Module%20Format.md) supersedes the BRX1 proof with the documented BRSX carrier, a name-driven ordered protected loader, integrity validation, and a two-module physical chain proof.
 [`Engineering Specification 121`](docs/engineering/121%20Runtime%20Subsystem%20Version%20Reporting.md) adds the generated protected subsystem descriptor, BDOS Function 206, and matching resident/transient `VER /V` reporting without a second command-local version table.
+[`Engineering Specification 122`](docs/engineering/122%20Resident%20Size%20Budget%20and%20Relocation%20Gate.md) makes stock-class TPA a release constraint, inventories the current protected footprint, and records the first verified compaction pass.
+[`Engineering Specification 123`](docs/engineering/123%20Unified%20BDOS%20Service%20Inventory.md) maps every disk/file selector from 13 through 40 onto ten universal internal services and defines the 3.5K ceiling for the replacement unified BDOS.
 [`Engineering Specification 25`](docs/engineering/25%20Allocation%20and%20DPB%20Pointers.md) exposes the current drive's reconstructed allocation vector and live 15-byte disk parameter block.
 [`Engineering Specification 26`](docs/engineering/26%20Directory%20Search%20and%20DMA.md) adds Search First/Search Next continuation, wildcard and all-user matching, and complete directory-record transfer to the selected DMA address.
 [`Engineering Specification 27`](docs/engineering/27%20Unchanged%20FCB%20Close.md) adds the non-mutating Close File boundary for unchanged activated FCBs and safely rejects dirty commits until writeback exists.
@@ -210,6 +212,7 @@ python3 tools/build_rsxloader.py
 python3 tools/build_native_rsxloader.py
 python3 tools/test_rsx_format.py
 python3 tools/test_subsystem_versions.py
+python3 tools/test_bdos_service_inventory.py
 python3 tools/build_fileloader.py
 python3 tools/build_native_fileloader.py
 python3 tools/build_system.py
