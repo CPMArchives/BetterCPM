@@ -228,6 +228,25 @@ def main() -> None:
             cpu.mem[0x7304] == writes,
             "Rename mutated the directory while rejecting its target")
 
+    # Set Attributes copies only high bits from the FCB name/type fields.
+    cpu.mem[FCB:FCB + 36] = bytes(36)
+    cpu.mem[FCB + 1:FCB + 12] = b"SECOND  COM"
+    cpu.mem[FCB + 9] |= 0x80    # T1 read-only on; first-name high bit off
+    tail = bytes(cpu.mem[0xEC80 + 44:0xEC80 + 64])
+    writes = cpu.mem[0x7304]
+    require(call(30, FCB) == 0, "Set Attributes missed an existing file")
+    require(not cpu.mem[0xEC80 + 33] & 0x80 and
+            cpu.mem[0xEC80 + 41] & 0x80,
+            "Set Attributes did not copy the requested high bits")
+    require(bytes(cpu.mem[0xEC80 + 44:0xEC80 + 64]) == tail,
+            "Set Attributes changed extent or allocation fields")
+    require(cpu.mem[0x7304] == writes + 1,
+            "Set Attributes did not flush exactly one dirty sector")
+    cpu.mem[FCB + 1:FCB + 12] = b"ABSENT  COM"
+    writes = cpu.mem[0x7304]
+    require(call(30, FCB) == 0xFF and cpu.mem[0x7304] == writes,
+            "Set Attributes wrote while reporting no matching file")
+
     print(f"unified BDOS U01-U06 foundation passed ({len(image)} bytes)")
     print("disk state, FCB drive view, shared iterator, and one-sector cache passed")
 

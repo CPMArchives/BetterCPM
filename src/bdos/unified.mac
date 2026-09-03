@@ -46,7 +46,7 @@ UB_TABLE:
         DW      UB_OPEN,UB_MISSING,UB_SFIRST,UB_SNEXT,UB_DELETE
         DW      UB_MISSING,UB_MISSING,UB_MAKE,UB_RENAME
         DW      UB_LOGINV,UB_CURDSK,UB_SETDMA,UB_GETALV,UB_WRPROT
-        DW      UB_ROVEC,UB_MISSING,UB_GETDPB,UB_USER
+        DW      UB_ROVEC,UB_ATTR,UB_GETDPB,UB_USER
         DW      UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING,UB_RSTDRV
         DW      UB_ZERO,UB_ZERO,UB_MISSING
 
@@ -766,6 +766,53 @@ UB_RNCOPY:
         LD      (UB_DIRTY),A
         JR      UB_RNPASS
 UB_RNDONE:
+        CALL    UB_DIRFLUSH
+        JP      NZ,UB_BAD
+        XOR     A
+        JP      UB_RETA
+
+; Function 30 applies only the FCB's high attribute bits to all matching
+; extents. Low seven-bit name/type characters and bytes 12..31 are untouched.
+UB_ATTR:
+        LD      (UB_ITFCB),DE
+        CALL    UB_FCBDRV
+        JP      C,UB_BAD
+        CALL    UB_CONTEXT
+        JP      NZ,UB_BAD
+        LD      HL,UB_RDONLY
+        CALL    UB_TESTBIT
+        JP      NZ,UB_BAD
+        CALL    UB_DSETUP
+        XOR     A
+        LD      (UB_FOUND),A
+UB_ATPASS:
+        CALL    UB_ITER
+        JR      C,UB_ATDONE
+        PUSH    HL
+        INC     HL
+        LD      DE,(UB_ITFCB)
+        INC     DE
+        LD      B,11
+UB_ATCOPY:
+        LD      A,(HL)
+        AND     07FH
+        LD      C,A
+        LD      A,(DE)
+        AND     080H
+        OR      C
+        LD      (HL),A
+        INC     HL
+        INC     DE
+        DJNZ    UB_ATCOPY
+        POP     HL
+        LD      A,1
+        LD      (UB_FOUND),A
+        LD      (UB_DIRTY),A
+        JR      UB_ATPASS
+UB_ATDONE:
+        LD      A,(UB_FOUND)
+        OR      A
+        JP      Z,UB_BAD
         CALL    UB_DIRFLUSH
         JP      NZ,UB_BAD
         XOR     A
