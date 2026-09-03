@@ -167,6 +167,10 @@ class Z80:
                 self.a &= self.c
                 self.z = self.a == 0
                 self.carry = False
+            elif op == 0xA6:            # AND (HL)
+                self.a &= self.mem[self.hl]
+                self.z = self.a == 0
+                self.carry = False
             elif op == 0x2F:            # CPL
                 self.a ^= 0xFF
             elif op == 0x3E:            # LD A,n

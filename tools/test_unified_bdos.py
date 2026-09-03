@@ -152,6 +152,29 @@ def main() -> None:
     require(cpu.mem[FCB + 1:FCB + 32] == cpu.mem[FIXTURE + 1:FIXTURE + 32],
             "Open did not activate directory bytes 1..31")
 
+    # Make is the first mutation client. Replace only the BIOS WRITE vector
+    # with a success/count stub; mapping and cache selection remain real.
+    cpu.mem[BIOS_BASE + 14 * 3:BIOS_BASE + 14 * 3 + 3] = bytes((0xC3, 0x00, 0x74))
+    cpu.mem[0x7400:0x7409] = bytes((
+        0x3A, 0x04, 0x73, 0x3C, 0x32, 0x04, 0x73, 0xAF, 0xC9))
+    cpu.mem[FCB:FCB + 36] = bytes(36)
+    cpu.mem[FCB + 1:FCB + 12] = b"NEW     COM"
+    made = call(22, FCB)
+    require(made == 2,
+            f"Make did not select the first free slot: A={made:02X} writes={cpu.mem[0x7304]} "
+            f"mode={cpu.mem[state['UB_ITMODE']]} rec={cpu.mem[state['UB_ITREC']]} "
+            f"slot={cpu.mem[state['UB_ITSLOT']]} dirty={cpu.mem[state['UB_DIRTY']]}")
+    require(cpu.mem[0x7304] == 1, "Make did not flush exactly one directory sector")
+    require(bytes(cpu.mem[0xEC80 + 64:0xEC80 + 76]) ==
+            bytes((7,)) + b"NEW     COM",
+            "Make did not initialize the cached directory entry")
+    require(call(22, FCB) == 0xFF and cpu.mem[0x7304] == 1,
+            "Make accepted a duplicate or wrote during duplicate rejection")
+    cpu.mem[FCB + 1:FCB + 12] = b"RO      COM"
+    call(28)
+    require(call(22, FCB) == 0xFF and cpu.mem[0x7304] == 1,
+            "Make mutated a software write-protected drive")
+
     print(f"unified BDOS U01-U06 foundation passed ({len(image)} bytes)")
     print("disk state, FCB drive view, shared iterator, and one-sector cache passed")
 
