@@ -49,6 +49,7 @@ def main() -> None:
     ))
     cpu.mem[platform_read:platform_read + len(read_success)] = read_success
     initial_sp = cpu.sp
+    state = symbols()
 
     def call(function: int, parameter: int = 0) -> int:
         cpu.c, cpu.de = function, parameter
@@ -58,7 +59,11 @@ def main() -> None:
 
     require(call(12) == 0x22 and cpu.hl == 0x22,
             "function 12 did not return CP/M 2.2")
-    require(call(13) == 0, "disk reset failed")
+    reset_result = call(13)
+    require(reset_result == 0,
+            f"disk reset failed: A={reset_result:02X} "
+            f"valid={cpu.mem[state['UB_VALID']]} rec={cpu.mem[state['UB_ITREC']]} "
+            f"reads={cpu.mem[0x7303]} cache={cpu.mem[state['UBS_COK']]}")
     require(call(24) == 1 and cpu.hl == 1, "reset did not log drive A")
     require(call(25) == 0, "reset did not select drive A")
 
@@ -110,14 +115,15 @@ def main() -> None:
     cpu.mem[FIXTURE:FIXTURE + 12] = bytes((7,)) + b"ONE     COM"
     cpu.mem[FIXTURE + 32:FIXTURE + 44] = bytes((7,)) + b"TWO     COM"
     cpu.mem[FIXTURE + 12] = cpu.mem[FIXTURE + 44] = 0
+    cpu.mem[FIXTURE + 45:FIXTURE + 64] = bytes(19)
     cpu.mem[FIXTURE + 13:FIXTURE + 16] = bytes((0x55, 2, 0x22))
-    cpu.mem[FIXTURE + 16:FIXTURE + 32] = bytes(range(1, 17))
+    cpu.mem[FIXTURE + 16:FIXTURE + 32] = bytes(
+        value for block in range(1, 9) for value in (block, 0))
     cpu.mem[FCB:FCB + 36] = bytes(36)
     cpu.mem[FCB] = 0
     cpu.mem[FCB + 1:FCB + 12] = b"???????????"
     call(32, 7)
     cpu.mem[0x7303] = 0
-    state = symbols()
     cpu.run(state["UB_DIRCOUNT"])
     require(cpu.b == 32, f"directory geometry returned {cpu.b} records")
     cpu.a = 0
@@ -137,6 +143,16 @@ def main() -> None:
     require(call(18) == 1, "Search Next did not retain slot continuation")
     require(cpu.mem[0x7303] == reads,
             "Search Next reread an already cached directory sector")
+
+    # Drive-B login rebuilt its ALV through the iterator: AL0/AL1 reserve the
+    # directory blocks and the live 16-bit allocation entries add blocks 1..8.
+    call(27)
+    alv = cpu.hl
+    require(bytes(cpu.mem[alv:alv + 2]) == bytes((0xFF, 0x80)),
+            "U07 did not reconstruct reserved and file-owned allocation bits")
+    cpu.de = 395                 # one beyond this fixture's DSM=394
+    cpu.run(state["UB_ALMARK"])
+    require(cpu.a != 0, "U07 accepted an allocation block beyond DSM")
 
     # Open uses the same iterator in exact-name mode, filters EX/S2 with the
     # live DPB's EXM, and activates bytes 1..31 without changing drive or CR.
@@ -266,8 +282,8 @@ def main() -> None:
     require(call(35, FCB) == 0xFF,
             "Compute File Size reported success for a missing file")
 
-    print(f"unified BDOS U01-U06 foundation passed ({len(image)} bytes)")
-    print("disk state, FCB drive view, shared iterator, and one-sector cache passed")
+    print(f"unified BDOS U01-U07 foundation passed ({len(image)} bytes)")
+    print("disk state, shared directory/cache, and ALV reconstruction passed")
 
 
 if __name__ == "__main__":

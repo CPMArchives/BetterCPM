@@ -227,11 +227,18 @@ UB_CTXLOAD:
         LD      (UB_VALID),A
         XOR     A
         LD      (UBS_COK),A
+        PUSH    BC
+        CALL    UB_ALLOGIN
+        POP     BC
+        JR      NZ,UB_CTXBAD
         LD      HL,UBS_LOGIN
         CALL    UB_SETBIT
         XOR     A
         RET
 UB_CTXBAD:
+        XOR     A
+        LD      (UB_VALID),A
+        LD      (UBS_COK),A
         LD      A,1
         OR      A
         RET
@@ -359,7 +366,7 @@ UB_SEARCH:
 UB_ITER:
         LD      A,(UB_ITREC)
         CALL    UB_DIRLOAD
-        JR      NZ,UB_ITDONE
+        JP      NZ,UB_ITDONE
         LD      A,(UB_ITSLOT)
         LD      E,A
         LD      D,0
@@ -372,6 +379,8 @@ UB_ITER:
         LD      A,(UB_ITMODE)
         OR      A
         JR      Z,UB_IUSED
+        CP      2
+        JR      Z,UB_IALIVE
         LD      A,(HL)
         CP      0E5H
         JR      Z,UB_ITFOUND
@@ -432,6 +441,11 @@ UB_ITFOUND:
         LD      A,(UB_ITRET)
         OR      A               ; preserve slot and clear carry
         RET
+UB_IALIVE:
+        LD      A,(HL)
+        CP      16
+        JR      C,UB_ITFOUND
+        JR      UB_ITADV
 UB_ITMISS:
         POP     HL
 UB_ITADV:
@@ -452,8 +466,10 @@ UB_ITSTEP:
         JR      C,UB_ITSAVE
         XOR     A
         LD      (UB_ITSLOT),A
+        PUSH    HL
         LD      HL,UB_ITREC
         INC     (HL)
+        POP     HL
         RET
 UB_ITSAVE:
         LD      (UB_ITSLOT),A
@@ -931,6 +947,152 @@ UB_MXTAKE:
         LDIR
         RET
 
+; U07 -- reconstruct the active allocation vector from DPB reserved blocks and
+; every live directory entry. The iterator's all-live mode is also available
+; to later allocation repair and diagnostic clients.
+UB_ALLOGIN:
+        LD      HL,(UB_DPH)
+        LD      DE,10
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (UB_DPB),DE
+        EX      DE,HL
+        LD      DE,5
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (UB_DSM),DE
+        LD      HL,(UB_DPH)
+        LD      DE,14
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (UB_ALVP),DE
+        LD      HL,(UB_DSM)
+        LD      DE,8
+        ADD     HL,DE
+        SRL     H
+        RR      L
+        SRL     H
+        RR      L
+        SRL     H
+        RR      L
+        LD      B,L
+        LD      HL,(UB_ALVP)
+        XOR     A
+UB_ALCLR:
+        LD      (HL),A
+        INC     HL
+        DJNZ    UB_ALCLR
+        LD      HL,(UB_DPB)
+        LD      DE,9
+        ADD     HL,DE
+        LD      A,(HL)          ; AL0/AL1 reserve directory blocks
+        LD      DE,(UB_ALVP)
+        LD      (DE),A
+        INC     HL
+        INC     DE
+        LD      A,(HL)
+        LD      (DE),A
+        LD      A,2
+        LD      (UB_ITMODE),A
+        XOR     A
+        LD      (UB_ITREC),A
+        LD      (UB_ITSLOT),A
+UB_ALSCAN:
+        CALL    UB_ITER
+        JR      C,UB_ALDONE
+        LD      DE,16
+        ADD     HL,DE
+        LD      A,(UB_DSM+1)
+        OR      A
+        JR      Z,UB_AL8
+        LD      B,8
+UB_AL16LP:
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        LD      A,D
+        OR      E
+        JR      Z,UB_AL16NX
+        CALL    UB_ALMARK
+        RET     NZ
+UB_AL16NX:
+        DJNZ    UB_AL16LP
+        JR      UB_ALSCAN
+UB_AL8:
+        LD      B,16
+UB_AL8LP:
+        LD      E,(HL)
+        INC     HL
+        LD      D,0
+        LD      A,E
+        OR      A
+        JR      Z,UB_AL8NX
+        CALL    UB_ALMARK
+        RET     NZ
+UB_AL8NX:
+        DJNZ    UB_AL8LP
+        JR      UB_ALSCAN
+UB_ALDONE:
+        XOR     A
+        RET
+
+; Mark allocation block DE, rejecting any nonzero block beyond DSM.
+UB_ALMARK:
+        PUSH    BC
+        PUSH    DE
+        PUSH    HL
+        LD      HL,(UB_DSM)
+        LD      A,D
+        CP      H
+        JR      C,UB_ALVALID
+        JR      NZ,UB_ALBAD
+        LD      A,E
+        CP      L
+        JR      C,UB_ALVALID
+        JR      NZ,UB_ALBAD
+UB_ALVALID:
+        LD      A,E
+        AND     7
+        LD      C,A
+        LD      H,D
+        LD      L,E
+        SRL     H
+        RR      L
+        SRL     H
+        RR      L
+        SRL     H
+        RR      L
+        LD      DE,(UB_ALVP)
+        ADD     HL,DE
+        PUSH    HL
+        LD      B,0
+        LD      HL,UB_ALBITS
+        ADD     HL,BC
+        LD      A,(HL)
+        POP     HL
+        OR      (HL)
+        LD      (HL),A
+        XOR     A
+        JR      UB_ALRET
+UB_ALBAD:
+        LD      A,1
+        OR      A
+UB_ALRET:
+        POP     HL
+        POP     DE
+        POP     BC
+        RET
+
+UB_ALBITS:
+        DB      128,64,32,16,8,4,2,1
+
 ; U06 -- a single cache backed by the DPH-published directory buffer. Caching
 ; state names the directory record currently represented; mutation clients
 ; will set UB_DIRTY and commit through UB_DIRFLUSH.
@@ -1097,6 +1259,9 @@ UB_RENFCB:      DW      0
 UB_TMPDRV:      DB      0
 UB_CANREC:      DB      0,0,0
 UB_MAXREC:      DB      0,0,0
+UB_DPB:         DW      0
+UB_DSM:         DW      0
+UB_ALVP:        DW      0
 
 UB_STACK:
         REPT    48
