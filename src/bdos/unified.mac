@@ -321,28 +321,25 @@ UB_SFIRST:
         LD      A,(DE)
         CP      '?'
         JR      Z,UB_SFALL
-        LD      A,(UB_USERNO)
-        LD      (UB_ITUSER),A
-        XOR     A
-        LD      (UB_ITALL),A
         LD      HL,(UB_ITFCB)
         LD      DE,14
         ADD     HL,DE
         LD      (HL),0          ; CP/M Search First clears S2
+        XOR     A
         JR      UB_SFINIT
 UB_SFALL:
+        XOR     A
+UB_SFINIT:
+        LD      B,1
+        LD      C,12
+        CALL    UB_ITINIT
+        LD      HL,(UB_ITFCB)
+        LD      A,(HL)
+        CP      '?'
+        JR      NZ,UB_SFLIVE
         LD      A,0FFH
         LD      (UB_ITALL),A
-UB_SFINIT:
-        XOR     A
-        LD      (UB_ITMODE),A
-        LD      A,12
-        LD      (UB_ITLEN),A
-        LD      A,1
-        LD      (UB_ITWILD),A
-        XOR     A
-        LD      (UB_ITREC),A
-        LD      (UB_ITSLOT),A
+UB_SFLIVE:
         LD      A,1
         LD      (UB_ITLIVE),A
         JR      UB_SEARCH
@@ -475,6 +472,21 @@ UB_ITSAVE:
         LD      (UB_ITSLOT),A
         RET
 
+; Initialize the common iterator. A=mode, B=wildcard enable, C=match length.
+UB_ITINIT:
+        LD      (UB_ITMODE),A
+        LD      A,(UB_USERNO)
+        LD      (UB_ITUSER),A
+        XOR     A
+        LD      (UB_ITALL),A
+        LD      (UB_ITREC),A
+        LD      (UB_ITSLOT),A
+        LD      A,B
+        LD      (UB_ITWILD),A
+        LD      A,C
+        LD      (UB_ITLEN),A
+        RET
+
 ; Function 15 configures the same iterator for an exact 8.3 name, then filters
 ; by the EXM-grouped logical extent. On success directory bytes 1..31 activate
 ; the caller FCB while its drive byte and current-record byte remain private.
@@ -487,16 +499,10 @@ UB_OPENCORE:
         JP      C,UB_BAD
         CALL    UB_CONTEXT
         JP      NZ,UB_BAD
-        LD      A,(UB_USERNO)
-        LD      (UB_ITUSER),A
         XOR     A
-        LD      (UB_ITMODE),A
-        LD      (UB_ITALL),A
-        LD      (UB_ITWILD),A
-        LD      (UB_ITREC),A
-        LD      (UB_ITSLOT),A
-        LD      A,11
-        LD      (UB_ITLEN),A
+        LD      B,A
+        LD      C,11
+        CALL    UB_ITINIT
 UB_OPNEXT:
         CALL    UB_ITER
         JP      C,UB_BAD
@@ -649,23 +655,16 @@ UB_MKNAME:
         JP      Z,UB_BAD
         INC     HL
         DJNZ    UB_MKNAME
-        LD      A,(UB_USERNO)
-        LD      (UB_ITUSER),A
         XOR     A
-        LD      (UB_ITMODE),A
-        LD      (UB_ITALL),A
-        LD      (UB_ITWILD),A
-        LD      (UB_ITREC),A
-        LD      (UB_ITSLOT),A
-        LD      A,11
-        LD      (UB_ITLEN),A
+        LD      B,A
+        LD      C,11
+        CALL    UB_ITINIT
         CALL    UB_ITER
         JP      NC,UB_BAD       ; any existing extent makes the name duplicate
         LD      A,1
-        LD      (UB_ITMODE),A
-        XOR     A
-        LD      (UB_ITREC),A
-        LD      (UB_ITSLOT),A
+        LD      B,0
+        LD      C,11
+        CALL    UB_ITINIT
         CALL    UB_ITER
         JP      C,UB_BAD        ; directory full or physical read failure
         LD      (UB_ITRET),A
@@ -732,18 +731,10 @@ UB_DDONE:
 
 ; Configure an all-extent, wildcard-name scan for the caller's current user.
 UB_DSETUP:
-        LD      A,(UB_USERNO)
-        LD      (UB_ITUSER),A
         XOR     A
-        LD      (UB_ITMODE),A
-        LD      (UB_ITALL),A
-        LD      (UB_ITREC),A
-        LD      (UB_ITSLOT),A
-        LD      A,1
-        LD      (UB_ITWILD),A
-        LD      A,11
-        LD      (UB_ITLEN),A
-        RET
+        LD      B,1
+        LD      C,11
+        JP      UB_ITINIT
 
 ; Function 23 uses the shared iterator for target-existence, source preflight,
 ; and mutation. Only the eleven name/type bytes change; their attribute bits
@@ -793,16 +784,10 @@ UB_RNCHK:
         LD      DE,16
         ADD     HL,DE
         LD      (UB_ITFCB),HL   ; reject an already-existing target name
-        LD      A,(UB_USERNO)
-        LD      (UB_ITUSER),A
         XOR     A
-        LD      (UB_ITMODE),A
-        LD      (UB_ITALL),A
-        LD      (UB_ITWILD),A
-        LD      (UB_ITREC),A
-        LD      (UB_ITSLOT),A
-        LD      A,11
-        LD      (UB_ITLEN),A
+        LD      B,A
+        LD      C,11
+        CALL    UB_ITINIT
         CALL    UB_ITER
         JP      NC,UB_BAD
         LD      HL,(UB_RENFCB)
