@@ -104,8 +104,6 @@ def main() -> None:
             "unavailable drive changed current drive")
     require(call(38) == 0 and call(39) == 0,
             "reserved standard functions did not return zero")
-    require(call(21) == 0xFF, "unfinished file call was not rejected")
-
     fcbdrv = symbols()["UB_FCBDRV"]
     cpu.mem[FCB] = 0
     cpu.de = FCB
@@ -387,8 +385,31 @@ def main() -> None:
     require(call(33, FCB) == 0xFF,
             "Random Read accepted an out-of-range R2 value")
 
+    # Sequential Write uses the same record mapper, allocating only when its
+    # current map element is empty.  It advances CR and grows RC in the FCB;
+    # Close is responsible for publishing those authenticated changes.
+    cpu.mem[FCB:FCB + 36] = bytes(36)
+    cpu.mem[FCB + 1:FCB + 12] = b"ONE     COM"
+    cpu.mem[dma:dma + 128] = bytes((0x5A,)) * 128
+    writes = cpu.mem[0x7304]
+    require(call(21, FCB) == 0,
+            "Sequential Write could not allocate and map its first record")
+    require(cpu.word(FCB + 16) == 9 and cpu.mem[FCB + 32] == 1 and
+            cpu.mem[FCB + 15] == 1,
+            "Sequential Write did not install its allocation or advance CR/RC")
+    require(cpu.mem[0x7304] == writes + 1,
+            "Sequential Write did not issue exactly one physical write")
+    writes = cpu.mem[0x7304]
+    require(call(21, FCB) == 0 and cpu.word(FCB + 16) == 9 and
+            cpu.mem[0x7304] == writes + 1,
+            "Sequential Write reallocated an existing block")
+    call(28)
+    writes = cpu.mem[0x7304]
+    require(call(21, FCB) == 0xFF and cpu.mem[0x7304] == writes,
+            "Sequential Write ignored software write protection")
+
     print(f"unified BDOS U01-U09 foundation passed ({len(image)} bytes)")
-    print("disk, directory, allocation, extent, and record-read mapping passed")
+    print("disk, directory, allocation, extent, and record-transfer mapping passed")
 
 
 if __name__ == "__main__":
