@@ -309,8 +309,18 @@ def main() -> None:
     require(call(35, FCB) == 0xFF,
             "Compute File Size reported success for a missing file")
 
-    print(f"unified BDOS U01-U07 foundation passed ({len(image)} bytes)")
-    print("disk state, shared directory/cache, and ALV reconstruction passed")
+    # Function 36 must use the identical S2:EX:record conversion, taking CR
+    # rather than a directory entry's RC as its low record component.
+    cpu.mem[FCB:FCB + 36] = bytes(36)
+    cpu.mem[FCB + 12] = 4
+    cpu.mem[FCB + 14] = 1
+    cpu.mem[FCB + 32] = 10
+    require(call(36, FCB) == 0 and
+            bytes(cpu.mem[FCB + 33:FCB + 36]) == bytes((0x0A, 0x12, 0x00)),
+            "Set Random Record diverged from shared extent arithmetic")
+
+    print(f"unified BDOS U01-U08 foundation passed ({len(image)} bytes)")
+    print("disk state, directory/cache, allocation, and extent conversion passed")
 
 
 if __name__ == "__main__":

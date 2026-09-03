@@ -276,6 +276,8 @@ class Z80:
                 self.a = self.mem[self.hl]
             elif op == 0x5F:            # LD E,A
                 self.e = self.a
+            elif op == 0x59:            # LD E,C
+                self.e = self.c
             elif op == 0x57:            # LD D,A
                 self.d = self.a
             elif op == 0x32:            # LD (nn),A
@@ -470,8 +472,9 @@ class Z80:
             elif op == 0xB0:            # OR B
                 self.a |= self.b
                 self.z, self.carry = self.a == 0, False
-            elif op in (0x81, 0x82):    # ADD A,C / ADD A,D
-                total = self.a + (self.c if op == 0x81 else self.d)
+            elif op in (0x80, 0x81, 0x82):  # ADD A,B / C / D
+                value = {0x80: self.b, 0x81: self.c, 0x82: self.d}[op]
+                total = self.a + value
                 self.a = total & 0xFF
                 self.z, self.carry = self.a == 0, total > 0xFF
             elif op == 0xC6:            # ADD A,n
