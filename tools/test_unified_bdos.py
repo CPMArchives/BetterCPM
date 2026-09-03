@@ -145,7 +145,7 @@ def main() -> None:
             f"Search First missed slot zero: A={search_first:02X} "
             f"reads={cpu.mem[0x7303]} mapped={bytes(cpu.mem[0x7300:0x7303]).hex()} "
             f"buffer={bytes(cpu.mem[0xEC80:0xEC8D]).hex()} "
-            f"live={cpu.mem[state['UB_ITLIVE']]} rec={cpu.mem[state['UB_ITREC']]} "
+            f"rec={cpu.mem[state['UB_ITREC']]} "
             f"cache={cpu.mem[state['UBS_COK']]} dph={cpu.word(state['UB_DPH']):04X}")
     dma = cpu.word(symbols()["UB_DMA"])
     require(bytes(cpu.mem[dma:dma + 12]) == bytes((7,)) + b"ONE     COM",

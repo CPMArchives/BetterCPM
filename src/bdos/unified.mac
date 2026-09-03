@@ -348,7 +348,6 @@ UB_SFIRST:
 UB_SFALL:
         XOR     A
 UB_SFINIT:
-        LD      B,1
         LD      C,12
         CALL    UB_ITINIT
         LD      HL,(UB_ITFCB)
@@ -356,16 +355,11 @@ UB_SFINIT:
         CP      '?'
         JR      NZ,UB_SFLIVE
         LD      A,0FFH
-        LD      (UB_ITALL),A
+        LD      (UB_ITUSER),A
 UB_SFLIVE:
-        LD      A,1
-        LD      (UB_ITLIVE),A
         JR      UB_SEARCH
 
 UB_SNEXT:
-        LD      A,(UB_ITLIVE)
-        OR      A
-        JP      Z,UB_BAD
 UB_SEARCH:
         CALL    UB_ITER
         JP      C,UB_BAD
@@ -404,10 +398,9 @@ UB_IUSED:
         LD      A,(HL)
         CP      16
         JR      NC,UB_ITADV
-        LD      A,(UB_ITALL)
-        OR      A
-        JR      NZ,UB_ITNAME
         LD      A,(UB_ITUSER)
+        CP      0FFH
+        JR      Z,UB_ITNAME
         CP      (HL)
         JR      NZ,UB_ITADV
 UB_ITNAME:
@@ -421,10 +414,7 @@ UB_ITCMP:
         LD      A,(DE)
         AND     07FH
         CP      '?'
-        JR      NZ,UB_ITLIT
-        LD      A,(UB_ITWILD)
-        OR      A
-        JR      NZ,UB_ITCHAR
+        JR      Z,UB_ITCHAR
 UB_ITLIT:
         LD      A,(DE)
         AND     07FH
@@ -467,8 +457,6 @@ UB_ITADV:
         CALL    UB_ITSTEP
         JP      UB_ITER
 UB_ITDONE:
-        XOR     A
-        LD      (UB_ITLIVE),A
         LD      A,0FFH
         OR      A
         SCF
@@ -490,17 +478,15 @@ UB_ITSAVE:
         LD      (UB_ITSLOT),A
         RET
 
-; Initialize the common iterator. A=mode, B=wildcard enable, C=match length.
+; Initialize the common iterator. A=mode, C=match length. Question marks are
+; always wildcards; exact-name callers reject them before entry.
 UB_ITINIT:
         LD      (UB_ITMODE),A
         LD      A,(UB_USERNO)
         LD      (UB_ITUSER),A
         XOR     A
-        LD      (UB_ITALL),A
         LD      (UB_ITREC),A
         LD      (UB_ITSLOT),A
-        LD      A,B
-        LD      (UB_ITWILD),A
         LD      A,C
         LD      (UB_ITLEN),A
         RET
@@ -520,7 +506,6 @@ UB_OPENCORE:
         CALL    UB_FCTX
         JP      NZ,UB_BAD
         XOR     A
-        LD      B,A
         LD      C,11
         CALL    UB_ITINIT
 UB_OPNEXT:
@@ -684,14 +669,12 @@ UB_MKNAME:
         INC     HL
         DJNZ    UB_MKNAME
         XOR     A
-        LD      B,A
         LD      C,11
         CALL    UB_ITINIT
         CALL    UB_ITER
         JP      NC,UB_BAD       ; any existing extent makes the name duplicate
 UB_MKFREE:
         LD      A,1
-        LD      B,0
         LD      C,11
         CALL    UB_ITINIT
         CALL    UB_ITER
@@ -761,7 +744,6 @@ UB_DDONE:
 ; Configure an all-extent, wildcard-name scan for the caller's current user.
 UB_DSETUP:
         XOR     A
-        LD      B,1
         LD      C,11
         JP      UB_ITINIT
 
@@ -809,7 +791,6 @@ UB_RNCHK:
         ADD     HL,DE
         LD      (UB_ITFCB),HL   ; reject an already-existing target name
         XOR     A
-        LD      B,A
         LD      C,11
         CALL    UB_ITINIT
         CALL    UB_ITER
@@ -927,7 +908,6 @@ UB_SZNAME:
         DJNZ    UB_SZNAME
         CALL    UB_DSETUP
         XOR     A
-        LD      (UB_ITWILD),A
         LD      (UB_FOUND),A
         LD      (UB_MAXREC),A
         LD      (UB_MAXREC+1),A
@@ -1845,13 +1825,10 @@ UB_CTXDRV:      DB      0
 UB_DPH:         DW      0
 UB_ITFCB:       DW      0
 UB_ITUSER:      DB      0
-UB_ITALL:       DB      0
 UB_ITREC:       DB      0
 UB_ITSLOT:      DB      0
-UB_ITLIVE:      DB      0
 UB_ITRET:       DB      0
 UB_ITLEN:       DB      0
-UB_ITWILD:      DB      0
 UB_ITMODE:      DB      0       ; zero=used match, one=deleted/free entry
 UB_DIRBUF:      DW      0
 UBS_CREC:       DB      0
