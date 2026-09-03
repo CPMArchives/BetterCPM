@@ -312,6 +312,20 @@ UB_FCBBAD:
         SCF
         RET
 
+; One file-service prologue. All directory clients publish the caller FCB,
+; resolve its drive, and select that drive through this path. Mutation
+; clients extend it with the common software write-protect test.
+UB_FCTX:
+        LD      (UB_ITFCB),DE
+        CALL    UB_FCBDRV
+        RET     C
+        JP      UB_CONTEXT
+UB_MCTX:
+        CALL    UB_FCTX
+        RET     NZ
+        LD      HL,UB_RDONLY
+        JP      UB_TESTBIT
+
 ; U05 -- one directory iterator. Search First/Next are the first public users;
 ; Open, mutation, allocation reconstruction, and Size will configure this same
 ; state instead of acquiring private scan loops.
@@ -503,10 +517,7 @@ UB_ACTIVATE:
         LD      (UB_OCOPY),A
         JR      UB_OPENCORE
 UB_OPENCORE:
-        LD      (UB_ITFCB),DE
-        CALL    UB_FCBDRV
-        JP      C,UB_BAD
-        CALL    UB_CONTEXT
+        CALL    UB_FCTX
         JP      NZ,UB_BAD
         XOR     A
         LD      B,A
@@ -660,13 +671,7 @@ UB_MAKE:
         CALL    UB_MAKECORE
         JP      UB_RETA
 UB_MAKECORE:
-        LD      (UB_ITFCB),DE
-        CALL    UB_FCBDRV
-        JP      C,UB_BAD
-        CALL    UB_CONTEXT
-        JP      NZ,UB_BAD
-        LD      HL,UB_RDONLY
-        CALL    UB_TESTBIT
+        CALL    UB_MCTX
         JP      NZ,UB_BAD
         LD      HL,(UB_ITFCB)
         INC     HL
@@ -717,13 +722,7 @@ UB_MKFREE:
 ; proves that every matching extent is mutable; the second marks matches E5.
 ; This prevents partial deletion when a later extent carries the R/O bit.
 UB_DELETE:
-        LD      (UB_ITFCB),DE
-        CALL    UB_FCBDRV
-        JP      C,UB_BAD
-        CALL    UB_CONTEXT
-        JP      NZ,UB_BAD
-        LD      HL,UB_RDONLY
-        CALL    UB_TESTBIT
+        CALL    UB_MCTX
         JP      NZ,UB_BAD
         CALL    UB_DSETUP
         XOR     A
@@ -771,12 +770,7 @@ UB_DSETUP:
 ; and every extent/allocation field remain attached to the original entry.
 UB_RENAME:
         LD      (UB_RENFCB),DE
-        CALL    UB_FCBDRV
-        JP      C,UB_BAD
-        CALL    UB_CONTEXT
-        JP      NZ,UB_BAD
-        LD      HL,UB_RDONLY
-        CALL    UB_TESTBIT
+        CALL    UB_MCTX
         JP      NZ,UB_BAD
         LD      A,C
         LD      (UB_TMPDRV),A
@@ -878,13 +872,7 @@ UB_RNDONE:
 ; Function 30 applies only the FCB's high attribute bits to all matching
 ; extents. Low seven-bit name/type characters and bytes 12..31 are untouched.
 UB_ATTR:
-        LD      (UB_ITFCB),DE
-        CALL    UB_FCBDRV
-        JP      C,UB_BAD
-        CALL    UB_CONTEXT
-        JP      NZ,UB_BAD
-        LD      HL,UB_RDONLY
-        CALL    UB_TESTBIT
+        CALL    UB_MCTX
         JP      NZ,UB_BAD
         CALL    UB_DSETUP
         XOR     A
@@ -925,10 +913,7 @@ UB_ATDONE:
 ; Function 35 reduces every exact-name extent to its exclusive logical end
 ; record: ((S2*32 + EX)*128 + RC). The largest candidate becomes FCB R0..R2.
 UB_SIZE:
-        LD      (UB_ITFCB),DE
-        CALL    UB_FCBDRV
-        JP      C,UB_BAD
-        CALL    UB_CONTEXT
+        CALL    UB_FCTX
         JP      NZ,UB_BAD
         LD      HL,(UB_ITFCB)
         INC     HL
