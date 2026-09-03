@@ -20,11 +20,14 @@ ECB_GENERATION  EQU     0C092H
 CPTCOUNT        EQU     0C094H
 CPTABLE         EQU     0C096H
 MODBUF          EQU     0ED00H
-MOD_LINK        EQU     MODBUF+6
-MOD_SIZE        EQU     MODBUF+8
-MOD_ALLOC       EQU     MODBUF+10
-MOD_RELOCS      EQU     MODBUF+14
-MOD_TABLE       EQU     MODBUF+16
+MOD_LINK        EQU     MODBUF+10
+MOD_SIZE        EQU     MODBUF+12
+MOD_ALLOC       EQU     MODBUF+14
+MOD_ENTRY       EQU     MODBUF+16
+MOD_RELOCS      EQU     MODBUF+22
+MOD_HEADERSZ    EQU     MODBUF+24
+MOD_PAYLOAD     EQU     MODBUF+26
+MOD_RELTABLE    EQU     MODBUF+28
 ; The directory path is substantially deeper than the old raw-sector reader.
 ; Grow its private stack downward through the unused fixed-core gap.
 CRSTKTOP        EQU     0D4F0H
@@ -104,7 +107,7 @@ CRCCP:
         JP      NZ,CRFAIL
         LD      HL,(CRBASE)
         LD      (ECB_CCPBASE),HL
-        LD      HL,(MOD_ALLOC)
+        LD      HL,(CRMALLOC)
         LD      (ECB_CCPSIZE),HL
         LD      HL,(ECB_GENERATION)
         INC     HL
@@ -236,7 +239,7 @@ RXBAD:
         LD      A,0FFH
         RET
 
-; Load one BCM1/BCX1 module below CRBOUND, then relocate it at CRBASE.
+; Load one BCM1/BCPX module below CRBOUND, then relocate it at CRBASE.
 CRLOAD:
         LD      A,(CRSLOT)
         LD      (CRFIRST),A     ; retained for the fixed-slot CCP image
@@ -253,33 +256,104 @@ CRMAGLP:
         INC     DE
         INC     HL
         DJNZ    CRMAGLP
+        LD      A,(MODBUF+2)
+        CP      'P'
+        JR      Z,CRNCPX
+; Preserve the established BCM1 command-module carrier while normalizing its
+; fields into the same private descriptor used by BCPX.  This explicit split
+; replaces the former accidental assumption that both formats shared offsets.
+        XOR     A
+        LD      (CRISCPX),A
+        LD      HL,(MODBUF+6)
+        LD      (CRMLINK),HL
+        LD      HL,(MODBUF+8)
+        LD      (CRMSIZE),HL
+        LD      HL,(MODBUF+10)
+        LD      (CRMALLOC),HL
+        LD      HL,(MODBUF+14)
+        LD      (CRMRELOCS),HL
+        LD      HL,0200H
+        LD      (CRMHEADSZ),HL
+        LD      (CRMPAYLOAD),HL
+        LD      HL,16
+        LD      (CRMRELTABLE),HL
+        JR      CRNORMED
+CRNCPX:
+        LD      HL,(MODBUF+6)   ; L=ABI major, H=ABI minor
+        DEC     HL
+        LD      A,H
+        OR      L               ; ABI 1.0 is the only accepted v1 contract
+        JP      NZ,CRBAD
+        LD      HL,(MODBUF+8)
+        LD      A,H
+        OR      L               ; v1 defines no nonzero flag bits
+        JP      NZ,CRBAD
+        LD      A,1
+        LD      (CRISCPX),A
+        LD      HL,(MOD_LINK)
+        LD      (CRMLINK),HL
         LD      HL,(MOD_SIZE)
+        LD      (CRMSIZE),HL
+        LD      HL,(MOD_ALLOC)
+        LD      (CRMALLOC),HL
+        LD      HL,(MOD_ENTRY)
+        LD      (CRMENTRY),HL
+        LD      HL,(MOD_RELOCS)
+        LD      (CRMRELOCS),HL
+        LD      HL,(MOD_HEADERSZ)
+        LD      (CRMHEADSZ),HL
+        LD      HL,(MOD_PAYLOAD)
+        LD      (CRMPAYLOAD),HL
+        LD      HL,(MOD_RELTABLE)
+        LD      (CRMRELTABLE),HL
+CRNORMED:
+        LD      HL,(CRMSIZE)
         LD      A,H
         OR      L
         JP      Z,CRBAD
-        LD      DE,(MOD_ALLOC)
+        LD      DE,(CRMALLOC)
         OR      A
         SBC     HL,DE
         JR      C,CRSZOK
         JR      Z,CRSZOK
         JP      CRBAD
 CRSZOK:
-        LD      HL,(MOD_ALLOC)
+        LD      HL,(CRMALLOC)
         LD      A,L
         OR      A
         JP      NZ,CRBAD
         LD      A,H
         OR      A
         JP      Z,CRBAD
-        LD      HL,(MOD_RELOCS)
+        LD      HL,(CRMPAYLOAD)
+        LD      DE,(CRMHEADSZ)
+        OR      A
+        SBC     HL,DE
+        JP      NZ,CRBAD        ; v1 payload immediately follows its header
+        LD      HL,(CRMPAYLOAD)
+        LD      DE,0200H
+        OR      A
+        SBC     HL,DE
+        JP      C,CRBAD
+        LD      A,L
+        OR      A
+        JP      NZ,CRBAD        ; carrier sections are physical-record aligned
+        LD      (CRSKIP),HL
+        LD      HL,(CRMRELOCS)
         LD      A,H
         OR      A
         JP      NZ,CRBAD
+        LD      E,249           ; BCM1's established maximum is 248
+        LD      A,(CRISCPX)
+        OR      A
+        JR      Z,CRRCMAX
+        LD      E,233           ; BCPX record 0 holds at most 232 entries
+CRRCMAX:
         LD      A,L
-        CP      249
+        CP      E
         JP      NC,CRBAD
         LD      HL,(CRBOUND)
-        LD      DE,(MOD_ALLOC)
+        LD      DE,(CRMALLOC)
         OR      A
         SBC     HL,DE
         JP      C,CRBAD
@@ -289,8 +363,22 @@ CRSZOK:
         LD      (CRBASE),HL
         LD      (CRBOUND),HL
         LD      (CRDEST),HL
-        LD      HL,(MOD_SIZE)
+        LD      HL,(CRMSIZE)
         LD      (CRLEFT),HL
+CRHSKIP:
+        LD      HL,(CRSKIP)
+        LD      A,H
+        OR      L
+        JR      Z,CRPAY
+        LD      HL,MODBUF
+        CALL    CRNEXT
+        RET     NZ
+        LD      HL,(CRSKIP)
+        LD      DE,0200H
+        OR      A
+        SBC     HL,DE
+        LD      (CRSKIP),HL
+        JR      CRHSKIP
 CRPAY:
         LD      HL,(CRLEFT)
         LD      A,H
@@ -327,23 +415,30 @@ CRRELOC:
         CALL    CRNEXT
         RET     NZ
         LD      HL,(CRBASE)
-        LD      DE,(MOD_LINK)
+        LD      DE,(CRMLINK)
         OR      A
         SBC     HL,DE
         LD      (CRDELTA),HL
-        LD      BC,(MOD_RELOCS)
-        LD      HL,MOD_TABLE
+        LD      BC,(CRMRELOCS)
+        LD      HL,(CRMRELTABLE)
+        LD      DE,0200H
+        OR      A
+        SBC     HL,DE
+        JP      NC,CRBAD        ; v1 relocation directory resides in record 0
+        LD      HL,(CRMRELTABLE)
+        LD      DE,MODBUF
+        ADD     HL,DE
 CRRLOOP:
         LD      A,B
         OR      C
-        JR      Z,CRGOOD
+        JR      Z,CRENTRY
         LD      E,(HL)
         INC     HL
         LD      D,(HL)
         INC     HL
         PUSH    HL
         PUSH    BC
-        LD      HL,(MOD_SIZE)
+        LD      HL,(CRMSIZE)
         DEC     HL
         OR      A
         SBC     HL,DE
@@ -376,6 +471,25 @@ CRBAD:
         LD      A,1
         OR      A
         RET
+CRENTRY:
+        LD      A,(CRISCPX)
+        OR      A
+        JR      Z,CRGOOD
+        LD      DE,(CRMENTRY)
+        LD      HL,(CRMSIZE)
+        OR      A
+        SBC     HL,DE
+        JR      C,CRBAD
+        JR      Z,CRBAD
+        LD      HL,(CRBASE)
+        ADD     HL,DE
+        EX      DE,HL
+        LD      HL,(CRBASE)
+        INC     HL
+        INC     HL
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D           ; publish validated command entry
 CRGOOD:
         XOR     A
         RET
@@ -413,7 +527,7 @@ CRFAIL:
         JR      CRFAIL
 
 CRCCPMAG:      DB      'B','C','M','1',1,1
-CRCPXMAG:      DB      'B','C','X','1',1,1
+CRCPXMAG:      DB      'B','C','P','X',1,1
 RXMAGIC:       DB      'B','R','X','1'
 RXHELLO:       DB      'HELLO   '
 CRSECTS:       DB      1,3,5,7,9,2,4,6,8,10
@@ -424,6 +538,16 @@ CRBASE:        DW      0
 CRPREV:        DW      0
 CRDEST:        DW      0
 CRLEFT:        DW      0
+CRSKIP:        DW      0
+CRMLINK:       DW      0
+CRMSIZE:       DW      0
+CRMALLOC:      DW      0
+CRMENTRY:      DW      0
+CRMRELOCS:     DW      0
+CRMHEADSZ:     DW      0
+CRMPAYLOAD:    DW      0
+CRMRELTABLE:   DW      0
+CRISCPX:       DB      0
 CRDELTA:       DW      0
 CRCOUNT:       DB      0
 CRSLOT:        DB      0

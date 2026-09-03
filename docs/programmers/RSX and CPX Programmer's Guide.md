@@ -128,8 +128,8 @@ transient application code is executing.
 
 ## 5. Module file information
 
-The final on-disk module format is not yet defined. It is expected to contain
-at least:
+The CPX on-disk format is now defined as `BCPX` version 1. The corresponding
+production RSX carrier remains to be finalized. The common design requires:
 
 - a file signature and module-format version;
 - module class: RSX or CPX;
@@ -229,14 +229,19 @@ versioned descriptor. The Model 4 has an initial on-disk relocatable loader
 and reconstruction profile. Runtime installation, removal, discovery, and ABI
 negotiation remain to be specified.
 
-### 7.2 Initial relocatable CPX image
+### 7.2 BCPX version 1 relocatable image
 
-The initial `BCX1` image occupies a 512-byte header followed by linked code.
-The header identifies the linked base, code size, page-rounded allocation,
-entry offset, and a list of 16-bit relocation sites. WBOOT allocates the image
-downward, adjusts every listed word, links its four-byte runtime header, and
-may choose a different address after any reconstruction. This is an executable
-first version, not yet a frozen third-party ABI.
+The `BCPX` version 1 image occupies a 512-byte structural and relocation
+header followed by linked code and nonresident command metadata. It identifies
+the module and ABI versions, module name, linked base, code size, page-rounded
+allocation, command/lifecycle entry offsets, relocation sites, exported
+commands, and a payload checksum. The exact byte layout and validation rules
+are specified by Engineering Specification 119.
+
+WBOOT allocates each named image downward, adjusts every listed word, installs
+the validated command entry in its four-byte runtime header, links the modules
+in reconstruction-table order, and may choose different addresses after any
+reconstruction. Module metadata is not copied into scarce runtime memory.
 
 The default `BASIC.CPX` is intended to contain the complete stock CCP command
 set—`DIR`, `ERA`, `REN`, `SAVE`, `TYPE`, and `USER`—plus the BetterCP/M `CLR`
@@ -258,7 +263,9 @@ physical allocation blocks are never persisted in the reconstruction table.
 ### 7.3 Provisional runtime manager
 
 `CPX.COM` currently provides `LIST` plus `LOAD` and `UNLOAD` for the known
-BASIC and HELLO proof modules.
+BASIC and HELLO modules. The protected file loader itself is now general and
+filename-driven; replacing this manager's numeric BASIC/HELLO control request
+with a name-based request block is the next interface increment.
 Names may be written with or without the `.CPX` extension. `RSX.COM` likewise
 accepts HELLO with or without `.RSX`.
 Configuration changes affect the active reconstruction table, then terminate
@@ -375,7 +382,7 @@ permanently unbootable.
 
 The following are deliberately open:
 
-- stabilization and version negotiation for the initial `BCX1` encoding;
+- version negotiation and forward-compatibility policy for `BCPX` revisions;
 - the final RSX dispatch and bypass ABI;
 - the expanded, versioned CPX ABI;
 - loader and configuration command syntax;

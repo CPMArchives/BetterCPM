@@ -81,8 +81,13 @@ directory utility unless it provides genuine additional value.
 
 ## CPX and RSX production interfaces
 
-- [ ] Replace the proof `BCX1` and `BRX1` carriers with versioned, documented
-  module formats practical to build under native CP/M with ZSM4.
+- [x] Replace the proof `BCX1` CPX carrier with the versioned, documented
+  `BCPX` v1 format while retaining native CP/M ZSM4 assembly of module code.
+- [ ] Replace the proof `BRX1` RSX carrier with a versioned, documented module
+  format practical to build under native CP/M with ZSM4.
+- [ ] Replace provisional Function 200's numeric BASIC/HELLO selectors with a
+  versioned, name-based CPX request block and enumerate module metadata without
+  compiling module identities into `CPX.COM` or BDOS.
 - [ ] Finalize CPX initialization, shutdown, metadata, command enumeration,
   ordering, dependency, recursion, abort, and capability-discovery rules.
 - [ ] Remove BASIC/HELLO-specific knowledge from the CPX manager and support

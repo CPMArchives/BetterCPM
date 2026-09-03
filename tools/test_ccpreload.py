@@ -6,6 +6,7 @@ import struct
 from pathlib import Path
 
 from test_bios import Z80, require
+from build_cpx_module import make_module
 
 ROOT = Path(__file__).resolve().parents[1]
 RELOADER = ROOT / "build/trs80/ccpreload.bin"
@@ -23,12 +24,20 @@ DIR_LOGIN = 0xD60C
 
 
 def relocated(module: bytes, target: int) -> bytes:
-    _magic, _version, _header_sectors, link, size, _allocation, _entry, count = (
-        struct.unpack_from("<4sBBHHHHH", module))
-    image = bytearray(module[512:512 + size])
+    if module[:4] == b"BCPX":
+        link = struct.unpack_from("<H", module, 10)[0]
+        size = struct.unpack_from("<H", module, 12)[0]
+        count = struct.unpack_from("<H", module, 22)[0]
+        payload = struct.unpack_from("<H", module, 26)[0]
+        table = struct.unpack_from("<H", module, 28)[0]
+    else:
+        _magic, _version, _header_sectors, link, size, _allocation, _entry, count = (
+            struct.unpack_from("<4sBBHHHHH", module))
+        payload, table = 512, 16
+    image = bytearray(module[payload:payload + size])
     delta = target - link
     for index in range(count):
-        offset = struct.unpack_from("<H", module, 16 + index * 2)[0]
+        offset = struct.unpack_from("<H", module, table + index * 2)[0]
         value = int.from_bytes(image[offset:offset + 2], "little")
         image[offset:offset + 2] = ((value + delta) & 0xFFFF).to_bytes(2, "little")
     return bytes(image)
@@ -79,15 +88,13 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
         machine.mem[0xC094] = 2
         machine.mem[0xC096:0xC09E] = b"BASIC   "
         machine.mem[0xC09E:0xC0A6] = b"HELLO   "
-        cpx_allocation = (struct.unpack_from("<H", basic_module, 10)[0] +
-                          struct.unpack_from("<H", hello_module, 10)[0])
+        cpx_allocation = (struct.unpack_from("<H", basic_module, 14)[0] +
+                          struct.unpack_from("<H", hello_module, 14)[0])
     elif with_cpx:
         payload = bytes((0, 0, 4, 0x80, 0xC9, 0))
-        header = bytearray(512)
-        struct.pack_into("<4sBBHHHHH", header, 0, b"BCX1", 1, 1,
-                         0x8000, len(payload), 0x100, 0, 1)
-        struct.pack_into("<H", header, 16, 2)
-        file_module = bytes(header) + payload
+        file_module = make_module(name="BASIC", version=(0, 0), commands=[],
+                                  linked_base=0x8000, code=payload,
+                                  relocations=[2])
         machine.mem[0x9000:0x9000 + len(file_module)] = file_module
         machine.mem[0xC094] = 1
         machine.mem[0xC096:0xC09E] = b"BASIC   "
@@ -124,8 +131,8 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
             f"actual={actual[mismatch:mismatch + 16].hex() if mismatch is not None else ''} "
             f"expected={expected[mismatch:mismatch + 16].hex() if mismatch is not None else ''}")
     if with_two_cpx:
-        basic_allocation = struct.unpack_from("<H", BASIC_MODULE.read_bytes(), 10)[0]
-        hello_allocation = struct.unpack_from("<H", HELLO_MODULE.read_bytes(), 10)[0]
+        basic_allocation = struct.unpack_from("<H", BASIC_MODULE.read_bytes(), 14)[0]
+        hello_allocation = struct.unpack_from("<H", HELLO_MODULE.read_bytes(), 14)[0]
         basic_base = gateway - basic_allocation
         hello_base = basic_base - hello_allocation
         require(machine.word(0xC086) == basic_base and
@@ -167,8 +174,8 @@ def main() -> None:
     run_at(calculated - 0x100, with_cpx=True)
     print("one-module CPX profile restored before the calculated CCP")
     cpx_allocation = (
-        struct.unpack_from("<H", BASIC_MODULE.read_bytes(), 10)[0] +
-        struct.unpack_from("<H", HELLO_MODULE.read_bytes(), 10)[0]
+        struct.unpack_from("<H", BASIC_MODULE.read_bytes(), 14)[0] +
+        struct.unpack_from("<H", HELLO_MODULE.read_bytes(), 14)[0]
     )
     two_cpx_target = 0xBFFD - allocation - cpx_allocation
     run_at(two_cpx_target, with_two_cpx=True)

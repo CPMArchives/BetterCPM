@@ -13,10 +13,12 @@ DIRBASE         EQU     0D600H
 ; Patch 2026-09-01: the BIOS DPH directory buffer is the same
 ; 128-byte workspace this service needs. The former BF00h DPH state was later
 ; relocated above BDOS after compatibility testing proved BF00h is still TPA.
-; Patch 2026-09-02: F300h was eventually consumed by the growing BIOS itself.
-; Move the buffer into the protected 128-byte gap immediately below the ED00h
-; physical-sector/module buffer so directory data can never overwrite BIOS.
-DIRBUF          EQU     0EC80H
+; Patch 2026-09-02: F300h was eventually consumed by the growing BIOS itself,
+; so DIRBUF moved to EC80h immediately below the ED00h physical buffer.
+; Patch 2026-09-03: the versioned CPX loader legitimately grew through EC80h.
+; Preserve its contiguous E900h..ECFFh region and move this buffer to the large
+; protected gap above the D4F0h loader stack and below Directory Services.
+DIRBUF          EQU     0D500H
 BIOSBASE        EQU     0EF00H
 BIOSELDS        EQU     BIOSBASE+27
 BIOSETTR        EQU     BIOSBASE+30
