@@ -509,9 +509,9 @@ class Z80:
             elif op == 0x0D:            # DEC C
                 self.c = (self.c - 1) & 0xFF
                 self.z = self.c == 0
-            elif op in (0x71, 0x72, 0x73):  # LD (HL),C / D / E
-                self.mem[self.hl] = {0x71: self.c, 0x72: self.d,
-                                     0x73: self.e}[op]
+            elif op in (0x70, 0x71, 0x72, 0x73):  # LD (HL),B / C / D / E
+                self.mem[self.hl] = {0x70: self.b, 0x71: self.c,
+                                     0x72: self.d, 0x73: self.e}[op]
             elif op == 0x12:            # LD (DE),A
                 self.mem[self.de] = self.a
             else:

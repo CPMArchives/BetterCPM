@@ -365,6 +365,28 @@ def main() -> None:
     require(call(20, FCB) == 1,
             "Sequential Read did not report EOF when CR reached RC")
 
+    cpu.mem[0xEC80:0xEC80 + 32] = bytes(32)
+    cpu.mem[0xEC80:0xEC80 + 12] = bytes((7,)) + b"ONE     COM"
+    cpu.mem[0xEC80 + 15] = 2
+    cpu.mem[0xEC80 + 16:0xEC80 + 18] = bytes((1, 0))
+    cpu.mem[FCB:FCB + 36] = bytes(36)
+    cpu.mem[FCB + 1:FCB + 12] = b"ONE     COM"
+    cpu.mem[FCB + 33:FCB + 36] = bytes((1, 0, 0))
+    cpu.mem[dma:dma + 128] = bytes(128)
+    random_result = call(33, FCB)
+    require(random_result == 0,
+            f"Random Read failed to activate and read the decoded extent: {random_result:02X} "
+            f"EX={cpu.mem[FCB+12]} S2={cpu.mem[FCB+14]} RC={cpu.mem[FCB+15]} "
+            f"CR={cpu.mem[FCB+32]} AL={bytes(cpu.mem[FCB+16:FCB+20]).hex()}")
+    require(cpu.mem[FCB + 12] == 0 and cpu.mem[FCB + 14] == 0 and
+            cpu.mem[FCB + 32] == 2,
+            "Random Read decoded R0..R2 or advanced CR incorrectly")
+    require(bytes(cpu.mem[dma:dma + 128]) == bytes((0x20,)) * 128,
+            "Random Read did not reuse the sequential record mapper")
+    cpu.mem[FCB + 35] = 4
+    require(call(33, FCB) == 0xFF,
+            "Random Read accepted an out-of-range R2 value")
+
     print(f"unified BDOS U01-U09 foundation passed ({len(image)} bytes)")
     print("disk, directory, allocation, extent, and record-read mapping passed")
 
