@@ -1,6 +1,6 @@
 # Engineering Specification 122: Resident Size Budget and Relocation Gate
 
-Status: adopted design constraint; optimization and relocation pending
+Status: adopted design constraint; optimization in progress; relocation pending
 
 ## Objective
 
@@ -35,11 +35,34 @@ byte-perfect packing and no alignment or guard space, the measured payload
 would begin at `C47Ah` and expose only about 48K of TPA above `0100h`.
 Therefore removing the present address holes is necessary but insufficient.
 
+### First compaction pass (2026-09-03)
+
+The first byte-level pass removed the `C9FEh..CAFFh` bring-up gap before the
+DPH/DPB unit and replaced the linear standard-function dispatcher with a
+direct 0..40 table. The protected payload fell by 344 bytes, from 12,166 to
+11,822 bytes. Native and cross assemblies remain byte-identical; all 17 BIOS
+contracts, all 39 defined CP/M 2.2 BDOS functions, and the complete resident
+system smoke test pass.
+
+This result establishes that address packing and local instruction cleanup
+cannot by themselves meet the target. The remaining reduction for a genuine
+56K TPA is 6,958 bytes. The decisive work is architectural:
+
+1. retain only the installed-RSX dispatch hook in protected memory and run
+   RSX installation/removal logic transiently;
+2. make WBOOT invoke a temporary command-environment reconstruction overlay,
+   rather than retaining the full reloader and module buffer;
+3. replace the separate 2.6K dispatcher and 4.8K directory implementation
+   with one shared file-state engine comparable in size class to the complete
+   3.5K CP/M 2.2 BDOS;
+4. preserve enhanced persistent command state as an explicitly charged build
+   feature, never as hidden base-system overhead.
+
 ## 1.0 budgets
 
 | Class | Target |
 |---|---:|
-| Minimal protected operating system | no more than approximately 5.5K for 56K TPA |
+| Minimal protected operating system | no more than 4.75K for 56K TPA on the Model 4 |
 | Default RSXs | zero |
 | CPXs and CCP | reclaimable; excluded from transient-time protected cost |
 | Persistent command/input state | explicitly budgeted, initially no more than 1K |
