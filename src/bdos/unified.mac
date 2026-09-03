@@ -1034,21 +1034,14 @@ UB_READ:
         CALL    UB_READCORE
         JP      UB_RETA
 UB_READCORE:
-        LD      (UB_RFCB),DE
         CALL    UB_FCBDRV
         JP      C,UB_BAD
         CALL    UB_CONTEXT
         JP      NZ,UB_BAD
-        LD      HL,(UB_RFCB)
-        LD      DE,32
-        ADD     HL,DE
-        LD      A,(HL)
+        LD      A,(IX+32)
         LD      C,A
-        LD      HL,(UB_RFCB)
-        LD      DE,15
-        ADD     HL,DE
         LD      A,C
-        CP      (HL)
+        CP      (IX+15)
         JR      NC,UB_REOF
         CALL    UB_RECMAP
         JP      C,UB_BAD
@@ -1057,10 +1050,7 @@ UB_READCORE:
         CALL    BIO_READ
         OR      A
         JP      NZ,UB_BAD
-        LD      HL,(UB_RFCB)
-        LD      DE,32
-        ADD     HL,DE
-        INC     (HL)
+        INC     (IX+32)
         XOR     A
         RET
 UB_REOF:
@@ -1076,7 +1066,6 @@ UB_WRITE:
         CALL    UB_WCORE
         JP      UB_RETA
 UB_WCORE:
-        LD      (UB_RFCB),DE
         CALL    UB_FCBDRV
         JP      C,UB_BAD
         CALL    UB_CONTEXT
@@ -1084,10 +1073,7 @@ UB_WCORE:
         LD      HL,UB_RDONLY
         CALL    UB_TESTBIT
         JP      NZ,UB_BAD
-        LD      HL,(UB_RFCB)
-        LD      DE,9
-        ADD     HL,DE
-        LD      A,(HL)
+        LD      A,(IX+9)
         AND     080H
         JP      NZ,UB_BAD
         CALL    UB_RECMAP
@@ -1110,7 +1096,8 @@ UB_WALLOC:
         CALL    UB_ALMARK
         POP     DE
         JP      NZ,UB_BAD
-        LD      HL,(UB_RFCB)
+        PUSH    IX
+        POP     HL
         LD      BC,16
         ADD     HL,BC
         LD      A,(UB_DSM+1)
@@ -1145,21 +1132,15 @@ UB_WMAPPED:
         CALL    BIO_WRITE
         OR      A
         JP      NZ,UB_BAD
-        LD      HL,(UB_RFCB)
-        LD      DE,32
-        ADD     HL,DE
-        INC     (HL)
-        LD      A,(HL)
-        LD      DE,-17
-        ADD     HL,DE
-        CP      (HL)
+        INC     (IX+32)
+        LD      A,(IX+32)
+        CP      (IX+15)
         JR      C,UB_WDONE
-        LD      (HL),A
+        LD      (IX+15),A
 UB_WDONE:
-        DEC     HL              ; FCB S2: mark allocation/record state dirty
-        LD      A,(HL)
+        LD      A,(IX+14)       ; mark allocation/record state dirty
         AND     07FH
-        LD      (HL),A
+        LD      (IX+14),A
         XOR     A
         RET
 
@@ -1167,9 +1148,11 @@ UB_WDONE:
 ; that extent, and then enters the exact same read core as Function 20.
 UB_RREAD:
         CALL    UB_RDECODE
-        LD      DE,(UB_RFCB)
+        PUSH    IX
+        POP     DE
         CALL    UB_ACTIVATE
-        LD      DE,(UB_RFCB)
+        PUSH    IX
+        POP     DE
         CALL    UB_READCORE
         JP      UB_RETA
 
@@ -1179,9 +1162,11 @@ UB_RWRITE:
         LD      (UB_ZMODE),A
 UB_RWCOMMON:
         CALL    UB_RDECODE
-        LD      DE,(UB_RFCB)
+        PUSH    IX
+        POP     DE
         CALL    UB_ACTIVATE
-        LD      DE,(UB_RFCB)
+        PUSH    IX
+        POP     DE
         CALL    UB_WCORE
         JP      UB_RETA
 
@@ -1204,10 +1189,7 @@ UB_ZCLEAR:
         LD      (HL),A
         INC     HL
         DJNZ    UB_ZCLEAR
-        LD      HL,(UB_RFCB)
-        LD      DE,32
-        ADD     HL,DE
-        LD      A,(HL)
+        LD      A,(IX+32)
         LD      (UB_RRCR),A
         LD      HL,(UB_DPB)
         INC     HL
@@ -1216,11 +1198,8 @@ UB_ZCLEAR:
         LD      C,(HL)          ; BLM
         LD      A,C
         CPL
-        LD      HL,(UB_RFCB)
-        LD      DE,32
-        ADD     HL,DE
-        AND     (HL)
-        LD      (HL),A          ; first record in the allocated block
+        AND     (IX+32)
+        LD      (IX+32),A       ; first record in the allocated block
         LD      A,C
         INC     A
         LD      C,A
@@ -1234,15 +1213,12 @@ UB_ZLOOP:
         CALL    BIO_WRITE
         OR      A
         JR      NZ,UB_ZFAIL
-        LD      HL,(UB_RFCB)
-        LD      DE,32
-        ADD     HL,DE
-        INC     (HL)
+        INC     (IX+32)
         POP     BC
         DEC     C
         JR      NZ,UB_ZLOOP
         LD      A,(UB_RRCR)
-        LD      (HL),A
+        LD      (IX+32),A
         CALL    UB_RECMAP
         RET
 UB_ZFAIL:
@@ -1252,10 +1228,7 @@ UB_ZFAIL:
         RET
 
 UB_RDECODE:
-        LD      (UB_RFCB),DE
-        LD      HL,35
-        ADD     HL,DE
-        LD      A,(HL)          ; CP/M 2.2 uses only low two bits of R2
+        LD      A,(IX+35)       ; CP/M 2.2 uses only low two bits of R2
         CP      4
         JP      NC,UB_BAD
         ADD     A,A
@@ -1263,8 +1236,7 @@ UB_RDECODE:
         ADD     A,A
         ADD     A,A
         LD      B,A
-        DEC     HL
-        LD      A,(HL)          ; R1
+        LD      A,(IX+34)       ; R1
         LD      C,A
         RRCA
         RRCA
@@ -1277,38 +1249,26 @@ UB_RDECODE:
         AND     0FH
         ADD     A,A
         LD      C,A             ; EX bits 1..4
-        DEC     HL
-        LD      A,(HL)          ; R0
+        LD      A,(IX+33)       ; R0
         AND     07FH
         LD      (UB_RRCR),A
-        LD      A,(HL)
+        LD      A,(IX+33)
         AND     080H
         JR      Z,UB_RRLOW
         LD      A,C
         OR      1
         LD      C,A
 UB_RRLOW:
-        LD      HL,(UB_RFCB)
-        LD      DE,12
-        ADD     HL,DE
-        LD      (HL),C
-        INC     HL
-        INC     HL
-        LD      (HL),B
-        LD      HL,(UB_RFCB)
-        LD      DE,32
-        ADD     HL,DE
+        LD      (IX+12),C
+        LD      (IX+14),B
         LD      A,(UB_RRCR)
-        LD      (HL),A
+        LD      (IX+32),A
         RET
 
 ; Map the current sequential record in UB_RFCB through EXM, BSH/BLM, the
 ; 8/16-bit allocation map, SPT/OFF, and BIOS sector translation.
 UB_RECMAP:
-        LD      HL,(UB_RFCB)
-        LD      DE,12
-        ADD     HL,DE
-        LD      C,(HL)          ; EX
+        LD      C,(IX+12)       ; EX
         LD      HL,(UB_DPB)
         LD      DE,4
         ADD     HL,DE
@@ -1318,12 +1278,7 @@ UB_RECMAP:
         LD      L,0
         SRL     H
         RR      L               ; grouped subextent * 128
-        LD      DE,(UB_RFCB)
-        EX      DE,HL
-        LD      BC,32
-        ADD     HL,BC
-        LD      C,(HL)          ; CR
-        EX      DE,HL
+        LD      C,(IX+32)       ; CR
         LD      B,0
         ADD     HL,BC
         LD      C,L
@@ -1351,7 +1306,8 @@ UB_RBIX:
         JP      NZ,UB_RMBAD
         LD      A,L
         LD      (UB_RBNO),A
-        LD      HL,(UB_RFCB)
+        PUSH    IX
+        POP     HL
         LD      DE,16
         ADD     HL,DE
         LD      A,(UB_DSM+1)
@@ -1844,7 +1800,6 @@ UB_DSM:         DW      0
 UB_ALVP:        DW      0
 UB_OPENENT:     DW      0
 UB_OCOPY:       DB      0
-UB_RFCB:        DW      0
 UB_RREM:        DB      0
 UB_RLOG:        DW      0
 UB_RBNO:        DB      0

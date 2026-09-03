@@ -111,6 +111,32 @@ class Z80:
                     self.push(self.ix)
                 elif sub == 0xE1:        # POP IX
                     self.ix = self.pop()
+                elif sub in (0x7E, 0x4E, 0xBE, 0xA6, 0x34,
+                              0x77, 0x70, 0x71):
+                    displacement = self.mem[self.pc]
+                    self.pc += 1
+                    if displacement & 0x80:
+                        displacement -= 0x100
+                    target = (self.ix + displacement) & 0xFFFF
+                    if sub == 0x7E:       # LD A,(IX+d)
+                        self.a = self.mem[target]
+                    elif sub == 0x4E:     # LD C,(IX+d)
+                        self.c = self.mem[target]
+                    elif sub == 0xBE:     # CP (IX+d)
+                        value = self.mem[target]
+                        self.z, self.carry = self.a == value, self.a < value
+                    elif sub == 0xA6:     # AND (IX+d)
+                        self.a &= self.mem[target]
+                        self.z, self.carry = self.a == 0, False
+                    elif sub == 0x34:     # INC (IX+d)
+                        self.mem[target] = (self.mem[target] + 1) & 0xFF
+                        self.z = self.mem[target] == 0
+                    elif sub == 0x77:     # LD (IX+d),A
+                        self.mem[target] = self.a
+                    elif sub == 0x70:     # LD (IX+d),B
+                        self.mem[target] = self.b
+                    else:                 # LD (IX+d),C
+                        self.mem[target] = self.c
                 else:
                     raise AssertionError(
                         f"unsupported IX opcode {sub:02X} at {self.pc - 2:04X}")
