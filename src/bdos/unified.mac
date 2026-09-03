@@ -44,7 +44,7 @@ UB_TABLE:
         DW      UB_MISSING,UB_VERSION
         DW      UB_RESET,UB_SELECT
         DW      UB_OPEN,UB_MISSING,UB_SFIRST,UB_SNEXT,UB_DELETE
-        DW      UB_MISSING,UB_MISSING,UB_MAKE,UB_MISSING
+        DW      UB_MISSING,UB_MISSING,UB_MAKE,UB_RENAME
         DW      UB_LOGINV,UB_CURDSK,UB_SETDMA,UB_GETALV,UB_WRPROT
         DW      UB_ROVEC,UB_MISSING,UB_GETDPB,UB_USER
         DW      UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING,UB_RSTDRV
@@ -656,6 +656,121 @@ UB_DSETUP:
         LD      (UB_ITLEN),A
         RET
 
+; Function 23 uses the shared iterator for target-existence, source preflight,
+; and mutation. Only the eleven name/type bytes change; their attribute bits
+; and every extent/allocation field remain attached to the original entry.
+UB_RENAME:
+        LD      (UB_RENFCB),DE
+        CALL    UB_FCBDRV
+        JP      C,UB_BAD
+        CALL    UB_CONTEXT
+        JP      NZ,UB_BAD
+        LD      HL,UB_RDONLY
+        CALL    UB_TESTBIT
+        JP      NZ,UB_BAD
+        LD      A,C
+        LD      (UB_TMPDRV),A
+        LD      HL,(UB_RENFCB)
+        LD      DE,16
+        ADD     HL,DE
+        LD      A,(HL)          ; new-name drive must be default or same drive
+        OR      A
+        JR      Z,UB_RNAMES
+        DEC     A
+        LD      C,A
+        LD      A,(UB_TMPDRV)
+        CP      C
+        JP      NZ,UB_BAD
+UB_RNAMES:
+        LD      HL,(UB_RENFCB)
+        INC     HL
+        LD      DE,16
+        LD      B,11
+UB_RNCHK:
+        LD      A,(HL)
+        AND     07FH
+        CP      '?'
+        JP      Z,UB_BAD
+        ADD     HL,DE
+        LD      A,(HL)
+        AND     07FH
+        CP      '?'
+        JP      Z,UB_BAD
+        OR      A
+        SBC     HL,DE
+        INC     HL
+        DJNZ    UB_RNCHK
+        LD      HL,(UB_RENFCB)
+        LD      DE,16
+        ADD     HL,DE
+        LD      (UB_ITFCB),HL   ; reject an already-existing target name
+        LD      A,(UB_USERNO)
+        LD      (UB_ITUSER),A
+        XOR     A
+        LD      (UB_ITMODE),A
+        LD      (UB_ITALL),A
+        LD      (UB_ITWILD),A
+        LD      (UB_ITREC),A
+        LD      (UB_ITSLOT),A
+        LD      A,11
+        LD      (UB_ITLEN),A
+        CALL    UB_ITER
+        JP      NC,UB_BAD
+        LD      HL,(UB_RENFCB)
+        LD      (UB_ITFCB),HL
+        CALL    UB_DSETUP
+        XOR     A
+        LD      (UB_FOUND),A
+UB_RNPRE:
+        CALL    UB_ITER
+        JR      C,UB_RNPOK
+        LD      A,1
+        LD      (UB_FOUND),A
+        PUSH    HL
+        LD      DE,9
+        ADD     HL,DE
+        LD      A,(HL)
+        POP     HL
+        AND     080H
+        JP      NZ,UB_BAD
+        JR      UB_RNPRE
+UB_RNPOK:
+        LD      A,(UB_FOUND)
+        OR      A
+        JP      Z,UB_BAD
+        CALL    UB_DSETUP
+UB_RNPASS:
+        CALL    UB_ITER
+        JR      C,UB_RNDONE
+        PUSH    HL
+        INC     HL
+        LD      DE,(UB_RENFCB)
+        LD      BC,17
+        EX      DE,HL
+        ADD     HL,BC
+        EX      DE,HL
+        LD      B,11
+UB_RNCOPY:
+        LD      A,(HL)
+        AND     080H
+        LD      C,A
+        LD      A,(DE)
+        AND     07FH
+        OR      C
+        LD      (HL),A
+        INC     HL
+        INC     DE
+        DJNZ    UB_RNCOPY
+        POP     HL
+        LD      A,1
+        LD      (UB_DIRTY),A
+        JR      UB_RNPASS
+UB_RNDONE:
+        CALL    UB_DIRFLUSH
+        JP      NZ,UB_BAD
+        XOR     A
+        JP      UB_RETA
+
 ; U06 -- a single cache backed by the DPH-published directory buffer. Caching
 ; state names the directory record currently represented; mutation clients
 ; will set UB_DIRTY and commit through UB_DIRFLUSH.
@@ -818,6 +933,8 @@ UBS_CREC:       DB      0
 UBS_COK:        DB      0
 UB_DIRTY:       DB      0
 UB_FOUND:       DB      0
+UB_RENFCB:      DW      0
+UB_TMPDRV:      DB      0
 
 UB_STACK:
         REPT    48

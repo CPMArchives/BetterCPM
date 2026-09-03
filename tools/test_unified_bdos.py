@@ -203,6 +203,31 @@ def main() -> None:
             cpu.mem[0x7304] == writes,
             "Delete partially mutated a set rejected during preflight")
 
+    # Rename changes all matching source extents through the same two-pass
+    # path, retaining the directory attribute bits on each name/type byte.
+    cpu.mem[0xEC80 + 9] &= 0x7F
+    cpu.mem[0xEC80 + 33] |= 0x80
+    cpu.mem[FCB:FCB + 36] = bytes(36)
+    cpu.mem[FCB + 1:FCB + 12] = b"TWO     COM"
+    cpu.mem[FCB + 17:FCB + 28] = b"SECOND  COM"
+    writes = cpu.mem[0x7304]
+    require(call(23, FCB) == 0, "Rename missed an exact existing source")
+    require(bytes(value & 0x7F for value in cpu.mem[0xEC80 + 33:0xEC80 + 44]) ==
+            b"SECOND  COM" and cpu.mem[0xEC80 + 33] & 0x80,
+            "Rename did not replace the name while preserving attributes")
+    require(cpu.mem[0x7304] == writes + 1,
+            "Rename did not flush its dirty directory sector exactly once")
+
+    cpu.mem[FCB + 1:FCB + 12] = b"SECOND  COM"
+    cpu.mem[FCB + 17:FCB + 28] = b"ONE     COM"
+    snapshot = bytes(cpu.mem[0xEC80:0xED00])
+    writes = cpu.mem[0x7304]
+    require(call(23, FCB) == 0xFF,
+            "Rename accepted an already-existing target")
+    require(bytes(cpu.mem[0xEC80:0xED00]) == snapshot and
+            cpu.mem[0x7304] == writes,
+            "Rename mutated the directory while rejecting its target")
+
     print(f"unified BDOS U01-U06 foundation passed ({len(image)} bytes)")
     print("disk state, FCB drive view, shared iterator, and one-sector cache passed")
 
