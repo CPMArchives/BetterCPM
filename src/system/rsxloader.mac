@@ -1,0 +1,534 @@
+; BetterCP/M protected BRSX v1 manager and ordered resident-chain loader.
+;
+; Function 202 passes DE -> request:
+;   +0 version (1), +1 operation (0 enumerate, 1 load, 2 unload, 3 query),
+;   +2 enumeration index, +3 reserved, +4..+11 space-padded filename stem,
+;   +12..+13 returned primary service number.
+
+RLBASE          EQU     0D100H
+FLOPEN          EQU     0D000H
+FLNEXT          EQU     0D003H
+FLRESET         EQU     0D006H
+MODBUF          EQU     0ED00H
+HISTBASE        EQU     0BE00H
+BASEGATE        EQU     HISTBASE-3
+COREBDOS        EQU     0C100H
+ECB_RSXHEAD     EQU     0C084H
+ECB_RSXLOW      EQU     0C088H
+ECB_TPATOP      EQU     0C090H
+RSTCOUNT        EQU     0D580H
+RSTABLE         EQU     0D581H       ; four ordered eight-byte stems
+RSTSERV         EQU     0D5A1H       ; four primary-service words
+
+        CSEG
+        .PHASE  RLBASE
+RL_ENTRY:
+        JP      RL_CONTROL
+
+RL_CONTROL:
+        LD      (RL_REQ),DE
+        LD      A,(RSTCOUNT)
+        CP      5
+        JR      C,RL_COUNTOK
+        ; Cold-load history: this state originally lived in an implicit gap.
+        ; Treat any impossible count as an uninitialized empty active profile.
+        XOR     A
+        LD      (RSTCOUNT),A
+RL_COUNTOK:
+        LD      A,(DE)
+        CP      1
+        JP      NZ,RL_BAD
+        INC     DE
+        LD      A,(DE)
+        OR      A
+        JP      Z,RL_ENUM
+        CP      1
+        JP      Z,RL_ADD
+        CP      2
+        JP      Z,RL_REMOVE
+        CP      3
+        JP      Z,RL_QUERY
+        JP      RL_BAD
+
+RL_ENUM:
+        LD      HL,(RL_REQ)
+        INC     HL
+        INC     HL
+        LD      A,(HL)
+        LD      B,A
+        LD      A,(RSTCOUNT)
+        CP      B
+        JP      Z,RL_ZERO
+        JP      C,RL_ZERO
+        LD      A,B
+        CALL    RL_TABPTR
+        LD      DE,(RL_REQ)
+        INC     DE
+        INC     DE
+        INC     DE
+        INC     DE
+        LD      BC,8
+        LDIR
+        LD      HL,(RL_REQ)
+        INC     HL
+        INC     HL
+        LD      A,(HL)
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        LD      HL,RSTSERV
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,(RL_REQ)
+        LD      BC,12
+        ADD     HL,BC
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      A,1
+        RET
+
+RL_QUERY:
+        CALL    RL_FIND
+        JP      C,RL_ZERO
+        LD      A,1
+        RET
+
+RL_ADD:
+        CALL    RL_FIND
+        JP      NC,RL_ZERO      ; already active is an idempotent success
+        LD      A,(RSTCOUNT)
+        CP      4
+        JP      NC,RL_BAD
+        PUSH    AF
+        CALL    RL_TABPTR
+        EX      DE,HL
+        LD      HL,(RL_REQ)
+        LD      BC,4
+        ADD     HL,BC
+        LD      BC,8
+        LDIR
+        POP     AF
+        INC     A
+        LD      (RSTCOUNT),A
+        CALL    RL_REBUILD
+        RET     Z
+        LD      HL,RSTCOUNT
+        DEC     (HL)
+        JP      RL_BAD
+
+RL_REMOVE:
+        CALL    RL_FIND
+        JP      C,RL_ZERO       ; absent is an idempotent success
+        LD      (RL_INDEX),A
+RL_SHLOOP:
+        LD      A,(RL_INDEX)
+        INC     A
+        LD      B,A
+        LD      A,(RSTCOUNT)
+        CP      B
+        JR      Z,RL_SHDONE
+        JR      C,RL_SHDONE
+        LD      A,B
+        CALL    RL_TABPTR
+        PUSH    HL
+        LD      A,(RL_INDEX)
+        CALL    RL_TABPTR
+        EX      DE,HL
+        POP     HL
+        LD      BC,8
+        LDIR
+        LD      HL,RL_INDEX
+        INC     (HL)
+        JR      RL_SHLOOP
+RL_SHDONE:
+        LD      HL,RSTCOUNT
+        DEC     (HL)
+        CALL    RL_REBUILD
+        RET     Z
+        JP      RL_BAD
+
+; Find request name. Return carry clear and A=index, or carry set.
+RL_FIND:
+        LD      A,(RSTCOUNT)
+        LD      B,A
+        XOR     A
+RL_FLOOP:
+        LD      C,A
+        LD      A,B
+        OR      A
+        JR      Z,RL_FMISS
+        LD      A,C
+        CALL    RL_TABPTR
+        LD      DE,(RL_REQ)
+        INC     DE
+        INC     DE
+        INC     DE
+        INC     DE
+        PUSH    BC
+        LD      B,8
+RL_FCMP:
+        LD      A,(DE)
+        CP      (HL)
+        JR      NZ,RL_FNXT
+        INC     DE
+        INC     HL
+        DJNZ    RL_FCMP
+        POP     BC
+        LD      A,C
+        OR      A
+        RET
+RL_FNXT:
+        POP     BC
+        DEC     B
+        LD      A,C
+        INC     A
+        JR      RL_FLOOP
+RL_FMISS:
+        SCF
+        RET
+
+; A=index -> HL=ordered name record.
+RL_TABPTR:
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        LD      L,A
+        LD      H,0
+        LD      DE,RSTABLE
+        ADD     HL,DE
+        RET
+
+; Validate every named carrier before changing the published chain, then load.
+RL_REBUILD:
+        XOR     A
+        LD      (RL_INDEX),A
+RL_VLOOP:
+        LD      A,(RL_INDEX)
+        LD      B,A
+        LD      A,(RSTCOUNT)
+        CP      B
+        JR      Z,RL_BUILD
+        LD      A,B
+        CALL    RL_TABPTR
+        LD      A,1
+        CALL    FLOPEN
+        RET     NZ
+        LD      HL,MODBUF
+        CALL    FLNEXT
+        RET     NZ
+        CALL    RL_VALID
+        RET     NZ
+        LD      A,(RL_INDEX)
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        LD      HL,RSTSERV
+        ADD     HL,DE
+        LD      DE,(MODBUF+46)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      HL,RL_INDEX
+        INC     (HL)
+        JR      RL_VLOOP
+RL_BUILD:
+        LD      HL,HISTBASE
+        LD      (RL_LOW),HL
+        LD      HL,0
+        LD      (ECB_RSXHEAD),HL
+        LD      (RL_PREV),HL
+        XOR     A
+        LD      (RL_INDEX),A
+RL_BLOOP:
+        LD      A,(RL_INDEX)
+        LD      B,A
+        LD      A,(RSTCOUNT)
+        CP      B
+        JR      Z,RL_PUBLISH
+        LD      A,B
+        CALL    RL_TABPTR
+        CALL    RL_LOAD
+        RET     NZ
+        LD      HL,RL_INDEX
+        INC     (HL)
+        JR      RL_BLOOP
+RL_PUBLISH:
+        LD      HL,(RL_LOW)
+        LD      (ECB_RSXLOW),HL
+        LD      A,(RSTCOUNT)
+        OR      A
+        JR      NZ,RL_PGATE
+        LD      HL,HISTBASE
+RL_PGATE:
+        DEC     HL
+        DEC     HL
+        DEC     HL
+        LD      (ECB_TPATOP),HL
+RL_ZERO:
+        XOR     A
+        RET
+
+RL_LOAD:
+        LD      A,1
+        CALL    FLOPEN
+        RET     NZ
+        LD      HL,MODBUF
+        CALL    FLNEXT
+        RET     NZ
+        CALL    RL_VALID
+        RET     NZ
+        LD      HL,(RL_LOW)
+        LD      DE,(MODBUF+14)
+        OR      A
+        SBC     HL,DE
+        RET     C
+        PUSH    HL
+        LD      DE,0103H        ; retain at least the CP/M page and gateway
+        OR      A
+        SBC     HL,DE
+        POP     HL
+        RET     C
+        LD      (RL_BASE),HL
+        LD      (RL_LOW),HL
+        LD      (RL_DEST),HL
+        LD      HL,(MODBUF+12)
+        LD      (RL_LEFT),HL
+RL_PAY:
+        LD      HL,(RL_LEFT)
+        LD      A,H
+        OR      L
+        JR      Z,RL_RELOC
+        LD      A,H
+        CP      2
+        JR      C,RL_LAST
+        LD      HL,(RL_DEST)
+        CALL    FLNEXT
+        RET     NZ
+        LD      (RL_DEST),HL
+        LD      HL,(RL_LEFT)
+        LD      DE,0200H
+        OR      A
+        SBC     HL,DE
+        LD      (RL_LEFT),HL
+        JR      RL_PAY
+RL_LAST:
+        LD      HL,MODBUF
+        CALL    FLNEXT
+        RET     NZ
+        LD      HL,MODBUF
+        LD      DE,(RL_DEST)
+        LD      BC,(RL_LEFT)
+        LDIR
+        LD      HL,0
+        LD      (RL_LEFT),HL
+        JR      RL_PAY
+RL_RELOC:
+        CALL    FLRESET
+        RET     NZ
+        LD      HL,MODBUF
+        CALL    FLNEXT
+        RET     NZ
+        LD      HL,(RL_BASE)
+        LD      DE,(MODBUF+12)
+        LD      BC,0
+RL_SUM:
+        LD      A,D
+        OR      E
+        JR      Z,RL_SUMDONE
+        LD      A,(HL)
+        ADD     A,C
+        LD      C,A
+        JR      NC,RL_SUMNC
+        INC     B
+RL_SUMNC:
+        INC     HL
+        DEC     DE
+        JR      RL_SUM
+RL_SUMDONE:
+        LD      HL,(MODBUF+44)
+        LD      A,L
+        CP      C
+        RET     NZ
+        LD      A,H
+        CP      B
+        RET     NZ
+        LD      HL,(RL_BASE)
+        LD      DE,(MODBUF+10)
+        OR      A
+        SBC     HL,DE
+        LD      (RL_DELTA),HL
+        LD      BC,(MODBUF+22)
+        LD      HL,MODBUF+48
+RL_RLOOP:
+        LD      A,B
+        OR      C
+        JR      Z,RL_LINK
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        PUSH    HL
+        LD      HL,(MODBUF+12)
+        DEC     HL              ; a relocated word needs two code bytes
+        OR      A
+        SBC     HL,DE
+        JP      Z,RL_ROFFBAD
+        JP      C,RL_ROFFBAD
+        POP     HL
+        PUSH    HL
+        PUSH    BC
+        LD      HL,(RL_BASE)
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        LD      BC,(RL_DELTA)
+        ADD     HL,BC
+        EX      DE,HL
+        LD      (HL),D
+        DEC     HL
+        LD      (HL),E
+        POP     BC
+        POP     HL
+        DEC     BC
+        JR      RL_RLOOP
+RL_ROFFBAD:
+        POP     HL
+        JP      RL_BAD
+RL_LINK:
+        LD      DE,(MODBUF+16)
+        LD      HL,(RL_BASE)
+        ADD     HL,DE
+        LD      (RL_DISPATCH),HL
+        EX      DE,HL
+        LD      HL,(RL_BASE)
+        INC     HL
+        INC     HL
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      HL,(RL_BASE)
+        LD      (HL),000H
+        INC     HL
+        LD      (HL),0C1H       ; default next dispatch is core BDOS C100h
+        LD      HL,(RL_PREV)
+        LD      A,H
+        OR      L
+        JR      NZ,RL_LPREV
+        LD      HL,(RL_BASE)
+        LD      (ECB_RSXHEAD),HL
+        JR      RL_LDONE
+RL_LPREV:
+        LD      DE,(RL_DISPATCH)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+RL_LDONE:
+        LD      HL,(RL_BASE)
+        LD      (RL_PREV),HL
+        XOR     A
+        RET
+
+RL_VALID:
+        LD      HL,MODBUF
+        LD      DE,RL_MAGIC
+        LD      B,8
+RL_MLOOP:
+        LD      A,(DE)
+        CP      (HL)
+        JR      Z,RL_MOK
+        JP      RL_BAD
+RL_MOK:
+        INC     DE
+        INC     HL
+        DJNZ    RL_MLOOP
+        LD      HL,(MODBUF+8)   ; flags must be zero
+        LD      A,H
+        OR      L
+        JR      NZ,RL_BAD
+        LD      HL,(MODBUF+12)
+        LD      A,H
+        OR      L
+        JR      Z,RL_BAD
+        LD      DE,(MODBUF+14)
+        OR      A
+        SBC     HL,DE
+        JR      C,RL_VSIZE
+        JR      Z,RL_VSIZE
+        JR      RL_BAD
+RL_VSIZE:
+        LD      HL,(MODBUF+14)
+        LD      A,H
+        OR      A
+        JR      Z,RL_BAD
+        LD      A,L
+        OR      A
+        JR      NZ,RL_BAD       ; whole-page allocation
+        LD      HL,(MODBUF+16)
+        LD      DE,(MODBUF+12)
+        OR      A
+        SBC     HL,DE
+        JR      NC,RL_BAD
+        LD      HL,(MODBUF+22)
+        LD      A,H
+        OR      A
+        JR      NZ,RL_BAD
+        LD      A,L
+        CP      233
+        JR      NC,RL_BAD
+        LD      HL,(MODBUF+24)
+        LD      DE,0200H
+        OR      A
+        SBC     HL,DE
+        JR      NZ,RL_BAD
+        LD      HL,(MODBUF+26)
+        LD      DE,0200H
+        OR      A
+        SBC     HL,DE
+        JR      NZ,RL_BAD
+        LD      HL,(MODBUF+28)
+        LD      DE,48
+        OR      A
+        SBC     HL,DE
+        JR      NZ,RL_BAD
+        LD      HL,(MODBUF+12)
+        LD      DE,0200H
+        ADD     HL,DE
+        LD      DE,(MODBUF+30)
+        OR      A
+        SBC     HL,DE
+        JR      NZ,RL_BAD
+        LD      A,(RL_INDEX)
+        CALL    RL_TABPTR
+        LD      DE,MODBUF+32
+        LD      B,8
+RL_NMCMP:
+        LD      A,(DE)
+        CP      (HL)
+        JR      NZ,RL_BAD
+        INC     DE
+        INC     HL
+        DJNZ    RL_NMCMP
+        XOR     A
+        RET
+RL_BAD:
+        LD      A,0FFH
+        OR      A
+        RET
+
+RL_MAGIC:       DB      'B','R','S','X',1,2,1,0
+RL_REQ:         DW      0
+RL_LOW:         DW      0
+RL_BASE:        DW      0
+RL_PREV:        DW      0
+RL_DISPATCH:    DW      0
+RL_DEST:        DW      0
+RL_LEFT:        DW      0
+RL_DELTA:       DW      0
+RL_INDEX:       DB      0
+        .DEPHASE
+        END

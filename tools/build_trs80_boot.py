@@ -201,9 +201,11 @@ def main() -> None:
     basic_cpx_path = ROOT / "build/cpx/BASIC.CPX"
     hello_cpx_path = ROOT / "build/cpx/HELLO.CPX"
     hello_rsx_path = ROOT / "build/rsx/HELLO.RSX"
+    echo_rsx_path = ROOT / "build/rsx/ECHO.RSX"
     cpx_utility_path = ROOT / "build/utilities/CPX.COM"
     rsx_utility_path = ROOT / "build/utilities/RSX.COM"
     rsxtest_path = ROOT / "build/utilities/RSXTEST.COM"
+    rsx2test_path = ROOT / "build/utilities/RSX2TST.COM"
     era_path = ROOT / "build/utilities/ERA.COM"
     ren_path = ROOT / "build/utilities/REN.COM"
     type_path = ROOT / "build/utilities/TYPE.COM"
@@ -213,8 +215,8 @@ def main() -> None:
     ver_path = ROOT / "build/utilities/VER.COM"
     warm_path = ROOT / "build/utilities/WARM.COM"
     for path in (resident_path, command_path, basic_cpx_path, hello_cpx_path,
-                 hello_rsx_path, cpx_utility_path, rsx_utility_path,
-                 rsxtest_path, era_path, ren_path, type_path, dir_path,
+                 hello_rsx_path, echo_rsx_path, cpx_utility_path, rsx_utility_path,
+                 rsxtest_path, rsx2test_path, era_path, ren_path, type_path, dir_path,
                  user_path, clr_path, ver_path, warm_path):
         if not path.is_file():
             raise SystemExit(f"missing system-image input: {path}")
@@ -275,6 +277,7 @@ def main() -> None:
                      ("CPX.COM", cpx_utility_path.read_bytes()),
                      ("RSX.COM", rsx_utility_path.read_bytes()),
                      ("RSXTEST.COM", rsxtest_path.read_bytes()),
+                     ("RSX2TST.COM", rsx2test_path.read_bytes()),
                      ("ERA.COM", era_path.read_bytes()),
                      ("REN.COM", ren_path.read_bytes()),
                      ("TYPE.COM", type_path.read_bytes()),
@@ -285,7 +288,8 @@ def main() -> None:
                      ("WARM.COM", warm_path.read_bytes()),
                      ("BASIC.CPX", basic_cpx_path.read_bytes()),
                      ("HELLO.CPX", hello_cpx_path.read_bytes()),
-                     ("HELLO.RSX", hello_rsx_path.read_bytes()), *extras])
+                     ("HELLO.RSX", hello_rsx_path.read_bytes()),
+                     ("ECHO.RSX", echo_rsx_path.read_bytes()), *extras])
     output = args.output.resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_bytes(image)

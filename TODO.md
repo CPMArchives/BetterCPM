@@ -83,7 +83,7 @@ directory utility unless it provides genuine additional value.
 
 - [x] Replace the proof `BCX1` CPX carrier with the versioned, documented
   `BCPX` v1 format while retaining native CP/M ZSM4 assembly of module code.
-- [ ] Replace the proof `BRX1` RSX carrier with a versioned, documented module
+- [x] Replace the proof `BRX1` RSX carrier with a versioned, documented module
   format practical to build under native CP/M with ZSM4.
 - [ ] Replace provisional Function 200's numeric BASIC/HELLO selectors with a
   versioned, name-based CPX request block and enumerate module metadata without
@@ -94,7 +94,8 @@ directory utility unless it provides genuine additional value.
   arbitrary valid CPX files.
 - [ ] Finalize the RSX dispatch, chaining, bypass, initialization, shutdown,
   error, and reentrancy ABI.
-- [ ] Support arbitrary valid RSX files rather than only the HELLO proof.
+- [x] Support arbitrary valid RSX files rather than only the HELLO proof,
+  including ordered enumeration and removal from a multi-module chain.
 - [ ] Make extension reconfiguration transactional, with validation,
   rollback, and a recovery configuration that boots without optional modules.
 - [ ] Define optional state export/import without preserving stale pointers.

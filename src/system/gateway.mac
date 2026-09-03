@@ -12,6 +12,7 @@ HISTBASE        EQU     SYSBASE-0200H ; 512-byte warm-boot-persistent history
 CPMGATE         EQU     HISTBASE-3
 DIRLOGIN        EQU     0D60CH
 BIOWBOOT        EQU     0EF03H
+RSTCOUNT        EQU     0D580H ; protected active-RSX reconstruction table
 
         CSEG
         .PHASE  SYSBASE
@@ -30,6 +31,9 @@ SYS_WBOOT:
         JP      SYS_WARM
 SYS_COLD:
         LD      SP,SYS_STKTOP
+        XOR     A
+        LD      (RSTCOUNT),A     ; cold boot starts from the saved empty profile
+                                ; while WBOOT deliberately preserves this byte
         XOR     A               ; cold boot deliberately begins on drive A
         JR      SYS_ENTER
 SYS_WARM:

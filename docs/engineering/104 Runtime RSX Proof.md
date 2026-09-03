@@ -58,6 +58,7 @@ The physical `trs80gp` test verifies:
   reconstructs the CPXs and CCP while preserving the RSX.
 - Unload removes interception and restores the original TPA boundary.
 
-General multi-RSX enumeration, arbitrary module sources, saved cold-boot
-profiles, initialization/shutdown calls, integrity metadata, and a formal
+The later general `BRSX` carrier, arbitrary filename loader, enumeration, and
+multi-module chain supersede this proof format in Engineering Specification
+120. Saved cold-boot profiles, initialization/shutdown calls, and a formal
 bypass ABI remain future work.

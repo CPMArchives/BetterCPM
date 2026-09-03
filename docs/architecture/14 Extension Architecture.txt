@@ -132,12 +132,13 @@ entry and dispatch organization, resident memory layout,
 initialization path, and possible chaining points shall not require
 all service calls permanently to enter the core BDOS directly.
 
-The first implementation includes a provisional RSX proof: a movable
-compatibility gateway, a protected chain, a relocatable HELLO.RSX, and
-runtime load/unload control.  This executable interface is intentionally
-narrow and is not yet the stable general third-party ABI.  General module
-discovery, initialization and shutdown, saved profiles, integrity metadata,
-and bypass services shall be specified from concrete uses.
+The implementation now includes a versioned BRSX carrier, a movable
+compatibility gateway, an ordered protected chain, arbitrary filename-based
+runtime load/unload control, service metadata, relocation, and payload
+integrity validation.  This executable interface remains provisional rather
+than a stable third-party ABI until initialization, shutdown, saved profiles,
+dependencies, ordering constraints, and bypass services are specified from
+concrete uses.
 
 The eventual extension facility may be compatible in purpose rather than
 binary-identical to CP/M 3 RSXs.

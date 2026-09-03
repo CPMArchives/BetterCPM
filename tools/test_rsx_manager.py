@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify the proof RSX's load, intercept, warm-boot, and unload lifecycle."""
+"""Verify general BRSX loading, ordered chaining, WBOOT, and unloading."""
 from __future__ import annotations
 
 import subprocess
@@ -49,15 +49,26 @@ def main() -> None:
         b"RSX function 201 returned 5253h",
     ))
 
-    second = run(("RSX LOAD HELLO", "RSXTEST", "HELLO WARM", "RSXTEST",
-                  "RSX UNLOAD HELLO.RSX", "RSX LIST", "RSXTEST"))
+    second = run(("RSX LOAD HELLO", "RSX LOAD ECHO.RSX", "RSX LIST",
+                  "RSX2TST"))
     require_ordered(second, (
-        b"Hello from HELLO.RSX", b"RSX function 201 returned 5253h",
-        b"Hello from BetterCP/M WARM", b"Hello from HELLO.RSX",
-        b"RSX function 201 returned 5253h", b"No RSXs loaded",
-        b"TPA available: 47K", b"RSX function 201 unsupported",
+        b"HELLO : BDOS 201", b"ECHO : BDOS 203",
+        b"TPA available: 45K", b"Hello from HELLO.RSX",
+        b"BDOS 201: HELLO present", b"Hello from ECHO.RSX",
+        b"BDOS 203: ECHO present",
     ))
-    print("RSX load/intercept/WBOOT/unload and TPA-boundary restoration passed")
+
+    third = run(("RSX LOAD HELLO", "RSX LOAD ECHO", "HELLO WARM",
+                 "RSX2TST", "RSX UNLOAD HELLO", "RSX LIST", "RSX2TST",
+                 "RSX UNLOAD ECHO.RSX", "RSX LIST"))
+    require_ordered(third, (
+        b"Hello from BetterCP/M WARM", b"BDOS 201: HELLO present",
+        b"BDOS 203: ECHO present", b"ECHO : BDOS 203",
+        b"TPA available: 46K", b"BDOS 201: absent",
+        b"BDOS 203: ECHO present", b"No RSXs loaded",
+        b"TPA available: 47K",
+    ))
+    print("BRSX validation, ordered chaining, WBOOT, middle unload, and TPA restoration passed")
 
 
 if __name__ == "__main__":

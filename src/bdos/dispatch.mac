@@ -33,7 +33,7 @@ DIRSELECT       EQU     0D642H  ; select/reuse a logical drive context
 CPTCOUNT        EQU     0C094H  ; active CPX reconstruction profile
 CPTFLAGS        EQU     0C095H  ; known-module membership bits
 CPTABLE         EQU     0C096H
-RSXCONTROL      EQU     0E903H
+RSXCONTROL      EQU     0D100H
 
         CSEG
         .PHASE  BDOSBASE

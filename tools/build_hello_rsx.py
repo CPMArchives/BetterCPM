@@ -1,21 +1,20 @@
 #!/usr/bin/env python3
-"""Build the compact one-sector HELLO.RSX proof carrier."""
+"""Build the BRSX version-1 HELLO.RSX carrier."""
 from __future__ import annotations
 
 import argparse
 import hashlib
-import struct
 from pathlib import Path
 
-from build_basic_cpx import relocation_offsets
+from build_cpx_module import relocation_offsets
 from build_ccp import assemble
+from build_rsx_module import make_module
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/rsx/hello.mac"
 BUILD = ROOT / "build/rsx"
 LINK_BASE = 0x8000
 ALTERNATE_BASE = 0x8101
-PAYLOAD_OFFSET = 64
 
 
 def main() -> None:
@@ -35,24 +34,19 @@ def main() -> None:
                                       "RSXBASE         EQU     08101H"),
                          BUILD / "hello-alt.bin", BUILD / "hello-alt.lst",
                          ALTERNATE_BASE)
-    offsets = relocation_offsets(data, alternate)
+    offsets = relocation_offsets(data, alternate, ALTERNATE_BASE - LINK_BASE)
     # The proof module deliberately claims one KiB.  Besides leaving realistic
     # growth room, this makes the protected-memory cost visible in CP/M's
     # whole-K TPA convention while load/unload is being verified.
     allocation = max(0x400, (len(data) + 0xFF) & ~0xFF)
-    if PAYLOAD_OFFSET + len(data) > 512 or len(offsets) > 24:
-        raise SystemExit("HELLO.RSX exceeds compact one-sector carrier")
-    carrier = bytearray(512)
-    struct.pack_into("<4sHHHHH", carrier, 0, b"BRX1", LINK_BASE, len(data),
-                     allocation, len(offsets), PAYLOAD_OFFSET)
-    for index, offset in enumerate(offsets):
-        struct.pack_into("<H", carrier, 16 + index * 2, offset)
-    carrier[PAYLOAD_OFFSET:PAYLOAD_OFFSET + len(data)] = data
+    carrier = make_module(name="HELLO", version=(0, 1), services=[201],
+                          linked_base=LINK_BASE, code=data, relocations=offsets,
+                          allocation=allocation)
     output = BUILD / "HELLO.RSX"
     output.write_bytes(carrier)
     print(f"{hashlib.sha256(data).hexdigest()}  build/rsx/hello.bin")
     print(f"HELLO.RSX bytes: {len(data)}; allocation: {allocation}; "
-          f"relocations: {len(offsets)}; carrier: 512")
+          f"relocations: {len(offsets)}; carrier: {len(carrier)}")
 
 
 if __name__ == "__main__":

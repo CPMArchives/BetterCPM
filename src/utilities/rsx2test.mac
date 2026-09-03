@@ -1,0 +1,40 @@
+; Exercise both proof services through the public CALL 0005h gateway.
+
+BDOS            EQU     0005H
+        CSEG
+        .PHASE  0103H
+START:
+        LD      C,201
+        CALL    BDOS
+        LD      DE,R2_N201
+        LD      A,H
+        CP      052H
+        JR      NZ,R2_PONE
+        LD      A,L
+        CP      053H
+        JR      NZ,R2_PONE
+        LD      DE,R2_Y201
+R2_PONE:
+        LD      C,9
+        CALL    BDOS
+        LD      C,203
+        CALL    BDOS
+        LD      DE,R2_N203
+        LD      A,H
+        CP      045H
+        JR      NZ,R2_PTWO
+        LD      A,L
+        CP      043H
+        JR      NZ,R2_PTWO
+        LD      DE,R2_Y203
+R2_PTWO:
+        LD      C,9
+        CALL    BDOS
+        LD      C,0
+        JP      BDOS
+R2_Y201:       DB      'BDOS 201: HELLO present',13,10,'$'
+R2_N201:       DB      13,10,'BDOS 201: absent',13,10,'$'
+R2_Y203:       DB      'BDOS 203: ECHO present',13,10,'$'
+R2_N203:       DB      13,10,'BDOS 203: absent',13,10,'$'
+        .DEPHASE
+        END     START

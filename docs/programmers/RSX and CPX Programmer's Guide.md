@@ -128,8 +128,10 @@ transient application code is executing.
 
 ## 5. Module file information
 
-The CPX on-disk format is now defined as `BCPX` version 1. The corresponding
-production RSX carrier remains to be finalized. The common design requires:
+The CPX on-disk format is `BCPX` version 1 and the RSX carrier is `BRSX`
+version 1. Both are executable development ABIs; the remaining lifecycle and
+bypass rules must be completed before either is declared stable for third
+parties. Their common design provides:
 
 - a file signature and module-format version;
 - module class: RSX or CPX;
@@ -180,21 +182,32 @@ specified before this becomes a stable third-party ABI.
 RSXs remain part of the system-service environment when the CCP and CPXs are
 reloaded. They must not depend upon private CCP or CPX data.
 
-### 6.1 Provisional runtime manager and carrier
+### 6.1 BRSX version 1 manager and carrier
 
-`RSX.COM` provides `LIST`, `LOAD HELLO`, and `UNLOAD HELLO`. Experimental
-BDOS Function 202 carries its query/load/unload request to fixed resident
-loader code. HELLO is intentionally absent from the default profile.
+`RSX.COM` provides `LIST`, `LOAD name[.RSX]`, and `UNLOAD name[.RSX]`.
+Experimental BDOS Function 202 carries a versioned request block to the fixed
+protected loader at `D100h`. The active table stores ordered eight-byte file
+stems rather than runtime addresses. The present saved cold-boot profile is
+empty.
 
-The initial compact `BRX1` carrier is stored as an ordinary `.RSX` file. It
-contains the linked base, code size, page-rounded protected allocation,
-relocation count, payload offset, relocation-word offsets, and linked code.
-It is a bring-up format rather than the final general-purpose RSX file ABI.
+The `BRSX` version-1 512-byte header identifies the format, module class, ABI,
+module name/version, linked base, code size, protected page allocation,
+dispatch/init/shutdown offsets, relocation table, service metadata, and
+payload checksum. Code follows the header, followed by one byte per advertised
+service. Engineering Specification 120 gives the exact offsets.
 
-HELLO.RSX claims one KiB so the protected-memory cost is visible in the
-whole-K TPA report. Loading moves the gateway and lowers the reported TPA;
-unloading restores both. WBOOT preserves the installed RSX and rebuilds the
-reclaimable CPX/CCP command environment beneath it.
+The manager validates all named headers before rebuilding the chain, loads and
+checksums each payload, applies relocation words, and links modules in explicit
+load order. `HELLO.RSX` advertises Function 201 and claims one KiB so the
+protected-memory cost remains visible. `ECHO.RSX` advertises Function 203 and
+proves that a second module chains through the first; removing HELLO leaves
+ECHO operational. Loading moves the gateway and lowers the reported TPA,
+unloading restores it, and WBOOT preserves the chain while reconstructing the
+reclaimable CPX/CCP command environment.
+
+Initialization and shutdown offsets are reserved but are not invoked yet.
+Dependencies, automatic ordering, saved profiles, rollback after a physical
+read failure, and the formal core-BDOS bypass interface remain provisional.
 
 ## 7. CPX execution model
 

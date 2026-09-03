@@ -1,0 +1,30 @@
+; Second BRSX proof module.  Its distinct service verifies that a later
+; extension chains correctly to an earlier extension rather than replacing it.
+
+RSXBASE         EQU     08000H
+BDOS            EQU     0C100H
+
+        CSEG
+        .PHASE  RSXBASE
+
+ER_NEXT:        DW      BDOS
+ER_ENTRY:       DW      ER_DISPATCH
+
+ER_DISPATCH:
+        LD      A,C
+        CP      203
+        JR      NZ,ER_CHAIN
+        LD      DE,ER_MESSAGE
+        LD      C,9
+        CALL    BDOS
+        LD      HL,04543H       ; "EC" proof signature
+        LD      A,L
+        RET
+ER_CHAIN:
+        LD      HL,(ER_NEXT)
+        JP      (HL)
+
+ER_MESSAGE:     DB      13,10,'Hello from ECHO.RSX',13,10,'$'
+
+        .DEPHASE
+        END

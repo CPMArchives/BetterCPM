@@ -18,7 +18,9 @@ def main() -> None:
                         default=Path("/Users/nathanael/bin/z80asm"))
     args = parser.parse_args()
     BUILD.mkdir(parents=True, exist_ok=True)
-    for stem, output_name in (("rsx", "RSX.COM"), ("rsxtest", "RSXTEST.COM")):
+    for stem, output_name in (("rsx", "RSX.COM"),
+                              ("rsxtest", "RSXTEST.COM"),
+                              ("rsx2test", "RSX2TST.COM")):
         source = (ROOT / f"src/utilities/{stem}.mac").read_text(encoding="ascii")
         text = source.replace("        CSEG\n        .PHASE  ",
                               "        ASEG\n        ORG     ").replace(

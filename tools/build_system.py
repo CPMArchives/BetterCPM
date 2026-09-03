@@ -15,12 +15,13 @@ COMPONENTS = (
     (0xC000, "gateway.bin"),
     (0xC100, "../bdos/bdos.bin"),
     (0xD000, "fileloader.bin"),
+    (0xD100, "rsxloader.bin"),
     (0xD600, "../bdos/directory.bin"),
     (0xE900, "../trs80/ccpreload.bin"),
     (0xEF00, "../bios/bios.bin"),
 )
 RESIDENT_BASE = 0xC000
-LIMITS = (0xC100, 0xD000, 0xD600, 0xE900, 0xED00, 0x10000)
+LIMITS = (0xC100, 0xD000, 0xD100, 0xD500, 0xE900, 0xED00, 0x10000)
 
 
 def main() -> None:

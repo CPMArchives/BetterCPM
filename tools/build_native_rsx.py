@@ -18,10 +18,14 @@ BUILD_UTIL = ROOT / "build/utilities"
 MODULES = (
     ("HELLO", ROOT / "src/rsx/hello.mac", BUILD_RSX / "hello.bin",
      BUILD_RSX / "hello-native.bin"),
+    ("ECHO", ROOT / "src/rsx/echo.mac", BUILD_RSX / "echo.bin",
+     BUILD_RSX / "echo-native.bin"),
     ("RSX", ROOT / "src/utilities/rsx.mac", BUILD_UTIL / "RSX.COM",
      BUILD_UTIL / "RSX-native.COM"),
     ("RSXTEST", ROOT / "src/utilities/rsxtest.mac", BUILD_UTIL / "RSXTEST.COM",
      BUILD_UTIL / "RSXTEST-native.COM"),
+    ("RSX2TST", ROOT / "src/utilities/rsx2test.mac", BUILD_UTIL / "RSX2TST.COM",
+     BUILD_UTIL / "RSX2TST-native.COM"),
 )
 
 
@@ -83,8 +87,12 @@ expect eof
             cross = cross_path.read_bytes()
             native = linked.read_bytes()[:len(cross)]
             if native != cross:
+                mismatch = next((index for index, pair in
+                                 enumerate(zip(native, cross))
+                                 if pair[0] != pair[1]), min(len(native), len(cross)))
                 raise SystemExit(f"native/cross {name} mismatch: "
-                                 f"linked size {linked.stat().st_size}")
+                                 f"linked size {linked.stat().st_size}; "
+                                 f"first difference {mismatch:04X}h")
             native_path.write_bytes(native)
             print(f"{name}: {len(native)} byte-identical bytes")
 

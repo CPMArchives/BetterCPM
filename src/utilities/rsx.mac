@@ -1,9 +1,9 @@
-; BetterCP/M proof RSX manager.
+; BetterCP/M general BRSX manager.
+; Supersedes the original hard-coded HELLO proof utility.
 
 BDOS            EQU     0005H
 RSXFUNC         EQU     202
 
-; LINK's absolute COM image supplies the conventional JP 0103h transfer.
         CSEG
         .PHASE  0103H
 START:
@@ -13,7 +13,9 @@ START:
 RS_SKIP:
         LD      A,B
         OR      A
-        JR      Z,RS_USAGE
+        JR      NZ,RS_SKIP1
+        JP      RS_USAGE
+RS_SKIP1:
         LD      A,(HL)
         CP      ' '
         JR      NZ,RS_HAVE
@@ -26,98 +28,240 @@ RS_HAVE:
         LD      (RS_LEN),A
         CP      4
         JR      Z,RS_LIST
-        CP      10
+        CP      6
+        JR      NC,RS_PARSE
+        JP      RS_USAGE
+RS_PARSE:
+        LD      DE,RS_KLOAD
+        LD      C,5
+        CALL    RS_PREFIX
         JR      Z,RS_LOAD
-        CP      14
-        JR      Z,RS_LOAD
-        CP      12
+        LD      DE,RS_KUNLOAD
+        LD      C,7
+        CALL    RS_PREFIX
         JR      Z,RS_UNLOAD
-        CP      16
-        JR      Z,RS_UNLOAD
-RS_USAGE:
-        LD      DE,RS_UMSG
-        JR      RS_PDONE
+        JR      RS_USAGE
+
 RS_LIST:
         LD      DE,RS_KLIST
-        LD      B,4
-        CALL    RS_MATCH
+        LD      C,4
+        CALL    RS_PREFIX
         JR      NZ,RS_USAGE
-        LD      E,0
-        CALL    RS_CONTROL
+        XOR     A
+        LD      (RS_INDEX),A
+RS_LLOOP:
+        CALL    RS_CLEAR
+        LD      A,(RS_INDEX)
+        LD      (RS_REQ+2),A
+        CALL    RS_CONTROL      ; operation zero enumerates
         OR      A
-        LD      DE,RS_NONE
-        JR      Z,RS_LISTMSG
-        LD      DE,RS_HELLO
-RS_LISTMSG:
+        JR      Z,RS_LDONE
+        LD      DE,RS_NL
         CALL    RS_PRINT
+        LD      HL,RS_REQ+4
+        LD      B,8
+RS_LNAME:
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,RS_LSP
+        LD      E,A
+        LD      C,2
+        PUSH    HL
+        PUSH    BC
+        CALL    BDOS
+        POP     BC
+        POP     HL
+RS_LSP:
+        INC     HL
+        DJNZ    RS_LNAME
+        LD      DE,RS_SERVICE
+        CALL    RS_PRINT
+        LD      A,(RS_REQ+12)
+        CALL    RS_DECIMAL
+        LD      HL,RS_INDEX
+        INC     (HL)
+        JR      RS_LLOOP
+RS_LDONE:
+        LD      A,(RS_INDEX)
+        OR      A
+        JR      NZ,RS_LTPA
+        LD      DE,RS_NONE
+        CALL    RS_PRINT
+RS_LTPA:
         CALL    RS_TPA
         JR      RS_DONE
+
 RS_LOAD:
-        LD      DE,RS_KLOAD
-        LD      B,10
-        CALL    RS_MATCH
-        JR      NZ,RS_USAGE
-        LD      A,(RS_LEN)
-        CP      10
-        JR      Z,RS_LOADOK
-        LD      BC,10
-        CALL    RS_EXT
-        JR      NZ,RS_USAGE
-RS_LOADOK:
-        LD      E,1
+        LD      A,1
         JR      RS_CHANGE
 RS_UNLOAD:
-        LD      DE,RS_KUNLOAD
-        LD      B,12
-        CALL    RS_MATCH
-        JR      NZ,RS_USAGE
-        LD      A,(RS_LEN)
-        CP      12
-        JR      Z,RS_UNLOK
-        LD      BC,12
-        CALL    RS_EXT
-        JR      NZ,RS_USAGE
-RS_UNLOK:
-        LD      E,2
+        LD      A,2
 RS_CHANGE:
+        LD      (RS_OP),A
+        CALL    RS_NAME
+        JR      NZ,RS_USAGE
+        LD      A,(RS_OP)
+        LD      (RS_REQ+1),A
         CALL    RS_CONTROL
         OR      A
         JR      Z,RS_DONE
         LD      DE,RS_ERROR
+        JR      RS_PDONE
+RS_USAGE:
+        LD      DE,RS_UMSG
 RS_PDONE:
         CALL    RS_PRINT
 RS_DONE:
         LD      C,0
         JP      BDOS
-RS_CONTROL:
-        LD      C,RSXFUNC
-        JP      BDOS
-RS_MATCH:
+
+; Match C bytes at the beginning of the trimmed command tail.
+RS_PREFIX:
         LD      HL,(RS_ARG)
-RS_MLOOP:
+RS_PLOOP:
         LD      A,(DE)
         CP      (HL)
         RET     NZ
         INC     DE
         INC     HL
-        DJNZ    RS_MLOOP
+        DEC     C
+        JR      NZ,RS_PLOOP
         RET
-RS_EXT:
+
+; Parse name after LOAD/UNLOAD. Optional .RSX is accepted, not stored.
+RS_NAME:
+        CALL    RS_CLEAR
         LD      HL,(RS_ARG)
-        ADD     HL,BC
+        LD      A,(RS_OP)
+        CP      1
+        LD      DE,5
+        JR      Z,RS_NPOS
+        LD      DE,7
+RS_NPOS:
+        ADD     HL,DE
+        LD      A,(RS_LEN)
+        SUB     E
+        JR      C,RS_NBAD
+        JR      Z,RS_NBAD
+        LD      C,A
+        LD      DE,RS_REQ+4
+        XOR     A
+        LD      (RS_NCOUNT),A
+RS_NLOOP:
+        LD      A,C
+        OR      A
+        JR      Z,RS_NDONE
+        LD      A,(HL)
+        CP      '.'
+        JR      Z,RS_NEXT
+        CP      ' '
+        JR      Z,RS_NBAD
+        LD      A,(RS_NCOUNT)
+        CP      8
+        JR      NC,RS_NBAD
+        LD      A,(HL)
+        LD      (DE),A
+        INC     DE
+        INC     HL
+        DEC     C
+        LD      A,(RS_NCOUNT)
+        INC     A
+        LD      (RS_NCOUNT),A
+        JR      RS_NLOOP
+RS_NEXT:
+        LD      A,C
+        CP      4
+        JR      NZ,RS_NBAD
         LD      DE,RS_KEXT
         LD      B,4
 RS_EXLOOP:
         LD      A,(DE)
         CP      (HL)
-        RET     NZ
+        JR      NZ,RS_NBAD
         INC     DE
         INC     HL
         DJNZ    RS_EXLOOP
+RS_NDONE:
+        LD      A,(RS_NCOUNT)
+        OR      A
+        JR      Z,RS_NBAD
+        XOR     A
         RET
+RS_NBAD:
+        LD      A,1
+        OR      A
+        RET
+
+RS_CLEAR:
+        LD      HL,RS_REQ
+        LD      B,14
+        XOR     A
+RS_CLOOP:
+        LD      (HL),A
+        INC     HL
+        DJNZ    RS_CLOOP
+        LD      A,1
+        LD      (RS_REQ),A
+        LD      HL,RS_REQ+4
+        LD      B,8
+        LD      A,' '
+RS_SPLOOP:
+        LD      (HL),A
+        INC     HL
+        DJNZ    RS_SPLOOP
+        RET
+
+RS_CONTROL:
+        LD      DE,RS_REQ
+        LD      C,RSXFUNC
+        JP      BDOS
 RS_PRINT:
         LD      C,9
         JP      BDOS
+
+; Primary experimental service numbers currently fit in one byte.
+RS_DECIMAL:
+        LD      B,'0'
+RS_D100:
+        CP      100
+        JR      C,RS_D10S
+        SUB     100
+        INC     B
+        JR      RS_D100
+RS_D10S:
+        LD      (RS_DREM),A
+        LD      A,B
+        CP      '0'
+        JR      Z,RS_DTENS
+        CALL    RS_CHAR
+RS_DTENS:
+        LD      A,(RS_DREM)
+        LD      B,'0'
+RS_D10:
+        CP      10
+        JR      C,RS_DONE10
+        SUB     10
+        INC     B
+        JR      RS_D10
+RS_DONE10:
+        LD      (RS_DREM),A
+        LD      A,B
+        CP      '0'
+        JR      NZ,RS_SHOW10
+        LD      A,(RS_REQ+12)
+        CP      100
+        JR      C,RS_UNITS
+        LD      A,'0'
+RS_SHOW10:
+        CALL    RS_CHAR
+RS_UNITS:
+        LD      A,(RS_DREM)
+        ADD     A,'0'
+RS_CHAR:
+        LD      E,A
+        LD      C,2
+        JP      BDOS
+
 RS_TPA:
         LD      HL,(0006H)
         LD      DE,0100H
@@ -135,7 +279,7 @@ RS_DIV:
         INC     B
         JR      RS_DIV
 RS_DIGITS:
-        LD      (RS_UNITS),A
+        LD      (RS_UNITV),A
         LD      A,B
         LD      (RS_TENS),A
         LD      DE,RS_TPAM
@@ -144,31 +288,33 @@ RS_DIGITS:
         OR      A
         JR      Z,RS_UNIT
         ADD     A,'0'
-        LD      E,A
-        LD      C,2
-        CALL    BDOS
+        CALL    RS_CHAR
 RS_UNIT:
-        LD      A,(RS_UNITS)
+        LD      A,(RS_UNITV)
         ADD     A,'0'
-        LD      E,A
-        LD      C,2
-        CALL    BDOS
+        CALL    RS_CHAR
         LD      DE,RS_TPAE
         JP      RS_PRINT
 
 RS_KLIST:      DB      'LIST'
-RS_KLOAD:      DB      'LOAD HELLO'
-RS_KUNLOAD:    DB      'UNLOAD HELLO'
+RS_KLOAD:      DB      'LOAD '
+RS_KUNLOAD:    DB      'UNLOAD '
 RS_KEXT:       DB      '.RSX'
+RS_NL:         DB      13,10,'$'
+RS_SERVICE:    DB      ' : BDOS $'
 RS_NONE:       DB      13,10,'No RSXs loaded',13,10,'$'
-RS_HELLO:      DB      13,10,'HELLO : BDOS 201',13,10,'$'
-RS_ERROR:      DB      13,10,'RSX profile error',13,10,'$'
-RS_UMSG:       DB      13,10,'RSX LIST | LOAD/UNLOAD HELLO',13,10,'$'
+RS_ERROR:      DB      13,10,'RSX module or profile error',13,10,'$'
+RS_UMSG:       DB      13,10,'RSX LIST | LOAD/UNLOAD name[.RSX]',13,10,'$'
 RS_TPAM:       DB      'TPA available: $'
 RS_TPAE:       DB      'K',13,10,'$'
 RS_ARG:        DW      0
 RS_LEN:        DB      0
+RS_OP:         DB      0
+RS_INDEX:      DB      0
+RS_NCOUNT:     DB      0
+RS_DREM:       DB      0
 RS_TENS:       DB      0
-RS_UNITS:      DB      0
+RS_UNITV:      DB      0
+RS_REQ:        DB      0,0,0,0,0,0,0,0,0,0,0,0,0,0
         .DEPHASE
         END     START
