@@ -1229,11 +1229,11 @@ BDOS_STKTOP:
 ; the live disk contract. Keep the historical mistake visible in the gateway
 ; source, but place every descriptor and workspace above resident BDOS code.
 ; Patch 2026-09-02: the second CPX profile made the fixed-core dispatcher
-; outgrow the old C900h descriptor boundary. Move the whole table as a unit
-; into the still-guarded gap below Directory Services.
-        REPT    0CB00H-$
-        DB      0
-        ENDM
+; outgrow the old C900h descriptor boundary. The first repair fixed this table
+; at CB00h, leaving a 258-byte bring-up hole after the private stack. Patch
+; 2026-09-03 removes that artificial boundary: the descriptor unit follows the
+; dispatcher immediately and its physical address is now a generated-layout
+; concern rather than reserved resident storage.
 BIO_DPH0:
         DW      0,0,0,0,0EC80H,BIO_DPB0,BIO_CSV0,BIO_ALV0
 BIO_DPH1:

@@ -492,11 +492,15 @@ def require(condition: bool, message: str) -> None:
 
 def install_drive_tables(cpu: Z80) -> None:
     """Install the gateway-owned four-drive DPH/DPB contract in test memory."""
-    dpb_address = 0xC940
-    workspaces = ((0xCB50, 0xCB70), (0xCBA2, 0xCBC2),
-                  (0xCBF4, 0xCC14), (0xCC46, 0xCC66))
+    # Patch 2026-09-03: the original fixture repeated the bring-up CB00h
+    # boundary. Keep this table explicit until the generated system-layout
+    # include lands, but mirror the packed descriptor unit exactly.
+    dph_base = 0xC9FE
+    dpb_address = 0xCA3E
+    workspaces = ((0xCA4E, 0xCA6E), (0xCAA0, 0xCAC0),
+                  (0xCAF2, 0xCB12), (0xCB44, 0xCB64))
     for drive, (csv, alv) in enumerate(workspaces):
-        dph = 0xCB00 + drive * 16
+        dph = dph_base + drive * 16
         for offset, value in ((8, 0xEC80), (10, dpb_address),
                               (12, csv), (14, alv)):
             cpu.mem[dph + offset:dph + offset + 2] = value.to_bytes(2, "little")
