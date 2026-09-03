@@ -47,7 +47,7 @@ UB_TABLE:
         DW      UB_MISSING,UB_MISSING,UB_MAKE,UB_RENAME
         DW      UB_LOGINV,UB_CURDSK,UB_SETDMA,UB_GETALV,UB_WRPROT
         DW      UB_ROVEC,UB_ATTR,UB_GETDPB,UB_USER
-        DW      UB_MISSING,UB_MISSING,UB_MISSING,UB_MISSING,UB_RSTDRV
+        DW      UB_MISSING,UB_MISSING,UB_SIZE,UB_MISSING,UB_RSTDRV
         DW      UB_ZERO,UB_ZERO,UB_MISSING
 
 UB_MISSING:
@@ -818,6 +818,119 @@ UB_ATDONE:
         XOR     A
         JP      UB_RETA
 
+; Function 35 reduces every exact-name extent to its exclusive logical end
+; record: ((S2*32 + EX)*128 + RC). The largest candidate becomes FCB R0..R2.
+UB_SIZE:
+        LD      (UB_ITFCB),DE
+        CALL    UB_FCBDRV
+        JP      C,UB_BAD
+        CALL    UB_CONTEXT
+        JP      NZ,UB_BAD
+        LD      HL,(UB_ITFCB)
+        INC     HL
+        LD      B,11
+UB_SZNAME:
+        LD      A,(HL)
+        AND     07FH
+        CP      '?'
+        JP      Z,UB_BAD
+        INC     HL
+        DJNZ    UB_SZNAME
+        CALL    UB_DSETUP
+        XOR     A
+        LD      (UB_ITWILD),A
+        LD      (UB_FOUND),A
+        LD      (UB_MAXREC),A
+        LD      (UB_MAXREC+1),A
+        LD      (UB_MAXREC+2),A
+UB_SZPASS:
+        CALL    UB_ITER
+        JR      C,UB_SZDONE
+        LD      A,1
+        LD      (UB_FOUND),A
+        PUSH    HL
+        LD      DE,12
+        ADD     HL,DE
+        LD      A,(HL)          ; EX low five bits
+        AND     01FH
+        LD      E,A
+        INC     HL
+        INC     HL
+        LD      A,(HL)          ; S2 low six bits
+        AND     03FH
+        LD      H,0
+        LD      L,A
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        LD      D,0
+        ADD     HL,DE           ; HL=logical extent
+        LD      A,L
+        AND     1
+        JR      Z,UB_SZLOW
+        LD      A,080H
+UB_SZLOW:
+        LD      C,A
+        EX      (SP),HL         ; recover entry pointer, retain extent
+        LD      DE,15
+        ADD     HL,DE
+        LD      A,(HL)          ; RC
+        EX      (SP),HL         ; HL=extent again
+        ADD     A,C
+        LD      (UB_CANREC),A
+        LD      D,0
+        JR      NC,UB_SZNC0
+        INC     D
+UB_SZNC0:
+        SRL     H
+        RR      L
+        LD      A,L
+        ADD     A,D
+        LD      (UB_CANREC+1),A
+        LD      A,H
+        ADC     A,0
+        LD      (UB_CANREC+2),A
+        CALL    UB_MAXIMUM
+        POP     HL
+        JR      UB_SZPASS
+UB_SZDONE:
+        LD      A,(UB_FOUND)
+        OR      A
+        JP      Z,UB_BAD
+        LD      HL,UB_MAXREC
+        LD      DE,(UB_ITFCB)
+        LD      BC,33
+        EX      DE,HL
+        ADD     HL,BC
+        EX      DE,HL
+        LD      BC,3
+        LDIR
+        XOR     A
+        JP      UB_RETA
+
+UB_MAXIMUM:
+        LD      HL,UB_MAXREC+2
+        LD      DE,UB_CANREC+2
+        LD      B,3
+UB_MXCMP:
+        LD      A,(DE)
+        CP      (HL)
+        JR      C,UB_MXNO
+        JR      NZ,UB_MXTAKE
+        DEC     DE
+        DEC     HL
+        DJNZ    UB_MXCMP
+UB_MXNO:
+        RET
+UB_MXTAKE:
+        LD      HL,UB_CANREC
+        LD      DE,UB_MAXREC
+        LD      BC,3
+        LDIR
+        RET
+
 ; U06 -- a single cache backed by the DPH-published directory buffer. Caching
 ; state names the directory record currently represented; mutation clients
 ; will set UB_DIRTY and commit through UB_DIRFLUSH.
@@ -982,6 +1095,8 @@ UB_DIRTY:       DB      0
 UB_FOUND:       DB      0
 UB_RENFCB:      DW      0
 UB_TMPDRV:      DB      0
+UB_CANREC:      DB      0,0,0
+UB_MAXREC:      DB      0,0,0
 
 UB_STACK:
         REPT    48

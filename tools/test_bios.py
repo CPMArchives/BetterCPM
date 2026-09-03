@@ -214,6 +214,8 @@ class Z80:
                 self.bc = (self.bc + 1) & 0xFFFF
             elif op == 0x13:            # INC DE
                 self.de = (self.de + 1) & 0xFFFF
+            elif op == 0x1B:            # DEC DE
+                self.de = (self.de - 1) & 0xFFFF
             elif op == 0x1C:            # INC E
                 self.e = (self.e + 1) & 0xFF
                 self.z = self.e == 0
@@ -352,6 +354,10 @@ class Z80:
                 value = self.de
                 self.de = self.hl
                 self.hl = value
+            elif op == 0xE3:            # EX (SP),HL
+                value = self.word(self.sp)
+                self.setword(self.sp, self.hl)
+                self.hl = value
             elif op == 0x09:            # ADD HL,BC
                 self.hl = (self.hl + self.bc) & 0xFFFF
             elif op == 0x19:            # ADD HL,DE
@@ -465,6 +471,11 @@ class Z80:
                 self.z, self.carry = self.a == 0, total > 0xFF
             elif op == 0xC6:            # ADD A,n
                 total = self.a + self.mem[self.pc]
+                self.pc += 1
+                self.a = total & 0xFF
+                self.z, self.carry = self.a == 0, total > 0xFF
+            elif op == 0xCE:            # ADC A,n
+                total = self.a + self.mem[self.pc] + (1 if self.carry else 0)
                 self.pc += 1
                 self.a = total & 0xFF
                 self.z, self.carry = self.a == 0, total > 0xFF

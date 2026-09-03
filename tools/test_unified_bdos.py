@@ -247,6 +247,25 @@ def main() -> None:
     require(call(30, FCB) == 0xFF and cpu.mem[0x7304] == writes,
             "Set Attributes wrote while reporting no matching file")
 
+    # Compute File Size reduces multiple exact-name extents to the largest
+    # exclusive 128-byte record number and stores it in R0..R2.
+    cpu.mem[0xEC80 + 32 + 12] = 3
+    cpu.mem[0xEC80 + 32 + 14] = 1
+    cpu.mem[0xEC80 + 32 + 15] = 5
+    cpu.mem[0xEC80 + 64] = 7
+    cpu.mem[0xEC80 + 65:0xEC80 + 76] = b"SECOND  COM"
+    cpu.mem[0xEC80 + 64 + 12] = 4
+    cpu.mem[0xEC80 + 64 + 14] = 1
+    cpu.mem[0xEC80 + 64 + 15] = 10
+    cpu.mem[FCB:FCB + 36] = bytes(36)
+    cpu.mem[FCB + 1:FCB + 12] = b"SECOND  COM"
+    require(call(35, FCB) == 0, "Compute File Size missed existing extents")
+    require(bytes(cpu.mem[FCB + 33:FCB + 36]) == bytes((0x0A, 0x12, 0x00)),
+            "Compute File Size did not select the largest logical end record")
+    cpu.mem[FCB + 1:FCB + 12] = b"ABSENT  COM"
+    require(call(35, FCB) == 0xFF,
+            "Compute File Size reported success for a missing file")
+
     print(f"unified BDOS U01-U06 foundation passed ({len(image)} bytes)")
     print("disk state, FCB drive view, shared iterator, and one-sector cache passed")
 
