@@ -41,12 +41,13 @@ def main() -> None:
             raise SystemExit(f"missing RSX manager test input: {path}")
 
     first = run(("RSXTEST", "RSX LIST", "RSX LOAD HELLO.RSX", "RSX LIST",
-                 "RSXTEST"))
+                 "RSXTEST", "RSX /V"))
     require_ordered(first, (
         b"RSX function 201 unsupported", b"No RSXs loaded",
         b"TPA available: 47K", b"HELLO : BDOS 201",
         b"TPA available: 46K", b"Hello from HELLO.RSX",
         b"RSX function 201 returned 5253h",
+        b"Resident System Extension facility: API 1.0; implementation 1.0",
     ))
 
     second = run(("RSX LOAD HELLO", "RSX LOAD ECHO.RSX", "RSX LIST",

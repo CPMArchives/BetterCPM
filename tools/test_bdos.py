@@ -630,7 +630,7 @@ def main() -> None:
             "BDOS version did not return CP/M 2.2 aliases")
     cpu.c = 206
     cpu.run(BDOS_BASE)
-    require(bytes(cpu.mem[cpu.hl:cpu.hl + 4]) == b"BV\x01\x05",
+    require(bytes(cpu.mem[cpu.hl:cpu.hl + 4]) == b"BV\x01\x03",
             "BetterCP/M version descriptor query returned invalid metadata")
     cpu.c, cpu.e = 14, 0
     cpu.run(BDOS_BASE, limit=50000)
@@ -693,6 +693,22 @@ def main() -> None:
     cpu.run(BDOS_BASE, limit=50000)
     require(cpu.a == 0 and cpu.mem[FCB + 14] == 0xA5,
             "all-user Search First did not preserve special S2 state")
+    # An explicit-drive search may change Directory Services' private context
+    # without changing BDOS's public default. A subsequent drive-'?' search
+    # must reselect that public default rather than scan the stale context.
+    cpu.mem[FCB] = 2
+    cpu.c, cpu.de = 17, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    cpu.c = 25
+    cpu.run(BDOS_BASE)
+    require(cpu.a == 0, "explicit-drive search changed the public default")
+    cpu.mem[FCB] = ord('?')
+    cpu.c, cpu.de = 17, FCB
+    cpu.run(BDOS_BASE, limit=50000)
+    cpu.c = 27
+    cpu.run(BDOS_BASE)
+    require(cpu.hl == expected_alv,
+            "all-user Search First retained an explicit-drive context")
     cpu.mem[FCB:FCB + 33] = bytes(33)
     cpu.mem[FCB + 1:FCB + 12] = b"READ    DAT"
     cpu.c, cpu.de = 15, FCB

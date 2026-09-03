@@ -10,6 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/utilities/cpx.mac"
+VERSION_INCLUDE = ROOT / "src/utilities/cpxvers.inc"
 BUILD = ROOT / "build/utilities"
 
 
@@ -26,6 +27,7 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="bettercpm-cpx-util-") as temporary:
         staged = Path(temporary) / SOURCE.name
         staged.write_text(text, encoding="ascii")
+        (staged.parent / VERSION_INCLUDE.name).write_bytes(VERSION_INCLUDE.read_bytes())
         raw = Path(temporary) / "cpx.bin"
         subprocess.run([str(args.assembler), "-fb", f"-o{raw}",
                         f"-l{BUILD / 'cpx.lst'}", staged.name],

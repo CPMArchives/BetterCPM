@@ -47,12 +47,12 @@ def main() -> None:
     output = run("VER /V")
     for line in (
         "Command environment: API 1.0; implementation 1.1",
-        "Command Processor Extension facility: API 1.0; implementation 1.0",
         "Basic Disk Operating System: API 1.1; implementation 1.1",
-        "Resident System Extension facility: API 1.0; implementation 1.0",
         "Basic Input/Output System: API 1.0; implementation 1.0",
     ):
         require(line in output, f"resident VER /V omitted {line}")
+    require("Extension facility" not in output,
+            "VER /V reported manager-owned CPX/RSX versions")
     output = run("A:VER")
     require("BetterCP/M 0.3" in output, "transient VER.COM did not match VER")
     output = run("A:VER /V")

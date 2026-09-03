@@ -18,7 +18,7 @@ def main() -> None:
     commands = (
         "CPX LOAD HELLO", "CPX LIST", "HELLO", "CPX UNLOAD BASIC",
         "CPX LIST", "HELLO", "CPX UNLOAD HELLO", "CPX LIST",
-        "HELLO",
+        "CPX /V", "HELLO",
     )
     with tempfile.TemporaryDirectory(prefix="bettercpm-cpx-manager-") as temporary:
         disk = Path(temporary, IMAGE.name)
@@ -37,7 +37,9 @@ def main() -> None:
         b"TPA available: 47K", b"A0>HELLO", b"Hello from HELLO.CPX",
         b"A0>CPX UNLOAD BASIC", b"HELLO : HELLO",
         b"A0>HELLO", b"Hello from HELLO.CPX", b"A0>CPX UNLOAD HELLO",
-        b"No CPXs loaded", b"TPA available: 47K", b"A0>HELLO",
+        b"No CPXs loaded", b"TPA available: 47K",
+        b"Command Processor Extension facility: API 1.0; implementation 1.0",
+        b"A0>HELLO",
         b"Hello from BetterCP/M",
     )
     position = 0

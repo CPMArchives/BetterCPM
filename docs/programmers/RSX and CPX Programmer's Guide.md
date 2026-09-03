@@ -295,10 +295,12 @@ BetterCP/M BDOS Function 206 takes no parameters and returns `HL` pointing to
 the immutable resident subsystem-version descriptor. Bytes zero through three
 are `B`, `V`, descriptor format `1`, and the completed-component count. Two
 words then point to the system identity and release strings. Each component
-record contains three words pointing respectively to its identity, API-version,
-and implementation-version strings. All strings are `$` terminated. The table
-is generated from `metadata/subsystem-versions.tsv`; extensions and utilities
-must validate the magic and descriptor major version before consuming it.
+record contains three words pointing respectively to a fixed component's
+identity, API-version, and implementation-version strings. All strings are `$`
+terminated. The descriptor contains CCP, BDOS, and BIOS records; CPX and RSX
+facility versions are owned by and reported through `CPX /V` and `RSX /V`.
+Everything is generated from `metadata/subsystem-versions.tsv`; consumers must
+validate the magic and descriptor major version before using the descriptor.
 
 `CPX LIST` reports each known active module's command inventory and the
 live TPA available from `0100h` to the exclusive boundary published at

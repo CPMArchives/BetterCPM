@@ -26,11 +26,24 @@ RS_HAVE:
         LD      (RS_ARG),HL
         LD      A,B
         LD      (RS_LEN),A
+        CP      2
+        JR      Z,RS_VERS
         CP      4
         JR      Z,RS_LIST
         CP      6
         JR      NC,RS_PARSE
         JP      RS_USAGE
+RS_VERS:
+        LD      A,(HL)
+        CP      '/'
+        JP      NZ,RS_USAGE
+        INC     HL
+        LD      A,(HL)
+        CP      'V'
+        JP      NZ,RS_USAGE
+        LD      DE,RS_VERSION
+        CALL    RS_PRINT
+        JP      RS_DONE
 RS_PARSE:
         LD      DE,RS_KLOAD
         LD      C,5
@@ -316,5 +329,7 @@ RS_DREM:       DB      0
 RS_TENS:       DB      0
 RS_UNITV:      DB      0
 RS_REQ:        DB      0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+        INCLUDE rsxvers.inc
         .DEPHASE
         END     START

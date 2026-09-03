@@ -5,7 +5,8 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
-from version_metadata import INCLUDE, render
+from version_metadata import (CPX_INCLUDE, INCLUDE, RSX_INCLUDE, render,
+                              render_manager)
 
 ROOT = Path(__file__).resolve().parents[1]
 MATRIX = ROOT / "metadata/subsystem-versions.tsv"
@@ -37,6 +38,10 @@ def main() -> None:
                 f"{component} version is {observed!r}, expected {expected!r}")
     require(INCLUDE.read_text(encoding="ascii") == render(),
             "src/bdos/versions.inc is stale; run tools/version_metadata.py")
+    require(CPX_INCLUDE.read_text(encoding="ascii") == render_manager("CPX", "CX_VERSION"),
+            "src/utilities/cpxvers.inc is stale")
+    require(RSX_INCLUDE.read_text(encoding="ascii") == render_manager("RSX", "RS_VERSION"),
+            "src/utilities/rsxvers.inc is stale")
     banner = f"BetterCP/M {rows['BetterCP/M']['implementation_version']}"
     for relative in ("src/ccp/ccp.mac", "src/cpx/basic.mac"):
         text = (ROOT / relative).read_text(encoding="ascii")

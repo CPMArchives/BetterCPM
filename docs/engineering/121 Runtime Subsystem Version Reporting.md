@@ -4,14 +4,17 @@ Status: implemented
 
 `VER` remains the concise release query and prints `BetterCP/M 0.3`. `VER /V`
 prints that release followed by the identity, API version, and implementation
-version of every completed subsystem. The same implementation supplies the
-resident `BASIC.CPX` command and ordinary `VER.COM` fallback.
+version of the fixed CCP, BDOS, and BIOS components. CPX and RSX facility
+versions belong to their respective managers and are reported by `CPX /V` and
+`RSX /V`, not by the system-level command. The same VER implementation supplies
+the resident `BASIC.CPX` command and ordinary `VER.COM` fallback.
 
 ## Single source of truth
 
 `metadata/subsystem-versions.tsv` is authoritative. The generator
-`tools/version_metadata.py` converts its completed subsystem rows into the
-ZSM4-compatible `src/bdos/versions.inc`. The version regression test compares
+`tools/version_metadata.py` converts fixed-component rows into the
+ZSM4-compatible `src/bdos/versions.inc` and generates manager-owned CPX/RSX
+version strings from their respective rows. The version regression test compares
 the checked-in include byte-for-byte with freshly rendered output, so a matrix
 change cannot silently leave runtime reporting stale.
 

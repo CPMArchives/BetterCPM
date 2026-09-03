@@ -26,18 +26,31 @@ HAVELEN:
         LD      (ARGSTART),HL
         LD      A,B
         LD      (TOTLEN),A
+        CP      2
+        JR      Z,TRYVERS
         CP      4
         JR      Z,TRYLIST
         CP      10
-        JR      Z,TRYLOAD
+        JP      Z,TRYLOAD
         CP      14
-        JR      Z,TRYLOAD
+        JP      Z,TRYLOAD
         CP      12
         JP      Z,TRYUNLOAD
         CP      16
         JP      Z,TRYUNLOAD
 USAGE:
         LD      DE,USEMSG
+        CALL    PRINT
+        JP      DONE
+TRYVERS:
+        LD      A,(HL)
+        CP      '/'
+        JR      NZ,USAGE
+        INC     HL
+        LD      A,(HL)
+        CP      'V'
+        JR      NZ,USAGE
+        LD      DE,CX_VERSION
         CALL    PRINT
         JP      DONE
 TRYLIST:
@@ -230,6 +243,8 @@ ARGSTART:       DW      0
 TOTLEN:         DB      0
 MODSEL:         DB      0
 LIST_ANY:       DB      0
+
+        INCLUDE cpxvers.inc
 
         .DEPHASE
         END     START

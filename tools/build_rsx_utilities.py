@@ -10,6 +10,7 @@ from build_ccp import assemble
 
 ROOT = Path(__file__).resolve().parents[1]
 BUILD = ROOT / "build/utilities"
+VERSION_INCLUDE = ROOT / "src/utilities/rsxvers.inc"
 
 
 def main() -> None:
@@ -25,6 +26,9 @@ def main() -> None:
         text = source.replace("        CSEG\n        .PHASE  ",
                               "        ASEG\n        ORG     ").replace(
                                   "        .DEPHASE\n", "")
+        if stem == "rsx":
+            text = text.replace("        INCLUDE rsxvers.inc",
+                                VERSION_INCLUDE.read_text(encoding="ascii"))
         output = BUILD / output_name
         linked = assemble(args.assembler, text, output,
                           BUILD / f"{stem}.lst", 0x103)

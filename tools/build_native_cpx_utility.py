@@ -14,6 +14,7 @@ from build_native_trs80 import (
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/utilities/cpx.mac"
+VERSION_INCLUDE = ROOT / "src/utilities/cpxvers.inc"
 BUILD = ROOT / "build/utilities"
 
 
@@ -26,7 +27,7 @@ def main() -> None:
     args = parser.parse_args()
     for path in (args.cpmsim, args.system_disk, args.disk_template,
                  args.tools / "ZSM4.COM", args.tools / "LINK.COM",
-                 SOURCE, BUILD / "CPX.COM"):
+                 SOURCE, VERSION_INCLUDE, BUILD / "CPX.COM"):
         if not path.is_file():
             raise SystemExit(f"missing native-build input: {path}")
 
@@ -41,6 +42,10 @@ def main() -> None:
         source.write_bytes(cpm_text(SOURCE))
         run("cpmcp", "-f", "ibm-3740", str(disks / "drivec.dsk"),
             str(source), "0:CPX.MAC")
+        include = work / "CPXVERS.INC"
+        include.write_bytes(cpm_text(VERSION_INCLUDE))
+        run("cpmcp", "-f", "ibm-3740", str(disks / "driveb.dsk"),
+            str(include), "0:CPXVERS.INC")
         for tool in ("ZSM4.COM", "LINK.COM"):
             run("cpmcp", "-f", "ibm-3740", str(disks / "drived.dsk"),
                 str(args.tools / tool), f"0:{tool}")

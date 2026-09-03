@@ -15,6 +15,7 @@ from build_native_trs80 import (
 ROOT = Path(__file__).resolve().parents[1]
 BUILD_RSX = ROOT / "build/rsx"
 BUILD_UTIL = ROOT / "build/utilities"
+VERSION_INCLUDE = ROOT / "src/utilities/rsxvers.inc"
 MODULES = (
     ("HELLO", ROOT / "src/rsx/hello.mac", BUILD_RSX / "hello.bin",
      BUILD_RSX / "hello-native.bin"),
@@ -40,6 +41,7 @@ def main() -> None:
               args.tools / "ZSM4.COM", args.tools / "LINK.COM"]
     inputs += [path for _name, path, cross, _native in MODULES
                for path in (path, cross)]
+    inputs.append(VERSION_INCLUDE)
     for path in inputs:
         if not path.is_file():
             raise SystemExit(f"missing native RSX build input: {path}")
@@ -56,6 +58,10 @@ def main() -> None:
             staged.write_bytes(cpm_text(source))
             run("cpmcp", "-f", "ibm-3740", str(disks / "drivec.dsk"),
                 str(staged), f"0:{name}.MAC")
+        include = work / "RSXVERS.INC"
+        include.write_bytes(cpm_text(VERSION_INCLUDE))
+        run("cpmcp", "-f", "ibm-3740", str(disks / "driveb.dsk"),
+            str(include), "0:RSXVERS.INC")
         for tool in ("ZSM4.COM", "LINK.COM"):
             run("cpmcp", "-f", "ibm-3740", str(disks / "drived.dsk"),
                 str(args.tools / tool), f"0:{tool}")
