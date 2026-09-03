@@ -115,6 +115,10 @@ class Z80:
                     address = self.word(self.pc)
                     self.pc += 2
                     self.setword(address, self.ix)
+                elif sub == 0x2A:        # LD IX,(nn)
+                    address = self.word(self.pc)
+                    self.pc += 2
+                    self.ix = self.word(address)
                 elif sub in (0x7E, 0x4E, 0xBE, 0xA6, 0x34, 0x35, 0x36,
                               0x77, 0x70, 0x71):
                     displacement = self.mem[self.pc]
@@ -577,16 +581,14 @@ def require(condition: bool, message: str) -> None:
         raise AssertionError(message)
 
 
-def install_drive_tables(cpu: Z80, dph_base: int = 0xC9A8,
-                         dpb_address: int = 0xC9E8,
+def install_drive_tables(cpu: Z80, dph_base: int = 0xDA00,
+                         dpb_address: int = 0xDA40,
                          workspaces=None) -> None:
-    """Install the gateway-owned four-drive DPH/DPB contract in test memory."""
-    # Patch 2026-09-03: the original fixture repeated the bring-up CB00h
-    # boundary. Keep this table explicit until the generated system-layout
-    # include lands, but mirror the packed descriptor unit exactly.
+    """Install the BIOS-owned four-drive DPH/DPB contract in test memory."""
+    # Mirror the separately linked src/bios/tables.mac unit.
     if workspaces is None:
-        workspaces = ((0xC9F8, 0xCA18), (0xCA4A, 0xCA6A),
-                      (0xCA9C, 0xCABC), (0xCAEE, 0xCB0E))
+        workspaces = ((0xDA50, 0xDA70), (0xDAA2, 0xDAC2),
+                      (0xDAF4, 0xDB14), (0xDB46, 0xDB66))
     for drive, (csv, alv) in enumerate(workspaces):
         dph = dph_base + drive * 16
         for offset, value in ((8, 0xEC80), (10, dpb_address),

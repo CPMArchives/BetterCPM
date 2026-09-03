@@ -33,15 +33,14 @@ def main() -> None:
     workspaces = ((0xD050, 0xD070), (0xD0A2, 0xD0C2),
                   (0xD0F4, 0xD114), (0xD146, 0xD166))
     install_drive_tables(cpu, TEST_DPH, TEST_DPB, workspaces)
-    # The active BIOS still carries provisional descriptor literals directly
-    # after the old BDOS. Relocate those four SELDSK return constants only in
-    # this standalone replacement test until generated system layout lands.
+    # Relocate the BIOS-owned descriptor addresses only for this standalone
+    # test's fixture tables; production uses the separate DA00h table unit.
     select_impl = cpu.word(BIOS_BASE + 9 * 3 + 1)
     for offset in range(48):
         address = select_impl + offset
         value = cpu.word(address)
-        if value in (0xC9A8, 0xC9B8, 0xC9C8, 0xC9D8):
-            cpu.setword(address, TEST_DPH + (value - 0xC9A8))
+        if value in (0xDA00, 0xDA10, 0xDA20, 0xDA30):
+            cpu.setword(address, TEST_DPH + (value - 0xDA00))
     image = IMAGE.read_bytes()
     cpu.mem[BASE:BASE + len(image)] = image
 
@@ -65,9 +64,11 @@ def main() -> None:
     state = symbols()
 
     def call(function: int, parameter: int = 0) -> int:
+        cpu.ix = 0xA55A
         cpu.c, cpu.de = function, parameter
         cpu.run(BASE, limit=50000)
         require(cpu.sp == initial_sp, f"function {function} unbalanced stack")
+        require(cpu.ix == 0xA55A, f"function {function} failed to restore IX")
         return cpu.a
 
     # U10 character-I/O conformance.  Patch only the platform leaves beneath
@@ -102,6 +103,11 @@ def main() -> None:
     require(call(9, 0x7050) == 0 and cpu.mem[0x7000] == ord("B") and
             cpu.mem[state["UB_COLUMN"]] == 9,
             "function 9 did not use cooked output")
+    for key, output, column in ((8, 8, 8), (9, 32, 16), (13, 13, 0), (10, 10, 0)):
+        cpu.mem[platform_conin:platform_conin + 3] = bytes((0x3E, key, 0xC9))
+        require(call(1) == key and cpu.mem[0x7000] == output and
+                cpu.mem[state["UB_COLUMN"]] == column,
+                f"cooked input failed to echo layout control {key}")
     cpu.mem[3] = 0xA5
     require(call(7) == 0xA5, "function 7 did not return IOBYTE")
     require(call(8, 0x5A) == 0 and cpu.mem[3] == 0x5A,
@@ -163,8 +169,9 @@ def main() -> None:
 
     require(call(32, 7) == 7 and call(32, 0xFF) == 7,
             "user set/query failed")
-    require(call(32, 16) == 0xFF and call(32, 0xFF) == 7,
-            "invalid user changed current user")
+    require(call(32, 0x3F) == 31 and call(32, 0xFF) == 31,
+            "public user selection did not use the CP/M modulo-32 contract")
+    call(32, 7)
 
     require(call(37, 2) == 0, "selective drive reset failed")
     require(call(24) == 1 and call(29) == 0,
@@ -447,8 +454,8 @@ def main() -> None:
             f"EX={cpu.mem[FCB+12]} S2={cpu.mem[FCB+14]} RC={cpu.mem[FCB+15]} "
             f"CR={cpu.mem[FCB+32]} AL={bytes(cpu.mem[FCB+16:FCB+20]).hex()}")
     require(cpu.mem[FCB + 12] == 0 and cpu.mem[FCB + 14] == 0x80 and
-            cpu.mem[FCB + 32] == 2,
-            "Random Read decoded R0..R2 or advanced CR incorrectly")
+            cpu.mem[FCB + 32] == 1,
+            "Random Read must leave CR at the requested record")
     require(bytes(cpu.mem[dma:dma + 128]) == bytes((0x20,)) * 128,
             "Random Read did not reuse the sequential record mapper")
     cpu.mem[FCB + 35] = 4
@@ -494,7 +501,7 @@ def main() -> None:
     require(call(34, FCB) == 0 and cpu.word(FCB + 16) == 1,
             "Random Write did not activate and reuse the decoded extent")
     require(cpu.mem[FCB + 12] == 0 and cpu.mem[FCB + 14] == 0 and
-            cpu.mem[FCB + 32] == 2 and cpu.mem[FCB + 15] == 2,
+            cpu.mem[FCB + 32] == 1 and cpu.mem[FCB + 15] == 2,
             "Random Write diverged from shared decode/write bookkeeping")
     require(cpu.mem[0x7304] == writes + 1,
             "Random Write did not issue exactly one physical write")
@@ -508,7 +515,7 @@ def main() -> None:
     cpu.mem[FCB + 33:FCB + 36] = bytes((128, 0, 0))
     writes = cpu.mem[0x7304]
     require(call(34, FCB) == 0 and cpu.mem[FCB + 12] == 1 and
-            cpu.mem[FCB + 32] == 1,
+            cpu.mem[FCB + 32] == 0,
             "Random Write did not create and use a missing extent")
     require(cpu.mem[0x7304] == writes + 2,
             "missing-extent Random Write did not create then transfer once")
@@ -545,8 +552,8 @@ def main() -> None:
             f"zero-fill Random Write did not allocate its target block: "
             f"A={zero_result:02X} AL={bytes(cpu.mem[FCB+16:FCB+22]).hex()} "
             f"CR={cpu.mem[FCB+32]} RC={cpu.mem[FCB+15]} writes={cpu.mem[0x7304]-writes}")
-    require(cpu.mem[FCB + 32] == 17 and cpu.mem[FCB + 15] == 17,
-            "zero-fill Random Write did not restore and advance its target record")
+    require(cpu.mem[FCB + 32] == 16 and cpu.mem[FCB + 15] == 17,
+            "zero-fill Random Write did not retain its target record")
     require(cpu.mem[0x7304] == writes + 17,
             "zero-fill Random Write did not initialize exactly one full block")
     require(cpu.mem[state["UBS_COK"]] == 0,
@@ -555,6 +562,15 @@ def main() -> None:
     writes = cpu.mem[0x7304]
     require(call(21, FCB) == 0xFF and cpu.mem[0x7304] == writes,
             "Sequential Write ignored software write protection")
+    saved_fcb = bytes(cpu.mem[FCB:FCB + 36])
+    require(call(16, FCB) == 0xFF and cpu.mem[0x7304] == writes and
+            bytes(cpu.mem[FCB:FCB + 36]) == saved_fcb,
+            "dirty Close ignored software protection or changed the FCB")
+    cpu.setword(state["UB_RDONLY"], 0)
+    cpu.mem[FCB:FCB + 36] = bytes(36)
+    cpu.mem[FCB + 1:FCB + 12] = b"MISSING DAT"
+    require(call(16, FCB) == 0xFF and cpu.mem[0x7304] == writes,
+            "missing dirty Close wrote through a stale directory pointer")
 
     print(f"unified BDOS U01-U09 foundation passed ({len(image)} bytes)")
     print("disk, directory, allocation, extent, and record-transfer mapping passed")

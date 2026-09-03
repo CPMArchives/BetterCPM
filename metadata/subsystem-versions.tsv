@@ -2,8 +2,8 @@ component	identity	interface_version	implementation_version	status	notes
 BetterCP/M	System release	-	0.3	completed baseline	System release identity; not an aggregate API version
 CCP	Command environment	1.0	1.1	completed	Implementation has evolved while retaining the initial command-environment contract
 CPX	Command Processor Extension facility	1.0	1.0	completed	Interface includes the loadable CPX module contract
-BDOS	Basic Disk Operating System	1.1	1.1	completed	Interface 1.1 adds the immutable subsystem-version descriptor query at Function 206
+BDOS	Basic Disk Operating System	1.1	1.2	completed	Unified filesystem core integrated with protected extension controls; interface unchanged
 RSX	Resident System Extension facility	1.0	1.0	completed	Implementation version identifies the RSX manager; interface includes chaining and module contract
-BIOS	Basic Input/Output System	1.0	1.0	completed	API version identifies the machine-independent boundary; implementation version identifies the current baseline implementation
+BIOS	Basic Input/Output System	1.0	1.1	completed	Disk descriptors and workspaces moved into an independently accounted BIOS-owned unit
 RTC BIOS extension	Optional RTC hardware interface	-	-	planned	Assign conservative initial versions when the interface and first driver are completed
 Extended Services RSX	BetterCP/M extended-services namespace	-	-	planned	Assign separate API and implementation versions when completed

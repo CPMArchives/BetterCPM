@@ -1,8 +1,6 @@
-; BetterCP/M compact unified BDOS -- replacement implementation in progress.
-;
-; This component is built and tested beside the historical dispatch.mac plus
-; directory.mac pair. It does not enter the boot image until functions 0..40
-; pass the same public contract within the 3.5K release ceiling.
+; BetterCP/M compact unified CP/M BDOS. The production resident image uses
+; this single filesystem engine. Extended controls use a separate protected
+; stack because loading an RSX requires nested standard disk calls.
 
 UB_BASE         EQU     0C100H
 BIO_WBOOT       EQU     0EF03H
@@ -25,9 +23,12 @@ BIO_SECTRAN     EQU     0EF30H
 
 ; U01 -- one public call frame and one 0..40 dispatch convention.
 UB_ENTRY:
+        LD      A,C
+        CP      200
+        JP      NC,0D600H
         LD      (UB_OLDSP),SP
         LD      SP,UB_STKTOP
-        PUSH    IX              ; one active FCB/parameter pointer per call
+        LD      (UB_OLDIX),IX    ; nonlocal error exits can unwind any helper depth
         PUSH    DE
         POP     IX
         LD      A,C
@@ -67,7 +68,7 @@ UB_RETA:
 UB_RETHL:
         LD      A,L             ; CP/M normal-return aliases A=L, B=H
         LD      B,H
-        POP     IX
+        LD      IX,(UB_OLDIX)
         LD      SP,(UB_OLDSP)
         RET
 
@@ -218,7 +219,7 @@ UB_BS:
         JR      Z,UB_RAWCHAR
         DEC     (HL)
 UB_RAWCHAR:
-        LD      C,A
+        LD      C,8             ; A now contains the column, not the input byte
 
 ; Polling during output implements ^S/^P/^C and preserves ordinary typeahead.
 UB_PUT:
@@ -260,10 +261,19 @@ UB_PUTNOW:
         JP      BIO_LIST
 
 UB_ECHO:
+        CP      8
+        JR      Z,UB_ECHOUT
+        CP      9
+        JR      Z,UB_ECHOUT
+        CP      10
+        JR      Z,UB_ECHOUT
+        CP      13
+        JR      Z,UB_ECHOUT
         CP      32
         RET     C
         CP      127
         RET     NC
+UB_ECHOUT:
         PUSH    AF
         CALL    UB_COCHAR
         POP     AF
@@ -500,8 +510,7 @@ UB_USER:
         LD      A,E
         CP      0FFH
         JR      Z,UB_GETUSR
-        CP      16
-        JP      NC,UB_BAD
+        AND     01FH            ; CP/M public BDOS user byte is modulo 32
         LD      (UB_USERNO),A
 UB_GETUSR:
         LD      A,(UB_USERNO)
@@ -739,7 +748,7 @@ UB_ITER:
         JR      UB_ITADV
 UB_IUSED:
         LD      A,(HL)
-        CP      16
+        CP      32
         JR      NC,UB_ITADV
         LD      A,(UB_ITUSER)
         CP      0FFH
@@ -794,7 +803,7 @@ UB_ITFOUND:
         RET
 UB_IALIVE:
         LD      A,(HL)
-        CP      16
+        CP      32
         JR      C,UB_ITFOUND
         JR      UB_ITADV
 UB_ITMISS:
@@ -913,7 +922,11 @@ UB_CCORE:
         LD      A,(HL)
         AND     080H
         JR      NZ,UB_CLCLEAN
+        CALL    UB_MCTX
+        JP      NZ,UB_BAD
+        LD      DE,(UB_ITFCB)
         CALL    UB_OPENCORE
+        JP      C,UB_BAD        ; never publish through a stale directory pointer
         LD      HL,(UB_ITFCB)
         LD      DE,12
         ADD     HL,DE
@@ -1344,7 +1357,7 @@ UB_WCORE:
         JR      NZ,UB_RBAD
         LD      A,(IX+9)
         AND     080H
-        JP      NZ,UB_BAD
+        JP      NZ,UB_FRO
         LD      A,(IX+32)
         CP      128
         JR      NZ,UB_WCUR
@@ -1422,6 +1435,20 @@ UB_WDONE:
 UB_WBAD:
         JP      UB_BAD
 
+UB_FRO:
+        LD      HL,UB_FROMESSAGE
+UB_FROLOOP:
+        LD      A,(HL)
+        OR      A
+        JP      Z,BIO_WBOOT
+        INC     HL
+        PUSH    HL
+        CALL    UB_COCHAR
+        POP     HL
+        JR      UB_FROLOOP
+UB_FROMESSAGE:
+        DB      13,10,'File R/O',13,10,0
+
 ; Function 33 decodes R0..R2 into the ordinary extent position, activates
 ; that extent, and then enters the exact same read core as Function 20.
 UB_RREAD:
@@ -1432,7 +1459,7 @@ UB_RREAD:
         PUSH    IX
         POP     DE
         CALL    UB_READCORE
-        JP      UB_RETA
+        JR      UB_RRETURN
 
 ; Function 34 differs only in its final shared transfer core.
 UB_RWRITE:
@@ -1446,6 +1473,12 @@ UB_RWCOMMON:
         PUSH    IX
         POP     DE
         CALL    UB_WCORE
+UB_RRETURN:
+        PUSH    AF
+        LD      A,(IX+33)
+        AND     07FH
+        LD      (IX+32),A       ; random I/O positions CR; only sequential advances it
+        POP     AF
         JP      UB_RETA
 
 ; Function 40 zeroes every record of a newly allocated block before the
@@ -1780,6 +1813,16 @@ UB_ALNEXT:
         DJNZ    UB_ALLP
         JR      UB_ALSCAN
 UB_ALDONE:
+        LD      A,(UB_DPBC+7)
+        INC     A
+        LD      B,A
+        LD      A,(UB_ITPOS)
+        CP      B
+        JR      Z,UB_ALOK       ; only actual directory exhaustion is successful
+        LD      A,1
+        OR      A
+        RET
+UB_ALOK:
         XOR     A
         RET
 
@@ -1956,7 +1999,9 @@ UB_POSDONE:
         CALL    BIO_SECTRAN
         LD      B,H
         LD      C,L
-        JP      BIO_SETSEC
+        CALL    BIO_SETSEC
+        OR      A               ; successful mapping must clear carry
+        RET
 
 UB_DIRFLUSH:
         LD      A,(UB_DIRTY)
@@ -1976,6 +2021,7 @@ UB_DIRFLUSH:
         RET
 
 UB_OLDSP:       DW      0
+UB_OLDIX:       DW      0
 UB_DRIVE:       DB      0
 UB_USERNO:      DB      0
 UB_DMA:         DW      0080H

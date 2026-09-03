@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Cross-assemble the initial BetterCP/M BDOS dispatcher."""
+"""Cross-assemble the production unified BDOS within its 3.5K ceiling."""
 from __future__ import annotations
 
 import argparse
@@ -9,7 +9,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "src/bdos/dispatch.mac"
+SOURCE = ROOT / "src/bdos/unified.mac"
 VERSIONS = ROOT / "src/bdos/versions.inc"
 BUILD = ROOT / "build/bdos"
 BASE = 0xC100
@@ -37,8 +37,8 @@ def main() -> None:
     if len(data) > BASE and data[:BASE] == bytes(BASE):
         data = data[BASE:]
         output.write_bytes(data)
-    if not data:
-        raise SystemExit("empty BDOS output")
+    if not data or len(data) > 3584:
+        raise SystemExit(f"BDOS size {len(data)} violates the 3584-byte ceiling")
     print(f"{hashlib.sha256(data).hexdigest()}  {output.relative_to(ROOT)}")
     print(f"BDOS bytes including private stack: {len(data)}")
 

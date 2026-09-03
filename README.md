@@ -7,9 +7,17 @@ Current system release: **BetterCP/M 0.3**.
 Subsystem versions evolve independently. The adopted rules are defined in
 [`SUBSYSTEM-VERSIONING.md`](specifications/SUBSYSTEM-VERSIONING.md), and the
 authoritative current assignments are maintained in
-[`subsystem-versions.tsv`](metadata/subsystem-versions.tsv). The initial
-completed baselines are CCP implementation 1.1/API 1.0 and CPX, BDOS, RSX,
-and BIOS implementation 1.0/API 1.0.
+[`subsystem-versions.tsv`](metadata/subsystem-versions.tsv). Current versions
+are CCP implementation 1.1/API 1.0, BDOS implementation 1.2/API 1.1,
+BIOS implementation 1.1/API 1.0, and CPX/RSX implementation 1.0/API 1.0.
+
+The production image now uses `src/bdos/unified.mac`, not the legacy dispatcher
+and separate directory engine. The compact core is 3,373 bytes; protected
+extension controls use another 631 bytes and BIOS disk tables/workspaces 408
+bytes. These are separately counted, not hidden in the 3.5K core claim.
+See [Unified Core Integration](docs/engineering/125%20Unified%20Core%20Integration.md).
+Historical conformance results below refer to the earlier implementation;
+they are not a completed regression certification of this replacement.
 
 The project has entered implementation. Its reproducibly generated TRS-80 Model 4 disks now load the resident BetterCP/M BIOS, BDOS, directory services, and CCP; expose physical floppy drives A: through D:; boot to an `A0>` drive/user prompt under `trs80gp`; accept direct `B:`, `5:`, and `C3:` navigation; provide visible-cursor CCP line editing with insert/overwrite modes, deletion, and persistent multi-command history; and store extensions as ordinary directory-visible files. A protected filename loader reconstructs default BASIC on cold boot and the active CPX set on WBOOT without relying on reclaimable command code. `CPX.COM` and `RSX.COM` accept arbitrary module names with or without their extensions. The versioned `BRSX` loader validates headers and payload checksums, relocates an ordered protected chain, enumerates its service metadata, preserves it across WBOOT, and returns each allocation to the TPA on unload. `HELLO.RSX` and `ECHO.RSX` prove two-module chaining and safe removal of the first chain member while the second remains callable. BASIC provides `DIR`, `ERA`, `TYPE`, `REN`, `SAVE`, `USER`, `CLR`, and `VER`; all except inherently resident SAVE have ordinary transient counterparts, and transient-only WARM supports scripts. Optional HELLO.CPX proves multiple-command-module chaining and transient-command fallback. The system retains transitional core copies pending their final removal, loads transient `.COM` programs with CP/M command tails and default FCBs, and completes clean independent physical compatibility passes for `ENTRYTST /SAFE` (25 passes), `BDOSTEST /SAFE` (56 passes), `FILETEST /SAFE` (28 passes with no omissions), and the complete applicable RANDTEST catalog: 41 required passes and 7 diagnostic observations. The complete 72-item DIRTEST catalog is also accounted for: all 52 required cases pass physically, all 15 diagnostics are observed, and its 5 private-mechanism or otherwise out-of-scope cases are explicitly identified. CPUTEST closes its five-item processor catalog with 2 required passes, 1 observation, and 2 explicit exclusions. BIOSTEST now records 29 physical required passes, including write-protect recovery, controlled logical-device behavior, and all three retained-evidence BOOT/WBOOT procedures, plus 11 non-guaranteed observations; its remaining 6 catalog entries are explicitly provider-dependent, optional, or out of scope. The build also produces canonical cross-drive, multi-user, full-disk, and genuinely blank disposable fixtures for four-drive testing.
 
@@ -184,11 +192,7 @@ python3 tools/test_bios.py
 python3 tools/build_native_bios.py
 python3 tools/test_trs80_physical_read.py
 python3 tools/test_trs80_physical_write.py
-python3 tools/build_directory.py
-python3 tools/test_directory.py
-python3 tools/build_native_directory.py
 python3 tools/build_bdos.py
-python3 tools/test_bdos.py
 python3 tools/build_native_bdos.py
 python3 tools/build_unified_bdos.py
 python3 tools/test_unified_bdos.py
@@ -221,6 +225,8 @@ python3 tools/build_native_fileloader.py
 python3 tools/build_system.py
 python3 tools/test_system.py
 python3 tools/build_native_system.py
+python3 tools/build_native_bdos.py --component extensions
+python3 tools/build_native_bdos.py --component tables
 python3 tools/build_trs80_boot.py
 python3 tools/build_native_trs80.py
 python3 tools/test_trs80_boot.py

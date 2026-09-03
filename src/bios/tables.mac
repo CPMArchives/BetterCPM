@@ -1,0 +1,53 @@
+; BIOS-owned disk descriptors and workspaces, separate from the BDOS core.
+        CSEG
+        .PHASE  0DA00H
+BIO_DPH0:
+        DW      0,0,0,0,0EC80H,BIO_DPB0,BIO_CSV0,BIO_ALV0
+BIO_DPH1:
+        DW      0,0,0,0,0EC80H,BIO_DPB0,BIO_CSV1,BIO_ALV1
+BIO_DPH2:
+        DW      0,0,0,0,0EC80H,BIO_DPB0,BIO_CSV2,BIO_ALV2
+BIO_DPH3:
+        DW      0,0,0,0,0EC80H,BIO_DPB0,BIO_CSV3,BIO_ALV3
+BIO_DPB0:
+        DW      80
+        DB      4,15,0
+        DW      394,127
+        DB      0C0H,0
+        DW      32,2
+        DB      0               ; align mutable workspace at DA50h
+BIO_CSV0:
+        REPT    32
+        DB      0
+        ENDM
+BIO_ALV0:
+        REPT    50
+        DB      0
+        ENDM
+BIO_CSV1:
+        REPT    32
+        DB      0
+        ENDM
+BIO_ALV1:
+        REPT    50
+        DB      0
+        ENDM
+BIO_CSV2:
+        REPT    32
+        DB      0
+        ENDM
+BIO_ALV2:
+        REPT    50
+        DB      0
+        ENDM
+BIO_CSV3:
+        REPT    32
+        DB      0
+        ENDM
+BIO_ALV3:
+        REPT    50
+        DB      0
+        ENDM
+
+        .DEPHASE
+        END

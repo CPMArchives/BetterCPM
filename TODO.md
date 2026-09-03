@@ -21,9 +21,12 @@ bring-up history is kept in those documents rather than repeated here.
   development layout.
 - [x] Inventory functions 13 through 40 against a single set of universal
   drive, FCB, directory, extent, allocation, transfer, and recovery services.
-- [ ] Replace the separate dispatcher/filesystem implementation with the
+- [x] Replace the separate dispatcher/filesystem implementation with the
   unified BDOS specified by Engineering Specification 123; require no more
   than 3.5K for functions 0 through 40 before switching the system build.
+  Integrated at 3,373 bytes with 211 bytes free; extension and BIOS support
+  are separately accounted in Engineering Specification 125. Full physical
+  compliance regression remains the separate task above.
 - [ ] Measure and publish the memory cost of the core, buffers, persistent
   DATA, installed RSXs, CPXs, and CCP.
 

@@ -14,9 +14,9 @@ EXPECTED = {
     "BetterCP/M": ("-", "0.3", "completed baseline"),
     "CCP": ("1.0", "1.1", "completed"),
     "CPX": ("1.0", "1.0", "completed"),
-    "BDOS": ("1.1", "1.1", "completed"),
+    "BDOS": ("1.1", "1.2", "completed"),
     "RSX": ("1.0", "1.0", "completed"),
-    "BIOS": ("1.0", "1.0", "completed"),
+    "BIOS": ("1.0", "1.1", "completed"),
 }
 
 
@@ -48,8 +48,8 @@ def main() -> None:
         require(banner in text, f"{relative} does not expose {banner}")
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     require(banner in readme, f"README does not identify {banner}")
-    print(f"{banner}; CCP impl 1.1/API 1.0; BDOS impl 1.1/API 1.1; "
-          "CPX, RSX, BIOS impl 1.0/API 1.0")
+    print(f"{banner}; CCP impl 1.1/API 1.0; BDOS impl 1.2/API 1.1; "
+          "CPX, RSX impl 1.0/API 1.0; BIOS impl 1.1/API 1.0")
 
 
 if __name__ == "__main__":

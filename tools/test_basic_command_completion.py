@@ -47,8 +47,8 @@ def main() -> None:
     output = run("VER /V")
     for line in (
         "Command environment: API 1.0; implementation 1.1",
-        "Basic Disk Operating System: API 1.1; implementation 1.1",
-        "Basic Input/Output System: API 1.0; implementation 1.0",
+        "Basic Disk Operating System: API 1.1; implementation 1.2",
+        "Basic Input/Output System: API 1.0; implementation 1.1",
     ):
         require(line in output, f"resident VER /V omitted {line}")
     require("Extension facility" not in output,
@@ -56,7 +56,7 @@ def main() -> None:
     output = run("A:VER")
     require("BetterCP/M 0.3" in output, "transient VER.COM did not match VER")
     output = run("A:VER /V")
-    require("Basic Disk Operating System: API 1.1; implementation 1.1" in output,
+    require("Basic Disk Operating System: API 1.1; implementation 1.2" in output,
             "transient VER.COM did not share verbose subsystem reporting")
 
     output = run("A:DIR")

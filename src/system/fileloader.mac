@@ -19,7 +19,7 @@ FL_OPBODY:
         LDIR
 FL_REOPEN:
         LD      HL,FL_FCB
-        LD      (HL),0
+        LD      (HL),1          ; module source is A0, independent of current DU
         INC     HL
         LD      DE,FL_NAME
         LD      B,8

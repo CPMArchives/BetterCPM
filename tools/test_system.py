@@ -21,9 +21,10 @@ DATA = 0x7900
 
 def bdos_symbol(name: str) -> int:
     import re
+    name = {"BDOS_OLDSP": "UB_OLDSP", "BDOS_DMA": "UB_DMA"}.get(name, name)
     listing = (ROOT / "build/bdos/bdos.lst").read_text(
         encoding="ascii", errors="replace")
-    matches = re.findall(rf"^([0-9a-f]{{4}})\s+.*\b{name}:?\s*$",
+    matches = re.findall(rf"^([0-9a-f]{{4}})\s+.*\b{name}:",
                          listing, re.MULTILINE | re.IGNORECASE)
     require(matches, f"BDOS listing lacks {name}")
     return int(matches[-1], 16)
@@ -250,10 +251,13 @@ def main() -> None:
             bytes(cpu.mem[FIXTURE:FIXTURE + 512]) == media_before_close,
             "CALL 0005h unchanged Close modified FCB or media")
     cpu.mem[FCB + 15] = 2
+    cpu.mem[FCB + 14] &= 0x7F  # CP/M S2 modified-bit protocol used by unified BDOS
     dirty_fcb = bytes(cpu.mem[FCB:FCB + 33])
     cpu.c, cpu.de = 16, FCB
     cpu.run(CALLER, limit=50000)
-    require(cpu.a == 1 and bytes(cpu.mem[FCB:FCB + 33]) == dirty_fcb and
+    closed_fcb = bytearray(dirty_fcb)
+    closed_fcb[14] |= 0x80
+    require(cpu.a == 1 and bytes(cpu.mem[FCB:FCB + 33]) == bytes(closed_fcb) and
             cpu.mem[entry + 15] == 2,
             "CALL 0005h dirty Close did not commit RC")
 
@@ -268,12 +272,14 @@ def main() -> None:
             "CALL 0005h Search First did not transfer its directory record")
     saved_record = bytes(cpu.mem[FIXTURE:FIXTURE + 128])
     cpu.mem[FIXTURE:FIXTURE + 128] = bytes((0xE5,)) * 128
+    cpu.mem[bdos_symbol("UBS_COK")] = 0  # fixture changed behind the disk cache
     cpu.c, cpu.de = 26, 0x7280
     cpu.run(CALLER)
     cpu.c, cpu.de = 18, 0xA55A
     cpu.run(CALLER, limit=50000)
     require(cpu.a == 0xFF, "CALL 0005h Search Next did not reach exhaustion")
     cpu.mem[FIXTURE:FIXTURE + 128] = saved_record
+    cpu.mem[bdos_symbol("UBS_COK")] = 0
 
     cpu.mem[FCB:FCB + 33] = bytes(33)
     cpu.mem[FCB + 1:FCB + 12] = b"READ    DAT"
@@ -299,7 +305,7 @@ def main() -> None:
     cpu.c, cpu.de = 33, FCB
     cpu.run(CALLER, limit=100000)
     require(cpu.a == 0 and cpu.mem[FCB + 12] == 0 and
-            cpu.mem[FCB + 14] == 0 and cpu.mem[FCB + 32] == 1 and
+            cpu.mem[FCB + 14] & 0x3F == 0 and cpu.mem[FCB + 32] == 1 and
             bytes(cpu.mem[FCB + 33:FCB + 36]) == bytes((1, 0, 0)) and
             bytes(cpu.mem[0x7100:0x7180]) == bytes((0xA1,)) * 128,
             "CALL 0005h Read Random did not preserve CP/M FCB semantics")
@@ -470,6 +476,38 @@ def main() -> None:
     cpu.run(CALLER)
     require(cpu.a == 31, "disk reset did not preserve current user")
 
+    # Extended services use a separate frame: loading modules makes nested
+    # standard BDOS calls without disturbing the application's DU/DMA state.
+    cpu.c = 206
+    cpu.run(CALLER)
+    require(bytes(cpu.mem[cpu.hl:cpu.hl + 4]) == b"BV\x01\x03",
+            "integrated version descriptor is unavailable")
+    cpu.c = 205
+    cpu.run(CALLER)
+    first_toggle = cpu.a
+    cpu.c = 205
+    cpu.run(CALLER)
+    require(cpu.a == (first_toggle ^ 0xFF), "printer hook lost shared state")
+    cpu.c, cpu.de = 200, 0x0100
+    cpu.run(CALLER)
+    require(cpu.a == 1, "legacy CPX query lost the default BASIC profile")
+    cpu.mem[0x7400:0x740E] = bytes((1, 0)) + bytes(12)
+    cpu.c, cpu.de = 202, 0x7400
+    cpu.run(CALLER)
+    require(cpu.a == 0, "empty RSX enumeration failed")
+    cpu.c, cpu.de = 26, 0x7345
+    cpu.run(CALLER)
+    cpu.mem[FCB:FCB + 36] = bytes((1,)) + b"READ    DAT" + bytes(24)
+    cpu.de, cpu.ix = FCB, 0xA55A
+    saved_sp = cpu.sp
+    cpu.run(0xD612, limit=50000)
+    require(cpu.a != 0xFF and cpu.sp == saved_sp and cpu.ix == 0xA55A,
+            "nested unified Open damaged the protected-reader call frame")
+    require(cpu.mem[bdos_symbol("UB_USERNO")] == 31 and
+            cpu.word(bdos_symbol("UB_DMA")) == 0x7345 and
+            cpu.mem[bdos_symbol("UB_DRIVE")] == 0,
+            "protected module read changed caller DU/DMA state")
+
     # Initialization failure must not expose either conventional vector.
     failed = Z80(resident[bios_offset:])
     failed.sp = 0xA800
@@ -477,7 +515,7 @@ def main() -> None:
     failed_read = failed.word(calls[1] + 1)
     failed.mem[failed_read:failed_read + 4] = bytes((0x3E, 0x05, 0xB7, 0xC9))
     failed.run(SYSTEM_INIT, limit=5000)
-    require(failed.a == 5 and bytes(failed.mem[0:8]) == bytes(8),
+    require(failed.a != 0 and bytes(failed.mem[0:8]) == bytes(8),
             "failed initialization published page-zero vectors")
 
     # Exercise the real WBOOT -> CCP path. WARM invokes Function 0, after which

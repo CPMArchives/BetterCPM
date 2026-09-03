@@ -1,0 +1,210 @@
+; Protected extension controls and adapters to the single unified filesystem.
+; D600 entry is called BEFORE the core takes its private stack: RSX loading
+; calls standard BDOS recursively, using a distinct protected control stack.
+        CSEG
+        .PHASE  0D600H
+        JP      EX_ENTRY
+        REPT    0D60CH-$
+        DB      0
+        ENDM
+        JP      AD_LOGIN
+        DB      0,0,0
+        JP      AD_OPEN
+        REPT    0D624H-$
+        DB      0
+        ENDM
+        JP      AD_READ
+
+        INCLUDE core.inc
+CPTCOUNT        EQU     0C094H
+CPTFLAGS        EQU     0C095H
+CPTABLE         EQU     0C096H
+RSXCONTROL      EQU     0D100H
+BIOCURSOR       EQU     0EF36H
+COREBDOS        EQU     0C100H
+
+EX_ENTRY:
+        LD      (EX_OLDSP),SP
+        LD      SP,EX_STKTOP
+        PUSH    IX
+        LD      (EX_PARM),DE
+        LD      A,C
+        CP      200
+        JP      Z,BF_CPXCTL
+        CP      202
+        JP      Z,BF_RSXCTL
+        CP      204
+        JP      Z,BF_CURSOR
+        CP      205
+        JP      Z,BF_CCPPRN
+        CP      206
+        JP      Z,BF_VERSION
+        XOR     A
+EX_RETURN:
+        LD      L,A
+        LD      H,0
+EX_RETHL:
+        LD      A,L
+        LD      B,H
+        POP     IX
+        LD      SP,(EX_OLDSP)
+        RET
+
+BF_CPXCTL:
+        LD      A,D
+        CP      1
+        JR      Z,BCX_BASIC
+        CP      2
+        JR      NZ,BCX_BAD
+        LD      A,2
+        JR      BCX_MADE
+BCX_BASIC:
+        LD      A,1
+BCX_MADE:
+        LD      (BCX_MVAL),A
+        LD      A,E
+        OR      A
+        JR      Z,BCX_QUERY
+        CP      1
+        JR      Z,BCX_LOAD
+        CP      2
+        JR      Z,BCX_UNLOAD
+        LD      A,0FFH
+        JP      EX_RETURN
+BCX_QUERY:
+        LD      A,(BCX_MVAL)
+        LD      B,A
+        LD      A,(CPTFLAGS)
+        AND     B
+        JP      Z,EX_RETURN
+        LD      A,1
+        JP      EX_RETURN
+BCX_LOAD:
+        LD      A,(BCX_MVAL)
+        LD      B,A
+        LD      A,(CPTFLAGS)
+        OR      B
+        LD      (CPTFLAGS),A
+        JR      BCX_REBUILD
+BCX_UNLOAD:
+        LD      A,(BCX_MVAL)
+        CPL
+        LD      B,A
+        LD      A,(CPTFLAGS)
+        AND     B
+        LD      (CPTFLAGS),A
+BCX_REBUILD:
+        XOR     A
+        LD      (CPTCOUNT),A
+        LD      DE,CPTABLE
+        LD      A,(CPTFLAGS)
+        AND     1
+        JR      Z,BCX_RHELLO
+        LD      HL,BCX_NBASIC
+        LD      BC,8
+        LDIR
+        LD      A,(CPTCOUNT)
+        INC     A
+        LD      (CPTCOUNT),A
+BCX_RHELLO:
+        LD      A,(CPTFLAGS)
+        AND     2
+        JR      Z,BCX_RDONE
+        LD      HL,BCX_NHELLO
+        LD      BC,8
+        LDIR
+        LD      A,(CPTCOUNT)
+        INC     A
+        LD      (CPTCOUNT),A
+BCX_RDONE:
+        XOR     A
+        JP      EX_RETURN
+BCX_BAD:
+        LD      A,0FFH
+        JP      EX_RETURN
+
+BCX_NBASIC:    DB      'BASIC   '
+BCX_NHELLO:    DB      'HELLO   '
+
+BF_RSXCTL:
+        LD      DE,(EX_PARM)
+        CALL    RSXCONTROL
+        JP      EX_RETURN
+
+; BetterCP/M Function 206 returns the protected, versioned descriptor generated
+; from the normative subsystem matrix. Consumers must validate BV/version 1.
+BF_VERSION:
+        LD      HL,BCV_DESC
+        JP      EX_RETHL
+
+
+BF_CURSOR:
+        LD      A,E
+        LD      C,A
+        CALL    BIOCURSOR
+        OR      A
+        JP      Z,EX_RETURN
+        LD      A,E
+        OR      A
+        LD      A,1
+        JP      Z,EX_RETURN
+        LD      HL,UB_COLUMN
+        INC     (HL)
+        JP      EX_RETURN
+BF_CCPPRN:
+        LD      A,(UB_LISTE)
+        CPL
+        LD      (UB_LISTE),A
+        JP      EX_RETURN
+
+; These compatibility entry points contain no filesystem engine. Module
+; files use user zero, preserving the caller's drive, user and DMA selections.
+AD_LOGIN:
+        LD      E,C
+        LD      C,14
+        JR      AD_CALL
+AD_OPEN:
+        LD      C,15
+        JR      AD_CALL
+AD_READ:
+        LD      (AD_DMA),BC
+        LD      C,20
+AD_CALL:
+        LD      HL,(UB_DMA)
+        PUSH    HL
+        LD      A,(UB_DRIVE)
+        PUSH    AF
+        LD      A,(UB_USERNO)
+        PUSH    AF
+        XOR     A
+        LD      (UB_USERNO),A
+        LD      A,C
+        CP      20
+        JR      NZ,AD_INVOKE
+        LD      HL,(AD_DMA)
+        LD      (UB_DMA),HL
+AD_INVOKE:
+        CALL    COREBDOS
+        LD      C,A
+        POP     AF
+        LD      (UB_USERNO),A
+        POP     AF
+        LD      (UB_DRIVE),A
+        POP     HL
+        LD      (UB_DMA),HL
+        LD      A,C
+        OR      A
+        RET
+
+EX_OLDSP:       DW      0
+EX_PARM:        DW      0
+BCX_MVAL:       DB      0
+AD_DMA:         DW      0
+EX_STACK:
+        REPT    128
+        DB      0
+        ENDM
+EX_STKTOP:
+        INCLUDE versions.inc
+        .DEPHASE
+        END
