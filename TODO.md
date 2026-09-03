@@ -24,20 +24,20 @@ bring-up history is kept in those documents rather than repeated here.
 
 ## Command environment and BASIC.CPX
 
-- [ ] Add stock `USER` behavior to `BASIC.CPX`.
-- [ ] Make the intended BASIC command inventory `DIR`, `ERA`, `REN`, `SAVE`,
+- [x] Add stock `USER` behavior to `BASIC.CPX`.
+- [x] Make the intended BASIC command inventory `DIR`, `ERA`, `REN`, `SAVE`,
   `TYPE`, `USER`, plus the BetterCP/M extensions `CLR` and `VER`.
-- [ ] Supply matching transient `DIR.COM`, `ERA.COM`, `REN.COM`, `TYPE.COM`,
+- [x] Supply matching transient `DIR.COM`, `ERA.COM`, `REN.COM`, `TYPE.COM`,
   `USER.COM`, `CLR.COM`, and `VER.COM` fallbacks. They must reproduce the
   corresponding BASIC.CPX behavior and must not acquire a divergent
   transient-only feature set.
-- [ ] Keep `SAVE` resident-only: a transient `SAVE.COM` would overwrite the
+- [x] Keep `SAVE` resident-only: a transient `SAVE.COM` would overwrite the
   TPA contents that it is supposed to save.
 - [ ] Remove the transitional command copies from the core CCP only after the
   CPX implementations and applicable transient fallbacks are verified.
-- [ ] Remove transitional core `VER` after identical BASIC.CPX and `VER.COM`
+- [ ] Remove transitional core `VER` now that identical BASIC.CPX and `VER.COM`
   implementations are verified.
-- [ ] Provide transient-only `WARM.COM` for scripts and testing. Interactive
+- [x] Provide transient-only `WARM.COM` for scripts and testing. Interactive
   users retain canonical, disk-independent `Ctrl-C` warm boot; `WARM` does not
   belong in BASIC.CPX.
 - [ ] Finish common named-DU resolution and use it consistently for command

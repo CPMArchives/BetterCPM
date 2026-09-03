@@ -207,9 +207,15 @@ def main() -> None:
     era_path = ROOT / "build/utilities/ERA.COM"
     ren_path = ROOT / "build/utilities/REN.COM"
     type_path = ROOT / "build/utilities/TYPE.COM"
+    dir_path = ROOT / "build/utilities/DIR.COM"
+    user_path = ROOT / "build/utilities/USER.COM"
+    clr_path = ROOT / "build/utilities/CLR.COM"
+    ver_path = ROOT / "build/utilities/VER.COM"
+    warm_path = ROOT / "build/utilities/WARM.COM"
     for path in (resident_path, command_path, basic_cpx_path, hello_cpx_path,
                  hello_rsx_path, cpx_utility_path, rsx_utility_path,
-                 rsxtest_path, era_path, ren_path, type_path):
+                 rsxtest_path, era_path, ren_path, type_path, dir_path,
+                 user_path, clr_path, ver_path, warm_path):
         if not path.is_file():
             raise SystemExit(f"missing system-image input: {path}")
     boot = assemble(args.assembler, SOURCE / "boot.mac", BUILD / "boot.bin", BOOT_ADDRESS)
@@ -272,6 +278,11 @@ def main() -> None:
                      ("ERA.COM", era_path.read_bytes()),
                      ("REN.COM", ren_path.read_bytes()),
                      ("TYPE.COM", type_path.read_bytes()),
+                     ("DIR.COM", dir_path.read_bytes()),
+                     ("USER.COM", user_path.read_bytes()),
+                     ("CLR.COM", clr_path.read_bytes()),
+                     ("VER.COM", ver_path.read_bytes()),
+                     ("WARM.COM", warm_path.read_bytes()),
                      ("BASIC.CPX", basic_cpx_path.read_bytes()),
                      ("HELLO.CPX", hello_cpx_path.read_bytes()),
                      ("HELLO.RSX", hello_rsx_path.read_bytes()), *extras])

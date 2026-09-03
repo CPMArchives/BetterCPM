@@ -1,0 +1,14 @@
+; BetterCP/M transient warm-boot command for scripts and explicit workflows.
+; Interactive users normally type Control-C at the CCP prompt.
+
+BDOS    EQU     0005H
+
+        CSEG
+        .PHASE  0103H
+
+START:
+        LD      C,0
+        JP      BDOS
+
+        .DEPHASE
+        END     START

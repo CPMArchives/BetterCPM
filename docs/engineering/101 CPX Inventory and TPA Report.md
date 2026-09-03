@@ -13,7 +13,7 @@ program area available to applications.
 With the default proof module installed, the manager reports:
 
 ```text
-BASIC : DIR, ERA, TYPE, REN, SAVE, CLR
+BASIC : DIR, ERA, TYPE, REN, SAVE, USER, CLR, VER
 TPA available: 47K
 ```
 

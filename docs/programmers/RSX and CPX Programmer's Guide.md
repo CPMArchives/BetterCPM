@@ -240,9 +240,8 @@ first version, not yet a frozen third-party ABI.
 
 The default `BASIC.CPX` is intended to contain the complete stock CCP command
 set—`DIR`, `ERA`, `REN`, `SAVE`, `TYPE`, and `USER`—plus the BetterCP/M `CLR`
-and `VER` extensions. The current image has implemented the stock set except
-`USER`, plus `CLR`; adding `USER` and `VER` are the remaining command-migration
-steps. BASIC is reconstructed on cold and warm boot. The CCP still contains its
+and `VER` extensions. The current image implements all eight. BASIC is
+reconstructed on cold and warm boot. The CCP still contains its
 older command copies during the transition; CPX-first dispatch verifies that
 the module implementations are the ones normally exercised. Matching
 transient fallbacks are required for every stock command except `SAVE`, whose
