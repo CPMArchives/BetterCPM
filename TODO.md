@@ -105,6 +105,10 @@ directory utility unless it provides genuine additional value.
   interface before promising third-party binary compatibility.
 - [ ] Eventually supply useful optional modules, including an extended
   SUBMIT/ZEX-like CPX, without delaying the core system.
+- [ ] Maybe: on platforms with bank-switched memory, provide a `BANKMEM.RSX`
+  exposing portable extended-BDOS query, allocation, and inter-bank transfer
+  services over a small hardware-specific BIOS/HAL interface. This is an
+  optional-module possibility, not a requirement for ordinary 64K targets.
 
 ## Configuration, installation, and disk formats
 

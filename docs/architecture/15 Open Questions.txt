@@ -360,6 +360,11 @@ Questions include:
   * Should bank-switched memory initially benefit the operating
     system, applications, or both?
 
+  * Should a possible BANKMEM.RSX expose portable extended-BDOS
+    bank query, allocation, and transfer services over platform BIOS
+    or HAL primitives, while keeping its dispatch and recovery path
+    in permanently addressable memory?
+
   * What facilities would be required for applications explicitly to
     use additional memory?
 
