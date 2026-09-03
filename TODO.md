@@ -42,6 +42,15 @@ bring-up history is kept in those documents rather than repeated here.
   belong in BASIC.CPX.
 - [ ] Finish common named-DU resolution and use it consistently for command
   lookup, BASIC commands, transient utilities, and module loading.
+- [ ] Implement a system `PATH` facility for command lookup across canonical
+  `DU:` locations, with documented search order, failure behavior, and CPX
+  command precedence. Accept named-directory references as input conveniences,
+  but resolve them immediately to canonical `DU:` entries for storage and
+  runtime use (for example, `ROOT:,UTILS:,C3:,GAMES:` might resolve to
+  `A0:,A1:,C3:,B0:`).
+- [ ] Add a low-priority customizable prompt facility. Supported prompt fields
+  should include the current drive/user (`DU:`), named directory, and current
+  date/time while preserving a compact CP/M-style default.
 
 The 512-byte packed, multi-command history buffer in persistent DATA is
 already implemented, as are Up/Down recall and warm-boot persistence. It
@@ -114,6 +123,28 @@ directory utility unless it provides genuine additional value.
 - [ ] Decide and specify BetterCP/M native disk formats and any compatible
   timestamp or attribute extensions; the MM 790K format is a carrier, not an
   architectural filesystem commitment.
+
+## File metadata, attributes, date, and time
+
+- [ ] Implement complete CP/M file-attribute handling throughout BDOS,
+  directory services, resident commands, transient utilities, and image
+  tooling, including read-only, system (`$SYS`), archive, and the filename
+  high-bit conventions used to encode them.
+- [ ] Give `$SYS` files the intended system-wide visibility, particularly
+  making suitable files discoverable from every user area without weakening
+  normal user-area isolation or producing duplicate directory results.
+- [ ] Specify the BetterCP/M clock and timestamp model: date epoch and range,
+  time resolution, persistent/on-disk representation, behavior on systems
+  without a real-time clock, and platform BIOS interface.
+- [ ] Extend the native directory/filesystem design to store file timestamps
+  while retaining the chosen level of cpmtools compatibility and defining
+  behavior for legacy disks without timestamp metadata.
+- [ ] Propagate date/time and timestamp support through BDOS calls, directory
+  operations, file creation/update semantics, CONFIG, disk-image tools,
+  cpmtools definitions or extensions, and relevant utilities.
+- [ ] Implement `TIME.COM` to display and set the system date/time and to
+  inspect and modify file timestamps, with precise syntax and compatibility
+  tests.
 
 ## Devices and portability
 
