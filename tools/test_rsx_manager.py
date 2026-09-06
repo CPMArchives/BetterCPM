@@ -14,7 +14,7 @@ IMAGE = ROOT / "build/trs80/BetterCPM-Extended-80T-DS-System-790K.dmk"
 
 
 def tpa(*modules: str) -> bytes:
-    allocated = sum(struct.unpack_from("<H", (ROOT / f"build/rsx/{name}.RSX").read_bytes(), 14)[0]
+    allocated = (1024 if modules else 0) + sum(struct.unpack_from("<H", (ROOT / f"build/rsx/{name}.RSX").read_bytes(), 14)[0]
                     for name in modules)
     return f"TPA available: {(LAYOUT['TPA'] - 0x100 - allocated) // 1024}K".encode()
 
@@ -53,9 +53,9 @@ def main() -> None:
     require_ordered(first, (
         b"RSX function 201 unsupported", b"No RSXs loaded",
         f"TPA available: {(LAYOUT['TPA'] - 0x100) // 1024 - 0}K".encode(), b"HELLO : BDOS 201",
-        f"TPA available: {(LAYOUT['TPA'] - 0x100) // 1024 - 1}K".encode(), b"Hello from HELLO.RSX",
+        f"TPA available: {(LAYOUT['TPA'] - 0x100) // 1024 - 2}K".encode(), b"Hello from HELLO.RSX",
         b"RSX function 201 returned 5253h",
-        b"Resident System Extension facility: API 1.0; implementation 1.1",
+        b"Resident System Extension facility: API 1.0; implementation 1.2",
     ))
 
     second = run(("RSX LOAD HELLO", "RSX LOAD ECHO.RSX", "RSX LIST",

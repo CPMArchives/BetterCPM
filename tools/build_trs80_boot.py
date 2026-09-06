@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import shutil
+import sys
 import subprocess
 import tempfile
 from pathlib import Path
@@ -31,8 +32,8 @@ VERIFY_SECTOR_LOGICAL_INDEX = 2  # logical order sector 5
 VERIFY_PAYLOAD = b"BetterCP/M verify" + bytes(SECTOR_SIZE - len(b"BetterCP/M verify"))
 CROSS_FIXTURE = (b"BFILE-000 " * 12 + b"BFILE-00")
 SYSTEM_FIRST_LOGICAL_INDEX = 2
-SYSTEM_SECTORS = 31
-COMMAND_FIRST_LOGICAL_INDEX = SYSTEM_FIRST_LOGICAL_INDEX + SYSTEM_SECTORS
+SYSTEM_SECTORS = LAYOUT["BOOT_SECTORS"]
+COMMAND_FIRST_LOGICAL_INDEX = SYSTEM_FIRST_LOGICAL_INDEX + SYSTEM_SECTORS + 6
 COMMAND_SECTORS = 7
 FILESYSTEM_FIRST_SECTOR = 40   # DPB OFF=2, one logical track per cylinder
 ALLOCATION_BLOCK_BYTES = 2048
@@ -161,7 +162,7 @@ def install(boot: bytes, stage1: bytes, resident: bytes, command: bytes,
         raw[start:start + SECTOR_SIZE] = payload.ljust(SECTOR_SIZE, b"\x00")
     capacity = SYSTEM_SECTORS * SECTOR_SIZE
     loaded_capacity = LAYOUT["BOOT_SECTORS"] * SECTOR_SIZE
-    if LAYOUT["SYSTEM"] + loaded_capacity > LAYOUT["CEILING"]:
+    if LAYOUT["SYSTEM"] + loaded_capacity > LAYOUT["RAM_END"]:
         raise ValueError("resident load would overwrite hardware-mapped memory")
     if loaded_capacity > capacity or len(resident) > loaded_capacity:
         raise ValueError("resident image exceeds the stage-one load count")
@@ -169,6 +170,21 @@ def install(boot: bytes, stage1: bytes, resident: bytes, command: bytes,
         raise ValueError(f"resident image is {len(resident)} bytes; loader capacity is {capacity}")
     start = SYSTEM_FIRST_LOGICAL_INDEX * SECTOR_SIZE
     raw[start:start + capacity] = resident.ljust(capacity, b"\x00")
+    reloader = (ROOT / "build/trs80/ccpreload.bin").read_bytes()
+    if not 0 < len(reloader) <= 896:
+        raise ValueError("transient reloader exceeds two reserved sectors")
+    reloader_start = (SYSTEM_FIRST_LOGICAL_INDEX + SYSTEM_SECTORS) * SECTOR_SIZE
+    raw[reloader_start:reloader_start + 1024] = reloader.ljust(1024, b"\x00")
+    controls = (ROOT / "build/system/config.bin").read_bytes()
+    if not 0 < len(controls) <= 1024:
+        raise ValueError("control overlay exceeds its physical-buffer window")
+    control_start = reloader_start + 1024
+    raw[control_start:control_start + 1024] = controls.ljust(1024, b"\x00")
+    manager = (ROOT / "build/system/rsxloader.bin").read_bytes()
+    if not 0 < len(manager) <= 893:
+        raise ValueError("on-demand RSX manager exceeds its allocation")
+    manager_start = control_start + 1024
+    raw[manager_start:manager_start + 1024] = manager.ljust(1024, b"\x00")
     command_capacity = COMMAND_SECTORS * SECTOR_SIZE
     if len(command) > command_capacity:
         raise ValueError(f"command module is {len(command)} bytes; "
@@ -233,13 +249,13 @@ def main() -> None:
     bios = build_bios(args.assembler)
     resident = resident_path.read_bytes()
     bios_offset = LAYOUT["BIOS"] - LAYOUT["SYSTEM"]
-    if resident[bios_offset:] != bios:
+    if resident[bios_offset:bios_offset + len(bios)] != bios:
         raise SystemExit("resident.bin does not contain the current BIOS; "
                          "run tools/build_system.py before creating a boot disk")
     build_support(args.assembler)
     for name, key, ceiling in (("extensions", "EXTENSIONS", "DISK"),
-                               ("disk", "DISK", "TABLES"),
-                               ("tables", "TABLES", "RELOADER")):
+                               ("disk", "DISK", "BIOS"),
+                               ("tables", "TABLES", "RSX_STATE")):
         current = (ROOT / "build/system" / (name + ".bin")).read_bytes()
         offset = LAYOUT[key] - LAYOUT["SYSTEM"]
         if (len(current) > LAYOUT[ceiling] - LAYOUT[key] or
@@ -298,6 +314,10 @@ def main() -> None:
             ("BTREL.DAT", bytes(128)),
             ("BTFILL.DAT", bytes(filler_blocks * ALLOCATION_BLOCK_BYTES)),
         ))
+    # These carriers live on disk, so always rebuild their layout-dependent code.
+    for tool in ("build_ccpreload.py", "build_rsxloader.py"):
+        subprocess.run([sys.executable, str(ROOT / "tools" / tool),
+                        "--assembler", str(args.assembler)], check=True)
     image = install(boot, stage1, resident, command,
                     [("HELLO.COM", HELLO_COM),
                      ("CPX.COM", cpx_utility_path.read_bytes()),

@@ -15,7 +15,7 @@ SOURCE = ROOT / "src/bios"
 PLATFORM = ROOT / "src/platform/trs80m4"
 BUILD = ROOT / "build/bios"
 BIOS_ADDRESS = LAYOUT["BIOS"]
-BIOS_LIMIT = LAYOUT["CEILING"] - BIOS_ADDRESS
+BIOS_LIMIT = LAYOUT["FILE"] - BIOS_ADDRESS
 
 
 def validate_bios(data: bytes) -> None:
@@ -24,7 +24,7 @@ def validate_bios(data: bytes) -> None:
     if len(data) > BIOS_LIMIT:
         raise SystemExit(
             f"BIOS is {len(data)} bytes; region {BIOS_ADDRESS:04X}h.."
-            f"{LAYOUT['CEILING'] - 1:04X}h permits {BIOS_LIMIT} bytes "
+            f"{LAYOUT['FILE'] - 1:04X}h permits {BIOS_LIMIT} bytes "
             f"(exceeds by {len(data) - BIOS_LIMIT} bytes); BIOS not installed")
 
 
@@ -44,6 +44,7 @@ def build_bios(assembler: Path) -> bytes:
         shutil.copy2(PLATFORM / "m4cons.inc", staged / "m4cons.inc")
         shutil.copy2(PLATFORM / "m4scroll.inc", staged / "m4scroll.inc")
         shutil.copy2(PLATFORM / "m4disk.inc", staged / "m4disk.inc")
+        (staged / "reload.inc").write_text(expand_layout((PLATFORM / "reload.inc").read_text()))
         staged_output = staged / "bios.bin"
         staged_listing = staged / "bios.lst"
         subprocess.run([str(assembler), "-fb", f"-o{staged_output}",

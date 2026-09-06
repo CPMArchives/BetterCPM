@@ -35,7 +35,7 @@ def main():
 
         source = root / "src/bios/bios.mac"
         original_source = source.read_text()
-        padding = LAYOUT["CEILING"] - LAYOUT["BIOS"] + 12 - len(originals[bios])
+        padding = LAYOUT["FILE"] - LAYOUT["BIOS"] + 12 - len(originals[bios])
         assert padding > 0
         source.write_text(original_source.replace(
             "        .DEPHASE", f"        DS      {padding}\n        .DEPHASE"))

@@ -1,19 +1,27 @@
-; Protected Model 4 map with runtime disk configuration.
-LY_SYS         EQU     0B600H
-LY_BDOS        EQU     0B700H
-LY_FILE        EQU     0C430H
-LY_RSX         EQU     0C510H
-LY_EXT         EQU     0C880H
-LY_DISK        EQU     0CC00H
-LY_TAB         EQU     0D780H
-LY_LOAD        EQU     0E680H
-LY_RSTA        EQU     0E9A0H
-LY_STKL        EQU     0E9D0H
-LY_STKT        EQU     0EA50H
-LY_DIR         EQU     0EA80H
-LY_BUF         EQU     0EB00H
-LY_BIOS        EQU     0EF00H
-LY_LIMIT       EQU     0F400H
-LY_HIST        EQU     0B400H
-LY_TPA         EQU     0B3FDH
-LY_SECTS       EQU     0001FH
+; COMMON RAM ASSIGNMENTS -- no hidden RAM or bank switching required.
+; TPA is 0100H through LY_TPA-1.  The three-byte jump and command
+; history follow it.  The command processor itself is reconstructible.
+; LY_RSX is optional: one K is charged only with an active RSX profile.
+; LY_CFG reuses LY_BUF; LY_LOAD and its stack borrow the finished TPA.
+; Keep build-time size checks: even a twelve-byte overrun is fatal.
+LY_SYS          EQU     0D704H
+LY_BDOS         EQU     0D804H
+LY_EXT          EQU     0E52DH
+LY_DISK         EQU     0E6BCH
+LY_BIOS         EQU     0EA53H
+LY_FILE         EQU     0ECE6H
+LY_TAB          EQU     0ED77H
+LY_RSTA         EQU     0EF57H
+LY_DIR          EQU     0EF80H
+LY_BUF          EQU     0F000H
+LY_RSX          EQU     0D104H
+LY_LOAD         EQU     00100H
+LY_CFG          EQU     0F000H
+LY_CPX          EQU     0F009H
+LY_STKL         EQU     00480H
+LY_STKT         EQU     00500H
+LY_LIMIT        EQU     0F400H
+LY_RAMEND       EQU     0F400H
+LY_HIST         EQU     0D504H
+LY_TPA          EQU     0D501H
+LY_SECTS        EQU     0000DH

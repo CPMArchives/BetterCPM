@@ -10,9 +10,8 @@ PL_CONIN       EQU     M4_IN
 PL_CONOT       EQU     M4_SCROLL_OUT
 PL_CURSOR      EQU     M4_CUROUT
 
-M4_READ_ONLY   EQU     0
-M4_MULTI_DRIVE EQU     1
-        INCLUDE m4disk.inc
-
-PL_READ        EQU     M4_READ
-PL_WRITE       EQU     M4_WRITE
+PL_INIT        EQU     M4_INIT
+        INCLUDE reload.inc
+PL_RELOAD      EQU     M4_RELOAD
+PL_OVLOAD      EQU     M4_OVLOAD
+PL_RSXLOAD     EQU     M4_RSLOAD

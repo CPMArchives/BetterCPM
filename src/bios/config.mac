@@ -1,0 +1,770 @@
+; DISK AND CPX CONTROL OVERLAY
+;
+; Lives in the idle physical-sector buffer.  Do not read a filesystem
+; sector while executing here -- that would erase our own instructions!
+; FORMAT writes from the caller's track stream, not from this buffer.
+; Common return paths restore the saved caller context in resident code.
+        INCLUDE layout.inc
+        INCLUDE disklinks.inc
+        INCLUDE cpxlinks.inc
+        INCLUDE bioslinks.inc
+        INCLUDE hardware.inc
+        CSEG
+        .PHASE  LY_CFG
+        JP CF_PHYS
+        JP CF_LOG
+        JP CF_FORMAT
+        JP BF_CPXCTL
+CF_PHYS:
+        LD A,(IX+0)
+        CALL DC_PHY
+        JP NC,DC_INVALID
+        LD (DC_DEST),HL
+        LD A,(IX+1)
+        CP 5
+        JP NZ,DC_UNSUPPORTED
+        LD A,(IX+2)
+        OR A
+        JP Z,DC_INVALID
+        CP 81
+        JP NC,DC_INVALID
+        LD A,(IX+3)
+        DEC A
+        CP 2
+        JP NC,DC_INVALID
+        LD A,(IX+4)
+        CP 4
+        JP NC,DC_INVALID
+        LD A,(IX+5)
+        CP 17
+        JP NC,DC_INVALID
+        ; Reject a hardware reduction that invalidates an attached format.
+        LD HL,LY_TAB+16
+        LD B,4
+DC_PHCHK:
+        LD A,(IX+0)
+        CP (HL)
+        JR NZ,DC_PHNEXT
+        PUSH HL
+        LD DE,16
+        ADD HL,DE
+        LD A,(IX+2)
+        CP (HL)
+        POP HL
+        JP C,DC_UNSUPPORTED
+        PUSH HL
+        LD DE,19
+        ADD HL,DE
+        BIT 6,(HL)
+        POP HL
+        JR Z,DC_PHNEXT
+        LD A,(IX+3)
+        CP 2
+        JP NZ,DC_UNSUPPORTED
+DC_PHNEXT:
+        LD DE,80
+        ADD HL,DE
+        DJNZ DC_PHCHK
+        PUSH IX
+        POP HL
+        INC HL
+        LD DE,(DC_DEST)
+        LD BC,6
+        LDIR
+        CALL DC_RESET
+        JP DC_OK
+
+CF_LOG:
+        LD A,(IX+0)
+        CALL DC_LOG
+        JP NC,DC_INVALID
+        LD DE,16
+        ADD HL,DE
+        LD (DC_DEST),HL
+        LD A,(IX+1)
+        CP 0FFH
+        JR NZ,DC_VALIDATE
+        LD A,(IX+0)
+        OR A
+        JP Z,DC_UNSUPPORTED
+        LD HL,(DC_DEST)
+        LD (HL),0FFH
+        CALL DC_RESET
+        JP DC_OK
+DC_VALIDATE:
+        CALL DC_PHY
+        JP NC,DC_INVALID
+        LD (DC_PHYADDR),HL
+        ; A is the fixed bootstrap filesystem until system-disk migration exists.
+        LD A,(IX+0)
+        OR A
+        JP Z,DC_UNSUPPORTED
+        LD A,(IX+17)
+        OR A
+        JP Z,DC_INVALID
+        CP 81
+        JP NC,DC_INVALID
+        INC HL
+        LD A,(HL)
+        CP (IX+17)
+        JP C,DC_UNSUPPORTED
+        INC HL
+        LD A,(IX+20)
+        AND 060H
+        CP 060H
+        JP Z,DC_UNSUPPORTED
+        BIT 6,(IX+20)
+        JR Z,DC_ONESIDE
+        LD A,(HL)
+        CP 2
+        JP NZ,DC_UNSUPPORTED
+DC_ONESIDE:
+        LD A,(IX+20)
+        AND 02FH             ; nonstandard side order/numbering unsupported v1
+        JP NZ,DC_UNSUPPORTED
+        LD A,(IX+18)
+        OR A
+        JP Z,DC_INVALID
+        CP 33
+        JP NC,DC_UNSUPPORTED
+        LD B,A
+        LD A,(IX+19)
+        CP 4
+        JP NC,DC_UNSUPPORTED
+        LD C,A
+        LD HL,0
+        LD L,B
+        OR A
+        JR Z,DC_SPT
+DC_SPTSHIFT:
+        ADD HL,HL
+        DEC A
+        JR NZ,DC_SPTSHIFT
+DC_SPT:
+        LD A,(IX+3)
+        CP H
+        JP NZ,DC_INVALID
+        LD A,(IX+2)
+        CP L
+        JP NZ,DC_INVALID
+        ; 128-byte CSV / directory limits inherited from current BDOS iterator.
+        LD A,(IX+10)
+        OR A
+        JP NZ,DC_UNSUPPORTED
+        LD A,(IX+9)
+        CP 128
+        JP NC,DC_UNSUPPORTED
+        LD A,(IX+8)
+        CP 4
+        JP NC,DC_UNSUPPORTED
+        LD A,(IX+14)
+        OR A
+        JP NZ,DC_INVALID
+        LD A,(IX+13)
+        CP 33
+        JP NC,DC_UNSUPPORTED
+        LD A,(IX+4)
+        CP 3
+        JP C,DC_INVALID
+        CP 8
+        JP NC,DC_INVALID
+        LD B,A
+        LD A,1
+DC_BLMSH:
+        ADD A,A
+        DJNZ DC_BLMSH
+        DEC A
+        CP (IX+5)
+        JP NZ,DC_INVALID
+        ; Directory records occupy the first allocation blocks.
+        LD A,(IX+9)
+        SRL A
+        SRL A
+        INC A
+        LD C,A
+        LD A,(IX+5)
+        INC A
+        LD B,A
+        LD A,C
+        LD C,0
+DC_DIRBL:
+        SET 7,C
+        SUB B
+        JR C,DC_DIRMASK
+        JR Z,DC_DIRMASK
+        SRL C
+        JR DC_DIRBL
+DC_DIRMASK:
+        LD A,(IX+11)
+        AND C
+        CP C
+        JP NZ,DC_INVALID
+        ; EXM follows allocation-entry width and block size.
+        LD A,(IX+4)
+        SUB 3
+        LD B,A
+        LD A,(IX+8)
+        OR A
+        LD A,B
+        JR Z,DC_EXMSZ
+        OR A
+        JP Z,DC_INVALID
+        DEC A
+DC_EXMSZ:
+        LD B,A
+        LD A,1
+        INC B
+DC_EXMSH:
+        DJNZ DC_EXMADD
+        JR DC_EXMDONE
+DC_EXMADD:
+        ADD A,A
+        JR DC_EXMSH
+DC_EXMDONE:
+        DEC A
+        CP (IX+6)
+        JP NZ,DC_INVALID
+        ; Allocation cannot extend past the available logical records.
+        LD L,(IX+17)
+        LD H,0
+        BIT 6,(IX+20)
+        JR Z,DC_CAPTRK
+        ADD HL,HL
+DC_CAPTRK:
+        LD E,(IX+15)
+        LD D,(IX+16)
+        OR A
+        SBC HL,DE
+        JP C,DC_INVALID
+        LD A,H
+        OR L
+        JP Z,DC_INVALID
+        LD B,L
+        LD E,(IX+2)
+        LD D,(IX+3)
+        LD HL,0
+DC_CAPMUL:
+        ADD HL,DE
+        DJNZ DC_CAPMUL
+        LD (DC_CAP),HL
+        LD L,(IX+7)
+        LD H,(IX+8)
+        INC HL
+        LD B,(IX+4)
+DC_ALSHIFT:
+        ADD HL,HL
+        JP C,DC_INVALID
+        DJNZ DC_ALSHIFT
+        LD DE,(DC_CAP)
+        OR A
+        SBC HL,DE
+        JR Z,DC_CAPOK
+        JP NC,DC_INVALID
+DC_CAPOK:
+        ; Validate sector IDs are unique (arbitrary bases are supported).
+        PUSH IX
+        POP HL
+        LD DE,21
+        ADD HL,DE
+        LD B,(IX+18)
+DC_SKEW:
+        LD A,(HL)
+        PUSH BC
+        PUSH HL
+        INC HL
+        DEC B
+        JR Z,DC_SKDONE
+DC_SKCMP:
+        CP (HL)
+        JP Z,DC_SKBAD
+        INC HL
+        DJNZ DC_SKCMP
+DC_SKDONE:
+        POP HL
+        POP BC
+        INC HL
+        DJNZ DC_SKEW
+        PUSH IX
+        POP HL
+        INC HL
+        LD DE,(DC_DEST)
+        LD BC,64
+        LDIR
+        CALL DC_RESET
+        JP DC_OK
+DC_SKBAD:
+        POP HL
+        POP BC
+        JP DC_INVALID
+        INCLUDE layout.inc
+        INCLUDE disklinks.inc
+        INCLUDE cpxlinks.inc
+        INCLUDE bioslinks.inc
+        INCLUDE hardware.inc
+        CSEG
+        .PHASE  LY_CFG
+        JP CF_PHYS
+        JP CF_LOG
+        JP CF_FORMAT
+        JP BF_CPXCTL
+CF_PHYS:
+        LD A,(IX+0)
+        CALL DC_PHY
+        JP NC,DC_INVALID
+        LD (DC_DEST),HL
+        LD A,(IX+1)
+        CP 5
+        JP NZ,DC_UNSUPPORTED
+        LD A,(IX+2)
+        OR A
+        JP Z,DC_INVALID
+        CP 81
+        JP NC,DC_INVALID
+        LD A,(IX+3)
+        DEC A
+        CP 2
+        JP NC,DC_INVALID
+        LD A,(IX+4)
+        CP 4
+        JP NC,DC_INVALID
+        LD A,(IX+5)
+        CP 17
+        JP NC,DC_INVALID
+        ; Reject a hardware reduction that invalidates an attached format.
+        LD HL,LY_TAB+16
+        LD B,4
+DC_PHCHK:
+        LD A,(IX+0)
+        CP (HL)
+        JR NZ,DC_PHNEXT
+        PUSH HL
+        LD DE,16
+        ADD HL,DE
+        LD A,(IX+2)
+        CP (HL)
+        POP HL
+        JP C,DC_UNSUPPORTED
+        PUSH HL
+        LD DE,19
+        ADD HL,DE
+        BIT 6,(HL)
+        POP HL
+        JR Z,DC_PHNEXT
+        LD A,(IX+3)
+        CP 2
+        JP NZ,DC_UNSUPPORTED
+DC_PHNEXT:
+        LD DE,80
+        ADD HL,DE
+        DJNZ DC_PHCHK
+        PUSH IX
+        POP HL
+        INC HL
+        LD DE,(DC_DEST)
+        LD BC,6
+        LDIR
+        CALL DC_RESET
+        JP DC_OK
+
+CF_LOG:
+        LD A,(IX+0)
+        CALL DC_LOG
+        JP NC,DC_INVALID
+        LD DE,16
+        ADD HL,DE
+        LD (DC_DEST),HL
+        LD A,(IX+1)
+        CP 0FFH
+        JR NZ,DC_VALIDATE
+        LD A,(IX+0)
+        OR A
+        JP Z,DC_UNSUPPORTED
+        LD HL,(DC_DEST)
+        LD (HL),0FFH
+        CALL DC_RESET
+        JP DC_OK
+DC_VALIDATE:
+        CALL DC_PHY
+        JP NC,DC_INVALID
+        LD (DC_PHYADDR),HL
+        ; A is the fixed bootstrap filesystem until system-disk migration exists.
+        LD A,(IX+0)
+        OR A
+        JP Z,DC_UNSUPPORTED
+        LD A,(IX+17)
+        OR A
+        JP Z,DC_INVALID
+        CP 81
+        JP NC,DC_INVALID
+        INC HL
+        LD A,(HL)
+        CP (IX+17)
+        JP C,DC_UNSUPPORTED
+        INC HL
+        LD A,(IX+20)
+        AND 060H
+        CP 060H
+        JP Z,DC_UNSUPPORTED
+        BIT 6,(IX+20)
+        JR Z,DC_ONESIDE
+        LD A,(HL)
+        CP 2
+        JP NZ,DC_UNSUPPORTED
+DC_ONESIDE:
+        LD A,(IX+20)
+        AND 02FH             ; nonstandard side order/numbering unsupported v1
+        JP NZ,DC_UNSUPPORTED
+        LD A,(IX+18)
+        OR A
+        JP Z,DC_INVALID
+        CP 33
+        JP NC,DC_UNSUPPORTED
+        LD B,A
+        LD A,(IX+19)
+        CP 4
+        JP NC,DC_UNSUPPORTED
+        LD C,A
+        LD HL,0
+        LD L,B
+        OR A
+        JR Z,DC_SPT
+DC_SPTSHIFT:
+        ADD HL,HL
+        DEC A
+        JR NZ,DC_SPTSHIFT
+DC_SPT:
+        LD A,(IX+3)
+        CP H
+        JP NZ,DC_INVALID
+        LD A,(IX+2)
+        CP L
+        JP NZ,DC_INVALID
+        ; 128-byte CSV / directory limits inherited from current BDOS iterator.
+        LD A,(IX+10)
+        OR A
+        JP NZ,DC_UNSUPPORTED
+        LD A,(IX+9)
+        CP 128
+        JP NC,DC_UNSUPPORTED
+        LD A,(IX+8)
+        CP 4
+        JP NC,DC_UNSUPPORTED
+        LD A,(IX+14)
+        OR A
+        JP NZ,DC_INVALID
+        LD A,(IX+13)
+        CP 33
+        JP NC,DC_UNSUPPORTED
+        LD A,(IX+4)
+        CP 3
+        JP C,DC_INVALID
+        CP 8
+        JP NC,DC_INVALID
+        LD B,A
+        LD A,1
+DC_BLMSH:
+        ADD A,A
+        DJNZ DC_BLMSH
+        DEC A
+        CP (IX+5)
+        JP NZ,DC_INVALID
+        ; Directory records occupy the first allocation blocks.
+        LD A,(IX+9)
+        SRL A
+        SRL A
+        INC A
+        LD C,A
+        LD A,(IX+5)
+        INC A
+        LD B,A
+        LD A,C
+        LD C,0
+DC_DIRBL:
+        SET 7,C
+        SUB B
+        JR C,DC_DIRMASK
+        JR Z,DC_DIRMASK
+        SRL C
+        JR DC_DIRBL
+DC_DIRMASK:
+        LD A,(IX+11)
+        AND C
+        CP C
+        JP NZ,DC_INVALID
+        ; EXM follows allocation-entry width and block size.
+        LD A,(IX+4)
+        SUB 3
+        LD B,A
+        LD A,(IX+8)
+        OR A
+        LD A,B
+        JR Z,DC_EXMSZ
+        OR A
+        JP Z,DC_INVALID
+        DEC A
+DC_EXMSZ:
+        LD B,A
+        LD A,1
+        INC B
+DC_EXMSH:
+        DJNZ DC_EXMADD
+        JR DC_EXMDONE
+DC_EXMADD:
+        ADD A,A
+        JR DC_EXMSH
+DC_EXMDONE:
+        DEC A
+        CP (IX+6)
+        JP NZ,DC_INVALID
+        ; Allocation cannot extend past the available logical records.
+        LD L,(IX+17)
+        LD H,0
+        BIT 6,(IX+20)
+        JR Z,DC_CAPTRK
+        ADD HL,HL
+DC_CAPTRK:
+        LD E,(IX+15)
+        LD D,(IX+16)
+        OR A
+        SBC HL,DE
+        JP C,DC_INVALID
+        LD A,H
+        OR L
+        JP Z,DC_INVALID
+        LD B,L
+        LD E,(IX+2)
+        LD D,(IX+3)
+        LD HL,0
+DC_CAPMUL:
+        ADD HL,DE
+        DJNZ DC_CAPMUL
+        LD (DC_CAP),HL
+        LD L,(IX+7)
+        LD H,(IX+8)
+        INC HL
+        LD B,(IX+4)
+DC_ALSHIFT:
+        ADD HL,HL
+        JP C,DC_INVALID
+        DJNZ DC_ALSHIFT
+        LD DE,(DC_CAP)
+        OR A
+        SBC HL,DE
+        JR Z,DC_CAPOK
+        JP NC,DC_INVALID
+DC_CAPOK:
+        ; Validate sector IDs are unique (arbitrary bases are supported).
+        PUSH IX
+        POP HL
+        LD DE,21
+        ADD HL,DE
+        LD B,(IX+18)
+DC_SKEW:
+        LD A,(HL)
+        PUSH BC
+        PUSH HL
+        INC HL
+        DEC B
+        JR Z,DC_SKDONE
+DC_SKCMP:
+        CP (HL)
+        JP Z,DC_SKBAD
+        INC HL
+        DJNZ DC_SKCMP
+DC_SKDONE:
+        POP HL
+        POP BC
+        INC HL
+        DJNZ DC_SKEW
+        PUSH IX
+        POP HL
+        INC HL
+        LD DE,(DC_DEST)
+        LD BC,64
+        LDIR
+        CALL DC_RESET
+        JP DC_OK
+DC_SKBAD:
+        POP HL
+        POP BC
+        JP DC_INVALID
+CF_FORMAT:
+        CALL DC_RESET         ; even a rejected request must clear cached context
+        LD A,(IX+0)
+        OR A
+        JP Z,DC_UNSUPPORTED
+        LD (BIO_DRIVE),A
+        LD HL,0
+        LD (BIO_TRACK),HL
+        LD (BIO_SECTOR),HL
+        CALL DC_MAP
+        OR A
+        JP NZ,DC_INVALID
+        LD A,(B_PDrive)
+        CP 1                ; never format bootstrap physical drive through alias
+        JP Z,DC_UNSUPPORTED
+        LD A,(IX+1)
+        LD (BIO_PCYL),A
+        LD A,(IX+0)
+        CALL DC_LOG
+        LD DE,32
+        ADD HL,DE
+        LD A,(IX+1)
+        CP (HL)
+        JP NC,DC_INVALID
+        LD A,(IX+2)
+        CP 2
+        JP NC,DC_INVALID
+        LD (B_PSide),A
+        OR A
+        JR Z,DC_FBUFFER
+        LD A,(DC_FLAGS)
+        AND 060H
+        JP Z,DC_INVALID
+DC_FBUFFER:
+        LD L,(IX+5)
+        LD H,(IX+6)
+        LD A,H
+        OR A
+        JP Z,DC_INVALID
+        LD (DC_BUFFER),HL
+        LD E,(IX+3)
+        LD D,(IX+4)
+        LD A,D
+        OR E
+        JP Z,DC_INVALID
+        ADD HL,DE
+        JP C,DC_INVALID
+        LD DE,LY_TPA
+        OR A
+        SBC HL,DE
+        JP NC,DC_INVALID
+        CALL DC_SEEK
+        OR A
+        JP NZ,DC_RETURN
+        LD HL,(DC_BUFFER)
+        LD B,(IX+3)
+        LD A,(IX+4)
+        LD C,A
+        LD A,B
+        OR A
+        LD A,C
+        JR Z,DC_FCOUNT
+        INC A
+DC_FCOUNT:
+        LD (DC_NBLK),A
+        LD C,FDCDATA
+        LD A,0F0H
+        OUT (FDCCOMMAND),A
+DC_FBYTE:
+        LD DE,0
+DC_FPOLL:
+        IN A,(FDCSTATUS)
+        AND 2
+        JR NZ,DC_FDATA
+        DEC DE
+        LD A,D
+        OR E
+        JR NZ,DC_FPOLL
+        IN A,(FDCSTATUS)
+        AND 1
+        JR Z,DC_FSTATUS
+        CALL DC_ERR
+        JP DC_RETURN
+DC_FDATA:
+        OUTI
+        JR NZ,DC_FBYTE
+        LD A,(DC_NBLK)
+        DEC A
+        LD (DC_NBLK),A
+        JR NZ,DC_FBYTE
+        ; The index pulse must complete before the stream is exhausted.
+        CALL DC_ERR
+        JP DC_RETURN
+DC_FSTATUS:
+        IN A,(FDCSTATUS)
+        AND 0FCH
+        JP DC_RETURN
+
+CPTCOUNT EQU LY_SYS+094H
+CPTFLAGS EQU LY_SYS+095H
+CPTABLE EQU LY_SYS+096H
+BF_CPXCTL:
+        LD      A,D
+        CP      1
+        JR      Z,BCX_BASIC
+        CP      2
+        JR      NZ,BCX_BAD
+        LD      A,2
+        JR      BCX_MADE
+BCX_BASIC:
+        LD      A,1
+BCX_MADE:
+        LD      (BCX_MVAL),A
+        LD      A,E
+        OR      A
+        JR      Z,BCX_QUERY
+        CP      1
+        JR      Z,BCX_LOAD
+        CP      2
+        JR      Z,BCX_UNLOAD
+        LD      A,0FFH
+        JP      EX_RETURN
+BCX_QUERY:
+        LD      A,(BCX_MVAL)
+        LD      B,A
+        LD      A,(CPTFLAGS)
+        AND     B
+        JP      Z,EX_RETURN
+        LD      A,1
+        JP      EX_RETURN
+BCX_LOAD:
+        LD      A,(BCX_MVAL)
+        LD      B,A
+        LD      A,(CPTFLAGS)
+        OR      B
+        LD      (CPTFLAGS),A
+        JR      BCX_REBUILD
+BCX_UNLOAD:
+        LD      A,(BCX_MVAL)
+        CPL
+        LD      B,A
+        LD      A,(CPTFLAGS)
+        AND     B
+        LD      (CPTFLAGS),A
+BCX_REBUILD:
+        XOR     A
+        LD      (CPTCOUNT),A
+        LD      DE,CPTABLE
+        LD      A,(CPTFLAGS)
+        AND     1
+        JR      Z,BCX_RHELLO
+        LD      HL,BCX_NBASIC
+        LD      BC,8
+        LDIR
+        LD      A,(CPTCOUNT)
+        INC     A
+        LD      (CPTCOUNT),A
+BCX_RHELLO:
+        LD      A,(CPTFLAGS)
+        AND     2
+        JR      Z,BCX_RDONE
+        LD      HL,BCX_NHELLO
+        LD      BC,8
+        LDIR
+        LD      A,(CPTCOUNT)
+        INC     A
+        LD      (CPTCOUNT),A
+BCX_RDONE:
+        XOR     A
+        JP      EX_RETURN
+BCX_BAD:
+        LD      A,0FFH
+        JP      EX_RETURN
+
+BCX_NBASIC:    DB      'BASIC   '
+BCX_NHELLO:    DB      'HELLO   '
+
+        .DEPHASE
+        END
+

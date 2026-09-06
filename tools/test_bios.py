@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Execute and verify the BetterCP/M BIOS scaffold's public entries."""
 from pathlib import Path
+import re
 from system_layout import LAYOUT
 
 ROOT = Path(__file__).resolve().parents[1]
 IMAGE = ROOT / "build/bios/bios.bin"
-BASE = 0xEF00
+BASE = LAYOUT["BIOS"]
 COUNT = 17
 SENTINEL = 0xFFFF
 
@@ -645,11 +646,11 @@ def main() -> None:
     boot_target = cpu.word(entries[0] + 1)
     require(cpu.mem[boot_target] == 0xCD and
             cpu.mem[boot_target + 3] == 0xC3 and
-            cpu.word(boot_target + 4) == LAYOUT["RELOADER"],
+            BASE <= cpu.word(boot_target + 4) < BASE + len(data),
             "BOOT does not initialize the platform then reconstruct commands")
     warm_target = cpu.word(entries[1] + 1)
     require(cpu.mem[warm_target] == 0xC3 and
-            cpu.word(warm_target + 1) == LAYOUT["RELOADER"],
+            cpu.word(warm_target + 1) == cpu.word(boot_target + 4),
             "WBOOT does not enter command-image restoration")
     private_read = BASE + 17 * 3
     private_cursor = private_read + 3
@@ -660,8 +661,8 @@ def main() -> None:
             BASE <= cpu.word(private_cursor + 1) < BASE + len(data),
             "private cursor-character vector is not a bounded JP")
     read_impl = cpu.word(private_read + 1)
-    require(cpu.mem[read_impl + 4] == 0x3E and cpu.mem[read_impl + 5] == 1,
-            "private physical-read implementation does not select system drive A")
+    require(cpu.mem[read_impl] == 0xC3 and cpu.word(read_impl + 1) == LAYOUT["DISK"] + 15,
+            "private physical read does not use the common disk engine")
 
     const_impl = cpu.word(entries[2] + 1)
     platform_const = cpu.word(const_impl + 1)
@@ -781,8 +782,8 @@ def main() -> None:
         require(cpu.mem[cpu.word(cpu.hl + 10):cpu.word(cpu.hl + 10)+15] == cpu.mem[dpb:dpb+15],
                 f"drive {name} did not share the selected 790K geometry")
         pair = (cpu.word(cpu.hl + 12), cpu.word(cpu.hl + 14))
-        require(pair not in work,
-                f"drive {name} reused another drive's check/allocation workspace")
+        require(pair in work,
+                f"drive {name} did not use the shared active-drive workspace")
         dphs.append(cpu.hl)
         work.add(pair)
     cpu.c = 5
@@ -823,12 +824,17 @@ def main() -> None:
     for address in range(write_entry, write_entry + 70):
         if cpu.mem[address] == 0xCD and cpu.word(address + 1) == physical_vector:
             cpu.setword(address + 1, platform_read)
-    read_success = bytes((
-        0x32, 0x00, 0x73,       # LD (7300h),A: cylinder
-        0x78, 0x32, 0x01, 0x73, # LD A,B / LD (7301h),A: side
-        0x79, 0x32, 0x02, 0x73, # LD A,C / LD (7302h),A: sector
-        0xAF, 0xC9,              # XOR A / RET
-    ))
+    listing = (ROOT / "build/bios/bios.lst").read_text()
+    def physical_report(destination):
+        code = bytearray()
+        for offset, symbol in enumerate(("BIO_PCYL", "B_PSide", "BIO_PSEC")):
+            match = re.search(rf"^([0-9a-f]{{4}})\s+.*\b{symbol}:", listing, re.M)
+            address = int(match[1], 16)
+            target = destination + offset
+            code.extend((0x3A, address & 255, address >> 8,
+                         0x32, target & 255, target >> 8))
+        return bytes(code) + bytes((0xAF, 0xC9))
+    read_success = physical_report(0x7300)
     cpu.mem[platform_read:platform_read + len(read_success)] = read_success
     order = (1, 3, 5, 7, 9, 2, 4, 6, 8, 10)
     for logical in range(80):
@@ -854,12 +860,7 @@ def main() -> None:
     require(write_jumps, "WRITE physical-jump site was not found")
     platform_write = 0x7440
     cpu.setword(write_jumps[-1] + 1, platform_write)
-    write_success = bytes((
-        0x32, 0x10, 0x73,
-        0x78, 0x32, 0x11, 0x73,
-        0x79, 0x32, 0x12, 0x73,
-        0xAF, 0xC9,
-    ))
+    write_success = physical_report(0x7310)
     cpu.mem[platform_write:platform_write + len(write_success)] = write_success
     for logical in range(80):
         for quarter in range(4):

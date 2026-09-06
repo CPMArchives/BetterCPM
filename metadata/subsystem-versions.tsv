@@ -1,9 +1,9 @@
 component	identity	interface_version	implementation_version	status	notes
 BetterCP/M	System release	-	0.3	completed baseline	System release identity; not an aggregate API version
-CCP	Command environment	1.0	1.2	completed	Packed resident layout; public interface unchanged
-CPX	Command Processor Extension facility	1.0	1.1	completed	Packed resident layout; public interface unchanged
-BDOS	Basic Disk Operating System	1.2	1.4	completed	Function 207 dispatches the BIOS disk configuration service
-RSX	Resident System Extension facility	1.0	1.1	completed	Packed resident layout; public interface unchanged
-BIOS	Basic Input/Output System	1.1	1.3	completed	Runtime disk configuration v1 and bounded track formatting; see BIOS-DISK-CONFIG.md
+CCP	Command environment	1.0	1.3	completed	CCP-owned stack and disposable warm-boot loader
+CPX	Command Processor Extension facility	1.0	1.2	completed	On-demand controls; public interface unchanged
+BDOS	Basic Disk Operating System	1.2	1.5	completed	Compact internal branches; public interface unchanged
+RSX	Resident System Extension facility	1.0	1.2	completed	On-demand manager and stack; active allocation reported in TPA
+BIOS	Basic Input/Output System	1.2	1.4	completed	Shared disk engine, four logical drives, and bounded control overlay
 RTC BIOS extension	Optional RTC hardware interface	-	-	planned	Assign conservative initial versions when the interface and first driver are completed
 Extended Services RSX	BetterCP/M extended-services namespace	-	-	planned	Assign separate API and implementation versions when completed

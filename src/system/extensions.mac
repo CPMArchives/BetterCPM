@@ -1,7 +1,7 @@
         INCLUDE layout.inc
 ; Protected extension controls and adapters to the single unified filesystem.
 ; The extension entry is called BEFORE the core takes its private stack: RSX loading
-; calls standard BDOS recursively, using a distinct protected control stack.
+; calls standard BDOS recursively, using its own on-demand manager stack.
         CSEG
         .PHASE  LY_EXT
         JP      EX_ENTRY
@@ -29,20 +29,18 @@ EX_ENTRY:
         CP 207
         JP Z,LY_DISK
         LD      (EX_OLDSP),SP
-        LD      SP,EX_STKTOP
         PUSH    IX
-        LD      (EX_PARM),DE
         LD      A,C
         CP      200
-        JP      Z,BF_CPXCTL
+        JR      Z,BF_CPXCTL
         CP      202
-        JP      Z,BF_RSXCTL
+        JR      Z,BF_RSXCTL
         CP      204
-        JP      Z,BF_CURSOR
+        JR      Z,BF_CURSOR
         CP      205
-        JP      Z,BF_CCPPRN
+        JR      Z,BF_CCPPRN
         CP      206
-        JP      Z,BF_VERSION
+        JR      Z,BF_VERSION
         XOR     A
 EX_RETURN:
         LD      L,A
@@ -55,91 +53,62 @@ EX_RETHL:
         RET
 
 BF_CPXCTL:
-        LD      A,D
-        CP      1
-        JR      Z,BCX_BASIC
-        CP      2
-        JR      NZ,BCX_BAD
-        LD      A,2
-        JR      BCX_MADE
-BCX_BASIC:
-        LD      A,1
-BCX_MADE:
-        LD      (BCX_MVAL),A
-        LD      A,E
+        PUSH    DE
+        CALL    LY_BIOS+57
+        POP     DE
         OR      A
-        JR      Z,BCX_QUERY
-        CP      1
-        JR      Z,BCX_LOAD
-        CP      2
-        JR      Z,BCX_UNLOAD
-        LD      A,0FFH
-        JP      EX_RETURN
-BCX_QUERY:
-        LD      A,(BCX_MVAL)
-        LD      B,A
-        LD      A,(CPTFLAGS)
-        AND     B
-        JP      Z,EX_RETURN
-        LD      A,1
-        JP      EX_RETURN
-BCX_LOAD:
-        LD      A,(BCX_MVAL)
-        LD      B,A
-        LD      A,(CPTFLAGS)
-        OR      B
-        LD      (CPTFLAGS),A
-        JR      BCX_REBUILD
-BCX_UNLOAD:
-        LD      A,(BCX_MVAL)
-        CPL
-        LD      B,A
-        LD      A,(CPTFLAGS)
-        AND     B
-        LD      (CPTFLAGS),A
-BCX_REBUILD:
-        XOR     A
-        LD      (CPTCOUNT),A
-        LD      DE,CPTABLE
-        LD      A,(CPTFLAGS)
-        AND     1
-        JR      Z,BCX_RHELLO
-        LD      HL,BCX_NBASIC
-        LD      BC,8
-        LDIR
-        LD      A,(CPTCOUNT)
-        INC     A
-        LD      (CPTCOUNT),A
-BCX_RHELLO:
-        LD      A,(CPTFLAGS)
-        AND     2
-        JR      Z,BCX_RDONE
-        LD      HL,BCX_NHELLO
-        LD      BC,8
-        LDIR
-        LD      A,(CPTCOUNT)
-        INC     A
-        LD      (CPTCOUNT),A
-BCX_RDONE:
-        XOR     A
-        JP      EX_RETURN
-BCX_BAD:
-        LD      A,0FFH
-        JP      EX_RETURN
-
-BCX_NBASIC:    DB      'BASIC   '
-BCX_NHELLO:    DB      'HELLO   '
+        JR      NZ,EX_RETURN
+        JP      LY_CFG+9
 
 BF_RSXCTL:
-        LD      DE,(EX_PARM)
+        LD      A,(LY_RSTA)
+        OR      A
+        JR      NZ,EX_RLOAD
+        LD      A,(DE)
+        CP      1
+        JR      NZ,EX_RBAD
+        INC     DE
+        LD      A,(DE)
+        DEC     DE
+        CP      1
+        JR      Z,EX_RLOAD
+        CP      4
+        JR      NC,EX_RBAD
+        XOR     A               ; empty enumerate/query/unload needs no manager
+        JR      EX_RETURN
+EX_RLOAD:
+        PUSH    DE
+        CALL    LY_BIOS+60
+        POP     DE
+; 07-Sep-2026 -- RSX LOAD / WARM BOOT PATCH
+; The two-sector carrier also covers the fixed BDOS jump at HIST-3.
+; Put the jump back even on a read error, before any further CALL 5.
+; The former stack top was:
+;       LD      SP,LY_RSX+0400H
+; A CALL there pushed its return address over the jump.  Leave those
+; three bytes alone; the manager stack must end immediately below it.
+        LD      HL,LY_TPA
+        LD      (HL),0C3H
+        INC     HL
+        LD      (HL),LOW COREBDOS
+        INC     HL
+        LD      (HL),HIGH COREBDOS
+        OR      A
+        JR      NZ,EX_RBAD
+        POP     IX              ; move the saved register to the manager's stack
+        LD      SP,LY_RSX+03FDH
+        PUSH    IX
         CALL    RSXCONTROL
-        JP      EX_RETURN
+        JR      EX_RETURN
+EX_RBAD:
+        LD      A,0FFH
+        JR      EX_RETURN
 
 ; BetterCP/M Function 206 returns the protected, versioned descriptor generated
 ; from the normative subsystem matrix. Consumers must validate BV/version 1.
 BF_VERSION:
         LD      HL,BCV_DESC
-        JP      EX_RETHL
+        JR      EX_RETHL
 
 
 BF_CURSOR:
@@ -147,19 +116,19 @@ BF_CURSOR:
         LD      C,A
         CALL    BIOCURSOR
         OR      A
-        JP      Z,EX_RETURN
+        JR      Z,EX_RETURN
         LD      A,E
         OR      A
         LD      A,1
-        JP      Z,EX_RETURN
+        JR      Z,EX_RETURN
         LD      HL,UB_COLUMN
         INC     (HL)
-        JP      EX_RETURN
+        JR      EX_RETURN
 BF_CCPPRN:
         LD      A,(UB_LISTE)
         CPL
         LD      (UB_LISTE),A
-        JP      EX_RETURN
+        JR      EX_RETURN
 
 ; These compatibility entry points contain no filesystem engine. Module
 ; files use user zero, preserving the caller's drive, user and DMA selections.
@@ -201,14 +170,8 @@ AD_INVOKE:
         RET
 
 EX_OLDSP:       DW      0
-EX_PARM:        DW      0
 BCX_MVAL:       DB      0
 AD_DMA:         DW      0
-EX_STACK:
-        REPT    128
-        DB      0
-        ENDM
-EX_STKTOP:
         INCLUDE versions.inc
         .DEPHASE
         END

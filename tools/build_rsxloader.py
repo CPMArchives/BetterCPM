@@ -26,8 +26,8 @@ def main() -> None:
         "        .DEPHASE\n", "")
     data = assemble(args.assembler, text, BUILD / "rsxloader.bin",
                     BUILD / "rsxloader.lst", BASE)
-    # Keep the independently linked loader and extension adapters disjoint.
-    if len(data) > LAYOUT["EXTENSIONS"] - BASE:
+    # Leave 128 stack bytes and the three-byte fixed gateway above the code.
+    if len(data) > 893:
         raise SystemExit(f"RSX loader exceeds its packed slot: {len(data)} bytes")
     print(f"{hashlib.sha256(data).hexdigest()}  build/system/rsxloader.bin")
     print(f"RSX loader bytes: {len(data)}")

@@ -1,12 +1,13 @@
-# Runtime disk configuration, ABI version 1
+# Runtime disk configuration, ABI version 2
 
-Implemented September 6, 2026. BIOS implementation 1.3/API 1.1; BDOS
-implementation 1.4/API 1.2. The standard 17 BIOS vectors remain unchanged.
+Updated September 7, 2026. BIOS implementation 1.4/API 1.2; BDOS
+implementation 1.5/API 1.2. The standard 17 BIOS vectors remain unchanged.
 
 ## Scope and current limits
 
-The resident BIOS owns 16 independent logical-drive records (A–P), each with
-its own DPH, writable DPB, format, allocation vector and check vector. Four
+The resident BIOS owns four logical-drive records (A–D), each with
+its own DPH, writable DPB and format. Allocation and check vectors are shared
+workspace; BDOS rebuilds allocation ownership when changing logical disks. Four
 physical records describe drives 0–3. Logical aliases can use the same hardware
 with different formats. Successful reconfiguration resets BDOS disk context,
 login state and directory cache; close every file before making changes.
@@ -51,7 +52,7 @@ context of the operation. Requests are synchronous and controller waits bounded.
 | 4 | Set logical record | byte 0=index; bytes 1–64=binding |
 | 5 | Format one track | byte 0=logical, 1=cylinder, 2=side, word 3=stream length, word 5=stream pointer |
 
-Discovery descriptor: `BDCF`, byte ABI version=1, logical count=16,
+Discovery descriptor: `BDCF`, byte ABI version=2, logical count=4,
 physical count=4, binding size=64, then two little-endian pointers to the
 physical table and logical table. These pointers are for inspection; applications
 should use operations 2/4 for validated updates. There is no SYS-GEN persistence
@@ -85,11 +86,12 @@ legacy cylinder-based SPT=80 convention. Applications must not submit that flag.
 DPB validation checks sector count/size agreement, BSH/BLM/EXM consistency,
 workspace bounds, directory reservations, allocation capacity and unique sector
 IDs before committing. A failed set leaves the existing logical record intact.
-Unbinding B–P uses physical FF; other binding fields are ignored.
+Unbinding B–D uses physical FF; other binding fields are ignored.
 
-Logical storage has a 240-byte stride: DPH at +0, binding at +16,
-128-byte allocation vector at +80, 32-byte check vector at +208. The DPH
-contains pointers to that logical drive's own DPB and workspaces.
+Logical storage has an 80-byte stride: DPH at +0, binding at +16.
+Four records occupy 320 bytes; the shared 128-byte allocation vector and
+32-byte check vector follow them. Each DPH points to its own DPB and the
+shared workspace. ABI version 2 identifies this changed table layout.
 
 ## Formatting
 
@@ -108,12 +110,15 @@ checking controller data-loss status and verifying the resulting sectors.
 
 ## Build and validation
 
-`python3 tools/build_complete_system.py` rebuilds all layout-dependent components
-and the boot image. The fixed BIOS region remains EF00h–F3FFh; runtime disk
-code and tables are separately bounded below it. Resident load starts at B600h
-and occupies 31 reserved sectors; the CCP carrier occupies the remaining seven
-sectors before the filesystem. TPA ceiling is B3FDh, 7 KiB below the previous
-layout. Every logical record has separate allocation state.
+The packed system has a D501h TPA ceiling: 54,273 bytes starting at 0100h.
+The resident image uses 13 sectors. Three two-sector carriers hold the
+warm-boot reloader, disk/CPX controls and optional RSX manager; the CCP uses
+seven sectors. Controls reuse the idle physical-sector buffer. The manager
+costs one additional KiB only while RSXs are active, plus their allocations.
+The system disk must remain available for these overlay reads and warm boot.
+Private BIOS entries +57 and +60 fetch controls and the RSX manager respectively;
+the standard 17 vectors and existing +51/+54 entries retain their positions.
+See the engineering memory-consolidation completion report for exact bounds.
 
 The boot builder reassembles the BIOS, runtime disk module, extension and tables,
 and rejects a resident image containing stale bytes. A failed oversized BIOS

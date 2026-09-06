@@ -566,6 +566,25 @@ def main() -> None:
     require(call(16, FCB) == 0xFF and cpu.mem[0x7304] == writes,
             "missing dirty Close wrote through a stale directory pointer")
 
+    # Shared ALV storage must be rebuilt, not carried across drive contexts.
+    # Give each selected drive a different synthetic allocation map.
+    alvs = []
+    for drive, block in ((0, 5), (1, 6), (0, 5)):
+        cpu.mem[FIXTURE:FIXTURE + 512] = bytes([0xE5]) * 512
+        entry = bytearray(32)
+        entry[1:12] = b"OWNER   DAT"
+        entry[15] = 1
+        entry[16:18] = block.to_bytes(2, "little")
+        cpu.mem[FIXTURE:FIXTURE + 32] = entry
+        cpu.mem[state["UB_VALID"]] = 0 if not alvs else cpu.mem[state["UB_VALID"]]
+        require(call(14, drive) == 0, "ALV ownership drive selection failed")
+        call(27)
+        alvs.append(cpu.hl)
+        require(cpu.mem[cpu.hl] & 0x06 == (0x80 >> block),
+                f"drive {drive} retained another drive's allocation bits")
+    require(len(set(alvs)) == 1, "fixture no longer exercises shared ALV storage")
+    print("shared allocation workspace rebuilt correctly across A/B/A switches")
+
     print(f"unified BDOS U01-U09 foundation passed ({len(image)} bytes)")
     print("disk, directory, allocation, extent, and record-transfer mapping passed")
 

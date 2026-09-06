@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Exercise the runtime disk ABI on disposable trs80gp media."""
+import re
+from system_layout import LAYOUT
 import subprocess
 import sys
 import tempfile
@@ -62,7 +64,7 @@ def main():
     code += [db(stream),'STREAMEND:','        END']
     with tempfile.TemporaryDirectory(prefix='bettercpm-disk-abi-') as name:
         work=Path(name)
-        (work/'probe.mac').write_text('\n'.join(code)+'\n')
+        (work/'probe.mac').write_text(re.sub(r'0EF([0-9A-F]{2})H', lambda m: f"0{LAYOUT['BIOS']+int(m[1],16):04X}H", '\n'.join(code)+'\n'))
         subprocess.run([str(ASM),'-fb','-oprobe.com','probe.mac'],cwd=work,check=True,stdout=subprocess.DEVNULL)
         b=ROOT/'build'
         files=[('PROBE.COM',(work/'probe.com').read_bytes()),('BASIC.CPX',(b/'cpx/BASIC.CPX').read_bytes())]

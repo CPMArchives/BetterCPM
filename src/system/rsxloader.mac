@@ -1,5 +1,9 @@
         INCLUDE layout.inc
-; BetterCP/M protected BRSX v1 manager and ordered resident-chain loader.
+; BRSX V1 -- ORDERED RESIDENT CHAIN LOADER
+; The manager owns one K only while an RSX profile is active.  Modules
+; go BELOW it.  Its upper 128 bytes hold the control stack; the final
+; three bytes belong to the fixed BDOS jump and must not be pushed on.
+; Removing the last module gives both manager and module RAM to TPA.
 ;
 ; Function 202 passes DE -> request:
 ;   +0 version (1), +1 operation (0 enumerate, 1 load, 2 unload, 3 query),
@@ -236,7 +240,7 @@ RL_VLOOP:
         INC     (HL)
         JR      RL_VLOOP
 RL_BUILD:
-        LD      HL,HISTBASE
+        LD      HL,LY_RSX
         LD      (RL_LOW),HL
         LD      HL,0
         LD      (ECB_RSXHEAD),HL

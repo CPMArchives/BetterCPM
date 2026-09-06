@@ -32,7 +32,10 @@ HISTCAP         EQU     502
         .PHASE  CCPBASE
 
 CCP_ENTRY:
-        LD      SP,CCP_STKTOP
+        LD      HL,(LY_SYS+08CH)
+        LD      DE,CCP_STKTOP-CCPBASE
+        ADD     HL,DE
+        LD      SP,HL
 CCP_LOOP:
         LD      DE,CCP_PROMPT
         LD      C,9
@@ -1571,10 +1574,9 @@ CCP_DIRFCB:
 CCP_RET:
         DW      0000H
 
-; The CCP uses the top of the protected reload stack after reconstruction.
-; Its stack does not travel with the reclaimable command image.
-CCP_STACK       EQU     LY_STKT-16
-CCP_STKTOP      EQU     LY_STKT
+; Command execution owns its stack inside the reconstructible CCP allocation.
+CCP_STACK:      DS      128
+CCP_STKTOP:
 
         .DEPHASE
         END
