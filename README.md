@@ -8,8 +8,17 @@ Subsystem versions evolve independently. The adopted rules are defined in
 [`SUBSYSTEM-VERSIONING.md`](specifications/SUBSYSTEM-VERSIONING.md), and the
 authoritative current assignments are maintained in
 [`subsystem-versions.tsv`](metadata/subsystem-versions.tsv). Current versions
-are CCP implementation 1.2/API 1.0, BDOS implementation 1.3/API 1.1,
-BIOS implementation 1.2/API 1.0, and CPX/RSX implementation 1.1/API 1.0.
+are CCP implementation 1.2/API 1.0, BDOS implementation 1.4/API 1.2,
+BIOS implementation 1.3/API 1.1, and CPX/RSX implementation 1.1/API 1.0.
+
+The development BIOS now provides 16 logical disk slots, four physical-drive
+records, runtime format assignment, and a bounded write-track service for DUP.
+See [the disk ABI and current limits](docs/programmers/BIOS-DISK-CONFIG.md).
+CONFIG/DUP menus and DISK.FDF file parsing are the next utility-layer work;
+format conversion to or from cpmtools diskdefs remains deferred.
+Rebuild the complete current layout with `python3 tools/build_complete_system.py`.
+The historical conformance results below describe the preceding baseline;
+the new BIOS validation is recorded in the disk ABI document.
 
 The production image now uses `src/bdos/unified.mac`, not the legacy dispatcher
 and separate directory engine. The compact core is 3,373 bytes; protected

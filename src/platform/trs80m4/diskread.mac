@@ -42,7 +42,7 @@ STOP:
 PASSMSG:
         DB      'Physical read verified',0
 FAILMSG:
-        DB      'Physical read failed',0
+        DB      'Failed',0
 SIGNATURE:
         DB      'BetterCP/M C2 H1 S10'
 SIGLEN  EQU     $-SIGNATURE

@@ -9,6 +9,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 from system_layout import LAYOUT, expand_layout
+from build_bios import build_bios
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/system/gateway.mac"
@@ -19,12 +20,13 @@ COMPONENTS = (
     (LAYOUT["FILE"], "fileloader.bin"),
     (LAYOUT["RSX"], "rsxloader.bin"),
     (LAYOUT["EXTENSIONS"], "extensions.bin"),
+    (LAYOUT["DISK"], "disk.bin"),
     (LAYOUT["TABLES"], "tables.bin"),
     (LAYOUT["RELOADER"], "../trs80/ccpreload.bin"),
     (LAYOUT["BIOS"], "../bios/bios.bin"),
 )
 RESIDENT_BASE = LAYOUT["SYSTEM"]
-LIMITS = (LAYOUT["BDOS"], LAYOUT["FILE"], LAYOUT["RSX"], LAYOUT["EXTENSIONS"], LAYOUT["TABLES"], LAYOUT["RELOADER"], LAYOUT["RSX_STATE"], LAYOUT["CEILING"])
+LIMITS = (LAYOUT["BDOS"], LAYOUT["FILE"], LAYOUT["RSX"], LAYOUT["EXTENSIONS"], LAYOUT["DISK"], LAYOUT["TABLES"], LAYOUT["RELOADER"], LAYOUT["RSX_STATE"], LAYOUT["CEILING"])
 
 
 def build_support(assembler: Path) -> None:
@@ -40,8 +42,17 @@ def build_support(assembler: Path) -> None:
     core = "".join(f"{name} EQU 0{address:04X}H\n"
                    for name, address in symbols.items())
     (BUILD / "core.inc").write_text(core, encoding="ascii")
+    bios_listing = (ROOT / "build/bios/bios.lst").read_text()
+    bios_symbols = {}
+    for symbol in ("BIO_DRIVE", "BIO_TRACK", "BIO_SECTOR", "BIO_DMA", "BIO_QUART", "BIO_PCYL", "B_PSide", "B_PDrive", "BIO_PSEC"):
+        match = re.search(rf"^([0-9a-f]{{4}})\s+.*\b{symbol}:", bios_listing, re.M | re.I)
+        if not match:
+            raise SystemExit(f"missing BIOS symbol {symbol}")
+        bios_symbols[symbol] = int(match[1], 16)
+    bioslinks = "".join(f"{k} EQU 0{v:04X}H\n" for k,v in bios_symbols.items())
     for relative, name, base in (("src/system/extensions.mac", "extensions", LAYOUT["EXTENSIONS"]),
-                                  ("src/bios/tables.mac", "tables", LAYOUT["TABLES"])):
+                                  ("src/bios/tables.mac", "tables", LAYOUT["TABLES"]),
+                                  ("src/bios/disk.mac", "disk", LAYOUT["DISK"])):
         source = (ROOT / relative).read_text(encoding="ascii").replace(
             "        CSEG\n        .PHASE  ", "        ASEG\n        ORG     "
         ).replace("        .DEPHASE\n", "")
@@ -49,6 +60,8 @@ def build_support(assembler: Path) -> None:
             staged = Path(temporary)
             (staged / f"{name}.mac").write_text(expand_layout(source), encoding="ascii")
             (staged / "core.inc").write_text(core, encoding="ascii")
+            (staged / "bioslinks.inc").write_text(bioslinks, encoding="ascii")
+            (staged / "hardware.inc").write_bytes((ROOT / "src/platform/trs80m4/hardware.inc").read_bytes())
             (staged / "versions.inc").write_bytes(
                 (ROOT / "src/bdos/versions.inc").read_bytes())
             output = BUILD / f"{name}.bin"
@@ -68,6 +81,7 @@ def main() -> None:
                         default=Path("/Users/nathanael/bin/z80asm"))
     args = parser.parse_args()
     BUILD.mkdir(parents=True, exist_ok=True)
+    build_bios(args.assembler)
     build_support(args.assembler)
     text = SOURCE.read_text(encoding="ascii")
     text = text.replace("        CSEG\n        .PHASE  ",
@@ -98,14 +112,16 @@ def main() -> None:
         if address < end:
             raise SystemExit(f"resident component overlap at {address:04X}h")
         if address + len(component) > LIMITS[index]:
-            raise SystemExit(f"resident component exceeds region ending {LIMITS[index]:04X}h")
+            raise SystemExit(f"{path.name}: {len(component)} bytes exceeds "
+                             f"{LIMITS[index] - address}-byte region by "
+                             f"{address + len(component) - LIMITS[index]} bytes")
         loaded.append((address, component))
         end = address + len(component)
     # Account for buffers and stacks that do not appear as emitted binaries.
     reservations = [(LAYOUT["TPA"], 3), (LAYOUT["HISTORY"], 512),
                     (LAYOUT["RSX_STATE"], 41),
                     (LAYOUT["STACK_LOW"], LAYOUT["STACK_TOP"] - LAYOUT["STACK_LOW"]),
-                    (LAYOUT["DIRBUF"], 128), (LAYOUT["MODULEBUF"], 512)]
+                    (LAYOUT["DIRBUF"], 128), (LAYOUT["MODULEBUF"], 1024)]
     ranges = sorted(reservations + [(address, len(data)) for address, data in loaded])
     previous_end = LAYOUT["TPA"]
     for address, size in ranges:

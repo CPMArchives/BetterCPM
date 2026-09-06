@@ -1,19 +1,19 @@
-; Canonical packed Model 4 protected-memory layout.
-; Parsed by tools/system_layout.py and expanded identically for both assemblers.
-LY_SYS      EQU     0D200H
-LY_BDOS        EQU     0D300H
-LY_FILE        EQU     0E030H
-LY_RSX         EQU     0E110H
-LY_EXT  EQU     0E480H
-LY_TAB      EQU     0E700H
-LY_LOAD    EQU     0E8A0H
-LY_RSTA   EQU     0EBC0H
-LY_STKL   EQU     0EBF0H
-LY_STKT   EQU     0EC70H
-LY_DIR      EQU     0EC80H
-LY_BUF   EQU     0ED00H
+; Protected Model 4 map with runtime disk configuration.
+LY_SYS         EQU     0B600H
+LY_BDOS        EQU     0B700H
+LY_FILE        EQU     0C430H
+LY_RSX         EQU     0C510H
+LY_EXT         EQU     0C880H
+LY_DISK        EQU     0CC00H
+LY_TAB         EQU     0D780H
+LY_LOAD        EQU     0E680H
+LY_RSTA        EQU     0E9A0H
+LY_STKL        EQU     0E9D0H
+LY_STKT        EQU     0EA50H
+LY_DIR         EQU     0EA80H
+LY_BUF         EQU     0EB00H
 LY_BIOS        EQU     0EF00H
-LY_LIMIT     EQU     0F400H
-LY_HIST     EQU     0D000H
-LY_TPA         EQU     0CFFDH
-LY_SECTS EQU    00011H
+LY_LIMIT       EQU     0F400H
+LY_HIST        EQU     0B400H
+LY_TPA         EQU     0B3FDH
+LY_SECTS       EQU     0001FH

@@ -1,54 +1,261 @@
         INCLUDE layout.inc
-; BIOS-owned disk descriptors and workspaces, separate from the BDOS core.
         CSEG
-        .PHASE  LY_TAB+0
-BIO_DPH0:
-        DW      0,0,0,0,LY_DIR,BIO_DPB0,BIO_CSV0,BIO_ALV0
-BIO_DPH1:
-        DW      0,0,0,0,LY_DIR,BIO_DPB0,BIO_CSV1,BIO_ALV1
-BIO_DPH2:
-        DW      0,0,0,0,LY_DIR,BIO_DPB0,BIO_CSV2,BIO_ALV2
-BIO_DPH3:
-        DW      0,0,0,0,LY_DIR,BIO_DPB0,BIO_CSV3,BIO_ALV3
-BIO_DPB0:
-        DW      80
-        DB      4,15,0
-        DW      394,127
-        DB      0C0H,0
-        DW      32,2
-        DB      0               ; align mutable workspace at DA50h
-BIO_CSV0:
-        REPT    32
-        DB      0
+        .PHASE  LY_TAB
+DPH00:
+        DW 0,0,0,0,LY_DIR,DPH00+17,DPH00+208,DPH00+80
+        DB 0
+        DW 80
+        DB 4,15,0
+        DW 394,127
+        DB 0C0H,0
+        DW 32,2
+        DB 80,10,2,0E0H
+        DB 1,3,5,7,9,2,4,6,8,10
+        REPT 34
+        DB 0
         ENDM
-BIO_ALV0:
-        REPT    50
-        DB      0
+        REPT 160
+        DB 0
         ENDM
-BIO_CSV1:
-        REPT    32
-        DB      0
+DPH01:
+        DW 0,0,0,0,LY_DIR,DPH01+17,DPH01+208,DPH01+80
+        DB 1
+        DW 80
+        DB 4,15,0
+        DW 394,127
+        DB 0C0H,0
+        DW 32,2
+        DB 80,10,2,0E0H
+        DB 1,3,5,7,9,2,4,6,8,10
+        REPT 34
+        DB 0
         ENDM
-BIO_ALV1:
-        REPT    50
-        DB      0
+        REPT 160
+        DB 0
         ENDM
-BIO_CSV2:
-        REPT    32
-        DB      0
+DPH02:
+        DW 0,0,0,0,LY_DIR,DPH02+17,DPH02+208,DPH02+80
+        DB 2
+        DW 80
+        DB 4,15,0
+        DW 394,127
+        DB 0C0H,0
+        DW 32,2
+        DB 80,10,2,0E0H
+        DB 1,3,5,7,9,2,4,6,8,10
+        REPT 34
+        DB 0
         ENDM
-BIO_ALV2:
-        REPT    50
-        DB      0
+        REPT 160
+        DB 0
         ENDM
-BIO_CSV3:
-        REPT    32
-        DB      0
+DPH03:
+        DW 0,0,0,0,LY_DIR,DPH03+17,DPH03+208,DPH03+80
+        DB 3
+        DW 80
+        DB 4,15,0
+        DW 394,127
+        DB 0C0H,0
+        DW 32,2
+        DB 80,10,2,0E0H
+        DB 1,3,5,7,9,2,4,6,8,10
+        REPT 34
+        DB 0
         ENDM
-BIO_ALV3:
-        REPT    50
-        DB      0
+        REPT 160
+        DB 0
         ENDM
-
+DPH04:
+        DW 0,0,0,0,LY_DIR,DPH04+17,DPH04+208,DPH04+80
+        DB 255
+        DW 80
+        DB 4,15,0
+        DW 394,127
+        DB 0C0H,0
+        DW 32,2
+        DB 80,10,2,0E0H
+        DB 1,3,5,7,9,2,4,6,8,10
+        REPT 34
+        DB 0
+        ENDM
+        REPT 160
+        DB 0
+        ENDM
+DPH05:
+        DW 0,0,0,0,LY_DIR,DPH05+17,DPH05+208,DPH05+80
+        DB 255
+        DW 80
+        DB 4,15,0
+        DW 394,127
+        DB 0C0H,0
+        DW 32,2
+        DB 80,10,2,0E0H
+        DB 1,3,5,7,9,2,4,6,8,10
+        REPT 34
+        DB 0
+        ENDM
+        REPT 160
+        DB 0
+        ENDM
+DPH06:
+        DW 0,0,0,0,LY_DIR,DPH06+17,DPH06+208,DPH06+80
+        DB 255
+        DW 80
+        DB 4,15,0
+        DW 394,127
+        DB 0C0H,0
+        DW 32,2
+        DB 80,10,2,0E0H
+        DB 1,3,5,7,9,2,4,6,8,10
+        REPT 34
+        DB 0
+        ENDM
+        REPT 160
+        DB 0
+        ENDM
+DPH07:
+        DW 0,0,0,0,LY_DIR,DPH07+17,DPH07+208,DPH07+80
+        DB 255
+        DW 80
+        DB 4,15,0
+        DW 394,127
+        DB 0C0H,0
+        DW 32,2
+        DB 80,10,2,0E0H
+        DB 1,3,5,7,9,2,4,6,8,10
+        REPT 34
+        DB 0
+        ENDM
+        REPT 160
+        DB 0
+        ENDM
+DPH08:
+        DW 0,0,0,0,LY_DIR,DPH08+17,DPH08+208,DPH08+80
+        DB 255
+        DW 80
+        DB 4,15,0
+        DW 394,127
+        DB 0C0H,0
+        DW 32,2
+        DB 80,10,2,0E0H
+        DB 1,3,5,7,9,2,4,6,8,10
+        REPT 34
+        DB 0
+        ENDM
+        REPT 160
+        DB 0
+        ENDM
+DPH09:
+        DW 0,0,0,0,LY_DIR,DPH09+17,DPH09+208,DPH09+80
+        DB 255
+        DW 80
+        DB 4,15,0
+        DW 394,127
+        DB 0C0H,0
+        DW 32,2
+        DB 80,10,2,0E0H
+        DB 1,3,5,7,9,2,4,6,8,10
+        REPT 34
+        DB 0
+        ENDM
+        REPT 160
+        DB 0
+        ENDM
+DPH10:
+        DW 0,0,0,0,LY_DIR,DPH10+17,DPH10+208,DPH10+80
+        DB 255
+        DW 80
+        DB 4,15,0
+        DW 394,127
+        DB 0C0H,0
+        DW 32,2
+        DB 80,10,2,0E0H
+        DB 1,3,5,7,9,2,4,6,8,10
+        REPT 34
+        DB 0
+        ENDM
+        REPT 160
+        DB 0
+        ENDM
+DPH11:
+        DW 0,0,0,0,LY_DIR,DPH11+17,DPH11+208,DPH11+80
+        DB 255
+        DW 80
+        DB 4,15,0
+        DW 394,127
+        DB 0C0H,0
+        DW 32,2
+        DB 80,10,2,0E0H
+        DB 1,3,5,7,9,2,4,6,8,10
+        REPT 34
+        DB 0
+        ENDM
+        REPT 160
+        DB 0
+        ENDM
+DPH12:
+        DW 0,0,0,0,LY_DIR,DPH12+17,DPH12+208,DPH12+80
+        DB 255
+        DW 80
+        DB 4,15,0
+        DW 394,127
+        DB 0C0H,0
+        DW 32,2
+        DB 80,10,2,0E0H
+        DB 1,3,5,7,9,2,4,6,8,10
+        REPT 34
+        DB 0
+        ENDM
+        REPT 160
+        DB 0
+        ENDM
+DPH13:
+        DW 0,0,0,0,LY_DIR,DPH13+17,DPH13+208,DPH13+80
+        DB 255
+        DW 80
+        DB 4,15,0
+        DW 394,127
+        DB 0C0H,0
+        DW 32,2
+        DB 80,10,2,0E0H
+        DB 1,3,5,7,9,2,4,6,8,10
+        REPT 34
+        DB 0
+        ENDM
+        REPT 160
+        DB 0
+        ENDM
+DPH14:
+        DW 0,0,0,0,LY_DIR,DPH14+17,DPH14+208,DPH14+80
+        DB 255
+        DW 80
+        DB 4,15,0
+        DW 394,127
+        DB 0C0H,0
+        DW 32,2
+        DB 80,10,2,0E0H
+        DB 1,3,5,7,9,2,4,6,8,10
+        REPT 34
+        DB 0
+        ENDM
+        REPT 160
+        DB 0
+        ENDM
+DPH15:
+        DW 0,0,0,0,LY_DIR,DPH15+17,DPH15+208,DPH15+80
+        DB 255
+        DW 80
+        DB 4,15,0
+        DW 394,127
+        DB 0C0H,0
+        DW 32,2
+        DB 80,10,2,0E0H
+        DB 1,3,5,7,9,2,4,6,8,10
+        REPT 34
+        DB 0
+        ENDM
+        REPT 160
+        DB 0
+        ENDM
         .DEPHASE
         END

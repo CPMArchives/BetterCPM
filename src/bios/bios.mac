@@ -47,8 +47,13 @@ BIOPHREAD:
 BIOCURSOR:
         JP      BIO_CUROUT
 BIO_PHRD:
+        PUSH    AF
+        CALL    LY_DISK+15
         LD      A,1
         LD      (B_PDrive),A
+        LD      A,0FFH
+        LD      (M4R_DRIVE),A
+        POP     AF
         JP      M4_READ
 BIO_CUROUT:
         JP      PL_CURSOR
@@ -102,23 +107,7 @@ BIOSETDM:
 ; Patch 2026-09-01: A: through D: are separate Model 4 floppy drives. They share
 ; the temporary MM Extended 790K geometry, but never BDOS scratch workspace.
 BIOSELDS:
-        LD      A,C
-        LD      (BIO_DRIVE),A
-        CP      4
-        JR      NC,BIO_NODSK
-        OR      A
-        LD      HL,BIO_DPH0
-        RET     Z
-        CP      2
-        LD      HL,BIO_DPH1
-        RET     C
-        LD      HL,BIO_DPH2
-        RET     Z
-        LD      HL,BIO_DPH3
-        RET
-BIO_NODSK:
-        LD      HL,0
-        RET
+        JP LY_DISK+6
 
 BIOREAD:
         CALL    BIO_MAP
@@ -131,7 +120,7 @@ BIOREAD:
         LD      C,A
         POP     AF
         LD      HL,BIO_PHYBF
-        CALL    PL_READ
+        CALL    LY_DISK+9
         RET     NZ
         LD      A,(BIO_QUART)
         LD      HL,BIO_PHYBF
@@ -160,7 +149,7 @@ BIOWRITE:
         LD      C,A
         POP     AF
         LD      HL,BIO_PHYBF
-        CALL    PL_READ
+        CALL    LY_DISK+9
         RET     NZ
         LD      A,(BIO_QUART)
         LD      DE,BIO_PHYBF
@@ -185,55 +174,11 @@ BIO_WRCOP:
         LD      C,A
         POP     AF
         LD      HL,BIO_PHYBF
-        JP      PL_WRITE
+        JP      LY_DISK+12
 
 BIO_MAP:
-        LD      A,(BIO_DRIVE)
-        CP      4
-        JR      NC,BIO_RDERR
-        LD      E,A
-        LD      D,0
-        LD      HL,BIO_DRMASK
-        ADD     HL,DE
-        LD      A,(HL)
-        LD      (B_PDrive),A
-        LD      A,(BIO_TRACK+1)
-        OR      A
-        JR      NZ,BIO_RDERR
-        LD      A,(BIO_TRACK)
-        CP      80
-        JR      NC,BIO_RDERR
-        LD      A,(BIO_SECTOR+1)
-        OR      A
-        JR      NZ,BIO_RDERR
-        LD      A,(BIO_SECTOR)
-        CP      80
-        JR      NC,BIO_RDERR
-        LD      E,A
-        AND     3
-        LD      (BIO_QUART),A
-        LD      A,E
-        SRL     A
-        SRL     A
-        LD      B,0
-        CP      10
-        JR      C,BIO_SIDE0
-        SUB     10
-        INC     B
-BIO_SIDE0:
-        LD      E,A
-        LD      D,0
-        LD      HL,BIO_ORDER
-        ADD     HL,DE
-        LD      C,(HL)
-        LD      A,B
-        LD      (B_PSide),A
-        LD      A,C
-        LD      (BIO_PSEC),A
-        LD      A,(BIO_TRACK)
-        LD      (BIO_PCYL),A
-        XOR     A
-        RET
+        JP LY_DISK+3
+
 BIO_RDERR:
         LD      A,1
         RET

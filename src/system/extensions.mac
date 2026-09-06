@@ -25,6 +25,9 @@ BIOCURSOR       EQU     LY_BIOS+54
 COREBDOS        EQU     LY_BDOS
 
 EX_ENTRY:
+        LD A,C
+        CP 207
+        JP Z,LY_DISK
         LD      (EX_OLDSP),SP
         LD      SP,EX_STKTOP
         PUSH    IX

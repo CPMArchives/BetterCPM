@@ -9,6 +9,8 @@ import subprocess
 import tempfile
 from pathlib import Path
 from system_layout import LAYOUT, expand_layout
+from build_bios import build_bios
+from build_system import build_support
 
 from build_montezuma_extended_790k import (
     RAW_SIZE,
@@ -29,9 +31,9 @@ VERIFY_SECTOR_LOGICAL_INDEX = 2  # logical order sector 5
 VERIFY_PAYLOAD = b"BetterCP/M verify" + bytes(SECTOR_SIZE - len(b"BetterCP/M verify"))
 CROSS_FIXTURE = (b"BFILE-000 " * 12 + b"BFILE-00")
 SYSTEM_FIRST_LOGICAL_INDEX = 2
-SYSTEM_SECTORS = 28
+SYSTEM_SECTORS = 31
 COMMAND_FIRST_LOGICAL_INDEX = SYSTEM_FIRST_LOGICAL_INDEX + SYSTEM_SECTORS
-COMMAND_SECTORS = 10
+COMMAND_SECTORS = 7
 FILESYSTEM_FIRST_SECTOR = 40   # DPB OFF=2, one logical track per cylinder
 ALLOCATION_BLOCK_BYTES = 2048
 DIRECTORY_ENTRIES = 128
@@ -226,6 +228,24 @@ def main() -> None:
                  user_path, clr_path, ver_path, warm_path):
         if not path.is_file():
             raise SystemExit(f"missing system-image input: {path}")
+    # Reassemble from source so a previous failed BIOS build cannot hide behind
+    # an old bios.bin/resident.bin pair. Never emit a disk using that pair.
+    bios = build_bios(args.assembler)
+    resident = resident_path.read_bytes()
+    bios_offset = LAYOUT["BIOS"] - LAYOUT["SYSTEM"]
+    if resident[bios_offset:] != bios:
+        raise SystemExit("resident.bin does not contain the current BIOS; "
+                         "run tools/build_system.py before creating a boot disk")
+    build_support(args.assembler)
+    for name, key, ceiling in (("extensions", "EXTENSIONS", "DISK"),
+                               ("disk", "DISK", "TABLES"),
+                               ("tables", "TABLES", "RELOADER")):
+        current = (ROOT / "build/system" / (name + ".bin")).read_bytes()
+        offset = LAYOUT[key] - LAYOUT["SYSTEM"]
+        if (len(current) > LAYOUT[ceiling] - LAYOUT[key] or
+                resident[offset:offset + len(current)] != current):
+            raise SystemExit(f"resident.bin does not contain the current {name}; "
+                             "run tools/build_system.py before creating a boot disk")
     boot = assemble(args.assembler, SOURCE / "boot.mac", BUILD / "boot.bin", BOOT_ADDRESS)
     stage1 = assemble(args.assembler, SOURCE / "stage1.mac", BUILD / "stage1.bin", STAGE1_ADDRESS)
     resident = resident_path.read_bytes()

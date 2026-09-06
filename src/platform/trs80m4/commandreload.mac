@@ -96,6 +96,7 @@ CRLINKD:
 CRCCP:
         XOR     A
         LD      (CRFILE),A
+        LD      A,3
         LD      (CRSLOT),A
         LD      HL,CRCCPMAG
         LD      (CRMAGPTR),HL
