@@ -10,6 +10,13 @@ bring-up history is kept in those documents rather than repeated here.
 
 ## Immediate priorities
 
+The first release milestone is engineering and compatibility qualification of
+BIOS, BDOS and their accompanying structures. Freeze that core baseline before
+finalizing the CCP and later distribution milestones. See
+[1.0 milestone scope](docs/releases/1.0-SCOPE-DRAFT.md#milestone-1-qualify-and-finalize-the-system-core).
+The older task inventory below is not a requirement to finish every higher-level
+feature before qualifying the core.
+
 - [ ] Resume BIOSTEST where physical testing stopped and reconcile every
   catalog entry against the current system image.
 - [ ] Rerun ENTRYTST, BDOSTEST, FILETEST, RANDTEST, DIRTEST, CPUTEST, and
@@ -51,6 +58,13 @@ bring-up history is kept in those documents rather than repeated here.
 - [x] Provide transient-only `WARM.COM` for scripts and testing. Interactive
   users retain canonical, disk-independent `Ctrl-C` warm boot; `WARM` does not
   belong in BASIC.CPX.
+- [ ] Implement the canonical named-directory map in protected, persistent OS
+  DATA, as confirmed by the user. Names resolve to drive/user pairs. The map
+  survives transient execution and CCP reconstruction/warm boot; the CCP and
+  utilities share one resolution interface and no independent authoritative maps.
+  Specify its bounded storage, initialization and interface as part of the core
+  boundary; implement higher-level navigation and utility syntax in their own
+  milestones. Persistence across power-off is a separate save/load decision.
 - [ ] Finish common named-DU resolution and use it consistently for command
   lookup, BASIC commands, transient utilities, and module loading.
 - [ ] Implement a system `PATH` facility for command lookup across canonical
