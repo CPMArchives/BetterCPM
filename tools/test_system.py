@@ -46,7 +46,12 @@ def main() -> None:
     calls = [address for address in range(read_impl, read_impl + 48)
              if cpu.mem[address] == 0xCD]
     require(len(calls) >= 2, "BIOS physical-read call was not found")
-    platform_read = cpu.word(calls[1] + 1)
+    platform_read = 0x7B00
+    cpu.setword(calls[1] + 1, platform_read)
+    write_entry = cpu.word(BIOS_BASE + 14 * 3 + 1)
+    for address in range(write_entry, write_entry + 70):
+        if cpu.mem[address] == 0xCD and cpu.word(address + 1) == LAYOUT["DISK"] + 9:
+            cpu.setword(address + 1, platform_read)
     read_success = bytes((
         0x78, 0xB7, 0x20, 0x07,
         0x79, 0xFE, 0x08, 0x30, 0x02,
@@ -54,16 +59,17 @@ def main() -> None:
         0x21, DATA & 0xFF, DATA >> 8,
         0x18, 0x03,
         0x21, FIXTURE & 0xFF, FIXTURE >> 8,
-        0x11, 0x00, 0xED,
+        0x11, LAYOUT["MODULEBUF"] & 255, LAYOUT["MODULEBUF"] >> 8,
         0x01, 0x00, 0x02,
         0xED, 0xB0, 0xAF, 0xC9,
     ))
     cpu.mem[platform_read:platform_read + len(read_success)] = read_success
     write_impl = cpu.word(BIOS_BASE + 14 * 3 + 1)
     write_jumps = [address for address in range(write_impl, write_impl + 90)
-                   if cpu.mem[address] == 0xC3]
+                   if cpu.mem[address] == 0xC3 and cpu.word(address + 1) == LAYOUT["DISK"] + 12]
     require(write_jumps, "BIOS physical-write jump was not found")
-    platform_write = cpu.word(write_jumps[-1] + 1)
+    platform_write = 0x7B40
+    cpu.setword(write_jumps[-1] + 1, platform_write)
     write_success = bytes((
         0x78, 0xB7, 0x20, 0x07,
         0x79, 0xFE, 0x08, 0x30, 0x02,
@@ -71,7 +77,7 @@ def main() -> None:
         0x11, DATA & 0xFF, DATA >> 8,
         0x18, 0x03,
         0x11, FIXTURE & 0xFF, FIXTURE >> 8,
-        0x21, 0x00, 0xED,
+        0x21, LAYOUT["MODULEBUF"] & 255, LAYOUT["MODULEBUF"] >> 8,
         0x01, 0x00, 0x02,
         0xED, 0xB0, 0xAF, 0xC9,
     ))

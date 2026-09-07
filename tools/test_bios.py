@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Execute and verify the BetterCP/M BIOS scaffold's public entries."""
 from pathlib import Path
+import re
 from system_layout import LAYOUT
 
 ROOT = Path(__file__).resolve().parents[1]
 IMAGE = ROOT / "build/bios/bios.bin"
-BASE = 0xEF00
+BASE = LAYOUT["BIOS"]
 COUNT = 17
 SENTINEL = 0xFFFF
 
@@ -60,7 +61,7 @@ class Z80:
         self.sp = (self.sp + 2) & 0xFFFF
         return value
 
-    def run(self, address: int, limit: int = 200) -> None:
+    def run(self, address: int, limit: int = 1000) -> None:
         self.pc = address
         self.push(SENTINEL)
         for _ in range(limit):
@@ -120,6 +121,25 @@ class Z80:
                     address = self.word(self.pc)
                     self.pc += 2
                     self.ix = self.word(address)
+                elif sub in (0x46, 0x56, 0x5E, 0x66, 0x6E):
+                    displacement = self.mem[self.pc]
+                    self.pc += 1
+                    if displacement & 128:
+                        displacement -= 256
+                    value = self.mem[(self.ix + displacement) & 65535]
+                    setattr(self, {0x46: 'b', 0x56: 'd', 0x5E: 'e', 0x66: 'h', 0x6E: 'l'}[sub], value)
+                elif sub == 0xCB:
+                    displacement = self.mem[self.pc]
+                    opcode = self.mem[self.pc + 1]
+                    self.pc += 2
+                    assert 0x46 <= opcode <= 0x7E and opcode & 7 == 6
+                    self.z = not (self.mem[(self.ix + displacement) & 65535] & (1 << ((opcode - 0x40) // 8)))
+                elif sub == 0x96:
+                    value = self.mem[self.ix + self.mem[self.pc]]
+                    self.pc += 1
+                    self.carry = self.a < value
+                    self.a = (self.a - value) & 255
+                    self.z = self.a == 0
                 elif sub in (0x7E, 0x4E, 0xBE, 0xA6, 0x34, 0x35, 0x36,
                               0x77, 0x70, 0x71):
                     displacement = self.mem[self.pc]
@@ -430,6 +450,9 @@ class Z80:
                 low = self.a & 1
                 self.a = (self.a >> 1) | (low << 7)
                 self.carry = bool(low)
+            elif op == 0xA5:            # AND L
+                self.a &= self.l
+                self.z, self.carry = self.a == 0, False
             elif op == 0x96:            # SUB (HL)
                 value = self.mem[self.hl]
                 self.carry = self.a < value
@@ -586,6 +609,12 @@ def install_drive_tables(cpu: Z80, dph_base: int = LAYOUT["TABLES"],
                          dpb_address: int = LAYOUT["TABLES"] + 64,
                          workspaces=None) -> None:
     """Install the BIOS-owned four-drive DPH/DPB contract in test memory."""
+    if workspaces is None and dph_base == LAYOUT["TABLES"]:
+        runtime = (ROOT / "build/system/disk.bin").read_bytes()
+        cpu.mem[LAYOUT["DISK"]:LAYOUT["DISK"] + len(runtime)] = runtime
+        tables = (ROOT / "build/system/tables.bin").read_bytes()
+        cpu.mem[dph_base:dph_base + len(tables)] = tables
+        return
     # Mirror the separately linked src/bios/tables.mac unit.
     if workspaces is None:
         workspaces = tuple((dph_base + 80 + drive * 82,
@@ -617,11 +646,11 @@ def main() -> None:
     boot_target = cpu.word(entries[0] + 1)
     require(cpu.mem[boot_target] == 0xCD and
             cpu.mem[boot_target + 3] == 0xC3 and
-            cpu.word(boot_target + 4) == LAYOUT["RELOADER"],
+            BASE <= cpu.word(boot_target + 4) < BASE + len(data),
             "BOOT does not initialize the platform then reconstruct commands")
     warm_target = cpu.word(entries[1] + 1)
     require(cpu.mem[warm_target] == 0xC3 and
-            cpu.word(warm_target + 1) == LAYOUT["RELOADER"],
+            cpu.word(warm_target + 1) == cpu.word(boot_target + 4),
             "WBOOT does not enter command-image restoration")
     private_read = BASE + 17 * 3
     private_cursor = private_read + 3
@@ -632,8 +661,8 @@ def main() -> None:
             BASE <= cpu.word(private_cursor + 1) < BASE + len(data),
             "private cursor-character vector is not a bounded JP")
     read_impl = cpu.word(private_read + 1)
-    require(cpu.mem[read_impl] == 0x3E and cpu.mem[read_impl + 1] == 1,
-            "private physical-read implementation does not select system drive A")
+    require(cpu.mem[read_impl] == 0xC3 and cpu.word(read_impl + 1) == LAYOUT["DISK"] + 15,
+            "private physical read does not use the common disk engine")
 
     const_impl = cpu.word(entries[2] + 1)
     platform_const = cpu.word(const_impl + 1)
@@ -750,11 +779,11 @@ def main() -> None:
         cpu.run(entries[9])
         require(cpu.hl != 0 and cpu.hl not in dphs,
                 f"SELDSK did not expose a distinct drive {name} DPH")
-        require(cpu.word(cpu.hl + 10) == dpb,
+        require(cpu.mem[cpu.word(cpu.hl + 10):cpu.word(cpu.hl + 10)+15] == cpu.mem[dpb:dpb+15],
                 f"drive {name} did not share the selected 790K geometry")
         pair = (cpu.word(cpu.hl + 12), cpu.word(cpu.hl + 14))
-        require(pair not in work,
-                f"drive {name} reused another drive's check/allocation workspace")
+        require(pair in work,
+                f"drive {name} did not use the shared active-drive workspace")
         dphs.append(cpu.hl)
         work.add(pair)
     cpu.c = 5
@@ -787,18 +816,30 @@ def main() -> None:
                   if cpu.mem[address] == 0xCD]
     require(len(read_calls) >= 2, "READ physical-call site was not found")
     call_at = read_calls[1]
-    platform_read = cpu.word(call_at + 1)
-    read_success = bytes((
-        0x32, 0x00, 0x73,       # LD (7300h),A: cylinder
-        0x78, 0x32, 0x01, 0x73, # LD A,B / LD (7301h),A: side
-        0x79, 0x32, 0x02, 0x73, # LD A,C / LD (7302h),A: sector
-        0xAF, 0xC9,              # XOR A / RET
-    ))
+    physical_vector = cpu.word(call_at + 1)
+    platform_read = 0x7400
+    cpu.setword(call_at + 1, platform_read)
+    # WRITE pre-reads through the same physical reader.
+    write_entry = cpu.word(entries[14] + 1)
+    for address in range(write_entry, write_entry + 70):
+        if cpu.mem[address] == 0xCD and cpu.word(address + 1) == physical_vector:
+            cpu.setword(address + 1, platform_read)
+    listing = (ROOT / "build/bios/bios.lst").read_text()
+    def physical_report(destination):
+        code = bytearray()
+        for offset, symbol in enumerate(("BIO_PCYL", "B_PSide", "BIO_PSEC")):
+            match = re.search(rf"^([0-9a-f]{{4}})\s+.*\b{symbol}:", listing, re.M)
+            address = int(match[1], 16)
+            target = destination + offset
+            code.extend((0x3A, address & 255, address >> 8,
+                         0x32, target & 255, target >> 8))
+        return bytes(code) + bytes((0xAF, 0xC9))
+    read_success = physical_report(0x7300)
     cpu.mem[platform_read:platform_read + len(read_success)] = read_success
     order = (1, 3, 5, 7, 9, 2, 4, 6, 8, 10)
     for logical in range(80):
         for quarter in range(4):
-            cpu.mem[0xED00 + quarter * 128:0xED80 + quarter * 128] = bytes((quarter,)) * 128
+            cpu.mem[LAYOUT["MODULEBUF"] + quarter * 128:LAYOUT["MODULEBUF"] + 128 + quarter * 128] = bytes((quarter,)) * 128
         cpu.bc = logical
         cpu.run(entries[11])
         cpu.a = 0xFF
@@ -815,19 +856,15 @@ def main() -> None:
 
     write_impl = cpu.word(entries[14] + 1)
     write_jumps = [address for address in range(write_impl, write_impl + 90)
-                   if cpu.mem[address] == 0xC3]
+                   if cpu.mem[address] == 0xC3 and cpu.word(address + 1) == LAYOUT["DISK"] + 12]
     require(write_jumps, "WRITE physical-jump site was not found")
-    platform_write = cpu.word(write_jumps[-1] + 1)
-    write_success = bytes((
-        0x32, 0x10, 0x73,
-        0x78, 0x32, 0x11, 0x73,
-        0x79, 0x32, 0x12, 0x73,
-        0xAF, 0xC9,
-    ))
+    platform_write = 0x7440
+    cpu.setword(write_jumps[-1] + 1, platform_write)
+    write_success = physical_report(0x7310)
     cpu.mem[platform_write:platform_write + len(write_success)] = write_success
     for logical in range(80):
         for quarter in range(4):
-            cpu.mem[0xED00 + quarter * 128:0xED80 + quarter * 128] = bytes((quarter,)) * 128
+            cpu.mem[LAYOUT["MODULEBUF"] + quarter * 128:LAYOUT["MODULEBUF"] + 128 + quarter * 128] = bytes((quarter,)) * 128
         replacement = (0x80 | logical) & 0xFF
         cpu.mem[0x7200:0x7280] = bytes((replacement,)) * 128
         cpu.bc = logical
@@ -842,7 +879,7 @@ def main() -> None:
                 f"WRITE {logical} selected wrong sector ID")
         for quarter in range(4):
             expected = replacement if quarter == (logical & 3) else quarter
-            require(cpu.mem[0xED00 + quarter * 128:0xED80 + quarter * 128] ==
+            require(cpu.mem[LAYOUT["MODULEBUF"] + quarter * 128:LAYOUT["MODULEBUF"] + 128 + quarter * 128] ==
                     bytes((expected,)) * 128,
                     f"WRITE {logical} corrupted quarter {quarter}")
 

@@ -16,7 +16,7 @@ SOURCE = """
         OR      A
         LD      DE,LY_TPA
         JR      Z,BOUND
-        LD      DE,LY_TPA-00400H
+        LD      DE,LY_TPA-00800H
 BOUND:
         LD      HL,(00006H)
         OR      A
@@ -68,6 +68,7 @@ BADMSG: DB      'TPA overwrite FAILED',13,10,'$'
 
 
 def main() -> None:
+    assert LAYOUT["TPA"] - 0x100 >= 53 * 1024, "TPA fell below the 53 KiB target"
     with tempfile.TemporaryDirectory(prefix="bettercpm-packed-tpa-") as temporary:
         work = Path(temporary)
         program = work / "TPAFILL.COM"

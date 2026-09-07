@@ -4,7 +4,7 @@
 ; Independently buildable BIOS, placed by the shared production memory map.
 
 BIOSBASE        EQU     LY_BIOS+0
-BIO_PHYBF       EQU     LY_BUF  ; 512-byte buffer below the resident BIOS
+BIO_PHYBF       EQU     LY_BUF  ; 1024-byte shared physical-sector buffer
 BIO_DIRBF       EQU     LY_DIR
 ; BIOS-owned descriptors are linked separately in the shared packed map.
 BIO_DPH0        EQU     LY_TAB+0
@@ -46,22 +46,28 @@ BIOPHREAD:
         JP      BIO_PHRD
 BIOCURSOR:
         JP      BIO_CUROUT
+BIOOVLOAD:
+        JP      PL_OVLOAD
+BIORLOAD:
+        JP      PL_RSXLOAD
 BIO_PHRD:
-        LD      A,1
-        LD      (B_PDrive),A
-        JP      M4_READ
+        JP LY_DISK+15
 BIO_CUROUT:
         JP      PL_CURSOR
 
 ; BOOT and WBOOT enter portable system reconstruction before the CCP.
 BIOBOOT:
-        CALL    M4_INIT
+        CALL    PL_INIT
 ; Patch 2026-09-02: the CCP is no longer part of the stage-one resident image.
 ; Cold and warm entry both reconstruct the calculated command environment
 ; from the system tracks before entering the portable WBOOT path.
-        JP      CCP_RELOAD
+        JP      PL_RELOAD
 BIOWBOOT:
-        JP      CCP_RELOAD
+; 07-Sep-2026 -- reclaim the command reloader's permanent storage.
+;       JP      CCP_RELOAD      ; old, permanently resident reloader
+; The transient is finished.  Fetch the reloader into its old TPA,
+; then rebuild the command environment.  PL_RELOAD does not return.
+        JP      PL_RELOAD
 
 ; CONST must return exactly 00h or FFh and must not consume the character.
 BIOCONST:
@@ -102,36 +108,13 @@ BIOSETDM:
 ; Patch 2026-09-01: A: through D: are separate Model 4 floppy drives. They share
 ; the temporary MM Extended 790K geometry, but never BDOS scratch workspace.
 BIOSELDS:
-        LD      A,C
-        LD      (BIO_DRIVE),A
-        CP      4
-        JR      NC,BIO_NODSK
-        OR      A
-        LD      HL,BIO_DPH0
-        RET     Z
-        CP      2
-        LD      HL,BIO_DPH1
-        RET     C
-        LD      HL,BIO_DPH2
-        RET     Z
-        LD      HL,BIO_DPH3
-        RET
-BIO_NODSK:
-        LD      HL,0
-        RET
+        JP LY_DISK+6
 
 BIOREAD:
         CALL    BIO_MAP
         RET     NZ
-        LD      A,(BIO_PCYL)
-        PUSH    AF
-        LD      A,(B_PSide)
-        LD      B,A
-        LD      A,(BIO_PSEC)
-        LD      C,A
-        POP     AF
         LD      HL,BIO_PHYBF
-        CALL    PL_READ
+        CALL    LY_DISK+9
         RET     NZ
         LD      A,(BIO_QUART)
         LD      HL,BIO_PHYBF
@@ -152,15 +135,8 @@ BIO_RDCOP:
 BIOWRITE:
         CALL    BIO_MAP
         RET     NZ
-        LD      A,(BIO_PCYL)
-        PUSH    AF
-        LD      A,(B_PSide)
-        LD      B,A
-        LD      A,(BIO_PSEC)
-        LD      C,A
-        POP     AF
         LD      HL,BIO_PHYBF
-        CALL    PL_READ
+        CALL    LY_DISK+9
         RET     NZ
         LD      A,(BIO_QUART)
         LD      DE,BIO_PHYBF
@@ -177,63 +153,12 @@ BIO_WRCOP:
         LD      HL,(BIO_DMA)
         LD      BC,128
         LDIR
-        LD      A,(BIO_PCYL)
-        PUSH    AF
-        LD      A,(B_PSide)
-        LD      B,A
-        LD      A,(BIO_PSEC)
-        LD      C,A
-        POP     AF
         LD      HL,BIO_PHYBF
-        JP      PL_WRITE
+        JP      LY_DISK+12
 
 BIO_MAP:
-        LD      A,(BIO_DRIVE)
-        CP      4
-        JR      NC,BIO_RDERR
-        LD      E,A
-        LD      D,0
-        LD      HL,BIO_DRMASK
-        ADD     HL,DE
-        LD      A,(HL)
-        LD      (B_PDrive),A
-        LD      A,(BIO_TRACK+1)
-        OR      A
-        JR      NZ,BIO_RDERR
-        LD      A,(BIO_TRACK)
-        CP      80
-        JR      NC,BIO_RDERR
-        LD      A,(BIO_SECTOR+1)
-        OR      A
-        JR      NZ,BIO_RDERR
-        LD      A,(BIO_SECTOR)
-        CP      80
-        JR      NC,BIO_RDERR
-        LD      E,A
-        AND     3
-        LD      (BIO_QUART),A
-        LD      A,E
-        SRL     A
-        SRL     A
-        LD      B,0
-        CP      10
-        JR      C,BIO_SIDE0
-        SUB     10
-        INC     B
-BIO_SIDE0:
-        LD      E,A
-        LD      D,0
-        LD      HL,BIO_ORDER
-        ADD     HL,DE
-        LD      C,(HL)
-        LD      A,B
-        LD      (B_PSide),A
-        LD      A,C
-        LD      (BIO_PSEC),A
-        LD      A,(BIO_TRACK)
-        LD      (BIO_PCYL),A
-        XOR     A
-        RET
+        JP LY_DISK+3
+
 BIO_RDERR:
         LD      A,1
         RET
@@ -276,11 +201,6 @@ B_PDrive:
         DB      1
 BIO_PSEC:
         DB      1
-BIO_ORDER:
-        DB      1,3,5,7,9,2,4,6,8,10
-BIO_DRMASK:
-        DB      1,2,4,8
-
         INCLUDE biosplat.inc
 
         .DEPHASE

@@ -1,121 +1,75 @@
         INCLUDE layout.inc
-; Protected 512-byte stream reader for CPX/RSX module files.
-; This service is usable before the CCP exists and after transient execution.
-
-FLBASE          EQU     LY_FILE
-DIROPEN         EQU     LY_EXT+012H
-DIRREAD         EQU     LY_EXT+024H
-
+; CPX/RSX FILE STREAM -- one cursor, one FCB.
+; OPEN: A=0 for CPX, nonzero for RSX; HL -> eight-byte name.
+; NEXT: HL -> destination; read up to four 128-byte records.
+; RESET reopens the same name.  Keep name/type in the FCB; a second
+; copy wastes RAM and can get out of step with the file being read.
+DIROPEN EQU LY_EXT+012H
+DIRREAD EQU LY_EXT+024H
         CSEG
-        .PHASE  FLBASE
-
-FL_OPEN:        JP      FL_OPBODY       ; HL=8-byte stem, A=0 CPX / nonzero RSX
-FL_NEXT:        JP      FL_NXBODY       ; HL=destination; return HL advanced 512
-FL_RESET:       JP      FL_REOPEN       ; reopen current name/type at record zero
-
+        .PHASE  LY_FILE
+FL_OPEN: JP FL_OPBODY
+FL_NEXT: JP FL_NXBODY
+FL_RESET: JP FL_REOPEN
 FL_OPBODY:
-        LD      (FL_TYPE),A
-        LD      DE,FL_NAME
-        LD      BC,8
+        LD DE,FL_FCB+1
+        LD BC,8
+        LDIR
+        LD HL,FL_CPXEXT
+        OR A
+        JR Z,FL_EXT
+        LD HL,FL_RSXEXT
+FL_EXT:
+        LD BC,3
         LDIR
 FL_REOPEN:
-        LD      HL,FL_FCB
-        LD      (HL),1          ; module source is A0, independent of current DU
-        INC     HL
-        LD      DE,FL_NAME
-        LD      B,8
-FL_NAMLP:
-        LD      A,(DE)
-        LD      (HL),A
-        INC     DE
-        INC     HL
-        DJNZ    FL_NAMLP
-        LD      DE,FL_CPXEXT
-        LD      A,(FL_TYPE)
-        OR      A
-        JR      Z,FL_EXT
-        LD      DE,FL_RSXEXT
-FL_EXT:
-        LD      B,3
-FL_EXLP:
-        LD      A,(DE)
-        LD      (HL),A
-        INC     DE
-        INC     HL
-        DJNZ    FL_EXLP
-        LD      B,24
-        XOR     A
-FL_ZERO:
-        LD      (HL),A
-        INC     HL
-        DJNZ    FL_ZERO
-        LD      DE,FL_FCB
-        CALL    DIROPEN
-        CP      0FFH
-        JR      Z,FL_BAD
-        XOR     A
+        LD A,1
+        LD (FL_FCB),A
+        LD HL,FL_FCB+12
+        LD DE,FL_FCB+13
+        LD BC,23
+        LD (HL),0
+        LDIR
+        LD DE,FL_FCB
+        CALL DIROPEN
+        CP 0FFH
+        JR Z,FL_BAD
+        XOR A
         RET
-
 FL_NXBODY:
-        LD      (FL_DEST),HL
-        LD      A,4
-        LD      (FL_RECS),A
-        XOR     A
-        LD      (FL_HAVE),A
+        LD B,4
 FL_RLOOP:
-        LD      BC,(FL_DEST)
-        LD      DE,FL_FCB
-        XOR     A
-        CALL    DIRREAD
-        OR      A
-        JR      NZ,FL_EOF
-        LD      A,(FL_HAVE)
-        INC     A
-        LD      (FL_HAVE),A
-        LD      HL,(FL_DEST)
-        LD      DE,0080H
-        ADD     HL,DE
-        LD      (FL_DEST),HL
-        LD      A,(FL_RECS)
-        DEC     A
-        LD      (FL_RECS),A
-        JR      NZ,FL_RLOOP
-        LD      HL,(FL_DEST)
-        XOR     A
+        PUSH BC
+        PUSH HL
+        LD B,H
+        LD C,L
+        LD DE,FL_FCB
+        CALL DIRREAD
+        POP HL
+        POP BC
+        OR A
+        JR NZ,FL_EOF
+        LD DE,128
+        ADD HL,DE
+        DJNZ FL_RLOOP
+        XOR A
         RET
-; A short final unit is valid once the file supplied at least one record.
 FL_EOF:
-        LD      A,(FL_HAVE)
-        OR      A
-        JR      Z,FL_BAD
-        LD      HL,(FL_DEST)
-        LD      A,(FL_RECS)
+        LD A,B
+        CP 4
+        JR Z,FL_BAD          ; no input at all is EOF; a partial carrier is valid
+        LD DE,128
 FL_PAD:
-        OR      A
-        JR      Z,FL_OK
-        LD      DE,0080H
-        ADD     HL,DE
-        DEC     A
-        JR      FL_PAD
-FL_OK:
-        XOR     A
+        ADD HL,DE
+        DJNZ FL_PAD
+        XOR A
         RET
 FL_BAD:
-        LD      A,1
-        OR      A
+        LD A,1
+        OR A
         RET
-
-FL_CPXEXT:      DB      'CPX'
-FL_RSXEXT:      DB      'RSX'
-FL_TYPE:        DB      0
-FL_RECS:        DB      0
-FL_HAVE:        DB      0
-FL_DEST:        DW      0
-FL_NAME:        DB      '        '
-FL_FCB:
-        REPT    36
-        DB      0
-        ENDM
-
+FL_CPXEXT: DB 'CPX'
+FL_RSXEXT: DB 'RSX'
+FL_FCB: DS 36
         .DEPHASE
         END

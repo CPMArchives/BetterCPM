@@ -15,8 +15,8 @@ BIOS = ROOT / "build/bios/bios.bin"
 BASE = LAYOUT["BDOS"]
 FCB = 0x7000
 FIXTURE = 0x7500
-TEST_DPH = 0xD000
-TEST_DPB = 0xD040
+TEST_DPH = LAYOUT["TABLES"]
+TEST_DPB = LAYOUT["TABLES"] + 17
 
 
 def symbols() -> dict[str, int]:
@@ -32,17 +32,7 @@ def symbols() -> dict[str, int]:
 def main() -> None:
     cpu = Z80(BIOS.read_bytes())
     cpu.sp = 0xA800  # caller stack below the packed protected image
-    workspaces = ((0xD050, 0xD070), (0xD0A2, 0xD0C2),
-                  (0xD0F4, 0xD114), (0xD146, 0xD166))
-    install_drive_tables(cpu, TEST_DPH, TEST_DPB, workspaces)
-    # Relocate the BIOS-owned descriptor addresses only for this standalone
-    # test's fixture tables; production uses the separately linked table unit.
-    select_impl = cpu.word(BIOS_BASE + 9 * 3 + 1)
-    for offset in range(48):
-        address = select_impl + offset
-        value = cpu.word(address)
-        if value in range(LAYOUT["TABLES"], LAYOUT["TABLES"] + 64, 16):
-            cpu.setword(address, TEST_DPH + value - LAYOUT["TABLES"])
+    install_drive_tables(cpu)
     image = IMAGE.read_bytes()
     cpu.mem[BASE:BASE + len(image)] = image
 
@@ -52,13 +42,14 @@ def main() -> None:
     read_calls = [address for address in range(read_impl, read_impl + 48)
                   if cpu.mem[address] == 0xCD]
     require(len(read_calls) >= 2, "BIOS physical-read call was not found")
-    platform_read = cpu.word(read_calls[1] + 1)
+    platform_read = 0x7B00
+    cpu.setword(read_calls[1] + 1, platform_read)
     read_success = bytes((
         0xF5, 0x3A, 0x03, 0x73, 0x3C, 0x32, 0x03, 0x73, 0xF1,
         0x32, 0x00, 0x73, 0x78, 0x32, 0x01, 0x73,
         0x79, 0x32, 0x02, 0x73,
         0x21, FIXTURE & 0xFF, FIXTURE >> 8,
-        0x11, 0x00, 0xED, 0x01, 0x00, 0x02,
+        0x11, LAYOUT["MODULEBUF"] & 255, LAYOUT["MODULEBUF"] >> 8, 0x01, 0x00, 0x02,
         0xED, 0xB0, 0xAF, 0xC9,
     ))
     cpu.mem[platform_read:platform_read + len(read_success)] = read_success
@@ -215,6 +206,7 @@ def main() -> None:
     cpu.mem[0x7303] = 0
     cpu.run(state["UB_DIRCOUNT"])
     require(cpu.b == 32, f"directory geometry returned {cpu.b} records")
+    require(call(14, 1) == 0, "reselection after failed drive selection failed")
     cpu.a = 0
     cpu.run(state["UB_DIRLOAD"], limit=10000)
     require(cpu.a == 0, f"directory cache load failed with {cpu.a:02X}")
@@ -222,7 +214,7 @@ def main() -> None:
     require(search_first == 0,
             f"Search First missed slot zero: A={search_first:02X} "
             f"reads={cpu.mem[0x7303]} mapped={bytes(cpu.mem[0x7300:0x7303]).hex()} "
-            f"buffer={bytes(cpu.mem[0xEC80:0xEC8D]).hex()} "
+            f"buffer={bytes(cpu.mem[LAYOUT['DIRBUF']:LAYOUT['DIRBUF'] + 13]).hex()} "
             f"pos={cpu.mem[state['UB_ITPOS']]} "
             f"cache={cpu.mem[state['UBS_COK']]} dph={cpu.word(state['UB_DPH']):04X}")
     dma = cpu.word(symbols()["UB_DMA"])
@@ -282,7 +274,7 @@ def main() -> None:
             f"mode={cpu.mem[state['UB_ITMODE']]} pos={cpu.mem[state['UB_ITPOS']]} "
             f"dirty={cpu.mem[state['UB_DIRTY']]}")
     require(cpu.mem[0x7304] == 1, "Make did not flush exactly one directory sector")
-    require(bytes(cpu.mem[0xEC80 + 64:0xEC80 + 76]) ==
+    require(bytes(cpu.mem[LAYOUT['DIRBUF'] + 64:LAYOUT['DIRBUF'] + 76]) ==
             bytes((7,)) + b"NEW     COM",
             "Make did not initialize the cached directory entry")
     require(call(22, FCB) == 0xFF and cpu.mem[0x7304] == 1,
@@ -295,13 +287,13 @@ def main() -> None:
     # Constrain the fixture to one directory record and verify Delete's
     # preflight/mutation passes through the same cache and iterator.
     require(call(37, 2) == 0, "could not clear drive-B write protection")
-    dpb = TEST_DPB
+    dpb = cpu.word(state["UB_DPB"])
     cpu.mem[dpb + 7] = 3          # DRM=3: four entries, one directory record
     cpu.mem[FCB:FCB + 36] = bytes(36)
     cpu.mem[FCB + 1:FCB + 12] = b"ONE     COM"
     writes = cpu.mem[0x7304]
     require(call(19, FCB) == 0, "Delete missed an exact existing file")
-    require(cpu.mem[0xEC80] == 0xE5 and cpu.mem[0xEC80 + 32] == 7,
+    require(cpu.mem[LAYOUT['DIRBUF']] == 0xE5 and cpu.mem[LAYOUT['DIRBUF'] + 32] == 7,
             "Delete changed the wrong cached directory entries")
     require(cpu.mem[0x7304] == writes + 1,
             "Delete did not flush its dirty directory sector exactly once")
@@ -309,39 +301,39 @@ def main() -> None:
             "Delete reported success when no matching entry remained")
 
     # A read-only extent found during preflight must prevent every mutation.
-    cpu.mem[0xEC80] = 7
-    cpu.mem[0xEC80 + 9] |= 0x80
+    cpu.mem[LAYOUT['DIRBUF']] = 7
+    cpu.mem[LAYOUT['DIRBUF'] + 9] |= 0x80
     cpu.mem[FCB + 1:FCB + 12] = b"???????????"
-    snapshot = bytes(cpu.mem[0xEC80:0xED00])
+    snapshot = bytes(cpu.mem[LAYOUT['DIRBUF']:LAYOUT['DIRBUF']+128])
     writes = cpu.mem[0x7304]
     require(call(19, FCB) == 0xFF,
             "Delete accepted a set containing a read-only extent")
-    require(bytes(cpu.mem[0xEC80:0xED00]) == snapshot and
+    require(bytes(cpu.mem[LAYOUT['DIRBUF']:LAYOUT['DIRBUF']+128]) == snapshot and
             cpu.mem[0x7304] == writes,
             "Delete partially mutated a set rejected during preflight")
 
     # Rename changes all matching source extents through the same two-pass
     # path, retaining the directory attribute bits on each name/type byte.
-    cpu.mem[0xEC80 + 9] &= 0x7F
-    cpu.mem[0xEC80 + 33] |= 0x80
+    cpu.mem[LAYOUT['DIRBUF'] + 9] &= 0x7F
+    cpu.mem[LAYOUT['DIRBUF'] + 33] |= 0x80
     cpu.mem[FCB:FCB + 36] = bytes(36)
     cpu.mem[FCB + 1:FCB + 12] = b"TWO     COM"
     cpu.mem[FCB + 17:FCB + 28] = b"SECOND  COM"
     writes = cpu.mem[0x7304]
     require(call(23, FCB) == 0, "Rename missed an exact existing source")
-    require(bytes(value & 0x7F for value in cpu.mem[0xEC80 + 33:0xEC80 + 44]) ==
-            b"SECOND  COM" and cpu.mem[0xEC80 + 33] & 0x80,
+    require(bytes(value & 0x7F for value in cpu.mem[LAYOUT['DIRBUF'] + 33:LAYOUT['DIRBUF'] + 44]) ==
+            b"SECOND  COM" and cpu.mem[LAYOUT['DIRBUF'] + 33] & 0x80,
             "Rename did not replace the name while preserving attributes")
     require(cpu.mem[0x7304] == writes + 1,
             "Rename did not flush its dirty directory sector exactly once")
 
     cpu.mem[FCB + 1:FCB + 12] = b"SECOND  COM"
     cpu.mem[FCB + 17:FCB + 28] = b"ONE     COM"
-    snapshot = bytes(cpu.mem[0xEC80:0xED00])
+    snapshot = bytes(cpu.mem[LAYOUT['DIRBUF']:LAYOUT['DIRBUF']+128])
     writes = cpu.mem[0x7304]
     require(call(23, FCB) == 0xFF,
             "Rename accepted an already-existing target")
-    require(bytes(cpu.mem[0xEC80:0xED00]) == snapshot and
+    require(bytes(cpu.mem[LAYOUT['DIRBUF']:LAYOUT['DIRBUF']+128]) == snapshot and
             cpu.mem[0x7304] == writes,
             "Rename mutated the directory while rejecting its target")
 
@@ -349,13 +341,13 @@ def main() -> None:
     cpu.mem[FCB:FCB + 36] = bytes(36)
     cpu.mem[FCB + 1:FCB + 12] = b"SECOND  COM"
     cpu.mem[FCB + 9] |= 0x80    # T1 read-only on; first-name high bit off
-    tail = bytes(cpu.mem[0xEC80 + 44:0xEC80 + 64])
+    tail = bytes(cpu.mem[LAYOUT['DIRBUF'] + 44:LAYOUT['DIRBUF'] + 64])
     writes = cpu.mem[0x7304]
     require(call(30, FCB) == 0, "Set Attributes missed an existing file")
-    require(not cpu.mem[0xEC80 + 33] & 0x80 and
-            cpu.mem[0xEC80 + 41] & 0x80,
+    require(not cpu.mem[LAYOUT['DIRBUF'] + 33] & 0x80 and
+            cpu.mem[LAYOUT['DIRBUF'] + 41] & 0x80,
             "Set Attributes did not copy the requested high bits")
-    require(bytes(cpu.mem[0xEC80 + 44:0xEC80 + 64]) == tail,
+    require(bytes(cpu.mem[LAYOUT['DIRBUF'] + 44:LAYOUT['DIRBUF'] + 64]) == tail,
             "Set Attributes changed extent or allocation fields")
     require(cpu.mem[0x7304] == writes + 1,
             "Set Attributes did not flush exactly one dirty sector")
@@ -366,14 +358,14 @@ def main() -> None:
 
     # Compute File Size reduces multiple exact-name extents to the largest
     # exclusive 128-byte record number and stores it in R0..R2.
-    cpu.mem[0xEC80 + 32 + 12] = 3
-    cpu.mem[0xEC80 + 32 + 14] = 1
-    cpu.mem[0xEC80 + 32 + 15] = 5
-    cpu.mem[0xEC80 + 64] = 7
-    cpu.mem[0xEC80 + 65:0xEC80 + 76] = b"SECOND  COM"
-    cpu.mem[0xEC80 + 64 + 12] = 4
-    cpu.mem[0xEC80 + 64 + 14] = 1
-    cpu.mem[0xEC80 + 64 + 15] = 10
+    cpu.mem[LAYOUT['DIRBUF'] + 32 + 12] = 3
+    cpu.mem[LAYOUT['DIRBUF'] + 32 + 14] = 1
+    cpu.mem[LAYOUT['DIRBUF'] + 32 + 15] = 5
+    cpu.mem[LAYOUT['DIRBUF'] + 64] = 7
+    cpu.mem[LAYOUT['DIRBUF'] + 65:LAYOUT['DIRBUF'] + 76] = b"SECOND  COM"
+    cpu.mem[LAYOUT['DIRBUF'] + 64 + 12] = 4
+    cpu.mem[LAYOUT['DIRBUF'] + 64 + 14] = 1
+    cpu.mem[LAYOUT['DIRBUF'] + 64 + 15] = 10
     cpu.mem[FCB:FCB + 36] = bytes(36)
     cpu.mem[FCB + 1:FCB + 12] = b"SECOND  COM"
     require(call(35, FCB) == 0, "Compute File Size missed existing extents")
@@ -396,7 +388,7 @@ def main() -> None:
     # Close uses a non-copying canonical lookup and commits a dirty FCB's
     # extent state and allocator-produced map. Conflicting owned blocks fail
     # without changing either the caller or directory.
-    cpu.mem[0xEC80 + 41] &= 0x7F
+    cpu.mem[LAYOUT['DIRBUF'] + 41] &= 0x7F
     cpu.mem[FCB:FCB + 36] = bytes(36)
     cpu.mem[FCB + 1:FCB + 12] = b"SECOND  COM"
     cpu.mem[FCB + 12] = 3
@@ -405,22 +397,22 @@ def main() -> None:
     cpu.mem[FCB + 32] = 9
     writes = cpu.mem[0x7304]
     require(call(16, FCB) == 1, "Close missed the canonical extent")
-    require(cpu.mem[0xEC80 + 32 + 15] == 6 and cpu.mem[FCB + 15] == 6,
+    require(cpu.mem[LAYOUT['DIRBUF'] + 32 + 15] == 6 and cpu.mem[FCB + 15] == 6,
             "Close did not commit and preserve the caller's RC")
     require(cpu.mem[0x7304] == writes + 1,
             "Close did not flush one dirty directory sector")
-    cpu.mem[0xEC80 + 32 + 16] = 8
+    cpu.mem[LAYOUT['DIRBUF'] + 32 + 16] = 8
     cpu.mem[FCB + 14] &= 0x7F
     cpu.mem[FCB + 15] = 7
     cpu.mem[FCB + 16] = 9
     writes = cpu.mem[0x7304]
     require(call(16, FCB) == 1,
             "base Close rejected an FCB requiring optional SAFEFS validation")
-    require(cpu.mem[0xEC80 + 32 + 15] == 7 and
-            cpu.mem[0xEC80 + 32 + 16] == 9 and
+    require(cpu.mem[LAYOUT['DIRBUF'] + 32 + 15] == 7 and
+            cpu.mem[LAYOUT['DIRBUF'] + 32 + 16] == 9 and
             cpu.mem[0x7304] == writes + 1,
             "base Close did not publish the caller's active FCB")
-    cpu.mem[0xEC80 + 32 + 16] = 8
+    cpu.mem[LAYOUT['DIRBUF'] + 32 + 16] = 8
     cpu.run(state["UB_ALLOGIN"], limit=50000)
 
     # Sequential Read maps CR through EXM, BSH/BLM, the 16-bit allocation map,
@@ -442,10 +434,10 @@ def main() -> None:
     require(call(20, FCB) == 1,
             "Sequential Read did not report EOF when CR reached RC")
 
-    cpu.mem[0xEC80:0xEC80 + 32] = bytes(32)
-    cpu.mem[0xEC80:0xEC80 + 12] = bytes((7,)) + b"ONE     COM"
-    cpu.mem[0xEC80 + 15] = 2
-    cpu.mem[0xEC80 + 16:0xEC80 + 18] = bytes((1, 0))
+    cpu.mem[LAYOUT['DIRBUF']:LAYOUT['DIRBUF'] + 32] = bytes(32)
+    cpu.mem[LAYOUT['DIRBUF']:LAYOUT['DIRBUF'] + 12] = bytes((7,)) + b"ONE     COM"
+    cpu.mem[LAYOUT['DIRBUF'] + 15] = 2
+    cpu.mem[LAYOUT['DIRBUF'] + 16:LAYOUT['DIRBUF'] + 18] = bytes((1, 0))
     cpu.mem[FCB:FCB + 36] = bytes(36)
     cpu.mem[FCB + 1:FCB + 12] = b"ONE     COM"
     cpu.mem[FCB + 33:FCB + 36] = bytes((1, 0, 0))
@@ -467,8 +459,8 @@ def main() -> None:
     # Sequential Write uses the same record mapper, allocating only when its
     # current map element is empty.  It advances CR and grows RC in the FCB;
     # Close is responsible for publishing those authenticated changes.
-    cpu.mem[0xEC80 + 64:0xEC80 + 96] = bytes(32)
-    cpu.mem[0xEC80 + 64:0xEC80 + 76] = bytes((7,)) + b"NEW     COM"
+    cpu.mem[LAYOUT['DIRBUF'] + 64:LAYOUT['DIRBUF'] + 96] = bytes(32)
+    cpu.mem[LAYOUT['DIRBUF'] + 64:LAYOUT['DIRBUF'] + 76] = bytes((7,)) + b"NEW     COM"
     cpu.mem[FCB:FCB + 36] = bytes(36)
     cpu.mem[FCB + 1:FCB + 12] = b"NEW     COM"
     cpu.mem[dma:dma + 128] = bytes((0x5A,)) * 128
@@ -486,10 +478,10 @@ def main() -> None:
             "Sequential Write reallocated an existing block")
     writes = cpu.mem[0x7304]
     close_result = call(16, FCB)
-    require(close_result == 2 and cpu.word(0xEC80 + 64 + 16) == 9 and
-            cpu.mem[0xEC80 + 64 + 15] == 2,
+    require(close_result == 2 and cpu.word(LAYOUT['DIRBUF'] + 64 + 16) == 9 and
+            cpu.mem[LAYOUT['DIRBUF'] + 64 + 15] == 2,
             f"Close did not publish allocator-produced map and record state: "
-            f"A={close_result:02X} dir={bytes(cpu.mem[0xEC80+64:0xEC80+96]).hex()}")
+            f"A={close_result:02X} dir={bytes(cpu.mem[LAYOUT['DIRBUF']+64:LAYOUT['DIRBUF']+96]).hex()}")
     require(cpu.mem[0x7304] == writes + 1 and cpu.mem[FCB + 14] & 0x80,
             "Close did not flush once and mark the active FCB clean")
 
@@ -511,7 +503,7 @@ def main() -> None:
     # A random write to a missing extent creates it through the same free-entry
     # service as Make. A sequential write at CR=128 then closes that dirty
     # extent, advances, creates the next extent, and continues there.
-    cpu.mem[0xEC80 + 32] = 0xE5
+    cpu.mem[LAYOUT['DIRBUF'] + 32] = 0xE5
     cpu.mem[FCB:FCB + 36] = bytes(36)
     cpu.mem[FCB + 1:FCB + 12] = b"NEW     COM"
     cpu.mem[FCB + 33:FCB + 36] = bytes((128, 0, 0))
@@ -522,8 +514,8 @@ def main() -> None:
     require(cpu.mem[0x7304] == writes + 2,
             "missing-extent Random Write did not create then transfer once")
     extent1 = [offset for offset in range(0, 128, 32)
-               if bytes(cpu.mem[0xEC80 + offset + 1:0xEC80 + offset + 12]) ==
-               b"NEW     COM" and cpu.mem[0xEC80 + offset + 12] == 1]
+               if bytes(cpu.mem[LAYOUT['DIRBUF'] + offset + 1:LAYOUT['DIRBUF'] + offset + 12]) ==
+               b"NEW     COM" and cpu.mem[LAYOUT['DIRBUF'] + offset + 12] == 1]
     require(len(extent1) == 1, "Random Write did not publish extent one")
     cpu.mem[FCB + 32] = 128
     writes = cpu.mem[0x7304]
@@ -538,8 +530,8 @@ def main() -> None:
     require(cpu.mem[0x7304] == writes + 3,
             "extent rollover did not close, create, and transfer exactly once")
     extent2 = [offset for offset in range(0, 128, 32)
-               if bytes(cpu.mem[0xEC80 + offset + 1:0xEC80 + offset + 12]) ==
-               b"NEW     COM" and cpu.mem[0xEC80 + offset + 12] == 2]
+               if bytes(cpu.mem[LAYOUT['DIRBUF'] + offset + 1:LAYOUT['DIRBUF'] + offset + 12]) ==
+               b"NEW     COM" and cpu.mem[LAYOUT['DIRBUF'] + offset + 12] == 2]
     require(len(extent2) == 1, "Sequential Write did not publish extent two")
 
     # Function 40 uses the same Random Write path, but a newly allocated map
@@ -573,6 +565,25 @@ def main() -> None:
     cpu.mem[FCB + 1:FCB + 12] = b"MISSING DAT"
     require(call(16, FCB) == 0xFF and cpu.mem[0x7304] == writes,
             "missing dirty Close wrote through a stale directory pointer")
+
+    # Shared ALV storage must be rebuilt, not carried across drive contexts.
+    # Give each selected drive a different synthetic allocation map.
+    alvs = []
+    for drive, block in ((0, 5), (1, 6), (0, 5)):
+        cpu.mem[FIXTURE:FIXTURE + 512] = bytes([0xE5]) * 512
+        entry = bytearray(32)
+        entry[1:12] = b"OWNER   DAT"
+        entry[15] = 1
+        entry[16:18] = block.to_bytes(2, "little")
+        cpu.mem[FIXTURE:FIXTURE + 32] = entry
+        cpu.mem[state["UB_VALID"]] = 0 if not alvs else cpu.mem[state["UB_VALID"]]
+        require(call(14, drive) == 0, "ALV ownership drive selection failed")
+        call(27)
+        alvs.append(cpu.hl)
+        require(cpu.mem[cpu.hl] & 0x06 == (0x80 >> block),
+                f"drive {drive} retained another drive's allocation bits")
+    require(len(set(alvs)) == 1, "fixture no longer exercises shared ALV storage")
+    print("shared allocation workspace rebuilt correctly across A/B/A switches")
 
     print(f"unified BDOS U01-U09 foundation passed ({len(image)} bytes)")
     print("disk, directory, allocation, extent, and record-transfer mapping passed")

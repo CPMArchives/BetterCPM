@@ -100,9 +100,9 @@ M4_KEYRW:
         LD      A,E
         ADD     A,8
         LD      E,A
-; All linked users place the compact 56-byte table within one page.  Keeping
-; only the low-byte row advance saves the boot diagnostics four bytes needed
-; for Shift-Left without enlarging their single-sector carrier.
+; BIOS growth can move the key table across a page boundary.
+        JR      NC,M4_KEYNX
+        INC     D
 M4_KEYNX:
         DJNZ    M4_KEYRW
         XOR     A

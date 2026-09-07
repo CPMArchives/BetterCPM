@@ -30,7 +30,7 @@ def main() -> None:
                  args.tools / "ZSM4.COM", args.tools / "LINK.COM",
                  SOURCE / "bios.mac", SOURCE / "biosplat.inc",
                  PLATFORM / "hardware.inc", PLATFORM / "m4cons.inc",
-                 PLATFORM / "m4scroll.inc", PLATFORM / "m4disk.inc",
+                 PLATFORM / "m4scroll.inc", PLATFORM / "reload.inc",
                  BUILD / "bios.bin"):
         if not path.is_file():
             raise SystemExit(f"missing native-build input: {path}")
@@ -47,7 +47,7 @@ def main() -> None:
                         (PLATFORM / "hardware.inc", "HARDWARE.INC"),
                         (PLATFORM / "m4cons.inc", "M4CONS.INC"),
                         (PLATFORM / "m4scroll.inc", "M4SCROLL.INC"))
-        source_files = source_files + ((PLATFORM / "m4disk.inc", "M4DISK.INC"),)
+        source_files = source_files + ((PLATFORM / "reload.inc", "RELOAD.INC"),)
         for source_path, cpm_name in source_files:
             host = work / cpm_name
             host.write_bytes(cpm_text(source_path))

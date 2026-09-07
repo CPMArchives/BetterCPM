@@ -163,7 +163,7 @@ UB_GETIN:
 UB_CONOUT:
         LD      A,E
         CALL    UB_COCHAR
-        JP      UB_OUTOK
+        JR      UB_OUTOK
 UB_PRINT:
         PUSH    IX
         POP     HL
@@ -674,7 +674,7 @@ UB_MCTX:
         CALL    UB_FCTX
         RET     NZ
         LD      HL,UB_RDONLY
-        JP      UB_TESTBIT
+        JR      UB_TESTBIT
 
 ; U05 -- one directory iterator. Search First/Next are the first public users;
 ; Open, mutation, allocation reconstruction, and Size will configure this same
@@ -1623,7 +1623,7 @@ UB_NXCLEAR:
         INC     HL
         DJNZ    UB_NXCLEAR
         LD      A,(UB_IOMODE)
-        JP      UB_EXTENT
+        JR      UB_EXTENT
 UB_NXBAD:
         SCF
         RET
@@ -1660,7 +1660,7 @@ UB_RBSH:
 UB_RBIX:
         LD      A,H
         OR      A
-        JP      NZ,UB_RMBAD
+        JR      NZ,UB_RMBAD
         LD      A,L
         LD      (UB_RBNO),A
         PUSH    IX
