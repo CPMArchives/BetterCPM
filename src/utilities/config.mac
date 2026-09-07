@@ -1,0 +1,787 @@
+; CONFIG -- BetterCP/M disk configuration, 07-Sep-2026.
+; The MM-style menus are transient. Only validated drive records stay
+; in the BIOS. A cold boot restores the installed system image.
+        ASEG
+        ORG 0100H
+        LD SP,04000H
+        CALL INIT
+        CALL FLOAD
+MAIN:   LD HL,TITLE
+        CALL HEADER
+        LD HL,MAINMSG
+        CALL PUTS
+        CALL CHOICE
+        CP 3
+        JP Z,DONE
+        CP 'I'
+        JP Z,EDITDRIVE
+        CP 'F'
+        JP Z,PHYSMENU
+        CP 'G'
+        JP Z,LOGMENU
+        CP 'A'
+        JP C,MAIN
+        CP 'I'
+        JP NC,MAIN
+        LD HL,NOTYET
+        CALL PUTS
+        CALL PAUSE
+        JP MAIN
+PHYSMENU:
+        LD HL,PHYHEAD
+        CALL HEADER
+        XOR A
+        LD (PHINDEX),A
+PHLIST: LD A,(PHINDEX)
+        CALL LABEL
+        LD HL,PHLABEL
+        CALL PUTS
+        LD A,(PHINDEX)
+        CALL DECOUT
+        CALL CRLF
+        LD A,(PHINDEX)
+        INC A
+        LD (PHINDEX),A
+        CP 4
+        JR C,PHLIST
+        LD HL,PHCOUNT
+        CALL PUTS
+        CALL CHOICE
+        CP 3
+        JP Z,MAIN
+        SUB 'A'
+        CP 4
+        JP NC,PHYSMENU
+        LD (PHINDEX),A
+PHEDIT: LD A,(PHINDEX)
+        LD (PHREQ),A
+        LD DE,PHREQ
+        LD B,1
+        CALL API
+        JP NZ,PHERROR
+        LD HL,PHEDITTL
+        CALL HEADER
+        LD HL,PHLABEL
+        CALL PUTS
+        LD A,(PHINDEX)
+        CALL DECOUT
+        CALL CRLF
+        CALL CRLF
+        XOR A
+        LD (FIELD),A
+PHFIELDS:
+        LD A,(FIELD)
+        CALL LABEL
+        LD A,(FIELD)
+        ADD A,A
+        LD L,A
+        LD H,0
+        LD DE,FLDNAMES
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        CALL PUTS
+        LD A,(FIELD)
+        INC A
+        LD L,A
+        LD H,0
+        LD DE,PHREQ
+        ADD HL,DE
+        LD A,(HL)
+        LD (OLDVAL),A
+        LD A,(FIELD)
+        CP 3
+        LD A,(OLDVAL)
+        JR NZ,PHDEC
+        LD L,A
+        LD H,0
+        LD DE,STEPTAB
+        ADD HL,DE
+        LD A,(HL)
+PHDEC:  CALL DECOUT
+        CALL CRLF
+        LD A,(FIELD)
+        INC A
+        LD (FIELD),A
+        CP 6
+        JR C,PHFIELDS
+        LD HL,PHHELP
+        CALL PUTS
+        CALL CHOICE
+        CP 3
+        JP Z,PHYSMENU
+        SUB 'A'
+        CP 6
+        JP NC,PHEDIT
+        LD (FIELD),A
+        CP 1
+        JP Z,TRACKS
+        CP 3
+        JP Z,STEPS
+        INC A
+        LD L,A
+        LD H,0
+        LD DE,PHREQ
+        ADD HL,DE
+        LD A,(HL)
+        LD (OLDVAL),A
+        LD HL,NUMMSG
+        CALL PUTS
+        CALL NUMBER
+        JP C,PHEDIT
+        JR PHSAVE
+TRACKS: LD HL,TRKMSG
+        CALL PUTS
+        CALL CHOICE
+        CP 3
+        JP Z,PHEDIT
+        CP 13
+        JP Z,PHEDIT
+        SUB 'A'
+        CP 4
+        JP NC,TRACKS
+        LD L,A
+        LD H,0
+        LD DE,TRKTAB
+        ADD HL,DE
+        LD A,(HL)
+        JR PHSAVE
+STEPS:  LD HL,STEPMSG
+        CALL PUTS
+        CALL CHOICE
+        CP 3
+        JP Z,PHEDIT
+        CP 13
+        JP Z,PHEDIT
+        SUB 'A'
+        CP 4
+        JP NC,STEPS
+PHSAVE: LD B,A
+        LD A,(FIELD)
+        INC A
+        LD L,A
+        LD H,0
+        LD DE,PHREQ
+        ADD HL,DE
+        LD (HL),B
+        LD DE,PHREQ
+        LD B,2
+        CALL API
+        JP Z,PHEDIT
+PHERROR:CALL ERROR
+        JP PHEDIT
+
+LOGMENU:LD HL,LOGHEAD
+        CALL HEADER
+        LD HL,LOGHELP
+        CALL PUTS
+        XOR A
+        LD (LOGIDX),A
+LOGLIST:LD A,(LOGIDX)
+        CALL LABEL
+        LD A,(LOGIDX)
+        LD (REQ),A
+        LD DE,REQ
+        LD B,3
+        CALL API
+        JP NZ,LOGERROR
+        LD A,(REQ+1)
+        CP 0FFH
+        JR Z,LOGUNDEF
+        CALL DECOUT
+        LD HL,COLON
+        CALL PUTS
+        LD HL,REQ+1
+        LD DE,CURB
+        LD BC,64
+        LDIR
+        CALL CURNAME
+        JR LOGNEXT
+LOGUNDEF:LD HL,UNDEF
+        CALL PUTS
+LOGNEXT:CALL CRLF
+        LD A,(LOGIDX)
+        INC A
+        LD (LOGIDX),A
+        CP 4
+        JR C,LOGLIST
+        LD HL,LOGFOOT
+        CALL PUTS
+        CALL CHOICE
+        CP 3
+        JP Z,MAIN
+        SUB 'A'
+        CP 4
+        JP NC,LOGMENU
+        LD (LOGIDX),A
+        OR A
+        JR NZ,LOGSTART
+        LD HL,BOOTMSG
+        CALL PUTS
+        CALL PAUSE
+        JP LOGMENU
+LOGSTART:XOR A
+        LD (PAGE),A
+PAGEVIEW:LD HL,LOGHEAD
+        CALL HEADER
+        LD HL,SELECTMSG
+        CALL PUTS
+        LD A,(LOGIDX)
+        ADD A,'A'
+        CALL PUTC
+        CALL CRLF
+        XOR A
+        LD (ROW),A
+PAGEROW:LD A,(ROW)
+        OR A
+        JR NZ,PAGELAB
+        LD HL,LBRACK
+        CALL PUTS
+        LD A,'A'
+        CALL INVERSE
+        LD HL,RBRACK
+        CALL PUTS
+        XOR A
+        JR PAGENAME
+PAGELAB:CALL LABEL
+PAGENAME:
+        LD B,A
+        LD A,(PAGE)
+        ADD A,B
+        CALL FNAME
+        CALL PNAME
+        CALL CRLF
+        LD A,(ROW)
+        INC A
+        LD (ROW),A
+        CP 16
+        JR Z,PAGEEND
+        LD B,A
+        LD A,(PAGE)
+        ADD A,B
+        LD B,A
+        LD A,(FCOUNT)
+        CP B
+        JR NZ,PAGEROW
+PAGEEND:LD HL,PAGEHELP
+        CALL PUTS
+        CALL CHOICE
+        CP 3
+        JP Z,LOGMENU
+        CP 13
+        JR Z,PAGEDEF
+        CP ','
+        JR Z,PREVPG
+        CP '<'
+        JR Z,PREVPG
+        CP '.'
+        JR Z,NEXTPG
+        CP '>'
+        JR Z,NEXTPG
+        SUB 'A'
+        JR PAGEPICK
+PAGEDEF:XOR A
+PAGEPICK:CP 16
+        JP NC,PAGEVIEW
+        LD B,A
+        LD A,(ROW)
+        CP B
+        JP Z,PAGEVIEW
+        JP C,PAGEVIEW
+        LD A,(PAGE)
+        ADD A,B
+        LD (CHOSEN),A
+        CALL FPARSE
+        JP C,FORMATBAD
+; Check whether any configured drive can accommodate the geometry.
+        XOR A
+        LD (CHECKPH),A
+HWCHECK:LD A,(CHECKPH)
+        CALL COMPAT
+        JR Z,ATTACH
+        LD A,(CHECKPH)
+        INC A
+        LD (CHECKPH),A
+        CP 4
+        JR C,HWCHECK
+        LD HL,HWMSG
+        JR PICKERR
+PREVPG: LD A,(PAGE)
+        OR A
+        JP Z,PAGEVIEW
+        SUB 16
+        LD (PAGE),A
+        JP PAGEVIEW
+NEXTPG: LD A,(PAGE)
+        ADD A,16
+        LD B,A
+        LD A,(FCOUNT)
+        CP B
+        JP C,PAGEVIEW
+        JP Z,PAGEVIEW
+        LD A,B
+        LD (PAGE),A
+        JP PAGEVIEW
+FORMATBAD:LD HL,FMTBAD
+PICKERR:CALL PUTS
+        CALL PAUSE
+        JP PAGEVIEW
+ATTACH: LD HL,LOGHEAD
+        CALL HEADER
+        LD HL,CHOSENMSG
+        CALL PUTS
+        LD A,(CHOSEN)
+        CALL FNAME
+        CALL PNAME
+        CALL CRLF
+        LD HL,ATTMSG
+        CALL PUTS
+        CALL KEY
+        CP 3
+        JP Z,PAGEVIEW
+        SUB '0'
+        CP 4
+        JR NC,ATTACH
+        LD (PHINDEX),A
+        CALL COMPAT
+        JR Z,BINDIT
+        LD HL,HWMSG
+        CALL PUTS
+        CALL PAUSE
+        JR ATTACH
+BINDIT: LD HL,BIND
+        LD DE,REQ+1
+        LD BC,64
+        LDIR
+        LD A,(PHINDEX)
+        LD (REQ+1),A
+        LD A,(LOGIDX)
+        LD (REQ),A
+        LD DE,REQ
+        LD B,4
+        CALL API
+        JR NZ,LOGERROR
+        LD HL,SAVED
+        CALL PUTS
+        CALL PAUSE
+        JP LOGMENU
+LOGERROR:CALL ERROR
+        JP LOGMENU
+; A=physical index. Z means format geometry fits the configured drive.
+COMPAT: LD (PHREQ),A
+        LD DE,PHREQ
+        LD B,1
+        CALL API
+        RET NZ
+        LD A,(PHREQ+2)
+        LD B,A
+        LD A,(BIND+16)
+        CP B
+        JR Z,COMSIDE
+        JR C,COMSIDE
+        JR COMBAD
+COMSIDE:LD A,(BIND+19)
+        AND 040H
+        LD B,1
+        JR Z,COMSS
+        INC B
+COMSS:  LD A,(PHREQ+3)
+        CP B
+        JR C,COMBAD
+        XOR A
+        RET
+COMBAD: LD A,1
+        OR A
+        RET
+
+; WORKBENCH -- keep the pencil marks here, not in the live BIOS table.
+; Start from a drive set up by G. Q submits the whole record at once;
+; BREAK throws away the working copy. The BIOS remains the final judge.
+EDITDRIVE:LD HL,EDTITLE
+        CALL HEADER
+        LD HL,EDASK
+        CALL PUTS
+        CALL CHOICE
+        CP 3
+        JP Z,MAIN
+        SUB 'A'
+        CP 1
+        JP C,EDITDRIVE
+        CP 4
+        JP NC,EDITDRIVE
+        LD (EDDRIVE),A
+        LD (REQ),A
+        LD DE,REQ
+        LD B,3
+        CALL API
+        JP NZ,EDERROR
+        LD A,(REQ+1)
+        CP 4
+        JP NC,EDERROR
+        LD HL,REQ+1
+        LD DE,EDCOPY
+        LD BC,64
+        LDIR
+EDSHOW: LD HL,EDTITLE
+        CALL HEADER
+        XOR A
+        LD (EDFIELD),A
+EDROW:  LD A,(EDFIELD)
+        CALL LABEL
+        LD A,(EDFIELD)
+        ADD A,A
+        LD E,A
+        LD D,0
+        LD HL,EDNAMES
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        CALL PUTS
+        CALL EDADDR
+        LD E,(HL)
+        LD D,0
+        LD A,(EDWIDTH)
+        CP 2
+        JR NZ,EDPRINT
+        INC HL
+        LD D,(HL)
+EDPRINT:EX DE,HL
+        CALL EDDEC
+        CALL CRLF
+        LD A,(EDFIELD)
+        INC A
+        LD (EDFIELD),A
+        CP 16
+        JR C,EDROW
+        LD HL,EDHELP
+        CALL PUTS
+        CALL CHOICE
+        CP 3
+        JP Z,MAIN
+        CP 'Q'
+        JP Z,EDAPPLY
+        CP 'S'
+        JP Z,EDSIZE
+        CP 'R'
+        JP Z,EDSECTOR
+        SUB 'A'
+        CP 16
+        JP NC,EDSHOW
+        LD (EDFIELD),A
+        LD HL,EDVALUE
+        CALL PUTS
+        CALL EDNUMBER
+        JP C,EDSHOW
+        PUSH DE
+        CALL EDADDR
+        POP DE
+        LD A,(EDWIDTH)
+        CP 2
+        JR Z,EDWORD
+        LD A,D
+        OR A
+        JP NZ,EDINVALID
+        LD (HL),E
+        JP EDSHOW
+EDWORD: LD (HL),E
+        INC HL
+        LD (HL),D
+        JP EDSHOW
+EDADDR: LD A,(EDFIELD)
+        ADD A,A
+        LD E,A
+        LD D,0
+        LD HL,EDOFFS
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD A,(HL)
+        LD (EDWIDTH),A
+        LD D,0
+        LD HL,EDCOPY
+        ADD HL,DE
+        RET
+EDAPPLY:LD HL,EDCOPY
+        LD DE,REQ+1
+        LD BC,64
+        LDIR
+        LD A,(EDDRIVE)
+        LD (REQ),A
+        LD DE,REQ
+        LD B,4
+        CALL API
+        JP NZ,EDINVALID
+        LD HL,SAVED
+        CALL PUTS
+        CALL PAUSE
+        JP MAIN
+EDERROR:CALL ERROR
+        JP MAIN
+EDINVALID:CALL ERROR
+        JP EDSHOW
+; The sector table is in physical order. Changing IDs changes interleave.
+; N selects the uniform size, or maximum size for a mixed track.
+; S records each individual length in the same physical order as the IDs.
+EDSECTOR:XOR A
+        LD (EDMODE),A
+        JR EDSLOTIN
+EDSIZE: LD A,1
+        LD (EDMODE),A
+EDSLOTIN:LD HL,EDSLOT
+        CALL PUTS
+        CALL EDNUMBER
+        JP C,EDSHOW
+        LD A,D
+        OR A
+        JP NZ,EDINVALID
+        LD A,E
+        OR A
+        JP Z,EDINVALID
+        CP 33
+        JP NC,EDINVALID
+        DEC A
+        LD (EDSAVE),A
+        LD A,(EDMODE)
+        OR A
+        JP NZ,EDSIZEIN
+        LD HL,EDID
+        CALL PUTS
+        CALL EDNUMBER
+        JP C,EDSHOW
+        LD A,D
+        OR A
+        JP NZ,EDINVALID
+        LD B,E
+        LD A,(EDSAVE)
+        LD E,A
+        LD D,0
+        LD HL,EDCOPY+20
+        ADD HL,DE
+        LD (HL),B
+        JP EDSHOW
+EDSIZEIN:LD HL,EDSIZEQ
+        CALL PUTS
+        CALL EDNUMBER
+        JP C,EDSHOW
+        LD A,D
+        OR A
+        JP NZ,EDINVALID
+        LD A,E
+        CP 4
+        JP NC,EDINVALID
+        LD (EDNEW),A
+; On the first mixed edit seed every slot from the old uniform length.
+        LD A,(EDCOPY+52)
+        OR A
+        JR NZ,EDPACK
+        LD A,(EDCOPY+18)
+        AND 3
+        LD B,A
+        RLCA
+        RLCA
+        OR B
+        LD B,A
+        RLCA
+        RLCA
+        RLCA
+        RLCA
+        OR B
+        LD HL,EDCOPY+53
+        LD B,8
+EDFILL: LD (HL),A
+        INC HL
+        DJNZ EDFILL
+        LD A,1
+        LD (EDCOPY+52),A
+EDPACK: LD A,(EDSAVE)
+        SRL A
+        SRL A
+        LD E,A
+        LD D,0
+        LD HL,EDCOPY+53
+        ADD HL,DE
+        LD A,(EDSAVE)
+        AND 3
+        ADD A,A
+        LD B,A
+        LD E,3
+        LD A,(EDNEW)
+        LD D,A
+        LD A,B
+        OR A
+        JR Z,EDMERGE
+EDSHIFT:SLA E
+        SLA D
+        DJNZ EDSHIFT
+EDMERGE:LD A,E
+        CPL
+        AND (HL)
+        OR D
+        LD (HL),A
+        JP EDSHOW
+; Read a decimal word using our own console input, so BREAK is local.
+; Re-use the FDF scanner's overflow check. ENTER alone leaves it alone.
+EDNUMBER:LD HL,EDINPUT
+        LD (EDPTR),HL
+        XOR A
+        LD (EDCOUNT),A
+        LD (EDOVER),A
+EDKEY:  CALL KEY
+        CP 3
+        JR Z,EDCANCEL
+        CP 13
+        JR Z,EDEND
+        CP '0'
+        JR C,EDKEY
+        CP '9'+1
+        JR NC,EDKEY
+        LD B,A
+        LD A,(EDCOUNT)
+        CP 5
+        JR C,EDTAKE
+        LD A,1
+        LD (EDOVER),A
+        JR EDKEY
+EDTAKE:
+        INC A
+        LD (EDCOUNT),A
+        LD HL,(EDPTR)
+        LD (HL),B
+        INC HL
+        LD (EDPTR),HL
+        LD A,B
+        CALL PUTC
+        JR EDKEY
+EDEND:  CALL CRLF
+        LD A,(EDOVER)
+        OR A
+        JR NZ,EDCANCEL
+        LD A,(EDCOUNT)
+        OR A
+        JR Z,EDCANCEL
+        LD HL,(EDPTR)
+        LD (HL),','
+        LD HL,EDINPUT
+        LD (PARPTR),HL
+        JP PNUM
+EDCANCEL:SCF
+        RET
+; Print HL unsigned, including directory counts beyond the old 255 limit.
+EDDEC:  LD DE,10000
+        CALL EDPLACE
+        LD DE,1000
+        CALL EDPLACE
+        LD DE,100
+        CALL EDPLACE
+        LD DE,10
+        CALL EDPLACE
+        LD A,L
+        ADD A,'0'
+        JP PUTC
+EDPLACE:LD A,'0'-1
+EDSUB:  INC A
+        OR A
+        SBC HL,DE
+        JR NC,EDSUB
+        ADD HL,DE
+        JP PUTC
+EDTITLE:DB 'Disk format workbench',0
+EDASK:  DB 'Copy current format from logical drive [B-D] (^C returns):',13,10,0
+EDHELP: DB 'A-P Edit  Q Apply to drive  R IDs  S Sizes  ^C Discard',13,10,0
+EDVALUE:DB 'Decimal value (ENTER keeps current, ^C cancels): ',0
+EDSLOT: DB 'Physical sector slot [1-32]: ',0
+EDSIZEQ:DB 'Size code [0=128, 1=256, 2=512, 3=1024]: ',0
+EDMODE: DB 0
+EDNEW:  DB 0
+EDID:   DB 'Sector ID [0-255]: ',0
+EDOFFS: DB 0,1,1,2,3,1,4,1,5,1,6,2,8,2,10,1
+        DB 11,1,12,2,14,2,16,1,17,1,18,1,19,1,52,1
+EDNAMES:DW ED0,ED1,ED2,ED3,ED4,ED5,ED6,ED7
+        DW ED8,ED9,ED10,ED11,ED12,ED13,ED14,ED15
+ED0:    DB 'Physical drive: ',0
+ED1:    DB '128-byte records/track (SPT): ',0
+ED2:    DB 'Block shift (BSH): ',0
+ED3:    DB 'Block mask (BLM): ',0
+ED4:    DB 'Extent mask (EXM): ',0
+ED5:    DB 'Last allocation block (DSM): ',0
+ED6:    DB 'Last directory entry (DRM): ',0
+ED7:    DB 'Directory allocation high (AL0): ',0
+ED8:    DB 'Directory allocation low (AL1): ',0
+ED9:    DB 'Directory check size (CKS): ',0
+ED10:   DB 'Reserved tracks (OFF): ',0
+ED11:   DB 'Cylinders: ',0
+ED12:   DB 'Physical sectors/track: ',0
+ED13:   DB 'Maximum size code (0=128 .. 3=1024): ',0
+ED14:   DB 'Format flags (decimal): ',0
+ED15:   DB 'Explicit size map (0=uniform, 1=mixed): ',0
+EDDRIVE:DB 0
+EDFIELD:DB 0
+EDWIDTH:DB 0
+EDSAVE: DB 0
+EDOVER: DB 0
+EDCOUNT:DB 0
+EDPTR:  DW 0
+EDINPUT:DS 6
+EDCOPY: DS 64
+
+TITLE:  DB 'BetterCP/M 2.2 CONFIG version 1.00',0
+MAINMSG:DB 'Configuration options:',13,10,13,10
+        DB '[ A ] System device assignments',13,10
+        DB '[ B ] Keyboard definitions',13,10
+        DB '[ C ] Video display definitions',13,10
+        DB '[ D ] Parallel printer definitions',13,10
+        DB '[ E ] Serial port definitions',13,10
+        DB '[ F ] Disk drive definitions',13,10
+        DB '[ G ] Disk format definitions',13,10
+        DB '[ H ] Save current configuration on disk (SYSGEN)',13,10,13,10
+        DB '[ I ] Create or edit a disk format',13,10,13,10
+        DB 'Select [ A - I ], or BREAK (^C) to exit.',13,10,0
+NOTYET: DB 'Feature not yet implemented.',13,10,0
+PHYHEAD:DB 'Disk drive selections',0
+PHLABEL:DB 'Physical disk drive ',0
+PHCOUNT:DB 13,10,'Number of drives: 4',13,10,13,10
+        DB 'Select [ A - D ], or BREAK (^C) to return.',13,10,0
+PHEDITTL:DB 'Disk drive definitions',0
+FLDNAMES:DW FLD0,FLD1,FLD2,FLD3,FLD4,FLD5
+FLD0:   DB 'Type of drive (inches):     ',0
+FLD1:   DB 'Number of tracks:          ',0
+FLD2:   DB 'Number of sides:           ',0
+FLD3:   DB 'Step rate (ms):            ',0
+FLD4:   DB 'Motor spin-up (1/4 sec):    ',0
+FLD5:   DB 'Head settling time (ms):   ',0
+PHHELP: DB 13,10,'Select [ A - F ], or BREAK (^C) to return.',13,10,0
+NUMMSG: DB 'New value (ENTER keeps current, ^C cancels): ',0
+TRKMSG: DB 13,10,'Track choices:',13,10
+        DB '[ A ] 35',13,10,'[ B ] 40',13,10,'[ C ] 77',13,10,'[ D ] 80',13,10
+        DB 'ENTER keeps current; ^C cancels.',13,10,0
+STEPMSG:DB 13,10,'Step rate choices (ms):',13,10
+        DB '[ A ] 6',13,10,'[ B ] 12',13,10,'[ C ] 20',13,10,'[ D ] 30',13,10
+        DB 'ENTER keeps current; ^C cancels.',13,10,0
+STEPTAB:DB 6,12,20,30
+TRKTAB: DB 35,40,77,80
+LOGHEAD:DB 'Disk format definitions',0
+LOGHELP:DB 'Choose the letter of the drive to change:',13,10
+        DB 'Drive  Physical drive & current format',13,10,0
+LOGFOOT:DB 13,10,'Select [ A - D ], or BREAK (^C) to return.',13,10,0
+COLON:  DB ': ',0
+SELECTMSG:DB 'Choose the format to be used for drive ',0
+PAGEHELP:DB ',< Previous   .> Next   ENTER: marked choice   ^C Return',13,10,0
+CHOSENMSG:DB 'Format selected:',13,10,0
+ATTMSG: DB 13,10,'Which physical disk drive is to be used [0-3]? ',0
+BOOTMSG:DB 'A: is the system drive; its binding is protected.',13,10,0
+FMTBAD: DB 'BIOS support for this definition is not implemented.',13,10,0
+HWMSG:  DB 'Disk format is incompatible with this drive!',13,10,0
+SAVED:  DB 13,10,'Disk configuration changed (until cold boot).',13,10,0
+PHINDEX:DB 0
+FIELD:  DB 0
+LOGIDX: DB 0
+PAGE:   DB 0
+ROW:    DB 0
+CHOSEN: DB 0
+CHECKPH:DB 0
+        INCLUDE disk/common.inc
+        END

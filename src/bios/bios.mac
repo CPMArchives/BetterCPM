@@ -30,7 +30,7 @@ BIOS:
         JP      BIOPUNCH
         JP      BIOREADR
         JP      BIOHOME
-        JP      BIOSELDS
+        JP      LY_DISK+6
         JP      BIOSETTR
         JP      BIOSETSE
         JP      BIOSETDM
@@ -50,10 +50,11 @@ BIOOVLOAD:
         JP      PL_OVLOAD
 BIORLOAD:
         JP      PL_RSXLOAD
+
 BIO_PHRD:
         JP LY_DISK+15
 BIO_CUROUT:
-        JP      PL_CURSOR
+        JP PL_CURSOR
 
 ; BOOT and WBOOT enter portable system reconstruction before the CCP.
 BIOBOOT:
@@ -106,25 +107,16 @@ BIOSETDM:
         RET
 
 ; Patch 2026-09-01: A: through D: are separate Model 4 floppy drives. They share
-; the temporary MM Extended 790K geometry, but never BDOS scratch workspace.
-BIOSELDS:
-        JP LY_DISK+6
+; one sector buffer, but never saved allocation ownership. A uses the
+; 780K system profile; B-D use unreserved 800K data profiles.
 
 BIOREAD:
-        CALL    BIO_MAP
+        CALL    LY_DISK+3
         RET     NZ
         LD      HL,BIO_PHYBF
         CALL    LY_DISK+9
         RET     NZ
-        LD      A,(BIO_QUART)
-        LD      HL,BIO_PHYBF
-        OR      A
-        JR      Z,BIO_RDCOP
-        LD      DE,128
-BIO_RDADD:
-        ADD     HL,DE
-        DEC     A
-        JR      NZ,BIO_RDADD
+        CALL    BIO_SLOT
 BIO_RDCOP:
         LD      DE,(BIO_DMA)
         LD      BC,128
@@ -133,22 +125,13 @@ BIO_RDCOP:
         RET
 
 BIOWRITE:
-        CALL    BIO_MAP
+        CALL    LY_DISK+3
         RET     NZ
         LD      HL,BIO_PHYBF
         CALL    LY_DISK+9
         RET     NZ
-        LD      A,(BIO_QUART)
-        LD      DE,BIO_PHYBF
-        OR      A
-        JR      Z,BIO_WRCOP
-        LD      HL,128
-BIO_WRADD:
+        CALL    BIO_SLOT
         EX      DE,HL
-        ADD     HL,DE
-        EX      DE,HL
-        DEC     A
-        JR      NZ,BIO_WRADD
 BIO_WRCOP:
         LD      HL,(BIO_DMA)
         LD      BC,128
@@ -156,11 +139,16 @@ BIO_WRCOP:
         LD      HL,BIO_PHYBF
         JP      LY_DISK+12
 
-BIO_MAP:
-        JP LY_DISK+3
-
-BIO_RDERR:
-        LD      A,1
+ ; One address calculation for both directions, not two walking loops.
+; 07-Sep-2026: recovered these bytes for the optional FDF dispatch.
+BIO_SLOT:
+        LD      A,(BIO_QUART)
+        LD      H,A
+        LD      L,0
+        SRL     H
+        RR      L
+        LD      DE,BIO_PHYBF
+        ADD     HL,DE
         RET
 
 ; LISTST encoding remains policy-pending; an unassigned list device is not

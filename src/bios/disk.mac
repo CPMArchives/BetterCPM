@@ -14,6 +14,7 @@
 DC_RAW:
         ; The bootstrap adapter uses the SAME physical I/O engine as BDOS.
         LD (BIO_PCYL),A
+        LD (DC_IDTRK),A
         LD A,B
         LD (B_PSide),A
         LD A,C
@@ -100,28 +101,19 @@ DC_OK:
 DC_PHY:
         CP 4
         RET NC
+        ADD A,A
+        LD E,A
+        ADD A,A
+        ADD A,E
+        LD E,A
+        LD D,0
         LD HL,DC_PHYS
-        LD DE,6
-        OR A
-        JR NZ,DC_PHYL
-        SCF
-        RET
-DC_PHYL:
         ADD HL,DE
-        DEC A
-        JR NZ,DC_PHYL
         SCF
         RET
 DC_GETPH:
-        LD A,(IX+0)
-        CALL DC_PHY
-        JR NC,DC_INVALID
-        PUSH IX
-        POP DE
-        INC DE
-        LD BC,6
-        LDIR
-        JR DC_OK
+        LD A,12
+        JR DC_CTL
 ; Four logical records, 80 bytes each. DPH + binding.
 ; BDOS rebuilds the shared allocation vector on every context switch.
 DC_LOG:
@@ -140,17 +132,8 @@ DC_LOGL:
         SCF
         RET
 DC_GETLOG:
-        LD A,(IX+0)
-        CALL DC_LOG
-        JR NC,DC_INVALID
-        LD DE,16
-        ADD HL,DE
-        PUSH IX
-        POP DE
-        INC DE
-        LD BC,64
-        LDIR
-        JR DC_OK
+        LD A,15
+        JR DC_CTL
 DC_RESET:
         ; Conservatively invalidate every alias and active BDOS disk context.
         PUSH IX
@@ -190,15 +173,11 @@ DC_MAP:
         LD (DC_PHYADDR),HL
         LD A,(IX+0)
         LD B,A
-        LD A,1
         INC B
+        LD A,080H
 DC_MASK:
-        DJNZ DC_MASKSHIFT
-        JR DC_MASKDONE
-DC_MASKSHIFT:
-        ADD A,A
-        JR DC_MASK
-DC_MASKDONE:
+        RLCA
+        DJNZ DC_MASK
         LD (B_PDrive),A
         LD HL,(BIO_SECTOR)
         LD E,(IX+1)
@@ -206,13 +185,40 @@ DC_MASKDONE:
         OR A
         SBC HL,DE
         JP NC,DC_MAPBAD
+        LD A,(IX+19)
+        AND 00FH
+        OR (IX+52)
+        JR Z,DC_COMMON
+; Optional conventions live in FDF.RSX. CALL 5 follows the current chain;
+; no saved RSX pointer can outlive a rebuild or an unload.
+        LD DE,(BIO_TRACK)
+        LD HL,(BIO_SECTOR)
+        LD BC,001D0H
+        CALL 5
+        BIT 7,B
+        JP Z,DC_MAPBAD
+        LD A,H
+        LD (DC_IDTRK),A
+        LD A,L
+        LD (BIO_PCYL),A
+        LD A,D
+        LD (B_PSide),A
+        LD A,E
+        LD (BIO_PSEC),A
+        LD A,B
+        AND 7
+        LD (BIO_QUART),A
+        LD A,B
+        RRCA
+        RRCA
+        RRCA
+        AND 3
+        JR DC_SETSIZE
+DC_COMMON:
         LD HL,(BIO_TRACK)
         LD A,H
         OR A
         JP NZ,DC_MAPBAD
-        LD A,(IX+19)
-        AND 040H
-        LD B,A
         XOR A
         LD (B_PSide),A
         LD A,(BIO_TRACK)
@@ -230,6 +236,7 @@ DC_CYL:
         CP (IX+16)
         JR NC,DC_MAPBAD
         LD (BIO_PCYL),A
+        LD (DC_IDTRK),A
         LD HL,(BIO_SECTOR)
         LD B,(IX+18)
         LD A,1
@@ -272,7 +279,9 @@ DC_SECOK:
         ADD HL,DE
         LD A,(HL)
         LD (BIO_PSEC),A
+DC_MAPPED:
         LD A,(IX+18)
+DC_SETSIZE:
         LD (DC_SIZE),A
         LD A,(IX+19)
         LD (DC_FLAGS),A
@@ -292,10 +301,6 @@ DC_READ:
 DC_WRITE:
         LD A,0A0H
 DC_IO:
-        PUSH AF
-        XOR A
-        LD (DC_FAILED),A
-        POP AF
         LD (DC_COMMAND),A
         LD (DC_BUFFER),HL
         CALL DC_SEEK
@@ -332,19 +337,18 @@ DC_BLGO:
         LD C,FDCDATA
         LD A,(DC_COMMAND)
         CP 080H
-        CALL Z,DC_RBYTE
-        LD A,(DC_COMMAND)
-        CP 080H
-        CALL NZ,DC_WBYTE
-        ; Each helper returns status in A; command comparison above would
-        ; discard it, so helpers record failures separately.
-        LD A,(DC_FAILED)
+        JR NZ,DC_OUTBLOCK
+        CALL DC_RBYTE
+        JR DC_XDONE
+DC_OUTBLOCK:
+        CALL DC_WBYTE
+DC_XDONE:
         OR A
         RET NZ
         CALL DC_WAIT
         RET NZ
         IN A,(FDCSTATUS)
-        AND 09CH
+        AND 0DCH
         RET NZ
         LD A,(DC_COMMAND)
         CP 080H
@@ -394,7 +398,7 @@ DC_RDATA:
         LD A,(DC_NBLK)
         DEC A
         LD (DC_NBLK),A
-        RET Z
+        JR Z,DC_ZERO
         JR DC_RBYTE
 DC_WBYTE:
         LD DE,0
@@ -407,30 +411,15 @@ DC_WPOLL:
         OR E
         JR NZ,DC_WPOLL
 DC_IOFAIL:
-        CALL DC_ERR
-        LD (DC_FAILED),A
-        RET
+        JR DC_ERR
 DC_WDATA:
         OUTI
         JR NZ,DC_WBYTE
         LD A,(DC_NBLK)
         DEC A
         LD (DC_NBLK),A
-        RET Z
+        JR Z,DC_ZERO
         JR DC_WBYTE
-DC_DRQ:
-        LD BC,0
-DC_DRQL:
-        IN A,(FDCSTATUS)
-        BIT 1,A
-        JR NZ,DC_ZERO
-        BIT 0,A
-        JR Z,DC_ERR
-        DEC BC
-        LD A,B
-        OR C
-        JR NZ,DC_DRQL
-        JR DC_ERR
 DC_WAIT:
         LD BC,0
 DC_WAITL:
@@ -443,6 +432,7 @@ DC_WAITL:
         JR NZ,DC_WAITL
 DC_ERR:
         LD A,0D0H
+        LD (DC_LAST),A       ; failed seek/restore leaves position untrusted
         OUT (FDCCOMMAND),A
         LD A,1
         OR A
@@ -470,7 +460,7 @@ DC_SEEK:
         LD B,A
         LD A,(DC_LAST)
         CP B
-        JR Z,DC_SEEKTO
+        JR Z,DC_SAME
         LD A,B
         LD (DC_LAST),A
         ; Restore on a drive change because the WD track register is shared.
@@ -488,6 +478,8 @@ DC_SPIN:
         DEC A
         JR NZ,DC_SPIN
 DC_RESTORE:
+        XOR A
+        LD (DC_LASTCYL),A
         LD HL,(DC_PHYADDR)
         LD DE,3
         ADD HL,DE
@@ -498,8 +490,10 @@ DC_RESTORE:
         RET NZ
         IN A,(FDCSTATUS)
         AND 010H
-        JR NZ,DC_ERR
+        JP NZ,DC_ERR
 DC_SEEKTO:
+        LD A,(DC_LASTCYL)
+        OUT (FDCTRACK),A
         LD A,(BIO_PCYL)
         OUT (FDCDATA),A
         LD HL,(DC_PHYADDR)
@@ -512,12 +506,24 @@ DC_SEEKTO:
         RET NZ
         IN A,(FDCSTATUS)
         AND 010H
-        JR NZ,DC_ERR
-        LD HL,(DC_PHYADDR)
-        LD DE,5
-        ADD HL,DE
+        JP NZ,DC_ERR
+        LD A,(BIO_PCYL)
+        LD (DC_LASTCYL),A
+; DC_WAIT preserves HL, still at the step-rate byte. Advance to settle.
+        INC HL
+        INC HL
         LD A,(HL)
         CALL DC_DELAY
+; Only a previously selected drive can take this shortcut. A drive change
+; must still restore, seek and settle even when its destination is track 0.
+DC_SAME:
+        LD HL,DC_LASTCYL
+        LD A,(BIO_PCYL)
+        CP (HL)
+        JR NZ,DC_SEEKTO
+DC_IDONLY:
+        LD A,(DC_IDTRK)
+        OUT (FDCTRACK),A
         XOR A
         RET
 ; Approximately 1ms at Model 4 4MHz. All waits are bounded.
@@ -525,14 +531,12 @@ DC_DELAY:
         OR A
         RET Z
 DC_DMS:
-        LD BC,117
+; 235 * (NOP + DJNZ) is about 4000 clocks at 4 MHz. Keep A intact
+; instead of shuffling it through D on every turn of the delay loop.
+        LD B,235
 DC_DLOOP:
-        DEC BC
-        LD D,A
-        LD A,B
-        OR C
-        LD A,D
-        JR NZ,DC_DLOOP
+        NOP
+        DJNZ DC_DLOOP
         DEC A
         JR NZ,DC_DMS
         RET
@@ -541,18 +545,19 @@ DC_DLOOP:
 ; request: logical,cylinder,side,length word,buffer word.
 
 DC_INFO:
-        DB 'B','D','C','F',2,4,4,64
+        DB 'B','D','C','F',5,4,4,64
         DW DC_PHYS,LY_TAB
+        DW LY_BUF           ; complete last physical read, logical polarity
+        DW LY_CFG+18        ; ABI 5: cached control image format entry
 DC_PHYS:
         REPT 4
         DB 5,80,2,0,2,15
         ENDM
-DC_CAP: DW 0
+DC_IDTRK: DB 0
+DC_LASTCYL: DB 0
 DC_LAST: DB 0FFH
-DC_DEST: DW 0
 DC_PHYADDR: DW DC_PHYS
 DC_NBLK: DB 0
-DC_FAILED: DB 0
 DC_COMMAND: DB 0
 DC_BUFFER: DW 0
 DC_SIZE: DB 2

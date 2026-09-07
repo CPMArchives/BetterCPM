@@ -139,7 +139,7 @@ def install_files(raw: bytearray,
             entry[12], entry[14], entry[15] = extent & 0x1F, extent >> 5, records_here
             for slot in range(blocks_here):
                 if next_block >= BLOCK_COUNT:
-                    raise ValueError("files exceed the 790K disk capacity")
+                    raise ValueError("files exceed the available filesystem capacity")
                 entry[16 + slot * 2:18 + slot * 2] = next_block.to_bytes(2, "little")
                 chunk = padded[content_at:content_at + ALLOCATION_BLOCK_BYTES]
                 start = directory + next_block * ALLOCATION_BLOCK_BYTES
@@ -225,6 +225,7 @@ def main() -> None:
     basic_cpx_path = ROOT / "build/cpx/BASIC.CPX"
     hello_cpx_path = ROOT / "build/cpx/HELLO.CPX"
     hello_rsx_path = ROOT / "build/rsx/HELLO.RSX"
+    fdf_rsx_path = ROOT / "build/rsx/FDF.RSX"
     echo_rsx_path = ROOT / "build/rsx/ECHO.RSX"
     cpx_utility_path = ROOT / "build/utilities/CPX.COM"
     rsx_utility_path = ROOT / "build/utilities/RSX.COM"
@@ -238,10 +239,13 @@ def main() -> None:
     clr_path = ROOT / "build/utilities/CLR.COM"
     ver_path = ROOT / "build/utilities/VER.COM"
     warm_path = ROOT / "build/utilities/WARM.COM"
+    config_path = ROOT / "build/utilities/CONFIG.COM"
+    dup_path = ROOT / "build/utilities/DUP.COM"
+    fdf_path = ROOT / "third_party/montezuma/DISK.FDF"
     for path in (resident_path, command_path, basic_cpx_path, hello_cpx_path,
-                 hello_rsx_path, echo_rsx_path, cpx_utility_path, rsx_utility_path,
+                 hello_rsx_path, echo_rsx_path, fdf_rsx_path, cpx_utility_path, rsx_utility_path,
                  rsxtest_path, rsx2test_path, era_path, ren_path, type_path, dir_path,
-                 user_path, clr_path, ver_path, warm_path):
+                 user_path, clr_path, ver_path, warm_path, config_path, dup_path, fdf_path):
         if not path.is_file():
             raise SystemExit(f"missing system-image input: {path}")
     # Reassemble from source so a previous failed BIOS build cannot hide behind
@@ -332,6 +336,10 @@ def main() -> None:
                      ("CLR.COM", clr_path.read_bytes()),
                      ("VER.COM", ver_path.read_bytes()),
                      ("WARM.COM", warm_path.read_bytes()),
+                     ("CONFIG.COM", config_path.read_bytes()),
+                     ("DUP.COM", dup_path.read_bytes()),
+                     ("DISK.FDF", fdf_path.read_bytes()),
+                     ("FDF.RSX", fdf_rsx_path.read_bytes()),
                      ("BASIC.CPX", basic_cpx_path.read_bytes()),
                      ("HELLO.CPX", hello_cpx_path.read_bytes()),
                      ("HELLO.RSX", hello_rsx_path.read_bytes()),

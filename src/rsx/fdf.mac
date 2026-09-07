@@ -1,0 +1,385 @@
+        INCLUDE layout.inc
+; FDF -- OPTIONAL MONTEZUMA DISK ADDRESS CONVENTIONS, 07-Sep-2026.
+; No ports, controller delays, or permanently patched entry addresses here.
+; The BIOS finds us through the current RSX chain, even after relocation.
+; MM 2.32 bios.asm SEEK and the EXBIOS patch are the reference.
+RSXBASE         EQU     08000H
+        CSEG
+        .PHASE  RSXBASE
+FD_NEXT:        DW      5
+FD_ENTRY:       DW      FD_DISPATCH
+FD_DISPATCH:
+        LD A,C
+        CP 208
+        JP Z,FD_SERVICE
+        CP 202
+        JP NZ,FD_CHAIN
+; Unloading our support detaches its logical aliases first. All ordinary
+; BDOS writes are synchronous. Select A successfully before altering tables;
+; this also keeps the command processor off a drive it can no longer read.
+        PUSH DE
+        PUSH BC
+        LD A,(DE)
+        CP 1
+        JR NZ,FD_PASS
+        INC DE
+        LD A,(DE)
+        CP 2
+        JR NZ,FD_PASS
+        INC DE
+        INC DE
+        INC DE
+        LD HL,FD_NAME
+        LD B,8
+FD_NAMELOOP:
+        LD A,(DE)
+        CP (HL)
+        JR NZ,FD_PASS
+        INC HL
+        INC DE
+        DJNZ FD_NAMELOOP
+        LD C,14
+        LD E,0
+        CALL LY_BDOS
+        OR A
+        JR NZ,FD_REMOVEFAIL
+        LD HL,LY_TAB+80+16
+        LD B,3
+FD_DETACH:
+        PUSH HL
+        LD DE,19
+        ADD HL,DE
+        LD A,(HL)
+        AND 00FH
+        LD E,A
+        PUSH BC
+        LD BC,33
+        ADD HL,BC
+        OR (HL)
+        POP BC
+        POP HL
+        JR Z,FD_KEEP
+        LD (HL),0FFH
+FD_KEEP:
+        LD DE,80
+        ADD HL,DE
+        DJNZ FD_DETACH
+        LD DE,0FFFFH
+        LD C,37
+        CALL LY_BDOS
+FD_PASS:
+        POP BC
+        POP DE
+FD_CHAIN:
+        LD HL,(FD_NEXT)
+        JP (HL)
+FD_REMOVEFAIL:
+        POP BC
+        POP DE
+FD_BAD:
+        LD HL,0FFFFH
+        LD A,0FFH
+        LD B,0
+        RET
+FD_SERVICE:
+        LD A,B
+        OR A
+        JR Z,FD_QUERY
+        CP 2
+        JP Z,FD_SUPER
+        CP 1
+        JR NZ,FD_BAD
+; BDOS has a deliberately small call stack. Borrow our own workspace for
+; the mapper, rather than charge every unloaded system a larger stack.
+        LD (FD_OLDSP),SP
+        LD SP,FD_STKTOP
+        CALL FD_MAP
+        LD SP,(FD_OLDSP)
+        RET
+FD_MAP:
+; Private BIOS call: IX=binding, DE=logical track, HL=128-byte sector.
+; Only live BIOS table addresses are accepted, not a public arbitrary pointer.
+        PUSH HL
+        PUSH DE
+        PUSH IX
+        POP HL
+        LD DE,LY_TAB+16
+        OR A
+        SBC HL,DE
+        LD B,4
+FD_PTR:
+        LD A,H
+        OR L
+        JR Z,FD_PTRGOOD
+        LD DE,80
+        OR A
+        SBC HL,DE
+        DJNZ FD_PTR
+        POP DE
+        POP HL
+        JR FD_BAD
+FD_QUERY:
+        LD HL,04644H           ; 'FD', distinguish an absent service's zero
+        RET
+FD_PTRGOOD:
+        POP DE
+        POP HL
+        LD A,D
+        OR A
+        JR NZ,FD_BAD
+        LD A,H
+        OR A
+        JP NZ,FD_BAD
+        LD A,L
+        LD (FD_RECORD),A
+        XOR A
+        LD (FD_INDEX),A
+; Count actual 128-byte records in each sector. This one walk handles
+; uniform media and an arbitrary two-bit size code for each skew slot.
+FD_FINDSEC:
+        LD A,(FD_INDEX)
+        CP (IX+17)
+        JP NC,FD_BAD
+        CALL FD_GETSIZE
+        LD (FD_SIZE),A
+        LD B,A
+        INC B
+        LD A,1
+FD_CAPLOOP:
+        DJNZ FD_CAPSHIFT
+        JR FD_CAPDONE
+FD_CAPSHIFT:
+        ADD A,A
+        JR FD_CAPLOOP
+FD_CAPDONE:
+        LD B,A
+        LD A,(FD_RECORD)
+        CP B
+        JR C,FD_FOUNDSEC
+        SUB B
+        LD (FD_RECORD),A
+        LD A,(FD_INDEX)
+        INC A
+        LD (FD_INDEX),A
+        JR FD_FINDSEC
+FD_FOUNDSEC:
+        OR 080H
+        LD (FD_QUART),A
+        LD A,(FD_INDEX)
+        PUSH DE
+        LD E,A
+        LD D,0
+        PUSH IX
+        POP HL
+        ADD HL,DE
+        LD DE,20
+        ADD HL,DE
+        LD A,(HL)
+        LD (FD_SECTOR),A
+        POP DE
+        XOR A
+        LD (FD_SIDE),A
+        LD A,E
+        BIT 6,(IX+19)
+        JR Z,FD_CYL
+        BIT 1,(IX+19)
+        JR Z,FD_ALTERNATE
+; Complete side zero before side one. FDF cylinders, not the drive's
+; mechanical limit, determine where the second surface begins.
+        CP (IX+16)
+        JR C,FD_CYL
+        SUB (IX+16)
+        LD B,A
+        BIT 0,(IX+19)
+        JR Z,FD_SIDEONE
+        LD A,(IX+16)
+        DEC A
+        SUB B
+        LD B,A
+        JR FD_SIDEONE
+FD_ALTERNATE:
+        SRL A
+        JR NC,FD_CYL
+        LD B,A
+FD_SIDEONE:
+        LD A,1
+        LD (FD_SIDE),A
+        LD A,B
+FD_CYL:
+        CP (IX+16)
+        JP NC,FD_BAD
+        LD C,A
+        LD L,A                ; mechanical cylinder (no implicit double step)
+        BIT 2,(IX+19)
+        JR Z,FD_IDTRACK
+        ADD A,A
+        LD B,A
+        LD A,(FD_SIDE)
+        ADD A,B
+FD_IDTRACK:
+        LD H,A
+        LD A,(FD_SIDE)
+        LD D,A
+        OR A
+        LD A,(FD_SECTOR)
+        JR Z,FD_RESULT
+        BIT 3,(IX+19)
+        JR Z,FD_RESULT
+        ADD A,(IX+17)
+        JP C,FD_BAD
+FD_RESULT:
+        LD E,A
+        LD A,(FD_SIZE)
+        RLCA
+        RLCA
+        RLCA
+        LD B,A
+        LD A,(FD_QUART)
+        OR B
+        LD B,A
+        XOR A
+        RET
+; Operation 2 is called by the checked BIOS setter with IX=request.
+; It recognizes geometry, and does not make any binding or perform disk I/O.
+FD_SUPER:
+        PUSH IX
+        POP HL
+        LD DE,0100H
+        OR A
+        SBC HL,DE
+        JP C,FD_BAD
+        PUSH IX
+        POP HL
+        LD DE,LY_TPA-80
+        OR A
+        SBC HL,DE
+        JP NC,FD_BAD
+        BIT 6,(IX+20)
+        JR Z,FD_MIXCHECK
+; Some FDF records count a whole cylinder in SPT (Micro-Abacus).
+; Recognize that convention from geometry, not a manufacturer-name test.
+        LD L,(IX+18)
+        LD H,0
+        LD B,(IX+19)
+        INC B
+FD_CYLSHIFT:
+        ADD HL,HL
+        DJNZ FD_CYLSHIFT
+        LD E,(IX+2)
+        LD D,(IX+3)
+        OR A
+        SBC HL,DE
+        JR NZ,FD_MIXCHECK
+        SET 5,(IX+20)
+        LD (IX+53),0
+        JP FD_QUERY
+FD_MIXCHECK:
+        LD A,(IX+53)
+        CP 1
+        JR Z,FD_CHECKMAP
+        OR A
+        JP NZ,FD_BAD
+; MM's built-in SUPER descriptor predates an explicit size map. Translate
+; it once, at attachment, to the same general map used by other callers.
+        LD A,(IX+2)
+        CP 44
+        JP NZ,FD_BAD
+        LD A,(IX+3)
+        OR A
+        JP NZ,FD_BAD
+        LD A,(IX+18)
+        CP 6
+        JP NZ,FD_BAD
+        LD A,(IX+19)
+        CP 3
+        JP NZ,FD_BAD
+        LD (IX+53),1
+        LD (IX+54),0FFH
+        LD (IX+55),00BH
+FD_CHECKMAP:
+        PUSH IX
+        INC IX
+        LD HL,0
+        XOR A
+        LD (FD_INDEX),A
+FD_MAPSUM:
+        CALL FD_GETSIZE
+        CP (IX+18)
+        JR C,FD_MAPSIZE
+        JR Z,FD_MAPSIZE
+        POP IX
+        JP FD_BAD
+FD_MAPSIZE:
+        LD B,A
+        INC B
+        LD DE,1
+FD_SUMSHIFT:
+        DJNZ FD_SUMMORE
+        JR FD_SUMADD
+FD_SUMMORE:
+        SLA E
+        RL D
+        JR FD_SUMSHIFT
+FD_SUMADD:
+        ADD HL,DE
+        LD A,(FD_INDEX)
+        INC A
+        LD (FD_INDEX),A
+        CP (IX+17)
+        JR C,FD_MAPSUM
+        LD E,(IX+1)
+        LD D,(IX+2)
+        OR A
+        SBC HL,DE
+        POP IX
+        JP NZ,FD_BAD
+        JP FD_QUERY
+; IX=binding. Size table has four two-bit codes per byte, low pair first.
+; Preserve DE (track number) and HL (validation sum).
+FD_GETSIZE:
+        LD A,(IX+52)
+        OR A
+        LD A,(IX+18)
+        RET Z
+        PUSH HL
+        PUSH DE
+        LD A,(FD_INDEX)
+        SRL A
+        SRL A
+        LD E,A
+        LD D,0
+        PUSH IX
+        POP HL
+        ADD HL,DE
+        LD DE,53
+        ADD HL,DE
+        LD C,(HL)
+        LD A,(FD_INDEX)
+        AND 3
+        LD B,A
+        INC B
+FD_PAIR:
+        DJNZ FD_PAIRNEXT
+        JR FD_PAIRREADY
+FD_PAIRNEXT:
+        SRL C
+        SRL C
+        JR FD_PAIR
+FD_PAIRREADY:
+        LD A,C
+        AND 3
+        POP DE
+        POP HL
+        RET
+FD_INDEX:       DB 0
+FD_RECORD:      DB 0
+FD_SIZE:        DB 0
+FD_NAME:        DB 'FDF     '
+FD_QUART:       DB 0
+FD_SIDE:        DB 0
+FD_SECTOR:      DB 0
+FD_OLDSP:       DW 0
+FD_STACK:       DS 64
+FD_STKTOP:
+        .DEPHASE
+        END

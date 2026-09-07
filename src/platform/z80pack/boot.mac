@@ -1,0 +1,47 @@
+        INCLUDE layout.inc
+; FIRST RECORD BOOT -- cpmsim loads precisely 128 bytes at address zero.
+; Fetch the packed resident image, then hand off to the ordinary BIOS BOOT.
+        ASEG
+        ORG 0
+        DI
+        LD SP,080H
+        XOR A
+        OUT (10),A
+        OUT (17),A
+        LD HL,LY_SYS
+        LD E,8
+        LD B,52
+ZB_NEXT:
+        LD A,E
+        LD C,0
+ZB_DIV: CP 26
+        JR C,ZB_POS
+        SUB 26
+        INC C
+        JR ZB_DIV
+ZB_POS: INC A
+        OUT (12),A
+        LD A,C
+        OUT (11),A
+        LD A,L
+        OUT (15),A
+        LD A,H
+        OUT (16),A
+        XOR A
+        OUT (13),A
+        IN A,(14)
+        OR A
+        JR NZ,ZB_FAIL
+        LD A,L
+        ADD A,128
+        LD L,A
+        JR NC,ZB_ADV
+        INC H
+ZB_ADV: INC E
+        DJNZ ZB_NEXT
+        JP LY_BIOS
+ZB_FAIL:LD A,'!'
+        OUT (1),A
+        HALT
+        JR ZB_FAIL
+        END

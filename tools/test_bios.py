@@ -113,6 +113,8 @@ class Z80:
                     self.push(self.ix)
                 elif sub == 0xE1:        # POP IX
                     self.ix = self.pop()
+                elif sub == 0x23:
+                    self.ix = (self.ix + 1) & 65535
                 elif sub == 0x22:        # LD (nn),IX
                     address = self.word(self.pc)
                     self.pc += 2
@@ -132,8 +134,28 @@ class Z80:
                     displacement = self.mem[self.pc]
                     opcode = self.mem[self.pc + 1]
                     self.pc += 2
-                    assert 0x46 <= opcode <= 0x7E and opcode & 7 == 6
-                    self.z = not (self.mem[(self.ix + displacement) & 65535] & (1 << ((opcode - 0x40) // 8)))
+                    target = (self.ix + displacement) & 65535
+                    if opcode >= 0xC0 and opcode & 7 == 6:
+                        self.mem[target] |= 1 << ((opcode >> 3) & 7)
+                    else:
+                        assert 0x46 <= opcode <= 0x7E and opcode & 7 == 6
+                        self.z = not (self.mem[target] & (1 << ((opcode - 0x40) // 8)))
+                elif sub in (0x46, 0x56, 0x5E, 0x66, 0x6E, 0x86):
+                    offset = self.mem[self.pc]
+                    self.pc += 1
+                    if offset & 128:
+                        offset -= 256
+                    value = self.mem[(self.ix + offset) & 65535]
+                    if sub == 0x86:
+                        total = self.a + value
+                        self.a = total & 255
+                        self.z, self.carry = self.a == 0, total > 255
+                    else:
+                        setattr(self, {0x46:'b',0x56:'d',0x5E:'e',0x66:'h',0x6E:'l'}[sub], value)
+                elif sub == 0xB6:
+                    self.a |= self.mem[self.ix + self.mem[self.pc]]
+                    self.pc += 1
+                    self.z, self.carry = self.a == 0, False
                 elif sub == 0x96:
                     value = self.mem[self.ix + self.mem[self.pc]]
                     self.pc += 1
@@ -555,8 +577,8 @@ class Z80:
             elif op == 0xB0:            # OR B
                 self.a |= self.b
                 self.z, self.carry = self.a == 0, False
-            elif op in (0x80, 0x81, 0x82):  # ADD A,B / C / D
-                value = {0x80: self.b, 0x81: self.c, 0x82: self.d}[op]
+            elif op in (0x80, 0x81, 0x82, 0x83):  # ADD A,B / C / D
+                value = {0x80: self.b, 0x81: self.c, 0x82: self.d, 0x83: self.e}[op]
                 total = self.a + value
                 self.a = total & 0xFF
                 self.z, self.carry = self.a == 0, total > 0xFF
@@ -595,6 +617,32 @@ class Z80:
                                      0x72: self.d, 0x73: self.e}[op]
             elif op == 0x12:            # LD (DE),A
                 self.mem[self.de] = self.a
+            elif op == 0xCB and self.mem[self.pc] == 0x12:
+                self.pc += 1
+                old = self.d
+                self.d = ((old << 1) | int(self.carry)) & 255
+                self.z, self.carry = self.d == 0, bool(old & 128)
+            elif op == 0xCB and self.mem[self.pc] >= 0xC0:
+                sub = self.mem[self.pc]
+                self.pc += 1
+                reg = ['b','c','d','e','h','l',None,'a'][sub & 7]
+                bit = 1 << ((sub >> 3) & 7)
+                if reg is None:
+                    self.mem[self.hl] |= bit
+                else:
+                    setattr(self, reg, getattr(self, reg) | bit)
+            elif 0x40 <= op <= 0x7F and op != 0x76:
+                registers = ['b', 'c', 'd', 'e', 'h', 'l', None, 'a']
+                source, target = op & 7, (op >> 3) & 7
+                value = self.mem[self.hl] if source == 6 else getattr(self, registers[source])
+                if target == 6:
+                    self.mem[self.hl] = value
+                else:
+                    setattr(self, registers[target], value)
+            elif op == 0x90:
+                self.carry = self.a < self.b
+                self.a = (self.a - self.b) & 255
+                self.z = self.a == 0
             else:
                 raise AssertionError(f"unsupported opcode {op:02X} at {self.pc - 1:04X}")
         raise AssertionError(f"execution limit reached from {address:04X}")
@@ -638,7 +686,7 @@ def main() -> None:
         offset = BASE + index * 3
         require(cpu.mem[offset] == 0xC3, f"entry {index} is not JP")
         target = cpu.word(offset + 1)
-        require(BASE <= target < BASE + len(data), f"entry {index} target outside image")
+        require(BASE <= target < BASE + len(data) or (index == 9 and target == LAYOUT["DISK"] + 6), f"entry {index} target outside image")
         return offset
 
     entries = [entry(index) for index in range(COUNT)]
@@ -766,7 +814,7 @@ def main() -> None:
     require(cpu.word(dpb) == 80, "drive A SPT is not 80")
     require(bytes(cpu.mem[dpb + 2:dpb + 5]) == bytes((4, 15, 0)),
             "drive A BSH/BLM/EXM mismatch")
-    require(cpu.word(dpb + 5) == 394 and cpu.word(dpb + 7) == 127,
+    require(cpu.word(dpb + 5) == 389 and cpu.word(dpb + 7) == 127,
             "drive A DSM/DRM mismatch")
     require(bytes(cpu.mem[dpb + 9:dpb + 11]) == bytes((0xC0, 0)),
             "drive A allocation mask mismatch")
@@ -779,8 +827,9 @@ def main() -> None:
         cpu.run(entries[9])
         require(cpu.hl != 0 and cpu.hl not in dphs,
                 f"SELDSK did not expose a distinct drive {name} DPH")
-        require(cpu.mem[cpu.word(cpu.hl + 10):cpu.word(cpu.hl + 10)+15] == cpu.mem[dpb:dpb+15],
-                f"drive {name} did not share the selected 790K geometry")
+        require(bytes(cpu.mem[cpu.word(cpu.hl + 10):cpu.word(cpu.hl + 10)+15]) ==
+                bytes((40,0,4,15,0,143,1,127,0,192,0,32,0,0,0)),
+                f"drive {name} does not have the default 800K DATA DPB")
         pair = (cpu.word(cpu.hl + 12), cpu.word(cpu.hl + 14))
         require(pair in work,
                 f"drive {name} did not use the shared active-drive workspace")

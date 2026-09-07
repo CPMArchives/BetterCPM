@@ -1,0 +1,175 @@
+        INCLUDE layout.inc
+        INCLUDE bioslinks.inc
+; Z80PACK CPMSIM DISK ADAPTER -- 07-Sep-2026
+; The simulator transfers one 128-byte record by DMA. No pretend WD ports,
+; sector-length tricks, or Model 4 memory map belong in this adapter.
+        ASEG
+        ORG LY_DISK
+        JP Z_API
+        JP Z_MAP
+        JP Z_SELECT
+        JP Z_READ
+        JP Z_WRITE
+        JP Z_BOOTREAD
+Z_SELECT:
+        LD A,C
+        CP 4
+        JR NC,Z_NODISK
+        LD (BIO_DRIVE),A
+        CALL Z_DPH
+        RET
+Z_NODISK:
+        LD HL,0
+        RET
+Z_DPH:
+        LD HL,LY_TAB
+        LD DE,80
+        OR A
+        RET Z
+Z_DPHLP:ADD HL,DE
+        DEC A
+        JR NZ,Z_DPHLP
+        RET
+Z_MAP:  LD A,(BIO_DRIVE)
+        CP 4
+        JR NC,Z_BAD
+        LD HL,(BIO_TRACK)
+        LD A,H
+        OR A
+        JR NZ,Z_BAD
+        LD A,L
+        CP 77
+        JR NC,Z_BAD
+        LD HL,(BIO_SECTOR)
+        LD A,H
+        OR A
+        JR NZ,Z_BAD
+        LD A,L
+        CP 26
+        JR NC,Z_BAD
+        XOR A
+        LD (BIO_QUART),A
+        RET
+Z_BAD:  LD A,1
+        OR A
+        RET
+Z_READ: XOR A
+        JR Z_TRANSFER
+Z_WRITE:LD A,1
+Z_TRANSFER:
+        PUSH AF
+        LD A,(BIO_DRIVE)
+        LD C,A
+        LD A,(BIO_TRACK)
+        LD D,A
+        LD A,(BIO_SECTOR)
+        INC A
+        LD E,A
+        POP AF
+; A=command, C=drive, D=track, E=1-based record, HL=DMA.
+; Unlike a WD controller the command has completed when OUT returns.
+Z_IO:   PUSH AF
+        LD A,C
+        OUT (10),A
+        LD A,D
+        OUT (11),A
+        LD A,E
+        OUT (12),A
+        XOR A
+        OUT (17),A
+        LD A,L
+        OUT (15),A
+        LD A,H
+        OUT (16),A
+        POP AF
+        OUT (13),A
+        LD DE,128
+        ADD HL,DE
+        IN A,(14)
+        OR A
+        RET
+; Read B consecutive absolute records from A:, DE=record, HL=destination.
+; System carriers are below record 256. Keep the loop on its caller's stack.
+Z_BOOTREAD:
+        PUSH BC
+        PUSH DE
+        LD A,E
+        LD D,0
+Z_DIV26:CP 26
+        JR C,Z_DIVDONE
+        SUB 26
+        INC D
+        JR Z_DIV26
+Z_DIVDONE:
+        INC A
+        LD E,A
+        LD C,0
+        XOR A
+        CALL Z_IO
+        POP DE
+        POP BC
+        RET NZ
+        INC DE
+        DJNZ Z_BOOTREAD
+        RET
+; Report the fixed virtual geometry. Reformat and runtime geometry changes
+; are not hardware operations on this first cpmsim target. Return unsupported
+; instead of passing a WD write-track stream to a record-only controller.
+Z_API:  LD A,B
+        OR A
+        LD HL,Z_INFO
+        RET Z
+        PUSH IX
+        PUSH DE
+        POP IX
+        LD A,D
+        OR A
+        JR Z,Z_REQBAD
+        LD HL,80
+        ADD HL,DE
+        JR C,Z_REQBAD
+        LD DE,LY_TPA
+        OR A
+        SBC HL,DE
+        JR NC,Z_REQBAD
+        LD A,(IX+0)
+        CP 4
+        JR NC,Z_REQBAD
+        LD A,B
+        CP 1
+        JR Z,Z_GETPH
+        CP 3
+        JR Z,Z_GETLOG
+        LD HL,2
+        JR Z_RETURN
+Z_REQBAD:
+        LD HL,1
+        JR Z_RETURN
+Z_GETPH:
+        LD HL,Z_PHYSICAL
+        LD BC,6
+        JR Z_COPY
+Z_GETLOG:
+        LD A,(IX+0)
+        CALL Z_DPH
+        LD DE,16
+        ADD HL,DE
+        LD BC,64
+Z_COPY: PUSH IX
+        POP DE
+        INC DE
+        LDIR
+        LD HL,0
+Z_RETURN:
+        LD A,L
+        POP IX
+        OR A
+        RET
+Z_INFO: DB 'BDCF',5,4,4,64
+        DW Z_PHYSICAL,LY_TAB
+        DW 0,0              ; no physical buffer or cached-format entry
+Z_PHYSICAL:
+        REPT 4
+        DB 8,77,1,0,0,0
+        ENDM
+        END

@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def main():
     with tempfile.TemporaryDirectory(prefix="bettercpm-bios-build-test-") as name:
         root = Path(name)
-        for directory in ("tools", "src", "build"):
+        for directory in ("tools", "src", "build", "third_party"):
             shutil.copytree(ROOT / directory, root / directory)
         bios = root / "build/bios/bios.bin"
         resident = root / "build/system/resident.bin"
