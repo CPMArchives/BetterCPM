@@ -5,10 +5,10 @@
 ; LY_CFG reuses LY_BUF; LY_LOAD and its stack borrow the finished TPA.
 ; Keep build-time size checks: even a twelve-byte overrun is fatal.
 LY_SYS          EQU     0D704H
-LY_BDOS         EQU     0D804H
-LY_EXT          EQU     0E52DH
-LY_DISK         EQU     0E6BCH
-LY_BIOS         EQU     0EA53H
+LY_BDOS         EQU     0D7FCH
+LY_EXT          EQU     0E53AH
+LY_DISK         EQU     0E6C9H
+LY_BIOS         EQU     0EA68H
 LY_FILE         EQU     0ECE6H
 LY_TAB          EQU     0ED77H
 LY_RSTA         EQU     0EF57H

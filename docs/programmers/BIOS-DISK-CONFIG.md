@@ -1,7 +1,7 @@
-# Runtime disk configuration, ABI version 2
+# Runtime disk configuration, ABI version 3
 
-Updated September 7, 2026. BIOS implementation 1.5/API 1.2; BDOS
-implementation 1.5/API 1.2. The standard 17 BIOS vectors remain unchanged.
+Updated September 7, 2026. BIOS implementation 1.6/API 1.3; BDOS
+implementation 1.6/API 1.2. The standard 17 BIOS vectors remain unchanged.
 
 ## Scope and current limits
 
@@ -21,11 +21,11 @@ until system-disk migration is implemented. These restrictions are explicit
 status-2 results, not silently ignored requests.
 
 Accepted runtime definitions have 1–80 cylinders, one or two sides, 1–32
-sectors per side, 128/256/512/1024-byte physical sectors, at most 128 directory
+sectors per side, 128/256/512/1024-byte physical sectors, at most 512 directory
 entries and 1,024 allocation blocks. The Model 4 implementation accepts 5-inch
 hardware; 8-inch drive support is not implemented. Standard alternating-side
-track order, FM/MFM and inverted data are supported. DISK.FDF flags for other
-side ordering or numbering are rejected. Native ZSM4 parity for the new disk
+track order, FM/MFM and inverted data are supported. Optional FDF.RSX handles other side ordering, ID-track numbering and mixed
+sector sizes. Five catalogue records still fail consistency validation. Native ZSM4 parity for the new disk
 module and real-hardware timing remain unverified.
 
 DISK.FDF is the format source for CONFIG.COM. The BIOS
@@ -52,7 +52,7 @@ context of the operation. Requests are synchronous and controller waits bounded.
 | 4 | Set logical record | byte 0=index; bytes 1–64=binding |
 | 5 | Format one track | byte 0=logical, 1=cylinder, 2=side, word 3=stream length, word 5=stream pointer |
 
-Discovery descriptor: `BDCF`, byte ABI version=2, logical count=4,
+Discovery descriptor: `BDCF`, byte ABI version=3, logical count=4,
 physical count=4, binding size=64, then two little-endian pointers to the
 physical table and logical table. These pointers are for inspection; applications
 should use operations 2/4 for validated updates. There is no SYS-GEN persistence
@@ -74,10 +74,12 @@ Offsets here are relative to the binding itself, one byte after the request inde
 | 1 | 15 | Standard CP/M DPB: SPT, BSH, BLM, EXM, DSM, DRM, AL0, AL1, CKS, OFF |
 | 16 | 1 | Cylinders |
 | 17 | 1 | Physical sectors per side |
-| 18 | 1 | Sector size code: 0=128, 1=256, 2=512, 3=1024 |
+| 18 | 1 | Maximum sector size code: 0=128, 1=256, 2=512, 3=1024 |
 | 19 | 1 | DISK.FDF flags: 80h=MFM, 40h=double-sided, 10h=inverted data |
 | 20 | 32 | Sector IDs in logical skew order; unused bytes zero |
-| 52 | 12 | Reserved, write zeros |
+| 52 | 1 | Zero=uniform, one=explicit mixed-size map |
+| 53 | 8 | Four two-bit size codes per byte, low bits first, in sector-table order |
+| 61 | 3 | Reserved, write zeros |
 
 DPB words are little-endian. SPT is the physical sector count times 2^size-code
 for these FDF profiles; double-sided disks have two CP/M tracks per cylinder.
@@ -91,7 +93,7 @@ Unbinding B–D uses physical FF; other binding fields are ignored.
 Logical storage has an 80-byte stride: DPH at +0, binding at +16.
 Four records occupy 320 bytes; the shared 128-byte allocation vector and
 32-byte check vector follow them. Each DPH points to its own DPB and the
-shared workspace. ABI version 2 identifies this changed table layout.
+shared workspace. ABI version 3 identifies this changed table layout.
 
 ## Formatting
 
@@ -144,3 +146,18 @@ The transient menus, runtime FDF parser and DUP formatting operation are
 implemented. See [CONFIG/DUP usage and limits](CONFIG-DUP.md). Copy, disk-error
 checking and SYSGEN persistence remain future work; diskdefs conversion remains
 deferred in both directions.
+
+## Optional format mapper
+
+FDF.RSX implements BDOS 208: B=0 queries the 4644h signature; B=1 is the
+private BIOS mapping call, and B=2 validates/normalizes extended geometry.
+The mapper uses a private stack. BIOS transfer loops use the returned actual
+sector length and quarter offset. No persistent pointer into the RSX is kept.
+Unloading FDF selects the system drive and detaches dependent B-D records
+before the chain manager releases memory. The module currently allocates 768
+bytes, plus the shared 1024-byte manager when loaded alone.
+
+Cylinder-based SPT is recognized during extended normalization and marked
+internally with bit 20h. MM SUPER is normalized into five 1024-byte sectors
+and one 512-byte sector. Arbitrary explicit two-bit size maps use the same
+mapping path; their sum must agree with SPT. The original DISK.FDF is unchanged.

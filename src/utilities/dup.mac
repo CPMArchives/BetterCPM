@@ -51,7 +51,17 @@ DFORMAT:LD HL,DFHEAD
         LDIR
         LD A,(CURB+19)
         AND 0FH
+        LD B,A
+        LD A,(CURB+52)
+        OR B
+        JR Z,DFKNOWN
+        LD BC,000D0H
+        CALL BDOS
+        LD DE,04644H
+        OR A
+        SBC HL,DE
         JP NZ,DUNSUP
+DFKNOWN:
         LD A,(CURB+18)
         CP 4
         JP NC,DUNSUP
@@ -184,7 +194,32 @@ STREAM: LD HL,TRACKBF
 SFMHEAD:LD A,0FFH
         LD BC,40
         CALL RUN
-SRECORD:LD A,(MFM)
+SRECORD:LD A,(CURB+18)
+        LD (SSIZE),A
+        LD A,(CURB+52)
+        OR A
+        JR Z,SWHOLE
+        LD A,(DSEC)
+        SRL A
+        SRL A
+        LD E,A
+        LD D,0
+        LD HL,CURB+53
+        ADD HL,DE
+        LD C,(HL)
+        LD A,(DSEC)
+        AND 3
+        LD B,A
+        INC B
+SSPAIR: DJNZ SSNEXT
+        JR SSREADY
+SSNEXT: SRL C
+        SRL C
+        JR SSPAIR
+SSREADY:LD A,C
+        AND 3
+        LD (SSIZE),A
+SWHOLE: LD A,(MFM)
         OR A
         LD BC,6
         JR Z,SIDZERO
@@ -199,8 +234,15 @@ SIDZERO:XOR A
         CALL RUN
 SIDMARK:LD A,0FEH
         CALL BYTE
+        LD A,(CURB+19)
+        BIT 2,A
         LD A,(DCYL)
-        CALL BYTE
+        JR Z,SIDCYL
+        ADD A,A
+        LD B,A
+        LD A,(DSIDE)
+        ADD A,B
+SIDCYL: CALL BYTE
         LD A,(DSIDE)
         CALL BYTE
         LD A,(DSEC)
@@ -209,8 +251,19 @@ SIDMARK:LD A,0FEH
         LD DE,CURB+20
         ADD HL,DE
         LD A,(HL)
-        CALL BYTE
-        LD A,(CURB+18)
+        LD B,A
+        LD A,(CURB+19)
+        BIT 3,A
+        LD A,B
+        JR Z,SIDSEC
+        LD A,(DSIDE)
+        OR A
+        LD A,B
+        JR Z,SIDSEC
+        LD A,(CURB+17)
+        ADD A,B
+SIDSEC: CALL BYTE
+        LD A,(SSIZE)
         CALL BYTE
         LD A,0F7H
         CALL BYTE
@@ -238,7 +291,7 @@ SDZERO: XOR A
 SDMARK: LD A,0FBH
         CALL BYTE
         LD BC,128
-        LD A,(CURB+18)
+        LD A,(SSIZE)
 SDBYTES:OR A
         JR Z,SDFILL
         SLA C
@@ -345,6 +398,7 @@ CONFIRM:DB 13,10,'Insert target disk. ALL DATA ON THIS PHYSICAL DISK WILL BE LOS
         DB 'Ctrl-C stops between tracks.',13,10
         DB 'Format this disk? [Y/N] ',0
 PROGRESS:DB 13,'Formatting cylinder ',0
+SSIZE:  DB 0
 SIDEMSG:DB ', side ',0
 COMPLETE:DB 13,10,'Format complete.',13,10,0
 PROTECTED:DB 'Physical drive 0 is the protected system disk.',13,10,0

@@ -13,6 +13,8 @@ MAIN:   LD HL,TITLE
         CALL CHOICE
         CP 3
         JP Z,DONE
+        CP 'I'
+        JP Z,EDITDRIVE
         CP 'F'
         JP Z,PHYSMENU
         CP 'G'
@@ -293,22 +295,6 @@ PAGEPICK:CP 16
         LD (CHOSEN),A
         CALL FPARSE
         JP C,FORMATBAD
-; Reject unsupported conventions before asking for hardware attachment.
-        LD A,(BIND+19)
-        AND 02FH
-        JP NZ,FORMATBAD
-        LD A,(BIND+18)
-        CP 4
-        JP NC,FORMATBAD
-        LD A,(BIND+9)
-        OR A
-        JP NZ,FORMATBAD
-        LD A,(BIND+8)
-        CP 128
-        JP NC,FORMATBAD
-        LD A,(BIND+7)
-        CP 4
-        JP NC,FORMATBAD
 ; Check whether any configured drive can accommodate the geometry.
         XOR A
         LD (CHECKPH),A
@@ -410,6 +396,338 @@ COMBAD: LD A,1
         OR A
         RET
 
+; WORKBENCH -- keep the pencil marks here, not in the live BIOS table.
+; Start from a drive set up by G. Q submits the whole record at once;
+; BREAK throws away the working copy. The BIOS remains the final judge.
+EDITDRIVE:LD HL,EDTITLE
+        CALL HEADER
+        LD HL,EDASK
+        CALL PUTS
+        CALL CHOICE
+        CP 3
+        JP Z,MAIN
+        SUB 'A'
+        CP 1
+        JP C,EDITDRIVE
+        CP 4
+        JP NC,EDITDRIVE
+        LD (EDDRIVE),A
+        LD (REQ),A
+        LD DE,REQ
+        LD B,3
+        CALL API
+        JP NZ,EDERROR
+        LD A,(REQ+1)
+        CP 4
+        JP NC,EDERROR
+        LD HL,REQ+1
+        LD DE,EDCOPY
+        LD BC,64
+        LDIR
+EDSHOW: LD HL,EDTITLE
+        CALL HEADER
+        XOR A
+        LD (EDFIELD),A
+EDROW:  LD A,(EDFIELD)
+        CALL LABEL
+        LD A,(EDFIELD)
+        ADD A,A
+        LD E,A
+        LD D,0
+        LD HL,EDNAMES
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        CALL PUTS
+        CALL EDADDR
+        LD E,(HL)
+        LD D,0
+        LD A,(EDWIDTH)
+        CP 2
+        JR NZ,EDPRINT
+        INC HL
+        LD D,(HL)
+EDPRINT:EX DE,HL
+        CALL EDDEC
+        CALL CRLF
+        LD A,(EDFIELD)
+        INC A
+        LD (EDFIELD),A
+        CP 16
+        JR C,EDROW
+        LD HL,EDHELP
+        CALL PUTS
+        CALL CHOICE
+        CP 3
+        JP Z,MAIN
+        CP 'Q'
+        JP Z,EDAPPLY
+        CP 'S'
+        JP Z,EDSIZE
+        CP 'R'
+        JP Z,EDSECTOR
+        SUB 'A'
+        CP 16
+        JP NC,EDSHOW
+        LD (EDFIELD),A
+        LD HL,EDVALUE
+        CALL PUTS
+        CALL EDNUMBER
+        JP C,EDSHOW
+        PUSH DE
+        CALL EDADDR
+        POP DE
+        LD A,(EDWIDTH)
+        CP 2
+        JR Z,EDWORD
+        LD A,D
+        OR A
+        JP NZ,EDINVALID
+        LD (HL),E
+        JP EDSHOW
+EDWORD: LD (HL),E
+        INC HL
+        LD (HL),D
+        JP EDSHOW
+EDADDR: LD A,(EDFIELD)
+        ADD A,A
+        LD E,A
+        LD D,0
+        LD HL,EDOFFS
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD A,(HL)
+        LD (EDWIDTH),A
+        LD D,0
+        LD HL,EDCOPY
+        ADD HL,DE
+        RET
+EDAPPLY:LD HL,EDCOPY
+        LD DE,REQ+1
+        LD BC,64
+        LDIR
+        LD A,(EDDRIVE)
+        LD (REQ),A
+        LD DE,REQ
+        LD B,4
+        CALL API
+        JP NZ,EDINVALID
+        LD HL,SAVED
+        CALL PUTS
+        CALL PAUSE
+        JP MAIN
+EDERROR:CALL ERROR
+        JP MAIN
+EDINVALID:CALL ERROR
+        JP EDSHOW
+; The sector table is in physical order. Changing IDs changes interleave.
+; N selects the uniform size, or maximum size for a mixed track.
+; S records each individual length in the same physical order as the IDs.
+EDSECTOR:XOR A
+        LD (EDMODE),A
+        JR EDSLOTIN
+EDSIZE: LD A,1
+        LD (EDMODE),A
+EDSLOTIN:LD HL,EDSLOT
+        CALL PUTS
+        CALL EDNUMBER
+        JP C,EDSHOW
+        LD A,D
+        OR A
+        JP NZ,EDINVALID
+        LD A,E
+        OR A
+        JP Z,EDINVALID
+        CP 33
+        JP NC,EDINVALID
+        DEC A
+        LD (EDSAVE),A
+        LD A,(EDMODE)
+        OR A
+        JP NZ,EDSIZEIN
+        LD HL,EDID
+        CALL PUTS
+        CALL EDNUMBER
+        JP C,EDSHOW
+        LD A,D
+        OR A
+        JP NZ,EDINVALID
+        LD B,E
+        LD A,(EDSAVE)
+        LD E,A
+        LD D,0
+        LD HL,EDCOPY+20
+        ADD HL,DE
+        LD (HL),B
+        JP EDSHOW
+EDSIZEIN:LD HL,EDSIZEQ
+        CALL PUTS
+        CALL EDNUMBER
+        JP C,EDSHOW
+        LD A,D
+        OR A
+        JP NZ,EDINVALID
+        LD A,E
+        CP 4
+        JP NC,EDINVALID
+        LD (EDNEW),A
+; On the first mixed edit seed every slot from the old uniform length.
+        LD A,(EDCOPY+52)
+        OR A
+        JR NZ,EDPACK
+        LD A,(EDCOPY+18)
+        AND 3
+        LD B,A
+        RLCA
+        RLCA
+        OR B
+        LD B,A
+        RLCA
+        RLCA
+        RLCA
+        RLCA
+        OR B
+        LD HL,EDCOPY+53
+        LD B,8
+EDFILL: LD (HL),A
+        INC HL
+        DJNZ EDFILL
+        LD A,1
+        LD (EDCOPY+52),A
+EDPACK: LD A,(EDSAVE)
+        SRL A
+        SRL A
+        LD E,A
+        LD D,0
+        LD HL,EDCOPY+53
+        ADD HL,DE
+        LD A,(EDSAVE)
+        AND 3
+        ADD A,A
+        LD B,A
+        LD E,3
+        LD A,(EDNEW)
+        LD D,A
+        LD A,B
+        OR A
+        JR Z,EDMERGE
+EDSHIFT:SLA E
+        SLA D
+        DJNZ EDSHIFT
+EDMERGE:LD A,E
+        CPL
+        AND (HL)
+        OR D
+        LD (HL),A
+        JP EDSHOW
+; Read a decimal word using our own console input, so BREAK is local.
+; Re-use the FDF scanner's overflow check. ENTER alone leaves it alone.
+EDNUMBER:LD HL,EDINPUT
+        LD (EDPTR),HL
+        XOR A
+        LD (EDCOUNT),A
+        LD (EDOVER),A
+EDKEY:  CALL KEY
+        CP 3
+        JR Z,EDCANCEL
+        CP 13
+        JR Z,EDEND
+        CP '0'
+        JR C,EDKEY
+        CP '9'+1
+        JR NC,EDKEY
+        LD B,A
+        LD A,(EDCOUNT)
+        CP 5
+        JR C,EDTAKE
+        LD A,1
+        LD (EDOVER),A
+        JR EDKEY
+EDTAKE:
+        INC A
+        LD (EDCOUNT),A
+        LD HL,(EDPTR)
+        LD (HL),B
+        INC HL
+        LD (EDPTR),HL
+        LD A,B
+        CALL PUTC
+        JR EDKEY
+EDEND:  CALL CRLF
+        LD A,(EDOVER)
+        OR A
+        JR NZ,EDCANCEL
+        LD A,(EDCOUNT)
+        OR A
+        JR Z,EDCANCEL
+        LD HL,(EDPTR)
+        LD (HL),','
+        LD HL,EDINPUT
+        LD (PARPTR),HL
+        JP PNUM
+EDCANCEL:SCF
+        RET
+; Print HL unsigned, including directory counts beyond the old 255 limit.
+EDDEC:  LD DE,10000
+        CALL EDPLACE
+        LD DE,1000
+        CALL EDPLACE
+        LD DE,100
+        CALL EDPLACE
+        LD DE,10
+        CALL EDPLACE
+        LD A,L
+        ADD A,'0'
+        JP PUTC
+EDPLACE:LD A,'0'-1
+EDSUB:  INC A
+        OR A
+        SBC HL,DE
+        JR NC,EDSUB
+        ADD HL,DE
+        JP PUTC
+EDTITLE:DB 'Disk format workbench',0
+EDASK:  DB 'Copy current format from logical drive [B-D] (^C returns):',13,10,0
+EDHELP: DB 'A-P Edit  Q Apply to drive  R IDs  S Sizes  ^C Discard',13,10,0
+EDVALUE:DB 'Decimal value (ENTER keeps current, ^C cancels): ',0
+EDSLOT: DB 'Physical sector slot [1-32]: ',0
+EDSIZEQ:DB 'Size code [0=128, 1=256, 2=512, 3=1024]: ',0
+EDMODE: DB 0
+EDNEW:  DB 0
+EDID:   DB 'Sector ID [0-255]: ',0
+EDOFFS: DB 0,1,1,2,3,1,4,1,5,1,6,2,8,2,10,1
+        DB 11,1,12,2,14,2,16,1,17,1,18,1,19,1,52,1
+EDNAMES:DW ED0,ED1,ED2,ED3,ED4,ED5,ED6,ED7
+        DW ED8,ED9,ED10,ED11,ED12,ED13,ED14,ED15
+ED0:    DB 'Physical drive: ',0
+ED1:    DB '128-byte records/track (SPT): ',0
+ED2:    DB 'Block shift (BSH): ',0
+ED3:    DB 'Block mask (BLM): ',0
+ED4:    DB 'Extent mask (EXM): ',0
+ED5:    DB 'Last allocation block (DSM): ',0
+ED6:    DB 'Last directory entry (DRM): ',0
+ED7:    DB 'Directory allocation high (AL0): ',0
+ED8:    DB 'Directory allocation low (AL1): ',0
+ED9:    DB 'Directory check size (CKS): ',0
+ED10:   DB 'Reserved tracks (OFF): ',0
+ED11:   DB 'Cylinders: ',0
+ED12:   DB 'Physical sectors/track: ',0
+ED13:   DB 'Maximum size code (0=128 .. 3=1024): ',0
+ED14:   DB 'Format flags (decimal): ',0
+ED15:   DB 'Explicit size map (0=uniform, 1=mixed): ',0
+EDDRIVE:DB 0
+EDFIELD:DB 0
+EDWIDTH:DB 0
+EDSAVE: DB 0
+EDOVER: DB 0
+EDCOUNT:DB 0
+EDPTR:  DW 0
+EDINPUT:DS 6
+EDCOPY: DS 64
+
 TITLE:  DB 'BetterCP/M 2.2 CONFIG version 1.00',0
 MAINMSG:DB 'Configuration options:',13,10,13,10
         DB '[ A ] System device assignments',13,10
@@ -420,7 +738,8 @@ MAINMSG:DB 'Configuration options:',13,10,13,10
         DB '[ F ] Disk drive definitions',13,10
         DB '[ G ] Disk format definitions',13,10
         DB '[ H ] Save current configuration on disk (SYSGEN)',13,10,13,10
-        DB 'Select [ A - H ], or BREAK (^C) to exit.',13,10,0
+        DB '[ I ] Create or edit a disk format',13,10,13,10
+        DB 'Select [ A - I ], or BREAK (^C) to exit.',13,10,0
 NOTYET: DB 'Feature not yet implemented.',13,10,0
 PHYHEAD:DB 'Disk drive selections',0
 PHLABEL:DB 'Physical disk drive ',0

@@ -723,9 +723,12 @@ UB_SEARCH:
 
 ; Return A=slot and HL=entry for the next configured match. NZ means end/error.
 UB_ITER:
-        LD      A,(UB_ITPOS)
-        SRL     A
-        SRL     A
+        LD      HL,(UB_ITPOS)
+        SRL     H
+        RR      L
+        SRL     H
+        RR      L
+        LD      A,L
         CALL    UB_DIRLOAD
         JP      NZ,UB_ITDONE
         LD      A,(UB_ITPOS)
@@ -796,9 +799,11 @@ UB_ITFOUND:
         LD      A,(UB_ITPOS)
         AND     3
         LD      (UB_ITRET),A
-        LD      A,(UB_ITPOS)
-        INC     A
-        LD      (UB_ITPOS),A
+        PUSH    HL
+        LD      HL,(UB_ITPOS)
+        INC     HL
+        LD      (UB_ITPOS),HL
+        POP     HL
         LD      A,(UB_ITRET)
         OR      A               ; preserve slot and clear carry
         RET
@@ -810,9 +815,11 @@ UB_IALIVE:
 UB_ITMISS:
         POP     HL
 UB_ITADV:
-        LD      A,(UB_ITPOS)
-        INC     A
-        LD      (UB_ITPOS),A
+        PUSH    HL
+        LD      HL,(UB_ITPOS)
+        INC     HL
+        LD      (UB_ITPOS),HL
+        POP     HL
         JP      UB_ITER
 UB_ITDONE:
         LD      A,0FFH
@@ -828,6 +835,7 @@ UB_ITINIT:
         LD      (UB_ITUSER),A
         XOR     A
         LD      (UB_ITPOS),A
+        LD      (UB_ITPOS+1),A
         LD      A,C
         LD      (UB_ITLEN),A
         RET
@@ -1785,6 +1793,7 @@ UB_ALCLR:
         LD      (UB_ITMODE),A
         XOR     A
         LD      (UB_ITPOS),A
+        LD      (UB_ITPOS+1),A
 UB_ALSCAN:
         CALL    UB_ITER
         JR      C,UB_ALDONE
@@ -1814,11 +1823,11 @@ UB_ALNEXT:
         DJNZ    UB_ALLP
         JR      UB_ALSCAN
 UB_ALDONE:
-        LD      A,(UB_DPBC+7)
-        INC     A
-        LD      B,A
-        LD      A,(UB_ITPOS)
-        CP      B
+        LD      HL,(UB_DPBC+7)
+        INC     HL
+        LD      DE,(UB_ITPOS)
+        OR      A
+        SBC     HL,DE
         JR      Z,UB_ALOK       ; only actual directory exhaustion is successful
         LD      A,1
         OR      A
@@ -1964,13 +1973,17 @@ UB_DIRBAD:
         OR      A
         RET
 
-; B=ceil((DRM+1)/4), constrained to the CP/M 2.2 8-bit search continuation.
+; Directory sectors, not entries, fit in one byte for the FDF catalogue.
+; 07-Sep-2026: an 8-bit ENTRY cursor wrapped at entry 256. Keep the
+; complete entry number; the same 128-byte buffer still serves every size.
 UB_DIRCOUNT:
-        LD      A,(UB_DPBC+7)   ; DRM low; CP/M Search continuation is 8-bit
-        ADD     A,4
-        SRL     A
-        SRL     A
-        LD      B,A
+        LD      HL,(UB_DPBC+7)
+        INC     HL
+        SRL     H
+        RR      L
+        SRL     H
+        RR      L
+        LD      B,L
         RET
 
 ; Position BIOS at directory record C through the same logical-record engine
@@ -2033,7 +2046,7 @@ UB_CTXDRV:      DB      0
 UB_DPH:         DW      0
 UB_ITFCB:       DW      0
 UB_ITUSER:      DB      0
-UB_ITPOS:       DB      0       ; packed directory entry index (record*4+slot)
+UB_ITPOS:       DW      0       ; packed directory entry index (record*4+slot)
 UB_ITRET:       DB      0
 UB_ITLEN:       DB      0
 UB_ITMODE:      DB      0       ; zero=used match, one=deleted/free entry

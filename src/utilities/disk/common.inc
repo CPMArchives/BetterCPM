@@ -226,7 +226,12 @@ DONE:   JP 0
 
 ; Read DISK.FDF on the current drive, with A: as the fallback.
 ; A bounded RAM copy permits paging both ways without reopening the disk.
-FLOAD:  LD HL,FDFCB+12
+FLOAD:  LD HL,BUILTINS
+        LD DE,FDFRAM
+        LD BC,BUILTINEND-BUILTINS
+        LDIR
+        LD (FPOS),DE
+  LD HL,FDFCB+12
         LD DE,FDFCB+13
         LD BC,23
         LD (HL),0
@@ -243,7 +248,7 @@ FLOAD:  LD HL,FDFCB+12
         CALL BDOS
         CP 0FFH
         JP Z,FMISSING
-FOPEN:  LD HL,FDFRAM
+FOPEN:  LD HL,(FPOS)
 FREAD:  LD (FPOS),HL
         EX DE,HL
         LD C,26
@@ -307,8 +312,7 @@ FREADY: LD A,(FCOUNT)
         OR A
         JP Z,FBAD
         RET
-FMISSING:LD HL,FNOMSG
-        JP FATAL
+FMISSING:JP FEND       ; the assembled MM definitions need no FDF file
 FBAD:   LD HL,FBADMSG
         JP FATAL
 ; A = catalogue index -> HL = descriptive name.
@@ -497,11 +501,11 @@ CHMSG:  DB 'Your choice: [',0
 LBRACK: DB '[ ',0
 RBRACK: DB ' ] ',0
 ERRMSG: DB 'Invalid or unsupported setting; no change made.',13,10,0
-ABIMSG: DB 'Requires BetterCP/M disk BIOS ABI 2 (four drives).',13,10,0
+ABIMSG: DB 'Requires BetterCP/M disk BIOS ABI 3 (four drives).',13,10,0
 SMALLMSG:DB 'Not enough transient memory (42K required).',13,10,0
 FNOMSG: DB 'Cannot open DISK.FDF on current drive or A:.',13,10,0
 FBADMSG:DB 'DISK.FDF is empty, unreadable or too large.',13,10,0
-MAGIC:  DB 'BDCF',2,4,4,64
+MAGIC:  DB 'BDCF',3,4,4,64
 CUSTOM: DB 'Current BIOS format (not listed in DISK.FDF)',0
 UNDEF:  DB 'Undefined disk drive',0
 WIDTHS: DB 2,1,1,1,2,2,1,1,2,2,1,1,1,1
@@ -523,3 +527,5 @@ NDIGIT: DB 0
 DIGIT:  DB 0
 
 HASREV: DB 0
+
+        INCLUDE disk/builtins.inc

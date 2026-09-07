@@ -1,20 +1,21 @@
 # CONFIG.COM and DUP.COM
 
 The version 1.00 utilities are ordinary transient programs. They require
-BetterCP/M disk ABI 2, four logical drives, and at least 42 KiB of available
+BetterCP/M disk ABI 3, four logical drives, and at least 42 KiB of available
 transient address space. They add no resident allocation: maximum TPA remains
 54,273 bytes when no RSXs are installed.
 
 Run `CONFIG` or `DUP` at the command prompt. Keep `DISK.FDF` on the current
 drive or A:. The utilities load its text at run time; they do not translate
 through cpmtools diskdefs. The shipped, unmodified catalogue has 96 entries.
-The eight MM built-in menu formats are not additional entries in this file.
+Sixteen recovered MM built-in formats precede those entries, giving 112 choices.
+The built-ins remain available when DISK.FDF is missing.
 An existing BIOS binding not found in the file is identified as an unlisted
 current BIOS format rather than assigned a guessed name.
 
 ## CONFIG
 
-The main menu retains the MM letter assignments. F and G are implemented;
+The main menu retains the MM letter assignments. F, G and I are implemented;
 A–E and H explicitly report “Feature not yet implemented.” Changes take effect
 immediately and survive warm boot. Saving them with SYSGEN is not implemented;
 cold boot reloads the installed configuration.
@@ -44,17 +45,23 @@ specific drive. B and C may have different formats on the same physical drive.
 The BIOS remains the final validator; rejected changes leave the binding intact.
 A's system binding is protected.
 
-A format can fail for two different reasons. An unsupported layout (for
-example Archives Model III with 320 directory entries, or a special side-order
-flag) exceeds the reconstructed BIOS's implementation. An otherwise supported
-format can also exceed a particular drive's configured tracks or sides. CONFIG
-uses separate messages for these cases. Showing all catalogue entries does not
-claim that every entry is supported.
+I opens the format workbench. It copies a B-D binding for editing, including
+DPB words, geometry, flags, sector IDs and individual sizes. Q applies the
+complete working copy; Ctrl-C discards it. The first version exposes dependent
+parameters explicitly, without automatic capacity calculations or named-file
+saving. See [workbench details](../engineering/FORMAT-WORKBENCH.md).
+
+An incompatible format can exceed hardware capabilities or fail BIOS consistency
+checks. The compiled validator now accepts 107 of 112 catalogue definitions;
+five source inconsistencies remain under investigation. This count is validation
+coverage, not verification of 107 physical formats. Optional FDF.RSX provides
+extended ordering and mixed-size mapping. Load it before assigning such formats;
+unloading it detaches dependent B-D bindings and restores its TPA allocation.
 
 ## DUP
 
 A formats a disk using the selected logical drive's current BIOS binding.
-Use CONFIG G first to choose another format. DUP displays the logical drive,
+Use CONFIG G or I first to choose another format. DUP displays the logical drive,
 physical target, and known format name, then requires Y before writing.
 Any other response cancels. Physical drive 0 is protected, including aliases.
 
@@ -80,7 +87,7 @@ contract, so it is not an assertion of support for every possible controller.
 build includes them and DISK.FDF in the boot image automatically.
 
 `python3 tools/test_disk_utilities.py` checks the assembly parser against all
-96 records and verifies paging, inverse headings, placeholders and exits.
+112 records and verifies paging, inverse headings, placeholders and exits.
 Additional `settings`, `format`, and `reject` arguments run the corresponding
 emulator scenarios. Every run uses private disk copies. Screen captures are
 retained under `build/test-results/disk-utilities/`.
@@ -103,3 +110,6 @@ is documented in the [Tandy Model 4 technical reference](https://www.vintagecomp
 The regression verifies all 40 requested tracks, their sector IDs, ID/data
 CRCs and erased payloads; untargeted tracks and the system image stay identical.
 This is a target I/O fix, not a change to the portable memory arrangement.
+
+The current control overlay occupies 1024 bytes; the 916-byte figure above
+records the earlier formatting regression fix. Current BIOS implementation is 1.6.

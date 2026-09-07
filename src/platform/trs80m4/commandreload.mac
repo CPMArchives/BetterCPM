@@ -36,6 +36,12 @@ CRSTART:
         JP      CRBODY
 CRBODY:
         LD      SP,CRSTKTOP
+; 07-Sep-2026 -- a BIOS caller may leave another physical drive selected
+; without changing BDOS's cached A: context. Do not reload BASIC.CPX from
+; that drive using A:'s old DPB. Invalidate before the first file lookup.
+        LD      DE,0FFFFH
+        LD      C,37
+        CALL    LY_BDOS
         LD      C,0
         CALL    DIRLOGIN        ; protected file services precede CCP/CPX load
         JP      NZ,CRFAIL

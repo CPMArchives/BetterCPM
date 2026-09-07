@@ -7,6 +7,8 @@ import struct
 import subprocess
 import tempfile
 from build_ccp import assemble
+from build_disk_utilities import builtin_source
+import json
 from build_trs80_boot import install
 from build_montezuma_extended_790k import crc16
 from run_trs80_command import DEFAULT_EMULATOR, key_args
@@ -31,14 +33,19 @@ def db(data):
     return '\n'.join('        DB '+','.join(map(str,data[i:i+16])) for i in range(0,len(data),16))
 
 def make_probe(work):
-    rows=records()
+    rows=[]
+    for f in json.loads((ROOT/'metadata/mm-builtin-formats.json').read_text())['formats']:
+        p=f['parameters']
+        binding=b'\0'+struct.pack('<HBBBHHBBHH',*p[:10])+bytes((p[12],p[10],p[11],p[13]))+bytes(f['sector_ids']).ljust(32,b'\0')+bytes(12)
+        rows.append((f['name'],binding))
+    rows+=records()
     text='''        ASEG
         ORG 100H
         LD SP,4000H
         CALL INIT
         CALL FLOAD
         LD A,(FCOUNT)
-        CP 96
+        CP 112
         JP NZ,TFAIL
         LD HL,EXPECTED
         LD (EXPECT),HL
@@ -60,7 +67,7 @@ TCMP:   LD A,(DE)
         LD A,(INDEX)
         INC A
         LD (INDEX),A
-        CP 96
+        CP 112
         JR NZ,TLOOP
         LD HL,BROKEN
         LD (FINDEX),HL
@@ -76,14 +83,14 @@ TFAIL:  LD HL,FAILMSG
         LD A,(INDEX)
         CALL DECOUT
         JP TWAIT
-PASSMSG:DB 'ALL 96 FDF RECORDS PASS; OVERFLOW REJECTED',13,10,0
+PASSMSG:DB 'ALL 112 FORMAT RECORDS PASS; OVERFLOW REJECTED',13,10,0
 FAILMSG:DB 'FDF PARSER FAIL at ',0
 INDEX:  DB 0
 EXPECT: DW 0
 BROKEN: DB 'Bad',13,10,'65536,3,7,0,170,63,192,0,16,2,9,2,40,128',13,10
         DB '1,4,7,2,5,8,3,6,9',13,10,26
 EXPECTED:
-'''+db(b''.join(b for _,b in rows))+'\n'+(ROOT/'src/utilities/disk/common.inc').read_text()+'\n        END\n'
+'''+db(b''.join(b for _,b in rows))+'\n'+(ROOT/'src/utilities/disk/common.inc').read_text().replace('        INCLUDE disk/builtins.inc',builtin_source())+'\n        END\n'
     path=work/'FDFTEST.COM'
     assemble(Path.home()/'bin/z80asm',text,path,work/'probe.lst',0x100)
     return path
@@ -162,14 +169,14 @@ def check_image(path, original, cylinders=40):
 
 
 def format_test(work):
-    steps=[('CONFIG\r',6000),('G',700),('B',700),('\r',700),('1',1200),
+    steps=[('CONFIG\r',6000),('G',700),('B',700),('.',700),('\r',700),('1',1200),
            ('\r',700),('\x03',700),('\x03',4000),('DUP\r',6000),('A',700),
            ('B',1000),('N',700),('A',700),('B',1000),('Y',25000),
            ('\r',700),('\x03',4000)]
     screens,w,image=run(work,'format',steps)
-    assert 'Disk configuration changed' in screens[4][0],screens[4][0]
-    assert 'Access Matrix' in screens[10][0],screens[10][0]
-    assert 'Format complete.' in screens[14][0],screens[14][0]
+    assert 'Disk configuration changed' in screens[5][0],screens[5][0]
+    assert 'Access Matrix' in screens[11][0],screens[11][0]
+    assert 'Format complete.' in screens[15][0],screens[15][0]
     assert 'A0>' in screens[-1][0],screens[-1][0]
     check_image(w/'b.dmk',image)
     print('PASS: configured FDF format, confirmation, all 40 tracks erased, other tracks and system disk unchanged, exit',flush=True)
@@ -190,7 +197,7 @@ def settings_probe(work):
         "OK: DB 'DRIVE SETTINGS AND ALIASES PASS',13,10,0",
         "BAD: DB 'DRIVE SETTINGS OR ALIASES FAIL',13,10,0"]
     for i,(_,_,data) in enumerate(expected): code += [f'EXP{i}:',db(data)]
-    code += [(ROOT/'src/utilities/disk/common.inc').read_text(),'        END']
+    code += [(ROOT/'src/utilities/disk/common.inc').read_text().replace('        INCLUDE disk/builtins.inc',builtin_source()),'        END']
     path=work/'CFGTEST.COM'
     assemble(Path.home()/'bin/z80asm','\n'.join(code),path,work/'settings.lst',0x100)
     return path
@@ -198,10 +205,10 @@ def settings_probe(work):
 
 def settings_test(work):
     probe=settings_probe(work)
-    steps=[('CONFIG\r',6000),('G',700),('B',700),('A',700),('1',1200),
+    steps=[('CONFIG\r',6000),('G',700),('B',700),('.',700),('A',700),('1',1200),
         ('\r',700),('\x03',700),('F',700),('B',700),('B',700),('B',1000),
         ('C',700),('1\r',1000),('D',700),('B',1000),('E',700),('3\r',1000),
-        ('F',700),('20\r',1000),('\x03',700),('\x03',700),('G',700),('C',700),
+        ('F',700),('20\r',1000),('\x03',700),('\x03',700),('G',700),('C',700),('.',700),
         ('F',700),('1',1200),('\r',700),('\x03',700),('\x03',4000),('CFGTEST\r',5000)]
     screens,w,image=run(work,'settings',steps,[(probe.name,probe.read_bytes())])
     assert 'DRIVE SETTINGS AND ALIASES PASS' in screens[-1][0],screens[-1][0]
@@ -210,13 +217,13 @@ def settings_test(work):
 
 
 def reject_test(work):
-    steps=[('CONFIG\r',6000),('G',700),('A',700),('\r',700),('B',700),('I',700),
-        ('\r',700),('\x03',700),('\x03',700),('\x03',4000),
+    steps=[('CONFIG\r',6000),('G',700),('A',700),('\r',700),('B',700),('M',700),
+        ('1',1000),('\r',700),('\x03',700),('\x03',4000),
         ('DUP\r',6000),('A',700),('A',700),('\r',700),('A',700),('B',1000),
         ('N',700),('\x03',4000)]
     screens,w,image=run(work,'reject',steps)
     assert 'binding is protected' in screens[2][0],screens[2][0]
-    assert 'BIOS support for this definition is not implemented' in screens[5][0],screens[5][0]
+    assert 'Invalid or unsupported setting' in screens[6][0],screens[6][0]
     assert 'protected system disk' in screens[12][0],screens[12][0]
     assert 'Format this disk?' in screens[15][0],screens[15][0]
     assert 'A0>' in screens[-1][0],screens[-1][0]
@@ -229,16 +236,16 @@ def main():
         work=Path(tmp)
         probe=make_probe(work)
         screens,_,_=run(work,'parser',[('FDFTEST\r',6000)],[(probe.name,probe.read_bytes())])
-        assert 'ALL 96 FDF RECORDS PASS' in screens[0][0],screens[0][0]
-        print('PASS: assembly parser matches all 96 FDF definitions and rejects overflow',flush=True)
+        assert 'ALL 112 FORMAT RECORDS PASS' in screens[0][0],screens[0][0]
+        print('PASS: assembly parser matches 16 built-ins plus 96 FDF definitions and rejects overflow',flush=True)
         screens,_,_=run(work,'menus',[('CONFIG\r',6000),('G',1000),('B',1000),
             ('.',1000),(',',1000),('>',1000),('<',1000),('\x03',1000),
             ('\x03',1000),('\x03',4000),('DUP\r',6000),('B',1000),
             ('\r',1000),('C',1000),('\r',1000),('\x03',4000)])
         page=screens[2][0]
         for i in range(16): assert '[ '+chr(65+i)+' ]' in page,page
-        assert 'Access Matrix' in page,page
-        assert 'California Computer Systems' in screens[3][0],screens[3][0]
+        assert 'Montezuma Micro Standard SYSTEM' in page,page
+        assert 'Access Matrix' in screens[3][0],screens[3][0]
         assert screens[2]==screens[4]==screens[6],'paging failed to restore first page'
         assert screens[3]==screens[5],'shifted next-page key differs from period'
         assert all(c&128 for c in screens[2][1][:79]),'heading is not reverse video'
