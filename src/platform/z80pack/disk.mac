@@ -165,8 +165,9 @@ Z_RETURN:
         POP IX
         OR A
         RET
-Z_INFO: DB 'BDCF',3,4,4,64
+Z_INFO: DB 'BDCF',5,4,4,64
         DW Z_PHYSICAL,LY_TAB
+        DW 0,0              ; no physical buffer or cached-format entry
 Z_PHYSICAL:
         REPT 4
         DB 8,77,1,0,0,0

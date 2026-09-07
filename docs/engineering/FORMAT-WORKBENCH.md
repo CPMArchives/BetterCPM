@@ -18,8 +18,8 @@ or inconsistent definitions before installing them.
 
 After applying a definition, exit CONFIG, run DUP, choose A, select the
 logical drive, and confirm formatting. DUP obtains the active BIOS binding;
-it does not reconstruct the format from the catalogue name. Copy and Check
-remain placeholders. A: and physical drive 0 are protected against formatting.
+it does not reconstruct the format from the catalogue name. DUP verifies each track immediately after writing it. Copy and Check use
+the same sector-reading path; see the [DUP guide](../programmers/CONFIG-DUP.md). A: and physical drive 0 are protected against formatting.
 Changes survive utility exits/warm boots, but not a cold boot. Named-file
 saving, capacity calculations, editable gaps, and an easier derived-parameter
 mode remain future work. DISK.FDF is unchanged; no permanent compatibility

@@ -4,6 +4,6 @@ CCP	Command environment	1.0	1.3	completed	CCP-owned stack and disposable warm-bo
 CPX	Command Processor Extension facility	1.0	1.2	completed	On-demand controls; public interface unchanged
 BDOS	Basic Disk Operating System	1.2	1.6	completed	16-bit directory entry traversal; public interface unchanged
 RSX	Resident System Extension facility	1.0	1.2	completed	On-demand manager and stack; active allocation reported in TPA
-BIOS	Basic Input/Output System	1.3	1.6	completed	Disk ABI 3; optional format mapping and per-sector size descriptions
+BIOS	Basic Input/Output System	1.5	1.9	completed	Disk ABI 5; optional transient control-image cache for formatting
 RTC BIOS extension	Optional RTC hardware interface	-	-	planned	Assign conservative initial versions when the interface and first driver are completed
 Extended Services RSX	BetterCP/M extended-services namespace	-	-	planned	Assign separate API and implementation versions when completed

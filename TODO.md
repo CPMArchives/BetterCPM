@@ -132,6 +132,36 @@ directory utility unless it provides genuine additional value.
 
 ## Configuration, installation, and disk formats
 
+### DUP development order
+
+Complete these stages in order:
+
+1. [ ] Finish reliable disk formatting (option A), including validation,
+   failure reporting, and verification of the resulting disk images.
+2. [x] Implement disk copying (option B) and checking disks for errors (option C),
+   sharing the formatter's verification path and restoring temporary destination
+   configuration. Continue broader media/platform qualification with formatting.
+3. [ ] Stabilize the current CONFIG/DUP work, then implement CONFIG option H
+   (SYSGEN) to save configuration and install a verified bootable system.
+4. [ ] After DUP and CONFIG H are complete, discuss which remaining settings
+   belong in a modern CP/M implementation before implementing more CONFIG
+   menus. Review MM's settings as a reference: retain useful portable settings,
+   identify hardware/driver-specific settings, and consider retiring obsolete
+   ones. MM parity means the agreed useful capabilities, not blindly cloning
+   every historical setting. Verify implemented behavior against that scope.
+5. [ ] Reconsider a disk editor only after that parity work. Physical-sector
+   and logical-record views, hex/ASCII display, and explicit edit/write actions
+   remain possible later enhancements.
+
+Command-line configuration is a design consideration for scripted setups.
+Use the same parameter validation and application routines as the menus, with
+unambiguous errors and completion status. Define command syntax, runtime versus
+saved settings, and explicit authorization of system-disk writes before treating
+the scripting interface as stable; no syntax is committed yet.
+
+Format selection within DUP and the division of format-editing functions
+between CONFIG and DUP remain design considerations for the formatting work.
+
 - [ ] Implement BetterCP/M `CONFIG` with saved RSX and CPX profiles, default
   drive/user state, logical-device assignments, disk-format presets, and
   field-level drive-parameter editing.

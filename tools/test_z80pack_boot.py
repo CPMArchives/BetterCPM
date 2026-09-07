@@ -91,6 +91,8 @@ BUFFER: DS 128
 '''
   probe=assemble(Path.home()/'bin/z80asm',source,w/'IOTEST.COM',w/'probe.lst',0x100)
   subprocess.run(['cpmcp','-T','raw','-f','bettercpm-z80pack-system',str(w/'disks/drivea.dsk'),str(w/'IOTEST.COM'),'0:IOTEST.COM'],cwd=w,check=True)
+  target=w/'disks/drivec.dsk'
+  raw=bytearray(target.read_bytes());raw[-128:]=b'\x5a'*128;target.write_bytes(raw)
   simulator=Path.home()/'CPM/z80pack/cpmsim/cpmsim'
   # Tcl receives paths as positional arguments, so shell metacharacters are
   # not interpreted. Every wait is bounded; no user's mounted media is used.
@@ -118,6 +120,39 @@ expect {
  timeout {exit 1}
 }
 prompt
+send -- "DUP\\r"
+expect -exact "Your choice:"
+send -- "B"
+expect -exact "Source logical drive"
+expect -exact "Your choice:"
+send -- "B"
+expect -exact "Destination logical drive"
+expect -exact "Your choice:"
+send -- "C"
+expect -exact {[Y/N]}
+send -- "Y"
+expect -exact "Copy complete; destination verified."
+expect -exact "Push ENTER for menu."
+send -- "\\r"
+expect -exact "Your choice:"
+send -- "C"
+expect -exact "Choose logical drive"
+expect -exact "Your choice:"
+send -- "C"
+expect -exact "Unreadable sectors: 00000"
+expect -exact "Push ENTER for menu."
+send -- "\\r"
+expect -exact "Your choice:"
+send -- "C"
+expect -exact "Choose logical drive"
+expect -exact "Your choice:"
+send -- "B\\003"
+expect -exact "Check stopped. No disk contents changed."
+expect -exact "Push ENTER for menu."
+send -- "\\r"
+expect -exact "Your choice:"
+send -- "\\003"
+prompt
 send -- "RSX LOAD ECHO\\r"
 prompt
 send -- "RSX LIST\\r"
@@ -136,9 +171,10 @@ expect eof
   run=subprocess.run(['expect',str(w/'test.exp'),str(simulator),str(w/'disks')],cwd=w,env=env,capture_output=True,text=True,timeout=240)
   report=image/'verification.txt';report.write_text(run.stdout+run.stderr)
   if run.returncode:raise AssertionError(f'cpmsim test failed: {report}\n{run.stdout[-1500:]}')
+  assert (w/'disks/driveb.dsk').read_bytes()==(w/'disks/drivec.dsk').read_bytes(), 'DUP missed disk content'
   for letter in 'bcd':
    output=w/(letter+'.dat')
    subprocess.run(['cpmcp','-T','raw','-f','bettercpm-z80pack-data',str(w/f'disks/drive{letter}.dsk'),'0:PROBE.DAT',str(output)],cwd=w,check=True)
    assert output.read_bytes()==bytes(range(128,0,-1)),letter
-  print('PASS: cpmsim disk boot, directory, transient/warm return, file create/write/close/open/read on B-D, RSX load/unload and 53K TPA. cpmtools verifies all three written files.')
+  print('PASS: cpmsim disk boot, directory, transient/warm return, file create/write/close/open/read on B-D, DUP copy/check, RSX load/unload and 53K TPA. cpmtools verifies all three written files.')
 if __name__=='__main__':main()

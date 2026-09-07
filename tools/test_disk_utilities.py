@@ -112,17 +112,17 @@ def keys(text):
         else: args+=key_args(char)
     return args
 
-def run(work,name,steps,extras=()):
+def run(work,name,steps,extras=(),blank=False,timeout=360):
     w=work/name;w.mkdir()
     image=medium(extras)
     (w/'a.dmk').write_bytes(image)
-    (w/'b.dmk').write_bytes(image)
+    (w/'b.dmk').write_bytes(image[:16]+bytes(len(image)-16) if blank else image)
     args=[str(DEFAULT_EMULATOR),'-m4','-batch','-turbo','-d0',str(w/'a.dmk'),
           '-d1',str(w/'b.dmk'),'-id','3000']
     for text,delay in steps:
-        args+=keys(text)+['-id',str(delay),'-it']
+        args+=keys(text)+(['-itime','0','-iw',delay] if isinstance(delay,str) else ['-id',str(delay)])+['-it']
     args+=['-ix']
-    subprocess.run(args,cwd=w,check=True,timeout=360)
+    subprocess.run(args,cwd=w,check=True,timeout=timeout)
     captures=[]
     for p in sorted(w.glob('trs80-text-*.bin'),key=lambda p:int(p.stem.rsplit('-',1)[1])):
         raw=p.read_bytes()[:1920]
@@ -171,7 +171,7 @@ def check_image(path, original, cylinders=40):
 def format_test(work):
     steps=[('CONFIG\r',6000),('G',700),('B',700),('.',700),('\r',700),('1',1200),
            ('\r',700),('\x03',700),('\x03',4000),('DUP\r',6000),('A',700),
-           ('B',1000),('N',700),('A',700),('B',1000),('Y',25000),
+           ('B',1000),('N',700),('A',700),('B',1000),('Y',40000),
            ('\r',700),('\x03',4000)]
     screens,w,image=run(work,'format',steps)
     assert 'Disk configuration changed' in screens[5][0],screens[5][0]
@@ -241,7 +241,7 @@ def main():
         screens,_,_=run(work,'menus',[('CONFIG\r',6000),('G',1000),('B',1000),
             ('.',1000),(',',1000),('>',1000),('<',1000),('\x03',1000),
             ('\x03',1000),('\x03',4000),('DUP\r',6000),('B',1000),
-            ('\r',1000),('C',1000),('\r',1000),('\x03',4000)])
+            ('\x03',1000),('C',1000),('\x03',1000),('\x03',4000)])
         page=screens[2][0]
         for i in range(16): assert '[ '+chr(65+i)+' ]' in page,page
         assert 'Montezuma Micro Standard SYSTEM' in page,page
@@ -250,10 +250,10 @@ def main():
         assert screens[3]==screens[5],'shifted next-page key differs from period'
         assert all(c&128 for c in screens[2][1][:79]),'heading is not reverse video'
         assert 'A0>' in screens[9][0],screens[9][0]
-        assert 'Feature not yet implemented' in screens[11][0],screens[11][0]
-        assert 'Feature not yet implemented' in screens[13][0],screens[13][0]
+        assert 'Source logical drive' in screens[11][0],screens[11][0]
+        assert 'Check a disk for errors' in screens[13][0],screens[13][0]
         assert 'A0>' in screens[15][0],screens[15][0]
-        print('PASS: 16-row menus, both paging key pairs, placeholders and CONFIG/DUP exit',flush=True)
+        print('PASS: 16-row menus, both paging key pairs, copy/check menus and CONFIG/DUP exit',flush=True)
 if __name__=='__main__':
     import sys
     if len(sys.argv)==1: main()

@@ -1,12 +1,57 @@
 ; DUP -- BetterCP/M Disk Utility Program, 07-Sep-2026.
 ; FORMAT uses the selected BIOS binding. CONFIG supplies that binding
-; from DISK.FDF. Copy and Check await their own implementation.
+; from DISK.FDF. The track walker is shared by Format, Copy and Check.
+; 07-Sep-2026: keep the disk work transient; no new resident buffers.
         ASEG
         ORG 0100H
         LD SP,04000H
         CALL INIT
+        LD B,0
+        CALL API
+        LD DE,12
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD (PHYBUF),DE
+        INC HL
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD (FASTFMT),DE
+        LD HL,(6)
+        LD DE,0CD00H
+        OR A
+        SBC HL,DE
+        JP C,DSMALL
+        LD HL,(1)            ; CP/M page zero points at the WBOOT vector
+        DEC HL
+        DEC HL
+        DEC HL
+        LD (BIOBASE),HL
         CALL FLOAD
-DMAIN:  LD HL,DTITLE
+; MM kept the formatter at hand. Save our adapter's control image once,
+; instead of visiting drive A and restoring the head on every track.
+        LD HL,(FASTFMT)
+        LD A,H
+        OR L
+        JR Z,DMAIN
+        XOR A
+        LD (REQ),A
+        LD DE,REQ
+        LD B,3              ; GET LOGICAL leaves the control image available
+        CALL API
+        JR Z,DSAVE
+        CALL ERROR
+        JP DONE             ; never enter the menu with an unfilled code cache
+DSAVE:  LD HL,(PHYBUF)
+        LD DE,CTRLBUF
+        LD BC,1024
+        LDIR
+DMAIN:  LD SP,04000H
+        CALL CLEANUP
+        JP NZ,RESTFAIL
+        LD HL,DTITLE
         CALL HEADER
         LD HL,DMENU
         CALL PUTS
@@ -16,14 +61,13 @@ DMAIN:  LD HL,DTITLE
         CP 'A'
         JP Z,DFORMAT
         CP 'B'
-        JR Z,DNOTYET
+        JP Z,DCOPY
         CP 'C'
-        JP NZ,DMAIN
-DNOTYET:LD HL,NOTYET
-        CALL PUTS
-        CALL PAUSE
+        JP Z,DCHECK
         JP DMAIN
-DFORMAT:LD HL,DFHEAD
+DFORMAT:XOR A
+        LD (MODE),A
+        LD HL,DFHEAD
         CALL HEADER
         LD HL,DFASK
         CALL PUTS
@@ -85,6 +129,8 @@ DFKNOWN:
         XOR A
         LD (DCYL),A
         LD (DSIDE),A
+        LD HL,0
+        LD (VERIFIED),HL
 ; Build and check track capacity BEFORE asking permission to erase.
         CALL STREAM
         JP C,DUNSUP
@@ -94,39 +140,25 @@ DFKNOWN:
         CP 'Y'
         JP NZ,DMAIN
 DTRACK: LD HL,PROGRESS
-        CALL PUTS
-        LD A,(DCYL)
-        CALL DECOUT
-        LD HL,SIDEMSG
-        CALL PUTS
-        LD A,(DSIDE)
-        CALL DECOUT
+        CALL FPROGRESS
         CALL STREAM
         JP C,DUNSUP
-        LD A,(DLOG)
-        LD (REQ),A
-        LD A,(DCYL)
-        LD (REQ+1),A
-        LD A,(DSIDE)
-        LD (REQ+2),A
-        LD HL,(STRPTR)
-        LD DE,TRACKBF
-        OR A
-        SBC HL,DE
-        LD (REQ+3),HL
-        LD HL,TRACKBF
-        LD (REQ+5),HL
-        LD DE,REQ
-        LD B,5
-        CALL API
+        CALL WRTRACK
         JP NZ,DIOERR
-        LD C,6
-        LD E,0FFH
-        CALL BDOS
-        CP 3
+        LD HL,VPROGRESS
+        CALL FPROGRESS
+        CALL TRACKPOS
+        LD A,1              ; read and compare with erased E5 records
+        LD (PASSMODE),A
+        CALL WALK
+        JP NZ,DABORT
+        LD HL,(VERIFIED)
+        INC HL
+        LD (VERIFIED),HL
+        CALL BREAKCK
         JP Z,DABORT
         LD A,(CURB+19)
-        AND 040H
+        AND 060H
         JR Z,DCYLIN
         LD A,(DSIDE)
         XOR 1
@@ -139,8 +171,27 @@ DCYLIN: LD A,(DCYL)
         LD A,(CURB+16)
         CP B
         JP NZ,DTRACK
+; Never report success merely because the cylinder loop ended. Account
+; separately for every successfully verified physical surface.
+        LD A,(CURB+16)
+        LD E,A
+        LD D,0
+        LD A,(CURB+19)
+        AND 060H
+        JR Z,FCOUNTEND
+        SLA E
+        RL D
+FCOUNTEND:LD HL,(VERIFIED)
+        OR A
+        SBC HL,DE
+        JP NZ,DABORT
         LD C,13
         CALL BDOS
+        LD HL,VCOUNTMSG
+        CALL PUTS
+        LD HL,(VERIFIED)
+        CALL WORDOUT
+        CALL CRLF
         LD HL,COMPLETE
         JR DREPORT
 DPROTECT:LD HL,PROTECTED
@@ -149,25 +200,827 @@ DUNSUP: LD HL,UNSUPPORTED
         JR DREPORT
 DABORT: LD HL,ABORTMSG
         JR DREPORT
-DIOERR: PUSH AF
+DIOERR: LD (STATUS),A
+        CALL CLEANUP
+        JP NZ,RESTFAIL
         LD HL,IOERR
         CALL PUTS
-        POP AF
+        LD A,(STATUS)
         CALL DECOUT
+        CALL WHYERR
+        CALL CRLF
+        CALL LOCATION
         CALL CRLF
         CALL PAUSE
         JP DMAIN
 DERR:   CALL ERROR
         JP DMAIN
-DREPORT:CALL PUTS
+DREPORT:PUSH HL
+        CALL CLEANUP
+        POP HL
+        JP NZ,RESTFAIL
+        CALL PUTS
         CALL PAUSE
         JP DMAIN
+
+; Common exit housekeeping. No warm boot is allowed to strand a temporary
+; binding. Restore through the checked setter, then forget all alias caches.
+CLEANUP:LD A,(CHANGED)
+        OR A
+        JR Z,CLRESET
+        LD HL,SAVED
+        LD DE,REQ+1
+        LD BC,64
+        LDIR
+        LD A,(DEST)
+        LD (REQ),A
+; Normalized cylinder-SPT records carry an internal bit. The setter will
+; reconstruct it from SPT with FDF loaded; callers must not submit it.
+        LD A,(REQ+20)
+        AND 0DFH
+        LD (REQ+20),A
+        LD DE,REQ
+        LD B,4
+        CALL API
+        RET NZ
+        XOR A
+        LD (CHANGED),A
+        LD HL,RESTORED
+        CALL PUTS
+CLRESET:LD DE,0FFFFH
+        LD C,37
+        CALL BDOS
+        XOR A
+        RET
+RESTFAIL:LD HL,RESTBAD
+        CALL PUTS
+        CALL PAUSE
+        JP DMAIN             ; retain saved record and retry, never claim success
+
+; Select a logical binding without logging in its filesystem. Reserved
+; tracks and deleted directory entries belong to a disk copy too.
+GETBIND:LD (REQ),A
+        LD DE,REQ
+        LD B,3
+        CALL API
+        RET NZ
+        LD A,(REQ+1)
+        CP 4
+        JR NC,GETBAD
+        LD HL,REQ+1
+        LD DE,CURB
+        LD BC,64
+        LDIR
+        XOR A
+        RET
+GETBAD: LD A,1
+        OR A
+        RET
+ASKDRV: CALL PUTS
+        CALL CHOICE
+        CP 3
+        JR Z,ASKBAD
+        SUB 'A'
+        CP 4
+        JR NC,ASKBAD
+        OR A
+        RET
+ASKBAD: LD A,0FFH
+        RET
+DCHECK: LD A,2
+        LD (MODE),A
+        LD HL,CHEAD
+        CALL HEADER
+        LD HL,DFASK
+        CALL ASKDRV
+        CP 0FFH
+        JP Z,DMAIN
+        LD (DLOG),A
+        CALL GETBIND
+        JP NZ,DERR
+        CALL STARTDISK
+CHECKLP:CALL TRACKPOS
+        CALL LOCATION
+        XOR A
+        LD (PASSMODE),A
+        CALL WALK
+        JP NZ,STOPPED
+        CALL NEXTSIDE
+        JR NZ,CHECKLP
+        LD HL,CHECKDONE
+        CALL PUTS
+        LD HL,(ERRORS)
+        CALL WORDOUT
+        CALL CRLF
+        LD HL,WAITEND
+        JP DREPORT
+
+DCOPY:  LD A,3
+        LD (MODE),A
+        LD HL,BHEAD
+        CALL HEADER
+        LD HL,SRCASK
+        CALL ASKDRV
+        CP 0FFH
+        JP Z,DMAIN
+        LD (SOURCE),A
+        LD (DLOG),A
+        CALL GETBIND
+        JP NZ,DERR
+        LD HL,DSTASK
+        CALL ASKDRV
+        CP 0FFH
+        JP Z,DMAIN
+        LD (DEST),A
+        LD (REQ),A
+        LD B,3
+        LD DE,REQ
+        CALL API
+        JP NZ,DERR
+        LD A,(REQ+1)
+        OR A
+        JP Z,DPROTECT
+        CP 4
+        JP NC,DERR
+        LD B,A
+        LD A,(CURB)
+        CP B
+        JP Z,SAMEFAIL
+        LD HL,REQ+1
+        LD DE,SAVED
+        LD BC,64
+        LDIR
+        LD HL,CURB
+        LD DE,TARGET
+        LD BC,64
+        LDIR
+        LD A,(SAVED)
+        LD (TARGET),A
+; Bootstrap A counts cylinders. Express its same filesystem in surface
+; tracks for the ordinary destination setter (SPT/2, OFF*2).
+        LD A,(TARGET+19)
+        BIT 5,A
+        JR Z,CPCOMP
+        AND 0DFH
+        OR 040H
+        LD (TARGET+19),A
+        LD HL,(TARGET+1)
+        SRL H
+        RR L
+        LD (TARGET+1),HL
+        LD HL,(TARGET+14)
+        ADD HL,HL
+        LD (TARGET+14),HL
+CPCOMP: XOR A
+        LD (REFORM),A
+        LD HL,TARGET+1
+        LD DE,SAVED+1
+        LD B,63
+CPCMPL: LD A,(DE)
+        CP (HL)
+        JR NZ,CPDIFF
+        INC HL
+        INC DE
+        DJNZ CPCMPL
+        JR CPCONF
+CPDIFF: LD A,1
+        LD (REFORM),A
+; Validate hardware before any write. A temporary binding is also restored
+; if the operator declines the erase question below.
+        LD HL,TARGET
+        LD DE,REQ+1
+        LD BC,64
+        LDIR
+        LD A,(DEST)
+        LD (REQ),A
+        LD DE,REQ
+        LD B,4
+        CALL API
+        JP NZ,DERR
+        LD A,1
+        LD (CHANGED),A
+        CALL STARTDISK
+        CALL STREAM
+        JP C,DUNSUP
+        LD HL,REFMSG
+        CALL PUTS
+CPCONF: LD HL,CPHMSG
+        CALL PUTS
+        LD A,(CURB)
+        CALL DECOUT
+        LD HL,CPHDEST
+        CALL PUTS
+        LD A,(SAVED)
+        CALL DECOUT
+        CALL CRLF
+        LD HL,COPYWARN
+        CALL PUTS
+        LD A,(SOURCE)
+        ADD A,'A'
+        CALL PUTC
+        LD HL,TODEST
+        CALL PUTS
+        LD A,(DEST)
+        ADD A,'A'
+        CALL PUTC
+        LD HL,COPYASK
+        CALL PUTS
+        CALL KEY
+        CP 'Y'
+        JP NZ,DMAIN
+        CALL CRLF
+        CALL STARTDISK
+        CALL TRACKPOS
+        LD HL,(NRECS)
+        LD DE,65
+        OR A
+        SBC HL,DE
+        JP NC,DUNSUP
+COPYLP: LD A,(SOURCE)
+        LD (DLOG),A
+        CALL TRACKPOS
+        CALL LOCATION
+        LD A,2              ; keep an entire source surface before erasing
+        LD (PASSMODE),A
+        CALL WALK
+        JP NZ,STOPPED
+        LD A,(DEST)
+        LD (DLOG),A
+        LD A,(REFORM)
+        OR A
+        JR Z,CPWRITE
+        CALL STREAM
+        JP C,DUNSUP
+        CALL WRTRACK
+        JP NZ,DIOERR
+        LD A,1
+        LD (PASSMODE),A
+        CALL WALK           ; freshly written track must pass before copying
+        JP NZ,STOPPED
+CPWRITE:LD A,3
+        LD (PASSMODE),A
+        CALL WALK
+        JP NZ,STOPPED
+        LD A,4
+        LD (PASSMODE),A
+        CALL WALK           ; compare destination with buffered source bytes
+        JP NZ,STOPPED
+        CALL NEXTSIDE
+        JP NZ,COPYLP
+        LD HL,COPYDONE
+        JP DREPORT
+SAMEFAIL:LD HL,SAMEMSG
+        JP DREPORT
+STOPPED:LD A,(MODE)
+        CP 2
+        LD HL,CSTOPMSG
+        JP Z,DREPORT
+        LD HL,STOPMSG
+        JP DREPORT
+
+STARTDISK:XOR A
+        LD (DCYL),A
+        LD (DSIDE),A
+        LD HL,0
+        LD (ERRORS),HL
+        RET
+NEXTSIDE:CALL BREAKCK
+        JP Z,STOPPED
+        LD A,(CURB+19)
+        AND 060H
+        JR Z,NSCYL
+        LD A,(DSIDE)
+        XOR 1
+        LD (DSIDE),A
+        OR A
+        RET NZ
+NSCYL:  LD A,(DCYL)
+        INC A
+        LD (DCYL),A
+        LD B,A
+        LD A,(CURB+16)
+        CP B
+        RET
+BREAKCK:LD C,6
+        LD E,0FFH
+        CALL BDOS
+        CP 3
+        RET
+
+; Physical cylinder/side -> logical track and first record. The BIOS then
+; performs the forward mapping, sector skew, inversion and deblocking.
+TRACKPOS:LD HL,(CURB+1)
+        LD A,(CURB+19)
+        AND 020H
+        JR Z,TPREG
+        SRL H
+        RR L
+        LD (NRECS),HL
+        LD A,(DSIDE)
+        OR A
+        JR NZ,TPBASE
+        LD HL,0
+TPBASE: LD (FIRST),HL
+        LD A,(DCYL)
+        LD L,A
+        LD H,0
+        LD (LTRACK),HL
+        RET
+TPREG:  LD (NRECS),HL
+        LD HL,0
+        LD (FIRST),HL
+        LD A,(DCYL)
+        LD B,A
+        LD A,(CURB+19)
+        BIT 6,A
+        JR Z,TPSINGLE
+        BIT 1,A
+        JR NZ,TPSEQ
+        LD A,B
+        ADD A,A
+        LD B,A
+        LD A,(DSIDE)
+        ADD A,B
+        JR TPDONE
+TPSEQ:  LD A,(DSIDE)
+        OR A
+        JR Z,TPSINGLE
+        LD A,(CURB+19)
+        BIT 0,A
+        JR Z,TPFORW
+        LD A,(CURB+16)
+        DEC A
+        SUB B
+        LD B,A
+TPFORW: LD A,(CURB+16)
+        ADD A,B
+        JR TPDONE
+TPSINGLE:LD A,B
+TPDONE: LD L,A
+        LD H,0
+        LD (LTRACK),HL
+        RET
+
+; WALK modes: 0 read only, 1 erased check, 2 source capture, 3 write,
+; 4 copied-data compare. CHECK continues after errors; other callers stop.
+; Each pass reads physical sectors afresh; their 128-byte portions share
+; only the private cache for that pass.
+WALK:   LD HL,0
+        LD (CACHEEND),HL
+        LD (RECNO),HL
+        LD HL,COPYBF
+        LD (CPTR),HL
+WLOOP:  CALL BREAKCK
+        JP Z,WABORT
+        CALL RECORDIO
+        OR A
+        JR NZ,WERROR
+        LD A,(PASSMODE)
+        CP 2
+        JR Z,WCAP
+        CP 1
+        JR Z,WFILL
+        CP 4
+        JP NZ,WNEXT
+        LD HL,(CPTR)
+        LD DE,RECBUF
+        LD B,128
+WCOMPARE:LD A,(DE)
+        CP (HL)
+        JR NZ,WMISMATCH
+        INC HL
+        INC DE
+        DJNZ WCOMPARE
+        JP WNEXT
+WFILL:  LD HL,RECBUF
+        LD B,128
+WFILLL: LD A,(HL)
+        CP 0E5H
+        JR NZ,WMISMATCH
+        INC HL
+        DJNZ WFILLL
+        JP WNEXT
+WCAP:   LD HL,RECBUF
+        LD DE,(CPTR)
+        LD BC,128
+        LDIR
+        JP WNEXT
+WMISMATCH:LD A,0FEH          ; distinct utility compare failure, not FDC status
+WERROR: LD (STATUS),A
+        CALL SECTORLOC
+        CALL LOCATION
+        LD HL,SECMSG
+        CALL PUTS
+        LD A,(DSEC)
+        LD E,A
+        LD D,0
+        LD HL,CURB+20
+        ADD HL,DE
+        LD A,(HL)
+        LD B,A
+        LD A,(CURB+19)
+        BIT 3,A
+        JR Z,WIDOUT
+        LD A,(DSIDE)
+        OR A
+        JR Z,WIDOUT
+        LD A,(CURB+17)
+        ADD A,B
+        LD B,A
+WIDOUT: LD A,B
+        CALL DECOUT
+        LD HL,RECMSG
+        CALL PUTS
+        LD HL,(RECNO)
+        LD A,L
+        CALL DECOUT
+        LD HL,STATUSMSG
+        CALL PUTS
+        LD A,(STATUS)
+        CALL DECOUT
+        CALL WHYERR
+        CALL CRLF
+        LD HL,(ERRORS)
+        INC HL
+        LD (ERRORS),HL
+        LD A,(MODE)
+        CP 2
+        JR NZ,WABORT
+; The rest of a bad physical sector would merely repeat the same error.
+        LD HL,(SECEND)
+        DEC HL
+        LD (RECNO),HL
+WNEXT:  LD HL,(CPTR)
+        LD DE,128
+        ADD HL,DE
+        LD (CPTR),HL
+        LD HL,(RECNO)
+        INC HL
+        LD (RECNO),HL
+        LD DE,(NRECS)
+        OR A
+        SBC HL,DE
+        JP C,WLOOP
+        XOR A
+        RET
+WABORT: LD A,1
+        OR A
+        RET
+
+; Use the standard BIOS vectors discovered at page zero, never fixed
+; machine addresses. Register clobbers are expected at every BIOS call.
+; ABI 4 supplies the complete freshly read sector. Copy it before any
+; console/RSX call can disturb the BIOS workspace. Our private copy uses
+; the idle end of the write-track buffer and expires at every new pass.
+RECORDIO:LD A,(PASSMODE)
+        CP 3
+        JR Z,REALIO
+        LD HL,(PHYBUF)
+        LD A,H
+        OR L
+        JR Z,REALIO
+        LD HL,(RECNO)
+        LD DE,(CACHEEND)
+        OR A
+        SBC HL,DE
+        JR NC,REALIO
+        LD HL,(RECNO)
+        LD DE,(CACHESTART)
+        OR A
+        SBC HL,DE
+        LD H,L
+        LD L,0
+        SRL H
+        RR L
+        LD DE,CACHEBUF
+        ADD HL,DE
+        LD DE,RECBUF
+        LD BC,128
+        LDIR
+        XOR A
+        RET
+REALIO: LD A,(DLOG)
+        LD C,A
+        LD E,0
+        LD A,27
+        CALL BCALL
+        LD A,H
+        OR L
+        JP Z,RIOBAD
+        LD BC,(LTRACK)
+        LD HL,(FIRST)
+; A cylinder-based source can be copied to an equivalent surface-based
+; destination. Only addressing changes; no bytes are translated.
+        LD A,(MODE)
+        CP 3
+        JR NZ,RIOPOS
+        LD A,(DLOG)
+        LD D,A
+        LD A,(DEST)
+        CP D
+        JR NZ,RIOPOS
+        LD A,(CURB+19)
+        BIT 5,A
+        JR Z,RIOPOS
+        SLA C
+        RL B
+        LD A,(DSIDE)
+        ADD A,C
+        LD C,A
+        LD HL,0
+RIOPOS: LD (IOFIRST),HL
+        LD A,30
+        CALL BCALL
+        LD HL,(RECNO)
+        LD DE,(IOFIRST)
+        ADD HL,DE
+        LD B,H
+        LD C,L
+        LD A,33
+        CALL BCALL
+        LD BC,RECBUF
+        LD A,(PASSMODE)
+        CP 3
+        JR NZ,RIODMA
+        LD BC,(CPTR)
+RIODMA: LD A,36
+        CALL BCALL
+        LD A,(PASSMODE)
+        CP 3
+        LD A,39
+        JR NZ,RIOGO
+        LD C,0
+        LD A,42
+RIOGO:  CALL BCALL
+        OR A
+        RET NZ
+        LD A,(PASSMODE)
+        CP 3
+        JR Z,RIOOK
+        LD HL,(PHYBUF)
+        LD A,H
+        OR L
+        JR Z,RIOOK
+        CALL SECTORLOC
+        LD HL,(RECNO)
+        LD (CACHESTART),HL
+        LD HL,(SECEND)
+        LD (CACHEEND),HL
+        LD BC,128
+        LD A,(SSIZE)
+CACHELEN:OR A
+        JR Z,CACHECOPY
+        SLA C
+        RL B
+        DEC A
+        JR CACHELEN
+CACHECOPY:LD HL,(PHYBUF)
+        LD DE,CACHEBUF
+        LDIR
+RIOOK:  XOR A
+        RET
+RIOBAD: LD A,1
+        OR A
+        RET
+BCALL:  LD HL,(BIOBASE)
+        LD E,A
+        LD D,0
+        ADD HL,DE
+        JP (HL)
+LOCATION:LD HL,ATMSG
+        CALL PUTS
+        LD A,(DCYL)
+        CALL DECOUT
+        LD HL,SIDEMSG
+        CALL PUTS
+        LD A,(DSIDE)
+        JP DECOUT
+WRTRACK:LD A,(DLOG)
+        LD (REQ),A
+        LD A,(DCYL)
+        LD (REQ+1),A
+        LD A,(DSIDE)
+        LD (REQ+2),A
+        LD HL,(STRPTR)
+        LD DE,TRACKBF
+        OR A
+        SBC HL,DE
+        LD (REQ+3),HL
+        LD HL,TRACKBF
+        LD (REQ+5),HL
+        LD HL,(FASTFMT)
+        LD A,H
+        OR L
+        JR Z,WRSLOW
+        LD HL,CTRLBUF
+        LD DE,(PHYBUF)
+        LD BC,1024
+        LDIR
+        LD DE,REQ
+        LD HL,(FASTFMT)
+        CALL WRCALL         ; same checked formatter, no system-disk read
+        OR A                ; direct entry returns status; normalize flags
+        RET
+WRCALL: JP (HL)
+WRSLOW: LD DE,REQ
+        LD B,5
+        JP API
+
+ ; Find the physical sector containing RECNO; shared size decoding handles
+; the small last sector of SUPER and arbitrary packed size maps alike.
+SECTORLOC:XOR A
+        LD (DSEC),A
+        LD HL,0
+        LD (SECEND),HL
+SLOC:   CALL GETSIZE
+        LD A,(SSIZE)
+        LD B,A
+        LD HL,1
+        INC B
+SLOCSH: DJNZ SLOCMORE
+        JR SLOCADD
+SLOCMORE:ADD HL,HL
+        JR SLOCSH
+SLOCADD:LD DE,(SECEND)
+        ADD HL,DE
+        LD (SECEND),HL
+        LD DE,(RECNO)
+        OR A
+        SBC HL,DE
+        JR C,SLOCNEXT
+        LD A,H
+        OR L
+        JR Z,SLOCNEXT
+        RET
+SLOCNEXT:LD A,(DSEC)
+        INC A
+        LD (DSEC),A
+        JR SLOC
+SECEND: DW 0
+; Decimal word printer for the final error count.
+WORDOUT:LD DE,10000
+        CALL WDIG
+        LD DE,1000
+        CALL WDIG
+        LD DE,100
+        CALL WDIG
+        LD DE,10
+        CALL WDIG
+        LD A,L
+        ADD A,'0'
+        JP PUTC
+WDIG:   LD A,'0'-1
+WDLOOP: INC A
+        OR A
+        SBC HL,DE
+        JR NC,WDLOOP
+        ADD HL,DE
+        JP PUTC
+
+ ; The numeric code is retained for diagnosis. Status 1 is deliberately
+; described broadly: old adapters merge validation and timeout failures.
+WHYERR: LD HL,EUNKNOWN
+        LD A,(STATUS)
+        CP 1
+        JR Z,ETIME
+        CP 2
+        JR Z,EUNSUP
+        CP 0FEH
+        JR Z,ECOMP
+        BIT 7,A
+        JR NZ,ENREADY
+        BIT 6,A
+        JR NZ,EPROTECT
+        BIT 4,A
+        JR NZ,ENFOUND
+        BIT 3,A
+        JR NZ,ECRC
+        BIT 2,A
+        JR NZ,ELOST
+        JP PUTS
+ETIME:  LD HL,ETIMEM
+        JP PUTS
+EUNSUP: LD HL,EUNSUPM
+        JP PUTS
+ECOMP:  LD HL,ECOMPM
+        JP PUTS
+ENREADY:LD HL,ENREADYM
+        JP PUTS
+EPROTECT:LD HL,EPROTM
+        JP PUTS
+ENFOUND:LD HL,ENFOUNDM
+        JP PUTS
+ECRC:   LD HL,ECRCM
+        JP PUTS
+ELOST:  LD HL,ELOSTM
+        JP PUTS
+EUNKNOWN:DB ' - Disk I/O failed.',0
+ETIMEM: DB ' - Request failed or drive did not respond.',0
+EUNSUPM:DB ' - Unsupported operation or disk address.',0
+ECOMPM: DB ' - Read-back data does not match.',0
+ENREADYM:DB ' - Drive not ready; check inserted disk.',0
+EPROTM: DB ' - Disk is write protected.',0
+ENFOUNDM:DB ' - Sector/track not found; check disk format.',0
+ECRCM:  DB ' - CRC error: sector data could not be read reliably.',0
+ELOSTM: DB ' - Data transfer failed.',0
+
+FPROGRESS:CALL PUTS
+        LD A,(DCYL)
+        CALL DECOUT
+        LD HL,SIDEMSG
+        CALL PUTS
+        LD A,(DSIDE)
+        CALL DECOUT
+        LD HL,PROGPAD
+        JP PUTS
+PROGPAD:DB '                ',0
+VPROGRESS:DB 13,'Verifying  cylinder ',0
+VERIFIED:DW 0
+VCOUNTMSG:DB 13,10,'Tracks written and verified: ',0
+
+DSMALL: LD HL,DMEMMSG
+        CALL PUTS
+        JP DONE
+DMEMMSG:DB 'DUP needs 51K of transient memory.',13,10,0
+CPHMSG: DB 'Physical source: ',0
+CPHDEST:DB '   Physical destination: ',0
+PHYBUF: DW 0
+FASTFMT:DW 0
+CTRLBUF EQU 0C900H
+CACHESTART:DW 0
+CACHEEND:DW 0
+CACHEBUF EQU 0A400H
+RECBUF  EQU 0A800H
+COPYBF  EQU 0A900H
+BIOBASE:DW 0
+MODE:   DB 0
+PASSMODE:DB 0
+CHANGED:DB 0
+REFORM: DB 0
+SOURCE: DB 0
+DEST:   DB 0
+STATUS: DB 0
+LTRACK: DW 0
+FIRST:  DW 0
+IOFIRST:DW 0
+NRECS:  DW 0
+RECNO:  DW 0
+CPTR:   DW 0
+ERRORS: DW 0
+SAVED:  DS 64
+TARGET: DS 64
+CHEAD:  DB 'Check a disk for errors',0
+BHEAD:  DB 'Copy a disk',0
+SRCASK: DB 'Source logical drive [ A - D ], ^C returns.',13,10,0
+DSTASK: DB 'Destination logical drive [ B - D ], ^C returns.',13,10,0
+SAMEMSG:DB 'Source and destination must be different physical drives.',13,10,0
+REFMSG: DB 'Destination format differs. Copy will format it to match the source.',13,10,0
+COPYWARN:DB 'Copy ALL sectors from ',0
+TODEST: DB ' to ',0
+COPYASK:DB '? Destination contents will be erased. [Y/N] ',0
+RESTORED:DB 13,10,'Destination configuration restored. Use CONFIG for the copied format.',13,10,0
+RESTBAD:DB 'Cannot restore destination configuration. Press a key to retry.',13,10,0
+COPYDONE:DB 13,10,'Copy complete; destination verified.',13,10,0
+CHECKDONE:DB 13,10,'Check complete. Unreadable sectors: ',0
+WAITEND:DB 0
+SECMSG: DB ', sector ID ',0
+CSTOPMSG:DB 13,10,'Check stopped. No disk contents changed.',13,10,0
+STOPMSG:DB 13,10,'Operation stopped. Destination may be partly written.',13,10,0
+ATMSG:  DB 13,'Cylinder ',0
+RECMSG: DB ', record ',0
+STATUSMSG:DB ', error status ',0
 
 ; WD WRITE TRACK stream. No controller ports here; BDOS 207 does I/O.
 ; MFM uses F5/F6 sync and F7 CRC tokens. FM uses the controller's
 ; address-mark tokens directly. Data starts erased (E5), inverted only
 ; for formats which specify it. Sector IDs follow the FDF skew order.
 ; STRPTR is bounded on every output. CRC tokens consume two disk bytes.
+GETSIZE:LD A,(CURB+18)
+        LD (SSIZE),A
+        LD A,(CURB+52)
+        OR A
+        RET Z
+        LD A,(DSEC)
+        SRL A
+        SRL A
+        LD E,A
+        LD D,0
+        LD HL,CURB+53
+        ADD HL,DE
+        LD C,(HL)
+        LD A,(DSEC)
+        AND 3
+        LD B,A
+        INC B
+SSPAIR: DJNZ SSNEXT
+        JR SSREADY
+SSNEXT: SRL C
+        SRL C
+        JR SSPAIR
+SSREADY:LD A,C
+        AND 3
+        LD (SSIZE),A
+        RET
 STREAM: LD HL,TRACKBF
         LD (STRPTR),HL
         XOR A
@@ -194,31 +1047,7 @@ STREAM: LD HL,TRACKBF
 SFMHEAD:LD A,0FFH
         LD BC,40
         CALL RUN
-SRECORD:LD A,(CURB+18)
-        LD (SSIZE),A
-        LD A,(CURB+52)
-        OR A
-        JR Z,SWHOLE
-        LD A,(DSEC)
-        SRL A
-        SRL A
-        LD E,A
-        LD D,0
-        LD HL,CURB+53
-        ADD HL,DE
-        LD C,(HL)
-        LD A,(DSEC)
-        AND 3
-        LD B,A
-        INC B
-SSPAIR: DJNZ SSNEXT
-        JR SSREADY
-SSNEXT: SRL C
-        SRL C
-        JR SSPAIR
-SSREADY:LD A,C
-        AND 3
-        LD (SSIZE),A
+SRECORD:CALL GETSIZE
 SWHOLE: LD A,(MFM)
         OR A
         LD BC,6
@@ -345,7 +1174,20 @@ SCAP:   OR A
         LD A,0FFH
         JR Z,STAIL
         LD A,04EH
-STAIL:  LD BC,1500
+STAIL:  PUSH AF
+; 07-Sep-2026 -- a fixed tail failed on short experimental tracks.
+;       LD BC,1500           ; enough only when the data nearly filled a turn
+; HL is used-budget, negative here. Fill the unused revolution as well,
+; then leave the controller another 1500 bytes to reach its index pulse.
+        LD DE,0
+        EX DE,HL
+        OR A
+        SBC HL,DE
+        LD BC,1500
+        ADD HL,BC
+        LD B,H
+        LD C,L
+        POP AF
         CALL RUN
         OR A
         RET
@@ -384,7 +1226,7 @@ OVERFLOW:
         LD SP,04000H
         JP DUNSUP
 
-DTITLE: DB 'BetterCP/M 2.2 Disk Utility Program version 1.00',0
+DTITLE: DB 'BetterCP/M 2.2 Disk Utility Program version 1.13',0
 DMENU:  DB 13,10,'[ A ] Format a disk',13,10
         DB '[ B ] Copy a disk',13,10
         DB '[ C ] Check a disk for errors',13,10,13,10

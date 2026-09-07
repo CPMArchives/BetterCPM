@@ -1,6 +1,6 @@
-# Runtime disk configuration, ABI version 3
+# Runtime disk configuration, ABI version 5
 
-Updated September 7, 2026. BIOS implementation 1.6/API 1.3; BDOS
+Updated September 7, 2026. BIOS implementation 1.9/API 1.5; BDOS
 implementation 1.6/API 1.2. The standard 17 BIOS vectors remain unchanged.
 
 ## Scope and current limits
@@ -52,11 +52,22 @@ context of the operation. Requests are synchronous and controller waits bounded.
 | 4 | Set logical record | byte 0=index; bytes 1–64=binding |
 | 5 | Format one track | byte 0=logical, 1=cylinder, 2=side, word 3=stream length, word 5=stream pointer |
 
-Discovery descriptor: `BDCF`, byte ABI version=3, logical count=4,
-physical count=4, binding size=64, then two little-endian pointers to the
-physical table and logical table. These pointers are for inspection; applications
+Discovery descriptor: `BDCF`, byte ABI version=5, logical count=4,
+physical count=4, binding size=64, then four little-endian pointers to the
+physical table, logical table, last physical-read buffer, and cached-format
+entry (offsets 8, 10, 12, 14).
+The table pointers are for inspection; applications
 should use operations 2/4 for validated updates. There is no SYS-GEN persistence
 operation yet. Warm boot preserves records; cold boot reloads the saved image.
+
+The ABI 4 buffer pointer is zero when the adapter only supplies standard
+128-byte reads (z80pack). Otherwise, after a successful standard BIOS READ,
+it exposes the complete physical sector, with inverted-data formats already
+normalized. Its length comes from the selected binding's sector-size map.
+Copy it immediately: subsequent disk operations may overwrite this BIOS-owned
+workspace. It is not a persistent cache and must never be written by utilities.
+DUP copies it into transient memory and invalidates its copy at every new track
+or pass. The descriptor reuses the existing buffer; no resident buffer is added.
 
 Physical settings: drive size in inches (5), cylinder count, side count,
 WD step-rate code (0=6ms, 1=12ms, 2=20ms, 3=30ms), motor spin-up in quarter
@@ -93,7 +104,7 @@ Unbinding B–D uses physical FF; other binding fields are ignored.
 Logical storage has an 80-byte stride: DPH at +0, binding at +16.
 Four records occupy 320 bytes; the shared 128-byte allocation vector and
 32-byte check vector follow them. Each DPH points to its own DPB and the
-shared workspace. ABI version 3 identifies this changed table layout.
+shared workspace. ABI version 5 identifies this changed table layout.
 
 ## Formatting
 
@@ -143,8 +154,8 @@ Checks for this change:
 ## CONFIG/DUP
 
 The transient menus, runtime FDF parser and DUP formatting operation are
-implemented. See [CONFIG/DUP usage and limits](CONFIG-DUP.md). Copy, disk-error
-checking and SYSGEN persistence remain future work; diskdefs conversion remains
+implemented. See [CONFIG/DUP usage and limits](CONFIG-DUP.md). Copy and disk-error checking use standard BIOS vectors; SYSGEN persistence
+remains future work; diskdefs conversion remains
 deferred in both directions.
 
 ## Optional format mapper
@@ -161,3 +172,29 @@ Cylinder-based SPT is recognized during extended normalization and marked
 internally with bit 20h. MM SUPER is normalized into five 1024-byte sectors
 and one 512-byte sector. Arbitrary explicit two-bit size maps use the same
 mapping path; their sum must agree with SPT. The original DISK.FDF is unchanged.
+
+## ABI 5 transient control-image cache
+
+A nonzero descriptor word at offset 14 advertises a direct cached-format
+entry. A zero word means use ordinary operation 5 (z80pack currently has no
+such entry). This is an optional platform capability, not a hardware address
+compiled into DUP.
+
+For the lifetime of one transient program, obtain the control image by a
+successful operation 3 (GET LOGICAL). Immediately copy 1,024 bytes from the
+physical-buffer address at descriptor offset 12 into private transient RAM.
+Before invoking the cached-format entry, copy those bytes back to that same
+address. Do not perform intervening disk I/O. The entry accepts DE pointing
+to a valid 80-byte request wholly inside the TPA, with the operation-5 fields;
+this pointer range is a caller precondition for the direct entry. It preserves
+IX and returns the same A/HL status as the ordinary formatter. Flags are
+unspecified: test A with OR A before branching on success or failure.
+All field/geometry/stream checks and physical-drive-zero protection are shared
+with ordinary operation 5. The snapshot is valid only for this running program
+and BIOS image; never save it to disk or reuse it after a boot or BIOS change.
+
+DUP keeps its snapshot at C900h–CCFFh, above its copy buffer. That space is
+available with FDF.RSX loaded. It acquires the snapshot once, aborts startup
+if acquisition fails, and releases it by ordinary transient exit. No global
+hook or resident cache allocation needs uninstalling. Normal BDOS callers
+continue to load the overlay as before.

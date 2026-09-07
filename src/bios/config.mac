@@ -17,6 +17,7 @@
         JP BF_CPXCTL
         JP CF_GETPH
         JP CF_GETLOG
+        JP CF_FAST
 CF_PHYS:
         LD A,(IX+0)
         CALL DC_PHY
@@ -307,7 +308,7 @@ DC_SKEW:
         JR Z,DC_SKDONE
 DC_SKCMP:
         CP (HL)
-        JP Z,DC_SKBAD
+        JR Z,DC_SKBAD
         INC HL
         DJNZ DC_SKCMP
 DC_SKDONE:
@@ -328,6 +329,13 @@ DC_SKBAD:
         POP HL
         POP BC
         JP DC_INVALID
+; 07-Sep-2026: caller has restored our complete 1K control image.
+; DE points at its valid 80-byte request in TPA, as for BDOS 207/5.
+; Keep normal geometry, drive-zero protection and stream checks below.
+CF_FAST:
+        PUSH IX
+        PUSH DE
+        POP IX
 CF_FORMAT:
         CALL DC_RESET         ; even a rejected request must clear cached context
         LD A,(IX+0)
@@ -338,7 +346,6 @@ CF_FORMAT:
         LD (BIO_TRACK),HL
         LD (BIO_SECTOR),HL
         CALL DC_MAP
-        OR A
         JP NZ,DC_INVALID
         LD A,(B_PDrive)
         CP 1                ; never format bootstrap physical drive through alias
@@ -381,14 +388,12 @@ DC_FBUFFER:
         SBC HL,DE
         JP NC,DC_INVALID
         CALL DC_SEEK
-        OR A
         JP NZ,DC_RETURN
-; 07-Sep-2026 -- the control overlay comes from drive A each track.
+; Ordinary calls load the overlay from A; DUP may supply its saved copy.
 ; A long restore/seek on the target can exhaust its motor timer.
 ; Re-select at the same cylinder before WRITE TRACK. Reuse the common
 ; seek service: this second call has no head travel, but renews selection.
         CALL DC_SEEK
-        OR A
         JP NZ,DC_RETURN
         LD HL,(DC_BUFFER)
         LD B,(IX+3)
@@ -417,8 +422,7 @@ DC_FPOLL:
         IN A,(FDCSTATUS)
         AND 1
         JR Z,DC_FSTATUS
-        CALL DC_ERR
-        JP DC_RETURN
+        JR DC_FFAIL
 DC_FDATA:
         OUTI
         JR NZ,DC_FBYTE
@@ -427,6 +431,7 @@ DC_FDATA:
         LD (DC_NBLK),A
         JR NZ,DC_FBYTE
         ; The index pulse must complete before the stream is exhausted.
+DC_FFAIL:
         CALL DC_ERR
         JP DC_RETURN
 DC_FSTATUS:

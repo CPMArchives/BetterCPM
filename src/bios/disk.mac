@@ -113,7 +113,7 @@ DC_PHY:
         RET
 DC_GETPH:
         LD A,12
-        JP DC_CTL
+        JR DC_CTL
 ; Four logical records, 80 bytes each. DPH + binding.
 ; BDOS rebuilds the shared allocation vector on every context switch.
 DC_LOG:
@@ -133,7 +133,7 @@ DC_LOGL:
         RET
 DC_GETLOG:
         LD A,15
-        JP DC_CTL
+        JR DC_CTL
 DC_RESET:
         ; Conservatively invalidate every alias and active BDOS disk context.
         PUSH IX
@@ -213,7 +213,7 @@ DC_MASK:
         RRCA
         RRCA
         AND 3
-        JP DC_SETSIZE
+        JR DC_SETSIZE
 DC_COMMON:
         LD HL,(BIO_TRACK)
         LD A,H
@@ -348,7 +348,7 @@ DC_XDONE:
         CALL DC_WAIT
         RET NZ
         IN A,(FDCSTATUS)
-        AND 09CH
+        AND 0DCH
         RET NZ
         LD A,(DC_COMMAND)
         CP 080H
@@ -398,7 +398,7 @@ DC_RDATA:
         LD A,(DC_NBLK)
         DEC A
         LD (DC_NBLK),A
-        JP Z,DC_ZERO
+        JR Z,DC_ZERO
         JR DC_RBYTE
 DC_WBYTE:
         LD DE,0
@@ -411,14 +411,14 @@ DC_WPOLL:
         OR E
         JR NZ,DC_WPOLL
 DC_IOFAIL:
-        JP DC_ERR
+        JR DC_ERR
 DC_WDATA:
         OUTI
         JR NZ,DC_WBYTE
         LD A,(DC_NBLK)
         DEC A
         LD (DC_NBLK),A
-        JP Z,DC_ZERO
+        JR Z,DC_ZERO
         JR DC_WBYTE
 DC_WAIT:
         LD BC,0
@@ -432,6 +432,7 @@ DC_WAITL:
         JR NZ,DC_WAITL
 DC_ERR:
         LD A,0D0H
+        LD (DC_LAST),A       ; failed seek/restore leaves position untrusted
         OUT (FDCCOMMAND),A
         LD A,1
         OR A
@@ -459,7 +460,7 @@ DC_SEEK:
         LD B,A
         LD A,(DC_LAST)
         CP B
-        JR Z,DC_SEEKTO
+        JR Z,DC_SAME
         LD A,B
         LD (DC_LAST),A
         ; Restore on a drive change because the WD track register is shared.
@@ -489,7 +490,7 @@ DC_RESTORE:
         RET NZ
         IN A,(FDCSTATUS)
         AND 010H
-        JR NZ,DC_ERR
+        JP NZ,DC_ERR
 DC_SEEKTO:
         LD A,(DC_LASTCYL)
         OUT (FDCTRACK),A
@@ -505,16 +506,24 @@ DC_SEEKTO:
         RET NZ
         IN A,(FDCSTATUS)
         AND 010H
-        JR NZ,DC_ERR
+        JP NZ,DC_ERR
         LD A,(BIO_PCYL)
         LD (DC_LASTCYL),A
-        LD A,(DC_IDTRK)
-        OUT (FDCTRACK),A
-        LD HL,(DC_PHYADDR)
-        LD DE,5
-        ADD HL,DE
+; DC_WAIT preserves HL, still at the step-rate byte. Advance to settle.
+        INC HL
+        INC HL
         LD A,(HL)
         CALL DC_DELAY
+; Only a previously selected drive can take this shortcut. A drive change
+; must still restore, seek and settle even when its destination is track 0.
+DC_SAME:
+        LD HL,DC_LASTCYL
+        LD A,(BIO_PCYL)
+        CP (HL)
+        JR NZ,DC_SEEKTO
+DC_IDONLY:
+        LD A,(DC_IDTRK)
+        OUT (FDCTRACK),A
         XOR A
         RET
 ; Approximately 1ms at Model 4 4MHz. All waits are bounded.
@@ -522,14 +531,12 @@ DC_DELAY:
         OR A
         RET Z
 DC_DMS:
-        LD BC,117
+; 235 * (NOP + DJNZ) is about 4000 clocks at 4 MHz. Keep A intact
+; instead of shuffling it through D on every turn of the delay loop.
+        LD B,235
 DC_DLOOP:
-        DEC BC
-        LD D,A
-        LD A,B
-        OR C
-        LD A,D
-        JR NZ,DC_DLOOP
+        NOP
+        DJNZ DC_DLOOP
         DEC A
         JR NZ,DC_DMS
         RET
@@ -538,8 +545,10 @@ DC_DLOOP:
 ; request: logical,cylinder,side,length word,buffer word.
 
 DC_INFO:
-        DB 'B','D','C','F',3,4,4,64
+        DB 'B','D','C','F',5,4,4,64
         DW DC_PHYS,LY_TAB
+        DW LY_BUF           ; complete last physical read, logical polarity
+        DW LY_CFG+18        ; ABI 5: cached control image format entry
 DC_PHYS:
         REPT 4
         DB 5,80,2,0,2,15
