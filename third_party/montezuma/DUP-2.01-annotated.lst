@@ -1,0 +1,1286 @@
+; MONTEZUMA MICRO DUP 2.01 -- WORKING DISASSEMBLY, 07-SEP-2026
+; Original COM SHA-256: 71df2862c4a5f645353f9d07d8b97fc230737e712df5bd99609035e98d0aac31
+; Selected code regions only. Not recovered original source or a rebuildable file.
+; Addresses assume the normal CP/M load address 0100h.
+; CALL 0A04h consumes inline zero-terminated screen text; CALL 0A61h has menu vectors.
+
+
+; ENTRY: collect BIOS vectors, load format catalogue once
+0134  31 AF 15   	LD	SP,15AFH
+0137  21 00 00   	LD	HL,0H
+013A  E5         	PUSH	HL
+013B  3A 07 00   	LD	A,(7H)
+013E  E6 80      	AND	80H
+0140  21 45 12   	LD	HL,1245H
+0143  CA 0A 0A   	JP	Z,0A0AH
+0146  2A 01 00   	LD	HL,(1H)
+0149  01 18 00   	LD	BC,18H
+014C  09         	ADD	HL,BC
+014D  11 7D 09   	LD	DE,97DH
+0150  01 18 00   	LD	BC,18H
+0153  ED B0      	LDIR
+0155  11 F3 14   	LD	DE,14F3H
+0158  0E 18      	LD	C,18H
+015A  ED B0      	LDIR
+015C  CD AF 15   	CALL	15AFH
+015F  31 AF 15   	LD	SP,15AFH
+0162  21 A2 0A   	LD	HL,0AA2H
+0165  CD 95 09   	CALL	995H
+0168  28 09      	JR	Z,173H
+016A  CD 61 0A   	CALL	0A61H
+016D  ; MENU TARGETS 0181h, 0294h, 0403h
+0173  21 53 0B   	LD	HL,0B53H
+0176  CD 91 0A   	CALL	0A91H
+0179  3E 1A      	LD	A,1AH
+017B  CD 13 0A   	CALL	0A13H
+017E  C3 00 00   	JP	0H
+
+; FORMAT menu
+0181  21 A6 0C   	LD	HL,0CA6H
+0184  CD 0A 0A   	CALL	0A0AH
+0187  CD 8F 04   	CALL	48FH
+018A  78         	LD	A,B
+018B  32 00 0D   	LD	(0D00H),A
+018E  CD 76 05   	CALL	576H
+0191  32 13 0D   	LD	(0D13H),A
+0194  CD 8F 05   	CALL	58FH
+0197  32 0D 15   	LD	(150DH),A
+019A  E5         	PUSH	HL
+019B  21 E5 0C   	LD	HL,0CE5H
+019E  CD 0A 0A   	CALL	0A0AH
+01A1  E1         	POP	HL
+01A2  CD 0A 0A   	CALL	0A0AH
+01A5  CD CB 05   	CALL	5CBH
+01A8  20 D7      	JR	NZ,181H
+01AA  D5         	PUSH	DE
+01AB  FD E1      	POP	IY
+01AD  FD 5E 11   	LD	E,(IY+11H)
+01B0  FD 56 12   	LD	D,(IY+12H)
+01B3  D5         	PUSH	DE
+01B4  DD E1      	POP	IX
+01B6  21 1B 0D   	LD	HL,0D1BH
+01B9  CD 91 0A   	CALL	0A91H
+01BC  28 C3      	JR	Z,181H
+01BE  CD 99 05   	CALL	599H
+01C1  28 F3      	JR	Z,1B6H
+01C3  21 DF 0D   	LD	HL,0DDFH
+01C6  36 20      	LD	(HL),20H
+01C8  23         	INC	HL
+01C9  36 4E      	LD	(HL),4EH
+01CB  23         	INC	HL
+01CC  36 6F      	LD	(HL),6FH
+
+; Clear bad-sector count; cylinder starts at zero
+01CE  AF         	XOR	A
+01CF  32 0E 15   	LD	(150EH),A
+01D2  57         	LD	D,A
+01D3  2A 0B 15   	LD	HL,(150BH)
+01D6  7E         	LD	A,(HL)
+01D7  23         	INC	HL
+01D8  66         	LD	H,(HL)
+01D9  6F         	LD	L,A
+01DA  5E         	LD	E,(HL)
+01DB  21 5B 0D   	LD	HL,0D5BH
+01DE  CD 0A 0A   	CALL	0A0AH
+
+; FORMAT CYLINDER LOOP (upwards)
+01E1  21 75 0D   	LD	HL,0D75H
+01E4  7A         	LD	A,D
+01E5  CD 6E 0A   	CALL	0A6EH
+01E8  21 71 0D   	LD	HL,0D71H
+01EB  CD 0A 0A   	CALL	0A0AH
+01EE  CD 73 06   	CALL	673H
+01F1  14         	INC	D
+01F2  3A 0D 15   	LD	A,(150DH)
+01F5  BA         	CP	D
+01F6  20 E9      	JR	NZ,1E1H
+01F8  2A 0B 15   	LD	HL,(150BH)
+01FB  7E         	LD	A,(HL)
+01FC  23         	INC	HL
+01FD  66         	LD	H,(HL)
+01FE  6F         	LD	L,A
+01FF  5E         	LD	E,(HL)
+0200  21 7A 0D   	LD	HL,0D7AH
+0203  CD 0A 0A   	CALL	0A0AH
+
+; VERIFY CYLINDER LOOP (downwards)
+0206  15         	DEC	D
+0207  21 94 0D   	LD	HL,0D94H
+020A  7A         	LD	A,D
+020B  CD 6E 0A   	CALL	0A6EH
+020E  21 90 0D   	LD	HL,0D90H
+0211  CD 0A 0A   	CALL	0A0AH
+0214  CD 6D 07   	CALL	76DH
+0217  28 09      	JR	Z,222H
+0219  21 9A 0D   	LD	HL,0D9AH
+021C  CD 91 0A   	CALL	0A91H
+021F  CA 81 01   	JP	Z,181H
+0222  7A         	LD	A,D
+0223  B7         	OR	A
+0224  20 E0      	JR	NZ,206H
+
+; System-format reserved-track handling
+0226  FD 7E 0D   	LD	A,(IY+0DH)
+0229  FD B6 0E   	OR	(IY+0EH)
+022C  28 0D      	JR	Z,23BH
+022E  06 00      	LD	B,0H
+0230  11 01 00   	LD	DE,1H
+0233  21 51 02   	LD	HL,251H
+0236  3E 02      	LD	A,2H
+0238  CD AB 07   	CALL	7ABH
+023B  21 DF 0D   	LD	HL,0DDFH
+023E  3A 0E 15   	LD	A,(150EH)
+0241  B7         	OR	A
+0242  C4 6E 0A   	CALL	NZ,0A6EH
+0245  21 C9 0D   	LD	HL,0DC9H
+0248  CD 91 0A   	CALL	0A91H
+024B  C2 B6 01   	JP	NZ,1B6H
+024E  C3 5F 01   	JP	15FH
+
+; COPY menu and source/destination selection
+0294  21 1D 0E   	LD	HL,0E1DH
+0297  CD 0A 0A   	CALL	0A0AH
+029A  CD 8F 04   	CALL	48FH
+029D  D5         	PUSH	DE
+029E  FD E1      	POP	IY
+02A0  78         	LD	A,B
+02A1  32 C1 0E   	LD	(0EC1H),A
+02A4  CD 76 05   	CALL	576H
+02A7  32 D4 0E   	LD	(0ED4H),A
+02AA  CD 8F 05   	CALL	58FH
+02AD  32 0D 15   	LD	(150DH),A
+02B0  E5         	PUSH	HL
+02B1  FD 6E 11   	LD	L,(IY+11H)
+02B4  FD 66 12   	LD	H,(IY+12H)
+02B7  22 14 15   	LD	(1514H),HL
+02BA  2A 0B 15   	LD	HL,(150BH)
+02BD  22 12 15   	LD	(1512H),HL
+02C0  21 64 0E   	LD	HL,0E64H
+02C3  CD 0A 0A   	CALL	0A0AH
+02C6  CD 8F 04   	CALL	48FH
+02C9  3A C1 0E   	LD	A,(0EC1H)
+02CC  B8         	CP	B
+02CD  20 07      	JR	NZ,2D6H
+02CF  3E 07      	LD	A,7H
+02D1  CD 13 0A   	CALL	0A13H
+02D4  18 EA      	JR	2C0H
+02D6  78         	LD	A,B
+02D7  32 02 0F   	LD	(0F02H),A
+02DA  CD 76 05   	CALL	576H
+02DD  32 15 0F   	LD	(0F15H),A
+02E0  21 98 0E   	LD	HL,0E98H
+02E3  CD 0A 0A   	CALL	0A0AH
+02E6  E1         	POP	HL
+02E7  CD 0A 0A   	CALL	0A0AH
+02EA  21 DC 0E   	LD	HL,0EDCH
+02ED  CD 0A 0A   	CALL	0A0AH
+
+; Save destination DPB in transient workspace
+02F0  D5         	PUSH	DE
+02F1  21 1A 15   	LD	HL,151AH
+02F4  01 15 00   	LD	BC,15H
+02F7  EB         	EX	DE,HL
+02F8  ED B0      	LDIR
+02FA  D1         	POP	DE
+02FB  21 11 00   	LD	HL,11H
+02FE  19         	ADD	HL,DE
+02FF  7E         	LD	A,(HL)
+0300  23         	INC	HL
+0301  66         	LD	H,(HL)
+0302  6F         	LD	L,A
+0303  22 16 15   	LD	(1516H),HL
+0306  ED 5B 14 15	LD	DE,(1514H)
+030A  01 03 00   	LD	BC,3H
+030D  09         	ADD	HL,BC
+030E  EB         	EX	DE,HL
+030F  09         	ADD	HL,BC
+0310  EB         	EX	DE,HL
+0311  1A         	LD	A,(DE)
+0312  BE         	CP	(HL)
+0313  28 2B      	JR	Z,340H
+0315  13         	INC	DE
+0316  23         	INC	HL
+0317  FD CB 13 76	BIT	6,(IY+13H)
+031B  28 06      	JR	Z,323H
+031D  1A         	LD	A,(DE)
+031E  A6         	AND	(HL)
+031F  E6 80      	AND	80H
+0321  28 1D      	JR	Z,340H
+0323  13         	INC	DE
+0324  13         	INC	DE
+0325  13         	INC	DE
+0326  23         	INC	HL
+0327  23         	INC	HL
+0328  23         	INC	HL
+0329  1A         	LD	A,(DE)
+032A  FD CB 13 6E	BIT	5,(IY+13H)
+032E  28 02      	JR	Z,332H
+0330  CB 3F      	SRL	A
+0332  BE         	CP	(HL)
+0333  28 14      	JR	Z,349H
+0335  30 09      	JR	NC,340H
+0337  FE 23      	CP	23H
+0339  20 05      	JR	NZ,340H
+033B  7E         	LD	A,(HL)
+033C  FE 28      	CP	28H
+033E  28 09      	JR	Z,349H
+0340  21 2E 14   	LD	HL,142EH
+0343  CD 91 0A   	CALL	0A91H
+0346  C3 94 02   	JP	294H
+0349  3A 2E 15   	LD	A,(152EH)
+034C  FD BE 14   	CP	(IY+14H)
+034F  21 9B 10   	LD	HL,109BH
+0352  C4 0A 0A   	CALL	NZ,0A0AH
+0355  21 1D 0F   	LD	HL,0F1DH
+0358  CD 91 0A   	CALL	0A91H
+035B  CA 94 02   	JP	Z,294H
+035E  DD 2A 16 15	LD	IX,(1516H)
+0362  CD 99 05   	CALL	599H
+0365  28 EE      	JR	Z,355H
+0367  21 61 0F   	LD	HL,0F61H
+036A  CD 0A 0A   	CALL	0A0AH
+036D  FD 22 18 15	LD	(1518H),IY
+
+; Build transient destination DPB from source format
+0371  2A 18 15   	LD	HL,(1518H)
+0374  11 1A 15   	LD	DE,151AH
+0377  01 15 00   	LD	BC,15H
+037A  ED B0      	LDIR
+037C  1B         	DEC	DE
+037D  1B         	DEC	DE
+037E  EB         	EX	DE,HL
+037F  CB AE      	RES	5,(HL)
+0381  2A 12 15   	LD	HL,(1512H)
+0384  7E         	LD	A,(HL)
+0385  23         	INC	HL
+0386  66         	LD	H,(HL)
+0387  6F         	LD	L,A
+0388  5E         	LD	E,(HL)
+0389  16 00      	LD	D,0H
+
+; COPY CYLINDER LOOP: format destination, read source, write destination, check
+038B  7A         	LD	A,D
+038C  21 06 10   	LD	HL,1006H
+038F  CD 6E 0A   	CALL	0A6EH
+0392  21 02 10   	LD	HL,1002H
+0395  CD 0A 0A   	CALL	0A0AH
+0398  DD 2A 16 15	LD	IX,(1516H)
+039C  FD 21 1A 15	LD	IY,151AH
+03A0  CD 04 0A   	CALL	0A04H
+03A3  ; INLINE TEXT b'\x1b=+;\x00'
+03A8  CD 73 06   	CALL	673H
+03AB  DD 2A 14 15	LD	IX,(1514H)
+03AF  FD 2A 18 15	LD	IY,(1518H)
+03B3  CD 04 0A   	CALL	0A04H
+03B6  ; INLINE TEXT b'\x1b=,;\x00'
+03BB  CD 0B 06   	CALL	60BH
+03BE  DD 2A 16 15	LD	IX,(1516H)
+03C2  FD 21 1A 15	LD	IY,151AH
+03C6  CD 04 0A   	CALL	0A04H
+03C9  ; INLINE TEXT b'\x1b=-;\x00'
+03CE  CD 3F 06   	CALL	63FH
+03D1  CD 04 0A   	CALL	0A04H
+03D4  ; INLINE TEXT b'\x1b=.;\x00'
+03D9  CD 6D 07   	CALL	76DH
+03DC  28 08      	JR	Z,3E6H
+03DE  21 0A 10   	LD	HL,100AH
+03E1  CD 0A 0A   	CALL	0A0AH
+03E4  18 11      	JR	3F7H
+03E6  14         	INC	D
+03E7  3A 0D 15   	LD	A,(150DH)
+03EA  BA         	CP	D
+03EB  20 9E      	JR	NZ,38BH
+03ED  FD 2A 18 15	LD	IY,(1518H)
+03F1  21 5A 10   	LD	HL,105AH
+03F4  CD 0A 0A   	CALL	0A0AH
+03F7  21 6F 10   	LD	HL,106FH
+03FA  CD 91 0A   	CALL	0A91H
+03FD  C2 55 03   	JP	NZ,355H
+0400  C3 5F 01   	JP	15FH
+
+; CHECK menu
+0403  21 E6 10   	LD	HL,10E6H
+0406  CD 0A 0A   	CALL	0A0AH
+0409  CD 8F 04   	CALL	48FH
+040C  78         	LD	A,B
+040D  32 40 11   	LD	(1140H),A
+0410  CD 76 05   	CALL	576H
+0413  32 53 11   	LD	(1153H),A
+0416  CD 8F 05   	CALL	58FH
+0419  32 0D 15   	LD	(150DH),A
+041C  D5         	PUSH	DE
+041D  FD E1      	POP	IY
+041F  FD 5E 11   	LD	E,(IY+11H)
+0422  FD 56 12   	LD	D,(IY+12H)
+0425  D5         	PUSH	DE
+0426  DD E1      	POP	IX
+0428  E5         	PUSH	HL
+0429  21 23 11   	LD	HL,1123H
+042C  CD 0A 0A   	CALL	0A0AH
+042F  E1         	POP	HL
+0430  CD 0A 0A   	CALL	0A0AH
+0433  21 5B 11   	LD	HL,115BH
+0436  CD 91 0A   	CALL	0A91H
+0439  28 C8      	JR	Z,403H
+043B  21 07 12   	LD	HL,1207H
+043E  36 20      	LD	(HL),20H
+0440  23         	INC	HL
+0441  36 4E      	LD	(HL),4EH
+0443  23         	INC	HL
+0444  36 6F      	LD	(HL),6FH
+0446  AF         	XOR	A
+0447  32 0E 15   	LD	(150EH),A
+044A  57         	LD	D,A
+044B  2A 0B 15   	LD	HL,(150BH)
+044E  7E         	LD	A,(HL)
+044F  23         	INC	HL
+0450  66         	LD	H,(HL)
+0451  6F         	LD	L,A
+0452  5E         	LD	E,(HL)
+0453  21 99 11   	LD	HL,1199H
+0456  CD 0A 0A   	CALL	0A0AH
+
+; CHECK CYLINDER LOOP (upwards)
+0459  21 B1 11   	LD	HL,11B1H
+045C  7A         	LD	A,D
+045D  CD 6E 0A   	CALL	0A6EH
+0460  21 AD 11   	LD	HL,11ADH
+0463  CD 0A 0A   	CALL	0A0AH
+0466  CD 6D 07   	CALL	76DH
+0469  28 08      	JR	Z,473H
+046B  21 B7 11   	LD	HL,11B7H
+046E  CD 91 0A   	CALL	0A91H
+0471  28 90      	JR	Z,403H
+0473  14         	INC	D
+0474  3A 0D 15   	LD	A,(150DH)
+0477  BA         	CP	D
+0478  20 DF      	JR	NZ,459H
+047A  21 07 12   	LD	HL,1207H
+047D  3A 0E 15   	LD	A,(150EH)
+0480  B7         	OR	A
+0481  C4 6E 0A   	CALL	NZ,0A6EH
+0484  21 F2 11   	LD	HL,11F2H
+0487  CD 91 0A   	CALL	0A91H
+048A  20 A7      	JR	NZ,433H
+048C  C3 5F 01   	JP	15FH
+048F  0E 41      	LD	C,41H
+0491  06 10      	LD	B,10H
+0493  21 F3 0B   	LD	HL,0BF3H
+0496  CD 0A 0A   	CALL	0A0AH
+0499  C5         	PUSH	BC
+049A  CD 04 0A   	CALL	0A04H
+049D  ; INLINE TEXT b'[ \x00'
+04A0  79         	LD	A,C
+04A1  CD 13 0A   	CALL	0A13H
+04A4  CD 04 0A   	CALL	0A04H
+04A7  ; INLINE TEXT b' ]   \x00'
+04AD  79         	LD	A,C
+04AE  D6 41      	SUB	41H
+04B0  4F         	LD	C,A
+04B1  CD 7D 09   	CALL	97DH
+04B4  C1         	POP	BC
+04B5  7C         	LD	A,H
+04B6  B5         	OR	L
+04B7  28 1F      	JR	Z,4D8H
+04B9  11 0A 00   	LD	DE,0AH
+04BC  19         	ADD	HL,DE
+04BD  5E         	LD	E,(HL)
+04BE  23         	INC	HL
+04BF  56         	LD	D,(HL)
+04C0  CD 14 05   	CALL	514H
+04C3  28 16      	JR	Z,4DBH
+04C5  79         	LD	A,C
+04C6  32 A0 0B   	LD	(0BA0H),A
+04C9  CD 76 05   	CALL	576H
+04CC  CD 13 0A   	CALL	0A13H
+04CF  CD 04 0A   	CALL	0A04H
+04D2  ; INLINE TEXT b':  \x00'
+04D6  18 03      	JR	4DBH
+04D8  21 70 0C   	LD	HL,0C70H
+04DB  CD 0A 0A   	CALL	0A0AH
+04DE  0C         	INC	C
+04DF  10 B8      	DJNZ	499H
+04E1  AF         	XOR	A
+04E2  32 A3 0B   	LD	(0BA3H),A
+04E5  3E 0B      	LD	A,0BH
+04E7  CD 13 0A   	CALL	0A13H
+04EA  3A A0 0B   	LD	A,(0BA0H)
+04ED  3C         	INC	A
+04EE  4F         	LD	C,A
+04EF  CD DA 09   	CALL	9DAH
+04F2  CA 5F 01   	JP	Z,15FH
+04F5  3D         	DEC	A
+04F6  4F         	LD	C,A
+04F7  C6 41      	ADD	A,41H
+04F9  47         	LD	B,A
+04FA  C5         	PUSH	BC
+04FB  CD 7D 09   	CALL	97DH
+04FE  C1         	POP	BC
+04FF  7C         	LD	A,H
+0500  B5         	OR	L
+0501  28 8C      	JR	Z,48FH
+0503  22 0B 15   	LD	(150BH),HL
+0506  11 0A 00   	LD	DE,0AH
+0509  19         	ADD	HL,DE
+050A  5E         	LD	E,(HL)
+050B  23         	INC	HL
+050C  56         	LD	D,(HL)
+050D  CD 14 05   	CALL	514H
+0510  C0         	RET	NZ
+0511  C3 8F 04   	JP	48FH
+0514  21 14 00   	LD	HL,14H
+0517  19         	ADD	HL,DE
+0518  7E         	LD	A,(HL)
+0519  B7         	OR	A
+051A  21 8B 0C   	LD	HL,0C8BH
+051D  C8         	RET	Z
+051E  CD 75 16   	CALL	1675H
+0521  C0         	RET	NZ
+0522  C5         	PUSH	BC
+0523  21 11 00   	LD	HL,11H
+0526  19         	ADD	HL,DE
+0527  7E         	LD	A,(HL)
+0528  23         	INC	HL
+0529  66         	LD	H,(HL)
+052A  6F         	LD	L,A
+052B  01 07 00   	LD	BC,7H
+052E  09         	ADD	HL,BC
+052F  7E         	LD	A,(HL)
+0530  21 31 0C   	LD	HL,0C31H
+0533  CD 6E 0A   	CALL	0A6EH
+0536  21 13 00   	LD	HL,13H
+0539  19         	ADD	HL,DE
+053A  3E 53      	LD	A,53H
+053C  CB 76      	BIT	6,(HL)
+053E  28 02      	JR	Z,542H
+0540  3E 44      	LD	A,44H
+0542  32 37 0C   	LD	(0C37H),A
+0545  3E 53      	LD	A,53H
+0547  CB 7E      	BIT	7,(HL)
+0549  28 02      	JR	Z,54DH
+054B  3E 44      	LD	A,44H
+054D  32 3B 0C   	LD	(0C3BH),A
+0550  21 0F 00   	LD	HL,0FH
+0553  19         	ADD	HL,DE
+0554  7E         	LD	A,(HL)
+0555  21 3E 0C   	LD	HL,0C3EH
+0558  CD 6E 0A   	CALL	0A6EH
+055B  21 10 00   	LD	HL,10H
+055E  19         	ADD	HL,DE
+055F  4E         	LD	C,(HL)
+0560  06 00      	LD	B,0H
+0562  21 64 0C   	LD	HL,0C64H
+0565  09         	ADD	HL,BC
+0566  09         	ADD	HL,BC
+0567  09         	ADD	HL,BC
+0568  D5         	PUSH	DE
+0569  11 51 0C   	LD	DE,0C51H
+056C  0E 03      	LD	C,3H
+056E  ED B0      	LDIR
+0570  D1         	POP	DE
+0571  C1         	POP	BC
+0572  21 22 0C   	LD	HL,0C22H
+0575  C9         	RET
+0576  C5         	PUSH	BC
+0577  E5         	PUSH	HL
+0578  21 11 00   	LD	HL,11H
+057B  19         	ADD	HL,DE
+057C  7E         	LD	A,(HL)
+057D  23         	INC	HL
+057E  66         	LD	H,(HL)
+057F  6F         	LD	L,A
+0580  01 03 00   	LD	BC,3H
+0583  09         	ADD	HL,BC
+0584  46         	LD	B,(HL)
+0585  3E 2F      	LD	A,2FH
+0587  3C         	INC	A
+0588  CB 08      	RRC	B
+058A  30 FB      	JR	NC,587H
+058C  E1         	POP	HL
+058D  C1         	POP	BC
+058E  C9         	RET
+058F  E5         	PUSH	HL
+0590  D5         	PUSH	DE
+0591  11 51 00   	LD	DE,51H
+0594  19         	ADD	HL,DE
+0595  7E         	LD	A,(HL)
+0596  D1         	POP	DE
+0597  E1         	POP	HL
+0598  C9         	RET
+
+; Probe first sector; readable sector triggers not-blank warning
+0599  06 00      	LD	B,0H
+059B  11 01 00   	LD	DE,1H
+059E  21 00 59   	LD	HL,5900H
+05A1  3E 04      	LD	A,4H
+05A3  CD AB 07   	CALL	7ABH
+05A6  28 03      	JR	Z,5ABH
+05A8  FE 80      	CP	80H
+05AA  C9         	RET
+05AB  21 95 12   	LD	HL,1295H
+05AE  CD 0A 0A   	CALL	0A0AH
+05B1  CD 20 0A   	CALL	0A20H
+05B4  FE 03      	CP	3H
+05B6  CA 5F 01   	JP	Z,15FH
+05B9  E6 5F      	AND	5FH
+05BB  FE 59      	CP	59H
+05BD  28 04      	JR	Z,5C3H
+05BF  FE 4E      	CP	4EH
+05C1  20 EE      	JR	NZ,5B1H
+05C3  4F         	LD	C,A
+05C4  CD 13 0A   	CALL	0A13H
+05C7  79         	LD	A,C
+05C8  FE 4E      	CP	4EH
+05CA  C9         	RET
+05CB  21 13 00   	LD	HL,13H
+05CE  19         	ADD	HL,DE
+05CF  CB 6E      	BIT	5,(HL)
+05D1  C8         	RET	Z
+05D2  21 98 14   	LD	HL,1498H
+05D5  CD 91 0A   	CALL	0A91H
+05D8  F6 FF      	OR	0FFH
+05DA  C9         	RET
+
+; Decode controller errors; prompt for retry/cancel
+05DB  C5         	PUSH	BC
+05DC  D5         	PUSH	DE
+05DD  E5         	PUSH	HL
+05DE  F6 02      	OR	2H
+05E0  21 F9 12   	LD	HL,12F9H
+05E3  01 21 00   	LD	BC,21H
+05E6  09         	ADD	HL,BC
+05E7  07         	RLCA
+05E8  30 FC      	JR	NC,5E6H
+05EA  E5         	PUSH	HL
+05EB  21 FC 12   	LD	HL,12FCH
+05EE  CD 0A 0A   	CALL	0A0AH
+05F1  E1         	POP	HL
+05F2  CD 0A 0A   	CALL	0A0AH
+05F5  21 01 14   	LD	HL,1401H
+05F8  CD 91 0A   	CALL	0A91H
+05FB  E1         	POP	HL
+05FC  D1         	POP	DE
+05FD  C1         	POP	BC
+05FE  CA 5F 01   	JP	Z,15FH
+0601  CD 04 0A   	CALL	0A04H
+0604  ; INLINE TEXT b'\x1b=4 \x19\x00'
+060A  C9         	RET
+
+; Read whole cylinder to transient buffer
+060B  06 00      	LD	B,0H
+060D  21 00 59   	LD	HL,5900H
+0610  FD 4E 0F   	LD	C,(IY+0FH)
+0613  D5         	PUSH	DE
+0614  C5         	PUSH	BC
+0615  D5         	PUSH	DE
+0616  3E 01      	LD	A,1H
+0618  CD AB 07   	CALL	7ABH
+061B  28 07      	JR	Z,624H
+061D  CD DB 05   	CALL	5DBH
+0620  D1         	POP	DE
+0621  C1         	POP	BC
+0622  18 F0      	JR	614H
+0624  EB         	EX	DE,HL
+0625  ED 52      	SBC	HL,DE
+0627  7D         	LD	A,L
+0628  E6 80      	AND	80H
+062A  6F         	LD	L,A
+062B  19         	ADD	HL,DE
+062C  D1         	POP	DE
+062D  C1         	POP	BC
+062E  1C         	INC	E
+062F  0D         	DEC	C
+0630  20 E2      	JR	NZ,614H
+0632  D1         	POP	DE
+0633  FD CB 13 76	BIT	6,(IY+13H)
+0637  C8         	RET	Z
+0638  3E 01      	LD	A,1H
+063A  A8         	XOR	B
+063B  47         	LD	B,A
+063C  20 D2      	JR	NZ,610H
+063E  C9         	RET
+
+; Write whole cylinder from transient buffer
+063F  06 00      	LD	B,0H
+0641  21 00 59   	LD	HL,5900H
+0644  FD 4E 0F   	LD	C,(IY+0FH)
+0647  D5         	PUSH	DE
+0648  C5         	PUSH	BC
+0649  D5         	PUSH	DE
+064A  3E 02      	LD	A,2H
+064C  CD AB 07   	CALL	7ABH
+064F  28 07      	JR	Z,658H
+0651  CD DB 05   	CALL	5DBH
+0654  D1         	POP	DE
+0655  C1         	POP	BC
+0656  18 F0      	JR	648H
+0658  EB         	EX	DE,HL
+0659  ED 52      	SBC	HL,DE
+065B  7D         	LD	A,L
+065C  E6 80      	AND	80H
+065E  6F         	LD	L,A
+065F  19         	ADD	HL,DE
+0660  D1         	POP	DE
+0661  C1         	POP	BC
+0662  1C         	INC	E
+0663  0D         	DEC	C
+0664  20 E2      	JR	NZ,648H
+0666  D1         	POP	DE
+0667  FD CB 13 76	BIT	6,(IY+13H)
+066B  C8         	RET	Z
+066C  3E 01      	LD	A,1H
+066E  A8         	XOR	B
+066F  47         	LD	B,A
+0670  20 D2      	JR	NZ,644H
+0672  C9         	RET
+
+; Construct WD179x write-track stream for cylinder/sides
+0673  C5         	PUSH	BC
+0674  D5         	PUSH	DE
+0675  21 0F 15   	LD	HL,150FH
+0678  72         	LD	(HL),D
+0679  23         	INC	HL
+067A  73         	LD	(HL),E
+067B  23         	INC	HL
+067C  36 00      	LD	(HL),0H
+067E  11 51 07   	LD	DE,751H
+0681  FD CB 13 7E	BIT	7,(IY+13H)
+0685  28 03      	JR	Z,68AH
+0687  11 5F 07   	LD	DE,75FH
+068A  21 00 59   	LD	HL,5900H
+068D  FD 46 0F   	LD	B,(IY+0FH)
+0690  3A 10 15   	LD	A,(1510H)
+0693  4F         	LD	C,A
+0694  CD 44 07   	CALL	744H
+0697  D5         	PUSH	DE
+0698  CD 44 07   	CALL	744H
+069B  CD 44 07   	CALL	744H
+069E  36 FE      	LD	(HL),0FEH
+06A0  23         	INC	HL
+06A1  3A 0F 15   	LD	A,(150FH)
+06A4  FD CB 13 56	BIT	2,(IY+13H)
+06A8  28 06      	JR	Z,6B0H
+06AA  87         	ADD	A,A
+06AB  77         	LD	(HL),A
+06AC  3A 11 15   	LD	A,(1511H)
+06AF  86         	ADD	A,(HL)
+06B0  77         	LD	(HL),A
+06B1  23         	INC	HL
+06B2  3A 11 15   	LD	A,(1511H)
+06B5  77         	LD	(HL),A
+06B6  23         	INC	HL
+06B7  71         	LD	(HL),C
+06B8  79         	LD	A,C
+06B9  23         	INC	HL
+
+; SUPER special case: sector ID 6 of six-sector track uses size code 2
+06BA  0C         	INC	C
+06BB  FE 06      	CP	6H
+06BD  20 07      	JR	NZ,6C6H
+06BF  FD BE 0F   	CP	(IY+0FH)
+06C2  3E 02      	LD	A,2H
+06C4  28 03      	JR	Z,6C9H
+06C6  FD 7E 10   	LD	A,(IY+10H)
+06C9  F5         	PUSH	AF
+06CA  77         	LD	(HL),A
+06CB  23         	INC	HL
+06CC  36 F7      	LD	(HL),0F7H
+06CE  23         	INC	HL
+06CF  CD 44 07   	CALL	744H
+06D2  CD 44 07   	CALL	744H
+06D5  CD 44 07   	CALL	744H
+06D8  36 FB      	LD	(HL),0FBH
+06DA  23         	INC	HL
+06DB  F1         	POP	AF
+06DC  C5         	PUSH	BC
+06DD  47         	LD	B,A
+06DE  04         	INC	B
+06DF  3E 80      	LD	A,80H
+06E1  07         	RLCA
+06E2  10 FD      	DJNZ	6E1H
+06E4  4F         	LD	C,A
+
+; Fill data E5h, complemented for inverted formats
+06E5  3E E5      	LD	A,0E5H
+06E7  FD CB 13 66	BIT	4,(IY+13H)
+06EB  28 01      	JR	Z,6EEH
+06ED  2F         	CPL
+06EE  06 80      	LD	B,80H
+06F0  77         	LD	(HL),A
+06F1  23         	INC	HL
+06F2  10 FC      	DJNZ	6F0H
+06F4  0D         	DEC	C
+06F5  20 F7      	JR	NZ,6EEH
+06F7  C1         	POP	BC
+06F8  36 F7      	LD	(HL),0F7H
+06FA  23         	INC	HL
+06FB  CD 44 07   	CALL	744H
+06FE  D1         	POP	DE
+06FF  10 96      	DJNZ	697H
+0701  1B         	DEC	DE
+0702  1A         	LD	A,(DE)
+0703  77         	LD	(HL),A
+0704  23         	INC	HL
+0705  10 FC      	DJNZ	703H
+
+; Issue write-track operation; retry through error prompt
+0707  21 00 59   	LD	HL,5900H
+070A  3A 0F 15   	LD	A,(150FH)
+070D  57         	LD	D,A
+070E  3A 11 15   	LD	A,(1511H)
+0711  47         	LD	B,A
+0712  3E 03      	LD	A,3H
+0714  CD AB 07   	CALL	7ABH
+0717  28 05      	JR	Z,71EH
+0719  CD DB 05   	CALL	5DBH
+071C  18 E9      	JR	707H
+071E  FD CB 13 76	BIT	6,(IY+13H)
+0722  28 1D      	JR	Z,741H
+0724  3A 11 15   	LD	A,(1511H)
+0727  EE 01      	XOR	1H
+0729  32 11 15   	LD	(1511H),A
+072C  28 13      	JR	Z,741H
+072E  FD CB 13 5E	BIT	3,(IY+13H)
+0732  CA 7E 06   	JP	Z,67EH
+0735  3A 10 15   	LD	A,(1510H)
+0738  FD 86 0F   	ADD	A,(IY+0FH)
+073B  32 10 15   	LD	(1510H),A
+073E  C3 7E 06   	JP	67EH
+0741  D1         	POP	DE
+0742  C1         	POP	BC
+0743  C9         	RET
+
+; Expand count/value pair into track stream
+0744  C5         	PUSH	BC
+0745  EB         	EX	DE,HL
+0746  46         	LD	B,(HL)
+0747  23         	INC	HL
+0748  7E         	LD	A,(HL)
+0749  23         	INC	HL
+074A  EB         	EX	DE,HL
+074B  77         	LD	(HL),A
+074C  23         	INC	HL
+074D  10 FC      	DJNZ	74BH
+074F  C1         	POP	BC
+0750  C9         	RET
+
+; Shared physical-sector check (A/B/C)
+076D  D5         	PUSH	DE
+076E  06 00      	LD	B,0H
+0770  68         	LD	L,B
+0771  FD 4E 0F   	LD	C,(IY+0FH)
+0774  D1         	POP	DE
+0775  D5         	PUSH	DE
+0776  C5         	PUSH	BC
+0777  D5         	PUSH	DE
+0778  E5         	PUSH	HL
+
+; Every sector reads into 5900h; earlier contents discarded
+0779  21 00 59   	LD	HL,5900H
+077C  3E 04      	LD	A,4H
+077E  CD AB 07   	CALL	7ABH
+0781  E1         	POP	HL
+0782  D1         	POP	DE
+0783  C1         	POP	BC
+0784  28 0A      	JR	Z,790H
+0786  CB 7F      	BIT	7,A
+0788  28 05      	JR	Z,78FH
+078A  CD DB 05   	CALL	5DBH
+078D  18 E7      	JR	776H
+
+; Count unsuccessful nonfatal sector read
+078F  2C         	INC	L
+0790  1C         	INC	E
+0791  0D         	DEC	C
+0792  20 E2      	JR	NZ,776H
+0794  FD CB 13 76	BIT	6,(IY+13H)
+0798  28 06      	JR	Z,7A0H
+079A  3E 01      	LD	A,1H
+079C  A8         	XOR	B
+079D  47         	LD	B,A
+079E  20 D1      	JR	NZ,771H
+
+; Accumulate errors in one byte (wraps at 256)
+07A0  3A 0E 15   	LD	A,(150EH)
+07A3  85         	ADD	A,L
+07A4  32 0E 15   	LD	(150EH),A
+07A7  7D         	LD	A,L
+07A8  B7         	OR	A
+07A9  D1         	POP	DE
+07AA  C9         	RET
+
+; TRANSIENT RAW DISK DISPATCH: A=1 read, 2 write, 3 format, 4 check
+07AB  F3         	DI
+07AC  3D         	DEC	A
+07AD  28 12      	JR	Z,7C1H
+07AF  3D         	DEC	A
+07B0  28 66      	JR	Z,818H
+07B2  3D         	DEC	A
+07B3  28 53      	JR	Z,808H
+07B5  3D         	DEC	A
+07B6  28 03      	JR	Z,7BBH
+07B8  F6 80      	OR	80H
+07BA  C9         	RET
+
+; Check: seek, then a single sector read (no normal retry ladder)
+07BB  CD 60 08   	CALL	860H
+07BE  C0         	RET	NZ
+07BF  18 1C      	JR	7DDH
+
+; Normal read with retry/recalibrate recovery
+07C1  CD 60 08   	CALL	860H
+07C4  C0         	RET	NZ
+07C5  CD D4 07   	CALL	7D4H
+07C8  C8         	RET	Z
+07C9  F8         	RET	M
+07CA  CD 00 09   	CALL	900H
+07CD  CD D4 07   	CALL	7D4H
+07D0  C8         	RET	Z
+07D1  CD F7 08   	CALL	8F7H
+07D4  CD DD 07   	CALL	7DDH
+07D7  C8         	RET	Z
+07D8  F8         	RET	M
+07D9  CD DD 07   	CALL	7DDH
+07DC  C8         	RET	Z
+
+; Read sector, using controller NMI to finish transfer
+07DD  E5         	PUSH	HL
+07DE  06 80      	LD	B,80H
+07E0  FD 7E 14   	LD	A,(IY+14H)
+07E3  FE 0D      	CP	0DH
+07E5  30 09      	JR	NC,7F0H
+07E7  DD 7E 0A   	LD	A,(IX+0AH)
+07EA  E6 10      	AND	10H
+07EC  0F         	RRCA
+07ED  F6 82      	OR	82H
+07EF  47         	LD	B,A
+07F0  CD 34 09   	CALL	934H
+07F3  03         	INC	BC
+07F4  08         	EX	AF,AF'
+07F5  DB F0      	IN	A,(0F0H)
+07F7  A3         	AND	E
+07F8  28 FB      	JR	Z,7F5H
+07FA  ED A2      	INI
+07FC  7A         	LD	A,D
+07FD  D3 F4      	OUT	(0F4H),A
+07FF  ED A2      	INI
+0801  18 FA      	JR	7FDH
+
+; NMI read continuation; mask FDC status 9Ch
+0803  EB         	EX	DE,HL
+0804  E1         	POP	HL
+0805  E6 9C      	AND	9CH
+0807  C9         	RET
+
+; Format: seek, then F0h WRITE TRACK
+0808  CD 60 08   	CALL	860H
+080B  C0         	RET	NZ
+080C  06 F0      	LD	B,0F0H
+080E  CD 34 09   	CALL	934H
+0811  15         	DEC	D
+0812  08         	EX	AF,AF'
+0813  18 2B      	JR	840H
+
+; NMI format continuation; mask FDC status 78h
+0815  E6 78      	AND	78H
+0817  C9         	RET
+
+; Normal write with retry/recalibrate recovery
+0818  CD 60 08   	CALL	860H
+081B  C0         	RET	NZ
+081C  CD 2D 08   	CALL	82DH
+081F  C8         	RET	Z
+0820  E6 C0      	AND	0C0H
+0822  C0         	RET	NZ
+0823  CD 00 09   	CALL	900H
+0826  CD 2D 08   	CALL	82DH
+0829  C8         	RET	Z
+082A  CD F7 08   	CALL	8F7H
+082D  CD 38 08   	CALL	838H
+0830  C8         	RET	Z
+0831  E6 C0      	AND	0C0H
+0833  C0         	RET	NZ
+0834  CD 38 08   	CALL	838H
+0837  C8         	RET	Z
+
+; Write sector (A0h)
+0838  E5         	PUSH	HL
+0839  06 A0      	LD	B,0A0H
+083B  CD 34 09   	CALL	934H
+083E  5B         	LD	E,E
+083F  08         	EX	AF,AF'
+
+; Output first byte, then DRQ polling loop
+0840  DB F0      	IN	A,(0F0H)
+0842  A3         	AND	E
+0843  28 FB      	JR	Z,840H
+0845  ED A3      	OUTI
+0847  7E         	LD	A,(HL)
+0848  23         	INC	HL
+0849  0E F0      	LD	C,0F0H
+084B  ED 58      	IN	E,(C)
+084D  E2 4B 08   	JP	PO,84BH
+0850  D3 F3      	OUT	(0F3H),A
+0852  0E F3      	LD	C,0F3H
+0854  7A         	LD	A,D
+0855  D3 F4      	OUT	(0F4H),A
+0857  ED A3      	OUTI
+0859  18 FA      	JR	855H
+085B  EB         	EX	DE,HL
+085C  E1         	POP	HL
+085D  E6 FC      	AND	0FCH
+085F  C9         	RET
+
+; Select side/density/drive; restore only if position unknown
+0860  FD 7E 13   	LD	A,(IY+13H)
+0863  E6 80      	AND	80H
+0865  DD B6 03   	OR	(IX+3H)
+0868  FD CB 13 76	BIT	6,(IY+13H)
+086C  28 13      	JR	Z,881H
+086E  CB 40      	BIT	0,B
+0870  28 0F      	JR	Z,881H
+0872  F6 10      	OR	10H
+0874  FD CB 13 5E	BIT	3,(IY+13H)
+0878  28 07      	JR	Z,881H
+087A  F5         	PUSH	AF
+087B  7B         	LD	A,E
+087C  FD 86 0F   	ADD	A,(IY+0FH)
+087F  5F         	LD	E,A
+0880  F1         	POP	AF
+0881  DD 77 0A   	LD	(IX+0AH),A
+0884  7A         	LD	A,D
+0885  FD CB 13 6E	BIT	5,(IY+13H)
+0889  28 01      	JR	Z,88CH
+088B  87         	ADD	A,A
+088C  DD BE 08   	CP	(IX+8H)
+088F  38 04      	JR	C,895H
+0891  DD CB 0A EE	SET	5,(IX+0AH)
+0895  57         	LD	D,A
+0896  DB F0      	IN	A,(0F0H)
+0898  07         	RLCA
+0899  CD 26 09   	CALL	926H
+089C  3E D0      	LD	A,0D0H
+089E  D3 F0      	OUT	(0F0H),A
+08A0  30 0D      	JR	NC,8AFH
+08A2  DD 46 05   	LD	B,(IX+5H)
+08A5  3E FA      	LD	A,0FAH
+08A7  CD 6E 09   	CALL	96EH
+08AA  10 F9      	DJNZ	8A5H
+08AC  CD 26 09   	CALL	926H
+08AF  7B         	LD	A,E
+08B0  D3 F2      	OUT	(0F2H),A
+
+; Restore per-drive cylinder into shared FDC track register
+08B2  DD 7E 09   	LD	A,(IX+9H)
+08B5  D3 F1      	OUT	(0F1H),A
+08B7  3C         	INC	A
+08B8  CC 07 09   	CALL	Z,907H
+08BB  7A         	LD	A,D
+08BC  DD BE 07   	CP	(IX+7H)
+08BF  D2 B8 07   	JP	NC,7B8H
+08C2  D3 F3      	OUT	(0F3H),A
+08C4  DD 77 09   	LD	(IX+9H),A
+08C7  CD 26 09   	CALL	926H
+
+; Skip seek when cylinder unchanged
+08CA  DB F1      	IN	A,(0F1H)
+08CC  92         	SUB	D
+08CD  28 09      	JR	Z,8D8H
+08CF  7A         	LD	A,D
+08D0  B7         	OR	A
+08D1  28 02      	JR	Z,8D5H
+08D3  3E 10      	LD	A,10H
+08D5  CD 07 09   	CALL	907H
+08D8  FD CB 13 6E	BIT	5,(IY+13H)
+08DC  28 06      	JR	Z,8E4H
+08DE  AF         	XOR	A
+08DF  DB F1      	IN	A,(0F1H)
+08E1  1F         	RRA
+08E2  D3 F1      	OUT	(0F1H),A
+08E4  FD CB 13 56	BIT	2,(IY+13H)
+08E8  C8         	RET	Z
+08E9  DB F1      	IN	A,(0F1H)
+08EB  87         	ADD	A,A
+08EC  DD CB 0A 66	BIT	4,(IX+0AH)
+08F0  28 01      	JR	Z,8F3H
+08F2  3C         	INC	A
+08F3  D3 F1      	OUT	(0F1H),A
+08F5  AF         	XOR	A
+08F6  C9         	RET
+
+; Invalidate remembered cylinder, then restore/reseek
+08F7  DD 56 09   	LD	D,(IX+9H)
+08FA  DD 36 09 FF	LD	(IX+9H),0FFH
+08FE  18 B2      	JR	8B2H
+
+; Step in/out recovery
+0900  3E 58      	LD	A,58H
+0902  CD 07 09   	CALL	907H
+0905  3E 68      	LD	A,68H
+
+; Issue step/seek/restore with configured timing
+0907  C5         	PUSH	BC
+0908  4F         	LD	C,A
+0909  3E 02      	LD	A,2H
+090B  CD 6E 09   	CALL	96EH
+090E  DD 7E 04   	LD	A,(IX+4H)
+0911  E6 03      	AND	3H
+0913  B1         	OR	C
+0914  C1         	POP	BC
+0915  CD 2C 09   	CALL	92CH
+0918  CD 26 09   	CALL	926H
+091B  DB F0      	IN	A,(0F0H)
+091D  1F         	RRA
+091E  38 F8      	JR	C,918H
+0920  DD 7E 06   	LD	A,(IX+6H)
+0923  C3 6E 09   	JP	96EH
+
+; Refresh motor/drive-select latch
+0926  DD 7E 0A   	LD	A,(IX+0AH)
+0929  D3 F4      	OUT	(0F4H),A
+092B  C9         	RET
+092C  D3 F0      	OUT	(0F0H),A
+092E  3E 14      	LD	A,14H
+0930  3D         	DEC	A
+0931  20 FD      	JR	NZ,930H
+0933  C9         	RET
+
+; Install transient NMI handler and command-specific return address
+0934  E5         	PUSH	HL
+0935  3E C3      	LD	A,0C3H
+0937  32 66 00   	LD	(66H),A
+093A  21 66 09   	LD	HL,966H
+093D  22 67 00   	LD	(67H),HL
+0940  E1         	POP	HL
+0941  E3         	EX	(SP),HL
+0942  5E         	LD	E,(HL)
+0943  23         	INC	HL
+0944  56         	LD	D,(HL)
+0945  23         	INC	HL
+0946  EB         	EX	DE,HL
+0947  E3         	EX	(SP),HL
+0948  D5         	PUSH	DE
+0949  DD 56 0A   	LD	D,(IX+0AH)
+094C  CB F2      	SET	6,D
+094E  1E 02      	LD	E,2H
+0950  0E F3      	LD	C,0F3H
+0952  CD 26 09   	CALL	926H
+0955  DD CB 0A 76	BIT	6,(IX+0AH)
+0959  28 02      	JR	Z,95DH
+095B  CB D0      	SET	2,B
+095D  78         	LD	A,B
+095E  CD 2C 09   	CALL	92CH
+0961  3E C0      	LD	A,0C0H
+0963  D3 E4      	OUT	(0E4H),A
+0965  C9         	RET
+
+; NMI: disable NMI source, return raw controller status
+0966  E3         	EX	(SP),HL
+0967  AF         	XOR	A
+0968  D3 E4      	OUT	(0E4H),A
+096A  DB F0      	IN	A,(0F0H)
+096C  E1         	POP	HL
+096D  C9         	RET
+
+; Delay loop
+096E  C5         	PUSH	BC
+096F  06 99      	LD	B,99H
+0971  10 FE      	DJNZ	971H
+0973  06 9A      	LD	B,9AH
+0975  10 FE      	DJNZ	975H
+0977  00         	NOP
+0978  3D         	DEC	A
+0979  20 F4      	JR	NZ,96FH
+097B  C1         	POP	BC
+097C  C9         	RET
+
+; Read DISK.FDF once into transient catalogue
+15AF  21 23 20   	LD	HL,2023H
+15B2  22 A1 17   	LD	(17A1H),HL
+15B5  11 24 20   	LD	DE,2024H
+15B8  01 FF 37   	LD	BC,37FFH
+15BB  36 00      	LD	(HL),0H
+15BD  ED B0      	LDIR
+15BF  21 5D 00   	LD	HL,5DH
+15C2  7E         	LD	A,(HL)
+15C3  FE 20      	CP	20H
+15C5  2B         	DEC	HL
+15C6  11 F8 16   	LD	DE,16F8H
+15C9  01 0C 00   	LD	BC,0CH
+15CC  20 06      	JR	NZ,15D4H
+15CE  7E         	LD	A,(HL)
+15CF  B7         	OR	A
+15D0  28 04      	JR	Z,15D6H
+15D2  0E 01      	LD	C,1H
+15D4  ED B0      	LDIR
+15D6  11 F8 16   	LD	DE,16F8H
+15D9  0E 0F      	LD	C,0FH
+15DB  CD 05 00   	CALL	5H
+15DE  3C         	INC	A
+15DF  C8         	RET	Z
+15E0  11 80 00   	LD	DE,80H
+15E3  0E 1A      	LD	C,1AH
+15E5  CD 05 00   	CALL	5H
+15E8  CD BF 16   	CALL	16BFH
+15EB  C8         	RET	Z
+15EC  7E         	LD	A,(HL)
+15ED  23         	INC	HL
+15EE  FE 2A      	CP	2AH
+15F0  20 F6      	JR	NZ,15E8H
+15F2  E5         	PUSH	HL
+15F3  21 A3 17   	LD	HL,17A3H
+15F6  E5         	PUSH	HL
+15F7  11 A4 17   	LD	DE,17A4H
+15FA  01 7F 00   	LD	BC,7FH
+15FD  36 00      	LD	(HL),0H
+15FF  ED B0      	LDIR
+1601  D1         	POP	DE
+1602  E1         	POP	HL
+1603  06 3C      	LD	B,3CH
+1605  7E         	LD	A,(HL)
+1606  23         	INC	HL
+1607  FE 0D      	CP	0DH
+1609  28 04      	JR	Z,160FH
+160B  12         	LD	(DE),A
+160C  13         	INC	DE
+160D  10 F6      	DJNZ	1605H
+160F  EB         	EX	DE,HL
+1610  36 0D      	LD	(HL),0DH
+1612  23         	INC	HL
+1613  36 0A      	LD	(HL),0AH
+1615  CD BF 16   	CALL	16BFH
+1618  C8         	RET	Z
+1619  11 E3 17   	LD	DE,17E3H
+161C  CD 93 16   	CALL	1693H
+161F  CD 89 16   	CALL	1689H
+1622  CD 89 16   	CALL	1689H
+1625  CD 89 16   	CALL	1689H
+1628  CD 93 16   	CALL	1693H
+162B  CD 93 16   	CALL	1693H
+162E  CD 89 16   	CALL	1689H
+1631  CD 89 16   	CALL	1689H
+1634  CD 93 16   	CALL	1693H
+1637  CD 93 16   	CALL	1693H
+163A  CD 89 16   	CALL	1689H
+163D  CD 89 16   	CALL	1689H
+1640  CD 93 16   	CALL	1693H
+1643  CD 89 16   	CALL	1689H
+1646  CD BF 16   	CALL	16BFH
+1649  C8         	RET	Z
+164A  11 03 18   	LD	DE,1803H
+164D  3A F2 17   	LD	A,(17F2H)
+1650  FE 1F      	CP	1FH
+1652  D2 E8 15   	JP	NC,15E8H
+1655  47         	LD	B,A
+1656  CD 89 16   	CALL	1689H
+1659  10 FB      	DJNZ	1656H
+165B  ED 5B A1 17	LD	DE,(17A1H)
+165F  21 A3 17   	LD	HL,17A3H
+1662  01 80 00   	LD	BC,80H
+1665  ED B0      	LDIR
+1667  ED 53 A1 17	LD	(17A1H),DE
+166B  21 23 58   	LD	HL,5823H
+166E  AF         	XOR	A
+166F  ED 52      	SBC	HL,DE
+1671  D2 E8 15   	JP	NC,15E8H
+1674  C9         	RET
+1675  3D         	DEC	A
+1676  6F         	LD	L,A
+1677  26 00      	LD	H,0H
+1679  29         	ADD	HL,HL
+167A  29         	ADD	HL,HL
+167B  29         	ADD	HL,HL
+167C  29         	ADD	HL,HL
+167D  29         	ADD	HL,HL
+167E  29         	ADD	HL,HL
+167F  29         	ADD	HL,HL
+1680  C5         	PUSH	BC
+1681  01 23 18   	LD	BC,1823H
+1684  09         	ADD	HL,BC
+1685  C1         	POP	BC
+1686  7E         	LD	A,(HL)
+1687  B7         	OR	A
+1688  C9         	RET
+1689  D5         	PUSH	DE
+168A  CD 9F 16   	CALL	169FH
+168D  E3         	EX	(SP),HL
+168E  73         	LD	(HL),E
+168F  23         	INC	HL
+1690  EB         	EX	DE,HL
+1691  E1         	POP	HL
+1692  C9         	RET
+1693  D5         	PUSH	DE
+1694  CD 9F 16   	CALL	169FH
+1697  E3         	EX	(SP),HL
+1698  73         	LD	(HL),E
+1699  23         	INC	HL
+169A  72         	LD	(HL),D
+169B  23         	INC	HL
+169C  EB         	EX	DE,HL
+169D  E1         	POP	HL
+169E  C9         	RET
+169F  11 00 00   	LD	DE,0H
+16A2  CD B6 16   	CALL	16B6H
+16A5  D8         	RET	C
+16A6  C5         	PUSH	BC
+16A7  EB         	EX	DE,HL
+16A8  29         	ADD	HL,HL
+16A9  44         	LD	B,H
+16AA  4D         	LD	C,L
+16AB  29         	ADD	HL,HL
+16AC  29         	ADD	HL,HL
+16AD  09         	ADD	HL,BC
+16AE  06 00      	LD	B,0H
+16B0  4F         	LD	C,A
+16B1  09         	ADD	HL,BC
+16B2  EB         	EX	DE,HL
+16B3  C1         	POP	BC
+16B4  18 EC      	JR	16A2H
+16B6  7E         	LD	A,(HL)
+16B7  23         	INC	HL
+16B8  D6 30      	SUB	30H
+16BA  D8         	RET	C
+16BB  FE 0A      	CP	0AH
+16BD  3F         	CCF
+16BE  C9         	RET
+16BF  21 21 17   	LD	HL,1721H
+16C2  E5         	PUSH	HL
+16C3  CD D3 16   	CALL	16D3H
+16C6  28 09      	JR	Z,16D1H
+16C8  77         	LD	(HL),A
+16C9  23         	INC	HL
+16CA  FE 0D      	CP	0DH
+16CC  20 F5      	JR	NZ,16C3H
+16CE  CD D3 16   	CALL	16D3H
+16D1  E1         	POP	HL
+16D2  C9         	RET
+16D3  E5         	PUSH	HL
+16D4  2A 1F 17   	LD	HL,(171FH)
+16D7  7D         	LD	A,L
+16D8  B7         	OR	A
+16D9  20 14      	JR	NZ,16EFH
+16DB  C5         	PUSH	BC
+16DC  D5         	PUSH	DE
+16DD  11 F8 16   	LD	DE,16F8H
+16E0  0E 14      	LD	C,14H
+16E2  CD 05 00   	CALL	5H
+16E5  D1         	POP	DE
+16E6  C1         	POP	BC
+16E7  21 80 00   	LD	HL,80H
+16EA  B7         	OR	A
+16EB  28 02      	JR	Z,16EFH
+16ED  36 1A      	LD	(HL),1AH
+16EF  7E         	LD	A,(HL)
+16F0  23         	INC	HL
+16F1  22 1F 17   	LD	(171FH),HL
+16F4  FE 1A      	CP	1AH
+16F6  E1         	POP	HL
+16F7  C9         	RET
+
+; Gap tables (count,value pairs), SD at 0751h, DD at 075Fh:
+; SD: 16 FF, 3 00, 3 00, 11 FF, 3 00, 3 00, 10 FF
+; DD: 32 4E, 12 00, 3 F5, 22 4E, 12 00, 3 F5, 24 4E
+; Mutable data: 150Dh cylinder count, 150Eh error count, 150Fh cylinder,
+; 1510h first sector ID, 1511h side, 151Ah temporary destination DPB.
+; IX -> BIOS physical-drive record; IY -> selected/temporary MM DPB.
+; 5900h is the shared transient track/physical-sector buffer.
