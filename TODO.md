@@ -1,7 +1,7 @@
 # BetterCP/M Project Backlog
 
 Status: Living project backlog  
-Updated: 2026-09-04
+Updated: 2026-09-07
 
 This document records substantial unfinished work. Detailed behavioral
 requirements remain authoritative in the architecture, engineering
@@ -215,3 +215,12 @@ directory utility unless it provides genuine additional value.
 7. Stabilize the public CPX and RSX formats and ABIs.
 8. Complete the remaining utilities, documentation, packaging, and physical
    platform validation.
+
+## Post-1.0 considerations
+
+- [ ] Evaluate a common BIOS core with separately loadable device/controller
+  drivers, selected by machine configuration, rather than one monolithic
+  machine-specific extension. Investigate a BIOS driver interface, bootstrap
+  requirements, dependencies, safe unloading, and RAM costs. This is deferred
+  research, not a 1.0 requirement or an instruction to implement now. See
+  [loadable BIOS device-driver proposal](docs/engineering/BIOS-DRIVERS-FUTURE.md).
