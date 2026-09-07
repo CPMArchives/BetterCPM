@@ -1,0 +1,362 @@
+; DUP -- BetterCP/M Disk Utility Program, 07-Sep-2026.
+; FORMAT uses the selected BIOS binding. CONFIG supplies that binding
+; from DISK.FDF. Copy and Check await their own implementation.
+        ASEG
+        ORG 0100H
+        LD SP,04000H
+        CALL INIT
+        CALL FLOAD
+DMAIN:  LD HL,DTITLE
+        CALL HEADER
+        LD HL,DMENU
+        CALL PUTS
+        CALL CHOICE
+        CP 3
+        JP Z,DONE
+        CP 'A'
+        JP Z,DFORMAT
+        CP 'B'
+        JR Z,DNOTYET
+        CP 'C'
+        JP NZ,DMAIN
+DNOTYET:LD HL,NOTYET
+        CALL PUTS
+        CALL PAUSE
+        JP DMAIN
+DFORMAT:LD HL,DFHEAD
+        CALL HEADER
+        LD HL,DFASK
+        CALL PUTS
+        CALL CHOICE
+        CP 3
+        JP Z,DMAIN
+        SUB 'A'
+        CP 4
+        JR NC,DFORMAT
+        LD (DLOG),A
+        LD (REQ),A
+        LD DE,REQ
+        LD B,3
+        CALL API
+        JP NZ,DERR
+        LD A,(REQ+1)
+        OR A
+        JP Z,DPROTECT
+        CP 4
+        JP NC,DERR
+        LD (DPHYS),A
+        LD HL,REQ+1
+        LD DE,CURB
+        LD BC,64
+        LDIR
+        LD A,(CURB+19)
+        AND 0FH
+        JP NZ,DUNSUP
+        LD A,(CURB+18)
+        CP 4
+        JP NC,DUNSUP
+        LD A,(CURB+17)
+        OR A
+        JP Z,DUNSUP
+        CP 33
+        JP NC,DUNSUP
+        LD HL,DLOGMSG
+        CALL PUTS
+        LD A,(DLOG)
+        ADD A,'A'
+        CALL PUTC
+        LD HL,DPHYMSG
+        CALL PUTS
+        LD A,(DPHYS)
+        CALL DECOUT
+        CALL CRLF
+        CALL CURNAME
+        CALL CRLF
+        XOR A
+        LD (DCYL),A
+        LD (DSIDE),A
+; Build and check track capacity BEFORE asking permission to erase.
+        CALL STREAM
+        JP C,DUNSUP
+        LD HL,CONFIRM
+        CALL PUTS
+        CALL KEY
+        CP 'Y'
+        JP NZ,DMAIN
+DTRACK: LD HL,PROGRESS
+        CALL PUTS
+        LD A,(DCYL)
+        CALL DECOUT
+        LD HL,SIDEMSG
+        CALL PUTS
+        LD A,(DSIDE)
+        CALL DECOUT
+        CALL STREAM
+        JP C,DUNSUP
+        LD A,(DLOG)
+        LD (REQ),A
+        LD A,(DCYL)
+        LD (REQ+1),A
+        LD A,(DSIDE)
+        LD (REQ+2),A
+        LD HL,(STRPTR)
+        LD DE,TRACKBF
+        OR A
+        SBC HL,DE
+        LD (REQ+3),HL
+        LD HL,TRACKBF
+        LD (REQ+5),HL
+        LD DE,REQ
+        LD B,5
+        CALL API
+        JP NZ,DIOERR
+        LD C,6
+        LD E,0FFH
+        CALL BDOS
+        CP 3
+        JP Z,DABORT
+        LD A,(CURB+19)
+        AND 040H
+        JR Z,DCYLIN
+        LD A,(DSIDE)
+        XOR 1
+        LD (DSIDE),A
+        JP NZ,DTRACK
+DCYLIN: LD A,(DCYL)
+        INC A
+        LD (DCYL),A
+        LD B,A
+        LD A,(CURB+16)
+        CP B
+        JP NZ,DTRACK
+        LD C,13
+        CALL BDOS
+        LD HL,COMPLETE
+        JR DREPORT
+DPROTECT:LD HL,PROTECTED
+        JR DREPORT
+DUNSUP: LD HL,UNSUPPORTED
+        JR DREPORT
+DABORT: LD HL,ABORTMSG
+        JR DREPORT
+DIOERR: PUSH AF
+        LD HL,IOERR
+        CALL PUTS
+        POP AF
+        CALL DECOUT
+        CALL CRLF
+        CALL PAUSE
+        JP DMAIN
+DERR:   CALL ERROR
+        JP DMAIN
+DREPORT:CALL PUTS
+        CALL PAUSE
+        JP DMAIN
+
+; WD WRITE TRACK stream. No controller ports here; BDOS 207 does I/O.
+; MFM uses F5/F6 sync and F7 CRC tokens. FM uses the controller's
+; address-mark tokens directly. Data starts erased (E5), inverted only
+; for formats which specify it. Sector IDs follow the FDF skew order.
+; STRPTR is bounded on every output. CRC tokens consume two disk bytes.
+STREAM: LD HL,TRACKBF
+        LD (STRPTR),HL
+        XOR A
+        LD (DSEC),A
+        LD A,(CURB+19)
+        AND 080H
+        LD (MFM),A
+        JR Z,SFMHEAD
+        LD A,04EH
+        LD BC,80
+        CALL RUN
+        LD A,0
+        LD BC,12
+        CALL RUN
+        LD A,0F6H
+        LD BC,3
+        CALL RUN
+        LD A,0FCH
+        CALL BYTE
+        LD A,04EH
+        LD BC,50
+        CALL RUN
+        JR SRECORD
+SFMHEAD:LD A,0FFH
+        LD BC,40
+        CALL RUN
+SRECORD:LD A,(MFM)
+        OR A
+        LD BC,6
+        JR Z,SIDZERO
+        LD BC,12
+SIDZERO:XOR A
+        CALL RUN
+        LD A,(MFM)
+        OR A
+        JR Z,SIDMARK
+        LD A,0F5H
+        LD BC,3
+        CALL RUN
+SIDMARK:LD A,0FEH
+        CALL BYTE
+        LD A,(DCYL)
+        CALL BYTE
+        LD A,(DSIDE)
+        CALL BYTE
+        LD A,(DSEC)
+        LD L,A
+        LD H,0
+        LD DE,CURB+20
+        ADD HL,DE
+        LD A,(HL)
+        CALL BYTE
+        LD A,(CURB+18)
+        CALL BYTE
+        LD A,0F7H
+        CALL BYTE
+        LD A,(MFM)
+        OR A
+        LD A,0FFH
+        LD BC,11
+        JR Z,SIDGAP
+        LD A,04EH
+        LD BC,22
+SIDGAP: CALL RUN
+        LD A,(MFM)
+        OR A
+        LD BC,6
+        JR Z,SDZERO
+        LD BC,12
+SDZERO: XOR A
+        CALL RUN
+        LD A,(MFM)
+        OR A
+        JR Z,SDMARK
+        LD A,0F5H
+        LD BC,3
+        CALL RUN
+SDMARK: LD A,0FBH
+        CALL BYTE
+        LD BC,128
+        LD A,(CURB+18)
+SDBYTES:OR A
+        JR Z,SDFILL
+        SLA C
+        RL B
+        DEC A
+        JR SDBYTES
+SDFILL: LD A,(CURB+19)
+        AND 010H
+        LD A,0E5H
+        JR Z,SDRUN
+        CPL
+SDRUN:  CALL RUN
+        LD A,0F7H
+        CALL BYTE
+        LD A,(MFM)
+        OR A
+        LD A,0FFH
+        LD BC,10
+        JR Z,SDGAP
+        LD A,04EH
+        LD BC,16
+SDGAP:  CALL RUN
+        LD A,(DSEC)
+        INC A
+        LD (DSEC),A
+        LD B,A
+        LD A,(CURB+17)
+        CP B
+        JP NZ,SRECORD
+; Account for each CRC token expanding from one byte to two on disk.
+        LD HL,(STRPTR)
+        LD DE,TRACKBF
+        OR A
+        SBC HL,DE
+        LD A,(CURB+17)
+        ADD A,A
+        LD E,A
+        LD D,0
+        ADD HL,DE
+        LD A,(MFM)
+        OR A
+        LD DE,3125
+        JR Z,SCAP
+        LD DE,6250
+SCAP:   OR A
+        SBC HL,DE
+        JR NC,STOOBIG
+; Extra gap lets the next index pulse end the write normally.
+        LD A,(MFM)
+        OR A
+        LD A,0FFH
+        JR Z,STAIL
+        LD A,04EH
+STAIL:  LD BC,1500
+        CALL RUN
+        OR A
+        RET
+STOOBIG:SCF
+        RET
+; RUN: BC copies of A. BYTE/RUN preserve all general registers.
+RUN:    CALL BYTE
+        DEC BC
+        PUSH AF
+        LD A,B
+        OR C
+        JR Z,RUNDONE
+        POP AF
+        JR RUN
+RUNDONE:POP AF
+        RET
+BYTE:   PUSH HL
+        PUSH DE
+        PUSH AF
+        LD HL,(STRPTR)
+        LD DE,TRKLIM
+        OR A
+        SBC HL,DE
+        JP NC,OVERFLOW
+        LD HL,(STRPTR)
+        POP AF
+        LD (HL),A
+        INC HL
+        LD (STRPTR),HL
+        POP DE
+        POP HL
+        RET
+OVERFLOW:
+; Drop the transient stack, not merely BYTE's return address. No disk
+; operation has begun for this track, so it is safe to return to menu.
+        LD SP,04000H
+        JP DUNSUP
+
+DTITLE: DB 'BetterCP/M 2.2 Disk Utility Program version 1.00',0
+DMENU:  DB 13,10,'[ A ] Format a disk',13,10
+        DB '[ B ] Copy a disk',13,10
+        DB '[ C ] Check a disk for errors',13,10,13,10
+        DB 'Select [ A - C ], or BREAK (^C) to exit.',13,10,0
+DFHEAD: DB 'Format a disk',0
+DFASK:  DB 'Choose logical drive [ A - D ], or ^C to return.',13,10,0
+DLOGMSG:DB 13,10,'Logical drive: ',0
+DPHYMSG:DB '   Physical disk drive: ',0
+NOTYET: DB 'Feature not yet implemented.',13,10,0
+CONFIRM:DB 13,10,'Insert target disk. ALL DATA ON THIS PHYSICAL DISK WILL BE LOST.',13,10
+        DB 'Ctrl-C stops between tracks.',13,10
+        DB 'Format this disk? [Y/N] ',0
+PROGRESS:DB 13,'Formatting cylinder ',0
+SIDEMSG:DB ', side ',0
+COMPLETE:DB 13,10,'Format complete.',13,10,0
+PROTECTED:DB 'Physical drive 0 is the protected system disk.',13,10,0
+UNSUPPORTED:DB 'This format is not supported by this formatter.',13,10,0
+ABORTMSG:DB 13,10,'Format aborted. Disk is only partly formatted.',13,10,0
+IOERR:  DB 13,10,'Format failed; controller status: ',0
+DLOG:   DB 0
+DPHYS:  DB 0
+DCYL:   DB 0
+DSIDE:  DB 0
+DSEC:   DB 0
+MFM:    DB 0
+STRPTR: DW 0
+        INCLUDE disk/common.inc
+        END

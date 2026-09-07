@@ -12,11 +12,11 @@ ROOT = Path(__file__).resolve().parents[1]
 MATRIX = ROOT / "metadata/subsystem-versions.tsv"
 EXPECTED = {
     "BetterCP/M": ("-", "0.3", "completed baseline"),
-    "CCP": ("1.0", "1.2", "completed"),
-    "CPX": ("1.0", "1.1", "completed"),
-    "BDOS": ("1.2", "1.4", "completed"),
-    "RSX": ("1.0", "1.1", "completed"),
-    "BIOS": ("1.1", "1.3", "completed"),
+    "CCP": ("1.0", "1.3", "completed"),
+    "CPX": ("1.0", "1.2", "completed"),
+    "BDOS": ("1.2", "1.5", "completed"),
+    "RSX": ("1.0", "1.2", "completed"),
+    "BIOS": ("1.2", "1.5", "completed"),
 }
 
 
@@ -48,8 +48,10 @@ def main() -> None:
         require(banner in text, f"{relative} does not expose {banner}")
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     require(banner in readme, f"README does not identify {banner}")
-    print(f"{banner}; CCP impl 1.2/API 1.0; BDOS impl 1.4/API 1.2; "
-          "CPX, RSX impl 1.1/API 1.0; BIOS impl 1.3/API 1.1")
+    print(banner + "; " + "; ".join(
+        f"{name} impl {rows[name]['implementation_version']}/API {rows[name]['interface_version']}"
+        for name in ("CCP", "BDOS", "CPX", "RSX", "BIOS")))
+
 
 
 if __name__ == "__main__":

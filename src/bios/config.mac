@@ -642,6 +642,13 @@ DC_FBUFFER:
         CALL DC_SEEK
         OR A
         JP NZ,DC_RETURN
+; 07-Sep-2026 -- the control overlay comes from drive A each track.
+; A long restore/seek on the target can exhaust its motor timer.
+; Re-select at the same cylinder before WRITE TRACK. Reuse the common
+; seek service: this second call has no head travel, but renews selection.
+        CALL DC_SEEK
+        OR A
+        JP NZ,DC_RETURN
         LD HL,(DC_BUFFER)
         LD B,(IX+3)
         LD A,(IX+4)

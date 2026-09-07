@@ -1,6 +1,6 @@
 # Runtime disk configuration, ABI version 2
 
-Updated September 7, 2026. BIOS implementation 1.4/API 1.2; BDOS
+Updated September 7, 2026. BIOS implementation 1.5/API 1.2; BDOS
 implementation 1.5/API 1.2. The standard 17 BIOS vectors remain unchanged.
 
 ## Scope and current limits
@@ -28,7 +28,7 @@ track order, FM/MFM and inverted data are supported. DISK.FDF flags for other
 side ordering or numbering are rejected. Native ZSM4 parity for the new disk
 module and real-hardware timing remain unverified.
 
-DISK.FDF is the format source for the forthcoming CONFIG utility. The BIOS
+DISK.FDF is the format source for CONFIG.COM. The BIOS
 accepts decoded records and does not open or parse text files. Do not translate
 through diskdefs or guess omitted physical parameters. The current MM-style
 system image retains its existing 80-track, double-sided, 790K default profile.
@@ -138,16 +138,9 @@ Checks for this change:
 - `test_packed_tpa.py`: overwrite the advertised TPA, survive in resident BDOS,
   rebuild the command environment and retain a resident RSX.
 
-## CONFIG/DUP follow-up requirements
+## CONFIG/DUP
 
-CONFIG F should reproduce the physical-drive menu, including the two timing
-settings. CONFIG G should use DISK.FDF, display 16 choices A–P per page, accept
-`,` or `<` for previous and `.` or `>` for next, and retain MM's reverse-video
-header, bracketed letters, Enter default and Ctrl-C return. Keep format choice,
-hardware compatibility and logical-to-physical binding distinct. The successful
-hardware-check path must still prompt for the physical attachment, as specified
-by the user. Disk-format conversion is deferred in both directions.
-
-DUP should implement Format; Copy and Check disk errors remain explicit
-“Feature not yet implemented” choices. Neither utility UI is part of this
-BIOS change.
+The transient menus, runtime FDF parser and DUP formatting operation are
+implemented. See [CONFIG/DUP usage and limits](CONFIG-DUP.md). Copy, disk-error
+checking and SYSGEN persistence remain future work; diskdefs conversion remains
+deferred in both directions.

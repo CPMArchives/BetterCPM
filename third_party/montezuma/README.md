@@ -11,3 +11,13 @@ The binary is retained as third-party software and is not part of BetterCP/M's
 original source. Its CP/M redistribution status follows the Digital Research
 CP/M open-source distribution permission reaffirmed in 2022; it is not
 relicensed under BetterCP/M's project license.
+
+## Disk format catalogue
+
+`DISK.FDF` is the unmodified 10,752-byte Montezuma Micro format catalogue
+extracted from the downloaded distribution during reconstruction. It is
+third-party reference data, not original BetterCP/M source.
+
+SHA-256: `9635fc0e93838f28c96aa274033fae1c8eb747db97fe4b2bd04337e39a286d66`.
+
+CONFIG reads the text catalogue at run time. No diskdefs conversion is used.

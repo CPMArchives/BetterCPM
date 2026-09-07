@@ -238,10 +238,13 @@ def main() -> None:
     clr_path = ROOT / "build/utilities/CLR.COM"
     ver_path = ROOT / "build/utilities/VER.COM"
     warm_path = ROOT / "build/utilities/WARM.COM"
+    config_path = ROOT / "build/utilities/CONFIG.COM"
+    dup_path = ROOT / "build/utilities/DUP.COM"
+    fdf_path = ROOT / "third_party/montezuma/DISK.FDF"
     for path in (resident_path, command_path, basic_cpx_path, hello_cpx_path,
                  hello_rsx_path, echo_rsx_path, cpx_utility_path, rsx_utility_path,
                  rsxtest_path, rsx2test_path, era_path, ren_path, type_path, dir_path,
-                 user_path, clr_path, ver_path, warm_path):
+                 user_path, clr_path, ver_path, warm_path, config_path, dup_path, fdf_path):
         if not path.is_file():
             raise SystemExit(f"missing system-image input: {path}")
     # Reassemble from source so a previous failed BIOS build cannot hide behind
@@ -332,6 +335,9 @@ def main() -> None:
                      ("CLR.COM", clr_path.read_bytes()),
                      ("VER.COM", ver_path.read_bytes()),
                      ("WARM.COM", warm_path.read_bytes()),
+                     ("CONFIG.COM", config_path.read_bytes()),
+                     ("DUP.COM", dup_path.read_bytes()),
+                     ("DISK.FDF", fdf_path.read_bytes()),
                      ("BASIC.CPX", basic_cpx_path.read_bytes()),
                      ("HELLO.CPX", hello_cpx_path.read_bytes()),
                      ("HELLO.RSX", hello_rsx_path.read_bytes()),
