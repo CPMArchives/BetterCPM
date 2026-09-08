@@ -21,7 +21,8 @@ def main():
     builtin=builtin_source()
     for stem in ('config','dup'):
         source=ROOT/f'src/utilities/{stem}.mac'
-        text=source.read_text().replace('        INCLUDE disk/common.inc',
+        text=source.read_text().replace('        INCLUDE disk/sysgen.inc',
+            (ROOT/'src/utilities/disk/sysgen.inc').read_text()).replace('        INCLUDE disk/common.inc',
             (ROOT/'src/utilities/disk/common.inc').read_text()).replace('        INCLUDE disk/builtins.inc', builtin)
         data=assemble(args.assembler,text,out/(stem.upper()+'.COM'),out/(stem+'.lst'),0x100)
         if len(data)>0x3D00:

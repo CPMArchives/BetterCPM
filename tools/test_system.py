@@ -507,7 +507,7 @@ def main() -> None:
     cpu.mem[FCB:FCB + 36] = bytes((1,)) + b"READ    DAT" + bytes(24)
     cpu.de, cpu.ix = FCB, 0xA55A
     saved_sp = cpu.sp
-    cpu.run(LAYOUT["EXTENSIONS"] + 0x12, limit=50000)
+    cpu.run(LAYOUT["EXTENSIONS"] + 0x06, limit=50000)
     require(cpu.a != 0xFF and cpu.sp == saved_sp and cpu.ix == 0xA55A,
             "nested unified Open damaged the protected-reader call frame")
     require(cpu.mem[bdos_symbol("UB_USERNO")] == 31 and

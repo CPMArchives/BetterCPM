@@ -1,0 +1,36 @@
+{
+  "image_sha256": "964836cdb772b728b949d774cbc56f33ad45b3a77eee5d4013246839dfb570c0",
+  "case_0143": "PASS on repaired image; see individual fault/reset observations",
+  "sources": {
+    "src/bdos/unified.mac": "01f70a639fcba0997a205218fabd09bce6c3af73b320544781ad794656982ad8",
+    "src/bios/tables.mac": "589423bde245417d51d004e12858c53bf3c396e41ad1eb4f88d27b95cdebd993",
+    "src/system/layout.inc": "1ca863298dbcb34f2c1418a3d4f0bf68054304c601865b646155feeaf515d063",
+    "tools/test_media_change.py": "627d81f75908805fa0985806b8e54f060ab1ed4725430ef2ea7618eb874f926d",
+    "tools/test_unified_bdos.py": "c9e477e79e845c40ab6e6ab249677e23298189345104ef1faeb3addf3b0b00bf"
+  },
+  "evidence": {
+    "build/compatibility/run-20260908-064716/FILETEST_ALL/rows.txt": "d87ddeada0e9fae24e3f54c1776afa54bff40f4652f0d4bcec0674c019fb2717",
+    "build/compatibility/run-20260908-064716/FILETEST_ALL/screens.txt": "790b3f8843946ab374289f1d9fb0c4e09d6e139b34eea5f35856d29bd31840fa",
+    "build/compatibility/run-20260908-064716/FILETEST_ALL/result.json": "27b84a0562ef10ec42a23365dd6cd8888d928610fc60488d5ba9f99077881115",
+    "build/compatibility/run-20260908-064716/DIRTEST_ALL/rows.txt": "5dc980a88ac6ab30c95eb3b0221d057efda97b99ddd0bf8f1fd3830c57de1a59",
+    "build/compatibility/run-20260908-064716/DIRTEST_ALL/screens.txt": "28d74ae14fb38ac98e3ba0399f6d8f0180ca05e5fe436dde4c8ddfd6f0f68903",
+    "build/compatibility/run-20260908-064716/DIRTEST_ALL/result.json": "7e71c02c25905c20d565e997f0eb8eb0f6c9dc9fc6096076250202cc61ad3881",
+    "build/compatibility/run-20260908-064907/DISKTEST_ALL_D/rows.txt": "84f2846a7638a3c22bb2e7106c27c7f148da007e379794a4bab41961bb566e77",
+    "build/compatibility/run-20260908-064907/DISKTEST_ALL_D/screens.txt": "45497d84a2a3c6d9d9f393f856054422d07c854c6174f8ab27e8726c661f2a52",
+    "build/compatibility/run-20260908-064907/DISKTEST_ALL_D/result.json": "9343106a7559fdf083252c8fcb843709bb375faac919da6267d27d654a12cbcf",
+    "build/compatibility/media-20260908-064616/MEDIA.COM": "7e29cc0b69bb09a4d3689bbfa5fb9e9c00c20a2dce32a7b8fb01393f3b45ec80",
+    "build/compatibility/media-20260908-064616/media.lst": "fba2f257cefa8bf8a614f43627d8818c84bc8c940c4dd48dfe4583d92d3bb545",
+    "build/compatibility/media-20260908-064616/screens.txt": "0ffe7d6bbc87ec86892b41465200ad991a8e8e39f81147714817f6aa94801d44",
+    "build/compatibility/media-20260908-064810/MEDIA.COM": "032394f94f52eb36d7bcfd90168c32b4ace304cb812dd97704fc28668327d3ff",
+    "build/compatibility/media-20260908-064810/media.lst": "4ae5e27eefa9f7b61029b99ac8b44c0433b2f7985d6fc8563e8a45e4b53a5f54",
+    "build/compatibility/media-20260908-064810/screens.txt": "116ed4325be7b0b319344f4989c5ad5e0cb8d686147a7adbb35fc8c3c734693d",
+    "build/compatibility/media-20260908-064956/MEDIA.COM": "01d39659a5a329310e0ce6c6b81ba7c15e538f910657ab503251618331f05f1f",
+    "build/compatibility/media-20260908-064956/media.lst": "e6bed0a90ee04f0308506d54a841e5e9e699af5a8a0fdc9d5b171ee000d44faf",
+    "build/compatibility/media-20260908-064956/screens.txt": "116ed4325be7b0b319344f4989c5ad5e0cb8d686147a7adbb35fc8c3c734693d",
+    "build/compatibility/media-protection-bdos.log": "b9ae2dec20915631c8239764a437d1016f633aeabc7d0366278f6b9c52c5debf",
+    "build/compatibility/media-protection-bios.log": "302a987de46791fa3c307cf6527f2a68c4af9ce0201ddcc9b136d047e2858485",
+    "build/compatibility/media-protection-ccp.log": "6110c8e29ff32a8dcedc99e7704daa0a6e667ff4fb63b48d0430556cd3a9493c",
+    "build/compatibility/media-protection-tpa.log": "4bde58c124e11926c9956c3fd13a919c1c247eb715ea8091a471ff602a1fb37b",
+    "build/compatibility/media-protection-build.log": "1e7ce70ed3c3c093a934278d1f62a47671b20b12d1a4a16e8454864051e8f77d"
+  }
+}

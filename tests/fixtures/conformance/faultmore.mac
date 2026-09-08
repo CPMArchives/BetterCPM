@@ -1,0 +1,121 @@
+; FAULTMORE -- final BIOS-error boundary instrument, 07-Sep-2026.
+; Replace only READ/WRITE vector operands after opening a known file.
+; A real BDOS must suspend at its physical-error operator path.  If it
+; returns after an operator ignore, restore the vectors before continuing.
+; This deliberately does not certify the controller driver's retries.
+        ORG 0100H
+        LD DE,FCB
+        LD C,15
+        CALL 5
+        CP 0FFH
+        JP Z,SETUPBAD
+        LD DE,BUFFER
+        LD C,26
+        CALL 5
+        LD DE,FCB
+        LD C,20
+        CALL 5
+        OR A
+        JP NZ,SETUPBAD
+        LD DE,READY
+        LD C,9
+        CALL 5
+        XOR A
+        LD (FCB+32),A
+        LD HL,(1)
+        LD DE,37
+        ADD HL,DE
+        LD (READPTR),HL
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD (OLDREAD),DE
+        DEC HL
+        LD DE,FAILREAD
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        LD DE,FCB
+        LD C,20
+        CALL 5
+        LD (READRET),A
+        LD HL,(READPTR)
+        LD DE,(OLDREAD)
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        LD DE,READBACK
+        LD C,9
+        CALL 5
+        XOR A
+        LD (FCB+32),A
+        LD HL,(1)
+        LD DE,40
+        ADD HL,DE
+        LD (WRITEPTR),HL
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD (OLDWRITE),DE
+        DEC HL
+        LD DE,FAILWRITE
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        LD DE,FCB
+        LD C,21
+        CALL 5
+        LD (WRITERET),A
+        LD HL,(WRITEPTR)
+        LD DE,(OLDWRITE)
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        LD DE,WRITEBACK
+        LD C,9
+        CALL 5
+        LD A,(HITS)
+        CP 2
+        LD DE,RESULTS
+        JR Z,SHOW
+SETUPBAD:
+        LD DE,BADMSG
+SHOW:   LD C,9
+        CALL 5
+        JP 0
+; These are one-shot faults.  Restore the entry before reporting failure so
+; an operator ^C can fetch a fresh CCP from the same healthy test disk.
+FAILREAD:
+        LD HL,(READPTR)
+        LD DE,(OLDREAD)
+        CALL RESTORE
+        JR FAILRET
+FAILWRITE:
+        LD HL,(WRITEPTR)
+        LD DE,(OLDWRITE)
+        CALL RESTORE
+FAILRET: LD HL,HITS
+        INC (HL)
+        LD A,1
+        RET
+RESTORE:
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        RET
+READPTR: DW 0
+WRITEPTR: DW 0
+OLDREAD: DW 0
+OLDWRITE: DW 0
+READRET: DB 0
+WRITERET: DB 0
+HITS: DB 0
+FCB: DB 0,'BTONE   DAT'
+     DB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+BUFFER: DS 128
+READY: DB 'Healthy file read passed; inject final BIOS errors.',13,10,'$'
+READBACK: DB 'READ CALLER RESUMED after operator ignore.',13,10,'$'
+WRITEBACK: DB 'WRITE CALLER RESUMED after operator ignore.',13,10,'$'
+RESULTS: DB 'FAULT PROVIDER COMPLETED BOTH CALLS',13,10,'$'
+BADMSG: DB 'FAULTMORE SETUP OR PROVIDER COUNT FAILED',13,10,'$'
+        END

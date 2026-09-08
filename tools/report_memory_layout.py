@@ -6,7 +6,7 @@ from system_layout import LAYOUT
 
 ROOT = Path(__file__).resolve().parents[1]
 RESERVATIONS = (
-    ("Persistent history", LAYOUT["HISTORY"], 512),
+    ("Persistent history", LAYOUT["HISTORY"], LAYOUT["SYSTEM"] - LAYOUT["HISTORY"]),
     ("Dynamic gateway (no RSXs)", LAYOUT["TPA"], 3),
     ("Active RSX table", LAYOUT["RSX_STATE"], 41),
     ("Reload/CCP stack", LAYOUT["STACK_LOW"], LAYOUT["STACK_TOP"] - LAYOUT["STACK_LOW"]),

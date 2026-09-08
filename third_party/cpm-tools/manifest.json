@@ -1,0 +1,14 @@
+{
+  "repository": "https://github.com/CPMArchives/cpm-tools",
+  "commit": "3e5eee55cac154e125659aadaa865b2c66e7d06a",
+  "files": [
+    {"name": "BDOSPRB.COM", "path": "BDOSPRB.COM", "sha256": "6062cd5b56618c92e68dada8783c1d5ec4cf09e0117ace90737ff0e811d76d3e"},
+    {"name": "COMINFO.COM", "path": "COMINFO.COM", "sha256": "5a4495b0c2d42db9de57fe328d911aec01646666693ffd607dec683d88890e69"},
+    {"name": "DISKEDIT.COM", "path": "DISKEDIT.COM", "sha256": "df514e1a4bf11224579db51ca5bd63a86c9581689bb3e75e5b95d4f5b0cec9cf"},
+    {"name": "DISKINFO.COM", "path": "DISKINFO.COM", "sha256": "fa03f5acfd1366d15d248bac6ab30ec4fad415c83eb6e7ebf1b24302b9b31db6"},
+    {"name": "DPBCHK.COM", "path": "DPBCHK.COM", "sha256": "05d310a0d9a7293abf9c2c3973c1d5af3bdb4ee7110762a838dbd6721df9c4e4"},
+    {"name": "FSCK.COM", "path": "FSCK.COM", "sha256": "d9a48ee1967eb95686ea4806e9cb3d64e8477fffa9e2ba82402e17ac8deaab7c"},
+    {"name": "SYSINFO.COM", "path": "SYSINFO.COM", "sha256": "83617404d28feda80b159470dc2d0dbebd5f207a2402e9646958fb3474999d6f"},
+    {"name": "TOOLS.DOC", "path": "TOOLS.DOC", "sha256": "01609f081aa4acce4a0aa01b87bfb5f84cf33b5f94009b94d4dca58a08d5b5b3"}
+  ]
+}

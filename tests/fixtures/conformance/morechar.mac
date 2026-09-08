@@ -1,0 +1,206 @@
+; MORECHAR -- controlled logical-device provider for the RAM conformance run.
+; 07-Sep-2026.  Exercise the real BDOS with distinct CONIN, READER and LIST
+; endpoints.  Save and restore every intercepted BIOS operand before exit.
+; This checks BDOS dispatch/echo, not a physical printer or paper-tape driver.
+        ORG 0100H
+        LD HL,(1)
+        LD DE,7
+        ADD HL,DE
+        LD (CINVEC),HL
+        LD BC,OLDCIN
+        LD DE,CINPUT
+        CALL INSTALL
+        LD HL,(1)
+        LD DE,13
+        ADD HL,DE
+        LD (LSTVEC),HL
+        LD BC,OLDLST
+        LD DE,LOUT
+        CALL INSTALL
+        LD HL,(1)
+        LD DE,19
+        ADD HL,DE
+        LD (RDRVEC),HL
+        LD BC,OLDRDR
+        LD DE,RINPUT
+        CALL INSTALL
+; The pristine test boot starts with printer echo off. Toggle it through
+; Function 10, just as a user would; do not alter private BDOS variables.
+        LD HL,TOGGLE
+        LD (INPTR),HL
+        LD DE,LINE
+        LD C,10
+        CALL 5
+        LD HL,N65
+        CALL BEGIN
+        LD E,'P'
+        LD C,2
+        CALL 5
+        LD A,(COUNT)
+        CP 1
+        JR NZ,END65
+        LD A,(CAPTURE)
+        CP 'P'
+END65:  CALL RESULT
+        LD HL,N66
+        CALL BEGIN
+        LD DE,STR
+        LD C,9
+        CALL 5
+        LD A,(COUNT)
+        CP 3
+        JR NZ,END66
+        LD HL,(CAPTURE)
+        LD DE,04F46H
+        OR A
+        SBC HL,DE
+        JR NZ,END66
+        LD A,(CAPTURE+2)
+        CP 'O'
+END66:  CALL RESULT
+        LD HL,N79
+        CALL BEGIN
+        LD E,'D'
+        LD C,6
+        CALL 5
+        LD A,(COUNT)
+        OR A
+        CALL RESULT
+        LD HL,N102
+        CALL BEGIN
+        LD HL,GRAPHIC
+        LD (INPTR),HL
+        LD E,0
+        LD C,1
+        CALL 5
+        CP 'G'
+        JR NZ,END102
+        LD A,(COUNT)
+        CP 1
+        JR NZ,END102
+        LD A,(CAPTURE)
+        CP 'G'
+END102: CALL RESULT
+        LD HL,N436
+        CALL BEGIN
+        XOR A
+        LD (NREAD),A
+        LD HL,OTHER
+        LD (INPTR),HL
+        LD C,3
+        CALL 5
+        CP 'R'
+        JR NZ,END436
+        LD A,(NREAD)
+        CP 1
+END436: CALL RESULT
+        LD HL,N438
+        CALL BEGIN
+        LD HL,OTHER
+        LD (INPTR),HL
+        LD C,3
+        CALL 5
+        CP 'R'
+        JR NZ,END438
+        LD HL,(INPTR)
+        LD DE,OTHER
+        OR A
+        SBC HL,DE
+END438: CALL RESULT
+        LD HL,N440
+        CALL BEGIN
+        LD E,9
+        LD C,5
+        CALL 5
+        LD A,(COUNT)
+        CP 1
+        JR NZ,END440
+        LD A,(CAPTURE)
+        CP 9
+END440: CALL RESULT
+; Turn echo off through the public line-input interface, then restore BIOS.
+        LD HL,TOGGLE
+        LD (INPTR),HL
+        LD DE,LINE
+        LD C,10
+        CALL 5
+        LD HL,(CINVEC)
+        LD DE,(OLDCIN)
+        CALL RESTORE
+        LD HL,(LSTVEC)
+        LD DE,(OLDLST)
+        CALL RESTORE
+        LD HL,(RDRVEC)
+        LD DE,(OLDRDR)
+        CALL RESTORE
+        JP 0
+INSTALL:LD A,(HL)
+        LD (BC),A
+        INC HL
+        INC BC
+        LD A,(HL)
+        LD (BC),A
+        DEC HL
+RESTORE:LD (HL),E
+        INC HL
+        LD (HL),D
+        RET
+CINPUT: LD HL,(INPTR)
+        LD A,(HL)
+        INC HL
+        LD (INPTR),HL
+        RET
+RINPUT: LD HL,NREAD
+        INC (HL)
+        LD A,'R'
+        RET
+LOUT:   LD A,(COUNT)
+        LD L,A
+        LD H,0
+        LD DE,CAPTURE
+        ADD HL,DE
+        LD (HL),C
+        LD HL,COUNT
+        INC (HL)
+        RET
+BEGIN:  LD DE,ROW
+        LD BC,4
+        LDIR
+        XOR A
+        LD (COUNT),A
+        RET
+RESULT: LD A,'P'
+        JR Z,SHOW
+        LD A,'F'
+SHOW:   LD (ROW+5),A
+        LD DE,NEWLINE
+        LD C,9
+        CALL 5
+        LD DE,ROW
+        LD C,9
+        JP 5
+N65:    DB '0065'
+N66:    DB '0066'
+N79:    DB '0079'
+N102:   DB '0102'
+N436:   DB '0436'
+N438:   DB '0438'
+N440:   DB '0440'
+ROW:    DB '0000 P R Controlled logical-device boundary passed',13,10,'$'
+NEWLINE:DB 13,10,'$'
+STR:    DB 'FOO$'
+TOGGLE: DB 16,13
+GRAPHIC:DB 'G'
+OTHER:  DB 'T'
+LINE:   DB 8,0,0,0,0,0,0,0,0,0
+CINVEC: DW 0
+LSTVEC: DW 0
+RDRVEC: DW 0
+OLDCIN: DW 0
+OLDLST: DW 0
+OLDRDR: DW 0
+INPTR:  DW 0
+NREAD:  DB 0
+COUNT:  DB 0
+CAPTURE:DS 256
+        END

@@ -1,0 +1,628 @@
+item	classification	result	requirement	detail	evidence
+0001	REQUIRED	P	.COM load origin	Program began at 0100h	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0002	REQUIRED	P	Transient entry point	Transient program entered at 0100h	build/compatibility/run-20260907-222250/CCPTEST_0002_CCPTEST.COM_0002_r_VER_r/rows.txt
+0003	REQUIRED	P	TPA lower boundary	TPA lower boundary is 0100h	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0004	REQUIRED	P	TPA upper-bound discovery	BDOS/TPA ceiling lies above program	build/compatibility/run-20260907-220132/CCPTEST_0004/rows.txt
+0005	REQUIRED	P	Warm-start gateway at 0000h	JMP at 0000h is warm start	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0006	REQUIRED	P	IOBYTE location	IOBYTE resides at 0003h	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0007	REQUIRED	P	Command-entry default-drive byte	Entry default-drive byte is in range	build/compatibility/run-20260907-220132/CCPTEST_0007/rows.txt
+0008	REQUIRED	P	BDOS gateway at 0005h	JMP at 0005h is BDOS gateway	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0009	REQUIRED	P	Reserved restart/interrupt region roles	Page-zero gateway roles present	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0010	REQUIRED	P	CBIOS scratch-area role	BIOS scratch ends before FCB at 005Ch	build/compatibility/run-20260907-220132/CCPTEST_0010/rows.txt
+0011	REQUIRED	P	First default FCB location	First default FCB is at 005Ch	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0012	PROFILE REQUIRED	-	Second default FCB at 006Ch	DRI-CCP: Run: ENTRYTST /0012 SECOND.BIN	captured/ENTRYTST_ALL/screens.txt
+0013	REQUIRED	P	Default FCB drive-prefix parsing	FCB2 drive=2 and ALPHA.TXT matched	build/compatibility/run-20260907-222051/CCPTEST_0013_B:ALPHA.TXT/rows.txt
+0014	REQUIRED	P	Default FCB wildcard expansion	Use /0014 A:AB*.C?M	build/compatibility/run-20260907-220132/ENTRYTST_0014_A:AB*.C?M/rows.txt
+0015	REQUIRED	P	Default FCB case and padding	Use /0015 mixed.txt	build/compatibility/run-20260907-220132/ENTRYTST_0015_MIXED.TXT/rows.txt
+0016	NOT GUARANTEED	UNRECORDED	Default FCB unopened control fields		
+0017	REQUIRED	P	Command-tail count location	Tail count read from 0080h	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0018	REQUIRED	P	Command-tail character location	Tail text begins at 0081h	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0019	REQUIRED	P	Leading blank in command tail	Command tail begins with SPACE	build/compatibility/run-20260907-220132/CCPTEST_0019/rows.txt
+0020	REQUIRED	P	Uppercase command-tail representation	Raw mixed-case input with backspace edit remained undispatched before host CR; resulting transient identity and uppercase tail verified.	build/compatibility/acquisition-20260907-235356/mixed/screens.txt
+0021	NOT GUARANTEED	O	NUL after counted command tail	Tail-end=0D; not guaranteed	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0022	OUTSIDE SCOPE	UNRECORDED	Bytes following command-tail terminator		
+0023	REQUIRED	P	Default DMA address	Entry DMA was 0080h	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0024	REQUIRED	P	Command-tail/default-DMA overlap	Tail and default DMA overlap	build/compatibility/run-20260907-211115/ENTRYTST_ALL/rows.txt
+0025	REQUIRED	P	Program termination through JMP 0000h	Executed documented termination path; fresh CCP prompt captured after transfer.	build/compatibility/run-20260907-222051/CCPTEST_0025_Z/final.txt
+0026	REQUIRED	P	Program termination through BDOS function 0	Executed documented termination path; fresh CCP prompt captured after transfer.	build/compatibility/run-20260907-222051/ENTRYTST_0026_Z/final.txt
+0027	REQUIRED	P	RET termination	Executed documented termination path; fresh CCP prompt captured after transfer.	build/compatibility/run-20260907-222051/ENTRYTST_0027_Z/final.txt
+0028	REQUIRED	P	Valid entry return word	Executed documented termination path; fresh CCP prompt captured after transfer.	build/compatibility/run-20260907-222051/CCPTEST_0028_Z/final.txt
+0029	OUTSIDE SCOPE	-	Exact entry SP	Outside executable scope	captured/ENTRYTST_ALL/screens.txt
+0030	OUTSIDE SCOPE	-	Exact entry return address	Outside executable scope	captured/ENTRYTST_ALL/screens.txt
+0031	NOT GUARANTEED	UNRECORDED	General-register entry state		
+0032	NOT GUARANTEED	O	Z80 extended-register entry state	Extended registers unspecified	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0033	NOT GUARANTEED	O	Entry flags and interrupt state	Flags/interrupt unspecified	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0034	OUTSIDE SCOPE	-	Exact BIOS/BDOS vector targets	Outside executable scope	followup/BDOSTEST_ALL_v3/screens.txt
+0035	REQUIRED	P	BDOS function selector in C	C=12 selected version (22h)	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0036	REQUIRED	P	BDOS function-specific input in DE/E	E=0 selected drive A	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0037	REQUIRED	P	Byte result in A	Fn 25 returned byte in A	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0038	REQUIRED	P	Word result in HL	Fn 24 returned word in HL	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0039	REQUIRED	P	Normal-return alias A=L	Normal return alias A=L	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0040	REQUIRED	P	Normal-return alias B=H	Normal return alias B=H	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0041	REQUIRED	P	CP/M 2.2 BDOS selector range	Selector range ends at Fn 40	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0042	REQUIRED	P	Out-of-range BDOS result	Fn 41 returned zero	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0043	REQUIRED	P	Caller SP restored on returning BDOS calls	Caller stack restored	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0044	OUTSIDE SCOPE	-	DRI private BDOS stack mechanism	Outside executable scope	followup/BDOSTEST_ALL_v3/screens.txt
+0045	NOT GUARANTEED	O	AF preservation across BDOS	AF=2288; not guaranteed	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0046	NOT GUARANTEED	O	BC preservation across BDOS	BC=000C; not guaranteed	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0047	NOT GUARANTEED	O	DE preservation across BDOS	DE=5AA5; not guaranteed	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0048	NOT GUARANTEED	O	HL preservation across BDOS	HL=0022; not guaranteed	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0049	NOT GUARANTEED	O	Z80-only and alternate-register preservation	Alt registers not read	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0050	OUTSIDE SCOPE	-	Valid-call C becomes input E	Outside executable scope	followup/BDOSTEST_ALL_v3/screens.txt
+0051	OUTSIDE SCOPE	UNRECORDED	Observed BDOS return flags		
+0052	REQUIRED	P	Function 2 character source	Operator confirmed Function 2 emitted A	followup/CONSTEST_0052_Y_v5/screens.txt
+0053	REQUIRED	P	Function 2 treats '$' as ordinary data	Operator confirmed Function 2 emitted dollar sign	build/compatibility/run-20260907-220650/CONSTEST_0053_Y/rows.txt
+0054	REQUIRED	P	Function 9 string address	Operator confirmed Function 9 used DE string address	build/compatibility/run-20260907-220650/CONSTEST_0054_Y/rows.txt
+0055	REQUIRED	P	Function 9 '$' termination	Operator confirmed Function 9 stopped at dollar sign	build/compatibility/run-20260907-220650/CONSTEST_0055_Y/rows.txt
+0056	REQUIRED	P	Function 9 terminator is not emitted	Operator confirmed terminator was not emitted	build/compatibility/run-20260907-220823/CONSTEST_0056_Y/rows.txt
+0057	REQUIRED	P	Function 9 empty string	Operator confirmed empty string emitted no bytes	build/compatibility/run-20260907-220823/CONSTEST_0057_Y/rows.txt
+0058	REQUIRED	P	Function 9 scans across ordinary control characters	Operator confirmed controls were scanned before terminator	build/compatibility/run-20260907-220823/CONSTEST_0058_Y/rows.txt
+0059	REQUIRED	P	Function 2 uses formatted console output	Operator confirmed Function 2 formatted TAB	build/compatibility/run-20260907-221122/CONSTEST_0059_Y/rows.txt
+0060	REQUIRED	P	Function 9 uses formatted console output	Operator confirmed Function 9 formatted TAB	build/compatibility/run-20260907-221122/CONSTEST_0060_Y/rows.txt
+0061	REQUIRED	P	Shared formatted-output state	Operator confirmed shared formatted-output state	build/compatibility/run-20260907-221122/CONSTEST_0061_Y/rows.txt
+0062	REQUIRED	P	TAB expansion	Operator confirmed eight-column TAB expansion	build/compatibility/run-20260907-221122/CONSTEST_0062_Y/rows.txt
+0063	REQUIRED	P	Function 2 participates in scrolling control	Two identical paused screens before resume; confirmation reached only after X.	build/compatibility/console-pause/63/result.json
+0064	REQUIRED	P	Function 9 participates in scrolling control	Two identical paused screens before resume; confirmation reached only after X.	build/compatibility/console-pause/64/result.json
+0065	REQUIRED	P	Function 2 participates in active printer echo	Controlled logical-device boundary passed	build/compatibility/run-20260907-233043/MORECHAR/rows.txt
+0066	REQUIRED	P	Function 9 participates in active printer echo	Controlled logical-device boundary passed	build/compatibility/run-20260907-233043/MORECHAR/rows.txt
+0067	NOT GUARANTEED	UNRECORDED	Function 2 has no function-specific return value		
+0068	NOT GUARANTEED	UNRECORDED	Function 9 has no function-specific return value		
+0069	PROFILE REQUIRED	UNRECORDED	Exact logical-column update rules		
+0070	PROFILE REQUIRED	UNRECORDED	LF resets DRI logical column		
+0071	PROFILE REQUIRED	UNRECORDED	CR does not reset DRI logical column		
+0072	NOT GUARANTEED	UNRECORDED	Pending-key buffering during formatted output		
+0073	NOT GUARANTEED	UNRECORDED	Ctrl-C behavior after output pause		
+0074	OUTSIDE SCOPE	UNRECORDED	DRI private formatted-output implementation state		
+0075	REQUIRED	P	Function 6 direct-output selection	Operator confirmed E not FF selected direct output	build/compatibility/run-20260907-221122/CONSTEST_0075_Y/rows.txt
+0076	REQUIRED	P	Function 6 direct-output character source	Operator confirmed Function 6 emitted E unchanged	build/compatibility/run-20260907-221122/CONSTEST_0076_Y/rows.txt
+0077	REQUIRED	P	Function 6 direct output does not expand TAB	Captured screen memory contains A, byte 09h, B in three adjacent cells; no BDOS space expansion.	build/compatibility/run-20260907-224546/CONSTEST_0077/final.txt
+0078	REQUIRED	P	Function 6 direct output bypasses Ctrl-S scrolling control	Inject Ctrl-S during dots; stream completes without a resume key.	build/compatibility/console-pause/78/result.json
+0079	REQUIRED	P	Function 6 direct output bypasses Ctrl-P printer echo	Controlled logical-device boundary passed	build/compatibility/run-20260907-233043/MORECHAR/rows.txt
+0080	NOT GUARANTEED	UNRECORDED	Function 6 direct output has no function-specific result		
+0081	REQUIRED	P	Function 6 nonblocking-input selection	Operator confirmed E=FF selected nonblocking input	build/compatibility/run-20260907-221122/CONSTEST_0081_Y/rows.txt
+0082	REQUIRED	P	Function 6 no-input result	Operator confirmed no-input result A=00	followup/CONSTEST_0082_Y_v5/screens.txt
+0083	REQUIRED	P	Function 6 ready-input result	Operator confirmed ready Function 6 returned input byte	build/compatibility/run-20260907-223415/CONSTEST_0083_K_Y/rows.txt
+0084	REQUIRED	P	Function 6 input is unadorned	Operator confirmed Function 6 input had no echo or editing	build/compatibility/run-20260907-223415/CONSTEST_0084_U_Y/rows.txt
+0085	REQUIRED	P	Function 11 not-ready result	Operator confirmed Function 11 not-ready result A=00	build/compatibility/run-20260907-223415/CONSTEST_0085_Z_Y/rows.txt
+0086	NOT GUARANTEED	UNRECORDED	Exact function 11 ready result		
+0087	NOT GUARANTEED	UNRECORDED	Function 11 pending-byte retention		
+0088	NOT GUARANTEED	UNRECORDED	DRI function 6 ignores retained pending byte		
+0089	OUTSIDE SCOPE	UNRECORDED	DRI function 6 E=FEh behavior		
+0090	OUTSIDE SCOPE	UNRECORDED	DRI private pending-byte representation		
+0091	REQUIRED	P	Function 1 selector	Operator confirmed Function 1 selected console input	build/compatibility/run-20260907-223415/CONSTEST_0091_Q_Y/rows.txt
+0092	REQUIRED	P	Function 1 blocking behavior	Operator confirmed Function 1 blocked until input	build/compatibility/run-20260907-223415/CONSTEST_0092_B_Y/rows.txt
+0093	REQUIRED	P	Function 1 result character	Operator confirmed Function 1 returned input character	build/compatibility/run-20260907-223415/CONSTEST_0093_R_Y/rows.txt
+0094	REQUIRED	P	Function 1 echoes graphic characters	Operator confirmed Function 1 echoed graphic input	build/compatibility/run-20260907-223415/CONSTEST_0094_G_Y/rows.txt
+0095	REQUIRED	P	Function 1 echoes CR	Operator confirmed Function 1 echoed CR	build/compatibility/run-20260907-223415/CONSTEST_0095___Y/rows.txt
+0096	REQUIRED	P	Function 1 echoes LF	Operator confirmed Function 1 echoed LF	build/compatibility/run-20260907-223415/CONSTEST_0096___Y/rows.txt
+0097	REQUIRED	P	Function 1 echoes backspace	Operator confirmed Function 1 echoed backspace	build/compatibility/run-20260907-223415/CONSTEST_0097___Y/rows.txt
+0098	REQUIRED	P	Function 1 TAB echo expansion	Operator confirmed Function 1 expanded TAB	build/compatibility/run-20260907-223415/CONSTEST_0098___Y/rows.txt
+0099	REQUIRED	P	Function 1 ordinary controls are not echoed	Operator confirmed ordinary control was not echoed	build/compatibility/run-20260907-223415/CONSTEST_0099___Y/rows.txt
+0100	REQUIRED	P	Function 1 echo uses shared formatted-console state	Operator confirmed Function 1 shared formatted state	build/compatibility/run-20260907-223415/CONSTEST_0100___Y/rows.txt
+0101	REQUIRED	P	Function 1 echo participates in scrolling control	Operator confirmed Function 1 honored scrolling control	build/compatibility/run-20260907-224546/CONSTEST_0101_____X_Y/rows.txt
+0102	REQUIRED	P	Function 1 echo participates in active printer echo	Controlled logical-device boundary passed	build/compatibility/run-20260907-233043/MORECHAR/rows.txt
+0103	PROFILE REQUIRED	UNRECORDED	Function-1 Ctrl-P printer-echo state change		
+0104	PROFILE REQUIRED	UNRECORDED	Function 1 consumes function-11-retained input		
+0105	OUTSIDE SCOPE	UNRECORDED	DRI private function-1 implementation details		
+0106	REQUIRED	P	Function 10 selector and buffer address	Operator confirmed Function 10 used DE buffer	build/compatibility/run-20260907-223415/CONSTEST_0106_AB__Y/rows.txt
+0107	REQUIRED	P	Function 10 maximum byte	Operator confirmed maximum-byte capacity termination	build/compatibility/run-20260907-223415/CONSTEST_0107_Z_Q__Y/rows.txt
+0108	REQUIRED	P	Function 10 returned count	Operator confirmed returned count byte	build/compatibility/run-20260907-223415/CONSTEST_0108_ABC__Y/rows.txt
+0109	REQUIRED	P	Function 10 returned data location	Operator confirmed returned data at buffer+2	build/compatibility/run-20260907-223415/CONSTEST_0109_XYZ__Y/rows.txt
+0110	NOT GUARANTEED	UNRECORDED	Bytes beyond function-10 returned count		
+0111	REQUIRED	P	Function 10 CR termination	CR ended input; terminator excluded	build/compatibility/run-20260907-223415/CONSTEST_0111_AB__Y/rows.txt
+0112	REQUIRED	P	Function 10 LF termination	Operator confirmed LF terminated and was excluded	build/compatibility/run-20260907-223415/CONSTEST_0112_AB__Y/rows.txt
+0113	REQUIRED	P	Function 10 capacity termination	Buffer capacity ended input	build/compatibility/run-20260907-223415/CONSTEST_0113_Z_Y/rows.txt
+0114	REQUIRED	P	Function 10 ordinary-character storage and echo	Operator confirmed ordinary input stored and echoed	build/compatibility/run-20260907-223415/CONSTEST_0114_M__Y/rows.txt
+0115	REQUIRED	P	Function 10 backspace editing	Operator confirmed backspace removed prior character	build/compatibility/run-20260907-223415/CONSTEST_0115_AB_C__Y/rows.txt
+0116	REQUIRED	P	Function 10 DEL editing	DEL removed preceding character	build/compatibility/run-20260907-224546/CONSTEST_0116_Y_AB_C__Y/rows.txt
+0117	REQUIRED	P	Function 10 initial Ctrl-C warm restart	Initial Ctrl-C left the input call through warm restart and returned to the CCP.	build/compatibility/run-20260907-223415/CONSTEST_0117_Z___VER_/final.txt
+0118	REQUIRED	P	Function 10 Ctrl-E line continuation	Operator confirmed Ctrl-E continued logical line	build/compatibility/run-20260907-223415/CONSTEST_0118_AB_CD__Y/rows.txt
+0119	REQUIRED	P	Function 10 Ctrl-R redisplay	Operator confirmed Ctrl-R redisplayed retained line	build/compatibility/run-20260907-223415/CONSTEST_0119_AB_CD__Y/rows.txt
+0120	REQUIRED	P	Function 10 Ctrl-U line deletion	Operator confirmed Ctrl-U discarded current line	build/compatibility/run-20260907-223415/CONSTEST_0120_AB_CD__Y/rows.txt
+0121	REQUIRED	P	Function 10 Ctrl-X line deletion	Operator confirmed Ctrl-X discarded current line	build/compatibility/run-20260907-223415/CONSTEST_0121_AB_CD__Y/rows.txt
+0122	REQUIRED	P	Function 10 starting-column-relative editing	Operator confirmed editing used starting column	build/compatibility/run-20260907-224546/CONSTEST_0122_AB_C__Y/rows.txt
+0123	REQUIRED	P	Function 10 stores no line terminator	Operator confirmed no CR or LF was stored	build/compatibility/run-20260907-223415/CONSTEST_0123_AB__Y/rows.txt
+0124	NOT GUARANTEED	UNRECORDED	Function 10 has no function-specific register result		
+0125	PROFILE REQUIRED	UNRECORDED	Function 10 Ctrl-P exclusion and printer-echo toggle		
+0126	PROFILE REQUIRED	UNRECORDED	Function 10 post-Ctrl-P echo state		
+0127	PROFILE REQUIRED	UNRECORDED	Function 10 seven-bit input masking		
+0128	PROFILE REQUIRED	UNRECORDED	Function 10 exact correction-display bytes		
+0129	PROFILE REQUIRED	UNRECORDED	Function 10 noninitial Ctrl-C behavior		
+0130	OUTSIDE SCOPE	UNRECORDED	DRI private function-10 editor organization		
+0131	OUTSIDE SCOPE	-	DRI function-10 zero common result	Outside executable scope	followup/BDOSTEST_ALL_v3/screens.txt
+0132	REQUIRED	P	Function 13 selector	Fn 13 reset disks; chose A	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0133	REQUIRED	P	Function 13 read/write reset	Fn 13 cleared R/O vector	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0134	REQUIRED	P	Function 13 selects drive A	Fn 13 selected drive A	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0135	REQUIRED	P	Function 13 restores default DMA	Fn 13 restored DMA at 0080h	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0136	REQUIRED	P	Function 13 resets login vector	Fn 13 reset login vector	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0137	NOT GUARANTEED	O	Function 13 function-specific result	Fn13 A=00; no fixed value	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0138	REQUIRED	P	Function 14 selector	Fn 14 E=1 selected drive B	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0139	REQUIRED	P	Function 14 drive numbering	Drive numbering is zero based	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0140	REQUIRED	P	Function 14 changes current disk	Fn 14 changed current drive	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0141	REQUIRED	P	Function 14 logs selected drive	Fn 14 logged selected drive	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0142	REQUIRED	P	Login vector is cumulative	Login vector accumulated A+B	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0143	REQUIRED	F	Standard media-change read-only behavior	Logged removable B had nonzero DPB CKS; swapped healthy media, evicted old directory cache through A, and read replacement directory. Function 29 still reported writable.	build/compatibility/media-20260908-004746/screens.txt
+0144	REQUIRED	P	FCB drive code zero uses current disk	FCB drive 0 used current disk	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0145	REQUIRED	P	Explicit FCB drive selection	Explicit FCB selected drive B	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0146	REQUIRED	P	Explicit FCB selection does not permanently change current disk	Explicit FCB kept current drive	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0147	REQUIRED	P	Function 24 login vector result	Fn 24 returned login vector	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0148	REQUIRED	P	Login vector bit mapping	Login bits map A=0, B=1	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0149	REQUIRED	P	Login bit meaning	Set bit means drive logged	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0150	REQUIRED	P	Function 25 current disk result	Fn 25 returned current drive	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0151	NOT GUARANTEED	O	Function 14 invalid-drive result	Invalid drive call not portable	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0152	OUTSIDE SCOPE	-	Function 13/14 synchronization of page-zero 0004h	Outside executable scope	followup/BDOSTEST_ALL_v3/screens.txt
+0153	OUTSIDE SCOPE	-	DRI private disk-state implementation	Outside executable scope	followup/BDOSTEST_ALL_v3/screens.txt
+0154	PROFILE REQUIRED	-	Unavailable-drive presentation	UNAVAILABLE-DRIVE: Run: BDOSTEST /0154	followup/BDOSTEST_ALL_v3/screens.txt
+0155	REQUIRED	P	Function 13 user-number preservation	Function 13 preserved user number	build/compatibility/run-20260907-211115/DISKTEST_ALL_D/rows.txt
+0156	REQUIRED	P	A sequential FCB occupies bytes 0-32 (33 bytes).	Prereq/Open=00; FCB/I/O state=7F	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0157	REQUIRED	P	A random-access FCB adds random-record bytes 33-35.	Prereq/Open=00; FCB/I/O state=82	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0158	REQUIRED	P	FCB byte 0 uses 0 for current default and 1-16 for explicit A-P selection.	Prereq/Open=00; FCB/I/O state=03	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0159	REQUIRED	P	FCB bytes 1-8 contain an uppercase, high-bit-clear, blank-padded filename.	Prereq/Open=00; FCB/I/O state=03	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0160	REQUIRED	P	FCB bytes 9-11 contain the uppercase file type.	Prereq/Open=00; FCB/I/O state=03	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0161	REQUIRED	P	High bits of type bytes 9-11 carry the documented read-only, system, and reserved attributes.	Prereq/Open=03; FCB/I/O state=C4	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0162	REQUIRED	P	FCB byte 12 is current extent, normally caller-initialized to zero and ranging 0-31 during I/O.	Prereq/Open=00; FCB/I/O state=1F	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0163	NOT GUARANTEED	O	FCB byte 13 is reserved for system use; applications have no portable literal-content guarantee.	Prereq/Open=00; FCB/I/O state=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0164	REQUIRED	P	FCB byte 14 is reserved for system use and supplied as zero on OPEN, MAKE, and SEARCH calls.	Prereq/Open=00; FCB/I/O state=80	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0165	REQUIRED	P	FCB byte 15 holds extent record count in the range 0-128.	Open=00; RC=01	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0166	REQUIRED	P	FCB bytes 16-31 hold CP/M-supplied allocation state reserved for system use.	Prereq/Open=00; FCB/I/O state=BF	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0167	REQUIRED	P	FCB byte 32 holds the sequential current record 0-127 and is normally initialized by the caller.	Read returns=00,00,00; CR=03	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0168	REQUIRED	P	Function 15 is selected by C=0Fh and takes the FCB address in DE.	Prereq/Open=03; FCB/I/O state=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0169	REQUIRED	P	Function 15 opens an existing file for the current user on the FCB-selected drive.	Current=01; explicit=00; drive A->A	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0170	REQUIRED	P	Successful function 15 returns a directory code 0-3 in A.	Prereq/Open=00; FCB/I/O state=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0171	REQUIRED	P	Function 15 returns FFh in A when no matching file exists.	Open=FF; FCB guards unchanged	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0172	REQUIRED	P	Successful open supplies directory/allocation information in the FCB for later file I/O.	Prereq/Open=00; FCB/I/O state=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0173	REQUIRED	P	Existing files must be successfully opened before read/write access.	Prereq/Open=00; FCB/I/O state=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0174	REQUIRED	P	? wildcards in open identity fields match corresponding directory characters.	Prereq/Open=02; FCB/I/O state=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0175	REQUIRED	P	Wildcard open activates the first matching FCB rather than enumerating all matches.	Prereq/Open=02; FCB/I/O state=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0176	REQUIRED	P	For sequential access from the beginning, the caller sets CR to zero; open need not do so.	Prereq/Open=00; FCB/I/O state=01	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0177	REQUIRED	P	Function 16 is selected by C=10h and takes an activated FCB address in DE.	Prereq/Open=03; FCB/I/O state=03	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0178	REQUIRED	P	Close after writes permanently records compatible new FCB directory information.	Prereq/Open=00; FCB/I/O state=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0179	REQUIRED	P	A file used only for reads need not be closed.	Prereq/Open=00; FCB/I/O state=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0180	REQUIRED	P	Successful close returns a directory code 0-3 in A.	Prereq/Open=03; FCB/I/O state=03	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0181	REQUIRED	P	Close returns FFh when the FCB filename cannot be found.	Prereq/Open=00; FCB/I/O state=FF	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0182	NOT GUARANTEED	O	FCB allocation-map representation is disk-format-dependent and has no universal application-owned encoding.	Prereq/Open=C3; FCB/I/O state=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0183	NOT GUARANTEED	O	Exact FCB bytes after failed Open, except for separately documented effects, are not guaranteed. Policy resolution: The exact behavior described above is not guaranteed by generic BetterCP/M CP/M 2.2 compatibility. Portable software shall not depend on it.	Prereq/Open=FF; FCB/I/O state=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0184	OUTSIDE SCOPE	UNRECORDED	DRI's high-S2 no-write/dirty flag representation is private.		
+0185	OUTSIDE SCOPE	UNRECORDED	DRI's exact zero result for unnecessary close after read-only access is not required.		
+0186	OUTSIDE SCOPE	UNRECORDED	DRI's internal open-copy order, search variables, and close map-merge algorithm are private.		
+0187	OUTSIDE SCOPE	-	Host-tool exact-byte-count data placed in reserved S1 is not a CP/M 2.2 requirement.	Outside executable scope	followup/BDOSTEST_ALL_v3/screens.txt
+0188	REQUIRED	P	Search First call convention	Search First accepted FCB in DE	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0189	REQUIRED	P	Search First initial directory scan position	Search First began new scan	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0190	REQUIRED	P	Search First successful result code	Search success returned 0..3	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0191	REQUIRED	P	Search First unsuccessful result code	No match returned FFh	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0192	REQUIRED	P	Search First DMA record transfer	Search copied entry to DMA	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0193	REQUIRED	P	Search result entry offset	Result selected 32-byte slot	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0194	REQUIRED	P	Search transfer record layout	Search entry layout matched FCB	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0195	REQUIRED	P	Directory entry user number	Entry user number was zero	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0196	REQUIRED	P	Directory entry FCB field layout	Search slot=02; next=01	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0197	REQUIRED	P	Search wildcard matching	Wildcard matched search names	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0198	REQUIRED	P	Type attribute comparison	Attribute search=03; next=00	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0199	REQUIRED	P	Default-drive FCB search	Drive 0 searched current disk	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0200	REQUIRED	P	Explicit-drive search	Explicit result=00; next=00	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0201	REQUIRED	P	Search First S2 handling	Search First tolerated S2 input	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0202	REQUIRED	P	All-user search wildcard drive	Users found mask=03	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0203	REQUIRED	P	Search Next call convention	Search Next continued scan	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0204	REQUIRED	P	Search Next continuation semantics	First=00; next=01	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0205	REQUIRED	P	Search Next result and DMA relationship	Search Next updated DMA slot	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0206	REQUIRED	P	Search Next unsuccessful result code	First=00; next=FF	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0207	REQUIRED	P	Search First restart behavior	Search First restarted scan	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0208	REQUIRED	P	Set DMA Address call convention	Search=00; next=42	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0209	REQUIRED	P	DMA address persistence	DMA persirst restarted scan	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0210	REQUIRED	P	DMA change during search continuation	First DMA=00; next=01	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0211	REQUIRED	P	Directory enumeration order	Enumeration followed entries	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0212	REQUIRED	P	Repeat-search ordering stability	Repeat first=00; next=01	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0213	NOT GUARANTEED	O	Enumeration ordering guarantee limitation	Order varies across media	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0214	NOT GUARANTEED	O	Default-drive continuation limitation	Before drive change=00; next=FF	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0215	NOT GUARANTEED	O	Search continuation state limitation	Continuation state is private	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0216	NOT GUARANTEED	O	Failed-search DMA contents	Failed search=FF; next=A5	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0217	OUTSIDE SCOPE	-	DRI FFh-path directory copy	Outside executable scope	followup/BDOSTEST_ALL_v3/screens.txt
+0218	OUTSIDE SCOPE	UNRECORDED	DRI private search implementation		
+0219	REQUIRED	P	Function 20 call convention	Prereq/Open=00; read/state=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0220	REQUIRED	P	Activated-FCB precondition	Prereq/Open=00; read/state=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0221	REQUIRED	P	Sequential position source	Prereq/Open=03; read/state=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0222	REQUIRED	P	Successful result	Prereq/Open=00; read/state=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0223	REQUIRED	P	Successful transfer size	Prereq/Open=00; read/state=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0224	REQUIRED	P	Current DMA destination	Prereq/Open=00; read/state=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0225	NOT GUARANTEED	O	Partial-byte count	Prereq/Open=02; read/state=41	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0226	REQUIRED	P	Advance after success	Prereq/Open=03; read/state=02	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0227	REQUIRED	P	CR progression within an extent	Prereq/Open=03; read/state=03	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0228	REQUIRED	P	Full-extent position	Prereq/Open=02; read/state=80	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0229	REQUIRED	P	Automatic extent transition	Prereq/Open=00; read/state=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0230	REQUIRED	P	New-extent first-record state	Prereq/Open=00; read/state=01	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0231	REQUIRED	P	Extent working-state replacement	Prereq/Open=00; read/state=02	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0232	REQUIRED	P	EOF/no-data result	Prereq/Open=00; read/state=01	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0233	NOT GUARANTEED	O	Exact EOF code	Prereq/Open=01; read/state=01	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0234	REQUIRED	P	Empty-file behavior	Prereq/Open=02; read/state=01	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0235	REQUIRED	P	Partial-final-extent EOF	Prereq/Open=02; read/state=01	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0236	REQUIRED	P	Exact-boundary EOF	Prereq/Open=02; read/state=01	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0237	REQUIRED	P	Repeated EOF indication	Prereq/Open=02; read/state=01	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0238	NOT GUARANTEED	O	DMA contents after failure	Prereq/Open=01; read/state=E7	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0239	REQUIRED	P	FCB mutation	Prereq/Open=03; read/state=03	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0240	NOT GUARANTEED	O	Exact FCB image after failed read	Prereq/Open=01; read/state=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0241	OUTSIDE SCOPE	UNRECORDED	DRI exact-boundary EX drift		
+0242	REQUIRED	P	Explicit-drive read	Prereq/Open=00; read/state=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0243	REQUIRED	P	Read-only readability	Prereq/Open=03; read/state=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0244	NOT GUARANTEED	O	Unopened-FCB result	Prereq/Open=01; read/state=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0245	NOT GUARANTEED	O	Invalid-FCB result	Prereq/Open=01; read/state=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0246	PROFILE REQUIRED	-	Physical read-error presentation	Run /0246 with CPM-DISKERR-INT read-fault provider	followup/ERRTEST_SAFE_v2/screens.txt
+0247	OUTSIDE SCOPE	UNRECORDED	DRI internal read machinery		
+0248	REQUIRED	P	Function 22 convention	Prereq=00; Make/write=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0249	REQUIRED	P	Make uniqueness precondition	Prereq=00; Make/write=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0250	REQUIRED	P	New empty file	Prereq=00; Make/write=01	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0251	REQUIRED	P	Make activates FCB	Prereq=00; Make/write=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0252	REQUIRED	P	Make success result	Prereq=00; Make/write=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0253	REQUIRED	P	Make directory-full result	Prereq=00; Make/write=FF	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0254	REQUIRED	P	Immediate empty-file visibility	Prereq=00; Make/write=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0255	REQUIRED	P	Data-full empty Make	Empty Make succeeded on full disk	build/compatibility/run-20260907-211115/DISKTEST_ALL_D/rows.txt
+0256	NOT GUARANTEED	O	Make on existing name	Prereq=FF; Make/write=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0257	NOT GUARANTEED	O	Ambiguous Make name	Prereq=FF; Make/write=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0258	OUTSIDE SCOPE	UNRECORDED	Immediate data-block reservation		
+0259	REQUIRED	P	Function 21 convention	Prereq=00; Make/write=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0260	REQUIRED	P	Write activation precondition	Prereq=00; Make/write=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0261	REQUIRED	P	Write source position	Prereq=00; Make/write=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0262	REQUIRED	P	Successful write result	Prereq=00; Make/write=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0263	REQUIRED	P	Write transfer size	Prereq=00; Make/write=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0264	REQUIRED	P	Current DMA source	Prereq=00; Make/write=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0265	NOT GUARANTEED	O	Partial-record length	Prereq=02; Make/write=41	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0266	REQUIRED	P	CR advance after write	Prereq=00; Make/write=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0267	REQUIRED	P	RC extension	Prereq=00; Make/write=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0268	REQUIRED	P	Existing-record overwrite	Prereq=00; Make/write=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0269	REQUIRED	P	On-demand allocation	Prereq=00; Make/write=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0270	NOT GUARANTEED	O	Exact allocation choice	Prereq=F5; Make/write=01	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0271	REQUIRED	P	Automatic write extent transition	Prereq=00; Make/write=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0272	REQUIRED	P	Successful transition state	Prereq=00; Make/write=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0273	REQUIRED	P	Full last record remains successful	Prereq=00; Make/write=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0274	REQUIRED	P	Next-extent failure result	Prereq=00; Make/write=FF	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0275	REQUIRED	P	Allocation-full failure	Growth failed; old file intact	build/compatibility/run-20260907-211115/DISKTEST_ALL_D/rows.txt
+0276	REQUIRED	P	Exact write failure codes	Sequential=02h, random=02h	build/compatibility/run-20260907-211115/DISKTEST_ALL_D/rows.txt
+0277	NOT GUARANTEED	O	Unactivated write behavior	Prereq=00; Make/write=01	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0278	REQUIRED	P	Explicit-drive Make/Write	Prereq=01; Make/write=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0279	REQUIRED	P	Close commits final written metadata	Prereq=00; Make/write=00	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0280	NOT GUARANTEED	O	Unclosed final extent	Prereq=F6; Make/write=01	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0281	NOT GUARANTEED	O	Pre-Close directory metadata	Prereq=F5; Make/write=01	build/compatibility/run-20260908-001449/FILETEST_ALL/rows.txt
+0282	OUTSIDE SCOPE	UNRECORDED	Exact close-time update sequence		
+0283	PROFILE REQUIRED	-	Physical write-error presentation	Run /0283 with CPM-DISKERR-INT write-fault provider	followup/ERRTEST_SAFE_v2/screens.txt
+0284	OUTSIDE SCOPE	UNRECORDED	DRI private write machinery		
+0285	REQUIRED	P	Function 19 convention	Delete=00; next=FF	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0286	REQUIRED	P	Delete identity	Delete/non-target=00; next=01	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0287	REQUIRED	P	Delete wildcards	Wildcard/nonmatch=00; next=02	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0288	REQUIRED	P	Delete all matches	Matches before/after=02; next=00	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0289	REQUIRED	P	Delete success result	Delete result/remaining=00; next=00	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0290	REQUIRED	P	Delete no-match result	Absent delete=FF; next=00	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0291	REQUIRED	P	Immediate search disappearance	Delete/search=00; next=FF	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0292	REQUIRED	P	Allocation release	Released block was reusable	build/compatibility/run-20260907-211115/DISKTEST_ALL_D/rows.txt
+0293	NOT GUARANTEED	O	Exact freed-block reuse	Same freed block was reused	build/compatibility/run-20260907-211115/DISKTEST_ALL_D/rows.txt
+0294	REQUIRED	P	Explicit-drive Delete	Drive before/after=00; next=00	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0295	REQUIRED	P	Delete user isolation	User0 delete/user1 search=00; next=01	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0296	NOT GUARANTEED	O	Open FCB after Delete	Open/delete/close=00; next=FF	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0297	OUTSIDE SCOPE	-	DRI E5 deletion mechanism	DRI E5 deletion mechanism is outside scope	followup/DIRTEST_ALL_v2/screens.txt
+0298	REQUIRED	P	Function 23 convention	Rename/search=00; next=00	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0299	REQUIRED	P	Rename FCB layout	Rename/old search=00; next=FF	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0300	REQUIRED	P	Same-drive destination	Same-drive rename/search=00; next=00	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0301	REQUIRED	P	Rename all extents	Rename/size records=00; next=81	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0302	REQUIRED	P	Rename success result	Rename result=00; next=00	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0303	REQUIRED	P	Rename missing-source result	Missing-source rename=FF; next=00	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0304	REQUIRED	P	Rename identity transition	Old/new search=FF; next=00	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0305	REQUIRED	P	Rename data preservation	Rename/read=00; next=00	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0306	REQUIRED	P	Rename user preservation	User1 rename/user0 search=00; next=FF	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0307	REQUIRED	P	Explicit-drive Rename	Default drive before/after=00; next=00	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0308	NOT GUARANTEED	O	Destination collision	Collision result/matches=FF; next=01	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0309	OUTSIDE SCOPE	-	Wildcard Rename	Wildcard Rename is outside scope	followup/DIRTEST_ALL_v2/screens.txt
+0310	NOT GUARANTEED	O	Open FCB after Rename	Open/renamed-close=00; next=00	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0311	NOT GUARANTEED	O	Physical directory order	Physical search slots=00; next=01	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0312	OUTSIDE SCOPE	-	Timestamp preservation	Timestamp preservation is outside scope	followup/DIRTEST_ALL_v2/screens.txt
+0313	OUTSIDE SCOPE	-	DRI in-place rename algorithm	DRI in-place rename algorithm is outside scope	followup/DIRTEST_ALL_v2/screens.txt
+0314	PROFILE REQUIRED	-	Delete/Rename physical errors	Run /0314 with delete/rename fault provider	followup/ERRTEST_SAFE_v2/screens.txt
+0315	NOT GUARANTEED	O	Invalid drive ambiguity	Invalid drive/no oracle=10; next=FF	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0316	OUTSIDE SCOPE	-	Directory compaction	Directory compaction is outside scope	followup/DIRTEST_ALL_v2/screens.txt
+0317	REQUIRED	P	Random field location	Prereq/Open=00; random-I/O=00	followup/RANDTEST_ALL/screens.txt
+0318	REQUIRED	P	Random field byte order	Prereq/Open=00; random-I/O=00	followup/RANDTEST_ALL/screens.txt
+0319	REQUIRED	P	CP/M 2.2 random range	Prereq/Open=00; random-I/O=00	followup/RANDTEST_ALL/screens.txt
+0320	REQUIRED	P	Random/sequential state distinction	Prereq/Open=00; random-I/O=00	followup/RANDTEST_ALL/screens.txt
+0321	REQUIRED	P	Function 36 convention	Prereq/Open=00; random-I/O=00	followup/RANDTEST_ALL/screens.txt
+0322	REQUIRED	P	Function 36 direction	Prereq/Open=00; random-I/O=00	followup/RANDTEST_ALL/screens.txt
+0323	REQUIRED	P	Function 36 boundary equivalence	Prereq/Open=00; random-I/O=00	followup/RANDTEST_ALL/screens.txt
+0324	REQUIRED	P	Function 36 no I/O	Prereq/Open=00; random-I/O=00	followup/RANDTEST_ALL/screens.txt
+0325	NOT GUARANTEED	UNRECORDED	Function 36 A value		
+0326	REQUIRED	P	Function 33 convention	Prereq/Open=00; random-I/O=00	followup/RANDTEST_ALL/screens.txt
+0327	REQUIRED	P	Random read destination	Prereq/Open=00; random-I/O=00	followup/RANDTEST_ALL/screens.txt
+0328	REQUIRED	P	Random read success	Prereq/Open=00; random-I/O=00	followup/RANDTEST_ALL/screens.txt
+0329	REQUIRED	P	Random read position	Prereq/Open=00; random-I/O=00	followup/RANDTEST_ALL/screens.txt
+0330	REQUIRED	P	Random read no advance	Prereq/Open=00; random-I/O=00	followup/RANDTEST_ALL/screens.txt
+0331	REQUIRED	P	Random read unwritten data	Prereq/Open=00; random-I/O=01	followup/RANDTEST_ALL/screens.txt
+0332	REQUIRED	P	Random read missing extent	Prereq/Open=00; random-I/O=FF	followup/RANDTEST_ALL/screens.txt
+0333	REQUIRED	P	Random overflow	Prereq/Open=00; random-I/O=FF	followup/RANDTEST_ALL/screens.txt
+0334	NOT GUARANTEED	UNRECORDED	DMA after failed random read		
+0335	REQUIRED	P	Function 34 convention	Prereq/Open=00; random-I/O=00	followup/RANDTEST_ALL/screens.txt
+0336	REQUIRED	P	Random write transfer	Prereq/Open=00; random-I/O=00	followup/RANDTEST_ALL/screens.txt
+0337	REQUIRED	P	Random write success	Prereq/Open=00; random-I/O=00	followup/RANDTEST_ALL/screens.txt
+0338	REQUIRED	P	Random write allocation	Prereq/Open=00; random-I/O=00	followup/RANDTEST_ALL/screens.txt
+0339	REQUIRED	P	Random write holes	Prereq/Open=00; random-I/O=00	followup/RANDTEST_ALL/screens.txt
+0340	REQUIRED	P	Random write virtual length	Prereq/Open=00; random-I/O=00	followup/RANDTEST_ALL/screens.txt
+0341	REQUIRED	P	Random write working fields	Prereq/Open=00; random-I/O=00	followup/RANDTEST_ALL/screens.txt
+0342	REQUIRED	P	Random write no advance	Prereq/Open=00; random-I/O=00	followup/RANDTEST_ALL/screens.txt
+0343	REQUIRED	P	No automatic random extent switch	Prereq/Open=00; random-I/O=00	followup/RANDTEST_ALL/screens.txt
+0344	REQUIRED	P	Random write Close	Prereq/Open=00; random-I/O=00	followup/RANDTEST_ALL/screens.txt
+0345	REQUIRED	P	Random write extent failure	Structured case report PASS	build/compatibility/run-20260907-222051/RANDTEST_0345:REPORT/screens.txt
+0346	REQUIRED	P	Allocation-full exact code	Structured case report PASS	build/compatibility/run-20260907-211227/RANDTEST_0346:REPORT/screens.txt
+0347	REQUIRED	P	Function 35 convention	Structured case report PASS	build/compatibility/run-20260907-220132/RANDTEST_0347:REPORT/screens.txt
+0348	REQUIRED	P	Function 35 result location	Structured case report PASS	build/compatibility/run-20260907-220132/RANDTEST_0348:REPORT/screens.txt
+0349	REQUIRED	P	Function 35 unit	Structured case report PASS	build/compatibility/run-20260907-220927/RANDTEST_0349:REPORT/screens.txt
+0350	REQUIRED	P	Function 35 maximum	Structured case report PASS	build/compatibility/run-20260907-220132/RANDTEST_0350:REPORT/screens.txt
+0351	REQUIRED	P	Sparse virtual size	Structured case report PASS	build/compatibility/run-20260907-220132/RANDTEST_0351:REPORT/screens.txt
+0352	NOT GUARANTEED	UNRECORDED	Function 35 A value		
+0353	OUTSIDE SCOPE	UNRECORDED	DRI random seek machinery		
+0354	PROFILE REQUIRED	-	Physical random-I/O errors	Run /0354 with random-I/O fault provider	followup/ERRTEST_SAFE_v2/screens.txt
+0355	OUTSIDE SCOPE	-	Physical allocation equals virtual size	Physical allocation is outside portable scope	followup/DISKTEST_ALL_D_v4/screens.txt
+0356	REQUIRED	P	Read-only attribute location	Read-only type byte=D4; next=4D	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0357	REQUIRED	P	System attribute location	System type bytes=54; next=CD	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0358	REQUIRED	P	Attribute/type coexistence	Coexisting type bytes=D4; next=CD	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0359	NOT GUARANTEED	O	Reserved t3’	Reserved t3/result=D0; next=00	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0360	REQUIRED	P	Function 30 convention	Function30/search slot=00; next=00	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0361	REQUIRED	P	Function 30 set/clear	Set/clear type byte=D4; next=54	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0362	REQUIRED	P	Function 30 all extents	All-extents result/type=00; next=D4	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0363	REQUIRED	P	Function 30 success result	Function30 result=00; next=00	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0364	REQUIRED	P	Function 30 no-match result	Missing attribute result=FF; next=00	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0365	NOT GUARANTEED	O	Function 30 exact success slot	Exact Function30 slot=00; next=00	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0366	REQUIRED	P	Open preserves indicators	Open/type indicator=00; next=D4	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0367	REQUIRED	P	Make accepts indicators	Make/type indicator=00; next=D4	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0368	REQUIRED	P	File read-only sequential protection	Read-only file write produced File R/O and warm restart; file bytes match pristine fixture.	build/compatibility/run-20260907-222051/RANDTEST_0368:REPORT/final.txt
+0369	REQUIRED	P	File read-only random protection	Read-only file write produced File R/O and warm restart; file bytes match pristine fixture.	build/compatibility/run-20260907-222051/RANDTEST_0369:REPORT/final.txt
+0370	REQUIRED	P	File read-only delete protection	RO delete/search=FF; next=00	build/compatibility/run-20260907-220823/DIRTEST_0370/rows.txt
+0371	REQUIRED	P	File read-only rename protection	RO rename/search=FF; next=00	build/compatibility/run-20260907-220823/DIRTEST_0371/rows.txt
+0372	NOT GUARANTEED	O	Protected-operation normal result	Prereq/Open=03; random-I/O=C4	build/compatibility/run-20260908-000045/RANDTEST_GROUP:LIFECYCLE/rows.txt
+0373	REQUIRED	P	Function 28 convention	Function 28 protected current disk	build/compatibility/run-20260907-211115/DISKTEST_ALL_D/rows.txt
+0374	REQUIRED	P	Function 28 transience	Protection ended after disk reset	build/compatibility/run-20260907-211115/DISKTEST_ALL_D/rows.txt
+0375	REQUIRED	P	Function 29 convention	Function 29 returned R/O vector	build/compatibility/run-20260907-211115/DISKTEST_ALL_D/rows.txt
+0376	REQUIRED	P	Read-only vector mapping	Vector bit 1 represented drive B	build/compatibility/run-20260907-211115/DISKTEST_ALL_D/rows.txt
+0377	REQUIRED	P	Function 28 vector effect	Function 28 set drive-B vector bit	build/compatibility/run-20260907-211115/DISKTEST_ALL_D/rows.txt
+0378	REQUIRED	P	Reset clears software protection	Function 13 cleared R/O vector	build/compatibility/run-20260907-211115/DISKTEST_ALL_D/rows.txt
+0379	REQUIRED	P	Protected-disk Make	Protected mutation entered Disk R/O and real warm restart; VER succeeded; complete scratch image is byte-identical before/after. Supersedes retained earlier failure.	build/compatibility/run-20260907-234144/DISKTEST_0379_D_VER_r/final.txt
+0380	REQUIRED	P	Protected-disk sequential write	Protected mutation entered Disk R/O and real warm restart; VER succeeded; complete scratch image is byte-identical before/after. Supersedes retained earlier failure.	build/compatibility/run-20260907-234144/DISKTEST_0380_D_VER_r/final.txt
+0381	REQUIRED	P	Protected-disk random write	Protected mutation entered Disk R/O and real warm restart; VER succeeded; complete scratch image is byte-identical before/after. Supersedes retained earlier failure.	build/compatibility/run-20260907-234144/DISKTEST_0381_D_VER_r/final.txt
+0382	REQUIRED	P	Protected-disk delete	Protected mutation entered Disk R/O and real warm restart; VER succeeded; complete scratch image is byte-identical before/after. Supersedes retained earlier failure.	build/compatibility/run-20260907-234144/DISKTEST_0382_D_VER_r/final.txt
+0383	REQUIRED	P	Protected-disk rename	Protected mutation entered Disk R/O and real warm restart; VER succeeded; complete scratch image is byte-identical before/after. Supersedes retained earlier failure.	build/compatibility/run-20260907-234144/DISKTEST_0383_D_VER_r/final.txt
+0384	REQUIRED	P	Protection before mutation	Protected mutation entered Disk R/O and real warm restart; VER succeeded; complete scratch image is byte-identical before/after. Supersedes retained earlier failure.	build/compatibility/run-20260907-234144/DISKTEST_0384_D_VER_r/final.txt
+0385	PROFILE REQUIRED	-	Fatal presentation	Run /0385 with DRI-PROTECT-INT provider	followup/ERRTEST_SAFE_v2/screens.txt
+0386	OUTSIDE SCOPE	-	Fatal handler internals	Resident handler internals are outside public contract	followup/ERRTEST_SAFE_v2/screens.txt
+0387	PROFILE REQUIRED	-	Exact diagnostic text	Run /0387 with DRI-DIAG-PRES capture	followup/ERRTEST_SAFE_v2/screens.txt
+0388	NOT GUARANTEED	O	Late attribute change versus dirty FCB	Prereq/Open=03; random-I/O=C4	build/compatibility/run-20260908-000045/RANDTEST_GROUP:LIFECYCLE/rows.txt
+0389	PROFILE REQUIRED	-	Automatic media-change protection	Run /0389 with REMOVABLE-MEDIA provider	followup/ERRTEST_SAFE_v2/screens.txt
+0390	REQUIRED	P	CBIOS physical read result	Real BIOS read succeeded with media; documented confirmed eject followed by uncached read returned nonzero.	build/compatibility/readerr-20260908-002033/screens.txt
+0391	REQUIRED	P	CBIOS physical write result	Real emulator write protection produced nonzero BIOS WRITE status; removing protection restored zero and a verified 128-byte transfer.	build/compatibility/bios-boundary/457/screens.txt
+0392	REQUIRED	F	BIOS retry responsibility	Assembled DC_READ/DC_WRITE each returned status 1 after one seek attempt; declared provider would return success on the second attempt.	build/compatibility/gaps-20260908-004815/retry.json
+0393	REQUIRED	F	Physical/logical error separation	Final physical BIOS errors return through the BDOS file-call result path instead of the operator path; successful and disk-full logical cases pass separately.	build/compatibility/run-20260907-234825/FAULTIO_VER_r/screens.txt
+0394	REQUIRED	F	Bad Sector presentation	No Bad Sector operator path	build/compatibility/run-20260907-234825/FAULTIO_VER_r/rows.txt
+0395	REQUIRED	BLOCKED	Physical-error ignore choice	Prerequisite Bad Sector operator path is absent (0394/0581 fail); no ignore/abort prompt exists at which to conduct this test.	build/compatibility/run-20260907-234825/FAULTIO_VER_r/screens.txt
+0396	REQUIRED	BLOCKED	Physical-error abort choice	Prerequisite Bad Sector operator path is absent (0394/0581 fail); no ignore/abort prompt exists at which to conduct this test.	build/compatibility/run-20260907-234825/FAULTIO_VER_r/screens.txt
+0397	REQUIRED	BLOCKED	Abort restart details	Prerequisite Bad Sector operator path is absent (0394/0581 fail); no ignore/abort prompt exists at which to conduct this test.	build/compatibility/run-20260907-234825/FAULTIO_VER_r/screens.txt
+0398	NOT GUARANTEED	O	Result after ignored physical error	Ignored physical-error result is not guaranteed	followup/ERRTEST_SAFE_v2/screens.txt
+0399	NOT GUARANTEED	O	DMA after ignored physical read	DMA after ignored physical read is not guaranteed	followup/ERRTEST_SAFE_v2/screens.txt
+0400	NOT GUARANTEED	O	Persistence after ignored physical write	Persistence after ignored write is not guaranteed	followup/ERRTEST_SAFE_v2/screens.txt
+0401	NOT GUARANTEED	O	Make persistence after physical error	Make persistence after physical error is not guaranteed	followup/ERRTEST_SAFE_v2/screens.txt
+0402	NOT GUARANTEED	O	Close persistence after physical error	Close persistence after physical error is not guaranteed	followup/ERRTEST_SAFE_v2/screens.txt
+0403	NOT GUARANTEED	O	Physical-write atomicity	Physical-write atomicity is not guaranteed	followup/ERRTEST_SAFE_v2/screens.txt
+0404	REQUIRED	P	Sequential read logical result	One record returned 00h; following sequential EOF returned 01h	build/compatibility/run-20260908-002221/ERRTEST_GROUP:AUTOMATIC/rows.txt
+0405	REQUIRED	F	Sequential write logical result	Final physical BIOS errors return through the BDOS file-call result path instead of the operator path; successful and disk-full logical cases pass separately.	build/compatibility/run-20260907-234825/FAULTIO_VER_r/screens.txt
+0406	REQUIRED	P	Random read logical codes	Random record 0 returned 00h; record 1 returned EOF 01h	build/compatibility/run-20260908-002221/ERRTEST_GROUP:AUTOMATIC/rows.txt
+0407	REQUIRED	P	Random write logical codes	Random write returned 00h; record 10000h returned 06h	build/compatibility/run-20260908-002221/ERRTEST_GROUP:AUTOMATIC/rows.txt
+0408	REQUIRED	P	Make/Delete/Rename/Close logical codes	Missing Open, then Make/Close/Rename/Delete codes agreed	build/compatibility/run-20260908-002221/ERRTEST_GROUP:AUTOMATIC/rows.txt
+0409	OUTSIDE SCOPE	-	DRI permanent-error internals	DRI permanent-error internals are outside public contract	followup/ERRTEST_SAFE_v2/screens.txt
+0410	OUTSIDE SCOPE	-	z80pack status values	z80pack private status values are outside public contract	followup/ERRTEST_SAFE_v2/screens.txt
+0411	PROFILE REQUIRED	-	Exact Bad Sector text	Run /0411 with DRI-DIAG-PRES bad-sector capture	followup/ERRTEST_SAFE_v2/screens.txt
+0412	NOT GUARANTEED	O	Accepted ignore characters	Accepted Ignore characters are implementation-dependent	followup/ERRTEST_SAFE_v2/screens.txt
+0413	OPTIONAL	-	Structured physical-error extension	Structured errors not requested	followup/BDOSTEST_ALL_v3/screens.txt
+0414	REQUIRED	P	Function 12 CP/M version result	Fn 12 returned CP/M 2.2	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0415	REQUIRED	P	Function 32 user-number query	Fn 32 queried user number	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0416	REQUIRED	P	Function 32 user-number selection	Fn 32 selected user 1	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0417	NOT GUARANTEED	O	Function 32 set-form result	Set-user A=01; not guaranteed	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0418	REQUIRED	P	Console functions do not use or overwrite DMA	Console status preserved DMA	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0419	REQUIRED	P	Console and identity calls preserve DMA selection	Identity calls preserved DMA	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0420	REQUIRED	P	Function 10 DE buffer is not DMA	Separate line buffer, DMA guard and following read passed	build/compatibility/run-20260907-223058/COREMORE_AB_r/rows.txt
+0421	OUTSIDE SCOPE	UNRECORDED	DRI private console polling implementation		
+0422	OUTSIDE SCOPE	-	Function 6 E=FEh behavior	Outside executable scope	followup/BDOSTEST_ALL_v3/screens.txt
+0423	OUTSIDE SCOPE	UNRECORDED	Function 34 is not Compute File Size		
+0424	REQUIRED	P	Function 27 allocation-vector pointer	Function 27 returned current scratch-disk ALV	build/compatibility/run-20260907-220650/BIOSTEST_0424_D_Y/rows.txt
+0425	REQUIRED	P	Allocation-vector length and bit mapping	DPB-derived ALV length and bits matched blank disk	build/compatibility/run-20260907-220650/BIOSTEST_0425_D_Y/rows.txt
+0426	REQUIRED	P	Reserved directory allocation bits	AL0/AL1 matched reserved ALV directory bits	build/compatibility/run-20260907-220650/BIOSTEST_0426_D_Y/rows.txt
+0427	REQUIRED	P	Live allocation state	One-record block set then cleared its ALV bit	build/compatibility/run-20260907-222051/BIOSTEST_0427_D_Y/rows.txt
+0428	NOT GUARANTEED	O	Allocation-pointer address and lifetime	Fixed address/lifetime is not portable	followup/BIOSTEST_SAFE_v2/screens.txt
+0429	NOT GUARANTEED	O	Application modification of allocation vector	Applications must not depend on ALV writes	followup/BIOSTEST_SAFE_v2/screens.txt
+0430	NOT GUARANTEED	O	Read-only allocation information	Post-Function-28 ALV accuracy may vary	followup/BIOSTEST_SAFE_v2/screens.txt
+0431	REQUIRED	P	Function 31 DPB pointer and layout	Decoded valid 15-byte DPBs for both drives	build/compatibility/run-20260907-220132/BIOSTEST_0431_D_Y/rows.txt
+0432	REQUIRED	P	DPB configuration and sharing	Both configured DPBs valid; sharing accepted	build/compatibility/run-20260907-220132/BIOSTEST_0432_D_Y/rows.txt
+0433	REQUIRED	P	Documented DPB modification	DPB field changed, re-queried, and restored	build/compatibility/run-20260907-220132/BIOSTEST_0433_D_Y/rows.txt
+0434	NOT GUARANTEED	O	DPB address and lifetime	Fixed DPB address/lifetime is not portable	followup/BIOSTEST_SAFE_v2/screens.txt
+0435	OPTIONAL	-	Function 37 compatibility status	Run only when OPT-FN37 is claimed	followup/BIOSTEST_SAFE_v2/screens.txt
+0436	REQUIRED	P	Function 3 Reader convention	Controlled logical-device boundary passed	build/compatibility/run-20260907-233043/MORECHAR/rows.txt
+0437	NOT GUARANTEED	O	Reader completion and optional-device behavior	Reader/device provider behavior may vary	followup/BIOSTEST_SAFE_v2/screens.txt
+0438	REQUIRED	P	Reader separation from console	Controlled logical-device boundary passed	build/compatibility/run-20260907-233043/MORECHAR/rows.txt
+0439	REQUIRED	P	Function 4 Punch convention	Function 4 delivered graphic/control bytes to PUNCH	build/compatibility/run-20260907-223510/BIOSTEST_0439_Y_K/rows.txt
+0440	REQUIRED	P	Function 5 List convention	Controlled logical-device boundary passed	build/compatibility/run-20260907-233043/MORECHAR/rows.txt
+0441	NOT GUARANTEED	O	Character-output result values	Character-output return values may vary	followup/BIOSTEST_SAFE_v2/screens.txt
+0442	REQUIRED	P	Function 7 IOBYTE query	Operator confirmed Function 7 returned IOBYTE	build/compatibility/run-20260907-222051/CONSTEST_0442_Y/rows.txt
+0443	REQUIRED	P	Function 8 IOBYTE set	Function 7/8 and 0003h were coherent; restored	followup/BIOSTEST_SAFE_v2/screens.txt
+0444	REQUIRED	P	IOBYTE field encoding	Operator confirmed standard IOBYTE field encoding	build/compatibility/run-20260907-222051/CONSTEST_0444_Y/rows.txt
+0445	REQUIRED	P	IOBYTE routing boundary	Functions 3/4/5 kept fixed logical dispatch	build/compatibility/run-20260907-223510/BIOSTEST_0445_Y_K/rows.txt
+0446	PROFILE REQUIRED	UNRECORDED	Active IOBYTE routing policy		
+0447	NOT GUARANTEED	O	IOBYTE set has no initialization contract	No initialization side effect is guaranteed	followup/BIOSTEST_SAFE_v2/screens.txt
+0448	REQUIRED	P	Character-device DMA independence	Character calls preserved DMA selection and sentinels	build/compatibility/run-20260907-223510/BIOSTEST_0448_Y_K/rows.txt
+0449	REQUIRED	P	Stateful BIOS disk setup	Traced persistent track/sector/DMA write context	followup/BIOSTEST_ALL_D_Y_Q_Y_K_Q_v4/screens.txt
+0450	REQUIRED	P	SELDSK result and deferral	SELDSK accepted scratch and rejected absent drive	followup/BIOSTEST_ALL_D_Y_Q_Y_K_Q_v4/screens.txt
+0451	REQUIRED	P	Public DPH layout	Current DPH pointers and Function 31 agreed	followup/BIOSTEST_ALL_D_Y_Q_Y_K_Q_v4/screens.txt
+0452	NOT GUARANTEED	O	DPH address and private workspace	Fixed DPH/private workspace is not portable	followup/BIOSTEST_ALL_D_Y_Q_Y_K_Q_v4/screens.txt
+0453	REQUIRED	P	Track mapping and OFF	Configured scratch D with OFF=1 through API 207; traced SETTRK matched independent allocation/record calculation across a track boundary.	build/compatibility/bios-boundary-v3/453/screens.txt
+0454	REQUIRED	P	Sector translation chain	SECTRAN result was passed to SETSEC	followup/BIOSTEST_ALL_D_Y_Q_Y_K_Q_v4/screens.txt
+0455	NOT GUARANTEED	O	Translation implementation freedom	Table or equivalent algorithm is accepted	followup/BIOSTEST_ALL_D_Y_Q_Y_K_Q_v4/screens.txt
+0456	REQUIRED	P	BIOS DMA state	Traced application and directory DMA addresses	followup/BIOSTEST_ALL_D_Y_Q_Y_K_Q_v4/screens.txt
+0457	REQUIRED	P	BIOS logical-sector transfer	Real emulator write protection: status 01 protected, 00 restored; 128-byte transfer passed.	build/compatibility/bios-boundary/457/screens.txt
+0458	REQUIRED	P	BIOS WRITE type codes	Observed WRITE type codes 0, 1, and 2	build/compatibility/run-20260907-211227/BIOSTEST_0458_D_Y/rows.txt
+0459	OUTSIDE SCOPE	-	Physical storage freedom	Physical mapping is outside the public contract	followup/BIOSTEST_ALL_D_Y_Q_Y_K_Q_v4/screens.txt
+0460	NOT GUARANTEED	O	BIOS disk-call reentrancy	Nested disk-call state is not guaranteed	followup/BIOSTEST_ALL_D_Y_Q_Y_K_Q_v4/screens.txt
+0461	REQUIRED	P	BIOS jump-vector structure	Found 17 consecutive public JMP vectors	followup/BIOSTEST_ALL_D_Y_Q_Y_K_Q_v4/screens.txt
+0462	NOT GUARANTEED	O	BIOS vector address freedom	No fixed BIOS vector address is portable	followup/BIOSTEST_ALL_D_Y_Q_Y_K_Q_v4/screens.txt
+0463	REQUIRED	P	BIOS-base discovery through WBOOT gateway	BIOS base derived only from WBOOT gateway	followup/BIOSTEST_ALL_D_Y_Q_Y_K_Q_v4/screens.txt
+0464	REQUIRED	P	BOOT control contract	BOOT resumed CCP with reconstructed public state	followup/BIOSTEST_0464_Y_BIOSTEST_0464\r_Y_v3/screens.txt
+0465	REQUIRED	P	WBOOT control contract	WBOOT resumed CCP on the requested drive	followup/BIOSTEST_0465_Y_BIOSTEST_0465\r_v3/screens.txt
+0466	REQUIRED	P	Warm-start gateway reconstruction	WBOOT reconstructed both damaged gateway opcodes	followup/BIOSTEST_0466_Y_BIOSTEST_0466\r_v3/screens.txt
+0467	OUTSIDE SCOPE	-	Boot implementation freedom	Boot implementation is outside public contract	followup/BIOSTEST_ALL_D_Y_Q_Y_K_Q_v4/screens.txt
+0468	REQUIRED	P	BIOS console status contract	CONST reported empty/ready/ready/empty without consume	followup/BIOSTEST_ALL_D_Y_Q_Y_K_Q_v4/screens.txt
+0469	REQUIRED	P	BIOS console input contract	CONIN returned the controlled zero-parity K byte	followup/BIOSTEST_ALL_D_Y_Q_Y_K_Q_v4/screens.txt
+0470	REQUIRED	P	BIOS character output contracts	CONOUT/LIST/PUNCH accepted graphic and control C bytes	followup/BIOSTEST_ALL_D_Y_Q_Y_K_Q_v4/screens.txt
+0471	REQUIRED	BLOCKED	BIOS reader contract	Absent-reader EOF is checked; this target has no configured normal reader provider, so the required normal-input half remains unqualified.	src/bios/bios.mac
+0472	PROFILE REQUIRED	-	LISTST result policy	Needs declared LISTST result profile	followup/BIOSTEST_ALL_D_Y_Q_Y_K_Q_v4/screens.txt
+0473	REQUIRED	P	Direct BIOS call layering	Direct TAB stayed raw; BDOS TAB was formatted	followup/BIOSTEST_ALL_D_Y_Q_Y_K_Q_v4/screens.txt
+0474	NOT GUARANTEED	UNRECORDED	BIOS residual registers and reentrancy		
+0475	REQUIRED	P	CCP semantic prompt	Controlled A/B collision, B-only default search, explicit-A success/failure and following B prompt/BDOS drive query agreed.	build/compatibility/ccp-20260907-234543/lookup/screens.txt
+0476	NOT GUARANTEED	UNRECORDED	CCP prompt presentation freedom		
+0477	REQUIRED	P	CCP buffered command acquisition	Raw mixed-case input with backspace edit remained undispatched before host CR; resulting transient identity and uppercase tail verified.	build/compatibility/acquisition-20260907-235356/mixed/screens.txt
+0478	PROFILE REQUIRED	UNRECORDED	DRI CCP command capacity		
+0479	REQUIRED	P	CCP empty and SPACE-only commands	Independent CR, one-SPACE, and two-SPACE runs silently returned to prompt; following VER succeeded. Supersedes retained earlier failure.	build/compatibility/run-20260907-233916
+0480	REQUIRED	P	TAB is not CCP SPACE	Raw TAB did not act as SPACE: NAME<TAB>MIXED did not execute NAME; following CR returned command error.	build/compatibility/acquisition-20260907-235356/tab/screens.txt
+0481	REQUIRED	P	CCP ASCII case normalization	Raw mixed-case input with backspace edit remained undispatched before host CR; resulting transient identity and uppercase tail verified.	build/compatibility/acquisition-20260907-235356/mixed/screens.txt
+0482	REQUIRED	P	CCP built-in command set	All six standard exact names took the built-in/CPX branch despite colliding COMs; DI and DIRX executed their distinct COM markers.	build/compatibility/ccp-20260907-234543/exact/screens.txt
+0483	REQUIRED	P	Exact built-in-name matching	All six standard exact names took the built-in/CPX branch despite colliding COMs; DI and DIRX executed their distinct COM markers.	build/compatibility/ccp-20260907-234543/exact/screens.txt
+0484	REQUIRED	P	Built-in precedence	All six standard exact names took the built-in/CPX branch despite colliding COMs; DI and DIRX executed their distinct COM markers.	build/compatibility/ccp-20260907-234543/exact/screens.txt
+0485	REQUIRED	P	Drive-only CCP selection	Controlled A/B collision, B-only default search, explicit-A success/failure and following B prompt/BDOS drive query agreed.	build/compatibility/ccp-20260907-234543/lookup/screens.txt
+0486	REQUIRED	P	Drive-prefixed transient dispatch	Controlled A/B collision, B-only default search, explicit-A success/failure and following B prompt/BDOS drive query agreed.	build/compatibility/ccp-20260907-234543/lookup/screens.txt
+0487	REQUIRED	P	Primary-name transient command syntax	Bare NAME executed its controlled COM and returned via RET; explicit .COM/.TXT forms were rejected; subsequent VER succeeded.	build/compatibility/ccp-20260907-234543/identity/screens.txt
+0488	REQUIRED	P	CCP resident/transient preparation boundary	Assembled CCP: declared EOF/read-error providers prove preparation only after successful loading and no execution on error/oversize. Resident USER operand reparsed without altering transient FCB/tail area.	build/compatibility/loader-results.log
+0489	REQUIRED	P	Generic command-error recovery	Controlled A/B collision, B-only default search, explicit-A success/failure and following B prompt/BDOS drive query agreed.	build/compatibility/ccp-20260907-234543/lookup/screens.txt
+0490	PROFILE REQUIRED	UNRECORDED	Exact DRI command-error presentation		
+0491	OUTSIDE SCOPE	UNRECORDED	CCP parser implementation freedom		
+0492	REQUIRED	P	CCP executable identity	Bare NAME executed its controlled COM and returned via RET; explicit .COM/.TXT forms were rejected; subsequent VER succeeded.	build/compatibility/ccp-20260907-234543/identity/screens.txt
+0493	REQUIRED	P	Single-drive transient lookup	Controlled A/B collision, B-only default search, explicit-A success/failure and following B prompt/BDOS drive query agreed.	build/compatibility/ccp-20260907-234543/lookup/screens.txt
+0494	REQUIRED	P	Current-user transient lookup	USER selected distinct executable copies in users 0/1/15; transient Function 32 matched and user-1 directory visibility was isolated.	build/compatibility/ccp-20260907-234543/users/screens.txt
+0495	REQUIRED	P	Explicit-drive lookup context	Controlled A/B collision, B-only default search, explicit-A success/failure and following B prompt/BDOS drive query agreed.	build/compatibility/ccp-20260907-234543/lookup/screens.txt
+0496	REQUIRED	P	CCP sequential COM loading	Every byte in a 382-record patterned COM checked at runtime; 383-record COM rejected before resident overwrite, followed by usable VER.	build/compatibility/load-boundary-retest.log
+0497	REQUIRED	P	CCP load completion	Assembled CCP: declared EOF/read-error providers prove preparation only after successful loading and no execution on error/oversize. Resident USER operand reparsed without altering transient FCB/tail area.	build/compatibility/loader-results.log
+0498	NOT GUARANTEED	UNRECORDED	Final COM record granularity		
+0499	REQUIRED	P	Resident-system load protection	Every byte in a 382-record patterned COM checked at runtime; 383-record COM rejected before resident overwrite, followed by usable VER.	build/compatibility/load-boundary-retest.log
+0500	NOT GUARANTEED	UNRECORDED	Transient maximum is configuration-dependent		
+0501	REQUIRED	P	CCP load-failure nonexecution	Assembled CCP: declared EOF/read-error providers prove preparation only after successful loading and no execution on error/oversize. Resident USER operand reparsed without altering transient FCB/tail area.	build/compatibility/loader-results.log
+0502	REQUIRED	P	Pre-execution DMA restoration	CCP restored default DMA at 0080h	captured/CCPTEST_ALL/screens.txt
+0503	REQUIRED	P	CCP CALL/RET cleanup path	Bare NAME executed its controlled COM and returned via RET; explicit .COM/.TXT forms were rejected; subsequent VER succeeded.	build/compatibility/ccp-20260907-234543/identity/screens.txt
+0504	REQUIRED	P	Termination-state convergence	Function 0, entry RET and JP 0000H each returned to B0 and executed VER. RET-versus-WBOOT distinction is separately failed under 0509.	build/compatibility/run-20260908-002221
+0505	OUTSIDE SCOPE	-	CCP loader implementation freedom	Outside executable scope	captured/CCPTEST_ALL/screens.txt
+0506	PROFILE REQUIRED	-	Default FCB operand assignment	DRI-CCP-ECO: Run CCPTEST /0506	captured/CCPTEST_ALL/screens.txt
+0507	NOT GUARANTEED	O	Default FCB residual fields	Residual FCB fields unspecified	captured/CCPTEST_ALL/screens.txt
+0508	PROFILE REQUIRED	-	Tail capacity is bounded by CCP input acquisition	DECLARED-CCP: Run CCPTEST /0508	captured/CCPTEST_ALL/screens.txt
+0509	REQUIRED	F	Transient termination mechanisms	Entry RET reaches the public WBOOT gateway (instrumented), although all three mechanisms restore a usable CCP. Stock RET-without-WBOOT distinction is not met.	build/compatibility/gaps-20260908-004215/screens.txt
+0510	NOT GUARANTEED	O	RET does not generally reconstruct page zero	RET need not rebuild page zero	captured/CCPTEST_ALL/screens.txt
+0511	NOT GUARANTEED	O	Termination does not implicitly close application FCBs	Open FCBs need explicit close	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0512	PROFILE REQUIRED	-	Post-termination drive and user policy	Run /0512 with declared CCP-LIFECYCLE profile	followup/ERRTEST_SAFE_v2/screens.txt
+0513	REQUIRED	P	File-operation failures are function-specific	Missing OPEN=FFh; sequential READ returned 00h then EOF 01h	captured/ECOTEST_ALL/screens.txt
+0514	NOT GUARANTEED	O	Failure does not generally validate DMA contents	A failed transfer does not validate DMA contents	followup/ERRTEST_SAFE_v2/screens.txt
+0515	NOT GUARANTEED	O	FCB state after precondition or operation failure	Failed-operation FCB state has no general guarantee	captured/ECOTEST_ALL/screens.txt
+0516	REQUIRED	P	Directory-full and allocation-full are distinct	Separate directory exhaustion and allocation exhaustion fixtures returned distinct Make/sequential/random results; assembled BDOS unit regression checks state preservation too.	build/compatibility/final-bdos-unit.log
+0517	NOT GUARANTEED	O	Malformed FCB behavior is outside the portable contract	Malformed FCB not portable	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0518	REQUIRED	P	BDOS system state components	Drive, user, login state read	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0519	REQUIRED	P	BIOS-owned selected-drive resources	BDOS DPB/ALV match BIOS-owned DPHs on A through D	build/compatibility/run-20260907-223058/COREMORE_AB_r/rows.txt
+0520	REQUIRED	P	Function 26 persistence boundary	Fn 26 persisted until reset	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0521	REQUIRED	P	System-state independence	Drive/user state independent	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0522	NOT GUARANTEED	O	ALV and DPB pointer lifetime	ALV=EEB7 DPB=ED88	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0523	OPTIONAL	-	Function 37 state-effect profile scope	Fn 37 profile not requested	followup/BDOSTEST_ALL_v3/screens.txt
+0524	OUTSIDE SCOPE	-	CP/M 2.2 Function 39 has no Get-BIOS contract	Outside executable scope	followup/BDOSTEST_ALL_v3/screens.txt
+0525	REQUIRED	P	CP/M 2.2 selectors 40 and 41	Fn 40 valid; Fn 41 unsupported	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0526	REQUIRED	P	Common BDOS gateway and invocation	Gateway at 0005h accepted call	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0527	REQUIRED	P	Common selector and parameter carriers	C and DE carried selector/input	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0528	REQUIRED	P	Common result and alias convention	Result aliases matched A/L B/H	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0529	REQUIRED	P	Strict CP/M 2.2 unsupported selectors	Unsupported call returned zero	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0530	NOT GUARANTEED	O	General register preservation	Registers may change	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0531	REQUIRED	P	Returning-call stack balance	Returning call balanced stack	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0532	NOT GUARANTEED	O	Invalid parameters are function-specific	Bad params are call-specific	build/compatibility/run-20260908-000045/BDOSTEST_ALL/rows.txt
+0533	NOT GUARANTEED	O	BDOS reentrancy	BDOS is not reentrlicit close	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0534	REQUIRED	P	Complete transient handoff	Complete transient image received	captured/CCPTEST_ALL/screens.txt
+0535	OUTSIDE SCOPE	-	Handoff preparation ordering	Outside executable scope	captured/ENTRYTST_ALL/screens.txt
+0536	NOT GUARANTEED	O	Unloaded transient memory	Unloaded TPA bytes unspecified	captured/CCPTEST_ALL/screens.txt
+0537	REQUIRED	P	Immediate BDOS readiness	BDOS ready at transient entry	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0538	REQUIRED	P	Loader DMA isolation	Loader left DMA at 0080h	captured/CCPTEST_ALL/screens.txt
+0539	NOT GUARANTEED	O	Transient stack preparation	SP=CA78; not guaranteed	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0540	REQUIRED	P	Load rejection suppresses execution	Assembled CCP: declared EOF/read-error providers prove preparation only after successful loading and no execution on error/oversize. Resident USER operand reparsed without altering transient FCB/tail area.	build/compatibility/loader-results.log
+0541	NOT GUARANTEED	O	Post-RET reconstruction boundary	Post-RET/no oracle=00; next=FF	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0542	REQUIRED	P	Enumeration returns directory entries, not unique filenames	Enumerated extents=02; next=00	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0543	REQUIRED	P	Matching extents remain separately visible	Visible matching extents=02; next=00	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0544	NOT GUARANTEED	O	Application-built FCB case is not folded	Lowercase FCB search=FF; next=00	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0545	REQUIRED	P	Search FCB lifetime	Search first/next=00; next=01	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0546	REQUIRED	P	Harmless state-query calls need not end enumeration	Query between searches=00; next=01	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0547	NOT GUARANTEED	O	Search context does not survive program lifecycle reset	Lifecycle/no oracle=00; next=FF	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0548	NOT GUARANTEED	O	Physical enumeration order is not a sort contract	Physical order slots=00; next=01	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0549	NOT GUARANTEED	O	Invalid-drive search need not return a result code	Invalid search/no oracle=10; next=FF	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0550	REQUIRED	P	Special drive-question search exposes complete directory values	Prereq=00; lifecycle=00	build/compatibility/run-20260908-000045/RANDTEST_GROUP:LIFECYCLE/rows.txt
+0551	REQUIRED	P	Make-to-open lifecycle equivalence	Prereq=00; lifecycle=00	build/compatibility/run-20260908-000045/RANDTEST_GROUP:LIFECYCLE/rows.txt
+0552	NOT GUARANTEED	O	Working FCB may lead directory metadata	Prereq=F5; lifecycle=01	build/compatibility/run-20260908-000045/RANDTEST_GROUP:LIFECYCLE/rows.txt
+0553	REQUIRED	P	Successful Close establishes reopened consistency	Prereq=00; lifecycle=00	build/compatibility/run-20260908-000045/RANDTEST_GROUP:LIFECYCLE/rows.txt
+0554	NOT GUARANTEED	O	Reopen reconstructs behavior, not FCB byte identity	Prereq=00; lifecycle=C3	build/compatibility/run-20260908-000045/RANDTEST_GROUP:LIFECYCLE/rows.txt
+0555	REQUIRED	P	Extents form one logical record stream	Prereq=00; lifecycle=00	build/compatibility/run-20260908-000045/RANDTEST_GROUP:LIFECYCLE/rows.txt
+0556	REQUIRED	P	Completed extent survives later extension failure	Prereq=00; lifecycle=00	build/compatibility/run-20260908-000045/RANDTEST_GROUP:LIFECYCLE/rows.txt
+0557	REQUIRED	P	Failed growth does not claim a new record	Prereq=00; lifecycle=FF	build/compatibility/run-20260908-000045/RANDTEST_GROUP:LIFECYCLE/rows.txt
+0558	OUTSIDE SCOPE	-	Allocation order is outside lifecycle compatibility	Allocation order is outside portable scope	followup/DISKTEST_ALL_D_v4/screens.txt
+0559	REQUIRED	P	User area participates in ordinary file identity	User0/user1 search=00; next=01	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0560	REQUIRED	P	Function 32 user-state contract	Set/restored user=01; next=00	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0561	REQUIRED	P	FCB does not carry ordinary user identity	Same FCB user0/user1=00; next=01	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0562	REQUIRED	P	Ordinary lookup has no cross-user fallback	User0 absent/user1 found=FF; next=00	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0563	REQUIRED	P	Make records current-user ownership	Made user1/user0 lookup=00; next=FF	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0564	REQUIRED	P	Delete and Rename are current-user scoped	Scoped delete/result mask=00; next=0F	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0565	NOT GUARANTEED	O	User change invalidates retained namespace assumptions	User-change continuation=00; next=01	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0566	REQUIRED	P	Complete-directory search is not public lookup	Public result/directory entries=00; next=02	build/compatibility/run-20260908-001449/DIRTEST_ALL/rows.txt
+0567	REQUIRED	P	CCP USER and BDOS user state are shared	USER selected distinct executable copies in users 0/1/15; transient Function 32 matched and user-1 directory visibility was isolated.	build/compatibility/ccp-20260907-234543/users/screens.txt
+0568	OUTSIDE SCOPE	-	User areas are not a security contract	Outside executable scope	captured/CCPTEST_ALL/screens.txt
+0569	REQUIRED	P	Resident command semantic set	All six standard exact names took the built-in/CPX branch despite colliding COMs; DI and DIRX executed their distinct COM markers.	build/compatibility/ccp-20260907-234543/exact/screens.txt
+0570	REQUIRED	P	DIR search and visibility	Blank, exact, wildcard, SYS-hidden, missing, explicit-drive and alternate-user DIR cases passed after the drive-label repair.	build/compatibility/ccp-20260907-235509/directory/screens.txt
+0571	NOT GUARANTEED	O	DIR ordering and exact layout	DIR ordering and exact layout are not guaranteed	captured/ECOTEST_ALL/screens.txt
+0572	REQUIRED	P	ERA wildcard confirmation boundary	Exact and partial-wildcard erases and all-wildcard N/Y tested; full user-0 erase spans directory records and preserves every user-1 file.	build/compatibility/ccp-20260908-000740/eraseall/screens.txt
+0573	NOT GUARANTEED	O	ERA read-only attribute is not protection	Read-only attribute is not a protection contract	captured/ECOTEST_ALL/screens.txt
+0574	REQUIRED	P	REN resident syntax and validation	REN success, collision, missing source and conflicting drives checked; same target name in user 1 was preserved and did not prevent user-0 rename.	build/compatibility/ccp-20260907-235509/rename/screens.txt
+0575	REQUIRED	P	SAVE page mapping	Controlled provider primed 0100H..02FFH immediately before SAVE 2; saved file contains exactly 512 A5 bytes.	build/compatibility/acquisition-20260908-000625/prime/b.dmk
+0576	NOT GUARANTEED	-	SAVE destructive replacement	Run: CCPTEST /0576	captured/CCPTEST_ALL/screens.txt
+0577	REQUIRED	P	TYPE byte-stream contract	TYPE covered ordinary/empty/multirecord files, TAB/backspace/CR/LF, Ctrl-Z termination and missing-file recovery.	build/compatibility/ccp-20260907-235509/types/screens.txt
+0578	REQUIRED	F	CCP USER accepted range	Stock USER rejects 16; BetterCP/M intentionally accepts 0..31. Preserve the extension and record this baseline divergence for the release profile.	build/compatibility/ccp-20260907-234543/users/screens.txt
+0579	REQUIRED	P	Ordinary resident-command recovery	Token/operand/missing-file/collision/count cases in CCP matrix plus real no-space SAVE all return a usable prompt without executing colliding transients.	build/compatibility/gaps-20260908-004215/screens.txt
+0580	PROFILE REQUIRED	-	Exact resident output presentation	Run /0580 with DRI-RES-PRES capture	followup/ERRTEST_SAFE_v2/screens.txt
+0581	REQUIRED	F	Physical failure suspends the BDOS caller	Physical failure did not suspend caller	build/compatibility/run-20260907-234825/FAULTIO_VER_r/rows.txt
+0582	REQUIRED	P	Logical failures return without physical-error intervention	All controlled logical failures returned without intervention	build/compatibility/run-20260908-002221/ERRTEST_GROUP:AUTOMATIC/rows.txt
+0583	NOT GUARANTEED	O	Ignored directory-search result is not validation	Ignored search data is not validation	followup/ERRTEST_SAFE_v2/screens.txt
+0584	NOT GUARANTEED	O	Ignored directory-update result is not persistence	Ignored directory update is not persistence	followup/ERRTEST_SAFE_v2/screens.txt
+0585	NOT GUARANTEED	O	Post-ignore affected state is not a continuation contract	Post-ignore state has no continuation guarantee	followup/ERRTEST_SAFE_v2/screens.txt
+0586	REQUIRED	BLOCKED	Physical-error abort abandons the interrupted caller	Prerequisite Bad Sector operator path is absent (0394/0581 fail); no ignore/abort prompt exists at which to conduct this test.	build/compatibility/run-20260907-234825/FAULTIO_VER_r/screens.txt
+0587	REQUIRED	BLOCKED	Abort recovery establishes a usable command environment	Prerequisite Bad Sector operator path is absent (0394/0581 fail); no ignore/abort prompt exists at which to conduct this test.	build/compatibility/run-20260907-234825/FAULTIO_VER_r/screens.txt
+0588	OUTSIDE SCOPE	-	Exact recovery internals are not part of the contract	Outside executable scope	captured/ENTRYTST_ALL/screens.txt
+0589	REQUIRED	P	Loader ceiling and overlay TPA are distinct	BDOS ceiling lies above program	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0590	REQUIRED	P	CCP overlay invalidates ordinary RET assumptions	Full advertised TPA overwritten after adopting private stack; direct warm restart restored CCP/CPXs and a usable system, including a loaded RSX.	build/compatibility/final-tpa.log
+0591	NOT GUARANTEED	O	System ownership is an application obligation	Application owns constraints	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0592	NOT GUARANTEED	O	Entry-stack storage may occupy overlayable memory	Entry stack may be overlayable	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0593	REQUIRED	P	Cold BOOT public postcondition	Gateways, drive, version and default DMA passed	build/compatibility/run-20260908-000734/BOOTMORE_C_A:BOOTMORE_V_r_VER_r/rows.txt
+0594	NOT GUARANTEED	O	Cold BOOT does not promise blanket memory clearing	BOOT need not clear all memory	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0595	REQUIRED	P	WBOOT command-environment reconstruction	Gateways, drive, version and default DMA passed	build/compatibility/run-20260908-000734/BOOTMORE_W_A:BOOTMORE_V_r_VER_r/rows.txt
+0596	NOT GUARANTEED	O	Residual state across WBOOT	Residual WBOOT state varies	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0597	NOT GUARANTEED	O	Console-pending state across WBOOT	Post-WBOOT console state varies	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0598	REQUIRED	P	BIOS vector is a public runtime ABI	WBOOT vector present at 0000h	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0599	REQUIRED	P	DPH structures are compatibility-visible	Function 31 returned a DPB	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0600	REQUIRED	P	Direct BIOS calls expose raw device behavior	Public BIOS setup/translation/DMA and real scratch-sector transfer/status verified independently of BDOS file services.	build/compatibility/bios-boundary/457/screens.txt
+0601	NOT GUARANTEED	O	BIOS implementation details remain profile-specific	BIOS internals vary by profile	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0602	REQUIRED	P	Function 40 selector and input	Function 40 consumed scratch FCB	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0603	REQUIRED	P	Function 40 allocation-block zero fill	Intervening records were zero	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0604	NOT GUARANTEED	O	Function 40 is not universal sparse-hole materialization	Sparse-hole behavior varies	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0605	REQUIRED	P	Function 40 result family	Function 40 returned success	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0606	REQUIRED	P	BIOS character services are raw device interfaces	Direct BIOS TAB remained a raw byte while BDOS console TAB expanded; public logical character interfaces checked separately.	build/compatibility/run-20260907-224546/CONSTEST_0077/final.txt
+0607	REQUIRED	P	Character devices remain distinct runtime paths	Distinct console, reader, punch and list endpoints exercised through the real BDOS with declared public-vector instruments; no physical printer qualification claimed.	build/compatibility/run-20260907-233043/MORECHAR/rows.txt
+0608	REQUIRED	P	IOBYTE reassignment is runtime visible	IOBYTE reassignment was visible	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0609	REQUIRED	P	IOBYTE access coherence	IOBYTE read/write was coherent	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0610	REQUIRED	P	Field-preserving assignment changes	Other IOBYTE fields preserved	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0611	NOT GUARANTEED	O	IOBYTE assignment does not validate device presence	Assignment need not prove I/O	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0612	REQUIRED	F	STAT device-assignment semantics	STAT device-assignment utility is absent from the supplied system image.	build/compatibility/ccp-20260907-234543/missingtools/screens.txt
+0613	REQUIRED	P	Parameterized disk-structure coherence	Disk parameter block available	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0614	REQUIRED	P	DPB-dependent directory allocation-map width	DPB block mask/limits coherent	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0615	REQUIRED	P	Logical directory placement	Logical disk structures followed	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0616	NOT GUARANTEED	O	Raw-format universality	Raw disk format is nonportable	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0617	REQUIRED	P	Direct-structure caller responsibility	Active DPH/DPB contract followed	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0618	NOT GUARANTEED	O	Damaged-directory recovery	Damaged-directory recovery behavior is not guaranteed	followup/ERRTEST_SAFE_v2/screens.txt
+0619	NOT GUARANTEED	O	Private BDOS target is not an application gateway	Private BDOS is not a gateway	build/compatibility/run-20260908-000045/ENTRYTST_ALL/rows.txt
+0620	REQUIRED	F	DRI submitted-command stream	SUBMIT and XSUB are absent; submitted-command and transient buffered-input scenarios cannot execute in this distribution.	build/compatibility/ccp-20260907-234543/missingtools/screens.txt
+0621	REQUIRED	F	XSUB buffered-input compatibility	SUBMIT and XSUB are absent; submitted-command and transient buffered-input scenarios cannot execute in this distribution.	build/compatibility/ccp-20260907-234543/missingtools/screens.txt
+0622	REQUIRED	P	Self-modifying transient execution	Modified code executed at two TPA locations	followup/BIOSTEST_ALL_D_Y_Q_Y_K_Q_v4/screens.txt
+0623	REQUIRED	P	Intel 8080-compatible binary execution baseline	Register, ALU, memory, stack and CALL/RET signatures agreed	captured/CPUTEST_ALL/screens.txt
+0624	REQUIRED	P	Declared processor-profile instruction semantics	ADC, INR carry preservation and DAA semantics agreed	captured/CPUTEST_ALL/screens.txt
+0625	OUTSIDE SCOPE	-	Z80 extensions outside a generic CP/M claim	Z80 extensions are outside the generic CP/M claim	captured/CPUTEST_ALL/screens.txt
+0626	NOT GUARANTEED	O	Undocumented processor behavior	Undocumented processor behavior is not guaranteed	captured/CPUTEST_ALL/screens.txt
+0627	OUTSIDE SCOPE	-	Processor timing and interrupt topology	Timing and interrupt topology require a hardware profile	captured/CPUTEST_ALL/screens.txt

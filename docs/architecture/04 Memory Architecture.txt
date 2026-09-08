@@ -136,6 +136,30 @@ classes.  From high to low, the intended 64K organization is:
   0100h  Transient program origin
   0000h  Compatibility page
 
+Persistent DATA is a dedicated reserved RAM region, not merely a label for
+scattered variables that happen to survive warm boot. The diagram above places
+it immediately above the downward-growing RSX area. This placement is settled:
+DATA stays at known addresses for the running system when RSXs are loaded or
+unloaded and the lower gateway/command environment moves or is reconstructed.
+It must remain outside the advertised TPA and reclaimable CPX/CCP storage.
+Addresses may differ between builds; publish the base and layout through a
+stable interface rather than requiring consumers to embed private addresses.
+
+The canonical DU/named-directory mapping is a required DATA resident. The rest
+of the contents are not yet finalized. Live drive-format definitions, disk login
+state and other long-lived mutable OS state remain candidates, not commitments.
+Assign each adopted field a documented owner and reset policy. Keeping its
+storage across WBOOT does not prevent an explicit CP/M reset operation from
+invalidating or reinitializing the state whose contract requires that action.
+Persistence here means across transient execution and warm boot; persistence
+across power-off requires a separate save/load mechanism.
+
+This is an architectural requirement, not a statement that today's scattered
+state has already been consolidated. Consolidation must migrate existing state
+without retaining duplicate authoritative copies, account for every reserved
+byte, and preserve the agreed TPA budget. The DATA region remains writable RAM
+in a ROM execution build.
+
 The fixed/protected region contains the immutable CP/M-compatible core,
 persistent system DATA, and all currently installed RSXs.  None of this
 memory is available to a transient program.  RSXs extend or intercept

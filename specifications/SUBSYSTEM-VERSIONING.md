@@ -83,7 +83,7 @@ commands. Runtime commands must not carry hand-maintained version values.
 ## Scope
 
 Only completed components receive released assignments. Planned facilities,
-including the RTC BIOS extension and Extended Services RSX, remain unassigned
+including the clock-provider RSXs and Extended Services RSX, remain unassigned
 until their first interfaces and implementations are completed. Their eventual
 initial versions need not match the versions of the BIOS, BDOS, or RSX facility
 that hosts them.

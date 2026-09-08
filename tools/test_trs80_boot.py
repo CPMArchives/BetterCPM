@@ -16,8 +16,12 @@ EXPECTED_LINES = (
     b"A: HELLO    COM : CPX      COM : RSX      COM : RSXTEST  COM",
     b"A: RSX2TST  COM : ERA      COM : REN      COM : TYPE     COM",
     b"A: DIR      COM : USER     COM : CLR      COM : VER      COM",
-    b"A: WARM     COM : BASIC    CPX : HELLO    CPX : HELLO    RSX",
-    b"A: ECHO     RSX",
+    b"A: WARM     COM : CONFIG   COM : DUP      COM : STAT     COM",
+    b"A: SUBMIT   COM : XSUB     COM : DISK     FDF : FDF      RSX",
+    b"A: BASIC    CPX : HELLO    CPX : HELLO    RSX : ECHO     RSX",
+    b"A: BATCHIO  RSX : BDOSPRB  COM : COMINFO  COM : DISKEDIT COM",
+    b"A: DISKINFO COM : DPBCHK   COM : FSCK     COM : SYSINFO  COM",
+    b"A: TOOLS    DOC : SYSGEN   DAT",
     b"",
     b"A0>HELLO WORLD",
     b"Hello from BetterCP/M WORLD",
@@ -64,11 +68,15 @@ def main() -> None:
         expected = bytearray(b" " * len(screen))
         for row, line in enumerate(EXPECTED_LINES):
             expected[row * 80:row * 80 + len(line)] = line
+        # Cursor blink phase depends on capture timing; accept either phase.
+        cursor = (len(EXPECTED_LINES)-1)*80+3
+        if screen[cursor] == 0x20:
+            expected[cursor] = 0x20
         if screen != expected:
             visible = [(index, byte) for index, byte in enumerate(screen)
                        if byte != 0x20][:80]
             raise SystemExit(f"boot test failed; visible bytes {visible}; "
-                             f"screen begins {screen[:240]!r}")
+                             f"screen rows {[screen[i:i+80].rstrip() for i in range(0,len(screen),80)]!r}")
         if any(captured[80 * 24:]):
             raise SystemExit("boot test wrote beyond the 80x24 video region")
     for line in EXPECTED_LINES:

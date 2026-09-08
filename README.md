@@ -192,6 +192,17 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 
 ## First boot
 
+BetterCP/M-specific command sources are collected in
+[`src/utilities`](src/utilities/README.md). Build the complete command set with
+`python3 tools/build_utilities.py`; individual builders remain available for
+focused development. General CP/M diagnostic tools such as SYSINFO remain in
+the separate [`CPMArchives/cpm-tools`](https://github.com/CPMArchives/cpm-tools)
+project.
+
+Generated BetterCP/M system disks include the pinned general-tool collection
+and its `TOOLS.DOC` manual. The adopted upstream revision and artifact hashes
+are recorded in [`third_party/cpm-tools/manifest.json`](third_party/cpm-tools/manifest.json).
+
 ```sh
 python3 tools/build_bios.py
 python3 tools/test_bios.py
@@ -219,6 +230,7 @@ python3 tools/build_cpx_utility.py
 python3 tools/build_native_cpx_utility.py
 python3 tools/build_hello_rsx.py
 python3 tools/build_echo_rsx.py
+python3 tools/build_batch.py
 python3 tools/build_rsx_utilities.py
 python3 tools/build_native_rsx.py
 python3 tools/build_rsxloader.py

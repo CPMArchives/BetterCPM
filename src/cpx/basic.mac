@@ -326,10 +326,11 @@ BC_DNEXT:
         LD      DE,BC_NL
         LD      C,9
         CALL    BDOS
-        LD      A,(BC_DTARG)
-        CP      0FFH
-        JR      NZ,BC_DDRIVE
-        LD      A,(BC_DSAVE)
+; Patch 2026-09-07: print the drive BDOS is actually searching.  The old
+; tentative-prefix value made DIR ONE.TXT on B: print O:.  A filename can
+; start with a drive letter without being a drive-qualified filespec.
+        LD      C,25
+        CALL    BDOS
 BC_DDRIVE:
         ADD     A,'A'
         CALL    BC_PCHAR

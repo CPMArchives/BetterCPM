@@ -1,6 +1,6 @@
 ; CONFIG -- BetterCP/M disk configuration, 07-Sep-2026.
 ; The MM-style menus are transient. Only validated drive records stay
-; in the BIOS. A cold boot restores the installed system image.
+; in the BIOS. H writes their defaults back to the installed system image.
         ASEG
         ORG 0100H
         LD SP,04000H
@@ -13,6 +13,8 @@ MAIN:   LD HL,TITLE
         CALL CHOICE
         CP 3
         JP Z,DONE
+        CP 'H'
+        JP Z,SYSGEN
         CP 'I'
         JP Z,EDITDRIVE
         CP 'F'
@@ -728,7 +730,7 @@ EDPTR:  DW 0
 EDINPUT:DS 6
 EDCOPY: DS 64
 
-TITLE:  DB 'BetterCP/M 2.2 CONFIG version 1.00',0
+TITLE:  DB 'BetterCP/M 2.2 CONFIG version 1.01',0
 MAINMSG:DB 'Configuration options:',13,10,13,10
         DB '[ A ] System device assignments',13,10
         DB '[ B ] Keyboard definitions',13,10
@@ -783,5 +785,6 @@ PAGE:   DB 0
 ROW:    DB 0
 CHOSEN: DB 0
 CHECKPH:DB 0
+        INCLUDE disk/sysgen.inc
         INCLUDE disk/common.inc
         END

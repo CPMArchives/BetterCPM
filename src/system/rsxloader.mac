@@ -6,7 +6,8 @@
 ; Removing the last module gives both manager and module RAM to TPA.
 ;
 ; Function 202 passes DE -> request:
-;   +0 version (1), +1 operation (0 enumerate, 1 load, 2 unload, 3 query),
+;   +0 version (1), +1 operation (0 enumerate, 1 load, 2 unload, 3 query,
+;                                4 retire without rebuilding),
 ;   +2 enumeration index, +3 reserved, +4..+11 space-padded filename stem,
 ;   +12..+13 returned primary service number.
 
@@ -46,13 +47,15 @@ RL_COUNTOK:
         INC     DE
         LD      A,(DE)
         OR      A
-        JP      Z,RL_ENUM
+        JR      Z,RL_ENUM
         CP      1
-        JP      Z,RL_ADD
+        JR      Z,RL_ADD
         CP      2
         JP      Z,RL_REMOVE
         CP      3
-        JP      Z,RL_QUERY
+        JR      Z,RL_QUERY
+        CP      4
+        JP      Z,RL_RETIRE
         JP      RL_BAD
 
 RL_ENUM:
@@ -127,6 +130,21 @@ RL_ADD:
 RL_REMOVE:
         CALL    RL_FIND
         JP      C,RL_ZERO       ; absent is an idempotent success
+        CALL    RL_SHIFT
+        CALL    RL_REBUILD
+        RET     Z
+        JP      RL_BAD
+
+; A running module cannot safely ask the manager to rebuild over its own code.
+; Operation four removes its reconstruction record only; WBOOT then performs
+; the ordinary rebuild on the protected system stack.
+RL_RETIRE:
+        CALL    RL_FIND
+        JP      C,RL_ZERO
+        CALL    RL_SHIFT
+        JP      RL_ZERO
+
+RL_SHIFT:
         LD      (RL_INDEX),A
 RL_SHLOOP:
         LD      A,(RL_INDEX)
@@ -151,9 +169,7 @@ RL_SHLOOP:
 RL_SHDONE:
         LD      HL,RSTCOUNT
         DEC     (HL)
-        CALL    RL_REBUILD
-        RET     Z
-        JP      RL_BAD
+        RET
 
 ; Find request name. Return carry clear and A=index, or carry set.
 RL_FIND:

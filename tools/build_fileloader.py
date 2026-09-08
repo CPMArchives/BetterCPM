@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import re
 import subprocess
 import tempfile
 from pathlib import Path
@@ -34,6 +35,9 @@ def main() -> None:
     if len(data) > LAYOUT["FILE"] and data[:LAYOUT["FILE"]] == bytes(LAYOUT["FILE"]):
         data = data[LAYOUT["FILE"]:]
         output.write_bytes(data)
+    match = re.search(r"^([0-9a-f]{4})\s+.*\bFL_FCB:", (BUILD/'fileloader.lst').read_text(), re.M|re.I)
+    if not match or int(match[1],16) != LAYOUT['FILE']+109:
+        raise SystemExit('protected COM loader FCB address changed; update its ABI')
     print(f"{hashlib.sha256(data).hexdigest()}  build/system/fileloader.bin")
     print(f"file-loader bytes: {len(data)}")
 

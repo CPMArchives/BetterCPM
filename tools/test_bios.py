@@ -69,7 +69,9 @@ class Z80:
                 return
             op = self.mem[self.pc]
             self.pc += 1
-            if op == 0xC3:              # JP nn
+            if op == 0x00:              # NOP
+                pass
+            elif op == 0xC3:              # JP nn
                 self.pc = self.word(self.pc)
             elif op in (0xC2, 0xCA, 0xD2, 0xDA):  # JP NZ/Z/NC/C,nn
                 target = self.word(self.pc)
@@ -79,6 +81,16 @@ class Z80:
                         (op == 0xD2 and not self.carry) or
                         (op == 0xDA and self.carry))
                 if take:
+                    self.pc = target
+            elif op in (0xC4, 0xCC, 0xD4, 0xDC):  # CALL NZ/Z/NC/C,nn
+                target = self.word(self.pc)
+                self.pc += 2
+                take = ((op == 0xC4 and not self.z) or
+                        (op == 0xCC and self.z) or
+                        (op == 0xD4 and not self.carry) or
+                        (op == 0xDC and self.carry))
+                if take:
+                    self.push(self.pc)
                     self.pc = target
             elif op == 0xCD:            # CALL nn
                 target = self.word(self.pc)
@@ -480,6 +492,9 @@ class Z80:
                 self.carry = self.a < value
                 self.a = (self.a - value) & 0xFF
                 self.z = self.a == 0
+            elif op == 0xCB and self.mem[self.pc] == 0x77:  # BIT 6,A
+                self.pc += 1
+                self.z = not bool(self.a & 0x40)
             elif op == 0xCB and self.mem[self.pc] == 0x3F:  # SRL A
                 self.pc += 1
                 self.carry = bool(self.a & 1)
@@ -577,8 +592,8 @@ class Z80:
             elif op == 0xB0:            # OR B
                 self.a |= self.b
                 self.z, self.carry = self.a == 0, False
-            elif op in (0x80, 0x81, 0x82, 0x83):  # ADD A,B / C / D
-                value = {0x80: self.b, 0x81: self.c, 0x82: self.d, 0x83: self.e}[op]
+            elif op in (0x80, 0x81, 0x82, 0x83, 0x85, 0x86):  # ADD A,B / C / D / E / L / (HL)
+                value = {0x80: self.b, 0x81: self.c, 0x82: self.d, 0x83: self.e, 0x85: self.l, 0x86: self.mem[self.hl]}[op]
                 total = self.a + value
                 self.a = total & 0xFF
                 self.z, self.carry = self.a == 0, total > 0xFF
@@ -693,23 +708,23 @@ def main() -> None:
 
     boot_target = cpu.word(entries[0] + 1)
     require(cpu.mem[boot_target] == 0xCD and
-            cpu.mem[boot_target + 3] == 0xC3 and
-            BASE <= cpu.word(boot_target + 4) < BASE + len(data),
+            cpu.mem[boot_target + 8] == 0xC3 and
+            BASE <= cpu.word(boot_target + 9) < BASE + len(data),
             "BOOT does not initialize the platform then reconstruct commands")
     warm_target = cpu.word(entries[1] + 1)
     require(cpu.mem[warm_target] == 0xC3 and
-            cpu.word(warm_target + 1) == cpu.word(boot_target + 4),
+            cpu.word(warm_target + 1) == cpu.word(boot_target + 9),
             "WBOOT does not enter command-image restoration")
     private_read = BASE + 17 * 3
     private_cursor = private_read + 3
     require(cpu.mem[private_read] == 0xC3 and
-            BASE <= cpu.word(private_read + 1) < BASE + len(data),
+            cpu.word(private_read + 1) == LAYOUT["DISK"] + 15,
             "private physical-read vector is not a bounded JP")
     require(cpu.mem[private_cursor] == 0xC3 and
             BASE <= cpu.word(private_cursor + 1) < BASE + len(data),
             "private cursor-character vector is not a bounded JP")
     read_impl = cpu.word(private_read + 1)
-    require(cpu.mem[read_impl] == 0xC3 and cpu.word(read_impl + 1) == LAYOUT["DISK"] + 15,
+    require(read_impl == LAYOUT["DISK"] + 15,
             "private physical read does not use the common disk engine")
 
     const_impl = cpu.word(entries[2] + 1)
@@ -735,6 +750,10 @@ def main() -> None:
     cpu.mem[0xF420] = 0x80                         # Shift-slash
     cpu.run(scan)
     require(cpu.a == ord("?"), "matrix scanner missed Shift-slash question mark")
+    cpu.mem[0xF420], cpu.mem[0xF410] = 0, 0x10     # Shift-4
+    cpu.run(scan)
+    require(cpu.a == ord("$"), "matrix scanner missed Shift-4 dollar sign")
+    cpu.mem[0xF410] = 0
     cpu.mem[0xF420] = cpu.mem[0xF480] = 0
     cpu.mem[0xF402], cpu.mem[0xF480] = 0x01, 0x04  # Control-H
     cpu.run(scan)
@@ -754,7 +773,7 @@ def main() -> None:
     require(cpu.a == 0x41, "CONIN did not clear parity")
 
     conout_impl = cpu.word(entries[4] + 1)
-    platform_conout = cpu.word(conout_impl + 1)
+    platform_conout = conout_impl
 
     scroll_cpu = Z80(data)
     scroll_cpu.mem[0xF800:0xFF80] = bytes((0x20,)) * 1920
@@ -782,6 +801,17 @@ def main() -> None:
             "CONOUT did not scroll at the automatic-wrap boundary")
     require(wrap_cpu.mem[0xFF80] == 0x5A,
             "automatic wrap wrote beyond Model 4 video RAM")
+
+    # A BS must move the display cursor, not occupy a character cell.
+    back_cpu = Z80(data)
+    back_cpu.mem[0xF800:0xFF80] = b" " * 1920
+    back_cpu.mem[0xF7FF] = 0xA5
+    for value in b"\x08ABC\x08X":
+        back_cpu.c = value
+        back_cpu.run(entries[4])
+    require(back_cpu.mem[0xF800:0xF804] == b"ABX " and
+            back_cpu.mem[0xF7FF] == 0xA5,
+            "Backspace failed to move left or crossed the left margin")
 
     cpu.mem[platform_conout:platform_conout + 5] = bytes((0x79, 0x32, 0x00, 0x70, 0xC9))
     cpu.c = 0x09
@@ -831,8 +861,8 @@ def main() -> None:
                 bytes((40,0,4,15,0,143,1,127,0,192,0,32,0,0,0)),
                 f"drive {name} does not have the default 800K DATA DPB")
         pair = (cpu.word(cpu.hl + 12), cpu.word(cpu.hl + 14))
-        require(pair in work,
-                f"drive {name} did not use the shared active-drive workspace")
+        require(all(pair[0] != old[0] and pair[1] == old[1] for old in work),
+                f"drive {name} did not retain a private CSV with shared ALV")
         dphs.append(cpu.hl)
         work.add(pair)
     cpu.c = 5
@@ -861,7 +891,8 @@ def main() -> None:
     cpu.bc = 0x7200
     cpu.run(entries[12])
     read_impl = cpu.word(entries[13] + 1)
-    read_calls = [address for address in range(read_impl, read_impl + 48)
+    prepare = cpu.word(read_impl + 1)
+    read_calls = [address for address in range(prepare, prepare + 11)
                   if cpu.mem[address] == 0xCD]
     require(len(read_calls) >= 2, "READ physical-call site was not found")
     call_at = read_calls[1]

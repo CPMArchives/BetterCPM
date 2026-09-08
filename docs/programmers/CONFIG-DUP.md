@@ -1,6 +1,6 @@
 # CONFIG.COM and DUP.COM
 
-CONFIG 1.00 and DUP 1.13 are ordinary transient programs. They require
+CONFIG 1.01 and DUP 1.13 are ordinary transient programs. They require
 BetterCP/M disk ABI 5 and four logical drives. CONFIG needs 42 KiB of
 transient space; allow 51 KiB for DUP and its private copy buffer. They add no resident allocation: maximum TPA remains
 54,273 bytes when no RSXs are installed.
@@ -15,10 +15,22 @@ current BIOS format rather than assigned a guessed name.
 
 ## CONFIG
 
-The main menu retains the MM letter assignments. F, G and I are implemented;
-A–E and H explicitly report “Feature not yet implemented.” Changes take effect
-immediately and survive warm boot. Saving them with SYSGEN is not implemented;
-cold boot reloads the installed configuration.
+The main menu retains the MM letter assignments. F, G, H and I have implementations;
+A–E explicitly report “Feature not yet implemented.” Changes take effect
+immediately and survive warm boot. CONFIG H is undergoing acceptance testing.
+
+H saves the four physical drive definitions and four logical bindings to the
+current boot disk A:. It requires the matching `A:SYSGEN.DAT`, generated with
+the system image. It checks the immutable resident carrier before confirmation,
+writes only changed configuration records, and verifies each write. A failed
+write or comparison triggers restoration of the original changed records;
+restoration failures are reported explicitly. This is not power-loss atomic.
+Files, boot loaders and resident executable code are preserved. An ordinary
+cold boot then uses the saved settings. H does not install a new system on
+another disk and does not persist loaded RSXs: load FDF.RSX again before using
+bindings that require it. The z80pack adapter currently has fixed settings.
+The reference file consumes disk space, not resident RAM. CONFIG temporarily
+borrows and then reloads its format catalogue while running H.
 
 F displays physical drives 0–3. Each drive has six settings:
 

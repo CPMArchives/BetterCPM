@@ -10,6 +10,17 @@ bring-up history is kept in those documents rather than repeated here.
 
 ## Immediate priorities
 
+- [ ] When resuming CONFIG.COM, implement the agreed active/startup settings
+  separation, configurable cold-boot drive capacity, and two H save scopes.
+  See [CONFIG startup decisions](docs/engineering/CONFIG-STARTUP-SETTINGS-DECISIONS.md).
+
+The first release milestone is engineering and compatibility qualification of
+BIOS, BDOS and their accompanying structures. Freeze that core baseline before
+finalizing the CCP and later distribution milestones. See
+[1.0 milestone scope](docs/releases/1.0-SCOPE-DRAFT.md#milestone-1-qualify-and-finalize-the-system-core).
+The older task inventory below is not a requirement to finish every higher-level
+feature before qualifying the core.
+
 - [ ] Resume BIOSTEST where physical testing stopped and reconcile every
   catalog entry against the current system image.
 - [ ] Rerun ENTRYTST, BDOSTEST, FILETEST, RANDTEST, DIRTEST, CPUTEST, and
@@ -35,6 +46,18 @@ bring-up history is kept in those documents rather than repeated here.
 
 ## Command environment and BASIC.CPX
 
+Agreed 1.0 boundary: the stock CCP contains only LOAD, JUMP, GO, PEEK, POKE and SAVE
+as built-in commands. BASIC.CPX supplies the other standard CP/M resident commands.
+Full SUBMIT/XSUB compatibility is required; further flow-control functionality
+is supplied through loadable CPXs rather than added to the core CCP.
+
+- [ ] Move SAVE from BASIC.CPX into the stock CCP and qualify memory-image
+  preservation; it must work without loading BASIC.CPX or a transient.
+- [ ] Specify and qualify the six core commands and remove transitional
+  standard-command copies after BASIC.CPX qualification.
+- [x] Qualify full SUBMIT/XSUB compatibility with original command files and
+  submitted-input workflows, including error/abort and warm-boot behavior.
+
 - [x] Add stock `USER` behavior to `BASIC.CPX`.
 - [x] Make the intended BASIC command inventory `DIR`, `ERA`, `REN`, `SAVE`,
   `TYPE`, `USER`, plus the BetterCP/M extensions `CLR` and `VER`.
@@ -51,6 +74,13 @@ bring-up history is kept in those documents rather than repeated here.
 - [x] Provide transient-only `WARM.COM` for scripts and testing. Interactive
   users retain canonical, disk-independent `Ctrl-C` warm boot; `WARM` does not
   belong in BASIC.CPX.
+- [ ] Implement the canonical named-directory map in protected, persistent OS
+  DATA, as confirmed by the user. Names resolve to drive/user pairs. The map
+  survives transient execution and CCP reconstruction/warm boot; the CCP and
+  utilities share one resolution interface and no independent authoritative maps.
+  Specify its bounded storage, initialization and interface as part of the core
+  boundary; implement higher-level navigation and utility syntax in their own
+  milestones. Persistence across power-off is a separate save/load decision.
 - [ ] Finish common named-DU resolution and use it consistently for command
   lookup, BASIC commands, transient utilities, and module loading.
 - [ ] Implement a system `PATH` facility for command lookup across canonical
@@ -63,18 +93,20 @@ bring-up history is kept in those documents rather than repeated here.
   should include the current drive/user (`DU:`), named directory, and current
   date/time while preserving a compact CP/M-style default.
 
-The 512-byte packed, multi-command history buffer in persistent DATA is
-already implemented, as are Up/Down recall and warm-boot persistence. It
-requires regression coverage during the full compatibility rerun, not a new
-implementation.
+The packed, multi-command history buffer in persistent DATA is already
+implemented, as are Up/Down recall and warm-boot persistence.  The current
+53K layout reserves 192 bytes (182 bytes of command records).  This is the
+temporary size accepted while the resident-memory trade-offs are reviewed;
+do not reduce it again.  It requires regression coverage during the full
+compatibility rerun, not a new implementation.
 
 ## Stock CP/M transient utilities
 
 - [ ] Implement `PIP.COM`.
 - [ ] Implement `STAT.COM`.
 - [ ] Implement `DUMP.COM`.
-- [ ] Implement `SUBMIT.COM`.
-- [ ] Implement `XSUB.COM`.
+- [x] Implement `SUBMIT.COM`.
+- [x] Implement `XSUB.COM`.
 - [ ] Implement `ED.COM`.
 - [ ] Implement `ASM.COM`.
 - [ ] Implement `LOAD.COM`.
@@ -193,9 +225,22 @@ between CONFIG and DUP remain design considerations for the formatting work.
 - [ ] Give `$SYS` files the intended system-wide visibility, particularly
   making suitable files discoverable from every user area without weakening
   normal user-area isolation or producing duplicate directory results.
-- [ ] Specify the BetterCP/M clock and timestamp model: date epoch and range,
-  time resolution, persistent/on-disk representation, behavior on systems
-  without a real-time clock, and platform BIOS interface.
+- [ ] Deliver date/time support for 1.0 through a common service and replaceable
+  clock-provider RSXs for add-on clocks and emulator-supplied services. Define
+  the core-facing contract before the core freeze; keep hardware access in the
+  provider. Select and qualify an explicit initial provider set and extend the
+  library as devices are supported.
+- [ ] Qualify unmodified date/time utilities for the agreed five-family baseline:
+  DateStamper, ZSDOS/ZDDOS, P2DOS, CP/M Plus, and DOS+/Z80DOS. Start with
+  DateStamper and ZSDOS/ZDDOS. Cover detection, call/entry conventions, return
+  behavior and applicable file timestamp layouts, not only clock reads. Resolve
+  the P2DOS function-200 collision with CPX control before core interface freeze.
+- [ ] Specify the clock model: date range and representation, time resolution,
+  local-time/UTC policy, capability/validity query, read and optional set,
+  unavailable/unset/fault results, and safe provider replacement/unload/WBOOT.
+  No provider must mean unavailable rather than a fabricated clock value.
+- [ ] Scope filesystem timestamps separately from the clock service, including
+  persistent/on-disk representation and behavior without a real-time clock.
 - [ ] Extend the native directory/filesystem design to store file timestamps
   while retaining the chosen level of cpmtools compatibility and defining
   behavior for legacy disks without timestamp metadata.
@@ -207,6 +252,12 @@ between CONFIG and DUP remain design considerations for the formatting work.
   tests.
 
 ## Devices and portability
+
+- [ ] Implement and qualify RomWBW as the third 1.0 platform target alongside
+  trs80gp/Model 4 and z80pack/cpmsim. Pin the firmware version and a concrete
+  test configuration; implement an HBIOS adapter and RomWBW clock-provider RSX.
+  Audit memory/boot/I/O contracts and run applicable core and clock tests.
+  Keep RomWBW target qualification separate from direct-ROM execution proof.
 
 - [ ] Complete configurable `CON:`, `RDR:`, `PUN:`, and `LST:` routing and
   `IOBYTE` behavior, including absent-device and timeout rules.
@@ -254,3 +305,17 @@ between CONFIG and DUP remain design considerations for the formatting work.
   requirements, dependencies, safe unloading, and RAM costs. This is deferred
   research, not a 1.0 requirement or an instruction to implement now. See
   [loadable BIOS device-driver proposal](docs/engineering/BIOS-DRIVERS-FUTURE.md).
+
+## Deferred disk-change enhancement
+
+- [ ] Automatic relogging after media-change detection. Consult available
+  ZSDOS/ZDDOS and ZRDOS source and documentation before implementation.
+  Define safe treatment of open FCBs, dirty buffers, and interrupted writes;
+  start by considering relogging at the idle command prompt. Current work
+  implements the CP/M 2.2 read-only response, not automatic relogging.
+
+- [ ] For ROMability, consolidate mutable drive definitions and disk workspaces
+  into the fixed persistent RAM layout, separate from ROM-resident defaults
+  and routines. Preserve DPH pointer interfaces, define cold/warm/reset rules,
+  and budget history/named-directory space explicitly. Moving tables alone
+  does not reduce their RAM cost.

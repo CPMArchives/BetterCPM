@@ -303,11 +303,38 @@ DC_WRITE:
 DC_IO:
         LD (DC_COMMAND),A
         LD (DC_BUFFER),HL
-        CALL DC_SEEK
-        RET NZ
+; Keep write data in controller polarity for ALL attempts. Restore the
+; caller's bytes on either success or failure; never invert each retry.
+        CP 0A0H
+        CALL Z,DC_INVBUF
+        LD A,3              ; first attempt plus two retries
+DC_RETRY:
+        PUSH AF
+        CALL DC_TRY
+        POP BC              ; B retains the remaining attempt count
+        OR A
+        JR Z,DC_FINISH
+        BIT 6,A             ; write protection will not improve on retry
+        JR NZ,DC_FINISH
+        DEC B
+        JR Z,DC_FINISH
+        PUSH BC
+        CALL DC_ERR         ; abort command and distrust head position
+        POP AF              ; remaining count was in B, now in A
+        JR DC_RETRY
+DC_FINISH:
+        OR A                ; BIT above must not disguise a final error
+        PUSH AF             ; retain the last controller result
         LD A,(DC_COMMAND)
         CP 0A0H
         CALL Z,DC_INVBUF
+        POP AF
+        RET
+; Formerly DC_IO returned after a single failed transfer. A CRC error,
+; lost byte or missed sector now gets a bounded fresh seek and transfer.
+DC_TRY:
+        CALL DC_SEEK
+        RET NZ
         LD A,(BIO_PSEC)
         OUT (FDCSECTOR),A
         LD A,(DC_COMMAND)

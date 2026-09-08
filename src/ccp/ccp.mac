@@ -26,7 +26,7 @@ CCP_HTMP        EQU     HISTBASE+7
 CCP_HSKIP       EQU     HISTBASE+8
 CCP_EDOLD       EQU     HISTBASE+9
 HISTDATA        EQU     HISTBASE+10
-HISTCAP         EQU     502
+HISTCAP         EQU     LY_SYS-LY_HIST-10
 
         CSEG
         .PHASE  CCPBASE
@@ -49,6 +49,7 @@ CCP_LOOP:
         OR      A
         JR      Z,CCP_LOOP
         CALL    CCP_UPPER
+        JR      Z,CCP_LOOP      ; SPACE-only input is an empty command
 ; Patch 2026-09-02: direct drive/user navigation is command-processor syntax,
 ; not a resident command.  Keep BDOS as the sole owner of both values so the
 ; prompt, FCB operations, transient programs, and warm-start reconstruction
@@ -72,6 +73,7 @@ CCP_LOOP:
 CCP_BAD:
         CALL    CCP_LOAD
         JR      NC,CCP_LOOP     ; successful program exits only via warm start
+        CALL    CS_CANCEL       ; a bad submitted command aborts the whole stream
         LD      DE,CCP_UNKNOWN
         LD      C,9
         CALL    BDOS
@@ -116,6 +118,12 @@ CCP_DUPONE:
 ; direct console input so cursor motion and insert/overwrite policy do not
 ; leak into the compatibility interface.
 CCP_READLN:
+; CP/M 2.2 SUBMIT is a command-acquisition path, not a resident command.
+; Prefer one protected-disk stack record before entering the interactive editor.
+        XOR     A
+        LD      (CCP_SUBACTIVE),A
+        JR      CS_READ
+CR_INTER:
         CALL    CCP_HINIT
         XOR     A
         LD      (CCP_COUNT),A
@@ -125,6 +133,154 @@ CCP_READLN:
         INC     A               ; each new line starts in insert mode
         LD      (CCP_EDINS),A
         JP      CCP_EDDRAW      ; publish the initial visible cursor
+
+; Read the last remaining A:$$$.SUB record, publish its decremented RC, and
+; echo it as though typed.  Nothing here must survive a transient: the file is
+; the stock persistent queue and WBOOT reconstructs this CCP before each read.
+CS_READ:
+        CALL    CS_PREP
+        LD      DE,0080H
+        LD      C,26
+        CALL    BDOS
+        LD      DE,LY_FCB
+        LD      C,15
+        CALL    BDOS
+        INC     A
+        JR      NZ,CS_OPEN
+        LD      DE,0080H
+        LD      C,26
+        CALL    BDOS
+        JR      CR_INTER
+CS_OPEN:
+        LD      A,(LY_FCB+15)
+        OR      A
+        JR      Z,CS_DROP
+        DEC     A
+        LD      (LY_FCB+32),A
+        LD      DE,LY_FCB
+        LD      C,20
+        CALL    BDOS
+        OR      A
+        JR      Z,CS_DATA
+CS_DROP:
+        LD      DE,LY_FCB
+        LD      C,19
+        CALL    BDOS
+        LD      DE,0080H
+        LD      C,26
+        CALL    BDOS
+        XOR     A
+        LD      (CCP_COUNT),A
+        SCF
+        RET
+CS_DATA:
+        LD      A,(0080H)
+        CP      126             ; stock SUBMIT never emits more than 125 bytes
+        JR      NC,CS_DROP
+        LD      C,A
+        LD      B,0
+        LD      HL,0081H
+        LD      DE,CCP_DATA
+        LDIR
+        XOR     A
+        LD      (LY_FCB+14),A   ; mark RC/S2 state dirty for BetterCP/M Close
+        LD      A,(LY_FCB+15)
+        DEC     A
+        LD      (LY_FCB+15),A
+        LD      C,16
+        OR      A
+        JR      NZ,CS_FILE
+        LD      C,19
+CS_FILE:
+        LD      DE,LY_FCB
+        CALL    BDOS
+        INC     A
+        JR      Z,CS_DROP
+        LD      DE,0080H
+        LD      C,26
+        CALL    BDOS
+        LD      A,1
+        LD      (CCP_SUBACTIVE),A
+        LD      A,(0080H)
+        LD      B,A
+        LD      HL,0081H
+CS_ECHO:
+        LD      A,B
+        OR      A
+        JR      Z,CS_CR
+        PUSH    BC
+        PUSH    HL
+        LD      E,(HL)
+        LD      C,2
+        CALL    BDOS
+        POP     HL
+        POP     BC
+        INC     HL
+        DJNZ    CS_ECHO
+CS_CR:
+        LD      E,13
+        LD      C,2
+        CALL    BDOS
+        LD      E,10
+        LD      C,2
+        CALL    BDOS
+; DRI CCP treats any pending console byte as cancellation after echoing a
+; submitted command.  Delete the unread tail before consuming the byte, so a
+; Ctrl-C warm start cannot resurrect the command stream.
+        LD      C,11
+        CALL    BDOS
+        OR      A
+        JR      Z,CS_OK
+        LD      DE,LY_FCB       ; the consumed stream FCB still names $$$.SUB
+        LD      C,19
+        CALL    BDOS
+        XOR     A
+        LD      (CCP_SUBACTIVE),A
+        LD      E,0FFH
+        LD      C,6
+        CALL    BDOS
+        XOR     A
+        LD      (0080H),A
+CS_OK:
+        LD      A,(0080H)
+        LD      (CCP_COUNT),A
+        SCF
+        RET
+
+CS_PREP:
+        LD      HL,LY_FCB
+        LD      B,36
+        XOR     A
+CS_ZERO:
+        LD      (HL),A
+        INC     HL
+        DJNZ    CS_ZERO
+        LD      A,1             ; only A:$$$.SUB is an active stock stream
+        LD      (LY_FCB),A
+        LD      HL,02424H       ; '$$'
+        LD      (LY_FCB+1),HL
+        LD      HL,02024H       ; '$ '
+        LD      (LY_FCB+3),HL
+        LD      HL,02020H
+        LD      (LY_FCB+5),HL
+        LD      (LY_FCB+7),HL
+        LD      HL,05553H       ; 'SU'
+        LD      (LY_FCB+9),HL
+        LD      A,'B'
+        LD      (LY_FCB+11),A
+        RET
+
+CS_CANCEL:
+        LD      A,(CCP_SUBACTIVE)
+        OR      A
+        RET     Z
+        CALL    CS_PREP
+        LD      DE,LY_FCB
+        LD      C,19
+        CALL    BDOS
+        XOR     A
+        LD      (CCP_SUBACTIVE),A
+        RET
 CCP_EDGET:
         LD      E,0FFH
         LD      C,6
@@ -669,7 +825,7 @@ CCP_EDFIN:
         RET     Z
         JP      CCP_HADD
 
-; Persistent packed command history. The protected 512-byte region contains a
+; Persistent packed command history. The protected history region contains a
 ; nine-byte control header followed by length-prefixed complete command lines. New
 ; records evict the oldest whole records only when space is required.
 CCP_HINIT:
@@ -978,12 +1134,19 @@ CPX_RETURN:
         EX      DE,HL
         JR      CPX_NEXT
 
+; Patch 2026-09-07: count nonblank characters while folding case.  Formerly
+; a SPACE-only command reached the loader and printed a question mark.
+; Sharing this walk also avoids another pointer in the relocation table.
 CCP_UPPER:
+        LD      C,0
         LD      HL,CCP_DATA
         LD      A,(CCP_COUNT)
         LD      B,A
 CCP_UPLOOP:
         LD      A,(HL)
+        CP      ' '
+        JR      Z,CCP_UPNEXT
+        INC     C
         CP      'a'
         JR      C,CCP_UPNEXT
         CP      'z'+1
@@ -993,6 +1156,8 @@ CCP_UPLOOP:
 CCP_UPNEXT:
         INC     HL
         DJNZ    CCP_UPLOOP
+        LD      A,C
+        OR      A
         RET
 
 CCP_EQUAL:
@@ -1074,38 +1239,9 @@ CCP_FNCPY:
         CALL    BDOS
         INC     A
         JP      Z,CCP_LFAIL
-        LD      HL,0100H
-        LD      (CLDPTR),HL
-CCP_LNEXT:
-        LD      DE,(CLDPTR)
-        LD      C,26
-        CALL    BDOS
-        LD      DE,CCP_FCB
-        LD      C,20
-        CALL    BDOS
-        OR      A
-        JR      NZ,CCP_LEOF
-        LD      HL,(CLDPTR)
-        LD      DE,128
-        ADD     HL,DE
-; Patch 2026-09-02: the transient ceiling is an active-layout value, not a
-; compiled CCP address. Preserve the candidate pointer while comparing it
-; with the exclusive ceiling published by the system gateway.
-        PUSH    HL
-        LD      DE,(TPATOP)
-        OR      A
-        SBC     HL,DE
-        POP     HL
-        JR      NC,CCP_LFAIL
-        LD      (CLDPTR),HL
-        JR      CCP_LNEXT
+ ; Build the transient arguments while the command line still exists.
+; The protected reader now owns EOF/error handling and the final jump.
 CCP_LEOF:
-        CP      1
-        JR      NZ,CCP_LFAIL
-        CALL    CCP_LURST
-        LD      DE,0080H
-        LD      C,26
-        CALL    BDOS
         LD      HL,005CH
         LD      B,36
         XOR     A
@@ -1150,8 +1286,21 @@ CCP_LTAIL0:
         CALL    CCP_PSKIP
         LD      DE,006CH
         CALL    CCP_PFCB
-        LD      SP,CCP_RET
-        JP      0100H
+        LD      HL,CCP_FCB
+        LD      DE,LY_FCB  ; protected module-reader FCB, idle during COM load
+        LD      BC,36
+        LDIR
+        LD      DE,LY_BUF      ; stage each record outside the full TPA
+        LD      C,26
+        CALL    BDOS
+        LD      A,(CCP_LUACT)
+        OR      A
+        LD      A,(CCP_LUSAV)
+        JP      NZ,LY_COMSTART
+        LD      E,0FFH
+        LD      C,32
+        CALL    BDOS
+        JP      LY_COMSTART
 CCP_LFAIL:
         CALL    CCP_LURST
         SCF
@@ -1551,6 +1700,7 @@ CCP_LUSAV      EQU     0046H
 CCP_LUTRG      EQU     0047H
 CCP_LUACT      EQU     0048H
 CCP_LDRV       EQU     0049H
+CCP_SUBACTIVE  EQU     004AH
 CCP_DIREP:
         DW      0080H
 CCP_DFPTR:

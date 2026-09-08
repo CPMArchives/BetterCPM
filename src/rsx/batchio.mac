@@ -1,0 +1,193 @@
+; BATCHIO -- protected CP/M 2.2 XSUB input provider.
+;
+; XSUB's code and working buffer must remain above a transient which uses all
+; of the advertised TPA.  The ordinary BRSX loader supplies that protection
+; and reconstructs this module after WBOOT.  Command text itself retains the
+; stock A:$$$.SUB representation; no pointer into the CCP or CPX is saved.
+
+RSXBASE         EQU     08000H
+BDOS            EQU     00005H
+
+        CSEG
+        .PHASE  RSXBASE
+
+BI_NEXT:        DW      BDOS
+BI_ENTRY:       DW      BI_DISPATCH
+
+BI_DISPATCH:
+        LD      A,C
+        CP      202             ; XSUB's post-load query acknowledges install
+        JR      Z,BI_ARMED
+        LD      A,(BI_FRESH)
+        OR      A
+        CALL    NZ,BI_ANNOUNCE  ; a reconstructed instance is now active
+        LD      A,C
+        CP      26              ; remember the application's DMA address
+        JR      Z,BI_SETDMA
+        CP      10              ; XSUB only supplies buffered console input
+        JP      Z,BI_READLN
+BI_CHAIN:
+        LD      HL,(BI_NEXT)
+        JP      (HL)
+
+BI_ARMED:
+        XOR     A
+        LD      (BI_FRESH),A
+        JR      BI_CHAIN        ; preserve the manager's real query result
+
+BI_SETDMA:
+        LD      (BI_UDMA),DE
+        JP      BI_CHAIN
+
+; Stock XSUB announces itself after each warm-start relocation.  BRSX is loaded
+; afresh during reconstruction, so this byte supplies the same lifecycle hook
+; without taking ownership of page-zero WBOOT or any fixed BIOS/BDOS storage.
+BI_ANNOUNCE:
+        XOR     A
+        LD      (BI_FRESH),A
+        PUSH    BC
+        PUSH    DE
+        LD      DE,BI_ACTIVE
+        LD      C,9
+        CALL    BI_CALL
+        POP     DE
+        POP     BC
+        RET
+
+; Enter the next lower RSX or the fixed BDOS and retain an ordinary return.
+BI_CALL:
+        LD      HL,(BI_NEXT)
+        JP      (HL)
+
+; Run one disk call with our protected record buffer as DMA, then restore the
+; caller's last Function-26 selection.  This is the essential XSUB invariant:
+; a transient never discovers that its input came through a disk record.
+BI_FCALL:
+        PUSH    BC
+        PUSH    DE
+        LD      DE,BI_BUFFER
+        LD      C,26
+        CALL    BI_CALL
+        POP     DE
+        POP     BC
+        CALL    BI_CALL
+        PUSH    AF
+        LD      HL,(BI_UDMA)
+        EX      DE,HL
+        LD      C,26
+        CALL    BI_CALL
+        POP     AF
+        RET
+
+BI_READLN:
+        LD      (BI_USERBUF),DE
+        LD      DE,BI_SUBFCB
+        LD      C,15
+        CALL    BI_FCALL
+        INC     A
+        JR      Z,BI_RETIRE     ; no submission: retire, then use Function 10
+        LD      A,(BI_SUBRC)
+        OR      A
+        JR      Z,BI_BADSUB
+        DEC     A
+        LD      (BI_SUBCR),A
+        LD      DE,BI_SUBFCB
+        LD      C,20
+        CALL    BI_FCALL
+        OR      A
+        JR      NZ,BI_BADSUB
+
+; SUBMIT limits records to 125 bytes.  Reject a hand-made corrupt stream before
+; it can run beyond either the protected buffer or the user's counted buffer.
+        LD      A,(BI_BUFFER)
+        CP      126
+        JR      NC,BI_BADSUB
+        LD      E,A
+        LD      D,0
+        LD      HL,BI_BUFFER+1
+        ADD     HL,DE
+        LD      (HL),13
+        INC     HL
+        LD      (HL),10
+        INC     HL
+        LD      (HL),'$'
+        LD      DE,BI_BUFFER+1
+        LD      C,9
+        CALL    BI_CALL
+
+; Function 10 returns [maximum][count][characters].  Like DRI XSUB, copy no
+; trailing CR and truncate silently to the application's advertised maximum.
+        LD      HL,(BI_USERBUF)
+        LD      A,(BI_BUFFER)
+        CP      (HL)
+        JR      C,BI_LENGTH
+        LD      A,(HL)
+BI_LENGTH:
+        LD      B,A
+        INC     HL
+        LD      (HL),A
+        INC     HL
+        LD      DE,BI_BUFFER+1
+BI_COPY:
+        LD      A,B
+        OR      A
+        JR      Z,BI_CONSUME
+        LD      A,(DE)
+        LD      (HL),A
+        INC     DE
+        INC     HL
+        DJNZ    BI_COPY
+
+; Open copied the directory RC into the FCB.  Clearing the private clean bit
+; lets Close publish the decremented count; the final record deletes $$$.SUB.
+BI_CONSUME:
+        XOR     A
+        LD      (BI_SUBFCB+14),A
+        LD      A,(BI_SUBRC)
+        DEC     A
+        LD      (BI_SUBRC),A
+        LD      C,16
+        OR      A
+        JR      NZ,BI_FILEOP
+        LD      C,19
+BI_FILEOP:
+        LD      DE,BI_SUBFCB
+        CALL    BI_FCALL
+        XOR     A
+        LD      L,A
+        LD      H,A
+        RET
+
+; A malformed or unreadable stream must not trap every later console read.
+; Remove it, restore the caller's buffer address, and use the real console.
+BI_BADSUB:
+        LD      DE,BI_SUBFCB
+        LD      C,19
+        CALL    BI_FCALL
+BI_RETIRE:
+        LD      DE,BI_REQUEST
+        LD      C,202           ; defer removal until WBOOT can rebuild safely
+        CALL    BI_CALL
+BI_CONSOLE:
+        LD      DE,(BI_USERBUF)
+        LD      C,10
+        JP      BI_CHAIN
+
+BI_ACTIVE:      DB      13,10,'(xsub active)','$'
+BI_SUBFCB:      DB      1,'$$$     ','SUB',0,0,0
+BI_SUBRC:       DB      0
+                REPT    16
+                DB      0
+                ENDM
+BI_SUBCR:       DB      0
+BI_BUFFER:
+                REPT    131
+                DB      0
+                ENDM
+BI_UDMA:        DW      0080H
+BI_USERBUF:     DW      0080H
+BI_FRESH:       DB      1
+BI_REQUEST:     DB      1,4,0,0,'BATCHIO ',0,0
+
+        .DEPHASE
+        END
