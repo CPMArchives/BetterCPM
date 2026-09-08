@@ -1,0 +1,1559 @@
+; BetterCP/M STAT -- CP/M 2.2 status utility with numeric DU and MEM reports.
+;
+; The ordinary paths use only documented CP/M 2.2 BDOS calls. STAT MEM is
+; deliberately system-build-specific: layout.inc supplies the fixed protected
+; boundaries and the versioned ECB supplies the current movable layout.
+
+        INCLUDE layout.inc
+
+BDOS            EQU     0005H
+TAIL            EQU     0080H
+DMA             EQU     0080H
+ECB             EQU     LY_SYS+080H
+
+        CSEG
+        .PHASE  0103H
+
+START:
+        LD      (OLDSP),SP
+        LD      SP,STACKTOP
+        LD      C,25
+        CALL    BDOS
+        LD      (SAVEDRV),A
+        LD      E,0FFH
+        LD      C,32
+        CALL    BDOS
+        LD      (SAVEUSR),A
+        LD      A,(TAIL)
+        LD      B,A
+        LD      HL,TAIL+1
+        CALL    TRIM
+        LD      A,B
+        OR      A
+        JP      Z,DISKSTATUS
+        CALL    ISMEM
+        JP      Z,MEMREPORT
+        CALL    ISVAL
+        JP      Z,VALUES
+        CALL    ISUSR
+        JP      Z,USERSTATUS
+        CALL    ISDEV
+        JP      Z,DEVSTATUS
+        CALL    ISDSK
+        JP      Z,DRIVEDETAILS
+        CALL    DEVICEASSIGN
+        JP      C,FINISH
+        CALL    PARSEDU
+        JP      C,BADFORM
+        CALL    TRIM
+        LD      A,B
+        OR      A
+        JP      Z,SPACEONLY
+        CALL    ISDSK
+        JP      Z,DRIVEDETAILS
+        LD      A,(HL)
+        CP      '='
+        JP      Z,DISKASSIGN
+        CALL    PARSEFCB
+        JP      C,BADFORM
+        CALL    FILEOPTION
+        CALL    FILES
+        JP      FINISH
+
+; Remove leading spaces. HL/B remain the unconsumed command.
+TRIM:
+        LD      A,B
+        OR      A
+        RET     Z
+        LD      A,(HL)
+        CP      ' '
+        RET     NZ
+        INC     HL
+        DEC     B
+        JR      TRIM
+
+; Exact-token recognizers leave Z set only for the complete token.
+ISMEM:  LD      DE,KMEM
+        LD      C,3
+        JR      ISEXACT
+ISVAL:  LD      DE,KVAL
+        LD      C,4
+        JR      ISEXACT
+ISUSR:  LD      DE,KUSR
+        LD      C,4
+        JR      ISEXACT
+ISDEV:  LD      DE,KDEV
+        LD      C,4
+        JR      ISEXACT
+ISDSK:  LD      DE,KDSK
+        LD      C,4
+ISEXACT:
+        LD      A,B
+        CP      C
+        RET     NZ
+        PUSH    HL
+        PUSH    BC
+IXLOOP: LD      A,(DE)
+        CP      (HL)
+        JR      NZ,IXNO
+        INC     DE
+        INC     HL
+        DEC     C
+        JR      NZ,IXLOOP
+        POP     BC
+        POP     HL
+        XOR     A
+        RET
+IXNO:   POP     BC
+        POP     HL
+        LD      A,1
+        OR      A
+        RET
+
+; Parse A:, 5:, or C3: at the beginning of an operand. Selection is temporary.
+; Carry means a colon form was attempted but invalid. No colon means no DU.
+PARSEDU:
+        LD      (ARGPTR),HL
+        LD      A,B
+        LD      (ARGLEN),A
+        LD      A,0FFH
+        LD      (NEWDRV),A
+        LD      (NEWUSR),A
+        LD      C,0
+        LD      A,B
+        OR      A
+        RET     Z
+        LD      A,(HL)
+        CP      'A'
+        JR      C,PDUUSER
+        CP      'P'+1
+        JR      NC,PDUNONE
+        SUB     'A'
+        LD      (NEWDRV),A
+        INC     HL
+        DEC     B
+        LD      A,B
+        OR      A
+        JR      Z,PDUNONE
+        LD      A,(HL)
+        CP      ':'
+        JR      Z,PDUAPPLY
+PDUUSER:
+        LD      A,(HL)
+        CP      '0'
+        JR      C,PDUNONE
+        CP      '9'+1
+        JR      NC,PDUNONE
+        SUB     '0'
+        LD      C,A
+        INC     HL
+        DEC     B
+        LD      A,B
+        OR      A
+        JR      Z,PDUBAD
+        LD      A,(HL)
+        CP      ':'
+        JR      Z,PDUSETU
+        CP      '0'
+        JR      C,PDUBAD
+        CP      '9'+1
+        JR      NC,PDUBAD
+        LD      A,C
+        ADD     A,A
+        LD      D,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,D
+        LD      C,A
+        LD      A,(HL)
+        SUB     '0'
+        ADD     A,C
+        CP      32
+        JR      NC,PDUBAD
+        LD      C,A
+        INC     HL
+        DEC     B
+        LD      A,B
+        OR      A
+        JR      Z,PDUBAD
+        LD      A,(HL)
+        CP      ':'
+        JR      NZ,PDUBAD
+PDUSETU:
+        LD      A,C
+        LD      (NEWUSR),A
+PDUAPPLY:
+        INC     HL
+        DEC     B
+        LD      A,(NEWDRV)
+        CP      0FFH
+        JR      Z,PDUAU
+        LD      E,A
+        LD      C,14
+        PUSH    HL
+        PUSH    BC
+        CALL    BDOS
+        POP     BC
+        POP     HL
+        CP      0FFH
+        JR      Z,PDUBAD
+PDUAU:  LD      A,(NEWUSR)
+        CP      0FFH
+        JR      Z,PDUOK
+        LD      E,A
+        LD      C,32
+        PUSH    HL
+        PUSH    BC
+        CALL    BDOS
+        POP     BC
+        POP     HL
+PDUOK:  OR      A
+        RET
+PDUNONE:
+        LD      HL,(ARGPTR)
+        LD      A,(ARGLEN)
+        LD      B,A
+        OR      A
+        RET
+PDUBAD: SCF
+        RET
+
+; Parse one CP/M 8.3 wildcard filespec into FCB. Stops before SPACE or '$'.
+PARSEFCB:
+        PUSH    HL
+        LD      HL,FCB
+        LD      C,36
+        XOR     A
+PFCLR:  LD      (HL),A
+        INC     HL
+        DEC     C
+        JR      NZ,PFCLR
+        LD      HL,FCB+1
+        LD      C,11
+        LD      A,' '
+PFSPACE:LD      (HL),A
+        INC     HL
+        DEC     C
+        JR      NZ,PFSPACE
+        POP     HL
+        LD      DE,FCB+1
+        LD      C,8
+        XOR     A
+        LD      (NAMECNT),A
+PFNAME: LD      A,B
+        OR      A
+        JR      Z,PFDONE
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,PFDONE
+        CP      '$'
+        JR      Z,PFDONE
+        CP      '.'
+        JR      Z,PFEXT
+        CP      '*'
+        JR      Z,PFSTAR
+        CP      '?'
+        JR      Z,PFPUT
+        CP      '!'
+        JR      C,PFBAD
+        CP      ':'
+        JR      Z,PFBAD
+PFPUT:  LD      (DE),A
+        INC     DE
+        INC     HL
+        DEC     B
+        LD      A,(NAMECNT)
+        INC     A
+        LD      (NAMECNT),A
+        DEC     C
+        JR      NZ,PFNAME
+        LD      A,B
+        OR      A
+        JR      Z,PFDONE
+        LD      A,(HL)
+        CP      '.'
+        JR      NZ,PFBAD
+PFEXT:  INC     HL
+        DEC     B
+        LD      DE,FCB+9
+        LD      C,3
+PFELP:  LD      A,B
+        OR      A
+        JR      Z,PFDONE
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,PFDONE
+        CP      '$'
+        JR      Z,PFDONE
+        CP      '*'
+        JR      Z,PFSTAR
+        CP      '?'
+        JR      Z,PFEPUT
+        CP      '!'
+        JR      C,PFBAD
+        CP      '.'
+        JR      Z,PFBAD
+        CP      ':'
+        JR      Z,PFBAD
+PFEPUT: LD      (DE),A
+        INC     DE
+        INC     HL
+        DEC     B
+        DEC     C
+        JR      NZ,PFELP
+        JR      PFDONE
+PFSTAR: LD      A,'?'
+PFSLP:  LD      (DE),A
+        INC     DE
+        DEC     C
+        JR      NZ,PFSLP
+        INC     HL
+        DEC     B
+PFDONE: LD      A,(NAMECNT)
+        OR      A
+        JR      Z,PFBAD
+        LD      (ARGPTR),HL
+        LD      A,B
+        LD      (ARGLEN),A
+        OR      A
+        RET
+PFBAD:  SCF
+        RET
+
+; Locate and decode the optional stock $S/$R/O/$R/W/$SYS/$DIR indicator.
+FILEOPTION:
+        LD      A,0FFH
+        LD      (OPTION),A
+        LD      HL,(ARGPTR)
+        LD      A,(ARGLEN)
+        LD      B,A
+FOFIND: CALL    TRIM
+        LD      A,B
+        OR      A
+        RET     Z
+        LD      A,(HL)
+        CP      '$'
+        RET     NZ
+        INC     HL
+        DEC     B
+        LD      A,B
+        OR      A
+        RET     Z
+        LD      A,(HL)
+        CP      'S'
+        JR      Z,FOS
+        CP      'R'
+        JR      Z,FORW
+        CP      'D'
+        JR      Z,FODIR
+        CP      'S'
+        JR      Z,FOSYS
+        RET
+FOS:    LD      A,B
+        CP      1
+        JR      NZ,FOSYS
+FOSIZE: XOR     A
+        LD      (OPTION),A
+        RET
+FORW:   INC     HL
+        DEC     B
+        LD      A,B
+        CP      2
+        RET     C
+        LD      A,(HL)
+        CP      '/'
+        RET     NZ
+        INC     HL
+        LD      A,(HL)
+        CP      'O'
+        JR      Z,FORO
+        CP      'W'
+        JR      Z,FORWRITE
+        RET
+FORO:   LD      A,1
+        LD      (OPTION),A
+        RET
+FORWRITE:LD     A,2
+        LD      (OPTION),A
+        RET
+FOSYS:  LD      A,3
+        LD      (OPTION),A
+        RET
+FODIR:  LD      A,4
+        LD      (OPTION),A
+        RET
+
+; No operand: status of logged-in drives, matching stock STAT's default form.
+DISKSTATUS:
+        LD      C,24
+        CALL    BDOS
+        LD      (LOGIN),HL
+        LD      C,29
+        CALL    BDOS
+        LD      (ROVEC),HL
+        XOR     A
+        LD      (DRIVE),A
+DSLOOP: LD      A,(DRIVE)
+        CP      16
+        JP      Z,FINISH
+        LD      E,A
+        LD      D,0
+        LD      HL,1
+DSMASK: LD      A,E
+        OR      A
+        JR      Z,DSCHECK
+        ADD     HL,HL
+        DEC     E
+        JR      DSMASK
+DSCHECK:EX      DE,HL
+        LD      HL,(LOGIN)
+        LD      A,H
+        AND     D
+        LD      H,A
+        LD      A,L
+        AND     E
+        OR      H
+        JR      Z,DSNEXT
+        LD      A,(DRIVE)
+        CALL    SELECTA
+        CALL    FREEK
+        CALL    CRLF
+        LD      A,(DRIVE)
+        ADD     A,'A'
+        CALL    PCHAR
+        LD      A,':'
+        CALL    PCHAR
+        LD      DE,MRSLASH
+        CALL    PRINT
+        LD      A,(DRIVE)
+        CALL    ROMASK
+        LD      A,'W'
+        JR      Z,DSACC
+        LD      A,'O'
+DSACC:  CALL    PCHAR
+        LD      DE,MSPACE
+        CALL    PRINT
+        LD      HL,(FREEKB)
+        CALL    PWORD
+        LD      DE,MKFREE
+        CALL    PRINT
+DSNEXT: LD      HL,DRIVE
+        INC     (HL)
+        JR      DSLOOP
+
+ROMASK: LD      E,A
+        LD      D,0
+        LD      HL,1
+ROMLP:  LD      A,E
+        OR      A
+        JR      Z,ROMGO
+        ADD     HL,HL
+        DEC     E
+        JR      ROMLP
+ROMGO:  EX      DE,HL
+        LD      HL,(ROVEC)
+        LD      A,H
+        AND     D
+        LD      H,A
+        LD      A,L
+        AND     E
+        OR      H
+        RET
+
+SELECTA:LD      E,A
+        LD      C,14
+        JP      BDOS
+
+SPACEONLY:
+        CALL    FREEK
+        LD      DE,MBYTES
+        CALL    PRINT
+        LD      C,25
+        CALL    BDOS
+        ADD     A,'A'
+        CALL    PCHAR
+        LD      DE,MCOLSP
+        CALL    PRINT
+        LD      HL,(FREEKB)
+        CALL    PWORD
+        LD      DE,MKCRLF
+        CALL    PRINT
+        JP      FINISH
+
+; Calculate free KiB on current disk from DPB and allocation vector.
+FREEK:  LD      C,31
+        CALL    BDOS
+        LD      (DPB),HL
+        LD      DE,2
+        ADD     HL,DE
+        LD      A,(HL)          ; BSH
+        SUB     3               ; KiB per block = 2^(BSH-3)
+        LD      (KSHIFT),A
+        INC     HL
+        INC     HL
+        INC     HL
+        LD      E,(HL)          ; DSM
+        INC     HL
+        LD      D,(HL)
+        LD      (BLOCKS),DE
+        LD      C,27
+        CALL    BDOS
+        LD      (ALV),HL
+        LD      HL,0
+        LD      (FREEKB),HL
+        LD      HL,0
+FKLOOP: LD      DE,(BLOCKS)
+        OR      A
+        SBC     HL,DE
+        JR      C,FKIN
+        JR      Z,FKIN
+        RET
+FKIN:   ADD     HL,DE
+        PUSH    HL
+        CALL    BLOCKFREE
+        POP     HL
+        JR      NZ,FKNEXT
+        PUSH    HL
+        LD      HL,1
+        LD      A,(KSHIFT)
+FKSH:   OR      A
+        JR      Z,FKADD
+        ADD     HL,HL
+        DEC     A
+        JR      FKSH
+FKADD:  LD      DE,(FREEKB)
+        ADD     HL,DE
+        LD      (FREEKB),HL
+        POP     HL
+FKNEXT: INC     HL
+        JR      FKLOOP
+
+; HL block number; Z if allocation bit is clear.
+BLOCKFREE:
+        PUSH    HL
+        SRL     H
+        RR      L
+        SRL     H
+        RR      L
+        SRL     H
+        RR      L
+        LD      DE,(ALV)
+        ADD     HL,DE
+        LD      A,(HL)
+        POP     HL
+        LD      C,L
+        LD      B,080H
+        LD      A,C
+        AND     7
+BFROT:  OR      A
+        JR      Z,BFTEST
+        SRL     B
+        DEC     A
+        JR      BFROT
+BFTEST: LD      A,B
+        LD      B,A
+        ; Recreate allocation byte because HL was restored to the block.
+        PUSH    HL
+        SRL     H
+        RR      L
+        SRL     H
+        RR      L
+        SRL     H
+        RR      L
+        LD      DE,(ALV)
+        ADD     HL,DE
+        LD      A,(HL)
+        AND     B
+        POP     HL
+        RET
+
+; DSK: reports characteristics of selected disk.
+DRIVEDETAILS:
+        LD      C,31
+        CALL    BDOS
+        LD      (DPB),HL
+        CALL    CRLF
+        LD      C,25
+        CALL    BDOS
+        ADD     A,'A'
+        CALL    PCHAR
+        LD      DE,MDRIVE
+        CALL    PRINT
+        LD      HL,(DPB)
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        LD      DE,MSPT
+        CALL    PLINE
+        LD      HL,(DPB)
+        LD      DE,5
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     DE
+        EX      DE,HL
+        LD      DE,MBLOCKCAP
+        CALL    PLINE
+        LD      HL,(DPB)
+        LD      DE,7
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     DE
+        EX      DE,HL
+        LD      DE,MDIRENTS
+        CALL    PLINE
+        LD      HL,(DPB)
+        LD      DE,13
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        LD      DE,MRESERVED
+        CALL    PLINE
+        CALL    FREEK
+        LD      HL,(FREEKB)
+        LD      DE,MKREMAIN
+        CALL    PLINE
+        JP      FINISH
+PLINE:  PUSH    DE
+        PUSH    HL
+        CALL    CRLF
+        POP     HL
+        CALL    PWORD
+        POP     DE
+        JP      PRINT
+
+DISKASSIGN:
+        INC     HL
+        DEC     B
+        CALL    TRIM
+        LD      A,B
+        CP      3
+        JP      NZ,BADFORM
+        LD      A,(HL)
+        CP      'R'
+        JP      NZ,BADFORM
+        INC     HL
+        LD      A,(HL)
+        CP      '/'
+        JP      NZ,BADFORM
+        INC     HL
+        LD      A,(HL)
+        CP      'O'
+        JP      NZ,BADFORM
+        LD      C,28
+        CALL    BDOS
+        JP      FINISH
+
+; File enumeration and attribute updates. Physical extents are aggregated into
+; one 16-byte summary per common filename, as stock STAT requires.
+FILES:  CALL    FREEK          ; also publishes block geometry for byte totals
+        LD      DE,DMA
+        LD      C,26
+        CALL    BDOS
+        XOR     A
+        LD      (FOUND),A
+        LD      (SUMCOUNT),A
+        LD      DE,FCB
+        LD      C,17
+FILELP: CALL    BDOS
+        CP      0FFH
+        JP      Z,FILECOLLECTED
+        LD      (DINDEX),A
+        LD      A,1
+        LD      (FOUND),A
+        LD      A,(DINDEX)
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,080H
+        LD      L,A
+        LD      H,0
+        LD      (DIRENT),HL
+        CALL    SUMEXTENT
+FILENEXT:
+        LD      DE,FCB
+        LD      C,18
+        JP      FILELP
+FILECOLLECTED:
+        LD      A,(FOUND)
+        OR      A
+        JR      NZ,FILEHAVE
+        LD      DE,MNOTFOUND
+        CALL    PRINT
+        RET
+FILEHAVE:
+        XOR     A
+        LD      (SUMINDEX),A
+FILEOUT:
+        LD      A,(SUMINDEX)
+        LD      B,A
+        LD      A,(SUMCOUNT)
+        CP      B
+        JP      Z,FILESPACE
+        LD      A,B
+        CALL    SUMPTR
+        LD      (SUMCUR),HL
+        LD      A,(OPTION)
+        CP      0FFH
+        JR      Z,FILEPRINT
+        OR      A
+        JR      Z,FILEPRINT
+        CALL    SETATTR
+        JP      FILEOUTNEXT
+FILEPRINT:
+        CALL    CRLF
+        LD      A,(OPTION)
+        OR      A
+        JR      NZ,FPNOSIZE
+        LD      HL,(SUMCUR)
+        LD      DE,11
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        CALL    PWORD5
+        LD      A,' '
+        CALL    PCHAR
+FPNOSIZE:
+        LD      HL,(SUMCUR)
+        LD      DE,11
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        CALL    PWORD5
+        LD      DE,MRECS
+        CALL    PRINT
+        LD      HL,(SUMCUR)
+        LD      DE,13
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        CALL    PWORD5
+        LD      DE,MKBYTES
+        CALL    PRINT
+        LD      HL,(SUMCUR)
+        LD      DE,15
+        ADD     HL,DE
+        LD      L,(HL)
+        LD      H,0
+        CALL    PWORD4
+        LD      DE,MEXTACC
+        CALL    PRINT
+        LD      HL,(SUMCUR)
+        LD      DE,8
+        ADD     HL,DE
+        LD      A,(HL)
+        AND     080H
+        LD      A,'W'
+        JR      Z,FACC
+        LD      A,'O'
+FACC:   CALL    PCHAR
+        LD      A,' '
+        CALL    PCHAR
+        LD      C,25
+        CALL    BDOS
+        ADD     A,'A'
+        CALL    PCHAR
+        LD      A,':'
+        CALL    PCHAR
+        LD      HL,(SUMCUR)
+        PUSH    HL
+        LD      DE,9
+        ADD     HL,DE
+        LD      A,(HL)
+        AND     080H
+        LD      (ISSYS),A
+        POP     HL
+        JR      Z,FPNAME
+        LD      A,'('
+        CALL    PCHAR
+FPNAME:
+        CALL    PNAME
+        LD      A,(ISSYS)
+        OR      A
+        JR      Z,FILEOUTNEXT
+        LD      A,')'
+        CALL    PCHAR
+FILEOUTNEXT:
+        LD      HL,SUMINDEX
+        INC     (HL)
+        JP      FILEOUT
+FILESPACE:
+        LD      DE,MBYTES
+        CALL    PRINT
+        LD      C,25
+        CALL    BDOS
+        ADD     A,'A'
+        CALL    PCHAR
+        LD      DE,MCOLSP
+        CALL    PRINT
+        LD      HL,(FREEKB)
+        CALL    PWORD
+        LD      DE,MKCRLF
+        JP      PRINT
+
+; Find or create the summary matching the current DMA directory entry, then
+; add its logical records, allocated KiB, and physical extent count.
+SUMEXTENT:
+        XOR     A
+        LD      (SUMINDEX),A
+SEFIND: LD      A,(SUMINDEX)
+        LD      B,A
+        LD      A,(SUMCOUNT)
+        CP      B
+        JR      Z,SENEW
+        LD      A,B
+        CALL    SUMPTR
+        PUSH    HL
+        LD      DE,(DIRENT)
+        INC     DE
+        LD      B,11
+SECMP:  LD      A,(DE)
+        AND     07FH
+        LD      C,A
+        LD      A,(HL)
+        AND     07FH
+        CP      C
+        JR      NZ,SENOMATCH
+        INC     HL
+        INC     DE
+        DJNZ    SECMP
+        POP     HL
+        JR      SEADD
+SENOMATCH:
+        POP     HL
+        LD      HL,SUMINDEX
+        INC     (HL)
+        JR      SEFIND
+SENEW:  LD      A,(SUMCOUNT)
+        CP      64
+        RET     NC
+        CALL    SUMPTR
+        PUSH    HL
+        EX      DE,HL
+        LD      HL,(DIRENT)
+        INC     HL
+        LD      BC,11
+        LDIR
+        XOR     A
+        LD      B,5
+SEZERO: LD      (DE),A
+        INC     DE
+        DJNZ    SEZERO
+        POP     HL
+        LD      A,(SUMCOUNT)
+        INC     A
+        LD      (SUMCOUNT),A
+SEADD:  LD      (SUMCUR),HL
+        PUSH    HL
+        LD      DE,11
+        ADD     HL,DE
+        EX      DE,HL           ; DE -> summary record word
+        LD      HL,(DIRENT)
+        LD      BC,12
+        ADD     HL,BC
+        LD      A,(HL)          ; logical extent number
+        LD      C,A
+        PUSH    DE
+        LD      DE,(DPB)
+        INC     DE
+        INC     DE
+        INC     DE
+        INC     DE
+        LD      A,(DE)          ; EXM
+        LD      B,A
+        POP     DE
+        LD      A,C
+        AND     B
+        LD      L,A
+        LD      H,0
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        PUSH    HL
+        LD      HL,(DIRENT)
+        LD      BC,15
+        ADD     HL,BC
+        LD      C,(HL)
+        LD      B,0
+        POP     HL
+        ADD     HL,BC
+        LD      A,(DE)
+        ADD     A,L
+        LD      (DE),A
+        INC     DE
+        LD      A,(DE)
+        ADC     A,H
+        LD      (DE),A
+        LD      HL,(DIRENT)
+        CALL    COUNTBLOCKS
+        EX      DE,HL           ; DE = this extent's allocated KiB
+        LD      HL,(SUMCUR)
+        LD      BC,13
+        ADD     HL,BC
+        LD      A,(HL)
+        ADD     A,E
+        LD      (HL),A
+        INC     HL
+        LD      A,(HL)
+        ADC     A,D
+        LD      (HL),A
+        INC     HL
+        INC     (HL)
+        POP     HL
+        RET
+
+; A summary index -> HL = 16-byte summary.
+SUMPTR: ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        LD      L,A
+        LD      H,0
+        LD      DE,SUMMARY
+        ADD     HL,DE
+        RET
+
+COUNTBLOCKS:
+        PUSH    HL
+        LD      DE,16
+        ADD     HL,DE
+        LD      DE,(DPB)
+        LD      A,E
+        ADD     A,6
+        LD      E,A
+        JR      NC,CBPTR
+        INC     D
+CBPTR:  LD      A,(DE)         ; high byte of DSM selects map entry width
+        OR      A
+        JR      NZ,CBWORD
+        LD      B,16
+        LD      DE,0
+CBLP:   LD      A,(HL)
+        OR      A
+        JR      Z,CBN
+        INC     DE
+CBN:    INC     HL
+        DJNZ    CBLP
+        JR      CBDONE
+CBWORD: LD      B,8
+        LD      DE,0
+CBWLP:  LD      A,(HL)
+        INC     HL
+        OR      (HL)
+        JR      Z,CBWN
+        INC     DE
+CBWN:   INC     HL
+        DJNZ    CBWLP
+CBDONE:
+        EX      DE,HL
+        LD      A,(KSHIFT)
+CBSH:   OR      A
+        JR      Z,CBOUT
+        ADD     HL,HL
+        DEC     A
+        JR      CBSH
+CBOUT:  POP     DE              ; discard caller's original directory pointer
+        RET
+
+SETATTR:
+        LD      HL,(SUMCUR)
+        LD      DE,FCB+1
+        LD      BC,11
+        LDIR
+        LD      A,(OPTION)
+        CP      1
+        JR      Z,SARO
+        CP      2
+        JR      Z,SARW
+        CP      3
+        JR      Z,SASYS
+        LD      HL,FCB+10
+        RES     7,(HL)
+        LD      DE,MDIR
+        JR      SAAPPLY
+SARO:   LD      HL,FCB+9
+        SET     7,(HL)
+        LD      DE,MRO
+        JR      SAAPPLY
+SARW:   LD      HL,FCB+9
+        RES     7,(HL)
+        LD      DE,MRW
+        JR      SAAPPLY
+SASYS:  LD      HL,FCB+10
+        SET     7,(HL)
+        LD      DE,MSYS
+SAAPPLY:PUSH    DE
+        LD      DE,FCB
+        LD      C,30
+        CALL    BDOS
+        CALL    CRLF
+        LD      HL,FCB+1
+        CALL    PNAME
+        LD      DE,MSETTO
+        CALL    PRINT
+        POP     DE
+        JP      PRINT
+
+PNAME:  LD      B,8
+PNLP:   LD      A,(HL)
+        AND     07FH
+        CALL    PCHAR
+        INC     HL
+        DJNZ    PNLP
+        LD      A,'.'
+        CALL    PCHAR
+        LD      B,3
+PNEXT:  LD      A,(HL)
+        AND     07FH
+        CALL    PCHAR
+        INC     HL
+        DJNZ    PNEXT
+        RET
+
+; Stock logical-device query/assignment forms.
+DEVICEASSIGN:
+        LD      (ARGPTR),HL
+        LD      A,B
+        LD      (ARGLEN),A
+        LD      DE,KCON
+        LD      C,4
+        CALL    PREFIX
+        JR      Z,DACON
+        LD      DE,KRDR
+        LD      C,4
+        CALL    PREFIX
+        JR      Z,DARDR
+        LD      DE,KPUN
+        LD      C,4
+        CALL    PREFIX
+        JR      Z,DAPUN
+        LD      DE,KLST
+        LD      C,4
+        CALL    PREFIX
+        JR      Z,DALST
+        OR      A
+        RET
+DACON:  LD      A,0
+        JR      DASEL
+DARDR:  LD      A,1
+        JR      DASEL
+DAPUN:  LD      A,2
+        JR      DASEL
+DALST:  LD      A,3
+DASEL:  LD      (DEVNO),A
+        LD      HL,(ARGPTR)
+        LD      A,(ARGLEN)
+        LD      B,A
+        LD      DE,4
+        ADD     HL,DE
+        LD      A,B
+        SUB     4
+        LD      B,A
+        CALL    TRIM
+        LD      A,B
+        OR      A
+        JR      Z,DASHOW
+        LD      A,(HL)
+        CP      '='
+        JR      NZ,DABAD
+        INC     HL
+        DEC     B
+        CALL    TRIM
+        CALL    DEVVALUE
+        JR      C,DABAD
+        CALL    SETIO
+DASHOW: CALL    SHOWONE
+        SCF
+        RET
+DABAD:  LD      DE,MINVALIDASSIGN
+        CALL    PRINT
+        SCF
+        RET
+
+PREFIX: LD      A,B
+        CP      C
+        RET     C
+        PUSH    HL
+        PUSH    BC
+PRLP:   LD      A,(DE)
+        CP      (HL)
+        JR      NZ,PRNO
+        INC     DE
+        INC     HL
+        DEC     C
+        JR      NZ,PRLP
+        POP     BC
+        POP     HL
+        XOR     A
+        RET
+PRNO:   POP     BC
+        POP     HL
+        LD      A,1
+        OR      A
+        RET
+
+DEVVALUE:
+        LD      A,B
+        CP      4
+        JR      C,DVBAD
+        LD      A,(DEVNO)
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        PUSH    HL
+        LD      HL,DEVNAMES
+        ADD     HL,DE
+        EX      DE,HL
+        POP     HL
+        LD      C,0
+DVLP:   PUSH    HL
+        PUSH    BC
+        LD      B,4
+DVCMP:  LD      A,(DE)
+        CP      (HL)
+        JR      NZ,DVNEXT
+        INC     DE
+        INC     HL
+        DJNZ    DVCMP
+        POP     BC
+        POP     HL
+        LD      A,C
+        AND     3
+        OR      A
+        RET
+DVNEXT: POP     BC
+        POP     HL
+        LD      A,C
+        INC     A
+        LD      C,A
+        CP      4
+        JR      NC,DVBAD
+        LD      A,E
+        ADD     A,4
+        LD      E,A
+        JR      NC,DVLP
+        INC     D
+        JR      DVLP
+DVBAD:  SCF
+        RET
+
+SETIO:  LD      C,A
+        LD      A,(0003H)
+        LD      B,A
+        LD      A,(DEVNO)
+        OR      A
+        JR      Z,SICON
+        CP      1
+        JR      Z,SIRDR
+        CP      2
+        JR      Z,SIPUN
+        LD      A,B
+        AND     03FH
+        LD      B,A
+        LD      A,C
+        AND     3
+        RRCA
+        RRCA
+        OR      B
+        JR      SIOUT
+SIPUN:  LD      A,B
+        AND     0CFH
+        LD      B,A
+        LD      A,C
+        AND     3
+        RLCA
+        RLCA
+        OR      B
+        JR      SIOUT
+SIRDR:  LD      A,B
+        AND     0F3H
+        LD      B,A
+        LD      A,C
+        AND     3
+        RLCA
+        RLCA
+        OR      B
+        JR      SIOUT
+SICON:  LD      A,B
+        AND     0FCH
+        LD      B,A
+        LD      A,C
+        AND     3
+        OR      B
+SIOUT:  LD      E,A
+        LD      C,8
+        JP      BDOS
+
+SHOWONE:
+        CALL    CRLF
+        LD      A,(DEVNO)
+        CALL    DEVKEYPTR
+        CALL    PRINT4HL
+        LD      DE,MIS
+        CALL    PRINT
+        LD      A,(0003H)
+        LD      C,A
+        LD      A,(DEVNO)
+        OR      A
+        JR      Z,SGOT
+SSHF:   SRL     C
+        SRL     C
+        DEC     A
+        JR      NZ,SSHF
+SGOT:   LD      A,C
+        AND     3
+        LD      C,A
+        LD      A,(DEVNO)
+        ADD     A,A
+        ADD     A,A
+        ADD     A,C
+        ADD     A,A
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        LD      HL,DEVNAMES
+        ADD     HL,DE
+        CALL    PRINT4HL
+        RET
+
+DEVKEYPTR:
+        ADD     A,A
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        LD      HL,DEVKEYS
+        ADD     HL,DE
+        RET
+PRINT4: EX      DE,HL
+PRINT4HL:
+        LD      B,4
+P4LP:   LD      A,(HL)
+        CALL    PCHAR
+        INC     HL
+        DJNZ    P4LP
+        RET
+
+DEVSTATUS:
+        XOR     A
+DEVSLP: LD      (DEVNO),A
+        CALL    SHOWONE
+        LD      A,(DEVNO)
+        INC     A
+        CP      4
+        JR      NZ,DEVSLP
+        JP      FINISH
+
+VALUES:LD      DE,MVALUES1
+        CALL    PRINT
+        LD      A,'$'
+        CALL    PCHAR
+        LD      DE,MVALUES2
+        CALL    PRINT
+        LD      A,'$'
+        CALL    PCHAR
+        LD      DE,MVALUES3
+        CALL    PRINT
+        LD      A,'$'
+        CALL    PCHAR
+        LD      DE,MVALUES4
+        CALL    PRINT
+        LD      A,'$'
+        CALL    PCHAR
+        LD      DE,MVALUES5
+        CALL    PRINT
+        JP      FINISH
+
+USERSTATUS:
+        LD      DE,MACTIVEUSER
+        CALL    PRINT
+        LD      E,0FFH
+        LD      C,32
+        CALL    BDOS
+        LD      L,A
+        LD      H,0
+        CALL    PWORD
+        LD      DE,MACTIVEFILES
+        CALL    PRINT
+        LD      HL,FCB
+        LD      B,36
+        XOR     A
+USCLR:  LD      (HL),A
+        INC     HL
+        DJNZ    USCLR
+        LD      HL,FCB+1
+        LD      B,11
+        LD      A,'?'
+USWILD: LD      (HL),A
+        INC     HL
+        DJNZ    USWILD
+        XOR     A
+        LD      (USERNO),A
+USLOOP: LD      A,(USERNO)
+        LD      E,A
+        LD      C,32
+        CALL    BDOS
+        LD      DE,FCB
+        LD      C,17
+        CALL    BDOS
+        CP      0FFH
+        JR      Z,USNEXT
+        LD      A,' '
+        CALL    PCHAR
+        LD      A,(USERNO)
+        LD      L,A
+        LD      H,0
+        CALL    PWORD
+USNEXT: LD      HL,USERNO
+        INC     (HL)
+        LD      A,(HL)
+        CP      32
+        JR      NZ,USLOOP
+        CALL    CRLF
+        JP      FINISH
+
+; BetterCP/M memory report. ECB fields are versioned and validated first.
+MEMREPORT:
+        LD      HL,ECB
+        LD      A,(HL)
+        CP      'B'
+        JR      NZ,MEMBAD
+        INC     HL
+        LD      A,(HL)
+        CP      'M'
+        JR      NZ,MEMBAD
+        INC     HL
+        LD      A,(HL)
+        CP      1
+        JR      NZ,MEMBAD
+        LD      DE,MMEMHEAD
+        CALL    PRINT
+        LD      HL,(0006H)
+        LD      DE,0100H
+        OR      A
+        SBC     HL,DE
+        LD      DE,MTPA
+        CALL    MEMLINE
+        LD      HL,(0006H)
+        LD      DE,0100H
+        OR      A
+        SBC     HL,DE
+        LD      A,L             ; COM loading is in complete 128-byte records
+        AND     080H
+        LD      L,A
+        LD      DE,MMAXCOM
+        CALL    MEMLINE
+        LD      HL,LY_TPA
+        LD      DE,(0006H)
+        OR      A
+        SBC     HL,DE
+        LD      DE,MRSX
+        CALL    MEMLINE
+        LD      HL,(ECB+14)     ; page-rounded live CCP bytes
+        LD      DE,MCCP
+        CALL    MEMLINE
+        LD      HL,(ECB+12)     ; CCP base is the low end of CCP plus all CPXs
+        EX      DE,HL
+        LD      HL,(ECB+16)
+        OR      A
+        SBC     HL,DE
+        LD      DE,MCPX
+        CALL    MEMLINE
+        LD      HL,LY_SYS-LY_TPA ; gateway plus persistent data/reservations
+        LD      DE,MPERSIST
+        CALL    MEMLINE
+        LD      HL,LY_LIMIT-LY_SYS
+        LD      DE,MCORE
+        CALL    MEMLINE
+        JP      FINISH
+MEMBAD: LD      DE,MMEMBAD
+        CALL    PRINT
+        JP      FINISH
+MEMLINE:PUSH    HL
+        PUSH    DE
+        CALL    CRLF
+        POP     DE
+        CALL    PRINT
+        POP     HL
+        CALL    PWORD
+        LD      DE,MBYTESUNIT
+        JP      PRINT
+
+; Decimal printers.
+PWORD5: LD      C,1
+        JR      PWSTART
+PWORD4: LD      C,2
+        JR      PWSTART
+PWORD:  LD      C,0
+PWSTART:LD      DE,10000
+        CALL    PWDIG
+        LD      DE,1000
+        CALL    PWDIG
+        LD      DE,100
+        CALL    PWDIG
+        LD      DE,10
+        CALL    PWDIG
+        LD      DE,1
+        LD      C,1
+PWDIG:  LD      B,'0'
+PWDLP:  OR      A
+        SBC     HL,DE
+        JR      C,PWDONE
+        INC     B
+        JR      PWDLP
+PWDONE: ADD     HL,DE
+        LD      A,B
+        CP      '0'
+        JR      NZ,PWPRINT
+        LD      A,C
+        OR      A
+        RET     Z
+        LD      A,B
+PWPRINT:CALL    PCHAR
+        LD      C,1
+        RET
+
+PRINT:  LD      C,9
+        JP      BDOS
+PCHAR:  PUSH    HL
+        PUSH    DE
+        PUSH    BC
+        LD      E,A
+        LD      C,2
+        CALL    BDOS
+        POP     BC
+        POP     DE
+        POP     HL
+        RET
+CRLF:   LD      DE,MCRLF
+        JR      PRINT
+
+BADFORM:LD      DE,MBADFORM
+        CALL    PRINT
+FINISH: LD      A,(SAVEDRV)
+        LD      E,A
+        LD      C,14
+        CALL    BDOS
+        LD      A,(SAVEUSR)
+        LD      E,A
+        LD      C,32
+        CALL    BDOS
+        LD      SP,(OLDSP)
+        LD      C,0
+        JP      BDOS
+
+KMEM:           DB 'MEM'
+KVAL:           DB 'VAL:'
+KUSR:           DB 'USR:'
+KDEV:           DB 'DEV:'
+KDSK:           DB 'DSK:'
+KCON:           DB 'CON:'
+KRDR:           DB 'RDR:'
+KPUN:           DB 'PUN:'
+KLST:           DB 'LST:'
+DEVKEYS:        DB 'CON:','RDR:','PUN:','LST:'
+DEVNAMES:       DB 'TTY:','CRT:','BAT:','UC1:'
+                DB 'TTY:','PTR:','UR1:','UR2:'
+                DB 'TTY:','PTP:','UP1:','UP2:'
+                DB 'TTY:','CRT:','LPT:','UL1:'
+
+MCRLF:          DB 13,10,'$'
+MRSLASH:        DB ' R/$'
+MSPACE:         DB ', Space: $'
+MKFREE:         DB 'K',13,10,'$'
+MBYTES:         DB 13,10,'Bytes Remaining On $'
+MCOLSP:         DB ': $'
+MKCRLF:         DB 'K',13,10,'$'
+MDRIVE:         DB ': Drive Characteristics$'
+MSPT:           DB ': 128 Byte Records/Track$'
+MBLOCKCAP:      DB ': Allocation Blocks$'
+MDIRENTS:       DB ': 32 Byte Directory Entries$'
+MRESERVED:      DB ': Reserved Tracks$'
+MKREMAIN:       DB ': Kilobytes Remaining$'
+MRECS:          DB ' Recs  $'
+MKBYTES:        DB 'K Bytes  $'
+MEXTACC:        DB ' Ext R/$'
+MNOTFOUND:      DB 13,10,'File Not Found',13,10,'$'
+MSETTO:         DB ' set to $'
+MRO:            DB 'R/O$'
+MRW:            DB 'R/W$'
+MSYS:           DB 'SYS$'
+MDIR:           DB 'DIR$'
+MIS:            DB ' is $'
+MINVALIDASSIGN: DB 13,10,'Invalid Assignment',13,10,'$'
+MVALUES1:       DB 13,10,'Temp R/O Disk: d:=R/O',13,10
+                DB 'Set Indicator: d:filename.typ $'
+MVALUES2:       DB 'R/O $'
+MVALUES3:       DB 'R/W $'
+MVALUES4:       DB 'SYS $'
+MVALUES5:       DB 'DIR',13,10,'Disk Status  : DSK: d:DSK:',13,10
+                DB 'User Status  : USR:',13,10
+                DB 'Memory Status: MEM',13,10
+                DB 'Iobyte Assign: CON: RDR: PUN: LST:',13,10,'$'
+MACTIVEUSER:    DB 13,10,'Active User : $'
+MACTIVEFILES:   DB 13,10,'Active Files:$'
+MMEMHEAD:       DB 13,10,'BetterCP/M Memory',13,10,'$'
+MTPA:           DB 'Current TPA                  : $'
+MMAXCOM:        DB 'Maximum loadable COM         : $'
+MRSX:           DB 'Protected RSX allocation     : $'
+MCCP:           DB 'Reclaimable CCP image        : $'
+MCPX:           DB 'Reclaimable CCP/CPX region   : $'
+MPERSIST:       DB 'Persistent data/reservations : $'
+MCORE:          DB 'Protected core and buffers   : $'
+MBYTESUNIT:     DB ' bytes$'
+MMEMBAD:        DB 13,10,'STAT MEM requires BetterCP/M ECB version 1',13,10,'$'
+MBADFORM:       DB 13,10,'Invalid STAT command',13,10,'$'
+
+OLDSP:          DW 0
+SAVEDRV:        DB 0
+SAVEUSR:        DB 0
+NEWDRV:         DB 0
+NEWUSR:         DB 0
+ARGPTR:         DW 0
+ARGLEN:         DB 0
+NAMECNT:        DB 0
+OPTION:         DB 0
+LOGIN:          DW 0
+ROVEC:          DW 0
+DRIVE:          DB 0
+DPB:            DW 0
+ALV:            DW 0
+BLOCKS:         DW 0
+FREEKB:         DW 0
+KSHIFT:         DB 0
+FOUND:          DB 0
+DINDEX:         DB 0
+DIRENT:         DW 0
+DEVNO:          DB 0
+USERNO:         DB 0
+ISSYS:          DB 0
+SUMCOUNT:       DB 0
+SUMINDEX:       DB 0
+SUMCUR:         DW 0
+FCB:            DS 36
+SUMMARY:        DS 64*16
+STACK:          DS 128
+STACKTOP:
+
+        .DEPHASE
+        END     START

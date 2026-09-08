@@ -99,14 +99,14 @@ applicable transient fallbacks are verified.
 | CP/M utility | Minimum compatible behavior | BetterCP/M replacement | Planned extensions | Status | Required evidence |
 |---|---|---|---|---|---|
 | `PIP.COM` | Copy/concatenate files and devices; standard options, verification, text/binary and wildcard behavior | New implementation | Numeric/named DU, clearer diagnostics, additional devices | Not started | Reference option matrix; data/device/error comparison |
-| `STAT.COM` | Disk/file/device status, attributes, assignments, and standard operands | New implementation | Named DU, capacity detail, BetterCP/M configuration reports | Not started | Reference output semantics and mutation tests |
+| `STAT.COM` | Disk/file/device status, attributes, assignments, and standard operands | `STAT.COM` | Numeric DU and `STAT MEM`; named DU deferred with the common resolver | Initial implementation complete | Automated disk/file/device/attribute/DU/memory tests; final reference-output comparison remains |
 | `ED.COM` | Compatible command-mode text editing, buffers, file lifecycle, and recovery files | New implementation | Optional modern interactive mode without changing baseline mode | Not started | Scripted reference sessions and failure/recovery tests |
 | `ASM.COM` | CP/M assembler source syntax, symbols, pseudo-operations, outputs, and diagnostics | New implementation or qualified redistributable implementation | Z80 mode may be explicit; ZSM4 remains the system-source assembler | Not started | Corpus comparison of HEX/PRN/symbol/error output |
 | `LOAD.COM` | Convert compatible Intel HEX input to `.COM` with standard validation and messages | New implementation | Extended-address diagnostics where harmless | Not started | Valid, sparse, malformed, checksum, and size cases |
 | `DDT.COM` | Load, inspect, modify, trace, breakpoint, assemble/disassemble, and save workflows | New implementation | Z80 registers/opcodes and BetterCP/M symbols | Not started | Scripted debugger sessions on reference fixtures |
 | `DUMP.COM` | Conventional hexadecimal file display and EOF behavior | New implementation | DU operands, ranges, ASCII column options | Not started | Byte-for-byte/reference presentation fixtures |
-| `SUBMIT.COM` | Positional substitution, command-file generation/execution order, quoting, and errors | New implementation | Numeric/named DU | Not started | Reference substitution and nested/error workflow tests |
-| `XSUB.COM` | Feed submitted input to programs using compatible console-buffer conventions | New implementation, possibly coordinated with an extension | Integrate with future extended-submit CPX | Not started | Interactive-input capture and chained SUBMIT tests |
+| `SUBMIT.COM` | Positional substitution, command-file generation/execution order, quoting, and errors | Native `SUBMIT.COM` plus CCP acquisition | Numeric/named DU | Initial implementation complete | Automated substitution/order/EOF/cancel/error/full-TPA workflows; final release campaign remains |
+| `XSUB.COM` | Feed submitted input to programs using compatible console-buffer conventions | Native installer plus protected `BATCHIO.RSX` | Integrate with future extended-submit CPX | Initial implementation complete | Automated Function-10/DMA/WBOOT/full-active-TPA workflow and preserved IN42 fixture; final release campaign remains |
 
 ## System-construction and platform utilities
 

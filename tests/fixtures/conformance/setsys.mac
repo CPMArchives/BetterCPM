@@ -1,0 +1,42 @@
+; SETSYS -- private test-fixture setup, not a distribution utility.
+; Reserve one track in D's standard 800K data format through CONFIG's API.
+; This lets the boundary test exercise nonzero reserved tracks on scratch D.
+        ORG 0100H
+        LD A,3
+        LD (REQ),A
+        LD DE,REQ
+        LD B,3
+        LD C,207
+        CALL 5
+        LD A,L
+        OR A
+        JR NZ,BAD
+        LD A,3
+        LD (REQ),A
+        LD (REQ+1),A
+; One 5K track costs three 2K allocation blocks, with 1K left unused.
+        LD HL,(REQ+7)
+        LD DE,3
+        OR A
+        SBC HL,DE
+        LD (REQ+7),HL
+        LD HL,1
+        LD (REQ+15),HL
+        LD DE,REQ
+        LD B,4
+        LD C,207
+        CALL 5
+        LD A,L
+        OR A
+        JR NZ,BAD
+        LD DE,OK
+        JR PRINT
+BAD:    LD DE,FAIL
+PRINT:  LD C,9
+        CALL 5
+        JP 0
+OK:     DB 'D SYSTEM READY',13,10,'$'
+FAIL:   DB 'D SYSTEM SETUP FAILED',13,10,'$'
+REQ:    DB 0
+        DS 79
+        END

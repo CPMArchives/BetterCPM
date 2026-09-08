@@ -1,0 +1,52 @@
+; READERR -- real BIOS read status with removable emulator media.
+; 08-Sep-2026.  The host ejects only scratch D at the printed handshake.
+        ORG 0100H
+        LD C,3
+        LD E,0
+        LD A,24
+        CALL BIO
+        LD A,H
+        OR L
+        JP Z,BAD
+        LD BC,0
+        LD A,27
+        CALL BIO
+        LD BC,0
+        LD A,30
+        CALL BIO
+        LD BC,BUFFER
+        LD A,33
+        CALL BIO
+        LD A,36
+        CALL BIO
+        OR A
+        JP NZ,BAD
+        LD DE,PROMPT
+        LD C,9
+        CALL 5
+        LD C,1
+        CALL 5
+; A different physical sector defeats the legitimate BIOS read cache.
+        LD BC,8
+        LD A,30
+        CALL BIO
+        LD A,36
+        CALL BIO
+        OR A
+        JP Z,BAD
+        LD DE,PASS
+        JR SHOW
+BAD:    LD DE,FAIL
+SHOW:   LD C,9
+        CALL 5
+        JP 0
+BIO:    LD E,A
+        LD D,0
+        LD HL,(1)
+        ADD HL,DE
+        JP (HL)
+BUFFER: DS 128
+PROMPT: DB 'Read succeeded. EJECT SCRATCH D, then press Y.',13,10,'$'
+PASS: DB '0390 P R Real BIOS read: zero with media, nonzero without',13,10,'$'
+FAIL: DB '0390 F R Real BIOS read-status test failed',13,10,'$'
+        END

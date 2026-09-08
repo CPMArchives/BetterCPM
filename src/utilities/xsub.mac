@@ -1,0 +1,50 @@
+; BetterCP/M CP/M 2.2 XSUB installer.
+; The protected BATCHIO BRSX replaces DRI's CCP-relative self relocation.
+
+BDOS            EQU     0005H
+RSXFUNC         EQU     202
+
+        CSEG
+        .PHASE  0100H
+XS_START:
+        LD      SP,XS_STACK
+        LD      DE,XS_REQUEST
+        LD      C,RSXFUNC
+        CALL    BDOS
+        CP      1
+        JR      Z,XS_PRESENT
+        OR      A
+        JR      NZ,XS_FAILURE
+        LD      A,1
+        LD      (XS_REQUEST+1),A
+        LD      DE,XS_REQUEST
+        LD      C,RSXFUNC
+        CALL    BDOS
+        OR      A
+        JR      NZ,XS_FAILURE
+        LD      A,3
+        LD      (XS_REQUEST+1),A
+        LD      C,RSXFUNC       ; suppress only this install-time announcement
+        CALL    BDOS            ; later WBOOT reconstruction starts fresh again
+XS_DONE:
+        LD      C,0
+        JP      BDOS
+XS_PRESENT:
+        LD      DE,XS_ALREADY
+        JR      XS_PRINT
+XS_FAILURE:
+        LD      DE,XS_LOADERR
+XS_PRINT:
+        LD      C,9
+        CALL    BDOS
+        JR      XS_DONE
+
+XS_REQUEST:     DB      1,3,0,0,'BATCHIO ',0,0
+XS_ALREADY:     DB      13,10,'Xsub Already Present','$'
+XS_LOADERR:     DB      13,10,'Xsub Load Error','$'
+                REPT    16
+                DW      0
+                ENDM
+XS_STACK:
+        .DEPHASE
+        END

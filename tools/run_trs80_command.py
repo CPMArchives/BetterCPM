@@ -24,9 +24,30 @@ KEY_ROWS = (
 )
 
 
-def key_args(text: str, delay: int = 4) -> list[str]:
+def key_args(text: str, delay: int = 12) -> list[str]:
     result: list[str] = []
     for character in text.upper():
+        # The test keyboard uses the same Control-letter mapping as M4_CONIN.
+        # Send actual key presses; do not insert bytes into guest buffers.
+        if character == "\x03":
+            # The Model 4 BREAK key is the machine's direct ASCII ETX key.
+            # It is more reliable in batch mode than overlapping CTRL and C.
+            result.extend(("-ik", "6", "4", "-id", str(delay),
+                           "-ik", "6", "0", "-id", str(delay)))
+            continue
+        if character == "\x7f":
+            result.extend(("-ik", "7", "1", "-ik", "6", "20",
+                           "-id", str(delay), "-ik", "6", "0",
+                           "-id", str(delay), "-ik", "7", "0", "-id", str(delay)))
+            continue
+        if ord(character) < 32 and character != "\r":
+            letter = chr(ord(character) + 64)
+            row = next(i for i, keys in enumerate(KEY_ROWS) if letter in keys)
+            column = KEY_ROWS[row].index(letter)
+            result.extend(("-ik", "7", "4", "-ik", str(row), f"{1 << column:X}",
+                           "-id", str(delay), "-ik", str(row), "0",
+                           "-id", str(delay), "-ik", "7", "0", "-id", str(delay)))
+            continue
         for row, characters in enumerate(KEY_ROWS):
             column = characters.find(character)
             if column >= 0:
@@ -38,7 +59,7 @@ def key_args(text: str, delay: int = 4) -> list[str]:
             # Model 4 punctuation uses the shift row simultaneously with its
             # base key. The physical row contains : ; , - . /, producing
             # * + < = > ? when shifted.
-            shifted = {"*": (5, 2), "+": (5, 3), "<": (5, 4),
+            shifted = {"$": (4, 4), "*": (5, 2), "+": (5, 3), "<": (5, 4),
                        "=": (5, 5), ">": (5, 6), "?": (5, 7)}
             if character in shifted:
                 row, column = shifted[character]

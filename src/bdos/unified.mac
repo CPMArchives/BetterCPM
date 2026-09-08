@@ -30,6 +30,14 @@ UB_ENTRY:
         LD      (UB_OLDSP),SP
         LD      SP,UB_STKTOP
         LD      (UB_OLDIX),IX    ; nonlocal error exits can unwind any helper depth
+; 08-Sep-2026: do not carry a clean directory cache across public calls.
+; The disk may have changed while the application owned the console.
+; A dirty record is retained until its normal synchronous flush.
+        LD      A,(UB_DIRTY)
+        OR      A
+        JR      NZ,UB_KEEPDIR
+        LD      (UBS_COK),A
+UB_KEEPDIR:
         PUSH    DE
         POP     IX
         LD      A,C
@@ -74,8 +82,8 @@ UB_RETHL:
         RET
 
 UB_VERSION:
-        LD      HL,0022H
-        JR      UB_RETHL
+        LD      A,022H
+        JR      UB_RETA
 
 ; U10 -- the complete CP/M 2.2 character-I/O surface.  All cooked output
 ; converges here, so console echo, Function 2 and Function 9 share tab,
@@ -673,8 +681,15 @@ UB_FCTX:
 UB_MCTX:
         CALL    UB_FCTX
         RET     NZ
+; Patch 2026-09-07: one R/O gate for directory changes, ordinary writes,
+; and new extents.  The former tests protected the disk, but returned FF
+; to programs which expected the CP/M diagnostic and warm restart.
+UB_CHECKRO:
         LD      HL,UB_RDONLY
-        JR      UB_TESTBIT
+        CALL    UB_TESTBIT
+        RET     Z
+        LD      HL,UB_DROMESSAGE
+        JP      UB_FROLOOP
 
 ; U05 -- one directory iterator. Search First/Next are the first public users;
 ; Open, mutation, allocation reconstruction, and Size will configure this same
@@ -856,12 +871,7 @@ UB_ACTIVATE:
         INC     DE
         LD      BC,31
         LDIR
-        LD      HL,(UB_ITFCB)
-        LD      DE,14
-        ADD     HL,DE
-        LD      A,(HL)
-        OR      080H           ; active FCB is clean until a write changes it
-        LD      (HL),A
+        SET     7,(IX+14)      ; freshly activated FCB is clean
         LD      A,(UB_ITRET)
         OR      A
         RET
@@ -956,12 +966,7 @@ UB_CCORE:
         LD      (UB_DIRTY),A
         CALL    UB_DIRFLUSH
         JP      NZ,UB_BAD
-        LD      HL,(UB_ITFCB)
-        LD      DE,14
-        ADD     HL,DE
-        LD      A,(HL)
-        OR      080H
-        LD      (HL),A
+        SET     7,(IX+14)      ; Close/Make leave the active FCB clean
 UB_CLCLEAN:
         LD      A,(UB_ITRET)
         RET
@@ -1009,12 +1014,7 @@ UB_MKFREE:
         LD      (UB_DIRTY),A
         CALL    UB_DIRFLUSH
         JR      NZ,UB_MBAD
-        LD      HL,(UB_ITFCB)
-        LD      DE,14
-        ADD     HL,DE
-        LD      A,(HL)
-        OR      080H
-        LD      (HL),A
+        SET     7,(IX+14)      ; Close/Make leave the active FCB clean
         LD      A,(UB_ITRET)
         RET
 UB_MBAD:
@@ -1330,17 +1330,13 @@ UB_READCORE:
         JR      C,UB_REOF
 UB_RDCUR:
         LD      A,(IX+32)
-        LD      C,A
-        LD      A,C
         CP      (IX+15)
         JR      NC,UB_REOF
         CALL    UB_RECMAP
         JR      C,UB_RBAD
         LD      BC,(UB_DMA)
         CALL    BIO_SETDMA
-        CALL    BIO_READ
-        OR      A
-        JR      NZ,UB_RBAD
+        CALL    UB_IOREAD
         INC     (IX+32)
         XOR     A
         RET
@@ -1357,13 +1353,8 @@ UB_WRITE:
         CALL    UB_WCORE
         JP      UB_RETA
 UB_WCORE:
-        CALL    UB_FCBDRV
-        JP      C,UB_BAD
-        CALL    UB_CONTEXT
-        JR      NZ,UB_RBAD
-        LD      HL,UB_RDONLY
-        CALL    UB_TESTBIT
-        JR      NZ,UB_RBAD
+        CALL    UB_MCTX         ; same drive selection and R/O gate as Make
+        JP      NZ,UB_BAD
         LD      A,(IX+9)
         AND     080H
         JP      NZ,UB_FRO
@@ -1389,7 +1380,7 @@ UB_WCHK8:
         JP      NC,UB_BAD
 UB_WALLOC:
         CALL    UB_ALFREE
-        JP      NZ,UB_BAD
+        JR      NZ,UB_FULL
         PUSH    DE
         CALL    UB_ALMARK
         POP     DE
@@ -1420,16 +1411,21 @@ UB_WREMAP:
         JR      C,UB_WBAD
         LD      A,(UB_ZMODE)
         OR      A
-        JR      Z,UB_WMAPPED
+        JR      NZ,UB_WZERO
+        LD      A,2             ; first write to a new allocation block
+        JR      UB_WXFER
+UB_WZERO:
         CALL    UB_ZBLOCK
         JR      NZ,UB_WBAD
 UB_WMAPPED:
+        XOR     A               ; ordinary write to an allocated block
+UB_WXFER:
+        PUSH    AF
         LD      BC,(UB_DMA)
         CALL    BIO_SETDMA
-        LD      C,0
-        CALL    BIO_WRITE
-        OR      A
-        JR      NZ,UB_WBAD
+        POP     AF
+        LD      C,A
+        CALL    UB_IOWR
         INC     (IX+32)
         LD      A,(IX+32)
         CP      (IX+15)
@@ -1443,6 +1439,9 @@ UB_WDONE:
         RET
 UB_WBAD:
         JP      UB_BAD
+UB_FULL:
+        LD      A,2             ; CP/M allocation-full result, not general FF
+        JP      UB_RETA
 
 UB_FRO:
         LD      HL,UB_FROMESSAGE
@@ -1457,6 +1456,8 @@ UB_FROLOOP:
         JR      UB_FROLOOP
 UB_FROMESSAGE:
         DB      13,10,'File R/O',13,10,0
+UB_DROMESSAGE:
+        DB      13,10,'Disk R/O',13,10,0
 
 ; Function 33 decodes R0..R2 into the ordinary extent position, activates
 ; that extent, and then enters the exact same read core as Function 20.
@@ -1513,7 +1514,6 @@ UB_ZCLEAR:
         LD      (UB_RRCR),A
         LD      A,(UB_DPBC+3)   ; BLM
         LD      C,A
-        LD      A,C
         CPL
         AND     (IX+32)
         LD      (IX+32),A       ; first record in the allocated block
@@ -1526,18 +1526,20 @@ UB_ZLOOP:
         JR      C,UB_ZFAIL
         LD      BC,(UB_DIRBUF)
         CALL    BIO_SETDMA
+        LD      A,(UB_DPBC+3)
+        AND     (IX+32)
         LD      C,0
-        CALL    BIO_WRITE
-        OR      A
-        JR      NZ,UB_ZFAIL
+        JR      NZ,UB_ZWRITE
+        LD      C,2             ; first zero record starts the new block
+UB_ZWRITE:
+        CALL    UB_IOWR
         INC     (IX+32)
         POP     BC
         DEC     C
         JR      NZ,UB_ZLOOP
         LD      A,(UB_RRCR)
         LD      (IX+32),A
-        CALL    UB_RECMAP
-        RET
+        JP      UB_RECMAP
 UB_ZFAIL:
         POP     BC
         LD      A,1
@@ -1545,14 +1547,20 @@ UB_ZFAIL:
         RET
 
 UB_RDECODE:
-        LD      A,(IX+35)       ; CP/M 2.2 uses only low two bits of R2
-        CP      4
-        JP      NC,UB_BAD
-        ADD     A,A
-        ADD     A,A
-        ADD     A,A
-        ADD     A,A
-        LD      B,A             ; S2 bits 4..5
+; R2 is a range check, not another pair of extent bits.  Accepting it
+; used to wrap very large requests into the directory.  Leave the FCB alone.
+        LD      A,(IX+35)
+        OR      A
+        JR      Z,UB_RVALID
+        LD      A,6
+        JP      UB_RETA
+UB_RVALID:
+; Save a dirty extent BEFORE decoding the new position.  Reopening its old
+; directory image used to throw away unclosed random writes and zero fill.
+; A bare search FCB has no records to commit.
+        LD      A,(IX+15)
+        OR      A
+        CALL    NZ,UB_CCORE
         LD      A,(IX+34)       ; R1
         LD      C,A
         RRCA
@@ -1560,7 +1568,6 @@ UB_RDECODE:
         RRCA
         RRCA
         AND     0FH
-        OR      B
         LD      (IX+14),A       ; decoded S2
         LD      A,C
         AND     0FH
@@ -1591,9 +1598,22 @@ UB_EXTENT:
         SCF
         RET
 UB_EXTMAKE:
-        LD      HL,UB_RDONLY
-        CALL    UB_TESTBIT
-        JP      NZ,UB_BAD
+        CALL    UB_CHECKRO
+; Do not publish an empty new extent when there is no room for its data.
+; Otherwise a failed growth write appears to have lengthened the file.
+        CALL    UB_ALFREE
+        JP      NZ,UB_FULL
+; A new extent owns no blocks yet. Clear the old map here, where random
+; seeks and sequential rollover meet; otherwise a seek can alias old data.
+        PUSH    IX
+        POP     HL
+        LD      DE,15
+        ADD     HL,DE
+        LD      B,17
+UB_NEWCLR:
+        LD      (HL),A
+        INC     HL
+        DJNZ    UB_NEWCLR
         CALL    UB_MKFREE
         OR      A
         RET
@@ -1621,15 +1641,6 @@ UB_NXCALC:
 UB_NXOPEN:
         XOR     A
         LD      (IX+32),A
-        PUSH    IX
-        POP     HL
-        LD      DE,15
-        ADD     HL,DE
-        LD      B,17
-UB_NXCLEAR:
-        LD      (HL),A
-        INC     HL
-        DJNZ    UB_NXCLEAR
         LD      A,(UB_IOMODE)
         JR      UB_EXTENT
 UB_NXBAD:
@@ -1868,21 +1879,10 @@ UB_AFLP:
         INC     DE
         PUSH    HL
         LD      HL,(UB_DSM)
-        LD      A,D
-        CP      H
-        JR      C,UB_AFCONT
-        JR      NZ,UB_AFFULL
-        LD      A,E
-        CP      L
-        JR      C,UB_AFCONT
-        JR      Z,UB_AFCONT
-UB_AFFULL:
-        POP     HL
-        LD      A,1
         OR      A
-        RET
-UB_AFCONT:
+        SBC     HL,DE           ; one unsigned word check includes high DSM
         POP     HL
+        JR      C,UB_AFFULL
         SRL     C
         JR      NZ,UB_AFLP
         LD      C,080H
@@ -1890,6 +1890,10 @@ UB_AFCONT:
         JR      UB_AFLP
 UB_AFOUND:
         XOR     A
+        RET
+UB_AFFULL:
+        LD      A,1
+        OR      A
         RET
 
 ; Translate block DE into allocation-vector byte HL and high-first mask A.
@@ -1944,7 +1948,12 @@ UB_DIRLOAD:
         LD      A,(UBS_CREC)
         CP      C
         JR      Z,UB_DIRHIT
+; 08-Sep-2026: retain the requested record while flushing the old one.
+; BIOS WRITE uses BC.  Losing C here skipped entries during a wildcard
+; erase spanning directory records, although single-record tests passed.
+        PUSH    BC
         CALL    UB_DIRFLUSH
+        POP     BC
         RET     NZ
 UB_DIRMISS:
         LD      A,C
@@ -1959,9 +1968,9 @@ UB_DIRMISS:
         CALL    UB_DIRPOS
         LD      BC,(UB_DIRBUF)
         CALL    BIO_SETDMA
-        CALL    BIO_READ
-        OR      A
-        RET     NZ
+        CALL    UB_IOREAD
+        XOR     A
+        CALL    UB_CSUM          ; compare a logged disk, seed a new login
         LD      A,1
         LD      (UBS_COK),A
 UB_DIRHIT:
@@ -2014,7 +2023,7 @@ UB_POSDONE:
         LD      B,H
         LD      C,L
         CALL    BIO_SETSEC
-        OR      A               ; successful mapping must clear carry
+        XOR     A               ; mapped OK: both carry and result must be zero
         RET
 
 UB_DIRFLUSH:
@@ -2026,13 +2035,115 @@ UB_DIRFLUSH:
         CALL    UB_DIRPOS
         LD      BC,(UB_DIRBUF)
         CALL    BIO_SETDMA
+        LD      A,(UB_CTXDRV)
+        LD      C,A
+        CALL    UB_CHECKRO      ; a directory read may just have found a change
         LD      C,1
-        CALL    BIO_WRITE
-        OR      A
-        RET     NZ
+        CALL    UB_IOWR
+        LD      A,1
+        CALL    UB_CSUM         ; our successful write becomes the new baseline
         XOR     A
         LD      (UB_DIRTY),A
         RET
+
+; Directory checksum service. A=0 checks a read; A=1 records our write.
+; Use the DPH CSV and DPB CKS, not a private drive-number/address formula.
+; CP/M sums each checked 128-byte directory record modulo 256. A mismatch
+; protects the logged drive; it does NOT adopt the new allocation map as
+; permission to write. Function 13/37 clears login before a fresh baseline.
+UB_CSUM:
+        PUSH    AF
+        LD      A,(UBS_CREC)
+        LD      E,A
+        LD      A,(UB_DPBC+11)
+        CP      E
+        JR      Z,UB_CSOUT
+        JR      C,UB_CSOUT
+        LD      D,0
+        LD      HL,(UB_DPH)
+        LD      BC,12
+        ADD     HL,BC
+        LD      C,(HL)
+        INC     HL
+        LD      B,(HL)
+        EX      DE,HL
+        ADD     HL,BC
+        PUSH    HL
+        LD      HL,(UB_DIRBUF)
+        LD      B,128
+        XOR     A
+UB_CSSUM:
+        ADD     A,(HL)
+        INC     HL
+        DJNZ    UB_CSSUM
+        LD      E,A
+        POP     HL
+        POP     AF
+        OR      A
+        JR      NZ,UB_CSSET
+        PUSH    HL
+        LD      A,(UB_CTXDRV)
+        LD      C,A
+        LD      HL,UBS_LOGIN
+        CALL    UB_TESTBIT
+        POP     HL
+        JR      Z,UB_CSSET
+        LD      A,(HL)
+        CP      E
+        RET     Z
+        LD      HL,UB_RDONLY
+        JP      UB_SETBIT
+UB_CSSET:
+        LD      (HL),E
+        RET
+UB_CSOUT:
+        POP     AF
+        RET
+
+; 08-Sep-2026 -- The BIOS has already tried the transfer again.  Do not
+; turn a hard error into EOF (or disk full) at the application interface.
+; Like CP/M 2.2, ^C abandons the call; any other key ignores this error.
+; Save the interrupted registers: console drivers need not preserve them.
+UB_IOREAD:
+        CALL    BIO_READ
+        JR      UB_IORET
+UB_IOWR:
+        CALL    BIO_WRITE
+UB_IORET:
+        OR      A
+        RET     Z
+        PUSH    BC
+        PUSH    DE
+        PUSH    HL
+        PUSH    IX
+        LD      HL,UB_SECMESSAGE
+UB_SECOUT:
+        LD      A,(HL)
+        OR      A
+        JR      Z,UB_SECKEY
+        INC     HL
+        LD      C,A
+        PUSH    HL
+        CALL    BIO_CONOUT
+        POP     HL
+        JR      UB_SECOUT
+UB_SECKEY:
+        CALL    BIO_CONIN
+        CP      3
+        JR      NZ,UB_IGNOR
+; Never flush a failed directory write while reconstructing the CCP.
+        XOR     A
+        LD      (UB_DIRTY),A
+        JP      BIO_WBOOT
+UB_IGNOR:
+        POP     IX
+        POP     HL
+        POP     DE
+        POP     BC
+        XOR     A
+        RET
+UB_SECMESSAGE:
+        DB      13,10,'Bad Sector',13,10,0
 
 UB_OLDSP:       DW      0
 UB_OLDIX:       DW      0
@@ -2075,7 +2186,7 @@ UB_PENDING:     DB      0
 UB_PENDCH:      DB      0
 
 UB_STACK:
-        REPT    32
+        REPT    40
         DB      0
         ENDM
 UB_STKTOP:

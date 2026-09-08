@@ -112,6 +112,10 @@ def main() -> None:
     if len(data) > LAYOUT["SYSTEM"] and data[:LAYOUT["SYSTEM"]] == bytes(LAYOUT["SYSTEM"]):
         data = data[LAYOUT["SYSTEM"]:]
         gateway.write_bytes(data)
+    for symbol, offset in [('SYS_COMDONE',3),('SYS_COMSTART',0x74)]:
+        match=re.search(rf'^([0-9a-f]{{4}})\s+.*\b{symbol}:', (BUILD/'gateway.lst').read_text(), re.M|re.I)
+        if not match or int(match[1],16)!=RESIDENT_BASE+offset:
+            raise SystemExit(f'protected COM handoff moved: {symbol}')
     if not data:
         raise SystemExit("empty system-gateway output")
 
@@ -135,7 +139,7 @@ def main() -> None:
     loaded.append((LAYOUT["RSX_STATE"], bytes(41)))
     end = LAYOUT["RSX_STATE"] + 41
     # Account for buffers and stacks that do not appear as emitted binaries.
-    reservations = [(LAYOUT["TPA"], 3), (LAYOUT["HISTORY"], 512),
+    reservations = [(LAYOUT["TPA"], 3), (LAYOUT["HISTORY"], base - LAYOUT["HISTORY"]),
                     (LAYOUT["DIRBUF"], 128), (LAYOUT["MODULEBUF"], 1024)]
     ranges = sorted(reservations + [(address, len(data)) for address, data in loaded])
     previous_end = LAYOUT["TPA"]
@@ -145,7 +149,7 @@ def main() -> None:
         previous_end = address + size
     if previous_end > LAYOUT["RAM_END"]:
         raise SystemExit("protected image overlaps hardware-mapped memory")
-    if (LAYOUT["HISTORY"] != base - 512 or
+    if (base - LAYOUT["HISTORY"] < 138 or
             LAYOUT["TPA"] != LAYOUT["HISTORY"] - 3):
         raise SystemExit("gateway/history placement disagrees with system initialization")
     load_end = base + LAYOUT["BOOT_SECTORS"] * 512

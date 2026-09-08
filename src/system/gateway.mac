@@ -9,9 +9,9 @@
 ; into explicit growth regions while leaving page-zero ABI addresses intact.
 SYSBASE         EQU     LY_SYS
 BDOS            EQU     LY_BDOS
-HISTBASE        EQU     SYSBASE-0200H ; 512-byte warm-boot-persistent history
+HISTBASE        EQU     LY_HIST       ; fixed warm-boot-persistent history
 CPMGATE         EQU     HISTBASE-3
-DIRLOGIN        EQU     LY_EXT+00CH
+DIRLOGIN        EQU     LY_EXT+003H
 BIOWBOOT        EQU     LY_BIOS+3
 RSTCOUNT        EQU     LY_RSTA ; protected active-RSX reconstruction table
 
@@ -20,6 +20,29 @@ RSTCOUNT        EQU     LY_RSTA ; protected active-RSX reconstruction table
 
 SYS_INIT:
         JP      SINIBODY
+
+ ; COM exit runs here even when every byte of the CCP has gone.
+; A=0 only after EOF, with the caller's user saved on the system stack.
+SYS_COMDONE:
+        POP DE
+        LD E,D
+        PUSH AF
+        LD C,32
+        CALL BDOS
+        LD DE,0080H
+        LD C,26
+        CALL BDOS
+        POP AF
+        OR A
+        JP NZ,0000H
+; Patch 2026-09-08: DRI's CCP calls a transient, so its entry RET bypasses
+; the public jump at 0000H.  Save that jump's present target rather than zero.
+; The target remains protected while the command environment is overwritten,
+; but a program which temporarily intercepts 0000H can still distinguish RET
+; from Function 0 and JP 0000H as old CP/M programs expect.
+        LD HL,(0001H)
+        PUSH HL
+        JP 0100H
 
         REPT    SYSBASE+020H-$  ; explicit bytes keep native/cross images equal
         DB      0
@@ -73,6 +96,12 @@ SYS_STACK:
         DB      0
         ENDM
 SYS_STKTOP:
+
+SYS_COMSTART:
+        LD SP,SYS_STKTOP
+        PUSH AF             ; original user, restored on success or failure
+        LD HL,0100H
+        JP LY_EXT+00CH
 
         REPT    SYSBASE+080H-$
         DB      0

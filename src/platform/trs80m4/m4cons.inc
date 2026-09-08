@@ -79,16 +79,14 @@ M4_KEYCHANGE:
         POP     AF
         RET
 M4_KEYDONE:
-        LD      A,(M4_PENDING)
-        LD      C,A
-        XOR     A
-        LD      (M4_PENDING),A
-        LD      A,C
+        LD      HL,M4_PENDING
+        LD      A,(HL)
+        LD      (HL),0
         RET
 
 ; Patch 2026-09-01: rows are selected by successive address bits at
 ; F401h..F440h.  Modifier/configuration policy remains above this scanner.
-M4_SCAN:
+M4_SCAN:                       ; BIOCONST supplies the public status flags
         LD      HL,KEYBASE+1
         LD      DE,M4_KEYTAB
         LD      B,7
@@ -144,18 +142,18 @@ M4_KEYSHIFT:
         RET     Z
         LD      A,C
         CP      ':'
-        JR      Z,M4_KSTAR
+        JR      Z,M4_KSUB16
+        CP      '4'
+        JR      Z,M4_KSUB16
         CP      '-'
-        JR      Z,M4_KEQUAL
+        JR      Z,M4_KADD16
         CP      '/'
         RET     NZ
-        LD      A,'?'
+M4_KADD16:
+        ADD     A,10H          ; '-' -> '=', '/' -> '?'
         RET
-M4_KSTAR:
-        LD      A,'*'
-        RET
-M4_KEQUAL:
-        LD      A,'='
+M4_KSUB16:
+        SUB     10H            ; ':' -> '*', Shift-4 -> '$'
         RET
 
 M4_KEYTAB:

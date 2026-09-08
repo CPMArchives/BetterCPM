@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import struct
+import re
 from pathlib import Path
 from system_layout import LAYOUT
 
@@ -19,9 +20,9 @@ BASE = LAYOUT["RELOADER"]
 MODULE_SOURCE = 0x6000
 DESCRIPTOR_CCP = (LAYOUT["SYSTEM"] + 0x8C)
 SYSTEM_WBOOT = (LAYOUT["SYSTEM"] + 0x23)
-PHYSICAL_READ = 0xEF33
+PHYSICAL_READ = LAYOUT["BIOS"] + 51
 FILE_LOADER = LAYOUT["FILE"]
-DIR_LOGIN = LAYOUT["EXTENSIONS"] + 12
+DIR_LOGIN = LAYOUT["EXTENSIONS"] + 3
 
 
 def relocated(module: bytes, target: int) -> bytes:
@@ -48,8 +49,16 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
     module = MODULE.read_bytes()
     allocation = struct.unpack_from("<H", module, 10)[0]
     machine = Z80(b"")
-    machine.mem[BASE:BASE + len(RELOADER.read_bytes())] = RELOADER.read_bytes()
-    sectors = [1, 3, 5, 7, 9, 2, 4, 6, 8, 10]
+    reloader = RELOADER.read_bytes()
+    machine.mem[BASE:BASE + len(reloader)] = reloader
+    # Function 37 is the reloader's only BDOS dependency.  This unit test
+    # supplies a successful reset while the full boot tests exercise the real
+    # production BDOS at the same address.
+    machine.mem[LAYOUT["BDOS"]:LAYOUT["BDOS"] + 2] = bytes((0xAF, 0xC9))
+    listing = (ROOT / "build/trs80/ccpreload.lst").read_text()
+    table = int(re.findall(r"^([0-9a-f]{4})\s+.*\bCRSECTS:",
+                           listing, re.MULTILINE | re.IGNORECASE)[-1], 16) - BASE
+    sectors = [reloader[table + index * 3 + 2] for index in range(7)]
 
     def install_slots(first: int, content: bytes) -> None:
         padded = content.ljust(((len(content) + 511) // 512) * 512, b"\x00")
@@ -61,24 +70,27 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
     install_slots(0, module)
     # Protected filename-loader test double. OPEN selects BASIC/HELLO from the
     # first stem byte; NEXT copies a 512-byte unit and advances; RESET rewinds.
-    vectors = bytes((0xC3, 0x10, 0xD0, 0xC3, 0x30, 0xD0,
-                     0xC3, 0x50, 0xD0))
+    # Keep the test provider below every possible CCP destination.  The
+    # old D010h stubs became part of the 53K CCP image after layout compaction
+    # and were overwritten while the loader was still using them.
+    vectors = bytes((0xC3, 0x10, 0x50, 0xC3, 0x30, 0x50,
+                     0xC3, 0x50, 0x50))
     open_stub = bytes((
         0x7E, 0xFE, 0x42, 0x11, 0x00, 0x90, 0x28, 0x03,
-        0x11, 0x00, 0xA0, 0xEB, 0x22, 0x00, 0xD1,
-        0x22, 0x02, 0xD1, 0xAF, 0xC9,
+        0x11, 0x00, 0xA0, 0xEB, 0x22, 0x00, 0x59,
+        0x22, 0x02, 0x59, 0xAF, 0xC9,
     ))
     next_stub = bytes((
-        0xE5, 0x2A, 0x00, 0xD1, 0xD1,
+        0xE5, 0x2A, 0x00, 0x59, 0xD1,
         0x01, 0x00, 0x02, 0xED, 0xB0, 0xEB, 0xE5,
-        0x2A, 0x00, 0xD1, 0x11, 0x00, 0x02, 0x19,
-        0x22, 0x00, 0xD1, 0xE1, 0xAF, 0xC9,
+        0x2A, 0x00, 0x59, 0x11, 0x00, 0x02, 0x19,
+        0x22, 0x00, 0x59, 0xE1, 0xAF, 0xC9,
     ))
-    reset_stub = bytes((0x2A, 0x02, 0xD1, 0x22, 0x00, 0xD1, 0xAF, 0xC9))
+    reset_stub = bytes((0x2A, 0x02, 0x59, 0x22, 0x00, 0x59, 0xAF, 0xC9))
     machine.mem[FILE_LOADER:FILE_LOADER + len(vectors)] = vectors
-    machine.mem[0xD010:0xD010 + len(open_stub)] = open_stub
-    machine.mem[0xD030:0xD030 + len(next_stub)] = next_stub
-    machine.mem[0xD050:0xD050 + len(reset_stub)] = reset_stub
+    machine.mem[0x5010:0x5010 + len(open_stub)] = open_stub
+    machine.mem[0x5030:0x5030 + len(next_stub)] = next_stub
+    machine.mem[0x5050:0x5050 + len(reset_stub)] = reset_stub
     machine.mem[DIR_LOGIN:DIR_LOGIN + 2] = bytes((0xAF, 0xC9))
     cpx_allocation = 0
     if with_two_cpx:

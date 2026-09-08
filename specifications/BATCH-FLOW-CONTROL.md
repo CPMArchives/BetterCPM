@@ -1,6 +1,16 @@
 # BetterCP/M Batch and Flow-Control Facility
 
-Status: proposed for the 1.0 distribution
+Status: full SUBMIT/XSUB compatibility confirmed for 1.0; extended flow features remain proposed.
+
+## Confirmed release boundary
+
+The core CCP's built-in command inventory is LOAD, JUMP, GO, PEEK, POKE and SAVE.
+BASIC.CPX supplies the other standard CP/M resident commands. Full SUBMIT/XSUB behavioral
+compatibility ships in 1.0. Flow control and further batch extensions are loadable
+CPX features; the extended language below is not automatically a mandatory 1.0
+inventory. Qualify original SUBMIT/XSUB syntax and workflows independently of the
+chosen internal implementation, including parameter substitution, command order,
+program input, cancellation and return across warm boot.
 
 ## Purpose
 

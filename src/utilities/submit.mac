@@ -1,0 +1,425 @@
+; BetterCP/M SUBMIT -- CP/M 2.2 positional command-file processor.
+;
+; The DRI utility's public file format is retained: counted command records
+; are written to $$$.SUB in reverse order.  The CCP and XSUB can therefore
+; cooperate without private pointers or code surviving in the TPA.
+
+BDOS            EQU     0005H
+
+        CSEG
+        .PHASE  0100H
+SU_START:
+        LD      SP,SU_STACK
+        XOR     A
+        LD      (SU_OUTLIVE),A
+        LD      (SU_SLEFT),A
+        LD      HL,SU_RBUF
+        LD      (SU_RBP),HL
+        LD      HL,SU_LINE
+        LD      (HL),'0'
+        INC     HL
+        LD      (HL),'0'
+        INC     HL
+        LD      (HL),'1'
+
+; Preserve the complete command tail before the first disk read replaces DMA.
+; Parameter zero is the SUB filename, parameter one the next blank-delimited
+; word, exactly as in the original utility.
+        LD      A,(0080H)
+        LD      C,A
+        LD      B,0
+        LD      HL,0081H
+        LD      DE,SU_ARGS
+        LD      A,C
+        OR      A
+        JR      Z,SU_ARGEND
+        LDIR
+SU_ARGEND:
+        XOR     A
+        LD      (DE),A
+
+; Use the CCP-prepared first default FCB and force the conventional SUB type.
+        LD      HL,005CH
+        LD      DE,SU_SRCFCB
+        LD      BC,36
+        LDIR
+        LD      HL,SU_SUBTYPE
+        LD      DE,SU_SRCFCB+9
+        LD      BC,3
+        LDIR
+        XOR     A
+        LD      (SU_SRCFCB+12),A
+        LD      (SU_SRCFCB+13),A
+        LD      (SU_SRCFCB+14),A
+        LD      (SU_SRCFCB+32),A
+        LD      DE,SU_IOBUF
+        LD      C,26
+        CALL    BDOS
+        LD      DE,SU_SRCFCB
+        LD      C,15
+        CALL    BDOS
+        INC     A
+        JR      NZ,SU_PARSE
+        LD      DE,SU_NOSUB
+        JP      SU_ERROR
+
+SU_PARSE:
+        XOR     A
+        LD      (SU_RLEN),A
+SU_NEXTCH:
+        CALL    SU_GETSOURCE
+        CP      01AH
+        JR      Z,SU_EOF
+        CP      13
+        JR      Z,SU_EOL
+        CP      10              ; CR/LF files count CR as the line terminator
+        JR      Z,SU_NEXTCH
+        CP      '$'
+        JR      Z,SU_DOLLAR
+        CP      '^'
+        JR      Z,SU_CARET
+        CALL    SU_PUTCHAR
+        JR      SU_NEXTCH
+
+SU_DOLLAR:
+        CALL    SU_GETSOURCE
+        CP      '$'
+        JR      Z,SU_LITERAL
+        CP      '0'
+        JR      C,SU_PARMERR
+        CP      '9'+1
+        JR      NC,SU_PARMERR
+        SUB     '0'
+        CALL    SU_COPYARG
+        JR      SU_NEXTCH
+SU_LITERAL:
+        CALL    SU_PUTCHAR
+        JR      SU_NEXTCH
+SU_PARMERR:
+        LD      DE,SU_BADPARM
+        JP      SU_ERROR
+
+SU_CARET:
+        CALL    SU_GETSOURCE
+        CP      'A'
+        JR      C,SU_CTLERR
+        CP      'Z'+1
+        JR      NC,SU_CTLERR
+        SUB     'A'-1
+        CALL    SU_PUTCHAR
+        JR      SU_NEXTCH
+SU_CTLERR:
+        LD      DE,SU_BADCTL
+        JP      SU_ERROR
+
+SU_EOL:
+        CALL    SU_STASHLINE
+        CALL    SU_INCLINE
+        JR      SU_PARSE
+SU_EOF:
+        CALL    SU_STASHLINE
+        JP      SU_MAKEFILE
+
+; Add one command byte.  The stock limit leaves room for count, NUL and '$'
+; in its 128-byte record.  Aggregate expansion remains bounded at two KiB.
+SU_PUTCHAR:
+        PUSH    AF
+        LD      A,(SU_RLEN)
+        CP      125
+        JR      NC,SU_TOOLONG
+        INC     A
+        LD      (SU_RLEN),A
+        POP     AF
+        CALL    SU_PUTAGG
+        RET
+SU_TOOLONG:
+        POP     AF
+        LD      DE,SU_LONGMSG
+        JP      SU_ERROR
+
+SU_PUTAGG:
+        PUSH    AF
+        LD      HL,(SU_RBP)
+        LD      DE,SU_RBUFEND
+        OR      A
+        SBC     HL,DE
+        JR      NC,SU_OVERFLOW
+        LD      HL,(SU_RBP)
+        POP     AF
+        LD      (HL),A
+        INC     HL
+        LD      (SU_RBP),HL
+        RET
+SU_OVERFLOW:
+        POP     AF
+        LD      DE,SU_OVRMSG
+        JP      SU_ERROR
+
+; Empty source lines have no CCP command and consume no $$$.SUB record.
+SU_STASHLINE:
+        LD      A,(SU_RLEN)
+        OR      A
+        RET     Z
+        CALL    SU_PUTAGG       ; packed representation is text followed by len
+        XOR     A
+        LD      (SU_RLEN),A
+        RET
+
+; A selects $0..$9.  Arguments are deliberately blank-delimited: CP/M 2.2
+; SUBMIT has no quoting language, defaults, or named variables.
+SU_COPYARG:
+        LD      B,A
+        LD      HL,SU_ARGS
+        CALL    SU_ARGSKIP
+SU_ARGNTH:
+        LD      A,B
+        OR      A
+        JR      Z,SU_ARGCOPY
+SU_ARGWORD:
+        LD      A,(HL)
+        OR      A
+        RET     Z
+        CP      ' '
+        JR      Z,SU_ARGNEXT
+        INC     HL
+        JR      SU_ARGWORD
+SU_ARGNEXT:
+        CALL    SU_ARGSKIP
+        DJNZ    SU_ARGNTH
+SU_ARGCOPY:
+        LD      A,(HL)
+        OR      A
+        RET     Z
+        CP      ' '
+        RET     Z
+        INC     HL
+        PUSH    HL
+        CALL    SU_PUTCHAR
+        POP     HL
+        JR      SU_ARGCOPY
+SU_ARGSKIP:
+        LD      A,(HL)
+        CP      ' '
+        RET     NZ
+        INC     HL
+        JR      SU_ARGSKIP
+
+; Return the next upper-case source byte in A.  EOF, including CP/M's 1Ah text
+; marker, is 1Ah.  A physical error is reported rather than mistaken for EOF.
+SU_GETSOURCE:
+        LD      A,(SU_SLEFT)
+        OR      A
+        JR      NZ,SU_SGET
+        LD      DE,SU_SRCFCB
+        LD      C,20
+        CALL    BDOS
+        OR      A
+        JR      Z,SU_SFILL
+        DEC     A
+        JR      Z,SU_SEOF
+        LD      DE,SU_READMSG
+        JP      SU_ERROR
+SU_SFILL:
+        LD      HL,SU_IOBUF
+        LD      (SU_SPTR),HL
+        LD      A,128
+        LD      (SU_SLEFT),A
+SU_SGET:
+        LD      HL,(SU_SPTR)
+        LD      A,(HL)
+        INC     HL
+        LD      (SU_SPTR),HL
+        LD      HL,SU_SLEFT
+        DEC     (HL)
+        CP      01AH
+        RET     Z
+        CP      'a'
+        RET     C
+        CP      'z'+1
+        RET     NC
+        AND     05FH
+        RET
+SU_SEOF:
+        LD      A,01AH
+        RET
+
+SU_INCLINE:
+        LD      HL,SU_LINE+2
+        INC     (HL)
+        LD      A,(HL)
+        CP      '9'+1
+        RET     C
+        LD      (HL),'0'
+        DEC     HL
+        INC     (HL)
+        LD      A,(HL)
+        CP      '9'+1
+        RET     C
+        LD      (HL),'0'
+        DEC     HL
+        INC     (HL)
+        RET
+
+SU_MAKEFILE:
+        LD      DE,SU_OUTFCB
+        LD      C,19
+        CALL    BDOS
+        XOR     A
+        LD      (SU_OUTFCB+12),A
+        LD      (SU_OUTFCB+13),A
+        LD      (SU_OUTFCB+14),A
+        LD      (SU_OUTFCB+15),A
+        LD      (SU_OUTFCB+32),A
+        LD      DE,SU_OUTFCB
+        LD      C,22
+        CALL    BDOS
+        INC     A
+        JR      NZ,SU_MADE
+        LD      DE,SU_DIRMSG
+        JP      SU_ERROR
+SU_MADE:
+        LD      A,1
+        LD      (SU_OUTLIVE),A
+        LD      DE,SU_IOBUF
+        LD      C,26
+        CALL    BDOS
+
+; Walk the packed commands backward.  This produces the on-disk stack consumed
+; by both the stock CCP and BetterCP/M's compatible command acquisition path.
+SU_WRITELOOP:
+        LD      HL,(SU_RBP)
+        LD      DE,SU_RBUF
+        LD      A,H
+        CP      D
+        JR      NZ,SU_HAVEREC
+        LD      A,L
+        CP      E
+        JR      Z,SU_CLOSE
+SU_HAVEREC:
+        DEC     HL
+        LD      A,(HL)
+        LD      (SU_WLEN),A
+        LD      B,A
+SU_BACKUP:
+        LD      A,B
+        OR      A
+        JR      Z,SU_BACKDONE
+        DEC     HL
+        DJNZ    SU_BACKUP
+SU_BACKDONE:
+        LD      (SU_WPTR),HL
+        LD      A,(SU_WLEN)
+        LD      (SU_IOBUF),A
+        LD      C,A
+        LD      B,0
+        LD      DE,SU_IOBUF+1
+        LD      A,C
+        OR      A
+        JR      Z,SU_WTERM
+        LDIR
+SU_WTERM:
+        XOR     A
+        LD      (DE),A
+        INC     DE
+        LD      A,'$'
+        LD      (DE),A
+        LD      DE,SU_OUTFCB
+        LD      C,21
+        CALL    BDOS
+        OR      A
+        JR      Z,SU_WNEXT
+        LD      DE,SU_WRERR
+        JP      SU_ERROR
+SU_WNEXT:
+        LD      HL,(SU_WPTR)
+        LD      (SU_RBP),HL
+        JR      SU_WRITELOOP
+
+SU_CLOSE:
+        LD      DE,SU_OUTFCB
+        LD      C,16
+        CALL    BDOS
+        INC     A
+        JR      NZ,SU_SUCCESS
+        LD      DE,SU_CLERR
+        JP      SU_ERROR
+SU_SUCCESS:
+        XOR     A
+        LD      (SU_OUTLIVE),A
+        LD      C,0
+        JP      BDOS
+
+; All failures return through WBOOT with no partially generated command file.
+SU_ERROR:
+        LD      (SU_ERRPTR),DE
+        LD      A,(SU_OUTLIVE)
+        OR      A
+        JR      Z,SU_ERRPRINT
+        LD      DE,SU_OUTFCB
+        LD      C,19
+        CALL    BDOS
+        XOR     A
+        LD      (SU_OUTLIVE),A
+SU_ERRPRINT:
+        LD      DE,SU_ERRHEAD
+        LD      C,9
+        CALL    BDOS
+        LD      DE,SU_LINE
+        LD      C,9
+        CALL    BDOS
+        LD      DE,(SU_ERRPTR)
+        LD      C,9
+        CALL    BDOS
+        LD      C,0
+        JP      BDOS
+
+SU_SUBTYPE:     DB      'SUB'
+SU_ERRHEAD:     DB      13,10,'Error On Line ','$'
+SU_LINE:        DB      '001 ','$'
+SU_NOSUB:       DB      'No ''SUB'' File Present','$'
+SU_BADPARM:     DB      'Parameter Error','$'
+SU_BADCTL:      DB      'Invalid Control Character','$'
+SU_LONGMSG:     DB      'Command Too Long','$'
+SU_OVRMSG:      DB      'Command Buffer Overflow','$'
+SU_READMSG:     DB      'Disk Read Error','$'
+SU_WRERR:       DB      'Disk Write Error','$'
+SU_DIRMSG:      DB      'Directory Full','$'
+SU_CLERR:       DB      'Cannot Close, Read/Only?','$'
+
+SU_SRCFCB:
+                REPT    36
+                DB      0
+                ENDM
+SU_OUTFCB:      DB      0,'$$$     ','SUB',0,0,0,0
+                REPT    16
+                DB      0
+                ENDM
+                DB      0,0,0,0
+SU_ARGS:
+                REPT    128
+                DB      0
+                ENDM
+SU_IOBUF:
+                REPT    128
+                DB      01AH
+                ENDM
+SU_RBUF:
+                REPT    2047    ; DRI rbuff(0) is its reverse-walk sentinel
+                DB      0
+                ENDM
+SU_RBUFEND:
+                DB      0       ; preserve the original 2K storage footprint
+SU_RBP:         DW      0
+SU_SPTR:        DW      0
+SU_SLEFT:       DB      0
+SU_RLEN:        DB      0
+SU_WLEN:        DB      0
+SU_WPTR:        DW      0
+SU_ERRPTR:      DW      0
+SU_OUTLIVE:     DB      0
+                REPT    32
+                DW      0
+                ENDM
+SU_STACK:
+        .DEPHASE
+        END

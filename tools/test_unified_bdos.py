@@ -9,8 +9,8 @@ from system_layout import LAYOUT
 from test_bios import BASE as BIOS_BASE, Z80, install_drive_tables, require
 
 ROOT = Path(__file__).resolve().parents[1]
-IMAGE = ROOT / "build/bdos/unified-bdos.bin"
-LISTING = ROOT / "build/bdos/unified-bdos.lst"
+IMAGE = ROOT / "build/bdos/bdos.bin"
+LISTING = ROOT / "build/bdos/bdos.lst"
 BIOS = ROOT / "build/bios/bios.bin"
 BASE = LAYOUT["BDOS"]
 FCB = 0x7000
@@ -39,7 +39,8 @@ def main() -> None:
     # Keep the production BIOS mapping and replace only its platform reader
     # with a deterministic 512-byte physical-sector fixture.
     read_impl = cpu.word(BIOS_BASE + 13 * 3 + 1)
-    read_calls = [address for address in range(read_impl, read_impl + 48)
+    prepare = cpu.word(read_impl + 1)
+    read_calls = [address for address in range(prepare, prepare + 11)
                   if cpu.mem[address] == 0xCD]
     require(len(read_calls) >= 2, "BIOS physical-read call was not found")
     platform_read = 0x7B00
@@ -55,6 +56,16 @@ def main() -> None:
     cpu.mem[platform_read:platform_read + len(read_success)] = read_success
     initial_sp = cpu.sp
     state = symbols()
+    lowest_stack = [state["UB_STKTOP"]]
+    original_push = cpu.push
+
+    def checked_push(value: int) -> None:
+        original_push(value)
+        if state["UB_STACK"] - 64 <= cpu.sp < state["UB_STKTOP"]:
+            lowest_stack[0] = min(lowest_stack[0], cpu.sp)
+            require(cpu.sp >= state["UB_STACK"], "BDOS private stack overflow")
+
+    cpu.push = checked_push
 
     def call(function: int, parameter: int = 0) -> int:
         cpu.ix = 0xA55A
@@ -64,6 +75,27 @@ def main() -> None:
         require(cpu.ix == 0xA55A, f"function {function} failed to restore IX")
         return cpu.a
 
+    def expect_warm_restart(function: int, parameter: int) -> None:
+        # Stop at the public WBOOT boundary.  The emulator campaign below
+        # separately verifies that the real loader reconstructs the CCP.
+        vector = bytes(cpu.mem[BIOS_BASE + 3:BIOS_BASE + 6])
+        output = bytes(cpu.mem[BIOS_BASE + 12:BIOS_BASE + 15])
+        # The earlier one-byte console recorder occupies the FCB address.
+        # Disconnect that instrument during diagnostics, preserving the FCB.
+        cpu.mem[BIOS_BASE + 12] = 0xC9
+        cpu.mem[BIOS_BASE + 3:BIOS_BASE + 6] = bytes((0xC3, 0x00, 0x7A))
+        cpu.mem[0x7A00:0x7A08] = bytes((0x3E, 1, 0x32, 0x10, 0x7A, 0xC3, 0xFF, 0xFF))
+        cpu.mem[0x7A10] = 0
+        cpu.c, cpu.de = function, parameter
+        try:
+            cpu.run(BASE, limit=50000)
+            require(cpu.mem[0x7A10] == 1,
+                    f"function {function} returned instead of entering WBOOT")
+        finally:
+            cpu.mem[BIOS_BASE + 3:BIOS_BASE + 6] = vector
+            cpu.mem[BIOS_BASE + 12:BIOS_BASE + 15] = output
+            cpu.sp = initial_sp
+
     # U10 character-I/O conformance.  Patch only the platform leaves beneath
     # the BIOS vectors, exactly as the production BDOS test does.
     const_impl = cpu.word(BIOS_BASE + 2 * 3 + 1)
@@ -71,7 +103,7 @@ def main() -> None:
     conin_impl = cpu.word(BIOS_BASE + 3 * 3 + 1)
     platform_conin = cpu.word(conin_impl + 1)
     conout_impl = cpu.word(BIOS_BASE + 4 * 3 + 1)
-    platform_conout = cpu.word(conout_impl + 1)
+    platform_conout = conout_impl
     cpu.mem[platform_const:platform_const + 2] = bytes((0xAF, 0xC9))
     require(call(11) == 0, "function 11 reported a false key")
     cpu.mem[platform_const:platform_const + 3] = bytes((0x3E, 1, 0xC9))
@@ -222,8 +254,8 @@ def main() -> None:
             "Search First did not copy the containing directory record")
     reads = cpu.mem[0x7303]
     require(call(18) == 1, "Search Next did not retain slot continuation")
-    require(cpu.mem[0x7303] == reads,
-            "Search Next reread an already cached directory sector")
+    require(cpu.mem[0x7303] > reads,
+            "Search Next reused a clean directory cache across public calls")
 
     # Drive-B login rebuilt its ALV through the iterator: AL0/AL1 reserve the
     # directory blocks and the live 16-bit allocation entries add blocks 1..8.
@@ -232,7 +264,7 @@ def main() -> None:
     require(bytes(cpu.mem[alv:alv + 2]) == bytes((0xFF, 0x80)),
             f"U07 did not reconstruct reserved and file-owned allocation bits: "
             f"{bytes(cpu.mem[alv:alv + 2]).hex()} at {alv:04X}")
-    cpu.de = 395                 # one beyond this fixture's DSM=394
+    cpu.de = cpu.word(state["UB_DPBC"] + 5) + 1  # first block beyond this DPB
     cpu.run(state["UB_ALMARK"])
     require(cpu.a != 0, "U07 accepted an allocation block beyond DSM")
     cpu.run(state["UB_ALFREE"])
@@ -261,6 +293,21 @@ def main() -> None:
     require(cpu.mem[FCB + 1:FCB + 32] == activated,
             "Open did not activate directory bytes 1..31")
 
+    # The legacy mutation fixture below edits DIRBUF directly and counts
+    # WRITE calls; it does not implement a backing disk for cache refills.
+    # Isolate those filesystem tests from the new media-change layer. The
+    # real-image media regression separately checks refills, CSV updates,
+    # write rejection and reset. Fresh public reads were checked above.
+    entry = BASE
+    clear = next(a for a in range(entry, entry + 48)
+                 if bytes(cpu.mem[a:a+3]) == bytes((0x32,
+                    state["UBS_COK"] & 255, state["UBS_COK"] >> 8)))
+    cpu.mem[clear:clear+3] = bytes(3)
+    for drive in range(4):
+        dpb = cpu.word(LAYOUT["TABLES"] + drive * 80 + 10)
+        cpu.mem[dpb + 11:dpb + 13] = bytes(2)
+    cpu.mem[state["UB_DPBC"] + 11:state["UB_DPBC"] + 13] = bytes(2)
+
     # Make is the first mutation client. Replace only the BIOS WRITE vector
     # with a success/count stub; mapping and cache selection remain real.
     cpu.mem[BIOS_BASE + 14 * 3:BIOS_BASE + 14 * 3 + 3] = bytes((0xC3, 0x00, 0x74))
@@ -281,7 +328,8 @@ def main() -> None:
             "Make accepted a duplicate or wrote during duplicate rejection")
     cpu.mem[FCB + 1:FCB + 12] = b"RO      COM"
     call(28)
-    require(call(22, FCB) == 0xFF and cpu.mem[0x7304] == 1,
+    expect_warm_restart(22, FCB)
+    require(cpu.mem[0x7304] == 1,
             "Make mutated a software write-protected drive")
 
     # Constrain the fixture to one directory record and verify Delete's
@@ -452,9 +500,14 @@ def main() -> None:
             "Random Read must leave CR at the requested record")
     require(bytes(cpu.mem[dma:dma + 128]) == bytes((0x20,)) * 128,
             "Random Read did not reuse the sequential record mapper")
-    cpu.mem[FCB + 35] = 4
-    require(call(33, FCB) == 0xFF,
-            "Random Read accepted an out-of-range R2 value")
+    for high in (1, 4, 255):
+        cpu.mem[FCB + 35] = high
+        saved_fcb = bytes(cpu.mem[FCB:FCB + 36])
+        for function in (33, 34, 40):
+            require(call(function, FCB) == 6,
+                    f"Random function {function} accepted R2={high}")
+            require(bytes(cpu.mem[FCB:FCB + 36]) == saved_fcb,
+                    "Out-of-range random I/O changed the FCB")
 
     # Sequential Write uses the same record mapper, allocating only when its
     # current map element is empty.  It advances CR and grows RC in the FCB;
@@ -554,10 +607,12 @@ def main() -> None:
             "zero-fill scratch use left the directory cache falsely valid")
     call(28)
     writes = cpu.mem[0x7304]
-    require(call(21, FCB) == 0xFF and cpu.mem[0x7304] == writes,
+    expect_warm_restart(21, FCB)
+    require(cpu.mem[0x7304] == writes,
             "Sequential Write ignored software write protection")
     saved_fcb = bytes(cpu.mem[FCB:FCB + 36])
-    require(call(16, FCB) == 0xFF and cpu.mem[0x7304] == writes and
+    expect_warm_restart(16, FCB)
+    require(cpu.mem[0x7304] == writes and
             bytes(cpu.mem[FCB:FCB + 36]) == saved_fcb,
             "dirty Close ignored software protection or changed the FCB")
     cpu.setword(state["UB_RDONLY"], 0)
@@ -585,6 +640,7 @@ def main() -> None:
     require(len(set(alvs)) == 1, "fixture no longer exercises shared ALV storage")
     print("shared allocation workspace rebuilt correctly across A/B/A switches")
 
+    print(f"BDOS private stack high-water: {state['UB_STKTOP'] - lowest_stack[0]} bytes")
     print(f"unified BDOS U01-U09 foundation passed ({len(image)} bytes)")
     print("disk, directory, allocation, extent, and record-transfer mapping passed")
 

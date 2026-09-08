@@ -12,6 +12,7 @@ from pathlib import Path
 from system_layout import LAYOUT, expand_layout
 from build_bios import build_bios
 from build_system import build_support
+from cpm_tools_bundle import files as cpm_tools_files
 
 from build_montezuma_extended_790k import (
     RAW_SIZE,
@@ -194,7 +195,11 @@ def install(boot: bytes, stage1: bytes, resident: bytes, command: bytes,
         raise ValueError("command module overlaps the CP/M filesystem")
     raw[command_start:command_start + command_capacity] = command.ljust(
         command_capacity, b"\x00")
-    install_files(raw, files)
+    from sysgen_image import sysgen_image
+    reference = sysgen_image(resident, LAYOUT["SYSTEM"],
+                             LAYOUT["BOOT_SECTORS"] * 4,
+                             SYSTEM_FIRST_LOGICAL_INDEX * 4, 80)
+    install_files(raw, files + [("SYSGEN.DAT", reference)])
     image = build(bytes(raw))
     verify(image, require_blank=False)
     return image
@@ -227,6 +232,7 @@ def main() -> None:
     hello_rsx_path = ROOT / "build/rsx/HELLO.RSX"
     fdf_rsx_path = ROOT / "build/rsx/FDF.RSX"
     echo_rsx_path = ROOT / "build/rsx/ECHO.RSX"
+    batchio_rsx_path = ROOT / "build/rsx/BATCHIO.RSX"
     cpx_utility_path = ROOT / "build/utilities/CPX.COM"
     rsx_utility_path = ROOT / "build/utilities/RSX.COM"
     rsxtest_path = ROOT / "build/utilities/RSXTEST.COM"
@@ -241,11 +247,15 @@ def main() -> None:
     warm_path = ROOT / "build/utilities/WARM.COM"
     config_path = ROOT / "build/utilities/CONFIG.COM"
     dup_path = ROOT / "build/utilities/DUP.COM"
+    stat_path = ROOT / "build/utilities/STAT.COM"
+    submit_path = ROOT / "build/utilities/SUBMIT.COM"
+    xsub_path = ROOT / "build/utilities/XSUB.COM"
     fdf_path = ROOT / "third_party/montezuma/DISK.FDF"
     for path in (resident_path, command_path, basic_cpx_path, hello_cpx_path,
-                 hello_rsx_path, echo_rsx_path, fdf_rsx_path, cpx_utility_path, rsx_utility_path,
+                 hello_rsx_path, echo_rsx_path, batchio_rsx_path, fdf_rsx_path, cpx_utility_path, rsx_utility_path,
                  rsxtest_path, rsx2test_path, era_path, ren_path, type_path, dir_path,
-                 user_path, clr_path, ver_path, warm_path, config_path, dup_path, fdf_path):
+                 user_path, clr_path, ver_path, warm_path, config_path, dup_path, stat_path,
+                 submit_path, xsub_path, fdf_path):
         if not path.is_file():
             raise SystemExit(f"missing system-image input: {path}")
     # Reassemble from source so a previous failed BIOS build cannot hide behind
@@ -338,12 +348,17 @@ def main() -> None:
                      ("WARM.COM", warm_path.read_bytes()),
                      ("CONFIG.COM", config_path.read_bytes()),
                      ("DUP.COM", dup_path.read_bytes()),
+                     ("STAT.COM", stat_path.read_bytes()),
+                     ("SUBMIT.COM", submit_path.read_bytes()),
+                     ("XSUB.COM", xsub_path.read_bytes()),
                      ("DISK.FDF", fdf_path.read_bytes()),
                      ("FDF.RSX", fdf_rsx_path.read_bytes()),
                      ("BASIC.CPX", basic_cpx_path.read_bytes()),
                      ("HELLO.CPX", hello_cpx_path.read_bytes()),
                      ("HELLO.RSX", hello_rsx_path.read_bytes()),
-                     ("ECHO.RSX", echo_rsx_path.read_bytes()), *extras])
+                     ("ECHO.RSX", echo_rsx_path.read_bytes()),
+                     ("BATCHIO.RSX", batchio_rsx_path.read_bytes()),
+                     *cpm_tools_files(ROOT), *extras])
     output = args.output.resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_bytes(image)

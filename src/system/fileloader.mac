@@ -4,8 +4,8 @@
 ; NEXT: HL -> destination; read up to four 128-byte records.
 ; RESET reopens the same name.  Keep name/type in the FCB; a second
 ; copy wastes RAM and can get out of step with the file being read.
-DIROPEN EQU LY_EXT+012H
-DIRREAD EQU LY_EXT+024H
+DIROPEN EQU LY_EXT+006H
+DIRREAD EQU LY_EXT+009H
         CSEG
         .PHASE  LY_FILE
 FL_OPEN: JP FL_OPBODY

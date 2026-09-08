@@ -1,0 +1,18 @@
+[
+  {
+    "source": "/Users/nathanael/CPM/montezuma-micro/images/CPMb231.dsk",
+    "source_sha256": "480cdf5dc504ad437448a27938241c81e45d91bab9c0073db738d11cabfb34aa",
+    "com": "CPMb231.dsk.CONFIG.COM",
+    "size": 12928,
+    "sha256": "8bd58443fd716751ee04e224590776555ae714eedcd8a6631092a0ace45ef02c",
+    "verified_sectors": 720
+  },
+  {
+    "source": "/Users/nathanael/CPM/montezuma-micro/images/CPMb232.dsk",
+    "source_sha256": "a13e310d0668b744ebe36c0aa5621a9d6148dcb45b3477d425ea3efb38e5504e",
+    "com": "CPMb232.dsk.CONFIG.COM",
+    "size": 12928,
+    "sha256": "3bf6d305f549346b52969a7eb457a6f7dbcc727fbd183a881ae4f024e79e2740",
+    "verified_sectors": 720
+  }
+]

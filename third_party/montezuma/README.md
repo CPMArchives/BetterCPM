@@ -35,3 +35,15 @@ Original COM: 8,064 bytes; SHA-256
 Extracted identically from `CPMb231.dsk` and `MMCPM231.DSK`; independent
 cpmtools extraction matched. See the
 [analysis and routine map](../../docs/engineering/MM-DUP-REVERSE-ENGINEERING.md).
+
+## CONFIG 3.10 / 3.01 reference binaries and disassembly
+
+Original CONFIG.COM files were extracted from the retained MM 2.32 and 2.31
+distributions respectively. `CONFIG-3.10-annotated.lst` traces the logical-drive
+selection and format-assignment paths. The two `CONFIG-*-linear.lst` files are
+raw linear disassemblies, including data decoded as instructions; they are
+not reassemblable source. Hashes are in `CONFIG-extraction-manifest.json`.
+
+See [CONFIG analysis](../../docs/engineering/MM-CONFIG-REVERSE-ENGINEERING.md)
+for the A–D restriction, BIOS table evidence, provenance and limitations.
+These are third-party reference materials, not original BetterCP/M code.

@@ -1,6 +1,7 @@
         INCLUDE layout.inc
 ; Four DPHs, each followed by its own 64-byte disk binding.
-; ALV and CSV are shared workspace, NOT four saved disk states.
+; ALV is shared workspace. Each drive retains its own 32-byte CSV.
+; Directory checksums must survive selection of another logical disk.
 ; BDOS must rebuild allocation ownership when changing logical disks.
 ; In particular A/B/A must not reuse B's allocated-block map for A.
         CSEG
@@ -10,7 +11,7 @@
 ; These installed defaults survive warm boot. SYSGEN will replace them
 ; in the system image when that utility is implemented.
 DPH0:
-        DW 0,0,0,0,LY_DIR,DPH0+17,CSV,ALV
+        DW 0,0,0,0,LY_DIR,DPH0+17,CSV+0,ALV
         DB 0
         DW 80
         DB 4,15,0
@@ -23,7 +24,7 @@ DPH0:
         DB 0
         ENDM
 DPH1:
-        DW 0,0,0,0,LY_DIR,DPH1+17,CSV,ALV
+        DW 0,0,0,0,LY_DIR,DPH1+17,CSV+32,ALV
         DB 1
         DW 40
         DB 4,15,0
@@ -36,7 +37,7 @@ DPH1:
         DB 0
         ENDM
 DPH2:
-        DW 0,0,0,0,LY_DIR,DPH2+17,CSV,ALV
+        DW 0,0,0,0,LY_DIR,DPH2+17,CSV+64,ALV
         DB 2
         DW 40
         DB 4,15,0
@@ -49,7 +50,7 @@ DPH2:
         DB 0
         ENDM
 DPH3:
-        DW 0,0,0,0,LY_DIR,DPH3+17,CSV,ALV
+        DW 0,0,0,0,LY_DIR,DPH3+17,CSV+96,ALV
         DB 3
         DW 40
         DB 4,15,0
@@ -62,6 +63,6 @@ DPH3:
         DB 0
         ENDM
 ALV:    DS 128
-CSV:    DS 32
+CSV:    DS 128
         .DEPHASE
         END

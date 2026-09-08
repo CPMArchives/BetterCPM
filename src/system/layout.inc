@@ -4,13 +4,13 @@
 ; LY_RSX is optional: one K is charged only with an active RSX profile.
 ; LY_CFG reuses LY_BUF; LY_LOAD and its stack borrow the finished TPA.
 ; Keep build-time size checks: even a twelve-byte overrun is fatal.
-LY_SYS          EQU     0D704H
-LY_BDOS         EQU     0D7FCH
-LY_EXT          EQU     0E53AH
-LY_DISK         EQU     0E6C9H
-LY_BIOS         EQU     0EA68H
-LY_FILE         EQU     0ECE6H
-LY_TAB          EQU     0ED77H
+LY_SYS          EQU     0D5C4H
+LY_BDOS         EQU     0D6BCH
+LY_EXT          EQU     0E49FH
+LY_DISK         EQU     0E648H
+LY_BIOS         EQU     0EA08H
+LY_FILE         EQU     0EC86H
+LY_TAB          EQU     0ED17H
 LY_RSTA         EQU     0EF57H
 LY_DIR          EQU     0EF80H
 LY_BUF          EQU     0F000H
@@ -25,3 +25,8 @@ LY_RAMEND       EQU     0F400H
 LY_HIST         EQU     0D504H
 LY_TPA          EQU     0D501H
 LY_SECTS        EQU     0000DH
+
+; Protected COM handoff and shared filename state (checked by builders).
+LY_COMSTART     EQU     LY_SYS+074H
+LY_COMDONE      EQU     LY_SYS+003H
+LY_FCB          EQU     LY_FILE+109

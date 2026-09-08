@@ -1,0 +1,352 @@
+CP/M TOOLS USER'S MANUAL
+========================
+
+This manual documents current behavior. Future development is recorded in
+ROADMAP.DOC on the tools disk and ROADMAP.md in the source repository.
+
+CONTENTS
+
+    1. General command conventions
+    2. SYSINFO
+    3. DISKINFO
+    4. DPBCHK
+    5. FSCK
+    6. DISKEDIT
+    7. COMINFO
+    8. BDOSPROBE
+    9. Building the native tools
+   10. Safety and result terminology
+
+
+1. GENERAL COMMAND CONVENTIONS
+
+CP/M Tools is a collection of small diagnostic programs for CP/M 2.2. Drive
+letters and options are case-insensitive. Options are matched exactly; an
+unlisted abbreviation is not accepted.
+
+The common informational commands are:
+
+    tool /H           Command help (also /HELP)
+    tool /INFO        Build information, where supported
+    tool /VER         Version information (also /VERSION)
+
+A drive is written in the usual CP/M form, such as B:. When a tool permits a
+drive and an option, the drive may normally appear before or after the option.
+
+
+2. SYSINFO
+
+PURPOSE
+
+SYSINFO reports documented, application-visible information about the running
+CP/M system. Reports cover memory, public vectors, I/O assignment, system
+state, disk parameters and space, the standard BIOS table, and structural
+health observations.
+
+IMPORTANT COMMANDS
+
+    SYSINFO                General system summary
+    SYSINFO /MEM           Memory layout
+    SYSINFO /IO            IOBYTE and device assignments
+    SYSINFO /VECTORS       Standard low-memory vectors
+    SYSINFO /BIOS          Standard BIOS jump table
+    SYSINFO /CHECK         Read-only structural audit
+    SYSINFO /STATE         Current drive, user and drive vectors
+    SYSINFO /DISK          Disk summary
+    SYSINFO /DPB           Raw and decoded disk parameters
+    SYSINFO /SPACE         Total, used and free disk space
+    SYSINFO /DRIVES        Compact drive inventory
+    SYSINFO /ALLOC         Allocation details
+    SYSINFO /MAP           Concise public memory map
+    SYSINFO /ALL:SHORT     Compact system and drive overview
+    SYSINFO /ALL           All current-drive details
+
+Run SYSINFO /H for the complete syntax, including drive-list forms.
+
+
+3. DISKINFO
+
+PURPOSE
+
+DISKINFO describes the selected drive's Disk Parameter Header, Disk Parameter
+Block, derived geometry, and current allocation totals. It is read-only.
+
+COMMANDS
+
+    DISKINFO                   Complete report for the current drive
+    DISKINFO B:                Complete report for drive B
+    DISKINFO B: /DPH           Disk Parameter Header only
+    DISKINFO B: /DPB           Disk Parameter Block only
+    DISKINFO B: /GEO           Derived geometry only
+    DISKINFO B: /ALLOC         Current allocation only
+    DISKINFO /H                Command help (also /HELP)
+    DISKINFO /INFO             Build information
+    DISKINFO /VER              Version (also /VERSION)
+
+
+4. DPBCHK
+
+PURPOSE
+
+DPBCHK validates a drive's public disk parameters without changing the disk.
+
+CHECKS
+
+    BSH       Allocation-block size is supported
+    BLM       Block mask agrees with BSH
+    EXM       Extent mask agrees with block geometry
+    DSM       Allocation-block range is representable
+    DIR       Directory reservation is sufficient
+    CKS       Check-vector size is plausible
+    POINTERS  Required DPH pointers are present and agree
+
+COMMANDS
+
+    DPBCHK                    Check the current drive
+    DPBCHK B:                 Check drive B
+    DPBCHK /H                 Command help (also /HELP)
+    DPBCHK /INFO              Build information
+    DPBCHK /VER               Version (also /VERSION)
+
+
+5. FSCK
+
+PURPOSE
+
+FSCK is a read-only consistency checker for CP/M 2.2 filesystems. It reads
+the selected drive's directory through the standard BIOS and examines the raw
+32-byte entries and allocation lists. It never calls the BIOS WRITE entry.
+
+COMMANDS
+
+    FSCK                      Check the current drive
+    FSCK B:                   Check drive B
+    FSCK B: /V                Detailed output (also /VERBOSE)
+    FSCK /H                   Command help (also /HELP)
+    FSCK /INFO                Build information
+    FSCK /VER                 Version (also /VERSION)
+
+NORMAL AND VERBOSE OUTPUT
+
+Normal output gives active and deleted directory-entry counts, warning and
+error totals, and a final consistency result. /V or /VERBOSE additionally
+identifies each active raw entry and prints individual findings.
+
+CHECKS IN DEV1
+
+User number
+    An active entry outside user areas 0 through 15 is a warning. E5H is an
+    erased directory entry.
+
+Record count
+    A record count greater than 128 is an error.
+
+Allocation range
+    A nonzero allocation number beyond DSM is an error.
+
+Directory reservation
+    A file allocation list must not refer to a directory block.
+
+Duplicate ownership
+    A block appearing more than once among active entries is an error.
+
+LIMITATIONS OF FSCK DEV1
+
+Dev1 does not yet validate filename characters, reconstruct complete extent
+sequences, reconcile every directory allocation with the BDOS allocation
+vector, or repair a disk. "Filesystem is consistent" means that no dev1 check
+found an error; it is not a guarantee against every possible fault.
+
+
+6. DISKEDIT
+
+PURPOSE
+
+DISKEDIT dev2 is a read-only, filesystem-aware sector browser. It begins at track zero
+of the selected drive and reads through the standard BIOS. The D command
+returns directly to the first directory sector.
+Each 128-byte logical sector is displayed in hexadecimal and ASCII together
+with its track, logical-sector number, translated sector, and filesystem
+region. DATA sectors also show their allocation block and directory-derived
+owner. Dev2 contains no call to the BIOS WRITE entry.
+
+COMMANDS
+
+    DISKEDIT                  Browse the current drive
+    DISKEDIT B:               Browse drive B
+    DISKEDIT /H               Command help (also /HELP)
+    DISKEDIT /INFO            Build information
+    DISKEDIT /VER             Version (also /VERSION)
+
+INTERACTIVE KEYS
+
+    N                         Next logical sector
+    P                         Previous logical sector
+    S                         First SYSTEM sector
+    D                         Return to the first directory sector
+    T                         First DATA sector
+    Q                         Quit to CP/M
+
+The region is reported as SYSTEM, DIRECTORY, or DATA. Sector numbers are
+logical CP/M records; the translated-sector field shows the value passed to
+the BIOS after applying the drive's sector-translation table. S reports that
+no SYSTEM area exists and leaves the position unchanged when the DPB has an
+OFF value of zero. T uses the directory blocks reserved by AL0/AL1.
+
+DATA OWNERSHIP
+
+The compact status line uses Trk, Log, Xlt, Reg, Blk, and Own. Blk and Own
+appear only in the DATA region. Own is displayed as a user number and CP/M
+filename, FREE when no active directory entry claims the block, CONFLICT when
+more than one allocation-list slot claims it, or UNKNOWN when the selected
+disk has more blocks than dev2's ownership-map capacity. Blocks from separate
+extents retain the same displayed user and filename.
+
+LIMITATIONS OF DISKEDIT DEV2
+
+Dev2 supports ownership maps for as many as 1024 allocation blocks. It does
+not modify sectors, jump directly to an arbitrary address, decode
+directory entries, follow file allocation chains, search data, or edit disk
+contents. These are candidates for later development after the read path has
+been exercised on a range of CP/M BIOS implementations.
+
+
+7. COMINFO
+
+PURPOSE
+
+COMINFO dev2 is a read-only static inspector for CP/M transient programs. It
+reads a named COM file through standard BDOS sequential reads and reports its
+logical CP/M size, 0100H load range, public page-zero address patterns, and
+possible Z80 instruction-prefix bytes.
+
+COMMANDS
+
+    COMINFO PROG.COM          Analyze PROG.COM
+    COMINFO PROG.COM /V       Detailed findings (also /VERBOSE)
+    COMINFO /H                Command help (also /HELP)
+    COMINFO /INFO             Build information
+    COMINFO /VER              Version (also /VERSION)
+
+REPORT
+
+Logical records and bytes
+    CP/M 2.2 records file length in 128-byte records. Logical bytes therefore
+    include any application padding in the final record.
+
+Load range
+    A valid transient program begins at 0100H. COMINFO reports the inclusive
+    address occupied by the logical file image and flags an image which would
+    extend beyond FFFFH.
+
+Page-zero references
+    Dev1 counts byte patterns for direct CALL 0005H, JMP 0000H, and other
+    8080 instructions with a direct address below 0100H. /V prints the file
+    offset of each pattern.
+
+BDOS function recognition
+    At a direct CALL 0005H, dev2 recognizes MVI C,function immediately before
+    the call. It also recognizes an adjacent LXI D,address placed before or
+    after MVI C. Reports give the symbolic CP/M 2.2 function name, per-function
+    count, and--under /V--the DE argument when present. Calls without one of
+    these exact idioms are retained as dynamic/unknown rather than guessed.
+
+Z80 prefix bytes
+    CBH, DDH, EDH, and FDH bytes are counted as heuristic findings. They may
+    be instructions or ordinary data and do not by themselves prove that the
+    program requires a Z80.
+
+LIMITATIONS OF COMINFO DEV2
+
+COMINFO dev2 is a byte-pattern inspector, not a disassembler or execution
+tracer. It does not follow control flow, identify dynamically constructed
+BDOS function numbers, prove CPU compatibility, calculate the resident system's actual
+TPA, or distinguish embedded data from executable code. A reported direct
+reference is a definite byte pattern, not proof that the path is executed.
+
+
+8. BDOSPROBE
+
+PURPOSE
+
+BDOSPROBE records the register-level result of selected documented BDOS calls.
+The CP/M program is named BDOSPRB.COM because CP/M filenames have an
+eight-character stem. Dev4 contains observational version, console,
+disk-state, allocation-vector, DPB, and current-user query calls plus one
+guarded same-drive selection probe.
+
+COMMANDS
+
+    BDOSPRB                 Run the CP/M version probe
+    BDOSPRB /CPM            Run the CP/M version probe
+    BDOSPRB /DISK           Login, current-disk and read-only vectors
+    BDOSPRB /MEM            Allocation-vector and DPB addresses
+    BDOSPRB /CONSOLE        Console input status
+    BDOSPRB /USER           Current user number (query only)
+    BDOSPRB /SELECT         Select current drive and verify public state
+    BDOSPRB /H              Command help (also /HELP)
+    BDOSPRB /INFO           Build and safety information
+    BDOSPRB /VER            Version (also /VERSION)
+
+DEV4 REPORT
+
+Every probe shows its function number and DE input. On return, dev4 reports A,
+BC, DE, HL, the condition flags, and the balanced stack pointer. It interprets
+only the documented result for that call. Other values are raw observations
+which may help compare implementations; they are not advertised as CP/M
+promises.
+
+Dev3 changes no disk or process state. `/USER` supplies E=FFH to function 32,
+queries twice, and reports whether the returned user number remained unchanged.
+It contains no set-user call. Future probes are admitted according
+to the safety matrix in BDOSPROBE-DESIGN.md in the source repository. Pure
+observations come first; writes, reset, and termination remain excluded from
+the ordinary probe.
+
+`/SELECT` first obtains the current drive with function 25. It snapshots the
+login and read-only vectors, passes only that same drive number to function 14,
+and compares all three values afterward. It accepts no drive argument and has
+no path for selecting a different drive. Any change is reported as a warning.
+
+VALIDATION
+
+Dev4 has passed native ZSM4/LINK builds and execution under z80pack in Z80 and
+Intel 8080 modes. Dev3 `/USER` has also been exercised successfully in user
+areas 0 and 3 on Montezuma Micro CP/M 2.2 in the TRS-80 emulator. Raw flags,
+SP, and undocumented registers may differ between implementations and are not
+conformance requirements. On that same Montezuma system, dev4 `/SELECT` passed
+from current drives A and B. Both runs preserved the selected drive, login
+vector 0003H, and read-only vector 0000H.
+
+
+9. BUILDING THE NATIVE TOOLS
+
+BUILD.SUB is the common rebuild script for DISKINFO, DPBCHK, FSCK, DISKEDIT,
+COMINFO and BDOSPROBE. Keep
+BUILD.SUB, the selected tool's MAC source, ZSM4.COM and LINK.COM on one drive.
+For example:
+
+    SUBMIT BUILD FSCK
+
+The argument is the program stem without an extension. Equivalent commands
+are SUBMIT BUILD DISKINFO, SUBMIT BUILD DPBCHK, SUBMIT BUILD DISKEDIT,
+SUBMIT BUILD COMINFO and SUBMIT BUILD BDOSPRB.
+BUILD.SUB performs:
+
+    ZSM4 tool=tool
+    LINK tool[A]
+
+SYSINFO is supplied prebuilt on the tools disk. Its current source uses the
+host z80asm build described in the repository and is not built by BUILD.SUB.
+
+
+10. SAFETY AND RESULT TERMINOLOGY
+
+The current information and checking tools are read-only. Nevertheless,
+preserve irreplaceable media before diagnostic work.
+
+PASS means a tested relationship agrees with the CP/M 2.2 rules used by the
+tool. WARN identifies something suspicious or nonstandard which does not by
+itself prove damage. FAIL or ERROR identifies a structural contradiction or
+an operation which could not be completed. Read each tool's version and
+limitations before treating a clean result as comprehensive.

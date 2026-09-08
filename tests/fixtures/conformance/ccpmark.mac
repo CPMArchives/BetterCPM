@@ -1,0 +1,57 @@
+; CCPMARK -- harmless command identity and public DU/tail recorder.
+; 07-Sep-2026.  Variants differ only in the printed identity.  RET is
+; intentional: the CCP must provide its ordinary transient return path.
+        ORG 0100H
+        LD DE,IDENT
+        LD C,9
+        CALL 5
+        LD C,25
+        CALL 5
+        ADD A,'A'
+        CALL OUT
+        LD A,'/'
+        CALL OUT
+        LD E,0FFH
+        LD C,32
+        CALL 5
+        CALL HEX
+        LD DE,TAILMSG
+        LD C,9
+        CALL 5
+        LD A,(80H)
+        LD B,A
+        LD HL,81H
+LOOP:   LD A,B
+        OR A
+        JR Z,DONE
+        LD A,(HL)
+        PUSH HL
+        PUSH BC
+        CALL OUT
+        POP BC
+        POP HL
+        INC HL
+        DJNZ LOOP
+DONE:   LD DE,NL
+        LD C,9
+        CALL 5
+        RET
+HEX:    PUSH AF
+        RRCA
+        RRCA
+        RRCA
+        RRCA
+        CALL NIB
+        POP AF
+NIB:    AND 0FH
+        ADD A,'0'
+        CP '9'+1
+        JR C,OUT
+        ADD A,7
+OUT:    LD E,A
+        LD C,2
+        JP 5
+IDENT:  DB 'MARK @ID@ DU ','$'
+TAILMSG: DB ' TAIL[','$'
+NL:     DB ']',13,10,'$'
+        END

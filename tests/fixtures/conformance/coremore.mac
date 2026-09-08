@@ -1,0 +1,126 @@
+; COREMORE -- additional public-interface checks for the conformance run.
+; 07-Sep-2026.  These cards fill two holes in the present suite runner.
+; No private BDOS addresses are used.  Run on disposable A: through D:.
+        ORG     0100H
+START:  LD      DE,PROMPT
+        LD      C,9
+        CALL    5
+        LD      HL,06000H
+        LD      DE,06001H
+        LD      BC,127
+        LD      (HL),0A5H
+        LDIR
+        LD      DE,06000H
+        LD      C,26
+        CALL    5
+        LD      DE,LINE
+        LD      C,10
+        CALL    5
+        LD      A,(LINE+1)
+        CP      2
+        JR      NZ,BAD420
+        LD      HL,(LINE+2)
+        LD      DE,04241H
+        OR      A
+        SBC     HL,DE
+        JR      NZ,BAD420
+        LD      HL,06000H
+        LD      B,128
+GUARD:  LD      A,(HL)
+        CP      0A5H
+        JR      NZ,BAD420
+        INC     HL
+        DJNZ    GUARD
+; Reading without another SETDMA proves that Function 10 did not change DMA.
+        LD      DE,FCB
+        LD      C,15
+        CALL    5
+        CP      0FFH
+        JR      Z,BAD420
+        LD      DE,FCB
+        LD      C,20
+        CALL    5
+        OR      A
+        JR      NZ,BAD420
+        LD      HL,(06000H)
+        LD      DE,04E4FH       ; 'ON' from BTONE.DAT
+        OR      A
+        SBC     HL,DE
+        JR      NZ,BAD420
+        LD      A,(LINE+1)
+        CP      2
+        JR      NZ,BAD420
+        LD      DE,P420
+        JR      SHOW420
+BAD420: LD      DE,F420
+SHOW420:LD      C,9
+        CALL    5
+; Select each drive through BDOS, then compare its pointers with the DPH
+; returned by the public BIOS vector.  A copy hidden inside BDOS won't do.
+        XOR     A
+        LD      (DRIVE),A
+NEXT:   LD      A,(DRIVE)
+        LD      E,A
+        LD      C,14
+        CALL    5
+        CP      0FFH
+        JR      Z,BAD519
+        LD      HL,(1)
+        LD      DE,24          ; WBOOT vector +24 = SELDSK vector
+        ADD     HL,DE
+        LD      A,(DRIVE)
+        LD      C,A
+        LD      E,0
+        CALL    VECTOR
+        LD      A,H
+        OR      L
+        JR      Z,BAD519
+        LD      DE,10
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (DPB),DE
+        INC     HL
+        INC     HL
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (ALV),DE
+        LD      C,31
+        CALL    5
+        LD      DE,(DPB)
+        OR      A
+        SBC     HL,DE
+        JR      NZ,BAD519
+        LD      C,27
+        CALL    5
+        LD      DE,(ALV)
+        OR      A
+        SBC     HL,DE
+        JR      NZ,BAD519
+        LD      A,(DRIVE)
+        INC     A
+        LD      (DRIVE),A
+        CP      4
+        JR      C,NEXT
+        LD      DE,P519
+        JR      FINISH
+BAD519: LD      DE,F519
+FINISH: LD      C,9
+        CALL    5
+        JP      0
+VECTOR: JP      (HL)
+DRIVE:  DB      0
+DPB:    DW      0
+ALV:    DW      0
+LINE:   DB      8,0,0,0,0,0,0,0,0,0
+FCB:    DB      0,'BTONE   DAT'
+        DB      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+PROMPT: DB      'COREMORE: type AB then Enter: $'
+P420:   DB      13,10,'0420 P R Separate line buffer, DMA guard and following read passed',13,10,'$'
+F420:   DB      13,10,'0420 F R Line buffer or DMA check failed',13,10,'$'
+P519:   DB      '0519 P R BDOS DPB/ALV match BIOS-owned DPHs on A through D',13,10,'$'
+F519:   DB      '0519 F R BDOS/BIOS resource pointer mismatch',13,10,'$'
+        END

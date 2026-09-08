@@ -1,0 +1,66 @@
+; KEYFEED -- temporary console provider at 9000H for CCP acquisition tests.
+; 07-Sep-2026.  Supplies case-sensitive bytes which the Model 4 keyboard
+; driver cannot presently type. Restore both public vectors after the last
+; byte; the host supplies the final CR so dispatch timing can be observed.
+        ORG 9000H
+START:  LD HL,(1)
+        LD DE,4
+        ADD HL,DE
+        LD (STATPTR),HL
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD (OLDSTAT),DE
+        DEC HL
+        LD DE,STATUS
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        LD HL,(1)
+        LD DE,7
+        ADD HL,DE
+        LD (INPTR),HL
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD (OLDIN),DE
+        DEC HL
+        LD DE,INPUT
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        RET
+STATUS: LD A,0FFH
+        RET
+INPUT:  PUSH HL
+        PUSH DE
+        LD HL,(NEXT)
+        LD A,(HL)
+        INC HL
+        LD (NEXT),HL
+        PUSH AF
+        LD A,(HL)
+        OR A
+        JR NZ,MORE
+        LD HL,(STATPTR)
+        LD DE,(OLDSTAT)
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        LD HL,(INPTR)
+        LD DE,(OLDIN)
+        LD (HL),E
+        INC HL
+        LD (HL),D
+@PRIME@
+MORE:   POP AF
+        POP DE
+        POP HL
+        RET
+STATPTR: DW 0
+INPTR: DW 0
+OLDSTAT: DW 0
+OLDIN: DW 0
+NEXT: DW KEYS
+KEYS: DB @KEYS@,0
+        END

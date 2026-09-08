@@ -5,16 +5,10 @@
         CSEG
         .PHASE  LY_EXT
         JP      EX_ENTRY
-        REPT    LY_EXT+00CH-$
-        DB      0
-        ENDM
         JP      AD_LOGIN
-        DB      0,0,0
         JP      AD_OPEN
-        REPT    LY_EXT+024H-$
-        DB      0
-        ENDM
         JP      AD_READ
+        JP      CL_NEXT
 
         INCLUDE core.inc
 CPTCOUNT        EQU     LY_SYS+094H
@@ -168,6 +162,38 @@ AD_INVOKE:
         LD      A,C
         OR      A
         RET
+
+ ; COM READER -- the CCP and CPXs may be overwritten after this point.
+; The module reader's idle FCB is borrowed, not its executable code.
+CL_NEXT:
+        PUSH HL
+        LD DE,LY_FCB
+        LD C,20
+        CALL COREBDOS
+        OR A
+        JR NZ,CL_END
+        POP HL
+        PUSH HL
+        LD DE,127
+        ADD HL,DE
+        LD DE,(LY_SYS+090H)
+        OR A
+        SBC HL,DE
+        JR NC,CL_BIG
+        POP DE
+        LD HL,LY_BUF
+        LD BC,128
+        LDIR
+        EX DE,HL
+        JR CL_NEXT
+CL_END:
+        POP HL
+        DEC A               ; EOF=1 is success; other errors stay nonzero
+        JP LY_COMDONE
+CL_BIG:
+        POP HL
+        LD A,1
+        JP LY_COMDONE
 
 EX_OLDSP:       DW      0
 BCX_MVAL:       DB      0

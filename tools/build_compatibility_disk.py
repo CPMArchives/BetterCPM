@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the first BetterCP/M disk carrying independent compatibility tools."""
+"""Build a BetterCP/M disk carrying the complete independent compatibility suite."""
 from __future__ import annotations
 
 import argparse
@@ -23,39 +23,39 @@ def main() -> None:
                         default=ROOT / "build/trs80/BetterCPM-Conformance-Drive-D-Full.dmk")
     parser.add_argument("--blank-output", type=Path,
                         default=ROOT / "build/trs80/BetterCPM-BIOSTEST-Blank-790K.dmk")
+    parser.add_argument("--system-only", action="store_true",
+                        help="build only the suite boot disk, without legacy scratch images")
     args = parser.parse_args()
-    entry = args.suite / "suite/build/ENTRYTST.COM"
-    bdos = args.suite / "suite/build/BDOSTEST.COM"
-    filetest = args.suite / "suite/build/FILETEST.COM"
-    randtest = args.suite / "suite/build/RANDTEST.COM"
-    dirtest = args.suite / "suite/build/DIRTEST.COM"
-    cputest = args.suite / "suite/build/CPUTEST.COM"
-    biostest = args.suite / "suite/build/BIOSTEST.COM"
+    programs = ("ENTRYTST", "BDOSTEST", "FILETEST", "RANDTEST", "DIRTEST",
+                "CONSTEST", "CCPTEST", "DISKTEST", "BIOSTEST", "ERRTEST",
+                "ECOTEST", "CPUTEST", "SCRATCH")
+    build = args.suite / "suite/build"
     payload = args.suite / "suite/runtime-payload"
-    mdir = ROOT / "third_party/montezuma/MDIR.COM"
-    era = ROOT / "build/utilities/ERA.COM"
-    fixtures = sorted(payload.glob("BT*.DAT"))
-    for path in (entry, bdos, filetest, randtest, dirtest, cputest, biostest,
-                 mdir, era, *fixtures):
+    bdos = build / "BDOSTEST.COM"
+    paths = [build / (name + ".COM") for name in programs]
+    paths += sorted(payload.glob("BT*.DAT"))
+    paths += [payload / "CPMTEST.CFG", args.suite / "external/sysinfo/SYSINFO.COM"]
+    for path in paths:
         if not path.is_file():
             raise SystemExit(f"missing compatibility input: {path}")
-    command = [
-        "python3", str(ROOT / "tools/build_trs80_boot.py"),
-        "--include", str(entry),
-        "--include", str(bdos),
-        "--include", str(filetest),
-        "--include", str(randtest),
-        "--include", str(dirtest),
-        "--include-user-as", f"1:DIRTEST.COM={dirtest}",
-        "--include", str(cputest),
-        "--include", str(biostest),
-        "--include", str(mdir),
-        "--include", str(era),
-    ]
-    for fixture in fixtures:
-        command.extend(("--include", str(fixture)))
+    # Keep the suite's published binaries tied to their published sources.
+    # A test disk made with a stray old COM is no yardstick for the new BIOS.
+    import hashlib
+    for line in (build / "SHA256SUMS.txt").read_text().splitlines():
+        digest, name = line.split()
+        if hashlib.sha256((build / name).read_bytes()).hexdigest() != digest:
+            raise SystemExit(f"suite checksum mismatch: {name}")
+    command = ["python3", str(ROOT / "tools/build_trs80_boot.py")]
+    for path in paths:
+        command.extend(("--include", str(path)))
+    command.extend(("--include-user-as", f"1:DIRTEST.COM={build / 'DIRTEST.COM'}"))
+    for name in ("BDSA.TMP", "BDSB.TMP"):
+        command.extend(("--include-as", f"{name}={bdos}"))
+    command.extend(("--include-as", f"COPYING.TXT={args.suite / 'LICENSE'}"))
     command.extend(("--output", str(args.output)))
     subprocess.run(command, cwd=ROOT, check=True)
+    if args.system_only:
+        return
     # BDOSTEST's multi-drive cases expect these conventional scratch fixtures.
     subprocess.run([
         "python3", str(ROOT / "tools/build_trs80_boot.py"),
@@ -68,11 +68,24 @@ def main() -> None:
         "--cross-fixture",
         "--output", str(args.drive_c_output),
     ], cwd=ROOT, check=True)
-    subprocess.run([
-        "python3", str(ROOT / "tools/build_trs80_boot.py"),
-        "--full-fixture",
-        "--output", str(args.drive_d_output),
-    ], cwd=ROOT, check=True)
+    # D: is a data-only capacity fixture.  Building it as a boot disk also
+    # installs the growing BetterCP/M utility collection, making the amount of
+    # filler stale whenever the distribution changes.
+    import build_trs80_boot as boot
+    from build_montezuma_extended_790k import build, RAW_SIZE
+    boot.FILESYSTEM_FIRST_SECTOR = 0
+    boot.BLOCK_COUNT = RAW_SIZE // boot.ALLOCATION_BLOCK_BYTES
+    raw = bytearray(b"\xe5" * RAW_SIZE)
+    full = bytearray(128 * 128)
+    full[-128:-120] = b"FULL-127"
+    filler_blocks = boot.BLOCK_COUNT - boot.FIRST_DATA_BLOCK - 9
+    boot.install_files(raw, [
+        ("BTFULL.DAT", bytes(full)),
+        ("BTREL.DAT", bytes(128)),
+        ("BTFILL.DAT", bytes(filler_blocks * boot.ALLOCATION_BLOCK_BYTES)),
+    ])
+    args.drive_d_output.parent.mkdir(parents=True, exist_ok=True)
+    args.drive_d_output.write_bytes(build(bytes(raw)))
     # Patch 2026-09-02: do not use build_trs80_boot.py for the controlled
     # BIOSTEST medium.  Every bootable image deliberately contains HELLO.COM,
     # so an image made that way is not a blank CP/M filesystem even when no

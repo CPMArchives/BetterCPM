@@ -4,6 +4,7 @@ from pathlib import Path
 import argparse,re,struct,subprocess,sys,json,hashlib
 from build_ccp import assemble
 from system_layout import LAYOUT as L
+from cpm_tools_bundle import files as cpm_tools_files
 ROOT=Path(__file__).resolve().parents[1]
 PLATFORM=ROOT/'src/platform/z80pack'
 TRACKS=77;SPT=26;RESERVED=5;SIZE=TRACKS*SPT*128
@@ -32,9 +33,16 @@ def main():
  def read(path):return (ROOT/path).read_text()
  # Rebuild common software from current source. These are portable artifacts;
  # target BIOS, disk code, tables and overlays are kept only in our output.
- for name in ('bdos','ccp','basic_cpx','hello_cpx','basic_transients','cpx_utility','rsx_utilities','rsxloader','hello_rsx','echo_rsx','fileloader','era','ren','type','disk_utilities'):
+ for name in ('bdos','ccp','basic_cpx','hello_cpx','rsxloader','hello_rsx','echo_rsx','fileloader','utilities'):
   subprocess.run([sys.executable,str(ROOT/'tools'/f'build_{name}.py')],check=True,stdout=subprocess.DEVNULL)
  bios_source=read('src/bios/bios.mac')
+ # cpmsim port 5 is its CP/M 2 RDR: input.  Keep the common unassigned-reader
+ # leaf for machines without a provider and substitute the z80pack binding
+ # without enlarging the tightly packed resident BIOS.
+ old_reader='BIOREADR:\n        LD      A,01AH\n        RET'
+ new_reader='BIOREADR:\n        IN      A,(5)\n        RET'
+ if old_reader not in bios_source:raise ValueError('common READER leaf changed')
+ bios_source=bios_source.replace(old_reader,new_reader)
  a=bios_source.index('BIOREAD:');b=bios_source.index('; LISTST',a)
  bios_source=bios_source[:a]+read('src/platform/z80pack/recordio.inc')+bios_source[b:]
  bios=asm('bios',bios_source.replace('        INCLUDE biosplat.inc',read('src/platform/z80pack/biosplat.inc')),L['BIOS'],L['FILE']-L['BIOS'])
@@ -94,10 +102,12 @@ def main():
  put(76,(ROOT/'build/system/rsxloader.bin').read_bytes(),1024)
  put(84,(ROOT/'build/ccp/ccp.rlm').read_bytes(),7*512)
  # CP/M 2.2, 1K allocation blocks, byte block numbers, 64 directory entries.
- files=[]
+ from sysgen_image import sysgen_image
+ files=[('SYSGEN.DAT',sysgen_image(bytes(resident),L['SYSTEM'],52,8,26))]
  for name in ('BASIC.CPX','HELLO.CPX'):files.append((name,(ROOT/'build/cpx'/name).read_bytes()))
  for f in sorted((ROOT/'build/utilities').glob('*.COM')):files.append((f.name,f.read_bytes()))
- for name in ('HELLO.RSX','ECHO.RSX'):files.append((name,(ROOT/'build/rsx'/name).read_bytes()))
+ for name,data in cpm_tools_files(ROOT):files.append((name,data))
+ for name in ('HELLO.RSX','ECHO.RSX','BATCHIO.RSX'):files.append((name,(ROOT/'build/rsx'/name).read_bytes()))
  files.append(('DISK.FDF',(ROOT/'third_party/montezuma/DISK.FDF').read_bytes()))
  # A small transient proves that load and warm return use this target BIOS.
  hello=bytes([0x11,0x0b,1,0x0e,9,0xcd,5,0,0xc3,0,0])+b'BetterCP/M on z80pack\r\n$'

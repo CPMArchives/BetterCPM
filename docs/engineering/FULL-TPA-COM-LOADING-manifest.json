@@ -1,0 +1,19 @@
+{
+  "tpa_bytes": 54273,
+  "maximum_com_bytes": 54272,
+  "rejected_com_bytes": 54400,
+  "files": {
+    "build/compatibility/load-boundary-20260908-082021/FIT/fixture.json": "0782d8a79bfaad1874a1f9b3ccd97ceb46598c0cec05ac76c22edf6f2291785e",
+    "build/compatibility/load-boundary-20260908-082021/FIT/screens.txt": "2b59eed219107983079542c1c93f648f5139cda15f51c058e9b4a73667ef67a1",
+    "build/compatibility/load-boundary-20260908-082021/FIT/FIT.COM": "fe14c012fde6cfa08de730988870d74a26cf66e4ac59ef7294860530b637aa8c",
+    "build/compatibility/load-boundary-20260908-082021/OVER/fixture.json": "5fd3c41a6152a09e79fbfbe5346cbbaaaefd941a15fc77101747b6c4a73e1df5",
+    "build/compatibility/load-boundary-20260908-082021/OVER/screens.txt": "44d0cb265f0813635eea99456b101d1ba51f2933a2b6ed33f094293dd286e614",
+    "build/compatibility/load-boundary-20260908-082021/OVER/OVER.COM": "ca826462396c22f5a79405900d291032e90663be27a3261e4e6e059eb4c9e4a4",
+    "build/compatibility/load-boundary-20260908-082633/FIT/fixture.json": "0782d8a79bfaad1874a1f9b3ccd97ceb46598c0cec05ac76c22edf6f2291785e",
+    "build/compatibility/load-boundary-20260908-082633/FIT/screens.txt": "2b59eed219107983079542c1c93f648f5139cda15f51c058e9b4a73667ef67a1",
+    "build/compatibility/load-boundary-20260908-082633/FIT/FIT.COM": "759d2f7f180cca27b2b54b4607f94e208cc9ec511eff6625aabd907a7dc39e17",
+    "build/compatibility/load-boundary-20260908-082633/OVER/fixture.json": "5fd3c41a6152a09e79fbfbe5346cbbaaaefd941a15fc77101747b6c4a73e1df5",
+    "build/compatibility/load-boundary-20260908-082633/OVER/screens.txt": "44d0cb265f0813635eea99456b101d1ba51f2933a2b6ed33f094293dd286e614",
+    "build/compatibility/load-boundary-20260908-082633/OVER/OVER.COM": "36df2d294e1e1ea2a77b902f558405fb03bc8c2babe4f5ef0489c45a2c88b8f5"
+  }
+}
