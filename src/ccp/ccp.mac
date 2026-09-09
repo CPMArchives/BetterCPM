@@ -56,9 +56,9 @@ CCP_LOOP:
 ; all observe one coherent state.  Accepted forms are B:, 5:, and C3:.
         CALL    CCP_NAVIGATE
         JR      C,CCP_LOOP
-; Patch 2026-09-02: production CPXs now get first refusal.  During the BASIC
+; Patch 2026-09-02: production CPXs now get first refusal.  During the RCP
 ; proof transition, the old resident commands remain below as fallbacks; this
-; ordering ensures ordinary DIR actually verifies BASIC.CPX when it is loaded.
+; ordering ensures ordinary DIR actually verifies RCP.CPX when it is loaded.
         CALL    CPX_DISPATCH
         JR      C,CCP_LOOP
         LD      A,(CCP_COUNT)
@@ -1104,7 +1104,7 @@ CCP_USERSET:
 ; text and B=length.  Carry set means handled; carry clear passes to the next
 ; CPX.  A CPX may alter ordinary registers but must preserve SP, IX, IY and the
 ; command buffer. CPXs get first refusal; currently retained core commands are
-; transition fallbacks and disappear only after BASIC.CPX is fully verified.
+; transition fallbacks and disappear only after RCP.CPX is fully verified.
 CPX_DISPATCH:
         LD      HL,(CPXHEAD)
 CPX_NEXT:

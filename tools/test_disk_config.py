@@ -67,7 +67,7 @@ def main():
         (work/'probe.mac').write_text(re.sub(r'0EF([0-9A-F]{2})H', lambda m: f"0{LAYOUT['BIOS']+int(m[1],16):04X}H", '\n'.join(code)+'\n'))
         subprocess.run([str(ASM),'-fb','-oprobe.com','probe.mac'],cwd=work,check=True,stdout=subprocess.DEVNULL)
         b=ROOT/'build'
-        files=[('PROBE.COM',(work/'probe.com').read_bytes()),('BASIC.CPX',(b/'cpx/BASIC.CPX').read_bytes())]
+        files=[('PROBE.COM',(work/'probe.com').read_bytes()),('RCP.CPX',(b/'cpx/RCP.CPX').read_bytes())]
         disk=install((b/'trs80/boot.bin').read_bytes(),(b/'trs80/stage1.bin').read_bytes(),
                      (b/'system/resident.bin').read_bytes(),(b/'ccp/ccp.rlm').read_bytes(),files)
         (work/'a.dmk').write_bytes(disk)

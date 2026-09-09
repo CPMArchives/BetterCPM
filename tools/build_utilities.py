@@ -20,10 +20,10 @@ ROOT = Path(__file__).resolve().parents[1]
 # emit more than one command, and BUILD_BATCH also emits BATCHIO.RSX because
 # XSUB cannot be built or tested sensibly without its protected companion.
 BUILDERS = (
-    "disk_utilities",       # CONFIG.COM, DUP.COM
+    "disk_utilities",       # CONFIG.COM, DUP.COM, SYSGEN.COM
     "cpx_utility",          # CPX.COM
     "rsx_utilities",        # RSX.COM and its diagnostic companions
-    "basic_transients",     # DIR.COM, USER.COM, CLR.COM, VER.COM
+    "rcp_transients",       # DIR.COM, USER.COM, CLR.COM, VER.COM
     "era",
     "ren",
     "type",

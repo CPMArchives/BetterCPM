@@ -227,7 +227,7 @@ def main() -> None:
     args = parser.parse_args()
     resident_path = ROOT / "build/system/resident.bin"
     command_path = ROOT / "build/ccp/ccp.rlm"
-    basic_cpx_path = ROOT / "build/cpx/BASIC.CPX"
+    basic_cpx_path = ROOT / "build/cpx/RCP.CPX"
     hello_cpx_path = ROOT / "build/cpx/HELLO.CPX"
     hello_rsx_path = ROOT / "build/rsx/HELLO.RSX"
     fdf_rsx_path = ROOT / "build/rsx/FDF.RSX"
@@ -247,6 +247,7 @@ def main() -> None:
     warm_path = ROOT / "build/utilities/WARM.COM"
     config_path = ROOT / "build/utilities/CONFIG.COM"
     dup_path = ROOT / "build/utilities/DUP.COM"
+    sysgen_path = ROOT / "build/utilities/SYSGEN.COM"
     stat_path = ROOT / "build/utilities/STAT.COM"
     submit_path = ROOT / "build/utilities/SUBMIT.COM"
     xsub_path = ROOT / "build/utilities/XSUB.COM"
@@ -254,7 +255,7 @@ def main() -> None:
     for path in (resident_path, command_path, basic_cpx_path, hello_cpx_path,
                  hello_rsx_path, echo_rsx_path, batchio_rsx_path, fdf_rsx_path, cpx_utility_path, rsx_utility_path,
                  rsxtest_path, rsx2test_path, era_path, ren_path, type_path, dir_path,
-                 user_path, clr_path, ver_path, warm_path, config_path, dup_path, stat_path,
+                 user_path, clr_path, ver_path, warm_path, config_path, dup_path, sysgen_path, stat_path,
                  submit_path, xsub_path, fdf_path):
         if not path.is_file():
             raise SystemExit(f"missing system-image input: {path}")
@@ -348,12 +349,13 @@ def main() -> None:
                      ("WARM.COM", warm_path.read_bytes()),
                      ("CONFIG.COM", config_path.read_bytes()),
                      ("DUP.COM", dup_path.read_bytes()),
+                     ("SYSGEN.COM", sysgen_path.read_bytes()),
                      ("STAT.COM", stat_path.read_bytes()),
                      ("SUBMIT.COM", submit_path.read_bytes()),
                      ("XSUB.COM", xsub_path.read_bytes()),
                      ("DISK.FDF", fdf_path.read_bytes()),
                      ("FDF.RSX", fdf_rsx_path.read_bytes()),
-                     ("BASIC.CPX", basic_cpx_path.read_bytes()),
+                     ("RCP.CPX", basic_cpx_path.read_bytes()),
                      ("HELLO.CPX", hello_cpx_path.read_bytes()),
                      ("HELLO.RSX", hello_rsx_path.read_bytes()),
                      ("ECHO.RSX", echo_rsx_path.read_bytes()),

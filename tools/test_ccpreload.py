@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 RELOADER = ROOT / "build/trs80/ccpreload.bin"
 MODULE = ROOT / "build/ccp/ccp.rlm"
 CCP = ROOT / "build/ccp/ccp.bin"
-BASIC_MODULE = ROOT / "build/cpx/BASIC.CPX"
+BASIC_MODULE = ROOT / "build/cpx/RCP.CPX"
 HELLO_MODULE = ROOT / "build/cpx/HELLO.CPX"
 BASE = LAYOUT["RELOADER"]
 MODULE_SOURCE = 0x6000
@@ -68,7 +68,7 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
             machine.mem[source:source + 512] = padded[offset:offset + 512]
 
     install_slots(0, module)
-    # Protected filename-loader test double. OPEN selects BASIC/HELLO from the
+    # Protected filename-loader test double. OPEN selects RCP/HELLO from the
     # first stem byte; NEXT copies a 512-byte unit and advances; RESET rewinds.
     # Keep the test provider below every possible CCP destination.  The
     # old D010h stubs became part of the 53K CCP image after layout compaction
@@ -99,18 +99,18 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
         machine.mem[0x9000:0x9000 + len(basic_module)] = basic_module
         machine.mem[0xA000:0xA000 + len(hello_module)] = hello_module
         machine.mem[(LAYOUT["SYSTEM"] + 0x94)] = 2
-        machine.mem[(LAYOUT["SYSTEM"] + 0x96):(LAYOUT["SYSTEM"] + 0x9E)] = b"BASIC   "
+        machine.mem[(LAYOUT["SYSTEM"] + 0x96):(LAYOUT["SYSTEM"] + 0x9E)] = b"RCP     "
         machine.mem[(LAYOUT["SYSTEM"] + 0x9E):(LAYOUT["SYSTEM"] + 0xA6)] = b"HELLO   "
         cpx_allocation = (struct.unpack_from("<H", basic_module, 14)[0] +
                           struct.unpack_from("<H", hello_module, 14)[0])
     elif with_cpx:
         payload = bytes((0, 0, 4, 0x80, 0xC9, 0))
-        file_module = make_module(name="BASIC", version=(0, 0), commands=[],
+        file_module = make_module(name="RCP", version=(0, 0), commands=[],
                                   linked_base=0x8000, code=payload,
                                   relocations=[2])
         machine.mem[0x9000:0x9000 + len(file_module)] = file_module
         machine.mem[(LAYOUT["SYSTEM"] + 0x94)] = 1
-        machine.mem[(LAYOUT["SYSTEM"] + 0x96):(LAYOUT["SYSTEM"] + 0x9E)] = b"BASIC   "
+        machine.mem[(LAYOUT["SYSTEM"] + 0x96):(LAYOUT["SYSTEM"] + 0x9E)] = b"RCP     "
         cpx_allocation = 0x100
 
     gateway = target + allocation + cpx_allocation
@@ -155,7 +155,7 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
         require(bytes(machine.mem[basic_base + 4:basic_base + len(relocated(
                     BASIC_MODULE.read_bytes(), basic_base))]) ==
                 relocated(BASIC_MODULE.read_bytes(), basic_base)[4:],
-                "linking HELLO corrupted relocated BASIC.CPX payload")
+                "linking HELLO corrupted relocated RCP.CPX payload")
         require(bytes(machine.mem[hello_base:hello_base + len(relocated(
                     HELLO_MODULE.read_bytes(), hello_base))]) ==
                 relocated(HELLO_MODULE.read_bytes(), hello_base),
@@ -192,7 +192,7 @@ def main() -> None:
     )
     two_cpx_target = 0xBFFD - allocation - cpx_allocation
     run_at(two_cpx_target, with_two_cpx=True)
-    print("real BASIC and HELLO modules restored, relocated, and linked")
+    print("real RCP and HELLO modules restored, relocated, and linked")
 
 
 if __name__ == "__main__":

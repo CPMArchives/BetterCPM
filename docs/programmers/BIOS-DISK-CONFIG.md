@@ -154,9 +154,11 @@ Checks for this change:
 ## CONFIG/DUP
 
 The transient menus, runtime FDF parser and DUP formatting operation are
-implemented. See [CONFIG/DUP usage and limits](CONFIG-DUP.md). Copy and disk-error checking use standard BIOS vectors; SYSGEN persistence
-remains future work; diskdefs conversion remains
-deferred in both directions.
+implemented. See [CONFIG/DUP/SYSGEN usage and limits](CONFIG-DUP.md). Copy,
+disk-error checking and full-system installation use standard BIOS vectors.
+CONFIG H saves current settings on A:, while standalone SYSGEN installs the
+complete reserved system area on a compatible target. Diskdefs conversion
+remains deferred in both directions.
 
 ## Optional format mapper
 

@@ -77,9 +77,9 @@ def main() -> None:
         require("NEW      DAT" in output and "A0>" in output,
                 "same-drive qualified rename failed or changed current DU")
 
-        # Removing BASIC.CPX must expose the ordinary transient fallback.
+        # Removing RCP.CPX must expose the ordinary transient fallback.
         build_image(drive_a, ("OLD.DAT", fixture))
-        run("CPX UNLOAD BASIC", drive_a, drive_b, "REN NEW.DAT=OLD.DAT")
+        run("CPX UNLOAD RCP", drive_a, drive_b, "REN NEW.DAT=OLD.DAT")
         output = run("DIR NEW.DAT", drive_a, drive_b)
         require("NEW      DAT" in output,
                 "transient REN.COM fallback did not rename its source")

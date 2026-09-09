@@ -42,7 +42,7 @@ def check(path: Path, name: bytes, version: tuple[int, int],
 
 
 def main() -> None:
-    check(ROOT / "build/cpx/BASIC.CPX", b"BASIC", (0, 2),
+    check(ROOT / "build/cpx/RCP.CPX", b"RCP", (0, 2),
           (b"DIR", b"ERA", b"TYPE", b"REN", b"SAVE", b"USER", b"CLR", b"VER"))
     check(ROOT / "build/cpx/HELLO.CPX", b"HELLO", (0, 1), (b"HELLO",))
     print("BCPX v1 identity, ABI, layout, relocation, metadata, and checksum passed")

@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 COMPONENTS = (
-    "bdos", "ccp", "ccpreload", "basic_cpx", "hello_cpx",
+    "bdos", "ccp", "ccpreload", "rcp_cpx", "hello_cpx",
     "hello_rsx", "echo_rsx", "fdf_rsx", "rsxloader",
     "fileloader", "system", "utilities", "trs80_boot",
 )

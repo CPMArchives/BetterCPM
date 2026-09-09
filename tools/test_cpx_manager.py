@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify runtime BASIC.CPX list, unload, and reload in one boot session."""
+"""Verify runtime RCP.CPX list, unload, and reload in one boot session."""
 from __future__ import annotations
 
 import subprocess
@@ -17,7 +17,7 @@ def main() -> None:
         if not path.is_file():
             raise SystemExit(f"missing CPX manager test input: {path}")
     commands = (
-        "CPX LOAD HELLO", "CPX LIST", "HELLO", "CPX UNLOAD BASIC",
+        "CPX LOAD HELLO", "CPX LIST", "HELLO", "CPX UNLOAD RCP",
         "CPX LIST", "HELLO", "CPX UNLOAD HELLO", "CPX LIST",
         "CPX /V", "HELLO",
     )
@@ -34,9 +34,9 @@ def main() -> None:
         subprocess.run(invocation, cwd=temporary, check=True)
         screen = Path(temporary, "trs80-text-0.bin").read_bytes()[:80 * 24]
     ordered = (
-        b"BASIC : DIR, ERA, TYPE, REN, SAVE, USER, CLR, VER", b"HELLO : HELLO",
+        b"RCP   : DIR, ERA, TYPE, REN, SAVE, USER, CLR, VER", b"HELLO : HELLO",
         f"TPA available: {(LAYOUT['TPA'] - 0x100) // 1024 - 0}K".encode(), b"A0>HELLO", b"Hello from HELLO.CPX",
-        b"A0>CPX UNLOAD BASIC", b"HELLO : HELLO",
+        b"A0>CPX UNLOAD RCP", b"HELLO : HELLO",
         b"A0>HELLO", b"Hello from HELLO.CPX", b"A0>CPX UNLOAD HELLO",
         b"No CPXs loaded", f"TPA available: {(LAYOUT['TPA'] - 0x100) // 1024 - 0}K".encode(),
         b"Command Processor Extension facility: API 1.0; implementation 1.2",

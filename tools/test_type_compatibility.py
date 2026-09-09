@@ -74,7 +74,7 @@ def main() -> None:
         require("LINE 30" in continued,
                 "space did not continue TYPE /P to the final page")
 
-        output = run("CPX UNLOAD BASIC", drive_a, drive_b,
+        output = run("CPX UNLOAD RCP", drive_a, drive_b,
                      "TYPE README.TXT\\r")
         require("DOLLAR $ SIGN" in output and "HIDDEN" not in output,
                 "transient TYPE.COM fallback did not display the file")

@@ -43,7 +43,7 @@ def main() -> None:
     require(RSX_INCLUDE.read_text(encoding="ascii") == render_manager("RSX", "RS_VERSION"),
             "src/utilities/rsxvers.inc is stale")
     banner = f"BetterCP/M {rows['BetterCP/M']['implementation_version']}"
-    for relative in ("src/ccp/ccp.mac", "src/cpx/basic.mac"):
+    for relative in ("src/ccp/ccp.mac", "src/cpx/rcp.mac"):
         text = (ROOT / relative).read_text(encoding="ascii")
         require(banner in text, f"{relative} does not expose {banner}")
     readme = (ROOT / "README.md").read_text(encoding="utf-8")

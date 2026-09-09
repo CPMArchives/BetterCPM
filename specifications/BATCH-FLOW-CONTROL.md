@@ -4,8 +4,8 @@ Status: full SUBMIT/XSUB compatibility confirmed for 1.0; extended flow features
 
 ## Confirmed release boundary
 
-The core CCP's built-in command inventory is LOAD, JUMP, GO, PEEK, POKE and SAVE.
-BASIC.CPX supplies the other standard CP/M resident commands. Full SUBMIT/XSUB behavioral
+The core CCP's built-in command inventory is GET, JUMP, PEEK/P, POKE, GO and SAVE.
+RCP.CPX supplies the other standard CP/M resident commands. Full SUBMIT/XSUB behavioral
 compatibility ships in 1.0. Flow control and further batch extensions are loadable
 CPX features; the extended language below is not automatically a mandatory 1.0
 inventory. Qualify original SUBMIT/XSUB syntax and workflows independently of the
@@ -87,4 +87,3 @@ source and interpretation policy.
 The design progression is:
 
 **CP/M SUBMIT -> ZEX/XSUB-style automation -> ZCPR3-style flow control.**
-

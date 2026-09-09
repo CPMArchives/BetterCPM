@@ -113,7 +113,7 @@ applicable transient fallbacks are verified.
 | CP/M utility/workflow | Compatibility purpose | BetterCP/M treatment | Status | Required evidence |
 |---|---|---|---|---|
 | `MOVCPM.COM` | Configure a CP/M system for a memory size and relocate its resident image | BetterCP/M configuration/build replacement; literal DRI image relocation is not portable | Not started | Equivalent supported-memory configuration and boot tests |
-| `SYSGEN.COM` | Transfer or install the bootable system image | Platform-aware BetterCP/M system installer | Not started | Reproducible install/readback/boot tests per platform |
+| `SYSGEN.COM` | Transfer or install the bootable system image | Install running A: on a compatible prepared target; preserve files and verify every system record | Model 4 implementation complete | Reproducible install/readback/boot test passes on trs80gp; other adapters require writable SYSTEM targets |
 | Vendor `FORMAT` tools | Prepare physical media for a selected geometry | BetterCP/M format utility using platform drive descriptors | Not started | Geometry, skew, verify, bad/error, and cross-tool image tests |
 | Montezuma `CONFIG` workflow | Select and edit drive formats and system defaults | BetterCP/M `CONFIG`, including preset and field-level editing | Designed, not implemented | Saved/default profile, validation, cpmtools conversion, and reboot tests |
 

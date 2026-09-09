@@ -33,7 +33,7 @@ def main():
  def read(path):return (ROOT/path).read_text()
  # Rebuild common software from current source. These are portable artifacts;
  # target BIOS, disk code, tables and overlays are kept only in our output.
- for name in ('bdos','ccp','basic_cpx','hello_cpx','rsxloader','hello_rsx','echo_rsx','fileloader','utilities'):
+ for name in ('bdos','ccp','rcp_cpx','hello_cpx','rsxloader','hello_rsx','echo_rsx','fileloader','utilities'):
   subprocess.run([sys.executable,str(ROOT/'tools'/f'build_{name}.py')],check=True,stdout=subprocess.DEVNULL)
  bios_source=read('src/bios/bios.mac')
  # cpmsim port 5 is its CP/M 2 RDR: input.  Keep the common unassigned-reader
@@ -104,7 +104,7 @@ def main():
  # CP/M 2.2, 1K allocation blocks, byte block numbers, 64 directory entries.
  from sysgen_image import sysgen_image
  files=[('SYSGEN.DAT',sysgen_image(bytes(resident),L['SYSTEM'],52,8,26))]
- for name in ('BASIC.CPX','HELLO.CPX'):files.append((name,(ROOT/'build/cpx'/name).read_bytes()))
+ for name in ('RCP.CPX','HELLO.CPX'):files.append((name,(ROOT/'build/cpx'/name).read_bytes()))
  for f in sorted((ROOT/'build/utilities').glob('*.COM')):files.append((f.name,f.read_bytes()))
  for name,data in cpm_tools_files(ROOT):files.append((name,data))
  for name in ('HELLO.RSX','ECHO.RSX','BATCHIO.RSX'):files.append((name,(ROOT/'build/rsx'/name).read_bytes()))

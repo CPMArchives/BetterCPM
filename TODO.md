@@ -44,36 +44,41 @@ feature before qualifying the core.
 - [x] Measure and publish the memory cost of the core, buffers, persistent
   DATA, installed RSXs, CPXs, and CCP.
 
-## Command environment and BASIC.CPX
+## Command environment and RCP.CPX
 
-Agreed 1.0 boundary: the stock CCP contains only LOAD, JUMP, GO, PEEK, POKE and SAVE
-as built-in commands. BASIC.CPX supplies the other standard CP/M resident commands.
+Agreed 1.0 boundary: the stock CCP contains only GET, JUMP, PEEK/P, POKE, GO and
+SAVE as built-in commands. RCP.CPX supplies DIR, ERA, TYPE, REN, USER, CLS, VER,
+COPY and MOVE. The contracts are fixed in `docs/architecture/16 Resident Command
+Set.txt`; implementation remains a later command-environment milestone.
 Full SUBMIT/XSUB compatibility is required; further flow-control functionality
 is supplied through loadable CPXs rather than added to the core CCP.
 
-- [ ] Move SAVE from BASIC.CPX into the stock CCP and qualify memory-image
-  preservation; it must work without loading BASIC.CPX or a transient.
+- [ ] Move SAVE from RCP.CPX into the stock CCP and qualify memory-image
+  preservation; it must work without loading RCP.CPX or a transient.
 - [ ] Specify and qualify the six core commands and remove transitional
-  standard-command copies after BASIC.CPX qualification.
+  standard-command copies after RCP.CPX qualification.
 - [x] Qualify full SUBMIT/XSUB compatibility with original command files and
   submitted-input workflows, including error/abort and warm-boot behavior.
 
-- [x] Add stock `USER` behavior to `BASIC.CPX`.
-- [x] Make the intended BASIC command inventory `DIR`, `ERA`, `REN`, `SAVE`,
+- [x] Add stock `USER` behavior to `RCP.CPX`.
+- [x] Complete the transitional RCP command inventory `DIR`, `ERA`, `REN`, `SAVE`,
   `TYPE`, `USER`, plus the BetterCP/M extensions `CLR` and `VER`.
 - [x] Supply matching transient `DIR.COM`, `ERA.COM`, `REN.COM`, `TYPE.COM`,
   `USER.COM`, `CLR.COM`, and `VER.COM` fallbacks. They must reproduce the
-  corresponding BASIC.CPX behavior and must not acquire a divergent
+  corresponding RCP.CPX behavior and must not acquire a divergent
   transient-only feature set.
 - [x] Keep `SAVE` resident-only: a transient `SAVE.COM` would overwrite the
   TPA contents that it is supposed to save.
 - [ ] Remove the transitional command copies from the core CCP only after the
   CPX implementations and applicable transient fallbacks are verified.
-- [ ] Remove transitional core `VER` now that identical BASIC.CPX and `VER.COM`
+- [ ] Remove transitional core `VER` now that identical RCP.CPX and `VER.COM`
   implementations are verified.
 - [x] Provide transient-only `WARM.COM` for scripts and testing. Interactive
   users retain canonical, disk-independent `Ctrl-C` warm boot; `WARM` does not
-  belong in BASIC.CPX.
+  belong in RCP.CPX.
+- [ ] Finalize RCP.CPX by removing SAVE after its CCP migration, renaming CLR to
+  CLS, and adding COPY and MOVE with both source/destination and `dest:=source`
+  syntax.
 - [ ] Implement the canonical named-directory map in protected, persistent OS
   DATA, as confirmed by the user. Names resolve to drive/user pairs. The map
   survives transient execution and CCP reconstruction/warm boot; the CCP and
@@ -113,8 +118,10 @@ compatibility rerun, not a new implementation.
 - [ ] Implement `DDT.COM`.
 - [ ] Implement a BetterCP/M `MOVCPM.COM` equivalent for supported memory and
   resident-system configurations.
-- [ ] Implement a platform-aware BetterCP/M `SYSGEN.COM` equivalent for
-  installing, retrieving, and verifying bootable system images.
+- [x] Implement `SYSGEN.COM` installation of the running A: system on a
+  compatible prepared target, with record-by-record readback, file-area
+  preservation and a cold-boot acceptance test. Image retrieval remains a
+  possible later extension rather than an alpha installation requirement.
 - [ ] Specify and compare each replacement against reference CP/M behavior;
   matching names alone do not establish compatibility.
 
@@ -168,13 +175,13 @@ directory utility unless it provides genuine additional value.
 
 Complete these stages in order:
 
-1. [ ] Finish reliable disk formatting (option A), including validation,
+1. [x] Finish reliable disk formatting (option A), including validation,
    failure reporting, and verification of the resulting disk images.
 2. [x] Implement disk copying (option B) and checking disks for errors (option C),
    sharing the formatter's verification path and restoring temporary destination
    configuration. Continue broader media/platform qualification with formatting.
-3. [ ] Stabilize the current CONFIG/DUP work, then implement CONFIG option H
-   (SYSGEN) to save configuration and install a verified bootable system.
+3. [x] Stabilize CONFIG/DUP, implement CONFIG H to save current A: defaults,
+   and provide standalone SYSGEN to install a verified bootable system.
 4. [ ] After DUP and CONFIG H are complete, discuss which remaining settings
    belong in a modern CP/M implementation before implementing more CONFIG
    menus. Review MM's settings as a reference: retain useful portable settings,

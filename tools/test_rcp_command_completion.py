@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exercise newly completed BASIC.CPX and transient command paths."""
+"""Exercise newly completed RCP.CPX and transient command paths."""
 from __future__ import annotations
 
 import subprocess
@@ -34,8 +34,8 @@ def main() -> None:
             raise SystemExit(f"missing completed-command test input: {path}")
 
     output = run("CPX LIST")
-    require("BASIC : DIR, ERA, TYPE, REN, SAVE, USER, CLR, VER" in output,
-            "CPX LIST did not publish the completed BASIC inventory")
+    require("RCP   : DIR, ERA, TYPE, REN, SAVE, USER, CLR, VER" in output,
+            "CPX LIST did not publish the completed RCP inventory")
 
     output = run("USER 5")
     require("A5>" in output, "resident USER did not select user 5")
@@ -74,7 +74,7 @@ def main() -> None:
     require(output.count("A0>") >= 2,
             "transient WARM.COM did not complete through a fresh prompt")
 
-    print("completed BASIC commands and DIR/USER/CLR/VER/WARM transients passed")
+    print("completed RCP commands and DIR/USER/CLR/VER/WARM transients passed")
 
 
 if __name__ == "__main__":

@@ -37,7 +37,7 @@ CRSTART:
 CRBODY:
         LD      SP,CRSTKTOP
 ; 07-Sep-2026 -- a BIOS caller may leave another physical drive selected
-; without changing BDOS's cached A: context. Do not reload BASIC.CPX from
+; without changing BDOS's cached A: context. Do not reload RCP.CPX from
 ; that drive using A:'s old DPB. Invalidate before the first file lookup.
         LD      DE,0FFFFH
         LD      C,37
@@ -63,15 +63,25 @@ CRCPXLP:
         OR      A
         JR      Z,CRCCP
         LD      HL,(CRTPTR)
-        XOR     A               ; filename extension is CPX
-        CALL    FLOPEN
-        JP      NZ,CRFAIL
-        LD      A,1
-        LD      (CRFILE),A
-        LD      HL,(CRTPTR)
+        PUSH    HL
         LD      DE,8
         ADD     HL,DE
         LD      (CRTPTR),HL
+        POP     HL
+        XOR     A               ; filename extension is CPX
+        CALL    FLOPEN
+        JR      Z,CROPEN
+; 08-Sep-2026 -- SYSGEN writes the complete protected system but does not
+; copy ordinary files.  A newly installed disk must therefore reach the
+; bare CCP when an optional CPX named by the old profile is not yet present.
+; Once a carrier opens, malformed data still takes the hard failure path.
+        LD      A,(CRCOUNT)
+        DEC     A
+        LD      (CRCOUNT),A
+        JR      CRCPXLP
+CROPEN:
+        LD      A,1
+        LD      (CRFILE),A
         LD      HL,CRCPXMAG
         LD      (CRMAGPTR),HL
         CALL    CRLOAD

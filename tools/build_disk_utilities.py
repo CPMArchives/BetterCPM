@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build CONFIG and DUP as ordinary transient programs; no resident slots."""
+"""Build CONFIG, DUP and SYSGEN as ordinary transient programs."""
 from pathlib import Path
 import argparse
 import json
@@ -19,7 +19,7 @@ def main():
     out=ROOT/'build/utilities'
     out.mkdir(parents=True,exist_ok=True)
     builtin=builtin_source()
-    for stem in ('config','dup'):
+    for stem in ('config','dup','sysgen'):
         source=ROOT/f'src/utilities/{stem}.mac'
         text=source.read_text().replace('        INCLUDE disk/sysgen.inc',
             (ROOT/'src/utilities/disk/sysgen.inc').read_text()).replace('        INCLUDE disk/common.inc',

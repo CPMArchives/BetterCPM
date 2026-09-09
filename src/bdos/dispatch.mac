@@ -116,8 +116,8 @@ BF_SETIO:
         JP      BDOS_RETURN
 
 ; BetterCP/M Function 200, provisional CPX profile control. D selects the
-; known module (1 BASIC, 2 HELLO); E=0 queries it, E=1 loads it, and E=2
-; unloads it. Canonical reconstruction order is BASIC followed by HELLO.
+; known module (1 RCP, 2 HELLO); E=0 queries it, E=1 loads it, and E=2
+; unloads it. Canonical reconstruction order is RCP followed by HELLO.
 BF_CPXCTL:
         LD      A,D
         CP      1
@@ -191,7 +191,7 @@ BCX_BAD:
         LD      A,0FFH
         JP      BDOS_RETURN
 
-BCX_NBASIC:    DB      'BASIC   '
+BCX_NBASIC:    DB      'RCP     '
 BCX_NHELLO:    DB      'HELLO   '
 
 BF_RSXCTL:

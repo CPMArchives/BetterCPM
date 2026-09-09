@@ -1123,14 +1123,14 @@ def main() -> None:
 
     # BetterCP/M's provisional Function 200 owns active CPX-profile mutation.
     cpu.mem[0xC094], cpu.mem[0xC095] = 1, 1
-    cpu.mem[0xC096:0xC09E] = b"BASIC   "
+    cpu.mem[0xC096:0xC09E] = b"RCP     "
     cpu.c, cpu.d, cpu.e = 200, 1, 0
     cpu.run(BDOS_BASE)
-    require(cpu.a == 1, "CPX control did not report BASIC.CPX loaded")
+    require(cpu.a == 1, "CPX control did not report RCP.CPX loaded")
     cpu.c, cpu.d, cpu.e = 200, 1, 2
     cpu.run(BDOS_BASE)
     require(cpu.a == 0 and cpu.mem[0xC094] == 0 and cpu.mem[0xC095] == 0,
-            "CPX control did not unload the active BASIC profile")
+            "CPX control did not unload the active RCP profile")
     cpu.c, cpu.d, cpu.e = 200, 2, 1
     cpu.run(BDOS_BASE)
     require(cpu.a == 0 and cpu.mem[0xC094] == 1 and
@@ -1141,9 +1141,9 @@ def main() -> None:
     cpu.run(BDOS_BASE)
     require(cpu.a == 0 and cpu.mem[0xC094] == 2 and
             cpu.mem[0xC095] == 3 and
-            bytes(cpu.mem[0xC096:0xC09E]) == b"BASIC   " and
+            bytes(cpu.mem[0xC096:0xC09E]) == b"RCP     " and
             bytes(cpu.mem[0xC09E:0xC0A6]) == b"HELLO   ",
-            "CPX control did not build canonical BASIC/HELLO order")
+            "CPX control did not build canonical RCP/HELLO order")
     cpu.c, cpu.d, cpu.e = 200, 3, 0
     cpu.run(BDOS_BASE)
     require(cpu.a == 0xFF, "CPX control accepted an unknown module")

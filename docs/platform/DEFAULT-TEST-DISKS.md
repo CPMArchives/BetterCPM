@@ -19,7 +19,9 @@ A uses the existing cylinder-based SPT and reserved-system-area convention;
 B-D use one CP/M track per surface and no reserved system area. Capacity
 names describe allocation space before directory/file use. No RSX is needed.
 Cold boot restores these records from the system image; CONFIG changes survive
-warm boot. SYSGEN persistence is not yet implemented.
+warm boot. CONFIG H saves current settings into A:'s resident carrier.
+Standalone SYSGEN copies and verifies the complete reserved area onto a target
+configured with the same SYSTEM format, without altering its file area.
 
 Run `python3 tools/build_complete_system.py`, then
 `python3 tools/build_test_disks.py --output /path/to/new/test-directory`.
