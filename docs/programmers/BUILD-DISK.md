@@ -68,3 +68,9 @@ native GENSYS-style composer and a SYSGEN input-image mode are still needed
 to turn newly assembled resident components into system tracks entirely
 under BetterCP/M. Until those exist, use the host composer to make the first
 boot disk and SYSGEN to install or duplicate that built system.
+
+
+The intended native workflow is assembler/linker, then a GENSYS-style composer
+which writes `SYSTEM.SYS`, followed by `SYSGEN SYSTEM.SYS B:`. The companion
+`SYSGEN A: B:` form will copy a complete protected system area from a bootable
+source disk. Bare `SYSGEN` retains the interactive current-A installation.

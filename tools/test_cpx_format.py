@@ -24,9 +24,11 @@ def check(path: Path, name: bytes, version: tuple[int, int],
     require(allocation & 0xFF == 0 and entry < size,
             f"{path.name}: invalid allocation or command entry")
     require(init == shutdown == 0xFFFF, f"{path.name}: unexpected lifecycle entry")
-    require(header_size == payload == 512 and table == 48,
+    relocation_end = table + relocations * 2
+    expected_header = 512 if relocation_end <= 512 else 1024
+    require(header_size == payload == expected_header and table == 48,
             f"{path.name}: noncanonical v1 section layout")
-    require(table + relocations * 2 <= header_size,
+    require(relocation_end <= header_size,
             f"{path.name}: relocation directory crosses header")
     require(module[32:40] == name.ljust(8, b" "), f"{path.name}: module name")
     require(tuple(module[40:42]) == version, f"{path.name}: module version")
@@ -43,7 +45,8 @@ def check(path: Path, name: bytes, version: tuple[int, int],
 
 def main() -> None:
     check(ROOT / "build/cpx/RCP.CPX", b"RCP", (0, 2),
-          (b"DIR", b"ERA", b"TYPE", b"REN", b"SAVE", b"USER", b"CLR", b"VER"))
+          (b"DIR", b"ERA", b"TYPE", b"REN", b"USER", b"CLS", b"VER",
+           b"COPY", b"MOVE"))
     check(ROOT / "build/cpx/HELLO.CPX", b"HELLO", (0, 1), (b"HELLO",))
     print("BCPX v1 identity, ABI, layout, relocation, metadata, and checksum passed")
 

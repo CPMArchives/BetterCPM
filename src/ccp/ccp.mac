@@ -56,9 +56,12 @@ CCP_LOOP:
 ; all observe one coherent state.  Accepted forms are B:, 5:, and C3:.
         CALL    CCP_NAVIGATE
         JR      C,CCP_LOOP
-; Patch 2026-09-02: production CPXs now get first refusal.  During the RCP
-; proof transition, the old resident commands remain below as fallbacks; this
-; ordering ensures ordinary DIR actually verifies RCP.CPX when it is loaded.
+; The little monitor commands must be present even on a bare system disk.
+; Try them before the extension chain so a CPX cannot accidentally replace
+; GET, JUMP, PEEK, POKE, GO, or SAVE with a namesake of its own.
+        CALL    CCP_CORE
+        JR      C,CCP_LOOP
+; Ordinary commands belong to the RCP and other command extensions.
         CALL    CPX_DISPATCH
         JR      C,CCP_LOOP
         LD      A,(CCP_COUNT)
@@ -1098,6 +1101,986 @@ CCP_USERSET:
         CALL    BDOS
         JP      CCP_LOOP
 
+; The resident monitor is intentionally small, but it is always available.
+; A successful keyword match leaves HL/B at its first argument.  Carry set
+; tells the caller that the line belonged to the monitor, even when the
+; command itself had to print a syntax error.
+CCP_CORE:
+        LD      HL,CCP_KGET
+        LD      C,3
+        CALL    CCP_MATCH
+        JR      NC,CCP_CJUMP
+        CALL    CCP_GET
+        SCF
+        RET
+CCP_CJUMP:
+        LD      HL,CCP_KJUMP
+        LD      C,4
+        CALL    CCP_MATCH
+        JR      NC,CCP_CPEEK
+        CALL    CCP_JUMP
+        SCF
+        RET
+CCP_CPEEK:
+        LD      HL,CCP_KPEEK
+        LD      C,4
+        CALL    CCP_MATCH
+        JR      C,CCP_CPDISP
+        LD      HL,CCP_KP
+        LD      C,1
+        CALL    CCP_MATCH
+        JR      NC,CCP_CPOKE
+CCP_CPDISP:
+        CALL    CCP_PEEK
+        SCF
+        RET
+CCP_CPOKE:
+        LD      HL,CCP_KPOKE
+        LD      C,4
+        CALL    CCP_MATCH
+        JR      NC,CCP_CGO
+        CALL    CCP_POKE
+        SCF
+        RET
+CCP_CGO:
+        LD      HL,CCP_KSAVE
+        LD      C,4
+        CALL    CCP_MATCH
+        JR      NC,CCP_CGOTRY
+        CALL    CCP_SAVE
+        SCF
+        RET
+CCP_CGOTRY:
+        LD      HL,CCP_KGO
+        LD      C,2
+        CALL    CCP_MATCH
+        RET     NC
+        CALL    CCP_GO
+        SCF
+        RET
+
+; Compare a keyword and require either end of line or a following blank.
+; This prevents P from stealing PIP and GET from stealing GETFILE.
+CCP_MATCH:
+        LD      A,(CCP_COUNT)
+        CP      C
+        JR      NC,CCP_MLENOK
+        OR      A               ; a short command is a miss, never a match
+        RET
+CCP_MLENOK:
+        LD      DE,CCP_DATA
+        PUSH    BC
+CCP_MLOOP:
+        LD      A,(DE)
+        CP      (HL)
+        JR      NZ,CCP_MNO
+        INC     DE
+        INC     HL
+        DEC     C
+        JR      NZ,CCP_MLOOP
+        POP     BC
+        LD      A,(CCP_COUNT)
+        SUB     C
+        LD      B,A
+        JR      Z,CCP_MYES
+        LD      A,(DE)
+        CP      ' '
+        JR      NZ,CCP_MRETNO
+CCP_MSKIP:
+        INC     DE
+        DJNZ    CCP_MSPMORE
+        EX      DE,HL
+        SCF
+        RET
+CCP_MSPMORE:
+        LD      A,(DE)
+        CP      ' '
+        JR      Z,CCP_MSKIP
+        EX      DE,HL
+        SCF
+        RET
+CCP_MYES:
+        EX      DE,HL
+        SCF
+        RET
+CCP_MNO:
+        POP     BC
+CCP_MRETNO:
+        OR      A
+        RET
+
+; Read one hexadecimal token.  HL/B advance to its separator or the end;
+; DE receives the sixteen-bit value.  Carry is clear for an empty or bad
+; token.  All address-taking commands share this one set of rules.
+CCP_HEX:
+        LD      DE,0
+        LD      C,0
+CCP_HXLOOP:
+        LD      A,B
+        OR      A
+        JR      Z,CCP_HXDONE
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,CCP_HXDONE
+        SUB     '0'
+        JR      C,CCP_HXBAD
+        CP      10
+        JR      C,CCP_HXDIG
+        SUB     7
+        CP      10
+        JR      C,CCP_HXBAD
+        CP      16
+        JR      NC,CCP_HXBAD
+CCP_HXDIG:
+        LD      (CCP_HEXDIG),A
+        SLA     E
+        RL      D
+        SLA     E
+        RL      D
+        SLA     E
+        RL      D
+        SLA     E
+        RL      D
+        LD      A,(CCP_HEXDIG)
+        OR      E
+        LD      E,A
+        INC     C
+        LD      A,C
+        CP      5               ; more than four digits cannot name an address
+        JR      NC,CCP_HXBAD
+        INC     HL
+        DEC     B
+        JR      CCP_HXLOOP
+CCP_HXDONE:
+        LD      A,C
+        OR      A
+        RET     Z
+        SCF
+        RET
+CCP_HXBAD:
+        OR      A
+        RET
+
+CCP_ARGSKIP:
+        LD      A,B
+        OR      A
+        RET     Z
+        LD      A,(HL)
+        CP      ' '
+        RET     NZ
+        INC     HL
+        DEC     B
+        JR      CCP_ARGSKIP
+
+; Make a fresh command tail and its two conventional default FCBs.  GO and
+; JUMP deliberately do not inherit the tail left by the last transient.
+CCP_MKTAIL:
+        LD      (CCP_APTR),HL
+        LD      A,B
+        LD      (CCP_ALEN),A
+        LD      HL,005CH
+        LD      B,36
+        XOR     A
+CCP_MTZERO:
+        LD      (HL),A
+        INC     HL
+        DJNZ    CCP_MTZERO
+        LD      A,(CCP_ALEN)
+        LD      (0080H),A
+        LD      C,A
+        LD      B,0
+        LD      HL,(CCP_APTR)
+        LD      DE,0081H
+        LD      A,C
+        OR      A
+        JR      Z,CCP_MTCR
+        LDIR
+CCP_MTCR:
+        LD      A,13
+        LD      (DE),A
+        LD      HL,(CCP_APTR)
+        LD      A,(CCP_ALEN)
+        LD      B,A
+        CALL    CCP_PSKIP
+        LD      DE,005CH
+        CALL    CCP_PFCB
+        CALL    CCP_PSKIP
+        LD      DE,006CH
+        CALL    CCP_PFCB
+        LD      DE,0080H
+        LD      C,26
+        JP      BDOS
+
+CCP_JUMP:
+        LD      A,B
+        OR      A
+        JR      Z,CCP_ADDRERR
+        CALL    CCP_HEX
+        JR      NC,CCP_ADDRERR
+        LD      (CCP_TADDR),DE
+        CALL    CCP_ARGSKIP
+        CALL    CCP_MKTAIL
+        LD      HL,(0001H)      ; a returning image performs a normal WBOOT
+        PUSH    HL
+        LD      HL,(CCP_TADDR)
+        JP      (HL)
+
+CCP_GO:
+        CALL    CCP_MKTAIL
+        LD      HL,(0001H)
+        PUSH    HL
+        LD      HL,0100H
+        JP      (HL)
+
+CCP_ADDRERR:
+        LD      DE,CCP_MADDR
+        LD      C,9
+        JP      BDOS
+
+; GET loads a raw file and leaves it in memory for PEEK, POKE, SAVE, GO, or
+; JUMP.  With two operands the first is the address; with one, even a name
+; made solely of hex digits denotes a file and the destination is 0100H.
+CCP_GET:
+        LD      A,B
+        OR      A
+        JP      Z,CCP_GSYNTAX
+        LD      (CCP_APTR),HL
+        LD      A,B
+        LD      (CCP_ALEN),A
+CCP_GSCAN:
+        LD      A,B
+        OR      A
+        JR      Z,CCP_GONE
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,CCP_GTWO
+        INC     HL
+        DEC     B
+        JR      CCP_GSCAN
+CCP_GONE:
+        LD      HL,0100H
+        LD      (CCP_TADDR),HL
+        LD      HL,(CCP_APTR)
+        LD      A,(CCP_ALEN)
+        LD      B,A
+        JR      CCP_GFILE
+CCP_GTWO:
+        LD      HL,(CCP_APTR)
+        LD      A,(CCP_ALEN)
+        LD      B,A
+        CALL    CCP_HEX
+        JP      NC,CCP_GSYNTAX
+        LD      (CCP_TADDR),DE
+        CALL    CCP_ARGSKIP
+        LD      A,B
+        OR      A
+        JP      Z,CCP_GSYNTAX
+CCP_GFILE:
+        LD      A,B
+        LD      (CCP_ALEN),A
+        LD      (CCP_APTR),HL
+; A filename is one token.  Reject a hidden third operand before touching RAM.
+CCP_GFSN:
+        LD      A,B
+        OR      A
+        JR      Z,CCP_GPARSE
+        LD      A,(HL)
+        CP      ' '
+        JP      Z,CCP_GSYNTAX
+        INC     HL
+        DEC     B
+        JR      CCP_GFSN
+CCP_GPARSE:
+        LD      HL,(CCP_TADDR)
+        LD      A,H
+        OR      A
+        JP      Z,CCP_GPROTECT  ; page zero belongs to the system
+        LD      HL,(CCP_APTR)
+        LD      A,(CCP_ALEN)
+        LD      B,A
+        LD      DE,CCP_FCB
+        CALL    CCP_PFCB
+        LD      A,(CCP_FCB+1)
+        CP      ' '
+        JP      Z,CCP_GSYNTAX
+        LD      HL,CCP_FCB+1
+        LD      B,11
+CCP_GWILD:
+        LD      A,(HL)
+        CP      '?'
+        JP      Z,CCP_GSYNTAX
+        INC     HL
+        DJNZ    CCP_GWILD
+        LD      DE,CCP_FCB
+        LD      C,35
+        CALL    BDOS
+        CP      0FFH
+        JP      Z,CCP_GNOFILE
+        LD      A,(CCP_FCB+35)
+        OR      A
+        JP      NZ,CCP_GBIG
+        LD      A,(CCP_FCB+34)
+        CP      2
+        JP      NC,CCP_GBIG
+        LD      HL,(CCP_FCB+33)
+        LD      (CCP_GRECS),HL
+        LD      B,7
+CCP_GMUL:
+        ADD     HL,HL
+        JP      C,CCP_GBIG
+        DJNZ    CCP_GMUL
+        LD      DE,(CCP_TADDR)
+        ADD     HL,DE
+        JP      C,CCP_GBIG
+        EX      DE,HL
+        LD      HL,(LY_SYS+08CH) ; live bottom of the reconstructible CCP
+        OR      A
+        SBC     HL,DE
+        JP      C,CCP_GBIG
+        LD      DE,CCP_FCB
+        LD      C,15
+        CALL    BDOS
+        INC     A
+        JR      Z,CCP_GNOFILE
+        LD      HL,(CCP_TADDR)
+        LD      (CCP_GDMA),HL
+CCP_GRLOOP:
+        LD      HL,(CCP_GRECS)
+        LD      A,H
+        OR      L
+        JR      Z,CCP_GDONE
+        LD      DE,(CCP_GDMA)
+        LD      C,26
+        CALL    BDOS
+        LD      DE,CCP_FCB
+        LD      C,20
+        CALL    BDOS
+        OR      A
+        JR      NZ,CCP_GREAD
+        LD      HL,(CCP_GDMA)
+        LD      DE,128
+        ADD     HL,DE
+        LD      (CCP_GDMA),HL
+        LD      HL,(CCP_GRECS)
+        DEC     HL
+        LD      (CCP_GRECS),HL
+        JR      CCP_GRLOOP
+CCP_GDONE:
+        LD      DE,CCP_MLOADED
+        JR      CCP_GPRINT
+CCP_GSYNTAX:
+        LD      DE,CCP_MGET
+        JR      CCP_GPRINT
+CCP_GPROTECT:
+        LD      DE,CCP_MPROTECT
+        JR      CCP_GPRINT
+CCP_GBIG:
+        LD      DE,CCP_MTOOBIG
+        JR      CCP_GPRINT
+CCP_GNOFILE:
+        LD      DE,CCP_MNOFILE
+        JR      CCP_GPRINT
+CCP_GREAD:
+        LD      DE,CCP_MREAD
+CCP_GPRINT:
+        PUSH    DE
+        LD      DE,0080H
+        LD      C,26
+        CALL    BDOS
+        POP     DE
+        LD      C,9
+        JP      BDOS
+
+; PEEK's page is sixteen rows of sixteen bytes.  Unlike a file pager, moving
+; backward costs only one subtraction, so the old monitor-style comma and
+; period controls are kept along with the printed angle-bracket mnemonics.
+CCP_PEEK:
+        XOR     A
+        LD      (CCP_PBOUND),A
+        LD      A,B
+        OR      A
+        JR      NZ,CCP_PKFIRST
+        LD      HL,(CLDPTR)
+        LD      (CCP_PPAGE),HL
+        JR      CCP_PKSHOW
+CCP_PKFIRST:
+        CALL    CCP_HEX
+        JP      NC,CCP_ADDRERR
+        LD      (CCP_PLOW),DE
+        LD      (CCP_PPAGE),DE
+        CALL    CCP_ARGSKIP
+        LD      A,B
+        OR      A
+        JR      Z,CCP_PKSHOW
+        CALL    CCP_HEX
+        JP      NC,CCP_ADDRERR
+        CALL    CCP_ARGSKIP
+        LD      A,B
+        OR      A
+        JP      NZ,CCP_ADDRERR
+        LD      (CCP_PHIGH),DE
+        LD      HL,(CCP_PLOW)
+        OR      A
+        SBC     HL,DE
+        JR      C,CCP_PKORDER
+        JR      Z,CCP_PKORDER
+        JP      CCP_ADDRERR
+CCP_PKORDER:
+        LD      A,1
+        LD      (CCP_PBOUND),A
+CCP_PKSHOW:
+        LD      HL,(CCP_PPAGE)
+        LD      (CCP_PPTR),HL
+        LD      HL,256
+        LD      (CCP_PCNT),HL
+CCP_PKLINE:
+        LD      DE,CCP_DIRNL
+        LD      C,9
+        CALL    BDOS
+        LD      HL,(CCP_PPTR)
+        LD      A,H
+        CALL    CCP_HEX8
+        LD      HL,(CCP_PPTR)
+        LD      A,L
+        CALL    CCP_HEX8
+        LD      E,':'
+        LD      C,2
+        CALL    BDOS
+        LD      A,16
+        LD      (CCP_PCOL),A
+CCP_PKBYTE:
+        LD      E,' '
+        LD      C,2
+        CALL    BDOS
+        LD      HL,(CCP_PPTR)
+        LD      A,(HL)
+        CALL    CCP_HEX8
+        LD      HL,(CCP_PCNT)
+        DEC     HL
+        LD      (CCP_PCNT),HL
+        LD      A,H
+        OR      L
+        JR      Z,CCP_PKPAGE
+        LD      HL,(CCP_PPTR)
+        LD      A,H
+        CP      0FFH
+        JR      NZ,CCP_PKINC
+        LD      A,L
+        CP      0FFH
+        JR      Z,CCP_PKPAGE
+CCP_PKINC:
+        INC     HL
+        LD      (CCP_PPTR),HL
+        LD      A,(CCP_PBOUND)
+        OR      A
+        JR      Z,CCP_PKCOL
+        LD      DE,(CCP_PHIGH)
+        OR      A
+        SBC     HL,DE
+        JR      C,CCP_PKCOL
+        JR      Z,CCP_PKCOL
+        JR      CCP_PKPAGE
+CCP_PKCOL:
+        LD      HL,CCP_PCOL
+        DEC     (HL)
+        JR      NZ,CCP_PKBYTE
+        JR      CCP_PKLINE
+CCP_PKPAGE:
+; Remember the byte following the display whenever one exists.  PEEK with no
+; argument resumes here after the CCP itself has been reloaded by WBOOT.
+        LD      HL,(CCP_PPTR)
+        LD      A,H
+        AND     L
+        CP      0FFH
+        JR      Z,CCP_PKWAIT
+        INC     HL
+        LD      (CLDPTR),HL
+CCP_PKWAIT:
+        LD      DE,CCP_MPAGER
+        LD      C,9
+        CALL    BDOS
+CCP_PKKEY:
+        LD      E,0FFH
+        LD      C,6
+        CALL    BDOS
+        OR      A
+        JR      Z,CCP_PKKEY
+        AND     07FH
+        CP      3
+        RET     Z
+        CP      ','
+        JR      Z,CCP_PKPREV
+        CP      '<'
+        JR      Z,CCP_PKPREV
+        CP      ' '
+        JR      Z,CCP_PKNEXT
+        CP      '.'
+        JR      Z,CCP_PKNEXT
+        CP      '>'
+        JR      NZ,CCP_PKKEY
+CCP_PKNEXT:
+        LD      HL,(CCP_PPAGE)
+        LD      DE,0100H
+        ADD     HL,DE
+        JR      C,CCP_PKRET
+        LD      A,(CCP_PBOUND)
+        OR      A
+        JR      Z,CCP_PKSETP
+        LD      DE,(CCP_PHIGH)
+        PUSH    HL
+        OR      A
+        SBC     HL,DE
+        POP     HL
+        JR      C,CCP_PKSETP
+        JR      Z,CCP_PKSETP
+        JR      CCP_PKRET
+CCP_PKPREV:
+        LD      HL,(CCP_PPAGE)
+        LD      DE,0100H
+        OR      A
+        SBC     HL,DE
+        JR      NC,CCP_PKPVOK
+        LD      HL,0
+CCP_PKPVOK:
+        LD      A,(CCP_PBOUND)
+        OR      A
+        JR      Z,CCP_PKSETP
+        LD      DE,(CCP_PLOW)
+        PUSH    HL
+        OR      A
+        SBC     HL,DE
+        POP     HL
+        JR      NC,CCP_PKSETP
+        EX      DE,HL
+CCP_PKSETP:
+        LD      (CCP_PPAGE),HL
+        JP      CCP_PKSHOW
+CCP_PKRET:
+        RET
+
+CCP_HEX8:
+        PUSH    AF
+        RRCA
+        RRCA
+        RRCA
+        RRCA
+        CALL    CCP_HEXNIB
+        POP     AF
+CCP_HEXNIB:
+        AND     0FH
+        ADD     A,'0'
+        CP      '9'+1
+        JR      C,CCP_HXOUT
+        ADD     A,7
+CCP_HXOUT:
+        LD      E,A
+        LD      C,2
+        JP      BDOS
+
+; POKE first converts every operand into a private byte string.  Only after
+; the complete line and its end address have been checked do we alter memory;
+; a typo in the last operand can therefore never leave a half-applied patch.
+CCP_POKE:
+        LD      A,B
+        OR      A
+        JP      Z,CCP_ADDRERR
+        CALL    CCP_HEX
+        JP      NC,CCP_ADDRERR
+        LD      (CCP_TADDR),DE
+        CALL    CCP_ARGSKIP
+        LD      A,B
+        OR      A
+        JR      Z,CCP_POSYNTAX
+        LD      DE,CCP_PBUF
+        XOR     A
+        LD      (CCP_PLEN),A
+CCP_PONEXT:
+        CALL    CCP_ARGSKIP
+        LD      A,B
+        OR      A
+        JR      Z,CCP_POCHECK
+        LD      A,(HL)
+        CP      '"'
+        JR      Z,CCP_POTEXT
+        PUSH    DE
+        CALL    CCP_HEX
+        LD      A,E
+        LD      (CCP_HEXDIG),A
+        LD      A,D
+        OR      A
+        JR      NZ,CCP_POFAIL
+        LD      A,(CCP_PLEN)
+        INC     A
+        LD      (CCP_PLEN),A
+        POP     DE
+        LD      A,(CCP_HEXDIG)
+        LD      (DE),A
+        INC     DE
+        JR      CCP_PONEXT
+CCP_POFAIL:
+        POP     DE
+        JR      CCP_POSYNTAX
+CCP_POTEXT:
+        INC     HL
+        DEC     B
+CCP_POTLOOP:
+        LD      A,B
+        OR      A
+        JR      Z,CCP_POCHECK
+        LD      A,(HL)
+        LD      (DE),A
+        INC     HL
+        INC     DE
+        LD      A,(CCP_PLEN)
+        INC     A
+        LD      (CCP_PLEN),A
+        DEC     B
+        JR      CCP_POTLOOP
+CCP_POCHECK:
+        LD      A,(CCP_PLEN)
+        OR      A
+        JR      Z,CCP_POSYNTAX
+        DEC     A
+        LD      E,A
+        LD      D,0
+        LD      HL,(CCP_TADDR)
+        ADD     HL,DE
+        JR      C,CCP_POSYNTAX
+        LD      HL,CCP_PBUF
+        LD      DE,(CCP_TADDR)
+        LD      A,(CCP_PLEN)
+        LD      C,A
+        LD      B,0
+        LDIR
+        RET
+CCP_POSYNTAX:
+        LD      DE,CCP_MPOKE
+        LD      C,9
+        JP      BDOS
+
+; SAVE n file -- copy n 256-byte pages beginning at 0100H.  This belongs in
+; the CCP because loading SAVE.COM would first destroy the very low-memory
+; image the command is meant to preserve.
+CCP_SAVE:
+        XOR     A
+        LD      (CCP_DUACT),A
+        LD      A,B
+        OR      A
+        JP      Z,CSVSYN
+        LD      C,0
+        LD      D,0
+CSVNUM:
+        LD      A,B
+        OR      A
+        JP      Z,CSVSYN
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,CSVNAME
+        CP      '0'
+        JP      C,CSVSYN
+        CP      '9'+1
+        JP      NC,CSVSYN
+        SUB     '0'
+        LD      E,A
+        LD      A,C
+        CP      25
+        JR      C,CSVMUL
+        JP      NZ,CSVSYN
+        LD      A,E
+        CP      6
+        JP      NC,CSVSYN
+CSVMUL:
+        LD      A,C
+        ADD     A,A
+        LD      C,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,C
+        ADD     A,E
+        LD      C,A
+        LD      D,1
+        INC     HL
+        DEC     B
+        JR      CSVNUM
+CSVNAME:
+        LD      A,D
+        OR      A
+        JP      Z,CSVSYN
+        LD      A,C
+        LD      (CCP_SPAGES),A
+CSVNSKP:
+        INC     HL
+        DEC     B
+        JP      Z,CSVSYN
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,CSVNSKP
+        CALL    CCP_DUSEL
+        LD      A,B
+        OR      A
+        JP      Z,CSVSYN
+        PUSH    HL
+        PUSH    BC
+CSVTLEN:
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,CSVTAIL
+        INC     HL
+        DJNZ    CSVTLEN
+        JR      CSVPAR
+CSVTAIL:
+        INC     HL
+        DEC     B
+CSVTRL:
+        LD      A,B
+        OR      A
+        JR      Z,CSVPAR
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,CSVPOP
+        INC     HL
+        DJNZ    CSVTRL
+CSVPAR:
+        POP     BC
+        POP     HL
+        LD      DE,CCP_FCB
+        CALL    CCP_PFCB
+        LD      A,(CCP_FCB+1)
+        CP      ' '
+        JR      Z,CSVSYN
+        LD      HL,CCP_FCB+1
+        LD      B,11
+CSVNOQ:
+        LD      A,(HL)
+        CP      '?'
+        JR      Z,CSVSYN
+        INC     HL
+        DJNZ    CSVNOQ
+        LD      DE,CCP_FCB
+        LD      C,19
+        CALL    BDOS
+        LD      DE,CCP_FCB
+        LD      C,22
+        CALL    BDOS
+        CP      0FFH
+        JR      Z,CSVSPACE
+        LD      HL,0100H
+        LD      (CCP_SDMA),HL
+        LD      A,(CCP_SPAGES)
+        LD      L,A
+        LD      H,0
+        ADD     HL,HL
+        LD      (CCP_SRECS),HL
+CSVWRITE:
+        LD      HL,(CCP_SRECS)
+        LD      A,H
+        OR      L
+        JR      Z,CSVCLOSE
+        LD      DE,(CCP_SDMA)
+        LD      C,26
+        CALL    BDOS
+        LD      DE,CCP_FCB
+        LD      C,21
+        CALL    BDOS
+        OR      A
+        JR      NZ,CSVSPACE
+        LD      HL,(CCP_SDMA)
+        LD      DE,128
+        ADD     HL,DE
+        LD      (CCP_SDMA),HL
+        LD      HL,(CCP_SRECS)
+        DEC     HL
+        LD      (CCP_SRECS),HL
+        JR      CSVWRITE
+CSVCLOSE:
+        LD      DE,CCP_FCB
+        LD      C,16
+        CALL    BDOS
+        CP      0FFH
+        JR      Z,CSVSPACE
+        JR      CSVDONE
+CSVPOP:
+        POP     BC
+        POP     HL
+CSVSYN:
+        LD      DE,CCP_MSAVE
+        JR      CSVPRINT
+CSVSPACE:
+        LD      DE,CCP_MSPACE
+CSVPRINT:
+        LD      C,9
+        CALL    BDOS
+CSVDONE:
+        LD      DE,0080H
+        LD      C,26
+        CALL    BDOS
+        JP      CCP_DURST
+
+; Temporarily select the optional A:, 5:, or C3: qualifier which prefixes a
+; resident command filename.  The caller's drive and user are always restored
+; before the monitor returns to its prompt.
+CCP_DUSEL:
+        LD      (CCP_DARGP),HL
+        LD      A,B
+        LD      (CCP_DLEN),A
+        LD      C,25
+        CALL    BDOS
+        LD      (CCP_DSAVE),A
+        LD      E,0FFH
+        LD      C,32
+        CALL    BDOS
+        LD      (CCP_USAVE),A
+        LD      A,1
+        LD      (CCP_DUACT),A
+        LD      A,0FFH
+        LD      (CCP_DTARG),A
+        LD      (CCP_UTARG),A
+        LD      HL,(CCP_DARGP)
+        LD      A,(CCP_DLEN)
+        LD      B,A
+        OR      A
+        RET     Z
+        LD      A,(HL)
+        CP      'A'
+        JR      C,CDUNUM
+        CP      'P'+1
+        JP      NC,CDUNONE
+        SUB     'A'
+        LD      (CCP_DTARG),A
+        INC     HL
+        DEC     B
+        LD      A,B
+        OR      A
+        JP      Z,CDUNONE
+        LD      A,(HL)
+        CP      ':'
+        JR      Z,CDUCOL
+        CP      '0'
+        JP      C,CDUNONE
+        CP      '9'+1
+        JP      NC,CDUNONE
+        SUB     '0'
+        LD      C,A
+        INC     HL
+        DEC     B
+        LD      A,B
+        OR      A
+        JP      Z,CDUNONE
+        LD      A,(HL)
+        CP      ':'
+        JR      Z,CDUSET
+        CP      '0'
+        JP      C,CDUNONE
+        CP      '9'+1
+        JP      NC,CDUNONE
+        LD      A,C
+        ADD     A,A
+        LD      D,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,D
+        LD      C,A
+        LD      A,(HL)
+        SUB     '0'
+        ADD     A,C
+        CP      32
+        JR      NC,CDUNONE
+        LD      C,A
+        INC     HL
+        DEC     B
+        LD      A,B
+        OR      A
+        JR      Z,CDUNONE
+        LD      A,(HL)
+        CP      ':'
+        JR      NZ,CDUNONE
+CDUSET:
+        LD      A,C
+        LD      (CCP_UTARG),A
+        JR      CDUCOL
+CDUNUM:
+        LD      A,(HL)
+        CP      '0'
+        JR      C,CDUNONE
+        CP      '9'+1
+        JR      NC,CDUNONE
+        SUB     '0'
+        LD      C,A
+        INC     HL
+        DEC     B
+        LD      A,B
+        OR      A
+        JR      Z,CDUNONE
+        LD      A,(HL)
+        CP      '0'
+        JR      C,CDUONE
+        CP      '9'+1
+        JR      NC,CDUONE
+        LD      A,C
+        ADD     A,A
+        LD      D,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,D
+        LD      C,A
+        LD      A,(HL)
+        SUB     '0'
+        ADD     A,C
+        CP      32
+        JR      NC,CDUNONE
+        LD      C,A
+        INC     HL
+        DEC     B
+CDUONE:
+        LD      A,(HL)
+        CP      ':'
+        JR      NZ,CDUNONE
+        LD      A,C
+        LD      (CCP_UTARG),A
+CDUCOL:
+        INC     HL
+        DEC     B
+        LD      (CCP_DARGP),HL
+        LD      A,B
+        LD      (CCP_DLEN),A
+        LD      A,(CCP_DTARG)
+        CP      0FFH
+        JR      Z,CDUUSER
+        LD      E,A
+        LD      C,14
+        CALL    BDOS
+CDUUSER:
+        LD      A,(CCP_UTARG)
+        CP      0FFH
+        JR      Z,CDUOUT
+        LD      E,A
+        LD      C,32
+        CALL    BDOS
+CDUOUT:
+        LD      HL,(CCP_DARGP)
+        LD      A,(CCP_DLEN)
+        LD      B,A
+        RET
+CDUNONE:
+        LD      HL,(CCP_DARGP)
+        LD      A,(CCP_DLEN)
+        LD      B,A
+        RET
+CCP_DURST:
+        LD      A,(CCP_DUACT)
+        OR      A
+        RET     Z
+        XOR     A
+        LD      (CCP_DUACT),A
+        LD      A,(CCP_DSAVE)
+        LD      E,A
+        LD      C,14
+        CALL    BDOS
+        LD      A,(CCP_USAVE)
+        LD      E,A
+        LD      C,32
+        JP      BDOS
+
 ; Command Processor Extension (CPX) chain.
 ;
 ; Each header contains DW next,entry.  Entry receives DE=upper-case command
@@ -1664,8 +2647,26 @@ CCP_WARMKEY:
         DB      'WARM'
 CU_KEY:
         DB      'USER '
+CCP_KGET:      DB      'GET'
+CCP_KJUMP:     DB      'JUMP'
+CCP_KPEEK:     DB      'PEEK'
+CCP_KP:        DB      'P'
+CCP_KPOKE:     DB      'POKE'
+CCP_KGO:       DB      'GO'
+CCP_KSAVE:     DB      'SAVE'
 CCP_COM:
         DB      'COM'
+CCP_MADDR:     DB      13,10,'ADDRESS REQUIRED',13,10,'$'
+CCP_MGET:      DB      13,10,'GET filename OR GET address filename',13,10,'$'
+CCP_MPOKE:     DB      13,10,'POKE address byte [byte ...]',13,10,'$'
+CCP_MPROTECT:  DB      13,10,'PROTECTED MEMORY',13,10,'$'
+CCP_MTOOBIG:   DB      13,10,'FILE WILL NOT FIT',13,10,'$'
+CCP_MNOFILE:   DB      13,10,'NO FILE',13,10,'$'
+CCP_MREAD:     DB      13,10,'READ ERROR',13,10,'$'
+CCP_MLOADED:   DB      13,10,'LOADED',13,10,'$'
+CCP_MPAGER:    DB      13,10,'< previous  > next  ^C quit $'
+CCP_MSAVE:     DB      13,10,'? SAVE pages filename',13,10,'$'
+CCP_MSPACE:    DB      13,10,'NO SPACE',13,10,'$'
 
 CCP_BUFFER:
         DB      127
@@ -1688,6 +2689,34 @@ CCP_FCB:
         ENDM
 CLDPTR:
         DW      0100H
+CCP_TADDR:     DW      0100H
+CCP_APTR:      DW      0
+CCP_ALEN:      DB      0
+CCP_HEXDIG:    DB      0
+CCP_GRECS:     DW      0
+CCP_GDMA:      DW      0100H
+CCP_PLOW:      DW      0
+CCP_PHIGH:     DW      0FFFFH
+CCP_PPAGE:     DW      0100H
+CCP_PPTR:      DW      0100H
+CCP_PCNT:      DW      0
+CCP_PBOUND:    DB      0
+CCP_PCOL:      DB      0
+CCP_PLEN:      DB      0
+CCP_SPAGES:    DB      0
+CCP_SDMA:      DW      0100H
+CCP_SRECS:     DW      0
+CCP_DARGP:     DW      0
+CCP_DLEN:      DB      0
+CCP_DSAVE:     DB      0
+CCP_USAVE:     DB      0
+CCP_DTARG:     DB      0FFH
+CCP_UTARG:     DB      0FFH
+CCP_DUACT:     DB      0
+CCP_PBUF:
+        REPT    127
+        DB      0
+        ENDM
 ; CCP-only loader scratch occupies the otherwise unused compatibility-page
 ; workspace below the default FCBs.  Using fixed page-zero bytes here also
 ; avoids spending scarce relocation-directory entries on ephemeral state.

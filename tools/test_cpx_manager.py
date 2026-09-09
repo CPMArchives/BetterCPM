@@ -34,7 +34,7 @@ def main() -> None:
         subprocess.run(invocation, cwd=temporary, check=True)
         screen = Path(temporary, "trs80-text-0.bin").read_bytes()[:80 * 24]
     ordered = (
-        b"RCP   : DIR, ERA, TYPE, REN, SAVE, USER, CLR, VER", b"HELLO : HELLO",
+        b"RCP   : DIR, ERA, TYPE, REN, USER, CLS, VER, COPY, MOVE", b"HELLO : HELLO",
         f"TPA available: {(LAYOUT['TPA'] - 0x100) // 1024 - 0}K".encode(), b"A0>HELLO", b"Hello from HELLO.CPX",
         b"A0>CPX UNLOAD RCP", b"HELLO : HELLO",
         b"A0>HELLO", b"Hello from HELLO.CPX", b"A0>CPX UNLOAD HELLO",

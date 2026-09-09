@@ -23,7 +23,7 @@ BUILDERS = (
     "disk_utilities",       # CONFIG.COM, DUP.COM, SYSGEN.COM
     "cpx_utility",          # CPX.COM
     "rsx_utilities",        # RSX.COM and its diagnostic companions
-    "rcp_transients",       # DIR.COM, USER.COM, CLR.COM, VER.COM
+    "rcp_transients",       # DIR.COM, USER.COM, CLS.COM, VER.COM, COPY.COM, MOVE.COM
     "era",
     "ren",
     "type",

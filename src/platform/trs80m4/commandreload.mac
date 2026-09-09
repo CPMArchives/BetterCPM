@@ -159,7 +159,12 @@ CRMAGLP:
         LD      (CRMALLOC),HL
         LD      HL,(MODBUF+14)
         LD      (CRMRELOCS),HL
-        LD      HL,0200H
+        LD      A,(MODBUF+5)    ; BCM1 records its header in 512-byte sectors
+        OR      A
+        JP      Z,CRBAD
+        LD      H,A
+        LD      L,0
+        ADD     HL,HL
         LD      (CRMHEADSZ),HL
         LD      (CRMPAYLOAD),HL
         LD      HL,16
@@ -226,19 +231,18 @@ CRSZOK:
         OR      A
         JP      NZ,CRBAD        ; carrier sections are physical-record aligned
         LD      (CRSKIP),HL
+; The relocation words must fit wholly inside the declared header.  Early
+; BCM1 and all present BCPX carriers use one sector; the larger resident CCP
+; uses two without changing the executable payload or relocation arithmetic.
         LD      HL,(CRMRELOCS)
-        LD      A,H
+        ADD     HL,HL
+        LD      DE,(CRMRELTABLE)
+        ADD     HL,DE
+        EX      DE,HL
+        LD      HL,(CRMHEADSZ)
         OR      A
-        JP      NZ,CRBAD
-        LD      E,249           ; BCM1's established maximum is 248
-        LD      A,(CRISCPX)
-        OR      A
-        JR      Z,CRRCMAX
-        LD      E,233           ; BCPX record 0 holds at most 232 entries
-CRRCMAX:
-        LD      A,L
-        CP      E
-        JP      NC,CRBAD
+        SBC     HL,DE
+        JP      C,CRBAD
         LD      HL,(CRBOUND)
         LD      DE,(CRMALLOC)
         OR      A
@@ -311,14 +315,22 @@ CRRELOC:
         LD      (CRDELTA),HL
         LD      BC,(CRMRELOCS)
         LD      HL,(CRMRELTABLE)
-        LD      DE,0200H
-        OR      A
-        SBC     HL,DE
-        JP      NC,CRBAD        ; v1 relocation directory resides in record 0
-        LD      HL,(CRMRELTABLE)
         LD      DE,MODBUF
         ADD     HL,DE
 CRRLOOP:
+        LD      DE,MODBUF+0200H
+        PUSH    HL
+        OR      A
+        SBC     HL,DE
+        POP     HL
+        JR      NZ,CRRHAVE
+        PUSH    BC
+        LD      HL,MODBUF
+        CALL    CRNEXT
+        POP     BC
+        RET     NZ
+        LD      HL,MODBUF
+CRRHAVE:
         LD      A,B
         OR      C
         JR      Z,CRENTRY
@@ -398,7 +410,7 @@ CRNEXT:
         OR      A
         JP      NZ,FLNEXT
         LD      A,(CRSLOT)
-        CP      7
+        CP      13
         JR      NC,CRBAD
         PUSH    HL
         LD      E,A
@@ -422,7 +434,7 @@ CRNEXT:
 CRFAIL:
         JR      CRFAIL
 
-CRCCPMAG:      DB      'B','C','M','1',1,1
+CRCCPMAG:      DB      'B','C','M','1',1,2
 CRCPXMAG:      DB      'B','C','P','X',1,1
 CRSECTS:
 ; @command-sector-table@

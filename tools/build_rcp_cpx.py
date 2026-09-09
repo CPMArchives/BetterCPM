@@ -38,7 +38,8 @@ def main() -> None:
     offsets = relocation_offsets(data, alternate, ALTERNATE_BASE - LINK_BASE)
     module_data = make_module(
         name="RCP", version=(0, 2),
-        commands=["DIR", "ERA", "TYPE", "REN", "SAVE", "USER", "CLR", "VER"],
+        commands=["DIR", "ERA", "TYPE", "REN", "USER", "CLS", "VER",
+                  "COPY", "MOVE"],
         linked_base=LINK_BASE, code=data, relocations=offsets)
     module = BUILD / "RCP.CPX"
     module.write_bytes(module_data)

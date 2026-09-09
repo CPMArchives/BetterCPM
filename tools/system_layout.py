@@ -23,4 +23,4 @@ def expand_layout(text: str) -> str:
     def table(start, count):
         return "\n".join(f"        DB {n//20},{n//10%2},{order[n%10]}" for n in range(start, start+count))
     return text.replace("; @resident-sector-table@", table(2, LAYOUT["BOOT_SECTORS"])) .replace(
-        "; @command-sector-table@", table(8 + LAYOUT["BOOT_SECTORS"], 7)).replace("; @reloader-sector-table@", table(2 + LAYOUT["BOOT_SECTORS"], 2)).replace("; @control-sector-table@", table(4 + LAYOUT["BOOT_SECTORS"], 2)).replace("; @rsx-sector-table@", table(6 + LAYOUT["BOOT_SECTORS"], 2))
+        "; @command-sector-table@", table(8 + LAYOUT["BOOT_SECTORS"], 13)).replace("; @reloader-sector-table@", table(2 + LAYOUT["BOOT_SECTORS"], 2)).replace("; @control-sector-table@", table(4 + LAYOUT["BOOT_SECTORS"], 2)).replace("; @rsx-sector-table@", table(6 + LAYOUT["BOOT_SECTORS"], 2))

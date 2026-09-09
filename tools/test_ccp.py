@@ -14,9 +14,9 @@ IMAGE = ROOT / "build/ccp/ccp.bin"
 MODULE = ROOT / "build/ccp/ccp.rlm"
 LISTING = ROOT / "build/ccp/ccp.lst"
 LINK_BASE = 0xBB00
-# Keep the focused image below both its C100h BDOS stand-in and the BE00h
-# persistent-history fixture as the relocatable CCP grows during development.
-BASE = 0xB300
+# Keep the focused image below its C100h BDOS stand-in as the resident monitor
+# grows.  This arbitrary relocation base is used only by the unit fixture.
+BASE = 0xA000
 CALLER = 0x7000
 
 
@@ -34,9 +34,10 @@ def symbol(name: str) -> int:
 def cpu() -> Z80:
     machine = Z80(b"")
     module = MODULE.read_bytes()
-    _magic, _version, _header_sectors, link, size, _allocation, _entry, count = (
+    _magic, _version, header_sectors, link, size, _allocation, _entry, count = (
         struct.unpack_from("<4sBBHHHHH", module))
-    data = bytearray(module[512:512 + size])
+    payload = header_sectors * 512
+    data = bytearray(module[payload:payload + size])
     delta = BASE - link
     for index in range(count):
         offset = struct.unpack_from("<H", module, 16 + index * 2)[0]

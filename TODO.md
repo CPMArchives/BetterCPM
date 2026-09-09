@@ -49,22 +49,22 @@ feature before qualifying the core.
 Agreed 1.0 boundary: the stock CCP contains only GET, JUMP, PEEK/P, POKE, GO and
 SAVE as built-in commands. RCP.CPX supplies DIR, ERA, TYPE, REN, USER, CLS, VER,
 COPY and MOVE. The contracts are fixed in `docs/architecture/16 Resident Command
-Set.txt`; implementation remains a later command-environment milestone.
+Set.txt`; the first implementation and focused command tests are complete.
 Full SUBMIT/XSUB compatibility is required; further flow-control functionality
 is supplied through loadable CPXs rather than added to the core CCP.
 
-- [ ] Move SAVE from RCP.CPX into the stock CCP and qualify memory-image
+- [x] Move SAVE from RCP.CPX into the stock CCP and qualify memory-image
   preservation; it must work without loading RCP.CPX or a transient.
-- [ ] Specify and qualify the six core commands and remove transitional
+- [x] Specify and qualify the six core commands and remove transitional
   standard-command copies after RCP.CPX qualification.
 - [x] Qualify full SUBMIT/XSUB compatibility with original command files and
   submitted-input workflows, including error/abort and warm-boot behavior.
 
 - [x] Add stock `USER` behavior to `RCP.CPX`.
-- [x] Complete the transitional RCP command inventory `DIR`, `ERA`, `REN`, `SAVE`,
-  `TYPE`, `USER`, plus the BetterCP/M extensions `CLR` and `VER`.
+- [x] Complete the RCP command inventory `DIR`, `ERA`, `REN`, `TYPE`, `USER`,
+  plus the BetterCP/M extensions `CLS`, `VER`, `COPY`, and `MOVE`.
 - [x] Supply matching transient `DIR.COM`, `ERA.COM`, `REN.COM`, `TYPE.COM`,
-  `USER.COM`, `CLR.COM`, and `VER.COM` fallbacks. They must reproduce the
+  `USER.COM`, `CLS.COM`, `VER.COM`, `COPY.COM`, and `MOVE.COM` fallbacks. They must reproduce the
   corresponding RCP.CPX behavior and must not acquire a divergent
   transient-only feature set.
 - [x] Keep `SAVE` resident-only: a transient `SAVE.COM` would overwrite the
@@ -76,7 +76,7 @@ is supplied through loadable CPXs rather than added to the core CCP.
 - [x] Provide transient-only `WARM.COM` for scripts and testing. Interactive
   users retain canonical, disk-independent `Ctrl-C` warm boot; `WARM` does not
   belong in RCP.CPX.
-- [ ] Finalize RCP.CPX by removing SAVE after its CCP migration, renaming CLR to
+- [x] Finalize RCP.CPX by removing SAVE after its CCP migration, renaming CLR to
   CLS, and adding COPY and MOVE with both source/destination and `dest:=source`
   syntax.
 - [ ] Implement the canonical named-directory map in protected, persistent OS
@@ -86,6 +86,10 @@ is supplied through loadable CPXs rather than added to the core CCP.
   Specify its bounded storage, initialization and interface as part of the core
   boundary; implement higher-level navigation and utility syntax in their own
   milestones. Persistence across power-off is a separate save/load decision.
+- [ ] Add transient `NDR.COM` to load, save, list, and select disk-backed named
+  directory sets such as `DEVLPMNT.NDR` and `GAMES.NDR`. Keep the active resolver
+  map in persistent DATA so command lookup does not require repeated floppy access;
+  these files are backing sets, not the live lookup database.
 - [ ] Finish common named-DU resolution and use it consistently for command
   lookup, BASIC commands, transient utilities, and module loading.
 - [ ] Implement a system `PATH` facility for command lookup across canonical

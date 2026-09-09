@@ -16,8 +16,10 @@ ORIGIN = 0x0100
 COMMANDS = {
     "DIR": "BC_DIR",
     "USER": "BC_USER",
-    "CLR": "BC_CLR",
+    "CLS": "BC_CLR",
     "VER": "BC_VER",
+    "COPY": "BC_COPY",
+    "MOVE": "BC_MOVE",
 }
 
 

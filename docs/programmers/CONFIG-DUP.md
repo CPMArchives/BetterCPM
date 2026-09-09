@@ -157,6 +157,11 @@ CONFIG H and SYSGEN have separate jobs. CONFIG H saves current settings into
 the running A: system without replacing its other system records. SYSGEN copies
 that complete, already-configured system to another disk.
 
+Future command forms are reserved as follows: `SYSGEN A: B:` copies the full
+protected system from a bootable source, while `SYSGEN SYSTEM.SYS B:` installs
+a system composed from a fresh source build. Those two forms require the native
+system composer and are not implemented yet.
+
 The current z80pack adapter defines B: through D: as data disks with no reserved
 system tracks and does not permit runtime format changes. SYSGEN is included in
 that distribution but correctly rejects those drives. A z80pack installation

@@ -57,17 +57,18 @@ def make_module(*, name: str, version: tuple[int, int], commands: list[str],
     if not code or entry_offset >= len(code) or allocation == 0:
         raise SystemExit("invalid CPX code or entry offset")
     relocation_end = RELOCATION_OFFSET + 2 * len(relocations)
-    if relocation_end > HEADER_SIZE:
+    header_size = 512 if relocation_end <= 512 else 1024
+    if relocation_end > header_size:
         raise SystemExit("CPX relocation directory exceeds its reserved area")
     metadata = b"".join(c.upper().encode("ascii").ljust(8, b" ")
                         for c in commands)
-    metadata_offset = HEADER_SIZE + len(code)
-    header = bytearray(HEADER_SIZE)
+    metadata_offset = header_size + len(code)
+    header = bytearray(header_size)
     struct.pack_into("<4sBBBBHHHHHHHHHHHH8sBBBBH", header, 0,
                      MAGIC, FORMAT_VERSION, MODULE_CLASS_CPX,
                      ABI_MAJOR, ABI_MINOR, flags, linked_base, len(code),
                      allocation, entry_offset, init_offset, shutdown_offset,
-                     len(relocations), HEADER_SIZE, HEADER_SIZE,
+                     len(relocations), header_size, header_size,
                      RELOCATION_OFFSET, metadata_offset,
                      stem.ljust(8, b" "), version[0], version[1],
                      len(commands), 0, sum(code) & 0xFFFF)
