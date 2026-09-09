@@ -515,7 +515,7 @@ BCX_BAD:
         LD      A,0FFH
         JP      EX_RETURN
 
-BCX_NBASIC:    DB      'BASIC   '
+BCX_NBASIC:    DB      'RCP     '
 BCX_NHELLO:    DB      'HELLO   '
 
 CF_GETPH:

@@ -1,0 +1,518 @@
+; SYSGEN -- BetterCP/M system disk installer, 08-Sep-2026.
+;
+; Copies the reserved system tracks from the running A: disk to another
+; logical drive.  The directory and file area are not touched.  CONFIG G
+; must first give the destination the same SYSTEM format as drive A:.
+;
+; Patch 08-Sep-2026: the boot record is written last.  Thus a stopped copy
+; does not receive BetterCP/M's boot sector until all other system records
+; have been written and checked.  This is no substitute for a backup, but
+; it avoids proclaiming a half-copied system to be a new boot disk.
+        ASEG
+        ORG 0100H
+BDOS    EQU 5
+
+        LD SP,04000H
+        CALL INIT
+        LD HL,(1)             ; page zero WBOOT jump follows the BIOS base
+        DEC HL
+        DEC HL
+        DEC HL
+        LD (BIOBASE),HL
+
+AGAIN:  LD HL,TITLE
+        CALL HEADER
+        LD HL,ASKDRV
+        CALL PUTS
+        CALL KEY
+        CP 3
+        JP Z,0
+        SUB 'B'
+        CP 3
+        JR NC,AGAIN
+        INC A                 ; B..D become logical numbers 1..3
+        LD (DEST),A
+        CALL SHOWKEY
+
+        XOR A
+        LD (REQ),A
+        LD DE,REQ
+        LD B,3                ; fetch A: without logging its directory
+        CALL API
+        JP NZ,APIBAD
+        LD HL,REQ+1
+        LD DE,SOURCE
+        LD BC,64
+        LDIR
+
+        LD A,(DEST)
+        LD (REQ),A
+        LD DE,REQ
+        LD B,3
+        CALL API
+        JP NZ,APIBAD
+        LD HL,REQ+1
+        LD DE,TARGET
+        LD BC,64
+        LDIR
+        LD A,(TARGET)
+        OR A
+        JP Z,PROTECT
+        CP 4
+        JP NC,APIBAD
+        LD B,A
+        LD A,(SOURCE)
+        CP B
+        JP Z,ALIAS
+
+; Bootstrap A: expresses a double-sided cylinder as one logical track.
+; CONFIG's ordinary bindings express the same disk as two surface tracks.
+; Make a comparison copy in the latter form, as DUP has done since 1.10.
+        LD HL,SOURCE
+        LD DE,EXPECT
+        LD BC,64
+        LDIR
+        LD A,(EXPECT+19)
+        BIT 5,A
+        JR Z,CMPFMT
+        AND 0DFH
+        OR 040H
+        LD (EXPECT+19),A
+        LD HL,(EXPECT+1)
+        SRL H
+        RR L
+        LD (EXPECT+1),HL
+        LD HL,(EXPECT+14)
+        ADD HL,HL
+        LD (EXPECT+14),HL
+CMPFMT:LD HL,EXPECT+1
+        LD DE,TARGET+1
+        LD B,63
+CMPLP:  LD A,(DE)
+        CP (HL)
+        JP NZ,BADFMT
+        INC DE
+        INC HL
+        DJNZ CMPLP
+
+; Reserved records = SPT * OFF.  Refuse arithmetic wrap and a zero-sized
+; system area.  The matching normalized formats imply the same byte count.
+        LD BC,(SOURCE+1)
+        LD DE,(SOURCE+14)
+        LD HL,0
+COUNTLP:LD A,D
+        OR E
+        JR Z,COUNTED
+        ADD HL,BC
+        JP C,BADFMT
+        DEC DE
+        JR COUNTLP
+COUNTED:LD A,H
+        OR L
+        JP Z,BADFMT
+        LD (NRECS),HL
+        LD HL,SUMMARY
+        CALL PUTS
+        LD A,(DEST)
+        ADD A,'A'
+        CALL PUTC
+        LD HL,PHYMSG
+        CALL PUTS
+        LD A,(TARGET)
+        CALL DECOUT
+        CALL CRLF
+        LD HL,RECORDMSG
+        CALL PUTS
+        LD HL,(NRECS)
+        CALL WORDOUT
+        CALL CRLF
+        LD HL,WARNING
+        CALL PUTS
+        CALL KEY
+        CP 'Y'
+        JP NZ,0
+        CALL CRLF
+
+; Copy records 1 through N-1 first.  Record zero, containing stage zero,
+; is installed only after the rest has passed immediate read-back checks.
+        LD HL,1
+        LD (RECNO),HL
+        LD HL,0
+        LD (TRACKNO),HL
+        LD HL,1
+        LD (NEXTTRK),HL
+COPYLP: CALL BREAKCK
+        JP Z,STOPPED
+        CALL PROGRESS
+        CALL COPYREC
+        JP NZ,IOFAIL
+        LD HL,(RECNO)
+        INC HL
+        LD (RECNO),HL
+        LD DE,(NRECS)
+        OR A
+        SBC HL,DE
+        JR C,COPYLP
+        LD HL,0
+        LD (RECNO),HL
+        CALL COPYREC
+        JP NZ,IOFAIL
+        LD DE,0FFFFH          ; discard every logged-drive vector
+        LD C,37
+        CALL BDOS
+        LD HL,COMPLETE
+        CALL PUTS
+        JP 0
+
+; Read source, write target, read target again, compare all 128 bytes.
+COPYREC:XOR A
+        LD HL,(RECNO)
+        LD DE,BUFFER
+        CALL DISKIO
+        RET NZ
+        LD A,1
+        LD HL,(RECNO)
+        LD DE,BUFFER
+        CALL DISKIO
+        RET NZ
+        LD A,2
+        LD HL,(RECNO)
+        LD DE,VERIFY
+        CALL DISKIO
+        RET NZ
+        LD HL,BUFFER
+        LD DE,VERIFY
+        LD B,128
+VERIFYLP:LD A,(DE)
+        CP (HL)
+        JR NZ,VERIFYBAD
+        INC DE
+        INC HL
+        DJNZ VERIFYLP
+        XOR A
+        RET
+VERIFYBAD:LD A,0FEH           ; utility compare error, not controller status
+        OR A
+        RET
+
+; A=0 reads A:.  A=1 writes destination.  A=2 reads destination.
+; HL is the 128-byte logical record number and DE is its transfer buffer.
+DISKIO: LD (IOMODE),A
+        LD (IOREC),HL
+        LD (IOBUF),DE
+        OR A
+        LD A,0
+        JR Z,IODRIVE
+        LD A,(DEST)
+IODRIVE:LD (IODRV),A
+        LD C,A
+        LD B,0
+        LD E,0
+        LD A,27
+        CALL BCALL
+        LD A,H
+        OR L
+        JR Z,SELECTBAD
+        LD DE,10
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD HL,(IOREC)
+        LD A,(DE)             ; DPB+0 = logical records per track
+        LD C,A
+        INC DE
+        LD A,(DE)
+        LD B,A
+        LD DE,0
+DIVLP:  OR A
+        SBC HL,BC
+        JR C,DIVDONE
+        INC DE
+        JR DIVLP
+DIVDONE:ADD HL,BC
+        PUSH HL               ; remainder is sector number
+        EX DE,HL              ; quotient is track number
+        LD B,H
+        LD C,L
+        LD A,30
+        CALL BCALL
+        POP BC
+        LD A,33
+        CALL BCALL
+        LD BC,(IOBUF)
+        LD A,36
+        CALL BCALL
+        LD A,(IOMODE)
+        CP 1
+        LD A,39
+        JR NZ,IOGO
+        LD BC,0
+        LD A,42
+IOGO:   CALL BCALL
+        OR A
+        RET
+SELECTBAD:LD A,0FFH
+        OR A
+        RET
+
+; Show progress once per A: logical track rather than scrolling 160 lines.
+PROGRESS:LD HL,(RECNO)
+        LD DE,(NEXTTRK)
+        OR A
+        SBC HL,DE
+        RET NZ
+        LD HL,INSTALLING
+        CALL PUTS
+        LD HL,(TRACKNO)
+        CALL WORDOUT
+        CALL CRLF
+        LD HL,(TRACKNO)
+        INC HL
+        LD (TRACKNO),HL
+        LD HL,(NEXTTRK)
+        LD DE,(SOURCE+1)
+        ADD HL,DE
+        LD (NEXTTRK),HL
+        RET
+
+BREAKCK:LD C,6
+        LD E,0FFH
+        CALL BDOS
+        CP 3
+        RET
+
+IOFAIL:LD (STATUS),A
+        LD HL,FAILMSG
+        CALL PUTS
+        LD HL,(RECNO)
+        CALL WORDOUT
+        LD HL,STATUSMSG
+        CALL PUTS
+        LD A,(STATUS)
+        CALL DECOUT
+        CALL CRLF
+        LD HL,PARTIAL
+        CALL PUTS
+        JP 0
+STOPPED:LD HL,STOPMSG
+        CALL PUTS
+        JP 0
+BADFMT:LD HL,FMTMSG
+        JR REPORT
+PROTECT:LD HL,PROTMSG
+        JR REPORT
+ALIAS:  LD HL,ALIASMSG
+        JR REPORT
+APIBAD: LD HL,APIERR
+REPORT: CALL PUTS
+        JP 0
+
+; The utility ABI keeps SYSGEN independent of the installed BIOS address.
+API:    LD C,207
+        CALL BDOS
+        LD A,L
+        OR A
+        RET
+INIT:   LD B,0
+        LD DE,REQ
+        CALL API
+        LD DE,MAGIC
+        LD B,8
+ABICMP: LD A,(DE)
+        CP (HL)
+        JP NZ,NOABI
+        INC DE
+        INC HL
+        DJNZ ABICMP
+        LD C,204
+        LD E,0
+        CALL BDOS
+        LD (HASREV),A
+        RET
+NOABI:  LD HL,ABIMSG
+        CALL PUTS
+        JP 0
+BCALL:  LD HL,(BIOBASE)
+        PUSH DE
+        LD E,A
+        LD D,0
+        ADD HL,DE
+        POP DE
+        JP (HL)
+
+; Plain CP/M console service.  Strings end in zero.
+PUTC:   PUSH AF
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        LD E,A
+        LD C,2
+        CALL BDOS
+        POP HL
+        POP DE
+        POP BC
+        POP AF
+        RET
+PUTS:   LD A,(HL)
+        INC HL
+        OR A
+        RET Z
+        CALL PUTC
+        JR PUTS
+CRLF:   LD A,13
+        CALL PUTC
+        LD A,10
+        JP PUTC
+KEY:    LD C,6
+        LD E,0FFH
+        CALL BDOS
+        OR A
+        JR Z,KEY
+        CP 'a'
+        RET C
+        CP 'z'+1
+        RET NC
+        AND 05FH
+        RET
+SHOWKEY:PUSH AF
+        LD A,' '
+        CALL PUTC
+        POP AF
+        PUSH AF
+        ADD A,'A'
+        CALL PUTC
+        CALL CRLF
+        POP AF
+        RET
+DECOUT: LD C,0
+        LD B,100
+        CALL DECDIG
+        LD B,10
+        CALL DECDIG
+        ADD A,'0'
+        JP PUTC
+DECDIG: LD D,'0'
+DECLP:  CP B
+        JR C,DECDONE
+        SUB B
+        INC D
+        JR DECLP
+DECDONE:PUSH AF
+        LD A,D
+        CP '0'
+        JR NZ,DECSHOW
+        LD A,C
+        OR A
+        JR Z,DECSKIP
+        LD A,D
+DECSHOW:CALL PUTC
+        LD C,1
+DECSKIP:POP AF
+        RET
+WORDOUT:LD C,0
+        LD DE,10000
+        CALL WDIG
+        LD DE,1000
+        CALL WDIG
+        LD DE,100
+        CALL WDIG
+        LD DE,10
+        CALL WDIG
+        LD A,L
+        ADD A,'0'
+        JP PUTC
+WDIG:   LD B,'0'
+WDIGLP:OR A
+        SBC HL,DE
+        JR C,WDIGDONE
+        INC B
+        JR WDIGLP
+WDIGDONE:ADD HL,DE
+        LD A,B
+        CP '0'
+        JR NZ,WDIGSHOW
+        LD A,C
+        OR A
+        RET Z
+        LD A,B
+WDIGSHOW:PUSH HL
+        CALL PUTC
+        POP HL
+        LD C,1
+        RET
+HEADER: LD A,28
+        CALL PUTC
+        LD B,79
+HEADLP: LD A,(HL)
+        OR A
+        JR Z,HEADSP
+        INC HL
+        JR HEADOUT
+HEADSP: LD A,' '
+HEADOUT:PUSH AF
+        LD A,(HASREV)
+        OR A
+        JR NZ,HEADREV
+        POP AF
+        CALL PUTC
+        JR HEADNEXT
+HEADREV:POP AF
+        PUSH AF
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        LD E,A
+        LD C,204
+        CALL BDOS
+        POP HL
+        POP DE
+        POP BC
+        POP AF
+HEADNEXT:
+        DJNZ HEADLP
+        CALL CRLF
+        JP CRLF
+
+TITLE:  DB 'Install a BetterCP/M system (SYSGEN)',0
+ASKDRV: DB 'Destination drive [ B - D ], or BREAK (^C) to exit: ',0
+SUMMARY:DB 13,10,'Install the running A: system on drive ',0
+PHYMSG: DB ':, physical drive ',0
+RECORDMSG:DB 'Reserved system records to copy and verify: ',0
+WARNING:DB 13,10,'The destination system area will be replaced.',13,10
+        DB 'Files outside the reserved system tracks will be preserved.',13,10
+        DB 'Proceed (Y/N)? ',0
+INSTALLING:DB 'Installing system track ',0
+COMPLETE:DB 13,10,'System installed and verified. The destination is bootable.',13,10,0
+FMTMSG: DB 13,10,'Destination is not the same SYSTEM format as A:.',13,10
+        DB 'Use CONFIG G to select the matching format, then try again.',13,10,0
+PROTMSG:DB 13,10,'Physical drive 0 is protected as the running system disk.',13,10,0
+ALIASMSG:DB 13,10,'Source and destination refer to the same physical drive.',13,10,0
+APIERR: DB 13,10,'The selected drive is undefined or unavailable.',13,10,0
+FAILMSG:DB 13,10,'System installation failed at logical record ',0
+STATUSMSG:DB '; status ',0
+PARTIAL:DB 'The destination may not boot. Its file area was not changed.',13,10,0
+STOPMSG:DB 13,10,'Installation stopped. The destination may not boot.',13,10
+        DB 'Its file area was not changed.',13,10,0
+ABIMSG:DB 'SYSGEN requires BetterCP/M disk BIOS ABI 5.',13,10,0
+MAGIC:  DB 'BDCF',5,4,4,64
+
+DEST:   DB 0
+STATUS: DB 0
+IOMODE: DB 0
+IODRV:  DB 0
+HASREV: DB 0
+BIOBASE:DW 0
+NRECS:  DW 0
+RECNO:  DW 0
+IOREC:  DW 0
+IOBUF:  DW 0
+TRACKNO:DW 0
+NEXTTRK:DW 0
+SOURCE: DS 64
+TARGET: DS 64
+EXPECT: DS 64
+REQ:    DS 80
+BUFFER: DS 128
+VERIFY: DS 128
+        END

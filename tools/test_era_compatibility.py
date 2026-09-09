@@ -68,12 +68,12 @@ def main() -> None:
         output = run("ERA", drive_a, drive_b)
         require("NO FILE" in output, "argument-free ERA did not match stock behavior")
 
-        # BASIC.CPX is optional.  Verify that removing it exposes the ordinary
+        # RCP.CPX is optional.  Verify that removing it exposes the ordinary
         # ERA.COM fallback and that the fallback performs the same deletion.
         build_image(drive_a, "--include-as", f"DELETE.ME={small}")
         output = run(
-            "CPX UNLOAD BASIC", drive_a, drive_b,
-            "ERA DELETE.ME", "CPX LOAD BASIC", "DIR DELETE.ME",
+            "CPX UNLOAD RCP", drive_a, drive_b,
+            "ERA DELETE.ME", "CPX LOAD RCP", "DIR DELETE.ME",
         )
         require("NO FILE" in output,
                 "transient ERA.COM fallback did not delete its target")

@@ -13,9 +13,11 @@ BIOS implementation 1.5/API 1.2, and CPX/RSX implementation 1.2/API 1.0.
 
 The development BIOS provides four logical disk slots, four physical-drive
 records, runtime format assignment, and a bounded write-track service.
-[CONFIG and DUP](docs/programmers/CONFIG-DUP.md) now provide live drive/format
-configuration and disk formatting. CONFIG reads DISK.FDF directly and displays
-16 formats per page; conversion to or from cpmtools diskdefs remains deferred.
+[CONFIG, DUP and SYSGEN](docs/programmers/CONFIG-DUP.md) now provide live
+drive/format configuration, formatting, copying, error checking, saved defaults,
+and verified installation onto a prepared system disk. CONFIG reads DISK.FDF
+directly and displays 16 formats per page; conversion to or from cpmtools
+diskdefs remains deferred.
 See [the disk ABI and current limits](docs/programmers/BIOS-DISK-CONFIG.md).
 Rebuild the current image with `python3 tools/build_complete_system.py`.
 
@@ -25,7 +27,7 @@ See [the memory layout and validation report](docs/engineering/127%2053K%20Memor
 Historical conformance results below describe earlier checkpoints; they are
 not a complete certification of every subsequent change.
 
-The project has entered implementation. Its reproducibly generated TRS-80 Model 4 disks now load the resident BetterCP/M BIOS, BDOS, directory services, and CCP; expose physical floppy drives A: through D:; boot to an `A0>` drive/user prompt under `trs80gp`; accept direct `B:`, `5:`, and `C3:` navigation; provide visible-cursor CCP line editing with insert/overwrite modes, deletion, and persistent multi-command history; and store extensions as ordinary directory-visible files. A protected filename loader reconstructs default BASIC on cold boot and the active CPX set on WBOOT without relying on reclaimable command code. `CPX.COM` and `RSX.COM` accept arbitrary module names with or without their extensions. The versioned `BRSX` loader validates headers and payload checksums, relocates an ordered protected chain, enumerates its service metadata, preserves it across WBOOT, and returns each allocation to the TPA on unload. `HELLO.RSX` and `ECHO.RSX` prove two-module chaining and safe removal of the first chain member while the second remains callable. BASIC provides `DIR`, `ERA`, `TYPE`, `REN`, `SAVE`, `USER`, `CLR`, and `VER`; all except inherently resident SAVE have ordinary transient counterparts, and transient-only WARM supports scripts. Optional HELLO.CPX proves multiple-command-module chaining and transient-command fallback. The system retains transitional core copies pending their final removal, loads transient `.COM` programs with CP/M command tails and default FCBs, and completes clean independent physical compatibility passes for `ENTRYTST /SAFE` (25 passes), `BDOSTEST /SAFE` (56 passes), `FILETEST /SAFE` (28 passes with no omissions), and the complete applicable RANDTEST catalog: 41 required passes and 7 diagnostic observations. The complete 72-item DIRTEST catalog is also accounted for: all 52 required cases pass physically, all 15 diagnostics are observed, and its 5 private-mechanism or otherwise out-of-scope cases are explicitly identified. CPUTEST closes its five-item processor catalog with 2 required passes, 1 observation, and 2 explicit exclusions. BIOSTEST now records 29 physical required passes, including write-protect recovery, controlled logical-device behavior, and all three retained-evidence BOOT/WBOOT procedures, plus 11 non-guaranteed observations; its remaining 6 catalog entries are explicitly provider-dependent, optional, or out of scope. The build also produces canonical cross-drive, multi-user, full-disk, and genuinely blank disposable fixtures for four-drive testing.
+The project has entered implementation. Its reproducibly generated TRS-80 Model 4 disks now load the resident BetterCP/M BIOS, BDOS, directory services, and CCP; expose physical floppy drives A: through D:; boot to an `A0>` drive/user prompt under `trs80gp`; accept direct `B:`, `5:`, and `C3:` navigation; provide visible-cursor CCP line editing with insert/overwrite modes, deletion, and persistent multi-command history; and store extensions as ordinary directory-visible files. A protected filename loader reconstructs the default RCP on cold boot and the active CPX set on WBOOT without relying on reclaimable command code. `CPX.COM` and `RSX.COM` accept arbitrary module names with or without their extensions. The versioned `BRSX` loader validates headers and payload checksums, relocates an ordered protected chain, enumerates its service metadata, preserves it across WBOOT, and returns each allocation to the TPA on unload. `HELLO.RSX` and `ECHO.RSX` prove two-module chaining and safe removal of the first chain member while the second remains callable. The default RCP provides `DIR`, `ERA`, `TYPE`, `REN`, `USER`, `CLS`, `VER`, `COPY`, and `MOVE`, with matching transient counterparts; the CCP itself provides `GET`, `JUMP`, `PEEK`/`P`, `POKE`, `GO`, and `SAVE`, and transient-only WARM supports scripts. Optional HELLO.CPX proves multiple-command-module chaining and transient-command fallback. The system retains transitional core copies pending their final removal, loads transient `.COM` programs with CP/M command tails and default FCBs, and completes clean independent physical compatibility passes for `ENTRYTST /SAFE` (25 passes), `BDOSTEST /SAFE` (56 passes), `FILETEST /SAFE` (28 passes with no omissions), and the complete applicable RANDTEST catalog: 41 required passes and 7 diagnostic observations. The complete 72-item DIRTEST catalog is also accounted for: all 52 required cases pass physically, all 15 diagnostics are observed, and its 5 private-mechanism or otherwise out-of-scope cases are explicitly identified. CPUTEST closes its five-item processor catalog with 2 required passes, 1 observation, and 2 explicit exclusions. BIOSTEST now records 29 physical required passes, including write-protect recovery, controlled logical-device behavior, and all three retained-evidence BOOT/WBOOT procedures, plus 11 non-guaranteed observations; its remaining 6 catalog entries are explicitly provider-dependent, optional, or out of scope. The build also produces canonical cross-drive, multi-user, full-disk, and genuinely blank disposable fixtures for four-drive testing.
 
 ## Design direction
 
@@ -218,12 +220,12 @@ python3 tools/build_ccp.py
 python3 tools/build_ccpreload.py
 python3 tools/test_ccpreload.py
 python3 tools/build_native_ccp.py
-python3 tools/build_basic_cpx.py
-python3 tools/build_native_basic_cpx.py
+python3 tools/build_rcp_cpx.py
+python3 tools/build_native_rcp_cpx.py
 python3 tools/build_hello_cpx.py
 python3 tools/build_native_hello_cpx.py
-python3 tools/build_basic_transients.py
-python3 tools/build_native_basic_transients.py
+python3 tools/build_rcp_transients.py
+python3 tools/build_native_rcp_transients.py
 python3 tools/build_warm.py
 python3 tools/build_native_warm.py
 python3 tools/build_cpx_utility.py
@@ -252,10 +254,21 @@ python3 tools/test_trs80_keyboard_overlap.py
 python3 tools/test_cpx_manager.py
 python3 tools/test_cpx_wboot_write.py
 python3 tools/test_rsx_manager.py
-python3 tools/test_basic_command_completion.py
+python3 tools/test_rcp_command_completion.py
 ```
 
 The native build runs ZSM4 and Digital Research LINK under CP/M and must match the cross-assembled binaries byte for byte. The emulator test boots the generated 790K DMK through the Model 4 ROM and both loader stages, loads the composed resident image, reconstructs the system, and verifies the CCP `A0>` prompt.
+
+Create the companion 800K source/build disk with:
+
+```sh
+python3 tools/build_source_disk.py
+```
+
+It contains every file under `src/`, ZSM4, LINK, an 8.3 filename map, and
+on-disk build/install instructions. See [the build-disk notes](docs/programmers/BUILD-DISK.md)
+for its user-area layout and the current boundary between native assembly,
+host system-image composition, and SYSGEN installation.
 
 These are working engineering documents. They record the present design thinking and may change as project goals and requirements are refined.
 

@@ -1,8 +1,9 @@
-# CONFIG.COM and DUP.COM
+# CONFIG.COM, DUP.COM and SYSGEN.COM
 
-CONFIG 1.01 and DUP 1.13 are ordinary transient programs. They require
+CONFIG 1.01, DUP 1.14 and SYSGEN are ordinary transient programs. They require
 BetterCP/M disk ABI 5 and four logical drives. CONFIG needs 42 KiB of
-transient space; allow 51 KiB for DUP and its private copy buffer. They add no resident allocation: maximum TPA remains
+transient space; allow 51 KiB for DUP and its private copy buffer. SYSGEN is
+under 3 KiB. They add no resident allocation: maximum TPA remains
 54,273 bytes when no RSXs are installed.
 
 Run `CONFIG` or `DUP` at the command prompt. Keep `DISK.FDF` on the current
@@ -88,6 +89,11 @@ and checks for E5 fill. Each read performs a fresh physical-sector read, so
 sector CRC errors are detected as well as wrong contents. Verification must
 pass before the next cylinder/side is formatted.
 
+Write-track operations receive three bounded attempts. The first failed
+command invalidates the BIOS drive-position cache, so a retry after inserting
+blank media performs a fresh select, restore and seek. A write-protect result
+returns immediately because another attempt cannot make the disk writable.
+
 Progress shows cylinder and side. Ctrl-C aborts between synchronous operations;
 the message makes clear that a partly formatted disk remains. Controller errors
 stop the operation and display their status. A read or compare failure reports
@@ -123,6 +129,45 @@ continues past unreadable sectors. It reports their locations/status and a final
 count, counting each failed physical sector once. Ctrl-C stops the scan. It does
 not check directory/allocation consistency or attempt repair.
 
+## SYSGEN
+
+SYSGEN installs the running A: system on a prepared B:, C: or D: disk. Use
+CONFIG G to assign the destination the same SYSTEM format as A:, and use DUP A
+to format the media first. SYSGEN rejects undefined drives, physical drive 0,
+physical aliases of A:, and a destination whose complete normalized format
+definition differs from A:.
+
+The installer copies every 128-byte record in the reserved system area. This
+includes stage zero, stage one, the resident image, protected reloaders and
+controls, the CCP carrier, and the saved persistent defaults. It writes and
+immediately reads back each record, compares all 128 bytes, and reports success
+only after the complete area agrees. The boot record is written last so an
+interrupted operation does not receive BetterCP/M's stage-zero sector. Ctrl-C
+is accepted between records. A stopped or failed target may not boot and should
+be reinstalled.
+
+The directory, allocation map and file data begin after the reserved tracks and
+remain byte-for-byte unchanged. Ordinary files are not copied. The command
+reloader therefore skips a configured CPX that is absent on a newly installed
+disk and starts the bare CCP; after the operator copies that CPX onto the disk,
+the saved startup profile loads it normally on the next warm boot. A CPX carrier
+which opens but fails structural validation remains a hard boot failure.
+
+CONFIG H and SYSGEN have separate jobs. CONFIG H saves current settings into
+the running A: system without replacing its other system records. SYSGEN copies
+that complete, already-configured system to another disk.
+
+Future command forms are reserved as follows: `SYSGEN A: B:` copies the full
+protected system from a bootable source, while `SYSGEN SYSTEM.SYS B:` installs
+a system composed from a fresh source build. Those two forms require the native
+system composer and are not implemented yet.
+
+The current z80pack adapter defines B: through D: as data disks with no reserved
+system tracks and does not permit runtime format changes. SYSGEN is included in
+that distribution but correctly rejects those drives. A z80pack installation
+target requires a future adapter definition with a writable SYSTEM area; the
+Model 4 path is the qualified 1.0 implementation today.
+
 The UI uses the private inverse-character service when available, with plain
 text fallback. Configuration and console calls go through BDOS; sector transfers use the
 standard BIOS vectors discovered through page zero. The transients contain no
@@ -131,7 +176,7 @@ contract, so it is not an assertion of support for every possible controller.
 
 ## Build and tests
 
-`python3 tools/build_disk_utilities.py` creates both COM files. The complete
+`python3 tools/build_disk_utilities.py` creates all three COM files. The complete
 build includes them and DISK.FDF in the boot image automatically.
 
 `python3 tools/test_disk_utilities.py` checks the assembly parser against all
@@ -139,6 +184,11 @@ build includes them and DISK.FDF in the boot image automatically.
 Additional `settings`, `format`, and `reject` arguments run the corresponding
 emulator scenarios. Every run uses private disk copies. Screen captures are
 retained under `build/test-results/disk-utilities/`.
+
+`python3 tools/test_sysgen_install.py` installs onto a disposable formatted
+790K SYSTEM image containing a sentinel file. It compares the entire reserved
+area with A:, proves that every byte after that area is unchanged, and then cold
+boots the installed target without relying on an external CPX file.
 
 `tools/test_dup_operations.py` exercises copying, check, declined confirmation,
 full binding restoration, source/system preservation, reserved-track data and
@@ -185,11 +235,12 @@ and pass, writes bypass it, and z80pack uses the standard 128-byte read path.
 The cache occupies idle write-track workspace, adding no resident memory and
 preserving the 54,273-byte TPA without an RSX.
 
-DUP 1.13 explains CRC, unavailable-sector, not-ready, write-protection and
+DUP 1.14 explains CRC, unavailable-sector, not-ready, write-protection and
 comparison errors while retaining the numeric status. Formatting failures also
 show cylinder and side. Status 1 remains a merged adapter failure: it cannot
-reliably distinguish timeout, seek failure and invalid request. A retry succeeding
-does not establish the cause of the earlier failure.
+reliably distinguish timeout, seek failure and invalid request. DUP now retries
+that recoverable result before reporting it. A retry succeeding does not
+establish the cause of the earlier failure.
 
 The format display distinguishes writing from verification. Successful surface
 verifications are counted independently of cylinder-loop termination, and the
@@ -197,6 +248,9 @@ count must match cylinders times sides before completion is reported. A full
 80-cylinder double-sided run reports 160 verified tracks. `test_dup_full_format.py`
 checks every ID, CRC and erased payload on all 1,600 default-format sectors,
 starting with an unformatted container rather than relying on existing sectors.
+`test_dup_unformatted.py` also ejects a mounted disk after boot, inserts
+trs80gp's internal `unformatted dmk` object, waits for DUP to finish, and
+independently checks all 160 generated tracks.
 
 The user's latest MM DUP benchmark is 18 seconds formatting plus 11 seconds
 verifying (29–30 seconds total) for an 80-cylinder, double-sided 800K disk.

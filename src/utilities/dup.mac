@@ -143,7 +143,7 @@ DTRACK: LD HL,PROGRESS
         CALL FPROGRESS
         CALL STREAM
         JP C,DUNSUP
-        CALL WRTRACK
+        CALL WRTRY
         JP NZ,DIOERR
         LD HL,VPROGRESS
         CALL FPROGRESS
@@ -451,7 +451,7 @@ COPYLP: LD A,(SOURCE)
         JR Z,CPWRITE
         CALL STREAM
         JP C,DUNSUP
-        CALL WRTRACK
+        CALL WRTRY
         JP NZ,DIOERR
         LD A,1
         LD (PASSMODE),A
@@ -825,6 +825,22 @@ WRCALL: JP (HL)
 WRSLOW: LD DE,REQ
         LD B,5
         JP API
+
+; Some drives need a second command after a new disk is dropped in.  The
+; first failure makes the BIOS forget the old head position, so the retry
+; does a full select, restore and seek.  Three tries was the customary CP/M
+; compromise: enough for a tardy spindle, but no endless wait on a bad disk.
+; A write-protected disk cannot improve by trying it again.
+WRTRY:  LD B,3
+WTRYLP: PUSH BC
+        CALL WRTRACK
+        POP BC
+        OR A
+        RET Z
+        BIT 6,A
+        RET NZ
+        DJNZ WTRYLP
+        RET
 
  ; Find the physical sector containing RECNO; shared size decoding handles
 ; the small last sector of SUPER and arbitrary packed size maps alike.
@@ -1226,7 +1242,7 @@ OVERFLOW:
         LD SP,04000H
         JP DUNSUP
 
-DTITLE: DB 'BetterCP/M 2.2 Disk Utility Program version 1.13',0
+DTITLE: DB 'BetterCP/M 2.2 Disk Utility Program version 1.14',0
 DMENU:  DB 13,10,'[ A ] Format a disk',13,10
         DB '[ B ] Copy a disk',13,10
         DB '[ C ] Check a disk for errors',13,10,13,10

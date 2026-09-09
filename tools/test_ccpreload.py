@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 RELOADER = ROOT / "build/trs80/ccpreload.bin"
 MODULE = ROOT / "build/ccp/ccp.rlm"
 CCP = ROOT / "build/ccp/ccp.bin"
-BASIC_MODULE = ROOT / "build/cpx/BASIC.CPX"
+BASIC_MODULE = ROOT / "build/cpx/RCP.CPX"
 HELLO_MODULE = ROOT / "build/cpx/HELLO.CPX"
 BASE = LAYOUT["RELOADER"]
 MODULE_SOURCE = 0x6000
@@ -33,9 +33,9 @@ def relocated(module: bytes, target: int) -> bytes:
         payload = struct.unpack_from("<H", module, 26)[0]
         table = struct.unpack_from("<H", module, 28)[0]
     else:
-        _magic, _version, _header_sectors, link, size, _allocation, _entry, count = (
+        _magic, _version, header_sectors, link, size, _allocation, _entry, count = (
             struct.unpack_from("<4sBBHHHHH", module))
-        payload, table = 512, 16
+        payload, table = header_sectors * 512, 16
     image = bytearray(module[payload:payload + size])
     delta = target - link
     for index in range(count):
@@ -58,17 +58,18 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
     listing = (ROOT / "build/trs80/ccpreload.lst").read_text()
     table = int(re.findall(r"^([0-9a-f]{4})\s+.*\bCRSECTS:",
                            listing, re.MULTILINE | re.IGNORECASE)[-1], 16) - BASE
-    sectors = [reloader[table + index * 3 + 2] for index in range(7)]
+    sectors = [tuple(reloader[table + index * 3:table + index * 3 + 3])
+               for index in range(13)]
 
     def install_slots(first: int, content: bytes) -> None:
         padded = content.ljust(((len(content) + 511) // 512) * 512, b"\x00")
         for offset in range(0, len(padded), 512):
-            physical = sectors[first + offset // 512]
-            source = MODULE_SOURCE + physical * 512
+            _track, side, physical = sectors[first + offset // 512]
+            source = MODULE_SOURCE + (side * 16 + physical) * 512
             machine.mem[source:source + 512] = padded[offset:offset + 512]
 
     install_slots(0, module)
-    # Protected filename-loader test double. OPEN selects BASIC/HELLO from the
+    # Protected filename-loader test double. OPEN selects RCP/HELLO from the
     # first stem byte; NEXT copies a 512-byte unit and advances; RESET rewinds.
     # Keep the test provider below every possible CCP destination.  The
     # old D010h stubs became part of the 53K CCP image after layout compaction
@@ -76,8 +77,8 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
     vectors = bytes((0xC3, 0x10, 0x50, 0xC3, 0x30, 0x50,
                      0xC3, 0x50, 0x50))
     open_stub = bytes((
-        0x7E, 0xFE, 0x42, 0x11, 0x00, 0x90, 0x28, 0x03,
-        0x11, 0x00, 0xA0, 0xEB, 0x22, 0x00, 0x59,
+        0x7E, 0xFE, 0x52, 0x11, 0x00, 0x20, 0x28, 0x03,
+        0x11, 0x00, 0x40, 0xEB, 0x22, 0x00, 0x59,
         0x22, 0x02, 0x59, 0xAF, 0xC9,
     ))
     next_stub = bytes((
@@ -96,31 +97,34 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
     if with_two_cpx:
         basic_module = BASIC_MODULE.read_bytes()
         hello_module = HELLO_MODULE.read_bytes()
-        machine.mem[0x9000:0x9000 + len(basic_module)] = basic_module
-        machine.mem[0xA000:0xA000 + len(hello_module)] = hello_module
+        machine.mem[0x2000:0x2000 + len(basic_module)] = basic_module
+        machine.mem[0x4000:0x4000 + len(hello_module)] = hello_module
         machine.mem[(LAYOUT["SYSTEM"] + 0x94)] = 2
-        machine.mem[(LAYOUT["SYSTEM"] + 0x96):(LAYOUT["SYSTEM"] + 0x9E)] = b"BASIC   "
+        machine.mem[(LAYOUT["SYSTEM"] + 0x96):(LAYOUT["SYSTEM"] + 0x9E)] = b"RCP     "
         machine.mem[(LAYOUT["SYSTEM"] + 0x9E):(LAYOUT["SYSTEM"] + 0xA6)] = b"HELLO   "
         cpx_allocation = (struct.unpack_from("<H", basic_module, 14)[0] +
                           struct.unpack_from("<H", hello_module, 14)[0])
     elif with_cpx:
         payload = bytes((0, 0, 4, 0x80, 0xC9, 0))
-        file_module = make_module(name="BASIC", version=(0, 0), commands=[],
+        file_module = make_module(name="RCP", version=(0, 0), commands=[],
                                   linked_base=0x8000, code=payload,
                                   relocations=[2])
-        machine.mem[0x9000:0x9000 + len(file_module)] = file_module
+        machine.mem[0x2000:0x2000 + len(file_module)] = file_module
         machine.mem[(LAYOUT["SYSTEM"] + 0x94)] = 1
-        machine.mem[(LAYOUT["SYSTEM"] + 0x96):(LAYOUT["SYSTEM"] + 0x9E)] = b"BASIC   "
+        machine.mem[(LAYOUT["SYSTEM"] + 0x96):(LAYOUT["SYSTEM"] + 0x9E)] = b"RCP     "
         cpx_allocation = 0x100
 
     gateway = target + allocation + cpx_allocation
     machine.mem[(LAYOUT["SYSTEM"] + 0x90):(LAYOUT["SYSTEM"] + 0x92)] = gateway.to_bytes(2, "little")
     machine.mem[target:target + allocation] = bytes((0xA5,)) * allocation
 
-    # Source fixtures are indexed by the actual Model 4 sector number in C.
+    # Source fixtures are indexed by side and actual Model 4 sector number.
+    # Eleven command sectors cross the side boundary, so C alone is no longer
+    # a unique key as it was for the original seven-sector carrier.
     reader = bytes((
         0xE5,                   # PUSH HL (destination)
-        0x79, 0x87, 0x67, 0x2E, 0x00,  # HL=C*512
+        0x78, 0x07, 0x07, 0x07, 0x07, 0x81, # A=side*16+sector
+        0x67, 0x2E, 0x00, 0x29,        # HL=A*512
         0x11, 0x00, 0x60, 0x19,  # HL+=6000h
         0xD1,                   # POP DE (destination)
         0x01, 0x00, 0x02, 0xED, 0xB0,  # LDIR 512 bytes
@@ -138,8 +142,18 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
     actual = bytes(machine.mem[target:target + len(expected)])
     mismatch = next((index for index, pair in enumerate(zip(actual, expected))
                      if pair[0] != pair[1]), None)
+    state = {}
+    for name in ("CRMLINK", "CRMSIZE", "CRMALLOC", "CRMRELOCS",
+                 "CRMHEADSZ", "CRMPAYLOAD", "CRMRELTABLE", "CRSKIP",
+                 "CRBASE", "CRSLOT"):
+        address = int(re.findall(rf"^([0-9a-f]{{4}})\s+.*\b{name}:",
+                                 listing, re.MULTILINE | re.IGNORECASE)[-1], 16)
+        state[name] = machine.word(address) if name != "CRSLOT" else machine.mem[address]
     require(actual == expected,
             f"CCP was not restored and relocated at {target:04X}h; "
+            f"reloader stopped at {machine.pc:04X}h; "
+            f"state={state}; "
+            f"header={bytes(machine.mem[LAYOUT['MODULEBUF']:LAYOUT['MODULEBUF'] + 16]).hex()}; "
             f"first mismatch={mismatch!r}; "
             f"actual={actual[mismatch:mismatch + 16].hex() if mismatch is not None else ''} "
             f"expected={expected[mismatch:mismatch + 16].hex() if mismatch is not None else ''}")
@@ -155,7 +169,7 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
         require(bytes(machine.mem[basic_base + 4:basic_base + len(relocated(
                     BASIC_MODULE.read_bytes(), basic_base))]) ==
                 relocated(BASIC_MODULE.read_bytes(), basic_base)[4:],
-                "linking HELLO corrupted relocated BASIC.CPX payload")
+                "linking HELLO corrupted relocated RCP.CPX payload")
         require(bytes(machine.mem[hello_base:hello_base + len(relocated(
                     HELLO_MODULE.read_bytes(), hello_base))]) ==
                 relocated(HELLO_MODULE.read_bytes(), hello_base),
@@ -192,7 +206,7 @@ def main() -> None:
     )
     two_cpx_target = 0xBFFD - allocation - cpx_allocation
     run_at(two_cpx_target, with_two_cpx=True)
-    print("real BASIC and HELLO modules restored, relocated, and linked")
+    print("real RCP and HELLO modules restored, relocated, and linked")
 
 
 if __name__ == "__main__":

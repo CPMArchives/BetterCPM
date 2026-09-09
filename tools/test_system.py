@@ -497,7 +497,7 @@ def main() -> None:
     require(cpu.a == (first_toggle ^ 0xFF), "printer hook lost shared state")
     cpu.c, cpu.de = 200, 0x0100
     cpu.run(CALLER)
-    require(cpu.a == 1, "legacy CPX query lost the default BASIC profile")
+    require(cpu.a == 1, "legacy CPX query lost the default RCP profile")
     cpu.mem[0x7400:0x740E] = bytes((1, 0)) + bytes(12)
     cpu.c, cpu.de = 202, 0x7400
     cpu.run(CALLER)
@@ -551,7 +551,7 @@ def main() -> None:
     cpu.mem[(LAYOUT["SYSTEM"] + 0x8C):(LAYOUT["SYSTEM"] + 0x8E)] = ccp_base.to_bytes(2, "little")
     cpu.mem[(LAYOUT["SYSTEM"] + 0x8E):(LAYOUT["SYSTEM"] + 0x90)] = allocation.to_bytes(2, "little")
     # This portable-core fixture intentionally exercises the no-CPX layout;
-    # the platform reloader and production disk tests cover BASIC.CPX.  Keep
+    # the platform reloader and production disk tests cover RCP.CPX.  Keep
     # its saved reconstruction profile explicitly empty rather than allowing
     # the production default to interpret the fixture's dummy sectors.
     cpu.mem[(LAYOUT["SYSTEM"] + 0x94)] = 0

@@ -8,6 +8,7 @@ from pathlib import Path
 
 from add_cpm_file_to_dmk import extract_raw
 from build_montezuma_extended_790k import build
+from build_source_disk import install_files as install_data_files
 from build_trs80_boot import (
     ALLOCATION_BLOCK_BYTES,
     DIRECTORY_ENTRIES,
@@ -26,6 +27,12 @@ def build_image(output: Path, *files: tuple[str, Path]) -> None:
     subprocess.run(command, cwd=ROOT, check=True, stdout=subprocess.DEVNULL)
 
 
+def build_data_image(output: Path, *files: tuple[str, Path]) -> None:
+    """Build the 800K DATA medium which the installed B: DPB describes."""
+    payload = [(0, name, source.read_bytes()) for name, source in files]
+    output.write_bytes(build(install_data_files(payload)))
+
+
 def fill_directory(image: Path) -> None:
     """Consume every free directory entry without consuming data blocks."""
     raw = extract_raw(image.read_bytes())
@@ -42,20 +49,21 @@ def fill_directory(image: Path) -> None:
     image.write_bytes(build(bytes(raw)))
 
 
-def run(command: str, image: Path, drive_b: Path) -> str:
+def run(command: str, image: Path, drive_b: Path, run_delay: int = 5000) -> str:
     completed = subprocess.run([
         "python3", str(ROOT / "tools/run_trs80_command.py"), command,
         "--emulator", str(DEFAULT_EMULATOR), "--image", str(image),
         "--drive-b", str(drive_b), "--boot-delay", "3000",
-        "--run-delay", "5000", "--in-place",
+        "--run-delay", str(run_delay), "--in-place",
     ], cwd=ROOT, check=True, capture_output=True, text=True)
     return completed.stdout
 
 
-def file_bytes(image: Path, filename: str) -> bytes | None:
+def file_bytes(image: Path, filename: str,
+               first_sector: int = FILESYSTEM_FIRST_SECTOR) -> bytes | None:
     raw = extract_raw(image.read_bytes())
     name, suffix = cpm_name(filename)
-    directory = FILESYSTEM_FIRST_SECTOR * SECTOR_SIZE
+    directory = first_sector * SECTOR_SIZE
     extents: list[tuple[int, bytes]] = []
     for index in range(DIRECTORY_ENTRIES):
         entry = raw[directory + index * 32:directory + (index + 1) * 32]
@@ -94,7 +102,7 @@ def main() -> None:
         old.write_bytes(b"OLD DESTINATION" * 20)
         drive_a, drive_b = work / "a.dmk", work / "b.dmk"
         build_image(drive_a, ("OLD.COM", old))
-        build_image(drive_b)
+        build_data_image(drive_b)
 
         run("SAVE 4 SNAP.COM", drive_a, drive_b)
         require(len(file_bytes(drive_a, "SNAP.COM") or b"") == 4 * 256,
@@ -111,7 +119,7 @@ def main() -> None:
                 "SAVE did not replace an existing destination")
 
         output = run("SAVE 1 B:OTHER.COM", drive_a, drive_b)
-        require(len(file_bytes(drive_b, "OTHER.COM") or b"") == 256 and
+        require(len(file_bytes(drive_b, "OTHER.COM", 0) or b"") == 256 and
                 "A0>" in output,
                 "drive-qualified SAVE failed or changed the current DU")
 

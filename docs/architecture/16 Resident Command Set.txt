@@ -1,0 +1,124 @@
+BETTERCP/M RESIDENT COMMAND SET
+
+Status: command boundary, syntax and first implementation complete.
+
+
+1. CORE CCP COMMANDS
+
+The stock CCP contains only these commands:
+
+  GET  JUMP  PEEK (P)  POKE  GO  SAVE
+
+These commands must execute without loading a transient or a CPX.  SAVE moves
+from the command package into the CCP.  The former BASIC.CPX is named RCP.CPX.
+
+
+2. COMMON ADDRESS RULES
+
+GET, JUMP, PEEK and POKE use one hexadecimal address parser.  Leading zeroes
+are optional.  Addresses range from 0000H through FFFFH.  A command rejects a
+missing or malformed required address without partially performing its work.
+
+
+3. GET
+
+  GET filename
+  GET address filename
+
+The one-operand form loads the named file beginning at 0100H.  The two-operand
+form loads it beginning at the specified address.  Operand count removes the
+possible ambiguity between a hexadecimal-looking filename and an address:
+GET 800 names a file, while GET 800 PROGRAM loads PROGRAM at 0800H.
+
+GET loads bytes and returns to the prompt.  It does not execute the image or
+remember a command tail.  It must reject any range that cannot remain intact
+while the command environment is active, including overlap with protected
+memory or the executing CCP/CPX area.
+
+
+4. JUMP AND GO
+
+  JUMP address [command tail]
+  GO [command tail]
+
+GO is exactly JUMP 0100H.  Both establish the normal transient stack, DMA,
+page-zero vectors, command tail and default FCBs before transferring control.
+With no supplied tail they create a blank tail; they never reuse a previous
+program's tail.
+
+JUMP with no operand, or with a first operand that is not hexadecimal, reports
+ADDRESS REQUIRED.
+
+
+5. PEEK AND P
+
+  PEEK [address]
+  PEEK first last
+  P [same operands]
+
+One address displays 256 bytes beginning at that exact address.  Two addresses
+display the inclusive range.  The display never wraps through FFFFH.  With no
+address, the first invocation starts at 0100H and later invocations continue
+at the byte following the previous display.
+
+The memory pager is bidirectional.  Comma or less-than displays the previous
+page.  Period, greater-than or SPACE displays the next page.  Ctrl-C returns
+to the command prompt.  Backward memory paging requires only address arithmetic
+and is small enough to remain in the CCP.
+
+
+6. POKE
+
+  POKE address byte [byte ...]
+  POKE address "text
+  POKE address byte [byte ...] "text
+
+Bytes are hexadecimal and are stored consecutively.  A quotation mark begins
+literal text for the remainder of the command.  POKE validates the address and
+all hexadecimal byte operands before changing memory.
+
+
+7. SAVE
+
+SAVE retains the stock CP/M page-count interface and BetterCP/M's existing
+drive/user filename support:
+
+  SAVE pages filename
+
+It saves the requested number of 256-byte pages beginning at 0100H.  SAVE is a
+core command because a transient would overwrite the memory being saved and a
+bare CCP must retain the complete GET/POKE/SAVE monitor sequence.
+
+
+8. DEFAULT RCP.CPX
+
+The standard command package is RCP.CPX.  Its finalized command inventory is:
+
+  DIR  ERA  TYPE  REN  USER  CLS  VER  COPY  MOVE
+
+SAVE now resides in the CCP; CLS, COPY and MOVE are present in RCP.CPX and as
+matching transient fallbacks.
+
+TYPE supports paging.  It uses SPACE, period or greater-than for the next page;
+if backward file paging is included, comma or less-than selects the previous
+page.  Backward TYPE paging is independent of the inexpensive CCP memory pager
+because it requires file-position bookkeeping.
+
+COPY accepts both forms and normalizes them to the same operation:
+
+  COPY source destination
+  COPY destination:=source
+
+MOVE uses the corresponding forms.  It removes the source only after the
+destination has been written and closed successfully.  A same-drive, same-user
+move may use a directory rename; a cross-drive or cross-user move copies and
+then erases.
+
+
+9. DEFERRED COMMAND PACKAGES
+
+PORT and other machine-level commands, ECHO and NOTE/#, and FLOW.CPX are not
+part of this implementation milestone.  RESET/R also remains deferred until
+its exact contract is chosen: a BDOS disk reset can return to a script, whereas
+a literal Ctrl-C warm boot abandons the current command sequence.
+

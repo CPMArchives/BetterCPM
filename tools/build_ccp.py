@@ -15,7 +15,11 @@ SOURCE = ROOT / "src/ccp/ccp.mac"
 BUILD = ROOT / "build/ccp"
 LINK_BASE = 0xBB00
 ALTERNATE_BASE = 0xBC01
-MODULE_HEADER_SIZE = 512
+CHECK_BASE = 0xBD37
+# The original one-sector relocation directory was sufficient for the small
+# bring-up CCP.  The finalized resident monitor needs a second sector; the
+# carrier records its header length so old one-sector modules remain legible.
+MODULE_HEADER_SIZE = 1024
 DEFAULT_GATEWAY = LAYOUT["TPA"]
 
 
@@ -34,18 +38,25 @@ def assemble(assembler: Path, text: str, output: Path, listing: Path,
     return data
 
 
-def relocation_offsets(linked: bytes, alternate: bytes) -> list[int]:
-    if len(linked) != len(alternate):
+def relocation_offsets(linked: bytes,
+                       alternates: list[tuple[bytes, int]]) -> list[int]:
+    if any(len(linked) != len(image) for image, _origin in alternates):
         raise SystemExit("CCP alternate-origin size changed")
-    delta = ALTERNATE_BASE - LINK_BASE
-    changed = {index for index, pair in enumerate(zip(linked, alternate))
-               if pair[0] != pair[1]}
+    changed = {
+        index
+        for image, _origin in alternates
+        for index, pair in enumerate(zip(linked, image))
+        if pair[0] != pair[1]
+    }
     candidates = []
     for offset in range(len(linked) - 1):
         old = int.from_bytes(linked[offset:offset + 2], "little")
-        new = int.from_bytes(alternate[offset:offset + 2], "little")
         covered = changed.intersection((offset, offset + 1))
-        if covered and (old + delta) & 0xFFFF == new:
+        if covered and all(
+            (old + origin - LINK_BASE) & 0xFFFF ==
+            int.from_bytes(image[offset:offset + 2], "little")
+            for image, origin in alternates
+        ):
             candidates.append((offset, covered))
     selected = []
     uncovered = set(changed)
@@ -58,12 +69,16 @@ def relocation_offsets(linked: bytes, alternate: bytes) -> list[int]:
         selected.append(offset)
         uncovered -= covered
     selected.sort()
-    relocated = bytearray(linked)
-    for offset in selected:
-        value = int.from_bytes(relocated[offset:offset + 2], "little")
-        relocated[offset:offset + 2] = ((value + delta) & 0xFFFF).to_bytes(2, "little")
-    if bytes(relocated) != alternate:
-        raise SystemExit("generated CCP relocation table does not reproduce alternate image")
+    for alternate, origin in alternates:
+        relocated = bytearray(linked)
+        delta = origin - LINK_BASE
+        for offset in selected:
+            value = int.from_bytes(relocated[offset:offset + 2], "little")
+            relocated[offset:offset + 2] = (
+                (value + delta) & 0xFFFF).to_bytes(2, "little")
+        if bytes(relocated) != alternate:
+            raise SystemExit(
+                "generated CCP relocation table does not reproduce alternate image")
     return selected
 
 
@@ -90,11 +105,17 @@ def main() -> None:
     alternate = assemble(args.assembler, alternate_text,
                          BUILD / "ccp-alt.bin", BUILD / "ccp-alt.lst",
                          ALTERNATE_BASE)
-    offsets = relocation_offsets(data, alternate)
+    check_text = text.replace("CCPBASE         EQU     0BB00H",
+                              "CCPBASE         EQU     0BD37H")
+    check = assemble(args.assembler, check_text,
+                     BUILD / "ccp-check.bin", BUILD / "ccp-check.lst",
+                     CHECK_BASE)
+    offsets = relocation_offsets(
+        data, [(alternate, ALTERNATE_BASE), (check, CHECK_BASE)])
     if len(offsets) > (MODULE_HEADER_SIZE - 16) // 2:
-        raise SystemExit("CCP relocation directory exceeds one sector")
+        raise SystemExit("CCP relocation directory exceeds its header")
     header = bytearray(MODULE_HEADER_SIZE)
-    header[:16] = struct.pack("<4sBBHHHHH", b"BCM1", 1, 1, LINK_BASE,
+    header[:16] = struct.pack("<4sBBHHHHH", b"BCM1", 1, 2, LINK_BASE,
                               len(data), allocation_size, 0, len(offsets))
     for index, offset in enumerate(offsets):
         struct.pack_into("<H", header, 16 + index * 2, offset)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build transient fallbacks directly from the BASIC.CPX command code."""
+"""Build transient fallbacks directly from the RCP.CPX command code."""
 from __future__ import annotations
 
 import argparse
@@ -10,14 +10,16 @@ from pathlib import Path
 from build_ccp import assemble
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "src/cpx/basic.mac"
+SOURCE = ROOT / "src/cpx/rcp.mac"
 BUILD = ROOT / "build/utilities"
 ORIGIN = 0x0100
 COMMANDS = {
     "DIR": "BC_DIR",
     "USER": "BC_USER",
-    "CLR": "BC_CLR",
+    "CLS": "BC_CLR",
     "VER": "BC_VER",
+    "COPY": "BC_COPY",
+    "MOVE": "BC_MOVE",
 }
 
 
@@ -26,13 +28,13 @@ def symbol(listing: Path, name: str) -> int:
                          listing.read_text(encoding="ascii"),
                          re.MULTILINE | re.IGNORECASE)
     if not matches:
-        raise SystemExit(f"BASIC transient listing lacks {name}")
+        raise SystemExit(f"RCP transient listing lacks {name}")
     return int(matches[-1], 16)
 
 
 def transient(image: bytes, entry: int) -> bytes:
     # CP/M supplies a blank-prefixed command tail. Strip its leading spaces,
-    # call the very same routine used by BASIC.CPX, then warm boot. Keeping the
+    # call the very same routine used by RCP.CPX, then warm boot. Keeping the
     # complete command body is intentionally a first parity implementation;
     # later dead-code removal may reduce the files without changing behavior.
     prefix = bytes((
@@ -64,8 +66,8 @@ def main() -> None:
     text = text.replace("        CSEG\n        .PHASE  ",
                         "        ASEG\n        ORG     ").replace(
                             "        .DEPHASE\n", "")
-    listing = BUILD / "basic-transient.lst"
-    base = assemble(args.assembler, text, BUILD / "basic-transient.bin",
+    listing = BUILD / "rcp-transient.lst"
+    base = assemble(args.assembler, text, BUILD / "rcp-transient.bin",
                     listing, ORIGIN)
     for command, entry_name in COMMANDS.items():
         data = transient(base, symbol(listing, entry_name))

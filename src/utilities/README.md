@@ -14,8 +14,8 @@ The collection currently contains:
 |---|---|---|
 | System configuration | `CONFIG`, `DUP` | `config.mac`, `dup.mac`, `disk/` |
 | Extension management | `CPX`, `RSX` | `cpx.mac`, `rsx.mac` |
-| Stock command replacements | `DIR`, `ERA`, `REN`, `TYPE`, `USER`, `SAVE` (resident), `SUBMIT`, `XSUB` | this directory and `../cpx/basic.mac` |
-| System reporting | `STAT`, `VER` | `stat.mac` and `../cpx/basic.mac` |
+| Stock command replacements | `DIR`, `ERA`, `REN`, `TYPE`, `USER`, `CLS`, `SUBMIT`, `XSUB`; `SAVE` is resident in the CCP | this directory and `../cpx/rcp.mac` |
+| System reporting | `STAT`, `VER` | `stat.mac` and `../cpx/rcp.mac` |
 | Maintenance | `WARM` | `warm.mac` |
 
 `PIP` is a planned BetterCP/M standard-utility replacement and will join this

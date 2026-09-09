@@ -136,11 +136,11 @@ ECB_GENERATION:
 ; is deliberately empty; later CPX installation records ordered module
 ; sources here.  Unlike the runtime CPX chain, this table survives WBOOT.
 CPTCOUNT:
-        DB      1               ; default proof profile loads BASIC.CPX
+        DB      1               ; default proof profile loads RCP.CPX
 CPTFLAGS:
-        DB      1               ; default: BASIC only; bit 1 enables HELLO at runtime
+        DB      1               ; default: RCP only; bit 1 enables HELLO at runtime
 CPTABLE:
-        DB      'BASIC   '      ; ordinary BASIC.CPX filename stem
+        DB      'RCP     '      ; ordinary RCP.CPX filename stem
 ; Patch 2026-09-02: reserve four reconstruction records during bring-up.  The
 ; earlier eight-record placeholder consumed the only fixed-page expansion
 ; space; a later variable persistent-DATA allocator will remove this ceiling.

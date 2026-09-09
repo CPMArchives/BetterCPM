@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build BASIC-derived transient commands natively and require cross parity."""
+"""Build RCP-derived transient commands natively and require cross parity."""
 from __future__ import annotations
 
 import argparse
@@ -8,7 +8,7 @@ import tempfile
 from pathlib import Path
 from system_layout import expand_layout
 
-from build_basic_transients import BUILD, COMMANDS, ROOT, SOURCE, symbol, transient
+from build_rcp_transients import BUILD, COMMANDS, ROOT, SOURCE, symbol, transient
 from build_native_trs80 import (
     DEFAULT_CPMSIM, DEFAULT_SYSTEM, DEFAULT_TEMPLATE, DEFAULT_TOOLS,
     blank, cpm_text, run,
@@ -24,11 +24,11 @@ def main() -> None:
     args = parser.parse_args()
     required = (args.cpmsim, args.system_disk, args.disk_template,
                 args.tools / "ZSM4.COM", args.tools / "LINK.COM", SOURCE,
-                BUILD / "basic-transient.bin", BUILD / "basic-transient.lst")
+                BUILD / "rcp-transient.bin", BUILD / "rcp-transient.lst")
     for path in required:
         if not path.is_file():
-            raise SystemExit(f"missing native BASIC transient input: {path}")
-    with tempfile.TemporaryDirectory(prefix="bettercpm-native-basic-transient-") as temporary:
+            raise SystemExit(f"missing native RCP transient input: {path}")
+    with tempfile.TemporaryDirectory(prefix="bettercpm-native-rcp-transient-") as temporary:
         work = Path(temporary)
         disks = work / "disks"
         disks.mkdir()
@@ -60,16 +60,16 @@ expect eof
 '''
         result = run("expect", "-c", commands, check=False)
         transcript = result.stdout + result.stderr
-        (BUILD / "NATIVE-BASIC-TRANSIENT-BUILD.LOG").write_text(
+        (BUILD / "NATIVE-RCP-TRANSIENT-BUILD.LOG").write_text(
             transcript, encoding="utf-8")
         if result.returncode or "Errors: 0" not in transcript or "CODE SIZE" not in transcript:
-            raise SystemExit(f"native BASIC transient build failed\n{transcript}")
+            raise SystemExit(f"native RCP transient build failed\n{transcript}")
         native_com = work / "BASX.COM"
         run("cpmcp", "-f", "ibm-3740", str(disks / "driveb.dsk"),
             "0:BASX.COM", str(native_com))
-        base = native_com.read_bytes()[:(BUILD / "basic-transient.bin").stat().st_size]
+        base = native_com.read_bytes()[:(BUILD / "rcp-transient.bin").stat().st_size]
         for command, entry_name in COMMANDS.items():
-            native = transient(base, symbol(BUILD / "basic-transient.lst", entry_name))
+            native = transient(base, symbol(BUILD / "rcp-transient.lst", entry_name))
             cross = (BUILD / f"{command}.COM").read_bytes()
             if native != cross:
                 raise SystemExit(f"native/cross {command}.COM mismatch")

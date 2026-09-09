@@ -108,7 +108,7 @@ proc prompt {} {
 spawn [lindex $argv 0] -z -d [lindex $argv 1]
 prompt
 send -- "DIR\\r"
-expect -exact "BASIC"
+expect -exact "RCP"
 prompt
 send -- "HELLO\\r"
 expect -exact "BetterCP/M on z80pack"

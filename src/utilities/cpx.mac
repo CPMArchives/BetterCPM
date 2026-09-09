@@ -225,16 +225,16 @@ PT_UNIT:
         JP      PRINT
 
 KLIST:          DB      'LIST'
-KLOADB:         DB      'LOAD BASIC'
+KLOADB:         DB      'LOAD RCP'
 KLOADH:         DB      'LOAD HELLO'
-KUNLOADB:       DB      'UNLOAD BASIC'
+KUNLOADB:       DB      'UNLOAD RCP'
 KUNLOADH:       DB      'UNLOAD HELLO'
 KCPX:           DB      '.CPX'
-LISTBASIC:      DB      13,10,'BASIC : DIR, ERA, TYPE, REN, SAVE, USER, CLR, VER',13,10,'$'
+LISTBASIC:      DB      13,10,'RCP   : DIR, ERA, TYPE, REN, USER, CLS, VER, COPY, MOVE',13,10,'$'
 LSTHMSG:        DB      'HELLO : HELLO',13,10,'$'
 LISTEMPTY:      DB      13,10,'No CPXs loaded',13,10,'$'
 LISTERROR:      DB      13,10,'CPX profile error',13,10,'$'
-USEMSG:         DB      13,10,'CPX LIST | LOAD/UNLOAD BASIC/HELLO',13,10,'$'
+USEMSG:         DB      13,10,'CPX LIST | LOAD/UNLOAD RCP/HELLO',13,10,'$'
 TPAMSG:         DB      'TPA available: $'
 TPAEND:         DB      'K',13,10,'$'
 PT_TENS:        DB      0

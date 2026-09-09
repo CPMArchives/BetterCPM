@@ -9,7 +9,7 @@ from run_trs80_command import key_args,DEFAULT_EMULATOR
 from system_layout import LAYOUT
 R=Path(__file__).resolve().parents[1];W=R/'build/compatibility'/time.strftime('load-boundary-%Y%m%d-%H%M%S');W.mkdir()
 ccp=struct.unpack_from('<H',(R/'build/ccp/ccp.rlm').read_bytes(),10)[0]
-cpx=struct.unpack_from('<H',(R/'build/cpx/BASIC.CPX').read_bytes(),14)[0]
+cpx=struct.unpack_from('<H',(R/'build/cpx/RCP.CPX').read_bytes(),14)[0]
 ceiling=LAYOUT['TPA'];maximum=(ceiling-0x100)//128
 for name,records in [('FIT',maximum),('OVER',maximum+1)]:
  w=W/name;w.mkdir()

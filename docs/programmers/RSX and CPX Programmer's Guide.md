@@ -233,8 +233,7 @@ The command-entry contract is presently:
 Ordinary registers other than those explicitly preserved may be changed.
 CPXs receive the upper-case command before the transitional core-resident
 commands. Carry clear passes through the chain and then to the CCP's resident
-command and `.COM` fallbacks. During migration this lets `BASIC.CPX` implement
-a command while the old core implementation remains as a safe fallback.
+command and `.COM` fallbacks. RCP.CPX implements the packaged commands while the CCP retains only its deliberately resident monitor commands.
 
 This interface is executable and tested, but CPX header addresses are active
 configuration details. The chain-head field has a stable location in the
@@ -244,7 +243,7 @@ negotiation remain to be specified.
 
 ### 7.2 BCPX version 1 relocatable image
 
-The `BCPX` version 1 image occupies a 512-byte structural and relocation
+The `BCPX` version 1 image occupies a declared 512- or 1024-byte structural and relocation
 header followed by linked code and nonresident command metadata. It identifies
 the module and ABI versions, module name, linked base, code size, page-rounded
 allocation, command/lifecycle entry offsets, relocation sites, exported
@@ -256,17 +255,10 @@ the validated command entry in its four-byte runtime header, links the modules
 in reconstruction-table order, and may choose different addresses after any
 reconstruction. Module metadata is not copied into scarce runtime memory.
 
-The default `BASIC.CPX` is intended to contain the complete stock CCP command
-set—`DIR`, `ERA`, `REN`, `SAVE`, `TYPE`, and `USER`—plus the BetterCP/M `CLR`
-and `VER` extensions. The current image implements all eight. BASIC is
-reconstructed on cold and warm boot. The CCP still contains its
-older command copies during the transition; CPX-first dispatch verifies that
-the module implementations are the ones normally exercised. Matching
-transient fallbacks are required for every stock command except `SAVE`, whose
-operation inherently depends on not overwriting the TPA at `0100h`. Because
-`CLR` is also part of the default BASIC command environment, it likewise
-requires a matching transient fallback even though it is not a stock DRI
-command.
+The default `RCP.CPX` contains `DIR`, `ERA`, `REN`, `TYPE`, `USER`, `CLS`,
+`VER`, `COPY`, and `MOVE`. It is reconstructed on cold and warm boot. Matching
+transient fallbacks permit operation without the RCP. `SAVE` resides in the
+CCP because loading a transient would destroy the TPA image that it must save.
 
 CPX reconstruction records contain eight-character filename stems. The
 protected file-loader supplies the `.CPX` extension and reads the ordinary

@@ -97,9 +97,10 @@ EXPECTED:
 
 def medium(extras=()):
     b=ROOT/'build'
-    files=[('BASIC.CPX',(b/'cpx/BASIC.CPX').read_bytes()),
+    files=[('RCP.CPX',(b/'cpx/RCP.CPX').read_bytes()),
            ('CONFIG.COM',(b/'utilities/CONFIG.COM').read_bytes()),
            ('DUP.COM',(b/'utilities/DUP.COM').read_bytes()),
+           ('SYSGEN.COM',(b/'utilities/SYSGEN.COM').read_bytes()),
            ('DISK.FDF',FDF.read_bytes()),*extras]
     return install((b/'trs80/boot.bin').read_bytes(),(b/'trs80/stage1.bin').read_bytes(),
         (b/'system/resident.bin').read_bytes(),(b/'ccp/ccp.rlm').read_bytes(),files)
