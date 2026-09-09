@@ -154,6 +154,10 @@ invalidating or reinitializing the state whose contract requires that action.
 Persistence here means across transient execution and warm boot; persistence
 across power-off requires a separate save/load mechanism.
 
+The live named-directory representation and resolver contract are specified in
+`17 Named Directory Register.txt`. Persistent DATA owns the authoritative map;
+protected code below the TPA owns the callable resolver.
+
 This is an architectural requirement, not a statement that today's scattered
 state has already been consolidated. Consolidation must migrate existing state
 without retaining duplicate authoritative copies, account for every reserved

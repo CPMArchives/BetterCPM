@@ -1,0 +1,112 @@
+BETTERCP/M NAMED DIRECTORY REGISTER
+
+Status: reconciled design baseline; implementation pending.
+
+
+1. PURPOSE AND CANONICAL IDENTITY
+
+A named directory is an alias for a canonical drive/user pair (DU).  It does
+not replace or extend the CP/M filesystem.  For example, ROOT may name A0 and
+GAMES may name C0.  Resolution produces an ordinary DU before normal command,
+filename, or search processing continues.
+
+Names contain one through eight letters or digits and are folded to upper case.
+The normal lookup is NAME to DU.  Reverse DU-to-NAME lookup supports display,
+inquiry, and the command prompt.
+
+Canonical DU syntax retains its ordinary meaning.  Tokens A: through P: and
+A0: through P31: are therefore reserved and may not be shadowed by aliases.
+This preserves the project's compatibility rule that an extension must not
+change the meaning of existing drive and numeric-DU forms.
+
+
+2. LIVE REGISTER AND PERSISTENCE
+
+The authoritative live Named Directory Register (NDR) resides in protected
+persistent DATA.  It survives transient execution, CCP/CPX reconstruction,
+and warm boot.  No utility, CPX, or disk file keeps an independent live map.
+Cold-boot initialization and explicit clear/load operations may replace it.
+
+Persistent DATA supplies storage, not executable lookup logic.  A small stable
+resolver service below the TPA performs NAME-to-DU and DU-to-NAME inquiries.
+This service remains callable while a transient has overwritten the CCP and
+all CPXs.  The CCP, RCP commands, transient utilities, module loader, PATH, and
+future applications must call this common service rather than implement their
+own parsers or maps.
+
+
+3. COMMAND AND FILE USE
+
+A recognized name followed by a colon is accepted wherever BetterCP/M accepts
+a DU-qualified operand.  Examples include:
+
+  ROOT:
+  TYPE GAMES:README.TXT
+  PIP UTILS:=ROOT:FOO.COM
+
+Changing directory through ROOT: or through its canonical A0: produces the
+same current DU.  When a current DU has a preferred name, the named-directory
+aware prompt is:
+
+  [A0:] ROOT>
+
+The displayed name describes the current DU, not the spelling used to reach
+it.  Prompt customization remains a separate lower-priority facility.
+
+
+4. MANAGEMENT
+
+The common management syntax is:
+
+  ND                 list assignments
+  ND A0:=ROOT         assign ROOT to A0
+  ND A0:=             remove the preferred name for A0
+  ND A0:              report the name for A0
+  ND ROOT:            report the DU for ROOT
+
+Names are unique.  Assigning an existing name elsewhere reports "ROOT exists"
+and changes nothing; reassignment requires an explicit removal first.
+
+The management front end need not be permanent core code.  NDR.COM provides
+the transient implementation.  A future optional NDR.CPX may provide the same
+ND commands without disk loading.  Both use the protected resolver service,
+so unloading the CPX never removes the namespace.
+
+
+5. NDR FILES
+
+Files such as STANDARD.NDR, DEVLPMNT.NDR, and GAMES.NDR are saved namespace
+sets.  They are bulk load/save media, not the runtime database, and therefore
+do not cause repeated floppy access during command lookup.  Definitions made
+interactively or by SUBMIT also survive warm boot without an NDR file.
+
+The human interchange form is one name and DU per line.  A compact binary form
+may be added for fast loading, but its version, checksum, replacement/merge
+semantics, and failure atomicity must be specified before implementation.
+
+
+6. STORAGE REPRESENTATION
+
+The legal 36-character alphabet permits six-bit packing: eight characters fit
+in six bytes.  Drive A-P and user 0-31 require nine bits, so a fixed maximum
+entry fits in eight bytes and a 128-byte allocation holds exactly 16 entries.
+
+Variable-length packed entries could hold more short names in the same space,
+but make mutation, validation, corruption recovery, and lookup more complex.
+This remains an implementation choice.  Before freezing the DATA ABI, compare
+fixed eight-byte entries, a compacted variable stream, and a fixed index plus
+packed-name pool.  The selected capacity must be explicit, measurable, and
+configurable if the memory trade-off warrants it.  Disk encoding need not be
+identical to the live representation.
+
+
+7. SECURITY BOUNDARY
+
+Named directories carry no passwords or access policy.  Protection attaches
+to the canonical DU, so it cannot be bypassed by renaming or deleting an alias.
+
+The proposed DU-protection bitmap, administrator credential, wheel byte,
+SECURITY.RSX, and fail-closed BDOS enforcement hook form a separate post-1.0
+security design.  They must receive their own threat model and interface
+specification before implementation.  None is required to implement the NDR,
+and the NDR format reserves no security fields.

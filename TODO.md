@@ -86,12 +86,13 @@ is supplied through loadable CPXs rather than added to the core CCP.
   Specify its bounded storage, initialization and interface as part of the core
   boundary; implement higher-level navigation and utility syntax in their own
   milestones. Persistence across power-off is a separate save/load decision.
-- [ ] Add transient `NDR.COM` to load, save, list, and select disk-backed named
-  directory sets such as `DEVLPMNT.NDR` and `GAMES.NDR`. Keep the active resolver
-  map in persistent DATA so command lookup does not require repeated floppy access;
-  these files are backing sets, not the live lookup database.
+- [ ] Add transient `NDR.COM` to manage the live map and load/save disk-backed
+  sets such as `DEVLPMNT.NDR` and `GAMES.NDR`. A future optional `NDR.CPX` may
+  expose the same `ND` command forms. Both must call the common protected
+  resolver; these files are backing sets, not the live lookup database. Follow
+  `docs/architecture/17 Named Directory Register.txt`.
 - [ ] Finish common named-DU resolution and use it consistently for command
-  lookup, BASIC commands, transient utilities, and module loading.
+  lookup, RCP commands, transient utilities, and module loading.
 - [ ] Implement a system `PATH` facility for command lookup across canonical
   `DU:` locations, with documented search order, failure behavior, and CPX
   command precedence. Accept named-directory references as input conveniences,
