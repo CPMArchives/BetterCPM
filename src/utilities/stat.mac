@@ -1337,67 +1337,186 @@ MEMREPORT:
         LD      HL,ECB
         LD      A,(HL)
         CP      'B'
-        JR      NZ,MEMBAD
+        JP      NZ,MEMBAD
         INC     HL
         LD      A,(HL)
         CP      'M'
-        JR      NZ,MEMBAD
+        JP      NZ,MEMBAD
         INC     HL
         LD      A,(HL)
         CP      1
-        JR      NZ,MEMBAD
+        JP      NZ,MEMBAD
         LD      DE,MMEMHEAD
+        CALL    PRINT
+        LD      HL,LY_LIMIT
+        LD      BC,0FFFFH
+        LD      DE,MPLATFORM
+        CALL    MAPLINE
+        LD      HL,LY_BUF
+        LD      BC,LY_LIMIT-1
+        LD      DE,MBUFFERS
+        CALL    MAPLINE
+        LD      HL,LY_DIR
+        LD      BC,LY_BUF-1
+        LD      DE,MDIRBUF
+        CALL    MAPLINE
+        LD      HL,LY_RSTA
+        LD      BC,LY_DIR-1
+        LD      DE,MRSXTABLE
+        CALL    MAPLINE
+        LD      HL,LY_TAB
+        LD      BC,LY_RSTA-1
+        LD      DE,MDRIVETAB
+        CALL    MAPLINE
+        LD      HL,LY_FILE
+        LD      BC,LY_TAB-1
+        LD      DE,MFILESVC
+        CALL    MAPLINE
+        LD      HL,LY_BIOS
+        LD      BC,LY_FILE-1
+        LD      DE,MBIOS
+        CALL    MAPLINE
+        LD      HL,LY_DISK
+        LD      BC,LY_BIOS-1
+        LD      DE,MDISKSVC
+        CALL    MAPLINE
+        LD      HL,LY_EXT
+        LD      BC,LY_DISK-1
+        LD      DE,MEXTSVC
+        CALL    MAPLINE
+        LD      HL,LY_BDOS
+        LD      BC,LY_EXT-1
+        LD      DE,MBDOS
+        CALL    MAPLINE
+        LD      HL,LY_SYS
+        LD      BC,LY_BDOS-1
+        LD      DE,MSYSGATE
+        CALL    MAPLINE
+        LD      HL,LY_HIST
+        LD      BC,LY_SYS-1
+        LD      DE,MPDS
+        CALL    MAPLINE
+        LD      HL,(ECB+16)
+        INC     HL
+        INC     HL
+        INC     HL
+        LD      BC,LY_TPA-1
+        LD      A,H
+        CP      B
+        JR      C,MRRSX
+        JR      NZ,MRGATE
+        LD      A,L
+        CP      C
+        JR      NC,MRGATE
+MRRSX: LD      DE,MRSX
+        CALL    MAPLINE
+MRGATE:LD      HL,(ECB+16)
+        PUSH    HL
+        INC     HL
+        INC     HL
+        LD      B,H
+        LD      C,L
+        POP     HL
+        LD      DE,MGATE
+        CALL    MAPLINE
+        LD      HL,(ECB+12)
+        LD      DE,(ECB+14)
+        ADD     HL,DE
+        LD      (MAPCPX),HL
+        LD      HL,(MAPCPX)
+        LD      BC,(ECB+16)
+        DEC     BC
+        LD      A,H
+        CP      B
+        JR      C,MRCPX
+        JR      NZ,MRTPA
+        LD      A,L
+        CP      C
+        JR      Z,MRCPX
+        JR      NC,MRTPA
+MRCPX: LD      DE,MCPX
+        CALL    MAPLINE
+MRTPA: LD      HL,(ECB+12)
+        PUSH    HL
+        LD      DE,(ECB+14)
+        ADD     HL,DE
+        DEC     HL
+        LD      B,H
+        LD      C,L
+        POP     HL
+        LD      DE,MCCP
+        CALL    MAPLINE
+        LD      HL,0100H
+        LD      BC,(ECB+12)
+        DEC     BC
+        LD      DE,MTRANSIENT
+        CALL    MAPLINE
+        LD      HL,0000H
+        LD      BC,00FFH
+        LD      DE,MPAGEZERO
+        CALL    MAPLINE
+        CALL    CRLF
+        LD      DE,MMAXCOM
         CALL    PRINT
         LD      HL,(0006H)
         LD      DE,0100H
         OR      A
         SBC     HL,DE
-        LD      DE,MTPA
-        CALL    MEMLINE
-        LD      HL,(0006H)
-        LD      DE,0100H
-        OR      A
-        SBC     HL,DE
-        LD      A,L             ; COM loading is in complete 128-byte records
+        LD      A,L
         AND     080H
         LD      L,A
-        LD      DE,MMAXCOM
-        CALL    MEMLINE
-        LD      HL,LY_TPA
-        LD      DE,(0006H)
-        OR      A
-        SBC     HL,DE
-        LD      DE,MRSX
-        CALL    MEMLINE
-        LD      HL,(ECB+14)     ; page-rounded live CCP bytes
-        LD      DE,MCCP
-        CALL    MEMLINE
-        LD      HL,(ECB+12)     ; CCP base is the low end of CCP plus all CPXs
-        EX      DE,HL
-        LD      HL,(ECB+16)
-        OR      A
-        SBC     HL,DE
-        LD      DE,MCPX
-        CALL    MEMLINE
-        LD      HL,LY_SYS-LY_TPA ; gateway plus persistent data/reservations
-        LD      DE,MPERSIST
-        CALL    MEMLINE
-        LD      HL,LY_LIMIT-LY_SYS
-        LD      DE,MCORE
-        CALL    MEMLINE
+        CALL    PWORD
+        LD      DE,MBYTESUNIT
+        CALL    PRINT
         JP      FINISH
 MEMBAD: LD      DE,MMEMBAD
         CALL    PRINT
         JP      FINISH
-MEMLINE:PUSH    HL
-        PUSH    DE
+; Print one inclusive, non-overlapping range. HL=start, BC=end, DE=label.
+MAPLINE:
+        LD      (MAPSTART),HL
+        LD      (MAPEND),BC
+        LD      (MAPLABEL),DE
         CALL    CRLF
-        POP     DE
-        CALL    PRINT
-        POP     HL
-        CALL    PWORD
-        LD      DE,MBYTESUNIT
+        LD      HL,(MAPEND)
+        CALL    PHEXWORD
+        LD      A,'-'
+        CALL    PCHAR
+        LD      HL,(MAPSTART)
+        CALL    PHEXWORD
+        LD      A,' '
+        CALL    PCHAR
+        LD      HL,(MAPEND)
+        LD      DE,(MAPSTART)
+        OR      A
+        SBC     HL,DE
+        INC     HL
+        CALL    PWORD5
+        LD      A,' '
+        CALL    PCHAR
+        LD      DE,(MAPLABEL)
         JP      PRINT
+
+PHEXWORD:
+        LD      A,H
+        CALL    PHEXBYTE
+        LD      A,L
+PHEXBYTE:
+        PUSH    AF
+        RRCA
+        RRCA
+        RRCA
+        RRCA
+        CALL    PHEXNIB
+        POP     AF
+PHEXNIB:
+        AND     00FH
+        ADD     A,'0'
+        CP      '9'+1
+        JR      C,PHXDIGIT
+        ADD     A,'A'-'9'-1
+PHXDIGIT:
+        JP      PCHAR
 
 ; Decimal printers.
 PWORD5: LD      C,1
@@ -1512,14 +1631,27 @@ MVALUES5:       DB 'DIR',13,10,'Disk Status  : DSK: d:DSK:',13,10
                 DB 'Iobyte Assign: CON: RDR: PUN: LST:',13,10,'$'
 MACTIVEUSER:    DB 13,10,'Active User : $'
 MACTIVEFILES:   DB 13,10,'Active Files:$'
-MMEMHEAD:       DB 13,10,'BetterCP/M Memory',13,10,'$'
-MTPA:           DB 'Current TPA                  : $'
-MMAXCOM:        DB 'Maximum loadable COM         : $'
-MRSX:           DB 'Protected RSX allocation     : $'
-MCCP:           DB 'Reclaimable CCP image        : $'
-MCPX:           DB 'Reclaimable CCP/CPX region   : $'
-MPERSIST:       DB 'Persistent data/reservations : $'
-MCORE:          DB 'Protected core and buffers   : $'
+MMEMHEAD:       DB 13,10,'BetterCP/M Memory Map',13,10
+                DB 'High-Low    Bytes Owner','$'
+MPLATFORM:      DB 'Platform-reserved memory$'
+MBUFFERS:       DB 'Shared physical/module buffers$'
+MDIRBUF:        DB 'Directory transfer buffer$'
+MRSXTABLE:      DB 'Active RSX reconstruction table$'
+MDRIVETAB:      DB 'Drive tables and disk workspace$'
+MFILESVC:       DB 'Protected file services$'
+MBIOS:          DB 'BIOS$'
+MDISKSVC:       DB 'Disk and extension support$'
+MEXTSVC:        DB 'Protected loader/extension services$'
+MBDOS:          DB 'BDOS and private state$'
+MSYSGATE:       DB 'System gateway, ECB and CPX profile$'
+MPDS:           DB 'PDS (command history)$'
+MRSX:           DB 'Loaded RSX allocation$'
+MGATE:          DB 'Dynamic CP/M gateway$'
+MCPX:           DB 'Loaded CPX allocation$'
+MCCP:           DB 'CCP image$'
+MTRANSIENT:     DB 'Transient area below CCP$'
+MPAGEZERO:      DB 'CP/M page zero$'
+MMAXCOM:        DB 'Maximum loadable COM: $'
 MBYTESUNIT:     DB ' bytes$'
 MMEMBAD:        DB 13,10,'STAT MEM requires BetterCP/M ECB version 1',13,10,'$'
 MBADFORM:       DB 13,10,'Invalid STAT command',13,10,'$'
@@ -1533,6 +1665,10 @@ ARGPTR:         DW 0
 ARGLEN:         DB 0
 NAMECNT:        DB 0
 OPTION:         DB 0
+MAPSTART:       DW 0
+MAPEND:         DW 0
+MAPLABEL:       DW 0
+MAPCPX:         DW 0
 LOGIN:          DW 0
 ROVEC:          DW 0
 DRIVE:          DB 0

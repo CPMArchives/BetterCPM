@@ -28,13 +28,15 @@ STAT CON:=device: | RDR:=device: | PUN:=device: | LST:=device:
 ## Memory report
 
 `STAT MEM` validates the version-1 BetterCP/M Extension Control Block and
-reports byte-exact live values for:
+prints one exhaustive map from `FFFFh` down through page zero. Each row is an
+inclusive address range with its byte count and owner. Fixed core components,
+buffers, the PDS, loaded RSXs, the movable gateway, loaded CPXs, the CCP, the
+transient area below the CCP, page zero, and platform-reserved addresses appear
+as distinct, non-overlapping regions. Empty RSX and CPX ranges are omitted.
 
-- the current TPA and maximum loadable whole-record COM image;
-- protected memory consumed by the active RSX allocation;
-- the page-rounded CCP image and the complete reclaimable CCP/CPX region;
-- persistent command-environment data/reservations; and
-- protected core, disk workspace, and buffers.
+The maximum loadable whole-record COM size follows the map. It may include the
+currently loaded CCP and CPXs because those components are reclaimable; it is
+therefore a capability of the mapped layout rather than another memory region.
 
 The TPA boundary comes from the conventional word at `0006h`; the COM ceiling
 is rounded down to a complete 128-byte load record. Movable command

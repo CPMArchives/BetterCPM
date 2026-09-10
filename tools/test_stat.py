@@ -44,13 +44,20 @@ def main() -> None:
         ], cwd=ROOT, check=True, stdout=subprocess.DEVNULL)
 
         output = run("STAT MEM", image)
-        require("Current TPA                  : 54273 bytes" in output,
-                f"bad live TPA report: {output!r}")
-        require("Maximum loadable COM         : 54272 bytes" in output,
+        require("BetterCP/M Memory Map" in output
+                and "FFFF-F400 03072 Platform-reserved memory" in output
+                and "D5C3-D504 00192 PDS (command history)" in output
+                and "D503-D501 00003 Dynamic CP/M gateway" in output
+                and "00FF-0000 00256 CP/M page zero" in output,
+                f"memory map is incomplete: {output!r}")
+        require("Maximum loadable COM: 54272 bytes" in output,
                 f"COM record-size ceiling is wrong: {output!r}")
-        require("Protected RSX allocation     : 0 bytes" in output
-                and "Reclaimable CCP/CPX region" in output,
-                f"incomplete memory report: {output!r}")
+        positions = [output.index(label) for label in
+                     ("Platform-reserved memory", "PDS (command history)",
+                      "Dynamic CP/M gateway", "Loaded CPX allocation",
+                      "CCP image", "CP/M page zero")]
+        require(positions == sorted(positions),
+                f"memory map is not ordered from high to low: {output!r}")
 
         output = run("STAT LARGE.DAT", image)
         require(output.count("LARGE   .DAT") == 1 and "K Bytes" in output,
