@@ -112,7 +112,8 @@ compatibility rerun, not a new implementation.
 
 - [ ] Implement the versioned PDS descriptor and allocator specified by
   `docs/architecture/18 Persistent Data Segment.txt`; inventory every 1.0 owner,
-  measure the default, and expose current and next-boot sizes.
+  measure the default using `docs/engineering/130 Protected Memory Audit.md`,
+  and expose current and next-boot sizes.
 - [ ] Make the cold-boot PDS size configurable while preserving 53 KiB in the
   default profile. Saving this setting must be independent of saving drive
   formats. Runtime contraction always waits for cold boot.
