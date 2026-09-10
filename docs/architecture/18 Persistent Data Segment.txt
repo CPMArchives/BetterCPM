@@ -1,0 +1,126 @@
+BETTERCP/M PERSISTENT DATA SEGMENT
+
+Status: architectural design baseline; general allocator and resizing pending.
+
+
+1. NAME AND PURPOSE
+
+The protected high-memory data region is the Persistent Data Segment (PDS).
+"Persistent memory" and "persistent data" may be used descriptively, but PDS
+is the architectural name.
+
+The PDS holds writable system state which must survive transient execution,
+CCP/CPX reconstruction, and ordinary warm boot. Persistence across power-off
+requires an explicit system-track or file save operation. Cold boot creates a
+new PDS from saved configuration and initialized defaults.
+
+
+2. PLACEMENT AND GROWTH
+
+The PDS has a fixed upper boundary immediately below the immutable core and a
+lower boundary which may grow downward:
+
+  BIOS and BDOS core
+  fixed BetterCP/M system gateway
+  PDS, fixed top and downward-growing lower boundary
+  installed RSX chain
+  dynamic CP/M compatibility gateway
+  CPX chain
+  CCP
+  TPA
+
+Expanding the PDS adds addresses below its former lower boundary. Existing PDS
+allocations do not move. Code must discover the PDS through the published
+descriptor rather than compile a private base address.
+
+The physical PDS high-water mark may increase but may not decrease between
+cold boots. Releasing an allocation makes it reusable inside the PDS; it does
+not move the resident boundary upward. A smaller boot configuration becomes
+effective only when cold boot rebuilds the segment.
+
+The system distinguishes:
+
+  PDS_CURRENT_SIZE   physical allocation in the running system
+  PDS_BOOT_SIZE      configured allocation for the next cold boot
+
+A larger boot setting may be applied immediately through controlled expansion.
+A smaller setting remains pending and reports that cold boot is required.
+
+
+3. ALLOCATION CONTRACT
+
+The PDS is one contiguous system-owned resource. XPM.RSX or another adjacent
+second class of persistent memory is rejected. Optional components request PDS
+storage through one allocator and do not claim raw addresses independently.
+
+Every allocation records at least an owner/facility identifier, structure
+version, length, active/free state, alignment if required, and reset/lifetime
+policy. Consumers obtain an allocation through the stable PDS interface and
+must not retain pointers into reclaimable CCP, CPX, or transient memory.
+
+Unloading a component defines whether its allocation is released, retained for
+reload, or migrated. Warm boot preserves allocations according to their stated
+policy. Explicit reset may clear selected structures without contracting the
+PDS. Cold boot validates or initializes every configured structure.
+
+
+4. CONTROLLED RUNTIME EXPANSION
+
+An ordinary allocation request never expands the PDS implicitly. Insufficient
+space returns a defined failure. Expansion is a deliberate system reconfiguration
+performed primarily by transient code, such as CONFIG.COM or a dedicated
+rebuilder.
+
+Preparation occurs while the resident environment is intact:
+
+  1. inspect the current layout and requested size;
+  2. inventory loaded RSXs and CPXs;
+  3. classify their reconstruction and state requirements;
+  4. load required images and relocation information;
+  5. preserve explicitly supported state;
+  6. calculate and validate the complete new layout; and
+  7. reject overlap with the rebuilder, its workspace, or the minimum TPA.
+
+The short commit phase then quiesces the environment, rebuilds extensions at
+their lower addresses, enlarges the PDS, restores or initializes supported
+state, moves the dynamic gateway, updates page zero and the system descriptor,
+and reconstructs the command environment.
+
+Active modules are never copied blindly. Each declares one of these behaviors:
+
+  STATELESS          reload and initialize
+  STATE_PRESERVING   save and restore through a versioned contract
+  COLD_ONLY          unload first or defer expansion until cold boot
+
+Most reconstruction machinery belongs in transient code. Permanent code
+publishes layout and allocator interfaces and supplies only the irreducible,
+short commit mechanism. Preparation should finish disk I/O before commit so a
+partly rebuilt resident environment is not required to load its own components.
+
+
+5. CONFIGURATION AND TPA POLICY
+
+CONFIG displays current and next-boot PDS sizes. Saving the boot size is
+independent of saving unrelated live drive formats or other settings. Runtime
+growth must fail cleanly if the proposed boundary overlaps the rebuilder or
+violates the configured minimum TPA, unless the user deliberately selects a
+profile with a smaller TPA.
+
+The default size remains uncommitted until all 1.0 consumers are inventoried.
+Likely consumers include the allocator header, command history and input queues,
+named-directory register, batch/flow state, date/time state, reconstruction
+tables, and explicitly approved extension state. Drive definitions and login
+state remain candidates until their ownership is finalized.
+
+
+6. RELEASE BOUNDARY AND CURRENT IMPLEMENTATION
+
+The 1.0 system must have the PDS ABI, measured storage inventory, configurable
+cold-boot size, stable allocations across warm boot, and the storage required
+by accepted 1.0 features. Runtime expansion is an accepted architectural
+capability, but need not delay 1.0 unless a required feature depends upon it.
+
+The present Model 4 build does not yet implement the general allocator or
+variable sizing. It reserves D504h through D5C3h: 192 bytes total, including
+ten bytes of history control and 182 bytes of packed command records. These
+addresses are current build facts, not permanent ABI values.

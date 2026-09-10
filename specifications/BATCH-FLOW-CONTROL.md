@@ -53,7 +53,7 @@ and unload it after the scripted-input scope ends.
 
 ## Persistent execution state
 
-The persistent DATA area holds descriptions of active batch work, not
+The Persistent Data Segment (PDS) holds descriptions of active batch work, not
 reclaimable CPX code or transient pointers. At minimum it records the command
 source stack, source positions, parameters, variables, conditional stack,
 current execution state, last command/error status, echo mode, and any active

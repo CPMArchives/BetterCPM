@@ -127,7 +127,7 @@ classes.  From high to low, the intended 64K organization is:
   base+100h  Fixed core BDOS entry
   base+080h  Resident Extension Control Block
   base       BetterCP/M system gateway
-         Persistent system DATA, growing downward
+         Persistent Data Segment (PDS), growing downward
          Installed RSXs, allocated downward
   xxxxh  Dynamic CP/M compatibility gateway
          CPXs, allocated downward
@@ -136,16 +136,16 @@ classes.  From high to low, the intended 64K organization is:
   0100h  Transient program origin
   0000h  Compatibility page
 
-Persistent DATA is a dedicated reserved RAM region, not merely a label for
-scattered variables that happen to survive warm boot. The diagram above places
+The Persistent Data Segment (PDS) is a dedicated reserved RAM region, not
+merely a label for scattered variables that happen to survive warm boot. The diagram above places
 it immediately above the downward-growing RSX area. This placement is settled:
-DATA stays at known addresses for the running system when RSXs are loaded or
+existing PDS allocations stay at known addresses when RSXs are loaded or
 unloaded and the lower gateway/command environment moves or is reconstructed.
 It must remain outside the advertised TPA and reclaimable CPX/CCP storage.
 Addresses may differ between builds; publish the base and layout through a
 stable interface rather than requiring consumers to embed private addresses.
 
-The canonical DU/named-directory mapping is a required DATA resident. The rest
+The canonical DU/named-directory mapping is a required PDS resident. The rest
 of the contents are not yet finalized. Live drive-format definitions, disk login
 state and other long-lived mutable OS state remain candidates, not commitments.
 Assign each adopted field a documented owner and reset policy. Keeping its
@@ -154,18 +154,20 @@ invalidating or reinitializing the state whose contract requires that action.
 Persistence here means across transient execution and warm boot; persistence
 across power-off requires a separate save/load mechanism.
 
-The live named-directory representation and resolver contract are specified in
-`17 Named Directory Register.txt`. Persistent DATA owns the authoritative map;
+The complete PDS placement, allocation, high-water and reconstruction rules are
+specified in `18 Persistent Data Segment.txt`. The live named-directory
+representation and resolver contract are specified in
+`17 Named Directory Register.txt`. The PDS owns the authoritative map;
 protected code below the TPA owns the callable resolver.
 
 This is an architectural requirement, not a statement that today's scattered
 state has already been consolidated. Consolidation must migrate existing state
 without retaining duplicate authoritative copies, account for every reserved
-byte, and preserve the agreed TPA budget. The DATA region remains writable RAM
+byte, and preserve the agreed TPA budget. The PDS remains writable RAM
 in a ROM execution build.
 
 The fixed/protected region contains the immutable CP/M-compatible core,
-persistent system DATA, and all currently installed RSXs.  None of this
+the PDS, and all currently installed RSXs. None of this
 memory is available to a transient program.  RSXs extend or intercept
 BDOS/system services and must remain callable while a transient program is
 executing.
@@ -199,7 +201,7 @@ The active RSX chain is the set currently installed.  A runtime change does
 not alter the saved profile unless explicitly saved.
 
 CPXs are dynamically loadable and unloadable command-processor extensions.
-Persistent system DATA holds an active CPX reconstruction table describing
+The PDS holds an active CPX reconstruction table describing
 the ordered CPX set currently in effect.  This table describes what to load,
 not the modules' temporary runtime addresses.  Runtime addresses are
 calculated during reconstruction and published through the Extension Control
@@ -210,13 +212,13 @@ Cold boot initializes the active CPX reconstruction table from that profile.
 The runtime CPX chain is the actual, overlayable code loaded below the
 dynamic gateway.
 
-Warm boot preserves the fixed core, persistent DATA, installed RSXs, and the
+Warm boot preserves the fixed core, PDS, installed RSXs, and the
 dynamic gateway.  It reloads the active CPX set from the reconstruction
 table, reloads the CCP beneath the CPXs, rebuilds the CPX chain, and transfers
 control to the CCP.  WBOOT therefore restores the command environment, not
 merely the CCP.
 
-Cold boot initializes persistent DATA, reconstructs the saved RSX profile,
+Cold boot initializes the PDS, reconstructs the saved RSX profile,
 establishes the dynamic compatibility gateway, initializes the active CPX
 reconstruction table from the saved CPX profile, and loads the CPXs and CCP.
 
@@ -227,14 +229,10 @@ size, TPA ceiling, and configuration generation.  Stable gateways consult
 the descriptor; movable components must not treat their current addresses as
 permanent ABI values.
 
-With no RSXs, the current implementation reserves `BE00h..BFFFh` for a
-512-byte persistent command-history block and materializes the three-byte
-dynamic gateway immediately below it at `BDFDh..BDFFh`. The current CCP is
-page-rounded to ten pages and calculated below any CPXs at `B3FDh`. Transient
-programs may overwrite both the CCP and any CPXs below `BDFDh`. WBOOT
-reconstructs the ordered CPX chain from persistent DATA and
-then reloads the CCP. Neither `BDFDh` nor `B3FDh` is a permanent ABI address;
-installing RSXs moves the dynamic gateway and recalculates the command layout.
+The current packed Model 4 build reserves `D504h..D5C3h` as a 192-byte PDS,
+including ten history-control bytes and 182 packed command-record bytes. This
+is a current implementation fact, not the final general allocator. WBOOT
+reconstructs the ordered CPX chain from the PDS and then reloads the CCP.
 
 
 4.5 COMPATIBILITY-VISIBLE MEMORY

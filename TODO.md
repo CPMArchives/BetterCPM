@@ -103,12 +103,23 @@ is supplied through loadable CPXs rather than added to the core CCP.
   should include the current drive/user (`DU:`), named directory, and current
   date/time while preserving a compact CP/M-style default.
 
-The packed, multi-command history buffer in persistent DATA is already
+The packed, multi-command history buffer in the PDS is already
 implemented, as are Up/Down recall and warm-boot persistence.  The current
 53K layout reserves 192 bytes (182 bytes of command records).  This is the
 temporary size accepted while the resident-memory trade-offs are reviewed;
 do not reduce it again.  It requires regression coverage during the full
 compatibility rerun, not a new implementation.
+
+- [ ] Implement the versioned PDS descriptor and allocator specified by
+  `docs/architecture/18 Persistent Data Segment.txt`; inventory every 1.0 owner,
+  measure the default, and expose current and next-boot sizes.
+- [ ] Make the cold-boot PDS size configurable while preserving 53 KiB in the
+  default profile. Saving this setting must be independent of saving drive
+  formats. Runtime contraction always waits for cold boot.
+- [ ] Implement controlled runtime PDS expansion after module reconstruction
+  contracts exist. Keep complex preparation in transient code, preserve only
+  declared state, enforce the minimum-TPA policy, and never shrink the physical
+  high-water boundary before cold boot.
 
 ## Stock CP/M transient utilities
 
@@ -293,7 +304,7 @@ between CONFIG and DUP remain design considerations for the formatting work.
 - [ ] Finish user documentation for installation, commands, configuration,
   disk handling, extensions, recovery, and upgrades.
 - [ ] Finish programmer documentation for the BIOS, BDOS, system gateway,
-  persistent DATA, CPX ABI, and RSX ABI.
+  PDS, CPX ABI, and RSX ABI.
 - [ ] Define release versioning, compatibility promises, upgrade rules, and
   automated release acceptance tests.
 

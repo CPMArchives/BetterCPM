@@ -155,7 +155,7 @@ command search, or other command-environment behavior.  It does not become
 an RSX merely because it is temporarily loaded.  CPXs shall use the command
 processor's extension interface rather than intercepting BDOS calls.  Their
 code is reclaimable with the CCP and restored by WBOOT from the active CPX
-reconstruction table in persistent DATA.
+reconstruction table in the Persistent Data Segment (PDS).
 
 
 14.5 STORAGE EXTENSIONS
@@ -281,7 +281,7 @@ The intended high-to-low ordering is:
 
   * BIOS and hardware-dependent resident state.
   * Core BDOS and System Services.
-  * Persistent system DATA and installed RSXs.
+  * The PDS and installed RSXs.
   * Dynamic CP/M compatibility gateway.
   * Installed CPXs.
   * Reloadable CCP core.
@@ -297,7 +297,7 @@ BIOS or core BDOS above it to move.
 RSXs are dynamically loadable and unloadable, but remain resident and
 protected while installed so transient programs can use their intercepted or
 extended services.  CPXs are dynamically loadable and unloadable overlays;
-they may be destroyed with the CCP by a transient program.  Persistent DATA
+they may be destroyed with the CCP by a transient program. The PDS
 contains the active CPX reconstruction table used by WBOOT to restore the
 ordered CPX set and CCP.
 

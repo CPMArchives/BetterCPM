@@ -22,12 +22,12 @@ change the meaning of existing drive and numeric-DU forms.
 
 2. LIVE REGISTER AND PERSISTENCE
 
-The authoritative live Named Directory Register (NDR) resides in protected
-persistent DATA.  It survives transient execution, CCP/CPX reconstruction,
+The authoritative live Named Directory Register (NDR) resides in the protected
+Persistent Data Segment (PDS). It survives transient execution, CCP/CPX reconstruction,
 and warm boot.  No utility, CPX, or disk file keeps an independent live map.
 Cold-boot initialization and explicit clear/load operations may replace it.
 
-Persistent DATA supplies storage, not executable lookup logic.  A small stable
+The PDS supplies storage, not executable lookup logic. A small stable
 resolver service below the TPA performs NAME-to-DU and DU-to-NAME inquiries.
 This service remains callable while a transient has overwritten the CCP and
 all CPXs.  The CCP, RCP commands, transient utilities, module loader, PATH, and
