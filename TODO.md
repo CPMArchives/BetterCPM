@@ -116,8 +116,9 @@ compatibility rerun, not a new implementation.
 - [ ] Make the cold-boot PDS size configurable while preserving 53 KiB in the
   default profile. Saving this setting must be independent of saving drive
   formats. Runtime contraction always waits for cold boot.
-- [ ] Implement controlled runtime PDS expansion after module reconstruction
-  contracts exist. Keep complex preparation in transient code, preserve only
+- [ ] Generalize resident-layout reconstruction and module-state contracts for
+  RSX load/unload, compaction, and controlled runtime PDS expansion. Keep
+  complex preparation in transient code, preserve only
   declared state, enforce the minimum-TPA policy, and never shrink the physical
   high-water boundary before cold boot.
 

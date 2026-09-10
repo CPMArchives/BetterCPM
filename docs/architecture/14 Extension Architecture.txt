@@ -157,6 +157,27 @@ processor's extension interface rather than intercepting BDOS calls.  Their
 code is reclaimable with the CCP and restored by WBOOT from the active CPX
 reconstruction table in the Persistent Data Segment (PDS).
 
+Any change to the protected resident layout uses one reconstruction
+transaction.  This includes loading an RSX, unloading an RSX, and changing
+the lower boundary of the PDS.  For example, if HELLO.RSX is loaded before
+FDF.RSX, unloading HELLO requires FDF and everything below it to be rebuilt
+at new addresses.  Expanding the PDS imposes the same requirement; it merely
+supplies a different upper boundary for the rebuilt RSX/CPX region.
+
+Consequently, the state contract belongs to the general extension
+architecture rather than to PDS expansion.  Every active RSX that may move
+must be reconstructible and declare one of these behaviors:
+
+  STATELESS          reload and initialize
+  STATE_PRESERVING   save and restore through a versioned contract
+  COLD_ONLY          do not move while active; defer the layout change
+
+Relocation records repair addresses derived from the linked image.  They do
+not by themselves identify pointers or other mutable values created while a
+module is running, so a stateful module must use the state-preservation
+contract.  Current HELLO and FDF implementations have no private live state
+that must survive reconstruction and therefore follow the stateless case.
+
 
 14.5 STORAGE EXTENSIONS
 -----------------------

@@ -71,11 +71,17 @@ space returns a defined failure. Expansion is a deliberate system reconfiguratio
 performed primarily by transient code, such as CONFIG.COM or a dedicated
 rebuilder.
 
+PDS expansion uses the resident-layout reconstruction transaction defined by
+the Extension Architecture. It introduces no separate relocation or active-
+state problem: removing a higher RSX already requires every lower RSX and the
+command environment to be rebuilt at new addresses. PDS expansion merely
+changes the boundary supplied to that same operation.
+
 Preparation occurs while the resident environment is intact:
 
   1. inspect the current layout and requested size;
   2. inventory loaded RSXs and CPXs;
-  3. classify their reconstruction and state requirements;
+  3. validate their declared reconstruction and state requirements;
   4. load required images and relocation information;
   5. preserve explicitly supported state;
   6. calculate and validate the complete new layout; and
@@ -86,11 +92,9 @@ their lower addresses, enlarges the PDS, restores or initializes supported
 state, moves the dynamic gateway, updates page zero and the system descriptor,
 and reconstructs the command environment.
 
-Active modules are never copied blindly. Each declares one of these behaviors:
-
-  STATELESS          reload and initialize
-  STATE_PRESERVING   save and restore through a versioned contract
-  COLD_ONLY          unload first or defer expansion until cold boot
+The STATELESS, STATE_PRESERVING, and COLD_ONLY behaviors are the general RSX
+reconstruction contract; they apply equally to load, unload, compaction, and
+PDS resizing.
 
 Most reconstruction machinery belongs in transient code. Permanent code
 publishes layout and allocator interfaces and supplies only the irreducible,
