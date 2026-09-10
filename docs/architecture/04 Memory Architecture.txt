@@ -194,7 +194,11 @@ Installed RSXs are dynamically loadable and unloadable, but remain protected
 for as long as they are installed.  Changing the active RSX set recalculates
 the protected boundary, reconstructs the RSX layout, moves the dynamic
 gateway, updates page zero and the Extension Control Block, and reconstructs
-the CPXs and CCP beneath it.
+the CPXs and CCP beneath it. Loading an RSX, unloading an RSX, compacting the
+chain, and expanding the PDS all invoke this same resident-layout transaction.
+PDS growth is therefore another cause of reconstruction, not a distinct form
+of relocation. The Extension Architecture defines the reconstruction and
+module-state contract used by every such operation.
 
 The saved RSX profile contains the cold-boot defaults maintained by CONFIG.
 The active RSX chain is the set currently installed.  A runtime change does
