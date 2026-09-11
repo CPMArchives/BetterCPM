@@ -1,0 +1,382 @@
+; Hardware-independent BetterCP/M clock display utility.
+; Discovers TIME ABI 1.0 through Resident Service Function 208.
+
+BDOS            EQU     0005H
+
+        CSEG
+        .PHASE  0103H
+START:
+        CALL    TM_PARSE
+        JP      NZ,TM_USAGE
+        LD      DE,TM_LOOKUP
+        LD      C,208
+        CALL    BDOS
+        LD      (TM_DSTAT),A
+        OR      A
+        JP      NZ,TM_NOCLOCK
+        LD      A,H
+        OR      L
+        JP      Z,TM_NOCLOCK
+        LD      (TM_ENTRY),HL
+        LD      A,(TM_MODE)
+        OR      A
+        JR      NZ,TM_PROVIDER
+        LD      DE,TM_REQUEST
+        LD      BC,TM_GOT
+        PUSH    BC
+        JP      (HL)
+TM_GOT:
+        OR      A
+        JP      NZ,TM_CLOCKERR
+        LD      DE,TM_NL
+        CALL    TM_PRINT
+        LD      HL,(TM_REQUEST+4)
+        CALL    TM_DATE
+        LD      A,' '
+        CALL    TM_CHAR
+        LD      A,(TM_REQUEST+6)
+        CALL    TM_BCD
+        LD      A,':'
+        CALL    TM_CHAR
+        LD      A,(TM_REQUEST+7)
+        CALL    TM_BCD
+        LD      A,':'
+        CALL    TM_CHAR
+        LD      A,(TM_REQUEST+8)
+        CALL    TM_BCD
+        LD      DE,TM_NL
+        CALL    TM_PRINT
+        JP      TM_EXIT
+
+TM_PROVIDER:
+        LD      A,(TM_LOOKUP+18)
+        LD      (TM_RSXREQ+2),A
+        LD      DE,TM_RSXREQ
+        LD      C,202
+        CALL    BDOS
+        OR      A
+        JR      Z,TM_PNONAME
+        LD      DE,TM_PNAME
+        CALL    TM_PRINT
+        LD      HL,TM_RSXREQ+4
+        LD      B,8
+TM_PNLOOP:
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,TM_PNDONE
+        PUSH    HL
+        PUSH    BC
+        CALL    TM_CHAR
+        POP     BC
+        POP     HL
+        INC     HL
+        DJNZ    TM_PNLOOP
+TM_PNDONE:
+        LD      DE,TM_NL
+        CALL    TM_PRINT
+TM_PNONAME:
+        LD      DE,TM_PHEAD
+        CALL    TM_PRINT
+        LD      A,(TM_LOOKUP+14)
+        CALL    TM_DEC8
+        LD      A,'.'
+        CALL    TM_CHAR
+        LD      A,(TM_LOOKUP+15)
+        CALL    TM_DEC8
+        LD      DE,TM_PREAD
+        CALL    TM_PRINT
+        LD      A,(TM_LOOKUP+16)
+        AND     1
+        LD      DE,TM_PSET
+        JR      NZ,TM_PCAP
+        LD      DE,TM_PRO
+TM_PCAP:
+        CALL    TM_PRINT
+        LD      DE,TM_PINDEX
+        CALL    TM_PRINT
+        LD      A,(TM_LOOKUP+18)
+        CALL    TM_DEC8
+        LD      DE,TM_NL
+        CALL    TM_PRINT
+        JP      TM_EXIT
+
+TM_PARSE:
+        XOR     A
+        LD      (TM_MODE),A
+        LD      A,(0080H)
+        OR      A
+        RET     Z
+        LD      B,A
+        LD      HL,0081H
+TM_PSPACE:
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,TM_PARG
+        INC     HL
+        DJNZ    TM_PSPACE
+        XOR     A
+        RET
+TM_PARG:
+        LD      A,B
+        CP      9
+        JR      NZ,TM_PBAD
+        LD      DE,TM_PKWORD
+        LD      B,9
+TM_PCMP:
+        LD      A,(HL)
+        CP      'a'
+        JR      C,TM_PUP
+        CP      'z'+1
+        JR      NC,TM_PUP
+        AND     5FH
+TM_PUP:
+        LD      C,A
+        LD      A,(DE)
+        CP      C
+        JR      NZ,TM_PBAD
+        INC     HL
+        INC     DE
+        DEC     B
+        JR      NZ,TM_PCMP
+TM_POK:
+        LD      A,1
+        LD      (TM_MODE),A
+        XOR     A
+        RET
+TM_PBAD:
+        LD      A,1
+        OR      A
+        RET
+
+; Convert CP/M day count HL to Gregorian date and print YYYY-MM-DD.
+TM_DATE:
+        LD      A,H
+        OR      L
+        JR      NZ,TM_DNONZERO
+        LD      DE,TM_EPOCH
+        JP      TM_PRINT
+TM_DNONZERO:
+        LD      DE,1978
+        DEC     HL              ; day 1 is 1978-01-01, make zero-based
+TM_YLOOP:
+        PUSH    HL
+        PUSH    DE
+        CALL    TM_YDAYS
+        EX      DE,HL
+        POP     BC              ; year in BC
+        POP     HL
+        OR      A
+        SBC     HL,DE
+        JR      C,TM_YEARFOUND
+        LD      D,B
+        LD      E,C
+        INC     DE
+        JR      TM_YLOOP
+TM_YEARFOUND:
+        ADD     HL,DE
+        LD      D,B
+        LD      E,C
+        PUSH    HL
+        EX      DE,HL
+        CALL    TM_DEC4
+        LD      A,'-'
+        CALL    TM_CHAR
+        POP     HL
+        LD      A,1
+        LD      (TM_MON),A
+TM_MLOOP:
+        PUSH    HL
+        PUSH    DE
+        LD      A,(TM_MON)
+        LD      C,A
+        CALL    TM_MDAYS
+        LD      C,A
+        LD      B,0
+        POP     DE              ; year
+        POP     HL
+        OR      A
+        SBC     HL,BC
+        JR      C,TM_MONTHFOUND
+        LD      A,(TM_MON)
+        INC     A
+        LD      (TM_MON),A
+        JR      TM_MLOOP
+TM_MONTHFOUND:
+        ADD     HL,BC
+        PUSH    HL
+        LD      A,(TM_MON)
+        CALL    TM_DEC2
+        LD      A,'-'
+        CALL    TM_CHAR
+        POP     HL
+        INC     HL
+        LD      A,L
+        JP      TM_DEC2
+
+; Input DE=year, output HL=365 or 366.
+TM_YDAYS:
+        LD      HL,365
+        LD      A,D
+        CP      HIGH 2100
+        JR      NZ,TM_YMOD4
+        LD      A,E
+        CP      LOW 2100
+        RET     Z
+TM_YMOD4:
+        LD      A,E
+        AND     3
+        RET     NZ
+        INC     HL
+        RET
+
+; Input DE=year, C=month 1..12, output A=days.
+TM_MDAYS:
+        LD      HL,TM_MTAB-1
+        LD      B,0
+        ADD     HL,BC
+        LD      A,(HL)
+        LD      B,A
+        LD      A,C
+        CP      2
+        LD      A,B
+        RET     NZ
+        PUSH    AF
+        LD      A,D
+        CP      HIGH 2100
+        JR      NZ,TM_MMOD4
+        LD      A,E
+        CP      LOW 2100
+        JR      NZ,TM_MMOD4
+        POP     AF
+        RET
+TM_MMOD4:
+        POP     AF
+        LD      A,E
+        AND     3
+        LD      A,B
+        RET     NZ
+        INC     A
+        RET
+
+TM_BCD:
+        PUSH    AF
+        RRCA
+        RRCA
+        RRCA
+        RRCA
+        AND     0FH
+        ADD     A,'0'
+        CALL    TM_CHAR
+        POP     AF
+        AND     0FH
+        ADD     A,'0'
+        JP      TM_CHAR
+
+TM_DEC2:
+        LD      B,'0'
+TM_D2L:
+        CP      10
+        JR      C,TM_D2D
+        SUB     10
+        INC     B
+        JR      TM_D2L
+TM_D2D:
+        PUSH    AF
+        LD      A,B
+        CALL    TM_CHAR
+        POP     AF
+        ADD     A,'0'
+        JP      TM_CHAR
+
+TM_DEC8:
+        JP      TM_DEC2
+TM_DEC4:
+        LD      BC,1000
+        CALL    TM_DIG0
+        LD      BC,100
+        CALL    TM_DIG0
+        LD      BC,10
+        CALL    TM_DIG0
+        LD      A,L
+        ADD     A,'0'
+        JP      TM_CHAR
+TM_DIGIT:
+        LD      A,H
+        OR      A
+        JR      NZ,TM_DIG0
+        LD      A,L
+        CP      C
+        RET     C
+TM_DIG0:
+        LD      A,'0'
+TM_DLOOP:
+        OR      A
+        SBC     HL,BC
+        JR      C,TM_DDONE
+        INC     A
+        JR      TM_DLOOP
+TM_DDONE:
+        ADD     HL,BC
+        JP      TM_CHAR
+
+TM_CHAR:
+        PUSH    BC
+        PUSH    DE
+        PUSH    HL
+        LD      E,A
+        LD      C,2
+        CALL    BDOS
+        POP     HL
+        POP     DE
+        POP     BC
+        RET
+TM_PRINT:
+        LD      C,9
+        JP      BDOS
+
+TM_NOCLOCK:
+        LD      DE,TM_NOMSG
+        CALL    TM_PRINT
+        LD      A,(TM_DSTAT)
+        CALL    TM_DEC8
+        LD      DE,TM_NL
+        JR      TM_ERROR
+TM_CLOCKERR:
+        LD      DE,TM_CERR
+        JR      TM_ERROR
+TM_USAGE:
+        LD      DE,TM_UMSG
+TM_ERROR:
+        CALL    TM_PRINT
+TM_EXIT:
+        LD      C,0
+        JP      BDOS
+
+TM_LOOKUP:     DB      1,20,0,0,'TIME',1,0,0,0
+               DS      8
+TM_RSXREQ:     DB      1,0,0,0
+               DB      '        '
+               DW      0
+TM_REQUEST:    DB      1,10,0,0
+               DS      5
+               DB      0
+TM_ENTRY:      DW      0
+TM_MODE:       DB      0
+TM_MON:        DB      0
+TM_DSTAT:      DB      0
+TM_PKWORD:     DB      '/PROVIDER'
+TM_MTAB:       DB      31,28,31,30,31,30,31,31,30,31,30,31
+TM_NL:         DB      13,10,'$'
+TM_PNAME:      DB      13,10,'Provider: $'
+TM_PHEAD:      DB      13,10,'TIME service ABI $'
+TM_PREAD:      DB      ', GET$'
+TM_PSET:       DB      '/SET$'
+TM_PRO:        DB      ', read-only$'
+TM_PINDEX:     DB      ', provider index $'
+TM_NOMSG:      DB      13,10,'No TIME provider is loaded; service status $'
+TM_CERR:       DB      13,10,'Clock provider error.',13,10,'$'
+TM_UMSG:       DB      13,10,'Usage: TIME [/PROVIDER]',13,10,'$'
+TM_EPOCH:      DB      '1977-12-31$'
+
+        .DEPHASE
+        END

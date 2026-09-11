@@ -234,6 +234,8 @@ python3 tools/build_hello_rsx.py
 python3 tools/build_echo_rsx.py
 python3 tools/build_batch.py
 python3 tools/build_rsx_utilities.py
+python3 tools/build_frehd_time_rsx.py
+python3 tools/build_time.py
 python3 tools/build_native_rsx.py
 python3 tools/build_rsxloader.py
 python3 tools/build_native_rsxloader.py

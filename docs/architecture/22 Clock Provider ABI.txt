@@ -1,7 +1,8 @@
 BETTERCP/M CLOCK PROVIDER ABI
 ============================
 
-Status: adopted design; implementation pending.
+Status: adopted design. TIME.COM and the first FreHD provider are implemented;
+central BRSX-v2 registry integration remains part of Stage 2.
 
 
 1. PURPOSE AND OWNERSHIP
@@ -127,8 +128,9 @@ not Gregorian-correct for 2100; the initial provider documents validity through
 No generic Model 4 trs80gp clock port has been established. trs80gp initializes
 recognized TRS-DOS/LDOS state and can emulate the FreHD RTC, while its documented
 `-rtc16` facility concerns Model 16/6000 Xenix. The first TRS-80 provider shall
-be named for the actual hardware interface, probably FreHD, after that protocol
-is verified. A generic trs80gp provider shall not be invented.
+be named for the actual hardware interface. `FREHDCLK.RSX` is that provider and
+uses the FreHD extended-command interface, so it serves real FreHD hardware and
+trs80gp's FreHD emulation. A generic trs80gp provider is not invented.
 
 Calendar conversion routines are source-level includes assembled only into
 providers that need them. They do not become permanent shared core code unless
@@ -166,4 +168,3 @@ discovery, request validation, BCD and range validation, known calendar and leap
 dates, coherent midnight sampling, absence and invalid-clock failures,
 reconstruction and rediscovery, and optional SET behavior. Platform tests shall
 also prove that a provider does not change unrelated emulator or hardware state.
-

@@ -1,0 +1,384 @@
+; FreHD real-time-clock provider for BetterCP/M TIME ABI 1.0.
+; The initial carrier intercepts Function 208 itself as a compatibility bridge
+; until the central BRSX-v2 registry walker is resident.  TIME.COM therefore
+; already uses the final public discovery and provider ABIs.
+
+RSXBASE         EQU     08000H
+BDOS            EQU     00005H
+DATA2           EQU     0C2H
+SIZE2           EQU     0C3H
+COMMAND2        EQU     0C4H
+STATUS          EQU     0CFH
+MODLATCH        EQU     0ECH
+
+        CSEG
+        .PHASE  RSXBASE
+
+FT_NEXT:        DW      BDOS
+FT_ENTRY:       DW      FT_DISPATCH
+
+FT_DISPATCH:
+        LD      A,C
+        CP      208
+        JR      NZ,FT_CHAIN
+        JP      FT_REGISTRY
+FT_CHAIN:
+        LD      HL,(FT_NEXT)
+        JP      (HL)
+
+; Resident Service ABI 1 bridge: LOOKUP (0) and ENUMERATE (1).
+FT_REGISTRY:
+        PUSH    DE
+        LD      A,(DE)
+        CP      1
+        JR      NZ,FT_RVER
+        INC     DE
+        LD      A,(DE)
+        CP      20
+        JR      NZ,FT_RLEN
+        INC     DE
+        LD      A,(DE)
+        CP      2
+        JR      NC,FT_ROP
+        INC     DE
+        LD      A,(DE)
+        OR      A
+        JR      NZ,FT_RFLAG
+        INC     DE              ; first service-ID byte at request +4
+        CALL    FT_CLROUT
+        LD      HL,FT_TIMEID
+        LD      B,4
+FT_RID:
+        LD      A,(DE)
+        CP      (HL)
+        JR      NZ,FT_RMISS
+        INC     DE
+        INC     HL
+        DJNZ    FT_RID
+        LD      A,(DE)          ; required major
+        CP      1
+        JR      NZ,FT_RMAJOR
+        INC     DE
+        LD      A,(DE)          ; minimum minor
+        OR      A
+        JR      NZ,FT_RMINOR
+        INC     DE
+        LD      A,(DE)          ; required capabilities, low
+        LD      B,A
+        INC     DE
+        LD      A,(DE)          ; required capabilities, high
+        OR      B
+        JR      NZ,FT_RCAP
+        POP     DE
+        PUSH    DE
+        LD      HL,FT_SERVICE
+        PUSH    HL
+        EX      DE,HL
+        LD      BC,12
+        ADD     HL,BC
+        POP     BC
+        LD      (HL),C
+        INC     HL
+        LD      (HL),B
+        INC     HL
+        LD      (HL),1
+        INC     HL
+        LD      (HL),0
+        INC     HL
+        LD      (HL),0          ; read-only capability word
+        INC     HL
+        LD      (HL),0
+        INC     HL
+        LD      (HL),0          ; provider index
+        INC     HL
+        LD      (HL),0
+        POP     DE
+        LD      HL,FT_SERVICE
+        XOR     A
+        RET
+
+FT_RVER:       LD      A,5
+        JR      FT_RFAIL
+FT_RLEN:       LD      A,6
+        JR      FT_RFAIL
+FT_ROP:        LD      A,7
+        JR      FT_RFAIL
+FT_RFLAG:      LD      A,7
+        JR      FT_RFAIL
+FT_RMISS:      LD      A,1
+        JR      FT_RFAIL
+FT_RMAJOR:     LD      A,2
+        JR      FT_RFAIL
+FT_RMINOR:     LD      A,3
+        JR      FT_RFAIL
+FT_RCAP:       LD      A,4
+FT_RFAIL:
+        LD      C,A
+        POP     DE
+        PUSH    DE
+        CALL    FT_CLRO0
+        LD      A,C
+        LD      HL,19
+        ADD     HL,DE
+        LD      (HL),A
+        POP     DE
+        LD      HL,0
+        RET
+
+FT_CLROUT:
+        PUSH    DE
+        DEC     DE
+        DEC     DE
+        DEC     DE
+        DEC     DE              ; restore request base from +4
+        CALL    FT_CLRO0
+        POP     DE
+        RET
+FT_CLRO0:
+        LD      HL,12
+        ADD     HL,DE
+        LD      B,8
+        XOR     A
+FT_RCLEAR:
+        LD      (HL),A
+        INC     HL
+        DJNZ    FT_RCLEAR
+        RET
+
+FT_TIMEID:     DB      'TIME'
+
+; TIME ABI 1.0 service dispatcher.
+FT_SERVICE:
+        PUSH    DE
+        LD      A,(DE)
+        CP      1
+        JR      NZ,FT_TVER
+        INC     DE
+        LD      A,(DE)
+        CP      10
+        JR      NZ,FT_TLEN
+        INC     DE
+        LD      A,(DE)
+        OR      A
+        JR      Z,FT_GET
+        CP      1
+        JR      Z,FT_TSET
+        LD      A,3
+        JR      FT_TFAIL
+FT_GET:
+        INC     DE
+        LD      A,(DE)
+        OR      A
+        JR      NZ,FT_TFLAGS
+        PUSH    DE
+        LD      HL,6
+        ADD     HL,DE          ; request byte +9 is reserved and must be zero
+        LD      A,(HL)
+        POP     DE
+        OR      A
+        JR      NZ,FT_TFLAGS
+        LD      A,10H           ; Model 4 EXTIO enables the FreHD port block
+        OUT     (MODLATCH),A
+        LD      A,1
+        OUT     (COMMAND2),A
+        CALL    FT_WAIT
+        JR      NZ,FT_TUNAV
+        IN      A,(SIZE2)
+        CP      6
+        JR      NZ,FT_TUNAV
+        LD      HL,FT_SAMPLE
+        LD      BC,6*256+DATA2
+        INIR
+        CALL    FT_VALIDATE
+        JR      NZ,FT_TINVALID
+        CALL    FT_DAYCOUNT
+        POP     DE
+        PUSH    DE
+        PUSH    HL
+        EX      DE,HL
+        LD      BC,4
+        ADD     HL,BC
+        POP     BC
+        LD      (HL),C
+        INC     HL
+        LD      (HL),B
+        INC     HL
+        LD      A,(FT_SAMPLE+2)
+        CALL    FT_BINBCD
+        LD      (HL),A
+        INC     HL
+        LD      A,(FT_SAMPLE+1)
+        CALL    FT_BINBCD
+        LD      (HL),A
+        INC     HL
+        LD      A,(FT_SAMPLE)
+        CALL    FT_BINBCD
+        LD      (HL),A
+        POP     DE
+        PUSH    DE
+        LD      HL,4
+        ADD     HL,DE
+        POP     DE
+        XOR     A
+        RET
+FT_TVER:       LD      A,1
+        JR      FT_TFAIL
+FT_TLEN:       LD      A,2
+        JR      FT_TFAIL
+FT_TFLAGS:     LD      A,4
+        JR      FT_TFAIL
+FT_TUNAV:      LD      A,5
+        JR      FT_TFAIL
+FT_TINVALID:   LD      A,6
+        JR      FT_TFAIL
+FT_TSET:       LD      A,8
+FT_TFAIL:
+        POP     DE
+        LD      HL,0
+        RET
+
+; Return Z on a ready, error-free FreHD response. Never wait forever.
+FT_WAIT:
+        LD      BC,0
+FT_WLOOP:
+        IN      A,(STATUS)
+        CP      0FFH
+        JR      Z,FT_WBAD
+        BIT     7,A
+        JR      Z,FT_WDONE
+        DEC     BC
+        LD      A,B
+        OR      C
+        JR      NZ,FT_WLOOP
+FT_WBAD:
+        LD      A,1
+        OR      A
+        RET
+FT_WDONE:
+        AND     1
+        RET
+
+; Validate binary sec,min,hour,year,day,month from FreHD.
+FT_VALIDATE:
+        LD      A,(FT_SAMPLE)
+        CP      60
+        RET     NC
+        LD      A,(FT_SAMPLE+1)
+        CP      60
+        RET     NC
+        LD      A,(FT_SAMPLE+2)
+        CP      24
+        RET     NC
+        LD      A,(FT_SAMPLE+5)
+        DEC     A
+        CP      12
+        RET     NC
+        LD      E,A
+        LD      D,0
+        LD      HL,FT_MTAB
+        ADD     HL,DE
+        LD      B,(HL)
+        LD      A,E
+        CP      1
+        JR      NZ,FT_VDAY
+        LD      A,(FT_SAMPLE+3)
+        AND     3
+        JR      NZ,FT_VDAY
+        INC     B
+FT_VDAY:
+        LD      A,(FT_SAMPLE+4)
+        OR      A
+        JR      Z,FT_VBAD
+        CP      B
+        JR      Z,FT_VOK
+        RET     NC
+FT_VOK:
+        XOR     A
+        RET
+FT_VBAD:
+        LD      A,1
+        OR      A
+        RET
+
+; Convert 2000..2099 calendar date to CP/M day count in HL.
+FT_DAYCOUNT:
+        LD      HL,8036
+        LD      A,(FT_SAMPLE+3)
+        LD      B,A
+        XOR     A
+        LD      C,A              ; current two-digit year
+FT_YLOOP:
+        LD      A,B
+        OR      A
+        JR      Z,FT_MADD
+        LD      DE,365
+        ADD     HL,DE
+        LD      A,C
+        AND     3
+        JR      NZ,FT_YNEXT
+        INC     HL
+FT_YNEXT:
+        INC     C
+        DEC     B
+        JR      FT_YLOOP
+FT_MADD:
+        LD      A,(FT_SAMPLE+5)
+        DEC     A
+        LD      B,A
+        LD      DE,FT_MTAB
+FT_MLOOP:
+        LD      A,B
+        OR      A
+        JR      Z,FT_DAYADD
+        LD      A,(DE)
+        INC     DE
+        LD      C,A
+        LD      A,(FT_SAMPLE+5)
+        SUB     B
+        CP      2                ; month being added is February
+        JR      NZ,FT_MNORMAL
+        LD      A,(FT_SAMPLE+3)
+        AND     3
+        JR      NZ,FT_MNORMAL
+        INC     C
+FT_MNORMAL:
+        LD      A,L
+        ADD     A,C
+        LD      L,A
+        JR      NC,FT_MNEXT
+        INC     H
+FT_MNEXT:
+        DEC     B
+        JR      FT_MLOOP
+FT_DAYADD:
+        LD      A,(FT_SAMPLE+4)
+        DEC     A
+        ADD     A,L
+        LD      L,A
+        RET     NC
+        INC     H
+        RET
+
+FT_BINBCD:
+        LD      B,0
+FT_BLOOP:
+        CP      10
+        JR      C,FT_BDONE
+        SUB     10
+        INC     B
+        JR      FT_BLOOP
+FT_BDONE:
+        LD      C,A
+        LD      A,B
+        RLCA
+        RLCA
+        RLCA
+        RLCA
+        OR      C
+        RET
+
+FT_MTAB:       DB      31,28,31,30,31,30,31,31,30,31,30,31
+FT_SAMPLE:     DS      6
+
+        .DEPHASE
+        END

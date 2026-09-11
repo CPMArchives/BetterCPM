@@ -86,6 +86,8 @@ def main() -> None:
                         help="optional DMK to mount as the third floppy")
     parser.add_argument("--drive-d", type=Path,
                         help="optional DMK to mount as the fourth floppy")
+    parser.add_argument("--frehd-dir", type=Path,
+                        help="enable trs80gp FreHD emulation using this directory")
     parser.add_argument("--boot-delay", type=int, default=1200)
     parser.add_argument("--run-delay", type=int, default=8000)
     parser.add_argument("--response", action="append", default=[],
@@ -134,6 +136,9 @@ def main() -> None:
                 drive_d = isolated
         command = [str(args.emulator), "-m4", "-batch", "-turbo",
                    "-d0", str(image), "-id", str(args.boot_delay)]
+        if args.frehd_dir:
+            args.frehd_dir.mkdir(parents=True, exist_ok=True)
+            command[4:4] = ["-frehd_dir", str(args.frehd_dir.resolve())]
         if drive_b:
             command[6:6] = ["-d1", str(drive_b)]
         if drive_c:
