@@ -1,0 +1,117 @@
+BETTERCP/M ABI DESIGN CONVENTIONS
+
+Status: adopted architectural baseline; individual provisional ABIs remain
+subject to their documented stability level.
+
+
+1. SCOPE
+
+BetterCP/M uses common ABI design rules, not one universal calling convention.
+CP/M BDOS calls, CPX dispatch, RSX interception, callable resident services,
+management requests and module files retain conventions suited to their jobs.
+
+Every published interface specifies its version, inputs, outputs, clobbers,
+preserved registers, flag meanings, memory effects, pointer lifetimes, error
+results and atomicity. A BetterCP/M release number is not an ABI version.
+
+
+2. IDENTITY, ADDRESS AND RELOCATION
+
+Persistent service IDs, module IDs, names and handles are distinct from runtime
+addresses. A movable object's address is configuration state, not identity.
+Addresses into an RSX, CPX or CCP expire at the lifetime boundary declared by
+their interface. Clients surviving reconstruction rediscover the object or use
+a documented stable gateway.
+
+Entry points in relocatable module files are offsets from the module base.
+Linked-image relocation records do not describe absolute pointers created at
+runtime; the RSX reconstruction ABI governs those values.
+
+
+3. REGISTER AND FLAG RULES
+
+A normal callable interface returns with the caller's stack restored. BetterCP/M-
+specific Z80 interfaces preserve IX and IY unless their own specification says
+otherwise. No other general-purpose register is universally preserved. CP/M-
+compatible calls retain their compatibility-defined behavior.
+
+Carry and other flags have no global BetterCP/M meaning. Each interface defines
+whether a flag means handled/declined, success/failure, comparison, continuation
+or nothing. Undocumented flags are not part of an ABI.
+
+
+4. STRUCTURES AND REQUEST BLOCKS
+
+Small frequent operations may use registers directly. Extensible or complex
+operations use caller-owned versioned request blocks. Unless specified otherwise:
+
+  * multi-byte integers are little-endian;
+  * structure length includes its complete header;
+  * reserved input bytes and bits are zero;
+  * a callee reads no field beyond the supplied length;
+  * appended fields are ignored only when the ABI permits compatible extension;
+  * output fields have defined values after failure;
+  * buffers do not overlap;
+  * the callee does not retain the request address; and
+  * validation failure leaves system state unchanged.
+
+Every interface states whether it is reentrant, interrupt-safe, or may call back
+through BDOS or another service. Bypass rules must prevent unintended recursion.
+
+
+5. VERSION AND CAPABILITY RULES
+
+Every published ABI has an incompatible-version discriminator. Major/minor
+versions are used when compatible extension is expected; a structure version
+and length are sufficient for small request blocks. Implementation versions are
+diagnostic metadata and need not occupy every runtime structure.
+
+Unknown major versions, request formats, functions, reconstruction classes and
+required capabilities are rejected. Unknown optional capabilities are ignored
+only when the interface explicitly permits it. Presence, ABI compatibility and
+capability support are independently discoverable.
+
+
+6. ERRORS, LIFETIMES AND PUBLICATION
+
+Every ABI defines success, failure, error-code location, partial modification,
+retry behavior and failure-state guarantees. Human-readable messages are not
+the programmatic ABI.
+
+Returned pointers declare a lifetime, such as until the next call, until
+reconstruction, while an RSX remains installed, or until explicit release. An
+undocumented pointer has short lifetime and must not be retained.
+
+New descriptors, services and reconstructed layouts are published atomically
+after validation and initialization. Clients may compare generation values for
+equality; numeric ordering is invalid because generations may wrap. Published
+descriptors are read-only to clients and change only through their owner.
+
+
+7. COMPONENT OWNERSHIP
+
+Private state stays behind the owning component's service interface. An RSX
+normally owns feature state for its installed lifetime. State which must outlive
+that RSX uses an explicit export/import contract or approved PDS allocation.
+A CPX never solely owns indispensable state because transient execution may
+destroy the command environment.
+
+Every BRSX declares STATELESS, STATEFUL, STATE_PRESERVING or COLD_ONLY before
+the module ABI becomes stable. A loader rejects unsupported classes before
+altering resident memory.
+
+
+8. MANAGEMENT AND STABILITY
+
+CPX and RSX management should converge on a common version/length/operation/
+flags/identity/status envelope without requiring identical operations or
+function numbers. The numeric CPX selector interface remains experimental.
+
+Interfaces are classified as proof/experimental, implemented provisional, or
+published stable. Execution alone does not make an ABI stable. A stable ABI
+requires binary layout, calling, lifecycle, version, error, reconstruction and
+compatibility rules.
+
+BetterCP/M-private ABIs do not change standard CP/M semantics unless a caller
+explicitly selects the extension.
+
