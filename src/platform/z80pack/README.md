@@ -53,6 +53,11 @@ RSX load/unload and the shared CPX controls remain available.
 independent BIOSTEST 0471 two-stage procedure.  It first proves a supplied
 uppercase `R`, then restarts without a sender and proves immediate `Ctrl-Z`.
 
+The system disk also contains the read-only `ZPRTC.RSX` clock provider. Load it
+with `RSX LOAD ZPRTC`; the hardware-independent `TIME` and `TIME /PROVIDER`
+commands then use cpmsim's ports 25/26 clock interface. The provider preserves
+the emulator's BCD/binary mode and rejects samples crossing a clock tick.
+
 `python3 tools/test_z80pack_boot.py` uses private copies of all disks. It boots,
 lists files, runs HELLO, creates/writes/closes/reopens/reads files on B-D, verifies
 their bytes with cpmtools, then loads and unloads ECHO.RSX and checks 53K TPA.

@@ -1,8 +1,9 @@
 BETTERCP/M CLOCK PROVIDER ABI
 ============================
 
-Status: adopted design. TIME.COM and the first FreHD provider are implemented;
-central BRSX-v2 registry integration remains part of Stage 2.
+Status: adopted design. TIME.COM, the FreHD provider, and the z80pack/cpmsim
+provider are implemented; central BRSX-v2 registry integration remains part of
+Stage 2.
 
 
 1. PURPOSE AND OWNERSHIP

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Focused structural and calendar checks for TIME.COM and FREHDCLK.RSX."""
+"""Focused structural and calendar checks for TIME.COM and clock providers."""
 from __future__ import annotations
 
 import datetime
@@ -17,14 +17,17 @@ def provider_day(year: int, month: int, day: int) -> int:
 
 
 def main() -> None:
-    carrier = (ROOT / "build/rsx/FREHDCLK.RSX").read_bytes()
     utility = (ROOT / "build/utilities/TIME.COM").read_bytes()
-    fields = struct.unpack_from("<4sBBBBHHHHHHHHHHHH8sBBBBHH", carrier)
-    magic, version = fields[0], fields[1]
-    code_size, allocation, primary = fields[7], fields[8], fields[-1]
-    assert magic == b"BRSX" and version == 1
-    assert fields[17] == b"FREHDCLK"
-    assert primary == 208 and allocation >= code_size and allocation % 256 == 0
+    for filename, name in (("FREHDCLK.RSX", b"FREHDCLK"),
+                           ("ZPRTC.RSX", b"ZPRTC   ")):
+        carrier = (ROOT / "build/rsx" / filename).read_bytes()
+        fields = struct.unpack_from("<4sBBBBHHHHHHHHHHHH8sBBBBHH", carrier)
+        magic, version = fields[0], fields[1]
+        code_size, allocation, primary = fields[7], fields[8], fields[-1]
+        assert magic == b"BRSX" and version == 1
+        assert fields[17] == name
+        assert primary == 208 and allocation >= code_size
+        assert allocation % 256 == 0
     assert utility[:3] == b"\xc3\x03\x01"
     assert b"TIME" in utility and b"/PROVIDER" in utility
 
@@ -37,7 +40,7 @@ def main() -> None:
     }
     for date, expected in known.items():
         assert provider_day(*date) == expected, (date, provider_day(*date))
-    print("TIME artifacts, provider carrier, ABI markers, and known dates passed")
+    print("TIME artifacts, provider carriers, ABI markers, and known dates passed")
 
 
 if __name__ == "__main__":
