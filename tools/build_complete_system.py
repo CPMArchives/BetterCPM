@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 COMPONENTS = (
     "bdos", "ccp", "ccpreload", "rcp_cpx", "hello_cpx",
-    "hello_rsx", "echo_rsx", "fdf_rsx", "rsxloader",
+    "hello_rsx", "echo_rsx", "fdf_rsx", "frehd_time_rsx", "rsxloader",
     "fileloader", "system", "utilities", "trs80_boot",
 )
 if __name__ == "__main__":

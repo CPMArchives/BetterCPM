@@ -29,6 +29,7 @@ BUILDERS = (
     "type",
     "warm",
     "stat",
+    "time",
     "batch",                # SUBMIT.COM, XSUB.COM, BATCHIO.RSX
 )
 

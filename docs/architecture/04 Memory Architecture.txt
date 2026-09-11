@@ -147,7 +147,7 @@ stable interface rather than requiring consumers to embed private addresses.
 
 The PDS contains mandatory system infrastructure: allocator metadata, core
 settings, drive and disk-session structures, the search path, reconstruction
-metadata, resident-service discovery records, and similar state whose lifetime
+metadata, the small service-registry descriptor and generation, and similar state whose lifetime
 is independent of optional modules. Optional feature data normally belongs to
 the resident RSX which implements the feature. Command history and the live
 named-directory register therefore reside in HISTORY.RSX and NDR.RSX while
@@ -159,7 +159,9 @@ The complete PDS placement, allocation, high-water and reconstruction rules are
 specified in `18 Persistent Data Segment.txt`. The live named-directory
 representation and resolver contract are specified in
 `17 Named Directory Register.txt`. NDR.RSX owns the authoritative map and
-publishes its callable resolver through the PDS service registry.
+publishes its callable resolver through the resident-service registry. Validated
+service advertisements reside with their provider rather than in a flat PDS
+table.
 
 This is an architectural requirement, not a statement that today's scattered
 state has already been consolidated. Consolidation must migrate existing state

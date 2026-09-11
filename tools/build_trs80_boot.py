@@ -231,6 +231,7 @@ def main() -> None:
     hello_cpx_path = ROOT / "build/cpx/HELLO.CPX"
     hello_rsx_path = ROOT / "build/rsx/HELLO.RSX"
     fdf_rsx_path = ROOT / "build/rsx/FDF.RSX"
+    frehd_time_rsx_path = ROOT / "build/rsx/FREHDCLK.RSX"
     echo_rsx_path = ROOT / "build/rsx/ECHO.RSX"
     batchio_rsx_path = ROOT / "build/rsx/BATCHIO.RSX"
     cpx_utility_path = ROOT / "build/utilities/CPX.COM"
@@ -251,14 +252,16 @@ def main() -> None:
     dup_path = ROOT / "build/utilities/DUP.COM"
     sysgen_path = ROOT / "build/utilities/SYSGEN.COM"
     stat_path = ROOT / "build/utilities/STAT.COM"
+    time_path = ROOT / "build/utilities/TIME.COM"
     submit_path = ROOT / "build/utilities/SUBMIT.COM"
     xsub_path = ROOT / "build/utilities/XSUB.COM"
     fdf_path = ROOT / "third_party/montezuma/DISK.FDF"
     for path in (resident_path, command_path, basic_cpx_path, hello_cpx_path,
-                 hello_rsx_path, echo_rsx_path, batchio_rsx_path, fdf_rsx_path, cpx_utility_path, rsx_utility_path,
+                 hello_rsx_path, echo_rsx_path, batchio_rsx_path, fdf_rsx_path,
+                 frehd_time_rsx_path, cpx_utility_path, rsx_utility_path,
                  rsxtest_path, rsx2test_path, era_path, ren_path, type_path, dir_path,
                  user_path, cls_path, ver_path, copy_path, move_path, warm_path, config_path, dup_path, sysgen_path, stat_path,
-                 submit_path, xsub_path, fdf_path):
+                 submit_path, xsub_path, time_path, fdf_path):
         if not path.is_file():
             raise SystemExit(f"missing system-image input: {path}")
     # Reassemble from source so a previous failed BIOS build cannot hide behind
@@ -355,10 +358,12 @@ def main() -> None:
                      ("DUP.COM", dup_path.read_bytes()),
                      ("SYSGEN.COM", sysgen_path.read_bytes()),
                      ("STAT.COM", stat_path.read_bytes()),
+                     ("TIME.COM", time_path.read_bytes()),
                      ("SUBMIT.COM", submit_path.read_bytes()),
                      ("XSUB.COM", xsub_path.read_bytes()),
                      ("DISK.FDF", fdf_path.read_bytes()),
                      ("FDF.RSX", fdf_rsx_path.read_bytes()),
+                     ("FREHDCLK.RSX", frehd_time_rsx_path.read_bytes()),
                      ("RCP.CPX", basic_cpx_path.read_bytes()),
                      ("HELLO.CPX", hello_cpx_path.read_bytes()),
                      ("HELLO.RSX", hello_rsx_path.read_bytes()),
