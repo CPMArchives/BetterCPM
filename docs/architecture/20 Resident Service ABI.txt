@@ -19,6 +19,12 @@ may be added only if measurement later justifies its PDS cost.
 The loader/reconstructor owns publication and removal. RSXs and transient
 programs cannot modify registry state directly.
 
+Validated advertisements are materialized in a loader-owned descriptor area
+inside each BRSX-v2 provider's allocation. Function 208 walks those descriptors
+through the active RSX chain. This makes discovery independent of disk I/O and
+avoids charging an unloaded service to the PDS. Engineering Specification 133
+defines the runtime header and descriptor representation.
+
 
 2. SERVICE AND PROVIDER IDENTITY
 

@@ -88,8 +88,11 @@ offset+1 < allocation size. Offsets 0000h and 0002h are forbidden because the
 loader owns those live header words.
 
 Sixteen-bit offsets are sufficient because an RSX allocation is contained in
-the Z80 address space. Metadata resides outside the live allocation and is not
-copied into protected memory.
+the Z80 address space. The on-disk metadata stream is outside the live
+allocation. During load, validated callable advertisements are materialized in
+a loader-owned descriptor area at the top of the provider's allocation so the
+registry can be queried without disk I/O. This descriptor area is excluded
+from module workspace and runtime-pointer slots.
 
 
 21.5 LIVE IMAGE AND INITIAL LOAD
@@ -252,4 +255,3 @@ Tests shall force the RSX to move and prove that:
 Negative tests shall reject unsorted, duplicate, reserved, out-of-range, and
 truncated metadata; unsupported classes; and layouts that cannot fit. A
 counter-only test does not qualify the implementation.
-

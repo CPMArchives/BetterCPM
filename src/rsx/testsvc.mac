@@ -1,0 +1,26 @@
+        INCLUDE layout.inc
+; Stage-2 callable resident-service qualification provider.
+
+RSXBASE         EQU     08000H
+BDOS            EQU     00005H
+
+        CSEG
+        .PHASE  RSXBASE
+
+TR_NEXT:        DW      BDOS
+TR_ENTRY:       DW      TR_DISPATCH
+TR_SVCOUNT:     DB      0       ; loader-owned BRSX-v2 runtime descriptor
+TR_RESERVED:    DB      0
+TR_SVOFF:       DW      0
+
+TR_DISPATCH:
+        LD      HL,(TR_NEXT)
+        JP      (HL)
+
+TR_SERVICE:
+        LD      HL,05253H
+        LD      A,L
+        RET
+
+        .DEPHASE
+        END
