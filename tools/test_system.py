@@ -579,7 +579,7 @@ def main() -> None:
             bytes(cpu.mem[DEFAULT_GATEWAY:HISTORY_BASE]) == bytes((0xC3, LAYOUT["BDOS"] & 255, LAYOUT["BDOS"] >> 8)) and
             cpu.word(bdos_symbol("BDOS_DMA")) == 0x0080,
             "WBOOT did not reconstruct gateways and default DMA state")
-    require(bytes(cpu.mem[(LAYOUT["SYSTEM"] + 0x80):(LAYOUT["SYSTEM"] + 0x84)]) == b"BM\x01\x00" and
+    require(bytes(cpu.mem[(LAYOUT["SYSTEM"] + 0x80):(LAYOUT["SYSTEM"] + 0x84)]) == b"BM\x01\x01" and
             cpu.word((LAYOUT["SYSTEM"] + 0x84)) == 0 and cpu.word((LAYOUT["SYSTEM"] + 0x86)) == 0 and
             cpu.word((LAYOUT["SYSTEM"] + 0x88)) == HISTORY_BASE and cpu.word((LAYOUT["SYSTEM"] + 0x8A)) == DEFAULT_GATEWAY and
             cpu.word((LAYOUT["SYSTEM"] + 0x8C)) == ccp_base and cpu.word((LAYOUT["SYSTEM"] + 0x8E)) == allocation and

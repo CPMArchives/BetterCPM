@@ -61,12 +61,12 @@ features normally own their state in the RSX which implements them. The test is:
   If unloading a feature should logically make its data cease to exist, that
   data belongs to the feature rather than the PDS.
 
-Consequently, command-history records normally belong to HISTORY.RSX, named-
-directory definitions to NDR.RSX, security state to SECURITY.RSX, and batch or
-flow state to the resident module which implements that facility. The user pays
-their protected-RAM cost only while the feature is installed. A CPX must never
-own indispensable persistent state because a transient program may overwrite
-the CPX region.
+Consequently, command-history records belong to HISTORY.RSX and named-directory
+definitions to NDR.RSX. Security, batch and flow state are likely candidates
+for the resident modules which implement those facilities, but remain subject
+to their individual designs. The user pays optional protected-RAM cost only
+while the feature is installed. A CPX must never own indispensable persistent
+state because a transient program may overwrite the CPX region.
 
 An RSX may instead request an owner-scoped PDS allocation when its data must
 survive explicit unloading, replacement, or absence of the module. This is an
@@ -218,4 +218,8 @@ capability, but need not delay 1.0 unless a required feature depends upon it.
 The present Model 4 build does not yet implement the general allocator or
 variable sizing. It reserves D504h through D5C3h: 192 bytes total, including
 ten bytes of history control and 182 bytes of packed command records. These
-addresses are current build facts, not permanent ABI values.
+addresses are current build facts, not permanent ABI values. PDS ABI 1 publishes
+this static layout through the version-1 system Extension Control Block: flag
+bit zero marks the view valid, its +08h word supplies the lower boundary, and
+the fixed system base supplies the upper boundary. Current and configured boot
+sizes are identical until configurable sizing is implemented.

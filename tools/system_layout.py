@@ -12,6 +12,9 @@ ALIASES = dict(SYSTEM="LY_SYS", BDOS="LY_BDOS", FILE="LY_FILE",
     DIRBUF="LY_DIR", MODULEBUF="LY_BUF", DISK="LY_DISK", BIOS="LY_BIOS", CEILING="LY_LIMIT",
     HISTORY="LY_HIST", TPA="LY_TPA", BOOT_SECTORS="LY_SECTS", CONFIG="LY_CFG", CPX_CONTROL="LY_CPX", RAM_END="LY_RAMEND")
 LAYOUT = {name: SYMBOLS[symbol] for name, symbol in ALIASES.items()}
+LAYOUT.update(PDS_DESCRIPTOR=LAYOUT["SYSTEM"] + 0x80,
+              PDS_TOP=LAYOUT["SYSTEM"], PDS_LOW=LAYOUT["HISTORY"],
+              PDS_SIZE=LAYOUT["SYSTEM"] - LAYOUT["HISTORY"])
 
 def expand_layout(text: str) -> str:
     """Inline the canonical include for host z80asm and native ZSM4."""

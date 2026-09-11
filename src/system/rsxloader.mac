@@ -20,7 +20,7 @@ HISTBASE        EQU     LY_HIST
 BASEGATE        EQU     HISTBASE-3
 COREBDOS        EQU     LY_BDOS
 ECB_RSXHEAD     EQU     LY_SYS+084H
-ECB_RSXLOW      EQU     LY_SYS+088H
+ECB_RSXLOW      EQU     LY_PDSF
 ECB_TPATOP      EQU     LY_SYS+090H
 RSTCOUNT        EQU     LY_RSTA
 RSTABLE         EQU     LY_RSTA+1       ; four ordered eight-byte stems

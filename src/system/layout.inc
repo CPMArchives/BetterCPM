@@ -26,6 +26,14 @@ LY_HIST         EQU     0D504H
 LY_TPA          EQU     0D501H
 LY_SECTS        EQU     0000DH
 
+; PDS ABI 1 static-layout bridge. The versioned system descriptor at LY_PDSD
+; publishes LY_PDSF as its live lower boundary. Until configurable sizing is
+; implemented, the upper boundary is LY_PDST and boot size equals current size.
+LY_PDSD         EQU     LY_SYS+080H
+LY_PDST         EQU     LY_SYS
+LY_PDSF         EQU     LY_SYS+088H
+LY_PDSS         EQU     LY_SYS-LY_HIST
+
 ; Protected COM handoff and shared filename state (checked by builders).
 LY_COMSTART     EQU     LY_SYS+074H
 LY_COMDONE      EQU     LY_SYS+003H

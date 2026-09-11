@@ -116,10 +116,11 @@ this saving can be claimed.
 
 The architectural review following this audit changed the ownership model.
 Optional feature data is no longer budgeted into the base PDS merely because it
-must survive transient execution. HISTORY.RSX owns command records, NDR.RSX
-owns the live named-directory register, and security and batch/flow state belong
-to their implementing resident modules. The PDS retains only core state and
-small reconstruction/service-discovery records.
+must survive transient execution. HISTORY.RSX owns command records and NDR.RSX
+owns the live named-directory register. Security and batch/flow state are likely
+to belong to their implementing resident modules, subject to their individual
+designs. The PDS retains only core state and small reconstruction/service-
+discovery records.
 
 The current 192-byte PDS is entirely command-history state. Moving history into
 HISTORY.RSX therefore removes those 192 bytes from the base inventory; it must
