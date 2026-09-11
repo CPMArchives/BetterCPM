@@ -15,11 +15,12 @@ BetterCP/M defines two distinct kinds of extension.
 
 ### 1.1 Resident System Extension (RSX)
 
-An RSX intercepts, supplements, or provides operating-system services. Its
-normal boundary is the BDOS call path. Possible RSXs include foreign
-filesystem translators, networking, print spooling, device services,
-redirection, auditing, and other facilities that must be available to
-applications independently of the current command processor.
+An RSX intercepts, supplements, or provides resident services. It may participate
+in the BDOS call path or publish a callable service used by the CCP or another
+component. Possible RSXs include foreign filesystem translators, networking,
+print spooling, device services, command history, named-directory resolution,
+redirection, auditing, and other facilities that must survive replacement of
+the command environment.
 
 An RSX is not a command-language package. An RSX may expose management
 operations used by commands, but its defining role is service extension.
@@ -27,8 +28,10 @@ operations used by commands, but its defining role is service extension.
 ### 1.2 Command Processor Extension (CPX)
 
 A CPX extends command interpretation. Possible CPXs include aliases,
-additional commands, command search rules, named-directory facilities,
-command history, and ZEX-like scripting with conditionals and control flow.
+additional commands, command search rules, named-directory management front
+ends, and ZEX-like scripting with conditionals and control flow. A CPX may call
+a resident RSX service, but may not own state required while a transient has
+overwritten the command environment.
 
 A CPX does not become an RSX merely because it is memory-resident. Its
 lifetime and interface belong to the command environment, not to BDOS
@@ -63,14 +66,12 @@ footprint. Installed RSXs reduce the TPA because they must remain callable by
 transient programs. CPXs do not reduce the transient TPA because WBOOT can
 reconstruct them.
 
-The fixed system begins at `C000h` and publishes the active layout through a
-versioned descriptor at `C080h`. With no RSXs, the first movable three-byte
-compatibility gateway occupies `BFFDh..BFFFh`. The current 1,116-byte CCP
-rounds to five pages and is calculated at `BAFDh`; its address is not an ABI.
-The Model 4 WBOOT reloader reads the persistent CPX reconstruction table,
-loads and links each relocatable CPX below `BFFDh`, and then calculates,
-restores, and relocates the CCP beneath the CPXs. Page zero advertises the
-dynamic gateway at `BFFDh` as the exclusive TPA ceiling.
+Addresses vary by build and are published through the versioned system
+descriptor; private historical addresses are not an ABI. The Model 4 WBOOT
+reloader reads the persistent CPX reconstruction table, loads and links each
+relocatable CPX below the dynamic gateway, and then calculates, restores, and
+relocates the CCP beneath the CPXs. Page zero advertises the current gateway as
+the exclusive TPA ceiling.
 
 ## 3. Fundamental address rule
 
@@ -125,6 +126,27 @@ environment from the active CPX reconstruction table.
 Configuration changes shall occur from a controlled command or warm-boot
 path. They shall not relocate the command environment while arbitrary
 transient application code is executing.
+
+### 4.1 Reconstruction class
+
+Every RSX declares one reconstruction class in its module ABI:
+
+- `STATELESS`: reload the image and initialize fresh state.
+- `STATEFUL`: retain the live image while obeying the runtime-pointer rules.
+- `STATE_PRESERVING`: export and import state through a versioned contract.
+- `COLD_ONLY`: reject runtime movement and defer the change until cold boot.
+
+Relocation metadata describes absolute words emitted by the linker. It cannot
+discover an absolute pointer written into mutable data after the module starts.
+A `STATEFUL` RSX must therefore use image-relative offsets or handles for such
+references, or declare each runtime pointer slot so reconstruction can apply the
+address delta. A module with more complex state should declare
+`STATE_PRESERVING`. The loader must reject any class it does not support before
+changing resident memory.
+
+The stateful-RSX qualification test stores both mutable data and a runtime-
+created absolute pointer to that data, forces the RSX to move, and verifies the
+pointer and value after reconstruction. A counter-only test is insufficient.
 
 ## 5. Module file information
 

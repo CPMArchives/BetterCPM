@@ -105,10 +105,12 @@ unavailable without impairing the base CCP. Explicitly unloading an ordinary
 stateful service discards its state. HISTORY may therefore discard its history,
 and NDR may discard its live register and later rebuild it from an NDR file.
 
-The version-1 requirement is the ordinary stateful RSX: its code and data move
-together during reconstruction and cease to exist on explicit unload. A later
-state-preserving service may serialize or migrate state through the general
-STATE_PRESERVING reconstruction contract or an owner-scoped PDS allocation.
+The first implementation target is an ordinary STATEFUL RSX whose code and data
+move together and cease to exist on explicit unload. Copying bytes alone is
+insufficient when the live image contains absolute pointers created after load;
+such pointers must be forbidden, represented as relocatable offsets/handles, or
+declared for adjustment. A later STATE_PRESERVING service may serialize or
+migrate state through a versioned contract or an owner-scoped PDS allocation.
 
 
 5. CONTROLLED RUNTIME EXPANSION
@@ -139,9 +141,9 @@ their lower addresses, enlarges the PDS, restores or initializes supported
 state, moves the dynamic gateway, updates page zero and the system descriptor,
 and reconstructs the command environment.
 
-The STATELESS, STATE_PRESERVING, and COLD_ONLY behaviors are the general RSX
-reconstruction contract; they apply equally to load, unload, compaction, and
-PDS resizing.
+The STATELESS, STATEFUL, STATE_PRESERVING, and COLD_ONLY behaviors are the
+general RSX reconstruction contract; they apply equally to load, unload,
+compaction, and PDS resizing.
 
 Most reconstruction machinery belongs in transient code. Permanent code
 publishes layout and allocator interfaces and supplies only the irreducible,

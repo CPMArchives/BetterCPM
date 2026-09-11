@@ -178,14 +178,26 @@ architecture rather than to PDS expansion.  Every active RSX that may move
 must be reconstructible and declare one of these behaviors:
 
   STATELESS          reload and initialize
+  STATEFUL           preserve the complete live image under stated pointer rules
   STATE_PRESERVING   save and restore through a versioned contract
   COLD_ONLY          do not move while active; defer the layout change
 
 Relocation records repair addresses derived from the linked image.  They do
 not by themselves identify pointers or other mutable values created while a
-module is running, so a stateful module must use the state-preservation
-contract.  Current HELLO and FDF implementations have no private live state
-that must survive reconstruction and therefore follow the stateless case.
+module is running. A STATEFUL module may be copied as a complete live image
+only if its ABI forbids untracked runtime absolute pointers, uses relocatable
+offsets/handles, or declares every runtime pointer slot that reconstruction
+must adjust. A module which cannot meet that rule must use the versioned
+STATE_PRESERVING export/import contract. Current HELLO and FDF implementations
+have no private live state that must survive reconstruction and therefore
+follow the stateless case.
+
+The reconstruction class is a required field in the RSX module ABI, even when
+an implementation release supports only a subset of the four behaviors. A
+loader must reject an unsupported class before altering the resident layout.
+Stage-3 acceptance requires a test RSX which stores a runtime-created absolute
+pointer to its own mutable data, moves during reconstruction, and demonstrates
+that both the pointer and the pointed-to state remain valid afterward.
 
 Optional feature state normally lives in its implementing RSX and moves with
 that RSX. Explicit unload discards it. An owner-scoped PDS allocation is used
