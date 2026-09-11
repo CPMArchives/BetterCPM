@@ -47,11 +47,31 @@ A larger boot setting may be applied immediately through controlled expansion.
 A smaller setting remains pending and reports that cold boot is required.
 
 
-3. ALLOCATION CONTRACT
+3. OWNERSHIP AND ALLOCATION CONTRACT
 
 The PDS is one contiguous system-owned resource. XPM.RSX or another adjacent
-second class of persistent memory is rejected. Optional components request PDS
-storage through one allocator and do not claim raw addresses independently.
+second class of persistent memory is rejected. Components which genuinely need
+PDS storage request it through one allocator and do not claim raw addresses
+independently.
+
+The PDS contains mandatory system infrastructure and owner-scoped allocations
+whose lifetime must be independent of a loaded module. Optional resident
+features normally own their state in the RSX which implements them. The test is:
+
+  If unloading a feature should logically make its data cease to exist, that
+  data belongs to the feature rather than the PDS.
+
+Consequently, command-history records normally belong to HISTORY.RSX, named-
+directory definitions to NDR.RSX, security state to SECURITY.RSX, and batch or
+flow state to the resident module which implements that facility. The user pays
+their protected-RAM cost only while the feature is installed. A CPX must never
+own indispensable persistent state because a transient program may overwrite
+the CPX region.
+
+An RSX may instead request an owner-scoped PDS allocation when its data must
+survive explicit unloading, replacement, or absence of the module. This is an
+exception selected by lifetime, not the default storage model for optional
+features.
 
 Every allocation records at least an owner/facility identifier, structure
 version, length, active/free state, alignment if required, and reset/lifetime
@@ -64,7 +84,34 @@ policy. Explicit reset may clear selected structures without contracting the
 PDS. Cold boot validates or initializes every configured structure.
 
 
-4. CONTROLLED RUNTIME EXPANSION
+4. RESIDENT FEATURE SERVICES
+
+An RSX may provide a callable service to the CCP or another system component;
+it need not exist solely to intercept a BDOS call. This permits optional CCP
+features such as command history and named-directory resolution to keep their
+code and data resident without enlarging the permanent CCP or base PDS.
+
+Each callable resident service publishes a small versioned record containing
+at least a service identifier, ABI version, current entry address and capability
+flags. The PDS holds the service registry because it is core reconstruction
+metadata, not feature data. Resident-layout reconstruction updates registered
+entry addresses. Clients must rediscover a service after reconstruction, or
+call it through a stable gateway; they must not retain an untracked raw pointer
+to a movable RSX.
+
+The CCP detects these services during initialization and after reconstruction.
+If HISTORY or NDR is absent, the corresponding command-environment feature is
+unavailable without impairing the base CCP. Explicitly unloading an ordinary
+stateful service discards its state. HISTORY may therefore discard its history,
+and NDR may discard its live register and later rebuild it from an NDR file.
+
+The version-1 requirement is the ordinary stateful RSX: its code and data move
+together during reconstruction and cease to exist on explicit unload. A later
+state-preserving service may serialize or migrate state through the general
+STATE_PRESERVING reconstruction contract or an owner-scoped PDS allocation.
+
+
+5. CONTROLLED RUNTIME EXPANSION
 
 An ordinary allocation request never expands the PDS implicitly. Insufficient
 space returns a defined failure. Expansion is a deliberate system reconfiguration
@@ -102,7 +149,7 @@ short commit mechanism. Preparation should finish disk I/O before commit so a
 partly rebuilt resident environment is not required to load its own components.
 
 
-5. CONFIGURATION AND TPA POLICY
+6. CONFIGURATION, SIZING AND TPA POLICY
 
 CONFIG displays current and next-boot PDS sizes. Saving the boot size is
 independent of saving unrelated live drive formats or other settings. Runtime
@@ -110,14 +157,58 @@ growth must fail cleanly if the proposed boundary overlaps the rebuilder or
 violates the configured minimum TPA, unless the user deliberately selects a
 profile with a smaller TPA.
 
-The default size remains uncommitted until all 1.0 consumers are inventoried.
-Likely consumers include the allocator header, command history and input queues,
-named-directory register, batch/flow state, date/time state, reconstruction
-tables, and explicitly approved extension state. Drive definitions and login
-state remain candidates until their ownership is finalized.
+PDS size is a user-selectable memory trade-off. The number and geometry of
+logical drives dominate required capacity; a user selecting more or larger
+independently configured drives selects a larger PDS and accepts the resulting
+reduction in TPA.
+
+The working sizing targets are:
+
+  1 KiB       minimum constrained profile and goal for a four-drive base
+  1.25 KiB    current preferred default planning target
+  1.5 KiB     fallback default if the final ABI leaves inadequate reserve
+  larger      user-configured drive and system profiles
+
+Allocation should use 256-byte pages unless measurement establishes that a
+finer granularity has a material benefit. These are budgets and capacities,
+not fixed ABI partitions.
+
+The expected four-drive base inventory is approximately:
+
+  623 bytes   current drive tables and disk session state
+   64 bytes   search path capacity
+   82 bytes   current RSX and CPX reconstruction records
+ 48-64 bytes PDS descriptor and allocator metadata
+ 40-48 bytes core settings and canonical date/time state
+ 143-167     alignment and growth reserve within a 1 KiB profile
+
+This makes a 1 KiB base plausible but tight. A 1.25 KiB default leaves a safer
+reserve for the callable-service registry and ABI evolution while remaining far
+below the former 3-5 KiB projection. The figures must be replaced by emitted-
+binary measurements when the version-1 structures are implemented.
 
 
-6. RELEASE BOUNDARY AND CURRENT IMPLEMENTATION
+7. BASE PDS INVENTORY
+
+The base PDS is expected to own:
+
+  * descriptor, allocator and allocation-directory metadata;
+  * core saved and live system settings;
+  * logical-drive bindings, DPH/DPB-derived writable records, CSV/ALV policy,
+    login/read-only state and other required disk session state;
+  * the system search path;
+  * RSX and CPX reconstruction metadata and the callable-service registry;
+  * canonical date/time state and its provider binding; and
+  * small shared state whose lifetime is independent of an optional module.
+
+Command history, the live named-directory registry, security databases and
+batch/flow queues are excluded from the base budget. They normally reside in
+their implementing RSXs. Moving an existing mutable table into the PDS is a
+ROMability and ownership change, not a RAM saving, unless its old allocation is
+removed or its representation is made smaller.
+
+
+8. RELEASE BOUNDARY AND CURRENT IMPLEMENTATION
 
 The 1.0 system must have the PDS ABI, measured storage inventory, configurable
 cold-boot size, stable allocations across warm boot, and the storage required

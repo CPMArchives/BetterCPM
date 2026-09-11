@@ -144,10 +144,19 @@ The eventual extension facility may be compatible in purpose rather than
 binary-identical to CP/M 3 RSXs.
 
 Resident System Extensions and Command Processor Extensions are distinct.
-An RSX intercepts or extends BDOS services.  It is part of the resident
+An RSX may intercept or extend BDOS services, or publish a callable resident
+service used by the CCP or another component. It is part of the resident
 service environment and remains above the command environment when the CCP
-is overwritten and restored.  RSXs are dynamically loadable and unloadable,
+is overwritten and restored. RSXs are dynamically loadable and unloadable,
 but an installed RSX remains protected while transient programs execute.
+
+A callable service publishes a versioned record through the small service
+registry in the PDS. The record identifies the service and ABI and supplies
+its current entry address and capabilities. Reconstruction updates addresses;
+clients rediscover the service or use a stable call-through gateway instead of
+retaining raw pointers to movable RSXs. This permits optional CCP facilities
+such as HISTORY and NDR to own resident code and data without becoming CPXs or
+enlarging the permanent CCP.
 
 A Command Processor Extension, or CPX, extends command interpretation.  A
 CPX may provide additional commands, aliases, scripting, conditional flow,
@@ -177,6 +186,12 @@ not by themselves identify pointers or other mutable values created while a
 module is running, so a stateful module must use the state-preservation
 contract.  Current HELLO and FDF implementations have no private live state
 that must survive reconstruction and therefore follow the stateless case.
+
+Optional feature state normally lives in its implementing RSX and moves with
+that RSX. Explicit unload discards it. An owner-scoped PDS allocation is used
+only when state must outlive unloading or replacement of its module. CPXs may
+not own indispensable persistent state because transient execution can destroy
+the entire command environment.
 
 
 14.5 STORAGE EXTENSIONS

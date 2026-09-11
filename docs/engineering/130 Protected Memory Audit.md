@@ -112,14 +112,53 @@ TPA or overlay storage instead of reserving the second half permanently. RSX
 loading from a running transient requires an explicit non-overlap plan before
 this saving can be claimed.
 
-## PDS consequence
+## Revised PDS ownership and sizing consequence
 
-The proposed non-disk PDS budget is about 1,312 bytes. The current 192-byte PDS
-already pays for part of it. Several proposed facilities also replace existing
-mutable allocations rather than adding wholly new memory: the CPX table, RSX
-table, portions of BDOS/BIOS session state and the PDS descriptor's live-layout
-fields. On that basis the likely net new protected-RAM requirement is closer to
-roughly 0.9–1.1 KiB than to the full 1.3 KiB, before disk-table normalization.
+The architectural review following this audit changed the ownership model.
+Optional feature data is no longer budgeted into the base PDS merely because it
+must survive transient execution. HISTORY.RSX owns command records, NDR.RSX
+owns the live named-directory register, and security and batch/flow state belong
+to their implementing resident modules. The PDS retains only core state and
+small reconstruction/service-discovery records.
+
+The current 192-byte PDS is entirely command-history state. Moving history into
+HISTORY.RSX therefore removes those 192 bytes from the base inventory; it must
+not be counted as an existing contribution toward the new base PDS.
+
+Using current measured structures, a four-drive base is approximately:
+
+| Base PDS item | Planning bytes |
+| --- | ---: |
+| Four drive records, shared ALV, four CSVs, physical definitions and disk session state | 623 |
+| Search path | up to 64 |
+| Current RSX and CPX reconstruction records | 82 |
+| Descriptor and allocator metadata | 48-64 |
+| Core settings and canonical date/time | 40-48 |
+| **Subtotal before alignment/reserve** | **857-881** |
+
+This leaves 143-167 bytes in a 1,024-byte profile. That is sufficient to make
+1 KiB a credible constrained target, but the margin must also absorb the
+callable-resident-service registry, alignment and ABI evolution. A 1.25 KiB
+default is therefore the preferred planning target; 1.5 KiB remains the
+fallback if concrete version-1 layouts exhaust the smaller budget.
+
+The service registry is intentionally small. Each installed callable service
+needs a service identifier, ABI version, current entry address and capability
+flags, likely 8-12 bytes per service. Bulk feature state remains in its RSX.
+The exact record is an ABI task, not yet an implemented or measured size.
+
+Drive count remains the principal configurable PDS cost. With the current
+shared 128-byte ALV, the measured model is `118*N + 151` bytes: 623 bytes for
+four drives, 1,095 for eight and 2,039 for sixteen. If every drive instead owns
+a fixed 128-byte ALV, the model is `246*N + 23`: 1,007, 1,991 and 3,959 bytes.
+Geometry-sized ALVs and normalized records should reduce the latter cost. A
+larger drive profile therefore selects a larger PDS and accepts less TPA.
+
+Several base allocations replace existing mutable allocations rather than add
+wholly new memory: CPX and RSX tables, drive tables, portions of BDOS/BIOS
+session state and descriptor live-layout fields. Relocation improves ROMability
+and ownership but saves RAM only when the old allocation disappears or the new
+representation is smaller.
 
 Immediately visible recovery is smaller:
 
@@ -140,8 +179,8 @@ objects into a contiguous PDS cannot be counted as a saving.
 ## Required next measurements
 
 1. Define the version-1 PDS descriptor and every default allocation record.
-2. Give command input, history, NDR, PATH, batch, CPX and RSX tables explicit
-   capacities and byte layouts.
+2. Give PATH, disk state, service registry, CPX and RSX records explicit
+   capacities and byte layouts; size optional feature data within its RSX.
 3. Separate persistent BDOS state from call-local scratch.
 4. Normalize the live DPH, format and logical/physical binding structures and
    measure four- and sixteen-drive profiles.

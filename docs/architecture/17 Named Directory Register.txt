@@ -20,19 +20,22 @@ This preserves the project's compatibility rule that an extension must not
 change the meaning of existing drive and numeric-DU forms.
 
 
-2. LIVE REGISTER AND PERSISTENCE
+2. LIVE REGISTER, OWNERSHIP AND PERSISTENCE
 
-The authoritative live Named Directory Register (NDR) resides in the protected
-Persistent Data Segment (PDS). It survives transient execution, CCP/CPX reconstruction,
-and warm boot.  No utility, CPX, or disk file keeps an independent live map.
-Cold-boot initialization and explicit clear/load operations may replace it.
+The authoritative live Named Directory Register belongs to NDR.RSX, including
+both resolver code and the live mapping data. NDR is an optional command-
+environment feature, so installations which do not load it pay no permanent
+storage cost. The RSX survives transient execution, CCP/CPX reconstruction and
+ordinary warm boot while installed. Explicit unload removes the feature and
+discards the live register; a saved NDR file may restore it after reload.
 
-The PDS supplies storage, not executable lookup logic. A small stable
-resolver service below the TPA performs NAME-to-DU and DU-to-NAME inquiries.
-This service remains callable while a transient has overwritten the CCP and
-all CPXs.  The CCP, RCP commands, transient utilities, module loader, PATH, and
-future applications must call this common service rather than implement their
-own parsers or maps.
+NDR.RSX publishes a versioned callable resident service through the registry
+defined by the PDS architecture. The CCP, RCP commands, transient utilities,
+module loader, PATH and future applications call this common service rather
+than implement private parsers or maps. Clients rediscover the service after
+resident reconstruction and tolerate its absence. NDR data does not consume a
+PDS allocation unless a future requirement explicitly says it must outlive the
+NDR module itself.
 
 
 3. COMMAND AND FILE USE
@@ -67,10 +70,10 @@ The common management syntax is:
 Names are unique.  Assigning an existing name elsewhere reports "ROOT exists"
 and changes nothing; reassignment requires an explicit removal first.
 
-The management front end need not be permanent core code.  NDR.COM provides
-the transient implementation.  A future optional NDR.CPX may provide the same
-ND commands without disk loading.  Both use the protected resolver service,
-so unloading the CPX never removes the namespace.
+The management front end need not be permanent core code. NDR.COM provides the
+transient implementation. A future optional NDR.CPX may provide the same ND
+commands without disk loading. Both use NDR.RSX, so unloading the CPX never
+removes the namespace while NDR.RSX remains installed.
 
 
 5. NDR FILES
