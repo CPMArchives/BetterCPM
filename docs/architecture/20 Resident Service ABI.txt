@@ -1,0 +1,177 @@
+BETTERCP/M RESIDENT SERVICE ABI AND REGISTRY
+
+Status: adopted Stage-2 design; implementation pending.
+
+
+1. PURPOSE AND OWNERSHIP
+
+The resident-service facility discovers callable services supplied by RSXs or,
+when useful, fixed core code. It defines discovery and binding, not the operation
+set of HIST, NDR, TIME, SECU or another individual service.
+
+The registry is a logical view derived from validated advertisements in the
+active RSX set. The PDS holds only the small registry descriptor, resident-layout
+generation and active reconstruction metadata. It does not duplicate every
+service in a 96-byte flat table. Lookup walks validated active providers and
+calculates the current entry from RSX base plus advertised entry offset. A cache
+may be added only if measurement later justifies its PDS cost.
+
+The loader/reconstructor owns publication and removal. RSXs and transient
+programs cannot modify registry state directly.
+
+Validated advertisements are materialized in a loader-owned descriptor area
+inside each BRSX-v2 provider's allocation. Function 208 walks those descriptors
+through the active RSX chain. This makes discovery independent of disk I/O and
+avoids charging an unloaded service to the PDS. Engineering Specification 133
+defines the runtime header and descriptor representation.
+
+
+2. SERVICE AND PROVIDER IDENTITY
+
+A service uses an exact four-byte uppercase ASCII identifier, space-padded when
+needed, for example HIST, NDR-space, TIME, SECU and TEST. Service identity is
+independent of the provider filename and module version. IDs beginning with X
+are experimental/private until a stable third-party allocation policy exists.
+
+Each advertisement contains:
+
+  4 bytes   service ID
+  1 byte    service ABI major
+  1 byte    service ABI minor
+  2 bytes   callable entry offset from RSX base
+  2 bytes   service-specific capability flags
+
+An RSX may advertise more than one service. Initial implementation capacity is
+four active RSXs, two advertisements per RSX and eight services total. These
+capacities are discoverable and are not client constants.
+
+Only one provider of a service ID may be active in ABI 1, regardless of major
+version. A duplicate rejects the proposed configuration before commit. If the
+sole provider has the wrong major, lookup reports ABI_MAJOR_UNAVAILABLE. Parallel
+major-version providers and priority/stacking policies are deferred.
+
+
+3. BRSX COMPATIBILITY
+
+BRSX version 1 currently advertises one 16-bit primary extended-BDOS service
+number. It does not advertise a four-byte callable-service ID, ABI minor,
+capabilities, multiple services or a callable entry offset. That field is not
+silently reinterpreted.
+
+The callable-service advertisement is introduced by the typed metadata stream
+in BRSX version 2. Legacy BRSX v1 modules remain numeric interceptors. The
+loader rejects unknown service-metadata versions and entry offsets outside the
+live callable image. `21 Stateful RSX Reconstruction ABI.txt` defines the
+version-2 carrier policy shared by callable services and reconstruction data.
+
+
+4. LOOKUP GATEWAY
+
+BetterCP/M extended Function 208 is the stable resident-service gateway:
+
+  C  = 208
+  DE = caller-owned request block
+
+The initial operations are LOOKUP, ENUMERATE and DESCRIBE_REGISTRY. Registration
+and removal are private reconstruction operations. One BDOS function is used
+for the registry; no function number is assigned per service.
+
+Function 208 returns:
+
+  A  = status
+  HL = callable address after successful LOOKUP, zero otherwise
+  DE = preserved request-block address
+  SP, IX and IY preserved
+  other general registers and flags undefined
+
+
+5. REQUEST BLOCK ABI 1
+
+The request block is 20 bytes:
+
+  +00  byte   structure version = 1
+  +01  byte   structure length = 20
+  +02  byte   operation
+  +03  byte   request flags; zero in ABI 1
+  +04  4      service ID
+  +08  byte   required ABI major
+  +09  byte   minimum ABI minor
+  +10  word   required capability mask
+  +12  word   returned callable address
+  +14  byte   returned ABI major
+  +15  byte   returned ABI minor
+  +16  word   returned capability flags
+  +18  byte   returned provider index
+  +19  byte   returned status
+
+A provider satisfies lookup when its ID and major match, its minor is at least
+the requested minimum, and it contains every required capability bit. Output
+fields are zero on failure except where a later status explicitly documents
+diagnostic output. The system never retains the request address.
+
+
+6. STATUS VALUES
+
+Status codes are local to this ABI until BetterCP/M adopts a general error
+namespace:
+
+  00 SUCCESS
+  01 SERVICE_NOT_FOUND
+  02 ABI_MAJOR_UNAVAILABLE
+  03 ABI_MINOR_TOO_OLD
+  04 REQUIRED_CAPABILITY_MISSING
+  05 BAD_REQUEST_VERSION
+  06 BAD_REQUEST_LENGTH
+  07 BAD_OPERATION
+  08 BAD_SERVICE_ID
+  09 REGISTRY_CORRUPT
+  0A END_OF_ENUMERATION
+  0B CAPACITY_EXCEEDED
+  0C DUPLICATE_SERVICE
+  0D UNSUPPORTED_PROVIDER
+
+
+7. ADDRESS LIFETIME AND CALLING
+
+A returned callable address is valid only while the resident-layout generation
+is unchanged. Transients may cache it during execution because reconstruction
+does not occur underneath arbitrary transient code. The reconstructed CCP/CPXs
+rediscover services. Fixed resident clients follow explicit rebinding rules.
+
+The service-specific ABI defines its operations, arguments, results, flags,
+clobbers, pointer lifetimes, reentrancy and bypass behavior. A normal service
+returns with SP restored and preserves IX/IY unless its ABI says otherwise. ABI
+1 uses one dispatcher entry per logical service, not one entry per operation.
+
+
+8. VALIDATION AND RECONSTRUCTION
+
+Before commit, the loader validates identifiers, metadata version, ABI major,
+capabilities, entry bounds, provider module, duplicate IDs and total capacity.
+Failure leaves the old configuration published and unchanged.
+
+Reconstruction builds the complete prospective logical registry from BRSX
+metadata, places and initializes/restores providers, and publishes the new RSX
+head and generation last. Service addresses are always recomputed as new base
+plus entry offset. Unload omits all advertisements belonging to the removed RSX;
+no stale pointer remains. Enumeration order and provider indices have no lasting
+semantic meaning and are valid only for the reported generation.
+
+Registry corruption never permits following an unvalidated pointer. The system
+reconstructs from validated active metadata when possible or enters the defined
+resident recovery path.
+
+
+9. STAGE-2 ACCEPTANCE
+
+The qualification provider advertises TEST ABI 1.0 with capability 0001h and
+returns 5253h. Acceptance requires:
+
+  1. successful discovery and direct call;
+  2. correct version and capability filtering;
+  3. SERVICE_NOT_FOUND for an unknown ID;
+  4. duplicate rejection before publication;
+  5. provider movement caused by another RSX change;
+  6. expiration of the old address and successful rediscovery at the new one;
+  7. clean removal on unload; and
+  8. enumeration which never exposes a partial or stale provider.

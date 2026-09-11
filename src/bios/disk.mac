@@ -193,7 +193,7 @@ DC_MASK:
 ; no saved RSX pointer can outlive a rebuild or an unload.
         LD DE,(BIO_TRACK)
         LD HL,(BIO_SECTOR)
-        LD BC,001D0H
+        LD BC,001D1H
         CALL 5
         BIT 7,B
         JP Z,DC_MAPBAD
@@ -458,7 +458,7 @@ DC_WAITL:
         OR C
         JR NZ,DC_WAITL
 DC_ERR:
-        LD A,0D0H
+        LD A,0D1H
         LD (DC_LAST),A       ; failed seek/restore leaves position untrusted
         OUT (FDCCOMMAND),A
         LD A,1

@@ -91,13 +91,12 @@ it need not exist solely to intercept a BDOS call. This permits optional CCP
 features such as command history and named-directory resolution to keep their
 code and data resident without enlarging the permanent CCP or base PDS.
 
-Each callable resident service publishes a small versioned record containing
-at least a service identifier, ABI version, current entry address and capability
-flags. The PDS holds the service registry because it is core reconstruction
-metadata, not feature data. Resident-layout reconstruction updates registered
-entry addresses. Clients must rediscover a service after reconstruction, or
-call it through a stable gateway; they must not retain an untracked raw pointer
-to a movable RSX.
+Each callable resident service publishes versioned metadata containing a service
+identifier, ABI version, entry offset and capability flags. The logical registry
+is derived from validated advertisements in the active RSXs. The PDS holds only
+its descriptor, generation and active reconstruction metadata, avoiding a flat
+duplicate table of current addresses. Clients rediscover a service after
+reconstruction and must not retain an untracked raw pointer to a movable RSX.
 
 The CCP detects these services during initialization and after reconstruction.
 If HISTORY or NDR is absent, the corresponding command-environment feature is
@@ -144,6 +143,10 @@ and reconstructs the command environment.
 The STATELESS, STATEFUL, STATE_PRESERVING, and COLD_ONLY behaviors are the
 general RSX reconstruction contract; they apply equally to load, unload,
 compaction, and PDS resizing.
+
+`21 Stateful RSX Reconstruction ABI.txt` is the normative contract for those
+classes. PDS growth consumes that general reconstruction service; it does not
+define a separate relocation mechanism.
 
 Most reconstruction machinery belongs in transient code. Permanent code
 publishes layout and allocator interfaces and supplies only the irreducible,

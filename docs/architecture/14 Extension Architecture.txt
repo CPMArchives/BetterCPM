@@ -151,10 +151,11 @@ is overwritten and restored. RSXs are dynamically loadable and unloadable,
 but an installed RSX remains protected while transient programs execute.
 
 A callable service publishes a versioned record through the small service
-registry in the PDS. The record identifies the service and ABI and supplies
-its current entry address and capabilities. Reconstruction updates addresses;
-clients rediscover the service or use a stable call-through gateway instead of
-retaining raw pointers to movable RSXs. This permits optional CCP facilities
+registry described by `20 Resident Service ABI.txt`. The logical registry is
+derived from validated advertisements in active RSXs; the PDS retains its small
+descriptor and reconstruction generation rather than a duplicate table of
+absolute entries. Clients rediscover the current service after reconstruction
+instead of retaining raw pointers to movable RSXs. This permits optional CCP facilities
 such as HISTORY and NDR to own resident code and data without becoming CPXs or
 enlarging the permanent CCP.
 
@@ -198,6 +199,12 @@ loader must reject an unsupported class before altering the resident layout.
 Stage-3 acceptance requires a test RSX which stores a runtime-created absolute
 pointer to its own mutable data, moves during reconstruction, and demonstrates
 that both the pointer and the pointed-to state remain valid afterward.
+
+The normative reconstruction contract is `21 Stateful RSX Reconstruction
+ABI.txt`. It introduces these declarations in BRSX version 2, preserves BRSX
+version 1 as a legacy stateless carrier, and defines typed metadata, complete-
+allocation preservation, pointer repair, lifecycle behavior, validation, and
+transactional publication.
 
 Optional feature state normally lives in its implementing RSX and moves with
 that RSX. Explicit unload discards it. An owner-scoped PDS allocation is used

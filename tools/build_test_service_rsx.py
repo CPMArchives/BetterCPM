@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the second BRSX v1 proof carrier, FDF.RSX."""
+"""Build the BRSX-v2 TEST callable-service qualification provider."""
 from __future__ import annotations
 
 import argparse
@@ -11,7 +11,7 @@ from build_ccp import assemble
 from build_rsx_module import make_module
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "src/rsx/fdf.mac"
+SOURCE = ROOT / "src/rsx/testsvc.mac"
 BUILD = ROOT / "build/rsx"
 LINK_BASE = 0x8000
 ALTERNATE_BASE = 0x8101
@@ -27,20 +27,22 @@ def main() -> None:
     text = source.replace("        CSEG\n        .PHASE  ",
                           "        ASEG\n        ORG     ").replace(
                               "        .DEPHASE\n", "")
-    code = assemble(args.assembler, text, BUILD / "fdf.bin",
-                    BUILD / "fdf.lst", LINK_BASE)
+    code = assemble(args.assembler, text, BUILD / "testsvc.bin",
+                    BUILD / "testsvc.lst", LINK_BASE)
     alternate = assemble(
         args.assembler,
         text.replace("RSXBASE         EQU     08000H",
                      "RSXBASE         EQU     08101H"),
-        BUILD / "fdf-alt.bin", BUILD / "fdf-alt.lst", ALTERNATE_BASE)
-    offsets = relocation_offsets(code, alternate, ALTERNATE_BASE - LINK_BASE)
-    carrier = make_module(name="FDF", version=(0, 1), services=[209],
-                          linked_base=LINK_BASE, code=code,
-                          relocations=offsets)
-    (BUILD / "FDF.RSX").write_bytes(carrier)
-    print(f"{hashlib.sha256(code).hexdigest()}  build/rsx/fdf.bin")
-    print(f"FDF.RSX bytes: {len(code)}; relocations: {len(offsets)}; "
+        BUILD / "testsvc-alt.bin", BUILD / "testsvc-alt.lst", ALTERNATE_BASE)
+    relocations = relocation_offsets(code, alternate, ALTERNATE_BASE - LINK_BASE)
+    service_offset = code.index(bytes((0x21, 0x53, 0x52, 0x7D, 0xC9)))
+    carrier = make_module(
+        name="TEST", version=(0, 1), services=[], linked_base=LINK_BASE,
+        code=code, relocations=relocations, entry_offset=8, format_version=2,
+        callable_services=[(b"TEST", 1, 0, service_offset, 1)])
+    (BUILD / "TEST.RSX").write_bytes(carrier)
+    print(f"{hashlib.sha256(code).hexdigest()}  build/rsx/testsvc.bin")
+    print(f"TEST.RSX bytes: {len(code)}; relocations: {len(relocations)}; "
           f"carrier: {len(carrier)}")
 
 

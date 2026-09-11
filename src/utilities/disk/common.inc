@@ -487,7 +487,7 @@ CURAW:  LD A,(DE)
 ; one when the drive is hooked up. Ask it to make the same pencilled-in
 ; copy after the ordinary comparison has failed. Most formats need no
 ; mapper at all and must keep matching their original catalogue record.
-CUNORM: LD C,208
+CUNORM: LD C,209
         LD B,0
         CALL BDOS
         LD A,H
@@ -496,7 +496,7 @@ CUNORM: LD C,208
         LD A,L
         CP 044H
         JR NZ,CUNEXT
-; Service 208 takes the setter's 80-byte request, one byte ahead of a bare
+; Service 209 takes the setter's 80-byte request, one byte ahead of a bare
 ; catalogue binding. Make a dummy request rather than handing it a pointer
 ; with all the old MM fields shifted one place to the left.
         XOR A
@@ -507,7 +507,7 @@ CUNORM: LD C,208
         LDIR
         LD DE,REQ
         LD IX,REQ              ; extended validator shares the BIOS setter ABI
-        LD C,208
+        LD C,209
         LD B,2
         CALL BDOS
         LD A,H
