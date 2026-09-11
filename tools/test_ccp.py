@@ -21,7 +21,7 @@ CALLER = 0x7000
 
 
 def symbol(name: str) -> int:
-    matches = re.findall(rf"^([0-9a-f]{{4}})\s+.*\b{name}:?\s*$",
+    matches = re.findall(rf"^([0-9a-f]{{4}})\s+.*\b{name}:\s*$",
                          LISTING.read_text(encoding="ascii"),
                          re.MULTILINE | re.IGNORECASE)
     require(matches, f"CCP listing lacks {name}")

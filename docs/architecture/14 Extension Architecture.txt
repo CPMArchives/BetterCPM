@@ -144,10 +144,19 @@ The eventual extension facility may be compatible in purpose rather than
 binary-identical to CP/M 3 RSXs.
 
 Resident System Extensions and Command Processor Extensions are distinct.
-An RSX intercepts or extends BDOS services.  It is part of the resident
+An RSX may intercept or extend BDOS services, or publish a callable resident
+service used by the CCP or another component. It is part of the resident
 service environment and remains above the command environment when the CCP
-is overwritten and restored.  RSXs are dynamically loadable and unloadable,
+is overwritten and restored. RSXs are dynamically loadable and unloadable,
 but an installed RSX remains protected while transient programs execute.
+
+A callable service publishes a versioned record through the small service
+registry in the PDS. The record identifies the service and ABI and supplies
+its current entry address and capabilities. Reconstruction updates addresses;
+clients rediscover the service or use a stable call-through gateway instead of
+retaining raw pointers to movable RSXs. This permits optional CCP facilities
+such as HISTORY and NDR to own resident code and data without becoming CPXs or
+enlarging the permanent CCP.
 
 A Command Processor Extension, or CPX, extends command interpretation.  A
 CPX may provide additional commands, aliases, scripting, conditional flow,
@@ -155,7 +164,46 @@ command search, or other command-environment behavior.  It does not become
 an RSX merely because it is temporarily loaded.  CPXs shall use the command
 processor's extension interface rather than intercepting BDOS calls.  Their
 code is reclaimable with the CCP and restored by WBOOT from the active CPX
-reconstruction table in persistent DATA.
+reconstruction table in the Persistent Data Segment (PDS).
+
+Any change to the protected resident layout uses one reconstruction
+transaction.  This includes loading an RSX, unloading an RSX, and changing
+the lower boundary of the PDS.  For example, if HELLO.RSX is loaded before
+FDF.RSX, unloading HELLO requires FDF and everything below it to be rebuilt
+at new addresses.  Expanding the PDS imposes the same requirement; it merely
+supplies a different upper boundary for the rebuilt RSX/CPX region.
+
+Consequently, the state contract belongs to the general extension
+architecture rather than to PDS expansion.  Every active RSX that may move
+must be reconstructible and declare one of these behaviors:
+
+  STATELESS          reload and initialize
+  STATEFUL           preserve the complete live image under stated pointer rules
+  STATE_PRESERVING   save and restore through a versioned contract
+  COLD_ONLY          do not move while active; defer the layout change
+
+Relocation records repair addresses derived from the linked image.  They do
+not by themselves identify pointers or other mutable values created while a
+module is running. A STATEFUL module may be copied as a complete live image
+only if its ABI forbids untracked runtime absolute pointers, uses relocatable
+offsets/handles, or declares every runtime pointer slot that reconstruction
+must adjust. A module which cannot meet that rule must use the versioned
+STATE_PRESERVING export/import contract. Current HELLO and FDF implementations
+have no private live state that must survive reconstruction and therefore
+follow the stateless case.
+
+The reconstruction class is a required field in the RSX module ABI, even when
+an implementation release supports only a subset of the four behaviors. A
+loader must reject an unsupported class before altering the resident layout.
+Stage-3 acceptance requires a test RSX which stores a runtime-created absolute
+pointer to its own mutable data, moves during reconstruction, and demonstrates
+that both the pointer and the pointed-to state remain valid afterward.
+
+Optional feature state normally lives in its implementing RSX and moves with
+that RSX. Explicit unload discards it. An owner-scoped PDS allocation is used
+only when state must outlive unloading or replacement of its module. CPXs may
+not own indispensable persistent state because transient execution can destroy
+the entire command environment.
 
 
 14.5 STORAGE EXTENSIONS
@@ -281,7 +329,7 @@ The intended high-to-low ordering is:
 
   * BIOS and hardware-dependent resident state.
   * Core BDOS and System Services.
-  * Persistent system DATA and installed RSXs.
+  * The PDS and installed RSXs.
   * Dynamic CP/M compatibility gateway.
   * Installed CPXs.
   * Reloadable CCP core.
@@ -297,7 +345,7 @@ BIOS or core BDOS above it to move.
 RSXs are dynamically loadable and unloadable, but remain resident and
 protected while installed so transient programs can use their intercepted or
 extended services.  CPXs are dynamically loadable and unloadable overlays;
-they may be destroyed with the CCP by a transient program.  Persistent DATA
+they may be destroyed with the CCP by a transient program. The PDS
 contains the active CPX reconstruction table used by WBOOT to restore the
 ordered CPX set and CCP.
 

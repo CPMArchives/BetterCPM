@@ -99,7 +99,8 @@ def main() -> None:
 
     cpu.run(SYSTEM_INIT, limit=60000)
     require(cpu.a == 0, "resident initialization failed")
-    require(bytes(cpu.mem[0:3]) == bytes((0xC3, 0x03, 0xEF)),
+    require(bytes(cpu.mem[0:3]) == bytes((0xC3, (BIOS_BASE + 3) & 255,
+                                            (BIOS_BASE + 3) >> 8)),
             "warm-boot page-zero vector is wrong")
     require(bytes(cpu.mem[5:8]) == bytes((0xC3, LAYOUT["TPA"] & 255, LAYOUT["TPA"] >> 8)) and
             bytes(cpu.mem[DEFAULT_GATEWAY:HISTORY_BASE]) == bytes((0xC3, LAYOUT["BDOS"] & 255, LAYOUT["BDOS"] >> 8)),
@@ -572,12 +573,13 @@ def main() -> None:
             f"WBOOT/Function-0 CCP transcript is incomplete at PC={cpu.pc:04X}: "
             f"in={cpu.word(0x7080):04X} out={cpu.word(0x7090):04X} "
             f"ccp={bytes(cpu.mem[ccp_base:ccp_base + 0x2A]).hex()} {transcript[:160]!r}")
-    require(bytes(cpu.mem[0:3]) == bytes((0xC3, 0x03, 0xEF)) and
+    require(bytes(cpu.mem[0:3]) == bytes((0xC3, (BIOS_BASE + 3) & 255,
+                                         (BIOS_BASE + 3) >> 8)) and
             bytes(cpu.mem[5:8]) == bytes((0xC3, LAYOUT["TPA"] & 255, LAYOUT["TPA"] >> 8)) and
             bytes(cpu.mem[DEFAULT_GATEWAY:HISTORY_BASE]) == bytes((0xC3, LAYOUT["BDOS"] & 255, LAYOUT["BDOS"] >> 8)) and
             cpu.word(bdos_symbol("BDOS_DMA")) == 0x0080,
             "WBOOT did not reconstruct gateways and default DMA state")
-    require(bytes(cpu.mem[(LAYOUT["SYSTEM"] + 0x80):(LAYOUT["SYSTEM"] + 0x84)]) == b"BM\x01\x00" and
+    require(bytes(cpu.mem[(LAYOUT["SYSTEM"] + 0x80):(LAYOUT["SYSTEM"] + 0x84)]) == b"BM\x01\x01" and
             cpu.word((LAYOUT["SYSTEM"] + 0x84)) == 0 and cpu.word((LAYOUT["SYSTEM"] + 0x86)) == 0 and
             cpu.word((LAYOUT["SYSTEM"] + 0x88)) == HISTORY_BASE and cpu.word((LAYOUT["SYSTEM"] + 0x8A)) == DEFAULT_GATEWAY and
             cpu.word((LAYOUT["SYSTEM"] + 0x8C)) == ccp_base and cpu.word((LAYOUT["SYSTEM"] + 0x8E)) == allocation and

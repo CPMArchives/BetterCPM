@@ -63,14 +63,15 @@ them. Each record may carry minimal source and echo/status policy metadata.
 
 ## History
 
-The existing 512-byte packed history buffer remains separate. It stores
+The current packed history buffer remains separate. Its 192-byte PDS allocation
+contains ten control bytes and 182 command-record bytes. It stores
 completed lines that have been dispatched and supports Up/Down recall. Recalled
 text is copied into the editor; history navigation does not remove or reorder
 pending commands.
 
 ## Persistent state and WBOOT
 
-The following live in protected persistent DATA and survive ordinary WBOOT:
+The following live in the protected Persistent Data Segment (PDS) and survive ordinary WBOOT:
 
 - raw type-ahead ring state and bytes;
 - pending completed-command records;
@@ -101,4 +102,3 @@ unless it actually produces a command dispatched by the CCP.
 4. Integrate existing history without conflating history with pending work.
 5. Define the command-source ABI used by SUBMIT.CPX and FLOW.CPX.
 6. Add BATCHIO.RSX as an explicitly activated input provider.
-

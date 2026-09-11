@@ -86,12 +86,13 @@ is supplied through loadable CPXs rather than added to the core CCP.
   Specify its bounded storage, initialization and interface as part of the core
   boundary; implement higher-level navigation and utility syntax in their own
   milestones. Persistence across power-off is a separate save/load decision.
-- [ ] Add transient `NDR.COM` to load, save, list, and select disk-backed named
-  directory sets such as `DEVLPMNT.NDR` and `GAMES.NDR`. Keep the active resolver
-  map in persistent DATA so command lookup does not require repeated floppy access;
-  these files are backing sets, not the live lookup database.
+- [ ] Add transient `NDR.COM` to manage the live map and load/save disk-backed
+  sets such as `DEVLPMNT.NDR` and `GAMES.NDR`. A future optional `NDR.CPX` may
+  expose the same `ND` command forms. Both must call the common protected
+  resolver; these files are backing sets, not the live lookup database. Follow
+  `docs/architecture/17 Named Directory Register.txt`.
 - [ ] Finish common named-DU resolution and use it consistently for command
-  lookup, BASIC commands, transient utilities, and module loading.
+  lookup, RCP commands, transient utilities, and module loading.
 - [ ] Implement a system `PATH` facility for command lookup across canonical
   `DU:` locations, with documented search order, failure behavior, and CPX
   command precedence. Accept named-directory references as input conveniences,
@@ -102,12 +103,25 @@ is supplied through loadable CPXs rather than added to the core CCP.
   should include the current drive/user (`DU:`), named directory, and current
   date/time while preserving a compact CP/M-style default.
 
-The packed, multi-command history buffer in persistent DATA is already
+The packed, multi-command history buffer in the PDS is already
 implemented, as are Up/Down recall and warm-boot persistence.  The current
 53K layout reserves 192 bytes (182 bytes of command records).  This is the
 temporary size accepted while the resident-memory trade-offs are reviewed;
 do not reduce it again.  It requires regression coverage during the full
 compatibility rerun, not a new implementation.
+
+- [ ] Implement the versioned PDS descriptor and allocator specified by
+  `docs/architecture/18 Persistent Data Segment.txt`; inventory every 1.0 owner,
+  measure the default using `docs/engineering/130 Protected Memory Audit.md`,
+  and expose current and next-boot sizes.
+- [ ] Make the cold-boot PDS size configurable while preserving 53 KiB in the
+  default profile. Saving this setting must be independent of saving drive
+  formats. Runtime contraction always waits for cold boot.
+- [ ] Generalize resident-layout reconstruction and module-state contracts for
+  RSX load/unload, compaction, and controlled runtime PDS expansion. Keep
+  complex preparation in transient code, preserve only
+  declared state, enforce the minimum-TPA policy, and never shrink the physical
+  high-water boundary before cold boot.
 
 ## Stock CP/M transient utilities
 
@@ -292,7 +306,7 @@ between CONFIG and DUP remain design considerations for the formatting work.
 - [ ] Finish user documentation for installation, commands, configuration,
   disk handling, extensions, recovery, and upgrades.
 - [ ] Finish programmer documentation for the BIOS, BDOS, system gateway,
-  persistent DATA, CPX ABI, and RSX ABI.
+  PDS, CPX ABI, and RSX ABI.
 - [ ] Define release versioning, compatibility promises, upgrade rules, and
   automated release acceptance tests.
 

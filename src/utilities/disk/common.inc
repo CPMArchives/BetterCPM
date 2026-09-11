@@ -467,7 +467,7 @@ PBAD:   SCF
 ; CURB is kept separate because FPARSE uses BIND as scratch.
 CURNAME:LD A,(CURB)
         CP 0FFH
-        JR Z,CUNDEF
+        JP Z,CUNDEF
         XOR A
         LD (FINDIDX),A
 CUFIND: LD A,(FINDIDX)
@@ -476,12 +476,57 @@ CUFIND: LD A,(FINDIDX)
         LD HL,CURB+1
         LD DE,BIND+1
         LD B,63
+CURAW:  LD A,(DE)
+        CP (HL)
+        JR NZ,CUNORM
+        INC HL
+        INC DE
+        DJNZ CURAW
+        JR CUFOUND
+; The old SUPER entries have no size map in CONFIG's catalogue. FDF adds
+; one when the drive is hooked up. Ask it to make the same pencilled-in
+; copy after the ordinary comparison has failed. Most formats need no
+; mapper at all and must keep matching their original catalogue record.
+CUNORM: LD C,208
+        LD B,0
+        CALL BDOS
+        LD A,H
+        CP 046H
+        JR NZ,CUNEXT
+        LD A,L
+        CP 044H
+        JR NZ,CUNEXT
+; Service 208 takes the setter's 80-byte request, one byte ahead of a bare
+; catalogue binding. Make a dummy request rather than handing it a pointer
+; with all the old MM fields shifted one place to the left.
+        XOR A
+        LD (REQ),A
+        LD HL,BIND
+        LD DE,REQ+1
+        LD BC,64
+        LDIR
+        LD DE,REQ
+        LD IX,REQ              ; extended validator shares the BIOS setter ABI
+        LD C,208
+        LD B,2
+        CALL BDOS
+        LD A,H
+        CP 046H
+        JR NZ,CUNEXT
+        LD A,L
+        CP 044H
+        JR NZ,CUNEXT
+CUCOMPARE:
+        LD HL,CURB+1
+        LD DE,REQ+2
+        LD B,63
 CUCMP:  LD A,(DE)
         CP (HL)
         JR NZ,CUNEXT
         INC HL
         INC DE
         DJNZ CUCMP
+CUFOUND:
         LD A,(FINDIDX)
         CALL FNAME
         JP PNAME
@@ -506,7 +551,7 @@ SMALLMSG:DB 'Not enough transient memory (42K required).',13,10,0
 FNOMSG: DB 'Cannot open DISK.FDF on current drive or A:.',13,10,0
 FBADMSG:DB 'DISK.FDF is empty, unreadable or too large.',13,10,0
 MAGIC:  DB 'BDCF',5,4,4,64
-CUSTOM: DB 'Current BIOS format (not listed in DISK.FDF)',0
+CUSTOM: DB 'Current BIOS format (not listed in format catalogue)',0
 UNDEF:  DB 'Undefined disk drive',0
 WIDTHS: DB 2,1,1,1,2,2,1,1,2,2,1,1,1,1
 FDFCB:  DB 0,'DISK    FDF'

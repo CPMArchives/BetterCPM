@@ -107,19 +107,22 @@ SYS_COMSTART:
         DB      0
         ENDM
 
-; Extension Control Block, version 1. This fixed descriptor publishes the
-; active calculated layout while RSX, CPX, and CCP addresses remain movable.
+; Extension Control Block, version 1. This is also the PDS ABI 1 descriptor.
+; ECB_PDSLOW publishes the live lower boundary; its fixed address at SYSBASE+80h
+; publishes SYSBASE as the upper boundary. Until configurable sizing exists,
+; current and next-boot sizes are both SYSBASE-ECB_PDSLOW.
 ECB_MAGIC:
         DB      'B','M'
 ECB_VERSION:
         DB      1
 ECB_FLAGS:
-        DB      0
+        DB      1               ; bit 0: static PDS ABI 1 view is valid
 ECB_RSXHEAD:
         DW      0
 ECB_CPXHEAD:
         DW      0
-ECB_RSXLOW:
+ECB_PDSLOW:
+ECB_RSXLOW:                     ; compatibility name used by RSX reconstruction
         DW      HISTBASE
 ECB_CPXLOW:
         DW      CPMGATE

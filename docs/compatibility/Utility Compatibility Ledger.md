@@ -66,9 +66,10 @@ B5:FILE.COM
 WORK:FILE.COM
 ```
 
-`WORK:` is illustrative named-DU syntax. Its namespace, ambiguity rules, and
-central resolution service remain to be specified; individual utilities shall
-not introduce private interpretations meanwhile.
+`WORK:` is illustrative named-DU syntax. The namespace and central resolver are
+specified in `docs/architecture/17 Named Directory Register.txt`; individual
+utilities shall not introduce private interpretations. Canonical `A:` through
+`P31:` forms remain reserved and cannot be shadowed by aliases.
 
 ## Resident and command-environment baseline
 
