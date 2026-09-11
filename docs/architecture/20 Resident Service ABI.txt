@@ -52,10 +52,11 @@ number. It does not advertise a four-byte callable-service ID, ABI minor,
 capabilities, multiple services or a callable entry offset. That field is not
 silently reinterpreted.
 
-The callable-service advertisement is introduced by an explicit compatible
-module-format extension or a new BRSX version. Legacy BRSX v1 modules remain
-numeric interceptors. The loader rejects unknown service-metadata versions and
-entry offsets outside the live callable image.
+The callable-service advertisement is introduced by the typed metadata stream
+in BRSX version 2. Legacy BRSX v1 modules remain numeric interceptors. The
+loader rejects unknown service-metadata versions and entry offsets outside the
+live callable image. `21 Stateful RSX Reconstruction ABI.txt` defines the
+version-2 carrier policy shared by callable services and reconstruction data.
 
 
 4. LOOKUP GATEWAY
@@ -168,4 +169,3 @@ returns 5253h. Acceptance requires:
   6. expiration of the old address and successful rediscovery at the new one;
   7. clean removal on unload; and
   8. enumeration which never exposes a partial or stale provider.
-

@@ -200,6 +200,12 @@ Stage-3 acceptance requires a test RSX which stores a runtime-created absolute
 pointer to its own mutable data, moves during reconstruction, and demonstrates
 that both the pointer and the pointed-to state remain valid afterward.
 
+The normative reconstruction contract is `21 Stateful RSX Reconstruction
+ABI.txt`. It introduces these declarations in BRSX version 2, preserves BRSX
+version 1 as a legacy stateless carrier, and defines typed metadata, complete-
+allocation preservation, pointer repair, lifecycle behavior, validation, and
+transactional publication.
+
 Optional feature state normally lives in its implementing RSX and moves with
 that RSX. Explicit unload discards it. An owner-scoped PDS allocation is used
 only when state must outlive unloading or replacement of its module. CPXs may

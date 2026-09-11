@@ -148,6 +148,12 @@ The stateful-RSX qualification test stores both mutable data and a runtime-
 created absolute pointer to that data, forces the RSX to move, and verifies the
 pointer and value after reconstruction. A counter-only test is insufficient.
 
+The accepted binary and lifecycle rules are specified by
+`docs/architecture/21 Stateful RSX Reconstruction ABI.txt`. They enter the
+module carrier with BRSX version 2. BRSX version 1 remains a legacy stateless
+numeric interceptor. Version 2 uses typed trailing metadata for numeric BDOS
+services, callable resident services, and runtime pointer-slot offsets.
+
 ## 5. Module file information
 
 The CPX on-disk format is `BCPX` version 1 and the RSX carrier is `BRSX`

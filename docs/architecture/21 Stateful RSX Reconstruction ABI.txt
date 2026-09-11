@@ -1,0 +1,255 @@
+21 STATEFUL RSX RECONSTRUCTION ABI
+==================================
+
+Status: Accepted architectural specification; implementation is Stage 3.
+
+
+21.1 PURPOSE AND SCOPE
+----------------------
+
+This specification defines how BetterCP/M preserves an already-loaded RSX
+when a resident-layout reconstruction moves it. It supplements the ordinary
+BRSX loading and linked-image relocation ABI. It applies to RSX load, unload,
+chain compaction, PDS expansion, and any other operation that reconstructs the
+protected resident layout.
+
+The mechanism is deliberately bounded. It copies a declared live image and
+repairs only pointer slots identified by the module. It is not a memory-graph
+walker or a general object relocator.
+
+
+21.2 FORMAT COMPATIBILITY
+-------------------------
+
+The reconstruction contract is introduced by BRSX format version 2. A BRSX
+version-1 image remains a legacy stateless numeric BDOS interceptor. Version 1
+does not acquire an inferred reconstruction class or callable-service records.
+
+The version-2 flags word uses bits 0-1 for the reconstruction class:
+
+  0  STATELESS
+  1  STATEFUL
+  2  STATE_PRESERVING
+  3  COLD_ONLY
+
+All other flag bits are reserved and shall be zero until assigned by a later
+ABI version. A loader shall reject an unknown format, unsupported class, or
+nonzero reserved bit before changing resident memory.
+
+
+21.3 RECONSTRUCTION CLASSES
+---------------------------
+
+STATELESS has no live state that must survive movement. Reconstruction may
+discard it, reload and relocate its disk image, run initialization, and link a
+fresh instance.
+
+STATEFUL preserves its complete live allocation. Reconstruction copies those
+bytes and repairs the declared linked and runtime pointer slots. It does not
+run ordinary shutdown or initialization while moving the instance.
+
+STATE_PRESERVING requires a future versioned export/import contract because a
+byte copy and pointer repair are insufficient. The class and numeric value are
+reserved now; the first implementation shall reject an active module of this
+class when movement would be required.
+
+COLD_ONLY may be explicitly unloaded, with its state discarded according to
+the ordinary unload contract, but may not be moved at runtime. A request that
+would move an active COLD_ONLY module shall fail without changing the layout
+and report that a cold boot is required.
+
+Stage 2 shall parse and validate all four declarations but shall accept only
+STATELESS callable-service providers. Stage 3 adds STATEFUL movement.
+
+
+21.4 VERSION-2 METADATA
+-----------------------
+
+BRSX version 2 retains the version-1 fixed carrier fields where their meaning
+is unchanged and replaces the untyped trailing service-byte convention with a
+versioned typed metadata stream. The exact byte offsets shall be fixed in the
+BRSX version-2 engineering specification before implementation.
+
+The metadata stream contains a signature, metadata major and minor version,
+header length, total length, record count, and reserved-zero fields. Each
+record is typed and length-delimited so an implementation can validate or
+skip records according to its declared ABI rules.
+
+The initial record types are:
+
+  01  intercepted numeric BDOS services
+  02  callable resident-service advertisements
+  03  runtime absolute-pointer slot offsets
+
+Callable-service advertisements follow `20 Resident Service ABI.txt`.
+Runtime-pointer records contain 16-bit little-endian offsets from the live RSX
+base to the pointer words. Offsets shall be sorted, unique, and satisfy
+offset+1 < allocation size. Offsets 0000h and 0002h are forbidden because the
+loader owns those live header words.
+
+Sixteen-bit offsets are sufficient because an RSX allocation is contained in
+the Z80 address space. Metadata resides outside the live allocation and is not
+copied into protected memory.
+
+
+21.5 LIVE IMAGE AND INITIAL LOAD
+--------------------------------
+
+The complete live image is the page-rounded allocation declared by the BRSX
+carrier, rather than merely the emitted payload length. On first load the
+loader copies the payload, zeros the allocation tail, applies ordinary linked-
+image relocation, writes its runtime header, and invokes initialization when
+that lifecycle operation is implemented.
+
+The loader owns these words in the current runtime header:
+
+  offset 0000h  next dispatch/chain target
+  offset 0002h  calculated dispatch entry
+
+Their meanings remain loader ABI, not module-owned persistent state.
+
+
+21.6 STATEFUL MODULE CONTRACT
+------------------------------
+
+A STATEFUL module promises that:
+
+  * all state required after movement is inside its declared live allocation;
+  * copying the allocation preserves every non-pointer value;
+  * runtime references to its own image use offsets or handles, or occupy
+    declared runtime pointer slots;
+  * it contains no untracked runtime absolute pointer into its own image;
+  * it does not depend on a live register value or an active stack frame;
+  * it contains no undocumented pointer into another movable RSX, a CPX, the
+    CCP, or transient reconstruction workspace; and
+  * fixed external resources remain valid independently of the RSX address.
+
+Reconstruction may occur only at a quiescent resident-system boundary. It
+shall not move a module while arbitrary application or RSX code is executing.
+A module that cannot satisfy this contract must use STATE_PRESERVING or
+COLD_ONLY.
+
+
+21.7 LIVE MOVEMENT AND POINTER REPAIR
+-------------------------------------
+
+For a STATEFUL move from old_base to new_base, the reconstructor preserves the
+entire allocation and computes delta = new_base - old_base. It examines the
+union of:
+
+  * ordinary static relocation slots from the BRSX linked image; and
+  * declared runtime absolute-pointer slots.
+
+At each slot, it adjusts the current word by delta only when:
+
+  old_base <= value < old_base + allocation_size
+
+Zero, sentinels, fixed-memory addresses, and all other values outside that
+half-open interval remain unchanged. This rule avoids reapplying original
+linked-image relocation blindly to an already-relocated live image.
+
+After module-owned slots are repaired, the loader rewrites its runtime words
+at offsets 0000h and 0002h and relinks the chain. Overlapping source and
+destination ranges shall have memmove semantics.
+
+
+21.8 SERVICES AND ADDRESS LIFETIME
+----------------------------------
+
+The callable-service registry is logically derived from validated service
+advertisements in the active RSXs. Reconstruction therefore does not patch a
+duplicate table of absolute service addresses. Once the new chain and
+generation are published, lookup derives each callable entry from the new
+module base and advertised entry offset.
+
+A raw callable address is valid only for the registry generation in which it
+was returned. Clients shall rediscover a service after reconstruction. A
+service identifier and ABI version are identity; a runtime address is not.
+
+
+21.9 LIFECYCLE RULES
+--------------------
+
+  initial STATELESS or STATEFUL load
+      relocate a fresh image and run initialization
+
+  explicit unload
+      run shutdown when implemented, then discard the instance and its state
+
+  STATELESS reconstruction
+      reload a fresh image and run initialization
+
+  STATEFUL reconstruction
+      move and repair the live image without shutdown or initialization
+
+  STATE_PRESERVING reconstruction
+      reserved pending a versioned export/import ABI
+
+  COLD_ONLY movement
+      reject and require cold boot
+
+A reconstruction-specific callback shall be added only if a demonstrated
+module cannot be served by these contracts.
+
+
+21.10 TRANSACTION AND PUBLICATION
+---------------------------------
+
+Resident reconstruction has a preparation phase and a short commit phase.
+Transient reconstruction code shall read and validate all carriers and
+metadata, classify every affected module, calculate the prospective layout,
+check available memory, preserve required live images, and finish required
+disk I/O before commit.
+
+Only after preparation succeeds may it reconstruct memory. It shall publish
+the chain head, boundaries, service generation, page-zero gateway, and other
+externally visible descriptors last. A validation or preparation failure
+leaves the active environment unchanged. The implementation shall define a
+recovery path for a failure during commit and shall never expose a partially
+linked environment as successful.
+
+The current loader is not yet the implementation of this transaction. It
+reloads modules from disk and updates some live tables while rebuilding.
+Stage 3 shall close that gap rather than treating the present behavior as an
+already-atomic foundation.
+
+
+21.11 VALIDATION
+----------------
+
+Before commit, the reconstructor shall validate at least:
+
+  * BRSX and metadata versions, lengths, counts, and reserved fields;
+  * the reconstruction class and implementation support for it;
+  * payload, allocation, entry, relocation, and metadata bounds;
+  * runtime pointer slots for bounds, sorting, uniqueness, and ownership;
+  * callable-service advertisements and duplicate-provider rules;
+  * the complete prospective memory map; and
+  * availability of every disk image or live snapshot required to finish.
+
+Malformed metadata is a transaction failure. It shall not be partially
+applied or silently interpreted as STATELESS.
+
+
+21.12 STAGE-3 QUALIFICATION
+---------------------------
+
+The qualification STATEFUL RSX shall contain a mutable counter and buffer, a
+runtime-created pointer to its own data, an ordinary linked pointer, and slots
+holding a fixed address, null, and a sentinel. It shall advertise a callable
+test service.
+
+Tests shall force the RSX to move and prove that:
+
+  * its base address changed;
+  * the counter and buffer retained their values;
+  * the runtime and linked internal pointers identify the relocated objects;
+  * fixed, null, and sentinel values remained unchanged;
+  * loader-owned chain words and numeric dispatch still work;
+  * the callable service is rediscovered at its new address/generation; and
+  * explicit unload performs the defined discard path.
+
+Negative tests shall reject unsorted, duplicate, reserved, out-of-range, and
+truncated metadata; unsupported classes; and layouts that cannot fit. A
+counter-only test does not qualify the implementation.
+

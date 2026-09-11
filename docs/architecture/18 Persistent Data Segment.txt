@@ -144,6 +144,10 @@ The STATELESS, STATEFUL, STATE_PRESERVING, and COLD_ONLY behaviors are the
 general RSX reconstruction contract; they apply equally to load, unload,
 compaction, and PDS resizing.
 
+`21 Stateful RSX Reconstruction ABI.txt` is the normative contract for those
+classes. PDS growth consumes that general reconstruction service; it does not
+define a separate relocation mechanism.
+
 Most reconstruction machinery belongs in transient code. Permanent code
 publishes layout and allocator interfaces and supplies only the irreducible,
 short commit mechanism. Preparation should finish disk I/O before commit so a
