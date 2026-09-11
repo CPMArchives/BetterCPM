@@ -184,11 +184,11 @@ The expected four-drive base inventory is approximately:
    64 bytes   search path capacity
    82 bytes   current RSX and CPX reconstruction records
  48-64 bytes PDS descriptor and allocator metadata
- 40-48 bytes core settings and canonical date/time state
- 143-167     alignment and growth reserve within a 1 KiB profile
+ 24-32 bytes core settings
+ 159-183     alignment and growth reserve within a 1 KiB profile
 
 This makes a 1 KiB base plausible but tight. A 1.25 KiB default leaves a safer
-reserve for the callable-service registry and ABI evolution while remaining far
+reserve for reconstruction metadata and ABI evolution while remaining far
 below the former 3-5 KiB projection. The figures must be replaced by emitted-
 binary measurements when the version-1 structures are implemented.
 
@@ -202,9 +202,14 @@ The base PDS is expected to own:
   * logical-drive bindings, DPH/DPB-derived writable records, CSV/ALV policy,
     login/read-only state and other required disk session state;
   * the system search path;
-  * RSX and CPX reconstruction metadata and the callable-service registry;
-  * canonical date/time state and its provider binding; and
+  * RSX and CPX reconstruction metadata plus the small service-registry
+    descriptor and generation;
   * small shared state whose lifetime is independent of an optional module.
+
+Hardware-backed TIME providers keep no current-time value or provider binding
+in the PDS. The physical or emulated clock is authoritative and the resident-
+service registry supplies discovery. A software-maintained clock owns its state
+inside its implementing RSX. See `22 Clock Provider ABI.txt`.
 
 Command history, the live named-directory registry, security databases and
 batch/flow queues are excluded from the base budget. They normally reside in

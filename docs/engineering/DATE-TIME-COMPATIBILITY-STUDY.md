@@ -1,9 +1,10 @@
 # Date/time conventions and BetterCP/M compatibility
 
-Research date: 2026-09-07. Status: design investigation; no new API numbers or
-on-disk format have been adopted. The user wants broad compatibility where
-feasible, with interchangeable clock-provider RSXs and shared time state in
-persistent DATA.
+Research date: 2026-09-07; provider decision updated 2026-09-11. Status:
+historical compatibility investigation with the native TIME provider ABI now
+adopted. The user wants broad compatibility where feasible, with interchangeable
+clock-provider RSXs. Current time is read from the provider and is not shared
+PDS state.
 
 ## Confirmed compatibility targets
 
@@ -119,13 +120,16 @@ The ordinary unified BDOS returns its unsupported result for functions 41–199;
 98/99 and 104/105 compatibility therefore also require routing through the
 appropriate extension path, not just adding conversions to TIME.COM.
 
-Recommend one canonical RAM time record with explicit validity and a full year
-(or unambiguous day count), accessed through stable gateways. Convert at the
-legacy API boundary, rejecting unrepresentable dates according to a specified
-policy. Preserve the current time, a retained stale sample, and availability as
-distinct states. Device reads must provide a coherent snapshot across rollover.
-Do not expose pointers into an unloadable provider; a legacy pointer interface
-needs a stable entry that remains safe after unload.
+The adopted native service is `TIME` ABI 1.0. It returns a five-byte day-count,
+hour, minute and second value based on the DOS+/Z80DOS extension of the CP/M Plus
+format. Hardware-backed providers are STATELESS and allocate no PDS block. The
+authoritative clock is sampled on demand; no stale or continuously advancing PDS
+copy is maintained. Device reads must provide a coherent snapshot across
+rollover. Raw provider addresses expire at reconstruction; legacy pointer
+interfaces need stable adapters that remain safe after provider unload.
+
+The exact provider request, errors, platform findings and qualification contract
+are normative in `docs/architecture/22 Clock Provider ABI.txt`.
 
 ## Work required before promising compatibility
 

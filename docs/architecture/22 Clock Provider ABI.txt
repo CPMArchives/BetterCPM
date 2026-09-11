@@ -1,0 +1,169 @@
+BETTERCP/M CLOCK PROVIDER ABI
+============================
+
+Status: adopted design; implementation pending.
+
+
+1. PURPOSE AND OWNERSHIP
+------------------------
+
+An optional hardware- or emulator-specific RSX supplies the current local civil
+date and time through the callable resident service `TIME`. Every provider uses
+the same ABI. Callers do not depend on its filename, hardware ports, or current
+address.
+
+The provider reads and validates its authoritative clock and translates it to
+the BetterCP/M representation. Presentation, locale, Unix conversion, command
+syntax, file timestamps, and legacy operating-system compatibility remain
+outside the provider.
+
+Hardware-backed providers normally declare STATELESS and retain no PDS block.
+A future software-maintained clock may keep its state in its own stateful RSX.
+The current time and provider binding are not base-PDS state; resident-service
+discovery supplies the binding.
+
+
+2. SERVICE IDENTITY AND CAPABILITY
+----------------------------------
+
+  service ID          TIME
+  service ABI         1.0
+  capability bit 0    SET supported
+
+Only one TIME provider may be active under Resident Service ABI 1. Provider
+module names identify implementations but are not part of this ABI.
+
+
+3. CANONICAL DATETIME
+---------------------
+
+The native BetterCP/M datetime value is five bytes:
+
+  +0  word  little-endian unsigned day count
+  +2  byte  packed-BCD hour, 00h through 23h
+  +3  byte  packed-BCD minute, 00h through 59h
+  +4  byte  packed-BCD second, 00h through 59h
+
+Day zero is 31 December 1977 and day one is 1 January 1978. The representable
+range is 31 December 1977 through 5 June 2157. Providers reject earlier,
+later, invalid-BCD, or otherwise invalid values without wrapping.
+
+This is based on the DOS+/Z80DOS five-byte extension of the CP/M Plus format.
+It is not the exact CP/M Plus buffer: CP/M Plus uses four bytes and returns
+seconds separately in A.
+
+
+4. REQUEST AND CALLING CONVENTION
+---------------------------------
+
+The caller invokes the service address returned by Resident Service Function
+208 with DE pointing to this ten-byte block:
+
+  +0  byte  request version = 1
+  +1  byte  request length = 10
+  +2  byte  operation: 0 GET, 1 SET
+  +3  byte  flags; zero in ABI 1
+  +4  word  day count
+  +6  byte  packed-BCD hour
+  +7  byte  packed-BCD minute
+  +8  byte  packed-BCD second
+  +9  byte  reserved; zero
+
+GET writes bytes +4 through +8 only after a complete valid sample has been
+obtained. SET reads those bytes. Defining SET in ABI 1 does not require a
+provider to implement it; providers without capability bit zero return
+SET_UNSUPPORTED.
+
+On return:
+
+  A   status
+  HL  address DE+4 on success, zero on failure
+  DE  preserved
+  SP, IX and IY preserved
+  other general registers and flags undefined
+
+Status values are:
+
+  00  SUCCESS
+  01  BAD_REQUEST_VERSION
+  02  BAD_REQUEST_LENGTH
+  03  BAD_OPERATION
+  04  BAD_FLAGS
+  05  CLOCK_UNAVAILABLE
+  06  CLOCK_INVALID
+  07  DATE_OUT_OF_RANGE
+  08  SET_UNSUPPORTED
+  09  SET_FAILED
+
+
+5. CLOCK SAMPLING AND SETTING
+-----------------------------
+
+GET returns one logically coherent sample. A provider uses a hardware latch,
+an atomic native operation, or a bounded read/re-read strategy appropriate to
+its clock. It does not fabricate a plausible date after failure.
+
+SET, when supported, accepts the same five-byte representation. It validates
+the entire request before changing the clock. Partial or failed setting returns
+a defined failure rather than success with an uncertain clock.
+
+TIME means the machine's ordinary local civil time. ABI 1 has no timezone,
+daylight-saving, subsecond, alarm, scheduler, or network-synchronization model.
+
+
+6. PLATFORM PROVIDERS
+---------------------
+
+The z80pack cpmsim RTC uses command port 25 and data port 26. Commands 0, 1 and
+2 return seconds, minutes and hours; commands 3 and 4 return the low and high
+day-count bytes. Its default time representation is BCD and its day count uses
+the CP/M epoch, so ZPRTC.RSX needs no Gregorian conversion. It shall inspect
+the emulator's current BCD/decimal mode and convert locally without toggling
+shared emulator state. Because each byte is sampled separately, it shall use a
+bounded retry to obtain a coherent result. The emulator's leap calculation is
+not Gregorian-correct for 2100; the initial provider documents validity through
+2099 unless corrective handling is implemented. SET is unsupported.
+
+No generic Model 4 trs80gp clock port has been established. trs80gp initializes
+recognized TRS-DOS/LDOS state and can emulate the FreHD RTC, while its documented
+`-rtc16` facility concerns Model 16/6000 Xenix. The first TRS-80 provider shall
+be named for the actual hardware interface, probably FreHD, after that protocol
+is verified. A generic trs80gp provider shall not be invented.
+
+Calendar conversion routines are source-level includes assembled only into
+providers that need them. They do not become permanent shared core code unless
+measurements later demonstrate a net resident-memory saving.
+
+
+7. COMPATIBILITY LAYERS
+-----------------------
+
+TIME is the hardware-provider ABI, not a claim of compatibility with an entire
+historical date/time system. Separate adapters translate between TIME and:
+
+  * CP/M Plus Functions 104 and 105;
+  * DOS+/Z80DOS Functions 104 and 105;
+  * ZSDOS/ZDDOS Functions 98 and 99 and related discovery;
+  * P2DOS clock services; and
+  * DateStamper discovery, clock and file-stamp conventions.
+
+The CP/M Plus four-byte buffer and DOS+/Z80DOS five-byte buffer require an
+explicit adapter policy. A common Function 105 handler must not blindly write a
+fifth byte beyond a CP/M Plus caller's allocation. File timestamp storage and
+semantics are separately qualified features.
+
+
+8. QUALIFICATION
+----------------
+
+The minimum hardware-independent utility is one TIME.COM binary supporting:
+
+  TIME             display the current local date and time
+  TIME /PROVIDER   identify and describe the discovered provider
+
+The same binary shall work unchanged with every provider. Provider tests cover
+discovery, request validation, BCD and range validation, known calendar and leap
+dates, coherent midnight sampling, absence and invalid-clock failures,
+reconstruction and rediscovery, and optional SET behavior. Platform tests shall
+also prove that a provider does not change unrelated emulator or hardware state.
+

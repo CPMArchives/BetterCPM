@@ -134,19 +134,24 @@ Using current measured structures, a four-drive base is approximately:
 | Search path | up to 64 |
 | Current RSX and CPX reconstruction records | 82 |
 | Descriptor and allocator metadata | 48-64 |
-| Core settings and canonical date/time | 40-48 |
-| **Subtotal before alignment/reserve** | **857-881** |
+| Core settings | 24-32 |
+| **Subtotal before alignment/reserve** | **841-865** |
 
-This leaves 143-167 bytes in a 1,024-byte profile. That is sufficient to make
-1 KiB a credible constrained target, but the margin must also absorb the
-callable-resident-service registry, alignment and ABI evolution. A 1.25 KiB
+This leaves 159-183 bytes in a 1,024-byte profile. That is sufficient to make
+1 KiB a credible constrained target, but the margin must also absorb registry
+generation/descriptor state, alignment and ABI evolution. A 1.25 KiB
 default is therefore the preferred planning target; 1.5 KiB remains the
 fallback if concrete version-1 layouts exhaust the smaller budget.
 
-The service registry is intentionally small. Each installed callable service
-needs a service identifier, ABI version, current entry address and capability
-flags, likely 8-12 bytes per service. Bulk feature state remains in its RSX.
-The exact record is an ABI task, not yet an implemented or measured size.
+The service registry keeps only its descriptor and generation in the PDS.
+Validated service advertisements are materialized in loader-owned storage inside
+each provider's RSX allocation, so installed services do not create a flat PDS
+table. Bulk feature state also remains in its RSX.
+
+The accepted TIME provider ABI removes canonical current time and provider
+binding from the base PDS. Hardware-backed providers read their authoritative
+clock on demand and are discovered through the resident-service registry. A
+software-maintained clock owns its state inside its stateful RSX.
 
 Drive count remains the principal configurable PDS cost. With the current
 shared 128-byte ALV, the measured model is `118*N + 151` bytes: 623 bytes for
@@ -180,7 +185,7 @@ objects into a contiguous PDS cannot be counted as a saving.
 ## Required next measurements
 
 1. Define the version-1 PDS descriptor and every default allocation record.
-2. Give PATH, disk state, service registry, CPX and RSX records explicit
+2. Give PATH, disk state, service-registry descriptor, CPX and RSX records explicit
    capacities and byte layouts; size optional feature data within its RSX.
 3. Separate persistent BDOS state from call-local scratch.
 4. Normalize the live DPH, format and logical/physical binding structures and
