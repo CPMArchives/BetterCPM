@@ -10,7 +10,7 @@ FD_NEXT:        DW      5
 FD_ENTRY:       DW      FD_DISPATCH
 FD_DISPATCH:
         LD A,C
-        CP 208
+        CP 209
         JP Z,FD_SERVICE
         CP 202
         JP NZ,FD_CHAIN

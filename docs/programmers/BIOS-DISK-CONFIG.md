@@ -162,7 +162,7 @@ remains deferred in both directions.
 
 ## Optional format mapper
 
-FDF.RSX implements BDOS 208: B=0 queries the 4644h signature; B=1 is the
+FDF.RSX implements private BDOS 209: B=0 queries the 4644h signature; B=1 is the
 private BIOS mapping call, and B=2 validates/normalizes extended geometry.
 The mapper uses a private stack. BIOS transfer loops use the returned actual
 sector length and quarter offset. No persistent pointer into the RSX is kept.

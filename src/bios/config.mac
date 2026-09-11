@@ -128,7 +128,7 @@ DC_ONESIDE:
         AND 00FH
         JR Z,DC_FDFOK
         PUSH IX
-        LD BC,000D0H
+        LD BC,000D1H
         CALL 5
         POP IX
         LD DE,04644H
@@ -165,7 +165,7 @@ DC_SPT:
         JR DC_GEOMOK
 DC_MIXED:
 ; Validate a packed per-sector size map, or expand the old MM SUPER form.
-        LD BC,002D0H
+        LD BC,002D1H
         CALL 5
         LD DE,04644H
         OR A
@@ -541,4 +541,3 @@ DC_CAP: DW 0
 DC_DEST: DW 0
         .DEPHASE
         END
-

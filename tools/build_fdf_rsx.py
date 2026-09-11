@@ -35,7 +35,7 @@ def main() -> None:
                      "RSXBASE         EQU     08101H"),
         BUILD / "fdf-alt.bin", BUILD / "fdf-alt.lst", ALTERNATE_BASE)
     offsets = relocation_offsets(code, alternate, ALTERNATE_BASE - LINK_BASE)
-    carrier = make_module(name="FDF", version=(0, 1), services=[208],
+    carrier = make_module(name="FDF", version=(0, 1), services=[209],
                           linked_base=LINK_BASE, code=code,
                           relocations=offsets)
     (BUILD / "FDF.RSX").write_bytes(carrier)

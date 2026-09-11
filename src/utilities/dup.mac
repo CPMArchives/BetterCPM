@@ -99,7 +99,7 @@ DFORMAT:XOR A
         LD A,(CURB+52)
         OR B
         JR Z,DFKNOWN
-        LD BC,000D0H
+        LD BC,000D1H
         CALL BDOS
         LD DE,04644H
         OR A
