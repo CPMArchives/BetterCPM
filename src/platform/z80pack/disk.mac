@@ -1,16 +1,49 @@
         INCLUDE layout.inc
         INCLUDE bioslinks.inc
-; Z80PACK CPMSIM DISK ADAPTER -- 07-Sep-2026
-; The simulator transfers one 128-byte record by DMA. No pretend WD ports,
-; sector-length tricks, or Model 4 memory map belong in this adapter.
+; Z80PACK CPMSIM DISK ADAPTER -- variable raw geometry
+;
+; cpmsim ports:
+;   10 drive
+;   11 track
+;   12 sector low
+;   13 command: 0 read, 1 write
+;   14 status
+;   15 DMA low
+;   16 DMA high
+;   17 sector high
+;   18 geometry-register selector
+;   19 geometry-register value
+;
+; Geometry registers:
+;   00 tracks low
+;   01 tracks high
+;   02 sectors/track low
+;   03 sectors/track high
+;   04 sector size low
+;   05 sector size high
+;   7F interface version = 1
+;
+; BetterCP/M continues to present 128-byte logical records.  The common BIOS
+; performs deblocking through LY_BUF using BIO_QUART.  This adapter transfers
+; one complete physical sector.
+;
+; First generalized implementation: uniform, single-sided raw media only.
+; Unsupported FDF flag combinations fail instead of being approximated.
+
         ASEG
         ORG LY_DISK
+
         JP Z_API
         JP Z_MAP
         JP Z_SELECT
         JP Z_READ
         JP Z_WRITE
         JP Z_BOOTREAD
+
+; ----------------------------------------------------------------------
+; Select logical drive and return its DPH.
+; ----------------------------------------------------------------------
+
 Z_SELECT:
         LD A,C
         CP 4
@@ -18,57 +51,258 @@ Z_SELECT:
         LD (BIO_DRIVE),A
         CALL Z_DPH
         RET
+
 Z_NODISK:
         LD HL,0
         RET
+
 Z_DPH:
         LD HL,LY_TAB
         LD DE,80
         OR A
         RET Z
-Z_DPHLP:ADD HL,DE
+
+Z_DPHLP:
+        ADD HL,DE
         DEC A
         JR NZ,Z_DPHLP
         RET
-Z_MAP:  LD A,(BIO_DRIVE)
+
+; ----------------------------------------------------------------------
+; Map CP/M logical track/record to raw physical track/sector/quarter.
+;
+; Logical-format record begins 16 bytes into each 80-byte DPH record:
+;
+;   +0      physical cpmsim drive
+;   +1,+2   CP/M 128-byte records/track
+;   +16     tracks
+;   +17     physical sectors/track
+;   +18     size code: 0=128, 1=256, 2=512, 3=1024
+;   +19     physical flags
+;
+; This stage accepts flags=0 only.
+; ----------------------------------------------------------------------
+
+Z_MAP:
+        PUSH IX
+
+        LD A,(BIO_DRIVE)
         CP 4
-        JR NC,Z_BAD
+        JP NC,Z_BADIX
+        CALL Z_DPH
+        LD DE,16
+        ADD HL,DE
+        PUSH HL
+        POP IX
+
+        LD A,(IX+0)
+        CP 16
+        JP NC,Z_BADIX
+        LD (ZP_DRIVE),A
+
+        LD A,(IX+19)
+        OR A
+        JP NZ,Z_BADIX
+
         LD HL,(BIO_TRACK)
         LD A,H
         OR A
-        JR NZ,Z_BAD
+        JP NZ,Z_BADIX
         LD A,L
-        CP 77
-        JR NC,Z_BAD
+        CP (IX+16)
+        JP NC,Z_BADIX
+        LD (ZP_TRACK),A
+
         LD HL,(BIO_SECTOR)
+        LD E,(IX+1)
+        LD D,(IX+2)
+        OR A
+        SBC HL,DE
+        JP NC,Z_BADIX
+
+        LD A,(IX+18)
+        CP 4
+        JP NC,Z_BADIX
+        LD (ZP_SIZE),A
+
+        LD HL,(BIO_SECTOR)
+
+; BIO_QUART = logical record modulo records-per-physical-sector.
+        LD A,(ZP_SIZE)
+        OR A
+        JR Z,ZP_QZERO
+        LD B,A
+        LD A,1
+ZP_QMLP:
+        ADD A,A
+        DJNZ ZP_QMLP
+        DEC A
+        AND L
+        JR ZP_QSAVE
+
+ZP_QZERO:
+        XOR A
+
+ZP_QSAVE:
+        LD (BIO_QUART),A
+
+; Physical sector ordinal = logical record >> size code.
+        LD A,(ZP_SIZE)
+        OR A
+        JR Z,ZP_DIVDONE
+        LD B,A
+
+ZP_DIVLP:
+        SRL H
+        RR L
+        DJNZ ZP_DIVLP
+
+ZP_DIVDONE:
         LD A,H
         OR A
-        JR NZ,Z_BAD
+        JP NZ,Z_BADIX
         LD A,L
-        CP 26
-        JR NC,Z_BAD
+        CP (IX+17)
+        JP NC,Z_BADIX
+        INC A
+        LD (ZP_SECTOR),A
+
+; Verify and program the cpmsim extended geometry interface.
+        LD A,07FH
+        OUT (18),A
+        IN A,(19)
+        CP 1
+        JP NZ,Z_BADIX
+
+        LD A,(ZP_DRIVE)
+        OUT (10),A
+
         XOR A
-        LD (BIO_QUART),A
+        OUT (18),A
+        LD A,(IX+16)
+        OUT (19),A
+        LD A,1
+        OUT (18),A
+        XOR A
+        OUT (19),A
+
+        LD A,2
+        OUT (18),A
+        LD A,(IX+17)
+        OUT (19),A
+        LD A,3
+        OUT (18),A
+        XOR A
+        OUT (19),A
+
+; Convert size code to byte count and program registers 04/05.
+        LD A,(ZP_SIZE)
+        ADD A,A
+        LD E,A
+        LD D,0
+        LD HL,ZP_SIZES
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+
+        LD A,4
+        OUT (18),A
+        LD A,E
+        OUT (19),A
+        LD A,5
+        OUT (18),A
+        LD A,D
+        OUT (19),A
+
+        POP IX
+        XOR A
         RET
-Z_BAD:  LD A,1
+
+Z_BADIX:
+        POP IX
+Z_BAD:
+        LD A,1
         OR A
         RET
-Z_READ: XOR A
+
+; ----------------------------------------------------------------------
+; Transfer one complete physical sector.
+; HL points to the common BIOS physical-sector buffer.
+; ----------------------------------------------------------------------
+
+Z_READ:
+        XOR A
         JR Z_TRANSFER
-Z_WRITE:LD A,1
+
+Z_WRITE:
+        LD A,1
+
 Z_TRANSFER:
         PUSH AF
-        LD A,(BIO_DRIVE)
-        LD C,A
-        LD A,(BIO_TRACK)
-        LD D,A
-        LD A,(BIO_SECTOR)
+
+        LD A,(ZP_DRIVE)
+        OUT (10),A
+
+        LD A,(ZP_TRACK)
+        OUT (11),A
+
+        LD A,(ZP_SECTOR)
+        OUT (12),A
+        XOR A
+        OUT (17),A
+
+        LD A,L
+        OUT (15),A
+        LD A,H
+        OUT (16),A
+
+        POP AF
+        OUT (13),A
+
+        IN A,(14)
+        OR A
+        RET
+
+; ----------------------------------------------------------------------
+; Read B consecutive absolute 128-byte system records from A:.
+; Bootstrap layout remains fixed at 77 tracks x 26 x 128 bytes.
+; ----------------------------------------------------------------------
+
+Z_BOOTREAD:
+        PUSH BC
+        PUSH DE
+
+        LD A,E
+        LD D,0
+
+ZP_BDIV:
+        CP 26
+        JR C,ZP_BDONE
+        SUB 26
+        INC D
+        JR ZP_BDIV
+
+ZP_BDONE:
         INC A
         LD E,A
-        POP AF
-; A=command, C=drive, D=track, E=1-based record, HL=DMA.
-; Unlike a WD controller the command has completed when OUT returns.
-Z_IO:   PUSH AF
+
+        LD C,0
+        XOR A
+        CALL Z_BOOTIO
+
+        POP DE
+        POP BC
+        RET NZ
+
+        INC DE
+        DJNZ Z_BOOTREAD
+        RET
+
+; A=command, C=drive, D=track, E=1-based 128-byte sector, HL=DMA.
+Z_BOOTIO:
+        PUSH AF
+
         LD A,C
         OUT (10),A
         LD A,D
@@ -77,54 +311,41 @@ Z_IO:   PUSH AF
         OUT (12),A
         XOR A
         OUT (17),A
+
         LD A,L
         OUT (15),A
         LD A,H
         OUT (16),A
+
         POP AF
         OUT (13),A
+
         LD DE,128
         ADD HL,DE
+
         IN A,(14)
         OR A
         RET
-; Read B consecutive absolute records from A:, DE=record, HL=destination.
-; System carriers are below record 256. Keep the loop on its caller's stack.
-Z_BOOTREAD:
-        PUSH BC
-        PUSH DE
-        LD A,E
-        LD D,0
-Z_DIV26:CP 26
-        JR C,Z_DIVDONE
-        SUB 26
-        INC D
-        JR Z_DIV26
-Z_DIVDONE:
-        INC A
-        LD E,A
-        LD C,0
-        XOR A
-        CALL Z_IO
-        POP DE
-        POP BC
-        RET NZ
-        INC DE
-        DJNZ Z_BOOTREAD
-        RET
-; Report the fixed virtual geometry. Reformat and runtime geometry changes
-; are not hardware operations on this first cpmsim target. Return unsupported
-; instead of passing a WD write-track stream to a record-only controller.
-Z_API:  LD A,B
+
+; ----------------------------------------------------------------------
+; BDOS 207 disk-configuration discovery/getters.
+; Runtime setters remain unsupported at this stage.
+; ----------------------------------------------------------------------
+
+Z_API:
+        LD A,B
         OR A
         LD HL,Z_INFO
         RET Z
+
         PUSH IX
         PUSH DE
         POP IX
+
         LD A,D
         OR A
         JR Z,Z_REQBAD
+
         LD HL,80
         ADD HL,DE
         JR C,Z_REQBAD
@@ -132,44 +353,69 @@ Z_API:  LD A,B
         OR A
         SBC HL,DE
         JR NC,Z_REQBAD
+
         LD A,(IX+0)
         CP 4
         JR NC,Z_REQBAD
+
         LD A,B
         CP 1
         JR Z,Z_GETPH
         CP 3
         JR Z,Z_GETLOG
+
         LD HL,2
         JR Z_RETURN
+
 Z_REQBAD:
         LD HL,1
         JR Z_RETURN
+
 Z_GETPH:
         LD HL,Z_PHYSICAL
         LD BC,6
         JR Z_COPY
+
 Z_GETLOG:
         LD A,(IX+0)
         CALL Z_DPH
         LD DE,16
         ADD HL,DE
         LD BC,64
-Z_COPY: PUSH IX
+
+Z_COPY:
+        PUSH IX
         POP DE
         INC DE
         LDIR
         LD HL,0
+
 Z_RETURN:
         LD A,L
         POP IX
         OR A
         RET
-Z_INFO: DB 'BDCF',5,4,4,64
+
+Z_INFO:
+        DB 'BDCF',5,4,4,64
         DW Z_PHYSICAL,LY_TAB
-        DW 0,0              ; no physical buffer or cached-format entry
+        DW LY_BUF,0
+
 Z_PHYSICAL:
         REPT 4
         DB 8,77,1,0,0,0
         ENDM
+
+ZP_SIZES:
+        DW 128,256,512,1024
+
+ZP_DRIVE:
+        DB 0
+ZP_TRACK:
+        DB 0
+ZP_SECTOR:
+        DB 1
+ZP_SIZE:
+        DB 0
+
         END
