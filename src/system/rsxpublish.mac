@@ -1,0 +1,255 @@
+        INCLUDE layout.inc
+; BRSX V2 DESCRIPTOR MATERIALIZER
+; Runs after reconstruction and before the disk-free resolver is installed.
+
+RPBASE          EQU     LY_RSX
+FLOPEN          EQU     LY_FILE
+FLNEXT          EQU     LY_FILE+3
+MODBUF          EQU     LY_BUF
+RSTCOUNT        EQU     LY_RSTA
+RSTABLE         EQU     LY_RSTA+1
+ECB_RSXHEAD     EQU     LY_SYS+084H
+
+        CSEG
+        .PHASE  RPBASE
+RP_ENTRY:
+        JP      RP_CONTROL
+
+RP_CONTROL:
+        XOR     A
+        LD      (RP_INDEX),A
+        LD      HL,(ECB_RSXHEAD)
+        LD      (RP_BASE),HL
+RP_LOOP:
+        LD      A,(RP_INDEX)
+        LD      B,A
+        LD      A,(RSTCOUNT)
+        CP      B
+        JR      Z,RP_GOOD
+        LD      A,B
+        CALL    RP_TABPTR
+        LD      A,1
+        CALL    FLOPEN
+        JP      NZ,RP_BAD
+        LD      HL,MODBUF
+        CALL    FLNEXT
+        JP      NZ,RP_BAD
+        LD      A,(MODBUF+4)
+        CP      1
+        JR      Z,RP_HAVEBASE
+        CP      2
+        JP      NZ,RP_BAD
+RP_HAVEBASE:
+        LD      (RP_FMT),A
+        LD      A,(RP_INDEX)
+        OR      A
+        JR      Z,RP_BASEOK
+        LD      HL,(RP_NDISP)
+        LD      DE,(MODBUF+16)
+        OR      A
+        SBC     HL,DE
+        LD      (RP_BASE),HL
+RP_BASEOK:
+        LD      HL,(RP_BASE)
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RP_NDISP),DE
+        LD      A,(RP_FMT)
+        CP      2
+        JR      NZ,RP_NEXT
+        LD      HL,(MODBUF+12)
+        LD      (RP_LEFT),HL
+        LD      (RP_CODE),HL
+        LD      HL,(MODBUF+14)
+        LD      (RP_ALLOC),HL
+        CALL    RP_FINDMETA
+        JP      NZ,RP_BAD
+        CALL    RP_CLEAR
+        CALL    RP_META
+        JP      NZ,RP_BAD
+RP_NEXT:
+        LD      HL,RP_INDEX
+        INC     (HL)
+        JR      RP_LOOP
+RP_GOOD:
+        XOR     A
+        RET
+RP_BAD:
+        LD      A,0FFH
+        OR      A
+        RET
+
+RP_TABPTR:
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        LD      L,A
+        LD      H,0
+        LD      DE,RSTABLE
+        ADD     HL,DE
+        RET
+
+RP_FINDMETA:
+        LD      HL,(RP_LEFT)
+        LD      A,H
+        CP      2
+        JR      C,RP_LAST
+        LD      HL,MODBUF
+        CALL    FLNEXT
+        RET     NZ
+        LD      HL,(RP_LEFT)
+        LD      DE,0200H
+        OR      A
+        SBC     HL,DE
+        LD      (RP_LEFT),HL
+        JR      RP_FINDMETA
+RP_LAST:
+        LD      A,H
+        OR      L
+        JR      Z,RP_EXACT
+        PUSH    HL
+        LD      HL,MODBUF
+        CALL    FLNEXT
+        POP     DE
+        RET     NZ
+        LD      HL,MODBUF
+        ADD     HL,DE
+        LD      (RP_METAP),HL
+        XOR     A
+        RET
+RP_EXACT:
+        LD      HL,MODBUF
+        CALL    FLNEXT
+        RET     NZ
+        LD      HL,MODBUF
+        LD      (RP_METAP),HL
+        XOR     A
+        RET
+
+; Clear payload tail before writing loader-owned descriptors.
+RP_CLEAR:
+        LD      HL,(RP_BASE)
+        LD      DE,(RP_CODE)
+        ADD     HL,DE
+        PUSH    HL
+        LD      HL,(RP_ALLOC)
+        LD      DE,(RP_CODE)
+        OR      A
+        SBC     HL,DE
+        LD      B,H
+        LD      C,L
+        POP     HL
+        LD      A,B
+        OR      C
+        RET     Z
+        LD      (HL),0
+        DEC     BC
+        LD      A,B
+        OR      C
+        RET     Z
+        LD      D,H
+        LD      E,L
+        INC     DE
+        LDIR
+        RET
+
+RP_META:
+        LD      HL,(RP_METAP)
+        LD      DE,RP_BMET
+        LD      B,4
+RP_BMLOOP:
+        LD      A,(DE)
+        CP      (HL)
+        JP      NZ,RP_BAD
+        INC     DE
+        INC     HL
+        DJNZ    RP_BMLOOP
+        LD      DE,3
+        ADD     HL,DE
+        LD      A,(HL)          ; record count at envelope +7
+        LD      (RP_NREC),A
+        LD      DE,5
+        ADD     HL,DE           ; first record at envelope +12
+        LD      DE,(RP_BASE)
+        EX      DE,HL
+        LD      BC,(RP_ALLOC)
+        ADD     HL,BC
+        LD      (RP_DPTR),HL
+        EX      DE,HL
+        XOR     A
+        LD      (RP_NSVC),A
+RP_RECLOOP:
+        LD      A,(RP_NREC)
+        OR      A
+        JR      Z,RP_DONE
+        DEC     A
+        LD      (RP_NREC),A
+        LD      A,(HL)
+        INC     HL
+        LD      B,(HL)
+        INC     HL
+        CP      2
+        JR      NZ,RP_SKIP
+        LD      A,B
+        CP      10
+        JP      NZ,RP_BAD
+        LD      (RP_MPTR),HL
+        LD      HL,(RP_DPTR)
+        LD      DE,10
+        OR      A
+        SBC     HL,DE
+        LD      (RP_DPTR),HL
+        EX      DE,HL
+        LD      HL,(RP_MPTR)
+        LD      BC,10
+        LDIR
+        LD      HL,(RP_MPTR)
+        LD      DE,10
+        ADD     HL,DE
+        LD      A,(RP_NSVC)
+        INC     A
+        LD      (RP_NSVC),A
+        JR      RP_RECLOOP
+RP_SKIP:
+        LD      E,B
+        LD      D,0
+        ADD     HL,DE
+        JR      RP_RECLOOP
+RP_DONE:
+        LD      HL,(RP_DPTR)
+        LD      DE,(RP_BASE)
+        OR      A
+        SBC     HL,DE
+        LD      (RP_OFF),HL
+        LD      HL,(RP_BASE)
+        LD      DE,4
+        ADD     HL,DE
+        LD      A,(RP_NSVC)
+        LD      (HL),A
+        INC     HL
+        LD      (HL),0
+        INC     HL
+        LD      DE,(RP_OFF)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        XOR     A
+        RET
+
+RP_BMET:       DB      'B','M','E','T'
+RP_BASE:       DW      0
+RP_NDISP:      DW      0
+RP_LEFT:       DW      0
+RP_CODE:       DW      0
+RP_ALLOC:      DW      0
+RP_METAP:      DW      0
+RP_DPTR:       DW      0
+RP_MPTR:       DW      0
+RP_OFF:        DW      0
+RP_INDEX:      DB      0
+RP_FMT:        DB      0
+RP_NREC:       DB      0
+RP_NSVC:       DB      0
+        .DEPHASE
+        END

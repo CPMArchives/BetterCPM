@@ -76,15 +76,16 @@ version-2 parsing/materialization pass measured 1,186 bytes before optimization.
 It was not retained because reducing validation or leaving an inadequately
 sized stack would make RSX reconstruction unsafe.
 
-Loader publication therefore uses three mutually exclusive system-track images
+Loader publication therefore uses four mutually exclusive system-track images
 in the existing 1 KiB manager slot:
 
 1. a validator checks the complete proposed profile, including all version-2
    metadata, reconstruction classes, entry bounds, capacities and duplicate
    service IDs;
-2. the compact rebuilder reloads and relocates the already validated profile,
-   verifies a per-carrier validation checksum, and materializes descriptors;
-3. the disk-free resolver replaces the rebuilder only after publication.
+2. the compact rebuilder reloads and relocates the already validated profile;
+3. a materializer rereads validated metadata, clears provider allocation tails,
+   and publishes the callable descriptors;
+4. the disk-free resolver replaces the materializer only after publication.
 
 The fixed Function 202 bridge orchestrates those phases. No phase calls code
 after replacing its own image. Validation failure leaves the published profile
@@ -105,6 +106,12 @@ bounds and framing, callable entry bounds, duplicate IDs within one provider,
 and sorted, unique runtime-pointer slots. Cross-provider duplicate checking is
 part of the forthcoming orchestration increment, where the validator can compare
 the candidate against the still-published live chain.
+
+The version-1 rebuilder required only a small carrier-version change and now
+occupies 917 bytes, retaining a 96-byte control stack. Descriptor publication
+is isolated in a 431-byte overlay; its focused test verifies allocation-tail
+clearing, descriptor copying, and runtime-header publication. Separating these
+operations avoids weakening either validation or stack safety.
 
 The carrier builder includes the descriptor bytes when calculating the minimum
 page-rounded allocation. BRSX-v2 dispatch and callable entries must lie beyond

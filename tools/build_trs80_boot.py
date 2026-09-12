@@ -182,7 +182,7 @@ def install(boot: bytes, stage1: bytes, resident: bytes, command: bytes,
     control_start = reloader_start + 1024
     raw[control_start:control_start + 1024] = controls.ljust(1024, b"\x00")
     manager = (ROOT / "build/system/rsxloader.bin").read_bytes()
-    if not 0 < len(manager) <= 893:
+    if not 0 < len(manager) <= 925:
         raise ValueError("on-demand RSX manager exceeds its allocation")
     manager_start = control_start + 1024
     raw[manager_start:manager_start + 1024] = manager.ljust(1024, b"\x00")

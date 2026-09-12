@@ -1,7 +1,7 @@
         INCLUDE layout.inc
-; BRSX V1 -- ORDERED RESIDENT CHAIN LOADER
+; BRSX V1/V2 -- ORDERED RESIDENT CHAIN REBUILDER
 ; The manager owns one K only while an RSX profile is active.  Modules
-; go BELOW it.  Its upper 128 bytes hold the control stack; the final
+; go BELOW it.  Its upper 96 bytes hold the control stack; the final
 ; three bytes belong to the fixed BDOS jump and must not be pushed on.
 ; Removing the last module gives both manager and module RAM to TPA.
 ;
@@ -457,7 +457,7 @@ RL_LDONE:
 RL_VALID:
         LD      HL,MODBUF
         LD      DE,RL_MAGIC
-        LD      B,8
+        LD      B,4
 RL_MLOOP:
         LD      A,(DE)
         CP      (HL)
@@ -467,6 +467,22 @@ RL_MOK:
         INC     DE
         INC     HL
         DJNZ    RL_MLOOP
+        LD      A,(HL)
+        CP      1
+        JR      Z,RL_VOK
+        CP      2
+        JP      NZ,RL_BAD
+RL_VOK:
+        INC     HL
+        LD      DE,RL_ABI
+        LD      B,3
+RL_ALOOP:
+        LD      A,(DE)
+        CP      (HL)
+        JP      NZ,RL_BAD
+        INC     DE
+        INC     HL
+        DJNZ    RL_ALOOP
         LD      HL,(MODBUF+8)   ; flags must be zero
         LD      A,H
         OR      L
@@ -541,7 +557,8 @@ RL_BAD:
         OR      A
         RET
 
-RL_MAGIC:       DB      'B','R','S','X',1,2,1,0
+RL_MAGIC:       DB      'B','R','S','X'
+RL_ABI:         DB      2,1,0
 RL_REQ:         DW      0
 RL_LOW:         DW      0
 RL_BASE:        DW      0
