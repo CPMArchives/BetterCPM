@@ -74,12 +74,30 @@ The current version-1 manager already occupies all 893 bytes available below
 its 128-byte control stack and the fixed three-byte gateway. A first complete
 version-2 parsing/materialization pass measured 1,186 bytes before optimization.
 It was not retained because reducing validation or leaving an inadequately
-sized stack would make RSX reconstruction unsafe. Loader publication therefore
-remains the next Stage-2 increment and must either recover roughly 293 bytes by
-factoring common manager code, or use a separately loaded validation phase whose
-failure cannot partially publish a resident profile. This size issue affects
-only rare reconstruction operations; it does not justify adding parser code to
-BDOS or reducing command-history/PDS allocations.
+sized stack would make RSX reconstruction unsafe.
+
+Loader publication therefore uses three mutually exclusive system-track images
+in the existing 1 KiB manager slot:
+
+1. a validator checks the complete proposed profile, including all version-2
+   metadata, reconstruction classes, entry bounds, capacities and duplicate
+   service IDs;
+2. the compact rebuilder reloads and relocates the already validated profile,
+   verifies a per-carrier validation checksum, and materializes descriptors;
+3. the disk-free resolver replaces the rebuilder only after publication.
+
+The fixed Function 202 bridge orchestrates those phases. No phase calls code
+after replacing its own image. Validation failure leaves the published profile
+unchanged. The validator may reopen earlier carriers to detect duplicates rather
+than reserving a flat scratch registry in the PDS; reconstruction is rare and
+the extra disk reads cost no resident RAM. The existing four RSTSERV words serve
+as transient validation checksums and are restored to their legacy enumeration
+meaning during publication.
+
+This arrangement keeps noninteractive Function 202 users such as XSUB working,
+adds no permanent protected code, and does not reduce command history or other
+PDS allocations. Once a profile is active, the same one-kilobyte charge that
+formerly held the manager contains the resolver instead.
 
 The carrier builder includes the descriptor bytes when calculating the minimum
 page-rounded allocation. BRSX-v2 dispatch and callable entries must lie beyond
