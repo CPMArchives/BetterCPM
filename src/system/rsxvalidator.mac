@@ -1,0 +1,450 @@
+        INCLUDE layout.inc
+; BRSX V2 PROFILE VALIDATOR
+; Function 202 request in DE. This overlay never changes the published profile.
+; It validates a LOAD carrier before the reconstruction manager is invoked.
+
+RVBASE          EQU     LY_RSX
+FLOPEN          EQU     LY_FILE
+FLNEXT          EQU     LY_FILE+3
+MODBUF          EQU     LY_BUF
+
+        CSEG
+        .PHASE  RVBASE
+RV_ENTRY:
+        JP      RV_CONTROL
+
+RV_CONTROL:
+        LD      (RV_REQ),DE
+        LD      A,(DE)
+        CP      1
+        JP      NZ,RV_BAD
+        INC     DE
+        LD      A,(DE)
+        CP      1               ; only LOAD introduces a new carrier
+        JR      Z,RV_LOAD
+        CP      5               ; known enumerate/load/unload/query/retire
+        JP      NC,RV_BAD
+        XOR     A
+        RET
+RV_LOAD:
+        LD      HL,(RV_REQ)
+        LD      DE,4
+        ADD     HL,DE
+        LD      A,1
+        CALL    FLOPEN
+        JP      NZ,RV_BAD
+        LD      HL,MODBUF
+        CALL    FLNEXT
+        JP      NZ,RV_BAD
+        LD      HL,MODBUF
+        LD      DE,RVMAGIC
+        LD      B,4
+RV_MAGLP:
+        LD      A,(DE)
+        CP      (HL)
+        JP      NZ,RV_BAD
+        INC     DE
+        INC     HL
+        DJNZ    RV_MAGLP
+        LD      A,(HL)
+        CP      1
+        JR      Z,RV_V1
+        CP      2
+        JP      NZ,RV_BAD
+        INC     HL
+        LD      DE,RV_ABI
+        LD      B,3
+RV_ABILP:
+        LD      A,(DE)
+        CP      (HL)
+        JP      NZ,RV_BAD
+        INC     DE
+        INC     HL
+        DJNZ    RV_ABILP
+        LD      HL,(MODBUF+8)
+        LD      A,H
+        OR      L               ; Stage 2 accepts STATELESS and no reserved bits
+        JP      NZ,RV_BAD
+        LD      HL,(MODBUF+12)
+        LD      A,H
+        OR      L
+        JP      Z,RV_BAD
+        LD      (RV_LEFT),HL
+        LD      (RV_CODE),HL
+        LD      DE,(MODBUF+14)
+        LD      (RV_ALLOC),DE
+        OR      A
+        SBC     HL,DE
+        JP      NC,RV_BAD       ; payload must be smaller than allocation
+        LD      A,E
+        OR      A
+        JP      NZ,RV_BAD       ; allocation is page-rounded
+        LD      HL,(MODBUF+16)
+        LD      DE,8
+        OR      A
+        SBC     HL,DE
+        JP      C,RV_BAD
+        LD      HL,(RV_CODE)
+        LD      DE,(MODBUF+16)
+        OR      A
+        SBC     HL,DE
+        JP      C,RV_BAD
+        JP      Z,RV_BAD
+        LD      HL,(MODBUF+30)
+        LD      DE,0200H
+        OR      A
+        SBC     HL,DE
+        LD      DE,(MODBUF+12)
+        OR      A
+        SBC     HL,DE
+        JP      NZ,RV_BAD       ; metadata follows payload exactly
+        CALL    RV_FINDMETA
+        JP      NZ,RV_BAD
+        CALL    RV_METADATA
+        RET
+RV_V1:
+        INC     HL
+        LD      DE,RV_ABI
+        LD      B,3
+RV_V1ABI:
+        LD      A,(DE)
+        CP      (HL)
+        JP      NZ,RV_BAD
+        INC     DE
+        INC     HL
+        DJNZ    RV_V1ABI
+        LD      HL,(MODBUF+8)
+        LD      A,H
+        OR      L
+        JP      NZ,RV_BAD
+        XOR     A
+        RET
+
+; Position RV_META at the metadata bytes. FLNEXT advances 512 bytes per call.
+RV_FINDMETA:
+        LD      HL,(RV_LEFT)
+        LD      A,H
+        CP      2
+        JR      C,RV_MLAST
+        LD      HL,MODBUF
+        CALL    FLNEXT
+        RET     NZ
+        LD      HL,(RV_LEFT)
+        LD      DE,0200H
+        OR      A
+        SBC     HL,DE
+        LD      (RV_LEFT),HL
+        JR      RV_FINDMETA
+RV_MLAST:
+        LD      A,H
+        OR      L
+        JR      Z,RV_MEXACT
+        PUSH    HL
+        LD      HL,MODBUF
+        CALL    FLNEXT
+        POP     DE
+        RET     NZ
+        LD      HL,MODBUF
+        ADD     HL,DE
+        LD      (RV_META),HL
+        XOR     A
+        RET
+RV_MEXACT:
+        LD      HL,MODBUF
+        CALL    FLNEXT
+        RET     NZ
+        LD      HL,MODBUF
+        LD      (RV_META),HL
+        XOR     A
+        RET
+
+RV_METADATA:
+        LD      HL,(RV_META)
+        LD      (RV_START),HL
+        LD      DE,RV_BMET
+        LD      B,4
+RV_BMETLP:
+        LD      A,(DE)
+        CP      (HL)
+        JP      NZ,RV_BAD
+        INC     DE
+        INC     HL
+        DJNZ    RV_BMETLP
+        LD      A,(HL)
+        CP      1
+        JP      NZ,RV_BAD
+        INC     HL
+        LD      A,(HL)
+        OR      A
+        JP      NZ,RV_BAD
+        INC     HL
+        LD      A,(HL)
+        CP      12
+        JP      NZ,RV_BAD
+        INC     HL
+        LD      A,(HL)
+        LD      (RV_NREC),A
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      A,D
+        CP      2
+        JP      NC,RV_BAD       ; metadata must fit this 512-byte window
+        LD      A,E
+        CP      12
+        JP      C,RV_BAD
+        LD      HL,(RV_START)
+        ADD     HL,DE
+        LD      (RV_END),HL
+        LD      DE,MODBUF+0200H
+        OR      A
+        SBC     HL,DE
+        JR      C,RV_ENDFITS
+        JP      NZ,RV_BAD
+RV_ENDFITS:
+        LD      HL,(RV_START)
+        LD      DE,10
+        ADD     HL,DE
+        LD      A,(HL)
+        INC     HL
+        OR      (HL)             ; reserved word
+        JP      NZ,RV_BAD
+        INC     HL
+        XOR     A
+        LD      (RV_NSVC),A
+RV_RLOOP:
+        LD      A,(RV_NREC)
+        OR      A
+        JP      Z,RV_RECDONE
+        DEC     A
+        LD      (RV_NREC),A
+        CALL    RV_ROOM2
+        JR      C,RV_ROOMOK
+        JP      NZ,RV_BAD
+RV_ROOMOK:
+        LD      A,(HL)
+        INC     HL
+        LD      B,(HL)
+        INC     HL
+        LD      A,B
+        OR      A
+        JP      Z,RV_BAD
+        PUSH    HL
+        LD      E,B
+        LD      D,0
+        ADD     HL,DE
+        LD      DE,(RV_END)
+        OR      A
+        SBC     HL,DE
+        POP     HL
+        JP      C,RV_RTYPE
+        JP      NZ,RV_BAD
+RV_RTYPE:
+        DEC     HL
+        DEC     HL
+        LD      A,(HL)
+        INC     HL
+        INC     HL
+        CP      1
+        JR      Z,RV_NUMERIC
+        CP      2
+        JR      Z,RV_CALLABLE
+        CP      3
+        JR      Z,RV_POINTERS
+        JP      RV_SKIP
+RV_NUMERIC:
+        JP      RV_SKIP         ; any nonempty byte vector is valid
+RV_CALLABLE:
+        LD      A,B
+        CP      10
+        JP      NZ,RV_BAD
+        LD      A,(RV_NSVC)
+        INC     A
+        CP      3
+        JP      NC,RV_BAD
+        LD      (RV_NSVC),A
+        PUSH    HL
+        PUSH    BC
+        CALL    RV_ID
+        POP     BC
+        POP     HL
+        JP      NZ,RV_BAD
+        LD      A,(RV_NSVC)
+        CP      1
+        JR      NZ,RV_IDSECOND
+        PUSH    HL
+        PUSH    BC
+        LD      DE,RV_IDONE
+        LD      BC,4
+        LDIR
+        POP     BC
+        POP     HL
+        JR      RV_IDENTRY
+RV_IDSECOND:
+        PUSH    HL
+        PUSH    BC
+        LD      DE,RV_IDONE
+        LD      B,4
+RV_IDCMP:
+        LD      A,(DE)
+        CP      (HL)
+        JR      NZ,RV_IDDIFF
+        INC     DE
+        INC     HL
+        DJNZ    RV_IDCMP
+        POP     BC
+        POP     HL
+        JP      RV_BAD          ; duplicate within one provider
+RV_IDDIFF:
+        POP     BC
+        POP     HL
+RV_IDENTRY:
+        PUSH    HL
+        LD      DE,6
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,(RV_CODE)
+        OR      A
+        SBC     HL,DE
+        POP     HL
+        JP      C,RV_BAD
+        JP      Z,RV_BAD
+        LD      A,D
+        OR      A
+        JR      NZ,RV_SKIP
+        LD      A,E
+        CP      8
+        JP      C,RV_BAD
+        JR      RV_SKIP
+RV_POINTERS:
+        LD      A,B
+        AND     1
+        JP      NZ,RV_BAD
+        PUSH    HL
+        PUSH    BC
+        LD      C,B
+        LD      B,0
+        XOR     A
+        LD      (RV_PSEEN),A
+RV_PTRLOOP:
+        LD      A,C
+        OR      A
+        JR      Z,RV_PTROK
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        DEC     C
+        DEC     C
+        LD      A,D
+        OR      E
+        JR      Z,RV_PTRBAD
+        LD      A,D
+        OR      A
+        JR      NZ,RV_PTRNZ
+        LD      A,E
+        CP      2
+        JR      Z,RV_PTRBAD
+RV_PTRNZ:
+        PUSH    HL
+        LD      HL,(RV_ALLOC)
+        DEC     HL
+        OR      A
+        SBC     HL,DE
+        POP     HL
+        JR      C,RV_PTRBAD
+        LD      A,(RV_PSEEN)
+        OR      A
+        JR      Z,RV_PTRFIRST
+        PUSH    HL
+        LD      HL,(RV_PREV)
+        OR      A
+        SBC     HL,DE
+        POP     HL
+        JR      NC,RV_PTRBAD
+RV_PTRFIRST:
+        LD      (RV_PREV),DE
+        LD      A,1
+        LD      (RV_PSEEN),A
+        JR      RV_PTRLOOP
+RV_PTRBAD:
+        POP     BC
+        POP     HL
+        JP      RV_BAD
+RV_PTROK:
+        POP     BC
+        POP     HL
+RV_SKIP:
+        LD      E,B
+        LD      D,0
+        ADD     HL,DE
+        JP      RV_RLOOP
+RV_RECDONE:
+        LD      DE,(RV_END)
+        OR      A
+        SBC     HL,DE
+        JP      NZ,RV_BAD
+        XOR     A
+        RET
+
+RV_ROOM2:
+        PUSH    HL
+        INC     HL
+        INC     HL
+        LD      DE,(RV_END)
+        OR      A
+        SBC     HL,DE
+        POP     HL
+        RET
+
+; Validate a nonblank uppercase/space-padded four-byte service ID.
+RV_ID:
+        LD      B,4
+        LD      C,0
+RV_IDLP:
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,RV_IDNEXT
+        CP      'A'
+        JR      C,RV_IDBAD
+        CP      'Z'+1
+        JR      NC,RV_IDBAD
+        LD      C,1
+RV_IDNEXT:
+        INC     HL
+        DJNZ    RV_IDLP
+        LD      A,C
+        OR      A
+        JR      Z,RV_IDBAD
+        XOR     A
+        RET
+RV_IDBAD:
+        LD      A,1
+        OR      A
+        RET
+
+RV_BAD:
+        LD      A,0FFH
+        OR      A
+        RET
+
+RVMAGIC:       DB      'B','R','S','X'
+RV_ABI:        DB      2,1,0
+RV_BMET:       DB      'B','M','E','T'
+RV_REQ:        DW      0
+RV_LEFT:       DW      0
+RV_CODE:       DW      0
+RV_ALLOC:      DW      0
+RV_META:       DW      0
+RV_START:      DW      0
+RV_END:        DW      0
+RV_NREC:       DB      0
+RV_NSVC:       DB      0
+RV_IDONE:      DS      4
+RV_PREV:       DW      0
+RV_PSEEN:      DB      0
+        .DEPHASE
+        END

@@ -2,9 +2,9 @@
 
 ## Status
 
-Stage-2 carrier, tooling, and the disk-free Function 208 resolver overlay are
-implemented. Resident-loader publication and system-track integration remain
-pending.
+Stage-2 carrier, tooling, the pre-publication validator overlay, and the
+disk-free Function 208 resolver overlay are implemented. Compact descriptor
+publication and system-track orchestration remain pending.
 
 ## Compatibility
 
@@ -98,6 +98,13 @@ This arrangement keeps noninteractive Function 202 users such as XSUB working,
 adds no permanent protected code, and does not reduce command history or other
 PDS allocations. Once a profile is active, the same one-kilobyte charge that
 formerly held the manager contains the resolver instead.
+
+The implemented validator occupies 735 bytes. Its focused tests cover valid
+version-1 and version-2 carriers, unsupported reconstruction classes, metadata
+bounds and framing, callable entry bounds, duplicate IDs within one provider,
+and sorted, unique runtime-pointer slots. Cross-provider duplicate checking is
+part of the forthcoming orchestration increment, where the validator can compare
+the candidate against the still-published live chain.
 
 The carrier builder includes the descriptor bytes when calculating the minimum
 page-rounded allocation. BRSX-v2 dispatch and callable entries must lie beyond
