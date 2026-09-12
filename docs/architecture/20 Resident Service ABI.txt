@@ -104,6 +104,17 @@ The request block is 20 bytes:
   +18  byte   returned provider index
   +19  byte   returned status
 
+For ENUMERATE, +18 supplies the zero-based service ordinal on entry. On
+success the ordinary output fields describe that service and +18 is replaced
+by its current provider index. Enumeration returns HL=0; the callable address
+is available at +12. Provider indices and enumeration order remain meaningful
+only for the current resident layout.
+
+DESCRIBE_REGISTRY returns the active service count as a word at +12, the
+provider capacity at +14, the per-provider service capacity at +15, and the
+total service capacity as a word at +16. Fields +18 and +19 retain their normal
+output meanings. ABI 1 reports capacities 4, 2, and 8 respectively.
+
 A provider satisfies lookup when its ID and major match, its minor is at least
 the requested minimum, and it contains every required capability bit. Output
 fields are zero on failure except where a later status explicitly documents

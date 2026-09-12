@@ -2,8 +2,9 @@
 
 ## Status
 
-Stage-2 carrier and tooling implemented; resident loader and Function 208
-integration pending.
+Stage-2 carrier, tooling, and the disk-free Function 208 resolver overlay are
+implemented. Resident-loader publication and system-track integration remain
+pending.
 
 ## Compatibility
 
@@ -63,7 +64,10 @@ walks active RSX headers and these descriptors, deriving each callable address
 as provider base plus entry offset. This retains no flat absolute-address table
 in the PDS and charges metadata to the provider that supplies it.
 
+The resolver is a separate on-demand overlay sharing the manager's 1 KiB slot.
+Its focused ABI implementation occupies 760 bytes, below the slot's 893-byte
+code ceiling, and performs no disk access during lookup or enumeration.
+
 The carrier builder includes the descriptor bytes when calculating the minimum
 page-rounded allocation. BRSX-v2 dispatch and callable entries must lie beyond
 the eight-byte runtime header and within the emitted payload.
-

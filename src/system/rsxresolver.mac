@@ -1,0 +1,530 @@
+        INCLUDE layout.inc
+; BRSX V2 -- DISK-FREE RESIDENT SERVICE RESOLVER
+; Loaded into the manager overlay slot after a successful RSX reconstruction.
+; Function 208 passes DE -> the 20-byte ABI-1 request block.
+
+RRBASE          EQU     LY_RSX
+ECB_RSXHEAD     EQU     LY_SYS+084H
+COREBDOS        EQU     LY_BDOS
+
+RR_LOOKUP       EQU     0
+RR_ENUM         EQU     1
+RR_DESCRIBE     EQU     2
+
+        CSEG
+        .PHASE  RRBASE
+RR_ENTRY:
+        JP      RR_CONTROL
+
+RR_CONTROL:
+        LD      (RR_REQ),DE
+        LD      A,(DE)
+        CP      1
+        JP      NZ,RR_BADVER
+        INC     DE
+        LD      A,(DE)
+        CP      20
+        JP      NZ,RR_BADLEN
+        INC     DE
+        LD      A,(DE)
+        LD      (RR_OP),A
+        INC     DE
+        LD      A,(DE)
+        OR      A
+        JP      NZ,RR_BADOP
+        LD      HL,(RR_REQ)
+        LD      BC,18
+        ADD     HL,BC
+        LD      A,(HL)
+        LD      (RR_WANTED),A
+        CALL    RR_CLEAR
+        LD      A,(RR_OP)
+        OR      A
+        JR      Z,RR_DOLOOK
+        CP      RR_ENUM
+        JR      Z,RR_DOENUM
+        CP      RR_DESCRIBE
+        JR      Z,RR_DODESC
+        JP      RR_BADOP
+
+RR_DOLOOK:
+        CALL    RR_VALIDID
+        JP      NZ,RR_BADID
+        XOR     A
+        LD      (RR_INDEX),A
+        LD      HL,(ECB_RSXHEAD)
+        CALL    RR_SCAN
+        JR      C,RR_LMISS
+        CALL    RR_FILTER
+        JP      Z,RR_SUCCESS
+        JP      RR_FINISH
+RR_LMISS:
+        LD      A,(RR_STATUS)
+        OR      A
+        JR      NZ,RR_LSTATUS
+        LD      A,1
+RR_LSTATUS:
+        JP      RR_FINISH
+
+; Enumeration uses +18 as the zero-based service ordinal on entry. On success
+; it returns the containing provider index there, like LOOKUP.
+RR_DOENUM:
+        XOR     A
+        LD      (RR_INDEX),A
+        LD      (RR_ORDINAL),A
+        LD      HL,(ECB_RSXHEAD)
+        CALL    RR_ENUMSCAN
+        JP      NC,RR_SUCCESS
+        LD      A,0AH
+        JP      RR_FINISH
+
+; DESCRIBE_REGISTRY returns active count in +12, limits in +14..+16:
+; providers=4, services/provider=2, total services=8.
+RR_DODESC:
+        XOR     A
+        LD      (RR_TOTAL),A
+        LD      (RR_INDEX),A
+        LD      HL,(ECB_RSXHEAD)
+        CALL    RR_COUNTSCAN
+        JP      C,RR_CORRUPT
+        LD      HL,(RR_REQ)
+        LD      DE,12
+        ADD     HL,DE
+        LD      A,(RR_TOTAL)
+        LD      (HL),A
+        INC     HL
+        LD      (HL),0
+        INC     HL
+        LD      (HL),4
+        INC     HL
+        LD      (HL),2
+        INC     HL
+        LD      (HL),8
+        INC     HL
+        LD      (HL),0
+        XOR     A
+        JP      RR_FINISH
+
+; Find requested ID. HL begins at provider base. Carry means end/corruption;
+; RR_STATUS differentiates a clean miss (zero) from corruption (9).
+RR_SCAN:
+        CALL    RR_PROVIDER
+        RET     C
+        LD      A,(HL)
+        LD      B,A
+        INC     HL
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        LD      DE,(RR_BASE)
+        ADD     HL,DE
+RR_SDESC:
+        LD      A,B
+        OR      A
+        JR      Z,RR_SNEXT
+        PUSH    BC
+        PUSH    HL
+        LD      DE,(RR_REQ)
+        EX      DE,HL
+        LD      BC,4
+        ADD     HL,BC
+        EX      DE,HL
+        LD      B,4
+RR_IDCMP:
+        LD      A,(DE)
+        CP      (HL)
+        JR      NZ,RR_IDNO
+        INC     DE
+        INC     HL
+        DJNZ    RR_IDCMP
+        POP     HL
+        POP     BC
+        OR      A
+        RET
+RR_IDNO:
+        POP     HL
+        LD      DE,10
+        ADD     HL,DE
+        POP     BC
+        DEC     B
+        JR      RR_SDESC
+RR_SNEXT:
+        CALL    RR_NEXT
+        JR      NC,RR_SCAN
+        RET
+
+RR_ENUMSCAN:
+        CALL    RR_PROVIDER
+        RET     C
+        LD      A,(HL)
+        LD      B,A
+        INC     HL
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        LD      DE,(RR_BASE)
+        ADD     HL,DE
+RR_EDESC:
+        LD      A,B
+        OR      A
+        JR      Z,RR_ENEXT
+        LD      A,(RR_ORDINAL)
+        LD      C,A
+        LD      A,(RR_WANTED)
+        CP      C
+        JR      Z,RR_EFOUND
+        LD      DE,10
+        ADD     HL,DE
+        LD      A,(RR_ORDINAL)
+        INC     A
+        LD      (RR_ORDINAL),A
+        DEC     B
+        JR      RR_EDESC
+RR_EFOUND:
+        OR      A
+        RET
+RR_ENEXT:
+        CALL    RR_NEXT
+        JR      NC,RR_ENUMSCAN
+        RET
+
+RR_COUNTSCAN:
+        LD      A,H
+        OR      L
+        RET     Z
+        CALL    RR_PROVIDER
+        RET     C
+        LD      A,(HL)
+        LD      B,A
+        LD      A,(RR_TOTAL)
+        ADD     A,B
+        LD      (RR_TOTAL),A
+        CALL    RR_NEXT
+        JR      NC,RR_COUNTSCAN
+        RET
+
+; Validate a v2 runtime header. Returns HL=base+4 and saves base.
+RR_PROVIDER:
+        LD      A,H
+        OR      L
+        SCF
+        RET     Z
+        LD      (RR_BASE),HL
+        INC     HL
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        PUSH    HL
+        LD      HL,(RR_BASE)
+        LD      BC,8
+        ADD     HL,BC
+        OR      A
+        SBC     HL,DE
+        POP     HL
+        JR      NZ,RR_PCLEAR
+        INC     HL
+        LD      A,(HL)
+        CP      3
+        JR      NC,RR_PCLEAR
+        INC     HL
+        LD      A,(HL)
+        OR      A
+        JR      NZ,RR_PCLEAR
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        LD      A,H
+        OR      L
+        JR      Z,RR_PCLEAR
+        LD      DE,(RR_BASE)
+        ADD     HL,DE
+        LD      DE,(RR_BASE)
+        OR      A
+        SBC     HL,DE
+        JR      C,RR_PCLEAR
+        LD      HL,(RR_BASE)
+        LD      DE,4
+        ADD     HL,DE
+        OR      A
+        RET
+RR_PCLEAR:
+        LD      A,9
+        LD      (RR_STATUS),A
+        SCF
+        RET
+
+; Advance using the next dispatch pointer. v2 providers have dispatch at +8;
+; legacy v1 providers at +4. The next header must identify itself accordingly.
+RR_NEXT:
+        LD      HL,(RR_BASE)
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,COREBDOS
+        OR      A
+        SBC     HL,DE
+        JR      Z,RR_NEND
+        LD      (RR_NEXTDISP),DE
+        EX      DE,HL
+        LD      DE,8
+        OR      A
+        SBC     HL,DE
+        PUSH    HL
+        INC     HL
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,(RR_NEXTDISP)
+        OR      A
+        SBC     HL,DE
+        POP     HL
+        JR      Z,RR_NGOOD
+        LD      HL,(RR_NEXTDISP)
+        LD      DE,4
+        OR      A
+        SBC     HL,DE
+        PUSH    HL
+        INC     HL
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,(RR_NEXTDISP)
+        OR      A
+        SBC     HL,DE
+        POP     HL
+        JR      NZ,RR_NCORRUPT
+RR_NGOOD:
+        LD      A,(RR_INDEX)
+        INC     A
+        CP      5
+        JR      NC,RR_NCORRUPT
+        LD      (RR_INDEX),A
+        OR      A
+        RET
+RR_NEND:
+        LD      HL,0
+        OR      A
+        RET
+RR_NCORRUPT:
+        LD      A,9
+        LD      (RR_STATUS),A
+        SCF
+        RET
+
+; HL -> matching ten-byte descriptor.
+RR_FILTER:
+        PUSH    HL
+        LD      DE,(RR_REQ)
+        LD      BC,4
+        ADD     HL,BC          ; descriptor ABI major
+        EX      DE,HL
+        LD      BC,8
+        ADD     HL,BC
+        LD      A,(DE)
+        CP      (HL)
+        JR      NZ,RR_FMAJOR
+        INC     DE
+        INC     HL
+        LD      A,(DE)
+        CP      (HL)
+        JR      C,RR_FMINOR
+        INC     DE
+        INC     DE
+        INC     DE
+        INC     HL
+        LD      A,(DE)
+        AND     (HL)
+        LD      C,A
+        INC     DE
+        INC     HL
+        LD      A,(DE)
+        AND     (HL)
+        LD      B,A
+        LD      HL,(RR_REQ)
+        LD      DE,10
+        ADD     HL,DE
+        LD      A,(HL)
+        CP      C
+        JR      NZ,RR_FCAP
+        INC     HL
+        LD      A,(HL)
+        CP      B
+        JR      NZ,RR_FCAP
+        POP     HL
+        XOR     A
+        RET
+RR_FMAJOR:
+        POP     HL
+        LD      A,2
+        RET
+RR_FMINOR:
+        POP     HL
+        LD      A,3
+        RET
+RR_FCAP:
+        POP     HL
+        LD      A,4
+        RET
+
+; HL -> descriptor. Copy identity/results and compute base+entry offset.
+RR_OUTPUT:
+        LD      (RR_DESC),HL
+        LD      DE,(RR_REQ)
+        EX      DE,HL
+        LD      BC,4
+        ADD     HL,BC
+        EX      DE,HL
+        LD      HL,(RR_DESC)
+        LD      BC,6
+        LDIR
+        LD      HL,(RR_DESC)
+        LD      DE,6
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,(RR_BASE)
+        ADD     HL,DE
+        PUSH    HL
+        LD      HL,(RR_REQ)
+        LD      DE,12
+        ADD     HL,DE
+        POP     DE
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      DE,(RR_DESC)
+        INC     DE
+        INC     DE
+        INC     DE
+        INC     DE
+        LD      A,(DE)
+        LD      (HL),A
+        INC     DE
+        INC     HL
+        LD      A,(DE)
+        LD      (HL),A
+        INC     DE
+        INC     DE
+        INC     DE
+        INC     HL
+        LD      A,(DE)
+        LD      (HL),A
+        INC     DE
+        INC     HL
+        LD      A,(DE)
+        LD      (HL),A
+        INC     HL
+        LD      A,(RR_INDEX)
+        LD      (HL),A
+        RET
+
+RR_SUCCESS:
+        CALL    RR_OUTPUT
+        XOR     A
+        JP      RR_FINISH
+
+RR_CLEAR:
+        LD      HL,(RR_REQ)
+        LD      DE,12
+        ADD     HL,DE
+        XOR     A
+        LD      (RR_STATUS),A
+        LD      B,8
+RR_CLOOP:
+        LD      (HL),A
+        INC     HL
+        DJNZ    RR_CLOOP
+        RET
+
+RR_VALIDID:
+        LD      HL,(RR_REQ)
+        LD      DE,4
+        ADD     HL,DE
+        LD      B,4
+        XOR     A
+        LD      (RR_NONSPACE),A
+RR_VILOOP:
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,RR_VISPACE
+        CP      'A'
+        JR      C,RR_VIBAD
+        CP      'Z'+1
+        JR      NC,RR_VIBAD
+        LD      A,1
+        LD      (RR_NONSPACE),A
+RR_VISPACE:
+        INC     HL
+        DJNZ    RR_VILOOP
+        LD      A,(RR_NONSPACE)
+        OR      A
+        JR      Z,RR_VIBAD
+        XOR     A
+        RET
+RR_VIBAD:
+        LD      A,1
+        OR      A
+        RET
+
+RR_BADVER:     LD A,5
+        JR      RR_FINISH
+RR_BADLEN:     LD A,6
+        JR      RR_FINISH
+RR_BADOP:      LD A,7
+        JR      RR_FINISH
+RR_BADID:      LD A,8
+        JR      RR_FINISH
+RR_CORRUPT:    LD A,9
+RR_FINISH:
+        LD      HL,(RR_REQ)
+        PUSH    HL
+        LD      DE,19
+        ADD     HL,DE
+        LD      (HL),A
+        POP     DE
+        OR      A
+        JR      NZ,RR_FAILHL
+        LD      A,(RR_OP)
+        OR      A
+        JR      NZ,RR_SUCCNOHL
+        LD      HL,(RR_REQ)
+        LD      BC,12
+        ADD     HL,BC
+        LD      A,(HL)
+        INC     HL
+        LD      H,(HL)
+        LD      L,A
+        LD      A,0
+        RET
+RR_SUCCNOHL:
+        XOR     A
+        LD      HL,0
+        RET
+RR_FAILHL:
+        LD      HL,0
+        RET
+
+RR_REQ:        DW      0
+RR_BASE:       DW      0
+RR_DESC:       DW      0
+RR_NEXTDISP:   DW      0
+RR_OP:         DB      0
+RR_INDEX:      DB      0
+RR_ORDINAL:    DB      0
+RR_WANTED:     DB      0
+RR_TOTAL:      DB      0
+RR_STATUS:     DB      0
+RR_NONSPACE:   DB      0
+        .DEPHASE
+        END
