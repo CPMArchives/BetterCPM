@@ -162,7 +162,7 @@ FT_SERVICE:
         OR      A
         JR      Z,FT_GET
         CP      1
-        JR      Z,FT_TSET
+        JP      Z,FT_TSET
         LD      A,3
         JR      FT_TFAIL
 FT_GET:
@@ -177,18 +177,20 @@ FT_GET:
         POP     DE
         OR      A
         JR      NZ,FT_TFLAGS
-        LD      A,10H           ; Model 4 EXTIO enables the FreHD port block
+        LD      A,50H           ; preserve map 1 while enabling EXTIO
         OUT     (MODLATCH),A
         LD      A,1
         OUT     (COMMAND2),A
         CALL    FT_WAIT
-        JR      NZ,FT_TUNAV
+        JR      NZ,FT_HFAIL
         IN      A,(SIZE2)
         CP      6
-        JR      NZ,FT_TUNAV
+        JR      NZ,FT_HFAIL
         LD      HL,FT_SAMPLE
         LD      BC,6*256+DATA2
         INIR
+        LD      A,40H           ; restore normal Model 4 map and I/O state
+        OUT     (MODLATCH),A
         CALL    FT_VALIDATE
         JR      NZ,FT_TINVALID
         CALL    FT_DAYCOUNT
@@ -221,6 +223,10 @@ FT_GET:
         POP     DE
         XOR     A
         RET
+FT_HFAIL:
+        LD      A,40H
+        OUT     (MODLATCH),A
+        JR      FT_TUNAV
 FT_TVER:       LD      A,1
         JR      FT_TFAIL
 FT_TLEN:       LD      A,2

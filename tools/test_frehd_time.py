@@ -24,6 +24,8 @@ def run(command: str) -> bytes:
         invocation.extend(key_args("RSX LOAD FREHDCLK\r"))
         invocation.extend(("-id", "3000"))
         invocation.extend(key_args(command + "\r"))
+        invocation.extend(("-id", "3000"))
+        invocation.extend(key_args("VER\r"))
         invocation.extend(("-id", "5000", "-it", "-ix"))
         subprocess.run(invocation, cwd=work, check=True, timeout=75)
         return (work / "trs80-text-0.bin").read_bytes()[:80 * 24]
@@ -37,9 +39,11 @@ def main() -> None:
     if not re.search(rb"20[0-9]{2}-[01][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]:[0-5][0-9]",
                      display):
         raise SystemExit(f"TIME did not display a clock sample: {display!r}")
+    if b"BetterCP/M 0.3" not in display:
+        raise SystemExit("TIME did not return to a working CCP prompt")
     provider = run("TIME /PROVIDER")
     for expected in (b"Provider: FREHDCLK", b"TIME service ABI 01.00",
-                     b"GET, read-only"):
+                     b"GET, read-only", b"BetterCP/M 0.3"):
         if expected not in provider:
             raise SystemExit(f"provider report lacks {expected!r}: {provider!r}")
     print("FREHDCLK discovery, RTC read, conversion, and provider report passed")

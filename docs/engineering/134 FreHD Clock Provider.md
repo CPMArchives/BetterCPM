@@ -25,9 +25,11 @@ the DS1307 year as 2000 through 2099, converts the date to the CP/M epoch, and
 returns packed-BCD time. It never changes the hardware clock and advertises no
 SET capability.
 
-On the Model 4 the provider enables the `EXTIO` latch before addressing the
-FreHD extended ports. This is required even when trs80gp's FreHD emulation is
-enabled; without it the extended port block is deliberately invisible.
+On the Model 4 the provider enables the `EXTIO` latch while preserving map 1
+before addressing the FreHD extended ports. This is required even when
+trs80gp's FreHD emulation is enabled; without it the extended port block is
+deliberately invisible. Every success and hardware-error path restores the
+normal map-1 latch value before returning to its caller.
 
 The same interface is emulated by trs80gp when FreHD support is enabled. The
 provider is named for FreHD because the ABI does not depend on trs80gp.
