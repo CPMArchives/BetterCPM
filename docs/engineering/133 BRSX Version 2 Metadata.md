@@ -68,6 +68,19 @@ The resolver is a separate on-demand overlay sharing the manager's 1 KiB slot.
 Its focused ABI implementation occupies 760 bytes, below the slot's 893-byte
 code ceiling, and performs no disk access during lookup or enumeration.
 
+## Loader integration constraint
+
+The current version-1 manager already occupies all 893 bytes available below
+its 128-byte control stack and the fixed three-byte gateway. A first complete
+version-2 parsing/materialization pass measured 1,186 bytes before optimization.
+It was not retained because reducing validation or leaving an inadequately
+sized stack would make RSX reconstruction unsafe. Loader publication therefore
+remains the next Stage-2 increment and must either recover roughly 293 bytes by
+factoring common manager code, or use a separately loaded validation phase whose
+failure cannot partially publish a resident profile. This size issue affects
+only rare reconstruction operations; it does not justify adding parser code to
+BDOS or reducing command-history/PDS allocations.
+
 The carrier builder includes the descriptor bytes when calculating the minimum
 page-rounded allocation. BRSX-v2 dispatch and callable entries must lie beyond
 the eight-byte runtime header and within the emitted payload.
