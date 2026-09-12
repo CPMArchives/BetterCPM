@@ -226,7 +226,7 @@ RR_PROVIDER:
         OR      A
         SBC     HL,DE
         POP     HL
-        JR      NZ,RR_PCLEAR
+        JR      NZ,RR_PV1
         INC     HL
         LD      A,(HL)
         CP      3
@@ -254,6 +254,16 @@ RR_PROVIDER:
         ADD     HL,DE
         OR      A
         RET
+RR_PV1:
+        LD      HL,(RR_BASE)
+        LD      BC,4
+        ADD     HL,BC
+        OR      A
+        SBC     HL,DE
+        JR      NZ,RR_PCLEAR
+        CALL    RR_NEXT
+        RET     C
+        JP      RR_PROVIDER
 RR_PCLEAR:
         LD      A,9
         LD      (RR_STATUS),A
