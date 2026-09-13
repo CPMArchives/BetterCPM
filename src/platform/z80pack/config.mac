@@ -1,0 +1,318 @@
+        INCLUDE layout.inc
+        INCLUDE cpxlinks.inc
+; Z80PACK RAW-DISK CONFIGURATION OVERLAY
+;
+; Vector ABI shared with the common disk service.  cpmsim has no physical
+; formatter, so format vectors deliberately report unsupported; physical and
+; logical definitions are fully runtime-settable.
+
+        ASEG
+        ORG LY_CFG
+
+        JP ZC_PHYS
+        JP ZC_LOG
+        JP ZC_UNSUP
+        JP BF_CPXCTL
+        JP ZC_GETPH
+        JP ZC_GETLOG
+        JP ZC_UNSUP
+
+; IX=request.  Byte 0 is the physical-drive number; bytes 1..6 are the
+; six-byte BetterCP/M physical descriptor.
+ZC_PHYS:
+        LD A,(IX+0)
+        CP 4
+        JP NC,ZC_INVALID
+        LD (ZC_DRIVE),A
+        LD A,(IX+2)
+        OR A
+        JP Z,ZC_INVALID
+        LD A,(IX+3)
+        DEC A
+        CP 2
+        JP NC,ZC_INVALID
+
+; Reject a reduction that would invalidate an attached logical format.
+        LD HL,LY_TAB+16
+        LD B,4
+ZC_PHCHK:
+        LD A,(HL)
+        LD C,A
+        LD A,(ZC_DRIVE)
+        CP C
+        JR NZ,ZC_PHNEXT
+        PUSH HL
+        LD DE,16
+        ADD HL,DE
+        LD A,(IX+2)
+        CP (HL)
+        POP HL
+        JP C,ZC_UNSUP
+        PUSH HL
+        LD DE,19
+        ADD HL,DE
+        LD A,(HL)
+        AND 060H
+        POP HL
+        JR Z,ZC_PHNEXT
+        LD A,(IX+3)
+        CP 2
+        JP NZ,ZC_UNSUP
+ZC_PHNEXT:
+        LD DE,80
+        ADD HL,DE
+        DJNZ ZC_PHCHK
+
+        LD A,(ZC_DRIVE)
+        CALL ZC_PHY
+        EX DE,HL
+        PUSH IX
+        POP HL
+        INC HL
+        LD BC,6
+        LDIR
+        JP ZC_OK
+
+; IX=request. Byte 0 is logical drive; bytes 1..64 are the normalized
+; logical binding used at LY_TAB+16.
+ZC_LOG:
+        LD A,(IX+0)
+        CP 4
+        JP NC,ZC_INVALID
+        OR A
+        JP Z,ZC_UNSUP          ; A: remains the fixed bootstrap filesystem
+        LD (ZC_DRIVE),A
+
+        LD A,(IX+1)
+        CP 0FFH
+        JR NZ,ZC_ATTACH
+        LD A,(ZC_DRIVE)
+        CALL ZC_DPH
+        LD DE,16
+        ADD HL,DE
+        LD (HL),0FFH
+        JP ZC_OK
+
+ZC_ATTACH:
+        CP 4
+        JP NC,ZC_INVALID
+        CALL ZC_PHY
+        LD (ZC_PHYPTR),HL
+
+; Logical track/cylinder count must fit the selected virtual drive.
+        LD A,(IX+17)
+        OR A
+        JP Z,ZC_INVALID
+        LD HL,(ZC_PHYPTR)
+        INC HL
+        LD A,(HL)
+        CP (IX+17)
+        JP C,ZC_UNSUP
+        INC HL
+
+; Standard and cylinder-track double-sided definitions need two surfaces.
+        LD A,(IX+20)
+        AND 060H
+        JR Z,ZC_SIDEOK
+        LD A,(HL)
+        CP 2
+        JP NZ,ZC_UNSUP
+ZC_SIDEOK:
+
+; Optional FDF conventions require the mapper RSX.
+        LD A,(IX+20)
+        AND 00FH
+        JR Z,ZC_FDFOK
+        PUSH IX
+        LD BC,000D1H
+        CALL 5
+        POP IX
+        LD DE,04644H
+        OR A
+        SBC HL,DE
+        JP NZ,ZC_UNSUP
+ZC_FDFOK:
+
+        LD A,(IX+18)
+        OR A
+        JP Z,ZC_INVALID
+        CP 33
+        JP NC,ZC_UNSUP
+        LD A,(IX+19)
+        CP 4
+        JP NC,ZC_UNSUP
+
+; Uniform geometry needs no size map.  Anything else is validated and,
+; where applicable, normalized by FDF.RSX operation 2.
+        LD L,(IX+18)
+        LD H,0
+        LD A,(IX+19)
+        OR A
+        JR Z,ZC_SPTDONE
+ZC_SPTSHIFT:
+        ADD HL,HL
+        DEC A
+        JR NZ,ZC_SPTSHIFT
+ZC_SPTDONE:
+        LD A,(IX+3)
+        CP H
+        JR NZ,ZC_MIXED
+        LD A,(IX+2)
+        CP L
+        JR NZ,ZC_MIXED
+        LD (IX+53),0
+        JR ZC_GEOMOK
+ZC_MIXED:
+        PUSH IX
+        LD BC,002D1H
+        CALL 5
+        POP IX
+        LD DE,04644H
+        OR A
+        SBC HL,DE
+        JP NZ,ZC_INVALID
+ZC_GEOMOK:
+
+; Operation 2 may normalize a cylinder-track format by setting bit 5.
+        LD A,(IX+20)
+        AND 060H
+        JR Z,ZC_NORMOK
+        LD A,(IX+1)
+        CALL ZC_PHY
+        INC HL
+        INC HL
+        LD A,(HL)
+        CP 2
+        JP NZ,ZC_UNSUP
+ZC_NORMOK:
+
+; BSH/BLM and DSM must be structurally plausible for CP/M 2.2.
+        LD A,(IX+4)
+        CP 3
+        JP C,ZC_INVALID
+        CP 8
+        JP NC,ZC_INVALID
+        LD B,A
+        LD A,1
+ZC_BLMSH:
+        ADD A,A
+        DJNZ ZC_BLMSH
+        DEC A
+        CP (IX+5)
+        JP NZ,ZC_INVALID
+        LD A,(IX+10)
+        CP 2
+        JP NC,ZC_UNSUP
+        LD A,(IX+14)
+        OR A
+        JP NZ,ZC_INVALID
+
+; Sector IDs in one physical track must be unique.
+        PUSH IX
+        POP HL
+        LD DE,21
+        ADD HL,DE
+        LD B,(IX+18)
+ZC_SKEW:
+        LD A,(HL)
+        PUSH BC
+        PUSH HL
+        INC HL
+        DEC B
+        JR Z,ZC_SKDONE
+ZC_SKCMP:
+        CP (HL)
+        JR Z,ZC_SKBAD
+        INC HL
+        DJNZ ZC_SKCMP
+ZC_SKDONE:
+        POP HL
+        POP BC
+        INC HL
+        DJNZ ZC_SKEW
+
+; Install the complete normalized 64-byte binding.
+        LD A,(ZC_DRIVE)
+        CALL ZC_DPH
+        LD DE,16
+        ADD HL,DE
+        EX DE,HL
+        PUSH IX
+        POP HL
+        INC HL
+        LD BC,64
+        LDIR
+        JP ZC_OK
+
+ZC_SKBAD:
+        POP HL
+        POP BC
+        JP ZC_INVALID
+
+; These getters are present because the overlay ABI reserves the vectors,
+; although z80pack's resident disk service normally handles operations 1/3.
+ZC_GETPH:
+        LD A,(IX+0)
+        CP 4
+        JP NC,ZC_INVALID
+        CALL ZC_PHY
+        LD BC,6
+        JR ZC_COPY
+
+ZC_GETLOG:
+        LD A,(IX+0)
+        CP 4
+        JP NC,ZC_INVALID
+        CALL ZC_DPH
+        LD DE,16
+        ADD HL,DE
+        LD BC,64
+ZC_COPY:
+        PUSH IX
+        POP DE
+        INC DE
+        LDIR
+ZC_OK:
+        XOR A
+        JR ZC_RESULT
+ZC_INVALID:
+        LD A,1
+        JR ZC_RESULT
+ZC_UNSUP:
+        LD A,2
+ZC_RESULT:
+        LD L,A
+        LD H,0
+        POP IX
+        RET
+
+; A=physical drive 0..3 -> HL six-byte descriptor.
+ZC_PHY:
+        LD E,A
+        ADD A,A
+        ADD A,A
+        ADD A,E
+        ADD A,E
+        LD E,A
+        LD D,0
+        LD HL,ZP_PHYSICAL
+        ADD HL,DE
+        RET
+
+; A=logical drive 0..3 -> HL 80-byte DPH record.
+ZC_DPH:
+        LD HL,LY_TAB
+        LD DE,80
+        OR A
+        RET Z
+ZC_DPHLP:
+        ADD HL,DE
+        DEC A
+        JR NZ,ZC_DPHLP
+        RET
+
+; Replaced by tools/build_z80pack_boot.py with the resident symbol address.
+ZP_PHYSICAL EQU 0FFFFH
+
+ZC_DRIVE:  DB 0
+ZC_PHYPTR: DW 0

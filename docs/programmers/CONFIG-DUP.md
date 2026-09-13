@@ -29,7 +29,8 @@ restoration failures are reported explicitly. This is not power-loss atomic.
 Files, boot loaders and resident executable code are preserved. An ordinary
 cold boot then uses the saved settings. H does not install a new system on
 another disk and does not persist loaded RSXs: load FDF.RSX again before using
-bindings that require it. The z80pack adapter currently has fixed settings.
+bindings that require it. The z80pack geometry-v2 adapter supports runtime
+physical and logical settings for raw images.
 The reference file consumes disk space, not resident RAM. CONFIG temporarily
 borrows and then reloads its format catalogue while running H.
 
@@ -196,7 +197,8 @@ untargeted-track preservation on private images. Its `same`, `mixed`, `bad`,
 `protected`, and `abort` modes cover matching formats, mixed sector sizes, bad
 CRCs, write protection and interruption. The mixed case uses FDF.RSX.
 
-The z80pack adapter still rejects format changes and write-track requests.
+The z80pack adapter accepts format binding changes but rejects write-track
+requests; formatting a raw host file remains a host-side operation.
 Copy between matching fixed-format bindings and read-only checking use its
 standard BIOS interface; cross-format copying requires adapter support.
 
@@ -231,7 +233,8 @@ seek and settle normally. DUP uses ABI 4 to copy each newly read physical sector
 into its own transient buffer. A 512-byte sector now needs one read per pass,
 instead of four; a 1024-byte sector needs one instead of eight. Every byte is
 still compared after formatting and copying. The cache expires at every track
-and pass, writes bypass it, and z80pack uses the standard 128-byte read path.
+and pass. z80pack reads 128-byte media directly and stages larger physical
+sectors through the shared buffer for deblocking and read-modify-write.
 The cache occupies idle write-track workspace, adding no resident memory and
 preserving the 54,273-byte TPA without an RSX.
 

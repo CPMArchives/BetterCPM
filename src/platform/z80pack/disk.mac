@@ -20,15 +20,17 @@
 ;   02 sectors/track low
 ;   03 sectors/track high
 ;   04 sector size low
-;   05 sector size high
-;   7F interface version = 1
+;   05 sector size high (legacy mode)
+;   06/07 raw track byte size
+;   08/09 selected sector byte offset
+;   0A/0B selected transfer byte count
+;   0C raw direct-address mode
+;   7F interface version = 2
 ;
 ; BetterCP/M continues to present 128-byte logical records.  The common BIOS
 ; performs deblocking through LY_BUF using BIO_QUART.  This adapter transfers
 ; one complete physical sector.
 ;
-; First generalized implementation: uniform, single-sided raw media only.
-; Unsupported FDF flag combinations fail instead of being approximated.
 
         ASEG
         ORG LY_DISK
@@ -69,18 +71,13 @@ Z_DPHLP:
         RET
 
 ; ----------------------------------------------------------------------
-; Map CP/M logical track/record to raw physical track/sector/quarter.
+; Map CP/M logical track/record to canonical raw-image position.
 ;
-; Logical-format record begins 16 bytes into each 80-byte DPH record:
-;
-;   +0      physical cpmsim drive
-;   +1,+2   CP/M 128-byte records/track
-;   +16     tracks
-;   +17     physical sectors/track
-;   +18     size code: 0=128, 1=256, 2=512, 3=1024
-;   +19     physical flags
-;
-; This stage accepts flags=0 only.
+; Raw images use cylinder-major physical ordering: cylinder 0 side 0,
+; cylinder 0 side 1, cylinder 1 side 0, ... .  FDF.RSX resolves optional
+; Montezuma track/side/ID conventions; this adapter converts its result to
+; a byte offset within that canonical raw track.  Mixed sector sizes are
+; therefore supported without teaching cpmsim anything about DISK.FDF.
 ; ----------------------------------------------------------------------
 
 Z_MAP:
@@ -101,17 +98,7 @@ Z_MAP:
         LD (ZP_DRIVE),A
 
         LD A,(IX+19)
-        OR A
-        JP NZ,Z_BADIX
-
-        LD HL,(BIO_TRACK)
-        LD A,H
-        OR A
-        JP NZ,Z_BADIX
-        LD A,L
-        CP (IX+16)
-        JP NC,Z_BADIX
-        LD (ZP_TRACK),A
+        LD (ZP_FLAGS),A
 
         LD HL,(BIO_SECTOR)
         LD E,(IX+1)
@@ -120,103 +107,294 @@ Z_MAP:
         SBC HL,DE
         JP NC,Z_BADIX
 
+; Low-nibble conventions and explicit mixed-size maps belong to FDF.RSX.
+        LD A,(IX+19)
+        AND 00FH
+        OR (IX+52)
+        JR Z,Z_COMMON
+
+        LD DE,(BIO_TRACK)
+        LD HL,(BIO_SECTOR)
+        LD BC,001D1H
+        CALL 5
+        BIT 7,B
+        JP Z,Z_BADIX
+
+        LD A,B
+        AND 7
+        LD (BIO_QUART),A
+        LD A,B
+        RRCA
+        RRCA
+        RRCA
+        AND 3
+        LD (ZP_SIZE),A
+        LD A,L
+        LD (ZP_CYL),A
+        LD A,D
+        LD (ZP_SIDE),A
+
+; FDF bit 3 continues side-one sector IDs after side zero.  The raw image
+; still stores sectors by their slot in the FDF skew list, so normalize the
+; returned ID before finding that slot.
+        LD A,E
+        LD C,A
+        LD A,(ZP_SIDE)
+        OR A
+        JR Z,Z_FINDID
+        BIT 3,(IX+19)
+        JR Z,Z_FINDID
+        LD A,C
+        SUB (IX+17)
+        JP C,Z_BADIX
+        LD C,A
+Z_FINDID:
+        LD A,C
+        LD (ZP_ID),A
+        JP Z_MAPPED
+
+; Built-in common mapping.  Density is irrelevant to a raw byte stream.
+; Bit 6 alternates sides by logical track.  Bit 5 is the normalized
+; cylinder-track form whose logical SPT spans both sides.
+Z_COMMON:
+        LD HL,(BIO_TRACK)
+        LD A,H
+        OR A
+        JP NZ,Z_BADIX
+        XOR A
+        LD (ZP_SIDE),A
+        LD A,L
+        BIT 5,(IX+19)
+        JR NZ,Z_CYLOK
+        BIT 6,(IX+19)
+        JR Z,Z_CYLOK
+        SRL A
+        PUSH AF
+        LD A,0
+        ADC A,0
+        LD (ZP_SIDE),A
+        POP AF
+Z_CYLOK:
+        CP (IX+16)
+        JP NC,Z_BADIX
+        LD (ZP_CYL),A
+
         LD A,(IX+18)
         CP 4
         JP NC,Z_BADIX
         LD (ZP_SIZE),A
 
         LD HL,(BIO_SECTOR)
-
-; BIO_QUART = logical record modulo records-per-physical-sector.
         LD A,(ZP_SIZE)
         OR A
-        JR Z,ZP_QZERO
+        JR Z,Z_QZERO
         LD B,A
         LD A,1
-ZP_QMLP:
+Z_QMASK:
         ADD A,A
-        DJNZ ZP_QMLP
+        DJNZ Z_QMASK
         DEC A
         AND L
-        JR ZP_QSAVE
-
-ZP_QZERO:
+        JR Z_QSAVE
+Z_QZERO:
         XOR A
-
-ZP_QSAVE:
+Z_QSAVE:
         LD (BIO_QUART),A
 
-; Physical sector ordinal = logical record >> size code.
         LD A,(ZP_SIZE)
         OR A
-        JR Z,ZP_DIVDONE
+        JR Z,Z_DIVDONE
         LD B,A
-
-ZP_DIVLP:
+Z_DIV:
         SRL H
         RR L
-        DJNZ ZP_DIVLP
-
-ZP_DIVDONE:
+        DJNZ Z_DIV
+Z_DIVDONE:
         LD A,H
         OR A
         JP NZ,Z_BADIX
         LD A,L
         CP (IX+17)
+        JR C,Z_INDEXOK
+        SUB (IX+17)
+        LD B,A
+        LD A,1
+        LD (ZP_SIDE),A
+        LD A,B
+Z_INDEXOK:
+        CP (IX+17)
         JP NC,Z_BADIX
-        INC A
-        LD (ZP_SECTOR),A
+        LD E,A
+        LD D,0
+        PUSH IX
+        POP HL
+        ADD HL,DE
+        LD DE,20
+        ADD HL,DE
+        LD A,(HL)
+        LD (ZP_ID),A
 
-; Verify and program the cpmsim extended geometry interface.
+Z_MAPPED:
+; Convert cylinder/side to canonical raw linear track.
+        LD A,(ZP_FLAGS)
+        AND 060H
+        LD A,(ZP_CYL)
+        JR Z,Z_TRACKONE
+        ADD A,A
+        LD B,A
+        LD A,(ZP_SIDE)
+        ADD A,B
+Z_TRACKONE:
+        LD (ZP_TRACK),A
+
+; Compute total bytes in one raw track.  ZP_BYTES returns DE = size of
+; physical slot A, honoring a packed mixed map.
+        LD HL,0
+        XOR A
+Z_TBYTES:
+        LD C,A
+        CALL ZP_BYTES
+        ADD HL,DE
+        LD A,C
+        INC A
+        CP (IX+17)
+        JR C,Z_TBYTES
+        LD (ZP_TBYT),HL
+
+; Raw sector dumps have no ID fields.  Canonical raw order is ascending sector
+; ID, so the FDF skew table determines the byte position.  With mixed sizes,
+; sum the sizes belonging to every lower-numbered ID.
+        LD HL,0
+        LD (ZP_OFFSET),HL
+        XOR A
+Z_OBYTES:
+        LD C,A
+        LD E,A
+        LD D,0
+        PUSH IX
+        POP HL
+        ADD HL,DE
+        LD DE,20
+        ADD HL,DE
+        LD A,(HL)
+        LD B,A
+        LD A,(ZP_ID)
+        CP B
+        JR C,Z_ONOADD
+        JR Z,Z_ONOADD
+        LD A,C
+        CALL ZP_BYTES
+        LD HL,(ZP_OFFSET)
+        ADD HL,DE
+        LD (ZP_OFFSET),HL
+Z_ONOADD:
+        LD A,C
+        INC A
+        CP (IX+17)
+        JR C,Z_OBYTES
+
+; cpmsim geometry interface v2 adds direct raw-track byte addressing.
         LD A,07FH
         OUT (18),A
         IN A,(19)
-        CP 1
-        JP NZ,Z_BADIX
+        CP 2
+        JP C,Z_BADIX
 
         LD A,(ZP_DRIVE)
         OUT (10),A
 
-        XOR A
-        OUT (18),A
-        LD A,(IX+16)
-        OUT (19),A
-        LD A,1
-        OUT (18),A
-        XOR A
-        OUT (19),A
-
-        LD A,2
-        OUT (18),A
-        LD A,(IX+17)
-        OUT (19),A
-        LD A,3
-        OUT (18),A
-        XOR A
-        OUT (19),A
-
-; Convert size code to byte count and program registers 04/05.
-        LD A,(ZP_SIZE)
-        ADD A,A
-        LD E,A
-        LD D,0
-        LD HL,ZP_SIZES
-        ADD HL,DE
-        LD E,(HL)
-        INC HL
-        LD D,(HL)
-
-        LD A,4
+; Track byte size.
+        LD DE,(ZP_TBYT)
+        LD A,6
         OUT (18),A
         LD A,E
         OUT (19),A
-        LD A,5
+        LD A,7
         OUT (18),A
         LD A,D
         OUT (19),A
 
+; Byte offset of selected physical sector within the track.
+        LD DE,(ZP_OFFSET)
+        LD A,8
+        OUT (18),A
+        LD A,E
+        OUT (19),A
+        LD A,9
+        OUT (18),A
+        LD A,D
+        OUT (19),A
+
+; Transfer byte count for the selected sector.
+        LD A,(ZP_SIZE)
+        CALL ZP_CODEBYTES
+        LD A,10
+        OUT (18),A
+        LD A,E
+        OUT (19),A
+        LD A,11
+        OUT (18),A
+        LD A,D
+        OUT (19),A
+
+; Direct raw-track addressing on.
+        LD A,12
+        OUT (18),A
+        LD A,1
+        OUT (19),A
+
         POP IX
         XOR A
+        RET
+
+; A = physical slot index.  Return DE = 128/256/512/1024 byte size.
+ZP_BYTES:
+        PUSH HL
+        PUSH BC
+        LD C,A
+        LD A,(IX+52)
+        OR A
+        LD A,(IX+18)
+        JR Z,ZP_BCODE
+        LD A,C
+        SRL A
+        SRL A
+        LD E,A
+        LD D,0
+        PUSH IX
+        POP HL
+        ADD HL,DE
+        LD DE,53
+        ADD HL,DE
+        LD B,(HL)
+        LD A,C
+        AND 3
+        LD C,A
+        JR Z,ZP_PAIRREADY
+ZP_PAIR:
+        SRL B
+        SRL B
+        DEC C
+        JR NZ,ZP_PAIR
+ZP_PAIRREADY:
+        LD A,B
+        AND 3
+ZP_BCODE:
+        CALL ZP_CODEBYTES
+        POP BC
+        POP HL
+        RET
+
+; A=size code -> DE=byte count.
+ZP_CODEBYTES:
+        LD DE,128
+        OR A
+        RET Z
+ZP_BSHIFT:
+        SLA E
+        RL D
+        DEC A
+        JR NZ,ZP_BSHIFT
         RET
 
 Z_BADIX:
@@ -227,8 +405,9 @@ Z_BAD:
         RET
 
 ; ----------------------------------------------------------------------
-; Transfer one complete physical sector.
-; HL points to the common BIOS physical-sector buffer.
+; Transfer one complete decoded physical sector.  A raw cpmtools image stores
+; logical sector bytes, so controller-specific inverted-data polarity does not
+; appear in this host representation.
 ; ----------------------------------------------------------------------
 
 Z_READ:
@@ -239,28 +418,34 @@ Z_WRITE:
         LD A,1
 
 Z_TRANSFER:
-        PUSH AF
+        LD (ZP_COMMAND),A
+        LD (ZP_BUFFER),HL
 
         LD A,(ZP_DRIVE)
         OUT (10),A
-
         LD A,(ZP_TRACK)
         OUT (11),A
-
-        LD A,(ZP_SECTOR)
-        OUT (12),A
-        XOR A
-        OUT (17),A
 
         LD A,L
         OUT (15),A
         LD A,H
         OUT (16),A
 
-        POP AF
+        LD A,(ZP_COMMAND)
         OUT (13),A
-
         IN A,(14)
+        PUSH AF
+
+        LD A,(ZP_COMMAND)
+        OR A
+        JR NZ,Z_WRESTORE
+        POP AF
+        OR A
+        RET NZ
+        XOR A
+        RET
+Z_WRESTORE:
+        POP AF
         OR A
         RET
 
@@ -305,6 +490,10 @@ Z_BOOTIO:
 
         LD A,C
         OUT (10),A
+        LD A,12
+        OUT (18),A
+        XOR A
+        OUT (19),A
         LD A,D
         OUT (11),A
         LD A,E
@@ -328,8 +517,8 @@ Z_BOOTIO:
         RET
 
 ; ----------------------------------------------------------------------
-; BDOS 207 disk-configuration discovery/getters.
-; Runtime setters remain unsupported at this stage.
+; BDOS 207 disk-configuration interface.  Setters execute through the
+; reloadable z80pack control overlay at LY_CFG.
 ; ----------------------------------------------------------------------
 
 Z_API:
@@ -361,18 +550,60 @@ Z_API:
         LD A,B
         CP 1
         JR Z,Z_GETPH
+        CP 2
+        JR Z,Z_SETPH
         CP 3
         JR Z,Z_GETLOG
+        CP 4
+        JR Z,Z_SETLOG
+        CP 5
+        JR Z,Z_FORMAT
 
         LD HL,2
-        JR Z_RETURN
+        JP Z_RETURN
+
+Z_SETPH:
+        XOR A
+        JR Z_CTL
+
+Z_SETLOG:
+        LD A,3
+        JR Z_CTL
+
+Z_FORMAT:
+        LD A,6
+
+Z_CTL:
+        PUSH AF
+        CALL LY_BIOS+57
+        POP BC
+        OR A
+        JP NZ,Z_CTLFAIL
+        LD H,0
+        LD L,B
+        LD DE,LY_CFG
+        ADD HL,DE
+        JP (HL)
+
+Z_CTLFAIL:
+        LD HL,1
+        JP Z_RETURN
 
 Z_REQBAD:
         LD HL,1
-        JR Z_RETURN
+        JP Z_RETURN
 
 Z_GETPH:
+        LD A,(IX+0)
+        LD E,A
+        ADD A,A
+        ADD A,A
+        ADD A,E
+        ADD A,E
+        LD E,A
+        LD D,0
         LD HL,Z_PHYSICAL
+        ADD HL,DE
         LD BC,6
         JR Z_COPY
 
@@ -403,19 +634,19 @@ Z_INFO:
 
 Z_PHYSICAL:
         REPT 4
-        DB 8,77,1,0,0,0
+        DB 8,80,2,0,0,0
         ENDM
 
-ZP_SIZES:
-        DW 128,256,512,1024
-
-ZP_DRIVE:
-        DB 0
-ZP_TRACK:
-        DB 0
-ZP_SECTOR:
-        DB 1
-ZP_SIZE:
-        DB 0
+ZP_DRIVE:      DB 0
+ZP_TRACK:      DB 0
+ZP_CYL:        DB 0
+ZP_SIDE:       DB 0
+ZP_ID:         DB 0
+ZP_SIZE:       DB 0
+ZP_FLAGS:      DB 0
+ZP_COMMAND:    DB 0
+ZP_BUFFER:     DW 0
+ZP_OFFSET:     DW 0
+ZP_TBYT:       DW 0
 
         END

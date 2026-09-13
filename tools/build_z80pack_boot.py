@@ -22,6 +22,7 @@ def main():
  p=argparse.ArgumentParser()
  p.add_argument('--output',type=Path,default=ROOT/'build/z80pack')
  p.add_argument('--assembler',type=Path,default=Path.home()/'bin/z80asm')
+ p.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim')
  args=p.parse_args();out=args.output.resolve()
  out.mkdir(parents=True,exist_ok=True)
  disks=out/'disks'
@@ -33,7 +34,7 @@ def main():
  def read(path):return (ROOT/path).read_text()
  # Rebuild common software from current source. These are portable artifacts;
  # target BIOS, disk code, tables and overlays are kept only in our output.
- for name in ('bdos','ccp','rcp_cpx','hello_cpx','rsxloader','rsxvalidator','rsxpublish','rsxresolver','test_service_rsx','svctest','hello_rsx','echo_rsx','zprtc_rsx','fileloader','utilities'):
+ for name in ('bdos','ccp','rcp_cpx','hello_cpx','rsxloader','rsxvalidator','rsxpublish','rsxresolver','test_service_rsx','svctest','hello_rsx','echo_rsx','fdf_rsx','zprtc_rsx','fileloader','utilities'):
   subprocess.run([sys.executable,str(ROOT/'tools'/f'build_{name}.py')],check=True,stdout=subprocess.DEVNULL)
  bios_source=read('src/bios/bios.mac')
  # cpmsim port 5 is its CP/M 2 RDR: input.  Keep the common unassigned-reader
@@ -53,7 +54,12 @@ def main():
  core=equ(bc,('UB_DMA','UB_DRIVE','UB_USERNO','UB_COLUMN','UB_LISTE'))
  ext=asm('extensions',read('src/system/extensions.mac').replace('        INCLUDE core.inc',core).replace('        INCLUDE versions.inc',read('src/bdos/versions.inc')),L['EXTENSIONS'],L['DISK']-L['EXTENSIONS'])
  es=symbols(out/'extensions.lst')
- config='        INCLUDE layout.inc\n        ASEG\n        ORG LY_CFG\n        JP Z_UNSUP\n        JP Z_UNSUP\n        JP Z_UNSUP\n        JP BF_CPXCTL\nZ_UNSUP: LD A,0FFH\n        JP EX_RETURN\n'+equ(es,('EX_RETURN','BCX_MVAL'))
+ ds=symbols(out/'disk.lst')
+ config=read('src/platform/z80pack/config.mac')
+ config=config.replace('        INCLUDE cpxlinks.inc',
+                       equ(es,('EX_RETURN','BCX_MVAL')))
+ config=config.replace('ZP_PHYSICAL EQU 0FFFFH',
+                       f"ZP_PHYSICAL EQU 0{ds['Z_PHYSICAL']:04X}H")
  tail=read('src/bios/config.mac').split('CPTCOUNT EQU',1)[1].split('CF_GETPH:',1)[0]
  config+='CPTCOUNT EQU'+tail+'\n        END\n'
  ctl=asm('config',config,L['CONFIG'],1024)
@@ -112,7 +118,7 @@ def main():
  for name in ('RCP.CPX','HELLO.CPX'):files.append((name,(ROOT/'build/cpx'/name).read_bytes()))
  for f in sorted((ROOT/'build/utilities').glob('*.COM')):files.append((f.name,f.read_bytes()))
  for name,data in cpm_tools_files(ROOT):files.append((name,data))
- for name in ('HELLO.RSX','ECHO.RSX','BATCHIO.RSX','ZPRTC.RSX','TEST.RSX'):files.append((name,(ROOT/'build/rsx'/name).read_bytes()))
+ for name in ('HELLO.RSX','ECHO.RSX','BATCHIO.RSX','FDF.RSX','ZPRTC.RSX','TEST.RSX'):files.append((name,(ROOT/'build/rsx'/name).read_bytes()))
  files.append(('DISK.FDF',(ROOT/'third_party/montezuma/DISK.FDF').read_bytes()))
  # A small transient proves that load and warm return use this target BIOS.
  hello=bytes([0x11,0x0b,1,0x0e,9,0xcd,5,0,0xc3,0,0])+b'BetterCP/M on z80pack\r\n$'
@@ -133,8 +139,41 @@ def main():
    entry+=1;block+=count
  disks.mkdir();(disks/'drivea.dsk').write_bytes(raw)
  for letter in 'bcd':(disks/f'drive{letter}.dsk').write_bytes(b'\xe5'*SIZE)
- (out/'diskdefs').write_text(''.join(f'diskdef bettercpm-z80pack-{name}\n seclen 128\n tracks 77\n sectrk 26\n blocksize 1024\n maxdir 64\n skew 1\n boottrk {off}\n os 2.2\nend\n' for name,off in [('system',RESERVED),('data',0)]))
- simulator=Path.home()/'CPM/z80pack/cpmsim/cpmsim'
+ diskdefs=''.join(f'diskdef bettercpm-z80pack-{name}\n seclen 128\n tracks 77\n sectrk 26\n blocksize 1024\n maxdir 64\n skew 1\n boottrk {off}\n os 2.2\nend\n' for name,off in [('system',RESERVED),('data',0)])
+ diskdefs+='''diskdef bettercpm-mm-standard-system
+ seclen 256
+ tracks 40
+ sectrk 18
+ blocksize 2048
+ maxdir 128
+ skew 2
+ boottrk 2
+ os 2.2
+end
+diskdef bettercpm-ampro-little-board
+ seclen 512
+ tracks 40
+ sectrk 10
+ blocksize 2048
+ maxdir 64
+ skew 0
+ boottrk 2
+ os 2.2
+end
+diskdef bettercpm-ampro-little-board-ds
+ seclen 512
+ tracks 80
+ sectrk 10
+ blocksize 2048
+ maxdir 128
+ skew 0
+ boottrk 2
+ os 2.2
+end
+'''
+ (out/'diskdefs').write_text(diskdefs)
+ simulator=args.simulator.expanduser().resolve()
+ if not simulator.is_file():raise SystemExit(f'missing cpmsim simulator: {simulator}')
  (out/'launch-z80pack.command').write_text('#!/bin/sh\ncd -- "$(dirname -- "$0")" || exit 1\nPATH="'+str(simulator.parent/'srctools')+':$PATH"\nexport PATH\nexec "'+str(simulator)+'" -z -d "$PWD/disks" "$@"\n')
  (out/'launch-z80pack.command').chmod(0o755)
  (out/'manifest.json').write_text(json.dumps({'target':'z80pack/cpmsim','tracks':77,'records_per_track':26,'record_bytes':128,'reserved_tracks':RESERVED,'allocation_kib':227,'sha256':hashlib.sha256(raw).hexdigest(),'shared_bdos_sha256':hashlib.sha256((ROOT/'build/bdos/bdos.bin').read_bytes()).hexdigest()},indent=2)+'\n')
