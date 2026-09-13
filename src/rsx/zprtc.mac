@@ -1,0 +1,193 @@
+; z80pack/cpmsim real-time-clock provider for BetterCP/M TIME ABI 1.0.
+; Function 208 discovery is supplied by the central BRSX-v2 registry walker.
+; This provider never changes cpmsim's BCD/binary mode.
+
+RSXBASE         EQU     08000H
+BDOS            EQU     00005H
+CLKCMD          EQU     25
+CLKDATA         EQU     26
+
+        CSEG
+        .PHASE  RSXBASE
+
+ZP_NEXT:        DW      BDOS
+ZP_ENTRY:       DW      ZP_DISPATCH
+ZP_CALLS:       DB      0,0
+                DW      0
+
+ZP_DISPATCH:
+        LD      HL,(ZP_NEXT)
+        JP      (HL)
+
+; TIME ABI 1.0 service dispatcher.
+ZP_SERVICE:
+        PUSH    DE
+        LD      A,(DE)
+        CP      1
+        JP      NZ,ZP_TVER
+        INC     DE
+        LD      A,(DE)
+        CP      10
+        JP      NZ,ZP_TLEN
+        INC     DE
+        LD      A,(DE)
+        OR      A
+        JR      Z,ZP_GET
+        CP      1
+        JP      Z,ZP_TSET
+        LD      A,3
+        JP      ZP_TFAIL
+ZP_GET:
+        INC     DE
+        LD      A,(DE)
+        OR      A
+        JP      NZ,ZP_TFLAGS
+        PUSH    DE
+        LD      HL,6
+        ADD     HL,DE
+        LD      A,(HL)
+        POP     DE
+        OR      A
+        JP      NZ,ZP_TFLAGS
+
+; Sample seconds around the other four fields.  If the second changed, the
+; sample may cross a minute/day boundary, so retry it.  Four attempts are
+; bounded yet make rejection extraordinarily unlikely during normal use.
+        IN      A,(CLKCMD)
+        LD      (ZP_MODE),A
+        LD      B,4
+ZP_RETRY:
+        XOR     A
+        OUT     (CLKCMD),A
+        IN      A,(CLKDATA)
+        LD      (ZP_SEC1),A
+        LD      A,3
+        OUT     (CLKCMD),A
+        IN      A,(CLKDATA)
+        LD      (ZP_SAMPLE),A
+        LD      A,4
+        OUT     (CLKCMD),A
+        IN      A,(CLKDATA)
+        LD      (ZP_SAMPLE+1),A
+        LD      A,2
+        OUT     (CLKCMD),A
+        IN      A,(CLKDATA)
+        LD      (ZP_SAMPLE+2),A
+        LD      A,1
+        OUT     (CLKCMD),A
+        IN      A,(CLKDATA)
+        LD      (ZP_SAMPLE+3),A
+        XOR     A
+        OUT     (CLKCMD),A
+        IN      A,(CLKDATA)
+        LD      (ZP_SAMPLE+4),A
+        LD      C,A
+        LD      A,(ZP_SEC1)
+        CP      C
+        JR      Z,ZP_COHERENT
+        DJNZ    ZP_RETRY
+        JR      ZP_TUNAV
+
+ZP_COHERENT:
+        LD      A,(ZP_MODE)
+        CP      2
+        JR      NC,ZP_TINVALID
+        OR      A
+        JR      Z,ZP_VALIDATE
+        LD      HL,ZP_SAMPLE+2
+        LD      B,3
+ZP_BINLOOP:
+        LD      A,(HL)
+        PUSH    BC
+        CALL    ZP_BINBCD
+        POP     BC
+        LD      (HL),A
+        INC     HL
+        DJNZ    ZP_BINLOOP
+ZP_VALIDATE:
+        CALL    ZP_CHKBCD
+        JR      NZ,ZP_TINVALID
+        POP     DE
+        PUSH    DE
+        INC     DE
+        INC     DE
+        INC     DE
+        INC     DE
+        LD      HL,ZP_SAMPLE
+        LD      BC,5
+        LDIR
+        POP     DE
+        PUSH    DE
+        LD      HL,4
+        ADD     HL,DE
+        POP     DE
+        XOR     A
+        RET
+ZP_TVER:       LD      A,1
+        JR      ZP_TFAIL
+ZP_TLEN:       LD      A,2
+        JR      ZP_TFAIL
+ZP_TFLAGS:     LD      A,4
+        JR      ZP_TFAIL
+ZP_TUNAV:      LD      A,5
+        JR      ZP_TFAIL
+ZP_TINVALID:   LD      A,6
+        JR      ZP_TFAIL
+ZP_TSET:       LD      A,8
+ZP_TFAIL:
+        POP     DE
+        LD      HL,0
+        RET
+
+; Validate packed BCD hour/minute/second.
+ZP_CHKBCD:
+        LD      HL,ZP_SAMPLE+2
+        LD      D,024H
+        CALL    ZP_ONEBCD
+        RET     NZ
+        INC     HL
+        LD      D,060H
+        CALL    ZP_ONEBCD
+        RET     NZ
+        INC     HL
+        LD      D,060H
+ZP_ONEBCD:
+        LD      A,(HL)
+        LD      B,A
+        AND     0FH
+        CP      10
+        JR      NC,ZP_VBAD
+        LD      A,B
+        CP      D
+        JR      NC,ZP_VBAD
+        XOR     A
+        RET
+ZP_VBAD:
+        LD      A,1
+        OR      A
+        RET
+
+ZP_BINBCD:
+        LD      C,0
+ZP_BLOOP:
+        CP      10
+        JR      C,ZP_BDONE
+        SUB     10
+        INC     C
+        JR      ZP_BLOOP
+ZP_BDONE:
+        LD      B,A
+        LD      A,C
+        RLCA
+        RLCA
+        RLCA
+        RLCA
+        OR      B
+        RET
+
+ZP_MODE:       DB      0
+ZP_SEC1:       DB      0
+ZP_SAMPLE:     DS      5
+
+        .DEPHASE
+        END

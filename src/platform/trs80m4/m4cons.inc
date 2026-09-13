@@ -50,9 +50,7 @@ M4_LF:
         RET
 
 M4_STAT:
-        CALL    M4_SCAN
-        OR      A
-        RET
+        JP      M4_SCAN
 M4_IN:
         LD      A,(M4_PENDING)
         OR      A

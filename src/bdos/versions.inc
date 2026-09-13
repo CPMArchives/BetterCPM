@@ -6,14 +6,14 @@ BCV_DESC:
         DW      BV_C_ID,BV_C_API,BV_C_IMP
         DW      BV_D_ID,BV_D_API,BV_D_IMP
         DW      BV_I_ID,BV_I_API,BV_I_IMP
-BCV_SYSTEM:     DB      'System release','$'
+BCV_SYSTEM:     DB      'System','$'
 BCV_RELEASE:    DB      '0.3','$'
-BV_C_ID:       DB      'Command environment','$'
+BV_C_ID:       DB      'CCP','$'
 BV_C_API:      DB      '1.0','$'
 BV_C_IMP:      DB      '1.3','$'
-BV_D_ID:       DB      'Basic Disk Operating System','$'
+BV_D_ID:       DB      'BDOS','$'
 BV_D_API:      DB      '1.2','$'
 BV_D_IMP:      DB      '1.6','$'
-BV_I_ID:       DB      'Basic Input/Output System','$'
+BV_I_ID:       DB      'BIOS','$'
 BV_I_API:      DB      '1.5','$'
 BV_I_IMP:      DB      '1.9','$'

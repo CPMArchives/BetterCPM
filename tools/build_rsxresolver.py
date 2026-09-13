@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""Build the protected BRSX manager and ordered-chain loader."""
+"""Build the disk-free Function 208 resident-service resolver overlay."""
 from __future__ import annotations
 
 import argparse
 import hashlib
 from pathlib import Path
-from system_layout import LAYOUT, expand_layout
 
 from build_ccp import assemble
+from system_layout import LAYOUT
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "src/system/rsxloader.mac"
+SOURCE = ROOT / "src/system/rsxresolver.mac"
 BUILD = ROOT / "build/system"
 BASE = LAYOUT["RSX"]
 
@@ -24,13 +24,12 @@ def main() -> None:
     text = SOURCE.read_text(encoding="ascii").replace(
         "        CSEG\n        .PHASE  ", "        ASEG\n        ORG     ").replace(
         "        .DEPHASE\n", "")
-    data = assemble(args.assembler, text, BUILD / "rsxloader.bin",
-                    BUILD / "rsxloader.lst", BASE)
-    # Leave at least 86 stack bytes and the three-byte fixed gateway above code.
-    if len(data) > 935:
-        raise SystemExit(f"RSX loader exceeds its packed slot: {len(data)} bytes")
-    print(f"{hashlib.sha256(data).hexdigest()}  build/system/rsxloader.bin")
-    print(f"RSX loader bytes: {len(data)}")
+    data = assemble(args.assembler, text, BUILD / "rsxresolver.bin",
+                    BUILD / "rsxresolver.lst", BASE)
+    if not data or len(data) > 893:
+        raise SystemExit(f"RSX resolver exceeds its packed slot: {len(data)} bytes")
+    print(f"{hashlib.sha256(data).hexdigest()}  build/system/rsxresolver.bin")
+    print(f"RSX resolver bytes: {len(data)}")
 
 
 if __name__ == "__main__":

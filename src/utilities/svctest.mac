@@ -1,0 +1,45 @@
+; Qualify the public Function 208 lookup gateway and invoke TEST.RSX.
+BDOS            EQU     0005H
+
+        CSEG
+        .PHASE  0103H
+START:
+        LD      DE,REQUEST
+        LD      C,208
+        CALL    BDOS
+        OR      A
+        JR      NZ,FAILED
+        LD      DE,PASSLOOK
+        LD      C,9
+        CALL    BDOS
+        LD      HL,(REQUEST+12)
+        LD      DE,SVCRET
+        PUSH    DE
+        JP      (HL)
+SVCRET:
+        LD      A,H
+        CP      052H
+        JR      NZ,FAILED
+        LD      A,L
+        CP      053H
+        JR      NZ,FAILED
+        LD      DE,PASSCALL
+        JR      PRINT
+FAILED:
+        LD      DE,FAILMSG
+PRINT:
+        LD      C,9
+        CALL    BDOS
+        LD      C,0
+        JP      BDOS
+
+REQUEST: DB     1,20,0,0,'T','E','S','T',1,0
+         DW     0,0
+         DB     0,0
+         DW     0
+         DB     0,0
+PASSLOOK: DB    'Function 208 found TEST',13,10,'$'
+PASSCALL: DB    'TEST service returned 5253h',13,10,'$'
+FAILMSG: DB     'Function 208 TEST failed',13,10,'$'
+        .DEPHASE
+        END     START

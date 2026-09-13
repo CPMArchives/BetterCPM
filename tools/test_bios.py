@@ -320,6 +320,8 @@ class Z80:
                 self.z = self.b == 0
             elif op == 0x03:            # INC BC
                 self.bc = (self.bc + 1) & 0xFFFF
+            elif op == 0x0B:            # DEC BC
+                self.bc = (self.bc - 1) & 0xFFFF
             elif op == 0x13:            # INC DE
                 self.de = (self.de + 1) & 0xFFFF
             elif op == 0x1B:            # DEC DE

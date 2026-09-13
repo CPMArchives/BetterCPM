@@ -2,8 +2,8 @@
 
 ## Status
 
-First provider increment implemented. Central BRSX-v2 registry publication is
-still a Stage-2 dependency.
+Implemented as an ordinary BRSX-v2 callable provider using the central Stage-2
+registry.
 
 ## Hardware contract
 
@@ -25,25 +25,25 @@ the DS1307 year as 2000 through 2099, converts the date to the CP/M epoch, and
 returns packed-BCD time. It never changes the hardware clock and advertises no
 SET capability.
 
-On the Model 4 the provider enables the `EXTIO` latch before addressing the
-FreHD extended ports. This is required even when trs80gp's FreHD emulation is
-enabled; without it the extended port block is deliberately invisible.
+On the Model 4 the provider enables the `EXTIO` latch while preserving map 1
+before addressing the FreHD extended ports. This is required even when
+trs80gp's FreHD emulation is enabled; without it the extended port block is
+deliberately invisible. Every success and hardware-error path restores the
+normal map-1 latch value before returning to its caller.
 
 The same interface is emulated by trs80gp when FreHD support is enabled. The
 provider is named for FreHD because the ABI does not depend on trs80gp.
 
-## Discovery transition
+## Discovery
 
 `TIME.COM` uses only Resident Service Function 208 and `TIME` ABI 1.0. It has no
 FreHD port knowledge. `TIME /PROVIDER` also asks the RSX manager for the current
 provider stem and reports the discovered ABI and capabilities.
 
-The current v1 carrier temporarily intercepts Function 208 and publishes its
-own sole `TIME` service. This is a bring-up bridge necessitated by the full
-fixed-core regions. Stage 2 replaces it with the central registry resolver in
-the existing one-kilobyte RSX-manager slot. Function 202 reloads reconstruction
-code before a profile change; while the profile is active, that slot can hold
-the resolver. The public utility and provider-call ABI do not change.
+The BRSX-v2 carrier advertises `TIME` 1.0 and does not intercept Function 208.
+Its code is 370 bytes and its page-rounded allocation is 512 bytes. Together
+with the shared one-kilobyte resolver allocation, it reduces the first-provider
+TPA charge from 1,792 bytes to 1,536 bytes.
 
 ## Artifacts
 
