@@ -20,10 +20,16 @@ def expand_layout(text: str) -> str:
     """Inline the canonical include for host z80asm and native ZSM4."""
     text = re.sub(r"^\s*INCLUDE\s+layout\.inc\s*$",
                   lambda _: SOURCE.read_text(encoding="ascii").rstrip(),
-                  text, flags=re.MULTILINE | re.IGNORECASE)
+        text, flags=re.MULTILINE | re.IGNORECASE)
 
     order = (1,3,5,7,9,2,4,6,8,10)
     def table(start, count):
         return "\n".join(f"        DB {n//20},{n//10%2},{order[n%10]}" for n in range(start, start+count))
     return text.replace("; @resident-sector-table@", table(2, LAYOUT["BOOT_SECTORS"])) .replace(
-        "; @command-sector-table@", table(8 + LAYOUT["BOOT_SECTORS"], 13)).replace("; @reloader-sector-table@", table(2 + LAYOUT["BOOT_SECTORS"], 2)).replace("; @control-sector-table@", table(4 + LAYOUT["BOOT_SECTORS"], 2)).replace("; @rsx-sector-table@", table(6 + LAYOUT["BOOT_SECTORS"], 2))
+        "; @command-sector-table@", table(14 + LAYOUT["BOOT_SECTORS"], 13)).replace(
+        "; @reloader-sector-table@", table(2 + LAYOUT["BOOT_SECTORS"], 2)).replace(
+        "; @control-sector-table@", table(4 + LAYOUT["BOOT_SECTORS"], 2)).replace(
+        "; @rsx-sector-table@", table(6 + LAYOUT["BOOT_SECTORS"], 2)).replace(
+        "; @rsx-validator-sector-table@", table(8 + LAYOUT["BOOT_SECTORS"], 2)).replace(
+        "; @rsx-publisher-sector-table@", table(10 + LAYOUT["BOOT_SECTORS"], 2)).replace(
+        "; @rsx-resolver-sector-table@", table(12 + LAYOUT["BOOT_SECTORS"], 2))

@@ -7,6 +7,8 @@ RVBASE          EQU     LY_RSX
 FLOPEN          EQU     LY_FILE
 FLNEXT          EQU     LY_FILE+3
 MODBUF          EQU     LY_BUF
+ECB_RSXHEAD     EQU     LY_SYS+084H
+COREBDOS        EQU     LY_BDOS
 
         CSEG
         .PHASE  RVBASE
@@ -24,8 +26,7 @@ RV_CONTROL:
         JR      Z,RV_LOAD
         CP      5               ; known enumerate/load/unload/query/retire
         JP      NC,RV_BAD
-        XOR     A
-        RET
+        JP      RV_OK
 RV_LOAD:
         LD      HL,(RV_REQ)
         LD      DE,4
@@ -101,7 +102,8 @@ RV_ABILP:
         CALL    RV_FINDMETA
         JP      NZ,RV_BAD
         CALL    RV_METADATA
-        RET
+        JP      NZ,RV_BAD
+        JP      RV_OK
 RV_V1:
         INC     HL
         LD      DE,RV_ABI
@@ -117,8 +119,28 @@ RV_V1ABI:
         LD      A,H
         OR      L
         JP      NZ,RV_BAD
+        JP      RV_OK
+
+; Request byte +3 is reserved publicly. The isolated test sets it nonzero to
+; request an ordinary return; production zero chains into the rebuilder.
+RV_OK:
+        LD      HL,(RV_REQ)
+        INC     HL
+        INC     HL
+        INC     HL
+        LD      A,(HL)
+        OR      A
+        JR      Z,RV_CHAIN
         XOR     A
         RET
+RV_CHAIN:
+        LD      (HL),0A5H       ; private phase-chain marker
+        LD      DE,(RV_REQ)
+        PUSH    DE
+        LD      HL,LY_RSX+3
+        PUSH    HL
+        XOR     A               ; overlay zero: rebuilder
+        JP      LY_BIOS+60
 
 ; Position RV_META at the metadata bytes. FLNEXT advances 512 bytes per call.
 RV_FINDMETA:
@@ -251,7 +273,7 @@ RV_RTYPE:
         CP      2
         JR      Z,RV_CALLABLE
         CP      3
-        JR      Z,RV_POINTERS
+        JP      Z,RV_POINTERS
         JP      RV_SKIP
 RV_NUMERIC:
         JP      RV_SKIP         ; any nonempty byte vector is valid
@@ -267,6 +289,12 @@ RV_CALLABLE:
         PUSH    HL
         PUSH    BC
         CALL    RV_ID
+        POP     BC
+        POP     HL
+        JP      NZ,RV_BAD
+        PUSH    HL
+        PUSH    BC
+        CALL    RV_ACTIVEID
         POP     BC
         POP     HL
         JP      NZ,RV_BAD
@@ -314,11 +342,108 @@ RV_IDENTRY:
         JP      Z,RV_BAD
         LD      A,D
         OR      A
-        JR      NZ,RV_SKIP
+        JP      NZ,RV_SKIP
         LD      A,E
         CP      8
         JP      C,RV_BAD
-        JR      RV_SKIP
+        JP      RV_SKIP
+
+; Reject an ID already published by the live profile. Legacy providers are
+; skipped; their numeric-service headers contain no callable descriptors.
+RV_ACTIVEID:
+        LD      (RV_CAND),HL
+        LD      HL,(ECB_RSXHEAD)
+        LD      B,4
+RV_ALOOP:
+        LD      A,H
+        OR      L
+        RET     Z
+        LD      (RV_LBASE),HL
+        INC     HL
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RV_LDISP),DE
+        LD      HL,(RV_LBASE)
+        LD      DE,8
+        ADD     HL,DE
+        LD      DE,(RV_LDISP)
+        OR      A
+        SBC     HL,DE
+        JR      NZ,RV_ANEXT
+        LD      HL,(RV_LBASE)
+        LD      DE,4
+        ADD     HL,DE
+        LD      C,(HL)
+        INC     HL
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,(RV_LBASE)
+        ADD     HL,DE
+RV_AIDLP:
+        LD      A,C
+        OR      A
+        JR      Z,RV_ANEXT
+        PUSH    BC
+        PUSH    HL
+        LD      DE,(RV_CAND)
+        LD      B,4
+RV_AIDCMP:
+        LD      A,(DE)
+        CP      (HL)
+        JR      NZ,RV_AIDIFF
+        INC     DE
+        INC     HL
+        DJNZ    RV_AIDCMP
+        POP     HL
+        POP     BC
+        LD      A,1
+        OR      A
+        RET
+RV_AIDIFF:
+        POP     HL
+        LD      DE,10
+        ADD     HL,DE
+        POP     BC
+        DEC     C
+        JR      RV_AIDLP
+RV_ANEXT:
+        LD      HL,(RV_LBASE)
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,COREBDOS
+        OR      A
+        SBC     HL,DE
+        RET     Z
+        LD      (RV_LDISP),DE
+        EX      DE,HL
+        LD      DE,8
+        OR      A
+        SBC     HL,DE
+        PUSH    HL
+        INC     HL
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,(RV_LDISP)
+        OR      A
+        SBC     HL,DE
+        POP     HL
+        JR      Z,RV_ABASE
+        LD      HL,(RV_LDISP)
+        LD      DE,4
+        OR      A
+        SBC     HL,DE
+RV_ABASE:
+        DEC     B
+        JP      NZ,RV_ALOOP
+        XOR     A
+        RET
 RV_POINTERS:
         LD      A,B
         AND     1
@@ -435,6 +560,9 @@ RVMAGIC:       DB      'B','R','S','X'
 RV_ABI:        DB      2,1,0
 RV_BMET:       DB      'B','M','E','T'
 RV_REQ:        DW      0
+RV_CAND:       DW      0
+RV_LBASE:      DW      0
+RV_LDISP:      DW      0
 RV_LEFT:       DW      0
 RV_CODE:       DW      0
 RV_ALLOC:      DW      0

@@ -1,0 +1,50 @@
+        INCLUDE layout.inc
+; Transient selector stored in the unused tail of the command-reloader block.
+; A selects rebuilder, validator, publisher, or resolver.  It is assembled at
+; LY_CFG+0380H and may overwrite itself only after M4_FETCH has returned.
+
+BIOPHREAD      EQU     LY_BIOS+51
+
+        CSEG
+        .PHASE  LY_CFG+0380H
+RS_SELECT:
+        LD      E,A
+        LD      D,0
+        LD      H,D
+        LD      L,E
+        ADD     HL,HL
+        ADD     HL,DE
+        ADD     HL,HL
+        LD      DE,RS_TABLE
+        ADD     HL,DE
+        EX      DE,HL
+        LD      HL,LY_RSX
+        LD      B,2
+RS_LOOP:
+        PUSH    BC
+        PUSH    DE
+        EX      DE,HL
+        LD      A,(HL)
+        INC     HL
+        LD      C,(HL)
+        INC     HL
+        LD      H,(HL)
+        LD      B,C
+        LD      C,H
+        EX      DE,HL
+        CALL    BIOPHREAD
+        POP     DE
+        POP     BC
+        RET     NZ
+        INC     DE
+        INC     DE
+        INC     DE
+        DJNZ    RS_LOOP
+        RET
+RS_TABLE:
+; @rsx-sector-table@
+; @rsx-validator-sector-table@
+; @rsx-publisher-sector-table@
+; @rsx-resolver-sector-table@
+        .DEPHASE
+        END

@@ -50,8 +50,13 @@ PL_OVLOAD:
         LD B,8
         JP LY_DISK+15
 PL_RSXLOAD:
+        ADD A,A
+        ADD A,A
+        ADD A,A
+        ADD A,76
+        LD E,A
+        LD D,0
         LD HL,LY_RSX
-        LD DE,76
         LD B,8
         JP LY_DISK+15
 Z_HALT:

@@ -25,7 +25,7 @@ def main() -> None:
         "        .DEPHASE\n", "")
     data = assemble(args.assembler, text, BUILD / "rsxvalidator.bin",
                     BUILD / "rsxvalidator.lst", LAYOUT["RSX"])
-    if not data or len(data) > 893:
+    if not data or len(data) > 935:
         raise SystemExit(f"RSX validator exceeds its packed slot: {len(data)} bytes")
     print(f"{hashlib.sha256(data).hexdigest()}  build/system/rsxvalidator.bin")
     print(f"RSX validator bytes: {len(data)}")

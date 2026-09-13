@@ -13,9 +13,13 @@ M4_RELOAD:
         LD SP,LY_STKT
         JP LY_LOAD
 M4_RSLOAD:
-        LD HL,LY_RSX
-        LD DE,M4_RSTAB
-        JR M4_FETCH
+        PUSH AF
+        LD HL,LY_CFG
+        LD DE,M4_RLTAB
+        CALL M4_FETCH          ; selector occupies the reloader block tail
+        POP AF
+        RET NZ
+        JP LY_CFG+0380H
 M4_OVLOAD:
         LD HL,LY_CFG
         LD DE,M4_OVTAB
@@ -53,6 +57,3 @@ M4_RLTAB:
 
 M4_OVTAB:
 ; @control-sector-table@
-
-M4_RSTAB:
-; @rsx-sector-table@

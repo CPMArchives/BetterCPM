@@ -18,6 +18,12 @@ def rows() -> list[dict[str, str]]:
 
 
 LABELS = {"CCP": "C", "CPX": "X", "BDOS": "D", "RSX": "R", "BIOS": "I"}
+RESIDENT_IDENTITIES = {
+    "BetterCP/M": "System",
+    "CCP": "CCP",
+    "BDOS": "BDOS",
+    "BIOS": "BIOS",
+}
 
 
 def quoted(value: str) -> str:
@@ -46,13 +52,13 @@ def render() -> str:
         stem = LABELS[row["component"]]
         lines.append(f"        DW      BV_{stem}_ID,BV_{stem}_API,BV_{stem}_IMP")
     lines.extend((
-        f"BCV_SYSTEM:     DB      {quoted(system['identity'])}",
+        f"BCV_SYSTEM:     DB      {quoted(RESIDENT_IDENTITIES['BetterCP/M'])}",
         f"BCV_RELEASE:    DB      {quoted(system['implementation_version'])}",
     ))
     for row in components:
         stem = LABELS[row["component"]]
         lines.extend((
-            f"BV_{stem}_ID:       DB      {quoted(row['identity'])}",
+            f"BV_{stem}_ID:       DB      {quoted(RESIDENT_IDENTITIES.get(row['component'], row['identity']))}",
             f"BV_{stem}_API:      DB      {quoted(row['interface_version'])}",
             f"BV_{stem}_IMP:      DB      {quoted(row['implementation_version'])}",
         ))

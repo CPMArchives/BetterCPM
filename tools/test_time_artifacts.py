@@ -24,10 +24,13 @@ def main() -> None:
         fields = struct.unpack_from("<4sBBBBHHHHHHHHHHHH8sBBBBHH", carrier)
         magic, version = fields[0], fields[1]
         code_size, allocation, primary = fields[7], fields[8], fields[-1]
-        assert magic == b"BRSX" and version == 1
+        assert magic == b"BRSX" and version == 2
         assert fields[17] == name
-        assert primary == 208 and allocation >= code_size
+        assert primary == 0xFFFF and allocation >= code_size
         assert allocation % 256 == 0
+        metadata = 512 + code_size
+        assert carrier[metadata:metadata + 4] == b"BMET"
+        assert b"TIME\x01\x00" in carrier[metadata:]
     assert utility[:3] == b"\xc3\x03\x01"
     assert b"TIME" in utility and b"/PROVIDER" in utility
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import re
 from pathlib import Path
 
 from build_cpx_module import relocation_offsets
@@ -37,10 +38,15 @@ def main() -> None:
         ALTERNATE_BASE)
     relocations = relocation_offsets(code, alternate,
                                      ALTERNATE_BASE - LINK_BASE)
-    allocation = (len(code) + 0xFF) & ~0xFF
-    carrier = make_module(name="ZPRTC", version=(0, 1), services=[208],
+    listing = (BUILD / "zprtc.lst").read_text(errors="replace")
+    service = int(re.search(r"^([0-9a-f]{4}).*\bZP_SERVICE:", listing,
+                            re.M | re.I).group(1), 16) - LINK_BASE
+    carrier = make_module(name="ZPRTC", version=(0, 2), services=[],
                           linked_base=LINK_BASE, code=code,
-                          relocations=relocations, allocation=allocation)
+                          relocations=relocations, entry_offset=8,
+                          format_version=2,
+                          callable_services=[(b"TIME", 1, 0, service, 0)])
+    allocation = int.from_bytes(carrier[14:16], "little")
     output = BUILD / "ZPRTC.RSX"
     output.write_bytes(carrier)
     print(f"{hashlib.sha256(code).hexdigest()}  build/rsx/zprtc.bin")

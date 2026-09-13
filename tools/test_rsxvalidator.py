@@ -61,12 +61,21 @@ NEXT:   PUSH    HL
                     work / "stub.bin", work / "stub.lst", LAYOUT["FILE"])
 
 
-def validate(validator: bytes, stub: bytes, carrier: bytes) -> int:
+def validate(validator: bytes, stub: bytes, carrier: bytes,
+             active_test: bool = False) -> int:
     cpu = Z80(b"")
     cpu.mem[LAYOUT["RSX"]:LAYOUT["RSX"] + len(validator)] = validator
     cpu.mem[LAYOUT["FILE"]:LAYOUT["FILE"] + len(stub)] = stub
     cpu.mem[STREAM:STREAM + 1024] = carrier[:1024].ljust(1024, b"\0")
-    cpu.mem[REQUEST:REQUEST + 14] = bytes((1, 1, 0, 0)) + b"TEST    " + bytes(2)
+    cpu.mem[REQUEST:REQUEST + 14] = bytes((1, 1, 0, 1)) + b"TEST    " + bytes(2)
+    if active_test:
+        base = 0xD004
+        cpu.setword(LAYOUT["SYSTEM"] + 0x84, base)
+        cpu.setword(base, LAYOUT["BDOS"])
+        cpu.setword(base + 2, base + 8)
+        cpu.mem[base + 4] = 1
+        cpu.setword(base + 6, 0x20)
+        cpu.mem[base + 0x20:base + 0x2A] = b"TEST" + bytes((1, 0, 8, 0, 0, 0))
     cpu.de = REQUEST
     cpu.run(LAYOUT["RSX"], limit=30000)
     return cpu.a
@@ -74,12 +83,14 @@ def validate(validator: bytes, stub: bytes, carrier: bytes) -> int:
 
 def main() -> None:
     validator = VALIDATOR.read_bytes()
-    require(0 < len(validator) <= 893, "validator does not fit overlay slot")
+    require(0 < len(validator) <= 935, "validator does not fit overlay slot")
     with tempfile.TemporaryDirectory(prefix="bettercpm-rsx-validator-") as temporary:
         stub = file_stub(Path(temporary))
         v2 = bytearray(TEST.read_bytes())
         require(validate(validator, stub, v2) == 0,
                 "valid BRSX-v2 TEST carrier was rejected")
+        require(validate(validator, stub, v2, active_test=True) == 0xFF,
+                "callable ID duplicated across providers was accepted")
         v1 = HELLO.read_bytes()
         require(validate(validator, stub, v1) == 0,
                 "valid legacy BRSX-v1 carrier was rejected")
@@ -115,7 +126,7 @@ def main() -> None:
                                (b"DUPL", 1, 1, 9, 0)])
         require(validate(validator, stub, duplicate) == 0xFF,
                 "duplicate service IDs within one provider were accepted")
-    print("BRSX validator accepts v1/v2 and rejects class, entry, and framing errors")
+    print("BRSX validator accepts v1/v2 and rejects class, entry, framing, and duplicate-service errors")
 
 
 if __name__ == "__main__":

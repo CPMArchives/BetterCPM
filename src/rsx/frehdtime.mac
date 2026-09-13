@@ -1,7 +1,5 @@
 ; FreHD real-time-clock provider for BetterCP/M TIME ABI 1.0.
-; The initial carrier intercepts Function 208 itself as a compatibility bridge
-; until the central BRSX-v2 registry walker is resident.  TIME.COM therefore
-; already uses the final public discovery and provider ABIs.
+; Function 208 discovery is supplied by the central BRSX-v2 registry walker.
 
 RSXBASE         EQU     08000H
 BDOS            EQU     00005H
@@ -16,136 +14,12 @@ MODLATCH        EQU     0ECH
 
 FT_NEXT:        DW      BDOS
 FT_ENTRY:       DW      FT_DISPATCH
+FT_CALLS:       DB      0,0
+                DW      0
 
 FT_DISPATCH:
-        LD      A,C
-        CP      208
-        JR      NZ,FT_CHAIN
-        JP      FT_REGISTRY
-FT_CHAIN:
         LD      HL,(FT_NEXT)
         JP      (HL)
-
-; Resident Service ABI 1 bridge: LOOKUP (0) and ENUMERATE (1).
-FT_REGISTRY:
-        PUSH    DE
-        LD      A,(DE)
-        CP      1
-        JR      NZ,FT_RVER
-        INC     DE
-        LD      A,(DE)
-        CP      20
-        JR      NZ,FT_RLEN
-        INC     DE
-        LD      A,(DE)
-        CP      2
-        JR      NC,FT_ROP
-        INC     DE
-        LD      A,(DE)
-        OR      A
-        JR      NZ,FT_RFLAG
-        INC     DE              ; first service-ID byte at request +4
-        CALL    FT_CLROUT
-        LD      HL,FT_TIMEID
-        LD      B,4
-FT_RID:
-        LD      A,(DE)
-        CP      (HL)
-        JR      NZ,FT_RMISS
-        INC     DE
-        INC     HL
-        DJNZ    FT_RID
-        LD      A,(DE)          ; required major
-        CP      1
-        JR      NZ,FT_RMAJOR
-        INC     DE
-        LD      A,(DE)          ; minimum minor
-        OR      A
-        JR      NZ,FT_RMINOR
-        INC     DE
-        LD      A,(DE)          ; required capabilities, low
-        LD      B,A
-        INC     DE
-        LD      A,(DE)          ; required capabilities, high
-        OR      B
-        JR      NZ,FT_RCAP
-        POP     DE
-        PUSH    DE
-        LD      HL,FT_SERVICE
-        PUSH    HL
-        EX      DE,HL
-        LD      BC,12
-        ADD     HL,BC
-        POP     BC
-        LD      (HL),C
-        INC     HL
-        LD      (HL),B
-        INC     HL
-        LD      (HL),1
-        INC     HL
-        LD      (HL),0
-        INC     HL
-        LD      (HL),0          ; read-only capability word
-        INC     HL
-        LD      (HL),0
-        INC     HL
-        LD      (HL),0          ; provider index
-        INC     HL
-        LD      (HL),0
-        POP     DE
-        LD      HL,FT_SERVICE
-        XOR     A
-        RET
-
-FT_RVER:       LD      A,5
-        JR      FT_RFAIL
-FT_RLEN:       LD      A,6
-        JR      FT_RFAIL
-FT_ROP:        LD      A,7
-        JR      FT_RFAIL
-FT_RFLAG:      LD      A,7
-        JR      FT_RFAIL
-FT_RMISS:      LD      A,1
-        JR      FT_RFAIL
-FT_RMAJOR:     LD      A,2
-        JR      FT_RFAIL
-FT_RMINOR:     LD      A,3
-        JR      FT_RFAIL
-FT_RCAP:       LD      A,4
-FT_RFAIL:
-        LD      C,A
-        POP     DE
-        PUSH    DE
-        CALL    FT_CLRO0
-        LD      A,C
-        LD      HL,19
-        ADD     HL,DE
-        LD      (HL),A
-        POP     DE
-        LD      HL,0
-        RET
-
-FT_CLROUT:
-        PUSH    DE
-        DEC     DE
-        DEC     DE
-        DEC     DE
-        DEC     DE              ; restore request base from +4
-        CALL    FT_CLRO0
-        POP     DE
-        RET
-FT_CLRO0:
-        LD      HL,12
-        ADD     HL,DE
-        LD      B,8
-        XOR     A
-FT_RCLEAR:
-        LD      (HL),A
-        INC     HL
-        DJNZ    FT_RCLEAR
-        RET
-
-FT_TIMEID:     DB      'TIME'
 
 ; TIME ABI 1.0 service dispatcher.
 FT_SERVICE:

@@ -1,7 +1,7 @@
         INCLUDE layout.inc
 ; BRSX V1/V2 -- ORDERED RESIDENT CHAIN REBUILDER
 ; The manager owns one K only while an RSX profile is active.  Modules
-; go BELOW it.  Its upper 96 bytes hold the control stack; the final
+; go BELOW it.  Its upper 86 bytes hold the control stack; the final
 ; three bytes belong to the fixed BDOS jump and must not be pushed on.
 ; Removing the last module gives both manager and module RAM to TPA.
 ;
@@ -30,6 +30,18 @@ RSTSERV         EQU     LY_RSTA+021H       ; four primary-service words
         .PHASE  RLBASE
 RL_ENTRY:
         JP      RL_CONTROL
+RL_CHAIN:
+        POP     DE
+        PUSH    DE
+        CALL    RL_CONTROL
+        POP     DE
+        OR      A
+        RET     NZ
+        PUSH    DE
+        LD      HL,LY_RSX+3
+        PUSH    HL
+        LD      A,2             ; overlay two: descriptor materializer
+        JP      LY_BIOS+60
 
 RL_CONTROL:
         LD      (RL_REQ),DE

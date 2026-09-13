@@ -40,7 +40,7 @@ def build_support(assembler: Path) -> None:
     core = "".join(f"{name} EQU 0{address:04X}H\n"
                    for name, address in symbols.items())
     (BUILD / "core.inc").write_text(core, encoding="ascii")
-    bios_listing = (ROOT / "build/bios/bios.lst").read_text()
+    bios_listing = (ROOT / "build/bios/bios.lst").read_text(errors="replace")
     bios_symbols = {}
     for symbol in ("BIO_DRIVE", "BIO_TRACK", "BIO_SECTOR", "BIO_DMA", "BIO_QUART", "BIO_PCYL", "B_PSide", "B_PDrive", "BIO_PSEC"):
         match = re.search(rf"^([0-9a-f]{{4}})\s+.*\b{symbol}:", bios_listing, re.M | re.I)

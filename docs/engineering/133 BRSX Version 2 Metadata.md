@@ -2,9 +2,9 @@
 
 ## Status
 
-Stage-2 carrier, tooling, the pre-publication validator overlay, and the
-disk-free Function 208 resolver overlay are implemented. Compact descriptor
-publication and system-track orchestration remain pending.
+Stage 2 implementation is complete; target-system qualification remains. The carrier format, validation, reconstruction,
+descriptor publication, central Function 208 resolver, provider conversion,
+and system-track orchestration are present on both supported targets.
 
 ## Compatibility
 
@@ -65,8 +65,7 @@ as provider base plus entry offset. This retains no flat absolute-address table
 in the PDS and charges metadata to the provider that supplies it.
 
 The resolver is a separate on-demand overlay sharing the manager's 1 KiB slot.
-Its focused ABI implementation occupies 760 bytes, below the slot's 893-byte
-code ceiling, and performs no disk access during lookup or enumeration.
+It occupies 779 bytes and performs no disk access during lookup or enumeration.
 
 ## Loader integration constraint
 
@@ -100,18 +99,23 @@ adds no permanent protected code, and does not reduce command history or other
 PDS allocations. Once a profile is active, the same one-kilobyte charge that
 formerly held the manager contains the resolver instead.
 
-The implemented validator occupies 735 bytes. Its focused tests cover valid
+The validator occupies 933 bytes. Its focused tests cover valid
 version-1 and version-2 carriers, unsupported reconstruction classes, metadata
 bounds and framing, callable entry bounds, duplicate IDs within one provider,
-and sorted, unique runtime-pointer slots. Cross-provider duplicate checking is
-part of the forthcoming orchestration increment, where the validator can compare
-the candidate against the still-published live chain.
+duplicate IDs across the live profile, and sorted, unique runtime-pointer slots.
 
-The version-1 rebuilder required only a small carrier-version change and now
-occupies 917 bytes, retaining a 96-byte control stack. Descriptor publication
-is isolated in a 431-byte overlay; its focused test verifies allocation-tail
+The rebuilder accepts both carrier versions and occupies 935 bytes, retaining
+an 86-byte control stack below the fixed gateway. Descriptor publication is
+isolated in a 457-byte overlay; its focused test verifies allocation-tail
 clearing, descriptor copying, and runtime-header publication. Separating these
 operations avoids weakening either validation or stack safety.
+
+The TRS-80 BIOS remains within its original protected allocation. A 65-byte
+transient selector and the four physical-sector tables occupy unused padding in
+the existing command-reloader system-track block. z80pack selects the four raw
+record ranges directly and reserves seven boot tracks. Each stored overlay ends
+with the correct dynamic BDOS gateway, so phase changes never expose a damaged
+CALL 5 target.
 
 The carrier builder includes the descriptor bytes when calculating the minimum
 page-rounded allocation. BRSX-v2 dispatch and callable entries must lie beyond

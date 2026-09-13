@@ -1,6 +1,6 @@
 ; z80pack/cpmsim real-time-clock provider for BetterCP/M TIME ABI 1.0.
-; The carrier temporarily intercepts Function 208 until the central BRSX-v2
-; registry walker is resident.  It never changes cpmsim's BCD/binary mode.
+; Function 208 discovery is supplied by the central BRSX-v2 registry walker.
+; This provider never changes cpmsim's BCD/binary mode.
 
 RSXBASE         EQU     08000H
 BDOS            EQU     00005H
@@ -12,136 +12,12 @@ CLKDATA         EQU     26
 
 ZP_NEXT:        DW      BDOS
 ZP_ENTRY:       DW      ZP_DISPATCH
+ZP_CALLS:       DB      0,0
+                DW      0
 
 ZP_DISPATCH:
-        LD      A,C
-        CP      208
-        JR      NZ,ZP_CHAIN
-        JP      ZP_REGISTRY
-ZP_CHAIN:
         LD      HL,(ZP_NEXT)
         JP      (HL)
-
-; Resident Service ABI 1 bridge: LOOKUP (0) and ENUMERATE (1).
-ZP_REGISTRY:
-        PUSH    DE
-        LD      A,(DE)
-        CP      1
-        JR      NZ,ZP_RVER
-        INC     DE
-        LD      A,(DE)
-        CP      20
-        JR      NZ,ZP_RLEN
-        INC     DE
-        LD      A,(DE)
-        CP      2
-        JR      NC,ZP_ROP
-        INC     DE
-        LD      A,(DE)
-        OR      A
-        JR      NZ,ZP_RFLAG
-        INC     DE
-        CALL    ZP_CLROUT
-        LD      HL,ZP_TIMEID
-        LD      B,4
-ZP_RID:
-        LD      A,(DE)
-        CP      (HL)
-        JR      NZ,ZP_RMISS
-        INC     DE
-        INC     HL
-        DJNZ    ZP_RID
-        LD      A,(DE)
-        CP      1
-        JR      NZ,ZP_RMAJOR
-        INC     DE
-        LD      A,(DE)
-        OR      A
-        JR      NZ,ZP_RMINOR
-        INC     DE
-        LD      A,(DE)
-        LD      B,A
-        INC     DE
-        LD      A,(DE)
-        OR      B
-        JR      NZ,ZP_RCAP
-        POP     DE
-        PUSH    DE
-        LD      HL,ZP_SERVICE
-        PUSH    HL
-        EX      DE,HL
-        LD      BC,12
-        ADD     HL,BC
-        POP     BC
-        LD      (HL),C
-        INC     HL
-        LD      (HL),B
-        INC     HL
-        LD      (HL),1
-        INC     HL
-        LD      (HL),0
-        INC     HL
-        LD      (HL),0
-        INC     HL
-        LD      (HL),0
-        INC     HL
-        LD      (HL),0
-        INC     HL
-        LD      (HL),0
-        POP     DE
-        LD      HL,ZP_SERVICE
-        XOR     A
-        RET
-
-ZP_RVER:       LD      A,5
-        JR      ZP_RFAIL
-ZP_RLEN:       LD      A,6
-        JR      ZP_RFAIL
-ZP_ROP:        LD      A,7
-        JR      ZP_RFAIL
-ZP_RFLAG:      LD      A,7
-        JR      ZP_RFAIL
-ZP_RMISS:      LD      A,1
-        JR      ZP_RFAIL
-ZP_RMAJOR:     LD      A,2
-        JR      ZP_RFAIL
-ZP_RMINOR:     LD      A,3
-        JR      ZP_RFAIL
-ZP_RCAP:       LD      A,4
-ZP_RFAIL:
-        LD      C,A
-        POP     DE
-        PUSH    DE
-        CALL    ZP_CLRO0
-        LD      A,C
-        LD      HL,19
-        ADD     HL,DE
-        LD      (HL),A
-        POP     DE
-        LD      HL,0
-        RET
-
-ZP_CLROUT:
-        PUSH    DE
-        DEC     DE
-        DEC     DE
-        DEC     DE
-        DEC     DE
-        CALL    ZP_CLRO0
-        POP     DE
-        RET
-ZP_CLRO0:
-        LD      HL,12
-        ADD     HL,DE
-        LD      B,8
-        XOR     A
-ZP_RCLEAR:
-        LD      (HL),A
-        INC     HL
-        DJNZ    ZP_RCLEAR
-        RET
-
-ZP_TIMEID:     DB      'TIME'
 
 ; TIME ABI 1.0 service dispatcher.
 ZP_SERVICE:

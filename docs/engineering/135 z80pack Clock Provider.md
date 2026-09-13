@@ -25,12 +25,11 @@ value discards the sample and retries, up to four attempts. Thus a minute or
 midnight transition cannot produce a mixed timestamp and hardware failure
 cannot cause an unbounded wait.
 
-## Current registry bridge
+## Registry publication
 
-As with the first FreHD provider, the initial carrier handles Resident Service
-Function 208 directly while the central BRSX-v2 registry resolver is under
-construction. It advertises the final `TIME` service ABI and can be replaced by
-a normal registered provider without changing `TIME.COM`.
+The BRSX-v2 carrier advertises `TIME` 1.0 through the central Function 208
+resolver. It contains 271 bytes of code in a 512-byte provider allocation and
+does not intercept the registry function itself.
 
 ## Use
 

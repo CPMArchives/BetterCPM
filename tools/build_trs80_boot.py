@@ -34,7 +34,7 @@ VERIFY_PAYLOAD = b"BetterCP/M verify" + bytes(SECTOR_SIZE - len(b"BetterCP/M ver
 CROSS_FIXTURE = (b"BFILE-000 " * 12 + b"BFILE-00")
 SYSTEM_FIRST_LOGICAL_INDEX = 2
 SYSTEM_SECTORS = LAYOUT["BOOT_SECTORS"]
-COMMAND_FIRST_LOGICAL_INDEX = SYSTEM_FIRST_LOGICAL_INDEX + SYSTEM_SECTORS + 6
+COMMAND_FIRST_LOGICAL_INDEX = SYSTEM_FIRST_LOGICAL_INDEX + SYSTEM_SECTORS + 12
 COMMAND_SECTORS = 13
 FILESYSTEM_FIRST_SECTOR = 40   # DPB OFF=2, one logical track per cylinder
 ALLOCATION_BLOCK_BYTES = 2048
@@ -175,17 +175,31 @@ def install(boot: bytes, stage1: bytes, resident: bytes, command: bytes,
     if not 0 < len(reloader) <= 896:
         raise ValueError("transient reloader exceeds two reserved sectors")
     reloader_start = (SYSTEM_FIRST_LOGICAL_INDEX + SYSTEM_SECTORS) * SECTOR_SIZE
-    raw[reloader_start:reloader_start + 1024] = reloader.ljust(1024, b"\x00")
+    selector = (ROOT / "build/trs80/rsxselect.bin").read_bytes()
+    reloader_block = bytearray(reloader.ljust(1024, b"\x00"))
+    reloader_block[896:896 + len(selector)] = selector
+    raw[reloader_start:reloader_start + 1024] = reloader_block
     controls = (ROOT / "build/system/config.bin").read_bytes()
     if not 0 < len(controls) <= 1024:
         raise ValueError("control overlay exceeds its physical-buffer window")
     control_start = reloader_start + 1024
     raw[control_start:control_start + 1024] = controls.ljust(1024, b"\x00")
     manager = (ROOT / "build/system/rsxloader.bin").read_bytes()
-    if not 0 < len(manager) <= 925:
+    if not 0 < len(manager) <= 935:
         raise ValueError("on-demand RSX manager exceeds its allocation")
+    gateway = bytes((0xC3, LAYOUT["BDOS"] & 0xFF, LAYOUT["BDOS"] >> 8))
+    def overlay_block(payload: bytes) -> bytes:
+        return payload.ljust(1021, b"\x00") + gateway
+
     manager_start = control_start + 1024
-    raw[manager_start:manager_start + 1024] = manager.ljust(1024, b"\x00")
+    raw[manager_start:manager_start + 1024] = overlay_block(manager)
+    overlay_start = manager_start + 1024
+    for name in ("rsxvalidator", "rsxpublish", "rsxresolver"):
+        overlay = (ROOT / f"build/system/{name}.bin").read_bytes()
+        if not 0 < len(overlay) <= 935:
+            raise ValueError(f"{name} overlay exceeds its allocation")
+        raw[overlay_start:overlay_start + 1024] = overlay_block(overlay)
+        overlay_start += 1024
     command_capacity = COMMAND_SECTORS * SECTOR_SIZE
     if len(command) > command_capacity:
         raise ValueError(f"command module is {len(command)} bytes; "
@@ -238,6 +252,8 @@ def main() -> None:
     rsx_utility_path = ROOT / "build/utilities/RSX.COM"
     rsxtest_path = ROOT / "build/utilities/RSXTEST.COM"
     rsx2test_path = ROOT / "build/utilities/RSX2TST.COM"
+    svctest_path = ROOT / "build/utilities/SVCTEST.COM"
+    test_rsx_path = ROOT / "build/rsx/TEST.RSX"
     era_path = ROOT / "build/utilities/ERA.COM"
     ren_path = ROOT / "build/utilities/REN.COM"
     type_path = ROOT / "build/utilities/TYPE.COM"
@@ -335,7 +351,9 @@ def main() -> None:
             ("BTFILL.DAT", bytes(filler_blocks * ALLOCATION_BLOCK_BYTES)),
         ))
     # These carriers live on disk, so always rebuild their layout-dependent code.
-    for tool in ("build_ccpreload.py", "build_rsxloader.py"):
+    for tool in ("build_ccpreload.py", "build_rsxselect.py", "build_rsxloader.py",
+                 "build_rsxvalidator.py", "build_rsxpublish.py",
+                 "build_rsxresolver.py"):
         subprocess.run([sys.executable, str(ROOT / "tools" / tool),
                         "--assembler", str(args.assembler)], check=True)
     image = install(boot, stage1, resident, command,
@@ -344,6 +362,7 @@ def main() -> None:
                      ("RSX.COM", rsx_utility_path.read_bytes()),
                      ("RSXTEST.COM", rsxtest_path.read_bytes()),
                      ("RSX2TST.COM", rsx2test_path.read_bytes()),
+                     ("SVCTEST.COM", svctest_path.read_bytes()),
                      ("ERA.COM", era_path.read_bytes()),
                      ("REN.COM", ren_path.read_bytes()),
                      ("TYPE.COM", type_path.read_bytes()),
@@ -369,6 +388,7 @@ def main() -> None:
                      ("HELLO.RSX", hello_rsx_path.read_bytes()),
                      ("ECHO.RSX", echo_rsx_path.read_bytes()),
                      ("BATCHIO.RSX", batchio_rsx_path.read_bytes()),
+                     ("TEST.RSX", test_rsx_path.read_bytes()),
                      *cpm_tools_files(ROOT), *extras])
     output = args.output.resolve()
     output.parent.mkdir(parents=True, exist_ok=True)

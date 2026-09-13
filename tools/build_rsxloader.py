@@ -26,8 +26,8 @@ def main() -> None:
         "        .DEPHASE\n", "")
     data = assemble(args.assembler, text, BUILD / "rsxloader.bin",
                     BUILD / "rsxloader.lst", BASE)
-    # Leave at least 96 stack bytes and the three-byte fixed gateway above code.
-    if len(data) > 925:
+    # Leave at least 86 stack bytes and the three-byte fixed gateway above code.
+    if len(data) > 935:
         raise SystemExit(f"RSX loader exceeds its packed slot: {len(data)} bytes")
     print(f"{hashlib.sha256(data).hexdigest()}  build/system/rsxloader.bin")
     print(f"RSX loader bytes: {len(data)}")
