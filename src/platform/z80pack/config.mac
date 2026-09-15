@@ -32,37 +32,6 @@ ZC_PHYS:
         CP 2
         JP NC,ZC_INVALID
 
-; Reject a reduction that would invalidate an attached logical format.
-        LD HL,LY_TAB+16
-        LD B,4
-ZC_PHCHK:
-        LD A,(HL)
-        LD C,A
-        LD A,(ZC_DRIVE)
-        CP C
-        JR NZ,ZC_PHNEXT
-        PUSH HL
-        LD DE,16
-        ADD HL,DE
-        LD A,(IX+2)
-        CP (HL)
-        POP HL
-        JP C,ZC_UNSUP
-        PUSH HL
-        LD DE,19
-        ADD HL,DE
-        LD A,(HL)
-        AND 060H
-        POP HL
-        JR Z,ZC_PHNEXT
-        LD A,(IX+3)
-        CP 2
-        JP NZ,ZC_UNSUP
-ZC_PHNEXT:
-        LD DE,80
-        ADD HL,DE
-        DJNZ ZC_PHCHK
-
         LD A,(ZC_DRIVE)
         CALL ZC_PHY
         EX DE,HL

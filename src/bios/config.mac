@@ -45,33 +45,6 @@ DC_INCHOK:
         LD A,(IX+5)
         CP 17
         JR NC,DC_PHBAD
-        ; Reject a hardware reduction that invalidates an attached format.
-        LD HL,LY_TAB+16
-        LD B,4
-DC_PHCHK:
-        LD A,(IX+0)
-        CP (HL)
-        JR NZ,DC_PHNEXT
-        PUSH HL
-        LD DE,16
-        ADD HL,DE
-        LD A,(IX+2)
-        CP (HL)
-        POP HL
-        JP C,DC_UNSUPPORTED
-        PUSH HL
-        LD DE,19
-        ADD HL,DE
-        BIT 6,(HL)
-        POP HL
-        JR Z,DC_PHNEXT
-        LD A,(IX+3)
-        CP 2
-        JP NZ,DC_UNSUPPORTED
-DC_PHNEXT:
-        LD DE,80
-        ADD HL,DE
-        DJNZ DC_PHCHK
         PUSH IX
         POP HL
         INC HL
