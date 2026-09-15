@@ -132,13 +132,24 @@ not check directory/allocation consistency or attempt repair.
 
 ## SYSGEN
 
-SYSGEN installs the running A: system on a prepared B:, C: or D: disk. Use
-CONFIG G to assign the destination the same SYSTEM format as A:, and use DUP A
-to format the media first. SYSGEN rejects undefined drives, physical drive 0,
-physical aliases of A:, and a destination whose complete normalized format
-definition differs from A:.
+SYSGEN installs BetterCP/M on a prepared B:, C: or D: disk. It accepts three
+forms:
 
-The installer copies every 128-byte record in the reserved system area. This
+```text
+SYSGEN
+SYSGEN A: B:
+SYSGEN SYSTEM.SYS B:
+```
+
+Bare `SYSGEN` retains the interactive running-A: workflow. The drive form
+obtains the canonical 160-record system image from a bootable source. The file
+form installs the versioned package produced by `SYSBUILD`. Use CONFIG G to
+assign a SYSTEM format to the destination and DUP A to format the media first.
+SYSGEN rejects undefined drives, physical drive 0, source/destination aliases,
+incompatible bootstrap geometry, and targets with fewer than 160 reserved
+records.
+
+The installer copies the canonical 160 128-byte records in the system area. This
 includes stage zero, stage one, the resident image, protected reloaders and
 controls, the CCP carrier, and the saved persistent defaults. It writes and
 immediately reads back each record, compares all 128 bytes, and reports success
@@ -154,13 +165,21 @@ disk and starts the bare CCP; after the operator copies that CPX onto the disk,
 the saved startup profile loads it normally on the next warm boot. A CPX carrier
 which opens but fails structural validation remains a hard boot failure.
 
+Before writing, SYSGEN adapts the installed physical-drive-zero descriptor and
+A: binding to the prepared target. The target may therefore use a different
+CP/M filesystem layout, allocation geometry, or reserved-track count, provided
+its bootstrap geometry is compatible and its reserved area holds the complete
+20 KiB package. Records beyond the package but within a larger reserved area
+are left unchanged.
+
 CONFIG H and SYSGEN have separate jobs. CONFIG H saves current settings into
 the running A: system without replacing its other system records. SYSGEN copies
 that complete, already-configured system to another disk.
 
-`SYSBUILD` now composes the versioned `SYSTEM.SYS` input from freshly assembled
-components. `SYSGEN SYSTEM.SYS B:` and generalized `SYSGEN A: B:` are the next
-installer forms; bare `SYSGEN` retains the interactive current-A installation.
+`SYSBUILD` composes the versioned `SYSTEM.SYS` input from freshly assembled
+components. Its header identifies the package version, platform, payload size,
+resident base, and built A: binding. SYSGEN validates the header and exact file
+length before it permits installation.
 
 The current z80pack adapter defines B: through D: as data disks with no reserved
 system tracks and does not permit runtime format changes. SYSGEN is included in
@@ -186,9 +205,13 @@ emulator scenarios. Every run uses private disk copies. Screen captures are
 retained under `build/test-results/disk-utilities/`.
 
 `python3 tools/test_sysgen_install.py` installs onto a disposable formatted
-790K SYSTEM image containing a sentinel file. It compares the entire reserved
-area with A:, proves that every byte after that area is unchanged, and then cold
-boots the installed target without relying on an external CPX file.
+790K SYSTEM image containing a sentinel file. It verifies the expected binding
+adaptation, proves that every byte after the reserved area is unchanged, and
+then cold boots the installed target without relying on an external CPX file.
+`python3 tools/test_sysgen_cross_format.py` qualifies both explicit-drive and
+`SYSTEM.SYS` installation onto a target with different filesystem geometry.
+`python3 tools/test_z80pack_sysgen_refusal.py` proves that z80pack's current
+data-only targets are rejected without changing their image files.
 
 `tools/test_dup_operations.py` exercises copying, check, declined confirmation,
 full binding restoration, source/system preservation, reserved-track data and

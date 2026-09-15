@@ -6,7 +6,7 @@ from build_ccp import assemble
 ROOT=Path(__file__).resolve().parents[1]
 
 def main():
- p=argparse.ArgumentParser();p.add_argument('--image-dir',type=Path,default=ROOT/'build/z80pack');args=p.parse_args()
+ p=argparse.ArgumentParser();p.add_argument('--image-dir',type=Path,default=ROOT/'build/z80pack');p.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim');args=p.parse_args()
  image=args.image_dir.resolve()
  with tempfile.TemporaryDirectory(prefix='bettercpm-cpmsim-test-') as tmp:
   w=Path(tmp);shutil.copytree(image/'disks',w/'disks');shutil.copy2(image/'diskdefs',w/'diskdefs')
@@ -93,7 +93,7 @@ BUFFER: DS 128
   subprocess.run(['cpmcp','-T','raw','-f','bettercpm-z80pack-system',str(w/'disks/drivea.dsk'),str(w/'IOTEST.COM'),'0:IOTEST.COM'],cwd=w,check=True)
   target=w/'disks/drivec.dsk'
   raw=bytearray(target.read_bytes());raw[-128:]=b'\x5a'*128;target.write_bytes(raw)
-  simulator=Path.home()/'CPM/z80pack/cpmsim/cpmsim'
+  simulator=args.simulator.expanduser().resolve()
   # Tcl receives paths as positional arguments, so shell metacharacters are
   # not interpreted. Every wait is bounded; no user's mounted media is used.
   script='''set timeout 25
