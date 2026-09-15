@@ -9,7 +9,7 @@ COMPONENTS = (
     "hello_rsx", "echo_rsx", "fdf_rsx", "frehd_time_rsx", "zprtc_rsx",
     "test_service_rsx", "svctest",
     "rsxloader", "rsxvalidator", "rsxpublish", "rsxresolver",
-    "fileloader", "system", "utilities", "trs80_boot",
+    "fileloader", "system", "utilities", "trs80_boot", "system_package",
 )
 if __name__ == "__main__":
     for component in COMPONENTS:

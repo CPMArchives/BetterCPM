@@ -63,14 +63,26 @@ The resulting bootable DMK already has those carriers installed. The current
 from the running A: disk onto a prepared, compatible SYSTEM disk without
 altering its CP/M filesystem.
 
-The build is therefore source-complete but not yet fully self-hosting. A
-native GENSYS-style composer and a SYSGEN input-image mode are still needed
-to turn newly assembled resident components into system tracks entirely
-under BetterCP/M. Until those exist, use the host composer to make the first
-boot disk and SYSGEN to install or duplicate that built system.
+`SYSBUILD.COM` is the native composer. It reads the standard assembled binary
+products from the current drive, checks every component against its assigned
+slot, constructs the 20 KiB protected-system payload, records the built A:
+binding in a versioned header, and writes and rereads `SYSTEM.SYS`. The package
+is 161 records: one metadata record followed by 160 payload records.
 
+The required input names are:
 
-The intended native workflow is assembler/linker, then a GENSYS-style composer
-which writes `SYSTEM.SYS`, followed by `SYSGEN SYSTEM.SYS B:`. The companion
-`SYSGEN A: B:` form will copy a complete protected system area from a bootable
-source disk. Bare `SYSGEN` retains the interactive current-A installation.
+```text
+BOOT.BIN     STAGE1.BIN   RESIDENT.BIN CCPRELOD.BIN RSXSEL.BIN
+CONFIG.BIN   RSXLOAD.BIN  RSXVALID.BIN RSXPUBL.BIN  RSXRESOL.BIN
+CCP.RLM
+```
+
+The host reference composer exports the same products and package with:
+
+```sh
+python3 tools/build_system_package.py
+```
+
+It also proves that the package payload exactly matches the protected area of
+the generated boot disk. Installation is the separate SYSGEN operation, so a
+failed composition cannot touch a target disk.

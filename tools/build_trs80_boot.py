@@ -267,6 +267,7 @@ def main() -> None:
     config_path = ROOT / "build/utilities/CONFIG.COM"
     dup_path = ROOT / "build/utilities/DUP.COM"
     sysgen_path = ROOT / "build/utilities/SYSGEN.COM"
+    sysbuild_path = ROOT / "build/utilities/SYSBUILD.COM"
     stat_path = ROOT / "build/utilities/STAT.COM"
     time_path = ROOT / "build/utilities/TIME.COM"
     submit_path = ROOT / "build/utilities/SUBMIT.COM"
@@ -276,7 +277,7 @@ def main() -> None:
                  hello_rsx_path, echo_rsx_path, batchio_rsx_path, fdf_rsx_path,
                  frehd_time_rsx_path, cpx_utility_path, rsx_utility_path,
                  rsxtest_path, rsx2test_path, era_path, ren_path, type_path, dir_path,
-                 user_path, cls_path, ver_path, copy_path, move_path, warm_path, config_path, dup_path, sysgen_path, stat_path,
+                 user_path, cls_path, ver_path, copy_path, move_path, warm_path, config_path, dup_path, sysgen_path, sysbuild_path, stat_path,
                  submit_path, xsub_path, time_path, fdf_path):
         if not path.is_file():
             raise SystemExit(f"missing system-image input: {path}")
@@ -376,6 +377,7 @@ def main() -> None:
                      ("CONFIG.COM", config_path.read_bytes()),
                      ("DUP.COM", dup_path.read_bytes()),
                      ("SYSGEN.COM", sysgen_path.read_bytes()),
+                     ("SYSBUILD.COM", sysbuild_path.read_bytes()),
                      ("STAT.COM", stat_path.read_bytes()),
                      ("TIME.COM", time_path.read_bytes()),
                      ("SUBMIT.COM", submit_path.read_bytes()),

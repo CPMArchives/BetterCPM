@@ -19,7 +19,7 @@ def main():
     out=ROOT/'build/utilities'
     out.mkdir(parents=True,exist_ok=True)
     builtin=builtin_source()
-    for stem in ('config','dup','sysgen'):
+    for stem in ('config','dup','sysgen','sysbuild'):
         source=ROOT/f'src/utilities/{stem}.mac'
         text=source.read_text().replace('        INCLUDE disk/sysgen.inc',
             (ROOT/'src/utilities/disk/sysgen.inc').read_text()).replace('        INCLUDE disk/common.inc',
