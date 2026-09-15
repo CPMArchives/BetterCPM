@@ -91,6 +91,8 @@ BUFFER: DS 128
 '''
   probe=assemble(Path.home()/'bin/z80asm',source,w/'IOTEST.COM',w/'probe.lst',0x100)
   subprocess.run(['cpmcp','-f','bettercpm-default',str(w/'disks/drivea.dsk'),str(w/'IOTEST.COM'),'0:IOTEST.COM'],cwd=w,check=True)
+  (w/'CPMTOOLS.TXT').write_bytes(b'Created with cpmtools\r\n')
+  subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(w/'disks/driveb.dsk'),str(w/'CPMTOOLS.TXT'),'0:CPMTOOLS.TXT'],cwd=w,check=True)
   target=w/'disks/drivec.dsk'
   raw=bytearray(target.read_bytes());raw[-128:]=b'\x5a'*128;target.write_bytes(raw)
   simulator=args.simulator.expanduser().resolve()
@@ -116,6 +118,9 @@ expect -exact "RCP"
 prompt
 send -s -- "HELLO\\r"
 expect -exact "BetterCP/M on z80pack"
+prompt
+send -s -- "DIR B:\\r"
+expect -exact "CPMTOOLS TXT"
 prompt
 send -s -- "IOTEST\\r"
 expect {
@@ -143,5 +148,5 @@ expect eof
   if run.returncode:
    tail=report.read_text(errors='replace')[-1500:] if report.exists() else run.stdout[-1500:]
    raise AssertionError(f'cpmsim test failed: {report}\n{tail}')
-  print('PASS: cpmsim disk boot, directory, cpmtools-supplied transient, file create/write/close/open/read on A, RSX load/unload and 53K TPA.')
+  print('PASS: cpmsim disk boot, A: directory, cpmtools-created B: directory, cpmtools-supplied transient, file create/write/close/open/read on A, RSX load/unload and 53K TPA.')
 if __name__=='__main__':main()

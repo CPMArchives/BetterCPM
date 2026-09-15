@@ -81,9 +81,14 @@ def main():
  tables='        INCLUDE layout.inc\n        ASEG\n        ORG LY_TAB\n'
  for i in range(4):
   binding=fmt.binding(i)
-  tables+=f'''ZDPH{i}: DW 0,0,0,0,LY_DIR,ZDPH{i}+17,ZCSV,ZALV
-        DB '''+','.join(str(value) for value in binding)+'''\n'''
- tables+='ZALV: DS 128\nZCSV: DS 32\n        END\n'
+  tables+=f'ZDPH{i}: DW 0,0,0,0,LY_DIR,ZDPH{i}+17,ZCSV{i},ZALV{i}\n'
+  # z80asm accepts a long DB line but silently drops operands beyond its
+  # internal line capacity.  Keep each directive short and verify stride.
+  for offset in range(0,len(binding),16):
+   tables+='        DB '+','.join(str(value) for value in binding[offset:offset+16])+'\n'
+ for i in range(4):
+  tables+=f'ZALV{i}: DS {(fmt.dsm+8)//8}\nZCSV{i}: DS {fmt.cks}\n'
+ tables+='        END\n'
  tab=asm('tables',tables,L['TABLES'],L['RSX_STATE']-L['TABLES'])
  gateway=asm('gateway',read('src/system/gateway.mac'),L['SYSTEM'],L['BDOS']-L['SYSTEM'])
  reload=read('src/platform/trs80m4/commandreload.mac')
@@ -168,11 +173,8 @@ def main():
  # cpmtools skewtab entries are zero-based raw-sector ordinals.
  ordered_ids=sorted(fmt.sector_ids)
  logical_to_raw=[ordered_ids.index(sector_id) for sector_id in fmt.sector_ids]
- raw_to_logical=[0]*len(logical_to_raw)
- for logical_slot,raw_slot in enumerate(logical_to_raw):
-  raw_to_logical[raw_slot]=logical_slot
- # cpmtools expects the inverse table: raw slot -> logical sector ordinal.
- skew=','.join(map(str,raw_to_logical))
+ # cpmtools maps each logical physical sector through this zero-based table.
+ skew=','.join(map(str,logical_to_raw))
  diskdefs=f'''diskdef bettercpm-default
  seclen {fmt.sector_bytes}
  tracks {fmt.raw_tracks}
