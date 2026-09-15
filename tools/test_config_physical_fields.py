@@ -47,8 +47,8 @@ REQ:    DB 1,0FFH
         second_toggle = screens[5][0]
         assert "Type of drive (inches):     8" in first_toggle, first_toggle
         assert "Type of drive (inches):     5" in second_toggle, second_toggle
-        assert "Number of sides:           1" in screens[6][0], screens[6][0]
-        assert "Number of sides:           2" in screens[7][0], screens[7][0]
+        assert "Number of sides:            1" in screens[6][0], screens[6][0]
+        assert "Number of sides:            2" in screens[7][0], screens[7][0]
         assert "Track choices:" in screens[8][0], screens[8][0]
         assert "Step rate choices (ms):" in screens[10][0], screens[10][0]
     print("CONFIG physical toggles and constrained selection lists passed")

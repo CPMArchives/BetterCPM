@@ -86,6 +86,10 @@ CHOICE: LD HL,CHMSG
         CALL INVERSE
         LD A,']'
         CALL PUTC
+; Leave the visible cursor in the blank field, not after the closing bracket.
+        LD A,8
+        CALL PUTC
+        CALL PUTC
         CALL KEY
         PUSH AF
         LD A,13
