@@ -1,0 +1,99 @@
+BETTERCP/M DEFAULT FLOPPY FORMAT
+
+Status: adopted design; implementation follows in the generalized host-image
+builder and formatter work.
+
+1. Decision
+
+BetterCP/M shall use the existing California Computer Systems 40-track,
+double-sided, double-density 332K format as its initial default floppy format
+for z80pack and for portable BetterCP/M distribution images.
+
+This is a selection of an existing CP/M format. It is not a new BetterCP/M
+format and must retain its established name and geometry in user interfaces,
+DISK.FDF, documentation, and cpmtools definitions.
+
+The current ad-hoc z80pack 77-track, 26-sector, 128-byte format remains a
+development artifact until the generalized image builder has produced and
+qualified the replacement. It is not a long-term compatibility target.
+
+2. Authoritative format
+
+The authoritative DISK.FDF entry is:
+
+  *California Computer Systems (40T, DS, DD, 332K)
+  36,4,15,1,165,63,128,0,16,6,18,1,40,192
+  1,5,9,13,17,3,7,11,15,2,6,10,14,18,4,8,12,16
+
+Its relevant properties are:
+
+  physical geometry       40 cylinders, two sides
+  physical sectors        18 per track, 256 bytes each
+  raw image size          368,640 bytes
+  CP/M logical tracks     80 surface tracks
+  logical records/track   36 records of 128 bytes
+  reserved area           6 logical tracks, 27,648 bytes (216 records)
+  allocation blocks       166 blocks of 2 KiB (DSM 165)
+  directory entries       64
+  nominal allocation      332 KiB, including the directory block
+
+The current BetterCP/M protected package occupies 20,480 bytes (160 records),
+leaving 7,168 bytes in the reserved area for format-reserved space and future
+system-package growth. The reserved-area boundary remains fixed by the format;
+unused reserved bytes do not become filesystem space.
+
+3. Distribution policy
+
+The default z80pack set should eventually create A: through D: in this same
+format. A: contains the installed system and standard files. B: through D:
+start as empty formatted disks with their reserved areas intact. Consequently,
+each default disk is cpmtools-interchangeable and is also a valid SYSGEN target.
+
+Users may select any other format supported by the active adapter. This default
+does not give the format special architectural status, create an on-disk
+BetterCP/M signature, or restrict CONFIG, DUP, SYSGEN, or the host builder to
+one geometry.
+
+4. Selection rationale
+
+The format meets the immediate requirements simultaneously:
+
+  - it is an existing named CP/M format already present in DISK.FDF;
+  - its reserved area holds the complete BetterCP/M system package;
+  - its filesystem comfortably holds the alpha distribution utility set;
+  - its uniform 256-byte sectors and ordinary two-sided organization are
+    representable by the z80pack geometry-v2 backend;
+  - its 40-cylinder geometry is practical for floppy-oriented platforms;
+  - raw images can be described explicitly to cpmtools without inventing a
+    private filesystem layout.
+
+The Digital Research 8-inch single-sided standard is more widely recognized,
+but its standard reserved area is too small for the current 20 KiB system.
+Changing its OFF value would create a BetterCP/M variant while retaining a
+misleading historical name. The larger DRI double-sided format is unnecessary
+for the default and is a more demanding formatter target. Montezuma's common
+SYSTEM formats likewise reserve too little space. The current z80pack format
+has adequate space only because it was created specifically for this project
+and therefore fails the existing-format requirement.
+
+5. Implementation and acceptance
+
+The next host-builder increment must consume this DISK.FDF definition rather
+than duplicate its numbers in several scripts. It must generate the bootstrap
+binding, system area, DPB/filesystem, raw image, and local cpmtools diskdef from
+one normalized descriptor.
+
+Changing the published default requires all of the following evidence:
+
+  - cold boot under z80pack from the generated 368,640-byte image;
+  - directory and file read/write tests under BetterCP/M;
+  - cpmtools reads files written by BetterCP/M and BetterCP/M reads files
+    written by cpmtools;
+  - SYSBUILD/SYSTEM.SYS installation with read-back verification;
+  - SYSGEN installation onto another default disk followed by cold boot;
+  - byte-for-byte preservation of the destination filesystem outside the
+    six reserved tracks.
+
+Until those tests pass, released build scripts must continue to label their
+old images as development images rather than silently calling them the new
+default.

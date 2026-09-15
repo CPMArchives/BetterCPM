@@ -237,9 +237,14 @@ between CONFIG and DUP remain design considerations for the formatting work.
   using safe checks appropriate to each controller.
 - [ ] Complete bounded retry, timeout, recovery, and crash-consistency policy
   for physical and filesystem writes.
-- [ ] Decide and specify BetterCP/M native disk formats and any compatible
-  timestamp or attribute extensions; the MM 790K format is a carrier, not an
-  architectural filesystem commitment.
+- [x] Select the existing California Computer Systems 40T DS DD 332K format as
+  the initial default floppy distribution format. The decision and migration
+  gates are specified in `docs/architecture/23 Default Floppy Format.txt`.
+  Implementation remains part of the generalized host-image builder and DUP
+  formatter work; no private BetterCP/M floppy format was introduced.
+- [ ] Decide whether later BetterCP/M-native disk formats need compatible
+  timestamp or attribute extensions; the MM 790K format remains a development
+  carrier rather than an architectural filesystem commitment.
 
 ## File metadata, attributes, date, and time
 

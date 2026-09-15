@@ -16,12 +16,17 @@ set of target artifacts and disks. It refuses to overwrite an existing disks
 directory. Start `build/z80pack/launch-z80pack.command` in a terminal. BYE exits
 the emulator. The launcher supplies the path to z80pack's cpmrecv helper.
 
-A-D initially use raw 77-track, 26-sector, 128-byte-sector images (256,256
+A-D currently use raw 77-track, 26-sector, 128-byte-sector images (256,256
 bytes each), using linear record order. A reserves seven tracks and has 227
 KiB of allocation space; B-D reserve none and have 250 KiB each. Directory
 storage consumes two 1-KiB blocks on each disk. B-D may be replaced with raw
 images in another CONFIG-selected format. The same unmodified image is then
 usable with a matching cpmtools `diskdefs` entry.
+
+This is a development carrier. The adopted distribution default is California
+Computer Systems 40T DS DD 332K, documented in
+`docs/architecture/23 Default Floppy Format.txt`. The generalized host-image
+builder must qualify that format before this fixed builder switches its output.
 
 System absolute record allocation on A:
 
