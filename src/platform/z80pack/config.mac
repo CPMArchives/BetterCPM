@@ -280,7 +280,7 @@ ZC_DPHLP:
         JR NZ,ZC_DPHLP
         RET
 
-; Replaced by tools/build_z80pack_boot.py with the resident symbol address.
+; Replaced by tools/build_z80pack_image.py with the resident symbol address.
 ZP_PHYSICAL EQU 0FFFFH
 
 ZC_DRIVE:  DB 0

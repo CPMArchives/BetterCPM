@@ -1,7 +1,6 @@
 BETTERCP/M DEFAULT FLOPPY FORMAT
 
-Status: adopted design; implementation follows in the generalized host-image
-builder and formatter work.
+Status: adopted and implemented as the z80pack distribution default.
 
 1. Decision
 
@@ -13,9 +12,8 @@ This is a selection of an existing CP/M format. It is not a new BetterCP/M
 format and must retain its established name and geometry in user interfaces,
 DISK.FDF, documentation, and cpmtools definitions.
 
-The current ad-hoc z80pack 77-track, 26-sector, 128-byte format remains a
-development artifact until the generalized image builder has produced and
-qualified the replacement. It is not a long-term compatibility target.
+The former ad-hoc z80pack 77-track carrier is no longer emitted by the default
+builder and is not a compatibility target.
 
 2. Authoritative format
 
