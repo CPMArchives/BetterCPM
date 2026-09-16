@@ -1,0 +1,366 @@
+; Phase-3 prospective RSX profile layout planner.
+;
+; DE -> request:
+; +0 top, +2 minimum permitted base
+; +4 old count, +5 new count, +6 removed old index (FFh for append/no-op)
+; +7 reserved, +8 old allocation-word vector, +10 new allocation-word vector
+; +12 new class-byte vector, +14 output records, +16 record capacity
+; +17 returned record count (written only on success)
+;
+; Eight-byte output record: old base, new base, allocation, class, old index.
+; An old base/index of zero/FFh denotes a fresh module or a stateless reload.
+
+RPBASE          EQU     07400H
+
+        CSEG
+        .PHASE  RPBASE
+RPL_ENTRY:
+        LD      (RPL_REQ),DE
+        EX      DE,HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RPL_TOP),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RPL_MIN),DE
+        INC     HL
+        LD      A,(HL)
+        CP      5
+        JP      NC,RPL_BAD
+        LD      (RPL_OCNT),A
+        INC     HL
+        LD      A,(HL)
+        CP      5
+        JP      NC,RPL_BAD
+        LD      (RPL_NCNT),A
+        INC     HL
+        LD      A,(HL)
+        LD      (RPL_REM),A
+        INC     HL
+        LD      A,(HL)
+        OR      A
+        JP      NZ,RPL_BAD
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RPL_OALLOC),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RPL_NALLOC),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RPL_CVECT),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RPL_OUT),DE
+        INC     HL
+        LD      A,(HL)
+        LD      B,A
+        LD      A,(RPL_NCNT)
+        CP      B
+        JP      NC,RPL_CAPEQ
+        JR      RPL_RELATION
+RPL_CAPEQ:
+        JP      NZ,RPL_BAD
+RPL_RELATION:
+        LD      A,(RPL_REM)
+        CP      0FFH
+        JR      Z,RPL_APPEND
+        LD      B,A
+        LD      A,(RPL_OCNT)
+        CP      B
+        JP      C,RPL_BAD
+        JP      Z,RPL_BAD
+        DEC     A
+        LD      B,A
+        LD      A,(RPL_NCNT)
+        CP      B
+        JP      NZ,RPL_BAD
+        JR      RPL_VALIDATE
+RPL_APPEND:
+        LD      A,(RPL_OCNT)
+        LD      B,A
+        LD      A,(RPL_NCNT)
+        CP      B
+        JR      Z,RPL_VALIDATE
+        DEC     A
+        CP      B
+        JP      NZ,RPL_BAD
+
+; Validate both allocation vectors and the prospective minimum base.
+RPL_VALIDATE:
+        LD      HL,(RPL_TOP)
+        LD      DE,(RPL_OALLOC)
+        LD      A,(RPL_OCNT)
+        CALL    RPL_WALK
+        JP      NZ,RPL_BAD
+        LD      HL,(RPL_TOP)
+        LD      DE,(RPL_NALLOC)
+        LD      A,(RPL_NCNT)
+        CALL    RPL_WALK
+        JP      NZ,RPL_BAD
+        LD      DE,(RPL_MIN)
+        OR      A
+        SBC     HL,DE
+        JP      C,RPL_BAD
+        LD      HL,(RPL_CVECT)
+        LD      A,(RPL_NCNT)
+        LD      B,A
+RPL_CLOOP:
+        LD      A,B
+        OR      A
+        JR      Z,RPL_BUILD
+        LD      A,(HL)
+        CP      4
+        JP      NC,RPL_BAD
+        CP      2               ; STATE_PRESERVING remains unsupported
+        JP      Z,RPL_BAD
+        INC     HL
+        DJNZ    RPL_CLOOP
+
+RPL_BUILD:
+        LD      HL,(RPL_TOP)
+        LD      (RPL_CURSOR),HL
+        LD      HL,(RPL_NALLOC)
+        LD      (RPL_NPTR),HL
+        LD      HL,(RPL_CVECT)
+        LD      (RPL_CPTR),HL
+        XOR     A
+        LD      (RPL_INDEX),A
+RPL_BLOOP:
+        LD      A,(RPL_INDEX)
+        LD      B,A
+        LD      A,(RPL_NCNT)
+        CP      B
+        JP      Z,RPL_DONE
+        LD      HL,(RPL_NPTR)
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        LD      (RPL_NPTR),HL
+        LD      (RPL_ALLOC),DE
+        LD      HL,(RPL_CURSOR)
+        OR      A
+        SBC     HL,DE
+        LD      (RPL_CURSOR),HL
+        LD      (RPL_NEWBASE),HL
+        LD      A,(RPL_INDEX)
+        CALL    RPL_MAPOLD
+        LD      (RPL_OLDIDX),A
+        CP      0FFH
+        JR      Z,RPL_FRESH
+        CALL    RPL_OLDBASE
+        LD      (RPL_OBASE),HL
+        LD      A,(RPL_OLDIDX)
+        CALL    RPL_OLDALLOC
+        LD      (RPL_OASIZE),DE
+        JR      RPL_CLASSIFY
+RPL_FRESH:
+        LD      HL,0
+        LD      (RPL_OBASE),HL
+        LD      (RPL_OASIZE),HL
+RPL_CLASSIFY:
+        LD      HL,(RPL_CPTR)
+        LD      A,(HL)
+        LD      (RPL_CVAL),A
+        INC     HL
+        LD      (RPL_CPTR),HL
+        OR      A
+        JR      Z,RPL_SLESS
+        CP      1
+        JR      Z,RPL_SFUL
+        ; COLD_ONLY may be introduced or retained without movement.
+        LD      A,(RPL_OLDIDX)
+        CP      0FFH
+        JR      Z,RPL_EMIT
+        JR      RPL_KEEPSIZE
+RPL_SFUL:
+        LD      A,(RPL_OLDIDX)
+        CP      0FFH
+        JR      Z,RPL_EMIT
+RPL_KEEPSIZE:
+        LD      HL,(RPL_ALLOC)
+        LD      DE,(RPL_OASIZE)
+        OR      A
+        SBC     HL,DE
+        JP      NZ,RPL_BAD
+        LD      A,(RPL_CVAL)
+        CP      1
+        JR      Z,RPL_EMIT
+        LD      HL,(RPL_OBASE)
+        LD      DE,(RPL_NEWBASE)
+        OR      A
+        SBC     HL,DE
+        JP      NZ,RPL_BAD
+        JR      RPL_EMIT
+RPL_SLESS:
+        LD      HL,0
+        LD      (RPL_OBASE),HL
+        LD      A,0FFH
+        LD      (RPL_OLDIDX),A
+RPL_EMIT:
+        LD      HL,(RPL_OUT)
+        LD      DE,(RPL_OBASE)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      DE,(RPL_NEWBASE)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      DE,(RPL_ALLOC)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      A,(RPL_CVAL)
+        LD      (HL),A
+        INC     HL
+        LD      A,(RPL_OLDIDX)
+        LD      (HL),A
+        INC     HL
+        LD      (RPL_OUT),HL
+        LD      HL,RPL_INDEX
+        INC     (HL)
+        JP      RPL_BLOOP
+RPL_DONE:
+        LD      HL,(RPL_REQ)
+        LD      DE,17
+        ADD     HL,DE
+        LD      A,(RPL_NCNT)
+        LD      (HL),A
+        XOR     A
+        RET
+
+; HL=top, DE=allocation vector, A=count. Return final base in HL.
+RPL_WALK:
+        LD      B,A
+RPL_WLOOP:
+        LD      A,B
+        OR      A
+        RET     Z
+        PUSH    BC
+        LD      A,(DE)
+        LD      C,A
+        INC     DE
+        LD      A,(DE)
+        LD      B,A
+        INC     DE
+        LD      A,B
+        OR      C
+        JR      Z,RPL_WZERO
+        PUSH    DE
+        LD      D,B
+        LD      E,C
+        OR      A
+        SBC     HL,DE
+        POP     DE
+        POP     BC
+        JR      C,RPL_WUNDER
+        DJNZ    RPL_WLOOP
+        XOR     A
+        RET
+RPL_WZERO:
+        POP     BC
+RPL_WUNDER:
+        LD      A,0FFH
+        OR      A
+        RET
+
+; Map new index A to old index, or FFh for an appended fresh entry.
+RPL_MAPOLD:
+        LD      B,A
+        LD      A,(RPL_REM)
+        CP      0FFH
+        JR      Z,RPL_MAPAPP
+        CP      B
+        JR      Z,RPL_MAPNEXT
+        JR      C,RPL_MAPNEXT
+        LD      A,B
+        RET
+RPL_MAPNEXT:
+        LD      A,B
+        INC     A
+        RET
+RPL_MAPAPP:
+        LD      A,(RPL_OCNT)
+        CP      B
+        LD      A,B
+        RET     NZ
+        LD      A,0FFH
+        RET
+
+; A=old index. Calculate old base from top and old allocation vector.
+RPL_OLDBASE:
+        INC     A
+        LD      B,A
+        LD      HL,(RPL_TOP)
+        LD      DE,(RPL_OALLOC)
+RPL_OBLOOP:
+        LD      A,(DE)
+        LD      C,A
+        INC     DE
+        LD      A,(DE)
+        INC     DE
+        PUSH    DE
+        LD      E,C
+        LD      D,A
+        OR      A
+        SBC     HL,DE
+        POP     DE
+        DJNZ    RPL_OBLOOP
+        RET
+
+; A=old index. Return its allocation in DE.
+RPL_OLDALLOC:
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        LD      HL,(RPL_OALLOC)
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        RET
+
+RPL_BAD:
+        LD      A,0FFH
+        OR      A
+        RET
+
+RPL_REQ:        DW      0
+RPL_TOP:        DW      0
+RPL_MIN:        DW      0
+RPL_OALLOC:     DW      0
+RPL_NALLOC:     DW      0
+RPL_CVECT:      DW      0
+RPL_OUT:        DW      0
+RPL_NPTR:       DW      0
+RPL_CPTR:       DW      0
+RPL_CURSOR:     DW      0
+RPL_ALLOC:      DW      0
+RPL_NEWBASE:    DW      0
+RPL_OBASE:      DW      0
+RPL_OASIZE:     DW      0
+RPL_OCNT:       DB      0
+RPL_NCNT:       DB      0
+RPL_REM:        DB      0
+RPL_INDEX:      DB      0
+RPL_OLDIDX:     DB      0
+RPL_CVAL:       DB      0
+
+        .DEPHASE
+        END
