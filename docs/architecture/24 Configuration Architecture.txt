@@ -1,0 +1,246 @@
+BETTERCP/M CONFIGURATION ARCHITECTURE
+
+Status: adopted design; implementation is incremental and incomplete.
+
+1. PURPOSE
+
+CONFIG is the system configuration utility for BetterCP/M. It edits portable
+system policy, platform capabilities, saved cold-boot defaults and selected
+session settings without making platform-private BIOS data into a public ABI.
+
+CONFIG shall preserve CP/M compatibility while exposing BetterCP/M facilities
+which did not exist in stock CP/M or Montezuma Micro CP/M. The Montezuma Micro
+CONFIG layout is a behavioral and user-interface reference, not a requirement
+to preserve Model 4 assumptions on every platform.
+
+Detailed editors may remain separate transient utilities. CONFIG may invoke or
+share services with them, but it does not become the owner of every feature's
+private data.
+
+2. CONFIGURATION STATES
+
+CONFIG shall distinguish three states:
+
+  active configuration       settings used by the running system;
+  saved startup defaults     settings read by the next cold boot;
+  pending cold-boot changes  edits which cannot or should not alter the
+                             running resident layout.
+
+Every setting shall say whether it applies immediately, for this session, or
+at the next cold boot. A warm boot shall not silently replace active settings
+with saved defaults.
+
+Saving configuration and installing a system are separate user operations.
+CONFIG saves validated startup settings on the current system disk. SYSGEN
+installs or copies a system image between disks and respects the destination
+format. They may share low-level package-writing code without sharing one
+user-facing meaning.
+
+The two CONFIG save scopes defined in
+`docs/engineering/CONFIG-STARTUP-SETTINGS-DECISIONS.md` remain authoritative:
+
+  save pending cold-boot changes only;
+  save all current settings as startup defaults.
+
+CONFIG shall validate the complete resulting startup configuration before it
+writes anything.
+
+3. CAPABILITY-DRIVEN PLATFORM SETTINGS
+
+The BIOS or platform adapter shall publish which configurable devices and
+fields it supports. CONFIG shall not offer controls which cannot affect the
+selected platform. A real UART, an emulator character stream and a machine
+without a serial device may consequently show different serial panels.
+
+Unsupported fields are omitted or identified as unavailable; they are not
+accepted and silently ignored. Platform-private register layouts and device
+addresses remain behind the BIOS/HAL boundary.
+
+3.1 System device assignments
+
+CONFIG shall retain CP/M logical-device routing for CON:, RDR:, PUN: and LST:
+and preserve applicable IOBYTE compatibility. Available destinations are
+published by the platform. They may include consoles, serial ports, a parallel
+port, host-file or emulator endpoints, and a null device. BetterCP/M shall not
+assume that every platform has a CRT, paper-tape reader, punch and parallel
+printer.
+
+3.2 Keyboard settings
+
+Portable keyboard settings may include arrow, function, BREAK, CLEAR and
+Backspace/Delete mappings and selection of a named keyboard profile. Key-repeat
+settings are displayed only when the active keyboard driver controls repeat;
+host-terminal repeat is not reimplemented merely to reproduce an old CONFIG
+field.
+
+3.3 Terminal/video settings
+
+CONFIG shall eventually select and inspect a terminal-capability profile.
+BetterCP/M-aware software may use that profile for abstract display operations.
+Existing CP/M applications remain free to send terminal-specific bytes through
+CONOUT and shall not be required to use a new API. The BIOS or emulator remains
+responsible for the native console behavior expected by those applications.
+
+A future TCAP-compatible service is a likely implementation, but its file
+format, ABI, resident provider and editor are deferred. CONFIG architecture
+requires only terminal-profile selection and capability inspection. Simple MM
+video-control aliases may remain available on platforms which support them;
+they are not a general translation mechanism between terminal protocols.
+
+3.4 List/printer settings
+
+The MM printer transformations remain useful as LST: output policy regardless
+of whether LST: routes to a parallel port, serial port, emulator endpoint or
+host file. Supported settings may include CR/LF translation, line-feed
+suppression, tab expansion, form-feed handling, page length, character policy
+and output timeout. The selected output provider determines which controls are
+available.
+
+3.5 Serial settings
+
+A serial panel first selects a port and then exposes supported line settings:
+baud rate, parity, word length, stop bits, DTR/RTS, CTS/DSR or named flow-control
+modes, and signal inversion where hardware requires it. Emulator endpoints may
+expose only endpoint selection or flow control. The panel shall not imply that
+changing an irrelevant framing value changed the emulator.
+
+4. DISK CONFIGURATION
+
+CONFIG owns the user interface for:
+
+  physical drive capabilities;
+  logical-drive-to-physical-device bindings;
+  independent formats for configured logical drives;
+  logical-drive capacity and its RAM/TPA consequence;
+  default/reference format selection where applicable;
+  format catalogue selection and the disk-format workbench.
+
+The A-P namespace, gaps, active-versus-saved rules, independent format records
+and cold-boot capacity requirements are specified in
+`docs/engineering/CONFIG-STARTUP-SETTINGS-DECISIONS.md`. DISK.FDF and normalized
+format descriptors remain the source of format definitions. CONFIG shall not
+embed a second divergent catalogue.
+
+5. MEMORY AND RESIDENT ENVIRONMENT
+
+CONFIG shall display the current and next-boot PDS sizes, the capacity required
+by the proposed configuration, the resulting TPA and whether a cold boot is
+required. Runtime PDS contraction is forbidden. PDS growth and resident-layout
+reconstruction follow `18 Persistent Data Segment.txt` and `21 Stateful RSX
+Reconstruction ABI.txt` rather than ad-hoc CONFIG relocation code.
+
+CONFIG shall manage the saved cold-boot RSX and CPX profile, including module
+order, reconstruction class, dependencies and measured memory cost. Loading or
+unloading a module in the current session remains a runtime module-manager
+operation. Saving the startup profile does not make CONFIG the owner of the
+module's private data.
+
+6. COMMAND ENVIRONMENT, SEARCH PATH AND STARTUP
+
+One CONFIG category shall manage command-environment defaults, including the
+system search path and one optional startup command. Named-directory records,
+history contents and security databases remain owned by their implementing
+services and utilities. CONFIG may select their modules for cold-boot loading
+and display their memory cost.
+
+6.1 Startup command record
+
+The startup record contains:
+
+  enabled/disabled state;
+  one ordinary CCP command line, including its arguments.
+
+An empty command disables execution. The stored line uses the normal CCP input
+limit, no more than 127 characters. One command is sufficient because a user
+may select `SUBMIT STARTUP` to run a longer sequence.
+
+Examples include:
+
+  SUBMIT STARTUP
+  NDR LOAD DEVLPMNT
+  DIR
+  WS WORK.DOC
+
+CONFIG shall allow the command to be inspected, edited, cleared and tested in
+the current environment. Testing it does not mark the cold-boot command as
+completed and shall state that it is an immediate test.
+
+6.2 Startup execution semantics
+
+The configured startup command runs once after a successful cold boot. It does
+not run after ordinary warm boots or every reconstruction of the CCP.
+
+Before executing it, the system shall:
+
+  initialize the resident system and PDS;
+  establish configured devices and logical drives;
+  reconstruct the saved RSX and CPX profiles;
+  publish resident services;
+  establish the saved search path and command environment.
+
+The system sets a session `startup executed` flag before dispatching the
+command. The flag survives warm boot and prevents a command which terminates
+through warm boot from creating an execution loop. Cold boot clears the flag.
+The flag is system state; the command text remains saved configuration and does
+not require permanent PDS storage after initialization.
+
+If the command is absent, fails, cannot be found or returns, the normal CCP
+prompt appears. Failure shall not repeat the command automatically.
+
+A documented recovery gesture, initially Ctrl-C during the startup-command
+window where the platform can support it, shall suppress automatic execution
+for that cold boot without erasing the saved command. Headless platforms shall
+provide an equivalent platform recovery method. Recovery shall remain possible
+when the stored command or search path is invalid.
+
+7. FEATURE OWNERSHIP
+
+CONFIG selects system policy and startup participation. It does not absorb
+feature databases merely because they are configurable.
+
+  NDR.RSX owns named-directory definitions;
+  HISTORY.RSX owns command-history contents and policy specific to history;
+  a future security service owns security policy and credentials;
+  a future terminal service owns detailed terminal definitions;
+  clock providers own provider-specific clock behavior.
+
+Their transient management utilities remain the detailed editors. CONFIG may
+show whether such a service is present, choose whether it loads at cold boot,
+and invoke a public service or utility where useful.
+
+8. USER INTERFACE ORGANIZATION
+
+The final labels may evolve, but CONFIG should converge on categories equivalent
+to:
+
+  System device assignments
+  Keyboard settings
+  Terminal/video profile
+  List/printer settings
+  Serial ports
+  Physical disk drives
+  Logical drives and disk formats
+  Disk-format catalogue and workbench
+  Memory and PDS configuration
+  Resident startup profile
+  Command environment, search path and startup
+  Save or load configuration
+
+This is a user-interface organization, not a fixed letter assignment or ABI.
+CONFIG shall clearly mark unavailable, session-only, pending and reboot-required
+values. It shall show consequences such as TPA reduction before a user commits
+a memory or resident-profile change.
+
+9. IMPLEMENTATION ORDER
+
+CONFIG may be completed incrementally:
+
+  1. retain and qualify the implemented disk panels and format workbench;
+  2. implement versioned saved configuration and the two save scopes;
+  3. add startup-command storage, once-only cold-boot dispatch and recovery;
+  4. add PDS/memory and resident-profile panels as their ABIs become real;
+  5. add capability-driven device, keyboard, printer and serial panels;
+  6. add terminal-profile selection after its service contract is designed.
+
+Each increment shall preserve stock CP/M console and program behavior. A menu
+entry shall not claim support before its active and saved behavior is tested.

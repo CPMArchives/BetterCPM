@@ -89,3 +89,25 @@ whether the change requires cold boot. Optimize the default implementation
 before charging users additional RAM; never sacrifice correctness to keep
 the headline size. These are configuration design requirements, not claims
 that every proposed setting is already implemented.
+
+## Startup command
+
+CONFIG shall store one optional ordinary CCP command line as part of the saved
+command-environment defaults. It runs once after cold boot, after device,
+logical-drive, RSX, CPX, resident-service and search-path initialization. It
+shall not run after warm boot or CCP reconstruction.
+
+Set the warm-boot-persistent `startup executed` flag before dispatch so a
+startup command which terminates through warm boot cannot loop. Cold boot
+clears the flag. An empty line disables the facility; `SUBMIT STARTUP` is the
+normal way to request a multi-command sequence. The command follows the CCP
+line-length limit and includes ordinary arguments.
+
+Failure returns to the normal prompt without automatic retry. Provide a
+cold-boot recovery gesture, initially Ctrl-C where the platform permits, which
+suppresses execution for that boot without erasing the saved line. CONFIG shall
+allow inspection, editing, clearing and an explicitly immediate test of the
+command.
+
+The complete CONFIG scope and ownership rules are specified by
+`docs/architecture/24 Configuration Architecture.txt`.
