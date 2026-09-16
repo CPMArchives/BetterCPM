@@ -840,6 +840,7 @@ WTRYLP: PUSH BC
         BIT 6,A
         RET NZ
         DJNZ WTRYLP
+        OR A                ; DJNZ sets Z on the exhausted final retry
         RET
 
  ; Find the physical sector containing RECNO; shared size decoding handles

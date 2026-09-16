@@ -50,9 +50,11 @@ physical/logical setters are implemented. A remains the protected bootstrap
 format; B-D can be rebound by CONFIG to uniform, double-sided, and FDF-assisted
 raw layouts. The adapter deblocks 256-, 512-, and 1024-byte sectors into CP/M
 records. The raw host representation contains decoded sector bytes, including
-for hardware formats whose controller representation is inverted. WD-style
-write-track formatting remains unsupported because a raw file needs no
-controller-level format operation.
+for hardware formats whose controller representation is inverted. DUP formats
+uniform raw media by initializing every mapped physical sector to E5 and then
+performing its normal read-back verification. Optional FDF conventions and
+explicit mixed-size maps remain unsupported by the raw formatter because their
+mapping service cannot be called recursively from the disk-configuration API.
 The inverse-character service reports unavailable and menus use plain output.
 RSX load/unload and the shared CPX controls remain available.
 

@@ -1,17 +1,18 @@
         INCLUDE layout.inc
+        INCLUDE bioslinks.inc
         INCLUDE cpxlinks.inc
 ; Z80PACK RAW-DISK CONFIGURATION OVERLAY
 ;
 ; Vector ABI shared with the common disk service.  cpmsim has no physical
-; formatter, so format vectors deliberately report unsupported; physical and
-; logical definitions are fully runtime-settable.
+; formatter.  The format vector initializes every mapped raw record to E5 for
+; uniform formats; physical and logical definitions are runtime-settable.
 
         ASEG
         ORG LY_CFG
 
         JP ZC_PHYS
         JP ZC_LOG
-        JP ZC_UNSUP
+        JP ZC_FORMAT
         JP BF_CPXCTL
         JP ZC_GETPH
         JP ZC_GETLOG
@@ -54,13 +55,150 @@ ZC_LOG:
 
         LD A,(IX+1)
         CP 0FFH
-        JR NZ,ZC_ATTACH
+        JP NZ,ZC_ATTACH
         LD A,(ZC_DRIVE)
         CALL ZC_DPH
         LD DE,16
         ADD HL,DE
         LD (HL),0FFH
         JP ZC_OK
+
+; IX=request: logical drive, cylinder, side, stream length, stream address.
+; A raw image has no WD track structure to generate.  Formatting therefore
+; writes an E5-filled physical sector through the resident mapper for every
+; logical record which belongs to the requested surface.  Repeated records in
+; a multi-record physical sector are harmless and keep this overlay compact.
+; Optional FDF conventions and explicit mixed-size maps are rejected because
+; their mapper may require a recursive BDOS service call.
+ZC_FORMAT:
+        PUSH IY
+        LD A,(IX+0)
+        OR A
+        JP Z,ZCF_UNSUP
+        CP 4
+        JP NC,ZCF_INVALID
+        CALL ZC_DPH
+        LD DE,16
+        ADD HL,DE
+        PUSH HL
+        POP IY
+        LD A,(IY+19)
+        AND 00FH
+        JP NZ,ZCF_UNSUP
+        LD A,(IY+52)
+        OR A
+        JP NZ,ZCF_UNSUP
+        LD A,(IX+1)
+        CP (IY+16)
+        JP NC,ZCF_INVALID
+        LD (ZCF_CYL),A
+        LD A,(IX+2)
+        CP 2
+        JP NC,ZCF_INVALID
+        LD (ZCF_SIDE),A
+
+; Validate and fill the caller's first 1K of track workspace.
+        LD L,(IX+5)
+        LD H,(IX+6)
+        LD A,H
+        OR A
+        JP Z,ZCF_INVALID
+        PUSH HL
+        LD DE,1024
+        ADD HL,DE
+        LD DE,LY_TPA
+        OR A
+        SBC HL,DE
+        POP HL
+        JP NC,ZCF_INVALID
+        LD (HL),0E5H
+        LD D,H
+        LD E,L
+        INC DE
+        LD BC,1023
+        LDIR
+        LD L,(IX+5)
+        LD H,(IX+6)
+        LD (ZCF_BUFFER),HL
+
+; Derive the logical track and record interval for this physical surface.
+        LD A,(ZCF_CYL)
+        LD (ZCF_TRACK),A
+        LD HL,0
+        LD (ZCF_FIRST),HL
+        LD L,(IY+1)
+        LD H,(IY+2)
+        LD A,(IY+19)
+        BIT 5,A
+        JR NZ,ZCF_CYLINDER
+        BIT 6,A
+        JR Z,ZCF_SINGLE
+        LD A,(ZCF_TRACK)
+        ADD A,A
+        LD B,A
+        LD A,(ZCF_SIDE)
+        ADD A,B
+        LD (ZCF_TRACK),A
+        JR ZCF_RANGE
+ZCF_SINGLE:
+        LD A,(ZCF_SIDE)
+        OR A
+        JR NZ,ZCF_INVALID
+        JR ZCF_RANGE
+ZCF_CYLINDER:
+        SRL H
+        RR L
+        LD A,(ZCF_SIDE)
+        OR A
+        JR Z,ZCF_RANGE
+        LD (ZCF_FIRST),HL
+ZCF_RANGE:
+        LD DE,(ZCF_FIRST)
+        ADD HL,DE
+        LD (ZCF_LIMIT),HL
+
+        LD A,(IX+0)
+        LD (BIO_DRIVE),A
+        LD A,(ZCF_TRACK)
+        LD (BIO_TRACK),A
+        XOR A
+        LD (BIO_TRACK+1),A
+        LD HL,(ZCF_FIRST)
+ZCF_RECORD:
+        LD (BIO_SECTOR),HL
+        PUSH HL
+        CALL LY_DISK+3
+        POP DE
+        OR A
+        JR NZ,ZCF_IOERR
+        PUSH DE
+        LD HL,(ZCF_BUFFER)
+        CALL LY_DISK+12
+        POP HL
+        OR A
+        JR NZ,ZCF_IOERR
+        INC HL
+        LD DE,(ZCF_LIMIT)
+        OR A
+        SBC HL,DE
+        ADD HL,DE
+        JR C,ZCF_RECORD
+        POP IY
+        JP ZC_OK
+
+ZCF_IOERR:
+        LD L,A
+        LD H,0
+        POP IY
+        POP IX
+        OR A
+        RET
+ZCF_INVALID:
+        POP IY
+        JP ZC_INVALID
+ZCF_UNSUP:
+        POP IY
+        JP ZC_UNSUP
 
 ZC_ATTACH:
         CP 4
@@ -285,3 +423,9 @@ ZP_PHYSICAL EQU 0FFFFH
 
 ZC_DRIVE:  DB 0
 ZC_PHYPTR: DW 0
+ZCF_BUFFER:DW 0
+ZCF_FIRST: DW 0
+ZCF_LIMIT: DW 0
+ZCF_TRACK: DB 0
+ZCF_CYL:   DB 0
+ZCF_SIDE:  DB 0

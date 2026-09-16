@@ -71,6 +71,7 @@ def main():
  es=symbols(out/'extensions.lst')
  ds=symbols(out/'disk.lst')
  config=read('src/platform/z80pack/config.mac')
+ config=config.replace('        INCLUDE bioslinks.inc',bioslinks)
  config=config.replace('        INCLUDE cpxlinks.inc',
                        equ(es,('EX_RETURN','BCX_MVAL')))
  config=config.replace('ZP_PHYSICAL EQU 0FFFFH',

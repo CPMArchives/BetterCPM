@@ -219,10 +219,14 @@ untargeted-track preservation on private images. Its `same`, `mixed`, `bad`,
 `protected`, and `abort` modes cover matching formats, mixed sector sizes, bad
 CRCs, write protection and interruption. The mixed case uses FDF.RSX.
 
-The z80pack adapter accepts format binding changes but rejects write-track
-requests; formatting a raw host file remains a host-side operation.
-Copy between matching fixed-format bindings and read-only checking use its
-standard BIOS interface; cross-format copying requires adapter support.
+The z80pack adapter accepts format binding changes and formats uniform raw
+media by writing E5 through the active logical-to-raw mapping. DUP performs its
+ordinary record-by-record read-back verification afterward. Optional FDF
+conventions and explicit mixed-size maps remain unsupported by the raw
+formatter because their mapping service cannot be called recursively from the
+disk-configuration API. Copy between matching bindings and read-only checking
+use the standard BIOS interface; cross-format copying requires both formats to
+be supported by the adapter.
 
 Real-hardware timing and native ZSM4 parity for these new utilities remain
 unverified. Tests of other BIOS services are documented separately.
@@ -258,7 +262,10 @@ still compared after formatting and copying. The cache expires at every track
 and pass. z80pack reads 128-byte media directly and stages larger physical
 sectors through the shared buffer for deblocking and read-modify-write.
 The cache occupies idle write-track workspace, adding no resident memory and
-preserving the 54,273-byte TPA without an RSX.
+preserving the 54,273-byte TPA without an RSX. z80pack stages larger physical
+sectors at size-dependent offsets in the shared buffer, so it advertises no
+single stable physical-sector buffer to DUP. DUP uses ordinary BIOS record
+reads for verification on that platform.
 
 DUP 1.14 explains CRC, unavailable-sector, not-ready, write-protection and
 comparison errors while retaining the numeric status. Formatting failures also

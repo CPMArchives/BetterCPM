@@ -643,7 +643,9 @@ Z_RETURN:
 Z_INFO:
         DB 'BDCF',5,4,4,64
         DW Z_PHYSICAL,LY_TAB
-        DW LY_BUF,0
+        ; Deblocking stages different sector sizes at different offsets.
+        ; Do not advertise one address as a stable complete-sector buffer.
+        DW 0,0
 
 Z_PHYSICAL:
         REPT 4
