@@ -1,0 +1,109 @@
+; Phase-3 STATEFUL reconstruction qualification provider.
+; The STAT service deliberately contains every value the movement contract
+; must distinguish: mutable bytes, a linked pointer, a runtime-created pointer,
+; and fixed/null/sentinel words.
+
+RSXBASE         EQU     08000H
+BDOS            EQU     00005H
+
+        CSEG
+        .PHASE  RSXBASE
+
+SR_NEXT:        DW      BDOS
+SR_ENTRY:       DW      SR_DISPATCH
+SR_CALLS:       DB      0,0
+                DW      0
+
+SR_DISPATCH:
+        LD      HL,(SR_NEXT)
+        JP      (HL)
+
+; STAT qualification ABI 1.0.  DE points to a 16-byte request:
+;   +0 version (1), +1 length (16), +2 operation
+; Operation 0 initializes the mutable state and runtime pointer.
+; Operation 1 increments the counter and first buffer byte.
+; Operation 2 returns counter, pointer slots and buffer observations:
+;   +4 counter, +6 runtime pointer, +8 linked pointer, +10 fixed pointer,
+;   +12 null pointer, +14 sentinel; A returns the first buffer byte.
+SR_SERVICE:
+        LD      A,(DE)
+        CP      1
+        JR      NZ,SR_BAD
+        INC     DE
+        LD      A,(DE)
+        CP      16
+        JR      NZ,SR_BAD
+        INC     DE
+        LD      A,(DE)
+        OR      A
+        JR      Z,SR_INIT
+        CP      1
+        JR      Z,SR_MUTATE
+        CP      2
+        JR      Z,SR_REPORT
+SR_BAD:
+        LD      A,0FFH
+        LD      HL,0
+        RET
+
+SR_INIT:
+        LD      HL,0
+        LD      (SR_COUNTER),HL
+        LD      HL,SR_BUFFER
+        LD      (SR_RUNTIME),HL
+        LD      A,0A1H
+        LD      (SR_BUFFER),A
+        LD      A,0B2H
+        LD      (SR_BUFFER+1),A
+        LD      A,0C3H
+        LD      (SR_BUFFER+2),A
+        LD      A,0D4H
+        LD      (SR_BUFFER+3),A
+        XOR     A
+        RET
+
+SR_MUTATE:
+        LD      HL,(SR_COUNTER)
+        INC     HL
+        LD      (SR_COUNTER),HL
+        LD      HL,(SR_RUNTIME)
+        INC     (HL)
+        XOR     A
+        RET
+
+SR_REPORT:
+        INC     DE
+        INC     DE
+        LD      HL,(SR_COUNTER)
+        LD      A,L
+        LD      (DE),A
+        INC     DE
+        LD      A,H
+        LD      (DE),A
+        INC     DE
+        LD      HL,SR_RUNTIME
+        LD      B,5
+SR_RLOOP:
+        LD      A,(HL)
+        LD      (DE),A
+        INC     HL
+        INC     DE
+        LD      A,(HL)
+        LD      (DE),A
+        INC     HL
+        INC     DE
+        DJNZ    SR_RLOOP
+        LD      A,(SR_BUFFER)
+        LD      HL,SR_BUFFER
+        RET
+
+SR_RUNTIME:    DW      0               ; declared runtime pointer slot
+SR_LINKED:     DW      SR_BUFFER       ; ordinary linked relocation slot
+SR_FIXED:      DW      BDOS            ; fixed address, never adjusted
+SR_NULL:       DW      0
+SR_SENTINEL:   DW      0FFFFH
+SR_COUNTER:    DW      0
+SR_BUFFER:     DB      0,0,0,0
+
+        .DEPHASE
+        END
