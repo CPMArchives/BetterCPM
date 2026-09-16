@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Build the self-contained BetterCP/M source and native-tools disk.
+"""Build BetterCP/M's native build disk and complete-source companion.
 
-The disk uses the MM 80-track, double-sided DATA layout: no reserved system
-tracks, 2K allocation blocks, and a 128-entry directory.  All build tools and
-sources reside in user zero.  SOURCES.DOC records the shortened or disambiguated
-8.3 name assigned to every repository path.
+Both disks use the MM 80-track, double-sided DATA layout: no reserved system
+tracks, 2K allocation blocks, and a 128-entry directory. All files reside in
+user zero. SOURCES.DOC records the shortened or disambiguated 8.3 names.
 """
 from __future__ import annotations
 
@@ -26,6 +25,43 @@ DIRECTORY_ENTRIES = 128
 FIRST_DATA_BLOCK = 2
 BLOCK_COUNT = RAW_SIZE // BLOCK_SIZE
 
+BUILD_SOURCES = (
+    ("BOOT.MAC", "src/platform/trs80m4/boot.mac"),
+    ("STAGE1.MAC", "src/platform/trs80m4/stage1.mac"),
+    ("GATEWAY.MAC", "src/system/gateway.mac"),
+    ("BDOS.MAC", "src/bdos/unified.mac"),
+    ("EXTENS.MAC", "src/system/extensions.mac"),
+    ("DISK.MAC", "src/bios/disk.mac"),
+    ("BIOS.MAC", "src/bios/bios.mac"),
+    ("FILELOAD.MAC", "src/system/fileloader.mac"),
+    ("TABLES.MAC", "src/bios/tables.mac"),
+    ("CCPRELOD.MAC", "src/platform/trs80m4/commandreload.mac"),
+    ("RSXSEL.MAC", "src/platform/trs80m4/rsxselect.mac"),
+    ("CONFIG.MAC", "src/bios/config.mac"),
+    ("RSXLOAD.MAC", "src/system/rsxloader.mac"),
+    ("RSXVALID.MAC", "src/system/rsxvalidator.mac"),
+    ("RSXPUBL.MAC", "src/system/rsxpublish.mac"),
+    ("RSXRESOL.MAC", "src/system/rsxresolver.mac"),
+    ("CCP.MAC", "src/ccp/ccp.mac"),
+    ("CCPALT.MAC", "src/ccp/ccp.mac"),
+    ("CCPCHK.MAC", "src/ccp/ccp.mac"),
+)
+
+BUILD_INCLUDES = (
+    ("LAYOUT.INC", "src/system/layout.inc"),
+    ("HARDWARE.INC", "src/platform/trs80m4/hardware.inc"),
+    ("M4DISK.INC", "src/platform/trs80m4/m4disk.inc"),
+    ("BIOSPLAT.INC", "src/bios/biosplat.inc"),
+    ("M4CONS.INC", "src/platform/trs80m4/m4cons.inc"),
+    ("M4SCROLL.INC", "src/platform/trs80m4/m4scroll.inc"),
+    ("RELOAD.INC", "src/platform/trs80m4/reload.inc"),
+    ("VERSIONS.INC", "src/bdos/versions.inc"),
+    ("CORE.INC", "build/system/core.inc"),
+    ("BIOSLINK.INC", "build/system/bioslink.inc"),
+    ("DISKLINK.INC", "build/system/disklink.inc"),
+    ("CPXLINK.INC", "build/system/cpxlink.inc"),
+)
+
 TOOL_SEARCH = (
     Path("/Users/nathanael/projects/git/cpm-compatibility/suite/build-tools"),
     Path("/Users/nathanael/git/cpm-compatibility/suite/build-tools"),
@@ -35,6 +71,22 @@ def text_file(data: bytes) -> bytes:
     """Give a host text file the conventional CP/M text-file ending."""
     text = data.decode("ascii").replace("\r\n", "\n").replace("\r", "\n")
     return text.replace("\n", "\r\n").encode("ascii") + b"\x1a"
+
+
+def build_source(data: bytes, name: str) -> bytes:
+    """Rewrite host-only include stems to canonical CP/M 8.3 names."""
+    text = data.decode("ascii")
+    for host, native in (("bioslinks.inc", "bioslink.inc"),
+                         ("disklinks.inc", "disklink.inc"),
+                         ("cpxlinks.inc", "cpxlink.inc")):
+        text = text.replace(host, native)
+    if name == "CCPALT.MAC":
+        text = text.replace("CCPBASE         EQU     0BB00H",
+                            "CCPBASE         EQU     0BC01H")
+    elif name == "CCPCHK.MAC":
+        text = text.replace("CCPBASE         EQU     0BB00H",
+                            "CCPBASE         EQU     0BD37H")
+    return text_file(text.encode("ascii"))
 
 
 def cpm_name(path: Path, used: set[str]) -> str:
@@ -134,7 +186,7 @@ def find_tools(explicit: Path | None) -> Path:
 
 
 def build_docs(mapping: list[dict[str, object]], tools: Path) -> tuple[bytes, bytes]:
-    areas = ["USER 0  ALL SOURCES, BUILD.DOC, SOURCES.DOC, ZSM4.COM, LINK.COM"]
+    areas = ["USER 0  BUILD SOURCES, BUILD.SUB, DOCS, ZSM4, LINK, BUILD TOOLS"]
     guide = """BETTERCP/M SOURCE AND NATIVE BUILD DISK
 
 This is an MM 80T DS DATA disk: 800K, 512-byte sectors, 2K blocks,
@@ -155,31 +207,21 @@ ASSEMBLING A TRANSIENT PROGRAM
   B0:LINK B:ERA[A]
 
 ZSM4 creates ERA.REL and LINK creates ERA.COM.  SOURCES.DOC maps every
-shortened CP/M filename back to its repository path.  Several resident and
-platform modules need generated link-symbol includes.  Once the standard
-binary products below have been assembled, SYSBUILD composes SYSTEM.SYS.
+shortened CP/M filename back to its repository path.
 
 BUILDING THE OPERATING SYSTEM
 
-The resident sources assemble the same way, but the linked pieces are not a
-single ordinary COM file.  BetterCP/M's boot sector, stage-one loader, packed
-resident image, reloader, control overlay, RSX manager, and relocatable CCP
-must be placed at defined offsets in a 20K protected-system image.
+BUILD.SUB, the canonical 8.3 source names, and the generated link-symbol
+includes form one coherent build snapshot. Run the complete native build in
+user zero:
 
-The repository's host build can perform that composition:
+  A0:SUBMIT B:BUILD
 
-  python3 tools/build_complete_system.py
-
-It writes build/trs80/BetterCPM-Extended-80T-DS-System-790K.dmk.  For native
-composition, put these products in the current CP/M directory:
-
-  BOOT.BIN STAGE1.BIN RESIDENT.BIN CCPRELOD.BIN RSXSEL.BIN CONFIG.BIN
-  RSXLOAD.BIN RSXVALID.BIN RSXPUBL.BIN RSXRESOL.BIN CCP.RLM
-
-Run SYSBUILD to create and read-back verify the canonical 160-record
-SYSTEM.SYS package.  Then use SYSGEN SYSTEM.SYS B: to install and verify it
-on a prepared SYSTEM disk.  SYSGEN A: B: instead obtains the package from an
-already bootable source disk.
+BUILD.SUB selects B:, assembles and links every component. RESPACK constructs the packed
+RESIDENT.BIN payload, then SYSBUILD creates and read-back verifies the
+161-record SYSTEM.SYS package. Use SYSGEN SYSTEM.SYS C: to install and verify
+it on a prepared SYSTEM disk. SYSGEN A: C: instead obtains the package from
+an already bootable source disk.
 
 INSTALLING AN EXISTING BUILT SYSTEM
 
@@ -212,28 +254,38 @@ def main() -> None:
                         default=OUT / "BetterCPM-Build-80T-DS-800K.dmk")
     args = parser.parse_args()
     tools = find_tools(args.tools)
-    subprocess.run([sys.executable, str(ROOT / "tools/build_disk_utilities.py")],
+    subprocess.run([sys.executable, str(ROOT / "tools/build_complete_system.py")],
                    cwd=ROOT, check=True)
 
     files: list[tuple[int, str, bytes]] = []
     mapping: list[dict[str, object]] = []
     used: dict[int, set[str]] = {user: set() for user in range(16)}
-    for source in sorted((ROOT / "src").rglob("*")):
-        if not source.is_file():
-            continue
-        user, label = source_area(source)
-        name = cpm_name(source, used[user])
-        content = text_file(source.read_bytes())
-        files.append((user, name, content))
-        mapping.append({"user": user, "area": label, "name": name,
-                        "source": str(source.relative_to(ROOT))})
-
+    for name, relative in BUILD_SOURCES:
+        source = ROOT / relative
+        used[0].add(name)
+        files.append((0, name, build_source(source.read_bytes(), name)))
+        mapping.append({"user": 0, "area": "NATIVE BUILD", "name": name,
+                        "source": relative})
+    for name, relative in BUILD_INCLUDES:
+        source = ROOT / relative
+        used[0].add(name)
+        files.append((0, name, text_file(source.read_bytes())))
+        mapping.append({"user": 0, "area": "NATIVE BUILD", "name": name,
+                        "source": relative})
+    build_sub = ROOT / "src/utilities/system-build.sub"
+    used[0].add("BUILD.SUB")
+    files.append((0, "BUILD.SUB", text_file(build_sub.read_bytes())))
+    mapping.append({"user": 0, "area": "NATIVE BUILD", "name": "BUILD.SUB",
+                    "source": str(build_sub.relative_to(ROOT))})
     for name in ("ZSM4.COM", "LINK.COM"):
         used[0].add(name)
         files.append((0, name, (tools / name).read_bytes()))
-    for name in ("SYSBUILD.COM", "SYSGEN.COM"):
+    for name in ("SUBMIT.COM", "SYSBUILD.COM", "SYSGEN.COM", "RESPACK.COM",
+                 "RLMBUILD.COM"):
         used[0].add(name)
         files.append((0, name, (ROOT / "build/utilities" / name).read_bytes()))
+    used[0].add("BATCHIO.RSX")
+    files.append((0, "BATCHIO.RSX", (ROOT / "build/rsx/BATCHIO.RSX").read_bytes()))
     license_path = tools / "zsm4-source/LICENSE"
     if license_path.is_file():
         files.append((0, "ZSM4.LIC", text_file(license_path.read_bytes())))
@@ -253,12 +305,15 @@ def main() -> None:
     verify(args.output.read_bytes(), require_blank=False)
     flat = args.output.with_suffix(".img")
     flat.write_bytes(raw)
+    z80pack = args.output.with_suffix(".dsk")
+    z80pack.write_bytes(raw)
     diskdefs = args.output.with_name("diskdefs-build")
     diskdefs.write_text("""diskdef bettercpm-build\n seclen 512\n tracks 160\n sectrk 10\n blocksize 2048\n maxdir 128\n skew 1\n boottrk 0\n os 2.2\nend\n""")
     report = {
         "format": "MM 80T DS DATA 800K",
         "dmk": args.output.name,
         "flat": flat.name,
+        "z80pack": z80pack.name,
         "sha256": hashlib.sha256(args.output.read_bytes()).hexdigest(),
         "files": len(files),
         "directory_entries_used": sum(max(1, ((len(data) + 127) // 128 + 127) // 128)
@@ -273,6 +328,36 @@ def main() -> None:
           f"{report['directory_entries_used']}/{DIRECTORY_ENTRIES} directory entries, "
           f"{report['allocation_blocks_used']}/{BLOCK_COUNT} blocks)")
     print(f"{report['sha256']}  {args.output.relative_to(ROOT)}")
+
+    # The complete and growing source tree no longer shares an 800K disk with
+    # the native toolchain. Preserve it on a companion image with the same
+    # physical/data format and a complete 8.3 path map.
+    archive_files: list[tuple[int, str, bytes]] = []
+    archive_map: list[dict[str, object]] = []
+    archive_used: set[str] = {"README.DOC", "SOURCES.DOC"}
+    for source in sorted((ROOT / "src").rglob("*")):
+        if not source.is_file() or source.name.startswith("."):
+            continue
+        name = cpm_name(source, archive_used)
+        archive_files.append((0, name, text_file(source.read_bytes())))
+        archive_map.append({"user": 0, "area": "SOURCE", "name": name,
+                            "source": str(source.relative_to(ROOT))})
+    archive_doc = ["BETTERCP/M COMPLETE SOURCE DISK", "",
+                   "This companion disk preserves the complete src/ tree.",
+                   "Use the build disk, BUILD.SUB and its canonical source",
+                   "names to build SYSTEM.SYS. SOURCES.DOC maps this archive.", ""]
+    archive_manifest = ["BETTERCP/M SOURCE FILE MAP", "", "CP/M NAME    SOURCE PATH", ""]
+    archive_manifest.extend(f" 0:{item['name']:12} {item['source']}"
+                            for item in sorted(archive_map, key=lambda row: str(row["name"])))
+    archive_files.extend(((0, "README.DOC", text_file(("\n".join(archive_doc) + "\n").encode("ascii"))),
+                          (0, "SOURCES.DOC", text_file(("\n".join(archive_manifest) + "\n").encode("ascii")))))
+    archive_raw = install_files(archive_files)
+    archive_output = args.output.with_name("BetterCPM-Sources-80T-DS-800K.dmk")
+    archive_output.write_bytes(build(archive_raw))
+    verify(archive_output.read_bytes(), require_blank=False)
+    archive_output.with_suffix(".img").write_bytes(archive_raw)
+    archive_output.with_suffix(".dsk").write_bytes(archive_raw)
+    print(f"created {archive_output} ({len(archive_files)} files)")
 
 
 if __name__ == "__main__":

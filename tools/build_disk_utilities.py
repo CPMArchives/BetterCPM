@@ -3,7 +3,9 @@
 from pathlib import Path
 import argparse
 import json
+import math
 from build_ccp import assemble
+from system_layout import expand_layout
 ROOT = Path(__file__).resolve().parents[1]
 
 def builtin_source():
@@ -19,9 +21,27 @@ def main():
     out=ROOT/'build/utilities'
     out.mkdir(parents=True,exist_ok=True)
     builtin=builtin_source()
-    for stem in ('config','dup','sysgen','sysbuild'):
+    ccp = (ROOT/'build/ccp/ccp.bin').read_bytes()
+    rlm = (ROOT/'build/ccp/ccp.rlm').read_bytes()
+    relocations = int.from_bytes(rlm[14:16], 'little')
+    ccpmeta = (f"CCP_SIZE EQU {len(ccp)}\n"
+               f"CCP_ALLOC EQU {(len(ccp)+255)&~255}\n"
+               f"CCP_RECORDS EQU {math.ceil(len(ccp)/128)}\n"
+               f"CCP_RELOCS EQU {relocations}\n")
+    partmeta = "".join(
+        f"{symbol}_SIZE EQU {(ROOT/path).stat().st_size}\n"
+        for symbol, path in (
+            ('GATEWAY', 'build/system/gateway.bin'),
+            ('BDOS', 'build/bdos/bdos.bin'),
+            ('EXTENS', 'build/system/extensions.bin'),
+            ('DISK', 'build/system/disk.bin'),
+            ('BIOS', 'build/bios/bios.bin'),
+            ('FILELOAD', 'build/system/fileloader.bin'),
+            ('TABLES', 'build/system/tables.bin'),
+        ))
+    for stem in ('config','dup','sysgen','sysbuild','respack','rlmbuild'):
         source=ROOT/f'src/utilities/{stem}.mac'
-        text=source.read_text().replace('        INCLUDE disk/sysgen.inc',
+        text=expand_layout(source.read_text()).replace('        INCLUDE ccpmeta.inc', ccpmeta).replace('        INCLUDE partmeta.inc', partmeta).replace('        INCLUDE disk/sysgen.inc',
             (ROOT/'src/utilities/disk/sysgen.inc').read_text()).replace('        INCLUDE disk/common.inc',
             (ROOT/'src/utilities/disk/common.inc').read_text()).replace('        INCLUDE disk/builtins.inc', builtin)
         data=assemble(args.assembler,text,out/(stem.upper()+'.COM'),out/(stem+'.lst'),0x100)

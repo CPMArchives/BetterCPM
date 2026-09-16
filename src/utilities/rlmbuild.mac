@@ -1,0 +1,268 @@
+; RLMBUILD -- construct CCP.RLM from three native absolute CCP links.
+;
+; CCPBASE.BIN is linked at BB00h, CCPALT.BIN at BC01h and CCPCHK.BIN at
+; BD37h. A relocatable word is therefore exactly one whose alternate values
+; equal the base word plus 0101h and 0237h. The host builder independently
+; uses the same two-origin proof.
+        INCLUDE ccpmeta.inc
+        ASEG
+        ORG     0100H
+BDOS    EQU     5
+BASEBUF EQU     04000H
+ALTBUF  EQU     05600H
+CHKBUF  EQU     06C00H
+HEADER  EQU     08200H
+HDRSIZE EQU     1024
+LINKBASE EQU    0BB00H
+
+START:  LD      SP,03F00H
+        LD      DE,BANNER
+        CALL    PRINT
+        LD      HL,BASEBUF
+        LD      DE,BASEBUF+1
+        LD      BC,03FFFH
+        XOR     A
+        LD      (HL),A
+        LDIR
+        LD      DE,BASEFCB
+        LD      HL,BASEBUF
+        CALL    LOAD
+        JP      NZ,FAIL
+        LD      DE,ALTFCB
+        LD      HL,ALTBUF
+        CALL    LOAD
+        JP      NZ,FAIL
+        LD      DE,CHKFCB
+        LD      HL,CHKBUF
+        CALL    LOAD
+        JP      NZ,FAIL
+
+        LD      HL,HEADER
+        LD      DE,HEADER+1
+        LD      BC,HDRSIZE-1
+        XOR     A
+        LD      (HL),A
+        LDIR
+        LD      HL,MAGIC
+        LD      DE,HEADER
+        LD      BC,16
+        LDIR
+        XOR     A
+        LD      (OFFSET),A
+        LD      (OFFSET+1),A
+        LD      (RELOCS),A
+        LD      (RELOCS+1),A
+SCAN:   LD      HL,(OFFSET)
+        LD      DE,CCP_SIZE-1
+        OR      A
+        SBC     HL,DE
+        JR      NC,SCANDONE
+        LD      HL,BASEBUF
+        LD      DE,(OFFSET)
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (OLDWORD),DE
+        LD      HL,00101H
+        ADD     HL,DE
+        LD      (EXPECT),HL
+        LD      HL,ALTBUF
+        LD      DE,(OFFSET)
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,(EXPECT)
+        OR      A
+        SBC     HL,DE
+        JR      NZ,SCANNEXT
+        LD      DE,(OLDWORD)
+        LD      HL,00237H
+        ADD     HL,DE
+        LD      (EXPECT),HL
+        LD      HL,CHKBUF
+        LD      DE,(OFFSET)
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,(EXPECT)
+        OR      A
+        SBC     HL,DE
+        JR      NZ,SCANNEXT
+        LD      HL,(RELOCS)
+        LD      DE,CCP_RELOCS
+        OR      A
+        SBC     HL,DE
+        JP      NC,RELOCBAD
+        LD      HL,(RELOCS)
+        ADD     HL,HL
+        LD      DE,HEADER+16
+        ADD     HL,DE
+        LD      DE,(OFFSET)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      HL,(RELOCS)
+        INC     HL
+        LD      (RELOCS),HL
+SCANNEXT:
+        LD      HL,(OFFSET)
+        INC     HL
+        LD      (OFFSET),HL
+        JR      SCAN
+SCANDONE:
+        LD      HL,(RELOCS)
+        LD      DE,CCP_RELOCS
+        OR      A
+        SBC     HL,DE
+        JP      NZ,RELOCBAD
+        LD      HL,BASEBUF+CCP_SIZE
+        LD      DE,BASEBUF+CCP_SIZE+1
+        LD      BC,CCP_RECORDS*128-CCP_SIZE-1
+        XOR     A
+        LD      (HL),A
+        LDIR
+
+        LD      DE,OUTFCB
+        LD      C,19
+        CALL    BDOS
+        LD      DE,OUTFCB
+        LD      C,22
+        CALL    BDOS
+        INC     A
+        JP      Z,CREATEBAD
+        LD      HL,HEADER
+        LD      B,8
+        CALL    WRITE
+        JP      NZ,WRITEBAD
+        LD      HL,BASEBUF
+        LD      B,CCP_RECORDS
+        CALL    WRITE
+        JP      NZ,WRITEBAD
+        LD      DE,OUTFCB
+        LD      C,16
+        CALL    BDOS
+        INC     A
+        JP      Z,CLOSEBAD
+        LD      DE,DONE
+        CALL    PRINT
+        JP      0
+
+; DE=FCB, HL=destination. Require exactly CCP_RECORDS records.
+LOAD:   LD      (CURFCB),DE
+        LD      (CURPTR),HL
+        LD      C,15
+        CALL    BDOS
+        INC     A
+        JR      Z,LOADMISS
+        XOR     A
+        LD      (COUNT),A
+LOADLP: LD      A,(COUNT)
+        CP      CCP_RECORDS+1
+        JR      NC,LOADBAD
+        LD      DE,(CURPTR)
+        LD      C,26
+        CALL    BDOS
+        LD      DE,(CURFCB)
+        LD      C,20
+        CALL    BDOS
+        OR      A
+        JR      NZ,LOADEOF
+        LD      HL,(CURPTR)
+        LD      DE,128
+        ADD     HL,DE
+        LD      (CURPTR),HL
+        LD      HL,COUNT
+        INC     (HL)
+        JR      LOADLP
+LOADEOF:CP      1
+        JR      NZ,LOADBAD
+        LD      A,(COUNT)
+        CP      CCP_RECORDS
+        JR      NZ,LOADBAD
+        XOR     A
+        JR      LOADCLOSE
+LOADMISS:LD     A,1
+        JR      LOADCLOSE
+LOADBAD:LD      A,2
+LOADCLOSE:
+        PUSH    AF
+        LD      DE,(CURFCB)
+        LD      C,16
+        CALL    BDOS
+        POP     AF
+        OR      A
+        RET
+
+; HL=source, B=record count.
+WRITE:  PUSH    BC
+        PUSH    HL
+        EX      DE,HL
+        LD      C,26
+        CALL    BDOS
+        LD      DE,OUTFCB
+        LD      C,21
+        CALL    BDOS
+        POP     HL
+        POP     BC
+        OR      A
+        RET     NZ
+        LD      DE,128
+        ADD     HL,DE
+        DJNZ    WRITE
+        XOR     A
+        RET
+
+RELOCBAD:LD     A,3
+        JR      FAIL
+CREATEBAD:LD    A,4
+        JR      FAIL
+WRITEBAD:LD     A,5
+        JR      FAIL
+CLOSEBAD:LD     A,6
+FAIL:   PUSH    AF
+        LD      DE,ERRMSG
+        CALL    PRINT
+        POP     AF
+        CALL    HEXBYTE
+        LD      DE,CRLF
+        CALL    PRINT
+        JP      0
+PRINT:  LD      C,9
+        JP      BDOS
+HEXBYTE:PUSH    AF
+        RRCA
+        RRCA
+        RRCA
+        RRCA
+        CALL    HEXDIG
+        POP     AF
+HEXDIG: AND     0FH
+        ADD     A,'0'
+        CP      '9'+1
+        JR      C,HEXOUT
+        ADD     A,7
+HEXOUT: LD      E,A
+        LD      C,2
+        JP      BDOS
+
+BANNER: DB      'BetterCP/M CCP relocation builder',13,10,'$'
+DONE:   DB      'CCP.RLM created and verified.',13,10,'$'
+ERRMSG: DB      'RLMBUILD failed; status $'
+CRLF:   DB      13,10,'$'
+MAGIC:  DB      'BCM1',1,2
+        DW      LINKBASE,CCP_SIZE,CCP_ALLOC,0,CCP_RELOCS
+BASEFCB:DB 0,'CCPBASE BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+ALTFCB: DB 0,'CCPALT  BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+CHKFCB: DB 0,'CCPCHK  BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+OUTFCB: DB 0,'CCP     RLM',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+CURFCB: DW 0
+CURPTR: DW 0
+COUNT:  DB 0
+OFFSET: DW 0
+RELOCS: DW 0
+OLDWORD:DW 0
+EXPECT: DW 0
+        END
