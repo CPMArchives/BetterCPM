@@ -24,6 +24,37 @@ BLOCK_SIZE = 2048
 DIRECTORY_ENTRIES = 128
 FIRST_DATA_BLOCK = 2
 BLOCK_COUNT = RAW_SIZE // BLOCK_SIZE
+MM_800K_SKEW = (0, 2, 4, 6, 8, 1, 3, 5, 7, 9)
+
+
+def z80pack_raw(logical: bytes) -> bytes:
+    """Place logical MM sectors into z80pack's physical image slots."""
+    sector_size = 512
+    track_size = len(MM_800K_SKEW) * sector_size
+    if len(logical) % track_size:
+        raise ValueError("MM image is not an integral number of tracks")
+    physical = bytearray(len(logical))
+    for base in range(0, len(logical), track_size):
+        for logical_sector, physical_slot in enumerate(MM_800K_SKEW):
+            source = base + logical_sector * sector_size
+            target = base + physical_slot * sector_size
+            physical[target:target + sector_size] = logical[source:source + sector_size]
+    return bytes(physical)
+
+
+def z80pack_logical(physical: bytes) -> bytes:
+    """Undo z80pack_raw for qualification and host-side inspection."""
+    sector_size = 512
+    track_size = len(MM_800K_SKEW) * sector_size
+    if len(physical) % track_size:
+        raise ValueError("MM image is not an integral number of tracks")
+    logical = bytearray(len(physical))
+    for base in range(0, len(physical), track_size):
+        for logical_sector, physical_slot in enumerate(MM_800K_SKEW):
+            source = base + physical_slot * sector_size
+            target = base + logical_sector * sector_size
+            logical[target:target + sector_size] = physical[source:source + sector_size]
+    return bytes(logical)
 
 BUILD_SOURCES = (
     ("BOOT.MAC", "src/platform/trs80m4/boot.mac"),
@@ -306,7 +337,7 @@ def main() -> None:
     flat = args.output.with_suffix(".img")
     flat.write_bytes(raw)
     z80pack = args.output.with_suffix(".dsk")
-    z80pack.write_bytes(raw)
+    z80pack.write_bytes(z80pack_raw(raw))
     diskdefs = args.output.with_name("diskdefs-build")
     diskdefs.write_text("""diskdef bettercpm-build\n seclen 512\n tracks 160\n sectrk 10\n blocksize 2048\n maxdir 128\n skew 1\n boottrk 0\n os 2.2\nend\n""")
     report = {
@@ -356,7 +387,7 @@ def main() -> None:
     archive_output.write_bytes(build(archive_raw))
     verify(archive_output.read_bytes(), require_blank=False)
     archive_output.with_suffix(".img").write_bytes(archive_raw)
-    archive_output.with_suffix(".dsk").write_bytes(archive_raw)
+    archive_output.with_suffix(".dsk").write_bytes(z80pack_raw(archive_raw))
     print(f"created {archive_output} ({len(archive_files)} files)")
 
 

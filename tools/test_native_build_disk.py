@@ -5,7 +5,7 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
-from build_source_disk import extract_files
+from build_source_disk import extract_files, z80pack_logical
 from system_layout import LAYOUT
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,10 +25,10 @@ def main() -> None:
     subprocess.run(["python3", str(ROOT / "tools/build_source_disk.py")],
                    cwd=ROOT, check=True, stdout=subprocess.DEVNULL)
     build = extract_files(BUILD_IMAGE.read_bytes())
-    if BUILD_Z80PACK.read_bytes() != BUILD_IMAGE.read_bytes():
-        raise SystemExit("z80pack build disk differs from flat logical image")
-    if SOURCE_Z80PACK.read_bytes() != SOURCE_IMAGE.read_bytes():
-        raise SystemExit("z80pack source disk differs from flat logical image")
+    if z80pack_logical(BUILD_Z80PACK.read_bytes()) != BUILD_IMAGE.read_bytes():
+        raise SystemExit("z80pack build disk does not decode to the logical image")
+    if z80pack_logical(SOURCE_Z80PACK.read_bytes()) != SOURCE_IMAGE.read_bytes():
+        raise SystemExit("z80pack source disk does not decode to the logical image")
     required = {
         "BUILD.SUB", "ZSM4.COM", "LINK.COM", "SUBMIT.COM", "BATCHIO.RSX",
         "RESPACK.COM", "RLMBUILD.COM", "SYSBUILD.COM", "SYSGEN.COM", "CORE.INC",

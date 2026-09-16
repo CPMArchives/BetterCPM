@@ -36,8 +36,9 @@ then verifies the complete DMK structure and sector CRCs.
 For z80pack, mount either `.dsk` file in a raw-image physical drive. In
 BetterCP/M CONFIG, define that physical drive as 5-inch, 80-track,
 double-sided, then assign the logical drive the `Montezuma Micro 80T DS DATA
-(80T, DS, DD, 800K)` format. The `.dsk` and `.img` files are byte-identical;
-the separate names make the intended emulator and host-tool uses clear.
+(80T, DS, DD, 800K)` format. The `.img` form is in logical order for the
+supplied cpmtools definition. The `.dsk` form places each 512-byte sector in
+the MM physical order 1,3,5,7,9,2,4,6,8,10 expected by the z80pack mapper.
 
 ## Disk organization
 

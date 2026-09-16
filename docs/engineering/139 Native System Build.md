@@ -46,5 +46,6 @@ produces two deterministic images:
 
 Both images are independently read back through the CP/M directory parser and
 their DMK structures and sector CRCs are verified. The generator also emits
-byte-identical raw `.dsk` forms for z80pack, where BetterCP/M accesses them
-through its MM 80T DS DATA format definition.
+raw `.dsk` forms for z80pack, where BetterCP/M accesses them through its MM
+80T DS DATA definition. The conversion places logical sectors into the
+format's 1,3,5,7,9,2,4,6,8,10 physical-slot order.
