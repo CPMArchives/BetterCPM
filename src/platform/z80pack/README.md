@@ -73,6 +73,12 @@ their bytes with cpmtools, then loads and unloads ECHO.RSX and checks 53K TPA.
 The transcript is saved as verification.txt. From the output directory,
 `cpmls -f bettercpm-default disks/drivea.dsk` reads the same filesystem.
 
+The generated `disks/drivea.dsk` through `disks/drived.dsk` names are relative
+symbolic links.  Their image files live in `disks/library/`.  To change mounted
+media, replace a drive link with a relative link to another library image.  This
+keeps saved images in the library when a drive assignment changes and makes the
+mounted set visible with `ls -l disks`.
+
 `python3 tools/test_z80pack_interchange.py` creates independent 256-byte,
 512-byte, and double-sided cpmtools images, writes a file with cpmtools, binds
 each image through CONFIG, reads and copies it under BetterCP/M, and extracts
