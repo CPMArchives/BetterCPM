@@ -1,0 +1,314 @@
+; Phase-3 validated-plan STATEFUL move scheduler.
+;
+; DE -> request:
+; +0 plan records, +2 slot descriptors, +4 count, +5 reserved
+; +6 mover-request scratch, +8 scratch bytes, +10 mover entry
+; +12 returned move count (written only on success)
+;
+; Plan records are the eight-byte records from RSXPLAN. Slot descriptors are
+; three bytes per record: union address word and union count byte.
+
+RSBASE          EQU     07800H
+
+        CSEG
+        .PHASE  RSBASE
+RS_ENTRY:
+        LD      (RS_REQ),DE
+        EX      DE,HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RS_PLAN),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RS_DESC),DE
+        INC     HL
+        LD      A,(HL)
+        CP      5
+        JP      NC,RS_BAD
+        LD      (RS_COUNT),A
+        INC     HL
+        LD      A,(HL)
+        OR      A
+        JP      NZ,RS_BAD
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RS_SCRATCH),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RS_CAP),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RS_MOVER),DE
+
+; Validate plan classes, ranges, slot scratch capacity, and one common move
+; direction before invoking the first mover.
+        XOR     A
+        LD      (RS_DIRECTION),A
+        LD      (RS_INDEX),A
+RS_VLOOP:
+        LD      A,(RS_INDEX)
+        LD      B,A
+        LD      A,(RS_COUNT)
+        CP      B
+        JP      Z,RS_PREPARE
+        LD      A,(RS_INDEX)
+        CALL    RS_RECORD
+        PUSH    HL
+        LD      DE,6
+        ADD     HL,DE
+        LD      A,(HL)
+        POP     HL
+        CP      4
+        JP      NC,RS_BAD
+        CP      1
+        JR      NZ,RS_VNEXT
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      A,D
+        OR      E
+        JR      Z,RS_VNEXT
+        LD      (RS_OLD),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RS_NEW),DE
+        INC     HL
+        LD      C,(HL)
+        INC     HL
+        LD      B,(HL)
+        LD      A,B
+        OR      C
+        JP      Z,RS_BAD
+        PUSH    BC
+        LD      HL,(RS_OLD)
+        ADD     HL,BC
+        JP      C,RS_BADPOP
+        LD      HL,(RS_NEW)
+        ADD     HL,BC
+        JP      C,RS_BADPOP
+        POP     BC
+        LD      HL,(RS_OLD)
+        LD      DE,(RS_NEW)
+        OR      A
+        SBC     HL,DE
+        JR      Z,RS_VNEXT
+        LD      A,1             ; new > old: upward, profile order
+        JR      C,RS_VDIR
+        INC     A               ; new < old: downward, reverse profile order
+RS_VDIR:
+        LD      B,A
+        LD      A,(RS_DIRECTION)
+        OR      A
+        JR      Z,RS_VFIRST
+        CP      B
+        JP      NZ,RS_BAD
+        JR      RS_VSLOTS
+RS_VFIRST:
+        LD      A,B
+        LD      (RS_DIRECTION),A
+RS_VSLOTS:
+        LD      A,(RS_INDEX)
+        CALL    RS_DESCRIPTOR
+        INC     HL
+        INC     HL
+        LD      A,(HL)
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        LD      HL,8
+        ADD     HL,DE
+        LD      DE,(RS_CAP)
+        OR      A
+        SBC     HL,DE
+        JP      C,RS_VNEXT
+        JP      Z,RS_VNEXT
+        JP      RS_BAD
+RS_BADPOP:
+        POP     BC
+        JP      RS_BAD
+RS_VNEXT:
+        LD      HL,RS_INDEX
+        INC     (HL)
+        JP      RS_VLOOP
+
+RS_PREPARE:
+        XOR     A
+        LD      (RS_MOVES),A
+        LD      A,(RS_COUNT)
+        OR      A
+        JP      Z,RS_DONE
+        LD      B,A
+        LD      A,(RS_DIRECTION)
+        CP      2
+        JR      NZ,RS_FORWARD
+        LD      A,B
+        DEC     A
+        LD      (RS_INDEX),A
+        JR      RS_EXEC
+RS_FORWARD:
+        XOR     A
+        LD      (RS_INDEX),A
+RS_EXEC:
+        LD      A,(RS_INDEX)
+        CALL    RS_RECORD
+        PUSH    HL
+        LD      DE,6
+        ADD     HL,DE
+        LD      A,(HL)
+        POP     HL
+        CP      1
+        JR      NZ,RS_NEXT
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      A,D
+        OR      E
+        JR      Z,RS_NEXT
+        LD      (RS_OLD),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RS_NEW),DE
+        LD      HL,(RS_OLD)
+        OR      A
+        SBC     HL,DE
+        JR      Z,RS_NEXT
+        LD      A,(RS_INDEX)
+        CALL    RS_RECORD
+        LD      DE,4
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RS_SIZE),DE
+        LD      A,(RS_INDEX)
+        CALL    RS_DESCRIPTOR
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        LD      A,(HL)
+        LD      (RS_SCOUNT),A
+        EX      DE,HL
+        LD      DE,(RS_SCRATCH)
+        PUSH    HL
+        LD      HL,(RS_OLD)
+        EX      DE,HL
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      DE,(RS_NEW)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      DE,(RS_SIZE)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      A,(RS_SCOUNT)
+        LD      (HL),A
+        INC     HL
+        LD      (HL),0
+        INC     HL
+        EX      DE,HL           ; DE=scratch+8
+        POP     HL              ; HL=slot union
+        LD      A,(RS_SCOUNT)
+        ADD     A,A
+        LD      C,A
+        LD      B,0
+        LDIR
+        LD      DE,(RS_SCRATCH)
+        LD      HL,(RS_MOVER)
+        LD      BC,RS_RETURN
+        PUSH    BC
+        JP      (HL)
+RS_RETURN:
+        OR      A
+        JP      NZ,RS_BAD
+        LD      HL,RS_MOVES
+        INC     (HL)
+RS_NEXT:
+        LD      A,(RS_DIRECTION)
+        CP      2
+        JR      Z,RS_REVERSE
+        LD      HL,RS_INDEX
+        INC     (HL)
+        LD      A,(HL)
+        LD      B,A
+        LD      A,(RS_COUNT)
+        CP      B
+        JP      NZ,RS_EXEC
+        JP      RS_DONE
+RS_REVERSE:
+        LD      A,(RS_INDEX)
+        OR      A
+        JR      Z,RS_DONE
+        DEC     A
+        LD      (RS_INDEX),A
+        JP      RS_EXEC
+RS_DONE:
+        LD      HL,(RS_REQ)
+        LD      DE,12
+        ADD     HL,DE
+        LD      A,(RS_MOVES)
+        LD      (HL),A
+        XOR     A
+        RET
+
+; A=index -> HL=plan record.
+RS_RECORD:
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        LD      HL,(RS_PLAN)
+        ADD     HL,DE
+        RET
+; A=index -> HL=three-byte slot descriptor.
+RS_DESCRIPTOR:
+        LD      E,A
+        ADD     A,A
+        ADD     A,E
+        LD      E,A
+        LD      D,0
+        LD      HL,(RS_DESC)
+        ADD     HL,DE
+        RET
+RS_BAD:
+        LD      A,0FFH
+        OR      A
+        RET
+
+RS_REQ:         DW      0
+RS_PLAN:        DW      0
+RS_DESC:        DW      0
+RS_SCRATCH:     DW      0
+RS_CAP:         DW      0
+RS_MOVER:       DW      0
+RS_OLD:         DW      0
+RS_NEW:         DW      0
+RS_SIZE:        DW      0
+RS_COUNT:       DB      0
+RS_INDEX:       DB      0
+RS_DIRECTION:   DB      0
+RS_SCOUNT:      DB      0
+RS_MOVES:       DB      0
+
+        .DEPHASE
+        END
