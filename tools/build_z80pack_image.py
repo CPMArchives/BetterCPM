@@ -169,8 +169,16 @@ def main():
 
  raw=raw_image(logical)
  blank=raw_image(bytearray(b'\xe5'*fmt.image_bytes))
- disks.mkdir();(disks/'drivea.dsk').write_bytes(raw)
- for letter in 'bcd':(disks/f'drive{letter}.dsk').write_bytes(blank)
+ disks.mkdir();library=disks/'library';library.mkdir()
+ media={
+  'a':('BetterCPM-System-CCS-40T-DS-DD-332K.dsk',raw),
+  'b':('Blank-B-CCS-40T-DS-DD-332K.dsk',blank),
+  'c':('Blank-C-CCS-40T-DS-DD-332K.dsk',blank),
+  'd':('Blank-D-CCS-40T-DS-DD-332K.dsk',blank),
+ }
+ for letter,(name,data) in media.items():
+  (library/name).write_bytes(data)
+  (disks/f'drive{letter}.dsk').symlink_to(Path('library')/name)
  # cpmtools skewtab entries are zero-based raw-sector ordinals.
  ordered_ids=sorted(fmt.sector_ids)
  logical_to_raw=[ordered_ids.index(sector_id) for sector_id in fmt.sector_ids]
@@ -234,5 +242,5 @@ end
  (out/'launch-z80pack.command').write_text('#!/bin/sh\ncd -- "$(dirname -- "$0")" || exit 1\nPATH="'+str(simulator.parent/'srctools')+':$PATH"\nexport PATH\nexec "'+str(simulator)+'" -z -d "$PWD/disks" "$@"\n')
  (out/'launch-z80pack.command').chmod(0o755)
  (out/'manifest.json').write_text(json.dumps({'target':'z80pack/cpmsim','format':fmt.name,'cylinders':fmt.cylinders,'sides':fmt.sides,'physical_sectors_per_track':fmt.physical_sectors,'physical_sector_bytes':fmt.sector_bytes,'image_bytes':fmt.image_bytes,'records_per_logical_track':fmt.spt,'reserved_tracks':fmt.off,'reserved_records':fmt.reserved_records,'allocation_kib':(fmt.dsm+1)*fmt.block_bytes//1024,'cpmtools_format':'bettercpm-default','sha256':hashlib.sha256(raw).hexdigest(),'shared_bdos_sha256':hashlib.sha256((ROOT/'build/bdos/bdos.bin').read_bytes()).hexdigest()},indent=2)+'\n')
- print(f'Created {disks}/drivea.dsk; {fmt.name}; {(fmt.dsm+1)*fmt.block_bytes//1024} KiB allocation area')
+ print(f'Created linked media in {library}; {fmt.name}; {(fmt.dsm+1)*fmt.block_bytes//1024} KiB allocation area')
 if __name__=='__main__':main()
