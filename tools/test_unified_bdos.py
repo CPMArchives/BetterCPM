@@ -219,6 +219,10 @@ def main() -> None:
     cpu.de = FCB
     cpu.run(fcbdrv)
     require(cpu.carry, "invalid FCB drive was accepted")
+    cpu.mem[FCB] = 5
+    cpu.de = FCB
+    cpu.run(fcbdrv)
+    require(cpu.carry, "unsupported drive E was accepted through an FCB")
 
     # Shared U05 iterator and U06 DPH-backed cache: wildcard Search First/Next
     # must retain one cursor, return containing records, and avoid rereading a

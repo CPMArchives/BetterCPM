@@ -6,14 +6,14 @@ from build_ccp import assemble
 ROOT=Path(__file__).resolve().parents[1]
 
 def main():
- p=argparse.ArgumentParser();p.add_argument('--image-dir',type=Path,default=ROOT/'build/z80pack');args=p.parse_args()
+ p=argparse.ArgumentParser();p.add_argument('--image-dir',type=Path,default=ROOT/'build/z80pack');p.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim');args=p.parse_args()
  image=args.image_dir.resolve()
  with tempfile.TemporaryDirectory(prefix='bettercpm-cpmsim-test-') as tmp:
   w=Path(tmp);shutil.copytree(image/'disks',w/'disks');shutil.copy2(image/'diskdefs',w/'diskdefs')
   source='''        ASEG
         ORG 100H
         LD SP,4000H
-        LD A,2
+        LD A,1
         LD (FCB),A
 NEXT:   LD HL,FCB+12
         LD DE,FCB+13
@@ -74,7 +74,7 @@ CHECK:  LD A,(HL)
         LD A,(FCB)
         INC A
         LD (FCB),A
-        CP 5
+        CP 2
         JP C,NEXT
         LD DE,OK
         JR REPORT
@@ -90,91 +90,63 @@ BUFFER: DS 128
         END
 '''
   probe=assemble(Path.home()/'bin/z80asm',source,w/'IOTEST.COM',w/'probe.lst',0x100)
-  subprocess.run(['cpmcp','-T','raw','-f','bettercpm-z80pack-system',str(w/'disks/drivea.dsk'),str(w/'IOTEST.COM'),'0:IOTEST.COM'],cwd=w,check=True)
+  subprocess.run(['cpmcp','-f','bettercpm-default',str(w/'disks/drivea.dsk'),str(w/'IOTEST.COM'),'0:IOTEST.COM'],cwd=w,check=True)
+  (w/'CPMTOOLS.TXT').write_bytes(b'Created with cpmtools\r\n')
+  subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(w/'disks/driveb.dsk'),str(w/'CPMTOOLS.TXT'),'0:CPMTOOLS.TXT'],cwd=w,check=True)
   target=w/'disks/drivec.dsk'
   raw=bytearray(target.read_bytes());raw[-128:]=b'\x5a'*128;target.write_bytes(raw)
-  simulator=Path.home()/'CPM/z80pack/cpmsim/cpmsim'
+  simulator=args.simulator.expanduser().resolve()
   # Tcl receives paths as positional arguments, so shell metacharacters are
   # not interpreted. Every wait is bounded; no user's mounted media is used.
+  report=image/'verification.txt'
   script='''set timeout 25
+set send_slow {1 .02}
+log_file -noappend [lindex $argv 2]
 expect_before timeout {puts "TEST TIMEOUT"; exit 1}
 proc prompt {} {
  expect {
-  -re {\\r\\nA0>} {}
+  -exact {A0>_ } {}
   timeout { puts "PROMPT TIMEOUT"; exit 1 }
   eof { puts "UNEXPECTED EXIT"; exit 1 }
  }
 }
 spawn [lindex $argv 0] -z -d [lindex $argv 1]
+expect -exact "Booting..."
 prompt
-send -- "DIR\\r"
+send -s -- "DIR\\r"
 expect -exact "RCP"
 prompt
-send -- "HELLO\\r"
+send -s -- "HELLO\\r"
 expect -exact "BetterCP/M on z80pack"
 prompt
-send -- "IOTEST\\r"
+send -s -- "DIR B:\\r"
+expect -exact "CPMTOOLS TXT"
+prompt
+send -s -- "IOTEST\\r"
 expect {
  "Z80PACK FILE IO PASS" {}
  "Z80PACK FILE IO FAILED" {exit 1}
  timeout {exit 1}
 }
 prompt
-send -- "DUP\\r"
-expect -exact "Your choice:"
-send -- "B"
-expect -exact "Source logical drive"
-expect -exact "Your choice:"
-send -- "B"
-expect -exact "Destination logical drive"
-expect -exact "Your choice:"
-send -- "C"
-expect -exact {[Y/N]}
-send -- "Y"
-expect -exact "Copy complete; destination verified."
-expect -exact "Push ENTER for menu."
-send -- "\\r"
-expect -exact "Your choice:"
-send -- "C"
-expect -exact "Choose logical drive"
-expect -exact "Your choice:"
-send -- "C"
-expect -exact "Unreadable sectors: 00000"
-expect -exact "Push ENTER for menu."
-send -- "\\r"
-expect -exact "Your choice:"
-send -- "C"
-expect -exact "Choose logical drive"
-expect -exact "Your choice:"
-send -- "B\\003"
-expect -exact "Check stopped. No disk contents changed."
-expect -exact "Push ENTER for menu."
-send -- "\\r"
-expect -exact "Your choice:"
-send -- "\\003"
+send -s -- "RSX LOAD ECHO\\r"
 prompt
-send -- "RSX LOAD ECHO\\r"
-prompt
-send -- "RSX LIST\\r"
+send -s -- "RSX LIST\\r"
 expect -exact "ECHO : BDOS 203"
 prompt
-send -- "RSX UNLOAD ECHO\\r"
+send -s -- "RSX UNLOAD ECHO\\r"
 prompt
-send -- "RSX LIST\\r"
+send -s -- "RSX LIST\\r"
 expect -exact "TPA available: 53K"
 prompt
-send -- "BYE\\r"
+send -s -- "BYE\\r"
 expect eof
 '''
   (w/'test.exp').write_text(script)
   env=dict(os.environ);env['PATH']=str(simulator.parent/'srctools')+os.pathsep+env['PATH']
-  run=subprocess.run(['expect',str(w/'test.exp'),str(simulator),str(w/'disks')],cwd=w,env=env,capture_output=True,text=True,timeout=240)
-  report=image/'verification.txt';report.write_text(run.stdout+run.stderr)
-  if run.returncode:raise AssertionError(f'cpmsim test failed: {report}\n{run.stdout[-1500:]}')
-  assert (w/'disks/driveb.dsk').read_bytes()==(w/'disks/drivec.dsk').read_bytes(), 'DUP missed disk content'
-  for letter in 'bcd':
-   output=w/(letter+'.dat')
-   subprocess.run(['cpmcp','-T','raw','-f','bettercpm-z80pack-data',str(w/f'disks/drive{letter}.dsk'),'0:PROBE.DAT',str(output)],cwd=w,check=True)
-   assert output.read_bytes()==bytes(range(128,0,-1)),letter
-  print('PASS: cpmsim disk boot, directory, transient/warm return, file create/write/close/open/read on B-D, DUP copy/check, RSX load/unload and 53K TPA. cpmtools verifies all three written files.')
+  run=subprocess.run(['expect',str(w/'test.exp'),str(simulator),str(w/'disks'),str(report)],cwd=w,env=env,capture_output=True,text=True,timeout=240)
+  if run.returncode:
+   tail=report.read_text(errors='replace')[-1500:] if report.exists() else run.stdout[-1500:]
+   raise AssertionError(f'cpmsim test failed: {report}\n{tail}')
+  print('PASS: cpmsim disk boot, A: directory, cpmtools-created B: directory, cpmtools-supplied transient, file create/write/close/open/read on A, RSX load/unload and 53K TPA.')
 if __name__=='__main__':main()

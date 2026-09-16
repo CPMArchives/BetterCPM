@@ -69,6 +69,15 @@ PHEDIT: LD A,(PHINDEX)
         CALL DECOUT
         CALL CRLF
         CALL CRLF
+        LD A,(PHNOTICE)
+        OR A
+        JR Z,PHNONOTE
+        XOR A
+        LD (PHNOTICE),A
+        LD HL,PHDETMSG
+        CALL PUTS
+        CALL CRLF
+PHNONOTE:
         XOR A
         LD (FIELD),A
 PHFIELDS:
@@ -118,10 +127,6 @@ PHDEC:  CALL DECOUT
         CP 6
         JP NC,PHEDIT
         LD (FIELD),A
-        CP 1
-        JP Z,TRACKS
-        CP 3
-        JP Z,STEPS
         INC A
         LD L,A
         LD H,0
@@ -129,10 +134,31 @@ PHDEC:  CALL DECOUT
         ADD HL,DE
         LD A,(HL)
         LD (OLDVAL),A
+        LD A,(FIELD)
+        OR A
+        JP Z,INCHES
+        CP 1
+        JP Z,TRACKS
+        CP 2
+        JP Z,SIDES
+        CP 3
+        JP Z,STEPS
         LD HL,NUMMSG
         CALL PUTS
         CALL NUMBER
         JP C,PHEDIT
+        JR PHSAVE
+INCHES: LD A,(OLDVAL)
+        CP 5
+        LD A,5
+        JR NZ,PHSAVE
+        LD A,8
+        JR PHSAVE
+SIDES:  LD A,(OLDVAL)
+        CP 1
+        LD A,1
+        JR NZ,PHSAVE
+        INC A
         JR PHSAVE
 TRACKS: LD HL,TRKMSG
         CALL PUTS
@@ -171,9 +197,63 @@ PHSAVE: LD B,A
         LD DE,PHREQ
         LD B,2
         CALL API
+        JR NZ,PHERROR
+        CALL PHCLEAN
+        LD A,(CHECKPH)
+        OR A
         JP Z,PHEDIT
+        LD A,1
+        LD (PHNOTICE),A
+        JP PHEDIT
 PHERROR:CALL ERROR
         JP PHEDIT
+
+; Physical configuration is authoritative. After it succeeds, detach every
+; non-system logical binding that the new track/side limits cannot support.
+PHCLEAN:XOR A
+        LD (CHECKPH),A
+        INC A
+        LD (LOGIDX),A
+PHCLP: LD A,(LOGIDX)
+        LD (REQ),A
+        LD DE,REQ
+        LD B,3
+        CALL API
+        JR NZ,PHCNEXT
+        LD A,(REQ+1)
+        CP 0FFH
+        JR Z,PHCNEXT
+        LD B,A
+        LD A,(PHINDEX)
+        CP B
+        JR NZ,PHCNEXT
+        LD A,(PHREQ+2)
+        LD HL,REQ+17
+        CP (HL)
+        JR C,PHCDET
+        LD A,(REQ+20)
+        AND 060H
+        JR Z,PHCNEXT
+        LD A,(PHREQ+3)
+        CP 2
+        JR Z,PHCNEXT
+PHCDET:LD A,(LOGIDX)
+        LD (REQ),A
+        LD A,0FFH
+        LD (REQ+1),A
+        LD DE,REQ
+        LD B,4
+        CALL API
+        JR NZ,PHCNEXT
+        LD A,1
+        LD (CHECKPH),A
+PHCNEXT:
+        LD A,(LOGIDX)
+        INC A
+        LD (LOGIDX),A
+        CP 4
+        JR C,PHCLP
+        RET
 
 LOGMENU:LD HL,LOGHEAD
         CALL HEADER
@@ -750,12 +830,13 @@ PHCOUNT:DB 13,10,'Number of drives: 4',13,10,13,10
 PHEDITTL:DB 'Disk drive definitions',0
 FLDNAMES:DW FLD0,FLD1,FLD2,FLD3,FLD4,FLD5
 FLD0:   DB 'Type of drive (inches):     ',0
-FLD1:   DB 'Number of tracks:          ',0
-FLD2:   DB 'Number of sides:           ',0
-FLD3:   DB 'Step rate (ms):            ',0
+FLD1:   DB 'Number of tracks:           ',0
+FLD2:   DB 'Number of sides:            ',0
+FLD3:   DB 'Step rate (ms):             ',0
 FLD4:   DB 'Motor spin-up (1/4 sec):    ',0
-FLD5:   DB 'Head settling time (ms):   ',0
+FLD5:   DB 'Head settling time (ms):    ',0
 PHHELP: DB 13,10,'Select [ A - F ], or BREAK (^C) to return.',13,10,0
+PHDETMSG:DB 13,10,'Incompatible logical drive binding unconfigured; use CONFIG G.',13,10,0
 NUMMSG: DB 'New value (ENTER keeps current, ^C cancels): ',0
 TRKMSG: DB 13,10,'Track choices:',13,10
         DB '[ A ] 35',13,10,'[ B ] 40',13,10,'[ C ] 77',13,10,'[ D ] 80',13,10
@@ -767,7 +848,7 @@ STEPTAB:DB 6,12,20,30
 TRKTAB: DB 35,40,77,80
 LOGHEAD:DB 'Disk format definitions',0
 LOGHELP:DB 'Choose the letter of the drive to change:',13,10
-        DB 'Drive  Physical drive & current format',13,10,0
+        DB 'Drive Physical drive & current format',13,10,0
 LOGFOOT:DB 13,10,'Select [ A - D ], or BREAK (^C) to return.',13,10,0
 COLON:  DB ': ',0
 SELECTMSG:DB 'Choose the format to be used for drive ',0
@@ -785,6 +866,7 @@ PAGE:   DB 0
 ROW:    DB 0
 CHOSEN: DB 0
 CHECKPH:DB 0
+PHNOTICE:DB 0
         INCLUDE disk/sysgen.inc
         INCLUDE disk/common.inc
         END

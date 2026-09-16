@@ -1,18 +1,22 @@
-; SYSGEN -- BetterCP/M system disk installer, 08-Sep-2026.
+; SYSGEN -- install a BetterCP/M system package on configured SYSTEM media.
 ;
-; Copies the reserved system tracks from the running A: disk to another
-; logical drive.  The directory and file area are not touched.  CONFIG G
-; must first give the destination the same SYSTEM format as drive A:.
-;
-; Patch 08-Sep-2026: the boot record is written last.  Thus a stopped copy
-; does not receive BetterCP/M's boot sector until all other system records
-; have been written and checked.  This is no substitute for a backup, but
-; it avoids proclaiming a half-copied system to be a new boot disk.
+; Bare SYSGEN retains the interactive A: to B:-D: workflow. SYSGEN A: B:
+; accepts explicit source/destination drives. SYSGEN SYSTEM.SYS B: installs
+; a freshly composed package. The destination filesystem is never touched.
         ASEG
         ORG 0100H
 BDOS    EQU 5
+FCB1    EQU 005CH
+FCB2    EQU 006CH
+TAIL    EQU 0080H
+IMAGE   EQU 04000H
+BUFFER  EQU 03000H
+VERIFY  EQU 03080H
+PKGHEADER EQU 03100H
+SYSRECS EQU 160
+SYSBASE EQU 0D5C4H
 
-        LD SP,04000H
+        LD SP,03F00H
         CALL INIT
         LD HL,(1)             ; page zero WBOOT jump follows the BIOS base
         DEC HL
@@ -20,6 +24,21 @@ BDOS    EQU 5
         DEC HL
         LD (BIOBASE),HL
 
+        LD A,(TAIL)
+        OR A
+        JR Z,INTERACTIVE
+        CALL PARSEARGS
+        OR A
+        JP Z,INPUTREADY
+        CP 1
+        JP Z,USAGEBAD
+        CP 2
+        JP Z,PKGBAD
+        JP SOURCEBAD
+
+INTERACTIVE:
+        XOR A
+        LD (SOURCEDEV),A
 AGAIN:  LD HL,TITLE
         CALL HEADER
         LD HL,ASKDRV
@@ -33,18 +52,246 @@ AGAIN:  LD HL,TITLE
         INC A                 ; B..D become logical numbers 1..3
         LD (DEST),A
         CALL SHOWKEY
+        CALL LOADDISK
+        JP NZ,IOFAIL
+        JP INPUTREADY
 
+; Accept either SYSTEM.SYS <drive>: or <source>: <destination>: using the
+; two default FCBs prepared by the CCP.
+PARSEARGS:
+        LD HL,FCB1+1
+        LD DE,SYSNAME
+        LD B,11
+PANAME: LD A,(DE)
+        CP (HL)
+        JR NZ,PADRIVES
+        INC DE
+        INC HL
+        DJNZ PANAME
+        LD A,(FCB2)
+        DEC A
+        CP 4
+        JR NC,PABAD
+        OR A
+        JR Z,PABAD
+        LD (DEST),A
+        LD A,1
+        LD (FILEMODE),A
+        JP LOADFILE
+PADRIVES:
+        LD A,(TAIL)
+        LD C,A
+        LD HL,TAIL+1
+        CALL PASKIP
+        JR C,PABAD
+        LD A,(HL)
+        INC HL
+        DEC C
+        AND 05FH
+        SUB 'A'
+        CP 4
+        JR NC,PABAD
+        LD (SOURCEDEV),A
+        LD A,C
+        OR A
+        JR Z,PABAD
+        LD A,(HL)
+        INC HL
+        DEC C
+        CP ':'
+        JR NZ,PABAD
+        CALL PASKIP
+        JR C,PABAD
+        LD A,(HL)
+        INC HL
+        DEC C
+        AND 05FH
+        SUB 'A'
+        CP 4
+        JR NC,PABAD
+        OR A
+        JR Z,PABAD
+        LD (DEST),A
+        LD A,C
+        OR A
+        JR Z,PABAD
+        LD A,(HL)
+        INC HL
+        DEC C
+        CP ':'
+        JR NZ,PABAD
+        CALL PASKIP
+        JR NC,PABAD
+        CALL LOADDISK
+        RET Z
+        LD (STATUS),A
+        LD A,3
+        OR A
+        RET
+PABAD:  LD A,1
+        OR A
+        RET
+
+; Skip spaces in the counted command tail. Carry means end of input.
+PASKIP:LD A,C
+        OR A
+        SCF
+        RET Z
+        LD A,(HL)
+        CP ' '
+        JR NZ,PANONSP
+        INC HL
+        DEC C
+        JR PASKIP
+PANONSP:OR A                    ; clear carry while input remains
+        RET
+
+; Read and validate the version-1, TRS-80 SYSTEM.SYS package.
+LOADFILE:
+        LD DE,FCB1
+        LD C,15
+        CALL BDOS
+        INC A
+        JR Z,LFERR
+        LD DE,PKGHEADER
+        LD C,26
+        CALL BDOS
+        LD DE,FCB1
+        LD C,20
+        CALL BDOS
+        OR A
+        JR NZ,LFERR
+        LD HL,PKGHEADER
+        LD DE,PKGMAGIC
+        LD B,10
+LFCMP:  LD A,(DE)
+        CP (HL)
+        JR NZ,LFERR
+        INC DE
+        INC HL
+        DJNZ LFCMP
+        LD HL,PKGHEADER+16
+        LD DE,SOURCE
+        LD BC,64
+        LDIR
+        LD HL,IMAGE
+        LD B,SYSRECS
+LFRD:   PUSH BC
+        PUSH HL
+        EX DE,HL
+        LD C,26
+        CALL BDOS
+        LD DE,FCB1
+        LD C,20
+        CALL BDOS
+        POP HL
+        POP BC
+        OR A
+        JR NZ,LFERR
+        LD DE,128
+        ADD HL,DE
+        DJNZ LFRD
+        LD DE,FCB1
+        LD C,20
+        CALL BDOS
+        CP 1
+        JR NZ,LFERR
+        LD DE,FCB1
+        LD C,16
+        CALL BDOS
         XOR A
+        RET
+LFERR:  LD A,2
+        OR A
+        RET
+
+; Buffer the canonical 160-record protected package from a bootable source.
+LOADDISK:
+        LD HL,0
+        LD (RECNO),HL
+        LD A,(SOURCEDEV)
         LD (REQ),A
         LD DE,REQ
-        LD B,3                ; fetch A: without logging its directory
+        LD B,3
         CALL API
-        JP NZ,APIBAD
+        JR NZ,LDAPIBAD
         LD HL,REQ+1
         LD DE,SOURCE
         LD BC,64
         LDIR
+        LD BC,(SOURCE+1)
+        LD DE,(SOURCE+14)
+        CALL RESCOUNT
+        JR C,LDSIZEBAD
+        LD DE,SYSRECS
+        OR A
+        SBC HL,DE
+        JR NC,LDSIZEOK
+        JR C,LDSIZEBAD
+LDSIZEOK:
+        LD A,1
+        LD (NEEDREAD),A
+        XOR A
+        RET
 
+READSOURCE:
+; Start at record one, matching the proven installer path.  This also gives
+; real floppy hardware a normal sector transfer before revisiting the boot
+; sector at record zero.
+        LD HL,1
+        LD (RECNO),HL
+LDRD:   LD HL,(RECNO)
+        LD DE,BUFFER
+        XOR A
+        CALL DISKIO
+        JR NZ,LDIOBAD
+        LD HL,(RECNO)
+        CALL IMAGEPTR
+        LD HL,BUFFER
+        LD BC,128
+        LDIR
+        LD HL,(RECNO)
+        INC HL
+        LD (RECNO),HL
+        LD DE,SYSRECS
+        OR A
+        SBC HL,DE
+        JR C,LDRD
+        LD HL,0
+        LD (RECNO),HL
+        LD DE,BUFFER
+        XOR A
+        CALL DISKIO
+        JR NZ,LDIOBAD
+        LD HL,(RECNO)
+        CALL IMAGEPTR
+        LD HL,BUFFER
+        LD BC,128
+        LDIR
+        XOR A
+        RET
+LDAPIBAD:LD A,11
+        OR A
+        RET
+LDSIZEBAD:LD A,12
+        OR A
+        RET
+LDIOBAD:ADD A,20
+        OR A
+        RET
+
+; BC=records/track, DE=reserved tracks. Return HL=records, carry on overflow.
+RESCOUNT:
+        LD HL,0
+RCLP:   LD A,D
+        OR E
+        RET Z
+        ADD HL,BC
+        RET C
+        DEC DE
+        JR RCLP
+
+INPUTREADY:
         LD A,(DEST)
         LD (REQ),A
         LD DE,REQ
@@ -63,8 +310,12 @@ AGAIN:  LD HL,TITLE
         LD B,A
         LD A,(SOURCE)
         CP B
+        JR NZ,GEOMETRY
+        LD A,(FILEMODE)
+        OR A
         JP Z,ALIAS
 
+GEOMETRY:
 ; Bootstrap A: expresses a double-sided cylinder as one logical track.
 ; CONFIG's ordinary bindings express the same disk as two surface tracks.
 ; Make a comparison copy in the latter form, as DUP has done since 1.10.
@@ -85,31 +336,36 @@ AGAIN:  LD HL,TITLE
         LD HL,(EXPECT+14)
         ADD HL,HL
         LD (EXPECT+14),HL
-CMPFMT:LD HL,EXPECT+1
-        LD DE,TARGET+1
-        LD B,63
+CMPFMT:LD HL,EXPECT+16
+        LD DE,TARGET+16
+        LD B,45               ; compare boot geometry, IDs and size map only
 CMPLP:  LD A,(DE)
         CP (HL)
-        JP NZ,BADFMT
+        JP NZ,BOOTFMT
         INC DE
         INC HL
         DJNZ CMPLP
 
-; Reserved records = SPT * OFF.  Refuse arithmetic wrap and a zero-sized
-; system area.  The matching normalized formats imply the same byte count.
-        LD BC,(SOURCE+1)
-        LD DE,(SOURCE+14)
+; Destination reserved records = SPT * OFF and must hold the canonical
+; payload. A larger reserved area is allowed and is left otherwise untouched.
+        LD BC,(TARGET+1)
+        LD DE,(TARGET+14)
         LD HL,0
 COUNTLP:LD A,D
         OR E
         JR Z,COUNTED
         ADD HL,BC
-        JP C,BADFMT
+        JP C,NOSPACE
         DEC DE
         JR COUNTLP
 COUNTED:LD A,H
         OR L
-        JP Z,BADFMT
+        JP Z,NOSPACE
+        LD DE,SYSRECS
+        OR A
+        SBC HL,DE
+        JP C,NOSPACE
+        LD HL,SYSRECS
         LD (NRECS),HL
         LD HL,SUMMARY
         CALL PUTS
@@ -132,9 +388,133 @@ COUNTED:LD A,H
         CP 'Y'
         JP NZ,0
         CALL CRLF
+        LD A,(NEEDREAD)
+        OR A
+        JR Z,IMAGEOK
+        CALL READSOURCE
+        JR Z,IMAGEOK
+        LD (STATUS),A
+        JP SOURCEBAD
+IMAGEOK:
+        CALL PATCHTARGET
+        JP NZ,PKGBAD
+        JP WRIMAGE
+
+; Patch the package's installed physical drive zero and A: binding to the
+; destination definition. The disk-facing binding uses one track per surface;
+; the bootstrap binding uses one track per cylinder on a double-sided disk.
+PATCHTARGET:
+        LD A,(TARGET)
+        LD (REQ),A
+        LD DE,REQ
+        LD B,1
+        CALL API
+        RET NZ
+        LD A,(REQ+1)
+        CP 5
+        JR NZ,PTBAD
+        CALL FINDDESC
+        RET NZ
+        LD (DESCPTR),HL
+        LD DE,8
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        CALL ABSTOIMG
+        LD DE,REQ+1
+        EX DE,HL
+        LD BC,6
+        LDIR
+        LD HL,TARGET
+        LD DE,BOOTBIND
+        LD BC,64
+        LDIR
+        XOR A
+        LD (BOOTBIND),A
+        LD A,(BOOTBIND+19)
+        BIT 6,A
+        JR Z,PTBIND
+        AND 0BFH
+        OR 020H
+        LD (BOOTBIND+19),A
+        LD HL,(BOOTBIND+1)
+        ADD HL,HL
+        JR C,PTBAD
+        LD (BOOTBIND+1),HL
+        LD HL,(BOOTBIND+14)
+        BIT 0,L
+        JR NZ,PTBAD
+        SRL H
+        RR L
+        LD (BOOTBIND+14),HL
+PTBIND:LD HL,(DESCPTR)
+        LD DE,10
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        CALL ABSTOIMG
+        LD DE,16
+        ADD HL,DE
+        LD DE,BOOTBIND
+        EX DE,HL
+        LD BC,64
+        LDIR
+        XOR A
+        RET
+PTBAD:  LD A,1
+        OR A
+        RET
+
+ABSTOIMG:
+        LD DE,SYSBASE
+        OR A
+        SBC HL,DE
+        LD DE,IMAGE+1024
+        ADD HL,DE
+        RET
+
+FINDDESC:
+        LD HL,IMAGE+1024
+        LD BC,52*128-12
+FDLOOP:LD A,(HL)
+        CP 'B'
+        JR NZ,FDNEXT
+        INC HL
+        LD A,(HL)
+        CP 'D'
+        JR NZ,FDBACK1
+        INC HL
+        LD A,(HL)
+        CP 'C'
+        JR NZ,FDBACK2
+        INC HL
+        LD A,(HL)
+        CP 'F'
+        JR NZ,FDBACK3
+        DEC HL
+        DEC HL
+        DEC HL
+        XOR A
+        RET
+FDBACK3:DEC HL
+FDBACK2:DEC HL
+FDBACK1:DEC HL
+FDNEXT: INC HL
+        DEC BC
+        LD A,B
+        OR C
+        JR NZ,FDLOOP
+        LD A,1
+        OR A
+        RET
 
 ; Copy records 1 through N-1 first.  Record zero, containing stage zero,
 ; is installed only after the rest has passed immediate read-back checks.
+WRIMAGE:
         LD HL,1
         LD (RECNO),HL
         LD HL,0
@@ -164,12 +544,13 @@ COPYLP: CALL BREAKCK
         CALL PUTS
         JP 0
 
-; Read source, write target, read target again, compare all 128 bytes.
-COPYREC:XOR A
-        LD HL,(RECNO)
+; Write buffered source, read target again, and compare all 128 bytes.
+COPYREC:LD HL,(RECNO)
+        CALL IMAGEPTR
+        EX DE,HL
         LD DE,BUFFER
-        CALL DISKIO
-        RET NZ
+        LD BC,128
+        LDIR
         LD A,1
         LD HL,(RECNO)
         LD DE,BUFFER
@@ -195,14 +576,30 @@ VERIFYBAD:LD A,0FEH           ; utility compare error, not controller status
         OR A
         RET
 
+; Convert a logical package record in HL to its transient address in DE.
+IMAGEPTR:
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,HL
+        LD DE,IMAGE
+        ADD HL,DE
+        EX DE,HL
+        RET
+
 ; A=0 reads A:.  A=1 writes destination.  A=2 reads destination.
 ; HL is the 128-byte logical record number and DE is its transfer buffer.
 DISKIO: LD (IOMODE),A
         LD (IOREC),HL
         LD (IOBUF),DE
         OR A
-        LD A,0
-        JR Z,IODRIVE
+        JR NZ,IOTARGET
+        LD A,(SOURCEDEV)
+        JR IODRIVE
+IOTARGET:
         LD A,(DEST)
 IODRIVE:LD (IODRV),A
         LD C,A
@@ -271,7 +668,7 @@ PROGRESS:LD HL,(RECNO)
         INC HL
         LD (TRACKNO),HL
         LD HL,(NEXTTRK)
-        LD DE,(SOURCE+1)
+        LD DE,(TARGET+1)
         ADD HL,DE
         LD (NEXTTRK),HL
         RET
@@ -299,6 +696,31 @@ STOPPED:LD HL,STOPMSG
         CALL PUTS
         JP 0
 BADFMT:LD HL,FMTMSG
+        JR REPORT
+BOOTFMT:LD HL,BOOTMSG
+        JR REPORT
+NOSPACE:LD HL,SPACEMSG
+        JR REPORT
+PKGBAD:LD HL,PKGMSG
+        JR REPORT
+SOURCEBAD:LD HL,SOURCEMSG
+        CALL PUTS
+        LD A,(SOURCEDEV)
+        ADD A,'A'
+        CALL PUTC
+        LD A,':'
+        CALL PUTC
+        LD A,' '
+        CALL PUTC
+        LD HL,(RECNO)
+        CALL WORDOUT
+        LD HL,STATUSMSG
+        CALL PUTS
+        LD A,(STATUS)
+        CALL DECOUT
+        CALL CRLF
+        JP 0
+USAGEBAD:LD HL,USAGEMSG
         JR REPORT
 PROTECT:LD HL,PROTMSG
         JR REPORT
@@ -476,7 +898,7 @@ HEADNEXT:
 
 TITLE:  DB 'Install a BetterCP/M system (SYSGEN)',0
 ASKDRV: DB 'Destination drive [ B - D ], or BREAK (^C) to exit: ',0
-SUMMARY:DB 13,10,'Install the running A: system on drive ',0
+SUMMARY:DB 13,10,'Install the selected BetterCP/M system on drive ',0
 PHYMSG: DB ':, physical drive ',0
 RECORDMSG:DB 'Reserved system records to copy and verify: ',0
 WARNING:DB 13,10,'The destination system area will be replaced.',13,10
@@ -484,8 +906,12 @@ WARNING:DB 13,10,'The destination system area will be replaced.',13,10
         DB 'Proceed (Y/N)? ',0
 INSTALLING:DB 'Installing system track ',0
 COMPLETE:DB 13,10,'System installed and verified. The destination is bootable.',13,10,0
-FMTMSG: DB 13,10,'Destination is not the same SYSTEM format as A:.',13,10
-        DB 'Use CONFIG G to select the matching format, then try again.',13,10,0
+FMTMSG: DB 13,10,'The selected system format is invalid.',13,10,0
+BOOTMSG:DB 13,10,'Destination bootstrap geometry is not supported by this system package.',13,10,0
+SPACEMSG:DB 13,10,'Destination reserved system area is too small (160 records required).',13,10,0
+PKGMSG:DB 13,10,'The system package is invalid or cannot represent the destination.',13,10,0
+SOURCEMSG:DB 13,10,'Source system read failed at logical record ',0
+USAGEMSG:DB 13,10,'Usage: SYSGEN, SYSGEN A: B:, or SYSGEN SYSTEM.SYS B:',13,10,0
 PROTMSG:DB 13,10,'Physical drive 0 is protected as the running system disk.',13,10,0
 ALIASMSG:DB 13,10,'Source and destination refer to the same physical drive.',13,10,0
 APIERR: DB 13,10,'The selected drive is undefined or unavailable.',13,10,0
@@ -496,8 +922,13 @@ STOPMSG:DB 13,10,'Installation stopped. The destination may not boot.',13,10
         DB 'Its file area was not changed.',13,10,0
 ABIMSG:DB 'SYSGEN requires BetterCP/M disk BIOS ABI 5.',13,10,0
 MAGIC:  DB 'BDCF',5,4,4,64
+SYSNAME:DB 'SYSTEM  SYS'
+PKGMAGIC:DB 'BCSY',1,1,160,0,0C4H,0D5H
 
 DEST:   DB 0
+SOURCEDEV:DB 0
+FILEMODE:DB 0
+NEEDREAD:DB 0
 STATUS: DB 0
 IOMODE: DB 0
 IODRV:  DB 0
@@ -509,10 +940,10 @@ IOREC:  DW 0
 IOBUF:  DW 0
 TRACKNO:DW 0
 NEXTTRK:DW 0
+DESCPTR:DW 0
 SOURCE: DS 64
 TARGET: DS 64
 EXPECT: DS 64
+BOOTBIND:DS 64
 REQ:    DS 80
-BUFFER: DS 128
-VERIFY: DS 128
         END

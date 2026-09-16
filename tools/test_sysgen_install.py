@@ -110,7 +110,16 @@ def main() -> None:
     installed_raw = extract_raw((OUT / "target.dmk").read_bytes())
     before_raw = extract_raw(target_before)
     reserved = 2 * 80 * 128
-    assert installed_raw[:reserved] == source_raw[:reserved]
+    # SYSGEN preserves the package except for its installed A: binding.  A
+    # double-sided runtime binding is normalized from surface-track (E0h) to
+    # the bootstrap's cylinder-track form (A0h).
+    differences = [
+        (offset, before, after)
+        for offset, (before, after) in enumerate(
+            zip(source_raw[:reserved], installed_raw[:reserved]))
+        if before != after
+    ]
+    assert differences == [(7030, 0xE0, 0xA0)], differences
     assert installed_raw[reserved:] == before_raw[reserved:]
 
     (OUT / "cold").mkdir()

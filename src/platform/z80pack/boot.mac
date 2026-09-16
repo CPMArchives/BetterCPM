@@ -1,25 +1,45 @@
         INCLUDE layout.inc
+        INCLUDE bootfmt.inc
 ; FIRST RECORD BOOT -- cpmsim loads precisely 128 bytes at address zero.
 ; Fetch the packed resident image, then hand off to the ordinary BIOS BOOT.
         ASEG
         ORG 0
         DI
-        LD SP,080H
+; Keep the bootstrap stack above page zero.  ZB_MAP occupies the end of the
+; first record, so the former 0080H stack destroyed its final entries.
+        LD SP,0100H
         XOR A
         OUT (10),A
-        OUT (17),A
+; During bootstrap, present the raw image as 128-byte slots. The full BIOS
+; installs the selected physical geometry after the resident image is loaded.
+        OUT (18),A
+        LD A,ZB_TRACKS
+        OUT (19),A
+        LD A,2
+        OUT (18),A
+        LD A,ZB_SLOTS
+        OUT (19),A
         LD HL,LY_SYS
         LD E,8
         LD B,52
 ZB_NEXT:
         LD A,E
         LD C,0
-ZB_DIV: CP 26
+ZB_DIV: CP ZB_SLOTS
         JR C,ZB_POS
-        SUB 26
+        SUB ZB_SLOTS
         INC C
         JR ZB_DIV
-ZB_POS: INC A
+ZB_POS: PUSH DE
+        PUSH HL
+        LD E,A
+        LD D,0
+        LD HL,ZB_MAP
+        ADD HL,DE
+        LD A,(HL)
+        POP HL
+        POP DE
+        INC A
         OUT (12),A
         LD A,C
         OUT (11),A
@@ -44,4 +64,6 @@ ZB_FAIL:LD A,'!'
         OUT (1),A
         HALT
         JR ZB_FAIL
+ZB_MAP:
+        DB ZB_MAP_BYTES
         END

@@ -273,6 +273,7 @@ BC_PDOK:
 
 BC_DIR:
         CALL    BC_DUSEL
+        JP      C,BC_BDERR
         LD      C,31            ; selected drive's DPB supplies EXM
         CALL    BDOS
         LD      DE,4
@@ -471,7 +472,7 @@ BC_DUSEL:
         SUB     '0'
         ADD     A,C
         CP      32
-        JR      NC,BC_DUNONE
+        JP      NC,BC_DUNONE
         LD      C,A
         INC     HL
         DEC     B
@@ -528,6 +529,12 @@ BC_DUONE:
         LD      A,C
         LD      (BC_UTARG),A
 BC_DUCOL:
+        LD      A,(BC_DTARG)
+        CP      0FFH
+        JR      Z,BC_DUVALID
+        CP      4
+        JP      NC,BC_DUBAD
+BC_DUVALID:
         INC     HL
         DEC     B
         LD      (BC_DARGP),HL
@@ -550,12 +557,26 @@ BC_DUOUT:
         LD      HL,(BC_DARGP)
         LD      A,(BC_DARGL)
         LD      B,A
+        OR      A               ; normal return clears carry
         RET
 BC_DUNONE:
         LD      HL,(BC_DARGP)
         LD      A,(BC_DARGL)
         LD      B,A
+        OR      A
         RET
+BC_DUBAD:
+        LD      HL,(BC_DARGP)
+        LD      A,(BC_DARGL)
+        LD      B,A
+        SCF
+        RET
+
+BC_BDERR:
+        LD      DE,BC_BDMSG
+        LD      C,9
+        CALL    BDOS
+        JP      BC_DURST
 
 BC_DURST:
         LD      A,(BC_DSAVE)
@@ -585,6 +606,7 @@ BC_DFSKIP:
 
 BC_ERA:
         CALL    BC_DUSEL
+        JP      C,BC_BDERR
         LD      A,B
         OR      A
         JR      Z,BC_ENOFILE
@@ -630,6 +652,7 @@ BC_ERET:
 
 BC_TYPE:
         CALL    BC_DUSEL
+        JP      C,BC_BDERR
         LD      A,B
         OR      A
         JP      Z,BC_TSYNTAX
@@ -772,6 +795,7 @@ BC_TERROR:
 
 BC_REN:
         CALL    BC_DUSEL
+        JP      C,BC_BDERR
         LD      A,B
         OR      A
         JP      Z,BC_RSYNTAX
@@ -1063,7 +1087,11 @@ BC_CPARSE:
         LD      B,A
         LD      DE,BC_FCB
         CALL    BC_COPAR
-        JP      NC,BC_CSYNT
+        JR      C,BC_CSOK
+        OR      A
+        JP      NZ,BC_BDERR
+        JP      BC_CSYNT
+BC_CSOK:
         LD      A,(BC_CODRV)
         LD      (BC_CSDRV),A
         LD      A,(BC_COUSE)
@@ -1073,7 +1101,11 @@ BC_CPARSE:
         LD      B,A
         LD      DE,BC_NEWFCB
         CALL    BC_COPAR
-        JP      NC,BC_CSYNT
+        JR      C,BC_CDOK
+        OR      A
+        JP      NZ,BC_BDERR
+        JP      BC_CSYNT
+BC_CDOK:
         LD      A,(BC_CODRV)
         LD      (BC_CDDRV),A
         LD      A,(BC_COUSE)
@@ -1214,6 +1246,7 @@ BC_COK:
 BC_COPAR:
         LD      (BC_COFCP),DE
         CALL    BC_DUSEL
+        JR      C,BC_COPDRV
         LD      (BC_COPTR),HL
         LD      A,B
         LD      (BC_COLEN),A
@@ -1244,6 +1277,11 @@ BC_COPAR:
         RET
 BC_COPBAD:
         CALL    BC_DURST
+        OR      A
+        RET
+BC_COPDRV:
+        CALL    BC_DURST
+        LD      A,1
         OR      A
         RET
 
@@ -1439,6 +1477,7 @@ BC_ALL:        DB      '*.*'
 BC_NL:         DB      13,10,'$'
 BC_SEP:        DB      ' : ','$'
 BC_NOFILE:     DB      13,10,'NO FILE',13,10,'$'
+BC_BDMSG:      DB      13,10,'INVALID DRIVE',13,10,'$'
 BC_ECONF:      DB      13,10,'ALL (Y/N)? $'
 BC_READERR:    DB      13,10,'READ ERROR',13,10,'$'
 BC_MORE:       DB      '--More--$'

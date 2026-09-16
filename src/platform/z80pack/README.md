@@ -11,17 +11,16 @@ The target READER entry reads cpmsim auxiliary-input port 5.  The host-side
 `cpmsend` helper supplies a normal reader stream; when no sender is attached,
 cpmsim returns CP/M end-of-file (`Ctrl-Z`).
 
-`python3 tools/build_z80pack_boot.py --output build/z80pack` builds a private
+`python3 tools/build_z80pack_image.py --output build/z80pack` builds a private
 set of target artifacts and disks. It refuses to overwrite an existing disks
 directory. Start `build/z80pack/launch-z80pack.command` in a terminal. BYE exits
 the emulator. The launcher supplies the path to z80pack's cpmrecv helper.
 
-A-D initially use raw 77-track, 26-sector, 128-byte-sector images (256,256
-bytes each), using linear record order. A reserves seven tracks and has 227
-KiB of allocation space; B-D reserve none and have 250 KiB each. Directory
-storage consumes two 1-KiB blocks on each disk. B-D may be replaced with raw
-images in another CONFIG-selected format. The same unmodified image is then
-usable with a matching cpmtools `diskdefs` entry.
+A-D use the California Computer Systems 40T DS DD 332K default: 40 cylinders,
+two sides, 18 256-byte sectors per side, and 368,640 bytes per raw image. A:
+contains the installed system and distribution files. B:-D: are empty formatted
+and boot-capable SYSGEN targets. The generated `diskdefs` describes the same
+bytes to cpmtools. `build_z80pack_boot.py` remains a compatibility wrapper.
 
 System absolute record allocation on A:
 
@@ -36,7 +35,7 @@ System absolute record allocation on A:
 | 92-99 | Service-descriptor publisher |
 | 100-107 | Resident-service resolver |
 | 108-120 | Relocatable CCP carrier |
-| 182 onward | CP/M directory and allocation blocks |
+| 216 onward | CP/M directory and allocation blocks |
 
 The bootstrap reads the resident image and enters the standard BIOS BOOT
 vector. The ordinary module-reconstruction algorithm is reused with a target
@@ -69,9 +68,8 @@ the emulator's BCD/binary mode and rejects samples crossing a clock tick.
 `python3 tools/test_z80pack_boot.py` uses private copies of all disks. It boots,
 lists files, runs HELLO, creates/writes/closes/reopens/reads files on B-D, verifies
 their bytes with cpmtools, then loads and unloads ECHO.RSX and checks 53K TPA.
-The transcript is saved as verification.txt. `cpmls -T raw -f
-bettercpm-z80pack-system disks/drivea.dsk` reads the filesystem from the output
-directory. Use bettercpm-z80pack-data for the original data disks.
+The transcript is saved as verification.txt. From the output directory,
+`cpmls -f bettercpm-default disks/drivea.dsk` reads the same filesystem.
 
 `python3 tools/test_z80pack_interchange.py` creates independent 256-byte,
 512-byte, and double-sided cpmtools images, writes a file with cpmtools, binds

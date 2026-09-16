@@ -12,6 +12,8 @@ import argparse
 import hashlib
 import json
 import re
+import subprocess
+import sys
 from pathlib import Path
 
 from build_montezuma_extended_790k import RAW_SIZE, build, verify
@@ -154,8 +156,8 @@ ASSEMBLING A TRANSIENT PROGRAM
 
 ZSM4 creates ERA.REL and LINK creates ERA.COM.  SOURCES.DOC maps every
 shortened CP/M filename back to its repository path.  Several resident and
-platform modules need generated link-symbol includes; use the repository
-host build for these until the native GENSYS composer is implemented.
+platform modules need generated link-symbol includes.  Once the standard
+binary products below have been assembled, SYSBUILD composes SYSTEM.SYS.
 
 BUILDING THE OPERATING SYSTEM
 
@@ -164,20 +166,20 @@ single ordinary COM file.  BetterCP/M's boot sector, stage-one loader, packed
 resident image, reloader, control overlay, RSX manager, and relocatable CCP
 must be placed at defined offsets in a 20K protected-system image.
 
-At present the repository's host build performs that composition:
+The repository's host build can perform that composition:
 
   python3 tools/build_complete_system.py
 
-It writes build/trs80/BetterCPM-Extended-80T-DS-System-790K.dmk.  The current
-SYSGEN.COM then installs by copying and verifying that complete protected
-area from the running A: system disk to a prepared compatible system disk.
-It does not yet consume separately assembled REL files or a SYSTEM.IMG file.
+It writes build/trs80/BetterCPM-Extended-80T-DS-System-790K.dmk.  For native
+composition, put these products in the current CP/M directory:
 
-Therefore a completely native source-to-system-track build still needs one
-additional program: a GENSYS-style composer, followed by a SYSGEN mode that
-reads the composed image and writes it to the system tracks.  Until that is
-implemented, native assembly on this disk is useful for development and
-binary comparison, while final system composition is done by the host build.
+  BOOT.BIN STAGE1.BIN RESIDENT.BIN CCPRELOD.BIN RSXSEL.BIN CONFIG.BIN
+  RSXLOAD.BIN RSXVALID.BIN RSXPUBL.BIN RSXRESOL.BIN CCP.RLM
+
+Run SYSBUILD to create and read-back verify the canonical 160-record
+SYSTEM.SYS package.  Then use SYSGEN SYSTEM.SYS B: to install and verify it
+on a prepared SYSTEM disk.  SYSGEN A: B: instead obtains the package from an
+already bootable source disk.
 
 INSTALLING AN EXISTING BUILT SYSTEM
 
@@ -210,6 +212,8 @@ def main() -> None:
                         default=OUT / "BetterCPM-Build-80T-DS-800K.dmk")
     args = parser.parse_args()
     tools = find_tools(args.tools)
+    subprocess.run([sys.executable, str(ROOT / "tools/build_disk_utilities.py")],
+                   cwd=ROOT, check=True)
 
     files: list[tuple[int, str, bytes]] = []
     mapping: list[dict[str, object]] = []
@@ -227,6 +231,9 @@ def main() -> None:
     for name in ("ZSM4.COM", "LINK.COM"):
         used[0].add(name)
         files.append((0, name, (tools / name).read_bytes()))
+    for name in ("SYSBUILD.COM", "SYSGEN.COM"):
+        used[0].add(name)
+        files.append((0, name, (ROOT / "build/utilities" / name).read_bytes()))
     license_path = tools / "zsm4-source/LICENSE"
     if license_path.is_file():
         files.append((0, "ZSM4.LIC", text_file(license_path.read_bytes())))

@@ -1,5 +1,6 @@
         INCLUDE layout.inc
         INCLUDE bioslinks.inc
+        INCLUDE bootfmt.inc
 ; Z80PACK CPMSIM DISK ADAPTER -- variable raw geometry
 ;
 ; cpmsim ports:
@@ -450,8 +451,9 @@ Z_WRESTORE:
         RET
 
 ; ----------------------------------------------------------------------
-; Read B consecutive absolute 128-byte system records from A:.
-; Bootstrap layout remains fixed at 77 tracks x 26 x 128 bytes.
+; Read B consecutive absolute 128-byte system records from A:.  The system
+; carrier follows the selected FDF sector order just like the first-record
+; bootstrap.
 ; ----------------------------------------------------------------------
 
 Z_BOOTREAD:
@@ -462,15 +464,23 @@ Z_BOOTREAD:
         LD D,0
 
 ZP_BDIV:
-        CP 26
+        CP ZB_SLOTS
         JR C,ZP_BDONE
-        SUB 26
+        SUB ZB_SLOTS
         INC D
         JR ZP_BDIV
 
 ZP_BDONE:
-        INC A
+        PUSH HL
         LD E,A
+        LD A,D
+        LD D,0
+        LD HL,ZP_BOOTMAP
+        ADD HL,DE
+        LD E,(HL)
+        INC E
+        LD D,A
+        POP HL
 
         LD C,0
         XOR A
@@ -483,6 +493,9 @@ ZP_BDONE:
         INC DE
         DJNZ Z_BOOTREAD
         RET
+
+ZP_BOOTMAP:
+        DB ZB_MAP_BYTES
 
 ; A=command, C=drive, D=track, E=1-based 128-byte sector, HL=DMA.
 Z_BOOTIO:

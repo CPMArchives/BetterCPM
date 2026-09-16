@@ -458,7 +458,7 @@ UB_RESET:
 
 UB_SELECT:
         LD      A,E
-        CP      16
+        CP      4               ; this build exposes only logical drives A-D
         JP      NC,UB_BAD
         LD      C,A
         CALL    UB_CONTEXT
@@ -661,7 +661,7 @@ UB_FCBCUR:
         RET
 UB_FCBEXP:
         DEC     A
-        CP      16
+        CP      4               ; FCB drive bytes 1-4 denote A-D
         JR      NC,UB_FCBBAD
         LD      C,A
         OR      A

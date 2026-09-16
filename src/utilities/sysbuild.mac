@@ -1,0 +1,424 @@
+; SYSBUILD -- compose SYSTEM.SYS from newly assembled BetterCP/M binaries.
+;
+; Run this in the directory containing the component files named in PARTS.
+; The result is the canonical 20 KiB TRS-80 protected-system package consumed
+; by SYSGEN.  Every unused byte is zero, every input has a fixed maximum, and
+; the completed output is reopened and verified record by record.
+        ASEG
+        ORG     0100H
+BDOS    EQU     5
+BUFFER  EQU     04000H
+SYSRECS EQU     160             ; 20 KiB / 128
+SYSBASE EQU     0D5C4H
+
+START:  LD      SP,03F00H
+        LD      DE,BANNER
+        CALL    PRINT
+        LD      HL,BUFFER
+        LD      DE,BUFFER+1
+        LD      BC,SYSRECS*128-1
+        XOR     A
+        LD      (HL),A
+        LDIR
+        LD      HL,PARTS
+NEXT:   LD      A,(HL)
+        OR      A
+        JP      Z,WRITEOUT
+        LD      (CURFCB),HL
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        LD      (CURDST),DE
+        LD      C,(HL)
+        INC     HL
+        LD      B,(HL)
+        INC     HL
+        LD      (CURCAP),BC
+        LD      (NEXTPART),HL
+        CALL    LOADPART
+        JP      NZ,FAIL
+        LD      HL,(NEXTPART)
+        JR      NEXT
+
+; Table entry: conventional 36-byte FCB, destination, capacity in records.
+LOADPART:
+        LD      DE,(CURFCB)
+        LD      C,15
+        CALL    BDOS
+        INC     A
+        JP      Z,MISSING
+        XOR     A
+        LD      (COUNT),A
+        LD      (COUNT+1),A
+READLP: LD      HL,(COUNT)
+        LD      DE,(CURCAP)
+        OR      A
+        SBC     HL,DE
+        JR      NC,FULLCHK
+        LD      HL,(CURDST)
+        LD      DE,(COUNT)
+        SLA     E
+        RL      D
+        SLA     E
+        RL      D
+        SLA     E
+        RL      D
+        SLA     E
+        RL      D
+        SLA     E
+        RL      D
+        SLA     E
+        RL      D
+        SLA     E
+        RL      D
+        ADD     HL,DE
+        EX      DE,HL
+        LD      C,26
+        CALL    BDOS
+        LD      DE,(CURFCB)
+        LD      C,20
+        CALL    BDOS
+        OR      A
+        JR      NZ,READEOF
+        LD      HL,(COUNT)
+        INC     HL
+        LD      (COUNT),HL
+        JR      READLP
+READEOF:
+        CP      1
+        JR      NZ,READBAD
+        LD      HL,(COUNT)
+        LD      A,H
+        OR      L
+        JR      Z,MISSING
+        JR      CLOSEOK
+FULLCHK:
+        LD      DE,SCRATCH
+        LD      C,26
+        CALL    BDOS
+        LD      DE,(CURFCB)
+        LD      C,20
+        CALL    BDOS
+        CP      1
+        JR      Z,CLOSEOK
+        LD      A,3
+        JR      CLOSEERR
+CLOSEOK:
+        XOR     A
+CLOSEERR:
+        PUSH    AF
+        LD      DE,(CURFCB)
+        LD      C,16
+        CALL    BDOS
+        POP     AF
+        OR      A
+        RET
+MISSING:
+        LD      A,1
+        OR      A
+        RET
+READBAD:
+        LD      A,2
+        JR      CLOSEERR
+
+WRITEOUT:
+        CALL    FINALIZE
+        JP      NZ,FAIL
+        CALL    MAKEHEADER
+        JP      NZ,FAIL
+        LD      DE,OUTFCB
+        LD      C,19
+        CALL    BDOS
+        LD      DE,OUTFCB
+        LD      C,22
+        CALL    BDOS
+        INC     A
+        JP      Z,CREATEBAD
+        LD      DE,HEADER
+        LD      C,26
+        CALL    BDOS
+        LD      DE,OUTFCB
+        LD      C,21
+        CALL    BDOS
+        OR      A
+        JP      NZ,WRITEBAD
+        LD      HL,BUFFER
+        LD      B,SYSRECS
+WRLP:   PUSH    BC
+        PUSH    HL
+        EX      DE,HL
+        LD      C,26
+        CALL    BDOS
+        LD      DE,OUTFCB
+        LD      C,21
+        CALL    BDOS
+        POP     HL
+        POP     BC
+        OR      A
+        JP      NZ,WRITEBAD
+        LD      DE,128
+        ADD     HL,DE
+        DJNZ    WRLP
+        LD      DE,OUTFCB
+        LD      C,16
+        CALL    BDOS
+        INC     A
+        JP      Z,CLOSEBAD
+        CALL    VERIFY
+        JP      NZ,FAIL
+        LD      DE,DONE
+        CALL    PRINT
+        JP      0
+
+VERIFY: LD      HL,OUTFCB+12
+        LD      B,24
+        XOR     A
+VFCLR:  LD      (HL),A
+        INC     HL
+        DJNZ    VFCLR
+        LD      DE,OUTFCB
+        LD      C,15
+        CALL    BDOS
+        INC     A
+        JP      Z,VERIFYBAD
+        LD      DE,SCRATCH
+        LD      C,26
+        CALL    BDOS
+        LD      DE,OUTFCB
+        LD      C,20
+        CALL    BDOS
+        OR      A
+        JP      NZ,VERIFYBAD
+        LD      HL,HEADER
+        LD      DE,SCRATCH
+        LD      B,128
+VFHDR:  LD      A,(DE)
+        CP      (HL)
+        JP      NZ,VERIFYBAD
+        INC     DE
+        INC     HL
+        DJNZ    VFHDR
+        LD      HL,BUFFER
+        LD      B,SYSRECS
+VFLP:   PUSH    BC
+        PUSH    HL
+        LD      DE,SCRATCH
+        LD      C,26
+        CALL    BDOS
+        LD      DE,OUTFCB
+        LD      C,20
+        CALL    BDOS
+        OR      A
+        JR      NZ,VFIO
+        POP     HL
+        PUSH    HL
+        LD      DE,SCRATCH
+        LD      B,128
+VFCMP:  LD      A,(DE)
+        CP      (HL)
+        JR      NZ,VFMISMATCH
+        INC     DE
+        INC     HL
+        DJNZ    VFCMP
+        POP     HL
+        POP     BC
+        LD      DE,128
+        ADD     HL,DE
+        DJNZ    VFLP
+        LD      DE,OUTFCB
+        LD      C,20
+        CALL    BDOS
+        CP      1
+        JR      NZ,VFEXTRA
+        LD      DE,OUTFCB
+        LD      C,16
+        CALL    BDOS
+        XOR     A
+        RET
+
+; The selector shares the last 128 bytes of the reloader carrier. Resident
+; overlay carriers end with the live system gateway jump, just as the host
+; composer constructs them.
+FINALIZE:
+        LD      HL,BDOSJUMP
+        LD      DE,BUFFER+9728+1021
+        LD      BC,3
+        LDIR
+        LD      HL,BDOSJUMP
+        LD      DE,BUFFER+10752+1021
+        LD      BC,3
+        LDIR
+        LD      HL,BDOSJUMP
+        LD      DE,BUFFER+11776+1021
+        LD      BC,3
+        LDIR
+        LD      HL,BDOSJUMP
+        LD      DE,BUFFER+12800+1021
+        LD      BC,3
+        LDIR
+        XOR     A
+        RET
+VFIO:   POP     HL
+        POP     BC
+        LD      A,5
+        OR      A
+        RET
+VFMISMATCH:
+        POP     HL
+        POP     BC
+        LD      A,6
+        OR      A
+        RET
+VFEXTRA:LD      A,7
+        OR      A
+        RET
+VERIFYBAD:
+        LD      A,4
+        OR      A
+        RET
+
+; Find the built resident's disk ABI descriptor and copy its A: binding into
+; the package header. This makes SYSTEM.SYS self-describing; SYSGEN need not
+; assume that the running system and newly built system use the same format.
+MAKEHEADER:
+        LD      HL,BUFFER+1024
+        LD      BC,52*128-12
+MHSCAN: LD      A,(HL)
+        CP      'B'
+        JR      NZ,MHNEXT
+        INC     HL
+        LD      A,(HL)
+        CP      'D'
+        JR      NZ,MHBACK1
+        INC     HL
+        LD      A,(HL)
+        CP      'C'
+        JR      NZ,MHBACK2
+        INC     HL
+        LD      A,(HL)
+        CP      'F'
+        JR      NZ,MHBACK3
+        DEC     HL
+        DEC     HL
+        DEC     HL
+        PUSH    HL
+        LD      DE,10
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)          ; absolute address of logical-record table
+        EX      DE,HL
+        LD      DE,SYSBASE
+        OR      A
+        SBC     HL,DE
+        LD      DE,BUFFER+1024+16
+        ADD     HL,DE           ; first binding follows A:'s 16-byte DPH
+        LD      DE,HEADER+16
+        LD      BC,64
+        LDIR
+        POP     HL
+        XOR     A
+        RET
+MHBACK3:DEC     HL
+MHBACK2:DEC     HL
+MHBACK1:DEC     HL
+MHNEXT:INC     HL
+        DEC     BC
+        LD      A,B
+        OR      C
+        JR      NZ,MHSCAN
+        LD      A,11
+        OR      A
+        RET
+
+CREATEBAD:LD    A,8
+        JR      FAIL
+WRITEBAD:LD     A,9
+        JR      FAIL
+CLOSEBAD:LD     A,10
+FAIL:   PUSH    AF
+        LD      DE,ERRMSG
+        CALL    PRINT
+        POP     AF
+        CALL    HEXBYTE
+        LD      DE,CRLF
+        CALL    PRINT
+        JP      0
+
+PRINT:  LD      C,9
+        JP      BDOS
+HEXBYTE:PUSH    AF
+        RRCA
+        RRCA
+        RRCA
+        RRCA
+        CALL    HEXDIG
+        POP     AF
+HEXDIG: AND     0FH
+        ADD     A,'0'
+        CP      '9'+1
+        JR      C,HEXOUT
+        ADD     A,7
+HEXOUT: LD      E,A
+        LD      C,2
+        JP      BDOS
+
+BANNER: DB      'BetterCP/M system builder',13,10,'$'
+DONE:   DB      'SYSTEM.SYS created and verified (161 records).',13,10,'$'
+ERRMSG: DB      'SYSBUILD failed; status $'
+CRLF:   DB      13,10,'$'
+
+; Keep these filenames stable: they are the native build-product ABI.
+PARTS:
+        DB 0,'BOOT    BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DW BUFFER
+        DW 4
+        DB 0,'STAGE1  BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DW BUFFER+512
+        DW 4
+        DB 0,'RESIDENTBIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DW BUFFER+1024
+        DW 52
+        DB 0,'CCPRELODBIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DW BUFFER+7680
+        DW 8
+        DB 0,'RSXSEL  BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DW BUFFER+8576
+        DW 1
+        DB 0,'CONFIG  BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DW BUFFER+8704
+        DW 8
+        DB 0,'RSXLOAD BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DW BUFFER+9728
+        DW 8
+        DB 0,'RSXVALIDBIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DW BUFFER+10752
+        DW 8
+        DB 0,'RSXPUBL BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DW BUFFER+11776
+        DW 8
+        DB 0,'RSXRESOLBIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DW BUFFER+12800
+        DW 8
+        DB 0,'CCP     RLM',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DW BUFFER+13824
+        DW 52
+        DB 0
+
+OUTFCB: DB 0,'SYSTEM  SYS',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+HEADER: DB 'BCSY',1,1
+        DW SYSRECS
+        DW SYSBASE
+        DS 6
+        DS 64
+        DS 48
+BDOSJUMP:DB 0C3H,0BCH,0D6H
+CURFCB: DW 0
+CURDST: DW 0
+CURCAP: DW 0
+NEXTPART:DW 0
+COUNT:  DW 0
+SCRATCH:DS 128
+        END

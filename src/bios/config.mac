@@ -18,56 +18,33 @@
         JP CF_GETPH
         JP CF_GETLOG
         JP CF_FAST
+DC_PHBAD:
+        JP DC_INVALID
 CF_PHYS:
         LD A,(IX+0)
         CALL DC_PHY
-        JP NC,DC_INVALID
+        JR NC,DC_PHBAD
         LD (DC_DEST),HL
         LD A,(IX+1)
         CP 5
+        JR Z,DC_INCHOK
+        CP 8
         JP NZ,DC_UNSUPPORTED
+DC_INCHOK:
         LD A,(IX+2)
-        OR A
-        JP Z,DC_INVALID
-        CP 81
-        JP NC,DC_INVALID
+        DEC A
+        CP 80
+        JR NC,DC_PHBAD
         LD A,(IX+3)
         DEC A
         CP 2
-        JP NC,DC_INVALID
+        JR NC,DC_PHBAD
         LD A,(IX+4)
         CP 4
-        JP NC,DC_INVALID
+        JR NC,DC_PHBAD
         LD A,(IX+5)
         CP 17
-        JP NC,DC_INVALID
-        ; Reject a hardware reduction that invalidates an attached format.
-        LD HL,LY_TAB+16
-        LD B,4
-DC_PHCHK:
-        LD A,(IX+0)
-        CP (HL)
-        JR NZ,DC_PHNEXT
-        PUSH HL
-        LD DE,16
-        ADD HL,DE
-        LD A,(IX+2)
-        CP (HL)
-        POP HL
-        JP C,DC_UNSUPPORTED
-        PUSH HL
-        LD DE,19
-        ADD HL,DE
-        BIT 6,(HL)
-        POP HL
-        JR Z,DC_PHNEXT
-        LD A,(IX+3)
-        CP 2
-        JP NZ,DC_UNSUPPORTED
-DC_PHNEXT:
-        LD DE,80
-        ADD HL,DE
-        DJNZ DC_PHCHK
+        JR NC,DC_PHBAD
         PUSH IX
         POP HL
         INC HL
