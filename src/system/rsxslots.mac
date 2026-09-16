@@ -1,0 +1,236 @@
+; Phase-3 static/runtime pointer-slot union preparer.
+;
+; DE -> request:
+;   +0 allocation size
+;   +2 static count, +3 runtime count
+;   +4 static-list address, +6 runtime-list address, +8 output address
+;   +10 output capacity in words, +11 reserved zero
+;   +12 returned union count (written only on success)
+;
+; Both input lists contain little-endian word offsets and must independently be
+; sorted and unique.  The output is their sorted, duplicate-free union.
+
+SUBASE          EQU     07200H
+
+        CSEG
+        .PHASE  SUBASE
+SU_ENTRY:
+        LD      (SU_REQ),DE
+        EX      DE,HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (SU_ALLOC),DE
+        LD      A,D
+        OR      E
+        JP      Z,SU_BAD
+        INC     HL
+        LD      A,(HL)
+        LD      (SU_SCNT),A
+        INC     HL
+        LD      A,(HL)
+        LD      (SU_RCNT),A
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (SU_SPTR),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (SU_RPTR),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (SU_OUT),DE
+        INC     HL
+        LD      A,(HL)
+        LD      (SU_CAP),A
+        INC     HL
+        LD      A,(HL)
+        OR      A
+        JP      NZ,SU_BAD
+
+; Reserve the maximum possible union before writing anything.
+        LD      A,(SU_SCNT)
+        LD      B,A
+        LD      A,(SU_RCNT)
+        ADD     A,B
+        JP      C,SU_BAD
+        LD      B,A
+        LD      A,(SU_CAP)
+        CP      B
+        JP      C,SU_BAD
+
+        LD      HL,(SU_SPTR)
+        LD      A,(SU_SCNT)
+        CALL    SU_VALID
+        JP      NZ,SU_BAD
+        LD      HL,(SU_RPTR)
+        LD      A,(SU_RCNT)
+        CALL    SU_VALID
+        JP      NZ,SU_BAD
+
+        XOR     A
+        LD      (SU_NOUT),A
+SU_MERGE:
+        LD      A,(SU_SCNT)
+        OR      A
+        JR      Z,SU_RREST
+        LD      A,(SU_RCNT)
+        OR      A
+        JR      Z,SU_SREST
+        LD      HL,(SU_SPTR)
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)          ; DE=static value
+        LD      HL,(SU_RPTR)
+        LD      C,(HL)
+        INC     HL
+        LD      B,(HL)          ; BC=runtime value
+        EX      DE,HL           ; HL=static value
+        PUSH    BC
+        LD      D,B
+        LD      E,C
+        OR      A
+        SBC     HL,DE
+        POP     BC
+        JR      C,SU_TAKESTATIC
+        JR      NZ,SU_TAKERUNTIME
+        LD      H,B
+        LD      L,C
+        CALL    SU_EMIT
+        CALL    SU_ADVS
+        CALL    SU_ADVR
+        JR      SU_MERGE
+SU_TAKESTATIC:
+        ADD     HL,BC           ; restore static value
+        CALL    SU_EMIT
+        CALL    SU_ADVS
+        JR      SU_MERGE
+SU_TAKERUNTIME:
+        LD      H,B
+        LD      L,C
+        CALL    SU_EMIT
+        CALL    SU_ADVR
+        JR      SU_MERGE
+SU_SREST:
+        LD      HL,(SU_SPTR)
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        CALL    SU_EMIT
+        CALL    SU_ADVS
+        JR      SU_MERGE
+SU_RREST:
+        LD      A,(SU_RCNT)
+        OR      A
+        JR      Z,SU_DONE
+        LD      HL,(SU_RPTR)
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        CALL    SU_EMIT
+        CALL    SU_ADVR
+        JR      SU_MERGE
+SU_DONE:
+        LD      HL,(SU_REQ)
+        LD      DE,12
+        ADD     HL,DE
+        LD      A,(SU_NOUT)
+        LD      (HL),A
+        XOR     A
+        RET
+
+; HL=list, A=count.  Validate complete two-byte bounds and strict ordering.
+SU_VALID:
+        LD      B,A
+        XOR     A
+        LD      (SU_SEEN),A
+SU_VLOOP:
+        LD      A,B
+        OR      A
+        RET     Z
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        PUSH    HL
+        LD      HL,(SU_ALLOC)
+        DEC     HL
+        OR      A
+        SBC     HL,DE
+        POP     HL
+        JR      C,SU_VBAD
+        JR      Z,SU_VBAD
+        LD      A,(SU_SEEN)
+        OR      A
+        JR      Z,SU_VFIRST
+        PUSH    HL
+        LD      HL,(SU_PREV)
+        OR      A
+        SBC     HL,DE
+        POP     HL
+        JR      NC,SU_VBAD
+SU_VFIRST:
+        LD      (SU_PREV),DE
+        LD      A,1
+        LD      (SU_SEEN),A
+        DJNZ    SU_VLOOP
+        XOR     A
+        RET
+SU_VBAD:
+        LD      A,0FFH
+        OR      A
+        RET
+
+SU_EMIT:
+        EX      DE,HL
+        LD      HL,(SU_OUT)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      (SU_OUT),HL
+        LD      HL,SU_NOUT
+        INC     (HL)
+        RET
+SU_ADVS:
+        LD      HL,(SU_SPTR)
+        INC     HL
+        INC     HL
+        LD      (SU_SPTR),HL
+        LD      HL,SU_SCNT
+        DEC     (HL)
+        RET
+SU_ADVR:
+        LD      HL,(SU_RPTR)
+        INC     HL
+        INC     HL
+        LD      (SU_RPTR),HL
+        LD      HL,SU_RCNT
+        DEC     (HL)
+        RET
+SU_BAD:
+        LD      A,0FFH
+        OR      A
+        RET
+
+SU_REQ:         DW      0
+SU_ALLOC:       DW      0
+SU_SPTR:        DW      0
+SU_RPTR:        DW      0
+SU_OUT:         DW      0
+SU_PREV:        DW      0
+SU_SCNT:        DB      0
+SU_RCNT:        DB      0
+SU_CAP:         DB      0
+SU_NOUT:        DB      0
+SU_SEEN:        DB      0
+
+        .DEPHASE
+        END
