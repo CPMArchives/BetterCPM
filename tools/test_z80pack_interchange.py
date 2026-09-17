@@ -9,20 +9,22 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 MARKER = b"BETTERCPM CPMTOOLS INTERCHANGE PASS\r\n"
-PAYLOAD = MARKER + bytes((index % 251) + 1
-                         for index in range(1280 - len(MARKER)))
+PAYLOAD = (MARKER * ((1280 + len(MARKER) - 1) // len(MARKER)))[:1280]
 CASES = (
-    ("mm-standard-system", 40 * 18 * 256, "A",
+    ("mm-standard-system", 40 * 18 * 256, "A", 40,
      "Montezuma Micro Standard SYSTEM"),
-    ("ampro-little-board", 40 * 10 * 512, ".F",
+    ("mm-80t-ds-data", 160 * 10 * 512, "H", 80,
+     "Montezuma Micro 80T DS DATA"),
+    ("ampro-little-board", 40 * 10 * 512, ".F", 40,
      "Ampro Little Board"),
-    ("ampro-little-board-ds", 80 * 10 * 512, ".G",
+    ("ampro-little-board-ds", 80 * 10 * 512, ".G", 40,
      "Ampro Little Board double-sided"),
 )
 
 
-def run_case(image: Path, simulator: Path, case: tuple[str, str, str, str]) -> None:
-    slug, image_size, selection, description = case
+def run_case(image: Path, simulator: Path,
+             case: tuple[str, int, str, int, str]) -> None:
+    slug, image_size, selection, cylinders, description = case
     fmt = "bettercpm-" + slug
     with tempfile.TemporaryDirectory(prefix=f"bettercpm-z80pack-{slug}-",
                                      dir="/private/tmp") as tmp:
@@ -43,13 +45,31 @@ def run_case(image: Path, simulator: Path, case: tuple[str, str, str, str]) -> N
             select += (f'send -s -- "{key}"\n'
                        'expect -exact "Your choice:"\n')
         select = select.rsplit('expect -exact "Your choice:"\n', 1)[0]
+        physical = ""
+        if cylinders == 80:
+            physical = r'''send -s -- "F"
+expect -exact "Your choice:"
+send -s -- "B"
+expect -exact "Physical disk drive 1"
+expect -exact "Your choice:"
+send -s -- "B"
+expect -exact "Track choices:"
+expect -exact "Your choice:"
+send -s -- "D"
+expect -exact "Physical disk drive 1"
+expect -exact "Your choice:"
+send -s -- "\003"
+prompt
+send -s -- "CONFIG\r"
+expect -exact "Your choice:"
+'''
         script = r'''set timeout 30
 set send_slow {1 .02}
 log_file -noappend [lindex $argv 2]
 expect_before timeout {puts "TEST TIMEOUT"; exit 1}
 proc prompt {} {
  expect {
-  -re {\r+\nA0>} {}
+  -re {\r+\n[A-D]0>} {}
   timeout {puts "PROMPT TIMEOUT"; exit 1}
   eof {puts "UNEXPECTED EXIT"; exit 1}
  }
@@ -59,6 +79,7 @@ expect -exact "Booting..."
 prompt
 send -s -- "CONFIG\r"
 expect -exact "Your choice:"
+@PHYSICAL@
 send -s -- "G"
 expect -exact "Choose the letter of the drive to change:"
 expect -exact "Your choice:"
@@ -81,7 +102,7 @@ send -s -- "COPY B:HOST.DAT B:ROUND.DAT\r"
 prompt
 send -s -- "BYE\r"
 expect eof
-'''.replace("@SELECT@", select)
+'''.replace("@PHYSICAL@", physical).replace("@SELECT@", select)
         test = work / "interchange.exp"
         test.write_text(script)
         env = dict(os.environ)
