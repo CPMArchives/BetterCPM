@@ -1,0 +1,277 @@
+; RESPACK -- compose the packed resident payload from native linked modules.
+;
+; Each input is an absolute binary linked from the source/build disk.  The
+; destination offsets and capacities come from the canonical memory map.
+; Unused bytes, including the initial reconstruction table, remain zero.
+        INCLUDE layout.inc
+        INCLUDE partmeta.inc
+        ASEG
+        ORG     0100H
+BDOS    EQU     5
+BUFFER  EQU     04000H
+RECS    EQU     52
+
+START:  LD      SP,03F00H
+        LD      DE,BANNER
+        CALL    PRINT
+        LD      HL,BUFFER
+        LD      DE,BUFFER+1
+        LD      BC,RECS*128-1
+        XOR     A
+        LD      (HL),A
+        LDIR
+        LD      HL,PARTS
+NEXT:   LD      A,(HL)
+        OR      A
+        JP      Z,WRITEOUT
+        INC     HL
+        LD      (CURFCB),HL
+        LD      DE,36
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        LD      (CURDST),DE
+        LD      C,(HL)
+        INC     HL
+        LD      B,(HL)
+        INC     HL
+        LD      (CURCAP),BC
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        LD      (CURSIZE),DE
+        LD      (NEXTPART),HL
+        CALL    LOADPART
+        JP      NZ,FAIL
+        LD      HL,(NEXTPART)
+        JR      NEXT
+
+LOADPART:
+        LD      DE,(CURFCB)
+        LD      C,15
+        CALL    BDOS
+        INC     A
+        JP      Z,MISSING
+        XOR     A
+        LD      (COUNT),A
+        LD      (COUNT+1),A
+READLP: LD      HL,(COUNT)
+        LD      DE,(CURCAP)
+        OR      A
+        SBC     HL,DE
+        JR      NC,FULLCHK
+        LD      HL,(CURDST)
+        LD      DE,(COUNT)
+        SLA     E
+        RL      D
+        SLA     E
+        RL      D
+        SLA     E
+        RL      D
+        SLA     E
+        RL      D
+        SLA     E
+        RL      D
+        SLA     E
+        RL      D
+        SLA     E
+        RL      D
+        ADD     HL,DE
+        EX      DE,HL
+        LD      C,26
+        CALL    BDOS
+        LD      DE,(CURFCB)
+        LD      C,20
+        CALL    BDOS
+        OR      A
+        JR      NZ,READEOF
+        LD      HL,(COUNT)
+        INC     HL
+        LD      (COUNT),HL
+        JR      READLP
+READEOF:
+        CP      1
+        JR      NZ,READBAD
+        LD      HL,(COUNT)
+        LD      A,H
+        OR      L
+        JR      Z,MISSING
+        JR      CLOSEOK
+FULLCHK:
+        LD      DE,SCRATCH
+        LD      C,26
+        CALL    BDOS
+        LD      DE,(CURFCB)
+        LD      C,20
+        CALL    BDOS
+        CP      1
+        JR      Z,CLOSEOK
+        LD      A,3
+        JR      CLOSEERR
+CLOSEOK:
+        XOR     A
+CLOSEERR:
+        PUSH    AF
+        LD      DE,(CURFCB)
+        LD      C,16
+        CALL    BDOS
+        POP     AF
+        OR      A
+        RET     NZ
+        LD      HL,(CURCAP)
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        LD      DE,(CURSIZE)
+        OR      A
+        SBC     HL,DE
+        RET     Z
+        LD      B,H
+        LD      C,L
+        LD      HL,(CURDST)
+        ADD     HL,DE
+        XOR     A
+        LD      (HL),A
+        DEC     BC
+        RET     Z
+        LD      D,H
+        LD      E,L
+        INC     DE
+        LDIR
+        XOR     A
+        RET
+MISSING:
+        LD      A,1
+        OR      A
+        RET
+READBAD:
+        LD      A,2
+        JR      CLOSEERR
+
+WRITEOUT:
+        LD      DE,OUTFCB
+        LD      C,19
+        CALL    BDOS
+        LD      DE,OUTFCB
+        LD      C,22
+        CALL    BDOS
+        INC     A
+        JP      Z,CREATEBAD
+        LD      HL,BUFFER
+        LD      B,RECS
+WRLP:   PUSH    BC
+        PUSH    HL
+        EX      DE,HL
+        LD      C,26
+        CALL    BDOS
+        LD      DE,OUTFCB
+        LD      C,21
+        CALL    BDOS
+        POP     HL
+        POP     BC
+        OR      A
+        JP      NZ,WRITEBAD
+        LD      DE,128
+        ADD     HL,DE
+        DJNZ    WRLP
+        LD      DE,OUTFCB
+        LD      C,16
+        CALL    BDOS
+        INC     A
+        JP      Z,CLOSEBAD
+        LD      DE,DONE
+        CALL    PRINT
+        JP      0
+
+CREATEBAD:LD    A,4
+        JR      FAIL
+WRITEBAD:LD     A,5
+        JR      FAIL
+CLOSEBAD:LD     A,6
+FAIL:   PUSH    AF
+        LD      DE,ERRMSG
+        CALL    PRINT
+        POP     AF
+        CALL    HEXBYTE
+        LD      DE,CRLF
+        CALL    PRINT
+        JP      0
+PRINT:  LD      C,9
+        JP      BDOS
+HEXBYTE:PUSH    AF
+        RRCA
+        RRCA
+        RRCA
+        RRCA
+        CALL    HEXDIG
+        POP     AF
+HEXDIG: AND     0FH
+        ADD     A,'0'
+        CP      '9'+1
+        JR      C,HEXOUT
+        ADD     A,7
+HEXOUT: LD      E,A
+        LD      C,2
+        JP      BDOS
+
+BANNER: DB      'BetterCP/M resident packer',13,10,'$'
+DONE:   DB      'RESIDENT.BIN created (52 records).',13,10,'$'
+ERRMSG: DB      'RESPACK failed; status $'
+CRLF:   DB      13,10,'$'
+
+; FCB, destination and maximum record count.  Keep these names synchronized
+; with BUILD.SUB; capacities are the assigned memory-map regions.
+PARTS:
+        DB 1
+        DB 0,'GATEWAY BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DW BUFFER+(LY_SYS-LY_SYS)
+        DW (LY_BDOS-LY_SYS+127)/128
+        DW GATEWAY_SIZE
+        DB 1
+        DB 0,'BDOS    BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DW BUFFER+(LY_BDOS-LY_SYS)
+        DW (LY_EXT-LY_BDOS+127)/128
+        DW BDOS_SIZE
+        DB 1
+        DB 0,'EXTENS  BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DW BUFFER+(LY_EXT-LY_SYS)
+        DW (LY_DISK-LY_EXT+127)/128
+        DW EXTENS_SIZE
+        DB 1
+        DB 0,'DISK    BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DW BUFFER+(LY_DISK-LY_SYS)
+        DW (LY_BIOS-LY_DISK+127)/128
+        DW DISK_SIZE
+        DB 1
+        DB 0,'BIOS    BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DW BUFFER+(LY_BIOS-LY_SYS)
+        DW (LY_FILE-LY_BIOS+127)/128
+        DW BIOS_SIZE
+        DB 1
+        DB 0,'FILELOADBIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DW BUFFER+(LY_FILE-LY_SYS)
+        DW (LY_TAB-LY_FILE+127)/128
+        DW FILELOAD_SIZE
+        DB 1
+        DB 0,'TABLES  BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DW BUFFER+(LY_TAB-LY_SYS)
+        DW (LY_RSTA-LY_TAB+127)/128
+        DW TABLES_SIZE
+        DB 0
+
+OUTFCB: DB 0,'RESIDENTBIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+CURFCB: DW 0
+CURDST: DW 0
+CURCAP: DW 0
+CURSIZE:DW 0
+NEXTPART:DW 0
+COUNT:  DW 0
+SCRATCH:DS 128
+        END

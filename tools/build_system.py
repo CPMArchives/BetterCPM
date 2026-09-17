@@ -48,6 +48,7 @@ def build_support(assembler: Path) -> None:
             raise SystemExit(f"missing BIOS symbol {symbol}")
         bios_symbols[symbol] = int(match[1], 16)
     bioslinks = "".join(f"{k} EQU 0{v:04X}H\n" for k,v in bios_symbols.items())
+    (BUILD / "bioslink.inc").write_text(bioslinks, encoding="ascii")
     for relative, name, base in (("src/system/extensions.mac", "extensions", LAYOUT["EXTENSIONS"]),
                                   ("src/bios/tables.mac", "tables", LAYOUT["TABLES"]),
                                   ("src/bios/disk.mac", "disk", LAYOUT["DISK"]),
@@ -66,6 +67,7 @@ def build_support(assembler: Path) -> None:
                     matches = re.findall(rf"^([0-9a-f]{{4}})\s+.*?\b{symbol}:", listing, re.M | re.I)
                     links += f"{symbol} EQU 0{int(matches[-1],16):04X}H\n"
                 (staged / "cpxlinks.inc").write_text(links)
+                (BUILD / "cpxlink.inc").write_text(links, encoding="ascii")
             if name == "config":
                 symbols = dict((m[1], int(m[0], 16)) for m in re.findall(
                     r"^([0-9a-f]{4})\s+.*?\b(DC_\w+):", (BUILD / "disk.lst").read_text(errors="replace"), re.M | re.I))
@@ -73,6 +75,7 @@ def build_support(assembler: Path) -> None:
                 imported = set(re.findall(r"\bDC_\w+\b", source)) - defined
                 links = "".join(f"{symbol} EQU 0{symbols[symbol]:04X}H\n" for symbol in sorted(imported))
                 (staged / "disklinks.inc").write_text(links)
+                (BUILD / "disklink.inc").write_text(links, encoding="ascii")
 
             (staged / "bioslinks.inc").write_text(bioslinks, encoding="ascii")
             (staged / "hardware.inc").write_bytes((ROOT / "src/platform/trs80m4/hardware.inc").read_bytes())

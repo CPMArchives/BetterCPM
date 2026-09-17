@@ -245,6 +245,8 @@ PHCDET:LD A,(LOGIDX)
         LD B,4
         CALL API
         JR NZ,PHCNEXT
+        LD A,(LOGIDX)
+        CALL RESETLOG
         LD A,1
         LD (CHECKPH),A
 PHCNEXT:
@@ -445,6 +447,8 @@ BINDIT: LD HL,BIND
         LD B,4
         CALL API
         JR NZ,LOGERROR
+        LD A,(LOGIDX)
+        CALL RESETLOG
         LD HL,SAVED
         CALL PUTS
         CALL PAUSE
@@ -597,6 +601,8 @@ EDAPPLY:LD HL,EDCOPY
         LD B,4
         CALL API
         JP NZ,EDINVALID
+        LD A,(EDDRIVE)
+        CALL RESETLOG
         LD HL,SAVED
         CALL PUTS
         CALL PAUSE
@@ -605,6 +611,25 @@ EDERROR:CALL ERROR
         JP MAIN
 EDINVALID:CALL ERROR
         JP EDSHOW
+
+; A changed DPH cannot retain BDOS's login, allocation, checksum, or
+; read-only state from its former format. Function 37 invalidates exactly
+; the logical drive whose binding CONFIG just replaced.
+RESETLOG:
+        CP 4
+        RET NC
+        LD B,A
+        LD DE,1
+        OR A
+        JR Z,RESETGO
+RESETSHIFT:
+        SLA E
+        RL D
+        DJNZ RESETSHIFT
+RESETGO:
+        LD C,37
+        CALL BDOS
+        RET
 ; The sector table is in physical order. Changing IDs changes interleave.
 ; N selects the uniform size, or maximum size for a mixed track.
 ; S records each individual length in the same physical order as the IDs.

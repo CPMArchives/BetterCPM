@@ -82,13 +82,17 @@ def main():
  tables='        INCLUDE layout.inc\n        ASEG\n        ORG LY_TAB\n'
  for i in range(4):
   binding=fmt.binding(i)
-  tables+=f'ZDPH{i}: DW 0,0,0,0,LY_DIR,ZDPH{i}+17,ZCSV{i},ZALV{i}\n'
+  tables+=f'ZDPH{i}: DW 0,0,0,0,LY_DIR,ZDPH{i}+17,ZCSV+{i * 32},ZALV\n'
   # z80asm accepts a long DB line but silently drops operands beyond its
   # internal line capacity.  Keep each directive short and verify stride.
   for offset in range(0,len(binding),16):
    tables+='        DB '+','.join(str(value) for value in binding[offset:offset+16])+'\n'
- for i in range(4):
-  tables+=f'ZALV{i}: DS {(fmt.dsm+8)//8}\nZCSV{i}: DS {fmt.cks}\n'
+ # CONFIG may replace the boot binding with any supported catalogue format.
+ # Keep one maximum-size allocation vector for the active BDOS context and a
+ # persistent 32-byte checksum vector for each logical drive.  Sizing these
+ # workspaces from the boot format corrupts the following drive's checksum
+ # state as soon as a larger disk is selected.
+ tables+='ZALV: DS 128\nZCSV: DS 128\n'
  tables+='        END\n'
  tab=asm('tables',tables,L['TABLES'],L['RSX_STATE']-L['TABLES'])
  gateway=asm('gateway',read('src/system/gateway.mac'),L['SYSTEM'],L['BDOS']-L['SYSTEM'])
@@ -213,6 +217,16 @@ end
  maxdir 128
  skew 2
  boottrk 2
+ os 2.2
+end
+diskdef bettercpm-mm-80t-ds-data
+ seclen 512
+ tracks 160
+ sectrk 10
+ blocksize 2048
+ maxdir 128
+ skew 2
+ boottrk 0
  os 2.2
 end
 diskdef bettercpm-ampro-little-board

@@ -1,8 +1,11 @@
 # BetterCP/M build disk
 
-`tools/build_source_disk.py` creates a companion development disk containing
-the complete `src/` tree, ZSM4, Digital Research LINK, and build instructions.
-It uses the Montezuma Micro 80-track, double-sided DATA geometry: 800 KiB,
+`tools/build_source_disk.py` creates a self-hosting build disk and a companion
+complete-source disk. The build disk contains the canonical native source set,
+generated link-symbol snapshot, ZSM4, Digital Research LINK, `SUBMIT`,
+`RESPACK`, `SYSBUILD`, `SYSGEN`, and build instructions. The source disk
+preserves the complete `src/` tree. Both use the Montezuma Micro 80-track,
+double-sided DATA geometry: 800 KiB,
 512-byte sectors, 2 KiB allocation blocks, 128 directory entries, and no
 reserved system tracks.
 
@@ -15,24 +18,41 @@ The generated artifacts are:
 - `build/trs80/BetterCPM-Build-80T-DS-800K.dmk` for trs80gp;
 - `build/trs80/BetterCPM-Build-80T-DS-800K.img` as a flat logical-sector
   image for cpmtools;
+- `build/trs80/BetterCPM-Build-80T-DS-800K.dsk` as the same raw 800K image
+  named for direct mounting in z80pack;
 - `build/trs80/BetterCPM-Build-80T-DS-800K.json`, which records every source
   mapping and the finished image hash;
-- `build/trs80/diskdefs-build`, a cpmtools definition for the flat image.
+- `build/trs80/BetterCPM-Sources-80T-DS-800K.dmk` and `.img`, containing the
+  complete source archive and its `SOURCES.DOC` map;
+- `build/trs80/BetterCPM-Sources-80T-DS-800K.dsk`, the raw z80pack form of
+  the complete source archive;
+- `build/trs80/diskdefs-build`, a cpmtools definition for the flat image. It
+  deliberately presents the image as one 1,600-sector linear track; this
+  prevents libdsk from imposing a double-sided track order on data that is
+  already in logical order.
 
 The builder searches the compatibility-suite build tools in the two known
 local checkout locations. A different tool directory can be supplied with
 `--tools`. It reads every file back through a separate CP/M directory parser,
 then verifies the complete DMK structure and sector CRCs.
 
+For z80pack, mount either `.dsk` file in a raw-image physical drive. In
+BetterCP/M CONFIG, define that physical drive as 5-inch, 80-track,
+double-sided, then assign the logical drive the `Montezuma Micro 80T DS DATA
+(80T, DS, DD, 800K)` format. The `.img` form is in logical order for the
+supplied cpmtools definition. The `.dsk` form places each 512-byte sector in
+the MM physical order 1,3,5,7,9,2,4,6,8,10 expected by the z80pack mapper.
+
 ## Disk organization
 
-CP/M's 8.3 filename limit cannot preserve the source tree paths. All source,
-tools, maps, and instructions reside in user zero. Colliding source names are
-assigned stable short names and recorded in `SOURCES.DOC`.
+CP/M's 8.3 filename limit cannot preserve the source tree paths. All files
+reside in user zero. `SOURCES.DOC` records the path represented by every name.
+The tree and native toolchain no longer fit together in the 398 usable 2 KiB
+blocks, so the reproducible build inputs and complete archive are separate.
 
 | User | Contents |
 |---:|---|
-| 0 | All sources, `BUILD.DOC`, `SOURCES.DOC`, ZSM4, and LINK |
+| 0 | Canonical build sources and includes, `BUILD.SUB`, documentation, ZSM4, LINK, and native build tools |
 
 `SOURCES.DOC` is the canonical path-to-disk-name map. The JSON manifest is
 the machine-readable equivalent.
@@ -48,20 +68,26 @@ B0:ZSM4 B:ERA=B:ERA
 B0:LINK B:ERA[A]
 ```
 
-Building a bootable operating system requires another stage. The separate
-linked components must be composed at their assigned offsets into the boot
-sector, stage-one loader, packed resident image, reloader, control overlay,
-RSX manager, and relocatable CCP carriers. The host build currently performs
-that job:
+The native build disk provides a complete ordered build. Boot the normal system
+disk as A:, mount the build disk as B:, and run:
 
-```sh
-python3 tools/build_complete_system.py
+```text
+A0>SUBMIT B:BUILD
 ```
 
-The resulting bootable DMK already has those carriers installed. The current
-`SYSGEN.COM` can copy and verify the complete 20 KiB protected system area
-from the running A: disk onto a prepared, compatible SYSTEM disk without
-altering its CP/M filesystem.
+`SUBMIT` and its resident batch service run from A:. `BUILD.SUB` selects B: and
+then assembles and links every required component. Generated symbol definitions
+are supplied in `CORE.INC`, `BIOSLINK.INC`, `DISKLINK.INC`, and `CPXLINK.INC`;
+they are produced by the same coherent host build
+that creates the disk, preventing sources and inter-module addresses from being
+mixed across builds.
+
+`RLMBUILD.COM` compares native CCP links at BB00h, BC01h, and BD37h and
+constructs the versioned `CCP.RLM` with a verified relocation directory.
+`RESPACK.COM` constructs the 52-record `RESIDENT.BIN` from `GATEWAY.BIN`,
+`BDOS.BIN`, `EXTENS.BIN`, `DISK.BIN`, `BIOS.BIN`, `FILELOAD.BIN`, and
+`TABLES.BIN`. `SYSBUILD.COM` then performs the package-level composition and
+read-back verification described below.
 
 `SYSBUILD.COM` is the native composer. It reads the standard assembled binary
 products from the current drive, checks every component against its assigned
@@ -86,3 +112,13 @@ python3 tools/build_system_package.py
 It also proves that the package payload exactly matches the protected area of
 the generated boot disk. Installation is the separate SYSGEN operation, so a
 failed composition cannot touch a target disk.
+
+After `SYSTEM.SYS created and verified` appears, prepare the destination with
+DUP and CONFIG, then install it without changing the destination filesystem:
+
+```text
+B0>SYSGEN SYSTEM.SYS C:
+```
+
+Move that disk to the boot drive and cold boot it. `SYSGEN A: C:` remains the
+traditional operation that copies an already installed system from A:.
