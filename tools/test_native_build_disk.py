@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import subprocess
+import tempfile
+import shutil
 from pathlib import Path
 
 from build_source_disk import extract_files, z80pack_logical
@@ -29,6 +31,19 @@ def main() -> None:
         raise SystemExit("z80pack build disk does not decode to the logical image")
     if z80pack_logical(SOURCE_Z80PACK.read_bytes()) != SOURCE_IMAGE.read_bytes():
         raise SystemExit("z80pack source disk does not decode to the logical image")
+    # Qualify the published cpmtools view itself.  A conventional 160-track
+    # raw definition lets libdsk infer side ordering and silently reads files
+    # beyond the first side from the wrong offsets.
+    with tempfile.TemporaryDirectory(prefix="bettercpm-build-disk-") as tmp:
+        work = Path(tmp)
+        shutil.copy2(ROOT / "build/trs80/diskdefs-build", work / "diskdefs")
+        shutil.copy2(BUILD_IMAGE, work / "build.img")
+        subprocess.run(["cpmcp", "-f", "bettercpm-build", "build.img",
+                        "0:ZSM4.COM", "ZSM4.COM"], cwd=work, check=True)
+        expected = build[(0, "ZSM4.COM")]
+        actual = (work / "ZSM4.COM").read_bytes()[:len(expected)]
+        if actual != expected:
+            raise SystemExit("cpmtools flat-image definition reordered build-disk data")
     required = {
         "BUILD.SUB", "ZSM4.COM", "LINK.COM", "SUBMIT.COM", "BATCHIO.RSX",
         "RESPACK.COM", "RLMBUILD.COM", "SYSBUILD.COM", "SYSGEN.COM", "CORE.INC",

@@ -26,7 +26,10 @@ The generated artifacts are:
   complete source archive and its `SOURCES.DOC` map;
 - `build/trs80/BetterCPM-Sources-80T-DS-800K.dsk`, the raw z80pack form of
   the complete source archive;
-- `build/trs80/diskdefs-build`, a cpmtools definition for the flat image.
+- `build/trs80/diskdefs-build`, a cpmtools definition for the flat image. It
+  deliberately presents the image as one 1,600-sector linear track; this
+  prevents libdsk from imposing a double-sided track order on data that is
+  already in logical order.
 
 The builder searches the compatibility-suite build tools in the two known
 local checkout locations. A different tool directory can be supplied with

@@ -339,7 +339,10 @@ def main() -> None:
     z80pack = args.output.with_suffix(".dsk")
     z80pack.write_bytes(z80pack_raw(raw))
     diskdefs = args.output.with_name("diskdefs-build")
-    diskdefs.write_text("""diskdef bettercpm-build\n seclen 512\n tracks 160\n sectrk 10\n blocksize 2048\n maxdir 128\n skew 1\n boottrk 0\n os 2.2\nend\n""")
+    # The .img artifact is already a flat logical-record stream.  Present it
+    # to cpmtools as one linear track so libdsk cannot infer two-sided media
+    # geometry and reorder alternate tracks behind our back.
+    diskdefs.write_text("""diskdef bettercpm-build\n seclen 512\n tracks 1\n sectrk 1600\n blocksize 2048\n maxdir 128\n boottrk 0\n os 2.2\nend\n""")
     report = {
         "format": "MM 80T DS DATA 800K",
         "dmk": args.output.name,
