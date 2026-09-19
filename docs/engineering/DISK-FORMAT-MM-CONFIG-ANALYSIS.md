@@ -1,5 +1,18 @@
 # Montezuma Micro CONFIG: logical-drive limits
-
+> **Status: Supporting technical analysis**
+>
+> This document records reverse-engineering and technical analysis of
+> Montezuma Micro CONFIG undertaken during development of the BetterCP/M
+> disk-format model.
+>
+> It is retained as supporting evidence for
+> `DISK-FORMAT-DEFINITION-SPECIFICATION.md` and is not itself an
+> implementation specification.
+>
+> Where terminology or conclusions in this document conflict with the
+> current specification, `DISK-FORMAT-DEFINITION-SPECIFICATION.md`
+> is authoritative.
+> 
 Examined 2026-09-08. This is static reverse engineering of the original
 CONFIG.COM binaries, correlated with the recovered MM 2.32 BIOS source.
 It is not a claim to have recovered CONFIG's original assembly source or
