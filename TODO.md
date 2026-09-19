@@ -281,13 +281,19 @@ between CONFIG and DUP remain design considerations for the formatting work.
   inspect and modify file timestamps, with precise syntax and compatibility
   tests.
 
+## ROMability
+
+- [ ] For 1.0 ROMability, consolidate mutable drive definitions and disk
+  workspaces into the fixed persistent RAM layout, separate from ROM-resident
+  defaults and routines. Preserve DPH pointer interfaces, define cold/warm/reset
+  rules, and budget history/named-directory space explicitly. Moving tables
+  alone does not reduce their RAM cost.
+
 ## Devices and portability
 
-- [ ] Implement and qualify RomWBW as the third 1.0 platform target alongside
-  trs80gp/Model 4 and z80pack/cpmsim. Pin the firmware version and a concrete
-  test configuration; implement an HBIOS adapter and RomWBW clock-provider RSX.
-  Audit memory/boot/I/O contracts and run applicable core and clock tests.
-  Keep RomWBW target qualification separate from direct-ROM execution proof.
+- [ ] Qualify trs80gp/Model 4 and z80pack/cpmsim as the two 1.0 platform
+  targets. RomWBW support is staged after 1.0 as described below; it is not a
+  1.0 release gate.
 
 - [ ] Complete configurable `CON:`, `RDR:`, `PUN:`, and `LST:` routing and
   `IOBYTE` behavior, including absent-device and timeout rules.
@@ -329,6 +335,19 @@ between CONFIG and DUP remain design considerations for the formatting work.
 
 ## Post-1.0 considerations
 
+- [ ] Target a bounded, single-bank RomWBW/HBIOS port for the first suitable
+  post-1.0 minor release (1.1 or 1.2). Pin one RomWBW/HBIOS version and one
+  repeatable hardware or emulator configuration; implement console, block-device,
+  boot, and clock-provider integration; and qualify the applicable BetterCP/M
+  core tests. Keep BetterCP/M within its existing 64 KiB execution model and do
+  not expose RomWBW banks to the core, PDS, RSXs, or transient programs. Broader
+  RomWBW configurations and devices may follow in a later minor release.
+- [ ] Reserve full RomWBW integration for 2.0. Design and qualify explicit bank
+  ownership and allocation, bank-qualified references, inter-bank call and copy
+  services, bank-aware PDS/RSX/transient lifecycles, reconstruction across bank
+  changes, and a generalized firmware/device architecture. Treat this as an
+  architectural version boundary rather than an expansion of the basic HBIOS
+  adapter.
 - [ ] Evaluate a common BIOS core with separately loadable device/controller
   drivers, selected by machine configuration, rather than one monolithic
   machine-specific extension. Investigate a BIOS driver interface, bootstrap
@@ -343,9 +362,3 @@ between CONFIG and DUP remain design considerations for the formatting work.
   Define safe treatment of open FCBs, dirty buffers, and interrupted writes;
   start by considering relogging at the idle command prompt. Current work
   implements the CP/M 2.2 read-only response, not automatic relogging.
-
-- [ ] For ROMability, consolidate mutable drive definitions and disk workspaces
-  into the fixed persistent RAM layout, separate from ROM-resident defaults
-  and routines. Preserve DPH pointer interfaces, define cold/warm/reset rules,
-  and budget history/named-directory space explicitly. Moving tables alone
-  does not reduce their RAM cost.
