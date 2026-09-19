@@ -1,5 +1,17 @@
 # Montezuma Micro DUP 2.01: working reverse engineering
-
+> **Status: Supporting technical analysis**
+>
+> This document records reverse-engineering and technical analysis of
+> Montezuma Micro DUP undertaken during development of the BetterCP/M
+> disk-format model.
+>
+> It is retained as supporting evidence for
+> `DISK-FORMAT-DEFINITION-SPECIFICATION.md` and is not itself an
+> implementation specification.
+>
+> Where terminology or conclusions in this document conflict with the
+> current specification, `DISK-FORMAT-DEFINITION-SPECIFICATION.md`
+> is authoritative.
 Examined September 7, 2026 to understand formatting performance and the
 repeatable initial verification error reported on track 79. This is a static
 analysis of the original utility, not recovered original assembly source.
