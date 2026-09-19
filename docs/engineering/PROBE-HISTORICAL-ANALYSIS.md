@@ -1,5 +1,16 @@
 # PROBE.COM Historical Analysis
-
+> **Status: Supporting technical analysis**
+>
+> This document records historical and technical analysis of `PROBE.COM`
+> undertaken during development of the BetterCP/M disk-format model.
+>
+> It is retained as supporting evidence for
+> `DISK-FORMAT-DEFINITION-SPECIFICATION.md` and is not itself an
+> implementation specification.
+>
+> Where terminology or conclusions in this document conflict with the
+> current specification, `DISK-FORMAT-DEFINITION-SPECIFICATION.md`
+> is authoritative.
 ## Artifact
 
 PROBE is a CP/M system and disk-parameter inspection utility by Paul M. Sittler. The supplied documentation identifies the program as PROBE.C Version 1 Revision 01, dated 2 September 1984, copyright 1984, released for non-commercial use.
