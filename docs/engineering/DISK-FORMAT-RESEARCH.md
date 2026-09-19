@@ -1,5 +1,17 @@
 # Disk Format Research Notes
 
+> **Status: Historical research — non-normative**
+>
+> This document records research that contributed to the BetterCP/M
+> disk-format design. Some terminology, interpretations, and architectural
+> conclusions have been superseded by later analysis.
+>
+> The authoritative current specification is
+> `DISK-FORMAT-DEFINITION-SPECIFICATION.md`.
+>
+> This document is retained as supporting research and should not be used
+> as an implementation specification.
+
 ## Purpose
 
 This note records source and methodology findings for BetterCP/M's disk-format support research. It is supporting engineering research, not the canonical disk-format specification.
