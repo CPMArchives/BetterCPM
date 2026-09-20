@@ -10,6 +10,10 @@ bring-up history is kept in those documents rather than repeated here.
 
 ## Immediate priorities
 
+- [ ] Enforce at least 53 KiB usable TPA in the default 1.0 configuration as a
+  continuous build and qualification gate. Apply it after each remaining PDS,
+  HISTORY, PATH/NDR, disk-state, CONFIG, clock, RSX, CPX and CCP integration;
+  do not defer aggregate memory accounting until release qualification.
 - [ ] When resuming CONFIG.COM, implement the agreed active/startup settings
   separation, configurable cold-boot drive capacity, and two H save scopes.
   See [CONFIG startup decisions](docs/engineering/CONFIG-STARTUP-SETTINGS-DECISIONS.md).
@@ -283,6 +287,11 @@ between CONFIG and DUP remain design considerations for the formatting work.
 
 ## ROMability
 
+- [ ] Qualify actual execution in place of BetterCP/M immutable code under
+  enforced ROM write protection. Locate every stack, variable, live
+  configuration, disk-state object and reconstruction record in RAM, exercise
+  cold/warm boot and representative runtime paths, and fail on any attempted ROM
+  write. A ROM-to-RAM bootstrap does not satisfy this 1.0 acceptance test.
 - [ ] For 1.0 ROMability, consolidate mutable drive definitions and disk
   workspaces into the fixed persistent RAM layout, separate from ROM-resident
   defaults and routines. Preserve DPH pointer interfaces, define cold/warm/reset
@@ -355,6 +364,11 @@ between CONFIG and DUP remain design considerations for the formatting work.
   a release only after deciding whether this is a demonstration or a continuing
   qualification target. See the
   [post-1.0 third-platform assessment](docs/engineering/POST-1.0-THIRD-PLATFORM-ASSESSMENT.md).
+- [ ] Preserve the demonstrated Cromemco hybrid-density requirement for a
+  future required FDF/FDB extension that can describe track ranges with
+  different encoding, sector counts and sector sizes. Do not design or add that
+  extension during 1.0 unless a required 1.0 format proves FDF/FDB v1
+  insufficient; uniform and already-supported formats remain the 1.0 path.
 - [ ] Evaluate a common BIOS core with separately loadable device/controller
   drivers, selected by machine configuration, rather than one monolithic
   machine-specific extension. Investigate a BIOS driver interface, bootstrap
