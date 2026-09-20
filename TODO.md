@@ -348,6 +348,13 @@ between CONFIG and DUP remain design considerations for the formatting work.
   changes, and a generalized firmware/device architecture. Treat this as an
   architectural version boundary rather than an expansion of the basic HBIOS
   adapter.
+- [ ] After 1.0, evaluate a conventional third 64 KiB platform without making
+  it a retroactive 1.0 release gate. Prefer z80pack Cromemco for disk/controller
+  and removable-media evidence; retain Altair/Tarbell as the lower-cost
+  demonstration option and IMSAI/FIF as the controller-diversity option. Assign
+  a release only after deciding whether this is a demonstration or a continuing
+  qualification target. See the
+  [post-1.0 third-platform assessment](docs/engineering/POST-1.0-THIRD-PLATFORM-ASSESSMENT.md).
 - [ ] Evaluate a common BIOS core with separately loadable device/controller
   drivers, selected by machine configuration, rather than one monolithic
   machine-specific extension. Investigate a BIOS driver interface, bootstrap
