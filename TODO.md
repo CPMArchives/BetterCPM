@@ -16,7 +16,7 @@ the detailed tasks but does not replace or reorder that roadmap.
 
 - [ ] Enforce at least 53 KiB usable TPA in the default 1.0 configuration as a
   continuous build and qualification gate. Apply it after each remaining PDS,
-  HISTORY, PATH/NDR, disk-state, CONFIG, clock, RSX, CPX and CCP integration;
+  disk-state, CONFIG, clock, RSX, CPX and CCP integration;
   do not defer aggregate memory accounting until release qualification.
 - [ ] When resuming CONFIG.COM, implement the agreed active/startup settings
   separation, configurable cold-boot drive capacity, and two H save scopes.
@@ -87,6 +87,9 @@ is supplied through loadable CPXs rather than added to the core CCP.
 - [x] Finalize RCP.CPX by removing SAVE after its CCP migration, renaming CLR to
   CLS, and adding COPY and MOVE with both source/destination and `dest:=source`
   syntax.
+
+### Later 1.x named-directory and command extensions
+
 - [ ] Implement the canonical named-directory map in protected, persistent OS
   DATA, as confirmed by the user. Names resolve to drive/user pairs. The map
   survives transient execution and CCP reconstruction/warm boot; the CCP and
@@ -111,6 +114,8 @@ is supplied through loadable CPXs rather than added to the core CCP.
   should include the current drive/user (`DU:`), named directory, and current
   date/time while preserving a compact CP/M-style default.
 
+### 1.0 bounded history and PDS
+
 The packed, multi-command history buffer in the PDS is already
 implemented, as are Up/Down recall and warm-boot persistence.  The current
 53K layout reserves 192 bytes (182 bytes of command records).  This is the
@@ -118,10 +123,12 @@ temporary size accepted while the resident-memory trade-offs are reviewed;
 do not reduce it again.  It requires regression coverage during the full
 compatibility rerun, not a new implementation.
 
-- [ ] Implement the versioned PDS descriptor and allocator specified by
-  `docs/architecture/18 Persistent Data Segment.txt`; inventory every 1.0 owner,
-  measure the default using `docs/engineering/130 Protected Memory Audit.md`,
-  and expose current and next-boot sizes.
+- [ ] Finish the versioned PDS descriptor and fixed 1.0 inventory; measure every
+  retained 1.0 owner using `docs/engineering/130 Protected Memory Audit.md`,
+  publish ownership and reset behavior, and preserve the 53 KiB TPA floor.
+
+### Later 1.x PDS generalization
+
 - [ ] Make the cold-boot PDS size configurable while preserving 53 KiB in the
   default profile. Saving this setting must be independent of saving drive
   formats. Runtime contraction always waits for cold boot.
@@ -161,9 +168,11 @@ directory utility unless it provides genuine additional value.
   `BCPX` v1 format while retaining native CP/M ZSM4 assembly of module code.
 - [x] Replace the proof `BRX1` RSX carrier with a versioned, documented module
   format practical to build under native CP/M with ZSM4.
-- [ ] Replace provisional Function 200's numeric BASIC/HELLO selectors with a
-  versioned, name-based CPX request block and enumerate module metadata without
-  compiling module identities into `CPX.COM` or BDOS.
+- [ ] Inventory the private BDOS namespace, move CPX control away from P2DOS
+  Function 200, remove the HELLO/ECHO proof selectors (currently 201/203) from
+  the released namespace, and rebuild every in-tree client. The replacement
+  CPX call uses a versioned, name-based request block and enumerates module
+  metadata without compiling module identities into `CPX.COM` or BDOS.
 - [ ] Finalize CPX initialization, shutdown, metadata, command enumeration,
   ordering, dependency, recursion, abort, and capability-discovery rules.
 - [ ] Remove BASIC/HELLO-specific knowledge from the CPX manager and support
@@ -179,13 +188,10 @@ directory utility unless it provides genuine additional value.
   conflicts, and cycles.
 - [ ] Keep the RSX/CPX Programmer's Guide synchronized with every stabilized
   interface before promising third-party binary compatibility.
-- [ ] Implement the 1.0 Batch Facility specified in
-  `specifications/BATCH-FLOW-CONTROL.md`: CP/M-compatible `SUBMIT.CPX`, optional
-  `FLOW.CPX`, and transient-input companion `BATCHIO.RSX`. Define the shared
-  command-source ABI, persistent batch context, command/error status,
-  dependencies, WBOOT recovery, and compatibility tests before fixing the
-  extended language.
-- [ ] Implement the persistent command-input system specified in
+- [ ] Keep the qualified CP/M-compatible SUBMIT/XSUB and `BATCHIO.RSX` path as
+  the 1.0 batch facility. Treat `SUBMIT.CPX`, `FLOW.CPX`, and the extended
+  language in `specifications/BATCH-FLOW-CONTROL.md` as later 1.x work.
+- [ ] After 1.0, implement the persistent command-input system specified in
   `specifications/COMMAND-INPUT-SYSTEM.md`: expand the one-byte output-time
   pending key into a BDOS type-ahead ring, add a completed-command queue, and
   integrate multiple commands, history, batch sources, and scripted input
@@ -254,7 +260,7 @@ between CONFIG and DUP remain design considerations for the formatting work.
   timestamp or attribute extensions; the MM 790K format remains a development
   carrier rather than an architectural filesystem commitment.
 
-## File metadata, attributes, date, and time
+## File metadata, attributes, and native clock
 
 - [ ] Implement complete CP/M file-attribute handling throughout BDOS,
   directory services, resident commands, transient utilities, and image
@@ -263,20 +269,25 @@ between CONFIG and DUP remain design considerations for the formatting work.
 - [ ] Give `$SYS` files the intended system-wide visibility, particularly
   making suitable files discoverable from every user area without weakening
   normal user-area isolation or producing duplicate directory results.
-- [ ] Deliver date/time support for 1.0 through a common service and replaceable
-  clock-provider RSXs for add-on clocks and emulator-supplied services. Define
-  the core-facing contract before the core freeze; keep hardware access in the
-  provider. Select and qualify an explicit initial provider set and extend the
-  library as devices are supported.
-- [ ] Qualify unmodified date/time utilities for the agreed five-family baseline:
+- [ ] Finish and qualify the native TIME 1.0 read service, `TIME.COM`, and the
+  read-only FreHD and z80pack providers. Pin representation, range, resolution,
+  local-time/UTC policy, capability/validity query, unavailable/unset/fault
+  results, and safe provider replacement/unload/WBOOT. No provider must mean
+  unavailable rather than a fabricated clock value.
+- [ ] Before the 1.0 ABI freeze, inventory the private BDOS namespace, move CPX
+  control away from historical P2DOS Function 200, remove the HELLO/ECHO proof
+  selectors (currently 201/203) from the released namespace, rebuild every
+  in-tree client, and reserve 200/201 for a possible later compatibility
+  adapter. Do not promise P2DOS support in 1.0.
+
+### Later 1.x date/time and timestamp work
+
+- [ ] Qualify unmodified date/time utilities for the five-family candidate set:
   DateStamper, ZSDOS/ZDDOS, P2DOS, CP/M Plus, and DOS+/Z80DOS. Start with
   DateStamper and ZSDOS/ZDDOS. Cover detection, call/entry conventions, return
-  behavior and applicable file timestamp layouts, not only clock reads. Resolve
-  the P2DOS function-200 collision with CPX control before core interface freeze.
-- [ ] Specify the clock model: date range and representation, time resolution,
-  local-time/UTC policy, capability/validity query, read and optional set,
-  unavailable/unset/fault results, and safe provider replacement/unload/WBOOT.
-  No provider must mean unavailable rather than a fabricated clock value.
+  behavior and applicable file timestamp layouts, not only clock reads.
+- [ ] Add clock setting only with an explicitly writable provider and defined
+  error, validity, rollover, and persistence behavior.
 - [ ] Scope filesystem timestamps separately from the clock service, including
   persistent/on-disk representation and behavior without a real-time clock.
 - [ ] Extend the native directory/filesystem design to store file timestamps
@@ -285,9 +296,9 @@ between CONFIG and DUP remain design considerations for the formatting work.
 - [ ] Propagate date/time and timestamp support through BDOS calls, directory
   operations, file creation/update semantics, CONFIG, disk-image tools,
   cpmtools definitions or extensions, and relevant utilities.
-- [ ] Implement `TIME.COM` to display and set the system date/time and to
-  inspect and modify file timestamps, with precise syntax and compatibility
-  tests.
+- [ ] Extend `TIME.COM` to set the system date/time and inspect or modify file
+  timestamps only when those later capabilities have defined providers and
+  on-disk contracts.
 
 ## ROMability
 
