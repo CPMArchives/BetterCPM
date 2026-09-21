@@ -1,0 +1,329 @@
+        INCLUDE layout.inc
+; Stage-3 bounded carrier-loading coordinator.
+;
+; DE points to the public Function 202 version-2 request.  This increment
+; accepts LOAD only, streams the named carrier into the caller-owned workspace,
+; derives its exact v1/v2 length, and invokes R3CARR then R3META in LY_CFG.
+; Success returns A=0, HL=facts, and publishes the primary numeric service at
+; request +12.  Failure returns FFh without changing the live RSX profile.
+
+RCBASE          EQU     LY_RSX
+FLOPEN          EQU     LY_FILE
+FLNEXT          EQU     LY_FILE+3
+CFGB            EQU     LY_CFG
+
+        CSEG
+        .PHASE  RCBASE
+RC_ENTRY:
+        LD      (RC_REQ),DE
+        EX      DE,HL
+        LD      A,(HL)
+        CP      2
+        JP      NZ,RC_BAD
+        INC     HL
+        LD      A,(HL)
+        CP      1
+        JP      NZ,RC_BAD
+        INC     HL
+        INC     HL
+        LD      A,(HL)
+        OR      A
+        JP      NZ,RC_BAD
+        LD      HL,(RC_REQ)
+        LD      DE,14
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_LOW),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_HIGH),DE
+        LD      HL,(RC_LOW)
+        LD      DE,0103H
+        OR      A
+        SBC     HL,DE
+        JP      C,RC_BAD
+        LD      HL,(RC_LOW)
+        LD      DE,(RC_HIGH)
+        OR      A
+        SBC     HL,DE
+        JP      NC,RC_BAD
+
+; Read the fixed 512-byte header after proving that complete transfer fits.
+        LD      HL,(RC_LOW)
+        LD      (RC_DEST),HL
+        CALL    RC_ROOM
+        JP      NZ,RC_BAD
+        LD      HL,(RC_REQ)
+        LD      DE,4
+        ADD     HL,DE
+        LD      A,1
+        CALL    FLOPEN
+        JP      NZ,RC_BAD
+        CALL    RC_NEXT
+        JP      NZ,RC_BAD
+
+; Read only the framing fields needed to discover the exact carrier length.
+; R3CARR remains authoritative for the complete fixed-header validation.
+        LD      HL,(RC_LOW)
+        LD      DE,RC_MAGIC
+        LD      B,4
+RC_MLOOP:
+        LD      A,(DE)
+        CP      (HL)
+        JP      NZ,RC_BAD
+        INC     DE
+        INC     HL
+        DJNZ    RC_MLOOP
+        LD      A,(HL)
+        CP      1
+        JR      Z,RC_V1
+        CP      2
+        JP      NZ,RC_BAD
+        LD      (RC_FMT),A
+        LD      HL,(RC_LOW)
+        LD      DE,30
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_MOFF),DE
+        LD      HL,0200H
+        OR      A
+        SBC     HL,DE
+        JP      NC,RC_BAD       ; metadata follows a nonempty payload
+        LD      HL,(RC_LOW)
+        OR      A
+        ADD     HL,DE
+        JP      C,RC_BAD
+        LD      DE,12
+        OR      A
+        ADD     HL,DE
+        JP      C,RC_BAD
+        LD      (RC_NEED),HL
+        CALL    RC_FILL
+        JP      NZ,RC_BAD
+        LD      HL,(RC_LOW)
+        LD      DE,(RC_MOFF)
+        OR      A
+        ADD     HL,DE
+        JP      C,RC_BAD
+        LD      DE,RC_BMET
+        LD      B,4
+RC_BLOOP:
+        LD      A,(DE)
+        CP      (HL)
+        JP      NZ,RC_BAD
+        INC     DE
+        INC     HL
+        DJNZ    RC_BLOOP
+        LD      HL,(RC_LOW)
+        LD      DE,(RC_MOFF)
+        ADD     HL,DE
+        LD      DE,8
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      A,D
+        OR      E
+        JP      Z,RC_BAD
+        LD      HL,(RC_MOFF)
+        OR      A
+        ADD     HL,DE
+        JP      C,RC_BAD
+        JR      RC_LENGTH
+
+RC_V1:
+        LD      (RC_FMT),A
+        LD      HL,(RC_LOW)
+        LD      DE,30
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_MOFF),DE
+        LD      HL,(RC_LOW)
+        LD      DE,42
+        ADD     HL,DE
+        LD      E,(HL)
+        LD      D,0
+        LD      HL,(RC_MOFF)
+        OR      A
+        ADD     HL,DE
+        JP      C,RC_BAD
+
+RC_LENGTH:
+        LD      (RC_LENVAL),HL
+        LD      DE,(RC_LOW)
+        OR      A
+        ADD     HL,DE
+        JP      C,RC_BAD
+        LD      (RC_NEED),HL
+        CALL    RC_FILL
+        JP      NZ,RC_BAD
+
+; Facts and the maximum two packed descriptors occupy 46 bytes after the
+; padded carrier stream.  Equality with high is valid because high is exclusive.
+        LD      HL,(RC_DEST)
+        LD      (RC_FACTS),HL
+        LD      DE,46
+        OR      A
+        ADD     HL,DE
+        JP      C,RC_BAD
+        LD      DE,(RC_HIGH)
+        OR      A
+        SBC     HL,DE
+        JP      C,RC_SPACE
+        JP      NZ,RC_BAD
+RC_SPACE:
+        LD      HL,(RC_FACTS)
+        LD      DE,26
+        ADD     HL,DE
+        LD      (RC_CURSOR),HL
+
+; Validate the fixed carrier and publish fixed facts.
+        LD      HL,RC_NCARR
+        CALL    RC_OVER
+        JP      NZ,RC_BAD
+        LD      HL,(RC_LOW)
+        LD      (RC_CREQ),HL
+        LD      HL,(RC_LENVAL)
+        LD      (RC_CREQ+2),HL
+        LD      HL,(RC_REQ)
+        LD      DE,4
+        ADD     HL,DE
+        LD      (RC_CREQ+4),HL
+        LD      HL,(RC_CURSOR)
+        LD      (RC_CREQ+6),HL
+        LD      HL,(RC_HIGH)
+        LD      (RC_CREQ+8),HL
+        LD      HL,(RC_FACTS)
+        LD      (RC_CREQ+10),HL
+        LD      A,0CCH
+        LD      (RC_CREQ+12),A
+        LD      DE,RC_CREQ
+        CALL    CFGB
+        OR      A
+        JP      NZ,RC_BAD
+        LD      A,(RC_CREQ+12)
+        CP      1
+        JP      NZ,RC_BAD
+
+; Validate typed metadata and publish its normalized facts.
+        LD      HL,RC_NMETA
+        CALL    RC_OVER
+        JP      NZ,RC_BAD
+        LD      HL,(RC_LOW)
+        LD      (RC_MREQ),HL
+        LD      HL,(RC_LENVAL)
+        LD      (RC_MREQ+2),HL
+        LD      HL,(RC_CURSOR)
+        LD      (RC_MREQ+4),HL
+        LD      HL,(RC_HIGH)
+        LD      (RC_MREQ+6),HL
+        LD      HL,(RC_FACTS)
+        LD      (RC_MREQ+8),HL
+        LD      A,0CCH
+        LD      (RC_MREQ+10),A
+        LD      DE,RC_MREQ
+        CALL    CFGB
+        OR      A
+        JP      NZ,RC_BAD
+        LD      A,(RC_MREQ+10)
+        CP      1
+        JP      NZ,RC_BAD
+
+        LD      HL,(RC_FACTS)
+        LD      DE,22
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,(RC_REQ)
+        LD      BC,12
+        ADD     HL,BC
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      HL,(RC_FACTS)
+        XOR     A
+        RET
+
+; Fill through absolute exclusive RC_NEED in complete 512-byte transfers.
+RC_FILL:
+        LD      HL,(RC_DEST)
+        LD      DE,(RC_NEED)
+        OR      A
+        SBC     HL,DE
+        JR      NC,RC_OK
+        CALL    RC_ROOM
+        RET     NZ
+        CALL    RC_NEXT
+        RET     NZ
+        JR      RC_FILL
+
+RC_NEXT:
+        LD      HL,(RC_DEST)
+        CALL    FLNEXT
+        RET     NZ
+        LD      (RC_DEST),HL
+RC_OK:
+        XOR     A
+        RET
+
+; Prove that one more complete stream transfer ends at or below high.
+RC_ROOM:
+        LD      HL,(RC_DEST)
+        LD      DE,0200H
+        OR      A
+        ADD     HL,DE
+        JR      C,RC_NOROOM
+        LD      DE,(RC_HIGH)
+        OR      A
+        SBC     HL,DE
+        JR      C,RC_OK
+        JR      Z,RC_OK
+RC_NOROOM:
+        LD      A,0FFH
+        OR      A
+        RET
+
+; Load a complete private 1 KiB phase into the CONFIG slot.
+RC_OVER:
+        LD      A,1
+        CALL    FLOPEN
+        RET     NZ
+        LD      HL,CFGB
+        CALL    FLNEXT
+        RET     NZ
+        CALL    FLNEXT
+        RET
+
+RC_BAD:
+        LD      A,0FFH
+        OR      A
+        RET
+
+RC_MAGIC:       DB      'B','R','S','X'
+RC_BMET:        DB      'B','M','E','T'
+RC_NCARR:       DB      'R3CARR  '
+RC_NMETA:       DB      'R3META  '
+RC_REQ:         DW      0
+RC_LOW:         DW      0
+RC_HIGH:        DW      0
+RC_DEST:        DW      0
+RC_NEED:        DW      0
+RC_LENVAL:      DW      0
+RC_MOFF:        DW      0
+RC_FACTS:       DW      0
+RC_CURSOR:      DW      0
+RC_FMT:         DB      0
+RC_CREQ:        DS      13
+RC_MREQ:        DS      11
+
+        .DEPHASE
+        END
