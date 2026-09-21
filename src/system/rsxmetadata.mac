@@ -1,0 +1,445 @@
+; Phase-3 BRSX metadata normalizer.
+;
+; DE -> request:
+; +0 carrier, +2 available carrier bytes, +4 scratch cursor
+; +6 scratch high (exclusive), +8 validated 26-byte carrier facts
+; +10 returned completion byte (written as one only on success)
+;
+; The preceding R3CARR phase validates the fixed header, payload checksum, and
+; static relocation list. This phase validates typed version-2 metadata, packs
+; callable descriptors into scratch, validates the runtime-pointer list, and
+; publishes those facts together only after the entire stream succeeds.
+
+RMBASE          EQU     07800H
+
+        CSEG
+        .PHASE  RMBASE
+RXM_ENTRY:
+        LD      (RXM_REQ),DE
+        EX      DE,HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RXM_CARRIER),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RXM_LENGTH),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RXM_CURSOR),DE
+        LD      (RXM_SERVICE),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RXM_HIGH),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RXM_FACTS),DE
+        LD      HL,(RXM_CURSOR)
+        LD      DE,(RXM_HIGH)
+        OR      A
+        SBC     HL,DE
+        JP      NC,RXM_BAD
+
+        LD      HL,(RXM_FACTS)
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RXM_PAYLOAD),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RXM_CODE),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RXM_ALLOC),DE
+        LD      DE,16
+        ADD     HL,DE           ; facts +21: format version
+        LD      A,(HL)
+        CP      1
+        JP      Z,RXM_V1
+        CP      2
+        JP      NZ,RXM_BAD
+
+; Metadata immediately follows the payload.
+        LD      HL,(RXM_PAYLOAD)
+        LD      DE,(RXM_CODE)
+        ADD     HL,DE
+        JP      C,RXM_BAD
+        LD      (RXM_BASE),HL
+        LD      DE,RXM_BMET
+        LD      B,4
+RXM_MAGLP:
+        LD      A,(DE)
+        CP      (HL)
+        JP      NZ,RXM_BAD
+        INC     DE
+        INC     HL
+        DJNZ    RXM_MAGLP
+        LD      A,(HL)
+        CP      1
+        JP      NZ,RXM_BAD
+        INC     HL
+        LD      A,(HL)
+        OR      A
+        JP      NZ,RXM_BAD
+        INC     HL
+        LD      A,(HL)
+        CP      12
+        JP      NZ,RXM_BAD
+        INC     HL
+        LD      A,(HL)
+        LD      (RXM_NREC),A
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      A,D
+        CP      2
+        JP      NC,RXM_BAD      ; v1 metadata fits one 512-byte window
+        LD      A,E
+        CP      12
+        JP      C,RXM_BAD
+        LD      (RXM_MLEN),DE
+        LD      HL,(RXM_BASE)
+        ADD     HL,DE
+        JP      C,RXM_BAD
+        LD      (RXM_END),HL
+        LD      DE,(RXM_CARRIER)
+        OR      A
+        SBC     HL,DE
+        LD      DE,(RXM_LENGTH)
+        OR      A
+        SBC     HL,DE
+        JP      C,RXM_FITS
+        JP      NZ,RXM_BAD
+RXM_FITS:
+        LD      HL,(RXM_BASE)
+        LD      DE,10
+        ADD     HL,DE
+        LD      A,(HL)
+        INC     HL
+        OR      (HL)
+        JP      NZ,RXM_BAD
+        INC     HL
+        LD      (RXM_RECPTR),HL
+        XOR     A
+        LD      (RXM_NSVC),A
+        LD      (RXM_NPTR),A
+        LD      (RXM_HAVEP),A
+        LD      HL,0
+        LD      (RXM_PLIST),HL
+
+RXM_RECLOOP:
+        LD      A,(RXM_NREC)
+        OR      A
+        JP      Z,RXM_RECDONE
+        DEC     A
+        LD      (RXM_NREC),A
+        LD      HL,(RXM_RECPTR)
+        INC     HL
+        LD      DE,(RXM_END)
+        OR      A
+        SBC     HL,DE
+        JP      NC,RXM_BAD
+        LD      HL,(RXM_RECPTR)
+        LD      A,(HL)
+        LD      (RXM_KIND),A
+        INC     HL
+        LD      A,(HL)
+        OR      A
+        JP      Z,RXM_BAD
+        LD      (RXM_RLEN),A
+        INC     HL
+        LD      (RXM_DATA),HL
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE
+        LD      (RXM_RECPTR),HL
+        LD      DE,(RXM_END)
+        OR      A
+        SBC     HL,DE
+        JP      C,RXM_KOK
+        JP      NZ,RXM_BAD
+RXM_KOK:
+        LD      A,(RXM_KIND)
+        CP      2
+        JP      Z,RXM_CALLABLE
+        CP      3
+        JP      Z,RXM_POINTERS
+        JP      RXM_RECLOOP
+
+RXM_CALLABLE:
+        LD      A,(RXM_RLEN)
+        CP      10
+        JP      NZ,RXM_BAD
+        LD      A,(RXM_NSVC)
+        CP      2
+        JP      NC,RXM_BAD
+        LD      HL,(RXM_DATA)
+        LD      B,4
+RXM_IDLP:
+        LD      A,(HL)
+        CP      020H
+        JP      C,RXM_BAD
+        CP      05BH
+        JP      NC,RXM_BAD
+        INC     HL
+        DJNZ    RXM_IDLP
+        LD      HL,(RXM_DATA)
+        LD      DE,6
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,(RXM_CODE)
+        OR      A
+        SBC     HL,DE
+        JP      C,RXM_BAD
+        JP      Z,RXM_BAD
+        LD      A,D
+        OR      A
+        JR      NZ,RXM_EOK
+        LD      A,E
+        CP      8
+        JP      C,RXM_BAD
+RXM_EOK:
+        LD      A,(RXM_NSVC)
+        OR      A
+        JR      Z,RXM_IDOK
+        LD      HL,(RXM_SERVICE)
+        LD      DE,(RXM_DATA)
+        LD      B,4
+RXM_IDCMP:
+        LD      A,(DE)
+        CP      (HL)
+        JR      NZ,RXM_IDOK
+        INC     DE
+        INC     HL
+        DJNZ    RXM_IDCMP
+        JP      RXM_BAD
+RXM_IDOK:
+        LD      HL,(RXM_CURSOR)
+        LD      DE,10
+        ADD     HL,DE
+        LD      DE,(RXM_HIGH)
+        OR      A
+        SBC     HL,DE
+        JP      C,RXM_SVCFIT
+        JP      NZ,RXM_BAD
+RXM_SVCFIT:
+        LD      HL,(RXM_DATA)
+        LD      DE,(RXM_CURSOR)
+        LD      BC,10
+        LDIR
+        LD      (RXM_CURSOR),DE
+        LD      HL,RXM_NSVC
+        INC     (HL)
+        JP      RXM_RECLOOP
+
+RXM_POINTERS:
+        LD      A,(RXM_HAVEP)
+        OR      A
+        JP      NZ,RXM_BAD
+        LD      A,(RXM_RLEN)
+        AND     1
+        JP      NZ,RXM_BAD
+        LD      A,(RXM_RLEN)
+        SRL     A
+        LD      (RXM_NPTR),A
+        LD      HL,(RXM_DATA)
+        LD      (RXM_PLIST),HL
+        LD      A,1
+        LD      (RXM_HAVEP),A
+        XOR     A
+        LD      (RXM_SEEN),A
+        LD      HL,(RXM_DATA)
+        LD      A,(RXM_NPTR)
+        LD      B,A
+RXM_PTRLOOP:
+        LD      A,B
+        OR      A
+        JP      Z,RXM_RECLOOP
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        LD      A,D
+        OR      E
+        JP      Z,RXM_BAD
+        LD      A,D
+        OR      A
+        JR      NZ,RXM_PTRNZ
+        LD      A,E
+        CP      8
+        JP      C,RXM_BAD
+RXM_PTRNZ:
+        LD      A,(RXM_SEEN)
+        OR      A
+        JR      Z,RXM_PTRFIRST
+        PUSH    HL
+        LD      HL,(RXM_PREV)
+        OR      A
+        SBC     HL,DE
+        POP     HL
+        JP      NC,RXM_BAD
+RXM_PTRFIRST:
+        LD      (RXM_PREV),DE
+        LD      A,1
+        LD      (RXM_SEEN),A
+        DJNZ    RXM_PTRLOOP
+
+RXM_RECDONE:
+        LD      HL,(RXM_RECPTR)
+        LD      DE,(RXM_END)
+        OR      A
+        SBC     HL,DE
+        JP      NZ,RXM_BAD
+        LD      A,(RXM_NSVC)
+        LD      E,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,E
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        LD      HL,(RXM_ALLOC)
+        OR      A
+        SBC     HL,DE
+        PUSH    HL              ; descriptor base
+        LD      DE,(RXM_CODE)
+        OR      A
+        SBC     HL,DE
+        JP      C,RXM_CAPBAD    ; descriptors must fit beyond payload
+        POP     HL
+        DEC     HL
+        LD      (RXM_PLIMIT),HL
+        LD      HL,(RXM_PLIST)
+        LD      A,(RXM_NPTR)
+        LD      B,A
+RXM_PBOUND:
+        LD      A,B
+        OR      A
+        JR      Z,RXM_PUBLISH
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        PUSH    HL
+        LD      HL,(RXM_PLIMIT)
+        OR      A
+        SBC     HL,DE
+        POP     HL
+        JP      C,RXM_BAD
+        JP      Z,RXM_BAD
+        DJNZ    RXM_PBOUND
+        JR      RXM_PUBLISH
+RXM_CAPBAD:
+        POP     HL
+        JP      RXM_BAD
+
+; Version 1 has an untyped numeric-service tail and no callable/runtime facts.
+RXM_V1:
+        LD      HL,(RXM_CARRIER)
+        LD      DE,42
+        ADD     HL,DE
+        LD      A,(HL)
+        LD      E,A
+        LD      D,0
+        LD      HL,(RXM_PAYLOAD)
+        LD      BC,(RXM_CODE)
+        ADD     HL,BC
+        ADD     HL,DE
+        JP      C,RXM_BAD
+        LD      DE,(RXM_CARRIER)
+        OR      A
+        SBC     HL,DE
+        LD      DE,(RXM_LENGTH)
+        OR      A
+        SBC     HL,DE
+        JP      C,RXM_V1OK
+        JP      NZ,RXM_BAD
+RXM_V1OK:
+        XOR     A
+        LD      (RXM_NSVC),A
+        LD      (RXM_NPTR),A
+        LD      HL,0
+        LD      (RXM_PLIST),HL
+
+RXM_PUBLISH:
+        LD      HL,(RXM_FACTS)
+        LD      DE,14
+        ADD     HL,DE
+        LD      DE,(RXM_PLIST)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      A,(RXM_NPTR)
+        LD      (HL),A
+        INC     HL
+        LD      A,(RXM_NSVC)
+        LD      (HL),A
+        INC     HL
+        LD      DE,(RXM_SERVICE)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      HL,(RXM_FACTS)
+        LD      DE,24
+        ADD     HL,DE
+        LD      DE,(RXM_CURSOR)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      HL,(RXM_REQ)
+        LD      DE,10
+        ADD     HL,DE
+        LD      (HL),1
+        XOR     A
+        RET
+
+RXM_BAD:
+        LD      A,0FFH
+        OR      A
+        RET
+
+RXM_BMET:      DB      'B','M','E','T'
+RXM_REQ:       DW      0
+RXM_CARRIER:   DW      0
+RXM_LENGTH:    DW      0
+RXM_CURSOR:    DW      0
+RXM_HIGH:      DW      0
+RXM_FACTS:     DW      0
+RXM_PAYLOAD:   DW      0
+RXM_CODE:      DW      0
+RXM_ALLOC:     DW      0
+RXM_BASE:      DW      0
+RXM_END:       DW      0
+RXM_MLEN:      DW      0
+RXM_RECPTR:    DW      0
+RXM_DATA:      DW      0
+RXM_PLIST:    DW      0
+RXM_SERVICE:   DW      0
+RXM_PREV:      DW      0
+RXM_PLIMIT:    DW      0
+RXM_NREC:      DB      0
+RXM_NSVC:      DB      0
+RXM_NPTR:      DB      0
+RXM_HAVEP:     DB      0
+RXM_KIND:      DB      0
+RXM_RLEN:      DB      0
+RXM_SEEN:      DB      0
+
+        .DEPHASE
+        END

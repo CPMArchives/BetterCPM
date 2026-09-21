@@ -42,13 +42,17 @@ def main() -> None:
     plan = build(args.assembler, "r3plan", "rsxplan.mac", "RPBASE", cfg)
     slots = build(args.assembler, "r3slots", "rsxslots.mac", "SUBASE", cfg)
     snapshot = build(args.assembler, "r3snapshot", "rsxsnapshot.mac", "RNBASE", cfg)
+    carrier = build(args.assembler, "r3carrier", "rsxcarrier.mac", "RXBASE", cfg)
+    metadata = build(args.assembler, "r3metadata", "rsxmetadata.mac", "RMBASE", cfg)
     mover = build(args.assembler, "r3mover", "rsxmover.mac", "RMBASE", cfg)
     schedule = build(args.assembler, "r3sched", "rsxschedule.mac", "RSBASE", cfg + 0x120)
     handoff = build(args.assembler, "r3ovload", "rsxovload.mac", "ROBASE", cfg + 0x320)
     commit = build(args.assembler, "r3commit", "rsxcommit.mac", "RCBASE", rsx)
 
     for label, data in (("planner", plan), ("slot preparer", slots),
-                        ("snapshot constructor", snapshot)):
+                        ("snapshot constructor", snapshot),
+                        ("carrier preparer", carrier),
+                        ("metadata preparer", metadata)):
         if len(data) > 1024:
             raise ValueError(f"{label} exceeds the shared overlay: {len(data)}")
     regions = ((0, mover, "mover"), (0x120, schedule, "scheduler"),
@@ -67,6 +71,8 @@ def main() -> None:
         "R3PLAN.RSX": plan,
         "R3SLOTS.RSX": slots,
         "R3SNAP.RSX": snapshot,
+        "R3CARR.RSX": carrier,
+        "R3META.RSX": metadata,
         "R3MOVE.RSX": bytes(image),
         "R3COMIT.RSX": commit.ljust(1021, b"\0") + gateway,
     }
