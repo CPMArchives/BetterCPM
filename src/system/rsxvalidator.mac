@@ -18,8 +18,9 @@ RV_ENTRY:
 RV_CONTROL:
         LD      (RV_REQ),DE
         LD      A,(DE)
-        CP      1
-        JP      NZ,RV_BAD
+        DEC     A
+        CP      2
+        RET     NC
         INC     DE
         LD      A,(DE)
         CP      1               ; only LOAD introduces a new carrier

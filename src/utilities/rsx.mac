@@ -209,14 +209,16 @@ RS_NBAD:
 
 RS_CLEAR:
         LD      HL,RS_REQ
-        LD      B,14
+        LD      B,18
         XOR     A
 RS_CLOOP:
         LD      (HL),A
         INC     HL
         DJNZ    RS_CLOOP
-        LD      A,1
+        LD      A,2
         LD      (RS_REQ),A
+        LD      HL,RS_END
+        LD      (RS_REQ+14),HL
         LD      HL,RS_REQ+4
         LD      B,8
         LD      A,' '
@@ -227,6 +229,12 @@ RS_SPLOOP:
         RET
 
 RS_CONTROL:
+        LD      HL,0
+        ADD     HL,SP
+        LD      BC,64
+        OR      A
+        SBC     HL,BC
+        LD      (RS_REQ+16),HL
         LD      DE,RS_REQ
         LD      C,RSXFUNC
         JP      BDOS
@@ -330,8 +338,9 @@ RS_NCOUNT:     DB      0
 RS_DREM:       DB      0
 RS_TENS:       DB      0
 RS_UNITV:      DB      0
-RS_REQ:        DB      0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RS_REQ:        DB      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
         INCLUDE rsxvers.inc
+RS_END:
         .DEPHASE
         END     START
