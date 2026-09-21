@@ -478,6 +478,8 @@ class Z80:
                 self.hl = (self.hl + self.de) & 0xFFFF
             elif op == 0x29:            # ADD HL,HL
                 self.hl = (self.hl * 2) & 0xFFFF
+            elif op == 0x39:            # ADD HL,SP
+                self.hl = (self.hl + self.sp) & 0xFFFF
             elif op == 0x07:            # RLCA
                 high = (self.a >> 7) & 1
                 self.a = ((self.a << 1) | high) & 0xFF
@@ -561,6 +563,12 @@ class Z80:
             elif op == 0xED and self.mem[self.pc] == 0x52:  # SBC HL,DE
                 self.pc += 1
                 value = self.hl - self.de - (1 if self.carry else 0)
+                self.carry = value < 0
+                self.hl = value & 0xFFFF
+                self.z = self.hl == 0
+            elif op == 0xED and self.mem[self.pc] == 0x42:  # SBC HL,BC
+                self.pc += 1
+                value = self.hl - self.bc - (1 if self.carry else 0)
                 self.carry = value < 0
                 self.hl = value & 0xFFFF
                 self.z = self.hl == 0

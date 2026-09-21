@@ -6,10 +6,12 @@
 ; Removing the last module gives both manager and module RAM to TPA.
 ;
 ; Function 202 passes DE -> request:
-;   +0 version (1), +1 operation (0 enumerate, 1 load, 2 unload, 3 query,
+;   +0 version (1 or 2), +1 operation (0 enumerate, 1 load, 2 unload, 3 query,
 ;                                4 retire without rebuilding),
 ;   +2 enumeration index, +3 reserved, +4..+11 space-padded filename stem,
-;   +12..+13 returned primary service number.
+;   +12..+13 returned primary service number. Version 2 adds caller-owned
+;   transaction workspace bounds at +14 and +16; the legacy rebuilder does
+;   not consume that workspace.
 
 RLBASE          EQU     LY_RSX
 FLOPEN          EQU     LY_FILE
@@ -54,8 +56,9 @@ RL_CONTROL:
         LD      (RSTCOUNT),A
 RL_COUNTOK:
         LD      A,(DE)
-        CP      1
-        JP      NZ,RL_BAD
+        DEC     A
+        CP      2
+        RET     NC
         INC     DE
         LD      A,(DE)
         OR      A

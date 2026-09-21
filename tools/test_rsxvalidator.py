@@ -62,12 +62,17 @@ NEXT:   PUSH    HL
 
 
 def validate(validator: bytes, stub: bytes, carrier: bytes,
-             active_test: bool = False) -> int:
+             active_test: bool = False, version: int = 1,
+             workspace: tuple[int, int] = (0x7200, 0x7800)) -> int:
     cpu = Z80(b"")
     cpu.mem[LAYOUT["RSX"]:LAYOUT["RSX"] + len(validator)] = validator
     cpu.mem[LAYOUT["FILE"]:LAYOUT["FILE"] + len(stub)] = stub
     cpu.mem[STREAM:STREAM + 1024] = carrier[:1024].ljust(1024, b"\0")
-    cpu.mem[REQUEST:REQUEST + 14] = bytes((1, 1, 0, 1)) + b"TEST    " + bytes(2)
+    request = bytes((version, 1, 0, 1)) + b"TEST    " + bytes(2)
+    if version == 2:
+        request += workspace[0].to_bytes(2, "little") + \
+            workspace[1].to_bytes(2, "little")
+    cpu.mem[REQUEST:REQUEST + len(request)] = request
     if active_test:
         base = 0xD004
         cpu.setword(LAYOUT["SYSTEM"] + 0x84, base)
@@ -89,6 +94,8 @@ def main() -> None:
         v2 = bytearray(TEST.read_bytes())
         require(validate(validator, stub, v2) == 0,
                 "valid BRSX-v2 TEST carrier was rejected")
+        require(validate(validator, stub, v2, version=2) == 0,
+                "valid Function 202 v2 workspace was rejected")
         require(validate(validator, stub, v2, active_test=True) == 0xFF,
                 "callable ID duplicated across providers was accepted")
         v1 = HELLO.read_bytes()
@@ -126,7 +133,8 @@ def main() -> None:
                                (b"DUPL", 1, 1, 9, 0)])
         require(validate(validator, stub, duplicate) == 0xFF,
                 "duplicate service IDs within one provider were accepted")
-    print("BRSX validator accepts v1/v2 and rejects class, entry, framing, and duplicate-service errors")
+    print("BRSX validator accepts request v1/v2 and rejects class, entry, "
+          "framing, and duplicate-service errors")
 
 
 if __name__ == "__main__":

@@ -66,8 +66,9 @@ BF_RSXCTL:
         OR      A
         JR      NZ,EX_RLOAD
         LD      A,(DE)
-        CP      1
-        JR      NZ,EX_RBAD
+        DEC     A
+        CP      2
+        JR      NC,EX_RBAD
         INC     DE
         LD      A,(DE)
         DEC     DE
