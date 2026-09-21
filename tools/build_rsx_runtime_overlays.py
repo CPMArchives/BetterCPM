@@ -44,6 +44,7 @@ def main() -> None:
     snapshot = build(args.assembler, "r3snapshot", "rsxsnapshot.mac", "RNBASE", cfg)
     carrier = build(args.assembler, "r3carrier", "rsxcarrier.mac", "RXBASE", cfg)
     metadata = build(args.assembler, "r3metadata", "rsxmetadata.mac", "RMBASE", cfg)
+    coordinator = build(args.assembler, "r3coord", "rsxcoordinator.mac", "RCBASE", rsx)
     mover = build(args.assembler, "r3mover", "rsxmover.mac", "RMBASE", cfg)
     schedule = build(args.assembler, "r3sched", "rsxschedule.mac", "RSBASE", cfg + 0x120)
     handoff = build(args.assembler, "r3ovload", "rsxovload.mac", "ROBASE", cfg + 0x320)
@@ -64,6 +65,9 @@ def main() -> None:
             raise ValueError(f"{label} overlaps the move overlay")
         image[offset:offset + len(data)] = data
         end = offset + len(data)
+    if len(coordinator) > 1021:
+        raise ValueError("carrier coordinator exceeds gateway-safe slot: "
+                         f"{len(coordinator)}")
     if len(commit) > 1021:
         raise ValueError(f"commit overlay exceeds gateway-safe slot: {len(commit)}")
     gateway = bytes((0xC3, LAYOUT["BDOS"] & 0xFF, LAYOUT["BDOS"] >> 8))
@@ -73,6 +77,7 @@ def main() -> None:
         "R3SNAP.RSX": snapshot,
         "R3CARR.RSX": carrier,
         "R3META.RSX": metadata,
+        "R3COORD.RSX": coordinator.ljust(1021, b"\0") + gateway,
         "R3MOVE.RSX": bytes(image),
         "R3COMIT.RSX": commit.ljust(1021, b"\0") + gateway,
     }

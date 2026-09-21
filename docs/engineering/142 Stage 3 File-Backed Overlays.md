@@ -11,13 +11,14 @@ transaction path from Function 202.
 The TRS-80 boot area is exactly 20 KiB and the relocatable CCP carrier leaves
 only 468 unused bytes. Enlarging the system area would change the qualified
 disk formats and the native `SYSTEM.SYS` contract. The transaction components
-therefore live as seven private files in user zero:
+therefore live as eight private files in user zero:
 
 - `R3PLAN.RSX`, the prospective planner at `LY_CFG`;
 - `R3SLOTS.RSX`, the pointer-union preparer at `LY_CFG`;
 - `R3SNAP.RSX`, the fresh and stateless snapshot constructor at `LY_CFG`;
 - `R3CARR.RSX`, the fixed carrier validator at `LY_CFG`;
 - `R3META.RSX`, the typed metadata validator and normalizer at `LY_CFG`;
+- `R3COORD.RSX`, the bounded carrier-loading coordinator at `LY_RSX`;
 - `R3MOVE.RSX`, the mover, scheduler, and handoff packed into `LY_CFG`; and
 - `R3COMIT.RSX`, the disk-free commit engine at `LY_RSX`.
 
@@ -43,7 +44,7 @@ component overlap at build time.
 The focused Z80 test uses the real packed move image and a filesystem stub to
 replace `LY_RSX`, verifies both 512-byte reads, confirms the exact transferred
 image and next-request pointer, and returns through the original stack. Both
-platform image builders install the same seven private overlay payloads.
+platform image builders install the same eight private overlay payloads.
 
 The next increment connects the Function 202 coordinator to these phases and
 constructs its validated plans, unions, and prepared snapshots.
