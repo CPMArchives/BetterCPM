@@ -125,8 +125,10 @@ RS_USAGE:
 RS_PDONE:
         CALL    RS_PRINT
 RS_DONE:
-        LD      C,0
-        JP      BDOS
+; The CCP installs a warm-boot return frame before entering a transient.
+; Use it after Function 202 has changed the resident chain; entering BDOS
+; Function 0 here loses the newly published profile during reconstruction.
+        RET
 
 ; Match C bytes at the beginning of the trimmed command tail.
 RS_PREFIX:
