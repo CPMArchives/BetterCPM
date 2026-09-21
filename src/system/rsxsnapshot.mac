@@ -1,0 +1,341 @@
+; Phase-3 fresh/STATELESS snapshot constructor.
+;
+; DE -> request:
+; +0 source payload, +2 payload size, +4 allocation size
+; +6 linked base, +8 prospective live base
+; +10 static relocation list, +12 relocation count
+; +14 packed ten-byte callable descriptors, +16 descriptor count
+; +17 reserved zero, +18 snapshot destination, +20 dispatch offset
+; +22 returned completion byte (written as one only on success)
+;
+; The destination receives a complete allocation ready for the disk-free
+; commit engine: copied payload, zeroed tail, relocation fixed for the final
+; live base, materialized callable descriptors, and a loader-owned header.
+
+RNBASE          EQU     07600H
+
+        CSEG
+        .PHASE  RNBASE
+RN_ENTRY:
+        LD      (RN_REQ),DE
+        EX      DE,HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RN_SOURCE),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RN_CODE),DE
+        LD      A,D
+        OR      E
+        JP      Z,RN_BAD
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RN_ALLOC),DE
+        LD      A,D
+        OR      A
+        JP      Z,RN_BAD
+        LD      A,E
+        OR      A
+        JP      NZ,RN_BAD       ; live allocations are whole pages
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RN_LINKED),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RN_LIVE),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RN_RLIST),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RN_NRELOC),DE
+        LD      A,D
+        OR      A
+        JP      NZ,RN_BAD
+        LD      A,E
+        CP      233
+        JP      NC,RN_BAD
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RN_SERVICES),DE
+        INC     HL
+        LD      A,(HL)
+        CP      3
+        JP      NC,RN_BAD
+        LD      (RN_NSERVICE),A
+        INC     HL
+        LD      A,(HL)
+        OR      A
+        JP      NZ,RN_BAD
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RN_OUTPUT),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RN_DISPATCH),DE
+
+; Validate sizes, final ranges, and descriptor capacity before writing output.
+        LD      HL,(RN_ALLOC)
+        LD      DE,(RN_CODE)
+        OR      A
+        SBC     HL,DE
+        JP      C,RN_BAD
+        LD      A,(RN_NSERVICE)
+        OR      A
+        JR      Z,RN_CAPOK
+        LD      B,A
+        LD      DE,10
+RN_CAPLP:
+        OR      A
+        SBC     HL,DE
+        JP      C,RN_BAD
+        DJNZ    RN_CAPLP
+RN_CAPOK:
+        LD      HL,(RN_DISPATCH)
+        LD      DE,8
+        OR      A
+        SBC     HL,DE
+        JP      C,RN_BAD
+        LD      HL,(RN_CODE)
+        LD      DE,(RN_DISPATCH)
+        OR      A
+        SBC     HL,DE
+        JP      C,RN_BAD
+        JP      Z,RN_BAD
+        LD      HL,(RN_LIVE)
+        LD      DE,(RN_ALLOC)
+        ADD     HL,DE
+        JP      C,RN_BAD
+        LD      HL,(RN_OUTPUT)
+        ADD     HL,DE
+        JP      C,RN_BAD
+        LD      (RN_OEND),HL
+        LD      HL,(RN_SOURCE)
+        LD      DE,(RN_CODE)
+        ADD     HL,DE
+        JP      C,RN_BAD
+        LD      (RN_SEND),HL
+        LD      DE,(RN_OUTPUT)
+        OR      A
+        SBC     HL,DE
+        JR      C,RN_SEPARATE
+        JR      Z,RN_SEPARATE
+        LD      HL,(RN_OEND)
+        LD      DE,(RN_SOURCE)
+        OR      A
+        SBC     HL,DE
+        JR      Z,RN_SEPARATE
+        JP      NC,RN_BAD
+RN_SEPARATE:
+
+; Relocation slots must be complete payload words in strict ascending order.
+        LD      HL,(RN_RLIST)
+        LD      DE,(RN_NRELOC)
+        XOR     A
+        LD      (RN_SEEN),A
+RN_VRELOC:
+        LD      A,D
+        OR      E
+        JR      Z,RN_COPY
+        LD      C,(HL)
+        INC     HL
+        LD      B,(HL)
+        INC     HL
+        PUSH    HL
+        LD      HL,(RN_CODE)
+        DEC     HL
+        OR      A
+        SBC     HL,BC
+        POP     HL
+        JP      C,RN_BAD
+        JP      Z,RN_BAD
+        LD      A,(RN_SEEN)
+        OR      A
+        JR      Z,RN_VFIRST
+        PUSH    HL
+        LD      HL,(RN_PREV)
+        OR      A
+        SBC     HL,BC
+        POP     HL
+        JP      NC,RN_BAD
+RN_VFIRST:
+        LD      (RN_PREV),BC
+        LD      A,1
+        LD      (RN_SEEN),A
+        DEC     DE
+        JR      RN_VRELOC
+
+RN_COPY:
+        LD      HL,(RN_SOURCE)
+        LD      DE,(RN_OUTPUT)
+        LD      BC,(RN_CODE)
+        LDIR
+
+; Zero every byte not supplied by the carrier before descriptors are placed.
+        LD      HL,(RN_OUTPUT)
+        LD      DE,(RN_CODE)
+        ADD     HL,DE
+        PUSH    HL
+        LD      HL,(RN_ALLOC)
+        LD      DE,(RN_CODE)
+        OR      A
+        SBC     HL,DE
+        LD      B,H
+        LD      C,L
+        POP     HL
+        LD      A,B
+        OR      C
+        JR      Z,RN_RELOC
+        LD      (HL),0
+        DEC     BC
+        LD      A,B
+        OR      C
+        JR      Z,RN_RELOC
+        LD      D,H
+        LD      E,L
+        INC     DE
+        LDIR
+
+; Apply static relocation for the prospective live address, not the temporary
+; snapshot address. The commit engine can then copy the image byte-for-byte.
+RN_RELOC:
+        LD      HL,(RN_LIVE)
+        LD      DE,(RN_LINKED)
+        OR      A
+        SBC     HL,DE
+        LD      (RN_DELTA),HL
+        LD      HL,(RN_RLIST)
+        LD      BC,(RN_NRELOC)
+RN_RLOOP:
+        LD      A,B
+        OR      C
+        JR      Z,RN_DESCRIPTORS
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        PUSH    HL
+        PUSH    BC
+        LD      HL,(RN_OUTPUT)
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        LD      BC,(RN_DELTA)
+        ADD     HL,BC
+        EX      DE,HL
+        LD      (HL),D
+        DEC     HL
+        LD      (HL),E
+        POP     BC
+        POP     HL
+        DEC     BC
+        JR      RN_RLOOP
+
+; Materialize descriptors downward from the allocation top.
+RN_DESCRIPTORS:
+        LD      HL,(RN_OUTPUT)
+        LD      DE,(RN_ALLOC)
+        ADD     HL,DE
+        LD      (RN_DPTR),HL
+        LD      HL,(RN_SERVICES)
+        LD      (RN_SPTR),HL
+        LD      A,(RN_NSERVICE)
+        LD      (RN_DLEFT),A
+RN_DLOOP:
+        LD      A,(RN_DLEFT)
+        OR      A
+        JR      Z,RN_HEADER
+        LD      HL,(RN_DPTR)
+        LD      DE,10
+        OR      A
+        SBC     HL,DE
+        LD      (RN_DPTR),HL
+        EX      DE,HL
+        LD      HL,(RN_SPTR)
+        LD      BC,10
+        LDIR
+        LD      (RN_SPTR),HL
+        LD      HL,RN_DLEFT
+        DEC     (HL)
+        JR      RN_DLOOP
+
+RN_HEADER:
+        LD      HL,(RN_DPTR)
+        LD      DE,(RN_OUTPUT)
+        OR      A
+        SBC     HL,DE
+        EX      DE,HL
+        LD      HL,(RN_OUTPUT)
+        XOR     A
+        LD      (HL),A
+        INC     HL
+        LD      (HL),A
+        INC     HL
+        LD      (HL),A
+        INC     HL
+        LD      (HL),A
+        INC     HL
+        LD      A,(RN_NSERVICE)
+        LD      (HL),A
+        INC     HL
+        LD      (HL),0
+        INC     HL
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      HL,(RN_REQ)
+        LD      DE,22
+        ADD     HL,DE
+        LD      (HL),1
+        XOR     A
+        RET
+
+RN_BAD:
+        LD      A,0FFH
+        OR      A
+        RET
+
+RN_REQ:        DW      0
+RN_SOURCE:     DW      0
+RN_CODE:       DW      0
+RN_ALLOC:      DW      0
+RN_LINKED:     DW      0
+RN_LIVE:       DW      0
+RN_RLIST:      DW      0
+RN_NRELOC:    DW      0
+RN_SERVICES:  DW      0
+RN_OUTPUT:     DW      0
+RN_DISPATCH:  DW      0
+RN_PREV:      DW      0
+RN_DELTA:     DW      0
+RN_DPTR:      DW      0
+RN_SPTR:      DW      0
+RN_SEND:      DW      0
+RN_OEND:      DW      0
+RN_NSERVICE:  DB      0
+RN_SEEN:      DB      0
+RN_DLEFT:     DB      0
+
+        .DEPHASE
+        END
