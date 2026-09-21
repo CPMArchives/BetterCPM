@@ -77,8 +77,10 @@ def target(work: Path) -> bytes:
 
 
 def main() -> None:
+    snapshot = (ROOT / "build/system/R3SNAP.RSX").read_bytes()
     move = (ROOT / "build/system/R3MOVE.RSX").read_bytes()
     commit = (ROOT / "build/system/R3COMIT.RSX").read_bytes()
+    assert 0 < len(snapshot) <= 1024
     assert len(move) == len(commit) == 1024
     assert move[0] != 0 and move[0x120] != 0 and move[0x320] != 0
     assert commit[-3:] == bytes((0xC3, LAYOUT["BDOS"] & 0xFF,

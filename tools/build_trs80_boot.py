@@ -254,7 +254,7 @@ def main() -> None:
     rsx2test_path = ROOT / "build/utilities/RSX2TST.COM"
     svctest_path = ROOT / "build/utilities/SVCTEST.COM"
     test_rsx_path = ROOT / "build/rsx/TEST.RSX"
-    runtime_overlay_names = ("R3PLAN.RSX", "R3SLOTS.RSX",
+    runtime_overlay_names = ("R3PLAN.RSX", "R3SLOTS.RSX", "R3SNAP.RSX",
                              "R3MOVE.RSX", "R3COMIT.RSX")
     era_path = ROOT / "build/utilities/ERA.COM"
     ren_path = ROOT / "build/utilities/REN.COM"
