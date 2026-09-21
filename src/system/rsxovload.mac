@@ -1,0 +1,59 @@
+        INCLUDE layout.inc
+; Disk-backed Stage-3 overlay handoff. This routine is placed in the tail of
+; the LY_CFG move/scheduler image, outside the code it loads at LY_RSX.
+;
+; DE -> request: +0 eight-byte filename address, +2 destination, +4 entry,
+;                +6 request address passed to the replacement overlay.
+; Success never returns: it jumps to the replacement entry with DE restored.
+; Failure returns nonzero through the original manager call frame.
+
+ROBASE          EQU     LY_CFG+0320H
+FLOPEN          EQU     LY_FILE
+FLNEXT          EQU     LY_FILE+3
+
+        CSEG
+        .PHASE  ROBASE
+RO_ENTRY:
+        EX      DE,HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RO_NAME),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RO_DEST),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RO_TARGET),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RO_NEXT),DE
+        LD      HL,(RO_NAME)
+        LD      A,1
+        CALL    FLOPEN
+        JR      NZ,RO_BAD
+        LD      HL,(RO_DEST)
+        CALL    FLNEXT
+        JR      NZ,RO_BAD
+        CALL    FLNEXT
+        JR      NZ,RO_BAD
+        LD      DE,(RO_NEXT)
+        LD      HL,(RO_TARGET)
+        JP      (HL)
+RO_BAD:
+        LD      A,0FFH
+        OR      A
+        RET
+
+RO_NAME:        DW      0
+RO_DEST:        DW      0
+RO_TARGET:      DW      0
+RO_NEXT:        DW      0
+        .DEPHASE
+        END

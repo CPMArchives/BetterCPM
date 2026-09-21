@@ -254,6 +254,8 @@ def main() -> None:
     rsx2test_path = ROOT / "build/utilities/RSX2TST.COM"
     svctest_path = ROOT / "build/utilities/SVCTEST.COM"
     test_rsx_path = ROOT / "build/rsx/TEST.RSX"
+    runtime_overlay_names = ("R3PLAN.RSX", "R3SLOTS.RSX",
+                             "R3MOVE.RSX", "R3COMIT.RSX")
     era_path = ROOT / "build/utilities/ERA.COM"
     ren_path = ROOT / "build/utilities/REN.COM"
     type_path = ROOT / "build/utilities/TYPE.COM"
@@ -354,7 +356,7 @@ def main() -> None:
     # These carriers live on disk, so always rebuild their layout-dependent code.
     for tool in ("build_ccpreload.py", "build_rsxselect.py", "build_rsxloader.py",
                  "build_rsxvalidator.py", "build_rsxpublish.py",
-                 "build_rsxresolver.py"):
+                 "build_rsxresolver.py", "build_rsx_runtime_overlays.py"):
         subprocess.run([sys.executable, str(ROOT / "tools" / tool),
                         "--assembler", str(args.assembler)], check=True)
     image = install(boot, stage1, resident, command,
@@ -391,6 +393,8 @@ def main() -> None:
                      ("ECHO.RSX", echo_rsx_path.read_bytes()),
                      ("BATCHIO.RSX", batchio_rsx_path.read_bytes()),
                      ("TEST.RSX", test_rsx_path.read_bytes()),
+                     *((name, (ROOT / "build/system" / name).read_bytes())
+                       for name in runtime_overlay_names),
                      *cpm_tools_files(ROOT), *extras])
     output = args.output.resolve()
     output.parent.mkdir(parents=True, exist_ok=True)

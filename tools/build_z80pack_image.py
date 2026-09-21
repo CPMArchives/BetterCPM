@@ -42,7 +42,7 @@ def main():
  def read(path):return (ROOT/path).read_text()
  # Rebuild common software from current source. These are portable artifacts;
  # target BIOS, disk code, tables and overlays are kept only in our output.
- for name in ('bdos','ccp','rcp_cpx','hello_cpx','rsxloader','rsxvalidator','rsxpublish','rsxresolver','test_service_rsx','svctest','hello_rsx','echo_rsx','fdf_rsx','zprtc_rsx','fileloader','utilities'):
+ for name in ('bdos','ccp','rcp_cpx','hello_cpx','rsxloader','rsxvalidator','rsxpublish','rsxresolver','rsx_runtime_overlays','test_service_rsx','svctest','hello_rsx','echo_rsx','fdf_rsx','zprtc_rsx','fileloader','utilities'):
   subprocess.run([sys.executable,str(ROOT/'tools'/f'build_{name}.py')],check=True,stdout=subprocess.DEVNULL)
  bios_source=read('src/bios/bios.mac')
  # cpmsim port 5 is its CP/M 2 RDR: input.  Keep the common unassigned-reader
@@ -139,6 +139,7 @@ def main():
  for f in sorted((ROOT/'build/utilities').glob('*.COM')):files.append((f.name,f.read_bytes()))
  for name,data in cpm_tools_files(ROOT):files.append((name,data))
  for name in ('HELLO.RSX','ECHO.RSX','BATCHIO.RSX','FDF.RSX','ZPRTC.RSX','TEST.RSX'):files.append((name,(ROOT/'build/rsx'/name).read_bytes()))
+ for name in ('R3PLAN.RSX','R3SLOTS.RSX','R3MOVE.RSX','R3COMIT.RSX'):files.append((name,(ROOT/'build/system'/name).read_bytes()))
  files.append(('DISK.FDF',(ROOT/'third_party/montezuma/DISK.FDF').read_bytes()))
  # A small transient proves that load and warm return use this target BIOS.
  hello=bytes([0x11,0x0b,1,0x0e,9,0xcd,5,0,0xc3,0,0])+b'BetterCP/M on z80pack\r\n$'
