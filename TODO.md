@@ -292,6 +292,10 @@ between CONFIG and DUP remain design considerations for the formatting work.
   configuration, disk-state object and reconstruction record in RAM, exercise
   cold/warm boot and representative runtime paths, and fail on any attempted ROM
   write. A ROM-to-RAM bootstrap does not satisfy this 1.0 acceptance test.
+- [ ] Extend and pin the z80pack/cpmsim qualification runtime so the configured
+  BetterCP/M ROM region is genuinely read-only and any attempted write is a
+  deterministic test failure. Retain that emulator change with the ROM-profile
+  evidence rather than relying on an unprotected memory-map convention.
 - [ ] For 1.0 ROMability, consolidate mutable drive definitions and disk
   workspaces into the fixed persistent RAM layout, separate from ROM-resident
   defaults and routines. Preserve DPH pointer interfaces, define cold/warm/reset

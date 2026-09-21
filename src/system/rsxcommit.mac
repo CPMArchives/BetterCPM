@@ -1,0 +1,604 @@
+; Phase-3 in-memory RSX transaction commit engine.
+;
+; DE -> request:
+; +0 plan, +2 pointer-union descriptors, +4 snapshot descriptors
+; +6 count, +7 reserved zero, +8 scheduler-request scratch
+; +10 scheduler entry, +12 mover-request scratch, +14 mover scratch bytes
+; +16 mover entry, +18 empty-profile base, +20 core dispatch
+; +22 publication descriptor, +24 returned committed count
+;
+; Each six-byte snapshot descriptor contains source, allocation size, and
+; dispatch offset. Retained STATEFUL/COLD_ONLY entries use zero source/size;
+; all fresh and STATELESS entries identify a fully relocated live image in
+; transaction scratch. Publication descriptor: addresses of chain head,
+; resident low boundary, TPA ceiling, generation word, and page-zero ceiling.
+
+RCBASE          EQU     07C00H
+
+        CSEG
+        .PHASE  RCBASE
+RC_ENTRY:
+        LD      (RC_REQ),DE
+        EX      DE,HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_PLAN),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_SDESC),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_SNAP),DE
+        INC     HL
+        LD      A,(HL)
+        CP      5
+        JP      NC,RC_BAD
+        LD      (RC_COUNT),A
+        INC     HL
+        LD      A,(HL)
+        OR      A
+        JP      NZ,RC_BAD
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_SREQ),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_SCHED),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_MREQ),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_MCAP),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_MOVER),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_TOP),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_CORE),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_PUB),DE
+
+; Validate every plan/snapshot record before invoking the scheduler.
+        XOR     A
+        LD      (RC_INDEX),A
+        LD      HL,(RC_TOP)
+        LD      (RC_CURSOR),HL
+RC_VLOOP:
+        LD      A,(RC_INDEX)
+        LD      B,A
+        LD      A,(RC_COUNT)
+        CP      B
+        JP      Z,RC_VDONE
+        LD      A,(RC_INDEX)
+        CALL    RC_RECORD
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_OLD),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_NEW),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_SIZE),DE
+        LD      A,D
+        OR      E
+        JP      Z,RC_BAD
+        INC     HL
+        LD      A,(HL)
+        CP      4
+        JP      NC,RC_BAD
+        CP      2
+        JP      Z,RC_BAD
+        LD      (RC_CLASS),A
+
+; Prospective records must be one tightly packed descending profile.
+        LD      HL,(RC_NEW)
+        LD      DE,(RC_SIZE)
+        OR      A
+        ADD     HL,DE
+        JP      C,RC_BAD
+        LD      DE,(RC_CURSOR)
+        OR      A
+        SBC     HL,DE
+        JP      NZ,RC_BAD
+        LD      HL,(RC_NEW)
+        LD      (RC_CURSOR),HL
+
+        LD      A,(RC_INDEX)
+        CALL    RC_SNPTR
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_SOURCE),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_SSIZE),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_DISP),DE
+        LD      HL,(RC_DISP)
+        LD      DE,8
+        OR      A
+        SBC     HL,DE
+        JP      C,RC_BAD
+        LD      HL,(RC_SIZE)
+        LD      DE,(RC_DISP)
+        OR      A
+        SBC     HL,DE
+        JP      C,RC_BAD
+        JP      Z,RC_BAD
+
+; Retained STATEFUL and COLD_ONLY images need no snapshot. Everything else
+; must have a complete pre-relocated allocation available before commit.
+        LD      A,(RC_CLASS)
+        CP      1
+        JR      Z,RC_MAYLIVE
+        CP      3
+        JR      NZ,RC_NEEDSNAP
+RC_MAYLIVE:
+        LD      HL,(RC_OLD)
+        LD      A,H
+        OR      L
+        JR      Z,RC_NEEDSNAP
+        LD      HL,(RC_SOURCE)
+        LD      A,H
+        OR      L
+        JP      NZ,RC_BAD
+        LD      HL,(RC_SSIZE)
+        LD      A,H
+        OR      L
+        JP      NZ,RC_BAD
+        JR      RC_VNEXT
+RC_NEEDSNAP:
+        LD      HL,(RC_SOURCE)
+        LD      A,H
+        OR      L
+        JP      Z,RC_BAD
+        LD      DE,(RC_SSIZE)
+        LD      HL,(RC_SIZE)
+        OR      A
+        SBC     HL,DE
+        JP      NZ,RC_BAD
+        LD      HL,(RC_SOURCE)
+        OR      A
+        ADD     HL,DE
+        JP      C,RC_BAD
+        LD      (RC_SEND),HL
+        CALL    RC_NODST
+        JP      NZ,RC_BAD
+RC_VNEXT:
+        LD      HL,RC_INDEX
+        INC     (HL)
+        JP      RC_VLOOP
+
+RC_VDONE:
+; Construct the scheduler request only after all commit inputs validate.
+        LD      HL,(RC_SREQ)
+        LD      DE,(RC_PLAN)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      DE,(RC_SDESC)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      A,(RC_COUNT)
+        LD      (HL),A
+        INC     HL
+        LD      (HL),0
+        INC     HL
+        LD      DE,(RC_MREQ)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      DE,(RC_MCAP)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      DE,(RC_MOVER)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      (HL),0CCH
+        LD      DE,(RC_SREQ)
+        LD      HL,(RC_SCHED)
+        LD      BC,RC_SRET
+        PUSH    BC
+        JP      (HL)
+RC_SRET:
+        OR      A
+        JP      NZ,RC_BAD       ; scheduler validated before its first move
+
+; Copy prepared images. Snapshot/destination disjointness was checked above.
+        XOR     A
+        LD      (RC_INDEX),A
+RC_COPYLP:
+        LD      A,(RC_INDEX)
+        LD      B,A
+        LD      A,(RC_COUNT)
+        CP      B
+        JR      Z,RC_LINKS
+        LD      A,(RC_INDEX)
+        CALL    RC_SNPTR
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      A,D
+        OR      E
+        JR      Z,RC_COPYNX
+        PUSH    DE
+        LD      A,(RC_INDEX)
+        CALL    RC_RECORD
+        INC     HL
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        EX      (SP),HL         ; HL=source, stack=new destination
+        POP     DE
+        PUSH    HL
+        PUSH    DE
+        LD      A,(RC_INDEX)
+        CALL    RC_SNPTR
+        INC     HL
+        INC     HL
+        LD      C,(HL)
+        INC     HL
+        LD      B,(HL)
+        POP     DE
+        POP     HL
+        LDIR
+RC_COPYNX:
+        LD      HL,RC_INDEX
+        INC     (HL)
+        JR      RC_COPYLP
+
+; Rebuild loader-owned dispatch and next-chain words for the complete profile.
+RC_LINKS:
+        XOR     A
+        LD      (RC_INDEX),A
+RC_LINKLP:
+        LD      A,(RC_INDEX)
+        LD      B,A
+        LD      A,(RC_COUNT)
+        CP      B
+        JR      Z,RC_PUBLISH
+        LD      A,(RC_INDEX)
+        CALL    RC_RECORD
+        INC     HL
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_NEW),DE
+        LD      A,(RC_INDEX)
+        CALL    RC_SNPTR
+        LD      BC,4
+        ADD     HL,BC
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,(RC_NEW)
+        ADD     HL,DE
+        LD      (RC_THISDP),HL
+        EX      DE,HL
+        LD      HL,(RC_NEW)
+        INC     HL
+        INC     HL
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      A,(RC_INDEX)
+        INC     A
+        LD      B,A
+        LD      A,(RC_COUNT)
+        CP      B
+        JR      Z,RC_LAST
+        LD      A,B
+        CALL    RC_RECORD
+        INC     HL
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_NEXT),DE
+        LD      A,B
+        CALL    RC_SNPTR
+        LD      DE,4
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,(RC_NEXT)
+        ADD     HL,DE
+        JR      RC_SETNEXT
+RC_LAST:
+        LD      HL,(RC_CORE)
+RC_SETNEXT:
+        EX      DE,HL
+        LD      HL,(RC_NEW)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      HL,RC_INDEX
+        INC     (HL)
+        JR      RC_LINKLP
+
+; Publish all externally visible state after the infallible memory commit.
+RC_PUBLISH:
+        LD      HL,(RC_PUB)
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_HEADP),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_LOWP),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_TPAP),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_GENP),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_PZP),DE
+        LD      A,(RC_COUNT)
+        OR      A
+        JR      Z,RC_EMPTYPROF
+        LD      HL,(RC_PLAN)
+        INC     HL
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        LD      (RC_HEAD),HL
+        LD      HL,(RC_CURSOR)
+        JR      RC_HAVELOW
+RC_EMPTYPROF:
+        LD      HL,0
+        LD      (RC_HEAD),HL
+        LD      HL,(RC_TOP)
+RC_HAVELOW:
+        LD      (RC_LOW),HL
+        EX      DE,HL
+        LD      HL,(RC_LOWP)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        EX      DE,HL
+        DEC     HL
+        DEC     HL
+        DEC     HL
+        LD      (RC_TPA),HL
+        EX      DE,HL
+        LD      HL,(RC_TPAP)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      HL,(RC_PZP)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      DE,(RC_HEAD)
+        LD      HL,(RC_HEADP)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      HL,(RC_GENP)    ; generation is the final publication store
+        LD      A,(HL)
+        INC     A
+        LD      (HL),A
+        OR      A
+        JR      NZ,RC_GENOK
+        INC     HL
+        INC     (HL)
+RC_GENOK:
+        LD      HL,(RC_REQ)
+        LD      DE,24
+        ADD     HL,DE
+        LD      A,(RC_COUNT)
+        LD      (HL),A
+        XOR     A
+        RET
+
+; Ensure current snapshot [source,send) is disjoint from every destination.
+RC_NODST:
+        XOR     A
+        LD      (RC_SCAN),A
+RC_NDLOOP:
+        LD      A,(RC_SCAN)
+        LD      B,A
+        LD      A,(RC_COUNT)
+        CP      B
+        JR      Z,RC_GOOD
+        LD      A,(RC_SCAN)
+        CALL    RC_RECORD
+        INC     HL
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RC_DBASE),DE
+        INC     HL
+        LD      C,(HL)
+        INC     HL
+        LD      B,(HL)
+        EX      DE,HL
+        OR      A
+        ADD     HL,BC
+        JP      C,RC_BAD
+        LD      (RC_DEND),HL
+        LD      HL,(RC_SEND)
+        LD      DE,(RC_DBASE)
+        OR      A
+        SBC     HL,DE
+        JR      C,RC_OCHECK
+        JR      Z,RC_OCHECK
+        LD      HL,(RC_SOURCE)
+        LD      DE,(RC_DEND)
+        OR      A
+        SBC     HL,DE
+        JR      NC,RC_OCHECK
+        LD      A,1
+        OR      A
+        RET
+; A prepared snapshot must also remain outside every retained live source;
+; otherwise the scheduler could destroy it before the copy phase.
+RC_OCHECK:
+        LD      A,(RC_SCAN)
+        CALL    RC_RECORD
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      A,D
+        OR      E
+        JR      Z,RC_NDNEXT
+        LD      (RC_DBASE),DE
+        INC     HL
+        INC     HL
+        INC     HL
+        LD      C,(HL)
+        INC     HL
+        LD      B,(HL)
+        EX      DE,HL
+        OR      A
+        ADD     HL,BC
+        JP      C,RC_BAD
+        LD      (RC_DEND),HL
+        LD      HL,(RC_SEND)
+        LD      DE,(RC_DBASE)
+        OR      A
+        SBC     HL,DE
+        JR      C,RC_NDNEXT
+        JR      Z,RC_NDNEXT
+        LD      HL,(RC_SOURCE)
+        LD      DE,(RC_DEND)
+        OR      A
+        SBC     HL,DE
+        JR      NC,RC_NDNEXT
+        LD      A,1
+        OR      A
+        RET
+RC_NDNEXT:
+        LD      HL,RC_SCAN
+        INC     (HL)
+        JP      RC_NDLOOP
+RC_GOOD:
+        XOR     A
+        RET
+
+; A=index -> plan record / six-byte snapshot descriptor.
+RC_RECORD:
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        LD      HL,(RC_PLAN)
+        ADD     HL,DE
+        RET
+RC_SNPTR:
+        LD      E,A
+        ADD     A,A
+        ADD     A,E
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        LD      HL,(RC_SNAP)
+        ADD     HL,DE
+        RET
+RC_BAD:
+        LD      A,0FFH
+        OR      A
+        RET
+
+RC_REQ:         DW      0
+RC_PLAN:        DW      0
+RC_SDESC:       DW      0
+RC_SNAP:        DW      0
+RC_SREQ:        DW      0
+RC_SCHED:       DW      0
+RC_MREQ:        DW      0
+RC_MCAP:        DW      0
+RC_MOVER:       DW      0
+RC_TOP:       DW      0
+RC_CORE:        DW      0
+RC_PUB:         DW      0
+RC_CURSOR:      DW      0
+RC_OLD:         DW      0
+RC_NEW:         DW      0
+RC_SIZE:        DW      0
+RC_SOURCE:      DW      0
+RC_SSIZE:       DW      0
+RC_SEND:        DW      0
+RC_DISP:        DW      0
+RC_DBASE:       DW      0
+RC_DEND:        DW      0
+RC_THISDP:      DW      0
+RC_NEXT:        DW      0
+RC_HEADP:       DW      0
+RC_LOWP:        DW      0
+RC_TPAP:        DW      0
+RC_GENP:        DW      0
+RC_PZP:         DW      0
+RC_HEAD:        DW      0
+RC_LOW:         DW      0
+RC_TPA:         DW      0
+RC_COUNT:       DB      0
+RC_INDEX:       DB      0
+RC_SCAN:        DB      0
+RC_CLASS:       DB      0
+
+        .DEPHASE
+        END
