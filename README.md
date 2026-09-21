@@ -44,8 +44,10 @@ The current work emphasizes:
 
 ## Documents
 
-The maintained [`Project Backlog`](TODO.md) is the comprehensive high-level
-inventory of unfinished work and its recommended execution order.
+The [`BetterCP/M 1.0 Roadmap`](docs/releases/1.0-ROADMAP.md) is the canonical
+ordering of the remaining architecture and implementation work. The maintained
+[`Project Backlog`](TODO.md) is the comprehensive task inventory governed by
+that roadmap.
 
 The initial architecture material is in [`docs/architecture`](docs/architecture). It covers architectural principles and boundaries, memory and boot design, the command environment, system services, hardware abstraction, program execution, storage, system state, compatibility, constraints, extensions, and open questions.
 
