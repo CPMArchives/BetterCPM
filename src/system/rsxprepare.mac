@@ -1,0 +1,243 @@
+; Phase-3 prospective transaction preparer.
+;
+; DE -> request:
+; +0 planner request, +2 six-byte slot-input records, +4 slot-union output
+; +6 slot-union capacity in words, +7 reserved zero
+; +8 planner entry, +10 slot-union preparer entry
+; +12 three-byte slot-descriptor output, +14 descriptor capacity
+; +15 returned prepared count (written only on success)
+;
+; Slot-input record: static-list address, static count, runtime-list address,
+; runtime count.  Output descriptors contain union address and union count.
+; The planner request supplies the prospective profile and receives its records.
+; This component changes scratch only; a failed request never publishes a count
+; and is therefore ineligible for the live commit phase.
+
+RTBASE          EQU     07A00H
+
+        CSEG
+        .PHASE  RTBASE
+RT_ENTRY:
+        LD      (RT_REQ),DE
+        EX      DE,HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RT_PRQ),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RT_INPUT),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RT_UNION),DE
+        INC     HL
+        LD      A,(HL)
+        LD      (RT_CAP),A
+        INC     HL
+        LD      A,(HL)
+        OR      A
+        JP      NZ,RT_BAD
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RT_PENTRY),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RT_SENTRY),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RT_DESC),DE
+        INC     HL
+        LD      A,(HL)
+        LD      (RT_DCAP),A
+
+; Produce and validate the complete prospective layout first.
+        LD      DE,(RT_PRQ)
+        LD      HL,(RT_PENTRY)
+        LD      BC,RT_PRRET
+        PUSH    BC
+        JP      (HL)
+RT_PRRET:
+        OR      A
+        JP      NZ,RT_BAD
+        LD      HL,(RT_PRQ)
+        LD      DE,17
+        ADD     HL,DE
+        LD      A,(HL)
+        CP      5
+        JP      NC,RT_BAD
+        LD      (RT_COUNT),A
+        LD      B,A
+        LD      A,(RT_DCAP)
+        CP      B
+        JP      C,RT_BAD
+
+; Validate aggregate worst-case union capacity before writing any union.
+        LD      HL,(RT_INPUT)
+        LD      A,(RT_COUNT)
+        LD      B,A
+        XOR     A
+RT_CAPLOOP:
+        LD      C,A
+        LD      A,B
+        OR      A
+        JR      Z,RT_CAPDONE
+        INC     HL
+        INC     HL
+        LD      A,(HL)         ; static count
+        ADD     A,C
+        JP      C,RT_BAD
+        LD      C,A
+        INC     HL
+        INC     HL
+        INC     HL
+        LD      A,(HL)         ; runtime count
+        ADD     A,C
+        JP      C,RT_BAD
+        INC     HL
+        DEC     B
+        JR      RT_CAPLOOP
+RT_CAPDONE:
+        LD      B,A
+        LD      A,(RT_CAP)
+        CP      B
+        JP      C,RT_BAD
+
+        LD      HL,(RT_PRQ)
+        LD      DE,14
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RT_PLAN),DE
+        XOR     A
+        LD      (RT_INDEX),A
+RT_LOOP:
+        LD      A,(RT_INDEX)
+        LD      B,A
+        LD      A,(RT_COUNT)
+        CP      B
+        JP      Z,RT_DONE
+
+; Allocation comes from this entry's validated eight-byte plan record.
+        LD      A,(RT_INDEX)
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        LD      HL,(RT_PLAN)
+        ADD     HL,DE
+        LD      DE,4
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RT_SREQ),DE
+
+; Locate this entry's six-byte slot-input record.
+        LD      A,(RT_INDEX)
+        LD      E,A
+        ADD     A,A
+        ADD     A,E
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        LD      HL,(RT_INPUT)
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RT_SREQ+4),DE
+        INC     HL
+        LD      A,(HL)
+        LD      (RT_SREQ+2),A
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RT_SREQ+6),DE
+        INC     HL
+        LD      A,(HL)
+        LD      (RT_SREQ+3),A
+
+        LD      HL,(RT_UNION)
+        LD      (RT_SREQ+8),HL
+        LD      A,(RT_CAP)
+        LD      (RT_SREQ+10),A
+        XOR     A
+        LD      (RT_SREQ+11),A
+        LD      A,0CCH
+        LD      (RT_SREQ+12),A
+        LD      DE,RT_SREQ
+        LD      HL,(RT_SENTRY)
+        LD      BC,RT_SLOTRET
+        PUSH    BC
+        JP      (HL)
+RT_SLOTRET:
+        OR      A
+        JP      NZ,RT_BAD
+
+; Publish this scratch descriptor and advance the bounded union area.
+        LD      HL,(RT_DESC)
+        LD      DE,(RT_UNION)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      A,(RT_SREQ+12)
+        LD      (HL),A
+        INC     HL
+        LD      (RT_DESC),HL
+        LD      B,A
+        LD      A,(RT_CAP)
+        SUB     B
+        LD      (RT_CAP),A
+        LD      A,B
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        LD      HL,(RT_UNION)
+        ADD     HL,DE
+        LD      (RT_UNION),HL
+        LD      HL,RT_INDEX
+        INC     (HL)
+        JP      RT_LOOP
+RT_DONE:
+        LD      HL,(RT_REQ)
+        LD      DE,15
+        ADD     HL,DE
+        LD      A,(RT_COUNT)
+        LD      (HL),A
+        XOR     A
+        RET
+RT_BAD:
+        LD      A,0FFH
+        OR      A
+        RET
+
+RT_REQ:         DW      0
+RT_PRQ:     DW      0
+RT_INPUT:       DW      0
+RT_UNION:       DW      0
+RT_PENTRY:     DW      0
+RT_SENTRY:       DW      0
+RT_DESC:        DW      0
+RT_PLAN:        DW      0
+RT_CAP:         DB      0
+RT_DCAP:        DB      0
+RT_COUNT:       DB      0
+RT_INDEX:       DB      0
+RT_SREQ:        DS      13
+
+        .DEPHASE
+        END
