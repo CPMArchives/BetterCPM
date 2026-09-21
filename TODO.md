@@ -1,12 +1,16 @@
 # BetterCP/M Project Backlog
 
 Status: Living project backlog  
-Updated: 2026-09-07
+Updated: 2026-09-21
 
 This document records substantial unfinished work. Detailed behavioral
 requirements remain authoritative in the architecture, engineering
 specifications, compatibility ledger, and programmers' guides. Completed
 bring-up history is kept in those documents rather than repeated here.
+
+The authoritative ordering of design and implementation work is the
+[BetterCP/M 1.0 roadmap](docs/releases/1.0-ROADMAP.md). This backlog supplies
+the detailed tasks but does not replace or reorder that roadmap.
 
 ## Immediate priorities
 
@@ -336,15 +340,11 @@ between CONFIG and DUP remain design considerations for the formatting work.
 
 ## Recommended execution order
 
-1. Close and rerun compatibility testing.
-2. Recover a stock-class TPA through a measured resident-memory audit.
-3. Add USER to BASIC.CPX and complete the resident/transient command split.
-4. Stabilize configuration storage sufficiently to begin CONFIG.
-5. Implement PIP, STAT, and BetterCP/M's MOVCPM/SYSGEN workflows.
-6. Generalize disk formats and add z80pack as the second platform.
-7. Stabilize the public CPX and RSX formats and ABIs.
-8. Complete the remaining utilities, documentation, packaging, and physical
-   platform validation.
+The former task-oriented list in this section predated the accepted staged
+architecture process and is superseded by the
+[canonical 1.0 roadmap](docs/releases/1.0-ROADMAP.md). In particular, Stage 3,
+the final scope freeze, Stages 4 through 7, and the Stage 8 architecture
+reconciliation gate precede the corresponding implementation program.
 
 ## Post-1.0 considerations
 
