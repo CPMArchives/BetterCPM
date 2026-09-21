@@ -1,0 +1,172 @@
+diff --git a/cpmsim/srcsim/Makefile b/cpmsim/srcsim/Makefile
+index 60a1272b..e9dbfba9 100644
+--- a/cpmsim/srcsim/Makefile
++++ b/cpmsim/srcsim/Makefile
+@@ -85,6 +85,12 @@ DEFS = -DCONFDIR=\"$(CONF_DIR)\" -DDISKSDIR=\"$(DISKS_DIR)\" $(PLAT_DEFS)
+ INCS = -I. -I$(CORE_DIR) -I$(IO_DIR) $(PLAT_INCS)
+ CPPFLAGS = $(DEFS) $(INCS)
+ 
++# BetterCP/M qualification build: fail deterministically on protected CPU/DMA
++# writes and prevent the guest from disabling the protected common segment.
++ifeq ($(ROM_QUALIFY),YES)
++CPPFLAGS += -DBETTERCPM_ROM_QUALIFY
++endif
++
+ CSTDS = -std=c99 -D_DEFAULT_SOURCE # -D_XOPEN_SOURCE=700L
+ CWARNS = -Wall -Wextra -Wwrite-strings
+ 
+diff --git a/cpmsim/srcsim/simio.c b/cpmsim/srcsim/simio.c
+index 2ec57db2..e139614f 100644
+--- a/cpmsim/srcsim/simio.c
++++ b/cpmsim/srcsim/simio.c
+@@ -745,6 +745,9 @@ void reset_system(void)
+ 	}
+ 	selbnk = 0;
+ 	segsize = SEGSIZ;
++#ifdef BETTERCPM_ROM_QUALIFY
++	rom_qualification_reset();
++#endif
+ 
+ 	/* reset CPU */
+ 	reset_cpu();
+@@ -2276,6 +2279,13 @@ static BYTE mmuc_in(void)
+  */
+ static void mmuc_out(BYTE data)
+ {
++#ifdef BETTERCPM_ROM_QUALIFY
++	if (rom_qualification) {
++		if (((int) data << 8) != segsize)
++			rom_qualification_control(22, data);
++		return;
++	}
++#endif
+ 	if (memory[1] != NULL) {
+ 		LOGE(TAG, "Not possible to resize already allocated segments");
+ 		cpu_error = IOERROR;
+@@ -2298,6 +2308,13 @@ static BYTE mmup_in(void)
+  */
+ static void mmup_out(BYTE data)
+ {
++#ifdef BETTERCPM_ROM_QUALIFY
++	if (rom_qualification) {
++		if (data != (BYTE) wp_common)
++			rom_qualification_control(23, data);
++		return;
++	}
++#endif
+ 	wp_common = data;
+ }
+ 
+diff --git a/cpmsim/srcsim/simmem.c b/cpmsim/srcsim/simmem.c
+index 1fea911e..dabcaf33 100644
+--- a/cpmsim/srcsim/simmem.c
++++ b/cpmsim/srcsim/simmem.c
+@@ -29,6 +29,7 @@
+  */
+ 
+ #include <stdlib.h>
++#include <stdio.h>
+ 
+ #include "sim.h"
+ #include "simdefs.h"
+@@ -43,6 +44,36 @@ int selbnk;			/* current selected bank */
+ int maxbnk;			/* number of allocated banks */
+ int segsize = SEGSIZ;		/* segment size of banks, default 48KB */
+ int wp_common;			/* write protect/unprotect common segment */
++#ifdef BETTERCPM_ROM_QUALIFY
++bool rom_qualification;
++static int rom_qualification_start;
++
++void rom_qualification_write(WORD addr, BYTE data, const char *source)
++{
++	fprintf(stderr,
++	    "ROM WRITE VIOLATION\nPC=%04X\nADDRESS=%04X\nDATA=%02X\nSOURCE=%s\n",
++	    PC, addr, data, source);
++	fflush(stderr);
++	exit(86);
++}
++
++void rom_qualification_control(BYTE port, BYTE data)
++{
++	fprintf(stderr,
++	    "ROM PROTECTION VIOLATION\nPC=%04X\nPORT=%02X\nDATA=%02X\nSOURCE=CONTROL\n",
++	    PC, port, data);
++	fflush(stderr);
++	exit(86);
++}
++
++void rom_qualification_reset(void)
++{
++	if (rom_qualification) {
++		segsize = rom_qualification_start;
++		wp_common = 1;
++	}
++}
++#endif
+ 
+ void init_memory(void)
+ {
+@@ -66,4 +97,24 @@ void init_memory(void)
+ 		for (i = 0; i < 65536; i++)
+ 			putmem(i, (BYTE) (rand() % 256));
+ 	}
++#ifdef BETTERCPM_ROM_QUALIFY
++	{
++		const char *value = getenv("CPMSIM_ROM_START");
++		char *end;
++		unsigned long start;
++
++		if (value != NULL && *value != '\0') {
++			start = strtoul(value, &end, 16);
++			if (*end != '\0' || start < 0x100 || start > 0xffff) {
++				fprintf(stderr, "invalid CPMSIM_ROM_START: %s\n", value);
++				exit(2);
++			}
++			rom_qualification = true;
++			rom_qualification_start = (int) start;
++			rom_qualification_reset();
++			fprintf(stderr, "ROM QUALIFICATION ACTIVE START=%04X END=FFFF\n",
++			    segsize);
++		}
++	}
++#endif
+ }
+diff --git a/cpmsim/srcsim/simmem.h b/cpmsim/srcsim/simmem.h
+index a7433e05..a3e7973e 100644
+--- a/cpmsim/srcsim/simmem.h
++++ b/cpmsim/srcsim/simmem.h
+@@ -51,6 +51,12 @@ extern void init_memory(void);
+ 
+ extern BYTE *memory[MAXSEG];
+ extern int selbnk, maxbnk, segsize, wp_common;
++#ifdef BETTERCPM_ROM_QUALIFY
++extern bool rom_qualification;
++extern void rom_qualification_write(WORD addr, BYTE data, const char *source);
++extern void rom_qualification_control(BYTE port, BYTE data);
++extern void rom_qualification_reset(void);
++#endif
+ 
+ /*
+  * memory access for the CPU cores
+@@ -68,6 +74,10 @@ static inline void memwrt(WORD addr, BYTE data)
+ 
+ 	if ((addr >= segsize) && (wp_common != 0)) {
+ 		wp_common |= 0x80;
++#ifdef BETTERCPM_ROM_QUALIFY
++		if (rom_qualification)
++			rom_qualification_write(addr, data, "CPU");
++#endif
+ #ifndef EXCLUDE_Z80
+ 		if (wp_common & 0x40)
+ 			int_nmi = true;
+@@ -125,6 +135,10 @@ static inline void dma_write(WORD addr, BYTE data)
+ {
+ 	if ((addr >= segsize) && (wp_common != 0)) {
+ 		wp_common |= 0x80;
++#ifdef BETTERCPM_ROM_QUALIFY
++		if (rom_qualification)
++			rom_qualification_write(addr, data, "DMA");
++#endif
+ 		return;
+ 	}
+ 
