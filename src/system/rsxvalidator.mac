@@ -472,8 +472,8 @@ RV_PTRLOOP:
         OR      A
         JR      NZ,RV_PTRNZ
         LD      A,E
-        CP      2
-        JR      Z,RV_PTRBAD
+        CP      8
+        JR      C,RV_PTRBAD
 RV_PTRNZ:
         PUSH    HL
         LD      HL,(RV_ALLOC)

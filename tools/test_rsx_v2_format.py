@@ -5,6 +5,8 @@ from __future__ import annotations
 import struct
 from pathlib import Path
 
+from build_rsx_module import make_module
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -34,6 +36,16 @@ def main() -> None:
     require((service_id, abi_major, abi_minor, capabilities) ==
             (b"TEST", 1, 0, 1), "TEST service identity")
     require(8 <= service_entry < size, "TEST service entry")
+    try:
+        make_module(name="BADPTR", version=(1, 0), services=[],
+                    linked_base=0x8000, code=b"\0" * 32,
+                    relocations=[], entry_offset=8, format_version=2,
+                    runtime_pointers=[4])
+    except SystemExit as error:
+        require("loader-owned" in str(error),
+                "runtime-header rejection diagnostic")
+    else:
+        raise SystemExit("runtime pointer inside loader-owned header accepted")
     print("BRSX v2 envelope, typed TEST advertisement, and capacity passed")
 
 

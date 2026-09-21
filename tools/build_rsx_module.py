@@ -98,7 +98,7 @@ def make_module(*, name: str, version: tuple[int, int], services: list[int],
     if len(set(relocations)) != len(relocations) or any(
             offset < 0 or offset + 1 >= len(code) for offset in relocations):
         raise SystemExit("invalid or duplicate RSX relocation offset")
-    if any(offset in (0, 2) or offset < 0 or offset + 1 >= len(code)
+    if any(offset < 8 or offset + 1 >= len(code)
            for offset in runtime_pointers):
         raise SystemExit("invalid loader-owned or out-of-range runtime pointer slot")
     if RELOCATION_OFFSET + 2 * len(relocations) > HEADER_SIZE:

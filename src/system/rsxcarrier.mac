@@ -1,0 +1,421 @@
+; Phase-3 in-memory BRSX carrier validator and fact extractor.
+;
+; DE -> request:
+; +0 carrier, +2 available carrier bytes, +4 expected eight-byte stem
+; +6 scratch cursor, +8 scratch high (exclusive), +10 facts output
+; +12 returned completion byte (written as one only on success)
+;
+; Twenty-six-byte facts output:
+; +0 payload, +2 code bytes, +4 allocation, +6 linked base
+; +8 dispatch offset, +10 static relocations, +12 relocation count
+; +14 runtime-pointer list, +16 runtime-pointer count, +17 callable count
+; +18 packed callable descriptors, +20 reconstruction class
+; +21 carrier format, +22 primary numeric service, +24 next scratch cursor
+;
+; Version-2 callable descriptors are packed into caller scratch. Other facts
+; point into the bounded carrier image, which the coordinator must retain until
+; preparation is complete. This phase publishes no fixed facts or completion
+; marker until every header, checksum, and static-relocation check succeeds;
+; R3META publishes the remaining facts only after metadata validation.
+
+RXBASE          EQU     07800H
+
+        CSEG
+        .PHASE  RXBASE
+RX_ENTRY:
+        LD      (RX_REQ),DE
+        EX      DE,HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RX_CARRIER),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RX_LENGTH),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RX_EXPECT),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RX_CURSOR),DE
+        LD      (RX_SERVICE),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RX_HIGH),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RX_FACTS),DE
+        LD      HL,(RX_CURSOR)
+        LD      DE,(RX_HIGH)
+        OR      A
+        SBC     HL,DE
+        JP      NC,RX_BAD
+        LD      HL,(RX_LENGTH)
+        LD      DE,0200H
+        OR      A
+        SBC     HL,DE
+        JP      C,RX_BAD
+        LD      HL,(RX_CARRIER)
+        LD      DE,0200H
+        ADD     HL,DE
+        JP      C,RX_BAD
+        LD      (RX_PAYLOAD),HL
+
+; Fixed carrier header and requested stem.
+        LD      HL,(RX_CARRIER)
+        LD      DE,RX_MAG
+        LD      B,4
+RX_MAGLP:
+        LD      A,(DE)
+        CP      (HL)
+        JP      NZ,RX_BAD
+        INC     DE
+        INC     HL
+        DJNZ    RX_MAGLP
+        LD      A,(HL)
+        CP      1
+        JR      Z,RX_FORMAT
+        CP      2
+        JP      NZ,RX_BAD
+RX_FORMAT:
+        LD      (RX_FMT),A
+        INC     HL
+        LD      DE,RX_ABI
+        LD      B,3
+RX_ABILP:
+        LD      A,(DE)
+        CP      (HL)
+        JP      NZ,RX_BAD
+        INC     DE
+        INC     HL
+        DJNZ    RX_ABILP
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      A,(RX_FMT)
+        DEC     A
+        JR      Z,RX_V1FLAGS
+        LD      A,D
+        OR      A
+        JP      NZ,RX_BAD
+        LD      A,E
+        AND     0FCH
+        JP      NZ,RX_BAD
+        LD      A,E
+        AND     3
+        CP      2
+        JP      Z,RX_BAD
+        LD      (RX_CLASS),A
+        JR      RX_FLAGSOK
+RX_V1FLAGS:
+        LD      A,D
+        OR      E
+        JP      NZ,RX_BAD
+        XOR     A
+        LD      (RX_CLASS),A
+RX_FLAGSOK:
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RX_LINKED),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RX_CODE),DE
+        LD      A,D
+        OR      E
+        JP      Z,RX_BAD
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RX_ALLOC),DE
+        LD      A,D
+        OR      A
+        JP      Z,RX_BAD
+        LD      A,E
+        OR      A
+        JP      NZ,RX_BAD
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RX_DISPATCH),DE
+        LD      HL,(RX_ALLOC)
+        LD      DE,(RX_CODE)
+        OR      A
+        SBC     HL,DE
+        JP      C,RX_BAD
+        LD      HL,(RX_DISPATCH)
+        LD      A,(RX_FMT)
+        DEC     A
+        LD      DE,4
+        JR      Z,RX_DISPMIN
+        LD      DE,8
+RX_DISPMIN:
+        OR      A
+        SBC     HL,DE
+        JP      C,RX_BAD
+        LD      HL,(RX_CODE)
+        LD      DE,(RX_DISPATCH)
+        OR      A
+        SBC     HL,DE
+        JP      C,RX_BAD
+        JP      Z,RX_BAD
+
+        LD      HL,(RX_CARRIER)
+        LD      DE,22
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RX_NRELOC),DE
+        LD      A,D
+        OR      A
+        JP      NZ,RX_BAD
+        LD      A,E
+        CP      233
+        JP      NC,RX_BAD
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      A,D
+        CP      2
+        JP      NZ,RX_BAD
+        LD      A,E
+        OR      A
+        JP      NZ,RX_BAD
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      A,D
+        CP      2
+        JP      NZ,RX_BAD
+        LD      A,E
+        OR      A
+        JP      NZ,RX_BAD
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      A,D
+        OR      A
+        JP      NZ,RX_BAD
+        LD      A,E
+        CP      48
+        JP      NZ,RX_BAD
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RX_METAOFF),DE
+        LD      HL,(RX_CODE)
+        LD      BC,0200H
+        ADD     HL,BC
+        OR      A
+        SBC     HL,DE
+        JP      NZ,RX_BAD
+
+        LD      HL,(RX_CARRIER)
+        LD      DE,32
+        ADD     HL,DE
+        LD      DE,(RX_EXPECT)
+        LD      B,8
+RX_NAMELP:
+        LD      A,(DE)
+        CP      (HL)
+        JP      NZ,RX_BAD
+        INC     DE
+        INC     HL
+        DJNZ    RX_NAMELP
+
+; The payload and metadata offset must fit the supplied carrier image.
+        LD      HL,(RX_METAOFF)
+        LD      DE,(RX_LENGTH)
+        OR      A
+        SBC     HL,DE
+        JR      C,RX_SIZEOK
+        JP      NZ,RX_BAD
+RX_SIZEOK:
+
+; Validate the payload checksum before exposing pointers into the carrier.
+        LD      HL,(RX_PAYLOAD)
+        LD      DE,(RX_CODE)
+        LD      BC,0
+RX_SUMLP:
+        LD      A,D
+        OR      E
+        JR      Z,RX_SUMDONE
+        LD      A,(HL)
+        ADD     A,C
+        LD      C,A
+        JR      NC,RX_SUMNC
+        INC     B
+RX_SUMNC:
+        INC     HL
+        DEC     DE
+        JR      RX_SUMLP
+RX_SUMDONE:
+        LD      HL,(RX_CARRIER)
+        LD      DE,44
+        ADD     HL,DE
+        LD      A,(HL)
+        CP      C
+        JP      NZ,RX_BAD
+        INC     HL
+        LD      A,(HL)
+        CP      B
+        JP      NZ,RX_BAD
+
+; Static relocation slots are sorted, unique, and complete payload words.
+        LD      HL,(RX_CARRIER)
+        LD      DE,48
+        ADD     HL,DE
+        LD      (RX_RELOCS),HL
+        LD      BC,(RX_NRELOC)
+        XOR     A
+        LD      (RX_SEEN),A
+RX_RLOOP:
+        LD      A,B
+        OR      C
+        JR      Z,RX_PREPUBLISH
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        PUSH    HL
+        LD      HL,(RX_CODE)
+        DEC     HL
+        OR      A
+        SBC     HL,DE
+        POP     HL
+        JP      C,RX_BAD
+        JP      Z,RX_BAD
+        LD      A,(RX_SEEN)
+        OR      A
+        JR      Z,RX_RFIRST
+        PUSH    HL
+        LD      HL,(RX_PREV)
+        OR      A
+        SBC     HL,DE
+        POP     HL
+        JP      NC,RX_BAD
+RX_RFIRST:
+        LD      (RX_PREV),DE
+        LD      A,1
+        LD      (RX_SEEN),A
+        DEC     BC
+        JR      RX_RLOOP
+
+RX_PREPUBLISH:
+        XOR     A
+        LD      (RX_NPOINTER),A
+        LD      (RX_NSERVICE),A
+        LD      HL,0
+        LD      (RX_PTRLST),HL
+
+RX_PUBLISH:
+        LD      HL,(RX_FACTS)
+        LD      DE,(RX_PAYLOAD)
+        CALL    RX_PUTWORD
+        LD      DE,(RX_CODE)
+        CALL    RX_PUTWORD
+        LD      DE,(RX_ALLOC)
+        CALL    RX_PUTWORD
+        LD      DE,(RX_LINKED)
+        CALL    RX_PUTWORD
+        LD      DE,(RX_DISPATCH)
+        CALL    RX_PUTWORD
+        LD      DE,(RX_RELOCS)
+        CALL    RX_PUTWORD
+        LD      DE,(RX_NRELOC)
+        CALL    RX_PUTWORD
+        LD      DE,(RX_PTRLST)
+        CALL    RX_PUTWORD
+        LD      A,(RX_NPOINTER)
+        LD      (HL),A
+        INC     HL
+        LD      A,(RX_NSERVICE)
+        LD      (HL),A
+        INC     HL
+        LD      DE,(RX_SERVICE)
+        CALL    RX_PUTWORD
+        LD      A,(RX_CLASS)
+        LD      (HL),A
+        INC     HL
+        LD      A,(RX_FMT)
+        LD      (HL),A
+        INC     HL
+        PUSH    HL
+        LD      HL,(RX_CARRIER)
+        LD      DE,46
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        POP     HL
+        CALL    RX_PUTWORD
+        LD      DE,(RX_CURSOR)
+        CALL    RX_PUTWORD
+        LD      HL,(RX_REQ)
+        LD      DE,12
+        ADD     HL,DE
+        LD      (HL),1
+        XOR     A
+        RET
+
+RX_PUTWORD:
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        RET
+
+RX_BAD:
+        LD      A,0FFH
+        OR      A
+        RET
+
+RX_MAG:      DB      'B','R','S','X'
+RX_ABI:        DB      2,1,0
+RX_BMET:       DB      'B','M','E','T'
+RX_REQ:        DW      0
+RX_CARRIER:    DW      0
+RX_LENGTH:     DW      0
+RX_EXPECT:     DW      0
+RX_CURSOR:     DW      0
+RX_HIGH:       DW      0
+RX_FACTS:      DW      0
+RX_PAYLOAD:    DW      0
+RX_CODE:       DW      0
+RX_ALLOC:      DW      0
+RX_LINKED:     DW      0
+RX_DISPATCH:   DW      0
+RX_METAOFF:    DW      0
+RX_RELOCS:     DW      0
+RX_NRELOC:    DW      0
+RX_PREV:       DW      0
+RX_PTRLST:   DW      0
+RX_SERVICE:    DW      0
+RX_FMT:    DB      0
+RX_CLASS:      DB      0
+RX_NSERVICE:   DB      0
+RX_NPOINTER:   DB      0
+RX_SEEN:       DB      0
+
+        .DEPHASE
+        END
