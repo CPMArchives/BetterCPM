@@ -234,6 +234,14 @@ RS_CONTROL:
         LD      BC,64
         OR      A
         SBC     HL,BC
+        LD      DE,(0006H)
+        PUSH    HL
+        OR      A
+        SBC     HL,DE
+        POP     HL
+        JR      C,RS_WHIGH
+        EX      DE,HL
+RS_WHIGH:
         LD      (RS_REQ+16),HL
         LD      DE,RS_REQ
         LD      C,RSXFUNC

@@ -36,10 +36,10 @@ the prospective live allocations.
 ## Utility ownership
 
 `RSX.COM` sets the low bound to the end of its loaded image. Immediately before
-calling BDOS it sets the high bound below its current stack, retaining 64 bytes
-for the caller's live stack. Thus transaction scratch is memory the utility
-actually owns; the operating system does not guess that an arbitrary fixed
-TPA address is unused.
+calling BDOS it sets the high bound to the lower of the current page-zero TPA
+ceiling and its stack minus a 64-byte reserve. Thus transaction scratch is
+memory the utility actually owns; the operating system does not guess that an
+arbitrary fixed TPA address is unused.
 
 This adds no protected-memory allocation and does not reduce the default TPA.
 Existing version-1 clients, including XSUB's BATCHIO control requests, remain

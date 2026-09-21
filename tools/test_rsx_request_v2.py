@@ -11,16 +11,15 @@ ROOT = Path(__file__).resolve().parents[1]
 CAPTURE = 0x7000
 
 
-def invoke(command: bytes) -> tuple[bytes, int]:
+def invoke(command: bytes, ceiling: int = 0xD000) -> tuple[bytes, int]:
     cpu = Z80(b"")
     program = (ROOT / "build/utilities/RSX.COM").read_bytes()
     cpu.mem[0x100:0x100 + len(program)] = program
     cpu.mem[0x80] = len(command)
     cpu.mem[0x81:0x81 + len(command)] = command
-    cpu.setword(6, 0xD000)
-    cpu.mem[5:8] = bytes((0xC3, 0x00, 0x80))
+    cpu.mem[5:8] = bytes((0xC3, ceiling & 0xFF, ceiling >> 8))
     # Capture the Function 202 request; every other BDOS call returns normally.
-    cpu.mem[0x8000:0x8012] = bytes((
+    cpu.mem[ceiling:ceiling + 0x12] = bytes((
         0x79, 0xFE, 0xCA, 0x20, 0x0B, 0xEB, 0x11, 0x00, 0x70,
         0x01, 0x12, 0x00, 0xED, 0xB0, 0xAF, 0xC9, 0xAF, 0xC9,
     ))
@@ -44,6 +43,8 @@ def main() -> None:
         high = int.from_bytes(request[16:18], "little")
         assert low < high <= 0xD000 and high + 64 < 0xD000
         assert final_sp == 0xD000
+    request, _ = invoke(b"LOAD HELLO", ceiling=0xC800)
+    assert int.from_bytes(request[16:18], "little") == 0xC800
     print("RSX.COM emits Function 202 v2 load/unload requests with workspace "
           "bounded by its image end and live stack")
 
