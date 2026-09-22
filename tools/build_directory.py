@@ -9,7 +9,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "src/bdos/directory.mac"
+SOURCE = ROOT / "src/bdos/dirsvc.mac"
 BUILD = ROOT / "build/bdos"
 BASE = 0xD600
 

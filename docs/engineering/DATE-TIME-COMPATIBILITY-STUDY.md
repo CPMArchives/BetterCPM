@@ -109,7 +109,7 @@ correct metadata placement, create/access/modify semantics, error handling,
 copying and directory maintenance all require validation.
 
 Concrete collision: BetterCP/M currently assigns BDOS 200 to CPX control
-(src/system/extensions.mac, EX_ENTRY); P2DOS assigns 200 to get-time. Blindly
+(src/system/extens.mac, EX_ENTRY); P2DOS assigns 200 to get-time. Blindly
 installing both is ambiguous. Review our private extension namespace before
 core freeze. Options are relocating/multiplexing BetterCP/M's private services
 with rebuilt clients, or an explicit P2DOS compatibility mode. Do not infer the

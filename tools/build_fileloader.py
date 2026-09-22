@@ -11,7 +11,7 @@ from pathlib import Path
 from system_layout import LAYOUT, expand_layout
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "src/system/fileloader.mac"
+SOURCE = ROOT / "src/system/fileload.mac"
 BUILD = ROOT / "build/system"
 
 

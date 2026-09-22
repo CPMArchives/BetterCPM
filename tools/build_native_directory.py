@@ -13,7 +13,7 @@ from build_native_trs80 import (
 )
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "src/bdos/directory.mac"
+SOURCE = ROOT / "src/bdos/dirsvc.mac"
 BUILD = ROOT / "build/bdos"
 
 

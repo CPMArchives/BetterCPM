@@ -10,7 +10,7 @@ from build_ccp import assemble
 from system_layout import LAYOUT
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "src/system/rsxvalidator.mac"
+SOURCE = ROOT / "src/system/rsxvalid.mac"
 BUILD = ROOT / "build/system"
 
 

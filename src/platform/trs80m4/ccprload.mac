@@ -2,7 +2,7 @@
 ; *                    Historical BetterCP/M CCP Reloader                        *
 ; *                                                                              *
 ; * Superseded CCP-only relocatable command-image reloader retained as patch     *
-; * history. Production builds use commandreload.mac to reconstruct ordered CPXs *
+; * history. Production builds use ccprelod.mac to reconstruct ordered CPXs *
 ; * and the calculated CCP. Do not add new behavior to this source.              *
 ; ********************************************************************************
 

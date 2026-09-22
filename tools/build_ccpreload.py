@@ -10,7 +10,7 @@ from pathlib import Path
 from system_layout import LAYOUT, expand_layout
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "src/platform/trs80m4/commandreload.mac"
+SOURCE = ROOT / "src/platform/trs80m4/ccprelod.mac"
 BUILD = ROOT / "build/trs80"
 BASE = LAYOUT["RELOADER"]
 

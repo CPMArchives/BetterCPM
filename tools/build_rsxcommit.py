@@ -6,7 +6,7 @@ import argparse
 from build_ccp import assemble
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "src/system/rsxcommit.mac"
+SOURCE = ROOT / "src/system/r3comit.mac"
 OUTPUT = ROOT / "build/system/rsxcommit.bin"
 BASE = 0x7C00
 

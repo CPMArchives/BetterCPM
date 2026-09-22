@@ -10,7 +10,7 @@ from system_layout import LAYOUT, expand_layout
 from build_ccp import assemble
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "src/system/rsxloader.mac"
+SOURCE = ROOT / "src/system/rsxload.mac"
 BUILD = ROOT / "build/system"
 BASE = LAYOUT["RSX"]
 

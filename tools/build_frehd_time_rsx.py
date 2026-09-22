@@ -12,7 +12,7 @@ from build_ccp import assemble
 from build_rsx_module import make_module
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "src/rsx/frehdtime.mac"
+SOURCE = ROOT / "src/rsx/frehdclk.mac"
 BUILD = ROOT / "build/rsx"
 LINK_BASE = 0x8000
 ALTERNATE_BASE = 0x8101

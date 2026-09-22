@@ -6,7 +6,7 @@ import argparse
 from build_ccp import assemble
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "src/system/rsxschedule.mac"
+SOURCE = ROOT / "src/system/rsxsched.mac"
 OUTPUT = ROOT / "build/system/rsxschedule.bin"
 BASE = 0x7800
 

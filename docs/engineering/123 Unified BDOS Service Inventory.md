@@ -6,7 +6,7 @@ Status: replacement design inventory; implementation pending
 
 BetterCP/M's current public BDOS dispatcher and filesystem service component
 occupy 7,369 bytes together: 2,624 bytes in `dispatch.mac` and 4,745 bytes in
-`directory.mac`. This is not justified by additional public functionality.
+`dirsvc.mac`. This is not justified by additional public functionality.
 The CP/M 2.2 BDOS supplies the same base console, disk, directory, extent, and
 record operations in approximately 3.5K.
 
@@ -218,5 +218,5 @@ workspace independently. Passing functional tests does not waive this budget.
 4. Implement U10 and run the binary-level function suite against both cores.
 5. Switch the system build only after all functions pass and the replacement
    meets the 3.5K hard ceiling.
-6. Remove `directory.mac` and the private D600h service-vector ABI.
+6. Remove `dirsvc.mac` and the private D600h service-vector ABI.
 
