@@ -1,15 +1,31 @@
-; BetterCP/M ERA transient utility.  Uses only the public CP/M 2.2 FCB and
-; BDOS Delete File contract, so the same binary is portable across BIOSes.
+; ********************************************************************************
+; *                         BetterCP/M ERA Utility                               *
+; *                                                                              *
+; * Portable transient file-erasure utility using only the public CP/M 2.2 FCB  *
+; * and BDOS Delete File contract. The same COM binary therefore remains         *
+; * independent of the installed BIOS.                                           *
+; ********************************************************************************
+
 
 BDOS    EQU     0005H
 FCB     EQU     005CH
 
         CSEG
-; LINK places a three-byte entry transfer at 0100h; relocatable code begins at
-; 0103h. Keeping that history explicit makes native and cross COM files equal.
+  ; LINK places a three-byte entry transfer at 0100h; relocatable code begins at
+  ; 0103h. Keeping that history explicit makes native and cross COM files equal.
         .PHASE  0103H
 
-START:
+; ================================================================================
+; =                            ERA Command Processing                            =
+; =                                                                              =
+; = Validates the CCP-prepared default FCB, applies the stock all-wildcard confirmation =
+; = rule, expands CP/M star syntax, and deletes the resulting file specification. =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Argument and Confirmation
+; -------------------------------------------------------------------------------
+
+START:                                  ; enter ERA utility
         LD      A,(0080H)
         OR      A
         JR      Z,NOARG
@@ -21,7 +37,8 @@ START:
         CALL    EXPAND
         LD      HL,FCB+1
         LD      B,11
-ALLQ:
+
+ALLQ:                                   ; check all-wildcard erase request
         LD      A,(HL)
         CP      '?'
         JR      NZ,DELETE
@@ -42,7 +59,12 @@ ALLQ:
         AND     05FH
         CP      'Y'
         JR      NZ,DONE
-DELETE:
+
+; -------------------------------------------------------------------------------
+; Delete Request
+; -------------------------------------------------------------------------------
+
+DELETE:                                 ; delete matching files
         LD      DE,FCB
         LD      C,19
         CALL    BDOS
@@ -51,36 +73,60 @@ DELETE:
         LD      DE,NOFILE
         LD      C,9
         CALL    BDOS
-DONE:
+
+DONE:                                   ; return to CCP
         LD      C,0
         JP      BDOS
 
-; Expand a CP/M star through the remainder of its current 8.3 field. Question
-; marks and ordinary characters are already prepared by the CCP default FCB.
-EXPAND:
+  ; Expand a CP/M star through the remainder of its current 8.3 field. Question
+  ; marks and ordinary characters are already prepared by the CCP default FCB.
+
+; ================================================================================
+; =                              Wildcard Expansion                              =
+; =                                                                              =
+; = Expands '*' through the remainder of its current 8.3 field while preserving  =
+; = question marks and ordinary characters already prepared by the CCP.          =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; CP/M Star Expansion
+; -------------------------------------------------------------------------------
+
+EXPAND:                                 ; expand CP/M star wildcard
         LD      A,(HL)
         CP      '*'
         JR      Z,STAR
         INC     HL
         DJNZ    EXPAND
         RET
-STAR:
+
+STAR:                                   ; fill remaining field with wildcards
         LD      (HL),'?'
         INC     HL
         DJNZ    STAR
         RET
 
-NOARG:
+NOARG:                                  ; report missing filespec
         LD      DE,NOFILE
         LD      C,9
         CALL    BDOS
         JR      DONE
 
-CONFIRM:
+; ================================================================================
+; =                                   ERA Data                                   =
+; =                                                                              =
+; = Defines the confirmation input buffer and missing-filespec message used by ERA. =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Buffers and Messages
+; -------------------------------------------------------------------------------
+
+CONFIRM:                                ; all-files confirmation buffer
         DB      13,10,'ALL (Y/N)? $'
-NOFILE:
+
+NOFILE:                                 ; no-filespec message
         DB      13,10,'NO FILE',13,10,'$'
-REPLY:
+
+REPLY:                                  ; console reply buffer
         DB      2,0,0,0
 
         .DEPHASE

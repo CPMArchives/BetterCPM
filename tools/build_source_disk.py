@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Build BetterCP/M's native build disk and complete-source companion.
+"""Build BetterCP/M's native build disk and complete-source volumes.
 
-Both disks use the MM 80-track, double-sided DATA layout: no reserved system
+The disks use the MM 80-track, double-sided DATA layout: no reserved system
 tracks, 2K allocation blocks, and a 128-entry directory. All files reside in
 user zero. SOURCES.DOC records the shortened or disambiguated 8.3 names.
 """
@@ -363,35 +363,60 @@ def main() -> None:
           f"{report['allocation_blocks_used']}/{BLOCK_COUNT} blocks)")
     print(f"{report['sha256']}  {args.output.relative_to(ROOT)}")
 
-    # The complete and growing source tree no longer shares an 800K disk with
-    # the native toolchain. Preserve it on a companion image with the same
-    # physical/data format and a complete 8.3 path map.
-    archive_files: list[tuple[int, str, bytes]] = []
+    # Keep the complete, commented source tree on as many DATA volumes as it
+    # needs. Leave room on every volume for the shared map and readme.
+    archive_volumes: list[list[tuple[int, str, bytes]]] = [[]]
+    volume_blocks = 0
+    volume_entries = 0
+    max_source_blocks = BLOCK_COUNT - FIRST_DATA_BLOCK - 16
+    max_source_entries = DIRECTORY_ENTRIES - 4
     archive_map: list[dict[str, object]] = []
     archive_used: set[str] = {"README.DOC", "SOURCES.DOC"}
     for source in sorted((ROOT / "src").rglob("*")):
         if not source.is_file() or source.name.startswith("."):
             continue
         name = cpm_name(source, archive_used)
-        archive_files.append((0, name, text_file(source.read_bytes())))
-        archive_map.append({"user": 0, "area": "SOURCE", "name": name,
+        content = text_file(source.read_bytes())
+        blocks = (len(content) + BLOCK_SIZE - 1) // BLOCK_SIZE
+        entries = max(1, ((len(content) + 127) // 128 + 127) // 128)
+        if blocks > max_source_blocks or entries > max_source_entries:
+            raise ValueError(f"source file cannot fit on one volume: {source}")
+        if (volume_blocks + blocks > max_source_blocks or
+                volume_entries + entries > max_source_entries):
+            archive_volumes.append([])
+            volume_blocks = volume_entries = 0
+        archive_volumes[-1].append((0, name, content))
+        volume_blocks += blocks
+        volume_entries += entries
+        archive_map.append({"user": 0, "area": "SOURCE",
+                            "volume": len(archive_volumes), "name": name,
                             "source": str(source.relative_to(ROOT))})
-    archive_doc = ["BETTERCP/M COMPLETE SOURCE DISK", "",
-                   "This companion disk preserves the complete src/ tree.",
+    archive_doc = ["BETTERCP/M COMPLETE SOURCE SET", "",
+                   f"Volumes in this set: {len(archive_volumes)}.",
+                   "Together these disks preserve the complete src/ tree.",
                    "Use the build disk, BUILD.SUB and its canonical source",
-                   "names to build SYSTEM.SYS. SOURCES.DOC maps this archive.", ""]
-    archive_manifest = ["BETTERCP/M SOURCE FILE MAP", "", "CP/M NAME    SOURCE PATH", ""]
-    archive_manifest.extend(f" 0:{item['name']:12} {item['source']}"
+                   "names to build SYSTEM.SYS. SOURCES.DOC maps every volume.", ""]
+    archive_manifest = ["BETTERCP/M SOURCE FILE MAP", "",
+                        "VOL USER:CP/M NAME  SOURCE PATH", ""]
+    archive_manifest.extend(f"{item['volume']:3} 0:{item['name']:12} {item['source']}"
                             for item in sorted(archive_map, key=lambda row: str(row["name"])))
-    archive_files.extend(((0, "README.DOC", text_file(("\n".join(archive_doc) + "\n").encode("ascii"))),
-                          (0, "SOURCES.DOC", text_file(("\n".join(archive_manifest) + "\n").encode("ascii")))))
-    archive_raw = install_files(archive_files)
-    archive_output = args.output.with_name("BetterCPM-Sources-80T-DS-800K.dmk")
-    archive_output.write_bytes(build(archive_raw))
-    verify(archive_output.read_bytes(), require_blank=False)
-    archive_output.with_suffix(".img").write_bytes(archive_raw)
-    archive_output.with_suffix(".dsk").write_bytes(z80pack_raw(archive_raw))
-    print(f"created {archive_output} ({len(archive_files)} files)")
+    shared_files = ((0, "README.DOC", text_file(("\n".join(archive_doc) + "\n").encode("ascii"))),
+                    (0, "SOURCES.DOC", text_file(("\n".join(archive_manifest) + "\n").encode("ascii"))))
+    for number, volume in enumerate(archive_volumes, 1):
+        volume_files = volume + list(shared_files)
+        archive_raw = install_files(volume_files)
+        recovered = extract_files(archive_raw)
+        for user, name, content in volume_files:
+            actual = recovered.get((user, name))
+            if actual is None or not actual.startswith(content):
+                raise SystemExit(f"source read-back failed on volume {number}: {user}:{name}")
+        archive_output = args.output.with_name(
+            f"BetterCPM-Sources-{number}-80T-DS-800K.dmk")
+        archive_output.write_bytes(build(archive_raw))
+        verify(archive_output.read_bytes(), require_blank=False)
+        archive_output.with_suffix(".img").write_bytes(archive_raw)
+        archive_output.with_suffix(".dsk").write_bytes(z80pack_raw(archive_raw))
+        print(f"created {archive_output} ({len(volume)} sources)")
 
 
 if __name__ == "__main__":

@@ -1,28 +1,48 @@
-; BetterCP/M general BRSX manager.
-; Supersedes the original hard-coded HELLO proof utility.
+; ********************************************************************************
+; *                         BetterCP/M BRSX Utility                              *
+; *                                                                              *
+; * General transient manager for the ordered resident-system-extension profile. *
+; * Supersedes the original hard-coded HELLO proof utility and provides LIST,    *
+; * LOAD, UNLOAD, version, service-number, and TPA reporting through Function 202.*
+; ********************************************************************************
+
 
 BDOS            EQU     0005H
 RSXFUNC         EQU     202
 
         CSEG
         .PHASE  0103H
-START:
+
+; ================================================================================
+; =                         Command Parsing and Dispatch                         =
+; =                                                                              =
+; = Parses the transient command tail and dispatches version, list, load, and unload =
+; = operations for the general BRSX manager.                                     =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Command-Tail Parse
+; -------------------------------------------------------------------------------
+
+START:                                  ; enter BRSX manager utility
         LD      A,(0080H)
         LD      B,A
         LD      HL,0081H
-RS_SKIP:
+
+RS_SKIP:                                ; skip leading command-tail spaces
         LD      A,B
         OR      A
         JR      NZ,RS_SKIP1
         JP      RS_USAGE
-RS_SKIP1:
+
+RS_SKIP1:                               ; continue leading-space scan
         LD      A,(HL)
         CP      ' '
         JR      NZ,RS_HAVE
         INC     HL
         DEC     B
         JR      RS_SKIP
-RS_HAVE:
+
+RS_HAVE:                                ; dispatch parsed manager command
         LD      (RS_ARG),HL
         LD      A,B
         LD      (RS_LEN),A
@@ -33,7 +53,12 @@ RS_HAVE:
         CP      6
         JR      NC,RS_PARSE
         JP      RS_USAGE
-RS_VERS:
+
+; -------------------------------------------------------------------------------
+; Version Request
+; -------------------------------------------------------------------------------
+
+RS_VERS:                                ; handle version request
         LD      A,(HL)
         CP      '/'
         JP      NZ,RS_USAGE
@@ -44,7 +69,8 @@ RS_VERS:
         LD      DE,RS_VERSION
         CALL    RS_PRINT
         JP      RS_DONE
-RS_PARSE:
+
+RS_PARSE:                               ; parse manager operation
         LD      DE,RS_KLOAD
         LD      C,5
         CALL    RS_PREFIX
@@ -55,25 +81,37 @@ RS_PARSE:
         JR      Z,RS_UNLOAD
         JR      RS_USAGE
 
-RS_LIST:
+; ================================================================================
+; =                             RSX Profile Listing                              =
+; =                                                                              =
+; = Enumerates the configured ordered RSX profile, prints each module and its primary =
+; = experimental service number, and reports the resulting TPA size.             =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Profile Enumeration
+; -------------------------------------------------------------------------------
+
+RS_LIST:                                ; list configured RSX profile
         LD      DE,RS_KLIST
         LD      C,4
         CALL    RS_PREFIX
         JR      NZ,RS_USAGE
         XOR     A
         LD      (RS_INDEX),A
-RS_LLOOP:
+
+RS_LLOOP:                               ; enumerate next RSX
         CALL    RS_CLEAR
         LD      A,(RS_INDEX)
         LD      (RS_REQ+2),A
-        CALL    RS_CONTROL      ; operation zero enumerates
+        CALL    RS_CONTROL              ; operation zero enumerates
         OR      A
         JR      Z,RS_LDONE
         LD      DE,RS_NL
         CALL    RS_PRINT
         LD      HL,RS_REQ+4
         LD      B,8
-RS_LNAME:
+
+RS_LNAME:                               ; print enumerated RSX name
         LD      A,(HL)
         CP      ' '
         JR      Z,RS_LSP
@@ -84,7 +122,8 @@ RS_LNAME:
         CALL    BDOS
         POP     BC
         POP     HL
-RS_LSP:
+
+RS_LSP:                                 ; print service-number separator
         INC     HL
         DJNZ    RS_LNAME
         LD      DE,RS_SERVICE
@@ -94,22 +133,40 @@ RS_LSP:
         LD      HL,RS_INDEX
         INC     (HL)
         JR      RS_LLOOP
-RS_LDONE:
+
+RS_LDONE:                               ; finish RSX listing
         LD      A,(RS_INDEX)
         OR      A
         JR      NZ,RS_LTPA
         LD      DE,RS_NONE
         CALL    RS_PRINT
-RS_LTPA:
+
+RS_LTPA:                                ; report TPA after listing
         CALL    RS_TPA
         JR      RS_DONE
 
-RS_LOAD:
+; ================================================================================
+; =                             RSX Profile Changes                              =
+; =                                                                              =
+; = Parses LOAD/UNLOAD names, accepts an optional .RSX suffix, builds the Function-202 =
+; = request, and invokes the protected chain manager.                            =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Load/Unload Dispatch
+; -------------------------------------------------------------------------------
+
+RS_LOAD:                                ; select load operation
         LD      A,1
         JR      RS_CHANGE
-RS_UNLOAD:
+
+RS_UNLOAD:                              ; select unload operation
         LD      A,2
-RS_CHANGE:
+
+; -------------------------------------------------------------------------------
+; Function-202 Change Request
+; -------------------------------------------------------------------------------
+
+RS_CHANGE:                              ; perform RSX profile change
         LD      (RS_OP),A
         CALL    RS_NAME
         JR      NZ,RS_USAGE
@@ -120,20 +177,35 @@ RS_CHANGE:
         JR      Z,RS_DONE
         LD      DE,RS_ERROR
         JR      RS_PDONE
-RS_USAGE:
+
+RS_USAGE:                               ; print manager usage
         LD      DE,RS_UMSG
-RS_PDONE:
+
+RS_PDONE:                               ; finish parsed operation
         CALL    RS_PRINT
-RS_DONE:
-; The CCP installs a warm-boot return frame before entering a transient.
-; Use it after Function 202 has changed the resident chain; entering BDOS
-; Function 0 here loses the newly published profile during reconstruction.
+
+RS_DONE:                                ; return to CCP
+  ; The CCP installs a warm-boot return frame before entering a transient.
+  ; Use it after Function 202 changes the resident chain: BDOS Function 0
+  ; would discard the newly published profile during reconstruction.
         RET
 
-; Match C bytes at the beginning of the trimmed command tail.
-RS_PREFIX:
+  ; Match C bytes at the beginning of the trimmed command tail.
+
+; ================================================================================
+; =                           Command and Name Parsing                           =
+; =                                                                              =
+; = Provides shared command-prefix matching and RSX filename-stem parsing used by the =
+; = manager command dispatcher.                                                  =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Prefix Match
+; -------------------------------------------------------------------------------
+
+RS_PREFIX:                              ; match command prefix
         LD      HL,(RS_ARG)
-RS_PLOOP:
+
+RS_PLOOP:                               ; compare prefix character
         LD      A,(DE)
         CP      (HL)
         RET     NZ
@@ -143,8 +215,13 @@ RS_PLOOP:
         JR      NZ,RS_PLOOP
         RET
 
-; Parse name after LOAD/UNLOAD. Optional .RSX is accepted, not stored.
-RS_NAME:
+  ; Parse name after LOAD/UNLOAD. Optional .RSX is accepted, not stored.
+
+; -------------------------------------------------------------------------------
+; RSX Name Parse
+; -------------------------------------------------------------------------------
+
+RS_NAME:                                ; parse RSX filename stem
         CALL    RS_CLEAR
         LD      HL,(RS_ARG)
         LD      A,(RS_OP)
@@ -152,7 +229,8 @@ RS_NAME:
         LD      DE,5
         JR      Z,RS_NPOS
         LD      DE,7
-RS_NPOS:
+
+RS_NPOS:                                ; position name parser
         ADD     HL,DE
         LD      A,(RS_LEN)
         SUB     E
@@ -162,7 +240,8 @@ RS_NPOS:
         LD      DE,RS_REQ+4
         XOR     A
         LD      (RS_NCOUNT),A
-RS_NLOOP:
+
+RS_NLOOP:                               ; scan RSX name
         LD      A,C
         OR      A
         JR      Z,RS_NDONE
@@ -183,35 +262,44 @@ RS_NLOOP:
         INC     A
         LD      (RS_NCOUNT),A
         JR      RS_NLOOP
-RS_NEXT:
+
+RS_NEXT:                                ; advance name scan
         LD      A,C
         CP      4
         JR      NZ,RS_NBAD
         LD      DE,RS_KEXT
         LD      B,4
-RS_EXLOOP:
+
+RS_EXLOOP:                              ; validate optional RSX extension
         LD      A,(DE)
         CP      (HL)
         JR      NZ,RS_NBAD
         INC     DE
         INC     HL
         DJNZ    RS_EXLOOP
-RS_NDONE:
+
+RS_NDONE:                               ; finish parsed RSX name
         LD      A,(RS_NCOUNT)
         OR      A
         JR      Z,RS_NBAD
         XOR     A
         RET
-RS_NBAD:
+
+RS_NBAD:                                ; reject invalid RSX name
         LD      A,1
         OR      A
         RET
 
-RS_CLEAR:
+; -------------------------------------------------------------------------------
+; Request Name Preparation
+; -------------------------------------------------------------------------------
+
+RS_CLEAR:                               ; clear request name field
         LD      HL,RS_REQ
         LD      B,18
         XOR     A
-RS_CLOOP:
+
+RS_CLOOP:                               ; clear next request byte
         LD      (HL),A
         INC     HL
         DJNZ    RS_CLOOP
@@ -222,13 +310,14 @@ RS_CLOOP:
         LD      HL,RS_REQ+4
         LD      B,8
         LD      A,' '
-RS_SPLOOP:
+
+RS_SPLOOP:                              ; pad request name with spaces
         LD      (HL),A
         INC     HL
         DJNZ    RS_SPLOOP
         RET
 
-RS_CONTROL:
+RS_CONTROL:                             ; call BRSX control service
         LD      HL,0
         ADD     HL,SP
         LD      BC,64
@@ -241,40 +330,58 @@ RS_CONTROL:
         POP     HL
         JR      C,RS_WHIGH
         EX      DE,HL
-RS_WHIGH:
+
+RS_WHIGH:                               ; bound scratch below TPA and stack
         LD      (RS_REQ+16),HL
         LD      DE,RS_REQ
         LD      C,RSXFUNC
         JP      BDOS
-RS_PRINT:
+
+; ================================================================================
+; =                                Manager Output                                =
+; =                                                                              =
+; = Provides message, decimal service-number, character, and TPA-size output for the =
+; = transient BRSX manager.                                                      =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Messages and Decimal Output
+; -------------------------------------------------------------------------------
+
+RS_PRINT:                               ; print $-terminated string
         LD      C,9
         JP      BDOS
 
-; Primary experimental service numbers currently fit in one byte.
-RS_DECIMAL:
+  ; Primary experimental service numbers currently fit in one byte.
+
+RS_DECIMAL:                             ; print service number
         LD      B,'0'
-RS_D100:
+
+RS_D100:                                ; emit hundreds digit
         CP      100
         JR      C,RS_D10S
         SUB     100
         INC     B
         JR      RS_D100
-RS_D10S:
+
+RS_D10S:                                ; compute decimal tens
         LD      (RS_DREM),A
         LD      A,B
         CP      '0'
         JR      Z,RS_DTENS
         CALL    RS_CHAR
-RS_DTENS:
+
+RS_DTENS:                               ; emit tens digit
         LD      A,(RS_DREM)
         LD      B,'0'
-RS_D10:
+
+RS_D10:                                 ; compute remaining units
         CP      10
         JR      C,RS_DONE10
         SUB     10
         INC     B
         JR      RS_D10
-RS_DONE10:
+
+RS_DONE10:                              ; finish decimal conversion
         LD      (RS_DREM),A
         LD      A,B
         CP      '0'
@@ -283,17 +390,24 @@ RS_DONE10:
         CP      100
         JR      C,RS_UNITS
         LD      A,'0'
-RS_SHOW10:
+
+RS_SHOW10:                              ; emit decimal tens when needed
         CALL    RS_CHAR
-RS_UNITS:
+
+RS_UNITS:                               ; emit units digit
         LD      A,(RS_DREM)
         ADD     A,'0'
-RS_CHAR:
+
+RS_CHAR:                                ; write console character
         LD      E,A
         LD      C,2
         JP      BDOS
 
-RS_TPA:
+; -------------------------------------------------------------------------------
+; TPA Reporting
+; -------------------------------------------------------------------------------
+
+RS_TPA:                                 ; print current TPA size
         LD      HL,(0006H)
         LD      DE,0100H
         OR      A
@@ -303,13 +417,15 @@ RS_TPA:
         RRCA
         AND     03FH
         LD      B,0
-RS_DIV:
+
+RS_DIV:                                 ; convert TPA kilobytes to decimal
         CP      10
         JR      C,RS_DIGITS
         SUB     10
         INC     B
         JR      RS_DIV
-RS_DIGITS:
+
+RS_DIGITS:                              ; emit TPA decimal digits
         LD      (RS_UNITV),A
         LD      A,B
         LD      (RS_TENS),A
@@ -320,35 +436,46 @@ RS_DIGITS:
         JR      Z,RS_UNIT
         ADD     A,'0'
         CALL    RS_CHAR
-RS_UNIT:
+
+RS_UNIT:                                ; print kilobyte suffix
         LD      A,(RS_UNITV)
         ADD     A,'0'
         CALL    RS_CHAR
         LD      DE,RS_TPAE
         JP      RS_PRINT
 
-RS_KLIST:      DB      'LIST'
-RS_KLOAD:      DB      'LOAD '
-RS_KUNLOAD:    DB      'UNLOAD '
-RS_KEXT:       DB      '.RSX'
-RS_NL:         DB      13,10,'$'
-RS_SERVICE:    DB      ' : BDOS $'
-RS_NONE:       DB      13,10,'No RSXs loaded',13,10,'$'
-RS_ERROR:      DB      13,10,'RSX module or profile error',13,10,'$'
-RS_UMSG:       DB      13,10,'RSX LIST | LOAD/UNLOAD name[.RSX]',13,10,'$'
-RS_TPAM:       DB      'TPA available: $'
-RS_TPAE:       DB      'K',13,10,'$'
-RS_ARG:        DW      0
-RS_LEN:        DB      0
-RS_OP:         DB      0
-RS_INDEX:      DB      0
-RS_NCOUNT:     DB      0
-RS_DREM:       DB      0
-RS_TENS:       DB      0
-RS_UNITV:      DB      0
-RS_REQ:        DB      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+; ================================================================================
+; =                            Manager Data and State                            =
+; =                                                                              =
+; = Defines command keywords, messages, parsing scratch, decimal-conversion state, and =
+; = the Function-202 request block.                                              =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Keywords and Working State
+; -------------------------------------------------------------------------------
+
+RS_KLIST:      DB      'LIST'           ; LIST keyword
+RS_KLOAD:      DB      'LOAD '          ; LOAD keyword
+RS_KUNLOAD:    DB      'UNLOAD '        ; UNLOAD keyword
+RS_KEXT:       DB      '.RSX'           ; RSX extension text
+RS_NL:         DB      13,10,'$'        ; newline string
+RS_SERVICE:    DB      ' : BDOS $'      ; service-number label
+RS_NONE:       DB      13,10,'No RSXs loaded',13,10,'$' ; empty-profile message
+RS_ERROR:      DB      13,10,'RSX module or profile error',13,10,'$' ; manager error message
+RS_UMSG:       DB      13,10,'RSX LIST | LOAD/UNLOAD name[.RSX]',13,10,'$' ; usage message
+RS_TPAM:       DB      'TPA available: $' ; TPA prefix
+RS_TPAE:       DB      'K',13,10,'$'    ; TPA suffix
+RS_ARG:        DW      0                ; command argument pointer
+RS_LEN:        DB      0                ; command-tail length
+RS_OP:         DB      0                ; requested manager operation
+RS_INDEX:      DB      0                ; enumeration index
+RS_NCOUNT:     DB      0                ; parsed name length
+RS_DREM:       DB      0                ; decimal remainder
+RS_TENS:       DB      0                ; decimal tens scratch
+RS_UNITV:      DB      0                ; decimal units scratch
+RS_REQ:        DB      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ; Function-202 request block
 
         INCLUDE rsxvers.inc
-RS_END:
+RS_END:                                ; first free byte after transient image
         .DEPHASE
         END     START

@@ -1,8 +1,27 @@
+; ********************************************************************************
+; *                    BetterCP/M Native System Build Script                     *
+; *                                                                              *
+; * Rebuilds the protected BetterCP/M system from native Z80 source products,    *
+; * constructs the resident payload and relocatable CCP, then composes the final *
+; * SYSTEM.SYS package.                                                         *
+; ********************************************************************************
+
 B:
+
+; -------------------------------------------------------------------------------
+; Remove Previous Build Products
+; -------------------------------------------------------------------------------
 ERA *.BIN
 ERA *.RLM
 ERA *.REL
 ERA SYSTEM.SYS
+
+; ================================================================================
+; =                         Resident System Components                          =
+; =                                                                              =
+; = Assemble and link the fixed resident modules, rename each absolute COM image =
+; = to its native build-product filename, and discard intermediate REL files.    =
+; ================================================================================
 ZSM4 BOOT=BOOT
 LINK BOOT=BOOT[A]
 REN BOOT.BIN=BOOT.COM
@@ -39,7 +58,18 @@ ZSM4 TABLES=TABLES
 LINK TABLES=TABLES[A]
 REN TABLES.BIN=TABLES.COM
 ERA TABLES.REL
+
+; -------------------------------------------------------------------------------
+; Pack Resident Payload
+; -------------------------------------------------------------------------------
 RESPACK
+
+; ================================================================================
+; =                    Reloadable System and RSX Components                    =
+; =                                                                              =
+; = Build the command reloader, RSX selector, configuration overlay, and RSX     =
+; = manager/validator/publisher/resolver carriers used during reconstruction.    =
+; ================================================================================
 ZSM4 CCPRELOD=CCPRELOD
 LINK CCPRELOD=CCPRELOD[A]
 REN CCPRELOD.BIN=CCPRELOD.COM
@@ -68,6 +98,13 @@ ZSM4 RSXRESOL=RSXRESOL
 LINK RSXRESOL=RSXRESOL[A]
 REN RSXRESOL.BIN=RSXRESOL.COM
 ERA RSXRESOL.REL
+
+; ================================================================================
+; =                        Relocatable Command Processor                        =
+; =                                                                              =
+; = Link the CCP at three independent origins, then derive CCP.RLM from the      =
+; = three-origin relocation proof.                                               =
+; ================================================================================
 ZSM4 CCP=CCP
 LINK CCP=CCP[A]
 REN CCPBASE.BIN=CCP.COM
@@ -81,4 +118,8 @@ LINK CCPCHK=CCPCHK[A]
 REN CCPCHK.BIN=CCPCHK.COM
 ERA CCPCHK.REL
 RLMBUILD
+
+; -------------------------------------------------------------------------------
+; Compose SYSTEM.SYS
+; -------------------------------------------------------------------------------
 SYSBUILD

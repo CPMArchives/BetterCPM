@@ -1,9 +1,11 @@
-; BATCHIO -- protected CP/M 2.2 XSUB input provider.
-;
-; XSUB's code and working buffer must remain above a transient which uses all
-; of the advertised TPA.  The ordinary BRSX loader supplies that protection
-; and reconstructs this module after WBOOT.  Command text itself retains the
-; stock A:$$$.SUB representation; no pointer into the CCP or CPX is saved.
+; ********************************************************************************
+; *                         BetterCP/M BATCHIO RSX                               *
+; *                                                                              *
+; * Protected CP/M 2.2 XSUB-style input provider. Supplies submitted command     *
+; * records from A:$$$.SUB through BDOS Function 10 while preserving the caller's*
+; * DMA state and falling through to the real console when batch input ends.     *
+; ********************************************************************************
+
 
 RSXBASE         EQU     08000H
 BDOS            EQU     00005H
@@ -11,38 +13,61 @@ BDOS            EQU     00005H
         CSEG
         .PHASE  RSXBASE
 
-BI_NEXT:        DW      BDOS
-BI_ENTRY:       DW      BI_DISPATCH
+; ================================================================================
+; =                            RSX Entry and Dispatch                            =
+; =                                                                              =
+; = Defines the protected RSX header, intercepts the relevant BDOS calls, and chains =
+; = all unhandled requests to the next RSX or fixed BDOS.                        =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; RSX Header
+; -------------------------------------------------------------------------------
 
-BI_DISPATCH:
+BI_NEXT:        DW      BDOS            ; next RSX descriptor pointer
+BI_ENTRY:       DW      BI_DISPATCH     ; RSX entry pointer
+
+; -------------------------------------------------------------------------------
+; BDOS Interception
+; -------------------------------------------------------------------------------
+
+BI_DISPATCH:                            ; intercept BDOS call
         LD      A,C
-        CP      202             ; XSUB's post-load query acknowledges install
+        CP      202                     ; XSUB's post-load query acknowledges install
         JR      Z,BI_ARMED
         LD      A,(BI_FRESH)
         OR      A
-        CALL    NZ,BI_ANNOUNCE  ; a reconstructed instance is now active
+        CALL    NZ,BI_ANNOUNCE          ; a reconstructed instance is now active
         LD      A,C
-        CP      26              ; remember the application's DMA address
+        CP      26                      ; remember the application's DMA address
         JR      Z,BI_SETDMA
-        CP      10              ; XSUB only supplies buffered console input
+        CP      10                      ; XSUB only supplies buffered console input
         JP      Z,BI_READLN
-BI_CHAIN:
+
+BI_CHAIN:                               ; chain to lower RSX or BDOS
         LD      HL,(BI_NEXT)
         JP      (HL)
 
-BI_ARMED:
+BI_ARMED:                               ; handle active batch input
         XOR     A
         LD      (BI_FRESH),A
-        JR      BI_CHAIN        ; preserve the manager's real query result
+        JR      BI_CHAIN                ; preserve the manager's real query result
 
-BI_SETDMA:
+BI_SETDMA:                              ; track caller DMA selection
         LD      (BI_UDMA),DE
         JP      BI_CHAIN
 
-; Stock XSUB announces itself after each warm-start relocation.  BRSX is loaded
-; afresh during reconstruction, so this byte supplies the same lifecycle hook
-; without taking ownership of page-zero WBOOT or any fixed BIOS/BDOS storage.
-BI_ANNOUNCE:
+  ; Stock XSUB announces itself after each warm-start relocation.  BRSX is loaded
+  ; afresh during reconstruction, so this byte supplies the same lifecycle hook
+  ; without taking ownership of page-zero WBOOT or any fixed BIOS/BDOS storage.
+
+; ================================================================================
+; =                         Protected BDOS Call Services                         =
+; =                                                                              =
+; = Preserves the caller's DMA selection while performing private $$$.SUB file calls =
+; = through the lower RSX/BDOS chain.                                            =
+; ================================================================================
+
+BI_ANNOUNCE:                            ; announce reconstructed XSUB
         XOR     A
         LD      (BI_FRESH),A
         PUSH    BC
@@ -54,15 +79,25 @@ BI_ANNOUNCE:
         POP     BC
         RET
 
-; Enter the next lower RSX or the fixed BDOS and retain an ordinary return.
-BI_CALL:
+  ; Enter the next lower RSX or the fixed BDOS and retain an ordinary return.
+
+; -------------------------------------------------------------------------------
+; Lower-Layer Calls
+; -------------------------------------------------------------------------------
+
+BI_CALL:                                ; call lower BDOS layer
         LD      HL,(BI_NEXT)
         JP      (HL)
 
-; Run one disk call with our protected record buffer as DMA, then restore the
-; caller's last Function-26 selection.  This is the essential XSUB invariant:
-; a transient never discovers that its input came through a disk record.
-BI_FCALL:
+  ; Run one disk call with our protected record buffer as DMA, then restore the
+  ; caller's last Function-26 selection.  This is the essential XSUB invariant:
+  ; a transient never discovers that its input came through a disk record.
+
+; -------------------------------------------------------------------------------
+; Protected DMA File Calls
+; -------------------------------------------------------------------------------
+
+BI_FCALL:                               ; perform protected-buffer file call
         PUSH    BC
         PUSH    DE
         LD      DE,BI_BUFFER
@@ -79,13 +114,23 @@ BI_FCALL:
         POP     AF
         RET
 
-BI_READLN:
+; ================================================================================
+; =                             Submitted Line Input                             =
+; =                                                                              =
+; = Reads, validates, truncates, and copies the next $$$.SUB record into the caller's =
+; = Function-10 buffer, then consumes or retires the stream as required.         =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Function-10 Input Substitution
+; -------------------------------------------------------------------------------
+
+BI_READLN:                              ; supply next submitted input line
         LD      (BI_USERBUF),DE
         LD      DE,BI_SUBFCB
         LD      C,15
         CALL    BI_FCALL
         INC     A
-        JR      Z,BI_RETIRE     ; no submission: retire, then use Function 10
+        JR      Z,BI_RETIRE             ; no submission: retire, then use Function 10
         LD      A,(BI_SUBRC)
         OR      A
         JR      Z,BI_BADSUB
@@ -97,8 +142,8 @@ BI_READLN:
         OR      A
         JR      NZ,BI_BADSUB
 
-; SUBMIT limits records to 125 bytes.  Reject a hand-made corrupt stream before
-; it can run beyond either the protected buffer or the user's counted buffer.
+  ; SUBMIT limits records to 125 bytes.  Reject a hand-made corrupt stream before
+  ; it can run beyond either the protected buffer or the user's counted buffer.
         LD      A,(BI_BUFFER)
         CP      126
         JR      NC,BI_BADSUB
@@ -115,20 +160,22 @@ BI_READLN:
         LD      C,9
         CALL    BI_CALL
 
-; Function 10 returns [maximum][count][characters].  Like DRI XSUB, copy no
-; trailing CR and truncate silently to the application's advertised maximum.
+  ; Function 10 returns [maximum][count][characters].  Like DRI XSUB, copy no
+  ; trailing CR and truncate silently to the application's advertised maximum.
         LD      HL,(BI_USERBUF)
         LD      A,(BI_BUFFER)
         CP      (HL)
         JR      C,BI_LENGTH
         LD      A,(HL)
-BI_LENGTH:
+
+BI_LENGTH:                              ; bound submitted record length
         LD      B,A
         INC     HL
         LD      (HL),A
         INC     HL
         LD      DE,BI_BUFFER+1
-BI_COPY:
+
+BI_COPY:                                ; copy submitted command text
         LD      A,B
         OR      A
         JR      Z,BI_CONSUME
@@ -138,9 +185,14 @@ BI_COPY:
         INC     HL
         DJNZ    BI_COPY
 
-; Open copied the directory RC into the FCB.  Clearing the private clean bit
-; lets Close publish the decremented count; the final record deletes $$$.SUB.
-BI_CONSUME:
+  ; Open copied the directory RC into the FCB.  Clearing the private clean bit
+  ; lets Close publish the decremented count; the final record deletes $$$.SUB.
+
+; -------------------------------------------------------------------------------
+; Submit-Stream Consumption
+; -------------------------------------------------------------------------------
+
+BI_CONSUME:                             ; consume submitted record
         XOR     A
         LD      (BI_SUBFCB+14),A
         LD      A,(BI_SUBRC)
@@ -150,7 +202,8 @@ BI_CONSUME:
         OR      A
         JR      NZ,BI_FILEOP
         LD      C,19
-BI_FILEOP:
+
+BI_FILEOP:                              ; close or delete submit stream
         LD      DE,BI_SUBFCB
         CALL    BI_FCALL
         XOR     A
@@ -158,36 +211,56 @@ BI_FILEOP:
         LD      H,A
         RET
 
-; A malformed or unreadable stream must not trap every later console read.
-; Remove it, restore the caller's buffer address, and use the real console.
-BI_BADSUB:
+  ; A malformed or unreadable stream must not trap every later console read.
+  ; Remove it, restore the caller's buffer address, and use the real console.
+
+; -------------------------------------------------------------------------------
+; Malformed Stream Recovery
+; -------------------------------------------------------------------------------
+
+BI_BADSUB:                              ; discard malformed submit stream
         LD      DE,BI_SUBFCB
         LD      C,19
         CALL    BI_FCALL
-BI_RETIRE:
+
+BI_RETIRE:                              ; retire exhausted submit stream
         LD      DE,BI_REQUEST
-        LD      C,202           ; defer removal until WBOOT can rebuild safely
+        LD      C,202                   ; defer removal until WBOOT can rebuild safely
         CALL    BI_CALL
-BI_CONSOLE:
+
+BI_CONSOLE:                             ; fall back to real console
         LD      DE,(BI_USERBUF)
         LD      C,10
         JP      BI_CHAIN
 
-BI_ACTIVE:      DB      13,10,'(xsub active)','$'
-BI_SUBFCB:      DB      1,'$$$     ','SUB',0,0,0
-BI_SUBRC:       DB      0
+; ================================================================================
+; =                            BATCHIO Working State                             =
+; =                                                                              =
+; = Defines protected submit-stream, DMA, user-buffer, lifecycle, and saved-request =
+; = state retained by the XSUB-compatible input provider.                        =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Protected State
+; -------------------------------------------------------------------------------
+
+BI_ACTIVE:      DB      13,10,'(xsub active)','$' ; batch-input active flag
+BI_SUBFCB:      DB      1,'$$$     ','SUB',0,0,0 ; submit-stream FCB
+BI_SUBRC:       DB      0               ; submit record count
                 REPT    16
                 DB      0
                 ENDM
-BI_SUBCR:       DB      0
-BI_BUFFER:
+
+BI_SUBCR:       DB      0               ; submit current record
+
+BI_BUFFER:                              ; protected submit record buffer
                 REPT    131
                 DB      0
                 ENDM
-BI_UDMA:        DW      0080H
-BI_USERBUF:     DW      0080H
-BI_FRESH:       DB      1
-BI_REQUEST:     DB      1,4,0,0,'BATCHIO ',0,0
+
+BI_UDMA:        DW      0080H           ; caller DMA address
+BI_USERBUF:     DW      0080H           ; caller Function-10 buffer
+BI_FRESH:       DB      1               ; warm-start announcement flag
+BI_REQUEST:     DB      1,4,0,0,'BATCHIO ',0,0 ; saved BDOS request
 
         .DEPHASE
         END

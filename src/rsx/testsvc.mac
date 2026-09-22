@@ -1,5 +1,13 @@
         INCLUDE layout.inc
-; Stage-2 callable resident-service qualification provider.
+
+; ********************************************************************************
+; *                       BetterCP/M TESTSVC RSX                                *
+; *                                                                              *
+; * Stage-2 callable resident-service qualification provider. Publishes one      *
+; * callable service through the BRSX service metadata while preserving normal  *
+; * RSX dispatch behavior for unrelated calls.                                  *
+; ********************************************************************************
+
 
 RSXBASE         EQU     08000H
 BDOS            EQU     00005H
@@ -7,17 +15,24 @@ BDOS            EQU     00005H
         CSEG
         .PHASE  RSXBASE
 
-TR_NEXT:        DW      BDOS
-TR_ENTRY:       DW      TR_DISPATCH
-TR_SVCOUNT:     DB      0       ; loader-owned BRSX-v2 runtime descriptor
-TR_RESERVED:    DB      0
-TR_SVOFF:       DW      0
+; ================================================================================
+; =                     Resident-Service Qualification                         =
+; =                                                                              =
+; = Defines the service metadata and callable qualification entry used to verify =
+; = discovery and invocation of an RSX-published resident service.               =
+; ================================================================================
 
-TR_DISPATCH:
+TR_NEXT:        DW      BDOS            ; next RSX descriptor pointer
+TR_ENTRY:       DW      TR_DISPATCH     ; RSX entry pointer
+TR_SVCOUNT:     DB      0               ; resident-service count
+TR_RESERVED:    DB      0               ; reserved service metadata
+TR_SVOFF:       DW      0               ; resident-service entry offset
+
+TR_DISPATCH:                            ; dispatch RSX request
         LD      HL,(TR_NEXT)
         JP      (HL)
 
-TR_SERVICE:
+TR_SERVICE:                             ; return qualification service value
         LD      HL,05253H
         LD      A,L
         RET

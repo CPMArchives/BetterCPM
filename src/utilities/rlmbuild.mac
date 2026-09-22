@@ -1,9 +1,11 @@
-; RLMBUILD -- construct CCP.RLM from three native absolute CCP links.
-;
-; CCPBASE.BIN is linked at BB00h, CCPALT.BIN at BC01h and CCPCHK.BIN at
-; BD37h. A relocatable word is therefore exactly one whose alternate values
-; equal the base word plus 0101h and 0237h. The host builder independently
-; uses the same two-origin proof.
+; ********************************************************************************
+; *                     BetterCP/M CCP RLM Builder                              *
+; *                                                                              *
+; * Constructs CCP.RLM from three native absolute CCP links at BB00H, BC01H,    *
+; * and BD37H. A word is relocatable only when the alternate images equal the   *
+; * base word plus 0101H and 0237H respectively.                                *
+; ********************************************************************************
+
         INCLUDE ccpmeta.inc
         ASEG
         ORG     0100H
@@ -15,7 +17,17 @@ HEADER  EQU     08200H
 HDRSIZE EQU     1024
 LINKBASE EQU    0BB00H
 
-START:  LD      SP,03F00H
+; ================================================================================
+; =                    Linked Image Load and Relocation Scan                     =
+; =                                                                              =
+; = Loads the three independently linked CCP images and compares corresponding words =
+; = to identify the relocation set proven by both alternate origins.             =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Input Image Setup
+; -------------------------------------------------------------------------------
+
+START:  LD      SP,03F00H               ; enter CCP relocatable-module builder
         LD      DE,BANNER
         CALL    PRINT
         LD      HL,BASEBUF
@@ -52,7 +64,18 @@ START:  LD      SP,03F00H
         LD      (OFFSET+1),A
         LD      (RELOCS),A
         LD      (RELOCS+1),A
-SCAN:   LD      HL,(OFFSET)
+
+; ================================================================================
+; =                             Relocation Detection                             =
+; =                                                                              =
+; = Scans the linked images word by word, records offsets whose alternate values match =
+; = both expected origin deltas, and rejects relocation-table overflow.          =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Three-Origin Word Comparison
+; -------------------------------------------------------------------------------
+
+SCAN:   LD      HL,(OFFSET)             ; scan linked images for relocation words
         LD      DE,CCP_SIZE-1
         OR      A
         SBC     HL,DE
@@ -107,12 +130,14 @@ SCAN:   LD      HL,(OFFSET)
         LD      HL,(RELOCS)
         INC     HL
         LD      (RELOCS),HL
-SCANNEXT:
+
+SCANNEXT:                               ; advance relocation scan
         LD      HL,(OFFSET)
         INC     HL
         LD      (OFFSET),HL
         JR      SCAN
-SCANDONE:
+
+SCANDONE:                               ; finish relocation scan
         LD      HL,(RELOCS)
         LD      DE,CCP_RELOCS
         OR      A
@@ -150,8 +175,19 @@ SCANDONE:
         CALL    PRINT
         JP      0
 
-; DE=FCB, HL=destination. Require exactly CCP_RECORDS records.
-LOAD:   LD      (CURFCB),DE
+  ; DE=FCB, HL=destination. Require exactly CCP_RECORDS records.
+
+; ================================================================================
+; =                              Linked Image Input                              =
+; =                                                                              =
+; = Loads one absolute CCP image through CP/M file services and requires exactly the =
+; = configured CCP record count.                                                 =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Exact-Length Image Load
+; -------------------------------------------------------------------------------
+
+LOAD:   LD      (CURFCB),DE             ; load one linked CCP image
         LD      (CURPTR),HL
         LD      C,15
         CALL    BDOS
@@ -159,7 +195,8 @@ LOAD:   LD      (CURFCB),DE
         JR      Z,LOADMISS
         XOR     A
         LD      (COUNT),A
-LOADLP: LD      A,(COUNT)
+
+LOADLP: LD      A,(COUNT)               ; read next linked-image record
         CP      CCP_RECORDS+1
         JR      NC,LOADBAD
         LD      DE,(CURPTR)
@@ -177,17 +214,21 @@ LOADLP: LD      A,(COUNT)
         LD      HL,COUNT
         INC     (HL)
         JR      LOADLP
-LOADEOF:CP      1
+
+LOADEOF:CP      1                       ; finish exact-length input
         JR      NZ,LOADBAD
         LD      A,(COUNT)
         CP      CCP_RECORDS
         JR      NZ,LOADBAD
         XOR     A
         JR      LOADCLOSE
-LOADMISS:LD     A,1
+
+LOADMISS:LD     A,1                     ; report missing linked image
         JR      LOADCLOSE
-LOADBAD:LD      A,2
-LOADCLOSE:
+
+LOADBAD:LD      A,2                     ; report linked-image read failure
+
+LOADCLOSE:                              ; handle linked-image close failure
         PUSH    AF
         LD      DE,(CURFCB)
         LD      C,16
@@ -196,8 +237,19 @@ LOADCLOSE:
         OR      A
         RET
 
-; HL=source, B=record count.
-WRITE:  PUSH    BC
+  ; HL=source, B=record count.
+
+; ================================================================================
+; =                              RLM Carrier Output                              =
+; =                                                                              =
+; = Creates CCP.RLM and writes its carrier header, base payload, and relocation data, =
+; = reporting create, write, close, or relocation-capacity failures.             =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Carrier Write
+; -------------------------------------------------------------------------------
+
+WRITE:  PUSH    BC                      ; write CCP.RLM output
         PUSH    HL
         EX      DE,HL
         LD      C,26
@@ -215,14 +267,18 @@ WRITE:  PUSH    BC
         XOR     A
         RET
 
-RELOCBAD:LD     A,3
+RELOCBAD:LD     A,3                     ; report relocation-table overflow
         JR      FAIL
-CREATEBAD:LD    A,4
+
+CREATEBAD:LD    A,4                     ; report output-create failure
         JR      FAIL
-WRITEBAD:LD     A,5
+
+WRITEBAD:LD     A,5                     ; report output-write failure
         JR      FAIL
-CLOSEBAD:LD     A,6
-FAIL:   PUSH    AF
+
+CLOSEBAD:LD     A,6                     ; report output-close failure
+
+FAIL:   PUSH    AF                      ; return build failure
         LD      DE,ERRMSG
         CALL    PRINT
         POP     AF
@@ -230,39 +286,67 @@ FAIL:   PUSH    AF
         LD      DE,CRLF
         CALL    PRINT
         JP      0
-PRINT:  LD      C,9
+
+; ================================================================================
+; =                             Builder Diagnostics                              =
+; =                                                                              =
+; = Provides message and hexadecimal output used by the native RLM build utility. =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Messages and Hex Output
+; -------------------------------------------------------------------------------
+
+PRINT:  LD      C,9                     ; print $-terminated message
         JP      BDOS
-HEXBYTE:PUSH    AF
+
+HEXBYTE:PUSH    AF                      ; print byte as hexadecimal
         RRCA
         RRCA
         RRCA
         RRCA
         CALL    HEXDIG
         POP     AF
-HEXDIG: AND     0FH
+
+HEXDIG: AND     0FH                     ; convert hexadecimal digit
         ADD     A,'0'
         CP      '9'+1
         JR      C,HEXOUT
         ADD     A,7
-HEXOUT: LD      E,A
+
+HEXOUT: LD      E,A                     ; emit hexadecimal digit
         LD      C,2
         JP      BDOS
 
-BANNER: DB      'BetterCP/M CCP relocation builder',13,10,'$'
-DONE:   DB      'CCP.RLM created and verified.',13,10,'$'
-ERRMSG: DB      'RLMBUILD failed; status $'
-CRLF:   DB      13,10,'$'
-MAGIC:  DB      'BCM1',1,2
+BANNER: DB      'BetterCP/M CCP relocation builder',13,10,'$' ; builder banner
+DONE:   DB      'CCP.RLM created and verified.',13,10,'$' ; success message
+ERRMSG: DB      'RLMBUILD failed; status $' ; generic error prefix
+CRLF:   DB      13,10,'$'               ; newline string
+
+; ================================================================================
+; =                        Builder Data and Working State                        =
+; =                                                                              =
+; = Defines carrier magic, input/output FCBs, current pointers, counters, relocation =
+; = state, and comparison scratch used by the builder.                           =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Files and Build State
+; -------------------------------------------------------------------------------
+
+MAGIC:  DB      'BCM1',1,2              ; RLM carrier magic
         DW      LINKBASE,CCP_SIZE,CCP_ALLOC,0,CCP_RELOCS
-BASEFCB:DB 0,'CCPBASE BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-ALTFCB: DB 0,'CCPALT  BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-CHKFCB: DB 0,'CCPCHK  BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-OUTFCB: DB 0,'CCP     RLM',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-CURFCB: DW 0
-CURPTR: DW 0
-COUNT:  DB 0
-OFFSET: DW 0
-RELOCS: DW 0
-OLDWORD:DW 0
-EXPECT: DW 0
+
+BASEFCB:DB 0,'CCPBASE BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ; BB00H-linked CCP input FCB
+
+ALTFCB: DB 0,'CCPALT  BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ; BC01H-linked CCP input FCB
+CHKFCB: DB 0,'CCPCHK  BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ; BD37H-linked CCP input FCB
+OUTFCB: DB 0,'CCP     RLM',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ; CCP.RLM output FCB
+CURFCB: DW 0                            ; current input FCB pointer
+CURPTR: DW 0                            ; current input destination
+COUNT:  DB 0                            ; record counter
+OFFSET: DW 0                            ; current scan offset
+RELOCS: DW 0                            ; relocation entry count
+
+OLDWORD:DW 0                            ; base linked word
+
+EXPECT: DW 0                            ; expected alternate linked word
         END

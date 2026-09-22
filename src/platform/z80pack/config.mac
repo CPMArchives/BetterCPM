@@ -1,11 +1,13 @@
         INCLUDE layout.inc
         INCLUDE bioslinks.inc
         INCLUDE cpxlinks.inc
-; Z80PACK RAW-DISK CONFIGURATION OVERLAY
-;
-; Vector ABI shared with the common disk service.  cpmsim has no physical
-; formatter.  The format vector initializes every mapped raw record to E5 for
-; uniform formats; physical and logical definitions are runtime-settable.
+
+; ********************************************************************************
+; *                    z80pack Raw-Disk Configuration Overlay                    *
+; *                                                                              *
+; * CPMSIM platform overlay implementing runtime physical/logical disk definitions *
+; * and raw-image formatting through the common BetterCP/M disk-control ABI.     *
+; ********************************************************************************
 
         ASEG
         ORG LY_CFG
@@ -18,9 +20,20 @@
         JP ZC_GETLOG
         JP ZC_UNSUP
 
-; IX=request.  Byte 0 is the physical-drive number; bytes 1..6 are the
-; six-byte BetterCP/M physical descriptor.
-ZC_PHYS:
+  ; IX=request.  Byte 0 is the physical-drive number; bytes 1..6 are the
+  ; six-byte BetterCP/M physical descriptor.
+
+; ================================================================================
+; =                            Raw-Disk Configuration                            =
+; =                                                                              =
+; = Implements the z80pack physical and logical disk-profile configuration vectors =
+; = shared with the common disk-service ABI.                                     =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Physical Profile Update
+; -------------------------------------------------------------------------------
+
+ZC_PHYS:                                ; set physical disk profile
         LD A,(IX+0)
         CP 4
         JP NC,ZC_INVALID
@@ -43,14 +56,19 @@ ZC_PHYS:
         LDIR
         JP ZC_OK
 
-; IX=request. Byte 0 is logical drive; bytes 1..64 are the normalized
-; logical binding used at LY_TAB+16.
-ZC_LOG:
+  ; IX=request. Byte 0 is logical drive; bytes 1..64 are the normalized
+  ; logical binding used at LY_TAB+16.
+
+; -------------------------------------------------------------------------------
+; Logical Profile Update
+; -------------------------------------------------------------------------------
+
+ZC_LOG:                                 ; set logical disk profile
         LD A,(IX+0)
         CP 4
         JP NC,ZC_INVALID
         OR A
-        JP Z,ZC_UNSUP          ; A: remains the fixed bootstrap filesystem
+        JP Z,ZC_UNSUP                   ; A: remains the fixed bootstrap filesystem
         LD (ZC_DRIVE),A
 
         LD A,(IX+1)
@@ -63,14 +81,25 @@ ZC_LOG:
         LD (HL),0FFH
         JP ZC_OK
 
-; IX=request: logical drive, cylinder, side, stream length, stream address.
-; A raw image has no WD track structure to generate.  Formatting therefore
-; writes an E5-filled physical sector through the resident mapper for every
-; logical record which belongs to the requested surface.  Repeated records in
-; a multi-record physical sector are harmless and keep this overlay compact.
-; Optional FDF conventions and explicit mixed-size maps are rejected because
-; their mapper may require a recursive BDOS service call.
-ZC_FORMAT:
+  ; IX=request: logical drive, cylinder, side, stream length, stream address.
+  ; A raw image has no WD track structure to generate.  Formatting therefore
+  ; writes an E5-filled physical sector through the resident mapper for every
+  ; logical record which belongs to the requested surface.  Repeated records in
+  ; a multi-record physical sector are harmless and keep this overlay compact.
+  ; Optional FDF conventions and explicit mixed-size maps are rejected because
+  ; their mapper may require a recursive BDOS service call.
+
+; ================================================================================
+; =                             Raw-Image Formatting                             =
+; =                                                                              =
+; = Formats a mapped raw-image surface by writing E5-filled sectors through the  =
+; = resident mapper; CPMSIM provides no physical track formatter.                =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Format Request Setup
+; -------------------------------------------------------------------------------
+
+ZC_FORMAT:                              ; format raw-image surface
         PUSH IY
         LD A,(IX+0)
         OR A
@@ -97,7 +126,7 @@ ZC_FORMAT:
         JP NC,ZCF_INVALID
         LD (ZCF_SIDE),A
 
-; Validate and fill the caller's first 1K of track workspace.
+  ; Validate and fill the caller's first 1K of track workspace.
         LD L,(IX+5)
         LD H,(IX+6)
         LD A,H
@@ -121,7 +150,7 @@ ZC_FORMAT:
         LD H,(IX+6)
         LD (ZCF_BUFFER),HL
 
-; Derive the logical track and record interval for this physical surface.
+  ; Derive the logical track and record interval for this physical surface.
         LD A,(ZCF_CYL)
         LD (ZCF_TRACK),A
         LD HL,0
@@ -140,19 +169,26 @@ ZC_FORMAT:
         ADD A,B
         LD (ZCF_TRACK),A
         JR ZCF_RANGE
-ZCF_SINGLE:
+
+ZCF_SINGLE:                             ; select single-sided surface
         LD A,(ZCF_SIDE)
         OR A
         JR NZ,ZCF_INVALID
         JR ZCF_RANGE
-ZCF_CYLINDER:
+
+ZCF_CYLINDER:                           ; select cylinder-track surface
         SRL H
         RR L
         LD A,(ZCF_SIDE)
         OR A
         JR Z,ZCF_RANGE
         LD (ZCF_FIRST),HL
-ZCF_RANGE:
+
+; -------------------------------------------------------------------------------
+; Surface Record Range
+; -------------------------------------------------------------------------------
+
+ZCF_RANGE:                              ; derive surface record range
         LD DE,(ZCF_FIRST)
         ADD HL,DE
         LD (ZCF_LIMIT),HL
@@ -164,7 +200,12 @@ ZCF_RANGE:
         XOR A
         LD (BIO_TRACK+1),A
         LD HL,(ZCF_FIRST)
-ZCF_RECORD:
+
+; -------------------------------------------------------------------------------
+; Format Record Loop
+; -------------------------------------------------------------------------------
+
+ZCF_RECORD:                             ; format next logical record
         LD (BIO_SECTOR),HL
         PUSH HL
         CALL LY_DISK+3
@@ -186,27 +227,39 @@ ZCF_RECORD:
         POP IY
         JP ZC_OK
 
-ZCF_IOERR:
+ZCF_IOERR:                              ; return format I/O error
         LD L,A
         LD H,0
         POP IY
         POP IX
         OR A
         RET
-ZCF_INVALID:
+
+ZCF_INVALID:                            ; return invalid format request
         POP IY
         JP ZC_INVALID
-ZCF_UNSUP:
+
+ZCF_UNSUP:                              ; return unsupported format request
         POP IY
         JP ZC_UNSUP
 
-ZC_ATTACH:
+; ================================================================================
+; =                    Logical Disk Attachment and Validation                    =
+; =                                                                              =
+; = Validates a normalized logical binding against the selected virtual drive,   =
+; = geometry, CP/M allocation rules, and sector-ID constraints before installation. =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Virtual Drive Validation
+; -------------------------------------------------------------------------------
+
+ZC_ATTACH:                              ; validate and attach logical disk
         CP 4
         JP NC,ZC_INVALID
         CALL ZC_PHY
         LD (ZC_PHYPTR),HL
 
-; Logical track/cylinder count must fit the selected virtual drive.
+  ; Logical track/cylinder count must fit the selected virtual drive.
         LD A,(IX+17)
         OR A
         JP Z,ZC_INVALID
@@ -217,16 +270,17 @@ ZC_ATTACH:
         JP C,ZC_UNSUP
         INC HL
 
-; Standard and cylinder-track double-sided definitions need two surfaces.
+  ; Standard and cylinder-track double-sided definitions need two surfaces.
         LD A,(IX+20)
         AND 060H
         JR Z,ZC_SIDEOK
         LD A,(HL)
         CP 2
         JP NZ,ZC_UNSUP
-ZC_SIDEOK:
 
-; Optional FDF conventions require the mapper RSX.
+ZC_SIDEOK:                              ; accept side geometry
+
+  ; Optional FDF conventions require the mapper RSX.
         LD A,(IX+20)
         AND 00FH
         JR Z,ZC_FDFOK
@@ -238,7 +292,8 @@ ZC_SIDEOK:
         OR A
         SBC HL,DE
         JP NZ,ZC_UNSUP
-ZC_FDFOK:
+
+ZC_FDFOK:                               ; accept FDF capability
 
         LD A,(IX+18)
         OR A
@@ -249,18 +304,20 @@ ZC_FDFOK:
         CP 4
         JP NC,ZC_UNSUP
 
-; Uniform geometry needs no size map.  Anything else is validated and,
-; where applicable, normalized by FDF.RSX operation 2.
+  ; Uniform geometry needs no size map.  Anything else is validated and,
+  ; where applicable, normalized by FDF.RSX operation 2.
         LD L,(IX+18)
         LD H,0
         LD A,(IX+19)
         OR A
         JR Z,ZC_SPTDONE
-ZC_SPTSHIFT:
+
+ZC_SPTSHIFT:                            ; scale sectors per track
         ADD HL,HL
         DEC A
         JR NZ,ZC_SPTSHIFT
-ZC_SPTDONE:
+
+ZC_SPTDONE:                             ; finish sector scaling
         LD A,(IX+3)
         CP H
         JR NZ,ZC_MIXED
@@ -269,7 +326,12 @@ ZC_SPTDONE:
         JR NZ,ZC_MIXED
         LD (IX+53),0
         JR ZC_GEOMOK
-ZC_MIXED:
+
+; -------------------------------------------------------------------------------
+; Geometry Normalization
+; -------------------------------------------------------------------------------
+
+ZC_MIXED:                               ; normalize mixed geometry
         PUSH IX
         LD BC,002D1H
         CALL 5
@@ -278,9 +340,10 @@ ZC_MIXED:
         OR A
         SBC HL,DE
         JP NZ,ZC_INVALID
-ZC_GEOMOK:
 
-; Operation 2 may normalize a cylinder-track format by setting bit 5.
+ZC_GEOMOK:                              ; accept normalized geometry
+
+  ; Operation 2 may normalize a cylinder-track format by setting bit 5.
         LD A,(IX+20)
         AND 060H
         JR Z,ZC_NORMOK
@@ -291,9 +354,10 @@ ZC_GEOMOK:
         LD A,(HL)
         CP 2
         JP NZ,ZC_UNSUP
-ZC_NORMOK:
 
-; BSH/BLM and DSM must be structurally plausible for CP/M 2.2.
+ZC_NORMOK:                              ; accept normalized binding
+
+  ; BSH/BLM and DSM must be structurally plausible for CP/M 2.2.
         LD A,(IX+4)
         CP 3
         JP C,ZC_INVALID
@@ -301,7 +365,12 @@ ZC_NORMOK:
         JP NC,ZC_INVALID
         LD B,A
         LD A,1
-ZC_BLMSH:
+
+; -------------------------------------------------------------------------------
+; CP/M Allocation Validation
+; -------------------------------------------------------------------------------
+
+ZC_BLMSH:                               ; derive block mask
         ADD A,A
         DJNZ ZC_BLMSH
         DEC A
@@ -314,31 +383,38 @@ ZC_BLMSH:
         OR A
         JP NZ,ZC_INVALID
 
-; Sector IDs in one physical track must be unique.
+  ; Sector IDs in one physical track must be unique.
         PUSH IX
         POP HL
         LD DE,21
         ADD HL,DE
         LD B,(IX+18)
-ZC_SKEW:
+
+; -------------------------------------------------------------------------------
+; Sector-ID Validation
+; -------------------------------------------------------------------------------
+
+ZC_SKEW:                                ; validate sector-ID uniqueness
         LD A,(HL)
         PUSH BC
         PUSH HL
         INC HL
         DEC B
         JR Z,ZC_SKDONE
-ZC_SKCMP:
+
+ZC_SKCMP:                               ; compare sector IDs
         CP (HL)
         JR Z,ZC_SKBAD
         INC HL
         DJNZ ZC_SKCMP
-ZC_SKDONE:
+
+ZC_SKDONE:                              ; finish sector-ID comparison
         POP HL
         POP BC
         INC HL
         DJNZ ZC_SKEW
 
-; Install the complete normalized 64-byte binding.
+  ; Install the complete normalized 64-byte binding.
         LD A,(ZC_DRIVE)
         CALL ZC_DPH
         LD DE,16
@@ -351,14 +427,25 @@ ZC_SKDONE:
         LDIR
         JP ZC_OK
 
-ZC_SKBAD:
+ZC_SKBAD:                               ; reject duplicate sector ID
         POP HL
         POP BC
         JP ZC_INVALID
 
-; These getters are present because the overlay ABI reserves the vectors,
-; although z80pack's resident disk service normally handles operations 1/3.
-ZC_GETPH:
+  ; These getters are present because the overlay ABI reserves the vectors,
+  ; although z80pack's resident disk service normally handles operations 1/3.
+
+; ================================================================================
+; =                         Configuration Query Services                         =
+; =                                                                              =
+; = Returns installed physical and logical profile records through the overlay ABI =
+; = and resolves the resident DPH table supplied by the image builder.           =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Physical Profile Query
+; -------------------------------------------------------------------------------
+
+ZC_GETPH:                               ; return physical profile
         LD A,(IX+0)
         CP 4
         JP NC,ZC_INVALID
@@ -366,7 +453,11 @@ ZC_GETPH:
         LD BC,6
         JR ZC_COPY
 
-ZC_GETLOG:
+; -------------------------------------------------------------------------------
+; Logical Profile Query
+; -------------------------------------------------------------------------------
+
+ZC_GETLOG:                              ; return logical profile
         LD A,(IX+0)
         CP 4
         JP NC,ZC_INVALID
@@ -374,27 +465,37 @@ ZC_GETLOG:
         LD DE,16
         ADD HL,DE
         LD BC,64
-ZC_COPY:
+
+ZC_COPY:                                ; copy profile to caller
         PUSH IX
         POP DE
         INC DE
         LDIR
-ZC_OK:
+
+ZC_OK:                                  ; return configuration success
         XOR A
         JR ZC_RESULT
-ZC_INVALID:
+
+ZC_INVALID:                             ; return invalid-request status
         LD A,1
         JR ZC_RESULT
-ZC_UNSUP:
+
+ZC_UNSUP:                               ; return unsupported-request status
         LD A,2
-ZC_RESULT:
+
+ZC_RESULT:                              ; return overlay result
         LD L,A
         LD H,0
         POP IX
         RET
 
-; A=physical drive 0..3 -> HL six-byte descriptor.
-ZC_PHY:
+  ; A=physical drive 0..3 -> HL six-byte descriptor.
+
+; -------------------------------------------------------------------------------
+; Physical Descriptor Lookup
+; -------------------------------------------------------------------------------
+
+ZC_PHY:                                 ; locate physical descriptor
         LD E,A
         ADD A,A
         ADD A,A
@@ -406,26 +507,44 @@ ZC_PHY:
         ADD HL,DE
         RET
 
-; A=logical drive 0..3 -> HL 80-byte DPH record.
-ZC_DPH:
+  ; A=logical drive 0..3 -> HL 80-byte DPH record.
+
+; -------------------------------------------------------------------------------
+; Logical DPH Lookup
+; -------------------------------------------------------------------------------
+
+ZC_DPH:                                 ; locate logical DPH
         LD HL,LY_TAB
         LD DE,80
         OR A
         RET Z
-ZC_DPHLP:
+
+ZC_DPHLP:                               ; scan DPH table
         ADD HL,DE
         DEC A
         JR NZ,ZC_DPHLP
         RET
 
-; Replaced by tools/build_z80pack_image.py with the resident symbol address.
+  ; Replaced by tools/build_z80pack_image.py with the resident symbol address.
 ZP_PHYSICAL EQU 0FFFFH
 
-ZC_DRIVE:  DB 0
-ZC_PHYPTR: DW 0
-ZCF_BUFFER:DW 0
-ZCF_FIRST: DW 0
-ZCF_LIMIT: DW 0
-ZCF_TRACK: DB 0
-ZCF_CYL:   DB 0
-ZCF_SIDE:  DB 0
+; ================================================================================
+; =                         Configuration Working State                          =
+; =                                                                              =
+; = Defines the selected drive, descriptor pointers, format workspace, and surface =
+; = range state used by the z80pack configuration overlay.                       =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Overlay State
+; -------------------------------------------------------------------------------
+
+ZC_DRIVE:  DB 0                         ; selected drive
+ZC_PHYPTR: DW 0                         ; physical descriptor pointer
+
+ZCF_BUFFER:DW 0                         ; format workspace pointer
+
+ZCF_FIRST: DW 0                         ; first surface record
+ZCF_LIMIT: DW 0                         ; surface record limit
+ZCF_TRACK: DB 0                         ; logical format track
+ZCF_CYL:   DB 0                         ; physical format cylinder
+ZCF_SIDE:  DB 0                         ; physical format side

@@ -12,9 +12,7 @@ from system_layout import LAYOUT
 
 ROOT = Path(__file__).resolve().parents[1]
 BUILD_IMAGE = ROOT / "build/trs80/BetterCPM-Build-80T-DS-800K.img"
-SOURCE_IMAGE = ROOT / "build/trs80/BetterCPM-Sources-80T-DS-800K.img"
 BUILD_Z80PACK = ROOT / "build/trs80/BetterCPM-Build-80T-DS-800K.dsk"
-SOURCE_Z80PACK = ROOT / "build/trs80/BetterCPM-Sources-80T-DS-800K.dsk"
 
 PRODUCTS = (
     "BOOT.BIN", "STAGE1.BIN", "RESIDENT.BIN", "CCPRELOD.BIN",
@@ -29,8 +27,13 @@ def main() -> None:
     build = extract_files(BUILD_IMAGE.read_bytes())
     if z80pack_logical(BUILD_Z80PACK.read_bytes()) != BUILD_IMAGE.read_bytes():
         raise SystemExit("z80pack build disk does not decode to the logical image")
-    if z80pack_logical(SOURCE_Z80PACK.read_bytes()) != SOURCE_IMAGE.read_bytes():
-        raise SystemExit("z80pack source disk does not decode to the logical image")
+    source_images = sorted((ROOT / "build/trs80").glob(
+        "BetterCPM-Sources-[0-9]*-80T-DS-800K.img"))
+    if not source_images:
+        raise SystemExit("no source archive volumes were generated")
+    for image in source_images:
+        if z80pack_logical(image.with_suffix(".dsk").read_bytes()) != image.read_bytes():
+            raise SystemExit(f"z80pack source disk does not decode: {image.name}")
     # Qualify the published cpmtools view itself.  A conventional 160-track
     # raw definition lets libdsk infer side ordering and silently reads files
     # beyond the first side from the wrong offsets.
@@ -85,14 +88,23 @@ def main() -> None:
     if packed != resident.ljust(52 * 128, b"\0"):
         raise SystemExit("RESPACK component map differs from resident.bin")
 
-    source = extract_files(SOURCE_IMAGE.read_bytes())
-    archived = {(user, name) for user, name in source}
+    archived: set[tuple[int, str]] = set()
+    manifests: set[bytes] = set()
+    for image in source_images:
+        source = extract_files(image.read_bytes())
+        manifests.add(source[(0, "SOURCES.DOC")].rstrip(b"\x1a"))
+        files = set(source) - {(0, "README.DOC"), (0, "SOURCES.DOC")}
+        if archived & files:
+            raise SystemExit(f"source names repeat across archive volumes: {image.name}")
+        archived |= files
+    if len(manifests) != 1:
+        raise SystemExit("source archive volumes disagree on SOURCES.DOC")
     source_count = sum(1 for path in (ROOT / "src").rglob("*")
                        if path.is_file() and not path.name.startswith("."))
-    if len(archived) != source_count + 2:
-        raise SystemExit("complete-source image does not cover the current src tree")
+    if len(archived) != source_count:
+        raise SystemExit("source archive volumes do not cover the current src tree")
     print("native build disk contains the complete BUILD.SUB toolchain; RESPACK "
-          "matches resident.bin and the companion disk preserves every source")
+          "matches resident.bin and the companion volumes preserve every source")
 
 
 if __name__ == "__main__":

@@ -1,7 +1,12 @@
         INCLUDE layout.inc
-; BetterCP/M resident command package (RCP).
-; Exports DIR, ERA, TYPE, REN, USER, CLS, VER, COPY, and MOVE through the common CPX
-; command entry.
+
+; ********************************************************************************
+; *                     BetterCP/M Resident Command Package                      *
+; *                                                                              *
+; * Command-processor extension providing DIR, ERA, TYPE, REN, USER, CLS, VER,   *
+; * COPY, and MOVE through the common CPX command interface.                     *
+; ********************************************************************************
+
 
 CPXBASE         EQU     08000H
 BDOS            EQU     00005H
@@ -9,11 +14,26 @@ BDOS            EQU     00005H
         CSEG
         .PHASE  CPXBASE
 
-; Required CPX header: WBOOT supplies NEXT and relocates ENTRY.
-BC_NEXT:        DW      0
-BC_ENTRY:       DW      BC_COMMAND
+  ; Required CPX header: WBOOT supplies NEXT and relocates ENTRY.
 
-BC_COMMAND:
+; ================================================================================
+; =                        CPX Entry and Command Dispatch                        =
+; =                                                                              =
+; = Defines the RCP CPX header and recognizes the resident command set before    =
+; = dispatching each accepted command to its implementation.                     =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; CPX Header
+; -------------------------------------------------------------------------------
+
+BC_NEXT:        DW      0               ; next CPX descriptor pointer
+BC_ENTRY:       DW      BC_COMMAND      ; RCP command entry pointer
+
+; -------------------------------------------------------------------------------
+; Command Recognition
+; -------------------------------------------------------------------------------
+
+BC_COMMAND:                             ; recognize resident command
         LD      (BC_CMDPTR),DE
         LD      A,B
         LD      (BC_CMDLEN),A
@@ -24,7 +44,8 @@ BC_COMMAND:
         CALL    BC_DIR
         SCF
         RET
-BC_TRYERA:
+
+BC_TRYERA:                              ; tryera
         LD      HL,BC_KERA
         LD      C,3
         CALL    BC_MATCH
@@ -32,7 +53,8 @@ BC_TRYERA:
         CALL    BC_ERA
         SCF
         RET
-BC_TRYTYP:
+
+BC_TRYTYP:                              ; trytyp
         LD      HL,BC_KTYPE
         LD      C,4
         CALL    BC_MATCH
@@ -40,7 +62,8 @@ BC_TRYTYP:
         CALL    BC_TYPE
         SCF
         RET
-BC_TRYREN:
+
+BC_TRYREN:                              ; tryren
         LD      HL,BC_KREN
         LD      C,3
         CALL    BC_MATCH
@@ -48,7 +71,8 @@ BC_TRYREN:
         CALL    BC_REN
         SCF
         RET
-BC_TRYCLS:
+
+BC_TRYCLS:                              ; trycls
         LD      HL,BC_KCLS
         LD      C,3
         CALL    BC_MATCH
@@ -56,7 +80,8 @@ BC_TRYCLS:
         CALL    BC_CLR
         SCF
         RET
-BC_TRYUSER:
+
+BC_TRYUSER:                             ; tryuser
         LD      HL,BC_KUSER
         LD      C,4
         CALL    BC_MATCH
@@ -64,7 +89,8 @@ BC_TRYUSER:
         CALL    BC_USER
         SCF
         RET
-BC_TRYVER:
+
+BC_TRYVER:                              ; tryver
         LD      HL,BC_KVER
         LD      C,3
         CALL    BC_MATCH
@@ -72,7 +98,8 @@ BC_TRYVER:
         CALL    BC_VER
         SCF
         RET
-BC_TRYCOPY:
+
+BC_TRYCOPY:                             ; trycopy
         LD      HL,BC_KCOPY
         LD      C,4
         CALL    BC_MATCH
@@ -82,7 +109,8 @@ BC_TRYCOPY:
         CALL    BC_COPY
         SCF
         RET
-BC_TRYMOVE:
+
+BC_TRYMOVE:                             ; trymove
         LD      HL,BC_KMOVE
         LD      C,4
         CALL    BC_MATCH
@@ -91,19 +119,32 @@ BC_TRYMOVE:
         SCF
         RET
 
-; Match keyword HL/C. On success carry is set and HL/B describe arguments.
-BC_MATCH:
+  ; Match keyword HL/C. On success carry is set and HL/B describe arguments.
+
+; ================================================================================
+; =                    Command and File-Specification Parsing                    =
+; =                                                                              =
+; = Provides shared keyword matching, argument handling, and CP/M FCB parsing used =
+; = by the resident command implementations.                                     =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Keyword Matching
+; -------------------------------------------------------------------------------
+
+BC_MATCH:                               ; match command keyword
         LD      A,C
         LD      (BC_KEYLEN),A
         LD      A,(BC_CMDLEN)
         CP      C
         JR      NC,BC_MLENOK
-        OR      A               ; too short is a decline, not a handled call
+        OR      A                       ; too short is a decline, not a handled call
         RET
-BC_MLENOK:
-; Keep the proof module on the exercised 8080-compatible instruction floor.
-; Subtract the short keyword length without depending on SUB C.
-BC_MSUB:
+
+BC_MLENOK:                              ; mlenok
+  ; Keep the proof module on the exercised 8080-compatible instruction floor.
+  ; Subtract the short keyword length without depending on SUB C.
+
+BC_MSUB:                                ; msub
         DEC     A
         DEC     C
         JR      NZ,BC_MSUB
@@ -111,7 +152,8 @@ BC_MSUB:
         LD      DE,(BC_CMDPTR)
         LD      A,(BC_KEYLEN)
         LD      C,A
-BC_MLOOP:
+
+BC_MLOOP:                               ; mloop
         LD      A,(DE)
         CP      (HL)
         JR      NZ,BC_MFAIL
@@ -127,7 +169,8 @@ BC_MLOOP:
         JR      NZ,BC_MFAIL
         LD      A,(BC_ARGLEN)
         LD      B,A
-BC_MSKIP:
+
+BC_MSKIP:                               ; mskip
         LD      A,B
         OR      A
         JR      Z,BC_MOK
@@ -137,18 +180,26 @@ BC_MSKIP:
         INC     DE
         DEC     B
         JR      BC_MSKIP
-BC_MOK0:
+
+BC_MOK0:                                ; mok0
         LD      B,0
-BC_MOK:
+
+BC_MOK:                                 ; mok
         EX      DE,HL
         SCF
         RET
-BC_MFAIL:
+
+BC_MFAIL:                               ; mfail
         OR      A
         RET
 
-; Parse HL/B into a 36-byte FCB at DE. Supports drive prefixes and * / ?.
-BC_PFCB:
+  ; Parse HL/B into a 36-byte FCB at DE. Supports drive prefixes and * / ?.
+
+; -------------------------------------------------------------------------------
+; FCB Parser
+; -------------------------------------------------------------------------------
+
+BC_PFCB:                                ; parse filespec into FCB
         LD      (BC_INPTR),HL
         LD      A,B
         LD      (BC_INLEN),A
@@ -156,7 +207,8 @@ BC_PFCB:
         PUSH    DE
         XOR     A
         LD      C,36
-BC_PZERO:
+
+BC_PZERO:                               ; pzero
         LD      (DE),A
         INC     DE
         DEC     C
@@ -165,7 +217,8 @@ BC_PZERO:
         INC     DE
         LD      A,' '
         LD      C,11
-BC_PSPACE:
+
+BC_PSPACE:                              ; pspace
         LD      (DE),A
         INC     DE
         DEC     C
@@ -193,10 +246,12 @@ BC_PSPACE:
         INC     HL
         DEC     B
         DEC     B
-BC_PNAME:
+
+BC_PNAME:                               ; pname
         INC     DE
         LD      C,8
-BC_PNLOOP:
+
+BC_PNLOOP:                              ; pnloop
         LD      A,B
         OR      A
         JR      Z,BC_PDOK
@@ -214,14 +269,17 @@ BC_PNLOOP:
         DEC     C
         JR      NZ,BC_PNLOOP
         JR      BC_PSKIPN
-BC_PNSTAR:
+
+BC_PNSTAR:                              ; pnstar
         LD      A,'?'
-BC_PNSLP:
+
+BC_PNSLP:                               ; pnslp
         LD      (DE),A
         INC     DE
         DEC     C
         JR      NZ,BC_PNSLP
-BC_PSKIPN:
+
+BC_PSKIPN:                              ; pskipn
         LD      A,B
         OR      A
         JR      Z,BC_PDOK
@@ -231,19 +289,23 @@ BC_PSKIPN:
         CP      '.'
         JR      NZ,BC_PSKIPN
         JR      BC_PEXT0
-BC_PDOT:
+
+BC_PDOT:                                ; pdot
         INC     HL
         DEC     B
-BC_PEXT0:
+
+BC_PEXT0:                               ; pext0
         LD      DE,(BC_FCBPTR)
         LD      A,E
         ADD     A,9
         LD      E,A
         JR      NC,BC_PEXT
         INC     D
-BC_PEXT:
+
+BC_PEXT:                                ; pext
         LD      C,3
-BC_PELOOP:
+
+BC_PELOOP:                              ; peloop
         LD      A,B
         OR      A
         JR      Z,BC_PDOK
@@ -259,22 +321,35 @@ BC_PELOOP:
         DEC     C
         JR      NZ,BC_PELOOP
         JR      BC_PDOK
-BC_PESTAR:
+
+BC_PESTAR:                              ; pestar
         LD      A,'?'
-BC_PESLP:
+
+BC_PESLP:                               ; peslp
         LD      (DE),A
         INC     DE
         DEC     C
         JR      NZ,BC_PESLP
-BC_PDOK:
+
+BC_PDOK:                                ; pdok
         LD      A,(BC_INLEN)
         OR      A
         RET
 
-BC_DIR:
+; ================================================================================
+; =                                 DIR Command                                  =
+; =                                                                              =
+; = Implements CP/M-style directory listing with temporary drive/user selection, =
+; = wildcard parsing, extent-group filtering, and four-column output.            =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Directory Setup
+; -------------------------------------------------------------------------------
+
+BC_DIR:                                 ; execute DIR command
         CALL    BC_DUSEL
         JP      C,BC_BDERR
-        LD      C,31            ; selected drive's DPB supplies EXM
+        LD      C,31                    ; selected drive's DPB supplies EXM
         CALL    BDOS
         LD      DE,4
         ADD     HL,DE
@@ -284,7 +359,7 @@ BC_DIR:
         XOR     A
         LD      (BC_DCOL),A
         LD      (BC_DFOUND),A
-        LD      HL,(BC_DARGP)   ; Function 31 does not preserve arguments
+        LD      HL,(BC_DARGP)           ; Function 31 does not preserve arguments
         LD      A,(BC_DARGL)
         LD      B,A
         LD      A,B
@@ -292,14 +367,20 @@ BC_DIR:
         JR      NZ,BC_DPARSE
         LD      HL,BC_ALL
         LD      B,3
-BC_DPARSE:
+
+; -------------------------------------------------------------------------------
+; Directory Search and Display
+; -------------------------------------------------------------------------------
+
+BC_DPARSE:                              ; dparse
         LD      DE,BC_FCB
         CALL    BC_PFCB
         LD      DE,0080H
         LD      C,26
         CALL    BDOS
         LD      C,17
-BC_DNEXT:
+
+BC_DNEXT:                               ; dnext
         LD      DE,BC_FCB
         CALL    BDOS
         CP      0FFH
@@ -313,12 +394,12 @@ BC_DNEXT:
         LD      L,A
         LD      H,0
         LD      (BC_DIREP),HL
-        LD      A,1             ; stock NO FILE depends on search, not display
-        LD      (BC_DFOUND),A   ; a matching SYS entry still counts as found
-; Patch 2026-09-02: the proof DIR printed one name per line and exposed every
-; matching extent. Preserve this old path in history here: stock CCP output is
-; a four-column directory of DIR-status filenames, once per physical extent
-; group. EXM determines which low EX bits belong to the first group.
+        LD      A,1                     ; stock NO FILE depends on search, not display
+        LD      (BC_DFOUND),A           ; a matching SYS entry still counts as found
+  ; Patch 2026-09-02: the proof DIR printed one name per line and exposed every
+  ; matching extent. Preserve this old path in history here: stock CCP output is
+  ; a four-column directory of DIR-status filenames, once per physical extent
+  ; group. EXM determines which low EX bits belong to the first group.
         LD      DE,12
         ADD     HL,DE
         LD      A,(HL)
@@ -329,7 +410,7 @@ BC_DNEXT:
         LD      DE,10
         ADD     HL,DE
         LD      A,(HL)
-        AND     080H            ; T2 high bit marks a SYS, not DIR, file
+        AND     080H                    ; T2 high bit marks a SYS, not DIR, file
         JR      NZ,BC_DSKIP
         LD      A,(BC_DCOL)
         OR      A
@@ -337,12 +418,13 @@ BC_DNEXT:
         LD      DE,BC_NL
         LD      C,9
         CALL    BDOS
-; Patch 2026-09-07: print the drive BDOS is actually searching.  The old
-; tentative-prefix value made DIR ONE.TXT on B: print O:.  A filename can
-; start with a drive letter without being a drive-qualified filespec.
+  ; Patch 2026-09-07: print the drive BDOS is actually searching.  The old
+  ; tentative-prefix value made DIR ONE.TXT on B: print O:.  A filename can
+  ; start with a drive letter without being a drive-qualified filespec.
         LD      C,25
         CALL    BDOS
-BC_DDRIVE:
+
+BC_DDRIVE:                              ; ddrive
         ADD     A,'A'
         CALL    BC_PCHAR
         LD      A,':'
@@ -350,11 +432,13 @@ BC_DDRIVE:
         LD      A,' '
         CALL    BC_PCHAR
         JR      BC_DNAME
-BC_DSEP:
+
+BC_DSEP:                                ; dsep
         LD      DE,BC_SEP
         LD      C,9
         CALL    BDOS
-BC_DNAME:
+
+BC_DNAME:                               ; dname
         LD      HL,(BC_DIREP)
         INC     HL
         LD      B,8
@@ -370,11 +454,14 @@ BC_DNAME:
         INC     A
         AND     3
         LD      (BC_DCOL),A
-BC_DMORE:
-BC_DSKIP:
+
+BC_DMORE:                               ; dmore
+
+BC_DSKIP:                               ; dskip
         LD      C,18
         JP      BC_DNEXT
-BC_DDONE:
+
+BC_DDONE:                               ; ddone
         LD      A,(BC_DFOUND)
         OR      A
         JR      Z,BC_DNOFILE
@@ -382,13 +469,14 @@ BC_DDONE:
         LD      C,9
         CALL    BDOS
         JP      BC_DURST
-BC_DNOFILE:
+
+BC_DNOFILE:                             ; dnofile
         LD      DE,BC_NOFILE
         LD      C,9
         CALL    BDOS
         JP      BC_DURST
 
-BC_FFIX:
+BC_FFIX:                                ; ffix
         LD      A,(HL)
         AND     07FH
         PUSH    HL
@@ -399,15 +487,21 @@ BC_FFIX:
         INC     HL
         DJNZ    BC_FFIX
         RET
-BC_PCHAR:
+
+BC_PCHAR:                               ; pchar
         LD      E,A
         LD      C,2
         JP      BDOS
 
-; DIR accepts the CCP's complete DU selector before an optional filespec:
-; A:, 5:, or C3:.  The selected DU is deliberately temporary; this preserves
-; the historical distinction between "DIR B:" and the navigation command B:.
-BC_DUSEL:
+  ; DIR accepts the CCP's complete DU selector before an optional filespec:
+  ; A:, 5:, or C3:.  The selected DU is deliberately temporary; this preserves
+  ; the historical distinction between "DIR B:" and the navigation command B:.
+
+; -------------------------------------------------------------------------------
+; Temporary Drive/User Selection
+; -------------------------------------------------------------------------------
+
+BC_DUSEL:                               ; parse temporary drive/user selector
         LD      (BC_DARGP),HL
         LD      A,B
         LD      (BC_DARGL),A
@@ -441,8 +535,8 @@ BC_DUSEL:
         LD      A,(HL)
         CP      ':'
         JR      Z,BC_DUCOL
-; BetterCP/M's combined DU form is an additive extension to CP/M's D: form.
-; After a drive letter, accept one or two decimal user digits before the colon.
+  ; BetterCP/M's combined DU form is an additive extension to CP/M's D: form.
+  ; After a drive letter, accept one or two decimal user digits before the colon.
         CP      '0'
         JP      C,BC_DUNONE
         CP      '9'+1
@@ -482,11 +576,13 @@ BC_DUSEL:
         LD      A,(HL)
         CP      ':'
         JR      NZ,BC_DUNONE
-BC_DUDONE:
+
+BC_DUDONE:                              ; dudone
         LD      A,C
         LD      (BC_UTARG),A
         JR      BC_DUCOL
-BC_DUNUM:
+
+BC_DUNUM:                               ; dunum
         LD      A,B
         OR      A
         JR      Z,BC_DUNONE
@@ -522,19 +618,22 @@ BC_DUNUM:
         LD      C,A
         INC     HL
         DEC     B
-BC_DUONE:
+
+BC_DUONE:                               ; duone
         LD      A,(HL)
         CP      ':'
         JR      NZ,BC_DUNONE
         LD      A,C
         LD      (BC_UTARG),A
-BC_DUCOL:
+
+BC_DUCOL:                               ; ducol
         LD      A,(BC_DTARG)
         CP      0FFH
         JR      Z,BC_DUVALID
         CP      4
         JP      NC,BC_DUBAD
-BC_DUVALID:
+
+BC_DUVALID:                             ; duvalid
         INC     HL
         DEC     B
         LD      (BC_DARGP),HL
@@ -546,39 +645,43 @@ BC_DUVALID:
         LD      E,A
         LD      C,14
         CALL    BDOS
-BC_DUUSER:
+
+BC_DUUSER:                              ; duuser
         LD      A,(BC_UTARG)
         CP      0FFH
         JR      Z,BC_DUOUT
         LD      E,A
         LD      C,32
         CALL    BDOS
-BC_DUOUT:
+
+BC_DUOUT:                               ; duout
         LD      HL,(BC_DARGP)
         LD      A,(BC_DARGL)
         LD      B,A
-        OR      A               ; normal return clears carry
+        OR      A                       ; normal return clears carry
         RET
-BC_DUNONE:
+
+BC_DUNONE:                              ; dunone
         LD      HL,(BC_DARGP)
         LD      A,(BC_DARGL)
         LD      B,A
         OR      A
         RET
-BC_DUBAD:
+
+BC_DUBAD:                               ; dubad
         LD      HL,(BC_DARGP)
         LD      A,(BC_DARGL)
         LD      B,A
         SCF
         RET
 
-BC_BDERR:
+BC_BDERR:                               ; bderr
         LD      DE,BC_BDMSG
         LD      C,9
         CALL    BDOS
         JP      BC_DURST
 
-BC_DURST:
+BC_DURST:                               ; durst
         LD      A,(BC_DSAVE)
         LD      E,A
         LD      C,14
@@ -587,7 +690,12 @@ BC_DURST:
         LD      E,A
         LD      C,32
         JP      BDOS
-BC_FIELD:
+
+; -------------------------------------------------------------------------------
+; Directory Field Formatting
+; -------------------------------------------------------------------------------
+
+BC_FIELD:                               ; print directory field
         LD      A,(HL)
         AND     07FH
         CP      ' '
@@ -599,12 +707,23 @@ BC_FIELD:
         CALL    BDOS
         POP     BC
         POP     HL
-BC_DFSKIP:
+
+BC_DFSKIP:                              ; dfskip
         INC     HL
         DJNZ    BC_FIELD
         RET
 
-BC_ERA:
+; ================================================================================
+; =                                 ERA Command                                  =
+; =                                                                              =
+; = Implements file erasure, including the stock CP/M confirmation rule for an   =
+; = all-wildcard erase and restoration of temporary drive/user context.          =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Erase Setup and Confirmation
+; -------------------------------------------------------------------------------
+
+BC_ERA:                                 ; execute ERA command
         CALL    BC_DUSEL
         JP      C,BC_BDERR
         LD      A,B
@@ -614,14 +733,15 @@ BC_ERA:
         CALL    BC_PFCB
         LD      HL,BC_FCB+1
         LD      B,11
-BC_EALLQ:
+
+BC_EALLQ:                               ; eallq
         LD      A,(HL)
         CP      '?'
         JR      NZ,BC_EDELETE
         INC     HL
         DJNZ    BC_EALLQ
-; Stock CP/M asks before an all-wildcard erase. Its buffered reply must contain
-; exactly one Y; extra characters cancel just as an N or empty line does.
+  ; Stock CP/M asks before an all-wildcard erase. Its buffered reply must contain
+  ; exactly one Y; extra characters cancel just as an N or empty line does.
         LD      DE,BC_ECONF
         LD      C,9
         CALL    BDOS
@@ -637,29 +757,43 @@ BC_EALLQ:
         AND     05FH
         CP      'Y'
         JR      NZ,BC_ERET
-BC_EDELETE:
+
+BC_EDELETE:                             ; edelete
         LD      DE,BC_FCB
         LD      C,19
         CALL    BDOS
         CP      0FFH
         JR      NZ,BC_ERET
-BC_ENOFILE:
+
+BC_ENOFILE:                             ; enofile
         LD      DE,BC_NOFILE
         LD      C,9
         CALL    BDOS
-BC_ERET:
+
+BC_ERET:                                ; eret
         JP      BC_DURST
 
-BC_TYPE:
+; ================================================================================
+; =                                 TYPE Command                                 =
+; =                                                                              =
+; = Displays a text file with optional paging, console-abort handling, and CP/M  =
+; = file/error semantics.                                                        =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; TYPE Setup
+; -------------------------------------------------------------------------------
+
+BC_TYPE:                                ; execute TYPE command
         CALL    BC_DUSEL
         JP      C,BC_BDERR
         LD      A,B
         OR      A
         JP      Z,BC_TSYNTAX
-; Separate the exact filename from the optional /P extension.
+  ; Separate the exact filename from the optional /P extension.
         LD      (BC_INPTR),HL
         LD      C,0
-BC_TSCAN:
+
+BC_TSCAN:                               ; tscan
         LD      A,(HL)
         CP      ' '
         JR      Z,BC_TOPTION
@@ -669,9 +803,11 @@ BC_TSCAN:
         XOR     A
         LD      (BC_TPAGE),A
         JR      BC_TPARSE
-BC_TOPTION:
+
+BC_TOPTION:                             ; toption
         PUSH    BC
-BC_TOSKIP:
+
+BC_TOSKIP:                              ; toskip
         INC     HL
         DEC     B
         JR      Z,BC_TSYPOP
@@ -692,10 +828,12 @@ BC_TOSKIP:
         LD      A,1
         LD      (BC_TPAGE),A
         JR      BC_TPARSE
-BC_TSYPOP:
+
+BC_TSYPOP:                              ; tsypop
         POP     BC
         JP      BC_TSYNTAX
-BC_TPARSE:
+
+BC_TPARSE:                              ; tparse
         LD      HL,(BC_INPTR)
         LD      B,C
         LD      DE,BC_FCB
@@ -716,7 +854,12 @@ BC_TPARSE:
         LD      DE,BC_NL
         LD      C,9
         CALL    BDOS
-BC_TREAD:
+
+; -------------------------------------------------------------------------------
+; File Display and Paging
+; -------------------------------------------------------------------------------
+
+BC_TREAD:                               ; tread
         LD      DE,BC_FCB
         LD      C,20
         CALL    BDOS
@@ -726,10 +869,12 @@ BC_TREAD:
         JP      Z,BC_DURST
         LD      DE,BC_READERR
         JR      BC_TERROR
-BC_TBLOCK:
+
+BC_TBLOCK:                              ; tblock
         LD      HL,BC_DMA
         LD      B,128
-BC_TCHAR:
+
+BC_TCHAR:                               ; tchar
         LD      A,(HL)
         CP      01AH
         JP      Z,BC_DURST
@@ -746,12 +891,13 @@ BC_TCHAR:
         PUSH    HL
         CALL    BC_TLINE
         POP     HL
-BC_TNEXT:
+
+BC_TNEXT:                               ; tnext
         INC     HL
         DJNZ    BC_TCHAR
         JR      BC_TREAD
 
-BC_TLINE:
+BC_TLINE:                               ; tline
         LD      A,(BC_TPAGE)
         OR      A
         RET     Z
@@ -767,7 +913,8 @@ BC_TLINE:
         LD      DE,BC_MORE
         LD      C,9
         CALL    BDOS
-BC_TWAIT:
+
+BC_TWAIT:                               ; twait
         LD      E,0FFH
         LD      C,6
         CALL    BDOS
@@ -783,17 +930,30 @@ BC_TWAIT:
         POP     DE
         POP     BC
         RET
-BC_TABORT:
+
+BC_TABORT:                              ; tabort
         LD      C,0
         JP      BDOS
-BC_TSYNTAX:
+
+BC_TSYNTAX:                             ; tsyntax
         LD      DE,BC_RQMARK
-BC_TERROR:
+
+BC_TERROR:                              ; terror
         LD      C,9
         CALL    BDOS
         JP      BC_DURST
 
-BC_REN:
+; ================================================================================
+; =                                 REN Command                                  =
+; =                                                                              =
+; = Parses and validates CP/M rename syntax, rejects ambiguous names, checks the =
+; = destination first, and performs the rename through BDOS.                     =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Rename Parsing and Validation
+; -------------------------------------------------------------------------------
+
+BC_REN:                                 ; execute REN command
         CALL    BC_DUSEL
         JP      C,BC_BDERR
         LD      A,B
@@ -803,7 +963,8 @@ BC_REN:
         LD      A,B
         LD      (BC_INLEN),A
         LD      C,0
-BC_RFIND:
+
+BC_RFIND:                               ; rfind
         LD      A,(HL)
         CP      '='
         JR      Z,BC_RFOUND
@@ -813,7 +974,8 @@ BC_RFIND:
         INC     C
         DJNZ    BC_RFIND
         JP      BC_RSYNTAX
-BC_RFOUND:
+
+BC_RFOUND:                              ; rfound
         LD      A,C
         OR      A
         JP      Z,BC_RSYNTAX
@@ -831,31 +993,36 @@ BC_RFOUND:
         DEC     A
         JP      Z,BC_RSYNTAX
         LD      B,A
-BC_RSKIP:
+
+BC_RSKIP:                               ; rskip
         LD      A,(HL)
         CP      ' '
         JR      NZ,BC_ROLD
         INC     HL
         DJNZ    BC_RSKIP
         JP      BC_RSYNTAX
-BC_ROLD:
-; The old name is the final operand. Stock CCP rejects another token rather
-; than silently ignoring it, so trim only trailing blanks.
+
+BC_ROLD:                                ; rold
+  ; The old name is the final operand. Stock CCP rejects another token rather
+  ; than silently ignoring it, so trim only trailing blanks.
         PUSH    HL
         PUSH    BC
-BC_RTAIL:
+
+BC_RTAIL:                               ; rtail
         LD      A,(HL)
         CP      ' '
         JR      Z,BC_RZ1
         INC     HL
         DJNZ    BC_RTAIL
         JR      BC_RZ3
-BC_RZ1:
+
+BC_RZ1:                                 ; rz1
         LD      A,B
         LD      C,A
         INC     HL
         DEC     C
-BC_RZ2:
+
+BC_RZ2:                                 ; rz2
         LD      A,C
         OR      A
         JR      Z,BC_RZ3
@@ -865,11 +1032,13 @@ BC_RZ2:
         INC     HL
         DEC     C
         JR      BC_RZ2
-BC_RZ4:
+
+BC_RZ4:                                 ; rz4
         POP     BC
         POP     HL
         JP      BC_RSYNTAX
-BC_RZ3:
+
+BC_RZ3:                                 ; rz3
         POP     BC
         POP     HL
         LD      DE,BC_FCB
@@ -880,14 +1049,14 @@ BC_RZ3:
         LD      A,(BC_FCB+1)
         CP      ' '
         JP      Z,BC_RSYNTAX
-; Neither half of a CP/M rename FCB may be ambiguous.
+  ; Neither half of a CP/M rename FCB may be ambiguous.
         LD      HL,BC_NEWFCB+1
         CALL    BC_RNOQ
         JP      Z,BC_RSYNTAX
         LD      HL,BC_FCB+1
         CALL    BC_RNOQ
         JP      Z,BC_RSYNTAX
-; An explicit drive on the old name must denote the already selected drive.
+  ; An explicit drive on the old name must denote the already selected drive.
         LD      A,(BC_FCB)
         OR      A
         JR      Z,BC_RSAME
@@ -900,8 +1069,9 @@ BC_RZ3:
         JP      NZ,BC_RSYNTAX
         XOR     A
         LD      (BC_FCB),A
-BC_RSAME:
-; Stock REN checks the destination before checking the source.
+
+BC_RSAME:                               ; rsame
+  ; Stock REN checks the destination before checking the source.
         LD      DE,BC_NEWFCB
         LD      C,17
         CALL    BDOS
@@ -921,23 +1091,29 @@ BC_RSAME:
         CALL    BDOS
         CP      0FFH
         JP      NZ,BC_DURST
-BC_RNOFILE:
+
+BC_RNOFILE:                             ; rnofile
         LD      DE,BC_NOFILE
         JR      BC_RPRINT
-BC_REXISTS:
+
+BC_REXISTS:                             ; rexists
         LD      DE,BC_REXMSG
         JR      BC_RPRINT
-BC_RSYNTAX:
+
+BC_RSYNTAX:                             ; rsyntax
         LD      DE,BC_RQMARK
-BC_RPRINT:
+
+BC_RPRINT:                              ; rprint
         LD      C,9
         CALL    BDOS
         JP      BC_DURST
 
-; Return NZ when the eleven-byte 8.3 field at HL contains no question mark.
-BC_RNOQ:
+  ; Return NZ when the eleven-byte 8.3 field at HL contains no question mark.
+
+BC_RNOQ:                                ; rnoq
         LD      B,11
-BC_RNQL:
+
+BC_RNQL:                                ; rnql
         LD      A,(HL)
         CP      '?'
         RET     Z
@@ -947,26 +1123,42 @@ BC_RNQL:
         OR      A
         RET
 
-; COPY and MOVE share one record-copy engine.  Both accepted spellings are
-; normalized before either disk is touched:
-;
-;       COPY source destination
-;       COPY destination:=source
-;
-; MOVE erases its source only after the new file has closed successfully.
-BC_MOVE:
+  ; COPY and MOVE share one record-copy engine.  Both accepted spellings are
+  ; normalized before either disk is touched:
+  ;
+  ;       COPY source destination
+  ;       COPY destination:=source
+  ;
+  ; MOVE erases its source only after the new file has closed successfully.
+
+; ================================================================================
+; =                            COPY and MOVE Commands                            =
+; =                                                                              =
+; = Normalizes both supported COPY syntaxes and shares one record-copy engine; MOVE =
+; = erases the source only after the destination closes successfully.            =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; MOVE Entry
+; -------------------------------------------------------------------------------
+
+BC_MOVE:                                ; execute MOVE command
         LD      A,1
         LD      (BC_MVFLAG),A
         JR      BC_COPY
-BC_COPY:
+
+; -------------------------------------------------------------------------------
+; COPY Entry and Syntax Normalization
+; -------------------------------------------------------------------------------
+
+BC_COPY:                                ; execute COPY command
         LD      A,(BC_MVFLAG)
         AND     1
         LD      (BC_MVFLAG),A
         XOR     A
         LD      (BC_CMADE),A
-; Save the command cursor before asking BDOS for the caller's DU.  Function
-; calls own the ordinary registers; the first draft accidentally tried to
-; parse whatever HL and B happened to contain after Function 32.
+  ; Save the command cursor before asking BDOS for the caller's DU.  Function
+  ; calls own the ordinary registers; the first draft accidentally tried to
+  ; parse whatever HL and B happened to contain after Function 32.
         LD      (BC_CBASE),HL
         LD      A,B
         LD      (BC_CBLEN),A
@@ -984,7 +1176,8 @@ BC_COPY:
         OR      A
         JP      Z,BC_CSYNT
         LD      C,0
-BC_CFIND:
+
+BC_CFIND:                               ; cfind
         LD      A,B
         CP      2
         JR      C,BC_CSPACE
@@ -996,12 +1189,14 @@ BC_CFIND:
         DEC     HL
         CP      '='
         JR      Z,BC_CASSIGN
-BC_CFNXT:
+
+BC_CFNXT:                               ; cfnxt
         INC     HL
         INC     C
         DEC     B
         JR      BC_CFIND
-BC_CASSIGN:
+
+BC_CASSIGN:                             ; cassign
         LD      A,C
         OR      A
         JP      Z,BC_CSYNT
@@ -1020,12 +1215,14 @@ BC_CASSIGN:
         LD      (BC_CSPTR),HL
         LD      (BC_CSLEN),A
         JR      BC_CPARSE
-BC_CSPACE:
+
+BC_CSPACE:                              ; cspace
         LD      HL,(BC_CBASE)
         LD      A,(BC_CBLEN)
         LD      B,A
         LD      C,0
-BC_CSWORD:
+
+BC_CSWORD:                              ; csword
         LD      A,B
         OR      A
         JP      Z,BC_CSYNT
@@ -1036,14 +1233,16 @@ BC_CSWORD:
         INC     C
         DEC     B
         JR      BC_CSWORD
-BC_CSSEP:
+
+BC_CSSEP:                               ; cssep
         LD      A,C
         OR      A
         JP      Z,BC_CSYNT
         LD      DE,(BC_CBASE)
         LD      (BC_CSPTR),DE
         LD      (BC_CSLEN),A
-BC_CSSKIP:
+
+BC_CSSKIP:                              ; csskip
         INC     HL
         DEC     B
         JP      Z,BC_CSYNT
@@ -1052,7 +1251,8 @@ BC_CSSKIP:
         JR      Z,BC_CSSKIP
         LD      (BC_CDPTR),HL
         LD      C,0
-BC_CDWORD:
+
+BC_CDWORD:                              ; cdword
         LD      A,B
         OR      A
         JR      Z,BC_CDEND
@@ -1063,10 +1263,12 @@ BC_CDWORD:
         INC     C
         DEC     B
         JR      BC_CDWORD
-BC_CDTAIL:
+
+BC_CDTAIL:                              ; cdtail
         INC     HL
         DEC     B
-BC_CDTRIM:
+
+BC_CDTRIM:                              ; cdtrim
         LD      A,B
         OR      A
         JR      Z,BC_CDEND
@@ -1076,12 +1278,18 @@ BC_CDTRIM:
         INC     HL
         DEC     B
         JR      BC_CDTRIM
-BC_CDEND:
+
+BC_CDEND:                               ; cdend
         LD      A,C
         OR      A
         JP      Z,BC_CSYNT
         LD      (BC_CDLEN),A
-BC_CPARSE:
+
+; -------------------------------------------------------------------------------
+; Source/Destination Parsing
+; -------------------------------------------------------------------------------
+
+BC_CPARSE:                              ; cparse
         LD      HL,(BC_CSPTR)
         LD      A,(BC_CSLEN)
         LD      B,A
@@ -1091,7 +1299,8 @@ BC_CPARSE:
         OR      A
         JP      NZ,BC_BDERR
         JP      BC_CSYNT
-BC_CSOK:
+
+BC_CSOK:                                ; csok
         LD      A,(BC_CODRV)
         LD      (BC_CSDRV),A
         LD      A,(BC_COUSE)
@@ -1105,13 +1314,14 @@ BC_CSOK:
         OR      A
         JP      NZ,BC_BDERR
         JP      BC_CSYNT
-BC_CDOK:
+
+BC_CDOK:                                ; cdok
         LD      A,(BC_CODRV)
         LD      (BC_CDDRV),A
         LD      A,(BC_COUSE)
         LD      (BC_CDUSR),A
-; Refuse an exact self-copy.  Apart from being useless, deleting it during a
-; failed MOVE cleanup would destroy the source.
+  ; Refuse an exact self-copy.  Apart from being useless, deleting it during a
+  ; failed MOVE cleanup would destroy the source.
         LD      A,(BC_CSDRV)
         LD      HL,BC_CDDRV
         CP      (HL)
@@ -1123,7 +1333,8 @@ BC_CDOK:
         LD      HL,BC_FCB+1
         LD      DE,BC_NEWFCB+1
         LD      B,11
-BC_CSAME:
+
+BC_CSAME:                               ; csame
         LD      A,(DE)
         CP      (HL)
         JR      NZ,BC_COPEN
@@ -1131,7 +1342,12 @@ BC_CSAME:
         INC     HL
         DJNZ    BC_CSAME
         JP      BC_CEXIST
-BC_COPEN:
+
+; -------------------------------------------------------------------------------
+; Record Copy Engine
+; -------------------------------------------------------------------------------
+
+BC_COPEN:                               ; copen
         CALL    BC_CSELS
         LD      DE,BC_FCB
         LD      C,15
@@ -1151,7 +1367,8 @@ BC_COPEN:
         JP      Z,BCNOSPC
         LD      A,1
         LD      (BC_CMADE),A
-BC_CLOOP:
+
+BC_CLOOP:                               ; cloop
         CALL    BC_CSELS
         LD      DE,BC_DMA
         LD      C,26
@@ -1165,7 +1382,8 @@ BC_CLOOP:
         JR      Z,BC_CCLOSE
         LD      DE,BC_READERR
         JR      BC_CFAIL
-BC_CWRITE:
+
+BC_CWRITE:                              ; cwrite
         CALL    BC_CSELD
         LD      DE,BC_DMA
         LD      C,26
@@ -1177,7 +1395,8 @@ BC_CWRITE:
         JR      Z,BC_CLOOP
         LD      DE,BC_NOSPACE
         JR      BC_CFAIL
-BC_CCLOSE:
+
+BC_CCLOSE:                              ; cclose
         CALL    BC_CSELD
         LD      DE,BC_NEWFCB
         LD      C,16
@@ -1197,22 +1416,28 @@ BC_CCLOSE:
         JR      NZ,BC_COK
         LD      DE,BC_MVERR
         JR      BC_CPRINT
-BCCLERR:
+
+BCCLERR:                                ; bcclerr
         LD      DE,BC_WRITEERR
         JR      BC_CFAIL
-BCNOSPC:
+
+BCNOSPC:                                ; bcnospc
         LD      DE,BC_NOSPACE
         JR      BC_CFAIL
-BC_CNOFILE:
+
+BC_CNOFILE:                             ; cnofile
         LD      DE,BC_NOFILE
         JR      BC_CPRINT
-BC_CEXIST:
+
+BC_CEXIST:                              ; cexist
         LD      DE,BC_REXMSG
         JR      BC_CPRINT
-BC_CSYNT:
+
+BC_CSYNT:                               ; csynt
         LD      DE,BC_CUSAGE
         JR      BC_CPRINT
-BC_CFAIL:
+
+BC_CFAIL:                               ; cfail
         PUSH    DE
         LD      A,(BC_CMADE)
         OR      A
@@ -1223,12 +1448,15 @@ BC_CFAIL:
         CALL    BDOS
         XOR     A
         LD      (BC_CMADE),A
-BC_CFP:
+
+BC_CFP:                                 ; cfp
         POP     DE
-BC_CPRINT:
+
+BC_CPRINT:                              ; cprint
         LD      C,9
         CALL    BDOS
-BC_COK:
+
+BC_COK:                                 ; cok
         LD      DE,0080H
         LD      C,26
         CALL    BDOS
@@ -1241,9 +1469,14 @@ BC_COK:
         LD      C,32
         JP      BDOS
 
-; Parse one exact DU-qualified operand into the supplied FCB, while capturing
-; the effective drive and user selected by the qualifier.
-BC_COPAR:
+  ; Parse one exact DU-qualified operand into the supplied FCB, while capturing
+  ; the effective drive and user selected by the qualifier.
+
+; -------------------------------------------------------------------------------
+; Qualified Copy Operand Parser
+; -------------------------------------------------------------------------------
+
+BC_COPAR:                               ; copar
         LD      (BC_COFCP),DE
         CALL    BC_DUSEL
         JR      C,BC_COPDRV
@@ -1275,28 +1508,32 @@ BC_COPAR:
         CALL    BC_DURST
         SCF
         RET
-BC_COPBAD:
+
+BC_COPBAD:                              ; copbad
         CALL    BC_DURST
         OR      A
         RET
-BC_COPDRV:
+
+BC_COPDRV:                              ; copdrv
         CALL    BC_DURST
         LD      A,1
         OR      A
         RET
 
-BC_CSELS:
+BC_CSELS:                               ; csels
         LD      A,(BC_CSDRV)
         LD      B,A
         LD      A,(BC_CSUSR)
         LD      E,A
         JR      BC_CSETDU
-BC_CSELD:
+
+BC_CSELD:                               ; cseld
         LD      A,(BC_CDDRV)
         LD      B,A
         LD      A,(BC_CDUSR)
         LD      E,A
-BC_CSETDU:
+
+BC_CSETDU:                              ; csetdu
         LD      A,E
         LD      (BC_CUTMP),A
         LD      E,B
@@ -1307,23 +1544,40 @@ BC_CSETDU:
         LD      C,32
         JP      BDOS
 
-; CLS is currently expressed through the Model 4 console's 1CH clear-screen
-; byte. Preserve this platform fact visibly until BetterCP/M defines a
-; portable terminal-capability service for CPXs.
-BC_CLR:
+  ; CLS is currently expressed through the Model 4 console's 1CH clear-screen
+  ; byte. Preserve this platform fact visibly until BetterCP/M defines a
+  ; portable terminal-capability service for CPXs.
+
+; ================================================================================
+; =                         CLS, USER, and VER Commands                          =
+; =                                                                              =
+; = Implements the remaining small resident commands: platform clear-screen, CP/M =
+; = user selection, and BetterCP/M version reporting.                            =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; CLS
+; -------------------------------------------------------------------------------
+
+BC_CLR:                                 ; execute CLS command
         LD      A,B
         OR      A
         JR      NZ,BC_CLRBAD
         LD      E,01CH
         LD      C,2
         JP      BDOS
-BC_CLRBAD:
+
+BC_CLRBAD:                              ; clrbad
         LD      DE,BC_RQMARK
         JP      BC_PRINT
 
-; USER remains a stock command even though direct 5: and C3: navigation makes
-; it optional for interactive use. Function 32 is the sole owner of user state.
-BC_USER:
+  ; USER remains a stock command even though direct 5: and C3: navigation makes
+  ; it optional for interactive use. Function 32 is the sole owner of user state.
+
+; -------------------------------------------------------------------------------
+; USER
+; -------------------------------------------------------------------------------
+
+BC_USER:                                ; execute USER command
         LD      A,B
         OR      A
         JR      Z,BC_USERBAD
@@ -1354,29 +1608,40 @@ BC_USER:
         LD      E,A
         DEC     B
         JR      NZ,BC_USERBAD
-BC_USERSET:
+
+BC_USERSET:                             ; userset
         LD      C,32
         JP      BDOS
-BC_USERBAD:
+
+BC_USERBAD:                             ; userbad
         LD      DE,BC_RQMARK
         JP      BC_PRINT
 
-; VER is a BetterCP/M default command rather than a DRI compatibility command.
-; Keep its CPX and transient presentations byte-for-byte shared for now.
-BC_VER:
+  ; VER is a BetterCP/M default command rather than a DRI compatibility command.
+  ; Keep its CPX and transient presentations byte-for-byte shared for now.
+
+; -------------------------------------------------------------------------------
+; VER
+; -------------------------------------------------------------------------------
+
+BC_VER:                                 ; execute VER command
         LD      A,B
         OR      A
         JR      NZ,BC_VERLONG
-BC_VERSHORT:
+
+BC_VERSHORT:                            ; vershort
         LD      DE,BC_VERSION
         JP      BC_PRINT
-BC_VERLONG:
+
+BC_VERLONG:                             ; verlong
         CP      2
         JR      Z,BC_VERCHECK
-BC_VERBAD:
+
+BC_VERBAD:                              ; verbad
         LD      DE,BC_RQMARK
         JP      BC_PRINT
-BC_VERCHECK:
+
+BC_VERCHECK:                            ; vercheck
         LD      A,(HL)
         CP      '/'
         JR      NZ,BC_VERBAD
@@ -1400,18 +1665,19 @@ BC_VERCHECK:
         INC     HL
         LD      A,(HL)
         INC     HL
-        INC     HL              ; system identity is already in concise banner
+        INC     HL                      ; system identity is already in concise banner
         INC     HL
         INC     HL
-        INC     HL              ; skip system release pointer
-        PUSH    AF              ; count and cursor survive public BDOS calls
+        INC     HL                      ; skip system release pointer
+        PUSH    AF                      ; count and cursor survive public BDOS calls
         PUSH    HL
         LD      DE,BC_VERSION
         LD      C,9
         CALL    BDOS
         POP     HL
         POP     AF
-BC_VLOOP:
+
+BC_VLOOP:                               ; vloop
         OR      A
         RET     Z
         DEC     A
@@ -1460,88 +1726,117 @@ BC_VLOOP:
         POP     HL
         POP     AF
         JR      BC_VLOOP
-BC_PRINT:
+
+; ================================================================================
+; =                          RCP Data and Working State                          =
+; =                                                                              =
+; = Defines command keywords, messages, parser state, file-copy state, FCBs, and =
+; = DMA workspace used by the resident command package.                          =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Command Strings and Messages
+; -------------------------------------------------------------------------------
+
+BC_PRINT:                               ; print $-terminated string
         LD      C,9
         JP      BDOS
 
-BC_KDIR:       DB      'DIR'
-BC_KERA:       DB      'ERA'
-BC_KTYPE:      DB      'TYPE'
-BC_KREN:       DB      'REN'
-BC_KCLS:       DB      'CLS'
-BC_KUSER:      DB      'USER'
-BC_KVER:       DB      'VER'
-BC_KCOPY:      DB      'COPY'
-BC_KMOVE:      DB      'MOVE'
-BC_ALL:        DB      '*.*'
-BC_NL:         DB      13,10,'$'
-BC_SEP:        DB      ' : ','$'
-BC_NOFILE:     DB      13,10,'NO FILE',13,10,'$'
-BC_BDMSG:      DB      13,10,'INVALID DRIVE',13,10,'$'
-BC_ECONF:      DB      13,10,'ALL (Y/N)? $'
-BC_READERR:    DB      13,10,'READ ERROR',13,10,'$'
-BC_MORE:       DB      '--More--$'
-BC_MERASE:     DB      8,' ',8,8,' ',8,8,' ',8,8,' ',8
+BC_KDIR:       DB      'DIR'            ; DIR keyword
+BC_KERA:       DB      'ERA'            ; ERA keyword
+BC_KTYPE:      DB      'TYPE'           ; TYPE keyword
+BC_KREN:       DB      'REN'            ; REN keyword
+BC_KCLS:       DB      'CLS'            ; CLS keyword
+BC_KUSER:      DB      'USER'           ; USER keyword
+BC_KVER:       DB      'VER'            ; VER keyword
+BC_KCOPY:      DB      'COPY'           ; COPY keyword
+BC_KMOVE:      DB      'MOVE'           ; MOVE keyword
+BC_ALL:        DB      '*.*'            ; all-files wildcard
+BC_NL:         DB      13,10,'$'        ; newline string
+BC_SEP:        DB      ' : ','$'        ; directory separator
+BC_NOFILE:     DB      13,10,'NO FILE',13,10,'$' ; file-not-found message
+BC_BDMSG:      DB      13,10,'INVALID DRIVE',13,10,'$' ; bad-drive message
+BC_ECONF:      DB      13,10,'ALL (Y/N)? $' ; erase confirmation prompt
+BC_READERR:    DB      13,10,'READ ERROR',13,10,'$' ; read-error message
+BC_MORE:       DB      '--More--$'      ; paging prompt
+BC_MERASE:     DB      8,' ',8,8,' ',8,8,' ',8,8,' ',8 ; MOVE erase-error message
                 DB      8,' ',8,8,' ',8,8,' ',8,8,' ',8,'$'
-BC_REXMSG:     DB      13,10,'FILE EXISTS',13,10,'$'
-BC_WRITEERR:   DB      13,10,'WRITE ERROR',13,10,'$'
-BC_MVERR:      DB      13,10,'COPY MADE; SOURCE NOT ERASED',13,10,'$'
-BC_CUSAGE:     DB      13,10,'COPY source destination OR destination:=source',13,10,'$'
-BC_RQMARK:     DB      13,10,'?',13,10,'$'
-BC_NOSPACE:    DB      13,10,'NO SPACE',13,10,'$'
-BC_VERSION:    DB      13,10,'BetterCP/M 0.3',13,10,'$'
-BC_VAPI:       DB      ': API ','$'
-BC_VIMPL:      DB      '; implementation ','$'
-BC_CMDPTR:     DW      0
-BC_CMDLEN:     DB      0
-BC_KEYLEN:     DB      0
-BC_ARGLEN:     DB      0
-BC_INPTR:      DW      0
-BC_INLEN:      DB      0
-BC_FCBPTR:     DW      0
-BC_DIREP:      DW      0080H
-BC_DARGP:      DW      0
-BC_DARGL:      DB      0
-BC_DSAVE:      DB      0
-BC_USAVE:      DB      0
-BC_DTARG:      DB      0FFH
-BC_UTARG:      DB      0FFH
-BC_EXMASK:     DB      0FFH
-BC_DCOL:       DB      0
-BC_DFOUND:     DB      0
-BC_EBUFFER:    DB      2,0,0,0
-BC_RDRIVE:     DB      0
-BC_TPAGE:      DB      0
-BC_TLCNT:      DB      0
-BC_MVFLAG:     DB      0
-BC_CDSAV:      DB      0
-BC_CUSAV:      DB      0
-BC_CBASE:      DW      0
-BC_CBLEN:      DB      0
-BC_CSPTR:      DW      0
-BC_CSLEN:      DB      0
-BC_CDPTR:      DW      0
-BC_CDLEN:      DB      0
-BC_CSDRV:      DB      0
-BC_CSUSR:      DB      0
-BC_CDDRV:      DB      0
-BC_CDUSR:      DB      0
-BC_CODRV:      DB      0
-BC_COUSE:      DB      0
-BC_COPTR:      DW      0
-BC_COLEN:      DB      0
-BC_COFCP:      DW      0
-BC_CUTMP:      DB      0
-BC_CMADE:      DB      0
-BC_FCB:
+
+BC_REXMSG:     DB      13,10,'FILE EXISTS',13,10,'$' ; rename target-exists message
+BC_WRITEERR:   DB      13,10,'WRITE ERROR',13,10,'$' ; write-error message
+BC_MVERR:      DB      13,10,'COPY MADE; SOURCE NOT ERASED',13,10,'$' ; MOVE error message
+BC_CUSAGE:     DB      13,10,'COPY source destination OR destination:=source',13,10,'$' ; COPY/MOVE usage message
+BC_RQMARK:     DB      13,10,'?',13,10,'$' ; rename wildcard-error message
+BC_NOSPACE:    DB      13,10,'NO SPACE',13,10,'$' ; disk-full message
+BC_VERSION:    DB      13,10,'BetterCP/M 0.3',13,10,'$' ; version heading
+BC_VAPI:       DB      ': API ','$'     ; API-version label
+BC_VIMPL:      DB      '; implementation ','$' ; implementation-version label
+
+; -------------------------------------------------------------------------------
+; Parser and DIR State
+; -------------------------------------------------------------------------------
+
+BC_CMDPTR:     DW      0                ; command pointer
+BC_CMDLEN:     DB      0                ; command length
+BC_KEYLEN:     DB      0                ; keyword length
+BC_ARGLEN:     DB      0                ; argument length
+BC_INPTR:      DW      0                ; input pointer
+BC_INLEN:      DB      0                ; input length
+BC_FCBPTR:     DW      0                ; working FCB pointer
+BC_DIREP:      DW      0080H            ; DIR entries-per-line
+BC_DARGP:      DW      0                ; DIR argument pointer
+BC_DARGL:      DB      0                ; DIR argument length
+BC_DSAVE:      DB      0                ; saved default drive
+BC_USAVE:      DB      0                ; saved user
+BC_DTARG:      DB      0FFH             ; target drive
+BC_UTARG:      DB      0FFH             ; target user
+BC_EXMASK:     DB      0FFH             ; extent mask
+BC_DCOL:       DB      0                ; DIR output column
+BC_DFOUND:     DB      0                ; DIR match-found flag
+BC_EBUFFER:    DB      2,0,0,0          ; ERA reply buffer
+BC_RDRIVE:     DB      0                ; rename drive
+BC_TPAGE:      DB      0                ; TYPE paging flag
+BC_TLCNT:      DB      0                ; TYPE line count
+
+; -------------------------------------------------------------------------------
+; COPY/MOVE State
+; -------------------------------------------------------------------------------
+
+BC_MVFLAG:     DB      0                ; MOVE-operation flag
+BC_CDSAV:      DB      0                ; COPY saved drive
+BC_CUSAV:      DB      0                ; COPY saved user
+BC_CBASE:      DW      0                ; COPY command base
+BC_CBLEN:      DB      0                ; COPY command length
+BC_CSPTR:      DW      0                ; COPY source pointer
+BC_CSLEN:      DB      0                ; COPY source length
+BC_CDPTR:      DW      0                ; COPY destination pointer
+BC_CDLEN:      DB      0                ; COPY destination length
+BC_CSDRV:      DB      0                ; COPY source drive
+BC_CSUSR:      DB      0                ; COPY source user
+BC_CDDRV:      DB      0                ; COPY destination drive
+BC_CDUSR:      DB      0                ; COPY destination user
+BC_CODRV:      DB      0                ; COPY original drive
+BC_COUSE:      DB      0                ; COPY original user
+BC_COPTR:      DW      0                ; COPY operand pointer
+BC_COLEN:      DB      0                ; COPY operand length
+BC_COFCP:      DW      0                ; COPY operand FCB pointer
+BC_CUTMP:      DB      0                ; COPY temporary user
+BC_CMADE:      DB      0                ; destination-created flag
+
+; -------------------------------------------------------------------------------
+; Working FCBs and DMA
+; -------------------------------------------------------------------------------
+
+BC_FCB:                                 ; primary working FCB
         REPT    36
         DB      0
         ENDM
-BC_NEWFCB:
+
+BC_NEWFCB:                              ; secondary working FCB
         REPT    36
         DB      0
         ENDM
-BC_DMA:
+
+BC_DMA:                                 ; COPY/TYPE DMA buffer
         REPT    128
         DB      0
         ENDM

@@ -1,13 +1,11 @@
-; Historical CCP-only reloader retained as patch history.
-; The build now uses commandreload.mac, which reconstructs ordered CPXs and
-; the calculated CCP. Do not add new behavior to this superseded source.
-;
-; BetterCP/M TRS-80 Model 4 relocatable command-image reloader.
-;
-; The command module occupies system-track physical sectors 30..33. Its first
-; sector is a header/relocation directory; following sectors contain the CCP
-; payload. WBOOT executes here from fixed memory, so the old CCP may be
-; overwritten safely before portable reconstruction resumes.
+; ********************************************************************************
+; *                    Historical BetterCP/M CCP Reloader                        *
+; *                                                                              *
+; * Superseded CCP-only relocatable command-image reloader retained as patch     *
+; * history. Production builds use commandreload.mac to reconstruct ordered CPXs *
+; * and the calculated CCP. Do not add new behavior to this source.              *
+; ********************************************************************************
+
 
 RELOADBASE      EQU     0E900H
 BIOPHREAD       EQU     0EF33H
@@ -28,27 +26,35 @@ MOD_TABLE       EQU     MODBUF+16
         CSEG
         .PHASE  RELOADBASE
 
-CRSTART:
+; ================================================================================
+; =                       Command Image Reconstruction                          =
+; =                                                                              =
+; = Validates the system-track command image, calculates the movable CCP base,   =
+; = and loads its payload downward from the compatibility gateway.               =
+; ================================================================================
+
+CRSTART:                                ; enter historical CCP reloader
         LD      SP,CRSTKTOP
         LD      HL,MODBUF
-        LD      C,1             ; track 1, side 1, sector 1: module header
+        LD      C,1                     ; track 1, side 1, sector 1: module header
         CALL    CRREAD
         JP      NZ,CRFAIL
         LD      HL,MODBUF
         LD      DE,CRMAGIC
         LD      B,6
-CRMAGLP:
+
+CRMAGLP:                                ; validate command-image header magic
         LD      A,(DE)
         CP      (HL)
         JP      NZ,CRFAIL
         INC     DE
         INC     HL
         DJNZ    CRMAGLP
-; CPX-aware reconstruction begins with the persistent ordered table.  The
-; first implementation accepts the real empty profile; non-empty profiles are
-; rejected rather than silently booting without their requested commands.
-; The table and loop remain the next module-loading boundary, while CCP size
-; and placement are already fully calculated rather than fixed at BB00h.
+  ; CPX-aware reconstruction begins with the persistent ordered table.  The
+  ; first implementation accepts the real empty profile; non-empty profiles are
+  ; rejected rather than silently booting without their requested commands.
+  ; The table and loop remain the next module-loading boundary, while CCP size
+  ; and placement are already fully calculated rather than fixed at BB00h.
         LD      A,(CPX_RECON_COUNT)
         OR      A
         JP      NZ,CRFAIL
@@ -58,13 +64,14 @@ CRMAGLP:
         JP      Z,CRFAIL
         LD      DE,(MOD_ALLOC)
         OR      A
-        SBC     HL,DE           ; payload must fit its page allocation
+        SBC     HL,DE                   ; payload must fit its page allocation
         JP      C,CRSZOK
         JP      Z,CRSZOK
         JP      CRFAIL
-CRSZOK:
+
+CRSZOK:                                 ; accept validated CCP size
         LD      HL,(MOD_ALLOC)
-        LD      A,L             ; allocation must be a nonzero page multiple
+        LD      A,L                     ; allocation must be a nonzero page multiple
         OR      A
         JP      NZ,CRFAIL
         LD      A,H
@@ -75,10 +82,10 @@ CRSZOK:
         OR      A
         JP      NZ,CRFAIL
         LD      A,L
-        CP      249             ; at most 248 words fit after header byte 16
+        CP      249                     ; at most 248 words fit after header byte 16
         JP      NC,CRFAIL
-; Allocate the CCP downward from the movable compatibility gateway.  There is
-; no arbitrary CCP slot: the module's rounded allocation determines its base.
+  ; Allocate the CCP downward from the movable compatibility gateway.  There is
+  ; no arbitrary CCP slot: the module's rounded allocation determines its base.
         LD      HL,(ECB_TPATOP)
         LD      DE,(MOD_ALLOC)
         OR      A
@@ -86,7 +93,7 @@ CRSZOK:
         JP      C,CRFAIL
         LD      A,H
         OR      A
-        JP      Z,CRFAIL        ; never overlap page zero/0100h origin
+        JP      Z,CRFAIL                ; never overlap page zero/0100h origin
         LD      (ECB_CCPBASE),HL
         LD      HL,(MOD_ALLOC)
         LD      (ECB_CCPSIZE),HL
@@ -100,7 +107,7 @@ CRSZOK:
         LD      HL,CRSECTS
         LD      (CRSECTP),HL
 
-CRPAY:
+CRPAY:                                  ; load next CCP payload sector
         LD      HL,(CRLEFT)
         LD      A,H
         OR      L
@@ -119,7 +126,7 @@ CRPAY:
         LD      (CRLEFT),HL
         JR      CRPAY
 
-CRLAST:
+CRLAST:                                 ; handle final partial payload sector
         LD      HL,MODBUF
         CALL    CRNEXT
         JP      NZ,CRFAIL
@@ -131,8 +138,16 @@ CRLAST:
         LD      (CRLEFT),HL
         JR      CRPAY
 
-; Re-read the header because the final partial payload used the shared buffer.
-CRRELOC:
+  ; Re-read the header because the final partial payload used the shared buffer.
+
+; ================================================================================
+; =                             CCP Relocation                                   =
+; =                                                                              =
+; = Re-reads the relocation directory and adjusts the loaded CCP image from its  =
+; = link origin to the calculated runtime base.                                  =
+; ================================================================================
+
+CRRELOC:                                ; begin CCP relocation
         LD      HL,MODBUF
         LD      C,1
         CALL    CRREAD
@@ -144,7 +159,8 @@ CRRELOC:
         LD      (CRDELTA),HL
         LD      BC,(MOD_RELOCS)
         LD      HL,MOD_TABLE
-CRRLOOP:
+
+CRRLOOP:                                ; apply next relocation entry
         LD      A,B
         OR      C
         JR      Z,CRDONE
@@ -155,7 +171,7 @@ CRRLOOP:
         PUSH    HL
         PUSH    BC
         LD      HL,(MOD_SIZE)
-        DEC     HL              ; relocation word must begin below size-1
+        DEC     HL                      ; relocation word must begin below size-1
         OR      A
         SBC     HL,DE
         JP      C,CRFAIL
@@ -181,40 +197,57 @@ CRRLOOP:
         DEC     B
         JR      CRRLOOP
 
-CRDONE:
+CRDONE:                                 ; complete CCP reconstruction
         JP      SYS_WBOOT
-CRFAIL:
+
+CRFAIL:                                 ; halt after reload failure
         JR      CRFAIL
 
-CRNEXT:
+; -------------------------------------------------------------------------------
+; System-Track Sector Input
+; -------------------------------------------------------------------------------
+
+CRNEXT:                                 ; advance system-track sector
         PUSH    HL
         LD      HL,(CRSECTP)
         LD      C,(HL)
         INC     HL
         LD      (CRSECTP),HL
         POP     HL
-CRREAD:
-        LD      A,1             ; cylinder 1
-        LD      B,1             ; side 1; BIOPHREAD forces system drive A
+
+CRREAD:                                 ; read current system-track sector
+        LD      A,1                     ; cylinder 1
+        LD      B,1                     ; side 1; BIOPHREAD forces system drive A
         JP      BIOPHREAD
 
-CRMAGIC:
+; -------------------------------------------------------------------------------
+; Reloader State
+; -------------------------------------------------------------------------------
+
+CRMAGIC:                                ; command-image magic signature
         DB      'B','C','M','1',1,1
-CRSECTS:
+
+CRSECTS:                                ; remaining payload sectors
         DB      3,5,7
-CRSECTP:
+
+CRSECTP:                                ; current system-track sector
         DW      0
-CRDEST:
+
+CRDEST:                                 ; current payload destination
         DW      0
-CRLEFT:
+
+CRLEFT:                                 ; remaining payload bytes
         DW      0
-CRDELTA:
+
+CRDELTA:                                ; CCP relocation delta
         DW      0
-CRSTACK:
+
+CRSTACK:                                ; reloader stack storage
         REPT    16
         DB      0
         ENDM
-CRSTKTOP:
+
+CRSTKTOP:                               ; top of reloader stack
 
         .DEPHASE
         END

@@ -1,17 +1,19 @@
         INCLUDE layout.inc
-; BRSX V1/V2 -- ORDERED RESIDENT CHAIN REBUILDER
-; The manager owns one K only while an RSX profile is active.  Modules
-; go BELOW it.  Its upper 86 bytes hold the control stack; the final
-; three bytes belong to the fixed BDOS jump and must not be pushed on.
-; Removing the last module gives both manager and module RAM to TPA.
-;
-; Function 202 passes DE -> request:
-;   +0 version (1 or 2), +1 operation (0 enumerate, 1 load, 2 unload, 3 query,
-;                                4 retire without rebuilding),
-;   +2 enumeration index, +3 reserved, +4..+11 space-padded filename stem,
-;   +12..+13 returned primary service number. Version 2 adds caller-owned
-;   transaction workspace bounds at +14 and +16; the legacy rebuilder does
-;   not consume that workspace.
+
+; ********************************************************************************
+; *                     BetterCP/M BRSX Chain Rebuilder                         *
+; *                                                                              *
+; * BRSX v1/v2 ordered resident-chain manager. Owns one K only while an RSX      *
+; * profile is active, loads modules below itself, and returns all manager/module *
+; * RAM to the TPA when the final RSX is removed.                                *
+; ********************************************************************************
+
+  ; Function 202 passes DE -> request:
+  ;   +0 version (1), +1 operation (0 enumerate, 1 load, 2 unload, 3 query,
+  ;                                4 retire without rebuilding),
+  ;   +2 enumeration index, +3 reserved, +4..+11 space-padded filename stem,
+  ;   +12..+13 returned primary service number.
+
 
 RLBASE          EQU     LY_RSX
 FLOPEN          EQU     LY_FILE
@@ -26,13 +28,25 @@ ECB_RSXLOW      EQU     LY_PDSF
 ECB_TPATOP      EQU     LY_SYS+090H
 RSTCOUNT        EQU     LY_RSTA
 RSTABLE         EQU     LY_RSTA+1       ; four ordered eight-byte stems
-RSTSERV         EQU     LY_RSTA+021H       ; four primary-service words
+RSTSERV         EQU     LY_RSTA+021H    ; four primary-service words
 
         CSEG
         .PHASE  RLBASE
-RL_ENTRY:
+
+; ================================================================================
+; =                          Manager Entry and Control                           =
+; =                                                                              =
+; = Provides the Function-202 manager boundary, validates the persistent profile count, =
+; = and dispatches enumerate, load, unload, query, and retire operations.        =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Manager Entry
+; -------------------------------------------------------------------------------
+
+RL_ENTRY:                               ; enter RSX chain manager
         JP      RL_CONTROL
-RL_CHAIN:
+
+RL_CHAIN:                               ; chain unhandled BDOS request
         POP     DE
         PUSH    DE
         CALL    RL_CONTROL
@@ -42,10 +56,14 @@ RL_CHAIN:
         PUSH    DE
         LD      HL,LY_RSX+3
         PUSH    HL
-        LD      A,2             ; overlay two: descriptor materializer
+        LD      A,2                     ; overlay two: descriptor materializer
         JP      LY_BIOS+60
 
-RL_CONTROL:
+; -------------------------------------------------------------------------------
+; Function-202 Dispatch
+; -------------------------------------------------------------------------------
+
+RL_CONTROL:                             ; dispatch Function-202 control request
         LD      (RL_REQ),DE
         LD      A,(RSTCOUNT)
         CP      5
@@ -54,7 +72,8 @@ RL_CONTROL:
         ; Treat any impossible count as an uninitialized empty active profile.
         XOR     A
         LD      (RSTCOUNT),A
-RL_COUNTOK:
+
+RL_COUNTOK:                             ; accept active-profile count
         LD      A,(DE)
         DEC     A
         CP      2
@@ -73,7 +92,17 @@ RL_COUNTOK:
         JP      Z,RL_RETIRE
         JP      RL_BAD
 
-RL_ENUM:
+; ================================================================================
+; =                        Ordered RSX Profile Management                        =
+; =                                                                              =
+; = Enumerates, queries, adds, removes, retires, finds, and compacts the persistent =
+; = ordered RSX reconstruction records.                                          =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Enumerate and Query
+; -------------------------------------------------------------------------------
+
+RL_ENUM:                                ; enumerate configured RSX
         LD      HL,(RL_REQ)
         INC     HL
         INC     HL
@@ -113,15 +142,19 @@ RL_ENUM:
         LD      A,1
         RET
 
-RL_QUERY:
+RL_QUERY:                               ; query configured RSX
         CALL    RL_FIND
         JP      C,RL_ZERO
         LD      A,1
         RET
 
-RL_ADD:
+; -------------------------------------------------------------------------------
+; Load Profile Record
+; -------------------------------------------------------------------------------
+
+RL_ADD:                                 ; add RSX to ordered profile
         CALL    RL_FIND
-        JP      NC,RL_ZERO      ; already active is an idempotent success
+        JP      NC,RL_ZERO              ; already active is an idempotent success
         LD      A,(RSTCOUNT)
         CP      4
         JP      NC,RL_BAD
@@ -142,26 +175,36 @@ RL_ADD:
         DEC     (HL)
         JP      RL_BAD
 
-RL_REMOVE:
+; -------------------------------------------------------------------------------
+; Unload Profile Record
+; -------------------------------------------------------------------------------
+
+RL_REMOVE:                              ; remove RSX from ordered profile
         CALL    RL_FIND
-        JP      C,RL_ZERO       ; absent is an idempotent success
+        JP      C,RL_ZERO               ; absent is an idempotent success
         CALL    RL_SHIFT
         CALL    RL_REBUILD
         RET     Z
         JP      RL_BAD
 
-; A running module cannot safely ask the manager to rebuild over its own code.
-; Operation four removes its reconstruction record only; WBOOT then performs
-; the ordinary rebuild on the protected system stack.
-RL_RETIRE:
+  ; A running module cannot safely ask the manager to rebuild over its own code.
+  ; Operation four removes its reconstruction record only; WBOOT then performs
+  ; the ordinary rebuild on the protected system stack.
+
+; -------------------------------------------------------------------------------
+; Retire Without Rebuild
+; -------------------------------------------------------------------------------
+
+RL_RETIRE:                              ; retire running RSX record
         CALL    RL_FIND
         JP      C,RL_ZERO
         CALL    RL_SHIFT
         JP      RL_ZERO
 
-RL_SHIFT:
+RL_SHIFT:                               ; compact ordered profile table
         LD      (RL_INDEX),A
-RL_SHLOOP:
+
+RL_SHLOOP:                              ; shift next profile record
         LD      A,(RL_INDEX)
         INC     A
         LD      B,A
@@ -181,17 +224,24 @@ RL_SHLOOP:
         LD      HL,RL_INDEX
         INC     (HL)
         JR      RL_SHLOOP
-RL_SHDONE:
+
+RL_SHDONE:                              ; finish profile compaction
         LD      HL,RSTCOUNT
         DEC     (HL)
         RET
 
-; Find request name. Return carry clear and A=index, or carry set.
-RL_FIND:
+  ; Find request name. Return carry clear and A=index, or carry set.
+
+; -------------------------------------------------------------------------------
+; Profile Name Lookup
+; -------------------------------------------------------------------------------
+
+RL_FIND:                                ; find RSX name in profile
         LD      A,(RSTCOUNT)
         LD      B,A
         XOR     A
-RL_FLOOP:
+
+RL_FLOOP:                               ; scan next profile record
         LD      C,A
         LD      A,B
         OR      A
@@ -205,7 +255,8 @@ RL_FLOOP:
         INC     DE
         PUSH    BC
         LD      B,8
-RL_FCMP:
+
+RL_FCMP:                                ; compare profile name
         LD      A,(DE)
         CP      (HL)
         JR      NZ,RL_FNXT
@@ -216,18 +267,21 @@ RL_FCMP:
         LD      A,C
         OR      A
         RET
-RL_FNXT:
+
+RL_FNXT:                                ; advance profile scan
         POP     BC
         DEC     B
         LD      A,C
         INC     A
         JR      RL_FLOOP
-RL_FMISS:
+
+RL_FMISS:                               ; report missing profile name
         SCF
         RET
 
-; A=index -> HL=ordered name record.
-RL_TABPTR:
+  ; A=index -> HL=ordered name record.
+
+RL_TABPTR:                              ; locate profile table record
         ADD     A,A
         ADD     A,A
         ADD     A,A
@@ -237,11 +291,23 @@ RL_TABPTR:
         ADD     HL,DE
         RET
 
-; Validate every named carrier before changing the published chain, then load.
-RL_REBUILD:
+  ; Validate every named carrier before changing the published chain, then load.
+
+; ================================================================================
+; =                           RSX Chain Reconstruction                           =
+; =                                                                              =
+; = Validates every configured carrier before publication, loads the ordered modules, =
+; = and atomically publishes either the rebuilt chain or an empty profile.       =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Preflight Validation
+; -------------------------------------------------------------------------------
+
+RL_REBUILD:                             ; rebuild active RSX chain
         XOR     A
         LD      (RL_INDEX),A
-RL_VLOOP:
+
+RL_VLOOP:                               ; validate next configured carrier
         LD      A,(RL_INDEX)
         LD      B,A
         LD      A,(RSTCOUNT)
@@ -270,7 +336,12 @@ RL_VLOOP:
         LD      HL,RL_INDEX
         INC     (HL)
         JR      RL_VLOOP
-RL_BUILD:
+
+; -------------------------------------------------------------------------------
+; Ordered Chain Build
+; -------------------------------------------------------------------------------
+
+RL_BUILD:                               ; build validated RSX chain
         LD      HL,LY_RSX
         LD      (RL_LOW),HL
         LD      HL,0
@@ -278,7 +349,8 @@ RL_BUILD:
         LD      (RL_PREV),HL
         XOR     A
         LD      (RL_INDEX),A
-RL_BLOOP:
+
+RL_BLOOP:                               ; load next configured carrier
         LD      A,(RL_INDEX)
         LD      B,A
         LD      A,(RSTCOUNT)
@@ -291,23 +363,40 @@ RL_BLOOP:
         LD      HL,RL_INDEX
         INC     (HL)
         JR      RL_BLOOP
-RL_PUBLISH:
+
+; -------------------------------------------------------------------------------
+; Chain Publication
+; -------------------------------------------------------------------------------
+
+RL_PUBLISH:                             ; publish rebuilt RSX chain
         LD      HL,(RL_LOW)
         LD      (ECB_RSXLOW),HL
         LD      A,(RSTCOUNT)
         OR      A
         JR      NZ,RL_PGATE
         LD      HL,HISTBASE
-RL_PGATE:
+
+RL_PGATE:                               ; publish gateway state
         DEC     HL
         DEC     HL
         DEC     HL
         LD      (ECB_TPATOP),HL
-RL_ZERO:
+
+RL_ZERO:                                ; publish empty RSX chain
         XOR     A
         RET
 
-RL_LOAD:
+; ================================================================================
+; =                       RSX Carrier Load and Relocation                        =
+; =                                                                              =
+; = Loads one protected RSX carrier below the current boundary, verifies its payload, =
+; = applies relocation entries, and links the relocated module into the chain.   =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Carrier Payload Load
+; -------------------------------------------------------------------------------
+
+RL_LOAD:                                ; load RSX carrier
         LD      A,1
         CALL    FLOPEN
         RET     NZ
@@ -322,7 +411,7 @@ RL_LOAD:
         SBC     HL,DE
         RET     C
         PUSH    HL
-        LD      DE,0103H        ; retain at least the CP/M page and gateway
+        LD      DE,0103H                ; retain at least the CP/M page and gateway
         OR      A
         SBC     HL,DE
         POP     HL
@@ -332,7 +421,8 @@ RL_LOAD:
         LD      (RL_DEST),HL
         LD      HL,(MODBUF+12)
         LD      (RL_LEFT),HL
-RL_PAY:
+
+RL_PAY:                                 ; load RSX payload
         LD      HL,(RL_LEFT)
         LD      A,H
         OR      L
@@ -350,7 +440,8 @@ RL_PAY:
         SBC     HL,DE
         LD      (RL_LEFT),HL
         JR      RL_PAY
-RL_LAST:
+
+RL_LAST:                                ; handle final partial payload
         LD      HL,MODBUF
         CALL    FLNEXT
         RET     NZ
@@ -361,7 +452,12 @@ RL_LAST:
         LD      HL,0
         LD      (RL_LEFT),HL
         JR      RL_PAY
-RL_RELOC:
+
+; -------------------------------------------------------------------------------
+; Relocation and Checksum
+; -------------------------------------------------------------------------------
+
+RL_RELOC:                               ; prepare RSX relocation
         CALL    FLRESET
         RET     NZ
         LD      HL,MODBUF
@@ -370,7 +466,8 @@ RL_RELOC:
         LD      HL,(RL_BASE)
         LD      DE,(MODBUF+12)
         LD      BC,0
-RL_SUM:
+
+RL_SUM:                                 ; checksum loaded module
         LD      A,D
         OR      E
         JR      Z,RL_SUMDONE
@@ -379,11 +476,13 @@ RL_SUM:
         LD      C,A
         JR      NC,RL_SUMNC
         INC     B
-RL_SUMNC:
+
+RL_SUMNC:                               ; accumulate checksum without carry
         INC     HL
         DEC     DE
         JR      RL_SUM
-RL_SUMDONE:
+
+RL_SUMDONE:                             ; finish module checksum
         LD      HL,(MODBUF+44)
         LD      A,L
         CP      C
@@ -398,7 +497,8 @@ RL_SUMDONE:
         LD      (RL_DELTA),HL
         LD      BC,(MODBUF+22)
         LD      HL,MODBUF+48
-RL_RLOOP:
+
+RL_RLOOP:                               ; apply next relocation entry
         LD      A,B
         OR      C
         JR      Z,RL_LINK
@@ -408,7 +508,7 @@ RL_RLOOP:
         INC     HL
         PUSH    HL
         LD      HL,(MODBUF+12)
-        DEC     HL              ; a relocated word needs two code bytes
+        DEC     HL                      ; a relocated word needs two code bytes
         OR      A
         SBC     HL,DE
         JP      Z,RL_ROFFBAD
@@ -432,10 +532,16 @@ RL_RLOOP:
         POP     HL
         DEC     BC
         JR      RL_RLOOP
-RL_ROFFBAD:
+
+RL_ROFFBAD:                             ; reject invalid relocation offset
         POP     HL
         JP      RL_BAD
-RL_LINK:
+
+; -------------------------------------------------------------------------------
+; RSX Chain Linkage
+; -------------------------------------------------------------------------------
+
+RL_LINK:                                ; link relocated RSX
         LD      DE,(MODBUF+16)
         LD      HL,(RL_BASE)
         ADD     HL,DE
@@ -450,7 +556,7 @@ RL_LINK:
         LD      HL,(RL_BASE)
         LD      (HL),LOW COREBDOS
         INC     HL
-        LD      (HL),HIGH COREBDOS       ; default next dispatch is the fixed core
+        LD      (HL),HIGH COREBDOS      ; default next dispatch is the fixed core
         LD      HL,(RL_PREV)
         LD      A,H
         OR      L
@@ -458,27 +564,41 @@ RL_LINK:
         LD      HL,(RL_BASE)
         LD      (ECB_RSXHEAD),HL
         JR      RL_LDONE
-RL_LPREV:
+
+RL_LPREV:                               ; update previous RSX link
         LD      DE,(RL_DISPATCH)
         LD      (HL),E
         INC     HL
         LD      (HL),D
-RL_LDONE:
+
+RL_LDONE:                               ; finish RSX link
         LD      HL,(RL_BASE)
         LD      (RL_PREV),HL
         XOR     A
         RET
 
-RL_VALID:
+; ================================================================================
+; =                            RSX Carrier Validation                            =
+; =                                                                              =
+; = Validates carrier magic, ABI metadata, module size, and structural constraints =
+; = before any published chain is changed.                                       =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Carrier Structure Validation
+; -------------------------------------------------------------------------------
+
+RL_VALID:                               ; validate RSX carrier
         LD      HL,MODBUF
         LD      DE,RL_MAGIC
         LD      B,4
-RL_MLOOP:
+
+RL_MLOOP:                               ; match carrier magic
         LD      A,(DE)
         CP      (HL)
         JR      Z,RL_MOK
         JP      RL_BAD
-RL_MOK:
+
+RL_MOK:                                 ; accept carrier magic
         INC     DE
         INC     HL
         DJNZ    RL_MLOOP
@@ -487,18 +607,20 @@ RL_MOK:
         JR      Z,RL_VOK
         CP      2
         JP      NZ,RL_BAD
-RL_VOK:
+
+RL_VOK:                                 ; accept validated carrier
         INC     HL
         LD      DE,RL_ABI
         LD      B,3
-RL_ALOOP:
+
+RL_ALOOP:                               ; validate ABI metadata
         LD      A,(DE)
         CP      (HL)
         JP      NZ,RL_BAD
         INC     DE
         INC     HL
         DJNZ    RL_ALOOP
-        LD      HL,(MODBUF+8)   ; flags must be zero
+        LD      HL,(MODBUF+8)           ; flags must be zero
         LD      A,H
         OR      L
         JR      NZ,RL_BAD
@@ -512,14 +634,15 @@ RL_ALOOP:
         JR      C,RL_VSIZE
         JR      Z,RL_VSIZE
         JR      RL_BAD
-RL_VSIZE:
+
+RL_VSIZE:                               ; validate module size
         LD      HL,(MODBUF+14)
         LD      A,H
         OR      A
         JR      Z,RL_BAD
         LD      A,L
         OR      A
-        JR      NZ,RL_BAD       ; whole-page allocation
+        JR      NZ,RL_BAD               ; whole-page allocation
         LD      HL,(MODBUF+16)
         LD      DE,(MODBUF+12)
         OR      A
@@ -558,7 +681,8 @@ RL_VSIZE:
         CALL    RL_TABPTR
         LD      DE,MODBUF+32
         LD      B,8
-RL_NMCMP:
+
+RL_NMCMP:                               ; compare requested RSX name
         LD      A,(DE)
         CP      (HL)
         JR      NZ,RL_BAD
@@ -567,21 +691,32 @@ RL_NMCMP:
         DJNZ    RL_NMCMP
         XOR     A
         RET
-RL_BAD:
+
+RL_BAD:                                 ; return manager failure
         LD      A,0FFH
         OR      A
         RET
 
-RL_MAGIC:       DB      'B','R','S','X'
-RL_ABI:         DB      2,1,0
-RL_REQ:         DW      0
-RL_LOW:         DW      0
-RL_BASE:        DW      0
-RL_PREV:        DW      0
-RL_DISPATCH:    DW      0
-RL_DEST:        DW      0
-RL_LEFT:        DW      0
-RL_DELTA:       DW      0
-RL_INDEX:       DB      0
+; ================================================================================
+; =                            Manager Working State                             =
+; =                                                                              =
+; = Defines carrier constants and the private request, placement, linkage, relocation, =
+; = and profile-index state used by the chain manager.                           =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Manager State
+; -------------------------------------------------------------------------------
+
+RL_MAGIC:       DB      'B','R','S','X' ; RSX carrier magic
+RL_ABI:         DB      2,1,0           ; supported RSX ABI version
+RL_REQ:         DW      0               ; active control request pointer
+RL_LOW:         DW      0               ; current RSX lower boundary
+RL_BASE:        DW      0               ; current module runtime base
+RL_PREV:        DW      0               ; previous RSX descriptor
+RL_DISPATCH:    DW      0               ; current module dispatch entry
+RL_DEST:        DW      0               ; module load destination
+RL_LEFT:        DW      0               ; module bytes remaining
+RL_DELTA:       DW      0               ; module relocation delta
+RL_INDEX:       DB      0               ; profile-table index
         .DEPHASE
         END

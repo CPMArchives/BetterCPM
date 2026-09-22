@@ -1,14 +1,28 @@
-; BetterCP/M SUBMIT -- CP/M 2.2 positional command-file processor.
-;
-; The DRI utility's public file format is retained: counted command records
-; are written to $$$.SUB in reverse order.  The CCP and XSUB can therefore
-; cooperate without private pointers or code surviving in the TPA.
+; ********************************************************************************
+; *                       BetterCP/M SUBMIT Utility                              *
+; *                                                                              *
+; * CP/M 2.2 positional command-file processor. Retains DRI's public $$$.SUB     *
+; * format: counted command records are written in reverse order so the CCP and  *
+; * XSUB-compatible input provider need no private pointers surviving in the TPA.*
+; ********************************************************************************
+
 
 BDOS            EQU     0005H
 
         CSEG
         .PHASE  0100H
-SU_START:
+
+; ================================================================================
+; =                        Command Tail and Source Setup                         =
+; =                                                                              =
+; = Preserves the complete command tail before disk I/O replaces DMA, prepares the =
+; = source FCB, and establishes positional parameters using stock CP/M semantics. =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Argument Preservation and FCB Setup
+; -------------------------------------------------------------------------------
+
+SU_START:                               ; enter SUBMIT utility
         LD      SP,SU_STACK
         XOR     A
         LD      (SU_OUTLIVE),A
@@ -22,9 +36,9 @@ SU_START:
         INC     HL
         LD      (HL),'1'
 
-; Preserve the complete command tail before the first disk read replaces DMA.
-; Parameter zero is the SUB filename, parameter one the next blank-delimited
-; word, exactly as in the original utility.
+  ; Preserve the complete command tail before the first disk read replaces DMA.
+  ; Parameter zero is the SUB filename, parameter one the next blank-delimited
+  ; word, exactly as in the original utility.
         LD      A,(0080H)
         LD      C,A
         LD      B,0
@@ -34,11 +48,12 @@ SU_START:
         OR      A
         JR      Z,SU_ARGEND
         LDIR
-SU_ARGEND:
+
+SU_ARGEND:                              ; finish command-tail capture
         XOR     A
         LD      (DE),A
 
-; Use the CCP-prepared first default FCB and force the conventional SUB type.
+  ; Use the CCP-prepared first default FCB and force the conventional SUB type.
         LD      HL,005CH
         LD      DE,SU_SRCFCB
         LD      BC,36
@@ -63,16 +78,27 @@ SU_ARGEND:
         LD      DE,SU_NOSUB
         JP      SU_ERROR
 
-SU_PARSE:
+; ================================================================================
+; =                           Source Command Expansion                           =
+; =                                                                              =
+; = Parses source lines, expands $0..$9 positional parameters and caret control escapes, =
+; = and accumulates bounded counted commands for later reverse output.           =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Command-Line Expansion
+; -------------------------------------------------------------------------------
+
+SU_PARSE:                               ; parse next source command
         XOR     A
         LD      (SU_RLEN),A
-SU_NEXTCH:
+
+SU_NEXTCH:                              ; process next source character
         CALL    SU_GETSOURCE
         CP      01AH
         JR      Z,SU_EOF
         CP      13
         JR      Z,SU_EOL
-        CP      10              ; CR/LF files count CR as the line terminator
+        CP      10                      ; CR/LF files count CR as the line terminator
         JR      Z,SU_NEXTCH
         CP      '$'
         JR      Z,SU_DOLLAR
@@ -81,7 +107,11 @@ SU_NEXTCH:
         CALL    SU_PUTCHAR
         JR      SU_NEXTCH
 
-SU_DOLLAR:
+; -------------------------------------------------------------------------------
+; Parameter Expansion
+; -------------------------------------------------------------------------------
+
+SU_DOLLAR:                              ; expand positional parameter
         CALL    SU_GETSOURCE
         CP      '$'
         JR      Z,SU_LITERAL
@@ -92,14 +122,20 @@ SU_DOLLAR:
         SUB     '0'
         CALL    SU_COPYARG
         JR      SU_NEXTCH
-SU_LITERAL:
+
+SU_LITERAL:                             ; append literal source character
         CALL    SU_PUTCHAR
         JR      SU_NEXTCH
-SU_PARMERR:
+
+SU_PARMERR:                             ; report invalid parameter reference
         LD      DE,SU_BADPARM
         JP      SU_ERROR
 
-SU_CARET:
+; -------------------------------------------------------------------------------
+; Control Escape
+; -------------------------------------------------------------------------------
+
+SU_CARET:                               ; expand control-character escape
         CALL    SU_GETSOURCE
         CP      'A'
         JR      C,SU_CTLERR
@@ -108,21 +144,28 @@ SU_CARET:
         SUB     'A'-1
         CALL    SU_PUTCHAR
         JR      SU_NEXTCH
-SU_CTLERR:
+
+SU_CTLERR:                              ; report invalid control escape
         LD      DE,SU_BADCTL
         JP      SU_ERROR
 
-SU_EOL:
+SU_EOL:                                 ; finish source command line
         CALL    SU_STASHLINE
         CALL    SU_INCLINE
         JR      SU_PARSE
-SU_EOF:
+
+SU_EOF:                                 ; finish source file
         CALL    SU_STASHLINE
         JP      SU_MAKEFILE
 
-; Add one command byte.  The stock limit leaves room for count, NUL and '$'
-; in its 128-byte record.  Aggregate expansion remains bounded at two KiB.
-SU_PUTCHAR:
+  ; Add one command byte.  The stock limit leaves room for count, NUL and '$'
+  ; in its 128-byte record.  Aggregate expansion remains bounded at two KiB.
+
+; -------------------------------------------------------------------------------
+; Command Buffering
+; -------------------------------------------------------------------------------
+
+SU_PUTCHAR:                             ; append command byte
         PUSH    AF
         LD      A,(SU_RLEN)
         CP      125
@@ -132,12 +175,13 @@ SU_PUTCHAR:
         POP     AF
         CALL    SU_PUTAGG
         RET
-SU_TOOLONG:
+
+SU_TOOLONG:                             ; report overlong command
         POP     AF
         LD      DE,SU_LONGMSG
         JP      SU_ERROR
 
-SU_PUTAGG:
+SU_PUTAGG:                              ; append byte to aggregate buffer
         PUSH    AF
         LD      HL,(SU_RBP)
         LD      DE,SU_RBUFEND
@@ -150,32 +194,51 @@ SU_PUTAGG:
         INC     HL
         LD      (SU_RBP),HL
         RET
-SU_OVERFLOW:
+
+SU_OVERFLOW:                            ; report aggregate overflow
         POP     AF
         LD      DE,SU_OVRMSG
         JP      SU_ERROR
 
-; Empty source lines have no CCP command and consume no $$$.SUB record.
-SU_STASHLINE:
+  ; Empty source lines have no CCP command and consume no $$$.SUB record.
+
+; -------------------------------------------------------------------------------
+; Completed Command Storage
+; -------------------------------------------------------------------------------
+
+SU_STASHLINE:                           ; store completed command record
         LD      A,(SU_RLEN)
         OR      A
         RET     Z
-        CALL    SU_PUTAGG       ; packed representation is text followed by len
+        CALL    SU_PUTAGG               ; packed representation is text followed by len
         XOR     A
         LD      (SU_RLEN),A
         RET
 
-; A selects $0..$9.  Arguments are deliberately blank-delimited: CP/M 2.2
-; SUBMIT has no quoting language, defaults, or named variables.
-SU_COPYARG:
+  ; A selects $0..$9.  Arguments are deliberately blank-delimited: CP/M 2.2
+  ; SUBMIT has no quoting language, defaults, or named variables.
+
+; ================================================================================
+; =                          Positional Argument Lookup                          =
+; =                                                                              =
+; = Locates blank-delimited command-tail arguments and copies the selected positional =
+; = parameter into the current expanded command.                                 =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Argument Selection
+; -------------------------------------------------------------------------------
+
+SU_COPYARG:                             ; copy positional argument
         LD      B,A
         LD      HL,SU_ARGS
         CALL    SU_ARGSKIP
-SU_ARGNTH:
+
+SU_ARGNTH:                              ; locate requested argument
         LD      A,B
         OR      A
         JR      Z,SU_ARGCOPY
-SU_ARGWORD:
+
+SU_ARGWORD:                             ; scan argument word
         LD      A,(HL)
         OR      A
         RET     Z
@@ -183,10 +246,12 @@ SU_ARGWORD:
         JR      Z,SU_ARGNEXT
         INC     HL
         JR      SU_ARGWORD
-SU_ARGNEXT:
+
+SU_ARGNEXT:                             ; advance argument scan
         CALL    SU_ARGSKIP
         DJNZ    SU_ARGNTH
-SU_ARGCOPY:
+
+SU_ARGCOPY:                             ; copy argument bytes
         LD      A,(HL)
         OR      A
         RET     Z
@@ -197,16 +262,28 @@ SU_ARGCOPY:
         CALL    SU_PUTCHAR
         POP     HL
         JR      SU_ARGCOPY
-SU_ARGSKIP:
+
+SU_ARGSKIP:                             ; skip preceding arguments
         LD      A,(HL)
         CP      ' '
         RET     NZ
         INC     HL
         JR      SU_ARGSKIP
 
-; Return the next upper-case source byte in A.  EOF, including CP/M's 1Ah text
-; marker, is 1Ah.  A physical error is reported rather than mistaken for EOF.
-SU_GETSOURCE:
+  ; Return the next upper-case source byte in A.  EOF, including CP/M's 1Ah text
+  ; marker, is 1Ah.  A physical error is reported rather than mistaken for EOF.
+
+; ================================================================================
+; =                              Source File Input                               =
+; =                                                                              =
+; = Provides uppercase buffered source input, recognizes CP/M text EOF, distinguishes =
+; = physical read errors, and tracks source line numbers.                        =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Buffered Source Input
+; -------------------------------------------------------------------------------
+
+SU_GETSOURCE:                           ; read next source character
         LD      A,(SU_SLEFT)
         OR      A
         JR      NZ,SU_SGET
@@ -219,12 +296,14 @@ SU_GETSOURCE:
         JR      Z,SU_SEOF
         LD      DE,SU_READMSG
         JP      SU_ERROR
-SU_SFILL:
+
+SU_SFILL:                               ; fill source input buffer
         LD      HL,SU_IOBUF
         LD      (SU_SPTR),HL
         LD      A,128
         LD      (SU_SLEFT),A
-SU_SGET:
+
+SU_SGET:                                ; return buffered source byte
         LD      HL,(SU_SPTR)
         LD      A,(HL)
         INC     HL
@@ -239,11 +318,12 @@ SU_SGET:
         RET     NC
         AND     05FH
         RET
-SU_SEOF:
+
+SU_SEOF:                                ; return source EOF
         LD      A,01AH
         RET
 
-SU_INCLINE:
+SU_INCLINE:                             ; increment source line count
         LD      HL,SU_LINE+2
         INC     (HL)
         LD      A,(HL)
@@ -260,7 +340,17 @@ SU_INCLINE:
         INC     (HL)
         RET
 
-SU_MAKEFILE:
+; ================================================================================
+; =                             $$$.SUB Construction                             =
+; =                                                                              =
+; = Creates the conventional command file and walks the packed command aggregate backward =
+; = to write the on-disk stack consumed by the CCP/XSUB path.                    =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Output File Creation
+; -------------------------------------------------------------------------------
+
+SU_MAKEFILE:                            ; create $$$.SUB output
         LD      DE,SU_OUTFCB
         LD      C,19
         CALL    BDOS
@@ -277,16 +367,22 @@ SU_MAKEFILE:
         JR      NZ,SU_MADE
         LD      DE,SU_DIRMSG
         JP      SU_ERROR
-SU_MADE:
+
+SU_MADE:                                ; begin reverse record output
         LD      A,1
         LD      (SU_OUTLIVE),A
         LD      DE,SU_IOBUF
         LD      C,26
         CALL    BDOS
 
-; Walk the packed commands backward.  This produces the on-disk stack consumed
-; by both the stock CCP and BetterCP/M's compatible command acquisition path.
-SU_WRITELOOP:
+  ; Walk the packed commands backward.  This produces the on-disk stack consumed
+  ; by both the stock CCP and BetterCP/M's compatible command acquisition path.
+
+; -------------------------------------------------------------------------------
+; Reverse Record Write
+; -------------------------------------------------------------------------------
+
+SU_WRITELOOP:                           ; write next submitted record
         LD      HL,(SU_RBP)
         LD      DE,SU_RBUF
         LD      A,H
@@ -295,18 +391,21 @@ SU_WRITELOOP:
         LD      A,L
         CP      E
         JR      Z,SU_CLOSE
-SU_HAVEREC:
+
+SU_HAVEREC:                             ; prepare current record
         DEC     HL
         LD      A,(HL)
         LD      (SU_WLEN),A
         LD      B,A
-SU_BACKUP:
+
+SU_BACKUP:                              ; walk aggregate backward
         LD      A,B
         OR      A
         JR      Z,SU_BACKDONE
         DEC     HL
         DJNZ    SU_BACKUP
-SU_BACKDONE:
+
+SU_BACKDONE:                            ; finish reverse record copy
         LD      (SU_WPTR),HL
         LD      A,(SU_WLEN)
         LD      (SU_IOBUF),A
@@ -317,7 +416,8 @@ SU_BACKDONE:
         OR      A
         JR      Z,SU_WTERM
         LDIR
-SU_WTERM:
+
+SU_WTERM:                               ; terminate submitted command record
         XOR     A
         LD      (DE),A
         INC     DE
@@ -330,12 +430,17 @@ SU_WTERM:
         JR      Z,SU_WNEXT
         LD      DE,SU_WRERR
         JP      SU_ERROR
-SU_WNEXT:
+
+SU_WNEXT:                               ; advance output record
         LD      HL,(SU_WPTR)
         LD      (SU_RBP),HL
         JR      SU_WRITELOOP
 
-SU_CLOSE:
+; -------------------------------------------------------------------------------
+; Output Close
+; -------------------------------------------------------------------------------
+
+SU_CLOSE:                               ; close $$$.SUB
         LD      DE,SU_OUTFCB
         LD      C,16
         CALL    BDOS
@@ -343,14 +448,26 @@ SU_CLOSE:
         JR      NZ,SU_SUCCESS
         LD      DE,SU_CLERR
         JP      SU_ERROR
-SU_SUCCESS:
+
+SU_SUCCESS:                             ; finish successful submission
         XOR     A
         LD      (SU_OUTLIVE),A
         LD      C,0
         JP      BDOS
 
-; All failures return through WBOOT with no partially generated command file.
-SU_ERROR:
+  ; All failures return through WBOOT with no partially generated command file.
+
+; ================================================================================
+; =                        Completion and Error Handling                         =
+; =                                                                              =
+; = Closes successful output or reports failures through the common WBOOT path without =
+; = leaving a partially generated command file.                                  =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Failure Reporting
+; -------------------------------------------------------------------------------
+
+SU_ERROR:                               ; handle SUBMIT failure
         LD      (SU_ERRPTR),DE
         LD      A,(SU_OUTLIVE)
         OR      A
@@ -360,7 +477,8 @@ SU_ERROR:
         CALL    BDOS
         XOR     A
         LD      (SU_OUTLIVE),A
-SU_ERRPRINT:
+
+SU_ERRPRINT:                            ; print SUBMIT error
         LD      DE,SU_ERRHEAD
         LD      C,9
         CALL    BDOS
@@ -373,53 +491,74 @@ SU_ERRPRINT:
         LD      C,0
         JP      BDOS
 
-SU_SUBTYPE:     DB      'SUB'
-SU_ERRHEAD:     DB      13,10,'Error On Line ','$'
-SU_LINE:        DB      '001 ','$'
-SU_NOSUB:       DB      'No ''SUB'' File Present','$'
-SU_BADPARM:     DB      'Parameter Error','$'
-SU_BADCTL:      DB      'Invalid Control Character','$'
-SU_LONGMSG:     DB      'Command Too Long','$'
-SU_OVRMSG:      DB      'Command Buffer Overflow','$'
-SU_READMSG:     DB      'Disk Read Error','$'
-SU_WRERR:       DB      'Disk Write Error','$'
-SU_DIRMSG:      DB      'Directory Full','$'
-SU_CLERR:       DB      'Cannot Close, Read/Only?','$'
+; ================================================================================
+; =                        SUBMIT Data and Working State                         =
+; =                                                                              =
+; = Defines messages, FCBs, saved arguments, disk/source buffers, aggregate pointers, =
+; = line/output state, and the utility's private stack.                          =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Messages and File State
+; -------------------------------------------------------------------------------
 
-SU_SRCFCB:
+SU_SUBTYPE:     DB      'SUB'           ; SUB file extension
+SU_ERRHEAD:     DB      13,10,'Error On Line ','$' ; error-message prefix
+SU_LINE:        DB      '001 ','$'      ; line-number label
+SU_NOSUB:       DB      'No ''SUB'' File Present','$' ; source-file missing message
+SU_BADPARM:     DB      'Parameter Error','$' ; bad-parameter message
+SU_BADCTL:      DB      'Invalid Control Character','$' ; bad-control message
+SU_LONGMSG:     DB      'Command Too Long','$' ; command-too-long message
+SU_OVRMSG:      DB      'Command Buffer Overflow','$' ; aggregate-overflow message
+SU_READMSG:     DB      'Disk Read Error','$' ; source-read error message
+SU_WRERR:       DB      'Disk Write Error','$' ; output-write error message
+SU_DIRMSG:      DB      'Directory Full','$' ; directory-full message
+SU_CLERR:       DB      'Cannot Close, Read/Only?','$' ; output-close error message
+
+SU_SRCFCB:                              ; source command-file FCB
                 REPT    36
                 DB      0
                 ENDM
-SU_OUTFCB:      DB      0,'$$$     ','SUB',0,0,0,0
+
+SU_OUTFCB:      DB      0,'$$$     ','SUB',0,0,0,0 ; $$$.SUB output FCB
                 REPT    16
                 DB      0
                 ENDM
                 DB      0,0,0,0
-SU_ARGS:
+
+; -------------------------------------------------------------------------------
+; Buffers and Parser State
+; -------------------------------------------------------------------------------
+
+SU_ARGS:                                ; saved command-tail arguments
                 REPT    128
                 DB      0
                 ENDM
-SU_IOBUF:
+
+SU_IOBUF:                               ; disk I/O buffer
                 REPT    128
                 DB      01AH
                 ENDM
-SU_RBUF:
-                REPT    2047    ; DRI rbuff(0) is its reverse-walk sentinel
+
+SU_RBUF:                                ; source read buffer
+                REPT    2047            ; DRI rbuff(0) is its reverse-walk sentinel
                 DB      0
                 ENDM
-SU_RBUFEND:
-                DB      0       ; preserve the original 2K storage footprint
-SU_RBP:         DW      0
-SU_SPTR:        DW      0
-SU_SLEFT:       DB      0
-SU_RLEN:        DB      0
-SU_WLEN:        DB      0
-SU_WPTR:        DW      0
-SU_ERRPTR:      DW      0
-SU_OUTLIVE:     DB      0
+
+SU_RBUFEND:                             ; end of source read buffer
+                DB      0               ; preserve the original 2K storage footprint
+
+SU_RBP:         DW      0               ; source-buffer pointer
+SU_SPTR:        DW      0               ; aggregate command pointer
+SU_SLEFT:       DB      0               ; aggregate bytes remaining
+SU_RLEN:        DB      0               ; current source-record length
+SU_WLEN:        DB      0               ; current output-record length
+SU_WPTR:        DW      0               ; current output pointer
+SU_ERRPTR:      DW      0               ; current error-message pointer
+SU_OUTLIVE:     DB      0               ; output-file live flag
                 REPT    32
                 DW      0
                 ENDM
-SU_STACK:
+
+SU_STACK:                               ; private SUBMIT stack
         .DEPHASE
         END

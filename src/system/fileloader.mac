@@ -1,17 +1,45 @@
         INCLUDE layout.inc
-; CPX/RSX FILE STREAM -- one cursor, one FCB.
-; OPEN: A=0 for CPX, nonzero for RSX; HL -> eight-byte name.
-; NEXT: HL -> destination; read up to four 128-byte records.
-; RESET reopens the same name.  Keep name/type in the FCB; a second
-; copy wastes RAM and can get out of step with the file being read.
+
+; ********************************************************************************
+; *                      BetterCP/M CPX/RSX File Stream                          *
+; *                                                                              *
+; * Shared one-cursor, one-FCB reader for CPX and RSX carrier files. OPEN selects*
+; * the carrier type and name; NEXT reads up to four 128-byte records; RESET     *
+; * reopens the same FCB without maintaining a redundant filename copy.           *
+; ********************************************************************************
+
 DIROPEN EQU LY_EXT+006H
 DIRREAD EQU LY_EXT+009H
         CSEG
         .PHASE  LY_FILE
-FL_OPEN: JP FL_OPBODY
-FL_NEXT: JP FL_NXBODY
-FL_RESET: JP FL_REOPEN
-FL_OPBODY:
+
+; ================================================================================
+; =                            File Stream Interface                             =
+; =                                                                              =
+; = Provides OPEN, NEXT, and RESET entry points over one retained FCB and cursor for =
+; = protected CPX/RSX carrier loading.                                           =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Public Entry Points
+; -------------------------------------------------------------------------------
+
+FL_OPEN: JP FL_OPBODY                   ; open CPX or RSX file stream
+
+FL_NEXT: JP FL_NXBODY                   ; read next file-stream block
+
+FL_RESET: JP FL_REOPEN                  ; reopen current file stream
+
+; ================================================================================
+; =                           Carrier Open and Reopen                            =
+; =                                                                              =
+; = Builds the carrier FCB, selects the CPX or RSX extension, opens the stream, and =
+; = reopens the retained name when the caller resets the stream.                 =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Open Carrier
+; -------------------------------------------------------------------------------
+
+FL_OPBODY:                              ; build and open stream FCB
         LD DE,FL_FCB+1
         LD BC,8
         LDIR
@@ -19,10 +47,16 @@ FL_OPBODY:
         OR A
         JR Z,FL_EXT
         LD HL,FL_RSXEXT
-FL_EXT:
+
+FL_EXT:                                 ; select CPX or RSX extension
         LD BC,3
         LDIR
-FL_REOPEN:
+
+; -------------------------------------------------------------------------------
+; Reset Stream
+; -------------------------------------------------------------------------------
+
+FL_REOPEN:                              ; reopen saved stream name
         LD A,1
         LD (FL_FCB),A
         LD HL,FL_FCB+12
@@ -36,9 +70,21 @@ FL_REOPEN:
         JR Z,FL_BAD
         XOR A
         RET
-FL_NXBODY:
+
+; ================================================================================
+; =                                 Block Input                                  =
+; =                                                                              =
+; = Reads up to four CP/M records into the caller destination and pads a short final =
+; = block while distinguishing normal EOF from stream failure.                   =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Read Block
+; -------------------------------------------------------------------------------
+
+FL_NXBODY:                              ; begin next-block read
         LD B,4
-FL_RLOOP:
+
+FL_RLOOP:                               ; read next 128-byte record
         PUSH BC
         PUSH HL
         LD B,H
@@ -54,22 +100,39 @@ FL_RLOOP:
         DJNZ FL_RLOOP
         XOR A
         RET
-FL_EOF:
+
+; -------------------------------------------------------------------------------
+; EOF and Padding
+; -------------------------------------------------------------------------------
+
+FL_EOF:                                 ; finish short final block
         LD A,B
         CP 4
-        JR Z,FL_BAD          ; no input at all is EOF; a partial carrier is valid
+        JR Z,FL_BAD                     ; no input at all is EOF; a partial carrier is valid
         LD DE,128
-FL_PAD:
+
+FL_PAD:                                 ; pad unread block bytes
         ADD HL,DE
         DJNZ FL_PAD
         XOR A
         RET
-FL_BAD:
+
+FL_BAD:                                 ; return file-stream failure
         LD A,1
         OR A
         RET
-FL_CPXEXT: DB 'CPX'
-FL_RSXEXT: DB 'RSX'
-FL_FCB: DS 36
+
+; ================================================================================
+; =                              File Stream State                               =
+; =                                                                              =
+; = Defines the carrier extensions and the single retained FCB used by the stream. =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Extensions and FCB
+; -------------------------------------------------------------------------------
+
+FL_CPXEXT: DB 'CPX'                     ; CPX filename extension
+FL_RSXEXT: DB 'RSX'                     ; RSX filename extension
+FL_FCB: DS 36                           ; shared file-stream FCB
         .DEPHASE
         END

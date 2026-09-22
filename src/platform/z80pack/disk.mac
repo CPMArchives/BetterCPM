@@ -1,37 +1,44 @@
         INCLUDE layout.inc
         INCLUDE bioslinks.inc
         INCLUDE bootfmt.inc
-; Z80PACK CPMSIM DISK ADAPTER -- variable raw geometry
-;
-; cpmsim ports:
-;   10 drive
-;   11 track
-;   12 sector low
-;   13 command: 0 read, 1 write
-;   14 status
-;   15 DMA low
-;   16 DMA high
-;   17 sector high
-;   18 geometry-register selector
-;   19 geometry-register value
-;
-; Geometry registers:
-;   00 tracks low
-;   01 tracks high
-;   02 sectors/track low
-;   03 sectors/track high
-;   04 sector size low
-;   05 sector size high (legacy mode)
-;   06/07 raw track byte size
-;   08/09 selected sector byte offset
-;   0A/0B selected transfer byte count
-;   0C raw direct-address mode
-;   7F interface version = 2
-;
-; BetterCP/M continues to present 128-byte logical records.  The common BIOS
-; performs deblocking through LY_BUF using BIO_QUART.  This adapter transfers
-; one complete physical sector.
-;
+
+; ********************************************************************************
+; *                       z80pack CPMSIM Raw-Disk Adapter                        *
+; *                                                                              *
+; * Variable-geometry disk adapter for CPMSIM raw images. BetterCP/M continues to *
+; * present 128-byte logical records while this layer maps runtime/FDF geometry  *
+; * to complete physical-sector transfers and direct raw-track byte addressing.  *
+; ********************************************************************************
+
+  ; cpmsim ports:
+  ;   10 drive
+  ;   11 track
+  ;   12 sector low
+  ;   13 command: 0 read, 1 write
+  ;   14 status
+  ;   15 DMA low
+  ;   16 DMA high
+  ;   17 sector high
+  ;   18 geometry-register selector
+  ;   19 geometry-register value
+  ;
+  ; Geometry registers:
+  ;   00 tracks low
+  ;   01 tracks high
+  ;   02 sectors/track low
+  ;   03 sectors/track high
+  ;   04 sector size low
+  ;   05 sector size high (legacy mode)
+  ;   06/07 raw track byte size
+  ;   08/09 selected sector byte offset
+  ;   0A/0B selected transfer byte count
+  ;   0C raw direct-address mode
+  ;   7F interface version = 2
+  ;
+  ; BetterCP/M continues to present 128-byte logical records.  The common BIOS
+  ; performs deblocking through LY_BUF using BIO_QUART.  This adapter transfers
+  ; one complete physical sector.
+  ;
 
         ASEG
         ORG LY_DISK
@@ -43,11 +50,19 @@
         JP Z_WRITE
         JP Z_BOOTREAD
 
-; ----------------------------------------------------------------------
-; Select logical drive and return its DPH.
-; ----------------------------------------------------------------------
+  ; Select logical drive and return its DPH.
 
-Z_SELECT:
+; ================================================================================
+; =                           Logical Drive Selection                            =
+; =                                                                              =
+; = Selects a z80pack logical drive, resolves its resident DPH, and publishes the =
+; = active CPMSIM raw-disk context used by subsequent mapping and transfer calls. =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Drive Selection and DPH Lookup
+; -------------------------------------------------------------------------------
+
+Z_SELECT:                               ; select logical drive
         LD A,C
         CP 4
         JR NC,Z_NODISK
@@ -55,33 +70,41 @@ Z_SELECT:
         CALL Z_DPH
         RET
 
-Z_NODISK:
+Z_NODISK:                               ; reject unavailable logical drive
         LD HL,0
         RET
 
-Z_DPH:
+Z_DPH:                                  ; locate drive DPH
         LD HL,LY_TAB
         LD DE,80
         OR A
         RET Z
 
-Z_DPHLP:
+Z_DPHLP:                                ; scan DPH table
         ADD HL,DE
         DEC A
         JR NZ,Z_DPHLP
         RET
 
-; ----------------------------------------------------------------------
-; Map CP/M logical track/record to canonical raw-image position.
-;
-; Raw images use cylinder-major physical ordering: cylinder 0 side 0,
-; cylinder 0 side 1, cylinder 1 side 0, ... .  FDF.RSX resolves optional
-; Montezuma track/side/ID conventions; this adapter converts its result to
-; a byte offset within that canonical raw track.  Mixed sector sizes are
-; therefore supported without teaching cpmsim anything about DISK.FDF.
-; ----------------------------------------------------------------------
+  ; Map CP/M logical track/record to canonical raw-image position.
+  ;
+  ; Raw images use cylinder-major physical ordering: cylinder 0 side 0,
+  ; cylinder 0 side 1, cylinder 1 side 0, ... .  FDF.RSX resolves optional
+  ; Montezuma track/side/ID conventions; this adapter converts its result to
+  ; a byte offset within that canonical raw track.  Mixed sector sizes are
+  ; therefore supported without teaching cpmsim anything about DISK.FDF.
 
-Z_MAP:
+; ================================================================================
+; =                       Logical-to-Raw Geometry Mapping                        =
+; =                                                                              =
+; = Maps BetterCP/M 128-byte logical records through runtime/FDF geometry to the =
+; = canonical raw-image track, sector slot, byte offset, and transfer size.      =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Geometry Decode
+; -------------------------------------------------------------------------------
+
+Z_MAP:                                  ; map logical record to raw-image sector
         PUSH IX
 
         LD A,(BIO_DRIVE)
@@ -108,7 +131,7 @@ Z_MAP:
         SBC HL,DE
         JP NC,Z_BADIX
 
-; Low-nibble conventions and explicit mixed-size maps belong to FDF.RSX.
+  ; Low-nibble conventions and explicit mixed-size maps belong to FDF.RSX.
         LD A,(IX+19)
         AND 00FH
         OR (IX+52)
@@ -135,9 +158,9 @@ Z_MAP:
         LD A,D
         LD (ZP_SIDE),A
 
-; FDF bit 3 continues side-one sector IDs after side zero.  The raw image
-; still stores sectors by their slot in the FDF skew list, so normalize the
-; returned ID before finding that slot.
+  ; FDF bit 3 continues side-one sector IDs after side zero.  The raw image
+  ; still stores sectors by their slot in the FDF skew list, so normalize the
+  ; returned ID before finding that slot.
         LD A,E
         LD C,A
         LD A,(ZP_SIDE)
@@ -149,15 +172,25 @@ Z_MAP:
         SUB (IX+17)
         JP C,Z_BADIX
         LD C,A
-Z_FINDID:
+
+; -------------------------------------------------------------------------------
+; Sector-ID Normalization
+; -------------------------------------------------------------------------------
+
+Z_FINDID:                               ; normalize and locate sector ID
         LD A,C
         LD (ZP_ID),A
         JP Z_MAPPED
 
-; Built-in common mapping.  Density is irrelevant to a raw byte stream.
-; Bit 6 alternates sides by logical track.  Bit 5 is the normalized
-; cylinder-track form whose logical SPT spans both sides.
-Z_COMMON:
+  ; Built-in common mapping.  Density is irrelevant to a raw byte stream.
+  ; Bit 6 alternates sides by logical track.  Bit 5 is the normalized
+  ; cylinder-track form whose logical SPT spans both sides.
+
+; -------------------------------------------------------------------------------
+; Built-In Geometry Mapping
+; -------------------------------------------------------------------------------
+
+Z_COMMON:                               ; apply built-in geometry mapping
         LD HL,(BIO_TRACK)
         LD A,H
         OR A
@@ -175,7 +208,8 @@ Z_COMMON:
         ADC A,0
         LD (ZP_SIDE),A
         POP AF
-Z_CYLOK:
+
+Z_CYLOK:                                ; accept mapped cylinder
         CP (IX+16)
         JP NC,Z_BADIX
         LD (ZP_CYL),A
@@ -191,26 +225,31 @@ Z_CYLOK:
         JR Z,Z_QZERO
         LD B,A
         LD A,1
-Z_QMASK:
+
+Z_QMASK:                                ; derive quarter-sector mask
         ADD A,A
         DJNZ Z_QMASK
         DEC A
         AND L
         JR Z_QSAVE
-Z_QZERO:
+
+Z_QZERO:                                ; handle zero quarter index
         XOR A
-Z_QSAVE:
+
+Z_QSAVE:                                ; save quarter-sector index
         LD (BIO_QUART),A
 
         LD A,(ZP_SIZE)
         OR A
         JR Z,Z_DIVDONE
         LD B,A
-Z_DIV:
+
+Z_DIV:                                  ; divide logical sector by physical size
         SRL H
         RR L
         DJNZ Z_DIV
-Z_DIVDONE:
+
+Z_DIVDONE:                              ; finish sector division
         LD A,H
         OR A
         JP NZ,Z_BADIX
@@ -222,7 +261,8 @@ Z_DIVDONE:
         LD A,1
         LD (ZP_SIDE),A
         LD A,B
-Z_INDEXOK:
+
+Z_INDEXOK:                              ; accept sector-slot index
         CP (IX+17)
         JP NC,Z_BADIX
         LD E,A
@@ -235,8 +275,8 @@ Z_INDEXOK:
         LD A,(HL)
         LD (ZP_ID),A
 
-Z_MAPPED:
-; Convert cylinder/side to canonical raw linear track.
+Z_MAPPED:                               ; publish mapped physical transfer
+  ; Convert cylinder/side to canonical raw linear track.
         LD A,(ZP_FLAGS)
         AND 060H
         LD A,(ZP_CYL)
@@ -245,14 +285,24 @@ Z_MAPPED:
         LD B,A
         LD A,(ZP_SIDE)
         ADD A,B
-Z_TRACKONE:
+
+; -------------------------------------------------------------------------------
+; Canonical Raw Track Addressing
+; -------------------------------------------------------------------------------
+
+Z_TRACKONE:                             ; linearize cylinder and side
         LD (ZP_TRACK),A
 
-; Compute total bytes in one raw track.  ZP_BYTES returns DE = size of
-; physical slot A, honoring a packed mixed map.
+  ; Compute total bytes in one raw track.  ZP_BYTES returns DE = size of
+  ; physical slot A, honoring a packed mixed map.
         LD HL,0
         XOR A
-Z_TBYTES:
+
+; -------------------------------------------------------------------------------
+; Raw Track Size
+; -------------------------------------------------------------------------------
+
+Z_TBYTES:                               ; compute raw track byte size
         LD C,A
         CALL ZP_BYTES
         ADD HL,DE
@@ -262,13 +312,18 @@ Z_TBYTES:
         JR C,Z_TBYTES
         LD (ZP_TBYT),HL
 
-; Raw sector dumps have no ID fields.  Canonical raw order is ascending sector
-; ID, so the FDF skew table determines the byte position.  With mixed sizes,
-; sum the sizes belonging to every lower-numbered ID.
+  ; Raw sector dumps have no ID fields.  Canonical raw order is ascending sector
+  ; ID, so the FDF skew table determines the byte position.  With mixed sizes,
+  ; sum the sizes belonging to every lower-numbered ID.
         LD HL,0
         LD (ZP_OFFSET),HL
         XOR A
-Z_OBYTES:
+
+; -------------------------------------------------------------------------------
+; Sector Byte Offset
+; -------------------------------------------------------------------------------
+
+Z_OBYTES:                               ; compute sector byte offset
         LD C,A
         LD E,A
         LD D,0
@@ -288,13 +343,14 @@ Z_OBYTES:
         LD HL,(ZP_OFFSET)
         ADD HL,DE
         LD (ZP_OFFSET),HL
-Z_ONOADD:
+
+Z_ONOADD:                               ; finish sector-offset accumulation
         LD A,C
         INC A
         CP (IX+17)
         JR C,Z_OBYTES
 
-; cpmsim geometry interface v2 adds direct raw-track byte addressing.
+  ; cpmsim geometry interface v2 adds direct raw-track byte addressing.
         LD A,07FH
         OUT (18),A
         IN A,(19)
@@ -304,7 +360,7 @@ Z_ONOADD:
         LD A,(ZP_DRIVE)
         OUT (10),A
 
-; Track byte size.
+  ; Track byte size.
         LD DE,(ZP_TBYT)
         LD A,6
         OUT (18),A
@@ -315,7 +371,7 @@ Z_ONOADD:
         LD A,D
         OUT (19),A
 
-; Byte offset of selected physical sector within the track.
+  ; Byte offset of selected physical sector within the track.
         LD DE,(ZP_OFFSET)
         LD A,8
         OUT (18),A
@@ -326,7 +382,7 @@ Z_ONOADD:
         LD A,D
         OUT (19),A
 
-; Transfer byte count for the selected sector.
+  ; Transfer byte count for the selected sector.
         LD A,(ZP_SIZE)
         CALL ZP_CODEBYTES
         LD A,10
@@ -338,7 +394,7 @@ Z_ONOADD:
         LD A,D
         OUT (19),A
 
-; Direct raw-track addressing on.
+  ; Direct raw-track addressing on.
         LD A,12
         OUT (18),A
         LD A,1
@@ -348,8 +404,13 @@ Z_ONOADD:
         XOR A
         RET
 
-; A = physical slot index.  Return DE = 128/256/512/1024 byte size.
-ZP_BYTES:
+  ; A = physical slot index.  Return DE = 128/256/512/1024 byte size.
+
+; -------------------------------------------------------------------------------
+; Physical Slot Size
+; -------------------------------------------------------------------------------
+
+ZP_BYTES:                               ; return physical slot byte size
         PUSH HL
         PUSH BC
         LD C,A
@@ -372,53 +433,71 @@ ZP_BYTES:
         AND 3
         LD C,A
         JR Z,ZP_PAIRREADY
-ZP_PAIR:
+
+ZP_PAIR:                                ; read packed size-code pair
         SRL B
         SRL B
         DEC C
         JR NZ,ZP_PAIR
-ZP_PAIRREADY:
+
+ZP_PAIRREADY:                           ; select packed size code
         LD A,B
         AND 3
-ZP_BCODE:
+
+ZP_BCODE:                               ; convert size code to bytes
         CALL ZP_CODEBYTES
         POP BC
         POP HL
         RET
 
-; A=size code -> DE=byte count.
-ZP_CODEBYTES:
+  ; A=size code -> DE=byte count.
+
+ZP_CODEBYTES:                           ; return decoded byte count
         LD DE,128
         OR A
         RET Z
-ZP_BSHIFT:
+
+ZP_BSHIFT:                              ; scale physical byte count
         SLA E
         RL D
         DEC A
         JR NZ,ZP_BSHIFT
         RET
 
-Z_BADIX:
+Z_BADIX:                                ; reject invalid slot index
         POP IX
-Z_BAD:
+
+Z_BAD:                                  ; return mapping failure
         LD A,1
         OR A
         RET
 
-; ----------------------------------------------------------------------
-; Transfer one complete decoded physical sector.  A raw cpmtools image stores
-; logical sector bytes, so controller-specific inverted-data polarity does not
-; appear in this host representation.
-; ----------------------------------------------------------------------
+  ; Transfer one complete decoded physical sector.  A raw cpmtools image stores
+  ; logical sector bytes, so controller-specific inverted-data polarity does not
+  ; appear in this host representation.
 
-Z_READ:
+; ================================================================================
+; =                       CPMSIM Physical Sector Transfer                        =
+; =                                                                              =
+; = Transfers one decoded physical sector to or from the CPMSIM raw image using  =
+; = geometry-interface v2 direct byte addressing where available.                =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Read/Write Entry
+; -------------------------------------------------------------------------------
+
+Z_READ:                                 ; read physical sector
         XOR A
         JR Z_TRANSFER
 
-Z_WRITE:
+Z_WRITE:                                ; write physical sector
         LD A,1
 
-Z_TRANSFER:
+; -------------------------------------------------------------------------------
+; Host Transfer Setup
+; -------------------------------------------------------------------------------
+
+Z_TRANSFER:                             ; perform CPMSIM physical transfer
         LD (ZP_COMMAND),A
         LD (ZP_BUFFER),HL
 
@@ -445,32 +524,41 @@ Z_TRANSFER:
         RET NZ
         XOR A
         RET
-Z_WRESTORE:
+
+Z_WRESTORE:                             ; restore write-side state
         POP AF
         OR A
         RET
 
-; ----------------------------------------------------------------------
-; Read B consecutive absolute 128-byte system records from A:.  The system
-; carrier follows the selected FDF sector order just like the first-record
-; bootstrap.
-; ----------------------------------------------------------------------
+  ; Read B consecutive absolute 128-byte system records from A:.  The system
+  ; carrier follows the selected FDF sector order just like the first-record
+  ; bootstrap.
 
-Z_BOOTREAD:
+; ================================================================================
+; =                        Bootstrap System-Record Input                         =
+; =                                                                              =
+; = Reads consecutive absolute 128-byte system records from drive A using the same =
+; = selected FDF sector order as the first-record bootstrap.                     =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; System Record Mapping
+; -------------------------------------------------------------------------------
+
+Z_BOOTREAD:                             ; read bootstrap system records
         PUSH BC
         PUSH DE
 
         LD A,E
         LD D,0
 
-ZP_BDIV:
+ZP_BDIV:                                ; divide bootstrap record index
         CP ZB_SLOTS
         JR C,ZP_BDONE
         SUB ZB_SLOTS
         INC D
         JR ZP_BDIV
 
-ZP_BDONE:
+ZP_BDONE:                               ; finish bootstrap mapping
         PUSH HL
         LD E,A
         LD A,D
@@ -494,11 +582,16 @@ ZP_BDONE:
         DJNZ Z_BOOTREAD
         RET
 
-ZP_BOOTMAP:
+ZP_BOOTMAP:                             ; map bootstrap record
         DB ZB_MAP_BYTES
 
-; A=command, C=drive, D=track, E=1-based 128-byte sector, HL=DMA.
-Z_BOOTIO:
+  ; A=command, C=drive, D=track, E=1-based 128-byte sector, HL=DMA.
+
+; -------------------------------------------------------------------------------
+; Bootstrap Host Transfer
+; -------------------------------------------------------------------------------
+
+Z_BOOTIO:                               ; perform bootstrap host transfer
         PUSH AF
 
         LD A,C
@@ -529,12 +622,20 @@ Z_BOOTIO:
         OR A
         RET
 
-; ----------------------------------------------------------------------
-; BDOS 207 disk-configuration interface.  Setters execute through the
-; reloadable z80pack control overlay at LY_CFG.
-; ----------------------------------------------------------------------
+  ; BDOS 207 disk-configuration interface.  Setters execute through the
+  ; reloadable z80pack control overlay at LY_CFG.
 
-Z_API:
+; ================================================================================
+; =                         Disk Configuration Interface                         =
+; =                                                                              =
+; = Implements the resident BDOS 207 control surface and delegates profile setters =
+; = and formatting to the reloadable z80pack configuration overlay.              =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; BDOS 207 Dispatch
+; -------------------------------------------------------------------------------
+
+Z_API:                                  ; dispatch disk-control request
         LD A,B
         OR A
         LD HL,Z_INFO
@@ -575,18 +676,18 @@ Z_API:
         LD HL,2
         JP Z_RETURN
 
-Z_SETPH:
+Z_SETPH:                                ; set physical profile
         XOR A
         JR Z_CTL
 
-Z_SETLOG:
+Z_SETLOG:                               ; set logical profile
         LD A,3
         JR Z_CTL
 
-Z_FORMAT:
+Z_FORMAT:                               ; format raw-image surface
         LD A,6
 
-Z_CTL:
+Z_CTL:                                  ; call configuration overlay
         PUSH AF
         CALL LY_BIOS+57
         POP BC
@@ -598,15 +699,19 @@ Z_CTL:
         ADD HL,DE
         JP (HL)
 
-Z_CTLFAIL:
+Z_CTLFAIL:                              ; handle overlay failure
         LD HL,1
         JP Z_RETURN
 
-Z_REQBAD:
+Z_REQBAD:                               ; reject invalid control request
         LD HL,1
         JP Z_RETURN
 
-Z_GETPH:
+; -------------------------------------------------------------------------------
+; Physical Profile Query
+; -------------------------------------------------------------------------------
+
+Z_GETPH:                                ; return physical profile
         LD A,(IX+0)
         LD E,A
         ADD A,A
@@ -620,48 +725,66 @@ Z_GETPH:
         LD BC,6
         JR Z_COPY
 
-Z_GETLOG:
+; -------------------------------------------------------------------------------
+; Logical Profile Query
+; -------------------------------------------------------------------------------
+
+Z_GETLOG:                               ; return logical profile
         LD A,(IX+0)
         CALL Z_DPH
         LD DE,16
         ADD HL,DE
         LD BC,64
 
-Z_COPY:
+Z_COPY:                                 ; copy profile to caller
         PUSH IX
         POP DE
         INC DE
         LDIR
         LD HL,0
 
-Z_RETURN:
+Z_RETURN:                               ; return disk-control result
         LD A,L
         POP IX
         OR A
         RET
 
-Z_INFO:
+; ================================================================================
+; =                          Disk Adapter Working State                          =
+; =                                                                              =
+; = Defines resident disk information and physical-transfer state used by geometry =
+; = mapping, CPMSIM I/O, bootstrap reads, and configuration queries.             =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Published Disk Information
+; -------------------------------------------------------------------------------
+
+Z_INFO:                                 ; published disk information
         DB 'BDCF',5,4,4,64
         DW Z_PHYSICAL,LY_TAB
         ; Deblocking stages different sector sizes at different offsets.
         ; Do not advertise one address as a stable complete-sector buffer.
         DW 0,0
 
-Z_PHYSICAL:
+; -------------------------------------------------------------------------------
+; Physical Transfer State
+; -------------------------------------------------------------------------------
+
+Z_PHYSICAL:                             ; physical profile table
         REPT 4
         DB 8,80,2,0,0,0
         ENDM
 
-ZP_DRIVE:      DB 0
-ZP_TRACK:      DB 0
-ZP_CYL:        DB 0
-ZP_SIDE:       DB 0
-ZP_ID:         DB 0
-ZP_SIZE:       DB 0
-ZP_FLAGS:      DB 0
-ZP_COMMAND:    DB 0
-ZP_BUFFER:     DW 0
-ZP_OFFSET:     DW 0
-ZP_TBYT:       DW 0
+ZP_DRIVE:      DB 0                     ; physical drive
+ZP_TRACK:      DB 0                     ; physical track
+ZP_CYL:        DB 0                     ; physical cylinder
+ZP_SIDE:       DB 0                     ; physical side
+ZP_ID:         DB 0                     ; physical sector ID
+ZP_SIZE:       DB 0                     ; physical sector size
+ZP_FLAGS:      DB 0                     ; geometry flags
+ZP_COMMAND:    DB 0                     ; host transfer command
+ZP_BUFFER:     DW 0                     ; host transfer buffer
+ZP_OFFSET:     DW 0                     ; raw-track byte offset
+ZP_TBYT:       DW 0                     ; raw-track byte count
 
         END

@@ -1,11 +1,28 @@
-; Hardware-independent BetterCP/M clock display utility.
-; Discovers TIME ABI 1.0 through Resident Service Function 208.
+; ********************************************************************************
+; *                         BetterCP/M TIME Utility                              *
+; *                                                                              *
+; * Hardware-independent clock display utility. Discovers a TIME ABI 1.0 provider*
+; * through Resident Service Function 208, invokes the resolved service, and     *
+; * formats the returned CP/M day count and clock fields for display.            *
+; ********************************************************************************
+
 
 BDOS            EQU     0005H
 
         CSEG
         .PHASE  0103H
-START:
+
+; ================================================================================
+; =                     TIME Service Discovery and Dispatch                      =
+; =                                                                              =
+; = Parses the requested TIME operation, resolves the TIME ABI through Function 208, =
+; = invokes the provider, and handles unavailable/error results.                 =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Service Lookup and Call
+; -------------------------------------------------------------------------------
+
+START:                                  ; enter TIME utility
         CALL    TM_PARSE
         JP      NZ,TM_USAGE
         LD      DE,TM_LOOKUP
@@ -25,7 +42,8 @@ START:
         LD      BC,TM_GOT
         PUSH    BC
         JP      (HL)
-TM_GOT:
+
+TM_GOT:                                 ; handle resolved TIME service
         OR      A
         JP      NZ,TM_CLOCKERR
         LD      DE,TM_NL
@@ -48,7 +66,17 @@ TM_GOT:
         CALL    TM_PRINT
         JP      TM_EXIT
 
-TM_PROVIDER:
+; ================================================================================
+; =                             Provider Information                             =
+; =                                                                              =
+; = Formats the resolved provider name and capability flags for the TIME information =
+; = display.                                                                     =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Provider Name and Capabilities
+; -------------------------------------------------------------------------------
+
+TM_PROVIDER:                            ; display provider information
         LD      A,(TM_LOOKUP+18)
         LD      (TM_RSXREQ+2),A
         LD      DE,TM_RSXREQ
@@ -60,7 +88,8 @@ TM_PROVIDER:
         CALL    TM_PRINT
         LD      HL,TM_RSXREQ+4
         LD      B,8
-TM_PNLOOP:
+
+TM_PNLOOP:                              ; copy provider name
         LD      A,(HL)
         CP      ' '
         JR      Z,TM_PNDONE
@@ -71,10 +100,12 @@ TM_PNLOOP:
         POP     HL
         INC     HL
         DJNZ    TM_PNLOOP
-TM_PNDONE:
+
+TM_PNDONE:                              ; finish provider-name copy
         LD      DE,TM_NL
         CALL    TM_PRINT
-TM_PNONAME:
+
+TM_PNONAME:                             ; handle unnamed provider
         LD      DE,TM_PHEAD
         CALL    TM_PRINT
         LD      A,(TM_LOOKUP+14)
@@ -90,7 +121,8 @@ TM_PNONAME:
         LD      DE,TM_PSET
         JR      NZ,TM_PCAP
         LD      DE,TM_PRO
-TM_PCAP:
+
+TM_PCAP:                                ; display provider capabilities
         CALL    TM_PRINT
         LD      DE,TM_PINDEX
         CALL    TM_PRINT
@@ -100,7 +132,17 @@ TM_PCAP:
         CALL    TM_PRINT
         JP      TM_EXIT
 
-TM_PARSE:
+; ================================================================================
+; =                               Command Parsing                                =
+; =                                                                              =
+; = Parses and uppercases the transient command tail and recognizes the supported TIME =
+; = display/provider operations.                                                 =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Command-Tail Parse
+; -------------------------------------------------------------------------------
+
+TM_PARSE:                               ; parse TIME command tail
         XOR     A
         LD      (TM_MODE),A
         LD      A,(0080H)
@@ -108,7 +150,8 @@ TM_PARSE:
         RET     Z
         LD      B,A
         LD      HL,0081H
-TM_PSPACE:
+
+TM_PSPACE:                              ; skip command spaces
         LD      A,(HL)
         CP      ' '
         JR      NZ,TM_PARG
@@ -116,20 +159,23 @@ TM_PSPACE:
         DJNZ    TM_PSPACE
         XOR     A
         RET
-TM_PARG:
+
+TM_PARG:                                ; parse command argument
         LD      A,B
         CP      9
         JR      NZ,TM_PBAD
         LD      DE,TM_PKWORD
         LD      B,9
-TM_PCMP:
+
+TM_PCMP:                                ; compare command keyword
         LD      A,(HL)
         CP      'a'
         JR      C,TM_PUP
         CP      'z'+1
         JR      NC,TM_PUP
         AND     5FH
-TM_PUP:
+
+TM_PUP:                                 ; uppercase command character
         LD      C,A
         LD      A,(DE)
         CP      C
@@ -138,32 +184,47 @@ TM_PUP:
         INC     DE
         DEC     B
         JR      NZ,TM_PCMP
-TM_POK:
+
+TM_POK:                                 ; accept parsed command
         LD      A,1
         LD      (TM_MODE),A
         XOR     A
         RET
-TM_PBAD:
+
+TM_PBAD:                                ; reject invalid command
         LD      A,1
         OR      A
         RET
 
-; Convert CP/M day count HL to Gregorian date and print YYYY-MM-DD.
-TM_DATE:
+  ; Convert CP/M day count HL to Gregorian date and print YYYY-MM-DD.
+
+; ================================================================================
+; =                             CP/M Date Conversion                             =
+; =                                                                              =
+; = Converts the CP/M day count to Gregorian year, month, and day and prints the result =
+; = as YYYY-MM-DD.                                                               =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Day-Count to Gregorian Date
+; -------------------------------------------------------------------------------
+
+TM_DATE:                                ; convert and print CP/M date
         LD      A,H
         OR      L
         JR      NZ,TM_DNONZERO
         LD      DE,TM_EPOCH
         JP      TM_PRINT
-TM_DNONZERO:
+
+TM_DNONZERO:                            ; handle nonzero day count
         LD      DE,1978
-        DEC     HL              ; day 1 is 1978-01-01, make zero-based
-TM_YLOOP:
+        DEC     HL                      ; day 1 is 1978-01-01, make zero-based
+
+TM_YLOOP:                               ; find Gregorian year
         PUSH    HL
         PUSH    DE
         CALL    TM_YDAYS
         EX      DE,HL
-        POP     BC              ; year in BC
+        POP     BC                      ; year in BC
         POP     HL
         OR      A
         SBC     HL,DE
@@ -172,7 +233,8 @@ TM_YLOOP:
         LD      E,C
         INC     DE
         JR      TM_YLOOP
-TM_YEARFOUND:
+
+TM_YEARFOUND:                           ; finish year conversion
         ADD     HL,DE
         LD      D,B
         LD      E,C
@@ -184,7 +246,8 @@ TM_YEARFOUND:
         POP     HL
         LD      A,1
         LD      (TM_MON),A
-TM_MLOOP:
+
+TM_MLOOP:                               ; find Gregorian month
         PUSH    HL
         PUSH    DE
         LD      A,(TM_MON)
@@ -192,7 +255,7 @@ TM_MLOOP:
         CALL    TM_MDAYS
         LD      C,A
         LD      B,0
-        POP     DE              ; year
+        POP     DE                      ; year
         POP     HL
         OR      A
         SBC     HL,BC
@@ -201,7 +264,8 @@ TM_MLOOP:
         INC     A
         LD      (TM_MON),A
         JR      TM_MLOOP
-TM_MONTHFOUND:
+
+TM_MONTHFOUND:                          ; finish month conversion
         ADD     HL,BC
         PUSH    HL
         LD      A,(TM_MON)
@@ -213,8 +277,13 @@ TM_MONTHFOUND:
         LD      A,L
         JP      TM_DEC2
 
-; Input DE=year, output HL=365 or 366.
-TM_YDAYS:
+  ; Input DE=year, output HL=365 or 366.
+
+; -------------------------------------------------------------------------------
+; Leap-Year Calculation
+; -------------------------------------------------------------------------------
+
+TM_YDAYS:                               ; return days in year
         LD      HL,365
         LD      A,D
         CP      HIGH 2100
@@ -222,15 +291,21 @@ TM_YDAYS:
         LD      A,E
         CP      LOW 2100
         RET     Z
-TM_YMOD4:
+
+TM_YMOD4:                               ; test leap-year divisibility
         LD      A,E
         AND     3
         RET     NZ
         INC     HL
         RET
 
-; Input DE=year, C=month 1..12, output A=days.
-TM_MDAYS:
+  ; Input DE=year, C=month 1..12, output A=days.
+
+; -------------------------------------------------------------------------------
+; Month Length
+; -------------------------------------------------------------------------------
+
+TM_MDAYS:                               ; return days in month
         LD      HL,TM_MTAB-1
         LD      B,0
         ADD     HL,BC
@@ -249,7 +324,8 @@ TM_MDAYS:
         JR      NZ,TM_MMOD4
         POP     AF
         RET
-TM_MMOD4:
+
+TM_MMOD4:                               ; handle February leap day
         POP     AF
         LD      A,E
         AND     3
@@ -258,7 +334,17 @@ TM_MMOD4:
         INC     A
         RET
 
-TM_BCD:
+; ================================================================================
+; =                         Time and Numeric Formatting                          =
+; =                                                                              =
+; = Formats packed-BCD clock values and provides fixed-width/general decimal conversion =
+; = used by TIME output.                                                         =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Packed-BCD Output
+; -------------------------------------------------------------------------------
+
+TM_BCD:                                 ; print packed BCD time
         PUSH    AF
         RRCA
         RRCA
@@ -272,15 +358,21 @@ TM_BCD:
         ADD     A,'0'
         JP      TM_CHAR
 
-TM_DEC2:
+; -------------------------------------------------------------------------------
+; Decimal Formatting
+; -------------------------------------------------------------------------------
+
+TM_DEC2:                                ; print two-digit decimal
         LD      B,'0'
-TM_D2L:
+
+TM_D2L:                                 ; convert two-digit decimal
         CP      10
         JR      C,TM_D2D
         SUB     10
         INC     B
         JR      TM_D2L
-TM_D2D:
+
+TM_D2D:                                 ; emit decimal digit
         PUSH    AF
         LD      A,B
         CALL    TM_CHAR
@@ -288,9 +380,10 @@ TM_D2D:
         ADD     A,'0'
         JP      TM_CHAR
 
-TM_DEC8:
+TM_DEC8:                                ; print eight-bit decimal
         JP      TM_DEC2
-TM_DEC4:
+
+TM_DEC4:                                ; print four-digit decimal
         LD      BC,1000
         CALL    TM_DIG0
         LD      BC,100
@@ -300,26 +393,34 @@ TM_DEC4:
         LD      A,L
         ADD     A,'0'
         JP      TM_CHAR
-TM_DIGIT:
+
+TM_DIGIT:                               ; emit decimal digit
         LD      A,H
         OR      A
         JR      NZ,TM_DIG0
         LD      A,L
         CP      C
         RET     C
-TM_DIG0:
+
+TM_DIG0:                                ; suppress leading decimal zero
         LD      A,'0'
-TM_DLOOP:
+
+TM_DLOOP:                               ; convert decimal value
         OR      A
         SBC     HL,BC
         JR      C,TM_DDONE
         INC     A
         JR      TM_DLOOP
-TM_DDONE:
+
+TM_DDONE:                               ; finish decimal conversion
         ADD     HL,BC
         JP      TM_CHAR
 
-TM_CHAR:
+; -------------------------------------------------------------------------------
+; Console Output
+; -------------------------------------------------------------------------------
+
+TM_CHAR:                                ; write console character
         PUSH    BC
         PUSH    DE
         PUSH    HL
@@ -330,53 +431,86 @@ TM_CHAR:
         POP     DE
         POP     BC
         RET
-TM_PRINT:
+
+TM_PRINT:                               ; print $-terminated string
         LD      C,9
         JP      BDOS
 
-TM_NOCLOCK:
+; ================================================================================
+; =                           Messages and Completion                            =
+; =                                                                              =
+; = Reports unavailable/provider errors or usage failures and returns through the normal =
+; = transient exit path.                                                         =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Error Reporting
+; -------------------------------------------------------------------------------
+
+TM_NOCLOCK:                             ; report unavailable clock
         LD      DE,TM_NOMSG
         CALL    TM_PRINT
         LD      A,(TM_DSTAT)
         CALL    TM_DEC8
         LD      DE,TM_NL
         JR      TM_ERROR
-TM_CLOCKERR:
+
+TM_CLOCKERR:                            ; report clock-service error
         LD      DE,TM_CERR
         JR      TM_ERROR
-TM_USAGE:
+
+TM_USAGE:                               ; print TIME usage
         LD      DE,TM_UMSG
-TM_ERROR:
+
+TM_ERROR:                               ; report TIME failure
         CALL    TM_PRINT
-TM_EXIT:
+
+TM_EXIT:                                ; return to CCP
         LD      C,0
         JP      BDOS
 
-TM_LOOKUP:     DB      1,20,0,0,'TIME',1,0,0,0
+; ================================================================================
+; =                       TIME Requests and Working State                        =
+; =                                                                              =
+; = Defines Function-208 and provider request blocks, resolved entry/state, calendar =
+; = tables, provider text, messages, and the CP/M epoch constant.                =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Requests and Provider State
+; -------------------------------------------------------------------------------
+
+TM_LOOKUP:     DB      1,20,0,0,'TIME',1,0,0,0 ; Function-208 lookup request
                DS      8
-TM_RSXREQ:     DB      1,0,0,0
+
+TM_RSXREQ:     DB      1,0,0,0          ; resident-service request block
                DB      '        '
                DW      0
-TM_REQUEST:    DB      1,10,0,0
+
+TM_REQUEST:    DB      1,10,0,0         ; TIME provider request block
                DS      5
                DB      0
-TM_ENTRY:      DW      0
-TM_MODE:       DB      0
-TM_MON:        DB      0
-TM_DSTAT:      DB      0
-TM_PKWORD:     DB      '/PROVIDER'
-TM_MTAB:       DB      31,28,31,30,31,30,31,31,30,31,30,31
-TM_NL:         DB      13,10,'$'
-TM_PNAME:      DB      13,10,'Provider: $'
-TM_PHEAD:      DB      13,10,'TIME service ABI $'
-TM_PREAD:      DB      ', GET$'
-TM_PSET:       DB      '/SET$'
-TM_PRO:        DB      ', read-only$'
-TM_PINDEX:     DB      ', provider index $'
-TM_NOMSG:      DB      13,10,'No TIME provider is loaded; service status $'
-TM_CERR:       DB      13,10,'Clock provider error.',13,10,'$'
-TM_UMSG:       DB      13,10,'Usage: TIME [/PROVIDER]',13,10,'$'
-TM_EPOCH:      DB      '1977-12-31$'
+
+TM_ENTRY:      DW      0                ; resolved service entry
+TM_MODE:       DB      0                ; selected TIME operation
+TM_MON:        DB      0                ; current month
+TM_DSTAT:      DB      0                ; date conversion state
+TM_PKWORD:     DB      '/PROVIDER'      ; packed provider word
+
+; -------------------------------------------------------------------------------
+; Calendar and Messages
+; -------------------------------------------------------------------------------
+
+TM_MTAB:       DB      31,28,31,30,31,30,31,31,30,31,30,31 ; month-length table
+TM_NL:         DB      13,10,'$'        ; newline string
+TM_PNAME:      DB      13,10,'Provider: $' ; provider-name buffer
+TM_PHEAD:      DB      13,10,'TIME service ABI $' ; provider heading
+TM_PREAD:      DB      ', GET$'         ; read capability text
+TM_PSET:       DB      '/SET$'          ; set capability text
+TM_PRO:        DB      ', read-only$'   ; read-only capability text
+TM_PINDEX:     DB      ', provider index $' ; provider index
+TM_NOMSG:      DB      13,10,'No TIME provider is loaded; service status $' ; no-clock message
+TM_CERR:       DB      13,10,'Clock provider error.',13,10,'$' ; clock-error message
+TM_UMSG:       DB      13,10,'Usage: TIME [/PROVIDER]',13,10,'$' ; usage message
+TM_EPOCH:      DB      '1977-12-31$'    ; CP/M epoch constant
 
         .DEPHASE
         END

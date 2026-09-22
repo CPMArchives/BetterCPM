@@ -1,17 +1,29 @@
-; SYSBUILD -- compose SYSTEM.SYS from newly assembled BetterCP/M binaries.
-;
-; Run this in the directory containing the component files named in PARTS.
-; The result is the canonical 20 KiB TRS-80 protected-system package consumed
-; by SYSGEN.  Every unused byte is zero, every input has a fixed maximum, and
-; the completed output is reopened and verified record by record.
+; ********************************************************************************
+; *                    BetterCP/M Protected-System Builder                       *
+; *                                                                              *
+; * Composes canonical SYSTEM.SYS from newly assembled BetterCP/M binaries. The  *
+; * 20 KiB TRS-80 protected-system package zero-fills unused space, enforces     *
+; * fixed component capacities, and is reopened and verified record by record.   *
+; ********************************************************************************
+
         ASEG
         ORG     0100H
 BDOS    EQU     5
 BUFFER  EQU     04000H
-SYSRECS EQU     160             ; 20 KiB / 128
+SYSRECS EQU     160                     ; 20 KiB / 128
 SYSBASE EQU     0D5C4H
 
-START:  LD      SP,03F00H
+; ================================================================================
+; =                           System Component Packing                           =
+; =                                                                              =
+; = Walks the canonical component table and loads each native build product into its =
+; = fixed SYSTEM.SYS destination while enforcing assigned record capacity.       =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Component Table Walk
+; -------------------------------------------------------------------------------
+
+START:  LD      SP,03F00H               ; enter protected-system builder
         LD      DE,BANNER
         CALL    PRINT
         LD      HL,BUFFER
@@ -21,7 +33,8 @@ START:  LD      SP,03F00H
         LD      (HL),A
         LDIR
         LD      HL,PARTS
-NEXT:   LD      A,(HL)
+
+NEXT:   LD      A,(HL)                  ; process next system component
         OR      A
         JP      Z,WRITEOUT
         INC     HL
@@ -44,8 +57,19 @@ NEXT:   LD      A,(HL)
         LD      HL,(NEXTPART)
         JR      NEXT
 
-; Table entry: conventional 36-byte FCB, destination, capacity in records.
-LOADPART:
+  ; Table entry: conventional 36-byte FCB, destination, capacity in records.
+
+; ================================================================================
+; =                             Component File Input                             =
+; =                                                                              =
+; = Reads one component through CP/M file services, requires it to fit its assigned =
+; = region, and reports missing/read/close failures.                             =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Open and Read Component
+; -------------------------------------------------------------------------------
+
+LOADPART:                               ; load one component file
         LD      DE,(CURFCB)
         LD      C,15
         CALL    BDOS
@@ -54,7 +78,8 @@ LOADPART:
         XOR     A
         LD      (COUNT),A
         LD      (COUNT+1),A
-READLP: LD      HL,(COUNT)
+
+READLP: LD      HL,(COUNT)              ; read next component record
         LD      DE,(CURCAP)
         OR      A
         SBC     HL,DE
@@ -88,7 +113,8 @@ READLP: LD      HL,(COUNT)
         INC     HL
         LD      (COUNT),HL
         JR      READLP
-READEOF:
+
+READEOF:                                ; finish component at EOF
         CP      1
         JR      NZ,READBAD
         LD      HL,(COUNT)
@@ -96,7 +122,12 @@ READEOF:
         OR      L
         JR      Z,MISSING
         JR      CLOSEOK
-FULLCHK:
+
+; -------------------------------------------------------------------------------
+; Capacity and Close
+; -------------------------------------------------------------------------------
+
+FULLCHK:                                ; check component capacity
         LD      DE,SCRATCH
         LD      C,26
         CALL    BDOS
@@ -107,9 +138,11 @@ FULLCHK:
         JR      Z,CLOSEOK
         LD      A,3
         JR      CLOSEERR
-CLOSEOK:
+
+CLOSEOK:                                ; accept component close
         XOR     A
-CLOSEERR:
+
+CLOSEERR:                               ; handle component close failure
         PUSH    AF
         LD      DE,(CURFCB)
         LD      C,16
@@ -117,15 +150,27 @@ CLOSEERR:
         POP     AF
         OR      A
         RET
-MISSING:
+
+MISSING:                                ; report missing component
         LD      A,1
         OR      A
         RET
-READBAD:
+
+READBAD:                                ; report component read failure
         LD      A,2
         JR      CLOSEERR
 
-WRITEOUT:
+; ================================================================================
+; =                              SYSTEM.SYS Output                               =
+; =                                                                              =
+; = Creates and writes the complete protected-system package from the assembled in-memory =
+; = image.                                                                       =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Package Write
+; -------------------------------------------------------------------------------
+
+WRITEOUT:                               ; write SYSTEM.SYS package
         CALL    FINALIZE
         JP      NZ,FAIL
         CALL    MAKEHEADER
@@ -148,7 +193,8 @@ WRITEOUT:
         JP      NZ,WRITEBAD
         LD      HL,BUFFER
         LD      B,SYSRECS
-WRLP:   PUSH    BC
+
+WRLP:   PUSH    BC                      ; write next package record
         PUSH    HL
         EX      DE,HL
         LD      C,26
@@ -174,10 +220,21 @@ WRLP:   PUSH    BC
         CALL    PRINT
         JP      0
 
-VERIFY: LD      HL,OUTFCB+12
+; ================================================================================
+; =                             Output Verification                              =
+; =                                                                              =
+; = Reopens SYSTEM.SYS, validates its header, compares every record against the in-memory =
+; = package, and rejects mismatches or unexpected extra data.                    =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Reopen and Compare
+; -------------------------------------------------------------------------------
+
+VERIFY: LD      HL,OUTFCB+12            ; verify completed SYSTEM.SYS
         LD      B,24
         XOR     A
-VFCLR:  LD      (HL),A
+
+VFCLR:  LD      (HL),A                  ; clear verification FCB
         INC     HL
         DJNZ    VFCLR
         LD      DE,OUTFCB
@@ -196,7 +253,8 @@ VFCLR:  LD      (HL),A
         LD      HL,HEADER
         LD      DE,SCRATCH
         LD      B,128
-VFHDR:  LD      A,(DE)
+
+VFHDR:  LD      A,(DE)                  ; verify package header
         CP      (HL)
         JP      NZ,VERIFYBAD
         INC     DE
@@ -204,7 +262,8 @@ VFHDR:  LD      A,(DE)
         DJNZ    VFHDR
         LD      HL,BUFFER
         LD      B,SYSRECS
-VFLP:   PUSH    BC
+
+VFLP:   PUSH    BC                      ; read next verification record
         PUSH    HL
         LD      DE,SCRATCH
         LD      C,26
@@ -218,7 +277,8 @@ VFLP:   PUSH    BC
         PUSH    HL
         LD      DE,SCRATCH
         LD      B,128
-VFCMP:  LD      A,(DE)
+
+VFCMP:  LD      A,(DE)                  ; compare verification record
         CP      (HL)
         JR      NZ,VFMISMATCH
         INC     DE
@@ -240,10 +300,21 @@ VFCMP:  LD      A,(DE)
         XOR     A
         RET
 
-; The selector shares the last 128 bytes of the reloader carrier. Resident
-; overlay carriers end with the live system gateway jump, just as the host
-; composer constructs them.
-FINALIZE:
+  ; The selector shares the last 128 bytes of the reloader carrier. Resident
+  ; overlay carriers end with the live system gateway jump, just as the host
+  ; composer constructs them.
+
+; ================================================================================
+; =                         Overlay Carrier Finalization                         =
+; =                                                                              =
+; = Finishes shared reloader/selector and resident overlay carrier tails with the live =
+; = system gateway jump required by the runtime loaders.                         =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Carrier Tail Finalization
+; -------------------------------------------------------------------------------
+
+FINALIZE:                               ; finalize overlay carriers
         LD      HL,BDOSJUMP
         LD      DE,BUFFER+9728+1021
         LD      BC,3
@@ -262,32 +333,48 @@ FINALIZE:
         LDIR
         XOR     A
         RET
-VFIO:   POP     HL
+
+VFIO:   POP     HL                      ; advance finalization record
         POP     BC
         LD      A,5
         OR      A
         RET
-VFMISMATCH:
+
+VFMISMATCH:                             ; report verification mismatch
         POP     HL
         POP     BC
         LD      A,6
         OR      A
         RET
-VFEXTRA:LD      A,7
+
+VFEXTRA:LD      A,7                     ; report extra output data
         OR      A
         RET
-VERIFYBAD:
+
+VERIFYBAD:                              ; report verification failure
         LD      A,4
         OR      A
         RET
 
-; Find the built resident's disk ABI descriptor and copy its A: binding into
-; the package header. This makes SYSTEM.SYS self-describing; SYSGEN need not
-; assume that the running system and newly built system use the same format.
-MAKEHEADER:
+  ; Find the built resident's disk ABI descriptor and copy its A: binding into
+  ; the package header. This makes SYSTEM.SYS self-describing; SYSGEN need not
+  ; assume that the running system and newly built system use the same format.
+
+; ================================================================================
+; =                         Package Header Construction                          =
+; =                                                                              =
+; = Finds the built resident disk-ABI descriptor and copies its drive-A binding into =
+; = the package header so SYSGEN need not assume the running system's format.    =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Disk-ABI Header Scan
+; -------------------------------------------------------------------------------
+
+MAKEHEADER:                             ; build package header
         LD      HL,BUFFER+1024
         LD      BC,52*128-12
-MHSCAN: LD      A,(HL)
+
+MHSCAN: LD      A,(HL)                  ; scan resident image for disk ABI
         CP      'B'
         JR      NZ,MHNEXT
         INC     HL
@@ -310,23 +397,27 @@ MHSCAN: LD      A,(HL)
         ADD     HL,DE
         LD      E,(HL)
         INC     HL
-        LD      D,(HL)          ; absolute address of logical-record table
+        LD      D,(HL)                  ; absolute address of logical-record table
         EX      DE,HL
         LD      DE,SYSBASE
         OR      A
         SBC     HL,DE
         LD      DE,BUFFER+1024+16
-        ADD     HL,DE           ; first binding follows A:'s 16-byte DPH
+        ADD     HL,DE                   ; first binding follows A:'s 16-byte DPH
         LD      DE,HEADER+16
         LD      BC,64
         LDIR
         POP     HL
         XOR     A
         RET
-MHBACK3:DEC     HL
-MHBACK2:DEC     HL
-MHBACK1:DEC     HL
-MHNEXT:INC     HL
+
+MHBACK3:DEC     HL                      ; backtrack three bytes
+
+MHBACK2:DEC     HL                      ; backtrack two bytes
+
+MHBACK1:DEC     HL                      ; backtrack one byte
+
+MHNEXT:INC     HL                       ; advance header scan
         DEC     BC
         LD      A,B
         OR      C
@@ -335,12 +426,15 @@ MHNEXT:INC     HL
         OR      A
         RET
 
-CREATEBAD:LD    A,8
+CREATEBAD:LD    A,8                     ; report output-create failure
         JR      FAIL
-WRITEBAD:LD     A,9
+
+WRITEBAD:LD     A,9                     ; report output-write failure
         JR      FAIL
-CLOSEBAD:LD     A,10
-FAIL:   PUSH    AF
+
+CLOSEBAD:LD     A,10                    ; report output-close failure
+
+FAIL:   PUSH    AF                      ; return build failure
         LD      DE,ERRMSG
         CALL    PRINT
         POP     AF
@@ -349,31 +443,54 @@ FAIL:   PUSH    AF
         CALL    PRINT
         JP      0
 
-PRINT:  LD      C,9
+; ================================================================================
+; =                             Builder Diagnostics                              =
+; =                                                                              =
+; = Provides message and hexadecimal output for native build failures and status. =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Messages and Hex Output
+; -------------------------------------------------------------------------------
+
+PRINT:  LD      C,9                     ; print $-terminated message
         JP      BDOS
-HEXBYTE:PUSH    AF
+
+HEXBYTE:PUSH    AF                      ; print byte as hexadecimal
         RRCA
         RRCA
         RRCA
         RRCA
         CALL    HEXDIG
         POP     AF
-HEXDIG: AND     0FH
+
+HEXDIG: AND     0FH                     ; convert hexadecimal digit
         ADD     A,'0'
         CP      '9'+1
         JR      C,HEXOUT
         ADD     A,7
-HEXOUT: LD      E,A
+
+HEXOUT: LD      E,A                     ; emit hexadecimal digit
         LD      C,2
         JP      BDOS
 
-BANNER: DB      'BetterCP/M system builder',13,10,'$'
-DONE:   DB      'SYSTEM.SYS created and verified (161 records).',13,10,'$'
-ERRMSG: DB      'SYSBUILD failed; status $'
-CRLF:   DB      13,10,'$'
+BANNER: DB      'BetterCP/M system builder',13,10,'$' ; builder banner
+DONE:   DB      'SYSTEM.SYS created and verified (161 records).',13,10,'$' ; success message
+ERRMSG: DB      'SYSBUILD failed; status $' ; generic error prefix
+CRLF:   DB      13,10,'$'               ; newline string
 
-; Keep these filenames stable: they are the native build-product ABI.
-PARTS:
+  ; Keep these filenames stable: they are the native build-product ABI.
+
+; ================================================================================
+; =                      Component Table and Working State                       =
+; =                                                                              =
+; = Defines the stable native build-product filenames, package header, output FCB, =
+; = gateway template, component pointers, counters, and scratch buffer.          =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Native Component Table
+; -------------------------------------------------------------------------------
+
+PARTS:                                  ; system component table
         DB 1
         DB 0,'BOOT    BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         DW BUFFER
@@ -420,18 +537,27 @@ PARTS:
         DW 52
         DB 0
 
-OUTFCB: DB 0,'SYSTEM  SYS',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-HEADER: DB 'BCSY',1,1
+; -------------------------------------------------------------------------------
+; Output Header and State
+; -------------------------------------------------------------------------------
+
+OUTFCB: DB 0,'SYSTEM  SYS',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ; SYSTEM.SYS output FCB
+HEADER: DB 'BCSY',1,1                   ; SYSTEM.SYS package header
         DW SYSRECS
         DW SYSBASE
         DS 6
         DS 64
         DS 48
-BDOSJUMP:DB 0C3H,0BCH,0D6H
-CURFCB: DW 0
-CURDST: DW 0
-CURCAP: DW 0
-NEXTPART:DW 0
-COUNT:  DW 0
-SCRATCH:DS 128
+
+BDOSJUMP:DB 0C3H,0BCH,0D6H              ; live gateway jump template
+
+CURFCB: DW 0                            ; current component FCB pointer
+CURDST: DW 0                            ; current component destination
+CURCAP: DW 0                            ; current component capacity
+
+NEXTPART:DW 0                           ; next component-table pointer
+
+COUNT:  DW 0                            ; record counter
+
+SCRATCH:DS 128                          ; component scratch buffer
         END

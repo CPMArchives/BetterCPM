@@ -1,17 +1,33 @@
-; Phase-3 overlap-safe live-allocation mover and guarded pointer repair.
-;
-; DE -> request:
-;   +0 old base, +2 new base, +4 allocation size
-;   +6 slot count, +7 reserved zero, +8 sorted unique word offsets
-; Return A=0 on success, FFh on validation failure.  Every slot is validated
-; before the first byte is moved.  A word is adjusted by new-old only when its
-; current value lies in [old,old+allocation).
+; ********************************************************************************
+; *                       BetterCP/M RSX Live Mover                              *
+; *                                                                              *
+; * Phase-3 overlap-safe live-allocation mover with guarded pointer repair. The  *
+; * complete sorted repair-slot list is validated before any byte moves, and a   *
+; * pointer is adjusted only when its value lies inside the old allocation.      *
+; ********************************************************************************
+
+  ; DE -> request:
+  ;   +0 old base, +2 new base, +4 allocation size
+  ;   +6 slot count, +7 reserved zero, +8 sorted unique word offsets
+  ; Return A=0 on success, FFh on validation failure.
+
 
 RMBASE          EQU     07000H
 
         CSEG
         .PHASE  RMBASE
-RM_ENTRY:
+
+; ================================================================================
+; =                           Move Request Validation                            =
+; =                                                                              =
+; = Validates allocation bounds, overlap arithmetic, and the complete sorted unique =
+; = pointer-repair slot list before permitting any live image modification.      =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Request Decode and Validation
+; -------------------------------------------------------------------------------
+
+RM_ENTRY:                               ; enter live-allocation mover
         LD      (RM_REQ),DE
         EX      DE,HL
         LD      E,(HL)
@@ -56,13 +72,18 @@ RM_ENTRY:
         SBC     HL,DE
         LD      (RM_DELTA),HL
 
-; Validate the complete sorted slot list before changing the live image.
+  ; Validate the complete sorted slot list before changing the live image.
         LD      HL,(RM_SLOTS)
         XOR     A
         LD      (RM_SEEN),A
         LD      A,(RM_COUNT)
         LD      B,A
-RM_VLOOP:
+
+; -------------------------------------------------------------------------------
+; Repair-Slot Validation
+; -------------------------------------------------------------------------------
+
+RM_VLOOP:                               ; validate next pointer-repair slot
         LD      A,B
         OR      A
         JR      Z,RM_COPY
@@ -87,30 +108,43 @@ RM_VLOOP:
         SBC     HL,DE
         POP     HL
         JP      NC,RM_BAD
-RM_VFIRST:
+
+RM_VFIRST:                              ; accept first repair slot
         LD      (RM_PREV),DE
         LD      A,1
         LD      (RM_SEEN),A
         DJNZ    RM_VLOOP
 
-RM_COPY:
+; ================================================================================
+; =                         Overlap-Safe Allocation Move                         =
+; =                                                                              =
+; = Copies the live allocation in the direction required by source/destination   =
+; = overlap so no unread source bytes are overwritten.                           =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Directional Copy
+; -------------------------------------------------------------------------------
+
+RM_COPY:                                ; move allocation to new base
         LD      HL,(RM_OLD)
         LD      DE,(RM_NEW)
         OR      A
         SBC     HL,DE
         JR      Z,RM_REPAIR
-        JR      C,RM_BACK       ; old < new: copy from the high end
+        JR      C,RM_BACK               ; old < new: copy from the high end
         LD      HL,(RM_OLD)
         LD      BC,(RM_SIZE)
         LDIR
         JR      RM_REPAIR
-RM_BACK:
+
+RM_BACK:                                ; select backward overlap copy
         LD      HL,(RM_OLDEND)
         DEC     HL
         LD      DE,(RM_NEWEND)
         DEC     DE
         LD      BC,(RM_SIZE)
-RM_BLOOP:
+
+RM_BLOOP:                               ; copy allocation backward
         LD      A,(HL)
         LD      (DE),A
         DEC     HL
@@ -120,11 +154,22 @@ RM_BLOOP:
         OR      C
         JR      NZ,RM_BLOOP
 
-RM_REPAIR:
+; ================================================================================
+; =                            Guarded Pointer Repair                            =
+; =                                                                              =
+; = Walks the validated repair slots and applies the relocation delta only to words =
+; = whose current values point inside the old allocation.                        =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Pointer Repair
+; -------------------------------------------------------------------------------
+
+RM_REPAIR:                              ; repair guarded pointers
         LD      HL,(RM_SLOTS)
         LD      A,(RM_COUNT)
         LD      B,A
-RM_RLOOP:
+
+RM_RLOOP:                               ; process next repair slot
         LD      A,B
         OR      A
         JR      Z,RM_OK
@@ -139,8 +184,8 @@ RM_RLOOP:
         LD      E,(HL)
         INC     HL
         LD      D,(HL)
-        PUSH    HL              ; high-byte address in the new image
-        EX      DE,HL           ; HL=current pointer value
+        PUSH    HL                      ; high-byte address in the new image
+        EX      DE,HL                   ; HL=current pointer value
         LD      DE,(RM_OLD)
         OR      A
         SBC     HL,DE
@@ -149,7 +194,7 @@ RM_RLOOP:
         OR      A
         SBC     HL,DE
         JR      NC,RM_RSKIP
-        ADD     HL,DE           ; restore value-old
+        ADD     HL,DE                   ; restore value-old
         LD      DE,(RM_NEW)
         ADD     HL,DE
         EX      DE,HL
@@ -158,31 +203,45 @@ RM_RLOOP:
         DEC     HL
         LD      (HL),E
         JR      RM_RNEXT
-RM_RSKIP:
+
+RM_RSKIP:                               ; leave external pointer unchanged
         POP     HL
-RM_RNEXT:
+
+RM_RNEXT:                               ; advance repair-slot scan
         POP     BC
         POP     HL
         DJNZ    RM_RLOOP
-RM_OK:
+
+RM_OK:                                  ; return move success
         XOR     A
         RET
-RM_BAD:
+
+RM_BAD:                                 ; return validation failure
         LD      A,0FFH
         OR      A
         RET
 
-RM_REQ:         DW      0
-RM_OLD:         DW      0
-RM_NEW:         DW      0
-RM_SIZE:        DW      0
-RM_OLDEND:      DW      0
-RM_NEWEND:      DW      0
-RM_DELTA:       DW      0
-RM_SLOTS:       DW      0
-RM_PREV:        DW      0
-RM_COUNT:       DB      0
-RM_SEEN:        DB      0
+; ================================================================================
+; =                             Mover Working State                              =
+; =                                                                              =
+; = Defines request, allocation bounds, relocation delta, repair-slot, and copy state =
+; = used by the live mover.                                                      =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Movement State
+; -------------------------------------------------------------------------------
+
+RM_REQ:         DW      0               ; movement request pointer
+RM_OLD:         DW      0               ; old allocation base
+RM_NEW:         DW      0               ; new allocation base
+RM_SIZE:        DW      0               ; allocation size
+RM_OLDEND:      DW      0               ; old allocation end
+RM_NEWEND:      DW      0               ; new allocation end
+RM_DELTA:       DW      0               ; relocation delta
+RM_SLOTS:       DW      0               ; repair-slot count
+RM_PREV:        DW      0               ; previous repair offset
+RM_COUNT:       DB      0               ; working byte count
+RM_SEEN:        DB      0               ; slot-validation flag
 
         .DEPHASE
         END

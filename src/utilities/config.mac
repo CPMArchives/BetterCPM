@@ -1,12 +1,28 @@
-; CONFIG -- BetterCP/M disk configuration, 07-Sep-2026.
-; The MM-style menus are transient. Only validated drive records stay
-; in the BIOS. H writes their defaults back to the installed system image.
+; ********************************************************************************
+; *                          BetterCP/M CONFIG Utility                           *
+; *                                                                              *
+; * Transient disk-configuration utility. MM-style menus edit private working    *
+; * records; only validated physical/logical definitions are committed to BIOS.  *
+; * Installed defaults may then be written back to the system image.             *
+; ********************************************************************************
+
         ASEG
         ORG 0100H
         LD SP,04000H
         CALL INIT
         CALL FLOAD
-MAIN:   LD HL,TITLE
+
+; ================================================================================
+; =                               CONFIG Main Menu                               =
+; =                                                                              =
+; = Presents the transient BetterCP/M disk-configuration menu and dispatches physical, =
+; = logical, workbench, format, and installed-default operations.                =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Main Menu Dispatch
+; -------------------------------------------------------------------------------
+
+MAIN:   LD HL,TITLE                     ; enter CONFIG utility
         CALL HEADER
         LD HL,MAINMSG
         CALL PUTS
@@ -29,12 +45,28 @@ MAIN:   LD HL,TITLE
         CALL PUTS
         CALL PAUSE
         JP MAIN
-PHYSMENU:
+
+; ================================================================================
+; =                         Physical Drive Configuration                         =
+; =                                                                              =
+; = Lists and edits authoritative physical-drive geometry, commits validated changes, =
+; = and detaches logical bindings no longer supported by the new media limits.   =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Physical Drive Menu
+; -------------------------------------------------------------------------------
+
+PHYSMENU:                               ; open physical-drive menu
         LD HL,PHYHEAD
         CALL HEADER
         XOR A
         LD (PHINDEX),A
-PHLIST: LD A,(PHINDEX)
+
+; -------------------------------------------------------------------------------
+; Physical Drive List
+; -------------------------------------------------------------------------------
+
+PHLIST: LD A,(PHINDEX)                  ; list physical-drive profiles
         CALL LABEL
         LD HL,PHLABEL
         CALL PUTS
@@ -55,7 +87,12 @@ PHLIST: LD A,(PHINDEX)
         CP 4
         JP NC,PHYSMENU
         LD (PHINDEX),A
-PHEDIT: LD A,(PHINDEX)
+
+; -------------------------------------------------------------------------------
+; Physical Field Editor
+; -------------------------------------------------------------------------------
+
+PHEDIT: LD A,(PHINDEX)                  ; edit selected physical profile
         LD (PHREQ),A
         LD DE,PHREQ
         LD B,1
@@ -77,10 +114,12 @@ PHEDIT: LD A,(PHINDEX)
         LD HL,PHDETMSG
         CALL PUTS
         CALL CRLF
-PHNONOTE:
+
+PHNONOTE:                               ; physical nonote
         XOR A
         LD (FIELD),A
-PHFIELDS:
+
+PHFIELDS:                               ; physical fields
         LD A,(FIELD)
         CALL LABEL
         LD A,(FIELD)
@@ -111,7 +150,8 @@ PHFIELDS:
         LD DE,STEPTAB
         ADD HL,DE
         LD A,(HL)
-PHDEC:  CALL DECOUT
+
+PHDEC:  CALL DECOUT                     ; physical dec
         CALL CRLF
         LD A,(FIELD)
         INC A
@@ -148,19 +188,22 @@ PHDEC:  CALL DECOUT
         CALL NUMBER
         JP C,PHEDIT
         JR PHSAVE
-INCHES: LD A,(OLDVAL)
+
+INCHES: LD A,(OLDVAL)                   ; inches
         CP 5
         LD A,5
         JR NZ,PHSAVE
         LD A,8
         JR PHSAVE
-SIDES:  LD A,(OLDVAL)
+
+SIDES:  LD A,(OLDVAL)                   ; sides
         CP 1
         LD A,1
         JR NZ,PHSAVE
         INC A
         JR PHSAVE
-TRACKS: LD HL,TRKMSG
+
+TRACKS: LD HL,TRKMSG                    ; tracks
         CALL PUTS
         CALL CHOICE
         CP 3
@@ -176,7 +219,8 @@ TRACKS: LD HL,TRKMSG
         ADD HL,DE
         LD A,(HL)
         JR PHSAVE
-STEPS:  LD HL,STEPMSG
+
+STEPS:  LD HL,STEPMSG                   ; step-rate s
         CALL PUTS
         CALL CHOICE
         CP 3
@@ -186,7 +230,12 @@ STEPS:  LD HL,STEPMSG
         SUB 'A'
         CP 4
         JP NC,STEPS
-PHSAVE: LD B,A
+
+; -------------------------------------------------------------------------------
+; Commit Physical Profile
+; -------------------------------------------------------------------------------
+
+PHSAVE: LD B,A                          ; save physical profile
         LD A,(FIELD)
         INC A
         LD L,A
@@ -205,16 +254,23 @@ PHSAVE: LD B,A
         LD A,1
         LD (PHNOTICE),A
         JP PHEDIT
-PHERROR:CALL ERROR
+
+PHERROR:CALL ERROR                      ; physical error
         JP PHEDIT
 
-; Physical configuration is authoritative. After it succeeds, detach every
-; non-system logical binding that the new track/side limits cannot support.
-PHCLEAN:XOR A
+  ; Physical configuration is authoritative. After it succeeds, detach every
+  ; non-system logical binding that the new track/side limits cannot support.
+
+; -------------------------------------------------------------------------------
+; Detach Incompatible Logical Bindings
+; -------------------------------------------------------------------------------
+
+PHCLEAN:XOR A                           ; detach incompatible logical bindings
         LD (CHECKPH),A
         INC A
         LD (LOGIDX),A
-PHCLP: LD A,(LOGIDX)
+
+PHCLP: LD A,(LOGIDX)                    ; physical clp
         LD (REQ),A
         LD DE,REQ
         LD B,3
@@ -237,7 +293,8 @@ PHCLP: LD A,(LOGIDX)
         LD A,(PHREQ+3)
         CP 2
         JR Z,PHCNEXT
-PHCDET:LD A,(LOGIDX)
+
+PHCDET:LD A,(LOGIDX)                    ; physical cdet
         LD (REQ),A
         LD A,0FFH
         LD (REQ+1),A
@@ -249,7 +306,8 @@ PHCDET:LD A,(LOGIDX)
         CALL RESETLOG
         LD A,1
         LD (CHECKPH),A
-PHCNEXT:
+
+PHCNEXT:                                ; physical cnext
         LD A,(LOGIDX)
         INC A
         LD (LOGIDX),A
@@ -257,13 +315,28 @@ PHCNEXT:
         JR C,PHCLP
         RET
 
-LOGMENU:LD HL,LOGHEAD
+; ================================================================================
+; =                         Logical Drive Configuration                          =
+; =                                                                              =
+; = Lists logical bindings, pages through available format definitions, checks physical =
+; = compatibility, and attaches a selected format to a logical drive.            =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Logical Drive Menu
+; -------------------------------------------------------------------------------
+
+LOGMENU:LD HL,LOGHEAD                   ; open logical-drive menu
         CALL HEADER
         LD HL,LOGHELP
         CALL PUTS
         XOR A
         LD (LOGIDX),A
-LOGLIST:LD A,(LOGIDX)
+
+; -------------------------------------------------------------------------------
+; Logical Drive List
+; -------------------------------------------------------------------------------
+
+LOGLIST:LD A,(LOGIDX)                   ; list logical-drive bindings
         CALL LABEL
         LD A,(LOGIDX)
         LD (REQ),A
@@ -283,9 +356,11 @@ LOGLIST:LD A,(LOGIDX)
         LDIR
         CALL CURNAME
         JR LOGNEXT
-LOGUNDEF:LD HL,UNDEF
+
+LOGUNDEF:LD HL,UNDEF                    ; logical undef
         CALL PUTS
-LOGNEXT:CALL CRLF
+
+LOGNEXT:CALL CRLF                       ; logical next
         LD A,(LOGIDX)
         INC A
         LD (LOGIDX),A
@@ -306,9 +381,15 @@ LOGNEXT:CALL CRLF
         CALL PUTS
         CALL PAUSE
         JP LOGMENU
-LOGSTART:XOR A
+
+LOGSTART:XOR A                          ; logical start
         LD (PAGE),A
-PAGEVIEW:LD HL,LOGHEAD
+
+; -------------------------------------------------------------------------------
+; Format Selection Pages
+; -------------------------------------------------------------------------------
+
+PAGEVIEW:LD HL,LOGHEAD                  ; display format-selection page
         CALL HEADER
         LD HL,SELECTMSG
         CALL PUTS
@@ -318,7 +399,8 @@ PAGEVIEW:LD HL,LOGHEAD
         CALL CRLF
         XOR A
         LD (ROW),A
-PAGEROW:LD A,(ROW)
+
+PAGEROW:LD A,(ROW)                      ; format page row
         OR A
         JR NZ,PAGELAB
         LD HL,LBRACK
@@ -329,8 +411,10 @@ PAGEROW:LD A,(ROW)
         CALL PUTS
         XOR A
         JR PAGENAME
-PAGELAB:CALL LABEL
-PAGENAME:
+
+PAGELAB:CALL LABEL                      ; format page lab
+
+PAGENAME:                               ; format page name
         LD B,A
         LD A,(PAGE)
         ADD A,B
@@ -349,7 +433,8 @@ PAGENAME:
         LD A,(FCOUNT)
         CP B
         JR NZ,PAGEROW
-PAGEEND:LD HL,PAGEHELP
+
+PAGEEND:LD HL,PAGEHELP                  ; format page end
         CALL PUTS
         CALL CHOICE
         CP 3
@@ -366,8 +451,10 @@ PAGEEND:LD HL,PAGEHELP
         JR Z,NEXTPG
         SUB 'A'
         JR PAGEPICK
-PAGEDEF:XOR A
-PAGEPICK:CP 16
+
+PAGEDEF:XOR A                           ; format page def
+
+PAGEPICK:CP 16                          ; format page pick
         JP NC,PAGEVIEW
         LD B,A
         LD A,(ROW)
@@ -379,10 +466,15 @@ PAGEPICK:CP 16
         LD (CHOSEN),A
         CALL FPARSE
         JP C,FORMATBAD
-; Check whether any configured drive can accommodate the geometry.
+  ; Check whether any configured drive can accommodate the geometry.
         XOR A
         LD (CHECKPH),A
-HWCHECK:LD A,(CHECKPH)
+
+; -------------------------------------------------------------------------------
+; Physical Compatibility Check
+; -------------------------------------------------------------------------------
+
+HWCHECK:LD A,(CHECKPH)                  ; hwcheck
         CALL COMPAT
         JR Z,ATTACH
         LD A,(CHECKPH)
@@ -392,13 +484,15 @@ HWCHECK:LD A,(CHECKPH)
         JR C,HWCHECK
         LD HL,HWMSG
         JR PICKERR
-PREVPG: LD A,(PAGE)
+
+PREVPG: LD A,(PAGE)                     ; prevpg
         OR A
         JP Z,PAGEVIEW
         SUB 16
         LD (PAGE),A
         JP PAGEVIEW
-NEXTPG: LD A,(PAGE)
+
+NEXTPG: LD A,(PAGE)                     ; nextpg
         ADD A,16
         LD B,A
         LD A,(FCOUNT)
@@ -408,11 +502,18 @@ NEXTPG: LD A,(PAGE)
         LD A,B
         LD (PAGE),A
         JP PAGEVIEW
-FORMATBAD:LD HL,FMTBAD
-PICKERR:CALL PUTS
+
+FORMATBAD:LD HL,FMTBAD                  ; formatbad
+
+PICKERR:CALL PUTS                       ; pickerr
         CALL PAUSE
         JP PAGEVIEW
-ATTACH: LD HL,LOGHEAD
+
+; -------------------------------------------------------------------------------
+; Attach Selected Format
+; -------------------------------------------------------------------------------
+
+ATTACH: LD HL,LOGHEAD                   ; attach selected logical format
         CALL HEADER
         LD HL,CHOSENMSG
         CALL PUTS
@@ -435,7 +536,8 @@ ATTACH: LD HL,LOGHEAD
         CALL PUTS
         CALL PAUSE
         JR ATTACH
-BINDIT: LD HL,BIND
+
+BINDIT: LD HL,BIND                      ; bindit
         LD DE,REQ+1
         LD BC,64
         LDIR
@@ -453,10 +555,16 @@ BINDIT: LD HL,BIND
         CALL PUTS
         CALL PAUSE
         JP LOGMENU
-LOGERROR:CALL ERROR
+
+LOGERROR:CALL ERROR                     ; logical error
         JP LOGMENU
-; A=physical index. Z means format geometry fits the configured drive.
-COMPAT: LD (PHREQ),A
+  ; A=physical index. Z means format geometry fits the configured drive.
+
+; -------------------------------------------------------------------------------
+; Geometry Compatibility
+; -------------------------------------------------------------------------------
+
+COMPAT: LD (PHREQ),A                    ; compatibility pat
         LD DE,PHREQ
         LD B,1
         CALL API
@@ -468,24 +576,38 @@ COMPAT: LD (PHREQ),A
         JR Z,COMSIDE
         JR C,COMSIDE
         JR COMBAD
-COMSIDE:LD A,(BIND+19)
+
+COMSIDE:LD A,(BIND+19)                  ; compatibility side
         AND 040H
         LD B,1
         JR Z,COMSS
         INC B
-COMSS:  LD A,(PHREQ+3)
+
+COMSS:  LD A,(PHREQ+3)                  ; compatibility ss
         CP B
         JR C,COMBAD
         XOR A
         RET
-COMBAD: LD A,1
+
+COMBAD: LD A,1                          ; compatibility bad
         OR A
         RET
 
-; WORKBENCH -- keep the pencil marks here, not in the live BIOS table.
-; Start from a drive set up by G. Q submits the whole record at once;
-; BREAK throws away the working copy. The BIOS remains the final judge.
-EDITDRIVE:LD HL,EDTITLE
+  ; WORKBENCH -- keep the pencil marks here, not in the live BIOS table.
+  ; Start from a drive set up by G. Q submits the whole record at once;
+  ; BREAK throws away the working copy. The BIOS remains the final judge.
+
+; ================================================================================
+; =                           Logical Format Workbench                           =
+; =                                                                              =
+; = Edits a private working copy of a logical DPH/binding record and submits the whole =
+; = record only when the user chooses to apply it.                               =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Workbench Entry
+; -------------------------------------------------------------------------------
+
+EDITDRIVE:LD HL,EDTITLE                 ; open logical-format workbench
         CALL HEADER
         LD HL,EDASK
         CALL PUTS
@@ -510,11 +632,17 @@ EDITDRIVE:LD HL,EDTITLE
         LD DE,EDCOPY
         LD BC,64
         LDIR
-EDSHOW: LD HL,EDTITLE
+
+; -------------------------------------------------------------------------------
+; Workbench Display
+; -------------------------------------------------------------------------------
+
+EDSHOW: LD HL,EDTITLE                   ; display workbench fields
         CALL HEADER
         XOR A
         LD (EDFIELD),A
-EDROW:  LD A,(EDFIELD)
+
+EDROW:  LD A,(EDFIELD)                  ; workbench row
         CALL LABEL
         LD A,(EDFIELD)
         ADD A,A
@@ -535,7 +663,8 @@ EDROW:  LD A,(EDFIELD)
         JR NZ,EDPRINT
         INC HL
         LD D,(HL)
-EDPRINT:EX DE,HL
+
+EDPRINT:EX DE,HL                        ; workbench print
         CALL EDDEC
         CALL CRLF
         LD A,(EDFIELD)
@@ -573,11 +702,13 @@ EDPRINT:EX DE,HL
         JP NZ,EDINVALID
         LD (HL),E
         JP EDSHOW
-EDWORD: LD (HL),E
+
+EDWORD: LD (HL),E                       ; workbench word
         INC HL
         LD (HL),D
         JP EDSHOW
-EDADDR: LD A,(EDFIELD)
+
+EDADDR: LD A,(EDFIELD)                  ; workbench addr
         ADD A,A
         LD E,A
         LD D,0
@@ -591,7 +722,12 @@ EDADDR: LD A,(EDFIELD)
         LD HL,EDCOPY
         ADD HL,DE
         RET
-EDAPPLY:LD HL,EDCOPY
+
+; -------------------------------------------------------------------------------
+; Apply Edited Binding
+; -------------------------------------------------------------------------------
+
+EDAPPLY:LD HL,EDCOPY                    ; apply edited logical binding
         LD DE,REQ+1
         LD BC,64
         LDIR
@@ -607,38 +743,58 @@ EDAPPLY:LD HL,EDCOPY
         CALL PUTS
         CALL PAUSE
         JP MAIN
-EDERROR:CALL ERROR
+
+EDERROR:CALL ERROR                      ; workbench error
         JP MAIN
-EDINVALID:CALL ERROR
+
+EDINVALID:CALL ERROR                    ; workbench invalid
         JP EDSHOW
 
-; A changed DPH cannot retain BDOS's login, allocation, checksum, or
-; read-only state from its former format. Function 37 invalidates exactly
-; the logical drive whose binding CONFIG just replaced.
-RESETLOG:
+  ; A changed DPH cannot retain BDOS's login, allocation, checksum, or
+  ; read-only state from its former format. Function 37 invalidates exactly
+  ; the logical drive whose binding CONFIG just replaced.
+
+; -------------------------------------------------------------------------------
+; Invalidate Replaced Binding
+; -------------------------------------------------------------------------------
+
+RESETLOG:                               ; invalidate replaced logical drive
         CP 4
         RET NC
         LD B,A
         LD DE,1
         OR A
         JR Z,RESETGO
-RESETSHIFT:
+
+RESETSHIFT:                             ; reset shift
         SLA E
         RL D
         DJNZ RESETSHIFT
-RESETGO:
+
+RESETGO:                                ; reset go
         LD C,37
         CALL BDOS
         RET
-; The sector table is in physical order. Changing IDs changes interleave.
-; N selects the uniform size, or maximum size for a mixed track.
-; S records each individual length in the same physical order as the IDs.
-EDSECTOR:XOR A
+  ; The sector table is in physical order. Changing IDs changes interleave.
+  ; N selects the uniform size, or maximum size for a mixed track.
+  ; S records each individual length in the same physical order as the IDs.
+
+; -------------------------------------------------------------------------------
+; Sector-ID Editing
+; -------------------------------------------------------------------------------
+
+EDSECTOR:XOR A                          ; workbench sector
         LD (EDMODE),A
         JR EDSLOTIN
-EDSIZE: LD A,1
+
+; -------------------------------------------------------------------------------
+; Sector-Size Editing
+; -------------------------------------------------------------------------------
+
+EDSIZE: LD A,1                          ; workbench size
         LD (EDMODE),A
-EDSLOTIN:LD HL,EDSLOT
+
+EDSLOTIN:LD HL,EDSLOT                   ; workbench slotin
         CALL PUTS
         CALL EDNUMBER
         JP C,EDSHOW
@@ -670,7 +826,8 @@ EDSLOTIN:LD HL,EDSLOT
         ADD HL,DE
         LD (HL),B
         JP EDSHOW
-EDSIZEIN:LD HL,EDSIZEQ
+
+EDSIZEIN:LD HL,EDSIZEQ                  ; workbench sizein
         CALL PUTS
         CALL EDNUMBER
         JP C,EDSHOW
@@ -681,7 +838,7 @@ EDSIZEIN:LD HL,EDSIZEQ
         CP 4
         JP NC,EDINVALID
         LD (EDNEW),A
-; On the first mixed edit seed every slot from the old uniform length.
+  ; On the first mixed edit seed every slot from the old uniform length.
         LD A,(EDCOPY+52)
         OR A
         JR NZ,EDPACK
@@ -699,12 +856,14 @@ EDSIZEIN:LD HL,EDSIZEQ
         OR B
         LD HL,EDCOPY+53
         LD B,8
-EDFILL: LD (HL),A
+
+EDFILL: LD (HL),A                       ; workbench fill
         INC HL
         DJNZ EDFILL
         LD A,1
         LD (EDCOPY+52),A
-EDPACK: LD A,(EDSAVE)
+
+EDPACK: LD A,(EDSAVE)                   ; workbench pack
         SRL A
         SRL A
         LD E,A
@@ -721,23 +880,31 @@ EDPACK: LD A,(EDSAVE)
         LD A,B
         OR A
         JR Z,EDMERGE
-EDSHIFT:SLA E
+
+EDSHIFT:SLA E                           ; workbench shift
         SLA D
         DJNZ EDSHIFT
-EDMERGE:LD A,E
+
+EDMERGE:LD A,E                          ; workbench merge
         CPL
         AND (HL)
         OR D
         LD (HL),A
         JP EDSHOW
-; Read a decimal word using our own console input, so BREAK is local.
-; Re-use the FDF scanner's overflow check. ENTER alone leaves it alone.
-EDNUMBER:LD HL,EDINPUT
+  ; Read a decimal word using our own console input, so BREAK is local.
+  ; Re-use the FDF scanner's overflow check. ENTER alone leaves it alone.
+
+; -------------------------------------------------------------------------------
+; Numeric Field Input
+; -------------------------------------------------------------------------------
+
+EDNUMBER:LD HL,EDINPUT                  ; workbench number
         LD (EDPTR),HL
         XOR A
         LD (EDCOUNT),A
         LD (EDOVER),A
-EDKEY:  CALL KEY
+
+EDKEY:  CALL KEY                        ; workbench key
         CP 3
         JR Z,EDCANCEL
         CP 13
@@ -753,7 +920,8 @@ EDKEY:  CALL KEY
         LD A,1
         LD (EDOVER),A
         JR EDKEY
-EDTAKE:
+
+EDTAKE:                                 ; workbench take
         INC A
         LD (EDCOUNT),A
         LD HL,(EDPTR)
@@ -763,7 +931,8 @@ EDTAKE:
         LD A,B
         CALL PUTC
         JR EDKEY
-EDEND:  CALL CRLF
+
+EDEND:  CALL CRLF                       ; workbench end
         LD A,(EDOVER)
         OR A
         JR NZ,EDCANCEL
@@ -775,10 +944,12 @@ EDEND:  CALL CRLF
         LD HL,EDINPUT
         LD (PARPTR),HL
         JP PNUM
-EDCANCEL:SCF
+
+EDCANCEL:SCF                            ; workbench cancel
         RET
-; Print HL unsigned, including directory counts beyond the old 255 limit.
-EDDEC:  LD DE,10000
+  ; Print HL unsigned, including directory counts beyond the old 255 limit.
+
+EDDEC:  LD DE,10000                     ; workbench dec
         CALL EDPLACE
         LD DE,1000
         CALL EDPLACE
@@ -789,54 +960,92 @@ EDDEC:  LD DE,10000
         LD A,L
         ADD A,'0'
         JP PUTC
-EDPLACE:LD A,'0'-1
-EDSUB:  INC A
+
+EDPLACE:LD A,'0'-1                      ; workbench place
+
+EDSUB:  INC A                           ; workbench sub
         OR A
         SBC HL,DE
         JR NC,EDSUB
         ADD HL,DE
         JP PUTC
-EDTITLE:DB 'Disk format workbench',0
-EDASK:  DB 'Copy current format from logical drive [B-D] (^C returns):',13,10,0
-EDHELP: DB 'A-P Edit  Q Apply to drive  R IDs  S Sizes  ^C Discard',13,10,0
-EDVALUE:DB 'Decimal value (ENTER keeps current, ^C cancels): ',0
-EDSLOT: DB 'Physical sector slot [1-32]: ',0
-EDSIZEQ:DB 'Size code [0=128, 1=256, 2=512, 3=1024]: ',0
-EDMODE: DB 0
-EDNEW:  DB 0
-EDID:   DB 'Sector ID [0-255]: ',0
-EDOFFS: DB 0,1,1,2,3,1,4,1,5,1,6,2,8,2,10,1
-        DB 11,1,12,2,14,2,16,1,17,1,18,1,19,1,52,1
-EDNAMES:DW ED0,ED1,ED2,ED3,ED4,ED5,ED6,ED7
-        DW ED8,ED9,ED10,ED11,ED12,ED13,ED14,ED15
-ED0:    DB 'Physical drive: ',0
-ED1:    DB '128-byte records/track (SPT): ',0
-ED2:    DB 'Block shift (BSH): ',0
-ED3:    DB 'Block mask (BLM): ',0
-ED4:    DB 'Extent mask (EXM): ',0
-ED5:    DB 'Last allocation block (DSM): ',0
-ED6:    DB 'Last directory entry (DRM): ',0
-ED7:    DB 'Directory allocation high (AL0): ',0
-ED8:    DB 'Directory allocation low (AL1): ',0
-ED9:    DB 'Directory check size (CKS): ',0
-ED10:   DB 'Reserved tracks (OFF): ',0
-ED11:   DB 'Cylinders: ',0
-ED12:   DB 'Physical sectors/track: ',0
-ED13:   DB 'Maximum size code (0=128 .. 3=1024): ',0
-ED14:   DB 'Format flags (decimal): ',0
-ED15:   DB 'Explicit size map (0=uniform, 1=mixed): ',0
-EDDRIVE:DB 0
-EDFIELD:DB 0
-EDWIDTH:DB 0
-EDSAVE: DB 0
-EDOVER: DB 0
-EDCOUNT:DB 0
-EDPTR:  DW 0
-EDINPUT:DS 6
-EDCOPY: DS 64
 
-TITLE:  DB 'BetterCP/M 2.2 CONFIG version 1.01',0
-MAINMSG:DB 'Configuration options:',13,10,13,10
+; ================================================================================
+; =                       Workbench Data and Field Tables                        =
+; =                                                                              =
+; = Defines workbench prompts, field metadata, format-name tables, and editing state. =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Workbench Strings and Tables
+; -------------------------------------------------------------------------------
+
+EDTITLE:DB 'Disk format workbench',0    ; workbench title
+
+EDASK:  DB 'Copy current format from logical drive [B-D] (^C returns):',13,10,0 ; workbench ask
+EDHELP: DB 'A-P Edit  Q Apply to drive  R IDs  S Sizes  ^C Discard',13,10,0 ; workbench help
+
+EDVALUE:DB 'Decimal value (ENTER keeps current, ^C cancels): ',0 ; workbench value
+
+EDSLOT: DB 'Physical sector slot [1-32]: ',0 ; workbench slot
+
+EDSIZEQ:DB 'Size code [0=128, 1=256, 2=512, 3=1024]: ',0 ; workbench sizeq
+
+EDMODE: DB 0                            ; workbench mode
+EDNEW:  DB 0                            ; workbench new
+EDID:   DB 'Sector ID [0-255]: ',0      ; workbench id
+EDOFFS: DB 0,1,1,2,3,1,4,1,5,1,6,2,8,2,10,1 ; workbench offs
+        DB 11,1,12,2,14,2,16,1,17,1,18,1,19,1,52,1
+
+EDNAMES:DW ED0,ED1,ED2,ED3,ED4,ED5,ED6,ED7 ; workbench names
+        DW ED8,ED9,ED10,ED11,ED12,ED13,ED14,ED15
+
+ED0:    DB 'Physical drive: ',0         ; workbench 0
+ED1:    DB '128-byte records/track (SPT): ',0 ; workbench 1
+ED2:    DB 'Block shift (BSH): ',0      ; workbench 2
+ED3:    DB 'Block mask (BLM): ',0       ; workbench 3
+ED4:    DB 'Extent mask (EXM): ',0      ; workbench 4
+ED5:    DB 'Last allocation block (DSM): ',0 ; workbench 5
+ED6:    DB 'Last directory entry (DRM): ',0 ; workbench 6
+ED7:    DB 'Directory allocation high (AL0): ',0 ; workbench 7
+ED8:    DB 'Directory allocation low (AL1): ',0 ; workbench 8
+ED9:    DB 'Directory check size (CKS): ',0 ; workbench 9
+ED10:   DB 'Reserved tracks (OFF): ',0  ; workbench 10
+ED11:   DB 'Cylinders: ',0              ; workbench 11
+ED12:   DB 'Physical sectors/track: ',0 ; workbench 12
+ED13:   DB 'Maximum size code (0=128 .. 3=1024): ',0 ; workbench 13
+ED14:   DB 'Format flags (decimal): ',0 ; workbench 14
+ED15:   DB 'Explicit size map (0=uniform, 1=mixed): ',0 ; workbench 15
+
+EDDRIVE:DB 0                            ; workbench drive
+
+EDFIELD:DB 0                            ; workbench field
+
+EDWIDTH:DB 0                            ; workbench width
+
+EDSAVE: DB 0                            ; workbench save
+EDOVER: DB 0                            ; workbench over
+
+EDCOUNT:DB 0                            ; workbench count
+
+EDPTR:  DW 0                            ; workbench ptr
+
+EDINPUT:DS 6                            ; workbench input
+
+EDCOPY: DS 64                           ; workbench copy
+
+; ================================================================================
+; =                          CONFIG Messages and State                           =
+; =                                                                              =
+; = Defines main-menu text, physical/logical prompts, lookup tables, and transient utility =
+; = state used by CONFIG.                                                        =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Main and Physical Menu Text
+; -------------------------------------------------------------------------------
+
+TITLE:  DB 'BetterCP/M 2.2 CONFIG version 1.01',0 ; utility title
+
+MAINMSG:DB 'Configuration options:',13,10,13,10 ; main-menu text
         DB '[ A ] System device assignments',13,10
         DB '[ B ] Keyboard definitions',13,10
         DB '[ C ] Video display definitions',13,10
@@ -847,51 +1056,85 @@ MAINMSG:DB 'Configuration options:',13,10,13,10
         DB '[ H ] Save current configuration on disk (SYSGEN)',13,10,13,10
         DB '[ I ] Create or edit a disk format',13,10,13,10
         DB 'Select [ A - I ], or BREAK (^C) to exit.',13,10,0
-NOTYET: DB 'Feature not yet implemented.',13,10,0
-PHYHEAD:DB 'Disk drive selections',0
-PHLABEL:DB 'Physical disk drive ',0
-PHCOUNT:DB 13,10,'Number of drives: 4',13,10,13,10
+
+NOTYET: DB 'Feature not yet implemented.',13,10,0 ; notyet
+
+PHYHEAD:DB 'Disk drive selections',0    ; physical yhead
+
+PHLABEL:DB 'Physical disk drive ',0     ; physical label
+
+PHCOUNT:DB 13,10,'Number of drives: 4',13,10,13,10 ; physical count
         DB 'Select [ A - D ], or BREAK (^C) to return.',13,10,0
-PHEDITTL:DB 'Disk drive definitions',0
-FLDNAMES:DW FLD0,FLD1,FLD2,FLD3,FLD4,FLD5
-FLD0:   DB 'Type of drive (inches):     ',0
-FLD1:   DB 'Number of tracks:           ',0
-FLD2:   DB 'Number of sides:            ',0
-FLD3:   DB 'Step rate (ms):             ',0
-FLD4:   DB 'Motor spin-up (1/4 sec):    ',0
-FLD5:   DB 'Head settling time (ms):    ',0
-PHHELP: DB 13,10,'Select [ A - F ], or BREAK (^C) to return.',13,10,0
-PHDETMSG:DB 13,10,'Incompatible logical drive binding unconfigured; use CONFIG G.',13,10,0
-NUMMSG: DB 'New value (ENTER keeps current, ^C cancels): ',0
-TRKMSG: DB 13,10,'Track choices:',13,10
+
+PHEDITTL:DB 'Disk drive definitions',0  ; physical edittl
+
+FLDNAMES:DW FLD0,FLD1,FLD2,FLD3,FLD4,FLD5 ; field names
+
+FLD0:   DB 'Type of drive (inches):     ',0 ; field 0
+FLD1:   DB 'Number of tracks:           ',0 ; field 1
+FLD2:   DB 'Number of sides:            ',0 ; field 2
+FLD3:   DB 'Step rate (ms):             ',0 ; field 3
+FLD4:   DB 'Motor spin-up (1/4 sec):    ',0 ; field 4
+FLD5:   DB 'Head settling time (ms):    ',0 ; field 5
+PHHELP: DB 13,10,'Select [ A - F ], or BREAK (^C) to return.',13,10,0 ; physical help
+
+PHDETMSG:DB 13,10,'Incompatible logical drive binding unconfigured; use CONFIG G.',13,10,0 ; physical-drive binding invalidation message
+
+NUMMSG: DB 'New value (ENTER keeps current, ^C cancels): ',0 ; nummsg
+TRKMSG: DB 13,10,'Track choices:',13,10 ; track-count msg
         DB '[ A ] 35',13,10,'[ B ] 40',13,10,'[ C ] 77',13,10,'[ D ] 80',13,10
         DB 'ENTER keeps current; ^C cancels.',13,10,0
-STEPMSG:DB 13,10,'Step rate choices (ms):',13,10
+
+STEPMSG:DB 13,10,'Step rate choices (ms):',13,10 ; step-rate msg
         DB '[ A ] 6',13,10,'[ B ] 12',13,10,'[ C ] 20',13,10,'[ D ] 30',13,10
         DB 'ENTER keeps current; ^C cancels.',13,10,0
-STEPTAB:DB 6,12,20,30
-TRKTAB: DB 35,40,77,80
-LOGHEAD:DB 'Disk format definitions',0
-LOGHELP:DB 'Choose the letter of the drive to change:',13,10
+
+STEPTAB:DB 6,12,20,30                   ; step-rate tab
+
+TRKTAB: DB 35,40,77,80                  ; track-count tab
+
+; -------------------------------------------------------------------------------
+; Logical Menu Text
+; -------------------------------------------------------------------------------
+
+LOGHEAD:DB 'Disk format definitions',0  ; logical head
+
+LOGHELP:DB 'Choose the letter of the drive to change:',13,10 ; logical help
         DB 'Drive Physical drive & current format',13,10,0
-LOGFOOT:DB 13,10,'Select [ A - D ], or BREAK (^C) to return.',13,10,0
-COLON:  DB ': ',0
-SELECTMSG:DB 'Choose the format to be used for drive ',0
-PAGEHELP:DB ',< Previous   .> Next   ENTER: marked choice   ^C Return',13,10,0
-CHOSENMSG:DB 'Format selected:',13,10,0
-ATTMSG: DB 13,10,'Which physical disk drive is to be used [0-3]? ',0
-BOOTMSG:DB 'A: is the system drive; its binding is protected.',13,10,0
-FMTBAD: DB 'BIOS support for this definition is not implemented.',13,10,0
-HWMSG:  DB 'Disk format is incompatible with this drive!',13,10,0
-SAVED:  DB 13,10,'Disk configuration changed (until cold boot).',13,10,0
-PHINDEX:DB 0
-FIELD:  DB 0
-LOGIDX: DB 0
-PAGE:   DB 0
-ROW:    DB 0
-CHOSEN: DB 0
-CHECKPH:DB 0
-PHNOTICE:DB 0
+
+LOGFOOT:DB 13,10,'Select [ A - D ], or BREAK (^C) to return.',13,10,0 ; logical foot
+
+COLON:  DB ': ',0                       ; colon
+
+SELECTMSG:DB 'Choose the format to be used for drive ',0 ; selectmsg
+
+PAGEHELP:DB ',< Previous   .> Next   ENTER: marked choice   ^C Return',13,10,0 ; format page help
+
+CHOSENMSG:DB 'Format selected:',13,10,0 ; chosenmsg
+
+ATTMSG: DB 13,10,'Which physical disk drive is to be used [0-3]? ',0 ; attmsg
+
+BOOTMSG:DB 'A: is the system drive; its binding is protected.',13,10,0 ; protected boot-drive binding message
+
+FMTBAD: DB 'BIOS support for this definition is not implemented.',13,10,0 ; fmtbad
+HWMSG:  DB 'Disk format is incompatible with this drive!',13,10,0 ; hwmsg
+SAVED:  DB 13,10,'Disk configuration changed (until cold boot).',13,10,0 ; saved
+
+; -------------------------------------------------------------------------------
+; Utility State
+; -------------------------------------------------------------------------------
+
+PHINDEX:DB 0                            ; physical index
+
+FIELD:  DB 0                            ; field
+LOGIDX: DB 0                            ; logical idx
+PAGE:   DB 0                            ; format page
+ROW:    DB 0                            ; row
+CHOSEN: DB 0                            ; chosen
+
+CHECKPH:DB 0                            ; checkph
+
+PHNOTICE:DB 0                           ; physical notice
         INCLUDE disk/sysgen.inc
         INCLUDE disk/common.inc
         END

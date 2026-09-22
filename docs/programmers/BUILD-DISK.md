@@ -1,10 +1,10 @@
 # BetterCP/M build disk
 
-`tools/build_source_disk.py` creates a self-hosting build disk and a companion
-complete-source disk. The build disk contains the canonical native source set,
+`tools/build_source_disk.py` creates a self-hosting build disk and companion
+complete-source volumes. The build disk contains the canonical native source set,
 generated link-symbol snapshot, ZSM4, Digital Research LINK, `SUBMIT`,
 `RESPACK`, `SYSBUILD`, `SYSGEN`, and build instructions. The source disk
-preserves the complete `src/` tree. Both use the Montezuma Micro 80-track,
+volumes together preserve the complete `src/` tree. All use the Montezuma Micro 80-track,
 double-sided DATA geometry: 800 KiB,
 512-byte sectors, 2 KiB allocation blocks, 128 directory entries, and no
 reserved system tracks.
@@ -22,10 +22,10 @@ The generated artifacts are:
   named for direct mounting in z80pack;
 - `build/trs80/BetterCPM-Build-80T-DS-800K.json`, which records every source
   mapping and the finished image hash;
-- `build/trs80/BetterCPM-Sources-80T-DS-800K.dmk` and `.img`, containing the
-  complete source archive and its `SOURCES.DOC` map;
-- `build/trs80/BetterCPM-Sources-80T-DS-800K.dsk`, the raw z80pack form of
-  the complete source archive;
+- `build/trs80/BetterCPM-Sources-1-80T-DS-800K.dmk` and
+  `BetterCPM-Sources-2-80T-DS-800K.dmk`, with matching `.img` and `.dsk`
+  forms. The two volumes hold the complete source archive. Each contains the
+  same `SOURCES.DOC` map identifying the volume for every source file;
 - `build/trs80/diskdefs-build`, a cpmtools definition for the flat image. It
   deliberately presents the image as one 1,600-sector linear track; this
   prevents libdsk from imposing a double-sided track order on data that is
@@ -36,7 +36,7 @@ local checkout locations. A different tool directory can be supplied with
 `--tools`. It reads every file back through a separate CP/M directory parser,
 then verifies the complete DMK structure and sector CRCs.
 
-For z80pack, mount either `.dsk` file in a raw-image physical drive. In
+For z80pack, mount a generated `.dsk` file in a raw-image physical drive. In
 BetterCP/M CONFIG, define that physical drive as 5-inch, 80-track,
 double-sided, then assign the logical drive the `Montezuma Micro 80T DS DATA
 (80T, DS, DD, 800K)` format. The `.img` form is in logical order for the
@@ -49,6 +49,7 @@ CP/M's 8.3 filename limit cannot preserve the source tree paths. All files
 reside in user zero. `SOURCES.DOC` records the path represented by every name.
 The tree and native toolchain no longer fit together in the 398 usable 2 KiB
 blocks, so the reproducible build inputs and complete archive are separate.
+The fully commented tree itself now spans two source volumes.
 
 | User | Contents |
 |---:|---|

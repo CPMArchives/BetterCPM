@@ -1,29 +1,54 @@
         INCLUDE layout.inc
-; BetterCP/M initial resident-system initialization and page-zero gateway.
-;
-; Provisional placement. This component establishes the standard CP/M entry
-; addresses only after the default drive has logged in successfully.
 
-; Patch 2026-09-01: the E500/E600/E800 bring-up map proved its boundaries by
-; catching two workspace collisions. Specification 29 relocates components
-; into explicit growth regions while leaving page-zero ABI addresses intact.
+; ********************************************************************************
+; *                   BetterCP/M Resident System Gateway                         *
+; *                                                                              *
+; * Initializes the resident system and installs the stable CP/M page-zero       *
+; * gateway only after the default drive has logged in successfully. Also owns   *
+; * BOOT/WBOOT reconstruction state and the live extension-control descriptor.   *
+; ********************************************************************************
+
+  ; Patch 2026-09-01: the E500/E600/E800 bring-up map proved its boundaries by
+  ; catching two workspace collisions. Specification 29 relocates components
+  ; into explicit growth regions while leaving page-zero ABI addresses intact.
 SYSBASE         EQU     LY_SYS
 BDOS            EQU     LY_BDOS
-HISTBASE        EQU     LY_HIST       ; fixed warm-boot-persistent history
+HISTBASE        EQU     LY_HIST         ; fixed warm-boot-persistent history
 CPMGATE         EQU     HISTBASE-3
 DIRLOGIN        EQU     LY_EXT+003H
 BIOWBOOT        EQU     LY_BIOS+3
-RSTCOUNT        EQU     LY_RSTA ; protected active-RSX reconstruction table
+RSTCOUNT        EQU     LY_RSTA         ; protected active-RSX reconstruction table
 
         CSEG
         .PHASE  SYSBASE
 
-SYS_INIT:
+; ================================================================================
+; =                        Resident System Initialization                        =
+; =                                                                              =
+; = Establishes protected resident state and the page-zero CP/M entry gateway after =
+; = the default disk context is valid.                                           =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Initial Gateway Setup
+; -------------------------------------------------------------------------------
+
+SYS_INIT:                               ; initialize resident system gateway
         JP      SINIBODY
 
  ; COM exit runs here even when every byte of the CCP has gone.
-; A=0 only after EOF, with the caller's user saved on the system stack.
-SYS_COMDONE:
+  ; A=0 only after EOF, with the caller's user saved on the system stack.
+
+; ================================================================================
+; =                      Transient Return and System Entry                       =
+; =                                                                              =
+; = Handles transient-program return, preserves CP/M page-zero interception semantics, =
+; = and provides the stable BIOS BOOT/WBOOT entry targets.                       =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Transient Return
+; -------------------------------------------------------------------------------
+
+SYS_COMDONE:                            ; handle transient program return
         POP DE
         LD E,D
         PUSH AF
@@ -35,46 +60,73 @@ SYS_COMDONE:
         POP AF
         OR A
         JP NZ,0000H
-; Patch 2026-09-08: DRI's CCP calls a transient, so its entry RET bypasses
-; the public jump at 0000H.  Save that jump's present target rather than zero.
-; The target remains protected while the command environment is overwritten,
-; but a program which temporarily intercepts 0000H can still distinguish RET
-; from Function 0 and JP 0000H as old CP/M programs expect.
+  ; Patch 2026-09-08: DRI's CCP calls a transient, so its entry RET bypasses
+  ; the public jump at 0000H.  Save that jump's present target rather than zero.
+  ; The target remains protected while the command environment is overwritten,
+  ; but a program which temporarily intercepts 0000H can still distinguish RET
+  ; from Function 0 and JP 0000H as old CP/M programs expect.
         LD HL,(0001H)
         PUSH HL
         JP 0100H
 
-        REPT    SYSBASE+020H-$  ; explicit bytes keep native/cross images equal
+        REPT    SYSBASE+020H-$          ; explicit bytes keep native/cross images equal
         DB      0
         ENDM
 
-; Stable targets used by the BIOS BOOT and WBOOT implementations.
-SYS_BOOT:
+  ; Stable targets used by the BIOS BOOT and WBOOT implementations.
+
+; -------------------------------------------------------------------------------
+; Stable BOOT/WBOOT Targets
+; -------------------------------------------------------------------------------
+
+SYS_BOOT:                               ; stable BIOS BOOT target
         JP      SYS_COLD
-SYS_WBOOT:
+
+SYS_WBOOT:                              ; stable BIOS WBOOT target
         JP      SYS_WARM
-SYS_COLD:
+
+; -------------------------------------------------------------------------------
+; Cold Entry
+; -------------------------------------------------------------------------------
+
+SYS_COLD:                               ; perform cold system entry
         LD      SP,SYS_STKTOP
         XOR     A
-        LD      (RSTCOUNT),A     ; cold boot starts from the saved empty profile
+        LD      (RSTCOUNT),A            ; cold boot starts from the saved empty profile
                                 ; while WBOOT deliberately preserves this byte
-        XOR     A               ; cold boot deliberately begins on drive A
+        XOR     A                       ; cold boot deliberately begins on drive A
         JR      SYS_ENTER
-SYS_WARM:
-; Preserve the default drive across reconstruction.  Function 13 must reset
-; disk state to A internally, but CP/M warm boot resumes the command processor
-; on the drive from which the transient returned.
+
+; -------------------------------------------------------------------------------
+; Warm Entry
+; -------------------------------------------------------------------------------
+
+SYS_WARM:                               ; perform warm system entry
+  ; Preserve the default drive across reconstruction.  Function 13 must reset
+  ; disk state to A internally, but CP/M warm boot resumes the command processor
+  ; on the drive from which the transient returned.
         LD      SP,SYS_STKTOP
         LD      C,25
         CALL    BDOS
-SYS_ENTER:
+
+; ================================================================================
+; =                      Command Environment Reconstruction                      =
+; =                                                                              =
+; = Switches to the dedicated system stack, reconstructs the command environment, =
+; = and resumes execution through the live CCP descriptor.                       =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Reconstruction Entry
+; -------------------------------------------------------------------------------
+
+SYS_ENTER:                              ; reconstruct command environment
         PUSH    AF
-; Patch 2026-09-01: Function 0 arrives on the BDOS private stack. Calling BDOS
-; again during reconstruction reused that stack and destroyed WBOOT's return
-; frames. Establish a distinct system stack before invoking any service.
+  ; Patch 2026-09-01: Function 0 arrives on the BDOS private stack. Calling BDOS
+  ; again during reconstruction reused that stack and destroyed WBOOT's return
+  ; frames. Establish a distinct system stack before invoking any service.
         CALL    SYS_INIT
         JR      NZ,SYS_STOP
-        LD      C,13            ; default drive A, DMA 0080h, fresh disk state
+        LD      C,13                    ; default drive A, DMA 0080h, fresh disk state
         CALL    BDOS
         POP     AF
         OR      A
@@ -82,24 +134,35 @@ SYS_ENTER:
         LD      E,A
         LD      C,14
         CALL    BDOS
-SYS_RESUME:
-; The CCP address is configuration state. A stable gateway must consult the
-; descriptor rather than embed a direct jump to the current default address.
+
+; -------------------------------------------------------------------------------
+; CCP Resume
+; -------------------------------------------------------------------------------
+
+SYS_RESUME:                             ; resume reconstructed CCP
+  ; The CCP address is configuration state. A stable gateway must consult the
+  ; descriptor rather than embed a direct jump to the current default address.
         LD      HL,(ECB_CCPBASE)
         PUSH    HL
         RET
-SYS_STOP:
+
+SYS_STOP:                               ; halt after fatal gateway failure
         JR      SYS_STOP
 
-SYS_STACK:
+; -------------------------------------------------------------------------------
+; System Stack and Transient State
+; -------------------------------------------------------------------------------
+
+SYS_STACK:                              ; system reconstruction stack
         REPT    32
         DB      0
         ENDM
-SYS_STKTOP:
 
-SYS_COMSTART:
+SYS_STKTOP:                             ; top of system stack
+
+SYS_COMSTART:                           ; saved transient-entry state
         LD SP,SYS_STKTOP
-        PUSH AF             ; original user, restored on success or failure
+        PUSH AF                         ; original user, restored on success or failure
         LD HL,0100H
         JP LY_EXT+00CH
 
@@ -107,57 +170,103 @@ SYS_COMSTART:
         DB      0
         ENDM
 
-; Extension Control Block, version 1. This is also the PDS ABI 1 descriptor.
-; ECB_PDSLOW publishes the live lower boundary; its fixed address at SYSBASE+80h
-; publishes SYSBASE as the upper boundary. Until configurable sizing exists,
-; current and next-boot sizes are both SYSBASE-ECB_PDSLOW.
-ECB_MAGIC:
+  ; Extension Control Block, version 1. This is also the PDS ABI 1 descriptor.
+  ; ECB_PDSLOW publishes the live lower boundary; its fixed address at SYSBASE+80h
+  ; publishes SYSBASE as the upper boundary. Until configurable sizing exists,
+  ; current and next-boot sizes are both SYSBASE-ECB_PDSLOW.
+
+; ================================================================================
+; =                           Extension Control Block                            =
+; =                                                                              =
+; = Publishes the versioned live RSX/CPX heads, protected-data boundaries, CCP   =
+; = placement, TPA limit, and reconstruction generation state.                   =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Live Environment Descriptor
+; -------------------------------------------------------------------------------
+
+ECB_MAGIC:                              ; extension-control-block signature
         DB      'B','M'
-ECB_VERSION:
+
+ECB_VERSION:                            ; extension-control-block version
         DB      1
-ECB_FLAGS:
-        DB      1               ; bit 0: static PDS ABI 1 view is valid
-ECB_RSXHEAD:
+
+ECB_FLAGS:                              ; extension-control flags
+        DB      1                       ; bit 0: static PDS ABI 1 view is valid
+
+ECB_RSXHEAD:                            ; live RSX-chain head
         DW      0
-ECB_CPXHEAD:
+
+ECB_CPXHEAD:                            ; live CPX-chain head
         DW      0
-ECB_PDSLOW:
-ECB_RSXLOW:                     ; compatibility name used by RSX reconstruction
+
+ECB_PDSLOW:                             ; live protected-data lower bound
+
+ECB_RSXLOW:                             ; live RSX lower bound
         DW      HISTBASE
-ECB_CPXLOW:
+
+ECB_CPXLOW:                             ; live CPX lower bound
         DW      CPMGATE
-ECB_CCPBASE:
-        DW      0               ; calculated and published by WBOOT reloader
-ECB_CCPSIZE:
-        DW      0               ; calculated from the command module
-ECB_TPATOP:
-        DW      CPMGATE         ; movable gateway is the exclusive TPA ceiling
-ECB_GENERATION:
+
+ECB_CCPBASE:                            ; live CCP base
+        DW      0                       ; calculated and published by WBOOT reloader
+
+ECB_CCPSIZE:                            ; live CCP size
+        DW      0                       ; calculated from the command module
+
+ECB_TPATOP:                             ; live TPA upper bound
+        DW      CPMGATE                 ; movable gateway is the exclusive TPA ceiling
+
+ECB_GENERATION:                         ; environment generation counter
         DW      1
 
-; Persistent command-environment reconstruction state.  The current profile
-; is deliberately empty; later CPX installation records ordered module
-; sources here.  Unlike the runtime CPX chain, this table survives WBOOT.
-CPTCOUNT:
-        DB      1               ; default proof profile loads RCP.CPX
-CPTFLAGS:
-        DB      1               ; default: RCP only; bit 1 enables HELLO at runtime
-CPTABLE:
-        DB      'RCP     '      ; ordinary RCP.CPX filename stem
-; Patch 2026-09-02: reserve four reconstruction records during bring-up.  The
-; earlier eight-record placeholder consumed the only fixed-page expansion
-; space; a later variable persistent-DATA allocator will remove this ceiling.
+  ; Persistent command-environment reconstruction state.  The current profile
+  ; is deliberately empty; later CPX installation records ordered module
+  ; sources here.  Unlike the runtime CPX chain, this table survives WBOOT.
+
+; ================================================================================
+; =                     Persistent CPX Reconstruction State                      =
+; =                                                                              =
+; = Retains the ordered CPX profile across WBOOT independently of the runtime CPX =
+; = chain so the command environment can be rebuilt deterministically.           =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Persistent CPX Profile
+; -------------------------------------------------------------------------------
+
+CPTCOUNT:                               ; persistent CPX record count
+        DB      1                       ; default proof profile loads RCP.CPX
+
+CPTFLAGS:                               ; persistent CPX profile flags
+        DB      1                       ; default: RCP only; bit 1 enables HELLO at runtime
+
+CPTABLE:                                ; persistent CPX reconstruction table
+        DB      'RCP     '              ; ordinary RCP.CPX filename stem
+  ; Patch 2026-09-02: reserve four reconstruction records during bring-up.  The
+  ; earlier eight-record placeholder consumed the only fixed-page expansion
+  ; space; a later variable persistent-DATA allocator will remove this ceiling.
         REPT    4*8-1
         DB      0
         ENDM
 
-; Patch 2026-09-02: the movable gateway setup no longer fits before the stable
-; C020h BOOT/WBOOT vectors.  Preserve those public addresses and keep the old
-; entry as a short branch into the unused tail of the fixed gateway page.
-SINIBODY:
-        LD      C,0             ; initial default drive A
+  ; Patch 2026-09-02: the movable gateway setup no longer fits before the stable
+  ; C020h BOOT/WBOOT vectors.  Preserve those public addresses and keep the old
+  ; entry as a short branch into the unused tail of the fixed gateway page.
+
+; ================================================================================
+; =                        Movable Gateway Initialization                        =
+; =                                                                              =
+; = Initializes the movable gateway state while preserving the stable public BOOT =
+; = and WBOOT vector addresses in the fixed gateway page.                        =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Gateway Setup Body
+; -------------------------------------------------------------------------------
+
+SINIBODY:                               ; initialize movable gateway state
+        LD      C,0                     ; initial default drive A
         CALL    DIRLOGIN
-        RET     NZ              ; do not publish a half-initialized system
+        RET     NZ                      ; do not publish a half-initialized system
         LD      HL,(ECB_TPATOP)
         LD      (HL),0C3H
         INC     HL
@@ -172,14 +281,19 @@ SINIBODY:
         INC     HL
         LD      E,(HL)
         INC     HL
-        LD      D,(HL)          ; first installed RSX entry
+        LD      D,(HL)                  ; first installed RSX entry
         LD      HL,(ECB_TPATOP)
         INC     HL
-SINI_GATE:
+
+; -------------------------------------------------------------------------------
+; Page-Zero Installation
+; -------------------------------------------------------------------------------
+
+SINI_GATE:                              ; install page-zero gateway
         LD      (HL),E
         INC     HL
         LD      (HL),D
-        LD      A,0C3H          ; JP opcode
+        LD      A,0C3H                  ; JP opcode
         LD      (0000H),A
         LD      (0005H),A
         LD      HL,BIOWBOOT

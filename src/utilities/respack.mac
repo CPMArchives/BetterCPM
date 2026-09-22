@@ -1,8 +1,11 @@
-; RESPACK -- compose the packed resident payload from native linked modules.
-;
-; Each input is an absolute binary linked from the source/build disk.  The
-; destination offsets and capacities come from the canonical memory map.
-; Unused bytes, including the initial reconstruction table, remain zero.
+; ********************************************************************************
+; *                       BetterCP/M Resident Packer                             *
+; *                                                                              *
+; * Composes the packed resident payload from native absolute linked modules.    *
+; * Destination offsets and capacities come from the canonical memory map;       *
+; * unused bytes, including the initial reconstruction table, remain zero.       *
+; ********************************************************************************
+
         INCLUDE layout.inc
         INCLUDE partmeta.inc
         ASEG
@@ -11,7 +14,17 @@ BDOS    EQU     5
 BUFFER  EQU     04000H
 RECS    EQU     52
 
-START:  LD      SP,03F00H
+; ================================================================================
+; =                           Resident Module Packing                            =
+; =                                                                              =
+; = Walks the canonical resident-module table, loads each absolute binary into its assigned =
+; = payload region, and enforces the memory-map capacity of every component.     =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Module Table Walk
+; -------------------------------------------------------------------------------
+
+START:  LD      SP,03F00H               ; enter resident payload packer
         LD      DE,BANNER
         CALL    PRINT
         LD      HL,BUFFER
@@ -21,7 +34,8 @@ START:  LD      SP,03F00H
         LD      (HL),A
         LDIR
         LD      HL,PARTS
-NEXT:   LD      A,(HL)
+
+NEXT:   LD      A,(HL)                  ; process next resident module
         OR      A
         JP      Z,WRITEOUT
         INC     HL
@@ -49,7 +63,17 @@ NEXT:   LD      A,(HL)
         LD      HL,(NEXTPART)
         JR      NEXT
 
-LOADPART:
+; ================================================================================
+; =                              Input Module Load                               =
+; =                                                                              =
+; = Opens one native linked module, reads it into the assigned destination, checks EOF =
+; = and capacity, and closes the source before continuing.                       =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Open and Read Module
+; -------------------------------------------------------------------------------
+
+LOADPART:                               ; load one resident module
         LD      DE,(CURFCB)
         LD      C,15
         CALL    BDOS
@@ -58,7 +82,8 @@ LOADPART:
         XOR     A
         LD      (COUNT),A
         LD      (COUNT+1),A
-READLP: LD      HL,(COUNT)
+
+READLP: LD      HL,(COUNT)              ; read next input record
         LD      DE,(CURCAP)
         OR      A
         SBC     HL,DE
@@ -92,7 +117,8 @@ READLP: LD      HL,(COUNT)
         INC     HL
         LD      (COUNT),HL
         JR      READLP
-READEOF:
+
+READEOF:                                ; finish input at EOF
         CP      1
         JR      NZ,READBAD
         LD      HL,(COUNT)
@@ -100,7 +126,12 @@ READEOF:
         OR      L
         JR      Z,MISSING
         JR      CLOSEOK
-FULLCHK:
+
+; -------------------------------------------------------------------------------
+; Capacity and Close
+; -------------------------------------------------------------------------------
+
+FULLCHK:                                ; check final module capacity
         LD      DE,SCRATCH
         LD      C,26
         CALL    BDOS
@@ -111,9 +142,11 @@ FULLCHK:
         JR      Z,CLOSEOK
         LD      A,3
         JR      CLOSEERR
-CLOSEOK:
+
+CLOSEOK:                                ; accept input close
         XOR     A
-CLOSEERR:
+
+CLOSEERR:                               ; handle input close failure
         PUSH    AF
         LD      DE,(CURFCB)
         LD      C,16
@@ -147,15 +180,27 @@ CLOSEERR:
         LDIR
         XOR     A
         RET
-MISSING:
+
+MISSING:                                ; report missing input module
         LD      A,1
         OR      A
         RET
-READBAD:
+
+READBAD:                                ; report input read failure
         LD      A,2
         JR      CLOSEERR
 
-WRITEOUT:
+; ================================================================================
+; =                             Packed Image Output                              =
+; =                                                                              =
+; = Creates the resident payload file and writes the completed packed image as CP/M =
+; = records, reporting create, write, or close failures.                         =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Create and Write Output
+; -------------------------------------------------------------------------------
+
+WRITEOUT:                               ; write packed resident image
         LD      DE,OUTFCB
         LD      C,19
         CALL    BDOS
@@ -166,7 +211,8 @@ WRITEOUT:
         JP      Z,CREATEBAD
         LD      HL,BUFFER
         LD      B,RECS
-WRLP:   PUSH    BC
+
+WRLP:   PUSH    BC                      ; write next output record
         PUSH    HL
         EX      DE,HL
         LD      C,26
@@ -190,12 +236,15 @@ WRLP:   PUSH    BC
         CALL    PRINT
         JP      0
 
-CREATEBAD:LD    A,4
+CREATEBAD:LD    A,4                     ; report output-create failure
         JR      FAIL
-WRITEBAD:LD     A,5
+
+WRITEBAD:LD     A,5                     ; report output-write failure
         JR      FAIL
-CLOSEBAD:LD     A,6
-FAIL:   PUSH    AF
+
+CLOSEBAD:LD     A,6                     ; report output-close failure
+
+FAIL:   PUSH    AF                      ; return pack failure
         LD      DE,ERRMSG
         CALL    PRINT
         POP     AF
@@ -203,32 +252,57 @@ FAIL:   PUSH    AF
         LD      DE,CRLF
         CALL    PRINT
         JP      0
-PRINT:  LD      C,9
+
+; ================================================================================
+; =                              Diagnostic Output                               =
+; =                                                                              =
+; = Provides message and hexadecimal output used to identify packing errors and module =
+; = sizes during the build.                                                      =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Messages and Hex Output
+; -------------------------------------------------------------------------------
+
+PRINT:  LD      C,9                     ; print $-terminated message
         JP      BDOS
-HEXBYTE:PUSH    AF
+
+HEXBYTE:PUSH    AF                      ; print byte as hexadecimal
         RRCA
         RRCA
         RRCA
         RRCA
         CALL    HEXDIG
         POP     AF
-HEXDIG: AND     0FH
+
+HEXDIG: AND     0FH                     ; convert hexadecimal digit
         ADD     A,'0'
         CP      '9'+1
         JR      C,HEXOUT
         ADD     A,7
-HEXOUT: LD      E,A
+
+HEXOUT: LD      E,A                     ; emit hexadecimal digit
         LD      C,2
         JP      BDOS
 
-BANNER: DB      'BetterCP/M resident packer',13,10,'$'
-DONE:   DB      'RESIDENT.BIN created (52 records).',13,10,'$'
-ERRMSG: DB      'RESPACK failed; status $'
-CRLF:   DB      13,10,'$'
+BANNER: DB      'BetterCP/M resident packer',13,10,'$' ; packer banner
+DONE:   DB      'RESIDENT.BIN created (52 records).',13,10,'$' ; success message
+ERRMSG: DB      'RESPACK failed; status $' ; generic error prefix
+CRLF:   DB      13,10,'$'               ; newline string
 
-; FCB, destination and maximum record count.  Keep these names synchronized
-; with BUILD.SUB; capacities are the assigned memory-map regions.
-PARTS:
+  ; FCB, destination and maximum record count.  Keep these names synchronized
+  ; with BUILD.SUB; capacities are the assigned memory-map regions.
+
+; ================================================================================
+; =                       Resident Module Table and State                        =
+; =                                                                              =
+; = Defines each input FCB, destination, and capacity together with the output FCB and =
+; = working pointers/counters used by the packer.                                =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Canonical Module Table
+; -------------------------------------------------------------------------------
+
+PARTS:                                  ; resident module table
         DB 1
         DB 0,'GATEWAY BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         DW BUFFER+(LY_SYS-LY_SYS)
@@ -266,12 +340,20 @@ PARTS:
         DW TABLES_SIZE
         DB 0
 
-OUTFCB: DB 0,'RESIDENTBIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-CURFCB: DW 0
-CURDST: DW 0
-CURCAP: DW 0
-CURSIZE:DW 0
-NEXTPART:DW 0
-COUNT:  DW 0
-SCRATCH:DS 128
+; -------------------------------------------------------------------------------
+; Output and Working State
+; -------------------------------------------------------------------------------
+
+OUTFCB: DB 0,'RESIDENTBIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ; output-image FCB
+CURFCB: DW 0                            ; current input FCB pointer
+CURDST: DW 0                            ; current destination pointer
+CURCAP: DW 0                            ; current module capacity
+
+CURSIZE:DW 0                            ; current module size
+
+NEXTPART:DW 0                           ; next module-table pointer
+
+COUNT:  DW 0                            ; record counter
+
+SCRATCH:DS 128                          ; input scratch buffer
         END

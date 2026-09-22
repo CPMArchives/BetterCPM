@@ -1,5 +1,12 @@
         INCLUDE layout.inc
-; BetterCP/M second proof CPX. Intercepts the HELLO command.
+
+; ********************************************************************************
+; *                         BetterCP/M HELLO CPX                                 *
+; *                                                                              *
+; * Second proof command-processor extension. Recognizes the HELLO command,      *
+; * prints its response, echoes any trailing argument, and declines all other    *
+; * commands so dispatch can continue through the CPX chain.                     *
+; ********************************************************************************
 
 CPXBASE         EQU     08000H
 BDOS            EQU     00005H
@@ -7,10 +14,25 @@ BDOS            EQU     00005H
         CSEG
         .PHASE  CPXBASE
 
-HC_NEXT:        DW      0
-HC_ENTRY:       DW      HC_COMMAND
+; -------------------------------------------------------------------------------
+; CPX Descriptor
+; -------------------------------------------------------------------------------
 
-HC_COMMAND:
+HC_NEXT:        DW      0               ; next CPX descriptor pointer
+HC_ENTRY:       DW      HC_COMMAND      ; CPX command entry pointer
+
+; ================================================================================
+; =                            HELLO Command Handler                             =
+; =                                                                              =
+; = Matches the HELLO keyword, validates the command boundary, emits the HELLO   =
+; = response and optional argument, and reports whether the command was handled. =
+; ================================================================================
+
+; -------------------------------------------------------------------------------
+; Command Recognition and Response
+; -------------------------------------------------------------------------------
+
+HC_COMMAND:                             ; recognize and handle HELLO command
         LD      A,B
         CP      5
         JR      C,HC_DECLINE
@@ -18,7 +40,8 @@ HC_COMMAND:
         LD      (HC_ARGLEN),A
         LD      B,5
         LD      HL,HC_KEY
-HC_MATCH:
+
+HC_MATCH:                               ; compare HELLO command keyword
         LD      A,(DE)
         CP      (HL)
         JR      NZ,HC_DECLINE
@@ -30,8 +53,9 @@ HC_MATCH:
         JR      Z,HC_HANDLE
         LD      A,(DE)
         CP      ' '
-        JR      NZ,HC_DECLINE   ; HELLOX is not the HELLO command
-HC_HANDLE:
+        JR      NZ,HC_DECLINE           ; HELLOX is not the HELLO command
+
+HC_HANDLE:                              ; handle recognized HELLO command
         LD      (HC_ARGPTR),DE
         LD      DE,HC_MESSAGE
         LD      C,9
@@ -39,7 +63,8 @@ HC_HANDLE:
         LD      HL,(HC_ARGPTR)
         LD      A,(HC_ARGLEN)
         LD      B,A
-HC_SKIP:
+
+HC_SKIP:                                ; skip spaces before HELLO argument
         LD      A,B
         OR      A
         JR      Z,HC_DONE
@@ -49,7 +74,8 @@ HC_SKIP:
         INC     HL
         DEC     B
         JR      HC_SKIP
-HC_ARG:
+
+HC_ARG:                                 ; emit separator before HELLO argument
         PUSH    HL
         PUSH    BC
         LD      E,' '
@@ -57,7 +83,8 @@ HC_ARG:
         CALL    BDOS
         POP     BC
         POP     HL
-HC_ARGLOOP:
+
+HC_ARGLOOP:                             ; echo HELLO argument
         LD      A,(HL)
         INC     HL
         PUSH    HL
@@ -68,21 +95,27 @@ HC_ARGLOOP:
         POP     BC
         POP     HL
         DJNZ    HC_ARGLOOP
-HC_DONE:
+
+HC_DONE:                                ; finish HELLO response
         LD      DE,HC_NEWLINE
         LD      C,9
         CALL    BDOS
         SCF
         RET
-HC_DECLINE:
+
+HC_DECLINE:                             ; decline unmatched command
         OR      A
         RET
 
-HC_KEY:         DB      'HELLO'
-HC_MESSAGE:     DB      13,10,'Hello from HELLO.CPX','$'
-HC_NEWLINE:     DB      13,10,'$'
-HC_ARGPTR:      DW      0
-HC_ARGLEN:      DB      0
+; -------------------------------------------------------------------------------
+; Command Data and State
+; -------------------------------------------------------------------------------
+
+HC_KEY:         DB      'HELLO'         ; HELLO command keyword
+HC_MESSAGE:     DB      13,10,'Hello from HELLO.CPX','$' ; HELLO response text
+HC_NEWLINE:     DB      13,10,'$'       ; response newline
+HC_ARGPTR:      DW      0               ; HELLO argument pointer
+HC_ARGLEN:      DB      0               ; HELLO argument length
 
         .DEPHASE
         END

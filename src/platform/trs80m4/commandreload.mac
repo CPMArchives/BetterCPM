@@ -1,7 +1,13 @@
         INCLUDE layout.inc
-; BetterCP/M TRS-80 Model 4 command-environment reloader.
-; Persistent CPX records are eight-character, space-padded filename stems.
-; The protected loader supplies .CPX and reads them through directory services.
+
+; ********************************************************************************
+; *                   BetterCP/M Command-Environment Reloader                    *
+; *                                                                              *
+; * Reconstructs the ordered CPX chain and relocatable CCP after BOOT/WBOOT. CPX *
+; * carriers are opened through Directory Services; BCM1 and BCPX headers are    *
+; * normalized into one private loader description before placement and relocation. *
+; ********************************************************************************
+
 RELOADBASE      EQU     LY_LOAD
 HISTBASE        EQU     LY_HIST
 BIOPHREAD       EQU     LY_BIOS+51
@@ -26,24 +32,36 @@ MOD_RELOCS      EQU     MODBUF+22
 MOD_HEADERSZ    EQU     MODBUF+24
 MOD_PAYLOAD     EQU     MODBUF+26
 MOD_RELTABLE    EQU     MODBUF+28
-; The directory path is substantially deeper than the old raw-sector reader.
-; Grow its private stack downward through the unused fixed-core gap.
+  ; The directory path is substantially deeper than the old raw-sector reader.
+  ; Grow its private stack downward through the unused fixed-core gap.
 CRSTKTOP        EQU     LY_STKT
 
         CSEG
         .PHASE  RELOADBASE
-CRSTART:
+
+; ================================================================================
+; =                      Command Environment Reconstruction                      =
+; =                                                                              =
+; = Rebuilds the command environment after BOOT/WBOOT by loading the persistent  =
+; = ordered CPX profile followed by the relocatable CCP beneath the protected core. =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Reloader Entry and Stack
+; -------------------------------------------------------------------------------
+
+CRSTART:                                ; enter command-environment reloader
         JP      CRBODY
-CRBODY:
+
+CRBODY:                                 ; begin reconstruction body
         LD      SP,CRSTKTOP
-; 07-Sep-2026 -- a BIOS caller may leave another physical drive selected
-; without changing BDOS's cached A: context. Do not reload RCP.CPX from
-; that drive using A:'s old DPB. Invalidate before the first file lookup.
+  ; 07-Sep-2026 -- a BIOS caller may leave another physical drive selected
+  ; without changing BDOS's cached A: context. Do not reload RCP.CPX from
+  ; that drive using A:'s old DPB. Invalidate before the first file lookup.
         LD      DE,0FFFFH
         LD      C,37
         CALL    LY_BDOS
         LD      C,0
-        CALL    DIRLOGIN        ; protected file services precede CCP/CPX load
+        CALL    DIRLOGIN                ; protected file services precede CCP/CPX load
         JP      NZ,CRFAIL
         LD      HL,(ECB_TPATOP)
         LD      (CRBOUND),HL
@@ -58,7 +76,12 @@ CRBODY:
         LD      (CRCOUNT),A
         LD      HL,CPTABLE
         LD      (CRTPTR),HL
-CRCPXLP:
+
+; -------------------------------------------------------------------------------
+; Persistent CPX Profile Walk
+; -------------------------------------------------------------------------------
+
+CRCPXLP:                                ; process next persistent CPX
         LD      A,(CRCOUNT)
         OR      A
         JR      Z,CRCCP
@@ -68,18 +91,29 @@ CRCPXLP:
         ADD     HL,DE
         LD      (CRTPTR),HL
         POP     HL
-        XOR     A               ; filename extension is CPX
+        XOR     A                       ; filename extension is CPX
         CALL    FLOPEN
         JR      Z,CROPEN
-; 08-Sep-2026 -- SYSGEN writes the complete protected system but does not
-; copy ordinary files.  A newly installed disk must therefore reach the
-; bare CCP when an optional CPX named by the old profile is not yet present.
-; Once a carrier opens, malformed data still takes the hard failure path.
+  ; 08-Sep-2026 -- SYSGEN writes the complete protected system but does not
+  ; copy ordinary files.  A newly installed disk must therefore reach the
+  ; bare CCP when an optional CPX named by the old profile is not yet present.
+  ; Once a carrier opens, malformed data still takes the hard failure path.
         LD      A,(CRCOUNT)
         DEC     A
         LD      (CRCOUNT),A
         JR      CRCPXLP
-CROPEN:
+
+; ================================================================================
+; =                             CPX Profile Loading                              =
+; =                                                                              =
+; = Opens each configured CPX through Directory Services, tolerates a missing optional =
+; = carrier, and links successfully loaded modules into the runtime CPX chain.   =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Open CPX Carrier
+; -------------------------------------------------------------------------------
+
+CROPEN:                                 ; open configured CPX carrier
         LD      A,1
         LD      (CRFILE),A
         LD      HL,CRCPXMAG
@@ -97,19 +131,30 @@ CROPEN:
         LD      HL,(CRBASE)
         LD      (ECB_CPXHEAD),HL
         JR      CRLINKD
-CRLINK:
+
+; -------------------------------------------------------------------------------
+; Link Loaded CPX
+; -------------------------------------------------------------------------------
+
+CRLINK:                                 ; link loaded CPX into chain
         LD      DE,(CRBASE)
         LD      (HL),E
         INC     HL
         LD      (HL),D
-CRLINKD:
+
+CRLINKD:                                ; finish CPX link
         LD      HL,(CRBASE)
         LD      (CRPREV),HL
         LD      A,(CRCOUNT)
         DEC     A
         LD      (CRCOUNT),A
         JR      CRCPXLP
-CRCCP:
+
+; -------------------------------------------------------------------------------
+; Load CCP Carrier
+; -------------------------------------------------------------------------------
+
+CRCCP:                                  ; load relocatable CCP
         XOR     A
         LD      (CRFILE),A
         LD      (CRSLOT),A
@@ -126,17 +171,33 @@ CRCCP:
         LD      (ECB_GENERATION),HL
         JP      SYS_WBOOT
 
-; Load one BCM1/BCPX module below CRBOUND, then relocate it at CRBASE.
-CRLOAD:
+  ; Load one BCM1/BCPX module below CRBOUND, then relocate it at CRBASE.
+
+; ================================================================================
+; =                          Relocatable Module Loader                           =
+; =                                                                              =
+; = Loads BCM1, BCPX, or CCP command-module carriers below the current boundary, =
+; = normalizes their headers, validates layout, and calculates runtime placement. =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Carrier Header Load
+; -------------------------------------------------------------------------------
+
+CRLOAD:                                 ; load relocatable command module
         LD      A,(CRSLOT)
-        LD      (CRFIRST),A     ; retained for the fixed-slot CCP image
+        LD      (CRFIRST),A             ; retained for the fixed-slot CCP image
         LD      HL,MODBUF
         CALL    CRNEXT
         RET     NZ
         LD      HL,MODBUF
         LD      DE,(CRMAGPTR)
         LD      B,6
-CRMAGLP:
+
+; -------------------------------------------------------------------------------
+; Carrier Signature Validation
+; -------------------------------------------------------------------------------
+
+CRMAGLP:                                ; match carrier signature
         LD      A,(DE)
         CP      (HL)
         RET     NZ
@@ -146,9 +207,9 @@ CRMAGLP:
         LD      A,(MODBUF+2)
         CP      'P'
         JR      Z,CRNCPX
-; Preserve the established BCM1 command-module carrier while normalizing its
-; fields into the same private descriptor used by BCPX.  This explicit split
-; replaces the former accidental assumption that both formats shared offsets.
+  ; Preserve the established BCM1 command-module carrier while normalizing its
+  ; fields into the same private descriptor used by BCPX.  This explicit split
+  ; replaces the former accidental assumption that both formats shared offsets.
         XOR     A
         LD      (CRISCPX),A
         LD      HL,(MODBUF+6)
@@ -159,7 +220,7 @@ CRMAGLP:
         LD      (CRMALLOC),HL
         LD      HL,(MODBUF+14)
         LD      (CRMRELOCS),HL
-        LD      A,(MODBUF+5)    ; BCM1 records its header in 512-byte sectors
+        LD      A,(MODBUF+5)            ; BCM1 records its header in 512-byte sectors
         OR      A
         JP      Z,CRBAD
         LD      H,A
@@ -170,15 +231,20 @@ CRMAGLP:
         LD      HL,16
         LD      (CRMRELTABLE),HL
         JR      CRNORMED
-CRNCPX:
-        LD      HL,(MODBUF+6)   ; L=ABI major, H=ABI minor
+
+; -------------------------------------------------------------------------------
+; BCPX Header Normalization
+; -------------------------------------------------------------------------------
+
+CRNCPX:                                 ; normalize BCPX carrier header
+        LD      HL,(MODBUF+6)           ; L=ABI major, H=ABI minor
         DEC     HL
         LD      A,H
-        OR      L               ; ABI 1.0 is the only accepted v1 contract
+        OR      L                       ; ABI 1.0 is the only accepted v1 contract
         JP      NZ,CRBAD
         LD      HL,(MODBUF+8)
         LD      A,H
-        OR      L               ; v1 defines no nonzero flag bits
+        OR      L                       ; v1 defines no nonzero flag bits
         JP      NZ,CRBAD
         LD      A,1
         LD      (CRISCPX),A
@@ -198,7 +264,12 @@ CRNCPX:
         LD      (CRMPAYLOAD),HL
         LD      HL,(MOD_RELTABLE)
         LD      (CRMRELTABLE),HL
-CRNORMED:
+
+; -------------------------------------------------------------------------------
+; Normalized Layout Validation
+; -------------------------------------------------------------------------------
+
+CRNORMED:                               ; validate normalized module layout
         LD      HL,(CRMSIZE)
         LD      A,H
         OR      L
@@ -209,7 +280,8 @@ CRNORMED:
         JR      C,CRSZOK
         JR      Z,CRSZOK
         JP      CRBAD
-CRSZOK:
+
+CRSZOK:                                 ; accept module allocation size
         LD      HL,(CRMALLOC)
         LD      A,L
         OR      A
@@ -221,7 +293,7 @@ CRSZOK:
         LD      DE,(CRMHEADSZ)
         OR      A
         SBC     HL,DE
-        JP      NZ,CRBAD        ; v1 payload immediately follows its header
+        JP      NZ,CRBAD                ; v1 payload immediately follows its header
         LD      HL,(CRMPAYLOAD)
         LD      DE,0200H
         OR      A
@@ -229,11 +301,11 @@ CRSZOK:
         JP      C,CRBAD
         LD      A,L
         OR      A
-        JP      NZ,CRBAD        ; carrier sections are physical-record aligned
+        JP      NZ,CRBAD                ; carrier sections are physical-record aligned
         LD      (CRSKIP),HL
-; The relocation words must fit wholly inside the declared header.  Early
-; BCM1 and all present BCPX carriers use one sector; the larger resident CCP
-; uses two without changing the executable payload or relocation arithmetic.
+  ; The relocation words must fit wholly inside the declared header.  Early
+  ; BCM1 and all present BCPX carriers use one sector; the larger resident CCP
+  ; uses two without changing the executable payload or relocation arithmetic.
         LD      HL,(CRMRELOCS)
         ADD     HL,HL
         LD      DE,(CRMRELTABLE)
@@ -253,13 +325,14 @@ CRSZOK:
         OR      A
         SBC     HL,DE
         POP     HL
-        JP      C,CRBAD        ; never overwrite the executing transient loader
+        JP      C,CRBAD                 ; never overwrite the executing transient loader
         LD      (CRBASE),HL
         LD      (CRBOUND),HL
         LD      (CRDEST),HL
         LD      HL,(CRMSIZE)
         LD      (CRLEFT),HL
-CRHSKIP:
+
+CRHSKIP:                                ; skip remaining header sectors
         LD      HL,(CRSKIP)
         LD      A,H
         OR      L
@@ -273,7 +346,12 @@ CRHSKIP:
         SBC     HL,DE
         LD      (CRSKIP),HL
         JR      CRHSKIP
-CRPAY:
+
+; -------------------------------------------------------------------------------
+; Executable Payload Load
+; -------------------------------------------------------------------------------
+
+CRPAY:                                  ; load executable payload
         LD      HL,(CRLEFT)
         LD      A,H
         OR      L
@@ -291,7 +369,8 @@ CRPAY:
         SBC     HL,DE
         LD      (CRLEFT),HL
         JR      CRPAY
-CRLAST:
+
+CRLAST:                                 ; handle final partial payload
         LD      HL,MODBUF
         CALL    CRNEXT
         RET     NZ
@@ -302,7 +381,18 @@ CRLAST:
         LD      HL,0
         LD      (CRLEFT),HL
         JR      CRPAY
-CRRELOC:
+
+; ================================================================================
+; =                              Module Relocation                               =
+; =                                                                              =
+; = Re-reads each carrier's relocation directory and adjusts relocation words from =
+; = the module link origin to its calculated runtime base.                       =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Relocation Directory Setup
+; -------------------------------------------------------------------------------
+
+CRRELOC:                                ; prepare module relocation
         CALL    CRRESET
         RET     NZ
         LD      HL,MODBUF
@@ -317,7 +407,12 @@ CRRELOC:
         LD      HL,(CRMRELTABLE)
         LD      DE,MODBUF
         ADD     HL,DE
-CRRLOOP:
+
+; -------------------------------------------------------------------------------
+; Relocation Application
+; -------------------------------------------------------------------------------
+
+CRRLOOP:                                ; read next relocation word
         LD      DE,MODBUF+0200H
         PUSH    HL
         OR      A
@@ -330,7 +425,8 @@ CRRLOOP:
         POP     BC
         RET     NZ
         LD      HL,MODBUF
-CRRHAVE:
+
+CRRHAVE:                                ; apply relocation word
         LD      A,B
         OR      C
         JR      Z,CRENTRY
@@ -366,14 +462,27 @@ CRRHAVE:
         JR      NC,CRRLOOP
         DEC     B
         JR      CRRLOOP
-CRRLBAD:
+
+CRRLBAD:                                ; reject invalid relocation entry
         POP     BC
         POP     HL
-CRBAD:
+
+CRBAD:                                  ; reject malformed module
         LD      A,1
         OR      A
         RET
-CRENTRY:
+
+; ================================================================================
+; =                        Command Environment Activation                        =
+; =                                                                              =
+; = Publishes relocated CPX entry points, finalizes the CCP boundary, resets the =
+; = module stream as needed, and transfers control into the reconstructed CCP.   =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Publish Module Entry
+; -------------------------------------------------------------------------------
+
+CRENTRY:                                ; publish relocated module entry
         LD      A,(CRISCPX)
         OR      A
         JR      Z,CRGOOD
@@ -391,12 +500,18 @@ CRENTRY:
         INC     HL
         LD      (HL),E
         INC     HL
-        LD      (HL),D           ; publish validated command entry
-CRGOOD:
+        LD      (HL),D                  ; publish validated command entry
+
+CRGOOD:                                 ; finish successful module load
         XOR     A
         RET
-; Restart a module stream so its relocation directory can be reread.
-CRRESET:
+  ; Restart a module stream so its relocation directory can be reread.
+
+; -------------------------------------------------------------------------------
+; Restart Module Stream
+; -------------------------------------------------------------------------------
+
+CRRESET:                                ; restart module stream
         LD      A,(CRFILE)
         OR      A
         JP      NZ,FLRESET
@@ -405,7 +520,11 @@ CRRESET:
         XOR     A
         RET
 
-CRNEXT:
+; -------------------------------------------------------------------------------
+; Advance CPX Profile
+; -------------------------------------------------------------------------------
+
+CRNEXT:                                 ; advance to next CPX
         LD      A,(CRFILE)
         OR      A
         JP      NZ,FLNEXT
@@ -431,34 +550,54 @@ CRNEXT:
         POP     HL
         JP      BIOPHREAD
 
-CRFAIL:
+; -------------------------------------------------------------------------------
+; Hard Failure
+; -------------------------------------------------------------------------------
+
+CRFAIL:                                 ; halt after reconstruction failure
         JR      CRFAIL
 
-CRCCPMAG:      DB      'B','C','M','1',1,2
-CRCPXMAG:      DB      'B','C','P','X',1,1
-CRSECTS:
-; @command-sector-table@
-CRMAGPTR:      DW      0
-CRTPTR:        DW      0
-CRBOUND:       DW      0
-CRBASE:        DW      0
-CRPREV:        DW      0
-CRDEST:        DW      0
-CRLEFT:        DW      0
-CRSKIP:        DW      0
-CRMLINK:       DW      0
-CRMSIZE:       DW      0
-CRMALLOC:      DW      0
-CRMENTRY:      DW      0
-CRMRELOCS:     DW      0
-CRMHEADSZ:     DW      0
-CRMPAYLOAD:    DW      0
-CRMRELTABLE:   DW      0
-CRISCPX:       DB      0
-CRDELTA:       DW      0
-CRCOUNT:       DB      0
-CRSLOT:        DB      0
-CRFIRST:       DB      0
-CRFILE:        DB      0
+; ================================================================================
+; =                            Reloader Working State                            =
+; =                                                                              =
+; = Defines carrier signatures and the private module, placement, relocation, CPX =
+; = chain, and file state used while reconstructing the command environment.     =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Carrier Signatures
+; -------------------------------------------------------------------------------
+
+CRCCPMAG:      DB      'B','C','M','1',1,2 ; CCP carrier signature
+CRCPXMAG:      DB      'B','C','P','X',1,1 ; CPX carrier signature
+
+; -------------------------------------------------------------------------------
+; Loader State
+; -------------------------------------------------------------------------------
+
+CRSECTS:                                ; module sector count
+  ; @command-sector-table@
+
+CRMAGPTR:      DW      0                ; expected signature pointer
+CRTPTR:        DW      0                ; temporary pointer
+CRBOUND:       DW      0                ; upper allocation boundary
+CRBASE:        DW      0                ; module runtime base
+CRPREV:        DW      0                ; previous CPX descriptor
+CRDEST:        DW      0                ; payload destination
+CRLEFT:        DW      0                ; payload bytes remaining
+CRSKIP:        DW      0                ; header bytes to skip
+CRMLINK:       DW      0                ; module link origin
+CRMSIZE:       DW      0                ; module executable size
+CRMALLOC:      DW      0                ; module allocation size
+CRMENTRY:      DW      0                ; module entry offset
+CRMRELOCS:     DW      0                ; module relocation count
+CRMHEADSZ:     DW      0                ; module header size
+CRMPAYLOAD:    DW      0                ; module payload offset
+CRMRELTABLE:   DW      0                ; module relocation-table offset
+CRISCPX:       DB      0                ; CPX-module flag
+CRDELTA:       DW      0                ; module relocation delta
+CRCOUNT:       DB      0                ; relocation entries remaining
+CRSLOT:        DB      0                ; current CPX profile slot
+CRFIRST:       DB      0                ; first CPX descriptor
+CRFILE:        DB      0                ; module file FCB
         .DEPHASE
         END

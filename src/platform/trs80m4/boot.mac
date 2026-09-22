@@ -1,9 +1,11 @@
-; BetterCP/M TRS-80 Model 4 stage-zero diagnostic loader
-;
-; The Model 4 ROM loads sector 1 of track 0 into 4300H.  Its three-byte
-; load-module header supplies the execution address.
-; This stage establishes Model 4 RAM/video mapping, reads one 512-byte
-; stage-one sector into 5000H, and transfers control there.
+; ********************************************************************************
+; *                  BetterCP/M TRS-80 Model 4 Stage-Zero Loader                 *
+; *                                                                              *
+; * Loaded by the Model 4 ROM from track 0 sector 1 at 4300H. Establishes the    *
+; * required RAM/video mapping, reads the 512-byte stage-one sector into 5000H,  *
+; * and transfers control to the stage-one diagnostic loader.                    *
+; ********************************************************************************
+
 
         INCLUDE hardware.inc
 
@@ -13,7 +15,14 @@
         DB      1
         DW      BOOT
 
-BOOT:   DI
+; ================================================================================
+; =                           Stage-Zero Bootstrap                               =
+; =                                                                              =
+; = Initializes Model 4 memory mapping and loads the stage-one sector before     =
+; = transferring control to the next bootstrap stage.                            =
+; ================================================================================
+
+BOOT:   DI                              ; stage-zero loader entry
         LD      A,082H
         OUT     (OPTREG),A
         XOR     A
@@ -37,13 +46,22 @@ BOOT:   DI
         JP      NZ,BOOTERROR
         JP      STAGE1BASE
 
-; Read the selected 512-byte sector from drive 0, track 0, side 0.
-; The controller asserts NMI at command completion.  INI repeats until
-; that NMI removes the interrupted-loop address and returns to our caller.
-READSECTOR:
+  ; Read the selected 512-byte sector from drive 0, track 0, side 0.
+  ; The controller asserts NMI at command completion.  INI repeats until
+  ; that NMI removes the interrupted-loop address and returns to our caller.
+
+; ================================================================================
+; =                         Raw Floppy Sector Read                               =
+; =                                                                              =
+; = Reads one 512-byte sector directly from drive 0, track 0, side 0 and uses    =
+; = the controller NMI to terminate the byte-transfer loop.                      =
+; ================================================================================
+
+READSECTOR:                             ; read stage-one sector
         LD      A,081H
         OUT     (FDCSELECT),A
-WAITIDLE:
+
+WAITIDLE:                               ; wait for controller idle
         IN      A,(FDCSTATUS)
         AND     1
         JR      NZ,WAITIDLE
@@ -55,25 +73,28 @@ WAITIDLE:
         OUT     (FDCSELECT),A
         LD      A,FDCREAD
         OUT     (FDCCOMMAND),A
-WAITBUSY:
+
+WAITBUSY:                               ; wait for controller command start
         IN      A,(FDCSTATUS)
         AND     1
         JR      Z,WAITBUSY
 
         LD      A,0C0H
         OUT     (NMIREG),A
-WAITDRQ:
+
+WAITDRQ:                                ; wait for controller data request
         IN      A,(FDCSTATUS)
         AND     E
         JR      Z,WAITDRQ
         INI
         LD      A,D
-READLOOP:
+
+READLOOP:                               ; transfer sector bytes
         OUT     (FDCSELECT),A
         INI
         JR      READLOOP
 
-NMIHANDLER:
+NMIHANDLER:                             ; complete controller transfer
         POP     HL
         XOR     A
         OUT     (NMIREG),A
@@ -81,17 +102,22 @@ NMIHANDLER:
         AND     09CH
         RET
 
-BOOTERROR:
+; -------------------------------------------------------------------------------
+; Bootstrap Error Handling
+; -------------------------------------------------------------------------------
+
+BOOTERROR:                              ; report stage-zero load failure
         LD      A,2
         OUT     (OPTREG),A
         LD      HL,ERRORMSG
         LD      DE,VIDEOBASE
         LD      BC,ERRORLEN
         LDIR
-ERRORLOOP:
+
+ERRORLOOP:                              ; halt in error loop
         JR      ERRORLOOP
 
-ERRORMSG:
+ERRORMSG:                               ; stage-zero error message
         DB      'BetterCP/M boot error'
 ERRORLEN        EQU     $-ERRORMSG
 

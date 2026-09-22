@@ -1,17 +1,24 @@
         INCLUDE layout.inc
         INCLUDE bootfmt.inc
-; FIRST RECORD BOOT -- cpmsim loads precisely 128 bytes at address zero.
-; Fetch the packed resident image, then hand off to the ordinary BIOS BOOT.
+
+; ********************************************************************************
+; *                       z80pack CPMSIM First-Record Boot                       *
+; *                                                                              *
+; * CPMSIM loads exactly one 128-byte record at address zero. This bootstrap     *
+; * fetches the packed BetterCP/M resident image and then transfers control to   *
+; * the ordinary BIOS BOOT entry.                                                *
+; ********************************************************************************
+
         ASEG
         ORG 0
         DI
-; Keep the bootstrap stack above page zero.  ZB_MAP occupies the end of the
-; first record, so the former 0080H stack destroyed its final entries.
+  ; Keep the bootstrap stack above page zero.  ZB_MAP occupies the end of the
+  ; first record, so the former 0080H stack destroyed its final entries.
         LD SP,0100H
         XOR A
         OUT (10),A
-; During bootstrap, present the raw image as 128-byte slots. The full BIOS
-; installs the selected physical geometry after the resident image is loaded.
+  ; During bootstrap, present the raw image as 128-byte slots. The full BIOS
+  ; installs the selected physical geometry after the resident image is loaded.
         OUT (18),A
         LD A,ZB_TRACKS
         OUT (19),A
@@ -22,15 +29,25 @@
         LD HL,LY_SYS
         LD E,8
         LD B,52
-ZB_NEXT:
+
+; ================================================================================
+; =                         Resident Image Bootstrap                            =
+; =                                                                              =
+; = Reads the packed resident image as 128-byte bootstrap slots, advances the    =
+; = destination through memory, and enters BIOS BOOT after the image is loaded.  =
+; ================================================================================
+
+ZB_NEXT:                                ; load next resident-image record
         LD A,E
         LD C,0
-ZB_DIV: CP ZB_SLOTS
+
+ZB_DIV: CP ZB_SLOTS                     ; divide record number by sectors per track
         JR C,ZB_POS
         SUB ZB_SLOTS
         INC C
         JR ZB_DIV
-ZB_POS: PUSH DE
+
+ZB_POS: PUSH DE                         ; position and read resident-image record
         PUSH HL
         LD E,A
         LD D,0
@@ -57,13 +74,20 @@ ZB_POS: PUSH DE
         LD L,A
         JR NC,ZB_ADV
         INC H
-ZB_ADV: INC E
+
+ZB_ADV: INC E                           ; advance resident-image destination
         DJNZ ZB_NEXT
         JP LY_BIOS
-ZB_FAIL:LD A,'!'
+
+ZB_FAIL:LD A,'!'                        ; halt after bootstrap read failure
         OUT (1),A
         HALT
         JR ZB_FAIL
-ZB_MAP:
+
+; -------------------------------------------------------------------------------
+; Bootstrap Disk Mapping
+; -------------------------------------------------------------------------------
+
+ZB_MAP:                                 ; bootstrap disk mapping table
         DB ZB_MAP_BYTES
         END

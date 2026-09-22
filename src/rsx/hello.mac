@@ -1,6 +1,13 @@
         INCLUDE layout.inc
-; BetterCP/M proof Resident System Extension.
-; Intercepts experimental BDOS Function 201 and chains every other call.
+
+; ********************************************************************************
+; *                         BetterCP/M HELLO RSX                                *
+; *                                                                              *
+; * Proof Resident System Extension. Intercepts experimental BDOS Function 201   *
+; * and returns its module-specific response while chaining every other call to  *
+; * the next RSX or fixed BDOS.                                                  *
+; ********************************************************************************
+
 
 RSXBASE         EQU     08000H
 BDOS            EQU     00005H
@@ -8,24 +15,36 @@ BDOS            EQU     00005H
         CSEG
         .PHASE  RSXBASE
 
-HR_NEXT:        DW      BDOS
-HR_ENTRY:       DW      HR_DISPATCH
+HR_NEXT:        DW      BDOS            ; next RSX descriptor pointer
+HR_ENTRY:       DW      HR_DISPATCH     ; RSX entry pointer
 
-HR_DISPATCH:
+; ================================================================================
+; =                          HELLO Proof Service                                =
+; =                                                                              =
+; = Handles experimental Function 201 as an RSX-local service and preserves the =
+; = normal lower-layer chain for all other BDOS requests.                        =
+; ================================================================================
+
+HR_DISPATCH:                            ; intercept proof BDOS service
         LD      A,C
         CP      201
         JR      NZ,HR_CHAIN
         LD      DE,HR_MESSAGE
         LD      C,9
         CALL    BDOS
-        LD      HL,05253H       ; "RS" proof signature
+        LD      HL,05253H               ; "RS" proof signature
         LD      A,L
         RET
-HR_CHAIN:
+
+HR_CHAIN:                               ; chain unhandled call to lower layer
         LD      HL,(HR_NEXT)
         JP      (HL)
 
-HR_MESSAGE:     DB      13,10,'Hello from HELLO.RSX',13,10,'$'
+; -------------------------------------------------------------------------------
+; Proof-Service Data
+; -------------------------------------------------------------------------------
+
+HR_MESSAGE:     DB      13,10,'Hello from HELLO.RSX',13,10,'$' ; proof-service response message
 
         .DEPHASE
         END
