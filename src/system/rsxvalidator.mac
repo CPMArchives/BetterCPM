@@ -1,7 +1,13 @@
         INCLUDE layout.inc
-; BRSX V2 PROFILE VALIDATOR
-; Function 202 request in DE. This overlay never changes the published profile.
-; It validates a LOAD carrier before the reconstruction manager is invoked.
+
+; ********************************************************************************
+; *                     BetterCP/M BRSX Profile Validator                       *
+; *                                                                              *
+; * BRSX v2 LOAD-carrier validator. Function 202 passes the candidate request in *
+; * DE; this overlay validates the carrier and its metadata before reconstruction*
+; * and never changes the published RSX profile itself.                          *
+; ********************************************************************************
+
 
 RVBASE          EQU     LY_RSX
 FLOPEN          EQU     LY_FILE
@@ -12,10 +18,21 @@ COREBDOS        EQU     LY_BDOS
 
         CSEG
         .PHASE  RVBASE
-RV_ENTRY:
+
+; ================================================================================
+; =                      Validator Entry and Carrier Header                      =
+; =                                                                              =
+; = Dispatches the validation request and checks carrier magic, ABI/version fields, =
+; = legacy-v1 compatibility, and the candidate's basic structural bounds.        =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Request and Header Validation
+; -------------------------------------------------------------------------------
+
+RV_ENTRY:                               ; enter BRSX profile validator
         JP      RV_CONTROL
 
-RV_CONTROL:
+RV_CONTROL:                             ; dispatch validator request
         LD      (RV_REQ),DE
         LD      A,(DE)
         DEC     A
@@ -23,12 +40,13 @@ RV_CONTROL:
         RET     NC
         INC     DE
         LD      A,(DE)
-        CP      1               ; only LOAD introduces a new carrier
+        CP      1                       ; only LOAD introduces a new carrier
         JR      Z,RV_LOAD
-        CP      5               ; known enumerate/load/unload/query/retire
+        CP      5                       ; known enumerate/load/unload/query/retire
         JP      NC,RV_BAD
         JP      RV_OK
-RV_LOAD:
+
+RV_LOAD:                                ; validate LOAD carrier
         LD      HL,(RV_REQ)
         LD      DE,4
         ADD     HL,DE
@@ -41,7 +59,8 @@ RV_LOAD:
         LD      HL,MODBUF
         LD      DE,RVMAGIC
         LD      B,4
-RV_MAGLP:
+
+RV_MAGLP:                               ; match carrier magic
         LD      A,(DE)
         CP      (HL)
         JP      NZ,RV_BAD
@@ -56,7 +75,8 @@ RV_MAGLP:
         INC     HL
         LD      DE,RV_ABI
         LD      B,3
-RV_ABILP:
+
+RV_ABILP:                               ; validate carrier ABI fields
         LD      A,(DE)
         CP      (HL)
         JP      NZ,RV_BAD
@@ -65,7 +85,7 @@ RV_ABILP:
         DJNZ    RV_ABILP
         LD      HL,(MODBUF+8)
         LD      A,H
-        OR      L               ; Stage 2 accepts STATELESS and no reserved bits
+        OR      L                       ; Stage 2 accepts STATELESS and no reserved bits
         JP      NZ,RV_BAD
         LD      HL,(MODBUF+12)
         LD      A,H
@@ -77,10 +97,10 @@ RV_ABILP:
         LD      (RV_ALLOC),DE
         OR      A
         SBC     HL,DE
-        JP      NC,RV_BAD       ; payload must be smaller than allocation
+        JP      NC,RV_BAD               ; payload must be smaller than allocation
         LD      A,E
         OR      A
-        JP      NZ,RV_BAD       ; allocation is page-rounded
+        JP      NZ,RV_BAD               ; allocation is page-rounded
         LD      HL,(MODBUF+16)
         LD      DE,8
         OR      A
@@ -99,17 +119,23 @@ RV_ABILP:
         LD      DE,(MODBUF+12)
         OR      A
         SBC     HL,DE
-        JP      NZ,RV_BAD       ; metadata follows payload exactly
+        JP      NZ,RV_BAD               ; metadata follows payload exactly
         CALL    RV_FINDMETA
         JP      NZ,RV_BAD
         CALL    RV_METADATA
         JP      NZ,RV_BAD
         JP      RV_OK
-RV_V1:
+
+; -------------------------------------------------------------------------------
+; Legacy v1 Validation
+; -------------------------------------------------------------------------------
+
+RV_V1:                                  ; validate legacy v1 carrier
         INC     HL
         LD      DE,RV_ABI
         LD      B,3
-RV_V1ABI:
+
+RV_V1ABI:                               ; validate legacy ABI metadata
         LD      A,(DE)
         CP      (HL)
         JP      NZ,RV_BAD
@@ -122,9 +148,10 @@ RV_V1ABI:
         JP      NZ,RV_BAD
         JP      RV_OK
 
-; Request byte +3 is reserved publicly. The isolated test sets it nonzero to
-; request an ordinary return; production zero chains into the rebuilder.
-RV_OK:
+  ; Request byte +3 is reserved publicly. The isolated test sets it nonzero to
+  ; request an ordinary return; production zero chains into the rebuilder.
+
+RV_OK:                                  ; finish successful validation
         LD      HL,(RV_REQ)
         INC     HL
         INC     HL
@@ -134,17 +161,33 @@ RV_OK:
         JR      Z,RV_CHAIN
         XOR     A
         RET
-RV_CHAIN:
-        LD      (HL),0A5H       ; private phase-chain marker
+
+; -------------------------------------------------------------------------------
+; Validated Load Handoff
+; -------------------------------------------------------------------------------
+
+RV_CHAIN:                               ; chain validated load to rebuilder
+        LD      (HL),0A5H               ; private phase-chain marker
         LD      DE,(RV_REQ)
         PUSH    DE
         LD      HL,LY_RSX+3
         PUSH    HL
-        XOR     A               ; overlay zero: rebuilder
+        XOR     A                       ; overlay zero: rebuilder
         JP      LY_BIOS+60
 
-; Position RV_META at the metadata bytes. FLNEXT advances 512 bytes per call.
-RV_FINDMETA:
+  ; Position RV_META at the metadata bytes. FLNEXT advances 512 bytes per call.
+
+; ================================================================================
+; =                    Metadata Location and Base Validation                     =
+; =                                                                              =
+; = Locates metadata across carrier blocks and validates the v2 base metadata before =
+; = processing typed metadata records.                                           =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Metadata Positioning
+; -------------------------------------------------------------------------------
+
+RV_FINDMETA:                            ; locate carrier metadata
         LD      HL,(RV_LEFT)
         LD      A,H
         CP      2
@@ -158,7 +201,8 @@ RV_FINDMETA:
         SBC     HL,DE
         LD      (RV_LEFT),HL
         JR      RV_FINDMETA
-RV_MLAST:
+
+RV_MLAST:                               ; handle final metadata block
         LD      A,H
         OR      L
         JR      Z,RV_MEXACT
@@ -172,7 +216,8 @@ RV_MLAST:
         LD      (RV_META),HL
         XOR     A
         RET
-RV_MEXACT:
+
+RV_MEXACT:                              ; accept exact metadata location
         LD      HL,MODBUF
         CALL    FLNEXT
         RET     NZ
@@ -181,12 +226,17 @@ RV_MEXACT:
         XOR     A
         RET
 
-RV_METADATA:
+; -------------------------------------------------------------------------------
+; Base Metadata
+; -------------------------------------------------------------------------------
+
+RV_METADATA:                            ; validate v2 metadata
         LD      HL,(RV_META)
         LD      (RV_START),HL
         LD      DE,RV_BMET
         LD      B,4
-RV_BMETLP:
+
+RV_BMETLP:                              ; validate base metadata
         LD      A,(DE)
         CP      (HL)
         JP      NZ,RV_BAD
@@ -213,7 +263,7 @@ RV_BMETLP:
         LD      D,(HL)
         LD      A,D
         CP      2
-        JP      NC,RV_BAD       ; metadata must fit this 512-byte window
+        JP      NC,RV_BAD               ; metadata must fit this 512-byte window
         LD      A,E
         CP      12
         JP      C,RV_BAD
@@ -225,18 +275,30 @@ RV_BMETLP:
         SBC     HL,DE
         JR      C,RV_ENDFITS
         JP      NZ,RV_BAD
-RV_ENDFITS:
+
+RV_ENDFITS:                             ; accept metadata end bound
         LD      HL,(RV_START)
         LD      DE,10
         ADD     HL,DE
         LD      A,(HL)
         INC     HL
-        OR      (HL)             ; reserved word
+        OR      (HL)                    ; reserved word
         JP      NZ,RV_BAD
         INC     HL
         XOR     A
         LD      (RV_NSVC),A
-RV_RLOOP:
+
+; ================================================================================
+; =                          Metadata Record Validation                          =
+; =                                                                              =
+; = Walks typed metadata records, validates record bounds and service definitions, =
+; = and rejects malformed or conflicting callable metadata.                      =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Typed Record Walk
+; -------------------------------------------------------------------------------
+
+RV_RLOOP:                               ; validate next metadata record
         LD      A,(RV_NREC)
         OR      A
         JP      Z,RV_RECDONE
@@ -245,7 +307,8 @@ RV_RLOOP:
         CALL    RV_ROOM2
         JR      C,RV_ROOMOK
         JP      NZ,RV_BAD
-RV_ROOMOK:
+
+RV_ROOMOK:                              ; accept record bounds
         LD      A,(HL)
         INC     HL
         LD      B,(HL)
@@ -263,7 +326,8 @@ RV_ROOMOK:
         POP     HL
         JP      C,RV_RTYPE
         JP      NZ,RV_BAD
-RV_RTYPE:
+
+RV_RTYPE:                               ; dispatch metadata record type
         DEC     HL
         DEC     HL
         LD      A,(HL)
@@ -276,9 +340,15 @@ RV_RTYPE:
         CP      3
         JP      Z,RV_POINTERS
         JP      RV_SKIP
-RV_NUMERIC:
-        JP      RV_SKIP         ; any nonempty byte vector is valid
-RV_CALLABLE:
+
+RV_NUMERIC:                             ; validate numeric service record
+        JP      RV_SKIP                 ; any nonempty byte vector is valid
+
+; -------------------------------------------------------------------------------
+; Callable Service Record
+; -------------------------------------------------------------------------------
+
+RV_CALLABLE:                            ; validate callable service record
         LD      A,B
         CP      10
         JP      NZ,RV_BAD
@@ -310,12 +380,14 @@ RV_CALLABLE:
         POP     BC
         POP     HL
         JR      RV_IDENTRY
-RV_IDSECOND:
+
+RV_IDSECOND:                            ; check second service ID
         PUSH    HL
         PUSH    BC
         LD      DE,RV_IDONE
         LD      B,4
-RV_IDCMP:
+
+RV_IDCMP:                               ; compare service identifiers
         LD      A,(DE)
         CP      (HL)
         JR      NZ,RV_IDDIFF
@@ -324,11 +396,13 @@ RV_IDCMP:
         DJNZ    RV_IDCMP
         POP     BC
         POP     HL
-        JP      RV_BAD          ; duplicate within one provider
-RV_IDDIFF:
+        JP      RV_BAD                  ; duplicate within one provider
+
+RV_IDDIFF:                              ; accept distinct service ID
         POP     BC
         POP     HL
-RV_IDENTRY:
+
+RV_IDENTRY:                             ; validate callable entry offset
         PUSH    HL
         LD      DE,6
         ADD     HL,DE
@@ -349,13 +423,25 @@ RV_IDENTRY:
         JP      C,RV_BAD
         JP      RV_SKIP
 
-; Reject an ID already published by the live profile. Legacy providers are
-; skipped; their numeric-service headers contain no callable descriptors.
-RV_ACTIVEID:
+  ; Reject an ID already published by the live profile. Legacy providers are
+  ; skipped; their numeric-service headers contain no callable descriptors.
+
+; ================================================================================
+; =                       Active Service-ID Conflict Check                       =
+; =                                                                              =
+; = Scans the currently published BRSX-v2 providers to reject a callable service ID =
+; = already present in the live profile.                                         =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Published-ID Scan
+; -------------------------------------------------------------------------------
+
+RV_ACTIVEID:                            ; check service ID against active profile
         LD      (RV_CAND),HL
         LD      HL,(ECB_RSXHEAD)
         LD      B,4
-RV_ALOOP:
+
+RV_ALOOP:                               ; scan active providers
         LD      A,H
         OR      L
         RET     Z
@@ -384,7 +470,8 @@ RV_ALOOP:
         LD      D,(HL)
         LD      HL,(RV_LBASE)
         ADD     HL,DE
-RV_AIDLP:
+
+RV_AIDLP:                               ; scan active service IDs
         LD      A,C
         OR      A
         JR      Z,RV_ANEXT
@@ -392,7 +479,8 @@ RV_AIDLP:
         PUSH    HL
         LD      DE,(RV_CAND)
         LD      B,4
-RV_AIDCMP:
+
+RV_AIDCMP:                              ; compare active service ID
         LD      A,(DE)
         CP      (HL)
         JR      NZ,RV_AIDIFF
@@ -404,14 +492,16 @@ RV_AIDCMP:
         LD      A,1
         OR      A
         RET
-RV_AIDIFF:
+
+RV_AIDIFF:                              ; continue active-ID scan
         POP     HL
         LD      DE,10
         ADD     HL,DE
         POP     BC
         DEC     C
         JR      RV_AIDLP
-RV_ANEXT:
+
+RV_ANEXT:                               ; advance active provider
         LD      HL,(RV_LBASE)
         LD      E,(HL)
         INC     HL
@@ -440,12 +530,24 @@ RV_ANEXT:
         LD      DE,4
         OR      A
         SBC     HL,DE
-RV_ABASE:
+
+RV_ABASE:                               ; accept active provider base
         DEC     B
         JP      NZ,RV_ALOOP
         XOR     A
         RET
-RV_POINTERS:
+
+; ================================================================================
+; =                       Pointer-Slot Metadata Validation                       =
+; =                                                                              =
+; = Validates sorted, unique pointer-slot offsets and their bounds within the    =
+; = candidate allocation.                                                        =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Pointer-Slot List
+; -------------------------------------------------------------------------------
+
+RV_POINTERS:                            ; validate pointer-slot metadata
         LD      A,B
         AND     1
         JP      NZ,RV_BAD
@@ -455,7 +557,8 @@ RV_POINTERS:
         LD      B,0
         XOR     A
         LD      (RV_PSEEN),A
-RV_PTRLOOP:
+
+RV_PTRLOOP:                             ; validate next pointer offset
         LD      A,C
         OR      A
         JR      Z,RV_PTROK
@@ -474,7 +577,8 @@ RV_PTRLOOP:
         LD      A,E
         CP      8
         JR      C,RV_PTRBAD
-RV_PTRNZ:
+
+RV_PTRNZ:                               ; validate nonzero pointer offset
         PUSH    HL
         LD      HL,(RV_ALLOC)
         DEC     HL
@@ -491,24 +595,29 @@ RV_PTRNZ:
         SBC     HL,DE
         POP     HL
         JR      NC,RV_PTRBAD
-RV_PTRFIRST:
+
+RV_PTRFIRST:                            ; accept first pointer offset
         LD      (RV_PREV),DE
         LD      A,1
         LD      (RV_PSEEN),A
         JR      RV_PTRLOOP
-RV_PTRBAD:
+
+RV_PTRBAD:                              ; reject invalid pointer list
         POP     BC
         POP     HL
         JP      RV_BAD
-RV_PTROK:
+
+RV_PTROK:                               ; accept pointer list
         POP     BC
         POP     HL
-RV_SKIP:
+
+RV_SKIP:                                ; skip unsupported metadata record
         LD      E,B
         LD      D,0
         ADD     HL,DE
         JP      RV_RLOOP
-RV_RECDONE:
+
+RV_RECDONE:                             ; finish metadata record
         LD      DE,(RV_END)
         OR      A
         SBC     HL,DE
@@ -516,7 +625,7 @@ RV_RECDONE:
         XOR     A
         RET
 
-RV_ROOM2:
+RV_ROOM2:                               ; accept remaining metadata room
         PUSH    HL
         INC     HL
         INC     HL
@@ -526,11 +635,23 @@ RV_ROOM2:
         POP     HL
         RET
 
-; Validate a nonblank uppercase/space-padded four-byte service ID.
-RV_ID:
+  ; Validate a nonblank uppercase/space-padded four-byte service ID.
+
+; ================================================================================
+; =                        Service Identifier Validation                         =
+; =                                                                              =
+; = Validates nonblank uppercase/space-padded four-byte service identifiers used by =
+; = callable service metadata.                                                   =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Service-ID Syntax
+; -------------------------------------------------------------------------------
+
+RV_ID:                                  ; validate service identifier
         LD      B,4
         LD      C,0
-RV_IDLP:
+
+RV_IDLP:                                ; scan service-ID character
         LD      A,(HL)
         CP      ' '
         JR      Z,RV_IDNEXT
@@ -539,7 +660,8 @@ RV_IDLP:
         CP      'Z'+1
         JR      NC,RV_IDBAD
         LD      C,1
-RV_IDNEXT:
+
+RV_IDNEXT:                              ; advance service-ID scan
         INC     HL
         DJNZ    RV_IDLP
         LD      A,C
@@ -547,33 +669,44 @@ RV_IDNEXT:
         JR      Z,RV_IDBAD
         XOR     A
         RET
-RV_IDBAD:
+
+RV_IDBAD:                               ; reject invalid service ID
         LD      A,1
         OR      A
         RET
 
-RV_BAD:
+RV_BAD:                                 ; return validation failure
         LD      A,0FFH
         OR      A
         RET
 
-RVMAGIC:       DB      'B','R','S','X'
-RV_ABI:        DB      2,1,0
-RV_BMET:       DB      'B','M','E','T'
-RV_REQ:        DW      0
-RV_CAND:       DW      0
-RV_LBASE:      DW      0
-RV_LDISP:      DW      0
-RV_LEFT:       DW      0
-RV_CODE:       DW      0
-RV_ALLOC:      DW      0
-RV_META:       DW      0
-RV_START:      DW      0
-RV_END:        DW      0
-RV_NREC:       DB      0
-RV_NSVC:       DB      0
-RV_IDONE:      DS      4
-RV_PREV:       DW      0
-RV_PSEEN:      DB      0
+; ================================================================================
+; =                           Validator Working State                            =
+; =                                                                              =
+; = Defines carrier constants and the candidate, metadata, service, pointer-list, and =
+; = active-profile scratch state used during validation.                         =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Validator State
+; -------------------------------------------------------------------------------
+
+RVMAGIC:       DB      'B','R','S','X'  ; BRSX carrier magic
+RV_ABI:        DB      2,1,0            ; supported BRSX ABI version
+RV_BMET:       DB      'B','M','E','T'  ; base metadata type
+RV_REQ:        DW      0                ; validation request pointer
+RV_CAND:       DW      0                ; candidate carrier pointer
+RV_LBASE:      DW      0                ; candidate link base
+RV_LDISP:      DW      0                ; candidate dispatch offset
+RV_LEFT:       DW      0                ; carrier bytes remaining
+RV_CODE:       DW      0                ; candidate code size
+RV_ALLOC:      DW      0                ; candidate allocation size
+RV_META:       DW      0                ; metadata pointer
+RV_START:      DW      0                ; metadata start
+RV_END:        DW      0                ; metadata end
+RV_NREC:       DB      0                ; metadata record count
+RV_NSVC:       DB      0                ; callable service count
+RV_IDONE:      DS      4                ; first service-ID present flag
+RV_PREV:       DW      0                ; previous pointer offset
+RV_PSEEN:      DB      0                ; pointer-list seen flag
         .DEPHASE
         END

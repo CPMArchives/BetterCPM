@@ -1,9 +1,11 @@
-; DISK AND CPX CONTROL OVERLAY
-;
-; Lives in the idle physical-sector buffer.  Do not read a filesystem
-; sector while executing here -- that would erase our own instructions!
-; FORMAT writes from the caller's track stream, not from this buffer.
-; Common return paths restore the saved caller context in resident code.
+; ********************************************************************************
+; *                   BetterCP/M Disk and CPX Control Overlay                    *
+; *                                                                              *
+; * Resident control overlay executed from the idle physical-sector buffer. Disk *
+; * configuration, formatting, CPX control, and profile queries must avoid any   *
+; * filesystem sector read that would overwrite the executing overlay.           *
+; ********************************************************************************
+
         INCLUDE layout.inc
         INCLUDE disklinks.inc
         INCLUDE cpxlinks.inc
@@ -18,9 +20,21 @@
         JP CF_GETPH
         JP CF_GETLOG
         JP CF_FAST
-DC_PHBAD:
+
+DC_PHBAD:                               ; reject invalid physical profile
         JP DC_INVALID
-CF_PHYS:
+
+; ================================================================================
+; =                         Disk Configuration Services                          =
+; =                                                                              =
+; = Validates and commits physical and logical disk-profile changes while the    =
+; = overlay occupies the otherwise idle physical-sector buffer.                  =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Physical Profile Update
+; -------------------------------------------------------------------------------
+
+CF_PHYS:                                ; set physical disk profile
         LD A,(IX+0)
         CALL DC_PHY
         JR NC,DC_PHBAD
@@ -30,7 +44,8 @@ CF_PHYS:
         JR Z,DC_INCHOK
         CP 8
         JP NZ,DC_UNSUPPORTED
-DC_INCHOK:
+
+DC_INCHOK:                              ; accept physical density code
         LD A,(IX+2)
         DEC A
         CP 80
@@ -53,7 +68,11 @@ DC_INCHOK:
         LDIR
         JP CF_COMMIT
 
-CF_LOG:
+; -------------------------------------------------------------------------------
+; Logical Profile Update
+; -------------------------------------------------------------------------------
+
+CF_LOG:                                 ; set logical disk profile
         LD A,(IX+0)
         CALL DC_LOG
         JP NC,DC_INVALID
@@ -70,7 +89,12 @@ CF_LOG:
         LD (HL),0FFH
         CALL DC_RESET
         JP DC_OK
-DC_VALIDATE:
+
+; -------------------------------------------------------------------------------
+; Logical Profile Validation
+; -------------------------------------------------------------------------------
+
+DC_VALIDATE:                            ; validate logical disk profile
         CALL DC_PHY
         JP NC,DC_INVALID
         LD (DC_PHYADDR),HL
@@ -97,9 +121,10 @@ DC_VALIDATE:
         LD A,(HL)
         CP 2
         JP NZ,DC_UNSUPPORTED
-DC_ONESIDE:
+
+DC_ONESIDE:                             ; validate single-sided profile
         LD A,(IX+20)
-        AND 020H             ; reserved for the bootstrap cylinder profile
+        AND 020H                        ; reserved for the bootstrap cylinder profile
         JP NZ,DC_UNSUPPORTED
         LD A,(IX+20)
         AND 00FH
@@ -112,7 +137,8 @@ DC_ONESIDE:
         OR A
         SBC HL,DE
         JP NZ,DC_UNSUPPORTED
-DC_FDFOK:
+
+DC_FDFOK:                               ; accept FDF capability
         LD A,(IX+18)
         OR A
         JP Z,DC_INVALID
@@ -127,28 +153,36 @@ DC_FDFOK:
         LD L,B
         OR A
         JR Z,DC_SPT
-DC_SPTSHIFT:
+
+DC_SPTSHIFT:                            ; scale sectors per track
         ADD HL,HL
         DEC A
         JR NZ,DC_SPTSHIFT
-DC_SPT:
+
+DC_SPT:                                 ; validate logical sector geometry
         LD A,(IX+3)
         CP H
         JR NZ,DC_MIXED
         LD A,(IX+2)
         CP L
         JR NZ,DC_MIXED
-        LD (IX+53),0        ; uniform geometry uses no optional size map
+        LD (IX+53),0                    ; uniform geometry uses no optional size map
         JR DC_GEOMOK
-DC_MIXED:
-; Validate a packed per-sector size map, or expand the old MM SUPER form.
+
+; -------------------------------------------------------------------------------
+; Mixed-Sector Geometry
+; -------------------------------------------------------------------------------
+
+DC_MIXED:                               ; validate mixed-sector geometry
+  ; Validate a packed per-sector size map, or expand the old MM SUPER form.
         LD BC,002D1H
         CALL 5
         LD DE,04644H
         OR A
         SBC HL,DE
         JP NZ,DC_INVALID
-DC_GEOMOK:
+
+DC_GEOMOK:                              ; continue validated geometry
         ; Up to 512 entries; BDOS walks records through one sector buffer.
         LD A,(IX+10)
         CP 2
@@ -169,7 +203,8 @@ DC_GEOMOK:
         JP NC,DC_INVALID
         LD B,A
         LD A,1
-DC_BLMSH:
+
+DC_BLMSH:                               ; derive block mask
         ADD A,A
         DJNZ DC_BLMSH
         DEC A
@@ -190,14 +225,20 @@ DC_BLMSH:
         LD B,A
         LD A,C
         LD C,0
-DC_DIRBL:
+
+; -------------------------------------------------------------------------------
+; Directory Allocation Mask
+; -------------------------------------------------------------------------------
+
+DC_DIRBL:                               ; derive directory allocation mask
         SET 7,C
         SUB B
         JR C,DC_DIRMASK
         JR Z,DC_DIRMASK
         SRL C
         JR DC_DIRBL
-DC_DIRMASK:
+
+DC_DIRMASK:                             ; validate directory allocation mask
         LD A,(IX+11)
         AND C
         CP C
@@ -213,23 +254,27 @@ DC_DIRMASK:
         OR A
         JP Z,DC_INVALID
         DEC A
-DC_EXMSZ:
+
+DC_EXMSZ:                               ; derive extent mask size
         LD B,A
         LD A,1
         INC B
-DC_EXMSH:
+
+DC_EXMSH:                               ; build extent mask
         DJNZ DC_EXMADD
         JR DC_EXMDONE
-DC_EXMADD:
+
+DC_EXMADD:                              ; extend extent mask
         ADD A,A
         JR DC_EXMSH
-DC_EXMDONE:
+
+DC_EXMDONE:                             ; validate extent mask
         DEC A
         CP (IX+6)
         JP C,DC_INVALID
         LD A,(IX+6)
         INC A
-        AND (IX+6)          ; a smaller 2^n-1 EXM is valid (part-used map)
+        AND (IX+6)                      ; a smaller 2^n-1 EXM is valid (part-used map)
         JP NZ,DC_INVALID
         ; Allocation cannot extend past the available logical records.
         LD L,(IX+17)
@@ -239,7 +284,12 @@ DC_EXMDONE:
         CP 040H
         JR NZ,DC_CAPTRK
         ADD HL,HL
-DC_CAPTRK:
+
+; -------------------------------------------------------------------------------
+; Media Capacity Validation
+; -------------------------------------------------------------------------------
+
+DC_CAPTRK:                              ; compute usable track count
         LD E,(IX+15)
         LD D,(IX+16)
         OR A
@@ -252,7 +302,8 @@ DC_CAPTRK:
         LD E,(IX+2)
         LD D,(IX+3)
         LD HL,0
-DC_CAPMUL:
+
+DC_CAPMUL:                              ; compute media record capacity
         ADD HL,DE
         DJNZ DC_CAPMUL
         LD (DC_CAP),HL
@@ -260,7 +311,8 @@ DC_CAPMUL:
         LD H,(IX+8)
         INC HL
         LD B,(IX+4)
-DC_ALSHIFT:
+
+DC_ALSHIFT:                             ; compute allocation capacity
         ADD HL,HL
         JP C,DC_INVALID
         DJNZ DC_ALSHIFT
@@ -269,26 +321,34 @@ DC_ALSHIFT:
         SBC HL,DE
         JR Z,DC_CAPOK
         JP NC,DC_INVALID
-DC_CAPOK:
+
+DC_CAPOK:                               ; accept allocation capacity
         ; Validate sector IDs are unique (arbitrary bases are supported).
         PUSH IX
         POP HL
         LD DE,21
         ADD HL,DE
         LD B,(IX+18)
-DC_SKEW:
+
+; -------------------------------------------------------------------------------
+; Sector-ID Validation
+; -------------------------------------------------------------------------------
+
+DC_SKEW:                                ; validate sector-ID uniqueness
         LD A,(HL)
         PUSH BC
         PUSH HL
         INC HL
         DEC B
         JR Z,DC_SKDONE
-DC_SKCMP:
+
+DC_SKCMP:                               ; compare sector IDs
         CP (HL)
         JR Z,DC_SKBAD
         INC HL
         DJNZ DC_SKCMP
-DC_SKDONE:
+
+DC_SKDONE:                              ; finish sector-ID comparison
         POP HL
         POP BC
         INC HL
@@ -299,22 +359,40 @@ DC_SKDONE:
         LD DE,(DC_DEST)
         LD BC,64
         LDIR
-CF_COMMIT:
+
+; -------------------------------------------------------------------------------
+; Commit Configuration
+; -------------------------------------------------------------------------------
+
+CF_COMMIT:                              ; commit configuration change
         CALL DC_RESET
         JP DC_OK
-DC_SKBAD:
+
+DC_SKBAD:                               ; reject duplicate sector ID
         POP HL
         POP BC
         JP DC_INVALID
-; 07-Sep-2026: caller has restored our complete 1K control image.
-; DE points at its valid 80-byte request in TPA, as for BDOS 207/5.
-; Keep normal geometry, drive-zero protection and stream checks below.
-CF_FAST:
+  ; 07-Sep-2026: caller has restored our complete 1K control image.
+  ; DE points at its valid 80-byte request in TPA, as for BDOS 207/5.
+  ; Keep normal geometry, drive-zero protection and stream checks below.
+
+; ================================================================================
+; =                               Disk Formatting                                =
+; =                                                                              =
+; = Validates a format request, reselects the target drive, and streams caller-  =
+; = supplied track data directly to the Model 4 floppy controller.               =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Format Request Setup
+; -------------------------------------------------------------------------------
+
+CF_FAST:                                ; enter fast format request
         PUSH IX
         PUSH DE
         POP IX
-CF_FORMAT:
-        CALL DC_RESET         ; even a rejected request must clear cached context
+
+CF_FORMAT:                              ; format selected track
+        CALL DC_RESET                   ; even a rejected request must clear cached context
         LD A,(IX+0)
         OR A
         JP Z,DC_UNSUPPORTED
@@ -325,7 +403,7 @@ CF_FORMAT:
         CALL DC_MAP
         JP NZ,DC_INVALID
         LD A,(B_PDrive)
-        CP 1                ; never format bootstrap physical drive through alias
+        CP 1                            ; never format bootstrap physical drive through alias
         JP Z,DC_UNSUPPORTED
         LD A,(IX+1)
         LD (BIO_PCYL),A
@@ -346,7 +424,8 @@ CF_FORMAT:
         LD A,(DC_FLAGS)
         AND 060H
         JP Z,DC_INVALID
-DC_FBUFFER:
+
+DC_FBUFFER:                             ; validate format buffer
         LD L,(IX+5)
         LD H,(IX+6)
         LD A,H
@@ -366,10 +445,10 @@ DC_FBUFFER:
         JP NC,DC_INVALID
         CALL DC_SEEK
         JP NZ,DC_RETURN
-; Ordinary calls load the overlay from A; DUP may supply its saved copy.
-; A long restore/seek on the target can exhaust its motor timer.
-; Re-select at the same cylinder before WRITE TRACK. Reuse the common
-; seek service: this second call has no head travel, but renews selection.
+  ; Ordinary calls load the overlay from A; DUP may supply its saved copy.
+  ; A long restore/seek on the target can exhaust its motor timer.
+  ; Re-select at the same cylinder before WRITE TRACK. Reuse the common
+  ; seek service: this second call has no head travel, but renews selection.
         CALL DC_SEEK
         JP NZ,DC_RETURN
         LD HL,(DC_BUFFER)
@@ -381,14 +460,21 @@ DC_FBUFFER:
         LD A,C
         JR Z,DC_FCOUNT
         INC A
-DC_FCOUNT:
+
+DC_FCOUNT:                              ; compute format block count
         LD (DC_NBLK),A
         LD C,FDCDATA
         LD A,0F0H
         OUT (FDCCOMMAND),A
-DC_FBYTE:
+
+; -------------------------------------------------------------------------------
+; Track Stream Transfer
+; -------------------------------------------------------------------------------
+
+DC_FBYTE:                               ; stream format bytes
         LD DE,0
-DC_FPOLL:
+
+DC_FPOLL:                               ; poll floppy controller
         IN A,(FDCSTATUS)
         AND 2
         JR NZ,DC_FDATA
@@ -400,7 +486,8 @@ DC_FPOLL:
         AND 1
         JR Z,DC_FSTATUS
         JR DC_FFAIL
-DC_FDATA:
+
+DC_FDATA:                               ; write next format byte
         OUTI
         JR NZ,DC_FBYTE
         LD A,(DC_NBLK)
@@ -408,10 +495,16 @@ DC_FDATA:
         LD (DC_NBLK),A
         JR NZ,DC_FBYTE
         ; The index pulse must complete before the stream is exhausted.
-DC_FFAIL:
+
+DC_FFAIL:                               ; handle format failure
         CALL DC_ERR
         JP DC_RETURN
-DC_FSTATUS:
+
+; -------------------------------------------------------------------------------
+; Format Completion
+; -------------------------------------------------------------------------------
+
+DC_FSTATUS:                             ; return format status
         IN A,(FDCSTATUS)
         AND 0FCH
         JP DC_RETURN
@@ -419,7 +512,18 @@ DC_FSTATUS:
 CPTCOUNT EQU LY_SYS+094H
 CPTFLAGS EQU LY_SYS+095H
 CPTABLE EQU LY_SYS+096H
-BF_CPXCTL:
+
+; ================================================================================
+; =                             CPX Profile Control                              =
+; =                                                                              =
+; = Implements BetterCP/M CPX query, load, and unload operations and rebuilds the =
+; = resident CPX descriptor table in canonical order.                            =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; CPX Request Dispatch
+; -------------------------------------------------------------------------------
+
+BF_CPXCTL:                              ; control CPX profile
         LD      A,D
         CP      1
         JR      Z,BCX_BASIC
@@ -427,9 +531,11 @@ BF_CPXCTL:
         JR      NZ,BCX_BAD
         LD      A,2
         JR      BCX_MADE
-BCX_BASIC:
+
+BCX_BASIC:                              ; select RCP profile bit
         LD      A,1
-BCX_MADE:
+
+BCX_MADE:                               ; save selected CPX mask
         LD      (BCX_MVAL),A
         LD      A,E
         OR      A
@@ -440,7 +546,8 @@ BCX_MADE:
         JR      Z,BCX_UNLOAD
         LD      A,0FFH
         JP      EX_RETURN
-BCX_QUERY:
+
+BCX_QUERY:                              ; query selected CPX
         LD      A,(BCX_MVAL)
         LD      B,A
         LD      A,(CPTFLAGS)
@@ -448,21 +555,28 @@ BCX_QUERY:
         JP      Z,EX_RETURN
         LD      A,1
         JP      EX_RETURN
-BCX_LOAD:
+
+BCX_LOAD:                               ; load selected CPX
         LD      A,(BCX_MVAL)
         LD      B,A
         LD      A,(CPTFLAGS)
         OR      B
         LD      (CPTFLAGS),A
         JR      BCX_REBUILD
-BCX_UNLOAD:
+
+BCX_UNLOAD:                             ; unload selected CPX
         LD      A,(BCX_MVAL)
         CPL
         LD      B,A
         LD      A,(CPTFLAGS)
         AND     B
         LD      (CPTFLAGS),A
-BCX_REBUILD:
+
+; -------------------------------------------------------------------------------
+; Descriptor Table Rebuild
+; -------------------------------------------------------------------------------
+
+BCX_REBUILD:                            ; rebuild CPX descriptor table
         XOR     A
         LD      (CPTCOUNT),A
         LD      DE,CPTABLE
@@ -475,7 +589,8 @@ BCX_REBUILD:
         LD      A,(CPTCOUNT)
         INC     A
         LD      (CPTCOUNT),A
-BCX_RHELLO:
+
+BCX_RHELLO:                             ; append HELLO descriptor if enabled
         LD      A,(CPTFLAGS)
         AND     2
         JR      Z,BCX_RDONE
@@ -485,36 +600,55 @@ BCX_RHELLO:
         LD      A,(CPTCOUNT)
         INC     A
         LD      (CPTCOUNT),A
-BCX_RDONE:
+
+BCX_RDONE:                              ; finish descriptor rebuild
         XOR     A
         JP      EX_RETURN
-BCX_BAD:
+
+BCX_BAD:                                ; reject invalid CPX request
         LD      A,0FFH
         JP      EX_RETURN
 
-BCX_NBASIC:    DB      'RCP     '
-BCX_NHELLO:    DB      'HELLO   '
+BCX_NBASIC:    DB      'RCP     '       ; RCP descriptor name
+BCX_NHELLO:    DB      'HELLO   '       ; HELLO descriptor name
 
-CF_GETPH:
+; ================================================================================
+; =                         Configuration Query Services                         =
+; =                                                                              =
+; = Returns the active physical or logical disk-profile descriptor to the caller =
+; = through the common configuration request buffer.                             =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Physical Profile Query
+; -------------------------------------------------------------------------------
+
+CF_GETPH:                               ; return physical profile
         LD A,(IX+0)
         CALL DC_PHY
         JP NC,DC_INVALID
         LD BC,6
         JR DC_GETCOPY
-CF_GETLOG:
+
+; -------------------------------------------------------------------------------
+; Logical Profile Query
+; -------------------------------------------------------------------------------
+
+CF_GETLOG:                              ; return logical profile
         LD A,(IX+0)
         CALL DC_LOG
         JP NC,DC_INVALID
         LD DE,16
         ADD HL,DE
         LD BC,64
-DC_GETCOPY:
+
+DC_GETCOPY:                             ; copy profile to caller
         PUSH IX
         POP DE
         INC DE
         LDIR
         JP DC_OK
-DC_CAP: DW 0
-DC_DEST: DW 0
+
+DC_CAP: DW 0                            ; media-capacity scratch
+DC_DEST: DW 0                           ; configuration destination pointer
         .DEPHASE
         END

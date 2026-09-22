@@ -1,9 +1,23 @@
-; Standalone hardware test for arbitrary Model 4 physical-sector reads.
+; ********************************************************************************
+; *                 Model 4 Physical-Sector Read Diagnostic                      *
+; *                                                                              *
+; * Standalone BetterCP/M hardware test for arbitrary Model 4 physical-sector    *
+; * reads. Reads cylinder 2, head 1, sector 10 and verifies its expected          *
+; * signature before reporting success or failure through the Model 4 console.   *
+; ********************************************************************************
 
         INCLUDE hardware.inc
         CSEG
         .PHASE  STAGE1BASE
-START:
+
+; ================================================================================
+; =                       Physical Read Verification                            =
+; =                                                                              =
+; = Initializes the Model 4 platform, performs the test-sector read, compares    =
+; = the returned signature, and reports the result.                              =
+; ================================================================================
+
+START:                                  ; run physical-sector read diagnostic
         DI
         LD      SP,STAGE1STACK
         CALL    M4_INIT
@@ -16,7 +30,8 @@ START:
         LD      HL,DISKBUFFER
         LD      DE,SIGNATURE
         LD      B,SIGLEN
-CHECK:
+
+CHECK:                                  ; compare expected sector signature
         LD      A,(DE)
         CP      (HL)
         JR      NZ,FAILED
@@ -25,9 +40,11 @@ CHECK:
         DJNZ    CHECK
         LD      HL,PASSMSG
         JR      PRINT
-FAILED:
+
+FAILED:                                 ; select failure message
         LD      HL,FAILMSG
-PRINT:
+
+PRINT:                                  ; print diagnostic result
         LD      A,(HL)
         OR      A
         JR      Z,STOP
@@ -37,21 +54,34 @@ PRINT:
         POP     HL
         INC     HL
         JR      PRINT
-STOP:
+
+STOP:                                   ; halt in diagnostic loop
         JR      STOP
-PASSMSG:
+
+; -------------------------------------------------------------------------------
+; Diagnostic Messages and Signature
+; -------------------------------------------------------------------------------
+
+PASSMSG:                                ; read-verification success message
         DB      'Physical read verified',0
-FAILMSG:
+
+FAILMSG:                                ; read-verification failure message
         DB      'Failed',0
-SIGNATURE:
+
+SIGNATURE:                              ; expected physical-sector signature
         DB      'BetterCP/M C2 H1 S10'
 SIGLEN  EQU     $-SIGNATURE
 
-M4_EDITOR_KEYS EQU     0       ; output-only one-sector carrier omits CCP keys
+; -------------------------------------------------------------------------------
+; Minimal Platform Binding
+; -------------------------------------------------------------------------------
+
+M4_EDITOR_KEYS EQU     0                ; output-only one-sector carrier omits CCP keys
         INCLUDE m4cons.inc
-B_PDrive:
-        DB      1               ; standalone diagnostic targets drive 0
-M4_READ_ONLY    EQU     1       ; keep this single-sector diagnostic below 512 bytes
+
+B_PDrive:                               ; diagnostic physical drive
+        DB      1                       ; standalone diagnostic targets drive 0
+M4_READ_ONLY    EQU     1               ; keep this single-sector diagnostic below 512 bytes
 M4_MULTI_DRIVE  EQU     0
         INCLUDE m4disk.inc
         .DEPHASE

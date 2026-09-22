@@ -1,16 +1,30 @@
         INCLUDE layout.inc
-; BetterCP/M TRS-80 Model 4 resident-system loader
+
+; ********************************************************************************
+; *                BetterCP/M TRS-80 Model 4 Resident-System Loader              *
+; *                                                                              *
+; * Stage-one loader that reads the protected resident system image from its      *
+; * generated physical-sector table into the shared production memory map, then  *
+; * enters BIOS BOOT to initialize the portable operating-system environment.     *
+; ********************************************************************************
 
         INCLUDE hardware.inc
 
 SYSIMAGE        EQU     LY_SYS
-SYSBOOT         EQU     LY_BIOS+0  ; enter BIOS BOOT, which initializes the console
+SYSBOOT         EQU     LY_BIOS+0       ; enter BIOS BOOT, which initializes the console
 SYSSECTORS      EQU     LY_SECTS
 
         CSEG
         .PHASE  STAGE1BASE
 
-STAGE1:
+; ================================================================================
+; =                         Resident System Load                                =
+; =                                                                              =
+; = Walks the generated physical-sector table, loads each resident-system sector =
+; = into its final memory location, and transfers control to BIOS BOOT.           =
+; ================================================================================
+
+STAGE1:                                 ; enter resident-system loader
         DI
         LD      SP,STAGE1STACK
         LD      HL,SYSTABLE
@@ -19,7 +33,8 @@ STAGE1:
         LD      (SYSDEST),HL
         LD      A,SYSSECTORS
         LD      (SYSLEFT),A
-SYSLOAD:
+
+SYSLOAD:                                ; load next resident-system sector
         LD      HL,(SYSTABP)
         LD      A,(HL)
         INC     HL
@@ -37,20 +52,32 @@ SYSLOAD:
         LD      (SYSLEFT),A
         JR      NZ,SYSLOAD
         JP      SYSBOOT
-SYSERROR:
+
+SYSERROR:                               ; halt after system-load failure
         JR      SYSERROR
 
-SYSTABLE:
-; @resident-sector-table@
+; -------------------------------------------------------------------------------
+; Sector Table and Loader State
+; -------------------------------------------------------------------------------
 
-SYSTABP:
+SYSTABLE:                               ; resident-system sector table
+  ; @resident-sector-table@
+
+SYSTABP:                                ; current sector-table pointer
         DW      0
-SYSDEST:
+
+SYSDEST:                                ; current system-image destination
         DW      SYSIMAGE
-SYSLEFT:
+
+SYSLEFT:                                ; resident sectors remaining
         DB      SYSSECTORS
-B_PDrive:
-        DB      1               ; stage one always loads the system from A:
+
+; -------------------------------------------------------------------------------
+; Minimal Disk Binding
+; -------------------------------------------------------------------------------
+
+B_PDrive:                               ; system-image physical drive
+        DB      1                       ; stage one always loads the system from A:
 
 M4_READ_ONLY    EQU     1
 M4_MULTI_DRIVE  EQU     1

@@ -1,6 +1,19 @@
-; BetterCP/M hardware-independent stage-one bring-up diagnostic
+; ********************************************************************************
+; *                    BetterCP/M Stage-One Bring-Up Diagnostic                  *
+; *                                                                              *
+; * Hardware-independent diagnostic used during stage-one bring-up. Initializes  *
+; * the platform, verifies a raw disk sector signature, exercises console input, *
+; * and reports success or failure through the HAL.                              *
+; ********************************************************************************
 
-CORE_START:
+; ================================================================================
+; =                              Bring-Up Test                                   =
+; =                                                                              =
+; = Initializes the HAL, verifies the configured raw disk sector, and confirms   =
+; = basic console input/output before stopping in the diagnostic loop.           =
+; ================================================================================
+
+CORE_START:                             ; run stage-one bring-up diagnostic
         CALL    HAL_INIT
         LD      HL,CORE_TITLE
         CALL    CORE_PRINTLN
@@ -14,7 +27,8 @@ CORE_START:
         LD      HL,DISKBUFFER
         LD      DE,CSIGNAT
         LD      B,CSIGLEN
-CCOMPARE:
+
+CCOMPARE:                               ; compare verification signature
         LD      A,(DE)
         CP      (HL)
         JR      NZ,CDISKERR
@@ -25,7 +39,8 @@ CCOMPARE:
         CALL    CORE_PRINTLN
         LD      HL,CKEYPROM
         CALL    CPRINT
-CKEYWAIT:
+
+CKEYWAIT:                               ; wait for console key
         CALL    HAL_CONST
         JR      Z,CKEYWAIT
         CALL    HAL_CONIN
@@ -36,20 +51,28 @@ CKEYWAIT:
         LD      C,10
         CALL    HAL_CONOUT
         JR      CSTOP
-CDISKERR:
+
+CDISKERR:                               ; report disk verification failure
         LD      HL,CDISKER
         CALL    CORE_PRINTLN
-CSTOP:
+
+CSTOP:                                  ; halt in diagnostic loop
         JR      CSTOP
 
-; Input: HL = zero-terminated string.  Clobbers AF, C, HL.
-CORE_PRINTLN:
+  ; Input: HL = zero-terminated string.  Clobbers AF, C, HL.
+
+; -------------------------------------------------------------------------------
+; Diagnostic Output
+; -------------------------------------------------------------------------------
+
+CORE_PRINTLN:                           ; print zero-terminated line
         CALL    CPRINT
         LD      C,13
         CALL    HAL_CONOUT
         LD      C,10
         JP      HAL_CONOUT
-CPRINT:
+
+CPRINT:                                 ; print zero-terminated string
         LD      A,(HL)
         OR      A
         RET     Z
@@ -60,16 +83,25 @@ CPRINT:
         INC     HL
         JR      CPRINT
 
-CORE_TITLE:
+; -------------------------------------------------------------------------------
+; Diagnostic Strings and Signature
+; -------------------------------------------------------------------------------
+
+CORE_TITLE:                             ; diagnostic title
         DB      'BetterCP/M',0
-CORE_PLATFORM:
+
+CORE_PLATFORM:                          ; platform-initialized message
         DB      'TRS-80 Model 4 platform initialized',0
-CDISKOK:
+
+CDISKOK:                                ; disk verification success message
         DB      'raw disk read verified',0
-CDISKER:
+
+CDISKER:                                ; disk verification failure message
         DB      'raw disk read failed',0
-CKEYPROM:
+
+CKEYPROM:                               ; key prompt
         DB      'key: ',0
-CSIGNAT:
+
+CSIGNAT:                                ; disk verification signature
         DB      'BetterCP/M verify'
 CSIGLEN EQU     $-CSIGNAT

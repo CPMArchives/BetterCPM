@@ -1,23 +1,25 @@
-; BetterCP/M first filesystem-facing directory reader.
-;
-; This is an independently buildable System Services component, not a BIOS
-; extension.  Its placement and the BIOS address are provisional bring-up
-; values.  It deliberately reaches disk only through the CP/M BIOS vectors.
+; ********************************************************************************
+; *                        BetterCP/M Directory Services                         *
+; *                                                                              *
+; * Filesystem-facing directory, allocation, and FCB services. Disk access is    *
+; * performed only through the CP/M BIOS vectors. This is an independently buildable *
+; * System Services component, not a BIOS extension.                             *
+; ********************************************************************************
 
 DIRBASE         EQU     0D600H
-; Patch 2026-09-01: DIRBUF was E900H through specification 14, EA00H for
-; specification 15, EC00H through specification 25, and ED00H for
-; specifications 26-27. Dirty Close grew across ED00H, so the intact buffer
-; moved below the resident code. Specification 29 gives that workspace an
-; explicit BF00H reservation while relocating this component for growth.
-; Patch 2026-09-01: the BIOS DPH directory buffer is the same
-; 128-byte workspace this service needs. The former BF00h DPH state was later
-; relocated above BDOS after compatibility testing proved BF00h is still TPA.
-; Patch 2026-09-02: F300h was eventually consumed by the growing BIOS itself,
-; so DIRBUF moved to EC80h immediately below the ED00h physical buffer.
-; Patch 2026-09-03: the versioned CPX loader legitimately grew through EC80h.
-; Preserve its contiguous E900h..ECFFh region and move this buffer to the large
-; protected gap above the D4F0h loader stack and below Directory Services.
+  ; Patch 2026-09-01: DIRBUF was E900H through specification 14, EA00H for
+  ; specification 15, EC00H through specification 25, and ED00H for
+  ; specifications 26-27. Dirty Close grew across ED00H, so the intact buffer
+  ; moved below the resident code. Specification 29 gives that workspace an
+  ; explicit BF00H reservation while relocating this component for growth.
+  ; Patch 2026-09-01: the BIOS DPH directory buffer is the same
+  ; 128-byte workspace this service needs. The former BF00h DPH state was later
+  ; relocated above BDOS after compatibility testing proved BF00h is still TPA.
+  ; Patch 2026-09-02: F300h was eventually consumed by the growing BIOS itself,
+  ; so DIRBUF moved to EC80h immediately below the ED00h physical buffer.
+  ; Patch 2026-09-03: the versioned CPX loader legitimately grew through EC80h.
+  ; Preserve its contiguous E900h..ECFFh region and move this buffer to the large
+  ; protected gap above the D4F0h loader stack and below Directory Services.
 DIRBUF          EQU     0D500H
 BIOSBASE        EQU     0EF00H
 BIOSELDS        EQU     BIOSBASE+27
@@ -31,8 +33,16 @@ BIOSECTR        EQU     BIOSBASE+48
         CSEG
         .PHASE  DIRBASE
 
-; Provisional internal service vectors keep callers independent of routine size.
-DIRSERV:
+; ================================================================================
+; =                         Directory Services Interface                         =
+; =                                                                              =
+; = Publishes the internal Directory Services entry vectors used by BDOS while   =
+; = keeping callers independent of the size and placement of individual routines. =
+; ================================================================================
+
+  ; Provisional internal service vectors keep callers independent of routine size.
+
+DIRSERV:                                ; Directory Services jump table
         JP      DIR_LD0
         JP      DIR_FIRST
         JP      DIR_LOAD
@@ -57,9 +67,14 @@ DIRSERV:
         JP      DIR_RZERO
         JP      DIR_SELECT
 
-; Select a logical drive without rebuilding its allocation state unnecessarily.
-; Input C=zero-based drive. This covers default and explicit FCB selection.
-DIR_SELECT:
+; -------------------------------------------------------------------------------
+; Drive Selection
+; -------------------------------------------------------------------------------
+
+  ; Select a logical drive without rebuilding its allocation state unnecessarily.
+  ; Input C=zero-based drive. This covers default and explicit FCB selection.
+
+DIR_SELECT:                             ; select logical drive
         LD      A,(DIR_VALID)
         OR      A
         JP      Z,DIR_LOGIN
@@ -69,22 +84,35 @@ DIR_SELECT:
         XOR     A
         RET
 
-DIR_RZERO:
+DIR_RZERO:                              ; request random write with zero fill
         PUSH    AF
         LD      A,0FFH
         LD      (DIR_ZFILL),A
         POP     AF
         JR      DIR_RWCOM
 
-; Write the 128-byte record named by FCB R0/R1. Missing extents are created
-; before the ordinary transactional data allocator is entered. H is nonzero
-; when the selected drive is software protected.
-DIR_RWRITE:
+; ================================================================================
+; =                              Random Record I/O                               =
+; =                                                                              =
+; = Implements CP/M 2.2 random record write, zero-fill write, and read semantics, =
+; = including extent creation, range checks, and FCB state reconstruction.       =
+; ================================================================================
+
+  ; Write the 128-byte record named by FCB R0/R1. Missing extents are created
+  ; before the ordinary transactional data allocator is entered. H is nonzero
+  ; when the selected drive is software protected.
+
+; -------------------------------------------------------------------------------
+; Random Write and Zero-Fill Write
+; -------------------------------------------------------------------------------
+
+DIR_RWRITE:                             ; write random record
         PUSH    AF
         XOR     A
         LD      (DIR_ZFILL),A
         POP     AF
-DIR_RWCOM:
+
+DIR_RWCOM:                              ; enter common random-write path
         LD      (DIR_QUSER),A
         LD      (DIR_QFCB),DE
         LD      (DIR_QDMA),BC
@@ -97,7 +125,8 @@ DIR_RWCOM:
         PUSH    DE
         INC     DE
         LD      B,11
-DIR_QWNAME:
+
+DIR_QWNAME:                             ; random-write name
         LD      A,(DE)
         AND     07FH
         CP      '?'
@@ -164,13 +193,14 @@ DIR_QWNAME:
         JP      C,DQ_WFAIL
         CP      0FFH
         JR      NZ,DIR_QWDO
-        LD      HL,(DIR_QFCB)   ; initialize a canonical empty target extent
+        LD      HL,(DIR_QFCB)           ; initialize a canonical empty target extent
         LD      DE,15
         ADD     HL,DE
         LD      (HL),0
         INC     HL
         LD      B,16
-DIR_QWZERO:
+
+DIR_QWZERO:                             ; random-write zero
         LD      (HL),0
         INC     HL
         DJNZ    DIR_QWZERO
@@ -180,7 +210,8 @@ DIR_QWZERO:
         JP      C,DQ_WFAIL
         CP      0FFH
         JR      Z,DQ_NODIR
-DIR_QWDO:
+
+DIR_QWDO:                               ; random-write do
         LD      A,(DIR_QUSER)
         LD      DE,(DIR_QFCB)
         LD      BC,(DIR_QDMA)
@@ -194,29 +225,38 @@ DIR_QWDO:
         ADD     HL,DE
         LD      A,(HL)
         DEC     A
-        LD      (HL),A          ; sequential I/O must address this record again
+        LD      (HL),A                  ; sequential I/O must address this record again
         XOR     A
         RET
-DIR_QWPOP:
+
+DIR_QWPOP:                              ; random-write pop
         POP     DE
         JP      DIR_QBAD
-DQ_NOBLK:
-        LD      A,2             ; no free data block
+
+DQ_NOBLK:                               ; report not found blk
+        LD      A,2                     ; no free data block
         OR      A
         RET
-DQ_NODIR:
-        LD      A,5             ; no free directory entry for target extent
+
+DQ_NODIR:                               ; report not found dir
+        LD      A,5                     ; no free directory entry for target extent
         OR      A
         RET
-DQ_WFAIL:
+
+DQ_WFAIL:                               ; write fail
         SCF
         RET
 
-; Read the 128-byte record named by FCB R0/R1. CP/M 2.2 reserves R2 and
-; reports a range error when it is nonzero. On success EX/S2/CR identify the
-; record just read; unlike sequential Read, CR is therefore not advanced.
-; Input A=user, DE=36-byte FCB, BC=DMA. Return CP/M random-I/O status.
-DIR_RREAD:
+; -------------------------------------------------------------------------------
+; Random Read
+; -------------------------------------------------------------------------------
+
+  ; Read the 128-byte record named by FCB R0/R1. CP/M 2.2 reserves R2 and
+  ; reports a range error when it is nonzero. On success EX/S2/CR identify the
+  ; record just read; unlike sequential Read, CR is therefore not advanced.
+  ; Input A=user, DE=36-byte FCB, BC=DMA. Return CP/M random-I/O status.
+
+DIR_RREAD:                              ; read random record
         LD      (DIR_QUSER),A
         LD      (DIR_QFCB),DE
         LD      (DIR_QDMA),BC
@@ -226,7 +266,8 @@ DIR_RREAD:
         PUSH    DE
         INC     DE
         LD      B,11
-DIR_QNAME:
+
+DIR_QNAME:                              ; random-I/O name
         LD      A,(DE)
         AND     07FH
         CP      '?'
@@ -236,11 +277,11 @@ DIR_QNAME:
         POP     DE
         LD      HL,35
         ADD     HL,DE
-        LD      A,(HL)          ; R2 must be zero in CP/M 2.2 random I/O
+        LD      A,(HL)                  ; R2 must be zero in CP/M 2.2 random I/O
         OR      A
         JP      NZ,DIR_QRANGE
         DEC     HL
-        LD      A,(HL)          ; R1 high nibble selects S2
+        LD      A,(HL)                  ; R1 high nibble selects S2
         LD      C,A
         AND     0F0H
         SRL     A
@@ -253,7 +294,7 @@ DIR_QNAME:
         ADD     A,A
         LD      C,A
         DEC     HL
-        LD      A,(HL)          ; R0 bit 7 is EX bit 0
+        LD      A,(HL)                  ; R0 bit 7 is EX bit 0
         LD      B,A
         AND     080H
         SRL     A
@@ -268,8 +309,10 @@ DIR_QNAME:
         LD      A,B
         AND     07FH
         LD      (DIR_QCR),A
-; Patch 2026-09-01: preserve an activated same-extent FCB. Reopening here
-; used to discard allocations and RC changes made by an unclosed Function 40.
+
+  ; Patch 2026-09-01: preserve an activated same-extent FCB. Reopening here
+  ; used to discard allocations and RC changes made by an unclosed Function 40.
+
         LD      HL,(DIR_QFCB)
         LD      DE,12
         ADD     HL,DE
@@ -283,9 +326,11 @@ DIR_QNAME:
         JR      NZ,DIR_QRDIFF
         LD      A,0FFH
         JR      DIR_QRSAV
-DIR_QRDIFF:
+
+DIR_QRDIFF:                             ; random-read diff
         XOR     A
-DIR_QRSAV:
+
+DIR_QRSAV:                              ; random-read sav
         LD      (DIR_QSAME),A
         LD      HL,(DIR_QFCB)
         LD      DE,12
@@ -311,43 +356,61 @@ DIR_QRSAV:
         JR      C,DIR_QSTORE
         CP      0FFH
         JR      Z,DIR_QNOEX
-DIR_QROPEN:
+
+DIR_QROPEN:                             ; random-read open
         LD      A,(DIR_QUSER)
         LD      DE,(DIR_QFCB)
         LD      BC,(DIR_QDMA)
         CALL    DIR_READ
         JR      C,DIR_QSTORE
         OR      A
-        RET     NZ              ; code 1: unwritten record in this extent
+        RET     NZ                      ; code 1: unwritten record in this extent
         LD      HL,(DIR_QFCB)
         LD      DE,32
         ADD     HL,DE
         LD      A,(HL)
-        DEC     A               ; sequential Read advanced it; Random must not
+        DEC     A                       ; sequential Read advanced it; Random must not
         LD      (HL),A
         XOR     A
         RET
-DIR_QPOPB:
+
+DIR_QPOPB:                              ; random-I/O popb
         POP     DE
-DIR_QBAD:
-        LD      A,9             ; invalid FCB
+
+DIR_QBAD:                               ; random-I/O bad
+        LD      A,9                     ; invalid FCB
         OR      A
-        RET
-DIR_QRANGE:
-        LD      A,6             ; random record number out of CP/M 2.2 range
-        OR      A
-        RET
-DIR_QNOEX:
-        LD      A,4             ; requested extent has not been written
-        OR      A
-        RET
-DIR_QSTORE:
-        SCF                     ; internal storage failure
         RET
 
-; Compute exact-name file size in 128-byte records and store FCB R0..R2.
-; Input A=user, DE=36-byte FCB. Return zero success, FFh missing/invalid.
-DIR_SIZE:
+DIR_QRANGE:                             ; random-read ange
+        LD      A,6                     ; random record number out of CP/M 2.2 range
+        OR      A
+        RET
+
+DIR_QNOEX:                              ; random-I/O noex
+        LD      A,4                     ; requested extent has not been written
+        OR      A
+        RET
+
+DIR_QSTORE:                             ; random-I/O store
+        SCF                             ; internal storage failure
+        RET
+
+; ================================================================================
+; =                           File Metadata Operations                           =
+; =                                                                              =
+; = Implements file-size calculation, attribute updates, rename, and deletion    =
+; = across all matching directory extents.                                       =
+; ================================================================================
+
+  ; Compute exact-name file size in 128-byte records and store FCB R0..R2.
+  ; Input A=user, DE=36-byte FCB. Return zero success, FFh missing/invalid.
+
+; -------------------------------------------------------------------------------
+; File Size
+; -------------------------------------------------------------------------------
+
+DIR_SIZE:                               ; compute file size
         LD      (DIR_ZUSER),A
         LD      (DIR_ZFCB),DE
         LD      A,(DE)
@@ -356,7 +419,8 @@ DIR_SIZE:
         LD      HL,(DIR_ZFCB)
         INC     HL
         LD      B,11
-DIR_ZNAME:
+
+DIR_ZNAME:                              ; size name
         LD      A,(HL)
         AND     07FH
         CP      '?'
@@ -371,7 +435,8 @@ DIR_ZNAME:
         LD      (DIR_ZMAX+1),A
         LD      (DIR_ZMAX+2),A
         LD      (DIR_RECORD),A
-DIR_ZPASS:
+
+DIR_ZPASS:                              ; size pass
         LD      A,(DIR_RECORD)
         LD      HL,DIR_RECS
         CP      (HL)
@@ -380,7 +445,8 @@ DIR_ZPASS:
         CALL    DIR_LOAD
         JP      NZ,DIR_ZERR
         LD      B,4
-DIR_ZENT:
+
+DIR_ZENT:                               ; size ent
         CALL    DIR_ZMAT
         JR      NZ,DIR_ZNEXT
         LD      A,0FFH
@@ -389,12 +455,12 @@ DIR_ZENT:
         PUSH    HL
         LD      DE,12
         ADD     HL,DE
-        LD      A,(HL)          ; EX low five bits
+        LD      A,(HL)                  ; EX low five bits
         AND     01FH
         LD      E,A
         INC     HL
         INC     HL
-        LD      A,(HL)          ; S2 low six bits
+        LD      A,(HL)                  ; S2 low six bits
         AND     03FH
         LD      H,0
         LD      L,A
@@ -404,30 +470,33 @@ DIR_ZENT:
         ADD     HL,HL
         ADD     HL,HL
         LD      D,0
-        ADD     HL,DE           ; HL=logical extent number
+        ADD     HL,DE                   ; HL=logical extent number
         LD      A,L
         AND     1
         JR      Z,DIR_ZLZERO
         LD      A,080H
         JR      DIR_ZLSET
-DIR_ZLZERO:
+
+DIR_ZLZERO:                             ; size lzero
         XOR     A
-DIR_ZLSET:
+
+DIR_ZLSET:                              ; size lset
         LD      C,A
-        POP     DE              ; recover entry pointer into DE temporarily
+        POP     DE                      ; recover entry pointer into DE temporarily
         PUSH    DE
-        PUSH    HL              ; retain the computed extent number
+        PUSH    HL                      ; retain the computed extent number
         EX      DE,HL
         LD      DE,15
         ADD     HL,DE
-        LD      A,(HL)          ; RC
-        POP     HL              ; HL=extent, A=RC
+        LD      A,(HL)                  ; RC
+        POP     HL                      ; HL=extent, A=RC
         ADD     A,C
         LD      (DIR_ZCAN),A
         LD      D,0
         JR      NC,DIR_ZNC0
         INC     D
-DIR_ZNC0:
+
+DIR_ZNC0:                               ; size nc0
         SRL     H
         RR      L
         LD      A,L
@@ -436,19 +505,22 @@ DIR_ZNC0:
         LD      A,H
         JR      NC,DIR_ZNC1
         INC     A
-DIR_ZNC1:
+
+DIR_ZNC1:                               ; size nc1
         LD      (DIR_ZCAN+2),A
         CALL    DIR_ZCMPMAX
         POP     HL
         POP     BC
-DIR_ZNEXT:
+
+DIR_ZNEXT:                              ; size next
         LD      DE,32
         ADD     HL,DE
         DJNZ    DIR_ZENT
         LD      HL,DIR_RECORD
         INC     (HL)
         JR      DIR_ZPASS
-DIR_ZDONE:
+
+DIR_ZDONE:                              ; size done
         LD      A,(DIR_ZFOUND)
         OR      A
         JR      Z,DIR_ZNO
@@ -462,15 +534,17 @@ DIR_ZDONE:
         LDIR
         XOR     A
         RET
-DIR_ZERR:
+
+DIR_ZERR:                               ; size err
         SCF
         RET
-DIR_ZNO:
+
+DIR_ZNO:                                ; size no
         LD      A,0FFH
         OR      A
         RET
 
-DIR_ZCMPMAX:
+DIR_ZCMPMAX:                            ; size cmpmax
         LD      A,(DIR_ZMAX+2)
         LD      C,A
         LD      A,(DIR_ZCAN+2)
@@ -488,25 +562,31 @@ DIR_ZCMPMAX:
         LD      A,(DIR_ZCAN)
         CP      C
         RET     C
-DIR_ZTAKE:
+
+DIR_ZTAKE:                              ; size take
         LD      HL,DIR_ZCAN
         LD      DE,DIR_ZMAX
         LD      BC,3
         LDIR
         RET
 
-DIR_ZMAT:
+DIR_ZMAT:                               ; size mat
         LD      A,(DIR_ZUSER)
         LD      DE,(DIR_ZFCB)
-        LD      C,0             ; exact name
+        LD      C,0                     ; exact name
         JP      DIR_MATCH
 
-; Common directory-name predicate. Input A=user, DE=FCB, HL=directory entry,
-; and C=zero for exact matching or nonzero to recognize '?' wildcards.
-; Patch 2026-09-03: Size, Attribute, Rename, and Delete originally carried
-; four private copies of this loop. Keep the old operation-specific entry
-; labels as small adapters while sharing the compatibility-sensitive rules.
-DIR_MATCH:
+; -------------------------------------------------------------------------------
+; Shared Name Matching
+; -------------------------------------------------------------------------------
+
+  ; Common directory-name predicate. Input A=user, DE=FCB, HL=directory entry,
+  ; and C=zero for exact matching or nonzero to recognize '?' wildcards.
+  ; Patch 2026-09-03: Size, Attribute, Rename, and Delete originally carried
+  ; four private copies of this loop. Keep the old operation-specific entry
+  ; labels as small adapters while sharing the compatibility-sensitive rules.
+
+DIR_MATCH:                              ; match directory name
         PUSH    BC
         PUSH    DE
         PUSH    HL
@@ -515,7 +595,8 @@ DIR_MATCH:
         INC     HL
         INC     DE
         LD      B,11
-DIR_MCMP:
+
+DIR_MCMP:                               ; create cmp
         LD      A,(DE)
         AND     07FH
         CP      '?'
@@ -523,7 +604,8 @@ DIR_MCMP:
         LD      A,C
         OR      A
         JR      NZ,DIR_MNEXT
-DIR_MCHAR:
+
+DIR_MCHAR:                              ; create char
         LD      A,(DE)
         AND     07FH
         PUSH    BC
@@ -533,24 +615,32 @@ DIR_MCHAR:
         CP      C
         POP     BC
         JR      NZ,DMC_NO
-DIR_MNEXT:
+
+DIR_MNEXT:                              ; create next
         INC     DE
         INC     HL
         DJNZ    DIR_MCMP
         XOR     A
         JR      DMC_RET
-DMC_NO:
+
+DMC_NO:                                 ; delete mc no
         LD      A,1
         OR      A
-DMC_RET:
+
+DMC_RET:                                ; delete mc ret
         POP     HL
         POP     DE
         POP     BC
         RET
 
-; Apply the high attribute bits of FCB bytes 1..11 to every matching extent.
-; A=user, DE=FCB, B=software protection. Wildcards affect matching only.
-DIR_ATTR:
+; -------------------------------------------------------------------------------
+; Set File Attributes
+; -------------------------------------------------------------------------------
+
+  ; Apply the high attribute bits of FCB bytes 1..11 to every matching extent.
+  ; A=user, DE=FCB, B=software protection. Wildcards affect matching only.
+
+DIR_ATTR:                               ; set file attributes
         LD      (DIR_AUSER),A
         LD      (DIR_AFCB),DE
         LD      A,B
@@ -566,7 +656,8 @@ DIR_ATTR:
         XOR     A
         LD      (DIR_AFOUND),A
         LD      (DIR_RECORD),A
-DIR_APASS:
+
+DIR_APASS:                              ; attribute pass
         LD      A,(DIR_RECORD)
         LD      HL,DIR_RECS
         CP      (HL)
@@ -577,7 +668,8 @@ DIR_APASS:
         XOR     A
         LD      (DIR_ADIRTY),A
         LD      B,4
-DIR_TENT:
+
+DIR_TENT:                               ; tent
         CALL    DIR_AMAT2
         JR      NZ,DIR_TNEXT
         PUSH    BC
@@ -586,7 +678,8 @@ DIR_TENT:
         LD      DE,(DIR_AFCB)
         INC     DE
         LD      B,11
-DIR_ACOPY:
+
+DIR_ACOPY:                              ; attribute copy
         LD      A,(HL)
         AND     07FH
         LD      C,A
@@ -602,7 +695,8 @@ DIR_ACOPY:
         LD      A,0FFH
         LD      (DIR_AFOUND),A
         LD      (DIR_ADIRTY),A
-DIR_TNEXT:
+
+DIR_TNEXT:                              ; tnext
         LD      DE,32
         ADD     HL,DE
         DJNZ    DIR_TENT
@@ -612,35 +706,44 @@ DIR_TNEXT:
         LD      C,1
         CALL    BIOWRITE
         JR      NZ,DIR_AERR
-DIR_AADV:
+
+DIR_AADV:                               ; attribute adv
         LD      HL,DIR_RECORD
         INC     (HL)
         JR      DIR_APASS
-DIR_TDONE:
+
+DIR_TDONE:                              ; tdone
         LD      A,(DIR_AFOUND)
         OR      A
         JR      Z,DIR_ANO
         CALL    DIR_INVAL
         XOR     A
         RET
-DIR_AERR:
+
+DIR_AERR:                               ; attribute err
         CALL    DIR_INVAL
         SCF
         RET
-DIR_ANO:
+
+DIR_ANO:                                ; attribute no
         LD      A,0FFH
         OR      A
         RET
 
-DIR_AMAT2:
+DIR_AMAT2:                              ; allocation mark at2
         LD      A,(DIR_AUSER)
         LD      DE,(DIR_AFCB)
-        LD      C,1             ; wildcard pattern
+        LD      C,1                     ; wildcard pattern
         JP      DIR_MATCH
 
-; Rename all extents of one exact filename. Old name is FCB+1, new name FCB+17.
-; A=user, DE=rename FCB, B=software protection. Wildcards are deferred.
-DIR_RENAME:
+; -------------------------------------------------------------------------------
+; Rename File
+; -------------------------------------------------------------------------------
+
+  ; Rename all extents of one exact filename. Old name is FCB+1, new name FCB+17.
+  ; A=user, DE=rename FCB, B=software protection. Wildcards are deferred.
+
+DIR_RENAME:                             ; rename matching file
         LD      (DIR_NUSER),A
         LD      (DIR_NFCB),DE
         LD      A,B
@@ -651,7 +754,7 @@ DIR_RENAME:
         JP      NC,DIR_NNO
         LD      HL,16
         ADD     HL,DE
-        LD      A,(HL)          ; new-name drive byte
+        LD      A,(HL)                  ; new-name drive byte
         CP      5
         JP      NC,DIR_NNO
         CALL    DIR_JEMPTY
@@ -660,7 +763,8 @@ DIR_RENAME:
         INC     HL
         LD      DE,16
         LD      B,11
-DIR_NWC:
+
+DIR_NWC:                                ; rename wc
         LD      A,(HL)
         AND     07FH
         CP      '?'
@@ -685,13 +789,15 @@ DIR_NWC:
         CP      0FFH
         JR      Z,DIR_NTARGET
         OR      A
-        JP      Z,DIR_NNO       ; target already exists
+        JP      Z,DIR_NNO               ; target already exists
         JP      DIR_NERR
-DIR_NTARGET:
+
+DIR_NTARGET:                            ; rename target
         XOR     A
         LD      (DIR_NFOUND),A
         LD      (DIR_RECORD),A
-DIR_NPRE:
+
+DIR_NPRE:                               ; rename pre
         LD      A,(DIR_RECORD)
         LD      HL,DIR_RECS
         CP      (HL)
@@ -700,7 +806,8 @@ DIR_NPRE:
         CALL    DIR_LOAD
         JP      NZ,DIR_NERR
         LD      B,4
-DIR_NPENT:
+
+DIR_NPENT:                              ; rename pent
         CALL    DIR_NMAT
         JR      NZ,DIR_NPNEXT
         LD      A,0FFH
@@ -712,20 +819,23 @@ DIR_NPENT:
         POP     HL
         AND     080H
         JP      NZ,DIR_NNO
-DIR_NPNEXT:
+
+DIR_NPNEXT:                             ; rename pnext
         LD      DE,32
         ADD     HL,DE
         DJNZ    DIR_NPENT
         LD      HL,DIR_RECORD
         INC     (HL)
         JR      DIR_NPRE
-DIR_NPOK:
+
+DIR_NPOK:                               ; rename pok
         LD      A,(DIR_NFOUND)
         OR      A
         JP      Z,DIR_NNO
         XOR     A
         LD      (DIR_RECORD),A
-DIR_NPASS:
+
+DIR_NPASS:                              ; rename pass
         LD      A,(DIR_RECORD)
         LD      HL,DIR_RECS
         CP      (HL)
@@ -736,7 +846,8 @@ DIR_NPASS:
         XOR     A
         LD      (DIR_NDIRTY),A
         LD      B,4
-DIR_NENT:
+
+DIR_NENT:                               ; rename ent
         CALL    DIR_NMAT
         JR      NZ,DIR_NNEXT
         PUSH    BC
@@ -746,9 +857,10 @@ DIR_NENT:
         LD      BC,17
         EX      DE,HL
         ADD     HL,BC
-        EX      DE,HL           ; DE=new eleven-byte name
+        EX      DE,HL                   ; DE=new eleven-byte name
         LD      B,11
-DIR_NCOPY:
+
+DIR_NCOPY:                              ; rename copy
         LD      A,(HL)
         AND     080H
         LD      C,A
@@ -763,7 +875,8 @@ DIR_NCOPY:
         POP     BC
         LD      A,0FFH
         LD      (DIR_NDIRTY),A
-DIR_NNEXT:
+
+DIR_NNEXT:                              ; rename next
         LD      DE,32
         ADD     HL,DE
         DJNZ    DIR_NENT
@@ -773,32 +886,41 @@ DIR_NNEXT:
         LD      C,1
         CALL    BIOWRITE
         JR      NZ,DIR_NERR
-DIR_NADV:
+
+DIR_NADV:                               ; rename adv
         LD      HL,DIR_RECORD
         INC     (HL)
         JR      DIR_NPASS
-DIR_NDONE:
+
+DIR_NDONE:                              ; rename done
         CALL    DIR_INVAL
         XOR     A
         RET
-DIR_NERR:
+
+DIR_NERR:                               ; rename err
         CALL    DIR_INVAL
         SCF
         RET
-DIR_NNO:
+
+DIR_NNO:                                ; rename no
         LD      A,0FFH
         OR      A
         RET
 
-DIR_NMAT:
+DIR_NMAT:                               ; rename mat
         LD      A,(DIR_NUSER)
         LD      DE,(DIR_NFCB)
-        LD      C,0             ; exact old name
+        LD      C,0                     ; exact old name
         JP      DIR_MATCH
 
-; Delete every extent matching an FCB pattern. A=user, DE=FCB, B=software RO.
-; A preflight pass prevents read-only multi-extent files from partial deletion.
-DIR_DELETE:
+; -------------------------------------------------------------------------------
+; Delete File
+; -------------------------------------------------------------------------------
+
+  ; Delete every extent matching an FCB pattern. A=user, DE=FCB, B=software RO.
+  ; A preflight pass prevents read-only multi-extent files from partial deletion.
+
+DIR_DELETE:                             ; delete matching file
         LD      (DIR_DUSER),A
         LD      (DIR_DFCB),DE
         LD      A,B
@@ -808,13 +930,14 @@ DIR_DELETE:
         CP      5
         JP      NC,DIR_DNO
         CALL    DIR_DJOK
-        JP      NZ,DIR_DNO       ; never discard another FCB's live journal
+        JP      NZ,DIR_DNO              ; never discard another FCB's live journal
         CALL    DIR_GALV
         JP      NZ,DIR_DERR
         XOR     A
         LD      (DIR_DFOUND),A
         LD      (DIR_RECORD),A
-DIR_DPRE:
+
+DIR_DPRE:                               ; delete pre
         LD      A,(DIR_RECORD)
         LD      HL,DIR_RECS
         CP      (HL)
@@ -823,7 +946,8 @@ DIR_DPRE:
         CALL    DIR_LOAD
         JP      NZ,DIR_DERR
         LD      B,4
-DIR_DPENT:
+
+DIR_DPENT:                              ; delete pent
         CALL    DIR_DMAT
         JR      NZ,DIR_DPNEXT
         LD      A,0FFH
@@ -834,21 +958,24 @@ DIR_DPENT:
         LD      A,(HL)
         POP     HL
         AND     080H
-        JP      NZ,DIR_DNO       ; no mutations have occurred in preflight
-DIR_DPNEXT:
+        JP      NZ,DIR_DNO              ; no mutations have occurred in preflight
+
+DIR_DPNEXT:                             ; delete pnext
         LD      DE,32
         ADD     HL,DE
         DJNZ    DIR_DPENT
         LD      HL,DIR_RECORD
         INC     (HL)
         JR      DIR_DPRE
-DIR_DPOK:
+
+DIR_DPOK:                               ; delete pok
         LD      A,(DIR_DFOUND)
         OR      A
         JP      Z,DIR_DNO
         XOR     A
         LD      (DIR_RECORD),A
-DIR_DPASS:
+
+DIR_DPASS:                              ; delete pass
         LD      A,(DIR_RECORD)
         LD      HL,DIR_RECS
         CP      (HL)
@@ -859,13 +986,15 @@ DIR_DPASS:
         XOR     A
         LD      (DIR_DDIRTY),A
         LD      B,4
-DIR_DENT:
+
+DIR_DENT:                               ; delete ent
         CALL    DIR_DMAT
         JR      NZ,DIR_DNEXT
         LD      (HL),0E5H
         LD      A,0FFH
         LD      (DIR_DDIRTY),A
-DIR_DNEXT:
+
+DIR_DNEXT:                              ; delete next
         LD      DE,32
         ADD     HL,DE
         DJNZ    DIR_DENT
@@ -875,34 +1004,40 @@ DIR_DNEXT:
         LD      C,1
         CALL    BIOWRITE
         JR      NZ,DIR_DERR
-DIR_DADV:
+
+DIR_DADV:                               ; delete adv
         LD      HL,DIR_RECORD
         INC     (HL)
         JR      DIR_DPASS
-DIR_DDONE:
+
+DIR_DDONE:                              ; delete done
         CALL    DIR_INVAL
         CALL    DJ_REM
         XOR     A
         RET
-DIR_DERR:
+
+DIR_DERR:                               ; delete err
         CALL    DIR_INVAL
         SCF
         RET
-DIR_DNO:
+
+DIR_DNO:                                ; delete no
         LD      A,0FFH
         OR      A
         RET
-; Z when directory entry HL matches current user and 11-byte wildcard pattern.
-DIR_DMAT:
+  ; Z when directory entry HL matches current user and 11-byte wildcard pattern.
+
+DIR_DMAT:                               ; delete mat
         LD      A,(DIR_DUSER)
         LD      DE,(DIR_DFCB)
-        LD      C,1             ; wildcard pattern
+        LD      C,1                     ; wildcard pattern
         JP      DIR_MATCH
 
-DIR_JEMPTY:
+DIR_JEMPTY:                             ; jempty
         LD      HL,DIR_PEND
         LD      B,32
-DIR_JELOOP:
+
+DIR_JELOOP:                             ; jeloop
         LD      A,(HL)
         INC     HL
         OR      (HL)
@@ -914,12 +1049,14 @@ DIR_JELOOP:
         XOR     A
         RET
 
-; Delete may retire allocations belonging to its own FCB, but must not cross
-; an unrelated unclosed writer. Journal removal occurs only after disk success.
-DIR_DJOK:
+  ; Delete may retire allocations belonging to its own FCB, but must not cross
+  ; an unrelated unclosed writer. Journal removal occurs only after disk success.
+
+DIR_DJOK:                               ; delete jok
         LD      HL,DIR_PEND
         LD      B,32
-DIR_DJLOOP:
+
+DIR_DJLOOP:                             ; delete jloop
         LD      E,(HL)
         INC     HL
         LD      D,(HL)
@@ -934,19 +1071,33 @@ DIR_DJLOOP:
         JR      NZ,DIR_DJBAD
         LD      A,L
         CP      E
-DIR_DJBAD:
+
+DIR_DJBAD:                              ; delete jbad
         POP     HL
         RET     NZ
-DIR_DJNEXT:
+
+DIR_DJNEXT:                             ; delete jnext
         INC     HL
         INC     HL
         DJNZ    DIR_DJLOOP
         XOR     A
         RET
 
-; Create an empty first extent. A=current user, DE=FCB, B=software protection.
-; Returns directory slot 0..3, FFh for duplicate/full/invalid, carry on storage.
-DIR_MAKE:
+; ================================================================================
+; =                      File Creation and Sequential Write                      =
+; =                                                                              =
+; = Creates empty extents and performs transactional sequential writes, including =
+; = allocation, zero-fill, extent rollover, and pending-allocation journaling.   =
+; ================================================================================
+
+  ; Create an empty first extent. A=current user, DE=FCB, B=software protection.
+  ; Returns directory slot 0..3, FFh for duplicate/full/invalid, carry on storage.
+
+; -------------------------------------------------------------------------------
+; Create First Extent
+; -------------------------------------------------------------------------------
+
+DIR_MAKE:                               ; create empty first extent
         LD      (DIR_MUSER),A
         LD      (DIR_MFCB),DE
         LD      A,B
@@ -962,7 +1113,8 @@ DIR_MAKE:
         LD      HL,(DIR_MFCB)
         INC     HL
         LD      B,11
-DIR_MNAME:
+
+DIR_MNAME:                              ; create name
         LD      A,(HL)
         AND     07FH
         CP      '?'
@@ -978,14 +1130,16 @@ DIR_MNAME:
         CP      0FFH
         JR      Z,DIR_MNEW
         OR      A
-        JR      Z,DIR_MREST      ; an extent of this user/name already exists
+        JR      Z,DIR_MREST             ; an extent of this user/name already exists
         JR      DIR_MERR
-DIR_MNEW:
+
+DIR_MNEW:                               ; create new
         LD      HL,(DIR_MFCB)
         LD      DE,12
         ADD     HL,DE
-        LD      B,21             ; EX,S1,S2,RC,allocation map,CR
-DIR_MZERO:
+        LD      B,21                    ; EX,S1,S2,RC,allocation map,CR
+
+DIR_MZERO:                              ; create zero
         LD      (HL),0
         INC     HL
         DJNZ    DIR_MZERO
@@ -995,29 +1149,38 @@ DIR_MZERO:
         JR      C,DIR_MERR
         CP      0FFH
         JR      Z,DIR_MREST
-        OR      A               ; public success must not inherit CP's carry
+        OR      A                       ; public success must not inherit CP's carry
         RET
-DIR_MERR:
+
+DIR_MERR:                               ; create err
         CALL    DIR_MLOAD
         SCF
         RET
-DIR_MREST:
+
+DIR_MREST:                              ; create rest
         CALL    DIR_MLOAD
-DIR_MNO:
+
+DIR_MNO:                                ; create no
         LD      A,0FFH
         OR      A
         RET
-DIR_MLOAD:
+
+DIR_MLOAD:                              ; create load
         LD      HL,DIR_MOLD
         LD      DE,(DIR_MFCB)
         LD      BC,33
         LDIR
         RET
 
-; Write one sequential 128-byte record. A=current user, DE=activated FCB,
-; BC=current DMA, H=nonzero when the selected drive is software protected.
-; The allocation vector and FCB are changed only after BIOS accepts the data.
-DIR_WRITE:
+; -------------------------------------------------------------------------------
+; Sequential Write
+; -------------------------------------------------------------------------------
+
+  ; Write one sequential 128-byte record. A=current user, DE=activated FCB,
+  ; BC=current DMA, H=nonzero when the selected drive is software protected.
+  ; The allocation vector and FCB are changed only after BIOS accepts the data.
+
+DIR_WRITE:                              ; write sequential record
         LD      (DIR_WUSER),A
         LD      (DIR_WFCB),DE
         LD      (DIR_WDMA),BC
@@ -1028,7 +1191,7 @@ DIR_WRITE:
         LD      A,(DE)
         CP      5
         JP      NC,DIR_WFAIL
-        LD      HL,9            ; CP/M read-only attribute is T1 bit 7
+        LD      HL,9                    ; CP/M read-only attribute is T1 bit 7
         ADD     HL,DE
         LD      A,(HL)
         AND     080H
@@ -1049,8 +1212,9 @@ DIR_WRITE:
         LD      DE,(DIR_WFCB)
         LD      BC,(DIR_WDMA)
         LD      H,0
-        JP      DIR_WRITE       ; first record in the new canonical extent
-DIR_WCUR:
+        JP      DIR_WRITE               ; first record in the new canonical extent
+
+DIR_WCUR:                               ; write cur
         LD      (DIR_WCR),A
 
         LD      HL,(DIR_WFCB)
@@ -1074,14 +1238,16 @@ DIR_WCUR:
         AND     C
         LD      (DIR_WREM),A
         LD      A,(DIR_BSH)
-DIR_WBIX:
+
+DIR_WBIX:                               ; write bix
         OR      A
         JR      Z,DIR_WBOK
         SRL     H
         RR      L
         DEC     A
         JR      DIR_WBIX
-DIR_WBOK:
+
+DIR_WBOK:                               ; write bok
         LD      A,H
         OR      A
         JP      NZ,DIR_WFULL
@@ -1103,14 +1269,16 @@ DIR_WBOK:
         INC     HL
         LD      D,(HL)
         JR      DIR_WGOT
-DIR_W8BIT:
+
+DIR_W8BIT:                              ; write 8bit
         LD      E,A
         LD      D,0
         ADD     HL,DE
         LD      (DIR_WAEP),HL
         LD      E,(HL)
         LD      D,0
-DIR_WGOT:
+
+DIR_WGOT:                               ; write got
         LD      A,D
         OR      E
         JR      NZ,DIR_WHAVE
@@ -1125,14 +1293,16 @@ DIR_WGOT:
         JR      Z,DW_NOZERO
         CALL    DIR_WZFILL
         JP      NZ,DIR_WFAIL
-DW_NOZERO:
+
+DW_NOZERO:                              ; delete w nozero
         LD      HL,(DIR_WNEW)
         LD      A,1
         LD      (DIR_WALLOC),A
         LD      D,H
         LD      E,L
         JR      DIR_WMAP
-DIR_WHAVE:
+
+DIR_WHAVE:                              ; write have
         XOR     A
         LD      (DIR_WALLOC),A
         LD      HL,(DIR_DSM)
@@ -1144,34 +1314,39 @@ DIR_WHAVE:
         CP      L
         JP      C,DIR_WMAP
         JP      NZ,DIR_WFAIL
-DIR_WMAP:
-        EX      DE,HL           ; HL=allocation block
+
+DIR_WMAP:                               ; write map
+        EX      DE,HL                   ; HL=allocation block
         LD      A,(DIR_BSH)
-DIR_WSHFT:
+
+DIR_WSHFT:                              ; write shft
         OR      A
         JR      Z,DIR_WSHOK
         ADD     HL,HL
         DEC     A
         JR      DIR_WSHFT
-DIR_WSHOK:
+
+DIR_WSHOK:                              ; write shok
         LD      A,(DIR_WREM)
         LD      E,A
         LD      D,0
         ADD     HL,DE
         LD      DE,(DIR_SPT)
         LD      BC,(DIR_OFF)
-DIR_WDIV:
+
+DIR_WDIV:                               ; write div
         OR      A
         SBC     HL,DE
         JR      C,DIR_WDONE
         INC     BC
         JR      DIR_WDIV
-DIR_WDONE:
+
+DIR_WDONE:                              ; write done
         ADD     HL,DE
         PUSH    HL
         CALL    BIOSETTR
         POP     BC
-        LD      DE,0             ; current native format has no XLT table
+        LD      DE,0                    ; current native format has no XLT table
         CALL    BIOSECTR
         LD      B,H
         LD      C,L
@@ -1180,10 +1355,11 @@ DIR_WDONE:
         CALL    BIOSETDM
         LD      A,(DIR_WALLOC)
         OR      A
-        LD      C,0              ; ordinary data write
+        LD      C,0                     ; ordinary data write
         JR      Z,DIR_WTYPE
-        LD      C,2              ; first record in a newly allocated block
-DIR_WTYPE:
+        LD      C,2                     ; first record in a newly allocated block
+
+DIR_WTYPE:                              ; write type
         CALL    BIOWRITE
         JP      NZ,DIR_WFAIL
 
@@ -1192,7 +1368,7 @@ DIR_WTYPE:
         JR      Z,DIR_WMETA
         LD      DE,(DIR_WNEW)
         CALL    DIR_AMARK
-        JP      NZ,DIR_WFAIL     ; range was already checked by allocator
+        JP      NZ,DIR_WFAIL            ; range was already checked by allocator
         LD      HL,(DIR_WAEP)
         LD      (HL),E
         LD      A,(DIR_DSM+1)
@@ -1200,40 +1376,46 @@ DIR_WTYPE:
         JR      Z,DIR_WMETA
         INC     HL
         LD      (HL),D
-DIR_WMETA:
+
+DIR_WMETA:                              ; write meta
         LD      A,(DIR_WALLOC)
         OR      A
         JR      Z,DIR_WPOS
         LD      DE,(DIR_WNEW)
         CALL    DIR_WPADD
-DIR_WPOS:
+
+DIR_WPOS:                               ; write pos
         LD      HL,(DIR_WFCB)
         LD      DE,32
         ADD     HL,DE
         INC     (HL)
         LD      A,(HL)
         LD      C,A
-        LD      DE,0FFEFH         ; from CR byte 32 to RC byte 15
+        LD      DE,0FFEFH               ; from CR byte 32 to RC byte 15
         ADD     HL,DE
         LD      A,(HL)
         CP      C
         JR      NC,DIR_WOK
         LD      (HL),C
-DIR_WOK:
+
+DIR_WOK:                                ; write ok
         XOR     A
         RET
-DIR_WFULL:
-        LD      A,1              ; CP/M-compatible directory/disk-full result
+
+DIR_WFULL:                              ; write full
+        LD      A,1                     ; CP/M-compatible directory/disk-full result
         OR      A
         RET
-DIR_WFAIL:
+
+DIR_WFAIL:                              ; write fail
         SCF
         RET
 
-; Function 40 patch: initialize every 128-byte record in a newly allocated
-; CP/M block before the caller's record is written. DIRBUF is expendable once
-; allocation reconstruction is complete, so it doubles as the zero DMA buffer.
-DIR_WZFILL:
+  ; Function 40 patch: initialize every 128-byte record in a newly allocated
+  ; CP/M block before the caller's record is written. DIRBUF is expendable once
+  ; allocation reconstruction is complete, so it doubles as the zero DMA buffer.
+
+DIR_WZFILL:                             ; write zfill
         LD      (DIR_ZBLOCK),HL
         LD      HL,DIRBUF
         LD      (HL),0
@@ -1242,29 +1424,34 @@ DIR_WZFILL:
         LDIR
         XOR     A
         LD      (DIR_ZREC),A
-DZ_LOOP:
+
+DZ_LOOP:                                ; loop
         LD      HL,(DIR_ZBLOCK)
         LD      A,(DIR_BSH)
-DZ_SHIFT:
+
+DZ_SHIFT:                               ; search hift
         OR      A
         JR      Z,DZ_SHOK
         ADD     HL,HL
         DEC     A
         JR      DZ_SHIFT
-DZ_SHOK:
+
+DZ_SHOK:                                ; search hok
         LD      A,(DIR_ZREC)
         LD      E,A
         LD      D,0
         ADD     HL,DE
         LD      DE,(DIR_SPT)
         LD      BC,(DIR_OFF)
-DZ_DIV:
+
+DZ_DIV:                                 ; delete iv
         OR      A
         SBC     HL,DE
         JR      C,DZ_DONE
         INC     BC
         JR      DZ_DIV
-DZ_DONE:
+
+DZ_DONE:                                ; finish
         ADD     HL,DE
         PUSH    HL
         CALL    BIOSETTR
@@ -1280,8 +1467,9 @@ DZ_DONE:
         OR      A
         LD      C,0
         JR      NZ,DZ_WRITE
-        LD      C,2             ; first logical record of a new CP/M block
-DZ_WRITE:
+        LD      C,2                     ; first logical record of a new CP/M block
+
+DZ_WRITE:                               ; write directory record
         CALL    BIOWRITE
         RET     NZ
         LD      HL,DIR_ZREC
@@ -1291,13 +1479,14 @@ DZ_WRITE:
         CP      (HL)
         JR      NZ,DZ_LOOP
         XOR     A
-        LD      (DIR_VALID),A   ; zero workspace displaced cached directory
+        LD      (DIR_VALID),A           ; zero workspace displaced cached directory
         RET
 
-; CR=128: commit the completed extent, create the next empty extent, then let
-; the ordinary write path allocate its first data block. Directory-full leaves
-; the caller at the stable old CR=128 position.
-DIR_WNEXT:
+  ; CR=128: commit the completed extent, create the next empty extent, then let
+  ; the ordinary write path allocate its first data block. Directory-full leaves
+  ; the caller at the stable old CR=128 position.
+
+DIR_WNEXT:                              ; write next
         LD      HL,(DIR_WFCB)
         LD      DE,DIR_WOLD
         LD      BC,33
@@ -1324,18 +1513,20 @@ DIR_WNEXT:
         INC     A
         AND     03FH
         LD      (HL),A
-DIR_WNZS2:
+
+DIR_WNZS2:                              ; write nzs2
         LD      HL,(DIR_WFCB)
         LD      DE,15
         ADD     HL,DE
-        LD      (HL),0          ; new extent RC
+        LD      (HL),0                  ; new extent RC
         INC     HL
         LD      B,16
-DIR_WNZAL:
+
+DIR_WNZAL:                              ; write nzal
         LD      (HL),0
         INC     HL
         DJNZ    DIR_WNZAL
-        LD      (HL),0          ; new extent CR
+        LD      (HL),0                  ; new extent CR
         LD      DE,(DIR_WFCB)
         LD      A,(DIR_WUSER)
         CALL    DIR_CREATE
@@ -1344,30 +1535,39 @@ DIR_WNZAL:
         JR      Z,DIR_WNREST
         XOR     A
         RET
-DIR_WNERR:
+
+DIR_WNERR:                              ; write nerr
         CALL    DIR_WNLOAD
         SCF
         RET
-DIR_WNREST:
+
+DIR_WNREST:                             ; write nrest
         CALL    DIR_WNLOAD
         LD      A,1
         OR      A
         RET
-DIR_WNLOAD:
+
+DIR_WNLOAD:                             ; write nload
         LD      HL,DIR_WOLD
         LD      DE,(DIR_WFCB)
         LD      BC,33
         LDIR
         RET
 
-; Create the FCB's current empty extent in the first deleted directory slot.
-; Input A=user, DE=FCB. Return zero success, one directory-full, carry storage.
-DIR_CREATE:
+; -------------------------------------------------------------------------------
+; Create Additional Extent
+; -------------------------------------------------------------------------------
+
+  ; Create the FCB's current empty extent in the first deleted directory slot.
+  ; Input A=user, DE=FCB. Return zero success, one directory-full, carry storage.
+
+DIR_CREATE:                             ; create current empty extent
         LD      (DIR_XUSER),A
         LD      (DIR_XFCB),DE
         XOR     A
         LD      (DIR_RECORD),A
-DIR_XRECD:
+
+DIR_XRECD:                              ; extent-create recd
         LD      A,(DIR_RECORD)
         LD      HL,DIR_RECS
         CP      (HL)
@@ -1378,7 +1578,8 @@ DIR_XRECD:
         LD      B,4
         XOR     A
         LD      (DIR_XSLOT),A
-DIR_XSCAN:
+
+DIR_XSCAN:                              ; extent-create scan
         LD      A,(HL)
         CP      0E5H
         JR      Z,DIR_XFOUND
@@ -1391,7 +1592,8 @@ DIR_XSCAN:
         LD      HL,DIR_RECORD
         INC     (HL)
         JR      DIR_XRECD
-DIR_XFOUND:
+
+DIR_XFOUND:                             ; extent-create found
         PUSH    HL
         LD      DE,DIR_XOLD
         LD      BC,32
@@ -1412,37 +1614,48 @@ DIR_XFOUND:
         LD      A,(DIR_XSLOT)
         OR      A
         RET
-DIR_XWERR:
+
+DIR_XWERR:                              ; extent-create werr
         PUSH    AF
         LD      HL,DIRBUF
         LD      A,(DIR_XSLOT)
         OR      A
         JR      Z,DIR_XRPOS
         LD      DE,32
-DIR_XRADD:
+
+DIR_XRADD:                              ; extent-create radd
         ADD     HL,DE
         DEC     A
         JR      NZ,DIR_XRADD
-DIR_XRPOS:
+
+DIR_XRPOS:                              ; extent-create rpos
         EX      DE,HL
         LD      HL,DIR_XOLD
         LD      BC,32
         LDIR
         CALL    DIR_INVAL
         POP     AF
-DIR_XERR:
+
+DIR_XERR:                               ; extent-create err
         SCF
         RET
-DIR_XFULL:
+
+DIR_XFULL:                              ; extent-create full
         LD      A,0FFH
         OR      A
         RET
 
-; Find the first clear allocation bit. Reserved directory blocks are already
-; represented in the reconstructed ALV, so this remains geometry-independent.
-DIR_WFREE:
+; -------------------------------------------------------------------------------
+; Block Allocation
+; -------------------------------------------------------------------------------
+
+  ; Find the first clear allocation bit. Reserved directory blocks are already
+  ; represented in the reconstructed ALV, so this remains geometry-independent.
+
+DIR_WFREE:                              ; find free allocation block
         LD      HL,0
-DIR_WFLOOP:
+
+DIR_WFLOOP:                             ; write floop
         PUSH    HL
         LD      A,L
         AND     7
@@ -1477,22 +1690,26 @@ DIR_WFLOOP:
         CP      E
         JR      C,DIR_WFLOOP
         JR      Z,DIR_WFLOOP
-DIR_WFNONE:
+
+DIR_WFNONE:                             ; write fnone
         LD      A,1
         OR      A
         RET
-DIR_WFOUND:
+
+DIR_WFOUND:                             ; write found
         XOR     A
         RET
 
-; Patch 2026-09-01: the original RC-only Close deliberately rejected every
-; allocation-map change. Keep that history visible: this pending journal is
-; the proof that now permits only blocks selected by BetterCP/M's allocator.
-; Each entry is FCB pointer followed by block.
-DIR_WPCAP:
+  ; Patch 2026-09-01: the original RC-only Close deliberately rejected every
+  ; allocation-map change. Keep that history visible: this pending journal is
+  ; the proof that now permits only blocks selected by BetterCP/M's allocator.
+  ; Each entry is FCB pointer followed by block.
+
+DIR_WPCAP:                              ; write pcap
         LD      HL,DIR_PEND
         LD      B,32
-DIR_WPCLOP:
+
+DIR_WPCLOP:                             ; write pclop
         LD      A,(HL)
         INC     HL
         OR      (HL)
@@ -1504,11 +1721,16 @@ DIR_WPCLOP:
         LD      A,1
         OR      A
         RET
-DIR_WPCOK:
+
+DIR_WPCOK:                              ; write pcok
         XOR     A
         RET
 
-DIR_WPADD:
+; -------------------------------------------------------------------------------
+; Pending Allocation Journal
+; -------------------------------------------------------------------------------
+
+DIR_WPADD:                              ; write padd
         PUSH    DE
         CALL    DIR_WPCAP
         POP     DE
@@ -1527,9 +1749,21 @@ DIR_WPADD:
         XOR     A
         RET
 
-; Read one sequential 128-byte record. A=current user, DE=activated FCB,
-; BC=current DMA. Returns A=0 success, A=1 EOF, or carry set on storage error.
-DIR_READ:
+; ================================================================================
+; =                          Sequential Read and Close                           =
+; =                                                                              =
+; = Reads sequential records across extent boundaries and closes activated FCBs, =
+; = committing only directory changes permitted by the compatibility rules.      =
+; ================================================================================
+
+  ; Read one sequential 128-byte record. A=current user, DE=activated FCB,
+  ; BC=current DMA. Returns A=0 success, A=1 EOF, or carry set on storage error.
+
+; -------------------------------------------------------------------------------
+; Sequential Read
+; -------------------------------------------------------------------------------
+
+DIR_READ:                               ; read sequential record
         LD      (DIR_RUSER),A
         LD      (DIR_RFCB),DE
         LD      (DIR_RDMA),BC
@@ -1540,38 +1774,40 @@ DIR_READ:
         JR      Z,DIR_RPOS
         SCF
         RET
-DIR_RPOS:
+
+DIR_RPOS:                               ; read pos
         LD      HL,(DIR_RFCB)
         LD      DE,32
         ADD     HL,DE
-        LD      A,(HL)          ; CR
+        LD      A,(HL)                  ; CR
         CP      128
         JR      C,DIR_RCHK
-        CALL    DIR_RNEXT       ; activate the next logical extent
+        CALL    DIR_RNEXT               ; activate the next logical extent
         JR      Z,DIR_RPOS
         JP      C,DIR_RFAIL
         JP      DIR_REOF
-DIR_RCHK:
+
+DIR_RCHK:                               ; read chk
         LD      C,A
         LD      HL,(DIR_RFCB)
         LD      DE,15
         ADD     HL,DE
         LD      A,C
-        CP      (HL)            ; CR >= RC means no data in this extent
+        CP      (HL)                    ; CR >= RC means no data in this extent
         JP      NC,DIR_REOF
         LD      (DIR_RCR),A
 
         LD      HL,(DIR_RFCB)
         LD      DE,12
         ADD     HL,DE
-        LD      A,(HL)          ; logical subextent within EXM group
+        LD      A,(HL)                  ; logical subextent within EXM group
         LD      C,A
         LD      A,(DIR_EXM)
         AND     C
         LD      H,A
         LD      L,0
         SRL     H
-        RR      L               ; HL=subextent*128
+        RR      L                       ; HL=subextent*128
         LD      A,(DIR_RCR)
         LD      E,A
         LD      D,0
@@ -1582,14 +1818,16 @@ DIR_RCHK:
         AND     C
         LD      (DIR_RREM),A
         LD      A,(DIR_BSH)
-DIR_RBIX:
+
+DIR_RBIX:                               ; read bix
         OR      A
         JR      Z,DIR_RBOK
         SRL     H
         RR      L
         DEC     A
         JR      DIR_RBIX
-DIR_RBOK:
+
+DIR_RBOK:                               ; read bok
         LD      A,H
         OR      A
         JP      NZ,DIR_REOF
@@ -1612,46 +1850,53 @@ DIR_RBOK:
         LD      D,(HL)
         EX      DE,HL
         JR      DIR_RBLK
-DIR_R8BIT:
+
+DIR_R8BIT:                              ; read 8bit
         LD      E,A
         LD      D,0
         ADD     HL,DE
         LD      L,(HL)
         LD      H,0
-DIR_RBLK:
+
+DIR_RBLK:                               ; read blk
         LD      A,H
         OR      L
-        JR      Z,DIR_REOF      ; zero allocation entry has no data
+        JR      Z,DIR_REOF              ; zero allocation entry has no data
         LD      DE,(DIR_DSM)
         OR      A
         SBC     HL,DE
         JR      C,DIR_RVALID
         JR      Z,DIR_RVALID
         JR      DIR_REOF
-DIR_RVALID:
-        ADD     HL,DE           ; restore allocation block number
+
+DIR_RVALID:                             ; read valid
+        ADD     HL,DE                   ; restore allocation block number
         LD      A,(DIR_BSH)
-DIR_RSHFT:
+
+DIR_RSHFT:                              ; read shft
         OR      A
         JR      Z,DIR_RSHOK
         ADD     HL,HL
         DEC     A
         JR      DIR_RSHFT
-DIR_RSHOK:
+
+DIR_RSHOK:                              ; read shok
         LD      A,(DIR_RREM)
         LD      E,A
         LD      D,0
-        ADD     HL,DE           ; logical record relative to data area
+        ADD     HL,DE                   ; logical record relative to data area
         LD      DE,(DIR_SPT)
         LD      BC,(DIR_OFF)
-DIR_RDIV:
+
+DIR_RDIV:                               ; read div
         OR      A
         SBC     HL,DE
         JR      C,DIR_RDONE
         INC     BC
         JR      DIR_RDIV
-DIR_RDONE:
-        ADD     HL,DE           ; HL is logical sector within track
+
+DIR_RDONE:                              ; read done
+        ADD     HL,DE                   ; HL is logical sector within track
         PUSH    HL
         CALL    BIOSETTR
         POP     BC
@@ -1670,16 +1915,19 @@ DIR_RDONE:
         INC     (HL)
         XOR     A
         RET
-DIR_RFAIL:
+
+DIR_RFAIL:                              ; read fail
         SCF
         RET
-DIR_REOF:
+
+DIR_REOF:                               ; read eof
         LD      A,1
         OR      A
         RET
 
-; CR=128: advance EX/S2 and activate the next extent. Missing extent is EOF.
-DIR_RNEXT:
+  ; CR=128: advance EX/S2 and activate the next extent. Missing extent is EOF.
+
+DIR_RNEXT:                              ; read next
         LD      HL,(DIR_RFCB)
         LD      DE,12
         ADD     HL,DE
@@ -1702,7 +1950,8 @@ DIR_RNEXT:
         INC     A
         AND     03FH
         LD      (HL),A
-DIR_RNCR:
+
+DIR_RNCR:                               ; read ncr
         LD      HL,(DIR_RFCB)
         LD      DE,32
         ADD     HL,DE
@@ -1713,7 +1962,7 @@ DIR_RNCR:
         RET     C
         CP      0FFH
         JR      NZ,DIR_RNOK
-        LD      HL,(DIR_RFCB)   ; restore stable exact-boundary EOF position
+        LD      HL,(DIR_RFCB)           ; restore stable exact-boundary EOF position
         LD      DE,12
         ADD     HL,DE
         LD      A,(DIR_ROEX)
@@ -1729,14 +1978,20 @@ DIR_RNCR:
         LD      A,1
         OR      A
         RET
-DIR_RNOK:
+
+DIR_RNOK:                               ; read nok
         XOR     A
         RET
 
-; Close an activated FCB. B is nonzero when the current disk is software
-; protected. RC changes and allocations recorded by Write Sequential may be
-; committed together; existing canonical blocks may not be removed/replaced.
-DIR_CLOSE:
+  ; Close an activated FCB. B is nonzero when the current disk is software
+  ; protected. RC changes and allocations recorded by Write Sequential may be
+  ; committed together; existing canonical blocks may not be removed/replaced.
+
+; -------------------------------------------------------------------------------
+; Close File
+; -------------------------------------------------------------------------------
+
+DIR_CLOSE:                              ; close activated FCB
         LD      (DIR_CFP),DE
         LD      A,B
         LD      (DIR_CPRO),A
@@ -1756,25 +2011,27 @@ DIR_CLOSE:
         LD      HL,(DIR_CFP)
         INC     HL
         LD      DE,DIR_CSAV
-        LD      B,14            ; identity through S2 must remain canonical
-C_CMPA:
+        LD      B,14                    ; identity through S2 must remain canonical
+
+C_CMPA:                                 ; compare a
         LD      A,(DE)
         CP      (HL)
         JP      NZ,DIR_CNOMR
         INC     DE
         INC     HL
         DJNZ    C_CMPA
-        LD      A,(DE)          ; saved FCB RC
+        LD      A,(DE)                  ; saved FCB RC
         CP      129
         JP      NC,DIR_CNOMR
         LD      (DIR_CNRC),A
         LD      C,A
-        LD      A,(HL)          ; canonical on-disk RC
+        LD      A,(HL)                  ; canonical on-disk RC
         CP      C
         LD      A,0
         JR      Z,DIR_CRCEQ
-        DEC     A               ; FFh marks the permitted dirty-RC case
-DIR_CRCEQ:
+        DEC     A                       ; FFh marks the permitted dirty-RC case
+
+DIR_CRCEQ:                              ; close rceq
         LD      (DIR_CDIR),A
         INC     DE
         INC     HL
@@ -1782,7 +2039,8 @@ DIR_CRCEQ:
         OR      A
         JR      Z,C_CMP8
         LD      B,8
-C_CMP16:
+
+C_CMP16:                                ; compare 16
         LD      A,(HL)
         LD      C,A
         INC     HL
@@ -1811,7 +2069,8 @@ C_CMP16:
         LD      A,0FFH
         LD      (DIR_CDIR),A
         JR      C_C16NEXT
-C_C16OLD:
+
+C_C16OLD:                               ; close 16old
         DEC     HL
         DEC     HL
         LD      A,(DE)
@@ -1824,12 +2083,15 @@ C_C16OLD:
         JP      NZ,DIR_CNOMR
         INC     DE
         INC     HL
-C_C16NEXT:
+
+C_C16NEXT:                              ; close 16next
         DJNZ    C_CMP16
         JR      C_CMPDONE
-C_CMP8:
+
+C_CMP8:                                 ; compare 8
         LD      B,16
-C_CMP8LOP:
+
+C_CMP8LOP:                              ; compare 8lop
         LD      A,(DE)
         LD      C,A
         LD      A,(HL)
@@ -1852,11 +2114,13 @@ C_CMP8LOP:
         JP      NZ,DIR_CNOMR
         LD      A,0FFH
         LD      (DIR_CDIR),A
-C_C8NEXT:
+
+C_C8NEXT:                               ; close 8next
         INC     DE
         INC     HL
         DJNZ    C_CMP8LOP
-C_CMPDONE:
+
+C_CMPDONE:                              ; compare done
         LD      A,(DIR_CDIR)
         OR      A
         JR      NZ,DIR_CWRITE
@@ -1864,8 +2128,8 @@ C_CMPDONE:
         OR      A
         RET
 
-DIR_CWRITE:
-        CALL    DIR_CREST       ; caller retains its dirty FCB exactly
+DIR_CWRITE:                             ; close write
+        CALL    DIR_CREST               ; caller retains its dirty FCB exactly
         LD      A,(DIR_CPRO)
         OR      A
         JR      NZ,C_NOWR
@@ -1873,41 +2137,43 @@ DIR_CWRITE:
         PUSH    HL
         LD      DE,DIR_COLD
         LD      BC,32
-        LDIR                    ; preserve buffer state for failed writeback
+        LDIR                            ; preserve buffer state for failed writeback
         POP     HL
         INC     HL
         LD      DE,DIR_CSAV
         EX      DE,HL
         LD      BC,31
-        LDIR                    ; merge validated FCB fields into directory
-        LD      C,1             ; BIOS directory-write type
+        LDIR                            ; merge validated FCB fields into directory
+        LD      C,1                     ; BIOS directory-write type
         CALL    BIOWRITE
         JR      NZ,DIR_CWERR
-        CALL    DIR_INVAL       ; rebuild allocation/login state on next use
+        CALL    DIR_INVAL               ; rebuild allocation/login state on next use
         CALL    DIR_PREM
         LD      A,(DIR_CRET)
         OR      A
         RET
-DIR_CWERR:
+
+DIR_CWERR:                              ; close werr
         PUSH    AF
         CALL    DIR_CENT
         EX      DE,HL
         LD      HL,DIR_COLD
         LD      BC,32
         LDIR
-        CALL    DIR_INVAL       ; media state is uncertain after failed write
+        CALL    DIR_INVAL               ; media state is uncertain after failed write
         POP     AF
         SCF
         RET
 
-DIR_CNOMR:
+DIR_CNOMR:                              ; close nomr
         CALL    DIR_CREST
-C_NOWR:
-        LD      A,0FFH          ; unsupported dirty state or protected disk
+
+C_NOWR:                                 ; report not found wr
+        LD      A,0FFH                  ; unsupported dirty state or protected disk
         OR      A
         RET
 
-DIR_CREST:
+DIR_CREST:                              ; close rest
         LD      HL,DIR_CSAV
         LD      DE,(DIR_CFP)
         INC     DE
@@ -1915,25 +2181,27 @@ DIR_CREST:
         LDIR
         RET
 
-DIR_CENT:
+DIR_CENT:                               ; close ent
         LD      HL,DIRBUF
         LD      A,(DIR_CRET)
         OR      A
         RET     Z
         LD      DE,32
-DIR_CEADD:
+
+DIR_CEADD:                              ; close eadd
         ADD     HL,DE
         DEC     A
         JR      NZ,DIR_CEADD
         RET
 
-DIR_CPEND:
+DIR_CPEND:                              ; close pend
         PUSH    BC
         PUSH    DE
         PUSH    HL
         LD      HL,DIR_PEND
         LD      B,32
-DIR_CPLOP:
+
+DIR_CPLOP:                              ; close plop
         LD      A,(DIR_CFP)
         CP      (HL)
         JR      NZ,DIR_CPNEXT
@@ -1952,10 +2220,12 @@ DIR_CPLOP:
         CP      (HL)
         JR      Z,DIR_CPYES
         DEC     HL
-DIR_CPBAD:
+
+DIR_CPBAD:                              ; close pbad
         DEC     HL
         DEC     HL
-DIR_CPNEXT:
+
+DIR_CPNEXT:                             ; close pnext
         INC     HL
         INC     HL
         INC     HL
@@ -1964,18 +2234,21 @@ DIR_CPNEXT:
         LD      A,1
         OR      A
         JR      DIR_PFRET
-DIR_CPYES:
+
+DIR_CPYES:                              ; close pyes
         XOR     A
-DIR_PFRET:
+
+DIR_PFRET:                              ; pfret
         POP     HL
         POP     DE
         POP     BC
         RET
 
-DIR_PREM:
+DIR_PREM:                               ; prem
         LD      HL,DIR_PEND
         LD      B,32
-DIR_CPRLOP:
+
+DIR_CPRLOP:                             ; close prlop
         LD      A,(DIR_CFP)
         CP      (HL)
         JR      NZ,DIR_CPRNEXT
@@ -1988,7 +2261,8 @@ DIR_CPRLOP:
         INC     HL
         LD      (HL),0
         DEC     HL
-DIR_CPRNEXT:
+
+DIR_CPRNEXT:                            ; close prnext
         INC     HL
         INC     HL
         INC     HL
@@ -1996,16 +2270,27 @@ DIR_CPRNEXT:
         DJNZ    DIR_CPRLOP
         RET
 
-DJ_REM:
+DJ_REM:                                 ; read em
         LD      HL,(DIR_DFCB)
         LD      (DIR_CFP),HL
         JP      DIR_PREM
 
-; Begin/continue a CP/M directory enumeration. Search First receives current
-; user in A, FCB in DE, and DMA in BC. Search Next receives the current DMA in
-; BC and uses the retained FCB/cursor. Successful calls copy all 128 bytes of
-; the containing directory record to DMA and return its slot in A.
-DIR_SFIR:
+  ; Begin/continue a CP/M directory enumeration. Search First receives current
+  ; user in A, FCB in DE, and DMA in BC. Search Next receives the current DMA in
+  ; BC and uses the retained FCB/cursor. Successful calls copy all 128 bytes of
+  ; the containing directory record to DMA and return its slot in A.
+
+; ================================================================================
+; =                            Directory Enumeration                             =
+; =                                                                              =
+; = Implements Search First and Search Next, retaining the search pattern and    =
+; = cursor while returning complete directory records through the caller's DMA.  =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Search First / Search Next
+; -------------------------------------------------------------------------------
+
+DIR_SFIR:                               ; begin directory search
         LD      (DIR_USER),A
         LD      (DIR_FCBP),DE
         LD      (DIR_SDMA),BC
@@ -2019,12 +2304,14 @@ DIR_SFIR:
         LD      HL,(DIR_FCBP)
         LD      DE,14
         ADD     HL,DE
-        LD      (HL),0          ; ordinary Search First clears S2
+        LD      (HL),0                  ; ordinary Search First clears S2
         JR      DIR_SINIT
-DIR_SALL:
+
+DIR_SALL:                               ; begin all-user directory search
         LD      A,0FFH
         LD      (S_ALLUSR),A
-DIR_SINIT:
+
+DIR_SINIT:                              ; search init
         XOR     A
         LD      (DIR_RECORD),A
         LD      (DIR_SLOT),A
@@ -2032,13 +2319,13 @@ DIR_SINIT:
         LD      (DIR_SACT),A
         JR      DIR_SSCAN
 
-DIR_SNXT:
+DIR_SNXT:                               ; continue directory search
         LD      (DIR_SDMA),BC
         LD      A,(DIR_SACT)
         OR      A
         JP      Z,DIR_SNONE
 
-DIR_SSCAN:
+DIR_SSCAN:                              ; search scan
         LD      A,(DIR_RECORD)
         LD      HL,DIR_RECS
         CP      (HL)
@@ -2048,18 +2335,21 @@ DIR_SSCAN:
         JR      Z,DIR_SLOK
         SCF
         RET
-DIR_SLOK:
+
+DIR_SLOK:                               ; search lok
         LD      A,(DIR_SLOT)
         OR      A
         JR      Z,DIR_SENT
         LD      DE,32
-DIR_SSKIP:
+
+DIR_SSKIP:                              ; search skip
         ADD     HL,DE
         DEC     A
         JR      NZ,DIR_SSKIP
-DIR_SENT:
+
+DIR_SENT:                               ; search ent
         LD      A,(HL)
-        CP      32              ; deleted and reserved metadata never match
+        CP      32                      ; deleted and reserved metadata never match
         JR      NC,DIR_SADV
         LD      A,(S_ALLUSR)
         OR      A
@@ -2067,20 +2357,22 @@ DIR_SENT:
         LD      A,(DIR_USER)
         CP      (HL)
         JR      NZ,DIR_SADV
-DIR_SNAME:
+
+DIR_SNAME:                              ; search name
         PUSH    HL
         INC     HL
         LD      DE,(DIR_FCBP)
         INC     DE
-        LD      B,12            ; filename, type, and EX
-DIR_SCMP:
+        LD      B,12                    ; filename, type, and EX
+
+DIR_SCMP:                               ; search cmp
         LD      A,(DE)
         CP      '?'
         JR      Z,DIR_SCNXT
         AND     07FH
         LD      C,A
         LD      A,B
-        CP      1               ; final compared byte is five-bit EX
+        CP      1                       ; final compared byte is five-bit EX
         JR      NZ,DIR_SBASE
         LD      A,C
         AND     01FH
@@ -2088,34 +2380,39 @@ DIR_SCMP:
         LD      A,(HL)
         AND     01FH
         JR      DIR_SCOMP
-DIR_SBASE:
+
+DIR_SBASE:                              ; search base
         LD      A,(HL)
         AND     07FH
-DIR_SCOMP:
+
+DIR_SCOMP:                              ; search comp
         CP      C
         JR      NZ,DIR_SMISS
-DIR_SCNXT:
+
+DIR_SCNXT:                              ; search cnxt
         INC     DE
         INC     HL
         DJNZ    DIR_SCMP
         POP     HL
         LD      A,(DIR_SLOT)
         LD      (DIR_SRET),A
-        CALL    S_ADV0          ; continuation begins after this match
+        CALL    S_ADV0                  ; continuation begins after this match
         LD      HL,DIRBUF
         LD      DE,(DIR_SDMA)
         LD      BC,128
         LDIR
         LD      A,(DIR_SRET)
-        OR      A               ; clear carry; slot zero remains Z
+        OR      A                       ; clear carry; slot zero remains Z
         RET
-DIR_SMISS:
+
+DIR_SMISS:                              ; search miss
         POP     HL
-DIR_SADV:
+
+DIR_SADV:                               ; search adv
         CALL    S_ADV0
         JR      DIR_SSCAN
 
-S_ADV0:
+S_ADV0:                                 ; advance directory scan 0
         LD      A,(DIR_SLOT)
         INC     A
         CP      4
@@ -2126,20 +2423,32 @@ S_ADV0:
         INC     A
         LD      (DIR_RECORD),A
         RET
-DIR_SSLOT:
+
+DIR_SSLOT:                              ; search slot
         LD      (DIR_SLOT),A
         RET
 
-DIR_SNONE:
+DIR_SNONE:                              ; search none
         XOR     A
         LD      (DIR_SACT),A
         LD      A,0FFH
         OR      A
         RET
 
-; Return live current-drive state for BDOS pointer-query functions. A stale or
-; invalidated login is rebuilt before its private pointers become public.
-DIR_GALV:
+  ; Return live current-drive state for BDOS pointer-query functions. A stale or
+  ; invalidated login is rebuilt before its private pointers become public.
+
+; ================================================================================
+; =                            Drive State and Login                             =
+; =                                                                              =
+; = Publishes live drive pointers, refreshes DPH/DPB geometry, and reconstructs  =
+; = allocation state when a drive is logged in or invalidated.                   =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Live Drive-State Queries
+; -------------------------------------------------------------------------------
+
+DIR_GALV:                               ; return live allocation-vector pointer
         LD      A,(DIR_VALID)
         OR      A
         JR      NZ,DIR_AGOK
@@ -2147,17 +2456,18 @@ DIR_GALV:
         LD      C,A
         CALL    DIR_LOGIN
         RET     NZ
-DIR_AGOK:
-; Patch 2026-09-02: a DPH publishes a live DPB, not a private immutable copy.
-; Refresh the mapping fields at each filesystem entry boundary.  Besides
-; honoring future CONFIG changes, this repairs cached geometry after software
-; deliberately exercises the public DPB (BIOSTEST 0433 does exactly that).
+
+DIR_AGOK:                               ; attribute gok
+  ; Patch 2026-09-02: a DPH publishes a live DPB, not a private immutable copy.
+  ; Refresh the mapping fields at each filesystem entry boundary.  Besides
+  ; honoring future CONFIG changes, this repairs cached geometry after software
+  ; deliberately exercises the public DPB (BIOSTEST 0433 does exactly that).
         LD      HL,(DIR_DPB)
-        LD      E,(HL)          ; SPT
+        LD      E,(HL)                  ; SPT
         INC     HL
         LD      D,(HL)
         LD      (DIR_SPT),DE
-        LD      DE,12           ; from DPB+1 to OFF at DPB+13
+        LD      DE,12                   ; from DPB+1 to OFF at DPB+13
         ADD     HL,DE
         LD      E,(HL)
         INC     HL
@@ -2167,17 +2477,26 @@ DIR_AGOK:
         XOR     A
         RET
 
-DIR_GDPB:
+; -------------------------------------------------------------------------------
+; DPB Refresh
+; -------------------------------------------------------------------------------
+
+DIR_GDPB:                               ; return live DPB pointer
         CALL    DIR_GALV
         RET     NZ
         LD      HL,(DIR_DPB)
         XOR     A
         RET
 
-; Establish drive state from its DPH and DPB. Input C=drive.
-; The allocation vector is cleared, seeded from AL0/AL1, and reconstructed
-; from every live ordinary directory extent before login becomes valid.
-DIR_LOGIN:
+  ; Establish drive state from its DPH and DPB. Input C=drive.
+  ; The allocation vector is cleared, seeded from AL0/AL1, and reconstructed
+  ; from every live ordinary directory extent before login becomes valid.
+
+; -------------------------------------------------------------------------------
+; Drive Login and Allocation Rebuild
+; -------------------------------------------------------------------------------
+
+DIR_LOGIN:                              ; log in selected drive
         XOR     A
         LD      (DIR_VALID),A
         LD      A,C
@@ -2194,51 +2513,51 @@ DIR_LOGIN:
         LD      D,(HL)
         LD      (DIR_DPB),DE
         EX      DE,HL
-        LD      E,(HL)          ; SPT
+        LD      E,(HL)                  ; SPT
         INC     HL
         LD      D,(HL)
         LD      (DIR_SPT),DE
-        LD      A,D             ; current divider requires 1..255 records/track
+        LD      A,D                     ; current divider requires 1..255 records/track
         OR      A
         JP      NZ,DIR_BADFMT
         LD      A,E
         OR      A
         JP      Z,DIR_BADFMT
-        INC     HL              ; BSH at DPB+2
+        INC     HL                      ; BSH at DPB+2
         LD      A,(HL)
         LD      (DIR_BSH),A
-        INC     HL              ; BLM at DPB+3
+        INC     HL                      ; BLM at DPB+3
         LD      A,(HL)
         LD      (DIR_BLM),A
-        INC     HL              ; EXM at DPB+4
+        INC     HL                      ; EXM at DPB+4
         LD      A,(HL)
         LD      (DIR_EXM),A
         CP      16
         JP      NC,DIR_BADFMT
-        INC     HL              ; DSM at DPB+5
+        INC     HL                      ; DSM at DPB+5
         LD      E,(HL)
         INC     HL
         LD      D,(HL)
         LD      (DIR_DSM),DE
-        INC     HL              ; DRM at DPB+7
+        INC     HL                      ; DRM at DPB+7
         LD      E,(HL)
         INC     HL
         LD      D,(HL)
         LD      (DIR_DRM),DE
-        INC     HL              ; AL0/AL1 at DPB+9
+        INC     HL                      ; AL0/AL1 at DPB+9
         LD      A,(HL)
         LD      (DIR_AL0),A
         INC     HL
         LD      A,(HL)
         LD      (DIR_AL1),A
         LD      DE,3
-        ADD     HL,DE           ; OFF at DPB+13
+        ADD     HL,DE                   ; OFF at DPB+13
         LD      E,(HL)
         INC     HL
         LD      D,(HL)
         LD      (DIR_OFF),DE
 
-        LD      HL,(DIR_DRM)    ; ceil((DRM+1)/4) directory records
+        LD      HL,(DIR_DRM)            ; ceil((DRM+1)/4) directory records
         LD      DE,4
         ADD     HL,DE
         SRL     H
@@ -2246,7 +2565,7 @@ DIR_LOGIN:
         SRL     H
         RR      L
         LD      (DIR_RECS),HL
-        LD      A,H             ; current scanner uses an 8-bit record index
+        LD      A,H                     ; current scanner uses an 8-bit record index
         OR      A
         JR      NZ,DIR_BADFMT
 
@@ -2257,7 +2576,7 @@ DIR_LOGIN:
         INC     HL
         LD      D,(HL)
         LD      (DIR_ALVP),DE
-        LD      HL,(DIR_DSM)    ; ceil((DSM+1)/8) allocation bytes
+        LD      HL,(DIR_DSM)            ; ceil((DSM+1)/8) allocation bytes
         LD      DE,8
         ADD     HL,DE
         SRL     H
@@ -2272,7 +2591,8 @@ DIR_LOGIN:
         LD      B,L
         LD      HL,(DIR_ALVP)
         XOR     A
-DIR_ACLR:
+
+DIR_ACLR:                               ; attribute clr
         LD      (HL),A
         INC     HL
         DJNZ    DIR_ACLR
@@ -2288,25 +2608,38 @@ DIR_ACLR:
         LD      (DIR_VALID),A
         XOR     A
         RET
-DIR_BADFMT:
+
+DIR_BADFMT:                             ; reject invalid input fmt
         LD      A,1
         OR      A
         RET
 
-DIR_INVAL:
+DIR_INVAL:                              ; invalidate cached drive state
         XOR     A
         LD      (DIR_VALID),A
         RET
 
-; Read the first 128-byte directory record for drive A.
-; Returns A=0/Z and HL=DIRBUF, or the BIOS/nonexistent-drive error in A/NZ.
-DIR_LD0:
+  ; Read the first 128-byte directory record for drive A.
+  ; Returns A=0/Z and HL=DIRBUF, or the BIOS/nonexistent-drive error in A/NZ.
+
+; ================================================================================
+; =                      Directory Record Access and Lookup                      =
+; =                                                                              =
+; = Reads directory records and provides the geometry-independent entry scanning, =
+; = exact-name lookup, and FCB extent activation services used throughout BDOS.  =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Directory Record Loading
+; -------------------------------------------------------------------------------
+
+DIR_LD0:                                ; load first directory record
         LD      C,0
         JP      DIR_LOAD
 
-; Read directory record C (0..31) for the current 128-entry MM 790K format.
-; The format-specific bounds belong here, above the geometry-neutral BIOS.
-DIR_LOAD:
+  ; Read directory record C (0..31) for the current 128-entry MM 790K format.
+  ; The format-specific bounds belong here, above the geometry-neutral BIOS.
+
+DIR_LOAD:                               ; load directory record
         LD      A,(DIR_VALID)
         OR      A
         JR      NZ,DIR_LDOK
@@ -2315,7 +2648,8 @@ DIR_LOAD:
         CALL    DIR_LOGIN
         POP     BC
         RET     NZ
-DIR_LDOK:
+
+DIR_LDOK:                               ; load ok
         LD      A,C
         LD      HL,DIR_RECS
         CP      (HL)
@@ -2329,14 +2663,16 @@ DIR_LDOK:
         JR      Z,DIR_NODRV
         LD      BC,(DIR_OFF)
         LD      A,(DIR_RECORD)
-DIR_DIVSP:
+
+DIR_DIVSP:                              ; delete ivsp
         LD      HL,DIR_SPT
         CP      (HL)
         JR      C,DIR_DIVDN
         SUB     (HL)
         INC     BC
         JR      DIR_DIVSP
-DIR_DIVDN:
+
+DIR_DIVDN:                              ; delete ivdn
         PUSH    AF
         CALL    BIOSETTR
         POP     AF
@@ -2354,20 +2690,27 @@ DIR_DIVDN:
         LD      HL,DIRBUF
         XOR     A
         RET
-DIR_NODRV:
+
+DIR_NODRV:                              ; report not found drv
         LD      A,1
         OR      A
         RET
 
-; Return the first ordinary CP/M entry in the loaded record.
-; Users 0..15 are ordinary entries. E5h is deleted; other user-byte values
-; are reserved metadata and are skipped rather than rejected.
-; Returns A=0/Z with HL at the 32-byte entry, or A=FFh/NZ if none exists.
-DIR_FIRST:
+  ; Return the first ordinary CP/M entry in the loaded record.
+  ; Users 0..15 are ordinary entries. E5h is deleted; other user-byte values
+  ; are reserved metadata and are skipped rather than rejected.
+  ; Returns A=0/Z with HL at the 32-byte entry, or A=FFh/NZ if none exists.
+
+; -------------------------------------------------------------------------------
+; Ordinary Entry Scanning
+; -------------------------------------------------------------------------------
+
+DIR_FIRST:                              ; find first ordinary directory entry
         CALL    DIR_LD0
         RET     NZ
         LD      B,4
-DIR_SCAN:
+
+DIR_SCAN:                               ; scan entries
         LD      A,(HL)
         CP      16
         JR      C,DIR_FOUND
@@ -2377,15 +2720,21 @@ DIR_SCAN:
         LD      A,0FFH
         OR      A
         RET
-DIR_FOUND:
+
+DIR_FOUND:                              ; handle match
         XOR     A
         RET
 
-; Find an exact user/name match across all 128 directory entries.
-; Input: A=user 0..15, DE=11-byte blank-padded CP/M name and extension.
-; Attribute bits (bit 7) do not participate in the comparison.
-; Return: A=0/Z and HL=entry, FFh/NZ if absent, or BIOS error/NZ.
-DIR_FIND:
+  ; Find an exact user/name match across all 128 directory entries.
+  ; Input: A=user 0..15, DE=11-byte blank-padded CP/M name and extension.
+  ; Attribute bits (bit 7) do not participate in the comparison.
+  ; Return: A=0/Z and HL=entry, FFh/NZ if absent, or BIOS error/NZ.
+
+; -------------------------------------------------------------------------------
+; Exact Name Lookup
+; -------------------------------------------------------------------------------
+
+DIR_FIND:                               ; find exact directory entry
         CP      16
         JR      NC,DIR_NOTF
         LD      (DIR_USER),A
@@ -2395,7 +2744,8 @@ DIR_FIND:
         LD      (DIR_NAMP+1),A
         XOR     A
         LD      (DIR_RECORD),A
-DIR_FRECD:
+
+DIR_FRECD:                              ; find recd
         LD      A,(DIR_RECORD)
         LD      HL,DIR_RECS
         CP      (HL)
@@ -2404,7 +2754,8 @@ DIR_FRECD:
         CALL    DIR_LOAD
         RET     NZ
         LD      B,4
-DIR_FENT:
+
+DIR_FENT:                               ; find ent
         LD      A,(DIR_USER)
         CP      (HL)
         JR      NZ,DIR_FNEXT
@@ -2416,7 +2767,8 @@ DIR_FENT:
         LD      A,(DIR_NAMP+1)
         LD      D,A
         LD      B,11
-DIR_FCHAR:
+
+DIR_FCHAR:                              ; find char
         LD      A,(DE)
         AND     07FH
         LD      C,A
@@ -2431,25 +2783,33 @@ DIR_FCHAR:
         POP     BC
         XOR     A
         RET
-DIR_FMISS:
+
+DIR_FMISS:                              ; find miss
         POP     HL
         POP     BC
-DIR_FNEXT:
+
+DIR_FNEXT:                              ; find next
         LD      DE,32
         ADD     HL,DE
         DJNZ    DIR_FENT
         LD      HL,DIR_RECORD
         INC     (HL)
         JR      DIR_FRECD
-DIR_NOTF:
+
+DIR_NOTF:                               ; report not found tf
         LD      A,0FFH
         OR      A
         RET
 
-; Activate an exact existing extent in a 33-byte sequential FCB.
-; Input: A=user, DE=FCB. Return directory slot 0..3 or FFh if absent.
-; This read-only slice supports EXM grouping and drive A/current-drive only.
-DIR_OPEN:
+; -------------------------------------------------------------------------------
+; FCB Extent Activation
+; -------------------------------------------------------------------------------
+
+  ; Activate an exact existing extent in a 33-byte sequential FCB.
+  ; Input: A=user, DE=FCB. Return directory slot 0..3 or FFh if absent.
+  ; This read-only slice supports EXM grouping and drive A/current-drive only.
+
+DIR_OPEN:                               ; activate existing FCB extent
         LD      (DIR_USER),A
         LD      (DIR_FCBP),DE
         LD      A,(DE)
@@ -2471,7 +2831,8 @@ DIR_OPEN:
         LD      (DIR_OMSK),A
         XOR     A
         LD      (DIR_RECORD),A
-DIR_ORECD:
+
+DIR_ORECD:                              ; open recd
         LD      A,(DIR_RECORD)
         LD      HL,DIR_RECS
         CP      (HL)
@@ -2479,13 +2840,15 @@ DIR_ORECD:
         LD      C,A
         CALL    DIR_LOAD
         JR      Z,DIR_OLOK
-        SCF                     ; internal storage failure, not a slot result
+        SCF                             ; internal storage failure, not a slot result
         RET
-DIR_OLOK:
+
+DIR_OLOK:                               ; open lok
         LD      B,4
         XOR     A
         LD      (DIR_SLOT),A
-DIR_OENT:
+
+DIR_OENT:                               ; open ent
         LD      A,(DIR_USER)
         CP      (HL)
         JP      NZ,DIR_ONEXT
@@ -2495,7 +2858,8 @@ DIR_OENT:
         LD      DE,(DIR_FCBP)
         INC     DE
         LD      B,11
-DIR_OCHAR:
+
+DIR_OCHAR:                              ; open char
         LD      A,(DE)
         AND     07FH
         CP      '?'
@@ -2505,7 +2869,8 @@ DIR_OCHAR:
         AND     07FH
         CP      C
         JR      NZ,DIR_OMISS
-DIR_OCNEXT:
+
+DIR_OCNEXT:                             ; open cnext
         INC     DE
         INC     HL
         DJNZ    DIR_OCHAR
@@ -2538,31 +2903,34 @@ DIR_OCNEXT:
         LD      A,(DIR_OS2)
         CP      C
         JR      NZ,DIR_OCTLN
-        INC     HL              ; RC must remain in the documented 0..128 range
+        INC     HL                      ; RC must remain in the documented 0..128 range
         LD      A,(HL)
         CP      129
         JR      NC,DIR_OCTLN
         LD      (DIR_ORC),A
         JR      DIR_OFOUND
-DIR_OCTLN:
+
+DIR_OCTLN:                              ; open ctln
         POP     HL
         JR      DIR_ONEXT
-DIR_OMISS:
+
+DIR_OMISS:                              ; open miss
         POP     HL
         POP     BC
         JR      DIR_ONEXT
-DIR_OFOUND:
+
+DIR_OFOUND:                             ; open found
         POP     HL
-        INC     HL              ; directory user byte is not FCB drive byte
+        INC     HL                      ; directory user byte is not FCB drive byte
         LD      DE,(DIR_FCBP)
         INC     DE
         LD      BC,31
-        LDIR                    ; FCB CR at byte 32 remains caller-owned
+        LDIR                            ; FCB CR at byte 32 remains caller-owned
         LD      HL,(DIR_FCBP)
         LD      DE,12
         ADD     HL,DE
         LD      A,(DIR_OEX)
-        LD      (HL),A          ; restore the caller's requested logical extent
+        LD      (HL),A                  ; restore the caller's requested logical extent
         LD      A,(DIR_ODX)
         LD      C,A
         LD      A,(DIR_OEX)
@@ -2570,21 +2938,25 @@ DIR_OFOUND:
         CP      C
         JR      Z,DIR_ORCDR
         JR      C,DIR_ORCFU
-        XOR     A               ; requested subextent is beyond directory end
+        XOR     A                       ; requested subextent is beyond directory end
         JR      DIR_ORCST
-DIR_ORCFU:
-        LD      A,128           ; an earlier subextent in the group is full
+
+DIR_ORCFU:                              ; open rcfu
+        LD      A,128                   ; an earlier subextent in the group is full
         JR      DIR_ORCST
-DIR_ORCDR:
+
+DIR_ORCDR:                              ; open rcdr
         LD      A,(DIR_ORC)
-DIR_ORCST:
+
+DIR_ORCST:                              ; open rcst
         LD      DE,3
-        ADD     HL,DE           ; FCB RC at byte 15
+        ADD     HL,DE                   ; FCB RC at byte 15
         LD      (HL),A
         LD      A,(DIR_SLOT)
         OR      A
         RET
-DIR_ONEXT:
+
+DIR_ONEXT:                              ; open next
         LD      DE,32
         ADD     HL,DE
         LD      A,(DIR_SLOT)
@@ -2595,17 +2967,31 @@ DIR_ONEXT:
         LD      HL,DIR_RECORD
         INC     (HL)
         JP      DIR_ORECD
-DIR_ONOTF:
+
+DIR_ONOTF:                              ; open notf
         LD      A,0FFH
         OR      A
         RET
 
-; Reconstruct file-owned allocation bits from all live ordinary extents.
-; MM 790K has DSM>255, hence eight 16-bit block numbers at entry bytes 16..31.
-DIR_ALSCN:
+; ================================================================================
+; =                          Allocation Reconstruction                           =
+; =                                                                              =
+; = Reconstructs the allocation vector from live directory extents and validates =
+; = 16-bit allocation block numbers against the current disk geometry.           =
+; ================================================================================
+
+  ; Reconstruct file-owned allocation bits from all live ordinary extents.
+  ; MM 790K has DSM>255, hence eight 16-bit block numbers at entry bytes 16..31.
+
+; -------------------------------------------------------------------------------
+; Allocation-Vector Reconstruction
+; -------------------------------------------------------------------------------
+
+DIR_ALSCN:                              ; scan directory allocations
         XOR     A
         LD      (DIR_RECORD),A
-DIR_ARECD:
+
+DIR_ARECD:                              ; attribute recd
         LD      A,(DIR_RECORD)
         LD      HL,DIR_RECS
         CP      (HL)
@@ -2614,7 +3000,8 @@ DIR_ARECD:
         CALL    DIR_LDOK
         RET     NZ
         LD      B,4
-DIR_AENT:
+
+DIR_AENT:                               ; attribute ent
         LD      A,(HL)
         CP      16
         JR      NC,DIR_ANEXT
@@ -2626,7 +3013,8 @@ DIR_AENT:
         OR      A
         JR      Z,DIR_8BIT
         LD      B,8
-DIR_ABLOCK:
+
+DIR_ABLOCK:                             ; attribute block
         LD      E,(HL)
         INC     HL
         LD      D,(HL)
@@ -2636,12 +3024,15 @@ DIR_ABLOCK:
         JR      Z,DIR_ABNEXT
         CALL    DIR_AMARK
         JR      NZ,DIR_ABAD
-DIR_ABNEXT:
+
+DIR_ABNEXT:                             ; attribute bnext
         DJNZ    DIR_ABLOCK
         JR      DIR_AUNW
-DIR_8BIT:
+
+DIR_8BIT:                               ; 8bit
         LD      B,16
-DIR_8LOOP:
+
+DIR_8LOOP:                              ; 8loop
         LD      E,(HL)
         INC     HL
         LD      D,0
@@ -2650,29 +3041,39 @@ DIR_8LOOP:
         JR      Z,DIR_8NEXT
         CALL    DIR_AMARK
         JR      NZ,DIR_ABAD
-DIR_8NEXT:
+
+DIR_8NEXT:                              ; 8next
         DJNZ    DIR_8LOOP
-DIR_AUNW:
+
+DIR_AUNW:                               ; attribute unw
         POP     HL
         POP     BC
-DIR_ANEXT:
+
+DIR_ANEXT:                              ; attribute next
         LD      DE,32
         ADD     HL,DE
         DJNZ    DIR_AENT
         LD      HL,DIR_RECORD
         INC     (HL)
         JR      DIR_ARECD
-DIR_ABAD:
+
+DIR_ABAD:                               ; attribute bad
         POP     HL
         POP     BC
         RET
-DIR_ADONE:
+
+DIR_ADONE:                              ; attribute done
         XOR     A
         RET
 
-; Mark 16-bit allocation block DE. Zero is an unused slot. Out-of-range block
-; numbers fail login instead of indexing beyond the BIOS allocation vector.
-DIR_AMARK:
+; -------------------------------------------------------------------------------
+; Allocation-Bit Validation
+; -------------------------------------------------------------------------------
+
+  ; Mark 16-bit allocation block DE. Zero is an unused slot. Out-of-range block
+  ; numbers fail login instead of indexing beyond the BIOS allocation vector.
+
+DIR_AMARK:                              ; mark allocation block
         PUSH    BC
         PUSH    DE
         PUSH    HL
@@ -2685,11 +3086,13 @@ DIR_AMARK:
         CP      L
         JR      C,DIR_AMVAL
         JR      Z,DIR_AMVAL
-DIR_AMBAD:
+
+DIR_AMBAD:                              ; allocation mark bad
         LD      A,1
         OR      A
         JR      DIR_AMRET
-DIR_AMVAL:
+
+DIR_AMVAL:                              ; allocation mark val
         LD      A,E
         AND     7
         LD      C,A
@@ -2712,208 +3115,342 @@ DIR_AMVAL:
         OR      (HL)
         LD      (HL),A
         XOR     A
-DIR_AMRET:
+
+DIR_AMRET:                              ; allocation mark ret
         POP     HL
         POP     DE
         POP     BC
         RET
 
-DIR_AMASK:
+DIR_AMASK:                              ; allocation mark ask
         DB      080H,040H,020H,010H,008H,004H,002H,001H
 
-DIR_USER:
+; ================================================================================
+; =                       Directory Services Working State                       =
+; =                                                                              =
+; = Defines retained drive, FCB, DMA, search, read/write, close, and allocation  =
+; = state used by the Directory Services routines.                               =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Core Drive and FCB State
+; -------------------------------------------------------------------------------
+
+DIR_USER:                               ; current user number
         DB      0
-DIR_RECORD:
+
+DIR_RECORD:                             ; current directory record
         DB      0
-DIR_NAMP:
+
+DIR_NAMP:                               ; current name pointer
         DW      0
-DIR_VALID:
+
+DIR_VALID:                              ; drive-state valid flag
         DB      0
-DIR_DRIVE:
+
+DIR_DRIVE:                              ; current logical drive
         DB      0
-DIR_DPH:
+
+DIR_DPH:                                ; current DPH pointer
         DW      0
-DIR_DPB:
+
+DIR_DPB:                                ; current DPB pointer
         DW      0
-DIR_SPT:
+
+DIR_SPT:                                ; sectors per track
         DW      0
-DIR_BSH:
+
+DIR_BSH:                                ; block shift
         DB      0
-DIR_BLM:
+
+DIR_BLM:                                ; block mask
         DB      0
-DIR_DSM:
+
+DIR_DSM:                                ; highest allocation block
         DW      0
-DIR_EXM:
+
+DIR_EXM:                                ; extent mask
         DB      0
-DIR_DRM:
+
+DIR_DRM:                                ; highest directory entry
         DW      0
-DIR_OFF:
+
+DIR_OFF:                                ; reserved-track offset
         DW      0
-DIR_RECS:
+
+DIR_RECS:                               ; directory record count
         DW      0
-DIR_ALVP:
+
+DIR_ALVP:                               ; allocation-vector pointer
         DW      0
-DIR_AL0:
+
+DIR_AL0:                                ; reserved-directory allocation byte 0
         DB      0
-DIR_AL1:
+
+DIR_AL1:                                ; reserved-directory allocation byte 1
         DB      0
-DIR_FCBP:
+
+DIR_FCBP:                               ; active FCB pointer
         DW      0
-DIR_OEX:
+
+DIR_OEX:                                ; opened extent number
         DB      0
-DIR_OMSK:
+
+DIR_OMSK:                               ; opened extent mask
         DB      0
-DIR_ODX:
+
+DIR_ODX:                                ; opened directory index
         DB      0
-DIR_ODG:
+
+DIR_ODG:                                ; opened directory record
         DB      0
-DIR_ORC:
+
+DIR_ORC:                                ; opened record count
         DB      0
-DIR_OS2:
+
+DIR_OS2:                                ; opened S2 value
         DB      0
-DIR_SLOT:
+
+DIR_SLOT:                               ; current directory slot
         DB      0
-DIR_SDMA:
+
+DIR_SDMA:                               ; search DMA pointer
         DW      0
-DIR_SACT:
+
+DIR_SACT:                               ; search-active flag
         DB      0
-S_ALLUSR:
+
+S_ALLUSR:                               ; all-users search flag
         DB      0
-DIR_SRET:
+
+DIR_SRET:                               ; search return slot
         DB      0
-DIR_CFP:
+
+DIR_CFP:                                ; close FCB pointer
         DW      0
-DIR_CRET:
+
+DIR_CRET:                               ; close return status
         DB      0
-DIR_CPRO:
+
+DIR_CPRO:                               ; close protection flag
         DB      0
-DIR_CDIR:
+
+DIR_CDIR:                               ; close directory index
         DB      0
-DIR_CNRC:
+
+DIR_CNRC:                               ; close new record count
         DB      0
-DIR_CBLK:
+
+DIR_CBLK:                               ; close block scratch
         DW      0
-DIR_CSAV:
+
+DIR_CSAV:                               ; close saved directory entry
         REPT    31
         DB      0
         ENDM
-DIR_COLD:
+
+DIR_COLD:                               ; close original directory entry
         REPT    32
         DB      0
         ENDM
-DIR_RUSER:
+
+; -------------------------------------------------------------------------------
+; Random-I/O State
+; -------------------------------------------------------------------------------
+
+DIR_RUSER:                              ; random-I/O user
         DB      0
-DIR_RFCB:
+
+DIR_RFCB:                               ; random-I/O FCB pointer
         DW      0
-DIR_RDMA:
+
+DIR_RDMA:                               ; random-I/O DMA pointer
         DW      0
-DIR_RCR:
+
+DIR_RCR:                                ; random-I/O record number
         DB      0
-DIR_RREM:
+
+DIR_RREM:                               ; random-read remaining records
         DB      0
-DIR_RBNO:
+
+DIR_RBNO:                               ; random-read block number
         DB      0
-DIR_ROEX:
+
+DIR_ROEX:                               ; random-read opened extent
         DB      0
-DIR_ROS2:
+
+DIR_ROS2:                               ; random-read opened S2
         DB      0
-DIR_QUSER:
+
+DIR_QUSER:                              ; random-write user
         DB      0
-DIR_QFCB:
+
+DIR_QFCB:                               ; random-write FCB pointer
         DW      0
-DIR_QDMA:
+
+DIR_QDMA:                               ; random-write DMA pointer
         DW      0
-DIR_QCR:
+
+DIR_QCR:                                ; random-write record number
         DB      0
-DIR_QEX:
+
+DIR_QEX:                                ; random-write extent
         DB      0
-DIR_QS2:
+
+DIR_QS2:                                ; random-write S2
         DB      0
-DIR_QSAME:
+
+DIR_QSAME:                              ; same-extent flag
         DB      0
-DIR_ZFILL:
+
+DIR_ZFILL:                              ; zero-fill request flag
         DB      0
-DIR_ZBLOCK:
+
+DIR_ZBLOCK:                             ; zero-fill block number
         DW      0
-DIR_ZREC:
+
+DIR_ZREC:                               ; zero-fill record number
         DB      0
-DIR_WUSER:
+
+; -------------------------------------------------------------------------------
+; Sequential-Write State
+; -------------------------------------------------------------------------------
+
+DIR_WUSER:                              ; sequential-write user
         DB      0
-DIR_WFCB:
+
+DIR_WFCB:                               ; sequential-write FCB pointer
         DW      0
-DIR_WDMA:
+
+DIR_WDMA:                               ; sequential-write DMA pointer
         DW      0
-DIR_WCR:
+
+DIR_WCR:                                ; sequential-write record number
         DB      0
-DIR_WREM:
+
+DIR_WREM:                               ; sequential-write remaining records
         DB      0
-DIR_WBNO:
+
+DIR_WBNO:                               ; sequential-write block number
         DB      0
-DIR_WAEP:
+
+DIR_WAEP:                               ; write allocation-entry pointer
         DW      0
-DIR_WNEW:
+
+DIR_WNEW:                               ; new-block flag
         DW      0
-DIR_WALLOC:
+
+DIR_WALLOC:                             ; allocated block number
         DB      0
-DIR_MUSER:
+
+; -------------------------------------------------------------------------------
+; Create State
+; -------------------------------------------------------------------------------
+
+DIR_MUSER:                              ; create user
         DB      0
-DIR_MFCB:
+
+DIR_MFCB:                               ; create FCB pointer
         DW      0
-DIR_MOLD:
+
+DIR_MOLD:                               ; create saved directory entry
         REPT    33
         DB      0
         ENDM
-DIR_DUSER:
+
+; -------------------------------------------------------------------------------
+; Delete State
+; -------------------------------------------------------------------------------
+
+DIR_DUSER:                              ; delete user
         DB      0
-DIR_DFCB:
+
+DIR_DFCB:                               ; delete FCB pointer
         DW      0
-DIR_DFOUND:
+
+DIR_DFOUND:                             ; delete match-found flag
         DB      0
-DIR_DDIRTY:
+
+DIR_DDIRTY:                             ; delete dirty-record flag
         DB      0
-DIR_NUSER:
+
+; -------------------------------------------------------------------------------
+; Rename State
+; -------------------------------------------------------------------------------
+
+DIR_NUSER:                              ; rename user
         DB      0
-DIR_NFCB:
+
+DIR_NFCB:                               ; rename FCB pointer
         DW      0
-DIR_NFOUND:
+
+DIR_NFOUND:                             ; rename match-found flag
         DB      0
-DIR_NDIRTY:
+
+DIR_NDIRTY:                             ; rename dirty-record flag
         DB      0
-DIR_AUSER:
+
+; -------------------------------------------------------------------------------
+; Attribute State
+; -------------------------------------------------------------------------------
+
+DIR_AUSER:                              ; attribute user
         DB      0
-DIR_AFCB:
+
+DIR_AFCB:                               ; attribute FCB pointer
         DW      0
-DIR_AFOUND:
+
+DIR_AFOUND:                             ; attribute match-found flag
         DB      0
-DIR_ADIRTY:
+
+DIR_ADIRTY:                             ; attribute dirty-record flag
         DB      0
-DIR_ZUSER:
+
+; -------------------------------------------------------------------------------
+; Size State
+; -------------------------------------------------------------------------------
+
+DIR_ZUSER:                              ; size user
         DB      0
-DIR_ZFCB:
+
+DIR_ZFCB:                               ; size FCB pointer
         DW      0
-DIR_ZFOUND:
+
+DIR_ZFOUND:                             ; size match-found flag
         DB      0
-DIR_ZMAX:
+
+DIR_ZMAX:                               ; maximum size found
         DB      0,0,0
-DIR_ZCAN:
+
+DIR_ZCAN:                               ; size candidate
         DB      0,0,0
-DIR_WPRO:
+
+DIR_WPRO:                               ; write protection flag
         DB      0
-DIR_WOLD:
+
+DIR_WOLD:                               ; write saved directory entry
         REPT    33
         DB      0
         ENDM
-DIR_XUSER:
+
+; -------------------------------------------------------------------------------
+; Extent-Creation State
+; -------------------------------------------------------------------------------
+
+DIR_XUSER:                              ; extent-create user
         DB      0
-DIR_XFCB:
+
+DIR_XFCB:                               ; extent-create FCB pointer
         DW      0
-DIR_XSLOT:
+
+DIR_XSLOT:                              ; extent-create free slot
         DB      0
-DIR_XOLD:
+
+DIR_XOLD:                               ; extent-create saved directory entry
         REPT    32
         DB      0
         ENDM
-DIR_PEND:
+
+DIR_PEND:                               ; pending-allocation journal
         REPT    128
         DB      0
         ENDM

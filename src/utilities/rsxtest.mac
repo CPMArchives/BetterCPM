@@ -1,10 +1,24 @@
-; Invoke experimental BDOS Function 201 through CALL 0005h.
+; ********************************************************************************
+; *                        BetterCP/M RSX Test Utility                           *
+; *                                                                              *
+; * Invokes experimental BDOS Function 201 through the public CALL 0005H gateway *
+; * and reports whether the proof resident service is currently present.         *
+; ********************************************************************************
 
-; LINK's absolute COM image supplies the conventional JP 0103h transfer.
+
+  ; LINK's absolute COM image supplies the conventional JP 0103h transfer.
 BDOS            EQU     0005H
         CSEG
         .PHASE  0103H
-START:
+
+; ================================================================================
+; =                           RSX Presence Test                                 =
+; =                                                                              =
+; = Calls the experimental proof service through the normal BDOS gateway and     =
+; = reports whether the installed RSX chain handles Function 201.                =
+; ================================================================================
+
+START:                                  ; enter RSX proof-service test
         LD      C,201
         CALL    BDOS
         LD      A,H
@@ -15,14 +29,21 @@ START:
         JR      NZ,RT_ABSENT
         LD      DE,RT_PRESENT
         JR      RT_PRINT
-RT_ABSENT:
+
+RT_ABSENT:                              ; select missing-service result
         LD      DE,RT_MISSING
-RT_PRINT:
+
+RT_PRINT:                               ; print proof-service result
         LD      C,9
         CALL    BDOS
         LD      C,0
         JP      BDOS
-RT_PRESENT:    DB      'RSX function 201 returned 5253h',13,10,'$'
-RT_MISSING:    DB      13,10,'RSX function 201 unsupported',13,10,'$'
+
+; -------------------------------------------------------------------------------
+; Test Result Messages
+; -------------------------------------------------------------------------------
+
+RT_PRESENT:    DB      'RSX function 201 returned 5253h',13,10,'$' ; service-present message
+RT_MISSING:    DB      13,10,'RSX function 201 unsupported',13,10,'$' ; service-missing message
         .DEPHASE
         END     START

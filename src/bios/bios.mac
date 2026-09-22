@@ -1,12 +1,18 @@
         INCLUDE layout.inc
-; BetterCP/M initial CP/M 2.2 compatibility BIOS scaffold
-;
-; Independently buildable BIOS, placed by the shared production memory map.
+
+; ********************************************************************************
+; *                    BetterCP/M CP/M 2.2 Compatibility BIOS                    *
+; *                                                                              *
+; * Portable BIOS core placed by the shared production memory map. Public CP/M   *
+; * vectors remain platform-neutral; Model 4 controller details stay behind the  *
+; * private platform interface.                                                  *
+; ********************************************************************************
+
 
 BIOSBASE        EQU     LY_BIOS+0
-BIO_PHYBF       EQU     LY_BUF  ; 1024-byte shared physical-sector buffer
+BIO_PHYBF       EQU     LY_BUF          ; 1024-byte shared physical-sector buffer
 BIO_DIRBF       EQU     LY_DIR
-; BIOS-owned descriptors are linked separately in the shared packed map.
+  ; BIOS-owned descriptors are linked separately in the shared packed map.
 BIO_DPH0        EQU     LY_TAB+0
 BIO_DPH1        EQU     LY_TAB+16
 BIO_DPH2        EQU     LY_TAB+32
@@ -17,10 +23,21 @@ CCP_RELOAD      EQU     LY_LOAD
         CSEG
         .PHASE  BIOSBASE
 
-; Patch 2026-09-01: retain the complete historical 17-entry vector even
-; while several services are stubs.  Existing software derives this base
-; from JMP WBOOT at page zero and indexes fixed three-byte JMP entries.
-BIOS:
+  ; Patch 2026-09-01: retain the complete historical 17-entry vector even
+  ; while several services are stubs.  Existing software derives this base
+  ; from JMP WBOOT at page zero and indexes fixed three-byte JMP entries.
+
+; ================================================================================
+; =                              BIOS Entry Vectors                              =
+; =                                                                              =
+; = Defines the public CP/M 2.2 BIOS jump table and the adjacent BetterCP/M-private =
+; = platform vectors used by portable system reconstruction.                     =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Public CP/M Vector
+; -------------------------------------------------------------------------------
+
+BIOS:                                   ; public BIOS jump table
         JP      BIOBOOT
         JP      BIOWBOOT
         JP      BIOCONST
@@ -39,90 +56,145 @@ BIOS:
         JP      BIOLSTST
         JP      BIOSECTR
 
-; BetterCP/M-private platform vector immediately after the public 17-vector
-; BIOS table. The fixed WBOOT reloader reads raw system-track sectors through
-; this entry without importing Model 4 controller code into the portable core.
-BIOPHREAD:
+  ; BetterCP/M-private platform vector immediately after the public 17-vector
+  ; BIOS table. The fixed WBOOT reloader reads raw system-track sectors through
+  ; this entry without importing Model 4 controller code into the portable core.
+
+; -------------------------------------------------------------------------------
+; BetterCP/M Private Platform Vectors
+; -------------------------------------------------------------------------------
+
+BIOPHREAD:                              ; platform physical-read vector
         JP      LY_DISK+15
-BIOCURSOR:
+
+BIOCURSOR:                              ; platform cursor vector
         JP      PL_CURSOR
-BIOOVLOAD:
+
+BIOOVLOAD:                              ; platform overlay-load vector
         JP      PL_OVLOAD
-BIORLOAD:
+
+BIORLOAD:                               ; platform reloader-load vector
         JP      PL_RSXLOAD
 
-; Direct vectors replace the former redundant second jumps.
+  ; Direct vectors replace the former redundant second jumps.
 
-; BOOT and WBOOT enter portable system reconstruction before the CCP.
-BIOBOOT:
+  ; BOOT and WBOOT enter portable system reconstruction before the CCP.
+
+; ================================================================================
+; =                      System Entry and Console Services                       =
+; =                                                                              =
+; = Implements cold/warm system entry and the portable console, list, punch, and =
+; = reader services exposed through the CP/M BIOS interface.                     =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Cold and Warm Entry
+; -------------------------------------------------------------------------------
+
+BIOBOOT:                                ; cold boot entry
         CALL    PL_INIT
-; 08-Sep-2026: BOOT must begin on A even when called from another drive.
-; WBOOT preserves the caller's drive; reset it only on this cold entry.
+  ; 08-Sep-2026: BOOT must begin on A even when called from another drive.
+  ; WBOOT preserves the caller's drive; reset it only on this cold entry.
         LD      C,13
         CALL    LY_BDOS
-; Patch 2026-09-02: the CCP is no longer part of the stage-one resident image.
-; Cold and warm entry both reconstruct the calculated command environment
-; from the system tracks before entering the portable WBOOT path.
-BIOWBOOT:
-; 07-Sep-2026 -- reclaim the command reloader's permanent storage.
-;       JP      CCP_RELOAD      ; old, permanently resident reloader
-; The transient is finished.  Fetch the reloader into its old TPA,
-; then rebuild the command environment.  PL_RELOAD does not return.
+  ; Patch 2026-09-02: the CCP is no longer part of the stage-one resident image.
+  ; Cold and warm entry both reconstruct the calculated command environment
+  ; from the system tracks before entering the portable WBOOT path.
+
+BIOWBOOT:                               ; warm boot entry
+  ; 07-Sep-2026 -- reclaim the command reloader's permanent storage.
+  ;       JP      CCP_RELOAD      ; old, permanently resident reloader
+  ; The transient is finished.  Fetch the reloader into its old TPA,
+  ; then rebuild the command environment.  PL_RELOAD does not return.
         JP      PL_RELOAD
 
-; CONST must return exactly 00h or FFh and must not consume the character.
-BIOCONST:
+  ; CONST must return exactly 00h or FFh and must not consume the character.
+
+; -------------------------------------------------------------------------------
+; Console Input
+; -------------------------------------------------------------------------------
+
+BIOCONST:                               ; return console status
         CALL    PL_CONST
         OR      A
         RET     Z
         LD      A,0FFH
         RET
 
-BIOCONIN:
+BIOCONIN:                               ; read console character
         CALL    PL_CONIN
         AND     07FH
         RET
 
 
-; Optional logical devices are explicitly unassigned in the scaffold.
-BIOLIST:
-BIOPUNCH:
+  ; Optional logical devices are explicitly unassigned in the scaffold.
+
+; -------------------------------------------------------------------------------
+; Optional Character Devices
+; -------------------------------------------------------------------------------
+
+BIOLIST:                                ; write list device
+
+BIOPUNCH:                               ; write punch device
         RET
-BIOREADR:
+
+BIOREADR:                               ; read reader device
         LD      A,01AH
         RET
 
-BIOHOME:
+; ================================================================================
+; =                     Disk Selection and Transfer Services                     =
+; =                                                                              =
+; = Maintains the current CP/M disk address, selects Model 4 floppy profiles, and =
+; = performs buffered sector reads and writes through the platform layer.        =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Disk Address Selection
+; -------------------------------------------------------------------------------
+
+BIOHOME:                                ; home current drive
         LD      BC,0
-BIOSETTR:
+
+BIOSETTR:                               ; set logical track
         LD      (BIO_TRACK),BC
         RET
-BIOSETSE:
+
+BIOSETSE:                               ; set logical sector
         LD      (BIO_SECTOR),BC
         RET
-BIOSETDM:
+
+BIOSETDM:                               ; set DMA address
         LD      (BIO_DMA),BC
         RET
 
-; Patch 2026-09-01: A: through D: are separate Model 4 floppy drives. They share
-; one sector buffer, but never saved allocation ownership. A uses the
-; 780K system profile; B-D use unreserved 800K data profiles.
+  ; Patch 2026-09-01: A: through D: are separate Model 4 floppy drives. They share
+  ; one sector buffer, but never saved allocation ownership. A uses the
+  ; 780K system profile; B-D use unreserved 800K data profiles.
 
-BIOREAD:
+; -------------------------------------------------------------------------------
+; Sector Read
+; -------------------------------------------------------------------------------
+
+BIOREAD:                                ; read logical sector
         CALL    BIO_PREP
         RET     NZ
-BIO_RDCOP:
+
+BIO_RDCOP:                              ; copy sector buffer to DMA
         LD      DE,(BIO_DMA)
         LD      BC,128
         LDIR
         XOR     A
         RET
 
-BIOWRITE:
+; -------------------------------------------------------------------------------
+; Sector Write
+; -------------------------------------------------------------------------------
+
+BIOWRITE:                               ; write logical sector
         CALL    BIO_PREP
         RET     NZ
         EX      DE,HL
-BIO_WRCOP:
+
+BIO_WRCOP:                              ; copy DMA to sector buffer
         LD      HL,(BIO_DMA)
         LD      BC,128
         LDIR
@@ -130,15 +202,21 @@ BIO_WRCOP:
         JP      LY_DISK+12
 
  ; One address calculation for both directions, not two walking loops.
-; 07-Sep-2026: recovered these bytes for the optional FDF dispatch.
-; Shared preparation pays for the console fix without taking TPA.
-BIO_PREP:
+  ; 07-Sep-2026: recovered these bytes for the optional FDF dispatch.
+  ; Shared preparation pays for the console fix without taking TPA.
+
+; -------------------------------------------------------------------------------
+; Physical Transfer Preparation
+; -------------------------------------------------------------------------------
+
+BIO_PREP:                               ; prepare physical sector transfer
         CALL    LY_DISK+3
         RET     NZ
         LD      HL,BIO_PHYBF
         CALL    LY_DISK+9
         RET     NZ
-BIO_SLOT:
+
+BIO_SLOT:                               ; select quarter-sector slot
         LD      A,(BIO_QUART)
         LD      H,A
         LD      L,0
@@ -146,17 +224,33 @@ BIO_SLOT:
         RR      L
         LD      DE,BIO_PHYBF
         ADD     HL,DE
-        XOR     A              ; successful preparation for either caller
+        XOR     A                       ; successful preparation for either caller
         RET
 
-; LISTST encoding remains policy-pending; an unassigned list device is not
-; ready in this scaffold.
-BIOLSTST:
+  ; LISTST encoding remains policy-pending; an unassigned list device is not
+  ; ready in this scaffold.
+
+; ================================================================================
+; =                            BIOS Utility Services                             =
+; =                                                                              =
+; = Implements list-device status and CP/M sector translation independently of   =
+; = the platform-specific floppy controller implementation.                      =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; List Status
+; -------------------------------------------------------------------------------
+
+BIOLSTST:                               ; return list-device status
         XOR     A
         RET
 
-; BC is the zero-based logical sector; DE is XLT or zero.  Return HL.
-BIOSECTR:
+  ; BC is the zero-based logical sector; DE is XLT or zero.  Return HL.
+
+; -------------------------------------------------------------------------------
+; Sector Translation
+; -------------------------------------------------------------------------------
+
+BIOSECTR:                               ; translate logical sector
         LD      H,B
         LD      L,C
         LD      A,D
@@ -168,24 +262,47 @@ BIOSECTR:
         LD      H,0
         RET
 
-; Persistent single-context disk state required by the CP/M BIOS boundary.
-BIO_DRIVE:
+  ; Persistent single-context disk state required by the CP/M BIOS boundary.
+
+; ================================================================================
+; =                              BIOS Working State                              =
+; =                                                                              =
+; = Defines the persistent drive, track, sector, DMA, and physical-transfer state =
+; = required by the single-context CP/M BIOS boundary.                           =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Logical Disk State
+; -------------------------------------------------------------------------------
+
+BIO_DRIVE:                              ; current logical drive
         DB      0
-BIO_TRACK:
+
+BIO_TRACK:                              ; current logical track
         DW      0
-BIO_SECTOR:
+
+BIO_SECTOR:                             ; current logical sector
         DW      0
-BIO_DMA:
+
+BIO_DMA:                                ; current DMA address
         DW      0080H
-BIO_QUART:
+
+; -------------------------------------------------------------------------------
+; Physical Transfer State
+; -------------------------------------------------------------------------------
+
+BIO_QUART:                              ; quarter-sector index
         DB      0
-BIO_PCYL:
+
+BIO_PCYL:                               ; physical cylinder
         DB      0
-B_PSide:
+
+B_PSide:                                ; physical side
         DB      0
-B_PDrive:
+
+B_PDrive:                               ; physical drive
         DB      1
-BIO_PSEC:
+
+BIO_PSEC:                               ; physical sector
         DB      1
         INCLUDE biosplat.inc
 

@@ -1,7 +1,15 @@
         INCLUDE layout.inc
         INCLUDE bioslinks.inc
         INCLUDE hardware.inc
-; BDOS 207: B=operation, DE=request in TPA. See BIOS-DISK-CONFIG.md.
+
+; ********************************************************************************
+; *                       BetterCP/M Model 4 Disk Control                        *
+; *                                                                              *
+; * Resident Model 4 floppy-disk engine shared by BDOS disk configuration, BIOS  *
+; * runtime transfers, and raw bootstrap I/O. Runtime geometry is translated here *
+; * into controller-level drive, cylinder, side, sector, and transfer parameters. *
+; ********************************************************************************
+
         CSEG
         .PHASE  LY_DISK
         JP DC_ENTRY
@@ -11,7 +19,17 @@
         JP DC_WRITE
         JP DC_RAW
 
-DC_RAW:
+; ================================================================================
+; =                            Disk Control Interface                            =
+; =                                                                              =
+; = Provides the resident entry vectors and BDOS-facing request dispatcher for raw =
+; = I/O, profile configuration, formatting, and configuration queries.           =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Resident Entry Vectors
+; -------------------------------------------------------------------------------
+
+DC_RAW:                                 ; raw physical-I/O entry
         ; The bootstrap adapter uses the SAME physical I/O engine as BDOS.
         LD (BIO_PCYL),A
         LD (DC_IDTRK),A
@@ -31,15 +49,18 @@ DC_RAW:
         POP HL
         JP DC_READ
 
-DC_SETPH:
+DC_SETPH:                               ; set physical profile entry
         XOR A
         JR DC_CTL
-DC_SETLOG:
+
+DC_SETLOG:                              ; set logical profile entry
         LD A,3
         JR DC_CTL
-DC_FORMAT:
+
+DC_FORMAT:                              ; format-track entry
         LD A,6
-DC_CTL:
+
+DC_CTL:                                 ; configuration-control entry
         PUSH AF
         CALL LY_BIOS+57
         POP BC
@@ -51,13 +72,18 @@ DC_CTL:
         ADD HL,DE
         JP (HL)
 
-DC_ENTRY:
+; -------------------------------------------------------------------------------
+; BDOS Request Dispatch
+; -------------------------------------------------------------------------------
+
+DC_ENTRY:                               ; dispatch disk-control request
         LD A,B
         OR A
         JR NZ,DC_REQUEST
         LD HL,DC_INFO
         RET
-DC_REQUEST:
+
+DC_REQUEST:                             ; dispatch selected control operation
         PUSH IX
         PUSH DE
         POP IX
@@ -82,23 +108,38 @@ DC_REQUEST:
         JR Z,DC_SETLOG
         CP 5
         JR Z,DC_FORMAT
-DC_INVALID:
+
+DC_INVALID:                             ; return invalid-request status
         LD A,1
         JR DC_RETURN
-DC_UNSUPPORTED:
+
+DC_UNSUPPORTED:                         ; return unsupported-request status
         LD A,2
-DC_RETURN:
+
+DC_RETURN:                              ; restore caller context and return
         LD L,A
         LD H,0
         POP IX
         RET
-DC_OK:
+
+DC_OK:                                  ; return success
         XOR A
         JR DC_RETURN
 
-; Physical records: size in inches, cylinders, sides, WD step code,
-; motor spin-up in 1/4 seconds, head settle in milliseconds.
-DC_PHY:
+  ; Physical records: size in inches, cylinders, sides, WD step code,
+  ; motor spin-up in 1/4 seconds, head settle in milliseconds.
+
+; ================================================================================
+; =                      Physical and Logical Disk Profiles                      =
+; =                                                                              =
+; = Resolves physical and logical disk descriptors, resets shared disk context,  =
+; = and selects the active logical drive binding.                                =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Physical Profile Lookup
+; -------------------------------------------------------------------------------
+
+DC_PHY:                                 ; locate physical profile
         CP 4
         RET NC
         ADD A,A
@@ -111,12 +152,18 @@ DC_PHY:
         ADD HL,DE
         SCF
         RET
-DC_GETPH:
+
+DC_GETPH:                               ; return physical profile
         LD A,12
         JR DC_CTL
-; Four logical records, 80 bytes each. DPH + binding.
-; BDOS rebuilds the shared allocation vector on every context switch.
-DC_LOG:
+  ; Four logical records, 80 bytes each. DPH + binding.
+  ; BDOS rebuilds the shared allocation vector on every context switch.
+
+; -------------------------------------------------------------------------------
+; Logical Profile Lookup
+; -------------------------------------------------------------------------------
+
+DC_LOG:                                 ; locate logical profile
         CP 4
         RET NC
         LD HL,LY_TAB
@@ -125,16 +172,23 @@ DC_LOG:
         JR NZ,DC_LOGL
         SCF
         RET
-DC_LOGL:
+
+DC_LOGL:                                ; locate logical profile entry
         ADD HL,DE
         DEC A
         JR NZ,DC_LOGL
         SCF
         RET
-DC_GETLOG:
+
+DC_GETLOG:                              ; return logical profile
         LD A,15
         JR DC_CTL
-DC_RESET:
+
+; -------------------------------------------------------------------------------
+; Context Invalidation
+; -------------------------------------------------------------------------------
+
+DC_RESET:                               ; invalidate disk contexts
         ; Conservatively invalidate every alias and active BDOS disk context.
         PUSH IX
         LD DE,0FFFFH
@@ -143,7 +197,11 @@ DC_RESET:
         POP IX
         RET
 
-DC_SELECT:
+; -------------------------------------------------------------------------------
+; Logical Drive Selection
+; -------------------------------------------------------------------------------
+
+DC_SELECT:                              ; select logical drive
         LD A,C
         LD (BIO_DRIVE),A
         CALL DC_LOG
@@ -155,10 +213,22 @@ DC_SELECT:
         CP 4
         POP HL
         RET C
-DC_NOLOG:
+
+DC_NOLOG:                               ; reject unbound logical drive
         LD HL,0
         RET
-DC_MAP:
+
+; ================================================================================
+; =                         Logical-to-Physical Mapping                          =
+; =                                                                              =
+; = Maps CP/M logical records through runtime geometry to Model 4 physical drive, =
+; = cylinder, side, sector, quarter-sector, and transfer-size parameters.        =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Geometry Mapping
+; -------------------------------------------------------------------------------
+
+DC_MAP:                                 ; map logical record to physical transfer
         PUSH IX
         LD A,(BIO_DRIVE)
         CALL DC_LOG
@@ -175,7 +245,8 @@ DC_MAP:
         LD B,A
         INC B
         LD A,080H
-DC_MASK:
+
+DC_MASK:                                ; decode geometry flags
         RLCA
         DJNZ DC_MASK
         LD (B_PDrive),A
@@ -189,8 +260,8 @@ DC_MASK:
         AND 00FH
         OR (IX+52)
         JR Z,DC_COMMON
-; Optional conventions live in FDF.RSX. CALL 5 follows the current chain;
-; no saved RSX pointer can outlive a rebuild or an unload.
+  ; Optional conventions live in FDF.RSX. CALL 5 follows the current chain;
+  ; no saved RSX pointer can outlive a rebuild or an unload.
         LD DE,(BIO_TRACK)
         LD HL,(BIO_SECTOR)
         LD BC,001D1H
@@ -214,7 +285,12 @@ DC_MASK:
         RRCA
         AND 3
         JR DC_SETSIZE
-DC_COMMON:
+
+; -------------------------------------------------------------------------------
+; Common Mapping Geometry
+; -------------------------------------------------------------------------------
+
+DC_COMMON:                              ; apply common geometry mapping
         LD HL,(BIO_TRACK)
         LD A,H
         OR A
@@ -222,7 +298,7 @@ DC_COMMON:
         XOR A
         LD (B_PSide),A
         LD A,(BIO_TRACK)
-        BIT 5,(IX+19)        ; built-in cylinder-track 790K profile
+        BIT 5,(IX+19)                   ; built-in cylinder-track 790K profile
         JR NZ,DC_CYL
         BIT 6,(IX+19)
         JR Z,DC_CYL
@@ -232,7 +308,8 @@ DC_COMMON:
         ADC A,0
         LD (B_PSide),A
         POP AF
-DC_CYL:
+
+DC_CYL:                                 ; derive physical cylinder
         CP (IX+16)
         JR NC,DC_MAPBAD
         LD (BIO_PCYL),A
@@ -241,26 +318,36 @@ DC_CYL:
         LD B,(IX+18)
         LD A,1
         INC B
-DC_QMASK:
+
+DC_QMASK:                               ; derive quarter-sector mask
         DJNZ DC_QSHIFT
         JR DC_QDONE
-DC_QSHIFT:
+
+DC_QSHIFT:                              ; scale quarter-sector index
         ADD A,A
         JR DC_QMASK
-DC_QDONE:
+
+DC_QDONE:                               ; finish quarter-sector mapping
         DEC A
         AND L
         LD (BIO_QUART),A
         LD B,(IX+18)
         INC B
-DC_DIV:
+
+; -------------------------------------------------------------------------------
+; Sector Division and Translation
+; -------------------------------------------------------------------------------
+
+DC_DIV:                                 ; divide logical sector by physical size
         DJNZ DC_DIVSHIFT
         JR DC_DIVDONE
-DC_DIVSHIFT:
+
+DC_DIVSHIFT:                            ; scale physical-sector divisor
         SRL H
         RR L
         JR DC_DIV
-DC_DIVDONE:
+
+DC_DIVDONE:                             ; finish sector division
         LD A,L
         CP (IX+17)
         JR C,DC_SECOK
@@ -269,7 +356,8 @@ DC_DIVDONE:
         LD A,1
         LD (B_PSide),A
         LD A,B
-DC_SECOK:
+
+DC_SECOK:                               ; accept translated sector
         LD E,A
         LD D,0
         PUSH IX
@@ -279,60 +367,87 @@ DC_SECOK:
         ADD HL,DE
         LD A,(HL)
         LD (BIO_PSEC),A
-DC_MAPPED:
+
+DC_MAPPED:                              ; publish mapped transfer
         LD A,(IX+18)
-DC_SETSIZE:
+
+DC_SETSIZE:                             ; set transfer size
         LD (DC_SIZE),A
         LD A,(IX+19)
         LD (DC_FLAGS),A
         POP IX
         XOR A
         RET
-DC_MAPBAD:
+
+DC_MAPBAD:                              ; reject invalid mapping
         POP IX
         LD A,1
         OR A
         RET
 
-; One physical transfer engine serves runtime geometry and raw boot reads.
-DC_READ:
+  ; One physical transfer engine serves runtime geometry and raw boot reads.
+
+; ================================================================================
+; =                       Physical Sector Transfer Engine                        =
+; =                                                                              =
+; = Performs shared physical reads and writes with bounded retry, controller-polarity =
+; = handling, buffer inversion, and byte-level WD controller transfers.          =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Read and Write Entry
+; -------------------------------------------------------------------------------
+
+DC_READ:                                ; read physical sector
         LD A,080H
         JR DC_IO
-DC_WRITE:
+
+DC_WRITE:                               ; write physical sector
         LD A,0A0H
-DC_IO:
+
+DC_IO:                                  ; enter common physical transfer
         LD (DC_COMMAND),A
         LD (DC_BUFFER),HL
-; Keep write data in controller polarity for ALL attempts. Restore the
-; caller's bytes on either success or failure; never invert each retry.
+  ; Keep write data in controller polarity for ALL attempts. Restore the
+  ; caller's bytes on either success or failure; never invert each retry.
         CP 0A0H
         CALL Z,DC_INVBUF
-        LD A,3              ; first attempt plus two retries
-DC_RETRY:
+        LD A,3                          ; first attempt plus two retries
+
+; -------------------------------------------------------------------------------
+; Bounded Transfer Retry
+; -------------------------------------------------------------------------------
+
+DC_RETRY:                               ; retry failed physical transfer
         PUSH AF
         CALL DC_TRY
-        POP BC              ; B retains the remaining attempt count
+        POP BC                          ; B retains the remaining attempt count
         OR A
         JR Z,DC_FINISH
-        BIT 6,A             ; write protection will not improve on retry
+        BIT 6,A                         ; write protection will not improve on retry
         JR NZ,DC_FINISH
         DEC B
         JR Z,DC_FINISH
         PUSH BC
-        CALL DC_ERR         ; abort command and distrust head position
-        POP AF              ; remaining count was in B, now in A
+        CALL DC_ERR                     ; abort command and distrust head position
+        POP AF                          ; remaining count was in B, now in A
         JR DC_RETRY
-DC_FINISH:
-        OR A                ; BIT above must not disguise a final error
-        PUSH AF             ; retain the last controller result
+
+DC_FINISH:                              ; finish transfer attempt
+        OR A                            ; BIT above must not disguise a final error
+        PUSH AF                         ; retain the last controller result
         LD A,(DC_COMMAND)
         CP 0A0H
         CALL Z,DC_INVBUF
         POP AF
         RET
-; Formerly DC_IO returned after a single failed transfer. A CRC error,
-; lost byte or missed sector now gets a bounded fresh seek and transfer.
-DC_TRY:
+  ; Formerly DC_IO returned after a single failed transfer. A CRC error,
+  ; lost byte or missed sector now gets a bounded fresh seek and transfer.
+
+; -------------------------------------------------------------------------------
+; Controller Transfer Setup
+; -------------------------------------------------------------------------------
+
+DC_TRY:                                 ; prepare controller transfer
         CALL DC_SEEK
         RET NZ
         LD A,(BIO_PSEC)
@@ -349,27 +464,33 @@ DC_TRY:
         LD B,A
         LD A,1
         JR Z,DC_BSET
-DC_BLSH:
+
+DC_BLSH:                                ; derive transfer block count
         ADD A,A
         DJNZ DC_BLSH
-DC_BSET:
+
+DC_BSET:                                ; set transfer block count
         LD (DC_NBLK),A
-DC_BLOCK:
+
+DC_BLOCK:                               ; select transfer block
         LD B,0
         LD A,(DC_SIZE)
         OR A
         JR NZ,DC_BLGO
         LD B,128
-DC_BLGO:
+
+DC_BLGO:                                ; begin transfer block
         LD C,FDCDATA
         LD A,(DC_COMMAND)
         CP 080H
         JR NZ,DC_OUTBLOCK
         CALL DC_RBYTE
         JR DC_XDONE
-DC_OUTBLOCK:
+
+DC_OUTBLOCK:                            ; finish output block
         CALL DC_WBYTE
-DC_XDONE:
+
+DC_XDONE:                               ; finish block transfer
         OR A
         RET NZ
         CALL DC_WAIT
@@ -381,10 +502,16 @@ DC_XDONE:
         CP 080H
         JR NZ,DC_IODONE
         CALL DC_INVBUF
-DC_IODONE:
+
+DC_IODONE:                              ; complete physical transfer
         XOR A
         RET
-DC_INVBUF:
+
+; -------------------------------------------------------------------------------
+; Write-Buffer Polarity
+; -------------------------------------------------------------------------------
+
+DC_INVBUF:                              ; invert write buffer
         LD A,(DC_FLAGS)
         AND 010H
         RET Z
@@ -393,12 +520,14 @@ DC_INVBUF:
         LD A,(DC_SIZE)
         OR A
         JR Z,DC_INVERT
-DC_INVSH:
+
+DC_INVSH:                               ; scale inversion length
         SLA E
         RL D
         DEC A
         JR NZ,DC_INVSH
-DC_INVERT:
+
+DC_INVERT:                              ; invert next buffer byte
         LD A,(HL)
         CPL
         LD (HL),A
@@ -408,9 +537,15 @@ DC_INVERT:
         OR E
         JR NZ,DC_INVERT
         RET
-DC_RBYTE:
+
+; -------------------------------------------------------------------------------
+; Read Data Transfer
+; -------------------------------------------------------------------------------
+
+DC_RBYTE:                               ; read controller data bytes
         LD DE,0
-DC_RPOLL:
+
+DC_RPOLL:                               ; poll controller for read data
         IN A,(FDCSTATUS)
         AND 2
         JR NZ,DC_RDATA
@@ -419,7 +554,8 @@ DC_RPOLL:
         OR E
         JR NZ,DC_RPOLL
         JR DC_IOFAIL
-DC_RDATA:
+
+DC_RDATA:                               ; store next read byte
         INI
         JR NZ,DC_RBYTE
         LD A,(DC_NBLK)
@@ -427,9 +563,15 @@ DC_RDATA:
         LD (DC_NBLK),A
         JR Z,DC_ZERO
         JR DC_RBYTE
-DC_WBYTE:
+
+; -------------------------------------------------------------------------------
+; Write Data Transfer
+; -------------------------------------------------------------------------------
+
+DC_WBYTE:                               ; write controller data bytes
         LD DE,0
-DC_WPOLL:
+
+DC_WPOLL:                               ; poll controller for write data
         IN A,(FDCSTATUS)
         AND 2
         JR NZ,DC_WDATA
@@ -437,9 +579,11 @@ DC_WPOLL:
         LD A,D
         OR E
         JR NZ,DC_WPOLL
-DC_IOFAIL:
+
+DC_IOFAIL:                              ; handle transfer failure
         JR DC_ERR
-DC_WDATA:
+
+DC_WDATA:                               ; output next write byte
         OUTI
         JR NZ,DC_WBYTE
         LD A,(DC_NBLK)
@@ -447,9 +591,15 @@ DC_WDATA:
         LD (DC_NBLK),A
         JR Z,DC_ZERO
         JR DC_WBYTE
-DC_WAIT:
+
+; -------------------------------------------------------------------------------
+; Controller Completion
+; -------------------------------------------------------------------------------
+
+DC_WAIT:                                ; wait for controller completion
         LD BC,0
-DC_WAITL:
+
+DC_WAITL:                               ; poll controller busy state
         IN A,(FDCSTATUS)
         BIT 0,A
         JR Z,DC_ZERO
@@ -457,17 +607,34 @@ DC_WAITL:
         LD A,B
         OR C
         JR NZ,DC_WAITL
-DC_ERR:
+
+; -------------------------------------------------------------------------------
+; Controller Error Status
+; -------------------------------------------------------------------------------
+
+DC_ERR:                                 ; return controller error
         LD A,0D1H
-        LD (DC_LAST),A       ; failed seek/restore leaves position untrusted
+        LD (DC_LAST),A                  ; failed seek/restore leaves position untrusted
         OUT (FDCCOMMAND),A
         LD A,1
         OR A
         RET
-DC_ZERO:
+
+DC_ZERO:                                ; return zero status
         XOR A
         RET
-DC_SEEK:
+
+; ================================================================================
+; =                     Drive Selection and Head Positioning                     =
+; =                                                                              =
+; = Selects and spins up the physical drive, restores or seeks the shared WD track =
+; = register, applies settle delays, and preserves safe drive-change semantics.  =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Drive Selection and Seek
+; -------------------------------------------------------------------------------
+
+DC_SEEK:                                ; select drive and position head
         CALL DC_WAIT
         RET NZ
         LD A,(B_PSide)
@@ -497,14 +664,20 @@ DC_SEEK:
         LD A,(HL)
         OR A
         JR Z,DC_RESTORE
-DC_SPIN:
+
+DC_SPIN:                                ; wait for motor spin-up
         PUSH AF
         LD A,250
         CALL DC_DELAY
         POP AF
         DEC A
         JR NZ,DC_SPIN
-DC_RESTORE:
+
+; -------------------------------------------------------------------------------
+; Track-Zero Restore
+; -------------------------------------------------------------------------------
+
+DC_RESTORE:                             ; restore drive to track zero
         XOR A
         LD (DC_LASTCYL),A
         LD HL,(DC_PHYADDR)
@@ -518,7 +691,12 @@ DC_RESTORE:
         IN A,(FDCSTATUS)
         AND 010H
         JP NZ,DC_ERR
-DC_SEEKTO:
+
+; -------------------------------------------------------------------------------
+; Cylinder Seek
+; -------------------------------------------------------------------------------
+
+DC_SEEKTO:                              ; seek to requested cylinder
         LD A,(DC_LASTCYL)
         OUT (FDCTRACK),A
         LD A,(BIO_PCYL)
@@ -536,58 +714,83 @@ DC_SEEKTO:
         JP NZ,DC_ERR
         LD A,(BIO_PCYL)
         LD (DC_LASTCYL),A
-; DC_WAIT preserves HL, still at the step-rate byte. Advance to settle.
+  ; DC_WAIT preserves HL, still at the step-rate byte. Advance to settle.
         INC HL
         INC HL
         LD A,(HL)
         CALL DC_DELAY
-; Only a previously selected drive can take this shortcut. A drive change
-; must still restore, seek and settle even when its destination is track 0.
-DC_SAME:
+  ; Only a previously selected drive can take this shortcut. A drive change
+  ; must still restore, seek and settle even when its destination is track 0.
+
+DC_SAME:                                ; reuse current cylinder
         LD HL,DC_LASTCYL
         LD A,(BIO_PCYL)
         CP (HL)
         JR NZ,DC_SEEKTO
-DC_IDONLY:
+
+DC_IDONLY:                              ; update controller track identity
         LD A,(DC_IDTRK)
         OUT (FDCTRACK),A
         XOR A
         RET
-; Approximately 1ms at Model 4 4MHz. All waits are bounded.
-DC_DELAY:
+  ; Approximately 1ms at Model 4 4MHz. All waits are bounded.
+
+; -------------------------------------------------------------------------------
+; Head-Settle Delay
+; -------------------------------------------------------------------------------
+
+DC_DELAY:                               ; delay for head settling
         OR A
         RET Z
-DC_DMS:
-; 235 * (NOP + DJNZ) is about 4000 clocks at 4 MHz. Keep A intact
-; instead of shuffling it through D on every turn of the delay loop.
+
+DC_DMS:                                 ; convert settle time to loop count
+  ; 235 * (NOP + DJNZ) is about 4000 clocks at 4 MHz. Keep A intact
+  ; instead of shuffling it through D on every turn of the delay loop.
         LD B,235
-DC_DLOOP:
+
+DC_DLOOP:                               ; execute millisecond delay
         NOP
         DJNZ DC_DLOOP
         DEC A
         JR NZ,DC_DMS
         RET
 
-; Format one physical track with caller-supplied WD write-track stream.
-; request: logical,cylinder,side,length word,buffer word.
+  ; Format one physical track with caller-supplied WD write-track stream.
+  ; request: logical,cylinder,side,length word,buffer word.
 
-DC_INFO:
+; ================================================================================
+; =                          Disk-Control Working State                          =
+; =                                                                              =
+; = Defines format request metadata and the persistent physical-transfer state used =
+; = by mapping, seeking, retry, and controller I/O.                              =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Format Request Descriptor
+; -------------------------------------------------------------------------------
+
+DC_INFO:                                ; format request descriptor
         DB 'B','D','C','F',5,4,4,64
         DW DC_PHYS,LY_TAB
-        DW LY_BUF           ; complete last physical read, logical polarity
-        DW LY_CFG+18        ; ABI 5: cached control image format entry
-DC_PHYS:
+        DW LY_BUF                       ; complete last physical read, logical polarity
+        DW LY_CFG+18                    ; ABI 5: cached control image format entry
+
+; -------------------------------------------------------------------------------
+; Physical Transfer State
+; -------------------------------------------------------------------------------
+
+DC_PHYS:                                ; physical profile table
         REPT 4
         DB 5,80,2,0,2,15
         ENDM
-DC_IDTRK: DB 0
-DC_LASTCYL: DB 0
-DC_LAST: DB 0FFH
-DC_PHYADDR: DW DC_PHYS
-DC_NBLK: DB 0
-DC_COMMAND: DB 0
-DC_BUFFER: DW 0
-DC_SIZE: DB 2
-DC_FLAGS: DB 080H
+
+DC_IDTRK: DB 0                          ; requested ID track
+DC_LASTCYL: DB 0                        ; last selected cylinder
+DC_LAST: DB 0FFH                        ; last selected physical drive
+DC_PHYADDR: DW DC_PHYS                  ; physical-profile pointer
+DC_NBLK: DB 0                           ; transfer block count
+DC_COMMAND: DB 0                        ; controller command
+DC_BUFFER: DW 0                         ; transfer buffer pointer
+DC_SIZE: DB 2                           ; physical transfer size
+DC_FLAGS: DB 080H                       ; active geometry flags
         .DEPHASE
         END

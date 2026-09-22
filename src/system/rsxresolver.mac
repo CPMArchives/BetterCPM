@@ -1,7 +1,13 @@
         INCLUDE layout.inc
-; BRSX V2 -- DISK-FREE RESIDENT SERVICE RESOLVER
-; Loaded into the manager overlay slot after a successful RSX reconstruction.
-; Function 208 passes DE -> the 20-byte ABI-1 request block.
+
+; ********************************************************************************
+; *                   BetterCP/M BRSX Service Resolver                           *
+; *                                                                              *
+; * BRSX v2 disk-free resident-service resolver. Loaded into the manager overlay *
+; * slot after successful RSX reconstruction; Function 208 resolves, enumerates, *
+; * and describes the live service registry without further disk access.         *
+; ********************************************************************************
+
 
 RRBASE          EQU     LY_RSX
 ECB_RSXHEAD     EQU     LY_SYS+084H
@@ -13,10 +19,21 @@ RR_DESCRIBE     EQU     2
 
         CSEG
         .PHASE  RRBASE
-RR_ENTRY:
+
+; ================================================================================
+; =                       Resolver Entry and ABI Dispatch                        =
+; =                                                                              =
+; = Validates the Function-208 ABI-1 request and dispatches lookup, enumeration, and =
+; = registry-description operations against the live RSX chain.                  =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Function-208 Dispatch
+; -------------------------------------------------------------------------------
+
+RR_ENTRY:                               ; enter disk-free service resolver
         JP      RR_CONTROL
 
-RR_CONTROL:
+RR_CONTROL:                             ; dispatch Function-208 resolver request
         LD      (RR_REQ),DE
         LD      A,(DE)
         CP      1
@@ -47,7 +64,11 @@ RR_CONTROL:
         JR      Z,RR_DODESC
         JP      RR_BADOP
 
-RR_DOLOOK:
+; -------------------------------------------------------------------------------
+; Lookup Operation
+; -------------------------------------------------------------------------------
+
+RR_DOLOOK:                              ; perform service lookup
         CALL    RR_VALIDID
         JP      NZ,RR_BADID
         XOR     A
@@ -58,17 +79,24 @@ RR_DOLOOK:
         CALL    RR_FILTER
         JP      Z,RR_SUCCESS
         JP      RR_FINISH
-RR_LMISS:
+
+RR_LMISS:                               ; return clean lookup miss
         LD      A,(RR_STATUS)
         OR      A
         JR      NZ,RR_LSTATUS
         LD      A,1
-RR_LSTATUS:
+
+RR_LSTATUS:                             ; return lookup status
         JP      RR_FINISH
 
-; Enumeration uses +18 as the zero-based service ordinal on entry. On success
-; it returns the containing provider index there, like LOOKUP.
-RR_DOENUM:
+  ; Enumeration uses +18 as the zero-based service ordinal on entry. On success
+  ; it returns the containing provider index there, like LOOKUP.
+
+; -------------------------------------------------------------------------------
+; Enumeration Operation
+; -------------------------------------------------------------------------------
+
+RR_DOENUM:                              ; enumerate service ordinal
         XOR     A
         LD      (RR_INDEX),A
         LD      (RR_ORDINAL),A
@@ -78,9 +106,14 @@ RR_DOENUM:
         LD      A,0AH
         JP      RR_FINISH
 
-; DESCRIBE_REGISTRY returns active count in +12, limits in +14..+16:
-; providers=4, services/provider=2, total services=8.
-RR_DODESC:
+  ; DESCRIBE_REGISTRY returns active count in +12, limits in +14..+16:
+  ; providers=4, services/provider=2, total services=8.
+
+; -------------------------------------------------------------------------------
+; Registry Description
+; -------------------------------------------------------------------------------
+
+RR_DODESC:                              ; describe active registry
         XOR     A
         LD      (RR_TOTAL),A
         LD      (RR_INDEX),A
@@ -105,9 +138,20 @@ RR_DODESC:
         XOR     A
         JP      RR_FINISH
 
-; Find requested ID. HL begins at provider base. Carry means end/corruption;
-; RR_STATUS differentiates a clean miss (zero) from corruption (9).
-RR_SCAN:
+  ; Find requested ID. HL begins at provider base. Carry means end/corruption;
+  ; RR_STATUS differentiates a clean miss (zero) from corruption (9).
+
+; ================================================================================
+; =                                Service Lookup                                =
+; =                                                                              =
+; = Walks validated providers and their published descriptors to locate a requested =
+; = service identity while distinguishing a clean miss from registry corruption. =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Provider/Descriptor Scan
+; -------------------------------------------------------------------------------
+
+RR_SCAN:                                ; scan providers for service ID
         CALL    RR_PROVIDER
         RET     C
         LD      A,(HL)
@@ -120,7 +164,8 @@ RR_SCAN:
         EX      DE,HL
         LD      DE,(RR_BASE)
         ADD     HL,DE
-RR_SDESC:
+
+RR_SDESC:                               ; scan provider descriptors
         LD      A,B
         OR      A
         JR      Z,RR_SNEXT
@@ -132,7 +177,8 @@ RR_SDESC:
         ADD     HL,BC
         EX      DE,HL
         LD      B,4
-RR_IDCMP:
+
+RR_IDCMP:                               ; compare requested service ID
         LD      A,(DE)
         CP      (HL)
         JR      NZ,RR_IDNO
@@ -143,19 +189,31 @@ RR_IDCMP:
         POP     BC
         OR      A
         RET
-RR_IDNO:
+
+RR_IDNO:                                ; handle descriptor ID mismatch
         POP     HL
         LD      DE,10
         ADD     HL,DE
         POP     BC
         DEC     B
         JR      RR_SDESC
-RR_SNEXT:
+
+RR_SNEXT:                               ; advance provider scan
         CALL    RR_NEXT
         JR      NC,RR_SCAN
         RET
 
-RR_ENUMSCAN:
+; ================================================================================
+; =                 Service Enumeration and Registry Description                 =
+; =                                                                              =
+; = Enumerates services by global ordinal and counts active providers/services for =
+; = the registry-description operation.                                          =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Ordinal Scan
+; -------------------------------------------------------------------------------
+
+RR_ENUMSCAN:                            ; scan providers for ordinal
         CALL    RR_PROVIDER
         RET     C
         LD      A,(HL)
@@ -168,7 +226,8 @@ RR_ENUMSCAN:
         EX      DE,HL
         LD      DE,(RR_BASE)
         ADD     HL,DE
-RR_EDESC:
+
+RR_EDESC:                               ; scan descriptors for ordinal
         LD      A,B
         OR      A
         JR      Z,RR_ENEXT
@@ -184,15 +243,21 @@ RR_EDESC:
         LD      (RR_ORDINAL),A
         DEC     B
         JR      RR_EDESC
-RR_EFOUND:
+
+RR_EFOUND:                              ; return enumerated service
         OR      A
         RET
-RR_ENEXT:
+
+RR_ENEXT:                               ; advance enumeration provider
         CALL    RR_NEXT
         JR      NC,RR_ENUMSCAN
         RET
 
-RR_COUNTSCAN:
+; -------------------------------------------------------------------------------
+; Registry Count
+; -------------------------------------------------------------------------------
+
+RR_COUNTSCAN:                           ; count active providers and services
         LD      A,H
         OR      L
         RET     Z
@@ -207,8 +272,19 @@ RR_COUNTSCAN:
         JR      NC,RR_COUNTSCAN
         RET
 
-; Validate a v2 runtime header. Returns HL=base+4 and saves base.
-RR_PROVIDER:
+  ; Validate a v2 runtime header. Returns HL=base+4 and saves base.
+
+; ================================================================================
+; =                          Provider Chain Validation                           =
+; =                                                                              =
+; = Validates BRSX v2 and legacy v1 provider headers and advances through the live =
+; = chain using the appropriate next-dispatch layout.                            =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Provider Header Validation
+; -------------------------------------------------------------------------------
+
+RR_PROVIDER:                            ; validate provider header
         LD      A,H
         OR      L
         SCF
@@ -254,7 +330,8 @@ RR_PROVIDER:
         ADD     HL,DE
         OR      A
         RET
-RR_PV1:
+
+RR_PV1:                                 ; handle legacy v1 provider
         LD      HL,(RR_BASE)
         LD      BC,4
         ADD     HL,BC
@@ -264,15 +341,21 @@ RR_PV1:
         CALL    RR_NEXT
         RET     C
         JP      RR_PROVIDER
-RR_PCLEAR:
+
+RR_PCLEAR:                              ; clear provider scratch
         LD      A,9
         LD      (RR_STATUS),A
         SCF
         RET
 
-; Advance using the next dispatch pointer. v2 providers have dispatch at +8;
-; legacy v1 providers at +4. The next header must identify itself accordingly.
-RR_NEXT:
+  ; Advance using the next dispatch pointer. v2 providers have dispatch at +8;
+  ; legacy v1 providers at +4. The next header must identify itself accordingly.
+
+; -------------------------------------------------------------------------------
+; Provider Chain Advance
+; -------------------------------------------------------------------------------
+
+RR_NEXT:                                ; advance to next provider
         LD      HL,(RR_BASE)
         LD      E,(HL)
         INC     HL
@@ -312,7 +395,8 @@ RR_NEXT:
         SBC     HL,DE
         POP     HL
         JR      NZ,RR_NCORRUPT
-RR_NGOOD:
+
+RR_NGOOD:                               ; accept next provider header
         LD      A,(RR_INDEX)
         INC     A
         CP      5
@@ -320,22 +404,35 @@ RR_NGOOD:
         LD      (RR_INDEX),A
         OR      A
         RET
-RR_NEND:
+
+RR_NEND:                                ; finish provider chain
         LD      HL,0
         OR      A
         RET
-RR_NCORRUPT:
+
+RR_NCORRUPT:                            ; report corrupt provider chain
         LD      A,9
         LD      (RR_STATUS),A
         SCF
         RET
 
-; HL -> matching ten-byte descriptor.
-RR_FILTER:
+  ; HL -> matching ten-byte descriptor.
+
+; ================================================================================
+; =                 Descriptor Filtering and Result Publication                  =
+; =                                                                              =
+; = Applies requested version/capability constraints to a matching descriptor and =
+; = copies the resolved identity, metadata, and callable entry into the request. =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Descriptor Constraints
+; -------------------------------------------------------------------------------
+
+RR_FILTER:                              ; filter matching descriptor
         PUSH    HL
         LD      DE,(RR_REQ)
         LD      BC,4
-        ADD     HL,BC          ; descriptor ABI major
+        ADD     HL,BC                   ; descriptor ABI major
         EX      DE,HL
         LD      BC,8
         ADD     HL,BC
@@ -372,21 +469,29 @@ RR_FILTER:
         POP     HL
         XOR     A
         RET
-RR_FMAJOR:
+
+RR_FMAJOR:                              ; check service major version
         POP     HL
         LD      A,2
         RET
-RR_FMINOR:
+
+RR_FMINOR:                              ; check service minor version
         POP     HL
         LD      A,3
         RET
-RR_FCAP:
+
+RR_FCAP:                                ; check service capabilities
         POP     HL
         LD      A,4
         RET
 
-; HL -> descriptor. Copy identity/results and compute base+entry offset.
-RR_OUTPUT:
+  ; HL -> descriptor. Copy identity/results and compute base+entry offset.
+
+; -------------------------------------------------------------------------------
+; Resolved Result
+; -------------------------------------------------------------------------------
+
+RR_OUTPUT:                              ; copy resolved service result
         LD      (RR_DESC),HL
         LD      DE,(RR_REQ)
         EX      DE,HL
@@ -439,32 +544,48 @@ RR_OUTPUT:
         LD      (HL),A
         RET
 
-RR_SUCCESS:
+RR_SUCCESS:                             ; return resolver success
         CALL    RR_OUTPUT
         XOR     A
         JP      RR_FINISH
 
-RR_CLEAR:
+; ================================================================================
+; =                      Request Validation and Completion                       =
+; =                                                                              =
+; = Clears result fields, validates service identifiers, maps ABI errors to status =
+; = codes, and returns success or failure through the Function-208 convention.   =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Request Result Initialization
+; -------------------------------------------------------------------------------
+
+RR_CLEAR:                               ; clear request result fields
         LD      HL,(RR_REQ)
         LD      DE,12
         ADD     HL,DE
         XOR     A
         LD      (RR_STATUS),A
         LD      B,8
-RR_CLOOP:
+
+RR_CLOOP:                               ; clear next result byte
         LD      (HL),A
         INC     HL
         DJNZ    RR_CLOOP
         RET
 
-RR_VALIDID:
+; -------------------------------------------------------------------------------
+; Service-ID Validation
+; -------------------------------------------------------------------------------
+
+RR_VALIDID:                             ; validate service identifier
         LD      HL,(RR_REQ)
         LD      DE,4
         ADD     HL,DE
         LD      B,4
         XOR     A
         LD      (RR_NONSPACE),A
-RR_VILOOP:
+
+RR_VILOOP:                              ; scan identifier character
         LD      A,(HL)
         CP      ' '
         JR      Z,RR_VISPACE
@@ -474,7 +595,8 @@ RR_VILOOP:
         JR      NC,RR_VIBAD
         LD      A,1
         LD      (RR_NONSPACE),A
-RR_VISPACE:
+
+RR_VISPACE:                             ; accept trailing identifier spaces
         INC     HL
         DJNZ    RR_VILOOP
         LD      A,(RR_NONSPACE)
@@ -482,21 +604,31 @@ RR_VISPACE:
         JR      Z,RR_VIBAD
         XOR     A
         RET
-RR_VIBAD:
+
+RR_VIBAD:                               ; reject invalid identifier
         LD      A,1
         OR      A
         RET
 
-RR_BADVER:     LD A,5
+RR_BADVER:     LD A,5                   ; report unsupported ABI version
         JR      RR_FINISH
-RR_BADLEN:     LD A,6
+
+RR_BADLEN:     LD A,6                   ; report invalid request length
         JR      RR_FINISH
-RR_BADOP:      LD A,7
+
+RR_BADOP:      LD A,7                   ; report invalid operation
         JR      RR_FINISH
-RR_BADID:      LD A,8
+
+RR_BADID:      LD A,8                   ; report invalid service ID
         JR      RR_FINISH
-RR_CORRUPT:    LD A,9
-RR_FINISH:
+
+RR_CORRUPT:    LD A,9                   ; report corrupt registry
+
+; -------------------------------------------------------------------------------
+; Status Return
+; -------------------------------------------------------------------------------
+
+RR_FINISH:                              ; finish resolver request
         LD      HL,(RR_REQ)
         PUSH    HL
         LD      DE,19
@@ -517,24 +649,36 @@ RR_FINISH:
         LD      L,A
         LD      A,0
         RET
-RR_SUCCNOHL:
+
+RR_SUCCNOHL:                            ; return success without service pointer
         XOR     A
         LD      HL,0
         RET
-RR_FAILHL:
+
+RR_FAILHL:                              ; return failure with null pointer
         LD      HL,0
         RET
 
-RR_REQ:        DW      0
-RR_BASE:       DW      0
-RR_DESC:       DW      0
-RR_NEXTDISP:   DW      0
-RR_OP:         DB      0
-RR_INDEX:      DB      0
-RR_ORDINAL:    DB      0
-RR_WANTED:     DB      0
-RR_TOTAL:      DB      0
-RR_STATUS:     DB      0
-RR_NONSPACE:   DB      0
+; ================================================================================
+; =                            Resolver Working State                            =
+; =                                                                              =
+; = Defines request, provider, descriptor, operation, ordinal, count, and status state =
+; = used by the disk-free registry resolver.                                     =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Resolver State
+; -------------------------------------------------------------------------------
+
+RR_REQ:        DW      0                ; resolver request pointer
+RR_BASE:       DW      0                ; current provider base
+RR_DESC:       DW      0                ; current descriptor pointer
+RR_NEXTDISP:   DW      0                ; next provider dispatch pointer
+RR_OP:         DB      0                ; resolver operation
+RR_INDEX:      DB      0                ; provider index
+RR_ORDINAL:    DB      0                ; service ordinal
+RR_WANTED:     DB      0                ; requested service count
+RR_TOTAL:      DB      0                ; total service count
+RR_STATUS:     DB      0                ; scan status
+RR_NONSPACE:   DB      0                ; identifier non-space count
         .DEPHASE
         END

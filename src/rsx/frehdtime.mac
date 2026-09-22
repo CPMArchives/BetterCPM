@@ -1,5 +1,11 @@
-; FreHD real-time-clock provider for BetterCP/M TIME ABI 1.0.
-; Function 208 discovery is supplied by the central BRSX-v2 registry walker.
+; ********************************************************************************
+; *                      BetterCP/M FreHD TIME RSX                               *
+; *                                                                              *
+; * FreHD real-time-clock provider for BetterCP/M TIME ABI 1.0. Function 208     *
+; * discovery is supplied by the central BRSX-v2 registry walker; this module    *
+; * implements the provider service and FreHD-specific clock access.              *
+; ********************************************************************************
+
 
 RSXBASE         EQU     08000H
 BDOS            EQU     00005H
@@ -12,17 +18,32 @@ MODLATCH        EQU     0ECH
         CSEG
         .PHASE  RSXBASE
 
-FT_NEXT:        DW      BDOS
-FT_ENTRY:       DW      FT_DISPATCH
-FT_CALLS:       DB      0,0
+; ================================================================================
+; =                         RSX Entry and TIME Dispatch                          =
+; =                                                                              =
+; = Defines the BRSX entry metadata and dispatches supported TIME ABI 1.0 service =
+; = requests while chaining unrelated BDOS calls through the RSX stack.          =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; RSX Header and Dispatch
+; -------------------------------------------------------------------------------
+
+FT_NEXT:        DW      BDOS            ; next RSX descriptor pointer
+FT_ENTRY:       DW      FT_DISPATCH     ; RSX entry pointer
+FT_CALLS:       DB      0,0             ; TIME service-call count
                 DW      0
 
-FT_DISPATCH:
+FT_DISPATCH:                            ; dispatch RSX request
         LD      HL,(FT_NEXT)
         JP      (HL)
 
-; TIME ABI 1.0 service dispatcher.
-FT_SERVICE:
+  ; TIME ABI 1.0 service dispatcher.
+
+; -------------------------------------------------------------------------------
+; TIME ABI Services
+; -------------------------------------------------------------------------------
+
+FT_SERVICE:                             ; dispatch TIME ABI service
         PUSH    DE
         LD      A,(DE)
         CP      1
@@ -39,19 +60,30 @@ FT_SERVICE:
         JP      Z,FT_TSET
         LD      A,3
         JR      FT_TFAIL
-FT_GET:
+
+; ================================================================================
+; =                         FreHD Real-Time Clock Access                         =
+; =                                                                              =
+; = Requests the current clock sample from FreHD, waits with a bounded poll, and =
+; = returns ABI-formatted time data or an appropriate provider status.           =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Clock Read
+; -------------------------------------------------------------------------------
+
+FT_GET:                                 ; read FreHD real-time clock
         INC     DE
         LD      A,(DE)
         OR      A
         JR      NZ,FT_TFLAGS
         PUSH    DE
         LD      HL,6
-        ADD     HL,DE          ; request byte +9 is reserved and must be zero
+        ADD     HL,DE                   ; request byte +9 is reserved and must be zero
         LD      A,(HL)
         POP     DE
         OR      A
         JR      NZ,FT_TFLAGS
-        LD      A,50H           ; preserve map 1 while enabling EXTIO
+        LD      A,50H                   ; preserve map 1 while enabling EXTIO
         OUT     (MODLATCH),A
         LD      A,1
         OUT     (COMMAND2),A
@@ -63,7 +95,7 @@ FT_GET:
         LD      HL,FT_SAMPLE
         LD      BC,6*256+DATA2
         INIR
-        LD      A,40H           ; restore normal Model 4 map and I/O state
+        LD      A,40H                   ; restore normal Model 4 map and I/O state
         OUT     (MODLATCH),A
         CALL    FT_VALIDATE
         JR      NZ,FT_TINVALID
@@ -97,30 +129,44 @@ FT_GET:
         POP     DE
         XOR     A
         RET
-FT_HFAIL:
+
+FT_HFAIL:                               ; handle FreHD hardware failure
         LD      A,40H
         OUT     (MODLATCH),A
         JR      FT_TUNAV
-FT_TVER:       LD      A,1
+
+FT_TVER:       LD      A,1              ; TIME ABI version result
         JR      FT_TFAIL
-FT_TLEN:       LD      A,2
+
+FT_TLEN:       LD      A,2              ; TIME record-length result
         JR      FT_TFAIL
-FT_TFLAGS:     LD      A,4
+
+FT_TFLAGS:     LD      A,4              ; TIME capability flags result
         JR      FT_TFAIL
-FT_TUNAV:      LD      A,5
+
+FT_TUNAV:      LD      A,5              ; TIME unavailable result
         JR      FT_TFAIL
-FT_TINVALID:   LD      A,6
+
+FT_TINVALID:   LD      A,6              ; TIME invalid-request result
         JR      FT_TFAIL
-FT_TSET:       LD      A,8
-FT_TFAIL:
+
+FT_TSET:       LD      A,8              ; TIME set-service entry
+
+FT_TFAIL:                               ; TIME set-service failure
         POP     DE
         LD      HL,0
         RET
 
-; Return Z on a ready, error-free FreHD response. Never wait forever.
-FT_WAIT:
+  ; Return Z on a ready, error-free FreHD response. Never wait forever.
+
+; -------------------------------------------------------------------------------
+; Bounded FreHD Wait
+; -------------------------------------------------------------------------------
+
+FT_WAIT:                                ; wait for FreHD response
         LD      BC,0
-FT_WLOOP:
+
+FT_WLOOP:                               ; poll FreHD response
         IN      A,(STATUS)
         CP      0FFH
         JR      Z,FT_WBAD
@@ -130,16 +176,29 @@ FT_WLOOP:
         LD      A,B
         OR      C
         JR      NZ,FT_WLOOP
-FT_WBAD:
+
+FT_WBAD:                                ; return FreHD error
         LD      A,1
         OR      A
         RET
-FT_WDONE:
+
+FT_WDONE:                               ; return FreHD ready status
         AND     1
         RET
 
-; Validate binary sec,min,hour,year,day,month from FreHD.
-FT_VALIDATE:
+  ; Validate binary sec,min,hour,year,day,month from FreHD.
+
+; ================================================================================
+; =                       Clock Validation and Conversion                        =
+; =                                                                              =
+; = Validates the binary RTC fields, converts the calendar date to the CP/M day  =
+; = count, and converts time components to packed BCD for the TIME ABI record.   =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; RTC Field Validation
+; -------------------------------------------------------------------------------
+
+FT_VALIDATE:                            ; validate RTC fields
         LD      A,(FT_SAMPLE)
         CP      60
         RET     NC
@@ -165,29 +224,38 @@ FT_VALIDATE:
         AND     3
         JR      NZ,FT_VDAY
         INC     B
-FT_VDAY:
+
+FT_VDAY:                                ; validate day of month
         LD      A,(FT_SAMPLE+4)
         OR      A
         JR      Z,FT_VBAD
         CP      B
         JR      Z,FT_VOK
         RET     NC
-FT_VOK:
+
+FT_VOK:                                 ; accept RTC fields
         XOR     A
         RET
-FT_VBAD:
+
+FT_VBAD:                                ; reject invalid RTC fields
         LD      A,1
         OR      A
         RET
 
-; Convert 2000..2099 calendar date to CP/M day count in HL.
-FT_DAYCOUNT:
+  ; Convert 2000..2099 calendar date to CP/M day count in HL.
+
+; -------------------------------------------------------------------------------
+; CP/M Day-Count Conversion
+; -------------------------------------------------------------------------------
+
+FT_DAYCOUNT:                            ; convert date to CP/M day count
         LD      HL,8036
         LD      A,(FT_SAMPLE+3)
         LD      B,A
         XOR     A
-        LD      C,A              ; current two-digit year
-FT_YLOOP:
+        LD      C,A                     ; current two-digit year
+
+FT_YLOOP:                               ; accumulate prior years
         LD      A,B
         OR      A
         JR      Z,FT_MADD
@@ -197,16 +265,19 @@ FT_YLOOP:
         AND     3
         JR      NZ,FT_YNEXT
         INC     HL
-FT_YNEXT:
+
+FT_YNEXT:                               ; advance year count
         INC     C
         DEC     B
         JR      FT_YLOOP
-FT_MADD:
+
+FT_MADD:                                ; accumulate prior months
         LD      A,(FT_SAMPLE+5)
         DEC     A
         LD      B,A
         LD      DE,FT_MTAB
-FT_MLOOP:
+
+FT_MLOOP:                               ; add month length
         LD      A,B
         OR      A
         JR      Z,FT_DAYADD
@@ -215,22 +286,25 @@ FT_MLOOP:
         LD      C,A
         LD      A,(FT_SAMPLE+5)
         SUB     B
-        CP      2                ; month being added is February
+        CP      2                       ; month being added is February
         JR      NZ,FT_MNORMAL
         LD      A,(FT_SAMPLE+3)
         AND     3
         JR      NZ,FT_MNORMAL
         INC     C
-FT_MNORMAL:
+
+FT_MNORMAL:                             ; handle non-leap February
         LD      A,L
         ADD     A,C
         LD      L,A
         JR      NC,FT_MNEXT
         INC     H
-FT_MNEXT:
+
+FT_MNEXT:                               ; advance month count
         DEC     B
         JR      FT_MLOOP
-FT_DAYADD:
+
+FT_DAYADD:                              ; add current day offset
         LD      A,(FT_SAMPLE+4)
         DEC     A
         ADD     A,L
@@ -239,15 +313,21 @@ FT_DAYADD:
         INC     H
         RET
 
-FT_BINBCD:
+; -------------------------------------------------------------------------------
+; Binary-to-BCD Conversion
+; -------------------------------------------------------------------------------
+
+FT_BINBCD:                              ; convert binary byte to packed BCD
         LD      B,0
-FT_BLOOP:
+
+FT_BLOOP:                               ; accumulate BCD tens
         CP      10
         JR      C,FT_BDONE
         SUB     10
         INC     B
         JR      FT_BLOOP
-FT_BDONE:
+
+FT_BDONE:                               ; finish BCD conversion
         LD      C,A
         LD      A,B
         RLCA
@@ -257,8 +337,17 @@ FT_BDONE:
         OR      C
         RET
 
-FT_MTAB:       DB      31,28,31,30,31,30,31,31,30,31,30,31
-FT_SAMPLE:     DS      6
+; ================================================================================
+; =                              TIME Provider Data                              =
+; =                                                                              =
+; = Defines calendar lookup data and the provider's TIME sample buffer.          =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Calendar and Sample Data
+; -------------------------------------------------------------------------------
+
+FT_MTAB:       DB      31,28,31,30,31,30,31,31,30,31,30,31 ; month-length table
+FT_SAMPLE:     DS      6                ; TIME sample buffer
 
         .DEPHASE
         END

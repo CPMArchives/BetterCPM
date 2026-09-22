@@ -1,9 +1,24 @@
-; Exercise both proof services through the public CALL 0005h gateway.
+; ********************************************************************************
+; *                     BetterCP/M Two-Service RSX Test                          *
+; *                                                                              *
+; * Exercises both proof resident services through the public CALL 0005H BDOS    *
+; * gateway, verifying that the installed RSX chain exposes Functions 201 and    *
+; * 203 without bypassing the normal CP/M entry path.                            *
+; ********************************************************************************
+
 
 BDOS            EQU     0005H
         CSEG
         .PHASE  0103H
-START:
+
+; ================================================================================
+; =                          Proof-Service Tests                                =
+; =                                                                              =
+; = Calls the two experimental resident services through BDOS and reports        =
+; = whether each expected proof result is returned.                              =
+; ================================================================================
+
+START:                                  ; enter two-service RSX test
         LD      C,201
         CALL    BDOS
         LD      DE,R2_N201
@@ -14,7 +29,8 @@ START:
         CP      053H
         JR      NZ,R2_PONE
         LD      DE,R2_Y201
-R2_PONE:
+
+R2_PONE:                                ; print first proof-service result
         LD      C,9
         CALL    BDOS
         LD      C,203
@@ -27,14 +43,20 @@ R2_PONE:
         CP      043H
         JR      NZ,R2_PTWO
         LD      DE,R2_Y203
-R2_PTWO:
+
+R2_PTWO:                                ; print second proof-service result
         LD      C,9
         CALL    BDOS
         LD      C,0
         JP      BDOS
-R2_Y201:       DB      'BDOS 201: HELLO present',13,10,'$'
-R2_N201:       DB      13,10,'BDOS 201: absent',13,10,'$'
-R2_Y203:       DB      'BDOS 203: ECHO present',13,10,'$'
-R2_N203:       DB      13,10,'BDOS 203: absent',13,10,'$'
+
+; -------------------------------------------------------------------------------
+; Test Result Messages
+; -------------------------------------------------------------------------------
+
+R2_Y201:       DB      'BDOS 201: HELLO present',13,10,'$' ; Function-201 success message
+R2_N201:       DB      13,10,'BDOS 201: absent',13,10,'$' ; Function-201 failure message
+R2_Y203:       DB      'BDOS 203: ECHO present',13,10,'$' ; Function-203 success message
+R2_N203:       DB      13,10,'BDOS 203: absent',13,10,'$' ; Function-203 failure message
         .DEPHASE
         END     START

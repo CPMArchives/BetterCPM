@@ -1,20 +1,38 @@
-; Phase-3 static/runtime pointer-slot union preparer.
-;
-; DE -> request:
-;   +0 allocation size
-;   +2 static count, +3 runtime count
-;   +4 static-list address, +6 runtime-list address, +8 output address
-;   +10 output capacity in words, +11 reserved zero
-;   +12 returned union count (written only on success)
-;
-; Both input lists contain little-endian word offsets and must independently be
-; sorted and unique.  The output is their sorted, duplicate-free union.
+; ********************************************************************************
+; *                    BetterCP/M RSX Pointer-Slot Union                         *
+; *                                                                              *
+; * Phase-3 preparer for the union of static and runtime pointer-repair slots.    *
+; * Validates both sorted unique offset lists completely before writing their    *
+; * sorted, duplicate-free union to the caller's output buffer.                  *
+; ********************************************************************************
+
+  ; DE -> request:
+  ;   +0 allocation size
+  ;   +2 static count, +3 runtime count
+  ;   +4 static-list address, +6 runtime-list address, +8 output address
+  ;   +10 output capacity in words, +11 reserved zero
+  ;   +12 returned union count (written only on success)
+
+  ; Both input lists contain little-endian word offsets and must independently be
+  ; sorted and unique.  The output is their sorted, duplicate-free union.
+
 
 SUBASE          EQU     07200H
 
         CSEG
         .PHASE  SUBASE
-SU_ENTRY:
+
+; ================================================================================
+; =                           Union Request Validation                           =
+; =                                                                              =
+; = Decodes the request, validates allocation and output capacity, and validates both =
+; = input slot lists before permitting any output writes.                        =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Request Decode and Capacity
+; -------------------------------------------------------------------------------
+
+SU_ENTRY:                               ; enter pointer-slot union preparer
         LD      (SU_REQ),DE
         EX      DE,HL
         LD      E,(HL)
@@ -53,7 +71,7 @@ SU_ENTRY:
         OR      A
         JP      NZ,SU_BAD
 
-; Reserve the maximum possible union before writing anything.
+  ; Reserve the maximum possible union before writing anything.
         LD      A,(SU_SCNT)
         LD      B,A
         LD      A,(SU_RCNT)
@@ -75,7 +93,18 @@ SU_ENTRY:
 
         XOR     A
         LD      (SU_NOUT),A
-SU_MERGE:
+
+; ================================================================================
+; =                            Sorted Slot-List Merge                            =
+; =                                                                              =
+; = Merges the validated static and runtime offset lists in ascending order while =
+; = suppressing duplicate offsets and respecting the reserved output capacity.   =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Two-Way Merge
+; -------------------------------------------------------------------------------
+
+SU_MERGE:                               ; merge static and runtime slot lists
         LD      A,(SU_SCNT)
         OR      A
         JR      Z,SU_RREST
@@ -85,12 +114,12 @@ SU_MERGE:
         LD      HL,(SU_SPTR)
         LD      E,(HL)
         INC     HL
-        LD      D,(HL)          ; DE=static value
+        LD      D,(HL)                  ; DE=static value
         LD      HL,(SU_RPTR)
         LD      C,(HL)
         INC     HL
-        LD      B,(HL)          ; BC=runtime value
-        EX      DE,HL           ; HL=static value
+        LD      B,(HL)                  ; BC=runtime value
+        EX      DE,HL                   ; HL=static value
         PUSH    BC
         LD      D,B
         LD      E,C
@@ -105,18 +134,25 @@ SU_MERGE:
         CALL    SU_ADVS
         CALL    SU_ADVR
         JR      SU_MERGE
-SU_TAKESTATIC:
-        ADD     HL,BC           ; restore static value
+
+SU_TAKESTATIC:                          ; emit next static slot
+        ADD     HL,BC                   ; restore static value
         CALL    SU_EMIT
         CALL    SU_ADVS
         JR      SU_MERGE
-SU_TAKERUNTIME:
+
+SU_TAKERUNTIME:                         ; emit next runtime slot
         LD      H,B
         LD      L,C
         CALL    SU_EMIT
         CALL    SU_ADVR
         JR      SU_MERGE
-SU_SREST:
+
+; -------------------------------------------------------------------------------
+; Static Remainder
+; -------------------------------------------------------------------------------
+
+SU_SREST:                               ; emit remaining static slots
         LD      HL,(SU_SPTR)
         LD      E,(HL)
         INC     HL
@@ -125,7 +161,12 @@ SU_SREST:
         CALL    SU_EMIT
         CALL    SU_ADVS
         JR      SU_MERGE
-SU_RREST:
+
+; -------------------------------------------------------------------------------
+; Runtime Remainder
+; -------------------------------------------------------------------------------
+
+SU_RREST:                               ; emit remaining runtime slots
         LD      A,(SU_RCNT)
         OR      A
         JR      Z,SU_DONE
@@ -137,7 +178,8 @@ SU_RREST:
         CALL    SU_EMIT
         CALL    SU_ADVR
         JR      SU_MERGE
-SU_DONE:
+
+SU_DONE:                                ; finish successful slot union
         LD      HL,(SU_REQ)
         LD      DE,12
         ADD     HL,DE
@@ -146,12 +188,24 @@ SU_DONE:
         XOR     A
         RET
 
-; HL=list, A=count.  Validate complete two-byte bounds and strict ordering.
-SU_VALID:
+  ; HL=list, A=count.  Validate complete two-byte bounds and strict ordering.
+
+; ================================================================================
+; =                             Slot-List Validation                             =
+; =                                                                              =
+; = Validates complete two-byte allocation bounds and strict ascending uniqueness for =
+; = one input pointer-slot list.                                                 =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Input List Validation
+; -------------------------------------------------------------------------------
+
+SU_VALID:                               ; validate one slot list
         LD      B,A
         XOR     A
         LD      (SU_SEEN),A
-SU_VLOOP:
+
+SU_VLOOP:                               ; validate next slot offset
         LD      A,B
         OR      A
         RET     Z
@@ -176,19 +230,25 @@ SU_VLOOP:
         SBC     HL,DE
         POP     HL
         JR      NC,SU_VBAD
-SU_VFIRST:
+
+SU_VFIRST:                              ; accept first slot offset
         LD      (SU_PREV),DE
         LD      A,1
         LD      (SU_SEEN),A
         DJNZ    SU_VLOOP
         XOR     A
         RET
-SU_VBAD:
+
+SU_VBAD:                                ; reject invalid slot list
         LD      A,0FFH
         OR      A
         RET
 
-SU_EMIT:
+; -------------------------------------------------------------------------------
+; Union Output
+; -------------------------------------------------------------------------------
+
+SU_EMIT:                                ; emit union slot offset
         EX      DE,HL
         LD      HL,(SU_OUT)
         LD      (HL),E
@@ -199,7 +259,8 @@ SU_EMIT:
         LD      HL,SU_NOUT
         INC     (HL)
         RET
-SU_ADVS:
+
+SU_ADVS:                                ; advance static-list cursor
         LD      HL,(SU_SPTR)
         INC     HL
         INC     HL
@@ -207,7 +268,8 @@ SU_ADVS:
         LD      HL,SU_SCNT
         DEC     (HL)
         RET
-SU_ADVR:
+
+SU_ADVR:                                ; advance runtime-list cursor
         LD      HL,(SU_RPTR)
         INC     HL
         INC     HL
@@ -215,22 +277,33 @@ SU_ADVR:
         LD      HL,SU_RCNT
         DEC     (HL)
         RET
-SU_BAD:
+
+SU_BAD:                                 ; return union failure
         LD      A,0FFH
         OR      A
         RET
 
-SU_REQ:         DW      0
-SU_ALLOC:       DW      0
-SU_SPTR:        DW      0
-SU_RPTR:        DW      0
-SU_OUT:         DW      0
-SU_PREV:        DW      0
-SU_SCNT:        DB      0
-SU_RCNT:        DB      0
-SU_CAP:         DB      0
-SU_NOUT:        DB      0
-SU_SEEN:        DB      0
+; ================================================================================
+; =                             Union Working State                              =
+; =                                                                              =
+; = Defines request, allocation, input/output cursors, counts, capacity, and validation =
+; = state used while preparing the repair-slot union.                            =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Union State
+; -------------------------------------------------------------------------------
+
+SU_REQ:         DW      0               ; union request pointer
+SU_ALLOC:       DW      0               ; allocation size
+SU_SPTR:        DW      0               ; static-list pointer
+SU_RPTR:        DW      0               ; runtime-list pointer
+SU_OUT:         DW      0               ; union output pointer
+SU_PREV:        DW      0               ; previous validated offset
+SU_SCNT:        DB      0               ; static slots remaining
+SU_RCNT:        DB      0               ; runtime slots remaining
+SU_CAP:         DB      0               ; output capacity
+SU_NOUT:        DB      0               ; union entries emitted
+SU_SEEN:        DB      0               ; slot-validation flag
 
         .DEPHASE
         END

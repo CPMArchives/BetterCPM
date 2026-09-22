@@ -1,52 +1,66 @@
-; BetterCP/M initial CP/M-compatible BDOS dispatcher.
-;
-; Provisional resident placement. Page-zero address 0005h is not installed yet.
+; ********************************************************************************
+; *                          BetterCP/M BDOS Dispatcher                          *
+; *                                                                              *
+; * CP/M-compatible resident BDOS gateway. Dispatches standard and BetterCP/M    *
+; * extended calls, provides console services, maintains public BDOS state, and  *
+; * adapts filesystem calls to Directory Services.                               *
+; ********************************************************************************
 
 BDOSBASE        EQU     0C100H
-BIOCONST        EQU     0EF06H  ; CP/M BIOS console-status vector
-BIOCONIN        EQU     0EF09H  ; CP/M BIOS console-input vector
-BIOCONOT        EQU     0EF0CH  ; CP/M BIOS console-output vector
-BIOCURSOR       EQU     0EF36H  ; BetterCP/M private cursor-character vector
-BIOLIST         EQU     0EF0FH  ; CP/M BIOS list-output vector
-BIOPUNCH        EQU     0EF12H  ; CP/M BIOS punch-output vector
-BIOREADR        EQU     0EF15H  ; CP/M BIOS reader-input vector
-BIOWBOOT        EQU     0EF03H  ; CP/M BIOS warm-boot vector
-DIROPEN         EQU     0D612H  ; seventh directory-service vector
-DIRINVAL        EQU     0D60FH  ; sixth directory-service vector
-DIRLOGIN        EQU     0D60CH  ; fifth directory-service vector
-DIRGALV         EQU     0D615H  ; eighth directory-service vector
-DIRGDPB         EQU     0D618H  ; ninth directory-service vector
-DIRSFIR         EQU     0D61BH  ; tenth directory-service vector
-DIRSNXT         EQU     0D61EH  ; eleventh directory-service vector
-DIRCLOS         EQU     0D621H  ; twelfth directory-service vector
-DIRREAD         EQU     0D624H  ; thirteenth directory-service vector
-DIRWRITE        EQU     0D627H  ; fourteenth directory-service vector
-DIRMAKE         EQU     0D62AH  ; fifteenth directory-service vector
-DIRDELETE       EQU     0D62DH  ; sixteenth directory-service vector
-DIRRENAME       EQU     0D630H  ; seventeenth directory-service vector
-DIRATTR         EQU     0D633H  ; eighteenth directory-service vector
-DIRSIZE         EQU     0D636H  ; nineteenth directory-service vector
-DIRRREAD        EQU     0D639H  ; twentieth directory-service vector
-DIRRWRIT        EQU     0D63CH  ; twenty-first directory-service vector
-DIRRZERO        EQU     0D63FH  ; twenty-second directory-service vector
-DIRSELECT       EQU     0D642H  ; select/reuse a logical drive context
-CPTCOUNT        EQU     0C094H  ; active CPX reconstruction profile
-CPTFLAGS        EQU     0C095H  ; known-module membership bits
+BIOCONST        EQU     0EF06H          ; CP/M BIOS console-status vector
+BIOCONIN        EQU     0EF09H          ; CP/M BIOS console-input vector
+BIOCONOT        EQU     0EF0CH          ; CP/M BIOS console-output vector
+BIOCURSOR       EQU     0EF36H          ; BetterCP/M private cursor-character vector
+BIOLIST         EQU     0EF0FH          ; CP/M BIOS list-output vector
+BIOPUNCH        EQU     0EF12H          ; CP/M BIOS punch-output vector
+BIOREADR        EQU     0EF15H          ; CP/M BIOS reader-input vector
+BIOWBOOT        EQU     0EF03H          ; CP/M BIOS warm-boot vector
+DIROPEN         EQU     0D612H          ; seventh directory-service vector
+DIRINVAL        EQU     0D60FH          ; sixth directory-service vector
+DIRLOGIN        EQU     0D60CH          ; fifth directory-service vector
+DIRGALV         EQU     0D615H          ; eighth directory-service vector
+DIRGDPB         EQU     0D618H          ; ninth directory-service vector
+DIRSFIR         EQU     0D61BH          ; tenth directory-service vector
+DIRSNXT         EQU     0D61EH          ; eleventh directory-service vector
+DIRCLOS         EQU     0D621H          ; twelfth directory-service vector
+DIRREAD         EQU     0D624H          ; thirteenth directory-service vector
+DIRWRITE        EQU     0D627H          ; fourteenth directory-service vector
+DIRMAKE         EQU     0D62AH          ; fifteenth directory-service vector
+DIRDELETE       EQU     0D62DH          ; sixteenth directory-service vector
+DIRRENAME       EQU     0D630H          ; seventeenth directory-service vector
+DIRATTR         EQU     0D633H          ; eighteenth directory-service vector
+DIRSIZE         EQU     0D636H          ; nineteenth directory-service vector
+DIRRREAD        EQU     0D639H          ; twentieth directory-service vector
+DIRRWRIT        EQU     0D63CH          ; twenty-first directory-service vector
+DIRRZERO        EQU     0D63FH          ; twenty-second directory-service vector
+DIRSELECT       EQU     0D642H          ; select/reuse a logical drive context
+CPTCOUNT        EQU     0C094H          ; active CPX reconstruction profile
+CPTFLAGS        EQU     0C095H          ; known-module membership bits
 CPTABLE         EQU     0C096H
 RSXCONTROL      EQU     0D100H
 
         CSEG
         .PHASE  BDOSBASE
 
-BDOS:
+; ================================================================================
+; =                       BDOS Entry and Function Dispatch                       =
+; =                                                                              =
+; = Implements the CP/M-compatible BDOS entry boundary, saves caller state,      =
+; = and dispatches standard and BetterCP/M extended function numbers.            =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Public Entry
+; -------------------------------------------------------------------------------
+
+BDOS:                                   ; enter BDOS dispatcher
         LD      A,C
         LD      (BDOS_FUNC),A
         LD      (BDOS_PARM),DE
         LD      (BDOS_OLDSP),SP
         LD      SP,BDOS_STKTOP
-; Patch 2026-09-03: the bring-up dispatcher used a linear CP/JP chain for
-; every standard call. Retain its behavior through a compact direct table;
-; this also makes the complete 0..40 compatibility surface explicit.
+  ; Patch 2026-09-03: the bring-up dispatcher used a linear CP/JP chain for
+  ; every standard call. Retain its behavior through a compact direct table;
+  ; this also makes the complete 0..40 compatibility surface explicit.
         CP      41
         JR      NC,BDOS_EXTENDED
         LD      L,A
@@ -59,24 +73,33 @@ BDOS:
         LD      D,(HL)
         EX      DE,HL
         PUSH    HL
-        LD      DE,(BDOS_PARM) ; table lookup used DE; restore public argument
+        LD      DE,(BDOS_PARM)          ; table lookup used DE; restore public argument
         RET
-BDOS_EXTENDED:
-        CP      200             ; provisional BetterCP/M CPX control service
+
+; -------------------------------------------------------------------------------
+; Extended-Function Dispatch
+; -------------------------------------------------------------------------------
+
+BDOS_EXTENDED:                          ; dispatch extended BDOS function
+        CP      200                     ; provisional BetterCP/M CPX control service
         JP      Z,BF_CPXCTL
-        CP      202             ; provisional BetterCP/M RSX control service
+        CP      202                     ; provisional BetterCP/M RSX control service
         JP      Z,BF_RSXCTL
-        CP      204             ; optional reverse-video cursor character
+        CP      204                     ; optional reverse-video cursor character
         JP      Z,BF_CURSOR
-        CP      205             ; CCP access to shared printer-echo toggle
+        CP      205                     ; CCP access to shared printer-echo toggle
         JP      Z,BF_CCPPRN
-        CP      206             ; immutable subsystem-version descriptor
+        CP      206                     ; immutable subsystem-version descriptor
         JP      Z,BF_VERSION
-; Patch 2026-09-01: selectors above Function 40 conventionally return zero.
+  ; Patch 2026-09-01: selectors above Function 40 conventionally return zero.
         XOR     A
         JP      BDOS_RETURN
 
-BDOS_TABLE:
+; -------------------------------------------------------------------------------
+; Standard Function Table
+; -------------------------------------------------------------------------------
+
+BDOS_TABLE:                             ; standard BDOS function table
         DW      BIOWBOOT,BF_CONIN,BF_CONOUT,BF_READER,BF_PUNCH
         DW      BF_LIST,BF_DCIO,BF_GETIO,BF_SETIO,BF_PRINT
         DW      BF_READLN,BF_CONST,BDOS_VERS,BDOS_RESET,BDOS_SELDR
@@ -87,38 +110,54 @@ BDOS_TABLE:
         DW      BDOS_SIZE,BDOS_SETRR,BF_RSTDR,BDOS_ZERO,BDOS_ZERO
         DW      BF_RZERO
 
-BDOS_ZERO:
+BDOS_ZERO:                              ; return zero for unsupported standard call
         XOR     A
         JP      BDOS_RETURN
 
-BF_READER:
+BF_READER:                              ; read console reader device
         CALL    BIOREADR
         JP      BDOS_RETURN
-BF_PUNCH:
+
+BF_PUNCH:                               ; write punch device
         LD      A,E
         LD      C,A
         CALL    BIOPUNCH
         XOR     A
         JP      BDOS_RETURN
-BF_LIST:
+
+BF_LIST:                                ; write list device
         LD      A,E
         LD      C,A
         CALL    BIOLIST
         XOR     A
         JP      BDOS_RETURN
-BF_GETIO:
-        LD      A,(0003H)       ; conventional CP/M page-zero I/O byte
-        JP      BDOS_RETURN
-BF_SETIO:
-        LD      A,E
-        LD      (0003H),A       ; keep direct and BDOS access to IOBYTE coherent
-        XOR     A               ; deterministic result for an output operation
+
+BF_GETIO:                               ; return I/O byte
+        LD      A,(0003H)               ; conventional CP/M page-zero I/O byte
         JP      BDOS_RETURN
 
-; BetterCP/M Function 200, provisional CPX profile control. D selects the
-; known module (1 RCP, 2 HELLO); E=0 queries it, E=1 loads it, and E=2
-; unloads it. Canonical reconstruction order is RCP followed by HELLO.
-BF_CPXCTL:
+BF_SETIO:                               ; set I/O byte
+        LD      A,E
+        LD      (0003H),A               ; keep direct and BDOS access to IOBYTE coherent
+        XOR     A                       ; deterministic result for an output operation
+        JP      BDOS_RETURN
+
+; ================================================================================
+; =                         BetterCP/M Extended Services                         =
+; =                                                                              =
+; = Implements BetterCP/M-specific BDOS calls for extension control, protected   =
+; = version information, and platform-assisted console services.                 =
+; ================================================================================
+
+  ; BetterCP/M Function 200, provisional CPX profile control. D selects the
+  ; known module (1 RCP, 2 HELLO); E=0 queries it, E=1 loads it, and E=2
+  ; unloads it. Canonical reconstruction order is RCP followed by HELLO.
+
+; -------------------------------------------------------------------------------
+; CPX Profile Control
+; -------------------------------------------------------------------------------
+
+BF_CPXCTL:                              ; control CPX profile
         LD      A,D
         CP      1
         JR      Z,BCX_BASIC
@@ -126,9 +165,11 @@ BF_CPXCTL:
         JR      NZ,BCX_BAD
         LD      A,2
         JR      BCX_MADE
-BCX_BASIC:
+
+BCX_BASIC:                              ; basic
         LD      A,1
-BCX_MADE:
+
+BCX_MADE:                               ; made
         LD      (BCX_MVAL),A
         LD      A,E
         OR      A
@@ -139,7 +180,8 @@ BCX_MADE:
         JR      Z,BCX_UNLOAD
         LD      A,0FFH
         JP      BDOS_RETURN
-BCX_QUERY:
+
+BCX_QUERY:                              ; query
         LD      A,(BCX_MVAL)
         LD      B,A
         LD      A,(CPTFLAGS)
@@ -147,21 +189,24 @@ BCX_QUERY:
         JP      Z,BDOS_RETURN
         LD      A,1
         JP      BDOS_RETURN
-BCX_LOAD:
+
+BCX_LOAD:                               ; load
         LD      A,(BCX_MVAL)
         LD      B,A
         LD      A,(CPTFLAGS)
         OR      B
         LD      (CPTFLAGS),A
         JR      BCX_REBUILD
-BCX_UNLOAD:
+
+BCX_UNLOAD:                             ; unload
         LD      A,(BCX_MVAL)
         CPL
         LD      B,A
         LD      A,(CPTFLAGS)
         AND     B
         LD      (CPTFLAGS),A
-BCX_REBUILD:
+
+BCX_REBUILD:                            ; rebuild
         XOR     A
         LD      (CPTCOUNT),A
         LD      DE,CPTABLE
@@ -174,7 +219,8 @@ BCX_REBUILD:
         LD      A,(CPTCOUNT)
         INC     A
         LD      (CPTCOUNT),A
-BCX_RHELLO:
+
+BCX_RHELLO:                             ; rhello
         LD      A,(CPTFLAGS)
         AND     2
         JR      Z,BCX_RDONE
@@ -184,32 +230,52 @@ BCX_RHELLO:
         LD      A,(CPTCOUNT)
         INC     A
         LD      (CPTCOUNT),A
-BCX_RDONE:
+
+BCX_RDONE:                              ; rdone
         XOR     A
         JP      BDOS_RETURN
-BCX_BAD:
+
+BCX_BAD:                                ; reject invalid request
         LD      A,0FFH
         JP      BDOS_RETURN
 
-BCX_NBASIC:    DB      'RCP     '
-BCX_NHELLO:    DB      'HELLO   '
+BCX_NBASIC:    DB      'RCP     '       ; nbasic
+BCX_NHELLO:    DB      'HELLO   '       ; nhello
 
-BF_RSXCTL:
+; -------------------------------------------------------------------------------
+; Protected Version Descriptor
+; -------------------------------------------------------------------------------
+
+BF_RSXCTL:                              ; return protected version descriptor
         LD      DE,(BDOS_PARM)
         CALL    RSXCONTROL
         JP      BDOS_RETURN
 
-; BetterCP/M Function 206 returns the protected, versioned descriptor generated
-; from the normative subsystem matrix. Consumers must validate BV/version 1.
-BF_VERSION:
+  ; BetterCP/M Function 206 returns the protected, versioned descriptor generated
+  ; from the normative subsystem matrix. Consumers must validate BV/version 1.
+
+BF_VERSION:                             ; return BetterCP/M version
         LD      HL,BCV_DESC
         JP      RET_HL
 
-; Print the $-terminated string at DE through the same cooked path as
-; Function 2. Preserve the scan pointer because tab expansion uses HL.
-BF_PRINT:
+; ================================================================================
+; =                           Cooked Console Services                            =
+; =                                                                              =
+; = Implements CP/M-compatible string output, buffered line input, cooked console =
+; = input/output, flow control, printer echo, column tracking, and direct console I/O. =
+; ================================================================================
+
+  ; Print the $-terminated string at DE through the same cooked path as
+  ; Function 2. Preserve the scan pointer because tab expansion uses HL.
+
+; -------------------------------------------------------------------------------
+; String Output
+; -------------------------------------------------------------------------------
+
+BF_PRINT:                               ; print $-terminated string
         LD      HL,(BDOS_PARM)
-BF_PRLOOP:
+
+BF_PRLOOP:                              ; prloop
         LD      A,(HL)
         CP      '$'
         JR      Z,BF_PREND
@@ -218,13 +284,19 @@ BF_PRLOOP:
         CALL    BF_COCHAR
         POP     HL
         JR      BF_PRLOOP
-BF_PREND:
+
+BF_PREND:                               ; prend
         XOR     A
         JP      BDOS_RETURN
 
-; Counted-buffer line editor. The buffer is [maximum][count][data...].
-; Editing is relative to the logical column at which the caller entered.
-BF_READLN:
+; -------------------------------------------------------------------------------
+; Buffered Line Input
+; -------------------------------------------------------------------------------
+
+  ; Counted-buffer line editor. The buffer is [maximum][count][data...].
+  ; Editing is relative to the logical column at which the caller entered.
+
+BF_READLN:                              ; read counted console line
         LD      HL,(BDOS_PARM)
         LD      A,(HL)
         LD      (BDL_MAX),A
@@ -237,7 +309,8 @@ BF_READLN:
         LD      (BDL_PTR),HL
         LD      A,(BDOS_COLUMN)
         LD      (BDL_START),A
-BF_RLLOOP:
+
+BF_RLLOOP:                              ; rlloop
         LD      A,(BDL_COUNT)
         LD      HL,BDL_MAX
         CP      (HL)
@@ -264,7 +337,8 @@ BF_RLLOOP:
         JR      Z,BF_RLX
         CP      16
         JR      Z,BF_RLP
-BF_RLSTORE:
+
+BF_RLSTORE:                             ; rlstore
         LD      HL,(BDL_PTR)
         LD      (HL),A
         INC     HL
@@ -273,37 +347,44 @@ BF_RLSTORE:
         INC     (HL)
         CALL    BF_CLECHO
         JR      BF_RLLOOP
-BF_RLCTRL:
+
+BF_RLCTRL:                              ; rlctrl
         LD      A,(BDL_COUNT)
         OR      A
         JP      Z,BIOWBOOT
         LD      A,3
         JR      BF_RLSTORE
-BF_RLP:
+
+BF_RLP:                                 ; rlp
         LD      A,(BDOS_LISTE)
         CPL
         LD      (BDOS_LISTE),A
         JR      BF_RLLOOP
-BF_RLE:
+
+BF_RLE:                                 ; rle
         CALL    BF_RLNEW
         XOR     A
         LD      (BDL_START),A
         JR      BF_RLLOOP
-BF_RLR:
+
+BF_RLR:                                 ; rlr
         CALL    BF_RLHASH
         CALL    BF_RLIND
         CALL    BF_RLREPLAY
         JR      BF_RLLOOP
-BF_RLU:
+
+BF_RLU:                                 ; rlu
         CALL    BF_RLHASH
         CALL    BF_RLIND
         CALL    BF_RLCLEAR
         JR      BF_RLLOOP
-BF_RLX:
+
+BF_RLX:                                 ; rlx
         LD      A,(BDL_COUNT)
         OR      A
         JP      Z,BF_RLLOOP
-BF_RLXLP:
+
+BF_RLXLP:                               ; rlxlp
         CALL    BF_RLERASE
         LD      A,(BDL_COUNT)
         DEC     A
@@ -312,7 +393,8 @@ BF_RLXLP:
         LD      HL,(BDL_BASE)
         LD      (BDL_PTR),HL
         JP      BF_RLLOOP
-BF_RLBS:
+
+BF_RLBS:                                ; rlbs
         LD      A,(BDL_COUNT)
         OR      A
         JP      Z,BF_RLLOOP
@@ -323,7 +405,8 @@ BF_RLBS:
         LD      (BDL_PTR),HL
         CALL    BF_RLERASE
         JP      BF_RLLOOP
-BF_RLDONE:
+
+BF_RLDONE:                              ; rldone
         LD      HL,(BDOS_PARM)
         INC     HL
         LD      A,(BDL_COUNT)
@@ -333,40 +416,46 @@ BF_RLDONE:
         XOR     A
         JP      BDOS_RETURN
 
-BF_RLERASE:
+BF_RLERASE:                             ; rlerase
         LD      A,8
         CALL    BF_COCHAR
         LD      A,' '
         CALL    BF_COCHAR
         LD      A,8
         JP      BF_COCHAR
-BF_RLHASH:
+
+BF_RLHASH:                              ; rlhash
         LD      A,'#'
         CALL    BF_COCHAR
-BF_RLNEW:
+
+BF_RLNEW:                               ; rlnew
         LD      A,13
         CALL    BF_COCHAR
         LD      A,10
         JP      BF_COCHAR
-BF_RLIND:
+
+BF_RLIND:                               ; rlind
         LD      A,(BDL_START)
         OR      A
         RET     Z
         LD      B,A
-BF_RLILP:
+
+BF_RLILP:                               ; rlilp
         PUSH    BC
         LD      A,' '
         CALL    BF_COCHAR
         POP     BC
         DJNZ    BF_RLILP
         RET
-BF_RLREPLAY:
+
+BF_RLREPLAY:                            ; rlreplay
         LD      HL,(BDL_BASE)
         LD      A,(BDL_COUNT)
         OR      A
         RET     Z
         LD      B,A
-BF_RLRPLP:
+
+BF_RLRPLP:                              ; rlrplp
         LD      A,(HL)
         INC     HL
         PUSH    HL
@@ -376,15 +465,17 @@ BF_RLRPLP:
         POP     HL
         DJNZ    BF_RLRPLP
         RET
-BF_RLCLEAR:
+
+BF_RLCLEAR:                             ; rlclear
         XOR     A
         LD      (BDL_COUNT),A
         LD      HL,(BDL_BASE)
         LD      (BDL_PTR),HL
         RET
 
-; Accepted controls not assigned an editing action use caret notation.
-BF_CLECHO:
+  ; Accepted controls not assigned an editing action use caret notation.
+
+BF_CLECHO:                              ; clecho
         LD      (BDOS_CHAR),A
         CP      9
         JP      Z,BF_COCHAR
@@ -397,24 +488,31 @@ BF_CLECHO:
         ADD     A,'@'
         JP      BF_COCHAR
 
-; Cooked, blocking console input. CP/M flow/printer controls are consumed;
-; ordinary control bytes are returned without echo.
-BF_CONIN:
-BF_CINLP:
+; -------------------------------------------------------------------------------
+; Cooked Console Input
+; -------------------------------------------------------------------------------
+
+  ; Cooked, blocking console input. CP/M flow/printer controls are consumed;
+  ; ordinary control bytes are returned without echo.
+
+BF_CONIN:                               ; read cooked console character
+
+BF_CINLP:                               ; cinlp
         CALL    BF_GETIN
-        CP      013H            ; ^S pauses until the next key
+        CP      013H                    ; ^S pauses until the next key
         JP      Z,BF_PAUSE
-        CP      011H            ; stray ^Q is invisible
+        CP      011H                    ; stray ^Q is invisible
         JR      Z,BF_CINLP
-        CP      010H            ; ^P toggles printer echo
+        CP      010H                    ; ^P toggles printer echo
         JR      Z,BF_TOGPR
-        CP      003H            ; ^C aborts to the CCP through warm boot
+        CP      003H                    ; ^C aborts to the CCP through warm boot
         JP      Z,BIOWBOOT
         LD      (BDOS_CHAR),A
         CALL    BF_ECHO
         LD      A,(BDOS_CHAR)
         JP      BDOS_RETURN
-BF_GETIN:
+
+BF_GETIN:                               ; getin
         LD      A,(BDP_VALID)
         OR      A
         JR      Z,BF_GIBIOS
@@ -422,21 +520,32 @@ BF_GETIN:
         LD      (BDP_VALID),A
         LD      A,(BDP_CHAR)
         RET
-BF_GIBIOS:
+
+BF_GIBIOS:                              ; gibios
         JP      BIOCONIN
 
-; Cooked console output shares tab and column rules with echoed input.
-BF_CONOUT:
+; -------------------------------------------------------------------------------
+; Cooked Console Output
+; -------------------------------------------------------------------------------
+
+  ; Cooked console output shares tab and column rules with echoed input.
+
+BF_CONOUT:                              ; write cooked console character
         LD      A,E
         CALL    BF_COCHAR
         XOR     A
         JP      BDOS_RETURN
 
-; BetterCP/M Function 204. E=0 queries the platform capability. A nonzero E
-; writes that character in the platform's cursor presentation and advances
-; the tracked console column. Unsupported platforms return zero and perform
-; no output, allowing the CCP to retain a plain-character fallback.
-BF_CURSOR:
+; -------------------------------------------------------------------------------
+; Platform Cursor Output
+; -------------------------------------------------------------------------------
+
+  ; BetterCP/M Function 204. E=0 queries the platform capability. A nonzero E
+  ; writes that character in the platform's cursor presentation and advances
+  ; the tracked console column. Unsupported platforms return zero and perform
+  ; no output, allowing the CCP to retain a plain-character fallback.
+
+BF_CURSOR:                              ; write platform cursor character
         LD      A,E
         LD      C,A
         CALL    BIOCURSOR
@@ -449,12 +558,14 @@ BF_CURSOR:
         LD      HL,BDOS_COLUMN
         INC     (HL)
         JP      BDOS_RETURN
-BF_CCPPRN:
+
+BF_CCPPRN:                              ; ccpprn
         LD      A,(BDOS_LISTE)
         CPL
         LD      (BDOS_LISTE),A
         JP      BDOS_RETURN
-BF_COCHAR:
+
+BF_COCHAR:                              ; cochar
         LD      (BDOS_CHAR),A
         CP      9
         JR      Z,BF_COTAB
@@ -468,36 +579,48 @@ BF_COCHAR:
         JR      Z,BF_COEND
         LD      HL,BDOS_COLUMN
         INC     (HL)
-BF_COEND:
+
+BF_COEND:                               ; coend
         RET
-BF_COTAB:
+
+BF_COTAB:                               ; cotab
         CALL    BF_TAB
         JR      BF_COEND
-BF_COCR:
+
+BF_COCR:                                ; cocr
         CALL    BF_CR
         JR      BF_COEND
-BF_COBS:
+
+BF_COBS:                                ; cobs
         CALL    BF_BS
         JR      BF_COEND
-BF_TOGPR:
-        LD      A,(BDOS_LISTE)
-        CPL
-        LD      (BDOS_LISTE),A
-        JP      BF_CINLP
-BF_PAUSE:
-        CALL    BIOCONIN
-        CP      003H
-        JP      Z,BIOWBOOT
-        CP      010H
-        JP      NZ,BF_CINLP     ; CP/M resumes after any key
-BF_PTOG:
+
+BF_TOGPR:                               ; togpr
         LD      A,(BDOS_LISTE)
         CPL
         LD      (BDOS_LISTE),A
         JP      BF_CINLP
 
-; Echo the saved character using CP/M's cooked single-character rules.
-BF_ECHO:
+BF_PAUSE:                               ; pause
+        CALL    BIOCONIN
+        CP      003H
+        JP      Z,BIOWBOOT
+        CP      010H
+        JP      NZ,BF_CINLP             ; CP/M resumes after any key
+
+BF_PTOG:                                ; ptog
+        LD      A,(BDOS_LISTE)
+        CPL
+        LD      (BDOS_LISTE),A
+        JP      BF_CINLP
+
+; -------------------------------------------------------------------------------
+; Cooked Character Echo
+; -------------------------------------------------------------------------------
+
+  ; Echo the saved character using CP/M's cooked single-character rules.
+
+BF_ECHO:                                ; echo cooked character
         LD      A,(BDOS_CHAR)
         CP      9
         JR      Z,BF_TAB
@@ -516,28 +639,33 @@ BF_ECHO:
         LD      HL,BDOS_COLUMN
         INC     (HL)
         RET
-BF_CR:
+
+BF_CR:                                  ; cr
         XOR     A
         LD      (BDOS_COLUMN),A
         LD      C,13
         JP      BF_PUTCH
-BF_BS:
+
+BF_BS:                                  ; bs
         LD      HL,BDOS_COLUMN
         LD      A,(HL)
         OR      A
         JR      Z,BF_EPLAIN
         DEC     (HL)
-BF_EPLAIN:
+
+BF_EPLAIN:                              ; eplain
         LD      A,(BDOS_CHAR)
         LD      C,A
         JP      BF_CPUT
-BF_TAB:
+
+BF_TAB:                                 ; tab
         LD      A,(BDOS_COLUMN)
         CPL
         AND     7
         INC     A
         LD      B,A
-BF_TABLOP:
+
+BF_TABLOP:                              ; tablop
         PUSH    BC
         LD      C,' '
         CALL    BF_CPUT
@@ -547,12 +675,18 @@ BF_TABLOP:
         DJNZ    BF_TABLOP
         RET
 
-; Poll CP/M output controls. If polling encounters ordinary input, retain it
-; for the next cooked or direct input call rather than discarding the key.
-BF_CPUT:
+  ; Poll CP/M output controls. If polling encounters ordinary input, retain it
+  ; for the next cooked or direct input call rather than discarding the key.
+
+BF_CPUT:                                ; cput
         LD      A,C
         LD      (BDO_CHAR),A
-BF_FLPOLL:
+
+; -------------------------------------------------------------------------------
+; Flow and Printer Control
+; -------------------------------------------------------------------------------
+
+BF_FLPOLL:                              ; flpoll
         LD      A,(BDP_VALID)
         OR      A
         JR      NZ,BF_FLREADY
@@ -572,28 +706,32 @@ BF_FLPOLL:
         LD      A,0FFH
         LD      (BDP_VALID),A
         JR      BF_FLREADY
-BF_FLTOG:
+
+BF_FLTOG:                               ; fltog
         LD      A,(BDOS_LISTE)
         CPL
         LD      (BDOS_LISTE),A
         JR      BF_FLPOLL
-BF_FLPAUS:
+
+BF_FLPAUS:                              ; flpaus
         CALL    BIOCONIN
         CP      003H
         JP      Z,BIOWBOOT
         CP      010H
-        JR      NZ,BF_FLREADY   ; consume any key and resume output
-BP_TOG:
+        JR      NZ,BF_FLREADY           ; consume any key and resume output
+
+BP_TOG:                                 ; toggle state
         LD      A,(BDOS_LISTE)
         CPL
         LD      (BDOS_LISTE),A
         JR      BF_FLREADY
-BF_FLREADY:
+
+BF_FLREADY:                             ; flready
         LD      A,(BDO_CHAR)
         LD      C,A
         JP      BF_PUTCH
 
-BF_PUTCH:
+BF_PUTCH:                               ; putch
         PUSH    BC
         CALL    BIOCONOT
         POP     BC
@@ -602,102 +740,134 @@ BF_PUTCH:
         RET     Z
         JP      BIOLIST
 
-; Direct console I/O bypasses echo and all cooked-console interpretation.
-; E=FFh polls for one input byte; every other value is output directly.
-BF_DCIO:
+; -------------------------------------------------------------------------------
+; Direct Console I/O
+; -------------------------------------------------------------------------------
+
+  ; Direct console I/O bypasses echo and all cooked-console interpretation.
+  ; E=FFh polls for one input byte; every other value is output directly.
+
+BF_DCIO:                                ; perform direct console I/O
         LD      A,E
         CP      0FFH
         JR      Z,BF_DCIN
         LD      C,A
         CALL    BIOCONOT
-        XOR     A               ; output-form return is not otherwise defined
+        XOR     A                       ; output-form return is not otherwise defined
         JP      BDOS_RETURN
-BF_DCIN:
+
+BF_DCIN:                                ; dcin
         LD      A,(BDP_VALID)
         OR      A
         JR      NZ,BF_DCREAD
         CALL    BIOCONST
         OR      A
-        JP      Z,BDOS_RETURN   ; nonblocking empty result
-BF_DCREAD:
+        JP      Z,BDOS_RETURN           ; nonblocking empty result
+
+BF_DCREAD:                              ; dcread
         CALL    BF_GETIN
         JP      BDOS_RETURN
 
-BF_CONST:
+BF_CONST:                               ; return console status
         LD      A,(BDP_VALID)
         OR      A
         JR      NZ,BF_CREADY
-        CALL    BIOCONST        ; BIOS already guarantees exactly 00h or FFh
+        CALL    BIOCONST                ; BIOS already guarantees exactly 00h or FFh
         JP      BDOS_RETURN
-BF_CREADY:
+
+BF_CREADY:                              ; cready
         LD      A,0FFH
         JP      BDOS_RETURN
 
-BDOS_VERS:
-        LD      A,022H          ; CP/M 2.2 identity, returned as HL=0022h
+; ================================================================================
+; =                        BDOS State and Drive Services                         =
+; =                                                                              =
+; = Implements version, disk reset/selection, DMA, allocation/DPB queries, write =
+; = protection, user selection, and resident read-only compatibility behavior.   =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Version and Disk State
+; -------------------------------------------------------------------------------
+
+BDOS_VERS:                              ; return CP/M version
+        LD      A,022H                  ; CP/M 2.2 identity, returned as HL=0022h
         JP      BDOS_RETURN
 
-BDOS_RESET:
+BDOS_RESET:                             ; reset disk system
         LD      C,0
         CALL    DIRLOGIN
         JR      NZ,BDOS_BADRV
         XOR     A
-        LD      (BDOS_DRIVE),A  ; reset selects A but preserves current user
+        LD      (BDOS_DRIVE),A          ; reset selects A but preserves current user
         LD      HL,0080H
         LD      (BDOS_DMA),HL
-        LD      HL,0001H        ; after reset, only drive A is logged
+        LD      HL,0001H                ; after reset, only drive A is logged
         LD      (STATE_LV),HL
-        LD      HL,0000H        ; reset clears software write protection
+        LD      HL,0000H                ; reset clears software write protection
         LD      (STATE_RO),HL
-        XOR     A               ; function 13 has no specified result
+        XOR     A                       ; function 13 has no specified result
         JP      BDOS_RETURN
 
-BDOS_SELDR:
+; -------------------------------------------------------------------------------
+; Drive Selection
+; -------------------------------------------------------------------------------
+
+BDOS_SELDR:                             ; select default drive
         LD      A,E
-        CP      4               ; Model 4 development system exposes A through D
+        CP      4                       ; Model 4 development system exposes A through D
         JR      NC,BDOS_BADRV
         LD      (BDOS_TDRIVE),A
         LD      C,A
-        CALL    DIRSELECT       ; commit BDOS state only after valid login
+        CALL    DIRSELECT               ; commit BDOS state only after valid login
         JR      NZ,BDOS_BADRV
         LD      HL,(BDOS_PARM)
         LD      A,L
         LD      (BDOS_DRIVE),A
-        CALL    BF_LOGCUR        ; login vector is cumulative
-        XOR     A               ; function 14 has no defined normal result
-        JP      BDOS_RETURN
-BDOS_BADRV:
-        LD      A,0FFH          ; deliberate provisional failure result
+        CALL    BF_LOGCUR               ; login vector is cumulative
+        XOR     A                       ; function 14 has no defined normal result
         JP      BDOS_RETURN
 
-BDOS_GETDR:
+BDOS_BADRV:                             ; badrv
+        LD      A,0FFH                  ; deliberate provisional failure result
+        JP      BDOS_RETURN
+
+BDOS_GETDR:                             ; return default drive
         LD      A,(BDOS_DRIVE)
         JP      BDOS_RETURN
 
-BDOS_LOGV:
+BDOS_LOGV:                              ; return login vector
         LD      HL,(STATE_LV)
         JP      RET_HL
 
-BDOS_STDMA:
+; -------------------------------------------------------------------------------
+; DMA and Disk Metadata
+; -------------------------------------------------------------------------------
+
+BDOS_STDMA:                             ; set DMA address
         LD      HL,(BDOS_PARM)
         LD      (BDOS_DMA),HL
-        XOR     A               ; function 26 has no specified result
+        XOR     A                       ; function 26 has no specified result
         JP      BDOS_RETURN
 
-BDOS_ALVP:
+BDOS_ALVP:                              ; return allocation-vector pointer
         CALL    DIRGALV
         JR      NZ,BDOS_PTRER
         JP      RET_HL
 
-BDOS_DPBP:
+BDOS_DPBP:                              ; return DPB pointer
         CALL    DIRGDPB
         JR      NZ,BDOS_PTRER
         JP      RET_HL
-BDOS_PTRER:
+
+BDOS_PTRER:                             ; ptrer
         LD      A,0FFH
         JP      BDOS_RETURN
 
-BDOS_WRPRO:
+; -------------------------------------------------------------------------------
+; Write Protection
+; -------------------------------------------------------------------------------
+
+BDOS_WRPRO:                             ; write-protect current drive
         LD      A,(BDOS_DRIVE)
         LD      E,A
         LD      D,0
@@ -707,30 +877,40 @@ BDOS_WRPRO:
         LD      HL,STATE_RO
         OR      (HL)
         LD      (HL),A
-        XOR     A               ; function 28 has no specified result
+        XOR     A                       ; function 28 has no specified result
         JP      BDOS_RETURN
 
-BDOS_ROV:
+BDOS_ROV:                               ; return read-only vector
         LD      HL,(STATE_RO)
         JP      RET_HL
 
-BF_USER:
+; -------------------------------------------------------------------------------
+; User Number
+; -------------------------------------------------------------------------------
+
+BF_USER:                                ; get or set user number
         LD      A,E
         CP      0FFH
         JR      Z,BF_GETU
-        AND     01FH            ; required CP/M 2.2 modulo-32 selection
+        AND     01FH                    ; required CP/M 2.2 modulo-32 selection
         LD      (BDOS_USER),A
-        XOR     A               ; set-form result is not guaranteed
+        XOR     A                       ; set-form result is not guaranteed
         JP      BDOS_RETURN
-BF_GETU:
+
+BF_GETU:                                ; getu
         LD      A,(BDOS_USER)
         JP      BDOS_RETURN
 
-; CP/M 2.2 abandons the transient after an attempted write through an FCB
-; carrying the file read-only attribute. Earlier BetterCP/M revisions safely
-; returned FFh here; retain that behavior in the directory layer, but
-; interpose the compatibility-visible resident error before write dispatch.
-BF_CHFRO:
+; -------------------------------------------------------------------------------
+; Read-Only File Compatibility
+; -------------------------------------------------------------------------------
+
+  ; CP/M 2.2 abandons the transient after an attempted write through an FCB
+  ; carrying the file read-only attribute. Earlier BetterCP/M revisions safely
+  ; returned FFh here; retain that behavior in the directory layer, but
+  ; interpose the compatibility-visible resident error before write dispatch.
+
+BF_CHFRO:                               ; chfro
         PUSH    DE
         LD      HL,(BDOS_PARM)
         LD      DE,9
@@ -740,10 +920,12 @@ BF_CHFRO:
         JR      NZ,BF_FROERR
         POP     DE
         RET
-BF_FROERR:
+
+BF_FROERR:                              ; froerr
         POP     DE
         LD      HL,BF_MSGFRO
-BF_FROLP:
+
+BF_FROLP:                               ; frolp
         LD      A,(HL)
         CP      '$'
         JP      Z,BIOWBOOT
@@ -753,10 +935,14 @@ BF_FROLP:
         POP     HL
         JR      BF_FROLP
 
-BF_MSGFRO:
+BF_MSGFRO:                              ; msgfro
         DB      13,10,'File R/O',13,10,'$'
 
-BF_RREAD:
+; -------------------------------------------------------------------------------
+; Random Record I/O
+; -------------------------------------------------------------------------------
+
+BF_RREAD:                               ; read random record
         LD      DE,(BDOS_PARM)
         CALL    BF_FSEL
         JP      NZ,BDOS_BADRV
@@ -764,10 +950,10 @@ BF_RREAD:
         LD      A,(BDOS_USER)
         CALL    DIRRREAD
         JP      NC,BDOS_RETURN
-        LD      A,0FFH          ; provisional physical-storage presentation
+        LD      A,0FFH                  ; provisional physical-storage presentation
         JP      BDOS_RETURN
 
-BF_RWRIT:
+BF_RWRIT:                               ; write random record
         LD      DE,(BDOS_PARM)
         CALL    BF_FSEL
         JP      NZ,BDOS_BADRV
@@ -778,10 +964,10 @@ BF_RWRIT:
         LD      A,(BDOS_USER)
         CALL    DIRRWRIT
         JP      NC,BDOS_RETURN
-        LD      A,0FFH          ; protection or physical-storage failure
+        LD      A,0FFH                  ; protection or physical-storage failure
         JP      BDOS_RETURN
 
-BF_RZERO:
+BF_RZERO:                               ; write random record with zero fill
         LD      DE,(BDOS_PARM)
         CALL    BF_FSEL
         JP      NZ,BDOS_BADRV
@@ -795,8 +981,13 @@ BF_RZERO:
         LD      A,0FFH
         JP      BDOS_RETURN
 
-; Selectively return the implemented drives to not-logged-in/read-write state.
-BF_RSTDR:
+; -------------------------------------------------------------------------------
+; Drive Reset
+; -------------------------------------------------------------------------------
+
+  ; Selectively return the implemented drives to not-logged-in/read-write state.
+
+BF_RSTDR:                               ; reset selected drives
         LD      HL,(BDOS_PARM)
         LD      A,L
         AND     0FH
@@ -809,7 +1000,8 @@ BF_RSTDR:
         LD      A,(STATE_RO)
         AND     0FEH
         LD      (STATE_RO),A
-BF_RSTB:
+
+BF_RSTB:                                ; rstb
         LD      A,E
         AND     2
         JR      Z,BF_RSTINV
@@ -819,7 +1011,8 @@ BF_RSTB:
         LD      A,(STATE_RO)
         AND     0FDH
         LD      (STATE_RO),A
-BF_RSTC:
+
+BF_RSTC:                                ; rstc
         LD      A,E
         AND     4
         JR      Z,BF_RSTD
@@ -829,7 +1022,8 @@ BF_RSTC:
         LD      A,(STATE_RO)
         AND     0FBH
         LD      (STATE_RO),A
-BF_RSTD:
+
+BF_RSTD:                                ; rstd
         LD      A,E
         AND     8
         JR      Z,BF_RSTINV
@@ -839,19 +1033,26 @@ BF_RSTD:
         LD      A,(STATE_RO)
         AND     0F7H
         LD      (STATE_RO),A
-BF_RSTINV:
+
+BF_RSTINV:                              ; rstinv
         LD      A,E
         OR      A
         JR      Z,BF_RSTDONE
         CALL    DIRINVAL
-BF_RSTDONE:
-        XOR     A               ; required for CP/M/MP/M compatibility
+
+BF_RSTDONE:                             ; rstdone
+        XOR     A                       ; required for CP/M/MP/M compatibility
         JP      BDOS_RETURN
 
-; Patch 2026-09-01: resolve FCB byte zero (0=current, 1=A, 2=B) before every
-; file operation. Explicit selection changes the directory context and login
-; vector, but deliberately does not change Function 25's default drive.
-BF_FSEL:
+; -------------------------------------------------------------------------------
+; FCB Drive Resolution
+; -------------------------------------------------------------------------------
+
+  ; Patch 2026-09-01: resolve FCB byte zero (0=current, 1=A, 2=B) before every
+  ; file operation. Explicit selection changes the directory context and login
+  ; vector, but deliberately does not change Function 25's default drive.
+
+BF_FSEL:                                ; resolve FCB drive
         PUSH    BC
         PUSH    DE
         LD      A,(DE)
@@ -859,12 +1060,15 @@ BF_FSEL:
         JR      Z,BF_FCUR
         OR      A
         JR      NZ,BF_FEXPL
-BF_FCUR:
+
+BF_FCUR:                                ; fcur
         LD      A,(BDOS_DRIVE)
         JR      BF_FGOT
-BF_FEXPL:
+
+BF_FEXPL:                               ; fexpl
         DEC     A
-BF_FGOT:
+
+BF_FGOT:                                ; fgot
         CP      4
         JR      NC,BF_FBAD
         LD      (BDOS_TDRIVE),A
@@ -873,16 +1077,18 @@ BF_FGOT:
         JR      NZ,BF_FDONE
         CALL    BF_LOGCUR
         XOR     A
-BF_FDONE:
+
+BF_FDONE:                               ; fdone
         POP     DE
         POP     BC
         RET
-BF_FBAD:
+
+BF_FBAD:                                ; fbad
         LD      A,1
         OR      A
         JR      BF_FDONE
 
-BF_LOGCUR:
+BF_LOGCUR:                              ; logcur
         LD      A,(BDOS_TDRIVE)
         LD      E,A
         LD      D,0
@@ -894,42 +1100,58 @@ BF_LOGCUR:
         LD      (HL),A
         RET
 
-BF_ISRO:
+; -------------------------------------------------------------------------------
+; Drive Read-Only Test
+; -------------------------------------------------------------------------------
+
+BF_ISRO:                                ; test drive read-only state
         PUSH    BC
         LD      A,(BDOS_TDRIVE)
         LD      B,A
         LD      A,(STATE_RO)
-BF_ROSHIFT:
+
+BF_ROSHIFT:                             ; roshift
         INC     B
         DEC     B
         JR      Z,BF_ROBIT
         RRCA
         DEC     B
         JR      BF_ROSHIFT
-BF_ROBIT:
+
+BF_ROBIT:                               ; robit
         AND     1
         POP     BC
         RET
 
-BF_DMASK:
+BF_DMASK:                               ; dmask
         DB      1,2,4,8
 
-BDOS_OPEN:
+; ================================================================================
+; =                           File Operation Dispatch                            =
+; =                                                                              =
+; = Adapts CP/M BDOS file calls to Directory Services, resolving drive context,  =
+; = read-only policy, search semantics, and return conventions at the BDOS boundary. =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Open and Close
+; -------------------------------------------------------------------------------
+
+BDOS_OPEN:                              ; open file
         LD      DE,(BDOS_PARM)
         CALL    BF_FSEL
         JP      NZ,BDOS_BADRV
         LD      HL,14
         ADD     HL,DE
-        LD      (HL),0          ; CP/M caller supplies S2 zero on Open
+        LD      (HL),0                  ; CP/M caller supplies S2 zero on Open
         LD      A,(BDOS_USER)
         CALL    DIROPEN
         JP      NC,BDOS_RETURN
-        LD      A,0FFH          ; provisional storage-error presentation
-; Patch 2026-09-01: RET_HL was inserted below for function 24. Keep this
-; explicit branch so Open errors cannot fall into the new 16-bit return path.
+        LD      A,0FFH                  ; provisional storage-error presentation
+  ; Patch 2026-09-01: RET_HL was inserted below for function 24. Keep this
+  ; explicit branch so Open errors cannot fall into the new 16-bit return path.
         JP      BDOS_RETURN
 
-BDOS_CLOSE:
+BDOS_CLOSE:                             ; close file
         LD      DE,(BDOS_PARM)
         CALL    BF_FSEL
         JP      NZ,BDOS_BADRV
@@ -938,10 +1160,14 @@ BDOS_CLOSE:
         LD      A,(BDOS_USER)
         CALL    DIRCLOS
         JP      NC,BDOS_RETURN
-        LD      A,0FFH          ; provisional storage-error presentation
+        LD      A,0FFH                  ; provisional storage-error presentation
         JP      BDOS_RETURN
 
-BDOS_SFIR:
+; -------------------------------------------------------------------------------
+; Directory Search
+; -------------------------------------------------------------------------------
+
+BDOS_SFIR:                              ; search first
         LD      DE,(BDOS_PARM)
         ; Drive '?' changes the user-matching policy, not the selected disk.
         ; BF_FSEL already resolves it to the public current drive.  Always
@@ -949,21 +1175,27 @@ BDOS_SFIR:
         ; leave Directory Services scanning its private stale context.
         CALL    BF_FSEL
         JP      NZ,BDOS_BADRV
-BF_SALL:
+
+BF_SALL:                                ; sall
         LD      BC,(BDOS_DMA)
         LD      A,(BDOS_USER)
         CALL    DIRSFIR
         JR      BF_SRET
 
-BDOS_SNXT:
+BDOS_SNXT:                              ; search next
         LD      BC,(BDOS_DMA)
         CALL    DIRSNXT
-BF_SRET:
+
+BF_SRET:                                ; sret
         JP      NC,BDOS_RETURN
-        LD      A,0FFH          ; provisional storage-error presentation
+        LD      A,0FFH                  ; provisional storage-error presentation
         JP      BDOS_RETURN
 
-BDOS_DELETE:
+; -------------------------------------------------------------------------------
+; Delete, Read, Write, and Create
+; -------------------------------------------------------------------------------
+
+BDOS_DELETE:                            ; delete file
         LD      DE,(BDOS_PARM)
         CALL    BF_FSEL
         JP      NZ,BDOS_BADRV
@@ -975,32 +1207,32 @@ BDOS_DELETE:
         LD      A,0FFH
         JP      BDOS_RETURN
 
-BDOS_READ:
+BDOS_READ:                              ; read sequential record
         LD      DE,(BDOS_PARM)
         CALL    BF_FSEL
         JP      NZ,BDOS_BADRV
         LD      BC,(BDOS_DMA)
         LD      A,(BDOS_USER)
         CALL    DIRREAD
-        JP      NC,BDOS_RETURN  ; zero success or nonzero EOF
-        LD      A,0FFH          ; provisional storage-error presentation
+        JP      NC,BDOS_RETURN          ; zero success or nonzero EOF
+        LD      A,0FFH                  ; provisional storage-error presentation
         JP      BDOS_RETURN
 
-BDOS_WRITE:
+BDOS_WRITE:                             ; write sequential record
         LD      DE,(BDOS_PARM)
         CALL    BF_FSEL
         JP      NZ,BDOS_BADRV
         CALL    BF_CHFRO
         LD      BC,(BDOS_DMA)
         CALL    BF_ISRO
-        LD      H,A             ; H=software-protected flag
+        LD      H,A                     ; H=software-protected flag
         LD      A,(BDOS_USER)
         CALL    DIRWRITE
         JP      NC,BDOS_RETURN
-        LD      A,0FFH          ; protection or physical-storage failure
+        LD      A,0FFH                  ; protection or physical-storage failure
         JP      BDOS_RETURN
 
-BDOS_MAKE:
+BDOS_MAKE:                              ; make file
         LD      DE,(BDOS_PARM)
         CALL    BF_FSEL
         JP      NZ,BDOS_BADRV
@@ -1012,7 +1244,11 @@ BDOS_MAKE:
         LD      A,0FFH
         JP      BDOS_RETURN
 
-BDOS_ATTR:
+; -------------------------------------------------------------------------------
+; Attributes and File Size
+; -------------------------------------------------------------------------------
+
+BDOS_ATTR:                              ; set file attributes
         LD      DE,(BDOS_PARM)
         CALL    BF_FSEL
         JP      NZ,BDOS_BADRV
@@ -1024,7 +1260,7 @@ BDOS_ATTR:
         LD      A,0FFH
         JP      BDOS_RETURN
 
-BDOS_SIZE:
+BDOS_SIZE:                              ; compute file size
         LD      DE,(BDOS_PARM)
         CALL    BF_FSEL
         JP      NZ,BDOS_BADRV
@@ -1034,8 +1270,13 @@ BDOS_SIZE:
         LD      A,0FFH
         JP      BDOS_RETURN
 
-; Convert S2:EX:CR to the 24-bit random-record field at FCB bytes 33..35.
-BDOS_SETRR:
+; -------------------------------------------------------------------------------
+; Sequential-to-Random Record Conversion
+; -------------------------------------------------------------------------------
+
+  ; Convert S2:EX:CR to the 24-bit random-record field at FCB bytes 33..35.
+
+BDOS_SETRR:                             ; set random record from sequential position
         LD      HL,(BDOS_PARM)
         LD      DE,12
         ADD     HL,DE
@@ -1061,7 +1302,8 @@ BDOS_SETRR:
         LD      C,0
         JR      Z,BR_LOW
         LD      C,080H
-BR_LOW:
+
+BR_LOW:                                 ; handle low record range
         LD      HL,(BDOS_PARM)
         LD      DE,32
         ADD     HL,DE
@@ -1073,7 +1315,8 @@ BR_LOW:
         LD      D,0
         JR      NC,BR_NC0
         INC     D
-BR_NC0:
+
+BR_NC0:                                 ; nc0
         LD      HL,(BDOS_RREX)
         SRL     H
         RR      L
@@ -1085,7 +1328,8 @@ BR_NC0:
         LD      C,0
         JR      NC,BR_NC1
         INC     C
-BR_NC1:
+
+BR_NC1:                                 ; nc1
         LD      DE,(BDOS_RREX)
         SRL     D
         LD      A,D
@@ -1095,7 +1339,11 @@ BR_NC1:
         XOR     A
         JP      BDOS_RETURN
 
-BDOS_RENAME:
+; -------------------------------------------------------------------------------
+; Rename
+; -------------------------------------------------------------------------------
+
+BDOS_RENAME:                            ; rename file
         LD      DE,(BDOS_PARM)
         CALL    BF_FSEL
         JP      NZ,BDOS_BADRV
@@ -1107,132 +1355,212 @@ BDOS_RENAME:
         LD      A,0FFH
         JP      BDOS_RETURN
 
-; CP/M normal-return aliases: A=L and B=H.
-RET_HL:
+  ; CP/M normal-return aliases: A=L and B=H.
+
+RET_HL:                                 ; return 16-bit value in HL
         LD      A,L
         LD      B,H
         JR      RET_SP
-BDOS_RETURN:
+
+; -------------------------------------------------------------------------------
+; Common Return Path
+; -------------------------------------------------------------------------------
+
+BDOS_RETURN:                            ; restore caller and return
         LD      L,A
         LD      H,0
         LD      B,H
         LD      A,L
-RET_SP:
+
+RET_SP:                                 ; sp
         LD      SP,(BDOS_OLDSP)
         RET
 
-BDOS_FUNC:
+; ================================================================================
+; =                              BDOS Working State                              =
+; =                                                                              =
+; = Defines dispatcher, console, drive, DMA, random-record, and private-stack state =
+; = retained by the resident BDOS gateway.                                       =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Dispatcher and Console State
+; -------------------------------------------------------------------------------
+
+BDOS_FUNC:                              ; current BDOS function
         DB      0
-BCX_MVAL:
+
+BCX_MVAL:                               ; mval
         DB      0
-BDOS_CHAR:
+
+BDOS_CHAR:                              ; saved console character
         DB      0
-BDOS_COLUMN:
+
+BDOS_COLUMN:                            ; current console column
         DB      0
-BDOS_LISTE:
+
+BDOS_LISTE:                             ; printer-echo flag
         DB      0
-BDP_VALID:
+
+BDP_VALID:                              ; pending-input valid flag
         DB      0
-BDP_CHAR:
+
+BDP_CHAR:                               ; pending input character
         DB      0
-BDO_CHAR:
+
+BDO_CHAR:                               ; saved output character
         DB      0
-BDL_MAX:
+
+BDL_MAX:                                ; line-buffer maximum
         DB      0
-BDL_COUNT:
+
+BDL_COUNT:                              ; line-buffer count
         DB      0
-BDL_START:
+
+BDL_START:                              ; line-entry starting column
         DB      0
-BDL_BASE:
+
+BDL_BASE:                               ; line-buffer base
         DW      0
-BDL_PTR:
+
+BDL_PTR:                                ; line-buffer pointer
         DW      0
-BDOS_PARM:
+
+; -------------------------------------------------------------------------------
+; BDOS Call and Drive State
+; -------------------------------------------------------------------------------
+
+BDOS_PARM:                              ; saved BDOS parameter
         DW      0
-BDOS_OLDSP:
+
+BDOS_OLDSP:                             ; caller stack pointer
         DW      0
-BDOS_USER:
-        DB      0               ; initial current user
-BDOS_DRIVE:
-        DB      0               ; initial current/default drive A
-BDOS_TDRIVE:
-        DB      0               ; target selected by the current FCB operation
-BDOS_DMA:
-        DW      0080H           ; CP/M startup DMA selection
-STATE_LV:
-        DW      0001H           ; gateway publishes BDOS only after A login
-STATE_RO:
-        DW      0000H           ; transient software read-only drive vector
-BDOS_RREX:
+
+BDOS_USER:                              ; current user number
+        DB      0                       ; initial current user
+
+BDOS_DRIVE:                             ; default drive
+        DB      0                       ; initial current/default drive A
+
+BDOS_TDRIVE:                            ; temporary drive
+        DB      0                       ; target selected by the current FCB operation
+
+BDOS_DMA:                               ; current DMA address
+        DW      0080H                   ; CP/M startup DMA selection
+
+STATE_LV:                               ; login vector
+        DW      0001H                   ; gateway publishes BDOS only after A login
+
+STATE_RO:                               ; read-only vector
+        DW      0000H                   ; transient software read-only drive vector
+
+BDOS_RREX:                              ; random-record extent scratch
         DW      0000H
-BDOS_RRP:
+
+BDOS_RRP:                               ; random-record pointer
         DW      0000H
 
         INCLUDE versions.inc
 
-; Patch 2026-09-01: the first public-call boundary receives its own stack now,
-; before more BDOS functions deepen the call graph. The exact size and address
-; remain provisional; only balanced restoration is compatibility-visible.
-BDOS_STACK:
+; -------------------------------------------------------------------------------
+; Private BDOS Stack
+; -------------------------------------------------------------------------------
+
+  ; Patch 2026-09-01: the first public-call boundary receives its own stack now,
+  ; before more BDOS functions deepen the call graph. The exact size and address
+  ; remain provisional; only balanced restoration is compatibility-visible.
+
+BDOS_STACK:                             ; private BDOS stack
         REPT    64
         DB      0
         ENDM
-BDOS_STKTOP:
 
-; Patch 2026-09-02: the original DPH/DPB tables at C080h and CSV/ALV pages
-; below C100h were inside the TPA. A large transient could therefore corrupt
-; the live disk contract. Keep the historical mistake visible in the gateway
-; source, but place every descriptor and workspace above resident BDOS code.
-; Patch 2026-09-02: the second CPX profile made the fixed-core dispatcher
-; outgrow the old C900h descriptor boundary. The first repair fixed this table
-; at CB00h, leaving a 258-byte bring-up hole after the private stack. Patch
-; 2026-09-03 removes that artificial boundary: the descriptor unit follows the
-; dispatcher immediately and its physical address is now a generated-layout
-; concern rather than reserved resident storage.
-BIO_DPH0:
+BDOS_STKTOP:                            ; top of private BDOS stack
+
+  ; Patch 2026-09-02: the original DPH/DPB tables at C080h and CSV/ALV pages
+  ; below C100h were inside the TPA. A large transient could therefore corrupt
+  ; the live disk contract. Keep the historical mistake visible in the gateway
+  ; source, but place every descriptor and workspace above resident BDOS code.
+  ; Patch 2026-09-02: the second CPX profile made the fixed-core dispatcher
+  ; outgrow the old C900h descriptor boundary. The first repair fixed this table
+  ; at CB00h, leaving a 258-byte bring-up hole after the private stack. Patch
+  ; 2026-09-03 removes that artificial boundary: the descriptor unit follows the
+  ; dispatcher immediately and its physical address is now a generated-layout
+  ; concern rather than reserved resident storage.
+
+; ================================================================================
+; =                   Resident Disk Descriptors and Workspaces                   =
+; =                                                                              =
+; = Defines the resident DPH, DPB, CSV, and allocation-vector objects exported   =
+; = through the BIOS/BDOS disk contract and kept outside the transient program area. =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Disk Parameter Headers
+; -------------------------------------------------------------------------------
+
+BIO_DPH0:                               ; drive A DPH
         DW      0,0,0,0,0EC80H,BIO_DPB0,BIO_CSV0,BIO_ALV0
-BIO_DPH1:
+
+BIO_DPH1:                               ; drive B DPH
         DW      0,0,0,0,0EC80H,BIO_DPB0,BIO_CSV1,BIO_ALV1
-BIO_DPH2:
+
+BIO_DPH2:                               ; drive C DPH
         DW      0,0,0,0,0EC80H,BIO_DPB0,BIO_CSV2,BIO_ALV2
-BIO_DPH3:
+
+BIO_DPH3:                               ; drive D DPH
         DW      0,0,0,0,0EC80H,BIO_DPB0,BIO_CSV3,BIO_ALV3
-BIO_DPB0:
+
+; -------------------------------------------------------------------------------
+; Disk Parameter Block
+; -------------------------------------------------------------------------------
+
+BIO_DPB0:                               ; resident DPB
         DW      80
         DB      4,15,0
         DW      394,127
         DB      0C0H,0
         DW      32,2
-        DB      0               ; align mutable workspace at CB50h
-BIO_CSV0:
+        DB      0                       ; align mutable workspace at CB50h
+
+; -------------------------------------------------------------------------------
+; Check and Allocation Vectors
+; -------------------------------------------------------------------------------
+
+BIO_CSV0:                               ; drive A check vector
         REPT    32
         DB      0
         ENDM
-BIO_ALV0:
+
+BIO_ALV0:                               ; drive A allocation vector
         REPT    50
         DB      0
         ENDM
-BIO_CSV1:
+
+BIO_CSV1:                               ; drive B check vector
         REPT    32
         DB      0
         ENDM
-BIO_ALV1:
+
+BIO_ALV1:                               ; drive B allocation vector
         REPT    50
         DB      0
         ENDM
-BIO_CSV2:
+
+BIO_CSV2:                               ; drive C check vector
         REPT    32
         DB      0
         ENDM
-BIO_ALV2:
+
+BIO_ALV2:                               ; drive C allocation vector
         REPT    50
         DB      0
         ENDM
-BIO_CSV3:
+
+BIO_CSV3:                               ; drive D check vector
         REPT    32
         DB      0
         ENDM
-BIO_ALV3:
+
+BIO_ALV3:                               ; drive D allocation vector
         REPT    50
         DB      0
         ENDM

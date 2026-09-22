@@ -1,6 +1,11 @@
-; z80pack/cpmsim real-time-clock provider for BetterCP/M TIME ABI 1.0.
-; Function 208 discovery is supplied by the central BRSX-v2 registry walker.
-; This provider never changes cpmsim's BCD/binary mode.
+; ********************************************************************************
+; *                       BetterCP/M z80pack RTC RSX                             *
+; *                                                                              *
+; * z80pack/CPMSIM real-time-clock provider for BetterCP/M TIME ABI 1.0.         *
+; * Function 208 discovery is supplied by the BRSX-v2 registry walker; the       *
+; * provider reads either CPMSIM BCD or binary mode without changing that mode.  *
+; ********************************************************************************
+
 
 RSXBASE         EQU     08000H
 BDOS            EQU     00005H
@@ -10,17 +15,32 @@ CLKDATA         EQU     26
         CSEG
         .PHASE  RSXBASE
 
-ZP_NEXT:        DW      BDOS
-ZP_ENTRY:       DW      ZP_DISPATCH
-ZP_CALLS:       DB      0,0
+; ================================================================================
+; =                         RSX Entry and TIME Dispatch                          =
+; =                                                                              =
+; = Defines the provider's BRSX metadata and dispatches supported TIME ABI 1.0   =
+; = requests while chaining unrelated calls through the RSX stack.               =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; RSX Header and Dispatch
+; -------------------------------------------------------------------------------
+
+ZP_NEXT:        DW      BDOS            ; next RSX descriptor pointer
+ZP_ENTRY:       DW      ZP_DISPATCH     ; RSX entry pointer
+ZP_CALLS:       DB      0,0             ; TIME service-call count
                 DW      0
 
-ZP_DISPATCH:
+ZP_DISPATCH:                            ; dispatch RSX request
         LD      HL,(ZP_NEXT)
         JP      (HL)
 
-; TIME ABI 1.0 service dispatcher.
-ZP_SERVICE:
+  ; TIME ABI 1.0 service dispatcher.
+
+; -------------------------------------------------------------------------------
+; TIME ABI Services
+; -------------------------------------------------------------------------------
+
+ZP_SERVICE:                             ; dispatch TIME ABI service
         PUSH    DE
         LD      A,(DE)
         CP      1
@@ -37,7 +57,18 @@ ZP_SERVICE:
         JP      Z,ZP_TSET
         LD      A,3
         JP      ZP_TFAIL
-ZP_GET:
+
+; ================================================================================
+; =                        CPMSIM Real-Time Clock Access                         =
+; =                                                                              =
+; = Samples the CPMSIM clock coherently across the time fields, retries a sample =
+; = that crosses a second boundary, and normalizes binary mode to packed BCD.    =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Coherent Clock Sampling
+; -------------------------------------------------------------------------------
+
+ZP_GET:                                 ; read CPMSIM real-time clock
         INC     DE
         LD      A,(DE)
         OR      A
@@ -50,13 +81,14 @@ ZP_GET:
         OR      A
         JP      NZ,ZP_TFLAGS
 
-; Sample seconds around the other four fields.  If the second changed, the
-; sample may cross a minute/day boundary, so retry it.  Four attempts are
-; bounded yet make rejection extraordinarily unlikely during normal use.
+  ; Sample seconds around the other four fields.  If the second changed, the
+  ; sample may cross a minute/day boundary, so retry it.  Four attempts are
+  ; bounded yet make rejection extraordinarily unlikely during normal use.
         IN      A,(CLKCMD)
         LD      (ZP_MODE),A
         LD      B,4
-ZP_RETRY:
+
+ZP_RETRY:                               ; retry incoherent clock sample
         XOR     A
         OUT     (CLKCMD),A
         IN      A,(CLKDATA)
@@ -88,7 +120,7 @@ ZP_RETRY:
         DJNZ    ZP_RETRY
         JR      ZP_TUNAV
 
-ZP_COHERENT:
+ZP_COHERENT:                            ; accept coherent clock sample
         LD      A,(ZP_MODE)
         CP      2
         JR      NC,ZP_TINVALID
@@ -96,7 +128,8 @@ ZP_COHERENT:
         JR      Z,ZP_VALIDATE
         LD      HL,ZP_SAMPLE+2
         LD      B,3
-ZP_BINLOOP:
+
+ZP_BINLOOP:                             ; convert binary clock fields
         LD      A,(HL)
         PUSH    BC
         CALL    ZP_BINBCD
@@ -104,7 +137,18 @@ ZP_BINLOOP:
         LD      (HL),A
         INC     HL
         DJNZ    ZP_BINLOOP
-ZP_VALIDATE:
+
+; ================================================================================
+; =                               Clock Validation                               =
+; =                                                                              =
+; = Validates the returned date/time sample and packed-BCD clock fields before   =
+; = publishing the TIME ABI record.                                              =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Sample Validation
+; -------------------------------------------------------------------------------
+
+ZP_VALIDATE:                            ; validate clock sample
         CALL    ZP_CHKBCD
         JR      NZ,ZP_TINVALID
         POP     DE
@@ -123,24 +167,36 @@ ZP_VALIDATE:
         POP     DE
         XOR     A
         RET
-ZP_TVER:       LD      A,1
+
+ZP_TVER:       LD      A,1              ; TIME ABI version result
         JR      ZP_TFAIL
-ZP_TLEN:       LD      A,2
+
+ZP_TLEN:       LD      A,2              ; TIME record-length result
         JR      ZP_TFAIL
-ZP_TFLAGS:     LD      A,4
+
+ZP_TFLAGS:     LD      A,4              ; TIME capability flags result
         JR      ZP_TFAIL
-ZP_TUNAV:      LD      A,5
+
+ZP_TUNAV:      LD      A,5              ; TIME unavailable result
         JR      ZP_TFAIL
-ZP_TINVALID:   LD      A,6
+
+ZP_TINVALID:   LD      A,6              ; TIME invalid-request result
         JR      ZP_TFAIL
-ZP_TSET:       LD      A,8
-ZP_TFAIL:
+
+ZP_TSET:       LD      A,8              ; TIME set-service entry
+
+ZP_TFAIL:                               ; TIME set-service failure
         POP     DE
         LD      HL,0
         RET
 
-; Validate packed BCD hour/minute/second.
-ZP_CHKBCD:
+  ; Validate packed BCD hour/minute/second.
+
+; -------------------------------------------------------------------------------
+; Packed-BCD Validation
+; -------------------------------------------------------------------------------
+
+ZP_CHKBCD:                              ; validate packed BCD time
         LD      HL,ZP_SAMPLE+2
         LD      D,024H
         CALL    ZP_ONEBCD
@@ -151,7 +207,8 @@ ZP_CHKBCD:
         RET     NZ
         INC     HL
         LD      D,060H
-ZP_ONEBCD:
+
+ZP_ONEBCD:                              ; validate one packed BCD byte
         LD      A,(HL)
         LD      B,A
         AND     0FH
@@ -162,20 +219,27 @@ ZP_ONEBCD:
         JR      NC,ZP_VBAD
         XOR     A
         RET
-ZP_VBAD:
+
+ZP_VBAD:                                ; reject invalid clock sample
         LD      A,1
         OR      A
         RET
 
-ZP_BINBCD:
+; -------------------------------------------------------------------------------
+; Binary-to-BCD Conversion
+; -------------------------------------------------------------------------------
+
+ZP_BINBCD:                              ; convert binary byte to packed BCD
         LD      C,0
-ZP_BLOOP:
+
+ZP_BLOOP:                               ; accumulate BCD tens
         CP      10
         JR      C,ZP_BDONE
         SUB     10
         INC     C
         JR      ZP_BLOOP
-ZP_BDONE:
+
+ZP_BDONE:                               ; finish BCD conversion
         LD      B,A
         LD      A,C
         RLCA
@@ -185,9 +249,19 @@ ZP_BDONE:
         OR      B
         RET
 
-ZP_MODE:       DB      0
-ZP_SEC1:       DB      0
-ZP_SAMPLE:     DS      5
+; ================================================================================
+; =                             TIME Provider State                              =
+; =                                                                              =
+; = Defines the saved CPMSIM clock mode, coherence scratch, and provider sample  =
+; = buffer used by the z80pack RTC service.                                      =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Provider State
+; -------------------------------------------------------------------------------
+
+ZP_MODE:       DB      0                ; saved CPMSIM RTC mode
+ZP_SEC1:       DB      0                ; first sampled second
+ZP_SAMPLE:     DS      5                ; TIME sample buffer
 
         .DEPHASE
         END

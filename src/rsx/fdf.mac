@@ -1,22 +1,39 @@
         INCLUDE layout.inc
-; FDF -- OPTIONAL MONTEZUMA DISK ADDRESS CONVENTIONS, 07-Sep-2026.
-; No ports, controller delays, or permanently patched entry addresses here.
-; The BIOS finds us through the current RSX chain, even after relocation.
-; MM 2.32 bios.asm SEEK and the EXBIOS patch are the reference.
+
+; ********************************************************************************
+; *                         BetterCP/M FDF RSX                                  *
+; *                                                                              *
+; * Optional Montezuma Micro disk-address convention layer. Adds FDF geometry    *
+; * mapping and normalization through the relocatable RSX chain without ports,   *
+; * controller timing, or permanently patched BIOS entry addresses.              *
+; ********************************************************************************
+
 RSXBASE         EQU     08000H
         CSEG
         .PHASE  RSXBASE
-FD_NEXT:        DW      5
-FD_ENTRY:       DW      FD_DISPATCH
-FD_DISPATCH:
+
+; ================================================================================
+; =                        RSX Entry and Alias Management                        =
+; =                                                                              =
+; = Dispatches FDF services through the current RSX chain and detaches dependent =
+; = logical aliases safely when FDF support is unloaded.                         =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; RSX Header and Dispatch
+; -------------------------------------------------------------------------------
+
+FD_NEXT:        DW      5               ; next RSX descriptor pointer
+FD_ENTRY:       DW      FD_DISPATCH     ; RSX entry pointer
+
+FD_DISPATCH:                            ; dispatch FDF RSX request
         LD A,C
         CP 209
         JP Z,FD_SERVICE
         CP 202
         JP NZ,FD_CHAIN
-; Unloading our support detaches its logical aliases first. All ordinary
-; BDOS writes are synchronous. Select A successfully before altering tables;
-; this also keeps the command processor off a drive it can no longer read.
+  ; Unloading our support detaches its logical aliases first. All ordinary
+  ; BDOS writes are synchronous. Select A successfully before altering tables;
+  ; this also keeps the command processor off a drive it can no longer read.
         PUSH DE
         PUSH BC
         LD A,(DE)
@@ -31,7 +48,8 @@ FD_DISPATCH:
         INC DE
         LD HL,FD_NAME
         LD B,8
-FD_NAMELOOP:
+
+FD_NAMELOOP:                            ; compare logical alias name
         LD A,(DE)
         CP (HL)
         JR NZ,FD_PASS
@@ -45,7 +63,12 @@ FD_NAMELOOP:
         JR NZ,FD_REMOVEFAIL
         LD HL,LY_TAB+80+16
         LD B,3
-FD_DETACH:
+
+; -------------------------------------------------------------------------------
+; Alias Detachment
+; -------------------------------------------------------------------------------
+
+FD_DETACH:                              ; detach FDF logical aliases
         PUSH HL
         LD DE,19
         ADD HL,DE
@@ -60,28 +83,44 @@ FD_DETACH:
         POP HL
         JR Z,FD_KEEP
         LD (HL),0FFH
-FD_KEEP:
+
+FD_KEEP:                                ; retain attached alias
         LD DE,80
         ADD HL,DE
         DJNZ FD_DETACH
         LD DE,0FFFFH
         LD C,37
         CALL LY_BDOS
-FD_PASS:
+
+FD_PASS:                                ; continue alias scan
         POP BC
         POP DE
-FD_CHAIN:
+
+FD_CHAIN:                               ; chain unhandled call
         LD HL,(FD_NEXT)
         JP (HL)
-FD_REMOVEFAIL:
+
+FD_REMOVEFAIL:                          ; handle detach failure
         POP BC
         POP DE
-FD_BAD:
+
+FD_BAD:                                 ; reject invalid FDF request
         LD HL,0FFFFH
         LD A,0FFH
         LD B,0
         RET
-FD_SERVICE:
+
+; ================================================================================
+; =                             FDF Address Mapping                              =
+; =                                                                              =
+; = Maps BetterCP/M logical track/record positions through Montezuma FDF skew, side, =
+; = sector-ID, and mixed-size conventions to normalized BIOS physical results.   =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Private Service Dispatch
+; -------------------------------------------------------------------------------
+
+FD_SERVICE:                             ; dispatch private FDF service
         LD A,B
         OR A
         JR Z,FD_QUERY
@@ -89,16 +128,21 @@ FD_SERVICE:
         JP Z,FD_SUPER
         CP 1
         JR NZ,FD_BAD
-; BDOS has a deliberately small call stack. Borrow our own workspace for
-; the mapper, rather than charge every unloaded system a larger stack.
+  ; BDOS has a deliberately small call stack. Borrow our own workspace for
+  ; the mapper, rather than charge every unloaded system a larger stack.
         LD (FD_OLDSP),SP
         LD SP,FD_STKTOP
         CALL FD_MAP
         LD SP,(FD_OLDSP)
         RET
-FD_MAP:
-; Private BIOS call: IX=binding, DE=logical track, HL=128-byte sector.
-; Only live BIOS table addresses are accepted, not a public arbitrary pointer.
+
+; -------------------------------------------------------------------------------
+; Logical Address Mapping
+; -------------------------------------------------------------------------------
+
+FD_MAP:                                 ; map FDF logical address
+  ; Private BIOS call: IX=binding, DE=logical track, HL=128-byte sector.
+  ; Only live BIOS table addresses are accepted, not a public arbitrary pointer.
         PUSH HL
         PUSH DE
         PUSH IX
@@ -107,7 +151,8 @@ FD_MAP:
         OR A
         SBC HL,DE
         LD B,4
-FD_PTR:
+
+FD_PTR:                                 ; validate live binding pointer
         LD A,H
         OR L
         JR Z,FD_PTRGOOD
@@ -118,10 +163,12 @@ FD_PTR:
         POP DE
         POP HL
         JR FD_BAD
-FD_QUERY:
-        LD HL,04644H           ; 'FD', distinguish an absent service's zero
+
+FD_QUERY:                               ; query binding geometry
+        LD HL,04644H                    ; 'FD', distinguish an absent service's zero
         RET
-FD_PTRGOOD:
+
+FD_PTRGOOD:                             ; accept validated binding pointer
         POP DE
         POP HL
         LD A,D
@@ -134,9 +181,14 @@ FD_PTRGOOD:
         LD (FD_RECORD),A
         XOR A
         LD (FD_INDEX),A
-; Count actual 128-byte records in each sector. This one walk handles
-; uniform media and an arbitrary two-bit size code for each skew slot.
-FD_FINDSEC:
+  ; Count actual 128-byte records in each sector. This one walk handles
+  ; uniform media and an arbitrary two-bit size code for each skew slot.
+
+; -------------------------------------------------------------------------------
+; Skew-Slot Search
+; -------------------------------------------------------------------------------
+
+FD_FINDSEC:                             ; locate logical record in skew map
         LD A,(FD_INDEX)
         CP (IX+17)
         JP NC,FD_BAD
@@ -145,13 +197,16 @@ FD_FINDSEC:
         LD B,A
         INC B
         LD A,1
-FD_CAPLOOP:
+
+FD_CAPLOOP:                             ; accumulate sector record capacity
         DJNZ FD_CAPSHIFT
         JR FD_CAPDONE
-FD_CAPSHIFT:
+
+FD_CAPSHIFT:                            ; scale sector capacity
         ADD A,A
         JR FD_CAPLOOP
-FD_CAPDONE:
+
+FD_CAPDONE:                             ; finish capacity count
         LD B,A
         LD A,(FD_RECORD)
         CP B
@@ -162,7 +217,12 @@ FD_CAPDONE:
         INC A
         LD (FD_INDEX),A
         JR FD_FINDSEC
-FD_FOUNDSEC:
+
+; -------------------------------------------------------------------------------
+; Side and Sector Mapping
+; -------------------------------------------------------------------------------
+
+FD_FOUNDSEC:                            ; map located sector
         OR 080H
         LD (FD_QUART),A
         LD A,(FD_INDEX)
@@ -184,8 +244,8 @@ FD_FOUNDSEC:
         JR Z,FD_CYL
         BIT 1,(IX+19)
         JR Z,FD_ALTERNATE
-; Complete side zero before side one. FDF cylinders, not the drive's
-; mechanical limit, determine where the second surface begins.
+  ; Complete side zero before side one. FDF cylinders, not the drive's
+  ; mechanical limit, determine where the second surface begins.
         CP (IX+16)
         JR C,FD_CYL
         SUB (IX+16)
@@ -197,26 +257,30 @@ FD_FOUNDSEC:
         SUB B
         LD B,A
         JR FD_SIDEONE
-FD_ALTERNATE:
+
+FD_ALTERNATE:                           ; apply alternating-side convention
         SRL A
         JR NC,FD_CYL
         LD B,A
-FD_SIDEONE:
+
+FD_SIDEONE:                             ; map side-one track
         LD A,1
         LD (FD_SIDE),A
         LD A,B
-FD_CYL:
+
+FD_CYL:                                 ; derive FDF cylinder
         CP (IX+16)
         JP NC,FD_BAD
         LD C,A
-        LD L,A                ; mechanical cylinder (no implicit double step)
+        LD L,A                          ; mechanical cylinder (no implicit double step)
         BIT 2,(IX+19)
         JR Z,FD_IDTRACK
         ADD A,A
         LD B,A
         LD A,(FD_SIDE)
         ADD A,B
-FD_IDTRACK:
+
+FD_IDTRACK:                             ; normalize sector ID by track
         LD H,A
         LD A,(FD_SIDE)
         LD D,A
@@ -227,7 +291,8 @@ FD_IDTRACK:
         JR Z,FD_RESULT
         ADD A,(IX+17)
         JP C,FD_BAD
-FD_RESULT:
+
+FD_RESULT:                              ; publish mapped address
         LD E,A
         LD A,(FD_SIZE)
         RLCA
@@ -239,9 +304,20 @@ FD_RESULT:
         LD B,A
         XOR A
         RET
-; Operation 2 is called by the checked BIOS setter with IX=request.
-; It recognizes geometry, and does not make any binding or perform disk I/O.
-FD_SUPER:
+  ; Operation 2 is called by the checked BIOS setter with IX=request.
+  ; It recognizes geometry, and does not make any binding or perform disk I/O.
+
+; ================================================================================
+; =                          FDF Geometry Normalization                          =
+; =                                                                              =
+; = Recognizes supported FDF geometry variants and normalizes legacy SUPER or    =
+; = cylinder-track descriptions into the common explicit size-map representation. =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Geometry Recognition
+; -------------------------------------------------------------------------------
+
+FD_SUPER:                               ; normalize SUPER geometry
         PUSH IX
         POP HL
         LD DE,0100H
@@ -256,13 +332,14 @@ FD_SUPER:
         JP NC,FD_BAD
         BIT 6,(IX+20)
         JR Z,FD_MIXCHECK
-; Some FDF records count a whole cylinder in SPT (Micro-Abacus).
-; Recognize that convention from geometry, not a manufacturer-name test.
+  ; Some FDF records count a whole cylinder in SPT (Micro-Abacus).
+  ; Recognize that convention from geometry, not a manufacturer-name test.
         LD L,(IX+18)
         LD H,0
         LD B,(IX+19)
         INC B
-FD_CYLSHIFT:
+
+FD_CYLSHIFT:                            ; normalize cylinder-track SPT
         ADD HL,HL
         DJNZ FD_CYLSHIFT
         LD E,(IX+2)
@@ -273,14 +350,19 @@ FD_CYLSHIFT:
         SET 5,(IX+20)
         LD (IX+53),0
         JP FD_QUERY
-FD_MIXCHECK:
+
+; -------------------------------------------------------------------------------
+; Mixed-Size Validation
+; -------------------------------------------------------------------------------
+
+FD_MIXCHECK:                            ; validate mixed-size geometry
         LD A,(IX+53)
         CP 1
         JR Z,FD_CHECKMAP
         OR A
         JP NZ,FD_BAD
-; MM's built-in SUPER descriptor predates an explicit size map. Translate
-; it once, at attachment, to the same general map used by other callers.
+  ; MM's built-in SUPER descriptor predates an explicit size map. Translate
+  ; it once, at attachment, to the same general map used by other callers.
         LD A,(IX+2)
         CP 44
         JP NZ,FD_BAD
@@ -296,31 +378,41 @@ FD_MIXCHECK:
         LD (IX+53),1
         LD (IX+54),0FFH
         LD (IX+55),00BH
-FD_CHECKMAP:
+
+; -------------------------------------------------------------------------------
+; Explicit Size-Map Validation
+; -------------------------------------------------------------------------------
+
+FD_CHECKMAP:                            ; validate explicit size map
         PUSH IX
         INC IX
         LD HL,0
         XOR A
         LD (FD_INDEX),A
-FD_MAPSUM:
+
+FD_MAPSUM:                              ; sum size-map capacity
         CALL FD_GETSIZE
         CP (IX+18)
         JR C,FD_MAPSIZE
         JR Z,FD_MAPSIZE
         POP IX
         JP FD_BAD
-FD_MAPSIZE:
+
+FD_MAPSIZE:                             ; decode next size-map entry
         LD B,A
         INC B
         LD DE,1
-FD_SUMSHIFT:
+
+FD_SUMSHIFT:                            ; scale size-map record count
         DJNZ FD_SUMMORE
         JR FD_SUMADD
-FD_SUMMORE:
+
+FD_SUMMORE:                             ; continue size-map sum
         SLA E
         RL D
         JR FD_SUMSHIFT
-FD_SUMADD:
+
+FD_SUMADD:                              ; add size-map capacity
         ADD HL,DE
         LD A,(FD_INDEX)
         INC A
@@ -334,9 +426,20 @@ FD_SUMADD:
         POP IX
         JP NZ,FD_BAD
         JP FD_QUERY
-; IX=binding. Size table has four two-bit codes per byte, low pair first.
-; Preserve DE (track number) and HL (validation sum).
-FD_GETSIZE:
+  ; IX=binding. Size table has four two-bit codes per byte, low pair first.
+  ; Preserve DE (track number) and HL (validation sum).
+
+; ================================================================================
+; =                         Packed Sector-Size Decoding                          =
+; =                                                                              =
+; = Decodes the packed two-bit per-sector size table used by mixed-size FDF media =
+; = while preserving the mapper's track and validation state.                    =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Packed Size Lookup
+; -------------------------------------------------------------------------------
+
+FD_GETSIZE:                             ; return sector size code
         LD A,(IX+52)
         OR A
         LD A,(IX+18)
@@ -358,28 +461,43 @@ FD_GETSIZE:
         AND 3
         LD B,A
         INC B
-FD_PAIR:
+
+FD_PAIR:                                ; select packed size-code pair
         DJNZ FD_PAIRNEXT
         JR FD_PAIRREADY
-FD_PAIRNEXT:
+
+FD_PAIRNEXT:                            ; advance packed pair
         SRL C
         SRL C
         JR FD_PAIR
-FD_PAIRREADY:
+
+FD_PAIRREADY:                           ; extract selected size code
         LD A,C
         AND 3
         POP DE
         POP HL
         RET
-FD_INDEX:       DB 0
-FD_RECORD:      DB 0
-FD_SIZE:        DB 0
-FD_NAME:        DB 'FDF     '
-FD_QUART:       DB 0
-FD_SIDE:        DB 0
-FD_SECTOR:      DB 0
-FD_OLDSP:       DW 0
-FD_STACK:       DS 64
-FD_STKTOP:
+
+; ================================================================================
+; =                              FDF Working State                               =
+; =                                                                              =
+; = Defines mapped-address scratch values and the private stack borrowed for FDF =
+; = mapping so the fixed BDOS stack need not grow when this RSX is absent.       =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Mapper State and Stack
+; -------------------------------------------------------------------------------
+
+FD_INDEX:       DB 0                    ; mapped skew index
+FD_RECORD:      DB 0                    ; record offset within sector
+FD_SIZE:        DB 0                    ; mapped sector size code
+FD_NAME:        DB 'FDF     '           ; alias name scratch
+FD_QUART:       DB 0                    ; mapped quarter-sector index
+FD_SIDE:        DB 0                    ; mapped physical side
+FD_SECTOR:      DB 0                    ; mapped sector ID
+FD_OLDSP:       DW 0                    ; saved caller stack pointer
+FD_STACK:       DS 64                   ; private FDF stack
+
+FD_STKTOP:                              ; top of private FDF stack
         .DEPHASE
         END

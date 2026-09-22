@@ -1,20 +1,38 @@
-; Phase-3 prospective RSX profile layout planner.
-;
-; DE -> request:
-; +0 top, +2 minimum permitted base
-; +4 old count, +5 new count, +6 removed old index (FFh for append/no-op)
-; +7 reserved, +8 old allocation-word vector, +10 new allocation-word vector
-; +12 new class-byte vector, +14 output records, +16 record capacity
-; +17 returned record count (written only on success)
-;
-; Eight-byte output record: old base, new base, allocation, class, old index.
-; An old base/index of zero/FFh denotes a fresh module or a stateless reload.
+; ********************************************************************************
+; *                     BetterCP/M RSX Layout Planner                           *
+; *                                                                              *
+; * Phase-3 prospective RSX profile layout planner. Validates old/new allocation *
+; * vectors and movement classes, computes prospective bases, and emits the      *
+; * movement records required to transform one ordered profile into another.     *
+; ********************************************************************************
+
+  ; DE -> request:
+  ;   +0 top, +2 minimum permitted base
+  ;   +4 old count, +5 new count, +6 removed old index (FFh for append/no-op)
+  ;   +7 reserved, +8 old allocation-word vector, +10 new allocation-word vector
+  ;   +12 new class-byte vector, +14 output records, +16 record capacity
+  ;   +17 returned record count (written only on success)
+
+  ; Eight-byte output record: old base, new base, allocation, class, old index.
+  ; An old base/index of zero/FFh denotes a fresh module or a stateless reload.
+
 
 RPBASE          EQU     07400H
 
         CSEG
         .PHASE  RPBASE
-RPL_ENTRY:
+
+; ================================================================================
+; =                         Planning Request Validation                          =
+; =                                                                              =
+; = Decodes the prospective profile request, validates counts/capacity and profile =
+; = relationship, and rejects impossible layouts before producing output.        =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Request Decode and Relationship
+; -------------------------------------------------------------------------------
+
+RPL_ENTRY:                              ; enter prospective layout planner
         LD      (RPL_REQ),DE
         EX      DE,HL
         LD      E,(HL)
@@ -70,9 +88,11 @@ RPL_ENTRY:
         CP      B
         JP      NC,RPL_CAPEQ
         JR      RPL_RELATION
-RPL_CAPEQ:
+
+RPL_CAPEQ:                              ; accept output capacity
         JP      NZ,RPL_BAD
-RPL_RELATION:
+
+RPL_RELATION:                           ; validate old/new profile relation
         LD      A,(RPL_REM)
         CP      0FFH
         JR      Z,RPL_APPEND
@@ -87,7 +107,8 @@ RPL_RELATION:
         CP      B
         JP      NZ,RPL_BAD
         JR      RPL_VALIDATE
-RPL_APPEND:
+
+RPL_APPEND:                             ; handle append or no-op relation
         LD      A,(RPL_OCNT)
         LD      B,A
         LD      A,(RPL_NCNT)
@@ -97,8 +118,19 @@ RPL_APPEND:
         CP      B
         JP      NZ,RPL_BAD
 
-; Validate both allocation vectors and the prospective minimum base.
-RPL_VALIDATE:
+  ; Validate both allocation vectors and the prospective minimum base.
+
+; ================================================================================
+; =                       Allocation and Class Validation                        =
+; =                                                                              =
+; = Validates old/new allocation vectors, movement-class values, and the prospective =
+; = minimum lower boundary before movement planning begins.                      =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Vector Validation
+; -------------------------------------------------------------------------------
+
+RPL_VALIDATE:                           ; validate allocation vectors and minimum base
         LD      HL,(RPL_TOP)
         LD      DE,(RPL_OALLOC)
         LD      A,(RPL_OCNT)
@@ -116,19 +148,30 @@ RPL_VALIDATE:
         LD      HL,(RPL_CVECT)
         LD      A,(RPL_NCNT)
         LD      B,A
-RPL_CLOOP:
+
+RPL_CLOOP:                              ; validate next class/allocation entry
         LD      A,B
         OR      A
         JR      Z,RPL_BUILD
         LD      A,(HL)
         CP      4
         JP      NC,RPL_BAD
-        CP      2               ; STATE_PRESERVING remains unsupported
+        CP      2                       ; STATE_PRESERVING remains unsupported
         JP      Z,RPL_BAD
         INC     HL
         DJNZ    RPL_CLOOP
 
-RPL_BUILD:
+; ================================================================================
+; =                          Movement Plan Construction                          =
+; =                                                                              =
+; = Walks the prospective new profile, classifies retained or fresh modules, computes =
+; = old/new bases and allocations, and emits eight-byte movement records.        =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Plan Record Build
+; -------------------------------------------------------------------------------
+
+RPL_BUILD:                              ; build movement-plan records
         LD      HL,(RPL_TOP)
         LD      (RPL_CURSOR),HL
         LD      HL,(RPL_NALLOC)
@@ -137,7 +180,8 @@ RPL_BUILD:
         LD      (RPL_CPTR),HL
         XOR     A
         LD      (RPL_INDEX),A
-RPL_BLOOP:
+
+RPL_BLOOP:                              ; plan next new-profile module
         LD      A,(RPL_INDEX)
         LD      B,A
         LD      A,(RPL_NCNT)
@@ -166,11 +210,17 @@ RPL_BLOOP:
         CALL    RPL_OLDALLOC
         LD      (RPL_OASIZE),DE
         JR      RPL_CLASSIFY
-RPL_FRESH:
+
+RPL_FRESH:                              ; plan fresh module
         LD      HL,0
         LD      (RPL_OBASE),HL
         LD      (RPL_OASIZE),HL
-RPL_CLASSIFY:
+
+; -------------------------------------------------------------------------------
+; Movement Classification
+; -------------------------------------------------------------------------------
+
+RPL_CLASSIFY:                           ; classify retained module movement
         LD      HL,(RPL_CPTR)
         LD      A,(HL)
         LD      (RPL_CVAL),A
@@ -185,11 +235,13 @@ RPL_CLASSIFY:
         CP      0FFH
         JR      Z,RPL_EMIT
         JR      RPL_KEEPSIZE
-RPL_SFUL:
+
+RPL_SFUL:                               ; handle stateful module
         LD      A,(RPL_OLDIDX)
         CP      0FFH
         JR      Z,RPL_EMIT
-RPL_KEEPSIZE:
+
+RPL_KEEPSIZE:                           ; preserve retained allocation size
         LD      HL,(RPL_ALLOC)
         LD      DE,(RPL_OASIZE)
         OR      A
@@ -204,12 +256,18 @@ RPL_KEEPSIZE:
         SBC     HL,DE
         JP      NZ,RPL_BAD
         JR      RPL_EMIT
-RPL_SLESS:
+
+RPL_SLESS:                              ; handle stateless reload
         LD      HL,0
         LD      (RPL_OBASE),HL
         LD      A,0FFH
         LD      (RPL_OLDIDX),A
-RPL_EMIT:
+
+; -------------------------------------------------------------------------------
+; Record Emission
+; -------------------------------------------------------------------------------
+
+RPL_EMIT:                               ; emit movement-plan record
         LD      HL,(RPL_OUT)
         LD      DE,(RPL_OBASE)
         LD      (HL),E
@@ -236,7 +294,8 @@ RPL_EMIT:
         LD      HL,RPL_INDEX
         INC     (HL)
         JP      RPL_BLOOP
-RPL_DONE:
+
+RPL_DONE:                               ; finish successful plan
         LD      HL,(RPL_REQ)
         LD      DE,17
         ADD     HL,DE
@@ -245,10 +304,22 @@ RPL_DONE:
         XOR     A
         RET
 
-; HL=top, DE=allocation vector, A=count. Return final base in HL.
-RPL_WALK:
+  ; HL=top, DE=allocation vector, A=count. Return final base in HL.
+
+; ================================================================================
+; =                         Profile Boundary Calculation                         =
+; =                                                                              =
+; = Computes the lower boundary of an allocation vector from the profile top while =
+; = detecting underflow below the permitted address range.                       =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Lower-Bound Walk
+; -------------------------------------------------------------------------------
+
+RPL_WALK:                               ; calculate profile lower bound
         LD      B,A
-RPL_WLOOP:
+
+RPL_WLOOP:                              ; subtract next allocation
         LD      A,B
         OR      A
         RET     Z
@@ -273,15 +344,28 @@ RPL_WLOOP:
         DJNZ    RPL_WLOOP
         XOR     A
         RET
-RPL_WZERO:
+
+RPL_WZERO:                              ; handle empty profile
         POP     BC
-RPL_WUNDER:
+
+RPL_WUNDER:                             ; reject lower-bound underflow
         LD      A,0FFH
         OR      A
         RET
 
-; Map new index A to old index, or FFh for an appended fresh entry.
-RPL_MAPOLD:
+  ; Map new index A to old index, or FFh for an appended fresh entry.
+
+; ================================================================================
+; =                           Old/New Profile Mapping                            =
+; =                                                                              =
+; = Maps prospective new-profile indices back to old-profile indices across append, =
+; = remove, and no-op relationships.                                             =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Index Mapping
+; -------------------------------------------------------------------------------
+
+RPL_MAPOLD:                             ; map new profile index to old index
         LD      B,A
         LD      A,(RPL_REM)
         CP      0FFH
@@ -291,11 +375,13 @@ RPL_MAPOLD:
         JR      C,RPL_MAPNEXT
         LD      A,B
         RET
-RPL_MAPNEXT:
+
+RPL_MAPNEXT:                            ; advance old-index mapping
         LD      A,B
         INC     A
         RET
-RPL_MAPAPP:
+
+RPL_MAPAPP:                             ; mark appended fresh entry
         LD      A,(RPL_OCNT)
         CP      B
         LD      A,B
@@ -303,13 +389,19 @@ RPL_MAPAPP:
         LD      A,0FFH
         RET
 
-; A=old index. Calculate old base from top and old allocation vector.
-RPL_OLDBASE:
+  ; A=old index. Calculate old base from top and old allocation vector.
+
+; -------------------------------------------------------------------------------
+; Old Base Calculation
+; -------------------------------------------------------------------------------
+
+RPL_OLDBASE:                            ; calculate old module base
         INC     A
         LD      B,A
         LD      HL,(RPL_TOP)
         LD      DE,(RPL_OALLOC)
-RPL_OBLOOP:
+
+RPL_OBLOOP:                             ; walk old allocations
         LD      A,(DE)
         LD      C,A
         INC     DE
@@ -324,8 +416,13 @@ RPL_OBLOOP:
         DJNZ    RPL_OBLOOP
         RET
 
-; A=old index. Return its allocation in DE.
-RPL_OLDALLOC:
+  ; A=old index. Return its allocation in DE.
+
+; -------------------------------------------------------------------------------
+; Old Allocation Lookup
+; -------------------------------------------------------------------------------
+
+RPL_OLDALLOC:                           ; return old allocation size
         ADD     A,A
         LD      E,A
         LD      D,0
@@ -336,31 +433,41 @@ RPL_OLDALLOC:
         LD      D,(HL)
         RET
 
-RPL_BAD:
+RPL_BAD:                                ; return planning failure
         LD      A,0FFH
         OR      A
         RET
 
-RPL_REQ:        DW      0
-RPL_TOP:        DW      0
-RPL_MIN:        DW      0
-RPL_OALLOC:     DW      0
-RPL_NALLOC:     DW      0
-RPL_CVECT:      DW      0
-RPL_OUT:        DW      0
-RPL_NPTR:       DW      0
-RPL_CPTR:       DW      0
-RPL_CURSOR:     DW      0
-RPL_ALLOC:      DW      0
-RPL_NEWBASE:    DW      0
-RPL_OBASE:      DW      0
-RPL_OASIZE:     DW      0
-RPL_OCNT:       DB      0
-RPL_NCNT:       DB      0
-RPL_REM:        DB      0
-RPL_INDEX:      DB      0
-RPL_OLDIDX:     DB      0
-RPL_CVAL:       DB      0
+; ================================================================================
+; =                            Planner Working State                             =
+; =                                                                              =
+; = Defines request pointers, allocation/class vectors, profile counts, current bases, =
+; = indices, and scratch values used while constructing the movement plan.       =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Planner State
+; -------------------------------------------------------------------------------
+
+RPL_REQ:        DW      0               ; layout request pointer
+RPL_TOP:        DW      0               ; profile upper boundary
+RPL_MIN:        DW      0               ; minimum permitted base
+RPL_OALLOC:     DW      0               ; old allocation vector pointer
+RPL_NALLOC:     DW      0               ; new allocation vector pointer
+RPL_CVECT:      DW      0               ; class vector pointer
+RPL_OUT:        DW      0               ; output-record pointer
+RPL_NPTR:       DW      0               ; new-allocation cursor
+RPL_CPTR:       DW      0               ; class-vector cursor
+RPL_CURSOR:     DW      0               ; current planned base
+RPL_ALLOC:      DW      0               ; current allocation size
+RPL_NEWBASE:    DW      0               ; current new base
+RPL_OBASE:      DW      0               ; current old base
+RPL_OASIZE:     DW      0               ; current old allocation size
+RPL_OCNT:       DB      0               ; old profile count
+RPL_NCNT:       DB      0               ; new profile count
+RPL_REM:        DB      0               ; removed old index
+RPL_INDEX:      DB      0               ; new profile index
+RPL_OLDIDX:     DB      0               ; mapped old profile index
+RPL_CVAL:       DB      0               ; current movement class
 
         .DEPHASE
         END

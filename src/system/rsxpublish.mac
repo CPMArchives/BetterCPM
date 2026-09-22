@@ -1,6 +1,13 @@
         INCLUDE layout.inc
-; BRSX V2 DESCRIPTOR MATERIALIZER
-; Runs after reconstruction and before the disk-free resolver is installed.
+
+; ********************************************************************************
+; *                    BetterCP/M BRSX Descriptor Materializer                   *
+; *                                                                              *
+; * BRSX v2 post-reconstruction publisher. Runs after the RSX chain has been     *
+; * rebuilt and before the disk-free resolver is installed, converting carrier  *
+; * metadata into the live descriptors and service records owned by the loader. *
+; ********************************************************************************
+
 
 RPBASE          EQU     LY_RSX
 FLOPEN          EQU     LY_FILE
@@ -12,9 +19,21 @@ ECB_RSXHEAD     EQU     LY_SYS+084H
 
         CSEG
         .PHASE  RPBASE
-RP_ENTRY:
+
+; ================================================================================
+; =                        Materializer Entry and Control                        =
+; =                                                                              =
+; = Provides the post-reconstruction control boundary and walks the rebuilt RSX  =
+; = profile while chaining unrelated requests through the resident stack.        =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Entry and Module Walk
+; -------------------------------------------------------------------------------
+
+RP_ENTRY:                               ; enter descriptor materializer
         JP      RP_CONTROL
-RP_CHAIN:
+
+RP_CHAIN:                               ; chain unhandled BDOS request
         POP     DE
         LD      (RP_REQ),DE
         CALL    RP_CONTROL
@@ -23,18 +42,23 @@ RP_CHAIN:
         INC     HL
         INC     HL
         INC     HL
-        LD      (HL),0           ; do not expose the private chain marker
+        LD      (HL),0                  ; do not expose the private chain marker
         POP     AF
         RET     NZ
-        LD      A,3             ; overlay three: disk-free resolver
+        LD      A,3                     ; overlay three: disk-free resolver
         JP      LY_BIOS+60
 
-RP_CONTROL:
+; -------------------------------------------------------------------------------
+; Materialization Request
+; -------------------------------------------------------------------------------
+
+RP_CONTROL:                             ; dispatch materialization request
         XOR     A
         LD      (RP_INDEX),A
         LD      HL,(ECB_RSXHEAD)
         LD      (RP_BASE),HL
-RP_LOOP:
+
+RP_LOOP:                                ; process next reconstructed RSX
         LD      A,(RP_INDEX)
         LD      B,A
         LD      A,(RSTCOUNT)
@@ -53,7 +77,8 @@ RP_LOOP:
         JR      Z,RP_HAVEBASE
         CP      2
         JP      NZ,RP_BAD
-RP_HAVEBASE:
+
+RP_HAVEBASE:                            ; accept located module base
         LD      (RP_FMT),A
         LD      A,(RP_INDEX)
         OR      A
@@ -63,7 +88,8 @@ RP_HAVEBASE:
         OR      A
         SBC     HL,DE
         LD      (RP_BASE),HL
-RP_BASEOK:
+
+RP_BASEOK:                              ; accept validated module base
         LD      HL,(RP_BASE)
         LD      E,(HL)
         INC     HL
@@ -82,21 +108,34 @@ RP_BASEOK:
         CALL    RP_CLEAR
         CALL    RP_META
         JP      NZ,RP_BAD
-RP_NEXT:
+
+RP_NEXT:                                ; advance reconstructed-module scan
         LD      HL,RP_INDEX
         INC     (HL)
         JR      RP_LOOP
 
-RP_REQ: DW      0
-RP_GOOD:
+RP_REQ: DW      0                       ; materialization request pointer
+
+RP_GOOD:                                ; return materialization success
         XOR     A
         RET
-RP_BAD:
+
+RP_BAD:                                 ; return materialization failure
         LD      A,0FFH
         OR      A
         RET
 
-RP_TABPTR:
+; ================================================================================
+; =                         Reconstruction Record Lookup                         =
+; =                                                                              =
+; = Locates each module's reconstruction record and corresponding carrier metadata =
+; = needed to build its live BRSX-v2 descriptor.                                 =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Profile Record Lookup
+; -------------------------------------------------------------------------------
+
+RP_TABPTR:                              ; locate reconstruction table record
         ADD     A,A
         ADD     A,A
         ADD     A,A
@@ -106,7 +145,11 @@ RP_TABPTR:
         ADD     HL,DE
         RET
 
-RP_FINDMETA:
+; -------------------------------------------------------------------------------
+; Carrier Metadata Lookup
+; -------------------------------------------------------------------------------
+
+RP_FINDMETA:                            ; locate module metadata
         LD      HL,(RP_LEFT)
         LD      A,H
         CP      2
@@ -120,7 +163,8 @@ RP_FINDMETA:
         SBC     HL,DE
         LD      (RP_LEFT),HL
         JR      RP_FINDMETA
-RP_LAST:
+
+RP_LAST:                                ; handle final metadata record
         LD      A,H
         OR      L
         JR      Z,RP_EXACT
@@ -134,7 +178,8 @@ RP_LAST:
         LD      (RP_METAP),HL
         XOR     A
         RET
-RP_EXACT:
+
+RP_EXACT:                               ; accept exact metadata layout
         LD      HL,MODBUF
         CALL    FLNEXT
         RET     NZ
@@ -143,8 +188,19 @@ RP_EXACT:
         XOR     A
         RET
 
-; Clear payload tail before writing loader-owned descriptors.
-RP_CLEAR:
+  ; Clear payload tail before writing loader-owned descriptors.
+
+; ================================================================================
+; =                            Descriptor Publication                            =
+; =                                                                              =
+; = Clears loader-owned descriptor space, copies normalized module metadata, and emits =
+; = the published resident-service records into the reconstructed module.        =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Descriptor Tail Initialization
+; -------------------------------------------------------------------------------
+
+RP_CLEAR:                               ; clear descriptor payload tail
         LD      HL,(RP_BASE)
         LD      DE,(RP_CODE)
         ADD     HL,DE
@@ -170,11 +226,16 @@ RP_CLEAR:
         LDIR
         RET
 
-RP_META:
+; -------------------------------------------------------------------------------
+; Metadata Materialization
+; -------------------------------------------------------------------------------
+
+RP_META:                                ; materialize module metadata
         LD      HL,(RP_METAP)
         LD      DE,RP_BMET
         LD      B,4
-RP_BMLOOP:
+
+RP_BMLOOP:                              ; copy base metadata
         LD      A,(DE)
         CP      (HL)
         JP      NZ,RP_BAD
@@ -183,10 +244,10 @@ RP_BMLOOP:
         DJNZ    RP_BMLOOP
         LD      DE,3
         ADD     HL,DE
-        LD      A,(HL)          ; record count at envelope +7
+        LD      A,(HL)                  ; record count at envelope +7
         LD      (RP_NREC),A
         LD      DE,5
-        ADD     HL,DE           ; first record at envelope +12
+        ADD     HL,DE                   ; first record at envelope +12
         LD      DE,(RP_BASE)
         EX      DE,HL
         LD      BC,(RP_ALLOC)
@@ -195,7 +256,12 @@ RP_BMLOOP:
         EX      DE,HL
         XOR     A
         LD      (RP_NSVC),A
-RP_RECLOOP:
+
+; -------------------------------------------------------------------------------
+; Service Record Publication
+; -------------------------------------------------------------------------------
+
+RP_RECLOOP:                             ; emit service records
         LD      A,(RP_NREC)
         OR      A
         JR      Z,RP_DONE
@@ -227,12 +293,14 @@ RP_RECLOOP:
         INC     A
         LD      (RP_NSVC),A
         JR      RP_RECLOOP
-RP_SKIP:
+
+RP_SKIP:                                ; skip unsupported metadata record
         LD      E,B
         LD      D,0
         ADD     HL,DE
         JR      RP_RECLOOP
-RP_DONE:
+
+RP_DONE:                                ; finish descriptor materialization
         LD      HL,(RP_DPTR)
         LD      DE,(RP_BASE)
         OR      A
@@ -253,19 +321,29 @@ RP_DONE:
         XOR     A
         RET
 
-RP_BMET:       DB      'B','M','E','T'
-RP_BASE:       DW      0
-RP_NDISP:      DW      0
-RP_LEFT:       DW      0
-RP_CODE:       DW      0
-RP_ALLOC:      DW      0
-RP_METAP:      DW      0
-RP_DPTR:       DW      0
-RP_MPTR:       DW      0
-RP_OFF:        DW      0
-RP_INDEX:      DB      0
-RP_FMT:        DB      0
-RP_NREC:       DB      0
-RP_NSVC:       DB      0
+; ================================================================================
+; =                          Materializer Working State                          =
+; =                                                                              =
+; = Defines module base, metadata, descriptor, service-record, format, and count state =
+; = used while publishing the rebuilt RSX descriptors.                           =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Publisher State
+; -------------------------------------------------------------------------------
+
+RP_BMET:       DB      'B','M','E','T'  ; base-metadata pointer
+RP_BASE:       DW      0                ; module runtime base
+RP_NDISP:      DW      0                ; module dispatch entry
+RP_LEFT:       DW      0                ; metadata bytes remaining
+RP_CODE:       DW      0                ; module code-size scratch
+RP_ALLOC:      DW      0                ; module allocation size
+RP_METAP:      DW      0                ; metadata source pointer
+RP_DPTR:       DW      0                ; descriptor destination pointer
+RP_MPTR:       DW      0                ; service-metadata pointer
+RP_OFF:        DW      0                ; current service offset
+RP_INDEX:      DB      0                ; module index
+RP_FMT:        DB      0                ; metadata format
+RP_NREC:       DB      0                ; metadata record count
+RP_NSVC:       DB      0                ; published service count
         .DEPHASE
         END

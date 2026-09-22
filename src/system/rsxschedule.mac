@@ -1,18 +1,36 @@
-; Phase-3 validated-plan STATEFUL move scheduler.
-;
-; DE -> request:
-; +0 plan records, +2 slot descriptors, +4 count, +5 reserved
-; +6 mover-request scratch, +8 scratch bytes, +10 mover entry
-; +12 returned move count (written only on success)
-;
-; Plan records are the eight-byte records from RSXPLAN. Slot descriptors are
-; three bytes per record: union address word and union count byte.
+; ********************************************************************************
+; *                    BetterCP/M RSX Move Scheduler                             *
+; *                                                                              *
+; * Phase-3 scheduler for validated STATEFUL movement plans. Validates plan       *
+; * classes, ranges, repair-slot capacity, and one common movement direction     *
+; * before invoking the live-allocation mover for any module.                    *
+; ********************************************************************************
+
+  ; DE -> request:
+  ;   +0 plan records, +2 slot descriptors, +4 count, +5 reserved
+  ;   +6 mover-request scratch, +8 scratch bytes, +10 mover entry
+  ;   +12 returned move count (written only on success)
+
+  ; Plan records are the eight-byte records from RSXPLAN. Slot descriptors are
+  ; three bytes per record: union address word and union count byte.
+
 
 RSBASE          EQU     07800H
 
         CSEG
         .PHASE  RSBASE
-RS_ENTRY:
+
+; ================================================================================
+; =                             Schedule Validation                              =
+; =                                                                              =
+; = Validates the RSXPLAN records and repair-slot descriptors, establishes a common =
+; = safe movement direction, and rejects the complete schedule before any move if invalid. =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Plan Validation
+; -------------------------------------------------------------------------------
+
+RS_ENTRY:                               ; enter stateful move scheduler
         LD      (RS_REQ),DE
         EX      DE,HL
         LD      E,(HL)
@@ -49,12 +67,13 @@ RS_ENTRY:
         LD      D,(HL)
         LD      (RS_MOVER),DE
 
-; Validate plan classes, ranges, slot scratch capacity, and one common move
-; direction before invoking the first mover.
+  ; Validate plan classes, ranges, slot scratch capacity, and one common move
+  ; direction before invoking the first mover.
         XOR     A
         LD      (RS_DIRECTION),A
         LD      (RS_INDEX),A
-RS_VLOOP:
+
+RS_VLOOP:                               ; validate next movement-plan record
         LD      A,(RS_INDEX)
         LD      B,A
         LD      A,(RS_COUNT)
@@ -103,10 +122,15 @@ RS_VLOOP:
         OR      A
         SBC     HL,DE
         JR      Z,RS_VNEXT
-        LD      A,1             ; new > old: upward, profile order
+        LD      A,1                     ; new > old: upward, profile order
         JR      C,RS_VDIR
-        INC     A               ; new < old: downward, reverse profile order
-RS_VDIR:
+        INC     A                       ; new < old: downward, reverse profile order
+
+; -------------------------------------------------------------------------------
+; Movement Direction Validation
+; -------------------------------------------------------------------------------
+
+RS_VDIR:                                ; validate common move direction
         LD      B,A
         LD      A,(RS_DIRECTION)
         OR      A
@@ -114,10 +138,16 @@ RS_VDIR:
         CP      B
         JP      NZ,RS_BAD
         JR      RS_VSLOTS
-RS_VFIRST:
+
+RS_VFIRST:                              ; accept first movement direction
         LD      A,B
         LD      (RS_DIRECTION),A
-RS_VSLOTS:
+
+; -------------------------------------------------------------------------------
+; Repair-Slot Capacity
+; -------------------------------------------------------------------------------
+
+RS_VSLOTS:                              ; validate repair-slot capacity
         LD      A,(RS_INDEX)
         CALL    RS_DESCRIPTOR
         INC     HL
@@ -134,15 +164,27 @@ RS_VSLOTS:
         JP      C,RS_VNEXT
         JP      Z,RS_VNEXT
         JP      RS_BAD
-RS_BADPOP:
+
+RS_BADPOP:                              ; reject invalid stateful population
         POP     BC
         JP      RS_BAD
-RS_VNEXT:
+
+RS_VNEXT:                               ; advance validation scan
         LD      HL,RS_INDEX
         INC     (HL)
         JP      RS_VLOOP
 
-RS_PREPARE:
+; ================================================================================
+; =                           Stateful Move Execution                            =
+; =                                                                              =
+; = Executes validated stateful moves in forward or reverse order as required by the =
+; = common direction, preparing one guarded mover request per module.            =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Execution Setup
+; -------------------------------------------------------------------------------
+
+RS_PREPARE:                             ; prepare movement execution
         XOR     A
         LD      (RS_MOVES),A
         LD      A,(RS_COUNT)
@@ -156,10 +198,20 @@ RS_PREPARE:
         DEC     A
         LD      (RS_INDEX),A
         JR      RS_EXEC
-RS_FORWARD:
+
+; -------------------------------------------------------------------------------
+; Forward Schedule
+; -------------------------------------------------------------------------------
+
+RS_FORWARD:                             ; execute forward-order schedule
         XOR     A
         LD      (RS_INDEX),A
-RS_EXEC:
+
+; -------------------------------------------------------------------------------
+; Mover Invocation
+; -------------------------------------------------------------------------------
+
+RS_EXEC:                                ; execute one stateful move
         LD      A,(RS_INDEX)
         CALL    RS_RECORD
         PUSH    HL
@@ -225,8 +277,8 @@ RS_EXEC:
         INC     HL
         LD      (HL),0
         INC     HL
-        EX      DE,HL           ; DE=scratch+8
-        POP     HL              ; HL=slot union
+        EX      DE,HL                   ; DE=scratch+8
+        POP     HL                      ; HL=slot union
         LD      A,(RS_SCOUNT)
         ADD     A,A
         LD      C,A
@@ -237,12 +289,14 @@ RS_EXEC:
         LD      BC,RS_RETURN
         PUSH    BC
         JP      (HL)
-RS_RETURN:
+
+RS_RETURN:                              ; finish mover invocation
         OR      A
         JP      NZ,RS_BAD
         LD      HL,RS_MOVES
         INC     (HL)
-RS_NEXT:
+
+RS_NEXT:                                ; advance scheduled move
         LD      A,(RS_DIRECTION)
         CP      2
         JR      Z,RS_REVERSE
@@ -254,14 +308,20 @@ RS_NEXT:
         CP      B
         JP      NZ,RS_EXEC
         JP      RS_DONE
-RS_REVERSE:
+
+; -------------------------------------------------------------------------------
+; Reverse Schedule
+; -------------------------------------------------------------------------------
+
+RS_REVERSE:                             ; execute reverse-order schedule
         LD      A,(RS_INDEX)
         OR      A
         JR      Z,RS_DONE
         DEC     A
         LD      (RS_INDEX),A
         JP      RS_EXEC
-RS_DONE:
+
+RS_DONE:                                ; finish successful schedule
         LD      HL,(RS_REQ)
         LD      DE,12
         ADD     HL,DE
@@ -270,8 +330,19 @@ RS_DONE:
         XOR     A
         RET
 
-; A=index -> HL=plan record.
-RS_RECORD:
+  ; A=index -> HL=plan record.
+
+; ================================================================================
+; =                          Plan and Descriptor Lookup                          =
+; =                                                                              =
+; = Locates the fixed-size movement-plan records and their corresponding repair-slot =
+; = descriptors by schedule index.                                               =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Plan Record Lookup
+; -------------------------------------------------------------------------------
+
+RS_RECORD:                              ; locate movement-plan record
         ADD     A,A
         ADD     A,A
         ADD     A,A
@@ -280,8 +351,13 @@ RS_RECORD:
         LD      HL,(RS_PLAN)
         ADD     HL,DE
         RET
-; A=index -> HL=three-byte slot descriptor.
-RS_DESCRIPTOR:
+  ; A=index -> HL=three-byte slot descriptor.
+
+; -------------------------------------------------------------------------------
+; Slot Descriptor Lookup
+; -------------------------------------------------------------------------------
+
+RS_DESCRIPTOR:                          ; locate repair-slot descriptor
         LD      E,A
         ADD     A,A
         ADD     A,E
@@ -290,25 +366,36 @@ RS_DESCRIPTOR:
         LD      HL,(RS_DESC)
         ADD     HL,DE
         RET
-RS_BAD:
+
+RS_BAD:                                 ; return scheduling failure
         LD      A,0FFH
         OR      A
         RET
 
-RS_REQ:         DW      0
-RS_PLAN:        DW      0
-RS_DESC:        DW      0
-RS_SCRATCH:     DW      0
-RS_CAP:         DW      0
-RS_MOVER:       DW      0
-RS_OLD:         DW      0
-RS_NEW:         DW      0
-RS_SIZE:        DW      0
-RS_COUNT:       DB      0
-RS_INDEX:       DB      0
-RS_DIRECTION:   DB      0
-RS_SCOUNT:      DB      0
-RS_MOVES:       DB      0
+; ================================================================================
+; =                           Scheduler Working State                            =
+; =                                                                              =
+; = Defines request, plan, descriptor, mover, direction, index, scratch-capacity, and =
+; = completed-move state used by the scheduler.                                  =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Scheduler State
+; -------------------------------------------------------------------------------
+
+RS_REQ:         DW      0               ; scheduler request pointer
+RS_PLAN:        DW      0               ; movement-plan pointer
+RS_DESC:        DW      0               ; slot-descriptor pointer
+RS_SCRATCH:     DW      0               ; mover scratch pointer
+RS_CAP:         DW      0               ; scratch capacity
+RS_MOVER:       DW      0               ; mover entry address
+RS_OLD:         DW      0               ; current old base
+RS_NEW:         DW      0               ; current new base
+RS_SIZE:        DW      0               ; current allocation size
+RS_COUNT:       DB      0               ; plan record count
+RS_INDEX:       DB      0               ; current plan index
+RS_DIRECTION:   DB      0               ; common movement direction
+RS_SCOUNT:      DB      0               ; repair-slot count
+RS_MOVES:       DB      0               ; completed move count
 
         .DEPHASE
         END

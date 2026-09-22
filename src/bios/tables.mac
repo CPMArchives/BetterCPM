@@ -1,16 +1,24 @@
         INCLUDE layout.inc
-; Four DPHs, each followed by its own 64-byte disk binding.
-; ALV is shared workspace. Each drive retains its own 32-byte CSV.
-; Directory checksums must survive selection of another logical disk.
-; BDOS must rebuild allocation ownership when changing logical disks.
-; In particular A/B/A must not reuse B's allocated-block map for A.
+
+; ********************************************************************************
+; *                     BetterCP/M Resident Disk Tables                          *
+; *                                                                              *
+; * Defines the four installed DPH/disk-binding records plus shared allocation   *
+; * workspace and per-drive directory checksum storage. The defaults describe    *
+; * the initial system/data disk profiles and may later be replaced by SYSGEN.   *
+; ********************************************************************************
+
         CSEG
         .PHASE  LY_TAB
-; Default A: 780K SYSTEM on MM Extended physical geometry. B-D: MM standard DATA 800K.
-; Data disks reserve no system cylinders; all four use 512-byte sectors.
-; These installed defaults survive warm boot. SYSGEN will replace them
-; in the system image when that utility is implemented.
-DPH0:
+
+; ================================================================================
+; =                        Installed Drive Descriptors                           =
+; =                                                                              =
+; = Each DPH is followed by its 64-byte logical-disk binding. Drive A defaults   =
+; = to the 780K system profile; B-D default to unreserved 800K data profiles.    =
+; ================================================================================
+
+DPH0:                                   ; drive A DPH and disk binding
         DW 0,0,0,0,LY_DIR,DPH0+17,CSV+0,ALV
         DB 0
         DW 80
@@ -23,7 +31,8 @@ DPH0:
         REPT 34
         DB 0
         ENDM
-DPH1:
+
+DPH1:                                   ; drive B DPH and disk binding
         DW 0,0,0,0,LY_DIR,DPH1+17,CSV+32,ALV
         DB 1
         DW 40
@@ -36,7 +45,8 @@ DPH1:
         REPT 34
         DB 0
         ENDM
-DPH2:
+
+DPH2:                                   ; drive C DPH and disk binding
         DW 0,0,0,0,LY_DIR,DPH2+17,CSV+64,ALV
         DB 2
         DW 40
@@ -49,7 +59,8 @@ DPH2:
         REPT 34
         DB 0
         ENDM
-DPH3:
+
+DPH3:                                   ; drive D DPH and disk binding
         DW 0,0,0,0,LY_DIR,DPH3+17,CSV+96,ALV
         DB 3
         DW 40
@@ -62,7 +73,12 @@ DPH3:
         REPT 34
         DB 0
         ENDM
-ALV:    DS 128
-CSV:    DS 128
+
+; -------------------------------------------------------------------------------
+; Shared Allocation and Checksum Workspace
+; -------------------------------------------------------------------------------
+
+ALV:    DS 128                          ; shared allocation-vector workspace
+CSV:    DS 128                          ; per-drive directory checksum vectors
         .DEPHASE
         END

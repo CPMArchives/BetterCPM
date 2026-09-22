@@ -1,26 +1,30 @@
         INCLUDE layout.inc
-; BetterCP/M initial command processor.
-;
-; The original EA40H placement left too little room for resident commands.
-; Patch 2026-09-01: move the CCP into the unused E940H..ECFFH region so DIR
-; can remain resident without taking space from transient programs.
-; Patch 2026-09-02: USER exhausted that exact-fit region.  Move the base down
-; into the verified gap after Directory Services; ED00H remains untouched.
-; Patch 2026-09-02: public SECTRAN calls grew Directory Services through
-; E8C0H. Advance the CCP by 16 bytes, retaining a guard before E8D0H.
-; Patch 2026-09-02: live-DPB refresh extended Directory Services through
-; E8D5H. Advance another 16 bytes, preserving a ten-byte guard.
-; Patch 2026-09-02: CPX support ended the exact-fit provisional placement at
-; E8D6H and temporarily protected B000H..BFFFH.  Specification 96 introduces
-; the quantitative memory model: the no-extension CCP is page-rounded and
-; originally ended below C000H. BB00H is now only the link origin; WBOOT
-; relocates this image beneath CPXs and the live compatibility gateway.
+
+; ************************************************************************
+; *               BetterCP/M initial command processor
+; *               ------------------------------------
+; *
+; *
+;   - The original EA40H placement left too little room for resident commands.
+;   - Patch 2026-09-01: move the CCP into the unused E940H..ECFFH region so DIR
+;     can remain resident without taking space from transient programs.
+;   - Patch 2026-09-02: USER exhausted that exact-fit region.  Move the base down
+;     into the verified gap after Directory Services; ED00H remains untouched.
+;   - Patch 2026-09-02: public SECTRAN calls grew Directory Services through
+;     E8C0H. Advance the CCP by 16 bytes, retaining a guard before E8D0H.
+;   - Patch 2026-09-02: live-DPB refresh extended Directory Services through
+;     E8D5H. Advance another 16 bytes, preserving a ten-byte guard.
+;   - Patch 2026-09-02: CPX support ended the exact-fit provisional placement at
+;     E8D6H and temporarily protected B000H..BFFFH.  Specification 96 introduces
+;     the quantitative memory model: the no-extension CCP is page-rounded and
+;     originally ended below C000H. BB00H is now only the link origin; WBOOT
+;     relocates this image beneath CPXs and the live compatibility gateway.
 
 CCPBASE         EQU     0BB00H
 BDOS            EQU     LY_BDOS
-CPXHEAD         EQU     LY_SYS+086H  ; active head in fixed extension descriptor
-TPATOP          EQU     LY_SYS+090H  ; exclusive upper bound for transient loads
-HISTBASE        EQU     LY_HIST  ; protected warm-boot-persistent history
+CPXHEAD         EQU     LY_SYS+086H     ; active head in fixed extension descriptor
+TPATOP          EQU     LY_SYS+090H     ; exclusive upper bound for transient loads
+HISTBASE        EQU     LY_HIST         ; protected warm-boot-persistent history
 CCP_HPOS        EQU     HISTBASE+6
 CCP_HTMP        EQU     HISTBASE+7
 CCP_HSKIP       EQU     HISTBASE+8
@@ -31,12 +35,27 @@ HISTCAP         EQU     LY_SYS-LY_HIST-10
         CSEG
         .PHASE  CCPBASE
 
-CCP_ENTRY:
+; ================================================================================
+; =                     CCP Initialization and Command Loop                      =
+; =                                                                              =
+; = Initializes the command processor, displays the prompt, acquires commands,   =
+; = and drives the top-level resident, extension, and transient dispatch path.   =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Initialization
+; -------------------------------------------------------------------------------
+
+CCP_ENTRY:                              ; initialize CCP stack
         LD      HL,(LY_SYS+08CH)
         LD      DE,CCP_STKTOP-CCPBASE
         ADD     HL,DE
         LD      SP,HL
-CCP_LOOP:
+
+; -------------------------------------------------------------------------------
+; Main Command Loop
+; -------------------------------------------------------------------------------
+
+CCP_LOOP:                               ; prompt for and dispatch next command
         LD      DE,CCP_PROMPT
         LD      C,9
         CALL    BDOS
@@ -49,19 +68,25 @@ CCP_LOOP:
         OR      A
         JR      Z,CCP_LOOP
         CALL    CCP_UPPER
-        JR      Z,CCP_LOOP      ; SPACE-only input is an empty command
-; Patch 2026-09-02: direct drive/user navigation is command-processor syntax,
-; not a resident command.  Keep BDOS as the sole owner of both values so the
-; prompt, FCB operations, transient programs, and warm-start reconstruction
-; all observe one coherent state.  Accepted forms are B:, 5:, and C3:.
+        JR      Z,CCP_LOOP              ; SPACE-only input is an empty command
+
+  ; Patch 2026-09-02: direct drive/user navigation is command-processor syntax,
+  ; not a resident command.  Keep BDOS as the sole owner of both values so the
+  ; prompt, FCB operations, transient programs, and warm-start reconstruction
+  ; all observe one coherent state.  Accepted forms are B:, 5:, and C3:.
+
         CALL    CCP_NAVIGATE
         JR      C,CCP_LOOP
-; The little monitor commands must be present even on a bare system disk.
-; Try them before the extension chain so a CPX cannot accidentally replace
-; GET, JUMP, PEEK, POKE, GO, or SAVE with a namesake of its own.
+
+  ; The little monitor commands must be present even on a bare system disk.
+  ; Try them before the extension chain so a CPX cannot accidentally replace
+  ; GET, JUMP, PEEK, POKE, GO, or SAVE with a namesake of its own.
+
         CALL    CCP_CORE
         JR      C,CCP_LOOP
-; Ordinary commands belong to the RCP and other command extensions.
+
+  ; Ordinary commands belong to the RCP and other command extensions.
+
         CALL    CPX_DISPATCH
         JR      C,CCP_LOOP
         LD      A,(CCP_COUNT)
@@ -73,19 +98,25 @@ CCP_LOOP:
         JP      Z,CCP_TRYVER
         CP      4
         JP      Z,CCP_TRYWARM
-CCP_BAD:
+
+CCP_BAD:                                ; fall through to transient command load
         CALL    CCP_LOAD
-        JR      NC,CCP_LOOP     ; successful program exits only via warm start
-        CALL    CS_CANCEL       ; a bad submitted command aborts the whole stream
+        JR      NC,CCP_LOOP             ; successful program exits only via warm start
+        CALL    CS_CANCEL               ; a bad submitted command aborts the whole stream
         LD      DE,CCP_UNKNOWN
         LD      C,9
         CALL    BDOS
         JP      CCP_LOOP
 
-; Display the live default drive/user pair.  User numbers are deliberately
-; unpadded: A0>, A5>, A31>.  The following command-line colon belongs to the
-; navigation syntax, not to the prompt itself.
-CCP_DUPROMPT:
+  ; Display the live default drive/user pair.  User numbers are deliberately
+  ; unpadded: A0>, A5>, A31>.  The following command-line colon belongs to the
+  ; navigation syntax, not to the prompt itself.
+
+; -------------------------------------------------------------------------------
+; Prompt Display
+; -------------------------------------------------------------------------------
+
+CCP_DUPROMPT:                           ; print current drive and user
         LD      C,25
         CALL    BDOS
         ADD     A,'A'
@@ -98,7 +129,8 @@ CCP_DUPROMPT:
         CP      10
         JR      C,CCP_DUPONE
         LD      B,0
-CCP_DUPTEN:
+
+CCP_DUPTEN:                             ; convert user-number tens digit
         SUB     10
         INC     B
         CP      10
@@ -110,37 +142,57 @@ CCP_DUPTEN:
         LD      C,2
         CALL    BDOS
         POP     AF
-CCP_DUPONE:
+
+CCP_DUPONE:                             ; print user-number units digit
         ADD     A,'0'
         LD      E,A
         LD      C,2
         JP      BDOS
 
-; Enhanced CCP-only command-line editor.  BDOS Function 10 deliberately keeps
-; its CP/M 2.2 contract for transient software; the command processor uses
-; direct console input so cursor motion and insert/overwrite policy do not
-; leak into the compatibility interface.
-CCP_READLN:
-; CP/M 2.2 SUBMIT is a command-acquisition path, not a resident command.
-; Prefer one protected-disk stack record before entering the interactive editor.
+  ; Enhanced CCP-only command-line editor.  BDOS Function 10 deliberately keeps
+  ; its CP/M 2.2 contract for transient software; the command processor uses
+  ; direct console input so cursor motion and insert/overwrite policy do not
+  ; leak into the compatibility interface.
+
+; ================================================================================
+; =                  Command Acquisition and SUBMIT Processing                   =
+; =                                                                              =
+; = Selects interactive or submitted command input and manages the CP/M          =
+; = A:$$$.SUB command stream without changing the transient BDOS interface.      =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Input Selection
+; -------------------------------------------------------------------------------
+
+CCP_READLN:                             ; acquire next command line
+
+  ; CP/M 2.2 SUBMIT is a command-acquisition path, not a resident command.
+  ; Prefer one protected-disk stack record before entering the interactive editor.
+
         XOR     A
         LD      (CCP_SUBACTIVE),A
         JR      CS_READ
-CR_INTER:
+
+CR_INTER:                               ; initialize interactive editor
         CALL    CCP_HINIT
         XOR     A
         LD      (CCP_COUNT),A
         LD      (CCP_EDCUR),A
         LD      (CCP_HPOS),A
         LD      (CCP_EDOLD),A
-        INC     A               ; each new line starts in insert mode
+        INC     A                       ; each new line starts in insert mode
         LD      (CCP_EDINS),A
-        JP      CCP_EDDRAW      ; publish the initial visible cursor
+        JP      CCP_EDDRAW              ; publish the initial visible cursor
 
-; Read the last remaining A:$$$.SUB record, publish its decremented RC, and
-; echo it as though typed.  Nothing here must survive a transient: the file is
-; the stock persistent queue and WBOOT reconstructs this CCP before each read.
-CS_READ:
+  ; Read the last remaining A:$$$.SUB record, publish its decremented RC, and
+  ; echo it as though typed.  Nothing here must survive a transient: the file is
+  ; the stock persistent queue and WBOOT reconstructs this CCP before each read.
+
+; -------------------------------------------------------------------------------
+; SUBMIT Record Processing
+; -------------------------------------------------------------------------------
+
+CS_READ:                                ; read next SUBMIT record
         CALL    CS_PREP
         LD      DE,0080H
         LD      C,26
@@ -154,7 +206,8 @@ CS_READ:
         LD      C,26
         CALL    BDOS
         JR      CR_INTER
-CS_OPEN:
+
+CS_OPEN:                                ; process open SUBMIT stream
         LD      A,(LY_FCB+15)
         OR      A
         JR      Z,CS_DROP
@@ -165,7 +218,8 @@ CS_OPEN:
         CALL    BDOS
         OR      A
         JR      Z,CS_DATA
-CS_DROP:
+
+CS_DROP:                                ; delete exhausted or invalid SUBMIT stream
         LD      DE,LY_FCB
         LD      C,19
         CALL    BDOS
@@ -176,9 +230,10 @@ CS_DROP:
         LD      (CCP_COUNT),A
         SCF
         RET
-CS_DATA:
+
+CS_DATA:                                ; accept SUBMIT record data
         LD      A,(0080H)
-        CP      126             ; stock SUBMIT never emits more than 125 bytes
+        CP      126                     ; stock SUBMIT never emits more than 125 bytes
         JR      NC,CS_DROP
         LD      C,A
         LD      B,0
@@ -186,7 +241,7 @@ CS_DATA:
         LD      DE,CCP_DATA
         LDIR
         XOR     A
-        LD      (LY_FCB+14),A   ; mark RC/S2 state dirty for BetterCP/M Close
+        LD      (LY_FCB+14),A           ; mark RC/S2 state dirty for BetterCP/M Close
         LD      A,(LY_FCB+15)
         DEC     A
         LD      (LY_FCB+15),A
@@ -194,7 +249,8 @@ CS_DATA:
         OR      A
         JR      NZ,CS_FILE
         LD      C,19
-CS_FILE:
+
+CS_FILE:                                ; close or delete updated SUBMIT stream
         LD      DE,LY_FCB
         CALL    BDOS
         INC     A
@@ -207,7 +263,8 @@ CS_FILE:
         LD      A,(0080H)
         LD      B,A
         LD      HL,0081H
-CS_ECHO:
+
+CS_ECHO:                                ; echo submitted command
         LD      A,B
         OR      A
         JR      Z,CS_CR
@@ -220,21 +277,24 @@ CS_ECHO:
         POP     BC
         INC     HL
         DJNZ    CS_ECHO
-CS_CR:
+
+CS_CR:                                  ; terminate submitted command echo
         LD      E,13
         LD      C,2
         CALL    BDOS
         LD      E,10
         LD      C,2
         CALL    BDOS
-; DRI CCP treats any pending console byte as cancellation after echoing a
-; submitted command.  Delete the unread tail before consuming the byte, so a
-; Ctrl-C warm start cannot resurrect the command stream.
+
+  ; DRI CCP treats any pending console byte as cancellation after echoing a
+  ; submitted command.  Delete the unread tail before consuming the byte, so a
+  ; Ctrl-C warm start cannot resurrect the command stream.
+
         LD      C,11
         CALL    BDOS
         OR      A
         JR      Z,CS_OK
-        LD      DE,LY_FCB       ; the consumed stream FCB still names $$$.SUB
+        LD      DE,LY_FCB               ; the consumed stream FCB still names $$$.SUB
         LD      C,19
         CALL    BDOS
         XOR     A
@@ -244,36 +304,42 @@ CS_CR:
         CALL    BDOS
         XOR     A
         LD      (0080H),A
-CS_OK:
+
+CS_OK:                                  ; publish submitted command
         LD      A,(0080H)
         LD      (CCP_COUNT),A
         SCF
         RET
 
-CS_PREP:
+; -------------------------------------------------------------------------------
+; SUBMIT Setup and Cancellation
+; -------------------------------------------------------------------------------
+
+CS_PREP:                                ; build A:$$$.SUB FCB
         LD      HL,LY_FCB
         LD      B,36
         XOR     A
-CS_ZERO:
+
+CS_ZERO:                                ; clear SUBMIT FCB
         LD      (HL),A
         INC     HL
         DJNZ    CS_ZERO
-        LD      A,1             ; only A:$$$.SUB is an active stock stream
+        LD      A,1                     ; only A:$$$.SUB is an active stock stream
         LD      (LY_FCB),A
-        LD      HL,02424H       ; '$$'
+        LD      HL,02424H               ; '$$'
         LD      (LY_FCB+1),HL
-        LD      HL,02024H       ; '$ '
+        LD      HL,02024H               ; '$ '
         LD      (LY_FCB+3),HL
         LD      HL,02020H
         LD      (LY_FCB+5),HL
         LD      (LY_FCB+7),HL
-        LD      HL,05553H       ; 'SU'
+        LD      HL,05553H               ; 'SU'
         LD      (LY_FCB+9),HL
         LD      A,'B'
         LD      (LY_FCB+11),A
         RET
 
-CS_CANCEL:
+CS_CANCEL:                              ; cancel active SUBMIT stream
         LD      A,(CCP_SUBACTIVE)
         OR      A
         RET     Z
@@ -284,7 +350,18 @@ CS_CANCEL:
         XOR     A
         LD      (CCP_SUBACTIVE),A
         RET
-CCP_EDGET:
+
+; ================================================================================
+; =                       Interactive Command-Line Editor                        =
+; =                                                                              =
+; = Provides CCP-local line editing, cursor motion, insertion, deletion,         =
+; = history navigation, and display redraw for interactive command input.        =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Key Dispatch
+; -------------------------------------------------------------------------------
+
+CCP_EDGET:                              ; read and decode editor keystroke
         LD      E,0FFH
         LD      C,6
         CALL    BDOS
@@ -293,57 +370,61 @@ CCP_EDGET:
         AND     07FH
         CP      13
         JP      Z,CCP_EDFIN
-        CP      3               ; ^C: CP/M warm boot
+        CP      3                       ; ^C: CP/M warm boot
         JR      Z,CCP_EDWBOOT
-        CP      19              ; ^S / physical Left: character left
+        CP      19                      ; ^S / physical Left: character left
         JP      Z,CCP_EDLEFT
         CP      28
         JP      Z,CCP_EDLEFT
-        CP      4               ; ^D / physical Right: character right
+        CP      4                       ; ^D / physical Right: character right
         JP      Z,CCP_EDRIGHT
         CP      29
         JP      Z,CCP_EDRIGHT
-        CP      1               ; ^A: word left
+        CP      1                       ; ^A: word left
         JP      Z,CCP_EDWLEFT
-        CP      6               ; ^F: word right
+        CP      6                       ; ^F: word right
         JP      Z,CCP_EDWRIGHT
-        CP      20              ; ^T: delete through next word
+        CP      20                      ; ^T: delete through next word
         JP      Z,CCP_EDDWORD
-        CP      5               ; ^E: physical new line, retain command
+        CP      5                       ; ^E: physical new line, retain command
         JR      Z,CCP_EDNEW
-        CP      11              ; physical Up remains an alias
+        CP      11                      ; physical Up remains an alias
         JP      Z,CCP_EDUP
-        CP      10              ; physical Down remains an alias
+        CP      10                      ; physical Down remains an alias
         JP      Z,CCP_EDDOWN
-        CP      16              ; ^P: toggle cooked-console printer echo
+        CP      16                      ; ^P: toggle cooked-console printer echo
         JR      Z,CCP_EDPRINT
-        CP      21              ; ^U: discard the current instruction queue
+        CP      21                      ; ^U: discard the current instruction queue
         JR      Z,CCP_EDCLEAR
-        CP      24              ; ^X: alternate CP/M line discard
+        CP      24                      ; ^X: alternate CP/M line discard
         JR      Z,CCP_EDCLEAR
-        CP      22              ; ^V: Insert/overwrite toggle
+        CP      22                      ; ^V: Insert/overwrite toggle
         JP      Z,CCP_EDTOG
-        CP      31              ; Model 4 CLEAR remains an alias
+        CP      31                      ; Model 4 CLEAR remains an alias
         JP      Z,CCP_EDTOG
-        CP      7               ; ^G: delete character under cursor
+        CP      7                       ; ^G: delete character under cursor
         JP      Z,CCP_EDDEL
-        CP      8               ; ^H: delete character left of cursor
+        CP      8                       ; ^H: delete character left of cursor
         JP      Z,CCP_EDBS
-        CP      127             ; Shift-Left / DEL
+        CP      127                     ; Shift-Left / DEL
         JP      Z,CCP_EDBS
         CP      32
         JR      C,CCP_EDGET
         CP      127
         JR      NC,CCP_EDGET
         JR      CCP_EDGRAPH
-; Keep compatibility-control handlers beside the input decoder. Besides
-; making the policy legible, relative dispatch avoids exhausting the compact
-; one-sector relocation directory as the reloadable CCP grows.
-CCP_EDWBOOT:
-; Patch 2026-09-03: CP/M visibly acknowledges a command-line warm boot.
-; Preserve that useful feedback instead of silently replacing one prompt with
-; another: echo ^C and terminate the abandoned instruction line before the
-; normal Function 0 path resets disk state and reconstructs the environment.
+
+  ; Keep compatibility-control handlers beside the input decoder. Besides
+  ; making the policy legible, relative dispatch avoids exhausting the compact
+  ; one-sector relocation directory as the reloadable CCP grows.
+
+CCP_EDWBOOT:                            ; handle command-line warm boot
+
+  ; Patch 2026-09-03: CP/M visibly acknowledges a command-line warm boot.
+  ; Preserve that useful feedback instead of silently replacing one prompt with
+  ; another: echo ^C and terminate the abandoned instruction line before the
+  ; normal Function 0 path resets disk state and reconstructs the environment.
+
         LD      E,'^'
         LD      C,2
         CALL    BDOS
@@ -358,7 +439,8 @@ CCP_EDWBOOT:
         CALL    BDOS
         LD      C,0
         JP      BDOS
-CCP_EDNEW:
+
+CCP_EDNEW:                              ; start physical continuation line
         LD      E,13
         LD      C,2
         CALL    BDOS
@@ -368,13 +450,20 @@ CCP_EDNEW:
         XOR     A
         LD      (CCP_EDOLD),A
         JP      CCP_EDDRAW
-CCP_EDPRINT:
-        LD      C,205           ; private command-environment console control
+
+CCP_EDPRINT:                            ; toggle printer echo
+        LD      C,205                   ; private command-environment console control
         CALL    BDOS
         JP      CCP_EDGET
-CCP_EDCLEAR:
+
+CCP_EDCLEAR:                            ; discard current command line
         JP      CCP_HCLEAR
-CCP_EDGRAPH:
+
+; -------------------------------------------------------------------------------
+; Character Insertion and Overwrite
+; -------------------------------------------------------------------------------
+
+CCP_EDGRAPH:                            ; insert or overwrite graphic character
         LD      (CCP_EDCHR),A
         LD      A,(CCP_COUNT)
         CP      127
@@ -387,7 +476,7 @@ CCP_EDGRAPH:
         LD      A,(CCP_EDINS)
         OR      A
         JR      Z,CCP_EDOVER
-; Insert before the cursor by moving the tail one byte to the right.
+  ; Insert before the cursor by moving the tail one byte to the right.
         LD      A,(CCP_COUNT)
         LD      C,A
         LD      A,(CCP_EDCUR)
@@ -406,13 +495,14 @@ CCP_EDGRAPH:
         LD      E,L
         INC     DE
         LDDR
-        LD      HL,CCP_DATA     ; LDDR finishes before the insertion point
+        LD      HL,CCP_DATA             ; LDDR finishes before the insertion point
         LD      A,(CCP_EDCUR)
         LD      E,A
         LD      D,0
         ADD     HL,DE
         JR      CCP_EDPUT
-CCP_EDOVER:
+
+CCP_EDOVER:                             ; overwrite character at cursor
         LD      HL,CCP_DATA
         LD      A,(CCP_EDCUR)
         LD      E,A
@@ -423,13 +513,15 @@ CCP_EDOVER:
         LD      HL,CCP_EDCUR
         INC     (HL)
         JP      CCP_EDDRAW
-CCP_EDAPP:
+
+CCP_EDAPP:                              ; append character at end of line
         LD      HL,CCP_DATA
         LD      A,(CCP_COUNT)
         LD      E,A
         LD      D,0
         ADD     HL,DE
-CCP_EDPUT:
+
+CCP_EDPUT:                              ; store edited character
         LD      A,(CCP_EDCHR)
         LD      (HL),A
         LD      HL,CCP_COUNT
@@ -437,14 +529,20 @@ CCP_EDPUT:
         LD      HL,CCP_EDCUR
         INC     (HL)
         JP      CCP_EDDRAW
-CCP_EDLEFT:
+
+; -------------------------------------------------------------------------------
+; Cursor Movement
+; -------------------------------------------------------------------------------
+
+CCP_EDLEFT:                             ; move cursor one character left
         LD      A,(CCP_EDCUR)
         OR      A
         JP      Z,CCP_EDGET
         DEC     A
         LD      (CCP_EDCUR),A
         JP      CCP_EDDRAW
-CCP_EDRIGHT:
+
+CCP_EDRIGHT:                            ; move cursor one character right
         LD      A,(CCP_EDCUR)
         LD      B,A
         LD      A,(CCP_COUNT)
@@ -455,13 +553,15 @@ CCP_EDRIGHT:
         LD      A,B
         LD      (CCP_EDCUR),A
         JP      CCP_EDDRAW
-CCP_EDWLEFT:
+
+CCP_EDWLEFT:                            ; move cursor one word left
         LD      A,(CCP_EDCUR)
         OR      A
         JP      Z,CCP_EDGET
         LD      E,A
         LD      D,0
-CCP_WLSpace:
+
+CCP_WLSpace:                            ; scan left across spaces
         DEC     E
         LD      HL,CCP_DATA
         ADD     HL,DE
@@ -472,7 +572,8 @@ CCP_WLSpace:
         OR      A
         JR      NZ,CCP_WLSpace
         JR      CCP_WLDONE
-CCP_WLWORD:
+
+CCP_WLWORD:                             ; scan left across word
         LD      A,E
         OR      A
         JR      Z,CCP_WLDONE
@@ -483,17 +584,20 @@ CCP_WLWORD:
         CP      ' '
         JR      NZ,CCP_WLWORD
         INC     E
-CCP_WLDONE:
+
+CCP_WLDONE:                             ; finish word-left motion
         LD      A,E
         LD      (CCP_EDCUR),A
         JP      CCP_EDDRAW
-CCP_EDWRIGHT:
+
+CCP_EDWRIGHT:                           ; move cursor one word right
         LD      A,(CCP_EDCUR)
         LD      E,A
         LD      A,(CCP_COUNT)
         CP      E
         JP      Z,CCP_EDGET
-CCP_WRWORD:
+
+CCP_WRWORD:                             ; scan right across word
         LD      D,0
         LD      HL,CCP_DATA
         ADD     HL,DE
@@ -505,7 +609,8 @@ CCP_WRWORD:
         CP      E
         JR      NZ,CCP_WRWORD
         JR      CCP_WRDONE
-CCP_WRSPACE:
+
+CCP_WRSPACE:                            ; scan right across spaces
         INC     E
         LD      A,(CCP_COUNT)
         CP      E
@@ -516,16 +621,23 @@ CCP_WRSPACE:
         LD      A,(HL)
         CP      ' '
         JR      Z,CCP_WRSPACE
-CCP_WRDONE:
+
+CCP_WRDONE:                             ; finish word-right motion
         LD      A,E
         LD      (CCP_EDCUR),A
         JP      CCP_EDDRAW
-CCP_EDTOG:
+
+CCP_EDTOG:                              ; toggle insert/overwrite mode
         LD      A,(CCP_EDINS)
         XOR     1
         LD      (CCP_EDINS),A
         JP      CCP_EDGET
-CCP_EDDEL:
+
+; -------------------------------------------------------------------------------
+; Character and Word Deletion
+; -------------------------------------------------------------------------------
+
+CCP_EDDEL:                              ; delete character at cursor
         LD      A,(CCP_EDCUR)
         LD      HL,CCP_COUNT
         CP      (HL)
@@ -548,18 +660,20 @@ CCP_EDDEL:
         LD      C,A
         LD      B,0
         LDIR
-CCP_DELDONE:
+
+CCP_DELDONE:                            ; finish character deletion
         LD      HL,CCP_COUNT
         DEC     (HL)
         JP      CCP_EDDRAW
-CCP_EDDWORD:
+
+CCP_EDDWORD:                            ; delete through next word
         LD      A,(CCP_EDCUR)
         LD      E,A
         LD      A,(CCP_COUNT)
         CP      E
-        JP      Z,CCP_EDGET
-; Skip leading spaces, the next word, and its trailing spaces.
-CCP_DWLEAD:
+        JP      Z,CCP_EDGET             ; skip leading spaces, the next word, and trailing spaces
+
+CCP_DWLEAD:                             ; skip leading spaces for word delete
         LD      D,0
         LD      HL,CCP_DATA
         ADD     HL,DE
@@ -571,7 +685,8 @@ CCP_DWLEAD:
         CP      E
         JR      NZ,CCP_DWLEAD
         JR      CCP_DWMOVE
-CCP_DWWORD:
+
+CCP_DWWORD:                             ; scan word for deletion
         INC     E
         LD      A,(CCP_COUNT)
         CP      E
@@ -582,7 +697,8 @@ CCP_DWWORD:
         LD      A,(HL)
         CP      ' '
         JR      NZ,CCP_DWWORD
-CCP_DWTAIL:
+
+CCP_DWTAIL:                             ; skip trailing spaces for word delete
         INC     E
         LD      A,(CCP_COUNT)
         CP      E
@@ -593,40 +709,43 @@ CCP_DWTAIL:
         LD      A,(HL)
         CP      ' '
         JR      Z,CCP_DWTAIL
-CCP_DWMOVE:
+
+CCP_DWMOVE:                             ; compact line after word delete
         LD      A,E
-        LD      (CCP_HTMP),A    ; end of deleted range
+        LD      (CCP_HTMP),A            ; end of deleted range
         LD      A,(CCP_EDCUR)
         LD      C,A
         LD      A,(CCP_HTMP)
         SUB     C
-        LD      (CCP_HSKIP),A   ; number of bytes removed
+        LD      (CCP_HSKIP),A           ; number of bytes removed
         LD      A,(CCP_COUNT)
         SUB     E
         LD      C,A
         LD      B,0
         LD      D,0
         LD      HL,CCP_DATA
-        ADD     HL,DE           ; source = data + end
+        ADD     HL,DE                   ; source = data + end
         LD      A,(CCP_EDCUR)
         LD      E,A
         LD      D,0
         PUSH    HL
         LD      HL,CCP_DATA
         ADD     HL,DE
-        EX      DE,HL           ; destination
+        EX      DE,HL                   ; destination
         POP     HL
         LD      A,B
         OR      C
         JR      Z,CCP_DWNOCOPY
         LDIR
-CCP_DWNOCOPY:
+
+CCP_DWNOCOPY:                           ; finish word deletion without copy
         LD      A,(CCP_COUNT)
         LD      HL,CCP_HSKIP
         SUB     (HL)
         LD      (CCP_COUNT),A
         JP      CCP_EDDRAW
-CCP_EDBS:
+
+CCP_EDBS:                               ; delete character left of cursor
         LD      A,(CCP_EDCUR)
         OR      A
         JP      Z,CCP_EDGET
@@ -638,33 +757,40 @@ CCP_EDBS:
         ADD     HL,DE
         LD      D,H
         LD      E,L
-        INC     HL               ; HL source, DE destination
+        INC     HL                      ; HL source, DE destination
         LD      A,(CCP_COUNT)
         LD      C,A
         LD      A,(CCP_EDCUR)
         CPL
         INC     A
-        ADD     A,C              ; old count - new cursor - 1
+        ADD     A,C                     ; old count - new cursor - 1
         DEC     A
-        JR      Z,CCP_BSEND      ; LDIR with BC=0 would copy 65536 bytes
+        JR      Z,CCP_BSEND             ; LDIR with BC=0 would copy 65536 bytes
         LD      C,A
         LD      B,0
         LDIR
-CCP_BSEND:
+
+CCP_BSEND:                              ; finish backspace deletion
         LD      HL,CCP_COUNT
         DEC     (HL)
         JR      CCP_EDDRAW
-CCP_EDUP:
+
+; -------------------------------------------------------------------------------
+; History Navigation
+; -------------------------------------------------------------------------------
+
+CCP_EDUP:                               ; recall previous history entry
         CALL    CCP_HINIT
         LD      A,(HISTBASE+3)
         LD      HL,CCP_HPOS
         CP      (HL)
         JP      Z,CCP_EDGET
         INC     (HL)
-        SUB     (HL)            ; zero-based oldest-to-newest record index
+        SUB     (HL)                    ; zero-based oldest-to-newest record index
         CALL    CCP_HGET
         JP      CCP_EDDRAW
-CCP_EDDOWN:
+
+CCP_EDDOWN:                             ; recall next history entry
         LD      A,(CCP_HPOS)
         OR      A
         JP      Z,CCP_EDGET
@@ -676,17 +802,24 @@ CCP_EDDOWN:
         SUB     B
         CALL    CCP_HGET
         JP      CCP_EDDRAW
-CCP_HCLEAR:
+
+CCP_HCLEAR:                             ; restore live line after history
         XOR     A
         LD      (CCP_COUNT),A
         LD      (CCP_EDCUR),A
         LD      (CCP_HPOS),A
         JP      CCP_EDDRAW
-; Redraw the whole logical line with the character under the cursor in the
-; platform cursor presentation. Unsupported platforms get an inserted visible
-; underscore. Erase one stale trailing cell, return to the left margin, then
-; print only through the logical cursor; no terminal escapes are required.
-CCP_EDDRAW:
+
+  ; Redraw the whole logical line with the character under the cursor in the
+  ; platform cursor presentation. Unsupported platforms get an inserted visible
+  ; underscore. Erase one stale trailing cell, return to the left margin, then
+  ; print only through the logical cursor; no terminal escapes are required.
+
+; -------------------------------------------------------------------------------
+; Display and Redraw
+; -------------------------------------------------------------------------------
+
+CCP_EDDRAW:                             ; redraw edited command line
         LD      E,13
         LD      C,2
         CALL    BDOS
@@ -699,9 +832,11 @@ CCP_EDDRAW:
         LD      HL,CCP_DATA
         CALL    CCP_EDTEXT
         CALL    CCP_CSHOW
-; Console services do not preserve HL. Reconstruct the tail pointer explicitly.
-; A is one only when reverse video consumed the character under the cursor;
-; an end-of-line cursor and the underscore fallback consume no command byte.
+
+  ; Console services do not preserve HL. Reconstruct the tail pointer explicitly.
+  ; A is one only when reverse video consumed the character under the cursor;
+  ; an end-of-line cursor and the underscore fallback consume no command byte.
+
         LD      C,A
         LD      HL,CCP_DATA
         LD      A,(CCP_EDCUR)
@@ -719,13 +854,16 @@ CCP_EDDRAW:
         LD      A,B
         JR      Z,CCP_CSLEN
         DEC     A
-CCP_CSLEN:
+
+CCP_CSLEN:                              ; measure visible command length
         LD      B,A
         POP     HL
         CALL    CCP_EDTEXT
-; Clear every cell retained from a previously longer rendering, plus one guard
-; cell. The former single-space cleanup left recalled text visible when ^X
-; returned from history to the empty live command line.
+
+  ; Clear every cell retained from a previously longer rendering, plus one guard
+  ; cell. The former single-space cleanup left recalled text visible when ^X
+  ; returned from history to the empty live command line.
+
         LD      A,(CCP_EDOLD)
         LD      B,A
         LD      A,(CCP_COUNT)
@@ -735,10 +873,12 @@ CCP_CSLEN:
         SUB     C
         JR      NC,CCP_CLCNT
         XOR     A
-CCP_CLCNT:
+
+CCP_CLCNT:                              ; clear stale display cells
         INC     A
         LD      B,A
-CCP_CLLOOP:
+
+CCP_CLLOOP:                             ; clear one stale display cell
         PUSH    BC
         LD      E,' '
         LD      C,2
@@ -757,7 +897,8 @@ CCP_CLLOOP:
         LD      HL,CCP_DATA
         CALL    CCP_EDTEXT
         JP      CCP_EDGET
-CCP_CSHOW:
+
+CCP_CSHOW:                              ; render command line and cursor
         LD      E,0
         LD      C,204
         CALL    BDOS
@@ -774,25 +915,29 @@ CCP_CSHOW:
         LD      E,(HL)
         LD      C,204
         CALL    BDOS
-        LD      A,1             ; cursor output consumed this command byte
+        LD      A,1                     ; cursor output consumed this command byte
         RET
-CCP_CSEND:
-        LD      E,' '           ; reverse blank is the end-of-line cursor
+
+CCP_CSEND:                              ; finish cursor rendering
+        LD      E,' '                   ; reverse blank is the end-of-line cursor
         LD      C,204
         CALL    BDOS
         XOR     A
         RET
-CCP_CSFALL:
+
+CCP_CSFALL:                             ; render fallback visible cursor
         LD      E,'_'
         LD      C,2
         CALL    BDOS
         XOR     A
         RET
-CCP_EDTEXT:
+
+CCP_EDTEXT:                             ; print text through logical cursor
         LD      A,B
         OR      A
         RET     Z
-CCP_EDTXLP:
+
+CCP_EDTXLP:                             ; print one edited-line character
         PUSH    BC
         PUSH    HL
         LD      E,(HL)
@@ -803,9 +948,16 @@ CCP_EDTXLP:
         INC     HL
         DJNZ    CCP_EDTXLP
         RET
-CCP_EDFIN:
-; Remove the visual cursor before command execution, then preserve CP/M's
-; final-carriage-return presentation.
+
+; -------------------------------------------------------------------------------
+; Line Completion
+; -------------------------------------------------------------------------------
+
+CCP_EDFIN:                              ; finish command-line editing
+
+  ; Remove the visual cursor before command execution, then preserve CP/M's
+  ; final-carriage-return presentation.
+
         LD      E,13
         LD      C,2
         CALL    BDOS
@@ -828,10 +980,21 @@ CCP_EDFIN:
         RET     Z
         JP      CCP_HADD
 
-; Persistent packed command history. The protected history region contains a
-; nine-byte control header followed by length-prefixed complete command lines. New
-; records evict the oldest whole records only when space is required.
-CCP_HINIT:
+  ; Persistent packed command history. The protected history region contains a
+  ; nine-byte control header followed by length-prefixed complete command lines. New
+  ; records evict the oldest whole records only when space is required.
+
+; ================================================================================
+; =                          Persistent Command History                          =
+; =                                                                              =
+; = Maintains the warm-boot-persistent packed command history, including         =
+; = validation, retrieval, eviction, and insertion of command records.           =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; History Initialization
+; -------------------------------------------------------------------------------
+
+CCP_HINIT:                              ; validate persistent history header
         LD      A,(HISTBASE)
         CP      'B'
         JR      NZ,CCP_HRESET
@@ -841,7 +1004,8 @@ CCP_HINIT:
         LD      A,(HISTBASE+2)
         CP      1
         RET     Z
-CCP_HRESET:
+
+CCP_HRESET:                             ; reset persistent history
         LD      HL,HISTBASE
         LD      (HL),'B'
         INC     HL
@@ -850,19 +1014,25 @@ CCP_HRESET:
         LD      (HL),1
         INC     HL
         XOR     A
-        LD      (HL),A          ; record count
+        LD      (HL),A                  ; record count
         INC     HL
-        LD      (HL),A          ; used byte count, little endian
+        LD      (HL),A                  ; used byte count, little endian
         INC     HL
         LD      (HL),A
         RET
 
-; A selects a zero-based record from oldest to newest. Copy the complete line
-; into the reloadable CCP edit buffer and place the logical cursor at its end.
-CCP_HGET:
+  ; A selects a zero-based record from oldest to newest. Copy the complete line
+  ; into the reloadable CCP edit buffer and place the logical cursor at its end.
+
+; -------------------------------------------------------------------------------
+; History Retrieval
+; -------------------------------------------------------------------------------
+
+CCP_HGET:                               ; fetch selected history entry
         LD      B,A
         LD      HL,HISTDATA
-CCP_HGLOOP:
+
+CCP_HGLOOP:                             ; scan packed history records
         LD      A,B
         OR      A
         JR      Z,CCP_HGFOUND
@@ -871,7 +1041,8 @@ CCP_HGLOOP:
         INC     DE
         ADD     HL,DE
         DJNZ    CCP_HGLOOP
-CCP_HGFOUND:
+
+CCP_HGFOUND:                            ; copy selected history record
         LD      A,(HL)
         LD      (CCP_COUNT),A
         LD      (CCP_EDCUR),A
@@ -882,12 +1053,17 @@ CCP_HGFOUND:
         LDIR
         RET
 
-CCP_HADD:
+; -------------------------------------------------------------------------------
+; History Insertion and Space Management
+; -------------------------------------------------------------------------------
+
+CCP_HADD:                               ; append command to history
         CALL    CCP_HINIT
         LD      A,(CCP_COUNT)
         INC     A
-        LD      (CCP_HTMP),A    ; required length byte plus command data
-CCP_HROOM:
+        LD      (CCP_HTMP),A            ; required length byte plus command data
+
+CCP_HROOM:                              ; make room for history record
         LD      HL,(HISTBASE+4)
         LD      A,(CCP_HTMP)
         LD      E,A
@@ -897,7 +1073,7 @@ CCP_HROOM:
         OR      A
         SBC     HL,DE
         JR      C,CCP_HAPPEND
-; Evict the oldest record and compact the packed region toward HISTDATA.
+  ; Evict the oldest record and compact the packed region toward HISTDATA.
         LD      A,(HISTDATA)
         INC     A
         LD      (CCP_HSKIP),A
@@ -916,11 +1092,13 @@ CCP_HROOM:
         OR      C
         JR      Z,CCP_HEMPTY
         LDIR
-CCP_HEMPTY:
+
+CCP_HEMPTY:                             ; reset empty history area
         LD      HL,HISTBASE+3
         DEC     (HL)
         JR      CCP_HROOM
-CCP_HAPPEND:
+
+CCP_HAPPEND:                            ; append packed history record
         LD      HL,HISTDATA
         LD      DE,(HISTBASE+4)
         ADD     HL,DE
@@ -944,10 +1122,21 @@ CCP_HAPPEND:
         LD      (CCP_HPOS),A
         RET
 
-; Carry set means that the complete input line was navigation syntax, whether
-; the requested physical drive exists or not.  This prevents a failed B: from
-; falling through into a search for the impossible transient "B:.COM".
-CCP_NAVIGATE:
+  ; Carry set means that the complete input line was navigation syntax, whether
+  ; the requested physical drive exists or not.  This prevents a failed B: from
+  ; falling through into a search for the impossible transient "B:.COM".
+
+; ================================================================================
+; =                     CCP Command Recognition and Dispatch                     =
+; =                                                                              =
+; = Recognizes CCP syntax and built-in commands before command extensions        =
+; = or transient-program loading are attempted.                                  =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Drive/User Navigation
+; -------------------------------------------------------------------------------
+
+CCP_NAVIGATE:                           ; recognize direct drive/user navigation
         LD      A,(CCP_COUNT)
         CP      2
         JR      C,CCP_NAVNO
@@ -955,8 +1144,8 @@ CCP_NAVIGATE:
         JR      NC,CCP_NAVNO
         LD      B,A
         LD      HL,CCP_DATA
-        LD      E,0FFH          ; FFh means retain current drive
-        LD      D,0FFH          ; FFh means retain current user
+        LD      E,0FFH                  ; FFh means retain current drive
+        LD      D,0FFH                  ; FFh means retain current user
         LD      A,(HL)
         CP      'A'
         JR      C,CCP_NAVUSER
@@ -968,8 +1157,9 @@ CCP_NAVIGATE:
         DEC     B
         LD      A,B
         CP      1
-        JR      Z,CCP_NAVCOLON  ; drive-only form
-CCP_NAVUSER:
+        JR      Z,CCP_NAVCOLON          ; drive-only form
+
+CCP_NAVUSER:                            ; parse user-only navigation
         LD      A,B
         CP      2
         JR      Z,CCP_NVONE
@@ -978,14 +1168,14 @@ CCP_NAVUSER:
         LD      A,(HL)
         SUB     '0'
         JR      C,CCP_NAVNO
-        CP      4               ; tens digit may only be 0..3
+        CP      4                       ; tens digit may only be 0..3
         JR      NC,CCP_NAVNO
         LD      C,A
         ADD     A,A
         LD      D,A
         ADD     A,A
         ADD     A,A
-        ADD     A,D             ; ten times first digit
+        ADD     A,D                     ; ten times first digit
         LD      D,A
         INC     HL
         LD      A,(HL)
@@ -999,7 +1189,8 @@ CCP_NAVUSER:
         LD      D,A
         INC     HL
         JR      CCP_NAVCOLON
-CCP_NVONE:
+
+CCP_NVONE:                              ; finish one-digit user parse
         LD      A,(HL)
         SUB     '0'
         JR      C,CCP_NAVNO
@@ -1007,7 +1198,8 @@ CCP_NVONE:
         JR      NC,CCP_NAVNO
         LD      D,A
         INC     HL
-CCP_NAVCOLON:
+
+CCP_NAVCOLON:                           ; require navigation colon
         LD      A,(HL)
         CP      ':'
         JR      NZ,CCP_NAVNO
@@ -1020,20 +1212,28 @@ CCP_NAVCOLON:
         POP     DE
         CP      0FFH
         JR      Z,CCP_NAVDONE
-CCP_NAVSETU:
+
+CCP_NAVSETU:                            ; set requested user number
         LD      A,D
         CP      0FFH
         JR      Z,CCP_NAVDONE
         LD      E,A
         LD      C,32
         CALL    BDOS
-CCP_NAVDONE:
+
+CCP_NAVDONE:                            ; report navigation handled
         SCF
         RET
-CCP_NAVNO:
+
+CCP_NAVNO:                              ; report non-navigation command
         OR      A
         RET
-CCP_TRYVER:
+
+; -------------------------------------------------------------------------------
+; Built-In Command Recognition
+; -------------------------------------------------------------------------------
+
+CCP_TRYVER:                             ; recognize VERSION command
         LD      HL,CCP_DATA
         LD      DE,CCP_VERKEY
         LD      B,3
@@ -1043,7 +1243,8 @@ CCP_TRYVER:
         LD      C,9
         CALL    BDOS
         JP      CCP_LOOP
-CCP_TRYDIR:
+
+CCP_TRYDIR:                             ; recognize DIR command
         LD      HL,CCP_DATA
         LD      DE,CCP_DIRKEY
         LD      B,3
@@ -1051,7 +1252,8 @@ CCP_TRYDIR:
         JP      NZ,CCP_BAD
         CALL    CCP_DIR
         JP      CCP_LOOP
-CCP_TRYWARM:
+
+CCP_TRYWARM:                            ; recognize WARM command
         LD      HL,CCP_DATA
         LD      DE,CCP_WARMKEY
         LD      B,4
@@ -1060,11 +1262,12 @@ CCP_TRYWARM:
         LD      C,0
         JP      BDOS
 
-; Patch 2026-09-02: keep the resident USER command deliberately thin.  The
-; CCP parses only its decimal operand; BDOS Function 32 remains the owner of
-; current-user state, so transient programs and the command environment can
-; never acquire divergent copies.
-CCP_TRYUSER:
+  ; Patch 2026-09-02: keep the resident USER command deliberately thin.  The
+  ; CCP parses only its decimal operand; BDOS Function 32 remains the owner of
+  ; current-user state, so transient programs and the command environment can
+  ; never acquire divergent copies.
+
+CCP_TRYUSER:                            ; recognize USER command
         LD      HL,CCP_DATA
         LD      DE,CU_KEY
         LD      B,5
@@ -1081,10 +1284,10 @@ CCP_TRYUSER:
         JR      Z,CCP_USERSET
         LD      A,E
         ADD     A,A
-        LD      D,A             ; D=first digit times two
+        LD      D,A                     ; D=first digit times two
         ADD     A,A
         ADD     A,A
-        ADD     A,D             ; A=first digit times ten
+        ADD     A,D                     ; A=first digit times ten
         LD      E,A
         INC     HL
         LD      A,(HL)
@@ -1096,16 +1299,22 @@ CCP_TRYUSER:
         CP      32
         JP      NC,CCP_BAD
         LD      E,A
-CCP_USERSET:
+
+CCP_USERSET:                            ; apply USER command selection
         LD      C,32
         CALL    BDOS
         JP      CCP_LOOP
 
-; The resident monitor is intentionally small, but it is always available.
-; A successful keyword match leaves HL/B at its first argument.  Carry set
-; tells the caller that the line belonged to the monitor, even when the
-; command itself had to print a syntax error.
-CCP_CORE:
+  ; The resident monitor is intentionally small, but it is always available.
+  ; A successful keyword match leaves HL/B at its first argument.  Carry set
+  ; tells the caller that the line belonged to the monitor, even when the
+  ; command itself had to print a syntax error.
+
+; -------------------------------------------------------------------------------
+; Core Command Dispatch
+; -------------------------------------------------------------------------------
+
+CCP_CORE:                               ; dispatch resident monitor command
         LD      HL,CCP_KGET
         LD      C,3
         CALL    CCP_MATCH
@@ -1113,7 +1322,8 @@ CCP_CORE:
         CALL    CCP_GET
         SCF
         RET
-CCP_CJUMP:
+
+CCP_CJUMP:                              ; recognize JUMP command
         LD      HL,CCP_KJUMP
         LD      C,4
         CALL    CCP_MATCH
@@ -1121,7 +1331,8 @@ CCP_CJUMP:
         CALL    CCP_JUMP
         SCF
         RET
-CCP_CPEEK:
+
+CCP_CPEEK:                              ; recognize PEEK command
         LD      HL,CCP_KPEEK
         LD      C,4
         CALL    CCP_MATCH
@@ -1130,11 +1341,13 @@ CCP_CPEEK:
         LD      C,1
         CALL    CCP_MATCH
         JR      NC,CCP_CPOKE
-CCP_CPDISP:
+
+CCP_CPDISP:                             ; recognize P abbreviation
         CALL    CCP_PEEK
         SCF
         RET
-CCP_CPOKE:
+
+CCP_CPOKE:                              ; recognize POKE command
         LD      HL,CCP_KPOKE
         LD      C,4
         CALL    CCP_MATCH
@@ -1142,7 +1355,8 @@ CCP_CPOKE:
         CALL    CCP_POKE
         SCF
         RET
-CCP_CGO:
+
+CCP_CGO:                                ; recognize GO command
         LD      HL,CCP_KSAVE
         LD      C,4
         CALL    CCP_MATCH
@@ -1150,7 +1364,8 @@ CCP_CGO:
         CALL    CCP_SAVE
         SCF
         RET
-CCP_CGOTRY:
+
+CCP_CGOTRY:                             ; dispatch GO or SAVE command
         LD      HL,CCP_KGO
         LD      C,2
         CALL    CCP_MATCH
@@ -1159,18 +1374,31 @@ CCP_CGOTRY:
         SCF
         RET
 
-; Compare a keyword and require either end of line or a following blank.
-; This prevents P from stealing PIP and GET from stealing GETFILE.
-CCP_MATCH:
+  ; Compare a keyword and require either end of line or a following blank.
+  ; This prevents P from stealing PIP and GET from stealing GETFILE.
+
+; ================================================================================
+; =                          Command Parsing Utilities                           =
+; =                                                                              =
+; = Provides shared keyword, numeric, argument, command-tail, and default-FCB    =
+; = parsing services used by resident CCP commands.                              =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Keyword Matching
+; -------------------------------------------------------------------------------
+
+CCP_MATCH:                              ; match command keyword
         LD      A,(CCP_COUNT)
         CP      C
         JR      NC,CCP_MLENOK
-        OR      A               ; a short command is a miss, never a match
+        OR      A                       ; a short command is a miss, never a match
         RET
-CCP_MLENOK:
+
+CCP_MLENOK:                             ; keyword length can match
         LD      DE,CCP_DATA
         PUSH    BC
-CCP_MLOOP:
+
+CCP_MLOOP:                              ; compare keyword characters
         LD      A,(DE)
         CP      (HL)
         JR      NZ,CCP_MNO
@@ -1186,36 +1414,46 @@ CCP_MLOOP:
         LD      A,(DE)
         CP      ' '
         JR      NZ,CCP_MRETNO
-CCP_MSKIP:
+
+CCP_MSKIP:                              ; skip matched keyword
         INC     DE
         DJNZ    CCP_MSPMORE
         EX      DE,HL
         SCF
         RET
-CCP_MSPMORE:
+
+CCP_MSPMORE:                            ; skip spaces after keyword
         LD      A,(DE)
         CP      ' '
         JR      Z,CCP_MSKIP
         EX      DE,HL
         SCF
         RET
-CCP_MYES:
+
+CCP_MYES:                               ; report keyword match
         EX      DE,HL
         SCF
         RET
-CCP_MNO:
+
+CCP_MNO:                                ; report keyword mismatch
         POP     BC
-CCP_MRETNO:
+CCP_MRETNO:                             ; return keyword mismatch
         OR      A
         RET
 
-; Read one hexadecimal token.  HL/B advance to its separator or the end;
-; DE receives the sixteen-bit value.  Carry is clear for an empty or bad
-; token.  All address-taking commands share this one set of rules.
-CCP_HEX:
+  ; Read one hexadecimal token.  HL/B advance to its separator or the end;
+  ; DE receives the sixteen-bit value.  Carry is clear for an empty or bad
+  ; token.  All address-taking commands share this one set of rules.
+
+; -------------------------------------------------------------------------------
+; Hexadecimal Arguments
+; -------------------------------------------------------------------------------
+
+CCP_HEX:                                ; parse hexadecimal token
         LD      DE,0
         LD      C,0
-CCP_HXLOOP:
+
+CCP_HXLOOP:                             ; accumulate hexadecimal digits
         LD      A,B
         OR      A
         JR      Z,CCP_HXDONE
@@ -1231,7 +1469,8 @@ CCP_HXLOOP:
         JR      C,CCP_HXBAD
         CP      16
         JR      NC,CCP_HXBAD
-CCP_HXDIG:
+
+CCP_HXDIG:                              ; convert one hexadecimal digit
         LD      (CCP_HEXDIG),A
         SLA     E
         RL      D
@@ -1246,22 +1485,28 @@ CCP_HXDIG:
         LD      E,A
         INC     C
         LD      A,C
-        CP      5               ; more than four digits cannot name an address
+        CP      5                       ; more than four digits cannot name an address
         JR      NC,CCP_HXBAD
         INC     HL
         DEC     B
         JR      CCP_HXLOOP
-CCP_HXDONE:
+
+CCP_HXDONE:                             ; finish hexadecimal parse
         LD      A,C
         OR      A
         RET     Z
         SCF
         RET
-CCP_HXBAD:
+
+CCP_HXBAD:                              ; report invalid hexadecimal token
         OR      A
         RET
 
-CCP_ARGSKIP:
+; -------------------------------------------------------------------------------
+; Argument and Command-Tail Preparation
+; -------------------------------------------------------------------------------
+
+CCP_ARGSKIP:                            ; skip spaces before argument
         LD      A,B
         OR      A
         RET     Z
@@ -1272,16 +1517,18 @@ CCP_ARGSKIP:
         DEC     B
         JR      CCP_ARGSKIP
 
-; Make a fresh command tail and its two conventional default FCBs.  GO and
-; JUMP deliberately do not inherit the tail left by the last transient.
-CCP_MKTAIL:
+  ; Make a fresh command tail and its two conventional default FCBs.  GO and
+  ; JUMP deliberately do not inherit the tail left by the last transient.
+
+CCP_MKTAIL:                             ; build transient command tail and FCBs
         LD      (CCP_APTR),HL
         LD      A,B
         LD      (CCP_ALEN),A
         LD      HL,005CH
         LD      B,36
         XOR     A
-CCP_MTZERO:
+
+CCP_MTZERO:                             ; clear default FCB area
         LD      (HL),A
         INC     HL
         DJNZ    CCP_MTZERO
@@ -1295,7 +1542,8 @@ CCP_MTZERO:
         OR      A
         JR      Z,CCP_MTCR
         LDIR
-CCP_MTCR:
+
+CCP_MTCR:                               ; terminate transient command tail
         LD      A,13
         LD      (DE),A
         LD      HL,(CCP_APTR)
@@ -1311,7 +1559,17 @@ CCP_MTCR:
         LD      C,26
         JP      BDOS
 
-CCP_JUMP:
+; ================================================================================
+; =                          Resident Monitor Commands                           =
+; =                                                                              =
+; = Implements the small resident monitor command set retained in the CCP so     =
+; = it remains available independently of CPXs and transient disk files.         =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; JUMP and GO
+; -------------------------------------------------------------------------------
+
+CCP_JUMP:                               ; execute JUMP command
         LD      A,B
         OR      A
         JR      Z,CCP_ADDRERR
@@ -1320,34 +1578,40 @@ CCP_JUMP:
         LD      (CCP_TADDR),DE
         CALL    CCP_ARGSKIP
         CALL    CCP_MKTAIL
-        LD      HL,(0001H)      ; a returning image performs a normal WBOOT
+        LD      HL,(0001H)              ; a returning image performs a normal WBOOT
         PUSH    HL
         LD      HL,(CCP_TADDR)
         JP      (HL)
 
-CCP_GO:
+CCP_GO:                                 ; execute GO command
         CALL    CCP_MKTAIL
         LD      HL,(0001H)
         PUSH    HL
         LD      HL,0100H
         JP      (HL)
 
-CCP_ADDRERR:
+CCP_ADDRERR:                            ; report missing or invalid address
         LD      DE,CCP_MADDR
         LD      C,9
         JP      BDOS
 
-; GET loads a raw file and leaves it in memory for PEEK, POKE, SAVE, GO, or
-; JUMP.  With two operands the first is the address; with one, even a name
-; made solely of hex digits denotes a file and the destination is 0100H.
-CCP_GET:
+  ; GET loads a raw file and leaves it in memory for PEEK, POKE, SAVE, GO, or
+  ; JUMP.  With two operands the first is the address; with one, even a name
+  ; made solely of hex digits denotes a file and the destination is 0100H.
+
+; -------------------------------------------------------------------------------
+; GET
+; -------------------------------------------------------------------------------
+
+CCP_GET:                                ; execute GET command
         LD      A,B
         OR      A
         JP      Z,CCP_GSYNTAX
         LD      (CCP_APTR),HL
         LD      A,B
         LD      (CCP_ALEN),A
-CCP_GSCAN:
+
+CCP_GSCAN:                              ; scan GET operands
         LD      A,B
         OR      A
         JR      Z,CCP_GONE
@@ -1357,14 +1621,16 @@ CCP_GSCAN:
         INC     HL
         DEC     B
         JR      CCP_GSCAN
-CCP_GONE:
+
+CCP_GONE:                               ; handle one-operand GET form
         LD      HL,0100H
         LD      (CCP_TADDR),HL
         LD      HL,(CCP_APTR)
         LD      A,(CCP_ALEN)
         LD      B,A
         JR      CCP_GFILE
-CCP_GTWO:
+
+CCP_GTWO:                               ; handle two-operand GET form
         LD      HL,(CCP_APTR)
         LD      A,(CCP_ALEN)
         LD      B,A
@@ -1375,12 +1641,14 @@ CCP_GTWO:
         LD      A,B
         OR      A
         JP      Z,CCP_GSYNTAX
-CCP_GFILE:
+
+CCP_GFILE:                              ; prepare GET filename
         LD      A,B
         LD      (CCP_ALEN),A
         LD      (CCP_APTR),HL
-; A filename is one token.  Reject a hidden third operand before touching RAM.
-CCP_GFSN:
+  ; A filename is one token.  Reject a hidden third operand before touching RAM.
+
+CCP_GFSN:                               ; skip spaces before GET filename
         LD      A,B
         OR      A
         JR      Z,CCP_GPARSE
@@ -1390,11 +1658,12 @@ CCP_GFSN:
         INC     HL
         DEC     B
         JR      CCP_GFSN
-CCP_GPARSE:
+
+CCP_GPARSE:                             ; parse GET file specification
         LD      HL,(CCP_TADDR)
         LD      A,H
         OR      A
-        JP      Z,CCP_GPROTECT  ; page zero belongs to the system
+        JP      Z,CCP_GPROTECT          ; page zero belongs to the system
         LD      HL,(CCP_APTR)
         LD      A,(CCP_ALEN)
         LD      B,A
@@ -1405,7 +1674,8 @@ CCP_GPARSE:
         JP      Z,CCP_GSYNTAX
         LD      HL,CCP_FCB+1
         LD      B,11
-CCP_GWILD:
+
+CCP_GWILD:                              ; reject wildcard GET filename
         LD      A,(HL)
         CP      '?'
         JP      Z,CCP_GSYNTAX
@@ -1425,7 +1695,8 @@ CCP_GWILD:
         LD      HL,(CCP_FCB+33)
         LD      (CCP_GRECS),HL
         LD      B,7
-CCP_GMUL:
+
+CCP_GMUL:                               ; compute GET load extent
         ADD     HL,HL
         JP      C,CCP_GBIG
         DJNZ    CCP_GMUL
@@ -1433,7 +1704,7 @@ CCP_GMUL:
         ADD     HL,DE
         JP      C,CCP_GBIG
         EX      DE,HL
-        LD      HL,(LY_SYS+08CH) ; live bottom of the reconstructible CCP
+        LD      HL,(LY_SYS+08CH)        ; live bottom of the reconstructible CCP
         OR      A
         SBC     HL,DE
         JP      C,CCP_GBIG
@@ -1444,7 +1715,8 @@ CCP_GMUL:
         JR      Z,CCP_GNOFILE
         LD      HL,(CCP_TADDR)
         LD      (CCP_GDMA),HL
-CCP_GRLOOP:
+
+CCP_GRLOOP:                             ; read GET file records
         LD      HL,(CCP_GRECS)
         LD      A,H
         OR      L
@@ -1465,24 +1737,30 @@ CCP_GRLOOP:
         DEC     HL
         LD      (CCP_GRECS),HL
         JR      CCP_GRLOOP
-CCP_GDONE:
+
+CCP_GDONE:                              ; report successful GET
         LD      DE,CCP_MLOADED
         JR      CCP_GPRINT
-CCP_GSYNTAX:
+
+CCP_GSYNTAX:                            ; report GET syntax error
         LD      DE,CCP_MGET
         JR      CCP_GPRINT
-CCP_GPROTECT:
+
+CCP_GPROTECT:                           ; report protected-memory overlap
         LD      DE,CCP_MPROTECT
         JR      CCP_GPRINT
-CCP_GBIG:
+
+CCP_GBIG:                               ; report oversized GET file
         LD      DE,CCP_MTOOBIG
         JR      CCP_GPRINT
-CCP_GNOFILE:
+
+CCP_GNOFILE:                            ; report missing GET file
         LD      DE,CCP_MNOFILE
         JR      CCP_GPRINT
-CCP_GREAD:
+CCP_GREAD:                              ; report GET read error
         LD      DE,CCP_MREAD
-CCP_GPRINT:
+
+CCP_GPRINT:                             ; print GET status message
         PUSH    DE
         LD      DE,0080H
         LD      C,26
@@ -1491,10 +1769,15 @@ CCP_GPRINT:
         LD      C,9
         JP      BDOS
 
-; PEEK's page is sixteen rows of sixteen bytes.  Unlike a file pager, moving
-; backward costs only one subtraction, so the old monitor-style comma and
-; period controls are kept along with the printed angle-bracket mnemonics.
-CCP_PEEK:
+  ; PEEK's page is sixteen rows of sixteen bytes.  Unlike a file pager, moving
+  ; backward costs only one subtraction, so the old monitor-style comma and
+  ; period controls are kept along with the printed angle-bracket mnemonics.
+
+; -------------------------------------------------------------------------------
+; PEEK
+; -------------------------------------------------------------------------------
+
+CCP_PEEK:                               ; execute PEEK command
         XOR     A
         LD      (CCP_PBOUND),A
         LD      A,B
@@ -1503,7 +1786,8 @@ CCP_PEEK:
         LD      HL,(CLDPTR)
         LD      (CCP_PPAGE),HL
         JR      CCP_PKSHOW
-CCP_PKFIRST:
+
+CCP_PKFIRST:                            ; establish first PEEK page
         CALL    CCP_HEX
         JP      NC,CCP_ADDRERR
         LD      (CCP_PLOW),DE
@@ -1525,15 +1809,18 @@ CCP_PKFIRST:
         JR      C,CCP_PKORDER
         JR      Z,CCP_PKORDER
         JP      CCP_ADDRERR
-CCP_PKORDER:
+
+CCP_PKORDER:                            ; normalize PEEK bounds
         LD      A,1
         LD      (CCP_PBOUND),A
-CCP_PKSHOW:
+
+CCP_PKSHOW:                             ; display current PEEK page
         LD      HL,(CCP_PPAGE)
         LD      (CCP_PPTR),HL
         LD      HL,256
         LD      (CCP_PCNT),HL
-CCP_PKLINE:
+
+CCP_PKLINE:                             ; display one PEEK row
         LD      DE,CCP_DIRNL
         LD      C,9
         CALL    BDOS
@@ -1548,7 +1835,8 @@ CCP_PKLINE:
         CALL    BDOS
         LD      A,16
         LD      (CCP_PCOL),A
-CCP_PKBYTE:
+
+CCP_PKBYTE:                             ; display one PEEK byte
         LD      E,' '
         LD      C,2
         CALL    BDOS
@@ -1568,7 +1856,8 @@ CCP_PKBYTE:
         LD      A,L
         CP      0FFH
         JR      Z,CCP_PKPAGE
-CCP_PKINC:
+
+CCP_PKINC:                              ; advance PEEK address
         INC     HL
         LD      (CCP_PPTR),HL
         LD      A,(CCP_PBOUND)
@@ -1580,14 +1869,18 @@ CCP_PKINC:
         JR      C,CCP_PKCOL
         JR      Z,CCP_PKCOL
         JR      CCP_PKPAGE
-CCP_PKCOL:
+
+CCP_PKCOL:                              ; finish PEEK row
         LD      HL,CCP_PCOL
         DEC     (HL)
         JR      NZ,CCP_PKBYTE
         JR      CCP_PKLINE
-CCP_PKPAGE:
-; Remember the byte following the display whenever one exists.  PEEK with no
-; argument resumes here after the CCP itself has been reloaded by WBOOT.
+
+CCP_PKPAGE:                             ; finish PEEK page
+
+  ; Remember the byte following the display whenever one exists.  PEEK with no
+  ; argument resumes here after the CCP itself has been reloaded by WBOOT.
+
         LD      HL,(CCP_PPTR)
         LD      A,H
         AND     L
@@ -1595,11 +1888,13 @@ CCP_PKPAGE:
         JR      Z,CCP_PKWAIT
         INC     HL
         LD      (CLDPTR),HL
-CCP_PKWAIT:
+
+CCP_PKWAIT:                             ; prompt for PEEK navigation
         LD      DE,CCP_MPAGER
         LD      C,9
         CALL    BDOS
-CCP_PKKEY:
+
+CCP_PKKEY:                              ; decode PEEK navigation key
         LD      E,0FFH
         LD      C,6
         CALL    BDOS
@@ -1618,7 +1913,8 @@ CCP_PKKEY:
         JR      Z,CCP_PKNEXT
         CP      '>'
         JR      NZ,CCP_PKKEY
-CCP_PKNEXT:
+
+CCP_PKNEXT:                             ; advance to next PEEK page
         LD      HL,(CCP_PPAGE)
         LD      DE,0100H
         ADD     HL,DE
@@ -1634,14 +1930,16 @@ CCP_PKNEXT:
         JR      C,CCP_PKSETP
         JR      Z,CCP_PKSETP
         JR      CCP_PKRET
-CCP_PKPREV:
+
+CCP_PKPREV:                             ; move to previous PEEK page
         LD      HL,(CCP_PPAGE)
         LD      DE,0100H
         OR      A
         SBC     HL,DE
         JR      NC,CCP_PKPVOK
         LD      HL,0
-CCP_PKPVOK:
+
+CCP_PKPVOK:                             ; accept previous PEEK page
         LD      A,(CCP_PBOUND)
         OR      A
         JR      Z,CCP_PKSETP
@@ -1652,13 +1950,15 @@ CCP_PKPVOK:
         POP     HL
         JR      NC,CCP_PKSETP
         EX      DE,HL
-CCP_PKSETP:
+
+CCP_PKSETP:                             ; store resumable PEEK position
         LD      (CCP_PPAGE),HL
         JP      CCP_PKSHOW
-CCP_PKRET:
+
+CCP_PKRET:                              ; return from PEEK
         RET
 
-CCP_HEX8:
+CCP_HEX8:                               ; print byte in hexadecimal
         PUSH    AF
         RRCA
         RRCA
@@ -1666,21 +1966,28 @@ CCP_HEX8:
         RRCA
         CALL    CCP_HEXNIB
         POP     AF
-CCP_HEXNIB:
+
+CCP_HEXNIB:                             ; print hexadecimal nibble
         AND     0FH
         ADD     A,'0'
         CP      '9'+1
         JR      C,CCP_HXOUT
         ADD     A,7
-CCP_HXOUT:
+
+CCP_HXOUT:                              ; emit hexadecimal digit
         LD      E,A
         LD      C,2
         JP      BDOS
 
-; POKE first converts every operand into a private byte string.  Only after
-; the complete line and its end address have been checked do we alter memory;
-; a typo in the last operand can therefore never leave a half-applied patch.
-CCP_POKE:
+  ; POKE first converts every operand into a private byte string.  Only after
+  ; the complete line and its end address have been checked do we alter memory;
+  ; a typo in the last operand can therefore never leave a half-applied patch.
+
+; -------------------------------------------------------------------------------
+; POKE
+; -------------------------------------------------------------------------------
+
+CCP_POKE:                               ; execute POKE command
         LD      A,B
         OR      A
         JP      Z,CCP_ADDRERR
@@ -1694,7 +2001,8 @@ CCP_POKE:
         LD      DE,CCP_PBUF
         XOR     A
         LD      (CCP_PLEN),A
-CCP_PONEXT:
+
+CCP_PONEXT:                             ; parse next POKE byte
         CALL    CCP_ARGSKIP
         LD      A,B
         OR      A
@@ -1717,13 +2025,16 @@ CCP_PONEXT:
         LD      (DE),A
         INC     DE
         JR      CCP_PONEXT
-CCP_POFAIL:
+
+CCP_POFAIL:                             ; reject invalid POKE command
         POP     DE
         JR      CCP_POSYNTAX
-CCP_POTEXT:
+
+CCP_POTEXT:                             ; apply validated POKE bytes
         INC     HL
         DEC     B
-CCP_POTLOOP:
+
+CCP_POTLOOP:                            ; write next POKE byte
         LD      A,B
         OR      A
         JR      Z,CCP_POCHECK
@@ -1736,7 +2047,8 @@ CCP_POTLOOP:
         LD      (CCP_PLEN),A
         DEC     B
         JR      CCP_POTLOOP
-CCP_POCHECK:
+
+CCP_POCHECK:                            ; validate POKE target range
         LD      A,(CCP_PLEN)
         OR      A
         JR      Z,CCP_POSYNTAX
@@ -1753,15 +2065,21 @@ CCP_POCHECK:
         LD      B,0
         LDIR
         RET
-CCP_POSYNTAX:
+
+CCP_POSYNTAX:                           ; report POKE syntax error
         LD      DE,CCP_MPOKE
         LD      C,9
         JP      BDOS
 
-; SAVE n file -- copy n 256-byte pages beginning at 0100H.  This belongs in
-; the CCP because loading SAVE.COM would first destroy the very low-memory
-; image the command is meant to preserve.
-CCP_SAVE:
+  ; SAVE n file -- copy n 256-byte pages beginning at 0100H.  This belongs in
+  ; the CCP because loading SAVE.COM would first destroy the very low-memory
+  ; image the command is meant to preserve.
+
+; -------------------------------------------------------------------------------
+; SAVE
+; -------------------------------------------------------------------------------
+
+CCP_SAVE:                               ; execute SAVE command
         XOR     A
         LD      (CCP_DUACT),A
         LD      A,B
@@ -1769,7 +2087,8 @@ CCP_SAVE:
         JP      Z,CSVSYN
         LD      C,0
         LD      D,0
-CSVNUM:
+
+CSVNUM:                                 ; parse SAVE page count
         LD      A,B
         OR      A
         JP      Z,CSVSYN
@@ -1789,7 +2108,8 @@ CSVNUM:
         LD      A,E
         CP      6
         JP      NC,CSVSYN
-CSVMUL:
+
+CSVMUL:                                 ; convert SAVE pages to records
         LD      A,C
         ADD     A,A
         LD      C,A
@@ -1802,13 +2122,15 @@ CSVMUL:
         INC     HL
         DEC     B
         JR      CSVNUM
-CSVNAME:
+
+CSVNAME:                                ; locate SAVE filename
         LD      A,D
         OR      A
         JP      Z,CSVSYN
         LD      A,C
         LD      (CCP_SPAGES),A
-CSVNSKP:
+
+CSVNSKP:                                ; skip spaces before SAVE filename
         INC     HL
         DEC     B
         JP      Z,CSVSYN
@@ -1821,17 +2143,20 @@ CSVNSKP:
         JP      Z,CSVSYN
         PUSH    HL
         PUSH    BC
-CSVTLEN:
+
+CSVTLEN:                                ; measure SAVE filename token
         LD      A,(HL)
         CP      ' '
         JR      Z,CSVTAIL
         INC     HL
         DJNZ    CSVTLEN
         JR      CSVPAR
-CSVTAIL:
+
+CSVTAIL:                                ; reject trailing SAVE operands
         INC     HL
         DEC     B
-CSVTRL:
+
+CSVTRL:                                 ; scan SAVE command tail
         LD      A,B
         OR      A
         JR      Z,CSVPAR
@@ -1840,7 +2165,8 @@ CSVTRL:
         JR      NZ,CSVPOP
         INC     HL
         DJNZ    CSVTRL
-CSVPAR:
+
+CSVPAR:                                 ; parse SAVE file specification
         POP     BC
         POP     HL
         LD      DE,CCP_FCB
@@ -1850,7 +2176,8 @@ CSVPAR:
         JR      Z,CSVSYN
         LD      HL,CCP_FCB+1
         LD      B,11
-CSVNOQ:
+
+CSVNOQ:                                 ; reject wildcard SAVE filename
         LD      A,(HL)
         CP      '?'
         JR      Z,CSVSYN
@@ -1871,7 +2198,8 @@ CSVNOQ:
         LD      H,0
         ADD     HL,HL
         LD      (CCP_SRECS),HL
-CSVWRITE:
+
+CSVWRITE:                               ; write SAVE records
         LD      HL,(CCP_SRECS)
         LD      A,H
         OR      L
@@ -1892,34 +2220,49 @@ CSVWRITE:
         DEC     HL
         LD      (CCP_SRECS),HL
         JR      CSVWRITE
-CSVCLOSE:
+
+CSVCLOSE:                               ; close SAVE output file
         LD      DE,CCP_FCB
         LD      C,16
         CALL    BDOS
         CP      0FFH
         JR      Z,CSVSPACE
         JR      CSVDONE
-CSVPOP:
+
+CSVPOP:                                 ; restore SAVE working registers
         POP     BC
         POP     HL
-CSVSYN:
+
+CSVSYN:                                 ; report SAVE syntax error
         LD      DE,CCP_MSAVE
         JR      CSVPRINT
-CSVSPACE:
+CSVSPACE:                               ; report SAVE disk-full error
         LD      DE,CCP_MSPACE
-CSVPRINT:
+CSVPRINT:                               ; print SAVE status message
         LD      C,9
         CALL    BDOS
-CSVDONE:
+
+CSVDONE:                                ; return from SAVE
         LD      DE,0080H
         LD      C,26
         CALL    BDOS
         JP      CCP_DURST
 
-; Temporarily select the optional A:, 5:, or C3: qualifier which prefixes a
-; resident command filename.  The caller's drive and user are always restored
-; before the monitor returns to its prompt.
-CCP_DUSEL:
+  ; Temporarily select the optional A:, 5:, or C3: qualifier which prefixes a
+  ; resident command filename.  The caller's drive and user are always restored
+  ; before the monitor returns to its prompt.
+
+; ================================================================================
+; =                        Drive/User Selection Services                         =
+; =                                                                              =
+; = Parses temporary drive/user qualifiers for resident commands and restores    =
+; = the caller's default drive and user context afterward.                       =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Drive/User Qualifier Parsing
+; -------------------------------------------------------------------------------
+
+CCP_DUSEL:                              ; parse drive/user-qualified command
         LD      (CCP_DARGP),HL
         LD      A,B
         LD      (CCP_DLEN),A
@@ -1994,11 +2337,13 @@ CCP_DUSEL:
         LD      A,(HL)
         CP      ':'
         JR      NZ,CDUNONE
-CDUSET:
+
+CDUSET:                                 ; apply parsed drive selection
         LD      A,C
         LD      (CCP_UTARG),A
         JR      CDUCOL
-CDUNUM:
+
+CDUNUM:                                 ; parse decimal user number
         LD      A,(HL)
         CP      '0'
         JR      C,CDUNONE
@@ -2031,13 +2376,15 @@ CDUNUM:
         LD      C,A
         INC     HL
         DEC     B
-CDUONE:
+
+CDUONE:                                 ; finish one-digit user number
         LD      A,(HL)
         CP      ':'
         JR      NZ,CDUNONE
         LD      A,C
         LD      (CCP_UTARG),A
-CDUCOL:
+
+CDUCOL:                                 ; accept drive/user qualifier colon
         INC     HL
         DEC     B
         LD      (CCP_DARGP),HL
@@ -2049,24 +2396,32 @@ CDUCOL:
         LD      E,A
         LD      C,14
         CALL    BDOS
-CDUUSER:
+
+CDUUSER:                                ; apply parsed user selection
         LD      A,(CCP_UTARG)
         CP      0FFH
         JR      Z,CDUOUT
         LD      E,A
         LD      C,32
         CALL    BDOS
-CDUOUT:
+
+CDUOUT:                                 ; finish drive/user selection
         LD      HL,(CCP_DARGP)
         LD      A,(CCP_DLEN)
         LD      B,A
         RET
-CDUNONE:
+
+CDUNONE:                                ; report no drive/user qualifier
         LD      HL,(CCP_DARGP)
         LD      A,(CCP_DLEN)
         LD      B,A
         RET
-CCP_DURST:
+
+; -------------------------------------------------------------------------------
+; Drive/User Restoration
+; -------------------------------------------------------------------------------
+
+CCP_DURST:                              ; restore saved drive/user state
         LD      A,(CCP_DUACT)
         OR      A
         RET     Z
@@ -2081,16 +2436,25 @@ CCP_DURST:
         LD      C,32
         JP      BDOS
 
-; Command Processor Extension (CPX) chain.
-;
-; Each header contains DW next,entry.  Entry receives DE=upper-case command
-; text and B=length.  Carry set means handled; carry clear passes to the next
-; CPX.  A CPX may alter ordinary registers but must preserve SP, IX, IY and the
-; command buffer. CPXs get first refusal; currently retained core commands are
-; transition fallbacks and disappear only after RCP.CPX is fully verified.
-CPX_DISPATCH:
+  ; Command Processor Extension (CPX) chain.
+  ;
+  ; Each header contains DW next,entry.  Entry receives DE=upper-case command
+  ; text and B=length.  Carry set means handled; carry clear passes to the next
+  ; CPX.  A CPX may alter ordinary registers but must preserve SP, IX, IY and the
+  ; command buffer. CPXs get first refusal; currently retained core commands are
+  ; transition fallbacks and disappear only after RCP.CPX is fully verified.
+
+; ================================================================================
+; =                         Command Processor Extensions                         =
+; =                                                                              =
+; = Traverses the active CPX chain, matches extension command names, and         =
+; = invokes the corresponding extension handlers.                                =
+; ================================================================================
+
+CPX_DISPATCH:                           ; dispatch command through CPX chain
         LD      HL,(CPXHEAD)
-CPX_NEXT:
+
+CPX_NEXT:                               ; test next CPX descriptor
         LD      A,H
         OR      L
         RET     Z
@@ -2104,11 +2468,14 @@ CPX_NEXT:
         LD      DE,CCP_DATA
         LD      A,(CCP_COUNT)
         LD      B,A
-; Patch 2026-09-02: the CCP is reloadable RAM, so patching this CALL provides
-; a compact Z80 indirect-call trampoline while preserving a normal return.
-CPX_CALL:
+
+  ; Patch 2026-09-02: the CCP is reloadable RAM, so patching this CALL provides
+  ; a compact Z80 indirect-call trampoline while preserving a normal return.
+
+CPX_CALL:                               ; call matching CPX command handler
         CALL    0000H
-CPX_RETURN:
+
+CPX_RETURN:                             ; return from CPX handler
         RET     C
         LD      HL,(CPX_CUR)
         LD      E,(HL)
@@ -2117,15 +2484,17 @@ CPX_RETURN:
         EX      DE,HL
         JR      CPX_NEXT
 
-; Patch 2026-09-07: count nonblank characters while folding case.  Formerly
-; a SPACE-only command reached the loader and printed a question mark.
-; Sharing this walk also avoids another pointer in the relocation table.
-CCP_UPPER:
+  ; Patch 2026-09-07: count nonblank characters while folding case.  Formerly
+  ; a SPACE-only command reached the loader and printed a question mark.
+  ; Sharing this walk also avoids another pointer in the relocation table.
+
+CCP_UPPER:                              ; uppercase command line
         LD      C,0
         LD      HL,CCP_DATA
         LD      A,(CCP_COUNT)
         LD      B,A
-CCP_UPLOOP:
+
+CCP_UPLOOP:                             ; uppercase next command character
         LD      A,(HL)
         CP      ' '
         JR      Z,CCP_UPNEXT
@@ -2136,14 +2505,15 @@ CCP_UPLOOP:
         JR      NC,CCP_UPNEXT
         AND     05FH
         LD      (HL),A
-CCP_UPNEXT:
+
+CCP_UPNEXT:                             ; advance uppercase scan
         INC     HL
         DJNZ    CCP_UPLOOP
         LD      A,C
         OR      A
         RET
 
-CCP_EQUAL:
+CCP_EQUAL:                              ; compare command text
         LD      A,(DE)
         CP      (HL)
         RET     NZ
@@ -2152,20 +2522,33 @@ CCP_EQUAL:
         DJNZ    CCP_EQUAL
         RET
 
-; First transient loader: a command containing one bare 1..8-character name
-; selects NAME.COM. Arguments and explicit extensions are later milestones.
-CCP_LOAD:
+  ; First transient loader: a command containing one bare 1..8-character name
+  ; selects NAME.COM. Arguments and explicit extensions are later milestones.
+
+; ================================================================================
+; =                           Transient Program Loader                           =
+; =                                                                              =
+; = Builds and loads .COM commands, handles qualified drive/user contexts,       =
+; = prepares the transient environment, and transfers control to the program.    =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Command Name and Program Loading
+; -------------------------------------------------------------------------------
+
+CCP_LOAD:                               ; load transient command
         LD      HL,CCP_FCB
         LD      B,36
         XOR     A
-CCP_FCLR:
+
+CCP_FCLR:                               ; clear transient-command FCB
         LD      (HL),A
         INC     HL
         DJNZ    CCP_FCLR
         LD      HL,CCP_FCB+1
         LD      B,11
         LD      A,' '
-CCP_FSPC:
+
+CCP_FSPC:                               ; initialize FCB name fields
         LD      (HL),A
         INC     HL
         DJNZ    CCP_FSPC
@@ -2182,7 +2565,8 @@ CCP_FSPC:
         LD      B,A
         LD      HL,(CCP_LPTR)
         XOR     A
-CCP_LNSCAN:
+
+CCP_LNSCAN:                             ; scan transient command name
         LD      C,A
         LD      A,(HL)
         CP      ' '
@@ -2194,8 +2578,9 @@ CCP_LNSCAN:
         INC     HL
         DJNZ    CCP_LNSCAN
         JR      CCP_LNFOUND
-CCP_LNFOUND:
-        OR      A               ; do not retain Z from the separating-space CP
+
+CCP_LNFOUND:                            ; finish transient command name
+        OR      A                       ; do not retain Z from the separating-space CP
         JP      Z,CCP_LFAIL
         LD      (CCP_NAMEL),A
         LD      C,A
@@ -2207,7 +2592,8 @@ CCP_LNFOUND:
         LD      B,A
         LD      HL,(CCP_LPTR)
         LD      DE,CCP_FCB+1
-CCP_FNCPY:
+
+CCP_FNCPY:                              ; copy transient filename into FCB
         LD      A,(HL)
         CP      '!'
         JP      C,CCP_LFAIL
@@ -2222,13 +2608,15 @@ CCP_FNCPY:
         CALL    BDOS
         INC     A
         JP      Z,CCP_LFAIL
- ; Build the transient arguments while the command line still exists.
-; The protected reader now owns EOF/error handling and the final jump.
-CCP_LEOF:
+                                        ; Build the transient arguments while the command line still exists.
+  ; The protected reader now owns EOF/error handling and the final jump.
+
+CCP_LEOF:                               ; finish transient filename parse
         LD      HL,005CH
         LD      B,36
         XOR     A
-CCP_ZPAGE:
+
+CCP_ZPAGE:                              ; clear transient base page
         LD      (HL),A
         INC     HL
         DJNZ    CCP_ZPAGE
@@ -2250,7 +2638,8 @@ CCP_ZPAGE:
         LD      C,A
         LD      B,0
         LDIR
-CCP_LTAIL0:
+
+CCP_LTAIL0:                             ; build transient command tail
         LD      A,13
         LD      (DE),A
         LD      A,(CCP_CMDLEN)
@@ -2270,10 +2659,10 @@ CCP_LTAIL0:
         LD      DE,006CH
         CALL    CCP_PFCB
         LD      HL,CCP_FCB
-        LD      DE,LY_FCB  ; protected module-reader FCB, idle during COM load
+        LD      DE,LY_FCB               ; protected module-reader FCB, idle during COM load
         LD      BC,36
         LDIR
-        LD      DE,LY_BUF      ; stage each record outside the full TPA
+        LD      DE,LY_BUF               ; stage each record outside the full TPA
         LD      C,26
         CALL    BDOS
         LD      A,(CCP_LUACT)
@@ -2284,16 +2673,22 @@ CCP_LTAIL0:
         LD      C,32
         CALL    BDOS
         JP      LY_COMSTART
-CCP_LFAIL:
+
+CCP_LFAIL:                              ; report transient load failure
         CALL    CCP_LURST
         SCF
         RET
 
-; Parse an optional DU qualifier on a transient command: A:NAME, 5:NAME, or
-; C3:NAME.  The drive is encoded in the loader FCB; a user selection is made
-; only while locating/reading the image and restored before execution.  Thus
-; B0>A:CPX LIST runs A0:CPX.COM but CPX.COM still observes B0 as its caller DU.
-CCP_LQUAL:
+  ; Parse an optional DU qualifier on a transient command: A:NAME, 5:NAME, or
+  ; C3:NAME.  The drive is encoded in the loader FCB; a user selection is made
+  ; only while locating/reading the image and restored before execution.  Thus
+  ; B0>A:CPX LIST runs A0:CPX.COM but CPX.COM still observes B0 as its caller DU.
+
+; -------------------------------------------------------------------------------
+; Qualified Drive/User Handling
+; -------------------------------------------------------------------------------
+
+CCP_LQUAL:                              ; parse transient drive/user qualifier
         LD      HL,CCP_DATA
         LD      (CCP_LPTR),HL
         LD      A,(CCP_COUNT)
@@ -2320,7 +2715,8 @@ CCP_LQUAL:
         LD      A,(HL)
         CP      ':'
         JR      Z,CCP_LQCOL
-CCP_LQNUM:
+
+CCP_LQNUM:                              ; parse qualified user number
         LD      A,(HL)
         CP      '0'
         RET     C
@@ -2350,7 +2746,8 @@ CCP_LQNUM:
         LD      C,A
         INC     HL
         DEC     B
-CCP_LQONE:
+
+CCP_LQONE:                              ; finish one-digit qualified user
         LD      A,(HL)
         CP      ':'
         RET     NZ
@@ -2370,12 +2767,14 @@ CCP_LQONE:
         POP     HL
         LD      A,1
         LD      (CCP_LUACT),A
-CCP_LQCOL:
+
+CCP_LQCOL:                              ; accept transient qualifier colon
         LD      A,(CCP_LDRV)
         CP      0FFH
         JR      Z,CCP_LQSTRP
         LD      (CCP_FCB),A
-CCP_LQSTRP:
+
+CCP_LQSTRP:                             ; strip qualifier from command line
         INC     HL
         DEC     B
         LD      (CCP_LPTR),HL
@@ -2387,7 +2786,7 @@ CCP_LQSTRP:
         LD      (CCP_QLEN),A
         RET
 
-CCP_LURST:
+CCP_LURST:                              ; restore caller drive/user state
         LD      A,(CCP_LUACT)
         OR      A
         RET     Z
@@ -2398,7 +2797,17 @@ CCP_LURST:
         LD      C,32
         JP      BDOS
 
-CCP_PSKIP:
+; ================================================================================
+; =                          File-Specification Parser                           =
+; =                                                                              =
+; = Parses CP/M file specifications into FCB form, including drive prefixes,     =
+; = filenames, extensions, and wildcard expansion.                               =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Parser Entry and FCB Initialization
+; -------------------------------------------------------------------------------
+
+CCP_PSKIP:                              ; skip spaces in command parser
         LD      A,B
         OR      A
         RET     Z
@@ -2409,9 +2818,10 @@ CCP_PSKIP:
         DEC     B
         JR      CCP_PSKIP
 
-; Build one ordinary space-padded 8.3 default FCB while leaving HL/B at the
-; following separator.
-CCP_PFCB:
+  ; Build one ordinary space-padded 8.3 default FCB while leaving HL/B at the
+  ; following separator.
+
+CCP_PFCB:                               ; parse command token into FCB
         PUSH    HL
         PUSH    BC
         PUSH    DE
@@ -2420,7 +2830,8 @@ CCP_PFCB:
         INC     DE
         LD      B,11
         LD      A,' '
-PFCLRL:
+
+PFCLRL:                                 ; clear parsed FCB fields
         LD      (DE),A
         INC     DE
         DJNZ    PFCLRL
@@ -2428,10 +2839,12 @@ PFCLRL:
         POP     BC
         POP     HL
         PUSH    DE
-; Patch 2026-09-02: the original parser deliberately deferred drive prefixes,
-; causing an argument such as B: to become the filename "B:" on drive zero.
-; This compact A:..P: prefix recognizer occupies the final 21 bytes below the
-; fixed ED00h physical-sector buffer; CCP_STKTOP now ends exactly at ED00h.
+
+  ; Patch 2026-09-02: the original parser deliberately deferred drive prefixes,
+  ; causing an argument such as B: to become the filename "B:" on drive zero.
+  ; This compact A:..P: prefix recognizer occupies the final 21 bytes below the
+  ; fixed ED00h physical-sector buffer; CCP_STKTOP now ends exactly at ED00h.
+
         LD      A,(HL)
         SUB     'A'-1
         CP      17
@@ -2448,10 +2861,16 @@ PFCLRL:
         INC     HL
         DEC     B
         DEC     B
-PFNODRV:
+
+; -------------------------------------------------------------------------------
+; Filename Parsing
+; -------------------------------------------------------------------------------
+
+PFNODRV:                                ; parse filename without drive prefix
         INC     DE
         LD      C,8
-PFNAMEL:
+
+PFNAMEL:                                ; parse filename characters
         LD      A,B
         OR      A
         JR      Z,PFDONE
@@ -2469,14 +2888,16 @@ PFNAMEL:
         DEC     C
         JR      NZ,PFNAMEL
         JR      PFSKPN
-PFNSTAR:
+PFNSTAR:                                ; expand wildcard filename
         LD      A,'?'
-PFNSTLP:
+
+PFNSTLP:                                ; fill wildcard filename field
         LD      (DE),A
         INC     DE
         DEC     C
         JR      NZ,PFNSTLP
-PFSKPN:
+
+PFSKPN:                                 ; skip excess filename characters
         LD      A,B
         OR      A
         JR      Z,PFDONE
@@ -2488,17 +2909,24 @@ PFSKPN:
         CP      '.'
         JR      NZ,PFSKPN
         JR      PFEXT0
-PFDOT:
+
+; -------------------------------------------------------------------------------
+; Extension Parsing
+; -------------------------------------------------------------------------------
+
+PFDOT:                                  ; parse filename extension
         INC     HL
         DEC     B
-PFEXT0:
+
+PFEXT0:                                 ; initialize extension parse
         POP     DE
         PUSH    DE
         LD      A,E
         ADD     A,9
         LD      E,A
         LD      C,3
-PFEXTL:
+
+PFEXTL:                                 ; parse extension characters
         LD      A,B
         OR      A
         JR      Z,PFDONE
@@ -2514,14 +2942,16 @@ PFEXTL:
         DEC     C
         JR      NZ,PFEXTL
         JR      PFSKPE
-PFESTAR:
+PFESTAR:                                ; expand wildcard extension
         LD      A,'?'
-PFESTLP:
+
+PFESTLP:                                ; fill wildcard extension field
         LD      (DE),A
         INC     DE
         DEC     C
         JR      NZ,PFESTLP
-PFSKPE:
+
+PFSKPE:                                 ; skip excess extension characters
         LD      A,B
         OR      A
         JR      Z,PFDONE
@@ -2531,25 +2961,39 @@ PFSKPE:
         INC     HL
         DEC     B
         JR      PFSKPE
-PFDONE:
+
+PFDONE:                                 ; finish FCB parse
         POP     DE
         RET
 
-; Resident DIR deliberately uses only the public BDOS search interface.  This
-; keeps the CCP independent of the directory implementation and exercises the
-; same contract available to transient CP/M programs.
-CCP_DIR:
+  ; Resident DIR deliberately uses only the public BDOS search interface.  This
+  ; keeps the CCP independent of the directory implementation and exercises the
+  ; same contract available to transient CP/M programs.
+
+; ================================================================================
+; =                             Resident DIR Command                             =
+; =                                                                              =
+; = Implements the resident directory command, including file-specification      =
+; = setup, directory search, and formatted entry display.                        =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Argument and FCB Setup
+; -------------------------------------------------------------------------------
+
+CCP_DIR:                                ; execute resident DIR command
         LD      HL,CCP_DIRFCB
         LD      B,36
         XOR     A
-CCP_DCLR:
+
+CCP_DCLR:                               ; clear DIR work FCB
         LD      (HL),A
         INC     HL
         DJNZ    CCP_DCLR
         LD      HL,CCP_DIRFCB+1
         LD      B,11
         LD      A,'?'
-CCP_DWILD:
+
+CCP_DWILD:                              ; supply default DIR wildcard
         LD      (HL),A
         INC     HL
         DJNZ    CCP_DWILD
@@ -2559,7 +3003,12 @@ CCP_DWILD:
         XOR     A
         LD      (CCP_DFOUND),A
         LD      C,17
-CCP_DNEXT:
+
+; -------------------------------------------------------------------------------
+; Directory Search
+; -------------------------------------------------------------------------------
+
+CCP_DNEXT:                              ; process next directory match
         LD      DE,CCP_DIRFCB
         CALL    BDOS
         CP      0FFH
@@ -2606,17 +3055,24 @@ CCP_DNEXT:
         ADD     HL,DE
         LD      B,3
         CALL    CCP_DFIELD
-CCP_DMORE:
+
+CCP_DMORE:                              ; continue directory search
         LD      C,18
         JR      CCP_DNEXT
-CCP_DDONE:
+
+CCP_DDONE:                              ; finish DIR command
         RET
 
-CCP_DFIELD:
+; -------------------------------------------------------------------------------
+; Entry Formatting
+; -------------------------------------------------------------------------------
+
+CCP_DFIELD:                             ; print fixed-width directory field
         LD      (CCP_DFPTR),HL
         LD      A,B
         LD      (CCP_DFCNT),A
-CCP_DFLOOP:
+
+CCP_DFLOOP:                             ; print directory field characters
         LD      HL,(CCP_DFPTR)
         LD      A,(HL)
         INC     HL
@@ -2627,99 +3083,130 @@ CCP_DFLOOP:
         LD      E,A
         LD      C,2
         CALL    BDOS
-CCP_DFSKIP:
+
+CCP_DFSKIP:                             ; skip padding in directory field
         LD      HL,CCP_DFCNT
         DEC     (HL)
         JR      NZ,CCP_DFLOOP
         RET
 
-CCP_PROMPT:
-        DB      13,10,'$'
-CCP_UNKNOWN:
-        DB      10,'?','$'
-CCP_VERSION:
-        DB      10,'BetterCP/M 0.3','$'
-CCP_VERKEY:
-        DB      'VER'
-CCP_DIRKEY:
-        DB      'DIR'
-CCP_WARMKEY:
-        DB      'WARM'
-CU_KEY:
-        DB      'USER '
-CCP_KGET:      DB      'GET'
-CCP_KJUMP:     DB      'JUMP'
-CCP_KPEEK:     DB      'PEEK'
-CCP_KP:        DB      'P'
-CCP_KPOKE:     DB      'POKE'
-CCP_KGO:       DB      'GO'
-CCP_KSAVE:     DB      'SAVE'
-CCP_COM:
-        DB      'COM'
-CCP_MADDR:     DB      13,10,'ADDRESS REQUIRED',13,10,'$'
-CCP_MGET:      DB      13,10,'GET filename OR GET address filename',13,10,'$'
-CCP_MPOKE:     DB      13,10,'POKE address byte [byte ...]',13,10,'$'
-CCP_MPROTECT:  DB      13,10,'PROTECTED MEMORY',13,10,'$'
-CCP_MTOOBIG:   DB      13,10,'FILE WILL NOT FIT',13,10,'$'
-CCP_MNOFILE:   DB      13,10,'NO FILE',13,10,'$'
-CCP_MREAD:     DB      13,10,'READ ERROR',13,10,'$'
-CCP_MLOADED:   DB      13,10,'LOADED',13,10,'$'
-CCP_MPAGER:    DB      13,10,'< previous  > next  ^C quit $'
-CCP_MSAVE:     DB      13,10,'? SAVE pages filename',13,10,'$'
-CCP_MSPACE:    DB      13,10,'NO SPACE',13,10,'$'
+; ================================================================================
+; =                         CCP Data and Working Storage                         =
+; =                                                                              =
+; = Defines command strings, messages, buffers, FCBs, working state,             =
+; = persistent interfaces, and stack storage used by the CCP.                    =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Command Strings and Keywords
+; -------------------------------------------------------------------------------
 
-CCP_BUFFER:
+CCP_PROMPT:                             ; prompt prefix string
+        DB      13,10,'$'
+CCP_UNKNOWN:                            ; unknown-command message
+        DB      10,'?','$'
+CCP_VERSION:                            ; version string
+        DB      10,'BetterCP/M 0.3','$'
+CCP_VERKEY:                             ; VERSION command keyword
+        DB      'VER'
+CCP_DIRKEY:                             ; DIR command keyword
+        DB      'DIR'
+CCP_WARMKEY:                            ; WARM command keyword
+        DB      'WARM'
+CU_KEY:                                 ; USER command keyword
+        DB      'USER '
+CCP_KGET:      DB      'GET'            ; GET command keyword
+CCP_KJUMP:     DB      'JUMP'           ; JUMP command keyword
+CCP_KPEEK:     DB      'PEEK'           ; PEEK command keyword
+CCP_KP:        DB      'P'              ; PEEK abbreviation keyword
+CCP_KPOKE:     DB      'POKE'           ; POKE command keyword
+CCP_KGO:       DB      'GO'             ; GO command keyword
+CCP_KSAVE:     DB      'SAVE'           ; SAVE command keyword
+CCP_COM:                                ; .COM extension text
+        DB      'COM'
+
+; -------------------------------------------------------------------------------
+; Messages
+; -------------------------------------------------------------------------------
+
+CCP_MADDR:     DB      13,10,'ADDRESS REQUIRED',13,10,'$' ; address-error message
+CCP_MGET:      DB      13,10,'GET filename OR GET address filename',13,10,'$' ; GET usage message
+CCP_MPOKE:     DB      13,10,'POKE address byte [byte ...]',13,10,'$' ; POKE usage message
+CCP_MPROTECT:  DB      13,10,'PROTECTED MEMORY',13,10,'$' ; protected-memory message
+CCP_MTOOBIG:   DB      13,10,'FILE WILL NOT FIT',13,10,'$' ; file-too-large message
+CCP_MNOFILE:   DB      13,10,'NO FILE',13,10,'$' ; file-not-found message
+CCP_MREAD:     DB      13,10,'READ ERROR',13,10,'$' ; read-error message
+CCP_MLOADED:   DB      13,10,'LOADED',13,10,'$' ; GET success message
+CCP_MPAGER:    DB      13,10,'< previous  > next  ^C quit $' ; PEEK pager prompt
+CCP_MSAVE:     DB      13,10,'? SAVE pages filename',13,10,'$' ; SAVE usage message
+CCP_MSPACE:    DB      13,10,'NO SPACE',13,10,'$' ; disk-full message
+
+; -------------------------------------------------------------------------------
+; Command and Editor Storage
+; -------------------------------------------------------------------------------
+
+CCP_BUFFER:                             ; command buffer base
         DB      127
-CCP_COUNT:
+CCP_COUNT:                              ; command-line length
         DB      0
-CCP_DATA:
+CCP_DATA:                               ; command-line text
         REPT    127
         DB      0
         ENDM
-CCP_EDCUR:
+CCP_EDCUR:                              ; logical editor cursor position
         DB      0
-CCP_EDINS:
+CCP_EDINS:                              ; editor insert-mode flag
         DB      1
-CCP_EDCHR:
+CCP_EDCHR:                              ; editor character scratch byte
         DB      0
-
-CCP_FCB:
+CCP_FCB:                                ; CCP working FCB
         REPT    36
         DB      0
         ENDM
-CLDPTR:
+CLDPTR:                                 ; transient load pointer
         DW      0100H
-CCP_TADDR:     DW      0100H
-CCP_APTR:      DW      0
-CCP_ALEN:      DB      0
-CCP_HEXDIG:    DB      0
-CCP_GRECS:     DW      0
-CCP_GDMA:      DW      0100H
-CCP_PLOW:      DW      0
-CCP_PHIGH:     DW      0FFFFH
-CCP_PPAGE:     DW      0100H
-CCP_PPTR:      DW      0100H
-CCP_PCNT:      DW      0
-CCP_PBOUND:    DB      0
-CCP_PCOL:      DB      0
-CCP_PLEN:      DB      0
-CCP_SPAGES:    DB      0
-CCP_SDMA:      DW      0100H
-CCP_SRECS:     DW      0
-CCP_DARGP:     DW      0
-CCP_DLEN:      DB      0
-CCP_DSAVE:     DB      0
-CCP_USAVE:     DB      0
-CCP_DTARG:     DB      0FFH
-CCP_UTARG:     DB      0FFH
-CCP_DUACT:     DB      0
-CCP_PBUF:
+
+; -------------------------------------------------------------------------------
+; Monitor Command State
+; -------------------------------------------------------------------------------
+
+CCP_TADDR:     DW      0100H            ; monitor target address
+CCP_APTR:      DW      0                ; argument pointer
+CCP_ALEN:      DB      0                ; argument length
+CCP_HEXDIG:    DB      0                ; hexadecimal parser digit count
+CCP_GRECS:     DW      0                ; GET record count
+CCP_GDMA:      DW      0100H            ; GET DMA address
+CCP_PLOW:      DW      0                ; PEEK lower bound
+CCP_PHIGH:     DW      0FFFFH           ; PEEK upper bound
+CCP_PPAGE:     DW      0100H            ; PEEK current page
+CCP_PPTR:      DW      0100H            ; PEEK display pointer
+CCP_PCNT:      DW      0                ; PEEK byte count
+CCP_PBOUND:    DB      0                ; PEEK bound flag
+CCP_PCOL:      DB      0                ; PEEK column counter
+CCP_PLEN:      DB      0                ; PEEK line length
+CCP_SPAGES:    DB      0                ; SAVE page count
+CCP_SDMA:      DW      0100H            ; SAVE DMA address
+CCP_SRECS:     DW      0                ; SAVE record count
+CCP_DARGP:     DW      0                ; DIR argument pointer
+CCP_DLEN:      DB      0                ; DIR argument length
+
+; -------------------------------------------------------------------------------
+; Drive/User State
+; -------------------------------------------------------------------------------
+
+CCP_DSAVE:     DB      0                ; saved default drive
+CCP_USAVE:     DB      0                ; saved default user
+CCP_DTARG:     DB      0FFH             ; target drive
+CCP_UTARG:     DB      0FFH             ; target user
+CCP_DUACT:     DB      0                ; drive/user selection flags
+CCP_PBUF:                               ; validated POKE byte buffer
         REPT    127
         DB      0
         ENDM
-; CCP-only loader scratch occupies the otherwise unused compatibility-page
-; workspace below the default FCBs.  Using fixed page-zero bytes here also
-; avoids spending scarce relocation-directory entries on ephemeral state.
+
+  ; CCP-only loader scratch occupies the otherwise unused compatibility-page
+  ; workspace below the default FCBs.  Using fixed page-zero bytes here also
+  ; avoids spending scarce relocation-directory entries on ephemeral state.
+
 CCP_NAMEL      EQU     0040H
 CCP_CMDLEN     EQU     0041H
 CCP_QLEN       EQU     0042H
@@ -2730,32 +3217,44 @@ CCP_LUTRG      EQU     0047H
 CCP_LUACT      EQU     0048H
 CCP_LDRV       EQU     0049H
 CCP_SUBACTIVE  EQU     004AH
-CCP_DIREP:
+
+; -------------------------------------------------------------------------------
+; DIR State
+; -------------------------------------------------------------------------------
+
+CCP_DIREP:                              ; DIR entries-per-line count
         DW      0080H
-CCP_DFPTR:
+CCP_DFPTR:                              ; DIR field pointer
         DW      0080H
-CCP_DFCNT:
+CCP_DFCNT:                              ; DIR field character count
         DB      0
-CCP_DFOUND:
+CCP_DFOUND:                             ; DIR match-found flag
         DB      0
-CPX_CUR:
+CPX_CUR:                                ; current CPX descriptor pointer
         DW      0
-; Patch 2026-09-02: the first resident DIR used LF alone. The Model 4 console
-; correctly preserves the horizontal cursor position on LF, which made each
-; successive filename march diagonally across the screen. CP/M text output
-; needs an explicit carriage return before line feed.
-CCP_DIRNL:
+
+  ; Patch 2026-09-02: the first resident DIR used LF alone. The Model 4 console
+  ; correctly preserves the horizontal cursor position on LF, which made each
+  ; successive filename march diagonally across the screen. CP/M text output
+  ; needs an explicit carriage return before line feed.
+
+CCP_DIRNL:                              ; DIR newline string
         DB      13,10,'$'
-CCP_DIRFCB:
+CCP_DIRFCB:                             ; DIR working FCB
         REPT    36
         DB      0
         ENDM
-CCP_RET:
+CCP_RET:                                ; shared return instruction
         DW      0000H
 
-; Command execution owns its stack inside the reconstructible CCP allocation.
-CCP_STACK:      DS      128
-CCP_STKTOP:
+  ; Command execution owns its stack inside the reconstructible CCP allocation.
+
+; -------------------------------------------------------------------------------
+; Stack Storage
+; -------------------------------------------------------------------------------
+
+CCP_STACK:      DS      128             ; CCP stack storage
+CCP_STKTOP:                             ; top of CCP stack
 
         .DEPHASE
         END

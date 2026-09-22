@@ -1,7 +1,11 @@
-; Phase-3 STATEFUL reconstruction qualification provider.
-; The STAT service deliberately contains every value the movement contract
-; must distinguish: mutable bytes, a linked pointer, a runtime-created pointer,
-; and fixed/null/sentinel words.
+; ********************************************************************************
+; *                       BetterCP/M STATEFUL RSX                               *
+; *                                                                              *
+; * Phase-3 reconstruction qualification provider. Its STAT service deliberately *
+; * contains mutable bytes plus runtime-created, linked, fixed, null, and         *
+; * sentinel pointer values so reconstruction can verify each movement contract. *
+; ********************************************************************************
+
 
 RSXBASE         EQU     08000H
 BDOS            EQU     00005H
@@ -9,23 +13,38 @@ BDOS            EQU     00005H
         CSEG
         .PHASE  RSXBASE
 
-SR_NEXT:        DW      BDOS
-SR_ENTRY:       DW      SR_DISPATCH
-SR_CALLS:       DB      0,0
+; ================================================================================
+; =                         RSX Entry and STAT Dispatch                          =
+; =                                                                              =
+; = Defines the qualification-provider RSX metadata and dispatches the private STAT =
+; = ABI while chaining unrelated calls through the resident extension stack.     =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; RSX Header and Dispatch
+; -------------------------------------------------------------------------------
+
+SR_NEXT:        DW      BDOS            ; next RSX descriptor pointer
+SR_ENTRY:       DW      SR_DISPATCH     ; RSX entry pointer
+SR_CALLS:       DB      0,0             ; STAT service-call count
                 DW      0
 
-SR_DISPATCH:
+SR_DISPATCH:                            ; dispatch RSX request
         LD      HL,(SR_NEXT)
         JP      (HL)
 
-; STAT qualification ABI 1.0.  DE points to a 16-byte request:
-;   +0 version (1), +1 length (16), +2 operation
-; Operation 0 initializes the mutable state and runtime pointer.
-; Operation 1 increments the counter and first buffer byte.
-; Operation 2 returns counter, pointer slots and buffer observations:
-;   +4 counter, +6 runtime pointer, +8 linked pointer, +10 fixed pointer,
-;   +12 null pointer, +14 sentinel; A returns the first buffer byte.
-SR_SERVICE:
+  ; STAT qualification ABI 1.0.  DE points to a 16-byte request:
+  ;   +0 version (1), +1 length (16), +2 operation
+  ; Operation 0 initializes the mutable state and runtime pointer.
+  ; Operation 1 increments the counter and first buffer byte.
+  ; Operation 2 returns counter, pointer slots and buffer observations:
+  ;   +4 counter, +6 runtime pointer, +8 linked pointer, +10 fixed pointer,
+  ;   +12 null pointer, +14 sentinel; A returns the first buffer byte.
+
+; -------------------------------------------------------------------------------
+; STAT ABI Request Validation
+; -------------------------------------------------------------------------------
+
+SR_SERVICE:                             ; dispatch STAT qualification service
         LD      A,(DE)
         CP      1
         JR      NZ,SR_BAD
@@ -41,12 +60,23 @@ SR_SERVICE:
         JR      Z,SR_MUTATE
         CP      2
         JR      Z,SR_REPORT
-SR_BAD:
+
+SR_BAD:                                 ; reject invalid STAT request
         LD      A,0FFH
         LD      HL,0
         RET
 
-SR_INIT:
+; ================================================================================
+; =                      STATEFUL Qualification Operations                       =
+; =                                                                              =
+; = Initializes, mutates, and reports the deliberately mixed state used to verify =
+; = that reconstruction preserves or rebuilds each value according to its contract. =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Initialize State
+; -------------------------------------------------------------------------------
+
+SR_INIT:                                ; initialize qualification state
         LD      HL,0
         LD      (SR_COUNTER),HL
         LD      HL,SR_BUFFER
@@ -62,7 +92,11 @@ SR_INIT:
         XOR     A
         RET
 
-SR_MUTATE:
+; -------------------------------------------------------------------------------
+; Mutate State
+; -------------------------------------------------------------------------------
+
+SR_MUTATE:                              ; mutate qualification state
         LD      HL,(SR_COUNTER)
         INC     HL
         LD      (SR_COUNTER),HL
@@ -71,7 +105,11 @@ SR_MUTATE:
         XOR     A
         RET
 
-SR_REPORT:
+; -------------------------------------------------------------------------------
+; Report State
+; -------------------------------------------------------------------------------
+
+SR_REPORT:                              ; report qualification state
         INC     DE
         INC     DE
         LD      HL,(SR_COUNTER)
@@ -83,7 +121,8 @@ SR_REPORT:
         INC     DE
         LD      HL,SR_RUNTIME
         LD      B,5
-SR_RLOOP:
+
+SR_RLOOP:                               ; copy state buffer to request
         LD      A,(HL)
         LD      (DE),A
         INC     HL
@@ -97,13 +136,23 @@ SR_RLOOP:
         LD      HL,SR_BUFFER
         RET
 
-SR_RUNTIME:    DW      0               ; declared runtime pointer slot
-SR_LINKED:     DW      SR_BUFFER       ; ordinary linked relocation slot
-SR_FIXED:      DW      BDOS            ; fixed address, never adjusted
-SR_NULL:       DW      0
-SR_SENTINEL:   DW      0FFFFH
-SR_COUNTER:    DW      0
-SR_BUFFER:     DB      0,0,0,0
+; ================================================================================
+; =                             Qualification State                              =
+; =                                                                              =
+; = Defines the runtime, linked, fixed, null, sentinel, counter, and mutable-buffer =
+; = values observed by the STAT qualification service.                           =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Movement-Contract State
+; -------------------------------------------------------------------------------
+
+SR_RUNTIME:    DW      0                ; runtime-created pointer
+SR_LINKED:     DW      SR_BUFFER        ; linked internal pointer
+SR_FIXED:      DW      BDOS             ; fixed-address pointer
+SR_NULL:       DW      0                ; null pointer
+SR_SENTINEL:   DW      0FFFFH           ; sentinel word
+SR_COUNTER:    DW      0                ; mutable counter
+SR_BUFFER:     DB      0,0,0,0          ; mutable state buffer
 
         .DEPHASE
         END

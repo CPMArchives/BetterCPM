@@ -1,4 +1,11 @@
-; BetterCP/M CPX transient manager, proof interface.
+; ********************************************************************************
+; *                        BetterCP/M CPX Utility                                *
+; *                                                                              *
+; * Transient proof manager for the command-processor extension profile. Parses  *
+; * LIST, LOAD, UNLOAD, and version requests, invokes the protected CPX control  *
+; * service, and reports the resulting transient-program-area size.              *
+; ********************************************************************************
+
 
 BDOS            EQU     0005H
 CMDLEN          EQU     0080H
@@ -8,11 +15,22 @@ CPXFUNC         EQU     200
         CSEG
         .PHASE  0103H
 
-START:
+; ================================================================================
+; =                         Command Parsing and Dispatch                         =
+; =                                                                              =
+; = Parses the transient command tail, recognizes CPX manager operations, and routes =
+; = accepted commands to list, load, unload, or version handling.                =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Command-Tail Parse
+; -------------------------------------------------------------------------------
+
+START:                                  ; enter CPX manager
         LD      A,(CMDLEN)
         LD      B,A
         LD      HL,CMDDATA
-SKIPSPACE:
+
+SKIPSPACE:                              ; skip leading command-tail spaces
         LD      A,B
         OR      A
         JR      Z,USAGE
@@ -22,7 +40,8 @@ SKIPSPACE:
         INC     HL
         DEC     B
         JR      SKIPSPACE
-HAVELEN:
+
+HAVELEN:                                ; dispatch parsed command
         LD      (ARGSTART),HL
         LD      A,B
         LD      (TOTLEN),A
@@ -38,11 +57,17 @@ HAVELEN:
         JP      Z,TRYUNLOAD
         CP      16
         JP      Z,TRYUNLOAD
-USAGE:
+
+USAGE:                                  ; print CPX usage
         LD      DE,USEMSG
         CALL    PRINT
         JP      DONE
-TRYVERS:
+
+; -------------------------------------------------------------------------------
+; Version Request
+; -------------------------------------------------------------------------------
+
+TRYVERS:                                ; try version command
         LD      A,(HL)
         CP      '/'
         JR      NZ,USAGE
@@ -53,7 +78,18 @@ TRYVERS:
         LD      DE,CX_VERSION
         CALL    PRINT
         JP      DONE
-TRYLIST:
+
+; ================================================================================
+; =                             CPX Profile Listing                              =
+; =                                                                              =
+; = Queries the installed proof CPXs, reports the active profile, and prints the =
+; = resulting TPA size.                                                          =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Profile Query
+; -------------------------------------------------------------------------------
+
+TRYLIST:                                ; try list command
         LD      HL,(ARGSTART)
         LD      DE,KLIST
         LD      B,4
@@ -73,7 +109,8 @@ TRYLIST:
         CALL    PRINT
         LD      A,1
         LD      (LIST_ANY),A
-LSTHCHK:
+
+LSTHCHK:                                ; check HELLO CPX status
         LD      D,2
         LD      E,0
         LD      C,CPXFUNC
@@ -86,21 +123,40 @@ LSTHCHK:
         CALL    PRINT
         LD      A,1
         LD      (LIST_ANY),A
-LISTCHECK:
+
+; -------------------------------------------------------------------------------
+; List Completion
+; -------------------------------------------------------------------------------
+
+LISTCHECK:                              ; finish CPX list query
         LD      A,(LIST_ANY)
         OR      A
         JR      NZ,LISTTPA
-LISTNONE:
+
+LISTNONE:                               ; report empty CPX profile
         LD      DE,LISTEMPTY
         CALL    PRINT
-LISTTPA:
+
+LISTTPA:                                ; report TPA after list
         CALL    PRINTTPA
         JP      DONE
-LISTBAD:
+
+LISTBAD:                                ; report CPX query failure
         LD      DE,LISTERROR
         CALL    PRINT
         JP      DONE
-TRYLOAD:
+
+; ================================================================================
+; =                                   CPX Load                                   =
+; =                                                                              =
+; = Parses the requested proof module and submits the corresponding protected CPX =
+; = profile-load operation.                                                      =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Load Request
+; -------------------------------------------------------------------------------
+
+TRYLOAD:                                ; try load command
         LD      HL,(ARGSTART)
         LD      DE,KLOADB
         LD      B,10
@@ -113,9 +169,11 @@ TRYLOAD:
         JP      NZ,USAGE
         LD      A,2
         JR      LOADNAME
-LOADBASIC:
+
+LOADBASIC:                              ; select BASIC/RCP module
         LD      A,1
-LOADNAME:
+
+LOADNAME:                               ; parse CPX load name
         LD      (MODSEL),A
         LD      A,(TOTLEN)
         CP      10
@@ -127,12 +185,24 @@ LOADNAME:
         LD      B,4
         CALL    EQUAL
         JP      NZ,USAGE
-LOADREADY:
+
+LOADREADY:                              ; submit CPX load request
         LD      A,(MODSEL)
         LD      D,A
         LD      E,1
         JR      CHANGE
-TRYUNLOAD:
+
+; ================================================================================
+; =                                  CPX Unload                                  =
+; =                                                                              =
+; = Parses the requested proof module and submits the corresponding protected CPX =
+; = profile-unload operation.                                                    =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Unload Request
+; -------------------------------------------------------------------------------
+
+TRYUNLOAD:                              ; try unload command
         LD      HL,(ARGSTART)
         LD      DE,KUNLOADB
         LD      B,12
@@ -145,9 +215,11 @@ TRYUNLOAD:
         JP      NZ,USAGE
         LD      A,2
         JR      UNLOADNAME
-UNLOADBASIC:
+
+UNLOADBASIC:                            ; select BASIC/RCP module for unload
         LD      A,1
-UNLOADNAME:
+
+UNLOADNAME:                             ; parse CPX unload name
         LD      (MODSEL),A
         LD      A,(TOTLEN)
         CP      12
@@ -159,20 +231,31 @@ UNLOADNAME:
         LD      B,4
         CALL    EQUAL
         JP      NZ,USAGE
-UNLOADREADY:
+
+UNLOADREADY:                            ; submit CPX unload request
         LD      A,(MODSEL)
         LD      D,A
         LD      E,2
-CHANGE:
+
+; -------------------------------------------------------------------------------
+; Profile Change
+; -------------------------------------------------------------------------------
+
+CHANGE:                                 ; perform CPX profile change
         LD      C,CPXFUNC
         CALL    BDOS
         OR      A
         JP      NZ,LISTBAD
-DONE:
+
+DONE:                                   ; return to CCP
         LD      C,0
         JP      BDOS
 
-EQUAL:
+; -------------------------------------------------------------------------------
+; Keyword Match
+; -------------------------------------------------------------------------------
+
+EQUAL:                                  ; compare command keyword
         LD      A,(DE)
         CP      (HL)
         RET     NZ
@@ -180,29 +263,43 @@ EQUAL:
         INC     HL
         DJNZ    EQUAL
         RET
-PRINT:
+
+PRINT:                                  ; print $-terminated string
         LD      C,9
         JP      BDOS
 
-; The word at 0006h is the exclusive top of the transient region. Report
-; whole kilobytes available from the conventional 0100h program origin.
-PRINTTPA:
+  ; The word at 0006h is the exclusive top of the transient region. Report
+  ; whole kilobytes available from the conventional 0100h program origin.
+
+; ================================================================================
+; =                                TPA Reporting                                 =
+; =                                                                              =
+; = Reads the exclusive transient-region limit at 0006H and reports whole kilobytes =
+; = available above the conventional 0100H program origin.                       =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; TPA Size Conversion
+; -------------------------------------------------------------------------------
+
+PRINTTPA:                               ; print current TPA size
         LD      HL,(0006H)
         LD      DE,0100H
         OR      A
         SBC     HL,DE
-        LD      A,H             ; floor(HL / 1024) = high byte / 4
+        LD      A,H                     ; floor(HL / 1024) = high byte / 4
         RRCA
         RRCA
         AND     03FH
         LD      B,0
-PT_DIV10:
+
+PT_DIV10:                               ; convert TPA kilobytes to decimal
         CP      10
         JR      C,PT_DIGITS
         SUB     10
         INC     B
         JR      PT_DIV10
-PT_DIGITS:
+
+PT_DIGITS:                              ; emit decimal TPA digits
         LD      (PT_UNITS),A
         LD      A,B
         LD      (PT_TENS),A
@@ -215,7 +312,8 @@ PT_DIGITS:
         LD      E,A
         LD      C,2
         CALL    BDOS
-PT_UNIT:
+
+PT_UNIT:                                ; print kilobyte suffix
         LD      A,(PT_UNITS)
         ADD     A,'0'
         LD      E,A
@@ -224,25 +322,40 @@ PT_UNIT:
         LD      DE,TPAEND
         JP      PRINT
 
-KLIST:          DB      'LIST'
-KLOADB:         DB      'LOAD RCP'
-KLOADH:         DB      'LOAD HELLO'
-KUNLOADB:       DB      'UNLOAD RCP'
-KUNLOADH:       DB      'UNLOAD HELLO'
-KCPX:           DB      '.CPX'
-LISTBASIC:      DB      13,10,'RCP   : DIR, ERA, TYPE, REN, USER, CLS, VER, COPY, MOVE',13,10,'$'
-LSTHMSG:        DB      'HELLO : HELLO',13,10,'$'
-LISTEMPTY:      DB      13,10,'No CPXs loaded',13,10,'$'
-LISTERROR:      DB      13,10,'CPX profile error',13,10,'$'
-USEMSG:         DB      13,10,'CPX LIST | LOAD/UNLOAD RCP/HELLO',13,10,'$'
-TPAMSG:         DB      'TPA available: $'
-TPAEND:         DB      'K',13,10,'$'
-PT_TENS:        DB      0
-PT_UNITS:       DB      0
-ARGSTART:       DW      0
-TOTLEN:         DB      0
-MODSEL:         DB      0
-LIST_ANY:       DB      0
+; ================================================================================
+; =                            Utility Data and State                            =
+; =                                                                              =
+; = Defines command keywords, messages, decimal-conversion scratch, and parsed-command =
+; = state used by the transient CPX manager.                                     =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Keywords and Messages
+; -------------------------------------------------------------------------------
+
+KLIST:          DB      'LIST'          ; LIST keyword
+KLOADB:         DB      'LOAD RCP'      ; LOAD BASIC keyword
+KLOADH:         DB      'LOAD HELLO'    ; LOAD HELLO keyword
+KUNLOADB:       DB      'UNLOAD RCP'    ; UNLOAD BASIC keyword
+KUNLOADH:       DB      'UNLOAD HELLO'  ; UNLOAD HELLO keyword
+KCPX:           DB      '.CPX'          ; CPX keyword
+LISTBASIC:      DB      13,10,'RCP   : DIR, ERA, TYPE, REN, USER, CLS, VER, COPY, MOVE',13,10,'$' ; BASIC profile text
+LSTHMSG:        DB      'HELLO : HELLO',13,10,'$' ; HELLO profile text
+LISTEMPTY:      DB      13,10,'No CPXs loaded',13,10,'$' ; empty-profile text
+LISTERROR:      DB      13,10,'CPX profile error',13,10,'$' ; list-error message
+USEMSG:         DB      13,10,'CPX LIST | LOAD/UNLOAD RCP/HELLO',13,10,'$' ; usage message
+TPAMSG:         DB      'TPA available: $' ; TPA prefix
+TPAEND:         DB      'K',13,10,'$'   ; TPA suffix
+
+; -------------------------------------------------------------------------------
+; Working State
+; -------------------------------------------------------------------------------
+
+PT_TENS:        DB      0               ; decimal tens scratch
+PT_UNITS:       DB      0               ; decimal units scratch
+ARGSTART:       DW      0               ; command argument pointer
+TOTLEN:         DB      0               ; command-tail length
+MODSEL:         DB      0               ; selected CPX module
+LIST_ANY:       DB      0               ; profile-nonempty flag
 
         INCLUDE cpxvers.inc
 
