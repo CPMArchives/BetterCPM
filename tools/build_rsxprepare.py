@@ -6,7 +6,7 @@ import argparse
 from build_ccp import assemble
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "src/system/rsxprepare.mac"
+SOURCE = ROOT / "src/system/r3prep.mac"
 OUTPUT = ROOT / "build/system/rsxprepare.bin"
 BASE = 0x7A00
 

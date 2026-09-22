@@ -3,7 +3,7 @@
 ## Scope
 
 The boot-image build now uses `src/bdos/unified.mac` for standard BDOS calls.
-Neither `dispatch.mac` nor `directory.mac` is linked into the resident image.
+Neither `dispatch.mac` nor `dirsvc.mac` is linked into the resident image.
 The old sources and legacy unit harnesses remain reference material; current
 core verification uses `test_unified_bdos.py` and `test_system.py`.
 

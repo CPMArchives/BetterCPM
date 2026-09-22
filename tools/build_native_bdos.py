@@ -30,7 +30,7 @@ def main() -> None:
     component = args.component
     source_path, build_dir = SOURCE, BUILD
     if component != "bdos":
-        source_path = ROOT / ("src/system/extensions.mac" if component == "extensions"
+        source_path = ROOT / ("src/system/extens.mac" if component == "extensions"
                               else "src/bios/tables.mac")
         build_dir = ROOT / "build/system"
     for path in (args.cpmsim, args.system_disk, args.disk_template,

@@ -49,7 +49,7 @@ def build_support(assembler: Path) -> None:
         bios_symbols[symbol] = int(match[1], 16)
     bioslinks = "".join(f"{k} EQU 0{v:04X}H\n" for k,v in bios_symbols.items())
     (BUILD / "bioslink.inc").write_text(bioslinks, encoding="ascii")
-    for relative, name, base in (("src/system/extensions.mac", "extensions", LAYOUT["EXTENSIONS"]),
+    for relative, name, base in (("src/system/extens.mac", "extensions", LAYOUT["EXTENSIONS"]),
                                   ("src/bios/tables.mac", "tables", LAYOUT["TABLES"]),
                                   ("src/bios/disk.mac", "disk", LAYOUT["DISK"]),
                                   ("src/bios/config.mac", "config", LAYOUT["CONFIG"])):

@@ -67,7 +67,7 @@ def main():
                                  '        REPT 4\n        DB 5,%d,%d,0,0,0\n        ENDM' % (fmt.cylinders,fmt.sides))
  disk=asm('disk',disk_source,L['DISK'],L['BIOS']-L['DISK'])
  core=equ(bc,('UB_DMA','UB_DRIVE','UB_USERNO','UB_COLUMN','UB_LISTE'))
- ext=asm('extensions',read('src/system/extensions.mac').replace('        INCLUDE core.inc',core).replace('        INCLUDE versions.inc',read('src/bdos/versions.inc')),L['EXTENSIONS'],L['DISK']-L['EXTENSIONS'])
+ ext=asm('extensions',read('src/system/extens.mac').replace('        INCLUDE core.inc',core).replace('        INCLUDE versions.inc',read('src/bdos/versions.inc')),L['EXTENSIONS'],L['DISK']-L['EXTENSIONS'])
  es=symbols(out/'extensions.lst')
  ds=symbols(out/'disk.lst')
  config=read('src/platform/z80pack/config.mac')
@@ -96,7 +96,7 @@ def main():
  tables+='        END\n'
  tab=asm('tables',tables,L['TABLES'],L['RSX_STATE']-L['TABLES'])
  gateway=asm('gateway',read('src/system/gateway.mac'),L['SYSTEM'],L['BDOS']-L['SYSTEM'])
- reload=read('src/platform/trs80m4/commandreload.mac')
+ reload=read('src/platform/trs80m4/ccprelod.mac')
  a=reload.index('        PUSH    HL\n',reload.index('CRNEXT:'));b=reload.index('\nCRFAIL:',a)
  reload=reload[:a]+'''        INC     A
         LD      (CRSLOT),A

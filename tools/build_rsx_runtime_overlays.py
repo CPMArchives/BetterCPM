@@ -41,14 +41,14 @@ def main() -> None:
 
     plan = build(args.assembler, "r3plan", "rsxplan.mac", "RPBASE", cfg)
     slots = build(args.assembler, "r3slots", "rsxslots.mac", "SUBASE", cfg)
-    snapshot = build(args.assembler, "r3snapshot", "rsxsnapshot.mac", "RNBASE", cfg)
-    carrier = build(args.assembler, "r3carrier", "rsxcarrier.mac", "RXBASE", cfg)
-    metadata = build(args.assembler, "r3metadata", "rsxmetadata.mac", "RMBASE", cfg)
-    coordinator = build(args.assembler, "r3coord", "rsxcoordinator.mac", "RCBASE", rsx)
+    snapshot = build(args.assembler, "r3snapshot", "r3snap.mac", "RNBASE", cfg)
+    carrier = build(args.assembler, "r3carrier", "r3carr.mac", "RXBASE", cfg)
+    metadata = build(args.assembler, "r3metadata", "r3meta.mac", "RMBASE", cfg)
+    coordinator = build(args.assembler, "r3coord", "r3coord.mac", "RCBASE", rsx)
     mover = build(args.assembler, "r3mover", "rsxmover.mac", "RMBASE", cfg)
-    schedule = build(args.assembler, "r3sched", "rsxschedule.mac", "RSBASE", cfg + 0x120)
-    handoff = build(args.assembler, "r3ovload", "rsxovload.mac", "ROBASE", cfg + 0x320)
-    commit = build(args.assembler, "r3commit", "rsxcommit.mac", "RCBASE", rsx)
+    schedule = build(args.assembler, "r3sched", "rsxsched.mac", "RSBASE", cfg + 0x120)
+    handoff = build(args.assembler, "r3ovload", "r3ovload.mac", "ROBASE", cfg + 0x320)
+    commit = build(args.assembler, "r3commit", "r3comit.mac", "RCBASE", rsx)
 
     for label, data in (("planner", plan), ("slot preparer", slots),
                         ("snapshot constructor", snapshot),

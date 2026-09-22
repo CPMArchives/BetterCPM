@@ -6,7 +6,7 @@ from build_ccp import assemble
 from system_layout import LAYOUT, expand_layout
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "src/platform/trs80m4/rsxselect.mac"
+SOURCE = ROOT / "src/platform/trs80m4/rsxsel.mac"
 OUTPUT = ROOT / "build/trs80/rsxselect.bin"
 
 def main() -> None:

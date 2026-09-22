@@ -61,18 +61,18 @@ BUILD_SOURCES = (
     ("STAGE1.MAC", "src/platform/trs80m4/stage1.mac"),
     ("GATEWAY.MAC", "src/system/gateway.mac"),
     ("BDOS.MAC", "src/bdos/unified.mac"),
-    ("EXTENS.MAC", "src/system/extensions.mac"),
+    ("EXTENS.MAC", "src/system/extens.mac"),
     ("DISK.MAC", "src/bios/disk.mac"),
     ("BIOS.MAC", "src/bios/bios.mac"),
-    ("FILELOAD.MAC", "src/system/fileloader.mac"),
+    ("FILELOAD.MAC", "src/system/fileload.mac"),
     ("TABLES.MAC", "src/bios/tables.mac"),
-    ("CCPRELOD.MAC", "src/platform/trs80m4/commandreload.mac"),
-    ("RSXSEL.MAC", "src/platform/trs80m4/rsxselect.mac"),
+    ("CCPRELOD.MAC", "src/platform/trs80m4/ccprelod.mac"),
+    ("RSXSEL.MAC", "src/platform/trs80m4/rsxsel.mac"),
     ("CONFIG.MAC", "src/bios/config.mac"),
-    ("RSXLOAD.MAC", "src/system/rsxloader.mac"),
-    ("RSXVALID.MAC", "src/system/rsxvalidator.mac"),
-    ("RSXPUBL.MAC", "src/system/rsxpublish.mac"),
-    ("RSXRESOL.MAC", "src/system/rsxresolver.mac"),
+    ("RSXLOAD.MAC", "src/system/rsxload.mac"),
+    ("RSXVALID.MAC", "src/system/rsxvalid.mac"),
+    ("RSXPUBL.MAC", "src/system/rsxpubl.mac"),
+    ("RSXRESOL.MAC", "src/system/rsxresol.mac"),
     ("CCP.MAC", "src/ccp/ccp.mac"),
     ("CCPALT.MAC", "src/ccp/ccp.mac"),
     ("CCPCHK.MAC", "src/ccp/ccp.mac"),
@@ -303,7 +303,7 @@ def main() -> None:
         files.append((0, name, text_file(source.read_bytes())))
         mapping.append({"user": 0, "area": "NATIVE BUILD", "name": name,
                         "source": relative})
-    build_sub = ROOT / "src/utilities/system-build.sub"
+    build_sub = ROOT / "src/utilities/build.sub"
     used[0].add("BUILD.SUB")
     files.append((0, "BUILD.SUB", text_file(build_sub.read_bytes())))
     mapping.append({"user": 0, "area": "NATIVE BUILD", "name": "BUILD.SUB",
