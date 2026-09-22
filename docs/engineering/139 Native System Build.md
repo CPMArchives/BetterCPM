@@ -41,8 +41,8 @@ exceed the 398 usable 2 KiB blocks of the 800K DATA format. The generator now
 produces two deterministic images:
 
 - the build disk, containing every input needed by `SUBMIT B:BUILD`; and
-- the complete-source disk, containing every non-hidden file under `src/` and
-  a path-to-8.3 map.
+- numbered complete-source volumes, together containing every non-hidden file
+  under `src/` and carrying the same volume-aware path-to-8.3 map.
 
 Both images are independently read back through the CP/M directory parser and
 their DMK structures and sector CRCs are verified. The generator also emits
