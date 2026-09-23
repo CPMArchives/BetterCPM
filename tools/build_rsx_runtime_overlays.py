@@ -45,6 +45,7 @@ def main() -> None:
     carrier = build(args.assembler, "r3carrier", "r3carr.mac", "RXBASE", cfg)
     metadata = build(args.assembler, "r3metadata", "r3meta.mac", "RMBASE", cfg)
     coordinator = build(args.assembler, "r3coord", "r3coord.mac", "RCBASE", rsx)
+    profile = build(args.assembler, "r3profile", "r3prof.mac", "PFBASE", rsx)
     mover = build(args.assembler, "r3mover", "rsxmover.mac", "RMBASE", cfg)
     schedule = build(args.assembler, "r3sched", "rsxsched.mac", "RSBASE", cfg + 0x120)
     handoff = build(args.assembler, "r3ovload", "r3ovload.mac", "ROBASE", cfg + 0x320)
@@ -68,6 +69,9 @@ def main() -> None:
     if len(coordinator) > 1021:
         raise ValueError("carrier coordinator exceeds gateway-safe slot: "
                          f"{len(coordinator)}")
+    if len(profile) > 1021:
+        raise ValueError("profile builder exceeds gateway-safe slot: "
+                         f"{len(profile)}")
     if len(commit) > 1021:
         raise ValueError(f"commit overlay exceeds gateway-safe slot: {len(commit)}")
     gateway = bytes((0xC3, LAYOUT["BDOS"] & 0xFF, LAYOUT["BDOS"] >> 8))
@@ -78,6 +82,7 @@ def main() -> None:
         "R3CARR.RSX": carrier,
         "R3META.RSX": metadata,
         "R3COORD.RSX": coordinator.ljust(1021, b"\0") + gateway,
+        "R3PROF.RSX": profile.ljust(1021, b"\0") + gateway,
         "R3MOVE.RSX": bytes(image),
         "R3COMIT.RSX": commit.ljust(1021, b"\0") + gateway,
     }

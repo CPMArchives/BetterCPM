@@ -81,6 +81,7 @@ def main() -> None:
     carrier = (ROOT / "build/system/R3CARR.RSX").read_bytes()
     metadata = (ROOT / "build/system/R3META.RSX").read_bytes()
     coordinator = (ROOT / "build/system/R3COORD.RSX").read_bytes()
+    profile = (ROOT / "build/system/R3PROF.RSX").read_bytes()
     move = (ROOT / "build/system/R3MOVE.RSX").read_bytes()
     commit = (ROOT / "build/system/R3COMIT.RSX").read_bytes()
     assert 0 < len(snapshot) <= 1024
@@ -89,6 +90,9 @@ def main() -> None:
     assert len(coordinator) == 1024
     assert coordinator[-3:] == bytes((0xC3, LAYOUT["BDOS"] & 0xFF,
                                       LAYOUT["BDOS"] >> 8))
+    assert len(profile) == 1024
+    assert profile[-3:] == bytes((0xC3, LAYOUT["BDOS"] & 0xFF,
+                                  LAYOUT["BDOS"] >> 8))
     assert len(move) == len(commit) == 1024
     assert move[0] != 0 and move[0x120] != 0 and move[0x320] != 0
     assert commit[-3:] == bytes((0xC3, LAYOUT["BDOS"] & 0xFF,
