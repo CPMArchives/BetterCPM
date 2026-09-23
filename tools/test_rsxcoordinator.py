@@ -19,6 +19,7 @@ WORK_HIGH = 0x7000
 CARRIER_SOURCE = 0x9000
 CARR_SOURCE = 0x9400
 META_SOURCE = 0x9800
+PLAN_SOURCE = 0x9C00
 FACTS = 0x6400
 LIVE_LOW = 0xD600
 LIVE_HIGH = 0xEC00
@@ -41,9 +42,13 @@ OPEN:   XOR     A
         LD      A,(HL)
         CP      'C'
         JR      Z,CARR
+        CP      'P'
+        JR      Z,PLAN
         LD      A,2
         JR      SELECT
 CARR:   LD      A,1
+        JR      SELECT
+PLAN:   LD      A,3
         JR      SELECT
 CARRIER:
         XOR     A
@@ -59,7 +64,10 @@ NEXT:   PUSH    HL
         DEC     A
         LD      BC,{CARR_SOURCE:04X}H
         JR      Z,HAVESRC
+        DEC     A
         LD      BC,{META_SOURCE:04X}H
+        JR      Z,HAVESRC
+        LD      BC,{PLAN_SOURCE:04X}H
 HAVESRC:
         LD      A,({COUNT:04X}H)
         LD      L,A
@@ -96,11 +104,13 @@ def invoke(stub: bytes, carrier: bytes, name: bytes, *, operation: int = 1,
     coordinator = (ROOT / "build/system/R3COORD.RSX").read_bytes()
     carr = (ROOT / "build/system/R3CARR.RSX").read_bytes()
     meta = (ROOT / "build/system/R3META.RSX").read_bytes()
+    plan = (ROOT / "build/system/R3PLAN.RSX").read_bytes()
     cpu.mem[LAYOUT["RSX"]:LAYOUT["RSX"] + len(coordinator)] = coordinator
     cpu.mem[LAYOUT["FILE"]:LAYOUT["FILE"] + len(stub)] = stub
     cpu.mem[CARRIER_SOURCE:CARRIER_SOURCE + 1024] = carrier.ljust(1024, b"\0")
     cpu.mem[CARR_SOURCE:CARR_SOURCE + 1024] = carr.ljust(1024, b"\0")
     cpu.mem[META_SOURCE:META_SOURCE + 1024] = meta.ljust(1024, b"\0")
+    cpu.mem[PLAN_SOURCE:PLAN_SOURCE + 1024] = plan.ljust(1024, b"\0")
     cpu.mem[COUNT:SELECT + 1] = b"\xA5\xA5"
     request = bytes((2, operation, 0, 0)) + name + b"\xA5\xA5" + \
         struct.pack("<HH", WORK_LOW, high)
@@ -125,10 +135,17 @@ def main() -> None:
         assert cpu.word(FACTS) == WORK_LOW + 512
         assert cpu.mem[FACTS + 20:FACTS + 22] == bytes((1, 2))
         assert cpu.mem[FACTS + 16:FACTS + 18] == b"\x01\x01"
+        plan_record = FACTS + 46
+        allocation = cpu.word(FACTS + 4)
+        assert cpu.word(plan_record) == 0
+        assert cpu.word(plan_record + 2) == LAYOUT["RSX"] - allocation
+        assert cpu.word(plan_record + 4) == allocation
+        assert cpu.mem[plan_record + 6:plan_record + 8] == b"\x01\xFF"
+        assert cpu.word(FACTS + 24) == FACTS + 75
 
-        # The exact worst-case reservation (facts plus two descriptors) is
-        # accepted even though this carrier currently publishes only one.
-        cpu, _ = invoke(stub, stateful, b"STATEFUL", high=FACTS + 46)
+        # The exact worst-case normalization plus initial-plan reservation is
+        # accepted even though this carrier currently publishes one descriptor.
+        cpu, _ = invoke(stub, stateful, b"STATEFUL", high=FACTS + 75)
         assert cpu.a == 0 and cpu.hl == FACTS
 
         hello = (ROOT / "build/rsx/HELLO.RSX").read_bytes()
@@ -137,17 +154,32 @@ def main() -> None:
         assert cpu.mem[FACTS + 20:FACTS + 22] == bytes((0, 1))
         assert cpu.mem[FACTS + 16:FACTS + 18] == b"\0\0"
 
+        # Existing profiles cannot yet be planned from the legacy name/service
+        # table, so they fail without changing the table or live chain.
+        cpu, _ = invoke(stub, stateful, b"STATEFUL")
+        cpu.mem[LAYOUT["RSX_STATE"]] = 1
+        before_state = bytes(cpu.mem[LAYOUT["RSX_STATE"]:LAYOUT["RSX_STATE"] + 41])
+        before_live = bytes(cpu.mem[LIVE_LOW:LIVE_HIGH])
+        cpu.mem[REQUEST + 12:REQUEST + 14] = b"\xA5\xA5"
+        cpu.de = REQUEST
+        cpu.sp = 0x5700
+        cpu.run(LAYOUT["RSX"], limit=100000)
+        assert cpu.a == 0xFF
+        assert cpu.word(REQUEST + 12) == 0xA5A5
+        assert bytes(cpu.mem[LAYOUT["RSX_STATE"]:LAYOUT["RSX_STATE"] + 41]) == before_state
+        assert bytes(cpu.mem[LIVE_LOW:LIVE_HIGH]) == before_live
+
         broken = bytearray(stateful)
         broken[512] ^= 1
         cpu, _ = invoke(stub, bytes(broken), b"STATEFUL")
         assert cpu.a == 0xFF and cpu.word(REQUEST + 12) == 0xA5A5
-        cpu, _ = invoke(stub, stateful, b"STATEFUL", high=FACTS + 45)
+        cpu, _ = invoke(stub, stateful, b"STATEFUL", high=FACTS + 74)
         assert cpu.a == 0xFF and cpu.word(REQUEST + 12) == 0xA5A5
         cpu, _ = invoke(stub, stateful, b"STATEFUL", operation=2)
         assert cpu.a == 0xFF and cpu.word(REQUEST + 12) == 0xA5A5
 
-    print("R3COORD streams bounded v1/v2 carriers, publishes normalized facts "
-          "only after both validation phases, and never mutates the live chain")
+    print("R3COORD streams bounded v1/v2 carriers, plans an initial profile "
+          "without live mutation, and rejects unprovable or undersized changes")
 
 
 if __name__ == "__main__":
