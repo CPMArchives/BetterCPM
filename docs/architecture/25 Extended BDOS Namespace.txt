@@ -18,9 +18,10 @@ search found no contrary assignment.
 This is a historical negative, not proof that no obscure implementation ever
 used the range.  The normative conclusion is that 176-199 is the best supported
 available range, while competing high ranges have known occupants.  In
-particular, 200/201 are P2DOS-family time services, 220-224 are used by modern
-RunCPM host/GPIO extensions, the 225-and-higher area intersects Vector Graphic
-Extended CP/M, and 240-255 intersects Baby Blue II/UniDOS conventions.
+particular, 200/201 are P2DOS-family time services which BetterCP/M adopts as
+compatibility calls, 220-224 are used by modern RunCPM host/GPIO extensions,
+the 225-and-higher area intersects Vector Graphic Extended CP/M, and 240-255
+intersects Baby Blue II/UniDOS conventions.
 
 
 2. OWNED RANGE AND ALLOCATION POLICY
@@ -62,9 +63,20 @@ production build may leave them unsupported.  Production applications shall
 not depend on them.  HELLO/ECHO-style proofs move here if they remain useful;
 they do not receive permanent production assignments.
 
-Functions 200 and 201 are outside the BetterCP/M-owned range and are reserved
-from BetterCP/M use so a later P2DOS-family compatibility adapter remains
-possible.  BetterCP/M 1.0 does not thereby promise that adapter.
+Functions 200 and 201 remain outside the BetterCP/M-private range because their
+meaning is inherited from P2DOS.  BetterCP/M 1.0 nevertheless implements them
+as its P2DOS-compatible clock calls:
+
+  200  get clock
+  201  set clock
+
+They use the historical P2DOS five-byte day-count/hour/minute/second record and
+translate through the native TIME resident service.  Their exact entry, return,
+unavailable-clock and read-only-provider behavior shall be verified against the
+P2DOS source and fixed in the clock compatibility specification before code is
+declared complete.  Function 201 delegates only when the selected TIME provider
+supports SET; lack of that capability follows the verified P2DOS failure path
+rather than reporting a successful update.
 
 
 4. BETTERCP/M 1.0 REGISTRY
@@ -83,6 +95,11 @@ The final 1.0 selector assignments are:
   184-196  unassigned production selectors
   197  reserved general escape gateway; no 1.0 callable contract
   198-199  non-public test/conformance selectors
+
+Inherited compatibility assignments outside the private range are:
+
+  200  P2DOS-compatible get clock
+  201  P2DOS-compatible set clock
 
 The service contracts remain in their owning architecture and engineering
 specifications.  This registry controls only the top-level BDOS numbers and
@@ -108,8 +125,9 @@ which still need two numeric interceptors use 198 and 199.
 
 Stage 6 performs the source migration in one bounded change: update
 dispatchers, RSXs, utilities, fixtures, builders, tests and programmer
-documentation; rebuild
-all in-tree clients; and prove that BetterCP/M no longer claims 200 or 201.
+documentation; rebuild all in-tree clients; prove that no BetterCP/M-private
+service claims 200 or 201; and install the P2DOS-compatible clock adapter at
+those inherited selectors.
 Obsolete numeric aliases are not retained unless a separately documented
 compatibility requirement justifies them.
 

@@ -150,6 +150,13 @@ historical date/time system. Separate adapters translate between TIME and:
   * P2DOS clock services; and
   * DateStamper discovery, clock and file-stamp conventions.
 
+The P2DOS Functions 200/201 adapter is required for BetterCP/M 1.0. Function
+200 obtains a TIME sample and returns the historical five-byte P2DOS record;
+Function 201 accepts that record and delegates to a provider advertising SET.
+The clock compatibility specification shall fix the exact historical register,
+return and failure conventions before implementation. Other historical clock
+adapters and file-stamp systems remain separately scoped compatibility work.
+
 The CP/M Plus four-byte buffer and DOS+/Z80DOS five-byte buffer require an
 explicit adapter policy. A common Function 105 handler must not blindly write a
 fifth byte beyond a CP/M Plus caller's allocation. File timestamp storage and

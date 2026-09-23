@@ -279,8 +279,9 @@ between CONFIG and DUP remain design considerations for the formatting work.
 - [ ] Before the 1.0 ABI freeze, implement the adopted 176-199 private BDOS
   namespace: migrate the registered services to 176-183, remove HELLO/ECHO
   proof selectors 201/203 from the released namespace, rebuild every in-tree
-  client, and leave 200/201 unclaimed for a possible later compatibility
-  adapter. Do not promise P2DOS support in 1.0.
+  client, and implement 200/201 as P2DOS-compatible get/set clock adapters over
+  TIME. Pin their exact historical entry, return, unavailable-clock and
+  read-only-provider behavior before implementation.
 
 ### Later 1.x date/time and timestamp work
 
