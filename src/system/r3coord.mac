@@ -3,15 +3,14 @@
 ;
 ; DE points to the public Function 202 version-2 request.  This increment
 ; accepts LOAD only, streams the named carrier into the caller-owned workspace,
-; derives its exact v1/v2 length, and invokes R3CARR then R3META in LY_CFG.
-; Success returns A=0, HL=facts, and publishes the primary numeric service at
-; request +12.  Failure returns FFh without changing the live RSX profile.
+; derives its exact v1/v2 length, and invokes R3CARR then R3META in LY_CFG. It
+; then hands normalized facts to R3PROF for general append planning. Failure
+; returns FFh without changing the live RSX profile.
 
 RCBASE          EQU     LY_RSX
 FLOPEN          EQU     LY_FILE
 FLNEXT          EQU     LY_FILE+3
 CFGB            EQU     LY_CFG
-RSTCOUNT        EQU     LY_RSTA
 
         CSEG
         .PHASE  RCBASE
@@ -238,73 +237,20 @@ RC_SPACE:
         CP      1
         JP      NZ,RC_BAD
 
-; Build the first prospective profile plan.  The persistent profile does not
-; yet retain allocations and reconstruction classes, so this bounded increment
-; accepts only the exact case it can prove: appending one validated carrier to
-; an empty profile.  Later profile changes must fail before publication.
-        CALL    RC_PLAN
-        JP      NZ,RC_BAD
-
-        LD      HL,(RC_FACTS)
-        LD      DE,22
-        ADD     HL,DE
-        LD      E,(HL)
-        INC     HL
-        LD      D,(HL)
-        LD      HL,(RC_REQ)
-        LD      BC,12
-        ADD     HL,BC
-        LD      (HL),E
-        INC     HL
-        LD      (HL),D
-        LD      HL,(RC_FACTS)
-        XOR     A
-        RET
-
-; Append one 8-byte plan record, its allocation/class vectors, and the
-; 18-byte planner request after the maximum normalized-facts reservation.
-RC_PLAN:
-        LD      A,(RSTCOUNT)
-        OR      A
-        JP      NZ,RC_PBAD
-        LD      HL,(RC_FACTS)
-        LD      DE,75
-        ADD     HL,DE
-        JP      C,RC_PBAD
-        LD      DE,(RC_HIGH)
-        OR      A
-        SBC     HL,DE
-        JR      C,RC_PROOM
-        JP      NZ,RC_PBAD
-RC_PROOM:
+  ; Pass the public request and normalized candidate facts through caller-owned
+  ; memory before the profile phase replaces this coordinator.
         LD      HL,(RC_FACTS)
         LD      DE,46
         ADD     HL,DE
-        LD      (RC_PLANREC),HL
-        LD      DE,8
-        ADD     HL,DE
-        LD      (RC_NALLOC),HL
+        LD      (RC_CONTEXT),HL
         EX      DE,HL
-        LD      HL,(RC_FACTS)
-        LD      BC,4
-        ADD     HL,BC
-        LD      A,(HL)
-        LD      (DE),A
+        LD      HL,(RC_REQ)
+        EX      DE,HL
+        LD      (HL),E
         INC     HL
-        INC     DE
-        LD      A,(HL)
-        LD      (DE),A
-        INC     DE
-        LD      (RC_CLASS),DE
-        LD      HL,(RC_FACTS)
-        LD      BC,20
-        ADD     HL,BC
-        LD      A,(HL)
-        LD      (DE),A
-        INC     DE
-        LD      (RC_PREQ),DE
-        EX      DE,HL
-        LD      DE,LY_RSX
+        LD      (HL),D
+        INC     HL
+        LD      DE,(RC_FACTS)
         LD      (HL),E
         INC     HL
         LD      (HL),D
@@ -313,72 +259,20 @@ RC_PROOM:
         LD      (HL),E
         INC     HL
         LD      (HL),D
-        INC     HL
-        XOR     A
-        LD      (HL),A              ; old count
-        INC     HL
-        INC     A
-        LD      (HL),A              ; new count
-        INC     HL
-        LD      A,0FFH
-        LD      (HL),A              ; append
-        INC     HL
-        XOR     A
-        LD      (HL),A              ; reserved
-        INC     HL
-        LD      DE,(RC_NALLOC)      ; unused old vector is still valid storage
-        LD      (HL),E
-        INC     HL
-        LD      (HL),D
-        INC     HL
-        LD      (HL),E              ; new allocation vector
-        INC     HL
-        LD      (HL),D
-        INC     HL
-        LD      DE,(RC_CLASS)
-        LD      (HL),E
-        INC     HL
-        LD      (HL),D
-        INC     HL
-        LD      DE,(RC_PLANREC)
-        LD      (HL),E
-        INC     HL
-        LD      (HL),D
-        INC     HL
-        LD      (HL),1              ; one record of capacity
-        INC     HL
-        LD      (HL),0CCH           ; planner must replace completion
 
-        LD      HL,RC_NPLAN
+  ; R3MOVE supplies the safe code path that replaces LY_RSX with R3PROF.
+        LD      HL,RC_NMOVE
         CALL    RC_OVER
-        RET     NZ
-        LD      DE,(RC_PREQ)
-        CALL    CFGB
-        OR      A
-        RET     NZ
-        LD      HL,(RC_PREQ)
-        LD      DE,17
-        ADD     HL,DE
-        LD      A,(HL)
-        CP      1
-        JR      NZ,RC_PBAD
-        LD      HL,(RC_FACTS)
-        LD      DE,24
-        ADD     HL,DE
-        EX      DE,HL
-        LD      HL,(RC_FACTS)
-        LD      BC,75
-        ADD     HL,BC
-        EX      DE,HL
-        LD      (HL),E
-        INC     HL
-        LD      (HL),D
-        XOR     A
-        RET
-RC_PBAD:
-        LD      A,0FFH
-        OR      A
-        RET
+        JP      NZ,RC_BAD
+        LD      HL,RC_NPROF
+        LD      (RC_HREQ),HL
+        LD      HL,LY_RSX
+        LD      (RC_HREQ+2),HL
+        LD      (RC_HREQ+4),HL
+        LD      HL,(RC_CONTEXT)
+        LD      (RC_HREQ+6),HL
+        LD      DE,RC_HREQ
+        JP      CFGB+0320H
 
 ; Fill through absolute exclusive RC_NEED in complete 512-byte transfers.
 RC_FILL:
@@ -439,7 +333,8 @@ RC_MAGIC:       DB      'B','R','S','X'
 RC_BMET:        DB      'B','M','E','T'
 RC_NCARR:       DB      'R3CARR  '
 RC_NMETA:       DB      'R3META  '
-RC_NPLAN:       DB      'R3PLAN  '
+RC_NMOVE:       DB      'R3MOVE  '
+RC_NPROF:       DB      'R3PROF  '
 RC_REQ:         DW      0
 RC_LOW:         DW      0
 RC_HIGH:        DW      0
@@ -449,13 +344,11 @@ RC_LENVAL:      DW      0
 RC_MOFF:        DW      0
 RC_FACTS:       DW      0
 RC_CURSOR:      DW      0
-RC_PLANREC:     DW      0
-RC_NALLOC:      DW      0
-RC_CLASS:       DW      0
-RC_PREQ:        DW      0
+RC_CONTEXT:     DW      0
 RC_FMT:         DB      0
 RC_CREQ:        DS      13
 RC_MREQ:        DS      11
+RC_HREQ:        DS      8
 
         .DEPHASE
         END

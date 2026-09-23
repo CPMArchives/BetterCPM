@@ -1,0 +1,462 @@
+        INCLUDE layout.inc
+
+; ********************************************************************************
+; *                  BetterCP/M Prospective Profile Builder                      *
+; *                                                                              *
+; * Reconstructs retained allocation and class vectors from carrier headers,     *
+; * appends one validated candidate, and invokes the Stage-3 layout planner.     *
+; * The phase writes only caller-owned transaction memory.                       *
+; ********************************************************************************
+
+PFBASE          EQU     LY_RSX
+FLOPEN          EQU     LY_FILE
+FLNEXT          EQU     LY_FILE+3
+CFGB            EQU     LY_CFG
+RSTCOUNT        EQU     LY_RSTA
+RSTABLE         EQU     LY_RSTA+1
+
+        CSEG
+        .PHASE  PFBASE
+
+; ================================================================================
+; =                           Profile Context Setup                              =
+; =                                                                              =
+; = Decodes the coordinator handoff, lays out bounded plan vectors, and reserves =
+; = one reusable sector for retained-carrier header inspection.                  =
+; ================================================================================
+
+PF_ENTRY:                               ; enter prospective profile builder
+        EX      DE,HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (PF_REQ),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (PF_FACTS),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (PF_HIGH),DE
+        LD      A,(RSTCOUNT)
+        CP      4
+        JP      NC,PF_BAD
+        LD      (PF_OCNT),A
+        INC     A
+        LD      (PF_NCNT),A
+
+        LD      HL,(PF_FACTS)
+        LD      DE,46
+        OR      A
+        ADD     HL,DE
+        JP      C,PF_BAD
+        LD      (PF_PLAN),HL
+        LD      A,(PF_NCNT)
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        OR      A
+        ADD     HL,DE
+        JP      C,PF_BAD
+        LD      (PF_OALLOC),HL
+        LD      A,(PF_OCNT)
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        OR      A
+        ADD     HL,DE
+        JP      C,PF_BAD
+        LD      (PF_NALLOC),HL
+        LD      A,(PF_NCNT)
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        OR      A
+        ADD     HL,DE
+        JP      C,PF_BAD
+        LD      (PF_CVECT),HL
+        LD      A,(PF_NCNT)
+        LD      E,A
+        LD      D,0
+        OR      A
+        ADD     HL,DE
+        JP      C,PF_BAD
+        LD      (PF_PREQ),HL
+        LD      DE,18
+        OR      A
+        ADD     HL,DE
+        JP      C,PF_BAD
+        LD      (PF_END),HL
+        LD      (PF_SCRATCH),HL
+        LD      A,(PF_OCNT)
+        OR      A
+        JR      Z,PF_SPACE
+        LD      DE,0200H
+        OR      A
+        ADD     HL,DE
+        JP      C,PF_BAD
+
+PF_SPACE:                               ; accept complete transaction workspace
+        LD      DE,(PF_HIGH)
+        OR      A
+        SBC     HL,DE
+        JR      C,PF_INIT
+        JP      NZ,PF_BAD
+
+PF_INIT:                                ; initialize vector cursors
+        LD      HL,(PF_OALLOC)
+        LD      (PF_OPTR),HL
+        LD      HL,(PF_NALLOC)
+        LD      (PF_NPTR),HL
+        LD      HL,(PF_CVECT)
+        LD      (PF_CPTR),HL
+        XOR     A
+        LD      (PF_INDEX),A
+
+; ================================================================================
+; =                         Retained Carrier Inspection                          =
+; =                                                                              =
+; = Rereads and validates the fixed header of each retained carrier, rejecting   =
+; = missing, renamed, malformed, duplicate, or unsupported profile members.      =
+; ================================================================================
+
+PF_SCAN:                                ; scan next retained profile member
+        LD      A,(PF_INDEX)
+        LD      B,A
+        LD      A,(PF_OCNT)
+        CP      B
+        JR      Z,PF_CANDIDATE
+        LD      A,B
+        CALL    PF_TABPTR
+        LD      (PF_NAME),HL
+        CALL    PF_DUPLICATE
+        JP      Z,PF_BAD
+        LD      HL,(PF_NAME)
+        LD      A,1
+        CALL    FLOPEN
+        JP      NZ,PF_BAD
+        LD      HL,(PF_SCRATCH)
+        CALL    FLNEXT
+        JP      NZ,PF_BAD
+        CALL    PF_HEADER
+        JP      NZ,PF_BAD
+        LD      HL,(PF_OPTR)
+        LD      DE,(PF_ALLOC)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      (PF_OPTR),HL
+        LD      HL,(PF_NPTR)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      (PF_NPTR),HL
+        LD      HL,(PF_CPTR)
+        LD      A,(PF_CVAL)
+        LD      (HL),A
+        INC     HL
+        LD      (PF_CPTR),HL
+        LD      HL,PF_INDEX
+        INC     (HL)
+        JR      PF_SCAN
+
+PF_CANDIDATE:                           ; append validated candidate facts
+        LD      HL,(PF_FACTS)
+        LD      DE,4
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,(PF_NPTR)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      HL,(PF_FACTS)
+        LD      DE,20
+        ADD     HL,DE
+        LD      A,(HL)
+        LD      HL,(PF_CPTR)
+        LD      (HL),A
+
+; ================================================================================
+; =                         Prospective Plan Publication                         =
+; =                                                                              =
+; = Invokes R3PLAN with the reconstructed vectors and publishes success only     =
+; = after the complete append plan has been returned.                            =
+; ================================================================================
+
+PF_BUILD:                               ; construct planner request
+        LD      HL,(PF_PREQ)
+        LD      DE,LY_RSX
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      DE,(PF_HIGH)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      A,(PF_OCNT)
+        LD      (HL),A
+        INC     HL
+        LD      A,(PF_NCNT)
+        LD      (HL),A
+        INC     HL
+        LD      (HL),0FFH
+        INC     HL
+        LD      (HL),0
+        INC     HL
+        LD      DE,(PF_OALLOC)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      DE,(PF_NALLOC)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      DE,(PF_CVECT)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      DE,(PF_PLAN)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      A,(PF_NCNT)
+        LD      (HL),A
+        INC     HL
+        LD      (HL),0CCH
+        LD      HL,PF_NPLAN
+        CALL    PF_OVER
+        JP      NZ,PF_BAD
+        LD      DE,(PF_PREQ)
+        CALL    CFGB
+        OR      A
+        JP      NZ,PF_BAD
+        LD      HL,(PF_PREQ)
+        LD      DE,17
+        ADD     HL,DE
+        LD      A,(HL)
+        LD      B,A
+        LD      A,(PF_NCNT)
+        CP      B
+        JP      NZ,PF_BAD
+
+  ; The header-inspection sector is disposable. Publish the first byte after
+  ; the durable plan and vectors as the next available transaction address.
+        LD      HL,(PF_FACTS)
+        LD      DE,24
+        ADD     HL,DE
+        EX      DE,HL
+        LD      HL,(PF_END)
+        EX      DE,HL
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      HL,(PF_FACTS)
+        LD      DE,22
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,(PF_REQ)
+        LD      BC,12
+        ADD     HL,BC
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      HL,(PF_FACTS)
+        XOR     A
+        RET
+
+; ================================================================================
+; =                       Fixed Carrier Header Validation                        =
+; =                                                                              =
+; = Checks the retained carrier identity and the geometry facts needed by the    =
+; = planner. Payload checksum and typed metadata remain preparation-phase work.  =
+; ================================================================================
+
+PF_HEADER:                              ; validate retained fixed header
+        LD      HL,(PF_SCRATCH)
+        LD      DE,PF_MAGIC
+        LD      B,4
+
+PF_MAGLOOP:                             ; compare carrier signature
+        LD      A,(DE)
+        CP      (HL)
+        JP      NZ,PF_BAD
+        INC     DE
+        INC     HL
+        DJNZ    PF_MAGLOOP
+        LD      A,(HL)
+        LD      (PF_FMT),A
+        CP      1
+        JR      Z,PF_ABI
+        CP      2
+        JP      NZ,PF_BAD
+
+PF_ABI:                                 ; validate carrier ABI
+        INC     HL
+        LD      DE,PF_ABIVAL
+        LD      B,3
+
+PF_ABILOOP:                             ; compare ABI bytes
+        LD      A,(DE)
+        CP      (HL)
+        JP      NZ,PF_BAD
+        INC     DE
+        INC     HL
+        DJNZ    PF_ABILOOP
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      A,(PF_FMT)
+        CP      1
+        JR      NZ,PF_V2CLASS
+        LD      A,D
+        OR      E
+        JP      NZ,PF_BAD
+        XOR     A
+        JR      PF_CLASSOK
+
+PF_V2CLASS:                             ; decode v2 reconstruction class
+        LD      A,D
+        OR      A
+        JP      NZ,PF_BAD
+        LD      A,E
+        AND     0FCH
+        JP      NZ,PF_BAD
+        LD      A,E
+        AND     3
+        CP      2
+        JP      Z,PF_BAD
+
+PF_CLASSOK:                             ; accept reconstruction class
+        LD      (PF_CVAL),A
+        LD      HL,(PF_SCRATCH)
+        LD      DE,12
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      A,D
+        OR      E
+        JP      Z,PF_BAD
+        LD      (PF_CODE),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      A,D
+        OR      A
+        JP      Z,PF_BAD
+        LD      A,E
+        OR      A
+        JP      NZ,PF_BAD
+        LD      (PF_ALLOC),DE
+        LD      HL,(PF_CODE)
+        OR      A
+        SBC     HL,DE
+        JP      NC,PF_BAD
+        LD      HL,(PF_SCRATCH)
+        LD      DE,32
+        ADD     HL,DE
+        LD      DE,(PF_NAME)
+        LD      B,8
+
+PF_NAMELOOP:                            ; compare retained filename stem
+        LD      A,(DE)
+        CP      (HL)
+        JP      NZ,PF_BAD
+        INC     DE
+        INC     HL
+        DJNZ    PF_NAMELOOP
+        XOR     A
+        RET
+
+; ================================================================================
+; =                              Local Utilities                                 =
+; ================================================================================
+
+PF_DUPLICATE:                           ; compare candidate and retained names
+        LD      DE,(PF_REQ)
+        INC     DE
+        INC     DE
+        INC     DE
+        INC     DE
+        LD      B,8
+
+PF_DUPLOOP:                             ; compare next stem byte
+        LD      A,(DE)
+        CP      (HL)
+        RET     NZ
+        INC     DE
+        INC     HL
+        DJNZ    PF_DUPLOOP
+        XOR     A
+        RET
+
+PF_TABPTR:                              ; return persistent name address
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        LD      L,A
+        LD      H,0
+        LD      DE,RSTABLE
+        ADD     HL,DE
+        RET
+
+PF_OVER:                                ; load one CONFIG-slot overlay
+        LD      A,1
+        CALL    FLOPEN
+        RET     NZ
+        LD      HL,CFGB
+        CALL    FLNEXT
+        RET     NZ
+        CALL    FLNEXT
+        RET
+
+PF_BAD:                                 ; reject prospective profile
+        LD      A,0FFH
+        OR      A
+        RET
+
+PF_MAGIC:       DB      'B','R','S','X' ; carrier signature
+PF_ABIVAL:      DB      2,1,0           ; accepted RSX ABI
+PF_NPLAN:       DB      'R3PLAN  '      ; planner overlay stem
+PF_REQ:         DW      0               ; public Function-202 request
+PF_FACTS:       DW      0               ; candidate normalized facts
+PF_HIGH:        DW      0               ; transaction high bound
+PF_PLAN:        DW      0               ; output movement records
+PF_OALLOC:      DW      0               ; retained allocation vector
+PF_NALLOC:      DW      0               ; prospective allocation vector
+PF_CVECT:       DW      0               ; prospective class vector
+PF_PREQ:        DW      0               ; planner request
+PF_END:         DW      0               ; durable planning-area end
+PF_SCRATCH:     DW      0               ; reusable header sector
+PF_OPTR:        DW      0               ; retained allocation cursor
+PF_NPTR:        DW      0               ; prospective allocation cursor
+PF_CPTR:        DW      0               ; class-vector cursor
+PF_NAME:        DW      0               ; retained filename stem
+PF_CODE:        DW      0               ; retained code size
+PF_ALLOC:       DW      0               ; retained allocation size
+PF_OCNT:        DB      0               ; retained profile count
+PF_NCNT:        DB      0               ; prospective profile count
+PF_INDEX:       DB      0               ; retained profile index
+PF_CVAL:        DB      0               ; retained reconstruction class
+PF_FMT:         DB      0               ; retained carrier format
+
+        .DEPHASE
+        END
