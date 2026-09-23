@@ -128,6 +128,10 @@ providers are STATELESS and allocate no PDS block. The authoritative clock is
 sampled on demand; no stale or continuously advancing PDS copy is maintained.
 Device reads must provide a coherent snapshot across rollover.
 
+The service is a general hardware-independent BetterCP/M clock facility rather
+than a P2DOS emulation layer. P2DOS compatibility follows from adopting its
+compact established selectors and record representation.
+
 The exact provider request, errors, platform findings and qualification contract
 are normative in `docs/architecture/22 Clock Provider ABI.txt`.
 

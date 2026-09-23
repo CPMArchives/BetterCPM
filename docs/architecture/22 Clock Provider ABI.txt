@@ -20,11 +20,17 @@ human presentation outside BDOS.  The layers are:
 BDOS supplies only the unhandled-call fallback.  It does not locate a provider,
 inspect a record, convert a date, access hardware or print a message.
 
+This is a general hardware-independent BetterCP/M service, not a P2DOS
+emulation facility.  It adopts P2DOS Functions 200/201 and the five-byte record
+because they are compact, adequate and historically established without
+constraining the underlying clock.  P2DOS clock-call compatibility is a useful
+property of the standard interface rather than its primary design objective.
+
 
 2. PUBLIC FUNCTIONS AND CLOCK RECORD
 ------------------------------------
 
-The public calls are inherited from P2DOS:
+The hardware-independent public calls use the P2DOS convention:
 
   C  = 200   GET TIME
   DE = address of a writable five-byte record
@@ -151,8 +157,8 @@ and z80pack providers may remain read-only for 1.0.
 -----------
 
 TIME.COM calls Function 200 to display the clock and Function 201 to set it.
-It owns command syntax, input parsing, calendar conversion, formatting, help and
-human-readable errors.  All accepted input forms produce the same five-byte
+It owns command syntax, input parsing, calendar conversion, formatting, help
+and human-readable errors.  All accepted input forms produce the same five-byte
 record before SET; command syntax does not alter BDOS or provider semantics.
 
 The minimum 1.0 interface is:
@@ -184,9 +190,9 @@ does not obscure their hardware contracts.
 9. COMPATIBILITY AND DEFERRED WORK
 ----------------------------------
 
-Functions 200/201 and their record provide P2DOS public clock-call
-compatibility.  They do not claim general P2DOS emulation or P2DOS filesystem
-timestamps.
+The general BetterCP/M clock interface consequently provides P2DOS public
+clock-call compatibility.  It does not claim general P2DOS emulation or P2DOS
+filesystem timestamps.
 
 Adapters for CP/M Plus, DOS+/Z80DOS, ZSDOS/ZDDOS, DateStamper and other useful
 historical interfaces are later 1.x work.  They should reuse this provider

@@ -76,6 +76,11 @@ successful return behavior shall be verified against P2DOS evidence before the
 remaining status numbers are frozen.  Function 201 is handled by a read-only
 provider as SET_UNSUPPORTED rather than chained to the BDOS fallback.
 
+The clock facility is a general hardware-independent BetterCP/M service.  Its
+selectors and record were selected because they are compact, adequate and
+historically established, not because the service is an emulation layer.
+P2DOS clock-call compatibility is a useful consequence of that choice.
+
 
 4. BETTERCP/M 1.0 REGISTRY
 --------------------------
