@@ -8,7 +8,7 @@ uses provisional Function 208 pending the Stage-6 migration to Function 182.
 
 The resident-service facility discovers callable services supplied by RSXs or,
 when useful, fixed core code. It defines discovery and binding, not the operation
-set of HIST, NDR, TIME, SECU or another individual service.
+set of HIST, NDR, SECU or another individual service.
 
 The registry is a logical view derived from validated advertisements in the
 active RSX set. The PDS holds only the small registry descriptor, resident-layout
@@ -30,7 +30,7 @@ Specification 133 defines the runtime header and descriptor representation.
 2. SERVICE AND PROVIDER IDENTITY
 
 A service uses an exact four-byte uppercase ASCII identifier, space-padded when
-needed, for example HIST, NDR-space, TIME, SECU and TEST. Service identity is
+needed, for example HIST, NDR-space, SECU and TEST. Service identity is
 independent of the provider filename and module version. IDs beginning with X
 are experimental/private until a stable third-party allocation policy exists.
 
@@ -64,6 +64,10 @@ in BRSX version 2. Legacy BRSX v1 modules remain numeric interceptors. The
 loader rejects unknown service-metadata versions and entry offsets outside the
 live callable image. `21 Stateful RSX Reconstruction ABI.txt` defines the
 version-2 carrier policy shared by callable services and reconstruction data.
+
+Clock providers use the inherited numeric Functions 200/201 interface defined
+by `22 Clock Provider ABI.txt`.  The current callable `TIME` advertisement is
+provisional and does not make clocks part of this stable registry ABI.
 
 
 4. LOOKUP GATEWAY

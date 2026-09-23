@@ -71,12 +71,10 @@ as its P2DOS-compatible clock calls:
   201  set clock
 
 They use the historical P2DOS five-byte day-count/hour/minute/second record and
-translate through the native TIME resident service.  Their exact entry, return,
-unavailable-clock and read-only-provider behavior shall be verified against the
-P2DOS source and fixed in the clock compatibility specification before code is
-declared complete.  Function 201 delegates only when the selected TIME provider
-supports SET; lack of that capability follows the verified P2DOS failure path
-rather than reporting a successful update.
+are intercepted directly by a conforming clock-provider RSX.  Their exact
+successful return behavior shall be verified against P2DOS evidence before the
+remaining status numbers are frozen.  Function 201 is handled by a read-only
+provider as SET_UNSUPPORTED rather than chained to the BDOS fallback.
 
 
 4. BETTERCP/M 1.0 REGISTRY

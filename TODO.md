@@ -271,17 +271,19 @@ between CONFIG and DUP remain design considerations for the formatting work.
 - [ ] Give `$SYS` files the intended system-wide visibility, particularly
   making suitable files discoverable from every user area without weakening
   normal user-area isolation or producing duplicate directory results.
-- [ ] Finish and qualify the native TIME 1.0 read service, `TIME.COM`, and the
-  read-only FreHD and z80pack providers. Pin representation, range, resolution,
-  local-time/UTC policy, capability/validity query, unavailable/unset/fault
-  results, and safe provider replacement/unload/WBOOT. No provider must mean
-  unavailable rather than a fabricated clock value.
+- [ ] Finish and qualify the Functions 200/201 clock-provider ABI, `TIME.COM`,
+  and the read-only FreHD and z80pack providers. Verify exact P2DOS success
+  behavior, freeze the minimal status values, and qualify provider replacement,
+  unload and WBOOT. With no provider installed, both calls must return 0FFh
+  rather than a fabricated clock value.
+- [ ] Adapt `TIME.COM` to use Functions 200/201 for display and SET requests,
+  and supply generic `CLOCK.RSX` source as a provider porting template.
 - [ ] Before the 1.0 ABI freeze, implement the adopted 176-199 private BDOS
   namespace: migrate the registered services to 176-183, remove HELLO/ECHO
   proof selectors 201/203 from the released namespace, rebuild every in-tree
-  client, and implement 200/201 as P2DOS-compatible get/set clock adapters over
-  TIME. Pin their exact historical entry, return, unavailable-clock and
-  read-only-provider behavior before implementation.
+  client, provide the 0FFh BDOS fallback for 200/201, and adapt each clock RSX
+  to intercept their P2DOS-compatible meanings. Pin exact historical success
+  behavior and the remaining status values before implementation.
 
 ### Later 1.x date/time and timestamp work
 
@@ -299,9 +301,8 @@ between CONFIG and DUP remain design considerations for the formatting work.
 - [ ] Propagate date/time and timestamp support through BDOS calls, directory
   operations, file creation/update semantics, CONFIG, disk-image tools,
   cpmtools definitions or extensions, and relevant utilities.
-- [ ] Extend `TIME.COM` to set the system date/time and inspect or modify file
-  timestamps only when those later capabilities have defined providers and
-  on-disk contracts.
+- [ ] Extend `TIME.COM` to inspect or modify file timestamps only when those
+  later capabilities have defined on-disk contracts.
 
 ## ROMability
 
