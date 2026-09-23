@@ -173,18 +173,23 @@ hardware failure.  Other applications may present the same statuses
 differently.
 
 
-8. REFERENCE PROVIDER
----------------------
+8. P2DOS.MAC REFERENCE PROVIDER
+-------------------------------
 
-BetterCP/M shall supply generic `CLOCK.RSX` source as a reference and porting
-template.  It demonstrates interception and chaining, the five-byte record,
-standard status behavior, and the boundary between common provider machinery
-and hardware-specific routines.  It is not the ABI definition and need not be
-an installable provider without a hardware binding.
+BetterCP/M 1.0 shall ship `P2DOS.MAC` as the standard provider source and
+porting template.  Its common body owns the BRSX metadata, Functions 200/201
+interception, unrelated-call chaining, the five-byte record, validation and
+standard status behavior.  Clearly isolated hardware routines perform the
+physical GET and optional SET operations.
 
-A provider may be implemented independently when it conforms to this document.
-Platform providers should share common source only where that reduces code and
-does not obscure their hardware contracts.
+A hardware implementor can copy or configure this source, supply the routines
+for a particular clock, and build a hardware-named RSX.  `P2DOS.MAC` is a
+reference implementation of the standard interface, not the definition of the
+ABI and not necessarily an installable provider without a hardware binding.
+
+A provider may instead be written independently when it conforms to this
+document.  Common source is encouraged where it reduces code without obscuring
+the hardware contract.
 
 
 9. COMPATIBILITY AND DEFERRED WORK
@@ -197,6 +202,13 @@ filesystem timestamps.
 Adapters for CP/M Plus, DOS+/Z80DOS, ZSDOS/ZDDOS, DateStamper and other useful
 historical interfaces are later 1.x work.  They should reuse this provider
 boundary rather than introduce separate hardware drivers.
+
+The RSX architecture does not prohibit another clock scheme.  A provider or
+adapter may expose a different historical or experimental interface through its
+own correctly allocated selectors and record format.  It shall chain 200/201
+unless it also supplies the standard BetterCP/M service, and it shall never
+assign incompatible meanings to 200/201.  BetterCP/M 1.0 qualifies only the
+standard interface.
 
 Filesystem timestamps remain separate because they affect directory layouts,
 file-operation semantics, copying, utilities, host tools and cpmtools
