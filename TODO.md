@@ -277,8 +277,8 @@ between CONFIG and DUP remain design considerations for the formatting work.
   unload and WBOOT. With no provider installed, both calls must return 0FFh
   rather than a fabricated clock value.
 - [ ] Adapt `TIME.COM` to use Functions 200/201 for display and SET requests,
-  and ship `P2DOS.MAC` as the standard provider source with isolated hardware
-  GET/SET routines which a porter can replace.
+  and ship `P2DOS.MAC` as the standard provider source with a stable
+  `CLKHW.INC` contract plus `CLKFREHD.INC` and `CLKZ80PK.INC` library modules.
 - [ ] Before the 1.0 ABI freeze, implement the adopted 176-199 private BDOS
   namespace: migrate the registered services to 176-183, remove HELLO/ECHO
   proof selectors 201/203 from the released namespace, rebuild every in-tree

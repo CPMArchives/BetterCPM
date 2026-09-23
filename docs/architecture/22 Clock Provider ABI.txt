@@ -179,13 +179,35 @@ differently.
 BetterCP/M 1.0 shall ship `P2DOS.MAC` as the standard provider source and
 porting template.  Its common body owns the BRSX metadata, Functions 200/201
 interception, unrelated-call chaining, the five-byte record, validation and
-standard status behavior.  Clearly isolated hardware routines perform the
-physical GET and optional SET operations.
+standard status behavior.
 
-A hardware implementor can copy or configure this source, supply the routines
-for a particular clock, and build a hardware-named RSX.  `P2DOS.MAC` is a
-reference implementation of the standard interface, not the definition of the
-ABI and not necessarily an installable provider without a hardware binding.
+Hardware support is supplied as a source include selected from the BetterCP/M
+clock library.  `P2DOS.MAC` includes one stable `CLKHW.INC` interface.  The
+build selects a library implementation, for example `CLKFREHD.INC` or
+`CLKZ80PK.INC`, and makes it available under that stable include name.  This
+keeps the common provider source identical across platforms and preserves a
+native CP/M assembly path with 8.3 filenames.
+
+The include contract supplies:
+
+  * a provider identity and capability declaration;
+  * a GET routine which obtains one coherent hardware sample and converts it
+    to the standard five-byte record;
+  * an optional SET routine which consumes that record and converts it to the
+    hardware representation; and
+  * the small internal results needed by the common provider: success,
+    unsupported SET and operation failure.
+
+The include does not intercept BDOS functions, chain RSXs, print messages or
+define public status numbers.  Those responsibilities remain in `P2DOS.MAC`.
+The exact entry labels, register preservation and scratch ownership are a
+source-level porting contract fixed with the Stage-6 implementation; they are
+not a separately linked runtime ABI.
+
+A hardware implementor normally adds one conforming `CLK*.INC` module and uses
+the common source to build a hardware-named RSX.  `P2DOS.MAC` is a reference
+implementation of the standard interface, not the definition of the ABI and
+not an installable provider without a selected hardware include.
 
 A provider may instead be written independently when it conforms to this
 document.  Common source is encouraged where it reduces code without obscuring
