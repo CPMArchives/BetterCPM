@@ -168,8 +168,10 @@ directory utility unless it provides genuine additional value.
   `BCPX` v1 format while retaining native CP/M ZSM4 assembly of module code.
 - [x] Replace the proof `BRX1` RSX carrier with a versioned, documented module
   format practical to build under native CP/M with ZSM4.
-- [ ] Inventory the private BDOS namespace, move CPX control away from P2DOS
-  Function 200, remove the HELLO/ECHO proof selectors (currently 201/203) from
+- [x] Inventory the private BDOS namespace and adopt Functions 176-199 under
+  `docs/architecture/25 Extended BDOS Namespace.txt`.
+- [ ] Migrate the registered production services from provisional Functions
+  200 and 202-209 to 176-183, remove HELLO/ECHO proof selectors 201/203 from
   the released namespace, and rebuild every in-tree client. The replacement
   CPX call uses a versioned, name-based request block and enumerates module
   metadata without compiling module identities into `CPX.COM` or BDOS.
@@ -274,10 +276,10 @@ between CONFIG and DUP remain design considerations for the formatting work.
   local-time/UTC policy, capability/validity query, unavailable/unset/fault
   results, and safe provider replacement/unload/WBOOT. No provider must mean
   unavailable rather than a fabricated clock value.
-- [ ] Before the 1.0 ABI freeze, inventory the private BDOS namespace, move CPX
-  control away from historical P2DOS Function 200, remove the HELLO/ECHO proof
-  selectors (currently 201/203) from the released namespace, rebuild every
-  in-tree client, and reserve 200/201 for a possible later compatibility
+- [ ] Before the 1.0 ABI freeze, implement the adopted 176-199 private BDOS
+  namespace: migrate the registered services to 176-183, remove HELLO/ECHO
+  proof selectors 201/203 from the released namespace, rebuild every in-tree
+  client, and leave 200/201 unclaimed for a possible later compatibility
   adapter. Do not promise P2DOS support in 1.0.
 
 ### Later 1.x date/time and timestamp work

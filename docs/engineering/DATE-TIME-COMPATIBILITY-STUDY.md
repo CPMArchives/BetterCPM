@@ -110,11 +110,12 @@ copying and directory maintenance all require validation.
 
 Concrete collision: BetterCP/M currently assigns BDOS 200 to CPX control
 (src/system/extens.mac, EX_ENTRY); P2DOS assigns 200 to get-time. Blindly
-installing both is ambiguous. Review our private extension namespace before
-core freeze. Options are relocating/multiplexing BetterCP/M's private services
-with rebuilt clients, or an explicit P2DOS compatibility mode. Do not infer the
-caller's intent from accidental pointer or register values. No migration is
-approved or implemented by this study.
+installing both is ambiguous. Architecture Specification 25 resolves the
+namespace decision by assigning BetterCP/M Functions 176-199 and leaving
+200/201 unclaimed. Stage 6 migrates private services and rebuilds their clients.
+Do not infer the caller's intent from accidental pointer or register values.
+This study does not itself implement the migration or a P2DOS compatibility
+mode.
 
 The ordinary unified BDOS returns its unsupported result for functions 41–199;
 98/99 and 104/105 compatibility therefore also require routing through the
@@ -136,7 +137,7 @@ are normative in `docs/architecture/22 Clock Provider ABI.txt`.
 - Obtain original DateStamper clock-entry and Z80DOS/DOS+ interface definitions.
 - Inventory discovery/version probes used by actual legacy time utilities; do
   not impersonate an entire OS just to make its clock calls discoverable.
-- Resolve BDOS 200 and publish exact register, buffer, error and date-range rules.
+- Complete the adopted Stage-6 migration away from BDOS 200/201.
 - Implement and measure optional adapters against the TPA budget.
 - Test buffer bounds (especially four versus five bytes), BCD validity, midnight,
   leap dates, century windows, set/read consistency, missing clocks and unload.

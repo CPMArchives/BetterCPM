@@ -57,8 +57,9 @@ seconds separately in A.
 4. REQUEST AND CALLING CONVENTION
 ---------------------------------
 
-The caller invokes the service address returned by Resident Service Function
-208 with DE pointing to this ten-byte block:
+The caller invokes the service address returned by the resident-service gateway
+(final 1.0 Function 182; currently provisional Function 208) with DE pointing
+to this ten-byte block:
 
   +0  byte  request version = 1
   +1  byte  request length = 10
