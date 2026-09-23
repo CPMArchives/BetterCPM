@@ -10,7 +10,11 @@ There are four visual forms:
 1. A single file header, beginning in column 1, uses `; *` and an asterisk
    border. Reserve this style for the file as a whole.
 2. Major functional divisions use `; =` and an equals-sign border. A short
-   description may explain the division. Leave blank lines around the section.
+   description may explain the division. All title and description text must
+   fit within the fixed width of the border. Reflow description text across
+   additional lines as necessary; never allow it to extend beyond the closing
+   `=`. If a word must be divided at the boundary, hyphenate it rather than
+   overflow the border. Leave blank lines around the section.
 3. Real subdivisions use `; -` and a dashed border with a concise title.
    Subsections are optional.
 4. Explanatory prose begins with two spaces before `;`. Use it for behavior,
