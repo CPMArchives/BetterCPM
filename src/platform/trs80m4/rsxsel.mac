@@ -33,10 +33,25 @@ RS_SELECT:                              ; select and load RSX utility
         ADD     HL,DE
         EX      DE,HL
         LD      HL,LY_RSX
-        LD      B,2
+        CALL    RS_READ
+        RET     NZ
+        INC     DE
+        INC     DE
+        INC     DE
+        LD      HL,LY_BUF
+        CALL    RS_READ                 ; stage the sector containing the stack
+        RET     NZ
+        LD      HL,LY_BUF
+        LD      DE,LY_RSX+0200H
+        LD      BC,01F4H
+        LDIR                            ; preserve the nine-byte return frame
+        LD      HL,LY_BUF+01FDH
+        LD      DE,LY_RSX+03FDH
+        LD      BC,3
+        LDIR                            ; install the fixed BDOS gateway
+        RET
 
-RS_LOOP:                                ; copy selected RSX image
-        PUSH    BC
+RS_READ:                                ; read one physical overlay sector
         PUSH    DE
         EX      DE,HL
         LD      A,(HL)
@@ -49,12 +64,6 @@ RS_LOOP:                                ; copy selected RSX image
         EX      DE,HL
         CALL    BIOPHREAD
         POP     DE
-        POP     BC
-        RET     NZ
-        INC     DE
-        INC     DE
-        INC     DE
-        DJNZ    RS_LOOP
         RET
 
 ; -------------------------------------------------------------------------------

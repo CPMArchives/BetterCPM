@@ -111,6 +111,7 @@ def main():
         JP      LY_DISK+15
 '''+reload[b:]
  loader=asm('reloader',reload,L['RELOADER'],896)
+ selector=asm('rsxselect',read('src/platform/z80pack/rsxsel.mac'),L['CONFIG']+0x380,128)
  bootfmt=(f'ZB_TRACKS EQU {fmt.raw_tracks}\n'
           f'ZB_SLOTS EQU {fmt.raw_track_bytes//128}\n')
  boot_source=read('src/platform/z80pack/boot.mac').replace('        INCLUDE bootfmt.inc',bootfmt)
@@ -125,7 +126,8 @@ def main():
  def put(record,data,capacity):
   if len(data)>capacity:raise ValueError('carrier overflow')
   logical[record*128:record*128+capacity]=data.ljust(capacity,b'\0')
- put(0,boot,128);put(8,resident,52*128);put(60,loader,1024);put(68,ctl,1024)
+ loader_carrier=loader.ljust(896,b'\0')+selector.ljust(128,b'\0')
+ put(0,boot,128);put(8,resident,52*128);put(60,loader_carrier,1024);put(68,ctl,1024)
  gateway_tail=bytes((0xc3,L['BDOS']&255,L['BDOS']>>8))
  def rsx_overlay(path):return path.read_bytes().ljust(1021,b'\0')+gateway_tail
  put(76,rsx_overlay(ROOT/'build/system/rsxloader.bin'),1024)

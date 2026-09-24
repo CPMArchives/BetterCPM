@@ -50,6 +50,13 @@ it into its execution slot. The final 12 bytes of the manager slot are never
 copied by this handoff; they contain the live return frame and BDOS gateway.
 The builder enforces a 1,012-byte executable/data prefix for manager overlays.
 
+The platform raw-overlay selectors enforce the same boundary. The TRS-80
+selector stages the second 512-byte sector, and the z80pack selector stages the
+eighth 128-byte record. Each installs bytes 0 through 1,011, preserves the nine
+live return-frame bytes at offsets 1,012 through 1,020, and installs the common
+three-byte BDOS gateway at offsets 1,021 through 1,023. Raw replacement can
+therefore return through the active frame without retaining the old overlay.
+
 The top 3,584 bytes of the caller workspace are reserved as follows:
 
 | Offset from reserved base | Size | Purpose |
@@ -92,7 +99,9 @@ selector without replacing the physical-read status flags. Failure recovery
 moves its return frame back to the protected extension caller's stack before
 raw manager restoration can overwrite the manager slot. The focused loader
 safety test verifies both behaviors, including a restoration stub that
-deliberately overwrites the former manager-stack location.
+deliberately overwrites the former manager-stack location. It also executes
+both platform selectors against synthetic carriers and verifies the preserved
+frame and installed gateway byte for byte.
 
 Production dispatch remains gated. Version-1 requests have no workspace fields
 and must never be treated as 18-byte requests. Their mutation path and warm boot

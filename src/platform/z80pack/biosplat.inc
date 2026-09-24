@@ -83,15 +83,14 @@ PL_OVLOAD:                              ; load control overlay
         JP LY_DISK+15
 
 PL_RSXLOAD:                             ; load selected RSX utility
-        ADD A,A
-        ADD A,A
-        ADD A,A
-        ADD A,76
-        LD E,A
-        LD D,0
-        LD HL,LY_RSX
+        LD C,A
+        LD HL,LY_CFG
+        LD DE,60
         LD B,8
-        JP LY_DISK+15
+        CALL LY_DISK+15
+        RET NZ
+        LD A,C
+        JP LY_CFG+0380H
 
 ; -------------------------------------------------------------------------------
 ; Carrier Load Failure
