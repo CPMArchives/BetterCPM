@@ -1,0 +1,415 @@
+        INCLUDE layout.inc
+
+; ********************************************************************************
+; *                    BetterCP/M Retained Carrier Loader                       *
+; *                                                                              *
+; * Reloads one retained carrier into bounded transaction scratch, validates     *
+; * its complete carrier and metadata streams, and hands normalized facts to     *
+; * the retained-member preparer. Final success is published only after every    *
+; * retained profile member has completed preparation.                           *
+; ********************************************************************************
+
+KEBASE          EQU     LY_RSX
+FLOPEN          EQU     LY_FILE
+FLNEXT          EQU     LY_FILE+3
+CFGB            EQU     LY_CFG
+RSTABLE         EQU     LY_RSTA+1
+
+  ; Context: request, candidate facts, high, plan, snapshot descriptors,
+  ; union descriptors, durable cursor, retained index/count, then current
+  ; carrier, exact carrier length, and normalized facts.
+
+        CSEG
+        .PHASE  KEBASE
+
+; ================================================================================
+; =                         Retained Carrier Streaming                           =
+; =                                                                              =
+; = Reopens the next retained profile member and discovers its exact carrier     =
+; = length while transferring only complete 512-byte file records.               =
+; ================================================================================
+
+KE_ENTRY:                               ; enter retained carrier loader
+        LD      (KE_CTX),DE
+        EX      DE,HL
+        LD      DE,22
+        ADD     HL,DE
+        LD      A,(HL)
+        CP      05AH
+        JP      NZ,KE_BAD
+KE_LOOP:                                ; select next retained profile member
+        LD      HL,(KE_CTX)
+        LD      DE,14
+        ADD     HL,DE
+        LD      A,(HL)
+        LD      B,A
+        INC     HL
+        LD      A,(HL)
+        CP      B
+        JP      Z,KE_DONE
+        JP      C,KE_BAD
+        LD      A,B
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        LD      L,A
+        LD      H,0
+        LD      DE,RSTABLE
+        ADD     HL,DE
+        LD      (KE_NAME),HL
+        LD      DE,(KE_CTX)
+        EX      DE,HL
+        LD      DE,12
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (KE_BASE),DE
+        LD      (KE_DEST),DE
+        CALL    KE_ROOM
+        JP      NZ,KE_BAD
+        LD      HL,(KE_NAME)
+        LD      A,1
+        CALL    FLOPEN
+        JP      NZ,KE_BAD
+        CALL    KE_NEXT
+        JP      NZ,KE_BAD
+        LD      HL,(KE_BASE)
+        LD      DE,KE_MAGIC
+        LD      B,4
+
+KE_MLOOP:                               ; validate framing signature
+        LD      A,(DE)
+        CP      (HL)
+        JP      NZ,KE_BAD
+        INC     DE
+        INC     HL
+        DJNZ    KE_MLOOP
+        LD      A,(HL)
+        CP      1
+        JR      Z,KE_V1
+        CP      2
+        JP      NZ,KE_BAD
+        LD      HL,(KE_BASE)
+        LD      DE,30
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (KE_MOFF),DE
+        LD      HL,(KE_BASE)
+        ADD     HL,DE
+        JP      C,KE_BAD
+        LD      DE,12
+        ADD     HL,DE
+        JP      C,KE_BAD
+        LD      (KE_NEED),HL
+        CALL    KE_FILL
+        JP      NZ,KE_BAD
+        LD      HL,(KE_BASE)
+        LD      DE,(KE_MOFF)
+        ADD     HL,DE
+        JP      C,KE_BAD
+        LD      DE,KE_BMET
+        LD      B,4
+
+KE_BMETLP:                              ; validate metadata framing signature
+        LD      A,(DE)
+        CP      (HL)
+        JP      NZ,KE_BAD
+        INC     DE
+        INC     HL
+        DJNZ    KE_BMETLP
+        LD      HL,(KE_BASE)
+        LD      DE,(KE_MOFF)
+        ADD     HL,DE
+        LD      DE,8
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      A,D
+        OR      E
+        JP      Z,KE_BAD
+        LD      HL,(KE_MOFF)
+        ADD     HL,DE
+        JP      C,KE_BAD
+        JR      KE_HAVE_LEN
+
+KE_V1:                                  ; derive legacy carrier length
+        LD      HL,(KE_BASE)
+        LD      DE,30
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (KE_MOFF),DE
+        LD      HL,(KE_BASE)
+        LD      BC,42
+        ADD     HL,BC
+        LD      A,(HL)
+        LD      C,A
+        LD      B,0
+        EX      DE,HL
+        ADD     HL,BC
+        JP      C,KE_BAD
+
+KE_HAVE_LEN:                            ; transfer through exact carrier end
+        LD      (KE_LEN),HL
+        LD      DE,(KE_BASE)
+        ADD     HL,DE
+        JP      C,KE_BAD
+        LD      (KE_NEED),HL
+        CALL    KE_FILL
+        JP      NZ,KE_BAD
+
+; ================================================================================
+; =                         Complete Carrier Validation                          =
+; =                                                                              =
+; = Runs the authoritative carrier and metadata normalizers, then records only   =
+; = their fully published facts in the persistent transaction context.           =
+; ================================================================================
+
+KE_NORMALIZE:                           ; reserve normalized facts and scratch
+        LD      HL,(KE_DEST)
+        LD      (KE_FACTS),HL
+        LD      DE,46
+        ADD     HL,DE
+        JP      C,KE_BAD
+        LD      DE,(KE_CTX)
+        PUSH    HL
+        EX      DE,HL
+        LD      DE,4
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        POP     HL
+        OR      A
+        SBC     HL,DE
+        JP      C,KE_SPACE
+        JP      NZ,KE_BAD
+KE_SPACE:
+        LD      HL,(KE_FACTS)
+        LD      DE,26
+        ADD     HL,DE
+        LD      (KE_CURSOR),HL
+        LD      HL,KE_NCARR
+        CALL    KE_OVER
+        JP      NZ,KE_BAD
+        LD      HL,(KE_BASE)
+        LD      (KE_CREQ),HL
+        LD      HL,(KE_LEN)
+        LD      (KE_CREQ+2),HL
+        LD      HL,(KE_NAME)
+        LD      (KE_CREQ+4),HL
+        LD      HL,(KE_CURSOR)
+        LD      (KE_CREQ+6),HL
+        CALL    KE_HIGH
+        LD      (KE_CREQ+8),HL
+        LD      HL,(KE_FACTS)
+        LD      (KE_CREQ+10),HL
+        LD      A,0CCH
+        LD      (KE_CREQ+12),A
+        LD      DE,KE_CREQ
+        CALL    CFGB
+        OR      A
+        JP      NZ,KE_BAD
+        LD      A,(KE_CREQ+12)
+        CP      1
+        JP      NZ,KE_BAD
+        LD      HL,KE_NMETA
+        CALL    KE_OVER
+        JP      NZ,KE_BAD
+        LD      HL,(KE_BASE)
+        LD      (KE_MREQ),HL
+        LD      HL,(KE_LEN)
+        LD      (KE_MREQ+2),HL
+        LD      HL,(KE_CURSOR)
+        LD      (KE_MREQ+4),HL
+        CALL    KE_HIGH
+        LD      (KE_MREQ+6),HL
+        LD      HL,(KE_FACTS)
+        LD      (KE_MREQ+8),HL
+        LD      A,0CCH
+        LD      (KE_MREQ+10),A
+        LD      DE,KE_MREQ
+        CALL    CFGB
+        OR      A
+        JP      NZ,KE_BAD
+        LD      A,(KE_MREQ+10)
+        CP      1
+        JP      NZ,KE_BAD
+
+  ; Publish the current normalized inputs only after both validators succeed.
+        LD      HL,(KE_CTX)
+        LD      DE,16
+        ADD     HL,DE
+        LD      DE,(KE_BASE)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      DE,(KE_LEN)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      DE,(KE_FACTS)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      HL,KE_NMOVE
+        CALL    KE_OVER
+        JP      NZ,KE_BAD
+        LD      HL,KE_NPREP
+        JP      KE_HANDOFF
+
+; ================================================================================
+; =                            Transaction Publication                           =
+; ================================================================================
+
+KE_DONE:                                ; publish only the complete preparation
+        LD      HL,(KE_CTX)
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (KE_PUBLIC),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (KE_FACTS),DE
+        LD      HL,(KE_CTX)
+        LD      DE,12
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,(KE_FACTS)
+        LD      BC,24
+        ADD     HL,BC
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      HL,(KE_FACTS)
+        LD      BC,22
+        ADD     HL,BC
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,(KE_PUBLIC)
+        LD      BC,12
+        ADD     HL,BC
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      HL,(KE_FACTS)
+        XOR     A
+        RET
+
+; ================================================================================
+; =                              Local Utilities                                 =
+; ================================================================================
+
+KE_FILL:                                ; fill through exclusive KE_NEED
+        LD      HL,(KE_DEST)
+        LD      DE,(KE_NEED)
+        OR      A
+        SBC     HL,DE
+        JR      NC,KE_FILLED
+        CALL    KE_ROOM
+        RET     NZ
+        CALL    KE_NEXT
+        RET     NZ
+        JR      KE_FILL
+KE_FILLED:
+        XOR     A
+        RET
+
+KE_NEXT:                                ; read one 512-byte carrier record
+        LD      HL,(KE_DEST)
+        CALL    FLNEXT
+        RET     NZ
+        LD      (KE_DEST),HL
+        RET
+
+KE_ROOM:                                ; prove one complete record fits
+        LD      HL,(KE_DEST)
+        LD      DE,0200H
+        OR      A
+        ADD     HL,DE
+        JR      C,KE_NOROOM
+        PUSH    HL
+        CALL    KE_HIGH
+        EX      DE,HL
+        POP     HL
+        OR      A
+        SBC     HL,DE
+        JR      C,KE_ROOMOK
+        JR      Z,KE_ROOMOK
+KE_NOROOM:
+        LD      A,0FFH
+        OR      A
+        RET
+KE_ROOMOK:
+        XOR     A
+        RET
+
+KE_HIGH:                                ; return exclusive high bound in HL
+        LD      HL,(KE_CTX)
+        LD      DE,4
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        RET
+
+KE_OVER:                                ; load one CONFIG-slot overlay
+        LD      A,1
+        CALL    FLOPEN
+        RET     NZ
+        LD      HL,CFGB
+        CALL    FLNEXT
+        RET     NZ
+        CALL    FLNEXT
+        RET
+
+KE_HANDOFF:                             ; replace this overlay safely
+        LD      (KE_HREQ),HL
+        LD      HL,LY_RSX
+        LD      (KE_HREQ+2),HL
+        LD      (KE_HREQ+4),HL
+        LD      HL,(KE_CTX)
+        LD      (KE_HREQ+6),HL
+        LD      DE,KE_HREQ
+        JP      CFGB+0320H
+
+KE_BAD:                                 ; reject retained preparation
+        LD      A,0FFH
+        OR      A
+        RET
+
+KE_MAGIC:       DB      'B','R','S','X' ; carrier signature
+KE_BMET:        DB      'B','M','E','T' ; metadata signature
+KE_NCARR:       DB      'R3CARR  '      ; carrier validator stem
+KE_NMETA:       DB      'R3META  '      ; metadata normalizer stem
+KE_NMOVE:       DB      'R3MOVE  '      ; safe handoff overlay stem
+KE_NPREP:       DB      'R3KPRE  '      ; retained preparer stem
+KE_CTX:         DW      0               ; transaction context
+KE_NAME:        DW      0               ; retained filename stem
+KE_BASE:        DW      0               ; carrier scratch base
+KE_DEST:        DW      0               ; next stream destination
+KE_NEED:        DW      0               ; absolute required stream end
+KE_MOFF:        DW      0               ; metadata offset
+KE_LEN:         DW      0               ; exact carrier length
+KE_FACTS:       DW      0               ; normalized fact block
+KE_CURSOR:      DW      0               ; normalizer scratch cursor
+KE_PUBLIC:      DW      0               ; public Function-202 request
+KE_CREQ:        DS      13              ; carrier validation request
+KE_MREQ:        DS      11              ; metadata validation request
+KE_HREQ:        DS      8               ; replacement-overlay handoff request
+
+        .DEPHASE
+        END

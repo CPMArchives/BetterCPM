@@ -46,6 +46,9 @@ def main() -> None:
     metadata = build(args.assembler, "r3metadata", "r3meta.mac", "RMBASE", cfg)
     coordinator = build(args.assembler, "r3coord", "r3coord.mac", "RCBASE", rsx)
     profile = build(args.assembler, "r3profile", "r3prof.mac", "PFBASE", rsx)
+    retained_context = build(args.assembler, "r3kctx", "r3kctx.mac", "KCBASE", rsx)
+    retained = build(args.assembler, "r3keep", "r3keep.mac", "KEBASE", rsx)
+    retained_prepare = build(args.assembler, "r3kpre", "r3kpre.mac", "KPBASE", rsx)
     mover = build(args.assembler, "r3mover", "rsxmover.mac", "RMBASE", cfg)
     schedule = build(args.assembler, "r3sched", "rsxsched.mac", "RSBASE", cfg + 0x120)
     handoff = build(args.assembler, "r3ovload", "r3ovload.mac", "ROBASE", cfg + 0x320)
@@ -72,6 +75,15 @@ def main() -> None:
     if len(profile) > 1021:
         raise ValueError("profile builder exceeds gateway-safe slot: "
                          f"{len(profile)}")
+    if len(retained_context) > 1021:
+        raise ValueError("retained context constructor exceeds gateway-safe slot: "
+                         f"{len(retained_context)}")
+    if len(retained) > 1021:
+        raise ValueError("retained carrier loader exceeds gateway-safe slot: "
+                         f"{len(retained)}")
+    if len(retained_prepare) > 1021:
+        raise ValueError("retained preparer exceeds gateway-safe slot: "
+                         f"{len(retained_prepare)}")
     if len(commit) > 1021:
         raise ValueError(f"commit overlay exceeds gateway-safe slot: {len(commit)}")
     gateway = bytes((0xC3, LAYOUT["BDOS"] & 0xFF, LAYOUT["BDOS"] >> 8))
@@ -83,6 +95,9 @@ def main() -> None:
         "R3META.RSX": metadata,
         "R3COORD.RSX": coordinator.ljust(1021, b"\0") + gateway,
         "R3PROF.RSX": profile.ljust(1021, b"\0") + gateway,
+        "R3KCTX.RSX": retained_context.ljust(1021, b"\0") + gateway,
+        "R3KEEP.RSX": retained.ljust(1021, b"\0") + gateway,
+        "R3KPRE.RSX": retained_prepare.ljust(1021, b"\0") + gateway,
         "R3MOVE.RSX": bytes(image),
         "R3COMIT.RSX": commit.ljust(1021, b"\0") + gateway,
     }

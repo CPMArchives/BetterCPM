@@ -1,0 +1,497 @@
+        INCLUDE layout.inc
+
+; ********************************************************************************
+; *                   BetterCP/M Retained Member Preparer                       *
+; *                                                                              *
+; * Converts one completely normalized retained carrier into either a durable    *
+; * STATEFUL pointer-slot union or a commit-ready STATELESS snapshot. COLD_ONLY   *
+; * members require neither. It then returns to the retained carrier loader.      *
+; ********************************************************************************
+
+KPBASE          EQU     LY_RSX
+FLOPEN          EQU     LY_FILE
+FLNEXT          EQU     LY_FILE+3
+CFGB            EQU     LY_CFG
+
+        CSEG
+        .PHASE  KPBASE
+
+; ================================================================================
+; =                           Member Classification                              =
+; =                                                                              =
+; = Reconciles normalized carrier facts with the prospective plan before any     =
+; = durable transaction descriptor is published.                                 =
+; ================================================================================
+
+KP_ENTRY:                               ; enter retained member preparer
+        LD      (KP_CTX),DE
+        EX      DE,HL
+        LD      DE,14
+        ADD     HL,DE
+        LD      A,(HL)
+        LD      (KP_INDEX),A
+        LD      B,A
+        INC     HL
+        LD      A,(HL)
+        CP      B
+        JP      C,KP_BAD
+        JP      Z,KP_BAD
+        LD      HL,(KP_CTX)
+        LD      DE,20
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (KP_FACTS),DE
+        LD      HL,(KP_CTX)
+        LD      DE,6
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        LD      A,(KP_INDEX)
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE
+        LD      (KP_PLAN),HL
+        LD      DE,4
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (KP_ALLOC),DE
+        INC     HL
+        LD      A,(HL)
+        LD      (KP_CLASS),A
+        LD      HL,(KP_FACTS)
+        LD      DE,4
+        ADD     HL,DE
+        LD      A,(HL)
+        LD      C,A
+        INC     HL
+        LD      A,(HL)
+        LD      B,A
+        LD      HL,(KP_ALLOC)
+        OR      A
+        SBC     HL,BC
+        JP      NZ,KP_BAD
+        LD      HL,(KP_FACTS)
+        LD      DE,20
+        ADD     HL,DE
+        LD      A,(HL)
+        LD      B,A
+        LD      A,(KP_CLASS)
+        CP      B
+        JP      NZ,KP_BAD
+        CALL    KP_GETCURSOR
+        OR      A
+        JP      Z,KP_SLESS
+        CP      1
+        JP      Z,KP_SFUL
+        CP      3
+        JP      Z,KP_FINISH
+        JP      KP_BAD
+
+; ================================================================================
+; =                        Stateful Pointer-Union Build                          =
+; ================================================================================
+
+KP_SFUL:                                ; prepare retained pointer-slot union
+        LD      HL,(KP_FACTS)
+        LD      DE,12
+        ADD     HL,DE
+        LD      A,(HL)
+        LD      (KP_SCNT),A
+        INC     HL
+        LD      A,(HL)
+        OR      A
+        JP      NZ,KP_BAD
+        LD      HL,(KP_FACTS)
+        LD      DE,16
+        ADD     HL,DE
+        LD      A,(HL)
+        LD      (KP_RCNT),A
+        LD      B,A
+        LD      A,(KP_SCNT)
+        ADD     A,B
+        JP      C,KP_BAD
+        LD      (KP_CAP),A
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        LD      HL,(KP_FACTS)
+        LD      BC,46
+        ADD     HL,BC
+        LD      (KP_TEMP),HL
+        ADD     HL,DE
+        JP      C,KP_BAD
+        CALL    KP_FITS
+        JP      NZ,KP_BAD
+        LD      HL,(KP_ALLOC)
+        LD      (KP_UREQ),HL
+        LD      A,(KP_SCNT)
+        LD      (KP_UREQ+2),A
+        LD      A,(KP_RCNT)
+        LD      (KP_UREQ+3),A
+        LD      HL,(KP_FACTS)
+        LD      DE,10
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (KP_UREQ+4),DE
+        LD      HL,(KP_FACTS)
+        LD      DE,14
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (KP_UREQ+6),DE
+        LD      HL,(KP_TEMP)
+        LD      (KP_UREQ+8),HL
+        LD      A,(KP_CAP)
+        LD      (KP_UREQ+10),A
+        XOR     A
+        LD      (KP_UREQ+11),A
+        LD      A,0CCH
+        LD      (KP_UREQ+12),A
+        LD      HL,KP_NSLOTS
+        CALL    KP_OVER
+        JP      NZ,KP_BAD
+        LD      DE,KP_UREQ
+        CALL    CFGB
+        OR      A
+        JP      NZ,KP_BAD
+        LD      A,(KP_UREQ+12)
+        LD      (KP_COUNT),A
+        LD      B,A
+        LD      A,(KP_CAP)
+        CP      B
+        JP      C,KP_BAD
+        LD      A,B
+        ADD     A,A
+        LD      C,A
+        LD      B,0
+        CALL    KP_RESERVE
+        JP      NZ,KP_BAD
+        LD      HL,(KP_TEMP)
+        LD      DE,(KP_CURSOR)
+        PUSH    BC
+        LDIR
+        POP     BC
+        LD      A,(KP_INDEX)
+        CALL    KP_UPTR
+        LD      DE,(KP_CURSOR)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      A,(KP_COUNT)
+        LD      (HL),A
+        LD      HL,(KP_CURSOR)
+        ADD     HL,BC
+        LD      (KP_CURSOR),HL
+        JP      KP_FINISH
+
+; ================================================================================
+; =                         Stateless Snapshot Build                             =
+; ================================================================================
+
+KP_SLESS:                               ; prepare retained commit-ready image
+        LD      HL,(KP_FACTS)
+        LD      DE,46
+        ADD     HL,DE
+        LD      (KP_TEMP),HL
+        LD      DE,(KP_ALLOC)
+        ADD     HL,DE
+        JP      C,KP_BAD
+        CALL    KP_FITS
+        JP      NZ,KP_BAD
+        LD      HL,KP_SREQ
+        LD      DE,(KP_FACTS)
+        LD      B,4
+KP_FACTWORDS:                           ; payload through linked-base facts
+        LD      A,(DE)
+        LD      (HL),A
+        INC     DE
+        INC     HL
+        LD      A,(DE)
+        LD      (HL),A
+        INC     DE
+        INC     HL
+        DJNZ    KP_FACTWORDS
+        PUSH    HL
+        LD      HL,(KP_PLAN)
+        INC     HL
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        POP     HL
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        PUSH    HL
+        LD      HL,(KP_FACTS)
+        LD      DE,10
+        ADD     HL,DE
+        EX      DE,HL
+        POP     HL
+        LD      B,2
+KP_RELOCWORDS:                          ; static-list address and count
+        LD      A,(DE)
+        LD      (HL),A
+        INC     DE
+        INC     HL
+        LD      A,(DE)
+        LD      (HL),A
+        INC     DE
+        INC     HL
+        DJNZ    KP_RELOCWORDS
+        PUSH    HL
+        LD      HL,(KP_FACTS)
+        LD      DE,18
+        ADD     HL,DE
+        EX      DE,HL
+        POP     HL
+        LD      A,(DE)
+        LD      (HL),A
+        INC     DE
+        INC     HL
+        LD      A,(DE)
+        LD      (HL),A
+        INC     HL
+        PUSH    HL
+        LD      HL,(KP_FACTS)
+        LD      DE,17
+        ADD     HL,DE
+        EX      DE,HL
+        POP     HL
+        LD      A,(DE)
+        LD      (HL),A
+        INC     HL
+        PUSH    HL
+        LD      HL,(KP_FACTS)
+        LD      DE,21
+        ADD     HL,DE
+        LD      A,(HL)
+        POP     HL
+        LD      (HL),A
+        INC     HL
+        LD      DE,(KP_TEMP)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        PUSH    HL
+        LD      HL,(KP_FACTS)
+        LD      DE,8
+        ADD     HL,DE
+        EX      DE,HL
+        POP     HL
+        LD      A,(DE)
+        LD      (HL),A
+        INC     DE
+        INC     HL
+        LD      A,(DE)
+        LD      (HL),A
+        INC     HL
+        LD      (HL),0CCH
+        LD      HL,KP_NSNAP
+        CALL    KP_OVER
+        JP      NZ,KP_BAD
+        LD      DE,KP_SREQ
+        CALL    CFGB
+        OR      A
+        JP      NZ,KP_BAD
+        LD      A,(KP_SREQ+22)
+        CP      1
+        JP      NZ,KP_BAD
+        LD      BC,(KP_ALLOC)
+        CALL    KP_RESERVE
+        JP      NZ,KP_BAD
+        LD      HL,(KP_TEMP)
+        LD      DE,(KP_CURSOR)
+        PUSH    BC
+        LDIR
+        POP     BC
+        LD      A,(KP_INDEX)
+        CALL    KP_SPTR
+        LD      DE,(KP_CURSOR)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      DE,(KP_ALLOC)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        PUSH    HL
+        LD      HL,(KP_FACTS)
+        LD      DE,8
+        ADD     HL,DE
+        EX      DE,HL
+        POP     HL
+        LD      A,(DE)
+        LD      (HL),A
+        INC     DE
+        INC     HL
+        LD      A,(DE)
+        LD      (HL),A
+        LD      HL,(KP_CURSOR)
+        ADD     HL,BC
+        LD      (KP_CURSOR),HL
+
+; ================================================================================
+; =                         Retained Loop Continuation                           =
+; ================================================================================
+
+KP_FINISH:                              ; advance durable cursor and member index
+        LD      HL,(KP_CTX)
+        LD      DE,12
+        ADD     HL,DE
+        LD      DE,(KP_CURSOR)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        INC     (HL)
+        LD      HL,KP_NMOVE
+        CALL    KP_OVER
+        JP      NZ,KP_BAD
+        LD      HL,KP_NKEEP
+        LD      (KP_HREQ),HL
+        LD      HL,LY_RSX
+        LD      (KP_HREQ+2),HL
+        LD      (KP_HREQ+4),HL
+        LD      HL,(KP_CTX)
+        LD      (KP_HREQ+6),HL
+        LD      DE,KP_HREQ
+        JP      CFGB+0320H
+
+; ================================================================================
+; =                              Local Utilities                                 =
+; ================================================================================
+
+KP_RESERVE:                             ; reserve BC durable bytes
+        CALL    KP_GETCURSOR
+        ADD     HL,BC
+        JR      C,KP_RBAD
+        CALL    KP_FITS
+        RET
+KP_RBAD:
+        LD      A,0FFH
+        OR      A
+        RET
+
+KP_GETCURSOR:                           ; load durable cursor
+        LD      HL,(KP_CTX)
+        LD      DE,12
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        LD      (KP_CURSOR),HL
+        RET
+
+KP_FITS:                                ; accept HL at or below exclusive high
+        PUSH    HL
+        LD      HL,(KP_CTX)
+        LD      DE,4
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        POP     HL
+        OR      A
+        SBC     HL,DE
+        JR      C,KP_FITOK
+        JR      Z,KP_FITOK
+        LD      A,0FFH
+        OR      A
+        RET
+KP_FITOK:
+        XOR     A
+        RET
+
+KP_SPTR:                                ; locate six-byte snapshot descriptor
+        LD      E,A
+        ADD     A,A
+        ADD     A,E
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        PUSH    DE
+        LD      HL,(KP_CTX)
+        LD      DE,8
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        POP     DE
+        ADD     HL,DE
+        RET
+
+KP_UPTR:                                ; locate three-byte union descriptor
+        LD      E,A
+        ADD     A,A
+        ADD     A,E
+        LD      E,A
+        LD      D,0
+        PUSH    DE
+        LD      HL,(KP_CTX)
+        LD      DE,10
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        POP     DE
+        ADD     HL,DE
+        RET
+
+KP_OVER:                                ; load one CONFIG-slot overlay
+        LD      A,1
+        CALL    FLOPEN
+        RET     NZ
+        LD      HL,CFGB
+        CALL    FLNEXT
+        RET     NZ
+        CALL    FLNEXT
+        RET
+
+KP_BAD:                                 ; reject retained preparation
+        LD      A,0FFH
+        OR      A
+        RET
+
+KP_NSLOTS:      DB      'R3SLOTS '      ; pointer-union overlay stem
+KP_NSNAP:       DB      'R3SNAP  '      ; snapshot overlay stem
+KP_NMOVE:       DB      'R3MOVE  '      ; safe handoff overlay stem
+KP_NKEEP:       DB      'R3KEEP  '      ; retained loader stem
+KP_CTX:         DW      0               ; transaction context
+KP_FACTS:       DW      0               ; current normalized facts
+KP_PLAN:        DW      0               ; current plan record
+KP_ALLOC:       DW      0               ; current allocation size
+KP_TEMP:        DW      0               ; temporary union or snapshot
+KP_CURSOR:      DW      0               ; durable output cursor
+KP_INDEX:       DB      0               ; retained profile index
+KP_CLASS:       DB      0               ; reconstruction class
+KP_SCNT:        DB      0               ; static relocation count
+KP_RCNT:        DB      0               ; runtime-pointer count
+KP_CAP:         DB      0               ; worst-case union capacity
+KP_COUNT:       DB      0               ; returned union count
+KP_UREQ:        DS      13              ; pointer-union request
+KP_SREQ:        DS      23              ; snapshot request
+KP_HREQ:        DS      8               ; replacement-overlay handoff request
+
+        .DEPHASE
+        END
