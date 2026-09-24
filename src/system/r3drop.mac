@@ -51,7 +51,7 @@ RD_OPERATION:                           ; accept transactional removal
         INC     HL
         LD      D,(HL)
         EX      DE,HL
-        LD      DE,0E00H                ; sector scratch plus private handoff stack
+        LD      DE,0F00H                ; overlay workspace plus manager stack band
         OR      A
         SBC     HL,DE
         JP      C,RD_BAD

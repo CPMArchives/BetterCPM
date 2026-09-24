@@ -8,9 +8,9 @@ persistent-profile publication, resolver restoration, and resident
 self-retirement. The former manager, validator, and publisher path has been
 removed; production accepts only BRSX version 2 carriers.
 
-Production cutover is complete. Stage 3 remains open only for the final
-cross-platform qualification deliverable: forced movement, failure rollback,
-warm-boot lifecycle, and immutable-code evidence on trs80gp and cpmsim.
+Production cutover and Stage 3 qualification are complete. Forced movement,
+failure rollback, warm-boot lifecycle, and immutable-code behavior pass on
+trs80gp and cpmsim.
 
 ## Prepared transaction
 
@@ -56,7 +56,8 @@ live return-frame bytes at offsets 1,012 through 1,020, and installs the common
 three-byte BDOS gateway at offsets 1,021 through 1,023. Raw replacement can
 therefore return through the active frame without retaining the old overlay.
 
-The top 3,584 bytes of the caller workspace are reserved as follows:
+Transaction RAM is capped at `7000h`, below every prospective resident move.
+The top 3,840 bytes of that effective caller workspace are reserved as follows:
 
 | Offset from reserved base | Size | Purpose |
 |---:|---:|---|
@@ -65,6 +66,13 @@ The top 3,584 bytes of the caller workspace are reserved as follows:
 | 0500h | 256 | reader state and private stack |
 | 0600h | 1,024 | saved CONFIG/movement workspace |
 | 0A00h | 1,024 | prefetched resolver |
+| 0E00h | 256 | isolated manager return stack |
+
+The entry moves the fixed three-word extension return frame into the final
+stack band before any manager phase executes. Disk and overlay reads therefore
+cannot overwrite either that frame or live STATEFUL allocations. The raw file
+reader consumes two complete 512-byte records for every private overlay;
+builders pad all such overlay files to exactly 1,024 bytes.
 
 The resolver and commit dependencies are read before the commit starts. Resolver
 restoration after commit is a bounded memory copy, with no file operation that
@@ -90,9 +98,10 @@ hazard. It checks:
 - final removal restoring the default TPA ceiling.
 
 The coordinator, overlay handoff, BRSX-v2 carrier normalizer, and in-memory
-commit have separate focused tests. Both target images are buildable, and the
-production stateless load/unload workflow passes on both targets. This is not
-yet the final cross-platform STATEFUL qualification evidence.
+commit have separate focused tests. The production test snapshots each
+STATEFUL carrier byte before movement and proves that reconstruction changes
+only loader-owned header words and declared pointer slots; executable code and
+immutable descriptors remain byte-exact.
 
 The platform-loader and return-stack concerns found during exploratory
 production integration are now resolved. `M4_RSLOAD` preserves the requested
@@ -110,11 +119,11 @@ explicit workspace bounds; BATCHIO self-retirement uses the same removal
 transaction and then warm boots. Warm boot preserves the committed live chain
 and does not reload retained STATEFUL data from the original carrier.
 
-Emulator qualification is still required against the final integrated path;
-earlier experimental runs are not release evidence.
-
-These tests do not claim production cross-platform stateful qualification or
-completion of the immutable-code acceptance rule. The remaining Stage 3 gate
-is forced-movement, failure, warm-boot, and immutable-code qualification on
-both trs80gp and cpmsim. No further production architecture increment is
-planned.
+`tools/test_stage3_cross_platform.py` supplies final integrated evidence on
+both supported 1.0 platforms. Its success scenario initializes and mutates a
+STATEFUL provider, forces relocation by removing the provider below it, checks
+state before and after warm boot, and exercises the callable service through
+Function 208. Its rollback scenario removes a required resolver file, proves
+the transaction fails, and verifies that the former profile and state remain
+published. Both scenarios pass on trs80gp and cpmsim. Stage 3 is complete; no
+further production architecture increment is planned.

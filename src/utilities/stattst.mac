@@ -1,0 +1,208 @@
+; ********************************************************************************
+; *                    BetterCP/M STATEFUL Qualification                        *
+; *                                                                              *
+; * Invokes the private STAT service supplied by STATEFUL.RSX. This development *
+; * command initializes or mutates its state and verifies preservation after    *
+; * relocation and warm boot.                                                   *
+; ********************************************************************************
+
+BDOS            EQU     0005H
+
+        CSEG
+        .PHASE  0103H
+
+; ================================================================================
+; =                         Command and Service Lookup                           =
+; ================================================================================
+
+START:                                  ; select INIT, MUTATE, or CHECK
+        LD      A,(0080H)
+        OR      A
+        JP      Z,BAD_ARGUMENT
+        LD      B,A
+        LD      HL,0081H
+
+ARG_SKIP:                               ; accept either conventional tail form
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,ARG_SELECT
+        INC     HL
+        DJNZ    ARG_SKIP
+        JP      BAD_ARGUMENT
+
+ARG_SELECT:                             ; decode the first non-space argument
+        CP      'I'
+        JR      Z,DO_INIT
+        CP      'M'
+        JR      Z,DO_MUTATE
+        CP      'C'
+        JP      NZ,FAILED
+        LD      A,2
+        JR      HAVE_OP
+
+DO_INIT:                                ; initialize the qualification state
+        XOR     A
+        JR      HAVE_OP
+
+DO_MUTATE:                              ; mutate three times before relocation
+        LD      A,1
+
+HAVE_OP:                                ; resolve the callable STAT service
+        LD      (STATREQ+2),A
+        LD      DE,LOOKUP
+        LD      C,208
+        CALL    BDOS
+        OR      A
+        JP      NZ,LOOKUP_FAILED
+        LD      HL,(LOOKUP+12)
+        LD      DE,STATREQ
+        LD      BC,SERVICE_RET
+        PUSH    BC
+        JP      (HL)
+
+SERVICE_RET:                            ; validate or repeat the operation
+        LD      (RESULT),A
+        LD      (RETURNED),HL
+        LD      A,(STATREQ+2)
+        CP      1
+        JR      NZ,RESULT_CHECK
+        LD      A,(REPEATS)
+        INC     A
+        LD      (REPEATS),A
+        CP      3
+        JR      NC,RESULT_CHECK
+        LD      A,1
+        JR      HAVE_OP
+
+RESULT_CHECK:                           ; dispatch operation-specific checks
+        LD      A,(STATREQ+2)
+        CP      2
+        JR      Z,CHECK_REPORT
+        LD      A,(RESULT)
+        OR      A
+        JP      NZ,CALL_FAILED
+        LD      A,(STATREQ+2)
+        OR      A
+        LD      DE,INIT_OK
+        JP      Z,PRINT
+        LD      DE,MUTATE_OK
+        JP      PRINT
+
+; ================================================================================
+; =                           Preservation Verification                          =
+; ================================================================================
+
+CHECK_REPORT:                           ; verify mutable and pointer state
+        LD      A,(RESULT)
+        CP      0A4H
+        JP      NZ,BAD_BUFFER
+        LD      HL,(STATREQ+4)
+        LD      DE,3
+        OR      A
+        SBC     HL,DE
+        JP      NZ,BAD_COUNTER
+        LD      HL,(STATREQ+6)
+        LD      DE,(STATREQ+8)
+        OR      A
+        SBC     HL,DE
+        JP      NZ,BAD_LINKED
+        LD      HL,(STATREQ+6)
+        LD      DE,(RETURNED)
+        OR      A
+        SBC     HL,DE
+        JP      NZ,BAD_RETURN
+        LD      HL,(STATREQ+10)
+        LD      DE,5
+        OR      A
+        SBC     HL,DE
+        JP      NZ,BAD_FIXED
+        LD      HL,(STATREQ+12)
+        LD      A,H
+        OR      L
+        JP      NZ,BAD_NULL
+        LD      HL,(STATREQ+14)
+        INC     HL
+        LD      A,H
+        OR      L
+        JP      NZ,BAD_SENTINEL
+        LD      DE,CHECK_OK
+        JP      PRINT
+
+FAILED:                                 ; report any lookup or state mismatch
+        LD      DE,FAIL_MSG
+        JP      PRINT
+
+BAD_ARGUMENT:                           ; report invalid command tail
+        LD      DE,ARG_MSG
+        JP      PRINT
+
+LOOKUP_FAILED:                          ; report Function-208 lookup failure
+        LD      DE,LOOKUP_MSG
+        JP      PRINT
+
+CALL_FAILED:                            ; report provider-call failure
+        LD      DE,CALL_MSG
+        JP      PRINT
+
+BAD_BUFFER:                             ; report mutable-buffer mismatch
+        LD      DE,BUFFER_MSG
+        JP      PRINT
+
+BAD_COUNTER:                            ; report counter mismatch
+        LD      DE,COUNTER_MSG
+        JP      PRINT
+
+BAD_LINKED:                             ; report linked-pointer mismatch
+        LD      DE,LINKED_MSG
+        JP      PRINT
+
+BAD_RETURN:                             ; report returned-pointer mismatch
+        LD      DE,RETURN_MSG
+        JP      PRINT
+
+BAD_FIXED:                              ; report fixed-pointer mismatch
+        LD      DE,FIXED_MSG
+        JP      PRINT
+
+BAD_NULL:                               ; report null-pointer mismatch
+        LD      DE,NULL_MSG
+        JP      PRINT
+
+BAD_SENTINEL:                           ; report sentinel mismatch
+        LD      DE,SENTINEL_MSG
+
+PRINT:                                  ; print result and return to the CCP
+        LD      C,9
+        CALL    BDOS
+        RET
+
+; -------------------------------------------------------------------------------
+; Requests and Messages
+; -------------------------------------------------------------------------------
+
+LOOKUP:  DB     1,20,0,0,'S','T','A','T',1,0
+         DW     0,0
+         DB     0,0
+         DW     0
+         DB     0,0
+STATREQ: DB     1,16,0,0
+         DS     12
+RESULT:  DB     0
+REPEATS: DB     0
+RETURNED: DW    0
+INIT_OK: DB     'STATEFUL INIT PASS',13,10,'$'
+MUTATE_OK: DB   'STATEFUL MUTATE PASS',13,10,'$'
+CHECK_OK: DB    'STATEFUL CHECK PASS',13,10,'$'
+FAIL_MSG: DB    'STATEFUL CHECK FAILED',13,10,'$'
+ARG_MSG: DB     'STATEFUL ARGUMENT FAILED',13,10,'$'
+LOOKUP_MSG: DB  'STATEFUL LOOKUP FAILED',13,10,'$'
+CALL_MSG: DB    'STATEFUL SERVICE FAILED',13,10,'$'
+BUFFER_MSG: DB  'STATEFUL BUFFER FAILED',13,10,'$'
+COUNTER_MSG: DB 'STATEFUL COUNTER FAILED',13,10,'$'
+LINKED_MSG: DB  'STATEFUL LINKED POINTER FAILED',13,10,'$'
+RETURN_MSG: DB  'STATEFUL RETURN POINTER FAILED',13,10,'$'
+FIXED_MSG: DB   'STATEFUL FIXED POINTER FAILED',13,10,'$'
+NULL_MSG: DB    'STATEFUL NULL POINTER FAILED',13,10,'$'
+SENTINEL_MSG: DB 'STATEFUL SENTINEL FAILED',13,10,'$'
+        .DEPHASE
+        END     START
