@@ -39,6 +39,14 @@ def main() -> None:
     cfg = LAYOUT["CONFIG"]
     rsx = LAYOUT["RSX"]
 
+    entry = build(args.assembler, "r3entry", "r3entry.mac", "RVBASE", rsx)
+    entry_source = (ROOT / "src/system/r3entry.mac").read_text(encoding="ascii")
+    helper = entry_source[entry_source.index("RI_ENTRY:"):entry_source.index("RI_END:")]
+    io = assemble(args.assembler, "        INCLUDE layout.inc\n        ASEG\n        ORG 0\n" + helper + "        END\n",
+                  BUILD / "rsxio.bin", BUILD / "rsxio.lst", 0)
+    if len(io) > 256 or len(entry) > 1012:
+        raise ValueError("transaction entry exceeds its execution slot")
+
     plan = build(args.assembler, "r3plan", "rsxplan.mac", "RPBASE", cfg)
     slots = build(args.assembler, "r3slots", "rsxslots.mac", "SUBASE", cfg)
     snapshot = build(args.assembler, "r3snapshot", "r3snap.mac", "RNBASE", cfg)
@@ -49,10 +57,14 @@ def main() -> None:
     retained_context = build(args.assembler, "r3kctx", "r3kctx.mac", "KCBASE", rsx)
     retained = build(args.assembler, "r3keep", "r3keep.mac", "KEBASE", rsx)
     retained_prepare = build(args.assembler, "r3kpre", "r3kpre.mac", "KPBASE", rsx)
+    finalizer = build(args.assembler, "r3final", "r3final.mac", "RFBASE", rsx)
+    removal = build(args.assembler, "r3drop", "r3drop.mac", "RDBASE", rsx)
     mover = build(args.assembler, "r3mover", "rsxmover.mac", "RMBASE", cfg)
     schedule = build(args.assembler, "r3sched", "rsxsched.mac", "RSBASE", cfg + 0x120)
-    handoff = build(args.assembler, "r3ovload", "r3ovload.mac", "ROBASE", cfg + 0x320)
+    handoff = build(args.assembler, "r3ovload", "r3ovload.mac", "ROBASE", cfg + 0x310)
+    persistent = build(args.assembler, "r3persist", "r3pst.mac", "RTBASE", cfg + 0x38F)
     commit = build(args.assembler, "r3commit", "r3comit.mac", "RCBASE", rsx)
+    resolver = (BUILD / "rsxresolver.bin").read_bytes()
 
     for label, data in (("planner", plan), ("slot preparer", slots),
                         ("snapshot constructor", snapshot),
@@ -61,7 +73,8 @@ def main() -> None:
         if len(data) > 1024:
             raise ValueError(f"{label} exceeds the shared overlay: {len(data)}")
     regions = ((0, mover, "mover"), (0x120, schedule, "scheduler"),
-               (0x320, handoff, "handoff"))
+               (0x310, handoff, "handoff"),
+               (0x38F, persistent, "persistent publisher"))
     image = bytearray(1024)
     end = 0
     for offset, data, label in regions:
@@ -69,25 +82,35 @@ def main() -> None:
             raise ValueError(f"{label} overlaps the move overlay")
         image[offset:offset + len(data)] = data
         end = offset + len(data)
-    if len(coordinator) > 1021:
+    if len(coordinator) > 1012:
         raise ValueError("carrier coordinator exceeds gateway-safe slot: "
                          f"{len(coordinator)}")
-    if len(profile) > 1021:
+    if len(profile) > 1012:
         raise ValueError("profile builder exceeds gateway-safe slot: "
                          f"{len(profile)}")
-    if len(retained_context) > 1021:
+    if len(retained_context) > 1012:
         raise ValueError("retained context constructor exceeds gateway-safe slot: "
                          f"{len(retained_context)}")
-    if len(retained) > 1021:
+    if len(retained) > 1012:
         raise ValueError("retained carrier loader exceeds gateway-safe slot: "
                          f"{len(retained)}")
-    if len(retained_prepare) > 1021:
+    if len(retained_prepare) > 1012:
         raise ValueError("retained preparer exceeds gateway-safe slot: "
                          f"{len(retained_prepare)}")
-    if len(commit) > 1021:
+    if len(finalizer) > 1012:
+        raise ValueError("transaction finalizer exceeds gateway-safe slot: "
+                         f"{len(finalizer)}")
+    if len(removal) > 1012:
+        raise ValueError("removal coordinator exceeds gateway-safe slot: "
+                         f"{len(removal)}")
+    if len(commit) > 1012:
         raise ValueError(f"commit overlay exceeds gateway-safe slot: {len(commit)}")
+    if len(resolver) > 1012:
+        raise ValueError("resolver exceeds gateway-safe slot: "
+                         f"{len(resolver)}")
     gateway = bytes((0xC3, LAYOUT["BDOS"] & 0xFF, LAYOUT["BDOS"] >> 8))
     outputs = {
+        "R3ENTRY.RSX": entry.ljust(1021, b"\0") + gateway,
         "R3PLAN.RSX": plan,
         "R3SLOTS.RSX": slots,
         "R3SNAP.RSX": snapshot,
@@ -98,8 +121,11 @@ def main() -> None:
         "R3KCTX.RSX": retained_context.ljust(1021, b"\0") + gateway,
         "R3KEEP.RSX": retained.ljust(1021, b"\0") + gateway,
         "R3KPRE.RSX": retained_prepare.ljust(1021, b"\0") + gateway,
+        "R3FINAL.RSX": finalizer.ljust(1021, b"\0") + gateway,
+        "R3DROP.RSX": removal.ljust(1021, b"\0") + gateway,
         "R3MOVE.RSX": bytes(image),
         "R3COMIT.RSX": commit.ljust(1021, b"\0") + gateway,
+        "R3RESOL.RSX": resolver.ljust(1021, b"\0") + gateway,
     }
     for name, data in outputs.items():
         (BUILD / name).write_bytes(data)

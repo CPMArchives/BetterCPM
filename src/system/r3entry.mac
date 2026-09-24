@@ -1,0 +1,212 @@
+        INCLUDE layout.inc
+
+; ********************************************************************************
+; *                  BetterCP/M Prepared Transaction Entry                        *
+; ********************************************************************************
+
+RVBASE          EQU     LY_RSX
+        CSEG
+        .PHASE  RVBASE
+
+  ; Qualification entry for version-2 LOAD and UNLOAD requests. Production
+  ; Function 202 remains on the legacy path until lifecycle qualification.
+
+RV_ENTRY:                               ; enter prepared-profile selector
+        LD      (RV_REQ),DE
+        LD      A,(DE)
+        CP      2
+        JP      NZ,RV_BAD
+        INC     DE
+        LD      A,(DE)
+        CP      1
+        JR      Z,RV_LOAD
+        CP      2
+        JP      NZ,RV_BAD
+        JR      RV_UNLOAD
+
+RV_LOAD:                                ; select append transaction
+        LD      HL,RV_NLOAD
+        JR      RV_START
+
+RV_UNLOAD:                              ; select removal transaction
+        LD      HL,RV_NDROP
+
+RV_START:                               ; load the safe overlay handoff
+        LD      (RV_HREQ),HL
+        LD      HL,(RV_REQ)
+        LD      (RV_HREQ+4),HL
+        LD      DE,16
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,(0006H)              ; exclusive active TPA ceiling
+        OR      A
+        SBC     HL,DE
+        JP      C,RV_BAD
+        LD      HL,LY_RSX               ; manager code is not caller workspace
+        OR      A
+        SBC     HL,DE
+        JP      C,RV_BAD
+        EX      DE,HL
+        LD      DE,0E00H                ; sector scratch plus private handoff stack
+        OR      A
+        SBC     HL,DE
+        JP      C,RV_BAD
+        LD      (RV_HREQ+2),HL
+        PUSH    HL                      ; scratch must remain above workspace low
+        LD      HL,(RV_REQ)
+        LD      DE,14
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        POP     DE
+        PUSH    HL
+        LD      BC,0103H
+        OR      A
+        SBC     HL,BC
+        POP     HL
+        JP      C,RV_BAD
+        OR      A
+        SBC     HL,DE
+        JP      NC,RV_BAD
+        LD      HL,(RV_HREQ+2)
+        LD      BC,0400H
+        ADD     HL,BC
+        PUSH    HL
+        EX      DE,HL
+        LD      HL,RI_ENTRY
+        LD      BC,RI_END-RI_ENTRY
+        LDIR
+        POP     HL
+        LD      DE,RV_HREQ
+        LD      A,1
+        JP      (HL)
+
+RV_BAD:                                 ; reject an unavailable transaction phase
+        LD      A,0FFH
+        OR      A
+        RET
+
+RV_NLOAD:       DB      'R3COORD '      ; append transaction coordinator
+RV_NDROP:       DB      'R3DROP  '      ; removal transaction coordinator
+RV_REQ:         DW      0               ; public Function-202 request
+RV_HREQ:        DS      6               ; replacement-overlay handoff request
+
+
+; Position-independent overlay reader copied to scratch+0400H. HL is its
+; runtime entry address, DE is a filename (A=0) or handoff request (A=1).
+; Scratch holds a complete image, code, private state/stack, and a saved CFG.
+RI_ENTRY:                               ; enter position-independent staged reader
+        PUSH    IX
+        POP     BC
+        PUSH    DE
+        LD      DE,0100H
+        ADD     HL,DE
+        PUSH    HL
+        POP     IX
+        POP     DE
+        LD      (IX+16),C
+        LD      (IX+17),B
+        LD      (IX+0),A
+        LD      HL,0
+        ADD     HL,SP
+        LD      (IX+2),L
+        LD      (IX+3),H
+        PUSH    IX
+        POP     HL
+        LD      BC,0100H
+        ADD     HL,BC
+        LD      SP,HL
+        OR      A
+        JR      Z,RI_NAME
+        EX      DE,HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        INC     HL
+        INC     HL
+        LD      A,(HL)
+        LD      (IX+4),A
+        INC     HL
+        LD      A,(HL)
+        LD      (IX+5),A
+        PUSH    DE
+        PUSH    IX
+        POP     DE
+        LD      HL,0100H
+        ADD     HL,DE
+        EX      DE,HL
+        LD      HL,LY_CFG
+        LD      BC,0400H
+        LDIR
+        POP     DE
+RI_NAME:                                ; open the selected overlay
+        EX      DE,HL
+        LD      A,1
+        CALL    LY_FILE
+        JR      NZ,RI_FAIL
+        PUSH    IX
+        POP     HL
+        LD      DE,0500H
+        OR      A
+        SBC     HL,DE
+        PUSH    HL
+        CALL    LY_FILE+3
+        JR      NZ,RI_READFAIL
+        CALL    LY_FILE+3
+        JR      NZ,RI_READFAIL
+        POP     HL
+        LD      A,(IX+0)
+        OR      A
+        LD      DE,LY_CFG
+        LD      BC,0400H
+        JR      Z,RI_COPY
+        LD      DE,LY_RSX
+        LD      BC,03F4H
+RI_COPY:                                ; install the complete staged image
+        LDIR
+        LD      A,(IX+0)
+        OR      A
+        JR      Z,RI_OK
+        PUSH    IX
+        POP     HL
+        LD      DE,0100H
+        ADD     HL,DE
+        LD      DE,LY_CFG
+        LD      BC,0400H
+        LDIR
+RI_OK:                                  ; report successful replacement
+        XOR     A
+        JR      RI_RETURN
+RI_READFAIL:                            ; unwind the staged destination
+        POP     HL
+RI_FAIL:                                ; report overlay read failure
+        LD      A,0FFH
+RI_RETURN:                              ; restore the caller frame and dispatch
+        LD      L,(IX+2)
+        LD      H,(IX+3)
+        LD      SP,HL
+        LD      E,(IX+4)
+        LD      D,(IX+5)
+        LD      B,(IX+0)
+        LD      L,(IX+16)
+        LD      H,(IX+17)
+        PUSH    HL
+        POP     IX
+        OR      A
+        RET     NZ
+        LD      A,B
+        OR      A
+        RET     Z
+        LD      A,D
+        OR      E
+        RET     Z
+        JP      LY_RSX
+RI_END:                                 ; end the copied reader code
+
+        .DEPHASE
+        END

@@ -15,7 +15,7 @@ REQUEST = 0x5800
 COUNT = 0x5FF0
 SELECT = 0x5FF1
 WORK_LOW = 0x6000
-WORK_HIGH = 0x7000
+WORK_HIGH = 0x8800
 CARRIER_SOURCE = 0x9000
 CARR_SOURCE = 0x9400
 META_SOURCE = 0x9800
@@ -29,9 +29,11 @@ KEEP_SOURCE = 0xB400
 KPRE_SOURCE = 0xB800
 SLOTS_SOURCE = 0xBC00
 STATEFUL_SOURCE = 0xC000
+FINAL_SOURCE = 0xC400
 FACTS = 0x6400
 LIVE_LOW = 0xD600
 LIVE_HIGH = 0xEC00
+FINAL_IMAGE = b""
 
 
 def file_stub(work: Path) -> bytes:
@@ -40,7 +42,7 @@ def file_stub(work: Path) -> bytes:
         ORG     0{LAYOUT['FILE']:04X}H
         JP      OPEN
         JP      NEXT
-        JP      OPEN
+        JP      RESET
 OPEN:   XOR     A
         LD      ({COUNT:04X}H),A
         LD      A,(HL)
@@ -62,6 +64,8 @@ OPEN:   XOR     A
         JR      Z,SSELECT
         CP      'K'
         JR      Z,KSELECT
+        CP      'F'
+        JR      Z,FSELECT
         JP      CARRIER
 PSELECT:
         INC     HL
@@ -107,6 +111,9 @@ KEEP:   LD      A,9
         JR      SELECTED
 SLOTS:  LD      A,11
         JR      SELECTED
+FSELECT:
+        LD      A,13
+        JR      SELECTED
 CARRIER:
         LD      A,(HL)
         CP      'H'
@@ -123,6 +130,9 @@ STATEFUL:
 SELECTED:
         LD      ({SELECT:04X}H),A
         XOR     A
+        RET
+RESET:  XOR     A
+        LD      ({COUNT:04X}H),A
         RET
 NEXT:   PUSH    HL
         EX      DE,HL
@@ -163,7 +173,10 @@ NEXT:   PUSH    HL
         DEC     A
         LD      BC,0{SLOTS_SOURCE:04X}H
         JP      Z,HAVESRC
+        DEC     A
         LD      BC,0{STATEFUL_SOURCE:04X}H
+        JP      Z,HAVESRC
+        LD      BC,0{FINAL_SOURCE:04X}H
 HAVESRC:
         LD      A,({COUNT:04X}H)
         LD      L,A
@@ -194,10 +207,64 @@ HAVESRC:
                     work / "stub.bin", work / "stub.lst", LAYOUT["FILE"])
 
 
+def final_stub(work: Path) -> bytes:
+    source = f"""
+        ASEG
+        ORG     0{LAYOUT['RSX']:04X}H
+        LD      (CTX),DE
+        EX      DE,HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (PUB),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (FACT),DE
+        LD      HL,(CTX)
+        LD      DE,12
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,(FACT)
+        LD      BC,24
+        ADD     HL,BC
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      HL,(FACT)
+        LD      BC,22
+        ADD     HL,BC
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,(PUB)
+        LD      BC,12
+        ADD     HL,BC
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      HL,(FACT)
+        XOR     A
+        RET
+CTX:    DW      0
+PUB:    DW      0
+FACT:   DW      0
+        END
+"""
+    return assemble(Path("/Users/nathanael/bin/z80asm"), source,
+                    work / "final.bin", work / "final.lst", LAYOUT["RSX"])
+
+
 def invoke(stub: bytes, carrier: bytes, name: bytes, *, operation: int = 1,
            high: int = WORK_HIGH,
-           retained: tuple[bytes, ...] = ()) -> tuple[Z80, bytes]:
+           retained: tuple[bytes, ...] = (), final: bytes = b"") -> tuple[Z80, bytes]:
     cpu = Z80(b"")
+    io = (ROOT / "build/system/rsxio.bin").read_bytes()
+    io_base = high - 0xE00 + 0x400
+    cpu.mem[io_base:io_base + len(io)] = io
     coordinator = (ROOT / "build/system/R3COORD.RSX").read_bytes()
     carr = (ROOT / "build/system/R3CARR.RSX").read_bytes()
     meta = (ROOT / "build/system/R3META.RSX").read_bytes()
@@ -223,6 +290,8 @@ def invoke(stub: bytes, carrier: bytes, name: bytes, *, operation: int = 1,
     selected_stateful = carrier if name == b"STATEFUL" else stateful
     cpu.mem[STATEFUL_SOURCE:STATEFUL_SOURCE + 1024] = \
         selected_stateful.ljust(1024, b"\0")
+    final = final or FINAL_IMAGE
+    cpu.mem[FINAL_SOURCE:FINAL_SOURCE + 1024] = final.ljust(1024, b"\0")
     cpu.mem[SNAP_SOURCE:SNAP_SOURCE + 1024] = snapshot.ljust(1024, b"\0")
     cpu.mem[KCTX_SOURCE:KCTX_SOURCE + 1024] = context.ljust(1024, b"\0")
     cpu.mem[KEEP_SOURCE:KEEP_SOURCE + 1024] = retained_loader.ljust(1024, b"\0")
@@ -250,11 +319,14 @@ def invoke(stub: bytes, carrier: bytes, name: bytes, *, operation: int = 1,
 
 
 def main() -> None:
+    global FINAL_IMAGE
     with tempfile.TemporaryDirectory(prefix="bettercpm-rsx-coordinator-") as temporary:
         stub = file_stub(Path(temporary))
+        final = final_stub(Path(temporary))
+        FINAL_IMAGE = final
         stateful = (ROOT / "build/rsx/STATEFUL.RSX").read_bytes()
         hello = (ROOT / "build/rsx/HELLO.RSX").read_bytes()
-        cpu, _ = invoke(stub, stateful, b"STATEFUL")
+        cpu, _ = invoke(stub, stateful, b"STATEFUL", final=final)
         assert cpu.a == 0 and cpu.hl == FACTS
         assert cpu.word(REQUEST + 12) == int.from_bytes(stateful[46:48], "little")
         assert cpu.mem[WORK_LOW:WORK_LOW + len(stateful)] == stateful
@@ -287,9 +359,11 @@ def main() -> None:
             (linked_value + cpu.word(plan_record + 2) -
              cpu.word(FACTS + 6)) & 0xFFFF
 
-        cpu, _ = invoke(stub, stateful, b"STATEFUL", high=FACTS + 386)
+        cpu, _ = invoke(stub, stateful, b"STATEFUL",
+                        high=FACTS + 386 + 0xE00)
         assert cpu.a == 0 and cpu.hl == FACTS
-        cpu, _ = invoke(stub, stateful, b"STATEFUL", high=FACTS + 385)
+        cpu, _ = invoke(stub, stateful, b"STATEFUL",
+                        high=FACTS + 385 + 0xE00)
         assert cpu.a == 0xFF and cpu.word(REQUEST + 12) == 0xA5A5
 
         cpu, _ = invoke(stub, hello, b"HELLO   ")
@@ -334,7 +408,9 @@ def main() -> None:
         unions = snapshots + 12
         candidate_snapshot = unions + 6 + 23
         durable_union = candidate_snapshot + candidate_allocation + 23
-        assert cpu.mem[snapshots:snapshots + 6] == b"\0" * 6
+        assert cpu.mem[snapshots:snapshots + 4] == b"\0" * 4
+        assert cpu.word(snapshots + 4) == int.from_bytes(
+            stateful[16:18], "little")
         assert cpu.word(snapshots + 6) == candidate_snapshot
         assert cpu.word(snapshots + 8) == candidate_allocation
         union_address = cpu.word(unions)
@@ -363,10 +439,12 @@ def main() -> None:
         assert cpu.word(FACTS + 24) == durable_union + 2 * union_count
         assert stateful_allocation == cpu.word(FACTS + 46 + 4)
 
-        cpu, _ = invoke(stub, stateful, b"STATEFUL", high=FACTS + 2502,
+        cpu, _ = invoke(stub, stateful, b"STATEFUL",
+                        high=FACTS + 2502 + 0xE00,
                         retained=(b"HELLO   ",))
         assert cpu.a == 0
-        cpu, _ = invoke(stub, stateful, b"STATEFUL", high=FACTS + 2501,
+        cpu, _ = invoke(stub, stateful, b"STATEFUL",
+                        high=FACTS + 2501 + 0xE00,
                         retained=(b"HELLO   ",))
         assert cpu.a == 0xFF and cpu.word(REQUEST + 12) == 0xA5A5
         cpu, _ = invoke(stub, stateful, b"STATEFUL",

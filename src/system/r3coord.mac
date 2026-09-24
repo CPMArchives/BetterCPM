@@ -40,7 +40,12 @@ RC_ENTRY:
         LD      E,(HL)
         INC     HL
         LD      D,(HL)
-        LD      (RC_HIGH),DE
+        EX      DE,HL
+        LD      DE,0E00H                ; sector scratch plus private handoff stack
+        OR      A
+        SBC     HL,DE
+        JP      C,RC_BAD
+        LD      (RC_HIGH),HL             ; reserve one sector for safe handoffs
         LD      HL,(RC_LOW)
         LD      DE,0103H
         OR      A
@@ -266,13 +271,12 @@ RC_SPACE:
         JP      NZ,RC_BAD
         LD      HL,RC_NPROF
         LD      (RC_HREQ),HL
-        LD      HL,LY_RSX
+        LD      HL,(RC_HIGH)
         LD      (RC_HREQ+2),HL
-        LD      (RC_HREQ+4),HL
         LD      HL,(RC_CONTEXT)
-        LD      (RC_HREQ+6),HL
+        LD      (RC_HREQ+4),HL
         LD      DE,RC_HREQ
-        JP      CFGB+0320H
+        JP      CFGB+0310H
 
 ; Fill through absolute exclusive RC_NEED in complete 512-byte transfers.
 RC_FILL:
@@ -314,15 +318,14 @@ RC_NOROOM:
         RET
 
 ; Load a complete private 1 KiB phase into the CONFIG slot.
-RC_OVER:
-        LD      A,1
-        CALL    FLOPEN
-        RET     NZ
-        LD      HL,CFGB
-        CALL    FLNEXT
-        RET     NZ
-        CALL    FLNEXT
-        RET
+RC_OVER:                                ; stage outside physical disk workspace
+        PUSH    HL
+        LD      HL,(RC_HIGH)
+        LD      BC,0400H
+        ADD     HL,BC
+        POP     DE
+        XOR     A
+        JP      (HL)
 
 RC_BAD:
         LD      A,0FFH
@@ -348,7 +351,7 @@ RC_CONTEXT:     DW      0
 RC_FMT:         DB      0
 RC_CREQ:        DS      13
 RC_MREQ:        DS      11
-RC_HREQ:        DS      8
+RC_HREQ:        DS      6
 
         .DEPHASE
         END

@@ -175,7 +175,7 @@ class Z80:
                     self.a = (self.a - value) & 255
                     self.z = self.a == 0
                 elif sub in (0x7E, 0x4E, 0xBE, 0xA6, 0x34, 0x35, 0x36,
-                              0x77, 0x70, 0x71):
+                              0x77, 0x70, 0x71, 0x74, 0x75):
                     displacement = self.mem[self.pc]
                     self.pc += 1
                     if displacement & 0x80:
@@ -204,6 +204,10 @@ class Z80:
                         self.mem[target] = self.a
                     elif sub == 0x70:     # LD (IX+d),B
                         self.mem[target] = self.b
+                    elif sub == 0x74:     # LD (IX+d),H
+                        self.mem[target] = self.h
+                    elif sub == 0x75:     # LD (IX+d),L
+                        self.mem[target] = self.l
                     else:                 # LD (IX+d),C
                         self.mem[target] = self.c
                 else:
@@ -629,6 +633,8 @@ class Z80:
                 self.e = self.l
             elif op == 0x2B:            # DEC HL
                 self.hl = (self.hl - 1) & 0xFFFF
+            elif op == 0xF9:            # LD SP,HL
+                self.sp = self.hl
             elif op == 0xE9:            # JP (HL)
                 self.pc = self.hl
             elif op == 0x14:            # INC D

@@ -257,8 +257,8 @@ def main() -> None:
     runtime_overlay_names = ("R3PLAN.RSX", "R3SLOTS.RSX", "R3SNAP.RSX",
                              "R3CARR.RSX", "R3META.RSX", "R3COORD.RSX",
                              "R3PROF.RSX", "R3KCTX.RSX", "R3KEEP.RSX",
-                             "R3KPRE.RSX",
-                             "R3MOVE.RSX", "R3COMIT.RSX")
+                             "R3KPRE.RSX", "R3FINAL.RSX", "R3DROP.RSX",
+                             "R3MOVE.RSX", "R3COMIT.RSX", "R3RESOL.RSX")
     era_path = ROOT / "build/utilities/ERA.COM"
     ren_path = ROOT / "build/utilities/REN.COM"
     type_path = ROOT / "build/utilities/TYPE.COM"

@@ -1,0 +1,78 @@
+        INCLUDE layout.inc
+
+; ********************************************************************************
+; *                  BetterCP/M Persistent Profile Publication                    *
+; ********************************************************************************
+
+  ; Runs from the tail of R3MOVE after live movement has become infallible
+  ; and before generation publication. DE addresses the commit request:
+  ; +27 prospective 41-byte state, +29 live state, +31 public request,
+  ; and +33 returned primary service.
+
+RTBASE          EQU     LY_CFG+038FH
+
+        CSEG
+        .PHASE  RTBASE
+RT_ENTRY:                               ; publish prepared persistent profile fields
+        LD      (RT_REQ),DE
+        EX      DE,HL
+        LD      DE,27
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        PUSH    DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        POP     HL
+        PUSH    HL
+        PUSH    DE
+        INC     HL
+        INC     DE
+        LD      BC,40
+        LDIR                            ; publish names and services first
+        POP     DE
+        POP     HL
+        LD      A,(HL)
+        LD      (DE),A                  ; publish count last
+        LD      HL,(RT_REQ)
+        LD      DE,31
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        LD      DE,12
+        ADD     HL,DE
+        EX      DE,HL
+        LD      HL,(RT_REQ)
+        LD      BC,33
+        ADD     HL,BC
+        LD      A,(HL)
+        LD      (DE),A
+        INC     HL
+        INC     DE
+        LD      A,(HL)
+        LD      (DE),A
+        XOR     A
+        RET
+
+RT_REQ:         DW      0
+
+        DS      RTBASE+0050H-$
+RT_CONT:                                ; restore prefetched resolver after commit
+        OR      A
+        RET     NZ
+        LD      HL,(RT_IMAGE)
+        LD      DE,LY_RSX
+        LD      BC,03F4H
+        LDIR                            ; preserve the active manager return stack
+        XOR     A
+        RET
+
+        DS      RTBASE+0067H-$
+RT_IMAGE:       DW      0               ; prefetched resolver address
+        .DEPHASE
+        END
