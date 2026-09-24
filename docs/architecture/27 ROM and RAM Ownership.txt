@@ -1,0 +1,177 @@
+BETTERCP/M ROM AND RAM OWNERSHIP
+
+Status: accepted BetterCP/M 1.0 architecture.
+
+
+1. PURPOSE
+
+This specification defines how the 1.0 ROM profile classifies resident code,
+data, stacks and workspaces before assigning addresses.  It complements the
+Persistent Data Segment, reconstruction and disk-state specifications.  It
+does not freeze a memory map.
+
+The controlling rules are:
+
+  ownership before placement;
+  lifetime before allocation; and
+  immutable templates in ROM, live mutable state in RAM.
+
+
+2. RELEASE BOUNDARY
+
+The reduced 1.0 boundary is authoritative.  HISTORY.RSX redesign, named
+directories and NDR, PATH, a general or dynamic PDS allocator, filesystem
+timestamps, terminal-capability redesign and third-platform qualification are
+post-1.0 work.  ROM qualification does not restore any of them as an implicit
+dependency.
+
+z80pack/cpmsim is the selected 1.0 ROM-qualification environment.  Environment
+selection is complete; construction and qualification of the separated
+BetterCP/M image remain implementation work.  The qualification build shall
+execute immutable code in place under enforced CPU and DMA write protection.
+
+
+3. WRITABLE OWNERSHIP CLASSES
+
+Every writable resident object shall have a documented owner, lifetime, cold-
+boot rule, warm-boot or reconstruction rule and RAM storage class.  The four
+storage classes are:
+
+  BOUNDED PDS STATE
+    Versioned persistent objects belonging to accepted 1.0 owners.
+
+  FIXED SUBSYSTEM STATE
+    Ordinary live variables owned by BDOS, BIOS, disk, extension or another
+    fixed subsystem.  Writability alone does not make an object persistent.
+
+  STACK
+    Explicitly sized execution storage whose nesting, interrupt and sharing
+    assumptions are documented.
+
+  SHARED SYSTEM WORKSPACE
+    Statically overlaid temporary storage whose users have proven mutually
+    exclusive lifetimes.
+
+Physical adjacency in high RAM does not merge these ownership contracts.
+
+
+4. BOUNDED 1.0 PDS
+
+The PDS is not BetterCP/M's general .bss segment.  An object belongs there only
+when it requires PDS discovery, ownership, versioning, persistence or
+reconstruction semantics.  The 1.0 PDS has a measured, versioned and fixed
+inventory of accepted owners.  General allocation, migration, configurable
+sizing and controlled runtime expansion are later 1.x capabilities.
+
+ROM separation does not justify assigning ordinary subsystem variables,
+stacks or temporary buffers to the PDS.
+
+
+5. STATIC WORKSPACE SHARING
+
+Temporary workspaces should share a fixed RAM overlay when lifetime analysis
+proves that they cannot be live simultaneously.  Candidate users include the
+directory buffer, file-loader FCB, physical/module/CONFIG transfer buffer,
+reconstruction scratch and BDOS call scratch.
+
+The existing 1,024-byte physical/module/CONFIG area is an important candidate;
+its current size is not an automatic permanent allocation.  Each overlay group
+must document its users, entry and exit conditions and exclusion proof.  This
+is static layout, not a dynamic allocator.
+
+
+6. IMMUTABLE TEMPLATES AND LIVE OBJECTS
+
+ROM may contain executable code, constants, immutable tables and descriptors,
+messages, cold-initialization code and immutable default templates.  A
+structure does not belong in ROM merely because its initial value is constant
+when runtime code later changes it.
+
+Mutable structures initialized from constants use this lifecycle:
+
+  immutable ROM template
+          |
+          v
+  cold initialization into a RAM live object
+          |
+          v
+  runtime changes to the RAM object only
+
+Live disk structures, selected formats and bindings, allocation/check vectors,
+session state and configuration working copies therefore reside in RAM.
+Immutable disk defaults and FDF/FDB catalogue material may remain in ROM.
+Stable DPH pointers refer to complete live RAM records.
+
+
+7. INITIALIZATION AND RESET
+
+Cold initialization instantiates all live PDS and subsystem objects, disk
+structures and stacks from their defined defaults.  It also establishes the
+shared workspace.  Every object specifies whether warm boot preserves it,
+reconstructs it, resets it from an immutable template or discards it.
+
+Stacks are sized from measured call depth, nesting and interrupt requirements.
+They do not enter the PDS merely because they require RAM.  Stack or workspace
+sharing is permitted only when concurrent use has been excluded.
+
+
+8. STAGE 3 IMMUTABILITY RULE
+
+Stage 3 reconstruction, movement, publication and commit shall not modify
+resident executable code or immutable descriptors.  Rewritten pointers,
+reconstruction records, transaction state, published profile state and all
+mutable extension state terminate in RAM-owned objects.
+
+Stage 3 qualification shall establish this property for its transaction path.
+It need not complete the full ROM relocation or final memory map; those remain
+ROM-profile implementation work.
+
+
+9. BOUNDARY AND BUDGET
+
+E300h is a qualification planning boundary, not a public ABI address.  The
+final builder derives the protected boundary from the completed ownership and
+lifetime inventory and rejects an image that exceeds the accepted RAM or ROM
+budget.
+
+The ordinary default profile retains at least 53 KiB usable TPA.  All writable
+resident state lies outside the protected immutable region, and all runtime
+addresses inside that region remain immutable for the full execution
+lifecycle.  The current 3,583-byte high-RAM envelope and 2,252-byte relocation
+inventory are planning measurements, not frozen allocations.
+
+
+10. REQUIRED INVENTORY AND QUALIFICATION
+
+Before freezing the ROM image, publish an inventory containing, for every
+writable resident object:
+
+  current source or location and size;
+  owner and persistence lifetime;
+  cold-boot and warm-boot behavior;
+  RAM storage class;
+  overlay group, if any; and
+  immutable template source, if any.
+
+Qualification shall prove correct initialization and reset behavior, absence
+of conflicting workspace lifetimes, stack bounds, RAM ownership of live disk
+pointers, Stage 3 immutability, enforced CPU and DMA protection and the 53 KiB
+TPA floor.  Exact PDS, stack and workspace addresses, overlay membership,
+stack sizes and final ROM boundary remain implementation results until this
+inventory and its measurements are complete.
+
+
+11. RELATED 1.0 SCOPE DECISIONS
+
+BetterCP/M 1.0 preserves the ordinary read-only, system and archive attribute
+bits through filesystem operations, permits them to be inspected and changed,
+and enforces read-only behavior.  Archive is metadata only.  Enhanced system-
+file visibility across user areas is deferred.
+
+The utility backlog is candidate inventory rather than a 1.0 release contract.
+Final utility selection remains the last design decision, and suitably licensed
+redistributable utilities may satisfy the selected inventory.
+
+Function 201 already defines SET TIME in the 1.0 public clock ABI.  A required
+writable provider is not part of 1.0; providing and qualifying one may be later
+work.

@@ -1,6 +1,8 @@
 BETTERCP/M PERSISTENT DATA SEGMENT
 
-Status: architectural design baseline; general allocator and resizing pending.
+Status: broad post-1.0 design direction.  BetterCP/M 1.0 implements only the
+bounded inventory defined by the canonical roadmap and Architecture
+Specification 27; its general allocator and resizing are later 1.x work.
 
 
 1. NAME AND PURPOSE
@@ -13,6 +15,10 @@ The PDS holds writable system state which must survive transient execution,
 CCP/CPX reconstruction, and ordinary warm boot. Persistence across power-off
 requires an explicit system-track or file save operation. Cold boot creates a
 new PDS from saved configuration and initialized defaults.
+
+The PDS is not BetterCP/M's general .bss.  Writability alone does not establish
+PDS ownership.  Fixed subsystem variables, stacks and temporary workspaces use
+the distinct RAM ownership classes defined by Architecture Specification 27.
 
 
 2. PLACEMENT AND GROWTH

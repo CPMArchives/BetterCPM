@@ -1,7 +1,7 @@
 # cpmsim ROM qualification assessment
 
 Date: 2026-09-20
-Status: feasibility established; BetterCP/M integration and release qualification pending
+Status: environment selected; BetterCP/M integration and release qualification pending
 
 ## Decision
 
@@ -105,9 +105,11 @@ is:
 | **Total** | **2,252** | |
 
 This list is the relocation inventory, not a claim that every item needs a
-separate allocation. The planned PDS absorbs several existing tables and records;
-stacks and mutually exclusive transfer workspaces should share storage where
-their lifetimes permit.
+separate allocation. Some records belong to the bounded PDS inventory. Fixed
+subsystem state, stacks and temporary workspaces retain distinct ownership even
+if placed in one contiguous high-RAM region. Mutually exclusive transfer
+workspaces should share storage where their lifetimes permit. Architecture
+Specification 27 defines the controlling ownership rules.
 
 ## Proposed qualification map
 
@@ -127,11 +129,11 @@ byte as additional requires 3,340 bytes. The proposed RAM region leaves 243 byte
 even under that deliberately double-counting bound. The current immutable payload
 leaves 1,751 bytes in ROM for initialization code and default templates.
 
-Stage 3 may reduce the RAM requirement by assigning HISTORY and other feature
-state to their RSXs and by overlaying the upper half of the present one-KiB
-workspace. It may also add small descriptors. Therefore `E300h` is a qualification
-planning boundary, not a frozen public ABI. The final builder must derive and
-check the boundary from the completed layouts.
+Later ownership and lifetime analysis may reduce the RAM requirement by
+overlaying mutually exclusive parts of the present one-KiB workspace. Stage 3
+may add small descriptors. Therefore `E300h` is a qualification planning
+boundary, not a frozen public ABI. The final builder must derive and check the
+boundary from the completed layouts.
 
 The cpmsim ROM build may use memory through `FFFFh`; it is a distinct build from
 the Model 4 profile whose upper address space is constrained at `F400h`. This does
@@ -215,12 +217,10 @@ ROM-specific checks supplement the compatibility suite rather than replacing it.
 
 ## Recommendation
 
-Adopt cpmsim as the selected 1.0 ROM qualification environment, subject to final
-approval when the relocated BetterCP/M image completes the integration matrix.
-Proceed with the `E300h` planning boundary and the qualification-only guard; do
-not freeze the exact boundary until Stage 3 produces the final state inventory.
-
-Because the complete BetterCP/M ROM image has not yet passed the matrix, leave
-`TODO.md` and `docs/releases/1.0-SCOPE-DRAFT.md` unchanged. Once it passes, replace
-their remaining environment-selection item with the exact cpmsim revision,
-boundary, image checksum/build procedure and acceptance evidence.
+cpmsim is the selected 1.0 ROM qualification environment. Proceed with the
+`E300h` planning boundary and the qualification-only guard; do not freeze the
+exact boundary until the ownership inventory and final layouts are complete.
+Passing the relocated BetterCP/M integration matrix qualifies the image rather
+than reopening the environment decision. Record the exact cpmsim revision,
+derived boundary, image checksum, build procedure and acceptance evidence with
+that qualification.

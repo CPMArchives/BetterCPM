@@ -138,7 +138,12 @@ compatibility rerun, not a new implementation.
   declared state, enforce the minimum-TPA policy, and never shrink the physical
   high-water boundary before cold boot.
 
-## Stock CP/M transient utilities
+## Candidate CP/M transient utility inventory
+
+This list is input to the final 1.0 utility-selection decision, not the release
+contract. A selected requirement may be satisfied by a suitably licensed,
+redistributable existing utility; an unchecked item does not by itself block
+1.0.
 
 - [ ] Implement `PIP.COM`.
 - [ ] Implement `STAT.COM`.
@@ -282,10 +287,9 @@ between CONFIG and DUP remain design considerations for the formatting work.
 - [ ] Implement complete CP/M file-attribute handling throughout BDOS,
   directory services, resident commands, transient utilities, and image
   tooling, including read-only, system (`$SYS`), archive, and the filename
-  high-bit conventions used to encode them.
-- [ ] Give `$SYS` files the intended system-wide visibility, particularly
-  making suitable files discoverable from every user area without weakening
-  normal user-area isolation or producing duplicate directory results.
+  high-bit conventions used to encode them. Preserve and permit inspection or
+  change of all three ordinary bits, enforce read-only, and treat archive as
+  metadata only.
 - [ ] Finish and qualify the Functions 200/201 clock-provider ABI, `TIME.COM`,
   and the read-only FreHD and z80pack providers. Verify exact P2DOS success
   behavior, freeze the minimal status values, and qualify provider replacement,
@@ -307,8 +311,10 @@ between CONFIG and DUP remain design considerations for the formatting work.
   DateStamper, ZSDOS/ZDDOS, P2DOS, CP/M Plus, and DOS+/Z80DOS. Start with
   DateStamper and ZSDOS/ZDDOS. Cover detection, call/entry conventions, return
   behavior and applicable file timestamp layouts, not only clock reads.
-- [ ] Add clock setting only with an explicitly writable provider and defined
-  error, validity, rollover, and persistence behavior.
+- [ ] Add and qualify a writable clock provider only with defined error,
+  validity, rollover, and persistence behavior. Function 201 and TIME.COM's SET
+  request already belong to the 1.0 interface; this later task supplies working
+  writable hardware/provider support rather than adding the public operation.
 - [ ] Scope filesystem timestamps separately from the clock service, including
   persistent/on-disk representation and behavior without a real-time clock.
 - [ ] Extend the native directory/filesystem design to store file timestamps
@@ -322,6 +328,11 @@ between CONFIG and DUP remain design considerations for the formatting work.
 
 ## ROMability
 
+- [ ] Inventory every writable resident object by owner, lifetime, cold/warm
+  behavior and RAM class (bounded PDS, fixed subsystem state, stack or shared
+  workspace). Prove static overlay lifetimes before sharing storage and derive
+  the final protected boundary from the completed inventory; do not freeze
+  `E300h` as ABI.
 - [ ] Qualify actual execution in place of BetterCP/M immutable code under
   enforced ROM write protection. Locate every stack, variable, live
   configuration, disk-state object and reconstruction record in RAM, exercise
@@ -345,11 +356,7 @@ between CONFIG and DUP remain design considerations for the formatting work.
 
 - [ ] Complete configurable `CON:`, `RDR:`, `PUN:`, and `LST:` routing and
   `IOBYTE` behavior, including absent-device and timeout rules.
-- [ ] Replace provisional Model 4-only terminal operations with a portable
-  terminal-capability interface while retaining `CLR` behavior.
 - [ ] Add and test the z80pack/cpmsim platform port.
-- [ ] Prove the hardware-abstraction boundary on at least one substantially
-  different additional machine or emulator.
 - [ ] Build per-platform boot loaders, BIOS modules, disk-image builders, and
   installation tests while sharing portable system components where possible.
 - [ ] Run compatibility tests on physical hardware when practical.
@@ -379,6 +386,10 @@ reconciliation gate precede the corresponding implementation program.
 
 ## Post-1.0 considerations
 
+- [ ] Replace provisional Model 4-only terminal operations with a portable
+  terminal-capability interface while retaining `CLR` behavior.
+- [ ] Give `$SYS` files enhanced system-wide visibility across user areas only
+  after defining isolation, lookup and duplicate-result behavior.
 - [ ] Target a bounded, single-bank RomWBW/HBIOS port for the first suitable
   post-1.0 minor release (1.1 or 1.2). Pin one RomWBW/HBIOS version and one
   repeatable hardware or emulator configuration; implement console, block-device,
