@@ -339,7 +339,7 @@ RV_RTYPE:                               ; dispatch metadata record type
         JR      Z,RV_CALLABLE
         CP      3
         JP      Z,RV_POINTERS
-        JP      RV_SKIP
+        JP      RV_BAD                  ; metadata 1.0 has no optional types
 
 RV_NUMERIC:                             ; validate numeric service record
         JP      RV_SKIP                 ; any nonempty byte vector is valid
@@ -611,7 +611,7 @@ RV_PTROK:                               ; accept pointer list
         POP     BC
         POP     HL
 
-RV_SKIP:                                ; skip unsupported metadata record
+RV_SKIP:                                ; finish accepted metadata record
         LD      E,B
         LD      D,0
         ADD     HL,DE

@@ -72,8 +72,10 @@ BRSX version-2 engineering specification before implementation.
 
 The metadata stream contains a signature, metadata major and minor version,
 header length, total length, record count, and reserved-zero fields. Each
-record is typed and length-delimited so an implementation can validate or
-skip records according to its declared ABI rules.
+record is typed and length-delimited. Metadata version 1.0 defines no optional
+record types: its loader shall reject every unknown type. A future metadata or
+carrier version may define explicit forward-compatible record semantics when a
+demonstrated requirement justifies them.
 
 The initial record types are:
 
@@ -223,6 +225,7 @@ already-atomic foundation.
 Before commit, the reconstructor shall validate at least:
 
   * BRSX and metadata versions, lengths, counts, and reserved fields;
+  * rejection of every unknown metadata-1.0 record type;
   * the reconstruction class and implementation support for it;
   * payload, allocation, entry, relocation, and metadata bounds;
   * runtime pointer slots for bounds, sorting, uniqueness, and ownership;

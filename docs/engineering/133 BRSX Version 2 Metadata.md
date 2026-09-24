@@ -39,6 +39,12 @@ length records are invalid. Metadata version 1 defines:
 | 2 | one 10-byte callable-service advertisement |
 | 3 | sorted, unique 16-bit runtime-pointer slot offsets |
 
+Metadata version 1.0 has no optional record types. Its validator rejects every
+unknown type rather than assuming that an unrecognized record may safely be
+ignored. A future metadata or carrier version may define explicit
+forward-compatible record semantics when a demonstrated requirement justifies
+them.
+
 A callable advertisement is a four-byte service ID, ABI major, ABI minor,
 16-bit entry offset from the RSX base, and 16-bit capability flags. Stage 2
 allows at most two callable advertisements per provider.
@@ -99,10 +105,11 @@ adds no permanent protected code, and does not reduce command history or other
 PDS allocations. Once a profile is active, the same one-kilobyte charge that
 formerly held the manager contains the resolver instead.
 
-The validator occupies 933 bytes. Its focused tests cover valid
+The validator occupies 932 bytes. Its focused tests cover valid
 version-1 and version-2 carriers, unsupported reconstruction classes, metadata
 bounds and framing, callable entry bounds, duplicate IDs within one provider,
-duplicate IDs across the live profile, and sorted, unique runtime-pointer slots.
+duplicate IDs across the live profile, unknown metadata-1.0 record types, and
+sorted, unique runtime-pointer slots.
 
 The rebuilder accepts both carrier versions and occupies 935 bytes, retaining
 an 86-byte control stack below the fixed gateway. Descriptor publication is
