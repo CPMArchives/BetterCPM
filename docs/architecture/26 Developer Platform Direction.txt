@@ -72,6 +72,16 @@ interfaces and chains rather than patching immutable executable code.
 4. LIMITS OF THE 1.0 COMMITMENT
 -------------------------------
 
+BetterCP/M 1.0 defines no generic hook or event framework.  Existing
+system-owned boundaries remain the appropriate mechanisms where they naturally
+own the behavior: RSXs intercept BDOS calls, CPXs participate in command
+dispatch, and the extension manager owns module load, unload, movement,
+reconstruction and republication.  A future hook is justified only by a
+concrete requirement which those supported boundaries cannot represent
+cleanly.  Complete command-lifecycle observation, direct warm-boot observation,
+BIOS/device instrumentation, disk/media lifecycle events and extension
+lifecycle notifications are possible examples, not one accepted event model.
+
 BetterCP/M 1.0 does not promise that every current control path remains
 interceptable.  In particular, it does not establish a BDOS-to-BIOS hook, a
 generic event framework, a system-information service, a dynamic driver
@@ -82,6 +92,13 @@ demonstrated use case.
 The callable-service registry is not a generic capability framework.  Clock
 Functions 200/201 are invoked directly and do not establish a stable callable
 `TIME` registry service.
+
+A durable registration never consists solely of a retained absolute callback
+address across module movement, reconstruction, unload, replacement or warm
+boot.  Persistent callbacks into transient TPA memory are not supported as
+durable registrations.  Stable identity and validated module-relative
+information survive; live addresses are derived from the currently published
+layout.  This rule does not define a hook registration ABI.
 
 Function 197 remains an undefined reserved escape selector.  Functions 198
 and 199 are non-public test and conformance selectors.  They provide no
@@ -119,7 +136,46 @@ resident-memory cost, compatibility effect and qualification requirements are
 understood.  No particular minor release is promised for the whole workstream.
 
 
-6. NATIVE TOOLCHAIN DIRECTION
+6. PROVISIONAL DEVELOPER-HOOK NOTES
+-----------------------------------
+
+This section preserves design ideas for later evaluation.  It defines no
+selector, metadata record, callback structure, event identity, runtime
+operation or compatibility promise.
+
+A resident module might eventually declare a subscription through versioned
+BRSX metadata containing an event identity, handler offset, flags, ABI
+information and any justified ordering or dependency information.  Loading
+and unloading that module could establish and remove the subscription without
+retaining an absolute callback address.
+
+The Stage-3 transaction appears to provide a suitable lifecycle pattern:
+validate a prospective module set and its metadata; resolve conflicts,
+capacities, bounds and ordering; reconstruct modules; derive live addresses
+from their published bases and validated offsets; and publish the new state
+atomically.  Failure would retain the old published state.  This analogy does
+not freeze hook-specific reconstruction semantics.
+
+Persistent hook ownership appears better suited to resident modules than to
+transients.  A diagnostic transient might load or configure a resident tracing
+RSX.  A strictly synchronous transient callback, if ever needed, would be a
+separate lifetime contract.
+
+If declarative metadata owns subscription lifecycle, a future Hook Service
+might primarily query, enumerate or configure events and handlers rather than
+register and unregister callback addresses.  One service with event IDs may be
+appropriate only if concrete event classes share ownership, metadata,
+lifecycle, ordering, dispatch, reconstruction and configuration semantics.
+Subsystem-specific interfaces remain preferable when those semantics differ.
+
+Handler ordering, suppression, recursion, reentrancy, mutation during
+dispatch, failure behavior, dispatch-time unload and observer-versus-
+interceptor semantics remain open.  A first concrete facility might be
+observation-only, follow validated profile order and permit reconfiguration
+only at a quiescent boundary, but that is not an accepted design.
+
+
+7. NATIVE TOOLCHAIN DIRECTION
 -----------------------------
 
 The primary native build path is ZSM4 followed by Digital Research LINK 1.3.
@@ -131,4 +187,3 @@ Before a 1.0 distribution includes LINK.COM, the third-party inventory shall
 record its exact hash, Digital Research LINK 1.3 identity, z80pack
 `hd-tools.dsk` and compatibility-suite provenance, and the applicable
 redistribution permission.  Provenance alone does not establish permission.
-
