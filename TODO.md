@@ -203,6 +203,21 @@ directory utility unless it provides genuine additional value.
   services over a small hardware-specific BIOS/HAL interface. This is an
   optional-module possibility, not a requirement for ordinary 64K targets.
 
+## Post-1.0 Developer Platform
+
+- [ ] Apply `docs/architecture/26 Developer Platform Direction.txt` as a
+  future-compatibility review when freezing the remaining 1.0 interfaces;
+  preserve inexpensive ABI headroom without adding speculative 1.0 machinery.
+- [ ] Define a collision-resistant allocation policy for stable,
+  experimental, project-local and third-party CPX, RSX and service identities.
+- [ ] Investigate supported introspection, demonstrated optional hooks,
+  removable tracing/diagnostics, an extension SDK, minimal ABI examples,
+  native development tools, and native build/test integration as independent
+  later-1.x increments.
+- [ ] Before distributing Digital Research LINK 1.3, record the exact binary
+  hash, z80pack and compatibility-suite provenance, and applicable
+  redistribution permission in the BetterCP/M third-party inventory.
+
 ## Configuration, installation, and disk formats
 
 ### DUP development order

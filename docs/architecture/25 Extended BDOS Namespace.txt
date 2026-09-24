@@ -30,7 +30,7 @@ intersects Baby Blue II/UniDOS conventions.
 BetterCP/M 1.0 owns Functions 176 through 199 as follows:
 
   176-196  production BetterCP/M service namespace
-  197      permanently reserved general escape gateway
+  197      reserved undefined future escape selector
   198-199  non-public test and conformance selectors
 
 Production allocations grow upward from 176.  Unassigned selectors remain
@@ -50,12 +50,12 @@ selector also does not by itself promote an experimental service ABI to stable.
 3. RESERVED SELECTORS
 ---------------------
 
-Function 197 is reserved as the general extended-service escape gateway.  It
-has no callable 1.0 contract, request block or dispatcher implementation.  It
-is an escape hatch for eventual namespace exhaustion or a future mechanism
-which cannot fit the ordinary service-selector model.  CPX, RSX, FDF, PDS,
-CONFIG and other normal services shall not be routed through it merely because
-it is available.
+Function 197 is an undefined reserved future escape selector.  It has no
+callable 1.0 contract, request block, gateway semantics or dispatcher
+implementation.  Its reservation preserves room for eventual namespace
+exhaustion or another future requirement which cannot fit the ordinary
+service-selector model.  CPX, RSX, FDF, PDS, CONFIG and other normal services
+shall not be routed through it merely because it is available.
 
 Functions 198 and 199 are reserved for proofs, diagnostics, chaining tests and
 conformance fixtures.  Their meanings may change without compatibility and a
@@ -96,7 +96,7 @@ The final 1.0 selector assignments are:
   182  callable resident-service registry
   183  FDF mixed-sector service
   184-196  unassigned production selectors
-  197  reserved general escape gateway; no 1.0 callable contract
+  197  reserved undefined future escape; no 1.0 callable contract
   198-199  non-public test/conformance selectors
 
 Inherited compatibility assignments outside the private range are:
