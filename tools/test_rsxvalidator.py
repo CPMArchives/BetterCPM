@@ -114,6 +114,10 @@ def main() -> None:
         bad_length[metadata + 13] = 9
         require(validate(validator, stub, bad_length) == 0xFF,
                 "malformed callable record was accepted")
+        unknown_type = bytearray(v2)
+        unknown_type[metadata + 12] = 0x7F
+        require(validate(validator, stub, unknown_type) == 0xFF,
+                "unknown metadata-1.0 record type was accepted")
         code = bytes(16)
         pointers = bytearray(make_module(
             name="PTRTEST", version=(0, 1), services=[], linked_base=0x8000,
@@ -134,7 +138,7 @@ def main() -> None:
         require(validate(validator, stub, duplicate) == 0xFF,
                 "duplicate service IDs within one provider were accepted")
     print("BRSX validator accepts request v1/v2 and rejects class, entry, "
-          "framing, and duplicate-service errors")
+          "framing, unknown-record, and duplicate-service errors")
 
 
 if __name__ == "__main__":
