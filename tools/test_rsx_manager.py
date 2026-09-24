@@ -27,7 +27,7 @@ def run(commands: tuple[str, ...]) -> bytes:
                       "-d0", str(disk), "-id", "3000"]
         for index, command in enumerate(commands):
             if index:
-                invocation.extend(("-id", "2500"))
+                invocation.extend(("-id", "5000"))
             invocation.extend(key_args(command + "\r"))
         invocation.extend(("-id", "1800", "-it", "-ix"))
         subprocess.run(invocation, cwd=temporary, check=True)
@@ -58,13 +58,13 @@ def main() -> None:
         b"Resident System Extension facility: API 1.0; implementation 1.2",
     ))
 
-    second = run(("RSX LOAD HELLO", "RSX LOAD ECHO.RSX", "RSX LIST",
-                  "RSX2TST"))
+    second = run(("RSX LOAD HELLO", "RSX LOAD ECHO.RSX", "RSX2TST",
+                  "RSX LIST"))
     require_ordered(second, (
-        b"HELLO : BDOS 201", b"ECHO : BDOS 203",
-        tpa("HELLO", "ECHO"), b"Hello from HELLO.RSX",
+        b"Hello from HELLO.RSX",
         b"BDOS 201: HELLO present", b"Hello from ECHO.RSX",
-        b"BDOS 203: ECHO present",
+        b"BDOS 203: ECHO present", b"HELLO : BDOS 201",
+        b"ECHO : BDOS 203", tpa("HELLO", "ECHO"),
     ))
 
     third = run(("RSX LOAD HELLO", "RSX LOAD ECHO", "HELLO WARM",

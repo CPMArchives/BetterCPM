@@ -1,0 +1,54 @@
+        INCLUDE layout.inc
+
+; ********************************************************************************
+; *                      z80pack RSX Overlay Selector                            *
+; *                                                                              *
+; * Loads a selected system-record carrier while preserving the active manager  *
+; * return frame during replacement.                                             *
+; ********************************************************************************
+
+
+DISKREAD        EQU     LY_DISK+15
+
+        CSEG
+        .PHASE  LY_CFG+0380H
+
+; ================================================================================
+; =                            RSX Utility Selection                            =
+; =                                                                              =
+; = Loads the selected carrier prefix directly and stages its final record so   =
+; = the live return frame is not overwritten.                                    =
+; ================================================================================
+
+RS_SELECT:                              ; select and load RSX utility
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,76
+        LD      E,A
+        LD      D,0
+        PUSH    DE
+        LD      HL,LY_RSX
+        LD      B,7
+        CALL    DISKREAD
+        POP     DE
+        RET     NZ
+        LD      A,E
+        ADD     A,7
+        LD      E,A
+        LD      HL,LY_BUF
+        LD      B,1
+        CALL    DISKREAD
+        RET     NZ
+        LD      HL,LY_BUF
+        LD      DE,LY_RSX+0380H
+        LD      BC,74H
+        LDIR                            ; preserve the nine-byte return frame
+        LD      HL,LY_BUF+07DH
+        LD      DE,LY_RSX+03FDH
+        LD      BC,3
+        LDIR                            ; install the fixed BDOS gateway
+        RET
+
+        .DEPHASE
+        END
