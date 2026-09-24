@@ -253,7 +253,9 @@ def main() -> None:
     rsxtest_path = ROOT / "build/utilities/RSXTEST.COM"
     rsx2test_path = ROOT / "build/utilities/RSX2TST.COM"
     svctest_path = ROOT / "build/utilities/SVCTEST.COM"
+    stattst_path = ROOT / "build/utilities/STATTST.COM"
     test_rsx_path = ROOT / "build/rsx/TEST.RSX"
+    stateful_rsx_path = ROOT / "build/rsx/STATEFUL.RSX"
     runtime_overlay_names = ("R3PLAN.RSX", "R3SLOTS.RSX", "R3SNAP.RSX",
                              "R3CARR.RSX", "R3META.RSX", "R3COORD.RSX",
                              "R3PROF.RSX", "R3KCTX.RSX", "R3KEEP.RSX",
@@ -368,6 +370,7 @@ def main() -> None:
                      ("RSXTEST.COM", rsxtest_path.read_bytes()),
                      ("RSX2TST.COM", rsx2test_path.read_bytes()),
                      ("SVCTEST.COM", svctest_path.read_bytes()),
+                     ("STATTST.COM", stattst_path.read_bytes()),
                      ("ERA.COM", era_path.read_bytes()),
                      ("REN.COM", ren_path.read_bytes()),
                      ("TYPE.COM", type_path.read_bytes()),
@@ -395,6 +398,7 @@ def main() -> None:
                      ("ECHO.RSX", echo_rsx_path.read_bytes()),
                      ("BATCHIO.RSX", batchio_rsx_path.read_bytes()),
                      ("TEST.RSX", test_rsx_path.read_bytes()),
+                     ("STATEFUL.RSX", stateful_rsx_path.read_bytes()),
                      *((name, (ROOT / "build/system" / name).read_bytes())
                        for name in runtime_overlay_names),
                      *cpm_tools_files(ROOT), *extras])

@@ -111,11 +111,11 @@ def main() -> None:
     gateway = bytes((0xC3, LAYOUT["BDOS"] & 0xFF, LAYOUT["BDOS"] >> 8))
     outputs = {
         "R3ENTRY.RSX": entry.ljust(1021, b"\0") + gateway,
-        "R3PLAN.RSX": plan,
-        "R3SLOTS.RSX": slots,
-        "R3SNAP.RSX": snapshot,
-        "R3CARR.RSX": carrier,
-        "R3META.RSX": metadata,
+        "R3PLAN.RSX": plan.ljust(1024, b"\0"),
+        "R3SLOTS.RSX": slots.ljust(1024, b"\0"),
+        "R3SNAP.RSX": snapshot.ljust(1024, b"\0"),
+        "R3CARR.RSX": carrier.ljust(1024, b"\0"),
+        "R3META.RSX": metadata.ljust(1024, b"\0"),
         "R3COORD.RSX": coordinator.ljust(1021, b"\0") + gateway,
         "R3PROF.RSX": profile.ljust(1021, b"\0") + gateway,
         "R3KCTX.RSX": retained_context.ljust(1021, b"\0") + gateway,

@@ -11,9 +11,9 @@ from system_layout import LAYOUT
 from test_bios import Z80
 
 ROOT = Path(__file__).resolve().parents[1]
-REQUEST = 0x3800
-WORK_LOW = 0x4000
-WORK_HIGH = 0x7600
+REQUEST = 0x0300
+WORK_LOW = 0x0405
+WORK_HIGH = 0xD400
 SOURCE_BASE = 0x7800
 RSTCOUNT = LAYOUT["RSX_STATE"]
 RSTABLE = RSTCOUNT + 1
@@ -148,8 +148,27 @@ def service_offset(carrier: bytes) -> int:
     raise AssertionError("STATEFUL carrier lacks callable service")
 
 
+def pointer_slots(carrier: bytes) -> tuple[int, ...]:
+    """Return every declared static or runtime pointer slot."""
+    count = struct.unpack_from("<H", carrier, 22)[0]
+    table = struct.unpack_from("<H", carrier, 28)[0]
+    slots = {struct.unpack_from("<H", carrier, table + 2 * index)[0]
+             for index in range(count)}
+    metadata = struct.unpack_from("<H", carrier, 30)[0]
+    cursor = metadata + 12
+    for _ in range(carrier[metadata + 7]):
+        record_type, length = carrier[cursor:cursor + 2]
+        if record_type == 3:
+            slots.update(struct.unpack_from(
+                f"<{length // 2}H", carrier, cursor + 2))
+        cursor += 2 + length
+    return tuple(sorted(slots))
+
+
 def invoke(cpu: Z80, bootstrap: bytes, operation: int, name: bytes,
-           high: int = WORK_HIGH) -> None:
+           high: int | None = None) -> None:
+    if high is None:
+        high = min(WORK_HIGH, cpu.word(6))
     cpu.mem[LAYOUT["RSX"]:LAYOUT["RSX"] + 1024] = bootstrap.ljust(1024, b"\0")
     request = bytes((2, operation, 0, 0)) + name + b"\xA5\xA5" + \
         struct.pack("<HH", WORK_LOW, high)
@@ -165,6 +184,7 @@ def main() -> None:
     for (_name, relative), address in zip(FILES, sources):
         data = (ROOT / relative).read_bytes()
         cpu.mem[address:address + 1024] = data.ljust(1024, b"\0")
+    immutable_sources = bytes(cpu.mem[SOURCE_BASE:SOURCE_BASE + 1024 * len(FILES)])
     with tempfile.TemporaryDirectory(prefix="bettercpm-stage3-production-") as temporary:
         stub = file_stub(Path(temporary), sources)
     cpu.mem[LAYOUT["FILE"]:LAYOUT["FILE"] + len(stub)] = stub
@@ -178,8 +198,8 @@ def main() -> None:
 
     cpu.setword(HEAD, 0)
     cpu.setword(LOW, LAYOUT["RSX"])
-    cpu.setword(TPA, LAYOUT["RSX"] - 3)
-    cpu.setword(6, LAYOUT["RSX"] - 3)
+    cpu.setword(TPA, LAYOUT["TPA"])
+    cpu.setword(6, LAYOUT["TPA"])
     cpu.setword(GEN, 1)
     cpu.mem[RSTCOUNT:RSTCOUNT + 41] = bytes(41)
 
@@ -206,6 +226,7 @@ def main() -> None:
     for _ in range(3):
         stat(old_base, 1)
     before_live = bytes(cpu.mem[old_base:LAYOUT["RSX"]])
+    before_stateful = before_live[:stateful_allocation]
     before_state = bytes(cpu.mem[RSTCOUNT:RSTCOUNT + 41])
     invoke(cpu, bootstrap, 2, b"HELLO   ", high=cpu.word(6) + 1)
     assert cpu.a == 0xFF
@@ -245,13 +266,27 @@ def main() -> None:
     assert cpu.word(REQUEST + 12) == 0
     assert cpu.word(GEN) == 4
 
+    # Movement may rewrite only the loader-owned header and declared pointer
+    # words. Every other code, descriptor, and state byte must remain identical.
+    expected = bytearray(before_stateful)
+    dispatch = struct.unpack_from("<H", stateful, 16)[0]
+    struct.pack_into("<HH", expected, 0, LAYOUT["BDOS"], new_base + dispatch)
+    delta = new_base - old_base
+    for slot in pointer_slots(stateful):
+        value = struct.unpack_from("<H", expected, slot)[0]
+        if old_base <= value < old_base + stateful_allocation:
+            struct.pack_into("<H", expected, slot, value + delta)
+    assert bytes(cpu.mem[new_base:new_base + stateful_allocation]) == bytes(expected)
+    assert bytes(cpu.mem[SOURCE_BASE:SOURCE_BASE + 1024 * len(FILES)]) == immutable_sources
+
     invoke(cpu, bootstrap, 2, b"STATEFUL")
     assert cpu.a == 0 and cpu.mem[RSTCOUNT] == 0
     assert cpu.word(HEAD) == 0
     assert cpu.word(TPA) == cpu.word(6) == LAYOUT["TPA"]
 
     print("prepared Stage 3 loads and removes a profile transactionally; "
-          "forced STATEFUL relocation preserves mutable state and pointers")
+          "forced STATEFUL relocation preserves state and changes only declared "
+          "RAM-owned header/pointer words")
 
 
 if __name__ == "__main__":

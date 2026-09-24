@@ -5,6 +5,7 @@
 ; ********************************************************************************
 
 RVBASE          EQU     LY_RSX
+RV_WORKHIGH     EQU     07000H          ; transaction RAM stays below resident moves
 RSTCOUNT        EQU     LY_RSTA
 RSTABLE         EQU     LY_RSTA+1
 RSTSERV         EQU     LY_RSTA+021H
@@ -94,7 +95,7 @@ RV_UNLOAD:                              ; select removal transaction
 
 RV_RETIRE:                              ; remove the calling provider, then WBOOT
         CALL    RV_FIND
-        JR      C,RV_ZERO
+        JP      C,RV_ZERO
         LD      HL,(RV_REQ)
         LD      DE,14
         ADD     HL,DE
@@ -118,20 +119,52 @@ RV_START:                               ; load the safe overlay handoff
         LD      E,(HL)
         INC     HL
         LD      D,(HL)
-        LD      HL,(0006H)              ; exclusive active TPA ceiling
+        LD      HL,(0006H)              ; reject a ceiling above the active TPA
         OR      A
         SBC     HL,DE
         JP      C,RV_BAD
-        LD      HL,LY_RSX               ; manager code is not caller workspace
+  ; A caller's TPA/stack ceiling can overlap both this temporary manager and
+  ; prospective resident destinations. Keep transaction RAM in the lower TPA
+  ; and publish that effective ceiling to every later preparation phase.
+        LD      HL,RV_WORKHIGH
         OR      A
         SBC     HL,DE
-        JP      C,RV_BAD
+        JR      NC,RV_HIGHOK
+        LD      DE,RV_WORKHIGH
+        LD      HL,(RV_REQ)
+        LD      BC,16
+        ADD     HL,BC
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+
+RV_HIGHOK:                              ; use the effective workspace ceiling
         EX      DE,HL
-        LD      DE,0E00H                ; sector scratch plus private handoff stack
+        LD      D,H                     ; retain the effective caller ceiling
+        LD      E,L
+        LD      BC,0F00H                ; overlay workspace plus manager stack band
         OR      A
-        SBC     HL,DE
+        SBC     HL,BC
         JP      C,RV_BAD
         LD      (RV_HREQ+2),HL
+        EX      DE,HL                    ; HL = effective caller ceiling
+  ; Move the fixed EX_RLOAD frame (return, request, saved IX) to the isolated
+  ; 256-byte band above all disk/overlay scratch. EX_RETURN ultimately restores
+  ; the original extension stack recorded before the transaction began.
+        LD      BC,6
+        OR      A
+        SBC     HL,BC
+        EX      DE,HL                    ; DE = relocated frame destination
+        LD      HL,0
+        ADD     HL,SP                    ; HL = current three-word frame
+        LD      BC,6
+        LDIR
+        EX      DE,HL                    ; HL = private manager-stack top
+        LD      BC,6
+        OR      A
+        SBC     HL,BC
+        LD      SP,HL
+        LD      HL,(RV_HREQ+2)
         PUSH    HL                      ; scratch must remain above workspace low
         LD      HL,(RV_REQ)
         LD      DE,14
