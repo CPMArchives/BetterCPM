@@ -228,8 +228,9 @@ BI_BADSUB:                              ; discard malformed submit stream
 
 BI_RETIRE:                              ; retire exhausted submit stream
         LD      DE,BI_REQUEST
-        LD      C,202                   ; defer removal until WBOOT can rebuild safely
+        LD      C,202                   ; transaction commits before rebuilding the CCP
         CALL    BI_CALL
+        JP      0000H                   ; failure may also have consumed command workspace
 
 BI_CONSOLE:                             ; fall back to real console
         LD      DE,(BI_USERBUF)

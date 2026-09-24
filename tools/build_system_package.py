@@ -22,8 +22,6 @@ COMPONENTS = (
     ("RSXSEL.BIN", "build/trs80/rsxselect.bin", 8576, 128),
     ("CONFIG.BIN", "build/system/config.bin", 8704, 1024),
     ("RSXLOAD.BIN", "build/system/rsxloader.bin", 9728, 1021),
-    ("RSXVALID.BIN", "build/system/rsxvalidator.bin", 10752, 1021),
-    ("RSXPUBL.BIN", "build/system/rsxpublish.bin", 11776, 1021),
     ("RSXRESOL.BIN", "build/system/rsxresolver.bin", 12800, 1021),
     ("CCP.RLM", "build/ccp/ccp.rlm", 13824, 52 * 128),
 )

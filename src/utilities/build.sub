@@ -68,7 +68,7 @@ RESPACK
 ; =                    Reloadable System and RSX Components                    =
 ; =                                                                              =
 ; = Build the command reloader, RSX selector, configuration overlay, and RSX     =
-; = manager/validator/publisher/resolver carriers used during reconstruction.    =
+; = transaction-entry and resolver carriers used during reconstruction.         =
 ; ================================================================================
 ZSM4 CCPRELOD=CCPRELOD
 LINK CCPRELOD=CCPRELOD[A]
@@ -86,14 +86,6 @@ ZSM4 RSXLOAD=RSXLOAD
 LINK RSXLOAD=RSXLOAD[A]
 REN RSXLOAD.BIN=RSXLOAD.COM
 ERA RSXLOAD.REL
-ZSM4 RSXVALID=RSXVALID
-LINK RSXVALID=RSXVALID[A]
-REN RSXVALID.BIN=RSXVALID.COM
-ERA RSXVALID.REL
-ZSM4 RSXPUBL=RSXPUBL
-LINK RSXPUBL=RSXPUBL[A]
-REN RSXPUBL.BIN=RSXPUBL.COM
-ERA RSXPUBL.REL
 ZSM4 RSXRESOL=RSXRESOL
 LINK RSXRESOL=RSXRESOL[A]
 REN RSXRESOL.BIN=RSXRESOL.COM

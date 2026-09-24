@@ -79,8 +79,8 @@ def main() -> None:
     unsupported = 0xCE04
     struct.pack_into("<HH", cpu.mem, unsupported, first + 8, unsupported + 4)
     cpu.setword(HEAD, unsupported)
-    require(request(cpu, 0, b"TIME", 1)[0] == 0,
-            "provider without a v2 descriptor header was not skipped")
+    require(request(cpu, 0, b"TIME", 1)[0] == 9,
+            "non-v2 provider was not rejected as a corrupt runtime chain")
     cpu.setword(HEAD, first)
 
     status, entry = request(cpu, 2)

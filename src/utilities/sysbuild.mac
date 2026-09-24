@@ -520,14 +520,6 @@ PARTS:                                  ; system component table
         DW BUFFER+9728
         DW 8
         DB 1
-        DB 0,'RSXVALIDBIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-        DW BUFFER+10752
-        DW 8
-        DB 1
-        DB 0,'RSXPUBL BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-        DW BUFFER+11776
-        DW 8
-        DB 1
         DB 0,'RSXRESOLBIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         DW BUFFER+12800
         DW 8

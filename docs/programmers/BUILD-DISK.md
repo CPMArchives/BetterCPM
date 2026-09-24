@@ -100,8 +100,7 @@ The required input names are:
 
 ```text
 BOOT.BIN     STAGE1.BIN   RESIDENT.BIN CCPRELOD.BIN RSXSEL.BIN
-CONFIG.BIN   RSXLOAD.BIN  RSXVALID.BIN RSXPUBL.BIN  RSXRESOL.BIN
-CCP.RLM
+CONFIG.BIN   RSXLOAD.BIN  RSXRESOL.BIN CCP.RLM
 ```
 
 The host reference composer exports the same products and package with:

@@ -185,21 +185,21 @@ def install(boot: bytes, stage1: bytes, resident: bytes, command: bytes,
     control_start = reloader_start + 1024
     raw[control_start:control_start + 1024] = controls.ljust(1024, b"\x00")
     manager = (ROOT / "build/system/rsxloader.bin").read_bytes()
-    if not 0 < len(manager) <= 935:
-        raise ValueError("on-demand RSX manager exceeds its allocation")
+    if not 0 < len(manager) <= 1021:
+        raise ValueError("RSX transaction entry exceeds its allocation")
     gateway = bytes((0xC3, LAYOUT["BDOS"] & 0xFF, LAYOUT["BDOS"] >> 8))
     def overlay_block(payload: bytes) -> bytes:
         return payload.ljust(1021, b"\x00") + gateway
 
     manager_start = control_start + 1024
     raw[manager_start:manager_start + 1024] = overlay_block(manager)
-    overlay_start = manager_start + 1024
-    for name in ("rsxvalidator", "rsxpublish", "rsxresolver"):
-        overlay = (ROOT / f"build/system/{name}.bin").read_bytes()
-        if not 0 < len(overlay) <= 935:
-            raise ValueError(f"{name} overlay exceeds its allocation")
-        raw[overlay_start:overlay_start + 1024] = overlay_block(overlay)
-        overlay_start += 1024
+    raw[manager_start + 1024:manager_start + 2048] = overlay_block(b"")
+    raw[manager_start + 2048:manager_start + 3072] = overlay_block(b"")
+    resolver = (ROOT / "build/system/rsxresolver.bin").read_bytes()
+    if not 0 < len(resolver) <= 1021:
+        raise ValueError("RSX resolver exceeds its allocation")
+    resolver_start = manager_start + 3 * 1024
+    raw[resolver_start:resolver_start + 1024] = overlay_block(resolver)
     command_capacity = COMMAND_SECTORS * SECTOR_SIZE
     if len(command) > command_capacity:
         raise ValueError(f"command module is {len(command)} bytes; "
@@ -358,7 +358,6 @@ def main() -> None:
         ))
     # These carriers live on disk, so always rebuild their layout-dependent code.
     for tool in ("build_ccpreload.py", "build_rsxselect.py", "build_rsxloader.py",
-                 "build_rsxvalidator.py", "build_rsxpublish.py",
                  "build_rsxresolver.py", "build_rsx_runtime_overlays.py"):
         subprocess.run([sys.executable, str(ROOT / "tools" / tool),
                         "--assembler", str(args.assembler)], check=True)

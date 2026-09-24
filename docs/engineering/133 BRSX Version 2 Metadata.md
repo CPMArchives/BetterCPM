@@ -1,5 +1,11 @@
 # Engineering Specification 133: BRSX Version 2 Metadata
 
+> **Production note:** Stage 3 superseded the transitional manager, validator,
+> and publisher implementation described below. Production now accepts only
+> BRSX version 2 carriers through the prepared transaction path. The historical
+> layout discussion remains useful background; specification 151 records the
+> active implementation.
+
 ## Status
 
 Stage 2 implementation is complete; target-system qualification remains. The carrier format, validation, reconstruction,
@@ -112,13 +118,9 @@ bounds and framing, callable entry bounds, duplicate IDs within one provider,
 duplicate IDs across the live profile, unknown metadata-1.0 record types, and
 sorted, unique runtime-pointer slots.
 
-The transitional rebuilder can still parse the obsolete version-1 carrier,
-but no supplied artifact depends on that implementation residue. It occupies
-935 bytes, retaining an 86-byte control stack below the fixed gateway.
-Descriptor publication is
-isolated in a 457-byte overlay; its focused test verifies allocation-tail
-clearing, descriptor copying, and runtime-header publication. Separating these
-operations avoids weakening either validation or stack safety.
+The transitional rebuilder once parsed the obsolete version-1 carrier. That
+compatibility path and its separate validator/publisher overlays were removed
+when the prepared Stage 3 transaction became the production Function 202 path.
 
 The TRS-80 BIOS remains within its original protected allocation. A 65-byte
 transient selector and the four physical-sector tables occupy unused padding in

@@ -91,7 +91,6 @@ def main() -> None:
     retained_prepare = (ROOT / "build/system/R3KPRE.RSX").read_bytes()
     finalizer = (ROOT / "build/system/R3FINAL.RSX").read_bytes()
     remover = (ROOT / "build/system/R3DROP.RSX").read_bytes()
-    legacy_validator = (ROOT / "build/system/R2VALID.RSX").read_bytes()
     move = (ROOT / "build/system/R3MOVE.RSX").read_bytes()
     commit = (ROOT / "build/system/R3COMIT.RSX").read_bytes()
     resolver = (ROOT / "build/system/R3RESOL.RSX").read_bytes()
@@ -105,7 +104,7 @@ def main() -> None:
     assert profile[-3:] == bytes((0xC3, LAYOUT["BDOS"] & 0xFF,
                                   LAYOUT["BDOS"] >> 8))
     for overlay in (retained_context, retained_loader, retained_prepare,
-                    finalizer, remover, legacy_validator):
+                    finalizer, remover):
         assert len(overlay) == 1024
         assert overlay[-3:] == bytes((0xC3, LAYOUT["BDOS"] & 0xFF,
                                       LAYOUT["BDOS"] >> 8))

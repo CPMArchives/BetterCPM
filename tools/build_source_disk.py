@@ -69,9 +69,7 @@ BUILD_SOURCES = (
     ("CCPRELOD.MAC", "src/platform/trs80m4/ccprelod.mac"),
     ("RSXSEL.MAC", "src/platform/trs80m4/rsxsel.mac"),
     ("CONFIG.MAC", "src/bios/config.mac"),
-    ("RSXLOAD.MAC", "src/system/rsxload.mac"),
-    ("RSXVALID.MAC", "src/system/rsxvalid.mac"),
-    ("RSXPUBL.MAC", "src/system/rsxpubl.mac"),
+    ("RSXLOAD.MAC", "src/system/r3entry.mac"),
     ("RSXRESOL.MAC", "src/system/rsxresol.mac"),
     ("CCP.MAC", "src/ccp/ccp.mac"),
     ("CCPALT.MAC", "src/ccp/ccp.mac"),
@@ -317,6 +315,12 @@ def main() -> None:
         files.append((0, name, (ROOT / "build/utilities" / name).read_bytes()))
     used[0].add("BATCHIO.RSX")
     files.append((0, "BATCHIO.RSX", (ROOT / "build/rsx/BATCHIO.RSX").read_bytes()))
+    for name in ("R3PLAN.RSX", "R3SLOTS.RSX", "R3SNAP.RSX", "R3CARR.RSX",
+                 "R3META.RSX", "R3COORD.RSX", "R3PROF.RSX", "R3KCTX.RSX",
+                 "R3KEEP.RSX", "R3KPRE.RSX", "R3FINAL.RSX", "R3DROP.RSX",
+                 "R3MOVE.RSX", "R3COMIT.RSX", "R3RESOL.RSX"):
+        used[0].add(name)
+        files.append((0, name, (ROOT / "build/system" / name).read_bytes()))
     license_path = tools / "zsm4-source/LICENSE"
     if license_path.is_file():
         files.append((0, "ZSM4.LIC", text_file(license_path.read_bytes())))
