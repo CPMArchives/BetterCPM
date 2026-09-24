@@ -42,7 +42,7 @@ def main():
  def read(path):return (ROOT/path).read_text()
  # Rebuild common software from current source. These are portable artifacts;
  # target BIOS, disk code, tables and overlays are kept only in our output.
- for name in ('bdos','ccp','rcp_cpx','hello_cpx','rsxloader','rsxvalidator','rsxpublish','rsxresolver','rsx_runtime_overlays','test_service_rsx','svctest','hello_rsx','echo_rsx','fdf_rsx','zprtc_rsx','fileloader','utilities'):
+ for name in ('bdos','ccp','rcp_cpx','hello_cpx','rsxloader','rsxresolver','rsx_runtime_overlays','test_service_rsx','svctest','hello_rsx','echo_rsx','fdf_rsx','zprtc_rsx','fileloader','utilities'):
   subprocess.run([sys.executable,str(ROOT/'tools'/f'build_{name}.py')],check=True,stdout=subprocess.DEVNULL)
  bios_source=read('src/bios/bios.mac')
  # cpmsim port 5 is its CP/M 2 RDR: input.  Keep the common unassigned-reader
@@ -131,8 +131,8 @@ def main():
  gateway_tail=bytes((0xc3,L['BDOS']&255,L['BDOS']>>8))
  def rsx_overlay(path):return path.read_bytes().ljust(1021,b'\0')+gateway_tail
  put(76,rsx_overlay(ROOT/'build/system/rsxloader.bin'),1024)
- put(84,rsx_overlay(ROOT/'build/system/rsxvalidator.bin'),1024)
- put(92,rsx_overlay(ROOT/'build/system/rsxpublish.bin'),1024)
+ put(84,bytes(1021)+gateway_tail,1024)
+ put(92,bytes(1021)+gateway_tail,1024)
  put(100,rsx_overlay(ROOT/'build/system/rsxresolver.bin'),1024)
  put(108,(ROOT/'build/ccp/ccp.rlm').read_bytes(),13*512)
  # CP/M 2.2, 1K allocation blocks, byte block numbers, 64 directory entries.

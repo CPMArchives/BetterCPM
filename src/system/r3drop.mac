@@ -30,7 +30,10 @@ RD_ENTRY:                               ; enter removal coordinator
         INC     HL
         LD      A,(HL)
         CP      2
+        JR      Z,RD_OPERATION
+        CP      4                       ; resident self-retirement
         JP      NZ,RD_BAD
+RD_OPERATION:                           ; accept transactional removal
         INC     HL
         INC     HL
         LD      A,(HL)

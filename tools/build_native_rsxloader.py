@@ -13,7 +13,7 @@ from build_native_trs80 import (
 )
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "src/system/rsxload.mac"
+SOURCE = ROOT / "src/system/r3entry.mac"
 BUILD = ROOT / "build/system"
 
 

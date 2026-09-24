@@ -167,7 +167,12 @@ RF_TOP:                                 ; store the empty-profile boundary
         CALL    RF_PUTDE
         LD      DE,(RF_PUB)
         CALL    RF_PUTDE
-        LD      (HL),0CCH               ; returned committed count
+        PUSH    HL
+        LD      HL,(RF_PUBLIC)
+        INC     HL
+        LD      A,(HL)
+        POP     HL
+        LD      (HL),A                  ; operation becomes returned committed count
         INC     HL
         LD      DE,CFGB+038FH
         CALL    RF_PUTDE               ; persistent-state publisher
@@ -353,7 +358,10 @@ RF_STATE:                               ; construct complete prospective profile
         CP      1
         JR      Z,RF_STLOAD
         CP      2
+        JR      Z,RF_STREMOVE
+        CP      4                       ; resident retirement uses removal state
         JP      NZ,RF_BAD
+RF_STREMOVE:                            ; remove the named persistent record
         CALL    RF_TARGET
         LD      (RF_TINDEX),A
 RF_STSHIFT:                             ; compact prospective persistent records

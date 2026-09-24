@@ -5,7 +5,7 @@
 ; +6 count, +7 publication mode, +8 scheduler-request scratch
 ; +10 scheduler entry, +12 mover-request scratch, +14 mover scratch bytes
 ; +16 mover entry, +18 empty-profile base, +20 core dispatch
-; +22 publication descriptor, +24 returned committed count
+; +22 publication descriptor, +24 operation/returned committed count
 ; Publication mode 1 adds +25 persistent publisher entry,
 ; +27 prospective persistent state, +29 live persistent state,
 ; +31 public request and +33 returned primary service.
@@ -467,8 +467,12 @@ RC_GENOK:
         LD      HL,(RC_REQ)
         LD      DE,24
         ADD     HL,DE
+        LD      B,(HL)                  ; finalizer left the public operation here
         LD      A,(RC_COUNT)
         LD      (HL),A
+        LD      A,B
+        CP      4
+        JP      Z,0000H                 ; removed caller cannot receive a return
         XOR     A
         RET
 

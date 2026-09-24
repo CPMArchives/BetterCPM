@@ -2,20 +2,19 @@
 
 ## Status and production gate
 
-The isolated Stage 3 entry now connects append/removal preparation to the
-in-memory commit and persistent-profile publication. `R3ENTRY.RSX` is a
-qualification artifact, not the production Function 202 selector. Production
-Function 202 retains the legacy validator and its rejection of STATEFUL loads.
-Stage 3 is **not complete**.
+The prepared Stage 3 entry is now the production Function 202 selector. It
+connects enumerate/query, append/removal preparation, in-memory commit,
+persistent-profile publication, resolver restoration, and resident
+self-retirement. The former manager, validator, and publisher path has been
+removed; production accepts only BRSX version 2 carriers.
 
-This distinction is intentional: retirement and warm-boot reconstruction must
-be reconciled with stateful preservation before enabling production STATEFUL
-loading. A successful prepared transaction alone does not qualify those
-lifecycle paths.
+Production cutover is complete. Stage 3 remains open only for the final
+cross-platform qualification deliverable: forced movement, failure rollback,
+warm-boot lifecycle, and immutable-code evidence on trs80gp and cpmsim.
 
 ## Prepared transaction
 
-The version-2 qualification entry accepts LOAD and UNLOAD, validates the
+The version-2 production entry accepts LOAD and UNLOAD, validates the
 caller-owned bounds, and selects the append or removal coordinator. Removal
 builds a prospective profile excluding the named provider; retained providers
 use the existing carrier, snapshot, and pointer-union preparation stages.
@@ -70,9 +69,10 @@ The top 3,584 bytes of the caller workspace are reserved as follows:
 The resolver and commit dependencies are read before the commit starts. Resolver
 restoration after commit is a bounded memory copy, with no file operation that
 could fail after publication. These bytes are transient workspace, not a new
-permanent PDS allocation. Production `RSX.COM` and the resident Function 202
-entry remain unchanged in this increment. Their integration must supply a
-workspace that leaves space for prospective resident allocations.
+permanent PDS allocation. Production `RSX.COM` supplies bounds that leave space
+for prospective resident allocations. BATCHIO retirement deliberately consumes
+the disposable command workspace and warm boots after success or failure; a
+successful commit never returns through the removed provider.
 
 ## Qualification
 
@@ -89,9 +89,10 @@ hazard. It checks:
   live allocations, persistent records, or the generation;
 - final removal restoring the default TPA ceiling.
 
-The coordinator, overlay handoff, legacy validator, and in-memory commit have
-separate focused tests. Both target images are buildable; this is build evidence,
-not successful production stateful execution on either emulator.
+The coordinator, overlay handoff, BRSX-v2 carrier normalizer, and in-memory
+commit have separate focused tests. Both target images are buildable, and the
+production stateless load/unload workflow passes on both targets. This is not
+yet the final cross-platform STATEFUL qualification evidence.
 
 The platform-loader and return-stack concerns found during exploratory
 production integration are now resolved. `M4_RSLOAD` preserves the requested
@@ -103,16 +104,17 @@ deliberately overwrites the former manager-stack location. It also executes
 both platform selectors against synthetic carriers and verifies the preserved
 frame and installed gateway byte for byte.
 
-Production dispatch remains gated. All supplied callers now issue the 18-byte
-version-2 request. LOAD and UNLOAD callers provide explicit workspace bounds;
-BATCHIO's nontransactional deferred-retirement request leaves them zero. Warm
-boot must not reload retained STATEFUL data from the original carrier.
+Production dispatch now uses the prepared transaction path. All supplied
+callers issue the 18-byte version-2 request. LOAD and UNLOAD callers provide
+explicit workspace bounds; BATCHIO self-retirement uses the same removal
+transaction and then warm boots. Warm boot preserves the committed live chain
+and does not reload retained STATEFUL data from the original carrier.
 
 Emulator qualification is still required against the final integrated path;
 earlier experimental runs are not release evidence.
 
 These tests do not claim production cross-platform stateful qualification or
-completion of the immutable-code acceptance rule. The remaining release gate
-is production dispatch/lifecycle integration, followed by forced-movement,
-failure, warm-boot, and immutable-code qualification on both
-trs80gp and cpmsim. No fixed remaining credit cost is implied.
+completion of the immutable-code acceptance rule. The remaining Stage 3 gate
+is forced-movement, failure, warm-boot, and immutable-code qualification on
+both trs80gp and cpmsim. No further production architecture increment is
+planned.

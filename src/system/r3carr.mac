@@ -83,11 +83,8 @@ RX_MAGLP:
         INC     HL
         DJNZ    RX_MAGLP
         LD      A,(HL)
-        CP      1
-        JR      Z,RX_FORMAT
         CP      2
         JP      NZ,RX_BAD
-RX_FORMAT:
         LD      (RX_FMT),A
         INC     HL
         LD      DE,RX_ABI
@@ -102,9 +99,6 @@ RX_ABILP:
         LD      E,(HL)
         INC     HL
         LD      D,(HL)
-        LD      A,(RX_FMT)
-        DEC     A
-        JR      Z,RX_V1FLAGS
         LD      A,D
         OR      A
         JP      NZ,RX_BAD
@@ -117,12 +111,6 @@ RX_ABILP:
         JP      Z,RX_BAD
         LD      (RX_CLASS),A
         JR      RX_FLAGSOK
-RX_V1FLAGS:
-        LD      A,D
-        OR      E
-        JP      NZ,RX_BAD
-        XOR     A
-        LD      (RX_CLASS),A
 RX_FLAGSOK:
         INC     HL
         LD      E,(HL)
@@ -159,12 +147,7 @@ RX_FLAGSOK:
         SBC     HL,DE
         JP      C,RX_BAD
         LD      HL,(RX_DISPATCH)
-        LD      A,(RX_FMT)
-        DEC     A
-        LD      DE,4
-        JR      Z,RX_DISPMIN
         LD      DE,8
-RX_DISPMIN:
         OR      A
         SBC     HL,DE
         JP      C,RX_BAD

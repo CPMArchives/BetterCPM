@@ -5,7 +5,7 @@
 ; +6 linked base, +8 prospective live base
 ; +10 static relocation list, +12 relocation count
 ; +14 packed ten-byte callable descriptors, +16 descriptor count
-; +17 carrier format (1 legacy BRSX, 2 current BRSX)
+; +17 carrier format (2, current BRSX)
 ; +18 snapshot destination, +20 dispatch offset
 ; +22 returned completion byte (written as one only on success)
 ;
@@ -81,11 +81,8 @@ RN_ENTRY:
         LD      (RN_NSERVICE),A
         INC     HL
         LD      A,(HL)
-        CP      1
-        JR      Z,RN_FORMATOK
         CP      2
         JP      NZ,RN_BAD
-RN_FORMATOK:
         LD      (RN_FMT),A
         INC     HL
         LD      E,(HL)
@@ -119,12 +116,7 @@ RN_CAPLP:
         DJNZ    RN_CAPLP
 RN_CAPOK:
         LD      HL,(RN_DISPATCH)
-        LD      DE,4
-        LD      A,(RN_FMT)
-        CP      1
-        JR      Z,RN_DISPMIN
         LD      DE,8
-RN_DISPMIN:
         OR      A
         SBC     HL,DE
         JP      C,RN_BAD
@@ -309,9 +301,6 @@ RN_HEADER:
         INC     HL
         LD      (HL),A
         INC     HL
-        LD      A,(RN_FMT)
-        CP      1
-        JR      Z,RN_COMPLETE
         LD      A,(RN_NSERVICE)
         LD      (HL),A
         INC     HL
@@ -320,7 +309,6 @@ RN_HEADER:
         LD      (HL),E
         INC     HL
         LD      (HL),D
-RN_COMPLETE:
         LD      HL,(RN_REQ)
         LD      DE,22
         ADD     HL,DE

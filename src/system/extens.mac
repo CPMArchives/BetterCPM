@@ -94,22 +94,7 @@ BF_CPXCTL:                              ; control CPX profile
 ; -------------------------------------------------------------------------------
 
 BF_RSXCTL:                              ; control RSX profile
-        LD      A,(LY_RSTA)
-        OR      A
-        JR      NZ,EX_RLOAD
-        LD      A,(DE)
-        DEC     A
-        CP      2
-        JR      NC,EX_RBAD
-        INC     DE
-        LD      A,(DE)
-        DEC     DE
-        CP      1
-        JR      Z,EX_RLOAD
-        CP      4
-        JR      NC,EX_RBAD
-        XOR     A                       ; empty enumerate/query/unload needs no manager
-        JR      EX_RETURN
+                                        ; all v2 operations share one production entry
 
 ; -------------------------------------------------------------------------------
 ; RSX Manager Load
@@ -117,7 +102,7 @@ BF_RSXCTL:                              ; control RSX profile
 
 EX_RLOAD:                               ; load RSX manager overlay
         PUSH    DE
-        LD      A,1                     ; validator starts the reconstruction pipeline
+        XOR     A                       ; production transaction entry
         CALL    LY_BIOS+60
         POP     DE
   ; Each control overlay is padded with the fixed BDOS jump at HIST-3.
@@ -130,9 +115,23 @@ EX_RLOAD:                               ; load RSX manager overlay
         POP     IX                      ; move the saved register to the manager's stack
         LD      SP,LY_RSX+03FDH
         PUSH    IX
+        PUSH    DE                      ; preserve the public request for result pickup
         CALL    RSXCONTROL
+        POP     DE
         OR      A
+        JR      NZ,EX_RMFAIL
+        LD      H,D
+        LD      L,E
+        INC     HL
+        INC     HL
+        INC     HL
+        LD      A,(HL)
+        BIT     7,A                     ; direct operation left a private result marker
         JR      Z,EX_RETURN
+        LD      (HL),0
+        AND     1
+        JR      EX_RETURN
+EX_RMFAIL:
         POP     IX                      ; leave memory that raw restore overwrites
         LD      SP,(EX_OLDSP)
         PUSH    IX

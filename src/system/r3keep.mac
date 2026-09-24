@@ -107,8 +107,6 @@ KE_MLOOP:                               ; validate framing signature
         INC     HL
         DJNZ    KE_MLOOP
         LD      A,(HL)
-        CP      1
-        JR      Z,KE_V1
         CP      2
         JP      NZ,KE_BAD
         LD      HL,(KE_BASE)
@@ -156,24 +154,6 @@ KE_BMETLP:                              ; validate metadata framing signature
         ADD     HL,DE
         JP      C,KE_BAD
         JR      KE_HAVE_LEN
-
-KE_V1:                                  ; derive legacy carrier length
-        LD      HL,(KE_BASE)
-        LD      DE,30
-        ADD     HL,DE
-        LD      E,(HL)
-        INC     HL
-        LD      D,(HL)
-        LD      (KE_MOFF),DE
-        LD      HL,(KE_BASE)
-        LD      BC,42
-        ADD     HL,BC
-        LD      A,(HL)
-        LD      C,A
-        LD      B,0
-        EX      DE,HL
-        ADD     HL,BC
-        JP      C,KE_BAD
 
 KE_HAVE_LEN:                            ; transfer through exact carrier end
         LD      (KE_LEN),HL

@@ -277,8 +277,8 @@ RR_COUNTSCAN:                           ; count active providers and services
 ; ================================================================================
 ; =                          Provider Chain Validation                           =
 ; =                                                                              =
-; = Validates BRSX v2 and legacy v1 provider headers and advances through the live =
-; = chain using the appropriate next-dispatch layout.                            =
+; = Validates BRSX v2 provider headers and advances through the live chain using  =
+; = the version-2 next-dispatch layout.                                           =
 ; ================================================================================
 ; -------------------------------------------------------------------------------
 ; Provider Header Validation
@@ -302,7 +302,7 @@ RR_PROVIDER:                            ; validate provider header
         OR      A
         SBC     HL,DE
         POP     HL
-        JR      NZ,RR_PV1
+        JR      NZ,RR_PCLEAR
         INC     HL
         LD      A,(HL)
         CP      3
@@ -331,25 +331,14 @@ RR_PROVIDER:                            ; validate provider header
         OR      A
         RET
 
-RR_PV1:                                 ; handle legacy v1 provider
-        LD      HL,(RR_BASE)
-        LD      BC,4
-        ADD     HL,BC
-        OR      A
-        SBC     HL,DE
-        JR      NZ,RR_PCLEAR
-        CALL    RR_NEXT
-        RET     C
-        JP      RR_PROVIDER
-
 RR_PCLEAR:                              ; clear provider scratch
         LD      A,9
         LD      (RR_STATUS),A
         SCF
         RET
 
-  ; Advance using the next dispatch pointer. v2 providers have dispatch at +8;
-  ; legacy v1 providers at +4. The next header must identify itself accordingly.
+  ; Advance using the next dispatch pointer at +8. The next BRSX-v2 header must
+  ; identify that same dispatch entry.
 
 ; -------------------------------------------------------------------------------
 ; Provider Chain Advance
@@ -380,21 +369,7 @@ RR_NEXT:                                ; advance to next provider
         SBC     HL,DE
         POP     HL
         JR      Z,RR_NGOOD
-        LD      HL,(RR_NEXTDISP)
-        LD      DE,4
-        OR      A
-        SBC     HL,DE
-        PUSH    HL
-        INC     HL
-        INC     HL
-        LD      E,(HL)
-        INC     HL
-        LD      D,(HL)
-        LD      HL,(RR_NEXTDISP)
-        OR      A
-        SBC     HL,DE
-        POP     HL
-        JR      NZ,RR_NCORRUPT
+        JR      RR_NCORRUPT
 
 RR_NGOOD:                               ; accept next provider header
         LD      A,(RR_INDEX)

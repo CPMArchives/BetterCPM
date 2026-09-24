@@ -1,34 +1,112 @@
         INCLUDE layout.inc
 
 ; ********************************************************************************
-; *                  BetterCP/M Prepared Transaction Entry                        *
+; *                    BetterCP/M RSX Transaction Entry                          *
 ; ********************************************************************************
 
 RVBASE          EQU     LY_RSX
+RSTCOUNT        EQU     LY_RSTA
+RSTABLE         EQU     LY_RSTA+1
+RSTSERV         EQU     LY_RSTA+021H
         CSEG
         .PHASE  RVBASE
 
-  ; Qualification entry for version-2 LOAD and UNLOAD requests. Production
-  ; Function 202 remains on the legacy path until lifecycle qualification.
+  ; Production Function 202 entry for BRSX-v2 profile control. LOAD and UNLOAD
+  ; use the prepared transaction; LIST and QUERY read the persistent profile.
 
-RV_ENTRY:                               ; enter prepared-profile selector
+RV_ENTRY:                               ; enter production profile selector
         LD      (RV_REQ),DE
         LD      A,(DE)
         CP      2
         JP      NZ,RV_BAD
+        LD      A,(RSTCOUNT)
+        CP      5
+        JP      NC,RV_BAD
         INC     DE
         LD      A,(DE)
+        OR      A
+        JR      Z,RV_ENUM
         CP      1
         JR      Z,RV_LOAD
         CP      2
-        JP      NZ,RV_BAD
-        JR      RV_UNLOAD
+        JR      Z,RV_UNLOAD
+        CP      3
+        JR      Z,RV_QUERY
+        CP      4
+        JR      Z,RV_RETIRE
+        JP      RV_BAD
+
+RV_ENUM:                                ; enumerate one persistent profile member
+        LD      HL,(RV_REQ)
+        INC     HL
+        INC     HL
+        LD      A,(HL)
+        LD      B,A
+        LD      A,(RSTCOUNT)
+        CP      B
+        JP      Z,RV_ZERO
+        JP      C,RV_ZERO
+        LD      A,B
+        PUSH    AF
+        CALL    RV_TABPTR
+        PUSH    HL
+        LD      HL,(RV_REQ)
+        LD      BC,4
+        ADD     HL,BC
+        EX      DE,HL
+        POP     HL
+        LD      BC,8
+        LDIR
+        POP     AF
+        CALL    RV_SERVPTR
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,(RV_REQ)
+        LD      BC,12
+        ADD     HL,BC
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      A,1
+        JP      RV_RESTORE
+
+RV_QUERY:                               ; query one persistent profile member
+        CALL    RV_FIND
+        JP      C,RV_ZERO
+        LD      A,1
+        JP      RV_RESTORE
 
 RV_LOAD:                                ; select append transaction
+        CALL    RV_FIND
+        JP      NC,RV_ZERO              ; an existing load is idempotent
+        LD      A,(RSTCOUNT)
+        CP      4
+        JP      NC,RV_BAD
         LD      HL,RV_NLOAD
         JR      RV_START
 
 RV_UNLOAD:                              ; select removal transaction
+        CALL    RV_FIND
+        JP      C,RV_ZERO               ; an absent unload is idempotent
+        LD      HL,RV_NDROP
+        JR      RV_START
+
+RV_RETIRE:                              ; remove the calling provider, then WBOOT
+        CALL    RV_FIND
+        JR      C,RV_ZERO
+        LD      HL,(RV_REQ)
+        LD      DE,14
+        ADD     HL,DE
+        LD      DE,0103H                ; command environment is disposable now
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      DE,(0006H)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
         LD      HL,RV_NDROP
 
 RV_START:                               ; load the safe overlay handoff
@@ -84,6 +162,82 @@ RV_START:                               ; load the safe overlay handoff
         LD      DE,RV_HREQ
         LD      A,1
         JP      (HL)
+
+RV_ZERO:                                ; return an idempotent miss or no-op
+        XOR     A
+
+RV_RESTORE:                             ; restore the resolver after a direct result
+        LD      B,A
+        LD      A,(RSTCOUNT)
+        OR      A
+        LD      A,B
+        RET     Z                       ; an empty profile has no resolver to restore
+        AND     1
+        OR      080H
+        LD      HL,(RV_REQ)
+        INC     HL
+        INC     HL
+        INC     HL
+        LD      (HL),A                  ; private result consumed by extensions
+        LD      A,3                     ; restore the disk-free resolver
+        JP      LY_BIOS+60
+
+RV_FIND:                                ; locate the requested persistent name
+        LD      A,(RSTCOUNT)
+        LD      B,A
+        XOR     A
+RV_FINDLP:                              ; compare another profile member
+        LD      C,A
+        LD      A,B
+        OR      A
+        JR      Z,RV_MISS
+        LD      A,C
+        CALL    RV_TABPTR
+        LD      DE,(RV_REQ)
+        INC     DE
+        INC     DE
+        INC     DE
+        INC     DE
+        PUSH    BC
+        LD      B,8
+RV_COMPARE:                             ; compare the eight-byte filename stem
+        LD      A,(DE)
+        CP      (HL)
+        JR      NZ,RV_DIFFER
+        INC     DE
+        INC     HL
+        DJNZ    RV_COMPARE
+        POP     BC
+        LD      A,C
+        OR      A                       ; clear carry while retaining index
+        RET
+RV_DIFFER:                              ; advance to the next profile member
+        POP     BC
+        LD      A,C
+        INC     A
+        DEC     B
+        JR      RV_FINDLP
+RV_MISS:                                ; report an absent filename
+        SCF
+        RET
+
+RV_TABPTR:                              ; locate one persistent filename record
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        LD      L,A
+        LD      H,0
+        LD      DE,RSTABLE
+        ADD     HL,DE
+        RET
+
+RV_SERVPTR:                             ; locate one primary-service record
+        ADD     A,A
+        LD      L,A
+        LD      H,0
+        LD      DE,RSTSERV
+        ADD     HL,DE
+        RET
 
 RV_BAD:                                 ; reject an unavailable transaction phase
         LD      A,0FFH
