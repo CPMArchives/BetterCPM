@@ -168,8 +168,10 @@ directory utility unless it provides genuine additional value.
   `BCPX` v1 format while retaining native CP/M ZSM4 assembly of module code.
 - [x] Replace the proof `BRX1` RSX carrier with a versioned, documented module
   format practical to build under native CP/M with ZSM4.
-- [ ] Inventory the private BDOS namespace, move CPX control away from P2DOS
-  Function 200, remove the HELLO/ECHO proof selectors (currently 201/203) from
+- [x] Inventory the private BDOS namespace and adopt Functions 176-199 under
+  `docs/architecture/25 Extended BDOS Namespace.txt`.
+- [ ] Migrate the registered production services from provisional Functions
+  200 and 202-209 to 176-183, remove HELLO/ECHO proof selectors 201/203 from
   the released namespace, and rebuild every in-tree client. The replacement
   CPX call uses a versioned, name-based request block and enumerates module
   metadata without compiling module identities into `CPX.COM` or BDOS.
@@ -200,6 +202,21 @@ directory utility unless it provides genuine additional value.
   exposing portable extended-BDOS query, allocation, and inter-bank transfer
   services over a small hardware-specific BIOS/HAL interface. This is an
   optional-module possibility, not a requirement for ordinary 64K targets.
+
+## Post-1.0 Developer Platform
+
+- [ ] Apply `docs/architecture/26 Developer Platform Direction.txt` as a
+  future-compatibility review when freezing the remaining 1.0 interfaces;
+  preserve inexpensive ABI headroom without adding speculative 1.0 machinery.
+- [ ] Define a collision-resistant allocation policy for stable,
+  experimental, project-local and third-party CPX, RSX and service identities.
+- [ ] Investigate supported introspection, demonstrated optional hooks,
+  removable tracing/diagnostics, an extension SDK, minimal ABI examples,
+  native development tools, and native build/test integration as independent
+  later-1.x increments.
+- [ ] Before distributing Digital Research LINK 1.3, record the exact binary
+  hash, z80pack and compatibility-suite provenance, and applicable
+  redistribution permission in the BetterCP/M third-party inventory.
 
 ## Configuration, installation, and disk formats
 
@@ -269,16 +286,20 @@ between CONFIG and DUP remain design considerations for the formatting work.
 - [ ] Give `$SYS` files the intended system-wide visibility, particularly
   making suitable files discoverable from every user area without weakening
   normal user-area isolation or producing duplicate directory results.
-- [ ] Finish and qualify the native TIME 1.0 read service, `TIME.COM`, and the
-  read-only FreHD and z80pack providers. Pin representation, range, resolution,
-  local-time/UTC policy, capability/validity query, unavailable/unset/fault
-  results, and safe provider replacement/unload/WBOOT. No provider must mean
-  unavailable rather than a fabricated clock value.
-- [ ] Before the 1.0 ABI freeze, inventory the private BDOS namespace, move CPX
-  control away from historical P2DOS Function 200, remove the HELLO/ECHO proof
-  selectors (currently 201/203) from the released namespace, rebuild every
-  in-tree client, and reserve 200/201 for a possible later compatibility
-  adapter. Do not promise P2DOS support in 1.0.
+- [ ] Finish and qualify the Functions 200/201 clock-provider ABI, `TIME.COM`,
+  and the read-only FreHD and z80pack providers. Verify exact P2DOS success
+  behavior, freeze the minimal status values, and qualify provider replacement,
+  unload and WBOOT. With no provider installed, both calls must return 0FFh
+  rather than a fabricated clock value.
+- [ ] Adapt `TIME.COM` to use Functions 200/201 for display and SET requests,
+  and ship `P2DOS.MAC` as the standard provider source with a stable
+  `CLKHW.INC` contract plus `CLKFREHD.INC` and `CLKZ80PK.INC` library modules.
+- [ ] Before the 1.0 ABI freeze, implement the adopted 176-199 private BDOS
+  namespace: migrate the registered services to 176-183, remove HELLO/ECHO
+  proof selectors 201/203 from the released namespace, rebuild every in-tree
+  client, provide the 0FFh BDOS fallback for 200/201, and adapt each clock RSX
+  to intercept their P2DOS-compatible meanings. Pin exact historical success
+  behavior and the remaining status values before implementation.
 
 ### Later 1.x date/time and timestamp work
 
@@ -296,9 +317,8 @@ between CONFIG and DUP remain design considerations for the formatting work.
 - [ ] Propagate date/time and timestamp support through BDOS calls, directory
   operations, file creation/update semantics, CONFIG, disk-image tools,
   cpmtools definitions or extensions, and relevant utilities.
-- [ ] Extend `TIME.COM` to set the system date/time and inspect or modify file
-  timestamps only when those later capabilities have defined providers and
-  on-disk contracts.
+- [ ] Extend `TIME.COM` to inspect or modify file timestamps only when those
+  later capabilities have defined on-disk contracts.
 
 ## ROMability
 

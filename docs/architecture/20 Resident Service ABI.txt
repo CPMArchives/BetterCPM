@@ -1,13 +1,14 @@
 BETTERCP/M RESIDENT SERVICE ABI AND REGISTRY
 
-Status: adopted Stage-2 design; implementation pending.
+Status: adopted and implemented Stage-2 design. The implementation currently
+uses provisional Function 208 pending the Stage-6 migration to Function 182.
 
 
 1. PURPOSE AND OWNERSHIP
 
 The resident-service facility discovers callable services supplied by RSXs or,
 when useful, fixed core code. It defines discovery and binding, not the operation
-set of HIST, NDR, TIME, SECU or another individual service.
+set of HIST, NDR, SECU or another individual service.
 
 The registry is a logical view derived from validated advertisements in the
 active RSX set. The PDS holds only the small registry descriptor, resident-layout
@@ -20,16 +21,16 @@ The loader/reconstructor owns publication and removal. RSXs and transient
 programs cannot modify registry state directly.
 
 Validated advertisements are materialized in a loader-owned descriptor area
-inside each BRSX-v2 provider's allocation. Function 208 walks those descriptors
-through the active RSX chain. This makes discovery independent of disk I/O and
-avoids charging an unloaded service to the PDS. Engineering Specification 133
-defines the runtime header and descriptor representation.
+inside each BRSX-v2 provider's allocation. The resident-service gateway walks
+those descriptors through the active RSX chain. This makes discovery independent
+of disk I/O and avoids charging an unloaded service to the PDS. Engineering
+Specification 133 defines the runtime header and descriptor representation.
 
 
 2. SERVICE AND PROVIDER IDENTITY
 
 A service uses an exact four-byte uppercase ASCII identifier, space-padded when
-needed, for example HIST, NDR-space, TIME, SECU and TEST. Service identity is
+needed, for example HIST, NDR-space, SECU and TEST. Service identity is
 independent of the provider filename and module version. IDs beginning with X
 are experimental/private until a stable third-party allocation policy exists.
 
@@ -64,19 +65,27 @@ loader rejects unknown service-metadata versions and entry offsets outside the
 live callable image. `21 Stateful RSX Reconstruction ABI.txt` defines the
 version-2 carrier policy shared by callable services and reconstruction data.
 
+Clock providers use the inherited numeric Functions 200/201 interface defined
+by `22 Clock Provider ABI.txt`.  The current callable `TIME` advertisement is
+provisional and does not make clocks part of this stable registry ABI.
+
 
 4. LOOKUP GATEWAY
 
-BetterCP/M extended Function 208 is the stable resident-service gateway:
+BetterCP/M Function 182 is the final 1.0 resident-service gateway:
 
-  C  = 208
+  C  = 182
   DE = caller-owned request block
+
+The current source and binaries still use provisional Function 208. Function
+182 becomes callable when Stage 6 migrates all private selectors together;
+there is no compatibility promise for the provisional number.
 
 The initial operations are LOOKUP, ENUMERATE and DESCRIBE_REGISTRY. Registration
 and removal are private reconstruction operations. One BDOS function is used
 for the registry; no function number is assigned per service.
 
-Function 208 returns:
+The resident-service gateway returns:
 
   A  = status
   HL = callable address after successful LOOKUP, zero otherwise

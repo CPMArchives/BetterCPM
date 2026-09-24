@@ -1,0 +1,189 @@
+BETTERCP/M DEVELOPER PLATFORM DIRECTION
+========================================
+
+Status: adopted future design goal; preserves 1.0 architectural headroom but
+does not add a BetterCP/M 1.0 feature requirement.
+
+
+1. PURPOSE
+----------
+
+BetterCP/M should become an unusually good CP/M system on which to develop
+native software, extensions, hardware support and BetterCP/M itself.  Public
+facilities should use documented, versioned and discoverable interfaces where
+practical instead of requiring private addresses or resident-code patches.
+
+Developer support does not justify permanent cost in an ordinary system.
+Optional instrumentation should normally be removable, and source-level
+contracts may provide modularity when a runtime interface would consume scarce
+resident memory without a demonstrated need.
+
+This direction does not create a developer framework for 1.0.  It governs how
+1.0 interfaces are frozen and establishes a post-1.0 workstream.
+
+
+2. BETTERCP/M 1.0 REVIEW RULE
+-----------------------------
+
+When freezing or publishing a 1.0 interface, determine whether the decision
+unnecessarily prevents future supported introspection, instrumentation,
+third-party extension, service discovery or system-owned hooks.  Preserve
+versioning, names, typed metadata, reserved expansion space and existing
+indirection when doing so has negligible 1.0 cost.
+
+Do not add speculative hooks, resident facilities, selectors, dispatch layers
+or compatibility promises solely to satisfy a possible future use.  If
+preserving an option requires substantial new machinery, defer the machinery.
+
+
+3. RETAINED EXTENSION FOUNDATIONS
+---------------------------------
+
+The following existing directions provide the intended foundation:
+
+  * RSXs may intercept documented BDOS calls and chain unrelated calls.
+  * CPXs participate in the documented command-dispatch chain.
+  * CPX and RSX module identity remains name-based and versioned rather than a
+    closed enumeration compiled into the core or management utilities.
+  * Typed module metadata may acquire compatible, explicitly versioned record
+    types.  Unknown required records are rejected according to their owning
+    carrier contract.
+  * The resident-service registry remains an extensible registry of callable
+    services.  It is not silently broadened into a universal metadata store.
+    General management information may later use another typed record or query
+    interface.
+  * BetterCP/M retains unassigned private BDOS production selectors and
+    allocates them only for accepted top-level service contracts.
+  * Movable objects are rediscovered through identities or stable gateways;
+    runtime addresses are not persistent identities.
+  * Private system structures remain private.  Future queries expose supported
+    information rather than private addresses and layouts.
+  * New BetterCP/M services return machine-readable status and leave
+    presentation to their callers where compatibility permits.
+  * Capability discovery is preferred to testing the BetterCP/M release
+    number when a feature-specific decision is required.
+  * Source-level contracts, such as the clock provider's `CLKHW.INC`, are
+    legitimate extension boundaries when dynamic loading supplies no benefit.
+
+ROM-capable systems reinforce these rules: supported extensions use declared
+interfaces and chains rather than patching immutable executable code.
+
+
+4. LIMITS OF THE 1.0 COMMITMENT
+-------------------------------
+
+BetterCP/M 1.0 defines no generic hook or event framework.  Existing
+system-owned boundaries remain the appropriate mechanisms where they naturally
+own the behavior: RSXs intercept BDOS calls, CPXs participate in command
+dispatch, and the extension manager owns module load, unload, movement,
+reconstruction and republication.  A future hook is justified only by a
+concrete requirement which those supported boundaries cannot represent
+cleanly.  Complete command-lifecycle observation, direct warm-boot observation,
+BIOS/device instrumentation, disk/media lifecycle events and extension
+lifecycle notifications are possible examples, not one accepted event model.
+
+BetterCP/M 1.0 does not promise that every current control path remains
+interceptable.  In particular, it does not establish a BDOS-to-BIOS hook, a
+generic event framework, a system-information service, a dynamic driver
+architecture, or a public ABI for reconstruction and disk-engine internals.
+Future hooks are introduced only through explicit contracts justified by a
+demonstrated use case.
+
+The callable-service registry is not a generic capability framework.  Clock
+Functions 200/201 are invoked directly and do not establish a stable callable
+`TIME` registry service.
+
+A durable registration never consists solely of a retained absolute callback
+address across module movement, reconstruction, unload, replacement or warm
+boot.  Persistent callbacks into transient TPA memory are not supported as
+durable registrations.  Stable identity and validated module-relative
+information survive; live addresses are derived from the currently published
+layout.  This rule does not define a hook registration ABI.
+
+Function 197 remains an undefined reserved escape selector.  Functions 198
+and 199 are non-public test and conformance selectors.  They provide no
+third-party experimental namespace or compatibility promise.
+
+No part of this direction adds a 1.0 resident module, PDS allocation, TPA cost,
+utility, hook, debugger, tracing facility or release qualification requirement.
+
+
+5. POST-1.0 DEVELOPER PLATFORM WORKSTREAM
+-----------------------------------------
+
+Later 1.x work may develop these areas independently:
+
+  * supported introspection for the system profile, compatibility profile, TPA
+    bounds, platform, installed modules, advertised services and capabilities;
+  * a collision-resistant allocation policy for stable, experimental,
+    project-local and third-party CPX, RSX and service identities;
+  * optional hooks and removable tracing or diagnostic modules for specific,
+    demonstrated development needs;
+  * an extension SDK containing authoritative assembler includes, structures,
+    identifiers, statuses, templates and minimal examples;
+  * a coherent native environment for editing, assembling, linking, debugging,
+    testing and rebuilding BetterCP/M; and
+  * native/host build equivalence and convenient compatibility-suite
+    integration.
+
+Prefer one coherent information service with subfunctions when appropriate
+instead of consuming one BDOS selector per query.  Prefer capability discovery
+to release-number tests.  Do not build a general event system merely for
+architectural symmetry.
+
+Each facility enters a release only after its use case, ABI, lifecycle,
+resident-memory cost, compatibility effect and qualification requirements are
+understood.  No particular minor release is promised for the whole workstream.
+
+
+6. PROVISIONAL DEVELOPER-HOOK NOTES
+-----------------------------------
+
+This section preserves design ideas for later evaluation.  It defines no
+selector, metadata record, callback structure, event identity, runtime
+operation or compatibility promise.
+
+A resident module might eventually declare a subscription through versioned
+BRSX metadata containing an event identity, handler offset, flags, ABI
+information and any justified ordering or dependency information.  Loading
+and unloading that module could establish and remove the subscription without
+retaining an absolute callback address.
+
+The Stage-3 transaction appears to provide a suitable lifecycle pattern:
+validate a prospective module set and its metadata; resolve conflicts,
+capacities, bounds and ordering; reconstruct modules; derive live addresses
+from their published bases and validated offsets; and publish the new state
+atomically.  Failure would retain the old published state.  This analogy does
+not freeze hook-specific reconstruction semantics.
+
+Persistent hook ownership appears better suited to resident modules than to
+transients.  A diagnostic transient might load or configure a resident tracing
+RSX.  A strictly synchronous transient callback, if ever needed, would be a
+separate lifetime contract.
+
+If declarative metadata owns subscription lifecycle, a future Hook Service
+might primarily query, enumerate or configure events and handlers rather than
+register and unregister callback addresses.  One service with event IDs may be
+appropriate only if concrete event classes share ownership, metadata,
+lifecycle, ordering, dispatch, reconstruction and configuration semantics.
+Subsystem-specific interfaces remain preferable when those semantics differ.
+
+Handler ordering, suppression, recursion, reentrancy, mutation during
+dispatch, failure behavior, dispatch-time unload and observer-versus-
+interceptor semantics remain open.  A first concrete facility might be
+observation-only, follow validated profile order and permit reconfiguration
+only at a quiescent boundary, but that is not an accepted design.
+
+
+7. NATIVE TOOLCHAIN DIRECTION
+-----------------------------
+
+The primary native build path is ZSM4 followed by Digital Research LINK 1.3.
+Historical DRI ASM and LOAD may be considered for supplemental media during
+the final utility and disk-inventory decision; they are not the primary
+BetterCP/M build environment.
+
+Before a 1.0 distribution includes LINK.COM, the third-party inventory shall
+record its exact hash, Digital Research LINK 1.3 identity, z80pack
+`hd-tools.dsk` and compatibility-suite provenance, and the applicable
+redistribution permission.  Provenance alone does not establish permission.

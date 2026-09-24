@@ -105,7 +105,9 @@ altering resident memory.
 
 CPX and RSX management should converge on a common version/length/operation/
 flags/identity/status envelope without requiring identical operations or
-function numbers. The numeric CPX selector interface remains experimental.
+function numbers. The numeric CPX selector interface remains experimental until
+its Stage-6 migration. `25 Extended BDOS Namespace.txt` is authoritative for
+BetterCP/M-private BDOS number ownership and allocation.
 
 Interfaces are classified as proof/experimental, implemented provisional, or
 published stable. Execution alone does not make an ABI stable. A stable ABI
@@ -115,3 +117,6 @@ compatibility rules.
 BetterCP/M-private ABIs do not change standard CP/M semantics unless a caller
 explicitly selects the extension.
 
+A coherent service normally owns one registered selector and places related
+operations beneath that selector. New private selectors are allocated through
+the namespace registry, not selected opportunistically in source code.

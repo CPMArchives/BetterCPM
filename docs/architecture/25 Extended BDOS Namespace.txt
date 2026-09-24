@@ -1,0 +1,157 @@
+BETTERCP/M EXTENDED BDOS NAMESPACE
+=================================
+
+Status: adopted BetterCP/M 1.0 namespace policy; source migration is Stage 6
+work and the current 200-209 selectors remain provisional until then.
+
+
+1. PURPOSE AND EVIDENCE
+-----------------------
+
+BetterCP/M shall allocate its private BDOS interfaces deliberately rather than
+claiming an apparently unused function number for each new feature.  Historical
+research found no documented assignment for Functions 176 through 199 (B0h
+through C7h) in the surveyed CP/M-family, replacement-BDOS, OEM-extension and
+modern CP/M material.  A repository and locally available compatibility-corpus
+search found no contrary assignment.
+
+This is a historical negative, not proof that no obscure implementation ever
+used the range.  The normative conclusion is that 176-199 is the best supported
+available range, while competing high ranges have known occupants.  In
+particular, 200/201 are P2DOS-family time services which BetterCP/M adopts as
+compatibility calls, 220-224 are used by modern RunCPM host/GPIO extensions,
+the 225-and-higher area intersects Vector Graphic Extended CP/M, and 240-255
+intersects Baby Blue II/UniDOS conventions.
+
+
+2. OWNED RANGE AND ALLOCATION POLICY
+------------------------------------
+
+BetterCP/M 1.0 owns Functions 176 through 199 as follows:
+
+  176-196  production BetterCP/M service namespace
+  197      reserved undefined future escape selector
+  198-199  non-public test and conformance selectors
+
+Production allocations grow upward from 176.  Unassigned selectors remain
+unassigned until an accepted service contract needs one.  Every assignment is
+entered in the registry in section 4 before code adopts it.
+
+A coherent service normally receives one top-level selector.  Related
+operations use a versioned service-specific request block or documented
+subfunction beneath that selector.  BetterCP/M does not spend one selector per
+operation when those operations form one service.
+
+The selector identifies a service boundary; it does not replace that service's
+own versioning, length, status, lifetime or atomicity rules.  Allocation of a
+selector also does not by itself promote an experimental service ABI to stable.
+
+
+3. RESERVED SELECTORS
+---------------------
+
+Function 197 is an undefined reserved future escape selector.  It has no
+callable 1.0 contract, request block, gateway semantics or dispatcher
+implementation.  Its reservation preserves room for eventual namespace
+exhaustion or another future requirement which cannot fit the ordinary
+service-selector model.  CPX, RSX, FDF, PDS, CONFIG and other normal services
+shall not be routed through it merely because it is available.
+
+Functions 198 and 199 are reserved for proofs, diagnostics, chaining tests and
+conformance fixtures.  Their meanings may change without compatibility and a
+production build may leave them unsupported.  Production applications shall
+not depend on them.  HELLO/ECHO-style proofs move here if they remain useful;
+they do not receive permanent production assignments.
+
+Functions 200 and 201 remain outside the BetterCP/M-private range because their
+meaning is inherited from P2DOS.  BetterCP/M 1.0 nevertheless implements them
+as its P2DOS-compatible clock calls:
+
+  200  get clock
+  201  set clock
+
+They use the historical P2DOS five-byte day-count/hour/minute/second record and
+are intercepted directly by a conforming clock-provider RSX.  Their exact
+successful return behavior shall be verified against P2DOS evidence before the
+remaining status numbers are frozen.  Function 201 is handled by a read-only
+provider as SET_UNSUPPORTED rather than chained to the BDOS fallback.
+
+The clock facility is a general hardware-independent BetterCP/M service.  Its
+selectors and record were selected because they are compact, adequate and
+historically established, not because the service is an emulation layer.
+P2DOS clock-call compatibility is a useful consequence of that choice.
+
+
+4. BETTERCP/M 1.0 REGISTRY
+--------------------------
+
+The final 1.0 selector assignments are:
+
+  176  CPX profile control
+  177  RSX profile control and reconstruction
+  178  console/video cursor support
+  179  command-environment printer-echo control
+  180  protected subsystem version descriptor
+  181  disk configuration and utility I/O
+  182  callable resident-service registry
+  183  FDF mixed-sector service
+  184-196  unassigned production selectors
+  197  reserved undefined future escape; no 1.0 callable contract
+  198-199  non-public test/conformance selectors
+
+Inherited compatibility assignments outside the private range are:
+
+  200  P2DOS-compatible get clock
+  201  P2DOS-compatible set clock
+
+The service contracts remain in their owning architecture and engineering
+specifications.  This registry controls only the top-level BDOS numbers and
+their stability class.
+
+
+5. PROVISIONAL-TO-FINAL MIGRATION
+---------------------------------
+
+The pre-freeze implementation currently uses:
+
+  200 -> 176  CPX control
+  202 -> 177  RSX control and reconstruction
+  204 -> 178  cursor support
+  205 -> 179  printer-echo control
+  206 -> 180  subsystem version descriptor
+  207 -> 181  disk configuration and utility I/O
+  208 -> 182  callable resident-service registry
+  209 -> 183  FDF service
+
+Proof selectors 201 and 203 are removed from the released namespace.  Tests
+which still need two numeric interceptors use 198 and 199.
+
+Stage 6 performs the source migration in one bounded change: update
+dispatchers, RSXs, utilities, fixtures, builders, tests and programmer
+documentation; rebuild all in-tree clients; prove that no BetterCP/M-private
+service claims 200 or 201; and install the P2DOS-compatible clock adapter at
+those inherited selectors.
+Obsolete numeric aliases are not retained unless a separately documented
+compatibility requirement justifies them.
+
+The extended dispatcher shall recognize the BetterCP/M-owned selectors
+explicitly.  It shall not route every function at or above 176 into BetterCP/M,
+because later historical and third-party ranges remain outside this namespace.
+
+
+6. FUTURE ALLOCATION RULES
+--------------------------
+
+Every future private BDOS proposal states:
+
+  * why it is a coherent top-level service rather than an operation of an
+    existing service;
+  * whether it is production, reserved, experimental or test-only;
+  * its versioning and request convention;
+  * its compatibility and failure behavior; and
+  * the registry entry it consumes.
+
+No source file may select a new BetterCP/M-private BDOS number
+opportunistically.  The architecture registry is authoritative.  Historical
+compatibility adapters outside 176-199 retain their historical numbers only
+when their own accepted specification requires that exact interface.
