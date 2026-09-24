@@ -82,6 +82,9 @@ def main() -> None:
     metadata = (ROOT / "build/system/R3META.RSX").read_bytes()
     coordinator = (ROOT / "build/system/R3COORD.RSX").read_bytes()
     profile = (ROOT / "build/system/R3PROF.RSX").read_bytes()
+    retained_context = (ROOT / "build/system/R3KCTX.RSX").read_bytes()
+    retained_loader = (ROOT / "build/system/R3KEEP.RSX").read_bytes()
+    retained_prepare = (ROOT / "build/system/R3KPRE.RSX").read_bytes()
     move = (ROOT / "build/system/R3MOVE.RSX").read_bytes()
     commit = (ROOT / "build/system/R3COMIT.RSX").read_bytes()
     assert 0 < len(snapshot) <= 1024
@@ -93,6 +96,10 @@ def main() -> None:
     assert len(profile) == 1024
     assert profile[-3:] == bytes((0xC3, LAYOUT["BDOS"] & 0xFF,
                                   LAYOUT["BDOS"] >> 8))
+    for overlay in (retained_context, retained_loader, retained_prepare):
+        assert len(overlay) == 1024
+        assert overlay[-3:] == bytes((0xC3, LAYOUT["BDOS"] & 0xFF,
+                                      LAYOUT["BDOS"] >> 8))
     assert len(move) == len(commit) == 1024
     assert move[0] != 0 and move[0x120] != 0 and move[0x320] != 0
     assert commit[-3:] == bytes((0xC3, LAYOUT["BDOS"] & 0xFF,

@@ -1,0 +1,276 @@
+        INCLUDE layout.inc
+
+; ********************************************************************************
+; *                 BetterCP/M Retained Context Constructor                     *
+; *                                                                              *
+; * Expands the six-byte post-candidate handoff seed into the complete retained   *
+; * preparation context, initializes descriptor vectors, publishes the already    *
+; * prepared candidate descriptor, and transfers control to R3KEEP.               *
+; ********************************************************************************
+
+KCBASE          EQU     LY_RSX
+FLOPEN          EQU     LY_FILE
+FLNEXT          EQU     LY_FILE+3
+CFGB            EQU     LY_CFG
+RSTCOUNT        EQU     LY_RSTA
+
+        CSEG
+        .PHASE  KCBASE
+
+; ================================================================================
+; =                         Context Layout Construction                          =
+; ================================================================================
+
+KC_ENTRY:                               ; enter retained context constructor
+        LD      (KC_CTX),DE
+        EX      DE,HL
+        PUSH    HL
+        LD      DE,22
+        ADD     HL,DE
+        LD      A,(HL)
+        POP     HL
+        CP      0A5H
+        JP      NZ,KC_BAD
+        INC     HL
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (KC_FACTS),DE
+        EX      DE,HL
+        LD      DE,46
+        ADD     HL,DE
+        JP      C,KC_BAD
+        LD      (KC_PLAN),HL
+        LD      A,(RSTCOUNT)
+        LD      (KC_OCNT),A
+        INC     A
+        LD      (KC_NCNT),A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE                   ; plan records
+        JP      C,KC_BAD
+        LD      A,(KC_OCNT)
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE                   ; retained allocations
+        JP      C,KC_BAD
+        LD      A,(KC_NCNT)
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE                   ; prospective allocations
+        JP      C,KC_BAD
+        LD      A,(KC_NCNT)
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE                   ; class vector
+        JP      C,KC_BAD
+        LD      DE,18
+        ADD     HL,DE                   ; planner request
+        JP      C,KC_BAD
+        LD      (KC_SDESC),HL
+        LD      A,(KC_NCNT)
+        LD      E,A
+        ADD     A,A
+        ADD     A,E
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE                   ; snapshot descriptors
+        JP      C,KC_BAD
+        LD      (KC_UDESC),HL
+        LD      A,(KC_NCNT)
+        LD      E,A
+        ADD     A,A
+        ADD     A,E
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE                   ; union descriptors
+        JP      C,KC_BAD
+        LD      DE,23
+        ADD     HL,DE
+        JP      C,KC_BAD
+        LD      (KC_CSNAP),HL
+        LD      DE,(KC_FACTS)
+        EX      DE,HL
+        LD      DE,4
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,(KC_CSNAP)
+        ADD     HL,DE
+        JP      C,KC_BAD
+        LD      DE,(KC_CTX)
+        OR      A
+        SBC     HL,DE
+        JP      NZ,KC_BAD
+        LD      HL,(KC_CTX)
+        LD      DE,23
+        ADD     HL,DE
+        JP      C,KC_BAD
+        LD      (KC_START),HL
+        PUSH    HL
+        LD      HL,(KC_CTX)
+        LD      DE,4
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        POP     HL
+        OR      A
+        SBC     HL,DE
+        JR      C,KC_SPACE
+        JP      NZ,KC_BAD
+
+; ================================================================================
+; =                          Descriptor Initialization                           =
+; ================================================================================
+
+KC_SPACE:                               ; clear complete descriptor vectors
+        LD      HL,(KC_SDESC)
+        LD      A,(KC_NCNT)
+        LD      E,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,E
+        LD      B,A
+        XOR     A
+KC_ZDESC:
+        LD      (HL),A
+        INC     HL
+        DJNZ    KC_ZDESC
+        LD      A,(KC_NCNT)
+        DEC     A
+        LD      E,A
+        ADD     A,A
+        ADD     A,E
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        LD      HL,(KC_SDESC)
+        ADD     HL,DE
+        LD      DE,(KC_CSNAP)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      DE,(KC_FACTS)
+        INC     DE
+        INC     DE
+        INC     DE
+        INC     DE
+        LD      A,(DE)
+        LD      (HL),A
+        INC     DE
+        INC     HL
+        LD      A,(DE)
+        LD      (HL),A
+        INC     HL
+        PUSH    HL
+        LD      HL,(KC_FACTS)
+        LD      DE,8
+        ADD     HL,DE
+        EX      DE,HL
+        POP     HL
+        LD      A,(DE)
+        LD      (HL),A
+        INC     DE
+        INC     HL
+        LD      A,(DE)
+        LD      (HL),A
+
+; ================================================================================
+; =                            Context Publication                               =
+; ================================================================================
+
+KC_PUBLISH:                             ; publish expanded retained context
+        LD      HL,(KC_CTX)
+        LD      DE,6
+        ADD     HL,DE
+        LD      DE,(KC_PLAN)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      DE,(KC_SDESC)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      DE,(KC_UDESC)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      DE,(KC_START)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        XOR     A
+        LD      (HL),A
+        INC     HL
+        LD      A,(KC_OCNT)
+        LD      (HL),A
+        INC     HL
+        XOR     A
+        LD      B,6
+KC_ZCURRENT:                            ; clear current retained inputs
+        LD      (HL),A
+        INC     HL
+        DJNZ    KC_ZCURRENT
+        LD      (HL),05AH
+        LD      HL,KC_NMOVE
+        CALL    KC_OVER
+        JP      NZ,KC_BAD
+        LD      HL,KC_NKEEP
+        LD      (KC_HREQ),HL
+        LD      HL,LY_RSX
+        LD      (KC_HREQ+2),HL
+        LD      (KC_HREQ+4),HL
+        LD      HL,(KC_CTX)
+        LD      (KC_HREQ+6),HL
+        LD      DE,KC_HREQ
+        JP      CFGB+0320H
+
+; ================================================================================
+; =                              Local Utilities                                 =
+; ================================================================================
+
+KC_OVER:                                ; load one CONFIG-slot overlay
+        LD      A,1
+        CALL    FLOPEN
+        RET     NZ
+        LD      HL,CFGB
+        CALL    FLNEXT
+        RET     NZ
+        CALL    FLNEXT
+        RET
+
+KC_BAD:                                 ; reject context construction
+        LD      A,0FFH
+        OR      A
+        RET
+
+KC_NMOVE:       DB      'R3MOVE  '      ; safe handoff overlay stem
+KC_NKEEP:       DB      'R3KEEP  '      ; retained carrier loader stem
+KC_CTX:         DW      0               ; retained context seed
+KC_FACTS:       DW      0               ; candidate normalized facts
+KC_PLAN:        DW      0               ; prospective plan records
+KC_SDESC:       DW      0               ; snapshot descriptor vector
+KC_UDESC:       DW      0               ; pointer-union descriptor vector
+KC_CSNAP:       DW      0               ; candidate snapshot address
+KC_START:       DW      0               ; first retained scratch byte
+KC_OCNT:        DB      0               ; retained profile count
+KC_NCNT:        DB      0               ; prospective profile count
+KC_HREQ:        DS      8               ; replacement-overlay handoff request
+
+        .DEPHASE
+        END

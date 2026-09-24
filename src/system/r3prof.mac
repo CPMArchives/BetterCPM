@@ -4,9 +4,9 @@
 ; *                  BetterCP/M Prospective Profile Builder                      *
 ; *                                                                              *
 ; * Reconstructs retained allocation and class vectors from carrier headers,     *
-; * appends one validated candidate, invokes the Stage-3 layout planner, and      *
-; * prepares the fresh candidate snapshot. The phase writes only transaction      *
-; * memory owned by the caller.                                                   *
+; * appends one validated candidate, invokes the Stage-3 layout planner, prepares  *
+; * its snapshot, and hands retained preparation onward. The phase writes only     *
+; * transaction memory owned by the caller.                                        *
 ; ********************************************************************************
 
 PFBASE          EQU     LY_RSX
@@ -265,24 +265,16 @@ PF_BUILD:                               ; construct planner request
 
 PF_PREP:                                ; lay out bounded snapshot scratch
         LD      HL,(PF_END)
-        LD      (PF_SDESC),HL
         LD      A,(PF_NCNT)
-        LD      B,A
-        XOR     A
-PF_ZDESC:                               ; clear six bytes per profile member
-        LD      (HL),A
-        INC     HL
-        LD      (HL),A
-        INC     HL
-        LD      (HL),A
-        INC     HL
-        LD      (HL),A
-        INC     HL
-        LD      (HL),A
-        INC     HL
-        LD      (HL),A
-        INC     HL
-        DJNZ    PF_ZDESC
+        LD      E,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,E                     ; nine descriptor bytes per member
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE
+        JP      C,PF_BAD
         LD      (PF_SREQ),HL
         LD      DE,23
         ADD     HL,DE
@@ -421,73 +413,62 @@ PF_RELOCWORDS:                          ; static list and count
         CP      1
         JP      NZ,PF_BAD
 
-PF_SDPUBLISH:                           ; publish candidate snapshot descriptor
-        LD      A,(PF_NCNT)
-        DEC     A
-        LD      E,A
-        ADD     A,A
-        ADD     A,E
-        ADD     A,A
-        LD      E,A
-        LD      D,0
-        LD      HL,(PF_SDESC)
+  ; Preserve the public request, candidate facts, and high bound after the
+  ; candidate snapshot. R3KCTX reconstructs the durable layout from these
+  ; three roots and the persistent profile count.
+        LD      HL,(PF_SEND)
+        LD      DE,23
         ADD     HL,DE
-        LD      DE,(PF_SNAP)
+        JP      C,PF_BAD
+        LD      DE,(PF_HIGH)
+        OR      A
+        SBC     HL,DE
+        JR      C,PF_SEEDOK
+        JP      NZ,PF_BAD
+PF_SEEDOK:
+        LD      HL,(PF_SEND)
+        LD      DE,(PF_REQ)
         LD      (HL),E
         INC     HL
         LD      (HL),D
         INC     HL
         LD      DE,(PF_FACTS)
-        INC     DE
-        INC     DE
-        INC     DE
-        INC     DE
-        LD      A,(DE)                  ; candidate allocation
-        LD      (HL),A
-        INC     DE
-        INC     HL
-        LD      A,(DE)
-        LD      (HL),A
-        INC     HL
-        PUSH    HL
-        LD      HL,(PF_FACTS)
-        LD      DE,8
-        ADD     HL,DE
-        EX      DE,HL
-        POP     HL
-        LD      A,(DE)                  ; candidate dispatch offset
-        LD      (HL),A
-        INC     DE
-        INC     HL
-        LD      A,(DE)
-        LD      (HL),A
-
-  ; The header-inspection sector is disposable. Publish the first byte after
-  ; the prepared candidate snapshot as the next available transaction address.
-        LD      HL,(PF_FACTS)
-        LD      DE,24
-        ADD     HL,DE
-        EX      DE,HL
-        LD      HL,(PF_SEND)
-        EX      DE,HL
         LD      (HL),E
         INC     HL
         LD      (HL),D
-        LD      HL,(PF_FACTS)
+        INC     HL
+        LD      DE,(PF_HIGH)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      HL,(PF_SEND)
         LD      DE,22
         ADD     HL,DE
-        LD      E,(HL)
-        INC     HL
-        LD      D,(HL)
-        LD      HL,(PF_REQ)
-        LD      BC,12
-        ADD     HL,BC
+        LD      (HL),0A5H               ; unexpanded retained context marker
+        LD      HL,PF_NMOVE
+        CALL    PF_OVER
+        RET     NZ
+        LD      HL,(PF_PREQ)
+        LD      DE,PF_NKEEP
         LD      (HL),E
         INC     HL
         LD      (HL),D
-        LD      HL,(PF_FACTS)
-        XOR     A
-        RET
+        INC     HL
+        LD      DE,LY_RSX
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      DE,(PF_SEND)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      DE,(PF_PREQ)
+        JP      CFGB+0320H
 
 ; ================================================================================
 ; =                       Fixed Carrier Header Validation                        =
@@ -645,6 +626,8 @@ PF_MAGIC:       DB      'B','R','S','X' ; carrier signature
 PF_ABIVAL:      DB      2,1,0           ; accepted RSX ABI
 PF_NPLAN:       DB      'R3PLAN  '      ; planner overlay stem
 PF_NSNAP:       DB      'R3SNAP  '      ; snapshot overlay stem
+PF_NMOVE:       DB      'R3MOVE  '      ; safe handoff overlay stem
+PF_NKEEP:       DB      'R3KCTX  '      ; retained context constructor stem
 PF_REQ:         DW      0               ; public Function-202 request
 PF_FACTS:       DW      0               ; candidate normalized facts
 PF_HIGH:        DW      0               ; transaction high bound
@@ -655,7 +638,6 @@ PF_CVECT:       DW      0               ; prospective class vector
 PF_PREQ:        DW      0               ; planner request
 PF_END:         DW      0               ; durable planning-area end
 PF_SCRATCH:     DW      0               ; reusable header sector
-PF_SDESC:       DW      0               ; six-byte snapshot descriptors
 PF_SREQ:        DW      0               ; snapshot constructor request
 PF_SNAP:        DW      0               ; candidate prepared snapshot
 PF_SEND:        DW      0               ; first byte after candidate snapshot

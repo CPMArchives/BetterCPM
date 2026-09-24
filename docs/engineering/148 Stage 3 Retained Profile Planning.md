@@ -64,5 +64,6 @@ operation checks remain active.
 
 Both platform image builders install `R3PROF.RSX` with the other private Stage
 3 overlays. Engineering Specification 149 consumes the complete general plan
-and prepares the new candidate snapshot. Retained pointer unions and snapshots
-remain the next preparation increment.
+and prepares the new candidate snapshot. Engineering Specification 150
+validates and prepares every retained member. Commit coordination and
+publication remain the next Stage 3 increment.

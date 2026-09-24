@@ -60,5 +60,7 @@ materialize callable descriptors.
 
 Both target image builders package `R3SNAP.RSX`. Engineering Specification 149
 connects carrier parsing, prospective-profile construction, the existing
-planner, and this snapshot constructor for the new candidate. Retained-member
-pointer unions and snapshots remain the next preparation increment.
+planner, and this snapshot constructor for the new candidate. Engineering
+Specification 150 completes preparation by constructing retained-member
+pointer unions and snapshots. Commit coordination and publication remain the
+next Stage 3 increment.

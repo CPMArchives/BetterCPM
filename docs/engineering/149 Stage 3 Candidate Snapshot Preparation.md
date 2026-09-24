@@ -63,8 +63,7 @@ constructor. It proves:
 - malformed carriers and unsupported operations still fail; and
 - every success and failure leaves live and persistent profile state unchanged.
 
-The next increment prepares every retained member. It must fully validate each
-retained carrier and metadata stream, construct pointer unions for retained
-STATEFUL modules, construct snapshots for retained STATELESS modules, and
-complete the descriptor arrays without publishing live state.
-
+Engineering Specification 150 prepares every retained member. It fully
+validates each retained carrier and metadata stream, constructs pointer unions
+for retained STATEFUL modules, constructs snapshots for retained STATELESS
+modules, and completes the descriptor arrays without publishing live state.

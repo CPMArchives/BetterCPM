@@ -24,6 +24,11 @@ MOVE_SOURCE = 0xA000
 PROF_SOURCE = 0xA400
 HELLO_SOURCE = 0xA800
 SNAP_SOURCE = 0xAC00
+KCTX_SOURCE = 0xB000
+KEEP_SOURCE = 0xB400
+KPRE_SOURCE = 0xB800
+SLOTS_SOURCE = 0xBC00
+STATEFUL_SOURCE = 0xC000
 FACTS = 0x6400
 LIVE_LOW = 0xD600
 LIVE_HIGH = 0xEC00
@@ -54,7 +59,9 @@ OPEN:   XOR     A
         CP      'M'
         JR      Z,MSELECT
         CP      'S'
-        JR      Z,SNAP
+        JR      Z,SSELECT
+        CP      'K'
+        JR      Z,KSELECT
         JP      CARRIER
 PSELECT:
         INC     HL
@@ -79,12 +86,40 @@ PROF:   LD      A,5
         JR      SELECTED
 SNAP:   LD      A,7
         JR      SELECTED
+SSELECT:
+        INC     HL
+        LD      A,(HL)
+        CP      'L'
+        JR      Z,SLOTS
+        JP      SNAP
+KSELECT:
+        INC     HL
+        LD      A,(HL)
+        CP      'C'
+        JR      Z,KCTX
+        CP      'E'
+        JR      Z,KEEP
+        LD      A,10
+        JR      SELECTED
+KCTX:   LD      A,8
+        JR      SELECTED
+KEEP:   LD      A,9
+        JR      SELECTED
+SLOTS:  LD      A,11
+        JR      SELECTED
 CARRIER:
         LD      A,(HL)
         CP      'H'
+        JR      Z,HELLO
+        CP      'S'
+        JR      Z,STATEFUL
         LD      A,0
-        JR      NZ,SELECTED
+        JR      SELECTED
+HELLO:
         LD      A,6
+        JR      SELECTED
+STATEFUL:
+        LD      A,12
 SELECTED:
         LD      ({SELECT:04X}H),A
         XOR     A
@@ -113,7 +148,22 @@ NEXT:   PUSH    HL
         DEC     A
         LD      BC,0{HELLO_SOURCE:04X}H
         JP      Z,HAVESRC
+        DEC     A
         LD      BC,0{SNAP_SOURCE:04X}H
+        JP      Z,HAVESRC
+        DEC     A
+        LD      BC,0{KCTX_SOURCE:04X}H
+        JP      Z,HAVESRC
+        DEC     A
+        LD      BC,0{KEEP_SOURCE:04X}H
+        JP      Z,HAVESRC
+        DEC     A
+        LD      BC,0{KPRE_SOURCE:04X}H
+        JP      Z,HAVESRC
+        DEC     A
+        LD      BC,0{SLOTS_SOURCE:04X}H
+        JP      Z,HAVESRC
+        LD      BC,0{STATEFUL_SOURCE:04X}H
 HAVESRC:
         LD      A,({COUNT:04X}H)
         LD      L,A
@@ -155,7 +205,12 @@ def invoke(stub: bytes, carrier: bytes, name: bytes, *, operation: int = 1,
     move = (ROOT / "build/system/R3MOVE.RSX").read_bytes()
     profile = (ROOT / "build/system/R3PROF.RSX").read_bytes()
     snapshot = (ROOT / "build/system/R3SNAP.RSX").read_bytes()
+    context = (ROOT / "build/system/R3KCTX.RSX").read_bytes()
+    retained_loader = (ROOT / "build/system/R3KEEP.RSX").read_bytes()
+    retained_prepare = (ROOT / "build/system/R3KPRE.RSX").read_bytes()
+    slots = (ROOT / "build/system/R3SLOTS.RSX").read_bytes()
     hello = (ROOT / "build/rsx/HELLO.RSX").read_bytes()
+    stateful = (ROOT / "build/rsx/STATEFUL.RSX").read_bytes()
     cpu.mem[LAYOUT["RSX"]:LAYOUT["RSX"] + len(coordinator)] = coordinator
     cpu.mem[LAYOUT["FILE"]:LAYOUT["FILE"] + len(stub)] = stub
     cpu.mem[CARRIER_SOURCE:CARRIER_SOURCE + 1024] = carrier.ljust(1024, b"\0")
@@ -165,7 +220,14 @@ def invoke(stub: bytes, carrier: bytes, name: bytes, *, operation: int = 1,
     cpu.mem[MOVE_SOURCE:MOVE_SOURCE + 1024] = move.ljust(1024, b"\0")
     cpu.mem[PROF_SOURCE:PROF_SOURCE + 1024] = profile.ljust(1024, b"\0")
     cpu.mem[HELLO_SOURCE:HELLO_SOURCE + 1024] = hello.ljust(1024, b"\0")
+    selected_stateful = carrier if name == b"STATEFUL" else stateful
+    cpu.mem[STATEFUL_SOURCE:STATEFUL_SOURCE + 1024] = \
+        selected_stateful.ljust(1024, b"\0")
     cpu.mem[SNAP_SOURCE:SNAP_SOURCE + 1024] = snapshot.ljust(1024, b"\0")
+    cpu.mem[KCTX_SOURCE:KCTX_SOURCE + 1024] = context.ljust(1024, b"\0")
+    cpu.mem[KEEP_SOURCE:KEEP_SOURCE + 1024] = retained_loader.ljust(1024, b"\0")
+    cpu.mem[KPRE_SOURCE:KPRE_SOURCE + 1024] = retained_prepare.ljust(1024, b"\0")
+    cpu.mem[SLOTS_SOURCE:SLOTS_SOURCE + 1024] = slots.ljust(1024, b"\0")
     cpu.mem[COUNT:SELECT + 1] = b"\xA5\xA5"
     cpu.mem[LAYOUT["RSX_STATE"]] = len(retained)
     for index, stem in enumerate(retained):
@@ -206,11 +268,11 @@ def main() -> None:
         assert cpu.word(plan_record + 4) == allocation
         assert cpu.mem[plan_record + 6:plan_record + 8] == b"\x01\xFF"
         snap_descriptor = FACTS + 75
-        snapshot = FACTS + 104
+        snapshot = FACTS + 107
         assert cpu.word(snap_descriptor) == snapshot
         assert cpu.word(snap_descriptor + 2) == allocation
         assert cpu.word(snap_descriptor + 4) == cpu.word(FACTS + 8)
-        assert cpu.word(FACTS + 24) == snapshot + allocation
+        assert cpu.word(FACTS + 24) == snapshot + allocation + 23
         assert cpu.mem[snapshot:snapshot + 4] == b"\0\0\0\0"
         assert cpu.mem[snapshot + 4:snapshot + 6] == b"\x01\0"
         assert cpu.word(snapshot + 6) == allocation - 10
@@ -225,9 +287,9 @@ def main() -> None:
             (linked_value + cpu.word(plan_record + 2) -
              cpu.word(FACTS + 6)) & 0xFFFF
 
-        cpu, _ = invoke(stub, stateful, b"STATEFUL", high=FACTS + 360)
+        cpu, _ = invoke(stub, stateful, b"STATEFUL", high=FACTS + 386)
         assert cpu.a == 0 and cpu.hl == FACTS
-        cpu, _ = invoke(stub, stateful, b"STATEFUL", high=FACTS + 359)
+        cpu, _ = invoke(stub, stateful, b"STATEFUL", high=FACTS + 385)
         assert cpu.a == 0xFF and cpu.word(REQUEST + 12) == 0xA5A5
 
         cpu, _ = invoke(stub, hello, b"HELLO   ")
@@ -252,17 +314,59 @@ def main() -> None:
         assert cpu.word(second + 4) == new_allocation
         assert cpu.mem[second + 6:second + 8] == b"\x01\xFF"
         snap_descriptors = FACTS + 88
-        snapshot = snap_descriptors + 12 + 23
-        assert cpu.mem[snap_descriptors:snap_descriptors + 6] == b"\0" * 6
+        snapshot = snap_descriptors + 12 + 6 + 23
+        retained_snapshot = snapshot + new_allocation + 23
+        assert cpu.word(snap_descriptors) == retained_snapshot
+        assert cpu.word(snap_descriptors + 2) == old_allocation
+        assert cpu.word(snap_descriptors + 4) == int.from_bytes(
+            hello[16:18], "little")
         assert cpu.word(snap_descriptors + 6) == snapshot
         assert cpu.word(snap_descriptors + 8) == new_allocation
         assert cpu.word(snap_descriptors + 10) == cpu.word(FACTS + 8)
-        assert cpu.word(FACTS + 24) == snapshot + new_allocation
+        assert cpu.word(FACTS + 24) == retained_snapshot + old_allocation
 
-        cpu, _ = invoke(stub, stateful, b"STATEFUL", high=FACTS + 600,
+        cpu, _ = invoke(stub, hello, b"HELLO   ",
+                        retained=(b"STATEFUL",))
+        assert cpu.a == 0 and cpu.hl == FACTS
+        stateful_allocation = int.from_bytes(stateful[14:16], "little")
+        candidate_allocation = cpu.word(FACTS + 4)
+        snapshots = FACTS + 88
+        unions = snapshots + 12
+        candidate_snapshot = unions + 6 + 23
+        durable_union = candidate_snapshot + candidate_allocation + 23
+        assert cpu.mem[snapshots:snapshots + 6] == b"\0" * 6
+        assert cpu.word(snapshots + 6) == candidate_snapshot
+        assert cpu.word(snapshots + 8) == candidate_allocation
+        union_address = cpu.word(unions)
+        union_count = cpu.mem[unions + 2]
+        static_count = int.from_bytes(stateful[22:24], "little")
+        static = tuple(int.from_bytes(stateful[48 + 2 * index:
+                                                 50 + 2 * index], "little")
+                       for index in range(static_count))
+        metadata = int.from_bytes(stateful[30:32], "little")
+        record = metadata + 12
+        runtime: tuple[int, ...] = ()
+        for _ in range(stateful[metadata + 7]):
+            kind, length = stateful[record:record + 2]
+            data = record + 2
+            if kind == 3:
+                runtime = tuple(int.from_bytes(stateful[offset:offset + 2],
+                                               "little")
+                                for offset in range(data, data + length, 2))
+            record = data + length
+        expected_union = tuple(sorted(set(static) | set(runtime)))
+        assert union_address == durable_union
+        assert union_count == len(expected_union)
+        assert tuple(cpu.word(union_address + 2 * index)
+                     for index in range(union_count)) == expected_union
+        assert cpu.mem[unions + 3:unions + 6] == b"\0" * 3
+        assert cpu.word(FACTS + 24) == durable_union + 2 * union_count
+        assert stateful_allocation == cpu.word(FACTS + 46 + 4)
+
+        cpu, _ = invoke(stub, stateful, b"STATEFUL", high=FACTS + 2502,
                         retained=(b"HELLO   ",))
         assert cpu.a == 0
-        cpu, _ = invoke(stub, stateful, b"STATEFUL", high=FACTS + 599,
+        cpu, _ = invoke(stub, stateful, b"STATEFUL", high=FACTS + 2501,
                         retained=(b"HELLO   ",))
         assert cpu.a == 0xFF and cpu.word(REQUEST + 12) == 0xA5A5
         cpu, _ = invoke(stub, stateful, b"STATEFUL",
@@ -281,8 +385,9 @@ def main() -> None:
         cpu, _ = invoke(stub, stateful, b"STATEFUL", operation=2)
         assert cpu.a == 0xFF and cpu.word(REQUEST + 12) == 0xA5A5
 
-    print("R3COORD and R3PROF normalize a candidate, plan bounded empty or "
-          "nonempty appends, and prepare the fresh candidate snapshot")
+    print("Stage 3 normalizes and plans bounded appends, prepares the fresh "
+          "candidate, and constructs retained STATELESS snapshots and "
+          "STATEFUL pointer unions without changing live state")
 
 
 if __name__ == "__main__":
