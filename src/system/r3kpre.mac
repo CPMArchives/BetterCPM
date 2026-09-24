@@ -195,6 +195,7 @@ KP_SFUL:                                ; prepare retained pointer-slot union
         LD      HL,(KP_CURSOR)
         ADD     HL,BC
         LD      (KP_CURSOR),HL
+        CALL    KP_DISPATCH            ; commit always needs live dispatch offset
         JP      KP_FINISH
 
 ; ================================================================================
@@ -367,13 +368,16 @@ KP_FINISH:                              ; advance durable cursor and member inde
         JP      NZ,KP_BAD
         LD      HL,KP_NKEEP
         LD      (KP_HREQ),HL
-        LD      HL,LY_RSX
-        LD      (KP_HREQ+2),HL
-        LD      (KP_HREQ+4),HL
         LD      HL,(KP_CTX)
-        LD      (KP_HREQ+6),HL
+        LD      (KP_HREQ+4),HL
+        LD      DE,4
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (KP_HREQ+2),DE
         LD      DE,KP_HREQ
-        JP      CFGB+0320H
+        JP      CFGB+0310H
 
 ; ================================================================================
 ; =                              Local Utilities                                 =
@@ -440,6 +444,24 @@ KP_SPTR:                                ; locate six-byte snapshot descriptor
         ADD     HL,DE
         RET
 
+KP_DISPATCH:                            ; publish retained dispatch in snapshot record
+        LD      A,(KP_INDEX)
+        CALL    KP_SPTR
+        LD      DE,4
+        ADD     HL,DE
+        PUSH    HL
+        LD      HL,(KP_FACTS)
+        LD      DE,8
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        POP     HL
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        RET
+
 KP_UPTR:                                ; locate three-byte union descriptor
         LD      E,A
         ADD     A,A
@@ -458,15 +480,20 @@ KP_UPTR:                                ; locate three-byte union descriptor
         ADD     HL,DE
         RET
 
-KP_OVER:                                ; load one CONFIG-slot overlay
-        LD      A,1
-        CALL    FLOPEN
-        RET     NZ
-        LD      HL,CFGB
-        CALL    FLNEXT
-        RET     NZ
-        CALL    FLNEXT
-        RET
+KP_OVER:                                ; stage outside physical disk workspace
+        PUSH    HL
+        LD      HL,(KP_CTX)
+        LD      BC,4
+        ADD     HL,BC
+        LD      C,(HL)
+        INC     HL
+        LD      H,(HL)
+        LD      L,C
+        LD      BC,0400H
+        ADD     HL,BC
+        POP     DE
+        XOR     A
+        JP      (HL)
 
 KP_BAD:                                 ; reject retained preparation
         LD      A,0FFH
@@ -491,7 +518,7 @@ KP_CAP:         DB      0               ; worst-case union capacity
 KP_COUNT:       DB      0               ; returned union count
 KP_UREQ:        DS      13              ; pointer-union request
 KP_SREQ:        DS      23              ; snapshot request
-KP_HREQ:        DS      8               ; replacement-overlay handoff request
+KP_HREQ:        DS      6               ; replacement-overlay handoff request
 
         .DEPHASE
         END

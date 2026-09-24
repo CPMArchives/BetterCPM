@@ -2,10 +2,13 @@
 ;
 ; DE -> request:
 ; +0 plan, +2 pointer-union descriptors, +4 snapshot descriptors
-; +6 count, +7 reserved zero, +8 scheduler-request scratch
+; +6 count, +7 publication mode, +8 scheduler-request scratch
 ; +10 scheduler entry, +12 mover-request scratch, +14 mover scratch bytes
 ; +16 mover entry, +18 empty-profile base, +20 core dispatch
 ; +22 publication descriptor, +24 returned committed count
+; Publication mode 1 adds +25 persistent publisher entry,
+; +27 prospective persistent state, +29 live persistent state,
+; +31 public request and +33 returned primary service.
 ;
 ; Each six-byte snapshot descriptor contains source, allocation size, and
 ; dispatch offset. Retained STATEFUL/COLD_ONLY entries use zero source/size;
@@ -41,8 +44,9 @@ RC_ENTRY:
         LD      (RC_COUNT),A
         INC     HL
         LD      A,(HL)
-        OR      A
-        JP      NZ,RC_BAD
+        CP      2
+        JP      NC,RC_BAD
+        LD      (RC_MODE),A
         INC     HL
         LD      E,(HL)
         INC     HL
@@ -152,7 +156,7 @@ RC_VLOOP:
         LD      D,(HL)
         LD      (RC_DISP),DE
         LD      HL,(RC_DISP)
-        LD      DE,8
+        LD      DE,4                    ; loader owns next and dispatch words
         OR      A
         SBC     HL,DE
         JP      C,RC_BAD
@@ -435,6 +439,22 @@ RC_HAVELOW:
         LD      (HL),E
         INC     HL
         LD      (HL),D
+        LD      A,(RC_MODE)
+        OR      A
+        JR      Z,RC_GENWRITE
+        LD      DE,(RC_REQ)
+        LD      HL,(RC_REQ)
+        LD      BC,25
+        ADD     HL,BC
+        LD      C,(HL)
+        INC     HL
+        LD      B,(HL)
+        LD      HL,RC_AFTERP
+        PUSH    HL
+        PUSH    BC
+        RET
+RC_AFTERP:                              ; resume after persistent publication
+RC_GENWRITE:                            ; publish the final generation change
         LD      HL,(RC_GENP)    ; generation is the final publication store
         LD      A,(HL)
         INC     A
@@ -599,6 +619,7 @@ RC_COUNT:       DB      0
 RC_INDEX:       DB      0
 RC_SCAN:        DB      0
 RC_CLASS:       DB      0
+RC_MODE:        DB      0
 
         .DEPHASE
         END

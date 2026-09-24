@@ -16,8 +16,9 @@ COUNT = 0x5FFF
 REQUEST = 0x6600
 NAME = 0x6620
 NEXT = 0x6543
+SCRATCH = 0x6800
 MARK = 0x5FFE
-ENTRY = LAYOUT["CONFIG"] + 0x320
+ENTRY = LAYOUT["CONFIG"] + 0x310
 
 
 def file_stub(work: Path) -> bytes:
@@ -26,8 +27,11 @@ def file_stub(work: Path) -> bytes:
         ORG     0{LAYOUT['FILE']:04X}H
         JP      OPEN
         JP      NEXTREC
-        JP      OPEN
+        JP      RESET
 OPEN:   XOR     A
+        LD      ({COUNT:04X}H),A
+        RET
+RESET:  XOR     A
         LD      ({COUNT:04X}H),A
         RET
 NEXTREC:
@@ -85,8 +89,12 @@ def main() -> None:
     retained_context = (ROOT / "build/system/R3KCTX.RSX").read_bytes()
     retained_loader = (ROOT / "build/system/R3KEEP.RSX").read_bytes()
     retained_prepare = (ROOT / "build/system/R3KPRE.RSX").read_bytes()
+    finalizer = (ROOT / "build/system/R3FINAL.RSX").read_bytes()
+    remover = (ROOT / "build/system/R3DROP.RSX").read_bytes()
+    legacy_validator = (ROOT / "build/system/R2VALID.RSX").read_bytes()
     move = (ROOT / "build/system/R3MOVE.RSX").read_bytes()
     commit = (ROOT / "build/system/R3COMIT.RSX").read_bytes()
+    resolver = (ROOT / "build/system/R3RESOL.RSX").read_bytes()
     assert 0 < len(snapshot) <= 1024
     assert 0 < len(carrier) <= 1024
     assert 0 < len(metadata) <= 1024
@@ -96,33 +104,42 @@ def main() -> None:
     assert len(profile) == 1024
     assert profile[-3:] == bytes((0xC3, LAYOUT["BDOS"] & 0xFF,
                                   LAYOUT["BDOS"] >> 8))
-    for overlay in (retained_context, retained_loader, retained_prepare):
+    for overlay in (retained_context, retained_loader, retained_prepare,
+                    finalizer, remover, legacy_validator):
         assert len(overlay) == 1024
         assert overlay[-3:] == bytes((0xC3, LAYOUT["BDOS"] & 0xFF,
                                       LAYOUT["BDOS"] >> 8))
-    assert len(move) == len(commit) == 1024
-    assert move[0] != 0 and move[0x120] != 0 and move[0x320] != 0
-    assert commit[-3:] == bytes((0xC3, LAYOUT["BDOS"] & 0xFF,
-                                 LAYOUT["BDOS"] >> 8))
+    assert len(move) == len(commit) == len(resolver) == 1024
+    assert (move[0] != 0 and move[0x120] != 0 and move[0x310] != 0 and
+            move[0x38F] != 0 and move[0x3DF] != 0)
+    for overlay in (commit, resolver):
+        assert overlay[-3:] == bytes((0xC3, LAYOUT["BDOS"] & 0xFF,
+                                      LAYOUT["BDOS"] >> 8))
     with tempfile.TemporaryDirectory(prefix="bettercpm-rsx-overlay-") as temporary:
         work = Path(temporary)
         cpu = Z80(b"")
+        io = (ROOT / "build/system/rsxio.bin").read_bytes()
+        io_base = SCRATCH + 0x400
+        cpu.mem[io_base:io_base + len(io)] = io
         stub = file_stub(work)
         payload = target(work).ljust(1024, b"\0")
         cpu.mem[LAYOUT["FILE"]:LAYOUT["FILE"] + len(stub)] = stub
         cpu.mem[LAYOUT["CONFIG"]:LAYOUT["CONFIG"] + len(move)] = move
         cpu.mem[STREAM:STREAM + 1024] = payload
+        preserved = bytes(range(12))
+        cpu.mem[LAYOUT["RSX"] + 1012:LAYOUT["RSX"] + 1024] = preserved
         cpu.mem[NAME:NAME + 8] = b"R3COMIT "
-        cpu.mem[REQUEST:REQUEST + 8] = struct.pack(
-            "<HHHH", NAME, LAYOUT["RSX"], LAYOUT["RSX"], NEXT)
+        cpu.mem[REQUEST:REQUEST + 6] = struct.pack(
+            "<HHH", NAME, SCRATCH, NEXT)
         cpu.de = REQUEST
         cpu.sp = 0x5F00
         cpu.run(ENTRY, limit=20000)
         assert cpu.a == 0 and cpu.word(MARK) == NEXT
-        assert cpu.mem[LAYOUT["RSX"]:LAYOUT["RSX"] + len(payload)] == payload
+        assert cpu.mem[LAYOUT["RSX"]:LAYOUT["RSX"] + 1012] == payload[:1012]
+        assert cpu.mem[LAYOUT["RSX"] + 1012:LAYOUT["RSX"] + 1024] == preserved
         assert cpu.sp == 0x5F00
-    print("file-backed RSX handoff loads exactly 1 KiB into the manager slot, "
-          "preserves the next request, and transfers control safely")
+    print("file-backed RSX handoff replaces the safe 1,012-byte prefix, preserves "
+          "the live manager frame, and transfers control safely")
 
 
 if __name__ == "__main__":

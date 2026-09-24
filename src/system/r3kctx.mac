@@ -232,27 +232,35 @@ KC_ZCURRENT:                            ; clear current retained inputs
         JP      NZ,KC_BAD
         LD      HL,KC_NKEEP
         LD      (KC_HREQ),HL
-        LD      HL,LY_RSX
-        LD      (KC_HREQ+2),HL
-        LD      (KC_HREQ+4),HL
         LD      HL,(KC_CTX)
-        LD      (KC_HREQ+6),HL
+        LD      (KC_HREQ+4),HL
+        LD      DE,4
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (KC_HREQ+2),DE
         LD      DE,KC_HREQ
-        JP      CFGB+0320H
+        JP      CFGB+0310H
 
 ; ================================================================================
 ; =                              Local Utilities                                 =
 ; ================================================================================
 
-KC_OVER:                                ; load one CONFIG-slot overlay
-        LD      A,1
-        CALL    FLOPEN
-        RET     NZ
-        LD      HL,CFGB
-        CALL    FLNEXT
-        RET     NZ
-        CALL    FLNEXT
-        RET
+KC_OVER:                                ; stage outside physical disk workspace
+        PUSH    HL
+        LD      HL,(KC_CTX)
+        LD      BC,4
+        ADD     HL,BC
+        LD      C,(HL)
+        INC     HL
+        LD      H,(HL)
+        LD      L,C
+        LD      BC,0400H
+        ADD     HL,BC
+        POP     DE
+        XOR     A
+        JP      (HL)
 
 KC_BAD:                                 ; reject context construction
         LD      A,0FFH
@@ -270,7 +278,7 @@ KC_CSNAP:       DW      0               ; candidate snapshot address
 KC_START:       DW      0               ; first retained scratch byte
 KC_OCNT:        DB      0               ; retained profile count
 KC_NCNT:        DB      0               ; prospective profile count
-KC_HREQ:        DS      8               ; replacement-overlay handoff request
+KC_HREQ:        DS      6               ; replacement-overlay handoff request
 
         .DEPHASE
         END

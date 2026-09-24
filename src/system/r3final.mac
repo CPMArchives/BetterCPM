@@ -1,0 +1,554 @@
+        INCLUDE layout.inc
+
+; ********************************************************************************
+; *                    BetterCP/M RSX Transaction Finalizer                      *
+; *                                                                              *
+; * Converts a completely prepared profile into the disk-free commit request,   *
+; * then replaces itself with the commit engine.                                 *
+; ********************************************************************************
+
+RFBASE          EQU     LY_RSX
+FLOPEN          EQU     LY_FILE
+FLNEXT          EQU     LY_FILE+3
+CFGB            EQU     LY_CFG
+RSTCOUNT        EQU     LY_RSTA
+RSTABLE         EQU     LY_RSTA+1
+RSTSERV         EQU     LY_RSTA+021H
+
+        CSEG
+        .PHASE  RFBASE
+
+; ================================================================================
+; = Commit Request Construction                                                 =
+; =                                                                             =
+; = Reserves bounded scheduler scratch, describes live publication, and         =
+; = supplies                                                                    =
+; = the persistent-profile update that becomes visible only after commit.       =
+; ================================================================================
+
+RF_ENTRY:                               ; enter transaction finalizer
+        LD      (RF_CTX),DE
+        EX      DE,HL
+        LD      DE,22
+        ADD     HL,DE
+        LD      A,(HL)
+        CP      05AH
+        JR      Z,RF_MARKOK
+        CP      05BH
+        JP      NZ,RF_BAD
+RF_MARKOK:                              ; accept a prepared transaction context
+        LD      HL,(RF_CTX)
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RF_PUBLIC),DE
+        LD      HL,(RF_CTX)
+        LD      DE,12
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RF_CURSOR),DE
+        INC     HL
+        LD      A,(HL)
+        LD      B,A
+        INC     HL
+        LD      A,(HL)
+        CP      B
+        JP      NZ,RF_BAD               ; every retained member was prepared
+        LD      B,A
+        LD      HL,(RF_CTX)
+        LD      DE,22
+        ADD     HL,DE
+        LD      A,(HL)
+        CP      05AH
+        LD      A,B
+        JR      NZ,RF_HAVECOUNT
+        INC     A                       ; append includes the fresh candidate
+RF_HAVECOUNT:                           ; validate the prospective profile count
+        CP      5
+        JP      NC,RF_BAD
+        LD      (RF_COUNT),A
+
+  ; Commit request, scheduler request, maximum mover request, and publication
+  ; descriptor are durable until commit has completed.
+        LD      HL,(RF_CURSOR)
+        LD      (RF_CREQ),HL
+        LD      DE,35
+        OR      A
+        ADD     HL,DE
+        JP      C,RF_BAD
+        LD      (RF_SREQ),HL
+        LD      DE,13
+        OR      A
+        ADD     HL,DE
+        JP      C,RF_BAD
+        LD      (RF_MREQ),HL
+        CALL    RF_MAXUNION
+        LD      A,(RF_MAX)
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        LD      HL,8
+        ADD     HL,DE
+        LD      (RF_MCAP),HL
+        EX      DE,HL
+        LD      HL,(RF_MREQ)
+        OR      A
+        ADD     HL,DE
+        JP      C,RF_BAD
+        LD      (RF_PUB),HL
+        LD      DE,10
+        OR      A
+        ADD     HL,DE
+        JP      C,RF_BAD
+        LD      (RF_PSTATE),HL
+        LD      DE,41
+        OR      A
+        ADD     HL,DE
+        JP      C,RF_BAD
+        CALL    RF_FITS
+        JP      NZ,RF_BAD
+        CALL    RF_STATE
+        OR      A
+        JP      NZ,RF_BAD
+
+        LD      HL,(RF_CREQ)
+        PUSH    HL
+        LD      HL,(RF_CTX)
+        LD      DE,6
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        POP     HL
+        CALL    RF_PUTDE               ; plan
+        PUSH    HL
+        LD      HL,(RF_CTX)
+        LD      DE,10
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        POP     HL
+        CALL    RF_PUTDE               ; pointer unions
+        PUSH    HL
+        LD      HL,(RF_CTX)
+        LD      DE,8
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        POP     HL
+        CALL    RF_PUTDE               ; snapshots
+        LD      A,(RF_COUNT)
+        LD      (HL),A
+        INC     HL
+        LD      (HL),1                 ; extended persistent publication
+        INC     HL
+        LD      DE,(RF_SREQ)
+        CALL    RF_PUTDE
+        LD      DE,CFGB+0120H
+        CALL    RF_PUTDE
+        LD      DE,(RF_MREQ)
+        CALL    RF_PUTDE
+        LD      DE,(RF_MCAP)
+        CALL    RF_PUTDE
+        LD      DE,CFGB
+        CALL    RF_PUTDE
+        LD      A,(RF_COUNT)
+        OR      A
+        LD      DE,LY_RSX
+        JR      NZ,RF_TOP
+        LD      DE,LY_HIST              ; release the manager for an empty profile
+RF_TOP:                                 ; store the empty-profile boundary
+        CALL    RF_PUTDE
+        LD      DE,LY_BDOS
+        CALL    RF_PUTDE
+        LD      DE,(RF_PUB)
+        CALL    RF_PUTDE
+        LD      (HL),0CCH               ; returned committed count
+        INC     HL
+        LD      DE,CFGB+038FH
+        CALL    RF_PUTDE               ; persistent-state publisher
+        LD      DE,(RF_PSTATE)
+        CALL    RF_PUTDE
+        LD      DE,RSTCOUNT
+        CALL    RF_PUTDE
+        LD      DE,(RF_PUBLIC)
+        CALL    RF_PUTDE
+        PUSH    HL
+        CALL    RF_PRIMARY
+        POP     HL
+        CALL    RF_PUTDE
+        LD      HL,(RF_PUB)
+        LD      DE,LY_SYS+084H
+        CALL    RF_PUTDE
+        LD      DE,LY_PDSF
+        CALL    RF_PUTDE
+        LD      DE,LY_SYS+090H
+        CALL    RF_PUTDE
+        LD      DE,LY_SYS+092H
+        CALL    RF_PUTDE
+        LD      DE,0006H
+        CALL    RF_PUTDE
+
+; ================================================================================
+; = Commit Handoff                                                              =
+; ================================================================================
+
+RF_COMMIT:                              ; finish all disk reads before publication
+        LD      HL,(RF_CTX)
+        LD      DE,4
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        LD      C,(HL)
+        INC     HL
+        LD      B,(HL)
+        LD      HL,0E03H                ; workspace end plus new gateway
+        ADD     HL,DE
+        EX      DE,HL
+        LD      H,B
+        LD      L,C
+        LD      A,(RF_COUNT)
+        OR      A
+        JR      Z,RF_SAFE
+        LD      B,A
+RF_BOUND:                               ; keep every destination above caller scratch
+        INC     HL
+        INC     HL
+        LD      C,(HL)
+        INC     HL
+        LD      A,(HL)
+        PUSH    HL
+        LD      H,A
+        LD      L,C
+        OR      A
+        SBC     HL,DE
+        POP     HL
+        JP      C,RF_BAD
+        LD      A,5
+RF_ADVANCE:                             ; advance to the next plan record
+        INC     HL
+        DEC     A
+        JR      NZ,RF_ADVANCE
+        DJNZ    RF_BOUND
+RF_SAFE:                                ; prefetch the resolver before committing
+        LD      HL,RF_NRESOL
+        CALL    RF_OVER
+        JP      NZ,RF_BAD
+        LD      HL,(RF_CTX)
+        LD      DE,4
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,0A00H
+        ADD     HL,DE
+        EX      DE,HL
+        LD      HL,CFGB
+        LD      BC,0400H
+        LDIR                            ; retain resolver independently of move code
+        LD      HL,RF_NMOVE
+        CALL    RF_OVER
+        JP      NZ,RF_BAD
+        LD      HL,RF_NCOMIT
+        LD      (RF_HREQ),HL
+        LD      HL,(RF_CTX)
+        LD      DE,4
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        LD      (RF_SCRATCH),HL
+        LD      (RF_HREQ+2),HL
+        LD      HL,(RF_CREQ)
+        LD      (RF_HREQ+4),HL
+        LD      HL,(RF_SCRATCH)
+        LD      BC,0A00H
+        ADD     HL,BC
+        LD      (CFGB+03F6H),HL         ; prefetched resolver, no post-commit IO
+        LD      HL,CFGB+03DFH           ; post-commit resolver continuation
+        PUSH    HL
+        LD      DE,RF_HREQ
+        JP      CFGB+0310H
+
+; ================================================================================
+; = Local Utilities                                                             =
+; ================================================================================
+
+RF_MAXUNION:                           ; find largest stateful repair union
+        XOR     A
+        LD      (RF_MAX),A
+        LD      (RF_INDEX),A
+RF_MAXLOOP:                             ; scan the next pointer-union size
+        LD      A,(RF_INDEX)
+        LD      B,A
+        LD      A,(RF_COUNT)
+        CP      B
+        RET     Z
+        LD      A,B
+        LD      E,A
+        ADD     A,A
+        ADD     A,E
+        LD      E,A
+        LD      D,0
+        PUSH    DE
+        LD      HL,(RF_CTX)
+        LD      DE,10
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        POP     DE
+        ADD     HL,DE
+        INC     HL
+        INC     HL
+        LD      A,(HL)
+        LD      B,A
+        LD      A,(RF_MAX)
+        CP      B
+        JR      NC,RF_MAXNEXT
+        LD      A,B
+        LD      (RF_MAX),A
+RF_MAXNEXT:                             ; advance the union scan
+        LD      HL,RF_INDEX
+        INC     (HL)
+        JR      RF_MAXLOOP
+
+RF_PRIMARY:                             ; return candidate primary service in DE
+        LD      DE,0
+        LD      HL,(RF_PUBLIC)
+        INC     HL
+        LD      A,(HL)
+        CP      1
+        RET     NZ
+        LD      HL,(RF_CTX)
+        INC     HL
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        LD      DE,22
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        RET
+
+RF_STATE:                               ; construct complete prospective profile state
+        LD      HL,RSTCOUNT
+        LD      DE,(RF_PSTATE)
+        LD      BC,41
+        LDIR
+        LD      HL,(RF_PUBLIC)
+        INC     HL
+        LD      A,(HL)
+        CP      1
+        JR      Z,RF_STLOAD
+        CP      2
+        JP      NZ,RF_BAD
+        CALL    RF_TARGET
+        LD      (RF_TINDEX),A
+RF_STSHIFT:                             ; compact prospective persistent records
+        LD      A,(RF_TINDEX)
+        LD      B,A
+        LD      A,(RF_COUNT)
+        CP      B
+        JR      Z,RF_STCOUNT
+        LD      A,B
+        INC     A
+        CALL    RF_PNAMEPTR
+        PUSH    HL
+        LD      A,(RF_TINDEX)
+        CALL    RF_PNAMEPTR
+        EX      DE,HL
+        POP     HL
+        LD      BC,8
+        LDIR
+        LD      A,(RF_TINDEX)
+        INC     A
+        CALL    RF_PSERVPTR
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        PUSH    DE
+        LD      A,(RF_TINDEX)
+        CALL    RF_PSERVPTR
+        POP     DE
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      HL,RF_TINDEX
+        INC     (HL)
+        JR      RF_STSHIFT
+RF_STLOAD:                              ; append candidate name and primary service
+        LD      A,(RF_COUNT)
+        DEC     A
+        LD      (RF_TINDEX),A
+        CALL    RF_PNAMEPTR
+        EX      DE,HL
+        LD      HL,(RF_PUBLIC)
+        LD      BC,4
+        ADD     HL,BC
+        LD      BC,8
+        LDIR
+        CALL    RF_PRIMARY
+        PUSH    DE
+        LD      A,(RF_TINDEX)
+        CALL    RF_PSERVPTR
+        POP     DE
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+RF_STCOUNT:                             ; store the prospective profile count
+        LD      HL,(RF_PSTATE)
+        LD      A,(RF_COUNT)
+        LD      (HL),A
+        XOR     A
+        RET
+
+RF_PNAMEPTR:                            ; locate name in prospective state
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        LD      HL,(RF_PSTATE)
+        INC     HL
+        ADD     HL,DE
+        RET
+
+RF_PSERVPTR:                            ; locate primary service in prospective state
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        LD      HL,(RF_PSTATE)
+        LD      BC,33
+        ADD     HL,BC
+        ADD     HL,DE
+        RET
+
+RF_TARGET:                              ; return persistent insertion/removal index
+        LD      A,(RF_COUNT)
+        LD      B,A
+        LD      HL,(RF_PUBLIC)
+        INC     HL
+        LD      A,(HL)
+        CP      1
+        LD      A,B
+        JR      Z,RF_LOADINDEX
+        LD      HL,(RF_PUBLIC)
+        LD      DE,4
+        ADD     HL,DE
+        EX      DE,HL
+        LD      HL,RSTABLE
+        XOR     A
+        LD      (RF_TINDEX),A
+RF_FIND:                                ; find the persistent removal record
+        LD      A,(RF_TINDEX)
+        LD      C,A
+        LD      A,(RSTCOUNT)
+        CP      C
+        JP      Z,RF_BAD
+        PUSH    HL
+        PUSH    DE
+        LD      B,8
+RF_COMPARE:                             ; compare the next filename byte
+        LD      A,(DE)
+        CP      (HL)
+        JR      NZ,RF_DIFFER
+        INC     DE
+        INC     HL
+        DJNZ    RF_COMPARE
+        POP     DE
+        POP     HL
+        LD      A,(RF_TINDEX)
+        RET
+RF_DIFFER:                              ; advance to another persistent name
+        POP     DE
+        POP     HL
+        LD      BC,8
+        ADD     HL,BC
+        LD      A,(RF_TINDEX)
+        INC     A
+        LD      (RF_TINDEX),A
+        JR      RF_FIND
+RF_LOADINDEX:                           ; return the appended member index
+        DEC     A
+        RET
+
+RF_FITS:                                ; accept HL at or below exclusive high
+        PUSH    HL
+        LD      HL,(RF_CTX)
+        LD      DE,4
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        POP     HL
+        OR      A
+        SBC     HL,DE
+        JR      C,RF_GOOD
+        JR      Z,RF_GOOD
+        LD      A,0FFH
+        OR      A
+        RET
+RF_GOOD:                                ; accept the final workspace bound
+        XOR     A
+        RET
+
+RF_PUTDE:                               ; store DE and advance HL
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        RET
+
+RF_OVER:                                ; stage outside physical disk workspace
+        PUSH    HL
+        LD      HL,(RF_CTX)
+        LD      BC,4
+        ADD     HL,BC
+        LD      C,(HL)
+        INC     HL
+        LD      H,(HL)
+        LD      L,C
+        LD      BC,0400H
+        ADD     HL,BC
+        POP     DE
+        XOR     A
+        JP      (HL)
+
+RF_BAD:                                 ; reject incomplete finalization
+        LD      A,0FFH
+        OR      A
+        RET
+
+RF_NRESOL:      DB      'R3RESOL '      ; prefetched disk-free resolver
+RF_NMOVE:       DB      'R3MOVE  '      ; mover, scheduler, and handoff image
+RF_NCOMIT:      DB      'R3COMIT '      ; disk-free commit engine
+RF_CTX:         DW      0               ; prepared transaction context
+RF_PUBLIC:      DW      0               ; public Function-202 request
+RF_CURSOR:      DW      0               ; first free durable byte
+RF_CREQ:        DW      0               ; commit request
+RF_SREQ:        DW      0               ; scheduler request
+RF_MREQ:        DW      0               ; mover request scratch
+RF_MCAP:        DW      0               ; mover scratch capacity
+RF_PUB:         DW      0               ; live publication descriptor
+RF_PSTATE:      DW      0               ; prospective persistent profile state
+RF_SCRATCH:     DW      0               ; sector scratch outside replaced memory
+RF_COUNT:       DB      0               ; prospective profile count
+RF_INDEX:       DB      0               ; union scan index
+RF_MAX:         DB      0               ; maximum repair-union count
+RF_TINDEX:      DB      0               ; persistent target scan index
+RF_HREQ:        DS      6               ; replacement-overlay handoff request
+
+        .DEPHASE
+        END

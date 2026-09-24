@@ -454,11 +454,7 @@ PF_SEEDOK:
         INC     HL
         LD      (HL),D
         INC     HL
-        LD      DE,LY_RSX
-        LD      (HL),E
-        INC     HL
-        LD      (HL),D
-        INC     HL
+        LD      DE,(PF_HIGH)
         LD      (HL),E
         INC     HL
         LD      (HL),D
@@ -468,7 +464,7 @@ PF_SEEDOK:
         INC     HL
         LD      (HL),D
         LD      DE,(PF_PREQ)
-        JP      CFGB+0320H
+        JP      CFGB+0310H
 
 ; ================================================================================
 ; =                       Fixed Carrier Header Validation                        =
@@ -607,15 +603,14 @@ PF_TABPTR:                              ; return persistent name address
         ADD     HL,DE
         RET
 
-PF_OVER:                                ; load one CONFIG-slot overlay
-        LD      A,1
-        CALL    FLOPEN
-        RET     NZ
-        LD      HL,CFGB
-        CALL    FLNEXT
-        RET     NZ
-        CALL    FLNEXT
-        RET
+PF_OVER:                                ; stage outside physical disk workspace
+        PUSH    HL
+        LD      HL,(PF_HIGH)
+        LD      BC,0400H
+        ADD     HL,BC
+        POP     DE
+        XOR     A
+        JP      (HL)
 
 PF_BAD:                                 ; reject prospective profile
         LD      A,0FFH

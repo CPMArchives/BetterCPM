@@ -48,10 +48,11 @@ def main():
  # cpmsim port 5 is its CP/M 2 RDR: input.  Keep the common unassigned-reader
  # leaf for machines without a provider and substitute the z80pack binding
  # without enlarging the tightly packed resident BIOS.
- old_reader='BIOREADR:\n        LD      A,01AH\n        RET'
- new_reader='BIOREADR:\n        IN      A,(5)\n        RET'
- if old_reader not in bios_source:raise ValueError('common READER leaf changed')
- bios_source=bios_source.replace(old_reader,new_reader)
+ reader_pattern=r'(BIOREADR:[^\n]*\n)\s*LD\s+A,01AH\n\s*RET'
+ bios_source,replacements=re.subn(reader_pattern,
+                                  r'\1        IN      A,(5)\n        RET',
+                                  bios_source,count=1)
+ if replacements != 1:raise ValueError('common READER leaf changed')
  a=bios_source.index('BIOREAD:');b=bios_source.index('; LISTST',a)
  bios_source=bios_source[:a]+read('src/platform/z80pack/recordio.inc')+bios_source[b:]
  bios=asm('bios',bios_source.replace('        INCLUDE biosplat.inc',read('src/platform/z80pack/biosplat.inc')),L['BIOS'],L['FILE']-L['BIOS'])
@@ -139,7 +140,7 @@ def main():
  for f in sorted((ROOT/'build/utilities').glob('*.COM')):files.append((f.name,f.read_bytes()))
  for name,data in cpm_tools_files(ROOT):files.append((name,data))
  for name in ('HELLO.RSX','ECHO.RSX','BATCHIO.RSX','FDF.RSX','ZPRTC.RSX','TEST.RSX'):files.append((name,(ROOT/'build/rsx'/name).read_bytes()))
- for name in ('R3PLAN.RSX','R3SLOTS.RSX','R3SNAP.RSX','R3CARR.RSX','R3META.RSX','R3COORD.RSX','R3PROF.RSX','R3KCTX.RSX','R3KEEP.RSX','R3KPRE.RSX','R3MOVE.RSX','R3COMIT.RSX'):files.append((name,(ROOT/'build/system'/name).read_bytes()))
+ for name in ('R3PLAN.RSX','R3SLOTS.RSX','R3SNAP.RSX','R3CARR.RSX','R3META.RSX','R3COORD.RSX','R3PROF.RSX','R3KCTX.RSX','R3KEEP.RSX','R3KPRE.RSX','R3FINAL.RSX','R3DROP.RSX','R3MOVE.RSX','R3COMIT.RSX','R3RESOL.RSX'):files.append((name,(ROOT/'build/system'/name).read_bytes()))
  files.append(('DISK.FDF',(ROOT/'third_party/montezuma/DISK.FDF').read_bytes()))
  # A small transient proves that load and warm return use this target BIOS.
  hello=bytes([0x11,0x0b,1,0x0e,9,0xcd,5,0,0xc3,0,0])+b'BetterCP/M on z80pack\r\n$'

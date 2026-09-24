@@ -1,0 +1,550 @@
+        INCLUDE layout.inc
+
+; ********************************************************************************
+; *                    BetterCP/M RSX Removal Coordinator                       *
+; *                                                                              *
+; * Builds a bounded prospective profile after removing one named member, then  *
+; * reuses the retained-member preparation and disk-free commit pipeline.        *
+; ********************************************************************************
+
+RDBASE          EQU     LY_RSX
+FLOPEN          EQU     LY_FILE
+FLNEXT          EQU     LY_FILE+3
+CFGB            EQU     LY_CFG
+RSTCOUNT        EQU     LY_RSTA
+RSTABLE         EQU     LY_RSTA+1
+
+        CSEG
+        .PHASE  RDBASE
+
+; ================================================================================
+; = Request and Workspace Layout                                                =
+; ================================================================================
+
+RD_ENTRY:                               ; enter removal coordinator
+        LD      (RD_REQ),DE
+        EX      DE,HL
+        LD      A,(HL)
+        CP      2
+        JP      NZ,RD_BAD
+        INC     HL
+        LD      A,(HL)
+        CP      2
+        JP      NZ,RD_BAD
+        INC     HL
+        INC     HL
+        LD      A,(HL)
+        OR      A
+        JP      NZ,RD_BAD
+        LD      HL,(RD_REQ)
+        LD      DE,14
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      (RD_LOW),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        LD      DE,0E00H                ; sector scratch plus private handoff stack
+        OR      A
+        SBC     HL,DE
+        JP      C,RD_BAD
+        LD      (RD_HIGH),HL             ; reserve one sector for safe handoffs
+        LD      HL,(RD_LOW)
+        LD      DE,0103H
+        OR      A
+        SBC     HL,DE
+        JP      C,RD_BAD
+        LD      HL,(RD_LOW)
+        LD      DE,(RD_HIGH)
+        OR      A
+        SBC     HL,DE
+        JP      NC,RD_BAD
+        LD      A,(RSTCOUNT)
+        OR      A
+        JP      Z,RD_OK                 ; absent from an empty profile
+        CP      5
+        JP      NC,RD_BAD
+        LD      (RD_OCNT),A
+        CALL    RD_FIND
+        JP      C,RD_OK                 ; absent removal is idempotent
+        LD      (RD_REMOVE),A
+        LD      B,A
+        LD      A,(RD_OCNT)
+        DEC     A
+        LD      (RD_NCNT),A
+
+  ; Context, prospective names, allocation vectors, classes, plan, planner
+  ; request, and both descriptor vectors remain durable through commit.
+        LD      HL,(RD_LOW)
+        LD      (RD_CTX),HL
+        LD      DE,23
+        OR      A
+        ADD     HL,DE
+        JP      C,RD_BAD
+        LD      (RD_NAMES),HL
+        LD      A,(RD_NCNT)
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        OR      A
+        ADD     HL,DE
+        JP      C,RD_BAD
+        LD      (RD_OALLOC),HL
+        LD      A,(RD_OCNT)
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        OR      A
+        ADD     HL,DE
+        JP      C,RD_BAD
+        LD      (RD_NALLOC),HL
+        LD      A,(RD_NCNT)
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        OR      A
+        ADD     HL,DE
+        JP      C,RD_BAD
+        LD      (RD_CVECT),HL
+        LD      A,(RD_NCNT)
+        LD      E,A
+        LD      D,0
+        OR      A
+        ADD     HL,DE
+        JP      C,RD_BAD
+        LD      (RD_PLAN),HL
+        LD      A,(RD_NCNT)
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        OR      A
+        ADD     HL,DE
+        JP      C,RD_BAD
+        LD      (RD_PREQ),HL
+        LD      DE,18
+        OR      A
+        ADD     HL,DE
+        JP      C,RD_BAD
+        LD      (RD_SDESC),HL
+        LD      A,(RD_NCNT)
+        LD      E,A
+        ADD     A,A
+        ADD     A,E
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        OR      A
+        ADD     HL,DE
+        JP      C,RD_BAD
+        LD      (RD_UDESC),HL
+        LD      A,(RD_NCNT)
+        LD      E,A
+        ADD     A,A
+        ADD     A,E
+        LD      E,A
+        LD      D,0
+        OR      A
+        ADD     HL,DE
+        JP      C,RD_BAD
+        LD      (RD_CURSOR),HL
+        LD      DE,0200H
+        OR      A
+        ADD     HL,DE
+        JP      C,RD_BAD
+        CALL    RD_FITS
+        JP      NZ,RD_BAD
+        LD      HL,(RD_OALLOC)
+        LD      (RD_OPTR),HL
+        LD      HL,(RD_NALLOC)
+        LD      (RD_NPTR),HL
+        LD      HL,(RD_CVECT)
+        LD      (RD_CPTR),HL
+        LD      HL,(RD_NAMES)
+        LD      (RD_NAMEPTR),HL
+        XOR     A
+        LD      (RD_INDEX),A
+
+; ================================================================================
+; = Retained Header Inspection                                                  =
+; ================================================================================
+
+RD_SCAN:                                ; collect old and prospective vectors
+        LD      A,(RD_INDEX)
+        LD      B,A
+        LD      A,(RD_OCNT)
+        CP      B
+        JR      Z,RD_PLANIT
+        LD      A,B
+        CALL    RD_TABPTR
+        LD      (RD_NAME),HL
+        LD      A,1
+        CALL    FLOPEN
+        JP      NZ,RD_BAD
+        LD      HL,(RD_CURSOR)
+        CALL    FLNEXT
+        JP      NZ,RD_BAD
+        CALL    RD_HEADER
+        JP      NZ,RD_BAD
+        LD      HL,(RD_OPTR)
+        LD      DE,(RD_ALLOC)
+        CALL    RD_PUTDE
+        LD      (RD_OPTR),HL
+        LD      A,(RD_INDEX)
+        LD      B,A
+        LD      A,(RD_REMOVE)
+        CP      B
+        JR      Z,RD_NEXT
+        LD      HL,(RD_NPTR)
+        LD      DE,(RD_ALLOC)
+        CALL    RD_PUTDE
+        LD      (RD_NPTR),HL
+        LD      HL,(RD_CPTR)
+        LD      A,(RD_CVAL)
+        LD      (HL),A
+        INC     HL
+        LD      (RD_CPTR),HL
+        LD      HL,(RD_NAME)
+        LD      DE,(RD_NAMEPTR)
+        LD      BC,8
+        LDIR
+        LD      (RD_NAMEPTR),DE
+RD_NEXT:                                ; advance the retained-profile scan
+        LD      HL,RD_INDEX
+        INC     (HL)
+        JR      RD_SCAN
+
+; ================================================================================
+; = Prospective Plan and Context                                                =
+; ================================================================================
+
+RD_PLANIT:                              ; invoke the authoritative planner
+        LD      HL,(RD_PREQ)
+        LD      DE,LY_RSX
+        CALL    RD_PUTDE
+        LD      DE,(RD_HIGH)
+        CALL    RD_PUTDE
+        LD      A,(RD_OCNT)
+        LD      (HL),A
+        INC     HL
+        LD      A,(RD_NCNT)
+        LD      (HL),A
+        INC     HL
+        LD      A,(RD_REMOVE)
+        LD      (HL),A
+        INC     HL
+        LD      (HL),0
+        INC     HL
+        LD      DE,(RD_OALLOC)
+        CALL    RD_PUTDE
+        LD      DE,(RD_NALLOC)
+        CALL    RD_PUTDE
+        LD      DE,(RD_CVECT)
+        CALL    RD_PUTDE
+        LD      DE,(RD_PLAN)
+        CALL    RD_PUTDE
+        LD      A,(RD_NCNT)
+        LD      (HL),A
+        INC     HL
+        LD      (HL),0CCH
+        LD      HL,RD_NPLAN
+        CALL    RD_OVER
+        JP      NZ,RD_BAD
+        LD      DE,(RD_PREQ)
+        CALL    CFGB
+        OR      A
+        JP      NZ,RD_BAD
+        LD      HL,(RD_PREQ)
+        LD      DE,17
+        ADD     HL,DE
+        LD      A,(HL)
+        LD      B,A
+        LD      A,(RD_NCNT)
+        CP      B
+        JP      NZ,RD_BAD
+
+        LD      HL,(RD_SDESC)
+        LD      A,(RD_NCNT)
+        LD      E,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,E
+        LD      B,A
+        XOR     A
+        LD      A,B
+        OR      A
+        JR      Z,RD_CONTEXT
+        XOR     A
+RD_CLEAR:                               ; clear prepared descriptor vectors
+        LD      (HL),A
+        INC     HL
+        DJNZ    RD_CLEAR
+
+RD_CONTEXT:                             ; publish removal preparation context
+        LD      HL,(RD_CTX)
+        LD      DE,(RD_REQ)
+        CALL    RD_PUTDE
+        LD      DE,(RD_NAMES)
+        CALL    RD_PUTDE
+        LD      DE,(RD_HIGH)
+        CALL    RD_PUTDE
+        LD      DE,(RD_PLAN)
+        CALL    RD_PUTDE
+        LD      DE,(RD_SDESC)
+        CALL    RD_PUTDE
+        LD      DE,(RD_UDESC)
+        CALL    RD_PUTDE
+        LD      DE,(RD_CURSOR)
+        CALL    RD_PUTDE
+        XOR     A
+        LD      (HL),A
+        INC     HL
+        LD      A,(RD_NCNT)
+        LD      (HL),A
+        INC     HL
+        XOR     A
+        LD      B,6
+RD_ZCURRENT:                            ; clear current retained-member fields
+        LD      (HL),A
+        INC     HL
+        DJNZ    RD_ZCURRENT
+        LD      (HL),05BH
+        LD      HL,RD_NMOVE
+        CALL    RD_OVER
+        JP      NZ,RD_BAD
+        LD      HL,RD_NKEEP
+        LD      (RD_HREQ),HL
+        LD      HL,(RD_HIGH)
+        LD      (RD_HREQ+2),HL
+        LD      HL,(RD_CTX)
+        LD      (RD_HREQ+4),HL
+        LD      DE,RD_HREQ
+        JP      CFGB+0310H
+
+; ================================================================================
+; = Fixed Carrier Header Validation                                             =
+; ================================================================================
+
+RD_HEADER:                              ; validate retained planning facts
+        LD      HL,(RD_CURSOR)
+        LD      DE,RDMAGIC
+        LD      B,4
+RD_MAGICLP:                             ; compare carrier signature bytes
+        LD      A,(DE)
+        CP      (HL)
+        JP      NZ,RD_BAD
+        INC     DE
+        INC     HL
+        DJNZ    RD_MAGICLP
+        LD      A,(HL)
+        LD      (RD_FMT),A
+        CP      1
+        JR      Z,RD_ABI
+        CP      2
+        JP      NZ,RD_BAD
+RD_ABI:                                 ; select the supported carrier ABI
+        INC     HL
+        LD      DE,RD_ABIVAL
+        LD      B,3
+RD_ABILP:                               ; compare ABI version bytes
+        LD      A,(DE)
+        CP      (HL)
+        JP      NZ,RD_BAD
+        INC     DE
+        INC     HL
+        DJNZ    RD_ABILP
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      A,(RD_FMT)
+        CP      1
+        JR      NZ,RD_V2CLASS
+        LD      A,D
+        OR      E
+        JP      NZ,RD_BAD
+        XOR     A
+        JR      RD_CLASSOK
+RD_V2CLASS:                             ; decode the reconstruction class
+        LD      A,D
+        OR      A
+        JP      NZ,RD_BAD
+        LD      A,E
+        AND     0FCH
+        JP      NZ,RD_BAD
+        LD      A,E
+        AND     3
+        CP      2
+        JP      Z,RD_BAD
+RD_CLASSOK:                             ; accept the reconstruction class
+        LD      (RD_CVAL),A
+        LD      HL,(RD_CURSOR)
+        LD      DE,12
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      A,D
+        OR      E
+        JP      Z,RD_BAD
+        LD      (RD_CODE),DE
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      A,D
+        OR      A
+        JP      Z,RD_BAD
+        LD      A,E
+        OR      A
+        JP      NZ,RD_BAD
+        LD      (RD_ALLOC),DE
+        LD      HL,(RD_CODE)
+        OR      A
+        SBC     HL,DE
+        JP      NC,RD_BAD
+        LD      HL,(RD_CURSOR)
+        LD      DE,32
+        ADD     HL,DE
+        LD      DE,(RD_NAME)
+        LD      B,8
+RD_NAMELP:                              ; validate the next filename byte
+        LD      A,(DE)
+        CP      (HL)
+        JP      NZ,RD_BAD
+        INC     DE
+        INC     HL
+        DJNZ    RD_NAMELP
+        XOR     A
+        RET
+
+; ================================================================================
+; = Local Utilities                                                             =
+; ================================================================================
+
+RD_FIND:                                ; find requested persistent profile member
+        LD      HL,(RD_REQ)
+        LD      DE,4
+        ADD     HL,DE
+        EX      DE,HL
+        LD      HL,RSTABLE
+        XOR     A
+        LD      (RD_INDEX),A
+RD_FINDLP:                              ; scan persistent profile names
+        LD      A,(RD_INDEX)
+        LD      B,A
+        LD      A,(RD_OCNT)
+        CP      B
+        SCF
+        RET     Z
+        PUSH    HL
+        PUSH    DE
+        LD      B,8
+RD_CMPLP:                               ; compare a persistent name
+        LD      A,(DE)
+        CP      (HL)
+        JR      NZ,RD_NOMATCH
+        INC     DE
+        INC     HL
+        DJNZ    RD_CMPLP
+        POP     DE
+        POP     HL
+        LD      A,(RD_INDEX)
+        OR      A
+        RET
+RD_NOMATCH:                             ; advance to the next profile record
+        POP     DE
+        POP     HL
+        LD      BC,8
+        ADD     HL,BC
+        LD      A,(RD_INDEX)
+        INC     A
+        LD      (RD_INDEX),A
+        JR      RD_FINDLP
+
+RD_TABPTR:                              ; return persistent name address
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        LD      L,A
+        LD      H,0
+        LD      DE,RSTABLE
+        ADD     HL,DE
+        RET
+
+RD_FITS:                                ; accept HL at or below exclusive high
+        LD      DE,(RD_HIGH)
+        OR      A
+        SBC     HL,DE
+        JR      C,RD_OK
+        JR      Z,RD_OK
+        LD      A,0FFH
+        OR      A
+        RET
+RD_OK:                                  ; return successful removal preparation
+        XOR     A
+        RET
+
+RD_PUTDE:                               ; store DE and advance HL
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        RET
+
+RD_OVER:                                ; stage outside physical disk workspace
+        PUSH    HL
+        LD      HL,(RD_HIGH)
+        LD      BC,0400H
+        ADD     HL,BC
+        POP     DE
+        XOR     A
+        JP      (HL)
+
+RD_BAD:                                 ; reject removal transaction
+        LD      A,0FFH
+        OR      A
+        RET
+
+RDMAGIC:        DB      'B','R','S','X' ; carrier signature
+RD_ABIVAL:      DB      2,1,0           ; accepted RSX ABI
+RD_NPLAN:       DB      'R3PLAN  '      ; prospective layout planner
+RD_NMOVE:       DB      'R3MOVE  '      ; safe handoff overlay
+RD_NKEEP:       DB      'R3KEEP  '      ; retained carrier loader
+RD_REQ:         DW      0               ; public request
+RD_LOW:         DW      0               ; workspace low bound
+RD_HIGH:        DW      0               ; workspace high bound
+RD_CTX:         DW      0               ; retained preparation context
+RD_NAMES:       DW      0               ; prospective filename vector
+RD_OALLOC:      DW      0               ; old allocation vector
+RD_NALLOC:      DW      0               ; prospective allocation vector
+RD_CVECT:       DW      0               ; prospective class vector
+RD_PLAN:        DW      0               ; movement plan
+RD_PREQ:        DW      0               ; planner request
+RD_SDESC:       DW      0               ; snapshot descriptors
+RD_UDESC:       DW      0               ; pointer-union descriptors
+RD_CURSOR:      DW      0               ; durable output/scratch cursor
+RD_OPTR:        DW      0               ; old allocation cursor
+RD_NPTR:        DW      0               ; new allocation cursor
+RD_CPTR:        DW      0               ; class cursor
+RD_NAMEPTR:     DW      0               ; prospective name cursor
+RD_NAME:        DW      0               ; current persistent name
+RD_CODE:        DW      0               ; current carrier code size
+RD_ALLOC:       DW      0               ; current allocation size
+RD_OCNT:        DB      0               ; old profile count
+RD_NCNT:        DB      0               ; prospective profile count
+RD_REMOVE:      DB      0               ; removed old index
+RD_INDEX:       DB      0               ; profile scan index
+RD_CVAL:        DB      0               ; current reconstruction class
+RD_FMT:         DB      0               ; current carrier format
+RD_HREQ:        DS      6               ; replacement-overlay handoff request
+
+        .DEPHASE
+        END
