@@ -24,6 +24,9 @@ RSXBASE         EQU     08000H
 
 FD_NEXT:        DW      5               ; next RSX descriptor pointer
 FD_ENTRY:       DW      FD_DISPATCH     ; RSX entry pointer
+FD_SVCOUNT:     DB      0               ; callable-service count
+FD_RESERVED:    DB      0               ; reserved service metadata
+FD_SVOFF:       DW      0               ; resident-service entry offset
 
 FD_DISPATCH:                            ; dispatch FDF RSX request
         LD A,C
@@ -37,7 +40,7 @@ FD_DISPATCH:                            ; dispatch FDF RSX request
         PUSH DE
         PUSH BC
         LD A,(DE)
-        CP 1
+        CP 2
         JR NZ,FD_PASS
         INC DE
         LD A,(DE)

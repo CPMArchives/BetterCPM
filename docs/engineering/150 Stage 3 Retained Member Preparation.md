@@ -67,8 +67,8 @@ sequence and proves:
 
 - empty-profile candidate preparation still succeeds at its exact workspace
   boundary;
-- a retained legacy STATELESS module is fully revalidated and reconstructed as
-  a format-appropriate snapshot;
+- a retained BRSX-v2 STATELESS module is fully revalidated and reconstructed
+  as a commit-ready snapshot;
 - a retained STATEFUL module receives the sorted, duplicate-free union of its
   static relocation and runtime-pointer slots;
 - descriptor vectors remain zero for classes that do not consume them;

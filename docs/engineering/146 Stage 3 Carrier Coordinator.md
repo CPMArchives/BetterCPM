@@ -17,8 +17,8 @@ be nonempty, and every 512-byte stream transfer must end at or below the high
 exclusive bound.
 
 The named BRSX carrier begins at the low bound. The coordinator reads its fixed
-header, derives the exact carrier length from the v1 numeric-service tail or
-the v2 metadata envelope, and loads only the complete 512-byte transfers needed
+header, derives the exact carrier length from the v2 metadata envelope, and
+loads only the complete 512-byte transfers needed
 to cover that length. It reserves the next 26 bytes for normalized facts and
 20 bytes for the maximum two callable descriptors. Arithmetic overflow,
 insufficient workspace, invalid framing, and a short stream all fail before
@@ -38,8 +38,8 @@ bytes, so CALL 5 remains valid while this phase is resident.
 
 ## Qualification
 
-The focused Z80 test streams the real `STATEFUL.RSX` v2 carrier and the legacy
-`HELLO.RSX` v1 carrier through named file stubs, then checks the normalized
+The focused Z80 test streams the real `STATEFUL.RSX` and converted stateless
+`HELLO.RSX` v2 carriers through named file stubs, then checks the normalized
 facts and returned service. It rejects a corrupted payload, insufficient
 workspace, and unsupported UNLOAD operation. A sentinel-covered live RSX range
 remains byte-for-byte unchanged in every case.

@@ -33,7 +33,7 @@ All validation completes before the first destination write. On success, the
 constructor copies the payload, clears the entire allocation tail, applies
 static relocation for the **prospective live base**, materializes callable
 descriptors downward from the allocation top for BRSX-v2, and creates the
-format-appropriate four- or eight-byte loader-owned runtime header. The
+eight-byte loader-owned runtime header. The
 resulting allocation can therefore be copied byte-for-byte by the disk-free
 commit engine.
 
@@ -54,9 +54,9 @@ linked and snapshot addresses, fixed-pointer preservation, zero-filled tail,
 descriptor order and runtime-header contents. It also proves that malformed
 relocation order, a partial relocation word, an invalid dispatch, and
 insufficient descriptor capacity are rejected before any snapshot byte is
-written. Legacy BRSX-v1 input receives its four-byte loader header and may
-dispatch at offset 4; BRSX-v2 input receives its eight-byte header and may
-materialize callable descriptors.
+written. Public BRSX-v2 input receives its eight-byte header and may
+materialize callable descriptors. The constructor's version-1 branch is
+transitional implementation residue, not a supported input contract.
 
 Both target image builders package `R3SNAP.RSX`. Engineering Specification 149
 connects carrier parsing, prospective-profile construction, the existing

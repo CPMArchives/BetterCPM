@@ -17,6 +17,9 @@ BDOS            EQU     00005H
 
 HR_NEXT:        DW      BDOS            ; next RSX descriptor pointer
 HR_ENTRY:       DW      HR_DISPATCH     ; RSX entry pointer
+HR_SVCOUNT:     DB      0               ; callable-service count
+HR_RESERVED:    DB      0               ; reserved service metadata
+HR_SVOFF:       DW      0               ; resident-service entry offset
 
 ; ================================================================================
 ; =                          HELLO Proof Service                                =

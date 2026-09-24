@@ -368,7 +368,7 @@ def main() -> None:
 
         cpu, _ = invoke(stub, hello, b"HELLO   ")
         assert cpu.a == 0 and cpu.hl == FACTS
-        assert cpu.mem[FACTS + 20:FACTS + 22] == bytes((0, 1))
+        assert cpu.mem[FACTS + 20:FACTS + 22] == bytes((0, 2))
         assert cpu.mem[FACTS + 16:FACTS + 18] == b"\0\0"
 
         cpu, _ = invoke(stub, stateful, b"STATEFUL",

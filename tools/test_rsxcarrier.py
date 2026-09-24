@@ -127,18 +127,18 @@ def main() -> None:
     before = phase_two(cpu, len(duplicate))
     assert cpu.a == 0xFF and bytes(cpu.mem[FACTS:FACTS + 26]) == before
 
-    # The same preparation path remains compatible with the original v1
-    # carrier.  Its untyped service tail does not publish v2 descriptors.
+    # A converted stateless public carrier follows the same v2 preparation
+    # path without publishing callable descriptors.
     hello = (ROOT / "build/rsx/HELLO.RSX").read_bytes()
     cpu, _ = phase_one(hello, name=b"HELLO   ")
-    assert cpu.a == 0 and cpu.mem[FACTS + 20:FACTS + 22] == bytes((0, 1))
+    assert cpu.a == 0 and cpu.mem[FACTS + 20:FACTS + 22] == bytes((0, 2))
     before = phase_two(cpu, len(hello))
     assert cpu.a == 0 and cpu.mem[REQUEST + 10] == 1
     assert cpu.mem[FACTS + 16:FACTS + 18] == b"\0\0"
     assert cpu.word(FACTS + 18) == SCRATCH
     assert cpu.word(FACTS + 24) == SCRATCH
 
-    print("BRSX carrier phases validate v1 and real STATEFUL v2 input, normalize "
+    print("BRSX carrier phases validate STATELESS and STATEFUL v2 input, normalize "
           "bounded facts, feed snapshot construction, and publish nothing "
           "on failure")
 

@@ -13,7 +13,6 @@ from test_bios import Z80, require
 ROOT = Path(__file__).resolve().parents[1]
 VALIDATOR = ROOT / "build/system/rsxvalidator.bin"
 TEST = ROOT / "build/rsx/TEST.RSX"
-HELLO = ROOT / "build/rsx/HELLO.RSX"
 REQUEST = 0x7000
 STREAM = 0x6000
 COUNT = 0x5FFF
@@ -62,7 +61,7 @@ NEXT:   PUSH    HL
 
 
 def validate(validator: bytes, stub: bytes, carrier: bytes,
-             active_test: bool = False, version: int = 1,
+             active_test: bool = False, version: int = 2,
              workspace: tuple[int, int] = (0x7200, 0x7800)) -> int:
     cpu = Z80(b"")
     cpu.mem[LAYOUT["RSX"]:LAYOUT["RSX"] + len(validator)] = validator
@@ -94,13 +93,10 @@ def main() -> None:
         v2 = bytearray(TEST.read_bytes())
         require(validate(validator, stub, v2) == 0,
                 "valid BRSX-v2 TEST carrier was rejected")
-        require(validate(validator, stub, v2, version=2) == 0,
+        require(validate(validator, stub, v2) == 0,
                 "valid Function 202 v2 workspace was rejected")
         require(validate(validator, stub, v2, active_test=True) == 0xFF,
                 "callable ID duplicated across providers was accepted")
-        v1 = HELLO.read_bytes()
-        require(validate(validator, stub, v1) == 0,
-                "valid legacy BRSX-v1 carrier was rejected")
         bad_class = bytearray(v2)
         bad_class[8] = 1
         require(validate(validator, stub, bad_class) == 0xFF,
@@ -137,7 +133,7 @@ def main() -> None:
                                (b"DUPL", 1, 1, 9, 0)])
         require(validate(validator, stub, duplicate) == 0xFF,
                 "duplicate service IDs within one provider were accepted")
-    print("BRSX validator accepts request v1/v2 and rejects class, entry, "
+    print("BRSX validator accepts the public v2 request and rejects class, entry, "
           "framing, unknown-record, and duplicate-service errors")
 
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the BRSX version-1 HELLO.RSX carrier."""
+"""Build the BRSX version-2 HELLO.RSX carrier."""
 from __future__ import annotations
 
 import argparse
@@ -41,7 +41,8 @@ def main() -> None:
     allocation = max(0x400, (len(data) + 0xFF) & ~0xFF)
     carrier = make_module(name="HELLO", version=(0, 1), services=[201],
                           linked_base=LINK_BASE, code=data, relocations=offsets,
-                          allocation=allocation)
+                          entry_offset=8, allocation=allocation,
+                          format_version=2)
     output = BUILD / "HELLO.RSX"
     output.write_bytes(carrier)
     print(f"{hashlib.sha256(data).hexdigest()}  build/rsx/hello.bin")
