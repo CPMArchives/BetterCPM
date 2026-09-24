@@ -27,8 +27,9 @@ M4_RSLOAD:                              ; load RSX carrier
         LD HL,LY_CFG
         LD DE,M4_RLTAB
         CALL M4_FETCH                   ; selector occupies the reloader block tail
-        POP AF
+        POP BC
         RET NZ
+        LD A,B
         JP LY_CFG+0380H
 
 M4_OVLOAD:                              ; load control overlay
