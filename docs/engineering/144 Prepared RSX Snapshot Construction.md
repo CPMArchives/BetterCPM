@@ -14,6 +14,7 @@ needed by the Function 202 transaction coordinator. It prepares fresh and
 - the carrier's linked base and the provider's prospective live base;
 - the validated static relocation directory;
 - zero, one, or two packed callable-service descriptors;
+- the validated BRSX carrier format;
 - a caller-owned snapshot destination; and
 - the validated dispatch offset.
 
@@ -22,17 +23,19 @@ component receives the compact facts produced by that parsing and refuses
 invalid sizes, overflowing address ranges, malformed relocation ordering,
 incomplete relocation words, excessive descriptor counts, inadequate
 descriptor space, overlapping payload and snapshot ranges, and invalid
-dispatch offsets. The request, relocation list, and packed descriptors remain
-distinct coordinator-owned inputs outside the snapshot allocation.
+formats or dispatch offsets. The request, relocation list, and packed
+descriptors remain distinct coordinator-owned inputs outside the snapshot
+allocation.
 
 ## Prepared image
 
 All validation completes before the first destination write. On success, the
 constructor copies the payload, clears the entire allocation tail, applies
 static relocation for the **prospective live base**, materializes callable
-descriptors downward from the allocation top, and creates the eight-byte
-loader-owned runtime header. The resulting allocation can therefore be copied
-byte-for-byte by the disk-free commit engine.
+descriptors downward from the allocation top for BRSX-v2, and creates the
+format-appropriate four- or eight-byte loader-owned runtime header. The
+resulting allocation can therefore be copied byte-for-byte by the disk-free
+commit engine.
 
 Relocation targets the eventual live address rather than the temporary
 snapshot address. Runtime-pointer slots are not adjusted for a fresh or
@@ -51,8 +54,11 @@ linked and snapshot addresses, fixed-pointer preservation, zero-filled tail,
 descriptor order and runtime-header contents. It also proves that malformed
 relocation order, a partial relocation word, an invalid dispatch, and
 insufficient descriptor capacity are rejected before any snapshot byte is
-written.
+written. Legacy BRSX-v1 input receives its four-byte loader header and may
+dispatch at offset 4; BRSX-v2 input receives its eight-byte header and may
+materialize callable descriptors.
 
-Both target image builders package `R3SNAP.RSX`. The next increment connects
-carrier parsing, prospective-profile construction, the existing planner and
-slot preparer, and this snapshot constructor under Function 202.
+Both target image builders package `R3SNAP.RSX`. Engineering Specification 149
+connects carrier parsing, prospective-profile construction, the existing
+planner, and this snapshot constructor for the new candidate. Retained-member
+pointer unions and snapshots remain the next preparation increment.

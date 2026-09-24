@@ -5,7 +5,8 @@
 ; +6 linked base, +8 prospective live base
 ; +10 static relocation list, +12 relocation count
 ; +14 packed ten-byte callable descriptors, +16 descriptor count
-; +17 reserved zero, +18 snapshot destination, +20 dispatch offset
+; +17 carrier format (1 legacy BRSX, 2 current BRSX)
+; +18 snapshot destination, +20 dispatch offset
 ; +22 returned completion byte (written as one only on success)
 ;
 ; The destination receives a complete allocation ready for the disk-free
@@ -80,8 +81,12 @@ RN_ENTRY:
         LD      (RN_NSERVICE),A
         INC     HL
         LD      A,(HL)
-        OR      A
+        CP      1
+        JR      Z,RN_FORMATOK
+        CP      2
         JP      NZ,RN_BAD
+RN_FORMATOK:
+        LD      (RN_FMT),A
         INC     HL
         LD      E,(HL)
         INC     HL
@@ -103,6 +108,9 @@ RN_ENTRY:
         OR      A
         JR      Z,RN_CAPOK
         LD      B,A
+        LD      A,(RN_FMT)
+        CP      2
+        JP      NZ,RN_BAD
         LD      DE,10
 RN_CAPLP:
         OR      A
@@ -111,7 +119,12 @@ RN_CAPLP:
         DJNZ    RN_CAPLP
 RN_CAPOK:
         LD      HL,(RN_DISPATCH)
+        LD      DE,4
+        LD      A,(RN_FMT)
+        CP      1
+        JR      Z,RN_DISPMIN
         LD      DE,8
+RN_DISPMIN:
         OR      A
         SBC     HL,DE
         JP      C,RN_BAD
@@ -296,6 +309,9 @@ RN_HEADER:
         INC     HL
         LD      (HL),A
         INC     HL
+        LD      A,(RN_FMT)
+        CP      1
+        JR      Z,RN_COMPLETE
         LD      A,(RN_NSERVICE)
         LD      (HL),A
         INC     HL
@@ -304,6 +320,7 @@ RN_HEADER:
         LD      (HL),E
         INC     HL
         LD      (HL),D
+RN_COMPLETE:
         LD      HL,(RN_REQ)
         LD      DE,22
         ADD     HL,DE
@@ -334,6 +351,7 @@ RN_SPTR:      DW      0
 RN_SEND:      DW      0
 RN_OEND:      DW      0
 RN_NSERVICE:  DB      0
+RN_FMT:       DB      0
 RN_SEEN:      DB      0
 RN_DLEFT:     DB      0
 

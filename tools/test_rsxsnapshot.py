@@ -23,7 +23,8 @@ ALLOCATION = 0x100
 
 def invoke(*, relocation_values: tuple[int, ...] = (0x20, 0x30),
            code_size: int = CODE_SIZE, dispatch: int = 8,
-           service_count: int = 2, source: int = SOURCE) -> tuple[Z80, bytes]:
+           service_count: int = 2, source: int = SOURCE,
+           format_version: int = 2) -> tuple[Z80, bytes]:
     cpu = Z80(b"")
     code = (ROOT / "build/system/R3SNAP.RSX").read_bytes()
     cpu.mem[ENTRY:ENTRY + len(code)] = code
@@ -45,7 +46,7 @@ def invoke(*, relocation_values: tuple[int, ...] = (0x20, 0x30),
     before = bytes(cpu.mem[OUTPUT:OUTPUT + ALLOCATION])
     request = struct.pack(
         "<8HBBHHB", source, code_size, ALLOCATION, LINKED, LIVE,
-        RELOCS, len(relocation_values), SERVICES, service_count, 0,
+        RELOCS, len(relocation_values), SERVICES, service_count, format_version,
         OUTPUT, dispatch, 0xCC)
     cpu.mem[REQUEST:REQUEST + len(request)] = request
     cpu.de = REQUEST
@@ -70,6 +71,11 @@ def main() -> None:
         cpu.mem[SERVICES:SERVICES + 10]
     assert cpu.sp == 0x5F00
 
+    cpu, _ = invoke(format_version=1, dispatch=4, service_count=0)
+    assert cpu.a == 0 and cpu.mem[REQUEST + 22] == 1
+    assert cpu.mem[OUTPUT:OUTPUT + 4] == b"\0\0\0\0"
+    assert cpu.mem[OUTPUT + 4] == (4 * 3) & 0xFF
+
     # Complete validation precedes the first destination write.
     for arguments in (
         {"relocation_values": (0x30, 0x20)},
@@ -77,13 +83,16 @@ def main() -> None:
         {"dispatch": CODE_SIZE},
         {"code_size": 0xF8, "service_count": 1},
         {"source": OUTPUT + 0x40},
+        {"format_version": 1, "service_count": 1, "dispatch": 4},
+        {"format_version": 3},
     ):
         cpu, before = invoke(**arguments)
         assert cpu.a == 0xFF and cpu.mem[REQUEST + 22] == 0xCC
         assert bytes(cpu.mem[OUTPUT:OUTPUT + ALLOCATION]) == before
 
-    print("RSX snapshot construction validates before writing, relocates for the "
-          "prospective live base, clears allocation tail, and materializes services")
+    print("RSX snapshot construction validates before writing, handles legacy "
+          "and current headers, relocates for the prospective live base, clears "
+          "the allocation tail, and materializes services")
 
 
 if __name__ == "__main__":
