@@ -133,6 +133,9 @@ EX_RLOAD:                               ; load RSX manager overlay
         CALL    RSXCONTROL
         OR      A
         JR      Z,EX_RETURN
+        POP     IX                      ; leave memory that raw restore overwrites
+        LD      SP,(EX_OLDSP)
+        PUSH    IX
         PUSH    AF
         LD      A,(LY_RSTA)
         OR      A

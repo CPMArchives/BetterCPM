@@ -86,13 +86,17 @@ The coordinator, overlay handoff, legacy validator, and in-memory commit have
 separate focused tests. Both target images are buildable; this is build evidence,
 not successful production stateful execution on either emulator.
 
-Exploratory production integration exposed additional platform-loader and
-return-stack concerns. Those experimental dispatch/platform changes are not
-part of this increment. In particular, `M4_RSLOAD` restores AF before testing
-the physical-read result, and raw manager replacement must not overwrite its
-own active return stack. Version-1 requests have no workspace fields and must
-never be treated as 18-byte requests. Their mutation path and warm boot must
-not reload retained STATEFUL data from the original carrier.
+The platform-loader and return-stack concerns found during exploratory
+production integration are now resolved. `M4_RSLOAD` preserves the requested
+selector without replacing the physical-read status flags. Failure recovery
+moves its return frame back to the protected extension caller's stack before
+raw manager restoration can overwrite the manager slot. The focused loader
+safety test verifies both behaviors, including a restoration stub that
+deliberately overwrites the former manager-stack location.
+
+Production dispatch remains gated. Version-1 requests have no workspace fields
+and must never be treated as 18-byte requests. Their mutation path and warm boot
+must not reload retained STATEFUL data from the original carrier.
 
 Emulator qualification is still required against the final integrated path;
 earlier experimental runs are not release evidence.
