@@ -4,8 +4,9 @@
 ; *                  BetterCP/M Prospective Profile Builder                      *
 ; *                                                                              *
 ; * Reconstructs retained allocation and class vectors from carrier headers,     *
-; * appends one validated candidate, and invokes the Stage-3 layout planner.     *
-; * The phase writes only caller-owned transaction memory.                       *
+; * appends one validated candidate, invokes the Stage-3 layout planner, and      *
+; * prepares the fresh candidate snapshot. The phase writes only transaction      *
+; * memory owned by the caller.                                                   *
 ; ********************************************************************************
 
 PFBASE          EQU     LY_RSX
@@ -254,13 +255,220 @@ PF_BUILD:                               ; construct planner request
         CP      B
         JP      NZ,PF_BAD
 
+; ==============================================================================
+; =                       Candidate Snapshot Preparation                       =
+; =                                                                            =
+; = Reserves the full snapshot-descriptor vector, then constructs the fresh    =
+; = candidate image for its planned live base. Retained descriptors remain     =
+; = empty until the following preparation increment.                           =
+; ==============================================================================
+
+PF_PREP:                                ; lay out bounded snapshot scratch
+        LD      HL,(PF_END)
+        LD      (PF_SDESC),HL
+        LD      A,(PF_NCNT)
+        LD      B,A
+        XOR     A
+PF_ZDESC:                               ; clear six bytes per profile member
+        LD      (HL),A
+        INC     HL
+        LD      (HL),A
+        INC     HL
+        LD      (HL),A
+        INC     HL
+        LD      (HL),A
+        INC     HL
+        LD      (HL),A
+        INC     HL
+        LD      (HL),A
+        INC     HL
+        DJNZ    PF_ZDESC
+        LD      (PF_SREQ),HL
+        LD      DE,23
+        ADD     HL,DE
+        JP      C,PF_BAD
+        LD      (PF_SNAP),HL
+        LD      DE,(PF_FACTS)
+        INC     DE
+        INC     DE
+        INC     DE
+        INC     DE
+        LD      A,(DE)                  ; candidate allocation low byte
+        LD      C,A
+        INC     DE
+        LD      A,(DE)
+        LD      B,A
+        ADD     HL,BC
+        JP      C,PF_BAD
+        LD      (PF_SEND),HL
+        LD      DE,(PF_HIGH)
+        OR      A
+        SBC     HL,DE
+        JR      C,PF_SBUILD
+        JP      NZ,PF_BAD
+
+PF_SBUILD:                              ; construct R3SNAP request
+        LD      HL,(PF_SREQ)
+        LD      DE,(PF_FACTS)
+        LD      B,4
+PF_FACTWORDS:                           ; payload through linked base
+        LD      A,(DE)
+        LD      (HL),A
+        INC     DE
+        INC     HL
+        LD      A,(DE)
+        LD      (HL),A
+        INC     DE
+        INC     HL
+        DJNZ    PF_FACTWORDS
+        LD      A,(PF_NCNT)
+        DEC     A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        PUSH    HL
+        LD      HL,(PF_PLAN)
+        ADD     HL,DE
+        INC     HL
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)                  ; prospective live base
+        POP     HL
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        PUSH    HL
+        LD      HL,(PF_FACTS)
+        LD      DE,10
+        ADD     HL,DE                   ; facts +10 static relocation list
+        EX      DE,HL
+        POP     HL
+        LD      B,2
+PF_RELOCWORDS:                          ; static list and count
+        LD      A,(DE)
+        LD      (HL),A
+        INC     DE
+        INC     HL
+        LD      A,(DE)
+        LD      (HL),A
+        INC     DE
+        INC     HL
+        DJNZ    PF_RELOCWORDS
+        PUSH    HL
+        LD      HL,(PF_FACTS)
+        LD      DE,18
+        ADD     HL,DE
+        EX      DE,HL
+        POP     HL
+        LD      A,(DE)                  ; packed callable descriptors
+        LD      (HL),A
+        INC     DE
+        INC     HL
+        LD      A,(DE)
+        LD      (HL),A
+        INC     HL
+        PUSH    HL
+        LD      HL,(PF_FACTS)
+        LD      DE,17
+        ADD     HL,DE
+        EX      DE,HL
+        POP     HL
+        LD      A,(DE)                  ; callable descriptor count
+        LD      (HL),A
+        INC     HL
+        PUSH    HL
+        LD      HL,(PF_FACTS)
+        LD      DE,21
+        ADD     HL,DE
+        LD      A,(HL)                  ; validated carrier format
+        POP     HL
+        LD      (HL),A
+        INC     HL
+        LD      DE,(PF_SNAP)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        PUSH    HL
+        LD      HL,(PF_FACTS)
+        LD      DE,8
+        ADD     HL,DE
+        EX      DE,HL
+        POP     HL
+        LD      A,(DE)                  ; dispatch offset
+        LD      (HL),A
+        INC     DE
+        INC     HL
+        LD      A,(DE)
+        LD      (HL),A
+        INC     HL
+        LD      (HL),0CCH               ; completion marker
+        LD      HL,PF_NSNAP
+        CALL    PF_OVER
+        JP      NZ,PF_BAD
+        LD      DE,(PF_SREQ)
+        CALL    CFGB
+        OR      A
+        JP      NZ,PF_BAD
+        LD      HL,(PF_SREQ)
+        LD      DE,22
+        ADD     HL,DE
+        LD      A,(HL)
+        CP      1
+        JP      NZ,PF_BAD
+
+PF_SDPUBLISH:                           ; publish candidate snapshot descriptor
+        LD      A,(PF_NCNT)
+        DEC     A
+        LD      E,A
+        ADD     A,A
+        ADD     A,E
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        LD      HL,(PF_SDESC)
+        ADD     HL,DE
+        LD      DE,(PF_SNAP)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      DE,(PF_FACTS)
+        INC     DE
+        INC     DE
+        INC     DE
+        INC     DE
+        LD      A,(DE)                  ; candidate allocation
+        LD      (HL),A
+        INC     DE
+        INC     HL
+        LD      A,(DE)
+        LD      (HL),A
+        INC     HL
+        PUSH    HL
+        LD      HL,(PF_FACTS)
+        LD      DE,8
+        ADD     HL,DE
+        EX      DE,HL
+        POP     HL
+        LD      A,(DE)                  ; candidate dispatch offset
+        LD      (HL),A
+        INC     DE
+        INC     HL
+        LD      A,(DE)
+        LD      (HL),A
+
   ; The header-inspection sector is disposable. Publish the first byte after
-  ; the durable plan and vectors as the next available transaction address.
+  ; the prepared candidate snapshot as the next available transaction address.
         LD      HL,(PF_FACTS)
         LD      DE,24
         ADD     HL,DE
         EX      DE,HL
-        LD      HL,(PF_END)
+        LD      HL,(PF_SEND)
         EX      DE,HL
         LD      (HL),E
         INC     HL
@@ -436,6 +644,7 @@ PF_BAD:                                 ; reject prospective profile
 PF_MAGIC:       DB      'B','R','S','X' ; carrier signature
 PF_ABIVAL:      DB      2,1,0           ; accepted RSX ABI
 PF_NPLAN:       DB      'R3PLAN  '      ; planner overlay stem
+PF_NSNAP:       DB      'R3SNAP  '      ; snapshot overlay stem
 PF_REQ:         DW      0               ; public Function-202 request
 PF_FACTS:       DW      0               ; candidate normalized facts
 PF_HIGH:        DW      0               ; transaction high bound
@@ -446,6 +655,10 @@ PF_CVECT:       DW      0               ; prospective class vector
 PF_PREQ:        DW      0               ; planner request
 PF_END:         DW      0               ; durable planning-area end
 PF_SCRATCH:     DW      0               ; reusable header sector
+PF_SDESC:       DW      0               ; six-byte snapshot descriptors
+PF_SREQ:        DW      0               ; snapshot constructor request
+PF_SNAP:        DW      0               ; candidate prepared snapshot
+PF_SEND:        DW      0               ; first byte after candidate snapshot
 PF_OPTR:        DW      0               ; retained allocation cursor
 PF_NPTR:        DW      0               ; prospective allocation cursor
 PF_CPTR:        DW      0               ; class-vector cursor

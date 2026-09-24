@@ -89,7 +89,7 @@ def main() -> None:
         "<8HBBHHB", cpu.word(FACTS), cpu.word(FACTS + 2),
         cpu.word(FACTS + 4), cpu.word(FACTS + 6), LIVE,
         cpu.word(FACTS + 10), cpu.word(FACTS + 12),
-        cpu.word(FACTS + 18), cpu.mem[FACTS + 17], 0,
+        cpu.word(FACTS + 18), cpu.mem[FACTS + 17], cpu.mem[FACTS + 21],
         SNAPSHOT, cpu.word(FACTS + 8), 0xCC)
     run_phase(cpu, "R3SNAP.RSX", request)
     assert cpu.a == 0 and cpu.mem[REQUEST + 22] == 1

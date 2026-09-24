@@ -63,5 +63,6 @@ and unchanged live memory. Existing candidate corruption and unsupported
 operation checks remain active.
 
 Both platform image builders install `R3PROF.RSX` with the other private Stage
-3 overlays. The next increment can consume the complete general plan while it
-constructs pointer unions and prepared snapshots for every prospective member.
+3 overlays. Engineering Specification 149 consumes the complete general plan
+and prepares the new candidate snapshot. Retained pointer unions and snapshots
+remain the next preparation increment.

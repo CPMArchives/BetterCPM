@@ -49,4 +49,6 @@ platform image builders install the same nine private overlay payloads.
 
 Engineering Specifications 145 through 148 connect the coordinator through
 carrier normalization, safe manager-slot handoff, and retained-profile
-planning. Pointer-union and prepared-snapshot integration remains later work.
+planning. Engineering Specification 149 adds format-aware preparation of the
+new candidate snapshot. Retained pointer-union and snapshot integration remains
+later work.
