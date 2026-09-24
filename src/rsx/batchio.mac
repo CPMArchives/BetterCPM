@@ -25,6 +25,9 @@ BDOS            EQU     00005H
 
 BI_NEXT:        DW      BDOS            ; next RSX descriptor pointer
 BI_ENTRY:       DW      BI_DISPATCH     ; RSX entry pointer
+BI_SVCOUNT:     DB      0               ; callable-service count
+BI_RESERVED:    DB      0               ; reserved service metadata
+BI_SVOFF:       DW      0               ; resident-service entry offset
 
 ; -------------------------------------------------------------------------------
 ; BDOS Interception
@@ -260,7 +263,7 @@ BI_BUFFER:                              ; protected submit record buffer
 BI_UDMA:        DW      0080H           ; caller DMA address
 BI_USERBUF:     DW      0080H           ; caller Function-10 buffer
 BI_FRESH:       DB      1               ; warm-start announcement flag
-BI_REQUEST:     DB      1,4,0,0,'BATCHIO ',0,0 ; saved BDOS request
+BI_REQUEST:     DB      2,4,0,0,'BATCHIO ',0,0,0,0,0,0 ; saved BDOS request
 
         .DEPHASE
         END

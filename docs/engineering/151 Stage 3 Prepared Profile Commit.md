@@ -8,10 +8,10 @@ qualification artifact, not the production Function 202 selector. Production
 Function 202 retains the legacy validator and its rejection of STATEFUL loads.
 Stage 3 is **not complete**.
 
-This distinction is intentional: the legacy request-version-1 mutation path,
-retirement, and warm-boot reconstruction must be reconciled with stateful
-preservation before enabling production STATEFUL loading. A successful prepared
-transaction alone does not qualify those lifecycle paths.
+This distinction is intentional: retirement and warm-boot reconstruction must
+be reconciled with stateful preservation before enabling production STATEFUL
+loading. A successful prepared transaction alone does not qualify those
+lifecycle paths.
 
 ## Prepared transaction
 
@@ -103,9 +103,10 @@ deliberately overwrites the former manager-stack location. It also executes
 both platform selectors against synthetic carriers and verifies the preserved
 frame and installed gateway byte for byte.
 
-Production dispatch remains gated. Version-1 requests have no workspace fields
-and must never be treated as 18-byte requests. Their mutation path and warm boot
-must not reload retained STATEFUL data from the original carrier.
+Production dispatch remains gated. All supplied callers now issue the 18-byte
+version-2 request. LOAD and UNLOAD callers provide explicit workspace bounds;
+BATCHIO's nontransactional deferred-retirement request leaves them zero. Warm
+boot must not reload retained STATEFUL data from the original carrier.
 
 Emulator qualification is still required against the final integrated path;
 earlier experimental runs are not release evidence.
@@ -113,5 +114,5 @@ earlier experimental runs are not release evidence.
 These tests do not claim production cross-platform stateful qualification or
 completion of the immutable-code acceptance rule. The remaining release gate
 is production dispatch/lifecycle integration, followed by forced-movement,
-failure, warm-boot, legacy-client, and immutable-code qualification on both
+failure, warm-boot, and immutable-code qualification on both
 trs80gp and cpmsim. No fixed remaining credit cost is implied.

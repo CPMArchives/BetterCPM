@@ -71,11 +71,6 @@ def main() -> None:
         cpu.mem[SERVICES:SERVICES + 10]
     assert cpu.sp == 0x5F00
 
-    cpu, _ = invoke(format_version=1, dispatch=4, service_count=0)
-    assert cpu.a == 0 and cpu.mem[REQUEST + 22] == 1
-    assert cpu.mem[OUTPUT:OUTPUT + 4] == b"\0\0\0\0"
-    assert cpu.mem[OUTPUT + 4] == (4 * 3) & 0xFF
-
     # Complete validation precedes the first destination write.
     for arguments in (
         {"relocation_values": (0x30, 0x20)},
@@ -83,15 +78,14 @@ def main() -> None:
         {"dispatch": CODE_SIZE},
         {"code_size": 0xF8, "service_count": 1},
         {"source": OUTPUT + 0x40},
-        {"format_version": 1, "service_count": 1, "dispatch": 4},
         {"format_version": 3},
     ):
         cpu, before = invoke(**arguments)
         assert cpu.a == 0xFF and cpu.mem[REQUEST + 22] == 0xCC
         assert bytes(cpu.mem[OUTPUT:OUTPUT + ALLOCATION]) == before
 
-    print("RSX snapshot construction validates before writing, handles legacy "
-          "and current headers, relocates for the prospective live base, clears "
+    print("RSX snapshot construction validates before writing, handles the v2 "
+          "runtime header, relocates for the prospective live base, clears "
           "the allocation tail, and materializes services")
 
 

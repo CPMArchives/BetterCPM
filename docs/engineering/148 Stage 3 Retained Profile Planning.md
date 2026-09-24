@@ -56,8 +56,8 @@ service result, reconstruction table, and live profile unchanged.
 
 The focused Z80 integration test executes the real coordinator, handoff,
 profile builder, and planner overlays. It proves both the empty-profile case
-and a nonempty append containing a retained legacy carrier plus a fresh
-stateful carrier. It checks both plan records, exact workspace acceptance and
+and a nonempty append containing a retained stateless v2 carrier plus a fresh
+stateful v2 carrier. It checks both plan records, exact workspace acceptance and
 one-byte-short rejection, duplicate rejection, unchanged persistent state,
 and unchanged live memory. Existing candidate corruption and unsupported
 operation checks remain active.

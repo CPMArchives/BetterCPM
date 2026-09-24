@@ -16,6 +16,9 @@ BDOS            EQU     00005H
 
 ER_NEXT:        DW      BDOS            ; next RSX descriptor pointer
 ER_ENTRY:       DW      ER_DISPATCH     ; RSX entry pointer
+ER_SVCOUNT:     DB      0               ; callable-service count
+ER_RESERVED:    DB      0               ; reserved service metadata
+ER_SVOFF:       DW      0               ; resident-service entry offset
 
 ; ================================================================================
 ; =                           Echo Proof Service                                =

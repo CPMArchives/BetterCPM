@@ -16,15 +16,17 @@ RSXFUNC         EQU     202
 ; ================================================================================
 ; =                             BATCHIO Installation                             =
 ; =                                                                              =
-; = Checks whether the protected XSUB-compatible provider is already active and otherwise =
-; = submits a Function-202 request to load BATCHIO into the ordered RSX profile. =
+; = Checks whether the protected XSUB-compatible provider is already active.    =
+; = If absent, submits a Function-202 request to load BATCHIO into the ordered   =
+; = RSX profile.                                                                =
 ; ================================================================================
 ; -------------------------------------------------------------------------------
 ; Presence Check and Load
 ; -------------------------------------------------------------------------------
 
 XS_START:                               ; enter XSUB installer
-        LD      SP,XS_STACK
+        LD      SP,(0006H)              ; own the top-of-TPA transient stack
+        CALL    XS_WORKSPACE
         LD      DE,XS_REQUEST
         LD      C,RSXFUNC
         CALL    BDOS
@@ -60,23 +62,39 @@ XS_PRINT:                               ; print installer message
         CALL    BDOS
         JR      XS_DONE
 
+XS_WORKSPACE:                           ; publish caller-owned transaction space
+        LD      HL,XS_END
+        LD      (XS_REQUEST+14),HL
+        LD      HL,0
+        ADD     HL,SP
+        LD      BC,64
+        OR      A
+        SBC     HL,BC
+        LD      DE,(0006H)
+        PUSH    HL
+        OR      A
+        SBC     HL,DE
+        POP     HL
+        JR      C,XS_WHIGH
+        EX      DE,HL
+
+XS_WHIGH:                               ; bound scratch below TPA and stack
+        LD      (XS_REQUEST+16),HL
+        RET
+
 ; ================================================================================
 ; =                           Installer Data and State                           =
 ; =                                                                              =
-; = Defines the BATCHIO load request, result messages, and private transient stack used =
-; = by the XSUB installer.                                                       =
+; = Defines the BATCHIO load request, transaction bounds, and result messages   =
+; = used by the XSUB installer.                                                  =
 ; ================================================================================
 ; -------------------------------------------------------------------------------
 ; Request, Messages, and Stack
 ; -------------------------------------------------------------------------------
 
-XS_REQUEST:     DB      1,3,0,0,'BATCHIO ',0,0 ; Function-202 load request
+XS_REQUEST:     DB      2,3,0,0,'BATCHIO ',0,0,0,0,0,0 ; Function-202 request
 XS_ALREADY:     DB      13,10,'Xsub Already Present','$' ; already-active message
 XS_LOADERR:     DB      13,10,'Xsub Load Error','$' ; load-failure message
-                REPT    16
-                DW      0
-                ENDM
-
-XS_STACK:                               ; private installer stack
+XS_END:                                 ; end of caller-owned program image
         .DEPHASE
         END

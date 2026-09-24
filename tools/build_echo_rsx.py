@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the second BRSX v1 proof carrier, ECHO.RSX."""
+"""Build the BRSX version-2 ECHO.RSX proof carrier."""
 from __future__ import annotations
 
 import argparse
@@ -37,7 +37,8 @@ def main() -> None:
     offsets = relocation_offsets(code, alternate, ALTERNATE_BASE - LINK_BASE)
     carrier = make_module(name="ECHO", version=(0, 1), services=[203],
                           linked_base=LINK_BASE, code=code,
-                          relocations=offsets)
+                          relocations=offsets, entry_offset=8,
+                          format_version=2)
     (BUILD / "ECHO.RSX").write_bytes(carrier)
     print(f"{hashlib.sha256(code).hexdigest()}  build/rsx/echo.bin")
     print(f"ECHO.RSX bytes: {len(code)}; relocations: {len(offsets)}; "

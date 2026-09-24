@@ -22,13 +22,13 @@ later increment reopens and completely prepares that retained member. The
 normalized facts' next-scratch pointer advances past the candidate allocation
 only after snapshot construction succeeds.
 
-## Format-aware runtime headers
+## Runtime headers
 
-Integration exposed a legacy boundary in the existing snapshot constructor.
-BRSX-v1 modules have a four-byte loader-owned header and may dispatch at offset
-4, while BRSX-v2 modules have the current eight-byte header and may advertise
-callable descriptors. The snapshot request now carries the already validated
-carrier format:
+The snapshot request carries the already validated carrier format. Public
+BRSX-v2 modules have an eight-byte loader-owned header and may advertise
+callable descriptors. A transitional version-1 branch remains in the isolated
+constructor until the old production manager is removed, but it is not part of
+the BetterCP/M 1.0 input contract:
 
 - version 1 accepts no callable descriptors, permits dispatch at offset 4,
   and clears only the four loader-owned header bytes; and
@@ -36,8 +36,7 @@ carrier format:
   callable-descriptor materialization.
 
 Unknown formats and callable descriptors on a version-1 request are rejected
-before destination memory changes. This preserves legacy BRSX-v1 loading while
-the Stage-3 transaction is introduced.
+before destination memory changes.
 
 ## Publication and failure behavior
 
@@ -57,7 +56,8 @@ constructor. It proves:
 - an empty-profile STATEFUL append produces a complete relocated snapshot and
   candidate descriptor;
 - exact workspace acceptance and one-byte-short rejection;
-- a legacy BRSX-v1 candidate receives the four-byte runtime header;
+- a converted stateless BRSX-v2 candidate receives the eight-byte runtime
+  header without callable descriptors;
 - a nonempty append reserves descriptors for the complete prospective profile,
   leaves the retained descriptor empty, and prepares the candidate entry;
 - malformed carriers and unsupported operations still fail; and

@@ -76,11 +76,11 @@ def main() -> None:
     require(request(cpu, 1, ordinal=2)[0] == 0x0A,
             "enumeration did not terminate cleanly")
 
-    legacy = 0xCE04
-    struct.pack_into("<HH", cpu.mem, legacy, first + 8, legacy + 4)
-    cpu.setword(HEAD, legacy)
+    unsupported = 0xCE04
+    struct.pack_into("<HH", cpu.mem, unsupported, first + 8, unsupported + 4)
+    cpu.setword(HEAD, unsupported)
     require(request(cpu, 0, b"TIME", 1)[0] == 0,
-            "legacy BRSX-v1 provider was not skipped")
+            "provider without a v2 descriptor header was not skipped")
     cpu.setword(HEAD, first)
 
     status, entry = request(cpu, 2)

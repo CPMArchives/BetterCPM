@@ -2,9 +2,10 @@
 
 ## Status
 
-Implemented general module format and filename-driven runtime loader. The
-dispatch and management interfaces remain provisional until initialization,
-shutdown, bypass, dependency, and saved-profile contracts are completed.
+Superseded before BetterCP/M 1.0 by BRSX version 2. This document records the
+bring-up format for historical engineering context; version 1 is not a public
+compatibility contract. All BetterCP/M-supplied RSXs and callers now use the
+version-2 carrier and Function 202 request.
 
 ## Purpose
 

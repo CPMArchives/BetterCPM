@@ -52,7 +52,8 @@ def main() -> None:
     offsets = relocation_offsets(code, alternate, ALTERNATE_BASE - LINK_BASE)
     carrier = make_module(name="BATCHIO", version=(1, 0), services=[10],
                           linked_base=LINK_BASE, code=code,
-                          relocations=offsets)
+                          relocations=offsets, entry_offset=8,
+                          format_version=2)
     output = RSX / "BATCHIO.RSX"
     output.write_bytes(carrier)
     print(f"{hashlib.sha256(code).hexdigest()}  build/rsx/batchio.bin")

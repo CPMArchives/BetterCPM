@@ -6,13 +6,14 @@ Stage 2 implementation is complete; target-system qualification remains. The car
 descriptor publication, central Function 208 resolver, provider conversion,
 and system-track orchestration are present on both supported targets.
 
-## Compatibility
+## Version policy
 
 BRSX version 2 preserves the fixed 48-byte version-1 carrier prefix where its
 meaning remains applicable. Byte 4 is 2. Flags bits 0-1 contain the
 reconstruction class: 0 STATELESS, 1 STATEFUL, 2 STATE_PRESERVING, and 3
-COLD_ONLY. Version-1 images retain their existing untyped numeric-service tail
-and are treated as legacy stateless numeric interceptors.
+COLD_ONLY. Version 2 is the first supported BetterCP/M 1.0 carrier format.
+Version 1 was used only by pre-release in-tree modules, all of which have been
+converted; preserving it is not a release compatibility requirement.
 
 ## Typed metadata stream
 
@@ -75,7 +76,7 @@ It occupies 779 bytes and performs no disk access during lookup or enumeration.
 
 ## Loader integration constraint
 
-The current version-1 manager already occupies all 893 bytes available below
+The transitional manager already occupies all 893 bytes available below
 its 128-byte control stack and the fixed three-byte gateway. A first complete
 version-2 parsing/materialization pass measured 1,186 bytes before optimization.
 It was not retained because reducing validation or leaving an inadequately
@@ -105,14 +106,16 @@ adds no permanent protected code, and does not reduce command history or other
 PDS allocations. Once a profile is active, the same one-kilobyte charge that
 formerly held the manager contains the resolver instead.
 
-The validator occupies 932 bytes. Its focused tests cover valid
-version-1 and version-2 carriers, unsupported reconstruction classes, metadata
+The validator occupies 932 bytes. Its focused tests cover valid version-2
+carriers, unsupported reconstruction classes, metadata
 bounds and framing, callable entry bounds, duplicate IDs within one provider,
 duplicate IDs across the live profile, unknown metadata-1.0 record types, and
 sorted, unique runtime-pointer slots.
 
-The rebuilder accepts both carrier versions and occupies 935 bytes, retaining
-an 86-byte control stack below the fixed gateway. Descriptor publication is
+The transitional rebuilder can still parse the obsolete version-1 carrier,
+but no supplied artifact depends on that implementation residue. It occupies
+935 bytes, retaining an 86-byte control stack below the fixed gateway.
+Descriptor publication is
 isolated in a 457-byte overlay; its focused test verifies allocation-tail
 clearing, descriptor copying, and runtime-header publication. Separating these
 operations avoids weakening either validation or stack safety.

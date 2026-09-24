@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build BetterCP/M BRSX version-1 or version-2 module carriers."""
+"""Build supported BRSX-v2 module carriers."""
 from __future__ import annotations
 
 import struct
@@ -55,9 +55,9 @@ def _v2_metadata(services: list[int], callable_services: list[tuple[bytes, int,
 
 def make_module(*, name: str, version: tuple[int, int], services: list[int],
                 linked_base: int, code: bytes, relocations: list[int],
-                entry_offset: int = 4, init_offset: int = NO_ENTRY,
+                entry_offset: int = 8, init_offset: int = NO_ENTRY,
                 shutdown_offset: int = NO_ENTRY, allocation: int | None = None,
-                flags: int = 0, format_version: int = 1,
+                flags: int = 0, format_version: int = 2,
                 reconstruction_class: str = "STATELESS",
                 callable_services: list[tuple[bytes, int, int, int, int]] | None = None,
                 runtime_pointers: list[int] | None = None) -> bytes:
@@ -66,14 +66,11 @@ def make_module(*, name: str, version: tuple[int, int], services: list[int],
         raise SystemExit("invalid RSX name or service number")
     callable_services = [] if callable_services is None else callable_services
     runtime_pointers = [] if runtime_pointers is None else runtime_pointers
-    if format_version not in (1, 2):
+    if format_version != 2:
         raise SystemExit("unsupported BRSX format version")
-    if format_version == 1 and (callable_services or runtime_pointers
-                                or reconstruction_class != "STATELESS"):
-        raise SystemExit("BRSX v1 cannot carry reconstruction metadata")
     if reconstruction_class not in RECONSTRUCTION_CLASSES:
         raise SystemExit("unknown RSX reconstruction class")
-    if format_version == 2 and flags & ~3:
+    if flags & ~3:
         raise SystemExit("BRSX v2 reserved flag bits must be zero")
     if len(callable_services) > 2:
         raise SystemExit("BRSX v2 supports at most two callable services")
@@ -87,9 +84,9 @@ def make_module(*, name: str, version: tuple[int, int], services: list[int],
         raise SystemExit("invalid RSX code, entry, or allocation")
     if allocation < len(code) + runtime_descriptor:
         raise SystemExit("RSX allocation cannot hold runtime service descriptors")
-    if format_version == 2 and (entry_offset < 8 or any(
+    if entry_offset < 8 or any(
             service[3] < 8 or service[3] >= len(code)
-            for service in callable_services)):
+            for service in callable_services):
         raise SystemExit("BRSX v2 entry overlaps its runtime header or payload end")
     for label, offset in (("initialization", init_offset),
                           ("shutdown", shutdown_offset)):
@@ -104,8 +101,7 @@ def make_module(*, name: str, version: tuple[int, int], services: list[int],
     if RELOCATION_OFFSET + 2 * len(relocations) > HEADER_SIZE:
         raise SystemExit("RSX relocation directory exceeds its header")
     metadata_offset = HEADER_SIZE + len(code)
-    metadata = (bytes(services) if format_version == 1 else
-                _v2_metadata(services, callable_services, runtime_pointers))
+    metadata = _v2_metadata(services, callable_services, runtime_pointers)
     header = bytearray(HEADER_SIZE)
     primary = services[0] if services else 0xFFFF
     flags = flags | RECONSTRUCTION_CLASSES[reconstruction_class]
