@@ -121,6 +121,13 @@ and cold-boot capacity requirements are specified in
 format descriptors remain the source of format definitions. CONFIG shall not
 embed a second divergent catalogue.
 
+Architecture Specification 28 defines the authoritative disk-state model.
+The BIOS-owned physical records and self-contained normalized logical bindings
+are operational authority. FDB identity is provenance, not a cold-boot or I/O
+dependency. CONFIG validates complete affected records before a synchronous
+update and explicitly reports any non-system binding it must unconfigure.
+Media observations remain separate and never select another format.
+
 5. MEMORY AND RESIDENT ENVIRONMENT
 
 CONFIG shall display the current and next-boot PDS sizes, the capacity required
