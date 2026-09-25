@@ -1,7 +1,8 @@
 # BetterCP/M RSX and CPX Programmer's Guide
 
-Status: Initial working draft  
-Date: 2026-09-02
+Status: Working architecture guide; Stage-6 selector migration remains an
+implementation task
+Date: 2026-09-25
 
 This guide describes how resident extensions and command-processor
 extensions fit into BetterCP/M. It records the decisions already made and
@@ -76,9 +77,11 @@ the exclusive TPA ceiling.
 ## 3. Fundamental address rule
 
 The saved RSX and CPX profiles are persistent configuration; their current
-memory addresses are not. Persistent DATA also contains the active RSX table
+memory addresses are not. Fixed subsystem state contains the active RSX table
 and the active CPX reconstruction table. The latter records which CPXs WBOOT
 must restore, not where their overlay images previously happened to reside.
+Neither table belongs to the bounded 1.0 PDS, whose only owner is built-in
+command history.
 
 Extension code must therefore be relocatable or position-independent. An
 extension must not publish an address that it expects to remain valid after
@@ -150,14 +153,15 @@ pointer and value after reconstruction. A counter-only test is insufficient.
 
 The accepted binary and lifecycle rules are specified by
 `docs/architecture/21 Stateful RSX Reconstruction ABI.txt`. They enter the
-module carrier with BRSX version 2. BRSX version 1 remains a legacy stateless
-numeric interceptor. Version 2 uses typed trailing metadata for numeric BDOS
-services, callable resident services, and runtime pointer-slot offsets.
+module carrier with BRSX version 2. The production loader rejects BRSX version
+1; it remains format history rather than a supported 1.0 compatibility path.
+Version 2 uses typed trailing metadata for numeric BDOS services, callable
+resident services, and runtime pointer-slot offsets.
 
 ## 5. Module file information
 
-The CPX on-disk format is `BCPX` version 1 and the RSX carrier is `BRSX`
-version 1. Both are executable development ABIs; the remaining lifecycle and
+The CPX on-disk format is `BCPX` version 1 and the production RSX carrier is
+`BRSX` version 2. Both are executable development ABIs; the remaining lifecycle and
 bypass rules must be completed before either is declared stable for third
 parties. Their common design provides:
 
@@ -187,10 +191,15 @@ proof. The dynamic gateway jumps to the first installed RSX's dispatch entry;
 an unowned request is passed to the next header's entry, with the final link
 targeting the fixed core BDOS at `C100h`.
 
-The proof runtime header contains a two-byte next-entry address at offset zero
-and a two-byte dispatch-entry address at offset two. `HELLO.RSX` owns
-experimental Function 201, returns `HL=5253h`, and chains all other calls.
-`RSXTEST.COM` reaches it through the public `CALL 0005h` path.
+The runtime header contains a two-byte next-entry address at offset zero and a
+two-byte dispatch-entry address at offset two. Non-public proof modules use
+Functions 198 and 199 after the coordinated selector migration; those numbers
+carry no stable application ABI. The proof service returns `HL=5253h` and
+chains all other calls. `RSXTEST.COM` reaches it through `CALL 0005h`.
+
+The pre-migration source still uses Functions 201 and 203 for these proofs and
+202 for RSX control. Those provisional assignments are implementation state,
+not supported 1.0 ABI aliases.
 
 An RSX must be able to:
 
@@ -210,32 +219,33 @@ specified before this becomes a stable third-party ABI.
 RSXs remain part of the system-service environment when the CCP and CPXs are
 reloaded. They must not depend upon private CCP or CPX data.
 
-### 6.1 BRSX version 1 manager and carrier
+### 6.1 BRSX version 2 manager and carrier
 
 `RSX.COM` provides `LIST`, `LOAD name[.RSX]`, and `UNLOAD name[.RSX]`.
-Experimental BDOS Function 202 carries a versioned request block to the fixed
+BetterCP/M Function 177 carries a versioned request block to the fixed
 protected loader at `D100h`. The active table stores ordered eight-byte file
 stems rather than runtime addresses. The present saved cold-boot profile is
 empty.
 
-The `BRSX` version-1 512-byte header identifies the format, module class, ABI,
+The `BRSX` version-2 carrier identifies the format, module class, ABI,
 module name/version, linked base, code size, protected page allocation,
 dispatch/init/shutdown offsets, relocation table, service metadata, and
-payload checksum. Code follows the header, followed by one byte per advertised
-service. Engineering Specification 120 gives the exact offsets.
+payload checksum and typed metadata. Engineering Specifications 133 through
+151 define the accepted metadata, preparation, relocation and commit path.
 
 The manager validates all named headers before rebuilding the chain, loads and
 checksums each payload, applies relocation words, and links modules in explicit
-load order. `HELLO.RSX` advertises Function 201 and claims one KiB so the
-protected-memory cost remains visible. `ECHO.RSX` advertises Function 203 and
-proves that a second module chains through the first; removing HELLO leaves
-ECHO operational. Loading moves the gateway and lowers the reported TPA,
+load order. `HELLO.RSX` advertises non-public Function 198 and claims one KiB
+so the protected-memory cost remains visible. `ECHO.RSX` advertises Function
+199 and proves that a second module chains through the first; removing HELLO
+leaves ECHO operational. Loading moves the gateway and lowers the reported TPA,
 unloading restores it, and WBOOT preserves the chain while reconstructing the
 reclaimable CPX/CCP command environment.
 
-Initialization and shutdown offsets are reserved but are not invoked yet.
-Dependencies, automatic ordering, saved profiles, rollback after a physical
-read failure, and the formal core-BDOS bypass interface remain provisional.
+The Stage-3 transaction validates the complete prospective configuration,
+relocates declared mutable pointers, retains or initializes state according to
+the reconstruction class, and publishes only after commit. A failure retains
+the old published configuration.
 
 ## 7. CPX execution model
 
@@ -305,13 +315,14 @@ Configuration changes affect the active reconstruction table, then terminate
 through WBOOT so fixed resident code performs all relocation. The manager is
 never required to move or overwrite the environment in which it is executing.
 
-Provisional BetterCP/M BDOS Function 200 mediates this proof. `D` selects
+BetterCP/M Function 176 mediates CPX profile control. In the current bounded
+manager, `D` selects
 BASIC (`1`) or HELLO (`2`); `E=0/1/2` requests status/load/unload. These
 operations are deliberately narrow and are not a stable third-party ABI. A
 later versioned request-block interface must replace or formally supersede
 them before arbitrary CPXs are supported.
 
-BetterCP/M BDOS Function 206 takes no parameters and returns `HL` pointing to
+BetterCP/M BDOS Function 180 takes no parameters and returns `HL` pointing to
 the immutable resident subsystem-version descriptor. Bytes zero through three
 are `B`, `V`, descriptor format `1`, and the completed-component count. Two
 words then point to the system identity and release strings. Each component

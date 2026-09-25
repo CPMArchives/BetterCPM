@@ -1,8 +1,9 @@
 BETTERCP/M EXTENDED BDOS NAMESPACE
 =================================
 
-Status: adopted BetterCP/M 1.0 namespace policy; source migration is Stage 6
-work and the current 200-209 selectors remain provisional until then.
+Status: frozen BetterCP/M 1.0 namespace policy. Current source still uses the
+provisional 200-209 assignments; their coordinated migration belongs to the
+later implementation program.
 
 
 1. PURPOSE AND EVIDENCE
@@ -73,10 +74,12 @@ as its P2DOS-compatible clock calls:
 They use the historical P2DOS five-byte day-count/hour/minute/second record and
 are intercepted by the separate `P2DOS.RSX` compatibility frontend. That frontend
 calls BetterCP/M's native callable `TIME` service and contains no hardware
-driver. Their exact successful return behavior shall be verified against P2DOS
-evidence before the remaining public result values are frozen. Function 201
-maps a native read-only-provider result to SET_UNSUPPORTED rather than chaining
-to the BDOS fallback.
+driver. Original P2DOS 2.3 source establishes A=00h and HL=0000h success with
+DE preserved. BetterCP/M returns A=0FEh and HL=00FEh when the installed frontend
+claims but cannot complete a request. If the frontend is absent, ordinary BDOS
+returns A=0FFh and HL=00FFh. FEh is BetterCP/M-defined behavior rather than a
+historical P2DOS result. Function 201 maps a native read-only-provider result to
+the claimed-failure result rather than chaining to the BDOS fallback.
 
 The native clock facility is a general hardware-independent BetterCP/M service.
 It uses the same compact record, but its callable-service entry is independent
@@ -96,7 +99,7 @@ The final 1.0 selector assignments are:
   180  protected subsystem version descriptor
   181  disk configuration and utility I/O
   182  callable resident-service registry
-  183  FDF mixed-sector service
+  183  FDF service
   184-196  unassigned production selectors
   197  reserved undefined future escape; no 1.0 callable contract
   198-199  non-public test/conformance selectors
@@ -128,11 +131,19 @@ The pre-freeze implementation currently uses:
 Proof selectors 201 and 203 are removed from the released namespace.  Tests
 which still need two numeric interceptors use 198 and 199.
 
-Stage 6 performs the source migration in one bounded change: update
+The implementation program performs the source migration in one bounded
+change: update
 dispatchers, RSXs, utilities, fixtures, builders, tests and programmer
 documentation; rebuild all in-tree clients; prove that no BetterCP/M-private
 service claims 200 or 201; and install the P2DOS-compatible clock adapter at
 those inherited selectors.
+`TIME.COM` uses provisional Function 208 for callable-service discovery and
+Function 202 for provider/profile information; those uses migrate to 182 and
+177 respectively. `FDF.RSX` uses provisional Function 209 for the FDF service
+and Function 202 for unload/profile handling; those uses migrate to 183 and 177.
+These secondary uses must be classified semantically rather than changed by a
+blind numeric substitution.
+
 Obsolete numeric aliases are not retained unless a separately documented
 compatibility requirement justifies them.
 

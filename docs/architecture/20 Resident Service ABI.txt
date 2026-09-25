@@ -1,7 +1,8 @@
 BETTERCP/M RESIDENT SERVICE ABI AND REGISTRY
 
-Status: adopted and implemented Stage-2 design. The implementation currently
-uses provisional Function 208 pending the Stage-6 migration to Function 182.
+Status: adopted ABI. Stage 6 freezes Function 182 as the 1.0 gateway. The
+implementation still uses provisional Function 208 until the later source
+migration recorded by the 1.0 implementation program.
 
 
 1. PURPOSE AND OWNERSHIP
@@ -11,11 +12,12 @@ when useful, fixed core code. It defines discovery and binding, not the operatio
 set of HIST, NDR, SECU or another individual service.
 
 The registry is a logical view derived from validated advertisements in the
-active RSX set. The PDS holds only the small registry descriptor, resident-layout
-generation and active reconstruction metadata. It does not duplicate every
-service in a 96-byte flat table. Lookup walks validated active providers and
-calculates the current entry from RSX base plus advertised entry offset. A cache
-may be added only if measurement later justifies its PDS cost.
+active RSX set. Registry gateway and reconstruction-control state belongs to
+the fixed extension subsystem. Validated provider descriptors remain inside
+their provider allocations. The bounded 1.0 PDS owns neither object and does
+not contain a flat table of service addresses. Lookup walks validated active
+providers and calculates the current entry from RSX base plus advertised entry
+offset. Stage 6 introduces no PDS allocation for this facility.
 
 The loader/reconstructor owns publication and removal. RSXs and transient
 programs cannot modify registry state directly.
@@ -54,22 +56,24 @@ major-version providers and priority/stacking policies are deferred.
 
 3. BRSX COMPATIBILITY
 
-BRSX version 1 currently advertises one 16-bit primary extended-BDOS service
-number. It does not advertise a four-byte callable-service ID, ABI minor,
-capabilities, multiple services or a callable entry offset. That field is not
-silently reinterpreted.
+BRSX version 1 historically advertised one 16-bit primary extended-BDOS
+service number. It did not advertise a four-byte callable-service ID, ABI
+minor, capabilities, multiple services or a callable entry offset. That field
+is not silently reinterpreted. The production Stage-3 loader accepts BRSX
+version 2 only; version 1 remains format history rather than a supported 1.0
+runtime ABI.
 
-The callable-service advertisement is introduced by the typed metadata stream
-in BRSX version 2. Legacy BRSX v1 modules remain numeric interceptors. The
-loader rejects unknown service-metadata versions and entry offsets outside the
-live callable image. `21 Stateful RSX Reconstruction ABI.txt` defines the
-version-2 carrier policy shared by callable services and reconstruction data.
+The callable-service advertisement is carried by the typed metadata stream in
+BRSX version 2. The loader rejects version-1 carriers, unknown service-metadata
+versions and entry offsets outside the live callable image. `21 Stateful RSX
+Reconstruction ABI.txt` defines the version-2 carrier policy shared by callable
+services and reconstruction data.
 
 Clock providers advertise the native callable `TIME` service defined by
 `22 Clock Provider ABI.txt`. Optional historical frontends, including the
 `P2DOS.RSX` Functions 200/201 frontend, consume that service rather than embedding
 or duplicating hardware-provider code. `TIME` service identity remains stable
-when the registry gateway migrates from provisional Function 208 to its final
+when implementation migrates from provisional Function 208 to the frozen
 Function 182 assignment.
 
 
@@ -80,13 +84,18 @@ BetterCP/M Function 182 is the final 1.0 resident-service gateway:
   C  = 182
   DE = caller-owned request block
 
-The current source and binaries still use provisional Function 208. Function
-182 becomes callable when Stage 6 migrates all private selectors together;
-there is no compatibility promise for the provisional number.
+The current source and binaries still use provisional Function 208. The later
+implementation migration changes all private selectors together; there is no
+compatibility promise for the provisional number.
 
-The initial operations are LOOKUP, ENUMERATE and DESCRIBE_REGISTRY. Registration
-and removal are private reconstruction operations. One BDOS function is used
-for the registry; no function number is assigned per service.
+The ABI-1 operations are:
+
+  0  LOOKUP
+  1  ENUMERATE
+  2  DESCRIBE_REGISTRY
+
+Registration and removal are private reconstruction operations. One BDOS
+function is used for the registry; no function number is assigned per service.
 
 The resident-service gateway returns:
 
