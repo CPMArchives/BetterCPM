@@ -6,6 +6,12 @@
 ; * sentinel pointer values so reconstruction can verify each movement contract. *
 ; ********************************************************************************
 
+; SR_LINKED is repaired by ordinary carrier relocation. SR_RUNTIME is created
+; only after load and must be declared in the runtime pointer-slot metadata.
+; Fixed, null, and sentinel words must remain unchanged. Keeping all cases in
+; one live allocation proves that reconstruction adjusts pointers by contract,
+; rather than treating every word that resembles an address as relocatable.
+
 
 RSXBASE         EQU     08000H
 BDOS            EQU     00005H

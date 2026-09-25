@@ -7,6 +7,12 @@
 ; * then replaces itself with the commit engine.                                 *
 ; ********************************************************************************
 
+; This is the transaction's last fallible phase. It reserves and validates all
+; commit scratch, constructs the complete publication record, and prefetches the
+; resolver before replacing itself. No disk operation is permitted after live
+; movement starts because a late read failure could no longer restore the old
+; profile safely.
+
 RFBASE          EQU     LY_RSX
 FLOPEN          EQU     LY_FILE
 FLNEXT          EQU     LY_FILE+3
@@ -242,6 +248,8 @@ RF_ADVANCE:                             ; advance to the next plan record
         JR      NZ,RF_ADVANCE
         DJNZ    RF_BOUND
 RF_SAFE:                                ; prefetch the resolver before committing
+  ; The resolver is part of the post-commit execution path. Retaining its image
+  ; now converts restoration into an infallible memory copy after publication.
         LD      HL,RF_NRESOL
         CALL    RF_OVER
         JP      NZ,RF_BAD
