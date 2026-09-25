@@ -1,0 +1,256 @@
+BETTERCP/M DISK-STATE NORMALIZATION
+
+Status: adopted Stage 4 architecture for BetterCP/M 1.0.
+
+1. PURPOSE AND SCOPE
+
+BetterCP/M has one active interpretation for each configured logical drive.
+That interpretation is held in BIOS-owned physical records and self-contained
+normalized logical bindings.  CONFIG, BDOS, DUP, SYSGEN and installation use
+that authority rather than maintaining competing permanent interpretations.
+
+This specification defines ownership, validation, transition, invalidation and
+failure behavior.  It does not assign final RAM addresses, create a general
+allocator, define the persistent byte layout or reopen deferred 1.0 features.
+
+2. THREE STATE DOMAINS
+
+Configuration source is the information from which an active configuration is
+constructed.  At cold boot it is the installed self-contained configuration.
+While CONFIG is running it is CONFIG's private candidate.  Immutable platform
+defaults may supply recovery values.  A separate permanent RAM copy of source
+intent is not required.
+
+Active configuration is the validated physical-drive records and normalized
+logical bindings used by the BIOS.  These records are the sole operational
+authority.
+
+Observed and derived state includes medium presence and change, readiness,
+write protection, controller position and cache, BDOS login and read-only
+state, DPH scratch, allocation vectors, checksum vectors and directory state.
+It is produced while operating under an active binding.  It does not define or
+silently alter that binding.
+
+The relationship is:
+
+  configuration source or candidate
+                |
+                | validate
+                v
+  BIOS-owned active configuration
+                |
+                | operate
+                v
+  observed and derived state
+
+3. ACTIVE AUTHORITY
+
+The existing BIOS disk subsystem is the 1.0 authority.  Its physical-drive
+records describe configured operation of platform slots.  Each logical DPH is
+paired with a complete normalized binding containing the physical-slot number,
+DPB, geometry, sector identifiers and required mapping semantics.
+
+The binding is operational data, not accidental implementation debris.  A
+consumer obtains it through the disk-control ABI or takes a validated transient
+copy.  No consumer independently reconstructs geometry from the catalogue or
+keeps a competing permanent geometry record.
+
+The BIOS validates a proposed complete record before copying it into active
+state.  BetterCP/M 1.0 is single-tasking; CONFIG, DUP and SYSGEN cannot modify
+the records concurrently.  A publication generation, stale-candidate protocol,
+double-buffered active state and generation checks are therefore not part of
+the 1.0 design.
+
+Every externally visible configuration operation nevertheless remains
+atomic in the behavioral sense: validate every record affected by that
+operation, update the authoritative BIOS records synchronously, and invalidate
+all affected derived state before returning control.  No caller may observe an
+operation half applied.
+
+4. FDF, FDB AND FORMAT PROVENANCE
+
+FDF is human-maintained source.  FDFCOMP produces the versioned FDB catalogue.
+CONFIG resolves a selected FDB descriptor into a complete normalized BIOS
+binding.  Runtime disk operation and cold boot do not require the catalogue to
+be reopened.
+
+An installed or active binding may also record FDB provenance:
+
+  FDB schema major;
+  the descriptor's eight-character format ID; and
+  a fingerprint of its canonical descriptor and referenced semantic
+  extensions.
+
+The exact fingerprint encoding and persistent placement belong to the FDB and
+saved-configuration implementation specifications.  A whole-catalogue CRC is
+not a per-format semantic fingerprint because an unrelated entry may change.
+
+Provenance is not operational authority.  If ID X and fingerprint A produced a
+saved binding and a later catalogue contains ID X with fingerprint B, the
+saved binding remains usable when it independently validates.  CONFIG reports
+the mismatch and may offer explicit migration.  It must not reinterpret,
+replace or disable the binding automatically.  A missing catalogue has the
+same rule.
+
+5. CONFIGURATION OPERATIONS
+
+CONFIG edits a private candidate.  It submits a complete physical or logical
+record only after validation.  A failed submission leaves the former active
+record unchanged.
+
+Logical unconfiguration is explicit source intent.  It removes the active
+binding and invalidates the logical drive's derived filesystem state.
+
+A physical change may make one or more non-system logical bindings impossible.
+CONFIG may either reject the change and explain the dependency, or show every
+affected binding, obtain explicit confirmation, commit the physical change and
+unconfigure those bindings.  It never silently rebinds, reformats, substitutes
+or clears them.  The boot/system drive has stronger protection and may not be
+invalidated through the ordinary session editor.
+
+The current field-at-a-time physical editor and complete-record logical editor
+are permitted.  A future editor may validate and apply several related records
+together, but a whole-configuration candidate is not a 1.0 requirement.
+
+6. MEDIA, ALIASES AND INVALIDATION
+
+A platform slot is distinct from a logical drive, medium and host image name.
+Several logical drives may bind the same slot.  Absence, wrong format, read
+failure, write protection or invalid filesystem data is observed state; none
+changes the configured binding or triggers format guessing.
+
+A binding change invalidates its old BDOS login and read-only state, DPH
+scratch, allocation and checksum information, directory state and relevant BIOS
+cache.  A physical change or media change invalidates these objects for every
+logical alias of the affected slot.  Conservative all-drive reset is valid
+when it is smaller or safer than exact alias tracking.
+
+Required mapping semantics are capabilities.  A capability used by active
+bindings may disappear only through a managed transition which either refuses
+removal or explicitly detaches every dependent binding and invalidates its
+derived state before the capability disappears.  Unexpected capability loss
+makes affected bindings unavailable and must be reported; it never licenses a
+different interpretation.
+
+FDF.RSX's managed unload, which selects a safe drive and detaches dependent
+aliases, is the current example of the second behavior.
+
+7. COLD BOOT, WARM BOOT AND PERSISTENCE
+
+Cold boot reconstructs live RAM from installed self-contained records and
+immutable platform defaults.  It validates structure, platform identity,
+physical records, complete normalized bindings and required capabilities before
+publishing them to the BIOS.  Drive A is boot-critical.  Invalid independent
+non-system bindings may be left explicitly unconfigured and reported without
+changing their meaning or substituting another format.
+
+Warm boot preserves the active physical records and bindings.  It may reset or
+rebuild derived session and filesystem state, but it does not reload saved
+cold-boot settings.
+
+Activation and persistence are independent operations.  Successful activation
+without saving changes the current session only.  A save failure does not roll
+back an already valid active change.
+
+Saved configuration contains self-contained physical and normalized logical
+records, explicit unconfigured slots, schema and integrity information,
+platform scope and optional FDB provenance.  It never contains RAM pointers,
+DPH addresses, ALV/CSV contents, controller position, media observations or
+utility scratch.
+
+CONFIG H's 1.0 disk-record writer verifies every changed installed-system
+record and attempts rollback after an ordinary I/O failure.  It does not
+promise recovery from power loss.  Power-failure-atomic replacement requires
+an explicit future persistent-storage design such as redundant slots or a
+journal and is deferred.
+
+The broader CONFIG architecture still distinguishes active settings, saved
+startup defaults and pending cold-boot-only changes, and retains its two save
+scopes.  That distinction does not require a second resident copy of disk
+intent after immediately applicable disk settings have entered BIOS state.
+
+8. DUP, SYSGEN AND INSTALLATION
+
+DUP obtains the active complete binding through the disk-control ABI, validates
+formatting support, physical compatibility, required capabilities and medium
+write readiness before the first destructive write, and uses one private copy
+for the synchronous operation.  Formatting changes the medium, not the active
+binding.  It invalidates every alias's derived media/filesystem state afterward.
+
+SYSGEN obtains the destination binding through the same ABI and additionally
+validates reserved-system-area existence, size, layout, image compatibility and
+write accessibility.  It writes only the reserved system area.  It installs a
+self-contained boot binding so reading the system disk never depends on first
+reading a catalogue from that disk.
+
+Installation constructs the same physical records and normalized bindings and
+uses the same validation rules.  It does not maintain separate format
+semantics.
+
+9. VALIDATION AND FAILURE
+
+Validation has four layers:
+
+  structural encoding and bounds;
+  relationships among physical records and bindings;
+  platform and required-capability support; and
+  operation-specific requirements such as formatting or system-area layout.
+
+Malformed input is rejected before semantic use.  An invalid CONFIG candidate
+does not alter active state.  Operational or media failure leaves configuration
+unchanged.  An ordinary persistence failure retains or attempts to restore the
+previous installed records.  No failure permits silent semantic substitution.
+
+Platform-specific saved records carry platform scope.  Another platform may
+reject them cleanly; cross-platform reinterpretation of a saved configuration
+is not a 1.0 requirement.
+
+10. STAGE 5 OWNERSHIP INVENTORY
+
+Stage 5 shall classify and size these concrete owners:
+
+  immutable platform capability/default templates;
+  fixed BIOS physical records;
+  fixed BIOS/DPH normalized logical bindings;
+  fixed BIOS controller/cache state;
+  fixed BDOS current-drive, login and read-only state;
+  reconstructible ALV, CSV and directory state;
+  installed on-disk startup configuration;
+  transient CONFIG candidates and diagnostics;
+  transient DUP, SYSGEN, FDB-reader and persistence workspaces; and
+  optional provenance metadata associated with saved bindings.
+
+There is no general disk-state heap, resident duplicate of session intent,
+resident FDB catalogue, resolved FDB pointer set or publication generation in
+the 1.0 inventory.  Ownership precedes placement and lifetime precedes static
+workspace overlay.
+
+11. ACCEPTANCE RULES
+
+Qualification shall prove at least the following:
+
+  a valid installed binding cold-boots without opening DISK.FDB;
+  an invalid candidate leaves the former active binding unchanged;
+  a valid unsaved change survives warm boot and not cold boot;
+  physical incompatibility is rejected or explicitly unconfigures every
+  identified non-system dependent binding;
+  drive A cannot be invalidated through the ordinary editor;
+  media change preserves bindings and invalidates every affected alias;
+  wrong or absent media causes no format substitution;
+  FDF.RSX unload refuses removal or detaches all dependent bindings first;
+  DUP rejects unsupported formatting before modifying media;
+  SYSGEN rejects an incompatible reserved area before writing;
+  a binding/FDB fingerprint mismatch is reported without changing the valid
+  self-contained binding;
+  ordinary CONFIG H write failure is detected, verified and rolled back where
+  possible without claiming power-loss atomicity; and
+  immutable templates remain unchanged while live state resides in RAM.
+
+12. DEFERRALS
+
+Stage 4 does not define exact RAM addresses or byte sizes, a general allocator,
+a publication counter, persistent-sector layout, power-loss journaling, the
+fingerprint algorithm, runtime catalogue replacement, automatic format
+detection, the future mixed-track extension, filesystem timestamps, host image
+management or additional platforms.
+

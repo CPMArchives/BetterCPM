@@ -18,6 +18,16 @@ DISK.FDF -> FDFCOMP -> DISK.FDB -> CONFIG -> BIOS / drive binding
 
 FDF is authoritative text. FDB is generated and versioned. CONFIG reads FDB; it does not parse the new text language. The canonical format and the BIOS's private in-memory binding need not have identical byte layouts.
 
+The FDB descriptor is a source for constructing a self-contained normalized
+BIOS binding; it is not a runtime indirection required for disk I/O or cold
+boot. The installed binding remains operational authority if the catalogue is
+missing or later contains different semantics under the same ID. CONFIG may
+record the eight-byte ID and a canonical per-descriptor fingerprint as
+provenance, report a mismatch, and offer explicit migration. It must never
+silently reinterpret an installed binding. The whole-file FDB CRC is not a
+per-descriptor fingerprint because unrelated catalogue changes affect it. See
+Architecture Specification 28.
+
 The new language reuses the historical filename but is not compatible with the old MM numeric grammar. A migration tool must recognize the old grammar explicitly, preserve reference values, and report errors; current CONFIG must not be handed the new source until its reader is upgraded. Keep the old reference file unchanged.
 
 ## 3. FDF source grammar

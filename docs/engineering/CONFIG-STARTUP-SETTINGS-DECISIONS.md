@@ -64,6 +64,12 @@ Selecting another destination may be added later. Loading/unloading device
 RSXs, dynamic drive registration and discardable RSX initialization sections
 remain deferred until after 1.0.
 
+The current disk-record writer verifies each changed installed-system record
+and attempts rollback after an ordinary I/O failure. It does not guarantee an
+old-or-new complete result after loss of power. Power-failure-atomic saving
+requires a separately designed redundant-slot or journal format and is deferred.
+This limitation does not relax complete validation before the first write.
+
 ## Implementation follow-through
 
 - Define stored configuration versioning and validation for both save scopes.
