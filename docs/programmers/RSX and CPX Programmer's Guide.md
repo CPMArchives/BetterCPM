@@ -104,7 +104,7 @@ The planned sequence is:
 
 1. An installer requests a new ordered RSX and CPX configuration.
 2. BetterCP/M locates every requested module and validates its type, ABI,
-   size, dependencies, and relocation information.
+   size, supported carrier metadata, and relocation information.
 3. It computes the complete prospective memory map and TPA ceiling without
    altering the running system.
 4. It rejects the request if the configuration is invalid or cannot fit.
@@ -175,9 +175,12 @@ parties. Their common design provides:
 - initialization and shutdown entry offsets;
 - dispatch entry offsets;
 - relocation records or a declaration of position independence;
-- dependency and ordering information;
 - state-export and state-import entry offsets, when supported; and
 - integrity information sufficient to reject a damaged module.
+
+BCPX version 1 and BRSX version 2 do not carry general declarative module
+dependencies, conflicts, or relative-order constraints. The configured profile
+is the complete source of chain order in BetterCP/M 1.0.
 
 Entry points should be stored as offsets within the module image until the
 loader relocates the module. The file format must be practical to produce
@@ -390,23 +393,30 @@ An extension must not retain pointers to:
 Shared information must be obtained through a documented, versioned
 interface or a capability specifically designed to survive reconstruction.
 
-## 9. Ordering and dependencies
+## 9. Ordering and runtime service use
 
 Chain order is observable whenever more than one extension can recognize the
-same operation. Configuration must therefore preserve an explicit order.
+same operation. BetterCP/M 1.0 therefore preserves the explicit configured CPX
+and RSX profile order. It defines no module-carried `REQUIRES`, `CONFLICTS`,
+`BEFORE`, `AFTER`, or equivalent relationship metadata, and constructs no
+general dependency or ordering graph.
 
-A module may declare that it:
+Prospective configuration remains transactional. The loader validates every
+invariant represented by the applicable carrier and subsystem contracts,
+including carrier structure, memory layout, relocation and pointer metadata,
+reconstruction class, callable-service advertisements, duplicate callable-
+service rejection, explicit profile order, and component-specific unload
+requirements. Failure preserves the previously published configuration.
 
-- requires another named module or capability;
-- must precede or follow another module class or capability;
-- conflicts with a module or capability; or
-- can operate in any order.
-
-The loader must reject dependency cycles, unsatisfied requirements, and
-irreconcilable ordering constraints before modifying the active system.
+Runtime use of another resident service does not by itself constitute a module
+dependency. A consumer may discover a callable service dynamically and define
+valid unavailable behavior. `P2DOS.RSX` using TIME is the canonical 1.0
+example: P2DOS remains installed without a TIME provider, resolves TIME for
+each request, and reports its defined claimed-failure result while the provider
+is unavailable.
 
 CPX chain order is explicit and command interception is therefore observable.
-Configuration tooling must eventually show and validate that order.
+Configuration tooling must show and preserve that order.
 
 ## 10. Resource accounting
 
@@ -455,7 +465,9 @@ The following are deliberately open:
 - module discovery and enumeration services;
 - persistent configuration storage;
 - state-export and state-import representation;
-- dependency identifiers and version constraints;
+- future declarative relationship metadata, including dependency identifiers,
+  target and version semantics, capability requirements, conflicts,
+  relative-order constraints, cycles, and cross-CPX/RSX behavior;
 - recovery and rollback storage;
 - authentication or integrity requirements beyond damage detection; and
 - interaction with future bank-switched memory.

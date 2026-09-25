@@ -274,7 +274,10 @@ all other BetterCP/M services.
 Dispatch order is drive/user navigation, core compatibility commands, the CPX
 chain in configured order, then transient lookup. The frozen CPX contract
 covers metadata and command enumeration, initialization/shutdown,
-chaining/bypass, error/reentrancy, ordering, dependencies, conflicts and cycle
-rejection. Some behavior remains implementation work; the architecture is not
+chaining/bypass, error/reentrancy, and preservation of explicit profile order.
+BCPX v1 and BRSX v2 define no general declarative module dependencies,
+conflicts, relative-order constraints, or relationship graph. Those facilities
+require a later carrier/metadata revision justified by a concrete use. Some
+retained behavior remains implementation work; the architecture is not
 provisional. NDR, PATH and named-directory navigation are later-1.x work.
 Canonical DU operation is the 1.0 model.
