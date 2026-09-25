@@ -4,6 +4,12 @@ BetterCP/M is an effort to design a compact, maintainable successor to CP/M 2.2 
 
 Current system release: **BetterCP/M 0.3**.
 
+
+**BetterCP/M 1.0 architecture status:** Stages 3 through 8 are complete. The
+repository documentation now reflects the frozen architecture and retained
+implementation contracts. Remaining feature gaps are implementation work; the
+implementation program is the current critical path.
+
 Subsystem versions evolve independently. The adopted rules are defined in
 [`SUBSYSTEM-VERSIONING.md`](specifications/SUBSYSTEM-VERSIONING.md), and the
 authoritative current assignments are maintained in
@@ -21,8 +27,10 @@ diskdefs remains deferred.
 See [the disk ABI and current limits](docs/programmers/BIOS-DISK-CONFIG.md).
 Rebuild the current image with `python3 tools/build_complete_system.py`.
 
-The packed layout provides **54,273 bytes of TPA (53 KiB plus one byte)** with
-no RSXs installed, using ordinary RAM. Its unified BDOS is 3,369 bytes.
+The packed layout exposes 54,273 addressable transient bytes from `0100h`.
+The frozen 1.0 acceptance boundary is a **54,272-byte maximum record-aligned
+COM image, exactly 53 KiB**, in the default configuration. Its unified BDOS is
+3,369 bytes.
 See [the memory layout and validation report](docs/engineering/127%2053K%20Memory%20Consolidation.md).
 Historical conformance results below describe earlier checkpoints; they are
 not a complete certification of every subsequent change.
@@ -36,11 +44,19 @@ The current work emphasizes:
 - CP/M 2.2 compatibility grounded in an explicit specification and conformance suite
 - a memory footprint in the same general class as Digital Research CP/M
 - a small command processor and an improved command environment
-- a unified model for drives, user areas, named directories, and command search paths
+- ordinary CP/M drive/user operation for 1.0, with named directories and command search paths retained as later extension work
 - table-driven, inspectable configuration
 - separation of portable system code from hardware-dependent support
 - an architecture suitable for ROM-resident code
 - explicit interfaces and state instead of magic addresses and undocumented dependencies
+
+
+The frozen 1.0 scope has two required platforms, a 53 KiB default TPA floor,
+the fixed 192-byte HISTORY-only PDS, production selectors 176-183, native TIME
+through Function 182, normalized disk state and FDF/FDB, CONFIG/DUP/SYSBUILD/
+SYSGEN, and ordinary R/O/SYS/ARC attributes. NDR/PATH, a general PDS,
+timestamps, mixed-track formats, terminal redesign, a third qualified platform,
+and the general developer platform are post-1.0 work.
 
 ## Documents
 
@@ -49,13 +65,22 @@ ordering of the remaining architecture and implementation work. The maintained
 [`Project Backlog`](TODO.md) is the comprehensive task inventory governed by
 that roadmap.
 
-The initial architecture material is in [`docs/architecture`](docs/architecture). It covers architectural principles and boundaries, memory and boot design, the command environment, system services, hardware abstraction, program execution, storage, system state, compatibility, constraints, extensions, and open questions.
+The architecture record is maintained in [`docs/architecture`](docs/architecture).
+Later numbered specifications and the
+[`1.0 implementation contracts`](docs/releases/1.0-IMPLEMENTATION-CONTRACTS.md)
+control where earlier design material conflicts. Historical architecture
+documents remain when they accurately record an earlier design stage and carry
+status notes where they could be mistaken for the current contract.
 
 The [`Utility Compatibility Ledger`](docs/compatibility/Utility%20Compatibility%20Ledger.md) inventories the standard CP/M commands and distribution utilities that BetterCP/M must replace, separates implemented prototypes from conformant replacements, and records the required evidence and planned DU extensions.
 
-The initial [`RSX and CPX Programmer's Guide`](docs/programmers/RSX%20and%20CPX%20Programmer's%20Guide.md) records the extension model, current CPX dispatcher, and planned relocatable module lifecycle. Interfaces marked provisional in that guide are not yet promised as a stable third-party binary ABI.
+The [`RSX and CPX Programmer's Guide`](docs/programmers/RSX%20and%20CPX%20Programmer's%20Guide.md)
+describes the current extension programming model. Production 1.0 RSXs use
+BRSX v2; BRSX v1 is historical format material rather than a required
+compatibility path. The guide distinguishes frozen contracts from incomplete
+implementation.
 
-The initial development target is defined in the [`Baseline Platform Specification`](docs/platform/Baseline%20Platform%20Specification.txt). The [`Architecture Readiness Review`](docs/reviews/Architecture%20Readiness%20Review.md) records the decision to begin Phase 2, and [`Engineering Specification 01`](docs/engineering/01%20Baseline%20Bring-Up%20Specification.md) defines the first diagnostic boot milestone.
+The initial development target is defined in the [`Baseline Platform Specification`](docs/platform/Baseline%20Platform%20Specification.txt). The [`Architecture Readiness Review`](docs/reviews/Architecture%20Readiness%20Review.md) records the historical decision to begin what it called Phase 2; current planning uses Stage terminology, and [`Engineering Specification 01`](docs/engineering/01%20Baseline%20Bring-Up%20Specification.md) defines the first diagnostic boot milestone.
 
 TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 790K System Disk`](docs/platform/TRS-80%20Model%204%20Montezuma%20Extended%20790K.md) container. [`Engineering Specification 02`](docs/engineering/02%20TRS-80%20Model%204%20Boot%20Milestone.md) records the first verified boot, [`Engineering Specification 03`](docs/engineering/03%20Initial%20Hardware%20Abstraction%20Interface.md) records the first executable boundary between portable core and platform code, and [`Engineering Specification 04`](docs/engineering/04%20Console%20Input%20Milestone.md) adds verified keyboard input. [`Engineering Specification 05`](docs/engineering/05%20Initial%20BIOS%20Scaffold.md) begins the independently buildable resident-system compatibility surface, [`Engineering Specification 06`](docs/engineering/06%20BIOS%20Direct-Call%20Conformance.md) executes its raw entry contracts, [`Engineering Specification 07`](docs/engineering/07%20Shared%20Model%204%20BIOS%20Console.md) binds it to the shared Model 4 console implementation, [`Engineering Specification 08`](docs/engineering/08%20MM%20790K%20Drive%20Definition.md) adds the first DPH/DPB, and [`Engineering Specification 09`](docs/engineering/09%20Read-Only%20Logical%20Disk%20Path.md) adds physical and 128-byte logical reads.
 
@@ -160,7 +185,7 @@ TRS-80 Model 4 development uses the reproducibly generated [`Montezuma Extended 
 [`Engineering Specification 93`](docs/engineering/93%20Drive-Qualified%20Default%20FCBs.md) completes A: through P: default-FCB drive prefixes and physically verifies `MDIR B:` against a separate disk.
 [`Engineering Specification 94`](docs/engineering/94%20CCP%20Wildcards%20and%20Buffer%20Relocation.md) completes `*`/`?` default-FCB wildcard handling and moves the private CCP stack into reserved resident space without shrinking the TPA.
 [`Engineering Specification 95`](docs/engineering/95%20Command%20Processor%20Extensions.md) distinguishes CPXs from RSXs, adds the first chained CPX command-dispatch ABI, and replaces the CCP's exact-fit provisional slot with an explicit protected command region pending true WBOOT reload support.
-[`Memory Architecture`](docs/architecture/04%20Memory%20Architecture.txt) defines the authoritative split between the protected Persistent Data Segment (PDS)/RSXs and the reclaimable CPX/CCP command environment. [`PDS Architecture`](docs/architecture/18%20Persistent%20Data%20Segment.txt) and the [`bounded 1.0 decision`](docs/architecture/29%20Bounded%201.0%20PDS.txt) freeze one 192-byte owner, built-in command history, while deferring a general allocator. [`ROM and RAM Ownership`](docs/architecture/27%20ROM%20and%20RAM%20Ownership.txt) classifies persistent state, fixed subsystem state, stacks and shared workspaces before the ROM layout is assigned. [`Extended BDOS Namespace`](docs/architecture/25%20Extended%20BDOS%20Namespace.txt) reserves Functions 176-199 for BetterCP/M 1.0 and records the final selector registry. [`Developer Platform Direction`](docs/architecture/26%20Developer%20Platform%20Direction.txt) preserves inexpensive 1.0 architectural headroom for a later developer-friendly 1.x workstream without adding a 1.0 framework or resident-memory cost. A movable CP/M compatibility gateway advertises the true TPA ceiling through `0005h`; WBOOT preserves installed RSXs and reconstructs CPXs and the CCP. [`Engineering Specification 96`](docs/engineering/96%20Quantitative%20Memory%20Model.md) records the earlier fixed-`C000h` implementation milestone.
+[`Memory Architecture`](docs/architecture/04%20Memory%20Architecture.txt) defines the authoritative split between the protected Persistent Data Segment (PDS)/RSXs and the reclaimable CPX/CCP command environment. [`PDS Architecture`](docs/architecture/18%20Persistent%20Data%20Segment.txt) and the [`bounded 1.0 decision`](docs/architecture/29%20Bounded%201.0%20PDS.txt) freeze one 192-byte owner, built-in command history, while deferring a general allocator. [`ROM and RAM Ownership`](docs/architecture/27%20ROM%20and%20RAM%20Ownership.txt) classifies persistent state, fixed subsystem state, stacks and shared workspaces before the ROM layout is assigned. [`Extended BDOS Namespace`](docs/architecture/25%20Extended%20BDOS%20Namespace.txt) assigns production Functions 176-183, leaves 184-196 as unassigned production space, reserves 197 as an undefined future escape, and keeps 198-199 for non-public tests; historical P2DOS clock Functions 200/201 belong to `P2DOS.RSX`. [`Developer Platform Direction`](docs/architecture/26%20Developer%20Platform%20Direction.txt) preserves inexpensive 1.0 architectural headroom for a later developer-friendly 1.x workstream without adding a 1.0 framework or resident-memory cost. A movable CP/M compatibility gateway advertises the true TPA ceiling through `0005h`; WBOOT preserves installed RSXs and reconstructs CPXs and the CCP. [`Engineering Specification 96`](docs/engineering/96%20Quantitative%20Memory%20Model.md) records the earlier fixed-`C000h` implementation milestone.
 
 [`Disk State Normalization`](docs/architecture/28%20Disk%20State%20Normalization.txt)
 makes the BIOS-owned physical records and self-contained normalized logical

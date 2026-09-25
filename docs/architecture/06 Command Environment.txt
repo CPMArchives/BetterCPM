@@ -266,3 +266,15 @@ environment when compatibility requires it.
 The Command Environment shall therefore be treated as a defined
 operating-system component rather than as an inseparable property of
 all other BetterCP/M services.
+
+
+6.10 BETTERCP/M 1.0 RECONCILIATION
+----------------------------------
+
+Dispatch order is drive/user navigation, core compatibility commands, the CPX
+chain in configured order, then transient lookup. The frozen CPX contract
+covers metadata and command enumeration, initialization/shutdown,
+chaining/bypass, error/reentrancy, ordering, dependencies, conflicts and cycle
+rejection. Some behavior remains implementation work; the architecture is not
+provisional. NDR, PATH and named-directory navigation are later-1.x work.
+Canonical DU operation is the 1.0 model.

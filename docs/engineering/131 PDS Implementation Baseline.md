@@ -1,5 +1,10 @@
 # 131 — PDS Implementation Baseline
 
+> **BetterCP/M 1.0 status:** Architecture Specification 29 and Engineering
+> Specification 152 establish the complete bounded inventory: this fixed
+> 192-byte extent contains only HISTORY v1. Broader allocator/additional-owner
+> proposals are not part of 1.0.
+
 Date: 2026-09-11  
 Status: accepted 1.0 implementation baseline; interpreted by Architecture
 Specifications 18 and 29

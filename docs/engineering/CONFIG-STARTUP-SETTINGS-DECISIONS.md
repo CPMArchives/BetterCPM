@@ -3,6 +3,11 @@
 Agreed with the user on 2026-09-08. Requirements for the next CONFIG.COM
 implementation pass; not a description of implemented behavior.
 
+The retained 1.0 authority in this document is the active/saved-scope model and
+startup-command lifecycle. General PDS sizing/growth, NDR/PATH, HISTORY.RSX and
+terminal-profile configuration are later work and do not alter the fixed
+192-byte 1.0 PDS. The startup command itself is not yet implemented.
+
 ## Drive capacity and persistent RAM
 
 Support the A–P logical namespace, including gaps. Inventory every slot and

@@ -1,6 +1,27 @@
 15 OPEN QUESTIONS
 =================
 
+
+STATUS: HISTORICAL INITIAL-DESIGN RECORD
+----------------------------------------
+
+This document records questions open during the initial architecture work.
+Most major 1.0 questions have since been resolved. It is retained as design
+history, not as the current list of unresolved 1.0 architecture.
+
+Resolution index:
+
+  compatibility boundary       Architecture Specification 12 and the 1.0
+                               implementation contracts;
+  memory, TPA and ROM/RAM      Specifications 27 and 29;
+  command reconstruction       Specifications 6, 20 and 21;
+  resident services            Specifications 20 and 25;
+  disk formats and state       Disk Format Definition Specification and
+                               Architecture Specification 28;
+  platform boundary            Specifications 8 and 26 plus the 1.0 roadmap;
+  boot/build/install           Specification 5 and Engineering Specification
+                               139.
+
 15.1 Purpose
 15.2 Compatibility Questions
 15.3 Memory Questions

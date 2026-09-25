@@ -5,6 +5,19 @@ implementation 1.6/API 1.2. The standard 17 BIOS vectors remain unchanged.
 
 ## Scope and current limits
 
+
+### Disk-state authority
+
+BIOS-owned physical records and self-contained normalized logical bindings are
+runtime authority. Text FDF and compiled FDB are validated construction inputs,
+not runtime indirection. A saved binding contains enough normalized semantics
+to reproduce cold-boot access without first reading `DISK.FDB`; replacing a
+catalog does not reinterpret active or saved bindings. Candidate, active,
+saved, observed and derived state are distinct. Committed changes invalidate
+affected derived state, while media observation does not mutate configured
+semantics. Normalized active records exist; the complete saved-state/FDB path
+remains partially implemented.
+
 The resident BIOS owns four logical-drive records (A–D), each with
 its own DPH, writable DPB and format. Allocation and check vectors are shared
 workspace; BDOS rebuilds allocation ownership when changing logical disks. Four
@@ -35,7 +48,9 @@ system image retains its existing 80-track, double-sided, 790K default profile.
 
 ## Calling convention
 
-Call BDOS 207 (C=207), B=operation, DE=request pointer. Operation 0 has no
+The current implementation calls provisional BDOS 207 (C=207); the frozen
+production selector is Function 181. B selects the operation and DE points to
+the request. Operation 0 has no
 request. For other operations reserve an 80-byte buffer wholly within the TPA,
 starting at 0100h or above. HL returns 0=success, 1=invalid/error,
 2=unsupported, or a nonzero controller error status for I/O; A mirrors L.
@@ -162,7 +177,8 @@ remains deferred in both directions.
 
 ## Optional format mapper
 
-FDF.RSX implements private BDOS 209: B=0 queries the 4644h signature; B=1 is the
+FDF.RSX currently implements provisional private BDOS 209; the frozen
+production selector is Function 183. B=0 queries the 4644h signature; B=1 is the
 private BIOS mapping call, and B=2 validates/normalizes extended geometry.
 The mapper uses a private stack. BIOS transfer loops use the returned actual
 sector length and quarter offset. No persistent pointer into the RSX is kept.

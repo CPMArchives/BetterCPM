@@ -194,7 +194,10 @@ reconstructs from validated active metadata when possible or enters the defined
 resident recovery path.
 
 
-9. STAGE-2 ACCEPTANCE
+9. HISTORICAL STAGE-2 ACCEPTANCE
+
++The following records the completed historical stage. Current 1.0 acceptance
+is governed by `docs/releases/1.0-IMPLEMENTATION-CONTRACTS.md`.
 
 The qualification provider advertises TEST ABI 1.0 with capability 0001h and
 returns 5253h. Acceptance requires:

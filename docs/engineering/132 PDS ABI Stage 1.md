@@ -1,5 +1,10 @@
 # 132 — PDS ABI Stage 1
 
+> **Historical PDS-ABI milestone:** “Stage 1” names this ABI milestone, not the
+> current architecture stage. ABI 1 remains sufficient for the frozen
+> HISTORY-only 1.0 PDS; see Architecture Specification 29 and Engineering
+> Specification 152.
+
 Date: 2026-09-11  
 Status: implemented static-layout bridge
 

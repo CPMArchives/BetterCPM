@@ -130,124 +130,56 @@ Media observations remain separate and never select another format.
 
 5. MEMORY AND RESIDENT ENVIRONMENT
 
-CONFIG shall display the current and next-boot PDS sizes, the capacity required
-by the proposed configuration, the resulting TPA and whether a cold boot is
-required. Runtime PDS contraction is forbidden. PDS growth and resident-layout
-reconstruction follow `18 Persistent Data Segment.txt` and `21 Stateful RSX
-Reconstruction ABI.txt` rather than ad-hoc CONFIG relocation code.
+The BetterCP/M 1.0 PDS is the fixed 192-byte HISTORY v1 object. CONFIG does not
+resize it. General allocation, configurable PDS sizing, migration and runtime
+growth are later-1.x work. CONFIG may display the measured memory cost and TPA
+effect of saved RSX/CPX startup profiles without becoming their state owner.
 
-CONFIG shall manage the saved cold-boot RSX and CPX profile, including module
-order, reconstruction class, dependencies and measured memory cost. Loading or
-unloading a module in the current session remains a runtime module-manager
-operation. Saving the startup profile does not make CONFIG the owner of the
-module's private data.
+6. COMMAND ENVIRONMENT AND STARTUP
 
-6. COMMAND ENVIRONMENT, SEARCH PATH AND STARTUP
-
-One CONFIG category shall manage command-environment defaults, including the
-system search path and one optional startup command. Named-directory records,
-history contents and security databases remain owned by their implementing
-services and utilities. CONFIG may select their modules for cold-boot loading
-and display their memory cost.
+The 1.0 command-environment category manages saved RSX and CPX startup profiles
+and one optional startup command. NDR, PATH, HISTORY.RSX and named-directory
+configuration are later-1.x work and are not prerequisites for startup.
 
 6.1 Startup command record
 
-The startup record contains:
-
-  enabled/disabled state;
-  one ordinary CCP command line, including its arguments.
-
+The record contains enabled/disabled state and one ordinary CCP command line.
 An empty command disables execution. The stored line uses the normal CCP input
-limit, no more than 127 characters. One command is sufficient because a user
-may select `SUBMIT STARTUP` to run a longer sequence.
-
-Examples include:
-
-  SUBMIT STARTUP
-  NDR LOAD DEVLPMNT
-  DIR
-  WS WORK.DOC
-
-CONFIG shall allow the command to be inspected, edited, cleared and tested in
-the current environment. Testing it does not mark the cold-boot command as
-completed and shall state that it is an immediate test.
+limit. `SUBMIT STARTUP` may run a longer sequence. CONFIG permits inspection,
+editing, clearing and an immediate test; testing does not mark cold execution
+complete and does not simulate a cold boot.
 
 6.2 Startup execution semantics
 
-The configured startup command runs once after a successful cold boot. It does
-not run after ordinary warm boots or every reconstruction of the CCP.
-
-Before executing it, the system shall:
-
-  initialize the resident system and PDS;
-  establish configured devices and logical drives;
-  reconstruct the saved RSX and CPX profiles;
-  publish resident services;
-  establish the saved search path and command environment.
-
-The system sets a session `startup executed` flag before dispatching the
-command. The flag survives warm boot and prevents a command which terminates
-through warm boot from creating an execution loop. Cold boot clears the flag.
-The flag is system state; the command text remains saved configuration and does
-not require permanent PDS storage after initialization.
-
-If the command is absent, fails, cannot be found or returns, the normal CCP
-prompt appears. Failure shall not repeat the command automatically.
-
-A documented recovery gesture, initially Ctrl-C during the startup-command
-window where the platform can support it, shall suppress automatic execution
-for that cold boot without erasing the saved command. Headless platforms shall
-provide an equivalent platform recovery method. Recovery shall remain possible
-when the stored command or search path is invalid.
+The command runs exactly once after successful true cold initialization and
+after required devices, drives, RSX/CPX profiles and resident services are
+ready. It does not run after WBOOT or reconstruction. The system sets a fixed
+gateway-state `startup executed` flag before dispatch. Cold boot clears the
+flag. Failure or return reaches the normal prompt without automatic retry. A
+documented recovery gesture suppresses execution for that boot without erasing
+the saved command.
 
 7. FEATURE OWNERSHIP
 
-CONFIG selects system policy and startup participation. It does not absorb
-feature databases merely because they are configurable.
-
-  NDR.RSX owns named-directory definitions;
-  HISTORY.RSX owns command-history contents and policy specific to history;
-  a future security service owns security policy and credentials;
-  a future terminal service owns detailed terminal definitions;
-  clock providers own provider-specific clock behavior.
-
-Their transient management utilities remain the detailed editors. CONFIG may
-show whether such a service is present, choose whether it loads at cold boot,
-and invoke a public service or utility where useful.
+CONFIG selects policy and startup participation; it does not absorb private
+feature state. Providers own provider-specific behavior. RSX/CPX profiles,
+disk state, startup lifecycle state, stacks and workspaces remain with their
+natural owners. NDR.RSX, HISTORY.RSX, terminal profiles and future security
+services are post-1.0 configuration directions.
 
 8. USER INTERFACE ORGANIZATION
 
-The final labels may evolve, but CONFIG should converge on categories equivalent
-to:
-
-  System device assignments
-  Keyboard settings
-  Terminal/video profile
-  List/printer settings
-  Serial ports
-  Physical disk drives
-  Logical drives and disk formats
-  Disk-format catalogue and workbench
-  Memory and PDS configuration
-  Resident startup profile
-  Command environment, search path and startup
-  Save or load configuration
-
-This is a user-interface organization, not a fixed letter assignment or ABI.
-CONFIG shall clearly mark unavailable, session-only, pending and reboot-required
-values. It shall show consequences such as TPA reduction before a user commits
-a memory or resident-profile change.
+The 1.0 CONFIG interface may organize device assignments, physical drives,
+logical bindings and formats, saved configuration, resident startup profiles,
+and the startup command. It marks unavailable, session-only, pending and
+reboot-required values and shows memory consequences before commit. Keyboard,
+printer and serial panels remain capability-driven. Terminal-profile selection,
+NDR/PATH panels and configurable PDS allocation are post-1.0.
 
 9. IMPLEMENTATION ORDER
 
-CONFIG may be completed incrementally:
-
-  1. retain and qualify the implemented disk panels and format workbench;
-  2. implement versioned saved configuration and the two save scopes;
-  3. add startup-command storage, once-only cold-boot dispatch and recovery;
-  4. add PDS/memory and resident-profile panels as their ABIs become real;
-  5. add capability-driven device, keyboard, printer and serial panels;
-  6. add terminal-profile selection after its service contract is designed.
-
-Each increment shall preserve stock CP/M console and program behavior. A menu
-entry shall not claim support before its active and saved behavior is tested.
+For 1.0: retain and qualify implemented disk panels; complete versioned saved
+configuration and its two scopes; implement startup storage, once-only dispatch
+and recovery; complete saved RSX/CPX profile handling; and add only platform
+panels supported by frozen capabilities. No menu entry may claim support before
+its active and saved behavior is tested.

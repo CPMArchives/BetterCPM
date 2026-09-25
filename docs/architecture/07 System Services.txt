@@ -311,3 +311,13 @@ Potential future debugging or system-development services may make
 use of such extension mechanisms, but no application-facing
 BetterCP/M service extension is required by the initial
 implementation.
+
+
+7.8 BETTERCP/M 1.0 RECONCILIATION
+----------------------------------
+
+Architecture Specifications 20, 22 and 25 control resident services and clock
+access. The registry is derived fixed-extension-subsystem state, not PDS data.
+Assigned production services use Functions 176-183. Native TIME is discovered
+through Function 182. Historical P2DOS Functions 200/201 belong to P2DOS.RSX,
+not to a hardware provider.
