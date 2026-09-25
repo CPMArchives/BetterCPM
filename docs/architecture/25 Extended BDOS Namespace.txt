@@ -71,15 +71,17 @@ as its P2DOS-compatible clock calls:
   201  set clock
 
 They use the historical P2DOS five-byte day-count/hour/minute/second record and
-are intercepted directly by a conforming clock-provider RSX.  Their exact
-successful return behavior shall be verified against P2DOS evidence before the
-remaining status numbers are frozen.  Function 201 is handled by a read-only
-provider as SET_UNSUPPORTED rather than chained to the BDOS fallback.
+are intercepted by the separate `P2DOS.RSX` compatibility frontend. That frontend
+calls BetterCP/M's native callable `TIME` service and contains no hardware
+driver. Their exact successful return behavior shall be verified against P2DOS
+evidence before the remaining public result values are frozen. Function 201
+maps a native read-only-provider result to SET_UNSUPPORTED rather than chaining
+to the BDOS fallback.
 
-The clock facility is a general hardware-independent BetterCP/M service.  Its
-selectors and record were selected because they are compact, adequate and
-historically established, not because the service is an emulation layer.
-P2DOS clock-call compatibility is a useful consequence of that choice.
+The native clock facility is a general hardware-independent BetterCP/M service.
+It uses the same compact record, but its callable-service entry is independent
+of P2DOS selectors. P2DOS clock-call compatibility is an optional frontend,
+not the native provider boundary.
 
 
 4. BETTERCP/M 1.0 REGISTRY

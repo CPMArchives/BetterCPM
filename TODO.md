@@ -290,20 +290,21 @@ between CONFIG and DUP remain design considerations for the formatting work.
   high-bit conventions used to encode them. Preserve and permit inspection or
   change of all three ordinary bits, enforce read-only, and treat archive as
   metadata only.
-- [ ] Finish and qualify the Functions 200/201 clock-provider ABI, `TIME.COM`,
-  and the read-only FreHD and z80pack providers. Verify exact P2DOS success
-  behavior, freeze the minimal status values, and qualify provider replacement,
-  unload and WBOOT. With no provider installed, both calls must return 0FFh
-  rather than a fabricated clock value.
-- [ ] Adapt `TIME.COM` to use Functions 200/201 for display and SET requests,
-  and ship `P2DOS.MAC` as the standard provider source with a stable
-  `CLKHW.INC` contract plus `CLKFREHD.INC` and `CLKZ80PK.INC` library modules.
+- [ ] Freeze and qualify the callable `TIME` ABI as the native clock service,
+  including `TIME.COM` and the read-only FreHD and z80pack providers. Migrate
+  registry lookup from provisional Function 208 to Function 182, then qualify
+  provider replacement, unload, WBOOT, coherent sampling, and SET_UNSUPPORTED.
+- [ ] Implement and qualify a separate `P2DOS.RSX` frontend which intercepts Functions
+  200/201 and calls the native `TIME` service without containing hardware code.
+  Verify exact P2DOS success behavior and freeze only the minimal public results
+  for success, unavailable, unsupported SET, and operation failure.
 - [ ] Before the 1.0 ABI freeze, implement the adopted 176-199 private BDOS
   namespace: migrate the registered services to 176-183, remove HELLO/ECHO
   proof selectors 201/203 from the released namespace, rebuild every in-tree
-  client, provide the 0FFh BDOS fallback for 200/201, and adapt each clock RSX
-  to intercept their P2DOS-compatible meanings. Pin exact historical success
-  behavior and the remaining status values before implementation.
+  client, provide the 0FFh BDOS fallback for 200/201, and route those selectors
+  through the separate `P2DOS.RSX` frontend to the native `TIME` service. Pin exact
+  historical success behavior and the remaining public result values before
+  implementation.
 
 ### Later 1.x date/time and timestamp work
 

@@ -5,6 +5,8 @@
 `ZPRTC.RSX` implements BetterCP/M `TIME` ABI 1.0 using the clock interface in
 z80pack/cpmsim. It is a read-only, hardware-backed, stateless provider. The
 portable `TIME.COM` utility is shared unchanged with other providers.
+It does not intercept P2DOS Functions 200/201; the separate `P2DOS.RSX` frontend
+consumes `TIME`.
 
 ## Hardware interface
 

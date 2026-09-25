@@ -1,44 +1,70 @@
-BETTERCP/M CLOCK PROVIDER ABI
-============================
+BETTERCP/M CLOCK PROVIDER AND TIME-SERVICE ABI
+==============================================
 
-Status: adopted BetterCP/M 1.0 design.  The current callable TIME service is a
-provisional implementation; Stage 6 migrates the providers and TIME.COM to the
-Functions 200/201 interface defined here.
-
-
-1. PURPOSE AND LAYERING
------------------------
-
-BetterCP/M exposes one standard clock ABI while keeping hardware knowledge and
-human presentation outside BDOS.  The layers are:
-
-  public ABI       Functions 200/201 and the five-byte clock record
-  provider RSX     operation, validation, status and hardware translation
-  hardware         physical or emulated clock representation
-  TIME.COM         parsing, formatting, help and human-readable errors
-
-BDOS supplies only the unhandled-call fallback.  It does not locate a provider,
-inspect a record, convert a date, access hardware or print a message.
-
-This is a general hardware-independent BetterCP/M service, not a P2DOS
-emulation facility.  It adopts P2DOS Functions 200/201 and the five-byte record
-because they are compact, adequate and historically established without
-constraining the underlying clock.  P2DOS clock-call compatibility is a useful
-property of the standard interface rather than its primary design objective.
+Status: adopted BetterCP/M 1.0 design. This specification supersedes the
+combined `P2DOS.MAC + CLKHW.INC` provider model. The existing callable `TIME`
+ABI, FreHD and z80pack providers, and native TIME.COM already implement the
+principal runtime separation defined here.
 
 
-2. PUBLIC FUNCTIONS AND CLOCK RECORD
-------------------------------------
+1. PURPOSE AND INVARIANTS
+-------------------------
 
-The hardware-independent public calls use the P2DOS convention:
+BetterCP/M separates clock hardware, its native clock service, native clients,
+and optional historical interfaces at runtime. The architecture preserves two
+invariants:
 
-  C  = 200   GET TIME
-  DE = address of a writable five-byte record
+  * adding a clock API or compatibility frontend shall not require modifying
+    or duplicating the hardware implementation; and
+  * adding a clock device shall not require modifying every clock frontend.
 
-  C  = 201   SET TIME
-  DE = address of a five-byte record
+The layers are:
 
-Both use this record:
+  hardware provider  coherent device access and native-record translation
+  native TIME ABI    hardware-independent BetterCP/M callable service
+  native consumer    TIME.COM and other BetterCP/M software
+  optional frontend  P2DOS or another separately specified historical API
+
+The hardware provider and native TIME service are currently one BRSX-v2
+module. That is a valid implementation of two architectural layers: the module
+advertises the native service and contains the device-specific implementation.
+It does not also become every historical frontend.
+
+BDOS supplies only mechanical routing and unsupported-call behavior. Human
+presentation remains in consumers.
+
+The generic resident-service resolver is infrastructure, not another clock
+layer. The native execution path is:
+
+  TIME.COM
+      |
+      | resolve `TIME` ABI 1.0 through Function 208/182
+      v
+  current callable TIME provider
+      |
+      v
+  clock hardware
+
+The P2DOS execution path is:
+
+  P2DOS application
+      |
+      | Function 200 or 201
+      v
+  P2DOS.RSX
+      |
+      | resolve `TIME` ABI 1.0 through Function 208/182
+      v
+  current callable TIME provider
+      |
+      v
+  clock hardware
+
+
+2. CANONICAL NATIVE CLOCK RECORD
+--------------------------------
+
+TIME ABI 1.0 uses this five-byte record:
 
   +0  byte  little-endian day-count low byte
   +1  byte  little-endian day-count high byte
@@ -46,212 +72,251 @@ Both use this record:
   +3  byte  packed-BCD minute, 00h through 59h
   +4  byte  packed-BCD second, 00h through 59h
 
-Day 1 is 1 January 1978 and day 65535 is 5 June 2157.  A conforming provider
-uses the same representation for GET and SET.  GET publishes the record only
-after obtaining and validating one coherent sample.  SET validates the complete
-record before changing the clock.
+Day 1 is 1 January 1978 and day 65535 is 5 June 2157. GET publishes the record
+only after obtaining and validating one coherent sample. SET validates the
+complete record before changing the clock.
 
-The record represents the machine's ordinary local civil time.  Version 1.0
-defines no timezone, daylight-saving, subsecond, alarm, scheduler or network-
-synchronization model.
+The record represents the machine's ordinary local civil time. ABI 1.0 defines
+no timezone, daylight-saving, subsecond, alarm, scheduler, or network-time
+model.
 
-This record is the BetterCP/M provider interchange representation as well as a
-historically deployed compatibility convention.  A competing native datetime
-structure shall not be introduced without a demonstrated requirement.
-
-
-3. BDOS FALLBACK
-----------------
-
-If no earlier RSX handles Function 200 or 201, the call reaches BDOS.  BDOS
-mechanically returns 0FFh for either selector.  The public ABI defines that
-value as UNAVAILABLE because reaching BDOS means no provider handled the call.
-
-Conceptually the two selectors share:
-
-        LD      A,0FFH
-        RET
-
-The actual unified dispatcher shall use its normal public-return path,
-including its register aliasing and stack restoration.  The conceptual
-three-byte body is not a license to bypass those rules and is not itself an ABI
-requirement.
-
-BDOS does not distinguish an absent provider from any other reason the call was
-not intercepted.  It attaches no internal state or policy to the result.
+This representation originated with P2DOS, but BetterCP/M adopts it as its
+native clock record because it is compact, adequate, historically established,
+efficient for common RTCs, and already implemented by the qualified providers.
+P2DOS compatibility is a useful consequence rather than the purpose of the
+native service. A competing or larger native record requires a demonstrated
+need and an appropriate ABI version change.
 
 
-4. STATUS CONTRACT
-------------------
+3. NATIVE TIME SERVICE
+----------------------
 
-The public ABI needs these semantic results:
+A provider advertises service ID `TIME`, ABI 1.0, through the resident-service
+registry. Clients discover its callable address through the resident-service
+gateway. Function 208 is the current gateway number; Architecture Specification
+20 assigns Function 182 as its final 1.0 number when Stage 6 migrates private
+selectors. The service identity and ABI do not change with that gateway-number
+migration.
 
-  SUCCESS
-  UNAVAILABLE
-  SET_UNSUPPORTED
-  OPERATION_FAILED
+The TIME request block is ten bytes:
 
-UNAVAILABLE is 0FFh.  The numeric values and exact return-register behavior for
-the other results shall not be frozen until P2DOS Function 200/201 success and
-return behavior has been checked against source or executable evidence.  The
-extension must preserve successful historical callers; it must not assign a
-status convention which changes an observable P2DOS success result.
+  +0  byte  structure version = 1
+  +1  byte  structure length = 10
+  +2  byte  operation: 0 GET, 1 SET
+  +3  byte  request flags; zero in ABI 1.0
+  +4  5     canonical clock record
+  +9  byte  reserved; zero in ABI 1.0
 
-Version 1.0 defines no more than these four public outcomes.  If P2DOS leaves a
-convenient return register unconstrained, BetterCP/M uses that register for the
-minimal convention.  Detailed validation, hardware and provider errors collapse
-to OPERATION_FAILED rather than creating a public error taxonomy.
+On successful GET, the provider writes the record at +4 and returns A=0 and
+HL=request+4. On successful SET, it returns A=0; SET details shall be completed
+when a writable provider is qualified. On failure, A contains a TIME-ABI status
+and HL is zero. DE remains the request address and SP, IX, and IY are preserved.
 
-A provider owns the status of every operation it intercepts.  A hardware read
-failure returns OPERATION_FAILED directly.  A read-only provider intercepts SET
-and returns SET_UNSUPPORTED; it does not chain to BDOS and turn the condition
-into UNAVAILABLE.  Additional statuses require demonstrated implementation
-need.
+The implemented TIME ABI 1.0 status values are:
 
+  00  SUCCESS
+  01  BAD_REQUEST_VERSION
+  02  BAD_REQUEST_LENGTH
+  03  BAD_OPERATION
+  04  BAD_FLAGS_OR_RESERVED_FIELD
+  05  UNAVAILABLE_OR_HARDWARE_FAILURE
+  06  INVALID_CLOCK_RECORD
+  08  SET_UNSUPPORTED
 
-5. PROVIDER RSX CONTRACT
-------------------------
+Status 07 is unassigned. These native statuses are distinct from the deliberately
+smaller public result convention of `P2DOS.RSX`.
 
-A conforming provider is a BRSX-v2 module which advertises and intercepts both
-numeric services 200 and 201.  It returns directly after handling either call
-and chains every unrelated selector unchanged to the next RSX or fixed system.
+Capability bit 0001h advertises SET. A read-only provider omits that bit and
+returns SET_UNSUPPORTED for operation 1. Zero or one provider of `TIME` ABI 1
+may be active. Duplicate service identity is rejected through the ordinary
+resident-service rules before publication.
 
-GET reads the authoritative clock, converts its hardware representation, and
-writes the standard record.  SET consumes that record and programs the clock
-when supported.  Provider errors are machine-readable; user-interface text does
-not belong in the RSX.
+A resolved callable address is valid only for the resident-layout generation
+in which it was returned. Clients rediscover after reconstruction according to
+Architecture Specifications 20 and 21.
 
-BetterCP/M 1.0 permits zero or one active conforming provider.  Reconstruction
-validation rejects a prospective profile containing more than one provider of
-either selector or a clock provider which advertises only one member of the
-pair.  No provider priority, fallback, selection or arbitration is defined.
-
-The current BRSX-v2 callable `TIME` advertisement and Function-208 discovery
-path are provisional clock implementations, not a second stable clock ABI.
-Stage 6 removes that dependency from standard clock clients.  The general
-resident-service registry remains available to unrelated callable services.
-
-
-6. HARDWARE BOUNDARY AND PROVIDERS
-----------------------------------
-
-Hardware may use BCD calendar registers, binary fields, an epoch counter,
-emulator host-time services or another representation.  The provider absorbs
-that difference and presents only the standard five-byte record upward.
-
-`FREHDCLK.RSX` uses the FreHD extended-command interface and therefore serves
-real FreHD hardware and trs80gp's FreHD emulation.  `ZPRTC.RSX` uses z80pack
-cpmsim command port 25 and data port 26.  The z80pack clock already supplies a
-CP/M-epoch day count and supports BCD or binary fields; the provider observes
-the configured mode without changing shared emulator state.  The emulator's
-leap calculation is not Gregorian-correct for 2100, so the initial provider
-documents validity through 2099 unless it supplies corrective handling.
-
-Each provider obtains a coherent sample using a hardware latch, atomic native
-operation or bounded read/re-read strategy.  It does not fabricate a plausible
-time after an unavailable, invalid or torn hardware sample.  The current FreHD
-and z80pack providers may remain read-only for 1.0.
+The service ID, ABI version, capabilities, and provider module identity are
+stable descriptions. A returned callable address is disposable runtime state;
+diagnostics and configuration shall not treat that address as provider identity.
 
 
-7. TIME.COM
------------
+4. HARDWARE PROVIDER CONTRACT
+-----------------------------
 
-TIME.COM calls Function 200 to display the clock and Function 201 to set it.
-It owns command syntax, input parsing, calendar conversion, formatting, help
-and human-readable errors.  All accepted input forms produce the same five-byte
-record before SET; command syntax does not alter BDOS or provider semantics.
+A hardware provider owns:
+
+  * coherent hardware reads;
+  * optional hardware writes;
+  * device-specific errors and bounded waits;
+  * conversion from device representation to the canonical record; and
+  * conversion from the canonical record when SET is supported.
+
+It does not own historical API selectors, command syntax, human-readable
+formatting, or CCP prompt policy.
+
+Hardware may expose BCD calendar registers, binary fields, an epoch counter,
+emulator host-time services, or another representation. The provider absorbs
+that difference. It shall not fabricate plausible time after an unavailable,
+invalid, or torn sample.
+
+`FREHDCLK.RSX` supplies `TIME` through the FreHD extended-command interface and
+serves real FreHD hardware and trs80gp's FreHD emulation. `ZPRTC.RSX` supplies
+the same ABI through z80pack/cpmsim ports 25 and 26. Both required 1.0 providers
+may remain read-only. Their engineering specifications define their exact
+coherence, range, error, and memory behavior.
+
+
+5. NATIVE CONSUMERS
+-------------------
+
+TIME.COM discovers and calls the native `TIME` service. It does not require a
+historical compatibility frontend. It owns command syntax, input parsing,
+calendar conversion, formatting, help, and human-readable errors.
 
 The minimum 1.0 interface is:
 
   TIME             display the current local date and time
-  TIME /PROVIDER   identify the installed provider when discoverable
+  TIME /PROVIDER   identify the installed provider
 
-The exact SET command syntax is fixed with the utility specification rather
-than this provider ABI.  TIME.COM renders UNAVAILABLE as a missing service,
-SET_UNSUPPORTED as a read-only clock, and OPERATION_FAILED as a provider or
-hardware failure.  Other applications may present the same statuses
-differently.
+The 1.0 utility work includes a native SET request path even though the required
+providers may be read-only. Exact human SET syntax belongs to the utility
+specification rather than this provider ABI.
+
+A future CCP clock display or other native client likewise uses `TIME`
+directly. No such prompt feature is added to the 1.0 scope by this architecture.
 
 
-8. P2DOS.MAC REFERENCE PROVIDER
+6. P2DOS COMPATIBILITY FRONTEND
 -------------------------------
 
-BetterCP/M 1.0 shall ship `P2DOS.MAC` as the standard provider source and
-porting template.  Its common body owns the BRSX metadata, Functions 200/201
-interception, unrelated-call chaining, the five-byte record, validation and
-standard status behavior.
+P2DOS compatibility is supplied by the separate, optional `P2DOS.RSX`
+frontend. The shipped 1.0 compatibility component owns:
 
-Hardware support is supplied as a source include selected from the BetterCP/M
-clock library.  `P2DOS.MAC` includes one stable `CLKHW.INC` interface.  The
-build selects a library implementation, for example `CLKFREHD.INC` or
-`CLKZ80PK.INC`, and makes it available under that stable include name.  This
-keeps the common provider source identical across platforms and preserves a
-native CP/M assembly path with 8.3 filenames.
+  C  = 200   P2DOS GET TIME
+  DE = address of its writable five-byte record
 
-The include contract supplies:
+  C  = 201   P2DOS SET TIME
+  DE = address of its five-byte record
 
-  * a provider identity and capability declaration;
-  * a GET routine which obtains one coherent hardware sample and converts it
-    to the standard five-byte record;
-  * an optional SET routine which consumes that record and converts it to the
-    hardware representation; and
-  * the small internal results needed by the common provider: success,
-    unsupported SET and operation failure.
+For every request, the frontend preserves the caller's buffer address, resolves
+the native `TIME` service through the defined lower-service path, invokes the
+returned address immediately, translates the result, and discards the address.
+It shall not retain a callable TIME address across service invocations or
+resident-layout generations. This rule avoids another rebinding mechanism.
 
-The include does not intercept BDOS functions, chain RSXs, print messages or
-define public status numbers.  Those responsibilities remain in `P2DOS.MAC`.
-The exact entry labels, register preservation and scratch ownership are a
-source-level porting contract fixed with the Stage-6 implementation; they are
-not a separately linked runtime ABI.
+Because the P2DOS and native records match, ordinary data translation is
+pass-through. The frontend contains no hardware driver. Its eventual measured
+allocation is implementation evidence, not part of this ABI.
 
-A hardware implementor normally adds one conforming `CLK*.INC` module and uses
-the common source to build a hardware-named RSX.  `P2DOS.MAC` is a reference
-implementation of the standard interface, not the definition of the ABI and
-not an installable provider without a selected hardware include.
+The public P2DOS-facing contract needs only SUCCESS, UNAVAILABLE,
+SET_UNSUPPORTED, and OPERATION_FAILED. Exact success register behavior and the
+non-FFh result values remain a Stage-6 closure item pending source or executable
+evidence. Native validation and hardware statuses collapse into those public
+outcomes; no elaborate public error taxonomy is required.
 
-A provider may instead be written independently when it conforms to this
-document.  Common source is encouraged where it reduces code without obscuring
-the hardware contract.
+If no frontend intercepts Function 200 or 201, the call reaches BDOS. BDOS
+mechanically returns 0FFh for either selector. This means that the P2DOS
+interface is not installed; it does not mean that the native clock is absent.
+A fully functional native TIME provider may still be loaded.
+
+Conversely, `P2DOS.RSX` may be installed while no native TIME provider is
+available. The frontend maps that resolver failure to its documented
+UNAVAILABLE result. BDOS does not locate providers, inspect records, access
+hardware, or distinguish any other cause.
+
+A read-only provider does not remove Function 201 from the frontend. The
+frontend maps the native SET_UNSUPPORTED result to its documented public result.
+Native clock use remains complete without loading this frontend.
+
+The default configuration need not load `P2DOS.RSX`. `FREHDCLK.RSX` or
+`ZPRTC.RSX` alone supplies native clock service for TIME.COM and other native
+consumers. Loading `P2DOS.RSX` adds historical clock-call compatibility without
+changing or duplicating the provider.
 
 
-9. COMPATIBILITY AND DEFERRED WORK
-----------------------------------
+7. OTHER HISTORICAL FRONTENDS
+-----------------------------
 
-The general BetterCP/M clock interface consequently provides P2DOS public
-clock-call compatibility.  It does not claim general P2DOS emulation or P2DOS
-filesystem timestamps.
+Later CP/M Plus, ZSDOS/ZDDOS, DateStamper, DOS+/Z80DOS, or other adapters may
+consume the same native TIME service. Each frontend owns its historical selector
+or entry convention, record translation, compatibility statuses, and required
+validation. None duplicates the device driver.
 
-Adapters for CP/M Plus, DOS+/Z80DOS, ZSDOS/ZDDOS, DateStamper and other useful
-historical interfaces are later 1.x work.  They should reuse this provider
-boundary rather than introduce separate hardware drivers.
+Those frontends and filesystem timestamps are later 1.x work. Clock-call
+compatibility does not imply timestamp-layout compatibility or broader emulation
+of the corresponding operating system.
 
-The RSX architecture does not prohibit another clock scheme.  A provider or
-adapter may expose a different historical or experimental interface through its
-own correctly allocated selectors and record format.  It shall chain 200/201
-unless it also supplies the standard BetterCP/M service, and it shall never
-assign incompatible meanings to 200/201.  BetterCP/M 1.0 qualifies only the
-standard interface.
 
-Filesystem timestamps remain separate because they affect directory layouts,
-file-operation semantics, copying, utilities, host tools and cpmtools
-interoperability.  Clock calls alone do not reopen that work for 1.0.
+8. CANONICAL DATA AND LATER TRANSFORMATIONS
+-------------------------------------------
+
+TIME ABI 1.0 exposes only the canonical five-byte record. It does not provide
+Gregorian structures, strings, locale policy, or presentation operations.
+Transient consumers may share conversion source without imposing resident code
+on every system.
+
+The architecture leaves room for later neutral transformations such as:
+
+  day count -> year/month/day
+  year/month/day -> day count
+
+No operation numbers, request blocks, service IDs, memory allocation, or release
+commitment are reserved for them now. If measured use by multiple resident
+clients later justifies shared runtime code, the resident-service registry can
+host a separate optional stateless conversion service. That is preferable to
+requiring every hardware provider to implement or forward calendar conversion.
+A TIME ABI revision remains possible if a demonstrated requirement instead
+shows that the transformation belongs inseparably to clock provision.
+
+The broader provider rule is:
+
+  Providers normalize hardware into the smallest stable domain record.
+  Compatibility adapters translate at API boundaries. Shared neutral
+  transformations become a service only when measured runtime sharing justifies
+  their resident cost. Presentation remains with consumers.
+
+Runtime decoupling takes precedence over source deduplication, but resident
+abstraction is not introduced merely to avoid duplicated source code.
+
+
+9. SUPERSEDED SOURCE-COMPOSITION MODEL
+--------------------------------------
+
+The standard architecture does not build each frontend by combining a common
+service body and hardware include:
+
+  P2DOS.MAC + CLKHW.INC -> hardware-specific P2DOS provider
+
+That arrangement remains technically possible for a constrained private build,
+but it ties hardware to one frontend and duplicates hardware code when several
+frontends coexist. BetterCP/M 1.0 instead ships independently built hardware
+providers and the separate `P2DOS.RSX` frontend. A hardware porter implements the
+native `TIME` ABI once.
 
 
 10. QUALIFICATION
 -----------------
 
-Acceptance covers:
+Native-service acceptance covers:
 
-  * exact P2DOS-compatible entry and successful-return behavior;
-  * 0FFh from unhandled Functions 200 and 201;
-  * zero-provider and exactly-one-provider profiles;
-  * rejection of duplicate or partial providers before publication;
-  * known dates, BCD validation, range limits and coherent midnight sampling;
-  * read-only SET, invalid input and hardware-failure behavior;
-  * provider load, unload, movement, WBOOT and rediscovery;
-  * unchanged unrelated hardware or emulator state; and
-  * one TIME.COM binary working unchanged with every qualified provider.
+  * correct TIME discovery, version, capabilities, and request validation;
+  * one TIME.COM binary operating unchanged with every qualified provider;
+  * known dates, BCD validation, range limits, and coherent rollover sampling;
+  * read-only SET, invalid input, hardware failure, and unavailable hardware;
+  * provider load, unload, movement, WBOOT, and rediscovery;
+  * rejection of duplicate TIME providers before publication; and
+  * unchanged unrelated hardware or emulator state.
 
-The status numbers and register convention are a design-closure gate for Stage
-6.  They must be resolved before the provider adaptation is considered
-complete.
+P2DOS-frontend acceptance additionally covers:
+
+  * exact historical entry and successful-return behavior;
+  * mechanical 0FFh fallback when the frontend is absent;
+  * native-to-public result mapping, including read-only SET;
+  * operation with each qualified hardware provider; and
+  * frontend load/unload without changing or duplicating the provider;
+  * per-call lookup through the lower-service path; and
+  * proof that no callable address survives an invocation or reconstruction.
+
+The exact P2DOS success convention and remaining public result values are a
+Stage-6 design-closure gate. Other historical frontends and filesystem
+timestamps are outside 1.0 qualification.

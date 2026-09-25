@@ -172,6 +172,6 @@ The utility backlog is candidate inventory rather than a 1.0 release contract.
 Final utility selection remains the last design decision, and suitably licensed
 redistributable utilities may satisfy the selected inventory.
 
-Function 201 already defines SET TIME in the 1.0 public clock ABI.  A required
-writable provider is not part of 1.0; providing and qualifying one may be later
-work.
+The native `TIME` ABI and the `P2DOS.RSX` Function 201 frontend both define SET in
+1.0. A required writable provider is not part of 1.0; providing and qualifying
+one may be later work.

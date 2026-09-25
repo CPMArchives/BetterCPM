@@ -65,9 +65,12 @@ loader rejects unknown service-metadata versions and entry offsets outside the
 live callable image. `21 Stateful RSX Reconstruction ABI.txt` defines the
 version-2 carrier policy shared by callable services and reconstruction data.
 
-Clock providers use the inherited numeric Functions 200/201 interface defined
-by `22 Clock Provider ABI.txt`.  The current callable `TIME` advertisement is
-provisional and does not make clocks part of this stable registry ABI.
+Clock providers advertise the native callable `TIME` service defined by
+`22 Clock Provider ABI.txt`. Optional historical frontends, including the
+`P2DOS.RSX` Functions 200/201 frontend, consume that service rather than embedding
+or duplicating hardware-provider code. `TIME` service identity remains stable
+when the registry gateway migrates from provisional Function 208 to its final
+Function 182 assignment.
 
 
 4. LOOKUP GATEWAY

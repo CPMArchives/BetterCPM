@@ -1,10 +1,10 @@
 # Date/time conventions and BetterCP/M compatibility
 
-Research date: 2026-09-07; provider decision updated 2026-09-23. Status:
-historical compatibility investigation with the Functions 200/201 provider ABI
-now adopted. The user wants broad compatibility where feasible, with
-interchangeable clock-provider RSXs. Current time is read from the provider and
-is not shared PDS state.
+Research date: 2026-09-07; architecture updated 2026-09-25. Status: historical
+compatibility investigation with the native callable `TIME` ABI and runtime-
+separated `P2DOS.RSX` frontend now adopted. The user wants broad compatibility where
+feasible, with interchangeable clock-provider RSXs. Current time is read from
+the provider and is not shared PDS state.
 
 ## Confirmed compatibility targets
 
@@ -111,26 +111,29 @@ copying and directory maintenance all require validation.
 Concrete collision: BetterCP/M currently assigns BDOS 200 to CPX control
 (src/system/extens.mac, EX_ENTRY); P2DOS assigns 200 to get-time. Blindly
 installing both is ambiguous. Architecture Specification 25 resolves the
-namespace decision by assigning BetterCP/M Functions 176-199 and leaving
-private services to 176-199 and restoring 200/201 to their inherited P2DOS
-get/set meanings. Stage 6 migrates private services, rebuilds their clients,
-and adapts each clock-provider RSX to intercept 200/201 directly. Do not infer
-the caller's intent from accidental pointer or register values. This study does
-not itself implement that migration or provider adaptation.
+namespace decision by assigning BetterCP/M private services to 176-199 and
+restoring 200/201 to their inherited P2DOS get/set meanings. Stage 6 migrates
+private services, rebuilds their clients, and supplies the separate `P2DOS.RSX`
+frontend for 200/201. Do not infer the caller's intent from accidental pointer
+or register values. This study does not itself implement that migration or
+frontend.
 
 The ordinary unified BDOS returns its unsupported result for functions 41–199;
 98/99 and 104/105 compatibility therefore also require routing through the
 appropriate extension path, not just adding conversions to TIME.COM.
 
-The adopted 1.0 service is the Functions 200/201 clock-provider ABI. It uses the
-P2DOS five-byte day-count, hour, minute and second record. Hardware-backed
-providers are STATELESS and allocate no PDS block. The authoritative clock is
-sampled on demand; no stale or continuously advancing PDS copy is maintained.
-Device reads must provide a coherent snapshot across rollover.
+The adopted 1.0 native service is the callable `TIME` ABI. It uses the compact
+five-byte day-count, hour, minute and second record historically associated
+with P2DOS, but does not adopt the P2DOS selectors as its native entry.
+Hardware-backed providers are STATELESS and allocate no PDS block. The
+authoritative clock is sampled on demand; no stale or continuously advancing
+PDS copy is maintained. Device reads must provide a coherent snapshot across
+rollover.
 
-The service is a general hardware-independent BetterCP/M clock facility rather
-than a P2DOS emulation layer. P2DOS compatibility follows from adopting its
-compact established selectors and record representation.
+P2DOS compatibility is the separate `P2DOS.RSX` frontend, which owns Functions
+200/201 and calls the native service. This lets one hardware provider serve
+native clients and multiple later compatibility APIs without duplicating device
+code.
 
 The exact provider request, errors, platform findings and qualification contract
 are normative in `docs/architecture/22 Clock Provider ABI.txt`.
@@ -140,8 +143,9 @@ are normative in `docs/architecture/22 Clock Provider ABI.txt`.
 - Obtain original DateStamper clock-entry and Z80DOS/DOS+ interface definitions.
 - Inventory discovery/version probes used by actual legacy time utilities; do
   not impersonate an entire OS just to make its clock calls discoverable.
-- Complete the adopted Stage-6 private-service migration away from BDOS 200/201
-  and adapt the clock-provider RSXs to intercept their inherited meanings.
+- Complete the adopted Stage-6 private-service migration away from BDOS 200/201,
+  migrate the registry gateway to Function 182, and implement `P2DOS.RSX`
+  against the native `TIME` service.
 - Implement and measure optional adapters against the TPA budget.
 - Test buffer bounds (especially four versus five bytes), BCD validity, midnight,
   leap dates, century windows, set/read consistency, missing clocks and unload.

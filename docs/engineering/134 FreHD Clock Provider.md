@@ -10,6 +10,10 @@ registry.
 `FREHDCLK.RSX` implements BetterCP/M `TIME` ABI 1.0 using FreHD's documented
 extended interface:
 
+It is the hardware provider and native-service implementation. It does not
+intercept P2DOS Functions 200/201; the separate `P2DOS.RSX` frontend consumes
+`TIME`.
+
 | Port | Use |
 |---:|---|
 | `C2h` | extended data |
