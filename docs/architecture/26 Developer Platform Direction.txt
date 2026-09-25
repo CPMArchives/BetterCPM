@@ -62,8 +62,9 @@ The following existing directions provide the intended foundation:
     presentation to their callers where compatibility permits.
   * Capability discovery is preferred to testing the BetterCP/M release
     number when a feature-specific decision is required.
-  * Source-level contracts, such as the clock provider's `CLKHW.INC`, are
-    legitimate extension boundaries when dynamic loading supplies no benefit.
+  * Source-level contracts remain legitimate extension boundaries when dynamic
+    loading supplies no benefit. They do not replace runtime separation where
+    independently selectable providers and frontends must coexist.
 
 ROM-capable systems reinforce these rules: supported extensions use declared
 interfaces and chains rather than patching immutable executable code.
@@ -89,9 +90,10 @@ architecture, or a public ABI for reconstruction and disk-engine internals.
 Future hooks are introduced only through explicit contracts justified by a
 demonstrated use case.
 
-The callable-service registry is not a generic capability framework.  Clock
-Functions 200/201 are invoked directly and do not establish a stable callable
-`TIME` registry service.
+The callable-service registry is not a generic capability framework. The
+native clock facility is the specifically defined callable `TIME` service;
+optional historical frontends such as P2DOS Functions 200/201 consume it under
+their own compatibility contracts.
 
 A durable registration never consists solely of a retained absolute callback
 address across module movement, reconstruction, unload, replacement or warm
