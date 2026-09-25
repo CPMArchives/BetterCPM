@@ -38,7 +38,7 @@ layer. The native execution path is:
 
   TIME.COM
       |
-      | resolve `TIME` ABI 1.0 through Function 208/182
+      | resolve `TIME` ABI 1.0 through Function 182
       v
   current callable TIME provider
       |
@@ -53,7 +53,7 @@ The P2DOS execution path is:
       v
   P2DOS.RSX
       |
-      | resolve `TIME` ABI 1.0 through Function 208/182
+      | resolve `TIME` ABI 1.0 through Function 182
       v
   current callable TIME provider
       |
@@ -93,10 +93,9 @@ need and an appropriate ABI version change.
 
 A provider advertises service ID `TIME`, ABI 1.0, through the resident-service
 registry. Clients discover its callable address through the resident-service
-gateway. Function 208 is the current gateway number; Architecture Specification
-20 assigns Function 182 as its final 1.0 number when Stage 6 migrates private
-selectors. The service identity and ABI do not change with that gateway-number
-migration.
+gateway at Function 182. Current source still uses provisional Function 208;
+the implementation program migrates every in-tree client together. The service
+identity and ABI do not change with that gateway-number migration.
 
 The TIME request block is ten bytes:
 
@@ -108,9 +107,15 @@ The TIME request block is ten bytes:
   +9  byte  reserved; zero in ABI 1.0
 
 On successful GET, the provider writes the record at +4 and returns A=0 and
-HL=request+4. On successful SET, it returns A=0; SET details shall be completed
-when a writable provider is qualified. On failure, A contains a TIME-ABI status
-and HL is zero. DE remains the request address and SP, IX, and IY are preserved.
+HL=request+4. For SET, the provider validates the complete record before
+modifying the clock. Invalid input returns INVALID_CLOCK_RECORD without any
+modification. A provider which does not advertise SET returns SET_UNSUPPORTED.
+A provider which advertises SET returns SUCCESS only after completing the
+requested update according to its provider contract. Successful SET is
+qualified with a writable provider or controlled fixture; the required 1.0
+hardware providers may remain read-only. On failure, A contains a TIME-ABI
+status and HL is zero. DE remains the request address and SP, IX, and IY are
+preserved.
 
 The implemented TIME ABI 1.0 status values are:
 
@@ -208,14 +213,27 @@ Because the P2DOS and native records match, ordinary data translation is
 pass-through. The frontend contains no hardware driver. Its eventual measured
 allocation is implementation evidence, not part of this ABI.
 
-The public P2DOS-facing contract needs only SUCCESS, UNAVAILABLE,
-SET_UNSUPPORTED, and OPERATION_FAILED. Exact success register behavior and the
-non-FFh result values remain a Stage-6 closure item pending source or executable
-evidence. Native validation and hardware statuses collapse into those public
-outcomes; no elaborate public error taxonomy is required.
+Original P2DOS 2.3 source establishes A=00h and HL=0000h on successful
+Functions 200 and 201 and restores the caller's DE buffer address. BetterCP/M
+freezes the following compact public convention:
 
-If no frontend intercepts Function 200 or 201, the call reaches BDOS. BDOS
-mechanically returns 0FFh for either selector. This means that the P2DOS
+  A=00h, HL=0000h  operation completed
+  A=0FEh, HL=00FEh frontend installed and claimed the request, but failed
+  A=0FFh, HL=00FFh no frontend handled the selector
+
+DE, SP, IX and IY are preserved. Other registers and flags are unspecified.
+FEh is deterministic BetterCP/M behavior, not historical P2DOS behavior.
+Native validation and hardware statuses collapse into FEh; no public error
+taxonomy distinguishes UNAVAILABLE, SET_UNSUPPORTED and other claimed failures.
+
+GET copies the five-byte record to the caller only after native success. A
+failed GET leaves all five caller bytes unchanged. SET copies the caller record
+into a private native request and relies on TIME validation. An installed
+frontend completely owns 200/201, so a claimed failure does not chain.
+
+If no frontend intercepts Function 200 or 201, the call reaches BDOS. The final
+dispatcher mechanically returns A=0FFh and HL=00FFh for either selector. This
+means that the P2DOS
 interface is not installed; it does not mean that the native clock is absent.
 A fully functional native TIME provider may still be loaded.
 
@@ -225,7 +243,7 @@ UNAVAILABLE result. BDOS does not locate providers, inspect records, access
 hardware, or distinguish any other cause.
 
 A read-only provider does not remove Function 201 from the frontend. The
-frontend maps the native SET_UNSUPPORTED result to its documented public result.
+frontend maps the native SET_UNSUPPORTED result to FEh/00FEh.
 Native clock use remains complete without loading this frontend.
 
 The default configuration need not load `P2DOS.RSX`. `FREHDCLK.RSX` or
@@ -252,6 +270,11 @@ exclusive frontends shall resolve and invoke TIME anew for every request, keep
 no provider pointer, use private translation scratch, and leave Function 12
 unchanged. Working binary names are `T104C3.RSX` and `T104Z8.RSX`; the names
 describe clock-call conventions rather than broader operating-system support.
+
+Before either frontend is admitted, implementation must prove that both cannot
+be active simultaneously. A narrow conflict check or configuration restriction
+is sufficient; this optional feature does not justify a general RSX dependency
+framework.
 
 Their inclusion is decided only after the required `P2DOS.RSX` establishes the
 actual common code, resident cost, lifecycle behavior, and qualification cost.
@@ -330,14 +353,14 @@ Native-service acceptance covers:
 
 P2DOS-frontend acceptance additionally covers:
 
-  * exact historical entry and successful-return behavior;
-  * mechanical 0FFh fallback when the frontend is absent;
+  * A=00h, HL=0000h historical success behavior and preserved DE;
+  * FEh/00FEh for a claimed failure;
+  * mechanical A=0FFh, HL=00FFh fallback when the frontend is absent;
   * native-to-public result mapping, including read-only SET;
   * operation with each qualified hardware provider; and
   * frontend load/unload without changing or duplicating the provider;
   * per-call lookup through the lower-service path; and
   * proof that no callable address survives an invocation or reconstruction.
 
-The exact P2DOS success convention and remaining public result values are a
-Stage-6 design-closure gate. Other historical frontends and filesystem
-timestamps are outside 1.0 qualification.
+Other historical frontends and filesystem timestamps are outside required 1.0
+qualification.
