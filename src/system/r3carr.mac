@@ -17,6 +17,10 @@
 ; preparation is complete. This phase publishes no fixed facts or completion
 ; marker until every header, checksum, and static-relocation check succeeds;
 ; R3META publishes the remaining facts only after metadata validation.
+;
+; Production intentionally accepts only BRSX v2. Version 1 lacks typed
+; reconstruction metadata, so accepting it as implicitly stateless would retain
+; a second, weaker movement contract and could silently discard live state.
 
 RXBASE          EQU     07800H
 

@@ -8,6 +8,10 @@
   ; and before generation publication. DE addresses the commit request:
   ; +27 prospective 41-byte state, +29 live state, +31 public request,
   ; and +33 returned primary service.
+  ; Names and service numbers are copied before the count. The count is the
+  ; profile-local validity boundary, while the later reconstruction generation
+  ; is the transaction-wide commit marker. Readers therefore see either the old
+  ; profile or a completely populated new one, never a partially filled table.
 
 RTBASE          EQU     LY_CFG+038FH
 
@@ -63,6 +67,8 @@ RT_REQ:         DW      0
 
         DS      RTBASE+0050H-$
 RT_CONT:                                ; restore prefetched resolver after commit
+  ; Copy only the resolver prefix. The manager tail holds the live return stack
+  ; and gateway used to escape the overlay that has just replaced itself.
         OR      A
         RET     NZ
         LD      HL,(RT_IMAGE)

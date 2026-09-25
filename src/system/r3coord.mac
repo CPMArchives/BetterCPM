@@ -1,11 +1,16 @@
         INCLUDE layout.inc
 ; Stage-3 bounded carrier-loading coordinator.
 ;
-; DE points to the public Function 202 version-2 request.  This increment
-; accepts LOAD only, streams the named carrier into the caller-owned workspace,
-; derives its exact v1/v2 length, and invokes R3CARR then R3META in LY_CFG. It
-; then hands normalized facts to R3PROF for general append planning. Failure
-; returns FFh without changing the live RSX profile.
+; DE points to the public Function 202 version-2 request. This phase accepts
+; LOAD only, streams the named carrier into the caller-owned workspace, derives
+; its framed length, and invokes R3CARR then R3META in LY_CFG. The authoritative
+; validator accepts only BRSX v2. Normalized facts then pass to R3PROF for
+; general append planning. Failure returns FFh without changing the live RSX
+; profile.
+
+; Every disk read occurs during preparation. Later phases replace one another
+; in the same overlay slots, so durable facts and handoff roots live in bounded
+; caller-owned RAM rather than in the phase that produced them.
 
 RCBASE          EQU     LY_RSX
 FLOPEN          EQU     LY_FILE

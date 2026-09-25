@@ -15,6 +15,17 @@
 ; all fresh and STATELESS entries identify a fully relocated live image in
 ; transaction scratch. Publication descriptor: addresses of chain head,
 ; resident low boundary, TPA ceiling, generation word, and page-zero ceiling.
+;
+; Commit has three ordered parts: validate every prepared input, perform the
+; now-infallible memory transformation, then publish the new profile. The
+; generation word is written last and is the reader-visible commit marker.
+; Before that store, readers continue to identify the old generation; after it,
+; every chain, boundary, page-zero, and persistent-profile field is complete.
+;
+; STATEFUL movement preserves the complete live allocation and repairs only
+; declared pointer words whose values address that allocation. Fresh and
+; STATELESS images were relocated in snapshots before commit. Executable bytes
+; and immutable descriptors are never patched as undeclared mutable state.
 
 RCBASE          EQU     07C00H
 
@@ -370,6 +381,7 @@ RC_SETNEXT:
         JR      RC_LINKLP
 
 ; Publish all externally visible state after the infallible memory commit.
+; RC_GENWRITE is deliberately last: generation makes the new state observable.
 RC_PUBLISH:
         LD      HL,(RC_PUB)
         LD      E,(HL)
