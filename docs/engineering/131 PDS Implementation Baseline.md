@@ -1,13 +1,14 @@
 # 131 — PDS Implementation Baseline
 
 Date: 2026-09-11  
-Status: Stage 0 implementation baseline
+Status: accepted 1.0 implementation baseline; interpreted by Architecture
+Specifications 18 and 29
 
 ## Purpose
 
-This records the last layout before the versioned PDS ABI is introduced. Later
-PDS, resident-service and ROMability work is measured against this checkpoint.
-The baseline is descriptive; it creates no new ABI.
+This records the layout from which the versioned PDS ABI was introduced. Stage
+5 retained that measured 192-byte layout as the complete 1.0 PDS contract.
+Engineering Specification 152 records the final source audit.
 
 ## Current memory contract
 
@@ -40,8 +41,8 @@ reclaimable while a transient executes.
 
 The only current PDS allocation is the 192-byte packed command-history area at
 `D504h–D5C3h`. It contains a ten-byte control area and 182 bytes of records.
-This is an implementation fact, not the planned general PDS ABI. HISTORY.RSX
-will eventually own these records.
+This is the accepted 1.0 PDS. A later HISTORY.RSX may own command history as
+part of a post-1.0 redesign, but that does not alter the 1.0 ownership contract.
 
 ## Regression boundary
 

@@ -59,9 +59,12 @@ Physical adjacency in high RAM does not merge these ownership contracts.
 
 The PDS is not BetterCP/M's general .bss segment.  An object belongs there only
 when it requires PDS discovery, ownership, versioning, persistence or
-reconstruction semantics.  The 1.0 PDS has a measured, versioned and fixed
-inventory of accepted owners.  General allocation, migration, configurable
-sizing and controlled runtime expansion are later 1.x capabilities.
+reconstruction semantics.  The 1.0 PDS has one measured owner: the built-in
+command-history facility in the fixed 192-byte region defined by Architecture
+Specification 18.  The RSX and CPX profiles, disk and configuration state,
+service registry, stacks and workspaces retain their natural subsystem owners.
+General allocation, migration, configurable sizing and controlled runtime
+expansion are later 1.x capabilities.
 
 ROM separation does not justify assigning ordinary subsystem variables,
 stacks or temporary buffers to the PDS.
