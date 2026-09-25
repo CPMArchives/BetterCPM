@@ -236,12 +236,12 @@ size, TPA ceiling, and configuration generation.  Stable gateways consult
 the descriptor; movable components must not treat their current addresses as
 permanent ABI values.
 
-The current packed Model 4 build reserves `D504h..D5C3h` as a 192-byte PDS,
-including ten history-control bytes and 182 packed command-record bytes. This
-predates the adopted ownership rule: the history allocation is to move into
-HISTORY.RSX. It is a current implementation fact, not the final general
-allocator. WBOOT reconstructs the ordered CPX chain from the PDS and then
-reloads the CCP.
+The packed Model 4 build reserves `D504h..D5C3h` as the fixed 192-byte 1.0 PDS,
+including ten history-control/working bytes and 182 packed command-record
+bytes. Built-in command history is its only 1.0 owner. WBOOT preserves this
+region while reconstructing the ordered CPX chain from fixed gateway state and
+then reloading the CCP. Architecture Specifications 18 and 29 define the
+bounded contract; a general allocator and HISTORY.RSX are later 1.x work.
 
 
 4.5 COMPATIBILITY-VISIBLE MEMORY

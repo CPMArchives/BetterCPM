@@ -205,9 +205,9 @@ Platform-specific saved records carry platform scope.  Another platform may
 reject them cleanly; cross-platform reinterpretation of a saved configuration
 is not a 1.0 requirement.
 
-10. STAGE 5 OWNERSHIP INVENTORY
+10. STAGE 5 OWNERSHIP RESULT
 
-Stage 5 shall classify and size these concrete owners:
+Stage 5 classified these concrete objects under their natural owners:
 
   immutable platform capability/default templates;
   fixed BIOS physical records;
@@ -222,8 +222,9 @@ Stage 5 shall classify and size these concrete owners:
 
 There is no general disk-state heap, resident duplicate of session intent,
 resident FDB catalogue, resolved FDB pointer set or publication generation in
-the 1.0 inventory.  Ownership precedes placement and lifetime precedes static
-workspace overlay.
+the 1.0 PDS inventory.  Disk and configuration state remain fixed subsystem or
+transient state rather than PDS allocations.  Ownership precedes placement and
+lifetime precedes static workspace overlay.
 
 11. ACCEPTANCE RULES
 
@@ -253,4 +254,3 @@ a publication counter, persistent-sector layout, power-loss journaling, the
 fingerprint algorithm, runtime catalogue replacement, automatic format
 detection, the future mixed-track extension, filesystem timestamps, host image
 management or additional platforms.
-

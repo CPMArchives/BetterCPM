@@ -1,0 +1,19 @@
+BETTERCP/M BOUNDED 1.0 PDS DECISION
+
+Status: accepted Stage 5 architecture.
+
+Architecture Specification 18 is the normative PDS contract.  This decision
+records the Stage 5 boundary which resolved earlier, broader allocator plans:
+
+  * BetterCP/M 1.0 has one PDS owner, built-in command history.
+  * Its allocation is the existing fixed 192-byte region at D504h-D5C3h.
+  * PDS ABI 1 and the existing Extension Control Block are sufficient.
+  * Fixed RSX, CPX, disk, BIOS and gateway state retain their subsystem owners.
+  * Stacks and temporary workspaces are not PDS allocations.
+  * A general allocator, configurable sizing, migration and expansion are later
+    1.x work and create no 1.0 implementation obligation.
+  * The fixed layout preserves the exact 53 KiB complete-record COM ceiling.
+
+The accepted byte layout, lifecycle, failure behavior and implementation gap
+are specified in Architecture Specification 18.  Engineering Specification
+152 records the repository evidence supporting this decision.

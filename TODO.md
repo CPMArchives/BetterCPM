@@ -116,16 +116,18 @@ is supplied through loadable CPXs rather than added to the core CCP.
 
 ### 1.0 bounded history and PDS
 
-The packed, multi-command history buffer in the PDS is already
-implemented, as are Up/Down recall and warm-boot persistence.  The current
-53K layout reserves 192 bytes (182 bytes of command records).  This is the
-temporary size accepted while the resident-memory trade-offs are reviewed;
-do not reduce it again.  It requires regression coverage during the full
-compatibility rerun, not a new implementation.
+The packed, multi-command history buffer in the PDS is implemented, as are
+Up/Down recall and warm-boot persistence. Stage 5 freezes the existing 192-byte
+region, including 182 bytes of command records, as the complete 1.0 inventory.
+It requires regression coverage during the full compatibility rerun, not a
+general allocator.
 
-- [ ] Finish the versioned PDS descriptor and fixed 1.0 inventory; measure every
-  retained 1.0 owner using `docs/engineering/130 Protected Memory Audit.md`,
-  publish ownership and reset behavior, and preserve the 53 KiB TPA floor.
+- [x] Freeze the versioned PDS descriptor and fixed 1.0 inventory, publish
+  ownership and reset behavior, and preserve the 53 KiB TPA floor. See
+  Architecture Specifications 18 and 29 and Engineering Specification 152.
+- [ ] Make cold boot unconditionally initialize an empty version-1 history
+  object; warm boot and command-environment reconstruction continue to preserve
+  a valid object. Add a focused regression that distinguishes the two paths.
 
 ### Later 1.x PDS generalization
 

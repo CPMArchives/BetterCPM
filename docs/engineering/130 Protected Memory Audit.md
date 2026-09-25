@@ -1,7 +1,8 @@
 # 130 — Protected Memory Audit
 
 Date: 2026-09-10  
-Status: measured design input; no layout change
+Status: historical measured input; 1.0 PDS conclusions superseded by
+Architecture Specifications 18 and 29
 
 ## Purpose
 
@@ -11,6 +12,9 @@ whether the planned core Persistent Data Segment can be built while retaining
 the default 53 KiB TPA.
 
 `src/system/layout.inc` and the current emitted binaries are authoritative.
+Its byte measurements remain useful. Its proposed 1-1.5 KiB allocator and
+reclassification of fixed RSX, CPX, disk and gateway state as PDS owners were
+not adopted for 1.0. Engineering Specification 152 records the final audit.
 The audited span is 7,935 bytes and accounts exactly:
 
 | Class | Bytes |
