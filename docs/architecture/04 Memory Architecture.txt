@@ -1,6 +1,18 @@
 04 MEMORY ARCHITECTURE
 ======================
 
+
+BETTERCP/M 1.0 RECONCILIATION NOTE
+----------------------------------
+
+Architecture Specifications 27 and 29 control the 1.0 ROM/RAM and PDS
+contracts. The 1.0 PDS is the fixed 192-byte HISTORY v1 object only. Broader
+allocator, NDR and search-path allocations described in this document are
+post-1.0 design. RSX/CPX profiles, registry state, disk state, startup state,
+stacks and workspaces remain with their natural owners. Final ROM addresses,
+stack sizes, overlays and protected boundary are implementation results. The
+default configuration retains at least 53 KiB usable TPA.
+
 4.1 Memory Model
 4.2 Address-Space Organization
 4.3 Transient Program Area
@@ -145,29 +157,13 @@ It must remain outside the advertised TPA and reclaimable CPX/CCP storage.
 Addresses may differ between builds; publish the base and layout through a
 stable interface rather than requiring consumers to embed private addresses.
 
-The PDS contains mandatory system infrastructure: allocator metadata, core
-settings, drive and disk-session structures, the search path, reconstruction
-metadata, the small service-registry descriptor and generation, and similar state whose lifetime
-is independent of optional modules. Optional feature data normally belongs to
-the resident RSX which implements the feature. Command history and the live
-named-directory register therefore reside in HISTORY.RSX and NDR.RSX while
-those features are installed. Assign every adopted field a documented owner
-and reset policy. Persistence across power-off requires a separate save/load
-mechanism.
-
-The complete PDS placement, allocation, high-water and reconstruction rules are
-specified in `18 Persistent Data Segment.txt`. The live named-directory
-representation and resolver contract are specified in
-`17 Named Directory Register.txt`. NDR.RSX owns the authoritative map and
-publishes its callable resolver through the resident-service registry. Validated
-service advertisements reside with their provider rather than in a flat PDS
-table.
-
-This is an architectural requirement, not a statement that today's scattered
-state has already been consolidated. Consolidation must migrate existing state
-without retaining duplicate authoritative copies, account for every reserved
-byte, and preserve the agreed TPA budget. The PDS remains writable RAM
-in a ROM execution build.
+For BetterCP/M 1.0 the PDS contains exactly one object: the fixed 192-byte
+built-in HISTORY v1 state specified by Architecture Specifications 18 and 29.
+The RSX committed profile belongs to the fixed extension subsystem; the CPX
+reconstruction profile belongs to fixed command/gateway state; the service
+registry is derived from active provider advertisements; disk state belongs to
+BIOS/BDOS and configuration owners. NDR/PATH and HISTORY.RSX are later-1.x
+designs. The PDS remains writable RAM in a ROM execution build.
 
 The fixed/protected region contains the immutable CP/M-compatible core,
 the PDS, and all currently installed RSXs. None of this
@@ -197,10 +193,9 @@ Installed RSXs are dynamically loadable and unloadable, but remain protected
 for as long as they are installed.  Changing the active RSX set recalculates
 the protected boundary, reconstructs the RSX layout, moves the dynamic
 gateway, updates page zero and the Extension Control Block, and reconstructs
-the CPXs and CCP beneath it. Loading an RSX, unloading an RSX, compacting the
-chain, and expanding the PDS all invoke this same resident-layout transaction.
-PDS growth is therefore another cause of reconstruction, not a distinct form
-of relocation. The Extension Architecture defines the reconstruction and
+the CPXs and CCP beneath it. Loading an RSX, unloading an RSX, and compacting the chain invoke this same
+resident-layout transaction. General PDS growth is post-1.0 architecture and
+is not a 1.0 reconstruction operation. The Extension Architecture defines the reconstruction and
 module-state contract used by every such operation.
 
 The saved RSX profile contains the cold-boot defaults maintained by CONFIG.
@@ -208,9 +203,9 @@ The active RSX chain is the set currently installed.  A runtime change does
 not alter the saved profile unless explicitly saved.
 
 CPXs are dynamically loadable and unloadable command-processor extensions.
-The PDS holds an active CPX reconstruction table describing
-the ordered CPX set currently in effect.  This table describes what to load,
-not the modules' temporary runtime addresses.  Runtime addresses are
+Fixed command/gateway state holds the active CPX reconstruction table
+describing the ordered CPX set currently in effect. This table describes what
+to load, not the modules' temporary runtime addresses.  Runtime addresses are
 calculated during reconstruction and published through the Extension Control
 Block where necessary.
 

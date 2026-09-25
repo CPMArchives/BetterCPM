@@ -5,10 +5,11 @@ implementation task
 Date: 2026-09-25
 
 This guide describes how resident extensions and command-processor
-extensions fit into BetterCP/M. It records the decisions already made and
-identifies interfaces that remain provisional. It is intended to become the
-programming reference for extension authors as the loader and module formats
-are implemented.
+extensions fit into BetterCP/M. HISTORY.RSX, named-directory resolution,
+NDR management and PATH are later-1.x extension examples rather than 1.0
+inventory. It records the frozen contracts and identifies behavior whose
+implementation or qualification remains incomplete. It is the programming
+reference for extension authors during the remaining implementation program.
 
 ## 1. Two extension classes
 
@@ -249,6 +250,12 @@ the old published configuration.
 
 ## 7. CPX execution model
 
+
+For metadata ABI 1 every record type must be understood. An unknown record
+causes rejection before publication and is not implicitly optional. The current
+normalizer's skip behavior is a known implementation defect against this
+contract.
+
 ### 7.1 Implemented dispatcher
 
 The current CCP implements a small forward chain. Its four-byte in-memory
@@ -269,9 +276,12 @@ The command-entry contract is presently:
 - `SP`, `IX`, `IY`, and the command buffer must be preserved.
 
 Ordinary registers other than those explicitly preserved may be changed.
-CPXs receive the upper-case command before the transitional core-resident
-commands. Carry clear passes through the chain and then to the CCP's resident
-command and `.COM` fallbacks. RCP.CPX implements the packaged commands while the CCP retains only its deliberately resident monitor commands.
+The CCP handles drive/user navigation and deliberately resident core
+compatibility commands first. Remaining commands are offered to the CPX chain
+in profile order; carry clear passes through the chain and then to transient
+lookup. A CPX does not receive first refusal on every command and is not a
+universal command observer. RCP.CPX implements the packaged commands while the
+CCP retains only its deliberately resident monitor commands.
 
 This interface is executable and tested, but CPX header addresses are active
 configuration details. The chain-head field has a stable location in the
@@ -344,7 +354,7 @@ The current reconstruction table uses canonical BASIC-then-HELLO order.
 Loading a second CPX moves the CCP farther downward within reclaimable command
 memory but does not move the protected gateway or reduce the advertised TPA.
 
-The final CPX ABI must additionally define:
+The retained BetterCP/M 1.0 CPX contract additionally requires:
 
 - initialization and shutdown calls;
 - access to the CCP command context through a versioned interface;

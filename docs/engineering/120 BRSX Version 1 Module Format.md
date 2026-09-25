@@ -1,5 +1,11 @@
 # Engineering Specification 120: BRSX Version 1 Module Format
 
+> **Historical engineering record — superseded carrier:** Production
+> BetterCP/M 1.0 uses BRSX v2 as defined by Engineering Specification 133.
+> BRSX-v1 compatibility is not a 1.0 requirement. Function 202 below was a
+> provisional implementation selector; Function 177 is the frozen production
+> selector.
+
 ## Status
 
 Superseded before BetterCP/M 1.0 by BRSX version 2. This document records the

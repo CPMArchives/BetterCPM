@@ -1,7 +1,7 @@
 # BetterCP/M Project Backlog
 
 Status: Living project backlog  
-Updated: 2026-09-21
+Updated: 2026-09-25
 
 This document records substantial unfinished work. Detailed behavioral
 requirements remain authoritative in the architecture, engineering
@@ -12,7 +12,27 @@ The authoritative ordering of design and implementation work is the
 [BetterCP/M 1.0 roadmap](docs/releases/1.0-ROADMAP.md). This backlog supplies
 the detailed tasks but does not replace or reorder that roadmap.
 
+
+Architecture is frozen through Stage 8. The implementation program is now the
+current critical path. Items below that implement a frozen contract are engineering
+tasks, not unresolved architecture; historical or deferred designs do not
+become 1.0 requirements by appearing in this backlog.
+
 ## Immediate priorities
+
+
+- [ ] Implement the frozen 176-183 production selector migration, move proof
+  services to 198/199, and provide the 200/201 unhandled fallback and
+  `P2DOS.RSX` frontend.
+- [ ] Make true cold boot initialize an empty HISTORY v1 PDS object
+  unconditionally while preserving valid history across WBOOT/reconstruction.
+- [ ] Reject unknown metadata-v1 BRSX record types without changing the live
+  profile.
+- [ ] Implement the production FDB compiler/reader and the frozen startup-command
+  lifecycle; retain DUP's remaining backend-capability and integration work.
+- [ ] Complete native TIME selector migration and TIME.COM SET, then qualify both
+  read-only providers and `P2DOS.RSX`.
+- [ ] Implement and qualify the BetterCP/M ROM/RAM split and protected XIP image.
 
 - [ ] Enforce at least 53 KiB usable TPA in the default 1.0 configuration as a
   continuous build and qualification gate. Apply it after each remaining PDS,
@@ -35,10 +55,6 @@ feature before qualifying the core.
   BIOSTEST after the later memory, CCP, CPX, RSX, and command changes.
 - [ ] Record every result as pass, failure, observation, provider-dependent,
   optional, or out of scope; leave no silent omissions.
-- [ ] Audit and compact the resident system so the production TPA returns to
-  the same general size class as stock CP/M, beyond the current 51K + 765-byte TPA.
-  Packing recovered 4,608 bytes; reaching 56K still requires 4,355 bytes of
-  additional resident reduction, not more gap removal.
 - [x] Inventory functions 13 through 40 against a single set of universal
   drive, FCB, directory, extent, allocation, transfer, and recovery services.
 - [x] Replace the separate dispatcher/filesystem implementation with the
@@ -90,13 +106,12 @@ is supplied through loadable CPXs rather than added to the core CCP.
 
 ### Later 1.x named-directory and command extensions
 
-- [ ] Implement the canonical named-directory map in protected, persistent OS
-  DATA, as confirmed by the user. Names resolve to drive/user pairs. The map
-  survives transient execution and CCP reconstruction/warm boot; the CCP and
-  utilities share one resolution interface and no independent authoritative maps.
-  Specify its bounded storage, initialization and interface as part of the core
-  boundary; implement higher-level navigation and utility syntax in their own
-  milestones. Persistence across power-off is a separate save/load decision.
+- [ ] Implement the later-1.x canonical named-directory map in NDR.RSX-owned
+  protected state. Names resolve to drive/user pairs, and all clients share one
+  resolution interface with no independent authoritative maps. Define its
+  bounded storage and lifecycle in that later feature; it does not occupy the
+  frozen 1.0 PDS or reopen the 1.0 core boundary. Persistence across power-off
+  remains a separate save/load decision.
 - [ ] Add transient `NDR.COM` to manage the live map and load/save disk-backed
   sets such as `DEVLPMNT.NDR` and `GAMES.NDR`. A future optional `NDR.CPX` may
   expose the same `ND` command forms. Both must call the common protected
@@ -175,18 +190,20 @@ directory utility unless it provides genuine additional value.
   `BCPX` v1 format while retaining native CP/M ZSM4 assembly of module code.
 - [x] Replace the proof `BRX1` RSX carrier with a versioned, documented module
   format practical to build under native CP/M with ZSM4.
-- [x] Inventory the private BDOS namespace and adopt Functions 176-199 under
+- [x] Inventory the private BDOS namespace: assign production Functions
+  176-183, leave 184-196 available, reserve 197, use 198/199 for non-public
+  tests, and preserve historical P2DOS 200/201 for `P2DOS.RSX` under
   `docs/architecture/25 Extended BDOS Namespace.txt`.
 - [ ] Migrate the registered production services from provisional Functions
   200 and 202-209 to 176-183, remove HELLO/ECHO proof selectors 201/203 from
   the released namespace, and rebuild every in-tree client. The replacement
   CPX call uses a versioned, name-based request block and enumerates module
   metadata without compiling module identities into `CPX.COM` or BDOS.
-- [ ] Finalize CPX initialization, shutdown, metadata, command enumeration,
+- [ ] Implement and qualify the frozen CPX initialization, shutdown, metadata, command enumeration,
   ordering, dependency, recursion, abort, and capability-discovery rules.
 - [ ] Remove BASIC/HELLO-specific knowledge from the CPX manager and support
   arbitrary valid CPX files.
-- [ ] Finalize the RSX dispatch, chaining, bypass, initialization, shutdown,
+- [ ] Implement and qualify the frozen RSX dispatch, chaining, bypass, initialization, shutdown,
   error, and reentrancy ABI.
 - [x] Support arbitrary valid RSX files rather than only the HELLO proof,
   including ordered enumeration and removal from a multi-module chain.
@@ -286,13 +303,15 @@ between CONFIG and DUP remain design considerations for the formatting work.
 
 ## File metadata, attributes, and native clock
 
-- [ ] Implement complete CP/M file-attribute handling throughout BDOS,
+- [x] Implement complete CP/M file-attribute handling throughout BDOS,
   directory services, resident commands, transient utilities, and image
   tooling, including read-only, system (`$SYS`), archive, and the filename
   high-bit conventions used to encode them. Preserve and permit inspection or
   change of all three ordinary bits, enforce read-only, and treat archive as
-  metadata only.
-- [ ] Freeze and qualify the callable `TIME` ABI as the native clock service,
+  metadata only. Focused implementation tests pass.
+- [ ] Complete final release-candidate qualification of R/O/SYS/ARC inspection,
+  change, enforcement, preservation and explicitly claimed host-tool behavior.
+- [ ] Implement and qualify the frozen callable `TIME` ABI as the native clock service,
   including `TIME.COM` and the read-only FreHD and z80pack providers. Migrate
   registry lookup from provisional Function 208 to Function 182, then qualify
   provider replacement, unload, WBOOT, coherent sampling, and SET_UNSUPPORTED.
@@ -300,8 +319,8 @@ between CONFIG and DUP remain design considerations for the formatting work.
   200/201 and calls the native `TIME` service without containing hardware code.
   Verify exact P2DOS success behavior and freeze only the minimal public results
   for success, unavailable, unsupported SET, and operation failure.
-- [ ] Before the 1.0 ABI freeze, implement the adopted 176-199 private BDOS
-  namespace: migrate the registered services to 176-183, remove HELLO/ECHO
+- [ ] Implement the frozen private BDOS namespace: migrate the registered
+  services to 176-183, remove HELLO/ECHO
   proof selectors 201/203 from the released namespace, rebuild every in-tree
   client, provide the 0FFh BDOS fallback for 200/201, and route those selectors
   through the separate `P2DOS.RSX` frontend to the native `TIME` service. Pin exact

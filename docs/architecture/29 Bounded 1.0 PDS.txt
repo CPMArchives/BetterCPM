@@ -2,6 +2,9 @@ BETTERCP/M BOUNDED 1.0 PDS DECISION
 
 Status: accepted Stage 5 architecture.
 
+This is the controlling 1.0 scope decision. Broader PDS designs remain
+historical or later-1.x work unless separately approved after 1.0.
+
 Architecture Specification 18 is the normative PDS contract.  This decision
 records the Stage 5 boundary which resolved earlier, broader allocator plans:
 

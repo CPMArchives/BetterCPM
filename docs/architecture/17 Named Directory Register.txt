@@ -3,6 +3,16 @@ BETTERCP/M NAMED DIRECTORY REGISTER
 Status: reconciled design baseline; implementation pending.
 
 
+BETTERCP/M 1.0 SCOPE NOTE
+-------------------------
+
+This specification preserves accepted later-1.x NDR design. Named directories,
+NDR.RSX, NDR.COM, named-directory-aware parsing and PATH integration are not
+BetterCP/M 1.0 requirements. BetterCP/M 1.0 uses canonical drive/user
+operation. A later implementation must establish its own storage contract and
+does not acquire space in the frozen 1.0 PDS.
+
+
 1. PURPOSE AND CANONICAL IDENTITY
 
 A named directory is an alias for a canonical drive/user pair (DU).  It does

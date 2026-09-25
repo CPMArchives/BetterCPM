@@ -2,6 +2,9 @@ BETTERCP/M PERSISTENT DATA SEGMENT
 
 Status: accepted BetterCP/M 1.0 architecture and later 1.x direction.
 
+Architecture Specification 29 controls the bounded 1.0 inventory wherever
+this document discusses broader later allocation machinery.
+
 
 1. NAME AND PURPOSE
 

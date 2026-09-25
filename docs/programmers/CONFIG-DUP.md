@@ -321,3 +321,21 @@ versus 341.10 seconds with 1.12 (about 6.7 times faster). All 160 tracks and
 1,600 sectors pass ID/data CRC and erased-byte checks. This remains slower
 than the user's MM run, but retains immediate per-track verification and
 byte comparisons. These are emulator wall times, not real-hardware timings.
+
+
+## Frozen 1.0 completion status
+
+Text FDF and FDF.RSX exist. The production FDB compiler/reader remain
+implementation work; normalized bindings do not depend on future catalog
+availability for runtime meaning.
+
+The optional startup command is not implemented. It runs once after true cold
+initialization and service availability, never on WBOOT or reconstruction. Its
+executed flag is set before dispatch; failure returns to the prompt without
+retry; cold boot clears it; a recovery gesture suppresses it for that boot.
+CONFIG must inspect, edit, clear and immediately test the command.
+
+DUP is partially implemented. Important binding, hardware and format validation
+exists. Remaining backend-capability and integration behavior still requires
+implementation, followed by the final supported/unsupported format matrix and
+platform qualification.

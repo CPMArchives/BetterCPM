@@ -1,6 +1,14 @@
 14 EXTENSION ARCHITECTURE
 =========================
 
+
+BETTERCP/M 1.0 STATUS
+---------------------
+
+This conceptual architecture is refined for 1.0 by Specifications 20, 21, 25,
+27 and 29. Production RSXs use BRSX v2. BRSX v1 is format history, not a 1.0
+compatibility path. Later focused specifications control on conflict.
+
 14.1 Extension Model
 14.2 Extension Principles
 14.3 Compatibility-Preserving Extensions
@@ -152,9 +160,9 @@ but an installed RSX remains protected while transient programs execute.
 
 A callable service publishes a versioned record through the small service
 registry described by `20 Resident Service ABI.txt`. The logical registry is
-derived from validated advertisements in active RSXs; the PDS retains its small
-descriptor and reconstruction generation rather than a duplicate table of
-absolute entries. Clients rediscover the current service after reconstruction
+derived from validated advertisements in active RSXs; the fixed extension
+subsystem retains registry control and reconstruction state rather than placing
+a duplicate table of absolute entries in the PDS. Clients rediscover the current service after reconstruction
 instead of retaining raw pointers to movable RSXs. This permits optional CCP facilities
 such as HISTORY and NDR to own resident code and data without becoming CPXs or
 enlarging the permanent CCP.
@@ -165,14 +173,14 @@ command search, or other command-environment behavior.  It does not become
 an RSX merely because it is temporarily loaded.  CPXs shall use the command
 processor's extension interface rather than intercepting BDOS calls.  Their
 code is reclaimable with the CCP and restored by WBOOT from the active CPX
-reconstruction table in the Persistent Data Segment (PDS).
+reconstruction table in fixed command/gateway state.
 
 Any change to the protected resident layout uses one reconstruction
 transaction.  This includes loading an RSX, unloading an RSX, and changing
-the lower boundary of the PDS.  For example, if HELLO.RSX is loaded before
+the protected resident layout. For example, if HELLO.RSX is loaded before
 FDF.RSX, unloading HELLO requires FDF and everything below it to be rebuilt
-at new addresses.  Expanding the PDS imposes the same requirement; it merely
-supplies a different upper boundary for the rebuilt RSX/CPX region.
+at new addresses. General PDS expansion is post-1.0 design and is not a 1.0
+transaction cause.
 
 Consequently, the state contract belongs to the general extension
 architecture rather than to PDS expansion.  Every active RSX that may move
@@ -201,8 +209,9 @@ pointer to its own mutable data, moves during reconstruction, and demonstrates
 that both the pointer and the pointed-to state remain valid afterward.
 
 The normative reconstruction contract is `21 Stateful RSX Reconstruction
-ABI.txt`. It introduces these declarations in BRSX version 2, preserves BRSX
-version 1 as a legacy stateless carrier, and defines typed metadata, complete-
+ABI.txt`. It introduces these declarations in BRSX version 2. Production
+BetterCP/M 1.0 accepts BRSX-v2 carriers; version 1 remains format history. It
+defines typed metadata, complete-
 allocation preservation, pointer repair, lifecycle behavior, validation, and
 transactional publication.
 
