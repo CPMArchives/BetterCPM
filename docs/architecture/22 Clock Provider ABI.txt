@@ -237,14 +237,35 @@ changing or duplicating the provider.
 7. OTHER HISTORICAL FRONTENDS
 -----------------------------
 
-Later CP/M Plus, ZSDOS/ZDDOS, DateStamper, DOS+/Z80DOS, or other adapters may
-consume the same native TIME service. Each frontend owns its historical selector
-or entry convention, record translation, compatibility statuses, and required
-validation. None duplicates the device driver.
+Two BDOS 104/105 clock-call profiles are bounded optional 1.0 candidates after
+`P2DOS.RSX` is complete and measured. They are not release requirements:
 
-Those frontends and filesystem timestamps are later 1.x work. Clock-call
-compatibility does not imply timestamp-layout compatibility or broader emulation
-of the corresponding operating system.
+  * the CP/M 3 and DOS+ 2.5 profile uses a four-byte day-count/hour/minute
+    record, returns seconds in A on GET, and resets seconds to zero on SET;
+  * the Z80DOS 2.4 profile uses a five-byte day-count/hour/minute/second record
+    and returns A=00h on GET.
+
+The profiles cannot be autodetected safely because the call carries no buffer
+length and callers do not identify their expectation consistently. A five-byte
+GET can overwrite a four-byte caller. If implemented, separate mutually
+exclusive frontends shall resolve and invoke TIME anew for every request, keep
+no provider pointer, use private translation scratch, and leave Function 12
+unchanged. Working binary names are `T104C3.RSX` and `T104Z8.RSX`; the names
+describe clock-call conventions rather than broader operating-system support.
+
+Their inclusion is decided only after the required `P2DOS.RSX` establishes the
+actual common code, resident cost, lifecycle behavior, and qualification cost.
+They may ship only if they remain small stateless adapters requiring no new
+TIME semantics, lifecycle architecture, operating-system impersonation, or
+filesystem timestamp behavior. They remain absent from the default profile and
+are not 1.0 release gates.
+
+Later ZSDOS/ZDDOS, DateStamper, or other adapters may consume the same native
+TIME service. Each frontend owns its historical selector or entry convention,
+record translation, compatibility statuses, and required validation. None
+duplicates the device driver. Clock-call compatibility does not imply
+timestamp-layout compatibility or broader emulation of the corresponding
+operating system; those larger facilities remain later 1.x work.
 
 
 8. CANONICAL DATA AND LATER TRANSFORMATIONS

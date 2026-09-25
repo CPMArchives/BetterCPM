@@ -6,15 +6,18 @@ separated `P2DOS.RSX` frontend now adopted. The user wants broad compatibility w
 feasible, with interchangeable clock-provider RSXs. Current time is read from
 the provider and is not shared PDS state.
 
-## Confirmed compatibility targets
+## Compatibility classification
 
-The user has approved DateStamper, ZSDOS/ZDDOS, P2DOS, CP/M Plus, and DOS+/Z80DOS
-as the baseline. Existing utilities must run unmodified. Prioritize DateStamper
-and ZSDOS/ZDDOS; relative historical popularity has not been quantified in this
-study. The other three remain baseline targets, not merely optional future work.
-Acceptance includes applicable discovery, clock and file-stamp contracts. Record
-version differences, direct disk-access assumptions and unresolved conflicts per
-utility rather than claiming universal compatibility from a shared clock backend.
+BetterCP/M 1.0 requires the separate `P2DOS.RSX` Functions 200/201 clock
+frontend. Two BDOS 104/105 profiles are bounded optional 1.0 candidates after
+that required frontend is complete and measured. DateStamper, ZSDOS/ZDDOS,
+filesystem timestamps, and broader CP/M Plus, DOS+, Z80DOS, or P2DOS emulation
+remain later work.
+
+Existing utilities are qualification evidence only for the exact interface they
+exercise. A shared clock backend does not establish compatibility with discovery
+probes, filesystem stamp layouts, direct disk access, or unrelated services of
+the originating operating system.
 
 ## Separate the interfaces
 
@@ -73,16 +76,50 @@ implementing this path. Do not advertise the signature prematurely.
 
 Source: [The Computer Journal 36, p. 41, environment-probe example](https://www.jaysage.org/tcj/tcj_36_OCR.pdf).
 
-### DOS+ 2.5 / Z80DOS variants
+### DOS+ 2.5 and Z80DOS 2.4 clock profiles
 
-The contemporary ZSDOS article identifies DOS+ 2.5 as a separate directory-stamp
-layout: creation date only, with modification and access dates/times. It shares
-the one-stamp-entry-per-three-file-entries arrangement with P2DOS, but the fields
-are not interchangeable. Exact Z80DOS/DOS+ clock-buffer and return conventions
-remain to be checked against original sources; do not assume identical semantics
-merely because reference summaries associate them with calls 104/105.
+Original source corrects the earlier assumption that DOS+ and Z80DOS share one
+104/105 record. DOS+ 2.5 deliberately follows the CP/M 3 clock-call convention:
+Function 104 reads four bytes and resets seconds to zero; Function 105 writes
+four bytes and returns BCD seconds in A. If its timer is disabled, GET returns
+A=0FFh without changing the caller's buffer. DOS+ file timestamps remain a
+different and CP/M-3-incompatible contract.
 
-Source: [The Computer Journal 37, p. 40](https://www.jaysage.org/tcj/tcj_37_OCR.pdf).
+Z80DOS 2.4 instead reads or writes a five-byte day-count/hour/minute/second
+record and documents A=00h for GET. Its Function-12 result remains CP/M 2.2 in
+A and adds the Z80DOS identifier 38h in D. Both clock profiles use day 1 as
+1978-01-01 and packed-BCD time fields.
+
+Sources: [DOS+ 2.5 source](https://dflund.se/~pi/cpm/files/ftp.mayn.de/pub/cpm/archive/bdos/dosplsor.ark),
+[Z80DOS 2.4 source and documentation](https://dflund.se/~pi/cpm/files/ftp.mayn.de/pub/cpm/archive/bdos/z80d24sr.lbr), and
+[The Computer Journal 37, p. 40](https://www.jaysage.org/tcj/tcj_37_OCR.pdf).
+
+The profiles cannot be selected safely from the 104/105 call itself. The call
+has no buffer length, and applications do not identify their convention
+consistently. A five-byte GET can overwrite a CP/M 3 or DOS+ caller's four-byte
+buffer. A conforming implementation therefore uses separate mutually exclusive
+frontends and never guesses from register contents or adjacent memory.
+
+### Representative 104/105 callers
+
+`DATE501.COM` calls 104/105 without detecting the operating system and assumes a
+five-byte record. It is an exact qualification target for the Z80DOS profile.
+Its date, hour, and minute also work through a four-byte frontend, but it ignores
+seconds returned in A, so seconds are not correct under CP/M 3/DOS+ semantics.
+
+`SCTIME.COM` accepts Function-12 versions at or above CP/M 2.2, calls Function
+105 with five bytes of storage, and writes returned A over the fifth byte. It is
+a useful four-byte-profile qualification target and requires no SCB or file
+timestamp behavior for its purpose of setting SuperCalc's date. Under Z80DOS it
+overwrites the fifth byte with the documented A=00h, which is immaterial to that
+date-only purpose.
+
+DOS+ `TIME.COM` is an intentional boundary case. It requires either a DOS+
+version result or DOS+ Function 210 identification. BetterCP/M shall not add
+that identity behavior merely to run the utility.
+
+Sources: [DATE501 source](https://ftpmirror.infania.net/sites/www.seasip.info/Cpm/2000/date501.mac)
+and [CP/M Year 2000 utility notes](https://ftpmirror.infania.net/sites/www.seasip.info/Cpm/2000/fixes.html).
 
 ## Disk formats and host interoperability
 
@@ -135,25 +172,50 @@ P2DOS compatibility is the separate `P2DOS.RSX` frontend, which owns Functions
 native clients and multiple later compatibility APIs without duplicating device
 code.
 
+After `P2DOS.RSX` is complete and measured, two mutually exclusive 104/105
+frontends may reuse that pattern. Each resolves TIME for every request, invokes
+the returned address immediately, retains no provider pointer, and translates
+through private five-byte scratch. The four-byte frontend never writes the
+caller's fifth byte; its SET supplies zero seconds. The five-byte frontend copies
+the complete record and returns A=00h on GET. Neither changes Function 12.
+
+Current estimates are 120-220 resident bytes and a 650-800-byte packaged RSX
+per profile, with no PDS allocation and only one profile loaded at a time. These
+are estimates until implementation. Admission to 1.0 requires actual measurement
+after `P2DOS.RSX` and must not threaten the schedule or 53 KiB TPA floor.
+
+Missing-provider GET leaves the caller's buffer unchanged. The four-byte profile
+may return A=0FFh, matching documented DOS+ disabled-timer behavior, but this is
+a BetterCP/M frontend rule rather than a CP/M 3 claim. Historical SET supplies no
+portable failure result, so a failed SET remains externally a no-op; the native
+TIME statuses remain internal to the adapter.
+
 The exact provider request, errors, platform findings and qualification contract
 are normative in `docs/architecture/22 Clock Provider ABI.txt`.
 
 ## Work required before promising compatibility
 
-- Obtain original DateStamper clock-entry and Z80DOS/DOS+ interface definitions.
+- Obtain the original DateStamper clock-entry definition. The Z80DOS 2.4 and
+  DOS+ 2.5 104/105 definitions are now verified from original source.
 - Inventory discovery/version probes used by actual legacy time utilities; do
   not impersonate an entire OS just to make its clock calls discoverable.
 - Complete the adopted Stage-6 private-service migration away from BDOS 200/201,
   migrate the registry gateway to Function 182, and implement `P2DOS.RSX`
   against the native `TIME` service.
-- Implement and measure optional adapters against the TPA budget.
-- Test buffer bounds (especially four versus five bytes), BCD validity, midnight,
-  leap dates, century windows, set/read consistency, missing clocks and unload.
+- Implement and measure optional adapters against the TPA budget only after
+  `P2DOS.RSX` establishes their common pattern.
+- Test four-byte and five-byte GET/SET separately, including guard bytes after
+  the four-byte caller buffer, BCD validity, midnight, leap dates, set/read
+  consistency, missing and read-only providers, unload, WBOOT, and provider
+  relocation between calls. Qualify SCTIME against the four-byte profile and
+  DATE501 against the five-byte profile, and prevent simultaneous ambiguous
+  configuration of both frontends.
 - Qualify each file-stamp scheme separately using prepared disposable media,
   legacy readers/writers and cpmtools round trips. Clock API compatibility alone
   must never be reported as complete filesystem timestamp compatibility.
 
-The five agreed families establish the compatibility scope. Their implementation
-need not impose every adapter or hardware provider's memory cost on every user.
-Measure the selected modules and state explicitly which combinations are required
-for each legacy utility. Unresolved contracts remain release-qualification gaps.
+Only P2DOS clock-call compatibility is a required 1.0 frontend. The two 104/105
+profiles are bounded optional candidates and all other historical families are
+later work. No optional adapter is a release-qualification gap unless it is
+explicitly admitted to the distribution; if admitted, qualify and document only
+the exact utilities and interface profile actually demonstrated.
