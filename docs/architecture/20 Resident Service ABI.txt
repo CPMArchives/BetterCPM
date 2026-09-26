@@ -1,8 +1,8 @@
 BETTERCP/M RESIDENT SERVICE ABI AND REGISTRY
 
-Status: adopted ABI. Stage 6 freezes Function 182 as the 1.0 gateway. The
-implementation still uses provisional Function 208 until the later source
-migration recorded by the 1.0 implementation program.
+Status: adopted and implemented ABI. Function 182 is the 1.0 gateway. The
+coordinated production-selector migration removed provisional Function 208;
+it is not retained as an alias.
 
 
 1. PURPOSE AND OWNERSHIP
@@ -72,9 +72,8 @@ services and reconstruction data.
 Clock providers advertise the native callable `TIME` service defined by
 `22 Clock Provider ABI.txt`. Optional historical frontends, including the
 `P2DOS.RSX` Functions 200/201 frontend, consume that service rather than embedding
-or duplicating hardware-provider code. `TIME` service identity remains stable
-when implementation migrates from provisional Function 208 to the frozen
-Function 182 assignment.
+or duplicating hardware-provider code. `TIME` service identity remained stable
+through the migration from provisional Function 208 to Function 182.
 
 
 4. LOOKUP GATEWAY
@@ -84,9 +83,9 @@ BetterCP/M Function 182 is the final 1.0 resident-service gateway:
   C  = 182
   DE = caller-owned request block
 
-The current source and binaries still use provisional Function 208. The later
-implementation migration changes all private selectors together; there is no
-compatibility promise for the provisional number.
+Current source and generated binaries use Function 182. The coordinated
+migration changed all private selectors together; provisional Function 208 is
+not a compatibility alias.
 
 The ABI-1 operations are:
 

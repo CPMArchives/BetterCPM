@@ -29,7 +29,7 @@ ER_SVOFF:       DW      0               ; resident-service entry offset
 
 ER_DISPATCH:                            ; intercept echo service call
         LD      A,C
-        CP      203
+        CP      199
         JR      NZ,ER_CHAIN
         LD      DE,ER_MESSAGE
         LD      C,9

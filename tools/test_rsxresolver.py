@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exercise the disk-free Stage-2 Function 208 resolver in isolation."""
+"""Exercise the disk-free Stage-2 Function 182 resolver in isolation."""
 from __future__ import annotations
 
 import struct
@@ -91,7 +91,7 @@ def main() -> None:
     cpu.setword(first + 2, first + 9)
     require(request(cpu, 0, b"TEST", 1)[0] == 9,
             "corrupt runtime header was followed")
-    print("Function 208 lookup, filtering, enumeration, description, and corruption checks passed")
+    print("Function 182 lookup, filtering, enumeration, description, and corruption checks passed")
 
 
 if __name__ == "__main__":

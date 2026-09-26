@@ -57,13 +57,14 @@ def check(path: Path, name: bytes, services: tuple[int, ...], allocation: int) -
 
 
 def main() -> None:
-    for stem in ("HELLO", "ECHO", "FDF", "BATCHIO", "FREHDCLK", "ZPRTC",
-                 "TEST"):
+    for stem in ("HELLO", "ECHO", "FDF", "P2DOS", "BATCHIO", "FREHDCLK",
+                 "ZPRTC", "TEST"):
         require((ROOT / f"build/rsx/{stem}.RSX").read_bytes()[:5] ==
                 b"BRSX\x02", f"{stem}.RSX: public carrier is not BRSX v2")
-    check(ROOT / "build/rsx/HELLO.RSX", b"HELLO", (201,), 1024)
-    check(ROOT / "build/rsx/ECHO.RSX", b"ECHO", (203,), 256)
-    check(ROOT / "build/rsx/FDF.RSX", b"FDF", (209,), 768)
+    check(ROOT / "build/rsx/HELLO.RSX", b"HELLO", (198,), 1024)
+    check(ROOT / "build/rsx/ECHO.RSX", b"ECHO", (199,), 256)
+    check(ROOT / "build/rsx/FDF.RSX", b"FDF", (183,), 768)
+    check(ROOT / "build/rsx/P2DOS.RSX", b"P2DOS", (200, 201), 256)
     check(ROOT / "build/rsx/BATCHIO.RSX", b"BATCHIO", (10,), 512)
     print("All public BRSX carriers use v2 identity, runtime headers, and metadata")
 

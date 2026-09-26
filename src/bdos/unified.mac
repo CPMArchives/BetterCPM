@@ -41,8 +41,15 @@ BIO_SECTRAN     EQU     LY_BIOS+48
 
 UB_ENTRY:                               ; enter unified BDOS
         LD      A,C
-        CP      200
-        JP      NC,LY_EXT
+        SUB     176
+        CP      8
+        JP      C,LY_EXT                ; route only the frozen production range
+        RRA                             ; 200/201 reduce to relative pair 12
+        CP      12
+        JP      Z,LY_EXT                ; route the P2DOS fallback pair
+
+UB_STANDARD:                            ; dispatch ordinary function
+        LD      A,C                     ; preserve the standard entry convention
         LD      (UB_OLDSP),SP
         LD      SP,UB_STKTOP
         LD      (UB_OLDIX),IX           ; nonlocal error exits can unwind any helper depth
@@ -624,8 +631,8 @@ UB_GETDPB:                              ; return DPB pointer
         JP      UB_RETHL
 
 UB_PTRBAD:                              ; ptrbad
-        LD      HL,0
-        JP      UB_RETHL
+        XOR     A
+        JP      UB_RETA
 
 UB_USER:                                ; get or set user number
         LD      A,E

@@ -1,7 +1,7 @@
 ; ********************************************************************************
 ; *                      BetterCP/M FreHD TIME RSX                               *
 ; *                                                                              *
-; * FreHD real-time-clock provider for BetterCP/M TIME ABI 1.0. Function 208     *
+; * FreHD real-time-clock provider for BetterCP/M TIME ABI 1.0. Function 182     *
 ; * discovery is supplied by the central BRSX-v2 registry walker; this module    *
 ; * implements the provider service and FreHD-specific clock access.              *
 ; ********************************************************************************

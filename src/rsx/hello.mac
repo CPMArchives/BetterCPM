@@ -3,7 +3,7 @@
 ; ********************************************************************************
 ; *                         BetterCP/M HELLO RSX                                *
 ; *                                                                              *
-; * Proof Resident System Extension. Intercepts experimental BDOS Function 201   *
+; * Proof Resident System Extension. Intercepts non-public BDOS Function 198     *
 ; * and returns its module-specific response while chaining every other call to  *
 ; * the next RSX or fixed BDOS.                                                  *
 ; ********************************************************************************
@@ -24,13 +24,13 @@ HR_SVOFF:       DW      0               ; resident-service entry offset
 ; ================================================================================
 ; =                          HELLO Proof Service                                =
 ; =                                                                              =
-; = Handles experimental Function 201 as an RSX-local service and preserves the =
+; = Handles non-public Function 198 as an RSX-local service and preserves the   =
 ; = normal lower-layer chain for all other BDOS requests.                        =
 ; ================================================================================
 
 HR_DISPATCH:                            ; intercept proof BDOS service
         LD      A,C
-        CP      201
+        CP      198
         JR      NZ,HR_CHAIN
         LD      DE,HR_MESSAGE
         LD      C,9

@@ -1,7 +1,7 @@
 ; ********************************************************************************
 ; *                        BetterCP/M RSX Test Utility                           *
 ; *                                                                              *
-; * Invokes experimental BDOS Function 201 through the public CALL 0005H gateway *
+; * Invokes non-public BDOS Function 198 through the public CALL 0005H gateway   *
 ; * and reports whether the proof resident service is currently present.         *
 ; ********************************************************************************
 
@@ -15,11 +15,11 @@ BDOS            EQU     0005H
 ; =                           RSX Presence Test                                 =
 ; =                                                                              =
 ; = Calls the experimental proof service through the normal BDOS gateway and     =
-; = reports whether the installed RSX chain handles Function 201.                =
+; = reports whether the installed RSX chain handles Function 198.                =
 ; ================================================================================
 
 START:                                  ; enter RSX proof-service test
-        LD      C,201
+        LD      C,198
         CALL    BDOS
         LD      A,H
         CP      052H
@@ -43,7 +43,7 @@ RT_PRINT:                               ; print proof-service result
 ; Test Result Messages
 ; -------------------------------------------------------------------------------
 
-RT_PRESENT:    DB      'RSX function 201 returned 5253h',13,10,'$' ; service-present message
-RT_MISSING:    DB      13,10,'RSX function 201 unsupported',13,10,'$' ; service-missing message
+RT_PRESENT:    DB      'RSX function 198 returned 5253h',13,10,'$' ; service-present message
+RT_MISSING:    DB      13,10,'RSX function 198 unsupported',13,10,'$' ; service-missing message
         .DEPHASE
         END     START

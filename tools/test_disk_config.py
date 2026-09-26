@@ -25,8 +25,8 @@ def main():
         number += 1
         code.extend([f'        LD A,{number}', '        LD (STAGE),A', instructions])
     def api(op, pointer='REQ', status=0):
-        step(f'        LD B,{op}\n        LD C,207\n        LD DE,{pointer}\n        CALL 5\n        LD A,L\n        CP {status}\n        JP NZ,FAIL')
-    step('        LD B,0\n        LD C,207\n        CALL 5\n        LD A,(HL)\n        CP 66\n        JP NZ,FAIL')
+        step(f'        LD B,{op}\n        LD C,181\n        LD DE,{pointer}\n        CALL 5\n        LD A,L\n        CP {status}\n        JP NZ,FAIL')
+    step('        LD B,0\n        LD C,181\n        CALL 5\n        LD A,(HL)\n        CP 66\n        JP NZ,FAIL')
     api(1, '0FFF0H',1)  # pointer wrap must never reach protected memory
     code += ['        LD A,1','        LD (REQ),A']
     api(1)

@@ -26,7 +26,7 @@ def setup_program() -> bytes:
         LD (REQ),A
         LD DE,REQ
         LD B,3
-        LD C,207
+        LD C,181
         CALL 5
         LD A,L
         OR A
@@ -49,7 +49,7 @@ _toolong: LD HL,(REQ+15)
         LD (REQ+15),HL
 SETIT:  LD DE,REQ
         LD B,4
-        LD C,207
+        LD C,181
         CALL 5
         LD A,L
         OR A

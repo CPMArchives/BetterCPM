@@ -1,9 +1,9 @@
 BETTERCP/M EXTENDED BDOS NAMESPACE
 =================================
 
-Status: frozen BetterCP/M 1.0 namespace policy. Current source still uses the
-provisional 200-209 assignments; their coordinated migration belongs to the
-later implementation program.
+Status: frozen and implemented BetterCP/M 1.0 namespace policy. Current source
+uses production Functions 176-183, proof Functions 198/199 and inherited
+P2DOS-compatible Functions 200/201 without provisional aliases.
 
 
 1. PURPOSE AND EVIDENCE
@@ -117,7 +117,7 @@ their stability class.
 5. PROVISIONAL-TO-FINAL MIGRATION
 ---------------------------------
 
-The pre-freeze implementation currently uses:
+The pre-freeze implementation used this migration map:
 
   200 -> 176  CPX control
   202 -> 177  RSX control and reconstruction
@@ -131,18 +131,16 @@ The pre-freeze implementation currently uses:
 Proof selectors 201 and 203 are removed from the released namespace.  Tests
 which still need two numeric interceptors use 198 and 199.
 
-The implementation program performs the source migration in one bounded
-change: update
+The implementation program completed the source migration in one bounded
+change: it updated
 dispatchers, RSXs, utilities, fixtures, builders, tests and programmer
-documentation; rebuild all in-tree clients; prove that no BetterCP/M-private
-service claims 200 or 201; and install the P2DOS-compatible clock adapter at
+documentation; rebuilt all in-tree clients; proved that no BetterCP/M-private
+service claims 200 or 201; and installed the P2DOS-compatible clock adapter at
 those inherited selectors.
-`TIME.COM` uses provisional Function 208 for callable-service discovery and
-Function 202 for provider/profile information; those uses migrate to 182 and
-177 respectively. `FDF.RSX` uses provisional Function 209 for the FDF service
-and Function 202 for unload/profile handling; those uses migrate to 183 and 177.
-These secondary uses must be classified semantically rather than changed by a
-blind numeric substitution.
+`TIME.COM` now uses Function 182 for callable-service discovery and Function
+177 for provider/profile information. `FDF.RSX` uses Function 183 for the FDF
+service and Function 177 for unload/profile handling. These secondary uses
+were classified semantically rather than changed by a blind substitution.
 
 Obsolete numeric aliases are not retained unless a separately documented
 compatibility requirement justifies them.

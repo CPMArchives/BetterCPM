@@ -201,9 +201,9 @@ Functions 198 and 199 after the coordinated selector migration; those numbers
 carry no stable application ABI. The proof service returns `HL=5253h` and
 chains all other calls. `RSXTEST.COM` reaches it through `CALL 0005h`.
 
-The pre-migration source still uses Functions 201 and 203 for these proofs and
-202 for RSX control. Those provisional assignments are implementation state,
-not supported 1.0 ABI aliases.
+Current source uses Functions 198 and 199 for these proofs and Function 177 for
+RSX control. The former 201, 203 and 202 assignments are historical
+implementation state, not supported 1.0 ABI aliases.
 
 An RSX must be able to:
 

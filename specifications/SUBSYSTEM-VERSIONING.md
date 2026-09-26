@@ -75,7 +75,7 @@ version. A change to a subsystem version and the corresponding matrix entry
 belong in the same change set.
 
 The build generates `src/bdos/versions.inc` from the fixed CCP, BDOS, and BIOS
-rows. BetterCP/M BDOS Function 206 returns a pointer to that immutable
+rows. BetterCP/M BDOS Function 180 returns a pointer to that immutable
 version-1 runtime descriptor for `VER /V`. CPX and RSX facility versions are
 generated from the same matrix into their owning `CPX /V` and `RSX /V`
 commands. Runtime commands must not carry hand-maintained version values.

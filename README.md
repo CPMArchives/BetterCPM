@@ -198,7 +198,7 @@ while media observations and derived filesystem state remain separate.
 [`Engineering Specification 101`](docs/engineering/101%20CPX%20Inventory%20and%20TPA%20Report.md) expands `CPX LIST` with the active module's command inventory and a live TPA calculation, verifying that reclaimable CPXs do not reduce the 47K transient area.
 [`Engineering Specification 102`](docs/engineering/102%20Multiple%20CPXs%20and%20HELLO%20CPX.md) adds `HELLO.CPX`, generalizes runtime profile control to two independently selectable modules, and physically verifies concurrent chaining, selective unload, transient fallback, and unchanged TPA.
 [`Engineering Specification 103`](docs/engineering/103%20Directory%20Buffer%20and%20Warm-Boot%20Write%20Integrity.md) removes a directory-buffer/BIOS overlap exposed by runtime CPX reconstruction and verifies that physical directory writes remain sound after WBOOT.
-[`Engineering Specification 104`](docs/engineering/104%20Runtime%20RSX%20Proof.md) implements the first protected RSX lifecycle: a relocatable HELLO.RSX, movable gateway interception, runtime load/unload manager, visible TPA-boundary movement, WBOOT persistence, and a physical application-level proof through Function 201.
+[`Engineering Specification 104`](docs/engineering/104%20Runtime%20RSX%20Proof.md) records the first protected RSX lifecycle. The retained relocatable `HELLO.RSX` proof now uses non-public Function 198 while preserving movable gateway interception, runtime load/unload, visible TPA-boundary movement, WBOOT persistence, and the physical application-level proof.
 [`Engineering Specification 105`](docs/engineering/105%20Directory-Visible%20Extension%20Files.md) replaces fixed CPX/RSX system slots with ordinary directory-visible files, adds the protected filename reader used by cold boot and WBOOT, and stores filename stems in the active reconstruction table.
 [`Engineering Specification 106`](docs/engineering/106%20Drive-User%20Navigation%20and%20Prompt.md) adds direct `B:`, `5:`, and `C3:` navigation, derives the `A0>` prompt from authoritative BDOS state, and verifies automatic downward CCP relocation after its next page of growth.
 [`Engineering Specification 107`](docs/engineering/107%20CCP%20Command-Line%20Editor.md) adds CCP-only cursor editing, insert/overwrite modes, deletion, one-command history, and the portable logical-key/Model-4 matrix boundary without changing CP/M Function 10.
@@ -214,7 +214,7 @@ while media observations and derived filesystem state remain separate.
 [`Engineering Specification 118`](docs/engineering/118%20Completed%20BASIC%20Command%20Set.md) completes BASIC.CPX with stock USER and BetterCP/M VER, adds matching DIR/USER/CLR/VER transient files, and verifies all new resident and transient paths.
 [`Engineering Specification 119`](docs/engineering/119%20BCPX%20Version%201%20Module%20Format.md) supersedes the BCX1 proof carrier with the documented, versioned BCPX format and its filename-driven loader contract.
 [`Engineering Specification 120`](docs/engineering/120%20BRSX%20Version%201%20Module%20Format.md) supersedes the BRX1 proof with the documented BRSX carrier, a name-driven ordered protected loader, integrity validation, and a two-module physical chain proof.
-[`Engineering Specification 121`](docs/engineering/121%20Runtime%20Subsystem%20Version%20Reporting.md) adds the generated protected subsystem descriptor, BDOS Function 206, and matching resident/transient `VER /V` reporting without a second command-local version table.
+[`Engineering Specification 121`](docs/engineering/121%20Runtime%20Subsystem%20Version%20Reporting.md) adds the generated protected subsystem descriptor, now exposed through production BDOS Function 180, and matching resident/transient `VER /V` reporting without a second command-local version table.
 [`Engineering Specification 122`](docs/engineering/122%20Resident%20Size%20Budget%20and%20Relocation%20Gate.md) makes stock-class TPA a release constraint, inventories the current protected footprint, and records the first verified compaction pass.
 [`Engineering Specification 123`](docs/engineering/123%20Unified%20BDOS%20Service%20Inventory.md) maps every disk/file selector from 13 through 40 onto ten universal internal services and defines the 3.5K ceiling for the replacement unified BDOS.
 [`Engineering Specification 25`](docs/engineering/25%20Allocation%20and%20DPB%20Pointers.md) exposes the current drive's reconstructed allocation vector and live 15-byte disk parameter block.
@@ -264,6 +264,7 @@ python3 tools/build_cpx_utility.py
 python3 tools/build_native_cpx_utility.py
 python3 tools/build_hello_rsx.py
 python3 tools/build_echo_rsx.py
+python3 tools/build_p2dos_rsx.py
 python3 tools/build_batch.py
 python3 tools/build_rsx_utilities.py
 python3 tools/build_frehd_time_rsx.py

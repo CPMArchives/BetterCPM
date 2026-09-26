@@ -378,7 +378,7 @@ KE_MOFF:        DW      0               ; metadata offset
 KE_LEN:         DW      0               ; exact carrier length
 KE_FACTS:       DW      0               ; normalized fact block
 KE_CURSOR:      DW      0               ; normalizer scratch cursor
-KE_PUBLIC:      DW      0               ; public Function-202 request
+KE_PUBLIC:      DW      0               ; public Function-177 request
 KE_CREQ:        DS      13              ; carrier validation request
 KE_MREQ:        DS      11              ; metadata validation request
 KE_HREQ:        DS      6               ; replacement-overlay handoff request

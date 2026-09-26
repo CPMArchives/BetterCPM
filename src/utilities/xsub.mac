@@ -8,7 +8,7 @@
 
 
 BDOS            EQU     0005H
-RSXFUNC         EQU     202
+RSXFUNC         EQU     177
 
         CSEG
         .PHASE  0100H
@@ -17,7 +17,7 @@ RSXFUNC         EQU     202
 ; =                             BATCHIO Installation                             =
 ; =                                                                              =
 ; = Checks whether the protected XSUB-compatible provider is already active.    =
-; = If absent, submits a Function-202 request to load BATCHIO into the ordered   =
+; = If absent, submits a Function-177 request to load BATCHIO into the ordered   =
 ; = RSX profile.                                                                =
 ; ================================================================================
 ; -------------------------------------------------------------------------------
@@ -92,7 +92,7 @@ XS_WHIGH:                               ; bound scratch below TPA and stack
 ; Request, Messages, and Stack
 ; -------------------------------------------------------------------------------
 
-XS_REQUEST:     DB      2,3,0,0,'BATCHIO ',0,0,0,0,0,0 ; Function-202 request
+XS_REQUEST:     DB      2,3,0,0,'BATCHIO ',0,0,0,0,0,0 ; Function-177 request
 XS_ALREADY:     DB      13,10,'Xsub Already Present','$' ; already-active message
 XS_LOADERR:     DB      13,10,'Xsub Load Error','$' ; load-failure message
 XS_END:                                 ; end of caller-owned program image

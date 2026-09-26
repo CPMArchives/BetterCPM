@@ -373,7 +373,7 @@ DC_SKBAD:                               ; reject duplicate sector ID
         POP BC
         JP DC_INVALID
   ; 07-Sep-2026: caller has restored our complete 1K control image.
-  ; DE points at its valid 80-byte request in TPA, as for BDOS 207/5.
+  ; DE points at its valid 80-byte request in TPA, as for BDOS 181/5.
   ; Keep normal geometry, drive-zero protection and stream checks below.
 
 ; ================================================================================

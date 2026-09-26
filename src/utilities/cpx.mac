@@ -10,7 +10,7 @@
 BDOS            EQU     0005H
 CMDLEN          EQU     0080H
 CMDDATA         EQU     0081H
-CPXFUNC         EQU     200
+CPXFUNC         EQU     176
 
         CSEG
         .PHASE  0103H

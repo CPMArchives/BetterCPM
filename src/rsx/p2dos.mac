@@ -1,0 +1,123 @@
+        INCLUDE layout.inc
+
+; ********************************************************************************
+; *                        BetterCP/M P2DOS RSX                                  *
+; *                                                                              *
+; * Optional P2DOS clock-call frontend. Intercepts Functions 200/201, resolves   *
+; * the native TIME service for every request, and retains no provider address.  *
+; ********************************************************************************
+
+
+RSXBASE         EQU     08000H
+BDOS            EQU     00005H
+
+        CSEG
+        .PHASE  RSXBASE
+
+; ================================================================================
+; =                         P2DOS Frontend Dispatch                              =
+; =                                                                              =
+; = Maps historical clock calls onto TIME ABI 1.0 and chains other requests.      =
+; = Failed GET never publishes the private native request buffer.                  =
+; ================================================================================
+
+P2_NEXT:        DW      BDOS            ; next RSX descriptor pointer
+P2_ENTRY:       DW      P2_DISPATCH     ; RSX entry pointer
+P2_SVCOUNT:     DB      0               ; callable-service count
+P2_RESERVED:    DB      0               ; reserved service metadata
+P2_SVOFF:       DW      0               ; resident-service entry offset
+
+P2_DISPATCH:                            ; dispatch P2DOS clock request
+        LD      A,C
+        CP      200
+        JR      Z,P2_GET
+        CP      201
+        JR      Z,P2_SET
+
+P2_CHAIN:                               ; chain unhandled request
+        LD      HL,(P2_NEXT)
+        JP      (HL)
+
+; -------------------------------------------------------------------------------
+; P2DOS GET and SET
+; -------------------------------------------------------------------------------
+
+P2_GET:                                 ; get P2DOS-format clock record
+        PUSH    DE                      ; public buffer address must survive
+        XOR     A
+        CALL    P2_CALL
+        OR      A
+        JR      NZ,P2_FAILED
+        POP     DE
+        PUSH    DE
+        LD      HL,P2_REQUEST+4
+        LD      BC,5
+        LDIR                            ; publish only a validated native sample
+        POP     DE
+        JR      P2_SUCCESS
+
+P2_SET:                                 ; set P2DOS-format clock record
+        PUSH    DE                      ; preserve caller address across copying
+        LD      HL,0
+        ADD     HL,DE
+        LD      DE,P2_REQUEST+4
+        LD      BC,5
+        LDIR
+        LD      A,1
+        CALL    P2_CALL
+        OR      A
+        JR      NZ,P2_FAILED
+        POP     DE
+
+P2_SUCCESS:                             ; return historical P2DOS success
+        XOR     A
+        LD      HL,0
+        RET
+
+P2_FAILED:                              ; map every claimed failure to FEh
+        POP     DE
+        LD      A,0FEH
+        LD      HL,000FEH
+        RET
+
+; -------------------------------------------------------------------------------
+; Per-Call Native TIME Resolution
+; -------------------------------------------------------------------------------
+
+P2_CALL:                                ; resolve and invoke native TIME service
+        LD      (P2_REQUEST+2),A
+        LD      HL,P2_LKRET
+        PUSH    HL
+        LD      C,182
+        LD      DE,P2_LKREQ
+        LD      HL,(P2_NEXT)
+        JP      (HL)                    ; bypass this frontend during discovery
+
+P2_LKRET:                               ; validate resident-service lookup
+        OR      A
+        RET     NZ
+        LD      A,H
+        OR      L
+        JR      Z,P2_NO_SERVICE
+        LD      BC,P2_TIME_RETURN
+        PUSH    BC
+        LD      DE,P2_REQUEST
+        JP      (HL)                    ; consume address only for this call
+
+P2_TIME_RETURN:                         ; return native TIME status
+        RET
+
+P2_NO_SERVICE:                          ; report unavailable native service
+        LD      A,1
+        RET
+
+; -------------------------------------------------------------------------------
+; Private Request Storage
+; -------------------------------------------------------------------------------
+
+P2_LKREQ:       DB      1,20,0,0,'TIME',1,0,0,0 ; Function-182 lookup request
+                DB      0,0,0,0,0,0,0,0         ; resolver output fields
+P2_REQUEST:     DB      1,10,0,0,0,0,0,0,0,0    ; native TIME request
+
+        .DEPHASE
+        END

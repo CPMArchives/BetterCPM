@@ -3,12 +3,12 @@
 ; *                                                                              *
 ; * General transient manager for the ordered resident-system-extension profile. *
 ; * Supersedes the original hard-coded HELLO proof utility and provides LIST,    *
-; * LOAD, UNLOAD, version, service-number, and TPA reporting through Function 202.*
+; * LOAD, UNLOAD, version, service-number, and TPA reporting through Function 177.*
 ; ********************************************************************************
 
 
 BDOS            EQU     0005H
-RSXFUNC         EQU     202
+RSXFUNC         EQU     177
 
         CSEG
         .PHASE  0103H
@@ -148,7 +148,8 @@ RS_LTPA:                                ; report TPA after listing
 ; ================================================================================
 ; =                             RSX Profile Changes                              =
 ; =                                                                              =
-; = Parses LOAD/UNLOAD names, accepts an optional .RSX suffix, builds the Function-202 =
+; = Parses LOAD/UNLOAD names, accepts an optional .RSX suffix, and builds the    =
+; = Function-177 request.                                                       =
 ; = request, and invokes the protected chain manager.                            =
 ; ================================================================================
 ; -------------------------------------------------------------------------------
@@ -163,7 +164,7 @@ RS_UNLOAD:                              ; select unload operation
         LD      A,2
 
 ; -------------------------------------------------------------------------------
-; Function-202 Change Request
+; Function-177 Change Request
 ; -------------------------------------------------------------------------------
 
 RS_CHANGE:                              ; perform RSX profile change
@@ -186,7 +187,7 @@ RS_PDONE:                               ; finish parsed operation
 
 RS_DONE:                                ; return to CCP
   ; The CCP installs a warm-boot return frame before entering a transient.
-  ; Use it after Function 202 changes the resident chain: BDOS Function 0
+  ; Use it after Function 177 changes the resident chain: BDOS Function 0
   ; would discard the newly published profile during reconstruction.
         RET
 
@@ -448,7 +449,7 @@ RS_UNIT:                                ; print kilobyte suffix
 ; =                            Manager Data and State                            =
 ; =                                                                              =
 ; = Defines command keywords, messages, parsing scratch, decimal-conversion state, and =
-; = the Function-202 request block.                                              =
+; = the Function-177 request block.                                              =
 ; ================================================================================
 ; -------------------------------------------------------------------------------
 ; Keywords and Working State
@@ -473,7 +474,7 @@ RS_NCOUNT:     DB      0                ; parsed name length
 RS_DREM:       DB      0                ; decimal remainder
 RS_TENS:       DB      0                ; decimal tens scratch
 RS_UNITV:      DB      0                ; decimal units scratch
-RS_REQ:        DB      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ; Function-202 request block
+RS_REQ:        DB      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ; Function-177 request block
 
         INCLUDE rsxvers.inc
 RS_END:                                ; first free byte after transient image

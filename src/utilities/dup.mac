@@ -983,7 +983,7 @@ LOCATION:LD HL,ATMSG                    ; location
 ; ================================================================================
 ; =                            Write-Track Operation                             =
 ; =                                                                              =
-; = Submits a prepared WD write-track stream through BDOS 207 with bounded retry and =
+; = Submits a prepared WD write-track stream through BDOS 181 with bounded retry =
 ; = write-protection handling.                                                   =
 ; ================================================================================
 ; -------------------------------------------------------------------------------
@@ -1284,7 +1284,7 @@ RECMSG: DB ', record ',0                ; recmsg
 
 STATUSMSG:DB ', error status ',0        ; statusmsg
 
-  ; WD WRITE TRACK stream. No controller ports here; BDOS 207 does I/O.
+  ; WD WRITE TRACK stream. No controller ports here; BDOS 181 does I/O.
   ; MFM uses F5/F6 sync and F7 CRC tokens. FM uses the controller's
   ; address-mark tokens directly. Data starts erased (E5), inverted only
   ; for formats which specify it. Sector IDs follow the FDF skew order.

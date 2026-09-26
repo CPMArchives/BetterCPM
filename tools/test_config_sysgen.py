@@ -14,7 +14,7 @@ def probe(work,check=False,fault=False):
         LD SP,4000H
         LD DE,REQ
         LD B,1
-        LD C,207
+        LD C,181
         CALL 5
         LD A,L
         OR A
@@ -30,7 +30,7 @@ def probe(work,check=False,fault=False):
         LD (REQ+6),A
         LD DE,REQ
         LD B,2
-        LD C,207
+        LD C,181
         CALL 5
         LD A,L
         OR A
@@ -38,7 +38,7 @@ def probe(work,check=False,fault=False):
 '''
     body+='''        LD DE,REQ
         LD B,3
-        LD C,207
+        LD C,181
         CALL 5
         LD A,L
         OR A
@@ -54,7 +54,7 @@ def probe(work,check=False,fault=False):
         LD (REQ+1),A
         LD DE,REQ
         LD B,4
-        LD C,207
+        LD C,181
         CALL 5
         LD A,L
         OR A

@@ -622,17 +622,17 @@ Z_BOOTIO:                               ; perform bootstrap host transfer
         OR A
         RET
 
-  ; BDOS 207 disk-configuration interface.  Setters execute through the
+  ; BDOS 181 disk-configuration interface. Setters execute through the
   ; reloadable z80pack control overlay at LY_CFG.
 
 ; ================================================================================
 ; =                         Disk Configuration Interface                         =
 ; =                                                                              =
-; = Implements the resident BDOS 207 control surface and delegates profile setters =
-; = and formatting to the reloadable z80pack configuration overlay.              =
+; = Implements the resident BDOS 181 control surface and delegates profile      =
+; = setters and formatting to the reloadable z80pack configuration overlay.      =
 ; ================================================================================
 ; -------------------------------------------------------------------------------
-; BDOS 207 Dispatch
+; BDOS 181 Dispatch
 ; -------------------------------------------------------------------------------
 
 Z_API:                                  ; dispatch disk-control request

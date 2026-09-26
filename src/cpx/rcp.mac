@@ -1649,7 +1649,7 @@ BC_VERCHECK:                            ; vercheck
         LD      A,(HL)
         CP      'V'
         JR      NZ,BC_VERBAD
-        LD      C,206
+        LD      C,180
         CALL    BDOS
         LD      A,(HL)
         CP      'B'

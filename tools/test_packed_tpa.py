@@ -93,7 +93,7 @@ def main() -> None:
         screen = (work / "trs80-text-0.bin").read_bytes()[:80 * 24]
         assert screen.count(b"TPA overwrite verified") == 2, screen
         assert b"FAILED" not in screen, screen
-        assert b"RSX function 201 returned 5253h" in screen, screen
+        assert b"RSX function 198 returned 5253h" in screen, screen
         assert screen.count(b"RCP   : DIR, ERA, TYPE, REN, USER, CLS, VER, COPY, MOVE") == 2, screen
         expected = f"TPA available: {(LAYOUT['TPA'] - 0x100) // 1024}K".encode()
         assert screen.count(expected) == 2, screen

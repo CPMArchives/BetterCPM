@@ -6,7 +6,7 @@
         LD (REQ),A
         LD DE,REQ
         LD B,3
-        LD C,207
+        LD C,181
         CALL 5
         LD A,L
         OR A
@@ -24,7 +24,7 @@
         LD (REQ+15),HL
         LD DE,REQ
         LD B,4
-        LD C,207
+        LD C,181
         CALL 5
         LD A,L
         OR A
