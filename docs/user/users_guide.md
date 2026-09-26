@@ -505,7 +505,194 @@ A CP/M warm boot also terminates the current program and returns control to the 
 Because an interrupted disk operation can leave an operation incomplete, avoid aborting a command while it is actively writing to a disk unless termination is necessary. If a disk operation reports an error or is interrupted unexpectedly, verify the affected files or media before continuing with further modifications. 
 
 ### 4. Basic Commands
-4.1 DIR — Directory 4.2 ERA — Erase Files 4.3 REN — Rename Files 4.4 TYPE — Display a File 4.5 USER — Select User Area 4.6 COPY — Copy Files 4.7 MOVE — Move Files 4.8 CLS — Clear Screen 4.9 VER — Display Version Information 4.10 SAVE — Save Memory to a File 4.11 GET — Load a File into Memory 4.12 GO — Execute at 0100H 4.13 JUMP — Execute at an Address 4.14 PEEK / P — Display Memory 4.15 POKE — Modify Memory
+
+BetterCP/M provides a set of basic commands for everyday system operation. Some are built directly into the command processor, while others are normally supplied as resident commands by the standard `RCP.CPX`.
+
+Several resident commands also have transient versions stored on disk. The resident version provides the command's basic, frequently used functions without loading a program from disk; the corresponding transient program may provide additional capabilities.
+
+Each command description presents the resident and transient forms together. Where a syntax form, option, or feature is available only in the transient version, it is identified as **transient only**. If no distinction is shown, the described operation is available in both forms where both forms of the command exist.
+
+The syntax descriptions in this chapter use the following conventions:
+
+- Words shown in uppercase identify commands or literal command elements.
+- *Italicized words* represent information supplied by the user.
+- Items enclosed in square brackets `[ ]` are optional.
+- A vertical bar `|` separates alternatives where more than one form is permitted.
+
+Examples show the command as it is entered at the BetterCP/M prompt.
+
+#### 4.1 DIR — Directory
+
+Displays a list of files in the current or specified drive/user area.
+
+`DIR` is available as both a resident command and a transient program. The resident version provides the standard CP/M 2.2 directory functions. The transient version provides additional ways to select and display files, including selection by file attributes and, where timestamp information is available, by date and time.
+
+##### Syntax
+
+```text
+DIR
+DIR filespec
+DIR DU:
+DIR DU:filespec
+```
+
+The transient version additionally accepts options for selecting or displaying files by attributes and date/time. The exact option syntax is provisional for BetterCP/M 1.0.
+
+##### Displaying a Directory
+
+`DIR` without an operand displays the files in the current drive/user area:
+
+```text
+A>DIR
+```
+
+A typical directory display lists the names and file types of the files found:
+
+```text
+A>DIR
+A: ASM      COM : CONFIG   COM : DUP      COM : README   TXT
+A: STAT     COM : SUBMIT   COM : TIME     COM : XSUB     COM
+```
+
+Only files visible under the normal CP/M directory rules are included.
+
+##### Specifying a Drive or User Area
+
+A drive can be specified without changing the current drive:
+
+```text
+A>DIR B:
+```
+
+BetterCP/M also accepts a drive/user specification:
+
+```text
+A>DIR B3:
+```
+
+This displays the directory of drive B, user area 3. When the command finishes, the current drive/user remains unchanged.
+
+Thus:
+
+```text
+A2>DIR B3:
+```
+
+displays the requested directory and returns to:
+
+```text
+A2>
+```
+
+##### Selecting Files
+
+A file specification restricts the listing to matching files:
+
+```text
+A>DIR *.COM
+```
+
+lists `.COM` files in the current drive/user area.
+
+The standard CP/M `?` and `*` wildcard characters can be used:
+
+```text
+A>DIR TEST?.COM
+A>DIR *.ASM
+A>DIR README.*
+```
+
+A file specification can also include a drive or drive/user:
+
+```text
+A>DIR B:*.COM
+A>DIR B3:*.ASM
+```
+
+Wildcards are described in Section 2.3.
+
+##### Resident DIR
+
+The resident `DIR` provides the standard CP/M 2.2 directory functions. It is intended for the common case of quickly listing files without loading a transient utility from disk.
+
+The resident command supports:
+
+```text
+DIR
+DIR filespec
+DIR DU:
+DIR DU:filespec
+```
+
+including the standard CP/M wildcard forms.
+
+For example:
+
+```text
+A>DIR *.COM
+```
+
+or:
+
+```text
+A>DIR B3:*.COM
+```
+
+No special action is required to invoke the resident version. When `DIR` is supplied by the active resident command package, entering `DIR` invokes it normally.
+
+##### Transient DIR
+
+`DIR.COM` provides the ordinary directory functions of resident `DIR` together with additional directory-selection and display facilities.
+
+The BetterCP/M 1.0 transient version is provisionally intended to provide at least the following additional capabilities:
+
+**File attributes**
+
+Files can be selected or displayed according to their CP/M file attributes, including:
+
+- read-only (R/O);
+- system (SYS); and
+- archive (ARC).
+
+This permits operations such as displaying only read-only files or identifying files carrying particular attribute settings.
+
+For example, the final interface may provide the equivalent of:
+
+```text
+A>DIR *.COM [RO]
+```
+
+to select read-only `.COM` files.
+
+> **Note:** The option notation shown here is provisional. The final BetterCP/M 1.0 `DIR.COM` syntax may differ.
+
+**Date and time**
+
+Where the disk format and installed facilities provide file date/time information, transient `DIR` can use that information in directory displays and file selection.
+
+This can include displaying file timestamps and selecting files according to date or time criteria.
+
+For example, the final interface may provide operations equivalent to:
+
+```text
+A>DIR *.ASM [DATE]
+```
+
+or selection of files before, after, or on a specified date.
+
+Date/time functions are available only when the underlying filesystem contains the required timestamp information. A system clock by itself does not give existing files timestamps.
+
+> **BetterCP/M 1.0 note:** Filesystem timestamp support is not part of the required BetterCP/M 1.0 system. Date/time directory functions therefore depend upon the facilities actually present in the system and media being used.
+
+##### Resident and Transient Operation
+
+The resident and transient versions are intended to present the same basic `DIR` command rather than two unrelated utilities. Ordinary directory operations use the same familiar syntax in either case.
+
+The transient program is needed only when a requested operation exceeds the capabilities of resident `DIR`.
+
+The final manual will mark transient-only syntax directly in the syntax and option descriptions so that the two forms can be consulted as a single command reference.
+
+4.2 ERA — Erase Files 4.3 REN — Rename Files 4.4 TYPE — Display a File 4.5 USER — Select User Area 4.6 COPY — Copy Files 4.7 MOVE — Move Files 4.8 CLS — Clear Screen 4.9 VER — Display Version Information 4.10 SAVE — Save Memory to a File 4.11 GET — Load a File into Memory 4.12 GO — Execute at 0100H 4.13 JUMP — Execute at an Address 4.14 PEEK / P — Display Memory 4.15 POKE — Modify Memory
 The final ordering is open. Alphabetical may prove better.
 
 ### 5. Batch Processing
