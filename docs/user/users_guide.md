@@ -60,7 +60,55 @@ Later chapters cover batch processing, CPX and RSX extensions, system configurat
 Programmers who require the BetterCP/M programming interfaces should consult the BetterCP/M Programmer's Guide. Internal system architecture and implementation are covered separately in the BetterCP/M technical documentation.
 
 ### 2. Drives, User Areas, and Files
-2.1 Drives and User Areas 2.2 File Names and File Specifications 2.3 Wildcards 2.4 File Attributes 2.5 Changing Media 2.6 Disk Status and Capacity
+#### 2.1 Drives and User Areas
+
+BetterCP/M follows the standard CP/M convention of identifying disk drives by letters. Drives are named `A:` through `P:`, although the number of drives actually available depends on the system and its configuration.
+
+The current drive is shown as part of the BetterCP/M command prompt. To select another drive, enter its drive letter followed by a colon:
+
+```text
+A> B:
+B>
+```
+
+Files may also be referenced on another drive without changing the current drive:
+
+```text
+A>DIR B:
+A>TYPE B:README.TXT
+```
+
+BetterCP/M also retains the CP/M user-area system. Each drive can contain files in user areas numbered 0 through 15. User areas provide separate logical file spaces on the same disk: a file in one user area is ordinarily distinct from files in the other user areas on that drive.
+
+The current user area can be selected directly by entering its number:
+
+```text
+A>5:
+A5>
+```
+
+A drive and user area can be selected together:
+
+```text
+A> B3:
+B3>
+```
+
+This selects drive B, user area 3.
+
+BetterCP/M uses the term **drive/user**, or **DU**, when referring to a particular combination of drive and user area. Thus `A0:` identifies drive A, user 0; `B3:` identifies drive B, user 3.
+
+A drive/user specification can also qualify a command or file operation without changing the current drive/user. For example:
+
+```text
+A>DIR B3:
+```
+
+lists the files in user area 3 of drive B while leaving the current drive and user area unchanged.
+
+The ordinary CP/M conventions remain valid. Programs that use the standard BDOS drive and user facilities see the same drive/user organization, and conventional CP/M programs need not be aware of BetterCP/M's combined `DU:` command notation.
+
+2.2 File Names and File Specifications 2.3 Wildcards 2.4 File Attributes 2.5 Changing Media 2.6 Disk Status and Capacity
 
 ### 3. Using the Command Environment
 3.1 The BetterCP/M Prompt 3.2 Entering Commands 3.3 Command-Line Editing 3.4 Command History 3.5 Selecting Drives and User Areas 3.6 Resident and Transient Commands 3.7 CPX Commands 3.8 Command Search and Program Execution 3.9 Terminating Commands and Programs
