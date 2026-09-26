@@ -199,8 +199,9 @@ directory utility unless it provides genuine additional value.
   the released namespace, and rebuild every in-tree client. The replacement
   CPX call uses a versioned, name-based request block and enumerates module
   metadata without compiling module identities into `CPX.COM` or BDOS.
-- [ ] Implement and qualify the frozen CPX initialization, shutdown, metadata, command enumeration,
-  ordering, dependency, recursion, abort, and capability-discovery rules.
+- [ ] Implement and qualify the frozen CPX initialization, shutdown, metadata,
+  command enumeration, configured ordering, recursion, abort, and capability-
+  discovery rules.
 - [ ] Remove BASIC/HELLO-specific knowledge from the CPX manager and support
   arbitrary valid CPX files.
 - [ ] Implement and qualify the frozen RSX dispatch, chaining, bypass, initialization, shutdown,
@@ -210,8 +211,9 @@ directory utility unless it provides genuine additional value.
 - [ ] Make extension reconfiguration transactional, with validation,
   rollback, and a recovery configuration that boots without optional modules.
 - [ ] Define optional state export/import without preserving stale pointers.
-- [ ] Preserve explicit extension ordering and reject missing dependencies,
-  conflicts, and cycles.
+- [ ] Preserve explicit CPX and RSX profile order and reject duplicate callable-
+  service providers before publication. Retain the former configuration after
+  any failed prospective validation.
 - [ ] Keep the RSX/CPX Programmer's Guide synchronized with every stabilized
   interface before promising third-party binary compatibility.
 - [ ] Keep the qualified CP/M-compatible SUBMIT/XSUB and `BATCHIO.RSX` path as
@@ -238,6 +240,11 @@ directory utility unless it provides genuine additional value.
   removable tracing/diagnostics, an extension SDK, minimal ABI examples,
   native development tools, and native build/test integration as independent
   later-1.x increments.
+- [ ] When a concrete component requires them, design a later carrier/metadata
+  revision for declarative extension relationships: dependency identifiers and
+  target/version semantics, installation capability requirements, conflicts,
+  relative-order declarations, graph/cycle validation, and cross-CPX/RSX
+  behavior. No minor release is assigned, and none of this is a 1.0 requirement.
 - [ ] Investigate the
   [unified user-facing module model](docs/engineering/POST-1.0-UNIFIED-MODULE-MODEL.md):
   a common management interface may identify a validated BCPX or BRSX carrier

@@ -26,8 +26,12 @@ bytes, exactly 53 KiB.
 Engineering Specification 151 records the completed Stage 3 prepared-profile
 commit and cross-platform qualification. Release acceptance must additionally
 cover the complete CPX and RSX behavior published by the Stage 7 contract,
-including ordering, dependencies, conflicts, cycle rejection, lifecycle,
-failure recovery and arbitrary conforming module metadata.
+including explicit configured ordering, lifecycle, failure recovery, duplicate
+callable-service rejection and arbitrary conforming metadata defined by the
+frozen carriers. Engineering Specification 156 corrects the former accidental
+promotion of general dependencies, conflicts, relative-order declarations and
+cycle rejection into the 1.0 contract; BCPX v1 and BRSX v2 cannot represent
+those later relationship facilities.
 
 The metadata-v1 normalizer recognizes the retained pointer and service records
 but currently advances past other record types. Architecture Specification 21
