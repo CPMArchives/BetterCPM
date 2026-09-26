@@ -245,6 +245,15 @@ directory utility unless it provides genuine additional value.
   target/version semantics, installation capability requirements, conflicts,
   relative-order declarations, graph/cycle validation, and cross-CPX/RSX
   behavior. No minor release is assigned, and none of this is a 1.0 requirement.
+- [ ] Investigate the
+  [unified user-facing module model](docs/engineering/POST-1.0-UNIFIED-MODULE-MODEL.md):
+  a common management interface may identify a validated BCPX or BRSX carrier
+  and delegate to its existing class-specific manager, while RSX/CPX remains
+  the authoritative lifetime distinction. Keep functional roles, service ABIs,
+  and optional filename conventions separate. Resolve the historical
+  `LOAD.COM` command-name conflict and the current stem-plus-class-extension
+  profile format before approving any interface or arbitrary role-oriented
+  extension. This is post-1.0 investigation, not a 1.0 implementation task.
 - [ ] Before distributing Digital Research LINK 1.3, record the exact binary
   hash, z80pack and compatibility-suite provenance, and applicable
   redistribution permission in the BetterCP/M third-party inventory.
