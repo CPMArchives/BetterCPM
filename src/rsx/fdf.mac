@@ -30,9 +30,9 @@ FD_SVOFF:       DW      0               ; resident-service entry offset
 
 FD_DISPATCH:                            ; dispatch FDF RSX request
         LD A,C
-        CP 209
+        CP 183
         JP Z,FD_SERVICE
-        CP 202
+        CP 177
         JP NZ,FD_CHAIN
   ; Unloading our support detaches its logical aliases first. All ordinary
   ; BDOS writes are synchronous. Select A successfully before altering tables;

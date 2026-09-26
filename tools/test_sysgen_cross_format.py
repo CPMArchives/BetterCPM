@@ -24,7 +24,7 @@ def setup_program() -> bytes:
         LD (REQ),A
         LD DE,REQ
         LD B,3
-        LD C,207
+        LD C,181
         CALL 5
         LD A,L
         OR A
@@ -46,7 +46,7 @@ def setup_program() -> bytes:
         LD (REQ+7),HL
         LD DE,REQ
         LD B,4
-        LD C,207
+        LD C,181
         CALL 5
         LD A,L
         OR A

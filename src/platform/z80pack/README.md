@@ -45,7 +45,7 @@ before reading system modules. Unloaded TPA remains 54,273 bytes.
 
 ## Runtime disk formats
 
-The standard BIOS disk/console entries work. BDOS 207 discovery, getters, and
+The standard BIOS disk/console entries work. BDOS 181 discovery, getters, and
 physical/logical setters are implemented. A remains the protected bootstrap
 format; B-D can be rebound by CONFIG to uniform, double-sided, and FDF-assisted
 raw layouts. The adapter deblocks 256-, 512-, and 1024-byte sectors into CP/M

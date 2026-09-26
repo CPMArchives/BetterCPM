@@ -93,9 +93,9 @@ need and an appropriate ABI version change.
 
 A provider advertises service ID `TIME`, ABI 1.0, through the resident-service
 registry. Clients discover its callable address through the resident-service
-gateway at Function 182. Current source still uses provisional Function 208;
-the implementation program migrates every in-tree client together. The service
-identity and ABI do not change with that gateway-number migration.
+gateway at Function 182. Current source and generated clients use that final
+selector; provisional Function 208 is not an alias. The service identity and
+ABI did not change with the gateway-number migration.
 
 The TIME request block is ten bytes:
 

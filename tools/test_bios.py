@@ -492,6 +492,10 @@ class Z80:
                 low = self.a & 1
                 self.a = (self.a >> 1) | (low << 7)
                 self.carry = bool(low)
+            elif op == 0x1F:            # RRA
+                low = self.a & 1
+                self.a = (self.a >> 1) | (0x80 if self.carry else 0)
+                self.carry = bool(low)
             elif op == 0xA5:            # AND L
                 self.a &= self.l
                 self.z, self.carry = self.a == 0, False

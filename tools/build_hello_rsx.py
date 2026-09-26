@@ -39,7 +39,7 @@ def main() -> None:
     # growth room, this makes the protected-memory cost visible in CP/M's
     # whole-K TPA convention while load/unload is being verified.
     allocation = max(0x400, (len(data) + 0xFF) & ~0xFF)
-    carrier = make_module(name="HELLO", version=(0, 1), services=[201],
+    carrier = make_module(name="HELLO", version=(0, 1), services=[198],
                           linked_base=LINK_BASE, code=data, relocations=offsets,
                           entry_offset=8, allocation=allocation,
                           format_version=2)

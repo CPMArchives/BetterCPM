@@ -16,7 +16,7 @@ def main() -> None:
         ORG 100H
         LD SP,4000H
         LD B,4
-        LD C,207
+        LD C,181
         LD DE,REQ
         CALL 5
         JP 0

@@ -36,23 +36,32 @@ COREBDOS        EQU     LY_BDOS
 
 EX_ENTRY:                               ; enter protected extension layer
         LD A,C
-        CP 207
+        CP 181
         JP Z,LY_DISK
         LD      (EX_OLDSP),SP
         PUSH    IX
         LD      A,C
-        CP      200
+        CP      176
         JR      Z,BF_CPXCTL
-        CP      202
+        CP      177
         JR      Z,BF_RSXCTL
-        CP      204
+        CP      178
         JP      Z,BF_CURSOR
-        CP      205
+        CP      179
         JP      Z,BF_CCPPRN
-        CP      206
+        CP      180
         JP      Z,BF_VERSION
-        CP      208
+        CP      182
         JR      Z,BF_RSXSVC
+        CP      200
+        JR      C,EX_UNHANDLED
+  ; Functions 200/201 belong to the optional P2DOS frontend. Reaching this
+  ; fixed layer proves no RSX claimed the call, so return the frozen absence
+  ; result rather than the ordinary unsupported-function zero.
+        LD      A,0FFH
+        JR      EX_RETURN
+
+EX_UNHANDLED:                           ; reject unsupported extension selector
         XOR     A
 
 EX_RETURN:                              ; return extension status
@@ -66,7 +75,7 @@ EX_RETHL:                               ; return extension value in HL
         LD      SP,(EX_OLDSP)
         RET
 
-EX_RET208:                              ; return Function-208 result
+EX_RET182:                              ; return Function-182 result
         POP     IX
         LD      SP,(EX_OLDSP)
         RET
@@ -159,7 +168,7 @@ BF_RSXSVC:                              ; locate RSX-published service
         OR      A
         JR      Z,BF_RSNONE
         CALL    RSXCONTROL
-        JR      EX_RET208
+        JR      EX_RET182
 
 BF_RSNONE:                              ; report missing RSX service
         PUSH    DE
@@ -182,9 +191,9 @@ BF_RSCLR:                               ; clear RSX registry
         LD      (HL),A
         LD      HL,0
         POP     DE
-        JR      EX_RET208
+        JR      EX_RET182
 
-  ; BetterCP/M Function 206 returns the protected, versioned descriptor generated
+  ; BetterCP/M Function 180 returns the protected, versioned descriptor generated
   ; from the normative subsystem matrix. Consumers must validate BV/version 1.
 
 ; ================================================================================

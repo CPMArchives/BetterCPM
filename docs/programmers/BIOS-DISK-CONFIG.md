@@ -48,8 +48,8 @@ system image retains its existing 80-track, double-sided, 790K default profile.
 
 ## Calling convention
 
-The current implementation calls provisional BDOS 207 (C=207); the frozen
-production selector is Function 181. B selects the operation and DE points to
+The current implementation calls production Function 181 (C=181). B selects
+the operation and DE points to
 the request. Operation 0 has no
 request. For other operations reserve an 80-byte buffer wholly within the TPA,
 starting at 0100h or above. HL returns 0=success, 1=invalid/error,
@@ -177,8 +177,7 @@ remains deferred in both directions.
 
 ## Optional format mapper
 
-FDF.RSX currently implements provisional private BDOS 209; the frozen
-production selector is Function 183. B=0 queries the 4644h signature; B=1 is the
+FDF.RSX implements production Function 183. B=0 queries the 4644h signature; B=1 is the
 private BIOS mapping call, and B=2 validates/normalizes extended geometry.
 The mapper uses a private stack. BIOS transfer loops use the returned actual
 sector length and quarter offset. No persistent pointer into the RSX is kept.

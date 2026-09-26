@@ -81,15 +81,15 @@ BDOS:                                   ; enter BDOS dispatcher
 ; -------------------------------------------------------------------------------
 
 BDOS_EXTENDED:                          ; dispatch extended BDOS function
-        CP      200                     ; provisional BetterCP/M CPX control service
+        CP      176                     ; BetterCP/M CPX profile control
         JP      Z,BF_CPXCTL
-        CP      202                     ; provisional BetterCP/M RSX control service
+        CP      177                     ; BetterCP/M RSX profile control
         JP      Z,BF_RSXCTL
-        CP      204                     ; optional reverse-video cursor character
+        CP      178                     ; optional reverse-video cursor character
         JP      Z,BF_CURSOR
-        CP      205                     ; CCP access to shared printer-echo toggle
+        CP      179                     ; CCP access to shared printer-echo toggle
         JP      Z,BF_CCPPRN
-        CP      206                     ; immutable subsystem-version descriptor
+        CP      180                     ; immutable subsystem-version descriptor
         JP      Z,BF_VERSION
   ; Patch 2026-09-01: selectors above Function 40 conventionally return zero.
         XOR     A
@@ -149,7 +149,7 @@ BF_SETIO:                               ; set I/O byte
 ; = version information, and platform-assisted console services.                 =
 ; ================================================================================
 
-  ; BetterCP/M Function 200, provisional CPX profile control. D selects the
+  ; BetterCP/M Function 176 CPX profile control. D selects the
   ; known module (1 RCP, 2 HELLO); E=0 queries it, E=1 loads it, and E=2
   ; unloads it. Canonical reconstruction order is RCP followed by HELLO.
 
@@ -251,7 +251,7 @@ BF_RSXCTL:                              ; return protected version descriptor
         CALL    RSXCONTROL
         JP      BDOS_RETURN
 
-  ; BetterCP/M Function 206 returns the protected, versioned descriptor generated
+  ; BetterCP/M Function 180 returns the protected, versioned descriptor generated
   ; from the normative subsystem matrix. Consumers must validate BV/version 1.
 
 BF_VERSION:                             ; return BetterCP/M version
@@ -540,7 +540,7 @@ BF_CONOUT:                              ; write cooked console character
 ; Platform Cursor Output
 ; -------------------------------------------------------------------------------
 
-  ; BetterCP/M Function 204. E=0 queries the platform capability. A nonzero E
+  ; BetterCP/M Function 178. E=0 queries the platform capability. A nonzero E
   ; writes that character in the platform's cursor presentation and advances
   ; the tracked console column. Unsupported platforms return zero and perform
   ; no output, allowing the CCP to retain a plain-character fallback.

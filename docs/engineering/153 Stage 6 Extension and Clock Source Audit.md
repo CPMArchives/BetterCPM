@@ -11,6 +11,13 @@ another lifecycle, PDS or hardware abstraction. Architecture Specifications
 TIME ABI, and the P2DOS-compatible 200/201 frontend contract. Source migration
 and frontend implementation remain later implementation work.
 
+## Post-audit implementation disposition
+
+Engineering Specification 157 records the coordinated migration to production
+Functions 176-183, proof Functions 198/199, the 200/201 absent fallback, and the
+P2DOS.RSX frontend. The inventory below remains the historical Stage 6 audit
+baseline rather than a description of current source.
+
 ## Current selector inventory
 
 The fixed extension dispatcher currently recognizes provisional Functions

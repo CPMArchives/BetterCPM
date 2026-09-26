@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the Function 208 callable-service qualification utility."""
+"""Build the Function 182 callable-service qualification utility."""
 from pathlib import Path
 import argparse
 from build_ccp import assemble

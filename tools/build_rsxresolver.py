@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the disk-free Function 208 resident-service resolver overlay."""
+"""Build the disk-free Function 182 resident-service resolver overlay."""
 from __future__ import annotations
 
 import argparse

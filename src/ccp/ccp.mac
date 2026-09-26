@@ -452,7 +452,7 @@ CCP_EDNEW:                              ; start physical continuation line
         JP      CCP_EDDRAW
 
 CCP_EDPRINT:                            ; toggle printer echo
-        LD      C,205                   ; private command-environment console control
+        LD      C,179                   ; private command-environment console control
         CALL    BDOS
         JP      CCP_EDGET
 
@@ -900,7 +900,7 @@ CCP_CLLOOP:                             ; clear one stale display cell
 
 CCP_CSHOW:                              ; render command line and cursor
         LD      E,0
-        LD      C,204
+        LD      C,178
         CALL    BDOS
         OR      A
         JR      Z,CCP_CSFALL
@@ -913,14 +913,14 @@ CCP_CSHOW:                              ; render command line and cursor
         LD      HL,CCP_DATA
         ADD     HL,DE
         LD      E,(HL)
-        LD      C,204
+        LD      C,178
         CALL    BDOS
         LD      A,1                     ; cursor output consumed this command byte
         RET
 
 CCP_CSEND:                              ; finish cursor rendering
         LD      E,' '                   ; reverse blank is the end-of-line cursor
-        LD      C,204
+        LD      C,178
         CALL    BDOS
         XOR     A
         RET

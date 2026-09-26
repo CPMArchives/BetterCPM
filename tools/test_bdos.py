@@ -156,11 +156,11 @@ def main() -> None:
     # by cooked transient output; two toggles must return to the initial state.
     list_echo = symbol("BDOS_LISTE")
     require(cpu.mem[list_echo] == 0, "printer echo did not start disabled")
-    cpu.c = 205
+    cpu.c = 179
     cpu.run(BDOS_BASE)
     require(cpu.mem[list_echo] == 0xFF,
             "CCP printer-echo control did not enable LIST duplication")
-    cpu.c = 205
+    cpu.c = 179
     cpu.run(BDOS_BASE)
     require(cpu.mem[list_echo] == 0,
             "CCP printer-echo control did not disable LIST duplication")
@@ -628,7 +628,7 @@ def main() -> None:
     cpu.run(BDOS_BASE)
     require(cpu.hl == 0x0022 and cpu.a == 0x22 and cpu.b == 0,
             "BDOS version did not return CP/M 2.2 aliases")
-    cpu.c = 206
+    cpu.c = 180
     cpu.run(BDOS_BASE)
     require(bytes(cpu.mem[cpu.hl:cpu.hl + 4]) == b"BV\x01\x03",
             "BetterCP/M version descriptor query returned invalid metadata")
@@ -1121,30 +1121,30 @@ def main() -> None:
     require(cpu.a == cpu.l == 0 and cpu.b == cpu.h == 0,
             "unsupported BDOS selector did not return conventional zero")
 
-    # BetterCP/M's provisional Function 200 owns active CPX-profile mutation.
+    # BetterCP/M Function 176 owns active CPX-profile mutation.
     cpu.mem[0xC094], cpu.mem[0xC095] = 1, 1
     cpu.mem[0xC096:0xC09E] = b"RCP     "
-    cpu.c, cpu.d, cpu.e = 200, 1, 0
+    cpu.c, cpu.d, cpu.e = 176, 1, 0
     cpu.run(BDOS_BASE)
     require(cpu.a == 1, "CPX control did not report RCP.CPX loaded")
-    cpu.c, cpu.d, cpu.e = 200, 1, 2
+    cpu.c, cpu.d, cpu.e = 176, 1, 2
     cpu.run(BDOS_BASE)
     require(cpu.a == 0 and cpu.mem[0xC094] == 0 and cpu.mem[0xC095] == 0,
             "CPX control did not unload the active RCP profile")
-    cpu.c, cpu.d, cpu.e = 200, 2, 1
+    cpu.c, cpu.d, cpu.e = 176, 2, 1
     cpu.run(BDOS_BASE)
     require(cpu.a == 0 and cpu.mem[0xC094] == 1 and
             cpu.mem[0xC095] == 2 and
             bytes(cpu.mem[0xC096:0xC09E]) == b"HELLO   ",
             "CPX control did not load the HELLO-only profile")
-    cpu.c, cpu.d, cpu.e = 200, 1, 1
+    cpu.c, cpu.d, cpu.e = 176, 1, 1
     cpu.run(BDOS_BASE)
     require(cpu.a == 0 and cpu.mem[0xC094] == 2 and
             cpu.mem[0xC095] == 3 and
             bytes(cpu.mem[0xC096:0xC09E]) == b"RCP     " and
             bytes(cpu.mem[0xC09E:0xC0A6]) == b"HELLO   ",
             "CPX control did not build canonical RCP/HELLO order")
-    cpu.c, cpu.d, cpu.e = 200, 3, 0
+    cpu.c, cpu.d, cpu.e = 176, 3, 0
     cpu.run(BDOS_BASE)
     require(cpu.a == 0xFF, "CPX control accepted an unknown module")
 

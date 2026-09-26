@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 COMPONENTS = (
     "bdos", "ccp", "ccpreload", "rcp_cpx", "hello_cpx",
-    "hello_rsx", "echo_rsx", "fdf_rsx", "frehd_time_rsx", "zprtc_rsx",
+    "hello_rsx", "echo_rsx", "fdf_rsx", "p2dos_rsx", "frehd_time_rsx", "zprtc_rsx",
     "test_service_rsx", "svctest",
     "stateful_test_rsx", "stattst",
     "rsxloader", "rsxresolver",

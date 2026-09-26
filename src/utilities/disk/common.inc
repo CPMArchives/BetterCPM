@@ -71,7 +71,7 @@ INVERSE:PUSH AF
         LD A,(HASREV)
         OR A
         JR Z,INVPLAIN
-        LD C,204
+        LD C,178
         JR INVCALL
 INVPLAIN:LD C,2
 INVCALL:CALL BDOS
@@ -192,7 +192,7 @@ NUMBAD: SCF
         RET
 ; API is deliberately independent of the loaded BIOS address.
 ; B = operation, DE = 80-byte request, A/Z = result.
-API:    LD C,207
+API:    LD C,181
         CALL BDOS
         LD A,L
         OR A
@@ -212,7 +212,7 @@ CHKABI: LD A,(DE)
         INC DE
         INC HL
         DJNZ CHKABI
-        LD C,204
+        LD C,178
         LD E,0
         CALL BDOS
         LD (HASREV),A
@@ -491,7 +491,7 @@ CURAW:  LD A,(DE)
 ; one when the drive is hooked up. Ask it to make the same pencilled-in
 ; copy after the ordinary comparison has failed. Most formats need no
 ; mapper at all and must keep matching their original catalogue record.
-CUNORM: LD C,209
+CUNORM: LD C,183
         LD B,0
         CALL BDOS
         LD A,H
@@ -500,7 +500,7 @@ CUNORM: LD C,209
         LD A,L
         CP 044H
         JR NZ,CUNEXT
-; Service 209 takes the setter's 80-byte request, one byte ahead of a bare
+; Service 183 takes the setter's 80-byte request, one byte ahead of a bare
 ; catalogue binding. Make a dummy request rather than handing it a pointer
 ; with all the old MM fields shifted one place to the left.
         XOR A
@@ -511,7 +511,7 @@ CUNORM: LD C,209
         LDIR
         LD DE,REQ
         LD IX,REQ              ; extended validator shares the BIOS setter ABI
-        LD C,209
+        LD C,183
         LD B,2
         CALL BDOS
         LD A,H

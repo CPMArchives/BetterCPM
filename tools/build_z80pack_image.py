@@ -141,7 +141,7 @@ def main():
  for name in ('RCP.CPX','HELLO.CPX'):files.append((name,(ROOT/'build/cpx'/name).read_bytes()))
  for f in sorted((ROOT/'build/utilities').glob('*.COM')):files.append((f.name,f.read_bytes()))
  for name,data in cpm_tools_files(ROOT):files.append((name,data))
- for name in ('HELLO.RSX','ECHO.RSX','BATCHIO.RSX','FDF.RSX','ZPRTC.RSX','TEST.RSX','STATEFUL.RSX'):files.append((name,(ROOT/'build/rsx'/name).read_bytes()))
+ for name in ('HELLO.RSX','ECHO.RSX','BATCHIO.RSX','FDF.RSX','P2DOS.RSX','ZPRTC.RSX','STATEFUL.RSX'):files.append((name,(ROOT/'build/rsx'/name).read_bytes()))
  for name in ('R3PLAN.RSX','R3SLOTS.RSX','R3SNAP.RSX','R3CARR.RSX','R3META.RSX','R3COORD.RSX','R3PROF.RSX','R3KCTX.RSX','R3KEEP.RSX','R3KPRE.RSX','R3FINAL.RSX','R3DROP.RSX','R3MOVE.RSX','R3COMIT.RSX','R3RESOL.RSX'):files.append((name,(ROOT/'build/system'/name).read_bytes()))
  files.append(('DISK.FDF',(ROOT/'third_party/montezuma/DISK.FDF').read_bytes()))
  # A small transient proves that load and warm return use this target BIOS.

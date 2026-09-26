@@ -7,6 +7,10 @@ roadmap, README and backlog material with the contracts frozen through Stage 7.
 It changed documentation only. Missing executable behavior remains
 implementation work under the 1.0 roadmap.
 
+Post-Stage-8 implementation update: Engineering Specification 157 records the
+completed production-selector migration, 200/201 fallback and P2DOS frontend.
+The source-audit findings below remain the historical Stage 8 baseline.
+
 The governing release contract is
 `docs/releases/1.0-IMPLEMENTATION-CONTRACTS.md`. Historical engineering records
 remain valid accounts of their milestones, including provisional selectors and

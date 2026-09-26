@@ -1,7 +1,7 @@
 ; ********************************************************************************
 ; *                    BetterCP/M Resident-Service Test                          *
 ; *                                                                              *
-; * Qualifies the public Function 208 service-lookup gateway, resolves the       *
+; * Qualifies the public Function 182 service-lookup gateway, resolves the       *
 ; * TEST.RSX callable service, invokes the returned entry point, and reports     *
 ; * lookup or invocation failure.                                                *
 ; ********************************************************************************
@@ -14,13 +14,14 @@ BDOS            EQU     0005H
 ; ================================================================================
 ; =                    Service Lookup and Invocation                           =
 ; =                                                                              =
-; = Submits an ABI-1 Function-208 lookup request, validates the returned callable=
+; = Submits an ABI-1 Function-182 lookup request and validates the returned      =
+; = callable address.                                                           =
 ; = service, invokes it, and reports the qualification result.                   =
 ; ================================================================================
 
 START:                                  ; enter resident-service lookup test
         LD      DE,REQUEST
-        LD      C,208
+        LD      C,182
         CALL    BDOS
         OR      A
         JR      NZ,FAILED
@@ -55,14 +56,14 @@ PRINT:                                  ; print test result
 ; Lookup Request and Result Messages
 ; -------------------------------------------------------------------------------
 
-REQUEST: DB     1,20,0,0,'T','E','S','T',1,0 ; Function-208 lookup request
+REQUEST: DB     1,20,0,0,'T','E','S','T',1,0 ; Function-182 lookup request
          DW     0,0
          DB     0,0
          DW     0
          DB     0,0
 
-PASSLOOK: DB    'Function 208 found TEST',13,10,'$' ; lookup-success message
+PASSLOOK: DB    'Function 182 found TEST',13,10,'$' ; lookup-success message
 PASSCALL: DB    'TEST service returned 5253h',13,10,'$' ; service-call success message
-FAILMSG: DB     'Function 208 TEST failed',13,10,'$' ; qualification failure message
+FAILMSG: DB     'Function 182 TEST failed',13,10,'$' ; qualification failure message
         .DEPHASE
         END     START

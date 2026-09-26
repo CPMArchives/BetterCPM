@@ -245,6 +245,7 @@ def main() -> None:
     hello_cpx_path = ROOT / "build/cpx/HELLO.CPX"
     hello_rsx_path = ROOT / "build/rsx/HELLO.RSX"
     fdf_rsx_path = ROOT / "build/rsx/FDF.RSX"
+    p2dos_rsx_path = ROOT / "build/rsx/P2DOS.RSX"
     frehd_time_rsx_path = ROOT / "build/rsx/FREHDCLK.RSX"
     echo_rsx_path = ROOT / "build/rsx/ECHO.RSX"
     batchio_rsx_path = ROOT / "build/rsx/BATCHIO.RSX"
@@ -282,6 +283,7 @@ def main() -> None:
     fdf_path = ROOT / "third_party/montezuma/DISK.FDF"
     for path in (resident_path, command_path, basic_cpx_path, hello_cpx_path,
                  hello_rsx_path, echo_rsx_path, batchio_rsx_path, fdf_rsx_path,
+                 p2dos_rsx_path,
                  frehd_time_rsx_path, cpx_utility_path, rsx_utility_path,
                  rsxtest_path, rsx2test_path, era_path, ren_path, type_path, dir_path,
                  user_path, cls_path, ver_path, copy_path, move_path, warm_path, config_path, dup_path, sysgen_path, sysbuild_path, stat_path,
@@ -391,6 +393,7 @@ def main() -> None:
                      ("XSUB.COM", xsub_path.read_bytes()),
                      ("DISK.FDF", fdf_path.read_bytes()),
                      ("FDF.RSX", fdf_rsx_path.read_bytes()),
+                     ("P2DOS.RSX", p2dos_rsx_path.read_bytes()),
                      ("FREHDCLK.RSX", frehd_time_rsx_path.read_bytes()),
                      ("RCP.CPX", basic_cpx_path.read_bytes()),
                      ("HELLO.CPX", hello_cpx_path.read_bytes()),

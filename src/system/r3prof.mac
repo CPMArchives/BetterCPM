@@ -623,7 +623,7 @@ PF_NPLAN:       DB      'R3PLAN  '      ; planner overlay stem
 PF_NSNAP:       DB      'R3SNAP  '      ; snapshot overlay stem
 PF_NMOVE:       DB      'R3MOVE  '      ; safe handoff overlay stem
 PF_NKEEP:       DB      'R3KCTX  '      ; retained context constructor stem
-PF_REQ:         DW      0               ; public Function-202 request
+PF_REQ:         DW      0               ; public Function-177 request
 PF_FACTS:       DW      0               ; candidate normalized facts
 PF_HIGH:        DW      0               ; transaction high bound
 PF_PLAN:        DW      0               ; output movement records

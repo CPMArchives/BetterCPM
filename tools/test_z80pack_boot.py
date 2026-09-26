@@ -132,7 +132,7 @@ prompt
 send -s -- "RSX LOAD ECHO\\r"
 prompt
 send -s -- "RSX LIST\\r"
-expect -exact "ECHO : BDOS 203"
+expect -exact "ECHO : BDOS 199"
 prompt
 send -s -- "RSX UNLOAD ECHO\\r"
 prompt

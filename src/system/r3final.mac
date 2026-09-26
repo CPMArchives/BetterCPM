@@ -551,7 +551,7 @@ RF_NRESOL:      DB      'R3RESOL '      ; prefetched disk-free resolver
 RF_NMOVE:       DB      'R3MOVE  '      ; mover, scheduler, and handoff image
 RF_NCOMIT:      DB      'R3COMIT '      ; disk-free commit engine
 RF_CTX:         DW      0               ; prepared transaction context
-RF_PUBLIC:      DW      0               ; public Function-202 request
+RF_PUBLIC:      DW      0               ; public Function-177 request
 RF_CURSOR:      DW      0               ; first free durable byte
 RF_CREQ:        DW      0               ; commit request
 RF_SREQ:        DW      0               ; scheduler request

@@ -2,7 +2,7 @@
 ; *                         BetterCP/M TIME Utility                              *
 ; *                                                                              *
 ; * Hardware-independent clock display utility. Discovers a TIME ABI 1.0 provider*
-; * through Resident Service Function 208, invokes the resolved service, and     *
+; * through Resident Service Function 182, invokes the resolved service, and     *
 ; * formats the returned CP/M day count and clock fields for display.            *
 ; ********************************************************************************
 
@@ -15,7 +15,7 @@ BDOS            EQU     0005H
 ; ================================================================================
 ; =                     TIME Service Discovery and Dispatch                      =
 ; =                                                                              =
-; = Parses the requested TIME operation, resolves the TIME ABI through Function 208, =
+; = Parses the requested TIME operation and resolves TIME through Function 182.  =
 ; = invokes the provider, and handles unavailable/error results.                 =
 ; ================================================================================
 ; -------------------------------------------------------------------------------
@@ -26,7 +26,7 @@ START:                                  ; enter TIME utility
         CALL    TM_PARSE
         JP      NZ,TM_USAGE
         LD      DE,TM_LOOKUP
-        LD      C,208
+        LD      C,182
         CALL    BDOS
         LD      (TM_DSTAT),A
         OR      A
@@ -80,7 +80,7 @@ TM_PROVIDER:                            ; display provider information
         LD      A,(TM_LOOKUP+18)
         LD      (TM_RSXREQ+2),A
         LD      DE,TM_RSXREQ
-        LD      C,202
+        LD      C,177
         CALL    BDOS
         OR      A
         JR      Z,TM_PNONAME
@@ -471,14 +471,15 @@ TM_EXIT:                                ; return to CCP
 ; ================================================================================
 ; =                       TIME Requests and Working State                        =
 ; =                                                                              =
-; = Defines Function-208 and provider request blocks, resolved entry/state, calendar =
+; = Defines Function-182 and provider request blocks, resolved entry/state,      =
+; = calendar conversion data, and messages.                                      =
 ; = tables, provider text, messages, and the CP/M epoch constant.                =
 ; ================================================================================
 ; -------------------------------------------------------------------------------
 ; Requests and Provider State
 ; -------------------------------------------------------------------------------
 
-TM_LOOKUP:     DB      1,20,0,0,'TIME',1,0,0,0 ; Function-208 lookup request
+TM_LOOKUP:     DB      1,20,0,0,'TIME',1,0,0,0 ; Function-182 lookup request
                DS      8
 
 TM_RSXREQ:     DB      1,0,0,0          ; resident-service request block

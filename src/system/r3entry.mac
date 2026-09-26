@@ -4,7 +4,7 @@
 ; *                    BetterCP/M RSX Transaction Entry                          *
 ; ********************************************************************************
 
-; Function 202 is the sole production gateway for resident-profile mutation.
+; Function 177 is the sole production gateway for resident-profile mutation.
 ; LOAD and UNLOAD first build a complete prospective profile in caller-owned
 ; transaction RAM. The live chain is unchanged until every fallible read,
 ; normalization, layout, snapshot, and pointer-repair preparation has passed.
@@ -18,7 +18,7 @@ RSTSERV         EQU     LY_RSTA+021H
         CSEG
         .PHASE  RVBASE
 
-  ; Production Function 202 entry for BRSX-v2 profile control. LOAD and UNLOAD
+  ; Production Function 177 entry for BRSX-v2 profile control. LOAD and UNLOAD
   ; use the prepared transaction; LIST and QUERY read the persistent profile.
   ; Version 1 carriers are deliberately excluded: they cannot declare the
   ; reconstruction class and runtime pointer slots required for safe movement.
@@ -287,7 +287,7 @@ RV_BAD:                                 ; reject an unavailable transaction phas
 
 RV_NLOAD:       DB      'R3COORD '      ; append transaction coordinator
 RV_NDROP:       DB      'R3DROP  '      ; removal transaction coordinator
-RV_REQ:         DW      0               ; public Function-202 request
+RV_REQ:         DW      0               ; public Function-177 request
 RV_HREQ:        DS      6               ; replacement-overlay handoff request
 
 

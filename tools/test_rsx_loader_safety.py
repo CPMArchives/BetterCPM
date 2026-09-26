@@ -104,7 +104,7 @@ RESTORE:
     cpu.mem[LAYOUT["RSX"]:LAYOUT["RSX"] + 4] = b"\x3E\xFF\xB7\xC9"
     cpu.mem[LAYOUT["RSX_STATE"]] = 1
     cpu.mem[REQUEST:REQUEST + 14] = bytes((1, 1)) + bytes(12)
-    cpu.c = 202
+    cpu.c = 177
     cpu.de = REQUEST
     cpu.ix = 0x4567
     cpu.sp = 0x9000

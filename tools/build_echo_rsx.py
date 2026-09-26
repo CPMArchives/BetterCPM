@@ -35,7 +35,7 @@ def main() -> None:
                      "RSXBASE         EQU     08101H"),
         BUILD / "echo-alt.bin", BUILD / "echo-alt.lst", ALTERNATE_BASE)
     offsets = relocation_offsets(code, alternate, ALTERNATE_BASE - LINK_BASE)
-    carrier = make_module(name="ECHO", version=(0, 1), services=[203],
+    carrier = make_module(name="ECHO", version=(0, 1), services=[199],
                           linked_base=LINK_BASE, code=code,
                           relocations=offsets, entry_offset=8,
                           format_version=2)

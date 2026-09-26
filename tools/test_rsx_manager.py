@@ -51,10 +51,10 @@ def main() -> None:
     first = run(("RSXTEST", "RSX LIST", "RSX LOAD HELLO.RSX", "RSX LIST",
                  "RSXTEST", "RSX /V"))
     require_ordered(first, (
-        b"RSX function 201 unsupported", b"No RSXs loaded",
-        f"TPA available: {(LAYOUT['TPA'] - 0x100) // 1024 - 0}K".encode(), b"HELLO : BDOS 201",
+        b"RSX function 198 unsupported", b"No RSXs loaded",
+        f"TPA available: {(LAYOUT['TPA'] - 0x100) // 1024 - 0}K".encode(), b"HELLO : BDOS 198",
         f"TPA available: {(LAYOUT['TPA'] - 0x100) // 1024 - 2}K".encode(), b"Hello from HELLO.RSX",
-        b"RSX function 201 returned 5253h",
+        b"RSX function 198 returned 5253h",
         b"Resident System Extension facility: API 1.0; implementation 1.2",
     ))
 
@@ -62,19 +62,19 @@ def main() -> None:
                   "RSX LIST"))
     require_ordered(second, (
         b"Hello from HELLO.RSX",
-        b"BDOS 201: HELLO present", b"Hello from ECHO.RSX",
-        b"BDOS 203: ECHO present", b"HELLO : BDOS 201",
-        b"ECHO : BDOS 203", tpa("HELLO", "ECHO"),
+        b"BDOS 198: HELLO present", b"Hello from ECHO.RSX",
+        b"BDOS 199: ECHO present", b"HELLO : BDOS 198",
+        b"ECHO : BDOS 199", tpa("HELLO", "ECHO"),
     ))
 
     third = run(("RSX LOAD HELLO", "RSX LOAD ECHO", "HELLO WARM",
                  "RSX2TST", "RSX UNLOAD HELLO", "RSX LIST", "RSX2TST",
                  "RSX UNLOAD ECHO.RSX", "RSX LIST"))
     require_ordered(third, (
-        b"Hello from BetterCP/M WARM", b"BDOS 201: HELLO present",
-        b"BDOS 203: ECHO present", b"ECHO : BDOS 203",
-        tpa("ECHO"), b"BDOS 201: absent",
-        b"BDOS 203: ECHO present", b"No RSXs loaded",
+        b"Hello from BetterCP/M WARM", b"BDOS 198: HELLO present",
+        b"BDOS 199: ECHO present", b"ECHO : BDOS 199",
+        tpa("ECHO"), b"BDOS 198: absent",
+        b"BDOS 199: ECHO present", b"No RSXs loaded",
         f"TPA available: {(LAYOUT['TPA'] - 0x100) // 1024 - 0}K".encode(),
     ))
     print("BRSX validation, ordered chaining, WBOOT, middle unload, and TPA restoration passed")

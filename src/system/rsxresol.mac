@@ -4,7 +4,7 @@
 ; *                   BetterCP/M BRSX Service Resolver                           *
 ; *                                                                              *
 ; * BRSX v2 disk-free resident-service resolver. Loaded into the manager overlay *
-; * slot after successful RSX reconstruction; Function 208 resolves, enumerates, *
+; * slot after successful RSX reconstruction; Function 182 resolves, enumerates, *
 ; * and describes the live service registry without further disk access.         *
 ; ********************************************************************************
 
@@ -23,17 +23,18 @@ RR_DESCRIBE     EQU     2
 ; ================================================================================
 ; =                       Resolver Entry and ABI Dispatch                        =
 ; =                                                                              =
-; = Validates the Function-208 ABI-1 request and dispatches lookup, enumeration, and =
+; = Validates the Function-182 ABI-1 request and dispatches lookup, enumeration, =
+; = and description operations.                                                  =
 ; = registry-description operations against the live RSX chain.                  =
 ; ================================================================================
 ; -------------------------------------------------------------------------------
-; Function-208 Dispatch
+; Function-182 Dispatch
 ; -------------------------------------------------------------------------------
 
 RR_ENTRY:                               ; enter disk-free service resolver
         JP      RR_CONTROL
 
-RR_CONTROL:                             ; dispatch Function-208 resolver request
+RR_CONTROL:                             ; dispatch Function-182 resolver request
         LD      (RR_REQ),DE
         LD      A,(DE)
         CP      1
@@ -528,7 +529,7 @@ RR_SUCCESS:                             ; return resolver success
 ; =                      Request Validation and Completion                       =
 ; =                                                                              =
 ; = Clears result fields, validates service identifiers, maps ABI errors to status =
-; = codes, and returns success or failure through the Function-208 convention.   =
+; = codes, and returns success or failure through the Function-182 convention.   =
 ; ================================================================================
 ; -------------------------------------------------------------------------------
 ; Request Result Initialization

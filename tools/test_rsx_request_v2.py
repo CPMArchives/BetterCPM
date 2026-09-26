@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify that RSX.COM supplies the Function 202 v2 workspace contract."""
+"""Verify that RSX.COM supplies the Function 177 v2 workspace contract."""
 from __future__ import annotations
 
 import re
@@ -18,9 +18,9 @@ def invoke(command: bytes, ceiling: int = 0xD000) -> tuple[bytes, int]:
     cpu.mem[0x80] = len(command)
     cpu.mem[0x81:0x81 + len(command)] = command
     cpu.mem[5:8] = bytes((0xC3, ceiling & 0xFF, ceiling >> 8))
-    # Capture the Function 202 request; every other BDOS call returns normally.
+    # Capture the Function 177 request; every other BDOS call returns normally.
     cpu.mem[ceiling:ceiling + 0x12] = bytes((
-        0x79, 0xFE, 0xCA, 0x20, 0x0B, 0xEB, 0x11, 0x00, 0x70,
+        0x79, 0xFE, 0xB1, 0x20, 0x0B, 0xEB, 0x11, 0x00, 0x70,
         0x01, 0x12, 0x00, 0xED, 0xB0, 0xAF, 0xC9, 0xAF, 0xC9,
     ))
     cpu.sp = 0xD000
@@ -45,7 +45,7 @@ def main() -> None:
         assert final_sp == 0xD000
     request, _ = invoke(b"LOAD HELLO", ceiling=0xC800)
     assert int.from_bytes(request[16:18], "little") == 0xC800
-    print("RSX.COM emits Function 202 v2 load/unload requests with workspace "
+    print("RSX.COM emits Function 177 v2 load/unload requests with workspace "
           "bounded by its image end and live stack")
 
 

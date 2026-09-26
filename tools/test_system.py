@@ -486,21 +486,21 @@ def main() -> None:
 
     # Extended services use a separate frame: loading modules makes nested
     # standard BDOS calls without disturbing the application's DU/DMA state.
-    cpu.c = 206
+    cpu.c = 180
     cpu.run(CALLER)
     require(bytes(cpu.mem[cpu.hl:cpu.hl + 4]) == b"BV\x01\x03",
             "integrated version descriptor is unavailable")
-    cpu.c = 205
+    cpu.c = 179
     cpu.run(CALLER)
     first_toggle = cpu.a
-    cpu.c = 205
+    cpu.c = 179
     cpu.run(CALLER)
     require(cpu.a == (first_toggle ^ 0xFF), "printer hook lost shared state")
-    cpu.c, cpu.de = 200, 0x0100
+    cpu.c, cpu.de = 176, 0x0100
     cpu.run(CALLER)
     require(cpu.a == 1, "legacy CPX query lost the default RCP profile")
     cpu.mem[0x7400:0x740E] = bytes((1, 0)) + bytes(12)
-    cpu.c, cpu.de = 202, 0x7400
+    cpu.c, cpu.de = 177, 0x7400
     cpu.run(CALLER)
     require(cpu.a == 0, "empty RSX enumeration failed")
     cpu.c, cpu.de = 26, 0x7345

@@ -2,7 +2,7 @@
 ; *                       BetterCP/M z80pack RTC RSX                             *
 ; *                                                                              *
 ; * z80pack/CPMSIM real-time-clock provider for BetterCP/M TIME ABI 1.0.         *
-; * Function 208 discovery is supplied by the BRSX-v2 registry walker; the       *
+; * Function 182 discovery is supplied by the BRSX-v2 registry walker; the       *
 ; * provider reads either CPMSIM BCD or binary mode without changing that mode.  *
 ; ********************************************************************************
 

@@ -194,7 +194,7 @@ directory utility unless it provides genuine additional value.
   176-183, leave 184-196 available, reserve 197, use 198/199 for non-public
   tests, and preserve historical P2DOS 200/201 for `P2DOS.RSX` under
   `docs/architecture/25 Extended BDOS Namespace.txt`.
-- [ ] Migrate the registered production services from provisional Functions
+- [x] Migrate the registered production services from provisional Functions
   200 and 202-209 to 176-183, remove HELLO/ECHO proof selectors 201/203 from
   the released namespace, and rebuild every in-tree client. The replacement
   CPX call uses a versioned, name-based request block and enumerates module
@@ -327,15 +327,15 @@ between CONFIG and DUP remain design considerations for the formatting work.
   metadata only. Focused implementation tests pass.
 - [ ] Complete final release-candidate qualification of R/O/SYS/ARC inspection,
   change, enforcement, preservation and explicitly claimed host-tool behavior.
-- [ ] Implement and qualify the frozen callable `TIME` ABI as the native clock service,
-  including `TIME.COM` and the read-only FreHD and z80pack providers. Migrate
-  registry lookup from provisional Function 208 to Function 182, then qualify
+- [ ] Complete qualification of the frozen callable `TIME` ABI as the native clock service,
+  including `TIME.COM` and the read-only FreHD and z80pack providers. Registry
+  lookup now uses Function 182; qualify
   provider replacement, unload, WBOOT, coherent sampling, and SET_UNSUPPORTED.
-- [ ] Implement and qualify a separate `P2DOS.RSX` frontend which intercepts Functions
+- [x] Implement and focused-qualify a separate `P2DOS.RSX` frontend which intercepts Functions
   200/201 and calls the native `TIME` service without containing hardware code.
   Verify exact P2DOS success behavior and freeze only the minimal public results
   for success, unavailable, unsupported SET, and operation failure.
-- [ ] Implement the frozen private BDOS namespace: migrate the registered
+- [x] Implement the frozen private BDOS namespace: migrate the registered
   services to 176-183, remove HELLO/ECHO
   proof selectors 201/203 from the released namespace, rebuild every in-tree
   client, provide the 0FFh BDOS fallback for 200/201, and route those selectors

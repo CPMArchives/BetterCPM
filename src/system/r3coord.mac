@@ -1,7 +1,7 @@
         INCLUDE layout.inc
 ; Stage-3 bounded carrier-loading coordinator.
 ;
-; DE points to the public Function 202 version-2 request. This phase accepts
+; DE points to the public Function 177 version-2 request. This phase accepts
 ; LOAD only, streams the named carrier into the caller-owned workspace, derives
 ; its framed length, and invokes R3CARR then R3META in LY_CFG. The authoritative
 ; validator accepts only BRSX v2. Normalized facts then pass to R3PROF for

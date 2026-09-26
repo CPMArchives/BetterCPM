@@ -35,7 +35,7 @@ BI_SVOFF:       DW      0               ; resident-service entry offset
 
 BI_DISPATCH:                            ; intercept BDOS call
         LD      A,C
-        CP      202                     ; XSUB's post-load query acknowledges install
+        CP      177                     ; XSUB's post-load query acknowledges install
         JR      Z,BI_ARMED
         LD      A,(BI_FRESH)
         OR      A
@@ -228,7 +228,7 @@ BI_BADSUB:                              ; discard malformed submit stream
 
 BI_RETIRE:                              ; retire exhausted submit stream
         LD      DE,BI_REQUEST
-        LD      C,202                   ; transaction commits before rebuilding the CCP
+        LD      C,177                   ; transaction commits before rebuilding the CCP
         CALL    BI_CALL
         JP      0000H                   ; failure may also have consumed command workspace
 

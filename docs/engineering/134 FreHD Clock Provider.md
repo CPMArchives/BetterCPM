@@ -40,11 +40,11 @@ provider is named for FreHD because the ABI does not depend on trs80gp.
 
 ## Discovery
 
-`TIME.COM` uses only Resident Service Function 208 and `TIME` ABI 1.0. It has no
+`TIME.COM` uses only Resident Service Function 182 and `TIME` ABI 1.0. It has no
 FreHD port knowledge. `TIME /PROVIDER` also asks the RSX manager for the current
 provider stem and reports the discovered ABI and capabilities.
 
-The BRSX-v2 carrier advertises `TIME` 1.0 and does not intercept Function 208.
+The BRSX-v2 carrier advertises `TIME` 1.0 and does not intercept Function 182.
 Its code is 370 bytes and its page-rounded allocation is 512 bytes. Together
 with the shared one-kilobyte resolver allocation, it reduces the first-provider
 TPA charge from 1,792 bytes to 1,536 bytes.

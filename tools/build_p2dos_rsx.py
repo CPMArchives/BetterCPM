@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the BRSX version-2 FDF.RSX provider."""
+"""Build the P2DOS clock frontend as a relocatable BRSX-v2 carrier."""
 from __future__ import annotations
 
 import argparse
@@ -11,7 +11,7 @@ from build_ccp import assemble
 from build_rsx_module import make_module
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "src/rsx/fdf.mac"
+SOURCE = ROOT / "src/rsx/p2dos.mac"
 BUILD = ROOT / "build/rsx"
 LINK_BASE = 0x8000
 ALTERNATE_BASE = 0x8101
@@ -27,22 +27,24 @@ def main() -> None:
     text = source.replace("        CSEG\n        .PHASE  ",
                           "        ASEG\n        ORG     ").replace(
                               "        .DEPHASE\n", "")
-    code = assemble(args.assembler, text, BUILD / "fdf.bin",
-                    BUILD / "fdf.lst", LINK_BASE)
+    code = assemble(args.assembler, text, BUILD / "p2dos.bin",
+                    BUILD / "p2dos.lst", LINK_BASE)
     alternate = assemble(
         args.assembler,
         text.replace("RSXBASE         EQU     08000H",
                      "RSXBASE         EQU     08101H"),
-        BUILD / "fdf-alt.bin", BUILD / "fdf-alt.lst", ALTERNATE_BASE)
-    offsets = relocation_offsets(code, alternate, ALTERNATE_BASE - LINK_BASE)
-    carrier = make_module(name="FDF", version=(0, 1), services=[183],
+        BUILD / "p2dos-alt.bin", BUILD / "p2dos-alt.lst", ALTERNATE_BASE)
+    relocations = relocation_offsets(code, alternate,
+                                     ALTERNATE_BASE - LINK_BASE)
+    carrier = make_module(name="P2DOS", version=(1, 0), services=[200, 201],
                           linked_base=LINK_BASE, code=code,
-                          relocations=offsets, entry_offset=8,
+                          relocations=relocations, entry_offset=8,
                           format_version=2)
-    (BUILD / "FDF.RSX").write_bytes(carrier)
-    print(f"{hashlib.sha256(code).hexdigest()}  build/rsx/fdf.bin")
-    print(f"FDF.RSX bytes: {len(code)}; relocations: {len(offsets)}; "
-          f"carrier: {len(carrier)}")
+    allocation = int.from_bytes(carrier[14:16], "little")
+    (BUILD / "P2DOS.RSX").write_bytes(carrier)
+    print(f"{hashlib.sha256(code).hexdigest()}  build/rsx/p2dos.bin")
+    print(f"P2DOS.RSX bytes: {len(code)}; allocation: {allocation}; "
+          f"relocations: {len(relocations)}; carrier: {len(carrier)}")
 
 
 if __name__ == "__main__":

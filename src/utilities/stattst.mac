@@ -50,7 +50,7 @@ DO_MUTATE:                              ; mutate three times before relocation
 HAVE_OP:                                ; resolve the callable STAT service
         LD      (STATREQ+2),A
         LD      DE,LOOKUP
-        LD      C,208
+        LD      C,182
         CALL    BDOS
         OR      A
         JP      NZ,LOOKUP_FAILED
@@ -136,7 +136,7 @@ BAD_ARGUMENT:                           ; report invalid command tail
         LD      DE,ARG_MSG
         JP      PRINT
 
-LOOKUP_FAILED:                          ; report Function-208 lookup failure
+LOOKUP_FAILED:                          ; report Function-182 lookup failure
         LD      DE,LOOKUP_MSG
         JP      PRINT
 

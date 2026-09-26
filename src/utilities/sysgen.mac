@@ -902,7 +902,7 @@ REPORT: CALL PUTS                       ; report
 ; Utility ABI Entry
 ; -------------------------------------------------------------------------------
 
-API:    LD C,207                        ; call utility disk API
+API:    LD C,181                        ; call utility disk API
         CALL BDOS
         LD A,L
         OR A
@@ -924,7 +924,7 @@ ABICMP: LD A,(DE)                       ; abicmp
         INC DE
         INC HL
         DJNZ ABICMP
-        LD C,204
+        LD C,178
         LD E,0
         CALL BDOS
         LD (HASREV),A
@@ -1101,7 +1101,7 @@ HEADREV:POP AF                          ; headrev
         PUSH DE
         PUSH HL
         LD E,A
-        LD C,204
+        LD C,178
         CALL BDOS
         POP HL
         POP DE
