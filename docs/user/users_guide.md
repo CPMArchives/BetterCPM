@@ -108,7 +108,74 @@ lists the files in user area 3 of drive B while leaving the current drive and us
 
 The ordinary CP/M conventions remain valid. Programs that use the standard BDOS drive and user facilities see the same drive/user organization, and conventional CP/M programs need not be aware of BetterCP/M's combined `DU:` command notation.
 
-2.2 File Names and File Specifications 2.3 Wildcards 2.4 File Attributes 2.5 Changing Media 2.6 Disk Status and Capacity
+#### 2.2 File Names and File Specifications
+
+BetterCP/M uses the standard CP/M file-naming convention. A file name consists of a name of up to eight characters and an optional file type of up to three characters, separated by a period:
+
+```text
+filename.typ
+```
+
+For example:
+
+```text
+README.TXT
+STAT.COM
+MYPROG.ASM
+DATA
+```
+
+`README.TXT` has the file name `README` and the file type `TXT`. `DATA` has no file type.
+
+File types commonly indicate the purpose or format of a file. For example, `.COM` normally identifies an executable program, `.ASM` an assembly-language source file, and `.SUB` a SUBMIT command file. These conventions do not change the basic organization of the file; the file type is part of its name.
+
+A **file specification**, or **filespec**, identifies a file and may include a drive and user area:
+
+```text
+README.TXT
+B:README.TXT
+B3:README.TXT
+```
+
+If no drive or user area is specified, BetterCP/M uses the current drive and user area. Thus, if the current prompt is:
+
+```text
+A2>
+```
+
+the file specification:
+
+```text
+README.TXT
+```
+
+refers to `README.TXT` in drive A, user area 2.
+
+A drive can be specified without a user number:
+
+```text
+B:README.TXT
+```
+
+and BetterCP/M commands that support DU-qualified file specifications can identify both explicitly:
+
+```text
+B3:README.TXT
+```
+
+This identifies `README.TXT` on drive B in user area 3 without requiring the current drive/user selection to be changed.
+
+File specifications are used throughout BetterCP/M commands. For example:
+
+```text
+TYPE README.TXT
+ERA B:OLD.DAT
+COPY B3:REPORT.TXT A:REPORT.TXT
+```
+
+Many commands also accept **wildcard file specifications**, allowing a single specification to select more than one file. Wildcards are described in the next section.
+
+2.3 Wildcards 2.4 File Attributes 2.5 Changing Media 2.6 Disk Status and Capacity
 
 ### 3. Using the Command Environment
 3.1 The BetterCP/M Prompt 3.2 Entering Commands 3.3 Command-Line Editing 3.4 Command History 3.5 Selecting Drives and User Areas 3.6 Resident and Transient Commands 3.7 CPX Commands 3.8 Command Search and Program Execution 3.9 Terminating Commands and Programs
