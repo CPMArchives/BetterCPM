@@ -265,7 +265,244 @@ The disk format also determines such characteristics as allocation-block size an
 Detailed disk operations and disk formats are covered in Chapter 8.
 
 ### 3. Using the Command Environment
-3.1 The BetterCP/M Prompt 3.2 Entering Commands 3.3 Command-Line Editing 3.4 Command History 3.5 Selecting Drives and User Areas 3.6 Resident and Transient Commands 3.7 CPX Commands 3.8 Command Search and Program Execution 3.9 Terminating Commands and Programs
+#### 3.1 The BetterCP/M Prompt
+
+When BetterCP/M is ready to accept a command, it displays the command prompt. The prompt identifies the current drive and, when appropriate, the current user area.
+
+For example:
+
+```text
+A>
+```
+
+indicates drive A in the default user area, while:
+
+```text
+A5>
+```
+
+indicates drive A, user area 5.
+
+Similarly:
+
+```text
+B3>
+```
+
+indicates drive B, user area 3.
+
+The prompt is redisplayed after a command completes and control returns to the command environment.
+
+Throughout this manual, examples that begin with a prompt show commands as they would be entered at the BetterCP/M console:
+
+```text
+A>DIR
+```
+
+Only the text following the prompt is typed by the user.
+
+#### 3.2 Entering Commands
+
+Enter a command by typing its name, followed where necessary by operands or options, and press `RETURN`.
+
+For example:
+
+```text
+A>DIR
+```
+
+displays a directory, while:
+
+```text
+A>TYPE README.TXT
+```
+
+displays the contents of `README.TXT`.
+
+Commands are not case-sensitive. Lower-case input is accepted and interpreted in the same manner as upper-case input:
+
+```text
+A>dir
+```
+
+Command names can identify commands built into the command processor, commands supplied by an installed CPX, or transient programs stored on disk. In ordinary use, the distinction does not affect how a command is entered.
+
+Spaces separate a command name from its operands and, where applicable, separate individual operands:
+
+```text
+A>COPY SOURCE.TXT B:SOURCE.TXT
+```
+
+The syntax description for each command shows which operands are required, which are optional, and which forms of the command are accepted.
+
+BetterCP/M also recognizes drive/user navigation as a command. For example:
+
+```text
+A>B3:
+B3>
+```
+
+selects drive B, user area 3.
+
+#### 3.3 Command-Line Editing
+
+BetterCP/M allows a command line to be edited before it is executed. The cursor can be moved through the line so that errors can be corrected without retyping the entire command.
+
+The command editor supports the familiar WordStar-style control-key conventions used by many CP/M programs. Editing operations include moving the cursor, inserting and deleting characters, and moving within the command line.
+
+For example, if a filename has been mistyped, the cursor can be moved back to the error, the incorrect characters changed, and the completed command then submitted with `RETURN`.
+
+Editing affects only the command currently being entered. The command is not interpreted or executed until it is submitted.
+
+The complete command-line editing key assignments are summarized in Appendix B.
+
+#### 3.4 Command History
+
+BetterCP/M maintains a bounded history of previously entered commands. Earlier commands can be recalled to the command line, reviewed or edited, and executed again.
+
+A recalled command behaves like an ordinary command line. It can be executed unchanged or modified with the normal command-line editing keys before `RETURN` is pressed.
+
+Command history is maintained by the command environment rather than by individual transient programs. It therefore remains available when control returns to the prompt after running a program.
+
+The history is preserved across a normal warm boot. A cold boot begins with an empty command history.
+
+Because the history has a fixed capacity, older entries are eventually discarded as newer commands are entered.
+
+The keys used to move through command history are listed with the other command-line editing keys in Appendix B.
+
+#### 3.5 Selecting Drives and User Areas
+
+The current drive and user area can be changed directly from the command prompt.
+
+To select another drive, enter its letter followed by a colon:
+
+```text
+A>B:
+B>
+```
+
+To select another user area on the current drive, enter the user number followed by a colon:
+
+```text
+B>5:
+B5>
+```
+
+To select both at once, combine the drive letter and user number:
+
+```text
+B5>C3:
+C3>
+```
+
+This selects drive C, user area 3.
+
+BetterCP/M refers to a drive and user-area combination as a **drive/user**, or **DU**. The forms:
+
+```text
+B:
+5:
+C3:
+```
+
+are therefore all forms of drive/user navigation.
+
+Changing the current drive/user affects subsequent operations that do not explicitly specify another location. It does not move or copy files between user areas or drives.
+
+Many BetterCP/M commands also accept a drive/user qualification without changing the current selection. For example:
+
+```text
+A2>DIR B3:
+```
+
+operates on drive B, user area 3 and then returns to the unchanged prompt:
+
+```text
+A2>
+```
+
+This distinction is useful when working with files on several drives or in several user areas: navigation changes the current working location, while a qualified command can operate elsewhere without doing so.
+
+#### 3.6 Resident and Transient Commands
+
+BetterCP/M commands can be either **resident** or **transient**.
+
+A resident command is available as part of the active command environment and can be executed without first loading an ordinary program from disk. BetterCP/M keeps only a small set of commands in the core command processor; additional resident commands can be supplied by Command Processor Extensions (CPXs).
+
+A transient command is an executable program, normally stored on disk as a `.COM` file. When a command is not handled by the command processor or an installed CPX, BetterCP/M attempts to locate and execute the corresponding transient program.
+
+Some commands are available in both resident and transient forms. The resident form provides commonly used functions without loading a program from disk, while the transient version can provide additional functions. Where the two forms differ, the command description identifies syntax or capabilities available only in the transient version.
+
+For ordinary command entry, the distinction is usually transparent. For example:
+
+```text
+A>DIR
+```
+
+invokes the available `DIR` command according to the active command environment. The user does not normally need to specify whether the command is resident or transient.
+
+The default BetterCP/M command environment includes the core resident commands and the standard resident command package. CPXs and their management are described in Chapter 6.
+
+#### 3.7 CPX Commands
+
+A **Command Processor Extension**, or **CPX**, extends the BetterCP/M command environment with additional resident commands.
+
+The standard BetterCP/M configuration includes `RCP.CPX`, which provides frequently used commands such as:
+
+```text
+DIR   ERA   TYPE   REN   USER
+CLS   VER   COPY   MOVE
+```
+
+These commands are available without loading an ordinary transient program into the Transient Program Area.
+
+Additional CPXs can be installed when other resident command facilities are required. More than one CPX can be active, and BetterCP/M maintains them in a defined order.
+
+The presence or absence of a CPX does not change the way its commands are typed. If a resident command is unavailable but a corresponding transient program is present, the transient program can provide the command instead.
+
+For example, the standard distribution can provide transient fallbacks for commands that are normally supplied by `RCP.CPX`. This allows a reduced command environment to remain usable without requiring all convenience commands to be resident.
+
+CPXs can be listed, loaded, and unloaded at run time. Chapter 6 describes CPX management and its effect on the command environment.
+
+#### 3.8 Command Search and Program Execution
+
+When a command is entered, BetterCP/M determines how the command is to be handled.
+
+Drive/user navigation is recognized first. Core commands provided directly by the command processor are then checked, followed by commands supplied by the installed CPXs in their configured order. If none of these handles the command, BetterCP/M attempts to execute it as a transient program.
+
+Thus, a command such as:
+
+```text
+A>MYPROG
+```
+
+can cause BetterCP/M to locate `MYPROG.COM`, load it into the Transient Program Area, establish the normal CP/M program environment, and transfer control to it.
+
+Command-line text following the program name is supplied to the program using the standard CP/M command-tail conventions. BetterCP/M also prepares the standard default File Control Blocks and other compatibility-visible program state expected by CP/M software.
+
+For example:
+
+```text
+A>MYPROG INPUT.DAT
+```
+
+executes `MYPROG.COM` with `INPUT.DAT` supplied as an argument in the conventional CP/M environment.
+
+When the transient program terminates normally, BetterCP/M restores the command environment as necessary and displays the prompt again.
+
+This process preserves the conventional CP/M program-execution model, allowing ordinary CP/M `.COM` programs to run without needing to know how BetterCP/M internally reconstructs its command environment.
+
+#### 3.9 Terminating Commands and Programs
+
+A command normally returns to the BetterCP/M prompt when its operation is complete.
+
+Transient CP/M programs likewise return control to the operating system through the normal CP/M termination mechanisms. BetterCP/M then restores the command environment as necessary and displays the prompt for the next command.
+
+Many commands and programs recognize `Ctrl-C` as an abort or termination request. The precise effect depends on the program being executed. In the command environment and BetterCP/M utilities, `Ctrl-C` is used where appropriate to abandon the current operation and return control to the prompt.
+
+A CP/M warm boot also terminates the current program and returns control to the command environment. BetterCP/M preserves those portions of system state defined to survive a warm boot, including the active extension configuration and valid command history, while reconstructing the parts of the command environment that need to be restored.
+
+Because an interrupted disk operation can leave an operation incomplete, avoid aborting a command while it is actively writing to a disk unless termination is necessary. If a disk operation reports an error or is interrupted unexpectedly, verify the affected files or media before continuing with further modifications. 
 
 ### 4. Basic Commands
 4.1 DIR — Directory 4.2 ERA — Erase Files 4.3 REN — Rename Files 4.4 TYPE — Display a File 4.5 USER — Select User Area 4.6 COPY — Copy Files 4.7 MOVE — Move Files 4.8 CLS — Clear Screen 4.9 VER — Display Version Information 4.10 SAVE — Save Memory to a File 4.11 GET — Load a File into Memory 4.12 GO — Execute at 0100H 4.13 JUMP — Execute at an Address 4.14 PEEK / P — Display Memory 4.15 POKE — Modify Memory
