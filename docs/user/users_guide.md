@@ -175,7 +175,94 @@ COPY B3:REPORT.TXT A:REPORT.TXT
 
 Many commands also accept **wildcard file specifications**, allowing a single specification to select more than one file. Wildcards are described in the next section.
 
-2.3 Wildcards 2.4 File Attributes 2.5 Changing Media 2.6 Disk Status and Capacity
+#### 2.3 Wildcards
+
+Many BetterCP/M commands accept wildcard file specifications when an operation is to apply to more than one file. BetterCP/M uses the standard CP/M wildcard characters `?` and `*`.
+
+A question mark (`?`) matches any single character in the corresponding position of a file name or file type. For example:
+
+```text
+DIR TEST?.COM
+```
+
+can match files such as:
+
+```text
+TEST1.COM
+TEST2.COM
+TESTA.COM
+```
+
+An asterisk (`*`) is a convenient abbreviation for wildcarding the remaining characters in a name or file type. Common examples include:
+
+```text
+DIR *.COM
+DIR LETTER.*
+DIR *.*
+```
+
+`*.COM` selects files with the file type `COM`, regardless of file name. `LETTER.*` selects files named `LETTER` with any file type. `*.*` selects all files applicable to the command.
+
+Wildcards can also be used with drive and user-area specifications:
+
+```text
+DIR B:*.COM
+DIR B3:*.ASM
+```
+
+The first searches the applicable user area on drive B for `.COM` files. The second searches user area 3 of drive B for `.ASM` files.
+
+Not every command permits wildcards in every operand. The description of each command states where wildcard file specifications are accepted.
+
+#### 2.4 File Attributes
+
+BetterCP/M supports the standard CP/M **read-only**, **system**, and **archive** file attributes. These attributes are stored with the file's directory information and are preserved by operations that preserve CP/M file attributes.
+
+The **read-only (R/O)** attribute protects a file against ordinary operations that would modify or erase it. BetterCP/M enforces this attribute.
+
+The **system (SYS)** attribute identifies a file as a system file. In BetterCP/M 1.0, the SYS attribute does not make a file visible across user areas; normal drive and user-area rules still apply.
+
+The **archive (ARC)** attribute is available as file metadata. BetterCP/M 1.0 does not assign it an automatic backup policy.
+
+A file can have more than one attribute at the same time.
+
+The system utilities provided with BetterCP/M allow these attributes to be inspected, set, and cleared. The appropriate utility and its syntax are described later in this manual.
+
+File attributes should not be confused with file types. In:
+
+```text
+SYSTEM.COM
+```
+
+`COM` is the file type. R/O, SYS, and ARC, if present, are attributes associated with the file.
+
+#### 2.5 Changing Media
+
+BetterCP/M supports removable disks and preserves the CP/M rules needed to prevent directory information from one disk from being written inadvertently to another.
+
+Do not remove or replace a disk while an operation is reading from or writing to it. Complete the operation before changing the medium.
+
+When a disk is changed, BetterCP/M detects or responds to the media state according to the capabilities of the drive and platform. A changed disk must be recognized before operations that modify its directory or file allocation are allowed to proceed normally.
+
+As with conventional CP/M, a disk can become temporarily read-only when the operating system cannot safely establish that its current directory information corresponds to the medium in the drive. This protects the new disk from writes based on stale information from the disk it replaced.
+
+If BetterCP/M reports that a disk is read-only following a media change, use the normal disk-reset or warm-boot procedure appropriate to the operation before attempting further writes. Do not treat a read-only indication following an unexpected media change as permission to force a write.
+
+Disk copying, formatting, and other operations that intentionally replace or rewrite media are performed with `DUP` and are described in Chapter 8.
+
+#### 2.6 Disk Status and Capacity
+
+The amount of storage available on a CP/M disk depends on its format. BetterCP/M can therefore operate with disks of different capacities and geometries without assuming that every drive contains the same type of medium.
+
+Disk-status utilities report information about mounted disks, including available storage where applicable. This information reflects the CP/M filesystem capacity of the selected disk rather than simply the raw physical capacity of the medium.
+
+When examining disk space, remember that CP/M allocates file storage in blocks. The amount of free space therefore changes in allocation-block units rather than one byte at a time. A small file can consume an entire allocation block.
+
+Directory space is also finite and is separate from file-data capacity. It is therefore possible for a disk to have unused data space but no free directory entries for additional files.
+
+The disk format also determines such characteristics as allocation-block size and directory capacity. Most users need not work with these values directly during ordinary file operations. `DUP`, `CONFIG`, and the disk-status utilities provide the appropriate information when inspecting, preparing, or configuring disks.
+
+Detailed disk operations and disk formats are covered in Chapter 8.
 
 ### 3. Using the Command Environment
 3.1 The BetterCP/M Prompt 3.2 Entering Commands 3.3 Command-Line Editing 3.4 Command History 3.5 Selecting Drives and User Areas 3.6 Resident and Transient Commands 3.7 CPX Commands 3.8 Command Search and Program Execution 3.9 Terminating Commands and Programs
