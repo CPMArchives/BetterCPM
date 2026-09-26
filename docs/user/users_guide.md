@@ -525,175 +525,441 @@ Examples show the command as it is entered at the BetterCP/M prompt.
 
 Displays a list of files in the current or specified drive/user area.
 
-`DIR` is available as both a resident command and a transient program. The resident version provides the standard CP/M 2.2 directory functions. The transient version provides additional ways to select and display files, including selection by file attributes and, where timestamp information is available, by date and time.
+`DIR` is available as both a resident command and a transient program. The
+resident version supports the standard CP/M 2.2 `DIR` syntax:
 
-##### Syntax
+    DIR
+    DIR filespec
+    DIR DU:
+    DIR DU:filespec
 
-```text
-DIR
-DIR filespec
-DIR DU:
-DIR DU:filespec
-```
+Examples:
 
-The transient version additionally accepts options for selecting or displaying files by attributes and date/time. The exact option syntax is provisional for BetterCP/M 1.0.
+    A>DIR
+    A>DIR *.COM
+    A>DIR B:
+    A>DIR B3:*.ASM
 
-##### Displaying a Directory
+`DIR` without a file specification displays the directory of the selected
+drive/user area. A file specification restricts the display to matching files.
+The standard CP/M `?` and `*` wildcard characters may be used.
 
-`DIR` without an operand displays the files in the current drive/user area:
+In addition to the above, the transient `DIR.COM` provides extended directory
+display and file-selection functions. Planned extensions include:
 
-```text
-A>DIR
-```
+- selection and display by file attributes;
+- display of file date and time information where available; and
+- selection of files by date and time where supported.
 
-A typical directory display lists the names and file types of the files found:
+##### Transient DIR Syntax
 
-```text
-A>DIR
-A: ASM      COM : CONFIG   COM : DUP      COM : README   TXT
-A: STAT     COM : SUBMIT   COM : TIME     COM : XSUB     COM
-```
+[TBD — final `DIR.COM` syntax and options will be added when the BetterCP/M
+1.0 transient DIR interface is finalized.]
 
-Only files visible under the normal CP/M directory rules are included.
+#### 4.2 ERA — Erase Files
 
-##### Specifying a Drive or User Area
+Erases one or more files from the current or specified drive/user area.
 
-A drive can be specified without changing the current drive:
+`ERA` is available as both a resident command and a transient program. The
+resident version supports the standard CP/M 2.2 `ERA` syntax:
 
-```text
-A>DIR B:
-```
+    ERA filespec
+    ERA DU:filespec
 
-BetterCP/M also accepts a drive/user specification:
+Examples:
 
-```text
-A>DIR B3:
-```
+    A>ERA OLD.TXT
+    A>ERA *.BAK
+    A>ERA B:OLD.COM
+    A>ERA B3:*.TMP
 
-This displays the directory of drive B, user area 3. When the command finishes, the current drive/user remains unchanged.
+The file specification may contain the standard CP/M `?` and `*` wildcard
+characters. When wildcards are used, all matching files are erased.
 
-Thus:
+In addition to the above, the transient `ERA.COM` provides extended file
+selection and erase functions.
 
-```text
-A2>DIR B3:
-```
+##### Transient ERA Syntax
 
-displays the requested directory and returns to:
+[TBD — final `ERA.COM` syntax and options will be added when the BetterCP/M
+1.0 transient ERA interface is finalized.]
 
-```text
-A2>
-```
 
-##### Selecting Files
+#### 4.3 REN — Rename Files
 
-A file specification restricts the listing to matching files:
+Changes the name or file type of a file.
 
-```text
-A>DIR *.COM
-```
+`REN` is available as both a resident command and a transient program. The
+resident version supports the standard CP/M 2.2 `REN` syntax:
 
-lists `.COM` files in the current drive/user area.
+    REN newname=oldname
+    REN DU:newname=oldname
 
-The standard CP/M `?` and `*` wildcard characters can be used:
+Examples:
 
-```text
-A>DIR TEST?.COM
-A>DIR *.ASM
-A>DIR README.*
-```
+    A>REN NEW.TXT=OLD.TXT
+    A>REN PROGRAM.COM=PROGRAM.OLD
+    A>REN B:FINAL.ASM=DRAFT.ASM
+    A>REN B3:NEW.DAT=OLD.DAT
 
-A file specification can also include a drive or drive/user:
+The old and new names refer to files in the same drive/user area. `REN` changes
+the directory entry for the file; it does not copy the file to another drive
+or user area. Use `MOVE` when a file is to be moved to another location.
 
-```text
-A>DIR B:*.COM
-A>DIR B3:*.ASM
-```
+In addition to the above, the transient `REN.COM` provides extended rename
+functions.
 
-Wildcards are described in Section 2.3.
+##### Transient REN Syntax
 
-##### Resident DIR
+[TBD — final `REN.COM` syntax and options will be added when the BetterCP/M
+1.0 transient REN interface is finalized.]
 
-The resident `DIR` provides the standard CP/M 2.2 directory functions. It is intended for the common case of quickly listing files without loading a transient utility from disk.
 
-The resident command supports:
+#### 4.4 TYPE — Display a File
 
-```text
-DIR
-DIR filespec
-DIR DU:
-DIR DU:filespec
-```
+Displays the contents of a text file on the console.
 
-including the standard CP/M wildcard forms.
+`TYPE` is available as both a resident command and a transient program. The
+resident version supports the standard CP/M 2.2 `TYPE` syntax:
+
+    TYPE filespec
+    TYPE DU:filespec
+
+Examples:
+
+    A>TYPE README.TXT
+    A>TYPE PROGRAM.ASM
+    A>TYPE B:NOTES.TXT
+    A>TYPE B3:README.TXT
+
+`TYPE` sends the contents of the specified file to the console. The command is
+intended primarily for text files; displaying a binary file can produce
+unreadable output or terminal control characters.
+
+The BetterCP/M resident `TYPE` also supports paged display, allowing long files
+to be viewed one screen at a time.
+
+In addition to the above, the transient `TYPE.COM` provides extended display
+functions.
+
+##### Transient TYPE Syntax
+
+[TBD — final `TYPE.COM` syntax and options will be added when the BetterCP/M
+1.0 transient TYPE interface is finalized.]
+
+#### 4.5 USER — Select User Area
+
+Selects the current user area.
+
+Syntax:
+
+    USER number
+
+where `number` is a user area from 0 through 31.
+
+Examples:
+
+    A>USER 3
+    A3>USER 17
+    A17>
+
+BetterCP/M also permits the user area to be selected directly by entering the
+user number followed by a colon:
+
+    A>3:
+    A3>
+
+or together with a drive:
+
+    A3>B17:
+    B17>
+
+`USER` is retained as a resident command for compatibility with conventional
+CP/M usage. There is no separate transient `USER.COM`.
+
+
+#### 4.6 COPY — Copy Files
+
+Copies one or more files to another file, drive, or user area.
+
+`COPY` is available as both a resident command and a transient program. Both
+versions accept either source-first or destination-first syntax:
+
+    COPY source destination
+    COPY destination=source
+
+Examples:
+
+    A>COPY README.TXT README.BAK
+    A>COPY README.TXT B:
+    A>COPY *.COM B:
+    A>COPY A3:*.ASM B17:
+    A>COPY B:README.TXT=README.TXT
+    A>COPY B:=*.COM
+
+The two syntax forms are equivalent. When the destination does not specify a
+new filename, the source filename is retained.
+
+Wildcards may be used to copy groups of files. Drive and user-area
+specifications may be used with the source and destination without changing
+the current drive/user.
+
+The source files remain unchanged after a successful copy.
+
+In addition to the above, the transient `COPY.COM` provides extended
+file-copying functions while retaining both syntax forms.
+
+##### Transient COPY Syntax
+
+[TBD — additional `COPY.COM` functions and options will be added when the
+BetterCP/M 1.0 transient COPY interface is finalized.]
+
+
+#### 4.7 MOVE — Move Files
+
+Moves one or more files to another name, drive, or user area.
+
+`MOVE` is available as a resident command and supports syntax parallel to
+`COPY`:
+
+    MOVE source destination
+    MOVE destination=source
+
+Examples:
+
+    A>MOVE README.TXT B:
+    A>MOVE *.BAK B:
+    A>MOVE A3:*.ASM B17:
+    A>MOVE B:README.TXT=README.TXT
+    A>MOVE B:=*.COM
+
+Wildcards may be used to move groups of files. Drive and user-area
+specifications may be used with the source and destination without changing
+the current drive/user.
+
+When the source and destination are on different drives or in different user
+areas, BetterCP/M copies each file to its destination and removes the source
+only after the destination has been successfully written and closed.
+
+Where possible, a move within the same drive/user area is performed by
+renaming the file rather than copying its contents.
+
+[TBD — determine whether BetterCP/M 1.0 will also provide a transient
+`MOVE.COM` and, if so, document its additional functions here.]
+
+#### 4.8 CLS — Clear Screen
+
+Clears the console screen and returns the cursor to the upper-left corner.
+
+Syntax:
+
+    CLS
+
+Example:
+
+    A>CLS
+
+`CLS` is supplied as a resident command by `RCP.CPX`. A matching transient
+`CLS.COM` is also provided so that the command remains available when the
+resident command package is not loaded.
+
+The exact screen-clearing operation is provided by the active console
+environment and may differ between supported platforms.
+
+#### 4.9 VER — Display Version Information
+
+Displays BetterCP/M version information.
+
+Syntax:
+
+    VER
+
+Example:
+
+    A>VER
+
+`VER` is supplied as a resident command by `RCP.CPX`. It identifies the
+running BetterCP/M system and its release version.
+
+[TBD — expand this entry when the final BetterCP/M 1.0 VER display and any
+additional version-reporting options are finalized.]
+
+#### 4.10 SAVE — Save Memory to a File
+
+Saves the contents of the Transient Program Area to a file.
+
+`SAVE` is a core resident command and supports the standard CP/M 2.2 syntax:
+
+    SAVE pages filespec
+
+where `pages` is the number of 256-byte pages to save, beginning at address
+0100H.
+
+Examples:
+
+    A>SAVE 10 TEST.COM
+    A>SAVE 40 B:PROGRAM.COM
+    A>SAVE 20 B3:IMAGE.COM
 
 For example:
 
-```text
-A>DIR *.COM
-```
+    A>SAVE 10 TEST.COM
+
+writes 10 pages, or 2560 bytes, beginning at 0100H to `TEST.COM`.
+
+`SAVE` is implemented directly by the BetterCP/M command processor rather than
+as a transient program. A transient `SAVE.COM` could overwrite the memory that
+SAVE is intended to preserve.
+
+BetterCP/M extends the conventional command to permit drive/user-qualified
+destination file specifications.
+
+#### 4.11 GET — Load a File into Memory
+
+Loads a file into memory without executing it.
+
+Syntax:
+
+    GET filename
+    GET address filename
+
+With one operand, `GET` loads the file beginning at address 0100H:
+
+    A>GET PROGRAM.COM
+
+An optional hexadecimal address specifies another load address:
+
+    A>GET 8000 DATA.BIN
+
+Leading zeroes in the address are optional.
+
+`GET` returns to the command prompt after loading the file. It does not execute
+the loaded image. The loaded program or data can subsequently be examined or
+modified with `PEEK` and `POKE`, or executed with `GO` or `JUMP`.
+
+`GET` rejects a load that would overwrite memory required by the active
+BetterCP/M command environment.
+
+
+#### 4.12 GO — Execute at 0100H
+
+Transfers control to address 0100H.
+
+Syntax:
+
+    GO [command tail]
+
+Examples:
+
+    A>GO
+    A>GO INPUT.DAT
+
+`GO` is equivalent to:
+
+    JUMP 0100
+
+Before transferring control, BetterCP/M establishes the normal CP/M transient
+program environment, including the stack, DMA address, page-zero vectors,
+command tail, and default FCBs.
+
+`GO` is useful for executing a program image previously loaded or modified in
+memory with commands such as `GET` and `POKE`.
+
+
+#### 4.13 JUMP — Execute at an Address
+
+Transfers control to a specified memory address.
+
+Syntax:
+
+    JUMP address [command tail]
+
+where `address` is a hexadecimal address from 0000H through FFFFH.
+
+Examples:
+
+    A>JUMP 100
+    A>JUMP 8000
+    A>JUMP 100 INPUT.DAT
+
+Before transferring control, `JUMP` establishes the normal CP/M transient
+program environment, including the stack, DMA address, page-zero vectors,
+command tail, and default FCBs.
+
+`GO` is equivalent to `JUMP 0100`.
+
+If no address is supplied, or the address is invalid, `JUMP` reports an error
+and returns to the command prompt.
+
+
+#### 4.14 PEEK / P — Display Memory
+
+Displays the contents of memory in hexadecimal and ASCII form.
+
+`P` is an abbreviation for `PEEK`.
+
+Syntax:
+
+    PEEK
+    PEEK address
+    PEEK first last
 
 or:
 
-```text
-A>DIR B3:*.COM
-```
+    P
+    P address
+    P first last
 
-No special action is required to invoke the resident version. When `DIR` is supplied by the active resident command package, entering `DIR` invokes it normally.
+Examples:
 
-##### Transient DIR
+    A>PEEK 100
+    A>P 8000
+    A>PEEK 100 1FF
 
-`DIR.COM` provides the ordinary directory functions of resident `DIR` together with additional directory-selection and display facilities.
+With one address, `PEEK` displays 256 bytes beginning at that address. With two
+addresses, it displays the inclusive range from `first` through `last`.
 
-The BetterCP/M 1.0 transient version is provisionally intended to provide at least the following additional capabilities:
+With no address, the first invocation begins at 0100H. Subsequent invocations
+continue from the byte following the previous display.
 
-**File attributes**
+During a paged display:
 
-Files can be selected or displayed according to their CP/M file attributes, including:
+    SPACE  .  >     display the next page
+           ,  <     display the previous page
+       Ctrl-C       return to the command prompt
 
-- read-only (R/O);
-- system (SYS); and
-- archive (ARC).
+Addresses are hexadecimal and may be written without leading zeroes. The
+display does not wrap from FFFFH to 0000H.
 
-This permits operations such as displaying only read-only files or identifying files carrying particular attribute settings.
 
-For example, the final interface may provide the equivalent of:
+#### 4.15 POKE — Modify Memory
 
-```text
-A>DIR *.COM [RO]
-```
+Stores bytes or text directly into memory.
 
-to select read-only `.COM` files.
+Syntax:
 
-> **Note:** The option notation shown here is provisional. The final BetterCP/M 1.0 `DIR.COM` syntax may differ.
+    POKE address byte [byte ...]
+    POKE address "text
+    POKE address byte [byte ...] "text
 
-**Date and time**
+where `address` and byte values are hexadecimal.
 
-Where the disk format and installed facilities provide file date/time information, transient `DIR` can use that information in directory displays and file selection.
+Examples:
 
-This can include displaying file timestamps and selecting files according to date or time criteria.
+    A>POKE 100 C3 00 80
+    A>POKE 200 "Hello
+    A>POKE 300 0D 0A "BetterCP/M
 
-For example, the final interface may provide operations equivalent to:
+Bytes are stored consecutively beginning at the specified address. A quotation
+mark introduces literal text; all remaining characters on the command line are
+stored as text.
 
-```text
-A>DIR *.ASM [DATE]
-```
+`POKE` validates the address and all hexadecimal byte operands before modifying
+memory. If an operand is invalid, no partial modification is performed.
 
-or selection of files before, after, or on a specified date.
-
-Date/time functions are available only when the underlying filesystem contains the required timestamp information. A system clock by itself does not give existing files timestamps.
-
-> **BetterCP/M 1.0 note:** Filesystem timestamp support is not part of the required BetterCP/M 1.0 system. Date/time directory functions therefore depend upon the facilities actually present in the system and media being used.
-
-##### Resident and Transient Operation
-
-The resident and transient versions are intended to present the same basic `DIR` command rather than two unrelated utilities. Ordinary directory operations use the same familiar syntax in either case.
-
-The transient program is needed only when a requested operation exceeds the capabilities of resident `DIR`.
-
-The final manual will mark transient-only syntax directly in the syntax and option descriptions so that the two forms can be consulted as a single command reference.
-
-4.2 ERA — Erase Files 4.3 REN — Rename Files 4.4 TYPE — Display a File 4.5 USER — Select User Area 4.6 COPY — Copy Files 4.7 MOVE — Move Files 4.8 CLS — Clear Screen 4.9 VER — Display Version Information 4.10 SAVE — Save Memory to a File 4.11 GET — Load a File into Memory 4.12 GO — Execute at 0100H 4.13 JUMP — Execute at an Address 4.14 PEEK / P — Display Memory 4.15 POKE — Modify Memory
-The final ordering is open. Alphabetical may prove better.
+`POKE`, together with `GET`, `PEEK`, `GO`, `JUMP`, and `SAVE`, provides a small
+resident set of memory inspection, modification, loading, execution, and saving
+commands.
 
 ### 5. Batch Processing
 5.1 SUBMIT 5.2 SUB Files 5.3 Parameters and Substitution 5.4 XSUB 5.5 Batch Execution and Termination 5.6 Examples
