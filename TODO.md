@@ -33,6 +33,9 @@ become 1.0 requirements by appearing in this backlog.
 - [ ] Complete TIME.COM SET, then qualify both read-only providers and
   `P2DOS.RSX` against the migrated production selectors.
 - [ ] Implement and qualify the BetterCP/M ROM/RAM split and protected XIP image.
+  The measured writable-object baseline is now machine checked by
+  `metadata/rom-ram-ownership.tsv` and Engineering Specification 159; placement,
+  cold initialization, workspace/stack evidence and protected XIP remain.
 
 - [ ] Enforce at least 53 KiB usable TPA in the default 1.0 configuration as a
   continuous build and qualification gate. Apply it after each remaining PDS,
