@@ -97,6 +97,8 @@ def main():
  tables+='        END\n'
  tab=asm('tables',tables,L['TABLES'],L['RSX_STATE']-L['TABLES'])
  gateway=asm('gateway',read('src/system/gateway.mac'),L['SYSTEM'],L['BDOS']-L['SYSTEM'])
+ subprocess.run([sys.executable,str(ROOT/'tools/test_rom_ownership_inventory.py'),
+                 '--platform','z80pack','--listing-root',str(out)],check=True)
  reload=read('src/platform/trs80m4/ccprelod.mac')
  a=reload.index('        PUSH    HL\n',reload.index('CRNEXT:'));b=reload.index('\nCRFAIL:',a)
  reload=reload[:a]+'''        INC     A

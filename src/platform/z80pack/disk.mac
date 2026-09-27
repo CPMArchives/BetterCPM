@@ -786,5 +786,6 @@ ZP_COMMAND:    DB 0                     ; host transfer command
 ZP_BUFFER:     DW 0                     ; host transfer buffer
 ZP_OFFSET:     DW 0                     ; raw-track byte offset
 ZP_TBYT:       DW 0                     ; raw-track byte count
+ZP_END:                                ; exclusive end of mutable disk state
 
         END

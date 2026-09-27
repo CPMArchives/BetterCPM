@@ -1,0 +1,24 @@
+object	platform	current_start	current_end	bytes	owner	lifetime	cold_boot	warm_boot	storage_class	overlay_group	immutable_template	disposition
+page-zero	all	0000	00FF	256	CP/M low-memory ABI	boot session	initialize vectors, drive, I/O byte and DMA defaults	preserve ABI; reconstruct vectors as required	fixed subsystem state	none	gateway and low-memory defaults	already RAM
+transient-loader-stack	all	0480	04FF	128	command reconstruction	one reconstruction pass	discarded	fresh for each reconstruction	stack	transient TPA borrow	none	already RAM
+command-history	all	D504	D5C3	192	built-in command history	cold boot through warm boots	create canonical empty v1 object	preserve valid object	bounded PDS state	none	none	relocate to ROM-profile RAM
+system-stack	all	D618	D637	32	system gateway	one system-entry pass	fresh stack	fresh stack	stack	none	none	relocate to ROM-profile RAM
+extension-control-live	all	D647	D657	17	system gateway	boot session	copy descriptor defaults then publish live values	preserve or reconstruct by field	fixed subsystem state	none	gateway descriptor defaults	relocate to ROM-profile RAM
+cpx-profile	all	D658	D680	41	command reconstruction	boot session	copy default profile	preserve across warm boot	fixed subsystem state	none	default CPX profile	relocate to ROM-profile RAM
+bdos-live-state	all	E432	E476	69	BDOS	boot session and individual calls	initialize CP/M defaults	preserve persistent fields; reset call-local fields	fixed subsystem state	none	BDOS state defaults	relocate to ROM-profile RAM
+bdos-stack	all	E477	E49E	40	BDOS	one public BDOS call	fresh stack	fresh stack	stack	none	none	relocate to ROM-profile RAM
+extension-live-state	all	E5F7	E5FB	5	extension dispatcher	one extension or adapter call	clear	clear or overwrite before use	fixed subsystem state	none	none	relocate to ROM-profile RAM
+trs80-physical-drive-profiles	trs80	E9E5	E9FC	24	disk service	boot session	copy default physical profiles	preserve live configuration	fixed subsystem state	none	TRS-80 physical-profile defaults	relocate to ROM-profile RAM
+trs80-disk-session-state	trs80	E9FD	EA07	11	disk service	boot session and individual transfers	initialize invalid/no-selection defaults	preserve selection; reset invalidated context	fixed subsystem state	none	TRS-80 disk session defaults	relocate to ROM-profile RAM
+z80pack-physical-drive-profiles	z80pack	E9B6	E9CD	24	disk service	boot session	copy default physical profiles	preserve live configuration	fixed subsystem state	none	z80pack physical-profile defaults	relocate to ROM-profile RAM
+z80pack-disk-session-state	z80pack	E9CE	E9DB	14	disk service	boot session and individual transfers	initialize transfer defaults	preserve or overwrite transfer context	fixed subsystem state	none	z80pack disk session defaults	relocate to ROM-profile RAM
+trs80-bios-disk-state	trs80	EAC0	EACB	12	BIOS	boot session and individual transfers	initialize CP/M disk defaults	preserve current disk context	fixed subsystem state	none	BIOS disk defaults	relocate to ROM-profile RAM
+trs80-bios-console-state	trs80	EBDA	EBDD	4	TRS-80 console adapter	boot session	initialize cursor, column and pending input	preserve console state	fixed subsystem state	none	platform console defaults	relocate to ROM-profile RAM
+z80pack-bios-disk-state	z80pack	EB03	EB0E	12	BIOS	boot session and individual transfers	initialize CP/M disk defaults	preserve current disk context	fixed subsystem state	none	BIOS disk defaults	relocate to ROM-profile RAM
+file-stream-fcb	all	ECF3	ED16	36	protected file loader	one carrier stream	discarded	discarded	temporary/shared workspace	file and reconstruction scratch	none	relocate to ROM-profile RAM
+trs80-live-disk-tables	trs80	ED17	EF56	576	disk service	boot session	copy DPH, binding, ALV and CSV defaults	preserve live bindings and filesystem state	fixed subsystem state	none	TRS-80 disk-table defaults	relocate to ROM-profile RAM
+z80pack-live-disk-tables	z80pack	ED17	EF56	576	disk service	boot session	copy DPH, binding, ALV and CSV defaults	preserve live bindings and filesystem state	fixed subsystem state	none	z80pack disk-table defaults	relocate to ROM-profile RAM
+rsx-profile	all	EF57	EF7F	41	RSX reconstruction	boot session	create empty profile	preserve and transactionally replace	fixed subsystem state	none	empty profile template	relocate to ROM-profile RAM
+directory-buffer	all	EF80	EFFF	128	BDOS directory service	one directory transfer	discarded	discarded	temporary/shared workspace	directory and reconstruction scratch	none	relocate to ROM-profile RAM
+physical-sector-buffer	all	F000	F1FF	512	disk service	one physical transfer	discarded	discarded	temporary/shared workspace	physical, module and CONFIG workspace	none	relocate to ROM-profile RAM
+module-config-buffer	all	F200	F3FF	512	command reconstruction and CONFIG	one module or CONFIG operation	discarded	discarded	temporary/shared workspace	physical, module and CONFIG workspace	none	relocate to ROM-profile RAM
