@@ -38,8 +38,9 @@ become 1.0 requirements by appearing in this backlog.
   Engineering Specifications 159–160. Engineering Specification 161 assigns
   the initial z80pack RAM map and derives a `DF00h` protection boundary.
   Engineering Specification 162 generates and verifies its RAM initialization
-  template; executable cold entry, workspace/stack evidence and protected XIP
-  remain.
+  template, and Engineering Specification 163 executes the bounded cold
+  initializer in isolation. Immutable-image packing, workspace/stack evidence
+  and protected XIP remain.
 
 - [ ] Enforce at least 53 KiB usable TPA in the default 1.0 configuration as a
   continuous build and qualification gate. Apply it after each remaining PDS,

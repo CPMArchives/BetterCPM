@@ -1,0 +1,41 @@
+        INCLUDE layout.inc
+        INCLUDE romlinks.inc
+
+; ********************************************************************************
+; *                    z80pack ROM Cold Initialization                           *
+; *                                                                              *
+; * Copies the accepted RAM template, publishes the live BDOS gateway, and       *
+; * invalidates persistent history on a true cold entry.                         *
+; ********************************************************************************
+
+  ; Entry contract:
+  ;   HL = immutable RAM-template address
+  ;   IX = immutable BDOS entry address
+  ;   SP = valid stack outside LY_TPA through LY_TPA+RI_BYTES-1
+  ; The routine is position independent. It changes only the accepted RAM image
+  ; and the caller's ordinary register/flag state.
+
+        ASEG
+        ORG     RI_ORIGIN
+
+; ================================================================================
+; =                         Cold RAM Instantiation                               =
+; =                                                                              =
+; = Copies the immutable defaults, then constructs the two runtime-owned objects =
+; = whose representations are deliberately absent from the template.             =
+; ================================================================================
+
+RI_INIT:                                ; instantiate the complete live RAM image
+        LD      DE,LY_TPA
+        LD      BC,RI_BYTES
+        LDIR
+
+        LD      A,0C3H                  ; publish JP immutable-BDOS-entry
+        LD      (LY_TPA),A
+        LD      (LY_TPA+1),IX
+
+        XOR     A                       ; history owner sees an invalid signature
+        LD      (LY_HIST),A
+        RET
+
+        END
