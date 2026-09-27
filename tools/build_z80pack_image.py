@@ -110,6 +110,12 @@ def main():
                  '--output',str(rom)],check=True)
  subprocess.run([sys.executable,str(ROOT/'tools/test_rom_cold_init.py'),
                  '--template',str(rom),'--initializer',str(rom)],check=True)
+ subprocess.run([sys.executable,str(ROOT/'tools/build_rom_pack.py'),
+                 '--z80pack-build',str(out),'--artifacts',str(rom),
+                 '--output',str(rom)],check=True)
+ subprocess.run([sys.executable,str(ROOT/'tools/test_rom_pack.py'),
+                 '--z80pack-build',str(out),'--artifacts',str(rom),
+                 '--pack',str(rom)],check=True)
  reload=read('src/platform/trs80m4/ccprelod.mac')
  a=reload.index('        PUSH    HL\n',reload.index('CRNEXT:'));b=reload.index('\nCRFAIL:',a)
  reload=reload[:a]+'''        INC     A
