@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 INVENTORY = ROOT / "metadata/rom-ram-ownership.tsv"
 
 RELOCATION_BYTES = {"trs80": 2252, "z80pack": 2251}
+ROM_RAM_BYTES = {"trs80": 2255, "z80pack": 2254}
 STORAGE_CLASSES = {
     "bounded PDS state",
     "fixed subsystem state",
@@ -25,6 +26,7 @@ STORAGE_CLASSES = {
 ANCHORS = {
     "page-zero": (0x0000, 0x0100),
     "transient-loader-stack": (LAYOUT["STACK_LOW"], LAYOUT["STACK_TOP"]),
+    "dynamic-bdos-gateway": (LAYOUT["TPA"], LAYOUT["HISTORY"]),
     "command-history": (LAYOUT["HISTORY"], LAYOUT["SYSTEM"]),
     "system-stack": ("system/gateway.lst:SYS_STACK", "system/gateway.lst:SYS_STKTOP"),
     "extension-control-live": ("system/gateway.lst:ECB_FLAGS", "system/gateway.lst:CPTCOUNT"),
@@ -82,6 +84,7 @@ def main() -> None:
 
     ranges = []
     relocation = 0
+    rom_ram = 0
     for row in rows:
         start = int(row["current_start"], 16)
         end = int(row["current_end"], 16) + 1
@@ -102,6 +105,9 @@ def main() -> None:
         ranges.append((start, end, row["object"]))
         if row["disposition"] == "relocate to ROM-profile RAM":
             relocation += end - start
+        if row["disposition"] in (
+                "relocate to ROM-profile RAM", "retain in ROM-profile RAM"):
+            rom_ram += end - start
 
     ranges.sort()
     for left, right in zip(ranges, ranges[1:]):
@@ -111,9 +117,13 @@ def main() -> None:
     if relocation != expected_relocation:
         raise AssertionError(
             f"ROM relocation inventory is {relocation} bytes, expected {expected_relocation}")
+    expected_rom_ram = ROM_RAM_BYTES[args.platform]
+    if rom_ram != expected_rom_ram:
+        raise AssertionError(
+            f"ROM-profile RAM inventory is {rom_ram} bytes, expected {expected_rom_ram}")
 
     print(f"ROM/RAM inventory ({args.platform}): {len(rows)} objects; "
-          f"{relocation} bytes require relocation")
+          f"{relocation} bytes require relocation; {rom_ram} bytes require RAM")
 
 
 if __name__ == "__main__":

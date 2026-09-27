@@ -19,11 +19,18 @@ move an object, select final addresses, claim an overlay proof or freeze the
 ## Measured result
 
 The inventory contains shared and platform-specific objects for both retained
-1.0 targets. Seventeen TRS-80 high-memory objects require 2,252 bytes of RAM
-placement. Sixteen z80pack high-memory objects require 2,251 bytes: its disk
+1.0 targets. Seventeen TRS-80 high-memory objects require 2,252 bytes of
+relocation. Sixteen z80pack high-memory objects require 2,251 bytes: its disk
 adapter has three more bytes of session state, while its host console needs no
 four-byte Model 4 cursor state. Both profiles also identify the writable
 page-zero ABI and transient reconstruction stack that already reside in RAM.
+
+The three-byte dynamic BDOS gateway at `D501h` is a separate shared RAM object.
+Although the historical audit classified its `JP` instruction as code, system
+initialization rewrites its target to BDOS or the active RSX chain. It therefore
+remains executable RAM under fixed system-gateway ownership. Including it makes
+the enforced ROM-profile RAM totals 2,255 bytes for TRS-80 and 2,254 bytes for
+z80pack, while preserving the historical relocation totals below.
 
 The 2,252-byte result independently preserves the measured relocation total in
 Engineering Specification 130 and the cpmsim ROM qualification assessment:
@@ -61,7 +68,7 @@ from emitted assembler listings and the canonical system layout. It rejects:
 - overlapping ranges;
 - an unknown storage class;
 - an omitted ownership, lifecycle, initialization or disposition field; and
-- any change to the measured 2,252-byte relocation total.
+- any change to the measured platform relocation or ROM-profile RAM total.
 
 `tools/build_complete_system.py` checks the TRS-80 profile after regenerating all
 resident listings. `tools/build_z80pack_image.py` checks the z80pack profile
