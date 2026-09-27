@@ -99,6 +99,7 @@ def main():
  gateway=asm('gateway',read('src/system/gateway.mac'),L['SYSTEM'],L['BDOS']-L['SYSTEM'])
  subprocess.run([sys.executable,str(ROOT/'tools/test_rom_ownership_inventory.py'),
                  '--platform','z80pack','--listing-root',str(out)],check=True)
+ subprocess.run([sys.executable,str(ROOT/'tools/test_rom_profile_ram_map.py')],check=True)
  reload=read('src/platform/trs80m4/ccprelod.mac')
  a=reload.index('        PUSH    HL\n',reload.index('CRNEXT:'));b=reload.index('\nCRFAIL:',a)
  reload=reload[:a]+'''        INC     A

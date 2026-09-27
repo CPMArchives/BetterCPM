@@ -1,0 +1,22 @@
+entry	kind	source_object	ram_start	ram_end	bytes	purpose
+dynamic-bdos-gateway	object	dynamic-bdos-gateway	D501	D503	3	stable writable BDOS and RSX-chain jump
+command-history	object	command-history	D504	D5C3	192	fixed bounded-PDS history object
+gateway-entry-reserve	reserved	none	D5C4	D617	84	stable system entry and future ROM trampolines
+system-stack	object	system-stack	D618	D637	32	system reconstruction stack
+gateway-handoff-reserve	reserved	none	D638	D643	12	stable COM handoff and descriptor alignment
+descriptor-header	reserved	none	D644	D646	3	live descriptor magic and version copied from ROM template
+extension-control-live	object	extension-control-live	D647	D657	17	live extension-control descriptor fields
+cpx-profile	object	cpx-profile	D658	D680	41	persistent CPX reconstruction profile
+gateway-tail-reserve	reserved	none	D681	D6BB	59	fixed gateway growth and ROM-entry trampolines
+bdos-live-state	object	bdos-live-state	D6BC	D700	69	BDOS persistent and call-local state
+bdos-stack	object	bdos-stack	D701	D728	40	private BDOS stack
+extension-live-state	object	extension-live-state	D729	D72D	5	extension dispatcher call state
+physical-drive-profiles	object	z80pack-physical-drive-profiles	D72E	D745	24	live z80pack physical-drive profiles
+disk-session-state	object	z80pack-disk-session-state	D746	D753	14	z80pack disk transfer state
+bios-disk-state	object	z80pack-bios-disk-state	D754	D75F	12	BIOS logical and physical disk state
+file-stream-fcb	object	file-stream-fcb	D760	D783	36	protected carrier-stream FCB
+live-disk-tables	object	z80pack-live-disk-tables	D784	D9C3	576	live DPH bindings, ALV and CSV records
+rsx-profile	object	rsx-profile	D9C4	D9EC	41	active RSX reconstruction profile
+directory-buffer	object	directory-buffer	D9ED	DA6C	128	BDOS directory transfer buffer
+physical-sector-buffer	object	physical-sector-buffer	DA6D	DC6C	512	maximum physical-sector staging buffer
+module-config-buffer	object	module-config-buffer	DC6D	DE6C	512	upper module and CONFIG workspace
