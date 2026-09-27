@@ -15,7 +15,6 @@
 
 PL_INIT:                                ; initialize CPMSIM platform state
         XOR A
-        LD (LY_HIST),A
         LD (LY_RSTA),A
         RET
 

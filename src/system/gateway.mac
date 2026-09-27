@@ -94,8 +94,12 @@ SYS_COLD:                               ; perform cold system entry
         XOR     A
         LD      (RSTCOUNT),A            ; cold boot starts from the saved empty profile
                                 ; while WBOOT deliberately preserves this byte
-        XOR     A                       ; cold boot deliberately begins on drive A
-        JR      SYS_ENTER
+  ; Invalidate the history owner's signature on true cold entry. The rebuilt
+  ; CCP then creates its canonical empty v1 object through CCP_HINIT; keeping
+  ; that representation out of the gateway preserves single ownership. WBOOT
+  ; deliberately bypasses this store and retains valid persistent history.
+        LD      (HISTBASE),A
+        JR      SYS_ENTER               ; A=0 deliberately begins on drive A
 
 ; -------------------------------------------------------------------------------
 ; Warm Entry
@@ -130,10 +134,9 @@ SYS_ENTER:                              ; reconstruct command environment
         CALL    BDOS
         POP     AF
         OR      A
-        JR      Z,SYS_RESUME
         LD      E,A
         LD      C,14
-        CALL    BDOS
+        CALL    NZ,BDOS                 ; warm drive B-P; cold and warm-A need no select
 
 ; -------------------------------------------------------------------------------
 ; CCP Resume

@@ -1,7 +1,7 @@
 # BetterCP/M Project Backlog
 
 Status: Living project backlog  
-Updated: 2026-09-25
+Updated: 2026-09-27
 
 This document records substantial unfinished work. Detailed behavioral
 requirements remain authoritative in the architecture, engineering
@@ -21,17 +21,17 @@ become 1.0 requirements by appearing in this backlog.
 ## Immediate priorities
 
 
-- [ ] Implement the frozen 176-183 production selector migration, move proof
+- [x] Implement the frozen 176-183 production selector migration, move proof
   services to 198/199, and provide the 200/201 unhandled fallback and
   `P2DOS.RSX` frontend.
-- [ ] Make true cold boot initialize an empty HISTORY v1 PDS object
+- [x] Make true cold boot initialize an empty HISTORY v1 PDS object
   unconditionally while preserving valid history across WBOOT/reconstruction.
 - [ ] Reject unknown metadata-v1 BRSX record types without changing the live
   profile.
 - [ ] Implement the production FDB compiler/reader and the frozen startup-command
   lifecycle; retain DUP's remaining backend-capability and integration work.
-- [ ] Complete native TIME selector migration and TIME.COM SET, then qualify both
-  read-only providers and `P2DOS.RSX`.
+- [ ] Complete TIME.COM SET, then qualify both read-only providers and
+  `P2DOS.RSX` against the migrated production selectors.
 - [ ] Implement and qualify the BetterCP/M ROM/RAM split and protected XIP image.
 
 - [ ] Enforce at least 53 KiB usable TPA in the default 1.0 configuration as a
@@ -140,9 +140,9 @@ general allocator.
 - [x] Freeze the versioned PDS descriptor and fixed 1.0 inventory, publish
   ownership and reset behavior, and preserve the 53 KiB TPA floor. See
   Architecture Specifications 18 and 29 and Engineering Specification 152.
-- [ ] Make cold boot unconditionally initialize an empty version-1 history
+- [x] Make cold boot unconditionally initialize an empty version-1 history
   object; warm boot and command-environment reconstruction continue to preserve
-  a valid object. Add a focused regression that distinguishes the two paths.
+  a valid object. The focused lifecycle regression distinguishes the two paths.
 
 ### Later 1.x PDS generalization
 
