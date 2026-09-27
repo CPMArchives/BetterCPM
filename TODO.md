@@ -36,8 +36,10 @@ become 1.0 requirements by appearing in this backlog.
   The measured writable-object baseline, including the executable three-byte
   RAM gateway, is now machine checked by `metadata/rom-ram-ownership.tsv` and
   Engineering Specifications 159–160. Engineering Specification 161 assigns
-  the initial z80pack RAM map and derives a `DF00h` protection boundary; cold
-  initialization, workspace/stack evidence and protected XIP remain.
+  the initial z80pack RAM map and derives a `DF00h` protection boundary.
+  Engineering Specification 162 generates and verifies its RAM initialization
+  template; executable cold entry, workspace/stack evidence and protected XIP
+  remain.
 
 - [ ] Enforce at least 53 KiB usable TPA in the default 1.0 configuration as a
   continuous build and qualification gate. Apply it after each remaining PDS,
