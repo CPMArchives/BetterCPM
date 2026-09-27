@@ -27,6 +27,8 @@ def main():
  p.add_argument('--format',default=DEFAULT_FORMAT,
                 help='exact DISK.FDF format name')
  p.add_argument('--fdf',type=Path,default=ROOT/'third_party/montezuma/DISK.FDF')
+ p.add_argument('--resident-only',action='store_true',
+                help='stop after resident artifacts for shifted-layout analysis')
  args=p.parse_args();out=args.output.resolve()
  fmt=select_fdf(args.fdf,args.format)
  record_map=fmt.raw_record_map()
@@ -42,7 +44,8 @@ def main():
  def read(path):return (ROOT/path).read_text()
  # Rebuild common software from current source. These are portable artifacts;
  # target BIOS, disk code, tables and overlays are kept only in our output.
- for name in ('bdos','ccp','rcp_cpx','hello_cpx','rsxloader','rsxresolver','rsx_runtime_overlays','test_service_rsx','svctest','stateful_test_rsx','stattst','hello_rsx','echo_rsx','fdf_rsx','zprtc_rsx','fileloader','utilities'):
+ names=('bdos','fileloader') if args.resident_only else ('bdos','ccp','rcp_cpx','hello_cpx','rsxloader','rsxresolver','rsx_runtime_overlays','test_service_rsx','svctest','stateful_test_rsx','stattst','hello_rsx','echo_rsx','fdf_rsx','zprtc_rsx','fileloader','utilities')
+ for name in names:
   subprocess.run([sys.executable,str(ROOT/'tools'/f'build_{name}.py')],check=True,stdout=subprocess.DEVNULL)
  bios_source=read('src/bios/bios.mac')
  # cpmsim port 5 is its CP/M 2 RDR: input.  Keep the common unassigned-reader
@@ -97,6 +100,8 @@ def main():
  tables+='        END\n'
  tab=asm('tables',tables,L['TABLES'],L['RSX_STATE']-L['TABLES'])
  gateway=asm('gateway',read('src/system/gateway.mac'),L['SYSTEM'],L['BDOS']-L['SYSTEM'])
+ if args.resident_only:
+  return
  subprocess.run([sys.executable,str(ROOT/'tools/test_rom_ownership_inventory.py'),
                  '--platform','z80pack','--listing-root',str(out)],check=True)
  subprocess.run([sys.executable,str(ROOT/'tools/test_rom_profile_ram_map.py')],check=True)
@@ -116,6 +121,12 @@ def main():
  subprocess.run([sys.executable,str(ROOT/'tools/test_rom_pack.py'),
                  '--z80pack-build',str(out),'--artifacts',str(rom),
                  '--pack',str(rom)],check=True)
+ subprocess.run([sys.executable,str(ROOT/'tools/build_rom_reference_inventory.py'),
+                 '--z80pack-build',str(out),'--pack',str(rom),
+                 '--output',str(rom/'rom-references.json')],check=True)
+ subprocess.run([sys.executable,str(ROOT/'tools/test_rom_reference_inventory.py'),
+                 '--z80pack-build',str(out),'--pack',str(rom),
+                 '--inventory',str(rom/'rom-references.json')],check=True)
  reload=read('src/platform/trs80m4/ccprelod.mac')
  a=reload.index('        PUSH    HL\n',reload.index('CRNEXT:'));b=reload.index('\nCRFAIL:',a)
  reload=reload[:a]+'''        INC     A
