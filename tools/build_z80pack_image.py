@@ -100,6 +100,11 @@ def main():
  subprocess.run([sys.executable,str(ROOT/'tools/test_rom_ownership_inventory.py'),
                  '--platform','z80pack','--listing-root',str(out)],check=True)
  subprocess.run([sys.executable,str(ROOT/'tools/test_rom_profile_ram_map.py')],check=True)
+ rom=out/'rom'
+ subprocess.run([sys.executable,str(ROOT/'tools/build_rom_ram_template.py'),
+                 '--z80pack-build',str(out),'--output',str(rom)],check=True)
+ subprocess.run([sys.executable,str(ROOT/'tools/test_rom_ram_template.py'),
+                 '--z80pack-build',str(out),'--template',str(rom)],check=True)
  reload=read('src/platform/trs80m4/ccprelod.mac')
  a=reload.index('        PUSH    HL\n',reload.index('CRNEXT:'));b=reload.index('\nCRFAIL:',a)
  reload=reload[:a]+'''        INC     A
