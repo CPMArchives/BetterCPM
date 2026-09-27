@@ -379,7 +379,10 @@ between CONFIG and DUP remain design considerations for the formatting work.
   behavior and RAM class (bounded PDS, fixed subsystem state, stack or shared
   workspace). Prove static overlay lifetimes before sharing storage and derive
   the final protected boundary from the completed inventory; do not freeze
-  `E300h` as ABI.
+  `E300h` as ABI. The source-derived owner inventory, initial z80pack placement,
+  `DF00h` boundary, initialization artifacts, immutable packing budget and
+  759-word packed-code address inventory are machine checked; workspace/stack
+  closeout remains.
 - [ ] Qualify actual execution in place of BetterCP/M immutable code under
   enforced ROM write protection. Locate every stack, variable, live
   configuration, disk-state object and reconstruction record in RAM, exercise

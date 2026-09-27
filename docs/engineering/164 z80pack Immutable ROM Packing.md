@@ -58,7 +58,7 @@ The focused verifier regenerates the artifact and proves:
 - all remaining 649 bytes contain erased-state `FFh`; and
 - the manifest continues to deny executable status until relocation succeeds.
 
-The next bounded increment is an address-reference inventory for the packed
-resident fragments. Each discovered reference must resolve either to another
-packed immutable address or to the accepted live-RAM map before executable
-status can change.
+Engineering Specification 165 completes the next bounded increment: all 759
+address words in packed resident fragments resolve to either packed immutable
+ROM or the accepted live-RAM map. Source relocation and protected execution are
+still required before executable status can change.
