@@ -53,7 +53,9 @@ increment:
 
 | Address | Purpose |
 | --- | --- |
-| `DF00h` | relocated resident system cold entry |
+| `DF00h` | relocated resident system initializer |
+| `DF20h` | relocated resident system BOOT entry |
+| `F225h` | relocated BIOS BOOT vector |
 | `DF9Eh` | relocated immutable BDOS entry |
 | `F3F5h` | RAM initialization template |
 | `FD61h` | position-independent cold initializer |
