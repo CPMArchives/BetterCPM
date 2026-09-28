@@ -93,6 +93,7 @@ packing. A focused `--resident-only` build mode exists solely to produce the
 disposable alternate-layout artifacts without recursively constructing media or
 another inventory.
 
-The next bounded increment is source relocation using this frozen inventory.
-It must update references in controlled owner groups and retain exact count and
-destination checks; protected execution remains a later acceptance step.
+Engineering Specification 166 completes the next bounded increment by applying
+all 759 packed-code references and accounting for the nineteen mutable-source
+words. The resulting artifact is address-complete. Cold-boot integration and
+protected execution remain separate later acceptance steps.

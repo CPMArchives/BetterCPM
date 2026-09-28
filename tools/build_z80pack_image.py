@@ -127,6 +127,12 @@ def main():
  subprocess.run([sys.executable,str(ROOT/'tools/test_rom_reference_inventory.py'),
                  '--z80pack-build',str(out),'--pack',str(rom),
                  '--inventory',str(rom/'rom-references.json')],check=True)
+ subprocess.run([sys.executable,str(ROOT/'tools/build_rom_relocated_image.py'),
+                 '--pack',str(rom),'--inventory',str(rom/'rom-references.json'),
+                 '--output',str(rom)],check=True)
+ subprocess.run([sys.executable,str(ROOT/'tools/test_rom_relocated_image.py'),
+                 '--pack',str(rom),'--inventory',str(rom/'rom-references.json'),
+                 '--image',str(rom)],check=True)
  reload=read('src/platform/trs80m4/ccprelod.mac')
  a=reload.index('        PUSH    HL\n',reload.index('CRNEXT:'));b=reload.index('\nCRFAIL:',a)
  reload=reload[:a]+'''        INC     A

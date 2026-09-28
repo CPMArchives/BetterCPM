@@ -40,8 +40,10 @@ become 1.0 requirements by appearing in this backlog.
   Engineering Specification 162 generates and verifies its RAM initialization
   template, and Engineering Specification 163 executes the bounded cold
   initializer in isolation. Engineering Specification 164 proves the complete
-  immutable packing budget without claiming executable relocation. Address
-  relocation, workspace/stack evidence and protected XIP remain.
+  immutable packing budget without claiming executable relocation. Engineering
+  Specifications 165–166 inventory and apply all resident address references,
+  producing an address-complete executable artifact. Cold-boot integration,
+  workspace/stack evidence and protected XIP remain.
 
 - [ ] Enforce at least 53 KiB usable TPA in the default 1.0 configuration as a
   continuous build and qualification gate. Apply it after each remaining PDS,
@@ -381,7 +383,7 @@ between CONFIG and DUP remain design considerations for the formatting work.
   the final protected boundary from the completed inventory; do not freeze
   `E300h` as ABI. The source-derived owner inventory, initial z80pack placement,
   `DF00h` boundary, initialization artifacts, immutable packing budget and
-  759-word packed-code address inventory are machine checked; workspace/stack
+  complete 778-word relocation accounting are machine checked; workspace/stack
   closeout remains.
 - [ ] Qualify actual execution in place of BetterCP/M immutable code under
   enforced ROM write protection. Locate every stack, variable, live
