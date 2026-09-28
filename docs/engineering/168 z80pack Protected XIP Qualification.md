@@ -10,8 +10,8 @@ disable the protected region.
 
 This completes the protected-XIP portion of Implementation Item 2. Engineering
 Specifications 169 and 170 supply the subsequent stack measurements and
-workspace-lifetime evidence. The focused Item 2 regression remains separate
-closure work.
+workspace-lifetime evidence. Engineering Specification 171 completes the
+focused RSX-overlay regression and closes the item.
 
 ## Reconstructed CCP carrier
 
@@ -67,8 +67,10 @@ The protected run proves:
 3. the writable RAM template and page-zero gateway initialize successfully;
 4. relocated BIOS BOOT and the disk-loaded reloader reach `A0>`;
 5. A: directory access succeeds;
-6. a transient program loads, runs and returns; and
-7. no CPU or DMA write touches the immutable image during those paths.
+6. a transient program loads, runs and returns;
+7. WBOOT reconstruction, dynamic RSX load/list/unload and 53 KiB TPA recovery
+   succeed; and
+8. no CPU or DMA write touches the immutable image during those paths.
 
 It records the image identity and results in
 `rom/rom-xip-qualification.json`. The independently generated build manifest
@@ -78,9 +80,9 @@ The same build also passes the ordinary z80pack disk-boot regression, including
 file creation/readback, cpmtools interoperability, RSX load/unload and the 53 KiB
 TPA gate.
 
-## Remaining Item 2 work
+## Item 2 closure
 
-Protected execution, stack capacity and workspace lifetimes are no longer open
-implementation questions. Item 2 still needs one focused regression that
-collects the ROM, RAM, TPA and protection results into the final acceptance
-record.
+Protected execution, stack capacity, workspace lifetimes and dynamic RSX
+transactions are machine-checked. Engineering Specification 171 records the
+last isolated correction and the final acceptance record. These results close
+Implementation Item 2; release-candidate qualification will rerun them.

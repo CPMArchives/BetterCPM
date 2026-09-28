@@ -32,7 +32,7 @@ become 1.0 requirements by appearing in this backlog.
   lifecycle; retain DUP's remaining backend-capability and integration work.
 - [ ] Complete TIME.COM SET, then qualify both read-only providers and
   `P2DOS.RSX` against the migrated production selectors.
-- [ ] Implement and qualify the BetterCP/M ROM/RAM split and protected XIP image.
+- [x] Implement and qualify the BetterCP/M ROM/RAM split and protected XIP image.
   The measured writable-object baseline, including the executable three-byte
   RAM gateway, is now machine checked by `metadata/rom-ram-ownership.tsv` and
   Engineering Specifications 159–160. Engineering Specification 161 assigns
@@ -49,9 +49,10 @@ become 1.0 requirements by appearing in this backlog.
   references and qualifies the complete path under locked `DF00h` CPU/DMA write
   protection. Engineering Specification 169 measures the three retained stacks
   during protected cold/warm execution and preserves at least 14 bytes of
-  reserve in each. Workspace evidence and final focused regression remain.
-  That final regression must first correct the isolated ROM-profile
-  `RSX LOAD ECHO` trap at `D62Fh`; do not broaden it into unrelated RSX work.
+  reserve in each. Engineering Specification 170 proves the retained workspace
+  lifetimes. Engineering Specification 171 relocates all 18 file-backed RSX
+  transaction artifacts, accounts for their 703 address words, and qualifies
+  dynamic load/list/unload with 53 KiB TPA recovery under protection.
 
 - [ ] Enforce at least 53 KiB usable TPA in the default 1.0 configuration as a
   continuous build and qualification gate. Apply it after each remaining PDS,
