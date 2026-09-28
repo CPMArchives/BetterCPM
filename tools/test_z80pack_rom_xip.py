@@ -38,11 +38,13 @@ def main() -> None:
         work = Path(temporary)
         simulator = build_guarded_simulator(source, work)
         prove_guard_primitives(simulator, work)
+        stack_report = image / "rom/rom-stack-qualification.json"
         subprocess.run([
             sys.executable, str(ROOT / "tools/test_z80pack_rom_boot.py"),
             "--image-dir", str(image), "--simulator", str(simulator),
-            "--rom-start", ROM_START,
+            "--rom-start", ROM_START, "--stack-report", str(stack_report),
         ], cwd=ROOT, check=True)
+    stacks = json.loads(stack_report.read_text(encoding="ascii"))["stacks"]
 
     report = {
         "boundary": int(ROM_START, 16),
@@ -52,6 +54,7 @@ def main() -> None:
         "cpu_write_rejected": True,
         "dma_write_rejected": True,
         "control_change_rejected": True,
+        "stacks": stacks,
     }
     (image / "rom/rom-xip-qualification.json").write_text(
         json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="ascii")

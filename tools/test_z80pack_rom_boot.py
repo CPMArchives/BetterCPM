@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -20,6 +21,7 @@ def main() -> None:
     parser.add_argument("--simulator", type=Path,
                         default=Path.home() / "projects/git/z80pack/cpmsim/cpmsim")
     parser.add_argument("--rom-start")
+    parser.add_argument("--stack-report", type=Path)
     args = parser.parse_args()
     image = args.image_dir.resolve()
     manifest = json.loads(
@@ -60,6 +62,11 @@ prompt
 send -s -- "HELLO\r"
 expect -exact "BetterCP/M on z80pack"
 prompt
+send -s -- "WARM\r"
+prompt
+send -s -- "DIR\r"
+expect -exact "RCP"
+prompt
 send -s -- "BYE\r"
 expect eof
 '''
@@ -81,10 +88,44 @@ expect eof
         if run.returncode:
             detail = report.read_text(errors="replace")[-1800:] if report.exists() else run.stdout[-1800:]
             raise AssertionError(f"ROM boot failed:\n{detail}")
+        if args.stack_report:
+            if not args.rom_start:
+                raise AssertionError("stack measurement requires protected ROM mode")
+            transcript = report.read_text(errors="replace")
+            pattern = re.compile(
+                r"ROM STACK HIGH-WATER NAME=(\w+) LOW=([0-9A-F]{4}) "
+                r"TOP=([0-9A-F]{4}) USED=(\d+) CAPACITY=(\d+) MARGIN=(\d+)")
+            stacks = {
+                match.group(1): {
+                    "low": int(match.group(2), 16),
+                    "top": int(match.group(3), 16),
+                    "used": int(match.group(4)),
+                    "capacity": int(match.group(5)),
+                    "margin": int(match.group(6)),
+                }
+                for match in pattern.finditer(transcript)
+            }
+            expected = {
+                "loader": (0x0480, 0x0500, 128),
+                "system": (0xD618, 0xD638, 32),
+                "bdos": (0xD701, 0xD729, 40),
+            }
+            if set(stacks) != set(expected):
+                raise AssertionError(f"incomplete stack measurement: {stacks}")
+            for name, (low, top, capacity) in expected.items():
+                measured = stacks[name]
+                if (measured["low"], measured["top"], measured["capacity"]) != (
+                        low, top, capacity):
+                    raise AssertionError(f"{name} stack layout changed: {measured}")
+                if measured["used"] <= 0 or measured["margin"] < 8:
+                    raise AssertionError(f"{name} stack lacks measured reserve: {measured}")
+            args.stack_report.write_text(
+                json.dumps({"stacks": stacks}, indent=2, sort_keys=True) + "\n",
+                encoding="ascii")
     protected = f" under enforced {args.rom_start}h protection" if args.rom_start else ""
     print("ROM cold entry verified" + protected + ": RAM initialized, relocated "
-          "BIOS BOOT entered, relocated disk reloader reached A0>, DIR and "
-          "transient execution passed")
+          "BIOS BOOT entered, relocated disk reloader reached A0>, DIR, "
+          "transient execution and warm reconstruction passed")
 
 
 if __name__ == "__main__":

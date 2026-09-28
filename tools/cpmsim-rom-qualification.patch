@@ -170,3 +170,86 @@ index a7433e05..a3e7973e 100644
  		return;
  	}
  
+diff --git a/cpmsim/srcsim/simio.c b/cpmsim/srcsim/simio.c
+index e139614f..b6f12be4 100644
+--- a/cpmsim/srcsim/simio.c
++++ b/cpmsim/srcsim/simio.c
+@@ -706,0 +707,4 @@ void exit_io(void)
++#ifdef BETTERCPM_ROM_QUALIFY
++	rom_qualification_report();
++#endif
++
+diff --git a/cpmsim/srcsim/simmem.c b/cpmsim/srcsim/simmem.c
+index dabcaf33..7a27912a 100644
+--- a/cpmsim/srcsim/simmem.c
++++ b/cpmsim/srcsim/simmem.c
+@@ -49,0 +50,50 @@ static int rom_qualification_start;
++struct qualification_stack {
++	const char *name;
++	WORD low;
++	WORD top;
++	WORD minimum;
++};
++static struct qualification_stack qualification_stacks[] = {
++	{ "loader", 0x0480, 0x0500, 0x0500 },
++	{ "system", 0xd618, 0xd638, 0xd638 },
++	{ "bdos", 0xd701, 0xd729, 0xd729 }
++};
++
++void rom_qualification_stack_write(WORD addr)
++{
++	unsigned int i;
++
++	if (!rom_qualification)
++		return;
++	for (i = 0; i < sizeof(qualification_stacks) /
++	    sizeof(qualification_stacks[0]); i++) {
++		struct qualification_stack *stack = &qualification_stacks[i];
++		if (SP <= stack->top && SP >= stack->low - 64 &&
++		    (addr == SP || addr == (WORD) (SP + 1))) {
++			if (SP < stack->low) {
++				fprintf(stderr,
++				    "ROM STACK OVERFLOW NAME=%s SP=%04X LOW=%04X\n",
++				    stack->name, SP, stack->low);
++				exit(87);
++			}
++			if (SP < stack->minimum)
++				stack->minimum = SP;
++		}
++	}
++}
++
++void rom_qualification_report(void)
++{
++	unsigned int i;
++
++	if (!rom_qualification)
++		return;
++	for (i = 0; i < sizeof(qualification_stacks) /
++	    sizeof(qualification_stacks[0]); i++) {
++		const struct qualification_stack *stack = &qualification_stacks[i];
++		fprintf(stderr, "ROM STACK HIGH-WATER NAME=%s LOW=%04X TOP=%04X "
++		    "USED=%u CAPACITY=%u MARGIN=%u\n", stack->name, stack->low,
++		    stack->top, stack->top - stack->minimum,
++		    stack->top - stack->low, stack->minimum - stack->low);
++	}
++}
+@@ -70,0 +121,2 @@ void rom_qualification_reset(void)
++	unsigned int i;
++
+@@ -73,0 +126,3 @@ void rom_qualification_reset(void)
++		for (i = 0; i < sizeof(qualification_stacks) /
++		    sizeof(qualification_stacks[0]); i++)
++			qualification_stacks[i].minimum = qualification_stacks[i].top;
+diff --git a/cpmsim/srcsim/simmem.h b/cpmsim/srcsim/simmem.h
+index a3e7973e..afec7df6 100644
+--- a/cpmsim/srcsim/simmem.h
++++ b/cpmsim/srcsim/simmem.h
+@@ -58,0 +59,2 @@ extern void rom_qualification_reset(void);
++extern void rom_qualification_stack_write(WORD addr);
++extern void rom_qualification_report(void);
+@@ -74,0 +77,4 @@ static inline void memwrt(WORD addr, BYTE data)
++#ifdef BETTERCPM_ROM_QUALIFY
++	rom_qualification_stack_write(addr);
++#endif
++
