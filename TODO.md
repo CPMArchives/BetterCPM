@@ -391,8 +391,8 @@ between CONFIG and DUP remain design considerations for the formatting work.
   the final protected boundary from the completed inventory; do not freeze
   `E300h` as ABI. The source-derived owner inventory, initial z80pack placement,
   `DF00h` boundary, initialization artifacts, immutable packing budget and
-  complete 778-word relocation accounting are machine checked; workspace/stack
-  closeout remains.
+  complete 778-word relocation accounting, retained-stack capacity and static
+  workspace lifetimes are machine checked; final focused closeout remains.
 - [ ] Qualify actual execution in place of BetterCP/M immutable code under
   enforced ROM write protection. Locate every stack, variable, live
   configuration, disk-state object and reconstruction record in RAM, exercise

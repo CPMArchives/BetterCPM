@@ -9,9 +9,9 @@ and deterministically rejects CPU, DMA and guest-control attempts to modify or
 disable the protected region.
 
 This completes the protected-XIP portion of Implementation Item 2. Engineering
-Specification 169 supplies the subsequent stack measurements. Workspace-
-lifetime evidence and the focused Item 2 regression remain separate closure
-work.
+Specifications 169 and 170 supply the subsequent stack measurements and
+workspace-lifetime evidence. The focused Item 2 regression remains separate
+closure work.
 
 ## Reconstructed CCP carrier
 
@@ -80,7 +80,7 @@ TPA gate.
 
 ## Remaining Item 2 work
 
-Protected execution and stack capacity are no longer open implementation
-questions. Item 2 still needs explicit workspace-lifetime evidence and one
-focused regression that collects the ROM, RAM, TPA and protection results into
-the final acceptance record.
+Protected execution, stack capacity and workspace lifetimes are no longer open
+implementation questions. Item 2 still needs one focused regression that
+collects the ROM, RAM, TPA and protection results into the final acceptance
+record.

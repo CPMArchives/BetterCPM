@@ -44,7 +44,13 @@ def main() -> None:
             "--image-dir", str(image), "--simulator", str(simulator),
             "--rom-start", ROM_START, "--stack-report", str(stack_report),
         ], cwd=ROOT, check=True)
+        workspace_report = image / "rom/rom-workspace-lifetimes.json"
+        subprocess.run([
+            sys.executable, str(ROOT / "tools/test_rom_workspace_lifetimes.py"),
+            "--image-dir", str(image), "--report", str(workspace_report),
+        ], cwd=ROOT, check=True)
     stacks = json.loads(stack_report.read_text(encoding="ascii"))["stacks"]
+    workspace = json.loads(workspace_report.read_text(encoding="ascii"))
 
     report = {
         "boundary": int(ROM_START, 16),
@@ -55,6 +61,7 @@ def main() -> None:
         "dma_write_rejected": True,
         "control_change_rejected": True,
         "stacks": stacks,
+        "workspace": workspace,
     }
     (image / "rom/rom-xip-qualification.json").write_text(
         json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="ascii")
