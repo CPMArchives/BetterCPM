@@ -44,8 +44,10 @@ become 1.0 requirements by appearing in this backlog.
   Specifications 165–166 inventory and apply all resident address references,
   producing an address-complete executable artifact. Engineering Specification
   167 connects the ROM cold entry, relocated reloader and ROM-profile system
-  disk and boots them through transient execution under cpmsim. Workspace/stack
-  evidence and enforced protected XIP remain.
+  disk and boots them through transient execution under cpmsim. Engineering
+  Specification 168 relocates the reconstructed CCP's 63 external layout
+  references and qualifies the complete path under locked `DF00h` CPU/DMA write
+  protection. Workspace/stack evidence and final focused regression remain.
 
 - [ ] Enforce at least 53 KiB usable TPA in the default 1.0 configuration as a
   continuous build and qualification gate. Apply it after each remaining PDS,

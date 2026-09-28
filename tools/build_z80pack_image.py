@@ -207,6 +207,8 @@ def main():
  rom_loader=(rom/'rom-reloader.bin').read_bytes()
  rom_loader_carrier=rom_loader.ljust(896,b'\0')+selector.ljust(128,b'\0')
  rom_logical[60*128:68*128]=rom_loader_carrier
+ rom_ccp=(rom/'rom-ccp.rlm').read_bytes()
+ rom_logical[108*128:160*128]=rom_ccp.ljust(13*512,b'\0')
  rom_raw=raw_image(rom_logical)
  blank=raw_image(bytearray(b'\xe5'*fmt.image_bytes))
  disks.mkdir();library=disks/'library';library.mkdir()
