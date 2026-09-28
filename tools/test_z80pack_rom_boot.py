@@ -67,6 +67,18 @@ prompt
 send -s -- "DIR\r"
 expect -exact "RCP"
 prompt
+send -s -- "RSX LOAD ECHO\r"
+prompt
+send -s -- "RSX LIST\r"
+expect -exact "ECHO : BDOS 199"
+expect -exact "TPA available: 51K"
+prompt
+send -s -- "RSX UNLOAD ECHO\r"
+prompt
+send -s -- "RSX LIST\r"
+expect -exact "No RSXs loaded"
+expect -exact "TPA available: 53K"
+prompt
 send -s -- "BYE\r"
 expect eof
 '''
@@ -125,7 +137,8 @@ expect eof
     protected = f" under enforced {args.rom_start}h protection" if args.rom_start else ""
     print("ROM cold entry verified" + protected + ": RAM initialized, relocated "
           "BIOS BOOT entered, relocated disk reloader reached A0>, DIR, "
-          "transient execution and warm reconstruction passed")
+          "transient execution, warm reconstruction, and dynamic RSX "
+          "load/list/unload passed")
 
 
 if __name__ == "__main__":

@@ -33,6 +33,23 @@ def main() -> None:
         raise AssertionError("ROM boot payload does not match its manifest")
     if manifest["base"] != int(ROM_START, 16):
         raise AssertionError("guard boundary does not match the ROM image base")
+    overlays_path = image / "rom/rsx-overlays/rom-rsx-overlays.json"
+    overlays = json.loads(overlays_path.read_text(encoding="ascii"))
+    if (overlays["file_count"] != 18 or overlays["reference_count"] != 703 or
+            overlays["unresolved_targets"] != 0):
+        raise AssertionError("ROM RSX-overlay relocation inventory changed")
+    for name, entry in overlays["files"].items():
+        artifact = (image / "rom/rsx-overlays" / name).read_bytes()
+        if hashlib.sha256(artifact).hexdigest() != entry["sha256"]:
+            raise AssertionError(f"{name}: relocated artifact hash mismatch")
+    selector_gateway = [
+        row for row in overlays["files"]["RSXSEL.BIN"]["references"]
+        if row["old_target"] == 0xF07D
+    ]
+    if (len(selector_gateway) != 1 or
+            selector_gateway[0]["new_target"] != 0xDAEA or
+            selector_gateway[0]["target_class"] != "live-ram"):
+        raise AssertionError("ROM RSX selector retained its conventional gateway")
 
     with tempfile.TemporaryDirectory(prefix="bettercpm-rom-xip-") as temporary:
         work = Path(temporary)
@@ -60,6 +77,11 @@ def main() -> None:
         "cpu_write_rejected": True,
         "dma_write_rejected": True,
         "control_change_rejected": True,
+        "rsx_load_list_unload_qualified": True,
+        "rsx_overlay_file_count": overlays["file_count"],
+        "rsx_overlay_reference_count": overlays["reference_count"],
+        "rsx_overlay_manifest_sha256": hashlib.sha256(
+            overlays_path.read_bytes()).hexdigest(),
         "stacks": stacks,
         "workspace": workspace,
     }

@@ -7,6 +7,7 @@ from fdf_format import select_fdf
 from system_layout import LAYOUT as L
 from cpm_tools_bundle import files as cpm_tools_files
 from build_z80pack_rom_boot import build as build_rom_boot, z80pack_reloader_source
+from build_rom_rsx_overlays import build as build_rom_rsx_overlays
 ROOT=Path(__file__).resolve().parents[1]
 PLATFORM=ROOT/'src/platform/z80pack'
 DEFAULT_FORMAT='California Computer Systems (40T, DS, DD, 332K)'
@@ -139,6 +140,9 @@ def main():
  build_rom_boot(out,rom,args.assembler.expanduser().resolve(),
                 fmt.raw_tracks,fmt.raw_track_bytes//128)
  selector=asm('rsxselect',read('src/platform/z80pack/rsxsel.mac'),L['CONFIG']+0x380,128)
+ rom_overlays=rom/'rsx-overlays'
+ build_rom_rsx_overlays(rom,rom_overlays,out/'rsxselect.bin',
+                        args.assembler.expanduser().resolve())
  bootfmt=(f'ZB_TRACKS EQU {fmt.raw_tracks}\n'
           f'ZB_SLOTS EQU {fmt.raw_track_bytes//128}\n')
  boot_source=read('src/platform/z80pack/boot.mac').replace('        INCLUDE bootfmt.inc',bootfmt)
@@ -205,10 +209,40 @@ def main():
  raw=raw_image(logical)
  rom_logical=bytearray(logical)
  rom_loader=(rom/'rom-reloader.bin').read_bytes()
- rom_loader_carrier=rom_loader.ljust(896,b'\0')+selector.ljust(128,b'\0')
+ rom_selector=(rom_overlays/'RSXSEL.BIN').read_bytes()
+ rom_loader_carrier=rom_loader.ljust(896,b'\0')+rom_selector.ljust(128,b'\0')
  rom_logical[60*128:68*128]=rom_loader_carrier
  rom_ccp=(rom/'rom-ccp.rlm').read_bytes()
  rom_logical[108*128:160*128]=rom_ccp.ljust(13*512,b'\0')
+ def replace_rom_file(name,data):
+  stem,suffix=name.split('.')
+  wanted=stem.ljust(8).encode()+suffix.ljust(3).encode()
+  directory=fmt.reserved_records*128
+  for index in range(fmt.drm+1):
+   entry=directory+index*32
+   if bytes(rom_logical[entry+1:entry+12])!=wanted:continue
+   records=rom_logical[entry+15]
+   if records*128<len(data):raise ValueError(f'{name}: ROM replacement exceeds directory extent')
+   blocks=[]
+   if fmt.dsm<256:blocks=[value for value in rom_logical[entry+16:entry+32] if value]
+   else:
+    blocks=[struct.unpack_from('<H',rom_logical,entry+16+slot*2)[0] for slot in range(8)]
+    blocks=[value for value in blocks if value]
+   payload=data.ljust(records*128,b'\x1a');cursor=0
+   for value in blocks:
+    count=min(fmt.block_bytes,len(payload)-cursor)
+    if count<=0:break
+    start=fmt.reserved_records*128+value*fmt.block_bytes
+    rom_logical[start:start+count]=payload[cursor:cursor+count];cursor+=count
+   if cursor!=len(payload):raise ValueError(f'{name}: incomplete ROM replacement')
+   return
+  raise ValueError(f'{name}: missing from ROM filesystem')
+ rom_entries=json.loads((rom/'rom-image.json').read_text())['entries']
+ rom_gateway_tail=bytes((0xc3,rom_entries['bdos']&255,rom_entries['bdos']>>8))
+ rom_logical[76*128:84*128]=(rom_overlays/'RSXLOAD.BIN').read_bytes().ljust(1021,b'\0')+rom_gateway_tail
+ rom_logical[100*128:108*128]=(rom_overlays/'RSXRESOL.BIN').read_bytes().ljust(1021,b'\0')+rom_gateway_tail
+ for name in sorted(('R3PLAN.RSX','R3SLOTS.RSX','R3SNAP.RSX','R3CARR.RSX','R3META.RSX','R3COORD.RSX','R3PROF.RSX','R3KCTX.RSX','R3KEEP.RSX','R3KPRE.RSX','R3FINAL.RSX','R3DROP.RSX','R3MOVE.RSX','R3COMIT.RSX','R3RESOL.RSX')):
+  replace_rom_file(name,(rom_overlays/name).read_bytes())
  rom_raw=raw_image(rom_logical)
  blank=raw_image(bytearray(b'\xe5'*fmt.image_bytes))
  disks.mkdir();library=disks/'library';library.mkdir()

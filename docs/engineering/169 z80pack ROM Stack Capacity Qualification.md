@@ -48,18 +48,20 @@ measurement does not weaken the protected-XIP result. The measurement logic is
 absent from an ordinary cpmsim build and changes no BetterCP/M production code
 or guest memory.
 
-## Isolated follow-up
+## Resolved follow-up
 
-An attempted extension of this campaign stopped at the first unrelated failure:
+An attempted extension of this campaign originally stopped at the first
+unrelated failure:
 `RSX LOAD ECHO` trapped on opcode `ED AE` at `D62Fh`, inside the system-stack
 range, after the protected ROM profile reached a normal prompt. The conventional
 disk regression continues to pass RSX
-load/unload. This increment records the exact boundary and does not expand into
-a general RSX investigation. The final focused Item 2 regression must isolate
-and correct that ROM-profile path before it can close the item.
+load/unload. Bounded probes subsequently identified an incompletely relocated
+RSX selector; Engineering Specification 171 records its correction and the
+passing protected load/list/unload regression.
 
 ## Result
 
 Retained stack capacity is now measured rather than inferred. Engineering
-Specification 170 supplies the workspace-lifetime evidence. The isolated
-ROM-profile RSX path remains before the final Item 2 acceptance regression.
+Specification 170 supplies the workspace-lifetime evidence. Engineering
+Specification 171 corrects and qualifies the isolated ROM-profile RSX path; it
+confirmed that stack capacity was not the cause.
