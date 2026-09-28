@@ -8,9 +8,10 @@ qualification passes normal cold boot, directory access and transient execution
 and deterministically rejects CPU, DMA and guest-control attempts to modify or
 disable the protected region.
 
-This completes the protected-XIP portion of Implementation Item 2. Final stack
-measurements, workspace-lifetime evidence and the focused Item 2 regression
-remain separate closure work.
+This completes the protected-XIP portion of Implementation Item 2. Engineering
+Specification 169 supplies the subsequent stack measurements. Workspace-
+lifetime evidence and the focused Item 2 regression remain separate closure
+work.
 
 ## Reconstructed CCP carrier
 
@@ -79,7 +80,7 @@ TPA gate.
 
 ## Remaining Item 2 work
 
-Protected execution is no longer an open implementation question. Item 2 still
-needs measured stack capacity, explicit workspace-lifetime evidence, and one
+Protected execution and stack capacity are no longer open implementation
+questions. Item 2 still needs explicit workspace-lifetime evidence and one
 focused regression that collects the ROM, RAM, TPA and protection results into
 the final acceptance record.

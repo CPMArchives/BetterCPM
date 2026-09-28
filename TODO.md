@@ -47,7 +47,11 @@ become 1.0 requirements by appearing in this backlog.
   disk and boots them through transient execution under cpmsim. Engineering
   Specification 168 relocates the reconstructed CCP's 63 external layout
   references and qualifies the complete path under locked `DF00h` CPU/DMA write
-  protection. Workspace/stack evidence and final focused regression remain.
+  protection. Engineering Specification 169 measures the three retained stacks
+  during protected cold/warm execution and preserves at least 14 bytes of
+  reserve in each. Workspace evidence and final focused regression remain.
+  That final regression must first correct the isolated ROM-profile
+  `RSX LOAD ECHO` trap at `D62Fh`; do not broaden it into unrelated RSX work.
 
 - [ ] Enforce at least 53 KiB usable TPA in the default 1.0 configuration as a
   continuous build and qualification gate. Apply it after each remaining PDS,
