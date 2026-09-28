@@ -36,8 +36,10 @@ The remaining objects follow contiguously by natural owner:
 | `D9EDh..DA6Ch` | 128 | Directory buffer |
 | `DA6Dh..DE6Ch` | 1,024 | Physical/module/CONFIG workspace |
 
-No workspaces overlap in this map. The full 1,024-byte area remains allocated,
-and both existing stack sizes remain unchanged.
+The full 1,024-byte area remains allocated, and both existing stack sizes
+remain unchanged. Engineering Specification 170 subsequently proves the three
+exclusive workspace lifetimes and confirms that the full reservation is
+required; it does not alter this placement.
 
 ## Derived boundary and budgets
 

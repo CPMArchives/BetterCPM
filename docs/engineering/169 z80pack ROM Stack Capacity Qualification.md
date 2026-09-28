@@ -60,6 +60,6 @@ and correct that ROM-profile path before it can close the item.
 
 ## Result
 
-Retained stack capacity is now measured rather than inferred. Workspace-
-lifetime evidence and the isolated ROM-profile RSX path remain before the final
-Item 2 acceptance regression.
+Retained stack capacity is now measured rather than inferred. Engineering
+Specification 170 supplies the workspace-lifetime evidence. The isolated
+ROM-profile RSX path remains before the final Item 2 acceptance regression.

@@ -18,5 +18,5 @@ file-stream-fcb	object	file-stream-fcb	D760	D783	36	zero	none	protected carrier-
 live-disk-tables	object	z80pack-live-disk-tables	D784	D9C3	576	copy-fixup	ED17	live DPH bindings, ALV and CSV records
 rsx-profile	object	rsx-profile	D9C4	D9EC	41	zero	none	active RSX reconstruction profile
 directory-buffer	object	directory-buffer	D9ED	DA6C	128	zero	none	BDOS directory transfer buffer
-physical-sector-buffer	object	physical-sector-buffer	DA6D	DC6C	512	zero	none	maximum physical-sector staging buffer
-module-config-buffer	object	module-config-buffer	DC6D	DE6C	512	zero	none	upper module and CONFIG workspace
+physical-sector-buffer	object	physical-sector-buffer	DA6D	DC6C	512	zero	none	lower workspace for module staging, full-sector transfers and control overlays
+module-config-buffer	object	module-config-buffer	DC6D	DE6C	512	zero	none	upper workspace for small-sector staging, full-sector transfers and control overlays
