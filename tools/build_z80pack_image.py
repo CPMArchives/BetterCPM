@@ -6,6 +6,7 @@ from build_ccp import assemble
 from fdf_format import select_fdf
 from system_layout import LAYOUT as L
 from cpm_tools_bundle import files as cpm_tools_files
+from build_z80pack_rom_boot import build as build_rom_boot, z80pack_reloader_source
 ROOT=Path(__file__).resolve().parents[1]
 PLATFORM=ROOT/'src/platform/z80pack'
 DEFAULT_FORMAT='California Computer Systems (40T, DS, DD, 332K)'
@@ -44,7 +45,7 @@ def main():
  def read(path):return (ROOT/path).read_text()
  # Rebuild common software from current source. These are portable artifacts;
  # target BIOS, disk code, tables and overlays are kept only in our output.
- names=('bdos','fileloader') if args.resident_only else ('bdos','ccp','rcp_cpx','hello_cpx','rsxloader','rsxresolver','rsx_runtime_overlays','test_service_rsx','svctest','stateful_test_rsx','stattst','hello_rsx','echo_rsx','fdf_rsx','zprtc_rsx','fileloader','utilities')
+ names=('bdos','fileloader') if args.resident_only else ('bdos','ccp','rcp_cpx','hello_cpx','rsxloader','rsxresolver','rsx_runtime_overlays','test_service_rsx','svctest','stateful_test_rsx','stattst','hello_rsx','echo_rsx','fdf_rsx','p2dos_rsx','zprtc_rsx','fileloader','utilities')
  for name in names:
   subprocess.run([sys.executable,str(ROOT/'tools'/f'build_{name}.py')],check=True,stdout=subprocess.DEVNULL)
  bios_source=read('src/bios/bios.mac')
@@ -133,20 +134,10 @@ def main():
  subprocess.run([sys.executable,str(ROOT/'tools/test_rom_relocated_image.py'),
                  '--pack',str(rom),'--inventory',str(rom/'rom-references.json'),
                  '--image',str(rom)],check=True)
- reload=read('src/platform/trs80m4/ccprelod.mac')
- a=reload.index('        PUSH    HL\n',reload.index('CRNEXT:'));b=reload.index('\nCRFAIL:',a)
- reload=reload[:a]+'''        INC     A
-        LD      (CRSLOT),A
-        DEC     A
-        ADD     A,A
-        ADD     A,A
-        ADD     A,108
-        LD      E,A
-        LD      D,0
-        LD      B,4
-        JP      LY_DISK+15
-'''+reload[b:]
+ reload=z80pack_reloader_source(read('src/platform/trs80m4/ccprelod.mac'))
  loader=asm('reloader',reload,L['RELOADER'],896)
+ build_rom_boot(out,rom,args.assembler.expanduser().resolve(),
+                fmt.raw_tracks,fmt.raw_track_bytes//128)
  selector=asm('rsxselect',read('src/platform/z80pack/rsxsel.mac'),L['CONFIG']+0x380,128)
  bootfmt=(f'ZB_TRACKS EQU {fmt.raw_tracks}\n'
           f'ZB_SLOTS EQU {fmt.raw_track_bytes//128}\n')
@@ -212,6 +203,11 @@ def main():
   return bytes(raw)
 
  raw=raw_image(logical)
+ rom_logical=bytearray(logical)
+ rom_loader=(rom/'rom-reloader.bin').read_bytes()
+ rom_loader_carrier=rom_loader.ljust(896,b'\0')+selector.ljust(128,b'\0')
+ rom_logical[60*128:68*128]=rom_loader_carrier
+ rom_raw=raw_image(rom_logical)
  blank=raw_image(bytearray(b'\xe5'*fmt.image_bytes))
  disks.mkdir();library=disks/'library';library.mkdir()
  media={
@@ -223,6 +219,13 @@ def main():
  for letter,(name,data) in media.items():
   (library/name).write_bytes(data)
   (disks/f'drive{letter}.dsk').symlink_to(Path('library')/name)
+ rom_name='BetterCPM-ROM-System-CCS-40T-DS-DD-332K.dsk'
+ (library/rom_name).write_bytes(rom_raw)
+ rom_disks=out/'rom-disks';rom_disks.mkdir()
+ (rom_disks/'drivea.dsk').symlink_to(Path('../disks/library')/rom_name)
+ for letter in ('b','c','d'):
+  (rom_disks/f'drive{letter}.dsk').symlink_to(
+      Path('../disks')/f'drive{letter}.dsk')
  # cpmtools skewtab entries are zero-based raw-sector ordinals.
  ordered_ids=sorted(fmt.sector_ids)
  logical_to_raw=[ordered_ids.index(sector_id) for sector_id in fmt.sector_ids]
@@ -295,6 +298,8 @@ end
  if not simulator.is_file():raise SystemExit(f'missing cpmsim simulator: {simulator}')
  (out/'launch-z80pack.command').write_text('#!/bin/sh\ncd -- "$(dirname -- "$0")" || exit 1\nPATH="'+str(simulator.parent/'srctools')+':$PATH"\nexport PATH\nexec "'+str(simulator)+'" -z -d "$PWD/disks" "$@"\n')
  (out/'launch-z80pack.command').chmod(0o755)
+ (out/'launch-z80pack-rom.command').write_text('#!/bin/sh\ncd -- "$(dirname -- "$0")" || exit 1\nPATH="'+str(simulator.parent/'srctools')+':$PATH"\nexport PATH\nexec "'+str(simulator)+'" -z -x "$PWD/rom/rom-boot.hex" -d "$PWD/rom-disks" "$@"\n')
+ (out/'launch-z80pack-rom.command').chmod(0o755)
  (out/'manifest.json').write_text(json.dumps({'target':'z80pack/cpmsim','format':fmt.name,'cylinders':fmt.cylinders,'sides':fmt.sides,'physical_sectors_per_track':fmt.physical_sectors,'physical_sector_bytes':fmt.sector_bytes,'image_bytes':fmt.image_bytes,'records_per_logical_track':fmt.spt,'reserved_tracks':fmt.off,'reserved_records':fmt.reserved_records,'allocation_kib':(fmt.dsm+1)*fmt.block_bytes//1024,'cpmtools_format':'bettercpm-default','sha256':hashlib.sha256(raw).hexdigest(),'shared_bdos_sha256':hashlib.sha256((ROOT/'build/bdos/bdos.bin').read_bytes()).hexdigest()},indent=2)+'\n')
  print(f'Created linked media in {library}; {fmt.name}; {(fmt.dsm+1)*fmt.block_bytes//1024} KiB allocation area')
 if __name__=='__main__':main()

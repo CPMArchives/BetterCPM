@@ -54,24 +54,30 @@ def call(machine: Z80, address: int) -> None:
     machine.run(CALLER, limit=20000)
 
 
+def install_bdos(machine: Z80, code: bytes) -> None:
+    address = LAYOUT["BDOS"]
+    machine.mem[address:address + len(code)] = code
+    machine.mem[5:8] = bytes((0xC3, address & 0xFF, address >> 8))
+
+
 def main() -> None:
     # A CCP-prompt Ctrl-C visibly acknowledges the key before invoking the
     # non-returning warm-boot service. Four direct-output calls avoid adding a
     # pointer to the CCP's already-full one-sector relocation directory.
     machine = cpu()
-    machine.mem[LAYOUT["BDOS"]:(LAYOUT["BDOS"] + 0x16)] = bytes((
+    install_bdos(machine, bytes((
         0x79, 0xB7, 0x28, 0x0C,        # LD A,C / OR A / JR Z,wboot
         0xFE, 0x02, 0xC0,              # CP 2 / RET NZ
         0x21, 0x00, 0x76, 0x34,        # INC output-call count
         0x7B, 0x32, 0x02, 0x76, 0xC9,  # record E / RET
         0x3E, 0xA5, 0x32, 0x01, 0x76, 0xC9,
-    ))
+    )))
     handler = symbol("CCP_EDWBOOT")
     expected = bytes((
-        0x1E, ord("^"), 0x0E, 0x02, 0xCD, LAYOUT["BDOS"] & 255, LAYOUT["BDOS"] >> 8,
-        0x1E, ord("C"), 0x0E, 0x02, 0xCD, LAYOUT["BDOS"] & 255, LAYOUT["BDOS"] >> 8,
-        0x1E, 13,       0x0E, 0x02, 0xCD, LAYOUT["BDOS"] & 255, LAYOUT["BDOS"] >> 8,
-        0x1E, 10,       0x0E, 0x02, 0xCD, LAYOUT["BDOS"] & 255, LAYOUT["BDOS"] >> 8,
+        0x1E, ord("^"), 0x0E, 0x02, 0xCD, 0x05, 0x00,
+        0x1E, ord("C"), 0x0E, 0x02, 0xCD, 0x05, 0x00,
+        0x1E, 13,       0x0E, 0x02, 0xCD, 0x05, 0x00,
+        0x1E, 10,       0x0E, 0x02, 0xCD, 0x05, 0x00,
     ))
     require(bytes(machine.mem[handler:handler + len(expected)]) == expected,
             "CCP Ctrl-C acknowledgement is not ^C followed by CR/LF")
@@ -89,7 +95,7 @@ def main() -> None:
         (b"A:CPX LIST", 1, b"CPX     COM"),
     ):
         machine = cpu()
-        machine.mem[LAYOUT["BDOS"]:(LAYOUT["BDOS"] + 3)] = bytes((0x3E, 0xFF, 0xC9))
+        install_bdos(machine, bytes((0x3E, 0xFF, 0xC9)))
         machine.mem[symbol("CCP_COUNT")] = len(command)
         start = symbol("CCP_DATA")
         machine.mem[start:start + len(command)] = command
@@ -109,7 +115,7 @@ def main() -> None:
         0x32, 0x01, 0x75, 0xAF, 0xC9,
         0x3A, 0x01, 0x75, 0xC9,
     ))
-    machine.mem[LAYOUT["BDOS"]:LAYOUT["BDOS"] + len(du_bdos)] = du_bdos
+    install_bdos(machine, du_bdos)
     machine.mem[0x7501] = 7
     command = b"A0:CPX LIST"
     machine.mem[symbol("CCP_COUNT")] = len(command)
@@ -156,7 +162,7 @@ def main() -> None:
         ("CCP_EDCLEAR", b"DISCARD", 4, b"", 0),
     ):
         machine = cpu()
-        machine.mem[LAYOUT["BDOS"]:LAYOUT["BDOS"] + len(editor_bdos)] = editor_bdos
+        install_bdos(machine, editor_bdos)
         machine.mem[0x7500] = 13
         machine.mem[symbol("CCP_COUNT")] = len(text)
         machine.mem[symbol("CCP_EDCUR")] = cursor
@@ -249,7 +255,7 @@ def main() -> None:
         0x3A, 0x01, 0x75, 0xC9  # get-user: LD A,(7501h) / RET
     ))
     machine = cpu()
-    machine.mem[LAYOUT["BDOS"]:LAYOUT["BDOS"] + len(nav_bdos)] = nav_bdos
+    install_bdos(machine, nav_bdos)
     machine.mem[0x7500], machine.mem[0x7501] = 0, 0
     for command, drive, user in (
         (b"B:", 1, 0),

@@ -1,0 +1,33 @@
+; ********************************************************************************
+; *                         z80pack ROM Cold Entry                               *
+; *                                                                              *
+; * Initializes the accepted writable-RAM template, publishes the immutable      *
+; * BDOS entry through page zero, and enters the relocated BIOS BOOT vector.      *
+; ********************************************************************************
+
+        INCLUDE romboot.inc
+
+        ASEG
+        ORG     RB_ORIGIN
+
+RB_COLD:                               ; enter from the cpmsim HEX start record
+        DI
+        LD      SP,0100H
+  ; The disk-loaded record-zero bootstrap normally establishes this temporary
+  ; 128-byte-slot geometry. ROM entry bypasses that bootstrap but still needs
+  ; the same geometry before BIOS BOOT fetches the command reloader.
+        XOR     A
+        OUT     (10),A
+        OUT     (18),A
+        LD      A,RB_TRACKS
+        OUT     (19),A
+        LD      A,2
+        OUT     (18),A
+        LD      A,RB_SLOTS
+        OUT     (19),A
+        LD      HL,RB_TEMPLATE
+        LD      IX,RB_BDOS
+        CALL    RB_INITIALIZER
+        JP      RB_BIOS_BOOT
+
+        END

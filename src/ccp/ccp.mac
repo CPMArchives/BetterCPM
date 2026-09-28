@@ -21,7 +21,9 @@
 ;     relocates this image beneath CPXs and the live compatibility gateway.
 
 CCPBASE         EQU     0BB00H
-BDOS            EQU     LY_BDOS
+  ; Reconstructed command code must remain independent of the resident-core
+  ; placement. System initialization publishes the active BDOS entry at page 0.
+BDOS            EQU     00005H
 CPXHEAD         EQU     LY_SYS+086H     ; active head in fixed extension descriptor
 TPATOP          EQU     LY_SYS+090H     ; exclusive upper bound for transient loads
 HISTBASE        EQU     LY_HIST         ; protected warm-boot-persistent history
