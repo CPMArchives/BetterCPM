@@ -70,7 +70,9 @@ def main() -> None:
     if manifest["target_class_counts"] != EXPECTED_CLASSES:
         raise AssertionError("target-class relocation totals changed")
     if manifest["entries"] != {
-            "system_cold": 0xDF00,
+            "system_init": 0xDF00,
+            "system_boot": 0xDF20,
+            "bios_boot": 0xF225,
             "bdos": 0xDF9E,
             "ram_template": 0xF3F5,
             "cold_initializer": 0xFD61}:

@@ -13,6 +13,17 @@ def digest(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def packed_entry(manifest: dict[str, object], component: str,
+                 source: int) -> int:
+    item = next(row for row in manifest["components"]
+                if row["name"] == component)
+    for fragment in item["fragments"]:
+        if fragment["source_start"] <= source < fragment["source_end"]:
+            return fragment["rom_start"] + source - fragment["source_start"]
+    raise ValueError(
+        f"{component} entry {source:04X}h is not in immutable packed code")
+
+
 def build(pack: Path, inventory_path: Path, output: Path) -> dict[str, object]:
     pack_manifest = json.loads(
         (pack / "rom-pack.json").read_text(encoding="ascii"))
@@ -100,7 +111,9 @@ def build(pack: Path, inventory_path: Path, output: Path) -> dict[str, object]:
         "target_class_counts": dict(sorted(class_counts.items())),
         "component_counts": dict(sorted(component_counts.items())),
         "entries": {
-            "system_cold": base,
+            "system_init": packed_entry(pack_manifest, "gateway", 0xD5C4),
+            "system_boot": packed_entry(pack_manifest, "gateway", 0xD5E4),
+            "bios_boot": packed_entry(pack_manifest, "bios", 0xEA08),
             "bdos": pack_manifest["candidate_entry_inputs"]["bdos"],
             "ram_template": pack_manifest["candidate_entry_inputs"]["template"],
             "cold_initializer": pack_manifest["candidate_entry_inputs"]["cold_initializer"],
