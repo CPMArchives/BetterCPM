@@ -1,7 +1,7 @@
 # cpmsim ROM qualification assessment
 
 Date: 2026-09-20
-Status: environment selected; BetterCP/M integration and release qualification pending
+Status: environment selected and BetterCP/M protected-XIP profile focused-qualified
 
 ## Decision
 
@@ -188,7 +188,7 @@ The reproducible qualification sequence is:
 cd cpmsim/srcsim
 make ROM_QUALIFY=YES build
 
-CPMSIM_ROM_START=E300 ../cpmsim -z -x BetterCPM-ROM.hex -d /path/to/disks
+CPMSIM_ROM_START=DF00 ../cpmsim -z -x BetterCPM-ROM.hex -d /path/to/disks
 ```
 
 The release runner must verify that the activation banner contains the expected

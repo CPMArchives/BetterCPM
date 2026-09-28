@@ -6,10 +6,11 @@ import argparse
 import hashlib
 import json
 import re
+import struct
 import tempfile
 from pathlib import Path
 
-from build_ccp import assemble
+from build_ccp import LINK_BASE as CCP_LINK_BASE, SOURCE as CCP_SOURCE, assemble
 from build_rom_reference_inventory import (
     DELTAS, SHIFTED_SYMBOLS, listing_context, live_target_ranges,
     relocation_offsets, resolve_target,
@@ -17,7 +18,7 @@ from build_rom_reference_inventory import (
 from system_layout import LAYOUT, expand_layout
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "src/platform/trs80m4/ccprelod.mac"
+RELOADER_SOURCE = ROOT / "src/platform/trs80m4/ccprelod.mac"
 ROM_BOOT = ROOT / "src/platform/z80pack/romboot.mac"
 
 
@@ -76,6 +77,62 @@ def intel_hex(data: bytes, base: int, entry: int) -> bytes:
     return ("\n".join(lines) + "\n").encode("ascii")
 
 
+def relocate_ccp(pack: dict[str, object], assembler: Path,
+                 rom: Path) -> dict[str, object]:
+    baseline = (ROOT / "build/ccp/ccp.bin").read_bytes()
+    module = bytearray((ROOT / "build/ccp/ccp.rlm").read_bytes())
+    source = normalized(CCP_SOURCE.read_text(encoding="ascii"))
+    alternates = []
+    with tempfile.TemporaryDirectory(prefix="bettercpm-rom-ccp-") as temporary:
+        temporary_path = Path(temporary)
+        for delta in DELTAS:
+            alternate = assemble(
+                assembler, shifted_layout_source(source, delta),
+                temporary_path / f"ccp-{delta:04x}.bin",
+                temporary_path / f"ccp-{delta:04x}.lst", CCP_LINK_BASE)
+            alternates.append((alternate, delta))
+    offsets = relocation_offsets(baseline, alternates, "ccp-external")
+    magic, version, header_sectors, link, size, _allocation, _entry, count = (
+        struct.unpack_from("<4sBBHHHHH", module))
+    if (magic != b"BCM1" or version != 1 or link != CCP_LINK_BASE or
+            size != len(baseline)):
+        raise ValueError("CCP module header does not identify the linked image")
+    payload = header_sectors * 512
+    internal = {
+        struct.unpack_from("<H", module, 16 + index * 2)[0]
+        for index in range(count)
+    }
+    if internal.intersection(offsets):
+        raise ValueError("CCP internal and external relocation words overlap")
+    live = live_target_ranges()
+    references = []
+    for offset in offsets:
+        old = int.from_bytes(baseline[offset:offset + 2], "little")
+        context = listing_context(
+            ROOT / "build/ccp/ccp.lst", CCP_LINK_BASE + offset)
+        kind, new, owners = resolve_target(
+            pack, old, str(context["source"]), live)
+        module[payload + offset:payload + offset + 2] = new.to_bytes(2, "little")
+        references.append({
+            "offset": offset, "operand": CCP_LINK_BASE + offset,
+            "old_target": old, "new_target": new, "target_class": kind,
+            "target_owners": owners, **context,
+        })
+    carrier = bytes(module)
+    (rom / "rom-ccp.rlm").write_bytes(carrier)
+    result: dict[str, object] = {
+        "bytes": len(carrier), "sha256": digest(carrier),
+        "source_sha256": digest(
+            (ROOT / "build/ccp/ccp.rlm").read_bytes()),
+        "external_reference_count": len(references),
+        "internal_relocation_count": count,
+        "unresolved_targets": 0, "references": references,
+    }
+    (rom / "rom-ccp.json").write_text(
+        json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="ascii")
+    return result
+
+
 def build(z80pack_build: Path, rom: Path, assembler: Path,
           raw_tracks: int, raw_slots: int) -> dict[str, object]:
     pack = json.loads((rom / "rom-pack.json").read_text(encoding="ascii"))
@@ -83,7 +140,7 @@ def build(z80pack_build: Path, rom: Path, assembler: Path,
         (rom / "rom-image.json").read_text(encoding="ascii"))
     baseline = (z80pack_build / "reloader.bin").read_bytes()
     source = normalized(z80pack_reloader_source(
-        SOURCE.read_text(encoding="ascii")))
+        RELOADER_SOURCE.read_text(encoding="ascii")))
     alternates = []
     with tempfile.TemporaryDirectory(prefix="bettercpm-rom-reloader-") as temporary:
         temporary_path = Path(temporary)
@@ -116,6 +173,7 @@ def build(z80pack_build: Path, rom: Path, assembler: Path,
         "source_sha256": digest(baseline), "reference_count": len(references),
         "unresolved_targets": 0, "references": references,
     }, indent=2, sort_keys=True) + "\n", encoding="ascii")
+    ccp = relocate_ccp(pack, assembler, rom)
 
     entries = relocated["entries"]
     origin = int(pack["base"]) + int(pack["used_bytes"])
@@ -149,11 +207,15 @@ def build(z80pack_build: Path, rom: Path, assembler: Path,
         "bios_boot": int(entries["bios_boot"]),
         "reloader_sha256": digest(reloader),
         "reloader_reference_count": len(references),
+        "ccp_external_reference_count": ccp["external_reference_count"],
+        "ccp_sha256": ccp["sha256"],
     }
     (rom / "rom-boot.json").write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="ascii")
     print(f"ROM boot integration: {len(stub)}-byte entry at {origin:04X}h; "
-          f"{len(references)} reloader references; {manifest['spare_bytes']} bytes spare")
+          f"{len(references)} reloader and "
+          f"{ccp['external_reference_count']} CCP references; "
+          f"{manifest['spare_bytes']} bytes spare")
     return manifest
 
 
