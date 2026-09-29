@@ -212,6 +212,40 @@ def main() -> None:
     require(bytes(machine.mem[dir_nl:dir_nl + 3]) == b"\r\n$",
             "resident DIR line separator is not CP/M CR/LF")
 
+    # PEEK appends a fixed-position ASCII field without allocating a row
+    # buffer. Printable seven-bit bytes survive; controls and high-bit bytes
+    # become dots. A bounded partial row retains the omitted hex columns so
+    # its ASCII field starts in the same terminal column as a full row.
+    direct_output_bdos = bytes((
+        0x79, 0xFE, 0x02, 0x20, 0x0C,  # LD A,C / CP 2 / JR NZ,other
+        0x2A, 0x00, 0x75,              # LD HL,(7500h)
+        0x73, 0x23,                    # LD (HL),E / INC HL
+        0x22, 0x00, 0x75,              # LD (7500h),HL
+        0x0E, 0x00,                    # LD C,0 (BDOS may clobber BC)
+        0xAF, 0xC9,                    # XOR A / RET
+        0xAF, 0xC9,                    # other: XOR A / RET
+    ))
+    for payload, expected in (
+        (bytes((0xC3, 0x03, 0x01, 0x31, 0x00, 0x05, 0x11, 0xFF,
+                0xFF, 0x0E, 0x25, 0xCD, 0xBC, 0xD6, 0x0E, 0x00)),
+         b"  |...1......%.....|"),
+        (bytes((ord("A"), 0x1F, ord("~"), 0x80)),
+         b" " * 36 + b"  |A.~.|"),
+    ):
+        machine = cpu()
+        install_bdos(machine, direct_output_bdos)
+        source, output = 0x7200, 0x7600
+        machine.mem[source:source + len(payload)] = payload
+        machine.mem[0x7500:0x7502] = output.to_bytes(2, "little")
+        machine.mem[symbol("CCP_PROW"):symbol("CCP_PROW") + 2] = (
+            source.to_bytes(2, "little"))
+        machine.mem[symbol("CCP_PLEN")] = len(payload)
+        machine.mem[symbol("CCP_PCOL")] = 16 - len(payload)
+        call(machine, symbol("CCP_PKASCII"))
+        end = int.from_bytes(machine.mem[0x7500:0x7502], "little")
+        require(bytes(machine.mem[output:end]) == expected,
+                f"PEEK ASCII field is wrong for {payload!r}")
+
     # The initial image has an empty CPX chain. Install two synthetic headers:
     # the first declines and the second claims the command. This verifies the
     # public ordering and carry contract without making a test CPX resident.

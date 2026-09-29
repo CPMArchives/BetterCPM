@@ -1827,6 +1827,7 @@ CCP_PKLINE:                             ; display one PEEK row
         LD      C,9
         CALL    BDOS
         LD      HL,(CCP_PPTR)
+        LD      (CCP_PROW),HL
         LD      A,H
         CALL    CCP_HEX8
         LD      HL,(CCP_PPTR)
@@ -1837,6 +1838,8 @@ CCP_PKLINE:                             ; display one PEEK row
         CALL    BDOS
         LD      A,16
         LD      (CCP_PCOL),A
+        XOR     A
+        LD      (CCP_PLEN),A
 
 CCP_PKBYTE:                             ; display one PEEK byte
         LD      E,' '
@@ -1845,19 +1848,23 @@ CCP_PKBYTE:                             ; display one PEEK byte
         LD      HL,(CCP_PPTR)
         LD      A,(HL)
         CALL    CCP_HEX8
+        LD      HL,CCP_PLEN
+        INC     (HL)
+        LD      HL,CCP_PCOL
+        DEC     (HL)
         LD      HL,(CCP_PCNT)
         DEC     HL
         LD      (CCP_PCNT),HL
         LD      A,H
         OR      L
-        JR      Z,CCP_PKPAGE
+        JR      Z,CCP_PKEND
         LD      HL,(CCP_PPTR)
         LD      A,H
         CP      0FFH
         JR      NZ,CCP_PKINC
         LD      A,L
         CP      0FFH
-        JR      Z,CCP_PKPAGE
+        JR      Z,CCP_PKEND
 
 CCP_PKINC:                              ; advance PEEK address
         INC     HL
@@ -1870,13 +1877,72 @@ CCP_PKINC:                              ; advance PEEK address
         SBC     HL,DE
         JR      C,CCP_PKCOL
         JR      Z,CCP_PKCOL
-        JR      CCP_PKPAGE
+        JR      CCP_PKEND
 
 CCP_PKCOL:                              ; finish PEEK row
+        LD      A,(CCP_PCOL)
+        OR      A
+        JR      NZ,CCP_PKBYTE
+        CALL    CCP_PKASCII
+        JR      CCP_PKLINE
+
+CCP_PKEND:                              ; finish final PEEK row
+        CALL    CCP_PKASCII
+        JR      CCP_PKPAGE
+
+  ; Print a fixed-position ASCII interpretation of the bytes just displayed.
+  ; Missing bytes in a bounded final row retain their three-column hex slots.
+
+CCP_PKASCII:                            ; display PEEK ASCII column
+        LD      A,(CCP_PCOL)
+        OR      A
+        JR      Z,CCP_PSEP
+
+CCP_PPAD:                               ; align partial-row ASCII
+        LD      E,' '
+        CALL    CCP_POUT
+        CALL    CCP_POUT
+        CALL    CCP_POUT
         LD      HL,CCP_PCOL
         DEC     (HL)
-        JR      NZ,CCP_PKBYTE
-        JR      CCP_PKLINE
+        JR      NZ,CCP_PPAD
+
+CCP_PSEP:                               ; open ASCII field
+        LD      E,' '
+        CALL    CCP_POUT
+        CALL    CCP_POUT
+        LD      E,'|'
+        CALL    CCP_POUT
+        LD      HL,(CCP_PROW)
+        LD      (CCP_PASC),HL
+        LD      A,(CCP_PLEN)
+        LD      (CCP_PCOL),A
+
+CCP_PCHR:                               ; print one ASCII character
+        LD      HL,(CCP_PASC)
+        LD      A,(HL)
+        CP      ' '
+        JR      C,CCP_PDOT
+        CP      07FH
+        JR      C,CCP_PAOUT
+
+CCP_PDOT:                               ; substitute nonprinting byte
+        LD      A,'.'
+
+CCP_PAOUT:                              ; emit ASCII character
+        LD      E,A
+        CALL    CCP_POUT
+        LD      HL,(CCP_PASC)
+        INC     HL
+        LD      (CCP_PASC),HL
+        LD      HL,CCP_PCOL
+        DEC     (HL)
+        JR      NZ,CCP_PCHR
+        LD      E,'|'
+
+CCP_POUT:                               ; emit one PEEK character
+        LD      C,2
+        JP      BDOS
 
 CCP_PKPAGE:                             ; finish PEEK page
 
@@ -3185,6 +3251,8 @@ CCP_PCNT:      DW      0                ; PEEK byte count
 CCP_PBOUND:    DB      0                ; PEEK bound flag
 CCP_PCOL:      DB      0                ; PEEK column counter
 CCP_PLEN:      DB      0                ; PEEK line length
+CCP_PROW:      DW      0100H            ; PEEK current row start
+CCP_PASC:      DW      0100H            ; PEEK ASCII pointer
 CCP_SPAGES:    DB      0                ; SAVE page count
 CCP_SDMA:      DW      0100H            ; SAVE DMA address
 CCP_SRECS:     DW      0                ; SAVE record count
