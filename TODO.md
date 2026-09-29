@@ -236,7 +236,7 @@ directory utility unless it provides genuine additional value.
   any failed prospective validation.
 - [ ] Keep the RSX/CPX Programmer's Guide synchronized with every stabilized
   interface before promising third-party binary compatibility.
-- [ ] Keep the qualified CP/M-compatible SUBMIT/XSUB and `BATCHIO.RSX` path as
+- [x] Keep the qualified CP/M-compatible SUBMIT/XSUB and `BATCHIO.RSX` path as
   the 1.0 batch facility. Treat `SUBMIT.CPX`, `FLOW.CPX`, and the extended
   language in `specifications/BATCH-FLOW-CONTROL.md` as later 1.x work.
 - [ ] After 1.0, implement the persistent command-input system specified in

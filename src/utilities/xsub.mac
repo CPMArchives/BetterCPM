@@ -25,7 +25,9 @@ RSXFUNC         EQU     177
 ; -------------------------------------------------------------------------------
 
 XS_START:                               ; enter XSUB installer
-        LD      SP,(0006H)              ; own the top-of-TPA transient stack
+  ; Preserve the CCP's transient return frame. Function 177 temporarily moves
+  ; its own manager frame, and the CCP must reconstruct the newly committed
+  ; chain before BATCHIO receives another public BDOS call.
         CALL    XS_WORKSPACE
         LD      DE,XS_REQUEST
         LD      C,RSXFUNC
@@ -41,14 +43,12 @@ XS_START:                               ; enter XSUB installer
         CALL    BDOS
         OR      A
         JR      NZ,XS_FAILURE
-        LD      A,3
-        LD      (XS_REQUEST+1),A
-        LD      C,RSXFUNC               ; suppress only this install-time announcement
-        CALL    BDOS                    ; later WBOOT reconstruction starts fresh again
 
 XS_DONE:                                ; finish successful XSUB installation
-        LD      C,0
-        JP      BDOS
+  ; Returning through the CCP performs WBOOT reconstruction before the fresh
+  ; provider can intercept a call. Calling BDOS here would enter BATCHIO while
+  ; its prepared live-chain link still awaits reconstruction.
+        RET
 
 XS_PRESENT:                             ; report XSUB already active
         LD      DE,XS_ALREADY

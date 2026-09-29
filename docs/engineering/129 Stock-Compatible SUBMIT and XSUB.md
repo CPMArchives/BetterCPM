@@ -79,6 +79,11 @@ allocation, not a reduction of the default target.
   the documented test build's protected pending byte so timing cannot make the
   keyboard-status assertion intermittent.
 
+`tools/test_z80pack_submit_xsub.py` independently verifies ordering,
+substitution, physical EOF, cleanup, XSUB installation, submitted Function-10
+input, and later-command continuation on cpmsim. Engineering Specification 173
+records the z80pack lifecycle correction and its focused diagnostic evidence.
+
 The preserved RUN42/IN42 pair produced `IN42 count=07 data=BATCH42`, satisfying
 the operative 0620 ordering and 0621 buffered-input propositions.  The larger
 RUN42 survey proceeds to PIP, which is outside this task and was not present on
@@ -93,7 +98,7 @@ Final reproducible artifact hashes from the passing build are:
 | Artifact | SHA-256 |
 |---|---|
 | `SUBMIT.COM` | `e14e07726d2b5028f8555917dd482295d7814079b00025415d2d5b480ea150c5` |
-| `XSUB.COM` | `07cb79e6648419193685225cd6c652bd72882f860b367da14601c613b18deca8` |
+| `XSUB.COM` | `5e71fa1eb1c1e3c719d8bc6dc192b5c4eced952ed566ce59b9a3809459c8b3da` |
 | `BATCHIO.RSX` | `10318199b11d224603e4ef7701e1892948291830dbc870dba05e2ca191b534d6` |
 | TRS-80 system DMK | `ea693c74552d9ade733cb6a339907cc284b22b5237c6d36902c3cb585f330ee6` |
 | disposable z80pack system disk | `abcbbd781e8151a63dbe7b23a9bb8485032c4ad9533ce51890cc3850d975d26c` |
