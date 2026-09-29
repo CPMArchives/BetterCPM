@@ -16,7 +16,24 @@ emulator requires.
 
 The default definition is the BetterCP/M CCS 40-cylinder, double-sided,
 double-density 332K format. Therefore a daily-use z80pack image can be
-converted with:
+created and populated with the generated cpmtools definition as follows:
+
+```sh
+cd build/z80pack-daily
+RAW=disks/library/MyDisk-CCS-40T-DS-DD-332K.dsk
+rm -f "$RAW"
+truncate -s 368640 "$RAW"
+mkfs.cpm -f bettercpm-default "$RAW"
+cpmcp -T raw -f bettercpm-default "$RAW" files/*.COM 0:
+cpmls -T raw -f bettercpm-default "$RAW"
+```
+
+Selecting the `raw` libdsk driver explicitly matters for an empty image: host
+format auto-detection may otherwise reject the file even though it exists.
+Pre-sizing supplies the complete raw medium rather than only the boot and
+directory region touched by `mkfs.cpm`.
+
+Convert that image with:
 
 ```sh
 python3 tools/convert_fdf_image.py raw-to-dmk driveb.dsk driveb.dmk
