@@ -118,6 +118,21 @@ def main() -> None:
     assert cpu.a == 0xFF and cpu.mem[REQUEST + 10] == 0xCC
     assert bytes(cpu.mem[FACTS:FACTS + 26]) == before
 
+    unknown = bytearray(carrier)
+    unknown[word(carrier, 30) + 12] = 0x7F
+    cpu, _ = phase_one(bytes(unknown))
+    live = LAYOUT["RSX"]
+    cpu.mem[live:live + 256] = bytes(range(256))
+    profile = LAYOUT["RSX_STATE"]
+    cpu.mem[profile:profile + 41] = b"\xA6" * 41
+    before_live = bytes(cpu.mem[live:live + 256])
+    before_profile = bytes(cpu.mem[profile:profile + 41])
+    before = phase_two(cpu, len(unknown))
+    assert cpu.a == 0xFF and cpu.mem[REQUEST + 10] == 0xCC
+    assert bytes(cpu.mem[FACTS:FACTS + 26]) == before
+    assert bytes(cpu.mem[live:live + 256]) == before_live
+    assert bytes(cpu.mem[profile:profile + 41]) == before_profile
+
     duplicate = make_module(
         name="DUPL", version=(1, 0), services=[], linked_base=0x8000,
         code=b"\0" * 32, relocations=[], entry_offset=8, format_version=2,
@@ -140,7 +155,7 @@ def main() -> None:
 
     print("BRSX carrier phases validate STATELESS and STATEFUL v2 input, normalize "
           "bounded facts, feed snapshot construction, and publish nothing "
-          "on failure")
+          "on malformed or unknown metadata")
 
 
 if __name__ == "__main__":

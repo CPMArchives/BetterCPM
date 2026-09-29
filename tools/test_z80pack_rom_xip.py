@@ -35,7 +35,7 @@ def main() -> None:
         raise AssertionError("guard boundary does not match the ROM image base")
     overlays_path = image / "rom/rsx-overlays/rom-rsx-overlays.json"
     overlays = json.loads(overlays_path.read_text(encoding="ascii"))
-    if (overlays["file_count"] != 18 or overlays["reference_count"] != 703 or
+    if (overlays["file_count"] != 18 or overlays["reference_count"] != 704 or
             overlays["unresolved_targets"] != 0):
         raise AssertionError("ROM RSX-overlay relocation inventory changed")
     for name, entry in overlays["files"].items():
