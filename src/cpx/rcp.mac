@@ -375,6 +375,12 @@ BC_DIR:                                 ; execute DIR command
 BC_DPARSE:                              ; dparse
         LD      DE,BC_FCB
         CALL    BC_PFCB
+  ; Search all physical directory extents. On EXM>0 disks a file between 16K
+  ; and one allocation-map group can have its first and only entry at EX=1,
+  ; so an EX=0 search silently loses the file. BC_EXMASK below still selects
+  ; only the first physical extent group for display.
+        LD      A,'?'
+        LD      (BC_FCB+12),A
         LD      DE,0080H
         LD      C,26
         CALL    BDOS
