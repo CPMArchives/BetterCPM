@@ -26,7 +26,7 @@ become 1.0 requirements by appearing in this backlog.
   `P2DOS.RSX` frontend.
 - [x] Make true cold boot initialize an empty HISTORY v1 PDS object
   unconditionally while preserving valid history across WBOOT/reconstruction.
-- [ ] Reject unknown metadata-v1 BRSX record types without changing the live
+- [x] Reject unknown metadata-v1 BRSX record types without changing the live
   profile.
 - [ ] Implement the production FDB compiler/reader and the frozen startup-command
   lifecycle; retain DUP's remaining backend-capability and integration work.
@@ -51,7 +51,7 @@ become 1.0 requirements by appearing in this backlog.
   during protected cold/warm execution and preserves at least 14 bytes of
   reserve in each. Engineering Specification 170 proves the retained workspace
   lifetimes. Engineering Specification 171 relocates all 18 file-backed RSX
-  transaction artifacts, accounts for their 703 address words, and qualifies
+  transaction artifacts, accounts for their 704 address words, and qualifies
   dynamic load/list/unload with 53 KiB TPA recovery under protection.
 
 - [ ] Enforce at least 53 KiB usable TPA in the default 1.0 configuration as a

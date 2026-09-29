@@ -173,11 +173,13 @@ RXM_RECLOOP:
         JP      NZ,RXM_BAD
 RXM_KOK:
         LD      A,(RXM_KIND)
+        CP      1
+        JP      Z,RXM_RECLOOP  ; numeric-service dispatch is validated elsewhere
         CP      2
         JP      Z,RXM_CALLABLE
         CP      3
         JP      Z,RXM_POINTERS
-        JP      RXM_RECLOOP
+        JP      RXM_BAD         ; metadata v1 defines no optional record types
 
 RXM_CALLABLE:
         LD      A,(RXM_RLEN)

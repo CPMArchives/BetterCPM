@@ -4,7 +4,7 @@
 
 The z80pack ROM profile relocates every file-backed RSX transaction overlay
 before placing it on the ROM-profile system disk. The accepted inventory
-contains 18 artifacts and 703 discovered address words, with no unresolved
+contains 18 artifacts and 704 discovered address words, with no unresolved
 target. Conventional disk images and their overlays remain unchanged.
 
 This completes the focused Implementation Item 2 regression. Under enforced
@@ -58,7 +58,7 @@ selector gateway relocation. Its guarded boot then performs:
 6. stack-capacity and workspace-lifetime checks.
 
 The final `rom-xip-qualification.json` binds the ROM image, relocation-manifest
-hash, 18-file/703-word inventory, RSX result, stack measurements and workspace
+hash, 18-file/704-word inventory, RSX result, stack measurements and workspace
 evidence into one acceptance record. Final release-candidate qualification
 will rerun this gate; it is no longer open Implementation Item 2 design or
 engineering work.

@@ -9,11 +9,11 @@
 ## Status
 
 The BRSX-v2 carrier and Stage-3 reconstruction path are the production
-foundation. Selector migration and final qualification remain. The current
-metadata normalizer also has the unknown-record rejection defect identified
-below. Function 208 and Function 202 in this historical implementation account
-are provisional assignments; Functions 182 and 177 are the frozen production
-selectors.
+foundation. Selector migration is complete and final release qualification
+remains. Engineering Specification 172 corrects and qualifies unknown-record
+rejection. Function 208 and Function 202 in this historical implementation
+account are provisional assignments; Functions 182 and 177 are the frozen
+production selectors.
 
 ## Version policy
 
@@ -53,10 +53,9 @@ Metadata version 1.0 has no optional record types. Its validator rejects every
 unknown type rather than assuming that an unrecognized record may safely be
 ignored.
 
-> **Implementation gap:** the current production normalizer still skips
-> unrecognized metadata-v1 record types. It must reject them without publishing
-> a prospective profile change.
- A future metadata or carrier version may define explicit
+Engineering Specification 172 verifies that the production normalizer rejects
+unrecognized metadata-v1 record types without publishing a prospective profile
+change. A future metadata or carrier version may define explicit
 forward-compatible record semantics when a demonstrated requirement justifies
 them.
 
