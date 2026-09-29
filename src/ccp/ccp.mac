@@ -1897,15 +1897,14 @@ CCP_PKASCII:                            ; display PEEK ASCII column
         LD      A,(CCP_PCOL)
         OR      A
         JR      Z,CCP_PSEP
+        LD      B,A
 
 CCP_PPAD:                               ; align partial-row ASCII
         LD      E,' '
         CALL    CCP_POUT
         CALL    CCP_POUT
         CALL    CCP_POUT
-        LD      HL,CCP_PCOL
-        DEC     (HL)
-        JR      NZ,CCP_PPAD
+        DJNZ    CCP_PPAD
 
 CCP_PSEP:                               ; open ASCII field
         LD      E,' '
@@ -1914,12 +1913,10 @@ CCP_PSEP:                               ; open ASCII field
         LD      E,'|'
         CALL    CCP_POUT
         LD      HL,(CCP_PROW)
-        LD      (CCP_PASC),HL
         LD      A,(CCP_PLEN)
-        LD      (CCP_PCOL),A
+        LD      B,A
 
 CCP_PCHR:                               ; print one ASCII character
-        LD      HL,(CCP_PASC)
         LD      A,(HL)
         CP      ' '
         JR      C,CCP_PDOT
@@ -1932,17 +1929,18 @@ CCP_PDOT:                               ; substitute nonprinting byte
 CCP_PAOUT:                              ; emit ASCII character
         LD      E,A
         CALL    CCP_POUT
-        LD      HL,(CCP_PASC)
         INC     HL
-        LD      (CCP_PASC),HL
-        LD      HL,CCP_PCOL
-        DEC     (HL)
-        JR      NZ,CCP_PCHR
+        DJNZ    CCP_PCHR
         LD      E,'|'
 
 CCP_POUT:                               ; emit one PEEK character
+        PUSH    BC
+        PUSH    HL
         LD      C,2
-        JP      BDOS
+        CALL    BDOS
+        POP     HL
+        POP     BC
+        RET
 
 CCP_PKPAGE:                             ; finish PEEK page
 
@@ -3252,7 +3250,6 @@ CCP_PBOUND:    DB      0                ; PEEK bound flag
 CCP_PCOL:      DB      0                ; PEEK column counter
 CCP_PLEN:      DB      0                ; PEEK line length
 CCP_PROW:      DW      0100H            ; PEEK current row start
-CCP_PASC:      DW      0100H            ; PEEK ASCII pointer
 CCP_SPAGES:    DB      0                ; SAVE page count
 CCP_SDMA:      DW      0100H            ; SAVE DMA address
 CCP_SRECS:     DW      0                ; SAVE record count

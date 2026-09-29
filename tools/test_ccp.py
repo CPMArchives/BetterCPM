@@ -217,11 +217,12 @@ def main() -> None:
     # become dots. A bounded partial row retains the omitted hex columns so
     # its ASCII field starts in the same terminal column as a full row.
     direct_output_bdos = bytes((
-        0x79, 0xFE, 0x02, 0x20, 0x0C,  # LD A,C / CP 2 / JR NZ,other
+        0x79, 0xFE, 0x02, 0x20, 0x10,  # LD A,C / CP 2 / JR NZ,other
         0x2A, 0x00, 0x75,              # LD HL,(7500h)
         0x73, 0x23,                    # LD (HL),E / INC HL
         0x22, 0x00, 0x75,              # LD (7500h),HL
-        0x0E, 0x00,                    # LD C,0 (BDOS may clobber BC)
+        0x01, 0x00, 0x00,              # LD BC,0 (BDOS may clobber BC)
+        0x21, 0x00, 0x00,              # LD HL,0 (and HL)
         0xAF, 0xC9,                    # XOR A / RET
         0xAF, 0xC9,                    # other: XOR A / RET
     ))
