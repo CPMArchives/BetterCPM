@@ -22,6 +22,21 @@ contains the installed system and distribution files. B:-D: are empty formatted
 and boot-capable SYSGEN targets. The generated `diskdefs` describes the same
 bytes to cpmtools. `build_z80pack_boot.py` remains a compatibility wrapper.
 
+The raw files are not DMK files, even though they describe the same physical
+format. Convert the default CCS 332K media for trs80gp with:
+
+```sh
+python3 tools/convert_fdf_image.py raw-to-dmk input.dsk output.dmk
+python3 tools/convert_fdf_image.py dmk-to-raw output.dmk recovered.dsk
+```
+
+The converter uses `DISK.FDF` for geometry and rotational sector IDs. It
+validates every DMK ID/data CRC and reconstructs canonical raw order, so the
+recovered raw file is byte-identical. `--format` selects another exact FDF
+name. The current bounded implementation accepts conventional uniform MFM
+definitions; it rejects FM, mixed-size and optional track/side/ID conventions
+instead of silently losing physical information.
+
 System absolute record allocation on A:
 
 | Records | Contents |
