@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
-"""Verify raw/DMK conversion against the default BetterCP/M disk format."""
+"""Verify raw/DMK conversion against BetterCP/M disk formats."""
 from convert_fdf_image import DEFAULT_FDF, DEFAULT_FORMAT, dmk_to_raw, raw_to_dmk
 from fdf_format import select_fdf
+
+
+INTERNAL_FDF = DEFAULT_FDF.with_name("DISK-INT.FDF")
+INTERNAL_800K_FORMAT = "Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)"
 
 
 def expect_failure(action, phrase: str) -> None:
@@ -43,7 +47,20 @@ def main() -> None:
     inverted = select_fdf(DEFAULT_FDF, "Columbia 964 (40T, SS, DD, 190K)")
     inverted_raw = bytes((index * 13) & 0xFF for index in range(inverted.image_bytes))
     assert dmk_to_raw(raw_to_dmk(inverted_raw, inverted), inverted) == inverted_raw
-    print("PASS: CCS 332K and inverted raw/DMK round trips, rotational IDs, CRC and scope checks")
+
+    mm800 = select_fdf(INTERNAL_FDF, INTERNAL_800K_FORMAT)
+    assert mm800.image_bytes == 819200
+    raw800 = bytes((track * 23 + slot * 11 + byte) & 0xFF
+                   for track in range(mm800.raw_tracks)
+                   for slot in range(mm800.physical_sectors)
+                   for byte in range(mm800.sector_bytes))
+    image800 = raw_to_dmk(raw800, mm800)
+    assert len(image800) == 16 + mm800.raw_tracks * 0x18EA
+    assert image800[1] == mm800.cylinders and image800[4] == 0
+    assert dmk_to_raw(image800, mm800) == raw800
+
+    print("PASS: CCS 332K, MM 800K, and inverted raw/DMK round trips, "
+          "rotational IDs, CRC and scope checks")
 
 
 if __name__ == "__main__":
