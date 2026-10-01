@@ -1222,19 +1222,6 @@ CCP_NAVNO:                              ; report non-navigation command
         OR      A
         RET
 
-; -------------------------------------------------------------------------------
-; Built-In Command Recognition
-; -------------------------------------------------------------------------------
-
-CCP_TRYDIR:                             ; recognize DIR command
-        LD      HL,CCP_DATA
-        LD      DE,CCP_DIRKEY
-        LD      B,3
-        CALL    CCP_EQUAL
-        JP      NZ,CCP_BAD
-        CALL    CCP_DIR
-        JP      CCP_LOOP
-
   ; The resident monitor is intentionally small, but it is always available.
   ; A successful keyword match leaves HL/B at its first argument.  Carry set
   ; tells the caller that the line belonged to the monitor, even when the
@@ -1751,7 +1738,7 @@ CCP_PKSHOW:                             ; display current PEEK page
         LD      (CCP_PCNT),HL
 
 CCP_PKLINE:                             ; display one PEEK row
-        LD      DE,CCP_DIRNL
+        LD      DE,CCP_NEWLINE
         LD      C,9
         CALL    BDOS
         LD      HL,(CCP_PPTR)
@@ -2960,130 +2947,6 @@ PFDONE:                                 ; finish FCB parse
         POP     DE
         RET
 
-  ; Resident DIR deliberately uses only the public BDOS search interface.  This
-  ; keeps the CCP independent of the directory implementation and exercises the
-  ; same contract available to transient CP/M programs.
-
-; ================================================================================
-; =                             Resident DIR Command                             =
-; =                                                                              =
-; = Implements the resident directory command, including file-specification      =
-; = setup, directory search, and formatted entry display.                        =
-; ================================================================================
-; -------------------------------------------------------------------------------
-; Argument and FCB Setup
-; -------------------------------------------------------------------------------
-
-CCP_DIR:                                ; execute resident DIR command
-        LD      HL,CCP_DIRFCB
-        LD      B,36
-        XOR     A
-
-CCP_DCLR:                               ; clear DIR work FCB
-        LD      (HL),A
-        INC     HL
-        DJNZ    CCP_DCLR
-        LD      HL,CCP_DIRFCB+1
-        LD      B,11
-        LD      A,'?'
-
-CCP_DWILD:                              ; supply default DIR wildcard
-        LD      (HL),A
-        INC     HL
-        DJNZ    CCP_DWILD
-        LD      DE,0080H
-        LD      C,26
-        CALL    BDOS
-        XOR     A
-        LD      (CCP_DFOUND),A
-        LD      C,17
-
-; -------------------------------------------------------------------------------
-; Directory Search
-; -------------------------------------------------------------------------------
-
-CCP_DNEXT:                              ; process next directory match
-        LD      DE,CCP_DIRFCB
-        CALL    BDOS
-        CP      0FFH
-        JR      Z,CCP_DDONE
-        ADD     A,A
-        ADD     A,A
-        ADD     A,A
-        ADD     A,A
-        ADD     A,A
-        ADD     A,080H
-        LD      L,A
-        LD      H,0
-        LD      (CCP_DIREP),HL
-        LD      DE,12
-        ADD     HL,DE
-        LD      A,(HL)
-        AND     01FH
-        JR      NZ,CCP_DMORE
-        INC     HL
-        INC     HL
-        LD      A,(HL)
-        AND     03FH
-        JR      NZ,CCP_DMORE
-        LD      A,1
-        LD      (CCP_DFOUND),A
-        LD      DE,CCP_DIRNL
-        LD      C,9
-        CALL    BDOS
-        LD      HL,(CCP_DIREP)
-        INC     HL
-        LD      B,8
-        CALL    CCP_DFIELD
-        LD      HL,(CCP_DIREP)
-        LD      DE,9
-        ADD     HL,DE
-        LD      A,(HL)
-        CP      ' '
-        JR      Z,CCP_DMORE
-        LD      E,'.'
-        LD      C,2
-        CALL    BDOS
-        LD      HL,(CCP_DIREP)
-        LD      DE,9
-        ADD     HL,DE
-        LD      B,3
-        CALL    CCP_DFIELD
-
-CCP_DMORE:                              ; continue directory search
-        LD      C,18
-        JR      CCP_DNEXT
-
-CCP_DDONE:                              ; finish DIR command
-        RET
-
-; -------------------------------------------------------------------------------
-; Entry Formatting
-; -------------------------------------------------------------------------------
-
-CCP_DFIELD:                             ; print fixed-width directory field
-        LD      (CCP_DFPTR),HL
-        LD      A,B
-        LD      (CCP_DFCNT),A
-
-CCP_DFLOOP:                             ; print directory field characters
-        LD      HL,(CCP_DFPTR)
-        LD      A,(HL)
-        INC     HL
-        LD      (CCP_DFPTR),HL
-        AND     07FH
-        CP      ' '
-        JR      Z,CCP_DFSKIP
-        LD      E,A
-        LD      C,2
-        CALL    BDOS
-
-CCP_DFSKIP:                             ; skip padding in directory field
-        LD      HL,CCP_DFCNT
-        DEC     (HL)
-        JR      NZ,CCP_DFLOOP
-        RET
-
 ; ================================================================================
 ; =                         CCP Data and Working Storage                         =
 ; =                                                                              =
@@ -3098,8 +2961,6 @@ CCP_PROMPT:                             ; prompt prefix string
         DB      13,10,'$'
 CCP_UNKNOWN:                            ; unknown-command message
         DB      10,'?','$'
-CCP_DIRKEY:                             ; DIR command keyword
-        DB      'DIR'
 CCP_KGET:      DB      'GET'            ; GET command keyword
 CCP_KJUMP:     DB      'JUMP'           ; JUMP command keyword
 CCP_KPEEK:     DB      'PEEK'           ; PEEK command keyword
@@ -3173,8 +3034,8 @@ CCP_PROW:      DW      0100H            ; PEEK current row start
 CCP_SPAGES:    DB      0                ; SAVE page count
 CCP_SDMA:      DW      0100H            ; SAVE DMA address
 CCP_SRECS:     DW      0                ; SAVE record count
-CCP_DARGP:     DW      0                ; DIR argument pointer
-CCP_DLEN:      DB      0                ; DIR argument length
+CCP_DARGP:     DW      0                ; qualified-command argument pointer
+CCP_DLEN:      DB      0                ; qualified-command argument length
 
 ; -------------------------------------------------------------------------------
 ; Drive/User State
@@ -3205,32 +3066,11 @@ CCP_LUACT      EQU     0048H
 CCP_LDRV       EQU     0049H
 CCP_SUBACTIVE  EQU     004AH
 
-; -------------------------------------------------------------------------------
-; DIR State
-; -------------------------------------------------------------------------------
-
-CCP_DIREP:                              ; DIR entries-per-line count
-        DW      0080H
-CCP_DFPTR:                              ; DIR field pointer
-        DW      0080H
-CCP_DFCNT:                              ; DIR field character count
-        DB      0
-CCP_DFOUND:                             ; DIR match-found flag
-        DB      0
 CPX_CUR:                                ; current CPX descriptor pointer
         DW      0
 
-  ; Patch 2026-09-02: the first resident DIR used LF alone. The Model 4 console
-  ; correctly preserves the horizontal cursor position on LF, which made each
-  ; successive filename march diagonally across the screen. CP/M text output
-  ; needs an explicit carriage return before line feed.
-
-CCP_DIRNL:                              ; DIR newline string
+CCP_NEWLINE:                            ; shared CR/LF string
         DB      13,10,'$'
-CCP_DIRFCB:                             ; DIR working FCB
-        REPT    36
-        DB      0
-        ENDM
 CCP_RET:                                ; shared return instruction
         DW      0000H
 

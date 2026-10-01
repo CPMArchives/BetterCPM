@@ -37,6 +37,9 @@ def main() -> None:
     require("RCP   : DIR, ERA, TYPE, REN, USER, CLS, VER, COPY, MOVE" in output,
             "CPX LIST did not publish the completed RCP inventory")
 
+    output = run("DIR")
+    require("RCP      CPX" in output, "RCP DIR did not list the command package")
+
     output = run("USER 5")
     require("A5>" in output, "RCP USER did not select user 5")
     output = run("A:USER 7")
@@ -65,8 +68,8 @@ def main() -> None:
             "COPY     COM" in output and "MOVE     COM" in output,
             "transient DIR.COM did not list the completed command files")
 
-    # A drive-qualified name bypasses the transitional core command and proves
-    # the ordinary CLS.COM fallback. Its success is a clean screen and prompt.
+    # A drive-qualified name bypasses the RCP command and proves the ordinary
+    # CLS.COM fallback. Its success is a clean screen and prompt.
     output = run("A:CLS")
     require("A0>" in output and "A:CLS" not in output,
             "transient CLS.COM did not clear the screen and restore the prompt")
