@@ -43,14 +43,14 @@ def main() -> None:
     require("A7>" in output, "transient USER.COM did not select user 7")
 
     output = run("VER")
-    require("BetterCP/M 0.3" in output, "resident VER did not report the version")
+    require("BetterCP/M 0.3" in output, "RCP VER did not report the version")
     output = run("VER /V", run_delay=800)
     for line in (
         "Command environment: API 1.0; implementation 1.3",
         "Basic Disk Operating System: API 1.2; implementation 1.6",
         "Basic Input/Output System: API 1.5; implementation 1.9",
     ):
-        require(line in output, f"resident VER /V omitted {line}")
+        require(line in output, f"RCP VER /V omitted {line}")
     require("Extension facility" not in output,
             "VER /V reported manager-owned CPX/RSX versions")
     output = run("A:VER")
