@@ -45,7 +45,6 @@ protected command-reloader stack remains unchanged.
 
 ## Remaining lifecycle work
 
-This increment does not implement ordinary pre-transient CPX shutdown. The CCP
-must still call present shutdown entries in reverse profile order immediately
-before a transient reclaims the live command environment. That is the next
-bounded Implementation Item 3 deliverable.
+Engineering Specification 181 completes ordinary pre-transient CPX shutdown
+in reverse profile order. The fixed Implementation Item 3 closure matrix
+remains the final acceptance step.

@@ -96,6 +96,13 @@ def main() -> None:
     ):
         machine = cpu()
         install_bdos(machine, bytes((0x3E, 0xFF, 0xC9)))
+        head, shutdown = 0x8000, 0x8010
+        machine.mem[head:head + 8] = (
+            bytes(6) + shutdown.to_bytes(2, "little"))
+        machine.mem[shutdown:shutdown + 5] = bytes(
+            (0x21, 0x03, 0x76, 0x34, 0xC9))
+        machine.mem[(LAYOUT["SYSTEM"] + 0x86):
+                    (LAYOUT["SYSTEM"] + 0x88)] = head.to_bytes(2, "little")
         machine.mem[symbol("CCP_COUNT")] = len(command)
         start = symbol("CCP_DATA")
         machine.mem[start:start + len(command)] = command
@@ -104,6 +111,9 @@ def main() -> None:
         require(machine.mem[fcb] == drive and
                 bytes(machine.mem[fcb + 1:fcb + 12]) == expected,
                 f"lookup FCB is wrong for {command!r}")
+        require(machine.mem[0x7603] == 0 and
+                machine.word(LAYOUT["SYSTEM"] + 0x86) == head,
+                "missing transient shut down the live CPX chain")
 
     # A combined DU prefix temporarily selects its user for the file lookup,
     # encodes its drive in the loader FCB, and restores the caller's user even
@@ -291,10 +301,20 @@ def main() -> None:
             0x3E, 0xEE, 0xC9,            # error: LD A,EEh / RET
         ))
 
-    def install_lifecycle(machine: Z80, bases: list[int], fail_last: bool) -> None:
+    def install_lifecycle(machine: Z80, bases: list[int], fail_last: bool,
+                          absent_shutdown: set[int] | None = None) -> int:
+        absent = absent_shutdown or set()
+        completed = range(len(bases) - 1 if fail_last else len(bases))
+        shutdown_expected = {}
+        final_value = len(bases) - 1 if fail_last else len(bases)
+        for index in reversed(list(completed)):
+            if index not in absent:
+                shutdown_expected[index] = final_value
+                final_value += 1
         for index, base in enumerate(bases):
             following = bases[index + 1] if index + 1 < len(bases) else 0
-            init, shutdown = base + 8, base + 32
+            init = base + 8
+            shutdown = 0 if index in absent else base + 32
             machine.mem[base:base + 8] = (
                 following.to_bytes(2, "little") + bytes(2) +
                 init.to_bytes(2, "little") + shutdown.to_bytes(2, "little"))
@@ -303,18 +323,34 @@ def main() -> None:
             machine.mem[init:init + len(init_code)] = init_code
             # The failing module is excluded from rollback.  Successful
             # predecessors therefore observe values N and N+1 in reverse.
-            rollback_expected = 2 * len(bases) - 3 - index
+            rollback_expected = shutdown_expected.get(index, 0)
             shutdown_code = ordered_callback(rollback_expected)
-            machine.mem[shutdown:shutdown + len(shutdown_code)] = shutdown_code
+            if shutdown:
+                machine.mem[shutdown:shutdown + len(shutdown_code)] = shutdown_code
         machine.mem[0x004B:0x004D] = bases[0].to_bytes(2, "little")
+        return final_value
 
     machine = cpu()
     success_chain = [0x8000, 0x8100]
-    install_lifecycle(machine, success_chain, False)
+    shutdown_result = install_lifecycle(machine, success_chain, False)
     call(machine, symbol("CPX_INITIALIZE"))
     require(machine.mem[0x7500] == 2 and
             machine.word(LAYOUT["SYSTEM"] + 0x86) == success_chain[0],
             "CPX initialization did not preserve order and publish atomically")
+    call(machine, symbol("CPX_SHUTDOWN"))
+    require(machine.mem[0x7500] == shutdown_result and
+            machine.word(LAYOUT["SYSTEM"] + 0x86) == 0,
+            "CPX shutdown did not run in reverse order and clear the live chain")
+
+    machine = cpu()
+    partial_chain = [0x8000, 0x8100, 0x8200]
+    shutdown_result = install_lifecycle(
+        machine, partial_chain, False, absent_shutdown={1})
+    call(machine, symbol("CPX_INITIALIZE"))
+    call(machine, symbol("CPX_SHUTDOWN"))
+    require(machine.mem[0x7500] == shutdown_result and
+            machine.word(LAYOUT["SYSTEM"] + 0x86) == 0,
+            "CPX shutdown did not skip an absent lifecycle entry")
 
     machine = cpu()
     failing_chain = [0x8000, 0x8100, 0x8200]
@@ -329,6 +365,27 @@ def main() -> None:
     require(machine.mem[0x7500] == 4 and
             machine.word(LAYOUT["SYSTEM"] + 0x86) == 0,
             "CPX initialization failure did not roll back in reverse order")
+
+    # GO and JUMP are monitor commands, but both transfer control to TPA code
+    # that may reclaim the command environment. They share the same shutdown
+    # boundary as a disk-loaded transient.
+    for routine, argument in (("CCP_GO", b""), ("CCP_JUMP", b"0100")):
+        machine = cpu()
+        install_bdos(machine, bytes((0xAF, 0xC9)))
+        install_lifecycle(machine, [0x8000], False)
+        call(machine, symbol("CPX_INITIALIZE"))
+        machine.mem[0:3] = bytes((0xC3, 0x00, 0xF1))
+        machine.mem[0xF100] = 0xC9
+        machine.mem[0x0100:0x0106] = bytes(
+            (0x3E, 0xA5, 0x32, 0x04, 0x76, 0xC9))
+        source = 0x7200
+        machine.mem[source:source + len(argument)] = argument
+        machine.hl, machine.b = source, len(argument)
+        call(machine, symbol(routine))
+        require(machine.mem[0x7604] == 0xA5 and
+                machine.mem[0x7500] == 2 and
+                machine.word(LAYOUT["SYSTEM"] + 0x86) == 0,
+                f"{routine} did not shut down CPXs before TPA execution")
 
     # Navigation syntax is owned by the CCP but its state is owned by BDOS.
     # This tiny BDOS stand-in exposes four physical drives and records current
