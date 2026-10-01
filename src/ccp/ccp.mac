@@ -91,11 +91,6 @@ CCP_LOOP:                               ; prompt for and dispatch next command
 
         CALL    CPX_DISPATCH
         JR      C,CCP_LOOP
-        LD      A,(CCP_COUNT)
-        CP      6
-        JP      Z,CCP_TRYUSER
-        CP      7
-        JP      Z,CCP_TRYUSER
 
 CCP_BAD:                                ; fall through to transient command load
         CALL    CCP_LOAD
@@ -1238,49 +1233,6 @@ CCP_TRYDIR:                             ; recognize DIR command
         CALL    CCP_EQUAL
         JP      NZ,CCP_BAD
         CALL    CCP_DIR
-        JP      CCP_LOOP
-
-  ; Patch 2026-09-02: keep the resident USER command deliberately thin.  The
-  ; CCP parses only its decimal operand; BDOS Function 32 remains the owner of
-  ; current-user state, so transient programs and the command environment can
-  ; never acquire divergent copies.
-
-CCP_TRYUSER:                            ; recognize USER command
-        LD      HL,CCP_DATA
-        LD      DE,CU_KEY
-        LD      B,5
-        CALL    CCP_EQUAL
-        JP      NZ,CCP_BAD
-        LD      A,(HL)
-        SUB     '0'
-        JP      C,CCP_BAD
-        CP      10
-        JP      NC,CCP_BAD
-        LD      E,A
-        LD      A,(CCP_COUNT)
-        CP      6
-        JR      Z,CCP_USERSET
-        LD      A,E
-        ADD     A,A
-        LD      D,A                     ; D=first digit times two
-        ADD     A,A
-        ADD     A,A
-        ADD     A,D                     ; A=first digit times ten
-        LD      E,A
-        INC     HL
-        LD      A,(HL)
-        SUB     '0'
-        JP      C,CCP_BAD
-        CP      10
-        JP      NC,CCP_BAD
-        ADD     A,E
-        CP      32
-        JP      NC,CCP_BAD
-        LD      E,A
-
-CCP_USERSET:                            ; apply USER command selection
-        LD      C,32
-        CALL    BDOS
         JP      CCP_LOOP
 
   ; The resident monitor is intentionally small, but it is always available.
@@ -3148,8 +3100,6 @@ CCP_UNKNOWN:                            ; unknown-command message
         DB      10,'?','$'
 CCP_DIRKEY:                             ; DIR command keyword
         DB      'DIR'
-CU_KEY:                                 ; USER command keyword
-        DB      'USER '
 CCP_KGET:      DB      'GET'            ; GET command keyword
 CCP_KJUMP:     DB      'JUMP'           ; JUMP command keyword
 CCP_KPEEK:     DB      'PEEK'           ; PEEK command keyword

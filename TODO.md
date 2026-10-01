@@ -104,7 +104,9 @@ is supplied through loadable CPXs rather than added to the core CCP.
 - [x] Qualify full SUBMIT/XSUB compatibility with original command files and
   submitted-input workflows, including error/abort and warm-boot behavior.
 
-- [x] Add stock `USER` behavior to `RCP.CPX`.
+- [x] Add stock `USER` behavior to `RCP.CPX`. Engineering Specification 177
+  removes the transitional core fallback after qualifying both RCP and
+  transient paths.
 - [x] Complete the RCP command inventory `DIR`, `ERA`, `REN`, `TYPE`, `USER`,
   plus the BetterCP/M extensions `CLS`, `VER`, `COPY`, and `MOVE`.
 - [x] Supply matching transient `DIR.COM`, `ERA.COM`, `REN.COM`, `TYPE.COM`,
