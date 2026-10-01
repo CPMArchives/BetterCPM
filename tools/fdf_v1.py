@@ -23,6 +23,10 @@ class FDFError(ValueError):
     """A source or semantic error in an FDF v1 catalogue."""
 
 
+class FDBError(ValueError):
+    """A structural or semantic error in a compiled FDB catalogue."""
+
+
 @dataclass(frozen=True)
 class Format:
     ident: str
@@ -70,6 +74,22 @@ class Format:
         if self.logical_track == "CYLINDER":
             result.append((0x82, b"\x01"))
         return tuple(result)
+
+
+@dataclass(frozen=True)
+class FDBDescriptor:
+    ident: str
+    description: str
+    supported: bool
+    unsupported_required: tuple[int, ...]
+    format: Format | None
+
+
+@dataclass(frozen=True)
+class FDB:
+    minor: int
+    crc: int
+    descriptors: tuple[FDBDescriptor, ...]
 
 
 def _uncomment(raw: str) -> str:
@@ -326,6 +346,164 @@ def serialize(formats: tuple[Format, ...]) -> bytes:
     return bytes(result)
 
 
+def _padded_text(raw: bytes, field: str, pattern: str | None = None) -> str:
+    try:
+        text = raw.decode("ascii")
+    except UnicodeDecodeError:
+        raise FDBError(f"{field}: non-ASCII byte") from None
+    value = text.rstrip(" ")
+    if not value or text[len(value):] != " " * (len(text) - len(value)):
+        raise FDBError(f"{field}: invalid space padding")
+    if pattern is not None and not re.fullmatch(pattern, value):
+        raise FDBError(f"{field}: invalid value {value!r}")
+    if any(not 32 <= ord(char) <= 126 for char in value):
+        raise FDBError(f"{field}: non-printable character")
+    return value
+
+
+def read_fdb(data: bytes) -> FDB:
+    """Validate and decode one complete FDB v1 file."""
+    if not data or len(data) % 128 or len(data) > 0xFF80:
+        raise FDBError("file length must be 1..511 complete CP/M records")
+    if len(data) < 128:
+        raise FDBError("file is shorter than the first record")
+    magic, major, minor, header_size, stride, count, first, pool, stored_crc = \
+        struct.unpack_from("<4sBBBBHHHH", data)
+    if magic != b"BFDB" or major != 1:
+        raise FDBError("unknown FDB signature or major version")
+    if header_size < 16 or stride < 64:
+        raise FDBError("header size or descriptor stride is too small")
+    if first != 128 or pool != first + count * stride or pool > len(data):
+        raise FDBError("descriptor table offsets are inconsistent")
+    if header_size > first or any(data[header_size:first]):
+        raise FDBError("reserved header bytes are nonzero")
+    check = bytearray(data)
+    check[14:16] = b"\0\0"
+    if crc16(check) != stored_crc:
+        raise FDBError("CRC-16 does not match the complete file")
+
+    owned = bytearray(len(data))
+    descriptors = []
+    identifiers = set()
+    highest = pool
+
+    def own(start: int, end: int, label: str) -> None:
+        nonlocal highest
+        if start < pool or end <= start or end > len(data):
+            raise FDBError(f"{label}: pool object is out of bounds")
+        if any(owned[start:end]):
+            raise FDBError(f"{label}: pool objects overlap")
+        owned[start:end] = b"\x01" * (end - start)
+        highest = max(highest, end)
+
+    for index in range(count):
+        start = first + index * stride
+        record = data[start:start + 64]
+        ident = _padded_text(record[0:8], f"descriptor {index} ID", r"[A-Z0-9]{1,8}")
+        if ident in identifiers:
+            raise FDBError(f"duplicate descriptor ID {ident}")
+        identifiers.add(ident)
+        description = _padded_text(record[8:40], f"{ident} description")
+        spt, bsh, blm, exm, dsm, drm, al0, al1, cks, off = \
+            struct.unpack_from("<HBBBHHBBHH", record, 40)
+        psectors, size_code, cylinders, flags, id_count = record[55:60]
+        id_offset, extension_offset = struct.unpack_from("<HH", record, 60)
+        if id_count != psectors or not psectors:
+            raise FDBError(f"{ident}: duplicated sector count is invalid")
+        if size_code not in range(4) or not cylinders:
+            raise FDBError(f"{ident}: sector size code or cylinder count is invalid")
+        own(id_offset, id_offset + id_count, f"{ident} sector IDs")
+        sector_ids = tuple(data[id_offset:id_offset + id_count])
+        if len(set(sector_ids)) != len(sector_ids):
+            raise FDBError(f"{ident}: sector IDs are not distinct")
+        if bool(flags & 0x80) != bool(extension_offset):
+            raise FDBError(f"{ident}: extension flag and offset disagree")
+
+        extensions: dict[int, bytes] = {}
+        unsupported = []
+        if extension_offset:
+            cursor = extension_offset
+            while True:
+                if cursor + 2 > len(data):
+                    raise FDBError(f"{ident}: unterminated extension list")
+                kind_byte, length = data[cursor:cursor + 2]
+                cursor += 2
+                if kind_byte == 0:
+                    if length:
+                        raise FDBError(f"{ident}: type zero has nonzero length")
+                    extension_end = cursor
+                    break
+                if kind_byte == 0x80:
+                    raise FDBError(f"{ident}: required extension kind zero is invalid")
+                end = cursor + length
+                if end > len(data):
+                    raise FDBError(f"{ident}: extension payload is out of bounds")
+                kind = kind_byte & 0x7F
+                if kind in extensions:
+                    raise FDBError(f"{ident}: repeated extension kind {kind}")
+                payload = data[cursor:end]
+                extensions[kind] = payload
+                if kind in (1, 2) and not kind_byte & 0x80:
+                    raise FDBError(f"{ident}: semantic extension {kind} is not required")
+                if kind not in (1, 2) and kind_byte & 0x80:
+                    unsupported.append(kind)
+                cursor = end
+            own(extension_offset, extension_end, f"{ident} extensions")
+
+        sector_sizes = None
+        if 1 in extensions:
+            payload = extensions[1]
+            if len(payload) != psectors or any(code not in range(4) for code in payload):
+                raise FDBError(f"{ident}: mixed-sector extension is malformed")
+            if max(payload) != size_code:
+                raise FDBError(f"{ident}: mixed-sector maximum disagrees with SECSIZE")
+            sector_sizes = tuple(128 << code for code in payload)
+        logical_track = "SURFACE"
+        if 2 in extensions:
+            if extensions[2] != b"\x01":
+                raise FDBError(f"{ident}: logical-track extension is malformed")
+            logical_track = "CYLINDER"
+
+        item = None
+        if not unsupported:
+            fields = {
+                "ID": (ident, 0), "DESCRIPTION": (description, 0),
+                "SPT": (str(spt), 0), "BSH": (str(bsh), 0),
+                "BLM": (str(blm), 0), "EXM": (str(exm), 0),
+                "DSM": (str(dsm), 0), "DRM": (str(drm), 0),
+                "AL0": (str(al0), 0), "AL1": (str(al1), 0),
+                "CKS": (str(cks), 0), "OFF": (str(off), 0),
+                "PSECTORS": (str(psectors), 0),
+                "SECSIZE": (str(128 << size_code), 0),
+                "CYLINDERS": (str(cylinders), 0),
+                "SIDES": ("2" if flags & 1 else "1", 0),
+                "ENCODING": ("MFM" if flags & 2 else "FM", 0),
+                "INVERT": ("YES" if flags & 4 else "NO", 0),
+                "SECTOR_IDS": (",".join(map(str, sector_ids)), 0),
+                "LOGICAL_TRACK": (logical_track, 0),
+                "SIDE_ORDER": ("SIDE_MAJOR" if flags & 8 else "ALTERNATING", 0),
+                "SIDE1_DIRECTION": ("REVERSE" if flags & 16 else "FORWARD", 0),
+                "TRACK_ID_MODE": ("CONTINUOUS" if flags & 32 else "PER_CYLINDER", 0),
+                "SECTOR_ID_MODE": ("CONTINUOUS" if flags & 64 else "RESTART", 0),
+            }
+            if sector_sizes is not None:
+                fields["SECTOR_SIZES"] = (",".join(map(str, sector_sizes)), 0)
+            try:
+                item = _make(fields)
+            except FDFError as error:
+                raise FDBError(f"{ident}: {error}") from None
+        descriptors.append(FDBDescriptor(
+            ident, description, not unsupported, tuple(sorted(unsupported)), item))
+
+    expected_size = (highest + 127) & ~127
+    if len(data) != expected_size:
+        raise FDBError("file has arbitrary extra record padding")
+    for offset in range(pool, len(data)):
+        if not owned[offset] and data[offset]:
+            raise FDBError(f"nonzero unowned pool byte at {offset:04X}h")
+    return FDB(minor, stored_crc, tuple(descriptors))
+
+
 def compile_file(path: Path) -> bytes:
     raw = path.read_bytes()
     raw = raw.split(b"\x1a", 1)[0]
@@ -334,3 +512,10 @@ def compile_file(path: Path) -> bytes:
     except UnicodeDecodeError as error:
         raise FDFError(f"{path}: source is not ASCII") from error
     return serialize(parse(text, str(path)))
+
+
+def read_fdb_file(path: Path) -> FDB:
+    try:
+        return read_fdb(path.read_bytes())
+    except OSError as error:
+        raise FDBError(f"{path}: {error}") from error

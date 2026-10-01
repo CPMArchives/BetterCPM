@@ -38,8 +38,8 @@ fields and invalid cylinder topology.
 ## Remaining Step 4 work
 
 This increment freezes executable compiler behavior; it does not claim CONFIG
-integration or complete the historical catalogue migration. The next increments
-must implement an independent FDB reader/validator, convert the 107 admitted
-reference definitions without changing the five excluded source records, build
-the native/catalogue packaging path, and integrate descriptor selection with
-CONFIG's normalized-binding transaction.
+integration or complete the historical catalogue migration. Engineering
+Specification 184 supplies the independent FDB reader/validator. The remaining
+increments must convert the 107 admitted reference definitions without changing
+the five excluded source records, build the native/catalogue packaging path,
+and integrate descriptor selection with CONFIG's normalized-binding transaction.
