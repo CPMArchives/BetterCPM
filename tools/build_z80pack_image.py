@@ -239,6 +239,24 @@ def main():
   raise ValueError(f'{name}: missing from ROM filesystem')
  rom_entries=json.loads((rom/'rom-image.json').read_text())['entries']
  rom_gateway_tail=bytes((0xc3,rom_entries['bdos']&255,rom_entries['bdos']>>8))
+ rom_config=bytearray(ctl)
+ reference_manifest=json.loads((rom/'rom-references.json').read_text())
+ overlay_references=reference_manifest['overlay_references']
+ for reference in overlay_references:
+  offset=reference['overlay_operand']
+  old=int.from_bytes(rom_config[offset:offset+2],'little')
+  if old!=reference['old_target']:
+   raise ValueError(f'CONFIG relocation source changed at {offset:04X}h')
+  rom_config[offset:offset+2]=reference['new_target'].to_bytes(2,'little')
+ rom_config=bytes(rom_config)
+ (rom/'rom-config.bin').write_bytes(rom_config)
+ (rom/'rom-config.json').write_text(json.dumps({
+  'bytes':len(rom_config),'relocation_words':len(overlay_references),
+  'references':overlay_references,
+  'source_sha256':hashlib.sha256(ctl).hexdigest(),
+  'sha256':hashlib.sha256(rom_config).hexdigest(),
+ },indent=2,sort_keys=True)+'\n')
+ rom_logical[68*128:76*128]=rom_config.ljust(1024,b'\0')
  rom_logical[76*128:84*128]=(rom_overlays/'RSXLOAD.BIN').read_bytes().ljust(1021,b'\0')+rom_gateway_tail
  rom_logical[100*128:108*128]=(rom_overlays/'RSXRESOL.BIN').read_bytes().ljust(1021,b'\0')+rom_gateway_tail
  for name in sorted(('R3PLAN.RSX','R3SLOTS.RSX','R3SNAP.RSX','R3CARR.RSX','R3META.RSX','R3COORD.RSX','R3PROF.RSX','R3KCTX.RSX','R3KEEP.RSX','R3KPRE.RSX','R3FINAL.RSX','R3DROP.RSX','R3MOVE.RSX','R3COMIT.RSX','R3RESOL.RSX')):

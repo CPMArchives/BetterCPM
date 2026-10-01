@@ -28,6 +28,8 @@ EXPECTED_DISCOVERED = {
     "tables": 16,
 }
 EXPECTED_CLASSES = {"immutable-rom": 429, "live-ram": 330}
+EXPECTED_OVERLAY_CLASSES = {"immutable-rom": 3, "live-ram": 102}
+EXPECTED_OVERLAY_REFERENCES = 105
 
 
 def main() -> None:
@@ -46,6 +48,7 @@ def main() -> None:
         name: (base, path.read_bytes())
         for name, base, path in component_inputs(build)
     }
+    config_source = (build / "config.bin").read_bytes()
     components = {row["name"]: row for row in manifest["components"]}
 
     if inventory["layout_deltas"] != [0x101, 0x203]:
@@ -58,6 +61,11 @@ def main() -> None:
         raise AssertionError("ROM/RAM reference classification changed")
     if inventory["reference_count"] != 759:
         raise AssertionError("packed-code reference total changed")
+    if (inventory["overlay_discovered_word_count"] !=
+            EXPECTED_OVERLAY_REFERENCES or
+            inventory["overlay_reference_count"] !=
+            EXPECTED_OVERLAY_REFERENCES):
+        raise AssertionError("CONFIG overlay reference total changed")
     if (inventory["unexplained_changed_bytes"] != 0 or
             inventory["unresolved_targets"] != 0):
         raise AssertionError("inventory reports an unexplained or unresolved fact")
@@ -107,6 +115,25 @@ def main() -> None:
         raise AssertionError("reference records do not match component totals")
     if dict(classes) != EXPECTED_CLASSES:
         raise AssertionError("reference records do not match class totals")
+    overlay_seen = set()
+    overlay_classes = Counter()
+    for reference in inventory["overlay_references"]:
+        offset = reference["overlay_operand"]
+        if (reference["component"] != "config" or
+                reference["source_offset"] != offset or
+                reference["source_operand"] != 0xF000 + offset):
+            raise AssertionError("CONFIG overlay operand mapping changed")
+        if offset in overlay_seen or offset + 1 in overlay_seen:
+            raise AssertionError("CONFIG overlay operands overlap")
+        overlay_seen.update((offset, offset + 1))
+        if int.from_bytes(config_source[offset:offset + 2], "little") != \
+                reference["old_target"]:
+            raise AssertionError("CONFIG overlay source operand changed")
+        if not reference["target_owners"] or not reference["source"]:
+            raise AssertionError("CONFIG overlay reference lacks provenance")
+        overlay_classes[reference["target_class"]] += 1
+    if dict(sorted(overlay_classes.items())) != EXPECTED_OVERLAY_CLASSES:
+        raise AssertionError("CONFIG overlay target classification changed")
     stack_tops = [row for row in inventory["references"]
                   if "STKTOP" in row["source"]]
     extension_entries = [row for row in inventory["references"]
@@ -120,8 +147,8 @@ def main() -> None:
             any(row["target_class"] != "immutable-rom"
                 for row in extension_entries)):
         raise AssertionError("E49Fh extension entries lost ROM semantics")
-    print("ROM address inventory verified: 759 packed-code words; "
-          "429 ROM and 330 live-RAM targets; no unresolved references")
+    print("ROM address inventory verified: 759 packed-code words and 105 CONFIG "
+          "overlay words; no unresolved references")
 
 
 if __name__ == "__main__":

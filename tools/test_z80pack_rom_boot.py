@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -36,6 +37,31 @@ def main() -> None:
             manifest["ccp_external_reference_count"] != 68 or
             manifest["spare_bytes"] != 615):
         raise AssertionError("accepted ROM boot layout changed")
+    config_report = json.loads(
+        (image / "rom/rom-config.json").read_text(encoding="ascii"))
+    config_image = (image / "rom/rom-config.bin").read_bytes()
+    config_source = (image / "config.bin").read_bytes()
+    references = config_report["references"]
+    if (config_report["bytes"] != 907 or
+            config_report["relocation_words"] != len(references) or
+            hashlib.sha256(config_source).hexdigest() !=
+            config_report["source_sha256"] or
+            hashlib.sha256(config_image).hexdigest() != config_report["sha256"]):
+        raise AssertionError("ROM CONFIG relocation manifest changed")
+    reproduced = bytearray(config_source)
+    seen: set[int] = set()
+    for reference in references:
+        offset = reference["overlay_operand"]
+        if offset in seen or offset + 1 in seen:
+            raise AssertionError("ROM CONFIG relocation operands overlap")
+        seen.update((offset, offset + 1))
+        if int.from_bytes(config_source[offset:offset + 2], "little") != \
+                reference["old_target"]:
+            raise AssertionError("ROM CONFIG source operand changed")
+        reproduced[offset:offset + 2] = \
+            reference["new_target"].to_bytes(2, "little")
+    if bytes(reproduced) != config_image:
+        raise AssertionError("ROM CONFIG relocation is not reproducible")
 
     with tempfile.TemporaryDirectory(prefix="bettercpm-rom-boot-") as temporary:
         work = Path(temporary)
@@ -68,6 +94,38 @@ send -s -- "WARM\r"
 prompt
 send -s -- "DIR\r"
 expect -exact "RCP"
+prompt
+send -s -- "CPX LIST\r"
+expect -exact "RCP.CPX"
+expect -exact "TPA available: 53K"
+prompt
+send -s -- "CPX LOAD HELLO\r"
+prompt
+send -s -- "CPX LIST\r"
+expect -exact "RCP.CPX"
+expect -exact "HELLO.CPX"
+prompt
+send -s -- "HELLO\r"
+expect -exact "Hello from HELLO.CPX"
+prompt
+send -s -- "WARM\r"
+prompt
+send -s -- "HELLO\r"
+expect -exact "Hello from HELLO.CPX"
+prompt
+send -s -- "CPX UNLOAD RCP\r"
+prompt
+send -s -- "HELLO\r"
+expect -exact "Hello from HELLO.CPX"
+prompt
+send -s -- "CPX UNLOAD HELLO\r"
+prompt
+send -s -- "CPX LIST\r"
+expect -exact "No CPXs loaded"
+expect -exact "TPA available: 53K"
+prompt
+send -s -- "HELLO\r"
+expect -exact "BetterCP/M on z80pack"
 prompt
 send -s -- "RSX LOAD ECHO\r"
 prompt
@@ -140,8 +198,8 @@ expect eof
     protected = f" under enforced {args.rom_start}h protection" if args.rom_start else ""
     print("ROM cold entry verified" + protected + ": RAM initialized, relocated "
           "BIOS BOOT entered, relocated disk reloader reached A0>, DIR, "
-          "transient execution, warm reconstruction, and dynamic RSX "
-          "load/list/unload passed")
+          "transient execution, CPX load/list/reconstruction/unload, and "
+          "dynamic RSX load/list/unload passed")
 
 
 if __name__ == "__main__":

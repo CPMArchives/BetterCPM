@@ -263,7 +263,7 @@ def invoke(stub: bytes, carrier: bytes, name: bytes, *, operation: int = 1,
            retained: tuple[bytes, ...] = (), final: bytes = b"") -> tuple[Z80, bytes]:
     cpu = Z80(b"")
     io = (ROOT / "build/system/rsxio.bin").read_bytes()
-    io_base = high - 0xE00 + 0x400
+    io_base = high - 0xF00 + 0x400
     cpu.mem[io_base:io_base + len(io)] = io
     coordinator = (ROOT / "build/system/R3COORD.RSX").read_bytes()
     carr = (ROOT / "build/system/R3CARR.RSX").read_bytes()
@@ -360,10 +360,10 @@ def main() -> None:
              cpu.word(FACTS + 6)) & 0xFFFF
 
         cpu, _ = invoke(stub, stateful, b"STATEFUL",
-                        high=FACTS + 386 + 0xE00)
+                        high=FACTS + 386 + 0xF00)
         assert cpu.a == 0 and cpu.hl == FACTS
         cpu, _ = invoke(stub, stateful, b"STATEFUL",
-                        high=FACTS + 385 + 0xE00)
+                        high=FACTS + 385 + 0xF00)
         assert cpu.a == 0xFF and cpu.word(REQUEST + 12) == 0xA5A5
 
         cpu, _ = invoke(stub, hello, b"HELLO   ")
@@ -440,11 +440,11 @@ def main() -> None:
         assert stateful_allocation == cpu.word(FACTS + 46 + 4)
 
         cpu, _ = invoke(stub, stateful, b"STATEFUL",
-                        high=FACTS + 2502 + 0xE00,
+                        high=FACTS + 2502 + 0xF00,
                         retained=(b"HELLO   ",))
         assert cpu.a == 0
         cpu, _ = invoke(stub, stateful, b"STATEFUL",
-                        high=FACTS + 2501 + 0xE00,
+                        high=FACTS + 2501 + 0xF00,
                         retained=(b"HELLO   ",))
         assert cpu.a == 0xFF and cpu.word(REQUEST + 12) == 0xA5A5
         cpu, _ = invoke(stub, stateful, b"STATEFUL",
