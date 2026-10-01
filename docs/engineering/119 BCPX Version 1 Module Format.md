@@ -47,10 +47,32 @@ Version 1 permits at most 232 relocation records in its first header group.
 
 The loader validates signature, format, class, required ABI, nonzero size,
 page-rounded allocation, aligned section boundaries, relocation count and
-sites, and command-entry bounds before publishing the runtime entry. It loads
-only the executable byte count, applies each relocation against the calculated
-runtime base, writes the validated entry address into the common runtime
-header, and links the module in persistent-table order.
+sites, command-entry bounds, and both lifecycle-entry fields before publishing
+the runtime entry.  Each lifecycle field is either `FFFFh` or an offset strictly
+within the executable byte count. It loads only the executable byte count,
+applies each relocation against the calculated runtime base, writes the
+validated entry address into the common runtime header, and links the module
+in persistent-table order.
+
+After constructing the complete prospective chain, the reloader calls present
+initialization entries in configured order and publishes the chain only after
+all succeed.  Before a transient program reclaims the live command environment,
+the CCP calls present shutdown entries in reverse order.  The exact register,
+failure, recovery, and pointer-lifetime rules are defined by section 7.4 of the
+*RSX and CPX Programmer's Guide*.
+
+The version-1 live header occupies the first eight executable bytes:
+
+| Offset | Size | Meaning |
+|---:|---:|---|
+| 0 | 2 | next live CPX base, or zero |
+| 2 | 2 | relocated command-entry address |
+| 4 | 2 | relocated initialization-entry address, or zero |
+| 6 | 2 | relocated shutdown-entry address, or zero |
+
+The loader owns and rewrites these words.  The carrier's entry offsets remain
+relative to the beginning of this complete executable image.  An absent
+`FFFFh` lifecycle offset becomes zero in the corresponding live-header word.
 
 `BCM1` remains the private CCP carrier and is normalized into the loader's
 internal descriptor rather than being mistaken for a CPX header. This explicit
