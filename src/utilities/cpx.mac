@@ -11,6 +11,7 @@ BDOS            EQU     0005H
 CMDLEN          EQU     0080H
 CMDDATA         EQU     0081H
 CPXFUNC         EQU     176
+FCB2            EQU     006CH
 
         CSEG
         .PHASE  0103H
@@ -18,8 +19,8 @@ CPXFUNC         EQU     176
 ; ================================================================================
 ; =                         Command Parsing and Dispatch                         =
 ; =                                                                              =
-; = Parses the transient command tail, recognizes CPX manager operations, and routes =
-; = accepted commands to list, load, unload, or version handling.                =
+; = Parses the transient command tail, recognizes CPX manager operations, and    =
+; = routes accepted commands to list, load, unload, or version handling.         =
 ; ================================================================================
 ; -------------------------------------------------------------------------------
 ; Command-Tail Parse
@@ -49,13 +50,20 @@ HAVELEN:                                ; dispatch parsed command
         JR      Z,TRYVERS
         CP      4
         JR      Z,TRYLIST
-        CP      10
+        CP      6
+        JR      C,USAGE
+        LD      HL,(ARGSTART)
+        LD      DE,KLOAD
+        LD      B,5
+        CALL    EQUAL
         JP      Z,TRYLOAD
-        CP      14
-        JP      Z,TRYLOAD
-        CP      12
-        JP      Z,TRYUNLOAD
-        CP      16
+        LD      A,(TOTLEN)
+        CP      8
+        JR      C,USAGE
+        LD      HL,(ARGSTART)
+        LD      DE,KUNLOAD
+        LD      B,7
+        CALL    EQUAL
         JP      Z,TRYUNLOAD
 
 USAGE:                                  ; print CPX usage
@@ -82,7 +90,7 @@ TRYVERS:                                ; try version command
 ; ================================================================================
 ; =                             CPX Profile Listing                              =
 ; =                                                                              =
-; = Queries the installed proof CPXs, reports the active profile, and prints the =
+; = Enumerates installed CPX names through Function 176 and prints the active    =
 ; = resulting TPA size.                                                          =
 ; ================================================================================
 ; -------------------------------------------------------------------------------
@@ -95,34 +103,29 @@ TRYLIST:                                ; try list command
         LD      B,4
         CALL    EQUAL
         JP      NZ,USAGE
+        LD      HL,REQUEST
+        LD      (HL),1
+        INC     HL
         XOR     A
-        LD      (LIST_ANY),A
-        LD      D,1
-        LD      E,0
-        LD      C,CPXFUNC
-        CALL    BDOS
-        CP      0FFH
-        JR      Z,LISTBAD
-        OR      A
-        JR      Z,LSTHCHK
-        LD      DE,LISTBASIC
-        CALL    PRINT
-        LD      A,1
+        LD      (HL),A                  ; enumerate operation
+        INC     HL
+        LD      (HL),A                  ; first index
         LD      (LIST_ANY),A
 
-LSTHCHK:                                ; check HELLO CPX status
-        LD      D,2
-        LD      E,0
+LISTNEXT:                               ; request next ordered profile name
+        LD      DE,REQUEST
         LD      C,CPXFUNC
         CALL    BDOS
         CP      0FFH
         JR      Z,LISTBAD
         OR      A
         JR      Z,LISTCHECK
-        LD      DE,LSTHMSG
-        CALL    PRINT
+        CALL    PRINTNAME
         LD      A,1
         LD      (LIST_ANY),A
+        LD      HL,REQUEST+2
+        INC     (HL)
+        JR      LISTNEXT
 
 ; -------------------------------------------------------------------------------
 ; List Completion
@@ -149,7 +152,7 @@ LISTBAD:                                ; report CPX query failure
 ; ================================================================================
 ; =                                   CPX Load                                   =
 ; =                                                                              =
-; = Parses the requested proof module and submits the corresponding protected CPX =
+; = Validates the CCP-normalized second default FCB and submits a name-based CPX  =
 ; = profile-load operation.                                                      =
 ; ================================================================================
 ; -------------------------------------------------------------------------------
@@ -157,45 +160,13 @@ LISTBAD:                                ; report CPX query failure
 ; -------------------------------------------------------------------------------
 
 TRYLOAD:                                ; try load command
-        LD      HL,(ARGSTART)
-        LD      DE,KLOADB
-        LD      B,10
-        CALL    EQUAL
-        JR      Z,LOADBASIC
-        LD      HL,(ARGSTART)
-        LD      DE,KLOADH
-        LD      B,10
-        CALL    EQUAL
-        JP      NZ,USAGE
-        LD      A,2
-        JR      LOADNAME
-
-LOADBASIC:                              ; select BASIC/RCP module
         LD      A,1
-
-LOADNAME:                               ; parse CPX load name
-        LD      (MODSEL),A
-        LD      A,(TOTLEN)
-        CP      10
-        JR      Z,LOADREADY
-        LD      HL,(ARGSTART)
-        LD      BC,10
-        ADD     HL,BC
-        LD      DE,KCPX
-        LD      B,4
-        CALL    EQUAL
-        JP      NZ,USAGE
-
-LOADREADY:                              ; submit CPX load request
-        LD      A,(MODSEL)
-        LD      D,A
-        LD      E,1
-        JR      CHANGE
+        JR      PREPCHANGE
 
 ; ================================================================================
 ; =                                  CPX Unload                                  =
 ; =                                                                              =
-; = Parses the requested proof module and submits the corresponding protected CPX =
+; = Validates the CCP-normalized second default FCB and submits a name-based CPX  =
 ; = profile-unload operation.                                                    =
 ; ================================================================================
 ; -------------------------------------------------------------------------------
@@ -203,45 +174,19 @@ LOADREADY:                              ; submit CPX load request
 ; -------------------------------------------------------------------------------
 
 TRYUNLOAD:                              ; try unload command
-        LD      HL,(ARGSTART)
-        LD      DE,KUNLOADB
-        LD      B,12
-        CALL    EQUAL
-        JR      Z,UNLOADBASIC
-        LD      HL,(ARGSTART)
-        LD      DE,KUNLOADH
-        LD      B,12
-        CALL    EQUAL
-        JP      NZ,USAGE
         LD      A,2
-        JR      UNLOADNAME
 
-UNLOADBASIC:                            ; select BASIC/RCP module for unload
-        LD      A,1
-
-UNLOADNAME:                             ; parse CPX unload name
-        LD      (MODSEL),A
-        LD      A,(TOTLEN)
-        CP      12
-        JR      Z,UNLOADREADY
-        LD      HL,(ARGSTART)
-        LD      BC,12
-        ADD     HL,BC
-        LD      DE,KCPX
-        LD      B,4
-        CALL    EQUAL
-        JP      NZ,USAGE
-
-UNLOADREADY:                            ; submit CPX unload request
-        LD      A,(MODSEL)
-        LD      D,A
-        LD      E,2
+PREPCHANGE:                             ; validate and construct mutation request
+        LD      (REQUEST+1),A
+        CALL    PREPNAME
+        JP      C,USAGE
 
 ; -------------------------------------------------------------------------------
 ; Profile Change
 ; -------------------------------------------------------------------------------
 
 CHANGE:                                 ; perform CPX profile change
+        LD      DE,REQUEST
         LD      C,CPXFUNC
         CALL    BDOS
         OR      A
@@ -250,6 +195,64 @@ CHANGE:                                 ; perform CPX profile change
 DONE:                                   ; return to CCP
         LD      C,0
         JP      BDOS
+
+; -------------------------------------------------------------------------------
+; Normalized CPX Name
+; -------------------------------------------------------------------------------
+
+PREPNAME:                               ; validate second FCB and copy stem
+        LD      A,(FCB2)
+        OR      A                       ; persistent profiles are not drive-qualified
+        JR      NZ,PN_BAD
+        LD      HL,FCB2+1
+        LD      DE,REQUEST+4
+        LD      B,8
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,PN_BAD
+
+PN_COPY:                                ; copy normalized non-wildcard stem
+        LD      A,(HL)
+        CP      '?'
+        JR      Z,PN_BAD
+        LD      (DE),A
+        INC     HL
+        INC     DE
+        DJNZ    PN_COPY
+        LD      HL,FCB2+9
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,PN_SPACE
+        LD      DE,KEXT
+        LD      B,3
+        CALL    EQUAL
+        JR      NZ,PN_BAD
+        JR      PN_OK
+
+PN_SPACE:                               ; require an entirely blank extension
+        INC     HL
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,PN_BAD
+        INC     HL
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,PN_BAD
+
+PN_OK:                                  ; initialize remaining request fields
+        LD      HL,REQUEST
+        LD      (HL),1
+        INC     HL
+        INC     HL
+        LD      (HL),0
+        INC     HL
+        LD      (HL),0
+        OR      A                       ; clear carry
+        RET
+
+PN_BAD:                                 ; reject malformed default FCB
+        SCF
+        RET
 
 ; -------------------------------------------------------------------------------
 ; Keyword Match
@@ -268,14 +271,36 @@ PRINT:                                  ; print $-terminated string
         LD      C,9
         JP      BDOS
 
+PRINTNAME:                              ; print returned stem and CPX extension
+        LD      HL,REQUEST+4
+        LD      B,8
+
+PNM_LOOP:                               ; print until stem padding
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,PNM_DONE
+        PUSH    BC
+        PUSH    HL
+        LD      E,A
+        LD      C,2
+        CALL    BDOS
+        POP     HL
+        POP     BC
+        INC     HL
+        DJNZ    PNM_LOOP
+
+PNM_DONE:                               ; append conventional extension
+        LD      DE,CPXEND
+        JP      PRINT
+
   ; The word at 0006h is the exclusive top of the transient region. Report
   ; whole kilobytes available from the conventional 0100h program origin.
 
 ; ================================================================================
 ; =                                TPA Reporting                                 =
 ; =                                                                              =
-; = Reads the exclusive transient-region limit at 0006H and reports whole kilobytes =
-; = available above the conventional 0100H program origin.                       =
+; = Reads the exclusive transient-region limit at 0006H and reports whole        =
+; = kilobytes available above the conventional 0100H program origin.             =
 ; ================================================================================
 ; -------------------------------------------------------------------------------
 ; TPA Size Conversion
@@ -325,24 +350,21 @@ PT_UNIT:                                ; print kilobyte suffix
 ; ================================================================================
 ; =                            Utility Data and State                            =
 ; =                                                                              =
-; = Defines command keywords, messages, decimal-conversion scratch, and parsed-command =
-; = state used by the transient CPX manager.                                     =
+; = Defines command keywords, messages, decimal-conversion scratch, and parsed   =
+; = command state used by the transient CPX manager.                             =
 ; ================================================================================
 ; -------------------------------------------------------------------------------
 ; Keywords and Messages
 ; -------------------------------------------------------------------------------
 
 KLIST:          DB      'LIST'          ; LIST keyword
-KLOADB:         DB      'LOAD RCP'      ; LOAD BASIC keyword
-KLOADH:         DB      'LOAD HELLO'    ; LOAD HELLO keyword
-KUNLOADB:       DB      'UNLOAD RCP'    ; UNLOAD BASIC keyword
-KUNLOADH:       DB      'UNLOAD HELLO'  ; UNLOAD HELLO keyword
-KCPX:           DB      '.CPX'          ; CPX keyword
-LISTBASIC:      DB      13,10,'RCP   : DIR, ERA, TYPE, REN, USER, CLS, VER, COPY, MOVE',13,10,'$' ; BASIC profile text
-LSTHMSG:        DB      'HELLO : HELLO',13,10,'$' ; HELLO profile text
+KLOAD:          DB      'LOAD '         ; LOAD keyword and separator
+KUNLOAD:        DB      'UNLOAD '       ; UNLOAD keyword and separator
+KEXT:           DB      'CPX'           ; accepted explicit extension
+CPXEND:         DB      '.CPX',13,10,'$' ; displayed profile suffix
 LISTEMPTY:      DB      13,10,'No CPXs loaded',13,10,'$' ; empty-profile text
 LISTERROR:      DB      13,10,'CPX profile error',13,10,'$' ; list-error message
-USEMSG:         DB      13,10,'CPX LIST | LOAD/UNLOAD RCP/HELLO',13,10,'$' ; usage message
+USEMSG:         DB      13,10,'CPX LIST | LOAD/UNLOAD name[.CPX]',13,10,'$' ; usage message
 TPAMSG:         DB      'TPA available: $' ; TPA prefix
 TPAEND:         DB      'K',13,10,'$'   ; TPA suffix
 
@@ -354,8 +376,9 @@ PT_TENS:        DB      0               ; decimal tens scratch
 PT_UNITS:       DB      0               ; decimal units scratch
 ARGSTART:       DW      0               ; command argument pointer
 TOTLEN:         DB      0               ; command-tail length
-MODSEL:         DB      0               ; selected CPX module
 LIST_ANY:       DB      0               ; profile-nonempty flag
+REQUEST:        DB      1,0,0,0         ; Function-176 v1 request envelope
+                DB      '        '      ; normalized CPX stem
 
         INCLUDE cpxvers.inc
 

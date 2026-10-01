@@ -13,7 +13,7 @@ MATRIX = ROOT / "metadata/subsystem-versions.tsv"
 EXPECTED = {
     "BetterCP/M": ("-", "0.3", "completed baseline"),
     "CCP": ("1.0", "1.3", "completed"),
-    "CPX": ("1.0", "1.2", "completed"),
+    "CPX": ("1.0", "1.3", "completed"),
     "BDOS": ("1.2", "1.6", "completed"),
     "RSX": ("1.0", "1.2", "completed"),
     "BIOS": ("1.5", "1.9", "completed"),
@@ -43,7 +43,9 @@ def main() -> None:
     require(RSX_INCLUDE.read_text(encoding="ascii") == render_manager("RSX", "RS_VERSION"),
             "src/utilities/rsxvers.inc is stale")
     banner = f"BetterCP/M {rows['BetterCP/M']['implementation_version']}"
-    for relative in ("src/ccp/ccp.mac", "src/cpx/rcp.mac"):
+    # The visible system banner is owned by the resident command package; the
+    # compact core CCP contains no user-facing sign-on text.
+    for relative in ("src/cpx/rcp.mac",):
         text = (ROOT / relative).read_text(encoding="ascii")
         require(banner in text, f"{relative} does not expose {banner}")
     readme = (ROOT / "README.md").read_text(encoding="utf-8")

@@ -221,12 +221,12 @@ directory utility unless it provides genuine additional value.
 - [x] Migrate the registered production services from provisional Functions
   200 and 202-209 to 176-183, remove HELLO/ECHO proof selectors 201/203 from
   the released namespace, and rebuild every in-tree client. The replacement
-  CPX call uses a versioned, name-based request block and enumerates module
-  metadata without compiling module identities into `CPX.COM` or BDOS.
+  CPX call uses a versioned, name-based request block and enumerates active
+  names without compiling module identities into `CPX.COM` or BDOS.
 - [ ] Implement and qualify the frozen CPX initialization, shutdown, metadata,
   command enumeration, configured ordering, recursion, abort, and capability-
   discovery rules.
-- [ ] Remove BASIC/HELLO-specific knowledge from the CPX manager and support
+- [x] Remove BASIC/HELLO-specific knowledge from the CPX manager and support
   arbitrary valid CPX files.
 - [ ] Implement and qualify the frozen RSX dispatch, chaining, bypass, initialization, shutdown,
   error, and reentrancy ABI.

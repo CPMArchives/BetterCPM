@@ -17,7 +17,7 @@ def main() -> None:
         if not path.is_file():
             raise SystemExit(f"missing CPX manager test input: {path}")
     commands = (
-        "CPX LOAD HELLO", "CPX LIST", "HELLO", "CPX UNLOAD RCP",
+        "CPX LOAD HELLO.CPX", "CPX LIST", "HELLO", "CPX UNLOAD RCP",
         "CPX LIST", "HELLO", "CPX UNLOAD HELLO", "CPX LIST",
         "CPX /V", "HELLO",
     )
@@ -34,12 +34,12 @@ def main() -> None:
         subprocess.run(invocation, cwd=temporary, check=True)
         screen = Path(temporary, "trs80-text-0.bin").read_bytes()[:80 * 24]
     ordered = (
-        b"RCP   : DIR, ERA, TYPE, REN, USER, CLS, VER, COPY, MOVE", b"HELLO : HELLO",
+        b"RCP.CPX", b"HELLO.CPX",
         f"TPA available: {(LAYOUT['TPA'] - 0x100) // 1024 - 0}K".encode(), b"A0>HELLO", b"Hello from HELLO.CPX",
-        b"A0>CPX UNLOAD RCP", b"HELLO : HELLO",
+        b"A0>CPX UNLOAD RCP", b"HELLO.CPX",
         b"A0>HELLO", b"Hello from HELLO.CPX", b"A0>CPX UNLOAD HELLO",
         b"No CPXs loaded", f"TPA available: {(LAYOUT['TPA'] - 0x100) // 1024 - 0}K".encode(),
-        b"Command Processor Extension facility: API 1.0; implementation 1.2",
+        b"Command Processor Extension facility: API 1.0; implementation 1.3",
         b"A0>HELLO",
         b"Hello from BetterCP/M",
     )

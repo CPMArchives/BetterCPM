@@ -316,24 +316,37 @@ protected file-loader supplies the `.CPX` extension and reads the ordinary
 file without depending on the reclaimable CCP or CPXs. Runtime addresses and
 physical allocation blocks are never persisted in the reconstruction table.
 
-### 7.3 Provisional runtime manager
+### 7.3 Runtime manager
 
-`CPX.COM` currently provides `LIST` plus `LOAD` and `UNLOAD` for the known
-BASIC and HELLO modules. The protected file loader itself is now general and
-filename-driven; replacing this manager's numeric BASIC/HELLO control request
-with a name-based request block is the next interface increment.
-Names may be written with or without the `.CPX` extension. `RSX.COM` likewise
-accepts HELLO with or without `.RSX`.
+`CPX.COM` provides `LIST`, `LOAD name[.CPX]`, and `UNLOAD name[.CPX]` for
+arbitrary CPX filename stems. The CCP parses the second command token into its
+second default FCB. `CPX.COM` requires an unqualified, nonblank, non-wildcard
+stem and either a blank extension or `CPX`. It then passes the normalized,
+upper-case, space-padded stem to the protected service. `RSX.COM` likewise
+accepts names with or without `.RSX`.
 Configuration changes affect the active reconstruction table, then terminate
 through WBOOT so fixed resident code performs all relocation. The manager is
 never required to move or overwrite the environment in which it is executing.
 
-BetterCP/M Function 176 mediates CPX profile control. In the current bounded
-manager, `D` selects
-BASIC (`1`) or HELLO (`2`); `E=0/1/2` requests status/load/unload. These
-operations are deliberately narrow and are not a stable third-party ABI. A
-later versioned request-block interface must replace or formally supersede
-them before arbitrary CPXs are supported.
+BetterCP/M Function 176 mediates CPX profile control. `DE` points to this
+12-byte version-1 request block and is preserved:
+
+| Offset | Size | Meaning |
+|---:|---:|---|
+| 0 | 1 | Request version, currently `1` |
+| 1 | 1 | Operation: `0` enumerate, `1` load, `2` unload |
+| 2 | 1 | Zero-based enumeration index; ignored for mutation |
+| 3 | 1 | Reserved; callers write zero |
+| 4 | 8 | Upper-case, space-padded CP/M filename stem |
+
+Enumeration returns `A=1` and copies the indexed stem to bytes 4–11, or
+returns `A=0` at the end. Load and unload return `A=0` on success. Loading an
+already active name and unloading an absent name are successful no-ops. All
+operations return `A=0FFh` for an unsupported request version, operation, or
+capacity failure. The protected handler rejects a blank mutation name but
+otherwise trusts the caller-normalized eight-byte stem; CPX filename and
+extension validation belongs to `CPX.COM`. The active table holds at most four
+names and preserves insertion order.
 
 BetterCP/M BDOS Function 180 takes no parameters and returns `HL` pointing to
 the immutable resident subsystem-version descriptor. Bytes zero through three
@@ -346,16 +359,15 @@ facility versions are owned by and reported through `CPX /V` and `RSX /V`.
 Everything is generated from `metadata/subsystem-versions.tsv`; consumers must
 validate the magic and descriptor major version before using the descriptor.
 
-`CPX LIST` reports each known active module's command inventory and the
-live TPA available from `0100h` to the exclusive boundary published at
-`0006h`. The current BASIC inventory is built into the proof manager. The
-general metadata ABI must let arbitrary CPXs publish a name, version, and
-commands or capabilities without adding module-specific knowledge to the
-manager.
+`CPX LIST` reports each active module filename and the live TPA available from
+`0100h` to the exclusive boundary published at `0006h`. It does not compile
+module identities or command inventories into the manager. Rich CPX metadata
+and capability discovery remain part of the separate retained CPX lifecycle
+contract.
 
-The current reconstruction table uses canonical BASIC-then-HELLO order.
-Loading a second CPX moves the CCP farther downward within reclaimable command
-memory but does not move the protected gateway or reduce the advertised TPA.
+The reconstruction table preserves configured insertion order. Loading another
+CPX moves the CCP farther downward within reclaimable command memory but does
+not move the protected gateway or reduce the advertised TPA.
 
 The retained BetterCP/M 1.0 CPX contract additionally requires:
 
