@@ -52,6 +52,7 @@ CCP_ENTRY:                              ; initialize CCP stack
         LD      DE,CCP_STKTOP-CCPBASE
         ADD     HL,DE
         LD      SP,HL
+        CALL    CPX_INITIALIZE
 
 ; -------------------------------------------------------------------------------
 ; Main Command Loop
@@ -2432,6 +2433,81 @@ CCP_DURST:                              ; restore saved drive/user state
 ; = invokes the corresponding extension handlers.                                =
 ; ================================================================================
 
+; -------------------------------------------------------------------------------
+; Prospective Chain Initialization
+; -------------------------------------------------------------------------------
+
+CPX_INITIALIZE:                        ; initialize before publishing the chain
+        XOR     A
+        LD      (CPXHEAD),A
+        LD      (CPXHEAD+1),A
+        LD      HL,0                   ; rollback-stack sentinel
+        PUSH    HL
+        LD      HL,(CCP_CPXNEW)
+
+CPX_INEXT:                             ; initialize in profile order
+        LD      A,H
+        OR      L
+        JR      Z,CPX_ICOMMIT
+        PUSH    HL                     ; retain base for reverse rollback
+        LD      (CPX_CUR),HL
+        LD      DE,4
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      A,D
+        OR      E
+        JR      Z,CPX_IADVANCE
+        LD      (CPX_ICALL+1),DE
+        LD      HL,(CPX_CUR)           ; lifecycle ABI receives module base
+
+CPX_ICALL:                             ; call relocated initialization entry
+        CALL    0000H
+        OR      A
+        JR      NZ,CPX_IFAIL
+
+CPX_IADVANCE:                          ; retain successful module for rollback
+        LD      HL,(CPX_CUR)
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        JR      CPX_INEXT
+
+CPX_ICOMMIT:                           ; discard rollback stack and publish
+        POP     HL
+        LD      A,H
+        OR      L
+        JR      NZ,CPX_ICOMMIT
+        LD      HL,(CCP_CPXNEW)
+        LD      (CPXHEAD),HL
+        RET
+
+CPX_IFAIL:                             ; exclude the module whose init failed
+        POP     HL
+
+CPX_IROLLBACK:                         ; shut down completed modules in reverse
+        POP     HL
+        LD      A,H
+        OR      L
+        RET     Z                       ; leave the active chain unpublished
+        LD      (CPX_CUR),HL
+        LD      DE,6
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      A,D
+        OR      E
+        JR      Z,CPX_IROLLBACK
+        LD      (CPX_ISCALL+1),DE
+        LD      HL,(CPX_CUR)           ; shutdown also receives module base
+
+CPX_ISCALL:                            ; call relocated shutdown entry
+        CALL    0000H
+        JR      CPX_IROLLBACK
+
 CPX_DISPATCH:                           ; dispatch command through CPX chain
         LD      HL,(CPXHEAD)
 
@@ -3065,6 +3141,7 @@ CCP_LUTRG      EQU     0047H
 CCP_LUACT      EQU     0048H
 CCP_LDRV       EQU     0049H
 CCP_SUBACTIVE  EQU     004AH
+CCP_CPXNEW     EQU     004BH             ; prospective head from the reloader
 
 CPX_CUR:                                ; current CPX descriptor pointer
         DW      0
