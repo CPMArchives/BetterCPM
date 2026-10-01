@@ -96,8 +96,6 @@ CCP_LOOP:                               ; prompt for and dispatch next command
         JP      Z,CCP_TRYUSER
         CP      7
         JP      Z,CCP_TRYUSER
-        CP      4
-        JP      Z,CCP_TRYWARM
 
 CCP_BAD:                                ; fall through to transient command load
         CALL    CCP_LOAD
@@ -1241,15 +1239,6 @@ CCP_TRYDIR:                             ; recognize DIR command
         JP      NZ,CCP_BAD
         CALL    CCP_DIR
         JP      CCP_LOOP
-
-CCP_TRYWARM:                            ; recognize WARM command
-        LD      HL,CCP_DATA
-        LD      DE,CCP_WARMKEY
-        LD      B,4
-        CALL    CCP_EQUAL
-        JP      NZ,CCP_BAD
-        LD      C,0
-        JP      BDOS
 
   ; Patch 2026-09-02: keep the resident USER command deliberately thin.  The
   ; CCP parses only its decimal operand; BDOS Function 32 remains the owner of
@@ -3159,8 +3148,6 @@ CCP_UNKNOWN:                            ; unknown-command message
         DB      10,'?','$'
 CCP_DIRKEY:                             ; DIR command keyword
         DB      'DIR'
-CCP_WARMKEY:                            ; WARM command keyword
-        DB      'WARM'
 CU_KEY:                                 ; USER command keyword
         DB      'USER '
 CCP_KGET:      DB      'GET'            ; GET command keyword

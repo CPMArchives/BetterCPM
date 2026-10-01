@@ -71,9 +71,9 @@ def main() -> None:
     require("A0>" in output and "A:CLS" not in output,
             "transient CLS.COM did not clear the screen and restore the prompt")
 
-    output = run("A:WARM")
+    output = run("WARM")
     require(output.count("A0>") >= 2,
-            "transient WARM.COM did not complete through a fresh prompt")
+            "unqualified transient WARM.COM did not complete through a fresh prompt")
 
     print("completed RCP commands and DIR/USER/CLS/VER/COPY/MOVE/WARM transients passed")
 
