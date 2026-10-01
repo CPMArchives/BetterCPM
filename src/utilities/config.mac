@@ -10,6 +10,7 @@
         ORG 0100H
         LD SP,04000H
         CALL INIT
+        CALL FDBLOAD
         CALL FLOAD
 
 ; ================================================================================
@@ -1137,4 +1138,5 @@ CHECKPH:DB 0                            ; checkph
 PHNOTICE:DB 0                           ; physical notice
         INCLUDE disk/sysgen.inc
         INCLUDE disk/common.inc
+        INCLUDE disk/fdbread.inc
         END
