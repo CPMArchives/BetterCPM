@@ -300,7 +300,7 @@ VFCMP:  LD      A,(DE)                  ; compare verification record
         XOR     A
         RET
 
-  ; The selector shares the last 128 bytes of the reloader carrier. Resident
+  ; The selector shares the last 92 bytes of the reloader carrier. Resident
   ; overlay carriers end with the live system gateway jump, just as the host
   ; composer constructs them.
 
@@ -509,7 +509,7 @@ PARTS:                                  ; system component table
         DW 8
         DB 1
         DB 0,'RSXSEL  BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-        DW BUFFER+8576
+        DW BUFFER+8612
         DW 1
         DB 1
         DB 0,'CONFIG  BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0

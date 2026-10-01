@@ -45,7 +45,8 @@ def relocated(module: bytes, target: int) -> bytes:
     return bytes(image)
 
 
-def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> bytes:
+def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False,
+           cpx_module: bytes | None = None, expect_reject: bool = False) -> bytes:
     module = MODULE.read_bytes()
     allocation = struct.unpack_from("<H", module, 10)[0]
     machine = Z80(b"")
@@ -105,10 +106,15 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
         cpx_allocation = (struct.unpack_from("<H", basic_module, 14)[0] +
                           struct.unpack_from("<H", hello_module, 14)[0])
     elif with_cpx:
-        payload = bytes((0, 0, 4, 0x80, 0xC9, 0))
-        file_module = make_module(name="RCP", version=(0, 0), commands=[],
-                                  linked_base=0x8000, code=payload,
-                                  relocations=[2])
+        if cpx_module is None:
+            payload = bytes((0, 0, 8, 0x80, 0, 0, 0, 0,
+                             0xC9, 0xC9, 0xC9))
+            file_module = make_module(
+                name="RCP", version=(0, 0), commands=[], linked_base=0x8000,
+                code=payload, relocations=[2], init_offset=9,
+                shutdown_offset=10)
+        else:
+            file_module = cpx_module
         machine.mem[0x2000:0x2000 + len(file_module)] = file_module
         machine.mem[(LAYOUT["SYSTEM"] + 0x94)] = 1
         machine.mem[(LAYOUT["SYSTEM"] + 0x96):(LAYOUT["SYSTEM"] + 0x9E)] = b"RCP     "
@@ -138,6 +144,12 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
     except AssertionError as error:
         require("execution limit reached" in str(error),
                 f"reloader failed unexpectedly: {error}")
+    if expect_reject:
+        failure = int(re.findall(r"^([0-9a-f]{4})\s+.*\bCRFAIL:",
+                                 listing, re.MULTILINE | re.IGNORECASE)[-1], 16)
+        require(machine.pc == failure,
+                f"malformed CPX stopped at {machine.pc:04X}h, not CRFAIL")
+        return b""
     expected = relocated(module, target)
     actual = bytes(machine.mem[target:target + len(expected)])
     mismatch = next((index for index, pair in enumerate(zip(actual, expected))
@@ -176,9 +188,15 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False) -> b
                 "HELLO.CPX relocation or payload integrity failed")
     elif with_cpx:
         cpx_base = gateway - 0x100
+        init = struct.unpack_from("<H", file_module, 18)[0]
+        shutdown = struct.unpack_from("<H", file_module, 20)[0]
+        expected_init = 0 if init == 0xFFFF else cpx_base + init
+        expected_shutdown = 0 if shutdown == 0xFFFF else cpx_base + shutdown
         require(machine.word((LAYOUT["SYSTEM"] + 0x86)) == cpx_base and
                 machine.word(cpx_base) == 0 and
-                machine.word(cpx_base + 2) == cpx_base + 4,
+                machine.word(cpx_base + 2) == cpx_base + 8 and
+                machine.word(cpx_base + 4) == expected_init and
+                machine.word(cpx_base + 6) == expected_shutdown,
                 "ordered CPX profile was not restored, relocated, and linked")
     return expected
 
@@ -199,7 +217,16 @@ def main() -> None:
     print(f"disk-backed CCP restoration passed at calculated {calculated:04X}h")
     print(f"relocatable CCP restoration passed at {alternate_target:04X}h")
     run_at(calculated - 0x100, with_cpx=True)
-    print("one-module CPX profile restored before the calculated CCP")
+    print("one-module CPX profile restored with lifecycle entries")
+    bad_payload = bytes((0, 0, 8, 0x80, 0, 0, 0, 0,
+                         0xC9, 0xC9, 0xC9))
+    malformed = bytearray(make_module(
+        name="RCP", version=(0, 0), commands=[], linked_base=0x8000,
+        code=bad_payload, relocations=[2]))
+    struct.pack_into("<H", malformed, 18, len(bad_payload))
+    run_at(calculated - 0x100, with_cpx=True, cpx_module=bytes(malformed),
+           expect_reject=True)
+    print("out-of-range CPX lifecycle entry rejected before CCP publication")
     cpx_allocation = (
         struct.unpack_from("<H", BASIC_MODULE.read_bytes(), 14)[0] +
         struct.unpack_from("<H", HELLO_MODULE.read_bytes(), 14)[0]

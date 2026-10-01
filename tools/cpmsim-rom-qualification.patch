@@ -191,7 +191,7 @@ index dabcaf33..7a27912a 100644
 +	WORD minimum;
 +};
 +static struct qualification_stack qualification_stacks[] = {
-+	{ "loader", 0x0480, 0x0500, 0x0500 },
++	{ "loader", 0x04c0, 0x0500, 0x0500 },
 +	{ "system", 0xd618, 0xd638, 0xd638 },
 +	{ "bdos", 0xd701, 0xd729, 0xd729 }
 +};

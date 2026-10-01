@@ -47,7 +47,7 @@ def relocation_offsets(linked: bytes, alternate: bytes, delta: int) -> list[int]
 
 def make_module(*, name: str, version: tuple[int, int], commands: list[str],
                 linked_base: int, code: bytes, relocations: list[int],
-                entry_offset: int = 4, init_offset: int = NO_ENTRY,
+                entry_offset: int = 8, init_offset: int = NO_ENTRY,
                 shutdown_offset: int = NO_ENTRY, flags: int = 0) -> bytes:
     """Return one BCPX v1 carrier. All public addresses are image offsets."""
     stem = name.upper().encode("ascii")
@@ -56,6 +56,10 @@ def make_module(*, name: str, version: tuple[int, int], commands: list[str],
     allocation = (len(code) + 0xFF) & ~0xFF
     if not code or entry_offset >= len(code) or allocation == 0:
         raise SystemExit("invalid CPX code or entry offset")
+    for label, offset in (("initialization", init_offset),
+                          ("shutdown", shutdown_offset)):
+        if offset != NO_ENTRY and offset >= len(code):
+            raise SystemExit(f"invalid CPX {label} offset")
     relocation_end = RELOCATION_OFFSET + 2 * len(relocations)
     header_size = 512 if relocation_end <= 512 else 1024
     if relocation_end > header_size:

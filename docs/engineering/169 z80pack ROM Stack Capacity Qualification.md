@@ -2,22 +2,23 @@
 
 ## Decision
 
-The three stacks retained by the z80pack 1.0 ROM profile keep their existing
+The three stacks retained by the z80pack 1.0 ROM profile have measured
 capacities. A protected execution campaign measures their high-water use during
 cold boot, command-environment reconstruction, directory work, transient
 execution and WBOOT reconstruction:
 
 | Stack | Range | Capacity | High-water | Reserve |
 | --- | --- | ---: | ---: | ---: |
-| Command reloader | `0480h..04FFh` | 128 | 20 | 108 |
-| System reconstruction | `D618h..D637h` | 32 | 14 | 18 |
+| Command reloader | `04C0h..04FFh` | 64 | 20 | 44 |
+| System reconstruction | `D618h..D637h` | 32 | 22 | 10 |
 | Unified BDOS | `D701h..D728h` | 40 | 26 | 14 |
 
 The independent unified-BDOS recovery campaign also reaches 26 bytes while
 covering its success, ignore and abort paths. No measured stack approaches its
 lower boundary, and the qualification gate requires at least eight bytes of
-reserve. The evidence supports the existing capacities; it does not claim or
-perform a reduction.
+reserve. The BCPX lifecycle-header implementation reassigned 64 bytes of the
+command reloader's original 108-byte measured reserve to executable code. Its
+64-byte stack retains 44 measured spare bytes and exceeds the eight-byte gate.
 
 ## Measurement method
 

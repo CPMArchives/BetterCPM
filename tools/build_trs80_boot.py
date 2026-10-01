@@ -172,12 +172,13 @@ def install(boot: bytes, stage1: bytes, resident: bytes, command: bytes,
     start = SYSTEM_FIRST_LOGICAL_INDEX * SECTOR_SIZE
     raw[start:start + capacity] = resident.ljust(capacity, b"\x00")
     reloader = (ROOT / "build/trs80/ccpreload.bin").read_bytes()
-    if not 0 < len(reloader) <= 896:
+    reloader_capacity = LAYOUT["RELOADER_CAPACITY"]
+    if not 0 < len(reloader) <= reloader_capacity:
         raise ValueError("transient reloader exceeds two reserved sectors")
     reloader_start = (SYSTEM_FIRST_LOGICAL_INDEX + SYSTEM_SECTORS) * SECTOR_SIZE
     selector = (ROOT / "build/trs80/rsxselect.bin").read_bytes()
     reloader_block = bytearray(reloader.ljust(1024, b"\x00"))
-    reloader_block[896:896 + len(selector)] = selector
+    reloader_block[reloader_capacity:reloader_capacity + len(selector)] = selector
     raw[reloader_start:reloader_start + 1024] = reloader_block
     controls = (ROOT / "build/system/config.bin").read_bytes()
     if not 0 < len(controls) <= 1024:

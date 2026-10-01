@@ -261,14 +261,19 @@ contract.
 
 ### 7.1 Implemented dispatcher
 
-The current CCP implements a small forward chain. Its four-byte in-memory
+The current CCP implements a small forward chain. The BCPX version-1 in-memory
 header is:
 
 ```text
 offset  size  meaning
 0       2     address of next CPX header, or zero
 2       2     command-entry address
+4       2     initialization-entry address, or zero
+6       2     shutdown-entry address, or zero
 ```
+
+The loader owns all four words.  A module's executable body follows this
+eight-byte header; modules must not treat the lifecycle words as private state.
 
 The command-entry contract is presently:
 
@@ -371,7 +376,6 @@ not move the protected gateway or reduce the advertised TPA.
 
 The retained BetterCP/M 1.0 CPX contract additionally requires:
 
-- initialization and shutdown calls;
 - access to the CCP command context through a versioned interface;
 - whether and how a CPX may replace or filter core commands;
 - facilities for invoking another command without uncontrolled recursion;
@@ -379,6 +383,49 @@ The retained BetterCP/M 1.0 CPX contract additionally requires:
 - error and abort propagation;
 - output and diagnostic conventions; and
 - capability discovery by other CPXs and transient utilities.
+
+### 7.4 Lifecycle entry points
+
+BCPX version 1 uses the initialization and shutdown offsets at header offsets
+18 and 20.  Each is either `FFFFh`, meaning that the operation is absent, or
+an offset strictly within the executable byte count.  A loader rejects any
+other value before changing the active command environment.
+
+After reconstructing and linking the complete prospective CPX chain, the
+reloader calls each nonzero initialization entry in configured profile order.
+The chain is not published to command dispatch until every initialization has
+succeeded.  On entry, `HL` is the module's runtime base.  The callback returns
+`A=0` for success and a nonzero module-local status for failure.  It restores
+`SP` and preserves `IX` and `IY`; `BC`, `DE`, `HL`, the other flags, and the
+nonzero failure values are not defined by ABI 1.  An initialization callback
+may use documented BDOS and resident-service interfaces but must not invoke
+the command dispatcher.
+
+An initialization failure rejects the prospective command environment.  The
+reconstructor calls shutdown for already initialized modules in reverse order
+and enters the defined command-environment recovery path.  It never publishes
+a partly initialized chain.
+
+A CPX instance is reclaimable command-environment state.  Before transferring
+control to a transient program which may overwrite that state, the CCP calls
+the present shutdown entries in reverse profile order.  This includes the
+transient `CPX.COM`; consequently a CPX removed by that program has already
+received shutdown for its last live instance.  A command handled by the CCP or
+a CPX does not reclaim the environment and does not cause shutdown.
+
+On shutdown entry, `HL` is the module's runtime base.  The callback restores
+`SP`, preserves `IX` and `IY`, and returns normally.  Other registers and flags
+are undefined, and its result cannot veto reclamation.  Shutdown must therefore
+finish its bounded cleanup without relying on the command environment remaining
+live.  If a transient load fails after shutdown has begun, the system uses
+WBOOT reconstruction rather than resuming a partly shut-down chain.
+
+Initialization runs for every freshly reconstructed instance, including cold
+boot and WBOOT reconstruction after transient execution.  Ordinary WBOOT does
+not call shutdown on an image that a transient has already overwritten.  A
+CPX must not retain pointers into loader workspace, the CCP, another CPX, or a
+transient program across either lifecycle boundary.  Indispensable persistent
+state remains outside reclaimable CPX memory behind a documented service.
 
 ## 8. State and relocation
 

@@ -275,6 +275,9 @@ Dispatch order is drive/user navigation, core compatibility commands, the CPX
 chain in configured order, then transient lookup. The frozen CPX contract
 covers metadata and command enumeration, initialization/shutdown,
 chaining/bypass, error/reentrancy, and preservation of explicit profile order.
+Fresh CPX instances initialize in profile order after the complete prospective
+chain has been reconstructed.  Live instances shut down in reverse order
+immediately before a transient program reclaims the command environment.
 BCPX v1 and BRSX v2 define no general declarative module dependencies,
 conflicts, relative-order constraints, or relationship graph. Those facilities
 require a later carrier/metadata revision justified by a concrete use. Some

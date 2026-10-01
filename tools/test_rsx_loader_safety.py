@@ -40,7 +40,7 @@ def assemble_selector(work: Path, name: str, relative: str) -> bytes:
                             "        ASEG\n        ORG     ")
     source = source.replace("        .DEPHASE\n", "")
     return assemble(ASSEMBLER, source, work / f"{name}.bin",
-                    work / f"{name}.lst", LAYOUT["CONFIG"] + 0x380)
+                    work / f"{name}.lst", LAYOUT["RSX_SELECTOR"])
 
 
 def test_model4_selector(work: Path) -> None:
@@ -63,8 +63,8 @@ M4_RLTAB       EQU     3300H
                 cpu.mem[0x100:0x100 + len(image)] = image
                 cpu.mem[STUB:STUB + 4] = (b"\x3E\x55\xB7\xC9" if failure
                                            else b"\xAF\xC9\0\0")
-                cpu.mem[LAYOUT["CONFIG"] + 0x380:
-                        LAYOUT["CONFIG"] + 0x384] = \
+                cpu.mem[LAYOUT["RSX_SELECTOR"]:
+                        LAYOUT["RSX_SELECTOR"] + 4] = \
                     bytes((0x32, MARK & 0xFF, MARK >> 8, 0xC9))
                 cpu.a = selector
                 cpu.z = incoming_zero
@@ -151,7 +151,7 @@ COPY:   PUSH    HL
     first = bytes((index & 0xFF for index in range(512)))
     final = bytes(((index + 0x40) & 0xFF for index in range(512)))
     cpu = Z80(b"")
-    entry = LAYOUT["CONFIG"] + 0x380
+    entry = LAYOUT["RSX_SELECTOR"]
     cpu.mem[entry:entry + len(selector)] = selector
     cpu.mem[LAYOUT["BIOS"] + 51:LAYOUT["BIOS"] + 51 + len(stub)] = stub
     cpu.mem[SOURCE1:SOURCE1 + len(first)] = first
@@ -192,7 +192,7 @@ COPY:
     first = bytes(((index + 0x10) & 0xFF for index in range(0x380)))
     final = bytes(((index + 0x80) & 0xFF for index in range(0x80)))
     cpu = Z80(b"")
-    entry = LAYOUT["CONFIG"] + 0x380
+    entry = LAYOUT["RSX_SELECTOR"]
     cpu.mem[entry:entry + len(selector)] = selector
     cpu.mem[LAYOUT["DISK"] + 15:LAYOUT["DISK"] + 15 + len(stub)] = stub
     cpu.mem[SOURCE1:SOURCE1 + len(first)] = first

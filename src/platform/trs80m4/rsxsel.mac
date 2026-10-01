@@ -12,7 +12,7 @@
 BIOPHREAD      EQU     LY_BIOS+51
 
         CSEG
-        .PHASE  LY_CFG+0380H
+        .PHASE  LY_RSSEL
 
 ; ================================================================================
 ; =                            RSX Utility Selection                            =

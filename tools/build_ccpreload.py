@@ -36,8 +36,9 @@ def main() -> None:
     if len(data) > BASE and data[:BASE] == bytes(BASE):
         data = data[BASE:]
         output.write_bytes(data)
-    if not data or len(data) > 896:
-        raise SystemExit(f"CCP reloader exceeds {BASE:04X}h..{BASE+895:04X}h: {len(data)} bytes")
+    capacity = LAYOUT["RELOADER_CAPACITY"]
+    if not data or len(data) > capacity:
+        raise SystemExit(f"CCP reloader exceeds {BASE:04X}h..{BASE+capacity-1:04X}h: {len(data)} bytes")
     print(f"{hashlib.sha256(data).hexdigest()}  {output.relative_to(ROOT)}")
     print(f"CCP reloader bytes: {len(data)}")
 

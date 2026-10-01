@@ -11,7 +11,7 @@
 DISKREAD        EQU     LY_DISK+15
 
         CSEG
-        .PHASE  LY_CFG+0380H
+        .PHASE  LY_RSSEL
 
 ; ================================================================================
 ; =                            RSX Utility Selection                            =

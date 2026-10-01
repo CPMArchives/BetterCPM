@@ -136,10 +136,10 @@ def main():
                  '--pack',str(rom),'--inventory',str(rom/'rom-references.json'),
                  '--image',str(rom)],check=True)
  reload=z80pack_reloader_source(read('src/platform/trs80m4/ccprelod.mac'))
- loader=asm('reloader',reload,L['RELOADER'],896)
+ loader=asm('reloader',reload,L['RELOADER'],L['RELOADER_CAPACITY'])
  build_rom_boot(out,rom,args.assembler.expanduser().resolve(),
                 fmt.raw_tracks,fmt.raw_track_bytes//128)
- selector=asm('rsxselect',read('src/platform/z80pack/rsxsel.mac'),L['CONFIG']+0x380,128)
+ selector=asm('rsxselect',read('src/platform/z80pack/rsxsel.mac'),L['RSX_SELECTOR'],1024-L['RELOADER_CAPACITY'])
  rom_overlays=rom/'rsx-overlays'
  build_rom_rsx_overlays(rom,rom_overlays,out/'rsxselect.bin',
                         args.assembler.expanduser().resolve())
@@ -157,7 +157,7 @@ def main():
  def put(record,data,capacity):
   if len(data)>capacity:raise ValueError('carrier overflow')
   logical[record*128:record*128+capacity]=data.ljust(capacity,b'\0')
- loader_carrier=loader.ljust(896,b'\0')+selector.ljust(128,b'\0')
+ loader_carrier=loader.ljust(L['RELOADER_CAPACITY'],b'\0')+selector.ljust(1024-L['RELOADER_CAPACITY'],b'\0')
  put(0,boot,128);put(8,resident,52*128);put(60,loader_carrier,1024);put(68,ctl,1024)
  gateway_tail=bytes((0xc3,L['BDOS']&255,L['BDOS']>>8))
  def rsx_overlay(path):return path.read_bytes().ljust(1021,b'\0')+gateway_tail
@@ -210,7 +210,7 @@ def main():
  rom_logical=bytearray(logical)
  rom_loader=(rom/'rom-reloader.bin').read_bytes()
  rom_selector=(rom_overlays/'RSXSEL.BIN').read_bytes()
- rom_loader_carrier=rom_loader.ljust(896,b'\0')+rom_selector.ljust(128,b'\0')
+ rom_loader_carrier=rom_loader.ljust(L['RELOADER_CAPACITY'],b'\0')+rom_selector.ljust(1024-L['RELOADER_CAPACITY'],b'\0')
  rom_logical[60*128:68*128]=rom_loader_carrier
  rom_ccp=(rom/'rom-ccp.rlm').read_bytes()
  rom_logical[108*128:160*128]=rom_ccp.ljust(13*512,b'\0')

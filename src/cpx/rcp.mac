@@ -14,7 +14,7 @@ BDOS            EQU     00005H
         CSEG
         .PHASE  CPXBASE
 
-  ; Required CPX header: WBOOT supplies NEXT and relocates ENTRY.
+  ; Required CPX header: WBOOT supplies NEXT and relocates the three entries.
 
 ; ================================================================================
 ; =                        CPX Entry and Command Dispatch                        =
@@ -28,6 +28,8 @@ BDOS            EQU     00005H
 
 BC_NEXT:        DW      0               ; next CPX descriptor pointer
 BC_ENTRY:       DW      BC_COMMAND      ; RCP command entry pointer
+BC_INIT:        DW      0               ; no initialization entry
+BC_SHUT:        DW      0               ; no shutdown entry
 
 ; -------------------------------------------------------------------------------
 ; Command Recognition

@@ -30,7 +30,7 @@ M4_RSLOAD:                              ; load RSX carrier
         POP BC
         RET NZ
         LD A,B
-        JP LY_CFG+0380H
+        JP LY_RSSEL
 
 M4_OVLOAD:                              ; load control overlay
         LD HL,LY_CFG

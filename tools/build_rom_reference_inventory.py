@@ -22,6 +22,7 @@ DELTAS = (0x101, 0x203)
 SHIFTED_SYMBOLS = (
     "LY_SYS", "LY_BDOS", "LY_EXT", "LY_DISK", "LY_BIOS", "LY_FILE",
     "LY_TAB", "LY_RSTA", "LY_DIR", "LY_BUF", "LY_CFG", "LY_CPX",
+    "LY_RSSEL",
     "LY_LIMIT", "LY_RAMEND", "LY_HIST", "LY_TPA",
 )
 
