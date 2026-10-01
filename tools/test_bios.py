@@ -248,6 +248,13 @@ class Z80:
             elif op == 0xAF:            # XOR A
                 self.a, self.z = 0, True
                 self.carry = False
+            elif op == 0xAC:            # XOR H
+                self.a ^= self.h
+                self.z, self.carry = self.a == 0, False
+            elif op == 0xEE:            # XOR n
+                self.a ^= self.mem[self.pc]
+                self.pc += 1
+                self.z, self.carry = self.a == 0, False
             elif op == 0x37:            # SCF
                 self.carry = True
             elif op == 0x3F:            # CCF
@@ -480,13 +487,17 @@ class Z80:
                 self.setword(self.sp, self.hl)
                 self.hl = value
             elif op == 0x09:            # ADD HL,BC
-                self.hl = (self.hl + self.bc) & 0xFFFF
+                value = self.hl + self.bc
+                self.hl, self.carry = value & 0xFFFF, value > 0xFFFF
             elif op == 0x19:            # ADD HL,DE
-                self.hl = (self.hl + self.de) & 0xFFFF
+                value = self.hl + self.de
+                self.hl, self.carry = value & 0xFFFF, value > 0xFFFF
             elif op == 0x29:            # ADD HL,HL
-                self.hl = (self.hl * 2) & 0xFFFF
+                value = self.hl * 2
+                self.hl, self.carry = value & 0xFFFF, value > 0xFFFF
             elif op == 0x39:            # ADD HL,SP
-                self.hl = (self.hl + self.sp) & 0xFFFF
+                value = self.hl + self.sp
+                self.hl, self.carry = value & 0xFFFF, value > 0xFFFF
             elif op == 0x07:            # RLCA
                 high = (self.a >> 7) & 1
                 self.a = ((self.a << 1) | high) & 0xFF
