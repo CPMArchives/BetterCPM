@@ -119,7 +119,8 @@ is supplied through loadable CPXs rather than added to the core CCP.
   implementations are verified.
 - [x] Provide transient-only `WARM.COM` for scripts and testing. Interactive
   users retain canonical, disk-independent `Ctrl-C` warm boot; `WARM` does not
-  belong in RCP.CPX.
+  belong in RCP.CPX. Engineering Specification 176 removes the transitional
+  core fallback, so unqualified `WARM` now follows ordinary transient lookup.
 - [x] Finalize RCP.CPX by removing SAVE after its CCP migration, renaming CLR to
   CLS, and adding COPY and MOVE with both source/destination and `dest:=source`
   syntax.
