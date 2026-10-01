@@ -33,8 +33,9 @@ become 1.0 requirements by appearing in this backlog.
   The compiler, independent host reader, 107-definition migration, deterministic
   packaging, CONFIG's native framing/CRC gate, and fixed-prefix descriptor
   enumeration are complete. Native object ownership, extension decoding, and
-  unsupported-required status are also complete. Semantic descriptor
-  validation, selection, and normalized binding construction remain.
+  unsupported-required status are also complete, and all 107 admitted
+  descriptors produce byte-exact normalized bindings. Native CONFIG selection,
+  attachment integration, and removal of the legacy runtime catalogue remain.
 - [ ] Complete TIME.COM SET, then qualify both read-only providers and
   `P2DOS.RSX` against the migrated production selectors.
 - [x] Implement and qualify the BetterCP/M ROM/RAM split and protected XIP image.

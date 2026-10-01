@@ -720,6 +720,191 @@ FDBISSUPPORTED:
         OR A
         RET
 
+; A = supported descriptor index -> the established 64-byte normalized BIND.
+; Carry means the descriptor cannot be represented by the current BIOS record.
+FDBBIND:
+        LD (FDBBINDINDEX),A
+        CALL FDBISSUPPORTED
+        RET C
+        SCF
+        RET Z
+        LD A,(FDBBINDINDEX)
+        CALL FDBDESC
+        RET C
+        PUSH HL
+        POP IX
+        LD A,(IX+55)
+        CP 33
+        CCF
+        RET C                           ; binding has 32 sector-ID slots
+        LD HL,BIND
+        LD DE,BIND+1
+        LD BC,63
+        LD (HL),0
+        LDIR
+        PUSH IX
+        POP HL
+        LD DE,40
+        ADD HL,DE
+        LD DE,BIND+1
+        LD BC,15
+        LDIR                            ; standard CP/M DPB
+        LD A,(IX+57)
+        LD (BIND+16),A                  ; cylinders
+        LD A,(IX+55)
+        LD (BIND+17),A                  ; physical sectors
+        LD A,(IX+56)
+        LD (BIND+18),A                  ; maximum sector-size code
+        LD A,(IX+58)
+        CALL FDBFLAGS
+        LD (BIND+19),A
+        LD L,(IX+60)
+        LD H,(IX+61)
+        LD DE,FDFRAM
+        ADD HL,DE
+        LD DE,BIND+20
+        LD C,(IX+55)
+        LD B,0
+        LDIR                            ; ordered sector IDs
+        LD A,(IX+62)
+        OR (IX+63)
+        RET Z
+        LD L,(IX+62)
+        LD H,(IX+63)
+        LD DE,FDFRAM
+        ADD HL,DE
+FDBBINDEXT:
+        LD A,(HL)
+        OR A
+        RET Z
+        LD C,A
+        INC HL
+        LD A,(HL)
+        LD (FDBEXLEN),A
+        INC HL
+        LD A,C
+        CP 081H
+        JR Z,FDBBINDMIXED
+        CP 082H
+        JR Z,FDBBINDCYLINDER
+FDBBINDSKIP:
+        LD A,(FDBEXLEN)
+        LD E,A
+        LD D,0
+        ADD HL,DE
+        JR FDBBINDEXT
+FDBBINDCYLINDER:
+        LD A,(BIND+19)
+        OR 020H
+        LD (BIND+19),A
+        JR FDBBINDSKIP
+FDBBINDMIXED:
+        PUSH HL
+        LD DE,BIND+53
+        LD A,1
+        LD (BIND+52),A
+        XOR A
+        LD (FDBPACKACC),A
+        LD (FDBPACKPOS),A
+        LD B,(IX+55)
+FDBPACKLP:
+        LD A,(HL)
+        LD C,A
+        LD A,(FDBPACKPOS)
+        OR A
+        JR Z,FDBPACKREADY
+        PUSH BC
+        LD B,A
+FDBPACKSHIFT:
+        LD A,C
+        ADD A,A
+        ADD A,A
+        LD C,A
+        DJNZ FDBPACKSHIFT
+        LD A,C
+        POP BC
+        LD C,A
+FDBPACKREADY:
+        LD A,(FDBPACKACC)
+        OR C
+        LD (FDBPACKACC),A
+        LD A,(FDBPACKPOS)
+        INC A
+        AND 3
+        LD (FDBPACKPOS),A
+        JR NZ,FDBPACKNEXT
+        LD A,(FDBPACKACC)
+        LD (DE),A
+        INC DE
+        XOR A
+        LD (FDBPACKACC),A
+FDBPACKNEXT:
+        INC HL
+        DJNZ FDBPACKLP
+        LD A,(FDBPACKPOS)
+        OR A
+        JR Z,FDBPACKDONE
+        LD A,(FDBPACKACC)
+        LD (DE),A
+FDBPACKDONE:
+        POP HL
+        JR FDBBINDSKIP
+
+; Translate normalized FDB flags to the established MM-compatible binding bits.
+FDBFLAGS:
+        LD C,A
+        LD B,0
+        AND 1
+        JR Z,FDBFLAG1
+        LD A,B
+        OR 040H
+        LD B,A
+FDBFLAG1:
+        LD A,C
+        AND 2
+        JR Z,FDBFLAG2
+        LD A,B
+        OR 080H
+        LD B,A
+FDBFLAG2:
+        LD A,C
+        AND 4
+        JR Z,FDBFLAG3
+        LD A,B
+        OR 010H
+        LD B,A
+FDBFLAG3:
+        LD A,C
+        AND 8
+        JR Z,FDBFLAG4
+        LD A,B
+        OR 2
+        LD B,A
+FDBFLAG4:
+        LD A,C
+        AND 010H
+        JR Z,FDBFLAG5
+        LD A,B
+        OR 1
+        LD B,A
+FDBFLAG5:
+        LD A,C
+        AND 020H
+        JR Z,FDBFLAG6
+        LD A,B
+        OR 4
+        LD B,A
+FDBFLAG6:
+        LD A,C
+        AND 040H
+        JR Z,FDBFLAGDONE
+        LD A,B
+        OR 8
+        LD B,A
+FDBFLAGDONE:
+        LD A,B
+        RET
+
 ; A index, DE bitmap base -> HL byte address, A bit mask.
 FDBBITPTR:
         LD C,A
@@ -837,6 +1022,9 @@ FDBOBJPTR:DW 0
 FDBHIGH:DW 0
 FDBOWNBASE:DW 0
 FDBOWNSIZE:DW 0
+FDBBINDINDEX:DB 0
+FDBPACKACC:DB 0
+FDBPACKPOS:DB 0
 FDBBITS:DB 1,2,4,8,16,32,64,128
 FDBTYPES:DS 16
 FDBSUPPORT:DS 32

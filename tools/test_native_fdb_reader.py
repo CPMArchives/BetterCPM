@@ -2,10 +2,11 @@
 """Execute the native FDB header and CRC validator against focused mutations."""
 from pathlib import Path
 import re
+import struct
 import tempfile
 
 from build_ccp import assemble
-from fdf_v1 import compile_file, crc16
+from fdf_v1 import compile_file, crc16, read_fdb
 from test_bios import Z80
 
 
@@ -36,6 +37,7 @@ def main() -> None:
 ENTRY:  CALL FDBVALID
         RET
 FCOUNT: DB 0
+BIND:   DS 64
 FDFRAM  EQU 04000H
 FDFLIM  EQU 07F80H
 """ + validator + "\n        END\n"
@@ -161,6 +163,38 @@ FDFLIM  EQU 07F80H
         cpu.run(names["FDBDESC"])
         assert cpu.carry
 
+        catalogue = read_fdb(payload)
+        size_codes = {128: 0, 256: 1, 512: 2, 1024: 3}
+        for index, decoded in enumerate(catalogue.descriptors):
+            item = decoded.format
+            assert item is not None
+            expected = bytearray(64)
+            expected[1:16] = struct.pack(
+                "<HBBBHHBBHH", item.spt, item.bsh, item.blm, item.exm,
+                item.dsm, item.drm, item.al0, item.al1, item.cks, item.off,
+            )
+            expected[16:20] = bytes((
+                item.cylinders, item.psectors, size_codes[item.secsize],
+                (0x80 if item.encoding == "MFM" else 0) |
+                (0x40 if item.sides == 2 else 0) |
+                (0x20 if item.logical_track == "CYLINDER" else 0) |
+                (0x10 if item.invert else 0) |
+                (0x02 if item.side_order == "SIDE_MAJOR" else 0) |
+                (0x01 if item.side1_direction == "REVERSE" else 0) |
+                (0x04 if item.track_id_mode == "CONTINUOUS" else 0) |
+                (0x08 if item.sector_id_mode == "CONTINUOUS" else 0),
+            ))
+            expected[20:20 + item.psectors] = bytes(item.sector_ids)
+            if item.sector_sizes is not None and len(set(item.sector_sizes)) > 1:
+                expected[52] = 1
+                for sector, size in enumerate(item.sector_sizes):
+                    expected[53 + sector // 4] |= size_codes[size] << (2 * (sector % 4))
+            cpu.a = index
+            cpu.run(names["FDBBIND"])
+            assert not cpu.carry, index
+            actual = cpu.mem[names["BIND"]:names["BIND"] + 64]
+            assert actual == expected, (index, actual.hex(), expected.hex())
+
         for kind, supported in ((0x03, 1), (0x83, 0)):
             changed = bytearray(payload)
             changed[cylinder_ext] = kind
@@ -175,8 +209,12 @@ FDFLIM  EQU 07F80H
             cpu.run(names["FDBISSUPPORTED"])
             assert not cpu.carry
             assert (not cpu.z) == bool(supported)
+            if not supported:
+                cpu.a = 51
+                cpu.run(names["FDBBIND"])
+                assert cpu.carry
 
-    print("Native FDB reader: framing, descriptors, object ownership and extensions pass")
+    print("Native FDB reader: validation and all 107 normalized bindings pass")
 
 
 if __name__ == "__main__":
