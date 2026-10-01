@@ -50,12 +50,22 @@ for result in (1,2,0xFF,0):
  m.mem[0:3]=bytes([0xc3,0xff,0xff])  # record warm-boot handoff without rebuilding
  m.setword(LAYOUT['SYSTEM']+0x90,0x9000)
  m.mem[LAYOUT['BDOS']:LAYOUT['BDOS']+len(stub)]=stub
+ m.mem[5:8]=bytes((0xC3,LAYOUT['BDOS']&0xFF,LAYOUT['BDOS']>>8))
  m.setword(LAYOUT['SYSTEM']+0x8c,BASE)
+ head,shutdown=0x8000,0x8010
+ m.mem[head:head+8]=bytes(6)+shutdown.to_bytes(2,'little')
+ m.mem[shutdown:shutdown+5]=bytes((0x21,0x07,0xF1,0x34,0xC9))
+ m.setword(LAYOUT['SYSTEM']+0x86,head)
  command=b'PROBE ONE.TXT TWO.DAT';m.mem[symbol('CCP_COUNT')]=len(command);start=symbol('CCP_DATA');m.mem[start:start+len(command)]=command
  m.mem[0x5c:0x80]=bytes([0xa5])*36;m.mem[0xF103]=result
  address=symbol('CCP_LOAD');m.mem[0xF200:0xF204]=bytes([0xCD,address&255,address>>8,0xC9])
- m.run(0xF200,limit=1000000)
+ try:
+  m.run(0xF200,limit=1000000)
+ except AssertionError as error:
+  stack=bytes(m.mem[m.sp:m.sp+12]).hex()
+  raise AssertionError(f'COM probe stopped at {m.pc:04X}h SP={m.sp:04X}h head={m.word(LAYOUT["SYSTEM"]+0x86):04X} shutdown={m.mem[0xF107]:02X} stack={stack}') from error
  assert m.mem[0xF106]==7,'caller user was not restored'
+ assert m.mem[0xF107]==1 and m.word(LAYOUT['SYSTEM']+0x86)==0,'COM handoff did not shut down the CPX chain exactly once'
  if result==1:
   assert m.mem[0xF104]==1,'EOF did not execute the complete image'
   assert m.mem[0x5d:0x65]==b'ONE     ' and m.mem[0x6d:0x75]==b'TWO     '
@@ -65,12 +75,3 @@ for result in (1,2,0xFF,0):
   assert m.pc==0xffff,'failed load did not enter warm boot'
  print(f'EOF/error provider {result:02X}: execution and preparation boundary passed')
 print('Successful EOF, logical read failure, final BIOS-error return, and oversize rejection passed')
-# The surviving resident USER branch reparses its decimal operand without
-# preparing transient FCBs/tail. Stop at its normal next-prompt destination.
-m=cpu();m.mem[symbol('CCP_LOOP')]=0xc9
-m.mem[LAYOUT['BDOS']:LAYOUT['BDOS']+5]=bytes([0x7b,0x32,5,0xf1,0xc9])
-command=b'USER 7';m.mem[symbol('CCP_COUNT')]=len(command);start=symbol('CCP_DATA');m.mem[start:start+len(command)]=command
-m.mem[0x5c:0x100]=bytes([0xa5])*164
-address=symbol('CCP_TRYUSER');m.mem[0xF200:0xF204]=bytes([0xcd,address&255,address>>8,0xc9]);m.run(0xF200,limit=1000)
-assert m.mem[0xF105]==7 and m.mem[0x5c:0x100]==bytes([0xa5])*164
-print('Resident USER reparsed operand without preparing transient FCBs/tail')

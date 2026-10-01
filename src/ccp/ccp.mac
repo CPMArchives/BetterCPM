@@ -1496,6 +1496,7 @@ CCP_JUMP:                               ; execute JUMP command
         LD      (CCP_TADDR),DE
         CALL    CCP_ARGSKIP
         CALL    CCP_MKTAIL
+        CALL    CPX_SHUTDOWN
         LD      HL,(0001H)              ; a returning image performs a normal WBOOT
         PUSH    HL
         LD      HL,(CCP_TADDR)
@@ -1503,6 +1504,7 @@ CCP_JUMP:                               ; execute JUMP command
 
 CCP_GO:                                 ; execute GO command
         CALL    CCP_MKTAIL
+        CALL    CPX_SHUTDOWN
         LD      HL,(0001H)
         PUSH    HL
         LD      HL,0100H
@@ -2508,6 +2510,53 @@ CPX_ISCALL:                            ; call relocated shutdown entry
         CALL    0000H
         JR      CPX_IROLLBACK
 
+; -------------------------------------------------------------------------------
+; Pre-Transient Shutdown
+; -------------------------------------------------------------------------------
+
+CPX_SHUTDOWN:                          ; collect active modules in profile order
+        LD      HL,0
+        PUSH    HL                     ; reverse-walk sentinel
+        LD      HL,(CPXHEAD)
+
+CPX_SCOLLECT:                          ; retain each base on the CCP stack
+        LD      A,H
+        OR      L
+        JR      Z,CPX_SNEXT
+        PUSH    HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        JR      CPX_SCOLLECT
+
+CPX_SNEXT:                             ; invoke shutdown in reverse order
+        POP     HL
+        LD      A,H
+        OR      L
+        JR      Z,CPX_SDONE
+        LD      (CPX_CUR),HL
+        LD      DE,6
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      A,D
+        OR      E
+        JR      Z,CPX_SNEXT
+        LD      (CPX_SCALL+1),DE
+        LD      HL,(CPX_CUR)           ; lifecycle ABI receives module base
+
+CPX_SCALL:                             ; call relocated shutdown entry
+        CALL    0000H
+        JR      CPX_SNEXT
+
+CPX_SDONE:                             ; prevent reuse of a shut-down chain
+        XOR     A
+        LD      (CPXHEAD),A
+        LD      (CPXHEAD+1),A
+        RET
+
 CPX_DISPATCH:                           ; dispatch command through CPX chain
         LD      HL,(CPXHEAD)
 
@@ -2722,13 +2771,13 @@ CCP_LTAIL0:                             ; build transient command tail
         LD      DE,LY_BUF               ; stage each record outside the full TPA
         LD      C,26
         CALL    BDOS
-        LD      A,(CCP_LUACT)
-        OR      A
-        LD      A,(CCP_LUSAV)
-        JP      NZ,LY_COMSTART
+        CALL    CCP_LURST               ; lifecycle observes the caller's DU state
         LD      E,0FFH
         LD      C,32
         CALL    BDOS
+        PUSH    AF                      ; protected handoff consumes original user
+        CALL    CPX_SHUTDOWN
+        POP     AF
         JP      LY_COMSTART
 
 CCP_LFAIL:                              ; report transient load failure
