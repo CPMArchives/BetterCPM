@@ -73,6 +73,7 @@ def alternate_build(delta: int) -> dict[str, bytes]:
             "bios": (output / "bios.bin").read_bytes(),
             "fileloader": (clone / "build/system/fileloader.bin").read_bytes(),
             "tables": (output / "tables.bin").read_bytes(),
+            "config": (output / "config.bin").read_bytes(),
         }
 
 
@@ -253,6 +254,11 @@ def build(z80pack_build: Path, pack: Path, output: Path) -> dict[str, object]:
         name: {"base": base, "path": path, "data": path.read_bytes()}
         for name, base, path in component_inputs(z80pack_build)
     }
+    baseline["config"] = {
+        "base": 0xF000,
+        "path": z80pack_build / "config.bin",
+        "data": (z80pack_build / "config.bin").read_bytes(),
+    }
     listings = {
         "gateway": z80pack_build / "gateway.lst",
         "bdos": ROOT / "build/bdos/bdos.lst",
@@ -261,10 +267,12 @@ def build(z80pack_build: Path, pack: Path, output: Path) -> dict[str, object]:
         "bios": z80pack_build / "bios.lst",
         "fileloader": ROOT / "build/system/fileloader.lst",
         "tables": z80pack_build / "tables.lst",
+        "config": z80pack_build / "config.lst",
     }
     shifted = [(alternate_build(delta), delta) for delta in DELTAS]
     live = live_target_ranges()
     references = []
+    overlay_references = []
     discovered_counts = {}
     ignored_mutable_counts = {}
     for name, item in baseline.items():
@@ -274,14 +282,27 @@ def build(z80pack_build: Path, pack: Path, output: Path) -> dict[str, object]:
         ignored = 0
         for offset in offsets:
             source = item["base"] + offset
-            packed = packed_address(manifest, name, source)
-            if packed is None:
-                ignored += 1
-                continue
             target = int.from_bytes(item["data"][offset:offset + 2], "little")
             context = listing_context(listings[name], source)
             kind, destination, owners = resolve_target(
                 manifest, target, str(context["source"]), live)
+            if name == "config":
+                overlay_references.append({
+                    "component": name,
+                    "source_operand": source,
+                    "source_offset": offset,
+                    "overlay_operand": offset,
+                    "old_target": target,
+                    "new_target": destination,
+                    "target_class": kind,
+                    "target_owners": owners,
+                    **context,
+                })
+                continue
+            packed = packed_address(manifest, name, source)
+            if packed is None:
+                ignored += 1
+                continue
             references.append({
                 "component": name,
                 "source_operand": source,
@@ -296,24 +317,32 @@ def build(z80pack_build: Path, pack: Path, output: Path) -> dict[str, object]:
         ignored_mutable_counts[name] = ignored
     counts = Counter(row["component"] for row in references)
     classes = Counter(row["target_class"] for row in references)
+    overlay_discovered_count = discovered_counts.pop("config")
+    ignored_mutable_counts.pop("config")
     result: dict[str, object] = {
         "method": "dual shifted-layout comparison",
         "layout_deltas": list(DELTAS),
         "fixed_ram_symbols": ["LY_RSX", "LY_LOAD", "LY_STKL", "LY_STKT", "LY_SECTS"],
         "discovered_word_counts": discovered_counts,
         "ignored_mutable_operand_counts": ignored_mutable_counts,
-        "reference_counts": {name: counts[name] for name in baseline},
+        "reference_counts": {
+            name: counts[name] for name in baseline if name != "config"
+        },
         "target_class_counts": dict(sorted(classes.items())),
         "reference_count": len(references),
         "unexplained_changed_bytes": 0,
         "unresolved_targets": 0,
         "references": references,
+        "overlay_reference_count": len(overlay_references),
+        "overlay_discovered_word_count": overlay_discovered_count,
+        "overlay_references": overlay_references,
     }
     output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n",
                       encoding="ascii")
     print("ROM reference inventory: " + ", ".join(
-        f"{name} {counts[name]}" for name in baseline) +
-        f"; total {len(references)}; all targets resolved")
+        f"{name} {counts[name]}" for name in baseline if name != "config") +
+        f"; packed total {len(references)}; CONFIG {len(overlay_references)}; "
+        "all targets resolved")
     return result
 
 

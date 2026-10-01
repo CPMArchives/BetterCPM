@@ -27,6 +27,7 @@ FCB2            EQU     006CH
 ; -------------------------------------------------------------------------------
 
 START:                                  ; enter CPX manager
+        LD      SP,STACKTOP             ; protect nested control/print calls
         LD      A,(CMDLEN)
         LD      B,A
         LD      HL,CMDDATA
@@ -381,6 +382,13 @@ REQUEST:        DB      1,0,0,0         ; Function-176 v1 request envelope
                 DB      '        '      ; normalized CPX stem
 
         INCLUDE cpxvers.inc
+
+STACK:                                  ; private transient stack
+        REPT    32
+        DW      0
+        ENDM
+
+STACKTOP:                               ; initial private stack pointer
 
         .DEPHASE
         END     START

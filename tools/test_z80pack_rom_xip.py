@@ -77,6 +77,7 @@ def main() -> None:
         "cpu_write_rejected": True,
         "dma_write_rejected": True,
         "control_change_rejected": True,
+        "cpx_load_list_reconstruct_unload_qualified": True,
         "rsx_load_list_unload_qualified": True,
         "rsx_overlay_file_count": overlays["file_count"],
         "rsx_overlay_reference_count": overlays["reference_count"],
