@@ -322,6 +322,9 @@ class Z80:
             elif op == 0x05:            # DEC B
                 self.b = (self.b - 1) & 0xFF
                 self.z = self.b == 0
+            elif op == 0x0C:            # INC C
+                self.c = (self.c + 1) & 0xFF
+                self.z = self.c == 0
             elif op == 0x03:            # INC BC
                 self.bc = (self.bc + 1) & 0xFFFF
             elif op == 0x0B:            # DEC BC

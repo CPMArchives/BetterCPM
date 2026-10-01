@@ -34,8 +34,8 @@ def main() -> None:
             raise SystemExit(f"missing completed-command test input: {path}")
 
     output = run("CPX LIST")
-    require("RCP   : DIR, ERA, TYPE, REN, USER, CLS, VER, COPY, MOVE" in output,
-            "CPX LIST did not publish the completed RCP inventory")
+    require("RCP.CPX" in output,
+            "CPX LIST did not publish the active RCP module")
 
     output = run("DIR")
     require("RCP      CPX" in output, "RCP DIR did not list the command package")

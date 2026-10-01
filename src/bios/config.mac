@@ -510,107 +510,170 @@ DC_FSTATUS:                             ; return format status
         JP DC_RETURN
 
 CPTCOUNT EQU LY_SYS+094H
-CPTFLAGS EQU LY_SYS+095H
+CPTFLAGS EQU LY_SYS+095H              ; reserved profile byte
 CPTABLE EQU LY_SYS+096H
 
 ; ================================================================================
 ; =                             CPX Profile Control                              =
 ; =                                                                              =
-; = Implements BetterCP/M CPX query, load, and unload operations and rebuilds the =
-; = resident CPX descriptor table in canonical order.                            =
+; = Implements version-1 name-based enumeration, load, and unload over the       =
+; = ordered persistent CPX reconstruction table.                                 =
 ; ================================================================================
 ; -------------------------------------------------------------------------------
 ; CPX Request Dispatch
 ; -------------------------------------------------------------------------------
 
 BF_CPXCTL:                              ; control CPX profile
-        LD      A,D
-        CP      1
-        JR      Z,BCX_BASIC
-        CP      2
-        JR      NZ,BCX_BAD
-        LD      A,2
-        JR      BCX_MADE
-
-BCX_BASIC:                              ; select RCP profile bit
-        LD      A,1
-
-BCX_MADE:                               ; save selected CPX mask
-        LD      (BCX_MVAL),A
-        LD      A,E
+        PUSH    DE                      ; preserve the public request address
+        EX      DE,HL
+        LD      A,(HL)
+        CP      1                       ; request-block version
+        JP      NZ,BCX_BAD
+        INC     HL
+        LD      A,(HL)                  ; operation
+        INC     HL                      ; enumeration index
+        INC     HL                      ; result/detail byte
+        INC     HL                      ; normalized eight-byte stem
+        PUSH    HL
+        POP     IX
         OR      A
-        JR      Z,BCX_QUERY
-        CP      1
+        JR      Z,BCX_ENUM
+        DEC     A
         JR      Z,BCX_LOAD
-        CP      2
-        JR      Z,BCX_UNLOAD
-        LD      A,0FFH
-        JP      EX_RETURN
+        DEC     A
+        JP      NZ,BCX_BAD
+        LD      A,(IX+0)
+        CP      ' '
+        JP      Z,BCX_BAD
+        CALL    BCX_FIND
+        JR      NC,BCX_OK               ; absent unload is idempotent
 
-BCX_QUERY:                              ; query selected CPX
-        LD      A,(BCX_MVAL)
-        LD      B,A
-        LD      A,(CPTFLAGS)
-        AND     B
-        JP      Z,EX_RETURN
-        LD      A,1
-        JP      EX_RETURN
-
-BCX_LOAD:                               ; load selected CPX
-        LD      A,(BCX_MVAL)
-        LD      B,A
-        LD      A,(CPTFLAGS)
-        OR      B
-        LD      (CPTFLAGS),A
-        JR      BCX_REBUILD
+; -------------------------------------------------------------------------------
+; Ordered Profile Removal
+; -------------------------------------------------------------------------------
 
 BCX_UNLOAD:                             ; unload selected CPX
-        LD      A,(BCX_MVAL)
-        CPL
+        LD      A,(CPTCOUNT)
+        SUB     C
+        DEC     A
+        JR      Z,BCX_UCOUNT
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        LD      C,A
+        LD      B,0
+        PUSH    HL
+        LD      DE,8
+        ADD     HL,DE
+        POP     DE
+        LDIR
+
+BCX_UCOUNT:                             ; publish shortened profile
+        LD      A,(CPTCOUNT)
+        DEC     A
+        LD      (CPTCOUNT),A
+        JR      BCX_OK
+
+; -------------------------------------------------------------------------------
+; Ordered Profile Enumeration and Addition
+; -------------------------------------------------------------------------------
+
+BCX_ENUM:                               ; return indexed active CPX name
+        LD      A,(IX-2)
         LD      B,A
-        LD      A,(CPTFLAGS)
-        AND     B
-        LD      (CPTFLAGS),A
-
-; -------------------------------------------------------------------------------
-; Descriptor Table Rebuild
-; -------------------------------------------------------------------------------
-
-BCX_REBUILD:                            ; rebuild CPX descriptor table
-        XOR     A
-        LD      (CPTCOUNT),A
+        LD      A,(CPTCOUNT)
+        CP      B
+        JR      Z,BCX_END
+        JR      C,BCX_END
+        LD      A,B
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        LD      L,A
+        LD      H,0
         LD      DE,CPTABLE
-        LD      A,(CPTFLAGS)
-        AND     1
-        JR      Z,BCX_RHELLO
-        LD      HL,BCX_NBASIC
+        ADD     HL,DE
+        PUSH    IX
+        POP     DE
         LD      BC,8
         LDIR
-        LD      A,(CPTCOUNT)
-        INC     A
-        LD      (CPTCOUNT),A
+        LD      A,1
+        JP      BCX_DONE
 
-BCX_RHELLO:                             ; append HELLO descriptor if enabled
-        LD      A,(CPTFLAGS)
-        AND     2
-        JR      Z,BCX_RDONE
-        LD      HL,BCX_NHELLO
-        LD      BC,8
-        LDIR
-        LD      A,(CPTCOUNT)
-        INC     A
-        LD      (CPTCOUNT),A
-
-BCX_RDONE:                              ; finish descriptor rebuild
+BCX_END:                                ; report end of enumeration
         XOR     A
-        JP      EX_RETURN
+        JP      BCX_DONE
+
+BCX_LOAD:                               ; append caller-normalized nonblank name
+        LD      A,(IX+0)
+        CP      ' '
+        JR      Z,BCX_BAD
+        CALL    BCX_FIND
+        JR      C,BCX_OK                ; duplicate load is idempotent
+        LD      A,(CPTCOUNT)
+        CP      4
+        JR      NC,BCX_BAD
+        EX      DE,HL                   ; DE=free table record
+        PUSH    IX
+        POP     HL
+        LD      BC,8
+        LDIR
+        LD      A,(CPTCOUNT)
+        INC     A
+        LD      (CPTCOUNT),A
+
+BCX_OK:                                 ; report successful mutation
+        XOR     A
+        JR      BCX_DONE
+
+; -------------------------------------------------------------------------------
+; Name Lookup
+; -------------------------------------------------------------------------------
+
+BCX_FIND:                               ; return matching record/index or append slot
+        LD      A,(CPTCOUNT)
+        LD      B,A
+        LD      HL,CPTABLE
+        LD      C,0
+
+BCX_FLOOP:                              ; compare one table record
+        LD      A,B
+        OR      A
+        RET     Z                       ; absent: carry clear, HL=append slot
+        PUSH    BC
+        PUSH    HL
+        PUSH    IX
+        POP     DE
+        LD      B,8
+
+BCX_FBYTE:                              ; compare one stem byte
+        LD      A,(DE)
+        CP      (HL)
+        JR      NZ,BCX_FMISS
+        INC     DE
+        INC     HL
+        DJNZ    BCX_FBYTE
+        POP     HL
+        POP     BC
+        SCF
+        RET
+
+BCX_FMISS:                              ; advance to next table record
+        POP     HL
+        LD      DE,8
+        ADD     HL,DE
+        POP     BC
+        INC     C
+        DJNZ    BCX_FLOOP
+        OR      A                       ; clear carry
+        RET
 
 BCX_BAD:                                ; reject invalid CPX request
         LD      A,0FFH
-        JP      EX_RETURN
 
-BCX_NBASIC:    DB      'RCP     '       ; RCP descriptor name
-BCX_NHELLO:    DB      'HELLO   '       ; HELLO descriptor name
+BCX_DONE:                               ; restore public request address
+        POP     DE
+        JP      EX_RETURN
 
 ; ================================================================================
 ; =                         Configuration Query Services                         =

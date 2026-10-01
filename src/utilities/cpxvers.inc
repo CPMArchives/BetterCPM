@@ -5,4 +5,4 @@
 ; * Do not edit by hand.                                                         *
 ; ********************************************************************************
 
-CX_VERSION: DB 13,10,'Command Processor Extension facility: API 1.0; implementation 1.2','$',13,10,'$' ; CPX facility version string
+CX_VERSION: DB 13,10,'Command Processor Extension facility: API 1.0; implementation 1.3','$',13,10,'$' ; CPX facility version string

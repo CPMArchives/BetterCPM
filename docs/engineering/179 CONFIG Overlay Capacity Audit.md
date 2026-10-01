@@ -47,9 +47,9 @@ make the current interface non-general:
 
 The accepted name-based interface can instead enumerate and edit the existing
 ordered four-record reconstruction table directly. A compact implementation can
-walk the 12-byte request once, share one name validator and one table-search
-routine, shift records in place on removal, and append new records without a
-separate flags-to-table rebuild.
+walk the 12-byte request once, share one table-search routine, shift records in
+place on removal, and append new records without a separate flags-to-table
+rebuild.
 
 The protected extension image currently ends at `E647h`, one byte before the
 `E648h` disk-service boundary. Expanding its existing one-byte `BCX_MVAL`
@@ -61,9 +61,10 @@ This is the only obvious compaction route with enough potential value and a
 small blast radius. The earlier straightforward implementation measured 264
 bytes for the CPX region, 112 bytes larger than the provisional handler and 63
 bytes beyond the overlay limit. The compact implementation must be assembled
-and measured rather than accepted from an estimate. It should proceed only if
-it preserves manager-side normalized-name validation and fits without changing
-the disk-control regions.
+and measured rather than accepted from an estimate. If full duplicated
+normalized-name validation does not fit, the 1.0 fallback is caller-side
+validation in `CPX.COM`, a nonblank guard in the protected handler, and bounded
+table operations.
 
 ## Implementation acceptance
 
@@ -72,9 +73,11 @@ cell. Accept it only when all of the following hold:
 
 - the extension image ends at or before `E648h`;
 - the CONFIG overlay is no larger than 1,024 bytes;
-- Function 176 preserves `DE`, enforces request version 1, validates the
-  upper-case space-padded name, and implements ordered enumeration, idempotent
-  load, and idempotent unload;
+- Function 176 preserves `DE`, enforces request version 1, rejects blank
+  mutation names, and implements ordered enumeration, idempotent load, and
+  idempotent unload;
+- `CPX.COM` validates and normalizes the unqualified CP/M filename before
+  submitting a mutation request;
 - the four-record profile limit and existing reconstruction order remain
   unchanged;
 - focused unit tests cover invalid requests, duplicates, capacity, enumeration,

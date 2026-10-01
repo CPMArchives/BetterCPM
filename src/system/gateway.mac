@@ -241,7 +241,7 @@ CPTCOUNT:                               ; persistent CPX record count
         DB      1                       ; default proof profile loads RCP.CPX
 
 CPTFLAGS:                               ; persistent CPX profile flags
-        DB      1                       ; default: RCP only; bit 1 enables HELLO at runtime
+        DB      0                       ; reserved after name-based profile control
 
 CPTABLE:                                ; persistent CPX reconstruction table
         DB      'RCP     '              ; ordinary RCP.CPX filename stem
