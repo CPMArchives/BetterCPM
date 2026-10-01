@@ -38,7 +38,7 @@ def main() -> None:
             "CPX LIST did not publish the completed RCP inventory")
 
     output = run("USER 5")
-    require("A5>" in output, "resident USER did not select user 5")
+    require("A5>" in output, "RCP USER did not select user 5")
     output = run("A:USER 7")
     require("A7>" in output, "transient USER.COM did not select user 7")
 
