@@ -174,7 +174,8 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False,
         hello_allocation = struct.unpack_from("<H", HELLO_MODULE.read_bytes(), 14)[0]
         basic_base = gateway - basic_allocation
         hello_base = basic_base - hello_allocation
-        require(machine.word((LAYOUT["SYSTEM"] + 0x86)) == basic_base and
+        require(machine.word(0x004B) == basic_base and
+                machine.word((LAYOUT["SYSTEM"] + 0x86)) == 0 and
                 machine.word(basic_base) == hello_base and
                 machine.word(hello_base) == 0,
                 "two-module CPX chain was not restored in table order")
@@ -192,7 +193,8 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False,
         shutdown = struct.unpack_from("<H", file_module, 20)[0]
         expected_init = 0 if init == 0xFFFF else cpx_base + init
         expected_shutdown = 0 if shutdown == 0xFFFF else cpx_base + shutdown
-        require(machine.word((LAYOUT["SYSTEM"] + 0x86)) == cpx_base and
+        require(machine.word(0x004B) == cpx_base and
+                machine.word((LAYOUT["SYSTEM"] + 0x86)) == 0 and
                 machine.word(cpx_base) == 0 and
                 machine.word(cpx_base + 2) == cpx_base + 8 and
                 machine.word(cpx_base + 4) == expected_init and

@@ -34,6 +34,7 @@ MOD_RELOCS      EQU     MODBUF+22
 MOD_HEADERSZ    EQU     MODBUF+24
 MOD_PAYLOAD     EQU     MODBUF+26
 MOD_RELTABLE    EQU     MODBUF+28
+CRHEAD          EQU     004BH           ; prospective CPX head for CCP activation
   ; The directory path is substantially deeper than the old raw-sector reader.
   ; Grow its private stack downward through the unused fixed-core gap.
 CRSTKTOP        EQU     LY_STKT
@@ -67,11 +68,10 @@ CRBODY:                                 ; begin reconstruction body
         JP      NZ,CRFAIL
         LD      HL,(ECB_TPATOP)
         LD      (CRBOUND),HL
-        XOR     A
-        LD      (ECB_CPXHEAD),A
-        LD      (ECB_CPXHEAD+1),A
-        LD      (CRPREV),A
-        LD      (CRPREV+1),A
+        LD      HL,0
+        LD      (ECB_CPXHEAD),HL
+        LD      (CRHEAD),HL
+        LD      (CRPREV),HL
         LD      A,(CPTCOUNT)
         CP      9
         JP      NC,CRFAIL
@@ -131,7 +131,7 @@ CROPEN:                                 ; open configured CPX carrier
         OR      L
         JR      NZ,CRLINK
         LD      HL,(CRBASE)
-        LD      (ECB_CPXHEAD),HL
+        LD      (CRHEAD),HL
         JR      CRLINKD
 
 ; -------------------------------------------------------------------------------

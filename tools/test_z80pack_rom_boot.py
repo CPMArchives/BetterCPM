@@ -32,8 +32,8 @@ def main() -> None:
             manifest["protected_xip_qualified"] is not False):
         raise AssertionError("ROM boot manifest overclaims or omits boot status")
     if (manifest["entry"] != 0xFD77 or manifest["stub_bytes"] != 34 or
-            manifest["reloader_reference_count"] != 45 or
-            manifest["ccp_external_reference_count"] != 63 or
+            manifest["reloader_reference_count"] != 43 or
+            manifest["ccp_external_reference_count"] != 66 or
             manifest["spare_bytes"] != 615):
         raise AssertionError("accepted ROM boot layout changed")
 

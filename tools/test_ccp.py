@@ -269,6 +269,67 @@ def main() -> None:
     require(machine.mem[0x7400] == 0xA5,
             "CPX chain did not pass a declined command to its successor")
 
+    # Initialization walks the prospective chain in profile order and publishes
+    # it only after every callback succeeds.  A later failure must shut down the
+    # completed prefix in reverse order and leave the active head empty.
+    def ordered_callback(expected: int, failure: int = 0) -> bytes:
+        if failure:
+            return bytes((
+                0x3A, 0x00, 0x75,       # LD A,(7500h)
+                0xFE, expected,          # CP expected
+                0x20, 0x03,              # JR NZ,error
+                0x3E, failure, 0xC9,     # LD A,failure / RET
+                0x3E, 0xEE, 0xC9,        # error: LD A,EEh / RET
+            ))
+        return bytes((
+            0x3A, 0x00, 0x75,           # LD A,(7500h)
+            0xFE, expected,              # CP expected
+            0x20, 0x06,                  # JR NZ,error
+            0x3C,                        # INC A
+            0x32, 0x00, 0x75,           # LD (7500h),A
+            0xAF, 0xC9,                  # XOR A / RET
+            0x3E, 0xEE, 0xC9,            # error: LD A,EEh / RET
+        ))
+
+    def install_lifecycle(machine: Z80, bases: list[int], fail_last: bool) -> None:
+        for index, base in enumerate(bases):
+            following = bases[index + 1] if index + 1 < len(bases) else 0
+            init, shutdown = base + 8, base + 32
+            machine.mem[base:base + 8] = (
+                following.to_bytes(2, "little") + bytes(2) +
+                init.to_bytes(2, "little") + shutdown.to_bytes(2, "little"))
+            failure = 7 if fail_last and index == len(bases) - 1 else 0
+            init_code = ordered_callback(index, failure)
+            machine.mem[init:init + len(init_code)] = init_code
+            # The failing module is excluded from rollback.  Successful
+            # predecessors therefore observe values N and N+1 in reverse.
+            rollback_expected = 2 * len(bases) - 3 - index
+            shutdown_code = ordered_callback(rollback_expected)
+            machine.mem[shutdown:shutdown + len(shutdown_code)] = shutdown_code
+        machine.mem[0x004B:0x004D] = bases[0].to_bytes(2, "little")
+
+    machine = cpu()
+    success_chain = [0x8000, 0x8100]
+    install_lifecycle(machine, success_chain, False)
+    call(machine, symbol("CPX_INITIALIZE"))
+    require(machine.mem[0x7500] == 2 and
+            machine.word(LAYOUT["SYSTEM"] + 0x86) == success_chain[0],
+            "CPX initialization did not preserve order and publish atomically")
+
+    machine = cpu()
+    failing_chain = [0x8000, 0x8100, 0x8200]
+    install_lifecycle(machine, failing_chain, True)
+    try:
+        call(machine, symbol("CPX_INITIALIZE"))
+    except AssertionError as error:
+        stack = bytes(machine.mem[machine.sp:machine.sp + 12]).hex()
+        raise AssertionError(
+            f"CPX rollback stopped at {machine.pc:04X}h SP={machine.sp:04X}h "
+            f"log={machine.mem[0x7500]:02X} stack={stack}") from error
+    require(machine.mem[0x7500] == 4 and
+            machine.word(LAYOUT["SYSTEM"] + 0x86) == 0,
+            "CPX initialization failure did not roll back in reverse order")
+
     # Navigation syntax is owned by the CCP but its state is owned by BDOS.
     # This tiny BDOS stand-in exposes four physical drives and records current
     # drive/user state, allowing the three public forms to be checked without
