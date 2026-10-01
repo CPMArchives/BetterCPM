@@ -51,9 +51,8 @@ CONFIG reaches its menu under cpmsim.
 
 ## Remaining Step 4 boundary
 
-The native reader now has enough structural information to decode a selected
-supported descriptor. The next increment constructs the self-contained
-normalized 64-byte BIOS binding, validates the descriptor's DPB/geometry and
-topology relationships, and proves byte equivalence with the existing binding
-for the admitted catalogue. CONFIG's menus remain on `DISK.FDF` until that
-replacement is complete.
+Engineering Specification 190 constructs the self-contained normalized 64-byte
+BIOS binding and proves byte equivalence for all 107 admitted descriptors. The
+BIOS remains the final semantic and hardware-capability validator. CONFIG's
+menus still remain on `DISK.FDF` until native name lookup and binding selection
+replace the legacy path together.
