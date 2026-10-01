@@ -206,11 +206,11 @@ def main() -> None:
         require(bytes(machine.mem[0x005C:0x0068]) == expected,
                 f"drive-qualified default FCB is wrong for {text!r}")
 
-    # Model 4 LF preserves the current column. DIR must issue CR/LF or its
-    # one-name-per-row display becomes a diagonal staircase across the screen.
-    dir_nl = symbol("CCP_DIRNL")
-    require(bytes(machine.mem[dir_nl:dir_nl + 3]) == b"\r\n$",
-            "resident DIR line separator is not CP/M CR/LF")
+    # Model 4 LF preserves the current column. PEEK rows therefore use the
+    # retained shared CR/LF string rather than a bare line feed.
+    newline = symbol("CCP_NEWLINE")
+    require(bytes(machine.mem[newline:newline + 3]) == b"\r\n$",
+            "PEEK line separator is not CP/M CR/LF")
 
     # PEEK appends a fixed-position ASCII field without allocating a row
     # buffer. Printable seven-bit bytes survive; controls and high-bit bytes
@@ -305,7 +305,7 @@ def main() -> None:
         require((machine.mem[0x7500], machine.mem[0x7501]) == (drive, user),
                 f"navigation state is wrong after {command!r}")
 
-    print("CCP parsing, DU execution, navigation, resident DIR, and CPX dispatch passed")
+    print("CCP parsing, DU execution, navigation, monitor commands, and CPX dispatch passed")
 
 
 if __name__ == "__main__":

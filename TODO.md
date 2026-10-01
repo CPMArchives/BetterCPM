@@ -115,8 +115,9 @@ is supplied through loadable CPXs rather than added to the core CCP.
   transient-only feature set.
 - [x] Keep `SAVE` resident-only: a transient `SAVE.COM` would overwrite the
   TPA contents that it is supposed to save.
-- [ ] Remove the transitional command copies from the core CCP only after the
-  CPX implementations and applicable transient fallbacks are verified.
+- [x] Remove the transitional command copies from the core CCP after verifying
+  the CPX implementations and applicable transient fallbacks. Engineering
+  Specifications 175 through 178 record the bounded removal increments.
 - [x] Remove transitional core `VER` now that identical RCP.CPX and `VER.COM`
   implementations are verified.
 - [x] Provide transient-only `WARM.COM` for scripts and testing. Interactive
