@@ -34,8 +34,9 @@ become 1.0 requirements by appearing in this backlog.
   packaging, CONFIG's native framing/CRC gate, and fixed-prefix descriptor
   enumeration are complete. Native object ownership, extension decoding, and
   unsupported-required status are also complete, and all 107 admitted
-  descriptors produce byte-exact normalized bindings. Native CONFIG selection,
-  attachment integration, and removal of the legacy runtime catalogue remain.
+  descriptors produce byte-exact normalized bindings. Native CONFIG selection
+  and attachment are integrated under cpmsim. Dead CONFIG text-reader removal,
+  release-media cleanup, and cross-platform closure remain.
 - [ ] Complete TIME.COM SET, then qualify both read-only providers and
   `P2DOS.RSX` against the migrated production selectors.
 - [x] Implement and qualify the BetterCP/M ROM/RAM split and protected XIP image.
