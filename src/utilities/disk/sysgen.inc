@@ -2,7 +2,7 @@
 ; Keep SYSGEN out of the resident system. The reference file belongs to
 ; this particular build; compare its fixed bytes before touching a track.
 ; 4000 = file header, 4080 = original, 6000 = proposed, 8000 = readback.
-; These buffers borrow the format catalogue. FLOAD puts it back on exit.
+; These buffers borrow the format catalogue. FDBLOAD puts it back on exit.
 SGHEAD  EQU 04000H
 SGOLD   EQU 04080H
 SGNEW   EQU 06000H
@@ -285,7 +285,7 @@ SGREPORT:CALL CRLF
 SGEXIT: LD DE,1
         LD C,37
         CALL BDOS
-        CALL FLOAD
+        CALL FDBLOAD
         JP MAIN
 SGREADF:LD C,26
         CALL BDOS

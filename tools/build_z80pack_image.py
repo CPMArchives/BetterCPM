@@ -175,7 +175,6 @@ def main():
  for name,data in cpm_tools_files(ROOT):files.append((name,data))
  for name in ('HELLO.RSX','ECHO.RSX','BATCHIO.RSX','FDF.RSX','P2DOS.RSX','ZPRTC.RSX','STATEFUL.RSX'):files.append((name,(ROOT/'build/rsx'/name).read_bytes()))
  for name in ('R3PLAN.RSX','R3SLOTS.RSX','R3SNAP.RSX','R3CARR.RSX','R3META.RSX','R3COORD.RSX','R3PROF.RSX','R3KCTX.RSX','R3KEEP.RSX','R3KPRE.RSX','R3FINAL.RSX','R3DROP.RSX','R3MOVE.RSX','R3COMIT.RSX','R3RESOL.RSX'):files.append((name,(ROOT/'build/system'/name).read_bytes()))
- files.append(('DISK.FDF',(ROOT/'third_party/montezuma/DISK.FDF').read_bytes()))
  files.append(('DISK.FDB',build_fdf_catalog().read_bytes()))
  # A small transient proves that load and warm return use this target BIOS.
  hello=bytes([0x11,0x0b,1,0x0e,9,0xcd,5,0,0xc3,0,0])+b'BetterCP/M on z80pack\r\n$'

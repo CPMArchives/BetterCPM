@@ -45,8 +45,6 @@ closure step.
 
 ## Remaining Step 4 boundary
 
-Legacy parsing routines remain in the shared utility include even though CONFIG
-no longer calls them; DUP and SYSGEN still use the shared source. Release media
-also still carry `DISK.FDF`. The next increment must separate or conditionally
-omit CONFIG's dead text-reader code, stop packaging the runtime text catalogue,
-and complete available cross-platform and negative catalogue qualification.
+Engineering Specification 192 removes CONFIG's dead legacy reader, changes
+DUP's catalogue-name lookup to FDB, restores the FDB after embedded SYSGEN use,
+and removes the transitional runtime text catalogue from release media.
