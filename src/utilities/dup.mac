@@ -8,6 +8,7 @@
 
         ASEG
         ORG 0100H
+FDBMODE EQU 1
         LD SP,04000H
         CALL INIT
         LD B,0
@@ -33,7 +34,7 @@
         DEC HL
         DEC HL
         LD (BIOBASE),HL
-        CALL FLOAD
+        CALL FDBLOAD
   ; MM kept the formatter at hand. Save our adapter's control image once,
   ; instead of visiting drive A and restoring the head on every track.
         LD HL,(FASTFMT)
@@ -156,7 +157,7 @@ DFKNOWN:                                ; dfknown
         LD A,(DPHYS)
         CALL DECOUT
         CALL CRLF
-        CALL CURNAME
+        CALL FDBCURNAME
         CALL CRLF
         XOR A
         LD (DCYL),A
@@ -1628,4 +1629,5 @@ DSEC:   DB 0                            ; dsec
 MFM:    DB 0                            ; mfm
 STRPTR: DW 0                            ; strptr
         INCLUDE disk/common.inc
+        INCLUDE disk/fdbread.inc
         END

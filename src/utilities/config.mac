@@ -8,6 +8,7 @@
 
         ASEG
         ORG 0100H
+FDBMODE EQU 1
         LD SP,04000H
         CALL INIT
         CALL FDBLOAD

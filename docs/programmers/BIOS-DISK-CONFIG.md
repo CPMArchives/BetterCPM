@@ -41,10 +41,12 @@ track order, FM/MFM and inverted data are supported. Optional FDF.RSX handles ot
 sector sizes. Five catalogue records still fail consistency validation. Native ZSM4 parity for the new disk
 module and real-hardware timing remain unverified.
 
-DISK.FDF is the format source for CONFIG.COM. The BIOS
-accepts decoded records and does not open or parse text files. Do not translate
-through diskdefs or guess omitted physical parameters. The current MM-style
-system image retains its existing 80-track, double-sided, 790K default profile.
+`metadata/DISK.FDF` is the authoritative host-side source and is compiled into
+the runtime `DISK.FDB`. CONFIG and DUP read the compiled database. The BIOS
+accepts normalized bindings and does not open or parse either catalogue format.
+Do not translate through diskdefs or guess omitted physical parameters. The
+current MM-style system image retains its existing 80-track, double-sided,
+790K default profile.
 
 ## Calling convention
 
@@ -126,7 +128,7 @@ shared workspace. ABI version 5 identifies this changed table layout.
 DUP supplies a complete WD write-track stream, including address marks, CRC
 commands, sector IDs and data/gap bytes. Geometry and stream-buffer bounds are
 checked; the BIOS does not validate the stream's internal contents. DUP must
-construct it from the chosen DISK.FDF definition, including sector size and
+construct it from the chosen normalized FDB binding, including sector size and
 inversion. Supply trailing gap bytes beyond one revolution: index completion
 ends the command successfully, whereas exhausting the stream first fails.
 Formatting a disk is repeated operation-5 calls for every cylinder/side;
@@ -188,7 +190,8 @@ bytes, plus the shared 1024-byte manager when loaded alone.
 Cylinder-based SPT is recognized during extended normalization and marked
 internally with bit 20h. MM SUPER is normalized into five 1024-byte sectors
 and one 512-byte sector. Arbitrary explicit two-bit size maps use the same
-mapping path; their sum must agree with SPT. The original DISK.FDF is unchanged.
+mapping path; their sum must agree with SPT. The authoritative FDF source is
+unchanged by runtime normalization.
 
 ## ABI 5 transient control-image cache
 

@@ -22,11 +22,12 @@ it does not reconstruct the format from the catalogue name. DUP verifies each tr
 the same sector-reading path; see the [DUP guide](../programmers/CONFIG-DUP.md). A: and physical drive 0 are protected against formatting.
 Changes survive utility exits/warm boots, but not a cold boot. Named-file
 saving, capacity calculations, editable gaps, and an easier derived-parameter
-mode remain future work. DISK.FDF is unchanged; no permanent compatibility
-commitment is implied by using it during development.
+mode remain future work. The authoritative FDF source is unchanged; no
+permanent compatibility commitment is implied by using the workbench during
+development.
 
-The catalogue contains the 16 recovered MM built-ins followed by 96 DISK.FDF
-entries. Pages contain 16 formats, with comma/< and period/> navigation.
+The compiled FDB catalogue contains 107 admitted definitions. Pages contain 16
+formats, with comma/< and period/> navigation.
 Mixed lengths and extended side-order mappings use optional FDF.RSX:
 `RSX LOAD FDF` before configuration; `RSX UNLOAD FDF` when finished.
 Unloading detaches dependent non-system bindings before releasing the module.

@@ -9,12 +9,12 @@ atomic replacement prevent a failed compilation from replacing a previously
 valid output.
 
 Both release-target media builders install that exact 8,320-byte `DISK.FDB` as
-an ordinary user-zero CP/M file. During the transition, they also retain the
-historical `DISK.FDF` required by the current CONFIG implementation. The native
-build disk carries `DISK.FDB` so a system built from it has the runtime catalogue
-available for the forthcoming CONFIG reader. It does not carry the 51 KiB host
-FDF source: BetterCP/M 1.0 has no native FDF compiler, and that unnecessary copy
-would reduce the 800K build disk to two free allocation blocks.
+an ordinary user-zero CP/M file. This specification originally retained the
+historical `DISK.FDF` during CONFIG's transition. Engineering Specification 192
+completed the native reader and removed that runtime text copy. The native
+build disk also carries `DISK.FDB`; it does not carry the 51 KiB host FDF source.
+BetterCP/M 1.0 has no native FDF compiler, and that unnecessary copy would
+reduce the 800K build disk to two free allocation blocks.
 
 ## Focused evidence
 
@@ -32,7 +32,6 @@ source copy.
 
 ## Boundary
 
-This increment supplies and packages the catalogue only. CONFIG still reads the
-historical text file and cannot select FDB descriptors yet. Replacing that path
-with the validated FDB reader and normalized-binding transaction is the next
-Step 4 implementation increment.
+This increment supplied and packaged the catalogue. Engineering Specifications
+187 through 192 subsequently completed native validation, selection, binding,
+runtime transition, and release-media cleanup.

@@ -18,7 +18,7 @@ EXPECTED_LINES = (
     b"A: DIR      COM : USER     COM : CLS      COM : VER      COM",
     b"A: COPY     COM : MOVE     COM : WARM     COM : CONFIG   COM",
     b"A: DUP      COM : SYSGEN   COM : STAT     COM : SUBMIT   COM",
-    b"A: XSUB     COM : DISK     FDF : FDF      RSX : RCP      CPX",
+    b"A: XSUB     COM : DISK     FDB : FDF      RSX : RCP      CPX",
     b"A: HELLO    CPX : HELLO    RSX : ECHO     RSX : BATCHIO  RSX",
     b"A: BDOSPRB  COM : COMINFO  COM : DISKEDIT COM : DISKINFO COM",
     b"A: DPBCHK   COM : FSCK     COM : SYSINFO  COM : TOOLS    DOC",

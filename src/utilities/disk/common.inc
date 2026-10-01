@@ -228,6 +228,7 @@ ERROR:  LD HL,ERRMSG
         JP PAUSE
 DONE:   JP 0
 
+        IF FDBMODE EQ 0
 ; Read DISK.FDF on the current drive, with A: as the fallback.
 ; A bounded RAM copy permits paging both ways without reopening the disk.
 FLOAD:  LD HL,BUILTINS
@@ -405,6 +406,7 @@ PSKEW:  PUSH BC
         DJNZ PSKEW
         OR A
         RET
+        ENDIF
 ; Decimal word scanner. Carry on overflow, bad delimiter, or premature EOF.
 PNUM:   LD HL,(PARPTR)
 PSPACE: LD A,(HL)
@@ -467,6 +469,7 @@ POK:    INC HL
 PBAD:   SCF
         RET
 
+        IF FDBMODE EQ 0
 ; Show the current binding's name if it occurs in the catalogue.
 ; CURB is kept separate because FPARSE uses BIND as scratch.
 CURNAME:LD A,(CURB)
@@ -545,6 +548,7 @@ CUNEXT: LD A,(FINDIDX)
         JP PUTS
 CUNDEF: LD HL,UNDEF
         JP PUTS
+        ENDIF
 WAITMSG:DB 13,10,'Push ENTER for menu.',0
 CHMSG:  DB 'Your choice: [',0
 LBRACK: DB '[ ',0
@@ -552,20 +556,22 @@ RBRACK: DB ' ] ',0
 ERRMSG: DB 'Invalid or unsupported setting; no change made.',13,10,0
 ABIMSG: DB 'Requires BetterCP/M disk BIOS ABI 5 (four drives).',13,10,0
 SMALLMSG:DB 'Not enough transient memory (42K required).',13,10,0
-FNOMSG: DB 'Cannot open DISK.FDF on current drive or A:.',13,10,0
-FBADMSG:DB 'DISK.FDF is empty, unreadable or too large.',13,10,0
 MAGIC:  DB 'BDCF',5,4,4,64
 CUSTOM: DB 'Current BIOS format (not listed in format catalogue)',0
 UNDEF:  DB 'Undefined disk drive',0
+        IF FDBMODE EQ 0
+FNOMSG: DB 'Cannot open DISK.FDF on current drive or A:.',13,10,0
+FBADMSG:DB 'DISK.FDF is empty, unreadable or too large.',13,10,0
 WIDTHS: DB 2,1,1,1,2,2,1,1,2,2,1,1,1,1
 FDFCB:  DB 0,'DISK    FDF'
         DS 24
-FCOUNT: DB 0
 FPOS:   DW 0
 FSTOP:  DW 0
+FINDEX: DS 256
+        ENDIF
+FCOUNT: DB 0
 PARPTR: DW 0
 FINDIDX:DB 0
-FINDEX: DS 256
 BIND:   DS 64
 CURB:   DS 64
 REQ:    DS 80
@@ -577,4 +583,6 @@ DIGIT:  DB 0
 
 HASREV: DB 0
 
+        IF FDBMODE EQ 0
         INCLUDE disk/builtins.inc
+        ENDIF

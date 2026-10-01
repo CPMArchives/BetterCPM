@@ -42,6 +42,7 @@ def make_probe(work):
     rows+=records()
     text='''        ASEG
         ORG 100H
+FDBMODE EQU 0
         LD SP,4000H
         CALL INIT
         CALL FLOAD
@@ -186,7 +187,7 @@ def format_test(work):
 
 
 def settings_probe(work):
-    code=['        ASEG','        ORG 100H','        LD SP,4000H']
+    code=['        ASEG','        ORG 100H','FDBMODE EQU 0','        LD SP,4000H']
     expected=[(1,1,bytes([5,40,1,1,3,20])),(3,1,bytes([1])+records()[0][1][1:]),
               (3,2,bytes([1])+records()[5][1][1:])]
     for i,(op,index,data) in enumerate(expected):

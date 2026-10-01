@@ -6,13 +6,12 @@ transient space; allow 51 KiB for DUP and its private copy buffer. SYSGEN is
 under 3 KiB. They add no resident allocation: maximum TPA remains
 54,273 bytes when no RSXs are installed.
 
-Run `CONFIG` or `DUP` at the command prompt. Keep `DISK.FDF` on the current
-drive or A:. The utilities load its text at run time; they do not translate
-through cpmtools diskdefs. The shipped, unmodified catalogue has 96 entries.
-Sixteen recovered MM built-in formats precede those entries, giving 112 choices.
-The built-ins remain available when DISK.FDF is missing.
-An existing BIOS binding not found in the file is identified as an unlisted
-current BIOS format rather than assigned a guessed name.
+Run `CONFIG` or `DUP` at the command prompt. Keep the compiled `DISK.FDB` on
+the current drive or A:. Both utilities validate and use its 107 admitted
+definitions directly; they do not parse the authoritative FDF source or
+translate through cpmtools diskdefs. An existing BIOS binding not found in the
+database is identified as an unlisted current BIOS format rather than assigned
+a guessed name.
 
 ## CONFIG
 
@@ -196,12 +195,12 @@ contract, so it is not an assertion of support for every possible controller.
 ## Build and tests
 
 `python3 tools/build_disk_utilities.py` creates all three COM files. The complete
-build includes them, the transitional historical `DISK.FDF`, and the compiled
-107-entry `DISK.FDB` in the boot image automatically. Current CONFIG continues
-to use the historical file until its FDB reader is integrated.
+build includes them and the compiled 107-entry `DISK.FDB` in the boot image
+automatically. The historical FDF catalogues remain host-side source and
+conversion evidence; release media no longer carry the transitional text file.
 
-`python3 tools/test_disk_utilities.py` checks the assembly parser against all
-112 records and verifies paging, inverse headings, copy/check menus and exits.
+`python3 tools/test_disk_utilities.py` retains a reference check of the legacy
+assembly parser and verifies paging, inverse headings, copy/check menus and exits.
 Additional `settings`, `format`, and `reject` arguments run the corresponding
 emulator scenarios. Every run uses private disk copies. Screen captures are
 retained under `build/test-results/disk-utilities/`.
