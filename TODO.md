@@ -115,7 +115,7 @@ is supplied through loadable CPXs rather than added to the core CCP.
   TPA contents that it is supposed to save.
 - [ ] Remove the transitional command copies from the core CCP only after the
   CPX implementations and applicable transient fallbacks are verified.
-- [ ] Remove transitional core `VER` now that identical RCP.CPX and `VER.COM`
+- [x] Remove transitional core `VER` now that identical RCP.CPX and `VER.COM`
   implementations are verified.
 - [x] Provide transient-only `WARM.COM` for scripts and testing. Interactive
   users retain canonical, disk-independent `Ctrl-C` warm boot; `WARM` does not

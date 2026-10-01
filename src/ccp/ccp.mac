@@ -96,8 +96,6 @@ CCP_LOOP:                               ; prompt for and dispatch next command
         JP      Z,CCP_TRYUSER
         CP      7
         JP      Z,CCP_TRYUSER
-        CP      3
-        JP      Z,CCP_TRYVER
         CP      4
         JP      Z,CCP_TRYWARM
 
@@ -1234,17 +1232,6 @@ CCP_NAVNO:                              ; report non-navigation command
 ; -------------------------------------------------------------------------------
 ; Built-In Command Recognition
 ; -------------------------------------------------------------------------------
-
-CCP_TRYVER:                             ; recognize VERSION command
-        LD      HL,CCP_DATA
-        LD      DE,CCP_VERKEY
-        LD      B,3
-        CALL    CCP_EQUAL
-        JR      NZ,CCP_TRYDIR
-        LD      DE,CCP_VERSION
-        LD      C,9
-        CALL    BDOS
-        JP      CCP_LOOP
 
 CCP_TRYDIR:                             ; recognize DIR command
         LD      HL,CCP_DATA
@@ -3170,10 +3157,6 @@ CCP_PROMPT:                             ; prompt prefix string
         DB      13,10,'$'
 CCP_UNKNOWN:                            ; unknown-command message
         DB      10,'?','$'
-CCP_VERSION:                            ; version string
-        DB      10,'BetterCP/M 0.3','$'
-CCP_VERKEY:                             ; VERSION command keyword
-        DB      'VER'
 CCP_DIRKEY:                             ; DIR command keyword
         DB      'DIR'
 CCP_WARMKEY:                            ; WARM command keyword
