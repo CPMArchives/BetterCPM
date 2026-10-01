@@ -207,6 +207,51 @@ FDBCRCNEXT:
 ; Validate the fixed prefix of every descriptor.  Required-extension semantics
 ; and binding construction are deliberately left to the next reader layer.
 FDBDALL:
+; Place the byte-ownership bitmap above the loaded catalogue. Its size is one
+; bit per possible FDB byte; reject a catalogue that leaves no validation room.
+        LD HL,(FDBLEN)
+        LD DE,7
+        ADD HL,DE
+        RET C
+        SRL H
+        RR L
+        SRL H
+        RR L
+        SRL H
+        RR L
+        LD (FDBOWNSIZE),HL
+        EX DE,HL
+        LD HL,FDFLIM
+        OR A
+        SBC HL,DE
+        LD (FDBOWNBASE),HL
+        LD HL,FDFRAM
+        LD DE,(FDBLEN)
+        ADD HL,DE
+        LD DE,(FDBOWNBASE)
+        OR A
+        SBC HL,DE
+        JR C,FDBOWNFIT
+        JR Z,FDBOWNFIT
+        SCF
+        RET
+FDBOWNFIT:
+        LD HL,(FDBOWNBASE)
+        LD DE,(FDBOWNBASE)
+        INC DE
+        LD BC,(FDBOWNSIZE)
+        DEC BC
+        LD (HL),0
+        LDIR
+        LD HL,FDBSUPPORT
+        LD DE,FDBSUPPORT+1
+        LD BC,31
+        LD (HL),0FFH
+        LDIR
+        LD HL,(FDBPOOL)
+        LD DE,FDFRAM
+        ADD HL,DE
+        LD (FDBHIGH),HL
         XOR A
         LD (FDBINDEX),A
 FDBDALP:
@@ -214,7 +259,7 @@ FDBDALP:
         LD B,A
         LD A,(FCOUNT)
         CP B
-        RET Z
+        JP Z,FDBDEND
         LD A,B
         CALL FDBDESC
         RET C
@@ -239,7 +284,7 @@ FDBDALP:
         RET NZ                          ; duplicated count must agree
         LD A,(IX+56)
         CP 4
-        JR NC,FDBDESCBAD
+        JP NC,FDBDESCBAD
         LD A,(IX+57)
         OR A
         SCF
@@ -252,12 +297,12 @@ FDBDALP:
         JR Z,FDBNOEXT
         LD A,C
         OR A
-        JR Z,FDBDESCBAD                 ; nonzero offset requires flag
+        JP Z,FDBDESCBAD                 ; nonzero offset requires flag
         JR FDBIDS
 FDBNOEXT:
         LD A,C
         OR A
-        JR NZ,FDBDESCBAD                ; flag requires nonzero offset
+        JP NZ,FDBDESCBAD                ; flag requires nonzero offset
 FDBIDS: LD E,(IX+60)
         LD D,(IX+61)
         PUSH DE
@@ -272,16 +317,363 @@ FDBIDS: LD E,(IX+60)
         LD H,0
         ADD HL,DE
         RET C
+        PUSH HL                          ; end offset
         LD DE,(FDBLEN)
         OR A
         SBC HL,DE
+        POP HL
         JR C,FDBIDSGOOD
-        JR NZ,FDBDESCBAD                ; end may equal file length
+        JR Z,FDBIDSGOOD                 ; end may equal file length
+        JP FDBDESCBAD
 FDBIDSGOOD:
+        PUSH HL                          ; end offset
+        LD DE,FDFRAM
+        ADD HL,DE
+        EX DE,HL                         ; DE = end address
+        POP HL                           ; discard numeric end
+        LD L,(IX+60)
+        LD H,(IX+61)
+        PUSH DE
+        LD DE,FDFRAM
+        ADD HL,DE                        ; HL = sector-ID address
+        POP DE
+        PUSH HL
+        PUSH DE
+        LD B,(IX+55)
+        CALL FDBIDUNIQUE
+        POP DE
+        POP HL
+        RET C
+        CALL FDBOBJADD
+        RET C
+        LD A,(IX+62)
+        OR (IX+63)
+        JR Z,FDBDESCOK
+        LD L,(IX+62)
+        LD H,(IX+63)
+        LD DE,FDFRAM
+        ADD HL,DE
+        CALL FDBEXTENSIONS
+        RET C
+FDBDESCOK:
         LD A,(FDBINDEX)
         INC A
         LD (FDBINDEX),A
-        JR FDBDALP
+        JP FDBDALP
+
+FDBDEND:
+; The final referenced byte determines the sole permitted record-aligned size.
+        LD HL,(FDBHIGH)
+        LD DE,FDFRAM
+        OR A
+        SBC HL,DE
+        LD DE,127
+        ADD HL,DE
+        RET C
+        LD A,L
+        AND 080H
+        LD L,A
+        LD DE,(FDBLEN)
+        OR A
+        SBC HL,DE
+        JP NZ,FDBDESCBAD
+; Every nonzero pool byte must belong to one claimed object.
+        LD HL,(FDBPOOL)
+        LD DE,FDFRAM
+        ADD HL,DE
+        LD (FDBOBJPTR),HL
+FDBOWNCHECK:
+        LD HL,(FDBOBJPTR)
+        LD DE,FDFRAM
+        OR A
+        SBC HL,DE
+        LD DE,(FDBLEN)
+        OR A
+        SBC HL,DE
+        JR Z,FDBOWNDONE
+        LD HL,(FDBOBJPTR)
+        LD A,(HL)
+        OR A
+        JR Z,FDBOWNNEXT
+        CALL FDBOWNPTR
+        AND (HL)
+        SCF
+        RET Z
+FDBOWNNEXT:
+        LD HL,(FDBOBJPTR)
+        INC HL
+        LD (FDBOBJPTR),HL
+        JR FDBOWNCHECK
+FDBOWNDONE:
+        OR A
+        RET
+
+; Require every sector ID in [HL,HL+B) to be distinct.
+FDBIDUNIQUE:
+        LD A,B
+        OR A
+        RET Z
+FIUOUT:
+        LD A,(HL)
+        PUSH HL
+        PUSH BC
+        INC HL
+        DEC B
+FIUIN:
+        JR Z,FIUNXT
+        CP (HL)
+        JR Z,FIUBAD
+        INC HL
+        DJNZ FIUIN
+FIUNXT:
+        POP BC
+        POP HL
+        INC HL
+        DJNZ FIUOUT
+        OR A
+        RET
+FIUBAD:
+        POP BC
+        POP HL
+        SCF
+        RET
+
+; Parse and validate one extension list beginning at HL, then own its complete
+; byte interval. Unknown required kinds mark only this descriptor unsupported.
+FDBEXTENSIONS:
+        LD (FDBEXSTART),HL
+        LD HL,FDBTYPES
+        LD DE,FDBTYPES+1
+        LD BC,15
+        LD (HL),0
+        LDIR
+        LD HL,(FDBEXSTART)
+FDBEXTLOOP:
+        LD DE,2
+        CALL FDBROOM
+        RET C
+        LD A,(HL)
+        LD (FDBEXTYPE),A
+        INC HL
+        LD A,(HL)
+        LD (FDBEXLEN),A
+        INC HL
+        LD A,(FDBEXTYPE)
+        OR A
+        JR NZ,FDBEXTNONZERO
+        LD A,(FDBEXLEN)
+        OR A
+        SCF
+        RET NZ
+        EX DE,HL
+        LD HL,(FDBEXSTART)
+        CALL FDBOBJADD
+        RET
+FDBEXTNONZERO:
+        CP 080H
+        SCF
+        RET Z
+        AND 07FH
+        PUSH HL
+        LD DE,FDBTYPES
+        CALL FDBBITPTR
+        LD B,A
+        AND (HL)
+        JR NZ,FDBEXTDUP
+        LD A,B
+        OR (HL)
+        LD (HL),A
+        POP HL
+        LD A,(FDBEXLEN)
+        LD E,A
+        LD D,0
+        CALL FDBROOM
+        RET C
+        LD A,(FDBEXTYPE)
+        AND 07FH
+        CP 1
+        JR Z,FDBEXTSIZE
+        CP 2
+        JR Z,FDBEXTTRACK
+        LD A,(FDBEXTYPE)
+        AND 080H
+        CALL NZ,FDBMARKUNSUPPORTED
+        JR FDBEXTADVANCE
+FDBEXTDUP:
+        POP HL
+        SCF
+        RET
+FDBEXTSIZE:
+        LD A,(FDBEXTYPE)
+        CP 081H
+        SCF
+        RET NZ
+        LD A,(FDBEXLEN)
+        CP (IX+55)
+        SCF
+        RET NZ
+        LD B,A
+        LD C,0                           ; maximum size code
+        PUSH HL
+FESLP:
+        LD A,(HL)
+        CP 4
+        JR NC,FESBAD
+        CP C
+        JR C,FESNXT
+        LD C,A
+FESNXT:
+        INC HL
+        DJNZ FESLP
+        POP HL
+        LD A,C
+        CP (IX+56)
+        SCF
+        RET NZ
+        JR FDBEXTADVANCE
+FESBAD:
+        POP HL
+        SCF
+        RET
+FDBEXTTRACK:
+        LD A,(FDBEXTYPE)
+        CP 082H
+        SCF
+        RET NZ
+        LD A,(FDBEXLEN)
+        CP 1
+        SCF
+        RET NZ
+        LD A,(HL)
+        CP 1
+        SCF
+        RET NZ
+FDBEXTADVANCE:
+        LD A,(FDBEXLEN)
+        LD E,A
+        LD D,0
+        ADD HL,DE
+        JP FDBEXTLOOP
+
+FDBMARKUNSUPPORTED:
+        PUSH HL
+        LD A,(FDBINDEX)
+        LD DE,FDBSUPPORT
+        CALL FDBBITPTR
+        CPL
+        AND (HL)
+        LD (HL),A
+        POP HL
+        RET
+
+; Carry if [HL,HL+DE) extends beyond the loaded file.
+FDBROOM:
+        PUSH HL
+        ADD HL,DE
+        JR C,FDBROOMBAD
+        PUSH HL
+        LD DE,FDFRAM
+        OR A
+        SBC HL,DE
+        LD DE,(FDBLEN)
+        OR A
+        SBC HL,DE
+        POP HL
+        JR C,FDBROOMGOOD
+        JR Z,FDBROOMGOOD
+FDBROOMBAD:
+        POP HL
+        SCF
+        RET
+FDBROOMGOOD:
+        POP HL
+        OR A
+        RET
+
+; Claim [HL,DE) in a bit-per-byte ownership map; carry on bounds or overlap.
+FDBOBJADD:
+        LD (FDBOBJPOS),HL
+        LD (FDBOBJEND),DE
+        OR A
+        SBC HL,DE
+        JR NC,FDBOBJBAD                  ; empty or reversed
+        LD HL,(FDBOBJPOS)
+        LD DE,FDFRAM
+        OR A
+        SBC HL,DE
+        LD DE,(FDBPOOL)
+        OR A
+        SBC HL,DE
+        RET C
+        LD HL,(FDBOBJEND)
+        LD DE,FDFRAM
+        OR A
+        SBC HL,DE
+        LD DE,(FDBLEN)
+        OR A
+        SBC HL,DE
+        JR C,FDBOBJBOUNDSOK
+        JR NZ,FDBOBJBAD
+FDBOBJBOUNDSOK:
+        LD HL,(FDBOBJEND)
+        LD DE,(FDBHIGH)
+        OR A
+        SBC HL,DE
+        JR C,FDBOBJMARK
+        JR Z,FDBOBJMARK
+        LD HL,(FDBOBJEND)
+        LD (FDBHIGH),HL
+FDBOBJMARK:
+        LD HL,(FDBOBJPOS)
+        LD (FDBOBJPTR),HL
+FOMLP:
+        CALL FDBOWNPTR
+        LD B,A
+        AND (HL)
+        SCF
+        RET NZ
+        LD A,B
+        OR (HL)
+        LD (HL),A
+        LD HL,(FDBOBJPTR)
+        INC HL
+        LD (FDBOBJPTR),HL
+        LD DE,(FDBOBJEND)
+        OR A
+        SBC HL,DE
+        JR NZ,FOMLP
+        OR A
+        RET
+FDBOBJBAD:
+        SCF
+        RET
+
+; Address in FDBOBJPTR -> HL ownership byte, A bit mask.
+FDBOWNPTR:
+        LD HL,(FDBOBJPTR)
+        LD DE,FDFRAM
+        OR A
+        SBC HL,DE
+        LD A,L
+        AND 7
+        LD E,A
+        LD D,0
+        PUSH DE
+        SRL H
+        RR L
+        SRL H
+        RR L
+        SRL H
+        RR L
+        LD DE,(FDBOWNBASE)
+        ADD HL,DE
+        POP DE
+        PUSH HL
+        LD HL,FDBBITS
+        ADD HL,DE
+        LD A,(HL)
+        POP HL
+        RET
 
 ; A = descriptor index -> HL = descriptor address, carry if outside catalogue.
 FDBDESC:
@@ -312,6 +704,42 @@ FDBNAME:
         RET C
         LD DE,8
         ADD HL,DE
+        RET
+
+; A = descriptor index -> zero when an unknown required extension prevents use.
+FDBISSUPPORTED:
+        LD B,A
+        LD A,(FCOUNT)
+        CP B
+        JR Z,FDBDESCBAD
+        JR C,FDBDESCBAD
+        LD A,B
+        LD DE,FDBSUPPORT
+        CALL FDBBITPTR
+        AND (HL)
+        OR A
+        RET
+
+; A index, DE bitmap base -> HL byte address, A bit mask.
+FDBBITPTR:
+        LD C,A
+        AND 7
+        LD L,A
+        LD H,0
+        PUSH DE
+        LD DE,FDBBITS
+        ADD HL,DE
+        LD B,(HL)
+        LD A,C
+        RRCA
+        RRCA
+        RRCA
+        AND 01FH
+        LD L,A
+        LD H,0
+        POP DE
+        ADD HL,DE
+        LD A,B
         RET
 
 ; Require one to eight uppercase letters/digits followed only by spaces.
@@ -400,3 +828,15 @@ FDBEXPECT:DW 0
 FDBHSIZE:DB 0
 FDBSTRIDE:DB 0
 FDBINDEX:DB 0
+FDBEXSTART:DW 0
+FDBEXTYPE:DB 0
+FDBEXLEN:DB 0
+FDBOBJPOS:DW 0
+FDBOBJEND:DW 0
+FDBOBJPTR:DW 0
+FDBHIGH:DW 0
+FDBOWNBASE:DW 0
+FDBOWNSIZE:DW 0
+FDBBITS:DB 1,2,4,8,16,32,64,128
+FDBTYPES:DS 16
+FDBSUPPORT:DS 32

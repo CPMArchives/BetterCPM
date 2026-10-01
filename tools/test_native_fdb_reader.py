@@ -37,6 +37,7 @@ ENTRY:  CALL FDBVALID
         RET
 FCOUNT: DB 0
 FDFRAM  EQU 04000H
+FDFLIM  EQU 07F80H
 """ + validator + "\n        END\n"
     with tempfile.TemporaryDirectory(prefix="bettercpm-native-fdb-") as directory:
         work = Path(directory)
@@ -93,6 +94,52 @@ FDFRAM  EQU 04000H
         changed[descriptor + 58] ^= 0x80
         assert not accepts(repaired(changed))
 
+        def descriptor_offset(index: int) -> int:
+            return 128 + index * 64
+
+        def word_at(data, offset: int) -> int:
+            return int.from_bytes(data[offset:offset + 2], "little")
+
+        first_ids = word_at(payload, descriptor + 60)
+        changed = bytearray(payload)
+        changed[first_ids + 1] = changed[first_ids]
+        assert not accepts(repaired(changed))
+        changed = bytearray(payload)
+        second = descriptor_offset(1)
+        changed[second + 60:second + 62] = first_ids.to_bytes(2, "little")
+        assert not accepts(repaired(changed))
+        changed = bytearray(payload)
+        changed[-1] = 1
+        assert not accepts(repaired(changed))
+        changed = bytearray(payload + bytes(128))
+        assert not accepts(repaired(changed))
+
+        cylinder = descriptor_offset(51)
+        cylinder_ext = word_at(payload, cylinder + 62)
+        for relative, value in ((0, 0x02), (0, 0x80), (2, 2), (4, 1)):
+            changed = bytearray(payload)
+            changed[cylinder_ext + relative] = value
+            assert not accepts(repaired(changed)), (relative, value)
+        changed = bytearray(payload)
+        changed[cylinder_ext + 3:cylinder_ext + 8] = bytes((0x82, 1, 1, 0, 0))
+        assert not accepts(repaired(changed))
+
+        mixed = descriptor_offset(103)
+        mixed_ext = word_at(payload, mixed + 62)
+        changed = bytearray(payload)
+        changed[mixed_ext + 1] = 5
+        assert not accepts(repaired(changed))
+        changed = bytearray(payload)
+        changed[mixed_ext + 2] = 4
+        assert not accepts(repaired(changed))
+        changed = bytearray(payload)
+        changed[mixed_ext + 2:mixed_ext + 8] = bytes((2, 2, 2, 2, 2, 2))
+        assert not accepts(repaired(changed))
+        changed = bytearray(payload)
+        next_mixed = descriptor_offset(104)
+        changed[next_mixed + 62:next_mixed + 64] = mixed_ext.to_bytes(2, "little")
+        assert not accepts(repaired(changed))
+
         cpu = Z80(b"")
         cpu.mem[0x100:0x100 + len(code)] = code
         cpu.mem[FDFRAM:FDFRAM + len(payload)] = payload
@@ -114,7 +161,22 @@ FDFRAM  EQU 04000H
         cpu.run(names["FDBDESC"])
         assert cpu.carry
 
-    print("Native FDB reader: framing, CRC, descriptor prefixes and indexed names pass")
+        for kind, supported in ((0x03, 1), (0x83, 0)):
+            changed = bytearray(payload)
+            changed[cylinder_ext] = kind
+            changed = bytearray(repaired(changed))
+            cpu = Z80(b"")
+            cpu.mem[0x100:0x100 + len(code)] = code
+            cpu.mem[FDFRAM:FDFRAM + len(changed)] = changed
+            cpu.setword(names["FDBLEN"], len(changed))
+            cpu.run(names["ENTRY"], limit=3_000_000)
+            assert not cpu.carry
+            cpu.a = 51
+            cpu.run(names["FDBISSUPPORTED"])
+            assert not cpu.carry
+            assert (not cpu.z) == bool(supported)
+
+    print("Native FDB reader: framing, descriptors, object ownership and extensions pass")
 
 
 if __name__ == "__main__":

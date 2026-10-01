@@ -38,8 +38,9 @@ release media and reaches CONFIG's main menu under cpmsim.
 
 ## Remaining Step 4 boundary
 
-This increment does not validate extension-list framing, object ownership and
-overlap, sector-ID uniqueness, or the semantic relationships needed to create
-a BIOS binding. Those checks belong with native extension decoding and binding
-construction. CONFIG's menus also remain on the transitional `DISK.FDF` path
-until the binary reader can replace both name lookup and `FPARSE` together.
+Engineering Specification 189 completes native extension framing, object
+ownership and overlap, sector-ID uniqueness, assigned-extension validation,
+and unsupported-required-extension marking. Semantic DPB/geometry validation
+and normalized binding construction still remain. CONFIG's menus stay on the
+transitional `DISK.FDF` path until binary lookup and `FPARSE` can be replaced
+together.
