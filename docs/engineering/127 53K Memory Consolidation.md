@@ -32,8 +32,11 @@ two-sector overlays, and seven CCP-carrier sectors, the boot data uses 28 sector
 ## Where the savings came from
 
 The warm-boot reloader now occupies finished transient RAM at 0100h instead
-of permanent RAM. Its 817-byte body has a 896-byte limit and a separate
-128-byte stack ending at 0500h. Fetching it initially uses a stack below 0100h.
+of permanent RAM. Its original 817-byte body had a 896-byte limit and a
+separate 128-byte stack ending at 0500h. The BCPX lifecycle implementation
+repartitions the same one-KiB overlay to 932 reloader bytes and 92 selector
+bytes, and retains a measured 64-byte stack ending at 0500h. Fetching it
+initially uses a stack below 0100h.
 The CCP likewise carries its own reconstructible stack.
 
 Disk setters, format control and CPX control share a 909-byte overlay in the

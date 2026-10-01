@@ -21,7 +21,7 @@ def check(path: Path, name: bytes, version: tuple[int, int],
      header_size, payload, table, metadata) = struct.unpack_from("<11H", module, 10)
     require(linked == 0x8000 and size and allocation >= size,
             f"{path.name}: invalid linked image dimensions")
-    require(allocation & 0xFF == 0 and entry < size,
+    require(allocation & 0xFF == 0 and entry == 8 and entry < size,
             f"{path.name}: invalid allocation or command entry")
     require(init == shutdown == 0xFFFF, f"{path.name}: unexpected lifecycle entry")
     relocation_end = table + relocations * 2

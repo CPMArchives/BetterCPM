@@ -89,7 +89,7 @@ PL_RSXLOAD:                             ; load selected RSX utility
         CALL LY_DISK+15
         RET NZ
         LD A,C
-        JP LY_CFG+0380H
+        JP LY_RSSEL
 
 ; -------------------------------------------------------------------------------
 ; Carrier Load Failure

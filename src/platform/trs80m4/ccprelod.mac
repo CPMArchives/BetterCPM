@@ -28,6 +28,8 @@ MOD_LINK        EQU     MODBUF+10
 MOD_SIZE        EQU     MODBUF+12
 MOD_ALLOC       EQU     MODBUF+14
 MOD_ENTRY       EQU     MODBUF+16
+MOD_INIT        EQU     MODBUF+18
+MOD_SHUT        EQU     MODBUF+20
 MOD_RELOCS      EQU     MODBUF+22
 MOD_HEADERSZ    EQU     MODBUF+24
 MOD_PAYLOAD     EQU     MODBUF+26
@@ -256,6 +258,10 @@ CRNCPX:                                 ; normalize BCPX carrier header
         LD      (CRMALLOC),HL
         LD      HL,(MOD_ENTRY)
         LD      (CRMENTRY),HL
+        LD      HL,(MOD_INIT)
+        LD      (CRMAGPTR),HL            ; signature pointer is dead after recognition
+        LD      HL,(MOD_SHUT)
+        LD      (CRSLOT),HL              ; raw-sector cursor is dead for CPX files
         LD      HL,(MOD_RELOCS)
         LD      (CRMRELOCS),HL
         LD      HL,(MOD_HEADERSZ)
@@ -501,9 +507,54 @@ CRENTRY:                                ; publish relocated module entry
         LD      (HL),E
         INC     HL
         LD      (HL),D                  ; publish validated command entry
+        INC     HL
+        LD      DE,(CRMAGPTR)
+        CALL    CRLPUB
+        JR      NZ,CRBAD
+        LD      DE,(CRSLOT)
+        CALL    CRLPUB
+        JR      NZ,CRBAD
 
 CRGOOD:                                 ; finish successful module load
         XOR     A
+        RET
+
+; -------------------------------------------------------------------------------
+; Lifecycle Entry Validation and Relocation
+; -------------------------------------------------------------------------------
+
+CRLPUB:                                ; validate and publish lifecycle entry
+        LD      A,D
+        AND     E
+        INC     A
+        JR      Z,CRLNONE
+        PUSH    HL
+        LD      HL,(CRMSIZE)
+        OR      A
+        SBC     HL,DE
+        JR      C,CRLPBAD
+        JR      Z,CRLPBAD
+        LD      HL,(CRBASE)
+        ADD     HL,DE
+        EX      DE,HL
+        POP     HL
+        JR      CRLPWRITE
+
+CRLNONE:                               ; publish absent lifecycle entry
+        LD      D,A
+        LD      E,A
+
+CRLPWRITE:                             ; store live lifecycle pointer
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        XOR     A
+        RET
+
+CRLPBAD:                               ; reject out-of-range lifecycle offset
+        POP     HL
+        OR      1
         RET
   ; Restart a module stream so its relocation directory can be reread.
 
@@ -530,7 +581,7 @@ CRNEXT:                                 ; advance to next CPX
         JP      NZ,FLNEXT
         LD      A,(CRSLOT)
         CP      13
-        JR      NC,CRBAD
+        JP      NC,CRBAD
         PUSH    HL
         LD      E,A
         INC     A

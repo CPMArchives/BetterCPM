@@ -1,6 +1,6 @@
 object	platform	current_start	current_end	bytes	owner	lifetime	cold_boot	warm_boot	storage_class	overlay_group	immutable_template	disposition
 page-zero	all	0000	00FF	256	CP/M low-memory ABI	boot session	initialize vectors, drive, I/O byte and DMA defaults	preserve ABI; reconstruct vectors as required	fixed subsystem state	none	gateway and low-memory defaults	already RAM
-transient-loader-stack	all	0480	04FF	128	command reconstruction	one reconstruction pass	discarded	fresh for each reconstruction	stack	transient TPA borrow	none	already RAM
+transient-loader-stack	all	04C0	04FF	64	command reconstruction	one reconstruction pass	discarded	fresh for each reconstruction	stack	transient TPA borrow	none	already RAM
 dynamic-bdos-gateway	all	D501	D503	3	system gateway and RSX chain	boot session	install JP to BDOS or active RSX head	rebuild after command-environment reconstruction	fixed subsystem state	none	none	retain in ROM-profile RAM
 command-history	all	D504	D5C3	192	built-in command history	cold boot through warm boots	create canonical empty v1 object	preserve valid object	bounded PDS state	none	none	relocate to ROM-profile RAM
 system-stack	all	D618	D637	32	system gateway	one system-entry pass	fresh stack	fresh stack	stack	none	none	relocate to ROM-profile RAM

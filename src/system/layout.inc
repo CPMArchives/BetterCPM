@@ -35,7 +35,9 @@ LY_RSX          EQU     0D104H          ; optional protected RSX region
 LY_LOAD         EQU     00100H          ; transient loader address
 LY_CFG          EQU     0F000H          ; configuration-overlay address
 LY_CPX          EQU     0F009H          ; reconstructible CPX region
-LY_STKL         EQU     00480H          ; transient loader stack low
+LY_RLCAP        EQU     003A4H          ; command-reloader carrier bytes
+LY_RSSEL        EQU     0F3A4H          ; RSX selector overlay entry
+LY_STKL         EQU     004C0H          ; transient loader stack low
 LY_STKT         EQU     00500H          ; transient loader stack top
 LY_LIMIT        EQU     0F400H          ; resident-memory upper limit
 LY_RAMEND       EQU     0F400H          ; available RAM end

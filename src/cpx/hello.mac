@@ -20,6 +20,8 @@ BDOS            EQU     00005H
 
 HC_NEXT:        DW      0               ; next CPX descriptor pointer
 HC_ENTRY:       DW      HC_COMMAND      ; CPX command entry pointer
+HC_INIT:        DW      0               ; no initialization entry
+HC_SHUT:        DW      0               ; no shutdown entry
 
 ; ================================================================================
 ; =                            HELLO Command Handler                             =

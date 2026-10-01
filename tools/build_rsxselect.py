@@ -19,9 +19,10 @@ def main() -> None:
         "        CSEG\n        .PHASE  ", "        ASEG\n        ORG     ").replace(
         "        .DEPHASE\n", "")
     data = assemble(args.assembler, text, OUTPUT,
-                    OUTPUT.with_suffix(".lst"), LAYOUT["CONFIG"] + 0x380)
-    if not 0 < len(data) <= 128:
-        raise SystemExit(f"RSX selector exceeds its 128-byte tail: {len(data)}")
+                    OUTPUT.with_suffix(".lst"), LAYOUT["RSX_SELECTOR"])
+    capacity = 1024 - LAYOUT["RELOADER_CAPACITY"]
+    if not 0 < len(data) <= capacity:
+        raise SystemExit(f"RSX selector exceeds its {capacity}-byte tail: {len(data)}")
     print(f"RSX selector bytes: {len(data)}")
 
 if __name__ == "__main__":

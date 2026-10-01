@@ -11,6 +11,8 @@ import subprocess
 import tempfile
 from pathlib import Path
 
+from system_layout import LAYOUT
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -30,7 +32,7 @@ def main() -> None:
             manifest["protected_xip_qualified"] is not False):
         raise AssertionError("ROM boot manifest overclaims or omits boot status")
     if (manifest["entry"] != 0xFD77 or manifest["stub_bytes"] != 34 or
-            manifest["reloader_reference_count"] != 43 or
+            manifest["reloader_reference_count"] != 45 or
             manifest["ccp_external_reference_count"] != 63 or
             manifest["spare_bytes"] != 615):
         raise AssertionError("accepted ROM boot layout changed")
@@ -118,7 +120,8 @@ expect eof
                 for match in pattern.finditer(transcript)
             }
             expected = {
-                "loader": (0x0480, 0x0500, 128),
+                "loader": (LAYOUT["STACK_LOW"], LAYOUT["STACK_TOP"],
+                           LAYOUT["STACK_TOP"] - LAYOUT["STACK_LOW"]),
                 "system": (0xD618, 0xD638, 32),
                 "bdos": (0xD701, 0xD729, 40),
             }
