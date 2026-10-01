@@ -451,6 +451,18 @@ reconciliation gate precede the corresponding implementation program.
 
 ## Post-1.0 considerations
 
+- [ ] Conduct a measured architectural retrospective immediately after 1.0.
+  Record actual byte usage, memory and overlay pressure, awkward interfaces,
+  recurring implementation problems, and technical debt without changing the
+  released architecture during the review. Include the fixed 1 KiB CONFIG
+  control-overlay limit and any local compaction or caller-validation choices
+  made to preserve it as concrete evidence.
+- [ ] Before full 2.0 design, use the 1.0 retrospective and experience from
+  bounded later-1.x ports to reassess memory placement, workspace lifetime and
+  overlay organization, ROM execution, PDS allocation, banking, firmware and
+  device services, CONFIG/FDF/installation boundaries, and platform interfaces
+  as one architectural problem. Preserve the 53 KiB TPA evidence and avoid
+  turning the bounded RomWBW 1.1/1.2 port into an implicit redesign.
 - [ ] Replace provisional Model 4-only terminal operations with a portable
   terminal-capability interface while retaining `CLR` behavior.
 - [ ] Give `$SYS` files enhanced system-wide visibility across user areas only
