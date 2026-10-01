@@ -72,6 +72,27 @@ FDFRAM  EQU 04000H
         changed[5] = 1
         assert accepts(repaired(changed))
 
+        descriptor = 128
+        mutations = (
+            (descriptor, ord("a")),          # ID must be uppercase
+            (descriptor + 1, ord(" ")),     # no embedded ID padding
+            (descriptor + 8, 0x1F),          # printable description
+            (descriptor + 55, 0),            # nonzero physical sectors
+            (descriptor + 56, 4),            # known size code
+            (descriptor + 57, 0),            # nonzero cylinders
+            (descriptor + 59, 0),            # repeated count agrees
+        )
+        for offset, value in mutations:
+            changed = bytearray(payload)
+            changed[offset] = value
+            assert not accepts(repaired(changed)), offset
+        changed = bytearray(payload)
+        changed[descriptor + 60:descriptor + 62] = (0).to_bytes(2, "little")
+        assert not accepts(repaired(changed))
+        changed = bytearray(payload)
+        changed[descriptor + 58] ^= 0x80
+        assert not accepts(repaired(changed))
+
         cpu = Z80(b"")
         cpu.mem[0x100:0x100 + len(code)] = code
         cpu.mem[FDFRAM:FDFRAM + len(payload)] = payload
@@ -81,7 +102,19 @@ FDFRAM  EQU 04000H
         assert cpu.word(names["FDBPOOL"]) == 128 + 107 * 64
         assert cpu.mem[FDFRAM + 14:FDFRAM + 16] == payload[14:16]
 
-    print("Native FDB reader: header, version, bounds, reserved bytes and CRC pass")
+        for index in (0, 53, 106):
+            cpu.a = index
+            cpu.run(names["FDBNAME"])
+            assert not cpu.carry
+            expected = FDFRAM + 128 + index * 64 + 8
+            assert cpu.hl == expected
+            assert cpu.mem[cpu.hl:cpu.hl + 32] == payload[128 + index * 64 + 8:
+                                                        128 + index * 64 + 40]
+        cpu.a = 107
+        cpu.run(names["FDBDESC"])
+        assert cpu.carry
+
+    print("Native FDB reader: framing, CRC, descriptor prefixes and indexed names pass")
 
 
 if __name__ == "__main__":

@@ -199,7 +199,190 @@ FDBCRCNEXT:
         OR A
         SBC HL,DE
         JP NZ,FDBBAD
+        CALL FDBDALL
+        RET C
         OR A
+        RET
+
+; Validate the fixed prefix of every descriptor.  Required-extension semantics
+; and binding construction are deliberately left to the next reader layer.
+FDBDALL:
+        XOR A
+        LD (FDBINDEX),A
+FDBDALP:
+        LD A,(FDBINDEX)
+        LD B,A
+        LD A,(FCOUNT)
+        CP B
+        RET Z
+        LD A,B
+        CALL FDBDESC
+        RET C
+        PUSH HL
+        CALL FDBID
+        POP HL
+        RET C
+        PUSH HL
+        LD DE,8
+        ADD HL,DE
+        CALL FDBDESCRIPTION
+        POP HL
+        RET C
+        PUSH HL
+        POP IX
+        LD A,(IX+55)
+        OR A
+        SCF
+        RET Z                           ; physical sector count
+        CP (IX+59)
+        SCF
+        RET NZ                          ; duplicated count must agree
+        LD A,(IX+56)
+        CP 4
+        JR NC,FDBDESCBAD
+        LD A,(IX+57)
+        OR A
+        SCF
+        RET Z                           ; cylinders must be nonzero
+        LD A,(IX+58)
+        AND 080H
+        LD C,A
+        LD A,(IX+62)
+        OR (IX+63)
+        JR Z,FDBNOEXT
+        LD A,C
+        OR A
+        JR Z,FDBDESCBAD                 ; nonzero offset requires flag
+        JR FDBIDS
+FDBNOEXT:
+        LD A,C
+        OR A
+        JR NZ,FDBDESCBAD                ; flag requires nonzero offset
+FDBIDS: LD E,(IX+60)
+        LD D,(IX+61)
+        PUSH DE
+        LD HL,(FDBPOOL)
+        OR A
+        EX DE,HL
+        SBC HL,DE
+        POP DE
+        RET C                           ; list points before pool
+        LD A,(IX+55)
+        LD L,A
+        LD H,0
+        ADD HL,DE
+        RET C
+        LD DE,(FDBLEN)
+        OR A
+        SBC HL,DE
+        JR C,FDBIDSGOOD
+        JR NZ,FDBDESCBAD                ; end may equal file length
+FDBIDSGOOD:
+        LD A,(FDBINDEX)
+        INC A
+        LD (FDBINDEX),A
+        JR FDBDALP
+
+; A = descriptor index -> HL = descriptor address, carry if outside catalogue.
+FDBDESC:
+        LD B,A
+        LD A,(FCOUNT)
+        CP B
+        JR Z,FDBDESCBAD
+        JR C,FDBDESCBAD
+        LD HL,FDFRAM+128
+        LD A,B
+        OR A
+        RET Z
+        LD A,(FDBSTRIDE)
+        LD E,A
+        LD D,0
+FDBADLP:
+        ADD HL,DE
+        DJNZ FDBADLP
+        OR A
+        RET
+FDBDESCBAD:
+        SCF
+        RET
+
+; A = descriptor index -> HL = 32-byte space-padded display description.
+FDBNAME:
+        CALL FDBDESC
+        RET C
+        LD DE,8
+        ADD HL,DE
+        RET
+
+; Require one to eight uppercase letters/digits followed only by spaces.
+FDBID:  LD B,8
+        LD C,0                           ; bit 0 seen char, bit 1 seen padding
+FDBIDLP:
+        LD A,(HL)
+        INC HL
+        CP ' '
+        JR Z,FDBIDSPACE
+        LD D,A
+        LD A,C
+        AND 2
+        SCF
+        RET NZ
+        LD A,D
+        CP '0'
+        JR C,FDBIDBAD
+        CP '9'+1
+        JR C,FDBIDCHAR
+        CP 'A'
+        JR C,FDBIDBAD
+        CP 'Z'+1
+        JR NC,FDBIDBAD
+FDBIDCHAR:
+        LD A,C
+        OR 1
+        LD C,A
+        DJNZ FDBIDLP
+        LD A,C
+        AND 1
+        JR Z,FDBIDBAD
+        OR A
+        RET
+FDBIDBAD:
+        SCF
+        RET
+FDBIDSPACE:
+        LD A,C
+        OR 2
+        LD C,A
+        DJNZ FDBIDLP
+        LD A,C
+        AND 1
+        JR Z,FDBIDBAD
+        OR A
+        RET
+
+; Description is 1..32 printable ASCII characters with space padding.
+FDBDESCRIPTION:
+        LD B,32
+        LD C,0
+FDBTXLP:
+        LD A,(HL)
+        INC HL
+        CP 32
+        JR C,FDBDESCTBAD
+        CP 127
+        JR NC,FDBDESCTBAD
+        CP ' '
+        JR Z,FDBDESCNEXT
+        LD C,1
+FDBDESCNEXT:
+        DJNZ FDBTXLP
+        LD A,C
+        OR A
+        JR Z,FDBDESCTBAD
+        OR A
+        RET
+FDBDESCTBAD:
+        SCF
         RET
 
 FDBBAD: SCF
@@ -216,3 +399,4 @@ FDBPOOL:DW 0
 FDBEXPECT:DW 0
 FDBHSIZE:DB 0
 FDBSTRIDE:DB 0
+FDBINDEX:DB 0

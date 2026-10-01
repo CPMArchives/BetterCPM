@@ -33,8 +33,8 @@ opens and validates the packaged `DISK.FDB` through the real BDOS path.
 
 ## Remaining Step 4 boundary
 
-CONFIG does not yet enumerate binary descriptors or construct normalized
-bindings from them. The next increments must validate descriptor and extension
-objects natively, replace `FNAME` and `FPARSE` with FDB-backed operations, and
-then remove the transitional runtime dependency on `DISK.FDF` after equivalent
-cross-platform behavior is demonstrated.
+Engineering Specification 188 adds bounded descriptor enumeration, fixed-prefix
+validation, sector-ID-reference bounds, and indexed description lookup. Native
+extension/object validation and normalized binding construction still remain;
+only after those are qualified can `FNAME` and `FPARSE` be replaced together
+and the transitional runtime dependency on `DISK.FDF` removed.
