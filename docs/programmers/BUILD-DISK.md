@@ -3,7 +3,8 @@
 `tools/build_source_disk.py` creates a self-hosting build disk and companion
 complete-source volumes. The build disk contains the canonical native source set,
 generated link-symbol snapshot, ZSM4, Digital Research LINK, `SUBMIT`,
-`RESPACK`, `SYSBUILD`, `SYSGEN`, and build instructions. The source disk
+`RESPACK`, `SYSBUILD`, `SYSGEN`, the compiled `DISK.FDB` catalogue, and build
+instructions. The source disk
 volumes together preserve the complete `src/` tree. All use the Montezuma Micro 80-track,
 double-sided DATA geometry: 800 KiB,
 512-byte sectors, 2 KiB allocation blocks, 128 directory entries, and no

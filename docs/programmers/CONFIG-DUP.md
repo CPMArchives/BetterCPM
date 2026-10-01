@@ -196,7 +196,9 @@ contract, so it is not an assertion of support for every possible controller.
 ## Build and tests
 
 `python3 tools/build_disk_utilities.py` creates all three COM files. The complete
-build includes them and DISK.FDF in the boot image automatically.
+build includes them, the transitional historical `DISK.FDF`, and the compiled
+107-entry `DISK.FDB` in the boot image automatically. Current CONFIG continues
+to use the historical file until its FDB reader is integrated.
 
 `python3 tools/test_disk_utilities.py` checks the assembly parser against all
 112 records and verifies paging, inverse headings, copy/check menus and exits.

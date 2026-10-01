@@ -16,6 +16,7 @@ import sys
 from pathlib import Path
 
 from build_montezuma_extended_790k import RAW_SIZE, build, verify
+from build_fdf_catalog import build as build_fdf_catalog
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -313,6 +314,11 @@ def main() -> None:
                  "RLMBUILD.COM"):
         used[0].add(name)
         files.append((0, name, (ROOT / "build/utilities" / name).read_bytes()))
+    fdb_path = build_fdf_catalog()
+    used[0].add("DISK.FDB")
+    files.append((0, "DISK.FDB", fdb_path.read_bytes()))
+    mapping.append({"user": 0, "area": "FORMAT CATALOGUE", "name": "DISK.FDB",
+                    "source": str(fdb_path.relative_to(ROOT))})
     used[0].add("BATCHIO.RSX")
     files.append((0, "BATCHIO.RSX", (ROOT / "build/rsx/BATCHIO.RSX").read_bytes()))
     for name in ("R3PLAN.RSX", "R3SLOTS.RSX", "R3SNAP.RSX", "R3CARR.RSX",

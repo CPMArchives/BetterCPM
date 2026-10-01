@@ -13,6 +13,7 @@ from system_layout import LAYOUT, expand_layout
 from build_bios import build_bios
 from build_system import build_support
 from cpm_tools_bundle import files as cpm_tools_files
+from build_fdf_catalog import build as build_fdf_catalog
 
 from build_montezuma_extended_790k import (
     RAW_SIZE,
@@ -282,13 +283,14 @@ def main() -> None:
     submit_path = ROOT / "build/utilities/SUBMIT.COM"
     xsub_path = ROOT / "build/utilities/XSUB.COM"
     fdf_path = ROOT / "third_party/montezuma/DISK.FDF"
+    fdb_path = build_fdf_catalog()
     for path in (resident_path, command_path, basic_cpx_path, hello_cpx_path,
                  hello_rsx_path, echo_rsx_path, batchio_rsx_path, fdf_rsx_path,
                  p2dos_rsx_path,
                  frehd_time_rsx_path, cpx_utility_path, rsx_utility_path,
                  rsxtest_path, rsx2test_path, era_path, ren_path, type_path, dir_path,
                  user_path, cls_path, ver_path, copy_path, move_path, warm_path, config_path, dup_path, sysgen_path, sysbuild_path, stat_path,
-                 submit_path, xsub_path, time_path, fdf_path):
+                 submit_path, xsub_path, time_path, fdf_path, fdb_path):
         if not path.is_file():
             raise SystemExit(f"missing system-image input: {path}")
     # Reassemble from source so a previous failed BIOS build cannot hide behind
@@ -393,6 +395,7 @@ def main() -> None:
                      ("SUBMIT.COM", submit_path.read_bytes()),
                      ("XSUB.COM", xsub_path.read_bytes()),
                      ("DISK.FDF", fdf_path.read_bytes()),
+                     ("DISK.FDB", fdb_path.read_bytes()),
                      ("FDF.RSX", fdf_rsx_path.read_bytes()),
                      ("P2DOS.RSX", p2dos_rsx_path.read_bytes()),
                      ("FREHDCLK.RSX", frehd_time_rsx_path.read_bytes()),
