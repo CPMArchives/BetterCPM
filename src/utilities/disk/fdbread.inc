@@ -706,6 +706,56 @@ FDBNAME:
         ADD HL,DE
         RET
 
+; A = descriptor index. Print its fixed 32-byte display description.
+FDBPNAME:
+        CALL FDBNAME
+        RET C
+        LD B,32
+FPNLP:
+        LD A,(HL)
+        CALL PUTC
+        INC HL
+        DJNZ FPNLP
+        OR A
+        RET
+
+; Print the FDB name matching CURB's normalized binding, or Custom/Undefined.
+FDBCURNAME:
+        LD A,(CURB)
+        CP 0FFH
+        JR Z,FDBCURUNDEFINED
+        XOR A
+        LD (FINDIDX),A
+FDBCURLOOP:
+        LD A,(FINDIDX)
+        CALL FDBBIND
+        JR C,FDBCURNEXT
+        LD HL,CURB+1
+        LD DE,BIND+1
+        LD B,63
+FDBCURCOMPARE:
+        LD A,(DE)
+        CP (HL)
+        JR NZ,FDBCURNEXT
+        INC HL
+        INC DE
+        DJNZ FDBCURCOMPARE
+        LD A,(FINDIDX)
+        JP FDBPNAME
+FDBCURNEXT:
+        LD A,(FINDIDX)
+        INC A
+        LD (FINDIDX),A
+        LD B,A
+        LD A,(FCOUNT)
+        CP B
+        JR NZ,FDBCURLOOP
+        LD HL,CUSTOM
+        JP PUTS
+FDBCURUNDEFINED:
+        LD HL,UNDEF
+        JP PUTS
+
 ; A = descriptor index -> zero when an unknown required extension prevents use.
 FDBISSUPPORTED:
         LD B,A

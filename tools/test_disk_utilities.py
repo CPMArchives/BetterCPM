@@ -8,6 +8,7 @@ import subprocess
 import tempfile
 from build_ccp import assemble
 from build_disk_utilities import builtin_source
+from build_fdf_catalog import build as build_fdf_catalog
 import json
 from build_trs80_boot import install
 from build_montezuma_extended_790k import crc16
@@ -101,6 +102,7 @@ def medium(extras=()):
            ('CONFIG.COM',(b/'utilities/CONFIG.COM').read_bytes()),
            ('DUP.COM',(b/'utilities/DUP.COM').read_bytes()),
            ('SYSGEN.COM',(b/'utilities/SYSGEN.COM').read_bytes()),
+           ('DISK.FDB',build_fdf_catalog().read_bytes()),
            ('DISK.FDF',FDF.read_bytes()),*extras]
     return install((b/'trs80/boot.bin').read_bytes(),(b/'trs80/stage1.bin').read_bytes(),
         (b/'system/resident.bin').read_bytes(),(b/'ccp/ccp.rlm').read_bytes(),files)
@@ -245,7 +247,7 @@ def main():
             ('\x03',1000),('C',1000),('\x03',1000),('\x03',4000)])
         page=screens[2][0]
         for i in range(16): assert '[ '+chr(65+i)+' ]' in page,page
-        assert 'Montezuma Micro Standard SYSTEM' in page,page
+        assert 'Access Matrix 40T SS' in page,page
         assert 'Access Matrix' in screens[3][0],screens[3][0]
         assert screens[2]==screens[4]==screens[6],'paging failed to restore first page'
         assert screens[3]==screens[5],'shifted next-page key differs from period'

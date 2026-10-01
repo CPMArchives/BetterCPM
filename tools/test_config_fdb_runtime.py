@@ -38,6 +38,21 @@ expect -exact "Booting..."
 prompt
 send -- "CONFIG\r"
 expect -exact "Configuration options:"
+send -- "G"
+expect -exact "Choose the letter of the drive to change:"
+send -- "B"
+expect -exact "Choose the format to be used for drive B"
+expect -exact "Access Matrix 40T SS"
+send -- "A"
+expect -exact "Format selected:"
+expect -exact "Access Matrix 40T SS"
+expect -exact "Which physical disk drive is to be used \[0-3\]?"
+send -- "1"
+expect -exact "Disk configuration changed (until cold boot)."
+send -- "\r"
+expect -exact "Choose the letter of the drive to change:"
+send -- "\003"
+expect -exact "Configuration options:"
 send -- "\003"
 prompt
 send -- "BYE\r"
@@ -52,7 +67,7 @@ expect eof
         )
         if run.returncode:
             raise AssertionError("CONFIG FDB startup failed\n" + run.stdout[-2000:])
-    print("PASS: CONFIG opens and validates packaged DISK.FDB under cpmsim")
+    print("PASS: CONFIG selects and attaches a packaged FDB descriptor under cpmsim")
 
 
 if __name__ == "__main__":

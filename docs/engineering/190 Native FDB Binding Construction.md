@@ -39,9 +39,8 @@ its main menu under cpmsim.
 
 ## Remaining Step 4 boundary
 
-The native path can validate, enumerate, name, classify, and construct a
-normalized binding, but CONFIG still calls the legacy text loader immediately
-after native validation. The next increment switches the format-selection UI
-and attachment path to native FDB names and bindings as one transaction. Only
-after cross-platform menu and attachment qualification can release media stop
-shipping `DISK.FDF` for CONFIG.
+Engineering Specification 191 switches CONFIG's format-selection UI, live-name
+matching, and attachment transaction to native FDB names and bindings. Dead
+legacy parser code still enters CONFIG through the shared utility include, and
+release media still package `DISK.FDF`; their removal and cross-platform closure
+remain the final Step 4 work.
