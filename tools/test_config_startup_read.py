@@ -22,35 +22,55 @@ def screen(path: Path) -> str:
                      for i in range(0, 1920, 80))
 
 
-def run_case(name: str, image: bytes, expected: str) -> None:
+def run_case(name: str, image: bytes, expected: tuple[str, ...],
+             actions: tuple[str, ...] = ()) -> None:
     work = OUT / name
     work.mkdir()
     disk = work / "a.dmk"
     disk.write_bytes(image)
+    original_record = extract_raw(image)[128:384]
     args = [str(DEFAULT_EMULATOR), "-m4", "-batch", "-turbo", "-d0", str(disk),
             "-id", "2500"]
     args += key_args("CONFIG\r") + ["-id", "2000"]
     args += key_args("J") + ["-id", "2000", "-it", "-ix"]
+    if actions:
+        args = args[:-2]
+        for action in actions:
+            args += key_args(action) + ["-id", "2000"]
+        args += ["-it", "-ix"]
     run_trs80gp(args, cwd=work, check=True, timeout=35)
     text = screen(work / "trs80-text-0.bin")
-    assert expected in text, text
+    for phrase in expected:
+        assert phrase in text, text
+    assert extract_raw(disk.read_bytes())[128:384] == original_record, \
+        "pending command edit changed protected media"
 
 
 def main() -> None:
     shutil.rmtree(OUT, ignore_errors=True)
     OUT.mkdir(parents=True)
     image = medium()
-    run_case("disabled", image, "Saved startup command: disabled.")
+    run_case("disabled", image, ("Pending startup command: disabled.",))
 
     enabled = extract_raw(image)
     enabled[128:384] = startup_record("VER", system_base=LAYOUT["SYSTEM"])
-    run_case("enabled", build(bytes(enabled)), "Saved startup command: VER")
+    enabled_image = build(bytes(enabled))
+    run_case("enabled", enabled_image, ("Pending startup command: VER",))
 
     invalid = extract_raw(image)
     invalid[128 + 12] ^= 1
     run_case("invalid", build(bytes(invalid)),
-             "Saved startup command record is invalid.")
-    print("PASS: CONFIG reads disabled, enabled and invalid BCST records")
+             ("Saved startup command record is invalid.",))
+
+    run_case("edit", image,
+             ("Pending startup command has not been saved.",
+              "Pending startup command: VER"),
+             ("E", "VER\r", "\x03", "J"))
+    run_case("clear", enabled_image,
+             ("Pending startup command has not been saved.",
+              "Pending startup command: disabled."),
+             ("C",))
+    print("PASS: CONFIG reads, edits and clears pending BCST records")
 
 
 if __name__ == "__main__":
