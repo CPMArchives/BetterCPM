@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import shutil
-import subprocess
 from pathlib import Path
 
 from add_cpm_file_to_dmk import extract_raw
@@ -12,6 +11,7 @@ from build_montezuma_extended_790k import RAW_SIZE, build
 from build_system_package import compose
 from run_trs80_command import DEFAULT_EMULATOR, key_args
 from test_disk_utilities import medium
+from trs80gp_launch import run as run_trs80gp
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "build/test-results/sysgen-cross-format"
@@ -90,7 +90,7 @@ def run_case(name: str, command_text: str, with_package: bool) -> None:
     args += key_args("SETCROSS\r") + ["-id", "2500", "-it"]
     args += key_args(command_text + "\r") + ["-id", "2500", "-it"]
     args += key_args("Y") + ["-id", "35000", "-it", "-ix"]
-    subprocess.run(args, cwd=work, check=True, timeout=70)
+    run_trs80gp(args, cwd=work, check=True, timeout=70)
     texts = [screen(path) for path in sorted(work.glob("trs80-text-*.bin"))]
     assert any("B CROSS FORMAT READY" in text for text in texts), texts
     assert any("System installed and verified" in text for text in texts), texts
@@ -100,9 +100,9 @@ def run_case(name: str, command_text: str, with_package: bool) -> None:
     assert after[:20 * 1024] != before[:20 * 1024]
     cold = work / "cold"
     cold.mkdir()
-    subprocess.run([str(DEFAULT_EMULATOR), "-m4", "-batch", "-turbo",
-                    "-d0", str(work / "target.dmk"), "-id", "4000", "-it", "-ix"],
-                   cwd=cold, check=True, timeout=20)
+    run_trs80gp([str(DEFAULT_EMULATOR), "-m4", "-batch", "-turbo",
+                 "-d0", str(work / "target.dmk"), "-id", "4000", "-it", "-ix"],
+                cwd=cold, check=True, timeout=20)
     assert "A0>" in screen(cold / "trs80-text-0.bin")
 
 
