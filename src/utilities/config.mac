@@ -12,6 +12,9 @@ FDBMODE EQU 1
         LD SP,04000H
         CALL INIT
         CALL FDBLOAD
+        XOR A
+        LD (STSTATE),A
+        LD (STDIRTY),A
 
 ; ================================================================================
 ; =                               CONFIG Main Menu                               =
@@ -781,38 +784,145 @@ RESETGO:                                ; reset go
 ; =                         Saved Startup Command                                =
 ; =                                                                              =
 ; = Reads and validates the versioned command-environment startup record from    =
-; = protected system records 1 and 2. Editing and saving follow in the next       =
-; = bounded increment.                                                           =
+; = protected system records 1 and 2. A private pending copy supports editing    =
+; = and clearing without changing the installed system.                          =
 ; ================================================================================
 
-STARTMENU:                              ; display saved startup command
+STARTMENU:                              ; display pending startup command
         LD HL,STTITLE
         CALL HEADER
-        CALL STLOAD
-        JR NZ,STINVALID
-        LD A,(TRACKBF+7)
+        LD A,(STSTATE)
+        OR A
+        CALL Z,STFETCH
+        LD A,(STSTATE)
+        CP 2
+        JR Z,STINVALID
+STSHOW: LD A,(STDIRTY)
+        OR A
+        JR Z,STCLEAN
+        LD HL,STPENDING
+        CALL PUTS
+STCLEAN:LD A,(STPEND+7)
         OR A
         JR Z,STDISABLED
         LD HL,STPREFIX
         CALL PUTS
-        LD A,(TRACKBF+8)
+        LD A,(STPEND+8)
         LD B,A
-        LD HL,TRACKBF+16
+        LD HL,STPEND+16
 STPRINT:LD A,(HL)
         CALL PUTC
         INC HL
         DJNZ STPRINT
         CALL CRLF
-        JR STPAUSE
+        JR STMENUS
 STDISABLED:
         LD HL,STOFF
         CALL PUTS
-        JR STPAUSE
+        JR STMENUS
 STINVALID:
         LD HL,STBAD
         CALL PUTS
-STPAUSE:CALL PAUSE
-        JP MAIN
+STMENUS:LD HL,STHELP
+        CALL PUTS
+        CALL CHOICE
+        CP 3
+        JP Z,MAIN
+        CP 'E'
+        JP Z,STEDIT
+        CP 'C'
+        JP Z,STCLEAR
+        JP STARTMENU
+
+STFETCH:CALL STLOAD                    ; establish private pending copy
+        JR NZ,STFETCHBAD
+        LD HL,TRACKBF
+        LD DE,STPEND
+        LD BC,256
+        LDIR
+        LD A,1
+        LD (STSTATE),A
+        RET
+STFETCHBAD:
+        CALL STDEFAULT
+        LD A,2
+        LD (STSTATE),A
+        RET
+
+STEDIT:LD HL,STEDITMSG                 ; replace pending command
+        CALL PUTS
+        XOR A
+        LD (STLINE+1),A
+        LD DE,STLINE
+        LD C,10
+        CALL BDOS
+        CALL CRLF
+        LD A,(STLINE+1)
+        OR A
+        JP Z,STARTMENU
+        LD B,A
+        LD HL,STLINE+2
+STEDCHK:LD A,(HL)
+        CP 32
+        JR C,STEDITBAD
+        CP 127
+        JR NC,STEDITBAD
+        INC HL
+        DJNZ STEDCHK
+        CALL STDEFAULT
+        LD A,1
+        LD (STPEND+7),A
+        LD A,(STLINE+1)
+        LD (STPEND+8),A
+        LD C,A
+        LD B,0
+        LD HL,STLINE+2
+        LD DE,STPEND+16
+        LDIR
+        CALL STCHECKSUM
+        LD A,1
+        LD (STSTATE),A
+        LD (STDIRTY),A
+        JP STARTMENU
+STEDITBAD:
+        LD HL,STCHARBAD
+        CALL PUTS
+        CALL PAUSE
+        JP STARTMENU
+
+STCLEAR:CALL STDEFAULT                 ; disable pending command
+        LD A,1
+        LD (STSTATE),A
+        LD (STDIRTY),A
+        JP STARTMENU
+
+STDEFAULT:                             ; construct canonical disabled record
+        LD HL,STPEND
+        LD DE,STPEND+1
+        LD BC,255
+        LD (HL),0
+        LDIR
+        LD HL,STHEADER
+        LD DE,STPEND
+        LD BC,16
+        LDIR
+STCHECKSUM:
+        LD HL,0                        ; set negative 16-bit word sum
+        LD (STPEND+12),HL
+        LD IX,STPEND
+        LD B,128
+STCKLOOP:LD E,(IX+0)
+        LD D,(IX+1)
+        ADD HL,DE
+        INC IX
+        INC IX
+        DJNZ STCKLOOP
+        EX DE,HL
+        LD HL,0
+        OR A
+        SBC HL,DE
+        LD (STPEND+12),HL
+        RET
 
 STLOAD: CALL SGDISKSET                  ; load protected records 1 and 2
         RET NZ
@@ -1258,10 +1368,17 @@ HWMSG:  DB 'Disk format is incompatible with this drive!',13,10,0 ; hwmsg
 SAVED:  DB 13,10,'Disk configuration changed (until cold boot).',13,10,0 ; saved
 
 STTITLE:DB 'Startup command',0
-STPREFIX:DB 'Saved startup command: ',0
-STOFF:  DB 'Saved startup command: disabled.',13,10,0
+STPREFIX:DB 'Pending startup command: ',0
+STOFF:  DB 'Pending startup command: disabled.',13,10,0
 STBAD:  DB 'Saved startup command record is invalid.',13,10,0
+STPENDING:DB 'Pending startup command has not been saved.',13,10,0
+STHELP: DB 13,10,'[ E ] Edit or replace command',13,10
+        DB '[ C ] Clear and disable command',13,10
+        DB 'BREAK (^C) returns without saving.',13,10,0
+STEDITMSG:DB 'New command (ENTER keeps current): ',0
+STCHARBAD:DB 'Command must contain printable ASCII characters.',13,10,0
 STMAGIC:DB 'BCST',1,0,16
+STHEADER:DB 'BCST',1,0,16,0,0,126,0,1,0,0,0C4H,0D5H
 
 ; -------------------------------------------------------------------------------
 ; Utility State
@@ -1278,6 +1395,11 @@ CHOSEN: DB 0                            ; chosen
 CHECKPH:DB 0                            ; checkph
 
 PHNOTICE:DB 0                           ; physical notice
+STSTATE:DB 0                            ; 0 unloaded, 1 valid, 2 invalid source
+STDIRTY:DB 0                            ; pending command differs from disk
+STLINE: DB 126,0                        ; BDOS counted-line input
+        DS 126
+STPEND: DS 256                          ; canonical pending BCST record
         INCLUDE disk/sysgen.inc
         INCLUDE disk/common.inc
         INCLUDE disk/fdbread.inc
