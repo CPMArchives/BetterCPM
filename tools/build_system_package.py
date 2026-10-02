@@ -8,6 +8,7 @@ import struct
 from pathlib import Path
 
 from add_cpm_file_to_dmk import extract_raw
+from startup_record import build as startup_record
 from system_layout import LAYOUT
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -39,6 +40,7 @@ def compose() -> tuple[bytes, dict[str, bytes]]:
     gateway = bytes((0xC3, LAYOUT["BDOS"] & 0xFF, LAYOUT["BDOS"] >> 8))
     for offset in (9728, 10752, 11776, 12800):
         payload[offset + 1021:offset + 1024] = gateway
+    payload[128:384] = startup_record(system_base=LAYOUT["SYSTEM"])
 
     resident = bytes(payload[1024:1024 + 52 * 128])
     signature = b"BDCF" + bytes((5, 4, 4, 64))
