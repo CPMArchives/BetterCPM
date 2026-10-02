@@ -28,15 +28,14 @@ become 1.0 requirements by appearing in this backlog.
   unconditionally while preserving valid history across WBOOT/reconstruction.
 - [x] Reject unknown metadata-v1 BRSX record types without changing the live
   profile.
-- [ ] Implement the production FDB compiler/reader and the frozen startup-command
-  lifecycle; retain DUP's remaining backend-capability and integration work.
-  The compiler, independent host reader, 107-definition migration, deterministic
-  packaging, CONFIG's native framing/CRC gate, and fixed-prefix descriptor
-  enumeration are complete. Native object ownership, extension decoding, and
-  unsupported-required status are also complete, and all 107 admitted
-  descriptors produce byte-exact normalized bindings. Native CONFIG selection
-  and attachment are integrated under cpmsim. Dead CONFIG text-reader removal,
-  release-media cleanup, and cross-platform closure remain.
+- [ ] Implement the frozen startup-command lifecycle; retain DUP's remaining
+  backend-capability and integration work. The production FDB compiler/reader,
+  107-definition migration, native CONFIG/DUP transition, dead text-reader
+  removal and release-media cleanup are complete in Engineering Specifications
+  183 through 192. Engineering Specification 193 fixes the remaining Step 5
+  checklist: saved/startup representation, CONFIG controls and save scopes,
+  once-only cold dispatch and recovery, DUP capability closure, and clean native
+  install plus two-platform qualification.
 - [ ] Complete TIME.COM SET, then qualify both read-only providers and
   `P2DOS.RSX` against the migrated production selectors.
 - [x] Implement and qualify the BetterCP/M ROM/RAM split and protected XIP image.
