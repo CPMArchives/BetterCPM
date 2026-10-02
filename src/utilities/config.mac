@@ -832,6 +832,8 @@ STMENUS:LD HL,STHELP
         JP Z,STEDIT
         CP 'C'
         JP Z,STCLEAR
+        CP 'T'
+        JP Z,STTEST
         JP STARTMENU
 
 STFETCH:CALL STLOAD                    ; establish private pending copy
@@ -895,6 +897,89 @@ STCLEAR:CALL STDEFAULT                 ; disable pending command
         LD (STSTATE),A
         LD (STDIRTY),A
         JP STARTMENU
+
+STTEST:LD A,(STPEND+8)                 ; submit pending command once
+        OR A
+        JP Z,STTESTOFF
+        CP 126
+        JP NC,STTESTLONG
+        CALL STFCBRESET
+        LD DE,STSUBFCB
+        LD C,15
+        CALL BDOS
+        INC A
+        JR NZ,STTESTBUSY
+        CALL STFCBRESET
+        LD DE,STSUBFCB
+        LD C,22
+        CALL BDOS
+        INC A
+        JR Z,STTESTERR
+        LD HL,STSUBBUF
+        LD DE,STSUBBUF+1
+        LD BC,127
+        LD (HL),0
+        LDIR
+        LD A,(STPEND+8)
+        LD (STSUBBUF),A
+        LD C,A
+        LD B,0
+        LD HL,STPEND+16
+        LD DE,STSUBBUF+1
+        LDIR
+        LD DE,STSUBBUF
+        LD C,26
+        CALL BDOS
+        LD DE,STSUBFCB
+        LD C,21
+        CALL BDOS
+        OR A
+        JR NZ,STTESTCLEAN
+        LD DE,STSUBFCB
+        LD C,16
+        CALL BDOS
+        INC A
+        JR Z,STTESTCLEAN
+        LD HL,STTESTING
+        CALL PUTS
+        LD DE,1                         ; relog A: before CCP reads new stream
+        LD C,37
+        CALL BDOS
+        LD C,0
+        JP BDOS
+STTESTCLEAN:
+        LD DE,STSUBFCB
+        LD C,19
+        CALL BDOS
+STTESTERR:
+        LD DE,0080H
+        LD C,26
+        CALL BDOS
+        LD HL,STTESTBAD
+        JR STTESTPAUSE
+STTESTOFF:
+        LD HL,STTESTNONE
+        JR STTESTPAUSE
+STTESTLONG:
+        LD HL,STTEST126
+        JR STTESTPAUSE
+STTESTBUSY:
+        LD DE,STSUBFCB
+        LD C,16
+        CALL BDOS
+        LD HL,STTESTSUB
+STTESTPAUSE:
+        CALL PUTS
+        CALL PAUSE
+        JP STARTMENU
+
+STFCBRESET:                            ; restore reusable A:$$$.SUB FCB
+        LD HL,STSUBFCB+12
+        LD DE,STSUBFCB+13
+        LD BC,23
+        LD (HL),0
+        LDIR
+        RET
 
 STDEFAULT:                             ; construct canonical disabled record
         LD HL,STPEND
@@ -1374,9 +1459,15 @@ STBAD:  DB 'Saved startup command record is invalid.',13,10,0
 STPENDING:DB 'Pending startup command has not been saved.',13,10,0
 STHELP: DB 13,10,'[ E ] Edit or replace command',13,10
         DB '[ C ] Clear and disable command',13,10
+        DB '[ T ] Test pending command now',13,10
         DB 'BREAK (^C) returns without saving.',13,10,0
 STEDITMSG:DB 'New command (ENTER keeps current): ',0
 STCHARBAD:DB 'Command must contain printable ASCII characters.',13,10,0
+STTESTING:DB 13,10,'Testing pending startup command...',13,10,0
+STTESTNONE:DB 'There is no pending startup command to test.',13,10,0
+STTEST126:DB 'A 126-byte command can run at cold boot but cannot use Test now.',13,10,0
+STTESTSUB:DB 'Cannot test while an A:$$$.SUB command stream is active.',13,10,0
+STTESTBAD:DB 'Unable to create the one-command test stream on A:.',13,10,0
 STMAGIC:DB 'BCST',1,0,16
 STHEADER:DB 'BCST',1,0,16,0,0,126,0,1,0,0,0C4H,0D5H
 
@@ -1400,6 +1491,9 @@ STDIRTY:DB 0                            ; pending command differs from disk
 STLINE: DB 126,0                        ; BDOS counted-line input
         DS 126
 STPEND: DS 256                          ; canonical pending BCST record
+STSUBFCB:DB 1,'$$$     ','SUB'          ; A: stock command stream
+        DS 24
+STSUBBUF:DS 128                         ; one counted submitted command
         INCLUDE disk/sysgen.inc
         INCLUDE disk/common.inc
         INCLUDE disk/fdbread.inc

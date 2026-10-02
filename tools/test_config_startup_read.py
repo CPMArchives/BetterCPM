@@ -23,7 +23,7 @@ def screen(path: Path) -> str:
 
 
 def run_case(name: str, image: bytes, expected: tuple[str, ...],
-             actions: tuple[str, ...] = ()) -> None:
+             actions: tuple[str, ...] = (), final_delay: int = 2000) -> None:
     work = OUT / name
     work.mkdir()
     disk = work / "a.dmk"
@@ -35,8 +35,9 @@ def run_case(name: str, image: bytes, expected: tuple[str, ...],
     args += key_args("J") + ["-id", "2000", "-it", "-ix"]
     if actions:
         args = args[:-2]
-        for action in actions:
-            args += key_args(action) + ["-id", "2000"]
+        for index, action in enumerate(actions):
+            delay = final_delay if index == len(actions) - 1 else 2000
+            args += key_args(action) + ["-id", str(delay)]
         args += ["-it", "-ix"]
     run_trs80gp(args, cwd=work, check=True, timeout=35)
     text = screen(work / "trs80-text-0.bin")
@@ -70,7 +71,19 @@ def main() -> None:
              ("Pending startup command has not been saved.",
               "Pending startup command: disabled."),
              ("C",))
-    print("PASS: CONFIG reads, edits and clears pending BCST records")
+    run_case("test-disabled", image,
+             ("There is no pending startup command to test.",),
+             ("T",))
+    run_case("test-now", image, ("BetterCP/M 0.3",),
+             ("E", "VER\r", "T"), final_delay=5000)
+
+    maximum = extract_raw(image)
+    maximum[128:384] = startup_record("A" * 126,
+                                      system_base=LAYOUT["SYSTEM"])
+    run_case("test-126", build(bytes(maximum)),
+             ("A 126-byte command can run at cold boot but cannot use Test now.",),
+             ("T",))
+    print("PASS: CONFIG reads, edits, clears and immediately tests pending BCST records")
 
 
 if __name__ == "__main__":
