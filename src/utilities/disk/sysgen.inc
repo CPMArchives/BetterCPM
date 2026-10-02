@@ -428,6 +428,39 @@ SGBIOS: LD HL,(SGBASE)
         ADD HL,DE
         POP DE
         JP (HL)
+; Select boot drive A and publish its DPB and logical records/track.
+SGDISKSET:
+        LD HL,(1)
+        DEC HL
+        DEC HL
+        DEC HL
+        LD (SGBASE),HL
+        LD BC,0
+        LD E,0
+        LD A,27
+        CALL SGBIOS
+        LD A,H
+        OR L
+        JR Z,SGDSBAD
+        LD DE,10
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        LD (SGDPB),HL
+        LD C,(HL)
+        INC HL
+        LD B,(HL)
+        LD A,B
+        OR C
+        JR Z,SGDSBAD
+        LD (SGSPT),BC
+        XOR A
+        RET
+SGDSBAD:LD A,1
+        OR A
+        RET
 SGTITLE:DB 'Save current configuration on disk (SYSGEN)',0
 SGMAGIC:DB 'BCSG',1,5
 SGASK:  DB 'Save current drive settings on boot disk A: (Y/N)? ',0
