@@ -99,3 +99,26 @@ power-off owner.
 
 This is an implementation-layout decision inside the frozen startup lifecycle,
 not a reopening of the command architecture.
+
+## Saved startup record assignment
+
+The first increment assigns protected logical records 1 and 2 to the version-1
+saved startup record. They are within the otherwise unused tail of the Model 4
+512-byte stage-zero sector and precede the stage-one sector at records 4 through
+7. Stage zero ignores the tail after its code; z80pack boots from record zero.
+The assignment therefore changes neither boot execution nor the frozen nine
+SYSBUILD products. Record 3 remains reserved and zero.
+
+The 256-byte `BCST` record contains a 16-byte header, the complete 126-byte CCP
+command capacity and zero-reserved expansion space. The header carries major
+and minor version, header size, enabled flag, command length and capacity,
+declared record size, a 16-bit little-endian word-sum checksum and the resident
+system-base binding. Empty command means disabled. Unknown flags, mismatched
+enabled/length state, control characters, nonzero reserved bytes, wrong system
+layout and any checksum error reject the record.
+
+The host package composer and both platform image builders emit the same
+canonical disabled record. Native SYSBUILD copies the byte-identical default
+after loading its frozen component set. SYSGEN already copies and verifies all
+160 protected records, so the record follows every supported installation path
+without changing the ordinary filesystem.

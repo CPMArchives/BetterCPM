@@ -315,6 +315,10 @@ VFCMP:  LD      A,(DE)                  ; compare verification record
 ; -------------------------------------------------------------------------------
 
 FINALIZE:                               ; finalize overlay carriers
+        LD      HL,STARTDEF
+        LD      DE,BUFFER+128
+        LD      BC,256
+        LDIR                            ; install canonical disabled startup record
         LD      HL,BDOSJUMP
         LD      DE,BUFFER+9728+1021
         LD      BC,3
@@ -542,6 +546,14 @@ HEADER: DB 'BCSY',1,1                   ; SYSTEM.SYS package header
         DS 48
 
 BDOSJUMP:DB 0C3H,0BCH,0D6H              ; live gateway jump template
+
+  ; Version-1 startup record. The 16-bit little-endian word sum, including the
+  ; checksum word, is zero. CONFIG replaces this two-record default only after
+  ; validating the complete saved configuration.
+STARTDEF:DB 'BCST',1,0,16,0,0,126,0,1,096H,013H,0C4H,0D5H
+        REPT 240
+        DB 0
+        ENDM
 
 CURFCB: DW 0                            ; current component FCB pointer
 CURDST: DW 0                            ; current component destination

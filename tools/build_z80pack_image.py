@@ -159,7 +159,9 @@ def main():
   if len(data)>capacity:raise ValueError('carrier overflow')
   logical[record*128:record*128+capacity]=data.ljust(capacity,b'\0')
  loader_carrier=loader.ljust(L['RELOADER_CAPACITY'],b'\0')+selector.ljust(1024-L['RELOADER_CAPACITY'],b'\0')
- put(0,boot,128);put(8,resident,52*128);put(60,loader_carrier,1024);put(68,ctl,1024)
+ from startup_record import build as startup_record
+ put(0,boot,128);put(1,startup_record(system_base=L['SYSTEM']),256)
+ put(8,resident,52*128);put(60,loader_carrier,1024);put(68,ctl,1024)
  gateway_tail=bytes((0xc3,L['BDOS']&255,L['BDOS']>>8))
  def rsx_overlay(path):return path.read_bytes().ljust(1021,b'\0')+gateway_tail
  put(76,rsx_overlay(ROOT/'build/system/rsxloader.bin'),1024)

@@ -162,6 +162,8 @@ def install(boot: bytes, stage1: bytes, resident: bytes, command: bytes,
     ):
         start = logical_index * SECTOR_SIZE
         raw[start:start + SECTOR_SIZE] = payload.ljust(SECTOR_SIZE, b"\x00")
+    from startup_record import build as startup_record
+    raw[128:384] = startup_record(system_base=LAYOUT["SYSTEM"])
     capacity = SYSTEM_SECTORS * SECTOR_SIZE
     loaded_capacity = LAYOUT["BOOT_SECTORS"] * SECTOR_SIZE
     if LAYOUT["SYSTEM"] + loaded_capacity > LAYOUT["RAM_END"]:
