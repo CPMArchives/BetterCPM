@@ -34,13 +34,15 @@ MAIN:   LD HL,TITLE                     ; enter CONFIG utility
         JP Z,SYSGEN
         CP 'I'
         JP Z,EDITDRIVE
+        CP 'J'
+        JP Z,STARTMENU
         CP 'F'
         JP Z,PHYSMENU
         CP 'G'
         JP Z,LOGMENU
         CP 'A'
         JP C,MAIN
-        CP 'I'
+        CP 'J'
         JP NC,MAIN
         LD HL,NOTYET
         CALL PUTS
@@ -774,6 +776,141 @@ RESETGO:                                ; reset go
         LD C,37
         CALL BDOS
         RET
+
+; ================================================================================
+; =                         Saved Startup Command                                =
+; =                                                                              =
+; = Reads and validates the versioned command-environment startup record from    =
+; = protected system records 1 and 2. Editing and saving follow in the next       =
+; = bounded increment.                                                           =
+; ================================================================================
+
+STARTMENU:                              ; display saved startup command
+        LD HL,STTITLE
+        CALL HEADER
+        CALL STLOAD
+        JR NZ,STINVALID
+        LD A,(TRACKBF+7)
+        OR A
+        JR Z,STDISABLED
+        LD HL,STPREFIX
+        CALL PUTS
+        LD A,(TRACKBF+8)
+        LD B,A
+        LD HL,TRACKBF+16
+STPRINT:LD A,(HL)
+        CALL PUTC
+        INC HL
+        DJNZ STPRINT
+        CALL CRLF
+        JR STPAUSE
+STDISABLED:
+        LD HL,STOFF
+        CALL PUTS
+        JR STPAUSE
+STINVALID:
+        LD HL,STBAD
+        CALL PUTS
+STPAUSE:CALL PAUSE
+        JP MAIN
+
+STLOAD: CALL SGDISKSET                  ; load protected records 1 and 2
+        RET NZ
+        XOR A
+        LD (SGHEAD+7),A
+        INC A
+        LD (SGINDEX),A
+        LD HL,TRACKBF
+        LD (SGIOBUF),HL
+        XOR A
+        CALL SGIO
+        RET NZ
+        LD A,2
+        LD (SGINDEX),A
+        LD HL,TRACKBF+128
+        LD (SGIOBUF),HL
+        XOR A
+        CALL SGIO
+        RET NZ
+
+STVALID:                               ; validate complete BCST v1 record
+        LD HL,TRACKBF
+        LD DE,STMAGIC
+        LD BC,7
+        CALL SGCMP
+        RET NZ
+        LD A,(TRACKBF+7)
+        CP 2
+        RET NC
+        LD A,(TRACKBF+8)
+        CP 127
+        RET NC
+        LD B,A
+        LD A,(TRACKBF+9)
+        CP 126
+        RET NZ
+        LD HL,(TRACKBF+10)
+        LD DE,256
+        OR A
+        SBC HL,DE
+        RET NZ
+        LD HL,(TRACKBF+14)
+        LD DE,0D5C4H
+        OR A
+        SBC HL,DE
+        RET NZ
+        LD A,B
+        OR A
+        JR Z,STSTATE0
+        LD A,(TRACKBF+7)
+        CP 1
+        RET NZ
+        JR STSUM
+STSTATE0:LD A,(TRACKBF+7)
+        OR A
+        RET NZ
+STSUM:  LD IX,TRACKBF                  ; 16-bit little-endian word sum is zero
+        LD HL,0
+        LD B,128
+STSUMLP:LD E,(IX+0)
+        LD D,(IX+1)
+        ADD HL,DE
+        INC IX
+        INC IX
+        DJNZ STSUMLP
+        LD A,H
+        OR L
+        RET NZ
+        LD IX,TRACKBF+16
+        LD A,(TRACKBF+8)
+        OR A
+        JR Z,STRESERVE
+        LD B,A
+STCHAR: LD A,(IX+0)
+        CP 32
+        JR C,STFAIL
+        CP 127
+        JR NC,STFAIL
+        INC IX
+        DJNZ STCHAR
+STRESERVE:
+        LD A,240
+        LD B,A
+        LD A,(TRACKBF+8)
+        LD C,A
+        LD A,B
+        SUB C
+        LD B,A
+STRESLP:LD A,(IX+0)
+        OR A
+        JR NZ,STFAIL
+        INC IX
+        DJNZ STRESLP
+        XOR A
+        RET
+STFAIL: LD A,1
+        OR A
+        RET
   ; The sector table is in physical order. Changing IDs changes interleave.
   ; N selects the uniform size, or maximum size for a mixed track.
   ; S records each individual length in the same physical order as the IDs.
@@ -1053,8 +1190,9 @@ MAINMSG:DB 'Configuration options:',13,10,13,10 ; main-menu text
         DB '[ F ] Disk drive definitions',13,10
         DB '[ G ] Disk format definitions',13,10
         DB '[ H ] Save current configuration on disk (SYSGEN)',13,10,13,10
-        DB '[ I ] Create or edit a disk format',13,10,13,10
-        DB 'Select [ A - I ], or BREAK (^C) to exit.',13,10,0
+        DB '[ I ] Create or edit a disk format',13,10
+        DB '[ J ] Startup command',13,10,13,10
+        DB 'Select [ A - J ], or BREAK (^C) to exit.',13,10,0
 
 NOTYET: DB 'Feature not yet implemented.',13,10,0 ; notyet
 
@@ -1118,6 +1256,12 @@ BOOTMSG:DB 'A: is the system drive; its binding is protected.',13,10,0 ; protect
 FMTBAD: DB 'BIOS support for this definition is not implemented.',13,10,0 ; fmtbad
 HWMSG:  DB 'Disk format is incompatible with this drive!',13,10,0 ; hwmsg
 SAVED:  DB 13,10,'Disk configuration changed (until cold boot).',13,10,0 ; saved
+
+STTITLE:DB 'Startup command',0
+STPREFIX:DB 'Saved startup command: ',0
+STOFF:  DB 'Saved startup command: disabled.',13,10,0
+STBAD:  DB 'Saved startup command record is invalid.',13,10,0
+STMAGIC:DB 'BCST',1,0,16
 
 ; -------------------------------------------------------------------------------
 ; Utility State
