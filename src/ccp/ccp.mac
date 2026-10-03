@@ -33,7 +33,7 @@ CCP_HSKIP       EQU     HISTBASE+8
 CCP_EDOLD       EQU     HISTBASE+9
 HISTDATA        EQU     HISTBASE+10
 HISTCAP         EQU     LY_SYS-LY_HIST-10
-STARTBUF        EQU     LY_BUF          ; shared buffer after reconstruction ends
+STARTBUF        EQU     LY_LOAD         ; finished transient-loader workspace
 STARTFLAG       EQU     LY_SYS+095H     ; bit 0: cold startup already consumed
 
         CSEG
@@ -122,6 +122,12 @@ CCP_STARTUP:
         RET     NZ
         SET     0,A
         LD      (STARTFLAG),A
+        CALL    CCP_STBASE              ; direct BIOS calls avoid BDOS ^C handling
+        CALL    CCP_SUPPR
+        JR      NC,CCP_STGO
+        OR      A                       ; suppression returns without dispatch
+        RET
+CCP_STGO:
         CALL    CCP_STLOAD              ; read BCST after reconstruction is done
         RET     NZ
         LD      HL,STARTBUF
@@ -226,15 +232,10 @@ CCP_STCOPY:
 ; -------------------------------------------------------------------------------
 
   ; Read protected logical records 1 and 2 from boot drive A through the public
-  ; BIOS jump table. Reconstruction has finished, so the shared sector/overlay
-  ; buffer is available and no cold bytes need survive the command reloader.
+  ; BIOS jump table. The destination is the finished transient-loader workspace;
+  ; LY_BUF cannot be used because a platform BIOS may use it during transfer.
 
 CCP_STLOAD:
-        LD      HL,(0001H)              ; derive BIOS base from WBOOT vector
-        DEC     HL
-        DEC     HL
-        DEC     HL
-        LD      (STBBASE),HL
         LD      BC,0
         LD      E,0                     ; boot drive A
         LD      A,27                    ; SELDSK
@@ -267,6 +268,34 @@ CCP_STREAD:
 CCP_STIOERR:
         LD      A,1
         OR      A
+        RET
+
+  ; A queued Ctrl-C suppresses the saved command for this cold boot. Read the
+  ; console through BIOS so the gesture cannot invoke BDOS warm-boot handling.
+  ; Other queued input is consumed but does not suppress startup.
+
+CCP_SUPPR:
+        LD      A,6                     ; CONST
+        CALL    CCP_STBIO
+        OR      A
+        RET     Z
+        LD      A,9                     ; CONIN
+        CALL    CCP_STBIO
+        AND     07FH
+        CP      3
+        JR      Z,CCP_STHELD
+        OR      A                       ; ordinary input: clear carry
+        RET
+CCP_STHELD:
+        SCF
+        RET
+
+CCP_STBASE:
+        LD      HL,(0001H)              ; derive BIOS base from WBOOT vector
+        DEC     HL
+        DEC     HL
+        DEC     HL
+        LD      (STBBASE),HL
         RET
 
 CCP_STBIO:

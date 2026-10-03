@@ -43,7 +43,7 @@ def marker_program() -> bytes:
 
 
 def run_case(image: Path, simulator: Path, name: str, record: bytes,
-             expected_count: int) -> None:
+             expected_count: int, *, suppress: bool = False) -> None:
     with tempfile.TemporaryDirectory(prefix=f"bettercpm-startup-{name}-") as tmp:
         work = Path(tmp)
         shutil.copytree(image / "disks", work / "disks")
@@ -58,8 +58,21 @@ def run_case(image: Path, simulator: Path, name: str, record: bytes,
         ], cwd=work, check=True)
 
         log = work / "session.txt"
-        script = work / "test.exp"
-        script.write_text("""set timeout 20
+        env = dict(os.environ)
+        env["PATH"] = str(simulator.parent / "srctools") + os.pathsep + env["PATH"]
+        if suppress:
+            # A pipe carries byte 03h without the host terminal converting it
+            # into SIGINT. Queue ordinary commands behind the recovery byte.
+            run = subprocess.run(
+                [str(simulator), "-z", "-d", str(work / "disks")],
+                cwd=work, env=env, input=b"\x03WARM\rBYE\r",
+                capture_output=True, timeout=60,
+            )
+            text = run.stdout.decode("ascii", errors="replace")
+            log.write_text(text)
+        else:
+            script = work / "test.exp"
+            script.write_text("""set timeout 20
 log_file -noappend [lindex $argv 2]
 expect_before timeout {puts "TEST TIMEOUT"; exit 1}
 spawn [lindex $argv 0] -z -d [lindex $argv 1]
@@ -69,15 +82,19 @@ expect -exact {A0>_ }
 send -- "BYE\\r"
 expect eof
 """)
-        env = dict(os.environ)
-        env["PATH"] = str(simulator.parent / "srctools") + os.pathsep + env["PATH"]
-        run = subprocess.run(
-            ["expect", str(script), str(simulator), str(work / "disks"), str(log)],
-            cwd=work, env=env, capture_output=True, text=True, timeout=60,
-        )
-        text = log.read_text(errors="replace") if log.exists() else run.stdout
+            run = subprocess.run(
+                ["expect", str(script), str(simulator), str(work / "disks"),
+                 str(log)], cwd=work, env=env, capture_output=True, text=True,
+                timeout=60,
+            )
+            text = log.read_text(errors="replace") if log.exists() else run.stdout
         if run.returncode:
-            raise AssertionError(f"{name}: cpmsim failed\n{text[-1500:]}")
+            raise AssertionError(
+                f"{name}: cpmsim failed ({run.returncode})\n"
+                f"stdout:\n{str(run.stdout)[-1000:]}\n"
+                f"stderr:\n{str(run.stderr)[-1000:]}\n"
+                f"log:\n{text[-1500:]}"
+            )
         count = text.count(MARKER)
         if count != expected_count:
             raise AssertionError(
@@ -98,12 +115,13 @@ def main() -> None:
 
     enabled = startup_record("MARK", system_base=LAYOUT["SYSTEM"])
     run_case(image, simulator, "enabled", enabled, 1)
+    run_case(image, simulator, "suppressed", enabled, 0, suppress=True)
 
     invalid = bytearray(enabled)
     invalid[12] ^= 1
     run_case(image, simulator, "invalid-checksum", bytes(invalid), 0)
     print("PASS: cold startup dispatches once, does not repeat after WARM, "
-          "and rejects a corrupt BCST record")
+          "honors queued Ctrl-C suppression, and rejects a corrupt BCST record")
 
 
 if __name__ == "__main__":
