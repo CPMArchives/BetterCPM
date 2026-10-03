@@ -34,7 +34,7 @@ MAIN:   LD HL,TITLE                     ; enter CONFIG utility
         CP 3
         JP Z,DONE
         CP 'H'
-        JP Z,SYSGEN
+        JP Z,SAVEMENU
         CP 'I'
         JP Z,EDITDRIVE
         CP 'J'
@@ -781,6 +781,126 @@ RESETGO:                                ; reset go
         RET
 
 ; ================================================================================
+; =                         Saved Configuration Scope                            =
+; =                                                                              =
+; = Makes the pending-only and all-current meanings explicit. The first scope    =
+; = writes only cold-boot state; it cannot capture temporary active disk state.  =
+; ================================================================================
+
+SAVEMENU:                              ; choose saved-default scope
+        LD HL,SAVETITLE
+        CALL HEADER
+        LD HL,SAVEHELP
+        CALL PUTS
+        CALL CHOICE
+        CP 3
+        JP Z,MAIN
+        CP 'A'
+        JP Z,STSAVE
+        CP 'B'
+        JP NZ,SAVEMENU
+        LD A,(STDIRTY)
+        OR A
+        JP Z,SYSGEN
+        LD HL,SAVEALLP
+        CALL PUTS
+        CALL PAUSE
+        JP SAVEMENU
+
+STSAVE:LD A,(STSTATE)                  ; save pending cold changes only
+        OR A
+        CALL Z,STFETCH
+        LD A,(STSTATE)
+        CP 2
+        JP Z,STSAVEINVALID
+        LD A,(STDIRTY)
+        OR A
+        JP Z,STSAVENONE
+        LD HL,STSAVEASK
+        CALL PUTS
+        CALL KEY
+        CP 'Y'
+        JP NZ,SAVEMENU
+        CALL STLOAD                    ; preserve installed BCST for rollback
+        JP NZ,STSAVEIO
+        LD HL,TRACKBF
+        LD DE,SGOLD
+        LD BC,256
+        LDIR
+        LD HL,STPEND                   ; validate complete proposed record
+        LD DE,TRACKBF
+        LD BC,256
+        LDIR
+        CALL STVALID
+        JR NZ,STSAVEINVALID
+        XOR A
+        LD (SGFAILED),A
+        LD A,1
+        LD (SGINDEX),A
+        LD HL,STPEND
+        LD (SGIOBUF),HL
+        CALL STSAVEONE
+        JR NZ,SVROLL1
+        LD A,2
+        LD (SGINDEX),A
+        LD HL,STPEND+128
+        LD (SGIOBUF),HL
+        CALL STSAVEONE
+        JR NZ,SVROLL2
+        XOR A
+        LD (STDIRTY),A
+        LD HL,STSAVED
+        JR STSAVEREPORT
+
+STSAVEONE:                             ; write and verify selected BCST record
+        LD A,1
+        CALL SGIO
+        RET NZ
+        JP SGVERIFY
+
+SVROLL2:                               ; restore both possibly changed records
+        LD A,2
+        LD (SGINDEX),A
+        LD HL,SGOLD+128
+        LD (SGIOBUF),HL
+        CALL STRESTORE
+        LD (SGFAILED),A
+SVROLL1:
+        LD A,1
+        LD (SGINDEX),A
+        LD HL,SGOLD
+        LD (SGIOBUF),HL
+        CALL STRESTORE
+        LD B,A
+        LD A,(SGFAILED)
+        OR B
+        LD HL,SVRESTOK
+        JR Z,STSAVEREPORT
+        LD HL,STDAMAGED
+        JR STSAVEREPORT
+
+STRESTORE:                             ; restore and verify one original record
+        LD A,1
+        CALL SGIO
+        RET NZ
+        JP SGVERIFY
+
+STSAVEINVALID:
+        LD HL,STSAVEBAD
+        JR STSAVEREPORT
+STSAVENONE:
+        LD HL,SVMNONE
+        JR STSAVEREPORT
+STSAVEIO:
+        LD HL,SVMIOERR
+STSAVEREPORT:
+        CALL CRLF
+        CALL PUTS
+        CALL PAUSE
+        CALL FDBLOAD                   ; save workspace overlays the catalogue
+        JP SAVEMENU
+
+; ================================================================================
 ; =                         Saved Startup Command                                =
 ; =                                                                              =
 ; = Reads and validates the versioned command-environment startup record from    =
@@ -1470,6 +1590,21 @@ STTESTSUB:DB 'Cannot test while an A:$$$.SUB command stream is active.',13,10,0
 STTESTBAD:DB 'Unable to create the one-command test stream on A:.',13,10,0
 STMAGIC:DB 'BCST',1,0,16
 STHEADER:DB 'BCST',1,0,16,0,0,126,0,1,0,0,0C4H,0D5H
+
+SAVETITLE:DB 'Save startup defaults',0
+SAVEHELP:DB '[ A ] Save pending cold-boot changes only',13,10
+        DB '[ B ] Save all current settings as startup defaults',13,10
+        DB 'BREAK (^C) returns without saving.',13,10,0
+SAVEALLP:DB 'Pending cold-boot changes must be saved separately first.',13,10
+        DB 'Choose scope A, then return to scope B.',13,10,0
+STSAVEASK:DB 'Save pending cold-boot changes on system disk A: (Y/N)? ',0
+STSAVED:DB 'Pending cold-boot changes saved and verified.',13,10,0
+SVMNONE:DB 'There are no pending cold-boot changes to save.',13,10,0
+STSAVEBAD:DB 'Pending startup command is invalid. Edit or clear it first.',13,10,0
+SVMIOERR:DB 'Cannot read startup defaults. Nothing saved.',13,10,0
+SVRESTOK:DB 'Save failed. Original startup defaults restored.',13,10,0
+STDAMAGED:DB 'Save failed; restoration also failed.',13,10
+        DB 'Boot disk may be damaged. Use your backup.',13,10,0
 
 ; -------------------------------------------------------------------------------
 ; Utility State

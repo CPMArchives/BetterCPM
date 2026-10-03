@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Qualify CONFIG's native read-only BCST panel on protected media."""
+"""Qualify CONFIG's pending BCST controls on protected media."""
 from __future__ import annotations
 
 import shutil
@@ -47,6 +47,28 @@ def run_case(name: str, image: bytes, expected: tuple[str, ...],
         "pending command edit changed protected media"
 
 
+def run_pending_save(image: bytes) -> bytes:
+    """Save one pending command and prove no unrelated byte was captured."""
+    work = OUT / "save-pending"
+    work.mkdir()
+    disk = work / "a.dmk"
+    disk.write_bytes(image)
+    args = [str(DEFAULT_EMULATOR), "-m4", "-batch", "-turbo", "-d0", str(disk),
+            "-id", "2500"]
+    for action in ("CONFIG\r", "J", "E", "VER\r", "\x03", "H", "A", "Y"):
+        args += key_args(action) + ["-id", "2000"]
+    args += ["-it", "-ix"]
+    run_trs80gp(args, cwd=work, check=True, timeout=35)
+    text = screen(work / "trs80-text-0.bin")
+    assert "Pending cold-boot changes saved and verified." in text, text
+    before = extract_raw(image)
+    after = extract_raw(disk.read_bytes())
+    assert after[128:384] == startup_record("VER", system_base=LAYOUT["SYSTEM"])
+    assert before[:128] == after[:128]
+    assert before[384:] == after[384:], "pending-only save captured unrelated state"
+    return disk.read_bytes()
+
+
 def main() -> None:
     shutil.rmtree(OUT, ignore_errors=True)
     OUT.mkdir(parents=True)
@@ -83,7 +105,9 @@ def main() -> None:
     run_case("test-126", build(bytes(maximum)),
              ("A 126-byte command can run at cold boot but cannot use Test now.",),
              ("T",))
-    print("PASS: CONFIG reads, edits, clears and immediately tests pending BCST records")
+    saved = run_pending_save(image)
+    run_case("saved-view", saved, ("Pending startup command: VER",))
+    print("PASS: CONFIG reads, edits, clears, tests and saves pending BCST records")
 
 
 if __name__ == "__main__":
