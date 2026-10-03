@@ -799,13 +799,7 @@ SAVEMENU:                              ; choose saved-default scope
         JP Z,STSAVE
         CP 'B'
         JP NZ,SAVEMENU
-        LD A,(STDIRTY)
-        OR A
-        JP Z,SYSGEN
-        LD HL,SAVEALLP
-        CALL PUTS
-        CALL PAUSE
-        JP SAVEMENU
+        JP SYSGEN
 
 STSAVE:LD A,(STSTATE)                  ; save pending cold changes only
         OR A
@@ -1595,8 +1589,6 @@ SAVETITLE:DB 'Save startup defaults',0
 SAVEHELP:DB '[ A ] Save pending cold-boot changes only',13,10
         DB '[ B ] Save all current settings as startup defaults',13,10
         DB 'BREAK (^C) returns without saving.',13,10,0
-SAVEALLP:DB 'Pending cold-boot changes must be saved separately first.',13,10
-        DB 'Choose scope A, then return to scope B.',13,10,0
 STSAVEASK:DB 'Save pending cold-boot changes on system disk A: (Y/N)? ',0
 STSAVED:DB 'Pending cold-boot changes saved and verified.',13,10,0
 SVMNONE:DB 'There are no pending cold-boot changes to save.',13,10,0

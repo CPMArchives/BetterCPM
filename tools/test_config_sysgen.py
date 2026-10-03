@@ -139,9 +139,11 @@ def main():
         if (OUT/name).exists():shutil.rmtree(OUT/name)
     setup=probe(OUT);check=probe(OUT,check=True)
     image=medium([('SETUP.COM',setup),('CHECK.COM',check)])
-    start=[('SETUP\r','SYSGEN PROBE PASS'),('\r','A0>'),('CONFIG\r','Your choice:'),('H','Save current drive settings')]
-    s=run(OUT/'save',image,start+[('Y','Configuration saved and verified.'),('\r','Your choice:'),('\x03','A0>')])
-    assert 'Configuration saved and verified.' in s[-3],s
+    start=[('SETUP\r','SYSGEN PROBE PASS'),('\r','A0>'),
+           ('CONFIG\r','Your choice:'),('H','Save startup defaults'),
+           ('B','Save all current settings')]
+    s=run(OUT/'save',image,start+[('Y','All current settings saved and verified.'),('\r','Your choice:'),('\x03','A0>')])
+    assert 'All current settings saved and verified.' in s[-3],s
     saved=(OUT/'save/a.dmk').read_bytes()
     before=logical(image);after=logical(saved)
     assert before!=after,'no settings written'
@@ -155,7 +157,9 @@ def main():
     for n in range(4):allowed.update(range(base+table+n*80+16,base+table+n*80+80))
     changed={i for i,(a,b) in enumerate(zip(before,after)) if a!=b}
     assert changed<=allowed,changed-allowed
-    cold=run(OUT/'cold',saved,[('CHECK\r','SYSGEN PROBE PASS'),('\r','A0>'),('CONFIG\r','Your choice:'),('H','Save current drive settings'),('Y','Configuration saved and verified.')])
+    cold=run(OUT/'cold',saved,[('CHECK\r','SYSGEN PROBE PASS'),('\r','A0>'),
+             ('CONFIG\r','Your choice:'),('H','Save startup defaults'),
+             ('B','Save all current settings'),('Y','All current settings saved and verified.')])
     assert 'SYSGEN PROBE PASS' in cold[0],cold
     assert logical((OUT/'cold/a.dmk').read_bytes())==after,'repeat save changed disk'
     run(OUT/'decline',image,start+[('N','Your choice:')])

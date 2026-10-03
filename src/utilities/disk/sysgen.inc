@@ -1,14 +1,30 @@
-; CONFIG H -- SAVE THE BOOT DISK'S DRIVE DEFINITIONS.  07-Sep-2026
+; CONFIG H -- SAVE ALL CURRENT STARTUP DEFAULTS.  07-Sep-2026
 ; Keep SYSGEN out of the resident system. The reference file belongs to
 ; this particular build; compare its fixed bytes before touching a track.
-; 4000 = file header, 4080 = original, 6000 = proposed, 8000 = readback.
+; 4000 = header, 4080 = original, 5A80 = startup old, 6000 = proposed,
+; 8000 = readback. The carrier may use no more than its assigned 52 records.
 ; These buffers borrow the format catalogue. FDBLOAD puts it back on exit.
 SGHEAD  EQU 04000H
 SGOLD   EQU 04080H
+SGSTOLD EQU 05A80H
 SGNEW   EQU 06000H
 SGDMA   EQU 08000H
 SYSGEN: LD HL,SGTITLE
         CALL HEADER
+        LD A,(STDIRTY)                  ; retain pending-state participation
+        LD (SGSTFLAG),A
+        OR A
+        JR Z,SGNOSTATE
+        LD A,(STSTATE)
+        CP 1
+        JP NZ,SGSTBAD
+        LD HL,STPEND                    ; validate before the first disk write
+        LD DE,SGDMA
+        LD BC,256
+        LDIR
+        CALL STVALID
+        JP NZ,SGSTBAD
+SGNOSTATE:
         LD HL,SGFCB+12
         LD DE,SGFCB+13
         LD BC,23
@@ -30,7 +46,7 @@ SYSGEN: LD HL,SGTITLE
         LD A,(SGHEAD+6)
         OR A
         JP Z,SGFILE
-        CP 64
+        CP 53
         JP NC,SGFILE
         LD (SGCOUNT),A
         LD HL,SGOLD
@@ -134,6 +150,9 @@ SGRESOK:
         LD A,(SGHEAD+7)
         CP 8
         JP NZ,SGWRONG
+        LD (SGFIRST),A
+        CALL SGSTRD                    ; preserve startup records for rollback
+        JP NZ,SGIOERR
         XOR A
         LD (SGINDEX),A
 SGDISK: CALL SGPTRS
@@ -229,6 +248,8 @@ SGLIVE: LD A,(SGDRIVE)
         CALL KEY
         CP 'Y'
         JP NZ,SGEXIT
+        CALL SGSTWR                    ; pending values override saved values
+        JR NZ,SGSTUNDO
         XOR A
         LD (SGINDEX),A
 SGSAVE: CALL SGDIFF
@@ -242,7 +263,16 @@ SGSAVE: CALL SGDIFF
         JR NZ,SGUNDO
 SGSKIP: CALL SGNEXT
         JR NZ,SGSAVE
+        XOR A
+        LD (STDIRTY),A
         LD HL,SGOK
+        JP SGREPORT
+SGSTUNDO:                              ; failed startup write: restore it only
+        CALL SGSTROLL
+        LD HL,SGRESTORED
+        OR A
+        JP Z,SGREPORT
+        LD HL,SGDAMAGED
         JP SGREPORT
 ; Include the failing record in the undo: a failed write may be partial.
 ; This protects an ordinary I/O failure, not loss of power during SYSGEN.
@@ -268,6 +298,11 @@ SGRSTEP:LD A,(SGINDEX)
         LD HL,SGSTOP
         CP (HL)
         JR NZ,SGROLL
+        CALL SGSTROLL                  ; include startup state in rollback
+        JR Z,SGRSTATE
+        LD A,1
+        LD (SGFAILED),A
+SGRSTATE:
         LD HL,SGRESTORED
         LD A,(SGFAILED)
         OR A
@@ -279,6 +314,8 @@ SGFILE: LD HL,SGFILEMSG
 SGWRONG:LD HL,SGWRONGMSG
         JR SGREPORT
 SGIOERR:LD HL,SGREADMSG
+        JR SGREPORT
+SGSTBAD:LD HL,SGSTBADMSG
 SGREPORT:CALL CRLF
         CALL PUTS
         CALL PAUSE
@@ -327,6 +364,89 @@ SGMERGE:LD DE,SGNEW
         EX DE,HL
         POP HL
         LDIR
+        RET
+
+; Read installed startup defaults into the gap after the reference image.
+SGSTRD: LD A,(SGSTFLAG)
+        OR A
+        RET Z
+        XOR A
+        LD (SGHEAD+7),A
+        INC A
+        LD (SGINDEX),A
+        LD HL,SGSTOLD
+        LD (SGIOBUF),HL
+        XOR A
+        CALL SGIO
+        JR NZ,SGSTEND
+        LD A,2
+        LD (SGINDEX),A
+        LD HL,SGSTOLD+128
+        LD (SGIOBUF),HL
+        XOR A
+        CALL SGIO
+SGSTEND:PUSH AF
+        LD A,(SGFIRST)
+        LD (SGHEAD+7),A
+        POP AF
+        OR A
+        RET
+
+; Write and verify the proposed startup defaults before the carrier records.
+SGSTWR: LD A,(SGSTFLAG)
+        OR A
+        RET Z
+        XOR A
+        LD (SGHEAD+7),A
+        INC A
+        LD (SGINDEX),A
+        LD HL,STPEND
+        LD (SGIOBUF),HL
+        CALL STSAVEONE
+        JR NZ,SGSTWEND
+        LD A,2
+        LD (SGINDEX),A
+        LD HL,STPEND+128
+        LD (SGIOBUF),HL
+        CALL STSAVEONE
+SGSTWEND:
+        PUSH AF
+        LD A,(SGFIRST)
+        LD (SGHEAD+7),A
+        POP AF
+        OR A
+        RET
+
+; Restore and verify both original startup records. Z means full recovery.
+SGSTROLL:
+        LD A,(SGSTFLAG)
+        OR A
+        RET Z
+        XOR A
+        LD (SGHEAD+7),A
+        LD (SGSTFAIL),A
+        LD A,2
+        LD (SGINDEX),A
+        LD HL,SGSTOLD+128
+        LD (SGIOBUF),HL
+        CALL STRESTORE
+        JR Z,SGSTRONE
+        LD A,1
+        LD (SGSTFAIL),A
+SGSTRONE:
+        LD A,1
+        LD (SGINDEX),A
+        LD HL,SGSTOLD
+        LD (SGIOBUF),HL
+        CALL STRESTORE
+        JR Z,SGSTRDONE
+        LD A,1
+        LD (SGSTFAIL),A
+SGSTRDONE:
+        LD A,(SGFIRST)
+        LD (SGHEAD+7),A
+        LD A,(SGSTFAIL)
+        OR A
         RET
 ; Compare BC bytes. Z means equal; no caller depends on the pointers.
 SGCMP:  LD A,(DE)
@@ -461,13 +581,14 @@ SGDISKSET:
 SGDSBAD:LD A,1
         OR A
         RET
-SGTITLE:DB 'Save current configuration on disk (SYSGEN)',0
+SGTITLE:DB 'Save all current settings as startup defaults',0
 SGMAGIC:DB 'BCSG',1,5
-SGASK:  DB 'Save current drive settings on boot disk A: (Y/N)? ',0
-SGOK:   DB 13,10,'Configuration saved and verified.',13,10,0
+SGASK:  DB 'Save all current settings on system disk A: (Y/N)? ',0
+SGOK:   DB 13,10,'All current settings saved and verified.',13,10,0
 SGFILEMSG:DB 'Missing or invalid A:SYSGEN.DAT for this build.',13,10,0
 SGWRONGMSG:DB 'Boot disk does not match this system. Nothing saved.',13,10,0
 SGREADMSG:DB 'Cannot read boot system records. Nothing saved.',13,10,0
+SGSTBADMSG:DB 'Pending startup command is invalid. Edit or clear it first.',13,10,0
 SGRESTORED:DB 'Save failed. Original configuration restored.',13,10,0
 SGDAMAGED:DB 'Save failed; restoration also failed.',13,10
         DB 'Boot disk may be damaged. Use your backup.',13,10,0
@@ -479,6 +600,9 @@ SGDRIVE:DB 0
 SGSTOP: DB 0
 SGFAILED:DB 0
 SGWRITE:DB 0
+SGSTFLAG:DB 0
+SGSTFAIL:DB 0
+SGFIRST:DB 0
 SGPTR:  DW 0
 SGBASE: DW 0
 SGDPB:  DW 0
