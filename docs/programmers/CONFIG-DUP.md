@@ -47,8 +47,8 @@ saved record from protected system media. An enabled command runs once through
 the ordinary CCP dispatcher after CPX initialization. The consumed flag is set
 before dispatch, so `WARM`, transient termination and CCP reconstruction do not
 run it again. Invalid, disabled or failed commands return to the ordinary
-prompt without retry. The cold-boot suppression gesture remains to be
-implemented.
+prompt without retry. Queueing Ctrl-C during cold initialization suppresses
+the command for that boot without erasing the saved setting.
 
 F displays physical drives 0–3. Each drive has six settings:
 
@@ -348,11 +348,11 @@ implementation work; normalized bindings do not depend on future catalog
 availability for runtime meaning.
 
 CONFIG J can inspect, edit, clear, immediately test and save the optional
-startup command. Cold-boot dispatch is the remaining implementation work. It
-will run once after true cold initialization and service availability, never
-on WBOOT or reconstruction. Its executed flag is set before dispatch; failure
-returns to the prompt without retry; cold boot clears it; a recovery gesture
-suppresses it for that boot.
+startup command. Cold boot reads and validates the saved record after command-
+environment reconstruction, then dispatches it once through the ordinary CCP
+path. It never runs on WBOOT or reconstruction. Its consumed flag is set before
+the recovery check and dispatch; failure returns to the prompt without retry;
+cold boot clears it; queued Ctrl-C suppresses it for that boot.
 
 DUP is partially implemented. Important binding, hardware and format validation
 exists. Remaining backend-capability and integration behavior still requires
