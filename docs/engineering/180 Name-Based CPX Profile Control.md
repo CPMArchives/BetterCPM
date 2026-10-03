@@ -8,8 +8,10 @@ four-record reconstruction table directly. It contains no RCP- or HELLO-specific
 identity, membership mask, or canonical rebuild path.
 
 The completed overlay occupies 1,018 of its fixed 1,024 bytes. The disk-control
-regions and memory map are unchanged. The former `CPTFLAGS` byte remains
-reserved and initializes to zero so the persistent layout does not move.
+regions and memory map are unchanged. Name-based CPX control leaves the former
+`CPTFLAGS` byte available; Step 5 subsequently assigned bit 0 as the once-only
+cold-startup marker without moving the persistent layout. Other bits remain
+reserved.
 
 ## Validation boundary
 

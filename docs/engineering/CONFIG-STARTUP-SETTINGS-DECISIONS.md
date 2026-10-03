@@ -6,7 +6,8 @@ implementation pass; not a description of implemented behavior.
 The retained 1.0 authority in this document is the active/saved-scope model and
 startup-command lifecycle. General PDS sizing/growth, NDR/PATH, HISTORY.RSX and
 terminal-profile configuration are later work and do not alter the fixed
-192-byte 1.0 PDS. The startup command itself is not yet implemented.
+192-byte 1.0 PDS. The saved record, CONFIG controls and once-only CCP dispatch
+are implemented; the cold-boot suppression gesture remains outstanding.
 
 ## Drive capacity and persistent RAM
 
