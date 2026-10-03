@@ -510,7 +510,7 @@ DC_FSTATUS:                             ; return format status
         JP DC_RETURN
 
 CPTCOUNT EQU LY_SYS+094H
-CPTFLAGS EQU LY_SYS+095H              ; reserved profile byte
+CPTFLAGS EQU LY_SYS+095H              ; bit 0: startup command already consumed
 CPTABLE EQU LY_SYS+096H
 
 ; ================================================================================

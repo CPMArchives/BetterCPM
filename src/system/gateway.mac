@@ -240,8 +240,8 @@ ECB_GENERATION:                         ; environment generation counter
 CPTCOUNT:                               ; persistent CPX record count
         DB      1                       ; default proof profile loads RCP.CPX
 
-CPTFLAGS:                               ; persistent CPX profile flags
-        DB      0                       ; reserved after name-based profile control
+CPTFLAGS:                               ; persistent cold-start flags
+        DB      0                       ; bit 0: startup command already consumed
 
 CPTABLE:                                ; persistent CPX reconstruction table
         DB      'RCP     '              ; ordinary RCP.CPX filename stem

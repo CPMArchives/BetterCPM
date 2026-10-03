@@ -37,6 +37,19 @@ physical and logical settings for raw images.
 The reference file consumes disk space, not resident RAM. CONFIG temporarily
 borrows and then reloads its format catalogue while running H.
 
+J maintains the optional cold-start command. It displays the saved command,
+allows a pending replacement or clear operation, and can test the pending
+command immediately without changing the disk. H scope A saves only that
+pending cold setting; scope B includes it with the active drive configuration.
+
+On a true cold boot, the first reconstructed CCP reads and fully validates the
+saved record from protected system media. An enabled command runs once through
+the ordinary CCP dispatcher after CPX initialization. The consumed flag is set
+before dispatch, so `WARM`, transient termination and CCP reconstruction do not
+run it again. Invalid, disabled or failed commands return to the ordinary
+prompt without retry. The cold-boot suppression gesture remains to be
+implemented.
+
 F displays physical drives 0–3. Each drive has six settings:
 
 - Drive size in inches (the present adapter accepts 5).

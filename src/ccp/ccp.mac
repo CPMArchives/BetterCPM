@@ -33,6 +33,8 @@ CCP_HSKIP       EQU     HISTBASE+8
 CCP_EDOLD       EQU     HISTBASE+9
 HISTDATA        EQU     HISTBASE+10
 HISTCAP         EQU     LY_SYS-LY_HIST-10
+STARTBUF        EQU     LY_BUF          ; shared buffer after reconstruction ends
+STARTFLAG       EQU     LY_SYS+095H     ; bit 0: cold startup already consumed
 
         CSEG
         .PHASE  CCPBASE
@@ -53,6 +55,8 @@ CCP_ENTRY:                              ; initialize CCP stack
         ADD     HL,DE
         LD      SP,HL
         CALL    CPX_INITIALIZE
+        CALL    CCP_STARTUP
+        JR      C,CCP_DISPATCH
 
 ; -------------------------------------------------------------------------------
 ; Main Command Loop
@@ -67,6 +71,8 @@ CCP_LOOP:                               ; prompt for and dispatch next command
         LD      C,2
         CALL    BDOS
         CALL    CCP_READLN
+
+CCP_DISPATCH:                           ; dispatch acquired or cold-start command
         LD      A,(CCP_COUNT)
         OR      A
         JR      Z,CCP_LOOP
@@ -101,6 +107,176 @@ CCP_BAD:                                ; fall through to transient command load
         LD      C,9
         CALL    BDOS
         JP      CCP_LOOP
+
+; -------------------------------------------------------------------------------
+; Cold-Startup Command
+; -------------------------------------------------------------------------------
+
+  ; Consume the cold marker before examining or dispatching the command. A
+  ; transient which exits through WBOOT therefore cannot cause a second run.
+  ; Invalid or disabled records simply fall through to the ordinary prompt.
+
+CCP_STARTUP:
+        LD      A,(STARTFLAG)
+        BIT     0,A
+        RET     NZ
+        SET     0,A
+        LD      (STARTFLAG),A
+        CALL    CCP_STLOAD              ; read BCST after reconstruction is done
+        RET     NZ
+        LD      HL,STARTBUF
+        LD      DE,CCP_STSIG
+        LD      B,7
+
+CCP_STMAGIC:
+        LD      A,(DE)
+        CP      (HL)
+        RET     NZ
+        INC     DE
+        INC     HL
+        DJNZ    CCP_STMAGIC
+        LD      A,(HL)                  ; flags: only enabled bit is defined
+        CP      1
+        RET     NZ
+        INC     HL
+        LD      A,(HL)                  ; command length
+        OR      A
+        RET     Z
+        CP      127
+        RET     NC
+        LD      C,A
+        INC     HL
+        LD      A,(HL)                  ; declared capacity is 126
+        CP      126
+        RET     NZ
+        INC     HL
+        LD      A,(HL)                  ; declared record size is 256
+        OR      A
+        RET     NZ
+        INC     HL
+        LD      A,(HL)
+        CP      1
+        RET     NZ
+        INC     HL
+        INC     HL                      ; checksum is verified below
+        INC     HL
+        LD      DE,(STARTBUF+14)        ; system-base binding
+        LD      HL,LY_SYS
+        OR      A
+        SBC     HL,DE
+        RET     NZ
+        LD      HL,STARTBUF             ; canonical 16-bit little-endian sum
+        LD      DE,0
+        LD      B,128
+
+CCP_STSUM:
+        LD      A,(HL)
+        ADD     A,E
+        LD      E,A
+        INC     HL
+        LD      A,(HL)
+        ADC     A,D
+        LD      D,A
+        INC     HL
+        DJNZ    CCP_STSUM
+        LD      A,D
+        OR      E
+        RET     NZ
+        LD      A,(STARTBUF+8)
+        LD      (CCP_COUNT),A
+        LD      B,A
+        LD      HL,STARTBUF+16
+
+CCP_STTEXT:                             ; reject controls in the saved command
+        LD      A,(HL)
+        CP      020H
+        RET     C
+        CP      07FH
+        RET     Z
+        INC     HL
+        DJNZ    CCP_STTEXT
+        LD      DE,STARTBUF+256
+
+CCP_STZERO:                             ; all bytes after the command are reserved
+        LD      A,H
+        CP      D
+        JR      NZ,CCP_STZBYTE
+        LD      A,L
+        CP      E
+        JR      Z,CCP_STCOPY
+CCP_STZBYTE:
+        LD      A,(HL)
+        OR      A
+        RET     NZ
+        INC     HL
+        JR      CCP_STZERO
+
+CCP_STCOPY:
+        LD      A,(STARTBUF+8)
+        LD      C,A
+        LD      B,0
+        LD      HL,STARTBUF+16
+        LD      DE,CCP_DATA
+        LDIR
+        SCF
+        RET
+
+; -------------------------------------------------------------------------------
+; Cold-Startup Record Input
+; -------------------------------------------------------------------------------
+
+  ; Read protected logical records 1 and 2 from boot drive A through the public
+  ; BIOS jump table. Reconstruction has finished, so the shared sector/overlay
+  ; buffer is available and no cold bytes need survive the command reloader.
+
+CCP_STLOAD:
+        LD      HL,(0001H)              ; derive BIOS base from WBOOT vector
+        DEC     HL
+        DEC     HL
+        DEC     HL
+        LD      (STBBASE),HL
+        LD      BC,0
+        LD      E,0                     ; boot drive A
+        LD      A,27                    ; SELDSK
+        CALL    CCP_STBIO
+        LD      A,H
+        OR      L
+        JR      Z,CCP_STIOERR
+        LD      BC,0
+        LD      A,30                    ; SETTRK 0
+        CALL    CCP_STBIO
+        LD      BC,1
+        LD      DE,STARTBUF
+        CALL    CCP_STREAD
+        RET     NZ
+        LD      BC,2
+        LD      DE,STARTBUF+128
+
+CCP_STREAD:
+        PUSH    DE
+        LD      A,33                    ; SETSEC logical record
+        CALL    CCP_STBIO
+        POP     BC
+        LD      A,36                    ; SETDMA
+        CALL    CCP_STBIO
+        LD      A,39                    ; READ
+        CALL    CCP_STBIO
+        OR      A
+        RET
+
+CCP_STIOERR:
+        LD      A,1
+        OR      A
+        RET
+
+CCP_STBIO:
+        LD      HL,(STBBASE)
+        PUSH    DE
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE
+        POP     DE
+        JP      (HL)
 
   ; Display the live default drive/user pair.  User numbers are deliberately
   ; unpadded: A0>, A5>, A31>.  The following command-line colon belongs to the
@@ -3095,6 +3271,8 @@ CCP_KGO:       DB      'GO'             ; GO command keyword
 CCP_KSAVE:     DB      'SAVE'           ; SAVE command keyword
 CCP_COM:                                ; .COM extension text
         DB      'COM'
+CCP_STSIG:     DB      'BCST',1,0,16
+STBBASE:       DW      0               ; runtime BIOS jump-table base
 
 ; -------------------------------------------------------------------------------
 ; Messages
