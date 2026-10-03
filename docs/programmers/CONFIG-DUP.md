@@ -15,16 +15,20 @@ a guessed name.
 
 ## CONFIG
 
-The main menu retains the MM letter assignments. F, G, H and I have implementations;
-A–E explicitly report “Feature not yet implemented.” Changes take effect
-immediately and survive warm boot. CONFIG H is undergoing acceptance testing.
+The main menu retains the MM letter assignments. F through J have
+implementations; A–E explicitly report “Feature not yet implemented.” Active
+drive changes take effect immediately and survive warm boot.
 
-H saves the four physical drive definitions and four logical bindings to the
-current boot disk A:. It requires the matching `A:SYSGEN.DAT`, generated with
-the system image. It checks the immutable resident carrier before confirmation,
-writes only changed configuration records, and verifies each write. A failed
-write or comparison triggers restoration of the original changed records;
-restoration failures are reported explicitly. This is not power-loss atomic.
+H offers two scopes. Scope A saves pending cold-boot changes only; in the
+current implementation that means the optional startup command. Scope B saves
+the four active physical definitions and four active logical bindings together
+with pending cold-boot changes, whose values take precedence over installed
+defaults. Both scopes write the current system disk A:. The all-current scope
+requires the matching `A:SYSGEN.DAT`, generated with the system image. It checks
+the immutable resident carrier before confirmation, writes only changed
+configuration records, and verifies each write. A failed write or comparison
+triggers restoration of the original changed records; restoration failures are
+reported explicitly. This is not power-loss atomic.
 Files, boot loaders and resident executable code are preserved. An ordinary
 cold boot then uses the saved settings. H does not install a new system on
 another disk and does not persist loaded RSXs: load FDF.RSX again before using
@@ -330,11 +334,12 @@ Text FDF and FDF.RSX exist. The production FDB compiler/reader remain
 implementation work; normalized bindings do not depend on future catalog
 availability for runtime meaning.
 
-The optional startup command is not implemented. It runs once after true cold
-initialization and service availability, never on WBOOT or reconstruction. Its
-executed flag is set before dispatch; failure returns to the prompt without
-retry; cold boot clears it; a recovery gesture suppresses it for that boot.
-CONFIG must inspect, edit, clear and immediately test the command.
+CONFIG J can inspect, edit, clear, immediately test and save the optional
+startup command. Cold-boot dispatch is the remaining implementation work. It
+will run once after true cold initialization and service availability, never
+on WBOOT or reconstruction. Its executed flag is set before dispatch; failure
+returns to the prompt without retry; cold boot clears it; a recovery gesture
+suppresses it for that boot.
 
 DUP is partially implemented. Important binding, hardware and format validation
 exists. Remaining backend-capability and integration behavior still requires
