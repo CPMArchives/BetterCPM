@@ -359,7 +359,10 @@ path. It never runs on WBOOT or reconstruction. Its consumed flag is set before
 the recovery check and dispatch; failure returns to the prompt without retry;
 cold boot clears it; queued Ctrl-C suppresses it for that boot.
 
-DUP is partially implemented. Important binding, hardware and format validation
-exists. Remaining backend-capability and integration behavior still requires
-implementation, followed by the final supported/unsupported format matrix and
-platform qualification.
+DUP backend-capability closure is complete for the two 1.0 platforms. The
+Model 4 path qualifies matching-format and cross-format copy/check operations,
+including FDF mixed-sector media, and preserves bindings and unaffected media
+through cancellation, CRC failure, write protection and interruption. The
+z80pack path formats and verifies uniform raw media and rejects mixed-sector
+formatting before writing. Native installation and final two-platform release
+qualification remain separate Item 5 work.

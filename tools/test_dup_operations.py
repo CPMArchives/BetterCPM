@@ -7,6 +7,10 @@ from test_disk_utilities import medium, keys
 from run_trs80_command import DEFAULT_EMULATOR
 from build_montezuma_extended_790k import crc16
 ROOT=Path(__file__).resolve().parents[1]
+RUNTIME_OVERLAYS=("R3PLAN.RSX","R3SLOTS.RSX","R3SNAP.RSX","R3CARR.RSX",
+    "R3META.RSX","R3COORD.RSX","R3PROF.RSX","R3KCTX.RSX","R3KEEP.RSX",
+    "R3KPRE.RSX","R3FINAL.RSX","R3DROP.RSX","R3MOVE.RSX","R3COMIT.RSX",
+    "R3RESOL.RSX")
 
 def binding(physical,sides):
     # Two cylinders, one reserved surface track: copy must include it too.
@@ -31,20 +35,20 @@ def probe(w, mode):
         OR A
         JR NZ,CHECK
         LD DE,BREQ
-        LD BC,04CFH
+        LD BC,04B5H
         CALL 5
         LD A,L
         OR A
         JR NZ,FAIL
         LD DE,CREQ
-        LD BC,04CFH
+        LD BC,04B5H
         CALL 5
         LD A,L
         OR A
         JR NZ,FAIL
         JR OK
 CHECK:  LD DE,READREQ
-        LD BC,03CFH
+        LD BC,03B5H
         CALL 5
         LD A,L
         OR A
@@ -123,7 +127,13 @@ def payloads(image):
 def main():
   mode=sys.argv[1] if len(sys.argv)>1 else 'copy'
   with tempfile.TemporaryDirectory(prefix='bettercpm-dup-') as tmp:
-    w=Path(tmp);code=probe(w,mode);system=medium([('DSET.COM',code),('RSX.COM',(ROOT/'build/utilities/RSX.COM').read_bytes()),('FDF.RSX',(ROOT/'build/rsx/FDF.RSX').read_bytes())])
+    w=Path(tmp);code=probe(w,mode)
+    extras=[('DSET.COM',code),
+            ('RSX.COM',(ROOT/'build/utilities/RSX.COM').read_bytes()),
+            ('FDF.RSX',(ROOT/'build/rsx/FDF.RSX').read_bytes())]
+    extras += [(name,(ROOT/'build/system'/name).read_bytes())
+               for name in RUNTIME_OVERLAYS]
+    system=medium(extras)
     source=bytearray(system);size=int.from_bytes(source[2:4],'little')
     badpos=None
     for cyl in range(2):
