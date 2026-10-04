@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prove DUP formats and verifies z80pack uniform raw media."""
+"""Prove z80pack DUP formats uniform media and rejects mixed media safely."""
 from __future__ import annotations
 
 import argparse
@@ -21,6 +21,8 @@ def main() -> None:
                         default=ROOT / "build/z80pack")
     parser.add_argument("--simulator", type=Path,
                         default=Path.home() / "projects/git/z80pack/cpmsim/cpmsim")
+    parser.add_argument("--unsupported", action="store_true",
+                        help="exercise mixed-sector pre-write rejection")
     args = parser.parse_args()
     image = args.image_dir.resolve()
     simulator = args.simulator.expanduser().resolve()
@@ -66,6 +68,27 @@ def main() -> None:
 
         try:
             expect("A0>_ ")
+            if args.unsupported:
+                os.write(terminal, b"RSX LOAD FDF\r")
+                expect("A0>_ ")
+                os.write(terminal, b"CONFIG\r")
+                expect("Your choice:")
+                os.write(terminal, b"G")
+                expect("Your choice:")
+                os.write(terminal, b"B")
+                for _ in range(6):
+                    expect("Your choice:")
+                    os.write(terminal, b".")
+                expect("Your choice:")
+                os.write(terminal, b"I")
+                expect("Which physical disk drive")
+                os.write(terminal, b"1")
+                expect("Disk configuration changed")
+                expect("Push ENTER for menu.")
+                os.write(terminal, b"\r")
+                expect("Choose the letter of the drive to change:")
+                os.write(terminal, b"\003")
+                expect("A0>_ ")
             os.write(terminal, b"DUP\r")
             expect("Your choice:")
             os.write(terminal, b"A")
@@ -74,8 +97,11 @@ def main() -> None:
             os.write(terminal, b"B")
             expect("Format this disk? [Y/N]")
             os.write(terminal, b"Y")
-            expect("Tracks written and verified: 00080", 120)
-            expect("Format complete.")
+            if args.unsupported:
+                expect("Unsupported operation or disk address.")
+            else:
+                expect("Tracks written and verified: 00080", 120)
+                expect("Format complete.")
             os.write(terminal, b"\r")
             expect("Your choice:")
             os.write(terminal, b"\003")
@@ -92,11 +118,19 @@ def main() -> None:
             except ChildProcessError:
                 pass
             os.close(terminal)
-        report = image / "dup-format-verification.txt"
+        report = image / ("dup-format-unsupported-verification.txt"
+                          if args.unsupported else "dup-format-verification.txt")
         report.write_bytes(transcript)
         actual = target.read_bytes()
-        assert actual == b"\xe5" * len(actual), "DUP did not erase raw image"
-    print("PASS: z80pack DUP formatted and verified the complete raw image")
+        if args.unsupported:
+            assert actual == b"\xa5" * len(actual), \
+                "unsupported format changed raw image"
+        else:
+            assert actual == b"\xe5" * len(actual), "DUP did not erase raw image"
+    if args.unsupported:
+        print("PASS: z80pack DUP rejected mixed-sector formatting before writing")
+    else:
+        print("PASS: z80pack DUP formatted and verified the complete raw image")
 
 
 if __name__ == "__main__":
