@@ -139,7 +139,7 @@ Z_MAP:                                  ; map logical record to raw-image sector
 
         LD DE,(BIO_TRACK)
         LD HL,(BIO_SECTOR)
-        LD BC,001D1H
+        LD BC,001B7H                  ; production FDF Function 183, operation 1
         CALL 5
         BIT 7,B
         JP Z,Z_BADIX

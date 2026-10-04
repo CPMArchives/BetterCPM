@@ -131,7 +131,7 @@ DFORMAT:XOR A                           ; format selected disk
         LD A,(CURB+52)
         OR B
         JR Z,DFKNOWN
-        LD BC,000D1H
+        LD BC,000B7H                  ; production FDF Function 183, operation 0
         CALL BDOS
         LD DE,04644H
         OR A

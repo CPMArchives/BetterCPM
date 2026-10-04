@@ -237,6 +237,11 @@ untargeted-track preservation on private images. Its `same`, `mixed`, `bad`,
 `protected`, and `abort` modes cover matching formats, mixed sector sizes, bad
 CRCs, write protection and interruption. The mixed case uses FDF.RSX.
 
+`tools/test_z80pack_dup_format.py` qualifies complete uniform raw-media format
+and read-back. Its `--unsupported` case loads FDF.RSX, installs a mixed-sector
+MM SUPER binding, and proves that the raw backend rejects formatting before
+changing any byte of the target image.
+
 The z80pack adapter accepts format binding changes and formats uniform raw
 media by writing E5 through the active logical-to-raw mapping. DUP performs its
 ordinary record-by-record read-back verification afterward. Optional FDF

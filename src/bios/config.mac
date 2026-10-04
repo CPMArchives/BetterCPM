@@ -130,7 +130,7 @@ DC_ONESIDE:                             ; validate single-sided profile
         AND 00FH
         JR Z,DC_FDFOK
         PUSH IX
-        LD BC,000D1H
+        LD BC,000B7H                  ; production FDF Function 183, operation 0
         CALL 5
         POP IX
         LD DE,04644H
@@ -175,7 +175,7 @@ DC_SPT:                                 ; validate logical sector geometry
 
 DC_MIXED:                               ; validate mixed-sector geometry
   ; Validate a packed per-sector size map, or expand the old MM SUPER form.
-        LD BC,002D1H
+        LD BC,002B7H                  ; production FDF Function 183, operation 2
         CALL 5
         LD DE,04644H
         OR A

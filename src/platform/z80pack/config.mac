@@ -285,7 +285,7 @@ ZC_SIDEOK:                              ; accept side geometry
         AND 00FH
         JR Z,ZC_FDFOK
         PUSH IX
-        LD BC,000D1H
+        LD BC,000B7H                  ; production FDF Function 183, operation 0
         CALL 5
         POP IX
         LD DE,04644H
@@ -333,7 +333,7 @@ ZC_SPTDONE:                             ; finish sector scaling
 
 ZC_MIXED:                               ; normalize mixed geometry
         PUSH IX
-        LD BC,002D1H
+        LD BC,002B7H                  ; production FDF Function 183, operation 2
         CALL 5
         POP IX
         LD DE,04644H
