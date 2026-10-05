@@ -33,7 +33,7 @@ Yes. Artificial intelligence has been used extensively in the implementation of 
 
 ### So Is BetterCP/M Vibe-Coded?
 
-No. BetterCP/M is not [vibe-coded](https://martinfowler.com/bliki/VibeCoding.html?utm_source=chatgpt.com).
+No. BetterCP/M is not [vibe-coded](https://martinfowler.com/bliki/VibeCoding.html?utm_source=chatgpt.com). It is much close to an [agentic coding](https://martinfowler.com/bliki/AgenticProgramming.html) project.
 
 AI has been used extensively during the implementation phase of BetterCP/M, but the project's goals, scope, compatibility baseline, system design, architecture, interfaces, behavioral requirements, compatibility policy, acceptance criteria, and release requirements are human-directed. AI is used primarily to translate those requirements into code and to assist with analysis, testing, and documentation.
 
