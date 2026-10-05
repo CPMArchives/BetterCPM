@@ -24,7 +24,7 @@ BetterCP/M grew out of that process. What began as an effort to understand CP/M 
 
 ## Is BetterCP/M Vibe-Coded?
 
-No. BetterCP/M is not [vibe-coded](https://x.com/karpathy/status/1886192184808149383) in the sense described by that term.
+No. BetterCP/M is not [vibe-coded](https://x.com/karpathy/status/1886192184808149383). It is much close to an [agentic coding](https://martinfowler.com/bliki/AgenticProgramming.html) project.
 
 AI-generated code is not accepted simply because it compiles, boots, produces plausible output, or appears to solve the immediate problem. BetterCP/M is developed against previously stated architecture, behavioral requirements, compatibility requirements, subsystem interfaces, memory constraints, and acceptance criteria.
 
