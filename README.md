@@ -25,6 +25,22 @@ BetterCP/M is designed around several principles:
 
 BetterCP/M retains the familiar CP/M model of drives, user areas, FCB-based file access, transient `.COM` programs, BDOS calls, and BIOS services while providing a more structured foundation for extending and maintaining the system.
 
+## The AI Elephant in the Room
+
+### Does BetterCP/M Use AI?
+
+Yes. Artificial intelligence has been used extensively in the implementation of BetterCP/M, including the production of its Z80 assembly-language source code. That may mean BetterCP/M is not for you. If you're still interested, read on.
+
+### So Is BetterCP/M Vibe-Coded?
+
+No. BetterCP/M is not [vibe-coded](https://martinfowler.com/bliki/VibeCoding.html?utm_source=chatgpt.com).
+
+AI has been used extensively during the implementation phase of BetterCP/M, but the project's goals, scope, compatibility baseline, system design, architecture, interfaces, behavioral requirements, compatibility policy, acceptance criteria, and release requirements are human-directed. AI is used primarily to translate those requirements into code and to assist with analysis, testing, and documentation.
+
+Generated code is not accepted merely because it assembles, boots, or appears to work. BetterCP/M is developed against explicit specifications, compatibility requirements, regression tests, reproducible-build requirements, and qualification criteria.
+
+For a detailed explanation of how artificial intelligence is used in BetterCP/M, its limitations, and the safeguards used around AI-generated code, see [`AI.md`](AI.md).
+
 ## Current system
 
 The current development system boots reproducibly on both the **TRS-80 Model 4 under `trs80gp`** and **z80pack `cpmsim`**. It provides a working BetterCP/M BIOS, BDOS, directory services, command processor, transient-program loader, resident commands, CPX command extensions, and relocatable RSX services.
