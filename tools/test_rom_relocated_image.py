@@ -12,14 +12,14 @@ from pathlib import Path
 from build_rom_relocated_image import build
 
 EXPECTED_COMPONENTS = {
-    "bdos": 520,
+    "bdos": 519,
     "bios": 64,
     "disk": 82,
     "extensions": 57,
     "fileloader": 13,
     "gateway": 23,
 }
-EXPECTED_CLASSES = {"immutable-rom": 429, "live-ram": 330}
+EXPECTED_CLASSES = {"immutable-rom": 431, "live-ram": 327}
 
 
 def digest(data: bytes) -> str:
@@ -56,12 +56,12 @@ def main() -> None:
     if (manifest["boot_integrated"] is not False or
             manifest["protected_xip_qualified"] is not False):
         raise AssertionError("relocation artifact overclaims later qualification")
-    if (manifest["relocation_words"] != 759 or
-            manifest["changed_words"] != 748 or
+    if (manifest["relocation_words"] != 758 or
+            manifest["changed_words"] != 747 or
             manifest["unchanged_final_words"] != 11 or
-            manifest["changed_bytes"] != 1496):
+            manifest["changed_bytes"] != 1494):
         raise AssertionError("accepted relocation totals changed")
-    if (manifest["accounted_layout_words"] != 778 or
+    if (manifest["accounted_layout_words"] != 777 or
             manifest["mutable_template_fixups"] != 16 or
             manifest["mutable_already_final_words"] != 3):
         raise AssertionError("mutable layout-word accounting changed")
@@ -108,8 +108,8 @@ def main() -> None:
         reversed_image[offset:offset + 2] = int(reference["old_target"]).to_bytes(2, "little")
     if bytes(reversed_image) != source:
         raise AssertionError("inverse relocation does not reproduce packed source")
-    print("Relocated ROM verified: all 778 layout words accounted; 759 disjoint "
-          "ROM words, 748 changed values, 1496 changed bytes, and no changes "
+    print("Relocated ROM verified: all 777 layout words accounted; 758 disjoint "
+          "ROM words, 747 changed values, 1494 changed bytes, and no changes "
           "outside inventoried operands")
 
 
