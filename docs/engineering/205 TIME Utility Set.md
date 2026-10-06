@@ -123,3 +123,19 @@ Each native probe result must appear immediately before the prompt because
 return redraws its command line. Other checks use the complete `A0>command`
 marker so a word inside a diagnostic cannot be mistaken for the command echo.
 Coherent sampling, rollover and other remaining Item 6 checks are still pending.
+
+## P2DOS frontend qualification closure
+
+The focused `test_p2dos_rsx.py` now injects every assigned native failure status
+(1, 2, 3, 4, 5, 6 and 8) after a controlled provider writes one, three or all five
+bytes of private output. All 21 cases return FEh/00FEh, preserve the caller's
+five-byte GET buffer and both guard bytes, and retain DE/SP/IX. Each case also
+confirms that the provider actually wrote the private output and received GET.
+A subsequent call resolves another provider and publishes its complete sample.
+
+Together with prior success, lookup failure, SET and per-call discovery tests,
+and actual two-platform lifecycle/register qualification, this closes the
+required P2DOS.RSX frontend checks. P2DOS remains 140 code bytes in a 256-byte
+allocation. No frontend or resident OS implementation change is required.
+Native provider coherence/rollover checks and other Item 6 work remain pending;
+frontend completion does not claim those provider tests have passed.
