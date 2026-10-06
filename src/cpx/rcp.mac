@@ -1389,7 +1389,7 @@ BC_CLOOP:                               ; cloop
         CP      1
         JR      Z,BC_CCLOSE
         LD      DE,BC_READERR
-        JR      BC_CFAIL
+        JP      BC_CFAIL
 
 BC_CWRITE:                              ; cwrite
         CALL    BC_CSELD
@@ -1402,7 +1402,7 @@ BC_CWRITE:                              ; cwrite
         OR      A
         JR      Z,BC_CLOOP
         LD      DE,BC_NOSPACE
-        JR      BC_CFAIL
+        JP      BC_CFAIL
 
 BC_CCLOSE:                              ; cclose
         CALL    BC_CSELD
@@ -1411,6 +1411,28 @@ BC_CCLOSE:                              ; cclose
         CALL    BDOS
         CP      0FFH
         JR      Z,BCCLERR
+  ; Apply attributes only after closing the complete destination. Setting R/O
+  ; earlier would prevent its writes. Open returned the source attributes in
+  ; BC_FCB; transfer their high bits without changing the destination name.
+        LD      HL,BC_FCB+1
+        LD      DE,BC_NEWFCB+1
+        LD      B,11
+BC_CATTR:
+        LD      A,(DE)
+        AND     7FH
+        LD      C,A
+        LD      A,(HL)
+        AND     80H
+        OR      C
+        LD      (DE),A
+        INC     HL
+        INC     DE
+        DJNZ    BC_CATTR
+        LD      DE,BC_NEWFCB
+        LD      C,30
+        CALL    BDOS
+        OR      A
+        JR      NZ,BCCLERR
         XOR     A
         LD      (BC_CMADE),A
         LD      A,(BC_MVFLAG)
