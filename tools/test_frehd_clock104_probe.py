@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Four-command Model 4/FreHD clock-adapter load and ABI timing probe."""
+"""Bounded Model 4/FreHD clock-adapter probe or full lifecycle campaign."""
 from __future__ import annotations
 
 import argparse
@@ -24,6 +24,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('--profile', choices=('T104C3', 'T104Z8'), required=True)
     parser.add_argument('--report', type=Path, required=True)
+    parser.add_argument('--lifecycle', action='store_true')
     args = parser.parse_args()
     report = args.report.resolve()
     report.mkdir(parents=True, exist_ok=False)
@@ -55,17 +56,26 @@ def main() -> None:
     commands = [
         ('RSX LOAD FREHDCLK', None), ('RSX LOAD P2DOS', None),
         ('RSX LOAD ' + args.profile, None), ('CLK104 0', 'abi')]
+    if args.lifecycle:
+        opposite = 'T104Z8' if args.profile == 'T104C3' else 'T104C3'
+        commands += [('WARM', None), ('CLK104 0', 'abi'),
+                     ('RSX LOAD ' + opposite, 'conflict'),
+                     ('RSX UNLOAD FREHDCLK', None), ('CLK104 1', 'abi'),
+                     ('RSX LOAD FREHDCLK', None), ('CLK104 0', 'abi'),
+                     ('CLKPROB 0', 'abi'), ('RSX UNLOAD ' + args.profile, None),
+                     ('RSX UNLOAD P2DOS', None), ('RSX UNLOAD FREHDCLK', None),
+                     ('RSX LIST', 'empty')]
     invocation = [str(DEFAULT_EMULATOR), '-m4', '-batch', '-turbo',
                   '-frehd_dir', str(frehd), '-d0', str(disk), '-id', '5000']
     for command, _ in commands:
         invocation += key_args(command + '\r')
         delay = 8000 if command.startswith(('RSX LOAD', 'RSX UNLOAD')) or command == 'WARM' else 3000
-        if command == 'RSX LOAD ' + args.profile:
+        if command.startswith(('RSX LOAD', 'RSX UNLOAD')) or command == 'WARM':
             delay = 16000
         invocation += ['-id', str(delay), '-it']
     invocation += ['-ix']
     (report / 'invocation.json').write_text(json.dumps(invocation, indent=2) + '\n')
-    run(invocation, cwd=report, timeout=180, check=True)
+    run(invocation, cwd=report, timeout=450 if args.lifecycle else 180, check=True)
     for index, (command, check) in enumerate(commands):
         capture = (report / f'trs80-text-{index}.bin').read_bytes()[:1920]
         lines = [capture[at:at+80].strip() for at in range(0, 1920, 80)
@@ -77,14 +87,19 @@ def main() -> None:
         marker = b'A0>' + command.encode()
         assert marker in capture, (command, capture)
         block = capture[capture.rindex(marker):]
-        assert b'error' not in block.lower(), (command, block)
+        if check == 'conflict':
+            assert b'RSX module or profile error' in block, block
+        elif check == 'empty':
+            assert b'No RSXs loaded' in block and b'53K' in block, block
+        else:
+            assert b'error' not in block.lower(), (command, block)
     (report / 'evidence.json').write_text(json.dumps({
-        'result': 'PASS', 'profile': args.profile, 'case': 'load-probe', 'commands': commands,
+        'result': 'PASS', 'profile': args.profile, 'case': 'lifecycle' if args.lifecycle else 'load-probe', 'commands': commands,
         'artifact_sha256': {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in artifacts},
         'image_sha256': hashlib.sha256(IMAGE.read_bytes()).hexdigest(),
         'simulator_sha256': hashlib.sha256(DEFAULT_EMULATOR.read_bytes()).hexdigest()
     }, indent=2) + '\n')
-    print('PASS: Model 4/FreHD ' + args.profile + ' ' + ' load/ABI timing probe')
+    print('PASS: Model 4/FreHD ' + args.profile + (' lifecycle' if args.lifecycle else ' load/ABI timing probe'))
 
 
 if __name__ == '__main__':

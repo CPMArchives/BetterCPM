@@ -16,7 +16,7 @@ from test_p2dos_rsx import invoke, provider, registry
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def check(stem: str, width: int) -> None:
+def check(stem: str, width: int, *, wrong_get_width: bool = False) -> None:
     carrier = (ROOT / f"build/rsx/{stem}.RSX").read_bytes()
     size, allocation = struct.unpack_from("<HH", carrier, 12)
     require(allocation == 256, "frontend exceeds one resident page")
@@ -27,7 +27,14 @@ def check(stem: str, width: int) -> None:
         if match:
             names[match.group(2).upper()] = int(match.group(1), 16)
     cpu = Z80(b"")
-    cpu.mem[BASE:BASE + size] = carrier[512:512 + size]
+    code = bytearray(carrier[512:512 + size])
+    if wrong_get_width:
+        # Deliberately make four-byte GET overwrite the caller's fifth byte.
+        # This tests the CPU-level guard oracle, not carrier CRC rejection.
+        offset = code.find(bytes((0x01, 4, 0)))
+        require(offset >= 0, "mutation could not locate the GET copy count")
+        code[offset + 1] = 5
+    cpu.mem[BASE:BASE + size] = code
     cpu.setword(names["C4_NEXT"], REGISTRY)
     entry, request = names["C4_DISPATCH"], names["C4_REQUEST"]
     cpu.iy = 0x5AA5
@@ -103,6 +110,14 @@ def check(stem: str, width: int) -> None:
 def main() -> None:
     check("T104C3", 4)
     check("T104Z8", 5)
+    try:
+        check("T104C3", 4, wrong_get_width=True)
+    except AssertionError as error:
+        require("GET changed guards" in str(error),
+                "wrong-width mutation failed for an unrelated reason")
+    else:
+        raise AssertionError("guard test accepted a five-byte overwrite")
+    print("PASS: deliberate four-byte GET overrun is detected")
 
 
 if __name__ == "__main__":

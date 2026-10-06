@@ -255,8 +255,9 @@ changing or duplicating the provider.
 7. OTHER HISTORICAL FRONTENDS
 -----------------------------
 
-Two BDOS 104/105 clock-call profiles are bounded optional 1.0 candidates after
-`P2DOS.RSX` is complete and measured. They are not release requirements:
+Two BDOS 104/105 clock-call profiles are admitted optional-to-load 1.0
+frontends after P2DOS qualification. Engineering Specification 207 records
+measurement and acceptance evidence. They are absent from the default profile:
 
   * the CP/M 3 and DOS+ 2.5 profile uses a four-byte day-count/hour/minute
     record, returns seconds in A on GET, and resets seconds to zero on SET;
@@ -268,20 +269,18 @@ length and callers do not identify their expectation consistently. A five-byte
 GET can overwrite a four-byte caller. If implemented, separate mutually
 exclusive frontends shall resolve and invoke TIME anew for every request, keep
 no provider pointer, use private translation scratch, and leave Function 12
-unchanged. Working binary names are `T104C3.RSX` and `T104Z8.RSX`; the names
+unchanged. Binary names are `T104C3.RSX` and `T104Z8.RSX`; the names
 describe clock-call conventions rather than broader operating-system support.
 
-Before either frontend is admitted, implementation must prove that both cannot
-be active simultaneously. A narrow conflict check or configuration restriction
-is sufficient; this optional feature does not justify a general RSX dependency
-framework.
+The shared Function-177 LOAD coordinator rejects the opposite exact canonical
+stem before file I/O or profile mutation. Both load orders are qualified. This
+narrow conflict check does not introduce a general RSX dependency framework.
 
-Their inclusion is decided only after the required `P2DOS.RSX` establishes the
-actual common code, resident cost, lifecycle behavior, and qualification cost.
-They may ship only if they remain small stateless adapters requiring no new
-TIME semantics, lifecycle architecture, operating-system impersonation, or
-filesystem timestamp behavior. They remain absent from the default profile and
-are not 1.0 release gates.
+Both remain small stateless adapters requiring no new TIME semantics, lifecycle
+architecture, operating-system impersonation, or filesystem timestamp behavior.
+T104C3 contains 149 resident bytes and T104Z8 contains 140; either allocates one
+256-byte page only when loaded. Final inventory and packaging carry both as
+optional modules. Their full contracts apply to final frozen release artifacts.
 
 Later ZSDOS/ZDDOS, DateStamper, or other adapters may consume the same native
 TIME service. Each frontend owns its historical selector or entry convention,
