@@ -81,3 +81,24 @@ The measured eight-second delay allows the command to run. This harness
 correction requires no provider or OS implementation change. Each launch has
 a 90-second timeout. Provider lifecycle and rollover qualification remain
 separate Item 6 work.
+
+## z80pack lifecycle qualification
+
+`test_z80pack_clock_lifecycle.py` exercises the actual resident chain with a
+native probe. It checks Functions 200/201 when P2DOS is absent, when its provider
+is present, and when P2DOS remains resident after the provider is removed.
+Expected results are FFh/00FFh for absent frontend, 00h/0000h for successful
+GET, and FEh/00FEh for claimed failures including unsupported SET. The probe
+checks DE, SP, IX and IY preservation and failed-GET buffer atomicity.
+
+Explicit WARM preserves working native and P2DOS clock calls. Removing ZPRTC
+leaves P2DOS listed and causes graceful service-unavailable behavior. Loading
+ECHO and then a new ZPRTC instance changes the chain layout; the still-resident
+P2DOS recovers without reload. Removing P2DOS leaves native TIME available.
+Subsequent provider and frontend reloads also succeed.
+
+The harness retains media, probe source/listing, commands, transcript and hashes.
+This qualifies replacement by a new instance of the same provider, not a switch
+between different provider implementations. FreHD lifecycle, coherent sampling,
+rollover boundaries and the remaining P2DOS matrix are still separate checks.
+No dependency manager or implementation change is required by these results.
