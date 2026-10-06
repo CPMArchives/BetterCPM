@@ -1667,7 +1667,7 @@ CCP_MTZERO:                             ; clear default FCB area
         LDIR
 
 CCP_MTCR:                               ; terminate transient command tail
-        LD      A,13
+        XOR     A                       ; DRI tools scan for the stock NUL sentinel
         LD      (DE),A
         LD      HL,(CCP_APTR)
         LD      A,(CCP_ALEN)
@@ -2951,7 +2951,7 @@ CCP_ZPAGE:                              ; clear transient base page
         LDIR
 
 CCP_LTAIL0:                             ; build transient command tail
-        LD      A,13
+        XOR     A                       ; counted tail is followed by the stock NUL
         LD      (DE),A
         LD      A,(CCP_CMDLEN)
         LD      C,A
@@ -3413,7 +3413,12 @@ CCP_RET:                                ; shared return instruction
 ; Stack Storage
 ; -------------------------------------------------------------------------------
 
-CCP_STACK:      DS      128             ; CCP stack storage
+  ; Explicit bytes keep host and native links identical; DS fill is tool-specific.
+
+CCP_STACK:                              ; CCP stack storage
+        REPT    128
+        DB      0
+        ENDM
 CCP_STKTOP:                             ; top of CCP stack
 
         .DEPHASE

@@ -17,6 +17,7 @@ from pathlib import Path
 
 from build_montezuma_extended_790k import RAW_SIZE, build, verify
 from build_fdf_catalog import build as build_fdf_catalog
+from system_layout import expand_layout
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -103,9 +104,23 @@ def text_file(data: bytes) -> bytes:
     return text.replace("\n", "\r\n").encode("ascii") + b"\x1a"
 
 
+def submit_file(data: bytes) -> bytes:
+    """Remove repository commentary from a native SUBMIT command stream."""
+    text = data.decode("ascii").replace("\r\n", "\n").replace("\r", "\n")
+    commands = [line for line in text.splitlines()
+                if line.strip() and not line.lstrip().startswith(";")]
+    if any(len(line) > 126 for line in commands):
+        raise ValueError("BUILD.SUB command exceeds the CCP line capacity")
+    return text_file(("\n".join(commands) + "\n").encode("ascii"))
+
+
 def build_source(data: bytes, name: str) -> bytes:
     """Rewrite host-only include stems to canonical CP/M 8.3 names."""
     text = data.decode("ascii")
+    # Keep the native INCLUDE instead of duplicating it in every source file;
+    # expand_layout must still generate the identical physical-sector tables.
+    text = re.sub(r"(?i)INCLUDE(\s+)layout\.inc", r"INCLUDE\1native_layout.inc", text)
+    text = expand_layout(text).replace("native_layout.inc", "layout.inc")
     for host, native in (("bioslinks.inc", "bioslink.inc"),
                          ("disklinks.inc", "disklink.inc"),
                          ("cpxlinks.inc", "cpxlink.inc")):
@@ -221,7 +236,9 @@ def build_docs(mapping: list[dict[str, object]], tools: Path) -> tuple[bytes, by
 
 This is an MM 80T DS DATA disk: 800K, 512-byte sectors, 2K blocks,
 128 directory entries, and no reserved system tracks.  It is intended as
-drive B: beside a bootable BetterCP/M system disk in drive A:.
+drive B: beside a bootable BetterCP/M system disk in drive A:.  The matching
+BetterCPM-Work-80T-DS-800K disk is mounted as drive C: and receives every
+intermediate and final build product.
 
 CONTENTS
 
@@ -247,11 +264,12 @@ user zero:
 
   A0:SUBMIT B:BUILD
 
-BUILD.SUB selects B:, assembles and links every component. RESPACK constructs the packed
-RESIDENT.BIN payload, then SYSBUILD creates and read-back verifies the
-161-record SYSTEM.SYS package. Use SYSGEN SYSTEM.SYS C: to install and verify
-it on a prepared SYSTEM disk. SYSGEN A: C: instead obtains the package from
-an already bootable source disk.
+BUILD.SUB selects C:, reads sources and tools from B:, and writes all products
+to the work disk. RESPACK constructs the packed RESIDENT.BIN payload, then
+SYSBUILD creates and read-back verifies the 161-record SYSTEM.SYS package.
+Move or copy SYSTEM.SYS from C: before using that drive letter for installation.
+SYSGEN SYSTEM.SYS D: installs a package on a prepared SYSTEM disk. SYSGEN A: D:
+instead obtains the package from an already bootable source disk.
 
 INSTALLING AN EXISTING BUILT SYSTEM
 
@@ -299,12 +317,12 @@ def main() -> None:
     for name, relative in BUILD_INCLUDES:
         source = ROOT / relative
         used[0].add(name)
-        files.append((0, name, text_file(source.read_bytes())))
+        files.append((0, name, build_source(source.read_bytes(), name)))
         mapping.append({"user": 0, "area": "NATIVE BUILD", "name": name,
                         "source": relative})
     build_sub = ROOT / "src/utilities/build.sub"
     used[0].add("BUILD.SUB")
-    files.append((0, "BUILD.SUB", text_file(build_sub.read_bytes())))
+    files.append((0, "BUILD.SUB", submit_file(build_sub.read_bytes())))
     mapping.append({"user": 0, "area": "NATIVE BUILD", "name": "BUILD.SUB",
                     "source": str(build_sub.relative_to(ROOT))})
     for name in ("ZSM4.COM", "LINK.COM"):
@@ -372,6 +390,26 @@ def main() -> None:
           f"{report['directory_entries_used']}/{DIRECTORY_ENTRIES} directory entries, "
           f"{report['allocation_blocks_used']}/{BLOCK_COUNT} blocks)")
     print(f"{report['sha256']}  {args.output.relative_to(ROOT)}")
+
+    # Native assemblers resolve INCLUDE files on the current output drive.
+    # Keep generated products off the nearly full source/tool disk by shipping
+    # a separate work disk containing only the coherent include snapshot.
+    work_files = []
+    for name, relative in BUILD_INCLUDES:
+        work_files.append((0, name, build_source((ROOT / relative).read_bytes(), name)))
+    work_raw = install_files(work_files)
+    work_recovered = extract_files(work_raw)
+    for user, name, content in work_files:
+        actual = work_recovered.get((user, name))
+        if actual is None or not actual.startswith(content):
+            raise SystemExit(f"work-disk read-back failed for {user}:{name}")
+    work_output = args.output.with_name("BetterCPM-Work-80T-DS-800K.dmk")
+    work_output.write_bytes(build(work_raw))
+    verify(work_output.read_bytes(), require_blank=False)
+    work_output.with_suffix(".img").write_bytes(work_raw)
+    work_output.with_suffix(".dsk").write_bytes(z80pack_raw(work_raw))
+    print(f"created {work_output} ({len(work_files)} generated includes, "
+          f"{BLOCK_COUNT - FIRST_DATA_BLOCK - sum((len(data) + BLOCK_SIZE - 1) // BLOCK_SIZE for _, _, data in work_files)} free blocks)")
 
     # Keep the complete, commented source tree on as many DATA volumes as it
     # needs. Leave room on every volume for the shared map and readme.

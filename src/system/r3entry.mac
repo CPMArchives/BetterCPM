@@ -288,7 +288,10 @@ RV_BAD:                                 ; reject an unavailable transaction phas
 RV_NLOAD:       DB      'R3COORD '      ; append transaction coordinator
 RV_NDROP:       DB      'R3DROP  '      ; removal transaction coordinator
 RV_REQ:         DW      0               ; public Function-177 request
-RV_HREQ:        DS      6               ; replacement-overlay handoff request
+RV_HREQ:                                ; replacement-overlay handoff request
+        REPT    6
+        DB      0
+        ENDM
 
 
 ; Position-independent overlay reader copied to scratch+0400H. HL is its

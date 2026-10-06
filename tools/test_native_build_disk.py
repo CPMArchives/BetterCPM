@@ -3,16 +3,19 @@
 from __future__ import annotations
 
 import subprocess
+import re
 import tempfile
 import shutil
 from pathlib import Path
 
-from build_source_disk import extract_files, z80pack_logical
+from build_source_disk import BUILD_INCLUDES, extract_files, z80pack_logical
 from system_layout import LAYOUT
 
 ROOT = Path(__file__).resolve().parents[1]
 BUILD_IMAGE = ROOT / "build/trs80/BetterCPM-Build-80T-DS-800K.img"
 BUILD_Z80PACK = ROOT / "build/trs80/BetterCPM-Build-80T-DS-800K.dsk"
+WORK_IMAGE = ROOT / "build/trs80/BetterCPM-Work-80T-DS-800K.img"
+WORK_Z80PACK = ROOT / "build/trs80/BetterCPM-Work-80T-DS-800K.dsk"
 
 PRODUCTS = (
     "BOOT.BIN", "STAGE1.BIN", "RESIDENT.BIN", "CCPRELOD.BIN",
@@ -26,6 +29,13 @@ def main() -> None:
     build = extract_files(BUILD_IMAGE.read_bytes())
     if z80pack_logical(BUILD_Z80PACK.read_bytes()) != BUILD_IMAGE.read_bytes():
         raise SystemExit("z80pack build disk does not decode to the logical image")
+    work = extract_files(WORK_IMAGE.read_bytes())
+    if z80pack_logical(WORK_Z80PACK.read_bytes()) != WORK_IMAGE.read_bytes():
+        raise SystemExit("z80pack work disk does not decode to the logical image")
+    includes = {name for name, _relative in BUILD_INCLUDES}
+    work_names = {name for _user, name in work}
+    if work_names != includes:
+        raise SystemExit("native work disk is not the exact generated-include set")
     source_images = sorted((ROOT / "build/trs80").glob(
         "BetterCPM-Sources-[0-9]*-80T-DS-800K.img"))
     if not source_images:
@@ -64,12 +74,29 @@ def main() -> None:
     if missing:
         raise SystemExit(f"native build disk lacks {missing}")
     script = build[(0, "BUILD.SUB")].decode("ascii").replace("\r", "")
+    lines = script.rstrip("\x1a\n").splitlines()
+    if any(not line.strip() or line.lstrip().startswith(";") or len(line) > 126
+           for line in lines):
+        raise SystemExit("native BUILD.SUB is not a bounded command-only stream")
     for product in PRODUCTS:
         if product not in script and product not in ("RESIDENT.BIN", "CCP.RLM"):
             raise SystemExit(f"BUILD.SUB does not produce {product}")
-    for command in ("B:\n", "RESPACK\n", "RLMBUILD\n", "SYSBUILD\n"):
+    for command in ("C:\n", "B:RESPACK\n", "B:RLMBUILD\n", "B:SYSBUILD\n"):
         if command not in script:
             raise SystemExit(f"BUILD.SUB lacks {command.strip()}")
+
+    if "REN CCPBASE.BIN=CCP.COM" not in script:
+        raise SystemExit("BUILD.SUB does not supply RLMBUILD's canonical base input")
+    for name in ("STAGE1.MAC", "CCPRELOD.MAC", "RSXSEL.MAC"):
+        if b"-sector-table@" in build[(0, name)]:
+            raise SystemExit(f"native source retains an unexpanded table: {name}")
+    if b"-sector-table@" in extract_files(WORK_IMAGE.read_bytes())[(0, "RELOAD.INC")]:
+        raise SystemExit("native work disk retains unexpanded overlay tables")
+    listing = (ROOT / "build/utilities/sysbuild.lst").read_text()
+    symbols = {name: int(address, 16) for address, name in re.findall(
+        r"^([0-9a-f]{4})\s+.*?\b(OUTFCB|HEADER):", listing, re.M | re.I)}
+    if symbols["HEADER"] - symbols["OUTFCB"] != 36:
+        raise SystemExit("SYSBUILD reopen reset can overwrite its expected header")
 
     # RESPACK's declared inputs must reproduce the host resident image exactly
     # after CP/M record padding.

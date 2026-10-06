@@ -5,6 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 import shutil
 import subprocess
+import argparse
+from trs80gp_launch import run as run_trs80gp
 
 from add_cpm_file_to_dmk import extract_raw
 from build_ccp import assemble
@@ -79,10 +81,17 @@ def screen(path: Path) -> str:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--package", type=Path,
+                        help="install this natively produced SYSTEM.SYS file")
+    args = parser.parse_args()
     shutil.rmtree(OUT, ignore_errors=True)
     OUT.mkdir(parents=True)
     setup = setup_program()
-    source = medium((("SETBSYS.COM", setup),))
+    extras = [("SETBSYS.COM", setup)]
+    if args.package:
+        extras.append(("SYSTEM.SYS", args.package.read_bytes()))
+    source = medium(tuple(extras))
     (OUT / "source.dmk").write_bytes(source)
 
     target_raw = bytearray([0xE5]) * RAW_SIZE
@@ -95,10 +104,13 @@ def main() -> None:
                "-d0", str(OUT / "source.dmk"),
                "-d1", str(OUT / "target.dmk"), "-id", "2500"]
     command += key_args("SETBSYS\r") + ["-id", "1500", "-it"]
-    command += key_args("SYSGEN\r") + ["-id", "1200", "-it"]
-    command += key_args("B") + ["-id", "800", "-it"]
+    if args.package:
+        command += key_args("SYSGEN SYSTEM.SYS B:\r") + ["-id", "2000", "-it"]
+    else:
+        command += key_args("SYSGEN\r") + ["-id", "1200", "-it"]
+        command += key_args("B") + ["-id", "800", "-it"]
     command += key_args("Y") + ["-id", "35000", "-it", "-ix"]
-    subprocess.run(command, cwd=OUT, check=True, timeout=70)
+    run_trs80gp(command, cwd=OUT, check=True, timeout=70)
     captures = sorted(OUT.glob("trs80-text-*.bin"))
     texts = [screen(path) for path in captures]
     for i, text in enumerate(texts):
@@ -125,7 +137,7 @@ def main() -> None:
     (OUT / "cold").mkdir()
     cold = [str(DEFAULT_EMULATOR), "-m4", "-batch", "-turbo",
             "-d0", str(OUT / "target.dmk"), "-id", "3500", "-it", "-ix"]
-    subprocess.run(cold, cwd=OUT / "cold", check=True, timeout=20)
+    run_trs80gp(cold, cwd=OUT / "cold", check=True, timeout=20)
     cold_capture = OUT / "cold/trs80-text-0.bin"
     cold_text = screen(cold_capture)
     (OUT / "cold-boot.txt").write_text(cold_text)

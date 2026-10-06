@@ -6,6 +6,7 @@ import json
 import math
 from build_ccp import assemble
 from system_layout import expand_layout
+from build_system_package import COMPONENTS
 ROOT = Path(__file__).resolve().parents[1]
 
 def builtin_source():
@@ -39,9 +40,11 @@ def main():
             ('FILELOAD', 'build/system/fileloader.bin'),
             ('TABLES', 'build/system/tables.bin'),
         ))
+    sysmeta = "".join(f"{name.split('.')[0]}_SIZE EQU {(ROOT/path).stat().st_size}\n"
+                      for name, path, _offset, _capacity in COMPONENTS)
     for stem in ('config','dup','sysgen','sysbuild','respack','rlmbuild'):
         source=ROOT/f'src/utilities/{stem}.mac'
-        text=expand_layout(source.read_text()).replace('        INCLUDE ccpmeta.inc', ccpmeta).replace('        INCLUDE partmeta.inc', partmeta).replace('        INCLUDE disk/sysgen.inc',
+        text=expand_layout(source.read_text()).replace('        INCLUDE ccpmeta.inc', ccpmeta).replace('        INCLUDE partmeta.inc', partmeta).replace('        INCLUDE sysmeta.inc', sysmeta).replace('        INCLUDE disk/sysgen.inc',
             (ROOT/'src/utilities/disk/sysgen.inc').read_text()).replace('        INCLUDE disk/common.inc',
             (ROOT/'src/utilities/disk/common.inc').read_text()).replace('        INCLUDE disk/fdbread.inc',
             (ROOT/'src/utilities/disk/fdbread.inc').read_text()).replace('        INCLUDE disk/builtins.inc', builtin)

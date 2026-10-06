@@ -133,6 +133,10 @@ FL_BAD:                                 ; return file-stream failure
 
 FL_CPXEXT: DB 'CPX'                     ; CPX filename extension
 FL_RSXEXT: DB 'RSX'                     ; RSX filename extension
-FL_FCB: DS 36                           ; shared file-stream FCB
+  ; Keep reserved storage identical in native and host links.
+FL_FCB:                                ; shared file-stream FCB
+        REPT 36
+        DB 0
+        ENDM
         .DEPHASE
         END
