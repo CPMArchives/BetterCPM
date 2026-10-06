@@ -27,13 +27,16 @@ def symbols() -> dict[str, int]:
     return result
 
 
-def provider(sample_address: int, sample: bytes) -> bytes:
+def provider(sample_address: int, sample: bytes, status: int = 0) -> bytes:
     code = bytearray()
     for offset, value in enumerate(sample):
         code.extend((0x3E, value, 0x32,
                      (sample_address + offset) & 0xFF,
                      (sample_address + offset) >> 8))
-    code.extend((0xAF, 0xC9))
+    if status:
+        code.extend((0x21, 0, 0, 0x3E, status, 0xC9))
+    else:
+        code.extend((0xAF, 0xC9))
     return bytes(code)
 
 
@@ -87,6 +90,37 @@ def main() -> None:
             bytes(cpu.mem[CALLER_BUFFER:CALLER_BUFFER + 5]) == sentinel,
             "failed P2DOS GET changed the caller buffer or result")
 
+    # A resolved provider can fail after touching its private output. Execute
+    # every assigned failure status, with partial and complete poisoned samples.
+    # Verify the fixture really wrote data, not merely the frontend's result.
+    poison = bytes((0xDE, 0xAD, 0xBE, 0xEF, 0x99))
+    guarded = b"\xC3" + sentinel + b"\x3C"
+    cpu.mem[REGISTRY:REGISTRY + 6] = registry(PROVIDER_A)
+    for status in (1, 2, 3, 4, 5, 6, 8):
+        for written in (1, 3, 5):
+            cpu.mem[CALLER_BUFFER - 1:CALLER_BUFFER + 6] = guarded
+            cpu.mem[request + 4:request + 9] = b"\x55" * 5
+            failure = provider(request + 4, poison[:written], status)
+            cpu.mem[PROVIDER_A:PROVIDER_A + len(failure)] = failure
+            invoke(cpu, entry, 200, CALLER_BUFFER)
+            require(cpu.a == 0xFE and cpu.hl == 0x00FE,
+                    f"provider GET failure {status} returned wrong A/HL")
+            require(bytes(cpu.mem[request + 4:request + 4 + written]) == poison[:written],
+                    "provider-failure fixture did not write its private output")
+            require(bytes(cpu.mem[CALLER_BUFFER - 1:CALLER_BUFFER + 6]) == guarded,
+                    f"provider GET failure {status} leaked {written} bytes or changed guards")
+            require(cpu.mem[request + 2] == 0, "failed GET used the wrong native operation")
+
+    # Subsequent success must publish a new complete sample after the failures.
+    recovery = provider(request + 4, first)
+    cpu.mem[PROVIDER_B:PROVIDER_B + len(recovery)] = recovery
+    cpu.mem[REGISTRY:REGISTRY + 6] = registry(PROVIDER_B)
+    invoke(cpu, entry, 200, CALLER_BUFFER)
+    require(cpu.a == 0 and cpu.hl == 0 and
+            bytes(cpu.mem[CALLER_BUFFER:CALLER_BUFFER + 5]) == first,
+            "GET did not recover with a freshly resolved provider after failure")
+    cpu.mem[CALLER_BUFFER:CALLER_BUFFER + 5] = sentinel
+
     cpu.mem[REGISTRY:REGISTRY + 6] = registry(PROVIDER_A)
     cpu.mem[PROVIDER_A:PROVIDER_A + 5] = bytes((0x3E, 8, 0x21, 0, 0))
     cpu.mem[PROVIDER_A + 5] = 0xC9
@@ -99,7 +133,7 @@ def main() -> None:
     invoke(cpu, entry, 201, CALLER_BUFFER)
     require(cpu.a == 0 and cpu.hl == 0,
             "P2DOS SET did not return historical success")
-    print("P2DOS.RSX GET/SET, failure atomicity, and per-call discovery passed")
+    print("P2DOS.RSX GET/SET, 21 provider-write failures, recovery, and per-call discovery passed")
 
 
 if __name__ == "__main__":
