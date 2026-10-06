@@ -97,3 +97,34 @@ against a supplied compatible package. The failed attempt is retained under
 `build/test-results/z80pack-sysgen-attributes`. The completed disk-source
 increment makes no file-source claim. File-source metadata preservation, DUP
 and applicable Model 4 media checks remain open. No OS source change is needed.
+
+## Model 4 file-source installation metadata preservation
+
+`test_model4_sysgen_attributes.py` supplies an explicit compatible SYSTEM.SYS
+package and a populated MM Extended SYSTEM target under trs80gp. The target
+contains all eight R/O, SYS and ARC combinations. An assembled transient
+checks their complete eleven-byte filename/type fields through native
+Function 17 before installation is permitted to begin.
+
+`SYSGEN SYSTEM.SYS B:` must report successful installation and verification.
+The host then recovers logical bytes from the resulting DMK and compares the
+entire filesystem area with its original image. Attributes, allocation and
+payload bytes must be unchanged. The installed disk must cold-boot to the
+prompt. Exact package, before/after DMKs, native probe/listing, launch arguments,
+screen captures, transcripts and hashes are retained under
+`build/test-results/model4-sysgen-attributes-v2`.
+
+The first probe used DS reservations for FCB state. The host assembler filled
+these bytes with FFh, causing Search First to request an invalid extent. One
+binding/directory probe proved the effective DPB and BIOS directory read were
+correct; inspecting the emitted FCB identified the test defect. The corrected
+probe emits explicit zero bytes and checks them before launching. Inspection
+and installation now run as separate stages, so a failed inspection prevents
+installation. The original failed attempt and focused diagnostics are retained;
+this correction does not weaken the expected attribute comparison or alter OS
+code.
+
+The disk-source cpmsim and file-source Model 4 checks cover the applicable
+installation paths with attributed media. DUP metadata preservation remains
+open; this increment does not claim every attribute operation was rerun on
+both hardware backends.
