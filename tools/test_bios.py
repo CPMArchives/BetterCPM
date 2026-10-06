@@ -20,6 +20,7 @@ class Z80:
         self.a = self.b = self.c = self.d = self.e = self.h = self.l = 0
         self.pc, self.sp, self.ix = 0, 0xE000, 0
         self.z, self.carry = False, False
+        self.port_read = self.port_write = None
 
     def word(self, address: int) -> int:
         return self.mem[address] | self.mem[address + 1] << 8
@@ -97,6 +98,29 @@ class Z80:
                 self.pc += 2
                 self.push(self.pc)
                 self.pc = target
+            elif op == 0xDB:            # IN A,(n), flags unchanged
+                port = (self.a << 8) | self.mem[self.pc]
+                self.pc += 1
+                if self.port_read is None:
+                    raise AssertionError("IN without a controlled port fixture")
+                self.a = self.port_read(port) & 0xFF
+            elif op == 0xD3:            # OUT (n),A, flags unchanged
+                port = (self.a << 8) | self.mem[self.pc]
+                self.pc += 1
+                if self.port_write is None:
+                    raise AssertionError("OUT without a controlled port fixture")
+                self.port_write(port, self.a)
+            elif op == 0xED and self.mem[self.pc] == 0xB2:  # INIR
+                self.pc += 1
+                if self.port_read is None:
+                    raise AssertionError("INIR without a controlled port fixture")
+                while True:
+                    self.mem[self.hl] = self.port_read(self.bc) & 0xFF
+                    self.hl = (self.hl + 1) & 0xFFFF
+                    self.b = (self.b - 1) & 0xFF
+                    if self.b == 0:
+                        break
+                self.z = True
             elif op == 0xC9:            # RET
                 self.pc = self.pop()
             elif op == 0xF5:            # PUSH AF
@@ -346,6 +370,9 @@ class Z80:
             elif op == 0x1D:            # DEC E
                 self.e = (self.e - 1) & 0xFF
                 self.z = self.e == 0
+            elif op == 0x24:            # INC H
+                self.h = (self.h + 1) & 0xFF
+                self.z = self.h == 0
             elif op == 0x23:            # INC HL
                 self.hl = (self.hl + 1) & 0xFFFF
             elif op == 0x34:            # INC (HL)
@@ -518,9 +545,10 @@ class Z80:
                 self.carry = self.a < value
                 self.a = (self.a - value) & 0xFF
                 self.z = self.a == 0
-            elif op == 0xCB and self.mem[self.pc] == 0x77:  # BIT 6,A
+            elif op == 0xCB and self.mem[self.pc] in (0x77, 0x7F):  # BIT 6/7,A
+                mask = 0x40 if self.mem[self.pc] == 0x77 else 0x80
                 self.pc += 1
-                self.z = not bool(self.a & 0x40)
+                self.z = not bool(self.a & mask)
             elif op == 0xCB and self.mem[self.pc] == 0x3F:  # SRL A
                 self.pc += 1
                 self.carry = bool(self.a & 1)
@@ -941,7 +969,7 @@ def main() -> None:
     for address in range(write_entry, write_entry + 70):
         if cpu.mem[address] == 0xCD and cpu.word(address + 1) == physical_vector:
             cpu.setword(address + 1, platform_read)
-    listing = (ROOT / "build/bios/bios.lst").read_text()
+    listing = (ROOT / "build/bios/bios.lst").read_text(errors="replace")
     def physical_report(destination):
         code = bytearray()
         for offset, symbol in enumerate(("BIO_PCYL", "B_PSide", "BIO_PSEC")):

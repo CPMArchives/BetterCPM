@@ -139,3 +139,26 @@ required P2DOS.RSX frontend checks. P2DOS remains 140 code bytes in a 256-byte
 allocation. No frontend or resident OS implementation change is required.
 Native provider coherence/rollover checks and other Item 6 work remain pending;
 frontend completion does not claim those provider tests have passed.
+
+## Provider sampling and rollover closure
+
+`test_clock_sampling.py` executes the actual assembled provider routines against
+controlled RTC ports. All 26 recorded checks pass. ZPRTC tests binary and BCD
+mode, seconds crossing midnight and minute boundaries, month/year transitions,
+leap-day and non-leap February boundaries, acceptance on the fourth attempt,
+and failure after exactly four incoherent attempts. Rejected samples leave the
+caller buffer unchanged; the provider never toggles the shared clock mode.
+
+FreHD tests both sides of those calendar boundaries using the documented
+command-1 latched six-byte response. The fixture changes its live clock during
+transfer while preserving the response snapshot; the provider publishes the
+correct day count and packed-BCD fields and restores the normal map/I/O latch.
+This verifies provider behavior under the established FreHD snapshot contract,
+not the internal implementation of physical clock firmware.
+
+The focused CPU runner adds controlled IN/OUT, INIR, BIT 7,A and INC H support.
+Its BIOS listing reader tolerates non-UTF-8 source-header bytes, as other
+listing readers already do. The complete BIOS-vector regression and existing
+TIME/P2DOS focused checks pass. No OS or provider source change is needed.
+Sampling/rollover qualification is complete; final attribute qualification
+and the optional 104/105 admission decision remain in Item 6.
