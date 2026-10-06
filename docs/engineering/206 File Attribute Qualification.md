@@ -128,3 +128,33 @@ The disk-source cpmsim and file-source Model 4 checks cover the applicable
 installation paths with attributed media. DUP metadata preservation remains
 open; this increment does not claim every attribute operation was rerun on
 both hardware backends.
+
+## DUP metadata preservation closure
+
+`test_z80pack_dup_attributes.py` starts with all eight attribute combinations
+on B: and a deliberately different destination. Native DUP copies and verifies
+the complete 368,640-byte raw disk. The destination must equal the source
+byte-for-byte, including directory attributes and every payload byte. Source
+and system disks must remain unchanged. A separate CHECK-only run must report
+zero unreadable sectors and leave every mounted disk unchanged.
+
+`test_model4_dup_attributes.py` uses the established native binding/restoration
+probe with a two-cylinder, double-sided fixture and a matching logical sector
+order. Its valid filesystem contains the eight attribute combinations and
+distinct payloads. Native DUP must copy and verify the entire 20,480-byte
+configured region, including its reserved surface track, while preserving every
+byte beyond that region. Source and system DMKs remain unchanged. Binding
+restoration is checked before/after operations, and a separate CHECK-only launch
+must read successfully without changing any media.
+
+These focused metadata checks supplement Engineering Specification 202's
+existing full-size, mixed-sector and failure matrix; they do not replace it or
+claim new backend capabilities. Evidence is retained under
+`build/test-results/z80pack-dup-attributes` and
+`build/test-results/model4-dup-attributes`, including exact media, launch
+arguments, transcripts/captures and hashes. No OS changes are required.
+
+The retained Item 6 attribute qualification is complete when these checks pass
+alongside the set/clear, COPY/MOVE, rename, read-only and installation checks
+above. Final release conformance and exact-release-artifact qualification remain
+separate roadmap gates.
