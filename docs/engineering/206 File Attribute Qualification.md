@@ -74,3 +74,26 @@ transcripts, raw entries and disk hashes under
 operation checks, not a new claim about every command frontend. No OS source
 change is needed. Installation/disk-operation metadata preservation and
 applicable Model 4 media qualification remain open.
+
+## z80pack disk-source installation metadata preservation
+
+`test_z80pack_sysgen_attributes.py` seeds eight payload files and sets each
+R/O, SYS and ARC combination through native Function 30. Raw directory
+inspection confirms those combinations before `SYSGEN A: B:` installs from
+the bootable source onto the populated data disk.
+
+Installation must replace the reserved system area while leaving every byte of
+the filesystem area unchanged, including directory attributes and allocation
+metadata. All eight payloads are extracted with cpmtools after installation
+and compared exactly. The installed disk must cold-boot to the prompt.
+The test retains before/installed images, working media, native probe
+source/listing/binary, transcripts, extracted payloads, geometry manifest and
+hashes under `build/test-results/z80pack-sysgen-attributes-disk`.
+
+An initial attempt to qualify the file-source path revealed that the selected
+z80pack fixture has no SYSTEM.SYS file. SYSGEN refused that request before
+confirmation or writes. This was a harness setup error; it is not evidence
+against a supplied compatible package. The failed attempt is retained under
+`build/test-results/z80pack-sysgen-attributes`. The completed disk-source
+increment makes no file-source claim. File-source metadata preservation, DUP
+and applicable Model 4 media checks remain open. No OS source change is needed.
