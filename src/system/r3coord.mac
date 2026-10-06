@@ -34,6 +34,8 @@ RC_ENTRY:
         LD      A,(HL)
         OR      A
         JP      NZ,RC_BAD
+        CALL    RC_CLOCK
+        JP      NZ,RC_BAD
         LD      HL,(RC_REQ)
         LD      DE,14
         ADD     HL,DE
@@ -331,6 +333,75 @@ RC_OVER:                                ; stage outside physical disk workspace
         POP     DE
         XOR     A
         JP      (HL)
+
+; -------------------------------------------------------------------------------
+; Optional Clock Profile Exclusion
+; -------------------------------------------------------------------------------
+; Four-byte and five-byte 104/105 callers cannot identify their buffer width.
+; Reject the opposite exact stem before file I/O or live-profile mutation. This
+; check belongs in the shared LOAD path, not merely the RSX command utility.
+; Ordinary duplicate names remain the prospective builder's responsibility.
+
+RC_CLOCK:                               ; select the conflicting clock stem
+        LD      HL,(RC_REQ)
+        LD      DE,4
+        ADD     HL,DE
+        PUSH    HL
+        LD      DE,RC_C3
+        CALL    RC_MATCH
+        POP     HL
+        LD      DE,RC_Z8
+        JR      Z,RC_CSCAN
+        PUSH    HL
+        CALL    RC_MATCH
+        POP     HL
+        JR      NZ,RC_COK
+        LD      DE,RC_C3
+
+RC_CSCAN:                               ; inspect bounded persistent name list
+        LD      A,(LY_RSTA)
+        CP      5
+        JR      NC,RC_CBAD
+        OR      A
+        JR      Z,RC_COK
+        LD      C,A
+        LD      HL,LY_RSTA+1
+
+RC_CLOOP:                               ; compare one complete eight-byte name
+        PUSH    HL
+        PUSH    DE
+        CALL    RC_MATCH
+        POP     DE
+        POP     HL
+        JR      Z,RC_CBAD
+        PUSH    DE
+        LD      DE,8
+        ADD     HL,DE
+        POP     DE
+        DEC     C
+        JR      NZ,RC_CLOOP
+
+RC_COK:                                 ; allow unrelated or compatible profile
+        XOR     A
+        RET
+RC_CBAD:                                ; claimed clock profile conflicts
+        LD      A,0FFH
+        OR      A
+        RET
+RC_MATCH:                               ; exact canonical padded stem equality
+        LD      B,8
+RC_CMATCH:
+        LD      A,(DE)
+        CP      (HL)
+        RET     NZ
+        INC     DE
+        INC     HL
+        DJNZ    RC_CMATCH
+        XOR     A
+        RET
+
+RC_C3:          DB      'T104C3  '
+RC_Z8:          DB      'T104Z8  '
 
 RC_BAD:
         LD      A,0FFH

@@ -62,9 +62,9 @@ CPU contract tests then passed. This was a source-label issue, not an OS defect.
 
 ## Remaining admission gates
 
-1. Enforce mutual exclusion in both load orders, including direct profile
-   construction and saved/cold profiles. The existing loader does not yet
-   supply this guarantee: do not load both candidates together.
+1. Qualify native mutual-exclusion behavior in both load orders and applicable
+   saved/cold profile paths. The shared LOAD coordinator now rejects conflicting
+   exact stems before file I/O; the CPU-level evidence is recorded below.
 2. Qualify real native load/unload, provider disappearance/replacement, WBOOT,
    and coexistence with P2DOS through the applicable platform paths.
 3. Run the agreed four-byte SCTIME and five-byte DATE501 historical clients;
@@ -75,3 +75,37 @@ CPU contract tests then passed. This was a source-label issue, not an OS defect.
 
 Item 6 remains open solely for this optional admission decision. No release
 requirement is added by this candidate implementation.
+
+## Shared LOAD exclusion increment
+
+`R3COORD` now compares the exact canonical eight-byte candidate name against
+T104C3 and T104Z8. For either candidate, it scans the bounded persistent active
+name list and rejects the opposite stem before opening the candidate file.
+Function 177's shared LOAD path owns this check, so calling the API directly
+does not bypass it. No general dependency tracking is introduced. Normal
+same-name duplicate validation remains the prospective builder's job.
+
+The prospective builder measured 1,012 bytes before this change, with no spare
+capacity. The load coordinator measured 707 bytes and now measures 808 bytes,
+leaving 204 bytes in its 1,012-byte execution slot. Its released overlay remains
+1,024 bytes. No permanent resident allocation or default TPA changes.
+
+Reproduce the bounded checks:
+
+```sh
+python3 tools/build_rsx_runtime_overlays.py
+python3 tools/test_clock104_exclusion.py
+python3 tools/test_rsxcoordinator.py
+python3 tools/test_rsx_runtime_overlays.py
+python3 tools/test_clock104_rsx.py
+```
+
+All pass. The new exclusion test exercises 45 cases: both directions, every
+position in each one-to-four-entry list, empty/same-name/unrelated profiles,
+nonexact names and invalid clock-profile counts. It also runs the production
+coordinator entry for both conflicting LOAD orders, asserting FFh, no file open,
+no candidate-length publication and unchanged live profile/memory.
+
+This proves the shared coordinator check, not complete emulator qualification.
+Native lifecycle, reconstruction/cold behavior and historical clients remain
+admission gates. Neither frontend is added to distribution media by this change.
