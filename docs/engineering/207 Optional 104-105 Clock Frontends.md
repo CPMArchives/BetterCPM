@@ -1,10 +1,16 @@
-# Optional 104/105 clock frontends — candidate implementation
+# Optional 104/105 clock frontends — qualification and admission
 
 ## Status and boundary
 
-The first bounded increment implements `T104C3.RSX` and `T104Z8.RSX` as
-BRSX-v2 candidates. Neither is admitted to the 1.0 inventory, installed in a
-release image, or added to the default profile. BIOS and BDOS are unchanged.
+**Current status: both frontends admitted as optional-to-load 1.0 components;
+Item 6 complete.** The increment history below records how the gates closed.
+Final inventory/packaging and frozen release qualification remain Items 7–9.
+
+
+The first bounded increment implemented `T104C3.RSX` and `T104Z8.RSX` as
+BRSX-v2 candidates. Neither was admitted to the 1.0 inventory, installed in a
+release image, or added to the default profile at that point. BIOS and BDOS
+were unchanged.
 The governing contract is Architecture Specification 22, section 7.
 
 These modules supply only historical clock calls. They do not claim broader
@@ -14,7 +20,7 @@ CP/M 3, DOS+ or Z80DOS compatibility.
 
 Both intercept Function 104 SET and Function 105 GET. Every claimed call
 resolves native TIME through Function 182, using private request storage.
-No provider entry point survives the call. Unclaimed functions chain unchanged.
+No provider entry point is reused across calls. Unclaimed functions chain unchanged.
 
 - T104C3 copies exactly four bytes. GET returns BCD seconds in A; SET supplies
   zero seconds to the native five-byte TIME request.
@@ -60,7 +66,7 @@ A first assembly exposed an eight-significant-character label collision.
 Shortening the shared prefix fixed the collision; both alternate builds and
 CPU contract tests then passed. This was a source-label issue, not an OS defect.
 
-## Remaining admission gates
+## Admission gates established for the candidate increments
 
 1. Qualify native mutual-exclusion behavior in both load orders and applicable
    saved/cold profile paths. The shared LOAD coordinator now rejects conflicting
@@ -74,8 +80,8 @@ CPU contract tests then passed. This was a source-label issue, not an OS defect.
    or deferral decision. Any required loader correction must stay narrowly
    bounded; these optional candidates do not justify architectural expansion.
 
-Item 6 remains open solely for this optional admission decision. No release
-requirement is added by this candidate implementation.
+At that point, Item 6 remained open for this optional admission decision.
+The candidate increment added no release requirement.
 
 ## Shared LOAD exclusion increment
 
@@ -139,9 +145,9 @@ return as a failed GET. Inspecting the generated probe isolated this error:
 availability now follows the explicit probe mode, while A retains its historical
 seconds semantics. The failure case still requires unchanged caller output.
 
-The Model 4/FreHD path and independently obtained SCTIME/DATE501 clients remain
-unqualified for these candidates. Thus this increment does not admit them or
-close Item 6. The historical binaries have been retrieved from the documented
+At that point the Model 4/FreHD path and SCTIME/DATE501 clients remained
+unqualified. Thus the cpmsim increment did not admit the candidates or close
+Item 6. The historical binaries have been retrieved from the documented
 archive for later checks; they are not redistributed in this commit.
 
 ## Independent historical-client increment
@@ -177,8 +183,8 @@ python3 tools/test_clock104_clients.py --sctime /path/to/SCTIME.COM --date501 /p
 
 This completes the historical GET-client gate. It does not claim the clients
 handle service failure or writable hardware; those behaviors are tested by the
-separate ABI/lifecycle probes. Model 4 qualification and the explicit admission
-decision remain open.
+separate ABI/lifecycle probes. After the historical-client increment, Model 4 qualification and the explicit
+admission decision remained open.
 
 ## Model 4 timing probe — qualification still open
 
@@ -200,6 +206,41 @@ immutable original disk copy, native probes and hash evidence. It is explicitly
 not the full lifecycle qualification. The sandbox launcher failure occurred
 before emulator startup; the successful run used desktop-launch permission.
 
-Remaining acceptance work is bounded Model 4 lifecycle runs with sufficient
-per-transition waiting, followed by the explicit admission decision. Neither
-candidate is admitted by the historical-client and timing-probe increment.
+The timing-probe increment left Model 4 lifecycle runs and the explicit
+admission decision open; it did not admit either candidate.
+
+## Final Model 4 qualification and admission
+
+Both full lifecycle campaigns pass with the measured transition waiting:
+
+```sh
+python3 tools/test_frehd_clock104_probe.py --profile T104C3 --lifecycle --report build/test-results/frehd-clock104-c3-new
+python3 tools/test_frehd_clock104_probe.py --profile T104Z8 --lifecycle --report build/test-results/frehd-clock104-z8-new
+```
+
+Passing evidence is retained in `build/test-results/frehd-clock104-c3-lifecycle/`
+and `build/test-results/frehd-clock104-z8-lifecycle/`. Each contains its private
+DMK image, generated probes, invocation, per-command screens and artifact/source
+image/simulator hashes. Sixteen captured commands per adapter qualify actual
+GET/read-only SET, WBOOT, the opposite-profile rejection, failed-GET atomicity
+after FreHD removal, provider replacement, P2DOS coexistence, final unload and
+53K TPA recovery. The extended campaign has a fixed 450-second bound; the small
+four-command diagnostic retains its 180-second bound. No automatic retries or
+OS changes are made on failure.
+
+The CPU contract test additionally mutates four-byte GET to copy five bytes.
+The guard check rejects this deliberate overwrite for the intended reason.
+This is an executable-code guard-oracle test, not a carrier-CRC test.
+
+Admission evidence now covers small measured cost, stateless per-call discovery,
+exact four/five-byte behavior, historical original clients, mutual exclusion and
+both native platform lifecycles. Admit T104C3 and T104Z8 as independently loadable
+optional 1.0 clock frontends, with only one 104/105 profile active at a time.
+Either may coexist with P2DOS. Both remain absent from the default profile;
+this is clock-call compatibility only.
+
+Item 6 implementation and retained qualification are complete. Include the
+accepted modules in the final utility/disk inventory and packaging under
+Items 7–8, then rerun their contracts on the exact frozen release artifacts
+under Item 9. This decision adds no timestamps, writable clock hardware,
+Function-12 impersonation or general dependency architecture.
