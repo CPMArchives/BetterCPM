@@ -454,7 +454,14 @@ TM_NOCLOCK:                             ; report unavailable clock
         LD      DE,TM_NL
         JR      TM_ERROR
 
-TM_CLOCKERR:                            ; report clock-service error
+TM_CLOCKERR:                            ; report native TIME failure
+  ; Keep ABI failures distinct; a read-only clock is not a hardware failure.
+        CP      8
+        LD      DE,TM_SETNO
+        JR      Z,TM_ERROR
+        CP      6
+        LD      DE,TM_BADREC
+        JR      Z,TM_ERROR
         LD      DE,TM_CERR
         JR      TM_ERROR
 
@@ -509,6 +516,8 @@ TM_PSET:       DB      '/SET$'          ; set capability text
 TM_PRO:        DB      ', read-only$'   ; read-only capability text
 TM_PINDEX:     DB      ', provider index $' ; provider index
 TM_NOMSG:      DB      13,10,'No TIME provider is loaded; service status $' ; no-clock message
+TM_SETNO:      DB      13,10,'Clock provider does not support SET.',13,10,'$'
+TM_BADREC:     DB      13,10,'Invalid clock record.',13,10,'$'
 TM_CERR:       DB      13,10,'Clock provider error.',13,10,'$' ; clock-error message
 TM_UMSG:       DB      13,10,'Usage: TIME [/PROVIDER]',13,10,'$' ; usage message
 TM_EPOCH:      DB      '1977-12-31$'    ; CP/M epoch constant
