@@ -67,8 +67,9 @@ CPU contract tests then passed. This was a source-label issue, not an OS defect.
    exact stems before file I/O; the CPU-level evidence is recorded below.
 2. Qualify real native load/unload, provider disappearance/replacement, WBOOT,
    and coexistence with P2DOS through the applicable platform paths.
-3. Run the agreed four-byte SCTIME and five-byte DATE501 historical clients;
-   verify exact ABI expectations and failure behavior independently.
+3. Historical GET client gate complete under cpmsim: original SCTIME and
+   DATE501 results agree with bracketing native TIME. Failure/SET behavior
+   remains covered by guarded ABI probes, not these GET-only client runs.
 4. Record final sizes and default-profile TPA, then make the explicit admission
    or deferral decision. Any required loader correction must stay narrowly
    bounded; these optional candidates do not justify architectural expansion.
@@ -142,3 +143,63 @@ The Model 4/FreHD path and independently obtained SCTIME/DATE501 clients remain
 unqualified for these candidates. Thus this increment does not admit them or
 close Item 6. The historical binaries have been retrieved from the documented
 archive for later checks; they are not redistributed in this commit.
+
+## Independent historical-client increment
+
+`tools/test_clock104_clients.py` executes the original archived SCTIME.COM with
+T104C3 and DATE501.COM with T104Z8 under cpmsim. It does not rebuild or edit either
+client. It pins their SHA-256 values and records the archive URLs, boot image,
+frontends, coordinator, probe and simulator hashes. The runtime disk retains
+the exact input binaries. Neither archived utility is redistributed in source.
+
+Archive binaries:
+
+- [SCTIME.COM](https://ftpmirror.infania.net/sites/www.seasip.info/Cpm/2000/sctime.com):
+  `d176ad1622087126dd986b138ff28517e765a40458f20263dd171a6af24a0609`
+- [DATE501.COM](https://ftpmirror.infania.net/sites/www.seasip.info/Cpm/2000/date501.com):
+  `c4d1e909ab277256fbfce8d0e4d397bc02278cbc49fbd1c7e08fbd2989a7cd84`
+
+SCTIME writes SuperCalc's BCD month/day/year/hour/minute/second record at
+0010h–0015h. Its binary stores E at 0010h and D at 0011h after conversion; the
+checker reads the six-byte output before making further BDOS calls. DATE501's
+independent PRDMJ source specifies DD-Mon-YYYY hh:mm:ss output. These observations
+corrected initial harness assumptions about date ordering and numeric months;
+neither the clients nor frontend implementation changed.
+
+Both observed results fall between native TIME samples taken before and after
+each original client. Final unload restores 53K TPA. The passing evidence is
+`build/test-results/clock104-clients-v3/`. Reproduce using independently obtained
+binaries matching the pinned hashes:
+
+```sh
+python3 tools/test_clock104_clients.py --sctime /path/to/SCTIME.COM --date501 /path/to/DATE501.COM --report build/test-results/clock104-clients-new
+```
+
+This completes the historical GET-client gate. It does not claim the clients
+handle service failure or writable hardware; those behaviors are tested by the
+separate ABI/lifecycle probes. Model 4 qualification and the explicit admission
+decision remain open.
+
+## Model 4 timing probe — qualification still open
+
+The attempted full Model 4 campaign was not a pass. Its captured screens show
+truncated commands, including `0CLKPROB 0`, after the third RSX load. It reached
+its 180-second bound without completing the sequence. This is recorded as
+incomplete automation evidence, not a demonstrated clock or OS defect.
+
+The next targeted test limited execution to four commands: load FREHDCLK,
+load P2DOS, load T104C3, and invoke the guarded clock ABI probe. Increasing the
+post-T104C3-load delay from 8,000 to 16,000 made this test pass with fresh
+`CLOCK ABI PASS` output immediately before the prompt. Source and frontend
+binaries did not change. The passing capture is retained in
+`build/test-results/frehd-clock104-c3-probe/`.
+
+`tools/test_frehd_clock104_probe.py` preserves this four-command diagnostic,
+using the existing application launcher, private writable working directory,
+immutable original disk copy, native probes and hash evidence. It is explicitly
+not the full lifecycle qualification. The sandbox launcher failure occurred
+before emulator startup; the successful run used desktop-launch permission.
+
+Remaining acceptance work is bounded Model 4 lifecycle runs with sufficient
+per-transition waiting, followed by the explicit admission decision. Neither
+candidate is admitted by the historical-client and timing-probe increment.
