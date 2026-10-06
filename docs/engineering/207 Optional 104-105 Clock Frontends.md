@@ -109,3 +109,36 @@ no candidate-length publication and unchanged live profile/memory.
 This proves the shared coordinator check, not complete emulator qualification.
 Native lifecycle, reconstruction/cold behavior and historical clients remain
 admission gates. Neither frontend is added to distribution media by this change.
+
+## Native cpmsim lifecycle increment
+
+`tools/test_z80pack_clock104.py` runs both released candidate carriers through
+real Function 177 loading on a disposable copy of the z80pack image. The test
+installs the new R3COORD overlay and removes unrelated old probes only from
+that copy to provide directory entries. The original image is unchanged.
+
+The passing campaign is retained in
+`build/test-results/z80pack-clock104-v5/`: generated probe sources/listings/COM
+files, runtime disk images, a command transcript and an evidence JSON containing
+artifact, boot-image and simulator hashes. The report directory is never
+overwritten by a rerun. Reproduce with:
+
+```sh
+python3 tools/test_z80pack_clock104.py --report build/test-results/z80pack-clock104-new
+```
+
+Both frontends pass actual GET/read-only SET register and buffer checks,
+provider disappearance and replacement after a changed RSX layout, WBOOT and
+mutual exclusion in both load orders. P2DOS's 200/201 calls are exercised while
+each adapter is resident, including provider absence. Final unload restores the
+empty profile and 53K TPA. No OS implementation correction was needed.
+
+An inherited harness branch treated a nonzero successful four-byte seconds
+return as a failed GET. Inspecting the generated probe isolated this error:
+availability now follows the explicit probe mode, while A retains its historical
+seconds semantics. The failure case still requires unchanged caller output.
+
+The Model 4/FreHD path and independently obtained SCTIME/DATE501 clients remain
+unqualified for these candidates. Thus this increment does not admit them or
+close Item 6. The historical binaries have been retrieved from the documented
+archive for later checks; they are not redistributed in this commit.
