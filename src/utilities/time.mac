@@ -1,8 +1,8 @@
 ; ********************************************************************************
 ; *                         BetterCP/M TIME Utility                              *
 ; *                                                                              *
-; * Hardware-independent clock display utility. Discovers a TIME ABI 1.0 provider*
-; * through Resident Service Function 182, invokes the resolved service, and     *
+; * Hardware-independent clock utility with canonical-record SET support.       *
+; * Discovers TIME ABI 1.0 through Function 182 and calls the resolved provider. *
 ; * formats the returned CP/M day count and clock fields for display.            *
 ; ********************************************************************************
 
@@ -37,7 +37,8 @@ START:                                  ; enter TIME utility
         LD      (TM_ENTRY),HL
         LD      A,(TM_MODE)
         OR      A
-        JR      NZ,TM_PROVIDER
+        CP      1
+        JP      Z,TM_PROVIDER
         LD      DE,TM_REQUEST
         LD      BC,TM_GOT
         PUSH    BC
@@ -46,6 +47,9 @@ START:                                  ; enter TIME utility
 TM_GOT:                                 ; handle resolved TIME service
         OR      A
         JP      NZ,TM_CLOCKERR
+        LD      A,(TM_MODE)
+        CP      2
+        JP      Z,TM_SETDONE
         LD      DE,TM_NL
         CALL    TM_PRINT
         LD      HL,(TM_REQUEST+4)
@@ -162,6 +166,8 @@ TM_PSPACE:                              ; skip command spaces
 
 TM_PARG:                                ; parse command argument
         LD      A,B
+        CP      19
+        JP      Z,TM_SPAR
         CP      9
         JR      NZ,TM_PBAD
         LD      DE,TM_PKWORD
@@ -194,6 +200,97 @@ TM_POK:                                 ; accept parsed command
 TM_PBAD:                                ; reject invalid command
         LD      A,1
         OR      A
+        RET
+
+  ; /SET consumes five hexadecimal bytes in canonical wire order. Validate
+  ; all fields before service discovery; the provider still owns validation
+  ; against its hardware date range and must reject unsupported SET itself.
+
+TM_SPAR:                            ; parse canonical SET record
+        LD      DE,TM_SKWORD
+        LD      B,5
+TM_SCMP:                                ; compare case-insensitive SET prefix
+        LD      A,(HL)
+        CP      'a'
+        JR      C,TM_SCUP
+        CP      'z'+1
+        JR      NC,TM_SCUP
+        AND     5FH
+TM_SCUP:                                ; preserve punctuation during folding
+        LD      C,A
+        LD      A,(DE)
+        CP      C
+        JP      NZ,TM_PBAD
+        INC     HL
+        INC     DE
+        DJNZ    TM_SCMP
+        LD      DE,TM_REQUEST+4
+        LD      B,5
+TM_SBYTE:                               ; decode one hexadecimal record byte
+        CALL    TM_HEX
+        JP      C,TM_PBAD
+        RLCA
+        RLCA
+        RLCA
+        RLCA
+        LD      C,A
+        CALL    TM_HEX
+        JP      C,TM_PBAD
+        OR      C
+        LD      (DE),A
+        INC     DE
+        DEC     B
+        JR      Z,TM_SVALID
+        LD      A,(HL)
+        CP      ' '
+        JP      NZ,TM_PBAD
+        INC     HL
+        JR      TM_SBYTE
+TM_SVALID:                              ; reject invalid packed-BCD fields
+        LD      HL,TM_REQUEST+6
+        LD      B,3
+TM_SBCD:                                ; check decimal nibbles and clock range
+        LD      A,(HL)
+        AND     0FH
+        CP      10
+        JP      NC,TM_PBAD
+        LD      A,B
+        CP      3
+        LD      A,(HL)
+        JR      NZ,TM_SMIN
+        CP      24H
+        JR      TM_SRANGE
+TM_SMIN:                                ; minute and second upper bounds
+        CP      60H
+TM_SRANGE:                              ; reject out-of-range clock fields
+        JP      NC,TM_PBAD
+        INC     HL
+        DJNZ    TM_SBCD
+        LD      A,1
+        LD      (TM_REQUEST+2),A
+        LD      A,2
+        LD      (TM_MODE),A
+        XOR     A
+        RET
+TM_HEX:                                 ; consume one hexadecimal digit
+        LD      A,(HL)
+        INC     HL
+        CP      '0'
+        JR      C,TM_HBAD
+        CP      '9'+1
+        JR      C,TM_HDEC
+        AND     5FH
+        CP      'A'
+        JR      C,TM_HBAD
+        CP      'F'+1
+        JR      NC,TM_HBAD
+        SUB     'A'-10
+        RET
+TM_HDEC:                                ; decode decimal hexadecimal digit
+        SUB     '0'
+        RET
+TM_HBAD:                                ; signal malformed hexadecimal input
+        SCF
         RET
 
   ; Convert CP/M day count HL to Gregorian date and print YYYY-MM-DD.
@@ -465,6 +562,10 @@ TM_CLOCKERR:                            ; report native TIME failure
         LD      DE,TM_CERR
         JR      TM_ERROR
 
+TM_SETDONE:                             ; report completed native clock update
+        LD      DE,TM_SETOK
+        JR      TM_ERROR
+
 TM_USAGE:                               ; print TIME usage
         LD      DE,TM_UMSG
 
@@ -501,6 +602,7 @@ TM_ENTRY:      DW      0                ; resolved service entry
 TM_MODE:       DB      0                ; selected TIME operation
 TM_MON:        DB      0                ; current month
 TM_DSTAT:      DB      0                ; date conversion state
+TM_SKWORD:     DB      '/SET '         ; canonical-record SET prefix
 TM_PKWORD:     DB      '/PROVIDER'      ; packed provider word
 
 ; -------------------------------------------------------------------------------
@@ -519,7 +621,10 @@ TM_NOMSG:      DB      13,10,'No TIME provider is loaded; service status $' ; no
 TM_SETNO:      DB      13,10,'Clock provider does not support SET.',13,10,'$'
 TM_BADREC:     DB      13,10,'Invalid clock record.',13,10,'$'
 TM_CERR:       DB      13,10,'Clock provider error.',13,10,'$' ; clock-error message
-TM_UMSG:       DB      13,10,'Usage: TIME [/PROVIDER]',13,10,'$' ; usage message
+TM_SETOK:      DB      13,10,'Clock set.',13,10,'$'
+TM_UMSG:       DB      13,10,'Usage: TIME [/PROVIDER]',13,10
+               DB      '       TIME /SET LL HH HR MN SC (five hex bytes)',13,10
+               DB      '       Day low/high, BCD hour/minute/second.',13,10,'$' ; usage message
 TM_EPOCH:      DB      '1977-12-31$'    ; CP/M epoch constant
 
         .DEPHASE
