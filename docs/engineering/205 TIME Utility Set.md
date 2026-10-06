@@ -66,3 +66,18 @@ The harness retains its private media, transcript, utility and simulator hashes,
 commands and sampled times. A report directory is never overwritten implicitly.
 This increment qualifies the z80pack client path; FreHD and provider lifecycle
 qualification remain separate Item 6 work.
+
+## FreHD provider qualification
+
+`test_frehd_time.py` installs the current TIME.COM in private Model 4 media and
+uses the established LaunchServices adapter. It verifies FreHD GET, provider
+identification and read-only capability reporting, SET_UNSUPPORTED rather than
+success, and return to a working CCP. It retains media, command arguments,
+screen captures and input hashes without overwriting prior reports.
+
+A capture immediately after provider loading isolated an input-timing failure:
+the earlier three-second delay typed TIME before that transition was ready.
+The measured eight-second delay allows the command to run. This harness
+correction requires no provider or OS implementation change. Each launch has
+a 90-second timeout. Provider lifecycle and rollover qualification remain
+separate Item 6 work.
