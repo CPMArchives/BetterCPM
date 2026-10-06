@@ -102,3 +102,24 @@ This qualifies replacement by a new instance of the same provider, not a switch
 between different provider implementations. FreHD lifecycle, coherent sampling,
 rollover boundaries and the remaining P2DOS matrix are still separate checks.
 No dependency manager or implementation change is required by these results.
+
+## FreHD lifecycle qualification
+
+`test_frehd_clock_lifecycle.py` separates recovery and warm-boot cases into
+bounded runs. The recovery case removes FREHDCLK while P2DOS remains resident,
+checks claimed failure and failed-GET buffer atomicity, confirms the remaining
+profile, reloads FREHDCLK, and verifies recovery and provider identification.
+The shared native probe checks A/HL results and DE/SP/IX/IY preservation on
+both supported platforms. No OS or provider change is required.
+
+The original combined run reached its 180-second limit after eleven stages;
+its verified warm-boot and failure-stage captures are retained separately.
+The shorter eight-stage recovery run passes completely. Its report retains
+the warm-stage captures and original invocation alongside the new media,
+probe, per-command captures and hashes. A full combined-run pass is not claimed.
+Use `--case warm` with a new report directory for an independent warm rerun.
+
+Each native probe result must appear immediately before the prompt because
+return redraws its command line. Other checks use the complete `A0>command`
+marker so a word inside a diagnostic cannot be mistaken for the command echo.
+Coherent sampling, rollover and other remaining Item 6 checks are still pending.
