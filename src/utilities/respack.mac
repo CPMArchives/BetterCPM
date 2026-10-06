@@ -173,6 +173,8 @@ CLOSEERR:                               ; handle input close failure
         XOR     A
         LD      (HL),A
         DEC     BC
+        LD      A,B                    ; DEC BC does not set Z; test remaining bytes
+        OR      C
         RET     Z
         LD      D,H
         LD      E,L

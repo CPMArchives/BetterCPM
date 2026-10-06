@@ -6,6 +6,7 @@
 ; * fixed component capacities, and is reopened and verified record by record.   *
 ; ********************************************************************************
 
+        INCLUDE sysmeta.inc
         ASEG
         ORG     0100H
 BDOS    EQU     5
@@ -51,6 +52,11 @@ NEXT:   LD      A,(HL)                  ; process next system component
         LD      B,(HL)
         INC     HL
         LD      (CURCAP),BC
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        LD      (CURSIZE),DE
         LD      (NEXTPART),HL
         CALL    LOADPART
         JP      NZ,FAIL
@@ -149,6 +155,36 @@ CLOSEERR:                               ; handle component close failure
         CALL    BDOS
         POP     AF
         OR      A
+        RET     NZ
+  ; CP/M records contain linker fill beyond the measured component bytes.
+  ; Remove only that padding; the package contract requires zero-filled slack.
+        LD      HL,(CURCAP)
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        LD      DE,(CURSIZE)
+        OR      A
+        SBC     HL,DE
+        RET     Z
+        LD      B,H
+        LD      C,L
+        LD      HL,(CURDST)
+        ADD     HL,DE
+        XOR     A
+        LD      (HL),A
+        DEC     BC
+        LD      A,B
+        OR      C
+        RET     Z
+        LD      D,H
+        LD      E,L
+        INC     DE
+        LDIR
+        XOR     A
         RET
 
 MISSING:                                ; report missing component
@@ -499,51 +535,65 @@ PARTS:                                  ; system component table
         DB 0,'BOOT    BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         DW BUFFER
         DW 4
+        DW BOOT_SIZE
         DB 1
         DB 0,'STAGE1  BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         DW BUFFER+512
         DW 4
+        DW STAGE1_SIZE
         DB 1
         DB 0,'RESIDENTBIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         DW BUFFER+1024
         DW 52
+        DW RESIDENT_SIZE
         DB 1
         DB 0,'CCPRELODBIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         DW BUFFER+7680
         DW 8
+        DW CCPRELOD_SIZE
         DB 1
         DB 0,'RSXSEL  BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         DW BUFFER+8612
         DW 1
+        DW RSXSEL_SIZE
         DB 1
         DB 0,'CONFIG  BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         DW BUFFER+8704
         DW 8
+        DW CONFIG_SIZE
         DB 1
         DB 0,'RSXLOAD BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         DW BUFFER+9728
         DW 8
+        DW RSXLOAD_SIZE
         DB 1
         DB 0,'RSXRESOLBIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         DW BUFFER+12800
         DW 8
+        DW RSXRESOL_SIZE
         DB 1
         DB 0,'CCP     RLM',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         DW BUFFER+13824
         DW 52
+        DW CCP_SIZE
         DB 0
 
 ; -------------------------------------------------------------------------------
 ; Output Header and State
 ; -------------------------------------------------------------------------------
 
-OUTFCB: DB 0,'SYSTEM  SYS',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ; SYSTEM.SYS output FCB
+  ; A full 36-byte FCB is required: VERIFY clears bytes 12-35 before reopening.
+  ; Shortening this object overwrites the adjacent expected package header.
+OUTFCB: DB 0,'SYSTEM  SYS'               ; SYSTEM.SYS output FCB
+        REPT 24
+        DB 0
+        ENDM
 HEADER: DB 'BCSY',1,1                   ; SYSTEM.SYS package header
         DW SYSRECS
         DW SYSBASE
-        DS 6
-        DS 64
-        DS 48
+        REPT 118
+        DB 0
+        ENDM
 
 BDOSJUMP:DB 0C3H,0BCH,0D6H              ; live gateway jump template
 
@@ -558,6 +608,7 @@ STARTDEF:DB 'BCST',1,0,16,0,0,126,0,1,096H,013H,0C4H,0D5H
 CURFCB: DW 0                            ; current component FCB pointer
 CURDST: DW 0                            ; current component destination
 CURCAP: DW 0                            ; current component capacity
+CURSIZE:DW 0                            ; measured component payload size
 
 NEXTPART:DW 0                           ; next component-table pointer
 

@@ -6,7 +6,7 @@
 ; * SYSTEM.SYS package.                                                         *
 ; ********************************************************************************
 
-B:
+C:
 
 ; -------------------------------------------------------------------------------
 ; Remove Previous Build Products
@@ -22,47 +22,47 @@ ERA SYSTEM.SYS
 ; = Assemble and link the fixed resident modules, rename each absolute COM image =
 ; = to its native build-product filename, and discard intermediate REL files.    =
 ; ================================================================================
-ZSM4 BOOT=BOOT
-LINK BOOT=BOOT[A]
+B:ZSM4 BOOT=B:BOOT
+B:LINK BOOT[A]
 REN BOOT.BIN=BOOT.COM
 ERA BOOT.REL
-ZSM4 STAGE1=STAGE1
-LINK STAGE1=STAGE1[A]
+B:ZSM4 STAGE1=B:STAGE1
+B:LINK STAGE1[A]
 REN STAGE1.BIN=STAGE1.COM
 ERA STAGE1.REL
-ZSM4 GATEWAY=GATEWAY
-LINK GATEWAY=GATEWAY[A]
+B:ZSM4 GATEWAY=B:GATEWAY
+B:LINK GATEWAY[A]
 REN GATEWAY.BIN=GATEWAY.COM
 ERA GATEWAY.REL
-ZSM4 BDOS=BDOS
-LINK BDOS=BDOS[A]
+B:ZSM4 BDOS=B:BDOS
+B:LINK BDOS[A]
 REN BDOS.BIN=BDOS.COM
 ERA BDOS.REL
-ZSM4 EXTENS=EXTENS
-LINK EXTENS=EXTENS[A]
+B:ZSM4 EXTENS=B:EXTENS
+B:LINK EXTENS[A]
 REN EXTENS.BIN=EXTENS.COM
 ERA EXTENS.REL
-ZSM4 DISK=DISK
-LINK DISK=DISK[A]
+B:ZSM4 DISK=B:DISK
+B:LINK DISK[A]
 REN DISK.BIN=DISK.COM
 ERA DISK.REL
-ZSM4 BIOS=BIOS
-LINK BIOS=BIOS[A]
+B:ZSM4 BIOS=B:BIOS
+B:LINK BIOS[A]
 REN BIOS.BIN=BIOS.COM
 ERA BIOS.REL
-ZSM4 FILELOAD=FILELOAD
-LINK FILELOAD=FILELOAD[A]
+B:ZSM4 FILELOAD=B:FILELOAD
+B:LINK FILELOAD[A]
 REN FILELOAD.BIN=FILELOAD.COM
 ERA FILELOAD.REL
-ZSM4 TABLES=TABLES
-LINK TABLES=TABLES[A]
+B:ZSM4 TABLES=B:TABLES
+B:LINK TABLES[A]
 REN TABLES.BIN=TABLES.COM
 ERA TABLES.REL
 
 ; -------------------------------------------------------------------------------
 ; Pack Resident Payload
 ; -------------------------------------------------------------------------------
-RESPACK
+B:RESPACK
 
 ; ================================================================================
 ; =                    Reloadable System and RSX Components                    =
@@ -70,24 +70,24 @@ RESPACK
 ; = Build the command reloader, RSX selector, configuration overlay, and RSX     =
 ; = transaction-entry and resolver carriers used during reconstruction.         =
 ; ================================================================================
-ZSM4 CCPRELOD=CCPRELOD
-LINK CCPRELOD=CCPRELOD[A]
+B:ZSM4 CCPRELOD=B:CCPRELOD
+B:LINK CCPRELOD[A]
 REN CCPRELOD.BIN=CCPRELOD.COM
 ERA CCPRELOD.REL
-ZSM4 RSXSEL=RSXSEL
-LINK RSXSEL=RSXSEL[A]
+B:ZSM4 RSXSEL=B:RSXSEL
+B:LINK RSXSEL[A]
 REN RSXSEL.BIN=RSXSEL.COM
 ERA RSXSEL.REL
-ZSM4 CONFIG=CONFIG
-LINK CONFIG=CONFIG[A]
+B:ZSM4 CONFIG=B:CONFIG
+B:LINK CONFIG[A]
 REN CONFIG.BIN=CONFIG.COM
 ERA CONFIG.REL
-ZSM4 RSXLOAD=RSXLOAD
-LINK RSXLOAD=RSXLOAD[A]
+B:ZSM4 RSXLOAD=B:RSXLOAD
+B:LINK RSXLOAD[A]
 REN RSXLOAD.BIN=RSXLOAD.COM
 ERA RSXLOAD.REL
-ZSM4 RSXRESOL=RSXRESOL
-LINK RSXRESOL=RSXRESOL[A]
+B:ZSM4 RSXRESOL=B:RSXRESOL
+B:LINK RSXRESOL[A]
 REN RSXRESOL.BIN=RSXRESOL.COM
 ERA RSXRESOL.REL
 
@@ -97,21 +97,21 @@ ERA RSXRESOL.REL
 ; = Link the CCP at three independent origins, then derive CCP.RLM from the      =
 ; = three-origin relocation proof.                                               =
 ; ================================================================================
-ZSM4 CCP=CCP
-LINK CCP=CCP[A]
+B:ZSM4 CCP=B:CCP
+B:LINK CCP[A]
 REN CCPBASE.BIN=CCP.COM
 ERA CCP.REL
-ZSM4 CCPALT=CCPALT
-LINK CCPALT=CCPALT[A]
+B:ZSM4 CCPALT=B:CCPALT
+B:LINK CCPALT[A]
 REN CCPALT.BIN=CCPALT.COM
 ERA CCPALT.REL
-ZSM4 CCPCHK=CCPCHK
-LINK CCPCHK=CCPCHK[A]
+B:ZSM4 CCPCHK=B:CCPCHK
+B:LINK CCPCHK[A]
 REN CCPCHK.BIN=CCPCHK.COM
 ERA CCPCHK.REL
-RLMBUILD
+B:RLMBUILD
 
 ; -------------------------------------------------------------------------------
 ; Compose SYSTEM.SYS
 ; -------------------------------------------------------------------------------
-SYSBUILD
+B:SYSBUILD

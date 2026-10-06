@@ -78,7 +78,14 @@ DPH3:                                   ; drive D DPH and disk binding
 ; Shared Allocation and Checksum Workspace
 ; -------------------------------------------------------------------------------
 
-ALV:    DS 128                          ; shared allocation-vector workspace
-CSV:    DS 128                          ; per-drive directory checksum vectors
+  ; Explicit zeros avoid assembler-specific DS fill in native system packages.
+ALV:                                   ; shared allocation-vector workspace
+        REPT 128
+        DB 0
+        ENDM
+CSV:                                   ; per-drive directory checksum vectors
+        REPT 128
+        DB 0
+        ENDM
         .DEPHASE
         END
