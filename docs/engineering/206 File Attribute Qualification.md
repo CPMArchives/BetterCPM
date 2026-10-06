@@ -52,3 +52,25 @@ Evidence is retained under `build/test-results/z80pack-copy-attributes-cpx-v2`
 and `build/test-results/z80pack-copy-attributes-transient`. Final rename,
 additional read-only operation checks, and installation/disk metadata
 qualification remain separate bounded checks.
+
+## Native rename and read-only operation qualification
+
+`test_z80pack_attribute_operations.py` exercises the released BDOS through
+ordinary `CALL 5` from an assembled CP/M transient under cpmsim. The fixtures
+cover all eight R/O, SYS and ARC combinations. Function 23 renames writable
+files from ATTR.DAT to NEW.BIN while retaining the attribute bits, extent and
+allocation metadata, and exact payload. Read-only rename and delete requests
+return failure and leave the complete data-disk image unchanged.
+
+Functions 21, 34 and 40 attempt sequential, random and random zero-fill writes
+to read-only files. The expected `File R/O` diagnostic and warm restart occur;
+the probe's post-call failure marker must not execute. Whole-image comparisons
+prove that neither payload nor filesystem metadata changes. Tests run with
+both R/O alone and all three attributes set.
+
+The report retains the native probe source, listing, binary, per-case media,
+transcripts, raw entries and disk hashes under
+`build/test-results/z80pack-attribute-operations`. These are native BDOS
+operation checks, not a new claim about every command frontend. No OS source
+change is needed. Installation/disk-operation metadata preservation and
+applicable Model 4 media qualification remain open.
