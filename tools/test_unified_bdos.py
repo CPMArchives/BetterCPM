@@ -515,7 +515,8 @@ def main() -> None:
 
     # Sequential Write uses the same record mapper, allocating only when its
     # current map element is empty.  It advances CR and grows RC in the FCB;
-    # Close is responsible for publishing those authenticated changes.
+    # Block ownership is published immediately for shared-ALV rebuilds;
+    # Close remains responsible for publishing the final record count.
     cpu.mem[LAYOUT['DIRBUF'] + 64:LAYOUT['DIRBUF'] + 96] = bytes(32)
     cpu.mem[LAYOUT['DIRBUF'] + 64:LAYOUT['DIRBUF'] + 76] = bytes((7,)) + b"NEW     COM"
     cpu.mem[FCB:FCB + 36] = bytes(36)
@@ -527,8 +528,12 @@ def main() -> None:
     require(cpu.word(FCB + 16) == 9 and cpu.mem[FCB + 32] == 1 and
             cpu.mem[FCB + 15] == 1,
             "Sequential Write did not install its allocation or advance CR/RC")
-    require(cpu.mem[0x7304] == writes + 1,
-            "Sequential Write did not issue exactly one physical write")
+    require(cpu.mem[0x7304] == writes + 2,
+            "new allocation must publish ownership and write its first record")
+    require(cpu.word(LAYOUT['DIRBUF'] + 64 + 16) == 9 and
+            cpu.mem[LAYOUT['DIRBUF'] + 64 + 15] == 0 and
+            not cpu.mem[FCB + 14] & 0x80,
+            "allocation publication must retain the unclosed record count")
     writes = cpu.mem[0x7304]
     require(call(21, FCB) == 0 and cpu.word(FCB + 16) == 9 and
             cpu.mem[0x7304] == writes + 1,
@@ -568,8 +573,8 @@ def main() -> None:
     require(call(34, FCB) == 0 and cpu.mem[FCB + 12] == 1 and
             cpu.mem[FCB + 32] == 0,
             "Random Write did not create and use a missing extent")
-    require(cpu.mem[0x7304] == writes + 2,
-            "missing-extent Random Write did not create then transfer once")
+    require(cpu.mem[0x7304] == writes + 3,
+            "missing-extent Random Write must create, reserve, and transfer")
     extent1 = [offset for offset in range(0, 128, 32)
                if bytes(cpu.mem[LAYOUT['DIRBUF'] + offset + 1:LAYOUT['DIRBUF'] + offset + 12]) ==
                b"NEW     COM" and cpu.mem[LAYOUT['DIRBUF'] + offset + 12] == 1]
@@ -584,8 +589,8 @@ def main() -> None:
             f"S2={cpu.mem[FCB+14]:02X} CR={cpu.mem[FCB+32]} RC={cpu.mem[FCB+15]} "
             f"RB={cpu.mem[state['UB_RBNO']]} AL={bytes(cpu.mem[FCB+16:FCB+24]).hex()} "
             f"AV={bytes(cpu.mem[alv:alv+8]).hex()}")
-    require(cpu.mem[0x7304] == writes + 3,
-            "extent rollover did not close, create, and transfer exactly once")
+    require(cpu.mem[0x7304] == writes + 4,
+            "extent rollover must close, create, reserve, and transfer")
     extent2 = [offset for offset in range(0, 128, 32)
                if bytes(cpu.mem[LAYOUT['DIRBUF'] + offset + 1:LAYOUT['DIRBUF'] + offset + 12]) ==
                b"NEW     COM" and cpu.mem[LAYOUT['DIRBUF'] + offset + 12] == 2]
@@ -605,8 +610,8 @@ def main() -> None:
             f"CR={cpu.mem[FCB+32]} RC={cpu.mem[FCB+15]} writes={cpu.mem[0x7304]-writes}")
     require(cpu.mem[FCB + 32] == 16 and cpu.mem[FCB + 15] == 17,
             "zero-fill Random Write did not retain its target record")
-    require(cpu.mem[0x7304] == writes + 17,
-            "zero-fill Random Write did not initialize exactly one full block")
+    require(cpu.mem[0x7304] == writes + 18,
+            "zero-fill must reserve, initialize one block, and write the record")
     require(cpu.mem[state["UBS_COK"]] == 0,
             "zero-fill scratch use left the directory cache falsely valid")
     call(28)

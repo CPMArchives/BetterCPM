@@ -1150,41 +1150,51 @@ UB_CLOSE:                               ; close file
 
 UB_CCORE:                               ; ccore
         LD      (UB_ITFCB),DE
-        LD      HL,14
-        ADD     HL,DE
-        LD      A,(HL)
-        AND     080H
+        BIT     7,(IX+14)               ; active FCB, including internal Close
         JR      NZ,UB_CLCLEAN
         CALL    UB_MCTX
         JP      NZ,UB_BAD
-        LD      DE,(UB_ITFCB)
-        CALL    UB_OPENCORE
-        JP      C,UB_BAD                ; never publish through a stale directory pointer
-        LD      HL,(UB_ITFCB)
-        LD      DE,12
-        ADD     HL,DE
-        EX      DE,HL
-        LD      HL,(UB_OPENENT)
-        LD      BC,12
-        ADD     HL,BC
-        LD      BC,20
-        EX      DE,HL
-        LDIR
-        LD      HL,(UB_OPENENT)
-        LD      DE,14
-        ADD     HL,DE
-        LD      A,(HL)
-        AND     03FH
-        LD      (HL),A
-        LD      A,1
-        LD      (UB_DIRTY),A
-        CALL    UB_DIRFLUSH
+        LD      BC,0140CH               ; copy 20 bytes from FCB offset 12
+        CALL    UB_PUBLISH
         JP      NZ,UB_BAD
         SET     7,(IX+14)               ; Close/Make leave the active FCB clean
 
 UB_CLCLEAN:                             ; clclean
         LD      A,(UB_ITRET)
         RET
+
+  ; All drives share one ALV, rebuilt from the directory on drive changes.
+  ; Publish new block ownership before a change can forget an unclosed FCB.
+  ; BC packs byte count in B and FCB offset in C: Close copies bytes 12-31;
+  ; allocation copies only 16-31, leaving EX/RC publication to normal Close.
+  ; Both ranges end at byte 32, so DE then locates S2 at a fixed -18 offset.
+
+UB_PUBLISH:                             ; publish FCB range without changing caller
+        PUSH    BC
+        LD      DE,(UB_ITFCB)
+        CALL    UB_OPENCORE
+        POP     BC
+        JP      C,UB_BAD
+        LD      E,C
+        LD      D,0
+        PUSH    IX
+        POP     HL
+        ADD     HL,DE
+        PUSH    HL
+        LD      HL,(UB_OPENENT)
+        ADD     HL,DE
+        EX      DE,HL
+        POP     HL
+        LD      C,B
+        LD      B,0
+        LDIR
+        EX      DE,HL
+        LD      DE,-18
+        ADD     HL,DE
+        LD      A,(HL)
+        AND     03FH
+        LD      (HL),A
+        JP      UB_DIRWRITE
 
   ; Function 22 uses the common exact-name scan to reject duplicates, then the
   ; same iterator in free-entry mode. The loaded cache entry is the mutation
@@ -1233,9 +1243,7 @@ UB_MKFREE:                              ; mkfree
         INC     HL
         LD      BC,31
         LDIR                            ; name, extent state, allocation map
-        LD      A,1
-        LD      (UB_DIRTY),A
-        CALL    UB_DIRFLUSH
+        CALL    UB_DIRWRITE
         JR      NZ,UB_MBAD
         SET     7,(IX+14)               ; Close/Make leave the active FCB clean
         LD      A,(UB_ITRET)
@@ -1680,7 +1688,7 @@ UB_WALLOC:                              ; walloc
         JP      NZ,UB_BAD
         PUSH    IX
         POP     HL
-        LD      BC,16
+        LD      BC,16                   ; B stays zero in both map-index paths
         ADD     HL,BC
         LD      A,(UB_DSM+1)
         OR      A
@@ -1688,7 +1696,6 @@ UB_WALLOC:                              ; walloc
         JR      Z,UB_WPUT8
         ADD     A,A
         LD      C,A
-        LD      B,0
         ADD     HL,BC
         LD      (HL),E
         INC     HL
@@ -1697,11 +1704,13 @@ UB_WALLOC:                              ; walloc
 
 UB_WPUT8:                               ; wput8
         LD      C,A
-        LD      B,0
         ADD     HL,BC
         LD      (HL),E
 
 UB_WREMAP:                              ; wremap
+        LD      BC,01010H               ; publish allocation map only
+        CALL    UB_PUBLISH
+        JR      NZ,UB_WBAD
         CALL    UB_RECMAP
         JR      C,UB_WBAD
         LD      A,(UB_ZMODE)
@@ -2458,6 +2467,10 @@ UB_POSDONE:                             ; posdone
 ; -------------------------------------------------------------------------------
 ; Directory Cache Flush
 ; -------------------------------------------------------------------------------
+
+UB_DIRWRITE:                            ; publish changed directory cache
+        LD      A,1
+        LD      (UB_DIRTY),A
 
 UB_DIRFLUSH:                            ; flush dirty directory cache
         LD      A,(UB_DIRTY)
