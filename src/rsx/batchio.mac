@@ -2,7 +2,7 @@
 ; *                         BetterCP/M BATCHIO RSX                               *
 ; *                                                                              *
 ; * Protected CP/M 2.2 XSUB-style input provider. Supplies submitted command     *
-; * records from A:$$$.SUB through BDOS Function 10 while preserving the caller's*
+; * records from A0:$$$.SUB through BDOS Function 10 while preserving the caller's*
 ; * DMA state and falling through to the real console when batch input ends.     *
 ; ********************************************************************************
 
@@ -103,6 +103,13 @@ BI_CALL:                                ; call lower BDOS layer
 BI_FCALL:                               ; perform protected-buffer file call
         PUSH    BC
         PUSH    DE
+        LD      E,0FFH
+        LD      C,32
+        CALL    BI_CALL
+        LD      (BI_USER),A
+        LD      E,0
+        LD      C,32
+        CALL    BI_CALL
         LD      DE,BI_BUFFER
         LD      C,26
         CALL    BI_CALL
@@ -114,8 +121,13 @@ BI_FCALL:                               ; perform protected-buffer file call
         EX      DE,HL
         LD      C,26
         CALL    BI_CALL
+        LD      A,(BI_USER)
+        LD      E,A
+        LD      C,32
+        CALL    BI_CALL
         POP     AF
         RET
+BI_USER:        DB      0               ; caller user restored after queue access
 
 ; ================================================================================
 ; =                             Submitted Line Input                             =

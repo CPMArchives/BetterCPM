@@ -124,3 +124,13 @@ the stock `(xsub active)` notice is emitted on BATCHIO's first public BDOS pass
 after reconstruction rather than by code installed in page-zero WBOOT.  Its
 lifecycle and meaning are preserved, but exact screen placement is a remaining
 presentation difference from a non-overwritten DRI CCP.
+
+## A0 queue policy — 2026-10-07
+
+BetterCP/M uses `A0:$$$.SUB` independently of the invoking drive/user. SUBMIT
+reads the source in the invoking context and accesses only its output queue in
+user zero. CCP consumption/cancellation, XSUB input, and CONFIG Test now use
+the same location. Every queue file call restores the caller user area and its
+BDOS result. Commands retain their context and may change drive/user. A0 must
+be writable. This is BetterCP/M policy, not a claim of universal community
+agreement.

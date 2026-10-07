@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+"""Check exact STAT totals on private multi-extent and many-file media."""
+import argparse
+import subprocess
+import re
+from pathlib import Path
+from test_z80pack_submit_xsub import ROOT, run_case
+
+
+def capacity_probe():
+    from test_bios import Z80
+    listing = (ROOT / 'build/utilities/stat.lst').read_text()
+    def address(name):
+        return int(re.search(r'^([0-9a-f]{4})\s+.*?\b' + name + ':', listing, re.M | re.I)[1], 16)
+    cpu = Z80(b'')
+    binary = (ROOT / 'build/utilities/STAT.COM').read_bytes()
+    cpu.mem[0x100:0x100 + len(binary)] = binary
+    cpu.setword(address('DPB'), 0x8000)
+    cpu.setword(address('DIRENT'), 0x8100)
+    cpu.mem[0x8006] = 1  # eight word-sized allocation slots
+    cpu.mem[address('KSHIFT')] = 1
+    for i in range(65):
+        cpu.mem[0x8100:0x8120] = bytes(32)
+        cpu.mem[0x8101:0x810c] = f'N{i:07}DAT'.encode()
+        cpu.mem[0x810f] = 1
+        cpu.mem[0x8110] = i + 1
+        cpu.run(address('SUMEXTENT'), limit=20000)
+    assert cpu.mem[address('SUMCOUNT')] == 64
+    assert cpu.mem[address('SUMFULL')] == 1
+    for i in range(64):
+        offset = address('SUMMARY') + i * 16
+        assert cpu.mem[offset:offset + 11] == f'N{i:07}DAT'.encode()
+        assert cpu.word(offset + 11) == 1
+        assert cpu.word(offset + 13) == 2
+        assert cpu.mem[offset + 15] == 1
+    # The reported SYSTEM.SYS case uses EXM=0: two physical entries.
+    cpu.mem[address('SUMCOUNT')] = 0
+    cpu.mem[address('SUMFULL')] = 0
+    for extent, records, blocks in ((0, 128, 8), (1, 33, 3)):
+        cpu.mem[0x8100:0x8120] = bytes(32)
+        cpu.mem[0x8101:0x810c] = b'SYSTEM  SYS'
+        cpu.mem[0x810c] = extent
+        cpu.mem[0x810f] = records
+        for i in range(blocks):
+            cpu.setword(0x8110 + i * 2, 1 + extent * 8 + i)
+        cpu.run(address('SUMEXTENT'), limit=20000)
+    offset = address('SUMMARY')
+    assert cpu.mem[address('SUMCOUNT')] == 1
+    assert cpu.word(offset + 11) == 161
+    assert cpu.word(offset + 13) == 22
+    assert cpu.mem[offset + 15] == 2
+    print('STAT EXM=0 two-entry totals, 64-summary boundary and overflow passed')
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--image-dir', type=Path, default=ROOT / 'build/z80pack-iobyte-qualified')
+    parser.add_argument('--simulator', type=Path, default=Path.home() / 'projects/git/z80pack/cpmsim/cpmsim')
+    args = parser.parse_args()
+    subprocess.run(['python3', str(ROOT / 'tools/build_stat.py')], check=True)
+
+    capacity_probe()
+
+    def files(work):
+        subprocess.run(['cpmrm', '-f', 'bettercpm-default', str(work / 'disks/drivea.dsk'), '0:stat.com'], cwd=work, check=True)
+        image = work / 'disks/driveb.dsk'
+        blank = image.read_bytes()
+        image.unlink()
+        image.write_bytes(blank)
+        fixtures = {'SYSTEM.SYS': 161 * 128, 'LONG.DAT': 513 * 128}
+        fixtures.update({f'F{i:02}.DAT': 128 for i in range(24)})
+        for name, size in fixtures.items():
+            source = work / name
+            source.write_bytes(bytes(size))
+            subprocess.run(['cpmcp', '-T', 'raw', '-f', 'bettercpm-default', str(image), str(source), '0:' + name], cwd=work, check=True)
+        return {'STAT.COM': (ROOT / 'build/utilities/STAT.COM').read_bytes()}
+
+    body = r'''
+send -s "stat b:system.sys\r"
+expect -re {00161 Recs +00022K Bytes +00001 Ext R/W B:SYSTEM +\.SYS}
+prompt
+send -s "stat b:long.dat\r"
+expect -re {00513 Recs +00066K Bytes +00003 Ext R/W B:LONG +\.DAT}
+prompt
+send -s "stat b:f??.dat\r"
+'''
+    for i in range(24):
+        body += f'expect -re {{00001 Recs +00002K Bytes +00001 Ext R/W B:F{i:02} +\\.DAT}}\n'
+    body += 'prompt\nsend -s "bye\\r"\nexpect eof\n'
+    run_case(args.image_dir.resolve(), args.simulator.resolve(), 'stat-files', files, body)
+    print('STAT exact record/allocation/extent totals and 24-file summaries passed')
+
+
+if __name__ == '__main__':
+    main()

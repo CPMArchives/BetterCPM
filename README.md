@@ -4,7 +4,7 @@ BetterCP/M is a compact, maintainable CP/M-compatible operating system for Z80-c
 
 The project begins with CP/M 2.2 as its compatibility baseline while redesigning the operating system around explicit interfaces, documented state, reproducible builds, portable hardware boundaries, and independently testable subsystems. The objective is not simply to reproduce Digital Research CP/M source code, but to provide a clean and well-specified CP/M environment that remains practical on small 8-bit systems.
 
-BetterCP/M 1.0 is under active development. Its architecture is frozen; Stages 1 through 8 of the 1.0 architecture program are complete, and the project is now in the implementation and qualification program.
+BetterCP/M has reached the **1.0 OS implementation milestone**: architecture Stages 1 through 8 and retained OS implementation Items 1 through 6 are complete. Utility selection and completion, release assembly, reproducible qualification tooling, and final release-candidate verification remain. This is a development milestone, not the declaration of a qualified 1.0 release.
 
 ## Goals
 
@@ -45,7 +45,7 @@ The current development system boots reproducibly on both the **TRS-80 Model 4 u
 
 The system supports four physical drives, runtime disk-format assignment, ordinary CP/M drive/user operation, persistent command history, SUBMIT/XSUB operation, configurable disk services, and the standard CP/M file operations exercised by the project's compatibility suite.
 
-CONFIG, DUP, SYSBUILD, and SYSGEN provide the developing configuration, disk-management, system-generation, and installation path. Disk configuration uses BetterCP/M's FDF/FDB format-description architecture.
+CONFIG, DUP, SYSBUILD, and SYSGEN provide the implemented configuration, disk-management, system-generation, and installation path. Disk configuration uses BetterCP/M's FDF/FDB format-description architecture.
 
 The default memory configuration accepts a maximum record-aligned 53 KiB `.COM` image (54,272 bytes).
 
@@ -53,14 +53,14 @@ Subsystems are versioned independently. See [`specifications/SUBSYSTEM-VERSIONIN
 
 ## BetterCP/M 1.0
 
-The architecture for BetterCP/M 1.0 is frozen. The remaining work is implementation, integration, and qualification against the accepted contracts.
+The architecture for BetterCP/M 1.0 is frozen, and the retained OS feature implementation is complete. The remaining roadmap covers utilities, release assembly, and final qualification against the accepted contracts. Testing may identify corrections; it does not imply another planned OS feature implementation stage.
 
 The two required 1.0 platforms are:
 
 - TRS-80 Model 4 / `trs80gp`;
 - z80pack / `cpmsim`.
 
-Both platforms already boot BetterCP/M; remaining platform work concerns completion and qualification against the frozen 1.0 requirements.
+Both platforms already boot BetterCP/M. Remaining platform work includes reproducible qualification tooling and testing of the frozen release artifacts.
 
 The 1.0 system includes the normalized disk-state and FDF/FDB architecture, CONFIG/DUP/SYSGEN installation path, bounded persistent command history, CPX and RSX extension facilities, ordinary CP/M read-only/system/archive file attributes, and the native BetterCP/M clock-service architecture.
 
@@ -77,6 +77,27 @@ The complete current development image can be generated with:
 ```sh
 python3 tools/build_complete_system.py
 ```
+
+For an interactive native OS build under trs80gp, prepare fresh media and launch:
+
+```sh
+bash tools/start_native_build.sh
+```
+
+This rebuilds a coherent source/tool snapshot and creates a boot disk in A:,
+the native build kit in B:, a SYSTEM-format work/installation disk in C:,
+and a spare data disk in D:. Existing output directories are never overwritten.
+Use `--prepare-only` to create media without launching, or supply a new output
+directory after that option. Set `TRS80GP` to override the emulator executable.
+
+In user zero, enter `B:` and `SUBMIT BUILD`. SUBMIT may be invoked from B:,
+but its temporary command stream uses writable A0:, as required by the CCP.
+The invoking user area is preserved; scripts may change drive/user without
+changing the queue location.
+The build selects C: and produces
+verified `SYSTEM.SYS`. Then enter `B:SYSGEN C:SYSTEM.SYS C:` to install it on
+that same disk without changing its ordinary files. Do not format C: between
+building and installation. The script prints the media directory for later reuse.
 
 Individual subsystem builders and tests remain available under `tools/` for development and qualification work.
 
