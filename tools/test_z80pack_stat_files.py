@@ -68,7 +68,7 @@ def main():
         image.unlink()
         image.write_bytes(blank)
         fixtures = {'SYSTEM.SYS': 161 * 128, 'LONG.DAT': 513 * 128}
-        fixtures.update({f'F{i:02}.DAT': 128 for i in range(24)})
+        fixtures.update({f'F{i:02}.DAT': 128 for i in reversed(range(24))})
         for name, size in fixtures.items():
             source = work / name
             source.write_bytes(bytes(size))
