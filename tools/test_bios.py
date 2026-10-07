@@ -671,6 +671,10 @@ class Z80:
                 total = self.a + value + int(self.carry)
                 self.a = total & 0xFF
                 self.z, self.carry = self.a == 0, total > 0xFF
+            elif op == 0x98:            # SBC A,B
+                total = self.a - self.b - int(self.carry)
+                self.a = total & 0xFF
+                self.z, self.carry = self.a == 0, total < 0
             elif op == 0xC6:            # ADD A,n
                 total = self.a + self.mem[self.pc]
                 self.pc += 1
