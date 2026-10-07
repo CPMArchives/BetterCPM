@@ -1210,6 +1210,13 @@ SETATTR:                                ; set matching file attributes
         LD      DE,FCB+1
         LD      BC,11
         LDIR
+        LD      C,29                   ; avoid BDOS's read-only abort path
+        CALL    BDOS
+        LD      (ROVEC),HL
+        LD      C,25
+        CALL    BDOS
+        CALL    ROMASK
+        JR      NZ,SADISKRO
         LD      A,(OPTION)
         CP      1
         JR      Z,SARO
@@ -1240,11 +1247,26 @@ SAAPPLY:PUSH    DE                      ; saapply
         LD      DE,FCB
         LD      C,30
         CALL    BDOS
+        CP      0FFH
+        JR      Z,SAFAIL
         CALL    CRLF
         LD      HL,FCB+1
         CALL    PNAME
         LD      DE,MSETTO
         CALL    PRINT
+        POP     DE
+        JP      PRINT
+
+SAFAIL: POP     DE                      ; discard the requested success text
+        LD      DE,MATTRFAIL
+        JR      SAERROR
+SADISKRO:
+        LD      DE,MATTRRO
+SAERROR:
+        PUSH    DE
+        CALL    CRLF
+        LD      HL,FCB+1
+        CALL    PNAME
         POP     DE
         JP      PRINT
 
@@ -1996,6 +2018,8 @@ MKBYTES:        DB 'K Bytes  $'         ; mkbytes
 MEXTACC:        DB ' Ext R/$'           ; mextacc
 MSUMFULL:       DB 13,10,'Too many matching files (maximum 64)',13,10,'$'
 MNOTFOUND:      DB 13,10,'File Not Found',13,10,'$' ; mnotfound
+MATTRFAIL:      DB ' attribute update failed',13,10,'$'
+MATTRRO:        DB ' attribute update failed: disk is read-only',13,10,'$'
 MSETTO:         DB ' set to $'          ; msetto
 MRO:            DB 'R/O$'               ; mro
 MRW:            DB 'R/W$'               ; mrw
