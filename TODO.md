@@ -209,8 +209,8 @@ redistributable existing utility; an unchecked item does not by itself block
   after 16 files. Exact checks cover 161-record and 513-record files, 24-file
   listings, EXM=0 two-entry aggregation, and the 64-summary boundary. Collection
   beyond 64 distinct files now reports an error instead of silently truncating.
-- [ ] Complete remaining stock STAT baseline: distinct $S
-  logical size, full DSK: fields/all-active-drive reporting, and complete VAL: help.
+- [ ] Complete remaining stock STAT baseline: full DSK: fields/all-active-drive
+  reporting and complete VAL: help.
 - [x] Correct STAT filespec/option parsing (2026-10-07): name/extension stars,
   exact $S/$R/O/$R/W/$SYS/$DIR options, full-width names with following options,
   and malformed/trailing operand rejection. Mixed `?*` patterns are accepted;
@@ -238,6 +238,14 @@ redistributable existing utility; an unchecked item does not by itself block
   (2026-10-07), moving the complete summary so attributes and totals stay with
   each file. Empty, single, mixed name/type and 64-entry reverse-order checks
   pass; disposable cpmsim media created in reverse order prints ascending names.
+
+- [x] Report distinct STAT $S logical size (2026-10-08) through BDOS Function
+  35's full three-byte result. Native random write to record 512 reports logical
+  size 513, recorded total 1, allocation 2K, and two physical entries (the empty
+  Make entry plus the random-write entry). Ordinary 161-record reporting and
+  24-bit formatting boundaries pass. Size lookup failure displays unavailable.
+  STAT runtime assertions now fail explicitly on every missing required output;
+  the complete file/parser/attribute/device/sorting campaign passes that guard.
 
 - [ ] Implement `DUMP.COM`.
 - [x] Implement `SUBMIT.COM`.

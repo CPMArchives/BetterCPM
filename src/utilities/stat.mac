@@ -902,15 +902,25 @@ FILEPRINT:                              ; fileprint
         OR      A
         JR      NZ,FPNOSIZE
         LD      HL,(SUMCUR)
-        LD      DE,11
-        ADD     HL,DE
-        LD      E,(HL)
-        INC     HL
-        LD      D,(HL)
-        EX      DE,HL
-        CALL    PWORD5
+        LD      DE,FCB+1
+        LD      BC,11
+        LDIR
+        LD      DE,FCB
+        LD      C,35                    ; independent exclusive logical end
+        CALL    BDOS
+        CP      0FFH
+        JR      Z,FPSIZEFAIL
+        LD      HL,FCB+33
+        LD      DE,SIZEVAL
+        LD      BC,3
+        LDIR
+        CALL    P24
         LD      A,' '
         CALL    PCHAR
+        JR      FPNOSIZE
+FPSIZEFAIL:
+        LD      DE,MSIZEFAIL
+        CALL    PRINT
 
 FPNOSIZE:                               ; fpnosize
         LD      HL,(SUMCUR)
@@ -1980,6 +1990,59 @@ PHXDIGIT:                               ; phxdigit
 ; Decimal Output
 ; -------------------------------------------------------------------------------
 
+  ; Print a 24-bit record count, padded to at least five decimal digits.
+P24:    LD      HL,SIZEDIVS
+        LD      (SIZEPTR),HL
+        LD      A,8
+        LD      (SIZECOUNT),A
+        XOR     A
+        LD      (SIZESTART),A
+P24NEXT:
+        LD      HL,(SIZEPTR)
+        LD      DE,SIZEDIV
+        LD      BC,3
+        LDIR
+        LD      (SIZEPTR),HL
+        LD      A,'0'
+        LD      (SIZEDIGIT),A
+P24SUB:
+        LD      HL,(SIZEVAL)
+        LD      DE,(SIZEDIV)
+        OR      A
+        SBC     HL,DE
+        LD      A,(SIZEVAL+2)
+        LD      C,A
+        LD      A,(SIZEDIV+2)
+        LD      B,A
+        LD      A,C
+        SBC     A,B
+        JR      C,P24OUT
+        LD      (SIZEVAL),HL
+        LD      (SIZEVAL+2),A
+        LD      HL,SIZEDIGIT
+        INC     (HL)
+        JR      P24SUB
+P24OUT:
+        LD      A,(SIZEDIGIT)
+        CP      '0'
+        JR      NZ,P24PRINT
+        LD      A,(SIZESTART)
+        OR      A
+        JR      NZ,P24PRINT
+        LD      A,(SIZECOUNT)
+        CP      6
+        JR      NC,P24SKIP
+P24PRINT:
+        LD      A,1
+        LD      (SIZESTART),A
+        LD      A,(SIZEDIGIT)
+        CALL    PCHAR
+P24SKIP:
+        LD      HL,SIZECOUNT
+        DEC     (HL)
+        JR      NZ,P24NEXT
+        RET
+
 PWORD5: LD      C,1                     ; pword5
         JR      PWSTART
 
@@ -2107,6 +2170,7 @@ MBLOCKCAP:      DB ': Allocation Blocks$' ; mblockcap
 MDIRENTS:       DB ': 32 Byte Directory Entries$' ; mdirents
 MRESERVED:      DB ': Reserved Tracks$' ; mreserved
 MKREMAIN:       DB ': Kilobytes Remaining$' ; mkremain
+MSIZEFAIL:      DB 'Size unavailable $'
 MRECS:          DB ' Recs  $'           ; mrecs
 MKBYTES:        DB 'K Bytes  $'         ; mkbytes
 MEXTACC:        DB ' Ext R/$'           ; mextacc
@@ -2165,6 +2229,21 @@ MBADFORM:       DB 13,10,'Invalid STAT command',13,10,'$' ; mbadform
 ; Utility State and Buffers
 ; -------------------------------------------------------------------------------
 
+SIZEDIVS:
+        DB 128,150,152
+        DB 64,66,15
+        DB 160,134,1
+        DB 16,39,0
+        DB 232,3,0
+        DB 100,0,0
+        DB 10,0,0
+        DB 1,0,0
+SIZEVAL:        DS 3
+SIZEDIV:        DS 3
+SIZEPTR:        DW 0
+SIZECOUNT:      DB 0
+SIZEDIGIT:      DB 0
+SIZESTART:      DB 0
 OLDSP:          DW 0                    ; oldsp
 SAVEDRV:        DB 0                    ; savedrv
 SAVEUSR:        DB 0                    ; saveusr

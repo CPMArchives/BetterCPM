@@ -5,6 +5,7 @@ import subprocess
 import re
 from pathlib import Path
 from test_z80pack_submit_xsub import ROOT, run_case
+from build_ccp import assemble
 
 
 def capacity_probe():
@@ -79,11 +80,45 @@ def main():
         entry = int(re.search(r'^([0-9a-f]{4})\s+.*?\bSETATTR:', listing, re.M | re.I)[1], 16)
         rostat = bytearray(stat)
         original = bytes(rostat[entry - 0x100:entry - 0x100 + 3])
-        rostat[entry - 0x100:entry - 0x100 + 3] = bytes((0xc3, 0, 0x18))
+        trampoline = (len(stat) + 0x100 + 255) & ~255
+        rostat[entry - 0x100:entry - 0x100 + 3] = bytes((0xc3, trampoline & 255, trampoline >> 8))
         target = entry + 3
         wrapper = bytes.fromhex('0e 1c cd 05 00') + original + bytes((0xc3, target & 255, target >> 8))
-        rostat += bytes(0x1700 - len(rostat)) + wrapper
-        return {'STAT.COM': stat, 'ROSTAT.COM': rostat}
+        rostat += bytes(trampoline - 0x100 - len(rostat)) + wrapper
+        source = """        ORG 100H
+        LD DE,FCB
+        LD C,22
+        CALL 5
+        CP 0FFH
+        JR Z,BAD
+        LD A,2
+        LD (FCB+34),A
+        LD DE,FCB
+        LD C,34
+        CALL 5
+        OR A
+        JR NZ,BAD
+        LD DE,FCB
+        LD C,16
+        CALL 5
+        CP 0FFH
+        JR Z,BAD
+        LD DE,GOOD
+        JR PRINT
+BAD:    LD DE,FAIL
+PRINT:  LD C,9
+        CALL 5
+        JP 0
+GOOD:   DB 'SPARSE READY',13,10,'$'
+FAIL:   DB 'SPARSE FAILED',13,10,'$'
+FCB:    DB 2,'SPARSE  DAT'
+        REPT 24
+        DB 0
+        ENDM
+        END
+"""
+        probe = assemble(Path.home() / 'bin/z80asm', source, work / 'sparse.bin', work / 'sparse.lst', 0x100)
+        return {'STAT.COM': stat, 'ROSTAT.COM': rostat, 'SPMAKE.COM': probe}
 
     body = r'''
 send -s "stat b:system.sys\r"
@@ -91,6 +126,15 @@ expect -re {00161 Recs +00022K Bytes +00001 Ext R/W B:SYSTEM +\.SYS}
 prompt
 send -s "stat b:long.dat\r"
 expect -re {00513 Recs +00066K Bytes +00003 Ext R/W B:LONG +\.DAT}
+prompt
+send -s "stat b:system.sys \$S\r"
+expect -re {00161 +00161 Recs +00022K Bytes +00001 Ext R/W B:SYSTEM +\.SYS}
+prompt
+send -s "spmake\r"
+expect -exact "SPARSE READY"
+prompt
+send -s "stat b:sparse.dat \$S\r"
+expect -re {00513 +00001 Recs +00002K Bytes +00002 Ext R/W B:SPARSE +\.DAT}
 prompt
 send -s "stat b:f?***.dat\r"
 '''
@@ -109,7 +153,7 @@ prompt
     for option, result in [('$R/O', 'R/O'), ('$R/W', 'R/W'), ('$SYS', 'SYS'), ('$DIR', 'DIR')]:
         option = option.replace('$', r'\$')
         body += f'send -s "stat b:f00.dat {option}\\r"\nexpect -re {{F00 +\\.DAT set to {result}}}\nprompt\n'
-    body += r'''send -s "rostat b:f00.dat \$sys\r"
+    body += r'''send -s "rostat b:f00.dat \$SYS\r"
 expect -re {F00 +\.DAT attribute update failed: disk is read-only}
 prompt
 send -s "stat b:f00.dat\r"
@@ -147,6 +191,24 @@ send -s "bye\r"
 expect eof
 '''
 
+    # Every required output must fail explicitly on timeout, including Tcl's
+    # one-pattern expect calls which otherwise may simply return on timeout.
+    body = body.replace('expect -re ', 'mustre ').replace('expect -exact ', 'mustexact ')
+    body = r'''proc mustre {pattern} {
+ expect {
+  -re $pattern {}
+  timeout {puts "MISSING REQUIRED REGEX: $pattern"; exit 1}
+  eof {puts "UNEXPECTED EXIT"; exit 1}
+ }
+}
+proc mustexact {pattern} {
+ expect {
+  -exact $pattern {}
+  timeout {puts "MISSING REQUIRED TEXT: $pattern"; exit 1}
+  eof {puts "UNEXPECTED EXIT"; exit 1}
+ }
+}
+''' + body
     run_case(args.image_dir.resolve(), args.simulator.resolve(), 'stat-files', files, body)
     print('STAT exact totals, 24-file star matching, attribute options, device assignments and invalid-tail rejection passed')
 
