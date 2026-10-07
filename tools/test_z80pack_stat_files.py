@@ -245,6 +245,24 @@ send -s "user 0\r"
 expect -exact "B0>_ "
 send -s "a:\r"
 prompt
+send -s "stat val:\r"
+expect -exact "Temp R/O Disk: d:=R/O"
+expect -exact "\$R/O \$R/W \$SYS \$DIR"
+expect -exact "\$S (logical record count)"
+expect -exact "Device Status: DEV:"
+expect -exact "CON:=TTY: CRT: BAT: UC1:"
+expect -exact "RDR:=TTY: PTR: UR1: UR2:"
+expect -exact "PUN:=TTY: PTP: UP1: UP2:"
+expect -exact "LST:=TTY: CRT: LPT: UL1:"
+expect -exact "Separate multiple assignments with spaces."
+expect -exact "BAT: console input uses RDR:; output uses LST:."
+prompt
+send -s "stat dev:\r"
+expect -exact "CON: is UC1:"
+expect -exact "RDR: is PTR:"
+expect -exact "PUN: is PTP:"
+expect -exact "LST: is LPT:"
+prompt
 send -s "bye\r"
 expect eof
 '''
