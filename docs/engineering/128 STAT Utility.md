@@ -50,3 +50,10 @@ with the exact system image at no resident-memory cost.
 the memory report, multi-extent aggregation, numeric-user selection and state
 restoration, DPB report, operand inventory, IOBYTE assignment, and file
 attribute update.
+
+`tools/test_z80pack_stat_files.py` also verifies exact file totals, sorting,
+parser rejection, device assignments and DPB fields on private cpmsim media.
+Its `USR:` checks cover an empty disk and a disk populated in users 0, 3, 15
+and 31, including return to B3: after enumeration. These checks test STAT's
+IOBYTE inspection/assignment interface; actual BIOS device routing remains
+separate release qualification.

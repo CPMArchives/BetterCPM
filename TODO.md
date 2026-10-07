@@ -220,6 +220,10 @@ redistributable existing utility; an unchecked item does not by itself block
   entries. Executed-code checks cover 384 summaries, memory/directory capacity
   bounds, explicit overflow and 257-file sorting with metadata intact; the
   cpmsim utility campaign passes. STAT shrinks from 6,550 to 5,646 bytes.
+- [x] Qualify STAT USR: on disposable cpmsim media (2026-10-08). A populated
+  disk reports exactly users 0, 3, 15 and 31; an empty disk reports no occupied
+  users. The active user is reported correctly and invocation from B3: restores
+  B3: after scanning all 32 user areas. No utility code change was required.
 - [x] Correct STAT filespec/option parsing (2026-10-07): name/extension stars,
   exact $S/$R/O/$R/W/$SYS/$DIR options, full-width names with following options,
   and malformed/trailing operand rejection. Mixed `?*` patterns are accepted;
