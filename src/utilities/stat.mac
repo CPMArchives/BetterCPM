@@ -53,7 +53,7 @@ START:                                  ; enter STAT utility
         CALL    ISDEV
         JP      Z,DEVSTATUS
         CALL    ISDSK
-        JP      Z,DRIVEDETAILS
+        JP      Z,ALLDETAILS
         CALL    DEVICEASSIGN
         JP      C,FINISH
         CALL    PARSEDU
@@ -721,7 +721,45 @@ BFTEST: LD      A,B                     ; bftest
 ; Selected Drive Details
 ; -------------------------------------------------------------------------------
 
-DRIVEDETAILS:                           ; report selected drive details
+ALLDETAILS:                             ; snapshot and report logged-in drives
+        LD      C,24
+        CALL    BDOS
+        LD      (LOGIN),HL
+        XOR     A
+        LD      (DRIVE),A
+ADLOOP: LD      A,(DRIVE)
+        CP      16
+        JP      Z,FINISH
+        LD      E,A
+        LD      HL,1
+ADMASK: LD      A,E
+        OR      A
+        JR      Z,ADCHECK
+        ADD     HL,HL
+        DEC     E
+        JR      ADMASK
+ADCHECK:
+        EX      DE,HL
+        LD      HL,(LOGIN)
+        LD      A,H
+        AND     D
+        LD      H,A
+        LD      A,L
+        AND     E
+        OR      H
+        JR      Z,ADNEXT
+        LD      A,(DRIVE)
+        CALL    SELECTA
+        CALL    DETAILONE
+ADNEXT: LD      HL,DRIVE
+        INC     (HL)
+        JR      ADLOOP
+
+DRIVEDETAILS:                           ; explicitly selected drive only
+        CALL    DETAILONE
+        JP      FINISH
+
+DETAILONE:
         LD      C,31
         CALL    BDOS
         LD      (DPB),HL
@@ -731,6 +769,25 @@ DRIVEDETAILS:                           ; report selected drive details
         ADD     A,'A'
         CALL    PCHAR
         LD      DE,MDRIVE
+        CALL    PRINT
+        LD      HL,(DPB)
+        INC     HL
+        INC     HL
+        LD      A,(HL)                  ; records per allocation block shift
+        CALL    CAPVALUE
+        CALL    CRLF
+        CALL    P24
+        LD      DE,MRECCAP
+        CALL    PRINT
+        LD      HL,(DPB)
+        INC     HL
+        INC     HL
+        LD      A,(HL)
+        SUB     3                       ; KiB per allocation block shift
+        CALL    CAPVALUE
+        CALL    CRLF
+        CALL    P24
+        LD      DE,MKCAP
         CALL    PRINT
         LD      HL,(DPB)
         LD      E,(HL)
@@ -760,6 +817,43 @@ DRIVEDETAILS:                           ; report selected drive details
         LD      DE,MDIRENTS
         CALL    PLINE
         LD      HL,(DPB)
+        LD      DE,11
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        ADD     HL,HL
+        ADD     HL,HL                   ; CKS counts four-entry records
+        LD      DE,MCHECKED
+        CALL    PLINE
+        LD      HL,(DPB)
+        LD      DE,4
+        ADD     HL,DE
+        LD      L,(HL)
+        LD      H,0
+        INC     HL
+        LD      B,7
+DEXSHIFT:
+        ADD     HL,HL
+        DJNZ    DEXSHIFT
+        LD      DE,MRECEXT
+        CALL    PLINE
+        LD      HL,(DPB)
+        INC     HL
+        INC     HL
+        LD      A,(HL)
+        LD      HL,1
+DBLOCKSHIFT:
+        OR      A
+        JR      Z,DBLOCKOUT
+        ADD     HL,HL
+        DEC     A
+        JR      DBLOCKSHIFT
+DBLOCKOUT:
+        LD      DE,MRECBLOCK
+        CALL    PLINE
+        LD      HL,(DPB)
         LD      DE,13
         ADD     HL,DE
         LD      E,(HL)
@@ -772,7 +866,39 @@ DRIVEDETAILS:                           ; report selected drive details
         LD      HL,(FREEKB)
         LD      DE,MKREMAIN
         CALL    PLINE
-        JP      FINISH
+        RET
+
+  ; SIZEVAL = (DSM+1) * 2^A, retaining carry beyond the low word.
+CAPVALUE:
+        LD      C,A
+        LD      HL,(DPB)
+        LD      DE,5
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL
+        INC     HL
+        LD      B,0
+        LD      A,H
+        OR      L
+        JR      NZ,CAPSHIFT
+        INC     B
+CAPSHIFT:
+        LD      A,C
+        OR      A
+        JR      Z,CAPDONE
+        ADD     HL,HL
+        LD      A,B
+        RLA
+        LD      B,A
+        DEC     C
+        JR      CAPSHIFT
+CAPDONE:
+        LD      (SIZEVAL),HL
+        LD      A,B
+        LD      (SIZEVAL+2),A
+        RET
 
 PLINE:  PUSH    DE                      ; pline
         PUSH    HL
@@ -2165,6 +2291,11 @@ MBYTES:         DB 13,10,'Bytes Remaining On $' ; mbytes
 MCOLSP:         DB ': $'                ; mcolsp
 MKCRLF:         DB 'K',13,10,'$'        ; mkcrlf
 MDRIVE:         DB ': Drive Characteristics$' ; mdrive
+MRECCAP:        DB ': 128 Byte Record Capacity$'
+MKCAP:          DB ': Kilobyte Drive Capacity$'
+MCHECKED:       DB ': Checked Directory Entries$'
+MRECEXT:        DB ': Records/Extent$'
+MRECBLOCK:      DB ': Records/Allocation Block$'
 MSPT:           DB ': 128 Byte Records/Track$' ; mspt
 MBLOCKCAP:      DB ': Allocation Blocks$' ; mblockcap
 MDIRENTS:       DB ': 32 Byte Directory Entries$' ; mdirents

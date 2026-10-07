@@ -671,6 +671,10 @@ class Z80:
                 total = self.a + value + int(self.carry)
                 self.a = total & 0xFF
                 self.z, self.carry = self.a == 0, total > 0xFF
+            elif op == 0x17:            # RLA (does not change Z)
+                old_carry = self.carry
+                self.carry = bool(self.a & 0x80)
+                self.a = ((self.a << 1) | int(old_carry)) & 0xFF
             elif op == 0x98:            # SBC A,B
                 total = self.a - self.b - int(self.carry)
                 self.a = total & 0xFF

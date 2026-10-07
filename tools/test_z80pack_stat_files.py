@@ -75,6 +75,11 @@ def main():
             source.write_bytes(bytes(size))
             subprocess.run(['cpmcp', '-T', 'raw', '-f', 'bettercpm-default', str(image), str(source), '0:' + name], cwd=work, check=True)
         stat = (ROOT / 'build/utilities/STAT.COM').read_bytes()
+        stat3 = work / 'STAT3.COM'
+        stat3.write_bytes(stat)
+        subprocess.run(['cpmcp', '-T', 'raw', '-f', 'bettercpm-default',
+                        str(work / 'disks/drivea.dsk'), str(stat3), '3:STAT.COM'],
+                       cwd=work, check=True)
         # Test-only trampoline marks the selected drive R/O at SETATTR entry.
         listing = (ROOT / 'build/utilities/stat.lst').read_text()
         entry = int(re.search(r'^([0-9a-f]{4})\s+.*?\bSETATTR:', listing, re.M | re.I)[1], 16)
@@ -118,7 +123,15 @@ FCB:    DB 2,'SPARSE  DAT'
         END
 """
         probe = assemble(Path.home() / 'bin/z80asm', source, work / 'sparse.bin', work / 'sparse.lst', 0x100)
-        return {'STAT.COM': stat, 'ROSTAT.COM': rostat, 'SPMAKE.COM': probe}
+        # Populate the login vector within the same invocation before its snapshot.
+        allentry = int(re.search(r'^([0-9a-f]{4})\s+.*?\bALLDETAILS:', listing, re.M | re.I)[1], 16)
+        allstat = bytearray(stat)
+        original = bytes(allstat[allentry - 0x100:allentry - 0x100 + 5])
+        allstat[allentry - 0x100:allentry - 0x100 + 5] = bytes((0xc3, trampoline & 255, trampoline >> 8, 0, 0))
+        target = allentry + 5
+        wrapper = bytes.fromhex('1e 01 0e 0e cd 05 00 1e 00 0e 0e cd 05 00') + original + bytes((0xc3, target & 255, target >> 8))
+        allstat += bytes(trampoline - 0x100 - len(allstat)) + wrapper
+        return {'STAT.COM': stat, 'ROSTAT.COM': rostat, 'SPMAKE.COM': probe, 'ALLSTAT.COM': allstat}
 
     body = r'''
 send -s "stat b:system.sys\r"
@@ -186,6 +199,51 @@ expect -exact "CON: is UC1:"
 expect -exact "RDR: is PTR:"
 expect -exact "PUN: is PTP:"
 expect -exact "LST: is LPT:"
+prompt
+send -s "stat b:dsk:\r"
+expect {
+ -exact "A: Drive Characteristics" {puts "UNEXPECTED DRIVE A"; exit 1}
+ -exact "B: Drive Characteristics" {}
+ timeout {exit 1}
+}
+expect -exact "02656: 128 Byte Record Capacity"
+expect -exact "00332: Kilobyte Drive Capacity"
+expect -exact "36: 128 Byte Records/Track"
+expect -exact "166: Allocation Blocks"
+expect -exact "64: 32 Byte Directory Entries"
+expect -exact "64: Checked Directory Entries"
+expect -exact "256: Records/Extent"
+expect -exact "16: Records/Allocation Block"
+expect -exact "6: Reserved Tracks"
+prompt
+send -s "stat dsk:\r"
+expect -exact "A: Drive Characteristics"
+expect -exact "6: Reserved Tracks"
+expect {
+ -exact "B: Drive Characteristics" {puts "UNLOGGED DRIVE B"; exit 1}
+ -exact "A0>_ " {}
+ timeout {exit 1}
+}
+send -s "allstat dsk:\r"
+expect -exact "A: Drive Characteristics"
+expect -exact "B: Drive Characteristics"
+expect -exact "6: Reserved Tracks"
+expect {
+ -re {[CD]: Drive Characteristics} {puts "UNLOGGED DRIVE"; exit 1}
+ -exact "A0>_ " {}
+ timeout {exit 1}
+}
+send -s "b:\r"
+expect -exact "B0>_ "
+send -s "user 3\r"
+expect -exact "B3>_ "
+send -s "a:stat a:dsk:\r"
+expect -exact "A: Drive Characteristics"
+expect -exact "6: Reserved Tracks"
+expect -exact "B3>_ "
+send -s "user 0\r"
+expect -exact "B0>_ "
+send -s "a:\r"
 prompt
 send -s "bye\r"
 expect eof

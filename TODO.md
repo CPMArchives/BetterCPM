@@ -209,8 +209,7 @@ redistributable existing utility; an unchecked item does not by itself block
   after 16 files. Exact checks cover 161-record and 513-record files, 24-file
   listings, EXM=0 two-entry aggregation, and the 64-summary boundary. Collection
   beyond 64 distinct files now reports an error instead of silently truncating.
-- [ ] Complete remaining stock STAT baseline: full DSK: fields/all-active-drive
-  reporting and complete VAL: help.
+- [ ] Complete remaining stock STAT baseline: complete VAL: help.
 - [x] Correct STAT filespec/option parsing (2026-10-07): name/extension stars,
   exact $S/$R/O/$R/W/$SYS/$DIR options, full-width names with following options,
   and malformed/trailing operand rejection. Mixed `?*` patterns are accepted;
@@ -246,6 +245,15 @@ redistributable existing utility; an unchecked item does not by itself block
   24-bit formatting boundaries pass. Size lookup failure displays unavailable.
   STAT runtime assertions now fail explicitly on every missing required output;
   the complete file/parser/attribute/device/sorting campaign passes that guard.
+
+- [x] Complete STAT DSK: reporting (2026-10-08): record/KiB capacity,
+  directory and checked-directory entries, records per extent/allocation block,
+  normalized records per track, reserved tracks, allocation blocks and free space.
+  Unqualified DSK: snapshots logged-in drives; drive-qualified DSK: reports only
+  that drive. Native 332K DPB fields, one/two logged-drive cases and return to B3:
+  after inspecting A: pass. Capacity arithmetic also passes 800K and word-carry
+  boundary probes. Warm start resets the login vector, so merely accessing B:
+  in a previous invocation does not include it in a later all-drive report.
 
 - [ ] Implement `DUMP.COM`.
 - [x] Implement `SUBMIT.COM`.
