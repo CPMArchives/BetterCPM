@@ -29,11 +29,11 @@ def main() -> None:
         raise AssertionError("RAM initialization manifest differs from regenerated facts")
     if hashlib.sha256(actual).hexdigest() != manifest["sha256"]:
         raise AssertionError("RAM initialization hash does not describe the template")
-    if manifest["immutable_source_bytes"] != 5365:
+    if manifest["immutable_source_bytes"] != 5370:
         raise AssertionError("current immutable-source measurement changed")
-    if manifest["rom_used_before_initializer"] != 7777:
+    if manifest["rom_used_before_initializer"] != 7782:
         raise AssertionError("current pre-initializer ROM budget changed")
-    if manifest["rom_spare_before_initializer"] != 671:
+    if manifest["rom_spare_before_initializer"] != 666:
         raise AssertionError("current pre-initializer ROM headroom changed")
 
     for row in read_map():

@@ -74,8 +74,8 @@ def main() -> None:
             "system_boot": 0xDF20,
             "bios_boot": 0xF225,
             "bdos": 0xDF9E,
-            "ram_template": 0xF3F5,
-            "cold_initializer": 0xFD61}:
+            "ram_template": 0xF3FA,
+            "cold_initializer": 0xFD66}:
         raise AssertionError("accepted executable entry inputs changed")
 
     base = manifest["base"]

@@ -784,12 +784,16 @@ DISKASSIGN:                             ; diskassign
 ; -------------------------------------------------------------------------------
 
 FILES:  CALL    FREEK                   ; enumerate matching files
+        ; Search every physical extent, not only logical extent zero.
+        LD      A,'?'
+        LD      (FCB+12),A
         LD      DE,DMA
         LD      C,26
         CALL    BDOS
         XOR     A
         LD      (FOUND),A
         LD      (SUMCOUNT),A
+        LD      (SUMFULL),A
         LD      DE,FCB
         LD      C,17
 
@@ -829,6 +833,14 @@ FILECOLLECTED:                          ; filecollected
         RET
 
 FILEHAVE:                               ; filehave
+        LD      A,(SUMFULL)
+        OR      A
+        JR      Z,FILELIST
+        LD      DE,MSUMFULL
+        CALL    PRINT
+        RET
+
+FILELIST:
         XOR     A
         LD      (SUMINDEX),A
 
@@ -995,7 +1007,12 @@ SENOMATCH:                              ; senomatch
 
 SENEW:  LD      A,(SUMCOUNT)            ; senew
         CP      64
-        RET     NC
+        JR      C,SECREATE
+        LD      A,1
+        LD      (SUMFULL),A
+        RET
+
+SECREATE:
         CALL    SUMPTR
         PUSH    HL
         EX      DE,HL
@@ -1079,12 +1096,12 @@ SEADD:  LD      (SUMCUR),HL             ; seadd
 
   ; A summary index -> HL = 16-byte summary.
 
-SUMPTR: ADD     A,A                     ; sumptr
-        ADD     A,A
-        ADD     A,A
-        ADD     A,A
-        LD      L,A
+SUMPTR: LD      L,A                     ; full-width summary offset
         LD      H,0
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
         LD      DE,SUMMARY
         ADD     HL,DE
         RET
@@ -1934,6 +1951,7 @@ MKREMAIN:       DB ': Kilobytes Remaining$' ; mkremain
 MRECS:          DB ' Recs  $'           ; mrecs
 MKBYTES:        DB 'K Bytes  $'         ; mkbytes
 MEXTACC:        DB ' Ext R/$'           ; mextacc
+MSUMFULL:       DB 13,10,'Too many matching files (maximum 64)',13,10,'$'
 MNOTFOUND:      DB 13,10,'File Not Found',13,10,'$' ; mnotfound
 MSETTO:         DB ' set to $'          ; msetto
 MRO:            DB 'R/O$'               ; mro
@@ -2012,6 +2030,7 @@ DIRENT:         DW 0                    ; dirent
 DEVNO:          DB 0                    ; devno
 USERNO:         DB 0                    ; userno
 ISSYS:          DB 0                    ; issys
+SUMFULL:        DB 0                    ; collection overflow
 SUMCOUNT:       DB 0                    ; sumcount
 SUMINDEX:       DB 0                    ; sumindex
 SUMCUR:         DW 0                    ; sumcur

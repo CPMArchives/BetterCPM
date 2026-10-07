@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OWNERSHIP = ROOT / "metadata/rom-ram-ownership.tsv"
 ROM_BASE = 0xDF00
 ROM_END = 0x10000
-EXPECTED_IMMUTABLE = 5365
+EXPECTED_IMMUTABLE = 5370
 EXPECTED_MUTABLE = 866
 
 

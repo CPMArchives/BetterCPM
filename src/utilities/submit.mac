@@ -350,10 +350,40 @@ SU_INCLINE:                             ; increment source line count
 ; Output File Creation
 ; -------------------------------------------------------------------------------
 
-SU_MAKEFILE:                            ; create $$$.SUB output
+  ; Only the queue uses user zero. Restore context and BDOS results on every
+  ; success/failure path; source lookup and submitted commands keep their user.
+SU_A0CALL:                              ; call BDOS on the A0 command stream
+        PUSH    BC
+        PUSH    DE
+        LD      E,0FFH
+        LD      C,32
+        CALL    BDOS
+        LD      (SU_USER),A
+        LD      E,0
+        LD      C,32
+        CALL    BDOS
+        POP     DE
+        POP     BC
+        CALL    BDOS
+        PUSH    AF
+        PUSH    BC
+        PUSH    DE
+        PUSH    HL
+        LD      A,(SU_USER)
+        LD      E,A
+        LD      C,32
+        CALL    BDOS
+        POP     HL
+        POP     DE
+        POP     BC
+        POP     AF
+        RET
+SU_USER:        DB      0               ; user saved for one output file call
+
+SU_MAKEFILE:                            ; create A0:$$$.SUB output
         LD      DE,SU_OUTFCB
         LD      C,19
-        CALL    BDOS
+        CALL    SU_A0CALL
         XOR     A
         LD      (SU_OUTFCB+12),A
         LD      (SU_OUTFCB+13),A
@@ -362,7 +392,7 @@ SU_MAKEFILE:                            ; create $$$.SUB output
         LD      (SU_OUTFCB+32),A
         LD      DE,SU_OUTFCB
         LD      C,22
-        CALL    BDOS
+        CALL    SU_A0CALL
         INC     A
         JR      NZ,SU_MADE
         LD      DE,SU_DIRMSG
@@ -425,7 +455,7 @@ SU_WTERM:                               ; terminate submitted command record
         LD      (DE),A
         LD      DE,SU_OUTFCB
         LD      C,21
-        CALL    BDOS
+        CALL    SU_A0CALL
         OR      A
         JR      Z,SU_WNEXT
         LD      DE,SU_WRERR
@@ -443,7 +473,7 @@ SU_WNEXT:                               ; advance output record
 SU_CLOSE:                               ; close $$$.SUB
         LD      DE,SU_OUTFCB
         LD      C,16
-        CALL    BDOS
+        CALL    SU_A0CALL
         INC     A
         JR      NZ,SU_SUCCESS
         LD      DE,SU_CLERR
@@ -474,7 +504,7 @@ SU_ERROR:                               ; handle SUBMIT failure
         JR      Z,SU_ERRPRINT
         LD      DE,SU_OUTFCB
         LD      C,19
-        CALL    BDOS
+        CALL    SU_A0CALL
         XOR     A
         LD      (SU_OUTLIVE),A
 
@@ -519,7 +549,9 @@ SU_SRCFCB:                              ; source command-file FCB
                 DB      0
                 ENDM
 
-SU_OUTFCB:      DB      0,'$$$     ','SUB',0,0,0,0 ; $$$.SUB output FCB
+  ; The CCP consumes A:$$$.SUB even when SUBMIT starts on another drive.
+  ; Keep the source FCB independent; only the temporary stream is fixed to A:.
+SU_OUTFCB:      DB      1,'$$$     ','SUB',0,0,0,0 ; A:$$$.SUB output FCB
                 REPT    16
                 DB      0
                 ENDM

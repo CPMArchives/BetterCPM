@@ -25,6 +25,10 @@ SYSSECTORS      EQU     LY_SECTS
 ; ================================================================================
 
 STAGE1:                                 ; enter resident-system loader
+  ; True cold entry owns IOBYTE. WBOOT and reconstruction preserve changes.
+  ; 95h selects CON=CRT, RDR=PTR, PUN=PTP and LST=LPT.
+        LD      A,095H
+        LD      (0003H),A
         DI
         LD      SP,STAGE1STACK
         LD      HL,SYSTABLE

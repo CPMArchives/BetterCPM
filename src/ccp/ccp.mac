@@ -398,7 +398,7 @@ CS_READ:                                ; read next SUBMIT record
         CALL    BDOS
         LD      DE,LY_FCB
         LD      C,15
-        CALL    BDOS
+        CALL    CS_A0CALL
         INC     A
         JR      NZ,CS_OPEN
         LD      DE,0080H
@@ -414,14 +414,14 @@ CS_OPEN:                                ; process open SUBMIT stream
         LD      (LY_FCB+32),A
         LD      DE,LY_FCB
         LD      C,20
-        CALL    BDOS
+        CALL    CS_A0CALL
         OR      A
         JR      Z,CS_DATA
 
 CS_DROP:                                ; delete exhausted or invalid SUBMIT stream
         LD      DE,LY_FCB
         LD      C,19
-        CALL    BDOS
+        CALL    CS_A0CALL
         LD      DE,0080H
         LD      C,26
         CALL    BDOS
@@ -451,7 +451,7 @@ CS_DATA:                                ; accept SUBMIT record data
 
 CS_FILE:                                ; close or delete updated SUBMIT stream
         LD      DE,LY_FCB
-        CALL    BDOS
+        CALL    CS_A0CALL
         INC     A
         JR      Z,CS_DROP
         LD      DE,0080H
@@ -495,7 +495,7 @@ CS_CR:                                  ; terminate submitted command echo
         JR      Z,CS_OK
         LD      DE,LY_FCB               ; the consumed stream FCB still names $$$.SUB
         LD      C,19
-        CALL    BDOS
+        CALL    CS_A0CALL
         XOR     A
         LD      (CCP_SUBACTIVE),A
         LD      E,0FFH
@@ -514,7 +514,7 @@ CS_OK:                                  ; publish submitted command
 ; SUBMIT Setup and Cancellation
 ; -------------------------------------------------------------------------------
 
-CS_PREP:                                ; build A:$$$.SUB FCB
+CS_PREP:                                ; build A0:$$$.SUB FCB
         LD      HL,LY_FCB
         LD      B,36
         XOR     A
@@ -523,7 +523,7 @@ CS_ZERO:                                ; clear SUBMIT FCB
         LD      (HL),A
         INC     HL
         DJNZ    CS_ZERO
-        LD      A,1                     ; only A:$$$.SUB is an active stock stream
+        LD      A,1                     ; only A0:$$$.SUB is an active stock stream
         LD      (LY_FCB),A
         LD      HL,02424H               ; '$$'
         LD      (LY_FCB+1),HL
@@ -538,6 +538,36 @@ CS_ZERO:                                ; clear SUBMIT FCB
         LD      (LY_FCB+11),A
         RET
 
+  ; Only the queue uses user zero. Restore context and BDOS results on every
+  ; success/failure path; source lookup and submitted commands keep their user.
+CS_A0CALL:                              ; call BDOS on the A0 command stream
+        PUSH    BC
+        PUSH    DE
+        LD      E,0FFH
+        LD      C,32
+        CALL    BDOS
+        LD      (CS_USER),A
+        LD      E,0
+        LD      C,32
+        CALL    BDOS
+        POP     DE
+        POP     BC
+        CALL    BDOS
+        PUSH    AF
+        PUSH    BC
+        PUSH    DE
+        PUSH    HL
+        LD      A,(CS_USER)
+        LD      E,A
+        LD      C,32
+        CALL    BDOS
+        POP     HL
+        POP     DE
+        POP     BC
+        POP     AF
+        RET
+CS_USER:        DB      0               ; user saved for one output file call
+
 CS_CANCEL:                              ; cancel active SUBMIT stream
         LD      A,(CCP_SUBACTIVE)
         OR      A
@@ -545,7 +575,7 @@ CS_CANCEL:                              ; cancel active SUBMIT stream
         CALL    CS_PREP
         LD      DE,LY_FCB
         LD      C,19
-        CALL    BDOS
+        CALL    CS_A0CALL
         XOR     A
         LD      (CCP_SUBACTIVE),A
         RET

@@ -164,6 +164,7 @@ def main() -> None:
         type=Path,
         default=Path.home() / "projects/git/z80pack/cpmsim/cpmsim",
     )
+    parser.add_argument("--only-from-b", action="store_true")
     args = parser.parse_args()
     image = args.image_dir.expanduser().resolve()
     simulator = args.simulator.expanduser().resolve()
@@ -171,6 +172,57 @@ def main() -> None:
     for dependency in (image / "disks", image / "diskdefs", simulator):
         if not dependency.exists():
             raise SystemExit(f"missing z80pack batch-test dependency: {dependency}")
+
+    def from_b_files(work: Path) -> dict[str, bytes]:
+        # Exercise a source/tool disk in B: and a script which selects C:.
+        for name, data in {
+            "SUBMIT.COM": (ROOT / "build/utilities/SUBMIT.COM").read_bytes(),
+            "XSUB.COM": (ROOT / "build/utilities/XSUB.COM").read_bytes(),
+            "BATCHIO.RSX": (ROOT / "build/rsx/BATCHIO.RSX").read_bytes(),
+            "FROMB.SUB": b"XSUB\r\nA:MARK FIRST\r\nC:\r\nUSER 5\r\nA:INPUT\r\nBATCHFULL\r\nA:MARK LAST\r\n",
+        }.items():
+            path = work / name
+            path.write_bytes(data)
+            subprocess.run(["cpmcp", "-T", "raw", "-f", "bettercpm-default",
+                            str(work / "disks/driveb.dsk"), str(path), "3:"],
+                           cwd=work, check=True)
+        probe = work / "MARK.COM"
+        probe.write_bytes(marker(work))
+        for user in (3, 5):
+            subprocess.run(["cpmcp", "-T", "raw", "-f", "bettercpm-default",
+                            str(work / "disks/drivea.dsk"), str(probe), f"{user}:"],
+                           cwd=work, check=True)
+        probe = work / "INPUT.COM"
+        probe.write_bytes(input_probe(work))
+        subprocess.run(["cpmcp", "-T", "raw", "-f", "bettercpm-default",
+                        str(work / "disks/drivea.dsk"), str(probe), "5:"],
+                       cwd=work, check=True)
+        return {}
+
+    run_case(image, simulator, "submit-from-b", from_b_files, r'''
+send -s -- "B:\r"
+expect -exact {B0>_ }
+send -s -- "USER 3\r"
+expect -exact {B3>_ }
+send -s -- "SUBMIT NOSUCH\r"
+expect -exact {B3>_ }
+send -s -- "SUBMIT FROMB\r"
+expect -exact "MARK: FIRST"
+expect -exact "INPUT OK"
+expect -exact "MARK: LAST"
+expect -exact {C5>_ }
+send -s -- "DIR A:$$$.SUB\r"
+expect -exact "NO FILE"
+expect -exact {C5>_ }
+send -s -- "DIR B:$$$.SUB\r"
+expect -exact "NO FILE"
+expect -exact {C5>_ }
+send -s -- "BYE\r"
+expect eof
+''')
+    print("PASS: A0 queue from B3, user-changing script, XSUB input and cleanup")
+    if args.only_from_b:
+        return
 
     run_case(
         image,

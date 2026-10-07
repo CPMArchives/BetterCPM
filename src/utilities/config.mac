@@ -1020,13 +1020,13 @@ STTEST:LD A,(STPEND+8)                 ; submit pending command once
         CALL STFCBRESET
         LD DE,STSUBFCB
         LD C,15
-        CALL BDOS
+        CALL STA0CALL
         INC A
         JR NZ,STTESTBUSY
         CALL STFCBRESET
         LD DE,STSUBFCB
         LD C,22
-        CALL BDOS
+        CALL STA0CALL
         INC A
         JR Z,STTESTERR
         LD HL,STSUBBUF
@@ -1046,12 +1046,12 @@ STTEST:LD A,(STPEND+8)                 ; submit pending command once
         CALL BDOS
         LD DE,STSUBFCB
         LD C,21
-        CALL BDOS
+        CALL STA0CALL
         OR A
         JR NZ,STTESTCLEAN
         LD DE,STSUBFCB
         LD C,16
-        CALL BDOS
+        CALL STA0CALL
         INC A
         JR Z,STTESTCLEAN
         LD HL,STTESTING
@@ -1064,7 +1064,7 @@ STTEST:LD A,(STPEND+8)                 ; submit pending command once
 STTESTCLEAN:
         LD DE,STSUBFCB
         LD C,19
-        CALL BDOS
+        CALL STA0CALL
 STTESTERR:
         LD DE,0080H
         LD C,26
@@ -1080,14 +1080,44 @@ STTESTLONG:
 STTESTBUSY:
         LD DE,STSUBFCB
         LD C,16
-        CALL BDOS
+        CALL STA0CALL
         LD HL,STTESTSUB
 STTESTPAUSE:
         CALL PUTS
         CALL PAUSE
         JP STARTMENU
 
-STFCBRESET:                            ; restore reusable A:$$$.SUB FCB
+  ; Only the queue uses user zero. Restore context and BDOS results on every
+  ; success/failure path; source lookup and submitted commands keep their user.
+STA0CALL:                              ; call BDOS on the A0 command stream
+        PUSH    BC
+        PUSH    DE
+        LD      E,0FFH
+        LD      C,32
+        CALL    BDOS
+        LD      (STUSER),A
+        LD      E,0
+        LD      C,32
+        CALL    BDOS
+        POP     DE
+        POP     BC
+        CALL    BDOS
+        PUSH    AF
+        PUSH    BC
+        PUSH    DE
+        PUSH    HL
+        LD      A,(STUSER)
+        LD      E,A
+        LD      C,32
+        CALL    BDOS
+        POP     HL
+        POP     DE
+        POP     BC
+        POP     AF
+        RET
+STUSER:        DB      0               ; user saved for one output file call
+
+STFCBRESET:                            ; restore reusable A0:$$$.SUB FCB
         LD HL,STSUBFCB+12
         LD DE,STSUBFCB+13
         LD BC,23
@@ -1580,7 +1610,7 @@ STCHARBAD:DB 'Command must contain printable ASCII characters.',13,10,0
 STTESTING:DB 13,10,'Testing pending startup command...',13,10,0
 STTESTNONE:DB 'There is no pending startup command to test.',13,10,0
 STTEST126:DB 'A 126-byte command can run at cold boot but cannot use Test now.',13,10,0
-STTESTSUB:DB 'Cannot test while an A:$$$.SUB command stream is active.',13,10,0
+STTESTSUB:DB 'Cannot test while an A0:$$$.SUB command stream is active.',13,10,0
 STTESTBAD:DB 'Unable to create the one-command test stream on A:.',13,10,0
 STMAGIC:DB 'BCST',1,0,16
 STHEADER:DB 'BCST',1,0,16,0,0,126,0,1,0,0,0C4H,0D5H
