@@ -80,6 +80,10 @@ def main():
             source = work / name
             source.write_bytes(bytes(size))
             subprocess.run(['cpmcp', '-T', 'raw', '-f', 'bettercpm-default', str(image), str(source), '0:' + name], cwd=work, check=True)
+        for user in (3, 15, 31):
+            subprocess.run(['cpmcp', '-T', 'raw', '-f', 'bettercpm-default',
+                            str(image), str(source), f'{user}:USER.DAT'],
+                           cwd=work, check=True)
         stat = (ROOT / 'build/utilities/STAT.COM').read_bytes()
         stat3 = work / 'STAT3.COM'
         stat3.write_bytes(stat)
@@ -247,6 +251,9 @@ send -s "a:stat a:dsk:\r"
 expect -exact "A: Drive Characteristics"
 expect -exact "6: Reserved Tracks"
 expect -exact "B3>_ "
+send -s "a:stat usr:\r"
+expect -re {Active User : +3\r?\nActive Files: +0 +3 +15 +31\r?\n}
+expect -exact "B3>_ "
 send -s "user 0\r"
 expect -exact "B0>_ "
 send -s "a:\r"
@@ -292,6 +299,31 @@ proc mustexact {pattern} {
 }
 ''' + body
     run_case(args.image_dir.resolve(), args.simulator.resolve(), 'stat-files', files, body)
+    def empty_files(work):
+        image = work / 'disks/driveb.dsk'
+        size = len(image.read_bytes())
+        image.unlink()
+        image.write_bytes(bytes([0xe5]) * size)
+        subprocess.run(['cpmrm', '-f', 'bettercpm-default',
+                        str(work / 'disks/drivea.dsk'), '0:stat.com'],
+                       cwd=work, check=True)
+        return {'STAT.COM': (ROOT / 'build/utilities/STAT.COM').read_bytes()}
+    empty_body = r'''
+send -s "b:\r"
+expect -exact "B0>_ "
+send -s "a:stat usr:\r"
+expect {
+ -re {Active User : +0\r?\nActive Files:\r?\n} {}
+ timeout {puts "EMPTY USER REPORT MISSING"; exit 1}
+ eof {exit 1}
+}
+expect -exact "B0>_ "
+send -s "bye\r"
+expect eof
+'''
+    empty_body = body[:body.index('send -s')] + empty_body.replace('expect -exact ', 'mustexact ')
+    run_case(args.image_dir.resolve(), args.simulator.resolve(), 'stat-empty-users', empty_files, empty_body)
+    print('STAT populated/empty user areas, user 31 and B3 context restoration passed')
     print('STAT exact totals, 24-file star matching, attribute options, device assignments and invalid-tail rejection passed')
 
 
