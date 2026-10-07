@@ -210,10 +210,16 @@ redistributable existing utility; an unchecked item does not by itself block
   listings, EXM=0 two-entry aggregation, and the 64-summary boundary. Collection
   beyond 64 distinct files now reports an error instead of silently truncating.
 - [ ] Complete remaining stock STAT baseline: alphabetical output, distinct $S
-  logical size, full DSK: fields/all-active-drive reporting, strict option and
-  device parsing, multiple device assignments, attribute failure reporting,
-  and complete VAL: help. The `F*.DAT` parser currently stops at the name star
-  instead of continuing into the extension; cover this explicitly in parser work.
+  logical size, full DSK: fields/all-active-drive reporting, device parsing,
+  multiple device assignments, attribute failure reporting, and complete VAL: help.
+- [x] Correct STAT filespec/option parsing (2026-10-07): name/extension stars,
+  exact $S/$R/O/$R/W/$SYS/$DIR options, full-width names with following options,
+  and malformed/trailing operand rejection. Mixed `?*` patterns are accepted;
+  consecutive stars collapse to one. Characters following a star run within
+  the same field, or stars beyond a full field, produce `Invalid filespec`.
+  Instruction-level parser checks and
+  cpmsim wildcard/attribute/rejection checks pass; rejected attribute options
+  leave the test file R/W. The separate $S reporting correction remains open.
 
 - [ ] Implement `DUMP.COM`.
 - [x] Implement `SUBMIT.COM`.

@@ -68,8 +68,9 @@ START:                                  ; enter STAT utility
         CP      '='
         JP      Z,DISKASSIGN
         CALL    PARSEFCB
-        JP      C,BADFORM
+        JP      C,BADFILE
         CALL    FILEOPTION
+        JP      C,BADFORM
         CALL    FILES
         JP      FINISH
 
@@ -298,22 +299,22 @@ PFSPACE:LD      (HL),A                  ; pfspace
 
 PFNAME: LD      A,B                     ; pfname
         OR      A
-        JR      Z,PFDONE
+        JP      Z,PFDONE
         LD      A,(HL)
         CP      ' '
-        JR      Z,PFDONE
+        JP      Z,PFDONE
         CP      '$'
-        JR      Z,PFDONE
+        JP      Z,PFDONE
         CP      '.'
         JR      Z,PFEXT
         CP      '*'
-        JR      Z,PFSTAR
+        JR      Z,PFNSTAR
         CP      '?'
         JR      Z,PFPUT
         CP      '!'
-        JR      C,PFBAD
+        JP      C,PFBAD
         CP      ':'
-        JR      Z,PFBAD
+        JP      Z,PFBAD
 
 PFPUT:  LD      (DE),A                  ; pfput
         INC     DE
@@ -326,10 +327,18 @@ PFPUT:  LD      (DE),A                  ; pfput
         JR      NZ,PFNAME
         LD      A,B
         OR      A
-        JR      Z,PFDONE
+        JP      Z,PFDONE
+
+PFNEND: LD      A,B
+        OR      A
+        JP      Z,PFDONE
         LD      A,(HL)
+        CP      ' '
+        JP      Z,PFDONE
+        CP      '$'
+        JP      Z,PFDONE
         CP      '.'
-        JR      NZ,PFBAD
+        JP      NZ,PFBAD
 
 PFEXT:  INC     HL                      ; pfext
         DEC     B
@@ -338,22 +347,22 @@ PFEXT:  INC     HL                      ; pfext
 
 PFELP:  LD      A,B                     ; pfelp
         OR      A
-        JR      Z,PFDONE
+        JP      Z,PFDONE
         LD      A,(HL)
         CP      ' '
-        JR      Z,PFDONE
+        JP      Z,PFDONE
         CP      '$'
-        JR      Z,PFDONE
+        JP      Z,PFDONE
         CP      '*'
-        JR      Z,PFSTAR
+        JR      Z,PFESTAR
         CP      '?'
         JR      Z,PFEPUT
         CP      '!'
-        JR      C,PFBAD
+        JP      C,PFBAD
         CP      '.'
-        JR      Z,PFBAD
+        JP      Z,PFBAD
         CP      ':'
-        JR      Z,PFBAD
+        JP      Z,PFBAD
 
 PFEPUT: LD      (DE),A                  ; pfeput
         INC     DE
@@ -361,21 +370,48 @@ PFEPUT: LD      (DE),A                  ; pfeput
         DEC     B
         DEC     C
         JR      NZ,PFELP
-        JR      PFDONE
+        JP      PFDONE
 
-PFSTAR: LD      A,'?'                   ; pfstar
+PFNSTAR:                                ; star fills the remaining name field
+        LD      A,(NAMECNT)
+        INC     A
+        LD      (NAMECNT),A
+        CALL    PFFILL
+        JR      PFNEND
 
-PFSLP:  LD      (DE),A                  ; pfslp
+PFESTAR:                                ; star fills the extension field
+        CALL    PFFILL
+        JP      PFDONE
+
+PFFILL: LD      A,'?'
+PFSLP:  LD      (DE),A
         INC     DE
         DEC     C
         JR      NZ,PFSLP
+        ; A consecutive run of stars has the meaning of one star.
+PFSTARS:
         INC     HL
         DEC     B
+        LD      A,B
+        OR      A
+        RET     Z
+        LD      A,(HL)
+        CP      '*'
+        JR      Z,PFSTARS
+        RET
 
 PFDONE: LD      A,(NAMECNT)             ; pfdone
         OR      A
-        JR      Z,PFBAD
-        LD      (ARGPTR),HL
+        JP      Z,PFBAD
+        LD      A,B
+        OR      A
+        JR      Z,PFSAVE
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,PFSAVE
+        CP      '$'
+        JR      NZ,PFBAD
+PFSAVE: LD      (ARGPTR),HL
         LD      A,B
         LD      (ARGLEN),A
         OR      A
@@ -403,67 +439,65 @@ FILEOPTION:                             ; parse file attribute option
         LD      A,(ARGLEN)
         LD      B,A
 
-FOFIND: CALL    TRIM                    ; fofind
+FOFIND: CALL    TRIM
+        ; Ignore trailing spaces, but require the complete remaining option.
+        PUSH    HL
+        LD      E,B
+        LD      D,0
+        ADD     HL,DE
+FOTRIM: LD      A,B
+        OR      A
+        JR      Z,FOTDONE
+        DEC     HL
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,FOTDONE
+        DEC     B
+        JR      FOTRIM
+FOTDONE:
+        POP     HL
         LD      A,B
         OR      A
         RET     Z
         LD      A,(HL)
         CP      '$'
-        RET     NZ
+        JR      NZ,FOBAD
         INC     HL
         DEC     B
-        LD      A,B
-        OR      A
-        RET     Z
-        LD      A,(HL)
-        CP      'S'
-        JR      Z,FOS
-        CP      'R'
-        JR      Z,FORW
-        CP      'D'
-        JR      Z,FODIR
-        CP      'S'
-        JR      Z,FOSYS
-        RET
-
-FOS:    LD      A,B                     ; fos
-        CP      1
-        JR      NZ,FOSYS
-
-FOSIZE: XOR     A                       ; fosize
-        LD      (OPTION),A
-        RET
-
-FORW:   INC     HL                      ; forw
-        DEC     B
-        LD      A,B
-        CP      2
-        RET     C
-        LD      A,(HL)
-        CP      '/'
-        RET     NZ
-        INC     HL
-        LD      A,(HL)
-        CP      'O'
+        LD      DE,KFSIZE
+        LD      C,1
+        CALL    ISEXACT
+        JR      Z,FOSIZE
+        LD      DE,KFRO
+        LD      C,3
+        CALL    ISEXACT
         JR      Z,FORO
-        CP      'W'
+        LD      DE,KFRW
+        LD      C,3
+        CALL    ISEXACT
         JR      Z,FORWRITE
+        LD      DE,KFSYS
+        LD      C,3
+        CALL    ISEXACT
+        JR      Z,FOSYS
+        LD      DE,KFDIR
+        LD      C,3
+        CALL    ISEXACT
+        JR      Z,FODIR
+FOBAD:  SCF
         RET
-
-FORO:   LD      A,1                     ; foro
-        LD      (OPTION),A
-        RET
-
-FORWRITE:LD     A,2                     ; forwrite
-        LD      (OPTION),A
-        RET
-
-FOSYS:  LD      A,3                     ; fosys
-        LD      (OPTION),A
-        RET
-
-FODIR:  LD      A,4                     ; fodir
-        LD      (OPTION),A
+FOSIZE: XOR     A
+        JR      FOSET
+FORO:   LD      A,1
+        JR      FOSET
+FORWRITE:
+        LD      A,2
+        JR      FOSET
+FOSYS:  LD      A,3
+        JR      FOSET
+FODIR:  LD      A,4
+FOSET:  LD      (OPTION),A
+        OR      A                       ; valid option, clear carry
         RET
 
   ; No operand: status of logged-in drives, matching stock STAT's default form.
@@ -1891,6 +1925,10 @@ PCHAR:  PUSH    HL                      ; pchar
 CRLF:   LD      DE,MCRLF                ; crlf
         JR      PRINT
 
+BADFILE:LD      DE,MBADFILE
+        CALL    PRINT
+        JP      FINISH
+
 BADFORM:LD      DE,MBADFORM             ; badform
         CALL    PRINT
 
@@ -1916,6 +1954,11 @@ FINISH: LD      A,(SAVEDRV)             ; restore context and return
 ; Keywords and Device Tables
 ; -------------------------------------------------------------------------------
 
+KFSIZE:         DB 'S'
+KFRO:           DB 'R/O'
+KFRW:           DB 'R/W'
+KFSYS:          DB 'SYS'
+KFDIR:          DB 'DIR'
 KMEM:           DB 'MEM'                ; kmem
 KVAL:           DB 'VAL:'               ; kval
 KUSR:           DB 'USR:'               ; kusr
@@ -1997,6 +2040,7 @@ MPAGEZERO:      DB 'CP/M page zero$'    ; mpagezero
 MMAXCOM:        DB 'Maximum loadable COM: $' ; mmaxcom
 MBYTESUNIT:     DB ' bytes$'            ; mbytesunit
 MMEMBAD:        DB 13,10,'STAT MEM requires BetterCP/M ECB version 1',13,10,'$' ; mmembad
+MBADFILE:       DB 13,10,'Invalid filespec',13,10,'$'
 MBADFORM:       DB 13,10,'Invalid STAT command',13,10,'$' ; mbadform
 
 ; -------------------------------------------------------------------------------

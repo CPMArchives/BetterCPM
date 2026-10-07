@@ -82,13 +82,27 @@ prompt
 send -s "stat b:long.dat\r"
 expect -re {00513 Recs +00066K Bytes +00003 Ext R/W B:LONG +\.DAT}
 prompt
-send -s "stat b:f??.dat\r"
+send -s "stat b:f?***.dat\r"
 '''
     for i in range(24):
         body += f'expect -re {{00001 Recs +00002K Bytes +00001 Ext R/W B:F{i:02} +\\.DAT}}\n'
-    body += 'prompt\nsend -s "bye\\r"\nexpect eof\n'
+    body += 'prompt\n'
+    for filespec in ['F**?.DAT', 'F.**?', 'F?**?.DAT*', 'F*.DAT*']:
+        body += f'send -s "stat b:{filespec}\\r"\nexpect -exact "Invalid filespec"\nprompt\n'
+    for option in ['$R/OX', '$SYSTEM', '$DIRX', '$', '$S EXTRA']:
+        option = option.replace('$', r'\$')
+        body += f'send -s "stat b:f00.dat {option}\\r"\nexpect -exact "Invalid STAT command"\nprompt\n'
+    body += r'''send -s "stat b:f00.dat\r"
+expect -re {00001 Recs +00002K Bytes +00001 Ext R/W B:F00 +\.DAT}
+prompt
+'''
+    for option, result in [('$R/O', 'R/O'), ('$R/W', 'R/W'), ('$SYS', 'SYS'), ('$DIR', 'DIR')]:
+        option = option.replace('$', r'\$')
+        body += f'send -s "stat b:f00.dat {option}\\r"\nexpect -re {{F00 +\\.DAT set to {result}}}\nprompt\n'
+    body += 'send -s "bye\\r"\nexpect eof\n'
+
     run_case(args.image_dir.resolve(), args.simulator.resolve(), 'stat-files', files, body)
-    print('STAT exact record/allocation/extent totals and 24-file summaries passed')
+    print('STAT exact totals, 24-file star matching, attribute options and invalid-tail rejection passed')
 
 
 if __name__ == '__main__':
