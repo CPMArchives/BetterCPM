@@ -73,7 +73,17 @@ def main():
             source = work / name
             source.write_bytes(bytes(size))
             subprocess.run(['cpmcp', '-T', 'raw', '-f', 'bettercpm-default', str(image), str(source), '0:' + name], cwd=work, check=True)
-        return {'STAT.COM': (ROOT / 'build/utilities/STAT.COM').read_bytes()}
+        stat = (ROOT / 'build/utilities/STAT.COM').read_bytes()
+        # Test-only trampoline marks the selected drive R/O at SETATTR entry.
+        listing = (ROOT / 'build/utilities/stat.lst').read_text()
+        entry = int(re.search(r'^([0-9a-f]{4})\s+.*?\bSETATTR:', listing, re.M | re.I)[1], 16)
+        rostat = bytearray(stat)
+        original = bytes(rostat[entry - 0x100:entry - 0x100 + 3])
+        rostat[entry - 0x100:entry - 0x100 + 3] = bytes((0xc3, 0, 0x18))
+        target = entry + 3
+        wrapper = bytes.fromhex('0e 1c cd 05 00') + original + bytes((0xc3, target & 255, target >> 8))
+        rostat += bytes(0x1700 - len(rostat)) + wrapper
+        return {'STAT.COM': stat, 'ROSTAT.COM': rostat}
 
     body = r'''
 send -s "stat b:system.sys\r"
@@ -99,7 +109,15 @@ prompt
     for option, result in [('$R/O', 'R/O'), ('$R/W', 'R/W'), ('$SYS', 'SYS'), ('$DIR', 'DIR')]:
         option = option.replace('$', r'\$')
         body += f'send -s "stat b:f00.dat {option}\\r"\nexpect -re {{F00 +\\.DAT set to {result}}}\nprompt\n'
-    body += 'send -s "bye\\r"\nexpect eof\n'
+    body += r'''send -s "rostat b:f00.dat \$sys\r"
+expect -re {F00 +\.DAT attribute update failed: disk is read-only}
+prompt
+send -s "stat b:f00.dat\r"
+expect -re {00001 Recs +00002K Bytes +00001 Ext R/W B:F00 +\.DAT}
+prompt
+send -s "bye\r"
+expect eof
+'''
 
     run_case(args.image_dir.resolve(), args.simulator.resolve(), 'stat-files', files, body)
     print('STAT exact totals, 24-file star matching, attribute options and invalid-tail rejection passed')

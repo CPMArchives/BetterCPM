@@ -211,7 +211,7 @@ redistributable existing utility; an unchecked item does not by itself block
   beyond 64 distinct files now reports an error instead of silently truncating.
 - [ ] Complete remaining stock STAT baseline: alphabetical output, distinct $S
   logical size, full DSK: fields/all-active-drive reporting, device parsing,
-  multiple device assignments, attribute failure reporting, and complete VAL: help.
+  multiple device assignments, and complete VAL: help.
 - [x] Correct STAT filespec/option parsing (2026-10-07): name/extension stars,
   exact $S/$R/O/$R/W/$SYS/$DIR options, full-width names with following options,
   and malformed/trailing operand rejection. Mixed `?*` patterns are accepted;
@@ -220,6 +220,11 @@ redistributable existing utility; an unchecked item does not by itself block
   Instruction-level parser checks and
   cpmsim wildcard/attribute/rejection checks pass; rejected attribute options
   leave the test file R/W. The separate $S reporting correction remains open.
+
+- [x] Check STAT attribute-update results (2026-10-07). A returned FFh reports
+  failure; valid directory-slot success values remain accepted. Preflight the
+  current drive's R/O vector to report rejection before BDOS's abort path.
+  Controlled-result execution and disposable cpmsim success/read-only tests pass.
 
 - [ ] Implement `DUMP.COM`.
 - [x] Implement `SUBMIT.COM`.
