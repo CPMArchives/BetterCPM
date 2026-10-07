@@ -209,7 +209,11 @@ redistributable existing utility; an unchecked item does not by itself block
   after 16 files. Exact checks cover 161-record and 513-record files, 24-file
   listings, EXM=0 two-entry aggregation, and the 64-summary boundary. Collection
   beyond 64 distinct files now reports an error instead of silently truncating.
-- [ ] Complete remaining stock STAT baseline: complete VAL: help.
+- [x] Complete assessed STAT VAL: help gap (2026-10-08): all legal device
+  selections are printed from the parser tables, with $S logical-size guidance,
+  multiple-assignment syntax and BAT: routing semantics. Strict cpmsim help and
+  unchanged-assignment checks pass alongside the complete utility campaign.
+  Final release qualification and the documented 64-file collection bound remain.
 - [x] Correct STAT filespec/option parsing (2026-10-07): name/extension stars,
   exact $S/$R/O/$R/W/$SYS/$DIR options, full-width names with following options,
   and malformed/trailing operand rejection. Mixed `?*` patterns are accepted;

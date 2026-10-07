@@ -1826,6 +1826,44 @@ VALUES:LD      DE,MVALUES1              ; values
         CALL    PCHAR
         LD      DE,MVALUES5
         CALL    PRINT
+        LD      A,'$'
+        CALL    PCHAR
+        LD      DE,MVALUES6
+        CALL    PRINT
+        XOR     A
+        LD      (DEVNO),A
+VALDEVICE:
+        CALL    CRLF
+        LD      A,(DEVNO)
+        CALL    DEVKEYPTR
+        CALL    PRINT4HL
+        LD      A,'='
+        CALL    PCHAR
+        LD      A,(DEVNO)
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        LD      HL,DEVNAMES
+        ADD     HL,DE
+        LD      C,4
+VALVALUE:
+        PUSH    BC
+        CALL    PRINT4HL
+        POP     BC
+        LD      A,' '
+        CALL    PCHAR
+        DEC     C
+        JR      NZ,VALVALUE
+        LD      HL,DEVNO
+        INC     (HL)
+        LD      A,(HL)
+        CP      4
+        JR      NZ,VALDEVICE
+        LD      DE,MVALUES7
+        CALL    PRINT
         JP      FINISH
 
 ; ================================================================================
@@ -2322,10 +2360,16 @@ MVALUES1:       DB 13,10,'Temp R/O Disk: d:=R/O',13,10 ; mvalues1
 MVALUES2:       DB 'R/O $'              ; mvalues2
 MVALUES3:       DB 'R/W $'              ; mvalues3
 MVALUES4:       DB 'SYS $'              ; mvalues4
-MVALUES5:       DB 'DIR',13,10,'Disk Status  : DSK: d:DSK:',13,10 ; mvalues5
+MVALUES5:       DB 'DIR',13,10,'File Size    : d:filename.typ $'
+MVALUES6:       DB 'S (logical record count)',13,10
+                DB 'Drive Status : STAT or d:',13,10
+                DB 'Disk Details : DSK: d:DSK:',13,10
                 DB 'User Status  : USR:',13,10
+                DB 'Device Status: DEV:',13,10
                 DB 'Memory Status: MEM',13,10
-                DB 'Iobyte Assign: CON: RDR: PUN: LST:',13,10,'$'
+                DB 'Iobyte Assignments:$'
+MVALUES7:       DB 13,10,'Separate multiple assignments with spaces.',13,10
+                DB 'BAT: console input uses RDR:; output uses LST:.',13,10,'$'
 
 MACTIVEUSER:    DB 13,10,'Active User : $' ; mactiveuser
 MACTIVEFILES:   DB 13,10,'Active Files:$' ; mactivefiles
