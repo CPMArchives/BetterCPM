@@ -210,8 +210,7 @@ redistributable existing utility; an unchecked item does not by itself block
   listings, EXM=0 two-entry aggregation, and the 64-summary boundary. Collection
   beyond 64 distinct files now reports an error instead of silently truncating.
 - [ ] Complete remaining stock STAT baseline: alphabetical output, distinct $S
-  logical size, full DSK: fields/all-active-drive reporting, device parsing,
-  multiple device assignments, and complete VAL: help.
+  logical size, full DSK: fields/all-active-drive reporting, and complete VAL: help.
 - [x] Correct STAT filespec/option parsing (2026-10-07): name/extension stars,
   exact $S/$R/O/$R/W/$SYS/$DIR options, full-width names with following options,
   and malformed/trailing operand rejection. Mixed `?*` patterns are accepted;
@@ -225,6 +224,15 @@ redistributable existing utility; an unchecked item does not by itself block
   failure; valid directory-slot success values remain accepted. Preflight the
   current drive's R/O vector to report rejection before BDOS's abort path.
   Controlled-result execution and disposable cpmsim success/read-only tests pass.
+
+- [x] Correct STAT device assignments (2026-10-07). Matching starts each legal
+  value at its table boundary; values require an end/space boundary. Process
+  multiple space-separated assignments, reporting malformed later operands.
+  PUN: now changes bits 4–5 rather than reader bits 2–3. All 16 legal values and
+  unrelated-bit preservation pass instruction-level tests; cpmsim assignment
+  lists, invalid values, trailing text and DEV: output pass. Assignments apply
+  sequentially: an invalid later operand does not undo earlier valid assignments.
+  Actual BIOS selector routing remains the separate open 1.0 requirement.
 
 - [ ] Implement `DUMP.COM`.
 - [x] Implement `SUBMIT.COM`.

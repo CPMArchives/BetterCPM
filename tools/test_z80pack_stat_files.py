@@ -115,12 +115,40 @@ prompt
 send -s "stat b:f00.dat\r"
 expect -re {00001 Recs +00002K Bytes +00001 Ext R/W B:F00 +\.DAT}
 prompt
+send -s "stat con:=uc1: rdr:=ur2: pun:=up2: lst:=ul1:\r"
+expect -exact "CON: is UC1:"
+expect -exact "RDR: is UR2:"
+expect -exact "PUN: is UP2:"
+expect -exact "LST: is UL1:"
+prompt
+send -s "stat con:=crt: rdr:=ptr: pun:=ptp: lst:=lpt:\r"
+expect -exact "CON: is CRT:"
+expect -exact "RDR: is PTR:"
+expect -exact "PUN: is PTP:"
+expect -exact "LST: is LPT:"
+prompt
+send -s "stat rdr:=crt:\r"
+expect -exact "Invalid Assignment"
+prompt
+send -s "stat con:=crt:x\r"
+expect -exact "Invalid Assignment"
+prompt
+send -s "stat con:=uc1: nonsense\r"
+expect -exact "CON: is UC1:"
+expect -exact "Invalid Assignment"
+prompt
+send -s "stat dev:\r"
+expect -exact "CON: is UC1:"
+expect -exact "RDR: is PTR:"
+expect -exact "PUN: is PTP:"
+expect -exact "LST: is LPT:"
+prompt
 send -s "bye\r"
 expect eof
 '''
 
     run_case(args.image_dir.resolve(), args.simulator.resolve(), 'stat-files', files, body)
-    print('STAT exact totals, 24-file star matching, attribute options and invalid-tail rejection passed')
+    print('STAT exact totals, 24-file star matching, attribute options, device assignments and invalid-tail rejection passed')
 
 
 if __name__ == '__main__':

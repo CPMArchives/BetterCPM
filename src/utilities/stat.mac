@@ -1304,7 +1304,11 @@ PNEXT:  LD      A,(HL)                  ; pnext
 ; Device Assignment
 ; -------------------------------------------------------------------------------
 
-DEVICEASSIGN:                           ; query or assign logical device
+  ; Apply assignments in order; a later error retains earlier valid changes.
+DEVICEASSIGN:                           ; query or assign logical devices
+        XOR     A
+        LD      (DASEEN),A
+DALOOP:
         LD      (ARGPTR),HL
         LD      A,B
         LD      (ARGLEN),A
@@ -1324,7 +1328,9 @@ DEVICEASSIGN:                           ; query or assign logical device
         LD      C,4
         CALL    PREFIX
         JR      Z,DALST
+        LD      A,(DASEEN)
         OR      A
+        JP      NZ,DABAD
         RET
 
 DACON:  LD      A,0                     ; dacon
@@ -1350,7 +1356,7 @@ DASEL:  LD      (DEVNO),A               ; dasel
         CALL    TRIM
         LD      A,B
         OR      A
-        JR      Z,DASHOW
+        JR      Z,DAQUERY
         LD      A,(HL)
         CP      '='
         JR      NZ,DABAD
@@ -1359,10 +1365,23 @@ DASEL:  LD      (DEVNO),A               ; dasel
         CALL    TRIM
         CALL    DEVVALUE
         JR      C,DABAD
+        PUSH    HL
+        PUSH    BC
         CALL    SETIO
+        CALL    SHOWONE
+        POP     BC
+        POP     HL
+        CALL    TRIM
+        LD      A,B
+        OR      A
+        JR      Z,DADONE
+        LD      A,1
+        LD      (DASEEN),A
+        JP      DALOOP
 
-DASHOW: CALL    SHOWONE                 ; dashow
-        SCF
+DAQUERY:
+        CALL    SHOWONE
+DADONE: SCF                             ; command was handled
         RET
 
 DABAD:  LD      DE,MINVALIDASSIGN       ; dabad
@@ -1420,28 +1439,38 @@ DEVVALUE:                               ; devvalue
         POP     HL
         LD      C,0
 
-DVLP:   PUSH    HL                      ; dvlp
+DVLP:   PUSH    HL                      ; compare from the start of each value
         PUSH    BC
+        PUSH    DE
         LD      B,4
 
-DVCMP:  LD      A,(DE)                  ; dvcmp
+DVCMP:  LD      A,(DE)
         CP      (HL)
         JR      NZ,DVNEXT
         INC     DE
         INC     HL
         DJNZ    DVCMP
+        POP     DE
         POP     BC
         POP     HL
-        LD      A,C
-        AND     3
+        LD      DE,4
+        ADD     HL,DE
+        LD      A,B
+        SUB     4
+        LD      B,A
+        JR      Z,DVGOOD
+        LD      A,(HL)
+        CP      ' '                     ; exact value, followed by separator
+        JR      NZ,DVBAD
+DVGOOD: LD      A,C
         OR      A
         RET
 
-DVNEXT: POP     BC                      ; dvnext
+DVNEXT: POP     DE
+        POP     BC
         POP     HL
+        INC     C
         LD      A,C
-        INC     A
-        LD      C,A
         CP      4
         JR      NC,DVBAD
         LD      A,E
@@ -1483,6 +1512,8 @@ SIPUN:  LD      A,B                     ; sipun
         LD      B,A
         LD      A,C
         AND     3
+        RLCA
+        RLCA
         RLCA
         RLCA
         OR      B
@@ -2095,6 +2126,7 @@ KSHIFT:         DB 0                    ; kshift
 FOUND:          DB 0                    ; found
 DINDEX:         DB 0                    ; dindex
 DIRENT:         DW 0                    ; dirent
+DASEEN:         DB 0                    ; earlier assignment in this invocation
 DEVNO:          DB 0                    ; devno
 USERNO:         DB 0                    ; userno
 ISSYS:          DB 0                    ; issys
