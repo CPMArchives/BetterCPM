@@ -213,7 +213,13 @@ redistributable existing utility; an unchecked item does not by itself block
   selections are printed from the parser tables, with $S logical-size guidance,
   multiple-assignment syntax and BAT: routing semantics. Strict cpmsim help and
   unchanged-assignment checks pass alongside the complete utility campaign.
-  Final release qualification and the documented 64-file collection bound remain.
+  Final release qualification remains.
+- [x] Remove STAT's fixed 64-file collection limit (2026-10-08). Summary storage
+  uses available transient memory above the utility, capped by the selected
+  disk's directory capacity. Word-sized counters support directories above 255
+  entries. Executed-code checks cover 384 summaries, memory/directory capacity
+  bounds, explicit overflow and 257-file sorting with metadata intact; the
+  cpmsim utility campaign passes. STAT shrinks from 6,550 to 5,646 bytes.
 - [x] Correct STAT filespec/option parsing (2026-10-07): name/extension stars,
   exact $S/$R/O/$R/W/$SYS/$DIR options, full-width names with following options,
   and malformed/trailing operand rejection. Mixed `?*` patterns are accepted;

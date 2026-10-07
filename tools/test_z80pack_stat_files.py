@@ -20,22 +20,28 @@ def capacity_probe():
     cpu.setword(address('DIRENT'), 0x8100)
     cpu.mem[0x8006] = 1  # eight word-sized allocation slots
     cpu.mem[address('KSHIFT')] = 1
-    for i in range(65):
+    for entries, slots, expected in [(384, 400, 384), (128, 400, 128), (384, 100, 100), (384, 0, 0)]:
+        cpu.setword(0x8007, entries - 1)
+        cpu.setword(6, address('SUMMARY') + slots * 16 + 7)
+        cpu.run(address('SUMROOM'), limit=10000)
+        assert cpu.word(address('SUMCAP')) == expected
+    cpu.setword(address('SUMCAP'), 384)
+    for i in range(385):
         cpu.mem[0x8100:0x8120] = bytes(32)
         cpu.mem[0x8101:0x810c] = f'N{i:07}DAT'.encode()
         cpu.mem[0x810f] = 1
-        cpu.mem[0x8110] = i + 1
-        cpu.run(address('SUMEXTENT'), limit=20000)
-    assert cpu.mem[address('SUMCOUNT')] == 64
+        cpu.setword(0x8110, i + 1)
+        cpu.run(address('SUMEXTENT'), limit=200000)
+    assert cpu.word(address('SUMCOUNT')) == 384
     assert cpu.mem[address('SUMFULL')] == 1
-    for i in range(64):
+    for i in range(384):
         offset = address('SUMMARY') + i * 16
         assert cpu.mem[offset:offset + 11] == f'N{i:07}DAT'.encode()
         assert cpu.word(offset + 11) == 1
         assert cpu.word(offset + 13) == 2
         assert cpu.mem[offset + 15] == 1
     # The reported SYSTEM.SYS case uses EXM=0: two physical entries.
-    cpu.mem[address('SUMCOUNT')] = 0
+    cpu.setword(address('SUMCOUNT'), 0)
     cpu.mem[address('SUMFULL')] = 0
     for extent, records, blocks in ((0, 128, 8), (1, 33, 3)):
         cpu.mem[0x8100:0x8120] = bytes(32)
@@ -44,13 +50,13 @@ def capacity_probe():
         cpu.mem[0x810f] = records
         for i in range(blocks):
             cpu.setword(0x8110 + i * 2, 1 + extent * 8 + i)
-        cpu.run(address('SUMEXTENT'), limit=20000)
+        cpu.run(address('SUMEXTENT'), limit=200000)
     offset = address('SUMMARY')
-    assert cpu.mem[address('SUMCOUNT')] == 1
+    assert cpu.word(address('SUMCOUNT')) == 1
     assert cpu.word(offset + 11) == 161
     assert cpu.word(offset + 13) == 22
     assert cpu.mem[offset + 15] == 2
-    print('STAT EXM=0 two-entry totals, 64-summary boundary and overflow passed')
+    print('STAT EXM=0 two-entry totals, 384-summary boundary and overflow passed')
 
 
 def main():
@@ -85,7 +91,7 @@ def main():
         entry = int(re.search(r'^([0-9a-f]{4})\s+.*?\bSETATTR:', listing, re.M | re.I)[1], 16)
         rostat = bytearray(stat)
         original = bytes(rostat[entry - 0x100:entry - 0x100 + 3])
-        trampoline = (len(stat) + 0x100 + 255) & ~255
+        trampoline = (len(stat) + 0x100 + 4095) & ~255
         rostat[entry - 0x100:entry - 0x100 + 3] = bytes((0xc3, trampoline & 255, trampoline >> 8))
         target = entry + 3
         wrapper = bytes.fromhex('0e 1c cd 05 00') + original + bytes((0xc3, target & 255, target >> 8))

@@ -944,6 +944,7 @@ DISKASSIGN:                             ; diskassign
 ; -------------------------------------------------------------------------------
 
 FILES:  CALL    FREEK                   ; enumerate matching files
+        CALL    SUMROOM
         ; Search every physical extent, not only logical extent zero.
         LD      A,'?'
         LD      (FCB+12),A
@@ -952,8 +953,9 @@ FILES:  CALL    FREEK                   ; enumerate matching files
         CALL    BDOS
         XOR     A
         LD      (FOUND),A
-        LD      (SUMCOUNT),A
         LD      (SUMFULL),A
+        LD      HL,0
+        LD      (SUMCOUNT),HL
         LD      DE,FCB
         LD      C,17
 
@@ -1002,16 +1004,16 @@ FILEHAVE:                               ; filehave
 
 FILELIST:
         CALL    SORTFILES
-        XOR     A
-        LD      (SUMINDEX),A
+        LD      HL,0
+        LD      (SUMINDEX),HL
 
-FILEOUT:                                ; fileout
-        LD      A,(SUMINDEX)
-        LD      B,A
-        LD      A,(SUMCOUNT)
-        CP      B
+FILEOUT:
+        LD      HL,(SUMINDEX)
+        LD      BC,(SUMCOUNT)
+        OR      A
+        SBC     HL,BC
         JP      Z,FILESPACE
-        LD      A,B
+        LD      HL,(SUMINDEX)
         CALL    SUMPTR
         LD      (SUMCUR),HL
         LD      A,(OPTION)
@@ -1116,8 +1118,9 @@ FPNAME:                                 ; fpname
         CALL    PCHAR
 
 FILEOUTNEXT:                            ; fileoutnext
-        LD      HL,SUMINDEX
-        INC     (HL)
+        LD      HL,(SUMINDEX)
+        INC     HL
+        LD      (SUMINDEX),HL
         JP      FILEOUT
 
 FILESPACE:                              ; filespace
@@ -1137,16 +1140,19 @@ FILESPACE:                              ; filespace
   ; Sort complete summaries by the eleven 7-bit name/type characters.
   ; Attribute bits do not affect ordering; counts move with their filename.
 SORTFILES:
-        LD      A,(SUMCOUNT)
-        CP      2
+        LD      HL,(SUMCOUNT)
+        LD      DE,2
+        OR      A
+        SBC     HL,DE
         RET     C
-        DEC     A
-        LD      (SORTLIMIT),A
+        LD      HL,(SUMCOUNT)
+        DEC     HL
+        LD      (SORTLIMIT),HL
 SORTPASS:
-        XOR     A
-        LD      (SORTINDEX),A
+        LD      HL,0
+        LD      (SORTINDEX),HL
 SORTPAIR:
-        LD      A,(SORTINDEX)
+        LD      HL,(SORTINDEX)
         CALL    SUMPTR
         PUSH    HL
         LD      DE,16
@@ -1186,13 +1192,18 @@ SORTMOVE:
         INC     DE
         DJNZ    SORTMOVE
 SORTNEXT:
-        LD      HL,SORTINDEX
-        INC     (HL)
-        LD      A,(SORTLIMIT)
-        CP      (HL)
+        LD      HL,(SORTINDEX)
+        INC     HL
+        LD      (SORTINDEX),HL
+        LD      DE,(SORTLIMIT)
+        OR      A
+        SBC     HL,DE
         JR      NZ,SORTPAIR
-        LD      HL,SORTLIMIT
-        DEC     (HL)
+        LD      HL,(SORTLIMIT)
+        DEC     HL
+        LD      (SORTLIMIT),HL
+        LD      A,H
+        OR      L
         JR      NZ,SORTPASS
         RET
 
@@ -1204,15 +1215,15 @@ SORTNEXT:
 ; -------------------------------------------------------------------------------
 
 SUMEXTENT:                              ; aggregate directory extent
-        XOR     A
-        LD      (SUMINDEX),A
+        LD      HL,0
+        LD      (SUMINDEX),HL
 
-SEFIND: LD      A,(SUMINDEX)            ; sefind
-        LD      B,A
-        LD      A,(SUMCOUNT)
-        CP      B
+SEFIND: LD      HL,(SUMINDEX)
+        LD      BC,(SUMCOUNT)
+        OR      A
+        SBC     HL,BC
         JR      Z,SENEW
-        LD      A,B
+        LD      HL,(SUMINDEX)
         CALL    SUMPTR
         PUSH    HL
         LD      DE,(DIRENT)
@@ -1234,18 +1245,22 @@ SECMP:  LD      A,(DE)                  ; secmp
 
 SENOMATCH:                              ; senomatch
         POP     HL
-        LD      HL,SUMINDEX
-        INC     (HL)
+        LD      HL,(SUMINDEX)
+        INC     HL
+        LD      (SUMINDEX),HL
         JR      SEFIND
 
-SENEW:  LD      A,(SUMCOUNT)            ; senew
-        CP      64
+SENEW:  LD      HL,(SUMCOUNT)
+        LD      BC,(SUMCAP)
+        OR      A
+        SBC     HL,BC
         JR      C,SECREATE
         LD      A,1
         LD      (SUMFULL),A
         RET
 
 SECREATE:
+        LD      HL,(SUMCOUNT)
         CALL    SUMPTR
         PUSH    HL
         EX      DE,HL
@@ -1260,9 +1275,11 @@ SEZERO: LD      (DE),A                  ; sezero
         INC     DE
         DJNZ    SEZERO
         POP     HL
-        LD      A,(SUMCOUNT)
-        INC     A
-        LD      (SUMCOUNT),A
+        PUSH    HL
+        LD      HL,(SUMCOUNT)
+        INC     HL
+        LD      (SUMCOUNT),HL
+        POP     HL
 
 SEADD:  LD      (SUMCUR),HL             ; seadd
         PUSH    HL
@@ -1327,10 +1344,40 @@ SEADD:  LD      (SUMCUR),HL             ; seadd
         POP     HL
         RET
 
-  ; A summary index -> HL = 16-byte summary.
+  ; Use transient memory above the utility, capped by the actual directory.
+SUMROOM:
+        LD      HL,(0006H)
+        LD      DE,SUMMARY
+        OR      A
+        SBC     HL,DE
+        JR      NC,SRSHIFT
+        LD      HL,0
+SRSHIFT:
+        LD      B,4
+SRLOOP: SRL     H
+        RR      L
+        DJNZ    SRLOOP
+        LD      (SUMCAP),HL
+        LD      HL,(DPB)
+        LD      DE,7
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     DE
+        LD      A,D
+        OR      E
+        RET     Z                       ; 65536 entries: memory remains the cap
+        LD      HL,(SUMCAP)
+        OR      A
+        SBC     HL,DE
+        RET     C
+        LD      (SUMCAP),DE
+        RET
 
-SUMPTR: LD      L,A                     ; full-width summary offset
-        LD      H,0
+  ; HL summary index -> HL = 16-byte summary.
+
+SUMPTR:
         ADD     HL,HL
         ADD     HL,HL
         ADD     HL,HL
@@ -2343,7 +2390,7 @@ MSIZEFAIL:      DB 'Size unavailable $'
 MRECS:          DB ' Recs  $'           ; mrecs
 MKBYTES:        DB 'K Bytes  $'         ; mkbytes
 MEXTACC:        DB ' Ext R/$'           ; mextacc
-MSUMFULL:       DB 13,10,'Too many matching files (maximum 64)',13,10,'$'
+MSUMFULL:       DB 13,10,'Insufficient transient memory for matching files',13,10,'$'
 MNOTFOUND:      DB 13,10,'File Not Found',13,10,'$' ; mnotfound
 MATTRFAIL:      DB ' attribute update failed',13,10,'$'
 MATTRRO:        DB ' attribute update failed: disk is read-only',13,10,'$'
@@ -2447,17 +2494,18 @@ DASEEN:         DB 0                    ; earlier assignment in this invocation
 DEVNO:          DB 0                    ; devno
 USERNO:         DB 0                    ; userno
 ISSYS:          DB 0                    ; issys
-SORTLIMIT:      DB 0                    ; unsorted adjacent-pair count
-SORTINDEX:      DB 0                    ; current adjacent pair
+SUMCAP:         DW 0                    ; available summary slots
+SORTLIMIT:      DW 0                    ; unsorted adjacent-pair count
+SORTINDEX:      DW 0                    ; current adjacent pair
 SUMFULL:        DB 0                    ; collection overflow
-SUMCOUNT:       DB 0                    ; sumcount
-SUMINDEX:       DB 0                    ; sumindex
+SUMCOUNT:       DW 0                    ; sumcount
+SUMINDEX:       DW 0                    ; sumindex
 SUMCUR:         DW 0                    ; sumcur
 FCB:            DS 36                   ; fcb
-SUMMARY:        DS 64*16                ; summary
 STACK:          DS 128                  ; private STAT stack
 
 STACKTOP:                               ; top of private STAT stack
+SUMMARY:                                ; dynamic summaries above the COM image
 
         .DEPHASE
         END     START

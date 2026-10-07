@@ -14,7 +14,7 @@ def main():
     binary = (ROOT / 'build/utilities/STAT.COM').read_bytes()
     cases = [[], [b'ONE     DAT'],
              [b'ZETA    TXT', b'ALPHA   DAT', b'ALPHA   COM', b'BETA    DAT'],
-             [f'F{i:07}DAT'.encode() for i in reversed(range(64))]]
+             [f'F{i:07}DAT'.encode() for i in reversed(range(257))]]
     for names in cases:
         records = []
         for i, name in enumerate(names):
@@ -22,17 +22,17 @@ def main():
             # Attribute bits must neither change ordering nor get separated.
             record[8] |= 0x80 if i % 2 else 0
             record[9] |= 0x80 if i % 3 else 0
-            record += bytes((i, 1, i + 1, 2, i + 2))
+            record += bytes((i & 255, i >> 8, (i + 1) & 255, 2, (i + 2) & 255))
             records.append(bytes(record))
         cpu = Z80(b'')
         cpu.mem[0x100:0x100 + len(binary)] = binary
         start = address('SUMMARY')
         cpu.mem[start:start + len(records) * 16] = b''.join(records)
-        cpu.mem[address('SUMCOUNT')] = len(records)
-        cpu.run(address('SORTFILES'), limit=500000)
+        cpu.setword(address('SUMCOUNT'), len(records))
+        cpu.run(address('SORTFILES'), limit=10000000)
         expected = sorted(records, key=lambda row: bytes(value & 0x7f for value in row[:11]))
         assert cpu.mem[start:start + len(records) * 16] == b''.join(expected), len(records)
-    print('STAT empty/single, name/type ordering, attribute-bit masking and 64-record metadata sorting passed')
+    print('STAT empty/single, name/type ordering, attribute-bit masking and 257-record metadata sorting passed')
 
 
 if __name__ == '__main__':
