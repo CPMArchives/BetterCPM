@@ -57,3 +57,9 @@ Its `USR:` checks cover an empty disk and a disk populated in users 0, 3, 15
 and 31, including return to B3: after enumeration. These checks test STAT's
 IOBYTE inspection/assignment interface; actual BIOS device routing remains
 separate release qualification.
+
+`tools/test_z80pack_stat_drives.py` qualifies logged-drive status, an exact
+free-space fixture, temporary drive read-only assignment, clearing on warm
+start, rejection of the unsupported R/W assignment and B3: context restoration.
+Test-only wrappers populate the login vector or inspect the public read-only
+vector before STAT's normal exit reaches WBOOT; production STAT is unchanged.
