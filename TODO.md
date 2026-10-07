@@ -224,6 +224,14 @@ redistributable existing utility; an unchecked item does not by itself block
   disk reports exactly users 0, 3, 15 and 31; an empty disk reports no occupied
   users. The active user is reported correctly and invocation from B3: restores
   B3: after scanning all 32 user areas. No utility code change was required.
+- [x] Qualify STAT drive status on disposable cpmsim media (2026-10-08).
+  Bare STAT reports the logged drives and their R/W or R/O state; B: reports
+  exactly 240K free on a fixture with independently counted allocations.
+  B:=R/O sets only B's public R/O-vector bit before WBOOT, and the next
+  invocation confirms WBOOT clears it. B:=R/W is rejected. Drive inspection
+  from B3: restores B3:. Test-only entry/exit probes expose state within the
+  invocation because warm start resets login and temporary R/O vectors.
+  No utility or resident OS code change was required.
 - [x] Correct STAT filespec/option parsing (2026-10-07): name/extension stars,
   exact $S/$R/O/$R/W/$SYS/$DIR options, full-width names with following options,
   and malformed/trailing operand rejection. Mixed `?*` patterns are accepted;
