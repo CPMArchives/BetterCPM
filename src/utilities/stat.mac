@@ -875,6 +875,7 @@ FILEHAVE:                               ; filehave
         RET
 
 FILELIST:
+        CALL    SORTFILES
         XOR     A
         LD      (SUMINDEX),A
 
@@ -996,6 +997,68 @@ FILESPACE:                              ; filespace
         CALL    PWORD
         LD      DE,MKCRLF
         JP      PRINT
+
+  ; Sort complete summaries by the eleven 7-bit name/type characters.
+  ; Attribute bits do not affect ordering; counts move with their filename.
+SORTFILES:
+        LD      A,(SUMCOUNT)
+        CP      2
+        RET     C
+        DEC     A
+        LD      (SORTLIMIT),A
+SORTPASS:
+        XOR     A
+        LD      (SORTINDEX),A
+SORTPAIR:
+        LD      A,(SORTINDEX)
+        CALL    SUMPTR
+        PUSH    HL
+        LD      DE,16
+        ADD     HL,DE
+        EX      DE,HL
+        POP     HL
+        PUSH    HL
+        PUSH    DE
+        LD      B,11
+SORTCMP:
+        LD      A,(HL)
+        AND     07FH
+        LD      C,A
+        LD      A,(DE)
+        AND     07FH
+        CP      C
+        JR      C,SORTSWAP
+        JR      NZ,SORTKEEP
+        INC     HL
+        INC     DE
+        DJNZ    SORTCMP
+SORTKEEP:
+        POP     DE
+        POP     HL
+        JR      SORTNEXT
+SORTSWAP:
+        POP     DE
+        POP     HL
+        LD      B,16
+SORTMOVE:
+        LD      A,(DE)
+        LD      C,(HL)
+        LD      (HL),A
+        LD      A,C
+        LD      (DE),A
+        INC     HL
+        INC     DE
+        DJNZ    SORTMOVE
+SORTNEXT:
+        LD      HL,SORTINDEX
+        INC     (HL)
+        LD      A,(SORTLIMIT)
+        CP      (HL)
+        JR      NZ,SORTPAIR
+        LD      HL,SORTLIMIT
+        DEC     (HL)
+        JR      NZ,SORTPASS
+        RET
 
   ; Find or create the summary matching the current DMA directory entry, then
   ; add its logical records, allocated KiB, and physical extent count.
@@ -2130,6 +2193,8 @@ DASEEN:         DB 0                    ; earlier assignment in this invocation
 DEVNO:          DB 0                    ; devno
 USERNO:         DB 0                    ; userno
 ISSYS:          DB 0                    ; issys
+SORTLIMIT:      DB 0                    ; unsorted adjacent-pair count
+SORTINDEX:      DB 0                    ; current adjacent pair
 SUMFULL:        DB 0                    ; collection overflow
 SUMCOUNT:       DB 0                    ; sumcount
 SUMINDEX:       DB 0                    ; sumindex

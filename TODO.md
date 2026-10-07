@@ -209,7 +209,7 @@ redistributable existing utility; an unchecked item does not by itself block
   after 16 files. Exact checks cover 161-record and 513-record files, 24-file
   listings, EXM=0 two-entry aggregation, and the 64-summary boundary. Collection
   beyond 64 distinct files now reports an error instead of silently truncating.
-- [ ] Complete remaining stock STAT baseline: alphabetical output, distinct $S
+- [ ] Complete remaining stock STAT baseline: distinct $S
   logical size, full DSK: fields/all-active-drive reporting, and complete VAL: help.
 - [x] Correct STAT filespec/option parsing (2026-10-07): name/extension stars,
   exact $S/$R/O/$R/W/$SYS/$DIR options, full-width names with following options,
@@ -233,6 +233,11 @@ redistributable existing utility; an unchecked item does not by itself block
   lists, invalid values, trailing text and DEV: output pass. Assignments apply
   sequentially: an invalid later operand does not undo earlier valid assignments.
   Actual BIOS selector routing remains the separate open 1.0 requirement.
+
+- [x] Sort STAT file summaries alphabetically by the 7-bit filename/type
+  (2026-10-07), moving the complete summary so attributes and totals stay with
+  each file. Empty, single, mixed name/type and 64-entry reverse-order checks
+  pass; disposable cpmsim media created in reverse order prints ascending names.
 
 - [ ] Implement `DUMP.COM`.
 - [x] Implement `SUBMIT.COM`.
