@@ -276,6 +276,32 @@ expect -exact "RDR: is PTR:"
 expect -exact "PUN: is PTP:"
 expect -exact "LST: is LPT:"
 prompt
+send -s "stat con:=crt: lst:=crt:\r"
+expect -exact "CON: is CRT:"
+expect -exact "LST: is CRT:"
+prompt
+send -s "stat ptp:\r"
+expect -exact "PTP: assigned to PUN:"
+prompt
+send -s "stat crt:\r"
+expect -exact "CRT: assigned to CON:"
+expect -exact "CRT: assigned to LST:"
+prompt
+send -s "stat up1:\r"
+expect -exact "UP1: not assigned"
+prompt
+send -s "stat xyz:\r"
+expect -exact "Unknown device target"
+prompt
+send -s "stat ptp:x\r"
+expect -exact "Invalid STAT command"
+prompt
+send -s "stat dev:\r"
+expect -exact "CON: is CRT:"
+expect -exact "RDR: is PTR:"
+expect -exact "PUN: is PTP:"
+expect -exact "LST: is CRT:"
+prompt
 send -s "bye\r"
 expect eof
 '''
@@ -324,6 +350,7 @@ expect eof
     empty_body = body[:body.index('send -s')] + empty_body.replace('expect -exact ', 'mustexact ')
     run_case(args.image_dir.resolve(), args.simulator.resolve(), 'stat-empty-users', empty_files, empty_body)
     print('STAT populated/empty user areas, user 31 and B3 context restoration passed')
+    print('STAT inverse target queries, shared/unassigned targets, invalid operands and unchanged mappings passed')
     print('STAT exact totals, 24-file star matching, attribute options, device assignments and invalid-tail rejection passed')
 
 
