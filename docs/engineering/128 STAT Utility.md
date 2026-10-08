@@ -85,12 +85,12 @@ present in the repository. It does not claim byte-for-byte DRI output identity.
 
 | Command family | Current evidence | Qualification limit |
 | --- | --- | --- |
-| `STAT`, `d:`, `d:=R/O` | cpmsim: logged drives, R/W and R/O, independently counted 240K free-space fixture, assignment to only B, WBOOT clearing, rejection of `d:=R/W`, B3 restoration | Model 4: exact A:/B: status and free space, B-only R/O vector, WBOOT clearing and rejected R/W; nonzero-user context remains |
+| `STAT`, `d:`, `d:=R/O` | cpmsim: logged drives, R/W and R/O, independently counted 240K free-space fixture, assignment to only B, WBOOT clearing, rejection of `d:=R/W`, B3 restoration | Model 4: exact A:/B: status and free space, B-only R/O vector, WBOOT clearing and rejected R/W; Targeted Model 4 drive parity passed |
 | File statistics and wildcards | Both platforms: exact 161/513-record totals, allocation/entry counts and sorted wildcard output; cpmsim: 100 sorted files on 800K; instruction checks: parser forms and 257-summary sorting | Remaining qualification groups below |
 | `$S` logical size | Both platforms: sparse logical size 513 versus one recorded record and ordinary 161-record reporting; instruction checks: all 24 formatting bits | Passed targeted parity; retain final release evidence |
 | `$R/O`, `$R/W`, `$SYS`, `$DIR` | Both platforms: wildcard updates across every matching extent, complete logical-media comparisons and read-only rejection; cpmsim: single-file updates; instruction checks: all valid success slots and FFh failure | Passed targeted parity; retain final release evidence |
-| `DSK:`, `d:DSK:` | cpmsim: exact 332K/800K DPB fields, one/two logged drives and context restoration; Model 4: exact 780K A: and 800K B: fields, one/two logged drives; instruction checks: word-carry boundaries | Model 4 nonzero-user context remains |
-| `USR:` | cpmsim: empty disk, users 0/3/15/31 and B3 restoration; Model 4: populated users 0/3/15 and return to A0 | Model 4 empty-disk and nonzero-user context cases remain |
+| `DSK:`, `d:DSK:` | cpmsim: exact 332K/800K DPB fields, one/two logged drives and context restoration; Model 4: exact 780K A: and 800K B: fields, one/two logged drives; instruction checks: word-carry boundaries | Model 4 Targeted Model 4 drive parity passed |
+| `USR:` | cpmsim: empty disk, users 0/3/15/31 and B3 restoration; Model 4: populated users 0/3/15 and return to A0 | Targeted Model 4 empty-disk and B3 restoration passed |
 | `DEV:` and assignments | Instruction checks: all 16 legal selector values and unrelated-bit preservation; cpmsim: assignment lists, inspection and malformed operands; Model 4: default mapping, assignment list and inspection | Actual BIOS routing is a separate open 1.0 requirement |
 | `VAL:` | cpmsim: legal selector matrix, file options, multiple assignments, BAT explanation and unchanged IOBYTE | Model 4 parity remains |
 
@@ -110,6 +110,21 @@ the 100-file 800K qualification below now supplies that separate evidence.
 2. Preserve the final platform binaries, commands and results, including the
    numeric DU and `MEM` extensions, and close the separate BIOS IOBYTE routing
    qualification before claiming device assignments operate on both platforms.
+
+### Edge cases retained for final qualification
+
+Include these cases in the remaining bounded campaign, reusing established
+coverage where it already supplies the required evidence:
+
+- Empty disk and wildcard patterns matching no files.
+- Invocation from a nonzero user: restore drive/user after both success and
+  malformed-input or operation failures.
+- Full directory and insufficient summary workspace: explicit failure without
+  memory corruption; retain the existing executed-code capacity checks and
+  native large-directory evidence rather than repeating them unnecessarily.
+- MEM with resident RSXs and with invalid/unavailable system metadata.
+- Malformed DU qualifiers and trailing operands through the native command
+  path, including checks that errors preserve the original drive/user.
 
 No additional missing command family was identified by this reconciliation.
 The outstanding items are coverage gaps; a test may still expose a defect that
@@ -259,3 +274,22 @@ validates invocation identity and runs only missing cases. Reports retain
 STAT, wrapper binaries/listings, media, invocations, captures and hashes.
 Production STAT remains 5,912 bytes with its unchanged SHA-256; no OS code
 change was required.
+
+### Model 4 empty media and context restoration — passed 2026-10-08
+
+`tools/test_model4_stat_context.py --report <new-directory>` qualifies nine
+native commands after a test-only entry wrapper selects B: and user 3 through
+public BDOS calls, before STAT captures its original context. Every capture
+must return to B3. The blank 800K B: reports Active User 3 with no populated
+users and no wildcard matches. Cross-DU A0: file lookup reports exact one-record,
+2K, one-entry totals; a missing file returns File Not Found. A:DSK: reports
+only the selected A: and restores B3. Both A32: and user-only 32: qualifiers
+are rejected, as are a trailing operand and a nonterminal wildcard.
+
+Both complete DMK images remain unchanged after every case. The harness's
+initial numeric assertion was corrected to accept the canonical zero-padded
+output; final assertions passed with --resume, validating retained invocation
+identity and executing the remaining cases. The report preserves production
+STAT, the context wrapper and listing, invocations, captures, images and hashes.
+No production STAT or OS correction was required. Help/MEM parity and the
+remaining resource/metadata edge-case evidence remain open.

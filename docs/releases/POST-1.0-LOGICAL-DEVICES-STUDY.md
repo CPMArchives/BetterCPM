@@ -492,3 +492,35 @@ existing binaries, and costs of resolution and lifecycle handling.
 Preserve traditional device assignments without adding new 1.0 requirements.
 The current utility iteration should specify and qualify ordinary STAT device
 behavior; the generalized namespace remains post-1.0 exploration.
+
+## DU-Level Protection and Optional WHEEL Privilege Policy
+
+Explore read-only policy for an individual filesystem drive/user area, so
+P10: could be protected while P0:–P9: and P11:–P31: remain writable, subject
+to any drive-wide protection. This is distinct from endpoint capabilities:
+a binding to an input device is not writable because of its provider, while
+a filesystem DU may be made read-only by policy. DU-granular endpoint bindings
+make this a useful related question; they do not automatically implement it.
+
+Define the scope of prohibited mutations: creation, existing-file writes,
+deletion, rename and attribute changes. Establish interactions with drive-wide
+R/O, individual file attributes, aliases and their resolved targets, saved
+configuration, WBOOT and binding removal. If ordinary programs are to obey
+filesystem DU protection, enforcement must cover their direct BDOS calls;
+checks in STAT, COPY or other cooperating utilities alone are insufficient.
+Measure resident memory and code costs during the architectural review,
+especially given the current BDOS capacity constraint.
+
+Consider a WHEEL-style privilege flag if the intended policy restricts who
+may clear protection or modify endpoint bindings. It is a candidate, not a
+prerequisite: accidental-write protection can exist without privilege control.
+Define who may change the flag, its initial and saved/session state, behavior
+across WBOOT and recovery, and whether the model is cooperative restriction
+or a stronger security boundary. A directly writable flag in ordinary program
+memory must not be presented as strong security. Do not assume a byte alone
+supplies enforceable privilege separation.
+
+Study DU protection and privilege policy together before choosing mechanisms.
+This remains post-1.0 exploration, with no new WHEEL byte, BDOS contract,
+protection schema or implementation requirement for 1.0. Retain drive-wide
+R/O and existing file attributes for the frozen release.

@@ -197,6 +197,11 @@ redistributable existing utility; an unchecked item does not by itself block
   see `docs/engineering/128 STAT Utility.md` for the reconciled compatibility
   checklist. Next: current Model 4 parity and preserved two-platform release
   evidence.
+- [ ] Include final STAT edge-case coverage: empty disk/no wildcard matches;
+  nonzero-user restoration after success and errors; full directory and
+  insufficient summary workspace with explicit, non-corrupting failure; MEM
+  with resident RSXs and invalid/unavailable metadata; native malformed DU
+  and trailing operands. Reuse existing targeted evidence where sufficient.
 - [x] Add STAT inverse device-target queries (2026-10-08). Standard targets
   report every matching logical device or `not assigned`, using the existing
   IOBYTE name tables without changing mappings. Unknown targets and extra
@@ -326,6 +331,12 @@ redistributable existing utility; an unchecked item does not by itself block
   next command after WBOOT reports both drives R/W. B:=R/W is rejected.
   Complete physical media remain unchanged. Test-only wrappers and retained
   captures preserve evidence; no production code change was required.
+- [x] Qualify Model 4 STAT empty media and B3 restoration (2026-10-08).
+  Nine native cases cover empty user enumeration, no wildcard matches,
+  successful/missing cross-DU file lookup, selected-drive DPB reporting,
+  out-of-range DU users, extra operands and invalid wildcard syntax. Every
+  case returns to B3 and preserves both complete disk images. No production
+  code correction was required; retained captures pass final assertions.
 - [x] Report distinct STAT $S logical size (2026-10-08) through BDOS Function
   35's full three-byte result. Native random write to record 512 reports logical
   size 513, recorded total 1, allocation 2K, and two physical entries (the empty
