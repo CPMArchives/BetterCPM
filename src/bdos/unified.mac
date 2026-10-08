@@ -248,7 +248,7 @@ UB_PRINT:                               ; print $-terminated string
 UB_PRLOOP:                              ; prloop
         LD      A,(HL)
         CP      '$'
-        JP      Z,UB_OUTOK
+        JR      Z,UB_OUTOK
         INC     HL
         PUSH    HL
         CALL    UB_COCHAR
@@ -603,13 +603,7 @@ UB_SETDMA:                              ; set DMA address
 UB_GETALV:                              ; return allocation-vector pointer
         CALL    UB_CURRENT
         JR      NZ,UB_PTRBAD
-        LD      HL,(UB_DPH)
-        LD      DE,14
-        ADD     HL,DE
-        LD      E,(HL)
-        INC     HL
-        LD      D,(HL)
-        EX      DE,HL
+        LD      HL,(UB_ALVP)           ; UB_CONTEXT already loaded the DPH ALV
         JP      UB_RETHL
 
 UB_WRPROT:                              ; write-protect current drive
@@ -881,8 +875,6 @@ UB_SFIRST:                              ; search first
         LD      DE,14
         ADD     HL,DE
         LD      (HL),0                  ; CP/M Search First clears S2
-        XOR     A
-        JR      UB_SFINIT
 
 UB_SFALL:                               ; sfall
         XOR     A
@@ -1070,12 +1062,26 @@ UB_OPEN:                                ; open file
 UB_ACTIVATE:                            ; activate
         CALL    UB_OPENCORE
         RET     C
+  ; A directory entry can cover several logical extents. Keep the caller's
+  ; requested EX; the entry's EX/RC describe only its last populated subextent.
+        LD      B,(IX+12)
+        PUSH    BC
         LD      HL,(UB_OPENENT)
         INC     HL
         LD      DE,(UB_ITFCB)
         INC     DE
         LD      BC,31
         LDIR
+        POP     BC
+        LD      A,(IX+12)
+        SUB     B
+        LD      (IX+12),B
+        JR      Z,UB_ACTCLEAN
+        SBC     A,A                    ; earlier subextent: 128; later: zero
+        INC     A
+        RRCA
+        LD      (IX+15),A
+UB_ACTCLEAN:
         SET     7,(IX+14)               ; freshly activated FCB is clean
         LD      A,(UB_ITRET)
         OR      A
@@ -1096,8 +1102,7 @@ UB_OPNEXT:                              ; opnext
         LD      DE,12
         ADD     HL,DE
         LD      A,(HL)
-        AND     01FH
-        LD      C,A
+        LD      C,A                     ; the shared mask below also removes EX high bits
         LD      A,(UB_DPBC+4)           ; EXM
         CPL
         AND     01FH
@@ -2020,13 +2025,11 @@ UB_RECMAP:                              ; map logical record to disk
         LD      B,0
         ADD     HL,BC
         LD      C,L
-        LD      (UB_RLOG),HL
         LD      A,(UB_DPBC+2)           ; BSH
         LD      B,A
         LD      A,(UB_DPBC+3)           ; BLM
         AND     C
         LD      (UB_RREM),A
-        LD      HL,(UB_RLOG)
         LD      A,B
 
 UB_RBSH:                                ; rbsh
@@ -2672,7 +2675,7 @@ UB_OPENENT:     DW      0               ; opened directory entry
 ; -------------------------------------------------------------------------------
 
 UB_RREM:        DB      0               ; records remaining
-UB_RLOG:        DW      0               ; logical record
+UB_RRES:        DW      0               ; reserved scratch; retain frozen ROM/RAM state span
 UB_RBNO:        DB      0               ; allocation block number
 UB_RRCR:        DB      0               ; random-record scratch
 UB_ZMODE:       DB      0               ; zero-fill mode

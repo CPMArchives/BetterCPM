@@ -27,7 +27,21 @@ def main():
             assert cpu.carry == (text in invalid), (binary_path, text)
             # The routine only reads its operand; no FCB or code writes.
             assert cpu.mem[origin:origin + len(binary)] == before[origin:origin + len(binary)]
-    print('COPY CPX/transient exact 8.3 boundaries and malformed operands passed')
+        def address(name):
+            return int(re.search(r'^([0-9a-f]{4})\s+.*?\b' + name + ':', listing, re.M | re.I)[1], 16)
+        for text, accepted in [('*.DAT', True), ('F?*.DAT', True), ('F***.D**', True),
+                               ('?*.?*', True), ('F*X.DAT', False), ('F**?.DAT', False),
+                               ('F*.DAT*', False), ('ABCDEFGH*.DAT', False)]:
+            cpu = Z80(b'')
+            cpu.mem[origin:origin + len(binary)] = binary
+            cpu.setword(address('BC_COFCP'), address('BC_FCB'))
+            cpu.mem[0x7000:0x7000 + len(text)] = text.encode('ascii')
+            cpu.hl, cpu.b = 0x7000, len(text)
+            cpu.run(entry, limit=10000)
+            assert cpu.carry == (not accepted), (binary_path, text)
+            if accepted:
+                assert cpu.mem[address('BC_CWILD')] == 1
+    print('COPY CPX/transient exact 8.3 and bounded source-wildcard grammar passed')
 
 
 if __name__ == '__main__':

@@ -675,8 +675,9 @@ class Z80:
                 old_carry = self.carry
                 self.carry = bool(self.a & 0x80)
                 self.a = ((self.a << 1) | int(old_carry)) & 0xFF
-            elif op == 0x98:            # SBC A,B
-                total = self.a - self.b - int(self.carry)
+            elif op in (0x98, 0x9F):    # SBC A,B / SBC A,A
+                operand = self.b if op == 0x98 else self.a
+                total = self.a - operand - int(self.carry)
                 self.a = total & 0xFF
                 self.z, self.carry = self.a == 0, total < 0
             elif op == 0xC6:            # ADD A,n

@@ -11,9 +11,11 @@ from build_rom_pack import component_inputs
 
 # Allocation publication shares Close/Make paths: -3 RAM references,
 # +2 ROM references; each remaining operand still undergoes independent checks.
+# Grouped-extent compaction removes one absolute jump and two scratch-word
+# references; the measured resident and live-state ranges remain unchanged.
 EXPECTED_REFERENCES = {
     "gateway": 23,
-    "bdos": 519,
+    "bdos": 516,
     "extensions": 57,
     "disk": 82,
     "bios": 64,
@@ -22,14 +24,14 @@ EXPECTED_REFERENCES = {
 }
 EXPECTED_DISCOVERED = {
     "gateway": 26,
-    "bdos": 519,
+    "bdos": 516,
     "extensions": 57,
     "disk": 82,
     "bios": 64,
     "fileloader": 13,
     "tables": 16,
 }
-EXPECTED_CLASSES = {"immutable-rom": 431, "live-ram": 327}
+EXPECTED_CLASSES = {"immutable-rom": 430, "live-ram": 325}
 EXPECTED_OVERLAY_CLASSES = {"immutable-rom": 3, "live-ram": 102}
 EXPECTED_OVERLAY_REFERENCES = 105
 
@@ -61,7 +63,7 @@ def main() -> None:
         raise AssertionError("packed-code reference counts changed")
     if inventory["target_class_counts"] != EXPECTED_CLASSES:
         raise AssertionError("ROM/RAM reference classification changed")
-    if inventory["reference_count"] != 758:
+    if inventory["reference_count"] != 755:
         raise AssertionError("packed-code reference total changed")
     if (inventory["overlay_discovered_word_count"] !=
             EXPECTED_OVERLAY_REFERENCES or
@@ -149,7 +151,7 @@ def main() -> None:
             any(row["target_class"] != "immutable-rom"
                 for row in extension_entries)):
         raise AssertionError("E49Fh extension entries lost ROM semantics")
-    print("ROM address inventory verified: 758 packed-code words and 105 CONFIG "
+    print("ROM address inventory verified: 755 packed-code words and 105 CONFIG "
           "overlay words; no unresolved references")
 
 
