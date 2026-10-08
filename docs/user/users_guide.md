@@ -544,6 +544,12 @@ Examples:
 drive/user area. A file specification restricts the display to matching files.
 The standard CP/M `?` and `*` wildcard characters may be used.
 
+Both forms use the same bounded 8.3 wildcard rules as COPY: `?` matches one
+position, and a terminal `*` fills the remainder of its filename or extension
+field. Adjacent terminal stars are equivalent to one star. `F?*.DAT` and
+`F***.DAT` are valid; `F*A.DAT` and `F**?.DAT` report `Invalid filespec.`
+Characters cannot follow a star run within the same field.
+
 In addition to the above, the transient `DIR.COM` provides extended directory
 display and file-selection functions. Planned extensions include:
 

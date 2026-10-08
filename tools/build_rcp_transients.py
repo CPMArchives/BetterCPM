@@ -24,7 +24,7 @@ COMMANDS = {
 
 
 def symbol(listing: Path, name: str) -> int:
-    matches = re.findall(rf"^([0-9a-f]{{4}})\s+.*\b{name}:?\s*$",
+    matches = re.findall(rf"^([0-9a-f]{{4}})\s+.*\b{name}:\s*(?:;.*)?$",
                          listing.read_text(encoding="ascii"),
                          re.MULTILINE | re.IGNORECASE)
     if not matches:

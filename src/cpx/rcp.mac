@@ -375,6 +375,18 @@ BC_DIR:                                 ; execute DIR command
 ; -------------------------------------------------------------------------------
 
 BC_DPARSE:                              ; dparse
+  ; Validate before FCB expansion so a star cannot conceal malformed suffixes.
+  ; DIR uses COPY's bounded 8.3 lexer, with wildcard source mode enabled.
+        LD      DE,BC_FCB
+        LD      (BC_COFCP),DE
+        XOR     A
+        LD      (BC_MVFLAG),A
+        PUSH    HL
+        PUSH    BC
+        CALL    BC_CVALID
+        POP     BC
+        POP     HL
+        JP      C,BC_DBAD
         LD      DE,BC_FCB
         CALL    BC_PFCB
   ; Search all physical directory extents. On EXM>0 disks a file between 16K
@@ -482,6 +494,11 @@ BC_DNOFILE:                             ; dnofile
         LD      DE,BC_NOFILE
         LD      C,9
         CALL    BDOS
+        JP      BC_DURST
+
+BC_DBAD:
+        LD      DE,BC_IFSPEC
+        CALL    BC_PRINT
         JP      BC_DURST
 
 BC_FFIX:                                ; ffix
@@ -2130,6 +2147,7 @@ BC_PRINT:                               ; print $-terminated string
         LD      C,9
         JP      BDOS
 
+BC_IFSPEC:     DB      13,10,'Invalid filespec.',13,10,'$'
 BC_KDIR:       DB      'DIR'            ; DIR keyword
 BC_KERA:       DB      'ERA'            ; ERA keyword
 BC_KTYPE:      DB      'TYPE'           ; TYPE keyword
