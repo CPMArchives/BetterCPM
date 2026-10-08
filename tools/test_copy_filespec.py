@@ -95,6 +95,9 @@ def main():
                     ('B1:F.DAT B3: /S', 0, 1, False),
                     ('B1:F.DAT B3: /S /S   ', 0, 1, False),
                     ('B1:F.DAT B3: /O /O', 1, 0, False),
+                    ('B1:F.DAT B3: /B', 0, 0, False),
+                    ('B1:F.DAT B3: /B /S /B', 0, 1, False),
+                    ('B1:F.DAT B3: /O /B', 1, 0, False),
                     ('B1:F.DAT B3: /O /S', 0, 0, True),
                     ('B1:F.DAT B3: /S /O', 0, 0, True)]:
                 cpu = Z80(b'')

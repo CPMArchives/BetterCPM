@@ -79,8 +79,17 @@ def copy_source(text: str) -> str:
     old = "        JR      Z,BC_CMAKE\n        LD      A,(BC_OVER)"
     assert text.count(old) == 1, "COPY destination-open hook changed"
     text = text.replace(old, "        JP      Z,BC_CMAKE\n        JP      CTEXIST\nCTALLOW:\n        LD      A,(BC_OVER)", 1)
-    text = text.replace("destination=source [/O]", "destination=source [/O|/S]", 1)
+    text = text.replace("destination=source [/O]", "destination=source [/O|/S] [/B]", 1)
+    old = "        JP      Z,BC_CEXIST\n        LD      A,(BC_NEWFCB+9)"
+    assert text.count(old) == 1, "COPY one-file overwrite entry changed"
+    text = text.replace(old, "        JP      Z,BC_CEXIST\nCTYALLOW:\n        LD      A,(BC_NEWFCB+9)", 1)
     state = """
+CT_BATCH: DB 0
+CT_CHOICE: DB 0
+CT_LINE: DS 48
+CT_ASKM: DB ' [Destination exists. Overwrite? Y/N/O/S/?] $'
+CT_HELPM: DB 'Y - Yes  N - No  O - Overwrite All  S - Skip All',13,10,'$'
+CT_ABORTM: DB 13,10,'COPY ABORTED',13,10,'$'
 CT_SKIP: DB 0
 CT_SKIPS: DB 0
 CT_FAILS: DB 0

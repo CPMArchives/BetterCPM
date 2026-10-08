@@ -51,6 +51,8 @@ def main():
         source_entries = [entry for entry in entries(1) if bytes(value & 127 for value in entry[1:12]) == b'F003    DAT']
         all_sources = entries(1)
         def invoke(command, label):
+            if profile == 'transient' and command.startswith('COPY '):
+                command += ' /B'
             commands = [(b'CPX UNLOAD RCP\r', b'A0>_ ', 30)]
             if profile == 'cpx':
                 commands.append((b'CPX LOAD RCP\r', b'A0>_ ', 30))

@@ -54,6 +54,17 @@ def main():
         c.mem[address('BC_WEND')] = 0xc9
         c.run(address('CTPREF'), limit=100000)
         assert (c.de == address('CT_MAPMSG')) == rejected, (sources, template)
+    c = cpu()
+    c.mem[address('BC_PCHAR')] = 0xc9
+    c.mem[address('BC_CSDRV')] = 0
+    c.mem[address('BC_CDDRV')] = 2
+    c.mem[address('BC_CSUSR')] = 31
+    c.mem[address('BC_CDUSR')] = 0
+    c.mem[address('BC_FCB')+1:address('BC_FCB')+12] = field('FOO$.COM')
+    c.mem[address('BC_NEWFCB')+1:address('BC_NEWFCB')+12] = field('NEW.DOC')
+    c.run(address('CTPAIR'), limit=10000)
+    start = address('CT_LINE')
+    assert bytes(c.mem[start:start+40]).split(b'\0')[0] == b'\r\nA31:FOO$.COM -> C0:NEW.DOC'
     print('Transient COPY positional substitution and mapping conflicts pass')
 
 

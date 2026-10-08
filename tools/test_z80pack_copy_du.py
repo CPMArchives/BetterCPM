@@ -44,6 +44,8 @@ def main():
         original = entry(1)
         assert all(value & 128 for value in original[9:12]), original
         def invoke(command, label):
+            if profile == 'transient' and command.startswith('COPY '):
+                command += ' /B'
             commands = [(b'CPX UNLOAD RCP\r', b'A0>_ ', 30)]
             if profile == 'cpx':
                 commands.append((b'CPX LOAD RCP\r', b'A0>_ ', 30))
@@ -64,7 +66,7 @@ def main():
                                  'attributes': destination[9:12].hex()})
         for number, (command, expected) in enumerate([
                 ('COPY B1:SOURCE.DAT B1:', b'FILE EXISTS' if profile == 'cpx' else b'COPY DESTINATION CONFLICT'),
-                ('COPY B1:SOURCE.DAT B3:', b'FILE EXISTS'),
+                ('COPY B1:SOURCE.DAT B3:', b'FILE EXISTS' if profile == 'cpx' else b'READ ONLY'),
                 ('COPY B1: B5:', b'COPY source destination'),
                 ('COPY B1:SOURCE.DAT B32:', b'COPY source destination')]):
             before = {p.name: p.read_bytes() for p in (work / 'disks').glob('*.dsk')}
