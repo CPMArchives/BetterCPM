@@ -308,6 +308,13 @@ redistributable existing utility; an unchecked item does not by itself block
   fixture creator, STAT, media, captures and hashes. The harness waits for
   output and the returned prompt, then allows keyboard settling before the
   next command. No production code change was required.
+- [x] Qualify Model 4 STAT wildcard attributes (2026-10-08). All four options
+  update exactly the requested bits in seven selected physical extents.
+  Complete logical-media comparisons preserve ARC, other attributes, payload,
+  allocation/extent metadata, a nonmatching five-entry file and a matching
+  filename in user 3. Read-only rejection reports both files and preserves
+  the complete physical DMK image. Tests retain images, captures and hashes;
+  no production code correction was required.
 - [x] Report distinct STAT $S logical size (2026-10-08) through BDOS Function
   35's full three-byte result. Native random write to record 512 reports logical
   size 513, recorded total 1, allocation 2K, and two physical entries (the empty
