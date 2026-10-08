@@ -19,8 +19,9 @@ close. Prior native qualification covers all eight attribute combinations in
 CPX and transient profiles. MOVE uses the same engine and erases its source
 only after successful copy/close and attribute handling.
 
-Remaining implementation includes an explicit overwrite option. Source
-wildcards/multiple files are implemented and qualified below. Destination DU shorthand is implemented below. These are not
+The agreed common implementation now includes source wildcards/multiple files
+and explicit overwrite control, qualified below. Final two-platform COPY
+qualification remains. Destination DU shorthand is implemented below. These are not
 claimed complete by the parser correction below. Destination wildcard renaming,
 concatenation, device transfers, transformations and the handoff proposal need
 separate contracts before implementation.
@@ -153,3 +154,63 @@ Shared RCP code grows from 3,153 to **3,584 bytes** (+431); rounded allocation
 increases from 3,328 to 3,584 bytes (+256). Explicit overwrite control and final
 two-platform COPY qualification remain. Handoff remains a separate discussion
 until the agreed resident COPY functionality is finished.
+
+## Explicit overwrite control — targeted qualification passed, 2026-10-08
+
+A single trailing `/O` explicitly allows replacing existing writable targets:
+
+```text
+COPY B1:FOO.DAT C2:FOO.DAT /O
+COPY B1:*.DAT C2: /O
+COPY C2::=B1:*.DAT /O
+```
+
+Without `/O`, existing targets are refused. Self-copy remains refused even
+with `/O`. A read-only target reports `READ ONLY`; `/O` does not override file
+protection. Wildcard MOVE and MOVE `/O` remain outside this COPY increment.
+Unknown, duplicate or misplaced options produce the usage diagnostic before
+file operations. Trailing whitespace is allowed in either command grammar.
+
+The engine opens the source before considering replacement. Destination
+existence uses BDOS Open rather than Search First: a grouped physical directory
+entry can have a nonzero EX even when the file starts at logical extent zero.
+The previous Search First check missed these large targets and reported
+`NO SPACE` after Make rejected the duplicate. Open supplies both the correct
+existence result and target attributes.
+
+Replacement deletes the old target, clears its attributes/allocation state
+from the working FCB, and creates the new target. All old extents are removed,
+so shortening a file does not leave its old tail. Source attributes are applied
+after successful close, including clearing attributes absent on the source.
+Replacing a target is **not transactional**: once deletion succeeds, a later
+read/write/space failure cannot restore the old contents. Normal copy failure
+cleanup still attempts to remove its newly created partial target. Previously
+completed batch copies remain.
+
+`test_z80pack_copy_overwrite.py` passes in CPX and transient profiles. CPX
+cases have COPY.COM and MOVE.COM absent; transient cases unload RCP. The test
+replaces a 769-record target with a distinct-per-record 513-record source,
+checks exact payload/extent count/attributes, exercises both grammars and a
+three-file wildcard batch containing empty, short and long sources, and
+verifies that absent source attributes clear old SYS/ARC bits. Read-only,
+self-copy, missing-source and malformed-option cases preserve all disk bytes.
+Every command returns to the caller's A0 context; source metadata is preserved.
+
+`test_copy_filespec.py` executes both emitted option parsers and retains exact
+8.3/wildcard boundary checks. Native wildcard regressions also pass on both
+EXM=1/8-bit and EXM=0/16-bit allocation formats, including cross-drive copying
+and safe stopping at a collision without `/O`.
+
+Reports are preserved at `/private/tmp/copy-overwrite-final`,
+`/private/tmp/copy-overwrite-wildcard-regression` and
+`/private/tmp/copy-overwrite-800k-regression`. Run the overwrite campaign with:
+
+```sh
+python3 tools/test_z80pack_copy_overwrite.py --image-dir <fresh-runtime> --report <new-directory>
+```
+
+RCP code grows from 3,584 to **3,733 bytes** (+149); rounded allocation grows
+from 3,584 to **3,840 bytes** (+256). COPY.COM shares the same 3,733-byte body.
+BIOS/BDOS code and memory boundaries are unchanged by this increment. The
+agreed common COPY implementation is now present; final two-platform COPY
+qualification and the deferred handoff discussion remain.

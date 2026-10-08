@@ -210,7 +210,13 @@ redistributable existing utility; an unchecked item does not by itself block
   stop without replacing existing files. Fix the exposed grouped-extent
   activation defect within the unchanged 3,555-byte BDOS allocation.
   Shared RCP grows 431 bytes; rounded allocation grows one 256-byte page.
-- [ ] Add explicit COPY overwrite control, retaining attribute preservation.
+- [x] Add explicit COPY overwrite control (2026-10-08). A trailing `/O`
+  replaces writable targets in both grammars and wildcard batches, preserving
+  source attributes and removing old tails. Read-only/self-copy/missing-source
+  and malformed-option cases preserve media; `/O` does not override R/O.
+  Replacement is not transactional. CPX/transient native qualification and
+  two-format wildcard regressions pass. RCP grows 149 bytes; rounded allocation
+  grows one 256-byte page; BIOS/BDOS unchanged.
 - [ ] Complete final two-platform COPY qualification before revisiting handoff.
 
 - [x] Implement and qualify `STAT.COM` (2026-10-08). Agreed stock command
