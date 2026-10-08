@@ -73,3 +73,35 @@ The ordinary no-argument form exercises the all-wildcard path on every boot.
 Explicit `*` and `?` parsing is also part of the implementation; automated
 injection of shifted Model 4 punctuation remains unsuitable as reference
 evidence because trs80gp may observe the underlying unshifted key as well.
+
+
+## Bounded wildcard grammar — 2026-10-09
+
+RCP DIR and the shared DIR.COM body now validate the operand with COPY's
+bounded 8.3 lexer before expanding it into an FCB. A question mark consumes
+one position; a terminal star run fills the remaining field. Adjacent terminal
+stars collapse, while literals or question marks after a star run are rejected.
+Malformed input reports `Invalid filespec.` and restores the caller DU.
+
+Qualification exposed an existing transient-builder defect: entry lookup
+matched a CALL instruction when the actual label had a trailing comment.
+For DIR, that target was inside the overwritten startup header. The builder
+now requires a colon-bearing label and permits its trailing comment. All
+transient wrappers consequently target their actual routine entries; this
+also removes their dependency on dispatch-side CALL/SCF/RET sequences.
+
+The shared body grows from 3,743 to 3,795 bytes (+52); its rounded CPX allocation
+remains 3,840 bytes. DIR.COM is 3,795 bytes. BDOS, BIOS and CCP are unchanged.
+Native ZSM4/LINK and host builds match for all six generated transients.
+
+`tools/test_dir_filespec.py` checks entry labels and rejects malformed operands
+before FCB expansion or a BDOS search. `tools/test_z80pack_dir_filespec.py`
+qualifies 28 cases across CPX-only and transient profiles: accepted wildcard
+forms, rejected suffixes and overlong fields, temporary B1 selection with A0
+restoration, SYS suppression, and one listing for a 20K EXM=1 file. All mounted
+disk images remain byte-identical. COPY lexer and positional mapping tests
+also pass after the shared change.
+
+Evidence: `/private/tmp/dir-bounded-wildcards-fixed-20261009/evidence.json`
+and `build/utilities/NATIVE-RCP-TRANSIENT-BUILD.LOG`. The user-guide source
+records the grammar; exported DOCX/PDF files were not regenerated.
