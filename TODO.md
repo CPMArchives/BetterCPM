@@ -195,8 +195,8 @@ redistributable existing utility; an unchecked item does not by itself block
 - [ ] Implement `PIP.COM`.
 - [x] Implement `STAT.COM` command families. Final qualification remains open;
   see `docs/engineering/128 STAT Utility.md` for the reconciled compatibility
-  checklist. Next: native listings beyond 64 files and 800K reports, then current Model 4 parity
-  and preserved two-platform release evidence.
+  checklist. Next: current Model 4 parity and preserved two-platform release
+  evidence.
 - [x] Add STAT inverse device-target queries (2026-10-08). Standard targets
   report every matching logical device or `not assigned`, using the existing
   IOBYTE name tables without changing mappings. Unknown targets and extra
@@ -213,6 +213,12 @@ redistributable existing utility; an unchecked item does not by itself block
   reports both selected files and leaves the entire image unchanged. Preserve
   binaries, images, transcripts and hashes through the test's --report output.
   No production code correction was required.
+- [x] Qualify native STAT large-directory/800K reporting (2026-10-08).
+  A reverse-created 100-file fixture occupies 105 physical entries on an
+  MM 800K disk. Complete sorted output and exact one/two/five-entry totals
+  pass through native BDOS. All DPB fields and independently counted 512K
+  free space match; inspection leaves the whole image unchanged. The test
+  retains binaries, private media, transcript and hashes via --report.
 - [ ] Required 1.0 qualification: close the standard CP/M 2.2 IOBYTE routing
   gap on Model 4/trs80gp and z80pack/cpmsim. Audit STAT's advertised assignments
   against actual BIOS behavior; implement and test supported selector routing,
