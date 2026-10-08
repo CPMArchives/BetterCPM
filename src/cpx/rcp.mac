@@ -1515,6 +1515,8 @@ BC_COPAR:                               ; copar
         LD      (BC_COLEN),A
         OR      A
         JR      Z,BC_COPBAD
+        CALL    BC_CVALID
+        JR      C,BC_COPBAD
         LD      C,25
         CALL    BDOS
         LD      (BC_CODRV),A
@@ -1548,6 +1550,63 @@ BC_COPDRV:                              ; copdrv
         CALL    BC_DURST
         LD      A,1
         OR      A
+        RET
+
+  ; Exact COPY operands must fit 8.3; never silently truncate to another file.
+  ; DU has already been consumed. Wildcards remain outside this exact form.
+BC_CVALID:
+        LD      C,8
+        LD      E,0
+BC_CVNEXT:
+        LD      A,B
+        OR      A
+        JR      Z,BC_CVEND
+        LD      A,(HL)
+        CP      '.'
+        JR      Z,BC_CVDOT
+        CP      ' '+1
+        JR      C,BC_CVBAD
+        CP      07FH
+        JR      NC,BC_CVBAD
+        CP      '*'
+        JR      Z,BC_CVBAD
+        CP      '?'
+        JR      Z,BC_CVBAD
+        CP      ':'
+        JR      Z,BC_CVBAD
+        CP      '='
+        JR      Z,BC_CVBAD
+        LD      A,C
+        OR      A
+        JR      Z,BC_CVBAD
+        DEC     C
+        INC     HL
+        DEC     B
+        JR      BC_CVNEXT
+BC_CVDOT:
+        LD      A,E
+        OR      A
+        JR      NZ,BC_CVBAD
+        LD      A,C
+        CP      8
+        JR      Z,BC_CVBAD
+        INC     E
+        LD      C,3
+        INC     HL
+        DEC     B
+        JR      BC_CVNEXT
+BC_CVEND:
+        LD      A,E
+        OR      A
+        JR      NZ,BC_CVOK
+        LD      A,C
+        CP      8
+        JR      Z,BC_CVBAD
+BC_CVOK:
+        OR      A
+        RET
+BC_CVBAD:
+        SCF
         RET
 
 BC_CSELS:                               ; csels

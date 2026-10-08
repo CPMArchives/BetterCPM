@@ -193,6 +193,16 @@ redistributable existing utility; an unchecked item does not by itself block
 1.0.
 
 - [ ] Implement `PIP.COM`.
+- [x] Reject COPY/MOVE exact filespec truncation (2026-10-08). Shared CPX
+  and transient code validates 8.3 field lengths and malformed exact operands
+  before file operations. Native cpmsim tests prove invalid commands preserve
+  all media; CPX tests have COPY.COM absent and transient tests unload RCP.
+  Code grows 80 bytes; rounded RCP allocation grows one 256-byte page.
+  See `docs/engineering/COPY Utility.md` for the audit and remaining work.
+- [ ] Complete agreed common COPY wildcard/multiple-file support,
+  destination DU shorthand and explicit overwrite control. Attribute
+  preservation already exists; retain it in the extended command paths.
+
 - [x] Implement and qualify `STAT.COM` (2026-10-08). Agreed stock command
   families, numeric DU and inverse queries pass the targeted two-platform
   campaign. Final MEM correction passes on both targets; size remains 5,912
