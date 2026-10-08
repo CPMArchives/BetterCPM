@@ -1166,6 +1166,7 @@ BC_COPY:                                ; execute COPY command
         LD      (BC_CMADE),A
         LD      (BC_CWILD),A
         LD      (BC_WACTIVE),A
+        LD      (BC_OVER),A
   ; Save the command cursor before asking BDOS for the caller's DU.  Function
   ; calls own the ordinary registers; the first draft accidentally tried to
   ; parse whatever HL and B happened to contain after Function 32.
@@ -1185,6 +1186,10 @@ BC_COPY:                                ; execute COPY command
         LD      A,B
         OR      A
         JP      Z,BC_CSYNT
+        CALL    BC_COPT
+        JP      C,BC_CSYNT
+        LD      A,B
+        LD      (BC_CBLEN),A
         LD      C,0
 
 BC_CFIND:                               ; cfind
@@ -1369,10 +1374,37 @@ BC_COPEN:                               ; copen
         JP      Z,BC_CNOFILE
         CALL    BC_CSELD
         LD      DE,BC_NEWFCB
-        LD      C,17
+        LD      C,15                    ; Open handles grouped physical extents
         CALL    BDOS
         CP      0FFH
-        JP      NZ,BC_CEXIST
+        JR      Z,BC_CMAKE
+        LD      A,(BC_OVER)
+        OR      A
+        JP      Z,BC_CEXIST
+        LD      A,(BC_NEWFCB+9)
+        AND     80H
+        JP      NZ,BC_CRO
+        LD      DE,BC_NEWFCB
+        LD      C,19
+        CALL    BDOS
+        CP      0FFH
+        JP      Z,BCCLERR
+  ; Open copied the old attributes/map. Make must start with a clean FCB.
+        LD      HL,BC_NEWFCB+1
+        LD      B,11
+BC_CONAME:
+        LD      A,(HL)
+        AND     7FH
+        LD      (HL),A
+        INC     HL
+        DJNZ    BC_CONAME
+        LD      B,24
+        XOR     A
+BC_COZERO:
+        LD      (HL),A
+        INC     HL
+        DJNZ    BC_COZERO
+BC_CMAKE:
         LD      DE,BC_NEWFCB
         LD      C,22
         CALL    BDOS
@@ -1462,6 +1494,10 @@ BCNOSPC:                                ; bcnospc
 
 BC_CNOFILE:                             ; cnofile
         LD      DE,BC_NOFILE
+        JR      BC_CPRINT
+
+BC_CRO:
+        LD      DE,BC_ROMESS
         JR      BC_CPRINT
 
 BC_CEXIST:                              ; cexist
@@ -1579,6 +1615,56 @@ BC_COPDRV:                              ; copdrv
         CALL    BC_DURST
         LD      A,1
         OR      A
+        RET
+
+  ; Trim whitespace and remove one trailing /O before either grammar parses.
+  ; MOVE retains its existing refusal to overwrite.
+BC_COPT:
+        PUSH    HL
+        LD      E,B
+        LD      D,0
+        ADD     HL,DE
+BC_COTRIM:
+        DEC     HL
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,BC_COTEST
+        DJNZ    BC_COTRIM
+        JR      BC_COBAD
+BC_COTEST:
+        LD      A,(BC_OVER)
+        OR      A
+        JR      NZ,BC_COEND
+        LD      A,B
+        CP      4
+        JR      C,BC_COEND
+        LD      A,(HL)
+        CP      'O'
+        JR      NZ,BC_COEND
+        DEC     HL
+        LD      A,(HL)
+        CP      '/'
+        JR      NZ,BC_COEND
+        DEC     HL
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,BC_COEND
+        LD      A,(BC_MVFLAG)
+        OR      A
+        JR      NZ,BC_COBAD
+        LD      A,1
+        LD      (BC_OVER),A
+        DEC     B
+        DEC     B
+        DEC     B
+        JR      BC_COTRIM
+BC_COEND:
+        POP     HL
+        OR      A
+        RET
+BC_COBAD:
+        POP     HL
+        SCF
         RET
 
   ; COPY operands must fit 8.3; never silently truncate to another file.
@@ -2060,7 +2146,7 @@ BC_MERASE:     DB      8,' ',8,8,' ',8,8,' ',8,8,' ',8 ; MOVE erase-error messag
 BC_REXMSG:     DB      13,10,'FILE EXISTS',13,10,'$' ; rename target-exists message
 BC_WRITEERR:   DB      13,10,'WRITE ERROR',13,10,'$' ; write-error message
 BC_MVERR:      DB      13,10,'COPY MADE; SOURCE NOT ERASED',13,10,'$' ; MOVE error message
-BC_CUSAGE:     DB      13,10,'COPY source destination OR destination:=source',13,10,'$' ; COPY/MOVE usage message
+BC_CUSAGE:     DB      13,10,'COPY source destination OR destination:=source [/O]',13,10,'$' ; COPY/MOVE usage message
 BC_RQMARK:     DB      13,10,'?',13,10,'$' ; rename wildcard-error message
 BC_NOSPACE:    DB      13,10,'NO SPACE',13,10,'$' ; disk-full message
 BC_VERSION:    DB      13,10,'BetterCP/M 0.3',13,10,'$' ; version heading
@@ -2097,6 +2183,8 @@ BC_TLCNT:      DB      0                ; TYPE line count
 ; COPY/MOVE State
 ; -------------------------------------------------------------------------------
 
+BC_ROMESS:     DB      13,10,'READ ONLY',13,10,'$'
+BC_OVER:       DB      0                ; COPY explicit replacement flag
 BC_MVFLAG:     DB      0                ; MOVE-operation flag
 BC_CDSAV:      DB      0                ; COPY saved drive
 BC_CUSAV:      DB      0                ; COPY saved user

@@ -41,7 +41,26 @@ def main():
             assert cpu.carry == (not accepted), (binary_path, text)
             if accepted:
                 assert cpu.mem[address('BC_CWILD')] == 1
-    print('COPY CPX/transient exact 8.3 and bounded source-wildcard grammar passed')
+        option_entry = address('BC_COPT')
+        for text, expected, overwrite, move, rejected in [
+                ('B1:F.DAT B3:', 'B1:F.DAT B3:', 0, 0, False),
+                ('B1:F.DAT B3:   ', 'B1:F.DAT B3:', 0, 0, False),
+                ('B1:F.DAT B3: /O', 'B1:F.DAT B3:', 1, 0, False),
+                ('B3::=B1:F.DAT   /O  ', 'B3::=B1:F.DAT', 1, 0, False),
+                ('B1:F.DAT B3: /O', '', 0, 1, True),
+                ('    ', '', 0, 0, True)]:
+            cpu = Z80(b'')
+            cpu.mem[origin:origin + len(binary)] = binary
+            cpu.mem[address('BC_MVFLAG')] = move
+            cpu.mem[0x7000:0x7000 + len(text)] = text.encode('ascii')
+            cpu.hl, cpu.b = 0x7000, len(text)
+            cpu.run(option_entry, limit=10000)
+            assert cpu.carry == rejected, (binary_path, text)
+            assert cpu.hl == 0x7000
+            if not rejected:
+                assert bytes(cpu.mem[cpu.hl:cpu.hl + cpu.b]).decode() == expected, text
+                assert cpu.mem[address('BC_OVER')] == overwrite
+    print('COPY CPX/transient exact 8.3, bounded wildcards and trailing /O parsing passed')
 
 
 if __name__ == '__main__':
