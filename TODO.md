@@ -320,6 +320,12 @@ redistributable existing utility; an unchecked item does not by itself block
   SYSTEM DPB fields and populated users 0/3/15. Captures confirm return to A0
   and whole-media preservation. R/O lifecycle, multiple-drive reporting,
   empty-disk enumeration and nonzero-user context remain separate cases.
+- [x] Qualify Model 4 STAT R/O lifecycle and multiple-drive reports
+  (2026-10-08). A:/B: status and full DPBs match the 780K SYSTEM/800K DATA
+  fixtures. B:=R/O yields exactly the B-only public read-only vector; the
+  next command after WBOOT reports both drives R/W. B:=R/W is rejected.
+  Complete physical media remain unchanged. Test-only wrappers and retained
+  captures preserve evidence; no production code change was required.
 - [x] Report distinct STAT $S logical size (2026-10-08) through BDOS Function
   35's full three-byte result. Native random write to record 512 reports logical
   size 513, recorded total 1, allocation 2K, and two physical entries (the empty

@@ -85,11 +85,11 @@ present in the repository. It does not claim byte-for-byte DRI output identity.
 
 | Command family | Current evidence | Qualification limit |
 | --- | --- | --- |
-| `STAT`, `d:`, `d:=R/O` | cpmsim: logged drives, R/W and R/O, independently counted 240K free-space fixture, assignment to only B, WBOOT clearing, rejection of `d:=R/W`, B3 restoration | Model 4: exact R/W A: and independently counted 706K; R/O lifecycle and multiple drives remain |
+| `STAT`, `d:`, `d:=R/O` | cpmsim: logged drives, R/W and R/O, independently counted 240K free-space fixture, assignment to only B, WBOOT clearing, rejection of `d:=R/W`, B3 restoration | Model 4: exact A:/B: status and free space, B-only R/O vector, WBOOT clearing and rejected R/W; nonzero-user context remains |
 | File statistics and wildcards | Both platforms: exact 161/513-record totals, allocation/entry counts and sorted wildcard output; cpmsim: 100 sorted files on 800K; instruction checks: parser forms and 257-summary sorting | Remaining qualification groups below |
 | `$S` logical size | Both platforms: sparse logical size 513 versus one recorded record and ordinary 161-record reporting; instruction checks: all 24 formatting bits | Passed targeted parity; retain final release evidence |
 | `$R/O`, `$R/W`, `$SYS`, `$DIR` | Both platforms: wildcard updates across every matching extent, complete logical-media comparisons and read-only rejection; cpmsim: single-file updates; instruction checks: all valid success slots and FFh failure | Passed targeted parity; retain final release evidence |
-| `DSK:`, `d:DSK:` | cpmsim: exact 332K/800K DPB fields, one/two logged drives and context restoration; Model 4: exact 780K A: fields through both forms; instruction checks: word-carry boundaries | Model 4 multiple-drive and nonzero-user context cases remain |
+| `DSK:`, `d:DSK:` | cpmsim: exact 332K/800K DPB fields, one/two logged drives and context restoration; Model 4: exact 780K A: and 800K B: fields, one/two logged drives; instruction checks: word-carry boundaries | Model 4 nonzero-user context remains |
 | `USR:` | cpmsim: empty disk, users 0/3/15/31 and B3 restoration; Model 4: populated users 0/3/15 and return to A0 | Model 4 empty-disk and nonzero-user context cases remain |
 | `DEV:` and assignments | Instruction checks: all 16 legal selector values and unrelated-bit preservation; cpmsim: assignment lists, inspection and malformed operands; Model 4: default mapping, assignment list and inspection | Actual BIOS routing is a separate open 1.0 requirement |
 | `VAL:` | cpmsim: legal selector matrix, file options, multiple assignments, BAT explanation and unchanged IOBYTE | Model 4 parity remains |
@@ -232,3 +232,30 @@ against the five retained captures using `--verify-existing`, which also checks
 that each retained invocation matches the expected command. No production
 code change was required. R/O lifecycle, multiple-drive reporting, empty-disk
 user enumeration and nonzero-user context restoration remain separate cases.
+
+### Model 4 R/O lifecycle and multiple-drive reports — passed 2026-10-08
+
+`tools/test_model4_stat_drives.py --report <new-directory>` qualifies both
+remaining drive-report groups on private A:/B: media. A: uses the 780K SYSTEM
+profile; B: uses the default unreserved 800K DATA profile. Independently counted
+A: allocation gives 678K free; B: has only its reserved directory blocks and
+796K free. Bare STAT reports only logged A:, while the two-drive case reports
+both drives in order. Both full DPB reports match all ten expected fields,
+including their different record/track values and reserved-track counts.
+Explicit B:DSK: reports only B: and returns to A0.
+
+Test-only wrappers select/log B: immediately before STAT's vector snapshot,
+using public BDOS calls because WBOOT clears logged-drive state. Another
+wrapper sets B: R/O and checks the resulting status. A FINISH wrapper observes
+Function 29 before WBOOT and requires the exact vector 0002h after B:=R/O.
+The following command in the same emulator session confirms both drives R/W,
+proving WBOOT clearing. B:=R/W produces Invalid STAT command. Every case
+preserves both complete physical DMK images.
+
+The assignment diagnostic overwrites its command echo on screen, so that
+capture requires its unique B ONLY READ-ONLY marker and the returned prompt.
+Final assertions passed against retained captures with `--resume`, which
+validates invocation identity and runs only missing cases. Reports retain
+STAT, wrapper binaries/listings, media, invocations, captures and hashes.
+Production STAT remains 5,912 bytes with its unchanged SHA-256; no OS code
+change was required.
