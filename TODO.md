@@ -217,7 +217,12 @@ redistributable existing utility; an unchecked item does not by itself block
   Replacement is not transactional. CPX/transient native qualification and
   two-format wildcard regressions pass. RCP grows 149 bytes; rounded allocation
   grows one 256-byte page; BIOS/BDOS unchanged.
-- [ ] Complete final two-platform COPY qualification before revisiting handoff.
+- [x] Complete final two-platform common COPY qualification (2026-10-08).
+  Model 4 CPX/transient wildcard batches, overwrite, eight attribute masks,
+  user 31, rejection preservation and full-directory/full-allocation cleanup
+  pass. Final cpmsim filespec/DU regressions and matching two-format wildcard
+  and overwrite evidence pass. Preserve the indexed evidence bundle; revisit
+  the handoff contract separately. No further production code change required.
 
 - [x] Implement and qualify `STAT.COM` (2026-10-08). Agreed stock command
   families, numeric DU and inverse queries pass the targeted two-platform
