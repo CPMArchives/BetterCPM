@@ -86,10 +86,10 @@ present in the repository. It does not claim byte-for-byte DRI output identity.
 | Command family | Current evidence | Qualification limit |
 | --- | --- | --- |
 | `STAT`, `d:`, `d:=R/O` | cpmsim: logged drives, R/W and R/O, independently counted 240K free-space fixture, assignment to only B, WBOOT clearing, rejection of `d:=R/W`, B3 restoration | Model 4 parity remains |
-| File statistics and wildcards | cpmsim: exact 161/513-record totals, allocation and physical-entry counts, 24 sorted files; instruction checks: accepted/rejected wildcard forms and 257-summary sorting | Native listing beyond 64 files remains |
+| File statistics and wildcards | cpmsim: exact 161/513-record totals, allocation and physical-entry counts, 100 sorted files on 800K; instruction checks: accepted/rejected wildcard forms and 257-summary sorting | Model 4 parity remains |
 | `$S` logical size | cpmsim: sparse logical size 513 versus one recorded record; instruction checks: all 24 formatting bits | Model 4 sparse-file parity remains |
 | `$R/O`, `$R/W`, `$SYS`, `$DIR` | cpmsim: single-file and wildcard updates, every matching extent, exact whole-image comparisons and read-only rejection; instruction checks: all valid directory-slot success returns and FFh failure | Model 4 parity remains |
-| `DSK:`, `d:DSK:` | cpmsim: exact 332K DPB fields, one/two logged drives and context restoration; instruction checks: 800K capacity and word-carry boundaries | Native 800K and Model 4 parity remain |
+| `DSK:`, `d:DSK:` | cpmsim: exact 332K/800K DPB fields, one/two logged drives and context restoration; instruction checks: word-carry boundaries | Model 4 parity remains |
 | `USR:` | cpmsim: empty disk, users 0/3/15/31 and B3 restoration | Model 4 parity remains |
 | `DEV:` and assignments | Instruction checks: all 16 legal selector values and unrelated-bit preservation; cpmsim: assignment lists, inspection and malformed operands | Actual BIOS routing is a separate open 1.0 requirement |
 | `VAL:` | cpmsim: legal selector matrix, file options, multiple assignments, BAT explanation and unchanged IOBYTE | Model 4 parity remains |
@@ -97,18 +97,17 @@ present in the repository. It does not claim byte-for-byte DRI output identity.
 The fixed 64-file summary buffer has been removed. Storage is bounded by both
 the selected directory and available transient memory; executed-code checks
 cover 384 summaries, capacity bounds and explicit overflow. Those checks do
-not substitute for a native large-directory listing through the full BDOS path.
+not substitute for a native large-directory listing through the full BDOS path;
+the 100-file 800K qualification below now supplies that separate evidence.
 
 ### Remaining bounded qualification
 
-1. List more than 64 files on a native 800K/128-entry disk. Verify complete,
-   sorted output, exact multi-extent totals and 800K DPB/free-space reporting.
-2. Bring the Model 4/trs80gp campaign up to the same required command cases,
+1. Bring the Model 4/trs80gp campaign up to the same required command cases,
    using completion/output evidence rather than fixed delays. The existing
    `test_stat.py` is smoke coverage: several assertions check only broad text
    presence, and each invocation uses a fixed four-second run delay. Its
    existence alone is not evidence that the current implementation passes.
-3. Preserve the final platform binaries, commands and results, including the
+2. Preserve the final platform binaries, commands and results, including the
    numeric DU and `MEM` extensions, and close the separate BIOS IOBYTE routing
    qualification before claiming device assignments operate on both platforms.
 
@@ -135,3 +134,18 @@ The report retains STAT and the rejection wrapper, before/after images,
 command transcripts and JSON evidence with STAT, simulator and image hashes.
 The qualification run passed with 5,912-byte STAT.COM, SHA-256
 `dedb8d3c4d8a91ec1e3313f3fe021441d7773a4e3194ff4b54eb9d2d713367ac`.
+
+### Native large-directory/800K qualification — passed 2026-10-08
+
+`tools/test_z80pack_stat_800k.py --report <new-directory>` creates private
+Montezuma Micro 80T DS DATA media and activates its binding through the native
+Function 181 setup used by the native-build harness. B is the test disk; C is
+an empty companion configured by that shared setup program.
+
+The fixture contains 100 files inserted in reverse order and 105 physical
+directory entries. Two files contain 161 and 513 records, occupying two and
+five entries respectively. The test verifies exactly 100 ascending output
+rows, every row's recorded/allocation/entry totals, all 800K DPB fields, and
+512K free space independently calculated from raw allocation entries. The
+entire B image remains unchanged after inspection. The report retains the
+private media, setup and STAT binaries, transcript and JSON hash evidence.
