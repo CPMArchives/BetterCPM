@@ -88,7 +88,7 @@ present in the repository. It does not claim byte-for-byte DRI output identity.
 | `STAT`, `d:`, `d:=R/O` | cpmsim: logged drives, R/W and R/O, independently counted 240K free-space fixture, assignment to only B, WBOOT clearing, rejection of `d:=R/W`, B3 restoration | Model 4 parity remains |
 | File statistics and wildcards | cpmsim: exact 161/513-record totals, allocation and physical-entry counts, 24 sorted files; instruction checks: accepted/rejected wildcard forms and 257-summary sorting | Native listing beyond 64 files remains |
 | `$S` logical size | cpmsim: sparse logical size 513 versus one recorded record; instruction checks: all 24 formatting bits | Model 4 sparse-file parity remains |
-| `$R/O`, `$R/W`, `$SYS`, `$DIR` | cpmsim: single-file updates and read-only rejection; instruction checks: all valid directory-slot success returns and FFh failure | Wildcard updates with raw-directory verification remain |
+| `$R/O`, `$R/W`, `$SYS`, `$DIR` | cpmsim: single-file and wildcard updates, every matching extent, exact whole-image comparisons and read-only rejection; instruction checks: all valid directory-slot success returns and FFh failure | Model 4 parity remains |
 | `DSK:`, `d:DSK:` | cpmsim: exact 332K DPB fields, one/two logged drives and context restoration; instruction checks: 800K capacity and word-carry boundaries | Native 800K and Model 4 parity remain |
 | `USR:` | cpmsim: empty disk, users 0/3/15/31 and B3 restoration | Model 4 parity remains |
 | `DEV:` and assignments | Instruction checks: all 16 legal selector values and unrelated-bit preservation; cpmsim: assignment lists, inspection and malformed operands | Actual BIOS routing is a separate open 1.0 requirement |
@@ -101,21 +101,37 @@ not substitute for a native large-directory listing through the full BDOS path.
 
 ### Remaining bounded qualification
 
-1. Apply all four attribute operations to wildcard-selected files on private
-   media. Check the actual directory attribute bits across every matching
-   extent, preserve unrelated bits and nonmatching files, and verify reported
-   failure leaves the target unchanged.
-2. List more than 64 files on a native 800K/128-entry disk. Verify complete,
+1. List more than 64 files on a native 800K/128-entry disk. Verify complete,
    sorted output, exact multi-extent totals and 800K DPB/free-space reporting.
-3. Bring the Model 4/trs80gp campaign up to the same required command cases,
+2. Bring the Model 4/trs80gp campaign up to the same required command cases,
    using completion/output evidence rather than fixed delays. The existing
    `test_stat.py` is smoke coverage: several assertions check only broad text
    presence, and each invocation uses a fixed four-second run delay. Its
    existence alone is not evidence that the current implementation passes.
-4. Preserve the final platform binaries, commands and results, including the
+3. Preserve the final platform binaries, commands and results, including the
    numeric DU and `MEM` extensions, and close the separate BIOS IOBYTE routing
    qualification before claiming device assignments operate on both platforms.
 
 No additional missing command family was identified by this reconciliation.
 The outstanding items are coverage gaps; a test may still expose a defect that
 requires a bounded correction.
+
+### Wildcard attribute qualification — passed 2026-10-08
+
+`tools/test_z80pack_stat_attributes.py --report <new-directory>` creates private
+media and applies all four attribute options to `B:MATCH*.DAT`. The selected
+files occupy one and three physical extents on the 332K format; initial R/O,
+SYS and ARC bits differ between them. A nonmatching three-extent file and a
+matching filename in user 3 act as preservation controls.
+
+After each command, the test compares the entire disk image with a separately
+constructed expected image permitting only the requested high-bit change in
+every matching directory entry. This also verifies preservation of file data,
+allocation/extent metadata, ARC, other attributes, other users and nonmatching
+files. A test-only read-only wrapper checks both failure messages and exact
+whole-image preservation. Production STAT is unmodified.
+
+The report retains STAT and the rejection wrapper, before/after images,
+command transcripts and JSON evidence with STAT, simulator and image hashes.
+The qualification run passed with 5,912-byte STAT.COM, SHA-256
+`dedb8d3c4d8a91ec1e3313f3fe021441d7773a4e3194ff4b54eb9d2d713367ac`.

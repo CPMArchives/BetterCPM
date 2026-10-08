@@ -195,8 +195,7 @@ redistributable existing utility; an unchecked item does not by itself block
 - [ ] Implement `PIP.COM`.
 - [x] Implement `STAT.COM` command families. Final qualification remains open;
   see `docs/engineering/128 STAT Utility.md` for the reconciled compatibility
-  checklist. Next: wildcard attribute updates with raw-directory verification,
-  native listings beyond 64 files and 800K reports, then current Model 4 parity
+  checklist. Next: native listings beyond 64 files and 800K reports, then current Model 4 parity
   and preserved two-platform release evidence.
 - [x] Add STAT inverse device-target queries (2026-10-08). Standard targets
   report every matching logical device or `not assigned`, using the existing
@@ -206,6 +205,14 @@ redistributable existing utility; an unchecked item does not by itself block
   native cpmsim query and existing file/drive campaigns pass. STAT.COM grows
   from 5,646 to 5,912 bytes; resident OS size is unchanged. Model 4 parity is
   retained in the final qualification work.
+- [x] Qualify STAT wildcard attributes on private cpmsim media (2026-10-08).
+  R/O, R/W, SYS and DIR update every matching physical extent. Whole-image
+  comparisons permit only the expected directory attribute-bit changes:
+  ARC, payload, extent/allocation metadata, a nonmatching multi-extent file
+  and the same filename in user 3 remain unchanged. Read-only disk rejection
+  reports both selected files and leaves the entire image unchanged. Preserve
+  binaries, images, transcripts and hashes through the test's --report output.
+  No production code correction was required.
 - [ ] Required 1.0 qualification: close the standard CP/M 2.2 IOBYTE routing
   gap on Model 4/trs80gp and z80pack/cpmsim. Audit STAT's advertised assignments
   against actual BIOS behavior; implement and test supported selector routing,
