@@ -711,8 +711,45 @@ file-copying functions while retaining both syntax forms.
 
 ##### Transient COPY Syntax
 
-[TBD — additional `COPY.COM` functions and options will be added when the
-BetterCP/M 1.0 transient COPY interface is finalized.]
+`COPY.COM` accepts destination wildcard templates as well as source wildcards:
+
+    COPY C3:*.DOC=A4:*.COM
+    COPY C3:X?*.BAK=A4:FOOBAR.COM
+
+The second example creates `XOOBAR.BAK`. Destination literals replace the
+corresponding source positions, `?` retains one source position, and a terminal
+`*` retains the remainder of that filename field.
+
+Options follow the operands:
+
+| Option | Meaning |
+| --- | --- |
+| `/O` | Replace existing writable destination files. |
+| `/S` | Skip existing writable destination files. |
+| `/B` | Run without collision prompts. See section 5.7. |
+
+`/O` and `/S` cannot be combined. `/B` may be combined with either. Read-only
+destinations are never overwritten; they report `READ ONLY`, fail that file,
+and allow processing to continue.
+
+Without `/B`, `/O` or `/S`, an existing writable destination prompts:
+
+    [Destination exists. Overwrite? Y/N/O/S/?]
+
+`Y` replaces that file; `N` skips it. `O` replaces this and subsequent writable
+collisions; `S` skips this and subsequent collisions. `?` displays help and
+repeats the prompt. The O/S choice lasts only for the current COPY invocation.
+At a collision prompt, Ctrl-C aborts COPY, preserving completed earlier copies
+and the existing destination. Interactive rename is a later increment.
+
+Before copying, the transient checks the complete mapping. Duplicate
+destinations, exact self-copy, destinations overlapping selected sources, and
+invalid generated names reject the operation without changing a destination.
+`/O` cannot override these checks. The current transient limit is 64 matched
+files; a larger batch reports `COPY BATCH TOO LARGE` before writing.
+
+These extended forms require `COPY.COM`. Until automatic handoff is implemented,
+use `CPX UNLOAD RCP` to select the transient implementation.
 
 
 #### 4.7 MOVE — Move Files
@@ -963,6 +1000,35 @@ commands.
 
 ### 5. Batch Processing
 5.1 SUBMIT 5.2 SUB Files 5.3 Parameters and Substitution 5.4 XSUB 5.5 Batch Execution and Termination 5.6 Examples
+
+#### 5.7 COPY in Batch Files
+
+A SUBMIT file executes a sequence of commands; it does not automatically make
+those commands noninteractive. A COPY command in a SUBMIT file may pause for
+an overwrite response. Use `/B` explicitly when the command must run without
+collision prompts.
+
+For example, a SUBMIT file may contain:
+
+    COPY B1:*.DAT C3: /B
+
+If a writable destination exists, `/B` alone reports `FILE EXISTS`, counts
+that file as failed, and continues with the next source. It does not overwrite
+or silently skip that file. New destination files are copied normally.
+
+To choose a collision policy in advance:
+
+    COPY B1:*.DAT C3: /B /O
+    COPY B1:*.DAT C3: /B /S
+
+The first command replaces existing writable destinations. The second skips
+existing writable destinations. Both copy files whose destinations do not
+already exist. A read-only destination fails that file and is preserved in
+all three forms; processing continues with later files.
+
+`/B` works equally at the command prompt. It does not change SUBMIT itself,
+make the whole script noninteractive, or suppress prompts from other programs.
+The mapping and capacity checks in section 4.6 still apply before any writes.
 
 ### 6. CPX and RSX Extensions
 6.1 BetterCP/M Extensions 6.2 CPXs 6.3 Listing CPXs 6.4 Loading and Unloading CPXs 6.5 RSXs 6.6 Listing RSXs 6.7 Loading and Unloading RSXs 6.8 Extension Order and Memory Use 6.9 Warm Boot and Extension Persistence 6.10 Recovery

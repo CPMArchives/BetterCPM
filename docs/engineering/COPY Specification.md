@@ -349,6 +349,7 @@ For BetterCP/M 1.0:
 /O    overwrite existing writable destinations
 /S    skip existing destinations
 /V    verify copied data
+/B    explicit noninteractive execution
 ```
 
 Switches are:
@@ -369,7 +370,7 @@ COPY C3:=A4:*.COM /O /V
 
 `/O` and `/S` are mutually exclusive.
 
-`/V` may be combined with either.
+`/V` may be combined with either. `/B` may be combined with `/O`, `/S` and `/V`; SUBMIT alone does not imply `/B`.
 
 Repeated identical switches may be treated as idempotent.
 
@@ -998,9 +999,10 @@ The implementation should also verify that the protected policy byte at `LY_SYS+
 
 The collision, mandatory preflight, read-only-target and rename-input decisions above are settled. These engineering details remain:
 
-1. Determine how genuinely noninteractive execution is identified. SUBMIT alone must not select it; SUBMIT retains ordinary interactive prompting.
-2. Choose a bounded representation of the complete initial source set and destination mappings. If capacity is exceeded, fail before mutation.
-3. Define cleanup-failure reporting. A failed/unavailable disk can also prevent deletion of an incomplete destination. Suggested rule: explicitly report cleanup failure, never claim success, and stop a batch when destination safety is uncertain. This suggestion remains pending. Replacement is nontransactional: deleting an old target for `/O` does not promise restoration after later failure or abort.
+Noninteractive admission is settled: `/B` selects it explicitly; SUBMIT alone retains interactive prompting.
+
+1. Choose a bounded representation of the complete initial source set and destination mappings. If capacity is exceeded, fail before mutation.
+2. Define cleanup-failure reporting. A failed/unavailable disk can also prevent deletion of an incomplete destination. Suggested rule: explicitly report cleanup failure, never claim success, and stop a batch when destination safety is uncertain. This suggestion remains pending. Replacement is nontransactional: deleting an old target for `/O` does not promise restoration after later failure or abort.
 
 The underlying data-copy, close, attribute and verification error cases must
 remain distinct from interpretation failures that permit automatic handoff.

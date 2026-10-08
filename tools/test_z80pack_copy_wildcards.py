@@ -71,6 +71,8 @@ def main():
         source_before = raw_entries(1)
         sentinel_before = raw_entries(3)[b'KEEP    TXT']
         def invoke(command, label):
+            if profile == 'transient' and command.startswith('COPY '):
+                command += ' /B'
             commands = ([(b'SETBUILD\r', b'A0>_ ', 30)] if fmt is not None else [])
             commands.append((b'CPX UNLOAD RCP\r', b'A0>_ ', 30))
             if profile == 'cpx':
@@ -113,7 +115,7 @@ def main():
         text = invoke('COPY B1:F*.DAT B5:', 'mid-batch-collision')
         assert b'FILE EXISTS' in text
         target = raw_entries(5)
-        assert set(target) == {b'F000    DAT', b'F001    DAT', b'F002    DAT', b'F003    DAT'}
+        assert set(target) == {f'F{n:03}    DAT'.encode() for n in range(4 if profile == 'cpx' else 6)}
         assert target[b'F003    DAT'] == prior
         for name in ('F000.DAT', 'F001.DAT', 'F002.DAT', 'F003.DAT'):
             extracted = work / ('collision-' + name)

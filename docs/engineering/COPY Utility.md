@@ -498,3 +498,40 @@ multi-extent overwrite regression. Evidence:
 `/private/tmp/copy-skip-mapping-regression-20261008/evidence.json`,
 `/private/tmp/copy-skip-overwrite-final-20261008/evidence.json`, and
 `build/utilities/NATIVE-RCP-TRANSIENT-BUILD.LOG`.
+
+## Interactive choices and explicit /B — 2026-10-08
+
+COPY.COM now prompts for existing writable destinations when neither `/O` nor
+`/S` nor `/B` applies. The prompt identifies the concrete source and destination
+DU/name. Y overwrites one file, N skips one, O overwrites subsequent writable
+collisions, S skips subsequent collisions, and ? displays help and repeats the
+prompt. Invalid responses also repeat it. O/S policy is reset on the next
+invocation. Interactive rename (R) remains the next increment and is not yet
+advertised in this prompt.
+
+Ctrl-C at a collision prompt aborts the invocation before modifying that
+destination; completed earlier files remain, later files are not attempted,
+and caller DU/DMA are restored. Transfer-phase Ctrl-C handling remains separate
+work. Direct console input permits explicit cancellation rather than allowing
+an input call to warm-boot past COPY cleanup.
+
+The user selected `/B` as genuinely noninteractive admission. It combines with
+`/O` or `/S`; without either, existing writable destinations report FILE EXISTS,
+count as failed, and processing continues. Read-only destinations remain
+failed and preserved in every mode. SUBMIT alone does not select `/B`: native
+qualification proves a SUBMIT file can pause at COPY's collision prompt.
+
+User documentation now covers current transient options in section 4.6 and
+COPY batch operation in section 5.7 of `docs/user/users_guide.md`. The target
+specification records `/B`. No exported DOCX/PDF regeneration is included.
+
+COPY.COM is 6,220 bytes; CPX and OS code are unchanged. Native and host builds
+are byte-identical. Qualification covers Y/N, lowercase input, help/invalid
+input, O/S policy reset in one running session, Ctrl-C after one completed
+copy, `/B` collision continuation without prompts, SUBMIT prompting, concrete
+DU labels (including user 31 and dollar signs), option parsing, mapping tests,
+multi-extent wildcard and overwrite regression. Evidence:
+`/private/tmp/copy-interactive-qualified-20261008/evidence.json`,
+`/private/tmp/copy-interactive-wildcard-regression-20261008/evidence.json`,
+`/private/tmp/copy-interactive-overwrite-regression-20261008/evidence.json`, and
+`build/utilities/NATIVE-RCP-TRANSIENT-BUILD.LOG`.
