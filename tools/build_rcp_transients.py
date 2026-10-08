@@ -60,8 +60,35 @@ def copy_source(text: str) -> str:
     end = text.index("BC_WCMP:", start)
     batch = (SOURCE.parent / "copy-batch.inc").read_text(encoding="ascii")
     text = text[:start] + batch + text[end:]
-    state = "\nCT_COUNT: DB 0\nCT_LEFT: DB 0\nCT_END: DW 0\nCT_CURSOR: DW 0\n"
-    state += "CT_FULLMSG: DB 13,10,'COPY BATCH TOO LARGE',13,10,'$'\nCT_NAMES: DS 64*11\n"
+    # Only the transient accepts destination wildcards. Validation still owns
+    # their legality; the batch driver owns concrete-name mapping and safety.
+    old = "        JR      NZ,BC_CVBAD\n        LD      A,(BC_MVFLAG)"
+    assert text.count(old) == 1, "COPY wildcard hook changed"
+    text = text.replace(old, "        JP      NZ,CTDWILD\n        LD      A,(BC_MVFLAG)", 1)
+    start = text.index("BC_COPNAME:")
+    end = text.index("BC_COPDONE:", start)
+    text = text[:start] + "BC_COPNAME:\n" + text[end:]
+    old = "        LD      A,(BC_CWILD)\n        OR      A\n        JP      NZ,BC_WSTART"
+    assert text.count(old) == 1, "COPY batch entry changed"
+    text = text.replace(old, "        JP      BC_WSTART", 1)
+    text = re.sub(r"(?m)^(\s*)JR(\s+(?:(?:NZ|Z|NC|C),)?BC_CV\w+)", r"\1JP\2", text)
+    state = """
+CT_COUNT: DB 0
+CT_LEFT: DB 0
+CT_END: DW 0
+CT_CURSOR: DW 0
+CT_FULLMSG: DB 13,10,'COPY BATCH TOO LARGE',13,10,'$'
+CT_NAMES: DS 64*11
+CT_TARGETS: DS 64*11
+CT_PATTERN: DS 11
+CT_DCUR: DW 0
+CTGPTR: DW 0
+CTCKPTR: DW 0
+CT_DONE: DB 0
+CTSCAN: DB 0
+CT_MAPMSG: DB 13,10,'COPY DESTINATION CONFLICT',13,10,'$'
+CT_NAMEMSG: DB 13,10,'INVALID DESTINATION NAME',13,10,'$'
+"""
     marker = "        .DEPHASE" if "        .DEPHASE" in text else "        END\n"
     return text.replace(marker, state + marker, 1)
 

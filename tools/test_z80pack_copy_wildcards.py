@@ -96,10 +96,10 @@ def main():
             assert set(target) == set(source_before) - {b'KEEP    TXT'} | ({b'KEEP    TXT'} if user == 3 else set())
             observations.append({'profile': profile, 'format': args.format, 'command': command, 'files': 6, 'multi_extent_records': 513})
         for number, (command, expected) in enumerate([
-                ('COPY B1:F*.DAT B1:', b'FILE EXISTS'),
+                ('COPY B1:F*.DAT B1:', b'FILE EXISTS' if profile == 'cpx' else b'COPY DESTINATION CONFLICT'),
                 ('COPY B1:F*.DAT B3:', b'FILE EXISTS'),
                 ('COPY B1:Z*.DAT B5:', b'NO FILE'),
-                ('COPY B1:F*.DAT B5:ONE.DAT', b'COPY source destination'),
+                ('COPY B1:F*.DAT B5:ONE.DAT', b'COPY source destination' if profile == 'cpx' else b'COPY DESTINATION CONFLICT'),
                 ('COPY B1:F*X.DAT B5:', b'COPY source destination'),
                 ('MOVE B1:F*.DAT B5:', b'COPY source destination')]):
             before = {p.name: p.read_bytes() for p in (work / 'disks').glob('*.dsk')}

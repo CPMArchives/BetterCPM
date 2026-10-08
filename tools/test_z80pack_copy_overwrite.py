@@ -59,7 +59,7 @@ def main():
         for number, (command, expected) in enumerate([
                 ('COPY B1:F003.DAT B3:', b'FILE EXISTS'),
                 ('COPY B1:F003.DAT B4: /O', b'READ ONLY'),
-                ('COPY B1:F003.DAT B1: /O', b'FILE EXISTS'),
+                ('COPY B1:F003.DAT B1: /O', b'FILE EXISTS' if profile == 'cpx' else b'COPY DESTINATION CONFLICT'),
                 ('COPY B1:MISSING.DAT B5:F003.DAT /O', b'NO FILE'),
                 ('COPY B1:F003.DAT B5: /X', b'COPY source destination'),
                 ('COPY B1:F003.DAT B5: /O /O', b'COPY source destination'),
