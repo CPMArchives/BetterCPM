@@ -193,7 +193,11 @@ redistributable existing utility; an unchecked item does not by itself block
 1.0.
 
 - [ ] Implement `PIP.COM`.
-- [ ] Implement `STAT.COM`.
+- [x] Implement `STAT.COM` command families. Final qualification remains open;
+  see `docs/engineering/128 STAT Utility.md` for the reconciled compatibility
+  checklist. Next: wildcard attribute updates with raw-directory verification,
+  native listings beyond 64 files and 800K reports, then current Model 4 parity
+  and preserved two-platform release evidence.
 - [ ] Required 1.0 qualification: close the standard CP/M 2.2 IOBYTE routing
   gap on Model 4/trs80gp and z80pack/cpmsim. Audit STAT's advertised assignments
   against actual BIOS behavior; implement and test supported selector routing,
@@ -208,7 +212,8 @@ redistributable existing utility; an unchecked item does not by itself block
   Search now includes all extents; full-width summary offsets prevent wrapping
   after 16 files. Exact checks cover 161-record and 513-record files, 24-file
   listings, EXM=0 two-entry aggregation, and the 64-summary boundary. Collection
-  beyond 64 distinct files now reports an error instead of silently truncating.
+  beyond 64 distinct files initially reported an error instead of silently
+  truncating; the later dynamic-buffer correction removes that fixed bound.
 - [x] Complete assessed STAT VAL: help gap (2026-10-08): all legal device
   selections are printed from the parser tables, with $S logical-size guidance,
   multiple-assignment syntax and BAT: routing semantics. Strict cpmsim help and
@@ -239,7 +244,7 @@ redistributable existing utility; an unchecked item does not by itself block
   the same field, or stars beyond a full field, produce `Invalid filespec`.
   Instruction-level parser checks and
   cpmsim wildcard/attribute/rejection checks pass; rejected attribute options
-  leave the test file R/W. The separate $S reporting correction remains open.
+  leave the test file R/W. The separate $S reporting correction is recorded below.
 
 - [x] Check STAT attribute-update results (2026-10-07). A returned FFh reports
   failure; valid directory-slot success values remain accepted. Preflight the
