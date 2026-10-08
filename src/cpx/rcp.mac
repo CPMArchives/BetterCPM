@@ -1514,9 +1514,17 @@ BC_COPAR:                               ; copar
         LD      A,B
         LD      (BC_COLEN),A
         OR      A
-        JR      Z,BC_COPBAD
+        JR      Z,BC_COPDU
         CALL    BC_CVALID
         JR      C,BC_COPBAD
+        JR      BC_COPGET
+BC_COPDU:
+        LD      HL,(BC_COFCP)
+        LD      DE,BC_NEWFCB
+        OR      A
+        SBC     HL,DE
+        JR      NZ,BC_COPBAD
+BC_COPGET:
         LD      C,25
         CALL    BDOS
         LD      (BC_CODRV),A
@@ -1533,10 +1541,18 @@ BC_COPAR:                               ; copar
         INC     DE
         LD      A,(DE)
         CP      ' '
-        JR      Z,BC_COPBAD
+        JR      NZ,BC_COPNAME
+        ; A destination DU alone inherits the exact source filename.
+        LD      HL,BC_FCB+1
+        LD      DE,BC_NEWFCB+1
+        LD      BC,11
+        LDIR
+        JR      BC_COPDONE
+BC_COPNAME:
         EX      DE,HL
         CALL    BC_RNOQ
         JR      Z,BC_COPBAD
+BC_COPDONE:
         CALL    BC_DURST
         SCF
         RET

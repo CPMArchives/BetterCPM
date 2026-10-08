@@ -19,8 +19,8 @@ close. Prior native qualification covers all eight attribute combinations in
 CPX and transient profiles. MOVE uses the same engine and erases its source
 only after successful copy/close and attribute handling.
 
-Remaining implementation includes source wildcards/multiple files,
-destination DU shorthand and an explicit overwrite option. These are not
+Remaining implementation includes source wildcards/multiple files and an
+explicit overwrite option. Destination DU shorthand is implemented below. These are not
 claimed complete by the parser correction below. Destination wildcard renaming,
 concatenation, device transfers, transformations and the handoff proposal need
 separate contracts before implementation.
@@ -51,3 +51,33 @@ while loaded. COPY.COM and the other currently untrimmed RCP-derived transients
 also become 3,127 bytes. This is a utility/CPX change; resident BIOS/BDOS code
 and their fixed capacities are unchanged. Model 4 qualification and broader
 COPY feature qualification remain open.
+
+## Destination DU shorthand — passed targeted checks 2026-10-08
+
+An exact source may be copied to a destination drive/user alone, retaining its
+filename: `COPY B1:SOURCE.DAT B3:`. Drive-only destinations use the caller's
+current user; combined destinations support users through 31. A missing
+source filename is still invalid. Exact self-copy and existing-destination
+checks apply after inheriting the name, before destructive work.
+
+The shared parser clears the destination FCB normally and copies only the
+source's eleven filename bytes when the destination is just a DU. Effective
+source/destination drive and user remain separately captured. Existing data
+copying, close ordering and final attribute preservation are unchanged.
+The assignment form retains its existing `:=` separator: a DU-only destination
+can be written `COPY B4::=B1:SOURCE.DAT` (destination `B4:` plus separator `:=`).
+The ordinary source-first form is the simpler spelling. This does not change
+the existing meaning of an extensionless destination such as `B:=source`.
+
+`tools/test_z80pack_copy_du.py --report <new-directory>` checks both profiles:
+CPX cases have no COPY.COM; transient cases unload RCP. Native transfers to
+users 0/3/4/31 retain exact payload and all three source attributes, preserve
+source metadata, and return to A0. Self-copy, existing destination, absent
+source name and out-of-range destination user all preserve the complete disk
+set. Exact-filespec boundary checks and the native malformed-name campaign
+remain passing after this parser change.
+
+Shared code grows from 3,127 to 3,153 bytes (+26); RCP allocation remains
+3,328 bytes. BIOS/BDOS code is unchanged. Wildcard/multiple-file support,
+explicit overwrite control and final two-platform COPY qualification remain.
+Handoff remains separate until the agreed common resident COPY work is done.

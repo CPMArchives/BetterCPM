@@ -199,8 +199,13 @@ redistributable existing utility; an unchecked item does not by itself block
   all media; CPX tests have COPY.COM absent and transient tests unload RCP.
   Code grows 80 bytes; rounded RCP allocation grows one 256-byte page.
   See `docs/engineering/COPY Utility.md` for the audit and remaining work.
+- [x] Add COPY destination DU shorthand (2026-10-08). Exact sources keep
+  their filenames when copied to a drive/user alone. Native CPX/transient
+  transfers preserve payload and R/O/SYS/ARC; self-copy, existing destination,
+  missing source name and invalid user rejections preserve disks. Shared code
+  grows 26 bytes with no additional rounded allocation; BIOS/BDOS unchanged.
 - [ ] Complete agreed common COPY wildcard/multiple-file support,
-  destination DU shorthand and explicit overwrite control. Attribute
+  and explicit overwrite control. Attribute
   preservation already exists; retain it in the extended command paths.
 
 - [x] Implement and qualify `STAT.COM` (2026-10-08). Agreed stock command
