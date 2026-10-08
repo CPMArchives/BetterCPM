@@ -224,6 +224,15 @@ redistributable existing utility; an unchecked item does not by itself block
   and overwrite evidence pass. Preserve the indexed evidence bundle; revisit
   the handoff contract separately. No further production code change required.
 
+- [ ] Implement the consolidated COPY target contract incrementally. First
+  change COPY assignment syntax to plain `=` and qualify both common forms.
+  Add the agreed direct handoff and protected RCP policy lifecycle without
+  BDOS growth; then transient positional destination substitution, collision
+  handling, `/S`, `/V`, reporting and Ctrl-C cleanup. Resolve the pending
+  noninteractive and batch-safety decisions before their implementation. See
+  `docs/engineering/COPY Specification.md`; PR #164 qualifies the earlier
+  common implementation, not these additions.
+
 - [x] Implement and qualify `STAT.COM` (2026-10-08). Agreed stock command
   families, numeric DU and inverse queries pass the targeted two-platform
   campaign. Final MEM correction passes on both targets; size remains 5,912

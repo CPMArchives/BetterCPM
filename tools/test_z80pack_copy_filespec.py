@@ -34,7 +34,9 @@ def main():
     simulator = Path.home() / 'projects/git/z80pack/cpmsim/cpmsim'
     cases = ['COPY B:ABCDEFGHI.COM B:WRONG.DAT', 'COPY B:SHORT.DAT B:LONGNAME9.DAT',
              'COPY B:SHORT.DAT B:NEW.ABCD', 'COPY B:.DAT B:WRONG.DAT',
-             'COPY B:F*X.DAT B:WRONG.DAT']
+             'COPY B:F*X.DAT B:WRONG.DAT',
+             'COPY B:WRONG.DAT:=B:SHORT.DAT', 'COPY =B:SHORT.DAT',
+             'COPY B:WRONG.DAT=', 'COPY B:WRONG.DAT==B:SHORT.DAT']
     observations = []
     for profile in ('cpx', 'transient'):
         if profile == 'cpx':
@@ -49,7 +51,7 @@ def main():
             commands.append((command.encode() + b'\r', b'A0>_ ', 30))
             text = session(simulator, work / 'disks', commands, report / f'{profile}-{number}.txt')
             assert b'CPX module or profile error' not in text, text
-            assert b'COPY source destination OR destination:=source' in text, text
+            assert b'COPY source destination OR destination=source' in text, text
             assert all((work / 'disks' / name).read_bytes() == data for name, data in before.items()), command
             observations.append({'profile': profile, 'command': command, 'media_unchanged': True})
     # Valid maximum-width names still copy identically through both profiles.

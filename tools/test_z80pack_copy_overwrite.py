@@ -70,7 +70,7 @@ def main():
             assert expected in text, (command, text)
             assert all((work / 'disks' / name).read_bytes() == data for name, data in before.items()), command
         for label, command, user in [('replace-longer', 'COPY B1:F003.DAT B3: /O', 3),
-                                     ('assignment', 'COPY B5::=B1:F003.DAT   /O  ', 5),
+                                     ('assignment', 'COPY B5:=B1:F003.DAT   /O  ', 5),
                                      ('wildcard', 'COPY B1:F***.DAT B7: /O', 7)]:
             if user == 7:
                 for name in ('F001.DAT', 'F002.DAT', 'F003.DAT'):

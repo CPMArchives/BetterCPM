@@ -107,9 +107,11 @@ because it requires file-position bookkeeping.
 COPY accepts both forms and normalizes them to the same operation:
 
   COPY source destination
-  COPY destination:=source
+  COPY destination=source
 
-MOVE uses the corresponding forms.  It removes the source only after the
+The consolidated COPY Specification controls COPY syntax and capabilities;
+its plain = operator is a target change from the qualified := implementation.
+MOVE retains its separately implemented command syntax. It removes the source only after the
 destination has been written and closed successfully.  A same-drive, same-user
 move may use a directory rename; a cross-drive or cross-user move copies and
 then erases.
@@ -122,3 +124,34 @@ part of this implementation milestone.  RESET/R also remains deferred until
 its exact contract is chosen: a BDOS disk reset can return to a script, whereas
 a literal Ctrl-C warm boot abandons the current command sequence.
 
+
+
+10. AUTOMATIC CPX-TO-TRANSIENT HANDOFF POLICY
+
+Accepted design addition; implementation remains pending.
+
+A resident command may report a local interpretation error and request direct
+transient lookup before performing operational side effects. The resident
+prints its diagnostic, the handoff path announces the transient, and the CCP
+reports the named transient if it cannot be found:
+
+  Invalid filespec -- handing off to COPY.COM
+  COPY.COM not found
+
+The CCP shall bypass another resident/CPX search for that invocation and
+preserve the original command tail and caller context. No callback or retained
+diagnostic pointer is required. The user accepts that a valid transient-only
+form may first receive the resident diagnostic. I/O failure or a partially
+completed operation shall not trigger automatic handoff.
+
+COPY /HANDOFF=OFF suppresses automatic handoff for resident COPY, leaving its
+local diagnostic. COPY /HANDOFF=ON restores handoff. Lookup failure alone
+never disables it. These controls work without COPY.COM. Their policy is
+RCP-owned protected shadow state: it survives warm boot and reconstruction,
+but explicit RCP removal discards it; reload and cold boot restore defaults.
+Individual command bits belong to RCP, and no permanent CONFIG save is made.
+
+Engineering Specification 119 defines the bounded one-byte reservation,
+ownership, lifetime and qualification requirements. The exact handoff signal
+remains an implementation contract to settle; no change to COPY cancellation
+behavior was requested.

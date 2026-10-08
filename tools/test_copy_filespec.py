@@ -41,12 +41,31 @@ def main():
             assert cpu.carry == (not accepted), (binary_path, text)
             if accepted:
                 assert cpu.mem[address('BC_CWILD')] == 1
+        # Stop after normalization: inspect operand boundaries without file I/O.
+        for text, move, destination, source in [
+                ('B:OUT.DAT=A:IN.DAT', 0, 'B:OUT.DAT', 'A:IN.DAT'),
+                ('B4:=A1:*.COM', 0, 'B4:', 'A1:*.COM'),
+                ('B:OUT.DAT:=A:IN.DAT', 1, 'B:OUT.DAT', 'A:IN.DAT'),
+                ('A:IN.DAT B:OUT.DAT', 0, 'B:OUT.DAT', 'A:IN.DAT')]:
+            cpu = Z80(b'')
+            cpu.mem[origin:origin + len(binary)] = binary
+            cpu.mem[5] = 0xc9  # BDOS return; no media operations in this check.
+            cpu.mem[address('BC_CPARSE')] = 0xc9
+            cpu.mem[address('BC_MVFLAG')] = move
+            cpu.mem[0x7000:0x7000 + len(text)] = text.encode('ascii')
+            cpu.hl, cpu.b = 0x7000, len(text)
+            cpu.run(address('BC_COPY'), limit=10000)
+            for pointer, length, expected in [('BC_CDPTR', 'BC_CDLEN', destination),
+                                               ('BC_CSPTR', 'BC_CSLEN', source)]:
+                start = cpu.word(address(pointer))
+                count = cpu.mem[address(length)]
+                assert bytes(cpu.mem[start:start + count]).decode() == expected, (text, pointer)
         option_entry = address('BC_COPT')
         for text, expected, overwrite, move, rejected in [
                 ('B1:F.DAT B3:', 'B1:F.DAT B3:', 0, 0, False),
                 ('B1:F.DAT B3:   ', 'B1:F.DAT B3:', 0, 0, False),
                 ('B1:F.DAT B3: /O', 'B1:F.DAT B3:', 1, 0, False),
-                ('B3::=B1:F.DAT   /O  ', 'B3::=B1:F.DAT', 1, 0, False),
+                ('B3:=B1:F.DAT   /O  ', 'B3:=B1:F.DAT', 1, 0, False),
                 ('B1:F.DAT B3: /O', '', 0, 1, True),
                 ('    ', '', 0, 0, True)]:
             cpu = Z80(b'')

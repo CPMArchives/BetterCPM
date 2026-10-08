@@ -43,7 +43,7 @@ def main() -> None:
                 f"source-first COPY failed: {output!r}")
         require("A0>" in output, "COPY did not restore the caller DU")
 
-        output = run("COPY B:ALT.DAT:=A:SOURCE.DAT", drive_a, drive_b, 15000)
+        output = run("COPY B:ALT.DAT=A:SOURCE.DAT", drive_a, drive_b, 15000)
         require(same_records(file_bytes(drive_b, "ALT.DAT", 0), payload),
                 f"assignment-form COPY failed: {output!r}")
 

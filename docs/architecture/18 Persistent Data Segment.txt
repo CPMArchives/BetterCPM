@@ -50,6 +50,8 @@ The following writable objects remain outside the 1.0 PDS:
 
   * the RSX reconstruction profile, which is fixed extension-subsystem state;
   * the CPX reconstruction profile, which is fixed gateway state;
+  * the accepted RCP shadow-policy byte, which is fixed gateway-associated
+    package state (Engineering Specification 119), not another PDS owner;
   * a future startup-command executed flag, which belongs to the gateway;
   * the resident-service registry, which is derived from loaded modules;
   * normalized disk and configuration state, which is fixed BIOS/disk state;

@@ -51,7 +51,7 @@ def main():
             return session(simulator, work / 'disks', commands, work / (label + '.txt'))
         for number, (command, user) in enumerate([
                 ('COPY B1:SOURCE.DAT B3:', 3), ('COPY B1:SOURCE.DAT B31:', 31),
-                ('COPY B1:SOURCE.DAT B:', 0), ('COPY B4::=B1:SOURCE.DAT', 4)]):
+                ('COPY B1:SOURCE.DAT B:', 0), ('COPY B4:=B1:SOURCE.DAT', 4)]):
             text = invoke(command, f'copy-{number}')
             assert b'FILE EXISTS' not in text and b'COPY source destination' not in text, text
             destination = entry(user)

@@ -1,5 +1,11 @@
 # COPY Utility: Incremental Implementation and Qualification
 
+The consolidated [COPY target specification](COPY%20Specification.md) controls
+future implementation. Its plain `=` assignment operator supersedes the
+previous `:=` target syntax. Historical qualification below describes the
+existing implementation and does not imply the new syntax or transient-only
+features are already available.
+
 ## Agreed common functionality
 
 The CPX and transient COPY should provide the ordinary copy operations,
@@ -269,3 +275,139 @@ Shared code remains 3,733 bytes, rounded RCP allocation 3,840 bytes, and BDOS
 3,555 bytes. The agreed common COPY subset is complete and qualified. Extended
 transient features, CPX-to-transient handoff, and the full release conformance
 campaign remain separate work.
+
+## CPX-to-transient handoff — agreed diagnostic sequence
+
+The user selected the simpler diagnostic-before-handoff approach. It
+supersedes the earlier proposal to retain a fallback diagnostic pointer or
+re-enter a CPX after failed lookup:
+
+```text
+A0>COPY B2:B*C*.DOC D2:
+Invalid filespec -- handing off to COPY.COM
+COPY.COM not found
+```
+
+Resident COPY prints its local diagnostic. The handoff path appends the
+announcement. The CCP then enters its normal transient loader directly,
+bypassing further resident/CPX interpretation. If lookup fails, the CCP prints
+the named missing-transient diagnostic instead of ordinary unknown-command
+output. If lookup succeeds, COPY.COM receives the original command tail and
+provides its own result. The user accepts that a valid transient-only form
+may first receive a resident diagnostic.
+
+The current CPX interface still has only handled and declined results. Add an
+explicit, backward-compatible handoff request; do not interpret unspecified
+return-register contents from legacy modules as a third result. A per-command
+request must be cleared before another dispatch and must not cause the CCP
+to redispatch the same command through the CPX chain. No callback or saved
+error-string pointer is required by the agreed sequence.
+
+Only interpretation failures before operational side effects may request
+handoff. Restore caller DU and DMA state and preserve the input command tail.
+A partially completed operation or an I/O failure must not hand off and repeat
+work. Protected-load failures after reclaiming the command environment retain
+the existing failure/WBOOT behavior; they cannot return to the old CPX.
+
+A previous disposable prototype measured a 31-byte CCP increase for the now
+superseded diagnostic-pointer design: 5,341 to 5,372 bytes, within the existing
+5,376-byte allocation. It is not a measurement of this agreed implementation
+or of suppression support. No production handoff code or CPX ABI change has
+yet been made. BDOS growth is excluded from the implementation scope.
+
+## RCP-owned protected shadow policy — proposed refinement
+
+The user proposes resident controls:
+
+```text
+COPY /HANDOFF=OFF
+COPY /HANDOFF=ON
+```
+
+OFF suppresses automatic handoff for every subsequent resident COPY invocation;
+the local diagnostic is still printed, without an announcement or transient
+lookup. ON restores automatic handoff. Failed transient lookup does not change
+the setting. Both controls must work without COPY.COM and before ordinary
+COPY operand parsing. Malformed controls must leave the setting unchanged.
+
+The latest proposal associates the policy with the installed RCP package,
+with independent command bits owned by RCP. This revises the earlier whole-
+session lifetime: explicit removal of RCP discards its policy, and later
+installation starts with defaults. WBOOT, ordinary transient execution, and
+CCP/CPX or RSX reconstruction preserve it while RCP remains installed. Cold
+boot restores defaults. Do not write this volatile policy into saved CONFIG
+state or disk records.
+
+This policy is separate from the one-invocation handoff request. The request
+belongs to reconstructible CCP working state and is cleared for every command.
+The suppression policy must have explicitly owned storage outside the
+reclaimable CCP/CPX regions. A single RCP-owned bitmap is a compact initial
+representation. The package owns its bit meanings; the core only initializes
+or discards the whole byte. Zero can encode defaults/all handoffs enabled,
+with one bits representing explicitly suppressed commands. This encoding
+keeps default storage zero-filled without a core dependency on command bits.
+
+The current protected history object demonstrates warm-boot-retained storage,
+but its working fields are owned by history and are not free scratch bytes.
+Do not borrow them or couple policy reset to history corruption/reinitialization.
+Storage placement, cold reset, ABI admission, complete size accounting, and
+lifecycle qualification remain implementation work. The bitmap's small data
+size alone does not establish the total code cost.
+
+Suppression should govern automatic handoff only; explicitly invoking a
+qualified transient remains a separate ordinary program invocation. A query
+such as COPY /HANDOFF may be useful, but has not been selected as required syntax.
+
+The user clarified that the trailing Ctrl-C sentence was stray text. It adds
+no requirement and does not change COPY cancellation behavior.
+
+
+### Protected-storage audit — one byte fits without moving existing fields
+
+The active CPX profile begins at `LY_SYS+0096h` and has four eight-byte filename
+records. Function 176 rejects a fifth record; its append, enumeration and
+removal paths stay inside those 32 bytes. In `gateway.mac`, the initial
+8-byte RCP name is followed by 31 zero bytes, so the source actually reserves
+39 bytes before `SINIBODY`. Seven existing zero bytes therefore lie outside
+the usable profile table.
+
+The first of those bytes, `LY_SYS+00B6h` (currently D67Ah), is a suitable
+candidate for a named RCP policy byte. Splitting the existing reservation into
+24 zeros after the initial name, one named zero policy byte, and six remaining
+reserved zeros produces a byte-identical 248-byte gateway. The table,
+`SINIBODY`, every existing field, and the BDOS boundary stay at their original
+addresses. No CPX descriptor expansion or protected-data layout shift is
+required to reserve the byte.
+
+The disposable assembly comparison and evidence are preserved in
+`/private/tmp/rcp-shadow-state-audit`. This proves storage placement only;
+production sources are unchanged. Cold-reset instructions, explicit-removal
+handling and resident controls still need separate code-size measurement and
+lifecycle tests. BDOS remains excluded from growth.
+
+Reset on actual RCP profile removal, not on CPX shutdown: the existing CCP
+calls shutdown before ordinary transient execution as well. Duplicate LOAD,
+unloading another package, profile reordering, and a failed/no-op profile
+request must preserve the RCP byte. Removing RCP resets it; later LOAD then
+observes defaults. The package identity used for association/reset must be
+explicit, including any supported alternate-filename or duplicate-package
+cases; a table slot index or live module address is not a stable identity.
+The general per-package shadow-state allocator remains future architecture,
+not a requirement for this one-byte RCP implementation.
+
+## Plain-equals COPY assignment — 2026-10-08
+
+Both COPY.COM and RCP.CPX now normalize `destination=source`, including
+`B4:=A1:*.COM` where the colon belongs to the destination DU. The extra
+separator colon in `B:OUT.DAT:=A:IN.DAT` is rejected. Source-first syntax
+remains available; MOVE retains its existing `:=` assignment.
+
+The shared body grows from 3,733 to 3,743 bytes; its 3,840-byte CPX allocation
+is unchanged. No BIOS, BDOS or CCP code changes are required.
+
+Qualification: parser execution in both builds verifies exact operand boundaries
+and MOVE compatibility. cpmsim runs in both CPX-only and transient profiles
+pass cross-DU shorthand, attributes and self-copy checks. Malformed assignments
+(empty operands, duplicate equals and retired separator) preserve all media.
+Evidence: `/private/tmp/copy-equals-du-20261008/evidence.json` and
+`/private/tmp/copy-equals-filespec-20261008/evidence.json`.
