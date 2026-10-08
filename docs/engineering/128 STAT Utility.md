@@ -23,10 +23,21 @@ STAT USR:
 STAT DEV:
 STAT VAL:
 STAT CON:=device: | RDR:=device: | PUN:=device: | LST:=device:
+STAT target:
 ```
 
 `filespec` and disk operands additionally accept BetterCP/M numeric selectors
 `5:` and `C3:`. A temporary selection is restored before STAT returns.
+
+`STAT target:` is a BetterCP/M inverse IOBYTE query. It accepts the standard
+targets in the assignment table: TTY, CRT, BAT, UC1, PTR, UR1, UR2, PTP, UP1,
+UP2, LPT and UL1, each followed by a colon. For example, `STAT CRT:` prints
+`CRT: assigned to CON:` and `CRT: assigned to LST:` if both selections use CRT.
+Every matching logical device is printed in CON/RDR/PUN/LST order; an unused
+target prints `target: not assigned`. Unknown targets and additional operands
+are rejected. Trailing spaces are allowed. Queries do not change the IOBYTE.
+The result describes the current selector mapping, not hardware availability
+or readiness. User-created endpoints remain outside the 1.0 scope.
 
 ## Memory report
 

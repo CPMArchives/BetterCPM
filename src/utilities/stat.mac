@@ -54,6 +54,8 @@ START:                                  ; enter STAT utility
         JP      Z,DEVSTATUS
         CALL    ISDSK
         JP      Z,ALLDETAILS
+        CALL    DEVICEQUERY
+        JP      C,FINISH
         CALL    DEVICEASSIGN
         JP      C,FINISH
         CALL    PARSEDU
@@ -1797,6 +1799,11 @@ SHOWONE:                                ; showone
         CALL    PRINT4HL
         LD      DE,MIS
         CALL    PRINT
+        CALL    DEVTARGET
+        CALL    PRINT4HL
+        RET
+
+DEVTARGET:                              ; selected target for DEVNO -> HL
         LD      A,(0003H)
         LD      C,A
         LD      A,(DEVNO)
@@ -1821,7 +1828,6 @@ SGOT:   LD      A,C                     ; sgot
         LD      D,0
         LD      HL,DEVNAMES
         ADD     HL,DE
-        CALL    PRINT4HL
         RET
 
 DEVKEYPTR:                              ; devkeyptr
@@ -1854,6 +1860,126 @@ DEVSLP: LD      (DEVNO),A               ; devslp
         CP      4
         JR      NZ,DEVSLP
         JP      FINISH
+
+; Reverse the current IOBYTE selections, using the assignment name table.
+; Carry means a device query was handled; numeric DU operands pass through.
+DEVICEQUERY:
+        LD      A,B
+        CP      4
+        JR      NC,DQCHECK
+        OR      A
+        RET
+DQCHECK:
+        PUSH    HL
+        INC     HL
+        LD      A,(HL)
+        CP      '0'
+        JR      C,DQCOLON
+        CP      '9'+1
+        JR      C,DQPASS
+DQCOLON:
+        INC     HL
+        INC     HL
+        LD      A,(HL)
+        CP      ':'
+        JR      NZ,DQPASS
+        POP     HL
+        LD      (QUERYPTR),HL
+        LD      A,B
+        LD      (QUERYLEN),A
+        PUSH    HL
+        LD      DE,4
+        ADD     HL,DE
+        LD      A,B
+        SUB     4
+        LD      B,A
+        CALL    TRIM
+        LD      A,B
+        OR      A
+        JR      Z,DQEMPTY
+        LD      A,(HL)
+        CP      '='
+        JR      Z,DQASSIGN
+        POP     HL
+        JR      DQBAD
+DQASSIGN:
+        POP     HL
+        ; The query recognizer must not consume an assignment operand.
+        LD      A,(QUERYLEN)
+        LD      B,A
+        OR      A
+        RET
+DQEMPTY:
+        POP     HL
+        LD      DE,DEVNAMES
+        LD      A,16
+DQVALID:
+        PUSH    AF
+        PUSH    DE
+        LD      B,4
+        LD      C,4
+        CALL    ISEXACT
+        POP     DE
+        POP     BC
+        JR      Z,DQSTART
+        EX      DE,HL
+        INC     HL
+        INC     HL
+        INC     HL
+        INC     HL
+        EX      DE,HL
+        LD      A,B
+        DEC     A
+        JR      NZ,DQVALID
+        LD      DE,MQUERYBAD
+        JR      DQERROR
+DQPASS: POP     HL
+        OR      A
+        RET
+DQBAD:  LD      DE,MBADFORM
+DQERROR:
+        CALL    PRINT
+        SCF
+        RET
+DQSTART:
+        XOR     A
+        LD      (DEVNO),A
+        LD      (QUERYFOUND),A
+DQLOOP:
+        CALL    DEVTARGET
+        EX      DE,HL
+        LD      HL,(QUERYPTR)
+        LD      B,4
+        LD      C,4
+        CALL    ISEXACT
+        JR      NZ,DQNEXT
+        LD      A,1
+        LD      (QUERYFOUND),A
+        CALL    CRLF
+        LD      HL,(QUERYPTR)
+        CALL    PRINT4HL
+        LD      DE,MQUERYASSIGN
+        CALL    PRINT
+        LD      A,(DEVNO)
+        CALL    DEVKEYPTR
+        CALL    PRINT4HL
+DQNEXT:
+        LD      A,(DEVNO)
+        INC     A
+        LD      (DEVNO),A
+        CP      4
+        JR      NZ,DQLOOP
+        LD      A,(QUERYFOUND)
+        OR      A
+        JR      NZ,DQDONE
+        CALL    CRLF
+        LD      HL,(QUERYPTR)
+        CALL    PRINT4HL
+        LD      DE,MQUERYNONE
+        CALL    PRINT
+DQDONE: CALL    CRLF
+        SCF
+        RET
 
 VALUES:LD      DE,MVALUES1              ; values
         CALL    PRINT
@@ -2363,6 +2489,12 @@ DEVNAMES:       DB 'TTY:','CRT:','BAT:','UC1:' ; devnames
                 DB 'TTY:','PTR:','UR1:','UR2:'
                 DB 'TTY:','PTP:','UP1:','UP2:'
                 DB 'TTY:','CRT:','LPT:','UL1:'
+MQUERYASSIGN:   DB ' assigned to $'
+MQUERYNONE:     DB ' not assigned$'
+MQUERYBAD:      DB 13,10,'Unknown device target',13,10,'$'
+QUERYPTR:       DW 0
+QUERYLEN:       DB 0
+QUERYFOUND:     DB 0
 
 ; -------------------------------------------------------------------------------
 ; Messages and Memory Labels

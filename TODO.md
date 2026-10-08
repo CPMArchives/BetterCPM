@@ -198,6 +198,14 @@ redistributable existing utility; an unchecked item does not by itself block
   checklist. Next: wildcard attribute updates with raw-directory verification,
   native listings beyond 64 files and 800K reports, then current Model 4 parity
   and preserved two-platform release evidence.
+- [x] Add STAT inverse device-target queries (2026-10-08). Standard targets
+  report every matching logical device or `not assigned`, using the existing
+  IOBYTE name tables without changing mappings. Unknown targets and extra
+  operands are rejected; assignment and numeric DU syntax remain intact.
+  Executed-code checks cover all 256 IOBYTE decodes and shared/unused targets;
+  native cpmsim query and existing file/drive campaigns pass. STAT.COM grows
+  from 5,646 to 5,912 bytes; resident OS size is unchanged. Model 4 parity is
+  retained in the final qualification work.
 - [ ] Required 1.0 qualification: close the standard CP/M 2.2 IOBYTE routing
   gap on Model 4/trs80gp and z80pack/cpmsim. Audit STAT's advertised assignments
   against actual BIOS behavior; implement and test supported selector routing,
