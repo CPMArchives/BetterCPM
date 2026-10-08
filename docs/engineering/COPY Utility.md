@@ -411,3 +411,30 @@ pass cross-DU shorthand, attributes and self-copy checks. Malformed assignments
 (empty operands, duplicate equals and retired separator) preserve all media.
 Evidence: `/private/tmp/copy-equals-du-20261008/evidence.json` and
 `/private/tmp/copy-equals-filespec-20261008/evidence.json`.
+
+## Frozen transient wildcard batch — 2026-10-08
+
+COPY.COM now collects the complete sorted, deduplicated source-name list before
+opening any destination. Execution consumes that fixed list instead of rescanning
+between writes. The first bounded implementation supports 64 matching files;
+65 or more report `COPY BATCH TOO LARGE` before mutation. This capacity is an
+explicit interim limit, not a claim that all target transient features are done.
+
+This increment retains DU-only wildcard destinations and rejects same-DU
+wildcard copies. For the currently admitted cross-DU form, preserving source
+names makes mappings unique and separates every destination from the selected
+source set. Destination substitution and its additional overlap/collision checks
+remain next. The CPX wildcard engine and all OS code are unchanged.
+
+The transient-only driver is in `src/cpx/copy-batch.inc`; both host and native
+transient builders select it only for COPY. COPY.COM is 4,576 bytes, including
+704 bytes for the 64-name workspace. Native ZSM4/LINK output is byte-identical
+to the host build. Native workspace reservation bytes are emitted explicitly
+to match the host assembler's FF filler for reproducible comparison.
+
+Qualification passes parser checks, cpmsim CPX/transient multi-extent wildcard
+and attribute regression, a successful 64-file empty-file batch, and a 65-file
+overflow leaving the whole source/destination disk unchanged. Evidence:
+`/private/tmp/copy-frozen64-clean-20261008/evidence.json`,
+`/private/tmp/copy-batch-boundary-final-20261008/evidence.json`, and
+`build/utilities/NATIVE-RCP-TRANSIENT-BUILD.LOG`.
