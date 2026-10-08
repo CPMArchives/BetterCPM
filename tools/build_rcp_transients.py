@@ -72,7 +72,19 @@ def copy_source(text: str) -> str:
     assert text.count(old) == 1, "COPY batch entry changed"
     text = text.replace(old, "        JP      BC_WSTART", 1)
     text = re.sub(r"(?m)^(\s*)JR(\s+(?:(?:NZ|Z|NC|C),)?BC_CV\w+)", r"\1JP\2", text)
+    start = text.index("BC_COPT:")
+    end = text.index("BC_CVALID:", start)
+    options = (SOURCE.parent / "copy-options.inc").read_text(encoding="ascii")
+    text = text[:start] + options + text[end:]
+    old = "        JR      Z,BC_CMAKE\n        LD      A,(BC_OVER)"
+    assert text.count(old) == 1, "COPY destination-open hook changed"
+    text = text.replace(old, "        JP      Z,BC_CMAKE\n        JP      CTEXIST\nCTALLOW:\n        LD      A,(BC_OVER)", 1)
+    text = text.replace("destination=source [/O]", "destination=source [/O|/S]", 1)
     state = """
+CT_SKIP: DB 0
+CT_SKIPS: DB 0
+CT_FAILS: DB 0
+CT_SKIPM: DB 13,10,'SKIPPED',13,10,'$'
 CT_COUNT: DB 0
 CT_LEFT: DB 0
 CT_END: DW 0

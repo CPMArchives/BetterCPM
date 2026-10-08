@@ -471,3 +471,30 @@ wildcard regression and explicit overwrite. Evidence:
 `/private/tmp/copy-mapping-wildcards-final-20261008/evidence.json`,
 `/private/tmp/copy-mapping-overwrite-final-20261008/evidence.json`, and
 `build/utilities/NATIVE-RCP-TRANSIENT-BUILD.LOG`.
+
+## Transient /S and read-only continuation — 2026-10-08
+
+COPY.COM now accepts trailing `/S` to skip existing writable destinations and
+continue the frozen batch. Repeated `/S` or `/O` is idempotent; mixing the two
+in either order is rejected before preflight or mutation. Unknown options are
+rejected. Mapping conflicts remain unconditional failures even with `/S`.
+
+An existing read-only destination is preserved and reports READ ONLY; that
+file is counted as failed internally and the batch advances, under either
+`/S` or `/O`. Writable skipped files report SKIPPED and are counted separately.
+Full per-file source/destination reporting and final summaries remain later
+work, as do interactive collisions and genuine noninteractive-mode admission.
+Without `/S` or `/O`, existing writable collisions retain the current stop
+behavior until the interactive collision increment is implemented.
+
+COPY.COM is 5,761 bytes. CPX, other transients and OS binaries are unchanged.
+Host and native ZSM4/LINK images remain byte-identical. Qualification covers
+mixed skipped/new/read-only files; all-existing batches with byte-identical
+media afterward; read-only data, attributes and source directory preservation;
+continuation to later files under `/O`; repeated and conflicting switches;
+unknown options; preflight rejection under `/S`; destination mapping and
+multi-extent overwrite regression. Evidence:
+`/private/tmp/copy-skip-20261008/evidence.json`,
+`/private/tmp/copy-skip-mapping-regression-20261008/evidence.json`,
+`/private/tmp/copy-skip-overwrite-final-20261008/evidence.json`, and
+`build/utilities/NATIVE-RCP-TRANSIENT-BUILD.LOG`.
