@@ -204,9 +204,14 @@ redistributable existing utility; an unchecked item does not by itself block
   transfers preserve payload and R/O/SYS/ARC; self-copy, existing destination,
   missing source name and invalid user rejections preserve disks. Shared code
   grows 26 bytes with no additional rounded allocation; BIOS/BDOS unchanged.
-- [ ] Complete agreed common COPY wildcard/multiple-file support,
-  and explicit overwrite control. Attribute
-  preservation already exists; retain it in the extended command paths.
+- [x] Add common COPY source wildcard/multiple-file support (2026-10-08).
+  CPX/transient tests on EXM=0 and EXM=1 formats preserve multi-extent payload,
+  attributes, source/unrelated metadata and caller DU. Mid-batch collisions
+  stop without replacing existing files. Fix the exposed grouped-extent
+  activation defect within the unchanged 3,555-byte BDOS allocation.
+  Shared RCP grows 431 bytes; rounded allocation grows one 256-byte page.
+- [ ] Add explicit COPY overwrite control, retaining attribute preservation.
+- [ ] Complete final two-platform COPY qualification before revisiting handoff.
 
 - [x] Implement and qualify `STAT.COM` (2026-10-08). Agreed stock command
   families, numeric DU and inverse queries pass the targeted two-platform

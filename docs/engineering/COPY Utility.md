@@ -19,8 +19,8 @@ close. Prior native qualification covers all eight attribute combinations in
 CPX and transient profiles. MOVE uses the same engine and erases its source
 only after successful copy/close and attribute handling.
 
-Remaining implementation includes source wildcards/multiple files and an
-explicit overwrite option. Destination DU shorthand is implemented below. These are not
+Remaining implementation includes an explicit overwrite option. Source
+wildcards/multiple files are implemented and qualified below. Destination DU shorthand is implemented below. These are not
 claimed complete by the parser correction below. Destination wildcard renaming,
 concatenation, device transfers, transformations and the handoff proposal need
 separate contracts before implementation.
@@ -81,3 +81,75 @@ Shared code grows from 3,127 to 3,153 bytes (+26); RCP allocation remains
 3,328 bytes. BIOS/BDOS code is unchanged. Wildcard/multiple-file support,
 explicit overwrite control and final two-platform COPY qualification remain.
 Handoff remains separate until the agreed common resident COPY work is done.
+
+## Wildcard increment and grouped-extent correction — 2026-10-08
+
+The shared CPX/transient COPY now accepts a bounded source wildcard and a
+DU-only destination, for example `COPY B1:F?*.DAT C2:` or
+`COPY B4::=B1:F***.DAT`. Question marks match individual filename positions;
+a terminal run of stars fills the rest of its field. Reject characters after
+that run, overlong fields, destination wildcards and wildcard MOVE. Each
+normalized filename is copied once even if it has multiple directory extents.
+The implementation rescans between files because ordinary BDOS calls can
+invalidate search state. Its workspace has a fixed size; no file list or
+per-file allocation is retained. Rescanning has quadratic directory-scan cost.
+
+Existing destinations are still refused. A batch stops on its first error;
+previously completed copies remain. The failing existing file and subsequent
+files are untouched. A source/destination DU alias is rejected before copying.
+The caller's drive/user and default DMA are restored. Source R/O/SYS/ARC
+attributes are transferred after destination close.
+
+Qualification exposed an existing BDOS grouped-extent defect. Activating a
+physical directory entry copied its last populated logical EX over the
+caller's requested EX. Reading skipped subextents; writing revisited earlier
+records. Activation now preserves EX and CR, normalizes RC to 128 for an
+earlier populated subextent or zero for a later unpopulated subextent, and
+retains the directory attributes and allocation map. Targeted probes and
+before-fix media are preserved at `/private/tmp/copy-wildcard-qualification`.
+
+The correction costs 20 bytes. Equivalent compaction recovers exactly those
+20 bytes: reuse the loaded ALV pointer, share Search First initialization,
+remove redundant EX masking and logical-record spill/reload, and shorten one
+in-range branch. The old scratch word remains reserved to preserve the frozen
+ROM/RAM state span. BDOS remains **3,555 bytes**, with unchanged resident
+boundaries, live-state addresses and 40-byte private stack. BIOS is unchanged.
+The measured ROM reference baseline loses one absolute branch and two scratch
+references; strict relocation checks retain their independent validation.
+
+Validation:
+
+- `test_bdos_grouped_extents.py`: 480 emitted-code activation cases covering
+  grouped and ungrouped extents, requested EX, populated EX, and RC boundaries.
+- `test_unified_bdos.py` and `test_bdos_recovery.py`: filesystem/record services,
+  A/B/A allocation switching, random/sequential I/O, and 24 success/ignore/abort
+  transfer cases. Measured private stack high-water is 26 bytes.
+- `test_copy_filespec.py`: actual CPX/transient parser boundaries and wildcard
+  grammar.
+- `test_copy_move.py`: Model 4 source-first/assignment copying, cross-DU data,
+  existing-destination refusal, MOVE erasure and caller restoration pass on
+  disposable media; the rebuilt Model 4 resident and ownership checks pass.
+- Fresh z80pack boot media pass ROM/RAM ownership, relocation, reference,
+  packing, and boot-artifact checks.
+- `test_z80pack_copy_wildcards.py` with `--format default` and `--format 800k`:
+  CPX and transient profiles on EXM=1/8-bit and EXM=0/16-bit allocation formats.
+  Each profile copies six files, including a distinct-per-record 513-record
+  file, through both grammars and across drives. Exact payload, all source
+  attributes and extent counts survive; unrelated metadata and source entries
+  remain unchanged. Invalid/no-match/self/existing cases preserve every disk.
+  Mid-batch collision tests preserve the existing target and completed copies.
+  CPX profiles remove COPY.COM and MOVE.COM; transient profiles unload RCP.
+
+Native reports: `/private/tmp/copy-wildcard-default-final` and
+`/private/tmp/copy-wildcard-800k-final`. Reproduce against newly built media:
+
+```sh
+python3 tools/build_z80pack_image.py --output /tmp/copy-fresh-runtime
+python3 tools/test_z80pack_copy_wildcards.py --image-dir /tmp/copy-fresh-runtime --report /tmp/copy-default
+python3 tools/test_z80pack_copy_wildcards.py --format 800k --image-dir /tmp/copy-fresh-runtime --report /tmp/copy-800k
+```
+
+Shared RCP code grows from 3,153 to **3,584 bytes** (+431); rounded allocation
+increases from 3,328 to 3,584 bytes (+256). Explicit overwrite control and final
+two-platform COPY qualification remain. Handoff remains a separate discussion
+until the agreed resident COPY functionality is finished.
