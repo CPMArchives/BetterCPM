@@ -63,7 +63,7 @@ def main():
             observations.append({'profile': profile, 'command': command, 'destination_user': user,
                                  'attributes': destination[9:12].hex()})
         for number, (command, expected) in enumerate([
-                ('COPY B1:SOURCE.DAT B1:', b'FILE EXISTS'),
+                ('COPY B1:SOURCE.DAT B1:', b'FILE EXISTS' if profile == 'cpx' else b'COPY DESTINATION CONFLICT'),
                 ('COPY B1:SOURCE.DAT B3:', b'FILE EXISTS'),
                 ('COPY B1: B5:', b'COPY source destination'),
                 ('COPY B1:SOURCE.DAT B32:', b'COPY source destination')]):

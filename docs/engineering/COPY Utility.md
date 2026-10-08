@@ -438,3 +438,36 @@ overflow leaving the whole source/destination disk unchanged. Evidence:
 `/private/tmp/copy-frozen64-clean-20261008/evidence.json`,
 `/private/tmp/copy-batch-boundary-final-20261008/evidence.json`, and
 `build/utilities/NATIVE-RCP-TRANSIENT-BUILD.LOG`.
+
+## Transient destination substitution and mapping preflight — 2026-10-08
+
+COPY.COM now accepts positional wildcard destination templates in both operand
+forms. Literals replace the corresponding source positions, `?` copies one
+source position, and a terminal star run copies the remainder of that padded
+8.3 field. Examples: `COPY B3:*.DOC=B1:*.COM` and
+`COPY B4:X?***.BAK=B1:FOOBAR.COM` produce FOO.DOC and XOOBAR.BAK as specified.
+An exact source also supports a destination template.
+
+All admitted transient COPY invocations build and validate their concrete
+destination mappings before opening any destination. Duplicate targets and
+any target in the selected source set on the same DU (including exact self-copy)
+report `COPY DESTINATION CONFLICT` with no mutation, even under `/O`. Generated
+names with empty stems, embedded padding or forbidden characters report
+`INVALID DESTINATION NAME`. Same-DU mappings to distinct, non-source names are
+now allowed. The batch still uses the initial frozen source set even if new
+outputs match the original wildcard. Capacity remains 64 source files.
+
+COPY.COM is 5,671 bytes, including separate 704-byte source and destination
+name tables. RCP.CPX, other transients and BIOS/BDOS/CCP are unchanged. Native
+ZSM4/LINK and host builds are byte-identical. Interactive collision handling,
+`/S`, `/V`, reporting and handoff remain later increments.
+
+Qualification: direct execution tests cover positional padding and mapping
+conflicts; cpmsim covers transformed names, same-DU frozen batches, rejection
+without disk mutation, mapped attributes, 64/65-file capacity, multi-extent
+wildcard regression and explicit overwrite. Evidence:
+`/private/tmp/copy-mapping-qualified-20261008/evidence.json`,
+`/private/tmp/copy-mapping-capacity-final-20261008/evidence.json`,
+`/private/tmp/copy-mapping-wildcards-final-20261008/evidence.json`,
+`/private/tmp/copy-mapping-overwrite-final-20261008/evidence.json`, and
+`build/utilities/NATIVE-RCP-TRANSIENT-BUILD.LOG`.

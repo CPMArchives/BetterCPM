@@ -1,18 +1,19 @@
-; Transient-only frozen wildcard source list. DU-only destinations retain
-; source names: cross-DU mapping is injective and cannot overlap source files.
+; Transient-only frozen source list and positional destination mapping.
 ; Capacity overflow is detected during collection, before any destination I/O.
 BC_WSTART:
+        LD      HL,BC_NEWFCB+1
+        LD      DE,CT_PATTERN
+        LD      BC,11
+        LDIR
         LD      A,(BC_COLEN)
         OR      A
-        JP      NZ,BC_CSYNT             ; wildcard targets must be a DU alone
-        LD      A,(BC_CSDRV)
-        LD      HL,BC_CDDRV
-        CP      (HL)
         JR      NZ,BC_WINIT
-        LD      A,(BC_CSUSR)
-        LD      HL,BC_CDUSR
-        CP      (HL)
-        JP      Z,BC_CEXIST             ; reject source/destination DU alias
+        LD      HL,CT_PATTERN
+        LD      B,11
+CT_INHERIT:
+        LD      (HL),'?'
+        INC     HL
+        DJNZ    CT_INHERIT
 BC_WINIT:
         XOR     A
         LD      (CT_COUNT),A
@@ -91,7 +92,7 @@ BC_WFOUND:
         JP      NZ,CT_COLLECT
         LD      A,(BC_WLAST)
         OR      A
-        JP      NZ,CT_BEGIN
+        JP      NZ,CTPREF
         LD      DE,BC_NOFILE
         CALL    BC_PRINT
         JP      BC_WEND
@@ -116,6 +117,8 @@ CT_FULL:
         CALL    BC_PRINT
         JP      BC_WEND
 CT_BEGIN:
+        LD      HL,CT_TARGETS
+        LD      (CT_DCUR),HL
         LD      A,(CT_COUNT)
         LD      (CT_LEFT),A
         LD      HL,CT_NAMES
@@ -143,7 +146,7 @@ CT_COPY:
         LD      DE,BC_FCB+1
         LD      BC,11
         LDIR
-        LD      HL,BC_WBEST
+        LD      HL,(CT_DCUR)
         LD      DE,BC_NEWFCB+1
         LD      BC,11
         LDIR
@@ -158,6 +161,10 @@ CT_COPY:
         LD      DE,11
         ADD     HL,DE
         LD      (CT_CURSOR),HL
+        LD      HL,(CT_DCUR)
+        LD      DE,11
+        ADD     HL,DE
+        LD      (CT_DCUR),HL
         LD      HL,CT_LEFT
         DEC     (HL)
         JP      CT_NEXT
@@ -165,3 +172,168 @@ BC_WEND:
         XOR     A
         LD      (BC_WACTIVE),A
         JP      BC_COK
+
+; Build and check the complete mapping before any destination is opened.
+CTPREF:
+        XOR     A
+        LD      (CT_DONE),A
+        LD      HL,CT_NAMES
+        LD      (CT_CURSOR),HL
+        LD      HL,CT_TARGETS
+        LD      (CT_DCUR),HL
+CTMAPNXT:
+        LD      HL,(CT_CURSOR)
+        LD      DE,(CT_DCUR)
+        CALL    CTGEN
+        JP      C,CTBADNAM
+        LD      A,(CT_DONE)
+        OR      A
+        JR      Z,CTSRCCK
+        LD      (CTSCAN),A
+        LD      HL,CT_TARGETS
+        CALL    CTCKSET
+        JP      Z,CTCONFL
+CTSRCCK:
+        LD      A,(BC_CSDRV)
+        LD      HL,BC_CDDRV
+        CP      (HL)
+        JR      NZ,CTMAPADV
+        LD      A,(BC_CSUSR)
+        LD      HL,BC_CDUSR
+        CP      (HL)
+        JR      NZ,CTMAPADV
+        LD      A,(CT_COUNT)
+        LD      (CTSCAN),A
+        LD      HL,CT_NAMES
+        CALL    CTCKSET
+        JP      Z,CTCONFL
+CTMAPADV:
+        LD      HL,(CT_CURSOR)
+        LD      DE,11
+        ADD     HL,DE
+        LD      (CT_CURSOR),HL
+        LD      HL,(CT_DCUR)
+        ADD     HL,DE
+        LD      (CT_DCUR),HL
+        LD      HL,CT_DONE
+        INC     (HL)
+        LD      A,(CT_COUNT)
+        CP      (HL)
+        JP      NZ,CTMAPNXT
+        JP      CT_BEGIN
+CTCKSET:
+        LD      (CTCKPTR),HL
+CTCKNEXT:
+        LD      HL,(CTCKPTR)
+        LD      DE,(CT_DCUR)
+        CALL    BC_WCMP
+        RET     Z
+        LD      HL,(CTCKPTR)
+        LD      DE,11
+        ADD     HL,DE
+        LD      (CTCKPTR),HL
+        LD      HL,CTSCAN
+        DEC     (HL)
+        JR      NZ,CTCKNEXT
+        LD      A,1
+        OR      A                       ; nonzero means no collision
+        RET
+CTCONFL:
+        LD      DE,CT_MAPMSG
+        CALL    BC_PRINT
+        JP      BC_WEND
+CTBADNAM:
+        LD      DE,CT_NAMEMSG
+        CALL    BC_PRINT
+        JP      BC_WEND
+
+; Positional substitution over the fixed 8+3 fields. PFCB expands terminal
+; stars into question marks; both copy the corresponding padded source bytes.
+CTGEN:
+        PUSH    DE
+        PUSH    HL
+        LD      HL,CT_PATTERN
+        LD      (CTGPTR),HL
+        POP     HL
+        LD      B,11
+CTGBYTE:
+        PUSH    HL
+        LD      HL,(CTGPTR)
+        LD      A,(HL)
+        INC     HL
+        LD      (CTGPTR),HL
+        POP     HL
+        CP      '?'
+        JR      NZ,CTGSTORE
+        LD      A,(HL)
+CTGSTORE:
+        LD      (DE),A
+        INC     HL
+        INC     DE
+        DJNZ    CTGBYTE
+        POP     HL
+        LD      B,8
+        CALL    CTVFIELD
+        RET     C
+        LD      A,C
+        OR      A
+        JR      Z,CT_INVALID           ; empty name, unlike empty extension
+        LD      B,3
+CTVFIELD:
+        LD      C,0                    ; count nonpadding characters
+        LD      E,0                    ; padding already seen
+CTVBYTE:
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,CTNONSP
+        LD      E,1
+        JR      CTVNEXT
+CTNONSP:
+        LD      A,E
+        OR      A
+        JR      NZ,CT_INVALID
+        LD      A,(HL)
+        CP      21H
+        JR      C,CT_INVALID
+        CP      7FH
+        JR      NC,CT_INVALID
+        PUSH    HL
+        PUSH    BC
+        LD      HL,CTBADCH
+        LD      B,14
+CT_BADCHAR:
+        CP      (HL)
+        JR      Z,CTCHBAD
+        INC     HL
+        DJNZ    CT_BADCHAR
+        POP     BC
+        POP     HL
+        INC     C
+CTVNEXT:
+        INC     HL
+        DJNZ    CTVBYTE
+        OR      A
+        RET
+CTCHBAD:
+        POP     BC
+        POP     HL
+CT_INVALID:
+        SCF
+        RET
+CTBADCH:
+        DB      '*?.:;[]=<>/,'
+        DB      05CH,022H
+
+; Destination wildcards do not turn an exact source into a wildcard search.
+CTDWILD:
+        PUSH    HL
+        PUSH    DE
+        LD      HL,(BC_COFCP)
+        LD      DE,BC_NEWFCB
+        OR      A
+        SBC     HL,DE
+        POP     DE
+        POP     HL
+        JP      NZ,BC_CVBAD
+        OR      A
+        RET

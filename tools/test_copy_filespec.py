@@ -41,6 +41,17 @@ def main():
             assert cpu.carry == (not accepted), (binary_path, text)
             if accepted:
                 assert cpu.mem[address('BC_CWILD')] == 1
+        for text, accepted in [('*.DOC', True), ('X?***.BAK', True),
+                               ('F*A.DAT', False), ('F**?.DAT', False),
+                               ('F?.DAT*', False)]:
+            cpu = Z80(b'')
+            cpu.mem[origin:origin + len(binary)] = binary
+            cpu.setword(address('BC_COFCP'), address('BC_NEWFCB'))
+            cpu.mem[0x7000:0x7000 + len(text)] = text.encode('ascii')
+            cpu.hl, cpu.b = 0x7000, len(text)
+            cpu.run(entry, limit=10000)
+            assert cpu.carry == (not accepted or origin != 0x100), (binary_path, text)
+            assert cpu.mem[address('BC_CWILD')] == 0
         # Stop after normalization: inspect operand boundaries without file I/O.
         for text, move, destination, source in [
                 ('B:OUT.DAT=A:IN.DAT', 0, 'B:OUT.DAT', 'A:IN.DAT'),
