@@ -315,6 +315,11 @@ redistributable existing utility; an unchecked item does not by itself block
   filename in user 3. Read-only rejection reports both files and preserves
   the complete physical DMK image. Tests retain images, captures and hashes;
   no production code correction was required.
+- [x] Qualify Model 4 STAT standard drive/DPB/user reports (2026-10-08).
+  Five native commands report independently counted 706K free, exact 780K
+  SYSTEM DPB fields and populated users 0/3/15. Captures confirm return to A0
+  and whole-media preservation. R/O lifecycle, multiple-drive reporting,
+  empty-disk enumeration and nonzero-user context remain separate cases.
 - [x] Report distinct STAT $S logical size (2026-10-08) through BDOS Function
   35's full three-byte result. Native random write to record 512 reports logical
   size 513, recorded total 1, allocation 2K, and two physical entries (the empty
