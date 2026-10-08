@@ -226,6 +226,13 @@ redistributable existing utility; an unchecked item does not by itself block
   command; assertions inspect only output following that command's echo.
   Actual BIOS selector routing and the remaining STAT command families still
   require their separate qualification. No production code change was needed.
+- [x] Qualify Model 4 STAT file totals and numeric DU (2026-10-08).
+  Native 161/513-record files report exact 22K/66K allocation and two/five
+  physical entries. Reverse-created wildcard fixtures list once in ascending
+  order. Both 3: and A3: locate the user-3 fixture and restore A0:; a subsequent
+  unqualified lookup correctly finds no user-0 copy. All six commands return
+  to the prompt and leave the entire medium unchanged. Saved report includes
+  STAT, media, invocation, decoded captures and hashes. No production fix.
 - [ ] Required 1.0 qualification: close the standard CP/M 2.2 IOBYTE routing
   gap on Model 4/trs80gp and z80pack/cpmsim. Audit STAT's advertised assignments
   against actual BIOS behavior; implement and test supported selector routing,
@@ -293,6 +300,14 @@ redistributable existing utility; an unchecked item does not by itself block
   each file. Empty, single, mixed name/type and 64-entry reverse-order checks
   pass; disposable cpmsim media created in reverse order prints ascending names.
 
+- [x] Qualify Model 4 STAT sparse and ordinary $S (2026-10-08). A native
+  random-write fixture reports 513 logical records, one recorded record, 2K
+  allocated and two physical entries; raw directory checks independently
+  confirm recorded data and allocation. The ordinary 161-record case also
+  passes. Inspection leaves the whole disk unchanged. Reports preserve the
+  fixture creator, STAT, media, captures and hashes. The harness waits for
+  output and the returned prompt, then allows keyboard settling before the
+  next command. No production code change was required.
 - [x] Report distinct STAT $S logical size (2026-10-08) through BDOS Function
   35's full three-byte result. Native random write to record 512 reports logical
   size 513, recorded total 1, allocation 2K, and two physical entries (the empty

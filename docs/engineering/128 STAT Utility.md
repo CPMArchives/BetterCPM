@@ -86,8 +86,8 @@ present in the repository. It does not claim byte-for-byte DRI output identity.
 | Command family | Current evidence | Qualification limit |
 | --- | --- | --- |
 | `STAT`, `d:`, `d:=R/O` | cpmsim: logged drives, R/W and R/O, independently counted 240K free-space fixture, assignment to only B, WBOOT clearing, rejection of `d:=R/W`, B3 restoration | Model 4 parity remains |
-| File statistics and wildcards | cpmsim: exact 161/513-record totals, allocation and physical-entry counts, 100 sorted files on 800K; instruction checks: accepted/rejected wildcard forms and 257-summary sorting | Model 4 parity remains |
-| `$S` logical size | cpmsim: sparse logical size 513 versus one recorded record; instruction checks: all 24 formatting bits | Model 4 sparse-file parity remains |
+| File statistics and wildcards | Both platforms: exact 161/513-record totals, allocation/entry counts and sorted wildcard output; cpmsim: 100 sorted files on 800K; instruction checks: parser forms and 257-summary sorting | Remaining qualification groups below |
+| `$S` logical size | Both platforms: sparse logical size 513 versus one recorded record and ordinary 161-record reporting; instruction checks: all 24 formatting bits | Passed targeted parity; retain final release evidence |
 | `$R/O`, `$R/W`, `$SYS`, `$DIR` | cpmsim: single-file and wildcard updates, every matching extent, exact whole-image comparisons and read-only rejection; instruction checks: all valid directory-slot success returns and FFh failure | Model 4 parity remains |
 | `DSK:`, `d:DSK:` | cpmsim: exact 332K/800K DPB fields, one/two logged drives and context restoration; instruction checks: word-carry boundaries | Model 4 parity remains |
 | `USR:` | cpmsim: empty disk, users 0/3/15/31 and B3 restoration | Model 4 parity remains |
@@ -167,3 +167,34 @@ as fresh results. All eight retained captures passed those assertions.
 The report retains STAT, boot media, invocation, screen captures and decoded
 text, plus hash evidence. This closes this bounded device-interface group;
 other Model 4 command families and actual BIOS IOBYTE routing remain open.
+
+### Model 4 file-statistics and DU parity — passed 2026-10-08
+
+`tools/test_model4_stat_files.py --report <new-directory>` captures six native
+commands. Exact checks cover 161 and 513 recorded records, 22K and 66K allocated,
+and two and five physical entries. Five reverse-created files must each appear
+once in ascending wildcard output. Numeric `3:` and combined `A3:` select the
+user-3 fixture, then return to A0:. A final unqualified lookup reports File Not
+Found, confirming no user-0 copy was accidentally selected or created.
+
+Every capture must show the completed return to the original prompt, and the
+entire private medium remains unchanged. The report retains STAT, boot media,
+invocation, decoded screen captures and binary/emulator/media hashes. Remaining
+Model 4 groups include wildcard attributes, drive/DPB/user reports,
+help and the BetterCP/M memory report.
+
+### Model 4 sparse `$S` parity — passed 2026-10-08
+
+`tools/test_model4_stat_sparse.py --report <new-directory>` creates a sparse
+file through native Make, random Write at record 512 and Close. Raw directory
+checks confirm two physical entries, one recorded record and one 2K allocation
+block. STAT reports 513 logical records, one recorded record, 2K allocated and
+two entries. An ordinary 161-record file reports identical logical and recorded
+counts, 22K allocated and two entries. Inspection leaves the whole medium
+unchanged.
+
+The report retains the creator source/binary, STAT, the pre-inspection image,
+invocations, captures and hash evidence. The harness requires explicit output
+and a returned prompt, then allows a short keyboard-settling interval before
+another command. The fixture creator is checked by its unique completion marker
+and prompt without requiring retention of its original command echo.
