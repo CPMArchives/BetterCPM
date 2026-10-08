@@ -85,12 +85,12 @@ present in the repository. It does not claim byte-for-byte DRI output identity.
 
 | Command family | Current evidence | Qualification limit |
 | --- | --- | --- |
-| `STAT`, `d:`, `d:=R/O` | cpmsim: logged drives, R/W and R/O, independently counted 240K free-space fixture, assignment to only B, WBOOT clearing, rejection of `d:=R/W`, B3 restoration | Model 4 parity remains |
+| `STAT`, `d:`, `d:=R/O` | cpmsim: logged drives, R/W and R/O, independently counted 240K free-space fixture, assignment to only B, WBOOT clearing, rejection of `d:=R/W`, B3 restoration | Model 4: exact R/W A: and independently counted 706K; R/O lifecycle and multiple drives remain |
 | File statistics and wildcards | Both platforms: exact 161/513-record totals, allocation/entry counts and sorted wildcard output; cpmsim: 100 sorted files on 800K; instruction checks: parser forms and 257-summary sorting | Remaining qualification groups below |
 | `$S` logical size | Both platforms: sparse logical size 513 versus one recorded record and ordinary 161-record reporting; instruction checks: all 24 formatting bits | Passed targeted parity; retain final release evidence |
 | `$R/O`, `$R/W`, `$SYS`, `$DIR` | Both platforms: wildcard updates across every matching extent, complete logical-media comparisons and read-only rejection; cpmsim: single-file updates; instruction checks: all valid success slots and FFh failure | Passed targeted parity; retain final release evidence |
-| `DSK:`, `d:DSK:` | cpmsim: exact 332K/800K DPB fields, one/two logged drives and context restoration; instruction checks: word-carry boundaries | Model 4 parity remains |
-| `USR:` | cpmsim: empty disk, users 0/3/15/31 and B3 restoration | Model 4 parity remains |
+| `DSK:`, `d:DSK:` | cpmsim: exact 332K/800K DPB fields, one/two logged drives and context restoration; Model 4: exact 780K A: fields through both forms; instruction checks: word-carry boundaries | Model 4 multiple-drive and nonzero-user context cases remain |
+| `USR:` | cpmsim: empty disk, users 0/3/15/31 and B3 restoration; Model 4: populated users 0/3/15 and return to A0 | Model 4 empty-disk and nonzero-user context cases remain |
 | `DEV:` and assignments | Instruction checks: all 16 legal selector values and unrelated-bit preservation; cpmsim: assignment lists, inspection and malformed operands; Model 4: default mapping, assignment list and inspection | Actual BIOS routing is a separate open 1.0 requirement |
 | `VAL:` | cpmsim: legal selector matrix, file options, multiple assignments, BAT explanation and unchanged IOBYTE | Model 4 parity remains |
 
@@ -214,3 +214,21 @@ rejection messages and exact physical DMK preservation. Each operation requires
 completion output and a returned prompt. The report retains STAT, the wrapper,
 initial/updated media, invocations, screen captures and hash evidence. No
 production STAT or OS change was required.
+
+### Model 4 drive/DPB/user reports — targeted cases passed 2026-10-08
+
+`tools/test_model4_stat_reports.py --report <new-directory>` checks five
+commands in independently bounded launches: bare STAT, A:, DSK:, A:DSK:
+and USR:. The private medium's directory and allocation pointers independently
+establish 706K free and populated users 0, 3 and 15. Both DPB forms must report
+all ten exact fields of the installed 780K SYSTEM profile, including 6,240
+records, 390 allocation blocks, 128 directory/check entries and two reserved
+tracks. Every command returns to A0 and leaves the complete DMK unchanged.
+
+The initial combined run stalled after its first capture; separate launches
+completed the standard cases. An additional A3:USR: test was removed because
+that command is outside the specified grammar. The final assertions passed
+against the five retained captures using `--verify-existing`, which also checks
+that each retained invocation matches the expected command. No production
+code change was required. R/O lifecycle, multiple-drive reporting, empty-disk
+user enumeration and nonzero-user context restoration remain separate cases.
