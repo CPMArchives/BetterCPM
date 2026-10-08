@@ -90,7 +90,24 @@ def main():
             if not rejected:
                 assert bytes(cpu.mem[cpu.hl:cpu.hl + cpu.b]).decode() == expected, text
                 assert cpu.mem[address('BC_OVER')] == overwrite
-    print('COPY CPX/transient exact 8.3, bounded wildcards and trailing /O parsing passed')
+        if origin == 0x100:
+            for text, overwrite, skip, rejected in [
+                    ('B1:F.DAT B3: /S', 0, 1, False),
+                    ('B1:F.DAT B3: /S /S   ', 0, 1, False),
+                    ('B1:F.DAT B3: /O /O', 1, 0, False),
+                    ('B1:F.DAT B3: /O /S', 0, 0, True),
+                    ('B1:F.DAT B3: /S /O', 0, 0, True)]:
+                cpu = Z80(b'')
+                cpu.mem[origin:origin + len(binary)] = binary
+                cpu.mem[0x7000:0x7000 + len(text)] = text.encode('ascii')
+                cpu.hl, cpu.b = 0x7000, len(text)
+                cpu.run(option_entry, limit=10000)
+                assert cpu.carry == rejected, text
+                if not rejected:
+                    assert bytes(cpu.mem[cpu.hl:cpu.hl + cpu.b]) == b'B1:F.DAT B3:'
+                    assert cpu.mem[address('BC_OVER')] == overwrite
+                    assert cpu.mem[address('CT_SKIP')] == skip
+    print('COPY CPX/transient filespec and transient /O-/S option parsing passed')
 
 
 if __name__ == '__main__':

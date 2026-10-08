@@ -65,6 +65,8 @@ def main():
                 ('COPY B1:F003.DAT B5: /O /O', b'COPY source destination'),
                 ('COPY B1:F003.DAT B5: /O EXTRA', b'COPY source destination'),
                 ('MOVE B1:F003.DAT B5: /O', b'COPY source destination')]):
+            if profile == 'transient' and command.endswith(' /O /O'):
+                continue  # Idempotent transient options are tested by test_z80pack_copy_skip.
             before = {p.name: p.read_bytes() for p in (work / 'disks').glob('*.dsk')}
             text = invoke(command, f'reject-{number}')
             assert expected in text, (command, text)
