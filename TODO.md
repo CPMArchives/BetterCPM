@@ -193,11 +193,13 @@ redistributable existing utility; an unchecked item does not by itself block
 1.0.
 
 - [ ] Implement `PIP.COM`.
-- [x] Implement `STAT.COM` command families. Final qualification remains open;
-  see `docs/engineering/128 STAT Utility.md` for the reconciled compatibility
-  checklist. Next: current Model 4 parity and preserved two-platform release
-  evidence.
-- [ ] Include final STAT edge-case coverage: empty disk/no wildcard matches;
+- [x] Implement and qualify `STAT.COM` (2026-10-08). Agreed stock command
+  families, numeric DU and inverse queries pass the targeted two-platform
+  campaign. Final MEM correction passes on both targets; size remains 5,912
+  bytes. Preserve the indexed qualification bundle for release assembly.
+  See `docs/engineering/128 STAT Utility.md`. BIOS IOBYTE routing and full
+  system conformance remain separate release requirements.
+- [x] Include final STAT edge-case coverage (2026-10-08): empty disk/no wildcard matches;
   nonzero-user restoration after success and errors; full directory and
   insufficient summary workspace with explicit, non-corrupting failure; MEM
   with resident RSXs and invalid/unavailable metadata; native malformed DU
@@ -337,6 +339,15 @@ redistributable existing utility; an unchecked item does not by itself block
   out-of-range DU users, extra operands and invalid wildcard syntax. Every
   case returns to B3 and preserves both complete disk images. No production
   code correction was required; retained captures pass final assertions.
+- [x] Qualify Model 4 STAT VAL/MEM and resource edge cases (2026-10-08).
+  Complete maps with and without a loaded RSX cover all 64K without overlap
+  or gaps; missing/invalid/version-mismatched metadata is rejected. Correct
+  STAT's loaded-RSX range to include the inactive original gateway's three
+  reserved bytes, without changing utility size or resident OS code.
+  Summary overflow guards pass at 0/1/100/128/384 slots. A full 128-entry
+  native directory completes; forced workspace failure rejects an attribute
+  request before mutation. Native cpmsim MEM load/unload and metadata parity
+  now pass, with unchanged media; evidence is consolidated in a hashed bundle.
 - [x] Report distinct STAT $S logical size (2026-10-08) through BDOS Function
   35's full three-byte result. Native random write to record 512 reports logical
   size 513, recorded total 1, allocation 2K, and two physical entries (the empty

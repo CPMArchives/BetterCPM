@@ -2180,7 +2180,7 @@ MEMREPORT:                              ; report BetterCP/M memory map
         INC     HL
         INC     HL
         INC     HL
-        LD      BC,LY_TPA-1
+        LD      BC,LY_TPA+2             ; include inactive original gateway
         LD      A,H
         CP      B
         JR      C,MRRSX

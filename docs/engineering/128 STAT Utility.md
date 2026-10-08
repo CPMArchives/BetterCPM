@@ -86,13 +86,13 @@ present in the repository. It does not claim byte-for-byte DRI output identity.
 | Command family | Current evidence | Qualification limit |
 | --- | --- | --- |
 | `STAT`, `d:`, `d:=R/O` | cpmsim: logged drives, R/W and R/O, independently counted 240K free-space fixture, assignment to only B, WBOOT clearing, rejection of `d:=R/W`, B3 restoration | Model 4: exact A:/B: status and free space, B-only R/O vector, WBOOT clearing and rejected R/W; Targeted Model 4 drive parity passed |
-| File statistics and wildcards | Both platforms: exact 161/513-record totals, allocation/entry counts and sorted wildcard output; cpmsim: 100 sorted files on 800K; instruction checks: parser forms and 257-summary sorting | Remaining qualification groups below |
+| File statistics and wildcards | Both platforms: exact 161/513-record totals, allocation/entry counts and sorted wildcard output; cpmsim: 100 sorted files on 800K; instruction checks: parser forms and 257-summary sorting | Targeted native and boundary checks passed |
 | `$S` logical size | Both platforms: sparse logical size 513 versus one recorded record and ordinary 161-record reporting; instruction checks: all 24 formatting bits | Passed targeted parity; retain final release evidence |
 | `$R/O`, `$R/W`, `$SYS`, `$DIR` | Both platforms: wildcard updates across every matching extent, complete logical-media comparisons and read-only rejection; cpmsim: single-file updates; instruction checks: all valid success slots and FFh failure | Passed targeted parity; retain final release evidence |
-| `DSK:`, `d:DSK:` | cpmsim: exact 332K/800K DPB fields, one/two logged drives and context restoration; Model 4: exact 780K A: and 800K B: fields, one/two logged drives; instruction checks: word-carry boundaries | Model 4 Targeted Model 4 drive parity passed |
+| `DSK:`, `d:DSK:` | cpmsim: exact 332K/800K DPB fields, one/two logged drives and context restoration; Model 4: exact 780K A: and 800K B: fields, one/two logged drives; instruction checks: word-carry boundaries | Targeted Model 4 drive parity passed |
 | `USR:` | cpmsim: empty disk, users 0/3/15/31 and B3 restoration; Model 4: populated users 0/3/15 and return to A0 | Targeted Model 4 empty-disk and B3 restoration passed |
 | `DEV:` and assignments | Instruction checks: all 16 legal selector values and unrelated-bit preservation; cpmsim: assignment lists, inspection and malformed operands; Model 4: default mapping, assignment list and inspection | Actual BIOS routing is a separate open 1.0 requirement |
-| `VAL:` | cpmsim: legal selector matrix, file options, multiple assignments, BAT explanation and unchanged IOBYTE | Model 4 parity remains |
+| `VAL:` | cpmsim: legal selector matrix, file options, multiple assignments, BAT explanation and unchanged IOBYTE | Both native platforms have targeted VAL coverage |
 
 The fixed 64-file summary buffer has been removed. Storage is bounded by both
 the selected directory and available transient memory; executed-code checks
@@ -100,21 +100,27 @@ cover 384 summaries, capacity bounds and explicit overflow. Those checks do
 not substitute for a native large-directory listing through the full BDOS path;
 the 100-file 800K qualification below now supplies that separate evidence.
 
-### Remaining bounded qualification
+### Qualification closure — 2026-10-08
 
-1. Bring the Model 4/trs80gp campaign up to the same required command cases,
-   using completion/output evidence rather than fixed delays. The existing
-   `test_stat.py` is smoke coverage: several assertions check only broad text
-   presence, and each invocation uses a fixed four-second run delay. Its
-   existence alone is not evidence that the current implementation passes.
-2. Preserve the final platform binaries, commands and results, including the
-   numeric DU and `MEM` extensions, and close the separate BIOS IOBYTE routing
-   qualification before claiming device assignments operate on both platforms.
+The agreed STAT utility behavior and retained edge-case campaign are qualified.
+The targeted native campaigns cover both platforms; the corrected MEM report
+passes on each. This is utility qualification, not completion of the full 1.0
+system conformance campaign or a claim that every BIOS selector routes I/O.
+Actual BIOS IOBYTE routing remains a separately tracked release requirement.
+
+Final STAT.COM is 5,912 bytes, SHA-256
+`a4ca926e0de437a2da529a67b03c998db58d9d500801fa7d1ace0aa1eec4e1f4`.
+`tools/collect_stat_qualification.py` consolidates passing reports, final binary,
+source snapshots, transcripts, media, invocations and per-file hashes in a
+local bundle. Earlier independent cases retain their original binary hashes;
+the final change is confined to the MEM range endpoint. Corrected native MEM
+campaigns and summary boundary guards run the final binary. Retained screen
+tails in full-directory tests supplement the complete 100-file listing check.
 
 ### Edge cases retained for final qualification
 
-Include these cases in the remaining bounded campaign, reusing established
-coverage where it already supplies the required evidence:
+The following cases are covered by the retained targeted campaigns and
+executed-code boundary tests:
 
 - Empty disk and wildcard patterns matching no files.
 - Invocation from a nonzero user: restore drive/user after both success and
@@ -293,3 +299,54 @@ identity and executing the remaining cases. The report preserves production
 STAT, the context wrapper and listing, invocations, captures, images and hashes.
 No production STAT or OS correction was required. Help/MEM parity and the
 remaining resource/metadata edge-case evidence remain open.
+
+### Model 4 help, MEM and resource edge cases — passed 2026-10-08
+
+`tools/test_model4_stat_help_memory.py --report <new-directory>` checks the
+complete VAL help and selector matrix, then MEM with no RSX and with ECHO
+loaded through the real manager and runtime overlays. Every reported range
+must have the correct inclusive size, descend without gaps or overlaps, and
+together cover all 65,536 bytes. The maximum COM size must agree with the
+live gateway boundary and shrink after loading the RSX. Test-only copies
+redirect metadata lookup to absent, invalid-signature and unsupported-version
+records; all reject the record without printing a map or changing media.
+The real ECB is never modified by these rejection fixtures.
+
+The loaded-RSX case exposed a three-byte gap in STAT's map: the original
+CP/M gateway location remains reserved but is inactive while the active
+gateway moves lower. STAT now includes those bytes in the loaded-RSX
+allocation range. The original gateway location is retained for the no-RSX
+layout; no memory-layout or lifecycle change was made. The correction changes
+only an immediate endpoint value, retaining the 5,912-byte utility size.
+Final STAT SHA-256 is
+`a4ca926e0de437a2da529a67b03c998db58d9d500801fa7d1ace0aa1eec4e1f4`.
+The initial fixture lacked RSX runtime overlays and incorrectly expected a
+LOAD success message; the completed campaign uses the required overlays,
+silent LOAD success and the returned prompt. All final checks passed.
+
+`tools/test_stat_capacity.py` exercises actual summary code at zero, one,
+100, 128 and 384 available slots, requiring explicit overflow and preservation
+of guard bytes beyond each workspace. It also retains the existing 384-summary
+and multi-extent aggregation checks. These checks passed on the corrected
+STAT binary.
+
+`tools/test_model4_stat_capacity.py --report <new-directory>` fills all 128
+directory entries, including 119 reverse-created matching files. The native
+listing completes with the expected sorted tail and exact per-file totals.
+A test-only zero-slot copy rejects a SYS attribute request with the explicit
+insufficient-memory diagnostic before any mutation; the complete medium
+remains unchanged. Full-listing coverage is supplied by the existing 100-file
+campaign; this full-directory case checks the retained screen tail and normal
+completion. Resource cases ran before the independent MEM endpoint correction.
+
+### Native cpmsim MEM parity — passed 2026-10-08
+
+`tools/test_z80pack_stat_memory.py --report <new-directory>` checks the final
+STAT binary with no RSX, with ECHO loaded and after unload. Complete maps must
+cover all 64K without gaps or overlaps; the maximum COM size agrees with the
+live gateway and returns to its original value after unload. Missing, invalid
+signature and unsupported-version metadata records all produce the specified
+rejection diagnostic without printing a map. All four complete runtime disk
+images remain unchanged. The report preserves binaries, transcripts, commands,
+media and hashes. This closes native MEM parity and the retained metadata
+edge cases. Actual BIOS IOBYTE routing remains a separate release requirement.
