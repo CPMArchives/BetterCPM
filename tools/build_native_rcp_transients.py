@@ -3,16 +3,24 @@
 from __future__ import annotations
 
 import argparse
+import re
 import shutil
 import tempfile
 from pathlib import Path
 from system_layout import expand_layout
 
-from build_rcp_transients import BUILD, COMMANDS, ROOT, SOURCE, symbol, transient
+from build_rcp_transients import BUILD, COMMANDS, ROOT, SOURCE, copy_source, symbol, transient
 from build_native_trs80 import (
     DEFAULT_CPMSIM, DEFAULT_SYSTEM, DEFAULT_TEMPLATE, DEFAULT_TOOLS,
     blank, cpm_text, run,
 )
+
+
+def initialized_workspace(text: str) -> str:
+    # LINK leaves DS bytes unspecified; cross assembly emits FF-filled space.
+    # Emit the same initial bytes natively for reproducible full-image comparison.
+    return re.sub(r"(?m)^(.*?:)\s+DS\s+([0-9*]+)\s*$",
+                  r"\1\n        REPT \2\n        DB 0FFH\n        ENDM", text)
 
 
 def main() -> None:
@@ -38,9 +46,13 @@ def main() -> None:
         text = expand_layout(SOURCE.read_text(encoding="ascii")).replace(
             "CPXBASE         EQU     08000H", "CPXBASE         EQU     00100H")
         staged = work / "BASX.MAC"
-        staged.write_bytes(text.replace("\n", "\r\n").encode("ascii") + b"\x1a")
+        staged.write_bytes(initialized_workspace(text).replace("\n", "\r\n").encode("ascii") + b"\x1a")
         run("cpmcp", "-f", "ibm-3740", str(disks / "drivec.dsk"),
             str(staged), "0:BASX.MAC")
+        copy_staged = work / "COPYX.MAC"
+        copy_staged.write_bytes(initialized_workspace(copy_source(text)).replace("\n", "\r\n").encode("ascii") + b"\x1a")
+        run("cpmcp", "-f", "ibm-3740", str(disks / "drivec.dsk"),
+            str(copy_staged), "0:COPYX.MAC")
         for tool in ("ZSM4.COM", "LINK.COM"):
             run("cpmcp", "-f", "ibm-3740", str(disks / "drived.dsk"),
                 str(args.tools / tool), f"0:{tool}")
@@ -53,6 +65,12 @@ send -- "D:ZSM4 B:BASX=C:BASX\r"
 expect -re {{Errors: +0}}
 expect "B>"
 send -- "D:LINK BASX\\[A\\]\r"
+expect "CODE SIZE"
+expect "B>"
+send -- "D:ZSM4 B:COPYX=C:COPYX\r"
+expect -re {{Errors: +0}}
+expect "B>"
+send -- "D:LINK COPYX\\[A\\]\r"
 expect "CODE SIZE"
 expect "B>"
 send "\034"
@@ -69,10 +87,19 @@ expect eof
             "0:BASX.COM", str(native_com))
         base = native_com.read_bytes()[:(BUILD / "rcp-transient.bin").stat().st_size]
         for command, entry_name in COMMANDS.items():
-            native = transient(base, symbol(BUILD / "rcp-transient.lst", entry_name))
+            command_base, listing = base, BUILD / "rcp-transient.lst"
+            if command == "COPY":
+                native_copy = work / "COPYX.COM"
+                run("cpmcp", "-f", "ibm-3740", str(disks / "driveb.dsk"),
+                    "0:COPYX.COM", str(native_copy))
+                command_base = native_copy.read_bytes()[:(BUILD / "copy-transient.bin").stat().st_size]
+                listing = BUILD / "copy-transient.lst"
+            native = transient(command_base, symbol(listing, entry_name))
             cross = (BUILD / f"{command}.COM").read_bytes()
             if native != cross:
-                raise SystemExit(f"native/cross {command}.COM mismatch")
+                (BUILD / f"{command}-native-mismatch.COM").write_bytes(native)
+                first = next((i for i, pair in enumerate(zip(native, cross)) if pair[0] != pair[1]), min(len(native), len(cross)))
+                raise SystemExit(f"native/cross {command}.COM mismatch at {first}: lengths {len(native)}/{len(cross)}")
             (BUILD / f"{command}-native.COM").write_bytes(native)
             print(f"{command}: {len(native)} byte-identical bytes")
 

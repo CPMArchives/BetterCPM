@@ -54,6 +54,18 @@ def transient(image: bytes, entry: int) -> bytes:
     return bytes(result)
 
 
+def copy_source(text: str) -> str:
+    """Replace only the transient COPY wildcard driver; keep CPX untouched."""
+    start = text.index("BC_WSTART:")
+    end = text.index("BC_WCMP:", start)
+    batch = (SOURCE.parent / "copy-batch.inc").read_text(encoding="ascii")
+    text = text[:start] + batch + text[end:]
+    state = "\nCT_COUNT: DB 0\nCT_LEFT: DB 0\nCT_END: DW 0\nCT_CURSOR: DW 0\n"
+    state += "CT_FULLMSG: DB 13,10,'COPY BATCH TOO LARGE',13,10,'$'\nCT_NAMES: DS 64*11\n"
+    marker = "        .DEPHASE" if "        .DEPHASE" in text else "        END\n"
+    return text.replace(marker, state + marker, 1)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--assembler", type=Path,
@@ -70,7 +82,13 @@ def main() -> None:
     base = assemble(args.assembler, text, BUILD / "rcp-transient.bin",
                     listing, ORIGIN)
     for command, entry_name in COMMANDS.items():
-        data = transient(base, symbol(listing, entry_name))
+        command_base, command_listing = base, listing
+        if command == "COPY":
+            copy_text = copy_source(text)
+            command_listing = BUILD / "copy-transient.lst"
+            command_base = assemble(args.assembler, copy_text,
+                                    BUILD / "copy-transient.bin", command_listing, ORIGIN)
+        data = transient(command_base, symbol(command_listing, entry_name))
         output = BUILD / f"{command}.COM"
         output.write_bytes(data)
         print(f"{hashlib.sha256(data).hexdigest()}  {output.relative_to(ROOT)}")

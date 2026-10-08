@@ -13,7 +13,7 @@ def main():
                'FILE.COM EXTRA', 'FILE.\x01', 'FILE.\x7f']
     for binary_path, listing_path, origin in [
             ('build/cpx/rcp.bin', 'build/cpx/rcp.lst', 0x8000),
-            ('build/utilities/COPY.COM', 'build/utilities/rcp-transient.lst', 0x100)]:
+            ('build/utilities/COPY.COM', 'build/utilities/copy-transient.lst', 0x100)]:
         binary = (ROOT / binary_path).read_bytes()
         listing = (ROOT / listing_path).read_text()
         entry = int(re.search(r'^([0-9a-f]{4})\s+.*?\bBC_CVALID:', listing, re.M | re.I)[1], 16)
