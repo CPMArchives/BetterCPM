@@ -219,6 +219,13 @@ redistributable existing utility; an unchecked item does not by itself block
   pass through native BDOS. All DPB fields and independently counted 512K
   free space match; inspection leaves the whole image unchanged. The test
   retains binaries, private media, transcript and hashes via --report.
+- [x] Qualify the STAT device interface on Model 4/trs80gp (2026-10-08).
+  Default 95h selectors, multiple assignments, shared/unused inverse targets,
+  invalid queries and unchanged mappings/media pass in eight captured commands.
+  The harness waits for output and the returned prompt before sending the next
+  command; assertions inspect only output following that command's echo.
+  Actual BIOS selector routing and the remaining STAT command families still
+  require their separate qualification. No production code change was needed.
 - [ ] Required 1.0 qualification: close the standard CP/M 2.2 IOBYTE routing
   gap on Model 4/trs80gp and z80pack/cpmsim. Audit STAT's advertised assignments
   against actual BIOS behavior; implement and test supported selector routing,

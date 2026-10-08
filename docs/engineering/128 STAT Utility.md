@@ -91,7 +91,7 @@ present in the repository. It does not claim byte-for-byte DRI output identity.
 | `$R/O`, `$R/W`, `$SYS`, `$DIR` | cpmsim: single-file and wildcard updates, every matching extent, exact whole-image comparisons and read-only rejection; instruction checks: all valid directory-slot success returns and FFh failure | Model 4 parity remains |
 | `DSK:`, `d:DSK:` | cpmsim: exact 332K/800K DPB fields, one/two logged drives and context restoration; instruction checks: word-carry boundaries | Model 4 parity remains |
 | `USR:` | cpmsim: empty disk, users 0/3/15/31 and B3 restoration | Model 4 parity remains |
-| `DEV:` and assignments | Instruction checks: all 16 legal selector values and unrelated-bit preservation; cpmsim: assignment lists, inspection and malformed operands | Actual BIOS routing is a separate open 1.0 requirement |
+| `DEV:` and assignments | Instruction checks: all 16 legal selector values and unrelated-bit preservation; cpmsim: assignment lists, inspection and malformed operands; Model 4: default mapping, assignment list and inspection | Actual BIOS routing is a separate open 1.0 requirement |
 | `VAL:` | cpmsim: legal selector matrix, file options, multiple assignments, BAT explanation and unchanged IOBYTE | Model 4 parity remains |
 
 The fixed 64-file summary buffer has been removed. Storage is bounded by both
@@ -149,3 +149,21 @@ rows, every row's recorded/allocation/entry totals, all 800K DPB fields, and
 512K free space independently calculated from raw allocation entries. The
 entire B image remains unchanged after inspection. The report retains the
 private media, setup and STAT binaries, transcript and JSON hash evidence.
+
+### Model 4 device-interface parity — passed 2026-10-08
+
+`tools/test_model4_stat_devices.py --report <new-directory>` captures eight
+commands covering the cold 95h mapping, multiple assignments, both CRT inverse
+matches, PTP's assignment, unused UP1, unknown/malformed targets, and unchanged
+mapping after queries. The entire private boot disk remains unchanged.
+
+The emulator waits for the expected output and the returned `A0>` prompt,
+distinguishing it from the command echo. Output alone is insufficient: the
+initial timing probe showed that warm boot could still be in progress after
+STAT printed its result. Assertions scope each expected line to output after
+the corresponding command echo, so retained earlier screen lines cannot count
+as fresh results. All eight retained captures passed those assertions.
+
+The report retains STAT, boot media, invocation, screen captures and decoded
+text, plus hash evidence. This closes this bounded device-interface group;
+other Model 4 command families and actual BIOS IOBYTE routing remain open.
