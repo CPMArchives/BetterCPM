@@ -1135,7 +1135,7 @@ BC_RNQL:                                ; rnql
   ; normalized before either disk is touched:
   ;
   ;       COPY source destination
-  ;       COPY destination:=source
+  ;       COPY destination=source
   ;
   ; MOVE erases its source only after the new file has closed successfully.
 
@@ -1192,40 +1192,47 @@ BC_COPY:                                ; execute COPY command
         LD      (BC_CBLEN),A
         LD      C,0
 
-BC_CFIND:                               ; cfind
+BC_CFIND:                               ; locate assignment separator
         LD      A,B
-        CP      2
-        JR      C,BC_CSPACE
+        OR      A
+        JR      Z,BC_CSPACE
         LD      A,(HL)
-        CP      ':'
-        JR      NZ,BC_CFNXT
-        INC     HL
-        LD      A,(HL)
-        DEC     HL
         CP      '='
         JR      Z,BC_CASSIGN
 
-BC_CFNXT:                               ; cfnxt
+BC_CFNXT:
         INC     HL
         INC     C
         DEC     B
         JR      BC_CFIND
 
-BC_CASSIGN:                             ; cassign
+BC_CASSIGN:
+        LD      E,1                    ; COPY uses plain equals
+        LD      A,(BC_MVFLAG)
+        OR      A
+        JR      Z,BC_CAEQUAL
+        LD      A,C                    ; preserve MOVE's existing := form
+        OR      A
+        JP      Z,BC_CSYNT
+        DEC     HL
+        LD      A,(HL)
+        CP      ':'
+        JP      NZ,BC_CSYNT
+        DEC     C
+        INC     E
+BC_CAEQUAL:
         LD      A,C
         OR      A
         JP      Z,BC_CSYNT
         LD      HL,(BC_CBASE)
         LD      (BC_CDPTR),HL
         LD      (BC_CDLEN),A
-        LD      E,A
         LD      D,0
+        ADD     A,E
+        LD      E,A
         ADD     HL,DE
-        INC     HL
-        INC     HL
         LD      A,(BC_CBLEN)
-        SUB     C
-        SUB     2
+        SUB     E
         JP      Z,BC_CSYNT
         LD      (BC_CSPTR),HL
         LD      (BC_CSLEN),A
@@ -2146,7 +2153,7 @@ BC_MERASE:     DB      8,' ',8,8,' ',8,8,' ',8,8,' ',8 ; MOVE erase-error messag
 BC_REXMSG:     DB      13,10,'FILE EXISTS',13,10,'$' ; rename target-exists message
 BC_WRITEERR:   DB      13,10,'WRITE ERROR',13,10,'$' ; write-error message
 BC_MVERR:      DB      13,10,'COPY MADE; SOURCE NOT ERASED',13,10,'$' ; MOVE error message
-BC_CUSAGE:     DB      13,10,'COPY source destination OR destination:=source [/O]',13,10,'$' ; COPY/MOVE usage message
+BC_CUSAGE:     DB      13,10,'COPY source destination OR destination=source [/O]',13,10,'$' ; COPY/MOVE usage message
 BC_RQMARK:     DB      13,10,'?',13,10,'$' ; rename wildcard-error message
 BC_NOSPACE:    DB      13,10,'NO SPACE',13,10,'$' ; disk-full message
 BC_VERSION:    DB      13,10,'BetterCP/M 0.3',13,10,'$' ; version heading

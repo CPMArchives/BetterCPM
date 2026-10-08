@@ -78,7 +78,7 @@ def main():
             commands.append((command.encode() + b'\r', b'A0>_ ', 60))
             return session(simulator, work / 'disks', commands, work / (label + '.txt'))
         for label, command, user, destination in [('copy', 'COPY B1:F***.DAT B3:', 3, b),
-                                                  ('assign', 'COPY B4::=B1:F?*.DAT', 4, b),
+                                                  ('assign', 'COPY B4:=B1:F?*.DAT', 4, b),
                                                   ('cross-drive', 'COPY B1:F*.DAT C2:', 2, work / 'disks/drivec.dsk')]:
             text = invoke(command, label)
             for error in (b'NO FILE', b'FILE EXISTS', b'COPY source destination', b'READ ERROR', b'WRITE ERROR', b'NO SPACE'):

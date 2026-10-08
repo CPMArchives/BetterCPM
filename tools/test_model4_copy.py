@@ -82,7 +82,7 @@ def main():
                 texts.append(text)
             return texts[len(setup):]
         commands = [('COPY A1:S*.DAT B3:', 'A0'), ('COPY A1:S*.DAT B4: /O', 'A0'),
-                    ('COPY B5::=A1:S?*.DAT', 'A0'), ('COPY A1:LARGE.DAT B31:', 'A0')]
+                    ('COPY B5:=A1:S?*.DAT', 'A0'), ('COPY A1:LARGE.DAT B31:', 'A0')]
         texts = invoke('success', commands)
         for text in texts:
             assert not any(error in text for error in ('FILE EXISTS', 'NO FILE', 'NO SPACE', 'READ ONLY', 'COPY source destination')), text
