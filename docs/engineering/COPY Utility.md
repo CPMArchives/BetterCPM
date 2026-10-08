@@ -13,16 +13,16 @@ separate design work; no handoff ABI is introduced by this increment.
 The implementation is shared in `src/cpx/rcp.mac`; `build_rcp_transients.py`
 builds COPY.COM from the same command body. Both source/destination and
 `destination:=source` forms support explicit drive/user qualifiers and copy
-one exact filename. Existing destinations and exact self-copies are refused.
+exact filenames or supported source wildcards. Existing destinations are refused
+unless `/O` is supplied; exact self-copies are always refused.
 R/O, SYS and ARC attributes are already copied after a successful destination
 close. Prior native qualification covers all eight attribute combinations in
 CPX and transient profiles. MOVE uses the same engine and erases its source
 only after successful copy/close and attribute handling.
 
 The agreed common implementation now includes source wildcards/multiple files
-and explicit overwrite control, qualified below. Final two-platform COPY
-qualification remains. Destination DU shorthand is implemented below. These are not
-claimed complete by the parser correction below. Destination wildcard renaming,
+and explicit overwrite control. The final two-platform campaign below qualifies
+that common subset, including destination DU shorthand. Destination wildcard renaming,
 concatenation, device transfers, transformations and the handoff proposal need
 separate contracts before implementation.
 
@@ -212,5 +212,60 @@ python3 tools/test_z80pack_copy_overwrite.py --image-dir <fresh-runtime> --repor
 RCP code grows from 3,584 to **3,733 bytes** (+149); rounded allocation grows
 from 3,584 to **3,840 bytes** (+256). COPY.COM shares the same 3,733-byte body.
 BIOS/BDOS code and memory boundaries are unchanged by this increment. The
-agreed common COPY implementation is now present; final two-platform COPY
-qualification and the deferred handoff discussion remain.
+agreed common COPY implementation is now present. The final campaign below
+closes its utility qualification; the deferred handoff discussion remains.
+
+
+## Final common COPY qualification — passed, 2026-10-08
+
+Both CPX and transient profiles pass on trs80gp Model 4 and cpmsim. The CPX
+cases omit COPY.COM, proving that the resident implementation handles them.
+The transient cases unload RCP before running COPY.COM.
+
+Model 4 checks SYSTEM-to-DATA transfers, both command grammars, wildcard
+batches, explicit overwrite, all eight R/O/SYS/ARC combinations, zero-length
+files, user 31, and restoration to the A0 caller. Payloads and directory
+entries are inspected independently after execution. Replacing a 257-record
+file with a one-record source removes every old extent and tail. A separate
+17-record transfer crosses an allocation-block boundary. The source disk
+remains byte-for-byte unchanged and an unrelated destination file survives.
+
+Default collisions, read-only overwrite, self-copy, no matches, malformed
+wildcards, destination wildcards, user 32, and duplicate overwrite options
+produce the expected errors without changing either disk. Full-directory
+failure leaves physical media unchanged. Full-allocation failure removes the
+incomplete destination while preserving existing files and their metadata.
+
+The final cpmsim filespec and DU regressions also pass. The retained wildcard
+and overwrite campaigns use the same final COPY/RCP binaries on EXM=0 and
+EXM=1 formats, including 513-record sources, replacement of longer
+769-record targets, attribute preservation, and mid-batch collision behavior.
+Earlier copies in a batch remain completed when a later copy fails.
+
+The first large Model 4 batch exceeded its short deadline during native
+floppy I/O. A bounded single-record probe completed in 27 seconds; the final
+campaign uses smaller transfers for platform checks and retains the larger
+extent cases under cpmsim. No production code correction was needed.
+
+Reproduce Model 4 qualification with:
+
+```sh
+python3 tools/test_model4_copy.py --report /private/tmp/copy-model4-new
+```
+
+Optional `--profile cpx` or `--profile transient` runs one profile. The
+qualification uses isolated emulator sessions and disposable media through
+the established LaunchServices launcher.
+
+The indexed evidence bundle is
+`/private/tmp/copy-final-qualification-2026-10-08/manifest.json`. It preserves
+seven passing reports, commands, console captures, fixture/result media,
+final binaries, source snapshots and SHA-256 hashes. The collector rejects
+reports tested with different COPY/RCP binaries, and checks BDOS hashes where
+reported. Reproduce collection with `tools/collect_copy_qualification.py
+--output NEW_DIRECTORY --case LABEL=REPORT` for each retained report.
+
+Shared code remains 3,733 bytes, rounded RCP allocation 3,840 bytes, and BDOS
+3,555 bytes. The agreed common COPY subset is complete and qualified. Extended
+transient features, CPX-to-transient handoff, and the full release conformance
+campaign remain separate work.
