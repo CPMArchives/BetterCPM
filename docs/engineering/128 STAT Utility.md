@@ -88,7 +88,7 @@ present in the repository. It does not claim byte-for-byte DRI output identity.
 | `STAT`, `d:`, `d:=R/O` | cpmsim: logged drives, R/W and R/O, independently counted 240K free-space fixture, assignment to only B, WBOOT clearing, rejection of `d:=R/W`, B3 restoration | Model 4 parity remains |
 | File statistics and wildcards | Both platforms: exact 161/513-record totals, allocation/entry counts and sorted wildcard output; cpmsim: 100 sorted files on 800K; instruction checks: parser forms and 257-summary sorting | Remaining qualification groups below |
 | `$S` logical size | Both platforms: sparse logical size 513 versus one recorded record and ordinary 161-record reporting; instruction checks: all 24 formatting bits | Passed targeted parity; retain final release evidence |
-| `$R/O`, `$R/W`, `$SYS`, `$DIR` | cpmsim: single-file and wildcard updates, every matching extent, exact whole-image comparisons and read-only rejection; instruction checks: all valid directory-slot success returns and FFh failure | Model 4 parity remains |
+| `$R/O`, `$R/W`, `$SYS`, `$DIR` | Both platforms: wildcard updates across every matching extent, complete logical-media comparisons and read-only rejection; cpmsim: single-file updates; instruction checks: all valid success slots and FFh failure | Passed targeted parity; retain final release evidence |
 | `DSK:`, `d:DSK:` | cpmsim: exact 332K/800K DPB fields, one/two logged drives and context restoration; instruction checks: word-carry boundaries | Model 4 parity remains |
 | `USR:` | cpmsim: empty disk, users 0/3/15/31 and B3 restoration | Model 4 parity remains |
 | `DEV:` and assignments | Instruction checks: all 16 legal selector values and unrelated-bit preservation; cpmsim: assignment lists, inspection and malformed operands; Model 4: default mapping, assignment list and inspection | Actual BIOS routing is a separate open 1.0 requirement |
@@ -180,7 +180,7 @@ Found, confirming no user-0 copy was accidentally selected or created.
 Every capture must show the completed return to the original prompt, and the
 entire private medium remains unchanged. The report retains STAT, boot media,
 invocation, decoded screen captures and binary/emulator/media hashes. Remaining
-Model 4 groups include wildcard attributes, drive/DPB/user reports,
+Model 4 groups include drive/DPB/user reports,
 help and the BetterCP/M memory report.
 
 ### Model 4 sparse `$S` parity — passed 2026-10-08
@@ -198,3 +198,19 @@ invocations, captures and hash evidence. The harness requires explicit output
 and a returned prompt, then allows a short keyboard-settling interval before
 another command. The fixture creator is checked by its unique completion marker
 and prompt without requiring retention of its original command echo.
+
+### Model 4 wildcard attribute parity — passed 2026-10-08
+
+`tools/test_model4_stat_attributes.py --report <new-directory>` applies R/O,
+R/W, SYS and DIR to two files occupying seven physical entries. Initial
+attributes differ, including ARC on one selected file. A nonmatching five-entry
+file and a matching filename in user 3 serve as preservation controls.
+
+After each operation, the complete extracted logical image must equal an
+independently constructed expected image permitting only the requested
+attribute-bit changes. This verifies every selected extent and preserves
+unrelated metadata and payload. A test-only R/O wrapper checks both per-file
+rejection messages and exact physical DMK preservation. Each operation requires
+completion output and a returned prompt. The report retains STAT, the wrapper,
+initial/updated media, invocations, screen captures and hash evidence. No
+production STAT or OS change was required.
