@@ -39,6 +39,6 @@ this directory.
 ### Shared DU selection include
 
 `common/duselect.inc` is the internal source library for Specification 208.
-Its initial conventional parser and bitmap iterator are qualified by
-`tools/test_du_select.py`; extended lists/ranges and utility adoption remain
-pending. Callers supply the selection map and workspace described in the include.
+Its single/compound scope parser and bitmap iterator are qualified by
+`tools/test_du_select.py`, with native assembler parity checked by
+`tools/build_native_du_select.py`. Utility adoption remains pending. Callers supply the selection map and workspace described in the include.

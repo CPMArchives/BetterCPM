@@ -391,3 +391,38 @@ cleared output, unsupported extended forms, empty-map exhaustion, and all
 512 drive/user bitmap positions in canonical order. The include is 314 bytes;
 64-byte map and 12-byte workspace are additional caller storage. Tests pass.
 Native assembler parity and utility-level qualification remain pending.
+
+
+## 14. Extended scope library increment — 2026-10-09
+
+The same include now parses per-drive user lists and nonrecursive compound
+DU lists. It supports singleton users, mixed items, inclusive closed ranges,
+open lower/upper/both endpoints, normalized descending endpoints, and bare
+user terms inheriting the original caller drive. Each compound term resolves
+omitted components independently against the original caller DU. Setting bits
+unions overlapping and duplicate selections without ordering the input.
+
+The parser keeps the 64-byte map and 12-byte caller workspace. The calling
+convention from section 13 is unchanged except that error code 3 (temporarily
+unsupported extended syntax) is retired: malformed selectors return code 1;
+out-of-domain values return code 2. Helpers unwind their calls before the
+outer parser clears the entire map on failure. Error HL points at the offending
+byte or at the counted-input end for truncation. Success returns the filename
+pointer/count without validating or altering that filename.
+
+Strict commas, required colons, balanced construct-specific brackets, decimal
+one/two-digit users, case-insensitive drives and no selector whitespace are
+enforced. `[*]`, recursive compound lists, nested user lists and malformed
+ranges fail; `[-]` selects all users. No changes to DIR, STAT, CCP or BDOS are
+included. File-pattern and option validation remain the adopting utility's
+responsibility before it acts on any selection.
+
+The include is now 571 bytes (+257); map/workspace sizes remain unchanged.
+`tools/test_du_select.py` passes conventional regressions, the agreed compound
+inheritance example, equivalent singleton spellings, mixed/open ranges,
+duplicates/overlaps, malformed and truncated inputs, all 1,024 closed-range
+endpoint pairs, and all 512 iterator positions. Native ZSM4/LINK emits the
+same 571 bytes as host assembly; reproducible native parity is provided by
+`tools/build_native_du_select.py` with its log at
+`build/du-select/NATIVE-DU-BUILD.LOG`. Utility integration and native operation
+qualification are the next increments.
