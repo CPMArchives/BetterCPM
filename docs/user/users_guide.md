@@ -956,10 +956,10 @@ These extended forms require `COPY.COM`. Use `:COPY` or `.COPY` to select it
 explicitly while automatic resident-to-transient handoff remains pending.
 
 
-##### COPY attribute selection and planned backup
+##### COPY attribute selection and backup
 
-**Source attribute selection and destination attribute qualifiers are implemented
-in transient COPY.COM. /BACKUP remains planned and is not yet available.**
+**Source attribute selection, destination attribute qualifiers, and /BACKUP
+are implemented in transient COPY.COM.**
 
 For example, this supported command selects ARC-marked files across all B:
 users and copies them to D0:, preserving attributes without changing source ARC:

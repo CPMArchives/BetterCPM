@@ -799,3 +799,25 @@ Source and /V recovery regressions pass:
 `/private/tmp/copy-dest-source-regression-20261010/evidence.json` and
 `/private/tmp/copy-dest-verify-regression-20261010/evidence.json`.
 User guide and design status updated; exported manuals are not regenerated.
+
+
+## 2026-10-10 — Explicit backup completion
+
+Transient COPY accepts `/BACKUP` in leading or trailing option groups. It does
+not imply `/V`, `/B`, or an ARC source predicate. After successful close and any
+requested verification, destination attributes are applied with ARC forced
+clear, then source ARC is cleared while other attributes are preserved.
+Destination metadata failure prevents the source update. Either metadata
+failure retains copied data, counts the file as failed, reports
+`DATA COPIED; ATTRIBUTE STATUS INCOMPLETE`, and permits the batch to continue.
+Skipped files, failed verification, and incomplete transfers do not clear source
+ARC. Contradictory destination qualifiers remain invalid before writes.
+
+COPY.COM is 9,576 bytes (217 bytes above the destination-qualifier increment).
+All six native ZSM4/LINK outputs match host builds. No resident CPX, CCP, BIOS,
+or BDOS change is required. Native evidence is preserved in
+`/private/tmp/copy-backup-full-20261010/evidence.json`: leading/trailing options,
+all eight attribute states, read-only sources, multi-extent source/destination
+entries, destination ARC override, malformed options, contradictions, skipped
+collisions, verification failure, and controlled destination/source metadata
+failures. Earlier pending-backup notes describe historical implementation state.

@@ -126,7 +126,10 @@ def main():
         ('/V', None, None), ('/V /B', None, None),
         ('/VV B1:F.DAT B3:', None, None),
         ('/X B1:F.DAT B3:', None, None),
-        ('/BACKUP B1:F.DAT B3:', None, None),
+        ('/BACKUP B1:F.DAT B3:', 'B1:F.DAT B3:', (0,0,0,0)),
+        ('/BACKUP /V B1:F.DAT B3: /BACKUP /B', 'B1:F.DAT B3:', (0,0,1,1)),
+        ('B1:F.DAT B3: /BACKUP', 'B1:F.DAT B3:', (0,0,0,0)),
+        ('/BACKUPX B1:F.DAT B3:', None, None),
         ('/V/B B1:F.DAT B3:', None, None)]:
         c=Z80(b''); c.mem[256:256+len(binary)]=binary
         c.mem[0x7000:0x7000+len(text)]=text.encode()
@@ -137,6 +140,7 @@ def main():
             assert bytes(c.mem[c.hl:c.hl+c.b]).decode()==expected,text
             assert tuple(c.mem[transient_address(n)] for n in
                          ('BC_OVER','CT_SKIP','CT_BATCH','CTV_ON'))==flags,text
+            assert c.mem[transient_address('CT_BACK')]==int('/BACKUP' in text),text
     print('COPY CPX/transient filespec and transient /O-/S option parsing passed')
 
 
