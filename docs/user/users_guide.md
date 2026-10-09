@@ -443,6 +443,21 @@ invokes the available `DIR` command according to the active command environment.
 
 The default BetterCP/M command environment includes the core resident commands and the standard resident command package. CPXs and their management are described in Chapter 6.
 
+##### Explicit transient execution
+
+Prefix a command name with `:` or `.` to bypass built-in and CPX commands
+and invoke its `.COM` program through the ordinary transient lookup:
+
+    :DIR B3:*.COM
+    .COPY B1:FOO.DAT C3:
+    :B3:FOO ARGUMENTS
+
+Both prefixes have the same meaning. Place the prefix before any command DU
+qualifier. Arguments retain their normal meaning. The same forms work in
+SUBMIT files. A missing program reports the ordinary `?` lookup failure;
+there is no fallback to the resident command. This explicitly selects the
+transient program; automatic CPX-to-transient handoff remains unimplemented.
+
 #### 3.7 CPX Commands
 
 A **Command Processor Extension**, or **CPX**, extends the BetterCP/M command environment with additional resident commands.

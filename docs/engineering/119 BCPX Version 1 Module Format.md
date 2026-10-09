@@ -148,3 +148,42 @@ layout, relocation bounds, names, command metadata, and payload checksums.
 The reloader tests exercise arbitrary filename-driven restoration and
 relocation; physical `trs80gp` tests verify BASIC/HELLO ordering, unloading,
 reloading, WBOOT reconstruction, and directory-write integrity.
+
+
+## Explicit transient invocation — 2026-10-09
+
+A leading colon or period before the command (and before any command DU
+qualifier) bypasses navigation, core monitor dispatch and every CPX. Both
+aliases enter the existing CCP_LOAD path. The loader accounts for the prefix
+in its consumed command length and advances its parsing pointer without
+moving or shortening the command buffer. The command tail and FCB arguments
+therefore exclude the prefix. Missing transients use the existing question-mark
+diagnostic and submitted-command cancellation behavior, without resident fallback.
+SUBMIT and cold startup commands use the same dispatch entry as console commands.
+
+This is a bounded exception to the 1.0 command-resolution freeze. The CPX
+return ABI is unchanged: carry still means handled versus unrecognized.
+Automatic handoff and protected policy lifecycle remain pending; they are
+not implied by explicit-prefix support.
+
+The CCP grows 35 bytes, from 5,341 to 5,376 bytes. Its rounded allocation remains
+5,376 bytes, exactly filled; its protected transient ceiling and BDOS are
+unchanged. Native ZSM4/LINK produces the same 5,376 bytes as host assembly.
+Relocation verification succeeds at BB00h, BC01h and BD37h.
+
+The native prefix test installs the new CCP in the reserved carrier of a
+retained z80pack image. It uses marker programs sharing core/CPX command names
+to prove bypass, DU-qualified lookup, argument preservation, maximum-length
+input, ordinary dispatch, missing-program behavior and SUBMIT execution.
+The general image builder's filesystem-full failure is separate from these
+checks; no media-packaging change is included here. User-guide source is
+updated; exported DOCX/PDF files are not regenerated.
+
+Qualification passes: 13 direct native cases, a missing core-command namesake
+with no fallback, and a two-command SUBMIT stream using both aliases. Evidence
+is retained at `/private/tmp/force-transient-qualified-v3-20261009/evidence.json`
+with the missing-core transcript at
+`/private/tmp/force-transient-qualified-v2-20261009/missing-core.txt`.
+`tools/test_ccp.py` and `tools/test_ccp_load_results.py` also pass. Native
+parity is recorded in `build/ccp/NATIVE-CCP-BUILD.LOG`. Physical trs80gp
+qualification is not included in this increment.

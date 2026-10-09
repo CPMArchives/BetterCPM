@@ -84,6 +84,12 @@ CCP_DISPATCH:                           ; dispatch acquired or cold-start comman
   ; prompt, FCB operations, transient programs, and warm-start reconstruction
   ; all observe one coherent state.  Accepted forms are B:, 5:, and C3:.
 
+  ; Explicit transient prefixes bypass navigation, core and CPX dispatch.
+        LD      A,(CCP_DATA)
+        CP      ':'
+        JR      Z,CCP_BAD
+        CP      '.'
+        JR      Z,CCP_BAD
         CALL    CCP_NAVIGATE
         JR      C,CCP_LOOP
 
@@ -3039,8 +3045,21 @@ CCP_LQUAL:                              ; parse transient drive/user qualifier
         LD      (CCP_LUACT),A
         DEC     A
         LD      (CCP_LDRV),A
-        LD      B,A
-        LD      A,(CCP_COUNT)
+        LD      A,(HL)
+        CP      ':'
+        JR      Z,FT_SKIP
+        CP      '.'
+        JR      NZ,FT_READY
+FT_SKIP:                               ; account for prefix without moving input
+        INC     HL
+        LD      (CCP_LPTR),HL
+        LD      A,(CCP_LREML)
+        DEC     A
+        LD      (CCP_LREML),A
+        LD      A,1
+        LD      (CCP_QLEN),A
+FT_READY:                              ; retain prefix in consumed command length
+        LD      A,(CCP_LREML)
         CP      3
         RET     C
         LD      B,A
