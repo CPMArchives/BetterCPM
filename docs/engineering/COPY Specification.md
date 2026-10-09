@@ -1646,3 +1646,29 @@ resident CPX, CCP, BIOS and BDOS are unchanged. Controlled native faults in
 continuation, disk-full stopping, deletion-failure stopping, caller DU restoration,
 exact earlier/later copies and source ARC behavior. Final allocation reporting,
 summary accounting, and complete platform qualification remain separate work.
+
+
+### 2026-10-10 — Destination allocation and summary reporting
+
+Completed copies report `source -> destination [nK]`. COPY scans all physical
+entries of the completed destination with a separate FCB, counts nonzero byte
+or word allocation slots according to DSM, and applies the destination DPB's
+block size. Empty files occupy 0K. This is allocated destination space, including
+multi-extent files, rather than source size or change in free space.
+
+A frozen batch of two or more selected files reports nonzero copied/skipped/
+failed totals with singular/plural wording. Only completed copies with successful
+metadata updates and allocation measurement contribute to copied counts and
+allocated totals. A batch stopped early does not count unattempted files as
+failed. Preflight rejection and no matches produce no summary. Allocation-report
+failure retains copied data and reports it explicitly without claiming success.
+32-bit allocation totals and decimal formatting avoid 16-bit summary overflow.
+
+COPY.COM is 10,303 bytes (636 bytes added). Native and host builds match for all
+six transients; resident CPX, CCP, BIOS and BDOS are unchanged. Execution tests
+cover byte/word allocation maps, 1K/2K/4K/16K blocks, and decimal boundaries through
+4,294,967,295. Native evidence in `/private/tmp/copy-report-20261010/evidence.json`
+covers empty files, one-record allocations, multi-extent allocation, replacement
+allocation rather than old size, mixed outcomes, zero-line omission and no
+matches. Backup and controlled-error regressions also assert summaries.
+Final platform qualification and the separately specified handoff remain.

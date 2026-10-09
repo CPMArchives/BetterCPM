@@ -128,6 +128,8 @@ CT_FULL:
         CALL    BC_PRINT
         JP      BC_WEND
 CT_BEGIN:
+        LD      A,1
+        LD      (CTR_RUN),A
         LD      HL,CT_DUS
         LD      (CTDUCUR),HL
         LD      HL,CT_TARGETS
@@ -190,6 +192,7 @@ CT_COPY:
         DEC     (HL)
         JP      CT_NEXT
 BC_WEND:
+        CALL    CTR_SUM
         XOR     A
         LD      (BC_WACTIVE),A
         JP      BC_COK

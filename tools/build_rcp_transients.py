@@ -110,7 +110,7 @@ def copy_source(text: str) -> str:
     text = text.replace(old, "        DJNZ    BC_CATTR\n        CALL    CTDATTR\n        LD      DE,BC_NEWFCB", 1)
     old = "        OR      A\n        JR      NZ,BCCLERR\n        XOR     A\n        LD      (BC_CMADE),A"
     assert text.count(old) == 1, "COPY metadata completion hook changed"
-    text = text.replace(old, "        OR      A\n        JP      NZ,CTBMFAIL\n        XOR     A\n        LD      (BC_CMADE),A\n        CALL    CTBPOST", 1)
+    text = text.replace(old, "        OR      A\n        JP      NZ,CTBMFAIL\n        XOR     A\n        LD      (BC_CMADE),A\n        CALL    CTBPOST\n        JP      C,BC_COK\n        CALL    CTR_OK", 1)
     start = text.index("BC_CFAIL:")
     end = text.index("BC_CPRINT:", start)
     text = text[:start] + (SOURCE.parent / "copy-error.inc").read_text(encoding="ascii") + text[end:]
@@ -122,6 +122,7 @@ def copy_source(text: str) -> str:
     text = text.replace(old, "BC_CNOFILE:                             ; cnofile\n        LD      DE,BC_NOFILE\n        JP      BC_CFAIL", 1)
     text = re.sub(r"(?m)^(\s*)JR(\s+(?:(?:NZ|Z|NC|C),)?BC_C(?:PRINT|OK))", r"\1JP\2", text)
     scope = (SOURCE.parent / "copy-scope.inc").read_text(encoding="ascii")
+    scope += (SOURCE.parent / "copy-report.inc").read_text(encoding="ascii")
     scope += (SOURCE.parent / "copy-backup.inc").read_text(encoding="ascii")
     scope += (SOURCE.parent / "copy-dest.inc").read_text(encoding="ascii")
     scope += (SOURCE.parent / "copy-verify.inc").read_text(encoding="ascii")

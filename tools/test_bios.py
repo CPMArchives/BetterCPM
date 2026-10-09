@@ -552,6 +552,12 @@ class Z80:
                 mask = 0x40 if self.mem[self.pc] == 0x77 else 0x80
                 self.pc += 1
                 self.z = not bool(self.a & mask)
+            elif op == 0xCB and self.mem[self.pc] == 0x16:  # RL (HL)
+                self.pc += 1
+                value = self.mem[self.hl]
+                self.mem[self.hl] = ((value << 1) | self.carry) & 255
+                self.carry = bool(value & 128)
+                self.z = self.mem[self.hl] == 0
             elif op == 0xCB and self.mem[self.pc] == 0x3F:  # SRL A
                 self.pc += 1
                 self.carry = bool(self.a & 1)
