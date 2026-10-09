@@ -1053,3 +1053,513 @@ and handles interactive retry/skip or noninteractive removal/continuation.
 Ctrl-C at the verification-failure prompt removes failed output and aborts.
 Transfer-phase cancellation and final reporting remain separate increments.
 See COPY Utility.md for native qualification and binary measurements.
+
+
+## Operand-qualified attributes and backup amendment — accepted 2026-10-09
+
+Architectural design: [COPY Operand Qualification and Backup](../architecture/30%20COPY%20Operand%20Qualification%20and%20Backup.md).
+
+The following amendment supersedes earlier exploratory `/A=ARC` syntax and
+option-placement-as-scope proposals. These new qualifiers and /BACKUP are target
+contracts, not implemented features. The already implemented multi-DU selection,
+/O /S /B /V behavior, mapping safety and cancellation remain the baseline.
+
+### Resolved interpretation and precedence
+
+- All free-standing slash options are command-wide, independent of leading or
+  trailing placement. Existing trailing forms remain supported. The accepted
+  outer forms permit leading and trailing groups; this does not introduce
+  arbitrary options inside an operand or between source and destination.
+- `/B` retains noninteractive batch meaning. `/BACKUP` is the backup spelling.
+- Source `[$ARC]` tests ARC; it never modifies source metadata by itself.
+- Destination qualifiers override preserved source RO/SYS/ARC states after
+  copy/close and requested verification succeed. Unmentioned attributes remain
+  preserved. They do not authorize overwriting an existing read-only target.
+- `/BACKUP` has final precedence over destination ARC settings: even an explicit
+  destination `[$ARC]` results in ARC clear after a successful backup. This was
+  explicitly selected by the user; it is not a preflight contradiction.
+- Opposite destination assignments to the same bit, including aliases, are
+  invalid before mutation: `[$RO,$RW]`, `[$SYS,$DIR]`, and `[$ARC,!$ARC]`.
+  Repeated equivalent assignments can be idempotent. Destination lists do not
+  acquire source Boolean-expression semantics.
+- Destination remains one resolved concrete DU. Existing drive-only, inherited
+  DU and bare destination filename forms are retained; destination sets remain
+  invalid. No new requirement for spelling every user number explicitly is
+  imposed on already accepted COPY forms.
+- Qualifier brackets follow the operand filespec/location. DU selector brackets
+  remain part of the location grammar, so `B[-]:*.DOC[$ARC]` contains two distinct
+  constructs. Parse both completely before selecting drives or mutating files.
+- No automatic ARC maintenance, resident handoff implementation or BDOS changes
+  are implied by this amendment. Handoff remains a separately qualified contract.
+
+### COPY.COM Amendment for Work: Operand-Scoped Qualifiers, ARC Semantics, and Multi-DU Sources
+
+Please update the `COPY.COM` design/implementation with the following additions and syntax refinements. These are intended as a focused amendment to the existing COPY specification, not a redesign of the command.
+
+## 1. Multi-DU source selection
+
+`COPY.COM` should accept the already-implemented shared DU selector syntax on the **source** side.
+
+Examples:
+
+```text
+COPY [A0,B7,C[3-5]]:*.COM D3:
+COPY B[-]:*.COM D3:
+```
+
+Semantics:
+
+- source may expand to multiple DUs;
+- destination must remain one explicit concrete DU;
+- all matching source files across all selected DUs are combined into one source set;
+- the existing global preflight is performed across that complete set before any write occurs.
+
+Existing safety rules remain mandatory:
+
+- duplicate destination mappings are rejected before mutation;
+- a destination overlapping any selected source is rejected before mutation;
+- `/O`, `/BACKUP`, or any other option does not weaken those checks.
+
+Example:
+
+```text
+A0:FOO.COM
+B7:FOO.COM
+```
+
+with:
+
+```text
+COPY [A0,B7]:*.COM D3:
+```
+
+must be rejected during preflight because both sources map to:
+
+```text
+D3:FOO.COM
+```
+
+This capability is transient-`COPY.COM` functionality. Resident COPY may hand off when it encounters source-selector syntax outside its smaller grammar.
+
+---
+
+## 2. Operand-scoped qualifier syntax
+
+We want to distinguish clearly between:
+
+- options that govern the COPY operation as a whole;
+- qualifiers attached specifically to a source or destination operand.
+
+Use square brackets to attach qualifiers directly to an operand.
+
+Examples:
+
+```text
+COPY B2:*.DOC[$ARC] C0:[!$ARC] /V
+```
+
+and equivalently:
+
+```text
+COPY /V C0:[!$ARC]=B2:*.DOC[$ARC]
+```
+
+The general principle is:
+
+```text
+free-standing /OPTION
+```
+
+means a command-wide COPY option.
+
+By contrast:
+
+```text
+operand[qualifiers]
+```
+
+means the enclosed qualifiers apply specifically to that operand.
+
+This deliberately avoids making free-standing option placement determine scope.
+
+### Supported outer forms
+
+Source-first form:
+
+```text
+COPY [global-options] source[source-qualifiers] destination[destination-qualifiers] [global-options]
+```
+
+Assignment form:
+
+```text
+COPY [global-options] destination[destination-qualifiers]=source[source-qualifiers] [global-options]
+```
+
+Whitespace around `=` remains optional. `=` continues to be the assignment operator; do not redefine `" = "` as a separate token.
+
+The bracket mechanism should work equally in both operand orders.
+
+---
+
+## 3. Attribute qualifier vocabulary
+
+For 1.0, the principal operand-local qualifier class is file attributes.
+
+Use `$` to identify an attribute inside brackets.
+
+Canonical BetterCP/M spellings:
+
+```text
+$RO
+$RW
+$SYS
+$DIR
+$ARC
+```
+
+Historical aliases should also be accepted if inexpensive:
+
+```text
+$R/O   = $RO
+$R/W   = $RW
+```
+
+Conceptually, the underlying positive attribute bits are:
+
+```text
+RO
+SYS
+ARC
+```
+
+with:
+
+```text
+$RW   = !$RO
+$DIR  = !$SYS
+```
+
+The shorter BetterCP/M spellings `$RO` and `$RW` should be canonical in documentation. The DRI-style slash forms are compatibility aliases.
+
+The purpose of `[...]` should remain broader than attributes in principle, but **do not turn it into a general query language for 1.0**. Treat brackets as the general operand-qualification container; `$...` is simply the file-attribute vocabulary currently defined inside it.
+
+---
+
+## 4. Source-side semantics
+
+On a source operand, bracketed attribute expressions are **selection predicates**.
+
+Examples:
+
+```text
+COPY A0:*.COM[$RO] D0:
+```
+
+Copy only read-only `.COM` files.
+
+```text
+COPY B[-]:*.DOC[$ARC] D0:
+```
+
+Copy only `.DOC` files whose ARC bit is set.
+
+Potential combinations should follow the attribute-expression rules already being developed for DIR:
+
+```text
+!   NOT
++   AND
+,   OR
+```
+
+with precedence:
+
+```text
+! > + > ,
+```
+
+Examples:
+
+```text
+[$ARC+!$SYS]
+[$RO,$SYS]
+[!$ARC]
+```
+
+The exact implementation can share a common attribute-expression parser with DIR if practical.
+
+---
+
+## 5. Destination-side semantics
+
+On a destination operand, bracketed attribute qualifiers specify the desired resulting attribute state.
+
+Examples:
+
+```text
+COPY A0:*.COM D0:[$RO]
+```
+
+Destination copies should be read-only.
+
+```text
+COPY A0:*.COM D0:[$RW,!$ARC]
+```
+
+Destination copies should be writable and have ARC clear.
+
+Do not assume that source Boolean-expression semantics and destination modification-list semantics must be implemented identically internally. Source brackets express predicates; destination brackets express resulting attribute state.
+
+The outer bracket syntax is shared, but the semantic interpretation depends on whether the operand is a source or destination.
+
+---
+
+## 6. ARC semantics
+
+Adopt the following ARC meaning for COPY:
+
+> ARC set means “changed since the last completed backup.”
+
+Ordinary COPY behavior:
+
+- preserve ARC on the destination;
+- leave source ARC unchanged.
+
+Source selection:
+
+```text
+COPY B0:*.COM[$ARC] D0:
+```
+
+selects only source files with ARC set.
+
+Selection alone does **not** clear ARC.
+
+---
+
+## 7. Explicit backup mode
+
+A separate command-wide backup option should perform backup-status handling.
+
+Proposed spelling:
+
+```text
+/BACKUP
+```
+
+`/B` is already reserved for noninteractive batch mode and must retain that meaning.
+
+Example:
+
+```text
+COPY /V /BACKUP B[-]:*.COM[$ARC] D0:
+```
+
+Semantics:
+
+1. select `.COM` files with ARC set across all user areas on B:;
+2. copy each selected file to D0:;
+3. verify if `/V` was requested;
+4. only after successful copy, destination close, and requested verification:
+   - clear ARC on the source;
+   - clear ARC on the destination.
+
+Important distinction:
+
+```text
+[$ARC]
+```
+
+is a **selection condition**.
+
+```text
+/BACKUP
+```
+
+is an **operation behavior**.
+
+`/BACKUP` must not implicitly mean `[$ARC]`.
+
+For example:
+
+```text
+COPY /BACKUP B0:*.COM D0:
+```
+
+copies all matching files and performs backup ARC clearing on successful copies, regardless of their initial ARC state.
+
+---
+
+## 8. Per-file backup transaction semantics
+
+Backup completion is per file, not all-or-nothing for the whole command.
+
+For each file:
+
+- skipped file → source ARC unchanged;
+- failed copy → source ARC unchanged;
+- aborted copy → source ARC unchanged;
+- successful copy but failed verification → source ARC unchanged;
+- successful copy + close + requested verification → ARC clearing may occur.
+
+If ARC update fails after the actual copy succeeds, do not silently report that file as a completely successful backup.
+
+Report that the data copy succeeded but backup-status handling was incomplete.
+
+Already-completed earlier files do not need to have their ARC changes rolled back if a later file fails.
+
+Global mapping/preflight errors still occur before any file mutation.
+
+---
+
+## 9. Command-wide options remain free-standing
+
+Free-standing slash options are COPY-wide.
+
+Examples include existing:
+
+```text
+/O
+/S
+/B
+/V
+```
+
+and proposed:
+
+```text
+/BACKUP
+```
+
+These should not acquire source or destination scope merely because they appear near an operand.
+
+This is the principal reason for introducing bracketed operand qualifiers.
+
+Examples:
+
+```text
+COPY /V B2:*.DOC[$ARC] C0:
+COPY B2:*.DOC[$ARC] C0: /V
+```
+
+may both retain their existing global `/V` meaning.
+
+Thus:
+
+```text
+/...
+```
+
+outside brackets = command option.
+
+```text
+[...]
+```
+
+attached to operand = operand qualifier.
+
+That distinction should be lexical and explicit rather than inferred from option position.
+
+---
+
+## 10. Historical rationale
+
+This design deliberately borrows the useful CP/M/PIP concept of attaching operand-specific parameters in brackets while retaining BetterCP/M's clearer modern option vocabulary.
+
+The model is therefore:
+
+```text
+COPY-wide option        /V
+source qualification    *.DOC[$ARC]
+destination state       D0:[$RW,!$ARC]
+```
+
+rather than trying to infer scope from where a free-standing `/OPTION` happens to appear.
+
+The `$` attribute vocabulary also has CP/M precedent through DRI STAT's `$R/O`, `$R/W`, `$SYS`, and `$DIR`, but BetterCP/M should document the cleaner canonical spellings:
+
+```text
+$RO
+$RW
+$SYS
+$DIR
+$ARC
+```
+
+with `$R/O` and `$R/W` accepted as aliases where practical.
+
+---
+
+## 11. Automatic ARC maintenance remains separate
+
+Do not make this COPY work dependent on automatic OS-level ARC setting.
+
+Whether BetterCP/M automatically sets ARC when files are subsequently modified is a separate OS/BDOS architecture decision.
+
+COPY should nevertheless implement correct:
+
+- ARC selection;
+- ARC preservation;
+- explicit `/BACKUP` clearing semantics.
+
+That keeps COPY behavior well-defined even before automatic ARC maintenance is decided.
+
+---
+
+## 12. Implementation/audit requests
+
+Please assess and implement, if practical:
+
+- reuse of the shared DU selector parser for multi-DU sources;
+- reuse of a shared attribute-expression parser with DIR;
+- operand-attached `[...]` parsing;
+- `$RO/$RW/$SYS/$DIR/$ARC`;
+- historical aliases `$R/O` and `$R/W`;
+- source predicate semantics;
+- destination resulting-state semantics;
+- `/BACKUP` post-success ARC handling;
+- preservation of existing `/O /S /B /V` behavior;
+- preservation of both COPY operand orders;
+- preservation of existing preflight safety rules;
+- resident-to-transient handoff for unsupported selector/qualifier syntax.
+
+Please keep this work bounded to COPY and reusable parser components. Do not expand `[...]` into a general-purpose selection language beyond what the current COPY/DIR attribute requirements actually need.
+
+### Implementation audit and bounded sequence
+
+Multi-DU source selection and complete mapping preflight are already implemented.
+The current COPY lexer accepts only trailing single-letter options, and its
+operand parser has no qualifier support. Directory collection currently masks
+attribute bits before retaining names; filtering must inspect original metadata
+before that normalization and before choosing/collecting matching files. Only
+selected files contribute to the 64-file limit and source-overlap preflight.
+
+No shared DIR attribute-expression parser exists in this checkout. Introduce an
+internal shared component with explicit source-predicate and destination-state
+entry points. With three positive bits, a source expression can be compiled into
+an eight-state truth mask; matching then needs no expression reevaluation per
+file. Destination parsing can produce set/clear masks while rejecting overlap.
+This representation is an implementation proposal to measure, not a new API.
+
+The current destination attribute application already follows close and /V.
+Apply destination masks at that point, with /BACKUP forcing destination ARC
+clear. Only after destination completion should source ARC be cleared through
+native Function 30, preserving its other attribute bits and exact DU/name.
+This avoids marking a source backed up if destination attribute completion fails.
+If source ARC clearing fails, leave the valid destination intact, report data
+copied but backup status incomplete, and count the file as failed backup status.
+Cross-disk metadata updates are not atomic and no rollback is promised.
+
+Build in bounded increments:
+
+1. Qualifier-aware lexical separation and leading/trailing option handling,
+   preserving both operand orders and optional whitespace around equals.
+2. Shared attribute vocabulary/predicate and destination-state parsers, tested
+   against all eight RO/SYS/ARC combinations and malformed expressions.
+3. Source filtering before collection/preflight, including multi-DU sources.
+4. Destination attribute overrides after verification, preserving R/O protection.
+5. /BACKUP source/destination updates and metadata-failure diagnostics.
+6. Updated reporting and native/platform qualification; handoff remains separate.
+
+Every increment must retain zero BDOS growth and the existing global mapping
+safety, original-DU inheritance, cancellation and verification contracts.

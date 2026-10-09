@@ -86,6 +86,9 @@ def copy_source(text: str) -> str:
     old = "        JR      Z,BCCLERR\n  ; Apply attributes"
     assert text.count(old) == 1, "COPY close verification hook changed"
     text = text.replace(old, "        JP      Z,BCCLERR\n        JP      CTVPOST\nCTVATTR:\n  ; Apply attributes", 1)
+    old = "BC_CLOOP:                               ; cloop\n        CALL    BC_CSELS"
+    assert text.count(old) == 1, "COPY transfer polling hook changed"
+    text = text.replace(old, "BC_CLOOP:                               ; cloop\n        CALL    CTCHECK\n        JP      C,CTCANCEL\n        CALL    BC_CSELS", 1)
     # Shared set parser is linked only into COPY.COM, never into RCP/MOVE.
     start = text.index("BC_CPARSE:")
     end = text.index("BC_CSOK:", start)

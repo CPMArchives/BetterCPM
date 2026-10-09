@@ -2,6 +2,8 @@
 ; and their attributes. CF clear means identical records and simultaneous EOF;
 ; CF set means open/read failure, unequal length or unequal record contents.
 CTVERIFY:
+        XOR A
+        LD (CT_CANCEL),A
         LD HL,BC_FCB
         LD DE,CTV_SRC
         CALL CTVFCB
@@ -21,6 +23,8 @@ CTVERIFY:
         CP 0FFH
         JP Z,CTVFAIL
 CTVLOOP:
+        CALL CTCHECK
+        JR C,CTVABORT
         CALL BC_CSELS
         LD DE,BC_DMA
         LD C,26
@@ -55,6 +59,10 @@ CVVBYTE:
         INC HL
         DJNZ CVVBYTE
         JR CTVLOOP
+CTVABORT:
+        LD A,1
+        LD (CT_CANCEL),A
+        JR CTVFAIL
 CTVGOOD:
         LD A,0
         JR CTVEXIT
@@ -92,6 +100,14 @@ CTVPOST:
         OR A
         JP Z,CTVATTR
         CALL CTVERIFY
+        PUSH AF
+        LD A,(CT_CANCEL)
+        OR A
+        JR Z,CTVRESULT
+        POP AF
+        JP CTCANCEL
+CTVRESULT:
+        POP AF
         JP NC,CTVATTR
         CALL CTPAIR
         LD A,(CT_BATCH)
@@ -185,3 +201,30 @@ CTV_ON: DB 0
 CVVERROR: DB ' [VERIFY ERROR]',13,10,'$'
 CVVASKM: DB ' [VERIFY ERROR] R/S/? $'
 CVVHELP: DB 'R - Retry  S - Skip',13,10,'$'
+
+; Poll only at record boundaries. No input waits; ordinary keys are ignored.
+CTCHECK:
+        LD E,0FFH
+        LD C,6
+        CALL BDOS
+        CP 3
+        JR Z,CTKEYC
+        OR A
+        RET
+CTKEYC:
+        SCF
+        RET
+; Enter by JP with only the copy driver's return address on the stack.
+CTCANCEL:
+        LD A,(BC_CMADE)
+        OR A
+        JR Z,CTCSTOP
+        CALL BC_CSELD
+        LD DE,BC_NEWFCB
+        LD C,16
+        CALL BDOS
+        CALL CVVDEL
+        RET C
+CTCSTOP:
+        JP CTABORT
+CT_CANCEL: DB 0

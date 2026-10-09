@@ -787,6 +787,12 @@ also reprompts without writing. Blank input returns to the collision prompt;
 Ctrl-C aborts COPY. If the new name already exists, normal collision handling
 applies to that name, including read-only protection.
 
+During copying and `/V` comparison, COPY checks for Ctrl-C between 128-byte
+records. Ctrl-C removes the current incomplete or unverified destination,
+preserves completed earlier files, restores the caller's DU and DMA, and returns
+to the prompt. A disk operation already in progress finishes before the next
+check. Other keys during transfer are ignored; `/B` does not disable Ctrl-C.
+
 With `/V`, COPY verifies every 128-byte record and requires matching logical
 ends before applying attributes. A verification failure prompts `R/S/?`:
 `R` retries from the beginning, `S` removes the failed destination and continues,
@@ -802,6 +808,72 @@ files; a larger batch reports `COPY BATCH TOO LARGE` before writing.
 
 These extended forms require `COPY.COM`. Use `:COPY` or `.COPY` to select it
 explicitly while automatic resident-to-transient handoff remains pending.
+
+
+##### Planned COPY attribute selection and backup
+
+**Design accepted; not yet available in COPY.COM.** The following syntax is
+provided to explain the planned behavior, not as instructions for the current
+utility.
+
+Command-wide options use `/`; qualifiers attached to an operand use brackets.
+For example:
+
+```text
+COPY /V /BACKUP B[-]:*.COM[$ARC] D0:
+```
+
+This selects `.COM` files across all user areas on B: **whose ARC bit is set**,
+copies them to D0:, verifies their contents, then clears ARC on both the source
+and destination after success. `/B` continues to mean noninteractive batch;
+`/BACKUP` is a separate option.
+
+ARC means “changed since the last completed backup.” Ordinary COPY preserves
+ARC and leaves the source unchanged. `[$ARC]` only selects files; it does not
+change their attributes. `/BACKUP` alone does not filter files by ARC.
+
+Source attribute qualifiers select files:
+
+| Qualifier | Selects |
+| --- | --- |
+| `[$RO]` | Read-only files |
+| `[$RW]` | Writable files |
+| `[$SYS]` | System files |
+| `[$DIR]` | Files without SYS set |
+| `[$ARC]` | Files with ARC set |
+
+Use `!` for NOT, `+` for AND and comma for OR. AND binds more tightly than OR:
+`[$ARC+!$SYS]` selects ARC-marked files without SYS; `[$RO,$SYS]` selects files
+with RO or SYS. `$R/O` and `$R/W` are aliases for `$RO` and `$RW`.
+
+Destination qualifiers set the completed copy's attributes:
+
+```text
+COPY A0:*.COM D0:[$RW,!$ARC]
+```
+
+This requests writable destination copies with ARC clear. Unspecified attributes
+are preserved. Opposite assignments such as `[$RO,$RW]` are invalid. Existing
+read-only destinations remain protected, even when `[$RW]` is requested.
+
+`/BACKUP` takes precedence over destination ARC settings and clears ARC after
+success, including when the destination says `[$ARC]`. Skipped, failed and
+aborted copies retain source ARC. If data copying succeeds but an attribute
+update fails, COPY reports incomplete backup-status handling.
+
+Both operand orders are supported by the design:
+
+```text
+COPY B2:*.DOC[$ARC] C0:[!$ARC] /V
+COPY /V C0:[!$ARC]=B2:*.DOC[$ARC]
+```
+
+Leading and trailing slash options have the same command-wide scope. They do
+not become destination options merely by appearing at the end.
+
+Automatic ARC setting when a file changes is a separate proposal. Until that
+exists, the user or another tool must explicitly maintain ARC status; do not
+assume this facility automatically discovers all changed files.
 
 
 #### 4.7 MOVE — Move Files

@@ -638,3 +638,44 @@ Evidence: `/private/tmp/copy-verify-flow-v4-20261009/evidence.json`,
 `/private/tmp/copy-v-interactive-regression-20261009/evidence.json`.
 User-guide source is updated; exported DOCX/PDF files are not regenerated.
 Transfer-phase cancellation, final reporting and final qualification remain.
+
+
+### 2026-10-09 — Transfer and verification cancellation
+
+Transient COPY polls direct console input before each transfer or verification
+record. Ctrl-C removes the current incomplete/unverified destination and aborts
+with earlier completed files untouched. Verification returns a separate
+cancellation flag through its ordinary stack frame before invoking cleanup;
+it cannot be mistaken for a verify-error prompt. Partial output is closed
+before deletion so pending allocations are committed and then released.
+Cleanup failure reports WRITE ERROR and stops. /B remains cancellable; polling
+never waits and ignores other transfer keys. Cancellation is bounded by the
+current synchronous disk operation and next record boundary.
+
+COPY.COM is 8,574 bytes (74 bytes added). Native ZSM4/LINK matches host builds
+for all transients. Filespec and mapping checks pass. The native cancellation
+harness supplies real Ctrl-C to the production keyboard checker at deterministic
+transfer/verification boundaries; only private test binaries contain the
+positioning wrapper. It checks removal of current output, earlier-file and
+source preservation, caller-DU return and successful allocation reuse by a
+subsequent release-binary copy. Evidence:
+`/private/tmp/copy-cancel-v4-20261009/evidence.json`.
+Verification and collision/rename/SUBMIT regressions pass:
+`/private/tmp/copy-cancel-verify-regression-20261009/evidence.json` and
+`/private/tmp/copy-cancel-interactive-regression-20261009/evidence.json`.
+No resident CPX, CCP, BIOS or BDOS changes. User-guide source is updated;
+exported DOCX/PDF files are not regenerated. Reporting and final qualification
+remain pending.
+
+
+### 2026-10-09 — Operand-qualified attribute amendment audit
+
+The COPY Specification records the supplied source/destination bracket qualifier
+contract, ARC meaning, /BACKUP behavior and option scope. It replaces exploratory
+/A=ARC and placement-inferred scope. User decisions: /BACKUP overrides a
+destination ARC-set qualifier; contradictory destination assignments are rejected.
+Multi-DU selection already exists. Qualifier parsing, attribute predicates,
+destination masks and /BACKUP remain unimplemented. No shared DIR attribute
+expression parser currently exists. The specification records the proposed
+reusable component and bounded implementation sequence. Cancellation changes
+prepared before the amendment remain intact and qualified.
