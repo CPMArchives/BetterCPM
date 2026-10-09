@@ -49,6 +49,9 @@ def main():
         c.mem[address('BC_CSDRV')] = 1
         c.mem[address('BC_CDDRV')] = 1 if same_du else 2
         c.mem[address('BC_CSUSR')] = c.mem[address('BC_CDUSR')] = 3
+        dus = address('CT_DUS')
+        for i in range(len(sources)):
+            c.mem[dus+2*i:dus+2*i+2] = bytes((1,3))
         c.mem[address('CT_BEGIN')] = 0xc9
         c.mem[address('BC_PRINT')] = 0xc9
         c.mem[address('BC_WEND')] = 0xc9

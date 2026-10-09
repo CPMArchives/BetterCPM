@@ -19,10 +19,16 @@ BC_WINIT:
         LD      (CT_COUNT),A
         LD      HL,CT_NAMES
         LD      (CT_END),HL
+        LD      HL,0
+        LD      (CTDUIDX),HL
+        LD      HL,CT_DUS
+        LD      (CTDUENDP),HL
         LD      HL,BC_FCB
         LD      DE,BC_WFCB
         LD      BC,36
         LDIR
+        JP      CTDUNEXT
+BC_WRESET:
         LD      HL,BC_WLAST
         LD      B,11
         XOR     A
@@ -90,18 +96,21 @@ BC_WFOUND:
         LD      A,(BC_WBEST)
         OR      A
         JP      NZ,CT_COLLECT
-        LD      A,(BC_WLAST)
-        OR      A
-        JP      NZ,CTPREF
-        LD      DE,BC_NOFILE
-        CALL    BC_PRINT
-        JP      BC_WEND
+        JP      CTDUNEXT
 CT_COLLECT:
         LD      A,(CT_COUNT)
         CP      64
         JP      Z,CT_FULL
         INC     A
         LD      (CT_COUNT),A
+        LD      HL,(CTDUENDP)
+        LD      A,(BC_CSDRV)
+        LD      (HL),A
+        INC     HL
+        LD      A,(BC_CSUSR)
+        LD      (HL),A
+        INC     HL
+        LD      (CTDUENDP),HL
         LD      HL,BC_WBEST
         LD      DE,(CT_END)
         LD      BC,11
@@ -117,6 +126,8 @@ CT_FULL:
         CALL    BC_PRINT
         JP      BC_WEND
 CT_BEGIN:
+        LD      HL,CT_DUS
+        LD      (CTDUCUR),HL
         LD      HL,CT_TARGETS
         LD      (CT_DCUR),HL
         LD      A,(CT_COUNT)
@@ -127,6 +138,14 @@ CT_NEXT:
         LD      A,(CT_LEFT)
         OR      A
         JP      Z,BC_WEND
+        LD      HL,(CTDUCUR)
+        LD      A,(HL)
+        LD      (BC_CSDRV),A
+        INC     HL
+        LD      A,(HL)
+        LD      (BC_CSUSR),A
+        INC     HL
+        LD      (CTDUCUR),HL
         LD      HL,(CT_CURSOR)
         LD      DE,BC_WBEST
         LD      BC,11
@@ -194,18 +213,7 @@ CTMAPNXT:
         CALL    CTCKSET
         JP      Z,CTCONFL
 CTSRCCK:
-        LD      A,(BC_CSDRV)
-        LD      HL,BC_CDDRV
-        CP      (HL)
-        JR      NZ,CTMAPADV
-        LD      A,(BC_CSUSR)
-        LD      HL,BC_CDUSR
-        CP      (HL)
-        JR      NZ,CTMAPADV
-        LD      A,(CT_COUNT)
-        LD      (CTSCAN),A
-        LD      HL,CT_NAMES
-        CALL    CTCKSET
+        CALL    CTSRCTST
         JP      Z,CTCONFL
 CTMAPADV:
         LD      HL,(CT_CURSOR)

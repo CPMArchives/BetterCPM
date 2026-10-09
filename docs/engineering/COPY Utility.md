@@ -535,3 +535,39 @@ multi-extent wildcard and overwrite regression. Evidence:
 `/private/tmp/copy-interactive-wildcard-regression-20261008/evidence.json`,
 `/private/tmp/copy-interactive-overwrite-regression-20261008/evidence.json`, and
 `build/utilities/NATIVE-RCP-TRANSIENT-BUILD.LOG`.
+
+
+## Combined source DU selection — 2026-10-09
+
+COPY.COM links the shared DU include through `copy-scope.inc`. Source parsing
+now resolves the scope without changing the current drive/user; the single
+conventional destination parser therefore continues to inherit the caller's
+original context. Collection iterates the complete source bitmap and freezes
+an additional two-byte DU pair per source name. All selected drives are checked
+before mapping or destination I/O. A missing source drive aborts collection.
+
+Mapping scans per-source DUs when checking source overlap, rather than relying
+on the last selected source location. Duplicate targets remain globally
+forbidden. The 64-file capacity is global and rejects the 65th file before
+writes. Each actual copy uses its frozen source DU, including prompt labels
+and attribute handling. CPX COPY, MOVE.COM, CCP and BDOS are unchanged.
+
+COPY.COM grows from 6,272 to 7,295 bytes. The source DU array adds 128 bytes,
+plus the shared 64-byte selection map, 12-byte workspace and driver state.
+Native ZSM4/LINK matches host assembly for COPY and all other generated
+transients. Lexer and mapping tests pass. Native source-set qualification
+covers the two requested selectors, exact output bytes, user-only inheritance,
+duplicate-target rejection, overlap with an earlier source DU, invalid sources,
+rejected destination sets, unavailable-drive rejection and global overflow.
+Sources remain unchanged in every case; rejected batches leave destination
+media unchanged. Evidence: `/private/tmp/copy-du-sets-v2-20261009/evidence.json`
+and `build/utilities/NATIVE-RCP-TRANSIENT-BUILD.LOG`.
+
+Native destination-mapping, interactive collision/abort/SUBMIT and skip/read-only
+regressions also pass with this binary. Reports:
+`/private/tmp/copy-du-set-mapping-regression-20261009/evidence.json`,
+`/private/tmp/copy-du-set-interactive-regression-20261009/evidence.json`, and
+`/private/tmp/copy-du-set-skip-regression-20261009/evidence.json`.
+User-guide source now recommends explicit `:COPY`/`.COPY`; exported DOCX/PDF
+files are not regenerated. Other transfer-utility adoption is recorded in
+Specification 208, with PIP's operation contract still pending.

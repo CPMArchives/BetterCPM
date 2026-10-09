@@ -83,6 +83,13 @@ def copy_source(text: str) -> str:
     old = "        JP      Z,BC_CEXIST\n        LD      A,(BC_NEWFCB+9)"
     assert text.count(old) == 1, "COPY one-file overwrite entry changed"
     text = text.replace(old, "        JP      Z,BC_CEXIST\nCTYALLOW:\n        LD      A,(BC_NEWFCB+9)", 1)
+    # Shared set parser is linked only into COPY.COM, never into RCP/MOVE.
+    start = text.index("BC_CPARSE:")
+    end = text.index("BC_CSOK:", start)
+    part = text[start:end].replace("CALL    BC_COPAR", "CALL    CTSCOPE", 1)
+    text = text[:start] + part + text[end:]
+    scope = (SOURCE.parent / "copy-scope.inc").read_text(encoding="ascii")
+    scope += (ROOT / "src/utilities/common/duselect.inc").read_text(encoding="ascii")
     state = """
 CT_BATCH: DB 0
 CT_CHOICE: DB 0
@@ -111,7 +118,7 @@ CT_MAPMSG: DB 13,10,'COPY DESTINATION CONFLICT',13,10,'$'
 CT_NAMEMSG: DB 13,10,'INVALID DESTINATION NAME',13,10,'$'
 """
     marker = "        .DEPHASE" if "        .DEPHASE" in text else "        END\n"
-    return text.replace(marker, state + marker, 1)
+    return text.replace(marker, scope + state + marker, 1)
 
 
 def main() -> None:
