@@ -352,3 +352,42 @@ An enhanced DIR may adopt the shared interpretation internally, but that does no
 7. Decide later whether to expose the qualified library as a supported public programmer interface.
 
 Open endpoints, normalized descending ranges, canonical order, duplicate collapse, user-only compound terms and retirement of `[*]` are accepted requirements, not unresolved options. This document does not declare all adopting utilities implemented or make every future adoption a new 1.0 prerequisite.
+
+
+## 13. Initial library increment — 2026-10-09
+
+`src/utilities/common/duselect.inc` supplies shared conventional-scope parsing,
+bitmap clearing and canonical iteration. Utilities include the routines once
+and define `DU_MAP` (64 bytes) and `DU_WORK` (12 bytes). These buffers belong
+to the adopting transient; no resident service or BDOS call is involved.
+
+Internal calling convention:
+
+- `DU_PARSE`: HL points to counted operand text; B is its length; D/E are the
+  captured original drive/user. On success, carry is clear, HL/B describe the
+  remaining filename operand, and the bitmap contains the resolved DU.
+- On failure, carry is set, A is the error code, HL points to the offending
+  input byte, and the bitmap is cleared. Error position is zero-based relative
+  to the original operand pointer. Code 1 is malformed syntax, 2 is outside
+  the logical domain, and 3 temporarily identifies an unsupported extended
+  selector. No partial selection may be used. Other registers are scratch.
+- `DU_NEXT`: BC is the next logical index, initially zero. Carry clear returns
+  D/E as the next selected drive/user and advances BC. Carry set means exhausted
+  and leaves BC=512. HL, DE and AF are scratch. Iterator state is caller-owned.
+
+The initial parser supports unqualified filenames and conventional `D:`,
+`DU:` and `U:` selectors, including lowercase drives and leading zeros. It
+rejects bracketed selection explicitly until the list/range increment is
+implemented. It only separates the scope; filename and option validation
+remain the caller's responsibility. Input text is never changed.
+
+This is an internal interface, not a published stable programmer ABI. No
+utility adopts the library in this increment. Extended lists/ranges and their
+error cases must pass before DIR or STAT inspection integration.
+
+`tools/test_du_select.py` executes the assembled include: conventional selection
+and inheritance, remaining filename boundaries, invalid domain/syntax with
+cleared output, unsupported extended forms, empty-map exhaustion, and all
+512 drive/user bitmap positions in canonical order. The include is 314 bytes;
+64-byte map and 12-byte workspace are additional caller storage. Tests pass.
+Native assembler parity and utility-level qualification remain pending.

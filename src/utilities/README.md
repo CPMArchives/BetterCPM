@@ -34,3 +34,11 @@ rather than BetterCP/M interfaces. BetterCP/M system disks include a pinned,
 checksum-verified binary snapshot and its `TOOLS.DOC` manual. Their source,
 tests, and release history remain in `cpm-tools`; they must not be forked into
 this directory.
+
+
+### Shared DU selection include
+
+`common/duselect.inc` is the internal source library for Specification 208.
+Its initial conventional parser and bitmap iterator are qualified by
+`tools/test_du_select.py`; extended lists/ranges and utility adoption remain
+pending. Callers supply the selection map and workspace described in the include.
