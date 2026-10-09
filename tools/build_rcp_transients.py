@@ -89,6 +89,7 @@ def copy_source(text: str) -> str:
     part = text[start:end].replace("CALL    BC_COPAR", "CALL    CTSCOPE", 1)
     text = text[:start] + part + text[end:]
     scope = (SOURCE.parent / "copy-scope.inc").read_text(encoding="ascii")
+    scope += (SOURCE.parent / "copy-verify.inc").read_text(encoding="ascii")
     scope += (SOURCE.parent / "copy-rename.inc").read_text(encoding="ascii")
     scope += (ROOT / "src/utilities/common/duselect.inc").read_text(encoding="ascii")
     state = """

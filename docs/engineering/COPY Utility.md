@@ -591,3 +591,24 @@ unchanged original/source bytes, alongside Y/N/O/S, /B and SUBMIT regressions.
 Evidence: `/private/tmp/copy-rename-v3-20261009/evidence.json`.
 User-guide source is updated; exported DOCX/PDF files are not regenerated.
 Verification, transfer-phase cancellation and final reporting remain pending.
+
+
+### 2026-10-09 — Verification comparison core
+
+An internal transient-only CTVERIFY routine reopens separate source and
+destination FCBs and compares their 128-byte logical records directly. Equal
+bytes and simultaneous EOF are required; open failures, read failures, unequal
+lengths and mismatches return carry set. Transfer FCBs remain untouched and the
+routine restores the transfer DMA buffer before returning. It performs no
+writes and does not yet expose /V.
+
+COPY.COM is 8,209 bytes, 361 bytes above the rename increment. Native ZSM4/LINK
+matches host assembly for all generated transients. Filespec and mapping tests
+pass. A proof-only native caller checks empty, one-record and multi-extent
+matches, first/last-byte differences, shorter/longer targets, and missing files,
+with byte-identical source/destination media after each verification. Evidence:
+`/private/tmp/copy-verify-core-v2-20261009/evidence.json`.
+
+The next increment must connect /V parsing, post-close verification, retry/skip
+handling and failed-destination cleanup before making /V available to users.
+No BIOS, BDOS, CCP or resident CPX changes are made.
