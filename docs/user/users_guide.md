@@ -764,8 +764,9 @@ Options follow the operands:
 | `/O` | Replace existing writable destination files. |
 | `/S` | Skip existing writable destination files. |
 | `/B` | Run without collision prompts. See section 5.7. |
+| `/V` | Reopen and compare source and destination records after copying. |
 
-`/O` and `/S` cannot be combined. `/B` may be combined with either. Read-only
+`/O` and `/S` cannot be combined. `/V` and `/B` may be combined with either. Read-only
 destinations are never overwritten; they report `READ ONLY`, fail that file,
 and allow processing to continue.
 
@@ -785,6 +786,13 @@ that conflicts with a selected source or another planned batch destination
 also reprompts without writing. Blank input returns to the collision prompt;
 Ctrl-C aborts COPY. If the new name already exists, normal collision handling
 applies to that name, including read-only protection.
+
+With `/V`, COPY verifies every 128-byte record and requires matching logical
+ends before applying attributes. A verification failure prompts `R/S/?`:
+`R` retries from the beginning, `S` removes the failed destination and continues,
+and `?` displays help. Ctrl-C removes the failed destination and aborts COPY.
+With `/B`, failure removes the destination and continues without prompting or
+automatic retry. SUBMIT alone retains interactive verification prompts.
 
 Before copying, the transient checks the complete mapping. Duplicate
 destinations, exact self-copy, destinations overlapping selected sources, and

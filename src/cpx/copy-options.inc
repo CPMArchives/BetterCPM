@@ -1,8 +1,9 @@
-; Transient-only trailing /O, /S and /B options. Repetition is idempotent, but
+; Transient-only trailing /O, /S, /B and /V options. Repetition is idempotent, but
 ; overwrite and skip are mutually exclusive. Strip options before preflight.
 BC_COPT:
         XOR     A
         LD      (CT_BATCH),A
+        LD      (CTV_ON),A
         LD      (CT_SKIP),A
         LD      (CT_SKIPS),A
         LD      (CT_FAILS),A
@@ -28,6 +29,8 @@ CTOTEST:
         CP      'S'
         JR      Z,CTOSLASH
         CP      'B'
+        JR      Z,CTOSLASH
+        CP      'V'
         JR      NZ,CT_OEND
 CTOSLASH:
         DEC     HL
@@ -42,6 +45,8 @@ CTOSLASH:
         OR      A
         JR      NZ,CT_OBAD
         LD      A,C
+        CP      'V'
+        JR      Z,CTSETV
         CP      'B'
         JR      Z,CTSETB
         CP      'S'
@@ -51,6 +56,10 @@ CTOSLASH:
         JR      NZ,CT_OBAD
         INC     A
         LD      (BC_OVER),A
+        JR      CTOTAIL
+CTSETV:
+        LD      A,1
+        LD      (CTV_ON),A
         JR      CTOTAIL
 CTSETB:
         LD      A,1

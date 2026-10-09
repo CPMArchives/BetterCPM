@@ -79,10 +79,13 @@ def copy_source(text: str) -> str:
     old = "        JR      Z,BC_CMAKE\n        LD      A,(BC_OVER)"
     assert text.count(old) == 1, "COPY destination-open hook changed"
     text = text.replace(old, "        JP      Z,BC_CMAKE\n        JP      CTEXIST\nCTALLOW:\n        LD      A,(BC_OVER)", 1)
-    text = text.replace("destination=source [/O]", "destination=source [/O|/S] [/B]", 1)
+    text = text.replace("destination=source [/O]", "destination=source [/O|/S] [/B] [/V]", 1)
     old = "        JP      Z,BC_CEXIST\n        LD      A,(BC_NEWFCB+9)"
     assert text.count(old) == 1, "COPY one-file overwrite entry changed"
     text = text.replace(old, "        JP      Z,BC_CEXIST\nCTYALLOW:\n        LD      A,(BC_NEWFCB+9)", 1)
+    old = "        JR      Z,BCCLERR\n  ; Apply attributes"
+    assert text.count(old) == 1, "COPY close verification hook changed"
+    text = text.replace(old, "        JP      Z,BCCLERR\n        JP      CTVPOST\nCTVATTR:\n  ; Apply attributes", 1)
     # Shared set parser is linked only into COPY.COM, never into RCP/MOVE.
     start = text.index("BC_CPARSE:")
     end = text.index("BC_CSOK:", start)
