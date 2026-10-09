@@ -1,4 +1,4 @@
-; Internal verification core, not yet exposed as /V. Preserve transfer FCBs
+; Transient /V verification core. Preserve transfer FCBs
 ; and their attributes. CF clear means identical records and simultaneous EOF;
 ; CF set means open/read failure, unequal length or unequal record contents.
 CTVERIFY:
@@ -85,3 +85,103 @@ CTVSTAT: DB 0
 CTV_SRC: DS 36
 CTV_DST: DS 36
 CTV_BUF: DS 128
+
+; Only a closed destination can be verified; attributes follow success.
+CTVPOST:
+        LD A,(CTV_ON)
+        OR A
+        JP Z,CTVATTR
+        CALL CTVERIFY
+        JP NC,CTVATTR
+        CALL CTPAIR
+        LD A,(CT_BATCH)
+        OR A
+        JR Z,CVVASK
+        LD DE,CVVERROR
+        CALL BC_PRINT
+        CALL CVVDEL
+        RET C
+        LD HL,CT_FAILS
+        INC (HL)
+        RET
+CVVASK:
+        LD DE,CVVASKM
+        CALL BC_PRINT
+CVVREAD:
+        LD E,0FFH
+        LD C,6
+        CALL BDOS
+        OR A
+        JR Z,CVVREAD
+        CP 3
+        JR Z,CVVABORT
+        CP 13
+        JR Z,CVVREAD
+        CP 10
+        JR Z,CVVREAD
+        CP 'a'
+        JR C,CVVANS
+        CP 'z'+1
+        JR NC,CVVANS
+        SUB 32
+CVVANS:
+        LD (CT_CHOICE),A
+        CALL BC_PCHAR
+        LD DE,BC_NL
+        CALL BC_PRINT
+        LD A,(CT_CHOICE)
+        CP 'R'
+        JR Z,CVVRETRY
+        CP 'S'
+        JR Z,CVVSKIP
+        LD DE,CVVHELP
+        CALL BC_PRINT
+        JR CVVASK
+CVVABORT:
+        CALL CVVDEL
+        RET C
+        JP CTABORT
+CVVSKIP:
+        CALL CVVDEL
+        RET C
+        JP CTSKIP
+CVVRETRY:
+        CALL CVVDEL
+        RET C
+        LD HL,BC_FCB
+        LD DE,CTV_SRC
+        CALL CTVFCB
+        LD HL,CTV_SRC
+        LD DE,BC_FCB
+        LD BC,36
+        LDIR
+        LD HL,BC_NEWFCB
+        LD DE,CTV_DST
+        CALL CTVFCB
+        LD HL,CTV_DST
+        LD DE,BC_NEWFCB
+        LD BC,36
+        LDIR
+        JP BC_COPEN
+; A cleanup failure stops the batch rather than claiming removal succeeded.
+CVVDEL:
+        CALL BC_CSELD
+        LD DE,BC_NEWFCB
+        LD C,19
+        CALL BDOS
+        CP 0FFH
+        JR Z,CVVDELNO
+        XOR A
+        LD (BC_CMADE),A
+        RET
+CVVDELNO:
+        LD A,1
+        LD (BC_WERROR),A
+        LD DE,BC_WRITEERR
+        CALL BC_PRINT
+        SCF
+        RET
+CTV_ON: DB 0
+CVVERROR: DB ' [VERIFY ERROR]',13,10,'$'
+CVVASKM: DB ' [VERIFY ERROR] R/S/? $'
+CVVHELP: DB 'R - Retry  S - Skip',13,10,'$'

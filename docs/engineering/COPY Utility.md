@@ -612,3 +612,29 @@ with byte-identical source/destination media after each verification. Evidence:
 The next increment must connect /V parsing, post-close verification, retry/skip
 handling and failed-destination cleanup before making /V available to users.
 No BIOS, BDOS, CCP or resident CPX changes are made.
+
+
+### 2026-10-09 — /V integration and failure handling
+
+/V is now a trailing, repeatable transient option, combinable with /O, /S and
+/B. COPY verifies after destination close and before attribute application.
+Interactive verification failure provides R/S/? with case-insensitive choices,
+help/invalid-choice reprompting and explicit Ctrl-C. Retry removes the failed
+output, resets transfer FCBs and repeats copy/verification. Skip removes it and
+continues; /B removes and counts it failed without prompting. Ctrl-C removes it
+and stops. A removal failure reports WRITE ERROR and stops the batch.
+
+COPY.COM is 8,500 bytes (291 bytes above the comparison core). All generated
+transients match native ZSM4/LINK; other transients and resident components are
+unchanged. Filespec/mapping tests, comparison-core regressions and the existing
+interactive/rename/SUBMIT campaign pass. Native flow tests cover normal
+multi-extent verification, option combinations/repetition, one-shot failure then
+successful retry, skip/help, /B failure and continuation, abort cleanup, no-/V
+bypass, exact data and R/O/SYS preservation. Failure injection is confined to
+private test binaries; the release binary contains no injection switch.
+
+Evidence: `/private/tmp/copy-verify-flow-v4-20261009/evidence.json`,
+`/private/tmp/copy-v-core-regression-20261009/evidence.json`, and
+`/private/tmp/copy-v-interactive-regression-20261009/evidence.json`.
+User-guide source is updated; exported DOCX/PDF files are not regenerated.
+Transfer-phase cancellation, final reporting and final qualification remain.

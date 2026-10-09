@@ -1043,3 +1043,13 @@ replacement collision handling and batch/source overlap protection. The native
 cpmsim qualification includes read-only replacement protection. This does not
 add resident handoff or change the CPX implementation. See COPY Utility.md for
 measurements and evidence; verification and final reporting remain pending.
+
+
+### Implementation update — /V, 2026-10-09
+
+Sections 16–18 now have a transient implementation: /V compares complete
+records and simultaneous EOF after close, applies attributes only on success,
+and handles interactive retry/skip or noninteractive removal/continuation.
+Ctrl-C at the verification-failure prompt removes failed output and aborts.
+Transfer-phase cancellation and final reporting remain separate increments.
+See COPY Utility.md for native qualification and binary measurements.
