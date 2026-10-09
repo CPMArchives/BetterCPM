@@ -1008,3 +1008,28 @@ The underlying data-copy, close, attribute and verification error cases must
 remain distinct from interpretation failures that permit automatic handoff.
 The exact safe handoff signal and the interactive-input/cancellation mechanism
 remain engineering choices to measure and qualify within the agreed behavior.
+
+
+## Extended source DU sets — accepted and implemented 2026-10-09
+
+Transient COPY admits Specification 208 selectors on its source operand in
+both source/destination and destination=source forms. The destination remains
+one resolved DU, optionally with a destination filename/template. The original
+caller DU supplies inherited components independently of previous terms.
+
+```text
+COPY [A0,B[5-7],C[3,5,6],5]:*.COM D3:
+COPY [A[-],B[-],C[-]]:*.COM D0:
+```
+
+Each frozen source record retains its own DU. Collection unions duplicate
+locations and visits drive-major/user-minor order with name order within each
+DU. A no-match DU contributes zero files. No overall matches reports NO FILE.
+An unavailable source drive aborts the complete collection before destination
+work. Capacity is 64 matched files across the complete selector.
+
+Mapping preflight covers the complete combined source list: duplicate generated
+destinations and targets overlapping any selected source DU/name reject the
+batch even with overwrite enabled. Ordinary overwrite, skip, read-only,
+interactive and batch behavior applies only after successful preflight.
+The resident COPY and MOVE implementations are unchanged.

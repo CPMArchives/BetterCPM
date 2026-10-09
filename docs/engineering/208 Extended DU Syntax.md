@@ -438,3 +438,20 @@ mutation and drive-wide operations reject bracketed scopes. An unavailable
 location receives a diagnostic and enumeration continues. Missing filename
 patterns after extended selectors are rejected. See Engineering Specification
 128 and the user guide for operation details and qualification evidence.
+
+
+## 16. Multiple-source, single-destination utility adoption — 2026-10-09
+
+Extended selectors also apply to source operands of utilities whose operation
+naturally combines multiple source locations into one destination. Transient
+COPY is the first implemented adopter. It accepts one common filename pattern
+across selected source DUs and one destination DU; source-set preflight is
+complete before writes. Individual source records retain their DUs.
+
+This is a reusable utility-level convention, not an OS change or automatic
+expansion by the CCP. Each adopting utility must define its own conflict,
+mutation and failure semantics. PIP is an intended future candidate when its
+maintained implementation is specified; concatenation, transformations and
+device targets need explicit PIP contracts. Existing MOVE and REN do not
+silently acquire cross-DU destructive behavior from this addition. DIR, STAT
+and WHEREIS use selectors for inspection rather than destination mapping.

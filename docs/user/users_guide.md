@@ -741,6 +741,22 @@ The second example creates `XOOBAR.BAK`. Destination literals replace the
 corresponding source positions, `?` retains one source position, and a terminal
 `*` retains the remainder of that filename field.
 
+COPY.COM also accepts extended DU selectors on the source, with one destination:
+
+    :COPY [A0,B[5-7],C[3,5,6],5]:*.COM D3:
+    :COPY [A[-],B[-],C[-]]:*.COM D0:
+
+The final user-only `5` inherits the caller's original drive. Sources are
+collected in drive/user order, with names sorted within each DU. Repeated DU
+selections do not repeat files. The destination cannot be a DU set.
+
+Preflight covers the combined source set. Equal generated destination names
+from different source locations reject the entire batch, even with `/O`.
+A destination that overlaps any selected source also rejects it. An unavailable
+source drive or a combined selection exceeding 64 files stops before writing.
+A selected DU with no matches contributes no files; if no DU has a match,
+COPY reports `NO FILE`.
+
 Options follow the operands:
 
 | Option | Meaning |
@@ -769,8 +785,8 @@ invalid generated names reject the operation without changing a destination.
 `/O` cannot override these checks. The current transient limit is 64 matched
 files; a larger batch reports `COPY BATCH TOO LARGE` before writing.
 
-These extended forms require `COPY.COM`. Until automatic handoff is implemented,
-use `CPX UNLOAD RCP` to select the transient implementation.
+These extended forms require `COPY.COM`. Use `:COPY` or `.COPY` to select it
+explicitly while automatic resident-to-transient handoff remains pending.
 
 
 #### 4.7 MOVE — Move Files
