@@ -729,3 +729,22 @@ This is a linked internal foundation, not yet called by public COPY parsing.
 Operand qualifiers remain rejected, so no attribute request is silently ignored.
 Attribute-expression evaluation and semantic integration are next. No new user
 syntax is claimed; exported manuals are not regenerated.
+
+
+### 2026-10-09 — Shared source attribute predicate compiler
+
+`src/utilities/common/attrselect.inc` compiles bracket contents into an eight-bit
+truth mask over RO(bit 0), SYS(bit 1) and ARC(bit 2). It supports RO/RW/SYS/DIR/ARC,
+R/O and R/W aliases, case-insensitive tokens and precedence ! > + > comma.
+Repeated NOTs invert by parity. Unknown vocabulary, missing operands, malformed
+operators, whitespace, parentheses and nonattribute queries are rejected with
+cleared result and carry set. HL/B consumes the expression on success.
+
+Execution tests cover 295 expressions against an independent Boolean evaluator
+for all eight states, including aliases, contradictions/tautologies and precedence.
+The small test CPU gained XOR C instruction support. The component is linked
+into COPY's proof carrier but not called by public parsing; qualifier syntax
+remains rejected until collection and destination semantics are integrated.
+COPY.COM is 9,039 bytes, 252 bytes added. Resident code and other transients do
+not grow. The received complete DIR contract is recorded in DIR Specification.md;
+its implementation shares this dependency rather than creating another parser.

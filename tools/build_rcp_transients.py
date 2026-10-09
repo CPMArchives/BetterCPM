@@ -104,6 +104,7 @@ def copy_source(text: str) -> str:
     scope = (SOURCE.parent / "copy-scope.inc").read_text(encoding="ascii")
     scope += (SOURCE.parent / "copy-verify.inc").read_text(encoding="ascii")
     scope += (SOURCE.parent / "copy-rename.inc").read_text(encoding="ascii")
+    scope += (ROOT / "src/utilities/common/attrselect.inc").read_text(encoding="ascii")
     scope += (ROOT / "src/utilities/common/operandqual.inc").read_text(encoding="ascii")
     scope += (ROOT / "src/utilities/common/duselect.inc").read_text(encoding="ascii")
     state = """

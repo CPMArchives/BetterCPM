@@ -272,6 +272,9 @@ class Z80:
             elif op == 0xAF:            # XOR A
                 self.a, self.z = 0, True
                 self.carry = False
+            elif op == 0xA9:            # XOR C
+                self.a ^= self.c
+                self.z, self.carry = self.a == 0, False
             elif op == 0xAC:            # XOR H
                 self.a ^= self.h
                 self.z, self.carry = self.a == 0, False
