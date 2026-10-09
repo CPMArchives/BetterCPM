@@ -1,4 +1,4 @@
-; Transient-only trailing /O, /S, /B and /V options. Repetition is idempotent, but
+; Transient-only leading/trailing /O, /S, /B and /V options. Repetition is idempotent, but
 ; overwrite and skip are mutually exclusive. Strip options before preflight.
 BC_COPT:
         XOR     A
@@ -7,6 +7,36 @@ BC_COPT:
         LD      (CT_SKIP),A
         LD      (CT_SKIPS),A
         LD      (CT_FAILS),A
+CTLEAD:
+        LD      A,B
+        OR      A
+        JP      Z,CT_LBAD
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,CTLPREFIX
+        INC     HL
+        DEC     B
+        JR      CTLEAD
+CTLPREFIX:
+        CP      '/'
+        JR      NZ,CTLREADY
+        LD      A,B
+        CP      4
+        JP      C,CT_LBAD
+        INC     HL
+        LD      A,(HL)
+        CALL    CTOAPPLY
+        JP      C,CT_LBAD
+        INC     HL
+        LD      A,(HL)
+        CP      ' '
+        JP      NZ,CT_LBAD
+        INC     HL
+        DEC     B
+        DEC     B
+        DEC     B
+        JR      CTLEAD
+CTLREADY:
         PUSH    HL
         LD      E,B
         LD      D,0
@@ -41,36 +71,9 @@ CTOSLASH:
         LD      A,(HL)
         CP      ' '
         JR      NZ,CT_OEND
-        LD      A,(BC_MVFLAG)
-        OR      A
-        JR      NZ,CT_OBAD
         LD      A,C
-        CP      'V'
-        JR      Z,CTSETV
-        CP      'B'
-        JR      Z,CTSETB
-        CP      'S'
-        JR      Z,CTSETS
-        LD      A,(CT_SKIP)
-        OR      A
-        JR      NZ,CT_OBAD
-        INC     A
-        LD      (BC_OVER),A
-        JR      CTOTAIL
-CTSETV:
-        LD      A,1
-        LD      (CTV_ON),A
-        JR      CTOTAIL
-CTSETB:
-        LD      A,1
-        LD      (CT_BATCH),A
-        JR      CTOTAIL
-CTSETS:
-        LD      A,(BC_OVER)
-        OR      A
-        JR      NZ,CT_OBAD
-        INC     A
-        LD      (CT_SKIP),A
+        CALL    CTOAPPLY
+        JP      C,CT_OBAD
 CTOTAIL:
         DEC     B
         DEC     B
@@ -82,6 +85,50 @@ CT_OEND:
         RET
 CT_OBAD:
         POP     HL
+        SCF
+        RET
+
+; Shared flag application for both ends. Does not clobber the cursor/count.
+CTOAPPLY:
+        LD      C,A
+        LD      A,(BC_MVFLAG)
+        OR      A
+        JR      NZ,CT_LBAD
+        LD      A,C
+        CP      'V'
+        JR      Z,CTSETV
+        CP      'B'
+        JR      Z,CTSETB
+        CP      'S'
+        JR      Z,CTSETS
+        CP      'O'
+        JR      NZ,CT_LBAD
+        LD      A,(CT_SKIP)
+        OR      A
+        JR      NZ,CT_LBAD
+        INC     A
+        LD      (BC_OVER),A
+        OR      A
+        RET
+CTSETV:
+        LD      A,1
+        LD      (CTV_ON),A
+        OR      A
+        RET
+CTSETB:
+        LD      A,1
+        LD      (CT_BATCH),A
+        OR      A
+        RET
+CTSETS:
+        LD      A,(BC_OVER)
+        OR      A
+        JR      NZ,CT_LBAD
+        INC     A
+        LD      (CT_SKIP),A
+        OR      A
+        RET
+CT_LBAD:
         SCF
         RET
 
@@ -260,3 +307,32 @@ CTNSPACE:
         RET
 CT_ARROW:
         DB      ' -> '
+
+; Assignment operands can have whitespace adjacent to =. Trim only their
+; outside spaces, never spaces inside filespecs or future bracket qualifiers.
+CTTRIM:
+        LD A,B
+        OR A
+        JP Z,CT_LBAD
+        LD A,(HL)
+        CP ' '
+        JR NZ,CTTEND
+        INC HL
+        DEC B
+        JR CTTRIM
+CTTEND:
+        PUSH HL
+        LD E,B
+        LD D,0
+        ADD HL,DE
+CTTBACK:
+        DEC HL
+        LD A,(HL)
+        CP ' '
+        JR NZ,CTTDONE
+        DEC B
+        JR CTTBACK
+CTTDONE:
+        POP HL
+        OR A
+        RET

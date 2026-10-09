@@ -757,7 +757,16 @@ source drive or a combined selection exceeding 64 files stops before writing.
 A selected DU with no matches contributes no files; if no DU has a match,
 COPY reports `NO FILE`.
 
-Options follow the operands:
+Global options may precede or follow the operands, or occur in both groups:
+
+```text
+COPY /V /B B1:*.COM C0:
+COPY /V C0: = B1:*.COM /B
+```
+
+Whitespace around `=` is optional. Options between source and destination are
+not accepted. Leading and trailing groups share the same invocation-wide
+policy; `/O` and `/S` conflict even when supplied in different groups.
 
 | Option | Meaning |
 | --- | --- |

@@ -679,3 +679,53 @@ destination masks and /BACKUP remain unimplemented. No shared DIR attribute
 expression parser currently exists. The specification records the proposed
 reusable component and bounded implementation sequence. Cancellation changes
 prepared before the amendment remain intact and qualified.
+
+
+### 2026-10-09 — Leading/trailing global option groups
+
+Transient COPY now strips leading /O /S /B /V groups as well as existing trailing
+groups, applies both through one flag routine, and uses the stripped cursor as
+the operand base. Repetitions remain idempotent; cross-group /O-/S conflicts are
+rejected before operand processing. Unknown, fused and option-only prefixes
+fail. No operand-qualified semantics or /BACKUP is enabled yet.
+
+Outside whitespace is trimmed from assignment operands so `destination = source`
+works as required; internal filename whitespace remains invalid. Source-first,
+assignment and multi-DU source forms retain their existing preflight behavior.
+COPY.COM is 8,681 bytes (107 bytes added); other transients and resident
+components remain unchanged. Native ZSM4/LINK matches host builds.
+
+Filespec and mapping checks pass, including prefix/suffix flag combinations,
+stripped pointers/counts and rejection cases. Native /V flow tests cover leading
+source-first and mixed-group spaced assignment, original suffix forms, recovery
+and invalid-option/unsupported-qualifier rejection without destination writes.
+Native extended DU collection/global preflight/capacity qualification passes
+with a leading /B form. Evidence:
+`/private/tmp/copy-leading-options-v3-20261009/evidence.json` and
+`/private/tmp/copy-leading-du-sets-20261009/evidence.json`.
+User guide and architecture status are updated; exported manuals are not
+regenerated. Operand qualifier separation and shared attribute parsing are next.
+
+
+### 2026-10-09 — Operand qualifier splitter foundation
+
+The internal shared component `src/utilities/common/operandqual.inc` splits a
+terminal operand-attached bracket block after location/DU parsing. It returns
+an unchanged start cursor, filespec length and qualifier content pointer/length.
+Empty filespec is permitted for a destination DU-only operand. Malformed,
+empty, nested, unclosed or nonterminal blocks and whitespace/control characters
+inside qualifiers fail with cleared output pointer/length. It does not interpret
+attribute expressions or validate filespecs; those remain separate layers.
+
+CPU execution tests combine the real DU parser and splitter, including
+`[A0,C[3,5,7-11],5]:F?*.DAT[!$SYS]`, destination-only qualifiers, aliases,
+truncations and maximum-tail boundaries. Native ZSM4/LINK matches host builds.
+COPY.COM is 8,787 bytes, 106 bytes above leading-option support; other transients
+and resident components are unchanged. Filespec/mapping checks and the native
+/V flow regression pass. Native evidence:
+`/private/tmp/copy-qualifier-foundation-20261009/evidence.json`.
+
+This is a linked internal foundation, not yet called by public COPY parsing.
+Operand qualifiers remain rejected, so no attribute request is silently ignored.
+Attribute-expression evaluation and semantic integration are next. No new user
+syntax is claimed; exported manuals are not regenerated.

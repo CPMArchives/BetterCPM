@@ -86,9 +86,16 @@ def copy_source(text: str) -> str:
     old = "        JR      Z,BCCLERR\n  ; Apply attributes"
     assert text.count(old) == 1, "COPY close verification hook changed"
     text = text.replace(old, "        JP      Z,BCCLERR\n        JP      CTVPOST\nCTVATTR:\n  ; Apply attributes", 1)
+    old = "        CALL    BC_COPT\n        JP      C,BC_CSYNT\n        LD      A,B"
+    assert text.count(old) == 1, "COPY option cursor hook changed"
+    text = text.replace(old, "        CALL    BC_COPT\n        JP      C,BC_CSYNT\n        LD      (BC_CBASE),HL\n        LD      A,B", 1)
     old = "BC_CLOOP:                               ; cloop\n        CALL    BC_CSELS"
     assert text.count(old) == 1, "COPY transfer polling hook changed"
     text = text.replace(old, "BC_CLOOP:                               ; cloop\n        CALL    CTCHECK\n        JP      C,CTCANCEL\n        CALL    BC_CSELS", 1)
+    for fcb in ("BC_FCB", "BC_NEWFCB"):
+        old = "        LD      B,A\n        LD      DE," + fcb + "\n        CALL    BC_COPAR"
+        assert text.count(old) == 1, "COPY operand trim hook changed"
+        text = text.replace(old, "        LD      B,A\n        CALL    CTTRIM\n        JP      C,BC_CSYNT\n        LD      DE," + fcb + "\n        CALL    BC_COPAR", 1)
     # Shared set parser is linked only into COPY.COM, never into RCP/MOVE.
     start = text.index("BC_CPARSE:")
     end = text.index("BC_CSOK:", start)
@@ -97,6 +104,7 @@ def copy_source(text: str) -> str:
     scope = (SOURCE.parent / "copy-scope.inc").read_text(encoding="ascii")
     scope += (SOURCE.parent / "copy-verify.inc").read_text(encoding="ascii")
     scope += (SOURCE.parent / "copy-rename.inc").read_text(encoding="ascii")
+    scope += (ROOT / "src/utilities/common/operandqual.inc").read_text(encoding="ascii")
     scope += (ROOT / "src/utilities/common/duselect.inc").read_text(encoding="ascii")
     state = """
 CT_BATCH: DB 0
