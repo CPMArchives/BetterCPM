@@ -1,8 +1,8 @@
-; Shared internal DU selection library, initial conventional-scope increment.
+; Shared internal DU selection library, bounded single and compound scopes.
 ; Include once. Caller defines DU_MAP (64 bytes) and DU_WORK (12 bytes).
 ; DU_PARSE: HL=input, B=count, D=original drive 0..15, E=user 0..31.
-; Success: CF clear, HL/B=remaining filespec; DU_MAP selects one DU.
-; Failure: CF set, A=1 syntax/2 domain/3 extended form not yet implemented,
+; Success: CF clear, HL/B=remaining filespec; DU_MAP contains the selected set.
+; Failure: CF set, A=1 syntax/2 domain,
 ;          HL=offending byte, DU_MAP cleared. BC/DE/AF are scratch.
 ; DU_NEXT: BC=next logical index (initially 0). Success CF clear, D/E=DU,
 ;          BC=following index. Exhausted CF set and BC=512. HL/AF scratch.
@@ -12,8 +12,11 @@ DU_LEN  EQU DU_WORK+2
 DU_DRV  EQU DU_WORK+3
 DU_USR  EQU DU_WORK+4
 DU_QLEN EQU DU_WORK+5
-DU_NUM  EQU DU_WORK+6
-DU_DIG  EQU DU_WORK+7
+DU_VAL  EQU DU_WORK+6
+DU_ODRV EQU DU_WORK+8
+DU_OUSR EQU DU_WORK+9
+DU_LOW  EQU DU_WORK+10
+DU_HIGH EQU DU_WORK+11
 
 DU_CLEAR:
         PUSH HL
@@ -34,73 +37,205 @@ DU_PARSE:
         LD A,B
         LD (DU_LEN),A
         LD A,D
+        LD (DU_ODRV),A
         LD (DU_DRV),A
         LD A,E
+        LD (DU_OUSR),A
         LD (DU_USR),A
         CALL DU_CLEAR
         LD A,D
         CP 16
-        JP NC,DU_RANGE
+        JP NC,DU_PDOM
         LD A,E
         CP 32
-        JP NC,DU_RANGE
-        LD C,0
+        JP NC,DU_PDOM
+        ; Only a colon or selector bracket introduces a qualified scope.
 DU_SCAN:
         LD A,B
         OR A
         JR Z,DU_PLAIN
         LD A,(HL)
+        CP ':'
+        JR Z,DU_SCOPE
         CP '['
-        JP Z,DU_EXT
+        JR Z,DU_SCOPE
         CP ']'
-        JP Z,DU_EXT
+        JR Z,DU_SCOPE
         CP ' '
         JR Z,DU_PLAIN
-        CP ':'
-        JR Z,DU_QUAL
         INC HL
-        INC C
         DJNZ DU_SCAN
 DU_PLAIN:
         LD HL,(DU_PTR)
         LD A,(DU_LEN)
         LD B,A
-        JR DU_SELECT
-DU_QUAL:
-        LD A,C
-        LD (DU_QLEN),A
-        OR A
-        JP Z,DU_SYNT
+        CALL DU_SELECT
+        RET
+DU_SCOPE:
         LD HL,(DU_PTR)
+        LD A,(DU_LEN)
+        LD B,A
         LD A,(HL)
+        CP '['
+        JR Z,DU_OUTER
+        CALL DU_TERM
+        JP C,DU_FAIL
+        JR DU_COLON
+DU_OUTER:
+        CALL DU_ADV
+DU_OTERM:
+        CALL DU_TERM
+        JP C,DU_FAIL
+        CALL DU_PEEK
+        JP C,DU_FAIL
+        CP ','
+        JR Z,DU_OCOM
+        CP ']'
+        JP NZ,DU_PSYNT
+        CALL DU_ADV
+        JR DU_COLON
+DU_OCOM:
+        CALL DU_ADV
+        JR DU_OTERM
+DU_COLON:
+        CALL DU_PEEK
+        JP C,DU_FAIL
+        CP ':'
+        JP NZ,DU_PSYNT
+        CALL DU_ADV
+        OR A
+        RET
+DU_PDOM:
+        LD A,2
+        JP DU_FAIL
+DU_PSYNT:
+        LD A,1
+        JP DU_FAIL
+
+; Subroutines return errors through carry, allowing every stack frame to unwind.
+DU_TERM:
+        LD A,(DU_ODRV)
+        LD (DU_DRV),A
+        LD A,(DU_OUSR)
+        LD (DU_USR),A
+        CALL DU_PEEK
+        RET C
         AND 05FH
         CP 'A'
-        JR C,DU_NUMBER
+        JR C,DU_TNUM
         CP 'P'+1
         JP NC,DU_SYNT
         SUB 'A'
         LD (DU_DRV),A
-        INC HL
-        DEC C
-        JR Z,DU_FINQ
+        CALL DU_ADV
+        LD A,B
+        OR A
+        JR Z,DU_TONE
+        LD A,(HL)
+        CP '['
+        JR Z,DU_ULIST
+        CP '0'
+        JR C,DU_TONE
+        CP '9'+1
+        JR NC,DU_TONE
+DU_TNUM:
+        CALL DU_NUMBER
+        RET C
+        LD (DU_USR),A
+DU_TONE:
+        CALL DU_SELECT
+        OR A
+        RET
+DU_ULIST:
+        CALL DU_ADV
+DU_UITEM:
+        CALL DU_PEEK
+        RET C
+        CP '-'
+        JR Z,DU_LOPEN
+        CALL DU_NUMBER
+        RET C
+        LD (DU_LOW),A
+        CALL DU_PEEK
+        RET C
+        CP '-'
+        JR Z,DU_HYPH
+        LD A,(DU_LOW)
+        LD (DU_HIGH),A
+        JR DU_UFILL
+DU_LOPEN:
+        XOR A
+        LD (DU_LOW),A
+DU_HYPH:
+        CALL DU_ADV
+        CALL DU_PEEK
+        RET C
+        CP ','
+        JR Z,DU_HOPEN
+        CP ']'
+        JR Z,DU_HOPEN
+        CALL DU_NUMBER
+        RET C
+        LD (DU_HIGH),A
+        JR DU_ORDER
+DU_HOPEN:
+        LD A,31
+        LD (DU_HIGH),A
+DU_ORDER:
+        LD A,(DU_LOW)
+        LD C,A
+        LD A,(DU_HIGH)
+        CP C
+        JR NC,DU_UFILL
+        LD (DU_LOW),A
+        LD A,C
+        LD (DU_HIGH),A
+DU_UFILL:
+        LD A,(DU_LOW)
+        LD (DU_USR),A
+DU_ULOOP:
+        CALL DU_SELECT
+        LD A,(DU_HIGH)
+        LD C,A
+        LD A,(DU_USR)
+        CP C
+        JR Z,DU_UEND
+        INC A
+        LD (DU_USR),A
+        JR DU_ULOOP
+DU_UEND:
+        CALL DU_PEEK
+        RET C
+        CP ','
+        JR Z,DU_UCOM
+        CP ']'
+        JP NZ,DU_SYNT
+        CALL DU_ADV
+        OR A
+        RET
+DU_UCOM:
+        CALL DU_ADV
+        JP DU_UITEM
+
+; One or two decimal digits, with no sign or whitespace. Result A=0..31.
 DU_NUMBER:
         XOR A
-        LD (DU_NUM),A
-        LD (DU_DIG),A
+        LD (DU_VAL),A
+        LD C,0
 DU_DIGIT:
-        LD A,(HL)
+        CALL DU_PEEK
+        RET C
         CP '0'
         JP C,DU_SYNT
         CP '9'+1
         JP NC,DU_SYNT
         SUB '0'
         LD E,A
-        LD A,(DU_DIG)
-        INC A
+        INC C
+        LD A,C
         CP 3
         JP NC,DU_SYNT
-        LD (DU_DIG),A
-        LD A,(DU_NUM)
+        LD A,(DU_VAL)
         ADD A,A
         LD D,A
         ADD A,A
@@ -109,19 +244,31 @@ DU_DIGIT:
         ADD A,E
         CP 32
         JP NC,DU_RANGE
-        LD (DU_NUM),A
+        LD (DU_VAL),A
+        CALL DU_ADV
+        LD A,B
+        OR A
+        JR Z,DU_NDONE
+        LD A,(HL)
+        CP '0'
+        JR C,DU_NDONE
+        CP '9'+1
+        JR C,DU_DIGIT
+DU_NDONE:
+        LD A,(DU_VAL)
+        OR A
+        RET
+DU_PEEK:
+        LD A,B
+        OR A
+        JP Z,DU_SYNT
+        LD A,(HL)
+        OR A
+        RET
+DU_ADV:
         INC HL
-        DEC C
-        JR NZ,DU_DIGIT
-        LD (DU_USR),A
-DU_FINQ:
-        INC HL
-        LD A,(DU_QLEN)
-        INC A
-        LD C,A
-        LD A,(DU_LEN)
-        SUB C
-        LD B,A
+        DEC B
+        RET
 DU_SELECT:
         PUSH HL
         PUSH BC
@@ -158,14 +305,14 @@ DU_BIT:
         POP HL
         OR A
         RET
-DU_EXT:
-        LD A,3
-        JR DU_FAIL
 DU_RANGE:
         LD A,2
-        JR DU_FAIL
+        SCF
+        RET
 DU_SYNT:
         LD A,1
+        SCF
+        RET
 DU_FAIL:
         PUSH AF
         CALL DU_CLEAR
