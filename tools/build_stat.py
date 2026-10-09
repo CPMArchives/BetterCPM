@@ -22,6 +22,8 @@ def main() -> None:
     args = parser.parse_args()
     BUILD.mkdir(parents=True, exist_ok=True)
     text = expand_layout(SOURCE.read_text(encoding="ascii"))
+    text = text.replace("        INCLUDE common/duselect.inc",
+                        (SOURCE.parent / "common/duselect.inc").read_text(encoding="ascii"))
     text = text.replace("        CSEG\n", "        ASEG\n")
     text = text.replace("        .PHASE  0103H\n", "        ORG     0103H\n")
     text = text.replace("        .DEPHASE\n", "")

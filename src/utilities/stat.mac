@@ -28,6 +28,8 @@ ECB             EQU     LY_SYS+080H
 ; -------------------------------------------------------------------------------
 
 START:                                  ; enter STAT utility
+        XOR     A
+        LD      (SETMODE),A
         LD      (OLDSP),SP
         LD      SP,STACKTOP
         LD      C,25
@@ -58,6 +60,8 @@ START:                                  ; enter STAT utility
         JP      C,FINISH
         CALL    DEVICEASSIGN
         JP      C,FINISH
+        CALL    SETCHECK
+        JP      C,SETFILES
         CALL    PARSEDU
         JP      C,BADFORM
         CALL    TRIM
@@ -81,6 +85,116 @@ START:                                  ; enter STAT utility
 ; -------------------------------------------------------------------------------
 ; Command-Tail Trimming
 ; -------------------------------------------------------------------------------
+
+; Extended scopes are inspection-only; conventional commands keep their path.
+SETCHECK:
+        PUSH HL
+        PUSH BC
+SETSCAN:
+        LD A,B
+        OR A
+        JR Z,SETNONE
+        LD A,(HL)
+        CP ' '
+        JR Z,SETNONE
+        CP '['
+        JR Z,SETYES
+        CP ']'
+        JR Z,SETYES
+        INC HL
+        DJNZ SETSCAN
+SETNONE:
+        POP BC
+        POP HL
+        OR A
+        RET
+SETYES:
+        POP BC
+        POP HL
+        SCF
+        RET
+SETFILES:
+        LD A,(SAVEDRV)
+        LD D,A
+        LD A,(SAVEUSR)
+        LD E,A
+        CALL DU_PARSE
+        JP C,BADFORM
+        CALL TRIM
+        LD A,B
+        OR A
+        JP Z,BADFORM
+        CALL ISDSK
+        JP Z,BADFORM
+        LD A,(HL)
+        CP '='
+        JP Z,BADFORM
+        CALL PARSEFCB
+        JP C,BADFILE
+        CALL FILEOPTION
+        JP C,BADFORM
+        LD A,(OPTION)
+        OR A
+        JR Z,SETVALID
+        INC A
+        JP NZ,BADFORM                  ; only no option or $S, never attributes
+SETVALID:
+        LD HL,FCB
+        LD DE,SETFCB
+        LD BC,36
+        LDIR
+        LD A,1
+        LD (SETMODE),A
+        LD BC,0
+SETNEXT:
+        CALL DU_NEXT
+        JP C,FINISH
+        LD (SETINDEX),BC
+        LD A,D
+        LD (SETDRV),A
+        LD A,E
+        LD (SETUSR),A
+        LD E,D
+        LD C,14
+        CALL BDOS
+        CP 0FFH
+        JR Z,SETMISS
+        LD A,(SETUSR)
+        LD E,A
+        LD C,32
+        CALL BDOS
+        CALL SETLABEL
+        CALL CRLF
+        LD HL,SETFCB
+        LD DE,FCB
+        LD BC,36
+        LDIR
+        CALL FILES
+        JR SETMORE
+SETMISS:
+        CALL SETLABEL
+        LD DE,MSETMISS
+        CALL PRINT
+SETMORE:
+        LD BC,(SETINDEX)
+        JR SETNEXT
+SETLABEL:
+        CALL CRLF
+        LD A,(SETDRV)
+        ADD A,'A'
+        CALL PCHAR
+        CALL SETUNUM
+        LD A,':'
+        JP PCHAR
+SETUNUM:
+        LD A,(SETUSR)
+        LD L,A
+        LD H,0
+        JP PWORD
+
+DU_MAP: DS 64
+DU_WORK: DS 12
+        INCLUDE common/duselect.inc
 
 TRIM:                                   ; trim leading command spaces
         LD      A,B
@@ -1097,6 +1211,9 @@ FACC:   CALL    PCHAR                   ; facc
         CALL    BDOS
         ADD     A,'A'
         CALL    PCHAR
+        LD      A,(SETMODE)
+        OR      A
+        CALL    NZ,SETUNUM
         LD      A,':'
         CALL    PCHAR
         LD      HL,(SUMCUR)
@@ -2576,6 +2693,7 @@ MPAGEZERO:      DB 'CP/M page zero$'    ; mpagezero
 MMAXCOM:        DB 'Maximum loadable COM: $' ; mmaxcom
 MBYTESUNIT:     DB ' bytes$'            ; mbytesunit
 MMEMBAD:        DB 13,10,'STAT MEM requires BetterCP/M ECB version 1',13,10,'$' ; mmembad
+MSETMISS:       DB ' unavailable',13,10,'$'
 MBADFILE:       DB 13,10,'Invalid filespec',13,10,'$'
 MBADFORM:       DB 13,10,'Invalid STAT command',13,10,'$' ; mbadform
 
@@ -2598,6 +2716,11 @@ SIZEPTR:        DW 0
 SIZECOUNT:      DB 0
 SIZEDIGIT:      DB 0
 SIZESTART:      DB 0
+SETMODE:        DB 0
+SETINDEX:       DW 0
+SETDRV:         DB 0
+SETUSR:         DB 0
+SETFCB:         DS 36
 OLDSP:          DW 0                    ; oldsp
 SAVEDRV:        DB 0                    ; savedrv
 SAVEUSR:        DB 0                    ; saveusr
