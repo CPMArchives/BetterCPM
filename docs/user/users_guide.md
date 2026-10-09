@@ -958,8 +958,8 @@ explicitly while automatic resident-to-transient handoff remains pending.
 
 ##### COPY attribute selection and planned backup
 
-**Source attribute selection is implemented in transient COPY.COM. Destination
-attribute qualifiers and /BACKUP remain planned and are not yet available.**
+**Source attribute selection and destination attribute qualifiers are implemented
+in transient COPY.COM. /BACKUP remains planned and is not yet available.**
 
 For example, this supported command selects ARC-marked files across all B:
 users and copies them to D0:, preserving attributes without changing source ARC:
@@ -1001,14 +1001,17 @@ Use `!` for NOT, `+` for AND and comma for OR. AND binds more tightly than OR:
 `[$ARC+!$SYS]` selects ARC-marked files without SYS; `[$RO,$SYS]` selects files
 with RO or SYS. `$R/O` and `$R/W` are aliases for `$RO` and `$RW`.
 
-Planned destination qualifiers will set the completed copy's attributes:
+Destination qualifiers set the completed copy's attributes after the copy and
+requested verification succeed:
 
 ```text
 COPY A0:*.COM D0:[$RW,!$ARC]
 ```
 
 This requests writable destination copies with ARC clear. Unspecified attributes
-are preserved. Opposite assignments such as `[$RO,$RW]` are invalid. Existing
+are preserved. Opposite assignments such as `[$RO,$RW]` are invalid before writes; repeated
+equivalent assignments are harmless. Destination qualifiers are comma-separated
+state assignments, not Boolean expressions with AND or OR. Existing
 read-only destinations remain protected, even when `[$RW]` is requested.
 
 `/BACKUP` takes precedence over destination ARC settings and clears ARC after
@@ -1016,8 +1019,7 @@ success, including when the destination says `[$ARC]`. Skipped, failed and
 aborted copies retain source ARC. If data copying succeeds but an attribute
 update fails, COPY reports incomplete backup-status handling.
 
-Both operand orders support source selection; the destination-qualified examples
-below remain planned:
+Both operand orders support source and destination qualifiers:
 
 ```text
 COPY B2:*.DOC[$ARC] C0:[!$ARC] /V

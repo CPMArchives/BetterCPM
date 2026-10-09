@@ -1590,3 +1590,13 @@ collection; its predicate is applied to directory metadata before the frozen
 source set and mapping preflight are constructed. Selection alone never changes
 ARC or other source attributes. Destination overrides and /BACKUP remain pending.
 See COPY Utility.md for native and shared-parser qualification.
+
+
+### Implementation update — destination attributes, 2026-10-10
+
+Destination qualifiers are implemented as comma-separated state assignments.
+They preserve unspecified attributes and apply overrides only after close and
+requested verification succeed. Alias-aware contradictions reject before writes.
+Existing read-only targets remain protected regardless of requested final state.
+Both operand orders and source/destination qualifier combinations are qualified.
+/BACKUP remains pending. See COPY Utility.md for measurements and evidence.

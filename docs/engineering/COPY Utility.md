@@ -772,3 +772,30 @@ The native /V recovery regression passes:
 Shared expression/splitter and filespec/mapping tests pass. User-guide source and
 architecture status now distinguish implemented source selection from pending
 destination and backup operations. Exported manuals are not regenerated.
+
+
+### 2026-10-10 — Destination attribute overrides
+
+The shared attribute component now exposes AT_STATE, producing disjoint RO/SYS/
+ARC set/clear masks for comma-separated literals, negations and aliases. Repeated
+equivalent assignments are idempotent; opposing assignments and Boolean-list
+operators fail with cleared outputs. CTDSCOPE splits the qualifier before normal
+single-DU/filename parsing. Bare qualifier-only destinations are invalid.
+
+CTDATTR adjusts only the three final extension attribute bits after source
+inheritance, close and /V. Other file attributes and filename bytes are preserved.
+Existing R/O targets remain unconditionally protected. /BACKUP stays rejected.
+COPY.COM is 9,359 bytes, 227 bytes added; no resident or other transient growth.
+
+CPU execution tests cover all pairwise vocabulary combinations, alias conflicts,
+wrapper boundaries and every three-state override combination over all eight
+initial attribute states, preserving unrelated attribute bits. Native qualification
+covers both operand orders, source predicates plus wildcard destination templates,
+exact multi-extent data and raw directory attributes, contradictions with no
+writes, and read-only target rejection despite $RW and /O. Source media remain
+unchanged. Native and host builds match for all six transients.
+Evidence: `/private/tmp/copy-destination-attrs-v2-20261010/evidence.json`.
+Source and /V recovery regressions pass:
+`/private/tmp/copy-dest-source-regression-20261010/evidence.json` and
+`/private/tmp/copy-dest-verify-regression-20261010/evidence.json`.
+User guide and design status updated; exported manuals are not regenerated.

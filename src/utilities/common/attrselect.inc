@@ -154,3 +154,76 @@ AT_NOT: DB 0
 AT_SUM: DB 0
 AT_TERM: DB 0
 AT_RESULT: DB 0
+
+; Destination modification list: comma-separated attribute literals only.
+; AT_SET/AT_CLEAR use RO=1 SYS=2 ARC=4. Contradictions clear both and fail.
+AT_STATE:
+        XOR A
+        LD (AT_SET),A
+        LD (AT_CLEAR),A
+AS_NEXT:
+        CALL AT_ATOM
+        JP C,AS_BAD
+        LD (AS_MASK),A
+        PUSH HL
+        PUSH BC
+        LD HL,AS_TABLE
+        LD B,6
+AS_FIND:
+        LD A,(AS_MASK)
+        CP (HL)
+        JR Z,AS_FOUND
+        INC HL
+        INC HL
+        INC HL
+        DJNZ AS_FIND
+        POP BC
+        POP HL
+        JR AS_BAD
+AS_FOUND:
+        INC HL
+        LD C,(HL)
+        INC HL
+        LD A,(HL)
+        OR A
+        JR Z,AS_CLR
+        LD A,(AT_CLEAR)
+        AND C
+        JR NZ,AS_CONFL
+        LD A,(AT_SET)
+        OR C
+        LD (AT_SET),A
+        JR AS_MORE
+AS_CLR:
+        LD A,(AT_SET)
+        AND C
+        JR NZ,AS_CONFL
+        LD A,(AT_CLEAR)
+        OR C
+        LD (AT_CLEAR),A
+AS_MORE:
+        POP BC
+        POP HL
+        LD A,B
+        OR A
+        RET Z
+        LD A,(HL)
+        CP ','
+        JR NZ,AS_BAD
+        INC HL
+        DEC B
+        JR AS_NEXT
+AS_CONFL:
+        POP BC
+        POP HL
+AS_BAD:
+        XOR A
+        LD (AT_SET),A
+        LD (AT_CLEAR),A
+        SCF
+        RET
+AS_TABLE:
+        DB 0AAH,1,1,055H,1,0,0CCH,2,1,033H,2,0,0F0H,4,1,00FH,4,0
+AS_MASK: DB 0
+AT_SET: DB 0
+AT_CLEAR: DB 0

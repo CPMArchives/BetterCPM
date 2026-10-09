@@ -101,7 +101,15 @@ def copy_source(text: str) -> str:
     end = text.index("BC_CSOK:", start)
     part = text[start:end].replace("CALL    BC_COPAR", "CALL    CTSCOPE", 1)
     text = text[:start] + part + text[end:]
+    start = text.index("BC_CSOK:")
+    end = text.index("BC_CDOK:", start)
+    part = text[start:end].replace("CALL    BC_COPAR", "CALL    CTDSCOPE", 1)
+    text = text[:start] + part + text[end:]
+    old = "        DJNZ    BC_CATTR\n        LD      DE,BC_NEWFCB"
+    assert text.count(old) == 1, "COPY destination attributes hook changed"
+    text = text.replace(old, "        DJNZ    BC_CATTR\n        CALL    CTDATTR\n        LD      DE,BC_NEWFCB", 1)
     scope = (SOURCE.parent / "copy-scope.inc").read_text(encoding="ascii")
+    scope += (SOURCE.parent / "copy-dest.inc").read_text(encoding="ascii")
     scope += (SOURCE.parent / "copy-verify.inc").read_text(encoding="ascii")
     scope += (SOURCE.parent / "copy-rename.inc").read_text(encoding="ascii")
     scope += (ROOT / "src/utilities/common/attrselect.inc").read_text(encoding="ascii")
