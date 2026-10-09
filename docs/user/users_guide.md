@@ -1019,6 +1019,12 @@ success, including when the destination says `[$ARC]`. Skipped, failed and
 aborted copies retain source ARC. If data copying succeeds but an attribute
 update fails, COPY reports incomplete backup-status handling.
 
+If a source read or destination write/close fails, COPY reports the file and
+removes its incomplete destination before continuing to later files. Disk full
+stops the batch. If removal fails, `INCOMPLETE DESTINATION CLEANUP FAILED`
+means the incomplete file may remain; COPY stops. Earlier completed copies
+remain available, and the failed file retains its source ARC status.
+
 Both operand orders support source and destination qualifiers:
 
 ```text

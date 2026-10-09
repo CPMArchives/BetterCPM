@@ -1622,3 +1622,27 @@ all eight attribute states, read-only sources, multi-extent source/destination
 entries, destination ARC override, malformed options, contradictions, skipped
 collisions, verification failure, and controlled destination/source metadata
 failures. Earlier pending-backup notes describe historical implementation state.
+
+
+### 2026-10-10 — Per-file transfer errors and cleanup
+
+Transient read/write/close errors now count the current file as failed, print its
+source/destination pair and diagnostic, close and delete a created incomplete
+destination, and continue the frozen batch when cleanup succeeds. A missing
+source at open uses the same per-file failure path. Sequential write status 2
+is allocation-full and aborts the remaining batch after cleanup; other nonzero
+write statuses report WRITE ERROR. Failure to create a destination retains the
+existing conservative NO SPACE stop policy.
+
+Deletion failure reports `INCOMPLETE DESTINATION CLEANUP FAILED` and stops the
+batch without claiming removal. The cleanup diagnostic also applies to /V and
+cancellation cleanup. Earlier completed copies are preserved. /BACKUP never
+clears source ARC for the failed file. Metadata failures after completed data
+remain distinct and retain the destination.
+
+COPY.COM is 9,667 bytes, 91 bytes added. All six native builds match host outputs;
+resident CPX, CCP, BIOS and BDOS are unchanged. Controlled native faults in
+`/private/tmp/copy-errors-20261010/evidence.json` prove read/write/close
+continuation, disk-full stopping, deletion-failure stopping, caller DU restoration,
+exact earlier/later copies and source ARC behavior. Final allocation reporting,
+summary accounting, and complete platform qualification remain separate work.

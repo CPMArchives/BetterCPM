@@ -193,7 +193,7 @@ CVVDEL:
 CVVDELNO:
         LD A,1
         LD (BC_WERROR),A
-        LD DE,BC_WRITEERR
+        LD DE,CTE_CLEAN
         CALL BC_PRINT
         SCF
         RET
