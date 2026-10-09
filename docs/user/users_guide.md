@@ -1076,3 +1076,31 @@ This is installation, not system generation.
 
 ## Appendixes
 A. Command Summary B. Command-Line Editing Keys C. File Attributes D. Control Characters E. BetterCP/M 1.0 Compatibility Notes F. Error Messages — possibly instead of Chapter 11 depending on size G. Glossary — only BetterCP/M/CP/M terminology actually worth defining
+
+
+#### 4.16 STAT — Extended DU File Inspection
+
+STAT accepts extended DU selectors when reporting file statistics:
+
+    STAT B[3,5]:*.COM
+    STAT B[5-3]:*.DAT $S
+    STAT B[-]:*.COM
+    STAT [A0,C[3,5,7-11],5]:*.DAT
+
+A drive's bracketed list selects users on that drive. `[-]` selects users
+0–31; open endpoints and descending ranges are accepted. Compound lists
+combine locations. A user-only term inherits the caller's original drive;
+a drive-only term inherits the original user. Duplicate locations are visited
+once, in drive-major/user-minor order. `[*]` is invalid as a user selector.
+Filename wildcards retain the bounded 8.3 rules.
+
+Each location has a DU heading, and every file result includes its DU. Empty
+locations report `File Not Found`. An unavailable drive is identified and
+inspection continues with the remaining locations. The caller's drive and
+user are restored on completion.
+
+An explicit filename or pattern is required after an extended selector.
+`$S` adds logical file size. Extended selectors currently support inspection
+only: attribute options and drive-wide commands such as `DSK:` and `=R/O`
+are rejected. Conventional single-DU STAT commands retain their existing
+behavior and output.

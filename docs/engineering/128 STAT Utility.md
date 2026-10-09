@@ -350,3 +350,36 @@ rejection diagnostic without printing a map. All four complete runtime disk
 images remain unchanged. The report preserves binaries, transcripts, commands,
 media and hashes. This closes native MEM parity and the retained metadata
 edge cases. Actual BIOS IOBYTE routing remains a separate release requirement.
+
+
+### Shared extended DU inspection — 2026-10-09
+
+STAT now links the Specification 208 assembly include for bracketed selector
+forms. Before selecting any location, it validates the complete scope,
+filespec and file option. Extended selectors admit file inspection only,
+with no option or `$S`; missing patterns, drive-wide DSK/read-only assignments
+and attribute changes are rejected. Conventional syntax remains on its
+established parser path and retains its output.
+
+The driver visits the bitmap once in canonical order. Each location is headed
+by its DU, and extended file rows include the user number. Every iteration
+restores the original parsed FCB because logical-size reporting may replace
+its name. Unavailable drive selection reports the requested DU and continues.
+The ordinary FINISH path restores the caller's drive/user.
+
+STAT.COM is 6,839 bytes; this is transient utility growth only. The shared
+include is expanded by `tools/build_stat.py` at build time; no OS service,
+BDOS change or CPX change is involved. Documentation source is updated;
+DOCX/PDF exports are not regenerated.
+
+Qualification passes on disposable cpmsim media: user lists, descending and
+duplicate selections, `$S`, user 31, the compound user-only inheritance example
+from caller B2, unavailable-drive continuation, malformed scopes, rejected
+attribute/drive-wide set operations, and conventional single-DU output.
+All three mounted fixture images remain byte-identical after every case;
+caller prompts confirm restoration. Evidence:
+`/private/tmp/stat-du-sets-v3-20261009/evidence.json`.
+Parser, 24-bit logical size, sorting, attribute result and summary-capacity
+regressions pass. Native ZSM4 parity of the shared include is already recorded
+in Specification 208; this increment does not claim native whole-STAT assembly
+parity or new trs80gp qualification.

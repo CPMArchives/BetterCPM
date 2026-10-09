@@ -426,3 +426,15 @@ same 571 bytes as host assembly; reproducible native parity is provided by
 `tools/build_native_du_select.py` with its log at
 `build/du-select/NATIVE-DU-BUILD.LOG`. Utility integration and native operation
 qualification are the next increments.
+
+
+## 15. Initial STAT adoption — 2026-10-09
+
+STAT file inspection now adopts the shared parser for bracketed selection
+forms. It validates scope/pattern/options before location selection and admits
+only inspection with no option or `$S`. Every file row identifies the selected
+DU. Conventional single-DU operations retain the previous path; attribute
+mutation and drive-wide operations reject bracketed scopes. An unavailable
+location receives a diagnostic and enumeration continues. Missing filename
+patterns after extended selectors are rejected. See Engineering Specification
+128 and the user guide for operation details and qualification evidence.
