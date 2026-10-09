@@ -1580,3 +1580,13 @@ with the shared DU selector. It separates a terminal qualifier block after DU
 parsing without interpreting the qualifier. COPY does not yet admit qualifiers:
 attribute parsing and operation semantics must be integrated first. See COPY
 Utility.md for the boundary contract and qualification.
+
+
+### Implementation update — source attributes, 2026-10-09
+
+Source-attached RO/RW/SYS/DIR/ARC expressions and R/O/R/W aliases are now
+implemented in transient COPY. The complete expression is compiled before
+collection; its predicate is applied to directory metadata before the frozen
+source set and mapping preflight are constructed. Selection alone never changes
+ARC or other source attributes. Destination overrides and /BACKUP remain pending.
+See COPY Utility.md for native and shared-parser qualification.

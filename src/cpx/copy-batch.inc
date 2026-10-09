@@ -62,6 +62,8 @@ BC_WSEARCH:
         LD      D,0
         LD      HL,BC_DMA+1
         ADD     HL,DE
+        CALL    CTMATCH
+        JP      Z,BC_WCONT
         LD      DE,BC_WNAME
         LD      B,11
 BC_WNCP:

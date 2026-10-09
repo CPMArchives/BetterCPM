@@ -1,7 +1,7 @@
 # COPY operand qualification and backup
 
-Accepted design: 2026-10-09. Operand qualifiers and /BACKUP are not yet
-implemented. Leading and trailing /O /S /B /V, multi-DU sources,
+Accepted design: 2026-10-09. Destination qualifiers and /BACKUP are not yet
+implemented. Source predicates, leading and trailing /O /S /B /V, multi-DU sources,
 attribute preservation and global mapping preflight already exist.
 
 ## Command structure and scope

@@ -1,5 +1,7 @@
 ; Transient COPY source scope. All DU selection is frozen before destination I/O.
 CTSCOPE:
+        LD A,0FFH
+        LD (CT_FILTER),A
         LD (BC_COFCP),DE
         LD A,(BC_CDSAV)
         LD D,A
@@ -7,11 +9,25 @@ CTSCOPE:
         LD E,A
         CALL DU_PARSE
         JR C,CTS_BAD
+        CALL OQ_SPLIT
+        JR C,CTS_BAD
         LD (BC_COPTR),HL
         LD A,B
         LD (BC_COLEN),A
         OR A
         JR Z,CTS_BAD
+        LD A,(OQ_LEN)
+        OR A
+        JR Z,CTSFILES
+        LD B,A
+        LD HL,(OQ_PTR)
+        CALL AT_PARSE
+        JR C,CTS_BAD
+        LD (CT_FILTER),A
+CTSFILES:
+        LD HL,(BC_COPTR)
+        LD A,(BC_COLEN)
+        LD B,A
         CALL BC_CVALID
         JR C,CTS_BAD
         LD HL,(BC_COPTR)
@@ -102,3 +118,47 @@ CTDUENDP: DW 0
 CTDUCUR: DW 0
 CTDUSCAN: DW 0
 CTDUMSG: DB 13,10,'COPY SOURCE DRIVE UNAVAILABLE',13,10,'$'
+
+; Evaluate the predicate against directory metadata before masking name bits.
+; Input HL points at the directory name; preserve it for filename collection.
+CTMATCH:
+        PUSH HL
+        PUSH BC
+        LD DE,8
+        ADD HL,DE
+        LD C,0
+        LD A,(HL)
+        AND 80H
+        JR Z,CTMSYS
+        INC C
+CTMSYS:
+        INC HL
+        LD A,(HL)
+        AND 80H
+        JR Z,CTMARC
+        LD A,C
+        OR 2
+        LD C,A
+CTMARC:
+        INC HL
+        LD A,(HL)
+        AND 80H
+        JR Z,CTMTEST
+        LD A,C
+        OR 4
+        LD C,A
+CTMTEST:
+        LD A,C
+        OR A
+        LD A,(CT_FILTER)
+        JR Z,CTMRESULT
+        LD B,C
+CTMSHIFT:
+        SRL A
+        DJNZ CTMSHIFT
+CTMRESULT:
+        AND 1
+        POP BC
+        POP HL
+        RET
+CT_FILTER: DB 0FFH

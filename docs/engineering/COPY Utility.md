@@ -748,3 +748,27 @@ remains rejected until collection and destination semantics are integrated.
 COPY.COM is 9,039 bytes, 252 bytes added. Resident code and other transients do
 not grow. The received complete DIR contract is recorded in DIR Specification.md;
 its implementation shares this dependency rather than creating another parser.
+
+
+### 2026-10-09 — Source attribute predicate integration
+
+Transient COPY now accepts source-attached qualifiers in both operand orders.
+The DU parser runs first, then the operand splitter and shared attribute compiler.
+Absent qualifiers reset the truth mask to FF (all states). Directory collection
+evaluates original RO/SYS/ARC metadata before masking filename bytes or freezing
+names. Only matching logical files contribute to capacity and mapping safety.
+Source qualifiers never modify source metadata. Destination qualifiers and
+/BACKUP remain rejected.
+
+COPY.COM is 9,132 bytes, 93 bytes added. Native ZSM4/LINK matches host builds;
+other transients and resident components are unchanged. Native qualification
+covers all eight states, RO/RW/SYS/DIR/ARC, slash aliases, AND/OR/NOT, leading
+options and spaced assignment, multi-extent data, no matches, invalid expressions,
+filtered duplicate mappings, retained duplicate rejection and selected-source
+overlap. Sources stay byte-identical and rejected cases perform no writes.
+Evidence: `/private/tmp/copy-source-select-20261009/evidence.json`.
+The native /V recovery regression passes:
+`/private/tmp/copy-select-verify-regression-20261009/evidence.json`.
+Shared expression/splitter and filespec/mapping tests pass. User-guide source and
+architecture status now distinguish implemented source selection from pending
+destination and backup operations. Exported manuals are not regenerated.
