@@ -1563,3 +1563,20 @@ Build in bounded increments:
 
 Every increment must retain zero BDOS growth and the existing global mapping
 safety, original-DU inheritance, cancellation and verification contracts.
+
+
+### Implementation update — global option groups, 2026-10-09
+
+Leading and trailing /O /S /B /V are implemented for transient COPY. Both groups
+share one policy and cross-group /O-/S conflicts are rejected before operations.
+Whitespace adjacent to assignment equals is accepted. Operand qualifiers and
+/BACKUP remain unimplemented and rejected. See COPY Utility.md for qualification.
+
+
+### Implementation update — qualifier splitter foundation, 2026-10-09
+
+A shared internal operand splitter is implemented and tested in combination
+with the shared DU selector. It separates a terminal qualifier block after DU
+parsing without interpreting the qualifier. COPY does not yet admit qualifiers:
+attribute parsing and operation semantics must be integrated first. See COPY
+Utility.md for the boundary contract and qualification.

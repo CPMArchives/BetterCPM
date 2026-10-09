@@ -86,8 +86,8 @@ def main():
             cpu.hl, cpu.b = 0x7000, len(text)
             cpu.run(option_entry, limit=10000)
             assert cpu.carry == rejected, (binary_path, text)
-            assert cpu.hl == 0x7000
             if not rejected:
+                assert cpu.hl == 0x7000
                 assert bytes(cpu.mem[cpu.hl:cpu.hl + cpu.b]).decode() == expected, text
                 assert cpu.mem[address('BC_OVER')] == overwrite
         if origin == 0x100:
@@ -110,6 +110,33 @@ def main():
                     assert bytes(cpu.mem[cpu.hl:cpu.hl + cpu.b]) == b'B1:F.DAT B3:'
                     assert cpu.mem[address('BC_OVER')] == overwrite
                     assert cpu.mem[address('CT_SKIP')] == skip
+    # Leading and trailing groups share one invocation-wide policy. Check
+    # stripped cursor/count and rejection before operand/media processing.
+    binary = (ROOT / 'build/utilities/COPY.COM').read_bytes()
+    listing = (ROOT / 'build/utilities/copy-transient.lst').read_text()
+    def transient_address(name):
+        return int(re.search(r'^([0-9a-f]{4})\s+.*?\b'+name+':',listing,re.M|re.I)[1],16)
+    for text, expected, flags in [
+        ('/V /B B1:F.DAT B3:', 'B1:F.DAT B3:', (0,0,1,1)),
+        (' /V   /O B3:=B1:F.DAT /B /V ', 'B3:=B1:F.DAT', (1,0,1,1)),
+        ('/S B1:F.DAT B3: /S', 'B1:F.DAT B3:', (0,1,0,0)),
+        ('/V B3: = B1:F.DAT /B', 'B3: = B1:F.DAT', (0,0,1,1)),
+        ('/O B1:F.DAT B3: /S', None, None),
+        ('/S B1:F.DAT B3: /O', None, None),
+        ('/V', None, None), ('/V /B', None, None),
+        ('/VV B1:F.DAT B3:', None, None),
+        ('/X B1:F.DAT B3:', None, None),
+        ('/BACKUP B1:F.DAT B3:', None, None),
+        ('/V/B B1:F.DAT B3:', None, None)]:
+        c=Z80(b''); c.mem[256:256+len(binary)]=binary
+        c.mem[0x7000:0x7000+len(text)]=text.encode()
+        c.hl,c.b=0x7000,len(text)
+        c.run(transient_address('BC_COPT'),limit=10000)
+        assert c.carry==(expected is None),text
+        if expected is not None:
+            assert bytes(c.mem[c.hl:c.hl+c.b]).decode()==expected,text
+            assert tuple(c.mem[transient_address(n)] for n in
+                         ('BC_OVER','CT_SKIP','CT_BATCH','CTV_ON'))==flags,text
     print('COPY CPX/transient filespec and transient /O-/S option parsing passed')
 
 

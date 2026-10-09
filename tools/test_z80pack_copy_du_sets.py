@@ -31,7 +31,7 @@ def main():
   for name,data in names.items():
    f=work/('read-'+str(user)+'-'+name);cpm('cpmcp',disks['d'],f'{user}:{name}',f)
    assert f.read_bytes()==data,(user,name)
- text=execute('COPY [A0,B[5-7],C[3,5,6],5]:*.COM D3: /B','mixed')
+ text=execute('COPY /B [A0,B[5-7],C[3,5,6],5]:*.COM D3:','mixed')
  assert b'COPY DESTINATION CONFLICT' not in text and b'COPY source destination' not in text,text
  contents(3,expected)
  text=execute('COPY [A[-],B[-],C[-]]:*.COM D0: /B','all-users');contents(0,expected)

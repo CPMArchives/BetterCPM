@@ -61,9 +61,21 @@ def main():
         if exists: assert f.read_bytes()==data,user
     install('normal')
     for user, options in [(3,'/V'),(4,'/B /V /V'),(5,'/O /V'),(6,'/S /V')]:
-        text=execute(f'COPY B1:DATA.DAT B{user}: {options}',[],f'normal-{user}')
+        command = f'COPY B1:DATA.DAT B{user}: {options}'
+        if user == 3: command = 'COPY /V B1:DATA.DAT B3:'
+        if user == 4: command = 'COPY /B /V B4: = B1:DATA.DAT /V'
+        text=execute(command,[],f'normal-{user}')
         assert b'VERIFY ERROR' not in text and b'COPY source' not in text
         check(user,True)
+    for index, command in enumerate([
+        'COPY /O B1:DATA.DAT B13: /S',
+        'COPY /S B1:DATA.DAT B13: /O',
+        'COPY /BACKUP B1:DATA.DAT B13:',
+        'COPY /V B1:DATA.DAT[$ARC] B13:']):
+        before = b.read_bytes()
+        text=execute(command,[],f'rejected-options-{index}')
+        assert b'COPY source destination' in text
+        assert b.read_bytes()==before
     install('always')
     text=execute('COPY B1:DATA.DAT B7: /B /V',[],'batch-failure')
     assert b'VERIFY ERROR' in text; check(7,False)
