@@ -956,14 +956,23 @@ These extended forms require `COPY.COM`. Use `:COPY` or `.COPY` to select it
 explicitly while automatic resident-to-transient handoff remains pending.
 
 
-##### Planned COPY attribute selection and backup
+##### COPY attribute selection and planned backup
 
-**Design accepted; not yet available in COPY.COM.** The following syntax is
-provided to explain the planned behavior, not as instructions for the current
-utility.
+**Source attribute selection is implemented in transient COPY.COM. Destination
+attribute qualifiers and /BACKUP remain planned and are not yet available.**
+
+For example, this supported command selects ARC-marked files across all B:
+users and copies them to D0:, preserving attributes without changing source ARC:
+
+```text
+COPY /B /V B[-]:*.COM[$ARC] D0:
+```
+
+Source filtering takes place before global mapping checks and the 64-file limit.
+No matches reports `NO FILE`. Invalid expressions fail before writes.
 
 Command-wide options use `/`; qualifiers attached to an operand use brackets.
-For example:
+For example, the planned backup syntax is:
 
 ```text
 COPY /V /BACKUP B[-]:*.COM[$ARC] D0:
@@ -992,7 +1001,7 @@ Use `!` for NOT, `+` for AND and comma for OR. AND binds more tightly than OR:
 `[$ARC+!$SYS]` selects ARC-marked files without SYS; `[$RO,$SYS]` selects files
 with RO or SYS. `$R/O` and `$R/W` are aliases for `$RO` and `$RW`.
 
-Destination qualifiers set the completed copy's attributes:
+Planned destination qualifiers will set the completed copy's attributes:
 
 ```text
 COPY A0:*.COM D0:[$RW,!$ARC]
@@ -1007,7 +1016,8 @@ success, including when the destination says `[$ARC]`. Skipped, failed and
 aborted copies retain source ARC. If data copying succeeds but an attribute
 update fails, COPY reports incomplete backup-status handling.
 
-Both operand orders are supported by the design:
+Both operand orders support source selection; the destination-qualified examples
+below remain planned:
 
 ```text
 COPY B2:*.DOC[$ARC] C0:[!$ARC] /V
