@@ -70,7 +70,7 @@ def main():
     for index, command in enumerate([
         'COPY /O B1:DATA.DAT B13: /S',
         'COPY /S B1:DATA.DAT B13: /O',
-        'COPY /BACKUP B1:DATA.DAT B13:',
+        'COPY /BACKUPX B1:DATA.DAT B13:',
         'COPY /V B1:DATA.DAT[$WHL] B13:']):
         before = b.read_bytes()
         text=execute(command,[],f'rejected-options-{index}')

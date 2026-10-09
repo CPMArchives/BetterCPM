@@ -4,6 +4,7 @@ BC_COPT:
         XOR     A
         LD      (CT_BATCH),A
         LD      (CTV_ON),A
+        LD      (CT_BACK),A
         LD      (CT_SKIP),A
         LD      (CT_SKIPS),A
         LD      (CT_FAILS),A
@@ -23,6 +24,26 @@ CTLPREFIX:
         LD      A,B
         CP      4
         JP      C,CT_LBAD
+        PUSH    HL
+        CALL    CTBWORD
+        POP     HL
+        JR      C,CTL_SHORT
+        LD      A,B
+        CP      9
+        JP      C,CT_LBAD
+        LD      DE,7
+        ADD     HL,DE
+        LD      A,(HL)
+        CP      ' '
+        JP      NZ,CT_LBAD
+        INC     HL
+        LD      A,B
+        SUB     8
+        LD      B,A
+        LD      A,1
+        LD      (CT_BACK),A
+        JR      CTLEAD
+CTL_SHORT:
         INC     HL
         LD      A,(HL)
         CALL    CTOAPPLY
@@ -54,6 +75,33 @@ CTOTEST:
         JR      C,CT_OEND
         LD      A,(HL)
         LD      C,A
+        CP      'P'
+        JR      NZ,CTO_SHORT
+        LD      A,B
+        CP      9
+        JR      C,CT_OEND
+        PUSH    HL
+        LD      DE,6
+        OR      A
+        SBC     HL,DE
+        CALL    CTBWORD
+        JR      C,CTB_NONE
+        DEC     HL
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,CTB_NONE
+        POP     DE
+        LD      A,1
+        LD      (CT_BACK),A
+        LD      A,B
+        SUB     8
+        LD      B,A
+        JP      CTOTRIM
+CTB_NONE:
+        POP     HL
+        JR      CT_OEND
+CTO_SHORT:
+        LD      A,C
         CP      'O'
         JR      Z,CTOSLASH
         CP      'S'
@@ -336,3 +384,31 @@ CTTDONE:
         POP HL
         OR A
         RET
+
+; Exact long option match; preserve cursor/count and require seven bytes.
+CTBWORD:
+        LD A,B
+        CP 7
+        RET C
+        PUSH HL
+        PUSH BC
+        LD DE,CTB_TEXT
+        LD B,7
+CTB_LOOP:
+        LD A,(DE)
+        CP (HL)
+        JR NZ,CTB_BAD
+        INC HL
+        INC DE
+        DJNZ CTB_LOOP
+        POP BC
+        POP HL
+        OR A
+        RET
+CTB_BAD:
+        POP BC
+        POP HL
+        SCF
+        RET
+CTB_TEXT: DB '/BACKUP'
+CT_BACK: DB 0

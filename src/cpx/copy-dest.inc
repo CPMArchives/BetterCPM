@@ -58,6 +58,11 @@ CTD_STORE:
         ADD A,A
         LD C,A
         DJNZ CTD_BYTE
+        LD A,(CT_BACK)
+        OR A
+        RET Z
+        LD HL,BC_NEWFCB+11
+        RES 7,(HL)
         RET
 CTD_SET: DB 0
 CTD_CLR: DB 0

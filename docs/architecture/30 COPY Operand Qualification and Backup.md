@@ -1,8 +1,8 @@
 # COPY operand qualification and backup
 
-Accepted design: 2026-10-09. /BACKUP is not yet implemented. Source predicates,
-destination overrides, leading and trailing /O /S /B /V, multi-DU sources,
-attribute preservation and global mapping preflight already exist.
+Accepted design: 2026-10-09. Implemented through /BACKUP: 2026-10-10. Source
+predicates, destination overrides, leading and trailing global options, multi-DU
+sources, attribute preservation and global mapping preflight are implemented.
 
 ## Command structure and scope
 
