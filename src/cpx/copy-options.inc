@@ -141,6 +141,8 @@ CTANSWER:
         JP      Z,CTYALLOW             ; one file, no sticky overwrite flag
         CP      'N'
         JP      Z,CTSKIP
+        CP      'R'
+        JP      Z,CTRENAME
         CP      'O'
         JR      Z,CTALLYES
         CP      'S'

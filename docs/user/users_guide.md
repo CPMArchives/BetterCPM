@@ -771,13 +771,20 @@ and allow processing to continue.
 
 Without `/B`, `/O` or `/S`, an existing writable destination prompts:
 
-    [Destination exists. Overwrite? Y/N/O/S/?]
+    [Destination exists. Overwrite? Y/N/O/S/R/?]
 
 `Y` replaces that file; `N` skips it. `O` replaces this and subsequent writable
 collisions; `S` skips this and subsequent collisions. `?` displays help and
 repeats the prompt. The O/S choice lasts only for the current COPY invocation.
 At a collision prompt, Ctrl-C aborts COPY, preserving completed earlier copies
-and the existing destination. Interactive rename is a later increment.
+and the existing destination.
+
+`R` asks for `New Name:` in the same destination DU. Enter a bare exact 8.3
+filename, without wildcards or a DU qualifier. Invalid names reprompt. A name
+that conflicts with a selected source or another planned batch destination
+also reprompts without writing. Blank input returns to the collision prompt;
+Ctrl-C aborts COPY. If the new name already exists, normal collision handling
+applies to that name, including read-only protection.
 
 Before copying, the transient checks the complete mapping. Duplicate
 destinations, exact self-copy, destinations overlapping selected sources, and
