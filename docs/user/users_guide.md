@@ -565,17 +565,154 @@ field. Adjacent terminal stars are equivalent to one star. `F?*.DAT` and
 `F***.DAT` are valid; `F*A.DAT` and `F**?.DAT` report `Invalid filespec.`
 Characters cannot follow a star run within the same field.
 
-In addition to the above, the transient `DIR.COM` provides extended directory
-display and file-selection functions. Planned extensions include:
+##### Planned transient DIR.COM
 
-- selection and display by file attributes;
-- display of file date and time information where available; and
-- selection of files by date and time where supported.
+**The following is the accepted 1.0 interface design, not functionality
+currently available in DIR.COM.** Implementation and qualification will follow
+completion of COPY. Resident DIR retains its traditional four-column display,
+with no sorting, sizes, attributes or summaries.
 
-##### Transient DIR Syntax
+Transient DIR will add size reporting, sorting, attribute selection/display,
+paging and searches across multiple drive/user areas. It will not display or
+filter dates, timestamps or wheel-protection attributes in 1.0.
 
-[TBD — final `DIR.COM` syntax and options will be added when the BetterCP/M
-1.0 transient DIR interface is finalized.]
+```text
+DIR [options] [location:filespec[attribute-expression]]
+```
+
+Omitting the location uses the current drive/user. Omitting the filespec uses
+`*.*`. To select the transient explicitly, use `:DIR` or `.DIR`; automatic
+handoff from resident DIR is still pending. The examples below describe the
+planned transient behavior.
+
+##### Selecting locations and files
+
+```text
+DIR *.COM
+DIR B7:*.COM
+DIR B[3-5]:*.COM
+DIR B[-]:*.COM
+DIR [A0,B[3-5],C[4,5,9],5]:*.COM
+```
+
+`B[-]:` selects all users on B:. A bare user term such as the final `5` in the
+last example inherits the drive that was current when DIR began. Selector
+brackets belong to the location; brackets after the filespec are attribute
+qualifiers. `[*]` is not an alias for all users.
+
+Wildcards retain the resident bounded rules described above. Extended selectors
+do not change filename matching.
+
+##### Selecting files by attributes
+
+| Qualifier | Matches |
+| --- | --- |
+| `[$RO]` | Read-only files |
+| `[$RW]` | Writable files |
+| `[$SYS]` | System files |
+| `[$DIR]` | Files without SYS set |
+| `[$ARC]` | Files with ARC set |
+
+`$R/O` and `$R/W` are aliases for `$RO` and `$RW`. Expressions use `!` for NOT,
+`+` for AND and comma for OR, with precedence NOT, AND, then OR:
+
+```text
+DIR *.COM[$ARC+!$SYS]
+DIR *.DOC[$RO,$SYS]
+DIR *.*[!$ARC]
+```
+
+These select ARC-marked non-SYS `.COM` files, `.DOC` files with RO or SYS set,
+and files with ARC clear, respectively. Qualifiers select files without changing
+their attributes. They do not accept size/date queries, parentheses or `$WHL`.
+
+SYS files are hidden by default. An explicit predicate admitting SYS files,
+such as `[$SYS]` or `[$SYS,$RO]`, displays those matches rather than silently
+applying the default suppression. The complete rule for predicates without an
+explicit SYS term remains to be finalized before implementation.
+
+##### Display and sorting options
+
+Options are case-insensitive. `/A` and `/P` may be repeated harmlessly. For
+value-bearing size, column and sort options, the last value wins.
+
+| Option | Meaning |
+| --- | --- |
+| `/A` | Display the three-character SYS/RO/ARC field |
+| `/P` | Pause after each screenful |
+| `/Z` or `/Z=K` | Display allocated kilobytes; the default |
+| `/Z=S` | Display size in allocated record units |
+| `/Z=E` | Display size in extents |
+| `/C=1`, `/C=2`, `/C=4` | Request that many columns |
+| `/S=N`, `/S=N+`, `/S=N-` | Sort by name ascending or descending |
+| `/S=T`, `/S=T+`, `/S=T-` | Sort by extension ascending or descending |
+| `/S=Z`, `/S=Z+`, `/S=Z-` | Sort by size ascending or descending |
+| `/S=U` | Keep native directory-search order |
+
+Name ascending is the default sort. Size sorting uses a numeric size metric,
+not the printed size text; changing `/Z=` does not change the sorting key.
+`/S=U+` and `/S=U-` are invalid. Other invalid values include `/C=3`, `/Z=X`
+and `/S=Q`.
+
+The attribute field is always three positions, **SRA**. A clear bit displays
+`-`: `---` means none set, `-R-` means read-only, and `S-A` means SYS plus ARC.
+`/A` displays attributes; it does not select ARC files or make SYS visible by
+itself. A selector does not turn on `/A` automatically.
+
+For example, this planned command selects ARC-marked non-SYS `.COM` files,
+displays attributes and lists the largest first:
+
+```text
+DIR /A /S=Z- B7:*.COM[$ARC+!$SYS]
+```
+
+Size is always displayed. Automatic layout chooses the greatest supported
+column count that fits: four, then two, then one. An explicit `/C=` request
+that will not fit reports an error; DIR does not silently reduce it.
+
+Here is an illustrative one-column listing; names and sizes are examples:
+
+```text
+A0>:DIR /A /C=1
+A: COPY     COM    9K  --A
+A: README   TXT    1K  ---
+A: STAT     COM    7K  -R-
+3 FILES, 17K TOTAL, 116K FREE
+A0>
+```
+
+##### Paging, summaries and multiple user areas
+
+Paging is off unless `/P` is supplied. At a page pause, Space or Return displays
+the next page; Ctrl-C aborts the listing and restores the caller's DU/context.
+DIR never changes file attributes or directory entries.
+
+Each summary counts only selected files. Per-file size and selected-file TOTAL
+use the same `/Z=` unit. A single-DU summary also reports the drive's free space;
+`1 FILE` uses singular wording. No matches reports `NO FILE`.
+
+For multi-DU selectors, DIR lists and sorts each DU separately, with a heading:
+
+```text
+B3:
+B: BAR      COM   8K : FOO      COM   6K
+2 FILES, 14K TOTAL
+
+B4:
+B: TEST     COM   4K : UTIL     COM   7K
+2 FILES, 11K TOTAL
+
+B: 25K SELECTED, 94K FREE
+```
+
+The example uses illustrative values. Free space belongs to the drive, not to
+an individual user area, so it is reported once per selected drive rather than
+repeated after every DU. An empty DU does not stop later selected DUs. DIR does
+not merge all DUs into one listing or sort across them.
+
+The default transient presentation is name-sorted, with K sizes, attributes
+hidden, paging off, automatic columns and summaries on. Precise record/extent
+accounting and terminal geometry will be qualified before release.
 
 #### 4.2 ERA — Erase Files
 

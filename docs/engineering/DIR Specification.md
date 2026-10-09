@@ -1,0 +1,1300 @@
+# BetterCP/M 1.0 transient DIR specification
+
+Received 2026-10-09. Target contract; the extended transient implementation is
+not yet complete. Resident DIR is not reopened. Existing DIR.COM remains the
+resident-body fallback until the new transient behavior is implemented and
+qualified. Explicit :DIR/.DIR works; automatic handoff is still unimplemented.
+
+## Audit clarifications awaiting resolution
+
+- Does every explicit attribute predicate replace implicit SYS suppression,
+  including `$RO`, or only predicates explicitly admitting SYS?
+- Proposed exact metrics: K/S are allocated bytes/128-byte records, E counts
+  physical directory entries, and size sorting uses allocated bytes.
+- Use actual width to choose 4/2/1 columns. Narrative rules override examples
+  that show three columns or omit always-enabled size. Console geometry must
+  be determined from existing platform bindings without a new resident service.
+
+## User documentation
+
+The user guide's DIR section contains a polished planned-interface description,
+examples and option reference. It explicitly distinguishes the unchanged resident
+command from unimplemented extended transient behavior. Date-related placeholders
+were removed because dates and wheel metadata are outside this 1.0 contract.
+SYS visibility for implicit predicates and precise size metrics remain identified
+as unresolved; the guide does not present them as qualified behavior. Exported
+DOCX/PDF manuals are not regenerated in this documentation increment.
+
+## Shared implementation dependency
+
+DU selection and qualifier splitting exist. The attribute predicate compiler
+is now implemented as an internal shared component, but is not yet connected
+to public DIR or COPY. It compiles the bounded !/+/comma grammar and attribute
+aliases to an eight-state RO/SYS/ARC truth mask. No wheel or date metadata is
+interpreted. See COPY Utility.md for shared-parser qualification.
+
+## DIR.COM — Complete Transient Command Specification for Work
+
+Please implement transient BetterCP/M `DIR.COM` according to the following specification.
+
+This is the consolidated 1.0 design for `DIR.COM`. It is a strict superset of the already-completed resident DIR and should reuse the shared BetterCP/M DU-selector, bounded-filespec, attribute-qualifier, and resident-to-transient handoff machinery already established elsewhere.
+
+The resident DIR design is **not being reopened**.
+
+---
+
+# 1. Purpose and relationship to resident DIR
+
+Resident DIR remains the small, traditional command:
+
+```text
+A0>DIR
+A: COPY     COM : CONFIG   COM : DUP      COM : TIME     COM
+A: SYSGEN   COM : STAT     COM : SUBMIT   COM : README   TXT
+A0>
+```
+
+Resident DIR has no sorting, summaries, totals, size display, paging, attribute display, or other extended reporting features.
+
+Transient `DIR.COM` is the richer implementation.
+
+It adds:
+
+- multi-DU selection;
+- attribute selection;
+- size display;
+- optional attribute display;
+- sorting;
+- adaptive 4/2/1-column presentation;
+- explicit column control;
+- paging;
+- file-count/size/free-space summaries.
+
+Advanced syntax encountered by resident DIR should hand off to `DIR.COM` using the common force-transient mechanism.
+
+---
+
+# 2. Basic syntax
+
+General form:
+
+```text
+DIR [options] [filespec[qualifiers]]
+```
+
+Examples:
+
+```text
+DIR
+DIR *.COM
+DIR B7:*.COM
+DIR B[-]:*.COM
+DIR [A0,B[3-5],C[4,5,9],5]:*.COM
+DIR B2:*.COM[$ARC]
+DIR /A /S=Z- B2:*.COM[$ARC+!$SYS]
+```
+
+Options are free-standing command-wide switches.
+
+Bracketed qualifiers are attached to the file operand and qualify the selected files.
+
+---
+
+# 3. Shared DU/location-selector syntax
+
+Use the already-implemented common DU selector parser.
+
+Examples include:
+
+```text
+B7:
+B[3-5]:
+B[5,7,11]:
+B[4-]:
+B[-]:
+[A0,B7,C3]:
+[A0,B[3-5],C[4,5,9],5]:
+```
+
+Semantics follow the existing shared implementation.
+
+Examples:
+
+```text
+B[-]:
+```
+
+means all user areas on B:.
+
+```text
+[A0,B[3-5],C[4,5,9],5]:
+```
+
+selects the DUs represented by those terms according to the already-frozen shared DU-selection rules.
+
+Do not create a DIR-specific location parser.
+
+Use the common bitmap representation and iterator.
+
+The complete invocation must be validated before output begins.
+
+---
+
+# 4. Filespec matching
+
+Use the shared BetterCP/M bounded wildcard grammar already used by DIR/COPY.
+
+Relevant examples:
+
+```text
+*.COM
+FOO.*
+F?*.DAT
+F.??*
+F***.DAT
+```
+
+Terminal `*` fills the remainder of its filename field.
+
+Repeated terminal stars collapse.
+
+Examples that remain invalid include embedded/nonterminal-star constructions such as:
+
+```text
+F*A.DAT
+F**?.DAT
+B*C*.DOC
+F.*A
+```
+
+Default filespec is:
+
+```text
+*.*
+```
+
+---
+
+# 5. Attribute selectors
+
+The old DIR-specific `/A=...` filtering proposal is retired.
+
+File attributes are selected using bracketed operand qualifiers.
+
+Examples:
+
+```text
+DIR *.*[$SYS]
+DIR *.COM[$RO]
+DIR *.COM[$ARC]
+DIR *.COM[$ARC+!$SYS]
+DIR *.DOC[$RO,$SYS]
+```
+
+Canonical 1.0 attribute vocabulary:
+
+```text
+$SYS
+$DIR
+$RO
+$RW
+$ARC
+```
+
+Historical aliases may also be accepted where the shared parser supports them:
+
+```text
+$R/O  = $RO
+$R/W  = $RW
+```
+
+Underlying relationships:
+
+```text
+$DIR = !$SYS
+$RW  = !$RO
+```
+
+Attribute-expression operators:
+
+```text
+!    NOT
++    AND
+,    OR
+```
+
+Precedence:
+
+```text
+! > + > ,
+```
+
+Examples:
+
+```text
+[$ARC+!$SYS]
+[$RO,$SYS]
+[!$ARC]
+[$SYS+$RO]
+```
+
+Do **not** implement wheel-protect selection in DIR 1.0.
+
+F7 has been reserved/established for future wheel semantics, but the wheel byte itself is post-1.0 and is not yet implemented. `DIR.COM` 1.0 should therefore neither interpret nor expose it.
+
+---
+
+# 6. SYS-file default behavior
+
+Plain DIR suppresses SYS files by default.
+
+For example:
+
+```text
+DIR
+```
+
+does not display files with the SYS bit set.
+
+However, an explicit attribute selector overrides this implicit suppression.
+
+Thus:
+
+```text
+DIR *.*[$SYS]
+```
+
+must display SYS files.
+
+Likewise:
+
+```text
+DIR *.*[$SYS,$RO]
+```
+
+must evaluate the user's explicit predicate as written; the default SYS suppression must not silently remove SYS matches.
+
+Conceptually:
+
+> SYS suppression is an implicit default only when the user has not explicitly requested attribute selection that includes SYS files.
+
+---
+
+# 7. Command-wide switches
+
+The complete transient DIR switch set for 1.0 is:
+
+```text
+/A
+/P
+/Z[=K|S|E]
+/C=1|2|4
+/S=N[+|-]
+/S=T[+|-]
+/S=Z[+|-]
+/S=U
+```
+
+No date-related switches or sorting are included in 1.0.
+
+Date stamping has not yet been implemented in BetterCP/M, so all previously discussed date display/filter/sort functionality is explicitly out of scope.
+
+---
+
+# 8. `/A` — display attributes
+
+Syntax:
+
+```text
+/A
+```
+
+No argument.
+
+Displays the fixed three-character attribute field:
+
+```text
+SRA
+```
+
+Positions are:
+
+```text
+S   SYS
+R   Read Only
+A   Archive
+```
+
+A clear bit is represented by `-`.
+
+Examples:
+
+```text
+---    no displayed attributes set
+-R-    read-only
+S-A    system + archive
+SRA    all three
+```
+
+Example listing:
+
+```text
+COPY     COM   6K  --A
+CONFIG   COM   4K  -R-
+SYSGEN   COM   7K  S-A
+SYSTEM   COM  12K  SRA
+```
+
+`RW` and `DIR` are not separate display positions because they represent the clear states of RO and SYS respectively.
+
+Repeated `/A` is harmless.
+
+Do not reserve a visible fourth position for wheel in 1.0.
+
+---
+
+# 9. `/Z` — size display
+
+Syntax:
+
+```text
+/Z
+/Z=K
+/Z=S
+/Z=E
+```
+
+`/Z` and `/Z=K` are equivalent.
+
+Meanings:
+
+```text
+K    allocated kilobytes
+S    allocated sectors/records
+E    extents
+```
+
+K is the default size representation.
+
+Examples:
+
+```text
+DIR
+DIR /Z
+DIR /Z=K
+```
+
+all use K for size reporting.
+
+```text
+DIR /Z=S
+```
+
+uses sector/record units.
+
+```text
+DIR /Z=E
+```
+
+uses extents.
+
+If several `/Z=` options occur, the last one wins:
+
+```text
+DIR /Z=K /Z=E
+```
+
+means extents.
+
+Per-file size and the selected-file `TOTAL` should use the same chosen size representation.
+
+---
+
+# 10. Default size display
+
+Transient DIR displays file size by default.
+
+Typical default output:
+
+```text
+A0>DIR
+A: CONFIG   COM   4K : COPY     COM   6K : DUP      COM   5K
+A: README   TXT   1K : STAT     COM   8K : SUBMIT   COM   2K
+A: SYSGEN   COM   7K : TIME     COM   3K
+8 FILES, 36K TOTAL, 116K FREE
+A0>
+```
+
+This is intentionally richer than resident DIR.
+
+Resident DIR remains unchanged.
+
+---
+
+# 11. `/S=` — sorting
+
+Transient DIR defaults to **name sort ascending**.
+
+Thus:
+
+```text
+DIR
+```
+
+and:
+
+```text
+DIR /S=N
+```
+
+are equivalent in sorting behavior.
+
+Supported sort keys:
+
+```text
+/S=N      name
+/S=T      file type / extension
+/S=Z      size
+/S=U      unsorted/native directory order
+```
+
+For `N`, `T`, and `Z`, an optional suffix specifies direction:
+
+```text
++    normal/forward/ascending
+-    reverse/descending
+```
+
+Omitting the suffix is equivalent to `+`.
+
+Examples:
+
+```text
+/S=N
+/S=N+
+/S=N-
+/S=T
+/S=T-
+/S=Z
+/S=Z-
+```
+
+Therefore:
+
+```text
+DIR /S=N
+```
+
+and:
+
+```text
+DIR /S=N+
+```
+
+are equivalent.
+
+Example:
+
+```text
+DIR /S=Z-
+```
+
+lists largest files first.
+
+---
+
+# 12. `/S=U` — unsorted/native order
+
+Syntax:
+
+```text
+/S=U
+```
+
+This suppresses sorting and preserves native CP/M directory/search order.
+
+`U` means unsorted.
+
+Do not define:
+
+```text
+/S=U+
+/S=U-
+```
+
+There is no need for reverse directory order.
+
+---
+
+# 13. Repeated sort options
+
+Exactly one sort mode is active, but multiple sort options are not an error.
+
+The **last one wins**.
+
+Example:
+
+```text
+DIR /S=N /S=Z-
+```
+
+means:
+
+```text
+/S=Z-
+```
+
+This rule is deliberate and intended to be friendly to SUBMIT files and constructed command lines.
+
+Do not abort merely because an earlier sort option is superseded later.
+
+The same last-value-wins rule applies to value-bearing `/Z=` and `/C=` switches.
+
+---
+
+# 14. Sort tie-breaking
+
+The user selects only one primary sort key.
+
+Do not expose compound multi-key sorting in 1.0.
+
+Implementation may use a deterministic internal tie-breaker, preferably filename/name+type, where needed to make output stable.
+
+That tie-breaker is not a user-selectable secondary sort.
+
+---
+
+# 15. `/C=` — explicit column count
+
+Syntax:
+
+```text
+/C=1
+/C=2
+/C=4
+```
+
+Without `/C=`, DIR automatically selects the greatest column count in which the requested fields fit cleanly.
+
+Only these column counts are supported:
+
+```text
+1
+2
+4
+```
+
+Examples:
+
+```text
+DIR
+```
+
+may choose four columns.
+
+```text
+DIR /A
+```
+
+may still choose four columns if attributes fit.
+
+```text
+DIR /C=1
+```
+
+forces one column even if more would fit.
+
+```text
+DIR /C=2
+```
+
+forces two columns if two columns fit.
+
+---
+
+# 16. Column-fit rule
+
+Automatic layout is based on actual rendered width, not simplistic feature rules.
+
+For example, attributes alone may still fit in four columns:
+
+```text
+COPY    COM --A CONFIG  COM -R- SYSGEN  COM S-A SYSTEM  COM SRA
+```
+
+But combinations such as size plus attributes may require fewer columns.
+
+General rule:
+
+> Unless the user explicitly requests a column count, DIR uses the greatest supported number of columns that fits the selected fields within the terminal width.
+
+Try, in order:
+
+```text
+4
+2
+1
+```
+
+Use the first that fits.
+
+If the user explicitly requests a column count greater than the maximum that can fit, report an error.
+
+Do not silently reduce an explicit `/C=` request.
+
+Repeated `/C=` values use the last one.
+
+---
+
+# 17. Output formatting
+
+The traditional CP/M-style filename presentation should remain recognizable.
+
+Without attribute display:
+
+```text
+A: COPY     COM   6K : CONFIG   COM   4K : DUP      COM   5K
+A: STAT     COM   8K : SUBMIT   COM   2K : SYSGEN   COM   7K
+```
+
+With `/A`, when width permits:
+
+```text
+COPY    COM --A CONFIG  COM -R- SYSGEN  COM S-A SYSTEM  COM SRA
+```
+
+For narrower column counts, align fields cleanly.
+
+Example one-column form:
+
+```text
+COPY     COM    6K  --A
+CONFIG   COM    4K  -R-
+SYSGEN   COM    7K  S-A
+SYSTEM   COM   12K  SRA
+```
+
+The formatter should derive its layout from the active fields and requested/automatic column count.
+
+---
+
+# 18. `/P` — paging
+
+Syntax:
+
+```text
+/P
+```
+
+Paging is off by default.
+
+When `/P` is active, pause after a screenful of output.
+
+At the paging prompt:
+
+```text
+SPACE
+RETURN
+```
+
+continue to the next page.
+
+```text
+^C
+```
+
+aborts the listing cleanly.
+
+Repeated `/P` is harmless.
+
+The paging mechanism should count actual emitted lines and should not corrupt DU restoration or leave DIR state altered after abort.
+
+---
+
+# 19. Summary line — single DU
+
+Transient DIR displays a compact summary after the listing.
+
+Example:
+
+```text
+8 FILES, 42K TOTAL, 116K FREE
+```
+
+For a filtered listing, `FILES` and `TOTAL` refer only to the files actually selected/listed.
+
+`FREE` is the free space on the drive.
+
+Example:
+
+```text
+A0>DIR *.COM
+A: CONFIG   COM   4K : COPY     COM   6K : DUP      COM   5K
+A: STAT     COM   8K : SUBMIT   COM   2K : SYSGEN   COM   7K
+A: TIME     COM   3K
+7 FILES, 35K TOTAL, 116K FREE
+A0>
+```
+
+Use singular grammar where appropriate:
+
+```text
+1 FILE
+```
+
+rather than:
+
+```text
+1 FILES
+```
+
+---
+
+# 20. Multi-DU output
+
+When a DU selector selects multiple directories, do **not** merge all files into one global listing for 1.0.
+
+List one DU at a time.
+
+Example conceptually:
+
+```text
+DIR [A0,B[3-4]]:*.COM
+```
+
+produces separate sections for:
+
+```text
+A0
+B3
+B4
+```
+
+Sorting applies independently within each DU.
+
+Do not implement a global cross-DU sort in 1.0.
+
+Do not prepend the DU to every filename merely to construct a merged listing.
+
+That can remain a possible future enhancement.
+
+---
+
+# 21. Multi-DU headings
+
+Each selected DU should be clearly identified before its listing.
+
+Example:
+
+```text
+A0:
+A: CONFIG   COM   4K : COPY     COM   6K
+2 FILES, 10K TOTAL
+
+B3:
+B: LINK     COM  10K : ZSM4     COM  12K
+2 FILES, 22K TOTAL
+```
+
+The exact cosmetic spacing may be adjusted to fit the formatter, but the user must always be able to tell which DU the following listing belongs to.
+
+---
+
+# 22. Multi-DU summaries and free space
+
+File count and selected-file size are DU-specific.
+
+Free space is a **drive property**, not a user-area property.
+
+Therefore, when several user areas on the same drive are listed, do not redundantly print the same free-space value after every DU.
+
+Example:
+
+```text
+B3:
+B: FOO      COM   6K : BAR      COM   8K
+2 FILES, 14K TOTAL
+
+B4:
+B: TEST     COM   4K : UTIL     COM   7K
+2 FILES, 11K TOTAL
+
+B: 25K SELECTED, 94K FREE
+```
+
+If several drives are selected, produce the corresponding drive-level free-space summary for each drive.
+
+The exact wording may be kept compact, but the distinction must remain:
+
+```text
+DU-level:
+    file count
+    selected size
+
+drive-level:
+    free space
+```
+
+Do not imply that B3 and B4 have independent free-space pools.
+
+---
+
+# 23. No matching files
+
+For a single-DU search with no matches, retain the familiar diagnostic:
+
+```text
+NO FILE
+```
+
+For multi-DU selection, do not let one empty DU prevent later selected DUs from being processed.
+
+A DU with no matches may report:
+
+```text
+NO FILE
+```
+
+for that DU and continue to the next selected DU.
+
+---
+
+# 24. Defaults
+
+Transient `DIR.COM` defaults are:
+
+```text
+filespec             *.*
+SYS visibility       hidden
+sort                  name ascending
+size display          K
+attribute display     off
+paging                off
+column count          automatic maximum fitting
+summary               on
+```
+
+Thus plain:
+
+```text
+DIR
+```
+
+means approximately:
+
+```text
+DIR *.*
+```
+
+with:
+
+- SYS hidden;
+- name sorting;
+- K size display;
+- no attribute field;
+- no paging;
+- automatic 4/2/1-column selection;
+- summary.
+
+---
+
+# 25. Switch parsing and repetition
+
+Switches are case-insensitive.
+
+Repeated standalone switches are harmless:
+
+```text
+/A /A
+/P /P
+```
+
+Repeated value-bearing switches use the last value:
+
+```text
+/Z=K /Z=E
+```
+
+means E.
+
+```text
+/C=4 /C=1
+```
+
+means one column.
+
+```text
+/S=N /S=Z-
+```
+
+means reverse size sort.
+
+Unknown switches or malformed values are syntax errors.
+
+Examples:
+
+```text
+/C=3
+/Z=X
+/S=Q
+/S=U-
+```
+
+are invalid.
+
+---
+
+# 26. Interaction between sorting and size units
+
+Size sorting is independent of how size is displayed.
+
+For example:
+
+```text
+DIR /Z=E /S=Z-
+```
+
+means:
+
+- display size in extents;
+- sort by file size descending.
+
+The sort should use the actual file-size metric, not formatted string comparison.
+
+---
+
+# 27. Attribute selector vs attribute display
+
+These are separate concepts.
+
+Example:
+
+```text
+DIR *.COM[$ARC]
+```
+
+selects ARC files but does not necessarily display the `SRA` field.
+
+Example:
+
+```text
+DIR /A *.COM
+```
+
+displays attributes for all matching visible files.
+
+Example:
+
+```text
+DIR /A *.COM[$ARC]
+```
+
+both:
+
+- selects files having ARC;
+- displays the `SRA` field.
+
+Do not make `/A` implicitly mean `[$ARC]` or vice versa.
+
+---
+
+# 28. Future wheel attribute
+
+BetterCP/M has reserved/established F7 for the future wheel-protect attribute.
+
+However:
+
+- the wheel byte is not implemented in 1.0;
+- wheel semantics are post-1.0;
+- DIR 1.0 must not expose `$WHL`;
+- DIR 1.0 must not display a `W` position;
+- DIR 1.0 should not interpret F7 as active file metadata.
+
+The 1.0 attribute display is therefore exactly:
+
+```text
+SRA
+```
+
+not `SRAW`.
+
+Future wheel support can extend this later without changing the existing three positions.
+
+---
+
+# 29. No date support in DIR.COM 1.0
+
+Explicitly omit:
+
+- date display;
+- date sorting;
+- date filtering;
+- timestamp-format options.
+
+Do not reserve implementation complexity for this now.
+
+Date functionality may be added later if/when BetterCP/M has a defined timestamp architecture.
+
+---
+
+# 30. No general query language in `[...]`
+
+The bracket mechanism is the general operand-qualification container, but for DIR 1.0 its practical defined use is file attributes.
+
+Do not expand it into a generic expression system such as:
+
+```text
+[SIZE>32K]
+[DATE>...]
+```
+
+Size/date-type filtering, if ever added, belongs in command-level functionality and should be designed separately.
+
+Keep this implementation bounded.
+
+---
+
+# 31. Resident/transient handoff
+
+Resident DIR remains the common subset.
+
+If the invocation requires transient functionality, resident DIR should hand off through the common force-transient mechanism.
+
+Examples likely requiring transient DIR include:
+
+```text
+DIR /A
+DIR /S=Z-
+DIR /P
+DIR /C=1
+DIR B[-]:*.COM
+DIR [A0,B[3-5]]:*.COM
+DIR *.COM[$ARC]
+```
+
+Conceptually, handoff should behave as though the command were reinvoked with the force-transient prefix.
+
+No duplicated loader/search path should be introduced.
+
+Explicit user force-transient syntax remains available independently.
+
+---
+
+# 32. Implementation structure
+
+Where practical, reuse existing shared BetterCP/M components for:
+
+- DU/location selector parsing;
+- DU bitmap iteration;
+- bounded filespec parsing;
+- attribute-expression parsing;
+- CPX→transient handoff;
+- caller DU capture/restoration.
+
+DIR-specific code should focus on:
+
+- collecting matching logical files;
+- computing size;
+- sorting;
+- formatting;
+- summaries;
+- paging.
+
+---
+
+# 33. File collection and logical-file handling
+
+As resident DIR already does, multiple directory extents belonging to the same logical file must be represented once in the user-visible listing.
+
+Transient DIR must aggregate whatever directory metadata is required to determine:
+
+- one logical filename;
+- selected size representation;
+- displayed attributes;
+- sort key.
+
+Do not list each extent as though it were a separate file.
+
+---
+
+# 34. Validation and side effects
+
+DIR is read-only.
+
+Nevertheless, validate the complete invocation before beginning the listing where practical.
+
+On exit, error, paging abort, or `^C`:
+
+- restore caller DU/context;
+- leave no persistent directory/user selection changes;
+- do not alter file attributes or directory entries.
+
+---
+
+# 35. Qualification expectations
+
+Please test at minimum:
+
+### Basic compatibility
+
+```text
+DIR
+DIR *.COM
+DIR B7:
+DIR B7:*.COM
+```
+
+### DU selectors
+
+```text
+DIR B[-]:*.COM
+DIR B[3-5]:*.COM
+DIR [A0,B[3-5],C[4,5,9],5]:*.COM
+```
+
+### Attributes
+
+```text
+DIR *.COM[$ARC]
+DIR *.*[$SYS]
+DIR *.*[$ARC+!$SYS]
+DIR /A *.COM
+DIR /A *.COM[$RO]
+```
+
+### Sorting
+
+```text
+DIR /S=N
+DIR /S=N-
+DIR /S=T
+DIR /S=T-
+DIR /S=Z
+DIR /S=Z-
+DIR /S=U
+DIR /S=N /S=Z-
+```
+
+Confirm final example uses `Z-`.
+
+### Size formats
+
+```text
+DIR /Z
+DIR /Z=K
+DIR /Z=S
+DIR /Z=E
+DIR /Z=K /Z=E
+```
+
+Confirm `/Z` = `/Z=K`, and last value wins.
+
+### Columns
+
+```text
+DIR /C=1
+DIR /C=2
+DIR /C=4
+DIR /A /C=4
+```
+
+Test both valid and width-invalid explicit requests.
+
+### Paging
+
+```text
+DIR /P
+DIR /P /A
+```
+
+Test continuation and `^C`.
+
+### Multi-DU summaries
+
+Use multiple users on one drive and multiple drives to verify:
+
+- separate DU listings;
+- DU file/size subtotals;
+- free space not redundantly treated as per-user;
+- correct drive-level free-space reporting.
+
+### Error cases
+
+```text
+DIR /C=3
+DIR /Z=X
+DIR /S=Q
+DIR /S=U-
+```
+
+and malformed DU/filespec/attribute expressions.
+
+---
+
+# 36. Scope boundary
+
+Do **not** add any of the following unless implementation uncovers a compelling existing requirement:
+
+- date support;
+- wheel support;
+- global merged multi-DU listing;
+- global cross-DU sort;
+- multi-key sort;
+- generic bracket query language;
+- extra display metadata beyond name, size, and `SRA`;
+- new persistent system state;
+- BDOS growth solely for DIR.
+
+The goal is a capable but bounded `DIR.COM`, not a general database/query utility.
+
+---
+
+## Final command-language summary
+
+```text
+DIR [options] [du/filespec[attribute-expression]]
+```
+
+Options:
+
+```text
+/A              show SRA attributes
+/P              page output
+
+/Z              size in K
+/Z=K            size in K
+/Z=S            size in sectors/records
+/Z=E            size in extents
+
+/C=1            one column
+/C=2            two columns
+/C=4            four columns
+                 omitted -> maximum fitting count
+
+/S=N[+|-]       name sort
+/S=T[+|-]       type sort
+/S=Z[+|-]       size sort
+/S=U            unsorted/native directory order
+```
+
+Defaults:
+
+```text
+SYS hidden
+name ascending
+size in K
+attributes hidden
+paging off
+automatic maximum-fitting columns
+summary on
+```
+
+Representative example:
+
+```text
+DIR /A /S=Z- [A0,B[3-5],C[-]]:*.COM[$ARC+!$SYS]
+```
+
+Meaning:
+
+> Search the selected DUs for `.COM` files whose ARC bit is set and SYS bit is clear; display the `SRA` attribute field; sort each DU's results by size descending; use the widest valid column layout; show per-DU totals and appropriate drive free-space summaries.
