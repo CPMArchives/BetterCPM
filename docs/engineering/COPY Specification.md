@@ -1033,3 +1033,13 @@ destinations and targets overlapping any selected source DU/name reject the
 batch even with overwrite enabled. Ordinary overwrite, skip, read-only,
 interactive and batch behavior applies only after successful preflight.
 The resident COPY and MOVE implementations are unchanged.
+
+
+### Implementation update — 2026-10-09
+
+Transient COPY now implements the section 12 interactive R contract, including
+exact-name validation, repeated prompts, blank cancellation, Ctrl-C, existing
+replacement collision handling and batch/source overlap protection. The native
+cpmsim qualification includes read-only replacement protection. This does not
+add resident handoff or change the CPX implementation. See COPY Utility.md for
+measurements and evidence; verification and final reporting remain pending.

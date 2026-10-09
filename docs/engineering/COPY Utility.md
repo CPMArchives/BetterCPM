@@ -571,3 +571,23 @@ regressions also pass with this binary. Reports:
 User-guide source now recommends explicit `:COPY`/`.COPY`; exported DOCX/PDF
 files are not regenerated. Other transfer-utility adoption is recorded in
 Specification 208, with PIP's operation contract still pending.
+
+
+### 2026-10-09 — Interactive collision rename
+
+COPY.COM now offers R at the collision prompt. Direct counted input supports
+lowercase folding, backspace/delete, blank cancellation and explicit Ctrl-C.
+Only exact bare 8.3 names are accepted; malformed, qualified and wildcard names
+reprompt. The candidate replaces the current frozen mapping only after checking
+all other batch destinations and selected sources. Conflicts restore the prior
+mapping and reprompt. Existing renamed targets use normal collision handling.
+
+COPY.COM is 7,848 bytes (553 bytes added); native ZSM4/LINK and host assembly
+match. Other transients and resident CPX code are unchanged; no BIOS/BDOS/CCP
+growth. Filespec and mapping tests pass. Native cpmsim interactive qualification
+covers rename validation, editing, blank cancellation, future/past target
+conflicts, selected-source overlap, existing replacement names, read-only replacement protection, abort and
+unchanged original/source bytes, alongside Y/N/O/S, /B and SUBMIT regressions.
+Evidence: `/private/tmp/copy-rename-v3-20261009/evidence.json`.
+User-guide source is updated; exported DOCX/PDF files are not regenerated.
+Verification, transfer-phase cancellation and final reporting remain pending.

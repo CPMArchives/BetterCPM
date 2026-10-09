@@ -9,7 +9,7 @@ from pathlib import Path
 from test_disk_utilities import ROOT
 from test_z80pack_sysgen_install import session
 
-PROMPT = b' [Destination exists. Overwrite? Y/N/O/S/?] '
+PROMPT = b' [Destination exists. Overwrite? Y/N/O/S/R/?] '
 
 
 def main():
@@ -83,10 +83,40 @@ def main():
     cpm('cpmcp', a, script, '0:ASK.SUB')
     text = execute('SUBMIT ASK', [(b'N', b'A0>_ ')], 'submit-interactive')
     assert PROMPT in text
+    # Rename rejects malformed names and future/past batch targets, then copies
+    # under a new exact name. Editing, blank cancellation and Ctrl-C are explicit.
+    text = execute('COPY B1:*.DAT B5:', [
+        (b'R', b'New Name: '), (b'BAD*NAME.DAT\r', b'New Name: '),
+        (b'B4:NEW.DAT\r', b'New Name: '), (b'B.DAT\r', b'New Name: '),
+        (b'newx\x08.dat\r', PROMPT), (b'R', b'New Name: '),
+        (b'NEW.DAT\r', b'New Name: '), (b'\r', PROMPT), (b'S', b'A0>_ ')], 'rename')
+    assert b'Invalid filename.' in text and b'COPY DESTINATION CONFLICT' in text
+    f = report / 'renamed.dat'
+    cpm('cpmcp', b, '5:NEW.DAT', f)
+    assert f.read_bytes() == sources['A.DAT']
+    check(5, old, 'rename-originals')
+    text = execute('COPY B1:A.DAT B5:', [(b'R', b'New Name: '),
+        (b'NEW.DAT\r', PROMPT), (b'N', b'A0>_ ')], 'rename-existing')
+    assert b'B5:NEW.DAT' in text
+    text = execute('COPY B1:A.DAT B5:', [(b'R', b'New Name: '),
+        (b'\x03', b'A0>_ ')], 'rename-abort')
+    assert b'COPY ABORTED' in text
+    text = execute('COPY B1:A.DAT B1:OTHER.DAT', [], 'prepare-same-du')
+    text = execute('COPY B1:A.DAT B1:OTHER.DAT', [(b'R', b'New Name: '),
+        (b'A.DAT\r', b'New Name: '), (b'\x03', b'A0>_ ')], 'rename-source-overlap')
+    assert b'COPY DESTINATION CONFLICT' in text
+    check(1, sources, 'rename-source-preserved')
+    text = execute('COPY B1:A.DAT B7:', [(b'R', b'New Name: '),
+        (b'C.DAT\r', b'A0>_ ')], 'rename-read-only')
+    assert b'READ ONLY' in text
+    check(7, {'A.DAT': old['A.DAT'], 'B.DAT': sources['B.DAT'],
+              'C.DAT': old['C.DAT']}, 'rename-read-only-preserved')
     (report / 'evidence.json').write_text(json.dumps({'result': 'PASS',
-        'choices': ['Y', 'N', 'O', 'S', '?'], 'invalid_response_reprompts': True,
+        'choices': ['Y', 'N', 'O', 'S', 'R', '?'], 'invalid_response_reprompts': True,
         'policy_resets_between_invocations': True, 'ctrl_c_keeps_completed_files': True,
         'batch_no_prompt_and_continues': True, 'submit_remains_interactive': True,
+        'rename_validation_and_editing': True, 'rename_blank_and_abort': True,
+        'rename_batch_and_source_safety': True, 'rename_read_only_protected': True,
         'copy_sha256': hashlib.sha256((ROOT / 'build/utilities/COPY.COM').read_bytes()).hexdigest()}, indent=2) + '\n')
     print('COPY interactive choices, policy reset, Ctrl-C, /B and SUBMIT prompting pass')
 

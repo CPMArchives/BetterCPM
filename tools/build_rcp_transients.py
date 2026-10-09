@@ -89,13 +89,14 @@ def copy_source(text: str) -> str:
     part = text[start:end].replace("CALL    BC_COPAR", "CALL    CTSCOPE", 1)
     text = text[:start] + part + text[end:]
     scope = (SOURCE.parent / "copy-scope.inc").read_text(encoding="ascii")
+    scope += (SOURCE.parent / "copy-rename.inc").read_text(encoding="ascii")
     scope += (ROOT / "src/utilities/common/duselect.inc").read_text(encoding="ascii")
     state = """
 CT_BATCH: DB 0
 CT_CHOICE: DB 0
 CT_LINE: DS 48
-CT_ASKM: DB ' [Destination exists. Overwrite? Y/N/O/S/?] $'
-CT_HELPM: DB 'Y - Yes  N - No  O - Overwrite All  S - Skip All',13,10,'$'
+CT_ASKM: DB ' [Destination exists. Overwrite? Y/N/O/S/R/?] $'
+CT_HELPM: DB 'Y - Yes  N - No  O - Overwrite All  S - Skip All  R - Rename',13,10,'$'
 CT_ABORTM: DB 13,10,'COPY ABORTED',13,10,'$'
 CT_SKIP: DB 0
 CT_SKIPS: DB 0
