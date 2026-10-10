@@ -174,7 +174,7 @@ def dir_source() -> str:
     text = expand_layout(text)
     text = text.replace('        CALL FS_PARSE\n        JP C,BC_DBAD\n',
                         '        CALL DP_PARSE\n        JP C,DP_REJECT\n', 1)
-    text = text.replace('BC_DIR:\n', 'BC_DIR:\n        PUSH HL\n        PUSH BC\n'
+    text = text.replace('BC_DIR:\n', 'BC_DIR:\n        LD (DG_STACK),SP\n        PUSH HL\n        PUSH BC\n'
         '        XOR A\n        LD HL,DT_TOTAL\n        LD B,12\n'
         'DT_CLEAR:\n        LD (HL),A\n        INC HL\n        DJNZ DT_CLEAR\n'
         '        POP BC\n        POP HL\n', 1)
@@ -185,6 +185,13 @@ def dir_source() -> str:
         encoding='ascii') + '\n' + text[end:]
     metrics = (ROOT / 'src/utilities/common/dirmetrics.inc').read_text(encoding='ascii')
     options = (ROOT / 'src/utilities/dir-options.inc').read_text(encoding='ascii')
+    paging = (ROOT / 'src/utilities/dir-paging.inc').read_text(encoding='ascii')
+    start = text.index('BC_PCHAR:')
+    end = text.index('  ; DIR accepts', start)
+    text = text[:start] + 'BC_PCHAR:\n        JP DG_CHAR\n\n' + text[end:]
+    start = text.index('BC_PRINT:')
+    end = text.index('BC_IFSPEC:', start)
+    text = text[:start] + 'BC_PRINT:\n        JP DG_PRINT\n\n' + text[end:]
     hook = '''
 ; Transient-only selected totals over all visible physical entries.
 DT_FILTER:
@@ -215,7 +222,7 @@ DT_TOTAL: DS 12
     decimal = decimal[decimal.index('CTR_DEC:\n'):decimal.index('CTR_RUN:')]
     decimal = decimal.replace('CTR_', 'DTD_')
     decimal += 'DTD_NUM: DS 4\nDTD_DIG: DS 10\nDTD_PTR: DW 0\nDT_BUFFER:\n'
-    return text.replace('        END\n', hook + options + metrics + decimal + '\n        END\n', 1)
+    return text.replace('        END\n', hook + options + metrics + paging + decimal + '\n        END\n', 1)
 
 
 def main() -> None:

@@ -239,6 +239,38 @@ and attributes are preserved. Evidence:
 `/private/tmp/dir-size-units-z80pack-20261010` and
 `/private/tmp/dir-size-units-model4-20261010`.
 
+## Paging increment — implemented
+
+Implemented `/P` in transient DIR.COM only. All character and string output
+passes through one line counter, including headings, blank lines and summaries.
+The current supported display baseline is 24 rows: pause after 23 emitted LF
+characters, immediately before the next output character. This avoids a redundant
+pause when the final output ends exactly at a page boundary. No public console
+geometry query is introduced; variable-height paging remains a future extension.
+Current single-column output fits within the supported 80-column display.
+
+The prompt is `MORE -- Space/ENTER for next page; ^C abort.` Space and Return
+continue; other keys are ignored. Ctrl-C unwinds the output stack and restores
+the caller's drive/user before returning. `/P` is repeatable, works alongside
+selection, sorting, units and attributes, and resets to off on each invocation.
+Malformed paging options reject the invocation before listing.
+
+DIR.COM is 7,072 bytes (+224), SHA-256
+`607c479bf38054efad4582fd4e2aa54c578ef47d43cd9cf7493daecf407d7087`.
+Native ZSM4/LINK output is byte-identical. BDOS, BIOS, CCP and RCP are unchanged.
+Focused execution checks cover page boundaries, no final pause, ignored keys,
+Space/Return, disabled paging, and Ctrl-C stack/DU restoration. The parser passes
+24 valid and 29 invalid forms. Existing collection, attribute, metric and sort
+checks and all 34 public z80pack regression cases pass.
+
+Public paging qualification passes on z80pack and Model 4 using thirty empty
+files, with RCP unloaded and a
+caller DU different from the selected DU. It checks Space/Return continuation,
+Ctrl-C restoration, repeated `/P`, combined attributes/record units, and paging
+reset on the next invocation. Disk contents and attributes must remain intact.
+Evidence: `/private/tmp/dir-paging-z80pack-20261010c` and
+`/private/tmp/dir-paging-model4-20261010b`.
+
 ## Audit clarifications awaiting resolution
 
 - K/S use allocated KiB/128-byte records; size sorting uses allocated space.
