@@ -82,6 +82,9 @@ def main():
     assert b'VERIFY ERROR' in text; check(7,False)
     text=execute('COPY B1:DATA.DAT B8: /V',[(b'?',b' [VERIFY ERROR] R/S/? '),(b'!',b' [VERIFY ERROR] R/S/? '),(b's',b'A0>_ ')],'skip-failure')
     assert b'R - Retry  S - Skip' in text; check(8,False)
+    assert text.count(b'R - Retry  S - Skip')==2
+    for remainder in text.split(b'R - Retry  S - Skip')[1:]:
+        assert remainder.lstrip(b'\r\n').startswith(b'B1:DATA.DAT -> B8:DATA.DAT [VERIFY ERROR] R/S/? '),remainder
     execute('COPY B1:DATA.DAT B9: /V',[(b'\x03',b'A0>_ ')],'abort-failure'); check(9,False)
     # No /V: the injected comparison failure must not affect ordinary copying.
     execute('COPY B1:DATA.DAT B10:',[],'no-verification'); check(10,True)

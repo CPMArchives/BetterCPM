@@ -2,6 +2,11 @@
 
 ## Current closure — 2026-10-10
 
+A subsequent [inline-help prompt correction](Interactive%20Prompt%20Convention.md)
+repeats filename context after help, adding three bytes (COPY.COM: 10,306 bytes).
+Targeted collision and verification regressions passed on both platforms; the
+frozen campaign below retains its original binary identity.
+
 Transient COPY implementation and planned two-platform functional qualification
 are complete for the frozen 10,303-byte COPY.COM. The final z80pack campaign and
 42 Model 4 cases are recorded in

@@ -254,7 +254,7 @@ CTANSWER:
         JR      Z,CTALLNO
         LD      DE,CT_HELPM
         CALL    BC_PRINT
-        JP      CTASK
+        JP      CTPROMPT               ; repeat the complete item context after help
 CTALLYES:
         LD      A,1
         LD      (BC_OVER),A

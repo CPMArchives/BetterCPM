@@ -59,6 +59,10 @@ def main():
     assert b'B1:A.DAT -> B3:A.DAT' in text
     assert b'B1:B.DAT -> B3:B.DAT' in text
     assert b'Y - Yes  N - No' in text
+    help_line=b'Y - Yes  N - No  O - Overwrite All  S - Skip All  R - Rename'
+    assert text.count(help_line)==2
+    for remainder in text.split(help_line)[1:]:
+        assert remainder.lstrip(b'\r\n').startswith(b'B1:C.DAT -> B3:C.DAT'+PROMPT),remainder
     check(3, {'A.DAT': sources['A.DAT'], 'B.DAT': old['B.DAT'], 'C.DAT': sources['C.DAT']}, 'mixed')
     text = execute('COPY B1:*.DAT B4:', [(b'O', b'A0>_ ')], 'overwrite-all',
                    ('COPY B1:*.DAT B4:', [(b'S', b'A0>_ ')]))
