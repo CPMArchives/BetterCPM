@@ -229,13 +229,14 @@ M4_KEYTAB:                              ; keyboard translation table
         DB      '89:;,-./'
   ; Patch 2026-09-02: publish the Model 4 special-key row instead of silently
   ; discarding it.  These are the conventional ASCII/control representations:
-  ; Enter, Clear/Insert, Break, Up, Down, Left, Right, Space.  The CCP consumes
-  ; them as editor keys; ordinary programs continue to receive the same bytes
-  ; through BIOS CONIN and the BDOS console functions.
+  ; Enter, Clear/Insert, Break, [, ], Left, Right, Space. Up/Down provide
+  ; brackets: Logical Layout sends host [ as Up and sends no matrix key for ].
+  ; History remains available through Ctrl-K/Ctrl-J. Ordinary programs receive
+  ; these same bytes through BIOS CONIN and the BDOS console functions.
         IF      M4_EDITOR_KEYS EQ 1
-        DB      13,31,3,11,10,28,29,' '
+        DB      13,31,3,'[',']',28,29,' '
         ELSE
-        DB      13,31,3,11,10,8,9,' '
+        DB      13,31,3,'[',']',8,9,' '
         ENDIF
 
 ; ================================================================================

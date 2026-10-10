@@ -16,7 +16,10 @@ retaining non-conflicting cursor editing and persistent history.
 | `Ctrl-S` | Move one character left while the CCP editor owns input. |
 | `Ctrl-U`, `Ctrl-X` | Discard the complete instruction queue and redraw an empty prompt. |
 
-Physical Up and Down select older and newer persistent-history records. They
+The CCP bytes Ctrl-K (0Bh) and Ctrl-J (0Ah) select older and newer
+persistent-history records. Platforms may also supply these bytes from
+physical Up and Down. On the Model 4, Up supplies `[` for trs80gp Logical
+Layout compatibility, and Down supplies `]`. Use Ctrl-K/Ctrl-J for history. They
 replace the former, incompatible `Ctrl-E`/`Ctrl-X` history bindings. Physical
 Left/Right and the remaining non-conflicting WordStar controls retain their
 editing actions.
