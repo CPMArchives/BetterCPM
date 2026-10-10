@@ -12,8 +12,8 @@ from system_layout import LAYOUT
 ROOT = Path(__file__).resolve().parents[1]
 INVENTORY = ROOT / "metadata/rom-ram-ownership.tsv"
 
-RELOCATION_BYTES = {"trs80": 2252, "z80pack": 2251}
-ROM_RAM_BYTES = {"trs80": 2255, "z80pack": 2254}
+RELOCATION_BYTES = {"trs80": 2253, "z80pack": 2251}
+ROM_RAM_BYTES = {"trs80": 2256, "z80pack": 2254}
 STORAGE_CLASSES = {
     "bounded PDS state",
     "fixed subsystem state",

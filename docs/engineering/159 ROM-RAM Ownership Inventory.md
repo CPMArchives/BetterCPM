@@ -85,3 +85,12 @@ Use this inventory to define the first ROM-profile RAM layout and cold
 initializer. Relocation should proceed by natural owner, with a focused test for
 each moved group. Workspace overlays and stack reductions must remain unclaimed
 until their independent lifetime or high-water evidence exists.
+
+## Model 4 keyboard state update (2026-10-11)
+
+The console now retains a physical key-table slot separately from the translated
+character. This adds one mutable byte, bringing Model 4 console state to five
+bytes and the current TRS-80 relocation/RAM totals to 2,253/2,256 bytes. The
+z80pack totals and the historical measurements above remain unchanged. Compact
+shift translation and direct status dispatch keep the BIOS within its existing
+638-byte allocation (637 bytes emitted).
