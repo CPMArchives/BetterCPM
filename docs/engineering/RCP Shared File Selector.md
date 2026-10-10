@@ -1,8 +1,9 @@
 # RCP shared file-selector integration
 
 Status: common DU/qualifier/predicate components linked and qualified in RCP on
-2026-10-10. The combined transactional parser and resident command migration
-remain pending. This work precedes expanded DIR.COM implementation.
+2026-10-10. The combined transactional parser is implemented and tested;
+resident command migration remains pending. This work precedes expanded DIR.COM
+implementation.
 
 ## Placement and scope
 
@@ -55,6 +56,41 @@ Exact malformed/truncated error positions and success-after-failure were tested
 in COPY and at three relocated RCP origins. DU, attribute, carrier-format, COPY
 filespec, mapping and reporting regressions pass. This prerequisite does not
 complete the transactional wrapper or migrate any resident command.
+
+## Combined operand transaction
+
+`FS_PARSE` is an internal RCP entry supplied by `common/rcpselect.inc`. Input is
+HL/B (operand pointer/length) and D/E (captured caller drive/user). It makes no
+BDOS calls and leaves the input untouched. Success returns carry clear and:
+
+- `DU_MAP`: the existing 64-byte location map, consumed through `DU_NEXT`;
+- `FS_FCB`: a 36-byte search FCB with an unqualified drive byte;
+- `FS_MASK`: the shared eight-state attribute truth mask (FFh if unfiltered).
+
+An empty filespec defaults to `*.*`, including DU-only selections. Unqualified
+filespec qualifiers are separated from DU scanning without modifying the common
+DU library. Qualified operands retain the complete DU grammar. The existing
+bounded lexer and FCB expander are reused; COPY's wildcard and operand-policy
+settings are saved/restored. Their remaining parser workspace is scratch.
+
+Failure returns carry set, HL at the detected position, and `FS_ERROR` identifying
+location (1), qualifier (2), predicate (3), or filespec (4) processing. The entire
+DU map, result FCB and predicate mask are cleared. Error classes identify the
+stage that detected the problem, not a guessed intent for malformed syntax.
+A later valid call clears the error. No command operation is performed here.
+
+RCP now measures 5,091 bytes, rounded to 5,120 bytes: +277 executable bytes and
++256 reclaimable allocated bytes over the preceding increment. There are 588
+relocations; the 1,536-byte header remains sufficient. Native ZSM4/LINK produces
+the same 5,091 bytes. BDOS is unchanged; transient builds exclude this RCP wrapper.
+
+Relocated tests at 4000h, 8101h and A000h cover inherited/compound scopes,
+unqualified predicates, empty defaults, wildcard expansion, policy preservation,
+input immutability, failed-result clearing, and successful reuse after failures
+in every stage. Existing DU, qualifier, predicate, carrier and COPY filespec
+checks pass. Evidence: `/private/tmp/rcp-selector-transaction-pass-20261010`.
+Resident DIR is the next consumer; this increment does not yet expose the expanded
+syntax through a command handler.
 
 A larger shared parser does not by itself implement multi-DU COPY: its frozen
 batch/preflight storage and operation contract require separate accounting.

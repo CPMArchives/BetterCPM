@@ -90,10 +90,42 @@ def main():
             c.mem[a('BC_MVFLAG')]=0;c.run(a('BC_CVALID'),limit=10000)
             assert (not c.carry)==valid,text
         results.append({'base':base,'result':'PASS','iterator_positions':512})
+        for text,pairs,filename,mask in [
+            ('',[(1,2)],'???????????',255),
+            ('F?*.DAT[$ARC+!$SYS]',[(1,2)],'F???????DAT',0x30),
+            ('B[-]:*.COM[$RO,$SYS]',[(1,u) for u in range(32)],'????????COM',0xEE),
+            ('[A0,C[3,5,7-11],5]:F***.DAT',[(0,0),(1,5)]+[(2,u) for u in (3,5,7,8,9,10,11)],'F???????DAT',255)]:
+            c=cpu(base,text)
+            c.setword(a('BC_COFCP'),0x1234)
+            c.mem[a('BC_MVFLAG')]=7;c.mem[a('BC_CWILD')]=9
+            c.run(a('FS_PARSE'),limit=100000)
+            expected=bytearray(64)
+            for d,u in pairs:expected[d*4+u//8]|=1<<(u%8)
+            assert not c.carry,text
+            assert bytes(c.mem[a('DU_MAP'):a('DU_MAP')+64])==expected,text
+            assert bytes(c.mem[a('FS_FCB')+1:a('FS_FCB')+12]).decode()==filename,text
+            assert c.mem[a('FS_MASK')]==mask and c.mem[a('FS_ERROR')]==0,text
+            assert c.word(a('BC_COFCP'))==0x1234
+            assert c.mem[a('BC_MVFLAG')]==7 and c.mem[a('BC_CWILD')]==9
+            assert bytes(c.mem[0x2000:0x2000+len(text)]).decode()==text
+        for text,stage in [('B32:*.COM',1),('F[]',2),('F[$RO]X',2),
+                           ('F[$WHL]',3),('F*A.DAT',4),('TOOLONGNM.COM',4),
+                           ('B[3',2),('[A0,B[32]]:F',1)]:
+            c=cpu(base,text)
+            c.mem[a('DU_MAP'):a('DU_MAP')+64]=bytes([255])*64
+            c.mem[a('FS_FCB'):a('FS_FCB')+37]=bytes([255])*37
+            c.run(a('FS_PARSE'),limit=100000)
+            assert c.carry and c.mem[a('FS_ERROR')]==stage,(text,c.hl,stage)
+            assert bytes(c.mem[a('DU_MAP'):a('DU_MAP')+64])==bytes(64),text
+            assert bytes(c.mem[a('FS_FCB'):a('FS_FCB')+37])==bytes(37),text
+            assert 0x2000<=c.hl<=0x2000+len(text),text
+            c.hl,c.b,c.d,c.e=0x2000,0,1,2
+            c.run(a('FS_PARSE'),limit=100000)
+            assert not c.carry and c.mem[a('FS_ERROR')]==0,text
     (report/'RCP.CPX').write_bytes(carrier)
     (report/'rcp.lst').write_text(listing)
     (report/'harness.py').write_bytes(Path(__file__).read_bytes())
-    (report/'evidence.json').write_text(json.dumps({'result':'PASS','components_only':True,
+    (report/'evidence.json').write_text(json.dumps({'result':'PASS','transactional_parser':True,
         'carrier_sha256':hashlib.sha256(carrier).hexdigest(),'bytes':size,'header':header,
         'relocations':count,'origins':results},indent=2)+'\n')
     print('Relocated RCP DU/qualifier/predicate components and bounded wildcard validation: PASS')
