@@ -11,6 +11,8 @@ DP_PARSE:
         LD (DT_SHOWATTR),A
         LD A,'N'
         LD (DN_MODE),A
+        LD A,'K'
+        LD (DT_UNIT),A
         CALL FS_CLEAR
 DP_TOKEN:
         LD A,B
@@ -80,21 +82,23 @@ DP_OPTION:
         LD (DP_ERROR),A
         LD A,(DP_LEN)
         CP 2
-        JR Z,DP_ATTR
+        JP Z,DP_ATTR
         CP 4
         JR Z,DP_FORM
         CP 5
-        JR NZ,DP_OPBAD
+        JP NZ,DP_OPBAD
 DP_FORM:
         INC HL
         LD A,(HL)
         AND 0DFH
+        CP 'Z'
+        JP Z,DP_UNIT
         CP 'S'
-        JR NZ,DP_OPBAD
+        JP NZ,DP_OPBAD
         INC HL
         LD A,(HL)
         CP '='
-        JR NZ,DP_OPBAD
+        JP NZ,DP_OPBAD
         INC HL
         LD A,(HL)
         AND 0DFH
@@ -106,7 +110,7 @@ DP_FORM:
         CP 'Z'
         JR Z,DP_KEY
         CP 'U'
-        JR NZ,DP_OPBAD
+        JP NZ,DP_OPBAD
 DP_KEY:
         LD E,0
         LD A,(DP_LEN)
@@ -114,13 +118,13 @@ DP_KEY:
         JR Z,DP_SET
         LD A,C
         CP 'U'
-        JR Z,DP_OPBAD
+        JP Z,DP_OPBAD
         INC HL
         LD A,(HL)
         CP '+'
         JR Z,DP_SET
         CP '-'
-        JR NZ,DP_OPBAD
+        JP NZ,DP_OPBAD
         INC E
 DP_SET:
         LD A,C
@@ -135,10 +139,33 @@ DP_ATTR:
         INC HL
         LD A,(HL)
         AND 0DFH
+        CP 'Z'
+        JR Z,DP_KUNIT
         CP 'A'
-        JR NZ,DP_OPBAD
+        JP NZ,DP_OPBAD
         LD A,1
         LD (DT_SHOWATTR),A
+        JR DP_OK
+DP_KUNIT:
+        LD A,'K'
+        JR DP_USET
+DP_UNIT:
+        LD A,(DP_LEN)
+        CP 4
+        JP NZ,DP_OPBAD
+        INC HL
+        LD A,(HL)
+        CP '='
+        JP NZ,DP_OPBAD
+        INC HL
+        LD A,(HL)
+        AND 0DFH
+        CP 'K'
+        JR Z,DP_USET
+        CP 'S'
+        JP NZ,DP_OPBAD
+DP_USET:
+        LD (DT_UNIT),A
         JR DP_OK
 DP_OPBAD:
         SCF

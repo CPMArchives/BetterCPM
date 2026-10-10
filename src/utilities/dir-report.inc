@@ -203,9 +203,8 @@ DT_ROW:
         LD HL,(DT_SCAN)
         LD DE,12
         ADD HL,DE
-        CALL DT_K
-        LD A,'K'
-        CALL BC_PCHAR
+        CALL DT_SIZE
+        CALL DT_SUFFIX
         CALL DT_ATTRIBUTES
         LD DE,BC_NL
         CALL BC_PRINT
@@ -234,10 +233,24 @@ DT_ROW:
 DT_SUMMARY:
         CALL BC_PRINT
         LD HL,DT_TOTAL
-        CALL DT_K
+        CALL DT_SIZE
+        CALL DT_SUFFIX
         LD DE,DT_SUMMSG
         CALL BC_PRINT
         JP RD_NEXT
+; Display selection does not change the allocated-record sort key.
+DT_SIZE:
+        LD A,(DT_UNIT)
+        CP 'K'
+        JP Z,DT_K
+        LD DE,DTD_NUM
+        LD BC,4
+        LDIR
+        JP DTD_DEC
+DT_SUFFIX:
+        LD A,(DT_UNIT)
+        JP BC_PCHAR
+DT_UNIT: DB 'K'
 DT_K:
         LD DE,DTD_NUM
         LD BC,4
@@ -297,7 +310,7 @@ DT_HEADING: DB ':',13,10,'$'
 DT_SPACE: DB '  $'
 DT_FILEMSG: DB ' FILES, $'
 DT_ONEMSG: DB ' FILE, $'
-DT_SUMMSG: DB 'K TOTAL',13,10,'$'
+DT_SUMMSG: DB ' TOTAL',13,10,'$'
 DT_FULLMSG: DB 13,10,'Directory too large.',13,10,'$'
 
 ; Stable comparison of the selected key, with name/extension tie-breaks. Move whole
