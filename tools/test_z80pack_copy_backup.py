@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Native backup ARC updates with raw metadata."""
+import hashlib
 import argparse,json,shutil,subprocess,re
 from pathlib import Path
 from test_disk_utilities import ROOT
@@ -68,7 +69,7 @@ def main():
  t=execute('COPY /B /V /BACKUP B1:F4.DAT D10:','verify-failure')
  assert disks['b'].read_bytes()==before and b'VERIFY ERROR' in t
  assert not any(e[0]==10 for e in entries())
- (w/'evidence.json').write_text(json.dumps({'result':'PASS','commands':commands,'raw_attributes_verified':True,'source_arc_cleared_only':True},indent=2)+'\n')
+ (w/'evidence.json').write_text(json.dumps({'copy_sha256':hashlib.sha256((ROOT/'build/utilities/COPY.COM').read_bytes()).hexdigest(),'result':'PASS','commands':commands,'raw_attributes_verified':True,'source_arc_cleared_only':True},indent=2)+'\n')
  print('Native COPY backup, option orders, read-only sources and raw extents pass')
 
 

@@ -1672,3 +1672,26 @@ covers empty files, one-record allocations, multi-extent allocation, replacement
 allocation rather than old size, mixed outcomes, zero-line omission and no
 matches. Backup and controlled-error regressions also assert summaries.
 Final platform qualification and the separately specified handoff remain.
+
+
+### 2026-10-10 — Frozen transient z80pack qualification
+
+The 10,303-byte COPY.COM with SHA-256
+`c0c6ee7cde8eedd32f3fb7a7ca42b67a0def6de81ff3c8ed8cee3a1d8a1e9b27`
+passes twelve native suites: DU sets, mapping safety, interactive collision and
+rename, verification recovery, cancellation, source predicates, destination
+attributes, backup, transfer-error policy, allocation reporting, 64-file capacity,
+and skip/read-only behavior. Execution-level parser, mapping, attribute, qualifier,
+allocation-map and decimal checks also pass. No implementation binary changed
+during the campaign.
+
+The exact input seed, final media, transcripts, controlled fault carriers,
+commands/exit codes, tested COPY binary, source components and SHA-256 inventory
+are preserved in `/private/tmp/copy-final-z80pack-bundle-20261010`. The collector
+requires matching COPY identities; optional RCP identities are checked when
+present, without claiming an RCP test for a transient-only case. A mismatched
+COPY report is rejected before an archive is created.
+
+This closes this frozen binary's z80pack transient campaign, not Model 4 or
+full-release conformance. Model 4 qualification and CPX/CCP handoff remain
+separate. No BIOS/BDOS changes or new COPY behavior are introduced here.
