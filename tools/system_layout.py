@@ -45,13 +45,19 @@ def expand_layout(text: str) -> str:
         directory = directory.replace('        LD      A,(BC_DCOL)\n',
             'RD_VISIBLE:\n        LD      A,(BC_DCOL)\n', 1)
         text = text[:start] + directory + text[end:]
+        text = text.replace('BC_ERA:                                 ; execute ERA command\n',
+            'BC_ERA:                                 ; execute ERA command\n'
+            '        CALL    RE_VALIDATE\n        JP      C,RE_REJECT\n', 1)
         common = ROOT / 'src/utilities/common'
         predicate = (common / 'attrselect.inc').read_text(encoding='ascii')
         predicate = predicate[:predicate.index('; Destination modification list:')]
         selector = ('DU_MAP: DS 64\nDU_WORK: DS 12\n' +
                     (common / 'duselect.inc').read_text(encoding='ascii') +
                     (common / 'operandqual.inc').read_text(encoding='ascii') + predicate +
-                    (common / 'rcpselect.inc').read_text(encoding='ascii'))
+                    (common / 'rcpselect.inc').read_text(encoding='ascii') +
+                    '\nRE_REJECT:\n        LD A,(FS_ERROR)\n        OR A\n'
+                    '        JP NZ,BC_DBAD\n        JP BC_DURST\n' +
+                    (ROOT / 'src/cpx/era-select.inc').read_text(encoding='ascii'))
         text = text.replace('; @rcp-shared-selector@', selector)
 
     order = (1,3,5,7,9,2,4,6,8,10)

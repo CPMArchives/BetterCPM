@@ -764,6 +764,14 @@ Examples:
 The file specification may contain the standard CP/M `?` and `*` wildcard
 characters. When wildcards are used, all matching files are erased.
 
+Resident ERA validates the complete filespec before selecting the target DU or
+erasing anything. It uses COPY's bounded wildcard rules: `F?*.DAT` and
+`F***.DAT` are valid; `F*A.DAT`, `F**?.DAT`, and overlong 8.3 names report
+`Invalid filespec.` rather than being truncated or expanded to a broader match.
+Compound DU selectors and attribute qualifiers currently report
+`Selection not supported by resident ERA.` and erase nothing. Their confirmation
+and protection behavior will be implemented separately.
+
 ##### Planned transient ERA.COM
 
 The following interface is the agreed target for the expanded ERA.COM. It is

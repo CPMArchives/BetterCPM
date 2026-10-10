@@ -163,6 +163,29 @@ reconstruction and recovered TPA at each increment. BDOS growth remains zero.
 
 ## Shared component integration — 2026-10-10
 
+### Resident ERA validation prerequisite
+
+RCP's ERA handler now passes its full operand through `FS_PARSE` before its
+legacy selection/deletion path. The gate captures caller DU, preserves the input
+pointer/length, and rejects malformed bounded filespecs before any mutation.
+It deliberately rejects bracketed scopes and predicates with a distinct
+unsupported-selection diagnostic: accepting those parsers must not let the old
+erase operation silently ignore them. Empty operands and ordinary single-DU
+forms retain their existing behavior, including the all-wildcard confirmation.
+
+This is validation adoption, not multi-DU ERA implementation. Its destructive
+selection/confirmation/protection contract remains a separate step. Transient
+builds exclude this RCP-only gate. RCP is 5,371 bytes, still allocated 5,376 bytes,
+with 622 relocations; BDOS remains unchanged. Native assembly matches the host
+payload. Relocated gate tests cover valid/rejected operands, input preservation
+and captured caller DU at three origins. Native tests reject a malformed pattern
+and an extended selector, inspect the surviving marker, then erase it with an
+ordinary exact filename and confirm NO FILE.
+Both z80pack and Model 4 pass with DIR.COM absent. Evidence:
+`/private/tmp/rcp-era-gate-relocated-20261010`,
+`/private/tmp/rcp-era-gate-z80pack-final-20261010`, and
+`/private/tmp/rcp-era-gate-model4-captures-20261010`.
+
 RCP now links exactly one copy of the existing DU parser/iterator, qualifier
 splitter, and attribute predicate compiler, with package-owned scratch. Build
 expansion uses the same common source files as the transient utilities; the

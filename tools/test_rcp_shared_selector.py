@@ -90,6 +90,17 @@ def main():
             c.mem[a('BC_MVFLAG')]=0;c.run(a('BC_CVALID'),limit=10000)
             assert (not c.carry)==valid,text
         results.append({'base':base,'result':'PASS','iterator_positions':512})
+        for text,accepted in [('',True),('B3:F?*.DAT',True),('F***.DAT',True),
+                              ('B:*.BAK',True),('F*A.DAT',False),('F**?.DAT',False),
+                              ('TOOLONGNM.COM',False),('F.COM[$RO]',False),
+                              ('B[3]:*.DAT',False),('[A0,B3]:*.DAT',False)]:
+            c=cpu(base,text)
+            # Query-only BDOS fixture: caller drive/user 1, output ignored.
+            c.mem[5:8]=b'\x3e\x01\xc9'
+            c.run(a('RE_VALIDATE'),limit=100000)
+            assert c.carry==(not accepted),text
+            assert (c.hl,c.b)==(0x2000,len(text)),text
+            assert c.mem[a('BC_DSAVE')]==1 and c.mem[a('BC_USAVE')]==1
         for mask in (0,255,0x30,0xEE,0xAA):
             for state in range(8):
                 c=cpu(base,'')
