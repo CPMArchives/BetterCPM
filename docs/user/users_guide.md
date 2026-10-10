@@ -615,7 +615,7 @@ or `-` (descending); `/S=U` preserves native directory order and accepts no sign
 The last sort switch wins. Switches may go before or after the selection operand.
 Type and size ties use ascending filename order. Size sorting uses allocated
 space, independently of how that size is displayed. Invalid switches reject the
-whole command before listing; `/Z=E` and `/C` are still pending.
+whole command before listing; `/Z=E` is still pending.
 
 `/A` adds a three-position `SRA` field after each file size: SYS, read-only,
 and ARC respectively, with `-` for each clear bit. For example, `-R-` means
@@ -638,7 +638,16 @@ original drive and user. Other keys are ignored. Repeating `/P` is harmless;
 paging is off again for the next DIR command. A listing that ends exactly at
 the page boundary does not require an extra key.
 
-Transient DIR will add extent units and columns.
+DIR automatically uses four, two or one column, whichever fits the selected
+entries on the supported 80-column display. It measures the actual size digits
+and optional attribute field, and aligns adjacent cells with ` : ` separators.
+`/C=1`, `/C=2` or `/C=4` requests a specific count; the last `/C=` wins. If that
+count cannot fit, DIR reports `Requested columns do not fit.` before listing
+that DU. Column selection and sorting apply separately to each selected DU.
+Use `/C=1 /P` when you want a paged, one-file-per-line listing. The next command
+returns to automatic columns unless `/C=` is supplied again.
+
+Transient DIR will add extent units.
 It will not display or
 filter dates, timestamps or wheel-protection attributes in 1.0.
 

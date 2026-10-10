@@ -271,13 +271,49 @@ reset on the next invocation. Disk contents and attributes must remain intact.
 Evidence: `/private/tmp/dir-paging-z80pack-20261010c` and
 `/private/tmp/dir-paging-model4-20261010b`.
 
+## Column-layout increment — implemented
+
+DIR now measures the actual rendered file fields in each selected DU using the
+same numeric/attribute formatter as visible output. Dry measurement emits no
+BDOS output and consumes no paging lines. The widest selected cell determines
+padding; three-character ` : ` separators occur only between adjacent cells.
+Automatic layout tries four, two and one column against the supported 80-column
+display. This uses the existing platform width baseline, not a new resident
+geometry service. A wider/narrower console binding needs separate qualification.
+
+`/C=1`, `/C=2` and `/C=4` are case-insensitive. Last valid request wins; each
+invocation resets to automatic. Malformed forms reject the command transaction.
+A valid explicit count that cannot fit reports `Requested columns do not fit.`
+before that DU's heading/listing; prior DU sections may already have been shown.
+There is no silent reduction. Rows fill left-to-right in the selected sort order,
+with one newline after a complete or partial final row. Paging counts these
+rendered rows, including headings/summaries, rather than individual file cells.
+
+DIR.COM is 7,381 bytes (+309), SHA-256
+`b4d1ed2dd153309ab420b089f12476ddcf85b32bf3f2d71c7aafae7ac3b3c705`.
+No resident component or other utility changes are required. Focused width/fit
+checks cover 176 combinations of allocated sizes through DWORD boundaries,
+units, attributes and automatic/explicit counts. The parser covers 27 valid and
+38 invalid forms, including last-value wins and next-command reset. All 34
+existing public z80pack cases pass. Nine new public cases pass on z80pack and
+Model 4 with RCP unloaded: explicit 1/2/4, actual digit-width padding, attribute
+widths, automatic fallback to two columns and rejection of oversized explicit
+requests. Fixture contents and attributes are preserved. Native ZSM4/LINK is
+byte-identical. Collection, eight attribute masks, 246 sort cases, 450 metric
+cases and focused paging controls/boundaries pass.
+
+Column evidence: `/private/tmp/dir-columns-z80pack-20261010` and
+`/private/tmp/dir-columns-model4-20261010`. Paging regression evidence:
+`/private/tmp/dir-columns-paging-z80pack-20261010` and
+`/private/tmp/dir-columns-paging-model4-20261010`.
+
 ## Audit clarifications awaiting resolution
 
 - K/S use allocated KiB/128-byte records; size sorting uses allocated space.
   Proposed E definition: count physical directory entries (decision pending).
-- Use actual width to choose 4/2/1 columns. Narrative rules override examples
-  that show three columns or omit always-enabled size. Console geometry must
-  be determined from existing platform bindings without a new resident service.
+- Column layout uses the supported 80-column platform baseline. Narrative rules
+  override examples that show three columns or omit always-enabled size. Other
+  console widths need a future binding/query and qualification.
 
 ## User documentation
 

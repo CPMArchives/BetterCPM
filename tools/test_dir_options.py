@@ -21,11 +21,12 @@ def main():
            ('/S=N- /S=T+ /S=Z- /S=U','U',0),
            ('/A','N',0),('/a /A /S=T- A0:*.COM','T',1),
            ('A[0,2]:*.TXT[$SYS] /A','N',0),
+           ('/C=1','N',0),('/c=2 /C=4','N',0),('/C=4 /A /C=1','N',0),
            ('/P','N',0),('/p /P /A /Z=S','N',0),('/P A[0,2]:*.TXT /S=T-','T',1),
            ('/Z','N',0),('/Z=K','N',0),('/z=s /A /S=Z- A0:*.DAT','Z',1),
            ('/Z=S /Z=K','N',0),('/Z=S /Z','N',0),('/Z=K /Z=S','N',0),
            (' /S=N'*24+' A0:*.*','N',0)]
-    invalid_options=['/S','/S=','/S=X','/S=U+','/S=U-','/S=N--',
+    invalid_options=['/C','/C=','/C=0','/C=3','/C=8','/C=2+','/C=01','/C:1','/C=3 /C=1','/S','/S=','/S=X','/S=U+','/S=U-','/S=N--',
                      '/P=ON','/PP','/P+','/Z=X','/Z=','/Z=S+','/Z=K-','/Z:S','/Z=X /Z=K','/A=RO','/AA','/A+','/A /S=X','/S=N?','/S=N /BOGUS','/S=X /S=N','/S==N','/S=T++','/S:N']
     invalid_files=['A0:F*A.COM /S=N','A0:*.COM B0:','/S=T A[32]:*.COM',
                    '/S=Z- A0:*.COM /S=N SECOND.DAT']
@@ -43,6 +44,8 @@ def main():
         assert c.mem[addr('DT_UNIT')]==ord(units[-1] if units else 'K'),text
         assert c.mem[addr('DG_PAGE')]==int(any(token.upper()=='/P' for token in text.split())),text
         assert c.mem[addr('DG_LINES')]==0,text
+        columns=[int(token[-1]) for token in text.upper().split() if token.startswith('/C=')]
+        assert c.mem[addr('DC_REQUEST')]==(columns[-1] if columns else 0),text
         assert any(c.mem[addr('DU_MAP'):addr('DU_MAP')+64]),text
     for text in invalid_options+invalid_files:
         execute('/S=T- A0:*.COM[$RO]') # leave valid state for rejection to clear

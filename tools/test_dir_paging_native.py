@@ -19,8 +19,8 @@ def main():
     binary=(ROOT/'build/utilities/DIR.COM').read_bytes()
     fixtures=[(f'PG{i:03}.TXT',b'',1,0) for i in range(30)]
     prompt='MORE -- Space/ENTER for next page; ^C abort.'
-    commands=['DIR /P A1:PG*.TXT','DIR /P /P /A /Z=S A1:PG*.TXT',
-              'DIR /P A1:PG*.TXT','DIR A1:PG*.TXT']
+    commands=['DIR /C=1 /P A1:PG*.TXT','DIR /C=1 /P /P /A /Z=S A1:PG*.TXT',
+              'DIR /C=1 /P A1:PG*.TXT','DIR A1:PG*.TXT']
     if a.platform=='z80pack':
         import shutil
         assert a.image_dir

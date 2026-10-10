@@ -16,6 +16,18 @@ DG_TEXT:
 DG_CHAR:
         PUSH AF
         PUSH HL
+        LD HL,DG_CHARS
+        INC (HL)
+        LD A,(DG_MEASURE)
+        OR A
+        POP HL
+        JR Z,DG_VISIBLE
+        POP AF
+        RET
+DG_VISIBLE:
+        POP AF
+        PUSH AF
+        PUSH HL
         PUSH BC
         PUSH DE
         LD A,(DG_PAGE)
@@ -66,6 +78,8 @@ DG_ABORT:
         CALL BDOS
         LD SP,(DG_STACK)             ; unwind output and formatter frames
         JP BC_DURST                  ; restore DU, then return to COM caller
+DG_CHARS: DB 0
+DG_MEASURE: DB 0
 DG_PAGE: DB 0
 DG_LINES: DB 0
 DG_STACK: DW 0

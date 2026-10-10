@@ -186,6 +186,7 @@ def dir_source() -> str:
     metrics = (ROOT / 'src/utilities/common/dirmetrics.inc').read_text(encoding='ascii')
     options = (ROOT / 'src/utilities/dir-options.inc').read_text(encoding='ascii')
     paging = (ROOT / 'src/utilities/dir-paging.inc').read_text(encoding='ascii')
+    columns = (ROOT / 'src/utilities/dir-columns.inc').read_text(encoding='ascii')
     start = text.index('BC_PCHAR:')
     end = text.index('  ; DIR accepts', start)
     text = text[:start] + 'BC_PCHAR:\n        JP DG_CHAR\n\n' + text[end:]
@@ -222,7 +223,7 @@ DT_TOTAL: DS 12
     decimal = decimal[decimal.index('CTR_DEC:\n'):decimal.index('CTR_RUN:')]
     decimal = decimal.replace('CTR_', 'DTD_')
     decimal += 'DTD_NUM: DS 4\nDTD_DIG: DS 10\nDTD_PTR: DW 0\nDT_BUFFER:\n'
-    return text.replace('        END\n', hook + options + metrics + paging + decimal + '\n        END\n', 1)
+    return text.replace('        END\n', hook + options + metrics + paging + columns + decimal + '\n        END\n', 1)
 
 
 def main() -> None:
