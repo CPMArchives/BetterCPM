@@ -11,6 +11,8 @@ DP_PARSE:
         LD (DT_SHOWATTR),A
         LD (DG_PAGE),A
         LD (DG_LINES),A
+        LD (DG_MEASURE),A
+        LD (DC_REQUEST),A
         LD A,'N'
         LD (DN_MODE),A
         LD A,'K'
@@ -95,6 +97,8 @@ DP_FORM:
         AND 0DFH
         CP 'Z'
         JP Z,DP_UNIT
+        CP 'C'
+        JP Z,DP_COLUMNS
         CP 'S'
         JP NZ,DP_OPBAD
         INC HL
@@ -175,6 +179,26 @@ DP_UNIT:
 DP_USET:
         LD (DT_UNIT),A
         JR DP_OK
+DP_COLUMNS:
+        LD A,(DP_LEN)
+        CP 4
+        JP NZ,DP_OPBAD
+        INC HL
+        LD A,(HL)
+        CP '='
+        JP NZ,DP_OPBAD
+        INC HL
+        LD A,(HL)
+        CP '1'
+        JR Z,DP_CSET
+        CP '2'
+        JR Z,DP_CSET
+        CP '4'
+        JP NZ,DP_OPBAD
+DP_CSET:
+        SUB '0'
+        LD (DC_REQUEST),A
+        JP DP_OK
 DP_OPBAD:
         SCF
         RET

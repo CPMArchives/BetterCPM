@@ -163,8 +163,10 @@ DT_FULL:
         CALL BC_PRINT
         JP BC_DURST
 
-; Initial one-column formatter; adaptive columns and display switches follow.
+; Column width is measured over selected records before headings are printed.
 DT_REPORT:
+        CALL DC_LAYOUT
+        JP C,DC_REJECT
         LD DE,BC_NL
         CALL BC_PRINT
         LD C,25
@@ -188,6 +190,8 @@ DT_ROWS:
         LD HL,(DT_FILES)
         LD (DT_LEFT),HL
 DT_ROW:
+        XOR A
+        LD (DG_CHARS),A
         LD HL,(DT_SCAN)
         LD B,8
         CALL BC_FFIX
@@ -206,8 +210,6 @@ DT_ROW:
         CALL DT_SIZE
         CALL DT_SUFFIX
         CALL DT_ATTRIBUTES
-        LD DE,BC_NL
-        CALL BC_PRINT
         LD HL,(DT_SCAN)
         LD DE,24
         ADD HL,DE
@@ -217,7 +219,12 @@ DT_ROW:
         LD (DT_LEFT),HL
         LD A,H
         OR L
-        JR NZ,DT_ROW
+        JR Z,DT_ROWEND
+        CALL DC_SEPARATOR
+        JP DT_ROW
+DT_ROWEND:
+        LD DE,BC_NL
+        CALL BC_PRINT
         LD HL,(DT_FILES)
         LD (DTD_NUM),HL
         LD HL,0

@@ -18,6 +18,7 @@ def main():
     p.add_argument('--platform',choices=('z80pack','model4'),required=True)
     p.add_argument('--report',type=Path,required=True)
     p.add_argument('--image-dir',type=Path)
+    p.add_argument('--columns-only',action='store_true',help='Run only the column-layout increment')
     p.add_argument('--verify-existing',action='store_true',help='Verify saved Model 4 captures without rerunning')
     a=p.parse_args();report=a.report.resolve();report.mkdir(parents=True,exist_ok=a.verify_existing)
     assert not a.verify_existing or a.platform=='model4'
@@ -76,7 +77,19 @@ def main():
         ('DIR A0:SIZ*.DAT',['SIZMULT  DAT  40K','2 FILES, 40K TOTAL'],['320S']),
         ('DIR /Z=X A0:SIZ*.DAT',['Invalid option.'],['SIZMULT  DAT']),
         ('DIR /Z=S+ A0:SIZ*.DAT',['Invalid option.'],['SIZMULT  DAT'])]
+    column_cases=[
+        ('DIR /C=1 A0:SEL*.TXT',['SELARC   TXT  2K','SELRO    TXT  2K','3 FILES, 6K TOTAL'],[' : ']),
+        ('DIR /C=2 A0:SEL*.TXT',['SELARC   TXT  2K : SELRO    TXT  2K','3 FILES, 6K TOTAL'],[]),
+        ('DIR /C=4 A0:SIZ*.DAT',['SIZEMPTY DAT  0K  : SIZMULT  DAT  40K','2 FILES, 40K TOTAL'],[]),
+        ('DIR /Z=S /C=4 A0:SIZ*.DAT',['Requested columns do not fit.'],['A0:', 'SIZMULT  DAT','2 FILES']),
+        ('DIR /A /C=4 A0:SEL*.TXT',['Requested columns do not fit.'],['SELARC   TXT','3 FILES']),
+        ('DIR /A /C=2 A0:SEL*.TXT',['SELARC   TXT  2K  --A : SELRO    TXT  2K  -R-','3 FILES, 6K TOTAL'],[]),
+        ('DIR /C=4 /A /C=1 A0:SEL*.TXT',['SELARC   TXT  2K  --A','3 FILES, 6K TOTAL'],[' : ']),
+        ('DIR /Z=S A0:SIZ*.DAT',['SIZEMPTY DAT  0S   : SIZMULT  DAT  320S','2 FILES, 320S TOTAL'],[]),
+        ('DIR /A A0:SEL*.TXT',['SELARC   TXT  2K  --A : SELRO    TXT  2K  -R-','3 FILES, 6K TOTAL'],[])]
+    cases = column_cases if a.columns_only else cases + column_cases
     def check_order(output,index):
+        if a.columns_only:return
         expected={0:['SELARC','SELRO','SELZERO'],3:['SELRO','SELSYS'],
                   6:['SIZEMPTY','SIZMULT'],8:['SELMIX   ASM','SELMIX   COM'],
                   9:['SELZERO','SELRO','SELARC'],10:['SELMIX   COM','SELMIX   ASM'],
@@ -121,8 +134,8 @@ def main():
             output=text.rsplit(command+' ',1)[-1]
             for value in required:assert value in output,(command,value,output)
             for value in excluded:assert value not in output,(command,value,output)
-            if i==6:assert output.count('SIZMULT  DAT')==1,(command,output)
-            if i==7:assert output.count('SIZMULT  DAT')==2,(command,output)
+            if i==6 and not a.columns_only:assert output.count('SIZMULT  DAT')==1,(command,output)
+            if i==7 and not a.columns_only:assert output.count('SIZMULT  DAT')==2,(command,output)
             check_order(output,i)
             observations.append({'command':command,'result':'PASS'})
         assert all((report/'disks'/name).read_bytes()==data for name,data in before.items())
@@ -149,8 +162,8 @@ def main():
             output=text.split('>'+command,1)[-1].split('A0>CHECK',1)[0]
             for value in required:assert value in output,(command,value,text)
             for value in excluded:assert value not in output,(command,value,text)
-            if i==6:assert output.count('SIZMULT  DAT')==1,(command,output)
-            if i==7:assert output.count('SIZMULT  DAT')==2,(command,output)
+            if i==6 and not a.columns_only:assert output.count('SIZMULT  DAT')==1,(command,output)
+            if i==7 and not a.columns_only:assert output.count('SIZMULT  DAT')==2,(command,output)
             check_order(output,i)
             assert marker(i) in text,(i,text)
             (report/f'case-{i}.txt').write_text(text)
