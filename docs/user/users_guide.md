@@ -598,11 +598,13 @@ selection. Empty locations report `NO FILE` individually.
 ##### Planned transient DIR.COM
 
 **DIR.COM now supports the same compound DU selections and attribute predicates
-as resident DIR, and works with RCP unloaded. Its richer reporting options below
-remain the accepted 1.0 design and are not implemented yet.** Resident DIR retains its traditional four-column display,
+as resident DIR, and works with RCP unloaded. It displays allocated KiB per file,
+combines all extents, and reports a selected file count and total for each DU.
+It currently uses one column in native discovery order. Sorting, adaptive columns
+and the reporting switches below remain planned.** Resident DIR retains its traditional four-column display,
 with no sorting, sizes, attribute display or summaries.
 
-Transient DIR will add size reporting, sorting, attribute display and paging.
+Transient DIR will add selectable size units, sorting, attribute display and paging.
 It will not display or
 filter dates, timestamps or wheel-protection attributes in 1.0.
 

@@ -3,7 +3,8 @@
 Received 2026-10-09. Target contract; the extended transient implementation is
 not yet complete. The first DIR.COM increment now links the qualified shared
 selection implementation independently of RCP. Multi-DU selection and attribute
-predicates work with RCP unloaded; richer display and sorting remain pending.
+predicates work with RCP unloaded. Allocated KiB and per-DU selected totals now
+display; the remaining reporting options and sorting are pending.
 Explicit :DIR/.DIR works; automatic handoff is still unimplemented.
 
 ## Selection baseline — 2026-10-10
@@ -22,8 +23,8 @@ before searching, rejects unsupported drives and malformed selectors, and uses
 *.* for omitted filespecs. Plain selection hides SYS; an explicit attribute
 predicate replaces implicit SYS suppression. This matches the qualified resident
 selector behavior and resolves that selection question for the transient too.
-Sizes, summaries, adaptive columns, paging, attribute display and sort options
-are not implemented yet; the remaining sections specify those future increments.
+At this baseline, sizes, summaries, adaptive columns, paging, attribute display
+and sort options were not implemented; later increments are recorded below.
 
 Native ZSM4/LINK and host assembly match DIR.COM. The native build stages DIR's
 source on B: to keep the three source images within its disposable floppy capacity.
@@ -47,7 +48,7 @@ accounting; entries beyond the first physical extent group still contribute.
 All three totals use four bytes, including entry counts across multi-DU sets.
 Allocation uses the DPB's byte/word block-map format and BSH; logical
 records use `(EX & EXM) * 128 + RC`. Zero allocation slots contribute nothing.
-This prepares reporting but does not yet add visible sizes, `/Z`, sorting,
+This increment prepared reporting without yet adding visible sizes, `/Z`, sorting,
 per-file aggregation or summaries. The physical-entry counter is available for
 the proposed E metric; its displayed definition remains part of the reporting
 contract clarification below.
@@ -61,6 +62,42 @@ selection visibility gates also pass.
 The existing six z80pack selection cases pass, with unchanged private disk
 images. Evidence: `/private/tmp/dir-metrics-z80pack-qualified-20261010`.
 
+## Per-file allocation display — 2026-10-10
+
+The transient now collects one record per normalized filename within each DU,
+aggregates all selected physical entries, and displays allocated KiB. An empty
+file is 0K; a multi-extent file is listed once with its complete allocation.
+Each DU has a heading and a file-count/allocated-KiB summary; the same filename
+in two DUs is counted independently. Implicit SYS hiding now excludes hidden
+entries from both collection and totals; an explicit predicate controls visibility.
+
+The collector makes a single directory traversal per DU and does not perform
+nested file searches. Its 24-byte records occupy disposable TPA after the
+transient image, bounded below the current BDOS/RSX entry with 256 bytes reserved.
+If another unique filename will not fit, `Directory too large.` stops the command
+before printing that DU's listing; existing records can still aggregate without
+requiring more space. The caller DU is restored on completion and this error path.
+The buffer is reset between DUs. No filesystem writes are performed.
+
+This is an intermediate one-column formatter in native discovery order.
+Name sorting, adaptive columns, `/Z` units, attribute display, paging and
+drive-free-space reporting remain pending; the final interface below is still
+the target. Decimal output is generated from COPY's qualified formatting source,
+linked independently into DIR, so DIR does not depend on COPY.COM or RCP.
+
+Qualification covers out-of-order multi-extent aggregation, attribute-bit masking
+in filename identity, empty files, buffer exhaustion, aggregation at capacity and
+32-bit KiB conversion. The public platform cases include a 40,000-byte file
+displayed once as 40K and the same filename in another user area at 2K.
+
+DIR.COM is 6,014 bytes, 407 bytes larger than the accounting foundation. Host
+assembly and native ZSM4/LINK match. Eight public cases pass on z80pack and
+Model 4 with RCP unloaded, including filtered totals and caller-DU restoration.
+Private z80pack images remain byte-identical; Model 4 fixture bytes/attributes
+remain unchanged after SUBMIT. Evidence:
+`/private/tmp/dir-sizes-z80pack-final-20261010` and
+`/private/tmp/dir-sizes-model4-final-20261010`.
+
 ## Audit clarifications awaiting resolution
 
 - Proposed exact metrics: K/S are allocated bytes/128-byte records, E counts
@@ -72,11 +109,11 @@ images. Evidence: `/private/tmp/dir-metrics-z80pack-qualified-20261010`.
 ## User documentation
 
 The user guide's DIR section contains a polished planned-interface description,
-examples and option reference. It distinguishes implemented selection from
-unimplemented extended transient reporting. Date-related placeholders
+examples and option reference. It distinguishes implemented selection and
+allocated-KiB reporting from remaining transient reporting options. Date-related placeholders
 were removed because dates and wheel metadata are outside this 1.0 contract.
-Precise size metrics remain identified as unresolved; the guide does not present
-them as qualified behavior. Exported
+The alternate size-unit definitions remain identified as pending; allocated KiB
+is now qualified behavior. Exported
 DOCX/PDF manuals are not regenerated in this documentation increment.
 
 ## Shared implementation dependency

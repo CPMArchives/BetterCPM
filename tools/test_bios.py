@@ -578,6 +578,13 @@ class Z80:
                 self.carry = bool(self.c & 1)
                 self.c >>= 1
                 self.z = self.c == 0
+            elif op == 0xCB and self.mem[self.pc] == 0x1E:  # RR (HL)
+                self.pc += 1
+                old_carry = self.carry
+                value = self.mem[self.hl]
+                self.carry = bool(value & 1)
+                self.mem[self.hl] = (value >> 1) | (0x80 if old_carry else 0)
+                self.z = self.mem[self.hl] == 0
             elif op == 0xCB and self.mem[self.pc] == 0x1D:  # RR L
                 self.pc += 1
                 old_carry = self.carry
