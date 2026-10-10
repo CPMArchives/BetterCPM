@@ -21,6 +21,9 @@ def main():
     commands=['CPX UNLOAD RCP','CPX LOAD RCP','DIR SELMARK.TXT','CPX LIST','DIR SELMARK.TXT',
               'DIR A[0,2]:SELMARK.TXT[$RW]', 'DIR A0:SELMARK.TXT[$RO]',
               'DIR [A0,E0]:SELMARK.TXT', 'DIR A0:SELMARK.TXT[$WHL]']
+    commands += ['ERA A0:SEL*MARK.TXT','DIR A0:SELMARK.TXT',
+                 'ERA A[0,2]:SELMARK.TXT','DIR A0:SELMARK.TXT',
+                 'ERA A0:SELMARK.TXT','DIR A0:SELMARK.TXT']
     if a.platform=='z80pack':
         assert a.image_dir
         shutil.copytree(a.image_dir/'disks',report/'disks');shutil.copy2(a.image_dir/'diskdefs',report/'diskdefs')
@@ -37,15 +40,18 @@ def main():
         assert 'A2: SELMARK  TXT' in text,text
     else:
         finish=b'\x11\x0b\x01\x0e\x09\xcd\x05\x00\xc3\x00\x00\r\nSELECTOR FINISH\r\n$'
+        commands.insert(11,'CHECK')
         commands.insert(5,'SNAP')
         extras=[('CPX.COM',(ROOT/'build/utilities/CPX.COM').read_bytes()),
                 ('SUBMIT.COM',(ROOT/'build/utilities/SUBMIT.COM').read_bytes()),
                 ('SELMARK.TXT',b'SELECTOR LIFECYCLE\r\n'),('FINISH.COM',finish),
                 ('SNAP.COM',finish.replace(b'SELECTOR FINISH',b'SELECTOR BASE')),
+                ('CHECK.COM',finish.replace(b'SELECTOR FINISH',b'SELECTOR CHECK')),
                 ('CASE.SUB',('\r\n'.join(c.replace('$','$$') for c in commands+['FINISH'])+'\r\n').encode()+b'\x1a')]
         disk=report/'a.dmk';disk.write_bytes(medium(extras))
         invocation=[str(DEFAULT_EMULATOR),'-m4','-batch','-turbo','-d0',str(disk),'-id','3000','-it']
         invocation+=keys('SUBMIT CASE\r')+['-itime','0','-iw','SELECTOR BASE','-it',
+                                          '-iw','SELECTOR CHECK','-it',
                                           '-iw','SELECTOR FINISH','-id','3000','-it','-ix']
         (report/'invocation.json').write_text(json.dumps(invocation,indent=2)+'\n')
         run(invocation,cwd=report,timeout=900,check=True)
@@ -56,12 +62,19 @@ def main():
     assert 'RCP.CPX' in text,text
     assert 'A0: SELMARK  TXT' in text and 'NO FILE' in text,text
     assert 'Invalid filespec' in text,text
+    assert 'Selection not supported by resident ERA.' in text,text
+    after_bad=text.rsplit('Invalid filespec.',1)[1]
+    assert 'A0: SELMARK  TXT' in after_bad.split('Selection not supported',1)[0],text
+    after_extended=text.split('Selection not supported by resident ERA.',1)[1]
+    assert 'A0: SELMARK  TXT' in after_extended.split('ERA A0:SELMARK.TXT',1)[0],text
+    assert 'NO FILE' in text.rsplit('DIR A0:SELMARK.TXT',1)[1],text
     (report/'harness.py').write_bytes(Path(__file__).read_bytes())
     (report/'evidence.json').write_text(json.dumps({'result':'PASS','platform':a.platform,
         'carrier_sha256':hashlib.sha256(module).hexdigest(),'no_DIR_transient':True,
         'coverage':['unload/reload','resident DIR','WBOOT after CPX LIST',
                     'user-set iteration','attribute predicates','invalid selectors',
-                    'caller DU restoration']},indent=2)+'\n')
+                    'caller DU restoration','ERA malformed-pattern rejection',
+                    'ERA extended-selection rejection','ERA exact-file deletion']},indent=2)+'\n')
     print('Expanded RCP loading, resident dispatch and WBOOT: PASS')
 
 
