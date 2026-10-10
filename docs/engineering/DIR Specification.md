@@ -4,7 +4,8 @@ Received 2026-10-09. Target contract; the extended transient implementation is
 not yet complete. The first DIR.COM increment now links the qualified shared
 selection implementation independently of RCP. Multi-DU selection and attribute
 predicates work with RCP unloaded. Allocated KiB and per-DU selected totals now
-display; the remaining reporting options and sorting are pending.
+display, and each DU now defaults to ascending filename order. The remaining
+reporting options and explicit sorting switches are pending.
 Explicit :DIR/.DIR works; automatic handoff is still unimplemented.
 
 ## Selection baseline — 2026-10-10
@@ -97,6 +98,34 @@ Private z80pack images remain byte-identical; Model 4 fixture bytes/attributes
 remain unchanged after SUBMIT. Evidence:
 `/private/tmp/dir-sizes-z80pack-final-20261010` and
 `/private/tmp/dir-sizes-model4-final-20261010`.
+
+## Default name sorting — 2026-10-10
+
+DIR.COM now sorts each collected DU independently by ascending normalized
+filename, then extension. Sorting occurs after collection and before display,
+without changing directory search order, issuing BDOS calls or writing the disk.
+Whole 24-byte records move together, preserving all per-file metrics. Equal keys
+retain their original order. Empty and single-file listings require no sorting.
+The sorter stops after a pass with no exchanges and omits the already-sorted
+tail from later passes.
+
+This adds 139 bytes: DIR.COM is 6,153 bytes. No additional per-file workspace is
+needed. Host and native ZSM4/LINK assembly match, and resident code and other
+transient utilities are unchanged. Thirty-six production-binary cases cover
+permutations, equal keys, already-sorted and reversed inputs, extension tie-breaks,
+buffer guards and a 260-file count; complete record identities and totals remain
+unchanged. Collection, capacity and 450 metric cases continue to pass.
+
+Nine public cases pass on z80pack and Model 4 with RCP unloaded. They check
+alphabetical ordering within each DU, extension tie-breaks with different sizes,
+multi-extent de-duplication, filtered totals and caller-DU restoration. Private
+z80pack disks remain byte-identical, and Model 4 fixture content and attributes
+remain unchanged. Evidence: `/private/tmp/dir-name-sort-z80pack-20261010` and
+`/private/tmp/dir-name-sort-model4-20261010`.
+
+The formatter still uses one column. Explicit `/S=N`, reverse ordering, type/size
+sorts and `/S=U` remain pending, along with the other reporting options. The
+specification below continues to describe the final target.
 
 ## Audit clarifications awaiting resolution
 

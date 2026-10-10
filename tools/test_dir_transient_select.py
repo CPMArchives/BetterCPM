@@ -26,7 +26,8 @@ def main():
               ('SELRO.TXT',b'RO\r\n',0,1),('SELSYS.TXT',b'SYS\r\n',0,2),
               ('SELARC.TXT',b'ARC\r\n',0,4),
               ('SIZMULT.DAT',b'M'*40000,0,0),('SIZEMPTY.DAT',b'',0,0),
-              ('SIZMULT.DAT',b'T'*2048,2,0)]
+              ('SIZMULT.DAT',b'T'*2048,2,0),
+              ('SELMIX.COM',b'C'*2048,0,0),('SELMIX.ASM',b'A'*4000,0,0)]
     cases=[
         (':DIR A[0,2]:SEL*.TXT',['A0:','A2:','SELZERO','SELTWO',
                                '3 FILES, 6K TOTAL','1 FILE, 2K TOTAL'],['SELSYS']),
@@ -39,7 +40,14 @@ def main():
                            '2 FILES, 40K TOTAL'],[]),
         ('DIR A[0,2]:SIZMULT.DAT',['A0:','A2:','SIZMULT  DAT  40K',
                                  'SIZMULT  DAT  2K','1 FILE, 40K TOTAL',
-                                 '1 FILE, 2K TOTAL'],[])]
+                                 '1 FILE, 2K TOTAL'],[]),
+        ('DIR A0:SELMIX.*',['SELMIX   ASM  4K','SELMIX   COM  2K',
+                            '2 FILES, 6K TOTAL'],[])]
+    def check_order(output,index):
+        expected={0:['SELARC','SELRO','SELZERO'],3:['SELRO','SELSYS'],
+                  6:['SIZEMPTY','SIZMULT'],8:['SELMIX   ASM','SELMIX   COM']}.get(index,[])
+        positions=[output.index(name) for name in expected]
+        assert positions==sorted(positions),(index,expected,output)
     observations=[]
     if a.platform=='z80pack':
         assert a.image_dir
@@ -77,6 +85,7 @@ def main():
             for value in excluded:assert value not in output,(command,value,output)
             if i==6:assert output.count('SIZMULT  DAT')==1,(command,output)
             if i==7:assert output.count('SIZMULT  DAT')==2,(command,output)
+            check_order(output,i)
             observations.append({'command':command,'result':'PASS'})
         assert all((report/'disks'/name).read_bytes()==data for name,data in before.items())
     else:
@@ -104,6 +113,7 @@ def main():
             for value in excluded:assert value not in output,(command,value,text)
             if i==6:assert output.count('SIZMULT  DAT')==1,(command,output)
             if i==7:assert output.count('SIZMULT  DAT')==2,(command,output)
+            check_order(output,i)
             assert marker(i) in text,(i,text)
             (report/f'case-{i}.txt').write_text(text)
             observations.append({'command':command,'result':'PASS'})
@@ -122,7 +132,7 @@ def main():
     (report/'harness.py').write_bytes(Path(__file__).read_bytes())
     (report/'evidence.json').write_text(json.dumps({'result':'PASS','platform':a.platform,
         'RCP_unloaded':True,'dir_sha256':hashlib.sha256(binary).hexdigest(),'cases':observations},indent=2)+'\n')
-    print('Self-contained DIR selection, predicates, multi-extent sizes and totals: PASS')
+    print('Self-contained DIR selection, sizes, per-DU name sorting and totals: PASS')
 
 
 if __name__=='__main__':main()
