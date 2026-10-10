@@ -1,14 +1,42 @@
 # BetterCP/M 1.0 transient DIR specification
 
 Received 2026-10-09. Target contract; the extended transient implementation is
-not yet complete. Resident DIR is not reopened. Existing DIR.COM remains the
-resident-body fallback until the new transient behavior is implemented and
-qualified. Explicit :DIR/.DIR works; automatic handoff is still unimplemented.
+not yet complete. The first DIR.COM increment now links the qualified shared
+selection implementation independently of RCP. Multi-DU selection and attribute
+predicates work with RCP unloaded; richer display and sorting remain pending.
+Explicit :DIR/.DIR works; automatic handoff is still unimplemented.
+
+## Selection baseline — 2026-10-10
+
+The host and native builders produce a self-contained 5,370-byte DIR.COM from
+the same source used by resident DIR. It includes one copy of the DU map/iterator,
+qualifier splitter, attribute predicate compiler and bounded filespec validator.
+This first build retains the common command body; later reporting work can
+replace that transitional packaging. There is no dependency on a loaded CPX,
+new BDOS service, or protected-memory allocation. RCP and the five other transient
+builds are unchanged by this increment.
+
+The baseline has the existing four-column display, drive/user row prefixes,
+per-DU NO FILE results, and caller-DU restoration. It validates the full operand
+before searching, rejects unsupported drives and malformed selectors, and uses
+*.* for omitted filespecs. Plain selection hides SYS; an explicit attribute
+predicate replaces implicit SYS suppression. This matches the qualified resident
+selector behavior and resolves that selection question for the transient too.
+Sizes, summaries, adaptive columns, paging, attribute display and sort options
+are not implemented yet; the remaining sections specify those future increments.
+
+Native ZSM4/LINK and host assembly match DIR.COM. The native build stages DIR's
+source on B: to keep the three source images within its disposable floppy capacity.
+Six selection cases pass on z80pack and Model 4 with RCP explicitly unloaded,
+including :DIR and .DIR, compound user selection, SYS/ARC/RO predicates, malformed
+wildcards, and invalid user numbers. z80pack disk images remain byte-identical;
+Model 4 fixture content and attributes remain unchanged (SUBMIT's stream changes).
+The test also confirms that the saved Model 4 DIR image matches the tested binary.
+Evidence: `/private/tmp/dir-selector-z80pack-current-20261010` and
+`/private/tmp/dir-selector-model4-20261010`.
 
 ## Audit clarifications awaiting resolution
 
-- Does every explicit attribute predicate replace implicit SYS suppression,
-  including `$RO`, or only predicates explicitly admitting SYS?
 - Proposed exact metrics: K/S are allocated bytes/128-byte records, E counts
   physical directory entries, and size sorting uses allocated bytes.
 - Use actual width to choose 4/2/1 columns. Narrative rules override examples
@@ -18,18 +46,18 @@ qualified. Explicit :DIR/.DIR works; automatic handoff is still unimplemented.
 ## User documentation
 
 The user guide's DIR section contains a polished planned-interface description,
-examples and option reference. It explicitly distinguishes the unchanged resident
-command from unimplemented extended transient behavior. Date-related placeholders
+examples and option reference. It distinguishes implemented selection from
+unimplemented extended transient reporting. Date-related placeholders
 were removed because dates and wheel metadata are outside this 1.0 contract.
-SYS visibility for implicit predicates and precise size metrics remain identified
-as unresolved; the guide does not present them as qualified behavior. Exported
+Precise size metrics remain identified as unresolved; the guide does not present
+them as qualified behavior. Exported
 DOCX/PDF manuals are not regenerated in this documentation increment.
 
 ## Shared implementation dependency
 
 DU selection and qualifier splitting exist. The attribute predicate compiler
-is now implemented as an internal shared component, but is not yet connected
-to public DIR or COPY. It compiles the bounded !/+/comma grammar and attribute
+is implemented and connected to public resident/transient DIR and COPY.
+It compiles the bounded !/+/comma grammar and attribute
 aliases to an eight-state RO/SYS/ARC truth mask. No wheel or date metadata is
 interpreted. See COPY Utility.md for shared-parser qualification.
 
