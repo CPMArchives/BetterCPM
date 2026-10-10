@@ -10,6 +10,7 @@ MODULE_CLASS_CPX = 1
 ABI_MAJOR = 1
 ABI_MINOR = 0
 HEADER_SIZE = 512
+MAX_HEADER_SIZE = 1536
 RELOCATION_OFFSET = 48
 NO_ENTRY = 0xFFFF
 
@@ -61,8 +62,8 @@ def make_module(*, name: str, version: tuple[int, int], commands: list[str],
         if offset != NO_ENTRY and offset >= len(code):
             raise SystemExit(f"invalid CPX {label} offset")
     relocation_end = RELOCATION_OFFSET + 2 * len(relocations)
-    header_size = 512 if relocation_end <= 512 else 1024
-    if relocation_end > header_size:
+    header_size = ((relocation_end + HEADER_SIZE - 1) // HEADER_SIZE) * HEADER_SIZE
+    if header_size > MAX_HEADER_SIZE:
         raise SystemExit("CPX relocation directory exceeds its reserved area")
     metadata = b"".join(c.upper().encode("ascii").ljust(8, b" ")
                         for c in commands)

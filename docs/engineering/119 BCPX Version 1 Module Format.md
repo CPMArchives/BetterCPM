@@ -7,8 +7,11 @@ The `BCX1` proof carrier is superseded by the versioned `BCPX` format. Version
 loader selects an arbitrary eight-character filename stem from the persistent
 reconstruction table and does not identify BASIC or HELLO itself.
 
-The first 512-byte record group contains the structural header and relocation
-directory. Executable code follows at byte 512. Command metadata follows the
+The first 512-byte record group contains the structural header. The relocation
+directory starts there and may extend through subsequent header groups. The
+host builder reserves the smallest 512-byte multiple containing it, currently
+bounded to 512, 1024, or 1536 bytes. Executable code follows at the declared
+header/payload offset. Command metadata follows the
 executable bytes and is not copied into command-environment memory.
 
 ## Version 1 header
@@ -28,8 +31,8 @@ executable bytes and is not copied into command-environment memory.
 | 18 | 2 | initialization offset, or `FFFFh` |
 | 20 | 2 | shutdown offset, or `FFFFh` |
 | 22 | 2 | relocation count |
-| 24 | 2 | header size, currently 512 |
-| 26 | 2 | payload offset, currently 512 |
+| 24 | 2 | header size, builder emits 512, 1024, or 1536 |
+| 26 | 2 | payload offset, equal to header size |
 | 28 | 2 | relocation-directory offset, currently 48 |
 | 30 | 2 | command-metadata offset |
 | 32 | 8 | uppercase, space-padded module name |
@@ -41,7 +44,9 @@ executable bytes and is not copied into command-environment memory.
 
 Each relocation is a little-endian 16-bit offset into the executable image.
 Each command-metadata record is an uppercase, space-padded eight-byte name.
-Version 1 permits at most 232 relocation records in its first header group.
+The first header group holds 232 relocation records; two groups hold 488 and
+three hold 744. The builder rejects larger directories. This extends the host
+builder policy without changing the version-1 field layout or loader ABI.
 
 ## Loader behavior
 
