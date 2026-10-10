@@ -54,6 +54,21 @@ def expand_layout(text: str) -> str:
             ren_start = text.index('BC_REN:')
             ren_end = text.index('BC_RNOQ:', ren_start)
             text = text[:ren_start] + (ROOT / 'src/cpx/ren-select.inc').read_text(encoding='ascii') + text[ren_end:]
+            copy_start = text.index('BC_CPARSE:')
+            copy_end = text.index('BC_COPEN:', copy_start)
+            text = text[:copy_start] + (ROOT / 'src/cpx/copy-select.inc').read_text(encoding='ascii') + text[copy_end:]
+            # Resident commands now use the shared selector/scanner. Keep the
+            # legacy parser and wildcard driver only in transient expansions.
+            text = text[:text.index('BC_COPAR:')] + text[text.index('BC_COPT:'):]
+            text = text[:text.index('BC_CVALID:')] + text[text.index('; Shared bounded 8.3 validator.'):]
+            text = text[:text.index('BC_WSTART:')] + text[text.index('BC_WCMP:'):]
+            text = text.replace('BC_CDSAV', 'BC_DSAVE').replace('BC_CUSAV', 'BC_USAVE')
+            text = text.replace('BC_CSDRV', 'RF_DRIVE').replace('BC_CSUSR', 'RF_USER')
+            text = re.sub(r'^RF_DRIVE:.*COPY source drive.*\n|^RF_USER:.*COPY source user.*\n', '', text, flags=re.MULTILINE)
+            text = re.sub(r'^BC_W(?:FCB|LAST|BEST|NAME):.*\n', '', text, flags=re.MULTILINE)
+            text = re.sub(r'^BC_DSAVE:.*COPY saved drive.*\n|^BC_USAVE:.*COPY saved user.*\n', '', text, flags=re.MULTILINE)
+            text = text.replace('        LD      (BC_CWILD),A\n', '')
+            text = text.replace('        LD      A,(BC_MVFLAG)\n        AND     1\n        LD      (BC_MVFLAG),A\n', '')
         text = text.replace('BC_ERA:                                 ; execute ERA command\n',
             'BC_ERA:                                 ; execute ERA command\n'
             '        CALL    RE_VALIDATE\n        JP      C,RE_REJECT\n', 1)
