@@ -37,6 +37,25 @@ bounded filespec code is already shared among RCP handlers and must be refactore
 for common use rather than duplicated. The current qualifier splitter's failure
 position also needs attention when assembling the combined error contract.
 
+## Qualifier error-position prerequisite
+
+The shared qualifier splitter now exposes `OQ_ERRPTR` without changing its
+existing restored-HL calling convention. Success clears the pointer. Failure
+points to the offending byte; a missing closing bracket points immediately past
+the input. A suffix after `]` points to the first suffix byte. Failed calls still
+clear qualifier pointer/length, and a subsequent successful call clears stale
+diagnostics. The combined wrapper must translate this pointer to its operand
+error position and clear its complete result; the splitter alone does not clear
+the DU map.
+
+This adds 14 bytes to RCP (4,814 executable bytes, still 4,864 allocated bytes),
+with 547 relocations. The shared source also adds 14 bytes to COPY.COM (10,320
+bytes); COPY's existing callers retain their behavior. No BDOS change is involved.
+Exact malformed/truncated error positions and success-after-failure were tested
+in COPY and at three relocated RCP origins. DU, attribute, carrier-format, COPY
+filespec, mapping and reporting regressions pass. This prerequisite does not
+complete the transactional wrapper or migrate any resident command.
+
 A larger shared parser does not by itself implement multi-DU COPY: its frozen
 batch/preflight storage and operation contract require separate accounting.
 Other modifying commands also need their own protection and preflight contracts.

@@ -22,6 +22,8 @@ def main():
         original=c.hl
         c.run(addr('OQ_SPLIT'),limit=10000)
         assert c.hl==original,text
+        error=c.word(addr('OQ_ERRPTR'))
+        assert (original<=error<=0x7000+len(text)) if c.carry else error==0,text
         assert bytes(c.mem[addr('DU_MAP'):addr('DU_MAP')+64])==bitmap,text
         ptr,length=c.word(addr('OQ_PTR')),c.mem[addr('OQ_LEN')]
         return c,bytes(c.mem[c.hl:c.hl+c.b]).decode(),bytes(c.mem[ptr:ptr+length]).decode()
@@ -51,6 +53,15 @@ def main():
     value='F.COM[$ARC+!$SYS]'
     for end in range(value.index('[')+1,len(value)):
         c,_,_=execute(value[:end]); assert c.carry,value[:end]
+        assert c.word(addr('OQ_ERRPTR'))==0x7000+end,value[:end]
+    for text,position in [('F[]',2),('F]',1),('F[[$RO]]',2),
+                          ('F[$RO]X',6),('F[$RO ]',5),('F[$RO][$SYS]',6)]:
+        c,_,_=execute(text)
+        assert c.carry and c.word(addr('OQ_ERRPTR'))==0x7000+position,text
+    # A failed call must not leave a stale diagnostic after a successful call.
+    c.hl,c.b=0x7000,1
+    c.run(addr('OQ_SPLIT'),limit=10000)
+    assert not c.carry and c.word(addr('OQ_ERRPTR'))==0
     # Maximum command-tail length cannot overrun the next byte.
     c,body,q=execute('F['+'X'*123+']')
     assert not c.carry and body=='F' and q=='X'*123

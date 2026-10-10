@@ -4,8 +4,13 @@
 ; No block: pointer/length zero. Empty filespec is legal for destination DU-only.
 ; CF set rejects empty/unclosed/nested blocks, stray ] or suffix after ].
 ; No whitespace is admitted within brackets. Semantic expression parsing follows.
+; OQ_ERRPTR is zero on success; on failure it locates the offending byte,
+; or the first byte beyond the operand for a missing closing bracket.
+; HL still returns unchanged for existing callers.
 OQ_SPLIT:
         XOR A
+        LD (OQ_ERRPTR),A
+        LD (OQ_ERRPTR+1),A
         LD (OQ_LEN),A
         LD (OQ_PTR),A
         LD (OQ_PTR+1),A
@@ -54,7 +59,10 @@ OQ_CLOSE:
         JR Z,OQ_BAD
         LD (OQ_LEN),A
         DEC B
-        JR NZ,OQ_BAD
+        JR Z,OQ_SUCCESS
+        INC HL                         ; first suffix byte, not the closing ]
+        JR OQ_BAD
+OQ_SUCCESS:
         LD A,(OQ_BASE)
         LD B,A
         POP HL
@@ -66,6 +74,7 @@ OQ_DONE:
         OR A
         RET
 OQ_BAD:
+        LD (OQ_ERRPTR),HL
         XOR A
         LD (OQ_LEN),A
         LD (OQ_PTR),A
@@ -76,3 +85,4 @@ OQ_BAD:
 OQ_PTR: DW 0
 OQ_LEN: DB 0
 OQ_BASE: DB 0
+OQ_ERRPTR: DW 0
