@@ -29,7 +29,8 @@ def expand_layout(text: str) -> str:
         predicate = predicate[:predicate.index('; Destination modification list:')]
         selector = ('DU_MAP: DS 64\nDU_WORK: DS 12\n' +
                     (common / 'duselect.inc').read_text(encoding='ascii') +
-                    (common / 'operandqual.inc').read_text(encoding='ascii') + predicate)
+                    (common / 'operandqual.inc').read_text(encoding='ascii') + predicate +
+                    (common / 'rcpselect.inc').read_text(encoding='ascii'))
         text = text.replace('; @rcp-shared-selector@', selector)
 
     order = (1,3,5,7,9,2,4,6,8,10)
