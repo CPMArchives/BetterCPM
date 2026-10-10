@@ -172,6 +172,7 @@ def dir_source() -> str:
         "        CSEG\n        .PHASE  ", "        ASEG\n        ORG     ").replace(
         "        .DEPHASE\n", "")
     text = expand_layout(text)
+    text = text.replace('        CALL DU_NEXT\n        JP C,BC_DURST', '        CALL DU_NEXT\n        JP C,DX_FINISH', 1)
     text = text.replace('        CALL FS_PARSE\n        JP C,BC_DBAD\n',
                         '        CALL DP_PARSE\n        JP C,DP_REJECT\n', 1)
     text = text.replace('BC_DIR:\n', 'BC_DIR:\n        LD (DG_STACK),SP\n        PUSH HL\n        PUSH BC\n'
@@ -187,6 +188,8 @@ def dir_source() -> str:
     options = (ROOT / 'src/utilities/dir-options.inc').read_text(encoding='ascii')
     paging = (ROOT / 'src/utilities/dir-paging.inc').read_text(encoding='ascii')
     columns = (ROOT / 'src/utilities/dir-columns.inc').read_text(encoding='ascii')
+    free = (ROOT / 'src/utilities/common/diskfree.inc').read_text(encoding='ascii')
+    free += (ROOT / 'src/utilities/dir-free.inc').read_text(encoding='ascii')
     start = text.index('BC_PCHAR:')
     end = text.index('  ; DIR accepts', start)
     text = text[:start] + 'BC_PCHAR:\n        JP DG_CHAR\n\n' + text[end:]
@@ -223,7 +226,7 @@ DT_TOTAL: DS 12
     decimal = decimal[decimal.index('CTR_DEC:\n'):decimal.index('CTR_RUN:')]
     decimal = decimal.replace('CTR_', 'DTD_')
     decimal += 'DTD_NUM: DS 4\nDTD_DIG: DS 10\nDTD_PTR: DW 0\nDT_BUFFER:\n'
-    return text.replace('        END\n', hook + options + metrics + paging + columns + decimal + '\n        END\n', 1)
+    return text.replace('        END\n', hook + options + metrics + paging + columns + free + decimal + '\n        END\n', 1)
 
 
 def main() -> None:

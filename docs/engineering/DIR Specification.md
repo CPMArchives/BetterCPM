@@ -307,6 +307,40 @@ Column evidence: `/private/tmp/dir-columns-z80pack-20261010` and
 `/private/tmp/dir-columns-paging-z80pack-20261010` and
 `/private/tmp/dir-columns-paging-model4-20261010`.
 
+## Drive-free-space increment — implemented
+
+After all selected DU sections, DIR prints one `drive: nK FREE` footer per
+selected drive, in drive order. This separate footer also serves a single DU;
+it avoids implying that user areas have separate space pools. Empty matches
+still receive the selected-drive footer. Free space always uses KiB, independent
+of `/Z=S`; selected file counts/sizes retain their DU-level meaning.
+
+The transient asks BDOS for each selected drive's live DPB and allocation vector
+only after Search Next has finished. A pure shared-source helper counts clear
+allocation bits through inclusive DSM, ignores padding bits, and scales by BSH
+into a DWORD KiB result. It neither alters the allocation vector nor changes
+filesystem metadata. The normal exit restores caller DU; paging also covers
+footers, with the existing Ctrl-C restoration path. Early errors and aborts do
+not print success footers.
+
+DIR.COM is 7,585 bytes (+204), SHA-256
+`8547e20f9ab2581d7f43625e034e0387b4f01b7a1f5c1317ea04f44c59f4eab0`.
+BDOS, BIOS, CCP, RCP and other utility binaries are unchanged. Native ZSM4/LINK
+output is byte-identical. Focused arithmetic covers 165 cases: empty/full/mixed
+vectors, MSB-first order, inclusive DSM, partial final bytes, 65,536 blocks and
+DWORD scaling. The test CPU now implements INC (HL)'s zero flag and SLA (HL),
+needed to exercise the count and scale instructions accurately.
+
+All 43 existing public z80pack cases pass. Four new drive-summary cases pass
+on both z80pack and Model 4. They verify
+single DU, several users on one drive, several drives and empty matches, with
+exact free counts and no redundant footers. z80pack counts are checked against
+cpmtools; Model 4 counts are independently calculated from directory allocation
+blocks, including SUBMIT's live command-stream allocation on A0. Model 4 A
+uses SYSTEM media and B uses DATA media to match their configured bindings.
+Evidence: `/private/tmp/dir-free-z80pack-20261010b` and
+`/private/tmp/dir-free-model4-20261010b`.
+
 ## Audit clarifications awaiting resolution
 
 - K/S use allocated KiB/128-byte records; size sorting uses allocated space.
