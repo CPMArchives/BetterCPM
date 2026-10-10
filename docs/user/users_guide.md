@@ -1152,32 +1152,41 @@ This illustrates a broader BetterCP/M design principle: the utilities expose suf
 
 #### 4.3 REN — Rename Files
 
-Changes the name or file type of a file.
+Resident `REN` renames files in place:
 
-`REN` is available as both a resident command and a transient program. The
-resident version supports the standard CP/M 2.2 `REN` syntax:
-
-    REN newname=oldname
-    REN DU:newname=oldname
+    REN template=source
 
 Examples:
 
-    A>REN NEW.TXT=OLD.TXT
-    A>REN PROGRAM.COM=PROGRAM.OLD
-    A>REN B:FINAL.ASM=DRAFT.ASM
-    A>REN B3:NEW.DAT=OLD.DAT
+    REN NEW.TXT=B3:OLD.TXT
+    REN *.TXT=B[-]:*.DOC
+    REN X?*.BAK=[A3,B5]:*.DOC[$RW]
 
-The old and new names refer to files in the same drive/user area. `REN` changes
-the directory entry for the file; it does not copy the file to another drive
-or user area. Use `MOVE` when a file is to be moved to another location.
+The source accepts the shared DU selectors, bounded wildcards and attribute
+expressions. The template must contain only a filename pattern, with no drive
+or user qualifier. Each result remains in its source DU; use COPY or MOVE to
+change locations.
 
-In addition to the above, the transient `REN.COM` provides extended rename
-functions.
+Template literals replace the corresponding filename positions. `?` copies
+one source position, and a terminal `*` copies the remainder of that field.
+Name and extension are separate fields. Repeated terminal stars are equivalent
+to one star; characters following a star run are invalid. The historical `_`
+separator is also accepted when no `=` is present.
 
-##### Transient REN Syntax
+Before renaming anything, REN checks the complete selection. Invalid generated
+names, duplicate targets within a DU, existing target files, and read-only
+files or drives reject the operation. Another selected source is also an
+existing target: rename chains and swaps are rejected. Identical target names
+in different DUs are permitted. A file mapped to its own name is unchanged.
+System files are included unless an attribute expression excludes them.
 
-[TBD — final `REN.COM` syntax and options will be added when the BetterCP/M
-1.0 transient REN interface is finalized.]
+REN preserves contents and attributes and restores the caller's DU. An
+unexpected failure during execution stops the command; previously completed
+renames are not rolled back.
+
+##### Transient REN
+
+The extended transient REN interface remains to be finalized and implemented.
 
 
 #### 4.4 TYPE — Display a File
