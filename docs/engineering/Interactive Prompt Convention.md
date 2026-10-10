@@ -64,6 +64,30 @@ standardize wording. The convention does not require adding retry/skip/abort
 recovery to current COPY read/write errors, which already have qualified cleanup
 and continuation/stop policies.
 
+## COPY prompt-context retrofit — 2026-10-10
+
+The initial audit found existing help actions; a subsequent source review found
+that their reprompts printed the choices without repeating the filename pair.
+Collision help now returns to CTPROMPT rather than CTASK, with no byte growth.
+Verification help calls CTPAIR before its existing reprompt, adding three bytes
+to COPY.COM. The prompt strings, help strings, action choices, and operation
+policies are unchanged. No BIOS, BDOS, CCP, or RCP allocation grows.
+
+COPY.COM is now 10,306 bytes, SHA-256
+`856f62904ace57feab13cccbc1587e4ca7103abacc3935e4b5f46667a5df93cd`.
+The earlier frozen campaign remains evidence for its recorded 10,303-byte binary;
+targeted prompt regression tests qualify this small subsequent change.
+The z80pack interactive and verification-flow suites explicitly check that both
+help and invalid-response paths repeat the correct filename pair. They also
+retain copy-policy, data-preservation, cleanup and noninteractive checks.
+
+Both z80pack suites passed. Model 4 interactive-choices, verify-skip and
+verify-abort also passed, with saved screens independently checked for the
+filename pair immediately after help. Evidence is preserved in
+`/private/tmp/copy-help-bundle-20261010`; all 209 files passed manifest size/hash
+verification. Manifest SHA-256:
+`80888e7094e3e83e7d0c5cd9aa5c81d68674e7e86d05e0aae36245345ad29887`.
+
 ## Qualification requirements for future implementations
 
 Check that `?` and repeated `?` print help and reprompt for the same item without

@@ -7,7 +7,9 @@ current closure in [COPY implementation and qualification record](COPY%20Utility
 
 Existing collision and verification inline help is retained under the
 [interactive prompt convention](Interactive%20Prompt%20Convention.md). That
-convention does not add new COPY recovery actions or change its qualified behavior.
+convention does not add new COPY recovery actions. The prompt-context correction
+repeats the source/destination pair after help; copy and recovery policies remain
+unchanged.
 
 The common COPY implementation qualified in PR #164 predates this consolidated
 contract. The first subsequent increment implements plain `destination=source`

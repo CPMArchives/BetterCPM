@@ -522,7 +522,7 @@ Because an interrupted disk operation can leave an operation incomplete, avoid a
 #### 3.10 Inline Help at Interactive Prompts
 
 When an interactive prompt offers several abbreviated actions, `?` may display
-a short explanation and repeat the prompt for the same item. Asking for help
+a short explanation and repeat the prompt, including its file context, for the same item. Asking for help
 does not retry, skip, abort, or change the command's current policy.
 
 For example, COPY's collision prompt offers `Y/N/O/S/R/?`. Enter `?` to see
@@ -749,14 +749,330 @@ Examples:
 The file specification may contain the standard CP/M `?` and `*` wildcard
 characters. When wildcards are used, all matching files are erased.
 
-In addition to the above, the transient `ERA.COM` provides extended file
-selection and erase functions.
+##### Planned transient ERA.COM
 
-##### Transient ERA Syntax
+The following interface is the agreed target for the expanded ERA.COM. It is
+not yet implemented; today's resident/basic transient command does not offer
+these options. The implementation contract is recorded in
+[ERA Specification](../engineering/ERA%20Specification.md).
 
-[TBD — final `ERA.COM` syntax and options will be added when the BetterCP/M
-1.0 transient ERA interface is finalized.]
 
+`ERA` removes files from disk.
+
+BetterCP/M ERA extends the traditional CP/M command with multi-DU selection, attribute selection, confirmation controls, read-only protection, and an optional destructive erase.
+
+Basic syntax:
+
+```text
+ERA [options] filespec[attributes]
+```
+
+Examples:
+
+```text
+ERA OLD.DOC
+ERA *.BAK
+ERA B[-]:*.DOC
+ERA B[-]:*.DOC[$ARC]
+```
+
+---
+
+##### Ordinary erase
+
+For one exact file:
+
+```text
+ERA TOM.DOC
+```
+
+ERA asks:
+
+```text
+TOM.DOC - Erase? Y/N
+```
+
+For a set of files, ERA shows what it intends to erase before doing anything:
+
+```text
+THE FOLLOWING FILES WILL BE ERASED:
+
+OLD1.BAK     OLD2.BAK     TEST.BAK     TEMP.BAK
+SAVE.BAK     JUNK.BAK
+
+6 FILES, 27K TOTAL
+
+ERASE THESE FILES? Y/N
+```
+
+Large lists are displayed in multiple columns and paged automatically:
+
+```text
+MORE -- Space/ENTER for next page.
+```
+
+---
+
+##### Selecting files
+
+ERA supports BetterCP/M DU selectors:
+
+```text
+ERA B[1,3,8-10]:*.DOC
+ERA B[-]:*.BAK
+ERA [A0,B[3-5],C[-]]:*.TMP
+```
+
+It also supports attribute qualifiers:
+
+```text
+ERA *.DOC[$ARC]
+ERA *.DOC[$SYS+$ARC]
+ERA *.DOC[$RO+$ARC]
+```
+
+Attribute operators are:
+
+```text
+!    NOT
++    AND
+,    OR
+```
+
+Examples:
+
+```text
+[$ARC+!$SYS]
+[$RW,$RO]
+```
+
+---
+
+##### Protected files
+
+ERA deliberately protects SYS and read-only files.
+
+A normal broad erase does not casually erase protected files.
+
+To select SYS files deliberately:
+
+```text
+ERA *.DOC[$SYS]
+```
+
+To select archived SYS files:
+
+```text
+ERA *.DOC[$SYS+$ARC]
+```
+
+Read-only files require additional authorization.
+
+To select them:
+
+```text
+ERA *.DOC[$RO]
+```
+
+To authorize their erasure without the read-only protection step:
+
+```text
+ERA /R *.DOC[$RO]
+```
+
+`/Y` does **not** imply `/R`.
+
+That distinction is deliberate.
+
+---
+
+##### Options
+
+###### `/D` — destructive erase
+
+```text
+ERA /D SECRET.DAT
+```
+
+overwrites the file's allocated data with zeroes and then destroys the residual directory metadata.
+
+For multiple files ERA warns:
+
+```text
+THE FOLLOWING FILES WILL BE DESTRUCTIVELY ERASED:
+```
+
+and finally:
+
+```text
+DESTRUCTIVELY ERASE THESE FILES? THIS IS UNRECOVERABLE. Y/N
+```
+
+Destructive erase is transient-only. It is not described as cryptographic secure erase. If a data overwrite fails, directory entries remain identifiable, but file data may be partially zeroed. Only successful overwrite and directory scrubbing count as destructive erasure.
+
+---
+
+###### `/Y` — assume Yes
+
+```text
+ERA /Y *.BAK
+```
+
+performs the operation without the manifest or ordinary confirmation prompts. It also skips RO files unless `/R` authorizes their erasure, and never pauses for failure recovery.
+
+Useful in SUBMIT files.
+
+`/Y` does not override read-only protection.
+
+To erase deliberately selected RO files unattended:
+
+```text
+ERA /Y /R *.BAK[$RO]
+```
+
+---
+
+###### `/R` — allow read-only erase
+
+```text
+ERA /R *.BAK[$RO]
+```
+
+authorizes erasure of selected read-only files.
+
+Without `/R`, explicitly selected read-only files require a separate per-file authorization. Under `/Y`, they are skipped instead. `/R` does not broaden the selector.
+
+---
+
+###### `/Q` — quiet
+
+```text
+ERA /Q *.BAK
+```
+
+suppresses the filename listing and ordinary informational output, but does not suppress required interaction.
+
+Thus the command still asks:
+
+```text
+ERASE THESE FILES? Y/N
+```
+
+For fully unattended quiet operation:
+
+```text
+ERA /Y /Q *.BAK
+```
+
+---
+
+###### `/C` — confirm each file
+
+```text
+ERA /C *.DOC
+```
+
+first performs the ordinary group confirmation, then asks about each erasable file:
+
+```text
+BOB.TXT Y/N
+FRED.COM Y/N
+```
+
+Protected files which ERA is not authorized to erase are skipped rather than turned into ordinary `/C` questions.
+
+With `/R`, selected RO files participate normally in `/C`. `/Y` suppresses `/C` confirmations; `/Q` does not.
+
+---
+
+##### Errors
+
+If an erase operation fails interactively:
+
+```text
+ERA TOM.DOC - Failed. R/S/A/?
+```
+
+Enter:
+
+```text
+R    Retry
+S    Skip
+A    Abort all
+?    Show help
+```
+
+Entering `?` displays:
+
+```text
+R Retry, S Skip, A Abort all.
+```
+
+and repeats the prompt.
+
+With `/Y`, ERA never pauses for this recovery menu; it reports the failed file, skips it, and continues when safe.
+
+---
+
+##### Completion summary
+
+ERA finishes with a compact summary:
+
+```text
+12 FILES ERASED, 2 SKIPPED, 1 FAILED, 47K FREED
+```
+
+For destructive erase:
+
+```text
+12 FILES DESTRUCTIVELY ERASED, 2 SKIPPED, 1 FAILED, 47K FREED
+```
+
+`FREED` is actual allocated disk space released, not logical file length.
+
+`/Q` suppresses this normal summary. Zero-valued categories are omitted; skipped and failed files contribute nothing to `FREED`. No qualifying files reports `NO FILE` without confirmation.
+
+---
+
+##### Archiving files and then deleting the originals
+
+ARC denotes changed since last backup. The following cleanup selects files whose ARC bit is set; it does not prove those files were copied successfully.
+
+After confirming every selected file was successfully copied, the planned cleanup sequence is:
+
+```text
+COPY B[-]:*.*[$ARC] D0:
+ERA    B[-]:*.*[$ARC]
+ERA    B[-]:*.*[$SYS+$ARC]
+ERA /R B[-]:*.*[$RO+$ARC]
+```
+
+The separate ERA commands are intentional.
+
+ERA's SYS and RO protections are not weakened merely to make every protected case fit into one command line.
+
+---
+
+##### Backing up files while retaining the originals
+
+The convenient form is:
+
+```text
+COPY /BACKUP B[-]:*.DOC[$ARC] D0:
+```
+
+`/BACKUP` clears ARC on both source and destination only after successful copy/close and any requested verification. Add `/V` when verification is wanted; `/BACKUP` does not imply it.
+
+A future STAT ARC-clearing operation could provide a manual source-side workflow. The following STAT syntax is proposed and is not currently implemented:
+
+```text
+COPY B[-]:*.DOC[$ARC] D0:
+STAT B[-]:*.DOC[$ARC] !$ARC
+```
+
+This would clear source ARC only, unlike `/BACKUP`, which clears source and destination ARC. Use such a manual step only after checking every selected source was successfully copied; a partial or skipped batch must not be followed by clearing the entire source selection.
+
+This illustrates a broader BetterCP/M design principle: the utilities expose sufficiently general primitives that higher-level workflows can be composed from ordinary commands.
 
 #### 4.3 REN — Rename Files
 

@@ -152,6 +152,7 @@ CVVANS:
         JR Z,CVVSKIP
         LD DE,CVVHELP
         CALL BC_PRINT
+        CALL CTPAIR                    ; retain item context when repeating the prompt
         JR CVVASK
 CVVABORT:
         CALL CVVDEL
