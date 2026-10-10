@@ -580,15 +580,30 @@ field. Adjacent terminal stars are equivalent to one star. `F?*.DAT` and
 `F***.DAT` are valid; `F*A.DAT` and `F**?.DAT` report `Invalid filespec.`
 Characters cannot follow a star run within the same field.
 
+Resident DIR also accepts compound DU selections and attribute predicates:
+
+```text
+DIR A[0,2]:*.COM
+DIR [A0,B3]:*.DOC[$RW]
+DIR B[-]:*.COM[$ARC+!$SYS]
+```
+
+The full selection is checked before searching. Each selected DU is listed
+separately, with a drive/user prefix such as `B3:`. The original drive and user
+are restored when DIR finishes. Plain DIR hides SYS files; an explicit attribute
+expression controls inclusion of SYS files as well. The current platform
+bindings permit drives A: through D:; an unsupported drive rejects the complete
+selection. Empty locations report `NO FILE` individually.
+
 ##### Planned transient DIR.COM
 
 **The following is the accepted 1.0 interface design, not functionality
 currently available in DIR.COM.** Implementation and qualification will follow
 completion of COPY. Resident DIR retains its traditional four-column display,
-with no sorting, sizes, attributes or summaries.
+with no sorting, sizes, attribute display or summaries.
 
-Transient DIR will add size reporting, sorting, attribute selection/display,
-paging and searches across multiple drive/user areas. It will not display or
+Transient DIR will add size reporting, sorting, attribute display and paging.
+It will not display or
 filter dates, timestamps or wheel-protection attributes in 1.0.
 
 ```text

@@ -2,7 +2,7 @@
 
 Status: common DU/qualifier/predicate components linked and qualified in RCP on
 2026-10-10. The combined transactional parser is implemented and tested;
-resident command migration remains pending. This work precedes expanded DIR.COM
+resident DIR uses the interface; other command migrations remain pending. This work precedes expanded DIR.COM
 implementation.
 
 ## Placement and scope
@@ -91,6 +91,34 @@ in every stage. Existing DU, qualifier, predicate, carrier and COPY filespec
 checks pass. Evidence: `/private/tmp/rcp-selector-transaction-pass-20261010`.
 Resident DIR is the next consumer; this increment does not yet expose the expanded
 syntax through a command handler.
+
+## First consumer: resident DIR
+
+The RCP-only build replaces DIR's single-DU setup with `dir-select.inc`, leaving
+the current transient fallbacks unchanged. DIR parses the complete operand before
+selecting a location, rejects any drive beyond the current A:–D: bindings before
+iteration, and searches each selected DU through the shared iterator. A separate
+index survives BDOS calls. It restores the original DU after success or errors.
+
+Each output row now identifies the drive and user (`A0:`, `B3:`, etc.). The existing
+four-column display and physical-extent grouping remain. An empty matching scope
+reports NO FILE per DU. Attribute predicates run against the three directory bits.
+Without a qualifier SYS files retain their traditional hidden behavior; with an
+explicit qualifier the predicate determines inclusion, including SYS files.
+No sorting, size reporting, paging or command-specific display options are added.
+
+RCP measures 5,234 executable bytes, 5,376 allocated bytes (+256 reclaimable),
+605 relocations, and a 6,842-byte carrier. Native and host assembly match. BDOS
+is unchanged and all six transient fallback binaries remain unchanged. Relocated
+predicate tests cover five masks across all eight attribute states at three
+origins. The z80pack native lifecycle test includes populated users 0 and 2,
+filter exclusion, malformed predicates and atomic unsupported-drive rejection.
+The Model 4 test uses the same commands (user 2 is empty there). SUBMIT test scripts
+escape literal dollar signs as `$$`, rather than invoking parameter substitution.
+Both native platform runs passed, including unload/reload and WBOOT with DIR.COM
+absent. Evidence is retained in `/private/tmp/rcp-dir-native-z80pack-20261010`,
+`/private/tmp/rcp-dir-native-model4-captures-20261010`, and
+`/private/tmp/rcp-dir-relocated-20261010`.
 
 A larger shared parser does not by itself implement multi-DU COPY: its frozen
 batch/preflight storage and operation contract require separate accounting.

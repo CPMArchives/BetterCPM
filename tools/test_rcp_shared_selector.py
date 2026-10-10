@@ -90,6 +90,14 @@ def main():
             c.mem[a('BC_MVFLAG')]=0;c.run(a('BC_CVALID'),limit=10000)
             assert (not c.carry)==valid,text
         results.append({'base':base,'result':'PASS','iterator_positions':512})
+        for mask in (0,255,0x30,0xEE,0xAA):
+            for state in range(8):
+                c=cpu(base,'')
+                c.setword(a('BC_DIREP'),0x2100)
+                for bit in range(3):c.mem[0x2109+bit]=128 if state&(1<<bit) else 0
+                c.mem[a('FS_MASK')]=mask
+                c.run(a('RD_FILTER'),limit=10000)
+                assert c.carry==bool(mask&(1<<state)),(base,mask,state)
         for text,pairs,filename,mask in [
             ('',[(1,2)],'???????????',255),
             ('F?*.DAT[$ARC+!$SYS]',[(1,2)],'F???????DAT',0x30),
