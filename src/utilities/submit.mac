@@ -23,6 +23,7 @@ BDOS            EQU     0005H
 ; -------------------------------------------------------------------------------
 
 SU_START:                               ; enter SUBMIT utility
+        CALL    UV_CHECK                ; standalone utility identity
         LD      SP,SU_STACK
         XOR     A
         LD      (SU_OUTLIVE),A
@@ -592,5 +593,7 @@ SU_OUTLIVE:     DB      0               ; output-file live flag
                 ENDM
 
 SU_STACK:                               ; private SUBMIT stack
+; @utility-version SUBMIT@
+
         .DEPHASE
         END

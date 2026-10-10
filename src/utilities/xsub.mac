@@ -25,6 +25,7 @@ RSXFUNC         EQU     177
 ; -------------------------------------------------------------------------------
 
 XS_START:                               ; enter XSUB installer
+        CALL    UV_CHECK                ; standalone utility identity
   ; Preserve the CCP's transient return frame. Function 177 temporarily moves
   ; its own manager frame, and the CCP must reconstruct the newly committed
   ; chain before BATCHIO receives another public BDOS call.
@@ -96,5 +97,7 @@ XS_REQUEST:     DB      2,3,0,0,'BATCHIO ',0,0,0,0,0,0 ; Function-177 request
 XS_ALREADY:     DB      13,10,'Xsub Already Present','$' ; already-active message
 XS_LOADERR:     DB      13,10,'Xsub Load Error','$' ; load-failure message
 XS_END:                                 ; end of caller-owned program image
+; @utility-version XSUB@
+
         .DEPHASE
         END

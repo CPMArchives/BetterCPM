@@ -1794,3 +1794,20 @@ An explicit filename or pattern is required after an extended selector.
 only: attribute options and drive-wide commands such as `DSK:` and `=R/O`
 are rejected. Conventional single-DU STAT commands retain their existing
 behavior and output.
+
+### Utility version identification
+
+Use `/VER` by itself to identify a BetterCP/M utility:
+
+```text
+A0>DIR /VER
+BetterCP/M DIR 1.0 (Resident, RCP Build 001)
+A0>:DIR /VER
+BetterCP/M DIR 1.0 (Build 001)
+```
+
+The resident line identifies the installed RCP package. The force-transient `:DIR` form identifies DIR.COM. Transient utilities omit “Transient” from their output. Other examples include `STAT /VER`, `COPY /VER`, and `TIME /VER`.
+
+Version identifies the release; build identifies its particular executable revision. Each utility has an independent build sequence, while resident commands share the RCP sequence. Build numbers continue across version changes and do not advance merely because the same source is rebuilt.
+
+`/VER` prints the identity and exits without carrying out the command. Do not combine it with filespecs or other options; such combinations report `Invalid /VER usage.` Existing CPX/RSX `/V` reports facility versions and remains a separate option. This convention applies to BetterCP/M-owned utilities, not adopted third-party programs.

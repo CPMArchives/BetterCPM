@@ -8,6 +8,8 @@ import subprocess
 import tempfile
 from pathlib import Path
 
+from system_layout import expand_layout
+
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/utilities/time.mac"
 BUILD = ROOT / "build/utilities"
@@ -19,7 +21,7 @@ def main() -> None:
                         default=Path("/Users/nathanael/bin/z80asm"))
     args = parser.parse_args()
     BUILD.mkdir(parents=True, exist_ok=True)
-    text = SOURCE.read_text(encoding="ascii").replace(
+    text = expand_layout(SOURCE.read_text(encoding="ascii")).replace(
         "        CSEG\n", "        ASEG\n").replace(
         "        .PHASE  0103H\n", "        ORG     0103H\n").replace(
         "        .DEPHASE\n", "")

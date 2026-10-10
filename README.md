@@ -50,6 +50,7 @@ CONFIG, DUP, SYSBUILD, and SYSGEN provide the implemented configuration, disk-ma
 The default memory configuration accepts a maximum record-aligned 53 KiB `.COM` image (54,272 bytes).
 
 Subsystems are versioned independently. See [`specifications/SUBSYSTEM-VERSIONING.md`](specifications/SUBSYSTEM-VERSIONING.md) and the authoritative assignments in [`metadata/subsystem-versions.tsv`](metadata/subsystem-versions.tsv).
+Utility `/VER` output and independent build counters are defined in [`specifications/UTILITY-VERSIONING.md`](specifications/UTILITY-VERSIONING.md), with assignments in [`metadata/utility-versions.tsv`](metadata/utility-versions.tsv).
 
 ## BetterCP/M 1.0
 

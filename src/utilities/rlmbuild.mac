@@ -27,7 +27,8 @@ LINKBASE EQU    0BB00H
 ; Input Image Setup
 ; -------------------------------------------------------------------------------
 
-START:  LD      SP,03F00H               ; enter CCP relocatable-module builder
+START:  CALL    UV_CHECK
+        LD      SP,03F00H               ; enter CCP relocatable-module builder
         LD      DE,BANNER
         CALL    PRINT
         LD      HL,BASEBUF
@@ -349,4 +350,6 @@ RELOCS: DW 0                            ; relocation entry count
 OLDWORD:DW 0                            ; base linked word
 
 EXPECT: DW 0                            ; expected alternate linked word
+; @utility-version RLMBUILD@
+
         END

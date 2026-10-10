@@ -9,6 +9,7 @@
         ASEG
         ORG 0100H
 FDBMODE EQU 1
+        CALL    UV_CHECK                ; standalone utility identity
         LD SP,04000H
         CALL INIT
         LD B,0
@@ -1630,4 +1631,6 @@ MFM:    DB 0                            ; mfm
 STRPTR: DW 0                            ; strptr
         INCLUDE disk/common.inc
         INCLUDE disk/fdbread.inc
+; @utility-version DUP@
+
         END

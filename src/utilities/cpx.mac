@@ -27,6 +27,7 @@ FCB2            EQU     006CH
 ; -------------------------------------------------------------------------------
 
 START:                                  ; enter CPX manager
+        CALL    UV_CHECK                ; standalone utility identity
         LD      SP,STACKTOP             ; protect nested control/print calls
         LD      A,(CMDLEN)
         LD      B,A
@@ -389,6 +390,8 @@ STACK:                                  ; private transient stack
         ENDM
 
 STACKTOP:                               ; initial private stack pointer
+
+; @utility-version CPX@
 
         .DEPHASE
         END     START

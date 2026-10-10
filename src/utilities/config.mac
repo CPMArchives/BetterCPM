@@ -9,6 +9,7 @@
         ASEG
         ORG 0100H
 FDBMODE EQU 1
+        CALL    UV_CHECK                ; standalone utility identity
         LD SP,04000H
         CALL INIT
         CALL FDBLOAD
@@ -1654,4 +1655,6 @@ STSUBBUF:DS 128                         ; one counted submitted command
         INCLUDE disk/sysgen.inc
         INCLUDE disk/common.inc
         INCLUDE disk/fdbread.inc
+; @utility-version CONFIG@
+
         END
