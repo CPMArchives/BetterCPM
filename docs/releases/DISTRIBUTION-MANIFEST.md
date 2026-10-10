@@ -1,6 +1,6 @@
 # BetterCP/M Distribution Manifest
 
-Status: authoritative manifest in progress.  
+Status: authoritative manifest in progress.
 Established by the maintainer, 2026-10-10.
 
 This document determines distribution membership. Development-disk contents and
