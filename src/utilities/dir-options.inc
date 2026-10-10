@@ -8,6 +8,7 @@ DP_PARSE:
         LD (DP_HAS),A
         LD (DP_ALEN),A
         LD (DN_REV),A
+        LD (DT_SHOWATTR),A
         LD A,'N'
         LD (DN_MODE),A
         CALL FS_CLEAR
@@ -78,6 +79,8 @@ DP_OPTION:
         LD A,1
         LD (DP_ERROR),A
         LD A,(DP_LEN)
+        CP 2
+        JR Z,DP_ATTR
         CP 4
         JR Z,DP_FORM
         CP 5
@@ -124,9 +127,19 @@ DP_SET:
         LD (DN_MODE),A
         LD A,E
         LD (DN_REV),A
+DP_OK:
         XOR A
         LD (DP_ERROR),A
         RET
+DP_ATTR:
+        INC HL
+        LD A,(HL)
+        AND 0DFH
+        CP 'A'
+        JR NZ,DP_OPBAD
+        LD A,1
+        LD (DT_SHOWATTR),A
+        JR DP_OK
 DP_OPBAD:
         SCF
         RET

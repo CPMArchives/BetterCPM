@@ -168,6 +168,44 @@ The one-column formatter remains unchanged. Alternate `/Z` units, attribute
 display, paging, adaptive/explicit columns and drive-free-space reports remain
 pending. Unsupported options currently reject rather than silently doing nothing.
 
+## Attribute-display implementation increment
+
+Implemented `/A` as the fixed `SRA` field after the allocated-KiB size. SYS,
+read-only and ARC use positions 1, 2 and 3; a clear bit prints `-`. The option
+is repeatable, case-insensitive and independent of sorting. It resets to off
+for every invocation. `/A=...`, `/AA` and other malformed forms reject the
+complete command before listing.
+
+Display does not change selection or SYS visibility: `/A` alone still hides SYS
+files. Existing attribute-expression operands select files independently.
+There is no wheel position or new metadata. The existing reserved byte in each
+24-byte collected file record now holds RO/SYS/ARC bits, conservatively ORed
+across the selected physical entries. Sorting moves those bits with the entire
+record. No extra per-file buffer space is needed and filesystem metadata is
+never modified.
+
+DIR.COM is 6,763 bytes (+123 from the sort-switch increment), SHA-256
+`349cb447469ef5035e12552c6eff899bed7dd55fff105db9b41a71c52ebf4450`.
+Native ZSM4/LINK assembly matches the host binary byte for byte. Other derived
+utilities, RCP, CCP and BDOS are unchanged by this increment.
+
+Focused qualification covers all eight attribute masks, disabled display,
+immutable directory entries and extent aggregation. Fifteen valid and twenty
+invalid command forms pass, including reset and failure atomicity. The
+collector/capacity checks, 246 sort cases and 450 metric cases also pass.
+
+Twenty-five public cases pass on z80pack and Model 4 with RCP unloaded,
+including all eight displayed masks, default SYS hiding, explicit SYS selection,
+compound-DU selection, reverse sorting with attributes, repeated `/A`, a following
+invocation without `/A`, and malformed-option rejection before listing. Caller
+DU restoration and existing size/count reports remain correct. z80pack images
+are byte-identical before and after; Model 4 fixture contents and attributes
+are preserved. Evidence: `/private/tmp/dir-attributes-z80pack-final-20261010`
+and `/private/tmp/dir-attributes-model4-20261010`.
+
+Alternate `/Z` units, paging, adaptive/explicit columns, drive-free-space reports
+and final combined qualification remain pending.
+
 ## Audit clarifications awaiting resolution
 
 - Proposed exact metrics: K/S are allocated bytes/128-byte records, E counts
