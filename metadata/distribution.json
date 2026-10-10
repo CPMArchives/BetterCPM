@@ -1,0 +1,376 @@
+{
+  "schema": 1,
+  "authority": "docs/releases/DISTRIBUTION-MANIFEST.md",
+  "system_disk": [
+    {
+      "name": "DIR.COM",
+      "artifact": "build/utilities/DIR.COM",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "ERA.COM",
+      "artifact": "build/utilities/ERA.COM",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "TYPE.COM",
+      "artifact": "build/utilities/TYPE.COM",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "REN.COM",
+      "artifact": "build/utilities/REN.COM",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "VER.COM",
+      "artifact": "build/utilities/VER.COM",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "COPY.COM",
+      "artifact": "build/utilities/COPY.COM",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "CONFIG.COM",
+      "artifact": "build/utilities/CONFIG.COM",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "DUP.COM",
+      "artifact": "build/utilities/DUP.COM",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "TIME.COM",
+      "artifact": "build/utilities/TIME.COM",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "SYSGEN.COM",
+      "artifact": "build/utilities/SYSGEN.COM",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "STAT.COM",
+      "artifact": "build/utilities/STAT.COM",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "SUBMIT.COM",
+      "artifact": "build/utilities/SUBMIT.COM",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "CPX.COM",
+      "artifact": "build/utilities/CPX.COM",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "RSX.COM",
+      "artifact": "build/utilities/RSX.COM",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "DISK.FDB",
+      "artifact": "build/catalog/DISK.FDB",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "RCP.CPX",
+      "artifact": "build/cpx/RCP.CPX",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "ZPRTC.RSX",
+      "artifact": "build/rsx/ZPRTC.RSX",
+      "status": "implemented",
+      "targets": [
+        "z80pack"
+      ],
+      "user": 0
+    },
+    {
+      "name": "FREHDCLK.RSX",
+      "artifact": "build/rsx/FREHDCLK.RSX",
+      "status": "implemented",
+      "targets": [
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "R3PLAN.RSX",
+      "artifact": "build/system/R3PLAN.RSX",
+      "status": "implemented",
+      "role": "runtime dependency",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "R3SLOTS.RSX",
+      "artifact": "build/system/R3SLOTS.RSX",
+      "status": "implemented",
+      "role": "runtime dependency",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "R3SNAP.RSX",
+      "artifact": "build/system/R3SNAP.RSX",
+      "status": "implemented",
+      "role": "runtime dependency",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "R3CARR.RSX",
+      "artifact": "build/system/R3CARR.RSX",
+      "status": "implemented",
+      "role": "runtime dependency",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "R3META.RSX",
+      "artifact": "build/system/R3META.RSX",
+      "status": "implemented",
+      "role": "runtime dependency",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "R3COORD.RSX",
+      "artifact": "build/system/R3COORD.RSX",
+      "status": "implemented",
+      "role": "runtime dependency",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "R3PROF.RSX",
+      "artifact": "build/system/R3PROF.RSX",
+      "status": "implemented",
+      "role": "runtime dependency",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "R3KCTX.RSX",
+      "artifact": "build/system/R3KCTX.RSX",
+      "status": "implemented",
+      "role": "runtime dependency",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "R3KEEP.RSX",
+      "artifact": "build/system/R3KEEP.RSX",
+      "status": "implemented",
+      "role": "runtime dependency",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "R3KPRE.RSX",
+      "artifact": "build/system/R3KPRE.RSX",
+      "status": "implemented",
+      "role": "runtime dependency",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "R3FINAL.RSX",
+      "artifact": "build/system/R3FINAL.RSX",
+      "status": "implemented",
+      "role": "runtime dependency",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "R3DROP.RSX",
+      "artifact": "build/system/R3DROP.RSX",
+      "status": "implemented",
+      "role": "runtime dependency",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "R3MOVE.RSX",
+      "artifact": "build/system/R3MOVE.RSX",
+      "status": "implemented",
+      "role": "runtime dependency",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "R3COMIT.RSX",
+      "artifact": "build/system/R3COMIT.RSX",
+      "status": "implemented",
+      "role": "runtime dependency",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "R3RESOL.RSX",
+      "artifact": "build/system/R3RESOL.RSX",
+      "status": "implemented",
+      "role": "runtime dependency",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
+      "name": "PIP.COM",
+      "status": "planned",
+      "reason": "No integrated source or approved adopted artifact yet",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ]
+    },
+    {
+      "name": "WHEREIS.COM",
+      "status": "planned",
+      "reason": "Selected; implementation pending",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ]
+    },
+    {
+      "name": "Full-screen editor",
+      "status": "planned",
+      "reason": "Program selection pending",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ]
+    }
+  ]
+}
