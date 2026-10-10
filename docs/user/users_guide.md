@@ -485,6 +485,10 @@ When a command is entered, BetterCP/M determines how the command is to be handle
 
 Drive/user navigation is recognized first. Core commands provided directly by the command processor are then checked, followed by commands supplied by the installed CPXs in their configured order. If none of these handles the command, BetterCP/M attempts to execute it as a transient program.
 
+For an unqualified program name, BetterCP/M searches the current drive and user area first, then A0:. A program in the current DU takes precedence. This fixed fallback also applies to explicit transient execution with `:NAME` or `.NAME`. A drive or user qualifier, such as `B3:NAME`, restricts lookup to that location; it does not fall back to A0:.
+
+A program found on A0: runs with the original caller's drive and user area, so unqualified file operands retain their ordinary meaning. A load or read failure after finding a program does not cause another search. This is a fixed lookup rule, not a configurable system path.
+
 Thus, a command such as:
 
 ```text

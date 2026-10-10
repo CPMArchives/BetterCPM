@@ -2950,11 +2950,45 @@ CCP_FNCPY:                              ; copy transient filename into FCB
         INC     HL
         INC     DE
         DJNZ    CCP_FNCPY
+        CALL    CCP_LOPEN
+        JP      Z,CCP_LFAIL
+        JR      CCP_LEOF
+
+CCP_LOPEN:                             ; current DU first, then fixed A0 fallback
         LD      DE,CCP_FCB
         LD      C,15
         CALL    BDOS
         INC     A
-        JP      Z,CCP_LFAIL
+        RET     NZ
+        LD      A,(CCP_FCB)             ; accepted drive/user qualifiers are exact
+        LD      HL,CCP_LUACT
+        OR      (HL)
+        JR      Z,CCP_LAFALL
+        XOR     A                      ; qualified miss: no alternate location
+        RET
+CCP_LAFALL:
+        LD      E,0FFH
+        LD      C,32
+        CALL    BDOS
+        LD      (CCP_LUSAV),A
+        LD      A,1
+        LD      (CCP_LUACT),A
+        LD      (CCP_FCB),A
+        LD      HL,CCP_FCB+12           ; discard any failed Open scratch state
+        LD      B,24
+        XOR     A
+CCP_LACLR:
+        LD      (HL),A
+        INC     HL
+        DJNZ    CCP_LACLR
+        LD      E,A
+        LD      C,32
+        CALL    BDOS
+        LD      DE,CCP_FCB
+        LD      C,15
+        CALL    BDOS
+        INC     A
+        RET
                                         ; Build the transient arguments while the command line still exists.
   ; The protected reader now owns EOF/error handling and the final jump.
 
