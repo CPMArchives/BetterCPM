@@ -60,3 +60,20 @@ The existing clean-build order expects SYSBUILD metadata prerequisites before
 utility assembly. The new distribution orchestrator explicitly builds boot,
 stage-one, and RSX-selector artifacts first, inside the isolated snapshot. No
 existing development builder was changed.
+
+## cpmsim BYE correction — 2026-10-11
+
+The System Disk manifest now includes target-specific `BYE.COM`, built from
+`src/platform/z80pack/bye.mac`. It uses the same cpmsim hardware-control
+interface as the development disk's BYE command. Model 4 membership is unchanged.
+No BIOS, BDOS, or existing development-image builder changed.
+
+A clean cpmsim distribution rebuild passed filesystem, exact-membership,
+artifact-integrity, boot, and clock-provider load checks. It contains 33 files
+and reports 200 KiB free. An additional real emulator boot invoked BYE and
+observed process termination with successful exit status. The builder now
+requires this check before publishing the cpmsim image.
+
+Retained evidence is under
+`/private/tmp/bettercpm-bye-distribution-20261011/`, including `exit-test.txt`
+and the target report. The five existing distribution failure-gate tests pass.

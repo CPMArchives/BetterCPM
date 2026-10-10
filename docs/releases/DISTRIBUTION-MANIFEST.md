@@ -33,6 +33,7 @@ All membership or layout changes require discussion with the maintainer.
 - WHEREIS.COM: planned; include once implemented.
 - RCP.CPX: required resident command package.
 - CPX.COM and RSX.COM: extension managers.
+- BYE.COM: cpmsim-only simulator exit command.
 - ZPRTC.RSX: cpmsim clock provider only.
 - FREHDCLK.RSX: Model 4/FreHD clock provider only; requires FreHD hardware/emulation.
 - General-purpose full-screen editor: exact program TBD.

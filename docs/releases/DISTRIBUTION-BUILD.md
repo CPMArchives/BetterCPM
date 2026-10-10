@@ -68,6 +68,10 @@ select artifacts by timestamp or fall back to an old binary after build failure.
 Use a fresh work directory after changing inputs or after an incomplete build.
 Use `--output` to choose a separate publication directory.
 
+`BYE` shuts down cpmsim and returns to the host shell. `BYE.COM` is included
+only on the cpmsim distribution; it is not a Model 4 utility. The builder
+verifies a real simulator exit before publishing that image.
+
 Clock providers are available for explicit loading: `ZPRTC.RSX` on cpmsim and
 `FREHDCLK.RSX` on Model 4. FreHD requires the relevant hardware/emulation;
 shipping that provider does not make every Model 4 clock-capable. CPX/RSX
