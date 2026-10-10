@@ -50,6 +50,10 @@ def expand_layout(text: str) -> str:
         directory = directory.replace('        LD      A,(BC_DCOL)\n',
             'RD_VISIBLE:\n        LD      A,(BC_DCOL)\n', 1)
         text = text[:start] + directory + text[end:]
+        if 'CPXBASE         EQU     00100H' not in text:
+            ren_start = text.index('BC_REN:')
+            ren_end = text.index('BC_RNOQ:', ren_start)
+            text = text[:ren_start] + (ROOT / 'src/cpx/ren-select.inc').read_text(encoding='ascii') + text[ren_end:]
         text = text.replace('BC_ERA:                                 ; execute ERA command\n',
             'BC_ERA:                                 ; execute ERA command\n'
             '        CALL    RE_VALIDATE\n        JP      C,RE_REJECT\n', 1)

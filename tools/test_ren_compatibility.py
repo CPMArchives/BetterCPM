@@ -53,7 +53,7 @@ def main() -> None:
         require("NEW      DAT" in new_output and "NO FILE" in old_output,
                 "exact resident rename did not move the directory name")
 
-        output = run("REN KEEP.DAT=OLD.DAT", drive_a, drive_b)
+        output = run("REN KEEP.DAT=NEW.DAT", drive_a, drive_b)
         require("FILE EXISTS" in output,
                 "existing destination did not report FILE EXISTS")
 
@@ -61,18 +61,19 @@ def main() -> None:
         require("NO FILE" in output, "missing source did not report NO FILE")
 
         output = run("REN NEW.DAT OLD.DAT", drive_a, drive_b)
-        require("?" in output, "space was incorrectly accepted as REN separator")
+        require("Invalid filespec." in output, "space was incorrectly accepted as REN separator")
 
         output = run("REN WILD.DAT=K*.DAT", drive_a, drive_b)
-        require("?" in output, "ambiguous REN source was not rejected")
+        require("WILD     DAT" in run("DIR WILD.DAT", drive_a, drive_b),
+                "bounded wildcard REN did not rename its source")
 
         output = run("REN NEW.DAT=OLD.DAT EXTRA", drive_a, drive_b)
-        require("?" in output, "REN ignored a trailing operand")
+        require("Invalid filespec." in output, "REN ignored a trailing operand")
 
         output = run("REN B:XNEW.DAT=A:KEEP.DAT", drive_a, drive_b)
-        require("?" in output, "cross-drive REN was not rejected")
+        require("Invalid filespec." in output, "cross-drive REN was not rejected")
 
-        run("REN B:NEW.DAT=B:OLD.DAT", drive_a, drive_b)
+        run("REN NEW.DAT=B:OLD.DAT", drive_a, drive_b)
         output = run("DIR B:NEW.DAT", drive_a, drive_b)
         require("NEW      DAT" in output and "A0>" in output,
                 "same-drive qualified rename failed or changed current DU")

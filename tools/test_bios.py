@@ -149,6 +149,9 @@ class Z80:
                     self.push(self.ix)
                 elif sub == 0xE1:        # POP IX
                     self.ix = self.pop()
+                elif sub == 0x21:        # LD IX,nn
+                    self.ix = self.word(self.pc)
+                    self.pc += 2
                 elif sub == 0x23:
                     self.ix = (self.ix + 1) & 65535
                 elif sub == 0x22:        # LD (nn),IX
