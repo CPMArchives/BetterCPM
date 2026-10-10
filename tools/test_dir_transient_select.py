@@ -28,6 +28,7 @@ def main():
               ('SIZMULT.DAT',b'M'*40000,0,0),('SIZEMPTY.DAT',b'',0,0),
               ('SIZMULT.DAT',b'T'*2048,2,0),
               ('SELMIX.COM',b'C'*2048,0,0),('SELMIX.ASM',b'A'*4000,0,0)]
+    fixtures += [(f'ATR{mask}.TXT',b'ATTR\r\n',0,mask) for mask in range(8)]
     cases=[
         (':DIR A[0,2]:SEL*.TXT',['A0:','A2:','SELZERO','SELTWO',
                                '3 FILES, 6K TOTAL','1 FILE, 2K TOTAL'],['SELSYS']),
@@ -52,12 +53,25 @@ def main():
         ('DIR /S=N A0:SELMIX.* /S=BAD',['Invalid option.'],['A0:','2 FILES','SELMIX   ASM']),
         ('DIR /S=X /S=N A0:SELMIX.*',['Invalid option.'],['A0:','2 FILES','SELMIX   ASM']),
         ('DIR /S=Z A0:SELMIX.*',['SELMIX   COM  2K','SELMIX   ASM  4K','2 FILES, 6K TOTAL'],[])]
+    cases += [
+        ('DIR /A A[0,2]:SEL*.TXT',
+         ['SELARC   TXT  2K  --A','SELRO    TXT  2K  -R-',
+          'SELZERO  TXT  2K  ---','SELTWO   TXT  2K  ---'],['SELSYS']),
+        ('DIR A0:SEL*.TXT[$SYS] /A', ['SELSYS   TXT  2K  S--'],['SELZERO']),
+        ('DIR /A /S=N- A0:ATR*.TXT[$RO,$RW]',
+         [f'ATR{mask}     TXT  2K  '+''.join(letter if mask&bit else '-'
+            for bit,letter in [(2,'S'),(1,'R'),(4,'A')]) for mask in range(8)],[]),
+        ('DIR /A /A A0:SEL*.TXT',['SELRO    TXT  2K  -R-'],['SELSYS']),
+        ('DIR A0:SEL*.TXT',['SELRO    TXT  2K'],['  -R-','  --A','  ---']),
+        ('DIR /A=RO A0:SEL*.TXT',['Invalid option.'],['SELRO    TXT']),
+        ('DIR /AA A0:SEL*.TXT',['Invalid option.'],['SELRO    TXT'])]
     def check_order(output,index):
         expected={0:['SELARC','SELRO','SELZERO'],3:['SELRO','SELSYS'],
                   6:['SIZEMPTY','SIZMULT'],8:['SELMIX   ASM','SELMIX   COM'],
                   9:['SELZERO','SELRO','SELARC'],10:['SELMIX   COM','SELMIX   ASM'],
                   11:['SIZMULT','SIZEMPTY'],12:['SELMIX   COM','SELMIX   ASM'],
                   13:['SELMIX   ASM','SELMIX   COM'],17:['SELMIX   COM','SELMIX   ASM']}.get(index,[])
+        if index==20:expected=[f'ATR{mask}     TXT' for mask in range(7,-1,-1)]
         positions=[output.index(name) for name in expected]
         assert positions==sorted(positions),(index,expected,output)
     observations=[]
@@ -85,7 +99,8 @@ def main():
         (report/'DIR.COM').write_bytes(binary);cpm('cpmcp',report/'DIR.COM','0:DIR.COM')
         for name,data,user,mask in fixtures:
             path=report/name;path.write_bytes(data);cpm('cpmcp',path,f'{user}:{name}')
-            if mask:cpm('cpmchattr', {1:'r',2:'s',4:'a'}[mask],f'{user}:{name}')
+            if mask:cpm('cpmchattr', ''.join(flag for bit,flag in
+                        [(1,'r'),(2,'s'),(4,'a')] if mask&bit),f'{user}:{name}')
         before={path.name:path.read_bytes() for path in (report/'disks').glob('*.dsk')}
         for i,(command,required,excluded) in enumerate(cases):
             text=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',report/'disks',
@@ -144,7 +159,7 @@ def main():
     (report/'harness.py').write_bytes(Path(__file__).read_bytes())
     (report/'evidence.json').write_text(json.dumps({'result':'PASS','platform':a.platform,
         'RCP_unloaded':True,'dir_sha256':hashlib.sha256(binary).hexdigest(),'cases':observations},indent=2)+'\n')
-    print('Self-contained DIR selection, sizes, sort switches and totals: PASS')
+    print(f'Self-contained DIR selection, sizes, sorting, attributes and totals: {len(cases)} cases PASS')
 
 
 if __name__=='__main__':main()

@@ -1,5 +1,5 @@
 ; Transient DIR collection. One 24-byte record per selected file on this DU:
-; normalized name (11), reserved (1), DM accumulator (12).
+; normalized name (11), RO/SYS/ARC mask (1), DM accumulator (12).
 ; The buffer occupies disposable TPA below the current BDOS/RSX entry minus
 ; 256 bytes. Never rescan a file while Search Next is active.
 RD_SEARCH:
@@ -115,8 +115,39 @@ DT_ZEROREC:
         LD (DT_FILES),HL
         LD HL,(DT_SCAN)
 DT_ACCUM:
-        LD DE,12
+        LD DE,11
         ADD HL,DE
+        PUSH HL
+        LD HL,(BC_DIREP)
+        LD DE,9
+        ADD HL,DE
+        LD C,0
+        LD A,(HL)
+        AND 80H
+        JR Z,DT_ASYS
+        INC C
+DT_ASYS:
+        INC HL
+        LD A,(HL)
+        AND 80H
+        JR Z,DT_AARC
+        LD A,C
+        OR 2
+        LD C,A
+DT_AARC:
+        INC HL
+        LD A,(HL)
+        AND 80H
+        JR Z,DT_AMERGE
+        LD A,C
+        OR 4
+        LD C,A
+DT_AMERGE:
+        LD A,C
+        POP HL
+        OR (HL)
+        LD (HL),A
+        INC HL
         LD B,H
         LD C,L
         LD HL,(BC_DIREP)
@@ -173,7 +204,10 @@ DT_ROW:
         LD DE,12
         ADD HL,DE
         CALL DT_K
-        LD DE,DT_KLINE
+        LD A,'K'
+        CALL BC_PCHAR
+        CALL DT_ATTRIBUTES
+        LD DE,BC_NL
         CALL BC_PRINT
         LD HL,(DT_SCAN)
         LD DE,24
@@ -221,6 +255,39 @@ DT_KBYTE:
         JR NZ,DT_KBYTE
         DJNZ DT_KSHIFT
         JP DTD_DEC
+; /A is reporting only. Accumulated attributes stay with the sorted record.
+DT_ATTRIBUTES:
+        LD A,(DT_SHOWATTR)
+        OR A
+        RET Z
+        LD DE,DT_SPACE
+        CALL BC_PRINT
+        LD HL,(DT_SCAN)
+        LD DE,11
+        ADD HL,DE
+        LD A,(HL)
+        LD (DT_ATTRBITS),A
+        LD HL,DT_ATTRTABLE
+        LD B,3
+DT_APOS:
+        LD A,(DT_ATTRBITS)
+        AND (HL)
+        INC HL
+        LD A,'-'
+        JR Z,DT_APRINT
+        LD A,(HL)
+DT_APRINT:
+        INC HL
+        PUSH HL
+        PUSH BC
+        CALL BC_PCHAR
+        POP BC
+        POP HL
+        DJNZ DT_APOS
+        RET
+DT_SHOWATTR: DB 0
+DT_ATTRBITS: DB 0
+DT_ATTRTABLE: DB 2,'S',1,'R',4,'A'
 DT_LIMIT: DW 0
 DT_END: DW 0
 DT_FILES: DW 0
@@ -228,7 +295,6 @@ DT_SCAN: DW 0
 DT_LEFT: DW 0
 DT_HEADING: DB ':',13,10,'$'
 DT_SPACE: DB '  $'
-DT_KLINE: DB 'K',13,10,'$'
 DT_FILEMSG: DB ' FILES, $'
 DT_ONEMSG: DB ' FILE, $'
 DT_SUMMSG: DB 'K TOTAL',13,10,'$'

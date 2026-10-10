@@ -42,6 +42,7 @@ def main():
         return (bytes(c.mem[start:start+11]).decode(),
                 tuple(int.from_bytes(c.mem[start+12+i*4:start+16+i*4],'little')
                       for i in range(3)))
+    assert all(c.mem[buffer+i*24+11]==1 for i in range(3))
     assert summary(0) == ('MULTI   DAT',(64,647,3))
     assert summary(1) == ('EMPTY   DAT',(0,0,1))
     assert summary(2) == ('THIRD   TXT',(16,1,1))
