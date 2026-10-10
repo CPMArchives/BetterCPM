@@ -1278,6 +1278,26 @@ Wildcards may be used to copy groups of files. Drive and user-area
 specifications may be used with the source and destination without changing
 the current drive/user.
 
+Resident COPY and MOVE share the same source-selection engine. Sources may
+span multiple DUs and use attribute expressions:
+
+    COPY [A0,B[5-7],C[3,5,6],5]:*.COM D3:
+    COPY B[-]:*.DOC[$RW+!$SYS] C4:
+    MOVE [A3,B5]:*.BAK C4:
+
+Their destination must resolve to exactly one DU. A set notation which resolves
+to one DU is accepted; multiple destination DUs are rejected. Resident commands
+retain each source filename for a DU-only target. An exact destination filename
+is allowed only when the entire selection contains one file; destination
+wildcard templates remain a transient COPY feature.
+
+Both resident commands preflight the full selection before writing. Duplicate
+target names from different source DUs and overlap with any selected source
+reject the invocation. Existing targets are rejected unless resident COPY has
+its trailing `/O` option; read-only targets remain protected. MOVE does not
+overwrite, and read-only sources are rejected before any move. No matching
+files reports `NO FILE`. The caller DU is restored.
+
 The source files remain unchanged after a successful copy.
 
 In addition to the above, the transient `COPY.COM` provides extended
@@ -1482,15 +1502,15 @@ Moves one or more files to another name, drive, or user area.
 `COPY`:
 
     MOVE source destination
-    MOVE destination=source
+    MOVE destination:=source
 
 Examples:
 
     A>MOVE README.TXT B:
     A>MOVE *.BAK B:
     A>MOVE A3:*.ASM B17:
-    A>MOVE B:README.TXT=README.TXT
-    A>MOVE B:=*.COM
+    A>MOVE B:README.TXT:=README.TXT
+    A>MOVE B3:BACKUP.COM:=A2:ORIGINAL.COM
 
 Wildcards may be used to move groups of files. Drive and user-area
 specifications may be used with the source and destination without changing
@@ -1500,8 +1520,11 @@ When the source and destination are on different drives or in different user
 areas, BetterCP/M copies each file to its destination and removes the source
 only after the destination has been successfully written and closed.
 
-Where possible, a move within the same drive/user area is performed by
-renaming the file rather than copying its contents.
+Resident MOVE uses the same copy engine even within one DU, followed by source
+deletion after the destination closes and its attributes have been applied.
+If source deletion fails, it reports `COPY MADE; SOURCE NOT ERASED`. An
+unexpected execution failure stops the invocation; earlier completed files are
+not rolled back.
 
 [TBD — determine whether BetterCP/M 1.0 will also provide a transient
 `MOVE.COM` and, if so, document its additional functions here.]

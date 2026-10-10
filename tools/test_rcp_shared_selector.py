@@ -112,8 +112,7 @@ def main():
             assert c.carry and c.a==0 and c.mem[a('AT_RESULT')]==0
             assert 0<=c.hl-0x2000<=len(text)
         for text,valid in [('F?*.DAT',True),('F***.DAT',True),('F*A.DAT',False),('F**?.DAT',False),('TOOLONGNM.COM',False)]:
-            c=cpu(base,text);c.mem[a('BC_COFCP'):a('BC_COFCP')+2]=a('BC_FCB').to_bytes(2,'little')
-            c.mem[a('BC_MVFLAG')]=0;c.run(a('BC_CVALID'),limit=10000)
+            c=cpu(base,text);c.a=1;c.run(a('FP_VALIDATE'),limit=10000)
             assert (not c.carry)==valid,text
         results.append({'base':base,'result':'PASS','iterator_positions':512})
         for text,accepted in [('',True),('B3:F?*.DAT',True),('F***.DAT',True),
