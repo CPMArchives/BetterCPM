@@ -6,10 +6,12 @@ import argparse
 import shutil
 import tempfile
 from pathlib import Path
+from system_layout import expand_layout
+from build_native_rcp_transients import initialized_workspace
 
 from build_native_trs80 import (
     DEFAULT_CPMSIM, DEFAULT_SYSTEM, DEFAULT_TEMPLATE, DEFAULT_TOOLS,
-    blank, cpm_text, run,
+    blank, run,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -38,7 +40,9 @@ def main() -> None:
         for drive in "bcd":
             blank(args.disk_template, disks / f"drive{drive}.dsk")
         staged = work / "RCP.MAC"
-        staged.write_bytes(cpm_text(SOURCE))
+        # Match the cross assembler's defined DS fill, including shared scratch.
+        text = initialized_workspace(expand_layout(SOURCE.read_text(encoding='ascii')))
+        staged.write_bytes(text.replace('\n', '\r\n').encode('ascii') + b'\x1a')
         run("cpmcp", "-f", "ibm-3740", str(disks / "drivec.dsk"),
             str(staged), "0:RCP.MAC")
         for tool in ("ZSM4.COM", "LINK.COM"):

@@ -1,7 +1,8 @@
 # RCP shared file-selector integration
 
-Status: integration started on 2026-10-10. The shared selector is not yet exposed
-to resident commands. This work precedes expanded DIR.COM implementation.
+Status: common DU/qualifier/predicate components linked and qualified in RCP on
+2026-10-10. The combined transactional parser and resident command migration
+remain pending. This work precedes expanded DIR.COM implementation.
 
 ## Placement and scope
 
@@ -76,3 +77,48 @@ All 42 inventoried files passed size/hash verification. Manifest SHA-256:
 
 Measure actual final executable size, rounded allocation, relocation count,
 reconstruction and recovered TPA at each increment. BDOS growth remains zero.
+
+## Shared component integration — 2026-10-10
+
+RCP now links exactly one copy of the existing DU parser/iterator, qualifier
+splitter, and attribute predicate compiler, with package-owned scratch. Build
+expansion uses the same common source files as the transient utilities; the
+RCP marker is omitted from transient builds to avoid duplicates and byte growth.
+No resident command uses the added entry points yet. In particular, this does
+not claim complete invocation validation or error atomicity across all three
+components. The qualifier splitter still returns its original HL on failure;
+the combined wrapper must resolve that error-position contract and clear all
+results on later parsing failures.
+
+Measured RCP code: 4,800 bytes; rounded allocation: 4,864 bytes (+1,024 reclaimable
+bytes from the prior RCP); relocations: 544; carrier header: 1,536 bytes; file:
+6,408 bytes. Carrier SHA-256:
+`a130dc4e1d419e9c5ef6f402528c6f8a8991be208b503afde8fb2324318334e6`.
+BDOS bytes match the preceding header qualification snapshot. All six generated
+transient fallbacks remain unchanged, including the 10,306-byte COPY.COM.
+
+Native ZSM4/LINK and host assembly produced identical 4,800-byte payloads. Native
+build staging now explicitly emits the cross assembler's FF scratch fill; LINK
+does not define DS fill bytes, and implicit fill initially prevented parity.
+Runtime parsing initializes the scratch it uses; this is build reproducibility,
+not a new runtime initialization policy.
+
+The actual carrier's relocation table was applied at 4000h, 8101h and A000h.
+Tests executed DU scopes, caller-drive inheritance, domain/syntax errors,
+input preservation, all 512 iterator positions, qualifier splitting, predicate
+truth masks, and the existing bounded wildcard validator. The common library
+campaigns additionally passed 1,024 ranges, 295 expressions across eight
+attribute states, malformed/truncated qualifiers, and iterator boundaries.
+
+The expanded production carrier passed unload/reload and resident DIR dispatch
+before and after CPX.COM-induced WBOOT on z80pack and Model 4. DIR.COM was absent
+in both tests. This qualifies carrier lifecycle and existing command behavior;
+the new parsing routines were executed in the relocated instruction harness.
+
+Evidence: `/private/tmp/rcp-selector-component-bundle-20261010`; all 47 files
+passed manifest size/hash verification. Manifest SHA-256:
+`1d9513b7c27db18dee0b49ae855237d075fe9ba500b6e8646b5da6bb827d086f`.
+
+Next: compose the parsers into one transactional result contract, share bounded
+filespec validation without COPY-specific state coupling, then migrate resident
+DIR. This step does not broaden ERA/COPY/REN/TYPE operation semantics.
