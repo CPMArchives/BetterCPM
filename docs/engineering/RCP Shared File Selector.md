@@ -163,6 +163,42 @@ reconstruction and recovered TPA at each increment. BDOS growth remains zero.
 
 ## Shared component integration — 2026-10-10
 
+### Pure shared filespec validator
+
+The bounded 8.3 lexer is now `common/filespec.inc`, included once in RCP and once
+in each generated transient command image. `FP_VALIDATE` takes HL/B input and
+an explicit A mode (0 exact, 1 wildcard). It returns carry clear and A=0/1 for
+absence/presence of wildcards, or carry set, A=0 and HL at the detected error.
+It writes neither input nor global state and makes no BDOS calls. The frozen
+grammar is unchanged, including terminal star runs and rejection of suffixes
+after them.
+
+`FS_PARSE` calls that entry directly, eliminating its COPY policy save/restore
+and temporary changes. `BC_CVALID` remains a small COPY adapter: resident COPY
+permits wildcards only on a COPY source; transient COPY also permits destination
+templates without marking an exact source as a wildcard source. The old private
+destination wildcard callback is removed. No new command grammar or operation
+policy is introduced.
+
+RCP is 5,370 bytes (one byte smaller), still allocated 5,376 bytes, with 614
+relocations. COPY.COM is 10,340 bytes (+20); the five other generated fallback
+images are 3,838 bytes (+43). Those images include the common command body;
+their growth does not add protected OS memory. Native assembly matches all seven
+host images. BDOS is unchanged.
+
+Relocated tests independently check 154 name/extension/mode combinations at each
+of three origins, input/code immutability, wildcard results and exact error
+positions. Existing transaction/gate, COPY filespec/mapping, qualifier and carrier
+tests pass. Native z80pack tests pass resident DIR/ERA lifecycle, CPX/transient
+malformed-name rejection without disk changes, valid copies, destination
+substitution and frozen-source conflict rejection. Evidence is retained in
+`/private/tmp/rcp-pure-filespec-relocated-20261010`,
+`/private/tmp/rcp-pure-filespec-z80pack-20261010`,
+`/private/tmp/copy-pure-filespec-native-20261010` and
+`/private/tmp/copy-pure-mapping-native-20261010`.
+The Model 4 resident lifecycle and ERA rejection/deletion checks also pass;
+evidence: `/private/tmp/rcp-pure-filespec-model4-20261010`.
+
 ### Resident ERA validation prerequisite
 
 RCP's ERA handler now passes its full operand through `FS_PARSE` before its

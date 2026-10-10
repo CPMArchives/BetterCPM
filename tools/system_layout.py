@@ -22,6 +22,9 @@ def expand_layout(text: str) -> str:
     text = re.sub(r"^\s*INCLUDE\s+layout\.inc\s*$",
                   lambda _: SOURCE.read_text(encoding="ascii").rstrip(),
         text, flags=re.MULTILINE | re.IGNORECASE)
+    if '; @bounded-filespec@' in text:
+        text = text.replace('; @bounded-filespec@',
+            (ROOT / 'src/utilities/common/filespec.inc').read_text(encoding='ascii'))
 
     if '; @rcp-shared-selector@' in text:
         start = text.index('BC_DIR:')

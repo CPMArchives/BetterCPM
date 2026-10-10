@@ -33,6 +33,32 @@ def main():
     results=[]
     for base in (0x4000,0x8101,0xA000):
         a=lambda name:address(name,base)
+        # Pure shared lexer: independent oracle for the frozen bounded grammar.
+        def field_ok(field,width,mode):
+            if not field:return False
+            if any(ord(ch)<33 or ord(ch)>=127 or ch in '.:=' for ch in field):return False
+            if not mode and any(ch in '*?' for ch in field):return False
+            if '*' in field:
+                prefix,stars=field.split('*',1)
+                return len(prefix)<width and all(ch=='*' for ch in stars)
+            return len(field)<=width
+        names=['','F','FOO','ABCDEFGH','ABCDEFGHI','?','F?*','F***','F*A','F**?','ABCDEFGH*']
+        extensions=['','COM','ABCD','?','**','D**','D*A']
+        for mode in (0,1):
+            for name in names:
+                for ext in extensions:
+                    text=name+'.'+ext
+                    expected=field_ok(name,8,mode) and (not ext or field_ok(ext,3,mode))
+                    c=cpu(base,text);before=bytes(c.mem[base:base+size]);c.a=mode
+                    c.run(a('FP_VALIDATE'),limit=10000)
+                    assert (not c.carry)==expected,(mode,text)
+                    assert c.a==(int(any(ch in text for ch in '*?')) if expected else 0),(mode,text)
+                    assert bytes(c.mem[base:base+size])==before,(mode,text)
+                    assert bytes(c.mem[0x2000:0x2000+len(text)]).decode()==text
+                    assert 0x2000<=c.hl<=0x2000+len(text)
+        for text,position in [('F*A.DAT',2),('F**?.DAT',3),('ABCDEFGHI.COM',8),('F..COM',2)]:
+            c=cpu(base,text);c.a=1;c.run(a('FP_VALIDATE'),limit=10000)
+            assert c.carry and c.hl==0x2000+position,text
         for text,pairs,tail in [
             ('*.COM',[(1,2)],'*.COM'),('P31:FOO.DAT',[(15,31)],'FOO.DAT'),
             ('B[-]:',[(1,u) for u in range(32)],''),

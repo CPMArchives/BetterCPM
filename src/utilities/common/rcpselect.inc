@@ -75,47 +75,25 @@ FS_PREDOK:
         LD HL,BC_ALL
         LD B,3
 FS_VALIDATE:
-        ; Reuse the existing lexer and FCB expander, preserving COPY policy.
-        LD DE,(BC_COFCP)
-        PUSH DE
-        LD A,(BC_MVFLAG)
-        PUSH AF
-        LD A,(BC_CWILD)
-        PUSH AF
-        LD DE,BC_FCB
-        LD (BC_COFCP),DE
-        XOR A
-        LD (BC_MVFLAG),A
+        ; Shared lexical policy is explicit, independent of COPY state.
         PUSH HL
         PUSH BC
-        CALL BC_CVALID
+        LD A,1
+        CALL FP_VALIDATE
         JR C,FS_LEXBAD
         POP BC
         POP HL
         LD DE,FS_FCB
         CALL BC_PFCB
-        CALL FS_RESTORE
         OR A
         RET
 FS_LEXBAD:
         LD (FS_FILE),HL
         POP BC
         POP HL
-        CALL FS_RESTORE
         LD HL,(FS_FILE)
         LD A,4
         JR FS_BAD
-FS_RESTORE:
-        ; Called with saved policy below the return address.
-        POP HL
-        POP AF
-        LD (BC_CWILD),A
-        POP AF
-        LD (BC_MVFLAG),A
-        POP DE
-        LD (BC_COFCP),DE
-        PUSH HL
-        RET
 FS_DUBAD:
         LD A,1
         JR FS_BAD

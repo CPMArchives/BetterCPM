@@ -62,9 +62,11 @@ def copy_source(text: str) -> str:
     text = text[:start] + batch + text[end:]
     # Only the transient accepts destination wildcards. Validation still owns
     # their legality; the batch driver owns concrete-name mapping and safety.
-    old = "        JR      NZ,BC_CVBAD\n        LD      A,(BC_MVFLAG)"
+    old = "BC_CVDMODE:\n        XOR     A"
     assert text.count(old) == 1, "COPY wildcard hook changed"
-    text = text.replace(old, "        JP      NZ,CTDWILD\n        LD      A,(BC_MVFLAG)", 1)
+    text = text.replace(old, "BC_CVDMODE:\n        LD      HL,(BC_COFCP)\n"
+        "        LD      DE,BC_NEWFCB\n        OR      A\n        SBC     HL,DE\n"
+        "        LD      A,0\n        JR      NZ,BC_CVMODE\n        INC     A", 1)
     start = text.index("BC_COPNAME:")
     end = text.index("BC_COPDONE:", start)
     text = text[:start] + "BC_COPNAME:\n" + text[end:]
