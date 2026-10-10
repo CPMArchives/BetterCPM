@@ -65,6 +65,17 @@ def main():
         ('DIR A0:SEL*.TXT',['SELRO    TXT  2K'],['  -R-','  --A','  ---']),
         ('DIR /A=RO A0:SEL*.TXT',['Invalid option.'],['SELRO    TXT']),
         ('DIR /AA A0:SEL*.TXT',['Invalid option.'],['SELRO    TXT'])]
+    cases += [
+        ('DIR /Z A0:SIZ*.DAT',['SIZMULT  DAT  40K','SIZEMPTY DAT  0K','2 FILES, 40K TOTAL'],[]),
+        ('DIR /Z=K A0:SIZ*.DAT',['SIZMULT  DAT  40K','SIZEMPTY DAT  0K','2 FILES, 40K TOTAL'],[]),
+        ('DIR /Z=S /S=Z- A0:SIZ*.DAT',['SIZMULT  DAT  320S','SIZEMPTY DAT  0S','2 FILES, 320S TOTAL'],[]),
+        ('DIR /Z=S /A A[0,2]:SEL*.TXT',['SELARC   TXT  16S  --A','SELRO    TXT  16S  -R-',
+          'SELZERO  TXT  16S  ---','SELTWO   TXT  16S  ---','3 FILES, 48S TOTAL','1 FILE, 16S TOTAL'],['SELSYS']),
+        ('DIR /Z=S /Z=K A0:SIZ*.DAT',['SIZMULT  DAT  40K','2 FILES, 40K TOTAL'],['320S']),
+        ('DIR /Z=K /Z=S A0:SIZ*.DAT',['SIZMULT  DAT  320S','2 FILES, 320S TOTAL'],['40K']),
+        ('DIR A0:SIZ*.DAT',['SIZMULT  DAT  40K','2 FILES, 40K TOTAL'],['320S']),
+        ('DIR /Z=X A0:SIZ*.DAT',['Invalid option.'],['SIZMULT  DAT']),
+        ('DIR /Z=S+ A0:SIZ*.DAT',['Invalid option.'],['SIZMULT  DAT'])]
     def check_order(output,index):
         expected={0:['SELARC','SELRO','SELZERO'],3:['SELRO','SELSYS'],
                   6:['SIZEMPTY','SIZMULT'],8:['SELMIX   ASM','SELMIX   COM'],

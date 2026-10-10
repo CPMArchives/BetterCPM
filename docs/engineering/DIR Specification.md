@@ -206,10 +206,43 @@ and `/private/tmp/dir-attributes-model4-20261010`.
 Alternate `/Z` units, paging, adaptive/explicit columns, drive-free-space reports
 and final combined qualification remain pending.
 
+## Allocated-size unit implementation increment
+
+Implemented `/Z`, `/Z=K` and `/Z=S`. K remains the default allocated-KiB
+representation; S is allocated 128-byte records, not physical sector count,
+logical length or exact file bytes. Per-file and selected-DU totals use the
+same chosen representation and suffix. Size sorting remains based on allocated
+records, independently of the display option. Options can appear on either side
+of the selection operand; the last valid size option wins, and `/Z` restores K.
+Each new invocation resets the unit to K. Malformed units reject the complete
+command before any listing. Attribute display and selection are independent.
+
+The `/Z=E` definition is still awaiting the explicit physical-directory-entry
+versus logical-16K-extent decision. It is not implemented in this increment.
+
+DIR.COM is 6,848 bytes (+85), SHA-256
+`8805cb72f8bc6d5c21b899c68694e94167341cf68435234a947269f5b89fa30d`.
+The native ZSM4/LINK output is byte-identical. No resident component or other
+utility changes are required.
+
+Focused checks cover K/S conversion across DWORD boundaries, defaults, last
+value wins, reset, coexistence with sorting and attributes, and invalid options.
+Twenty-one valid and twenty-six invalid parser cases pass, along with the eight
+attribute combinations, collection/capacity checks, 246 sort cases and 450 metric
+cases.
+Thirty-four public cases pass on both z80pack and Model 4 with RCP unloaded.
+The new cases cover `/Z` equivalence with `/Z=K`, allocated records and matching
+totals, compound-DU attribute reporting in S, last-unit-wins, default reset and
+malformed-option rejection. Existing selection, sorting and K reports remain
+correct. z80pack images are byte-identical before/after; Model 4 fixture contents
+and attributes are preserved. Evidence:
+`/private/tmp/dir-size-units-z80pack-20261010` and
+`/private/tmp/dir-size-units-model4-20261010`.
+
 ## Audit clarifications awaiting resolution
 
-- Proposed exact metrics: K/S are allocated bytes/128-byte records, E counts
-  physical directory entries, and size sorting uses allocated bytes.
+- K/S use allocated KiB/128-byte records; size sorting uses allocated space.
+  Proposed E definition: count physical directory entries (decision pending).
 - Use actual width to choose 4/2/1 columns. Narrative rules override examples
   that show three columns or omit always-enabled size. Console geometry must
   be determined from existing platform bindings without a new resident service.

@@ -67,6 +67,14 @@ def main():
         c.hl = 0x7300
         c.run(addr('DT_K'),limit=100000)
         assert bytes(c.mem[output:c.word(0x6000)]).decode() == str(records//8)
+    for unit in 'KS':
+        c.mem[addr('DT_UNIT')]=ord(unit)
+        for records in [0,8,16,320,65536,0xfffffff8]:
+            c.mem[0x7300:0x7304]=records.to_bytes(4,'little')
+            c.setword(0x6000,output);c.hl=0x7300
+            c.run(addr('DT_SIZE'),limit=100000)
+            expected=records//8 if unit=='K' else records
+            assert bytes(c.mem[output:c.word(0x6000)]).decode()==str(expected)
     print('DIR multi-extent grouping, buffer exhaustion and 32-bit KiB formatting pass')
 
 if __name__ == '__main__':

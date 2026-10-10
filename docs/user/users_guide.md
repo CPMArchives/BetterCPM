@@ -615,7 +615,7 @@ or `-` (descending); `/S=U` preserves native directory order and accepts no sign
 The last sort switch wins. Switches may go before or after the selection operand.
 Type and size ties use ascending filename order. Size sorting uses allocated
 space, independently of how that size is displayed. Invalid switches reject the
-whole command before listing; `/P`, `/Z` and `/C` are still pending.
+whole command before listing; `/P`, `/Z=E` and `/C` are still pending.
 
 `/A` adds a three-position `SRA` field after each file size: SYS, read-only,
 and ARC respectively, with `-` for each clear bit. For example, `-R-` means
@@ -624,7 +624,14 @@ not select files, reveal SYS files, or change their attributes; use an operand
 attribute expression to select them. The display is off again on the next
 invocation unless `/A` is specified.
 
-Transient DIR will add selectable size units, columns and paging.
+`/Z` and `/Z=K` select allocated KiB (the default). `/Z=S` displays allocated
+128-byte records, not physical floppy sectors or logical file length. Both
+per-file sizes and each selected-DU total use the chosen unit, with `K` or `S`
+as the suffix. The last valid size-unit switch wins; a later `/Z` restores K.
+Unit selection resets to K on the next invocation. Sorting by `/S=Z` continues
+to use allocated space regardless of the display unit.
+
+Transient DIR will add extent units, columns and paging.
 It will not display or
 filter dates, timestamps or wheel-protection attributes in 1.0.
 
