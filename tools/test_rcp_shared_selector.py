@@ -64,6 +64,7 @@ def main():
                                      ('*.COM[$RO,$SYS]','*.COM','$RO,$SYS',0xEE)]:
             c=cpu(base,text);c.run(a('OQ_SPLIT'),limit=10000)
             assert not c.carry and bytes(c.mem[c.hl:c.hl+c.b]).decode()==body
+            assert c.word(a('OQ_ERRPTR'))==0
             ptr=c.word(a('OQ_PTR'));length=c.mem[a('OQ_LEN')]
             assert bytes(c.mem[ptr:ptr+length]).decode()==expr
             if expr:
@@ -72,6 +73,14 @@ def main():
         for text in ('F[]','F[$RO','F[$RO]X','F[[$RO]]','F[$RO ]'):
             c=cpu(base,text);c.run(a('OQ_SPLIT'),limit=10000)
             assert c.carry and c.word(a('OQ_PTR'))==0 and c.mem[a('OQ_LEN')]==0
+            assert 0x2000<=c.word(a('OQ_ERRPTR'))<=0x2000+len(text)
+        for text,position in [('F[]',2),('F]',1),('F[[$RO]]',2),
+                              ('F[$RO]X',6),('F[$RO ]',5),('F[$RO',5)]:
+            c=cpu(base,text);c.run(a('OQ_SPLIT'),limit=10000)
+            assert c.carry and c.hl==0x2000
+            assert c.word(a('OQ_ERRPTR'))==0x2000+position,text
+            c.hl,c.b=0x2000,1;c.run(a('OQ_SPLIT'),limit=10000)
+            assert not c.carry and c.word(a('OQ_ERRPTR'))==0
         for text in ('$WHL','$ARC++$RO','$SYS,','!'):
             c=cpu(base,text);c.run(a('AT_PARSE'),limit=10000)
             assert c.carry and c.a==0 and c.mem[a('AT_RESULT')]==0
