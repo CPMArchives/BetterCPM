@@ -1,6 +1,7 @@
 ; Transient-only leading/trailing /O, /S, /B and /V options. Repetition is idempotent, but
 ; overwrite and skip are mutually exclusive. Strip options before preflight.
 BC_COPT:
+        CALL    CTR_INIT
         XOR     A
         LD      (CT_BATCH),A
         LD      (CTV_ON),A

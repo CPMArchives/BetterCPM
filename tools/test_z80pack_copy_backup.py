@@ -31,6 +31,7 @@ def main():
  for user,cmd in [(3,'COPY /BACKUP /B /V B1:*.DAT D3:[$ARC]'),(4,'COPY /B /V B1:*.DAT D4: /BACKUP')]:
   t=execute(cmd,f'backup-{user}')
   assert b'COPY source destination' not in t and b'INCOMPLETE' not in t
+  assert b'8 FILES COPIED [48K]' in t and b'[34K]' in t,t
   for state in range(8):
    f=w/f'out-{user}-{state}';cpm('cpmcp','d',f'{user}:F{state}.DAT',f);assert f.read_bytes()==payloads[state]
    found=[e for e in entries() if e[0]==user and bytes(c&127 for c in e[1:12])==f'F{state}'.ljust(8).encode()+b'DAT']

@@ -952,6 +952,24 @@ invalid generated names reject the operation without changing a destination.
 `/O` cannot override these checks. The current transient limit is 64 matched
 files; a larger batch reports `COPY BATCH TOO LARGE` before writing.
 
+Each successful transient copy reports its source, destination, and allocated
+space on the destination disk:
+
+```text
+B1:FOO.COM -> D0:FOO.COM [2K]
+```
+
+`K` means 1024 bytes. The size includes allocation-block rounding; an empty file
+reports `0K`. For batches selecting more than one file, COPY reports nonzero
+copied, skipped, and failed totals. Only successful copies contribute to the
+allocation total:
+
+```text
+3 FILES COPIED [18K]
+1 FILE SKIPPED
+1 FILE FAILED
+```
+
 These extended forms require `COPY.COM`. Use `:COPY` or `.COPY` to select it
 explicitly while automatic resident-to-transient handoff remains pending.
 

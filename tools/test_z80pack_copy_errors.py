@@ -28,6 +28,8 @@ def main():
   f=d/'COPY.COM';f.write_bytes(image);cpm('cpmrm','a','0:COPY.COM');cpm('cpmcp','a',f,'0:COPY.COM')
   t=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',d/'disks',[(b'CPX UNLOAD RCP\r',b'A0>_ ',30),(b'COPY /B /BACKUP B1:*.DAT D0:\r',b'A0>_ ',90)],d/'transcript.txt')
   assert (b'NO SPACE' if label=='full' else b'READ ERROR' if label=='read' else b'WRITE ERROR') in t,(label,t)
+  assert (b'1 FILE COPIED [2K]' if stop else b'2 FILES COPIED [4K]') in t,t
+  assert b'1 FILE FAILED' in t,t
   if cleanup:assert b'INCOMPLETE DESTINATION CLEANUP FAILED' in t
   for name,exists in [('A',True),('B',cleanup),('C',not stop)]:
    f=d/('out-'+name);cpm('cpmcp','d','0:'+name+'.DAT',f);assert f.exists()==exists,(label,name)
