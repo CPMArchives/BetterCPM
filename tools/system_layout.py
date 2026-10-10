@@ -24,6 +24,27 @@ def expand_layout(text: str) -> str:
         text, flags=re.MULTILINE | re.IGNORECASE)
 
     if '; @rcp-shared-selector@' in text:
+        start = text.index('BC_DIR:')
+        end = text.index('BC_FFIX:', start)
+        directory = text[start:end]
+        search = directory.index('  ; Search all physical directory extents.')
+        directory = ((ROOT / 'src/cpx/dir-select.inc').read_text(encoding='ascii') +
+                     '\nRD_SEARCH:\n' + directory[search:])
+        directory = directory.replace('        LD      A,1                     ; stock NO FILE',
+            '        CALL    RD_FILTER\n        JR      NC,BC_DSKIP\n'
+            '        LD      A,1                     ; stock NO FILE', 1)
+        directory = directory.replace("        ADD     A,'A'\n        CALL    BC_PCHAR\n",
+            "        ADD     A,'A'\n        CALL    BC_PCHAR\n        CALL    RD_PRINTUSER\n", 1)
+        # Each DU gets its own completed listing; restore the caller only at end.
+        done = directory.index('BC_DDONE:')
+        directory = directory[:done] + directory[done:].replace(
+            '        JP      BC_DURST', '        JP      RD_NEXT', 2)
+        directory = directory.replace('        LD      HL,(BC_DIREP)\n        LD      DE,10',
+            '        LD      A,(OQ_LEN)\n        OR      A\n        JR      NZ,RD_VISIBLE\n'
+            '        LD      HL,(BC_DIREP)\n        LD      DE,10', 1)
+        directory = directory.replace('        LD      A,(BC_DCOL)\n',
+            'RD_VISIBLE:\n        LD      A,(BC_DCOL)\n', 1)
+        text = text[:start] + directory + text[end:]
         common = ROOT / 'src/utilities/common'
         predicate = (common / 'attrselect.inc').read_text(encoding='ascii')
         predicate = predicate[:predicate.index('; Destination modification list:')]
