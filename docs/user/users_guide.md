@@ -599,16 +599,14 @@ expression controls inclusion of SYS files as well. The current platform
 bindings permit drives A: through D:; an unsupported drive rejects the complete
 selection. Empty locations report `NO FILE` individually.
 
-##### Planned transient DIR.COM
+##### Transient DIR.COM
 
-**DIR.COM now supports the same compound DU selections and attribute predicates
-as resident DIR, and works with RCP unloaded. It displays allocated KiB per file,
-combines all extents, and reports a selected file count and total for each DU.
-It currently uses one column, sorted alphabetically by filename then extension
-within each DU. Name, type, size and native-order sort switches and `/A` attribute
-display are implemented. Adaptive columns and the other reporting switches below
-remain planned.** Resident DIR retains its traditional four-column display,
-with no sorting, sizes, attribute display or summaries.
+**DIR.COM supports compound DU selections and attribute predicates, and works
+with RCP unloaded. It combines directory extents into one file entry, supports
+sorting, allocated KiB/record units, attribute display, automatic or explicit
+columns, paging, per-DU totals and once-per-drive free-space reporting.**
+Extent units (`/Z=E`) remain pending. Resident DIR retains its traditional
+four-column display, with no sorting, sizes, attribute display or summaries.
 
 Implemented sorting: `/S=N`, `/S=T` and `/S=Z` accept an optional `+` (ascending)
 or `-` (descending); `/S=U` preserves native directory order and accepts no sign.
