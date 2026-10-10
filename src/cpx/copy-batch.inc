@@ -336,17 +336,3 @@ CT_INVALID:
 CTBADCH:
         DB      '*?.:;[]=<>/,'
         DB      05CH,022H
-
-; Destination wildcards do not turn an exact source into a wildcard search.
-CTDWILD:
-        PUSH    HL
-        PUSH    DE
-        LD      HL,(BC_COFCP)
-        LD      DE,BC_NEWFCB
-        OR      A
-        SBC     HL,DE
-        POP     DE
-        POP     HL
-        JP      NZ,BC_CVBAD
-        OR      A
-        RET
