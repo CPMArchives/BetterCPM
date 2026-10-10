@@ -66,7 +66,7 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False,
         padded = content.ljust(((len(content) + 511) // 512) * 512, b"\x00")
         for offset in range(0, len(padded), 512):
             _track, side, physical = sectors[first + offset // 512]
-            source = MODULE_SOURCE + (side * 16 + physical) * 512
+            source = MODULE_SOURCE + (side * 16 + physical - 6) * 512
             machine.mem[source:source + 512] = padded[offset:offset + 512]
 
     install_slots(0, module)
@@ -129,7 +129,9 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False,
     # a unique key as it was for the original seven-sector carrier.
     reader = bytes((
         0xE5,                   # PUSH HL (destination)
-        0x78, 0x07, 0x07, 0x07, 0x07, 0x81, # A=side*16+sector
+        # Compact the fixture below the destination; physical sector 6 is
+        # the first carrier slot. The unadjusted final slot overlapped CCP.
+        0x78, 0x07, 0x07, 0x07, 0x07, 0x81, 0xD6, 6,
         0x67, 0x2E, 0x00, 0x29,        # HL=A*512
         0x11, 0x00, 0x60, 0x19,  # HL+=6000h
         0xD1,                   # POP DE (destination)

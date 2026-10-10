@@ -90,8 +90,8 @@ def main() -> None:
     # Stub Open as "not found" so CCP_LOAD returns after constructing its
     # private lookup FCB. This directly guards the 2026-09-01 stale-Z flag bug.
     for command, drive, expected in (
-        (b"HELLO WORLD", 0, b"HELLO   COM"),
-        (b"MINRET22 X", 0, b"MINRET22COM"),
+        (b"HELLO WORLD", 1, b"HELLO   COM"),
+        (b"MINRET22 X", 1, b"MINRET22COM"),
         (b"A:CPX LIST", 1, b"CPX     COM"),
     ):
         machine = cpu()

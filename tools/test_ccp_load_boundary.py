@@ -7,6 +7,7 @@ from add_cpm_file_to_dmk import extract_raw,add_file
 from build_montezuma_extended_790k import build
 from run_trs80_command import key_args,DEFAULT_EMULATOR
 from system_layout import LAYOUT
+from trs80gp_launch import run as run_emulator
 R=Path(__file__).resolve().parents[1];W=R/'build/compatibility'/time.strftime('load-boundary-%Y%m%d-%H%M%S');W.mkdir()
 ccp=struct.unpack_from('<H',(R/'build/ccp/ccp.rlm').read_bytes(),10)[0]
 cpx=struct.unpack_from('<H',(R/'build/cpx/RCP.CPX').read_bytes(),14)[0]
@@ -52,7 +53,7 @@ BADMSG: DB 'LOAD PATTERN OR PROFILE FAILED',13,10,'$'
  (w/(name+'.COM')).write_bytes(data)
  raw=extract_raw(Path(os.environ.get('BETTERCPM_TEST_IMAGE',str(R/'build/trs80/BetterCPM-Extended-80T-DS-System-790K.dmk'))).read_bytes());add_file(raw,name+'.COM',data);(w/'a.dmk').write_bytes(build(raw))
  args=[str(DEFAULT_EMULATOR),'-m4','-batch','-turbo','-d0',str(w/'a.dmk'),'-id','3500']+key_args(name+'\r')+['-id','12000','-it']+key_args('VER\r')+['-id','6000','-it','-ix']
- subprocess.run(args,cwd=w,timeout=180,check=True,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE)
+ run_emulator(args,cwd=w,timeout=180,check=True)
  screens=[]
  for p in sorted(w.glob('trs80-text-*.bin')):
   d=p.read_bytes()[:1920];screens.append('\n'.join(bytes(x&127 for x in d[i:i+80]).decode('ascii').rstrip() for i in range(0,1920,80)))
