@@ -9,6 +9,8 @@ DP_PARSE:
         LD (DP_ALEN),A
         LD (DN_REV),A
         LD (DT_SHOWATTR),A
+        LD (DG_PAGE),A
+        LD (DG_LINES),A
         LD A,'N'
         LD (DN_MODE),A
         LD A,'K'
@@ -141,10 +143,16 @@ DP_ATTR:
         AND 0DFH
         CP 'Z'
         JR Z,DP_KUNIT
+        CP 'P'
+        JR Z,DP_PAGING
         CP 'A'
         JP NZ,DP_OPBAD
         LD A,1
         LD (DT_SHOWATTR),A
+        JR DP_OK
+DP_PAGING:
+        LD A,1
+        LD (DG_PAGE),A
         JR DP_OK
 DP_KUNIT:
         LD A,'K'

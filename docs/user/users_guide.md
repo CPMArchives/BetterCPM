@@ -615,7 +615,7 @@ or `-` (descending); `/S=U` preserves native directory order and accepts no sign
 The last sort switch wins. Switches may go before or after the selection operand.
 Type and size ties use ascending filename order. Size sorting uses allocated
 space, independently of how that size is displayed. Invalid switches reject the
-whole command before listing; `/P`, `/Z=E` and `/C` are still pending.
+whole command before listing; `/Z=E` and `/C` are still pending.
 
 `/A` adds a three-position `SRA` field after each file size: SYS, read-only,
 and ARC respectively, with `-` for each clear bit. For example, `-R-` means
@@ -631,7 +631,14 @@ as the suffix. The last valid size-unit switch wins; a later `/Z` restores K.
 Unit selection resets to K on the next invocation. Sorting by `/S=Z` continues
 to use allocated space regardless of the display unit.
 
-Transient DIR will add extent units, columns and paging.
+`/P` pauses after 23 output lines on the standard 24-row display. Headings,
+blank lines and summaries count toward the page. The prompt spells out the
+controls: Space or Enter continues, and Ctrl-C aborts DIR and restores your
+original drive and user. Other keys are ignored. Repeating `/P` is harmless;
+paging is off again for the next DIR command. A listing that ends exactly at
+the page boundary does not require an extra key.
+
+Transient DIR will add extent units and columns.
 It will not display or
 filter dates, timestamps or wheel-protection attributes in 1.0.
 

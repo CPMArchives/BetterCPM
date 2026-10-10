@@ -21,11 +21,12 @@ def main():
            ('/S=N- /S=T+ /S=Z- /S=U','U',0),
            ('/A','N',0),('/a /A /S=T- A0:*.COM','T',1),
            ('A[0,2]:*.TXT[$SYS] /A','N',0),
+           ('/P','N',0),('/p /P /A /Z=S','N',0),('/P A[0,2]:*.TXT /S=T-','T',1),
            ('/Z','N',0),('/Z=K','N',0),('/z=s /A /S=Z- A0:*.DAT','Z',1),
            ('/Z=S /Z=K','N',0),('/Z=S /Z','N',0),('/Z=K /Z=S','N',0),
            (' /S=N'*24+' A0:*.*','N',0)]
     invalid_options=['/S','/S=','/S=X','/S=U+','/S=U-','/S=N--',
-                     '/Z=X','/Z=','/Z=S+','/Z=K-','/Z:S','/Z=X /Z=K','/A=RO','/AA','/A+','/A /S=X','/S=N?','/S=N /BOGUS','/S=X /S=N','/S==N','/S=T++','/S:N']
+                     '/P=ON','/PP','/P+','/Z=X','/Z=','/Z=S+','/Z=K-','/Z:S','/Z=X /Z=K','/A=RO','/AA','/A+','/A /S=X','/S=N?','/S=N /BOGUS','/S=X /S=N','/S==N','/S=T++','/S:N']
     invalid_files=['A0:F*A.COM /S=N','A0:*.COM B0:','/S=T A[32]:*.COM',
                    '/S=Z- A0:*.COM /S=N SECOND.DAT']
     def execute(text):
@@ -40,6 +41,8 @@ def main():
         assert c.mem[addr('DT_SHOWATTR')]==int(any(token.upper()=='/A' for token in text.split())),text
         units=[token.upper().split('=')[-1] if '=' in token else 'K' for token in text.split() if token.upper()=='/Z' or token.upper().startswith('/Z=')]
         assert c.mem[addr('DT_UNIT')]==ord(units[-1] if units else 'K'),text
+        assert c.mem[addr('DG_PAGE')]==int(any(token.upper()=='/P' for token in text.split())),text
+        assert c.mem[addr('DG_LINES')]==0,text
         assert any(c.mem[addr('DU_MAP'):addr('DU_MAP')+64]),text
     for text in invalid_options+invalid_files:
         execute('/S=T- A0:*.COM[$RO]') # leave valid state for rejection to clear
@@ -49,7 +52,8 @@ def main():
         assert bytes(c.mem[addr('DU_MAP'):addr('DU_MAP')+64])==bytes(64),text
         assert bytes(c.mem[addr('FS_FCB'):addr('FS_FCB')+36])==bytes(36),text
         assert c.mem[addr('FS_MASK')]==0,text
-    execute('/A /Z=S /S=N- A2:*.COM');execute('')
+    execute('/P /A /Z=S /S=N- A2:*.COM');execute('')
+    assert c.mem[addr('DG_PAGE')]==0
     assert c.mem[addr('DT_UNIT')]==ord('K')
     assert c.mem[addr('DT_SHOWATTR')]==0
     assert not c.carry and c.mem[addr('DN_MODE')]==ord('N') and c.mem[addr('DN_REV')]==0
