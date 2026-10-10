@@ -42,10 +42,22 @@ def main():
                                  'SIZMULT  DAT  2K','1 FILE, 40K TOTAL',
                                  '1 FILE, 2K TOTAL'],[]),
         ('DIR A0:SELMIX.*',['SELMIX   ASM  4K','SELMIX   COM  2K',
-                            '2 FILES, 6K TOTAL'],[])]
+                            '2 FILES, 6K TOTAL'],[]),
+        ('DIR /S=N- A0:SEL*.TXT',['3 FILES, 6K TOTAL'],['SELSYS']),
+        ('DIR /S=T- A0:SELMIX.*',['SELMIX   COM  2K','SELMIX   ASM  4K'],[]),
+        ('DIR A0:SIZ*.DAT /S=Z-',['SIZMULT  DAT  40K','SIZEMPTY DAT  0K','2 FILES, 40K TOTAL'],[]),
+        ('DIR /S=N- A0:SELMIX.* /S=U',['2 FILES, 6K TOTAL'],[]),
+        ('DIR /S=U A0:SELMIX.* /S=N+',['2 FILES, 6K TOTAL'],[]),
+        ('DIR A0:SELMIX.* /S=U-',['Invalid option.'],['A0:','2 FILES','SELMIX   ASM']),
+        ('DIR /S=N A0:SELMIX.* /S=BAD',['Invalid option.'],['A0:','2 FILES','SELMIX   ASM']),
+        ('DIR /S=X /S=N A0:SELMIX.*',['Invalid option.'],['A0:','2 FILES','SELMIX   ASM']),
+        ('DIR /S=Z A0:SELMIX.*',['SELMIX   COM  2K','SELMIX   ASM  4K','2 FILES, 6K TOTAL'],[])]
     def check_order(output,index):
         expected={0:['SELARC','SELRO','SELZERO'],3:['SELRO','SELSYS'],
-                  6:['SIZEMPTY','SIZMULT'],8:['SELMIX   ASM','SELMIX   COM']}.get(index,[])
+                  6:['SIZEMPTY','SIZMULT'],8:['SELMIX   ASM','SELMIX   COM'],
+                  9:['SELZERO','SELRO','SELARC'],10:['SELMIX   COM','SELMIX   ASM'],
+                  11:['SIZMULT','SIZEMPTY'],12:['SELMIX   COM','SELMIX   ASM'],
+                  13:['SELMIX   ASM','SELMIX   COM'],17:['SELMIX   COM','SELMIX   ASM']}.get(index,[])
         positions=[output.index(name) for name in expected]
         assert positions==sorted(positions),(index,expected,output)
     observations=[]
@@ -132,7 +144,7 @@ def main():
     (report/'harness.py').write_bytes(Path(__file__).read_bytes())
     (report/'evidence.json').write_text(json.dumps({'result':'PASS','platform':a.platform,
         'RCP_unloaded':True,'dir_sha256':hashlib.sha256(binary).hexdigest(),'cases':observations},indent=2)+'\n')
-    print('Self-contained DIR selection, sizes, per-DU name sorting and totals: PASS')
+    print('Self-contained DIR selection, sizes, sort switches and totals: PASS')
 
 
 if __name__=='__main__':main()

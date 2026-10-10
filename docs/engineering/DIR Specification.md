@@ -4,8 +4,8 @@ Received 2026-10-09. Target contract; the extended transient implementation is
 not yet complete. The first DIR.COM increment now links the qualified shared
 selection implementation independently of RCP. Multi-DU selection and attribute
 predicates work with RCP unloaded. Allocated KiB and per-DU selected totals now
-display, and each DU now defaults to ascending filename order. The remaining
-reporting options and explicit sorting switches are pending.
+display, and each DU supports the specified name/type/size/native-order sort
+switches. The remaining reporting options are pending.
 Explicit :DIR/.DIR works; automatic handoff is still unimplemented.
 
 ## Selection baseline — 2026-10-10
@@ -126,6 +126,47 @@ remain unchanged. Evidence: `/private/tmp/dir-name-sort-z80pack-20261010` and
 The formatter still uses one column. Explicit `/S=N`, reverse ordering, type/size
 sorts and `/S=U` remain pending, along with the other reporting options. The
 specification below continues to describe the final target.
+
+## Explicit sort switches — 2026-10-10
+
+Implemented `/S=N`, `/S=T`, `/S=Z` and `/S=U`. N/T/Z accept optional `+` or `-`;
+no sign means ascending. U preserves the collector's native discovery order and
+rejects either sign. Name order compares filename then extension. Type order
+compares the extension; size order compares the full unsigned 32-bit allocated
+record count, independently of displayed KiB. Type and size ties use ascending
+filename+extension even when the primary key is reversed.
+
+A transient-only command transaction separates one selection operand from
+command-wide switches. Switches may precede or follow the operand; repeated
+valid sort switches use the last value. Defaults reset to name ascending at
+every invocation. Unknown switches or invalid values report `Invalid option.`
+and reject the complete command. Invalid operands still report `Invalid filespec.`
+The original command tail is unchanged, and failed validation clears the shared
+selection map, FCB and predicate before any drive/user selection or directory
+listing. An invalid earlier switch is not excused by a later valid switch.
+The `/` inside a qualifier such as `[$R/O]` remains part of the operand.
+
+DIR.COM is 6,640 bytes, 487 bytes larger than the default-name-sort build. The
+growth includes a 128-byte private operand buffer; no protected state, BDOS or
+resident CPX change is required. Host and native ZSM4/LINK assembly match.
+Twelve valid and sixteen invalid command forms pass production-binary tests,
+including a 127-byte tail, failure atomicity and resetting defaults between invocations. Sort
+qualification now covers 246 cases across all keys and directions, with size
+boundaries crossing 8-, 16- and 24-bit values and the maximum unsigned DWORD.
+Whole-record identity, stable equal keys, buffer guards and DU totals are preserved.
+Collection/capacity tests and the 450 metric cases also pass.
+
+Eighteen public cases pass on z80pack and Model 4 with RCP unloaded, covering
+all keys, reverse order, native order, last-switch-wins behavior and rejection
+before listing. Caller DU restoration, sizes and filtered totals remain correct.
+Private z80pack disks are byte-identical before/after; Model 4 fixtures retain
+their content and attributes. Evidence:
+`/private/tmp/dir-sort-options-z80pack-20261010` and
+`/private/tmp/dir-sort-options-model4-20261010`.
+
+The one-column formatter remains unchanged. Alternate `/Z` units, attribute
+display, paging, adaptive/explicit columns and drive-free-space reports remain
+pending. Unsupported options currently reject rather than silently doing nothing.
 
 ## Audit clarifications awaiting resolution
 

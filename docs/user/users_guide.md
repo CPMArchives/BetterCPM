@@ -601,11 +601,19 @@ selection. Empty locations report `NO FILE` individually.
 as resident DIR, and works with RCP unloaded. It displays allocated KiB per file,
 combines all extents, and reports a selected file count and total for each DU.
 It currently uses one column, sorted alphabetically by filename then extension
-within each DU. Explicit sort switches, adaptive columns and the other reporting
-switches below remain planned.** Resident DIR retains its traditional four-column display,
+within each DU. Name, type, size and native-order sort switches are implemented;
+adaptive columns and the other reporting switches below remain planned.** Resident DIR retains its traditional four-column display,
 with no sorting, sizes, attribute display or summaries.
 
-Transient DIR will add selectable size units, alternate sort modes, attribute display and paging.
+Implemented sorting: `/S=N`, `/S=T` and `/S=Z` accept an optional `+` (ascending)
+or `-` (descending); `/S=U` preserves native directory order and accepts no sign.
+The last sort switch wins. Switches may go before or after the selection operand.
+Type and size ties use ascending filename order. Size sorting uses allocated
+space, independently of how that size is displayed. Invalid switches reject the
+whole command before listing; options such as `/A`, `/P`, `/Z` and `/C` are still
+pending.
+
+Transient DIR will add selectable size units, attribute display and paging.
 It will not display or
 filter dates, timestamps or wheel-protection attributes in 1.0.
 
