@@ -175,6 +175,8 @@ DP_UNIT:
         CP 'K'
         JR Z,DP_USET
         CP 'S'
+        JR Z,DP_USET
+        CP 'E'
         JP NZ,DP_OPBAD
 DP_USET:
         LD (DT_UNIT),A

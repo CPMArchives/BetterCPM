@@ -1,14 +1,50 @@
-# DIR.COM combined qualification — 2026-10-10
+# DIR.COM qualification — complete 2026-10-10
 
-This campaign qualifies the implemented transient DIR feature set together.
-It does not admit `/Z=E`: the physical-entry versus logical-16-KiB definition
-still needs a decision and implementation. Automatic resident-to-transient
-handoff is separate; `:DIR` and `.DIR` explicitly invoke the transient.
+The retained 1.0 DIR implementation is complete. `/Z=E` is adopted as physical
+directory entries used by each selected file. Automatic resident-to-transient
+handoff and additional console geometry remain separate facilities; `:DIR` and
+`.DIR` explicitly invoke this self-contained utility.
 
-Tested DIR.COM: 7,585 bytes, SHA-256
-`8547e20f9ab2581d7f43625e034e0387b4f01b7a1f5c1317ea04f44c59f4eab0`.
-This increment changes tests/documentation only. The previously qualified native
-ZSM4/LINK binary is byte-identical to host assembly; no resident allocation changes.
+Final DIR.COM: version 1.0, Build 002, 8,495 bytes, SHA-256
+`a846074dd2d9e4315f0a0f52caf307fafc7ec97dc2697c6f715e0e751a5348bb`.
+The E-unit closure adds 12 executable bytes to Build 001. RCP, BIOS and BDOS
+allocation/code are unchanged. Native ZSM4/LINK matches cross assembly exactly.
+
+## Final physical-entry closure
+
+Ten public cases pass on z80pack and Model 4 with RCP unloaded. Independent
+raw-directory counts verify an empty file occupies 1E, the 40,000-byte fixture
+occupies 2E on z80pack and 3E on Model 4, and another user's small file occupies
+1E. These different results distinguish physical entries from logical 16 KiB
+extents. Cases combine E units with selectors, predicates, attributes, columns,
+paging and sorting; check totals, invalid options, repeated-switch precedence,
+no matches, free space remaining in KiB, and next-command reset to K. Fixture
+contents and attributes are preserved.
+
+Evidence:
+
+- `/private/tmp/dir-extents-z80pack-20261010c`
+- `/private/tmp/dir-extents-model4-20261010`
+
+The separate 60-file, two-column paging campaign includes `/P /P /A /Z=E`:
+each empty file occupies 1E and the total is 60E. Space/Enter, ignored keys,
+Ctrl-C restoration and next-command reset retain their existing behavior.
+
+- `/private/tmp/dir-extents-paging-z80pack-20261010`
+- `/private/tmp/dir-extents-paging-model4-20261010`
+
+Focused checks cover 31 valid/40 invalid command forms, 264 rendered-column
+cases (including independent E DWORD values), physical-entry carry/aggregation,
+and allocated-space sorting with E display selected. `/VER` identifies Build
+002 and existing version-query checks pass. The full 63-case public campaign passes on z80pack with final Build 002:
+`/private/tmp/dir-final-build002-z80pack-20261010`. It includes the ten extent
+cases alongside the previously qualified 53-case campaign.
+
+The following historical campaign used the pre-version-query 7,585-byte binary,
+SHA-256 `8547e20f9ab2581d7f43625e034e0387b4f01b7a1f5c1317ea04f44c59f4eab0`.
+Its evidence is retained. The final full z80pack rerun is recorded above;
+Model 4 closure adds the ten extent and four paging cases rather than rerunning
+the historical 53-case campaign.
 
 ## Public combined campaign
 
@@ -58,9 +94,7 @@ independent exact free-space oracles. It checks one footer per selected drive,
 multiple users, multiple drives and no matches. Model 4 media match the bindings:
 SYSTEM on A, DATA on B. Free-space output stays in KiB independently of `/Z=S`.
 
-## Remaining closure
+## Closure status
 
-- Decide and implement `/Z=E`, then qualify its formatting, totals, column widths
-  and interactions. Existing `/S=Z` remains allocated-space sorting.
-- Other console widths/heights and automatic handoff are separate from this
-  80-column/24-row DIR qualification.
+No retained DIR command feature remains pending. Other console widths/heights
+and automatic handoff are outside this 80-column/24-row utility qualification.

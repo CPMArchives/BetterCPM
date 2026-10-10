@@ -9,7 +9,7 @@ listing=(ROOT/'build/utilities/dir-transient.lst').read_text()
 def addr(name):
     return int(re.search(r'^([0-9a-f]{4})\s+.*?\b'+name+':',listing,re.M|re.I)[1],16)
 cases=0
-for unit in 'KS':
+for unit in 'KSE':
     for attributes in (0,1):
         for records in (0,8,80,800,8000,80000,800000,8000000,80000000,800000000,0xfffffff8):
             value=records//8 if unit=='K' else records
@@ -18,7 +18,7 @@ for unit in 'KS':
             for request in (0,1,2,4):
                 c=Z80(b'');c.mem[256:256+len(image)]=image;c.mem[5]=0x76
                 buffer=addr('DT_BUFFER')
-                wide=b'WIDTH   DAT'+bytes([7])+records.to_bytes(4,'little')+bytes(8)
+                wide=b'WIDTH   DAT'+bytes([7])+(8 if unit=='E' else records).to_bytes(4,'little')+bytes(4)+records.to_bytes(4,'little')
                 narrow=b'EMPTY   DAT'+bytes([0])+bytes(12)
                 entries=wide+narrow if cases%2 else narrow+wide
                 c.mem[buffer:buffer+48]=entries

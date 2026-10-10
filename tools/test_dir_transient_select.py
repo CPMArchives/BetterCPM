@@ -18,6 +18,7 @@ def main():
     p.add_argument('--platform',choices=('z80pack','model4'),required=True)
     p.add_argument('--report',type=Path,required=True)
     p.add_argument('--image-dir',type=Path)
+    p.add_argument('--extents-only',action='store_true',help='Qualify physical directory-entry display units')
     p.add_argument('--edges-only',action='store_true',help='Run combined selector/report edge cases')
     p.add_argument('--free-only',action='store_true',help='Run drive-level free-space qualification')
     p.add_argument('--columns-only',action='store_true',help='Run only the column-layout increment')
@@ -109,7 +110,18 @@ def main():
          ['SELARC   TXT  16S  --A','1 FILE, 16S TOTAL','NO FILE','K FREE'],['SELRO    TXT','MORE --']),
         ('DIR /C=1 A0:SEL*.TXT[$RO+!$RO]', ['NO FILE','K FREE'],[' FILES,']),
         ('DIR A0:SIZ*.DAT', ['SIZEMPTY DAT  0K  : SIZMULT  DAT  40K','2 FILES, 40K TOTAL'],['  ---','320S','MORE --'])]
-    cases = edge_cases if a.edges_only else free_cases if a.free_only else column_cases if a.columns_only else cases + column_cases + edge_cases
+    extent_cases=[
+        ('DIR /Z=E /C=1 A0:SIZ*.DAT', ['SIZEMPTY DAT  1E','SIZMULT  DAT  {MULT}E','2 FILES, {SUM}E TOTAL','K FREE'],['40K','320S']),
+        ('DIR /Z=E /S=Z- /C=2 /A /P A[0,2]:SIZMULT.DAT', ['A0:','A2:','SIZMULT  DAT  {MULT}E  ---','SIZMULT  DAT  1E  ---','1 FILE, {MULT}E TOTAL','1 FILE, 1E TOTAL'],['40K','320S']),
+        ('DIR /Z=S /Z=E /C=4 A0:SEL*.TXT', ['3 FILES, 3E TOTAL','1E'],['SELSYS','16S']),
+        ('DIR /Z=E A0:SEL*.TXT[$SYS]', ['SELSYS   TXT  1E','1 FILE, 1E TOTAL'],['SELRO']),
+        ('DIR /Z=E /S=N- /C=2 A0:SELMIX.*', ['SELMIX   COM  1E','SELMIX   ASM  1E','2 FILES, 2E TOTAL'],[]),
+        ('DIR /Z=E /Z A0:SIZ*.DAT', ['2 FILES, 40K TOTAL'],['E TOTAL']),
+        ('DIR /Z=E+ /Z=E A0:SIZ*.DAT', ['Invalid option.'],['SIZMULT',' FILES,']),
+        ('DIR /Z=EE A0:SIZ*.DAT', ['Invalid option.'],['SIZMULT']),
+        ('DIR /Z=E A0:NONE.*', ['NO FILE','K FREE'],['E TOTAL']),
+        ('DIR A0:SIZ*.DAT', ['2 FILES, 40K TOTAL'],['E TOTAL'])]
+    cases = extent_cases if a.extents_only else edge_cases if a.edges_only else free_cases if a.free_only else column_cases if a.columns_only else cases + column_cases + edge_cases + extent_cases
 
     def check_free(output,index,expected):
         import re
@@ -118,7 +130,7 @@ def main():
         assert values==[(drive,str(expected[drive])) for drive in drives],(index,values,expected,output)
 
     def check_order(output,index):
-        if a.columns_only or a.free_only or a.edges_only:return
+        if a.columns_only or a.free_only or a.edges_only or a.extents_only:return
         expected={0:['SELARC','SELRO','SELZERO'],3:['SELRO','SELSYS'],
                   6:['SIZEMPTY','SIZMULT'],8:['SELMIX   ASM','SELMIX   COM'],
                   9:['SELZERO','SELRO','SELARC'],10:['SELMIX   COM','SELMIX   ASM'],
@@ -127,6 +139,11 @@ def main():
         if index==20:expected=[f'ATR{mask}     TXT' for mask in range(7,-1,-1)]
         positions=[output.index(name) for name in expected]
         assert positions==sorted(positions),(index,expected,output)
+    def extent_expectations(raw):
+        entries=[raw[i:i+32] for i in range(0,len(raw),32)]
+        count=sum(e[0]==0 and bytes(v&127 for v in e[1:12])==b'SIZMULT DAT' for e in entries)
+        assert count>1,count
+        return [(cmd,[x.format(MULT=count,SUM=count+1) for x in required],excluded) for cmd,required,excluded in cases]
     observations=[]
     if a.platform=='z80pack':
         assert a.image_dir
@@ -159,6 +176,8 @@ def main():
             import re
             listing=subprocess.check_output(['cpmls','-T','raw','-f','bettercpm-default','-D',str(disk)],cwd=report).decode()
             free=int(re.search(r'(\d+)K Free',listing)[1]);expected_free={'A':free,'B':free}
+        from test_z80pack_attributes import directory
+        cases=extent_expectations(directory(disk,report/'diskdefs'))
         before={path.name:path.read_bytes() for path in (report/'disks').glob('*.dsk')}
         for i,(command,required,excluded) in enumerate(cases):
             text=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',report/'disks',
@@ -168,8 +187,8 @@ def main():
             output=text.rsplit(command+' ',1)[-1]
             for value in required:assert value in output,(command,value,output)
             for value in excluded:assert value not in output,(command,value,output)
-            if i==6 and not a.columns_only and not a.free_only and not a.edges_only:assert output.count('SIZMULT  DAT')==1,(command,output)
-            if i==7 and not a.columns_only and not a.free_only and not a.edges_only:assert output.count('SIZMULT  DAT')==2,(command,output)
+            if i==6 and not a.columns_only and not a.free_only and not a.edges_only and not a.extents_only:assert output.count('SIZMULT  DAT')==1,(command,output)
+            if i==7 and not a.columns_only and not a.free_only and not a.edges_only and not a.extents_only:assert output.count('SIZMULT  DAT')==2,(command,output)
             check_order(output,i)
             if a.free_only:check_free(output,i,expected_free)
             observations.append({'command':command,'result':'PASS'})
@@ -185,6 +204,9 @@ def main():
         extras.append(('CASE.SUB',('\r\n'.join(script)+'\r\n').replace('$','$$').encode()+b'\x1a'))
         disk=report/'a.dmk';before=medium(extras)
         if not a.verify_existing:disk.write_bytes(before)
+        from add_cpm_file_to_dmk import extract_raw
+        from build_trs80_boot import FILESYSTEM_FIRST_SECTOR
+        cases=extent_expectations(extract_raw(before)[FILESYSTEM_FIRST_SECTOR*512:][:4096])
         if a.free_only:
             from add_cpm_file_to_dmk import extract_raw
             from build_trs80_boot import FILESYSTEM_FIRST_SECTOR
@@ -220,8 +242,8 @@ def main():
             output=text.split('>'+command,1)[-1].split('A0>CHECK',1)[0]
             for value in required:assert value in output,(command,value,text)
             for value in excluded:assert value not in output,(command,value,text)
-            if i==6 and not a.columns_only and not a.free_only and not a.edges_only:assert output.count('SIZMULT  DAT')==1,(command,output)
-            if i==7 and not a.columns_only and not a.free_only and not a.edges_only:assert output.count('SIZMULT  DAT')==2,(command,output)
+            if i==6 and not a.columns_only and not a.free_only and not a.edges_only and not a.extents_only:assert output.count('SIZMULT  DAT')==1,(command,output)
+            if i==7 and not a.columns_only and not a.free_only and not a.edges_only and not a.extents_only:assert output.count('SIZMULT  DAT')==2,(command,output)
             check_order(output,i)
             if a.free_only:check_free(output,i,expected_free)
             assert marker(i) in text,(i,text)

@@ -28,6 +28,7 @@ def main():
         for mode,reverse in modes:
             c = Z80(b'')
             c.mem[256:256+len(image)] = image
+            c.mem[addr('DT_UNIT')]=ord('E')  # Display units must not change allocated-space ordering.
             start = addr('DT_BUFFER')
             sizes=[0,8,256,65536,0x1000000,0xffffffff]
             records = [name+bytes([i%256])+sizes[i%len(sizes)].to_bytes(4,'little')+
