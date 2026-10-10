@@ -1,5 +1,16 @@
 # COPY Utility: Incremental Implementation and Qualification
 
+## Current closure — 2026-10-10
+
+Transient COPY implementation and planned two-platform functional qualification
+are complete for the frozen 10,303-byte COPY.COM. The final z80pack campaign and
+42 Model 4 cases are recorded in
+[z80pack qualification](COPY%20Transient%20z80pack%20Qualification.md) and
+[Model 4 qualification](COPY%20Transient%20Model%204%20Qualification.md).
+Final release-image conformance, automatic handoff, the RCP shared-selector
+update, and deferred performance investigation remain separate. The sections
+below preserve the history of incremental implementation.
+
 The consolidated [COPY target specification](COPY%20Specification.md) controls
 future implementation. Its plain `=` assignment operator supersedes the
 previous `:=` target syntax. Historical qualification below describes the

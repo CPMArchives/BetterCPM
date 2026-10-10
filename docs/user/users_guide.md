@@ -519,6 +519,21 @@ A CP/M warm boot also terminates the current program and returns control to the 
 
 Because an interrupted disk operation can leave an operation incomplete, avoid aborting a command while it is actively writing to a disk unless termination is necessary. If a disk operation reports an error or is interrupted unexpectedly, verify the affected files or media before continuing with further modifications. 
 
+#### 3.10 Inline Help at Interactive Prompts
+
+When an interactive prompt offers several abbreviated actions, `?` may display
+a short explanation and repeat the prompt for the same item. Asking for help
+does not retry, skip, abort, or change the command's current policy.
+
+For example, COPY's collision prompt offers `Y/N/O/S/R/?`. Enter `?` to see
+the meaning of those choices. Simple `Y/N` confirmations do not need a help
+action, and paging prompts should state their controls directly.
+
+Future ERA failure recovery will use `R/S/A/?`: retry the current item, skip
+it, abort the command, or display help. This ERA interface is planned, not yet
+implemented. Noninteractive modes follow their error policy without prompting;
+quiet output does not by itself answer prompts.
+
 ### 4. Basic Commands
 
 BetterCP/M provides a set of basic commands for everyday system operation. Some are built directly into the command processor, while others are normally supplied as resident commands by the standard `RCP.CPX`.

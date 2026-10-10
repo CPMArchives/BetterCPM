@@ -1,7 +1,13 @@
 # BetterCP/M 1.0 COPY Specification
 
-Status: target contract supplied on 2026-10-08; implementation and
-qualification are incremental. Pending decisions are listed at the end.
+Status: target contract supplied on 2026-10-08; transient COPY implementation
+and planned two-platform functional qualification complete on 2026-10-10.
+Handoff and protected session-policy controls remain separate work. See the
+current closure in [COPY implementation and qualification record](COPY%20Utility.md).
+
+Existing collision and verification inline help is retained under the
+[interactive prompt convention](Interactive%20Prompt%20Convention.md). That
+convention does not add new COPY recovery actions or change its qualified behavior.
 
 The common COPY implementation qualified in PR #164 predates this consolidated
 contract. The first subsequent increment implements plain `destination=source`
