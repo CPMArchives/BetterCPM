@@ -15,12 +15,15 @@ def main():
     p.add_argument('--platform', choices=('z80pack','model4'), required=True)
     p.add_argument('--report',type=Path,required=True)
     p.add_argument('--image-dir',type=Path)
+    p.add_argument('--two-columns',action='store_true',help='Qualify paging by rendered two-column rows')
     a=p.parse_args(); report=a.report.resolve(); report.mkdir(parents=True,exist_ok=False)
     binary=(ROOT/'build/utilities/DIR.COM').read_bytes()
-    fixtures=[(f'PG{i:03}.TXT',b'',1,0) for i in range(30)]
+    count=60 if a.two_columns else 30
+    columns=2 if a.two_columns else 1
+    fixtures=[(f'PG{i:03}.TXT',b'',1,0) for i in range(count)]
     prompt='MORE -- Space/ENTER for next page; ^C abort.'
-    commands=['DIR /C=1 /P A1:PG*.TXT','DIR /C=1 /P /P /A /Z=S A1:PG*.TXT',
-              'DIR /C=1 /P A1:PG*.TXT','DIR A1:PG*.TXT']
+    commands=[f'DIR /C={columns} /P A1:PG*.TXT',f'DIR /C={columns} /P /P /A /Z=S A1:PG*.TXT',
+              f'DIR /C={columns} /P A1:PG*.TXT','DIR A1:PG*.TXT']
     if a.platform=='z80pack':
         import shutil
         assert a.image_dir
@@ -44,9 +47,10 @@ def main():
             else:sequence.append((command.encode()+b'\r',b'B7>_ ',60))
         output=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',report/'disks',sequence,report/'transcript.txt').decode(errors='replace')
         assert output.count(prompt)==3,output
-        assert output.count('30 FILES, 0K TOTAL')==2,output
-        assert output.count('30 FILES, 0S TOTAL')==1,output
+        assert output.count(f'{count} FILES, 0K TOTAL')==2,output
+        assert output.count(f'{count} FILES, 0S TOTAL')==1,output
         assert '^C' in output
+        if a.two_columns:assert 'PG056    TXT  0K : PG057    TXT  0K : PG058    TXT  0K : PG059    TXT  0K' in output
         for f in (report/'disks').glob('*.dsk'):assert before[f.name]==f.read_bytes(),f
     else:
         disk=report/'a.dmk'
@@ -58,20 +62,21 @@ def main():
             invocation+=keys(command+'\r')
             if i<3:
                 invocation+=['-iw',prompt,'-it']+keys(['X ','\r','\x03'][i])
-                if i<2:invocation+=['-iw','30 FILES, 0'+('K' if i==0 else 'S')+' TOTAL']
-            else:invocation+=['-iw','30 FILES, 0K TOTAL']
+                if i<2:invocation+=['-iw',f'{count} FILES, 0'+('K' if i==0 else 'S')+' TOTAL']
+            else:invocation+=['-iw',f'{count} FILES, 0K TOTAL']
             invocation+=['-id','8000','-it']
         invocation+=['-ix']
         (report/'invocation.json').write_text(json.dumps(invocation,indent=2))
         run(invocation,cwd=report,timeout=600,check=True)
         for i in range(3):
             text=screen(report/f'trs80-text-{3+2*i}.bin')
-            assert prompt in text and 'PG020' in text and 'PG021' not in text,text
-        for index,summary in [(4,'30 FILES, 0K TOTAL'),(6,'30 FILES, 0S TOTAL'),(9,'30 FILES, 0K TOTAL')]:
+            assert prompt in text and f'PG{21*columns-1:03}' in text and f'PG{21*columns:03}' not in text,text
+        for index,summary in [(4,f'{count} FILES, 0K TOTAL'),(6,f'{count} FILES, 0S TOTAL'),(9,f'{count} FILES, 0K TOTAL')]:
             text=screen(report/f'trs80-text-{index}.bin')
             assert summary in text and text.rstrip().endswith('A7>'),text
+        if a.two_columns:assert 'PG056    TXT  0K : PG057    TXT  0K : PG058    TXT  0K : PG059    TXT  0K' in screen(report/'trs80-text-9.bin')
         text=screen(report/'trs80-text-8.bin')
-        assert '^C' in text and '30 FILES' not in text and text.rstrip().endswith('A7>'),text
+        assert '^C' in text and f'{count} FILES' not in text and text.rstrip().endswith('A7>'),text
         from test_model4_copy import files
         from add_cpm_file_to_dmk import extract_raw
         from build_trs80_boot import FILESYSTEM_FIRST_SECTOR

@@ -1,13 +1,14 @@
 # BetterCP/M 1.0 transient DIR specification
 
-Received 2026-10-09. Target contract; the extended transient implementation is
-not yet complete. The first DIR.COM increment now links the qualified shared
-selection implementation independently of RCP. Multi-DU selection and attribute
-predicates work with RCP unloaded. Allocated KiB and per-DU selected totals now
-display, and each DU supports the specified name/type/size/native-order sort
-switches. The remaining reporting options are pending.
+Received 2026-10-09. DIR.COM now implements the shared selection language,
+attribute predicates/display, file grouping, allocated KiB/record units,
+name/type/size/native-order sorting, automatic/explicit columns, paging,
+per-DU selected totals and once-per-drive free space. It is self-contained and
+works with RCP unloaded. Extent units (`/Z=E`) await their definition; combined
+qualification of the implemented feature set passes on both platforms.
 Explicit :DIR/.DIR works; automatic handoff is still unimplemented.
 
+The implementation history below records each qualified increment.
 ## Selection baseline — 2026-10-10
 
 The host and native builders produce a self-contained 5,370-byte DIR.COM from
@@ -340,6 +341,25 @@ blocks, including SUBMIT's live command-stream allocation on A0. Model 4 A
 uses SYSTEM media and B uses DATA media to match their configured bindings.
 Evidence: `/private/tmp/dir-free-z80pack-20261010b` and
 `/private/tmp/dir-free-model4-20261010b`.
+
+## Combined implemented-feature qualification — complete
+
+The full 53-case public campaign passes on z80pack and Model 4 with RCP unloaded.
+Ten new edge cases combine selectors, duplicate users/leading zeros, terminal
+star runs, attribute predicates/display, record units, columns, paging and sort
+options. Malformed syntax and invalid superseded options reject the invocation;
+empty predicates/matches retain free-space reporting; ordinary invocations reset
+all report options. File contents and attributes remain intact.
+
+A separate sixty-file, two-column paging campaign passes on both platforms,
+checking the first-page boundary at PG041, Space/Return, ignored keys, Ctrl-C,
+caller-DU restoration and next-command reset to four plain KiB columns. No utility
+or resident code changes were required. DIR.COM remains 7,585 bytes with the
+free-space increment's SHA-256.
+
+See [DIR Qualification.md](<DIR Qualification.md>) for evidence paths, campaign
+scope and remaining closure. `/Z=E` is not included: its definition still needs
+a decision, implementation and qualification.
 
 ## Audit clarifications awaiting resolution
 
