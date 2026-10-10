@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from build_distribution import capacity, selected_files, current_build, digest, publish_named
+from build_distribution import capacity, selected_files, current_build, digest, publish_named, publish_generation
 
 
 class DistributionGates(unittest.TestCase):
@@ -43,6 +43,46 @@ class DistributionGates(unittest.TestCase):
             report['sha256']=digest(b'new')
             publish_named(generation,[(target,source,report)],root)
             self.assertEqual(destination.read_bytes(),b'new')
+
+    def test_repeat_build_reuses_release_and_restores_named_image(self):
+        with tempfile.TemporaryDirectory() as t:
+            root=Path(t);candidate=root/'candidate';target=candidate/'trs80gp'
+            target.mkdir(parents=True)
+            image=target/'disk.dmk';image.write_bytes(b'qualified image')
+            report={'target':'trs80gp','sha256':digest(image.read_bytes())}
+            (target/'report.json').write_text(json.dumps(report))
+            (target/'build.log').write_text('first build')
+            reports=[(target,image,report)];generation=root/'release'
+            self.assertFalse(publish_generation(candidate,generation,reports))
+            (target/'build.log').write_text('repeat build')
+            self.assertTrue(publish_generation(candidate,generation,reports))
+            self.assertEqual((generation/'trs80gp/build.log').read_text(),'first build')
+            named=root/'build/trs80/disk.dmk';named.parent.mkdir(parents=True)
+            named.write_bytes(b'changed by emulator')
+            publish_named(generation,reports,root)
+            self.assertEqual(named.read_bytes(),b'qualified image')
+
+    def test_repeat_build_rejects_damaged_or_different_release(self):
+        with tempfile.TemporaryDirectory() as t:
+            root=Path(t);candidate=root/'candidate';target=candidate/'trs80gp'
+            target.mkdir(parents=True)
+            image=target/'disk.dmk';image.write_bytes(b'qualified image')
+            report={'target':'trs80gp','sha256':digest(image.read_bytes())}
+            (target/'report.json').write_text(json.dumps(report))
+            reports=[(target,image,report)];generation=root/'release'
+            publish_generation(candidate,generation,reports)
+            stored=generation/'trs80gp/disk.dmk';stored.write_bytes(b'damaged')
+            with self.assertRaisesRegex(ValueError,'integrity'):
+                publish_generation(candidate,generation,reports)
+            self.assertEqual(stored.read_bytes(),b'damaged')
+            stored.write_bytes(image.read_bytes())
+            saved=generation/'trs80gp/report.json'
+            saved.write_text(json.dumps(dict(report,source='different')))
+            with self.assertRaisesRegex(ValueError,'differs'):
+                publish_generation(candidate,generation,reports)
+            saved.unlink()
+            with self.assertRaisesRegex(ValueError,'incomplete'):
+                publish_generation(candidate,generation,reports)
 
     def test_cache_rejects_source_and_artifact_drift(self):
         with tempfile.TemporaryDirectory() as t:

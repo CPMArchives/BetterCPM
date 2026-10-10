@@ -282,6 +282,26 @@ def publish_named(generation, reports, root=ROOT):
     return [destination for _, destination in prepared]
 
 
+def publish_generation(publication, generation, reports):
+    """Reuse an identical, intact immutable release on repeated builds."""
+    if generation.exists():
+        for _, image, report in reports:
+            target = generation / report['target']
+            try:
+                existing = json.loads((target / 'report.json').read_text())
+                image_hash = digest((target / image.name).read_bytes())
+            except (OSError, ValueError) as error:
+                raise ValueError(f'{generation}: existing release is incomplete or unreadable; previous release preserved') from error
+            if existing != report or image_hash != report['sha256']:
+                raise ValueError(f'{generation}: existing release differs or failed integrity check; previous release preserved')
+        return True
+    with tempfile.TemporaryDirectory(prefix='.candidate-', dir=generation.parent) as publish_temp:
+        staged = Path(publish_temp) / 'release'
+        shutil.copytree(publication, staged)
+        staged.rename(generation)
+    return False
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--target', choices=['all','z80pack','trs80gp'], default='all')
@@ -337,8 +357,6 @@ def main():
             reports.append((out,image,report))
         # Publish one immutable generation only after every requested target passes.
         generation = a.output / ('release-'+identity['revision'][:12]+'-'+digest(json.dumps([r for _,_,r in reports],sort_keys=True).encode())[:12])
-        if generation.exists():
-            raise ValueError(f'{generation} already exists; previous release preserved')
         if source_identity() != identity:
             raise ValueError('source inputs changed during the build; candidate not published')
         # Keep construction inputs/private emulator media out of delivered evidence.
@@ -347,10 +365,8 @@ def main():
                 for path in out.glob(pattern):
                     path.unlink()
             shutil.rmtree(out/'disks', ignore_errors=True)
-        with tempfile.TemporaryDirectory(prefix='.candidate-', dir=a.output) as publish_temp:
-            staged = Path(publish_temp)/'release'
-            shutil.copytree(publication,staged)
-            staged.rename(generation)
+        if publish_generation(publication, generation, reports):
+            print(f'Reusing verified release: {generation}', flush=True)
         named_images = publish_named(generation, reports)
         for destination, (_, image, report) in zip(named_images, reports):
             print(f"PASS {destination}: {len(report['included'])} files, {report['free_bytes']//1024}K free; planned: "+', '.join(c['name'] for c in report['omitted'] if c['status']=='planned'))
