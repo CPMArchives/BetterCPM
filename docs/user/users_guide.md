@@ -597,9 +597,9 @@ selection. Empty locations report `NO FILE` individually.
 
 ##### Planned transient DIR.COM
 
-**The following is the accepted 1.0 interface design, not functionality
-currently available in DIR.COM.** Implementation and qualification will follow
-completion of COPY. Resident DIR retains its traditional four-column display,
+**DIR.COM now supports the same compound DU selections and attribute predicates
+as resident DIR, and works with RCP unloaded. Its richer reporting options below
+remain the accepted 1.0 design and are not implemented yet.** Resident DIR retains its traditional four-column display,
 with no sorting, sizes, attribute display or summaries.
 
 Transient DIR will add size reporting, sorting, attribute display and paging.
@@ -656,10 +656,11 @@ These select ARC-marked non-SYS `.COM` files, `.DOC` files with RO or SYS set,
 and files with ARC clear, respectively. Qualifiers select files without changing
 their attributes. They do not accept size/date queries, parentheses or `$WHL`.
 
-SYS files are hidden by default. An explicit predicate admitting SYS files,
-such as `[$SYS]` or `[$SYS,$RO]`, displays those matches rather than silently
-applying the default suppression. The complete rule for predicates without an
-explicit SYS term remains to be finalized before implementation.
+SYS files are hidden by default. An explicit attribute predicate replaces that
+default suppression: any SYS file satisfying the predicate is displayed. For
+example, `[$RW]` also includes writable SYS files; `[$RW+!$SYS]` excludes them.
+Predicates such as `[$SYS]` or `[$SYS,$RO]` display their matches rather than silently
+applying the default suppression.
 
 ##### Display and sorting options
 

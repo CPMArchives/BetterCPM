@@ -163,6 +163,15 @@ CT_NAMEMSG: DB 13,10,'INVALID DESTINATION NAME',13,10,'$'
     return text.replace(marker, scope + state + marker, 1)
 
 
+def dir_source() -> str:
+    """Self-contained DIR selector baseline, using the qualified RCP source."""
+    text = SOURCE.read_text(encoding="ascii")
+    return text.replace("CPXBASE         EQU     08000H",
+                        "CPXBASE         EQU     00100H").replace(
+        "        CSEG\n        .PHASE  ", "        ASEG\n        ORG     ").replace(
+        "        .DEPHASE\n", "")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--assembler", type=Path,
@@ -181,6 +190,10 @@ def main() -> None:
                     listing, ORIGIN)
     for command, entry_name in COMMANDS.items():
         command_base, command_listing = base, listing
+        if command == "DIR":
+            command_listing = BUILD / "dir-transient.lst"
+            command_base = assemble(args.assembler, dir_source(),
+                                    BUILD / "dir-transient.bin", command_listing, ORIGIN)
         if command == "COPY":
             copy_text = copy_source(text)
             command_listing = BUILD / "copy-transient.lst"
