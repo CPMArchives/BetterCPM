@@ -53,7 +53,13 @@ and validation results. The raw Model 4 intermediate is only a filesystem-tool
 representation; the DMK carries the actual Model 4 system and boot tracks.
 
 All requested targets must pass before a generation is published. Earlier
-successful generations are never overwritten. A failed invocation reports the
+successful generations are never overwritten. Repeating a build with identical
+inputs and results reuses the existing generation after verifying its target
+reports and image hashes. The fixed-name emulator images are refreshed from
+that verified generation, including when a previous emulator run changed them.
+An incomplete, damaged, or mismatched existing generation fails verification
+and is preserved for inspection; do not delete a release just to repeat a build.
+A failed invocation reports the
 failed command and leaves previous distributions intact. Choose `--work` to
 retain isolated build logs and artifacts on failure:
 
