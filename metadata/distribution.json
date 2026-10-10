@@ -371,6 +371,15 @@
         "z80pack",
         "trs80gp"
       ]
+    },
+    {
+      "name": "BYE.COM",
+      "artifact": "build/z80pack-tools/BYE.COM",
+      "status": "implemented",
+      "targets": [
+        "z80pack"
+      ],
+      "user": 0
     }
   ]
 }

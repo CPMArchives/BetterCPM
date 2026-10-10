@@ -78,6 +78,8 @@ def current_build(work, target, identity, reuse):
         run([sys.executable, 'tools/build_z80pack_image.py'], root, root / 'build.log')
     else:
         shutil.copy2(root / 'common-build.log', root / 'build.log')
+    if target == 'z80pack':
+        run([sys.executable, 'tools/build_z80pack_bye.py'], root, root/'exit-build.log')
     # Clock packages are explicit target components, not taken from disk files.
     builder = 'frehd_time_rsx' if target == 'trs80gp' else 'zprtc_rsx'
     run([sys.executable, f'tools/build_{builder}.py'], root, root / 'clock-build.log')
@@ -210,6 +212,31 @@ def boot(target, image, out, root, simulator, emulator):
             raise ValueError('cpmsim boot/system/provider identity missing')
         if 'Error' in text or 'NOT FOUND' in text:
             raise ValueError('cpmsim command failure; see boot.txt')
+        # A second private boot proves BYE returns control to the host.
+        script = out/'exit-test.exp'
+        script.write_text(r"""set timeout 30
+log_file -noappend [lindex $argv 2]
+spawn -noecho [lindex $argv 0] -z -d [lindex $argv 1]
+expect {
+ -exact {A0>_ } {}
+ timeout {exit 1}
+ eof {exit 1}
+}
+send -- "BYE\r"
+expect {
+ eof {}
+ timeout {exit 1}
+}
+set status [wait]
+exit [lindex $status 3]
+""")
+        environment = dict(os.environ)
+        environment['PATH'] = str(simulator.parent/'srctools')+os.pathsep+environment['PATH']
+        subprocess.run(['expect', str(script), str(simulator), str(disks),
+                        str(out/'exit-test.txt')], cwd=out, env=environment,
+                       check=True, timeout=60, stdout=subprocess.PIPE,
+                       stderr=subprocess.STDOUT)
+
     else:
         from trs80gp_launch import run as launch
         from run_trs80_command import key_args

@@ -1,0 +1,12 @@
+; cpmsim-only host exit command. The z80pack hardware-control port accepts
+; AAh to unlock, followed by 80h to stop the simulator. No BDOS/BIOS change.
+        ASEG
+        ORG     0100H
+        LD      A,0AAH
+        OUT     (0A0H),A
+        LD      A,080H
+        OUT     (0A0H),A
+        DI
+        HALT
+        RET
+        END
