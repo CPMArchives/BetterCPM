@@ -647,6 +647,13 @@ that DU. Column selection and sorting apply separately to each selected DU.
 Use `/C=1 /P` when you want a paged, one-file-per-line listing. The next command
 returns to automatic columns unless `/C=` is supplied again.
 
+After listing the selected DUs, DIR prints a separate free-space footer for
+each selected drive, for example `B: 94K FREE`. Free space belongs to the drive,
+so selecting B3 and B4 produces only one B: footer. This also applies when no
+files match. Free space always uses KiB, even with `/Z=S`; file counts and
+selected-file totals remain separate for each DU. DIR restores your original
+drive and user when finished.
+
 Transient DIR will add extent units.
 It will not display or
 filter dates, timestamps or wheel-protection attributes in 1.0.

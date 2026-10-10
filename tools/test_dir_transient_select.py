@@ -18,6 +18,7 @@ def main():
     p.add_argument('--platform',choices=('z80pack','model4'),required=True)
     p.add_argument('--report',type=Path,required=True)
     p.add_argument('--image-dir',type=Path)
+    p.add_argument('--free-only',action='store_true',help='Run drive-level free-space qualification')
     p.add_argument('--columns-only',action='store_true',help='Run only the column-layout increment')
     p.add_argument('--verify-existing',action='store_true',help='Verify saved Model 4 captures without rerunning')
     a=p.parse_args();report=a.report.resolve();report.mkdir(parents=True,exist_ok=a.verify_existing)
@@ -87,9 +88,20 @@ def main():
         ('DIR /C=4 /A /C=1 A0:SEL*.TXT',['SELARC   TXT  2K  --A','3 FILES, 6K TOTAL'],[' : ']),
         ('DIR /Z=S A0:SIZ*.DAT',['SIZEMPTY DAT  0S   : SIZMULT  DAT  320S','2 FILES, 320S TOTAL'],[]),
         ('DIR /A A0:SEL*.TXT',['SELARC   TXT  2K  --A : SELRO    TXT  2K  -R-','3 FILES, 6K TOTAL'],[])]
-    cases = column_cases if a.columns_only else cases + column_cases
+    free_cases=[
+        ('DIR A0:SEL*.TXT',['3 FILES, 6K TOTAL'],[]),
+        ('DIR A[0,2]:SIZ*.DAT',['A0:','A2:','2 FILES, 40K TOTAL','1 FILE, 2K TOTAL'],[]),
+        ('DIR [A0,A2,B0,B2]:SIZ*.DAT',['A0:','A2:','B0:','B2:'],[]),
+        ('DIR /Z=S A[0,2]:NONE.*',['NO FILE'],[' FILES,'])]
+    cases = free_cases if a.free_only else column_cases if a.columns_only else cases + column_cases
+    def check_free(output,index,expected):
+        import re
+        values=re.findall(r'^([A-P]): (\d+)K FREE\r?$',output,re.M)
+        drives=['A','B'] if index==2 else ['A']
+        assert values==[(drive,str(expected[drive])) for drive in drives],(index,values,expected,output)
+
     def check_order(output,index):
-        if a.columns_only:return
+        if a.columns_only or a.free_only:return
         expected={0:['SELARC','SELRO','SELZERO'],3:['SELRO','SELSYS'],
                   6:['SIZEMPTY','SIZMULT'],8:['SELMIX   ASM','SELMIX   COM'],
                   9:['SELZERO','SELRO','SELARC'],10:['SELMIX   COM','SELMIX   ASM'],
@@ -125,6 +137,11 @@ def main():
             path=report/name;path.write_bytes(data);cpm('cpmcp',path,f'{user}:{name}')
             if mask:cpm('cpmchattr', ''.join(flag for bit,flag in
                         [(1,'r'),(2,'s'),(4,'a')] if mask&bit),f'{user}:{name}')
+        if a.free_only:shutil.copy2(disk,report/'disks/driveb.dsk')
+        if a.free_only:
+            import re
+            listing=subprocess.check_output(['cpmls','-T','raw','-f','bettercpm-default','-D',str(disk)],cwd=report).decode()
+            free=int(re.search(r'(\d+)K Free',listing)[1]);expected_free={'A':free,'B':free}
         before={path.name:path.read_bytes() for path in (report/'disks').glob('*.dsk')}
         for i,(command,required,excluded) in enumerate(cases):
             text=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',report/'disks',
@@ -134,9 +151,10 @@ def main():
             output=text.rsplit(command+' ',1)[-1]
             for value in required:assert value in output,(command,value,output)
             for value in excluded:assert value not in output,(command,value,output)
-            if i==6 and not a.columns_only:assert output.count('SIZMULT  DAT')==1,(command,output)
-            if i==7 and not a.columns_only:assert output.count('SIZMULT  DAT')==2,(command,output)
+            if i==6 and not a.columns_only and not a.free_only:assert output.count('SIZMULT  DAT')==1,(command,output)
+            if i==7 and not a.columns_only and not a.free_only:assert output.count('SIZMULT  DAT')==2,(command,output)
             check_order(output,i)
+            if a.free_only:check_free(output,i,expected_free)
             observations.append({'command':command,'result':'PASS'})
         assert all((report/'disks'/name).read_bytes()==data for name,data in before.items())
     else:
@@ -150,7 +168,30 @@ def main():
         extras.append(('CASE.SUB',('\r\n'.join(script)+'\r\n').replace('$','$$').encode()+b'\x1a'))
         disk=report/'a.dmk';before=medium(extras)
         if not a.verify_existing:disk.write_bytes(before)
+        if a.free_only:
+            from add_cpm_file_to_dmk import extract_raw
+            from build_trs80_boot import FILESYSTEM_FIRST_SECTOR
+            filesystem=extract_raw(before)[FILESYSTEM_FIRST_SECTOR*512:]
+            used={0,1}
+            for position in range(0,4096,32):
+                entry=filesystem[position:position+32]
+                if entry[0]>31:continue
+                used.update(block for at in range(16,32,2) if (block:=int.from_bytes(entry[at:at+2],'little')))
+            free=(len(filesystem)//2048-len(used))*2
+            from build_source_disk import install_files
+            from build_montezuma_extended_790k import build
+            braw=install_files([(user,name,data) for name,data,user,_ in fixtures])
+            bused={0,1}
+            for position in range(0,4096,32):
+                entry=braw[position:position+32]
+                if entry[0]>31:continue
+                bused.update(block for at in range(16,32,2) if (block:=int.from_bytes(entry[at:at+2],'little')))
+            expected_free={'A':free-2,'B':(len(braw)//2048-len(bused))*2}
+            # A is SYSTEM media; B's default binding is DATA media.
+            bimage=build(braw)
+            (report/'b.dmk').write_bytes(bimage)
         invocation=[str(DEFAULT_EMULATOR),'-m4','-batch','-turbo','-d0',str(disk),'-id','3000','-it']
+        if a.free_only:invocation+=['-d1',str(report/'b.dmk')]
         invocation+=keys('CPX UNLOAD RCP\r')+['-id','3000','-it']+keys('SUBMIT CASE\r')+['-itime','0']
         for i in range(len(cases)):invocation+=['-iw',marker(i),'-it']
         invocation+=['-id','3000','-it','-ix']
@@ -162,9 +203,10 @@ def main():
             output=text.split('>'+command,1)[-1].split('A0>CHECK',1)[0]
             for value in required:assert value in output,(command,value,text)
             for value in excluded:assert value not in output,(command,value,text)
-            if i==6 and not a.columns_only:assert output.count('SIZMULT  DAT')==1,(command,output)
-            if i==7 and not a.columns_only:assert output.count('SIZMULT  DAT')==2,(command,output)
+            if i==6 and not a.columns_only and not a.free_only:assert output.count('SIZMULT  DAT')==1,(command,output)
+            if i==7 and not a.columns_only and not a.free_only:assert output.count('SIZMULT  DAT')==2,(command,output)
             check_order(output,i)
+            if a.free_only:check_free(output,i,expected_free)
             assert marker(i) in text,(i,text)
             (report/f'case-{i}.txt').write_text(text)
             observations.append({'command':command,'result':'PASS'})
@@ -178,6 +220,7 @@ def main():
         for name,_,user,_ in fixtures:
             key=name.partition('.')[0].ljust(8).encode()+name.partition('.')[2].ljust(3).encode()
             assert old[(user,key)]==new[(user,key)],name
+        if a.free_only:assert (report/'b.dmk').read_bytes()==bimage
         assert screen(report/f'trs80-text-{len(cases)+2}.bin').rstrip().endswith('A0>')
     (report/'DIR.COM').write_bytes(binary)
     (report/'harness.py').write_bytes(Path(__file__).read_bytes())
