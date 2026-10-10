@@ -368,7 +368,7 @@ The history is preserved across a normal warm boot. A cold boot begins with an e
 
 Because the history has a fixed capacity, older entries are eventually discarded as newer commands are entered.
 
-The keys used to move through command history are listed with the other command-line editing keys in Appendix B.
+Ctrl-K recalls an older history entry; Ctrl-J selects a newer entry. On the Model 4, the Up-arrow key supplies `[` so that trs80gp Logical Layout can enter selection expressions without recalling history. Down-arrow supplies `]`; Logical Layout does not send a key signal for the host `]` key. Use Up/Down for bracket entry and Ctrl-K/Ctrl-J for history navigation.
 
 #### 3.5 Selecting Drives and User Areas
 

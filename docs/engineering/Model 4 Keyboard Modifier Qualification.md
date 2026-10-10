@@ -37,16 +37,29 @@ Qualified image SHA-256:
 Build and ROM/RAM ownership checks pass. The z80pack ROM-profile RAM map
 continues to pass unchanged.
 
-## Bracket mapping remains a separate decision
+## Bracket mapping
 
 A raw matrix diagnostic under trs80gp Logical Layout observed host `[` as
-Model 4 row 6, bit 3: the physical Up key. BetterCP/M maps that key to byte
-11, which the CCP interprets as history recall. This explains replacement of
-the current input by a previous command. The BIOS cannot distinguish host `[`
-from a physical Up arrow when the emulator supplies the same matrix state.
+Model 4 row 6, bit 3: the physical Up key. The former byte 11 invoked CCP
+history recall and replaced the command being entered. The BIOS cannot
+distinguish host `[` from a physical Up arrow with that same matrix state.
 
-The proposed choice is to publish `[` for that key and use the existing
-Ctrl-K history shortcut, or retain Up-arrow history and establish another
-bracket chord/mapping. This change has not been made pending the user's choice.
-Right-bracket host mapping still requires qualification. No bracket fix is
-claimed by the modifier regression.
+The Up and Down slots now publish ASCII `[` (5Bh) and `]` (5Dh). History
+navigation remains available through Ctrl-K (0Bh) and Ctrl-J (0Ah); this is a Model 4 keyboard mapping change, with no CCP
+or BDOS changes. The BIOS size and writable-state layout are unchanged.
+The BIOS regression checks both brackets and both history chords.
+
+The user and the raw matrix probe both confirmed that host `]` produces no
+matrix event in Logical Layout. This is an emulator limitation; the BIOS
+cannot recover a character it never receives. Physical Down provides a
+closing-bracket fallback. Host `[` continues to work normally via the Up slot.
+These mappings also apply on real Model 4 keyboards. Left/Right editing and
+Shift-Left backspace remain unchanged.
+
+The rebuilt image (SHA-256
+`e0253bfdb49012cb87e9d915053c23ff889d634bdd370ec3e49dfba05fef716d`)
+passes the complete byte regression, including `5B 5D 0B 0A` for the two
+brackets and history chords. A separate boot entered `:DIR *.*[$SYS]`
+through physical matrix keys and returned `NO FILE` and a fresh `A0>` prompt,
+with no history replacement or filespec error. BIOS remains 637/638 bytes
+and the ROM/RAM inventory check passes.
