@@ -51,7 +51,8 @@ increment; the final campaign consumes that frozen binary.
 
 ## Remaining qualification
 
-Run the corresponding completed transient behavior on Model 4/trs80gp and
-preserve matching evidence. This z80pack result does not qualify an older Model 4
+Continue the corresponding completed transient behavior on Model 4/trs80gp and
+preserve matching evidence. The first Model 4 results and remaining scope are
+recorded in [the Model 4 qualification note](COPY%20Transient%20Model%204%20Qualification.md). This z80pack result does not qualify an older Model 4
 COPY binary by inference. The separately specified handoff mechanism remains
 outside this command-only campaign.
