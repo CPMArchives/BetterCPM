@@ -35,6 +35,32 @@ The test also confirms that the saved Model 4 DIR image matches the tested binar
 Evidence: `/private/tmp/dir-selector-z80pack-current-20261010` and
 `/private/tmp/dir-selector-model4-20261010`.
 
+## Size-accounting foundation — 2026-10-10
+
+DIR.COM now accumulates selected allocation records, logical records and physical
+directory-entry counts while its existing directory search visits each entry.
+The accounting helper issues no BDOS calls, so it cannot replace the active
+search or alter its DMA buffer. Totals cover the whole selected DU set and reset
+at each invocation. Predicate filtering and implicit SYS hiding apply before
+accounting; entries beyond the first physical extent group still contribute.
+
+All three totals use four bytes, including entry counts across multi-DU sets.
+Allocation uses the DPB's byte/word block-map format and BSH; logical
+records use `(EX & EXM) * 128 + RC`. Zero allocation slots contribute nothing.
+This prepares reporting but does not yet add visible sizes, `/Z`, sorting,
+per-file aggregation or summaries. The physical-entry counter is available for
+the proposed E metric; its displayed definition remains part of the reporting
+contract clarification below.
+
+The helper is linked only into DIR.COM, now 5,607 bytes (237 bytes added).
+Native ZSM4/LINK matches host assembly. RCP, BDOS and the other five transient
+utilities are unchanged. Production-binary execution checks 450 accumulation
+cases covering empty/sparse/full maps, both block-number widths, several block
+sizes, EXM/RC boundaries, repeated entries and carries into higher total bytes;
+selection visibility gates also pass.
+The existing six z80pack selection cases pass, with unchanged private disk
+images. Evidence: `/private/tmp/dir-metrics-z80pack-qualified-20261010`.
+
 ## Audit clarifications awaiting resolution
 
 - Proposed exact metrics: K/S are allocated bytes/128-byte records, E counts

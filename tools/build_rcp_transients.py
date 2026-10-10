@@ -8,6 +8,7 @@ import re
 from pathlib import Path
 
 from build_ccp import assemble
+from system_layout import expand_layout
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/cpx/rcp.mac"
@@ -166,10 +167,47 @@ CT_NAMEMSG: DB 13,10,'INVALID DESTINATION NAME',13,10,'$'
 def dir_source() -> str:
     """Self-contained DIR selector baseline, using the qualified RCP source."""
     text = SOURCE.read_text(encoding="ascii")
-    return text.replace("CPXBASE         EQU     08000H",
+    text = text.replace("CPXBASE         EQU     08000H",
                         "CPXBASE         EQU     00100H").replace(
         "        CSEG\n        .PHASE  ", "        ASEG\n        ORG     ").replace(
         "        .DEPHASE\n", "")
+    text = expand_layout(text)
+    text = text.replace('BC_DIR:\n', 'BC_DIR:\n        PUSH HL\n        PUSH BC\n'
+        '        XOR A\n        LD HL,DT_TOTAL\n        LD B,12\n'
+        'DT_CLEAR:\n        LD (HL),A\n        INC HL\n        DJNZ DT_CLEAR\n'
+        '        POP BC\n        POP HL\n', 1)
+    text = text.replace('        LD C,31\n        CALL BDOS\n',
+        '        LD C,31\n        CALL BDOS\n        LD (DT_DPB),HL\n', 1)
+    text = text.replace('        CALL    RD_FILTER\n', '        CALL    DT_FILTER\n', 1)
+    metrics = (ROOT / 'src/utilities/common/dirmetrics.inc').read_text(encoding='ascii')
+    hook = '''
+; Transient-only selected totals, before the display's first-extent gate.
+DT_FILTER:
+        CALL RD_FILTER
+        RET NC
+        LD A,(OQ_LEN)
+        OR A
+        JR NZ,DT_COUNT
+        LD HL,(BC_DIREP)
+        LD DE,10
+        ADD HL,DE
+        LD A,(HL)
+        AND 80H
+        LD HL,(BC_DIREP)
+        SCF
+        RET NZ                     ; hidden SYS still follows existing NO FILE policy
+DT_COUNT:
+        LD HL,(BC_DIREP)
+        LD DE,(DT_DPB)
+        LD BC,DT_TOTAL
+        CALL DM_ADD
+        LD HL,(BC_DIREP)            ; display requires original entry pointer
+        SCF
+        RET
+DT_DPB: DW 0
+DT_TOTAL: DS 12
+'''
+    return text.replace('        END\n', hook + metrics + '\n        END\n', 1)
 
 
 def main() -> None:
