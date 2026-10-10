@@ -1,0 +1,149 @@
+; Transient DIR command transaction. HL/B=tail, D/E=captured caller DU.
+; One operand and command-wide options, in either order. Original tail is
+; unchanged. All tokens validate before FS_PARSE publishes a selection map.
+DP_PARSE:
+        LD (DP_DU),DE
+        XOR A
+        LD (DP_ERROR),A
+        LD (DP_HAS),A
+        LD (DP_ALEN),A
+        LD (DN_REV),A
+        LD A,'N'
+        LD (DN_MODE),A
+        CALL FS_CLEAR
+DP_TOKEN:
+        LD A,B
+        OR A
+        JR Z,DP_DONE
+        LD A,(HL)
+        CP ' '
+        JR NZ,DP_START
+        INC HL
+        DEC B
+        JR DP_TOKEN
+DP_START:
+        LD (DP_TOK),HL
+        LD C,0
+DP_SCAN:
+        LD A,B
+        OR A
+        JR Z,DP_STOP
+        LD A,(HL)
+        CP ' '
+        JR Z,DP_STOP
+        INC HL
+        INC C
+        DEC B
+        JR DP_SCAN
+DP_STOP:
+        LD (DP_NEXT),HL
+        LD A,B
+        LD (DP_REM),A
+        LD A,C
+        LD (DP_LEN),A
+        LD HL,(DP_TOK)
+        LD A,(HL)
+        CP '/'
+        JR Z,DP_SWITCH
+        LD A,(DP_HAS)
+        OR A
+        JR NZ,DP_BAD
+        INC A
+        LD (DP_HAS),A
+        LD A,C
+        LD (DP_ALEN),A
+        LD B,0
+        LD DE,DP_ARG
+        LDIR
+        JR DP_RESUME
+DP_SWITCH:
+        CALL DP_OPTION
+        JR C,DP_BAD
+DP_RESUME:
+        LD HL,(DP_NEXT)
+        LD A,(DP_REM)
+        LD B,A
+        JR DP_TOKEN
+DP_DONE:
+        LD HL,DP_ARG
+        LD A,(DP_ALEN)
+        LD B,A
+        LD DE,(DP_DU)
+        JP FS_PARSE
+DP_BAD:
+        CALL FS_CLEAR
+        SCF
+        RET
+DP_OPTION:
+        LD A,1
+        LD (DP_ERROR),A
+        LD A,(DP_LEN)
+        CP 4
+        JR Z,DP_FORM
+        CP 5
+        JR NZ,DP_OPBAD
+DP_FORM:
+        INC HL
+        LD A,(HL)
+        AND 0DFH
+        CP 'S'
+        JR NZ,DP_OPBAD
+        INC HL
+        LD A,(HL)
+        CP '='
+        JR NZ,DP_OPBAD
+        INC HL
+        LD A,(HL)
+        AND 0DFH
+        LD C,A
+        CP 'N'
+        JR Z,DP_KEY
+        CP 'T'
+        JR Z,DP_KEY
+        CP 'Z'
+        JR Z,DP_KEY
+        CP 'U'
+        JR NZ,DP_OPBAD
+DP_KEY:
+        LD E,0
+        LD A,(DP_LEN)
+        CP 4
+        JR Z,DP_SET
+        LD A,C
+        CP 'U'
+        JR Z,DP_OPBAD
+        INC HL
+        LD A,(HL)
+        CP '+'
+        JR Z,DP_SET
+        CP '-'
+        JR NZ,DP_OPBAD
+        INC E
+DP_SET:
+        LD A,C
+        LD (DN_MODE),A
+        LD A,E
+        LD (DN_REV),A
+        XOR A
+        LD (DP_ERROR),A
+        RET
+DP_OPBAD:
+        SCF
+        RET
+DP_REJECT:
+        LD A,(DP_ERROR)
+        OR A
+        JP Z,BC_DBAD
+        LD DE,DP_MSG
+        CALL BC_PRINT
+        JP BC_DURST
+DP_DU: DW 0
+DP_TOK: DW 0
+DP_NEXT: DW 0
+DP_LEN: DB 0
+DP_REM: DB 0
+DP_HAS: DB 0
+DP_ALEN: DB 0
+DP_ERROR: DB 0
+DP_ARG: DS 128
+DP_MSG: DB 13,10,'Invalid option.',13,10,'$'

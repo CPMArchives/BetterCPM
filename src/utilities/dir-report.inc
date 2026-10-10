@@ -234,10 +234,13 @@ DT_ONEMSG: DB ' FILE, $'
 DT_SUMMSG: DB 'K TOTAL',13,10,'$'
 DT_FULLMSG: DB 13,10,'Directory too large.',13,10,'$'
 
-; Stable ascending comparison of normalized name then extension. Move whole
+; Stable comparison of the selected key, with name/extension tie-breaks. Move whole
 ; records so allocation, logical-record and physical-entry totals stay attached.
 ; Shrink the sorted tail after each pass; an already-sorted pass returns early.
 DN_SORT:
+        LD A,(DN_MODE)
+        CP 'U'
+        RET Z
         LD HL,(DT_FILES)
         DEC HL
         LD A,H
@@ -263,16 +266,8 @@ DN_PAIR:
         ADD HL,DE
         EX DE,HL
         LD HL,(DN_PTR)
-        LD B,11
-DN_CMP:
-        LD C,(HL)
-        LD A,(DE)
-        CP C
+        CALL DN_ORDER
         JR C,DN_EXCH
-        JR NZ,DN_NEXT
-        INC HL
-        INC DE
-        DJNZ DN_CMP
         JR DN_NEXT
 DN_EXCH:
         LD A,1
@@ -317,3 +312,70 @@ DN_NEXT:
 DN_PTR: DW 0
 DN_LAST: DW 0
 DN_SWAP: DB 0
+DN_MODE: DB 'N'
+DN_REV: DB 0
+
+; Carry means the right record should precede the left. Reverse applies to
+; the primary key; type/size ties use ascending name+extension in either mode.
+DN_ORDER:
+        LD A,(DN_MODE)
+        CP 'T'
+        JR Z,DN_TYPE
+        CP 'Z'
+        JR Z,DN_SIZE
+        CALL DN_NAME
+        JR DN_DIR
+DN_TYPE:
+        LD BC,8
+        ADD HL,BC
+        EX DE,HL
+        ADD HL,BC
+        EX DE,HL
+        LD B,3
+        CALL DN_LEX
+        JR NZ,DN_DIR
+        JP DN_NAME
+DN_SIZE:
+        LD BC,15                ; allocated record DWORD, most significant byte
+        ADD HL,BC
+        EX DE,HL
+        ADD HL,BC
+        EX DE,HL
+        LD B,4
+DN_NUM:
+        LD C,(HL)
+        LD A,(DE)
+        CP C
+        JR NZ,DN_DIR
+        DEC HL
+        DEC DE
+        DJNZ DN_NUM
+        JP DN_NAME
+DN_NAME:
+        LD HL,(DN_PTR)
+        LD DE,24
+        ADD HL,DE
+        EX DE,HL
+        LD HL,(DN_PTR)
+        LD B,11
+DN_LEX:
+        LD C,(HL)
+        LD A,(DE)
+        CP C
+        RET NZ
+        INC HL
+        INC DE
+        DJNZ DN_LEX
+        RET
+DN_DIR:
+        RET Z
+        PUSH AF
+        LD A,(DN_REV)
+        OR A
+        JR Z,DN_NORMAL
+        POP AF
+        CCF
+        RET
+DN_NORMAL:
+        POP AF
+        RET
