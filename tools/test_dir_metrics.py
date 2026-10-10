@@ -65,7 +65,7 @@ def main():
         c.run(addr('DT_FILTER'),limit=10000)
         matches = bool(mask & (1<<state))
         visible = matches and (explicit or not state & 2)
-        assert c.carry == matches
+        assert c.carry == bool(visible)
         assert c.hl == entry or not matches
         assert c.word(addr('DT_TOTAL')+8) == int(bool(visible))
     print(f'DIR metrics: {count} accumulation cases and selected visibility gates pass')

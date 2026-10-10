@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Qualify self-contained DIR selection with RCP unloaded on both platforms."""
+"""Qualify DIR selectors and multi-extent sizes with RCP unloaded on both platforms."""
 import argparse
 import hashlib
 import json
@@ -24,14 +24,22 @@ def main():
     binary=(ROOT/'build/utilities/DIR.COM').read_bytes()
     fixtures=[('SELZERO.TXT',b'ZERO\r\n',0,0),('SELTWO.TXT',b'TWO\r\n',2,0),
               ('SELRO.TXT',b'RO\r\n',0,1),('SELSYS.TXT',b'SYS\r\n',0,2),
-              ('SELARC.TXT',b'ARC\r\n',0,4)]
+              ('SELARC.TXT',b'ARC\r\n',0,4),
+              ('SIZMULT.DAT',b'M'*40000,0,0),('SIZEMPTY.DAT',b'',0,0),
+              ('SIZMULT.DAT',b'T'*2048,2,0)]
     cases=[
-        (':DIR A[0,2]:SEL*.TXT',['A0:','A2:','SELZERO','SELTWO'],['SELSYS']),
-        ('.DIR A0:SEL*.TXT[$SYS]',['SELSYS'],['SELZERO','SELRO','SELARC']),
-        ('DIR A0:SEL*.TXT[$ARC+!$SYS]',['SELARC'],['SELZERO','SELRO','SELSYS']),
-        ('DIR [A0,A2]:SEL?*.TXT[$RO,$SYS]',['SELRO','SELSYS'],['SELZERO','SELTWO','SELARC']),
+        (':DIR A[0,2]:SEL*.TXT',['A0:','A2:','SELZERO','SELTWO',
+                               '3 FILES, 6K TOTAL','1 FILE, 2K TOTAL'],['SELSYS']),
+        ('.DIR A0:SEL*.TXT[$SYS]',['SELSYS','1 FILE, 2K TOTAL'],['SELZERO','SELRO','SELARC']),
+        ('DIR A0:SEL*.TXT[$ARC+!$SYS]',['SELARC','1 FILE, 2K TOTAL'],['SELZERO','SELRO','SELSYS']),
+        ('DIR [A0,A2]:SEL?*.TXT[$RO,$SYS]',['SELRO','SELSYS','2 FILES, 4K TOTAL'],['SELZERO','SELTWO','SELARC']),
         ('DIR A0:SEL*ZERO.TXT',['Invalid filespec.'],['SELZERO  TXT']),
-        ('DIR A[32]:SEL*.TXT',['Invalid filespec.'],['SELZERO  TXT'])]
+        ('DIR A[32]:SEL*.TXT',['Invalid filespec.'],['SELZERO  TXT']),
+        ('DIR A0:SIZ*.DAT',['SIZMULT  DAT  40K','SIZEMPTY DAT  0K',
+                           '2 FILES, 40K TOTAL'],[]),
+        ('DIR A[0,2]:SIZMULT.DAT',['A0:','A2:','SIZMULT  DAT  40K',
+                                 'SIZMULT  DAT  2K','1 FILE, 40K TOTAL',
+                                 '1 FILE, 2K TOTAL'],[])]
     observations=[]
     if a.platform=='z80pack':
         assert a.image_dir
@@ -67,6 +75,8 @@ def main():
             output=text.rsplit(command+' ',1)[-1]
             for value in required:assert value in output,(command,value,output)
             for value in excluded:assert value not in output,(command,value,output)
+            if i==6:assert output.count('SIZMULT  DAT')==1,(command,output)
+            if i==7:assert output.count('SIZMULT  DAT')==2,(command,output)
             observations.append({'command':command,'result':'PASS'})
         assert all((report/'disks'/name).read_bytes()==data for name,data in before.items())
     else:
@@ -92,6 +102,8 @@ def main():
             output=text.split('>'+command,1)[-1].split('A0>CHECK',1)[0]
             for value in required:assert value in output,(command,value,text)
             for value in excluded:assert value not in output,(command,value,text)
+            if i==6:assert output.count('SIZMULT  DAT')==1,(command,output)
+            if i==7:assert output.count('SIZMULT  DAT')==2,(command,output)
             assert marker(i) in text,(i,text)
             (report/f'case-{i}.txt').write_text(text)
             observations.append({'command':command,'result':'PASS'})
@@ -110,7 +122,7 @@ def main():
     (report/'harness.py').write_bytes(Path(__file__).read_bytes())
     (report/'evidence.json').write_text(json.dumps({'result':'PASS','platform':a.platform,
         'RCP_unloaded':True,'dir_sha256':hashlib.sha256(binary).hexdigest(),'cases':observations},indent=2)+'\n')
-    print('Self-contained DIR selection, predicates and malformed input: PASS')
+    print('Self-contained DIR selection, predicates, multi-extent sizes and totals: PASS')
 
 
 if __name__=='__main__':main()

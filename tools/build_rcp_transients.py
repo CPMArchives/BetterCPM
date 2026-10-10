@@ -165,7 +165,7 @@ CT_NAMEMSG: DB 13,10,'INVALID DESTINATION NAME',13,10,'$'
 
 
 def dir_source() -> str:
-    """Self-contained DIR selector baseline, using the qualified RCP source."""
+    """Self-contained DIR selectors with transient-only collection/reporting."""
     text = SOURCE.read_text(encoding="ascii")
     text = text.replace("CPXBASE         EQU     08000H",
                         "CPXBASE         EQU     00100H").replace(
@@ -178,10 +178,12 @@ def dir_source() -> str:
         '        POP BC\n        POP HL\n', 1)
     text = text.replace('        LD C,31\n        CALL BDOS\n',
         '        LD C,31\n        CALL BDOS\n        LD (DT_DPB),HL\n', 1)
-    text = text.replace('        CALL    RD_FILTER\n', '        CALL    DT_FILTER\n', 1)
+    start, end = text.index('RD_SEARCH:\n'), text.index('BC_DBAD:\n')
+    text = text[:start] + (ROOT / 'src/utilities/dir-report.inc').read_text(
+        encoding='ascii') + '\n' + text[end:]
     metrics = (ROOT / 'src/utilities/common/dirmetrics.inc').read_text(encoding='ascii')
     hook = '''
-; Transient-only selected totals, before the display's first-extent gate.
+; Transient-only selected totals over all visible physical entries.
 DT_FILTER:
         CALL RD_FILTER
         RET NC
@@ -194,20 +196,23 @@ DT_FILTER:
         LD A,(HL)
         AND 80H
         LD HL,(BC_DIREP)
-        SCF
-        RET NZ                     ; hidden SYS still follows existing NO FILE policy
+        RET NZ                     ; hidden SYS is not a displayed/selected file
 DT_COUNT:
         LD HL,(BC_DIREP)
         LD DE,(DT_DPB)
         LD BC,DT_TOTAL
         CALL DM_ADD
-        LD HL,(BC_DIREP)            ; display requires original entry pointer
+        LD HL,(BC_DIREP)            ; preserve the caller's entry pointer
         SCF
         RET
 DT_DPB: DW 0
 DT_TOTAL: DS 12
 '''
-    return text.replace('        END\n', hook + metrics + '\n        END\n', 1)
+    decimal = (ROOT / 'src/cpx/copy-report.inc').read_text(encoding='ascii')
+    decimal = decimal[decimal.index('CTR_DEC:\n'):decimal.index('CTR_RUN:')]
+    decimal = decimal.replace('CTR_', 'DTD_')
+    decimal += 'DTD_NUM: DS 4\nDTD_DIG: DS 10\nDTD_PTR: DW 0\nDT_BUFFER:\n'
+    return text.replace('        END\n', hook + metrics + decimal + '\n        END\n', 1)
 
 
 def main() -> None:
