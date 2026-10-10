@@ -23,6 +23,15 @@ def expand_layout(text: str) -> str:
                   lambda _: SOURCE.read_text(encoding="ascii").rstrip(),
         text, flags=re.MULTILINE | re.IGNORECASE)
 
+    if '; @rcp-shared-selector@' in text:
+        common = ROOT / 'src/utilities/common'
+        predicate = (common / 'attrselect.inc').read_text(encoding='ascii')
+        predicate = predicate[:predicate.index('; Destination modification list:')]
+        selector = ('DU_MAP: DS 64\nDU_WORK: DS 12\n' +
+                    (common / 'duselect.inc').read_text(encoding='ascii') +
+                    (common / 'operandqual.inc').read_text(encoding='ascii') + predicate)
+        text = text.replace('; @rcp-shared-selector@', selector)
+
     order = (1,3,5,7,9,2,4,6,8,10)
     def table(start, count):
         return "\n".join(f"        DB {n//20},{n//10%2},{order[n%10]}" for n in range(start, start+count))

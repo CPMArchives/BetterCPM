@@ -168,6 +168,7 @@ def main() -> None:
     args = parser.parse_args()
     BUILD.mkdir(parents=True, exist_ok=True)
     text = SOURCE.read_text(encoding="ascii")
+    text = text.replace('; @rcp-shared-selector@', '')
     text = text.replace("CPXBASE         EQU     08000H",
                         "CPXBASE         EQU     00100H")
     text = text.replace("        CSEG\n        .PHASE  ",

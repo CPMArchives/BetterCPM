@@ -43,7 +43,8 @@ def main() -> None:
         shutil.copy2(args.system_disk, disks / "drivea.dsk")
         for drive in "bcd":
             blank(args.disk_template, disks / f"drive{drive}.dsk")
-        text = expand_layout(SOURCE.read_text(encoding="ascii")).replace(
+        text = expand_layout(SOURCE.read_text(encoding="ascii").replace(
+            '; @rcp-shared-selector@', '')).replace(
             "CPXBASE         EQU     08000H", "CPXBASE         EQU     00100H")
         staged = work / "BASX.MAC"
         staged.write_bytes(initialized_workspace(text).replace("\n", "\r\n").encode("ascii") + b"\x1a")

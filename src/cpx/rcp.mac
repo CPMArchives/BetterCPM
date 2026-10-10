@@ -2258,5 +2258,7 @@ BC_WLAST:      DS      11
 BC_WBEST:      DS      11
 BC_WNAME:      DS      11
 
+; @rcp-shared-selector@
+
         .DEPHASE
         END
