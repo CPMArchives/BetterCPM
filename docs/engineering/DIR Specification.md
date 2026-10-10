@@ -1,12 +1,27 @@
 # BetterCP/M 1.0 transient DIR specification
 
-Received 2026-10-09. DIR.COM now implements the shared selection language,
-attribute predicates/display, file grouping, allocated KiB/record units,
-name/type/size/native-order sorting, automatic/explicit columns, paging,
-per-DU selected totals and once-per-drive free space. It is self-contained and
-works with RCP unloaded. Extent units (`/Z=E`) await their definition; combined
-qualification of the implemented feature set passes on both platforms.
-Explicit :DIR/.DIR works; automatic handoff is still unimplemented.
+Status: implemented for the retained 1.0 contract. DIR.COM is self-contained and
+works with RCP unloaded. It supports shared selectors and attribute predicates,
+file grouping, K/S/E units, all retained sort modes, attribute display, columns,
+paging, per-DU totals and once-per-drive free space. Explicit :DIR/.DIR works;
+automatic resident-to-transient handoff remains a separate facility decision.
+
+## Final extent-unit definition — adopted 2026-10-10
+
+`/Z=E` counts the physical directory entries occupied by each selected file.
+The displayed E total is the sum of those counts for the selected DU. An empty
+file occupies one entry. A physical entry may represent more than one logical
+16 KiB extent when EXM is nonzero; E does not count those logical extents.
+Duplicate selector terms do not duplicate files or entries. SYS visibility and
+attribute predicates apply before aggregation. `/S=Z` continues sorting by
+allocated records, independently of the display unit. Drive free space remains
+in KiB. Repeated valid `/Z=` switches use the last value; `/Z` and the next
+invocation restore K. Malformed earlier options still reject the whole command.
+
+DIR reports version 1.0, Build 002. This closure adds twelve executable bytes;
+BIOS, BDOS and RCP allocation are unchanged. See [DIR Qualification](<DIR Qualification.md>)
+for final evidence. The authoritative rules above supersede historical pending
+notes and ambiguous “extents” wording below.
 
 The implementation history below records each qualified increment.
 ## Selection baseline — 2026-10-10
@@ -724,8 +739,8 @@ Meanings:
 
 ```text
 K    allocated kilobytes
-S    allocated sectors/records
-E    extents
+S    allocated 128-byte records
+E    physical directory entries
 ```
 
 K is the default size representation.
@@ -750,7 +765,7 @@ uses sector/record units.
 DIR /Z=E
 ```
 
-uses extents.
+uses physical directory-entry counts.
 
 If several `/Z=` options occur, the last one wins:
 
@@ -758,7 +773,7 @@ If several `/Z=` options occur, the last one wins:
 DIR /Z=K /Z=E
 ```
 
-means extents.
+means physical directory-entry counts.
 
 Per-file size and the selected-file `TOTAL` should use the same chosen size representation.
 
@@ -1310,7 +1325,7 @@ DIR /Z=E /S=Z-
 
 means:
 
-- display size in extents;
+- display physical directory-entry counts;
 - sort by file size descending.
 
 The sort should use the actual file-size metric, not formatted string comparison.
@@ -1618,7 +1633,7 @@ Options:
 /Z              size in K
 /Z=K            size in K
 /Z=S            size in sectors/records
-/Z=E            size in extents
+/Z=E            physical directory-entry counts
 
 /C=1            one column
 /C=2            two columns

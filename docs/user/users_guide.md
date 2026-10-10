@@ -603,9 +603,9 @@ selection. Empty locations report `NO FILE` individually.
 
 **DIR.COM supports compound DU selections and attribute predicates, and works
 with RCP unloaded. It combines directory extents into one file entry, supports
-sorting, allocated KiB/record units, attribute display, automatic or explicit
+sorting, allocated KiB/record and directory-entry units, attribute display, automatic or explicit
 columns, paging, per-DU totals and once-per-drive free-space reporting.**
-Extent units (`/Z=E`) remain pending. Resident DIR retains its traditional
+Resident DIR retains its traditional
 four-column display, with no sorting, sizes, attribute display or summaries.
 
 Implemented sorting: `/S=N`, `/S=T` and `/S=Z` accept an optional `+` (ascending)
@@ -613,7 +613,7 @@ or `-` (descending); `/S=U` preserves native directory order and accepts no sign
 The last sort switch wins. Switches may go before or after the selection operand.
 Type and size ties use ascending filename order. Size sorting uses allocated
 space, independently of how that size is displayed. Invalid switches reject the
-whole command before listing; `/Z=E` is still pending.
+whole command before listing.
 
 `/A` adds a three-position `SRA` field after each file size: SYS, read-only,
 and ARC respectively, with `-` for each clear bit. For example, `-R-` means
@@ -623,8 +623,11 @@ attribute expression to select them. The display is off again on the next
 invocation unless `/A` is specified.
 
 `/Z` and `/Z=K` select allocated KiB (the default). `/Z=S` displays allocated
-128-byte records, not physical floppy sectors or logical file length. Both
-per-file sizes and each selected-DU total use the chosen unit, with `K` or `S`
+128-byte records, not physical floppy sectors or logical file length. `/Z=E`
+counts physical directory entries occupied by the file. An empty file still
+occupies one directory entry. This is not a count of logical 16 KiB extents;
+one physical entry can describe several logical extents on some formats.
+Per-file sizes and each selected-DU total use the chosen unit, with `K`, `S` or `E`
 as the suffix. The last valid size-unit switch wins; a later `/Z` restores K.
 Unit selection resets to K on the next invocation. Sorting by `/S=Z` continues
 to use allocated space regardless of the display unit.
@@ -648,11 +651,10 @@ returns to automatic columns unless `/C=` is supplied again.
 After listing the selected DUs, DIR prints a separate free-space footer for
 each selected drive, for example `B: 94K FREE`. Free space belongs to the drive,
 so selecting B3 and B4 produces only one B: footer. This also applies when no
-files match. Free space always uses KiB, even with `/Z=S`; file counts and
+files match. Free space always uses KiB, even with `/Z=S` or `/Z=E`; file counts and
 selected-file totals remain separate for each DU. DIR restores your original
 drive and user when finished.
 
-Transient DIR will add extent units.
 It will not display or
 filter dates, timestamps or wheel-protection attributes in 1.0.
 
@@ -663,7 +665,7 @@ DIR [options] [location:filespec[attribute-expression]]
 Omitting the location uses the current drive/user. Omitting the filespec uses
 `*.*`. To select the transient explicitly, use `:DIR` or `.DIR`; automatic
 handoff from resident DIR is still pending. The examples below describe the
-planned transient behavior.
+implemented transient behavior.
 
 ##### Selecting locations and files
 
@@ -723,7 +725,7 @@ value-bearing size, column and sort options, the last value wins.
 | `/P` | Pause after each screenful |
 | `/Z` or `/Z=K` | Display allocated kilobytes; the default |
 | `/Z=S` | Display size in allocated record units |
-| `/Z=E` | Display size in extents |
+| `/Z=E` | Count physical directory entries used |
 | `/C=1`, `/C=2`, `/C=4` | Request that many columns |
 | `/S=N`, `/S=N+`, `/S=N-` | Sort by name ascending or descending |
 | `/S=T`, `/S=T+`, `/S=T-` | Sort by extension ascending or descending |
@@ -1803,7 +1805,7 @@ Use `/VER` by itself to identify a BetterCP/M utility:
 A0>DIR /VER
 BetterCP/M DIR 1.0 (Resident, RCP Build 001)
 A0>:DIR /VER
-BetterCP/M DIR 1.0 (Build 001)
+BetterCP/M DIR 1.0 (Build 002)
 ```
 
 The resident line identifies the installed RCP package. The force-transient `:DIR` form identifies DIR.COM. Transient utilities omit “Transient” from their output. Other examples include `STAT /VER`, `COPY /VER`, and `TIME /VER`.

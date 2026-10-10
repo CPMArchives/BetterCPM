@@ -250,6 +250,12 @@ DT_SIZE:
         LD A,(DT_UNIT)
         CP 'K'
         JP Z,DT_K
+        CP 'E'
+        JR NZ,DT_RECORDS
+        ; Third accumulator DWORD counts physical directory entries.
+        LD DE,8
+        ADD HL,DE
+DT_RECORDS:
         LD DE,DTD_NUM
         LD BC,4
         LDIR
