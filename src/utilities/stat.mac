@@ -28,6 +28,7 @@ ECB             EQU     LY_SYS+080H
 ; -------------------------------------------------------------------------------
 
 START:                                  ; enter STAT utility
+        CALL    UV_CHECK                ; standalone utility identity
         XOR     A
         LD      (SETMODE),A
         LD      (OLDSP),SP
@@ -2756,6 +2757,8 @@ SUMFULL:        DB 0                    ; collection overflow
 SUMCOUNT:       DW 0                    ; sumcount
 SUMINDEX:       DW 0                    ; sumindex
 SUMCUR:         DW 0                    ; sumcur
+; @utility-version STAT@
+
 FCB:            DS 36                   ; fcb
 STACK:          DS 128                  ; private STAT stack
 

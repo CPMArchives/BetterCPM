@@ -42,7 +42,10 @@ BC_COMMAND:                             ; recognize resident command
         LD      HL,BC_KDIR
         LD      C,3
         CALL    BC_MATCH
-        JR      NC,BC_TRYERA
+        JP      NC,BC_TRYERA
+        LD      DE,UV_RDIR
+        CALL    UV_QUERY
+        RET     C
         CALL    BC_DIR
         SCF
         RET
@@ -51,7 +54,10 @@ BC_TRYERA:                              ; tryera
         LD      HL,BC_KERA
         LD      C,3
         CALL    BC_MATCH
-        JR      NC,BC_TRYTYP
+        JP      NC,BC_TRYTYP
+        LD      DE,UV_RERA
+        CALL    UV_QUERY
+        RET     C
         CALL    BC_ERA
         SCF
         RET
@@ -60,7 +66,10 @@ BC_TRYTYP:                              ; trytyp
         LD      HL,BC_KTYPE
         LD      C,4
         CALL    BC_MATCH
-        JR      NC,BC_TRYREN
+        JP      NC,BC_TRYREN
+        LD      DE,UV_RTYPE
+        CALL    UV_QUERY
+        RET     C
         CALL    BC_TYPE
         SCF
         RET
@@ -69,7 +78,10 @@ BC_TRYREN:                              ; tryren
         LD      HL,BC_KREN
         LD      C,3
         CALL    BC_MATCH
-        JR      NC,BC_TRYCLS
+        JP      NC,BC_TRYCLS
+        LD      DE,UV_RREN
+        CALL    UV_QUERY
+        RET     C
         CALL    BC_REN
         SCF
         RET
@@ -78,7 +90,10 @@ BC_TRYCLS:                              ; trycls
         LD      HL,BC_KCLS
         LD      C,3
         CALL    BC_MATCH
-        JR      NC,BC_TRYUSER
+        JP      NC,BC_TRYUSER
+        LD      DE,UV_RCLS
+        CALL    UV_QUERY
+        RET     C
         CALL    BC_CLR
         SCF
         RET
@@ -87,7 +102,10 @@ BC_TRYUSER:                             ; tryuser
         LD      HL,BC_KUSER
         LD      C,4
         CALL    BC_MATCH
-        JR      NC,BC_TRYVER
+        JP      NC,BC_TRYVER
+        LD      DE,UV_RUSER
+        CALL    UV_QUERY
+        RET     C
         CALL    BC_USER
         SCF
         RET
@@ -96,7 +114,10 @@ BC_TRYVER:                              ; tryver
         LD      HL,BC_KVER
         LD      C,3
         CALL    BC_MATCH
-        JR      NC,BC_TRYCOPY
+        JP      NC,BC_TRYCOPY
+        LD      DE,UV_RVER
+        CALL    UV_QUERY
+        RET     C
         CALL    BC_VER
         SCF
         RET
@@ -105,7 +126,10 @@ BC_TRYCOPY:                             ; trycopy
         LD      HL,BC_KCOPY
         LD      C,4
         CALL    BC_MATCH
-        JR      NC,BC_TRYMOVE
+        JP      NC,BC_TRYMOVE
+        LD      DE,UV_RCOPY
+        CALL    UV_QUERY
+        RET     C
         XOR     A
         LD      (BC_MVFLAG),A
         CALL    BC_COPY
@@ -117,6 +141,9 @@ BC_TRYMOVE:                             ; trymove
         LD      C,4
         CALL    BC_MATCH
         RET     NC
+        LD      DE,UV_RMOVE
+        CALL    UV_QUERY
+        RET     C
         CALL    BC_MOVE
         SCF
         RET
@@ -2206,6 +2233,8 @@ BC_WBEST:      DS      11
 BC_WNAME:      DS      11
 
 ; @rcp-shared-selector@
+
+; @rcp-version@
 
         .DEPHASE
         END

@@ -24,7 +24,8 @@ SYSBASE EQU     0D5C4H
 ; Component Table Walk
 ; -------------------------------------------------------------------------------
 
-START:  LD      SP,03F00H               ; enter protected-system builder
+START:  CALL    UV_CHECK
+        LD      SP,03F00H               ; enter protected-system builder
         LD      DE,BANNER
         CALL    PRINT
         LD      HL,BUFFER
@@ -615,4 +616,6 @@ NEXTPART:DW 0                           ; next component-table pointer
 COUNT:  DW 0                            ; record counter
 
 SCRATCH:DS 128                          ; component scratch buffer
+; @utility-version SYSBUILD@
+
         END

@@ -24,6 +24,7 @@ RSXFUNC         EQU     177
 ; -------------------------------------------------------------------------------
 
 START:                                  ; enter BRSX manager utility
+        CALL    UV_CHECK                ; standalone utility identity
         LD      A,(0080H)
         LD      B,A
         LD      HL,0081H
@@ -478,5 +479,7 @@ RS_REQ:        DB      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ; Function-177 reques
 
         INCLUDE rsxvers.inc
 RS_END:                                ; first free byte after transient image
+; @utility-version RSX@
+
         .DEPHASE
         END     START

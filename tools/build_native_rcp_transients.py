@@ -44,8 +44,8 @@ def main() -> None:
         for drive in "bcd":
             blank(args.disk_template, disks / f"drive{drive}.dsk")
         text = expand_layout(SOURCE.read_text(encoding="ascii").replace(
-            '; @rcp-shared-selector@', '')).replace(
-            "CPXBASE         EQU     08000H", "CPXBASE         EQU     00100H")
+            '; @rcp-shared-selector@', '').replace(
+            "CPXBASE         EQU     08000H", "CPXBASE         EQU     00100H"))
         staged = work / "BASX.MAC"
         staged.write_bytes(initialized_workspace(text).replace("\n", "\r\n").encode("ascii") + b"\x1a")
         run("cpmcp", "-f", "ibm-3740", str(disks / "drivec.dsk"),
@@ -112,7 +112,8 @@ expect eof
                     "0:COPYX.COM", str(native_copy))
                 command_base = native_copy.read_bytes()[:(BUILD / "copy-transient.bin").stat().st_size]
                 listing = BUILD / "copy-transient.lst"
-            native = transient(command_base, symbol(listing, entry_name))
+            native = transient(command_base, symbol(listing, entry_name),
+                               symbol(listing, "UV_CHECK"), symbol(listing, "UV_T" + command))
             cross = (BUILD / f"{command}.COM").read_bytes()
             if native != cross:
                 (BUILD / f"{command}-native-mismatch.COM").write_bytes(native)

@@ -19,6 +19,7 @@ PKGHEADER EQU 03100H
 SYSRECS EQU 160
 SYSBASE EQU 0D5C4H
 
+        CALL    UV_CHECK                ; standalone utility identity
         LD SP,03F00H
         CALL INIT
         LD HL,(1)                       ; page zero WBOOT jump follows the BIOS base
@@ -1208,4 +1209,6 @@ EXPECT: DS 64                           ; expect
 BOOTBIND:DS 64                          ; bootbind
 
 REQ:    DS 80                           ; configuration API request
+; @utility-version SYSGEN@
+
         END

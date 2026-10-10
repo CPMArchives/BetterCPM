@@ -19,6 +19,8 @@ LAYOUT.update(PDS_DESCRIPTOR=LAYOUT["SYSTEM"] + 0x80,
 
 def expand_layout(text: str) -> str:
     """Inline the canonical include for host z80asm and native ZSM4."""
+    from utility_versions import expand_versions
+    text = expand_versions(text)
     text = re.sub(r"^\s*INCLUDE\s+layout\.inc\s*$",
                   lambda _: SOURCE.read_text(encoding="ascii").rstrip(),
         text, flags=re.MULTILINE | re.IGNORECASE)

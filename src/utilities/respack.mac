@@ -24,7 +24,8 @@ RECS    EQU     52
 ; Module Table Walk
 ; -------------------------------------------------------------------------------
 
-START:  LD      SP,03F00H               ; enter resident payload packer
+START:  CALL    UV_CHECK
+        LD      SP,03F00H               ; enter resident payload packer
         LD      DE,BANNER
         CALL    PRINT
         LD      HL,BUFFER
@@ -358,4 +359,6 @@ NEXTPART:DW 0                           ; next module-table pointer
 COUNT:  DW 0                            ; record counter
 
 SCRATCH:DS 128                          ; input scratch buffer
+; @utility-version RESPACK@
+
         END

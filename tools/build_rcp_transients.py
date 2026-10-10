@@ -33,12 +33,14 @@ def symbol(listing: Path, name: str) -> int:
     return int(matches[-1], 16)
 
 
-def transient(image: bytes, entry: int) -> bytes:
+def transient(image: bytes, entry: int, check: int, banner: int) -> bytes:
     # CP/M supplies a blank-prefixed command tail. Strip its leading spaces,
     # call the very same routine used by RCP.CPX, then warm boot. Keeping the
     # complete command body is intentionally a first parity implementation;
     # later dead-code removal may reduce the files without changing behavior.
     prefix = bytes((
+        0x11, banner & 0xFF, banner >> 8,
+        0xCD, check & 0xFF, check >> 8,
         0x21, 0x81, 0x00,       # LD HL,0081h
         0x3A, 0x80, 0x00,       # LD A,(0080h)
         0x47,                   # LD B,A
@@ -256,7 +258,8 @@ def main() -> None:
             command_listing = BUILD / "copy-transient.lst"
             command_base = assemble(args.assembler, copy_text,
                                     BUILD / "copy-transient.bin", command_listing, ORIGIN)
-        data = transient(command_base, symbol(command_listing, entry_name))
+        data = transient(command_base, symbol(command_listing, entry_name),
+                         symbol(command_listing, "UV_CHECK"), symbol(command_listing, "UV_T" + command))
         output = BUILD / f"{command}.COM"
         output.write_bytes(data)
         print(f"{hashlib.sha256(data).hexdigest()}  {output.relative_to(ROOT)}")

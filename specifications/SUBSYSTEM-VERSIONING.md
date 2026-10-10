@@ -91,3 +91,7 @@ that hosts them.
 The executable conformance utilities are separately released development
 tools. Their existing per-utility versions remain independent of BetterCP/M
 subsystem versions.
+
+## Utility executable identification
+
+Standalone `/VER` and per-utility build counters are defined in [Utility Version and Build Identification](UTILITY-VERSIONING.md). They do not replace subsystem interface or implementation versions.

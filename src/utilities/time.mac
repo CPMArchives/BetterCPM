@@ -23,6 +23,7 @@ BDOS            EQU     0005H
 ; -------------------------------------------------------------------------------
 
 START:                                  ; enter TIME utility
+        CALL    UV_CHECK                ; standalone utility identity
         CALL    TM_PARSE
         JP      NZ,TM_USAGE
         LD      DE,TM_LOOKUP
@@ -626,6 +627,8 @@ TM_UMSG:       DB      13,10,'Usage: TIME [/PROVIDER]',13,10
                DB      '       TIME /SET LL HH HR MN SC (five hex bytes)',13,10
                DB      '       Day low/high, BCD hour/minute/second.',13,10,'$' ; usage message
 TM_EPOCH:      DB      '1977-12-31$'    ; CP/M epoch constant
+
+; @utility-version TIME@
 
         .DEPHASE
         END

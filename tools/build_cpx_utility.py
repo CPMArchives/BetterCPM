@@ -8,6 +8,8 @@ import subprocess
 import tempfile
 from pathlib import Path
 
+from system_layout import expand_layout
+
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/utilities/cpx.mac"
 VERSION_INCLUDE = ROOT / "src/utilities/cpxvers.inc"
@@ -20,7 +22,7 @@ def main() -> None:
                         default=Path("/Users/nathanael/bin/z80asm"))
     args = parser.parse_args()
     BUILD.mkdir(parents=True, exist_ok=True)
-    text = SOURCE.read_text(encoding="ascii")
+    text = expand_layout(SOURCE.read_text(encoding="ascii"))
     text = text.replace("        CSEG\n", "        ASEG\n")
     text = text.replace("        .PHASE  0103H\n", "        ORG     0103H\n")
     text = text.replace("        .DEPHASE\n", "")
