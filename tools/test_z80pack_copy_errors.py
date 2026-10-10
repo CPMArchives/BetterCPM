@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Private one-shot faults qualify COPY cleanup, continuation and stop rules."""
+import hashlib
 import argparse,json,re,shutil,subprocess
 from pathlib import Path
 from test_disk_utilities import ROOT
@@ -39,6 +40,6 @@ def main():
    entries=[directory[i:i+32] for i in range(0,len(directory),32) if directory[i]==1 and bytes(c&127 for c in directory[i+1:i+12])==name.encode()+b'       DAT']
    assert entries and all(bool(e[11]&128)==arc for e in entries),(label,name)
   results.append(label)
- (w/'evidence.json').write_text(json.dumps({'result':'PASS','controlled_faults':results,'caller_du_restored':True},indent=2)+'\n')
+ (w/'evidence.json').write_text(json.dumps({'copy_sha256':hashlib.sha256((ROOT/'build/utilities/COPY.COM').read_bytes()).hexdigest(),'result':'PASS','controlled_faults':results,'caller_du_restored':True},indent=2)+'\n')
  print('Native COPY read/write/close continuation, disk-full stop and cleanup failure pass')
 if __name__=='__main__':main()

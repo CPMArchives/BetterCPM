@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Qualify /V integration and controlled post-close verification failures."""
+import hashlib
 import argparse
 import json
 import re
@@ -104,7 +105,7 @@ def main():
         assert entries and all(e[9]&128 and e[10]&128 for e in entries),user
     f=report/'source-after.dat'; cpm('cpmcp',b,'1:DATA.DAT',f)
     assert f.read_bytes()==data
-    (report/'evidence.json').write_text(json.dumps({'result':'PASS','cases':['normal','options','batch-failure','help-skip','abort-cleanup','no-V','retry-success','batch-continues'],'fault_injection':'test binary only'},indent=2)+'\n')
+    (report/'evidence.json').write_text(json.dumps({'copy_sha256':hashlib.sha256((ROOT/'build/utilities/COPY.COM').read_bytes()).hexdigest(),'result':'PASS','cases':['normal','options','batch-failure','help-skip','abort-cleanup','no-V','retry-success','batch-continues'],'fault_injection':'test binary only'},indent=2)+'\n')
     print('Native COPY /V success, retry, skip, batch and abort cleanup pass')
 
 

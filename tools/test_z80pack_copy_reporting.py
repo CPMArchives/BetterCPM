@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Native COPY report allocation, summaries and zero-count omission."""
+import hashlib
 import argparse,json,shutil,subprocess
 from pathlib import Path
 from test_disk_utilities import ROOT
@@ -28,6 +29,6 @@ def main():
  assert b'FILE SKIPPED' not in t and b'FILE FAILED' not in t,t
  t=execute('COPY /B B1:*.ZZZ D3:','no-match')
  assert b'NO FILE' in t and b'COPIED [' not in t and b'FILE FAILED' not in t,t
- (w/'evidence.json').write_text(json.dumps({'result':'PASS','empty_k':0,'one_record_k':2,'multi_extent_k':34,'mixed_summary':True,'overwrite_actual_allocation':True},indent=2)+'\n')
+ (w/'evidence.json').write_text(json.dumps({'copy_sha256':hashlib.sha256((ROOT/'build/utilities/COPY.COM').read_bytes()).hexdigest(),'result':'PASS','empty_k':0,'one_record_k':2,'multi_extent_k':34,'mixed_summary':True,'overwrite_actual_allocation':True},indent=2)+'\n')
  print('Native COPY allocation, mixed summaries, overwrite and no-match reporting pass')
 if __name__=='__main__':main()

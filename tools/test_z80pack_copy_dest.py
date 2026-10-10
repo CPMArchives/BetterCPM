@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Native destination qualifiers and read-only protection with raw metadata."""
+import hashlib
 import argparse,json,shutil,subprocess
 from pathlib import Path
 from test_disk_utilities import ROOT
@@ -45,7 +46,7 @@ def main():
   t=execute(f'COPY /B B1:*.DAT D7:[{q}]',f'invalid-{i}',True);assert b'COPY source destination' in t
  f=w/'old.dat';f.write_bytes(b'OLD'.ljust(128,b'X'));cpm('cpmcp','d',f,'7:F0.DAT');cpm('cpmchattr','d','r','7:F0.DAT')
  t=execute('COPY /O /B B1:F0.DAT D7:[$RW]','read-only',True);assert b'READ ONLY' in t
- (w/'evidence.json').write_text(json.dumps({'result':'PASS','commands':commands,'raw_attributes_verified':True,'source_media_unchanged':True},indent=2)+'\n')
+ (w/'evidence.json').write_text(json.dumps({'copy_sha256':hashlib.sha256((ROOT/'build/utilities/COPY.COM').read_bytes()).hexdigest(),'result':'PASS','commands':commands,'raw_attributes_verified':True,'source_media_unchanged':True},indent=2)+'\n')
  print('Native COPY destination overrides, qualifier orders, raw extents and read-only protection pass')
 
 
