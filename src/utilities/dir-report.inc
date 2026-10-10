@@ -151,6 +151,7 @@ DT_REPORT:
         CALL BC_PRINT
         JP RD_NEXT
 DT_ROWS:
+        CALL DN_SORT
         LD HL,DT_BUFFER
         LD (DT_SCAN),HL
         LD HL,(DT_FILES)
@@ -232,3 +233,87 @@ DT_FILEMSG: DB ' FILES, $'
 DT_ONEMSG: DB ' FILE, $'
 DT_SUMMSG: DB 'K TOTAL',13,10,'$'
 DT_FULLMSG: DB 13,10,'Directory too large.',13,10,'$'
+
+; Stable ascending comparison of normalized name then extension. Move whole
+; records so allocation, logical-record and physical-entry totals stay attached.
+; Shrink the sorted tail after each pass; an already-sorted pass returns early.
+DN_SORT:
+        LD HL,(DT_FILES)
+        DEC HL
+        LD A,H
+        OR L
+        RET Z
+        INC HL
+        LD A,H
+        OR L
+        RET Z
+        LD HL,(DT_END)
+        LD DE,24
+        OR A
+        SBC HL,DE
+        LD (DN_LAST),HL
+DN_PASS:
+        XOR A
+        LD (DN_SWAP),A
+        LD HL,DT_BUFFER
+        LD (DN_PTR),HL
+DN_PAIR:
+        LD HL,(DN_PTR)
+        LD DE,24
+        ADD HL,DE
+        EX DE,HL
+        LD HL,(DN_PTR)
+        LD B,11
+DN_CMP:
+        LD C,(HL)
+        LD A,(DE)
+        CP C
+        JR C,DN_EXCH
+        JR NZ,DN_NEXT
+        INC HL
+        INC DE
+        DJNZ DN_CMP
+        JR DN_NEXT
+DN_EXCH:
+        LD A,1
+        LD (DN_SWAP),A
+        LD HL,(DN_PTR)
+        LD DE,24
+        ADD HL,DE
+        EX DE,HL
+        LD HL,(DN_PTR)
+        LD B,24
+DN_BYTES:
+        LD C,(HL)
+        LD A,(DE)
+        LD (HL),A
+        LD A,C
+        LD (DE),A
+        INC HL
+        INC DE
+        DJNZ DN_BYTES
+DN_NEXT:
+        LD HL,(DN_PTR)
+        LD DE,24
+        ADD HL,DE
+        LD (DN_PTR),HL
+        LD DE,(DN_LAST)
+        OR A
+        SBC HL,DE
+        JR NZ,DN_PAIR
+        LD A,(DN_SWAP)
+        OR A
+        RET Z
+        LD HL,(DN_LAST)
+        LD DE,24
+        OR A
+        SBC HL,DE
+        LD (DN_LAST),HL
+        LD DE,DT_BUFFER
+        OR A
+        SBC HL,DE
+        JR NZ,DN_PASS
+        RET
+DN_PTR: DW 0
+DN_LAST: DW 0
+DN_SWAP: DB 0
