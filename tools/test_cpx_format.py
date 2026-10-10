@@ -25,7 +25,8 @@ def check(path: Path, name: bytes, version: tuple[int, int],
             f"{path.name}: invalid allocation or command entry")
     require(init == shutdown == 0xFFFF, f"{path.name}: unexpected lifecycle entry")
     relocation_end = table + relocations * 2
-    expected_header = 512 if relocation_end <= 512 else 1024
+    expected_header = ((relocation_end + 511) // 512) * 512
+    require(expected_header <= 1536, f"{path.name}: unsupported builder header size")
     require(header_size == payload == expected_header and table == 48,
             f"{path.name}: noncanonical v1 section layout")
     require(relocation_end <= header_size,
