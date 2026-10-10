@@ -85,11 +85,8 @@ M4_LF:                                  ; perform line feed
 ; Console Status and Blocking Input
 ; -------------------------------------------------------------------------------
 
-M4_STAT:                                ; return keyboard status
-        JP      M4_SCAN
-
 M4_IN:                                  ; read keyboard character
-        LD      A,(M4_PENDING)
+        LD      A,(M4_PENDING+1)
         OR      A
         JR      NZ,M4_KEYCHANGE
 
@@ -97,7 +94,8 @@ M4_INWAIT:                              ; wait for keyboard input
         CALL    M4_SCAN
         OR      A
         JR      Z,M4_INWAIT
-        LD      (M4_PENDING),A
+        LD      D,A
+        LD      (M4_PENDING),DE
   ; Patch 2026-09-02: the original whole-matrix release wait could discard a
   ; second key pressed before the first was released.  Retain that debounce for
   ; reliable repeated letters, but queue one different overlapping key.
@@ -110,18 +108,18 @@ M4_KEYCHANGE:                           ; handle changed key state
         CALL    M4_SCAN
         OR      A
         JR      Z,M4_KEYDONE
-        LD      C,A
+  ; E identifies the physical key-table slot. Compare that identity, never
+  ; its translated byte: a Shift/Control release is not another keypress.
+        LD      D,A
         LD      A,(M4_PENDING)
-        CP      C
+        CP      E
         JR      Z,M4_KEYCHANGE
-        PUSH    AF
-        LD      A,C
-        LD      (M4_PENDING),A
-        POP     AF
+        LD      A,(M4_PENDING+1)
+        LD      (M4_PENDING),DE
         RET
 
 M4_KEYDONE:                             ; finish keyboard scan
-        LD      HL,M4_PENDING
+        LD      HL,M4_PENDING+1
         LD      A,(HL)
         LD      (HL),0
         RET
@@ -133,6 +131,7 @@ M4_KEYDONE:                             ; finish keyboard scan
 ; Keyboard Matrix Scan
 ; -------------------------------------------------------------------------------
 
+M4_STAT:                                ; status uses the same physical scan
 M4_SCAN:                                ; scan keyboard matrix
         LD      HL,KEYBASE+1
         LD      DE,M4_KEYTAB
@@ -201,21 +200,20 @@ M4_KEYSHIFT:                            ; translate shifted key
         LD      A,127
         RET     Z
         LD      A,C
-        CP      ':'
-        JR      Z,M4_KSUB16
-        CP      '4'
-        JR      Z,M4_KSUB16
-        CP      '-'
-        JR      Z,M4_KADD16
-        CP      '/'
-        RET     NZ
-
-M4_KADD16:                              ; advance key-table pointer by 16
-        ADD     A,10H                   ; '-' -> '=', '/' -> '?'
+  ; The Model 4 shifted punctuation is two ASCII ranges. Keep letters and
+  ; editor controls unchanged, and leave Shift-0 as 0 (no printed symbol).
+        CP      ','
+        RET     C
+        CP      '<'
+        RET     NC
+        CP      '0'
+        RET     Z
+        CP      '1'
+        JR      C,M4_KADD16
+        SUB     10H                     ; 1..9, :, ; -> !..), *, +
         RET
-
-M4_KSUB16:                              ; retreat key-table pointer by 16
-        SUB     10H                     ; ':' -> '*', Shift-4 -> '$'
+M4_KADD16:
+        ADD     A,10H                   ; , - . / -> < = > ?
         RET
 
 ; -------------------------------------------------------------------------------
@@ -256,5 +254,5 @@ M4CURSOR:                               ; physical cursor address
 M4COLUMN:                               ; current display column
         DB      0
 
-M4_PENDING:                             ; pending overlapping key
-        DB      0
+M4_PENDING:                             ; raw key identity, then translated byte
+        DW      0
