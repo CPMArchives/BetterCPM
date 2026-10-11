@@ -548,6 +548,10 @@ class Z80:
             elif op == 0xA5:            # AND L
                 self.a &= self.l
                 self.z, self.carry = self.a == 0, False
+            elif op == 0x8E:            # ADC A,(HL)
+                value = self.a + self.mem[self.hl] + int(self.carry)
+                self.a = value & 0xFF
+                self.z, self.carry = self.a == 0, value > 0xFF
             elif op == 0x96:            # SUB (HL)
                 value = self.mem[self.hl]
                 self.carry = self.a < value
@@ -567,6 +571,17 @@ class Z80:
                     self.mem[self.hl] &= 0x7F
                 else:
                     self.mem[self.hl] |= 0x80
+            elif op == 0xCB and self.mem[self.pc] == 0x20:  # SLA B
+                self.pc += 1
+                self.carry = bool(self.b & 0x80)
+                self.b = (self.b << 1) & 0xFF
+                self.z = self.b == 0
+            elif op == 0xCB and self.mem[self.pc] == 0x11:  # RL C
+                self.pc += 1
+                carry_in = int(self.carry)
+                self.carry = bool(self.c & 0x80)
+                self.c = ((self.c << 1) | carry_in) & 0xFF
+                self.z = self.c == 0
             elif op == 0xCB and self.mem[self.pc] == 0x21:  # SLA C
                 self.pc += 1
                 self.carry = bool(self.c & 0x80)
@@ -597,6 +612,17 @@ class Z80:
                 self.carry = bool(self.h & 1)
                 self.h >>= 1
                 self.z = self.h == 0
+            elif op == 0xCB and self.mem[self.pc] == 0x3E:  # SRL (HL)
+                self.pc += 1
+                self.carry = bool(self.mem[self.hl] & 1)
+                self.mem[self.hl] >>= 1
+                self.z = self.mem[self.hl] == 0
+            elif op == 0xCB and self.mem[self.pc] == 0x12:  # RL D
+                self.pc += 1
+                carry_in = int(self.carry)
+                self.carry = bool(self.d & 0x80)
+                self.d = ((self.d << 1) | carry_in) & 0xFF
+                self.z = self.d == 0
             elif op == 0xCB and self.mem[self.pc] == 0x3A:  # SRL D
                 self.pc += 1
                 self.carry = bool(self.d & 1)

@@ -185,7 +185,7 @@ def main():
             assert dest.read_bytes() == original[(user,name)]
     all_names = {'NORMAL.DAT','READONLY.DAT','SYSTEM.DAT','BOTH.DAT'}
     text = execute(':ERA /VER', label='version')
-    assert b'BetterCP/M ERA 1.0 (Build 001)' in text
+    assert b'BetterCP/M ERA 1.0 (Build 002)' in text
     text = execute(':ERA /Y B1:*.DAT', label='safe-broad')
     assert b'1 FILES ERASED, 3 SKIPPED, 34K FREED' in text, text[-500:]
     remains(1, all_names-{'NORMAL.DAT'})
@@ -204,7 +204,7 @@ def main():
     remains(6, all_names)
     execute(':ERA B6:NORMAL.DAT', [(b'Erase? Y/N ', b'\x03')], 'abort-exact')
     remains(6, all_names)
-    for i, operand in enumerate(('B6:F*A.DAT','B6:*.DAT /D','B6:*.DAT /QQ','[B6,E0]:*.DAT','B6:*.DAT[$RO,]')):
+    for i, operand in enumerate(('B6:F*A.DAT','B6:*.DAT /Z','B6:*.DAT /QQ','[B6,E0]:*.DAT','B6:*.DAT[$RO,]')):
         text = execute(':ERA /Y '+operand, label='invalid-'+str(i))
         assert b'Invalid filespec or option.' in text or b'INVALID DRIVE' in text
         remains(6, all_names)

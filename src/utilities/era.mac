@@ -1,6 +1,5 @@
 ; BetterCP/M transient ERA: collect the complete target set before any mutation.
-; Ordinary erase includes explicit protected-file admission and /R.
-; Destructive /D remains reserved for the subsequent raw-write increment.
+; Ordinary and destructive transient erase with protected-file admission.
 BDOS EQU 5
         CSEG
         .PHASE  0103H
@@ -70,15 +69,13 @@ E_EXACT:
         LD A,1
         LD (E_ONCE),A
         CALL E_FULL
-        LD DE,E_ASKONE
-        CALL E_PRINT
+        CALL E_ASKSEL
         JR E_CONFIRM
 E_MULTI:
         LD A,(E_QUIET)
         OR A
         CALL Z,E_MANIFEST
-        LD DE,E_ASKALL
-        CALL E_PRINT
+        CALL E_ASKGLOBAL
 E_CONFIRM:
         CALL E_YN
         JP C,E_CANCEL
@@ -115,14 +112,20 @@ E_ORDCONF:
         OR A
         JR NZ,E_TRY
         CALL E_FULL
-        LD DE,E_ASKONE
-        CALL E_PRINT
+        CALL E_ASKSEL
         CALL E_YN
         JP C,E_CANCEL
         JP Z,E_TRY
         CALL E_SKIP
         JP E_ADVANCE
 E_TRY:
+        LD A,(E_DESTRUCT)
+        OR A
+        JR Z,E_FRESHTRY
+        LD A,(ED_STAGE)
+        OR A
+        JP NZ,E_DRETRY
+E_FRESHTRY:
         CALL E_ABORTKEY
         JP C,E_CANCEL
         CALL E_SELECT
@@ -148,6 +151,11 @@ E_TRY:
         JR NZ,E_UNRO
         CALL E_FULL
         LD DE,E_ASKRO
+        LD A,(E_DESTRUCT)
+        OR A
+        JR Z,E_ROPRINT
+        LD DE,E_ASKDRO
+E_ROPRINT:
         CALL E_PRINT
         CALL E_YN
         JP C,E_CANCEL
@@ -155,6 +163,9 @@ E_TRY:
         LD A,1
         LD (E_ROAUTH),A
 E_UNRO:
+        LD A,(E_DESTRUCT)
+        OR A
+        JP NZ,E_DBEGIN
         CALL E_APATTR
         RES 7,(HL)
         LD DE,E_FCB
@@ -165,6 +176,9 @@ E_UNRO:
         CALL E_REPAIR
         JP E_FAILURE
 E_DELETE:
+        LD A,(E_DESTRUCT)
+        OR A
+        JP NZ,E_DBEGIN
         LD DE,E_FCB
         LD C,19
         CALL BDOS
@@ -182,6 +196,14 @@ E_DELOK:
         LD DE,E_FREED
         CALL E_ADD4
         JP E_ADVANCE
+E_DBEGIN:
+        CALL ED_BEGIN
+        JP C,E_FAILURE
+        JP ED_SUCCESS
+E_DRETRY:
+        CALL ED_RETRY
+        JP C,E_FAILURE
+        JP ED_SUCCESS
 E_NEWPROT:
         CALL E_SKIP
         CALL E_PROTECT
@@ -217,6 +239,9 @@ E_FAILED:
         LD HL,E_NFAIL
         CALL E_INC
 E_ADVANCE:
+        CALL ED_CLEAN
+        XOR A
+        LD (ED_STAGE),A
         LD HL,(E_CURRENT)
         LD DE,32
         ADD HL,DE
@@ -224,6 +249,7 @@ E_ADVANCE:
         JP E_EXECLOOP
 E_CANCEL:
         LD SP,E_STKTOP
+        CALL ED_CLEAN
         XOR A
         LD (E_PAGING),A
         LD DE,E_STOPMSG
@@ -318,6 +344,9 @@ EP_OPTION:
         JR Z,EP_SET
         LD DE,E_OVERRIDE
         CP 'R'
+        JR Z,EP_SET
+        LD DE,E_DESTRUCT
+        CP 'D'
         JR NZ,EP_BAD
 EP_SET:
         LD A,1
@@ -702,6 +731,11 @@ E_MANIFEST:
         LD A,1
         LD (E_PAGING),A
         LD DE,E_HEADING
+        LD A,(E_DESTRUCT)
+        OR A
+        JR Z,E_HEADOUT
+        LD DE,E_DHEADING
+E_HEADOUT:
         CALL E_PRINT
         LD HL,E_HEAP
         LD (E_CURRENT),HL
@@ -905,6 +939,22 @@ E_SUMMARY:
         LD DE,E_ERASEMSG
         CALL E_PRINT
 E_SSKIP:
+        LD HL,(E_DERASE)
+        LD A,H
+        OR L
+        JR Z,E_SSHARED
+        CALL E_NUMBER
+        LD DE,E_DERMSG
+        CALL E_PRINT
+E_SSHARED:
+        LD HL,(E_SHARED)
+        LD A,H
+        OR L
+        JR Z,E_SSKIPS
+        CALL E_NUMBER
+        LD DE,E_SHRMSG
+        CALL E_PRINT
+E_SSKIPS:
         LD HL,(E_SKIPPED)
         LD A,H
         OR L
@@ -1162,6 +1212,30 @@ E_ATERM: DB 0
 E_OVERRIDE: DB 0
 E_ROAUTH: DB 0
 E_ONCE: DB 0
+E_ASKSEL:
+        LD DE,E_ASKONE
+        LD A,(E_DESTRUCT)
+        OR A
+        JR Z,E_ASKOUT
+        LD DE,E_ASKDONE
+E_ASKOUT:
+        JP E_PRINT
+E_ASKGLOBAL:
+        LD DE,E_ASKALL
+        LD A,(E_DESTRUCT)
+        OR A
+        JR Z,E_ASKOUT
+        LD DE,E_ASKDALL
+        JP E_PRINT
+E_DESTRUCT: DB 0
+E_DERASE: DW 0
+E_SHARED: DW 0
+E_ASKDONE: DB ' - Destructively erase? This is unrecoverable. Y/N $'
+E_ASKDALL: DB 'DESTRUCTIVELY ERASE THESE FILES? THIS IS UNRECOVERABLE. Y/N $'
+E_ASKDRO: DB ' - Read only. Destructively erase? This is unrecoverable. Y/N $'
+E_DHEADING: DB 13,10,'THE FOLLOWING FILES WILL BE DESTRUCTIVELY ERASED:',13,10,'$'
+E_DERMSG: DB ' FILES DESTRUCTIVELY ERASED, $'
+E_SHRMSG: DB ' ERASED WITH SHARED BLOCKS RETAINED, $'
 E_DRIVE: DB 0
 E_USER: DB 0
 E_YES: DB 0
