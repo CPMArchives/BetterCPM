@@ -9,7 +9,7 @@ from pathlib import Path
 
 from build_native_trs80 import (
     DEFAULT_CPMSIM, DEFAULT_SYSTEM, DEFAULT_TEMPLATE, DEFAULT_TOOLS,
-    blank, cpm_text, run,
+    blank, run,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -38,7 +38,9 @@ def main() -> None:
         for drive in "bcd":
             blank(args.disk_template, disks / f"drive{drive}.dsk")
         source = work / "ERA.MAC"
-        source.write_bytes(cpm_text(SOURCE))
+        from build_era import expanded_source
+        from build_native_rcp_transients import initialized_workspace
+        source.write_bytes(initialized_workspace(expanded_source()).replace('\n','\r\n').encode('ascii') + b'\x1a')
         run("cpmcp", "-f", "ibm-3740", str(disks / "drivec.dsk"),
             str(source), "0:ERA.MAC")
         for tool in ("ZSM4.COM", "LINK.COM"):

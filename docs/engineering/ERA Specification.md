@@ -1,15 +1,19 @@
 # BetterCP/M 1.0 transient ERA specification
 
-Status: target contract recorded on 2026-10-10. Expanded ERA.COM implementation
-has not started. The existing resident/basic transient ERA is not claimed to
-provide the interface below. Destructive erase `/D` is transient-only.
+Status: ordinary transient ERA workflow is implemented and qualified.
+The current increment adds full selection/preflight, `/Y`, `/Q`, `/C`, `/R`,
+protected-file authorization, recovery and allocated-space accounting. `/D`,
+`/QQ`, `/N` and `/DRV` are not implemented in this increment and are rejected
+before mutation. The complete target contract below remains the completion
+baseline. Destructive erase `/D` is transient-only.
 
 This contract uses the shared [DU-selector specification](208%20Extended%20DU%20Syntax.md),
 operand attribute predicates, and [interactive prompt convention](Interactive%20Prompt%20Convention.md).
 Implementation follows COPY, RCP shared-selector work, and DIR. The planned
 user-facing interface is in the user guide, section 4.2.
 
-Qualification: [resident ERA evidence](Resident%20ERA%20Qualification.md).
+Qualification: [resident ERA evidence](Resident%20ERA%20Qualification.md) and
+[ordinary transient ERA evidence](Transient%20ERA%20Qualification.md).
 
 ## Resident ERA boundary
 
@@ -33,21 +37,44 @@ concrete name. Basic erase failures report Erase failed and continue; unmatched
 selections report NO FILE. Protected skips have no rich accounting or override.
 The transient workflow below remains a separate implementation task.
 
+## Protected-file decisions (2026-10-11)
+
+Admission is branch-specific. Every protected attribute present on a file must
+be explicitly admitted by the **same OR branch that actually matches** that
+file. Positive `$SYS` and `$RO` atoms admit their respective attributes;
+`!$DIR` and `!$RW` are equivalent admissions. Negation parity is respected.
+Comma separates OR branches; `+` joins conditions within a branch. Merely
+mentioning a protected attribute in an unrelated branch grants no permission.
+
+For `[$SYS+$RO,$ARC]`, a SYS+RO file is deliberately admitted by the first
+branch. A SYS+ARC file without RO matches only the ARC branch and remains
+protected. `[$SYS,$RO]` does not admit a file having both protected attributes:
+neither branch explicitly admits both. Use `[$SYS+$RO]` for that class.
+`/R` authorizes RO erasure only after selection and admission; it cannot
+broaden either or override SYS protection.
+
+Without `/R`, each explicitly admitted RO file receives one prompt:
+`DU:filename - Read only. Erase? Y/N`. This prompt also satisfies `/C` for that
+file. A negative answer skips that file; Ctrl-C aborts the entire invocation.
+`/Y` without `/R` skips RO files and never pauses for their authorization.
+The ordinary multi-file preflight confirmation is still a separate batch
+confirmation. An exact single RO file goes directly to its RO prompt.
+
+Complete parsing and target collection precede mutation. Duplicate DU
+selections are collapsed. Target-list overflow rejects the whole operation
+with nothing erased. Wildcards matching one file use the multi-file preflight
+presentation. Supported command options may precede or follow the operand;
+repeating an option is idempotent. The ordinary implementation stores one
+32-byte record per concrete DU/name, including merged attributes and metrics.
+The list uses remaining TPA with a 256-byte margin below the BDOS entry address;
+overflow during collection stops before mutation. Enumeration collects matching
+names before applying predicates, so rejected names also consume list capacity.
+
 ## Implementation questions retained for resolution
 
 Before coding destructive operations, make these boundaries precise without
 weakening the protections below:
 
-- Define “explicitly admit SYS/RO” for compound predicates, including negation,
-  aliases and OR branches. A truth table alone cannot distinguish `$ARC` from
-  a deliberate protected-file admission. `/R` authorizes selected RO files;
-  it must not silently broaden selection.
-- Define the exact RO-specific per-file authorization prompt and its interaction
-  with `/C`, plus cancellation at confirmation, paging and destructive-write
-  boundaries. Failure recovery already defines R/S/A/?.
-- Define target-set storage limits and preflight overflow behavior, option
-  placement/repetition, and whether a wildcard matching one file follows the
-  manifest or exact-file presentation. No syntax error may cause partial erasure.
 - Define recovery after a partial directory scrub, shared/corrupt allocation
   maps, raw-write permission checks and filesystem cache/allocation-state
   reconciliation. The specified overwrite-before-scrub order remains mandatory.

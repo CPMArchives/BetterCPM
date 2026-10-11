@@ -550,9 +550,9 @@ For example, COPY's collision prompt offers `Y/N/O/S/R/?`. Enter `?` to see
 the meaning of those choices. Simple `Y/N` confirmations do not need a help
 action, and paging prompts should state their controls directly.
 
-Future ERA failure recovery will use `R/S/A/?`: retry the current item, skip
-it, abort the command, or display help. This ERA interface is planned, not yet
-implemented. Noninteractive modes follow their error policy without prompting;
+ERA.COM failure recovery uses `R/S/A/?`: retry the current item, skip
+it, abort the command, or display help. Noninteractive modes follow their
+error policy without prompting;
 quiet output does not by itself answer prompts.
 
 ### 4. Basic Commands
@@ -841,13 +841,14 @@ Only `Y` proceeds. Protected files remain protected after that confirmation.
 Resident ERA provides basic error handling and no completion summary. Its richer
 erase options (`/Y`, `/Q`, `/QQ`, `/C`, `/N`, `/R`, `/D`, `/DRV`) are unsupported.
 Use `:ERA` to invoke the transient implementation explicitly; the expanded
-ERA.COM workflow below is still planned.
+ERA.COM now implements the ordinary workflow described below.
 
-##### Planned transient ERA.COM
+##### Transient ERA.COM — ordinary workflow and planned extensions
 
-The following interface is the agreed target for the expanded ERA.COM. It is
-not yet implemented; today's resident/basic transient command does not offer
-these options. The implementation contract is recorded in
+The following interface is the agreed target for the expanded ERA.COM. The
+ordinary workflow (`/Y`, `/Q`, `/C`, `/R`) is implemented and qualified.
+`/D`, `/QQ`, `/N` and `/DRV` remain planned and are rejected by
+the current increment. The implementation contract is recorded in
 [ERA Specification](../engineering/ERA%20Specification.md).
 
 
@@ -960,6 +961,13 @@ To select archived SYS files:
 ERA *.DOC[$SYS+$ARC]
 ```
 
+Protected attributes must be explicitly selected in the **same matching OR
+branch**. For example, `[$SYS+$RO,$ARC]` admits a file with both SYS and RO
+through its first branch. A SYS+ARC file without RO matches only `$ARC` and
+remains protected. Mentioning `$SYS` in a branch that does not match grants no
+authorization. `[$SYS,$RO]` does not authorize a file having both attributes;
+use `[$SYS+$RO]` for that class. `!$DIR` means `$SYS`, and `!$RW` means `$RO`.
+
 Read-only files require additional authorization.
 
 To select them:
@@ -974,9 +982,18 @@ To authorize their erasure without the read-only protection step:
 ERA /R *.DOC[$RO]
 ```
 
-`/Y` does **not** imply `/R`.
+Without `/R`, an explicitly selected RO file asks:
 
-That distinction is deliberate.
+```text
+B4:TOM.DOC - Read only. Erase? Y/N
+```
+
+This one prompt also satisfies `/C` for that file. `N` skips the file; Ctrl-C
+aborts the whole command. An exact single RO file goes directly to this prompt;
+a multi-file operation still has its separate batch confirmation.
+
+`/Y` does **not** imply `/R`: it skips RO files without prompting. `/R` never
+broadens selection or bypasses SYS protection.
 
 ---
 
