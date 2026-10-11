@@ -34,7 +34,7 @@ of each concrete file for RO/SYS protection, independently of its selection
 predicate. A protected extent protects the whole file. Delete only an exact
 concrete name. Basic erase failures report Erase failed and continue; unmatched
 selections report NO FILE. Protected skips have no rich accounting or override.
-The transient workflow below remains a separate implementation task.
+The transient workflow below is implemented separately in ERA.COM.
 
 ## Protected-file decisions (2026-10-11)
 
@@ -86,7 +86,7 @@ saved entry list. Skip or Abort reports incomplete destructive erasure without
 claiming that directory metadata remains intact. Do not restore directory
 entries after the data has already been zeroed.
 
-## Implementation boundaries and remaining documentation caveat
+## Implementation boundaries and documentation caveat
 
 The implemented destructive transaction rejects invalid/reserved allocation
 pointers and duplicate target allocations before writing; it preserves shared
