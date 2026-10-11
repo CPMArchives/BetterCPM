@@ -9,6 +9,30 @@ operand attribute predicates, and [interactive prompt convention](Interactive%20
 Implementation follows COPY, RCP shared-selector work, and DIR. The planned
 user-facing interface is in the user guide, section 4.2.
 
+Qualification: [resident ERA evidence](Resident%20ERA%20Qualification.md).
+
+## Resident ERA boundary
+
+Resident ERA is a capable selector plus basic safe erase. It supports exact and
+wildcard files, single and multiple DUs, attribute predicates, and `/VER`.
+It unconditionally skips RO and SYS files, even when a predicate explicitly
+selects them. No resident switch overrides protection. `/Y`, `/Q`, `/QQ`, `/C`,
+`/N`, `/R`, `/D`, and `/DRV` are not resident options.
+
+Validate the complete operand and supported drive domain before mutation.
+Capture the caller DU once and restore it on completion, rejection, or cancelled
+confirmation. Bare ERA reports NO FILE. An all-wildcard 8.3 pattern, including
+location-only selection, retains the existing ALL (Y/N)? confirmation once for
+the whole invocation. Only a single Y authorizes proceeding.
+
+Enumerate concrete names in lexical order with fresh searches after each erase;
+do not reuse a BDOS search cursor across deletion. Inspect all physical extents
+of each concrete file for RO/SYS protection, independently of its selection
+predicate. A protected extent protects the whole file. Delete only an exact
+concrete name. Basic erase failures report Erase failed and continue; unmatched
+selections report NO FILE. Protected skips have no rich accounting or override.
+The transient workflow below remains a separate implementation task.
+
 ## Implementation questions retained for resolution
 
 Before coding destructive operations, make these boundaries precise without
@@ -43,7 +67,7 @@ It preserves the familiar CP/M `ERA filespec` model while adding BetterCP/M's co
 
 The command is intentionally narrow. It is an erase utility, not a general file-management program.
 
-The resident ERA remains the smaller common implementation. The shared RCP selector service may allow resident ERA to understand the common BetterCP/M file selector syntax, but **destructive erase `/D` is transient-only**.
+The resident ERA remains the smaller common implementation. Resident ERA uses the shared RCP selector service for the complete common file selector syntax. **Destructive erase `/D` is transient-only**.
 
 ---
 

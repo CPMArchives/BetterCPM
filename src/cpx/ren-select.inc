@@ -6,13 +6,7 @@ BC_REN:
         LD (RF_ARG),HL
         LD A,B
         LD (RF_LEN),A
-        LD C,25
-        CALL BDOS
-        LD (BC_DSAVE),A
-        LD C,32
-        LD E,0FFH
-        CALL BDOS
-        LD (BC_USAVE),A
+        CALL RE_CAPTURE
         LD HL,(RF_ARG)
         LD A,(RF_LEN)
         LD B,A
@@ -81,14 +75,8 @@ RF_EQUAL:
         LD D,A
         CALL FS_PARSE
         JP C,BC_DBAD
-        LD HL,DU_MAP+16
-        LD B,48
-RF_DOMAIN:
-        LD A,(HL)
-        OR A
-        JP NZ,BC_BDERR
-        INC HL
-        DJNZ RF_DOMAIN
+        CALL RE_DVALID
+        JP C,BC_BDERR
         XOR A
         LD (RF_PASS),A
         LD (RF_ANY),A
