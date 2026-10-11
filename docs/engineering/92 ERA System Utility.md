@@ -1,5 +1,11 @@
 # Engineering Specification 92: ERA System Utility
 
+Current resident contract: RCP.CPX ERA now uses the complete shared selector and
+always protects RO and SYS files. Its implementation and boundary are described
+in [ERA Specification](ERA%20Specification.md). The stock/basic ERA.COM history
+below does not describe the planned full transient workflow.
+
+
 ## Compatibility baseline
 
 BetterCP/M supplies ERA both as a resident `BASIC.CPX` command and as the

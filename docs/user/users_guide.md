@@ -818,29 +818,30 @@ accounting and terminal geometry will be qualified before release.
 
 Erases one or more files from the current or specified drive/user area.
 
-`ERA` is available as both a resident command and a transient program. The
-resident version supports the standard CP/M 2.2 `ERA` syntax:
+Resident `ERA` supports the shared BetterCP/M file-selection language:
 
     ERA filespec
     ERA DU:filespec
+    ERA B[1,3,8-10]:*.BAK
+    ERA [A0,B[3-5]]:*.DOC[$ARC]
+    ERA /VER
 
-Examples:
+It validates the complete selection before erasing anything and restores your
+original drive/user area afterward. The bounded wildcard rules apply: `F?*.DAT`
+and `F***.DAT` are valid; `F*A.DAT`, `F**?.DAT`, and overlong 8.3 names report
+`Invalid filespec.`.
 
-    A>ERA OLD.TXT
-    A>ERA *.BAK
-    A>ERA B:OLD.COM
-    A>ERA B3:*.TMP
+Resident ERA always skips read-only (`$RO`) and system (`$SYS`) files, including
+files explicitly selected with those attributes. Attribute selection never
+overrides this protection. Ordinary selected files are erased in each selected
+DU. Bare `ERA` reports `NO FILE`; an all-wildcard name/extension, including an
+omitted filespec after a location, asks `ALL (Y/N)?` once for the whole selection.
+Only `Y` proceeds. Protected files remain protected after that confirmation.
 
-The file specification may contain the standard CP/M `?` and `*` wildcard
-characters. When wildcards are used, all matching files are erased.
-
-Resident ERA validates the complete filespec before selecting the target DU or
-erasing anything. It uses COPY's bounded wildcard rules: `F?*.DAT` and
-`F***.DAT` are valid; `F*A.DAT`, `F**?.DAT`, and overlong 8.3 names report
-`Invalid filespec.` rather than being truncated or expanded to a broader match.
-Compound DU selectors and attribute qualifiers currently report
-`Selection not supported by resident ERA.` and erase nothing. Their confirmation
-and protection behavior will be implemented separately.
+Resident ERA provides basic error handling and no completion summary. Its richer
+erase options (`/Y`, `/Q`, `/QQ`, `/C`, `/N`, `/R`, `/D`, `/DRV`) are unsupported.
+Use `:ERA` to invoke the transient implementation explicitly; the expanded
+ERA.COM workflow below is still planned.
 
 ##### Planned transient ERA.COM
 

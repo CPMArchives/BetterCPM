@@ -199,7 +199,28 @@ substitution and frozen-source conflict rejection. Evidence is retained in
 The Model 4 resident lifecycle and ERA rejection/deletion checks also pass;
 evidence: `/private/tmp/rcp-pure-filespec-model4-20261010`.
 
-### Resident ERA validation prerequisite
+### Resident ERA shared selection (supersedes the lexical gate)
+
+Resident ERA now consumes the full FS_PARSE result and iterates all selected DUs.
+The old resident bracket/predicate rejection is retired. Parse and drive-domain
+validation finish before mutation; malformed operands and unsupported drives
+cannot cause partial erasure. Bare ERA remains NO FILE, and all-wildcard
+selection retains one ALL (Y/N)? confirmation for the whole invocation.
+
+ERA reuses the resident REN/COPY concrete-name scanner. Each deletion is followed
+by a fresh lexical rescan, so directory mutation cannot invalidate a retained
+BDOS search cursor. An independent exact-name search checks every physical
+extent for RO/SYS; either attribute always prevents deletion, even when explicitly
+selected. The caller DU is restored. Rich overrides, reporting, confirmation and
+recovery remain ERA.COM work.
+
+Caller-DU capture, selection parsing and drive-domain checking are shared with
+resident DIR/REN/COPY where applicable to stay within the existing carrier's
+1,536-byte header limit. RCP Build 005 has 6,862 payload bytes, a 6,912-byte
+allocation and 744 relocations. No BDOS, CPX format or protected-state growth is
+required. Transient expansion keeps its existing basic ERA path.
+
+### Historical resident ERA validation prerequisite
 
 RCP's ERA handler now passes its full operand through `FS_PARSE` before its
 legacy selection/deletion path. The gate captures caller DU, preserves the input

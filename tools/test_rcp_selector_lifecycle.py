@@ -62,11 +62,9 @@ def main():
     assert 'RCP.CPX' in text,text
     assert 'A0: SELMARK  TXT' in text and 'NO FILE' in text,text
     assert 'Invalid filespec' in text,text
-    assert 'Selection not supported by resident ERA.' in text,text
     after_bad=text.rsplit('Invalid filespec.',1)[1]
-    assert 'A0: SELMARK  TXT' in after_bad.split('Selection not supported',1)[0],text
-    after_extended=text.split('Selection not supported by resident ERA.',1)[1]
-    assert 'A0: SELMARK  TXT' in after_extended.split('ERA A0:SELMARK.TXT',1)[0],text
+    assert 'A0: SELMARK  TXT' in after_bad.split('ERA A[0,2]',1)[0],text
+    assert 'NO FILE' in text.split('ERA A[0,2]:SELMARK.TXT',1)[1].split('ERA A0:SELMARK.TXT',1)[0],text
     assert 'NO FILE' in text.rsplit('DIR A0:SELMARK.TXT',1)[1],text
     (report/'harness.py').write_bytes(Path(__file__).read_bytes())
     (report/'evidence.json').write_text(json.dumps({'result':'PASS','platform':a.platform,
@@ -74,7 +72,7 @@ def main():
         'coverage':['unload/reload','resident DIR','WBOOT after CPX LIST',
                     'user-set iteration','attribute predicates','invalid selectors',
                     'caller DU restoration','ERA malformed-pattern rejection',
-                    'ERA extended-selection rejection','ERA exact-file deletion']},indent=2)+'\n')
+                    'ERA multi-DU deletion','ERA exact-file deletion']},indent=2)+'\n')
     print('Expanded RCP loading, resident dispatch and WBOOT: PASS')
 
 

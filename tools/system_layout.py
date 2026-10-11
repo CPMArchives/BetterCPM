@@ -37,6 +37,13 @@ def expand_layout(text: str) -> str:
         search = directory.index('  ; Search all physical directory extents.')
         directory = ((ROOT / 'src/cpx/dir-select.inc').read_text(encoding='ascii') +
                      '\nRD_SEARCH:\n' + directory[search:])
+        if 'CPXBASE         EQU     00100H' not in text:
+            setup_start = directory.index('        LD (BC_DARGP),HL')
+            setup_end = directory.index('        JP C,BC_DBAD', setup_start)
+            directory = directory[:setup_start] + '        CALL RE_VALIDATE\n' + directory[setup_end:]
+            domain_start = directory.index('        LD HL,DU_MAP+16')
+            domain_end = directory.index('        DJNZ RD_DOMAIN', domain_start) + len('        DJNZ RD_DOMAIN')
+            directory = directory[:domain_start] + '        CALL RE_DVALID\n        JP C,BC_BDERR' + directory[domain_end:]
         directory = directory.replace('        LD      A,1                     ; stock NO FILE',
             '        CALL    RD_FILTER\n        JR      NC,BC_DSKIP\n'
             '        LD      A,1                     ; stock NO FILE', 1)
@@ -69,9 +76,17 @@ def expand_layout(text: str) -> str:
             text = re.sub(r'^RF_DRIVE:.*COPY source drive.*\n|^RF_USER:.*COPY source user.*\n', '', text, flags=re.MULTILINE)
             text = re.sub(r'^BC_W(?:FCB|LAST|BEST|NAME):.*\n', '', text, flags=re.MULTILINE)
             text = re.sub(r'^BC_DSAVE:.*COPY saved drive.*\n|^BC_USAVE:.*COPY saved user.*\n', '', text, flags=re.MULTILINE)
+            capture_start = text.index('        LD      C,25', text.index('BC_COPY:'))
+            capture_end = text.index('        LD      A,B\n        OR      A', capture_start)
+            text = text[:capture_start] + '        CALL RE_CAPTURE\n' + text[capture_end:]
             text = text.replace('        LD      (BC_CWILD),A\n', '')
             text = text.replace('        LD      A,(BC_MVFLAG)\n        AND     1\n        LD      (BC_MVFLAG),A\n', '')
-        text = text.replace('BC_ERA:                                 ; execute ERA command\n',
+        if 'CPXBASE         EQU     00100H' not in text:
+            era_start = text.index('BC_ERA:')
+            era_end = text.index('; ================================================================================', era_start)
+            text = text[:era_start] + (ROOT / 'src/cpx/era-resident.inc').read_text(encoding='ascii') + '\n' + text[era_end:]
+        else:
+            text = text.replace('BC_ERA:                                 ; execute ERA command\n',
             'BC_ERA:                                 ; execute ERA command\n'
             '        CALL    RE_VALIDATE\n        JP      C,RE_REJECT\n', 1)
         common = ROOT / 'src/utilities/common'
@@ -81,9 +96,10 @@ def expand_layout(text: str) -> str:
                     (common / 'duselect.inc').read_text(encoding='ascii') +
                     (common / 'operandqual.inc').read_text(encoding='ascii') + predicate +
                     (common / 'rcpselect.inc').read_text(encoding='ascii') +
-                    '\nRE_REJECT:\n        LD A,(FS_ERROR)\n        OR A\n'
-                    '        JP NZ,BC_DBAD\n        JP BC_DURST\n' +
-                    (ROOT / 'src/cpx/era-select.inc').read_text(encoding='ascii'))
+                    ('\nRE_REJECT:\n        LD A,(FS_ERROR)\n        OR A\n'
+                      '        JP NZ,BC_DBAD\n        JP BC_DURST\n' +
+                      (ROOT / 'src/cpx/era-select.inc').read_text(encoding='ascii')
+                     if 'CPXBASE         EQU     00100H' in text else ''))
         text = text.replace('; @rcp-shared-selector@', selector)
 
     order = (1,3,5,7,9,2,4,6,8,10)

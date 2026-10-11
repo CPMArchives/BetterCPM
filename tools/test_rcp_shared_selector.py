@@ -117,8 +117,8 @@ def main():
         results.append({'base':base,'result':'PASS','iterator_positions':512})
         for text,accepted in [('',True),('B3:F?*.DAT',True),('F***.DAT',True),
                               ('B:*.BAK',True),('F*A.DAT',False),('F**?.DAT',False),
-                              ('TOOLONGNM.COM',False),('F.COM[$RO]',False),
-                              ('B[3]:*.DAT',False),('[A0,B3]:*.DAT',False)]:
+                              ('TOOLONGNM.COM',False),('F.COM[$RO]',True),
+                              ('B[3]:*.DAT',True),('[A0,B3]:*.DAT',True)]:
             c=cpu(base,text)
             # Query-only BDOS fixture: caller drive/user 1, output ignored.
             c.mem[5:8]=b'\x3e\x01\xc9'
@@ -126,6 +126,14 @@ def main():
             assert c.carry==(not accepted),text
             assert (c.hl,c.b)==(0x2000,len(text)),text
             assert c.mem[a('BC_DSAVE')]==1 and c.mem[a('BC_USAVE')]==1
+        # Domain validation rejects the whole selection, including a later
+        # unsupported drive, before an operation can iterate a valid first DU.
+        for drive in range(16):
+            c=cpu(base,'')
+            c.mem[a('DU_MAP'):a('DU_MAP')+64]=bytes(64)
+            c.mem[a('DU_MAP')+drive*4]=1
+            c.run(a('RE_DVALID'),limit=1000)
+            assert c.carry==(drive>=4),drive
         for mask in (0,255,0x30,0xEE,0xAA):
             for state in range(8):
                 c=cpu(base,'')
