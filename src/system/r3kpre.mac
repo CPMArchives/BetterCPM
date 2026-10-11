@@ -1,4 +1,5 @@
         INCLUDE layout.inc
+; @rsx-container-slots@
 
 ; ********************************************************************************
 ; *                   BetterCP/M Retained Member Preparer                       *
@@ -500,10 +501,10 @@ KP_BAD:                                 ; reject retained preparation
         OR      A
         RET
 
-KP_NSLOTS:      DB      'R3SLOTS '      ; pointer-union overlay stem
-KP_NSNAP:       DB      'R3SNAP  '      ; snapshot overlay stem
-KP_NMOVE:       DB      'R3MOVE  '      ; safe handoff overlay stem
-KP_NKEEP:       DB      'R3KEEP  '      ; retained loader stem
+KP_NSLOTS:      DB      R3SLOTS_RECORD      ; pointer-union overlay slot
+KP_NSNAP:       DB      R3SNAP_RECORD      ; snapshot overlay slot
+KP_NMOVE:       DB      R3MOVE_RECORD      ; safe handoff overlay slot
+KP_NKEEP:       DB      R3KEEP_RECORD      ; retained loader slot
 KP_CTX:         DW      0               ; transaction context
 KP_FACTS:       DW      0               ; current normalized facts
 KP_PLAN:        DW      0               ; current plan record

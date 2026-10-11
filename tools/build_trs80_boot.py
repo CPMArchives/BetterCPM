@@ -261,7 +261,7 @@ def main() -> None:
     stattst_path = ROOT / "build/utilities/STATTST.COM"
     test_rsx_path = ROOT / "build/rsx/TEST.RSX"
     stateful_rsx_path = ROOT / "build/rsx/STATEFUL.RSX"
-    runtime_overlay_names = ("R3PLAN.RSX", "R3SLOTS.RSX", "R3SNAP.RSX",
+    runtime_overlay_names = ("R3PACK.RSX", "R3PLAN.RSX", "R3SLOTS.RSX", "R3SNAP.RSX",
                              "R3CARR.RSX", "R3META.RSX", "R3COORD.RSX",
                              "R3PROF.RSX", "R3KCTX.RSX", "R3KEEP.RSX",
                              "R3KPRE.RSX", "R3FINAL.RSX", "R3DROP.RSX",

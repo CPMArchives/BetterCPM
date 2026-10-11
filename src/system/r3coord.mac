@@ -1,4 +1,5 @@
         INCLUDE layout.inc
+; @rsx-container-slots@
 ; Stage-3 bounded carrier-loading coordinator.
 ;
 ; DE points to the public Function 177 version-2 request. This phase accepts
@@ -410,10 +411,10 @@ RC_BAD:
 
 RC_MAGIC:       DB      'B','R','S','X'
 RC_BMET:        DB      'B','M','E','T'
-RC_NCARR:       DB      'R3CARR  '
-RC_NMETA:       DB      'R3META  '
-RC_NMOVE:       DB      'R3MOVE  '
-RC_NPROF:       DB      'R3PROF  '
+RC_NCARR:       DB      R3CARR_RECORD
+RC_NMETA:       DB      R3META_RECORD
+RC_NMOVE:       DB      R3MOVE_RECORD
+RC_NPROF:       DB      R3PROF_RECORD
 RC_REQ:         DW      0
 RC_LOW:         DW      0
 RC_HIGH:        DW      0

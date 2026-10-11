@@ -85,7 +85,7 @@ def main() -> None:
     inputs = [(args.sctime,'SCTIME.COM'),(args.date501,'DATE501.COM'),(read,'SCREAD.COM'),
               (ROOT / 'build/rsx/T104C3.RSX','T104C3.RSX'),
               (ROOT / 'build/rsx/T104Z8.RSX','T104Z8.RSX'),
-              (ROOT / 'build/system/R3COORD.RSX','R3COORD.RSX')]
+              (ROOT / 'build/system/R3PACK.RSX','R3PACK.RSX')]
     for path,name in inputs:
         subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(disk),str(path),'0:'+name],cwd=work,check=True)
     commands = ['RSX LOAD ZPRTC','RSX LOAD T104C3','TIME','SCTIME','SCREAD','TIME',

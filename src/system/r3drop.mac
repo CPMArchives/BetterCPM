@@ -1,4 +1,5 @@
         INCLUDE layout.inc
+; @rsx-container-slots@
 
 ; ********************************************************************************
 ; *                    BetterCP/M RSX Removal Coordinator                       *
@@ -518,9 +519,9 @@ RD_BAD:                                 ; reject removal transaction
 
 RDMAGIC:        DB      'B','R','S','X' ; carrier signature
 RD_ABIVAL:      DB      2,1,0           ; accepted RSX ABI
-RD_NPLAN:       DB      'R3PLAN  '      ; prospective layout planner
-RD_NMOVE:       DB      'R3MOVE  '      ; safe handoff overlay
-RD_NKEEP:       DB      'R3KEEP  '      ; retained carrier loader
+RD_NPLAN:       DB      R3PLAN_RECORD      ; prospective layout planner
+RD_NMOVE:       DB      R3MOVE_RECORD      ; safe handoff overlay
+RD_NKEEP:       DB      R3KEEP_RECORD      ; retained carrier loader
 RD_REQ:         DW      0               ; public request
 RD_LOW:         DW      0               ; workspace low bound
 RD_HIGH:        DW      0               ; workspace high bound

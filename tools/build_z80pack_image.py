@@ -176,6 +176,7 @@ def main():
  for f in sorted((ROOT/'build/utilities').glob('*.COM')):files.append((f.name,f.read_bytes()))
  for name,data in cpm_tools_files(ROOT):files.append((name,data))
  for name in ('HELLO.RSX','ECHO.RSX','BATCHIO.RSX','FDF.RSX','P2DOS.RSX','ZPRTC.RSX','STATEFUL.RSX'):files.append((name,(ROOT/'build/rsx'/name).read_bytes()))
+ files.append(('R3PACK.RSX',(ROOT/'build/system/R3PACK.RSX').read_bytes()))
  for name in ('R3PLAN.RSX','R3SLOTS.RSX','R3SNAP.RSX','R3CARR.RSX','R3META.RSX','R3COORD.RSX','R3PROF.RSX','R3KCTX.RSX','R3KEEP.RSX','R3KPRE.RSX','R3FINAL.RSX','R3DROP.RSX','R3MOVE.RSX','R3COMIT.RSX','R3RESOL.RSX'):files.append((name,(ROOT/'build/system'/name).read_bytes()))
  files.append(('DISK.FDB',build_fdf_catalog().read_bytes()))
  # A small transient proves that load and warm return use this target BIOS.
@@ -264,6 +265,7 @@ def main():
  rom_logical[100*128:108*128]=(rom_overlays/'RSXRESOL.BIN').read_bytes().ljust(1021,b'\0')+rom_gateway_tail
  for name in sorted(('R3PLAN.RSX','R3SLOTS.RSX','R3SNAP.RSX','R3CARR.RSX','R3META.RSX','R3COORD.RSX','R3PROF.RSX','R3KCTX.RSX','R3KEEP.RSX','R3KPRE.RSX','R3FINAL.RSX','R3DROP.RSX','R3MOVE.RSX','R3COMIT.RSX','R3RESOL.RSX')):
   replace_rom_file(name,(rom_overlays/name).read_bytes())
+ replace_rom_file('R3PACK.RSX',(rom_overlays/'R3PACK.RSX').read_bytes())
  rom_raw=raw_image(rom_logical)
  blank=raw_image(bytearray(b'\xe5'*fmt.image_bytes))
  disks.mkdir();library=disks/'library';library.mkdir()

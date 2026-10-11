@@ -28,8 +28,15 @@ def file_stub(work: Path) -> bytes:
         JP      OPEN
         JP      NEXTREC
         JP      RESET
+        REPT    136
+        DB      0
+        ENDM
 OPEN:   XOR     A
         LD      ({COUNT:04X}H),A
+        LD      (0ED13H),A
+        LD      A,120
+        LD      (0ED02H),A
+        XOR     A
         RET
 RESET:  XOR     A
         LD      ({COUNT:04X}H),A
@@ -59,6 +66,9 @@ NEXTREC:
         LD      A,({COUNT:04X}H)
         INC     A
         LD      ({COUNT:04X}H),A
+        LD      A,(0ED13H)
+        ADD     A,4
+        LD      (0ED13H),A
         XOR     A
         RET
         END
@@ -127,7 +137,7 @@ def main() -> None:
         cpu.mem[STREAM:STREAM + 1024] = payload
         preserved = bytes(range(12))
         cpu.mem[LAYOUT["RSX"] + 1012:LAYOUT["RSX"] + 1024] = preserved
-        cpu.mem[NAME:NAME + 8] = b"R3COMIT "
+        cpu.mem[NAME] = 0
         cpu.mem[REQUEST:REQUEST + 6] = struct.pack(
             "<HHH", NAME, SCRATCH, NEXT)
         cpu.de = REQUEST

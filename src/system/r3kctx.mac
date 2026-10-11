@@ -1,4 +1,5 @@
         INCLUDE layout.inc
+; @rsx-container-slots@
 
 ; ********************************************************************************
 ; *                 BetterCP/M Retained Context Constructor                     *
@@ -267,8 +268,8 @@ KC_BAD:                                 ; reject context construction
         OR      A
         RET
 
-KC_NMOVE:       DB      'R3MOVE  '      ; safe handoff overlay stem
-KC_NKEEP:       DB      'R3KEEP  '      ; retained carrier loader stem
+KC_NMOVE:       DB      R3MOVE_RECORD      ; safe handoff overlay slot
+KC_NKEEP:       DB      R3KEEP_RECORD      ; retained carrier loader slot
 KC_CTX:         DW      0               ; retained context seed
 KC_FACTS:       DW      0               ; candidate normalized facts
 KC_PLAN:        DW      0               ; prospective plan records

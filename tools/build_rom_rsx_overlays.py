@@ -152,6 +152,8 @@ def build(pack: Path, output: Path, selector: Path,
         }
         total += len(references)
 
+    from rsx_container import PACK_NAME, pack as combine_slots
+    (output / PACK_NAME).write_bytes(combine_slots({name:(output/name).read_bytes() for name in CFG_FILES | RSX_FILES}))
     result: dict[str, object] = {
         "files": reports, "file_count": len(reports),
         "reference_count": total, "unresolved_targets": 0,

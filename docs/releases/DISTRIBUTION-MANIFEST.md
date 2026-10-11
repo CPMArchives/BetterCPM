@@ -33,6 +33,7 @@ All membership or layout changes require discussion with the maintainer.
 - WHEREIS.COM: planned; include once implemented.
 - RCP.CPX: required resident command package.
 - CPX.COM and RSX.COM: extension managers.
+- R3PACK.RSX: required RSX-manager runtime container.
 - BYE.COM: cpmsim-only simulator exit command.
 - ZPRTC.RSX: cpmsim clock provider only.
 - FREHDCLK.RSX: Model 4/FreHD clock provider only; requires FreHD hardware/emulation.
@@ -79,13 +80,14 @@ quietly resolved by copying additional files from development media.
 
 ## Required runtime dependencies
 
-The approved RSX manager and clock providers require the existing file-backed
-manager helpers below. These are runtime overlays, not optional test extensions;
-`src/system` and `tools/build_rsx_runtime_overlays.py` define their dependencies.
-
-R3PLAN.RSX, R3SLOTS.RSX, R3SNAP.RSX, R3CARR.RSX, R3META.RSX, R3COORD.RSX,
-R3PROF.RSX, R3KCTX.RSX, R3KEEP.RSX, R3KPRE.RSX, R3FINAL.RSX, R3DROP.RSX,
-R3MOVE.RSX, R3COMIT.RSX, R3RESOL.RSX.
+The approved RSX manager and clock providers require `R3PACK.RSX`, a single
+15 KB fixed-slot container of the existing runtime helpers. It replaces the
+fifteen separately distributed R3 helper files; these remain diagnostic build
+artifacts. The container is an internal manager dependency, not an extension
+to load with RSX LOAD. `tools/rsx_container.py` fixes the slot order and
+`tools/build_rsx_runtime_overlays.py` builds it. Keep it matched to the system
+build. This packaging cleanup does not change the overlay architecture; the
+post-1.0 architectural review remains planned.
 
 Clock providers are shipped for explicit loading; no provider is loaded by
 default. P2DOS and 104/105 compatibility adapters are not selected by this

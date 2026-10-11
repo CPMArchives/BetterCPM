@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from rsx_container import PACK_NAME, pack
 from build_ccp import assemble
 from system_layout import LAYOUT, expand_layout
 
@@ -127,6 +128,7 @@ def main() -> None:
         "R3COMIT.RSX": commit.ljust(1021, b"\0") + gateway,
         "R3RESOL.RSX": resolver.ljust(1021, b"\0") + gateway,
     }
+    outputs[PACK_NAME] = pack(outputs)
     for name, data in outputs.items():
         (BUILD / name).write_bytes(data)
         print(f"{name}: {len(data)} bytes")

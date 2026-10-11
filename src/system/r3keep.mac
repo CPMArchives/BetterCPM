@@ -1,4 +1,5 @@
         INCLUDE layout.inc
+; @rsx-container-slots@
 
 ; ********************************************************************************
 ; *                    BetterCP/M Retained Carrier Loader                       *
@@ -364,11 +365,11 @@ KE_BAD:                                 ; reject retained preparation
 
 KE_MAGIC:       DB      'B','R','S','X' ; carrier signature
 KE_BMET:        DB      'B','M','E','T' ; metadata signature
-KE_NCARR:       DB      'R3CARR  '      ; carrier validator stem
-KE_NMETA:       DB      'R3META  '      ; metadata normalizer stem
-KE_NMOVE:       DB      'R3MOVE  '      ; safe handoff overlay stem
-KE_NPREP:       DB      'R3KPRE  '      ; retained preparer stem
-KE_NFINAL:      DB      'R3FINAL '      ; transaction finalizer stem
+KE_NCARR:       DB      R3CARR_RECORD      ; carrier validator stem
+KE_NMETA:       DB      R3META_RECORD      ; metadata normalizer stem
+KE_NMOVE:       DB      R3MOVE_RECORD      ; safe handoff overlay slot
+KE_NPREP:       DB      R3KPRE_RECORD      ; retained preparer slot
+KE_NFINAL:      DB      R3FINAL_RECORD      ; transaction finalizer stem
 KE_CTX:         DW      0               ; transaction context
 KE_NAME:        DW      0               ; retained filename stem
 KE_BASE:        DW      0               ; carrier scratch base
