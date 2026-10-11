@@ -1203,7 +1203,121 @@ renames are not rolled back.
 
 ##### Transient REN
 
-The extended transient REN interface remains to be finalized and implemented.
+The following is the **planned REN interface**, recorded in the
+[REN engineering specification](../engineering/REN%20Specification.md).
+It has not yet replaced the current resident behavior described above or the
+basic transient implementation. Use `:REN` to request the transient program
+explicitly when these features become available.
+
+REN changes filenames in place. It never moves a file to another drive or user
+area. The two planned forms are equivalent:
+
+```text
+REN source template
+REN template=source
+```
+
+For example:
+
+```text
+REN B[-]:*.DOC *.TXT
+REN *.TXT=B[-]:*.DOC
+REN [A0,B[3-5],C7]:*.DOC[$ARC] *.TXT
+```
+
+The source can select multiple DUs, wildcard names and file attributes. The
+name template must have no location: `*.TXT` is valid; `B3:*.TXT` is not.
+Each result stays in its original DU. File contents and attributes are retained.
+
+Templates follow COPY's positional rules, independently for name and extension:
+literals replace source positions, `?` retains one source position, and a
+terminal `*` retains the rest of the field. Repeated terminal stars are
+redundant. Characters after a star run, such as `F*A`, are invalid. Thus
+`REN *.DOC *.TXT` changes the extension without changing the name.
+
+###### Planned transient options
+
+| Option | Meaning |
+| --- | --- |
+| `/C` | Confirm each eligible rename with `Y/N`. |
+| `/Y` | Automatically answer Yes to confirmations; does not override protection. |
+| `/N` | Automatically answer No in `/C` mode, displaying proposed mappings. |
+| `/DRY` | Preview with a guaranteed absence of writes, even with `/Y`. |
+| `/P` | Allow selected read-only and system files to be renamed. |
+| `/Q` | Suppress routine successful mappings; retain noteworthy outcomes and summary. |
+| `/QQ` | Suppress normal REN output and assume `/Y` when it was not supplied. |
+| `/VER` | Print the version and build banner, then exit without renaming. |
+
+By default, the planned implementation renames eligible files immediately and
+reports results. Read-only and system files are skipped unless `/P` is supplied.
+Attribute predicates select files; `/P` separately permits protection override:
+
+```text
+:REN /P *.DOC[$RO] *.TXT
+```
+
+This selects only read-only `.DOC` files and permits their rename. `/P` does
+not broaden the selection. Resident REN's target subset does not require `/P`;
+STAT can remove protection temporarily and restore it after renaming.
+
+Use `/DRY` for a guaranteed preview:
+
+```text
+:REN /DRY B[-]:*.DOC *.TXT
+```
+
+Visible dry runs end with `Dry run only: no files were renamed.` Neither `/Y`
+nor its position in the command can override `/DRY`. With `/C`, `/N` displays
+proposed mappings without synthetic `N` responses on each line. If both `/Y`
+and `/N` appear without `/DRY`, the later confirmation policy wins.
+
+###### Collisions and failures
+
+An existing target is never overwritten. Interactive collisions offer:
+
+```text
+File exists. N/S/A/?
+```
+
+`N` means **New name**, `S` skips this file, and `A` aborts the remainder.
+`?` prints `N New name, S Skip file, A Abort remainder.` and repeats the prompt.
+A new name must be locationless and valid 8.3; if it also exists, the collision
+prompt returns. A file mapped to its own name is unchanged and may count as
+skipped.
+
+Operational failures offer:
+
+```text
+REN A.DOC - Failed. R/S/A/?
+```
+
+`R` retries, `S` skips, and `A` aborts the remainder. `?` prints
+`R Retry, S Skip file, A Abort remainder.` and reprompts without changing state.
+Under `/Y`, recoverable operational failures default to Skip.
+
+Execution is incremental: aborting leaves earlier successful renames in place.
+REN does not promise rollback or an atomic batch. Multi-DU reports group
+mappings beneath headings such as `A0:` and `B3:`. Normal and `/Q` reports end
+with a summary such as `12 FILES RENAMED, 2 SKIPPED, 1 FAILED`, omitting
+zero-count categories. No matches may report `NO FILE`.
+
+`/Q` does not answer prompts. `/QQ` suppresses mappings, skip notices,
+no-match messages, syntax diagnostics and summaries. When explicit `/Y` is
+absent, the proposed ordinary super-quiet behavior first prints once:
+
+```text
+REN: /Y not specified. /QQ assumes /Y.
+```
+
+Explicit `/Y /QQ` omits that notice. `/QQ` never implies `/P`; `/DRY` always
+prevents writes and suppresses its usual preview/footer under `/QQ`. Lower-level
+OS diagnostics may still appear. Unattended collision policy, `/QQ /N`, and
+the `/DRY /QQ` notice interaction remain implementation questions in the
+engineering specification; do not rely on those combinations yet.
+
+The planned resident subset includes core in-place rename, shared source
+selection, positional templates, protection rules and `/VER`. The richer
+confirmation, preview, override and reporting options above belong to REN.COM.
 
 
 #### 4.4 TYPE — Display a File
