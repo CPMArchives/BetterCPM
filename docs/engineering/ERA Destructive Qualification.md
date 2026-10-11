@@ -65,3 +65,22 @@ through builder options as needed. Only disposable media is modified.
 Destructive erase is not a claim of cryptographic secure erasure. Failed data
 writes may leave partially zeroed data, and failed scrubs may leave partially
 scrubbed metadata. Shared data is intentionally retained.
+
+## Final ERA closeout
+
+Build 002 also passes the ordinary Model 4 workflow: mixed-drive rejection
+before mutation, multi-extent deletion, unattended RO preservation, same-branch
+protection admission, `/R`, and negated aliases. The SUBMIT finish marker and
+independent directory inspection confirm completion and preservation of KEEP.DAT.
+
+Both manifest-selected distribution disks were rebuilt from source and passed
+filesystem, file-integrity and boot qualification. Each includes the exact
+7,619-byte ERA binary with the SHA-256 recorded above. The z80pack disk contains
+19 files with 208K free; the Model 4 disk contains 18 files with 656K free.
+The RSX helpers are packaged in their single container. PIP, WHEREIS and the
+provisional full-screen editor remain planned distribution items.
+
+ERA's agreed 1.0 resident and transient operation contracts are complete.
+Automatic resident-to-transient handoff is separate command-environment work;
+use `:ERA` to select transient behavior explicitly when necessary. `/QQ`, `/N`
+and `/DRV` are not part of the agreed transient switch set.
