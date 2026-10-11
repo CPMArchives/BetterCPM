@@ -43,6 +43,9 @@ def file_stub(work: Path) -> bytes:
         JP      OPEN
         JP      NEXT
         JP      RESET
+        REPT    136
+        DB      0
+        ENDM
 OPEN:   XOR     A
         LD      ({COUNT:04X}H),A
         LD      A,(HL)
@@ -70,6 +73,8 @@ OPEN:   XOR     A
 PSELECT:
         INC     HL
         LD      A,(HL)
+        CP      'A'
+        JR      Z,PACK
         CP      'R'
         JP      Z,PROF
         JP      PLAN
@@ -114,6 +119,8 @@ SLOTS:  LD      A,11
 FSELECT:
         LD      A,13
         JR      SELECTED
+PACK:   LD      A,255
+        JR      SELECTED
 CARRIER:
         LD      A,(HL)
         CP      'H'
@@ -129,7 +136,10 @@ STATEFUL:
         LD      A,12
 SELECTED:
         LD      ({SELECT:04X}H),A
+        LD      A,120
+        LD      (0ED02H),A
         XOR     A
+        LD      (0ED13H),A
         RET
 RESET:  XOR     A
         LD      ({COUNT:04X}H),A
@@ -137,6 +147,24 @@ RESET:  XOR     A
 NEXT:   PUSH    HL
         EX      DE,HL
         LD      A,({SELECT:04X}H)
+        CP      255
+        JR      NZ,OLDSELECT
+        LD      A,(0ED13H)
+        RRCA
+        RRCA
+        AND     1
+        LD      ({COUNT:04X}H),A
+        LD      A,(0ED13H)
+        RRCA
+        RRCA
+        RRCA
+        AND     01FH
+        LD      HL,PACKMAP
+        LD      C,A
+        LD      B,0
+        ADD     HL,BC
+        LD      A,(HL)
+OLDSELECT:
         OR      A
         LD      BC,0{CARRIER_SOURCE:04X}H
         JP      Z,HAVESRC
@@ -199,8 +227,12 @@ HAVESRC:
         LD      A,({COUNT:04X}H)
         INC     A
         LD      ({COUNT:04X}H),A
+        LD      A,(0ED13H)
+        ADD     A,4
+        LD      (0ED13H),A
         XOR     A
         RET
+PACKMAP: DB 3,11,7,1,2,0,5,8,9,10,13,0,4,0,0
         END
 """
     return assemble(Path("/Users/nathanael/bin/z80asm"), source,

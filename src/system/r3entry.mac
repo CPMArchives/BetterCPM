@@ -1,4 +1,5 @@
         INCLUDE layout.inc
+; @rsx-container-slots@
 
 ; ********************************************************************************
 ; *                    BetterCP/M RSX Transaction Entry                          *
@@ -285,8 +286,8 @@ RV_BAD:                                 ; reject an unavailable transaction phas
         OR      A
         RET
 
-RV_NLOAD:       DB      'R3COORD '      ; append transaction coordinator
-RV_NDROP:       DB      'R3DROP  '      ; removal transaction coordinator
+RV_NLOAD:       DB      R3COORD_RECORD      ; append transaction coordinator
+RV_NDROP:       DB      R3DROP_RECORD      ; removal transaction coordinator
 RV_REQ:         DW      0               ; public Function-177 request
 RV_HREQ:                                ; replacement-overlay handoff request
         REPT    6
@@ -295,7 +296,7 @@ RV_HREQ:                                ; replacement-overlay handoff request
 
 
 ; Position-independent overlay reader copied to scratch+0400H. HL is its
-; runtime entry address, DE is a filename (A=0) or handoff request (A=1).
+; runtime entry address, DE is a slot descriptor (A=0) or handoff request (A=1).
 ; Scratch holds a complete image, code, private state/stack, and a saved CFG.
 RI_ENTRY:                               ; enter position-independent staged reader
         PUSH    IX
@@ -342,11 +343,26 @@ RI_ENTRY:                               ; enter position-independent staged read
         LD      BC,0400H
         LDIR
         POP     DE
-RI_NAME:                                ; open the selected overlay
-        EX      DE,HL
+RI_NAME:                                ; open the container at selected record
+        LD      A,(DE)
+        LD      (IX+18),A
+        PUSH    IX
+        POP     HL
+        LD      DE,RI_PACK-RI_ENTRY-0100H
+        ADD     HL,DE
         LD      A,1
         CALL    LY_FILE
         JR      NZ,RI_FAIL
+        LD      A,(LY_FCB+15)
+        CP      120                     ; exact packed length within extent zero
+        JR      NZ,RI_FAIL
+        LD      A,(IX+18)
+        CP      113
+        JR      NC,RI_FAIL
+        AND     7
+        JR      NZ,RI_FAIL
+        LD      A,(IX+18)
+        LD      (LY_FCB+32),A
         PUSH    IX
         POP     HL
         LD      DE,0500H
@@ -357,6 +373,12 @@ RI_NAME:                                ; open the selected overlay
         JR      NZ,RI_READFAIL
         CALL    LY_FILE+3
         JR      NZ,RI_READFAIL
+        LD      A,(IX+18)
+        ADD     A,8
+        LD      C,A
+        LD      A,(LY_FCB+32)
+        CP      C
+        JR      NZ,RI_READFAIL           ; reject a partially padded block
         POP     HL
         LD      A,(IX+0)
         OR      A
@@ -404,6 +426,7 @@ RI_RETURN:                              ; restore the caller frame and dispatch
         OR      E
         RET     Z
         JP      LY_RSX
+RI_PACK: DB 'R3PACK  '
 RI_END:                                 ; end the copied reader code
 
         .DEPHASE

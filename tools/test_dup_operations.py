@@ -7,10 +7,7 @@ from test_disk_utilities import medium, keys
 from run_trs80_command import DEFAULT_EMULATOR
 from build_montezuma_extended_790k import crc16
 ROOT=Path(__file__).resolve().parents[1]
-RUNTIME_OVERLAYS=("R3PLAN.RSX","R3SLOTS.RSX","R3SNAP.RSX","R3CARR.RSX",
-    "R3META.RSX","R3COORD.RSX","R3PROF.RSX","R3KCTX.RSX","R3KEEP.RSX",
-    "R3KPRE.RSX","R3FINAL.RSX","R3DROP.RSX","R3MOVE.RSX","R3COMIT.RSX",
-    "R3RESOL.RSX")
+RUNTIME_OVERLAYS=("R3PACK.RSX",)
 
 def binding(physical,sides):
     # Two cylinders, one reserved surface track: copy must include it too.

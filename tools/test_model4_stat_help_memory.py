@@ -43,9 +43,7 @@ def main():
     address = (len(stat) + 0x100 + 255) & ~255
     extras = [('STAT.COM', stat), ('RSX.COM', (ROOT / 'build/utilities/RSX.COM').read_bytes()),
               ('ECHO.RSX', (ROOT / 'build/rsx/ECHO.RSX').read_bytes())]
-    overlays = ('R3PLAN', 'R3SLOTS', 'R3SNAP', 'R3CARR', 'R3META', 'R3COORD',
-                'R3PROF', 'R3KCTX', 'R3KEEP', 'R3KPRE', 'R3FINAL', 'R3DROP',
-                'R3MOVE', 'R3COMIT', 'R3RESOL')
+    overlays = ('R3PACK',)
     extras += [(name + '.RSX', (ROOT / 'build/system' / (name + '.RSX')).read_bytes())
                for name in overlays]
     for name, record in [('NOMETA.COM', bytes(32)), ('BADSIG.COM', b'XX\1' + bytes(29)),

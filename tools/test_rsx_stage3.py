@@ -23,25 +23,9 @@ LOW = LAYOUT["SYSTEM"] + 0x88
 TPA = LAYOUT["SYSTEM"] + 0x90
 GEN = LAYOUT["SYSTEM"] + 0x92
 
-FILES = (
-    ("R3MOVE  ", "build/system/R3MOVE.RSX"),
-    ("R3COORD ", "build/system/R3COORD.RSX"),
-    ("R3CARR  ", "build/system/R3CARR.RSX"),
-    ("R3META  ", "build/system/R3META.RSX"),
-    ("R3PROF  ", "build/system/R3PROF.RSX"),
-    ("R3PLAN  ", "build/system/R3PLAN.RSX"),
-    ("R3SNAP  ", "build/system/R3SNAP.RSX"),
-    ("R3KCTX  ", "build/system/R3KCTX.RSX"),
-    ("R3KEEP  ", "build/system/R3KEEP.RSX"),
-    ("R3KPRE  ", "build/system/R3KPRE.RSX"),
-    ("R3SLOTS ", "build/system/R3SLOTS.RSX"),
-    ("R3FINAL ", "build/system/R3FINAL.RSX"),
-    ("R3COMIT ", "build/system/R3COMIT.RSX"),
-    ("R3RESOL ", "build/system/R3RESOL.RSX"),
-    ("R3DROP  ", "build/system/R3DROP.RSX"),
-    ("HELLO   ", "build/rsx/HELLO.RSX"),
-    ("STATEFUL", "build/rsx/STATEFUL.RSX"),
-)
+FILES = (("R3PACK  ", "build/system/R3PACK.RSX"),
+         ("HELLO   ", "build/rsx/HELLO.RSX"),
+         ("STATEFUL", "build/rsx/STATEFUL.RSX"))
 
 
 def file_stub(work: Path, sources: tuple[int, ...]) -> bytes:
@@ -55,6 +39,9 @@ def file_stub(work: Path, sources: tuple[int, ...]) -> bytes:
         JP      OPEN
         JP      NEXT
         JP      RESET
+        REPT    136
+        DB      0
+        ENDM
 OPEN:   LD      (INPUT),HL
         LD      HL,TABLE
 SEARCH: LD      E,(HL)
@@ -79,6 +66,10 @@ MATCH:  LD      A,(DE)
         LD      (SOURCE),BC
         XOR     A
         LD      (COUNT),A
+        LD      (0ED13H),A
+        LD      A,120
+        LD      (0ED02H),A
+        XOR     A
         RET
 NEXTNAME:
         POP     DE
@@ -101,11 +92,9 @@ NEXT:   PUSH    HL
         POP     HL
         PUSH    HL
         EX      DE,HL
-        LD      A,(COUNT)
+        LD      A,(0ED13H)
         LD      L,A
         LD      H,0
-        ADD     HL,HL
-        ADD     HL,HL
         ADD     HL,HL
         ADD     HL,HL
         ADD     HL,HL
@@ -123,6 +112,9 @@ NEXT:   PUSH    HL
         LD      A,(COUNT)
         INC     A
         LD      (COUNT),A
+        LD      A,(0ED13H)
+        ADD     A,4
+        LD      (0ED13H),A
         XOR     A
         RET
 INPUT:  DW      0
@@ -179,7 +171,7 @@ def invoke(cpu: Z80, bootstrap: bytes, operation: int, name: bytes,
 
 
 def main() -> None:
-    sources = tuple(SOURCE_BASE + 0x400 * index for index in range(len(FILES)))
+    sources = (SOURCE_BASE, SOURCE_BASE+15360, SOURCE_BASE+16384)
     cpu = Z80(b"")
     for (_name, relative), address in zip(FILES, sources):
         data = (ROOT / relative).read_bytes()
@@ -237,16 +229,16 @@ def main() -> None:
     assert bytes(cpu.mem[old_base:LAYOUT["RSX"]]) == before_live
     assert bytes(cpu.mem[RSTCOUNT:RSTCOUNT + 41]) == before_state
 
-    # A missing resolver must fail before any live movement or publication.
-    resolver_name = cpu.mem.find(b"R3RESOL ", LAYOUT["FILE"], LAYOUT["FILE"] + len(stub))
-    assert resolver_name >= 0
-    cpu.mem[resolver_name] = ord("X")
+    # A missing container must fail before any live movement or publication.
+    container_name = cpu.mem.find(b"R3PACK  ", LAYOUT["FILE"], LAYOUT["FILE"] + len(stub))
+    assert container_name >= 0
+    cpu.mem[container_name] = ord("X")
     generation = cpu.word(GEN)
     invoke(cpu, bootstrap, 2, b"HELLO   ")
     assert cpu.a == 0xFF and cpu.word(GEN) == generation
     assert bytes(cpu.mem[old_base:LAYOUT["RSX"]]) == before_live
     assert bytes(cpu.mem[RSTCOUNT:RSTCOUNT + 41]) == before_state
-    cpu.mem[resolver_name] = ord("R")
+    cpu.mem[container_name] = ord("R")
 
     invoke(cpu, bootstrap, 2, b"HELLO   ")
     assert cpu.a == 0 and cpu.mem[RSTCOUNT] == 1

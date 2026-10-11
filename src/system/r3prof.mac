@@ -1,4 +1,5 @@
         INCLUDE layout.inc
+; @rsx-container-slots@
 
 ; ********************************************************************************
 ; *                  BetterCP/M Prospective Profile Builder                      *
@@ -619,10 +620,10 @@ PF_BAD:                                 ; reject prospective profile
 
 PF_MAGIC:       DB      'B','R','S','X' ; carrier signature
 PF_ABIVAL:      DB      2,1,0           ; accepted RSX ABI
-PF_NPLAN:       DB      'R3PLAN  '      ; planner overlay stem
-PF_NSNAP:       DB      'R3SNAP  '      ; snapshot overlay stem
-PF_NMOVE:       DB      'R3MOVE  '      ; safe handoff overlay stem
-PF_NKEEP:       DB      'R3KCTX  '      ; retained context constructor stem
+PF_NPLAN:       DB      R3PLAN_RECORD      ; planner overlay slot
+PF_NSNAP:       DB      R3SNAP_RECORD      ; snapshot overlay slot
+PF_NMOVE:       DB      R3MOVE_RECORD      ; safe handoff overlay slot
+PF_NKEEP:       DB      R3KCTX_RECORD      ; retained context constructor stem
 PF_REQ:         DW      0               ; public Function-177 request
 PF_FACTS:       DW      0               ; candidate normalized facts
 PF_HIGH:        DW      0               ; transaction high bound

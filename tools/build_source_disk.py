@@ -339,7 +339,7 @@ def main() -> None:
                     "source": str(fdb_path.relative_to(ROOT))})
     used[0].add("BATCHIO.RSX")
     files.append((0, "BATCHIO.RSX", (ROOT / "build/rsx/BATCHIO.RSX").read_bytes()))
-    for name in ("R3PLAN.RSX", "R3SLOTS.RSX", "R3SNAP.RSX", "R3CARR.RSX",
+    for name in ("R3PACK.RSX", "R3PLAN.RSX", "R3SLOTS.RSX", "R3SNAP.RSX", "R3CARR.RSX",
                  "R3META.RSX", "R3COORD.RSX", "R3PROF.RSX", "R3KCTX.RSX",
                  "R3KEEP.RSX", "R3KPRE.RSX", "R3FINAL.RSX", "R3DROP.RSX",
                  "R3MOVE.RSX", "R3COMIT.RSX", "R3RESOL.RSX"):

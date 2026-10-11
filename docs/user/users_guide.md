@@ -1976,3 +1976,11 @@ The resident line identifies the installed RCP package. The force-transient `:DI
 Version identifies the release; build identifies its particular executable revision. Each utility has an independent build sequence, while resident commands share the RCP sequence. Build numbers continue across version changes and do not advance merely because the same source is rebuilt.
 
 `/VER` prints the identity and exits without carrying out the command. Do not combine it with filespecs or other options; such combinations report `Invalid /VER usage.` Existing CPX/RSX `/V` reports facility versions and remains a separate option. This convention applies to BetterCP/M-owned utilities, not adopted third-party programs.
+
+
+### RSX manager runtime container
+
+Keep `R3PACK.RSX` on the System Disk in A0:. The RSX manager reads its
+internal helper slots automatically; do not load it as an extension. It
+replaces the separate R3 helper files. Keep the container matched to the
+BetterCP/M system build; use the distribution builder to install both together.

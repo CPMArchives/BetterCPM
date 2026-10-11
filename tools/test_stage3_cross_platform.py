@@ -10,6 +10,7 @@ import tempfile
 from pathlib import Path
 
 from run_trs80_command import DEFAULT_EMULATOR, ROOT, key_args
+from trs80gp_launch import run
 
 TRS_IMAGE = ROOT / "build/trs80/BetterCPM-Extended-80T-DS-System-790K.dmk"
 DEFAULT_Z80 = ROOT / "build/z80pack"
@@ -31,7 +32,7 @@ ROLLBACK = (
     ("RSX LOAD STATEFUL", ()),
     ("STATTST I", ("STATEFUL INIT PASS",)),
     ("STATTST M", ("STATEFUL MUTATE PASS",)),
-    ("ERA R3RESOL.RSX", ()),
+    ("ERA R3PACK.RSX", ()),
     ("RSX UNLOAD HELLO", ("RSX module or profile error",)),
     ("STATTST C", ("STATEFUL CHECK PASS",)),
     ("RSX LIST", ("HELLO", "STATEFUL")),
@@ -106,7 +107,7 @@ def trs_screen(commands: tuple[tuple[str, tuple[str, ...]], ...]) -> bytes:
                 invocation.extend(("-id", "12000"))
             invocation.extend(key_args(command + "\r"))
         invocation.extend(("-id", "1800", "-it", "-ix"))
-        subprocess.run(invocation, cwd=work, check=True)
+        run(invocation, cwd=work, check=True, timeout=900)
         return (work / "trs80-text-0.bin").read_bytes()[:80 * 24]
 
 
