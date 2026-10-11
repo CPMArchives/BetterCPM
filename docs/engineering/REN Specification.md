@@ -1,0 +1,1014 @@
+# REN / REN.COM — BetterCP/M Engineering Specification
+
+Status: target contract recorded on 2026-10-11. This document specifies future
+REN work; it does not claim that the existing resident or basic transient
+implementation already supplies these behaviors. The current resident behavior
+is documented in [Resident REN Selection](Resident%20REN%20Selection.md).
+The planned user interface is in user-guide section 4.3.
+
+Uses the shared [DU syntax](208%20Extended%20DU%20Syntax.md),
+[COPY template rules](COPY%20Specification.md), and
+[interactive prompt convention](Interactive%20Prompt%20Convention.md).
+This contract supersedes earlier target assumptions where they conflict;
+implementation and qualification must follow separately.
+
+## Implementation boundaries to settle
+
+- The supplied resident subset changes today's preflight, SYS handling and
+  syntax. Qualify those changes explicitly rather than treating this document
+  as evidence that the implementation changed. `/Y` is listed as transient-only
+  in section 2 and is not required of the resident subset.
+- Define collision policy under `/Y` and `/QQ`: neither can overwrite an
+  existing target, and `/QQ` cannot silently wait for input. The supplied
+  contract does not yet choose the unattended collision action.
+- Resolve `/QQ /N` precedence and the one-time `/QQ` notice under `/DRY`.
+  Section 20 allows no output for a super-quiet dry run, whereas section 19
+  normally requires the notice when explicit `/Y` is absent. Keep `/DRY`'s
+  no-write guarantee regardless of these reporting decisions.
+- Define `/N` without `/C`, invalid or blank new-name responses, cancellation,
+  and whether interactive new-name input accepts templates or only literal
+  names. These should be settled before implementing the prompt flows.
+- Incremental execution still needs safe source enumeration: avoid selecting
+  newly renamed entries twice, losing unprocessed sources, or changing behavior
+  when generated targets overlap selected sources. No overwrite or cycle
+  solving is authorized by this specification.
+- Define switch placement/repetition and syntax validation before mutation.
+  Incremental collision handling does not authorize partial writes from an
+  invalid invocation. Protection override must preserve original attributes.
+
+## 1. Purpose
+
+`REN` changes file names without changing file location.
+
+BetterCP/M supports two equivalent forms:
+
+```text
+REN filespec template
+REN template=filespec
+```
+
+where:
+
+- `filespec` is the source selector;
+- `template` is the destination-name template;
+- every file remains in its original DU;
+- the template never carries a location specification.
+
+Examples:
+
+```text
+REN B[-]:*.DOC *.TXT
+REN *.TXT=B[-]:*.DOC
+```
+
+These are equivalent.
+
+`REN` is not a relocation command. Moving files between DUs belongs to `MOVE`.
+
+---
+
+## 2. Resident and transient forms
+
+Resident `REN` is deliberately smaller.
+
+Transient `REN.COM` is the full implementation.
+
+Resident REN should support the core rename operation and `/VER`, using the common RCP selector infrastructure where applicable, but richer interaction/reporting modes belong to `REN.COM`.
+
+Transient-only features include:
+
+```text
+/C
+/Y
+/N
+/DRY
+/P
+/Q
+/QQ
+```
+
+Resident REN does not need to support protected-file override directly. A user can temporarily remove attributes with `STAT`, perform the resident rename, then restore them.
+
+Example:
+
+```text
+STAT FOO.DOC $RW
+REN FOO.DOC FOO.TXT
+STAT FOO.TXT $RO
+```
+
+---
+
+## 3. Source selector
+
+The source operand uses the common BetterCP/M selector syntax.
+
+Examples:
+
+```text
+A0:FOO.DOC
+B[-]:*.DOC
+[A0,B[3-5],C7]:*.BAK
+B[-]:*.DOC[$ARC]
+```
+
+The shared selector may include:
+
+- one or many DUs;
+- bounded wildcard filespecs;
+- attribute predicates.
+
+Example:
+
+```text
+REN [A0,B[3-5],C7]:*.DOC[$ARC] *.TXT
+```
+
+renames the selected ARC-marked `.DOC` files in place within each source DU.
+
+---
+
+## 4. Template operand
+
+The rename template is always locationless.
+
+Valid:
+
+```text
+*.TXT
+NEWNAME.DOC
+F?*.BAK
+```
+
+Invalid:
+
+```text
+B:*.TXT
+B3:*.TXT
+B[-]:*.TXT
+[A0,B3]:*.TXT
+```
+
+The template controls only the resulting 8.3 filename.
+
+It never selects or determines a destination DU.
+
+---
+
+## 5. Rename-template semantics
+
+REN must use the same positional filename-template rules already established for COPY.
+
+Do not create a REN-specific transformation language.
+
+Rules:
+
+- literals replace the corresponding source position;
+- `?` copies one source position;
+- terminal `*` copies the remainder of that field;
+- repeated terminal stars collapse;
+- positions do not shift;
+- the resulting filename must be a valid CP/M 8.3 name.
+
+Examples:
+
+```text
+REN *.DOC *.TXT
+```
+
+changes only the extension.
+
+```text
+REN FOO?.DOC BAR?.TXT
+```
+
+applies `?` positionally.
+
+Any template accepted/rejected by COPY's destination-template engine should behave the same way in REN.
+
+Where practical, use the same shared transformation code.
+
+---
+
+## 6. In-place semantics
+
+Each selected file remains in its original DU.
+
+For:
+
+```text
+REN B[-]:*.DOC *.TXT
+```
+
+the mapping is conceptually:
+
+```text
+B0:FOO.DOC -> B0:FOO.TXT
+B3:BAR.DOC -> B3:BAR.TXT
+B7:BAZ.DOC -> B7:BAZ.TXT
+```
+
+REN never maps files between DUs.
+
+---
+
+## 7. Attribute selection and protection
+
+The source selector decides which files are candidates.
+
+REN independently applies protection rules.
+
+Protected classes currently include:
+
+```text
+$RO
+$SYS
+```
+
+Attribute selectors remain selection-only.
+
+Examples:
+
+```text
+REN /P *.DOC[$RO] *.TXT
+```
+
+means:
+
+> Select only RO `.DOC` files and allow their protection to be overridden.
+
+```text
+REN /P *.DOC[$SYS] *.TXT
+```
+
+means:
+
+> Select only SYS `.DOC` files and allow protection override.
+
+Without `/P`, protected files are skipped.
+
+---
+
+## 8. `/P` — override protection
+
+Syntax:
+
+```text
+/P
+```
+
+`/P` allows REN to operate on protected selected files.
+
+It overrides both currently protected classes:
+
+- read-only;
+- system.
+
+It does not broaden the selection.
+
+Thus:
+
+```text
+REN /P *.DOC *.TXT
+```
+
+renames matching files including protected ones.
+
+```text
+REN /P *.DOC[$RO] *.TXT
+```
+
+renames only selected RO files.
+
+```text
+REN /P *.DOC[$SYS] *.TXT
+```
+
+renames only selected SYS files.
+
+The separation is:
+
+```text
+[...]  = which files
+/P     = whether protection may be overridden
+```
+
+---
+
+## 9. Default behavior
+
+With no confirmation/reporting switches, REN immediately performs eligible renames and reports results.
+
+Examples:
+
+```text
+A0>REN A.DOC A.TXT
+A.DOC -> A.TXT success
+```
+
+Equivalent assignment form:
+
+```text
+A0>REN A.TXT=A.DOC
+A.DOC -> A.TXT success
+```
+
+Protected file:
+
+```text
+A0>REN A.DOC A.TXT
+A.DOC -> A.TXT $RO skipped
+```
+
+Naming collision:
+
+```text
+A0>REN A.DOC A.TXT
+File exists. N/S/A/?
+```
+
+Plain REN is not a confirm-every-file mode and is not silent.
+
+It performs ordinary eligible renames and pauses only when a decision is actually required.
+
+---
+
+## 10. Collision handling
+
+If a generated target name already exists, REN pauses:
+
+```text
+File exists. N/S/A/?
+```
+
+`?` displays:
+
+```text
+N New name, S Skip file, A Abort remainder.
+```
+
+then repeats the prompt.
+
+Actions:
+
+- `N` — supply a new name;
+- `S` — skip this file;
+- `A` — stop processing the remaining files;
+- `?` — display one-line help and reprompt.
+
+Use **Abort remainder**, not **Abort all**, because earlier renames are not rolled back.
+
+---
+
+## 11. New-name entry after collision
+
+If the user chooses:
+
+```text
+N
+```
+
+prompt:
+
+```text
+New name?
+```
+
+The response must be:
+
+- locationless;
+- valid 8.3;
+- legal under REN's template/name rules.
+
+If the new target also exists, display the collision prompt again.
+
+Example:
+
+```text
+E.DOC -> E.TXT File exists. N/S/A/? N
+New name? E2.TXT
+E.DOC -> E2.TXT
+```
+
+---
+
+## 12. Incremental execution
+
+REN does not require a full batch-preflight collision map before ordinary execution.
+
+Example:
+
+```text
+A.DOC -> A.TXT    success
+B.DOC -> B.TXT    success
+C.DOC -> C.TXT    File exists. N/S/A/?
+```
+
+If the user chooses `A`, the earlier successful renames remain.
+
+This behavior is intentional.
+
+Transient REN may perform additional lookahead where convenient, but full atomic preflight is not required as a semantic contract.
+
+---
+
+## 13. `/C` — confirm each
+
+Syntax:
+
+```text
+/C
+```
+
+`/C` enters a step-through mode.
+
+For each otherwise eligible rename:
+
+```text
+A.DOC -> A.TXT Y/N
+```
+
+The user answers each operation.
+
+A typical session:
+
+```text
+A.DOC -> A.TXT Y/N Y - A.DOC -> A.TXT
+B.DOC -> B.TXT Y/N N - User Skipped
+C.DOC -> C.TXT Y/N Y - C.DOC -> C.TXT
+D.DOC -> D.TXT [SKIPPED - READ ONLY]
+E.DOC -> E.TXT File exists. N/S/A/?
+```
+
+Protected files do not display synthetic user input.
+
+Use direct status such as:
+
+```text
+D.DOC -> D.TXT [SKIPPED - READ ONLY]
+```
+
+or:
+
+```text
+D.DOC -> D.TXT [SKIPPED - SYSTEM FILE]
+```
+
+This keeps true user responses distinct from automatic protection decisions.
+
+---
+
+## 14. `/Y` — assume Yes
+
+Syntax:
+
+```text
+/Y
+```
+
+`/Y` automatically answers Yes to ordinary confirmation points.
+
+It does not override protection.
+
+Thus:
+
+```text
+REN /Y *.DOC *.TXT
+```
+
+renames all eligible files without confirmation but skips protected files unless `/P` is also present.
+
+`/Y` also resolves `/C` confirmation points automatically.
+
+Example:
+
+```text
+REN /Y /C *.DOC *.TXT
+```
+
+performs the step-through mapping using automatic Yes.
+
+Routine mapping output remains visible unless `/Q` or `/QQ` changes reporting.
+
+---
+
+## 15. `/N` — assume No
+
+Syntax:
+
+```text
+/N
+```
+
+`/N` is the opposite confirmation policy.
+
+Within `/C`, it automatically answers No.
+
+Example:
+
+```text
+REN /C /N *.DOC *.TXT
+```
+
+does not rename files.
+
+Instead it displays the proposed mappings:
+
+```text
+A.DOC -> A.TXT
+B.DOC -> B.TXT
+C.DOC -> C.TXT [SKIPPED - READ ONLY]
+D.DOC -> D.TXT
+```
+
+No artificial `N` is printed on each ordinary line.
+
+The absence of write activity is implied by the option.
+
+If `/Y` and `/N` are both used without `/DRY`, normal option precedence applies: later confirmation policy wins.
+
+Thus:
+
+```text
+REN /C /N /Y ...
+```
+
+executes eligible renames.
+
+```text
+REN /C /Y /N ...
+```
+
+does not.
+
+---
+
+## 16. `/DRY` — guaranteed dry run
+
+Syntax:
+
+```text
+/DRY
+```
+
+`/DRY` provides a hard no-write guarantee.
+
+Its display behavior resembles:
+
+```text
+/C /N
+```
+
+but it is not merely an alias.
+
+`/DRY` cannot be overridden by `/Y`, regardless of switch order.
+
+Thus all of these remain dry runs:
+
+```text
+REN /DRY ...
+REN /DRY /Y ...
+REN /Y /DRY ...
+REN /DRY /C /Y ...
+```
+
+At the end of a visible dry run:
+
+```text
+Dry run only: no files were renamed.
+```
+
+`/DRY` should be treated internally as a dedicated safety mode.
+
+---
+
+## 17. Multi-DU output grouping
+
+When output spans multiple DUs, group results by DU rather than repeating the DU on every line.
+
+Example:
+
+```text
+A0:
+   A.DOC -> A.TXT
+   B.DOC -> B.TXT
+A2:
+   A.DOC -> A.TXT [SKIPPED - READ ONLY]
+B1:
+   D.DOC -> D.TXT
+   E.DOC -> E.TXT
+C4:
+   E.DOC -> E.TXT [SKIPPED - TARGET EXISTS]
+```
+
+This format is used for:
+
+- normal reporting;
+- `/Y`;
+- `/C`;
+- `/C /N`;
+- `/DRY`;
+
+subject to `/Q` and `/QQ`.
+
+For a single-DU operation, the DU heading may be omitted unless needed for clarity.
+
+---
+
+## 18. `/Q` — quiet
+
+Syntax:
+
+```text
+/Q
+```
+
+Quiet mode suppresses routine successful rename lines.
+
+It retains noteworthy outcomes and the final summary.
+
+Example:
+
+```text
+A2:
+   A.DOC -> A.TXT [SKIPPED - READ ONLY]
+C4:
+   E.DOC -> E.TXT [SKIPPED - TARGET EXISTS]
+
+17 FILES RENAMED, 2 SKIPPED
+```
+
+`/Q` does not change confirmation behavior.
+
+---
+
+## 19. `/QQ` — super-quiet
+
+Syntax:
+
+```text
+/QQ
+```
+
+Super-quiet mode suppresses all normal REN-generated output.
+
+This includes:
+
+- successful mappings;
+- skip messages;
+- target-exists notices;
+- no-match messages;
+- syntax diagnostics;
+- final summaries.
+
+`/QQ` is intended to strive for zero REN output.
+
+Because a silent interactive prompt would be unsafe, `/QQ` implies `/Y` if `/Y` was not explicitly specified.
+
+If `/Y` is absent, print exactly once:
+
+```text
+REN: /Y not specified. /QQ assumes /Y.
+```
+
+Then enter super-quiet operation.
+
+If `/Y` was explicitly supplied:
+
+```text
+REN /Y /QQ ...
+```
+
+even that message is omitted.
+
+`/QQ` does not imply `/P`.
+
+Protected files therefore remain protected unless `/P` is supplied.
+
+---
+
+## 20. `/QQ` and dry run
+
+`/DRY` remains dominant over `/QQ` and `/Y`.
+
+Example:
+
+```text
+REN /DRY /QQ ...
+```
+
+performs no writes and suppresses the usual dry-run display and footer.
+
+No output is required from REN.
+
+---
+
+## 21. Runtime failure handling
+
+For an operational rename failure after processing has begun, use:
+
+```text
+REN A.DOC - Failed. R/S/A/?
+```
+
+`?` displays:
+
+```text
+R Retry, S Skip file, A Abort remainder.
+```
+
+then reprompts.
+
+Semantics:
+
+- `R` — retry current rename;
+- `S` — skip current file and continue;
+- `A` — stop processing remaining files;
+- `?` — inline help.
+
+Under `/Y`, recoverable failure handling defaults to Skip.
+
+Under `/QQ`, REN itself remains silent.
+
+Lower-level operating-system diagnostics may still appear independently where the OS reports them.
+
+---
+
+## 22. Self-mapping
+
+If template expansion produces exactly the same filename:
+
+```text
+A.DOC -> A.DOC
+```
+
+treat this as a no-op/skip, not a failure.
+
+It may contribute to SKIPPED accounting.
+
+---
+
+## 23. No source matches
+
+If no files match, ordinary REN may report:
+
+```text
+NO FILE
+```
+
+`/QQ` suppresses this.
+
+---
+
+## 24. Final summary
+
+Normal and `/Q` modes should report a compact summary:
+
+```text
+12 FILES RENAMED, 2 SKIPPED, 1 FAILED
+```
+
+Omit zero-count categories.
+
+Examples:
+
+```text
+12 FILES RENAMED
+```
+
+```text
+12 FILES RENAMED, 2 SKIPPED
+```
+
+`/QQ` suppresses the summary.
+
+For `/DRY`, the dry-run footer replaces normal execution semantics:
+
+```text
+Dry run only: no files were renamed.
+```
+
+unless `/QQ` suppresses it.
+
+---
+
+## 25. `/VER`
+
+All BetterCP/M utilities support:
+
+```text
+/VER
+```
+
+REN follows the same format.
+
+Resident example:
+
+```text
+BetterCP/M REN 1.0 (Resident, Build 002)
+```
+
+Transient:
+
+```text
+BetterCP/M REN 1.0 (Build 004)
+```
+
+`/VER` prints the banner and exits without performing any rename.
+
+---
+
+## 26. Transient REN.COM switch set
+
+The complete transient switch set is:
+
+```text
+/C
+/Y
+/N
+/DRY
+/P
+/Q
+/QQ
+/VER
+```
+
+Meaning:
+
+```text
+/C      confirm each / step-through mode
+/Y      assume Yes
+/N      assume No
+/DRY    guaranteed no-write dry run
+/P      override protected-file restrictions
+/Q      quiet
+/QQ     super-quiet; implies /Y if absent
+/VER    show version banner and exit
+```
+
+---
+
+## 27. Resident REN subset
+
+Resident REN remains deliberately smaller.
+
+It should support:
+
+- core rename syntax;
+- shared source selector infrastructure where resident code already permits it;
+- COPY-compatible template transformation;
+- normal protection behavior;
+- `/VER`.
+
+It need not support:
+
+```text
+/C
+/N
+/DRY
+/P
+/Q
+/QQ
+```
+
+unless later implementation work shows one is exceptionally cheap and worthwhile.
+
+Protected-file rename can be achieved manually using STAT where needed.
+
+---
+
+## 28. Explicit exclusions
+
+REN 1.0 must not implement:
+
+- relocation between DUs;
+- destination-location selectors;
+- destination attribute changes;
+- recursion;
+- path traversal;
+- regex renaming;
+- arbitrary substring replacement;
+- automatic case conversion;
+- numbering sequences;
+- automatic overwrite of existing targets;
+- temporary-name cycle solving.
+
+REN is deliberately a bounded filename transformation utility.
+
+---
+
+## 29. Qualification expectations
+
+Test at minimum:
+
+### Syntax forms
+
+```text
+REN A.DOC A.TXT
+REN A.TXT=A.DOC
+REN B[-]:*.DOC *.TXT
+REN *.TXT=B[-]:*.DOC
+```
+
+### Template behavior
+
+Use COPY-equivalent positional tests involving:
+
+```text
+*
+?
+literal positions
+repeated terminal *
+invalid nonterminal *
+```
+
+### Multi-DU grouping
+
+```text
+REN [A0,A2,B1,C4]:*.DOC *.TXT
+```
+
+Verify grouped output.
+
+### Protection
+
+```text
+REN *.DOC *.TXT
+REN /P *.DOC *.TXT
+REN /P *.DOC[$RO] *.TXT
+REN /P *.DOC[$SYS] *.TXT
+```
+
+### Confirm mode
+
+```text
+REN /C *.DOC *.TXT
+REN /Y /C *.DOC *.TXT
+REN /N /C *.DOC *.TXT
+```
+
+### Dry run
+
+```text
+REN /DRY *.DOC *.TXT
+REN /DRY /Y *.DOC *.TXT
+REN /Y /DRY *.DOC *.TXT
+```
+
+Verify no writes.
+
+### Quiet
+
+```text
+REN /Q *.DOC *.TXT
+REN /QQ *.DOC *.TXT
+REN /Y /QQ *.DOC *.TXT
+```
+
+Verify bare `/QQ` emits only:
+
+```text
+REN: /Y not specified. /QQ assumes /Y.
+```
+
+then silence.
+
+### Collision
+
+Force:
+
+```text
+E.DOC -> E.TXT
+```
+
+where `E.TXT` already exists.
+
+Verify:
+
+```text
+File exists. N/S/A/?
+```
+
+and help/new-name flow.
+
+### Failure recovery
+
+Verify:
+
+```text
+REN A.DOC - Failed. R/S/A/?
+```
+
+with help and reprompt.
+
+### Summary
+
+Verify:
+
+```text
+n FILES RENAMED, n SKIPPED, n FAILED
+```
+
+with zero-valued categories omitted.
+
+---
