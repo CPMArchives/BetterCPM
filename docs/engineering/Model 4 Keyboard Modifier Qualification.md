@@ -9,7 +9,7 @@ physical key identities. A Shift change while the colon key remained held
 produced both `:` and `*`. Releasing Control before releasing a letter could
 likewise publish both the control character and the ordinary letter.
 
-The scanner now retains the physical key-table slot separately from the
+The scanner now retains the physical matrix slot separately from the
 translated byte. Modifier changes on that same slot do not enqueue another
 character. A different overlapping key still queues normally. Shifted
 punctuation uses the Model 4 ASCII ranges, including `!`, quotes, `#`, `%`,
@@ -37,29 +37,44 @@ Qualified image SHA-256:
 Build and ROM/RAM ownership checks pass. The z80pack ROM-profile RAM map
 continues to pass unchanged.
 
-## Bracket mapping
+## Montezuma Micro punctuation chords
 
-A raw matrix diagnostic under trs80gp Logical Layout observed host `[` as
-Model 4 row 6, bit 3: the physical Up key. The former byte 11 invoked CCP
-history recall and replaced the command being entered. The BIOS cannot
-distinguish host `[` from a physical Up arrow with that same matrix state.
+The temporary Up/Down bracket mapping is retired. Up and Down again return
+0Bh and 0Ah for CCP history. Left/Right and Shift-Left remain unchanged.
 
-The Up and Down slots now publish ASCII `[` (5Bh) and `]` (5Dh). History
-navigation remains available through Ctrl-K (0Bh) and Ctrl-J (0Ah); this is a Model 4 keyboard mapping change, with no CCP
-or BDOS changes. The BIOS size and writable-state layout are unchanged.
-The BIOS regression checks both brackets and both history chords.
+The scanner implements the ten punctuation chords documented on printed page
+10 of the [Montezuma Micro Model 4 manual](https://archive.org/download/CPM_Model_4_1984_Montezuma_Micro_PDF/CPM_Model_4_1984_Montezuma_Micro_PDF.pdf#page=12):
 
-The user and the raw matrix probe both confirmed that host `]` produces no
-matrix event in Logical Layout. This is an emulator limitation; the BIOS
-cannot recover a character it never receives. Physical Down provides a
-closing-bracket fallback. Host `[` continues to work normally via the Up slot.
-These mappings also apply on real Model 4 keyboards. Left/Right editing and
-Shift-Left backspace remain unchanged.
+| Character | Original Model 4 Control chord |
+| --- | --- |
+| `[` | 8 / opening parenthesis |
+| `]` | 9 / closing parenthesis |
+| `{` | comma / opening angle bracket |
+| `}` | period / closing angle bracket |
+| `\` | slash |
+| &#124; | 1 |
+| `~` | 3 |
+| `^` | 5 |
+| backtick | 7 |
+| `_` | minus |
 
-The rebuilt image (SHA-256
-`e0253bfdb49012cb87e9d915053c23ff889d634bdd370ec3e49dfba05fef716d`)
-passes the complete byte regression, including `5B 5D 0B 0A` for the two
-brackets and history chords. A separate boot entered `:DIR *.*[$SYS]`
-through physical matrix keys and returned `NO FILE` and a fresh `A0>` prompt,
-with no history replacement or filespec error. BIOS remains 637/638 bytes
-and the ROM/RAM inventory check passes.
+Each chord works with Control alone or Control plus Shift. Ordinary letters,
+shifted punctuation and existing letter controls retain their behavior. This
+implements punctuation compatibility, not every Montezuma keyboard convention.
+
+Arithmetic decoding replaces the ordinary-key table; cursor-store tails are
+shared. BIOS now emits 636 of 638 allocated bytes, with no BDOS growth or
+memory-boundary changes. The five-byte console state moves to EBD9h–EBDDh;
+ROM relocation and RAM totals remain 2,253 and 2,256 bytes.
+
+The BIOS vector test covers connected ordinary keys, all ten chords with and
+without Shift, arrow controls, and output/cursor behavior. The emulator test
+reads the same chords through public BIOS CONIN using physical matrix input.
+Host-layout translation remains distinct: the previously observed host `[`
+arrives as Up in Logical Layout, and host `]` produced no matrix event.
+These observations do not establish how every host layout translates Control
+chords; the original Model 4 signals are the qualified interface.
+
+The rebuilt emulator image passes all 42 expected CONIN bytes. A separate
+boot enters `:DIR *.*[$SYS]` through the punctuation chords and returns
+`NO FILE` followed by a fresh prompt, without a filespec error.

@@ -850,7 +850,8 @@ def main() -> None:
 
     # Exercise the production matrix scanner before replacing CONIN below.
     scan_at = platform_const - BASE + 1
-    scan = int.from_bytes(data[scan_at:scan_at + 2], "little")
+    scan = (int.from_bytes(data[scan_at:scan_at + 2], "little")
+            if data[platform_const - BASE] == 0xC3 else platform_const)
     cpu.mem[platform_const:platform_const + 3] = data[
         platform_const - BASE:platform_const - BASE + 3]
     cpu.mem[0xF420], cpu.mem[0xF480] = 0x04, 0x01  # Shift-colon
@@ -877,6 +878,32 @@ def main() -> None:
     cpu.run(scan)
     require(cpu.a == 127, "Shift-Left did not produce DEL")
     cpu.mem[0xF440] = cpu.mem[0xF480] = 0
+
+    # Check every connected ordinary matrix key after arithmetic decoding.
+    rows = ('@ABCDEFG', 'HIJKLMNO', 'PQRSTUVW', 'XYZ', '01234567', '89:;,-./')
+    for row, letters in enumerate(rows):
+        for column, letter in enumerate(letters):
+            address = 0xF400 + (1 << row)
+            cpu.mem[address] = 1 << column
+            cpu.run(scan)
+            require(cpu.a == ord(letter), f'matrix key {letter} decoded incorrectly')
+            cpu.mem[address] = 0
+    # All MM punctuation mappings accept both Ctrl and Ctrl+Shift.
+    chords = [(5,0,'['),(5,1,']'),(5,4,'{'),(5,6,'}'),(5,7,'\\'),
+              (4,1,'|'),(4,3,'~'),(4,5,'^'),(4,7,'`'),(5,5,'_')]
+    for modifier in (4, 5):
+        for row, column, character in chords:
+            address = 0xF400 + (1 << row)
+            cpu.mem[address], cpu.mem[0xF480] = 1 << column, modifier
+            cpu.run(scan)
+            require(cpu.a == ord(character), f'MM chord for {character} failed')
+            cpu.mem[address] = 0
+    cpu.mem[0xF480] = 0
+    for mask, code in ((8,11),(16,10)):
+        cpu.mem[0xF440] = mask
+        cpu.run(scan)
+        require(cpu.a == code, 'arrow history control code changed')
+    cpu.mem[0xF440] = 0
 
     conin_impl = cpu.word(entries[3] + 1)
     platform_conin = cpu.word(conin_impl + 1)
