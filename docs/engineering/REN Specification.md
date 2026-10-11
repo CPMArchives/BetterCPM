@@ -1,8 +1,7 @@
 # REN / REN.COM — BetterCP/M Engineering Specification
 
-Status: target contract recorded on 2026-10-11. This document specifies future
-REN work; it does not claim that the existing resident or basic transient
-implementation already supplies these behaviors. The current resident behavior
+Status: resident core subset implemented on 2026-10-11; full transient REN.COM
+remains future work. The current resident behavior
 is documented in [Resident REN Selection](Resident%20REN%20Selection.md).
 The planned user interface is in user-guide section 4.3.
 
@@ -14,10 +13,8 @@ implementation and qualification must follow separately.
 
 ## Implementation boundaries to settle
 
-- The supplied resident subset changes today's preflight, SYS handling and
-  syntax. Qualify those changes explicitly rather than treating this document
-  as evidence that the implementation changed. `/Y` is listed as transient-only
-  in section 2 and is not required of the resident subset.
+- Resident REN now accepts both operand orders, skips RO/SYS files and handles
+  collisions incrementally. `/Y` remains transient-only.
 - Define collision policy under `/Y` and `/QQ`: neither can overwrite an
   existing target, and `/QQ` cannot silently wait for input. The supplied
   contract does not yet choose the unattended collision action.

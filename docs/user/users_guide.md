@@ -1344,8 +1344,11 @@ OS diagnostics may still appear. Unattended collision policy, `/QQ /N`, and
 the `/DRY /QQ` notice interaction remain implementation questions in the
 engineering specification; do not rely on those combinations yet.
 
-The planned resident subset includes core in-place rename, shared source
-selection, positional templates, protection rules and `/VER`. The richer
+Resident REN supports both `REN source template` and `REN template=source`,
+shared source selection, positional templates and `/VER`. It skips RO and SYS
+files, including explicitly selected protected files. It never overwrites an
+existing target; a collision stops processing and keeps earlier successful
+renames. All renames stay within each source DU. The richer
 confirmation, preview, override and reporting options above belong to REN.COM.
 
 

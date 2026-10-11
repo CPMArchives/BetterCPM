@@ -8,17 +8,19 @@ separately constrains what its destination means:
 | REN | One or many DUs/files | Location-free filename template; applied in each source DU |
 | COPY, MOVE | One or many DUs/files | Exactly one resolved DU |
 
-This increment implements resident REN. It does not change COPY or MOVE.
+Resident REN implements the settled core subset. It does not change COPY or MOVE.
 
 ## Interface
 
-`REN template=source` retains destination-first CP/M ordering. An underscore
+`REN source template` accepts source-first ordering; `REN template=source`
+retains destination-first CP/M ordering. An underscore
 separator is accepted when no equals sign appears. With an equals separator,
 underscores in names remain literal characters.
 
 The source uses the common selector implementation: compound DU selections,
 bounded filename wildcards and attribute expressions. The caller DU is captured
-once for inherited locations. System files are eligible by default.
+once for inherited locations. RO and SYS files are skipped, even when explicitly selected. Protection is
+checked across every physical extent, independently of the selection predicate.
 
 The template has no location qualifier, even if that qualifier names the same
 DU as a source. Literal positions replace source positions; question marks copy
@@ -28,14 +30,16 @@ internal padding spaces. Empty extensions are allowed.
 
 ## Preflight and execution
 
-Validate all selected DUs before the first rename. Reject invalid concrete
-names, duplicate generated targets within a DU, existing targets (including
-other selected sources), and changes to read-only files or drives. Identical
-names in different DUs do not collide. Identity mappings are no-ops.
+Validate the full syntax and selected drive domain before the first rename.
+Process sources in lexical order within each DU. Reject invalid concrete names
+and stop on existing targets, including other selected sources. Never overwrite
+an existing file. A duplicate generated target produces FILE EXISTS when reached;
+earlier successful renames remain. No batch collision preflight or rollback is
+promised. Identity mappings are no-ops. RO/SYS files are skipped; drive read-only
+state still prevents changes to otherwise eligible files.
 
-Execution uses BDOS rename and preserves file contents and attributes. Restore
-the caller DU on every return. Unexpected execution failures stop processing;
-this is not rollback of previously completed renames.
+Execution uses BDOS rename and preserves contents and attributes. Restore the
+caller DU on every return. Unexpected execution failures stop processing.
 
 ## Implementation
 
@@ -45,23 +49,24 @@ Transient source expansion retains its existing body; this is not an
 implementation of the future extended REN.COM contract.
 
 Fixed scratch storage and lexical directory rescans avoid allocating a list of
-all selected files. Physical extents are deduplicated by name. Pairwise mapping
-checks are performed within each DU. Positional substitution is idempotent:
+all selected files. Physical extents are deduplicated by name. Positional substitution is idempotent:
 a renamed target that still matches the source pattern maps to itself on a
 subsequent rescan. It therefore cannot be renamed repeatedly.
 
-RCP Build 002 grows from 6,053 to 6,805 bytes. Rounded allocation increases from
-6,144 to 6,912 bytes, a 768-byte increase in reclaimable command memory. No BDOS,
-BIOS, protected-data or CPX descriptor changes are required. Native and cross
-assembly produce identical RCP payloads.
+RCP Build 006 occupies 6,880 bytes, with the existing 6,912-byte rounded
+allocation. Its carrier uses 744 relocation entries within the existing header
+limit. No BDOS, BIOS, protected-data or CPX descriptor changes are required.
 
 ## Qualification
 
 `tools/test_resident_ren_mapping.py` checks positional substitution, invalid
-concrete names and the fixed-point property. `tools/test_resident_ren_select.py`
-exercises 16 public-command cases on z80pack and Model 4: exact and compound-DU
-renames, inherited locations, bounded stars, attributes, multi-extent files,
-identity mappings, duplicate targets, later-DU collisions, source overlap,
-read-only protection and invalid locations. Final directory names, attributes
-and file payloads are checked independently. z80pack also checks unchanged
-images after rejected and no-op commands.
+concrete names, the fixed-point property, and protection merged across all
+physical extents (including a protected later extent). `tools/test_resident_ren_select.py`
+checks 22 public-command cases on cpmsim and Model 4, including both syntax forms, compound/inherited DUs, attribute selection,
+multi-extent files, identity mappings, collisions, incremental completion,
+RO/SYS skips and invalid locations. Final directory names, attributes and file
+payloads are inspected independently. Rejected syntax and no-op commands leave
+the cpmsim image unchanged.
+
+Native ZSM4/LINK and cross assembly produce 6,880 byte-identical bytes.
+The 124 utility identity/dispatch checks and positional mapping checks pass.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Resident REN selection, mapping and no-mutation preflight on both platforms."""
+"""Resident REN syntax, selection, protection and incremental execution."""
 import argparse,json,shutil,subprocess
 from pathlib import Path
 from test_disk_utilities import ROOT,medium,keys
@@ -26,17 +26,23 @@ def main():
   ('REN *.TXT=A[3,5]:F*A.DOC','Invalid filespec.',{}),
   ('REN KEEP.TXT=A0:MISSING.DOC','NO FILE',{}),
   ('REN NEW.TXT_A3:ONE.DOC','',{(3,'ONE.DOC'):'NEW.TXT'}),
-  ('REN *.TXT=[A3,5]:BATCH*.DOC','',{(u,n):n.replace('.DOC','.TXT') for u in [3,5] for n in ['BATCH1.DOC','BATCH2.DOC']}),
-  ('REN SAME.TXT=A[3,5]:DUP*.DOC','Rename mapping collision.',{}),
-  ('REN TAKEN.TXT=A[3,5]:LATER.DOC','FILE EXISTS',{}),
+  ('REN *.TXT=[A3,5]:BATCH*.DOC','',{(u,n):n.replace('.DOC','.TXT') for u in [3,5] for n in ['BATCH2.DOC']}),
+  ('REN SAME.TXT=A[3,5]:DUP*.DOC','FILE EXISTS',{(3,'DUP1.DOC'):'SAME.TXT'}),
+  ('REN TAKEN.TXT=A[3,5]:LATER.DOC','FILE EXISTS',{(3,'LATER.DOC'):'TAKEN.TXT'}),
   ('REN OV2.DOC=A3:OV*.DOC','FILE EXISTS',{}),
-  ('REN *.TXT=A3:RO*.DOC','Read only.',{}),
+  ('REN A3:RO*.DOC *.TXT','',{(3,'RO2.DOC'):'RO2.TXT'}),
   ('REN X?***.BAK=A3:FOOBAR.DOC','',{(3,'FOOBAR.DOC'):'XOOBAR.BAK'}),
-  ('REN *.TXT=A3:RO*.DOC[$RW]','',{(3,'RO2.DOC'):'RO2.TXT'}),
-  ('REN SAME.TXT=A[3,5]:LATER.DOC','',{(u,'LATER.DOC'):'SAME.TXT' for u in [3,5]}),
+  ('REN *.TXT=A3:RO*.DOC[$RW]','',{}),
+  ('REN SAME.TXT=A[3,5]:LATER.DOC','',{(5,'LATER.DOC'):'SAME.TXT'}),
   ('REN *.TXT=A[3,5]:*.TXT','',{}),
   ('REN B2:NEW.TXT=A3:NEW.TXT','Invalid filespec.',{}),
-  ('REN NEW.TXT=[A3,E5]:NEW.TXT','INVALID DRIVE',{})]
+  ('REN NEW.TXT=[A3,E5]:NEW.TXT','INVALID DRIVE',{}),
+  ('REN A3:NEW.TXT FINAL.TXT','',{(3,'NEW.TXT'):'FINAL.TXT'}),
+  ('REN A3:RO1.DOC DENIED.TXT','',{}),
+  ('REN A[3,5]:BATCH1.DOC[$SYS] *.TXT','',{}),
+  ('REN A3:FINAL.TXT B3:BAD.TXT','Invalid filespec.',{}),
+  ('REN A3:FINAL.TXT F_INAL.TXT','',{(3,'FINAL.TXT'):'F_INAL.TXT'}),
+  ('REN A3:F_INAL.TXT FINAL.TXT','',{(3,'F_INAL.TXT'):'FINAL.TXT'})]
  def cpm(tool,*args):return subprocess.run([tool,'-T','raw','-f','bettercpm-default',str(report/'disks/drivea.dsk'),*map(str,args)],cwd=report,check=True,stdout=subprocess.DEVNULL)
  observations=[]
  if a.platform=='z80pack':
@@ -49,7 +55,7 @@ def main():
    before=(report/'disks/drivea.dsk').read_bytes()
    text=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',report/'disks',[(cmd.encode()+b'\r',b'A0>_ ',120)],report/f'case-{i}.txt').decode(errors='replace')
    assert wanted in text,(cmd,wanted,text)
-   if wanted or not changes:assert (report/'disks/drivea.dsk').read_bytes()==before,cmd
+   if not changes:assert (report/'disks/drivea.dsk').read_bytes()==before,cmd
    observations.append({'command':cmd,'result':'PASS'})
   raw=directory(report/'disks/drivea.dsk',report/'diskdefs')
  else:
@@ -70,7 +76,7 @@ def main():
   filesystem=extract_raw(disk.read_bytes())[FILESYSTEM_FIRST_SECTOR*512:]
   raw=filesystem[:4096]
  # Independent raw metadata: successful mappings preserved entry count/attrs;
- # rejected batches retained originals, and no cross-user relocation occurred.
+ # invalid invocations retained originals, and no cross-user relocation occurred.
  expected={}
  for name,data,user,mask in fixtures:expected[(user,name)]=(mask,data)
  for _,_,changes in cases:
@@ -94,5 +100,5 @@ def main():
    key=stem.ljust(8).encode()+ext.ljust(3).encode()
    assert contents[(user,key)][0][:len(data)]==data,(user,name)
  (report/'evidence.json').write_text(json.dumps({'result':'PASS','platform':a.platform,'cases':observations},indent=2))
- print(f'Resident REN: {len(cases)} selection/mapping/preflight cases PASS on {a.platform}')
+ print(f'Resident REN: {len(cases)} syntax/selection/protection cases PASS on {a.platform}')
 if __name__=='__main__':main()
