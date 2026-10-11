@@ -132,8 +132,26 @@ def main():
                 c.setword(a('BC_DIREP'),0x2100)
                 for bit in range(3):c.mem[0x2109+bit]=128 if state&(1<<bit) else 0
                 c.mem[a('FS_MASK')]=mask
+                c.hl=0x1234
                 c.run(a('RD_FILTER'),limit=10000)
+                assert c.hl==0x1234,(base,mask,state)
                 assert c.carry==bool(mask&(1<<state)),(base,mask,state)
+        # Exercise the production search/filter/extent path. Allocation-map bytes
+        # must never be mistaken for EX when the attribute predicate returns.
+        for slot in range(4):
+            for allocation in (0,1,2,127,255):
+                c=cpu(base,'')
+                c.mem[5:8]=bytes((0x3E,slot,0xC9))
+                c.mem[a('BC_DSKIP'):a('BC_DSKIP')+3]=b'\x3e\x00\xc9'
+                c.mem[a('BC_DNAME'):a('BC_DNAME')+3]=b'\x3e\x01\xc9'
+                entry=0x80+slot*32
+                c.mem[entry:entry+32]=bytes(32)
+                c.mem[entry+24]=allocation
+                c.mem[a('FS_MASK')]=0x55  # RW, independent of SYS/ARC
+                c.mem[a('BC_EXMASK')]=0xFE
+                c.mem[a('BC_DCOL')]=1
+                c.run(a('BC_DNEXT'),limit=10000)
+                assert c.a==1,(base,slot,allocation)
         for text,pairs,filename,mask in [
             ('',[(1,2)],'???????????',255),
             ('F?*.DAT[$ARC+!$SYS]',[(1,2)],'F???????DAT',0x30),

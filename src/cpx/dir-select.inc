@@ -62,6 +62,7 @@ RD_NEXT:
 
 ; Predicate over directory T1/T2/T3 attribute bits, before the usual SYS hiding.
 RD_FILTER:
+        PUSH HL                     ; caller still needs the entry base for EX/SYS
         LD HL,(BC_DIREP)
         LD DE,9
         ADD HL,DE
@@ -85,6 +86,7 @@ RD_BITNEXT:
 RD_SHIFT:
         RRCA
         DJNZ RD_SHIFT
+        POP HL
         RET                         ; carry = predicate matched
 
 RD_PRINTUSER:

@@ -264,3 +264,16 @@ passed manifest size/hash verification. Manifest SHA-256:
 Next: compose the parsers into one transactional result contract, share bounded
 filespec validation without COPY-specific state coupling, then migrate resident
 DIR. This step does not broaden ERA/COPY/REN/TYPE operation semantics.
+
+## Resident DIR attribute-filter correction (2026-10-11)
+
+The directory predicate must preserve HL: the caller uses the entry base to
+inspect EX and SYS after filtering. Previously RD_FILTER left HL at entry+12,
+so the subsequent EX read examined allocation byte entry+24 instead. This
+could omit R/W files even though transient DIR and STAT reported them correctly.
+Preserve HL across the predicate; RCP build 4 includes this correction.
+
+The relocated-payload regression checks HL preservation for every attribute
+state and exercises the production search path with all four directory slots
+and five allocation-byte values at three load addresses. The regression fails
+on the previous implementation and passes after the fix.
