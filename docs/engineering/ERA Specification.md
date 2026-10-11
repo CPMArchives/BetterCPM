@@ -1,11 +1,9 @@
 # BetterCP/M 1.0 transient ERA specification
 
-Status: ordinary transient ERA workflow is implemented and qualified.
-The current increment adds full selection/preflight, `/Y`, `/Q`, `/C`, `/R`,
-protected-file authorization, recovery and allocated-space accounting. `/D`,
-`/QQ`, `/N` and `/DRV` are not implemented in this increment and are rejected
-before mutation. The complete target contract below remains the completion
-baseline. Destructive erase `/D` is transient-only.
+Status: ordinary and destructive transient ERA workflows are implemented and
+qualified. `/D`, `/Y`, `/Q`, `/C`, `/R` and `/VER` are supported. `/QQ`, `/N`
+and `/DRV` remain unsupported and are rejected before mutation. Destructive
+`/D` is transient-only. See the qualification records below.
 
 This contract uses the shared [DU-selector specification](208%20Extended%20DU%20Syntax.md),
 operand attribute predicates, and [interactive prompt convention](Interactive%20Prompt%20Convention.md).
@@ -13,7 +11,8 @@ Implementation follows COPY, RCP shared-selector work, and DIR. The planned
 user-facing interface is in the user guide, section 4.2.
 
 Qualification: [resident ERA evidence](Resident%20ERA%20Qualification.md) and
-[ordinary transient ERA evidence](Transient%20ERA%20Qualification.md).
+[ordinary transient ERA evidence](Transient%20ERA%20Qualification.md), and
+[destructive ERA evidence](ERA%20Destructive%20Qualification.md).
 
 ## Resident ERA boundary
 
@@ -70,14 +69,36 @@ The list uses remaining TPA with a 256-byte margin below the BDOS entry address;
 overflow during collection stops before mutation. Enumeration collects matching
 names before applying predicates, so rejected names also consume list capacity.
 
-## Implementation questions retained for resolution
+Implementation preparation: [destructive ERA audit](ERA%20Destructive%20Implementation%20Audit.md).
 
-Before coding destructive operations, make these boundaries precise without
-weakening the protections below:
+## Destructive recovery decisions (2026-10-11)
 
-- Define recovery after a partial directory scrub, shared/corrupt allocation
-  maps, raw-write permission checks and filesystem cache/allocation-state
-  reconciliation. The specified overwrite-before-scrub order remains mandatory.
+When a selected file shares an allocation block with another live file, `/D`
+must preserve that block and zero only the unshared blocks. Inspect ownership
+across the entire drive, all user areas and all extents; selection does not
+limit the files whose ownership must be protected. After all unshared blocks have been zeroed successfully, scrub the selected
+file's directory entries and report "erased; shared blocks retained". Count
+this outcome separately from fully destructive erasures; it must not be
+reported as a complete zeroing of all allocated data.
+
+After a partially completed directory scrub fails, Retry resumes using the
+saved entry list. Skip or Abort reports incomplete destructive erasure without
+claiming that directory metadata remains intact. Do not restore directory
+entries after the data has already been zeroed.
+
+## Implementation boundaries and remaining documentation caveat
+
+The implemented destructive transaction rejects invalid/reserved allocation
+pointers and duplicate target allocations before writing; it preserves shared
+blocks as specified above. The per-file plan uses the remaining transient
+workspace and fails before that file's writes if capacity is insufficient.
+Geometry whose allocation-derived logical record addresses exceed 16 bits is
+rejected rather than truncated. It checks the drive RO vector before planning
+and each raw write; `/R` never overrides drive protection. After an attempted
+directory write, completion/skip/abort paths selectively reset and relog the
+affected drive through Function 37 to refresh directory checksums and allocation
+state. A denied write that never reaches the BIOS does not trigger that reset.
+No BDOS growth or private resident-data access is required.
 - The manual `STAT ... !$ARC` example is a proposed composition, not a command
   implemented by today's STAT. Its ARC mutation contract needs separate work.
   Do not present it as equivalent to COPY's per-success transactional backup:
@@ -641,8 +662,8 @@ For each logical file:
 1. Locate all directory extents belonging to the file.
 2. Capture all allocation information required to identify every allocated data block.
 3. Preserve that information independently of the directory entries.
-4. Overwrite every allocated data block with `00h`.
-5. Do not alter the directory entries until all required data overwrites for that file have succeeded.
+4. Overwrite every unshared allocated data block with `00h`; leave blocks owned by another live file unchanged.
+5. Do not alter the directory entries until all required unshared-block overwrites for that file have succeeded.
 6. After successful data overwrite, scrub every directory entry associated with the file:
    - byte 0 = `E5h`;
    - bytes 1–31 = `00h`.
@@ -679,7 +700,7 @@ The file may of course contain partially zeroed data after a physical write fail
 
 A Retry begins the current file's destructive operation again using the preserved allocation information.
 
-A Skip leaves the directory entries intact.
+A Skip during data overwriting leaves the directory entries intact. After directory scrubbing has begun, Skip reports incomplete destructive erasure; some entries may already be scrubbed.
 
 ---
 
@@ -841,7 +862,7 @@ Use the following broad classifications:
 **FAILED**
 - files on which ERA attempted an operation but encountered an operational failure.
 
-For destructive ERA, only files whose overwrite and final directory scrub complete successfully count as destructively erased.
+For destructive ERA, only files whose complete allocated-data overwrite and final directory scrub succeed count as fully destructively erased. Files whose shared blocks are retained are counted separately as erased with shared blocks retained. Freed-space accounting includes only their unshared blocks.
 
 ---
 

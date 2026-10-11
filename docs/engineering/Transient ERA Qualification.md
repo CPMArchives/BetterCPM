@@ -1,5 +1,9 @@
 # Ordinary transient ERA qualification
 
+Historical Build 001 evidence. Build 002 adds destructive erase; see
+[destructive ERA qualification](ERA%20Destructive%20Qualification.md) for the
+current binary and ordinary regression results.
+
 Qualified 2026-10-11. ERA.COM 1.0 Build 001 is 5,244 bytes, SHA-256
 `0a89f3b9f6171c8b9cbf22430040157089711b5a7d574126754ef15aa6e02e8c`.
 Native ZSM4/LINK and cross-assembled binaries are byte-identical.

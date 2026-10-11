@@ -843,18 +843,18 @@ erase options (`/Y`, `/Q`, `/QQ`, `/C`, `/N`, `/R`, `/D`, `/DRV`) are unsupporte
 Use `:ERA` to invoke the transient implementation explicitly; the expanded
 ERA.COM now implements the ordinary workflow described below.
 
-##### Transient ERA.COM — ordinary workflow and planned extensions
+##### Transient ERA.COM
 
 The following interface is the agreed target for the expanded ERA.COM. The
-ordinary workflow (`/Y`, `/Q`, `/C`, `/R`) is implemented and qualified.
-`/D`, `/QQ`, `/N` and `/DRV` remain planned and are rejected by
-the current increment. The implementation contract is recorded in
+ordinary and destructive workflows (`/Y`, `/Q`, `/C`, `/R`, `/D`) are implemented
+and qualified. `/QQ`, `/N` and `/DRV` remain unsupported and are rejected before
+erasure. The implementation contract is recorded in
 [ERA Specification](../engineering/ERA%20Specification.md).
 
 
 `ERA` removes files from disk.
 
-BetterCP/M ERA extends the traditional CP/M command with multi-DU selection, attribute selection, confirmation controls, read-only protection, and an optional destructive erase.
+BetterCP/M ERA extends the traditional CP/M command with multi-DU selection, attribute selection, confirmation controls, read-only protection, and destructive erase with `/D`.
 
 Basic syntax:
 
@@ -1018,6 +1018,17 @@ and finally:
 ```text
 DESTRUCTIVELY ERASE THESE FILES? THIS IS UNRECOVERABLE. Y/N
 ```
+
+For a file sharing allocation blocks with another live file, destructive erase
+must leave the shared blocks unchanged and zero only the unshared blocks.
+This protects the other file's data; it is not a complete zeroing of the selected
+file's allocated data. After zeroing the unshared blocks, ERA scrubs the selected
+file's directory entries and reports "erased; shared blocks retained". This
+outcome is counted separately from fully destructive erasures.
+
+If directory scrubbing fails after some entries have been scrubbed, Retry resumes
+from the saved entry list. Skip or Abort reports an incomplete destructive erase.
+ERA does not attempt to restore entries after the data has been zeroed.
 
 Destructive erase is transient-only. It is not described as cryptographic secure erase. If a data overwrite fails, directory entries remain identifiable, but file data may be partially zeroed. Only successful overwrite and directory scrubbing count as destructive erasure.
 

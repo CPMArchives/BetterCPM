@@ -44,7 +44,7 @@ def main():
     text='\n'.join(screen(p) for p in sorted(w.glob('trs80-text-*.bin')))
     (w/'transcript.txt').write_text(text)
     assert 'ERA FINISH' in text and 'INVALID DRIVE' in text
-    assert 'BETTERCP/M ERA 1.0 (BUILD 001)' in text.upper()
+    assert 'BETTERCP/M ERA 1.0 (BUILD 002)' in text.upper()
     raw=extract_raw(disk.read_bytes());remaining=set()
     for offset in range(directory,directory+DIRECTORY_ENTRIES*32,32):
         if raw[offset]!=0:continue

@@ -23,6 +23,8 @@ def expanded_source():
         for name in ('duselect.inc','filespec.inc','operandqual.inc'))
     selector += predicate + (common / 'rcpselect.inc').read_text(encoding='ascii')
     selector += (common / 'dirmetrics.inc').read_text(encoding='ascii')
+    selector += ''.join((common / name).read_text(encoding='ascii') + '\n'
+                        for name in ('eraraw.inc', 'eraplan.inc', 'eraerase.inc'))
     # Reuse the same validated-span FCB encoder as RCP; no independent grammar.
     rcp = (ROOT / 'src/cpx/rcp.mac').read_text(encoding='ascii')
     start = rcp.index('BC_PFCB:')
