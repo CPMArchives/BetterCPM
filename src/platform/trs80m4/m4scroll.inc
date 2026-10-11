@@ -47,8 +47,7 @@ M4_SCROLL_OUT:                          ; write bounded scrolling console charac
         LD      HL,VIDEOEND-VIDEOCOLS
         ADD     A,L
         LD      L,A
-        LD      (M4CURSOR),HL
-        RET
+        JP      M4_SETC
 
   ; Patch 2026-09-07: CONIN echoed BS correctly, but the old output leaf
   ; planted an 08H character on the screen.  Move left without erasing; the
@@ -63,8 +62,7 @@ M4_BACKSPACE:                           ; move cursor left for backspace
         DEC     (HL)
         LD      HL,(M4CURSOR)
         DEC     HL
-        LD      (M4CURSOR),HL
-        RET
+        JP      M4_SETC
 
   ; BetterCP/M private cursor-character operation. C=0 queries support. Any
   ; other byte is written at the current console position in reverse video and

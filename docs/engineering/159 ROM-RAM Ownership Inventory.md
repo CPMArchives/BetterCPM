@@ -88,9 +88,13 @@ until their independent lifetime or high-water evidence exists.
 
 ## Model 4 keyboard state update (2026-10-11)
 
-The console now retains a physical key-table slot separately from the translated
+The console now retains a physical matrix slot separately from the translated
 character. This adds one mutable byte, bringing Model 4 console state to five
 bytes and the current TRS-80 relocation/RAM totals to 2,253/2,256 bytes. The
 z80pack totals and the historical measurements above remain unchanged. Compact
 shift translation and direct status dispatch keep the BIOS within its existing
 638-byte allocation (637 bytes emitted).
+
+Montezuma punctuation support retains five console-state bytes at EBD9h–EBDDh.
+Arithmetic key decoding and shared cursor stores reduce emitted BIOS size to
+636/638 bytes; relocation/RAM totals and subsystem boundaries stay unchanged.

@@ -368,7 +368,24 @@ The history is preserved across a normal warm boot. A cold boot begins with an e
 
 Because the history has a fixed capacity, older entries are eventually discarded as newer commands are entered.
 
-Ctrl-K recalls an older history entry; Ctrl-J selects a newer entry. On the Model 4, the Up-arrow key supplies `[` so that trs80gp Logical Layout can enter selection expressions without recalling history. Down-arrow supplies `]`; Logical Layout does not send a key signal for the host `]` key. Use Up/Down for bracket entry and Ctrl-K/Ctrl-J for history navigation.
+Ctrl-K or Up recalls an older history entry; Ctrl-J or Down selects a newer entry.
+
+On the Model 4, Montezuma Micro punctuation chords provide characters missing from its keyboard. Control selects the following characters; Shift may also be held. The key names below refer to the original Model 4 keyboard, rather than the host keyboard layout.
+
+| Character | Model 4 chord |
+| --- | --- |
+| `[` | Ctrl-8 (Ctrl-parenthesis open) |
+| `]` | Ctrl-9 (Ctrl-parenthesis close) |
+| `{` | Ctrl-comma (Ctrl-angle bracket open) |
+| `}` | Ctrl-period (Ctrl-angle bracket close) |
+| `\` | Ctrl-/ |
+| &#124; | Ctrl-1 |
+| `~` | Ctrl-3 |
+| `^` | Ctrl-5 |
+| backtick | Ctrl-7 |
+| `_` | Ctrl-minus |
+
+An emulator may translate host keys differently. The BIOS requires the corresponding Model 4 key signal; a host key that the emulator does not transmit cannot be recovered by the BIOS. Up and Down remain history keys.
 
 #### 3.5 Selecting Drives and User Areas
 

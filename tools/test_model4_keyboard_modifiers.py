@@ -12,7 +12,7 @@ from test_sysgen_install import screen
 from trs80gp_launch import run
 
 PROBE = "        ASEG\n        ORG 0100H\n        LD HL,0F800H\n        LD DE,TITLE\n        LD B,9\nREADY:  LD A,(DE)\n        LD (HL),A\n        INC HL\n        INC DE\n        DJNZ READY\nLOOP:   CALL READ\n        PUSH AF\n        RRCA\n        RRCA\n        RRCA\n        RRCA\n        CALL HEX\n        POP AF\n        CALL HEX\n        LD A,' '\n        CALL PRINT\n        JR LOOP\nREAD:   LD HL,(1)\n        LD DE,6\n        ADD HL,DE\n        JP (HL)\nHEX:    AND 0FH\n        ADD A,'0'\n        CP ':'\n        JR C,PRINT\n        ADD A,7\nPRINT:  LD HL,(POS)\n        LD (HL),A\n        INC HL\n        LD (POS),HL\n        RET\nPOS:    DW 0F8A0H\nTITLE:  DB 'KBD READY'\n        END\n"
-EXPECTED = [0x3A, 0x2A, *range(0x21, 0x2C), 0x3C, 0x3D, 0x3E, 0x3F, 0x41, 0x42, 0x01, 0x5B, 0x5D, 0x0B, 0x0A]
+EXPECTED = [0x3A, 0x2A, *range(0x21, 0x2C), 0x3C, 0x3D, 0x3E, 0x3F, 0x41, 0x42, 0x01, 0x0B, 0x0A, *[ord(c) for c in '[]{}\\|~^`_'] * 2]
 
 
 def main():
@@ -48,26 +48,28 @@ def main():
                 '-ik','0','4','-id','12','-ik','0','0','-id','12']
     command += ['-ik','7','4','-id','12','-ik','0','2','-id','12',
                 '-ik','7','0','-id','12','-ik','0','0','-id','12']
-    # Up/Down supply brackets; Ctrl-K/Ctrl-J retain history navigation.
+    # Restore Up/Down control codes and all ten MM punctuation chords.
     command += ['-ik','6','8','-id','12','-ik','6','0','-id','12',
-                '-ik','6','10','-id','12','-ik','6','0','-id','12',
-                '-ik','7','4','-ik','1','8','-id','12',
-                '-ik','1','0','-id','12','-ik','7','0','-id','12',
-                '-ik','7','4','-ik','1','4','-id','12',
-                '-ik','1','0','-id','12','-ik','7','0','-id','12']
+                '-ik','6','10','-id','12','-ik','6','0','-id','12']
+    chords = [(5,0),(5,1),(5,4),(5,6),(5,7),(4,1),(4,3),(4,5),(4,7),(5,5)]
+    for modifier in ('4', '5'):  # Ctrl, and Ctrl+Shift on the same physical keys
+        for row, column in chords:
+            command += ['-ik','7',modifier,'-id','12',
+                        '-ik',str(row),f'{1 << column:X}','-id','12',
+                        '-ik',str(row),'0','-id','12','-ik','7','0','-id','12']
     command += ['-id', '100', '-it', '-ix']
     run(command, cwd=out, timeout=180)
     captured = screen(out / 'trs80-text-0.bin')
     (out / 'screen.txt').write_text(captured + '\n')
     expected = ' '.join(f'{byte:02X}' for byte in EXPECTED)
-    observed = ' '.join(captured.splitlines()[2:]).strip()
+    observed = ' '.join(' '.join(captured.splitlines()[2:]).split())
     result = {'image_sha256': hashlib.sha256(original).hexdigest(),
               'expected': expected, 'observed': observed,
               'status': 'PASS' if observed == expected else 'FAIL'}
     (out / 'result.json').write_text(json.dumps(result, indent=2) + '\n')
     if observed != expected:
         raise SystemExit(f'BIOS keyboard bytes differ: {result}')
-    print('PASS: modifier edges, shifted punctuation, overlapping A/B, Control release, brackets and history chords')
+    print('PASS: modifier edges, shifted punctuation, overlapping A/B, Control release, MM punctuation and arrow controls')
 
 
 if __name__ == '__main__':

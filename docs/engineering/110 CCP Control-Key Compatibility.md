@@ -18,8 +18,8 @@ retaining non-conflicting cursor editing and persistent history.
 
 The CCP bytes Ctrl-K (0Bh) and Ctrl-J (0Ah) select older and newer
 persistent-history records. Platforms may also supply these bytes from
-physical Up and Down. On the Model 4, Up supplies `[` for trs80gp Logical
-Layout compatibility, and Down supplies `]`. Use Ctrl-K/Ctrl-J for history. They
+physical Up and Down, including on the Model 4. Montezuma punctuation chords
+provide brackets without taking over the arrow keys. These history controls
 replace the former, incompatible `Ctrl-E`/`Ctrl-X` history bindings. Physical
 Left/Right and the remaining non-conflicting WordStar controls retain their
 editing actions.

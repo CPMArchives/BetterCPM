@@ -41,15 +41,16 @@ M4_OUT:                                 ; write console character
         LD      HL,(M4CURSOR)
         LD      (HL),A
         INC     HL
-        LD      (M4CURSOR),HL
         LD      A,(M4COLUMN)
         INC     A
         CP      VIDEOCOLS
         JR      C,M4_STCOL
         XOR     A
 
-M4_STCOL:                               ; store updated console column
+M4_STCOL:                               ; store updated console column and cursor
         LD      (M4COLUMN),A
+M4_SETC:
+        LD      (M4CURSOR),HL
         RET
 
 ; -------------------------------------------------------------------------------
@@ -63,17 +64,14 @@ M4_CR:                                  ; perform carriage return
         LD      HL,(M4CURSOR)
         OR      A
         SBC     HL,DE
-        LD      (M4CURSOR),HL
         XOR     A
-        LD      (M4COLUMN),A
-        RET
+        JR      M4_STCOL
 
 M4_LF:                                  ; perform line feed
         LD      HL,(M4CURSOR)
         LD      DE,VIDEOCOLS
         ADD     HL,DE
-        LD      (M4CURSOR),HL
-        RET
+        JR      M4_SETC
 
 ; ================================================================================
 ; =                            Model 4 Keyboard Input                            =
@@ -108,7 +106,7 @@ M4_KEYCHANGE:                           ; handle changed key state
         CALL    M4_SCAN
         OR      A
         JR      Z,M4_KEYDONE
-  ; E identifies the physical key-table slot. Compare that identity, never
+  ; E identifies the physical matrix slot. Compare that identity, never
   ; its translated byte: a Shift/Control release is not another keypress.
         LD      D,A
         LD      A,(M4_PENDING)
@@ -134,7 +132,7 @@ M4_KEYDONE:                             ; finish keyboard scan
 M4_STAT:                                ; status uses the same physical scan
 M4_SCAN:                                ; scan keyboard matrix
         LD      HL,KEYBASE+1
-        LD      DE,M4_KEYTAB
+        LD      E,0                     ; physical matrix slot, 0..55
         LD      B,7
 
 M4_KEYRW:                               ; scan next keyboard row
@@ -145,9 +143,6 @@ M4_KEYRW:                               ; scan next keyboard row
         LD      A,E
         ADD     A,8
         LD      E,A
-  ; BIOS growth can move the key table across a page boundary.
-        JR      NC,M4_KEYNX
-        INC     D
 
 M4_KEYNX:                               ; advance keyboard row
         DJNZ    M4_KEYRW
@@ -161,11 +156,32 @@ M4_KEYNX:                               ; advance keyboard row
 M4_KEYBT:                               ; translate pressed key bit
         RRCA
         JR      C,M4_KEYFD
-        INC     DE
+        INC     E
         JR      M4_KEYBT
 
 M4_KEYFD:                               ; finish key translation
-        LD      A,(DE)
+  ; The first rows are ASCII runs: @.._, 0..;, and ,../. Keeping only
+  ; the eight special keys recovers space for Montezuma punctuation chords.
+        LD      A,E
+        CP      32
+        JR      NC,M4_NUMKEY
+        ADD     A,'@'
+        JR      M4_CHAR
+M4_NUMKEY:
+        CP      44
+        JR      NC,M4_PUNKEY
+        ADD     A,16
+        JR      M4_CHAR
+M4_PUNKEY:
+        CP      48
+        JR      C,M4_CHAR
+        SUB     48
+        LD      HL,M4_KEYTAB
+        LD      B,0
+        LD      C,A
+        ADD     HL,BC
+        LD      A,(HL)
+M4_CHAR:
         LD      C,A
         LD      A,(KEYBASE+128)         ; shifts, Control, Caps, and F1-F3
         IF      M4_EDITOR_KEYS EQ 1
@@ -174,6 +190,17 @@ M4_KEYFD:                               ; finish key translation
         JR      Z,M4_KEYSHIFT
   ; Publish ordinary ASCII control-letter values. This was previously omitted,
   ; making WordStar-style CCP editing keys physically impossible on the Model 4.
+        LD      A,C
+        SUB     ','
+        CP      14
+        JR      NC,M4_CTRLLETTER
+        LD      HL,M4_CTRLTAB
+        LD      B,0
+        LD      C,A
+        ADD     HL,BC
+        LD      A,(HL)
+        RET
+M4_CTRLLETTER:
         LD      A,C
         CP      '@'
         RET     C
@@ -221,22 +248,20 @@ M4_KADD16:
 ; -------------------------------------------------------------------------------
 
 M4_KEYTAB:                              ; keyboard translation table
-        DB      '@ABCDEFG'
-        DB      'HIJKLMNO'
-        DB      'PQRSTUVW'
-        DB      'XYZ',0,0,0,0,0
-        DB      '01234567'
-        DB      '89:;,-./'
-  ; Patch 2026-09-02: publish the Model 4 special-key row instead of silently
-  ; discarding it.  These are the conventional ASCII/control representations:
-  ; Enter, Clear/Insert, Break, [, ], Left, Right, Space. Up/Down provide
-  ; brackets: Logical Layout sends host [ as Up and sends no matrix key for ].
-  ; History remains available through Ctrl-K/Ctrl-J. Ordinary programs receive
-  ; these same bytes through BIOS CONIN and the BDOS console functions.
+  ; Enter, Clear/Insert, Break, Up, Down, Left, Right, Space.
+  ; Restore normal arrow control codes; punctuation uses the MM chords.
         IF      M4_EDITOR_KEYS EQ 1
-        DB      13,31,3,'[',']',28,29,' '
+        DB      13,31,3,11,10,28,29,' '
         ELSE
-        DB      13,31,3,'[',']',8,9,' '
+        DB      13,31,3,11,10,8,9,' '
+        ENDIF
+
+  ; CTRL punctuation is indexed by the physical unshifted character ,..9.
+  ; MM calls these CTRL <, -, >, /, 1, 3, 5, 7, (, ). Shift is immaterial
+  ; to the physical chord. Unassigned number chords keep the digit unchanged.
+        IF      M4_EDITOR_KEYS EQ 1
+M4_CTRLTAB:
+        DB      '{','_','}',05CH,'0','|','2','~','4','^','6',060H,'[',']'
         ENDIF
 
 ; ================================================================================

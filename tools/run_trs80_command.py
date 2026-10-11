@@ -20,13 +20,22 @@ KEY_ROWS = (
     "XYZ\0\0\0\0\0",
     "01234567",
     "89:;,-./",
-    "\r\0\0[]\0\0 ",
+    "\r\0\0\0\0\0\0 ",
 )
 
 
 def key_args(text: str, delay: int = 12) -> list[str]:
     result: list[str] = []
     for character in text.upper():
+        mm = {'[': (5, 0), ']': (5, 1), '{': (5, 4), '}': (5, 6),
+              '\\': (5, 7), '|': (4, 1), '~': (4, 3), '^': (4, 5),
+              '`': (4, 7), '_': (5, 5)}
+        if character in mm:
+            row, column = mm[character]
+            result.extend(('-ik', '7', '4', '-ik', str(row), f'{1 << column:X}',
+                           '-id', str(delay), '-ik', str(row), '0',
+                           '-id', str(delay), '-ik', '7', '0', '-id', str(delay)))
+            continue
         # The test keyboard uses the same Control-letter mapping as M4_CONIN.
         # Send actual key presses; do not insert bytes into guest buffers.
         if character == "\x03":
