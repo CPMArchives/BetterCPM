@@ -1,133 +1,1234 @@
-; ********************************************************************************
-; *                         BetterCP/M ERA Utility                               *
-; *                                                                              *
-; * Portable transient file-erasure utility using only the public CP/M 2.2 FCB  *
-; * and BDOS Delete File contract. The same COM binary therefore remains         *
-; * independent of the installed BIOS.                                           *
-; ********************************************************************************
-
-
-BDOS    EQU     0005H
-FCB     EQU     005CH
-
+; BetterCP/M transient ERA: collect the complete target set before any mutation.
+; Ordinary erase includes explicit protected-file admission and /R.
+; Destructive /D remains reserved for the subsequent raw-write increment.
+BDOS EQU 5
         CSEG
-  ; LINK places a three-byte entry transfer at 0100h; relocatable code begins at
-  ; 0103h. Keeping that history explicit makes native and cross COM files equal.
         .PHASE  0103H
+START:
+        LD SP,E_STKTOP
+        CALL UV_CHECK
+        LD C,25
+        CALL BDOS
+        LD (E_DRIVE),A
+        LD C,32
+        LD E,0FFH
+        CALL BDOS
+        LD (E_USER),A
+        LD HL,(6)
+        LD DE,256
+        OR A
+        SBC HL,DE
+        LD (E_LIMIT),HL
+        LD HL,E_HEAP
+        LD (E_NEXT),HL
+        LD HL,0081H
+        LD A,(0080H)
+        LD B,A
+        CALL EP_PARSE
+        JP C,E_SYNTAX
+        LD A,(EP_HAS)
+        OR A
+        JP Z,E_NOFILE
+        LD HL,DU_MAP+16
+        LD B,48
+E_DOMAIN:
+        LD A,(HL)
+        OR A
+        JP NZ,E_BADDU
+        INC HL
+        DJNZ E_DOMAIN
+        CALL E_COLLECT
+        JP C,E_OVERFLOW
+        CALL E_CLASS
+        LD HL,(E_MATCH)
+        LD A,H
+        OR L
+        JP Z,E_NOFILE
+        LD HL,(E_READY)
+        LD A,H
+        OR L
+        JP Z,E_SUMMARY
+        LD A,(E_YES)
+        OR A
+        JR NZ,E_EXEC
+        LD HL,(E_READY)
+        DEC HL
+        LD A,H
+        OR L
+        JR NZ,E_MULTI
+        LD A,(E_WILD)
+        OR A
+        JR NZ,E_MULTI
+        CALL E_FIRST
+        LD A,(IX+13)
+        AND 1
+        JR Z,E_EXACT
+        LD A,(E_OVERRIDE)
+        OR A
+        JR Z,E_EXEC
+E_EXACT:
+        LD A,1
+        LD (E_ONCE),A
+        CALL E_FULL
+        LD DE,E_ASKONE
+        CALL E_PRINT
+        JR E_CONFIRM
+E_MULTI:
+        LD A,(E_QUIET)
+        OR A
+        CALL Z,E_MANIFEST
+        LD DE,E_ASKALL
+        CALL E_PRINT
+E_CONFIRM:
+        CALL E_YN
+        JP C,E_CANCEL
+        JP NZ,E_CANCEL
+E_EXEC:
+        LD HL,E_HEAP
+        LD (E_CURRENT),HL
+E_EXECLOOP:
+        LD HL,(E_CURRENT)
+        LD DE,(E_NEXT)
+        OR A
+        SBC HL,DE
+        JP Z,E_SUMMARY
+        LD IX,(E_CURRENT)
+        LD A,(IX+14)
+        CP 2
+        JP NZ,E_ADVANCE
+        XOR A
+        LD (E_ROAUTH),A
+        LD A,(IX+13)
+        AND 1
+        JR Z,E_ORDCONF
+        LD A,(E_OVERRIDE)
+        OR A
+        JP Z,E_TRY
+E_ORDCONF:
+        LD A,(E_ONCE)
+        OR A
+        JP NZ,E_TRY
+        LD A,(E_EACH)
+        OR A
+        JP Z,E_TRY
+        LD A,(E_YES)
+        OR A
+        JR NZ,E_TRY
+        CALL E_FULL
+        LD DE,E_ASKONE
+        CALL E_PRINT
+        CALL E_YN
+        JP C,E_CANCEL
+        JP Z,E_TRY
+        CALL E_SKIP
+        JP E_ADVANCE
+E_TRY:
+        CALL E_ABORTKEY
+        JP C,E_CANCEL
+        CALL E_SELECT
+        CALL E_MKFCB
+        ; Recheck every extent and its matching-branch authorization.
+        CALL E_CHECK
+        JP C,E_FAILURE
+        LD B,A
+        LD A,(E_ALLOW)
+        CALL E_TESTMASK
+        JP NC,E_NEWPROT
+        LD A,(E_LIVE)
+        AND 1
+        JR Z,E_DELETE
+        LD A,(E_OVERRIDE)
+        OR A
+        JR NZ,E_UNRO
+        LD A,(E_YES)
+        OR A
+        JP NZ,E_NEWPROT
+        LD A,(E_ROAUTH)
+        OR A
+        JR NZ,E_UNRO
+        CALL E_FULL
+        LD DE,E_ASKRO
+        CALL E_PRINT
+        CALL E_YN
+        JP C,E_CANCEL
+        JP NZ,E_NEWPROT
+        LD A,1
+        LD (E_ROAUTH),A
+E_UNRO:
+        CALL E_APATTR
+        RES 7,(HL)
+        LD DE,E_FCB
+        LD C,30
+        CALL BDOS
+        CP 0FFH
+        JR NZ,E_DELETE
+        CALL E_REPAIR
+        JP E_FAILURE
+E_DELETE:
+        LD DE,E_FCB
+        LD C,19
+        CALL BDOS
+        CP 0FFH
+        JR NZ,E_DELOK
+        ; A failed delete must restore the original protection attributes.
+        CALL E_REPAIR
+        JP E_FAILURE
+E_DELOK:
+        LD HL,E_ERASED
+        CALL E_INC
+        LD HL,(E_CURRENT)
+        LD DE,16
+        ADD HL,DE
+        LD DE,E_FREED
+        CALL E_ADD4
+        JP E_ADVANCE
+E_NEWPROT:
+        CALL E_SKIP
+        CALL E_PROTECT
+        JP E_ADVANCE
+E_FAILURE:
+        CALL E_FULL
+        LD DE,E_FAIL
+        CALL E_PRINT
+        LD A,(E_YES)
+        OR A
+        JR NZ,E_FAILED
+E_RECOVER:
+        LD DE,E_RECOV
+        CALL E_PRINT
+        CALL E_KEY
+        CP 3
+        JP Z,E_CANCEL
+        CP '?'
+        JR Z,E_RHELP
+        AND 0DFH
+        CP 'R'
+        JP Z,E_TRY
+        CP 'S'
+        JR Z,E_FAILED
+        CP 'A'
+        JP Z,E_CANCEL
+        JR E_RECOVER
+E_RHELP:
+        LD DE,E_HELP
+        CALL E_PRINT
+        JR E_RECOVER
+E_FAILED:
+        LD HL,E_NFAIL
+        CALL E_INC
+E_ADVANCE:
+        LD HL,(E_CURRENT)
+        LD DE,32
+        ADD HL,DE
+        LD (E_CURRENT),HL
+        JP E_EXECLOOP
+E_CANCEL:
+        LD SP,E_STKTOP
+        XOR A
+        LD (E_PAGING),A
+        LD DE,E_STOPMSG
+        CALL E_PRINT
+        JP E_DONE
+E_SYNTAX:
+        LD DE,E_BADSPEC
+        CALL E_PRINT
+        JP E_DONE
+E_BADDU:
+        LD DE,E_BADDRIVE
+        CALL E_PRINT
+        JP E_DONE
+E_OVERFLOW:
+        LD DE,E_FULLM
+        CALL E_PRINT
+        JP E_DONE
+E_NOFILE:
+        LD DE,E_NOMATCH
+        CALL E_PRINT
+E_DONE:
+        LD A,(E_DRIVE)
+        LD E,A
+        LD C,14
+        CALL BDOS
+        LD A,(E_USER)
+        LD E,A
+        LD C,32
+        CALL BDOS
+        JP 0
 
-; ================================================================================
-; =                            ERA Command Processing                            =
-; =                                                                              =
-; = Validates the CCP-prepared default FCB, applies the stock all-wildcard confirmation =
-; = rule, expands CP/M star syntax, and deletes the resulting file specification. =
-; ================================================================================
-; -------------------------------------------------------------------------------
-; Argument and Confirmation
-; -------------------------------------------------------------------------------
-
-START:                                  ; enter ERA utility
-        LD      A,(0080H)
-        OR      A
-        JR      Z,NOARG
-        LD      HL,FCB+1
-        LD      B,8
-        CALL    EXPAND
-        LD      HL,FCB+9
-        LD      B,3
-        CALL    EXPAND
-        LD      HL,FCB+1
-        LD      B,11
-
-ALLQ:                                   ; check all-wildcard erase request
-        LD      A,(HL)
-        CP      '?'
-        JR      NZ,DELETE
-        INC     HL
-        DJNZ    ALLQ
-        LD      DE,CONFIRM
-        LD      C,9
-        CALL    BDOS
-        XOR     A
-        LD      (REPLY+1),A
-        LD      DE,REPLY
-        LD      C,10
-        CALL    BDOS
-        LD      A,(REPLY+1)
-        CP      1
-        JR      NZ,DONE
-        LD      A,(REPLY+2)
-        AND     05FH
-        CP      'Y'
-        JR      NZ,DONE
-
-; -------------------------------------------------------------------------------
-; Delete Request
-; -------------------------------------------------------------------------------
-
-DELETE:                                 ; delete matching files
-        LD      DE,FCB
-        LD      C,19
-        CALL    BDOS
-        CP      0FFH
-        JR      NZ,DONE
-        LD      DE,NOFILE
-        LD      C,9
-        CALL    BDOS
-
-DONE:                                   ; return to CCP
-        LD      C,0
-        JP      BDOS
-
-  ; Expand a CP/M star through the remainder of its current 8.3 field. Question
-  ; marks and ordinary characters are already prepared by the CCP default FCB.
-
-; ================================================================================
-; =                              Wildcard Expansion                              =
-; =                                                                              =
-; = Expands '*' through the remainder of its current 8.3 field while preserving  =
-; = question marks and ordinary characters already prepared by the CCP.          =
-; ================================================================================
-; -------------------------------------------------------------------------------
-; CP/M Star Expansion
-; -------------------------------------------------------------------------------
-
-EXPAND:                                 ; expand CP/M star wildcard
-        LD      A,(HL)
-        CP      '*'
-        JR      Z,STAR
-        INC     HL
-        DJNZ    EXPAND
+; One operand and command-wide /Y /Q /C /R in either order. Repetitions are
+; idempotent. Reject every token before issuing any mutating BDOS request.
+EP_PARSE:
+        LD A,B
+        OR A
+        JR Z,EP_DONE
+        LD A,(HL)
+        CP ' '
+        JR NZ,EP_TOKEN
+        INC HL
+        DEC B
+        JR EP_PARSE
+EP_TOKEN:
+        LD (EP_PTR),HL
+        LD C,0
+EP_SCAN:
+        LD A,B
+        OR A
+        JR Z,EP_STOP
+        LD A,(HL)
+        CP ' '
+        JR Z,EP_STOP
+        INC HL
+        INC C
+        DEC B
+        JR EP_SCAN
+EP_STOP:
+        LD (EP_NEXT),HL
+        LD A,B
+        LD (EP_REM),A
+        LD HL,(EP_PTR)
+        LD A,(HL)
+        CP '/'
+        JR Z,EP_OPTION
+        LD A,(EP_HAS)
+        OR A
+        JR NZ,EP_BAD
+        INC A
+        LD (EP_HAS),A
+        LD A,C
+        LD (EP_LEN),A
+        LD B,0
+        LD DE,EP_ARG
+        LDIR
+        JR EP_RESUME
+EP_OPTION:
+        LD A,C
+        CP 2
+        JR NZ,EP_BAD
+        INC HL
+        LD A,(HL)
+        AND 0DFH
+        LD DE,E_YES
+        CP 'Y'
+        JR Z,EP_SET
+        LD DE,E_QUIET
+        CP 'Q'
+        JR Z,EP_SET
+        LD DE,E_EACH
+        CP 'C'
+        JR Z,EP_SET
+        LD DE,E_OVERRIDE
+        CP 'R'
+        JR NZ,EP_BAD
+EP_SET:
+        LD A,1
+        LD (DE),A
+EP_RESUME:
+        LD HL,(EP_NEXT)
+        LD A,(EP_REM)
+        LD B,A
+        JR EP_PARSE
+EP_DONE:
+        LD A,(E_USER)
+        LD E,A
+        LD A,(E_DRIVE)
+        LD D,A
+        LD HL,EP_ARG
+        LD A,(EP_LEN)
+        LD B,A
+        CALL FS_PARSE
+        RET C
+        CALL E_ADMISSION
+        LD HL,FS_FCB+1
+        LD B,11
+EP_WILD:
+        LD A,(HL)
+        CP '?'
+        JR Z,EP_ISWILD
+        INC HL
+        DJNZ EP_WILD
+        OR A
+        RET
+EP_ISWILD:
+        LD A,1
+        LD (E_WILD),A
+        OR A
+        RET
+EP_BAD:
+        CALL FS_CLEAR
+        SCF
         RET
 
-STAR:                                   ; fill remaining field with wildcards
-        LD      (HL),'?'
-        INC     HL
-        DJNZ    STAR
+; Collect all physical extents matching the bounded name pattern, then merge
+; attributes and allocation metrics per logical file. Predicate evaluation
+; follows merging so an inconsistent protected extent cannot be ignored.
+E_COLLECT:
+        LD BC,0
+        LD (E_INDEX),BC
+E_DULOOP:
+        LD BC,(E_INDEX)
+        CALL DU_NEXT
+        JP C,E_CEND
+        LD (E_INDEX),BC
+        LD A,D
+        LD (E_TDRIVE),A
+        LD A,E
+        LD (E_TUSER),A
+        LD E,D
+        LD C,14
+        CALL BDOS
+        LD A,(E_TUSER)
+        LD E,A
+        LD C,32
+        CALL BDOS
+        LD C,31
+        CALL BDOS
+        LD (E_DPB),HL
+        LD HL,FS_FCB
+        LD DE,E_SEARCH
+        LD BC,36
+        LDIR
+        XOR A
+        LD (E_SEARCH),A
+        LD A,'?'
+        LD (E_SEARCH+12),A
+        LD DE,E_DMA
+        LD C,26
+        CALL BDOS
+        LD DE,E_SEARCH
+        LD C,17
+E_SCAN:
+        CALL BDOS
+        CP 0FFH
+        JR Z,E_DULOOP
+        ADD A,A
+        ADD A,A
+        ADD A,A
+        ADD A,A
+        ADD A,A
+        LD E,A
+        LD D,0
+        LD HL,E_DMA
+        ADD HL,DE
+        LD (E_ENTRY),HL
+        INC HL
+        LD DE,E_NAME
+        LD B,11
+E_NAMES:
+        LD A,(HL)
+        AND 7FH
+        LD (DE),A
+        INC HL
+        INC DE
+        DJNZ E_NAMES
+        CALL E_RECORD
+        RET C
+        ; Read the raw entry's attributes independently of the name copy.
+        LD HL,(E_ENTRY)
+        LD DE,9
+        ADD HL,DE
+        LD B,3
+        LD C,0
+        LD D,1
+E_MRGATT:
+        LD A,(HL)
+        AND 80H
+        JR Z,E_ANEXT
+        LD A,C
+        OR D
+        LD C,A
+E_ANEXT:
+        SLA D
+        INC HL
+        DJNZ E_MRGATT
+        LD A,(IX+13)
+        OR C
+        LD (IX+13),A
+        PUSH IX
+        POP BC
+        LD HL,16
+        ADD HL,BC
+        LD B,H
+        LD C,L
+        LD HL,(E_ENTRY)
+        LD DE,(E_DPB)
+        CALL DM_ADD
+        CALL E_ABORTKEY
+        JP C,E_CANCEL
+        LD DE,E_SEARCH
+        LD C,18
+        JP E_SCAN
+; No selected DUs remain: success, not capacity failure.
+E_CEND:
+        OR A
+        RET
+E_RECORD:
+        LD IX,E_HEAP
+E_FIND:
+        PUSH IX
+        POP HL
+        LD DE,(E_NEXT)
+        OR A
+        SBC HL,DE
+        JR Z,E_NEW
+        LD A,(E_TDRIVE)
+        CP (IX+0)
+        JR NZ,E_RNEXT
+        LD A,(E_TUSER)
+        CP (IX+1)
+        JR NZ,E_RNEXT
+        PUSH IX
+        POP HL
+        INC HL
+        INC HL
+        LD DE,E_NAME
+        LD B,11
+E_COMPARE:
+        LD A,(DE)
+        CP (HL)
+        JR NZ,E_RNEXT
+        INC HL
+        INC DE
+        DJNZ E_COMPARE
+        OR A
+        RET
+E_RNEXT:
+        LD DE,32
+        ADD IX,DE
+        JR E_FIND
+E_NEW:
+        PUSH IX
+        POP HL
+        LD DE,32
+        ADD HL,DE
+        PUSH HL
+        LD DE,(E_LIMIT)
+        OR A
+        SBC HL,DE
+        POP HL
+        JR NC,E_RFULL
+        LD (E_NEXT),HL
+        PUSH IX
+        POP HL
+        LD B,32
+        XOR A
+E_RCLEAR:
+        LD (HL),A
+        INC HL
+        DJNZ E_RCLEAR
+        LD A,(E_TDRIVE)
+        LD (IX+0),A
+        LD A,(E_TUSER)
+        LD (IX+1),A
+        PUSH IX
+        POP DE
+        INC DE
+        INC DE
+        LD HL,E_NAME
+        LD BC,11
+        LDIR
+        OR A
+        RET
+E_RFULL:
+        SCF
         RET
 
-NOARG:                                  ; report missing filespec
-        LD      DE,NOFILE
-        LD      C,9
-        CALL    BDOS
-        JR      DONE
+E_CLASS:
+        LD HL,E_HEAP
+        LD (E_CURRENT),HL
+E_CLLOOP:
+        LD HL,(E_CURRENT)
+        LD DE,(E_NEXT)
+        OR A
+        SBC HL,DE
+        RET Z
+        LD IX,(E_CURRENT)
+        LD A,(IX+13)
+        LD B,A
+        LD A,(FS_MASK)
+        CALL E_TESTMASK
+        JR NC,E_CLNEXT
+        LD HL,E_MATCH
+        CALL E_INC
+        LD B,(IX+13)
+        LD A,(E_ALLOW)
+        CALL E_TESTMASK
+        JR NC,E_CLPROT
+        LD A,(IX+13)
+        AND 1
+        JR Z,E_ELIG
+        LD A,(E_OVERRIDE)
+        OR A
+        JR NZ,E_ELIG
+        LD A,(E_YES)
+        OR A
+        JR Z,E_ELIG
+E_CLPROT:
+        LD (IX+14),1
+        CALL E_SKIP
+        LD A,(E_QUIET)
+        OR A
+        CALL Z,E_PROTECT
+        JR E_CLNEXT
+E_ELIG:
+        LD (IX+14),2
+        LD HL,E_READY
+        CALL E_INC
+        PUSH IX
+        POP HL
+        LD DE,16
+        ADD HL,DE
+        LD DE,E_TOTAL
+        CALL E_ADD4
+E_CLNEXT:
+        LD HL,(E_CURRENT)
+        LD DE,32
+        ADD HL,DE
+        LD (E_CURRENT),HL
+        JP E_CLLOOP
+E_FIRST:
+        LD IX,E_HEAP
+E_FLOOP:
+        LD A,(IX+14)
+        CP 2
+        RET Z
+        LD DE,32
+        ADD IX,DE
+        JR E_FLOOP
+E_SKIP:
+        LD HL,E_SKIPPED
+E_INC:
+        INC (HL)
+        RET NZ
+        INC HL
+        INC (HL)
+        RET
+; Add the DWORD at HL to the DWORD at DE, preserving IX and no BDOS calls.
+E_ADD4:
+        LD B,4
+        OR A
+E_ADLOOP:
+        LD A,(DE)
+        ADC A,(HL)
+        LD (DE),A
+        INC DE
+        INC HL
+        DJNZ E_ADLOOP
+        RET
+E_SELECT:
+        LD IX,(E_CURRENT)
+        LD E,(IX+0)
+        LD C,14
+        CALL BDOS
+        LD IX,(E_CURRENT)
+        LD E,(IX+1)
+        LD C,32
+        JP BDOS
+E_MKFCB:
+        LD HL,E_FCB
+        LD B,36
+        XOR A
+E_FZERO:
+        LD (HL),A
+        INC HL
+        DJNZ E_FZERO
+        LD HL,(E_CURRENT)
+        INC HL
+        INC HL
+        LD DE,E_FCB+1
+        LD BC,11
+        LDIR
+        RET
+E_CHECK:
+        XOR A
+        LD (E_LIVE),A
+        LD (E_SEEN),A
+        LD A,'?'
+        LD (E_FCB+12),A
+        LD DE,E_DMA
+        LD C,26
+        CALL BDOS
+        LD DE,E_FCB
+        LD C,17
+E_CSCAN:
+        CALL BDOS
+        CP 0FFH
+        JR Z,E_CHECKED
+        LD HL,E_SEEN
+        LD (HL),1
+        ADD A,A
+        ADD A,A
+        ADD A,A
+        ADD A,A
+        ADD A,A
+        LD E,A
+        LD D,0
+        LD HL,E_DMA+9
+        ADD HL,DE
+        LD B,3
+        LD C,1
+        LD A,(E_LIVE)
+E_CATTR:
+        BIT 7,(HL)
+        JR Z,E_CNEXT
+        OR C
+E_CNEXT:
+        INC HL
+        SLA C
+        DJNZ E_CATTR
+        LD (E_LIVE),A
+E_CMORE:
+        LD DE,E_FCB
+        LD C,18
+        JR E_CSCAN
+E_CHECKED:
+        XOR A
+        LD (E_FCB+12),A
+        LD A,(E_SEEN)
+        OR A
+        SCF
+        RET Z
+        LD A,(E_LIVE)
+        OR A
+        RET
 
-; ================================================================================
-; =                                   ERA Data                                   =
-; =                                                                              =
-; = Defines the confirmation input buffer and missing-filespec message used by ERA. =
-; ================================================================================
-; -------------------------------------------------------------------------------
-; Buffers and Messages
-; -------------------------------------------------------------------------------
-
-CONFIRM:                                ; all-files confirmation buffer
-        DB      13,10,'ALL (Y/N)? $'
-
-NOFILE:                                 ; no-filespec message
-        DB      13,10,'NO FILE',13,10,'$'
-
-REPLY:                                  ; console reply buffer
-        DB      2,0,0,0
-
+; Dense six-column manifest, grouped by DU. Automatic 23-line paging.
+E_MANIFEST:
+        XOR A
+        LD (E_COLUMN),A
+        LD (E_LINES),A
+        LD A,0FFH
+        LD (E_LASTDU),A
+        LD (E_LASTDU+1),A
+        LD A,1
+        LD (E_PAGING),A
+        LD DE,E_HEADING
+        CALL E_PRINT
+        LD HL,E_HEAP
+        LD (E_CURRENT),HL
+E_MLOOP:
+        LD HL,(E_CURRENT)
+        LD DE,(E_NEXT)
+        OR A
+        SBC HL,DE
+        JR Z,E_MEND
+        LD IX,(E_CURRENT)
+        LD A,(IX+14)
+        CP 2
+        JR NZ,E_MNEXT
+        LD A,(E_LASTDU)
+        CP (IX+0)
+        JR NZ,E_MDU
+        LD A,(E_LASTDU+1)
+        CP (IX+1)
+        JR Z,E_MNAME
+E_MDU:
+        CALL E_NEWLINE
+        LD A,(IX+0)
+        LD (E_LASTDU),A
+        LD A,(IX+1)
+        LD (E_LASTDU+1),A
+        CALL E_DUNAME
+        CALL E_NEWLINE
+E_MNAME:
+        CALL E_NAMEOUT
+        LD A,(E_COLUMN)
+        INC A
+        LD (E_COLUMN),A
+        CP 6
+        CALL Z,E_NEWLINE
+E_MNEXT:
+        LD HL,(E_CURRENT)
+        LD DE,32
+        ADD HL,DE
+        LD (E_CURRENT),HL
+        JR E_MLOOP
+E_MEND:
+        CALL E_NEWLINE
+        LD HL,(E_READY)
+        CALL E_NUMBER
+        LD DE,E_FILETOTAL
+        CALL E_PRINT
+        LD HL,E_TOTAL
+        CALL E_KBYTES
+        LD DE,E_KTOTAL
+        CALL E_PRINT
+        XOR A
+        LD (E_PAGING),A
+        RET
+E_FULL:
+        LD IX,(E_CURRENT)
+        CALL E_DUNAME
+        JP E_NAMEPLAIN
+E_DUNAME:
+        LD A,(IX+0)
+        ADD A,'A'
+        CALL E_CHAR
+        LD L,(IX+1)
+        LD H,0
+        CALL E_NUMBER
+        LD A,':'
+        JP E_CHAR
+E_NAMEOUT:
+        CALL E_NAMEPLAIN
+        LD B,13
+        LD A,(E_NLEN)
+        LD C,A
+        LD A,B
+        SUB C
+        LD B,A
+E_PAD:
+        LD A,' '
+        CALL E_CHAR
+        DJNZ E_PAD
+        RET
+E_NAMEPLAIN:
+        PUSH IX
+        POP HL
+        INC HL
+        INC HL
+        LD B,8
+        LD C,0
+        CALL E_FIELD
+        LD A,'.'
+        CALL E_CHAR
+        INC C
+        LD B,3
+        CALL E_FIELD
+        LD A,C
+        LD (E_NLEN),A
+        RET
+E_FIELD:
+        LD A,(HL)
+        CP ' '
+        JR Z,E_FNEX
+        CALL E_CHAR
+        INC C
+E_FNEX:
+        INC HL
+        DJNZ E_FIELD
+        RET
+E_PROTECT:
+        LD IX,(E_CURRENT)
+        CALL E_FULL
+        LD DE,E_PROTMSG
+        JP E_PRINT
+E_NUMBER:
+        LD (E_VALUE),HL
+        LD HL,0
+        LD (E_VALUE+2),HL
+E_DEC32:
+        LD HL,E_DIGITS+10
+        LD (HL),'$'
+        LD (E_DIGPTR),HL
+E_DIVIDE:
+        LD B,32
+        LD C,0
+E_DIVBIT:
+        LD HL,E_VALUE
+        SLA (HL)
+        INC HL
+        RL (HL)
+        INC HL
+        RL (HL)
+        INC HL
+        RL (HL)
+        LD A,C
+        RLA
+        LD C,A
+        CP 10
+        JR C,E_QUOT
+        SUB 10
+        LD C,A
+        LD HL,E_VALUE
+        SET 0,(HL)
+E_QUOT:
+        DJNZ E_DIVBIT
+        LD HL,(E_DIGPTR)
+        DEC HL
+        LD A,C
+        ADD A,'0'
+        LD (HL),A
+        LD (E_DIGPTR),HL
+        LD HL,E_VALUE
+        LD A,(HL)
+        INC HL
+        OR (HL)
+        INC HL
+        OR (HL)
+        INC HL
+        OR (HL)
+        JR NZ,E_DIVIDE
+        LD DE,(E_DIGPTR)
+        JP E_PRINT
+; K is ceiling(allocated 128-byte records / 8); use a full DWORD accumulator.
+E_KBYTES:
+        LD DE,E_VALUE
+        LD BC,4
+        LDIR
+        LD HL,E_VALUE
+        LD A,(HL)
+        ADD A,7
+        LD (HL),A
+        INC HL
+        LD A,(HL)
+        ADC A,0
+        LD (HL),A
+        INC HL
+        LD A,(HL)
+        ADC A,0
+        LD (HL),A
+        INC HL
+        LD A,(HL)
+        ADC A,0
+        LD (HL),A
+        LD B,3
+E_KSHIFT:
+        LD HL,E_VALUE+3
+        SRL (HL)
+        DEC HL
+        RR (HL)
+        DEC HL
+        RR (HL)
+        DEC HL
+        RR (HL)
+        DJNZ E_KSHIFT
+        JP E_DEC32
+E_SUMMARY:
+        LD A,(E_QUIET)
+        OR A
+        JP NZ,E_DONE
+        LD HL,(E_ERASED)
+        LD A,H
+        OR L
+        JR Z,E_SSKIP
+        CALL E_NUMBER
+        LD DE,E_ERASEMSG
+        CALL E_PRINT
+E_SSKIP:
+        LD HL,(E_SKIPPED)
+        LD A,H
+        OR L
+        JR Z,E_SFAIL
+        CALL E_NUMBER
+        LD DE,E_SKIPMSG
+        CALL E_PRINT
+E_SFAIL:
+        LD HL,(E_NFAIL)
+        LD A,H
+        OR L
+        JR Z,E_SFREE
+        CALL E_NUMBER
+        LD DE,E_ERRMSG
+        CALL E_PRINT
+E_SFREE:
+        LD HL,E_FREED
+        CALL E_KBYTES
+        LD DE,E_FREEMSG
+        CALL E_PRINT
+        JP E_DONE
+E_YN:
+        CALL E_KEY
+        CP 3
+        SCF
+        RET Z
+        AND 0DFH
+        CP 'Y'
+        JR Z,E_YESKEY
+        CP 'N'
+        JR NZ,E_YN
+        CALL E_CHAR
+        CALL E_NEWLINE
+        LD A,1
+        OR A
+        RET
+E_YESKEY:
+        CALL E_CHAR
+        CALL E_NEWLINE
+        XOR A
+        RET
+E_KEY:
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        PUSH IX
+E_KWAIT:
+        LD E,0FFH
+        LD C,6
+        CALL BDOS
+        OR A
+        JR Z,E_KWAIT
+        POP IX
+        POP HL
+        POP DE
+        POP BC
+        RET
+E_ABORTKEY:
+        LD E,0FFH
+        LD C,6
+        CALL BDOS
+        CP 3
+        SCF
+        RET Z
+        OR A
+        RET
+E_PRINT:
+        PUSH HL
+        PUSH DE
+        EX DE,HL
+E_PLOOP:
+        LD A,(HL)
+        CP '$'
+        JR Z,E_PEND
+        CALL E_CHAR
+        INC HL
+        JR E_PLOOP
+E_PEND:
+        POP DE
+        POP HL
+        RET
+E_CHAR:
+        PUSH AF
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        PUSH IX
+        LD A,(E_PAGING)
+        OR A
+        JR Z,E_EMIT
+        LD A,(E_LINES)
+        CP 23
+        JR C,E_EMIT
+        LD DE,E_MORE
+        LD C,9
+        CALL BDOS
+E_PAGEKEY:
+        CALL E_KEY
+        CP 3
+        JP Z,E_CANCEL
+        CP ' '
+        JR Z,E_PAGERESET
+        CP 13
+        JR NZ,E_PAGEKEY
+E_PAGERESET:
+        XOR A
+        LD (E_LINES),A
+        LD DE,E_PAGEEND
+        LD C,9
+        CALL BDOS
+E_EMIT:
+        POP IX
+        POP HL
+        POP DE
+        POP BC
+        POP AF
+        PUSH AF
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        PUSH IX
+        LD E,A
+        LD C,2
+        CALL BDOS
+        POP IX
+        POP HL
+        POP DE
+        POP BC
+        POP AF
+        CP 10
+        RET NZ
+        PUSH HL
+        LD HL,E_LINES
+        INC (HL)
+        POP HL
+        RET
+E_NEWLINE:
+        LD DE,E_NL
+        CALL E_PRINT
+        XOR A
+        LD (E_COLUMN),A
+        RET
+; Reuse the validated attribute atoms; retain admission per matching OR branch.
+; Restrict each branch truth mask to the protection bits explicitly mentioned.
+E_ADMISSION:
+        LD A,11H
+        LD (E_ALLOW),A
+        LD A,(OQ_LEN)
+        OR A
+        RET Z
+        LD B,A
+        LD HL,(OQ_PTR)
+        XOR A
+        LD (E_ALLOW),A
+E_ABRANCH:
+        XOR A
+        LD (E_ABITS),A
+        LD A,0FFH
+        LD (E_ATERM),A
+E_AATOM:
+        CALL AT_ATOM
+        LD C,A
+        CP 0AAH
+        JR NZ,E_ASYS
+        LD A,(E_ABITS)
+        OR 1
+        LD (E_ABITS),A
+E_ASYS:
+        LD A,C
+        CP 0CCH
+        JR NZ,E_AAND
+        LD A,(E_ABITS)
+        OR 2
+        LD (E_ABITS),A
+E_AAND:
+        LD A,(E_ATERM)
+        AND C
+        LD (E_ATERM),A
+        LD A,B
+        OR A
+        JR Z,E_AMERGE
+        LD A,(HL)
+        CP '+'
+        JR NZ,E_AMERGE
+        INC HL
+        DEC B
+        JR E_AATOM
+E_AMERGE:
+        LD A,(E_ABITS)
+        LD C,A
+        LD A,(E_ATERM)
+        LD D,A
+        LD A,C
+        AND 1
+        LD A,D
+        JR NZ,E_AHASRO
+        AND 55H
+E_AHASRO:
+        LD D,A
+        LD A,C
+        AND 2
+        LD A,D
+        JR NZ,E_AHASSY
+        AND 33H
+E_AHASSY:
+        LD C,A
+        LD A,(E_ALLOW)
+        OR C
+        LD (E_ALLOW),A
+        LD A,B
+        OR A
+        RET Z
+        INC HL
+        DEC B
+        JR E_ABRANCH
+; A=truth mask, B=attribute state; CF reports membership.
+E_TESTMASK:
+        INC B
+E_TMLOOP:
+        RRCA
+        DJNZ E_TMLOOP
+        RET
+; Apply merged live attribute bits to the exact FCB, preserving SYS and ARC.
+E_APATTR:
+        LD HL,E_FCB+9
+        LD A,(E_LIVE)
+        LD B,3
+E_ATTLOOP:
+        RES 7,(HL)
+        RRCA
+        JR NC,E_ATTSTEP
+        SET 7,(HL)
+E_ATTSTEP:
+        INC HL
+        DJNZ E_ATTLOOP
+        LD HL,E_FCB+9
+        RET
+E_REPAIR:
+        LD A,(E_LIVE)
+        AND 1
+        RET Z
+        CALL E_APATTR
+        LD DE,E_FCB
+        LD C,30
+        CALL BDOS
+        CP 0FFH
+        RET NZ
+        CALL E_FULL
+        LD DE,E_REPMSG
+        JP E_PRINT
+E_REPMSG: DB ' - Unable to restore read-only protection.',13,10,'$'
+E_ALLOW: DB 11H
+E_ABITS: DB 0
+E_ATERM: DB 0
+E_OVERRIDE: DB 0
+E_ROAUTH: DB 0
+E_ONCE: DB 0
+E_DRIVE: DB 0
+E_USER: DB 0
+E_YES: DB 0
+E_QUIET: DB 0
+E_EACH: DB 0
+E_WILD: DB 0
+E_NEXT: DW 0
+E_LIMIT: DW 0
+E_CURRENT: DW 0
+E_INDEX: DW 0
+E_TDRIVE: DB 0
+E_TUSER: DB 0
+E_DPB: DW 0
+E_ENTRY: DW 0
+E_MATCH: DW 0
+E_READY: DW 0
+E_ERASED: DW 0
+E_SKIPPED: DW 0
+E_NFAIL: DW 0
+E_TOTAL: DB 0,0,0,0
+E_FREED: DB 0,0,0,0
+E_VALUE: DB 0,0,0,0
+E_DIGPTR: DW 0
+E_DIGITS: DS 11
+E_LIVE: DB 0
+E_SEEN: DB 0
+E_COLUMN: DB 0
+E_LINES: DB 0
+E_PAGING: DB 0
+E_NLEN: DB 0
+E_LASTDU: DW 0
+EP_HAS: DB 0
+EP_LEN: DB 0
+EP_PTR: DW 0
+EP_NEXT: DW 0
+EP_REM: DB 0
+EP_ARG: DS 128
+E_NAME: DS 11
+E_SEARCH: DS 36
+E_FCB: DS 36
+E_DMA: DS 128
+E_BADSPEC: DB 13,10,'Invalid filespec or option.',13,10,'$'
+E_BADDRIVE: DB 13,10,'INVALID DRIVE',13,10,'$'
+E_FULLM: DB 13,10,'ERA: target list exceeds available memory; nothing erased.',13,10,'$'
+E_NOMATCH: DB 13,10,'NO FILE',13,10,'$'
+E_STOPMSG: DB 13,10,'ERA cancelled.',13,10,'$'
+E_PROTMSG: DB ' [SKIPPED - PROTECTED]',13,10,'$'
+E_ASKRO: DB ' - Read only. Erase? Y/N $'
+E_ASKONE: DB ' - Erase? Y/N $'
+E_ASKALL: DB 'ERASE THESE FILES? Y/N $'
+E_HEADING: DB 13,10,'THE FOLLOWING FILES WILL BE ERASED:',13,10,'$'
+E_FILETOTAL: DB ' FILES, $'
+E_KTOTAL: DB 'K TOTAL',13,10,'$'
+E_ERASEMSG: DB ' FILES ERASED, $'
+E_SKIPMSG: DB ' SKIPPED, $'
+E_ERRMSG: DB ' FAILED, $'
+E_FREEMSG: DB 'K FREED',13,10,'$'
+E_FAIL: DB ' - Failed.',13,10,'$'
+E_RECOV: DB 'R/S/A/? $'
+E_HELP: DB 13,10,'R Retry, S Skip, A Abort all.',13,10,'$'
+E_NL: DB 13,10,'$'
+E_MORE: DB 'MORE -- Space/ENTER for next page.$'
+E_PAGEEND: DB 13,10,'$'
+; @era-selector@
+; @utility-version ERA@
+E_STACK: DS 256
+E_STKTOP:
+E_HEAP:
         .DEPHASE
-        END     START
+        END START

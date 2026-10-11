@@ -557,6 +557,24 @@ class Z80:
                 mask = 0x40 if self.mem[self.pc] == 0x77 else 0x80
                 self.pc += 1
                 self.z = not bool(self.a & mask)
+            elif op == 0xCB and self.mem[self.pc] == 0x7E:  # BIT 7,(HL)
+                self.pc += 1
+                self.z = not bool(self.mem[self.hl] & 0x80)
+            elif op == 0xCB and self.mem[self.pc] in (0xBE, 0xFE):  # RES/SET 7,(HL)
+                operation = self.mem[self.pc]
+                self.pc += 1
+                if operation == 0xBE:
+                    self.mem[self.hl] &= 0x7F
+                else:
+                    self.mem[self.hl] |= 0x80
+            elif op == 0xCB and self.mem[self.pc] == 0x21:  # SLA C
+                self.pc += 1
+                self.carry = bool(self.c & 0x80)
+                self.c = (self.c << 1) & 0xFF
+                self.z = self.c == 0
+            elif op == 0xCB and self.mem[self.pc] == 0xC6:  # SET 0,(HL), flags unchanged
+                self.pc += 1
+                self.mem[self.hl] |= 1
             elif op == 0xCB and self.mem[self.pc] == 0x26:  # SLA (HL)
                 self.pc += 1
                 value = self.mem[self.hl]

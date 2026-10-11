@@ -73,7 +73,7 @@ def main() -> None:
         build_image(drive_a, "--include-as", f"DELETE.ME={small}")
         output = run(
             "CPX UNLOAD RCP", drive_a, drive_b,
-            "ERA DELETE.ME", "CPX LOAD RCP", "DIR DELETE.ME",
+            "ERA /Y DELETE.ME", "CPX LOAD RCP", "DIR DELETE.ME",
         )
         require("NO FILE" in output,
                 "transient ERA.COM fallback did not delete its target")
