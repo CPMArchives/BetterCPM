@@ -16,5 +16,25 @@ def main():
    assert bytes(c.mem[addr('RF_NAME'):addr('RF_NAME')+11])==new
    c.mem[0x6000:0x600b]=new;c.hl=0x6000;c.run(addr('RF_MAP'),10000)
    assert not c.carry and bytes(c.mem[addr('RF_NAME'):addr('RF_NAME')+11])==new,'mapping must be idempotent'
- print('Resident REN positional mapping, invalid-name rejection and fixed points PASS')
+ # Protection comes from every extent, including one excluded by a predicate.
+ for masks in ((0,), (0,1), (0,2), (1,2), (4,0)):
+  c=Z80(b'');c.mem[0x8000:0x8000+len(image)]=image
+  c.mem[5:8]=bytes((0xDB,254,0xC9));index=[0];dma=[0]
+  c.mem[addr('RF_BEST'):addr('RF_BEST')+11]=b'FILE    DOC'
+  def io(port):
+   assert port&255==254
+   if c.c==26:dma[0]=c.de;return 0
+   assert c.c in (17,18),c.c
+   if c.c==17:index[0]=0
+   if index[0]==len(masks):return 255
+   mask=masks[index[0]];index[0]+=1
+   row=bytearray(32);row[1:12]=b'FILE    DOC'
+   for bit in range(3):row[9+bit]|=((mask>>bit)&1)<<7
+   c.mem[dma[0]:dma[0]+32]=row
+   return 0
+  c.port_read=io;c.run(addr('RF_PROTECT'),limit=10000)
+  expected=0
+  for mask in masks:expected|=mask&3
+  assert c.a==expected,(masks,c.a,expected)
+ print('Resident REN positional mapping, invalid-name rejection fixed points and all-extent protection PASS')
 if __name__=='__main__':main()

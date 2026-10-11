@@ -1,6 +1,6 @@
 ; Resident REN: location-free template=shared source selection.
-; Fixed workspace; directory rescans avoid a resident batch list. Preflight all
-; DUs before mutation. Positional mapping is idempotent, so renamed targets are
+; Fixed workspace; validate syntax and DU domain before incremental execution.
+; Positional mapping is idempotent, so renamed targets are
 ; harmless no-ops if they still match the original source pattern on rescans.
 BC_REN:
         LD (RF_ARG),HL
@@ -28,11 +28,34 @@ RF_ALT:
         LD HL,(RF_ARG)
         LD A,(RF_LEN)
         LD B,A
+        CALL RF_TRIM
+        LD A,B
+        OR A
+        JP Z,BC_DBAD
+        PUSH HL
+        PUSH BC
+RF_WS:
+        LD A,(HL)
+        CP ' '
+        JR Z,RF_WSFOUND
+        INC HL
+        DJNZ RF_WS
+        POP BC
+        POP HL
+        JR RF_LEGACY
+RF_WSFOUND:
+        POP BC
+        POP HL
+        JR RF_SPACE
+RF_LEGACY:
+        LD HL,(RF_ARG)
+        LD A,(RF_LEN)
+        LD B,A
         LD C,0
 RF_UNDER:
         LD A,B
         OR A
-        JP Z,BC_DBAD
+        JP Z,RF_SPACE
         LD A,(HL)
         CP '_'
         JR Z,RF_EQUAL
@@ -40,6 +63,30 @@ RF_UNDER:
         INC C
         DEC B
         JR RF_UNDER
+ ; Source-first form: source token followed by a location-free template.
+RF_SPACE:
+        LD HL,(RF_ARG)
+        LD A,(RF_LEN)
+        LD B,A
+        CALL RF_TRIM
+        LD (RF_SRC),HL
+        LD C,0
+RF_STOKEN:
+        LD A,B
+        OR A
+        JP Z,BC_DBAD
+        LD A,(HL)
+        CP ' '
+        JR Z,RF_STEND
+        INC HL
+        INC C
+        DEC B
+        JR RF_STOKEN
+RF_STEND:
+        LD A,C
+        LD (RF_SLEN),A
+        CALL RF_TRIM
+        JP RF_TEMPLATE
 RF_EQUAL:
         INC HL
         DEC B
@@ -48,6 +95,7 @@ RF_EQUAL:
         LD (RF_SLEN),A
         LD HL,(RF_ARG)
         LD B,C
+RF_TEMPLATE:
         ; Trim outer spaces only; template must be a single location-free token.
         CALL RF_TRIM
         LD A,B
@@ -78,7 +126,6 @@ RF_EQUAL:
         CALL RE_DVALID
         JP C,BC_BDERR
         XOR A
-        LD (RF_PASS),A
         LD (RF_ANY),A
 RF_BEGIN:
         LD BC,0
@@ -109,6 +156,9 @@ RF_NEXT:
         LD DE,RF_LAST
         LD BC,11
         LDIR
+        CALL RF_PROTECT
+        AND 3
+        JR NZ,RF_NEXT
         LD HL,RF_BEST
         CALL RF_MAP
         JP C,BC_DBAD
@@ -119,9 +169,6 @@ RF_NEXT:
         LD A,(RF_ATTR)
         AND 1
         JP NZ,RF_READONLY
-        LD A,(RF_PASS)
-        OR A
-        JR NZ,RF_RENAME
         LD C,29
         CALL BDOS
         LD A,(RF_DRIVE)
@@ -142,9 +189,6 @@ RF_ROBIT:
         CALL BDOS
         CP 0FFH
         JP NZ,BC_REXISTS             ; includes any selected-source overlap
-        CALL RF_PAIRS
-        JP C,RF_COLLIDE
-        JP RF_NEXT
 RF_RENAME:
         CALL RF_FCB
         LD HL,RF_BEST
@@ -162,15 +206,59 @@ RF_RENAME:
         JP Z,RF_FAILED
         JP RF_NEXT
 RF_END:
-        LD A,(RF_PASS)
-        OR A
-        JP NZ,BC_DURST
         LD A,(RF_ANY)
         OR A
         JP Z,BC_RNOFILE
-        INC A
-        LD (RF_PASS),A
-        JP RF_BEGIN
+        JP BC_DURST
+ ; Inspect every physical extent independently of the selection predicate.
+RF_PROTECT:
+        CALL RF_FCB
+        LD HL,RF_BEST
+        LD DE,RF_FILE+1
+        LD BC,11
+        LDIR
+        LD A,'?'
+        LD (RF_FILE+12),A
+        XOR A
+        LD (RF_ATTR),A
+        LD DE,BC_DMA
+        LD C,26
+        CALL BDOS
+        LD DE,RF_FILE
+        LD C,17
+RF_PATTR:
+        CALL BDOS
+        CP 0FFH
+        JR Z,RF_PDONE
+        ADD A,A
+        ADD A,A
+        ADD A,A
+        ADD A,A
+        ADD A,A
+        LD E,A
+        LD D,0
+        LD HL,BC_DMA+9
+        ADD HL,DE
+        LD A,(HL)
+        RLCA
+        AND 1
+        LD B,A
+        INC HL
+        LD A,(HL)
+        RLCA
+        AND 1
+        ADD A,A
+        OR B
+        LD B,A
+        LD A,(RF_ATTR)
+        OR B
+        LD (RF_ATTR),A
+        LD DE,RF_FILE
+        LD C,18
+        JR RF_PATTR
+RF_PDONE:
+        LD A,(RF_ATTR)
+        RET
 RF_SELECT:
         LD A,(RF_DRIVE)
         LD E,A
@@ -323,42 +411,6 @@ RF_ADV:
         DJNZ RF_CHAR
         OR A
         RET
-; Duplicate mappings only matter within this source DU. Search every original
-; selected entry; physical extents of the same name are not separate sources.
-RF_PAIRS:
-        LD HL,RF_NAME
-        LD DE,RF_TARGET
-        LD BC,11
-        LDIR
-        CALL RF_FIRST
-RF_PAIR:
-        JR NC,RF_PCHECK
-        OR A
-        RET
-RF_PCHECK:
-        LD HL,RF_CAND
-        LD DE,RF_BEST
-        CALL BC_WCMP
-        JR Z,RF_PNEXT
-        LD HL,RF_CAND
-        CALL RF_MAP
-        JR NC,RF_PVALID
-        LD A,4
-        LD (FS_ERROR),A
-        JR RF_PBAD
-RF_PVALID:
-        LD HL,RF_NAME
-        LD DE,RF_TARGET
-        CALL BC_WCMP
-        JR Z,RF_PBAD
-RF_PNEXT:
-        CALL RF_MORE
-        JR NC,RF_PAIR
-        OR A
-        RET
-RF_PBAD:
-        SCF
-        RET
 RF_TRIM:
         LD A,B
         OR A
@@ -392,12 +444,6 @@ BC_RNOFILE:
 BC_RPRINT:
         CALL BC_PRINT
         JP BC_DURST
-RF_COLLIDE:
-        LD A,(FS_ERROR)
-        OR A
-        JP NZ,BC_DBAD
-        LD DE,RF_CMSG
-        JP BC_RPRINT
 RF_READONLY:
         LD DE,RF_RMSG
         JP BC_RPRINT
@@ -408,7 +454,6 @@ RF_ARG: DW 0
 RF_LEN: DB 0
 RF_SRC: DW 0
 RF_SLEN: DB 0
-RF_PASS: DB 0
 RF_ANY: DB 0
 RF_INDEX: DW 0
 RF_DRIVE: DB 0
@@ -421,7 +466,5 @@ RF_LAST: DS 11
 RF_BEST: DS 11
 RF_CAND: DS 11
 RF_NAME: DS 11
-RF_TARGET: DS 11
-RF_CMSG: DB 13,10,'Rename mapping collision.',13,10,'$'
 RF_RMSG: DB 13,10,'Read only.',13,10,'$'
 RF_FMSG: DB 13,10,'Rename failed.',13,10,'$'
