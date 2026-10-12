@@ -188,6 +188,8 @@ R_ALLOW:
         OR A
         RET
 R_SUCCESS:
+        XOR A
+        LD (R_TRY),A
         LD HL,RF_NAME
         LD DE,(R_NEXT)
         LD BC,11
@@ -238,6 +240,8 @@ R_COLLISION:
         JR Z,R_COLSKIP
         JP R_COLPROM
 R_COLSKIP:
+        XOR A
+        LD (R_TRY),A
         LD DE,R_EXISTMSG
         CALL R_SKIP
         JP RF_NEXT
@@ -358,6 +362,9 @@ R_COUNTS:
         LD HL,(R_SKIPPED)
         LD DE,R_SKMSG
         CALL R_COUNT
+        LD HL,(R_FAILED)
+        LD DE,R_FAILMSG
+        CALL R_COUNT
         LD A,(R_COMMA)
         OR A
         JP NZ,R_NEWLINE
@@ -443,6 +450,8 @@ R_HELPIT:
         CALL BC_PRINT
         JR R_COLPROM
 R_NEWNAME:
+        XOR A
+        LD (R_TRY),A
         CALL R_NEWLINE
 R_NEWPROM:
         LD DE,R_NEWMSG
@@ -549,6 +558,9 @@ R_CHECKEX:
         CALL BDOS
         CP 0FFH
         JP NZ,R_COLPROM
+        LD A,(R_TRY)
+        OR A
+        JP NZ,R_MUTATE
         JP RF_RENAME
 ; Per-DU ledger prevents arbitrary interactive targets from being selected again.
 ; The resident engine's fixed-point assumption alone does not cover new names.
@@ -604,3 +616,82 @@ R_NEWFCB: DS 36
 R_NEXT: DW 0
 R_LIMIT: DW 0
 R_SCAN: DW 0
+
+; Recoverable failure retries only the current mapping, without re-confirming it.
+; Retry rechecks target existence and drive protection before another mutation.
+R_FAILURE:
+        LD A,(R_DRY)
+        OR A
+        JR NZ,R_FAILSKIP
+        LD A,(R_POLICY)
+        OR A
+        JR NZ,R_FAILSKIP
+        LD A,(R_QUIET)
+        CP 2
+        JR Z,R_FAILSKIP
+R_FAILPROM:
+        LD DE,R_FPRE
+        CALL BC_PRINT
+        LD HL,RF_BEST
+        CALL R_NAME
+        LD DE,R_FAILASK
+        CALL BC_PRINT
+        LD C,1
+        CALL BDOS
+        CP 3
+        JR Z,R_FAILABORT
+        CP '?'
+        JR Z,R_FAILHELP
+        AND 5FH
+        CP 'A'
+        JR Z,R_FAILABORT
+        CP 'S'
+        JR Z,R_FAILANS
+        CP 'R'
+        JR NZ,R_FAILPROM
+        CALL R_NEWLINE
+        LD A,1
+        LD (R_TRY),A
+        JP R_CHECK
+R_FAILHELP:
+        CALL R_NEWLINE
+        LD DE,R_FHELP
+        CALL BC_PRINT
+        JR R_FAILPROM
+R_FAILABORT:
+        CALL R_FAILCOUNT
+        CALL R_NEWLINE
+        JP R_ABORT
+R_FAILANS:
+        CALL R_NEWLINE
+R_FAILSKIP:
+        CALL R_FAILCOUNT
+        CALL R_MAPPING
+        LD DE,R_FAILLINE
+        CALL BC_PRINT
+        JP RF_NEXT
+R_FAILCOUNT:
+        XOR A
+        LD (R_TRY),A
+        LD HL,(R_FAILED)
+        INC HL
+        LD (R_FAILED),HL
+        RET
+R_DRIVEWR:
+        LD C,29
+        CALL BDOS
+        LD A,(RF_DRIVE)
+        LD B,A
+        INC B
+R_DBITS:
+        SRL H
+        RR L
+        DJNZ R_DBITS
+        RET
+R_TRY: DB 0
+R_FAILED: DW 0
+R_FPRE: DB 'REN ','$'
+R_FAILASK: DB ' - Failed. R/S/A/? ','$'
+R_FHELP: DB 'R Retry, S Skip file, A Abort remainder.',13,10,'$'
+R_FAILLINE: DB ' [FAILED]',13,10,'$'
+R_FAILMSG: DB ' FAILED','$'

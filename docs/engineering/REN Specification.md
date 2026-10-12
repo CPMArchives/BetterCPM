@@ -26,7 +26,8 @@ implementation and qualification must follow separately.
   `/DRY` also report/skip collisions without prompting.
 - Collision replacement input accepts only literal, locationless 8.3 names.
   Invalid input reprompts; blank returns to the collision menu; Ctrl-C aborts
-  the remainder. Retry/skip/abort operational failure handling remains pending.
+  the remainder. Operational failures offer retry/skip/abort with inline help;
+  unattended failures are counted and skipped.
 - Source enumeration uses lexical progression and a per-DU ledger of successful
   destinations, preventing repeated renaming even after arbitrary interactive
   replacement names. Positional mappings also remain idempotent. Targets overlapping
@@ -1083,3 +1084,27 @@ change, edited and overlong input, blank, Ctrl-C, self-mapping, selected-source
 overlap, `/C`, and prevention of interactive-target reselection. Native and
 physical platform qualification remain pending, as do `/P`, operational failure
 recovery and failed-file accounting.
+
+## Operational failure recovery increment — 2026-10-12
+
+REN Build 004 adds `REN filename - Failed. R/S/A/?`. Help prints
+`R Retry, S Skip file, A Abort remainder.` and reprompts without affecting
+counts. Retry preserves the current source/target mapping, rechecks target
+existence and drive read-only status, and does not repeat `/C` authorization.
+If a target has appeared, normal collision handling applies before any new
+mutation. `/Y` and `/QQ` count a failed file and continue without prompting;
+`/QQ` remains silent. A file recovered by retry counts as renamed, while a
+failure abandoned with skip, abort or Ctrl-C counts once as failed. Abort
+restores the caller DU and retains earlier successful changes. Final summaries
+include nonzero FAILED counts independently of ordinary SKIPPED counts.
+
+Drive read-only rejection uses the same failure policy. `/DRY` never prompts
+for such a failure and still cannot mutate. `/P` remains unimplemented and does
+not yet permit protected-file renames.
+
+Cross assembly succeeds at 5,142 bytes. Core, confirmation/reporting, collision
+and injected-failure execution tests pass. Failure cases cover repeated retry,
+help, no repeated confirmation, skip, partial-success abort/Ctrl-C, unattended
+quiet behavior, a target appearing between failure and retry, and read-only
+drives. Native assembler parity and physical platform qualification remain
+pending; the fixture tests are not a claim of real-media qualification.

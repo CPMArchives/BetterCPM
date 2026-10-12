@@ -3,7 +3,7 @@
 from pathlib import Path
 from test_bios import Z80, SENTINEL
 ROOT=Path(__file__).resolve().parents[1]
-def run(tail, files, responses='', ledger_capacity=None):
+def run(tail, files, responses='', ledger_capacity=None, rename_failures=None, racing_target=False, drive_ro=False):
  responses=iter(responses)
  c=Z80(b''); image=(ROOT/'build/utilities/REN.COM').read_bytes()
  c.mem[0x100:0x100+len(image)]=image;c.mem[0:3]=bytes((0xC3,SENTINEL&255,SENTINEL>>8))
@@ -23,7 +23,7 @@ def run(tail, files, responses='', ledger_capacity=None):
    return state['user']
   if f==14:state['drive']=c.e;return 0
   if f==26:state['dma']=c.de;return 0
-  if f==29:c.hl=0;return 0
+  if f==29:c.hl=2 if drive_ro else 0;return 0
   if f==9:
    p=c.de
    while c.mem[p]!=36:output.append(chr(c.mem[p]));p+=1
@@ -48,6 +48,10 @@ def run(tail, files, responses='', ledger_capacity=None):
    return 0
   if f==23:
    old=(state['drive'],state['user'],bytes(c.mem[c.de+1:c.de+12]));new=(old[0],old[1],bytes(c.mem[c.de+17:c.de+28]))
+   if rename_failures and rename_failures.get(old,0):
+    rename_failures[old]-=1
+    if racing_target:files[new]=4
+    return 255
    assert old in files and new not in files
    files[new]=files.pop(old);mutations.append((old,new));return 0
   raise AssertionError(f)
@@ -76,6 +80,6 @@ def main():
  changes,out=run('B1:*.* X*.*',{(1,1,a):0,(1,1,b):0})
  assert len(changes)==2
  changes,out=run('/VER',{})
- assert not changes and 'BetterCP/M REN 1.0 (Build 003)' in out
+ assert not changes and 'BetterCP/M REN 1.0 (Build 004)' in out
  print('PASS: transient REN operand orders, multi-DU, predicates, attributes, protection, dry run, invalid syntax, caller DU and version')
 if __name__=='__main__':main()
