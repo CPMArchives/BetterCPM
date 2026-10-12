@@ -34,9 +34,11 @@ def expanded_source():
     adapt('CALL RF_SELECT\n', 'CALL RF_SELECT\n        CALL R_DUSTART\n')
     adapt('JR C,RF_DONE\n', 'JR C,RF_DONE\n        CALL R_SEEN\n        JP C,RF_STEP\n')
     adapt('JP NZ,BC_REXISTS', 'JP NZ,R_COLLISION')
-    adapt('RF_RENAME:\n', 'RF_RENAME:\n        CALL R_BEFORE\n        JP C,RF_NEXT\n')
+    adapt('RF_RENAME:\n', 'RF_RENAME:\n        CALL R_BEFORE\n        JP C,RF_NEXT\nR_MUTATE:\n        CALL R_DRIVEWR\n        JP C,R_FAILURE\n')
     adapt('JP Z,RF_FAILED\n        JP RF_NEXT',
-          'JP Z,RF_FAILED\n        CALL R_SUCCESS\n        JP RF_NEXT')
+          'JP Z,R_FAILURE\n        CALL R_SUCCESS\n        JP RF_NEXT')
+    adapt('JP NZ,RF_READONLY', 'JP NZ,R_FAILURE')
+    adapt('JP C,RF_READONLY', 'JP C,R_FAILURE')
     code += resident
     era = (ROOT / 'src/cpx/era-resident.inc').read_text(encoding='ascii')
     code += era[era.index('RE_CAPTURE:'):era.index('RE_FAILED:')]

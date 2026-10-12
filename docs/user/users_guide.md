@@ -1261,13 +1261,18 @@ suppresses every rename; `/N` also suppresses writes without requiring `/C`.
 `/N`; `/DRY /QQ` is silent. The last `/Y` or `/N`, and the last `/Q` or `/QQ`, wins.
 Use `:REN` to request the transient explicitly.
 
-Protection override (`/P`) and operational failure recovery remain pending.
+Protection override (`/P`) remains pending.
 RO/SYS files are skipped. Interactive collisions now offer `N/S/A/?`: supply a
 new literal name, skip the file, abort the remainder, or display help. Invalid
 replacement names reprompt; blank returns to the collision menu. Backspace/DEL
 edits, Ctrl-U clears the response, and Ctrl-C aborts the remainder. Earlier
-renames remain in effect. Existing files are never overwritten. Operational
-failures currently stop processing.
+renames remain in effect. Existing files are never overwritten.
+
+Operational failures offer `R/S/A/?`: retry the current rename, skip that file,
+abort the remainder, or display inline help. Retry checks the target again and
+does not repeat an already answered `/C` confirmation. `/Y` and `/QQ` count
+failures and continue without prompting. Successful retries count as renamed;
+unrecovered failures count as FAILED in the completion summary.
 
 REN changes filenames in place. It never moves a file to another drive or user
 area. The two planned forms are equivalent:
