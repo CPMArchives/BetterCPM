@@ -32,6 +32,24 @@ A warm boot returns control to the operating system without performing a complet
 
 Normal operation begins at the command prompt.
 
+##### 1.2.1 Terminal monitor (planned for 1.0)
+
+The accepted 1.0 design provides a loadable terminal monitor, sometimes called
+the TCAP RSX. Implementation is pending. The Model 4 monitor will provide
+Montezuma Micro-style ADM-3A behavior; the general terminal target is VT52.
+Full-screen programs must be configured for the terminal personality supplied
+by the monitor and use the supported console interfaces.
+
+The monitor can be loaded by a startup SUBMIT script using the saved cold-start
+command, such as `SUBMIT STARTUP`. Warm boot keeps the monitor loaded and does
+not rerun the startup script. Provider filenames and installation instructions
+will be supplied when implementation is qualified.
+
+Without the monitor, the basic console remains available for commands and text
+output, but does not provide complete terminal emulation. Loading the monitor
+reduces memory available to programs. Unloading it releases that memory; with
+all RSXs unloaded, the system returns to its 53K core TPA baseline.
+
 #### 1.3 The Command Environment
 
 BetterCP/M is a command-line operating system. The user interacts with and controls the operating system by typing commands at the command prompt.

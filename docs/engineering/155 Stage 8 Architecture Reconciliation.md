@@ -87,6 +87,13 @@ RomWBW/HBIOS port remains a 1.1 or 1.2 candidate. General bank-aware RomWBW
 architecture remains 2.0 work. The final 1.0 utility and disk inventory remains
 a later 1.0 decision point, not deferred post-1.0 scope.
 
+Subsequent decision, 2026-10-12: the bounded
+[terminal-monitor RSX](../architecture/31%20Terminal%20Monitor%20RSX.md) is accepted
+for 1.0, with implementation pending. It uses BIOS hooks and the existing
+cold-start SUBMIT mechanism. General terminal-capability discovery, formats and
+configuration remain deferred; this is a specific exception to the earlier
+terminal-work boundary, not adoption of the broader redesign.
+
 ## Implementation inventory
 
 The implementation program remains responsible for the cold HISTORY reset,

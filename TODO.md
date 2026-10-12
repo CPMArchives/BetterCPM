@@ -682,6 +682,13 @@ reconciliation gate precede the corresponding implementation program.
   turning the bounded RomWBW 1.1/1.2 port into an implicit redesign.
 - [ ] Replace provisional Model 4-only terminal operations with a portable
   terminal-capability interface while retaining `CLR` behavior.
+  Preserve the [post-1.0 terminal architecture discussion outline](docs/engineering/POST-1.0-TERMINAL-ARCHITECTURE-OUTLINE.md)
+  as an unfrozen research agenda: personality/backend separation, transparent
+  legacy console support, optional native screen API, input/replies and lifecycle.
+- [ ] Implement the accepted [VIEW.COM specification](docs/engineering/POST-1.0-VIEW-SPECIFICATION.md)
+  after 1.0, against the terminal/screen architecture available then. VIEW is a
+  read-only interactive text/hex viewer with Find and decompression, assigned
+  to the Utilities Disk and excluded from the BetterCP/M 1.0 distribution.
 - [ ] Give `$SYS` files enhanced system-wide visibility across user areas only
   after defining isolation, lookup and duplicate-result behavior.
 - [ ] Target a bounded, single-bank RomWBW/HBIOS port for the first suitable

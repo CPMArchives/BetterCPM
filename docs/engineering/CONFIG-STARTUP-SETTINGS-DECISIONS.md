@@ -9,6 +9,11 @@ terminal-profile configuration are later work and do not alter the fixed
 192-byte 1.0 PDS. The saved record, CONFIG controls and once-only CCP dispatch
 and Ctrl-C cold-boot suppression gesture are implemented.
 
+On 2026-10-12, the bounded [terminal-monitor RSX design](../architecture/31%20Terminal%20Monitor%20RSX.md)
+was accepted for 1.0. Its startup uses this existing saved-command mechanism
+and a SUBMIT script; monitor implementation is pending. This does not add a
+CONFIG terminal-profile panel, change the PDS or reopen general TCAP configuration.
+
 ## Drive capacity and persistent RAM
 
 Support the A–P logical namespace, including gaps. Inventory every slot and
