@@ -13,13 +13,38 @@ SOURCE = ROOT / "src/utilities/ren.mac"
 BUILD = ROOT / "build/utilities"
 
 
+def expanded_source():
+    from utility_versions import expand_versions
+    common = ROOT / 'src/utilities/common'
+    code = 'DU_MAP: DS 64\nDU_WORK: DS 12\n'
+    code += ''.join((common / n).read_text(encoding='ascii') + '\n'
+                    for n in ('duselect.inc', 'filespec.inc', 'operandqual.inc'))
+    attr = (common / 'attrselect.inc').read_text(encoding='ascii')
+    code += attr[:attr.index('; Destination modification list:')]
+    code += (common / 'rcpselect.inc').read_text(encoding='ascii')
+    resident = (ROOT / 'src/cpx/ren-select.inc').read_text(encoding='ascii')
+    # Only the mutation is suppressed; dry run still validates and checks targets.
+    resident = resident.replace('RF_RENAME:\n', 'RF_RENAME:\n        LD A,(R_DRY)\n        OR A\n        JP NZ,RF_NEXT\n')
+    code += resident
+    era = (ROOT / 'src/cpx/era-resident.inc').read_text(encoding='ascii')
+    code += era[era.index('RE_CAPTURE:'):era.index('RE_FAILED:')]
+    code += era[era.index('RE_DVALID:'):]
+    directory = (ROOT / 'src/cpx/dir-select.inc').read_text(encoding='ascii')
+    code += directory[directory.index('RD_FILTER:'):directory.index('RD_PRINTUSER:')]
+    rcp = (ROOT / 'src/cpx/rcp.mac').read_text(encoding='ascii')
+    start = rcp.index('BC_PFCB:')
+    code += rcp[start:rcp.index('; ================================================================================', start)]
+    code += rcp[rcp.index('BC_WCMP:'):rcp.index('BC_CSELS:')]
+    return expand_versions(SOURCE.read_text(encoding='ascii').replace('; @ren-selector@', code))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--assembler", type=Path,
                         default=Path("/Users/nathanael/bin/z80asm"))
     args = parser.parse_args()
     BUILD.mkdir(parents=True, exist_ok=True)
-    text = SOURCE.read_text(encoding="ascii")
+    text = expanded_source()
     text = text.replace("        CSEG\n", "        ASEG\n")
     text = text.replace("        .PHASE  0103H\n", "        ORG     0103H\n")
     text = text.replace("        .DEPHASE\n", "")
