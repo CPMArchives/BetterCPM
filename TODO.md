@@ -674,6 +674,12 @@ reconciliation gate precede the corresponding implementation program.
   released architecture during the review. Include the fixed 1 KiB CONFIG
   control-overlay limit and any local compaction or caller-validation choices
   made to preserve it as concrete evidence.
+- [ ] Evaluate [reclaimable core/RSX code, broader disk overlays and the purpose
+  of runtime CPX modularity](docs/engineering/POST-1.0-RECLAIMABLE-CODE-AND-OVERLAYS.md)
+  during the architectural retrospective. Compare resident-service/CPX splits,
+  runtime overlay windows and monolithic or build-assembled CCPs; measure net
+  TPA savings, reload costs, state/recovery obligations and floppy versus fast
+  storage tradeoffs before selecting a design.
 - [ ] Before full 2.0 design, use the 1.0 retrospective and experience from
   bounded later-1.x ports to reassess memory placement, workspace lifetime and
   overlay organization, ROM execution, PDS allocation, banking, firmware and

@@ -152,3 +152,12 @@ A later proposal may advance only after it identifies concrete user workflows,
 audits the then-current carriers and managers, resolves the command-name and
 profile-format questions, and demonstrates that the common layer preserves the
 distinct RSX and CPX lifecycle guarantees.
+
+## Related lifetime and packaging review
+
+The [reclaimable-code and overlay research agenda](POST-1.0-RECLAIMABLE-CODE-AND-OVERLAYS.md)
+asks whether some resident services should be split from CPX management front
+ends, whether overlays should be used more broadly, and whether standard commands
+belong in runtime CPXs or a monolithic/build-assembled CCP. It evaluates the
+underlying placement choices; the generic management interface proposed here
+must not presume that every current packaging choice will survive that review.
