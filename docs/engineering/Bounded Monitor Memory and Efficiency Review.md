@@ -404,3 +404,13 @@ complete built-in monitor fits at 53K**. The selected loaded monitor RSX may red
 TPA as other RSXs do; unloading the last RSX must restore the core baseline.
 Feature cuts, reductions to the unloaded core baseline, a
 new general RSX architecture and a 54K claim remain unapproved.
+
+
+## Follow-through: single-entry monitor binding
+
+The [hook and lifecycle contract](Monitor%20RSX%20Hook%20and%20Lifecycle%20Contract.md)
+selects a single multiplexed entry and prepared rebind. Isolated assembly adds
+64 BIOS bytes; scheduler detach fits its 496-byte region and publisher rebind
+fits existing padding. Dispatch tests pass with a fake provider. Metadata
+selection, real transaction integration, warm-return reset and packed/ROM
+qualification remain pending; these results do not install a monitor.
