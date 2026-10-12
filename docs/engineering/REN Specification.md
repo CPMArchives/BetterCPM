@@ -12,27 +12,27 @@ Uses the shared [DU syntax](208%20Extended%20DU%20Syntax.md),
 This contract supersedes earlier target assumptions where they conflict;
 implementation and qualification must follow separately.
 
-## Implementation boundaries to settle
+## Implementation policies and remaining boundaries
 
-- Resident REN now accepts both operand orders, skips RO/SYS files and handles
-  collisions incrementally. `/Y` remains transient-only.
-- Define collision policy under `/Y` and `/QQ`: neither can overwrite an
-  existing target, and `/QQ` cannot silently wait for input. The supplied
-  contract does not yet choose the unattended collision action.
-- Resolve `/QQ /N` precedence and the one-time `/QQ` notice under `/DRY`.
-  Section 20 allows no output for a super-quiet dry run, whereas section 19
-  normally requires the notice when explicit `/Y` is absent. Keep `/DRY`'s
-  no-write guarantee regardless of these reporting decisions.
-- Define `/N` without `/C`, invalid or blank new-name responses, cancellation,
-  and whether interactive new-name input accepts templates or only literal
-  names. These should be settled before implementing the prompt flows.
-- Incremental execution still needs safe source enumeration: avoid selecting
-  newly renamed entries twice, losing unprocessed sources, or changing behavior
-  when generated targets overlap selected sources. No overwrite or cycle
-  solving is authorized by this specification.
-- Define switch placement/repetition and syntax validation before mutation.
-  Incremental collision handling does not authorize partial writes from an
-  invalid invocation. Protection override must preserve original attributes.
+- Switches are separate whitespace-delimited tokens in any position. All
+  options and operand syntax are validated before mutation. Repetition is
+  permitted; the last `/Y` or `/N` wins, and the last `/Q` or `/QQ` wins.
+- `/N` suppresses writes even without `/C`. `/DRY` suppresses writes regardless
+  of confirmation policy or switch order.
+- `/QQ` never prompts. It supplies assume-Yes only when no explicit confirmation
+  policy exists; it preserves explicit `/N`. The one-time notice is omitted
+  when explicit `/Y` occurs anywhere, or when `/DRY` is active.
+- Unattended `/Y` and `/QQ` skip existing targets without overwrite. `/N` and
+  `/DRY` also report/skip collisions without prompting.
+- Remaining prompt work: literal replacement-name validation, blank return to
+  the collision menu, Ctrl-C cancellation, and retry/skip/abort failure handling.
+- Source enumeration uses lexical progression and idempotent mapping, preventing
+  repeated renaming of newly generated matching entries. Targets overlapping
+  still-existing selected sources remain collisions; no cycle solving or
+  overwrite is authorized.
+- `/P` remains pending and must preserve original attributes when overriding
+  protection. Native build parity and physical platform qualification remain
+  pending.
 
 ## 1. Purpose
 
@@ -1034,3 +1034,23 @@ immutability, syntax rejection, caller-DU restoration and `/VER`. The native
 build now expands the same source as the cross build, but parity could not be
 run here because the configured cpmsim executable is unavailable. Physical
 platform and full workflow qualification remain pending.
+
+## Confirmation and reporting increment — 2026-10-12
+
+REN Build 002 adds `/C`, `/Y`, `/N`, `/DRY`, `/Q` and `/QQ` in any token position,
+with complete option validation before execution. Normal mappings and dry-run
+previews are grouped by source DU. Successful rename and skipped-file counts
+are reported with zero categories omitted; `/Q` suppresses successful mappings,
+and `/QQ` suppresses routine diagnostics and summaries. RO/SYS and self-mapping
+skips are reported. `/C` offers a simple Y/N prompt; Ctrl-C exits immediately
+after restoring the caller DU. `/Y` and `/QQ` skip existing targets and continue.
+Interactive collision/new-name handling, recoverable failure menus, failed-file
+accounting and `/P` are not yet implemented; an interactive collision or an
+operational failure still stops the core.
+
+Cross assembly succeeds at 4,285 bytes. Core and workflow execution tests pass,
+including option ordering/repetition, all dry-run combinations, invalid trailing
+options before mutation, protected files, multi-DU grouping, unattended collision
+skips, quiet output, notice policy, confirmation and Ctrl-C. The tests use an
+assembled Z80 image with a directory/BDOS fixture; they do not establish native
+assembler parity or physical disk behavior.

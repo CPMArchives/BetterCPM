@@ -31,50 +31,27 @@ R_CASEEND:
         POP BC
         POP HL
         CALL RE_CAPTURE
-        CALL RF_TRIM
-        XOR A
-        LD (R_DRY),A
-        LD A,B
-        CP 4
-        JR C,R_RUN
-        LD DE,R_DRYWORD
+        CALL R_OPTIONS
+        JP C,BC_DBAD
+        LD A,(R_QUIET)
+        CP 2
+        JR NZ,R_RUN
+        LD A,(R_DRY)
+        OR A
+        JR NZ,R_RUN
+        LD A,(R_YEXPLICIT)
+        OR A
+        JR NZ,R_RUN
+        LD DE,R_QNOTICE
         PUSH HL
         PUSH BC
-        LD C,4
-R_DCHECK:
-        LD A,(DE)
-        CP (HL)
-        JR NZ,R_NOTDRY
-        INC DE
-        INC HL
-        DEC C
-        JR NZ,R_DCHECK
-        LD A,B
-        SUB 4
-        LD B,A
-        OR A
-        JR Z,R_DRYSET
-        LD A,(HL)
-        CP ' '
-        JR NZ,R_NOTDRY
-R_DRYSET:
-        POP DE
-        POP DE
-        LD A,1
-        LD (R_DRY),A
-        CALL RF_TRIM
-        JR R_RUN
-R_NOTDRY:
+        LD C,9
+        CALL BDOS
         POP BC
         POP HL
 R_RUN:
         CALL BC_REN
-        LD A,(R_DRY)
-        OR A
-        JR Z,R_DONE
-        LD DE,R_DRYMSG
-        CALL BC_PRINT
-R_DONE:
+        CALL R_SUMMARY
         JP 0
 BC_DBAD:
         LD DE,R_BADMSG
@@ -92,6 +69,9 @@ BC_DURST:
         LD C,32
         JP BDOS
 BC_PRINT:
+        LD A,(R_QUIET)
+        CP 2
+        RET Z
         LD C,9
         JP BDOS
 ; @ren-selector@
@@ -107,9 +87,7 @@ BC_REXMSG: DB 13,10,'FILE EXISTS',13,10,'$'
 BC_NOFILE: DB 13,10,'NO FILE',13,10,'$'
 R_BADMSG: DB 13,10,'Invalid filespec.',13,10,'$'
 R_DUMSG: DB 13,10,'Invalid drive.',13,10,'$'
-R_DRYWORD: DB '/DRY'
-R_DRY: DB 0
-R_DRYMSG: DB 'Dry run only: no files were renamed.',13,10,'$'
+; @ren-workflow@
         DS 128
 R_STKTOP:
         .DEPHASE

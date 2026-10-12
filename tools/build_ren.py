@@ -23,8 +23,18 @@ def expanded_source():
     code += attr[:attr.index('; Destination modification list:')]
     code += (common / 'rcpselect.inc').read_text(encoding='ascii')
     resident = (ROOT / 'src/cpx/ren-select.inc').read_text(encoding='ascii')
-    # Only the mutation is suppressed; dry run still validates and checks targets.
-    resident = resident.replace('RF_RENAME:\n', 'RF_RENAME:\n        LD A,(R_DRY)\n        OR A\n        JP NZ,RF_NEXT\n')
+    def adapt(old, new):
+        nonlocal resident
+        if old not in resident:
+            raise ValueError('resident REN adapter anchor changed: ' + old)
+        resident = resident.replace(old, new, 1)
+    adapt('JR NZ,RF_NEXT\n', 'JR Z,RFT_UNPROTECTED\n        CALL R_PROTECTED\n        JP RF_NEXT\nRFT_UNPROTECTED:\n')
+    adapt('JR Z,RF_NEXT                 ; same-name mapping is a no-op',
+          'JR NZ,RFT_CHANGED\n        CALL R_SAME\n        JP RF_NEXT\nRFT_CHANGED:')
+    adapt('JP NZ,BC_REXISTS', 'JP NZ,R_COLLISION')
+    adapt('RF_RENAME:\n', 'RF_RENAME:\n        CALL R_BEFORE\n        JP C,RF_NEXT\n')
+    adapt('JP Z,RF_FAILED\n        JP RF_NEXT',
+          'JP Z,RF_FAILED\n        CALL R_SUCCESS\n        JP RF_NEXT')
     code += resident
     era = (ROOT / 'src/cpx/era-resident.inc').read_text(encoding='ascii')
     code += era[era.index('RE_CAPTURE:'):era.index('RE_FAILED:')]
@@ -35,7 +45,9 @@ def expanded_source():
     start = rcp.index('BC_PFCB:')
     code += rcp[start:rcp.index('; ================================================================================', start)]
     code += rcp[rcp.index('BC_WCMP:'):rcp.index('BC_CSELS:')]
-    return expand_versions(SOURCE.read_text(encoding='ascii').replace('; @ren-selector@', code))
+    text = SOURCE.read_text(encoding='ascii').replace('; @ren-selector@', code)
+    text = text.replace('; @ren-workflow@', (common / 'renflow.inc').read_text(encoding='ascii'))
+    return expand_versions(text)
 
 
 def main() -> None:

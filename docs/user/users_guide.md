@@ -1252,12 +1252,18 @@ renames are not rolled back.
 
 The following is the **planned REN interface**, recorded in the
 [REN engineering specification](../engineering/REN%20Specification.md).
-Implementation is in progress. The transient core now supports both operand
-orders, shared multi-DU and attribute selection, positional templates, and
-standalone `/VER`. A leading `/DRY` suppresses renames and prints a no-write
-footer; proposed-mapping display and the richer options below are still pending.
-Use `:REN` to request the transient program explicitly. Existing targets stop
-this initial implementation; RO/SYS files are skipped.
+Implementation is in progress. The transient supports both operand orders,
+shared multi-DU and attribute selection, positional templates, `/C`, `/Y`, `/N`,
+`/DRY`, `/Q`, `/QQ` and standalone `/VER`. Switches may appear as separate tokens
+before, between or after the operands. `/DRY` lists proposed mappings and
+suppresses every rename; `/N` also suppresses writes without requiring `/C`.
+`/Y` and `/QQ` skip existing targets and continue. `/QQ` preserves an explicit
+`/N`; `/DRY /QQ` is silent. The last `/Y` or `/N`, and the last `/Q` or `/QQ`, wins.
+Use `:REN` to request the transient explicitly.
+
+Protection override (`/P`), interactive collision/new-name handling and failure
+recovery remain pending. RO/SYS files are skipped; an interactive collision or
+operational failure currently stops processing.
 
 REN changes filenames in place. It never moves a file to another drive or user
 area. The two planned forms are equivalent:

@@ -3,7 +3,8 @@
 from pathlib import Path
 from test_bios import Z80, SENTINEL
 ROOT=Path(__file__).resolve().parents[1]
-def run(tail, files):
+def run(tail, files, responses=''):
+ responses=iter(responses)
  c=Z80(b''); image=(ROOT/'build/utilities/REN.COM').read_bytes()
  c.mem[0x100:0x100+len(image)]=image;c.mem[0:3]=bytes((0xC3,SENTINEL&255,SENTINEL>>8))
  c.mem[5:8]=bytes((0xDB,254,0xC9))
@@ -12,6 +13,10 @@ def run(tail, files):
  def io(port):
   assert port&255==254
   f=c.c
+  if f==2:output.append(chr(c.e));return c.e
+  if f==1:
+   ch=next(responses,None);assert ch is not None,'unexpected prompt'
+   output.append(ch);return ord(ch)
   if f==25:return state['drive']
   if f==32:
    if c.e!=255:state['user']=c.e
@@ -65,6 +70,6 @@ def main():
  changes,out=run('B1:*.* X*.*',{(1,1,a):0,(1,1,b):0})
  assert len(changes)==2
  changes,out=run('/VER',{})
- assert not changes and 'BetterCP/M REN 1.0 (Build 001)' in out
+ assert not changes and 'BetterCP/M REN 1.0 (Build 002)' in out
  print('PASS: transient REN operand orders, multi-DU, predicates, attributes, protection, dry run, invalid syntax, caller DU and version')
 if __name__=='__main__':main()
