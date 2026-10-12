@@ -281,6 +281,9 @@ class Z80:
             elif op == 0xAC:            # XOR H
                 self.a ^= self.h
                 self.z, self.carry = self.a == 0, False
+            elif op == 0xAE:            # XOR (HL)
+                self.a ^= self.mem[self.hl]
+                self.z, self.carry = self.a == 0, False
             elif op == 0xEE:            # XOR n
                 self.a ^= self.mem[self.pc]
                 self.pc += 1

@@ -69,6 +69,11 @@ The production BetterCP/M private BDOS namespace occupies Functions 176–196, w
 
 Several larger extensions are deliberately outside the 1.0 boundary. These include named directories and PATH, a generalized dynamic PDS, filesystem timestamps, terminal-capability redesign, general bank-aware operation, and additional qualified platforms. They remain possible post-1.0 work rather than hidden prerequisites for the first release.
 
+A bounded [terminal-monitor RSX](docs/architecture/31%20Terminal%20Monitor%20RSX.md)
+was accepted for 1.0 on 2026-10-12; implementation is pending. It supplies a
+loadable console personality through BIOS hooks and the existing startup-script
+mechanism. The broader terminal-capability redesign remains post-1.0 work.
+
 The authoritative scope and implementation sequence are defined by the [`BetterCP/M 1.0 Roadmap`](docs/releases/1.0-ROADMAP.md) and [`1.0 Implementation Contracts`](docs/releases/1.0-IMPLEMENTATION-CONTRACTS.md).
 
 ## Building BetterCP/M

@@ -96,6 +96,13 @@ the console is implemented by a serial terminal, memory-mapped
 display, particular keyboard interface, emulator console, or any
 other specific device.
 
+Accepted 1.0 refinement (2026-10-12): a loadable terminal-monitor RSX may
+provide the console personality through compact BIOS hooks, with the basic
+console retained as fallback.  The general target is VT52; the Model 4
+target is MM-style ADM-3A.  The scope, memory policy and required lifecycle
+qualification are defined in "31 Terminal Monitor RSX.md".  Implementation
+is pending; this does not establish a general TCAP discovery interface.
+
 
 8.4 STORAGE DEVICES
 -------------------
