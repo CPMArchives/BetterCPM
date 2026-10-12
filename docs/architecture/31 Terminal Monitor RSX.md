@@ -80,6 +80,10 @@ layout without reducing that baseline. The audit measured hook prototypes,
 not a complete installed-provider cost. The measured BIOS/BDOS savings remain
 qualification candidates, not permission to adopt unverified production changes.
 
+The implementation design and isolated feasibility probes are recorded in
+[Monitor RSX Hook and Lifecycle Contract](../engineering/Monitor%20RSX%20Hook%20and%20Lifecycle%20Contract.md).
+The production integration remains pending.
+
 ## Implementation acceptance
 
 Before declaring this complete, qualify both platforms for:
@@ -95,3 +99,7 @@ clear-screen byte is 1Ch, whereas the MM reference uses it for insert-line.
 Update internal callers or define the profile boundary without silently breaking
 either contract. The VT52 audit sample implements only a screen-control subset;
 its size and parser checks do not establish complete terminal compatibility.
+
+## Provider behavior
+
+[Monitor Provider Behavioral Requirements](../engineering/Monitor%20Provider%20Behavioral%20Requirements.md) defines the MM-style ADM-3A and VT52 personalities, input/reply queue semantics and qualification cases.
