@@ -2,6 +2,10 @@
 
 Date: 2026-09-03
 
+This is the historical stock compatibility baseline. The enhanced 1.0 target
+is specified in [TYPE Specification](TYPE%20Specification.md); its new behavior
+must be implemented and qualified separately.
+
 ## Compatibility baseline
 
 BetterCP/M supplies TYPE through the default `BASIC.CPX` and as an ordinary

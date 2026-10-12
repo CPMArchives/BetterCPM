@@ -1352,37 +1352,121 @@ renames. All renames stay within each source DU. The richer
 confirmation, preview, override and reporting options above belong to REN.COM.
 
 
-#### 4.4 TYPE — Display a File
+#### 4.4 TYPE — Display Text Files
 
-Displays the contents of a text file on the console.
+TYPE displays text on the console. Resident TYPE is the small core command;
+TYPE.COM provides the fuller paging facility. The enhanced interface below is
+**the proposed 1.0 target, not a statement that it is implemented today**.
 
-`TYPE` is available as both a resident command and a transient program. The
-resident version supports the standard CP/M 2.2 `TYPE` syntax:
+Both forms use the shared filespec, DU selector and attribute predicates:
 
-    TYPE filespec
-    TYPE DU:filespec
+```text
+TYPE README.TXT
+TYPE B3:README.TXT
+TYPE B[-]:*.TXT
+TYPE [A0,B3,C[4-6]]:*.DOC
+TYPE B[-]:*.DOC[$ARC]
+```
 
-Examples:
+Text ends at the raw CP/M EOF byte, 1Ah, or the end of the file. TYPE does not
+modify files. It does not decompress data or offer binary inspection; use a
+suitable viewer or DUMP for those tasks.
 
-    A>TYPE README.TXT
-    A>TYPE PROGRAM.ASM
-    A>TYPE B:NOTES.TXT
-    A>TYPE B3:README.TXT
+**Resident TYPE.** Without `/P`, stream the selected files continuously, with a
+simple separator between files. `/P` provides forward paging; Space and `.`
+advance one page. Backward and file navigation are transient features. The
+resident abort mechanism remains subject to implementation qualification.
 
-`TYPE` sends the contents of the specified file to the console. The command is
-intended primarily for text files; displaying a binary file can produce
-unreadable output or terminal control characters.
+**TYPE.COM.** Force transient execution with `:TYPE` or `.TYPE`. Without `/P`,
+stream files without normal paging pauses. A multi-file selection prints a
+banner such as `---------- B3:README.TXT ----------` before each file. A single
+exact file may omit the banner.
 
-The BetterCP/M resident `TYPE` also supports paged display, allowing long files
-to be viewed one screen at a time.
+| Option | Proposed effect |
+| --- | --- |
+| `/P` | Forward/backward paging and file navigation |
+| `/7` | Strip the high bit from displayed bytes; test raw 1Ah for EOF first |
+| `/T` | Expand tabs to fixed 8-column stops |
+| `/CTL` | Show controls as caret notation; overrides `/T` for tabs |
+| `/VER` | Print version/build information and exit |
 
-In addition to the above, the transient `TYPE.COM` provides extended display
-functions.
+For example:
 
-##### Transient TYPE Syntax
+```text
+:TYPE B[-]:*.DOC /P
+:TYPE README.TXT /7
+:TYPE README.TXT /T
+:TYPE README.TXT /CTL
+```
 
-[TBD — final `TYPE.COM` syntax and options will be added when the BetterCP/M
-1.0 transient TYPE interface is finalized.]
+In transient paged mode:
+
+| Key | Action |
+| --- | --- |
+| Ctrl-R or `,` | Previous page |
+| Ctrl-C, `.` or Space | Next page |
+| `<` | Beginning of current file; if already there, beginning of previous file |
+| `>` | Beginning of next file |
+| Ctrl-Q | Quit |
+
+Ctrl-C means next page only while TYPE.COM waits for a paging command. During
+ordinary output, normal console/BDOS Ctrl-C handling still applies.
+
+Esc does not quit TYPE.COM. Movement beyond the first or last selected file
+stays at the nearest valid position. A page may contain the end of one file,
+the next banner and the beginning of the next file. At the end of the final file, the final page remains displayed until Ctrl-Q.
+Next-page and next-file commands then do nothing; backward navigation remains
+available. Backward page navigation is not limited by the internal history
+cache: older positions are reconstructed when needed.
+
+The current file is the file at the top-of-page anchor, even if the page later
+crosses into another file. A banner at the top belongs to the file it introduces.
+An empty file is valid: multi-file display prints its banner and continues,
+without an `[EMPTY]` marker. Empty files remain available to file navigation but
+do not create a fictitious content page.
+
+Transient pages count display rows, including screen-edge spillover, rather
+than source lines. TYPE.COM uses the configured console dimensions and reserves
+a prompt row: normally 23 file-display rows on a 24-row console. Tabs advance
+to 8-column stops for page accounting even without `/T`. Resident accounting
+may be simpler to keep its implementation small.
+
+With `/CTL`, TAB appears as `^I` rather than expanding, and form feed
+appears as `^L` without clearing the screen. CR/LF is shown as `^M^J` while
+retaining line structure. With `/CTL`, bare CR or LF also ends a display line;
+a CR/LF pair produces one line break. DEL appears as `^?`, and other controls
+use conventional caret notation without executing their terminal actions.
+Raw 1Ah remains EOF and is not displayed. With `/7`, raw 9Ah becomes
+display data 1Ah and does not end text. `/7 /CTL` shows it as `^Z`; without
+`/CTL`, it passes through the ordinary display path. Without
+`/T`, tabs pass through to the console. Long lines follow the console's normal
+screen-edge behavior; there is no `/W`, `/C=`, or horizontal scrolling.
+
+Open/read failures report the affected file and continue with the next file,
+without an error-response prompt. For example:
+
+```text
+TYPE B3:FOO.TXT - Cannot open.
+TYPE B3:FOO.TXT - Read error.
+```
+
+Fatal failures terminate the command. No `/B` switch is needed; unpaged display
+and its error handling are already suitable for unattended use. `/P` explicitly
+requests interactive navigation.
+
+TYPE.COM assumes files stay stable during display. It does not snapshot their
+contents or promise to detect changes. Revisiting a page can display newer data;
+open/read failures during reconstruction follow the same skip policy.
+
+The target `/VER` banners follow the common version convention:
+
+```text
+BetterCP/M TYPE 1.0 (Resident, Build nnn)
+BetterCP/M TYPE 1.0 (Build nnn)
+```
+
+Searching, line numbering, line scrolling, runtime display changes, decompression,
+hex display and editing belong to VIEW or other utilities, rather than TYPE.
 
 #### 4.5 USER — Select User Area
 
