@@ -31,6 +31,8 @@ def expanded_source():
     adapt('JR NZ,RF_NEXT\n', 'JR Z,RFT_UNPROTECTED\n        CALL R_PROTECTED\n        JP RF_NEXT\nRFT_UNPROTECTED:\n')
     adapt('JR Z,RF_NEXT                 ; same-name mapping is a no-op',
           'JR NZ,RFT_CHANGED\n        CALL R_SAME\n        JP RF_NEXT\nRFT_CHANGED:')
+    adapt('CALL RF_SELECT\n', 'CALL RF_SELECT\n        CALL R_DUSTART\n')
+    adapt('JR C,RF_DONE\n', 'JR C,RF_DONE\n        CALL R_SEEN\n        JP C,RF_STEP\n')
     adapt('JP NZ,BC_REXISTS', 'JP NZ,R_COLLISION')
     adapt('RF_RENAME:\n', 'RF_RENAME:\n        CALL R_BEFORE\n        JP C,RF_NEXT\n')
     adapt('JP Z,RF_FAILED\n        JP RF_NEXT',

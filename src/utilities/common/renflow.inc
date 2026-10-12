@@ -184,9 +184,15 @@ R_PREVIEW:
         SCF
         RET
 R_ALLOW:
+        CALL R_ROOM
         OR A
         RET
 R_SUCCESS:
+        LD HL,RF_NAME
+        LD DE,(R_NEXT)
+        LD BC,11
+        LDIR
+        LD (R_NEXT),DE
         LD HL,(R_RENAMED)
         INC HL
         LD (R_RENAMED),HL
@@ -230,8 +236,7 @@ R_COLLISION:
         LD A,(R_QUIET)
         CP 2
         JR Z,R_COLSKIP
-        LD DE,BC_REXMSG
-        JP BC_RPRINT
+        JP R_COLPROM
 R_COLSKIP:
         LD DE,R_EXISTMSG
         CALL R_SKIP
@@ -412,3 +417,190 @@ R_CRLF: DB 13,10,'$'
 R_SEPARATOR: DB ', ','$'
 R_RNMSG: DB ' FILES RENAMED','$'
 R_SKMSG: DB ' SKIPPED','$'
+
+; Collision help and literal replacement name. No overwrite or cycle solving.
+R_COLPROM:
+        CALL R_MAPPING
+        LD DE,R_COLMSG
+        CALL BC_PRINT
+        LD C,1
+        CALL BDOS
+        CP 3
+        JP Z,R_ABORT
+        CP '?'
+        JR Z,R_HELPIT
+        AND 5FH
+        CP 'A'
+        JP Z,R_ABORT
+        CP 'S'
+        JP Z,R_COLSKIP
+        CP 'N'
+        JR Z,R_NEWNAME
+        JP R_COLPROM
+R_HELPIT:
+        CALL R_NEWLINE
+        LD DE,R_COLHELP
+        CALL BC_PRINT
+        JR R_COLPROM
+R_NEWNAME:
+        CALL R_NEWLINE
+R_NEWPROM:
+        LD DE,R_NEWMSG
+        CALL BC_PRINT
+        XOR A
+        LD (R_ILEN),A
+        LD (R_IFULL),A
+R_INCHAR:
+        LD C,1
+        CALL BDOS
+        CP 3
+        JP Z,R_ABORT
+        CP 13
+        JR Z,R_INEND
+        CP 8
+        JR Z,R_BACK
+        CP 127
+        JR Z,R_BACK
+        CP 21
+        JR Z,R_RELINE
+        LD E,A
+        LD A,(R_ILEN)
+        CP 31
+        JR NC,R_OVER
+        LD L,A
+        LD H,0
+        LD BC,R_IBUF
+        ADD HL,BC
+        LD A,E
+        CP 'a'
+        JR C,R_ISTORE
+        CP 'z'+1
+        JR NC,R_ISTORE
+        AND 5FH
+R_ISTORE:
+        LD (HL),A
+        LD A,(R_ILEN)
+        INC A
+        LD (R_ILEN),A
+        JR R_INCHAR
+R_OVER:
+        LD A,1
+        LD (R_IFULL),A
+        JR R_INCHAR
+R_BACK:
+        LD A,(R_ILEN)
+        OR A
+        JR Z,R_INCHAR
+        DEC A
+        LD (R_ILEN),A
+        JR R_INCHAR
+R_RELINE:
+        XOR A
+        LD (R_ILEN),A
+        LD (R_IFULL),A
+        JR R_INCHAR
+R_INEND:
+        CALL R_NEWLINE
+        LD A,(R_IFULL)
+        OR A
+        JR NZ,R_INBAD
+        LD A,(R_ILEN)
+        OR A
+        JP Z,R_COLPROM
+        LD B,A
+        LD HL,R_IBUF
+        CALL OQ_SPLIT
+        JR C,R_INBAD
+        LD A,(OQ_LEN)
+        OR A
+        JR NZ,R_INBAD
+        XOR A
+        CALL FP_VALIDATE
+        JR C,R_INBAD
+        LD HL,R_IBUF
+        LD A,(R_ILEN)
+        LD B,A
+        LD DE,R_NEWFCB
+        CALL BC_PFCB
+        LD HL,R_NEWFCB+1
+        LD DE,RF_NAME
+        LD BC,11
+        LDIR
+        JP R_CHECK
+R_INBAD:
+        LD DE,R_INVALID
+        CALL BC_PRINT
+        JP R_NEWPROM
+R_CHECK:
+        LD HL,RF_BEST
+        LD DE,RF_NAME
+        CALL BC_WCMP
+        JR NZ,R_CHECKEX
+        CALL R_SAME
+        JP RF_NEXT
+R_CHECKEX:
+        CALL RF_FCB
+        LD HL,RF_NAME
+        LD DE,RF_FILE+1
+        LD BC,11
+        LDIR
+        LD DE,RF_FILE
+        LD C,17
+        CALL BDOS
+        CP 0FFH
+        JP NZ,R_COLPROM
+        JP RF_RENAME
+; Per-DU ledger prevents arbitrary interactive targets from being selected again.
+; The resident engine's fixed-point assumption alone does not cover new names.
+R_DUSTART:
+        LD HL,R_HEAP
+        LD (R_NEXT),HL
+        LD HL,(6)
+        LD DE,256
+        OR A
+        SBC HL,DE
+        LD (R_LIMIT),HL
+        RET
+R_ROOM:
+        LD HL,(R_NEXT)
+        LD DE,11
+        ADD HL,DE
+        LD DE,(R_LIMIT)
+        OR A
+        SBC HL,DE
+        RET C
+        RET Z
+        LD DE,R_NOMEM
+        CALL BC_PRINT
+        JP R_ABORT
+R_SEEN:
+        LD HL,R_HEAP
+        LD (R_SCAN),HL
+R_SEENLP:
+        LD HL,(R_SCAN)
+        LD DE,(R_NEXT)
+        OR A
+        SBC HL,DE
+        RET Z
+        LD HL,RF_CAND
+        LD DE,(R_SCAN)
+        CALL BC_WCMP
+        SCF
+        RET Z
+        LD HL,(R_SCAN)
+        LD DE,11
+        ADD HL,DE
+        LD (R_SCAN),HL
+        JR R_SEENLP
+R_COLMSG: DB ' - File exists. N/S/A/? ', '$'
+R_COLHELP: DB 'N New name, S Skip file, A Abort remainder.',13,10,'$'
+R_NEWMSG: DB 'New name? ','$'
+R_INVALID: DB 'Invalid filename.',13,10,'$'
+R_NOMEM: DB 'Insufficient memory.',13,10,'$'
+R_ILEN: DB 0
+R_IFULL: DB 0
+R_IBUF: DS 32
+R_NEWFCB: DS 36
+R_NEXT: DW 0
+R_LIMIT: DW 0
+R_SCAN: DW 0

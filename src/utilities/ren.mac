@@ -90,5 +90,6 @@ R_DUMSG: DB 13,10,'Invalid drive.',13,10,'$'
 ; @ren-workflow@
         DS 128
 R_STKTOP:
+R_HEAP:
         .DEPHASE
         END START

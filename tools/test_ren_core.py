@@ -3,7 +3,7 @@
 from pathlib import Path
 from test_bios import Z80, SENTINEL
 ROOT=Path(__file__).resolve().parents[1]
-def run(tail, files, responses=''):
+def run(tail, files, responses='', ledger_capacity=None):
  responses=iter(responses)
  c=Z80(b''); image=(ROOT/'build/utilities/REN.COM').read_bytes()
  c.mem[0x100:0x100+len(image)]=image;c.mem[0:3]=bytes((0xC3,SENTINEL&255,SENTINEL>>8))
@@ -29,6 +29,12 @@ def run(tail, files, responses=''):
    while c.mem[p]!=36:output.append(chr(c.mem[p]));p+=1
    return 0
   if f in (17,18):
+   if ledger_capacity is not None:
+    import re
+    listing=(ROOT/'build/utilities/ren.lst').read_text()
+    def address(name):return int(re.search(r'^([0-9a-f]{4})\s+.*?\b'+name+':',listing,re.M|re.I)[1],16)
+    limit=address('R_HEAP')+11*ledger_capacity
+    p=address('R_LIMIT');c.mem[p:p+2]=limit.to_bytes(2,'little')
    if f==17:
     pat=bytes(c.mem[c.de+1:c.de+12])
     state['rows']=[(k,v) for k,v in files.items() if k[:2]==(state['drive'],state['user']) and all(a==63 or a==b for a,b in zip(pat,k[2]))]
@@ -64,12 +70,12 @@ def main():
   ('B1:*.DOC *.TXT',{(1,1,a):0,(1,1,b'FOO     TXT'):0}),
   ('B1:*.DOC *.DOC',{(1,1,a):0}),
   ('B1:*.DOC *.TXT',{(1,1,a):2})):
-  before=files.copy();changes,out=run(command,files)
+  before=files.copy();changes,out=run(command,files,'S')
   assert not changes and files==before,(command,out)
  # A renamed target still matching the source is a fixed point, never renamed again.
  changes,out=run('B1:*.* X*.*',{(1,1,a):0,(1,1,b):0})
  assert len(changes)==2
  changes,out=run('/VER',{})
- assert not changes and 'BetterCP/M REN 1.0 (Build 002)' in out
+ assert not changes and 'BetterCP/M REN 1.0 (Build 003)' in out
  print('PASS: transient REN operand orders, multi-DU, predicates, attributes, protection, dry run, invalid syntax, caller DU and version')
 if __name__=='__main__':main()
