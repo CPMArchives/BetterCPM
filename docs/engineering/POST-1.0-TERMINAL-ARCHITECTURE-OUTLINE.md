@@ -532,3 +532,21 @@ Additional questions to retain for the later discussion:
 
 These notes extend the discussion agenda. They do not choose an API, database
 format, provider ABI or post-1.0 implementation schedule.
+
+## Provider library and companion qualification utilities
+
+Roadmap addition, 2026-10-12: once the 1.0 monitor support is in place, assemble
+a library of terminal-personality (working name: TCAP) RSXs. Begin by mining
+the Z-System TCAP library for terminal definitions and research leads, retaining
+provenance and checking redistribution terms before incorporating material.
+Capability descriptions are reference inputs; they do not by themselves supply
+a complete output parser, keyboard encoder or terminal-reply implementation.
+
+Provide one companion test utility for each monitor personality. Share test
+infrastructure where practical, while preserving personality-specific expected
+behavior. Exercise cursor movement, margins, erasure, scrolling, keyboard
+sequences, terminal replies and malformed-sequence recovery, together with real
+application and rendered-screen qualification. Record each provider's historical
+target, provenance, required/optional/unsupported features and qualification
+status. This is post-1.0 library work and does not expand the two initial 1.0
+provider targets or freeze the eventual TCAP format or ABI.

@@ -1,7 +1,8 @@
 # REN / REN.COM — BetterCP/M Engineering Specification
 
-Status: resident core subset implemented on 2026-10-11; full transient REN.COM
-remains future work. The current resident behavior
+Status: resident core subset implemented on 2026-10-11; transient core selection
+and mapping increment implemented on 2026-10-12. Full transient workflow remains
+in progress. The current resident behavior
 is documented in [Resident REN Selection](Resident%20REN%20Selection.md).
 The planned user interface is in user-guide section 4.3.
 
@@ -1009,3 +1010,27 @@ n FILES RENAMED, n SKIPPED, n FAILED
 with zero-valued categories omitted.
 
 ---
+
+## Transient implementation progress — 2026-10-12
+
+REN.COM now links the shared DU/filespec/predicate library and resident REN
+selection/mapping engine at build time. Both operand orders, locationless
+templates, multi-DU source selections and predicates are supported. RO/SYS
+protection is aggregated across physical extents, attributes are preserved,
+and the caller DU is restored. Source rescanning uses lexical progression and
+idempotent positional mapping; existing destinations stop this initial core
+without overwrite or cycle solving.
+
+Standalone `/VER` identifies REN Build 001. A leading `/DRY` validates and checks
+selected mappings while suppressing every rename; this initial increment emits
+the no-write footer but does not yet list proposed mappings. Other switches and
+rich grouping, summaries, collision/new-name and failure-recovery prompts remain
+pending. This is an implementation milestone, not full REN.COM qualification.
+
+Cross assembly succeeds at 3,255 bytes. `tools/test_ren_core.py` executes the
+assembled transient with a directory/BDOS fixture and checks operand orders,
+multi-DU selection, predicates, attribute retention, protection, dry-run
+immutability, syntax rejection, caller-DU restoration and `/VER`. The native
+build now expands the same source as the cross build, but parity could not be
+run here because the configured cpmsim executable is unavailable. Physical
+platform and full workflow qualification remain pending.

@@ -1252,9 +1252,12 @@ renames are not rolled back.
 
 The following is the **planned REN interface**, recorded in the
 [REN engineering specification](../engineering/REN%20Specification.md).
-It has not yet replaced the current resident behavior described above or the
-basic transient implementation. Use `:REN` to request the transient program
-explicitly when these features become available.
+Implementation is in progress. The transient core now supports both operand
+orders, shared multi-DU and attribute selection, positional templates, and
+standalone `/VER`. A leading `/DRY` suppresses renames and prints a no-write
+footer; proposed-mapping display and the richer options below are still pending.
+Use `:REN` to request the transient program explicitly. Existing targets stop
+this initial implementation; RO/SYS files are skipped.
 
 REN changes filenames in place. It never moves a file to another drive or user
 area. The two planned forms are equivalent:

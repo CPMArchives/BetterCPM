@@ -1,422 +1,116 @@
-; ********************************************************************************
-; *                         BetterCP/M REN Utility                               *
-; *                                                                              *
-; * Portable transient rename utility. The CCP prepares NEW and OLD in its two  *
-; * default FCBs, but BDOS Function 23 expects OLD/NEW in the reverse order, so *
-; * REN validates the command and constructs the public rename FCB explicitly.  *
-; ********************************************************************************
-
-
-BDOS    EQU     0005H
-FCB     EQU     005CH
-DMA     EQU     0080H
-
+; BetterCP/M transient REN: shared source selection and in-place templates.
+; Initial core increment; richer prompt/reporting modes follow separately.
+BDOS EQU 5
+BC_DMA EQU 80H
         CSEG
         .PHASE  0103H
-
-; ================================================================================
-; =                            REN Command Processing                            =
-; =                                                                              =
-; = Parses the equals-separated old name locally, resolves drive codes, rejects cross-drive =
-; = or wildcard renames, and performs the stock destination-first existence checks. =
-; ================================================================================
-; -------------------------------------------------------------------------------
-; Argument Parse and Rename
-; -------------------------------------------------------------------------------
-
-START:                                  ; enter REN utility
-        CALL    VALIDATE
-        JP      Z,SYNTAX
-  ; BetterCP/M's ordinary transient loader prepares space-separated default
-  ; FCBs; REN's equals-separated second name is therefore parsed locally.
-        LD      HL,(OPTR)
-        LD      A,(OLEN)
-        LD      B,A
-        LD      DE,FCB+16
-        CALL    PARSEFCB
-        LD      HL,FCB+1
-        CALL    NOQUEST
-        JP      Z,SYNTAX
-        LD      HL,FCB+17
-        CALL    NOQUEST
-        JP      Z,SYNTAX
-
-  ; Resolve zero (current) drive codes and forbid a cross-drive rename.
-        LD      C,25
-        CALL    BDOS
-        INC     A
-        LD      D,A
-        LD      A,(FCB)
-        OR      A
-        JR      NZ,HAVEOLD
-        LD      A,D
-
-HAVEOLD:                                ; accept parsed old name
-        LD      B,A
-        LD      A,(FCB+16)
-        OR      A
-        JR      NZ,HAVENEW
-        LD      A,D
-
-HAVENEW:                                ; accept parsed new name
-        CP      B
-        JP      NZ,SYNTAX
-        LD      A,B
-        LD      (FCB),A
-        LD      (FCB+16),A
-
-  ; Construct OLD/NEW in the order required by BDOS Rename File.
-        LD      HL,FCB+16
-        LD      DE,RENFCB
-        LD      B,12
-        CALL    MOVE
-        LD      HL,FCB
-        LD      DE,RENFCB+16
-        LD      B,12
-        CALL    MOVE
-  ; Stock REN tests the destination first, hence FILE EXISTS takes precedence
-  ; over a missing source. The first default FCB is already the new name.
-        LD      DE,DMA
-        LD      C,26
-        CALL    BDOS
-        LD      DE,FCB
-        LD      C,17
-        CALL    BDOS
-        CP      0FFH
-        JR      NZ,EXISTS
-        LD      DE,RENFCB
-        LD      C,17
-        CALL    BDOS
-        CP      0FFH
-        JR      Z,NOFILE
-        LD      DE,RENFCB
-        LD      C,23
-        CALL    BDOS
-        CP      0FFH
-        JR      Z,NOFILE
-
-DONE:                                   ; return to CCP
-        LD      C,0
-        JP      BDOS
-
-EXISTS:                                 ; report existing destination
-        LD      DE,EXMSG
-        JR      PRINT
-
-NOFILE:                                 ; report missing source
-        LD      DE,NFMSG
-        JR      PRINT
-
-SYNTAX:                                 ; report rename syntax error
-        LD      DE,QMSG
-
-PRINT:                                  ; print error message
-        LD      C,9
-        CALL    BDOS
-        JR      DONE
-
-  ; Require NEW=OLD (or the historical underscore/left-arrow separator), with
-  ; optional blanks around the separator and no trailing operand.
-
-; ================================================================================
-; =                           Rename Syntax Validation                           =
-; =                                                                              =
-; = Requires NEW=OLD or the historical alternate separator, permits surrounding blanks, =
-; = and rejects missing or trailing operands.                                    =
-; ================================================================================
-; -------------------------------------------------------------------------------
-; NEW/OLD Syntax
-; -------------------------------------------------------------------------------
-
-VALIDATE:                               ; validate REN command tail
-        LD      A,(DMA)
-        LD      B,A
-        LD      HL,DMA+1
-
-VLEAD:                                  ; skip leading spaces
-        LD      A,B
-        OR      A
-        RET     Z
-        LD      A,(HL)
-        CP      ' '
-        JR      NZ,VNEW
-        INC     HL
-        DEC     B
-        JR      VLEAD
-
-VNEW:                                   ; scan new-name token
-        LD      (NPTR),HL
-        LD      C,0
-
-VNEXT:                                  ; advance new-name scan
-        LD      A,(HL)
-        CP      '='
-        JR      Z,VSEP
-        CP      '_'
-        JR      Z,VSEP
-        CP      ' '
-        JR      Z,VBEFORE
-        INC     HL
-        INC     C
-        DJNZ    VNEXT
-        XOR     A
-        RET
-
-VBEFORE:                                ; scan separator prefix
-        INC     HL
-        DEC     B
-        JR      Z,VBAD
-        LD      A,(HL)
-        CP      ' '
-        JR      Z,VBEFORE
-        CP      '='
-        JR      Z,VSEP
-        CP      '_'
-        JR      Z,VSEP
-
-VBAD:                                   ; reject invalid rename syntax
-        XOR     A
-        RET
-
-VSEP:                                   ; accept rename separator
-        LD      A,C
-        LD      (NLEN),A
-        INC     HL
-        DEC     B
-
-VOSKIP:                                 ; skip spaces before old name
-        JR      Z,VBAD
-        LD      A,(HL)
-        CP      ' '
-        JR      NZ,VOLD
-        INC     HL
-        DEC     B
-        JR      VOSKIP
-
-VOLD:                                   ; scan old-name token
-        LD      (OPTR),HL
-        LD      C,0
-
-VOLDC:                                  ; scan old-name character
-        LD      A,(HL)
-        CP      '='
-        JR      Z,VBAD
-        CP      '_'
-        JR      Z,VBAD
-        CP      ' '
-        JR      Z,VTRAIL
-        INC     HL
-        INC     C
-        DJNZ    VOLDC
-        LD      A,C
-        LD      (OLEN),A
-        LD      A,1
-        OR      A
-        RET
-
-VTRAIL:                                 ; validate trailing command text
-        LD      A,C
-        LD      (OLEN),A
-        INC     HL
-        DEC     B
-
-VTLOOP:                                 ; skip trailing spaces
-        LD      A,B
-        OR      A
-        JR      Z,VGOOD
-        LD      A,(HL)
-        CP      ' '
-        JR      NZ,VBAD
-        INC     HL
-        DEC     B
-        JR      VTLOOP
-
-VGOOD:                                  ; accept validated rename syntax
-        LD      A,1
-        OR      A
-        RET
-
-; -------------------------------------------------------------------------------
-; Wildcard Rejection
-; -------------------------------------------------------------------------------
-
-NOQUEST:                                ; reject wildcard rename
-        LD      B,11
-
-NQLOOP:                                 ; scan FCB for wildcards
-        LD      A,(HL)
-        CP      '?'
-        RET     Z
-        INC     HL
-        DJNZ    NQLOOP
-        LD      A,1
-        OR      A
-        RET
-
-  ; Parse one exact/wildcard CP/M 8.3 token from HL/B into the 12-byte FCB at
-  ; DE. This is deliberately local to REN.COM; the shared loader parser can
-  ; remain a conventional two-space-separated-default-FCB service.
-
-; ================================================================================
-; =                          Local CP/M Filespec Parser                          =
-; =                                                                              =
-; = Parses one exact/wildcard CP/M 8.3 token into a 12-byte FCB so REN can handle its =
-; = equals-separated syntax without changing the shared transient-loader parser. =
-; ================================================================================
-; -------------------------------------------------------------------------------
-; FCB Initialization
-; -------------------------------------------------------------------------------
-
-PARSEFCB:                               ; parse CP/M 8.3 token into FCB
-        PUSH    HL
-        PUSH    BC
-        PUSH    DE
-        XOR     A
-        LD      (DE),A
-        INC     DE
-        LD      C,11
-        LD      A,' '
-
-PFCLR:                                  ; clear destination FCB
-        LD      (DE),A
-        INC     DE
-        DEC     C
-        JR      NZ,PFCLR
-        POP     DE
-        POP     BC
-        POP     HL
-        LD      A,B
-        CP      2
-        JR      C,PFNAME
-        LD      A,(HL)
-        SUB     'A'-1
-        CP      17
-        JR      NC,PFNAME
-        LD      C,A
-        INC     HL
-        LD      A,(HL)
-        DEC     HL
-        CP      ':'
-        JR      NZ,PFNAME
-        LD      A,C
-        LD      (DE),A
-        INC     HL
-        INC     HL
-        DEC     B
-        DEC     B
-
-; -------------------------------------------------------------------------------
-; Filename Field
-; -------------------------------------------------------------------------------
-
-PFNAME:                                 ; parse filename field
-        INC     DE
-        LD      C,8
-
-PFNL:                                   ; scan filename character
-        LD      A,B
-        OR      A
-        RET     Z
-        LD      A,(HL)
-        CP      '.'
-        JR      Z,PFDOT
-        CP      '*'
-        JR      Z,PFNSTAR
-        LD      (DE),A
-        INC     DE
-        INC     HL
-        DEC     B
-        DEC     C
-        JR      NZ,PFNL
-
-PFSKIPN:                                ; skip excess filename characters
-        LD      A,B
-        OR      A
-        RET     Z
-        LD      A,(HL)
-        INC     HL
-        DEC     B
-        CP      '.'
-        JR      NZ,PFSKIPN
-        JR      PFEXT0
-
-PFNSTAR:                                ; expand filename star
-        LD      A,'?'
-
-PFNSL:                                  ; fill remaining filename wildcards
-        LD      (DE),A
-        INC     DE
-        DEC     C
-        JR      NZ,PFNSL
-        JR      PFSKIPN
-
-; -------------------------------------------------------------------------------
-; Extension Field
-; -------------------------------------------------------------------------------
-
-PFDOT:                                  ; advance to extension field
-        INC     HL
-        DEC     B
-
-PFEXT0:                                 ; parse extension field
-        LD      DE,FCB+25
-        LD      C,3
-
-PFEL:                                   ; scan extension character
-        LD      A,B
-        OR      A
-        RET     Z
-        LD      A,(HL)
-        CP      '*'
-        JR      Z,PFESTAR
-        LD      (DE),A
-        INC     DE
-        INC     HL
-        DEC     B
-        DEC     C
-        JR      NZ,PFEL
-        RET
-
-PFESTAR:                                ; expand extension star
-        LD      A,'?'
-
-PFESL:                                  ; fill remaining extension wildcards
-        LD      (DE),A
-        INC     DE
-        DEC     C
-        JR      NZ,PFESL
-        RET
-
-MOVE:                                   ; copy parsed FCB bytes
-        LD      A,(HL)
-        LD      (DE),A
-        INC     HL
-        INC     DE
-        DJNZ    MOVE
-        RET
-
-; ================================================================================
-; =                          REN Data and Working State                          =
-; =                                                                              =
-; = Defines error messages, parsed-name pointers and lengths, and the constructed BDOS =
-; = rename FCB.                                                                  =
-; ================================================================================
-; -------------------------------------------------------------------------------
-; Messages and State
-; -------------------------------------------------------------------------------
-
-EXMSG:  DB      13,10,'FILE EXISTS',13,10,'$' ; destination-exists message
-NFMSG:  DB      13,10,'NO FILE',13,10,'$' ; source-not-found message
-QMSG:   DB      13,10,'?',13,10,'$'     ; syntax-error message
-NPTR:   DW      0                       ; new-name pointer
-OPTR:   DW      0                       ; old-name pointer
-NLEN:   DB      0                       ; new-name length
-OLEN:   DB      0                       ; old-name length
-
-RENFCB:                                 ; BDOS rename FCB
-        REPT    36
-        DB      0
-        ENDM
-
+START:
+        LD SP,R_STKTOP
+        CALL UV_CHECK
+        LD HL,81H
+        LD A,(80H)
+        LD B,A
+        ; Normalize command text exactly as CCP normally does.
+        PUSH HL
+        PUSH BC
+R_CASE:
+        LD A,B
+        OR A
+        JR Z,R_CASEEND
+        LD A,(HL)
+        CP 'a'
+        JR C,R_CASEADV
+        CP 'z'+1
+        JR NC,R_CASEADV
+        AND 5FH
+        LD (HL),A
+R_CASEADV:
+        INC HL
+        DJNZ R_CASE
+R_CASEEND:
+        POP BC
+        POP HL
+        CALL RE_CAPTURE
+        CALL RF_TRIM
+        XOR A
+        LD (R_DRY),A
+        LD A,B
+        CP 4
+        JR C,R_RUN
+        LD DE,R_DRYWORD
+        PUSH HL
+        PUSH BC
+        LD C,4
+R_DCHECK:
+        LD A,(DE)
+        CP (HL)
+        JR NZ,R_NOTDRY
+        INC DE
+        INC HL
+        DEC C
+        JR NZ,R_DCHECK
+        LD A,B
+        SUB 4
+        LD B,A
+        OR A
+        JR Z,R_DRYSET
+        LD A,(HL)
+        CP ' '
+        JR NZ,R_NOTDRY
+R_DRYSET:
+        POP DE
+        POP DE
+        LD A,1
+        LD (R_DRY),A
+        CALL RF_TRIM
+        JR R_RUN
+R_NOTDRY:
+        POP BC
+        POP HL
+R_RUN:
+        CALL BC_REN
+        LD A,(R_DRY)
+        OR A
+        JR Z,R_DONE
+        LD DE,R_DRYMSG
+        CALL BC_PRINT
+R_DONE:
+        JP 0
+BC_DBAD:
+        LD DE,R_BADMSG
+        JP BC_RPRINT
+BC_BDERR:
+        LD DE,R_DUMSG
+        JP BC_RPRINT
+BC_DURST:
+        LD A,(BC_DSAVE)
+        LD E,A
+        LD C,14
+        CALL BDOS
+        LD A,(BC_USAVE)
+        LD E,A
+        LD C,32
+        JP BDOS
+BC_PRINT:
+        LD C,9
+        JP BDOS
+; @ren-selector@
+; @utility-version REN@
+BC_DSAVE: DB 0
+BC_USAVE: DB 0
+BC_DIREP: DW 0
+BC_ALL: DB '*.*'
+BC_INPTR: DW 0
+BC_INLEN: DB 0
+BC_FCBPTR: DW 0
+BC_REXMSG: DB 13,10,'FILE EXISTS',13,10,'$'
+BC_NOFILE: DB 13,10,'NO FILE',13,10,'$'
+R_BADMSG: DB 13,10,'Invalid filespec.',13,10,'$'
+R_DUMSG: DB 13,10,'Invalid drive.',13,10,'$'
+R_DRYWORD: DB '/DRY'
+R_DRY: DB 0
+R_DRYMSG: DB 'Dry run only: no files were renamed.',13,10,'$'
+        DS 128
+R_STKTOP:
         .DEPHASE
-        END     START
+        END START

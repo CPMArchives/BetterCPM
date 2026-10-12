@@ -38,7 +38,10 @@ def main() -> None:
         for drive in "bcd":
             blank(args.disk_template, disks / f"drive{drive}.dsk")
         source = work / "REN.MAC"
-        source.write_bytes(cpm_text(SOURCE))
+        from build_ren import expanded_source
+        expanded = work / 'expanded.mac'
+        expanded.write_text(expanded_source(), encoding='ascii')
+        source.write_bytes(cpm_text(expanded))
         run("cpmcp", "-f", "ibm-3740", str(disks / "drivec.dsk"),
             str(source), "0:REN.MAC")
         for tool in ("ZSM4.COM", "LINK.COM"):

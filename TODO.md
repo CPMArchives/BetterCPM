@@ -685,6 +685,16 @@ reconciliation gate precede the corresponding implementation program.
   Preserve the [post-1.0 terminal architecture discussion outline](docs/engineering/POST-1.0-TERMINAL-ARCHITECTURE-OUTLINE.md)
   as an unfrozen research agenda: personality/backend separation, transparent
   legacy console support, optional native screen API, input/replies and lifecycle.
+- [ ] Assemble a library of terminal-personality RSXs after the 1.0 monitor
+  support is available. Begin by researching the Z-System TCAP library as a
+  source of terminal definitions and provenance; distinguish capability
+  descriptions from the emulation behavior each provider must implement.
+  Supply a matching qualification utility for each monitor, using a shared test
+  framework with personality-specific expected results. Cover display controls,
+  margins, scrolling, keyboard encoding, terminal replies and parser recovery;
+  record the historical target, source provenance, supported features and
+  qualification status for each provider. See the
+  [terminal architecture research agenda](docs/engineering/POST-1.0-TERMINAL-ARCHITECTURE-OUTLINE.md).
 - [ ] Implement the accepted [VIEW.COM specification](docs/engineering/POST-1.0-VIEW-SPECIFICATION.md)
   after 1.0, against the terminal/screen architecture available then. VIEW is a
   read-only interactive text/hex viewer with Find and decompression, assigned
