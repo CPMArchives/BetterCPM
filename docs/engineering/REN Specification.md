@@ -24,10 +24,12 @@ implementation and qualification must follow separately.
   when explicit `/Y` occurs anywhere, or when `/DRY` is active.
 - Unattended `/Y` and `/QQ` skip existing targets without overwrite. `/N` and
   `/DRY` also report/skip collisions without prompting.
-- Remaining prompt work: literal replacement-name validation, blank return to
-  the collision menu, Ctrl-C cancellation, and retry/skip/abort failure handling.
-- Source enumeration uses lexical progression and idempotent mapping, preventing
-  repeated renaming of newly generated matching entries. Targets overlapping
+- Collision replacement input accepts only literal, locationless 8.3 names.
+  Invalid input reprompts; blank returns to the collision menu; Ctrl-C aborts
+  the remainder. Retry/skip/abort operational failure handling remains pending.
+- Source enumeration uses lexical progression and a per-DU ledger of successful
+  destinations, preventing repeated renaming even after arbitrary interactive
+  replacement names. Positional mappings also remain idempotent. Targets overlapping
   still-existing selected sources remain collisions; no cycle solving or
   overwrite is authorized.
 - `/P` remains pending and must preserve original attributes when overriding
@@ -1054,3 +1056,30 @@ options before mutation, protected files, multi-DU grouping, unattended collisio
 skips, quiet output, notice policy, confirmation and Ctrl-C. The tests use an
 assembled Z80 image with a directory/BDOS fixture; they do not establish native
 assembler parity or physical disk behavior.
+
+## Interactive collision increment — 2026-10-12
+
+REN Build 003 implements `File exists. N/S/A/?` with one-line inline help,
+skip and abort-remainder actions. `N` reads a literal locationless 8.3 replacement
+name; lowercase is normalized. Wildcards, DU prefixes, qualifiers, invalid
+fields and overlong input reprompt with `Invalid filename.`. Blank returns to
+the collision menu; Backspace/DEL edits and Ctrl-U clears input. Ctrl-C aborts
+from either prompt, restores the caller DU and retains earlier successful
+renames. The replacement is checked for existing targets before mutation;
+a self-name is skipped, and `/C` still authorizes an eligible replacement.
+
+A per-DU ledger records successful destination names, including arbitrary
+interactive replacements. Rescans exclude these entries even when they continue
+to match the source selector and are not fixed points of the template. The
+ledger occupies 11 bytes per successful rename, starts above program/stack
+storage, and is bounded below the current BDOS entry with a 256-byte margin.
+Space is checked before each mutation; exhaustion aborts without performing
+that rename. The ledger resets between DUs. No cross-DU relocation, overwrite
+or temporary-name cycle solving is introduced.
+
+Cross assembly succeeds at 4,875 bytes. Core, workflow and collision execution
+tests pass, including repeated existing-name collisions, help with no state
+change, edited and overlong input, blank, Ctrl-C, self-mapping, selected-source
+overlap, `/C`, and prevention of interactive-target reselection. Native and
+physical platform qualification remain pending, as do `/P`, operational failure
+recovery and failed-file accounting.
