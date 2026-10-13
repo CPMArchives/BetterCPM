@@ -839,3 +839,15 @@ rename failures. A real cpmsim campaign compared a multi-extent SYS source
 copied with RV against the pinned DRI PIP 1.5 binary: extracted source and both
 outputs match byte for byte, including the partial final record and trailing
 data after 1Ah. Model 4 transfer qualification remains pending.
+
+
+## Cleanup-reporting increment — Build 004
+
+If removal of a staging file fails during recoverable error cleanup, PIP emits
+`CLEANUP FAILED: temporary file remains.` after the original error. It still
+restores the caller DU and default DMA. The staging file is available for
+inspection or manual removal; its presence does not imply a complete copy.
+A fixture injects both a source read failure and a staging deletion failure,
+checking that the old destination and source survive and both errors appear.
+This closes staging-deletion reporting only; fatal BDOS errors and SUBMIT
+cancellation remain pending.
