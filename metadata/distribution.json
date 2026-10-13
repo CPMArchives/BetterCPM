@@ -3,6 +3,16 @@
   "authority": "docs/releases/DISTRIBUTION-MANIFEST.md",
   "system_disk": [
     {
+      "name": "README.TXT",
+      "artifact": "src/distribution/README.TXT",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
       "name": "DIR.COM",
       "artifact": "build/utilities/DIR.COM",
       "status": "implemented",

@@ -16,6 +16,8 @@ All membership or layout changes require discussion with the maintainer.
 
 ## System Disk
 
+- README.TXT: introductory ASCII text in user 0, from `src/distribution/README.TXT`.
+
 - DIR.COM
 - ERA.COM
 - TYPE.COM
@@ -71,7 +73,8 @@ must record implementation/build status and target applicability separately.
 
 - Required operating-system boot/resident components are installed as the
   target's system, rather than inferred from development-directory files.
-- No on-disk documentation filenames or placement have yet been selected.
+- README.TXT is the selected introductory on-disk document. Additional on-disk
+  documentation filenames and placement remain undecided.
 - Files are installed in user 0, the boot/search location, unless a later
   manifest revision specifies otherwise.
 

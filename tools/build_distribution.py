@@ -351,7 +351,7 @@ def main():
                       'validation':{'filesystem':'PASS','file_integrity':'PASS','boot':boot_result},
                       'issues':['Existing core VER reports BetterCP/M 0.3; version presentation requires separate review',
                                 'PIP adoption/integration and editor selection pending',
-                                'Utilities/CPM Tools media deferred; on-disk documentation not selected']}
+                                'Utilities/CPM Tools media and additional on-disk documentation deferred']}
             (out/'report.json').write_text(json.dumps(report,indent=2)+'\n')
             shutil.copy2(root/'build.log',out/'build.log')
             reports.append((out,image,report))

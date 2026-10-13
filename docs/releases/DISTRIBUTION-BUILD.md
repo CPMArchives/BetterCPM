@@ -6,6 +6,11 @@ implementation status, target applicability, and user area. Planned PIP,
 WHEREIS, and the full-screen editor are reported as omissions until integrated.
 Utilities and CP/M Tools disks are not assembled by this first builder.
 
+Both System Disks include `README.TXT` in user 0. Its authoritative source is
+`src/distribution/README.TXT`, ASCII with CR/LF lines and CP/M text EOF. Source
+snapshotting and input hashing include it, and normal file-integrity checks
+verify the installed contents.
+
 From the repository root:
 
 ```sh
