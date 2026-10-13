@@ -17,11 +17,11 @@ def main():
     out,_=run('[B3,C5]:*.TXT[$ARC]',fixtures)
     assert 'DELTA' in out and 'ALPHA' not in out and 'BETA' not in out
     out,_=run('B3:A.TXT',fixtures);assert out=='ALPHA $\r\n',out
-    for tail in ('', 'B3:F*A.TXT', '[B3,E0]:*.TXT', 'B3:A.TXT OTHER.TXT', '/P B3:A.TXT', 'B3:A.TXT /7x'):
+    for tail in ('', 'B3:F*A.TXT', '[B3,E0]:*.TXT', 'B3:A.TXT OTHER.TXT', '/Z B3:A.TXT', 'B3:A.TXT /7x'):
         out,calls=run(tail,fixtures)
         assert not any(f in calls for f in (15,17,20)),(tail,out)
     out,calls=run('/ver',{})
-    assert 'BetterCP/M TYPE 1.0 (Build 001)' in out and not any(f in calls for f in (15,17,20,25,32))
+    assert 'BetterCP/M TYPE 1.0 (Build 002)' in out and not any(f in calls for f in (15,17,20,25,32))
     out,_=run('B3:*.TXT',fixtures,open_fail=(a,))
     assert 'TYPE B3:A.TXT - Cannot open.' in out and 'BETA' in out,out
     out,_=run('B3:*.TXT',fixtures,read_fail=(a,))

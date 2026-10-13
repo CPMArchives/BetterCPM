@@ -5,7 +5,7 @@ from pathlib import Path
 from test_bios import Z80, SENTINEL
 ROOT = Path(__file__).resolve().parents[1]
 
-def execute(tail, files, responses='', base=0x8000, open_fail=(), read_fail=(), transient=False):
+def execute(tail, files, responses='', base=0x8000, open_fail=(), read_fail=(), transient=False, observe=None):
     carrier = (ROOT/'build/cpx/RCP.CPX').read_bytes()
     linked, size = struct.unpack_from('<HH', carrier, 10)
     count, _, payload, table = struct.unpack_from('<4H', carrier, 22)
@@ -31,6 +31,7 @@ def execute(tail, files, responses='', base=0x8000, open_fail=(), read_fail=(), 
     def io(port):
         assert port&255==254
         f=c.c; actions.append(f)
+        if observe is not None:observe(c, f)
         if f==25:return state['drive']
         if f==32:
             if c.e!=255:state['user']=c.e

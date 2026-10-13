@@ -1,5 +1,5 @@
 ; BetterCP/M TYPE.COM: shared selection and streaming text transformations.
-; Bidirectional paging is a subsequent implementation increment.
+; Page replay reconstructs history without a bounded cache.
 BDOS EQU 5
 BC_DMA EQU 80H
         CSEG
@@ -64,16 +64,21 @@ T_WILD:
         XOR A
 T_BSET:
         LD (T_BANNER),A
+        CALL TP_INIT
         CALL T_RESET
 T_FILE:
+        CALL TP_CHECK
         CALL T_NEXT
         JP C,T_DONE
+        LD A,1
+        LD (T_FFIRST),A
         XOR A
         LD (T_COL),A
         LD (T_CR),A
         LD A,(T_BANNER)
         OR A
         CALL NZ,T_HEAD
+        CALL TP_CHECK
         CALL RF_FCB
         LD HL,RF_LAST
         LD DE,RF_FILE+1
@@ -84,6 +89,8 @@ T_FILE:
         CALL BDOS
         INC A
         JR Z,T_OPEN
+        LD A,1
+        LD (T_ISOPEN),A
 T_READ:
         LD DE,BC_DMA
         LD C,26
@@ -112,14 +119,15 @@ T_CHAR:
         CALL T_RENDER
         POP BC
         POP HL
+        LD A,(TP_ACT)
+        OR A
+        JP NZ,TP_CHECK
         INC HL
         DJNZ T_CHAR
         JR T_READ
 T_CLOSE:
         CALL T_FLUSH
-        LD DE,RF_FILE
-        LD C,16
-        CALL BDOS
+        CALL T_CLOSEFILE
         JP T_FILE
 T_OPEN:
         CALL T_CONTEXT
@@ -135,8 +143,17 @@ T_BAD:
 T_DRIVE:
         LD DE,T_DRIVEM
 T_REPORT:
+        XOR A
+        LD (T_PAGED),A
         CALL BC_PRINT
+        JP T_EXIT
 T_DONE:
+        LD A,(T_PAGED)
+        OR A
+        CALL NZ,TP_FINAL
+        CALL TP_CHECK
+T_EXIT:
+        CALL T_CLOSEFILE
         CALL BC_DURST
         JP 0
 ; Parse one operand and separate /7, /T, /CTL tokens in any position.
@@ -146,6 +163,7 @@ T_OPTIONS:
         LD (T_SEVEN),A
         LD (T_TABS),A
         LD (T_CTL),A
+        LD (T_PAGED),A
 T_OPT:
         CALL T_TRIM
         LD A,B
@@ -188,10 +206,16 @@ T_SHORT:
         LD A,(IX+1)
         CP '7'
         JR Z,T_O7
+        CP 'P'
+        JR Z,T_OPAGE
         CP 'T'
         JR NZ,T_OBAD
         LD A,1
         LD (T_TABS),A
+        JR T_OADV
+T_OPAGE:
+        LD A,1
+        LD (T_PAGED),A
         JR T_OADV
 T_O7:
         LD A,1
@@ -431,16 +455,65 @@ T_OUT:
         PUSH DE
         PUSH HL
         LD E,A
+        LD A,(T_PAGED)
+        OR A
+        JR Z,T_DIRECT
+        LD A,E
+        CALL TP_PUT
+        JR T_POP
+T_DIRECT:
         LD C,2
         CALL BDOS
+T_POP:
         POP HL
         POP DE
         POP BC
         POP AF
         RET
 BC_PRINT:
+        LD A,(T_PAGED)
+        OR A
+        JR NZ,T_PSTRING
         LD C,9
         JP BDOS
+T_PSTRING:
+        PUSH HL
+        PUSH BC
+        LD H,D
+        LD L,E
+T_SBYTE:
+        LD A,(HL)
+        CP '$'
+        JR Z,T_SEND
+        CALL T_OUT
+        INC HL
+        JR T_SBYTE
+T_SEND:
+        POP BC
+        POP HL
+        RET
+T_CLOSEFILE:
+        LD A,(T_ISOPEN)
+        OR A
+        RET Z
+        XOR A
+        LD (T_ISOPEN),A
+        LD DE,RF_FILE
+        LD C,16
+        JP BDOS
+TP_CHECK:
+        LD A,(TP_ACT)
+        OR A
+        RET Z
+        CP 2
+        JP Z,T_EXIT
+        ; Discard suspended renderer/string frames before replaying.
+        LD SP,T_STACK
+        CALL T_CLOSEFILE
+        CALL TP_RESET
+        CALL T_RESET
+        JP T_FILE
+; @type-paging@
 BC_DURST:
         LD A,(BC_DSAVE)
         LD E,A
@@ -477,6 +550,9 @@ T_COL: DB 0
 T_CR: DB 0
 T_INDU: DB 0
 T_BANNER: DB 0
+T_PAGED: DB 0
+T_ISOPEN: DB 0
+T_FFIRST: DB 0
 T_DASH: DB 13,10,'---------- $'
 T_TAIL: DB ' ----------',13,10,'$'
 T_PREFIX: DB 13,10,'TYPE $'
