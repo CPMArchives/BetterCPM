@@ -1171,3 +1171,27 @@ Tests cover tab widths including 0/255, CR versus LF, filtering, limits,
 source continuity, wildcard attributes, multi-record expansions and write-failure
 cleanup. Real cpmsim T/F/D cases are compared against the pinned DRI binary
 via tools/test_pip_extract_media.py --formatting. PIP remains development-only.
+
+
+## Build 015 — numbered lines and pagination
+
+N (or N1) prefixes lines with a six-column decimal number using leading spaces,
+then colon and space. N2 and other nonzero values use six zero-filled digits
+followed by a tab. N0 disables numbering. Pn inserts page ejects according to
+the DRI line counter; bare P/P1 uses 60, and P0 disables pagination. A numbered/
+paged line starts at the first non-form-feed character or after LF. Number and
+page state continue across concatenated sources, while each invocation resets
+numbering and initializes the page counter to DRI's 254 value.
+
+Generated number prefixes and page ejects use the shared tab/column output
+path, so T and D apply to number prefixes. F filters input form feeds but does
+not remove generated page ejects. Explicit input form feeds reset the page
+counter without consuming a pending line prefix. The six-digit number wraps
+at 999999, matching DRI's three-byte decimal counter.
+
+Emulator tests cover number forms, decimal carry, initial and repeated ejects,
+source continuity and F/T interaction. Real cpmsim N/P output matches the
+pinned DRI binary. PRN: remains unavailable pending physical LPT routing
+qualification: DRI forces that assignment, so it cannot yet be treated as a
+plain synonym for the current LST route. Its formatting prerequisites are now
+implemented. PIP remains development-only.
