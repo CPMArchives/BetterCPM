@@ -42,6 +42,12 @@ PC_COPT:
         OR A
         JR Z,PC_CSKIP
         LD A,C
+        CP 1
+        JR Z,PC_CSKIP
+        CP 7
+        JR Z,PC_CSKIP
+        CP 8
+        JR Z,PC_CSKIP
         CP 4
         JR Z,PC_CSKIP
         CP 13
@@ -218,6 +224,9 @@ PC_CONT:
         JP Z,PC_READ
         JR PC_CHAR
 PC_NEXT:
+        CALL HH_EOF
+        OR A
+        JP NZ,PT_WFAIL
         CALL PE_CHECK
         JP C,PT_FAIL
         LD A,(PT_SRCOPEN)

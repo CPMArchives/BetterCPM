@@ -64,7 +64,7 @@ def execute(tail,files,fail=None,answer='N',readonly=0,unused=None,exm=0,patch_o
    if k[2].endswith(b'$$$') and fail is None:
     source_lengths=[len(v[0]) for name,v in files.items() if name[2].startswith(b'SRC')]
     if unused is not None:assert c.mem[p+13]==unused
-    elif source_lengths and c.mem[addr('PP_COUNT')]==2 and not any(c.mem[addr('OP_DATA')+i] for i in (127,128,129,135,137,139,140,142,143,144,149)):assert c.mem[p+13]==(-source_lengths[0])%128
+    elif source_lengths and c.mem[addr('PP_COUNT')]==2 and not any(c.mem[addr('OP_DATA')+i] for i in (125,127,128,129,131,132,135,137,139,140,142,143,144,149)):assert c.mem[p+13]==(-source_lengths[0])%128
    return 0
   if f==22:
    if fail=='make':return 255
@@ -136,11 +136,11 @@ def main():
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT', {**base,t:(b'OLD TEMP',1)});assert 'CANNOT REMOVE TEMPORARY' in out and fs[t]==[b'OLD TEMP',1]
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT', {**base,t:(b'OLD TEMP',6)});assert fs[d]==[expected,0]
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT', {s:(b'',0)});assert fs[d]==[b'',0]
- for command in ['B7:=A2:*.DAT[H]','B7:D=A2:SRC.DAT[H]','B7:D=A2:SRC.DAT,A2:SRC.DAT[H]']:
+ for command in ['B7:=A2:*.DAT[X]','B7:D=A2:SRC.DAT[X]','B7:D=A2:SRC.DAT,A2:SRC.DAT[X]']:
   out,fs,calls,_=execute(command,base);assert 'not implemented' in out and not any(f in calls for f in (19,22,23))
  queue=key(0,0,'$$$.SUB');other=key(1,7,'$$$.SUB')
  batch={**base,queue:(b'BATCH',0),other:(b'UNRELATED',0)}
- for command in ['BAD','B7:DEST.DAT=A2:MISSING.DAT','B7:D=A2:SRC.DAT[H]']:
+ for command in ['BAD','B7:DEST.DAT=A2:MISSING.DAT','B7:D=A2:SRC.DAT[X]']:
   out,fs,_,_=execute(command,batch)
   assert queue not in fs and fs[other]==[b'UNRELATED',0] and fs[d]==[b'OLD DESTINATION',0]
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT',batch,fail='read')
@@ -148,7 +148,7 @@ def main():
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT',batch)
  assert fs[queue]==[b'BATCH',0]
  out,fs,calls,_=execute('/VER',batch)
- assert 'Build 018' in out and fs[queue]==[b'BATCH',0] and calls==[9]
+ assert 'Build 020' in out and fs[queue]==[b'BATCH',0] and calls==[9]
  for protection in ['cancel','roqueue','rodrive']:
   protected_batch={**batch,queue:(b'BATCH',1 if protection=='roqueue' else 0)}
   out,fs,_,_=execute('BAD',protected_batch,fail='cancel' if protection=='cancel' else None,readonly=1 if protection=='rodrive' else 0)

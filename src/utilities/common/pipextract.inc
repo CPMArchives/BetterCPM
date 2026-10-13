@@ -1,6 +1,7 @@
 ; DRI GETSOURCE extraction: matching does not retry overlaps and succeeds
 ; on the character AFTER the string. Original operand strings remain read-only.
 PE_INIT:
+        CALL HH_INIT
         XOR A
         LD (PE_MATCH),A
         LD (PE_DONE),A
@@ -36,7 +37,7 @@ PE_SLOOP:
         LD A,(HL)
         INC HL
         LD (PE_PTR),HL
-        CALL PF_PUT
+        CALL HH_PUT
         OR A
         RET NZ
         LD HL,PE_LEFT
@@ -55,14 +56,14 @@ PE_QTEST:
         LD A,1
         LD (PE_DONE),A
         LD A,13
-        CALL PF_PUT
+        CALL HH_PUT
         OR A
         RET NZ
         LD A,10
-        JP PF_PUT
+        JP HH_PUT
 PE_CURRENT:
         LD A,(PE_CHAR)
-        JP PF_PUT
+        JP HH_PUT
 PE_TEST:
         LD E,A                       ; length
         LD A,(PE_MATCH)
@@ -111,9 +112,17 @@ PE_QERROR: DB 'QUIT NOT FOUND',13,10,'$'
 ; extraction before any transfer I/O rather than assume peripheral EOF rules.
 PE_VALID:
         LD HL,(PC_PTR)
-        LD DE,60
+        LD DE,51
         ADD HL,DE
         LD A,(HL)
+        INC HL
+        OR (HL)
+        LD E,A
+        LD HL,(PC_PTR)
+        LD BC,60
+        ADD HL,BC
+        LD A,(HL)
+        OR E
         INC HL
         INC HL
         OR (HL)

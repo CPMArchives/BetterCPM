@@ -78,6 +78,21 @@ PN_ZERO:
         RET
 PF_PUT:
         LD (PN_CHAR),A
+        CP 13H
+        JR NZ,PN_NORMAL
+        LD A,(OP_DATA+125)
+        OR A
+        JR Z,PN_NORMAL
+        LD A,(PD_ACTIVE)
+        LD HL,PX_EFLAG
+        OR (HL)
+        JR NZ,PN_NORMAL
+        ; DRI B disk-output flush: all complete records have already been
+        ; written/verified; the partial record remains buffered, unpadded.
+        XOR A
+        RET
+PN_NORMAL:
+        LD A,(PN_CHAR)
         CP 12
         JR NZ,PN_START
         LD A,(OP_DATA+129)
