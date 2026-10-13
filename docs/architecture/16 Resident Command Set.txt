@@ -126,7 +126,12 @@ a literal Ctrl-C warm boot abandons the current command sequence.
 
 
 
-10. AUTOMATIC CPX-TO-TRANSIENT HANDOFF POLICY
+10. POST-1.0 AUTOMATIC CPX-TO-TRANSIENT HANDOFF POLICY
+
+Decision 2026-10-13: defer automatic handoff and /HANDOFF policy controls.
+For 1.0, explicit :COMMAND or .COMMAND remains available. Resident commands
+recognize selected transient-only switches and report a Use :COMMAND hint
+before performing operations. The following contract is retained for post-1.0.
 
 Accepted design addition; implementation remains pending.
 

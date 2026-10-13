@@ -35,5 +35,13 @@ def expand_versions(text):
             data += ''.join(strings(n, False, 'UV_T'+n) for n in ['DIR','USER','CLS','VER','COPY'])
             # MOVE remains transitional, with RCP identity until its own contract is completed.
             data += strings('MOVE', True, 'UV_TMOVE')
+        resident = 'CPXBASE         EQU     00100H' not in text
+        if resident:
+            # Standalone tail wrapper is unused by RCP; keep carrier relocations bounded.
+            query = query[query.index('\nUV_QUERY:') + 1:]
+            text = re.sub(r'LD      DE,(UV_R[A-Z]+)',
+                          r'LD      DE,\1-BC_COMMAND', text)
+            text = text.replace('CALL    UV_QUERY', 'CALL    RH_VERSION')
+            data += (ROOT / 'src/cpx/feature-hint.inc').read_text()
         text = text.replace('; @rcp-version@', data + query.replace('; @version-banner@', ''))
     return text
