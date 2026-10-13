@@ -4,12 +4,18 @@ PW_START:
         CP 2
         JP NZ,PT_UNSUP
         LD A,(OP_DATA)
+        CP 1
+        JP Z,PW_ONEXT
+        CP 7
+        JP Z,PW_ONEXT
+        CP 8
+        JP Z,PW_ONEXT
         CP 4
-        JR Z,PW_ONEXT
+        JP Z,PW_ONEXT
         CP 13
-        JR Z,PW_ONEXT
+        JP Z,PW_ONEXT
         CP 15
-        JR Z,PW_ONEXT
+        JP Z,PW_ONEXT
         CP 3
         JP NZ,PT_UNSUP
         LD A,(OP_DATA+2)
@@ -35,32 +41,32 @@ PW_VALID:
 PW_OPT:
         LD A,(HL)
         OR A
-        JR Z,PW_ONEXT
+        JP Z,PW_ONEXT
         LD A,C
         CP 3
-        JR Z,PW_ONEXT
+        JP Z,PW_ONEXT
         CP 5
-        JR Z,PW_ONEXT
+        JP Z,PW_ONEXT
         CP 19
-        JR Z,PW_ONEXT
+        JP Z,PW_ONEXT
         CP 16
-        JR Z,PW_ONEXT
+        JP Z,PW_ONEXT
         CP 18
-        JR Z,PW_ONEXT
+        JP Z,PW_ONEXT
         CP 11
-        JR Z,PW_ONEXT
+        JP Z,PW_ONEXT
         CP 20
-        JR Z,PW_ONEXT
+        JP Z,PW_ONEXT
         CP 25
-        JR Z,PW_ONEXT
+        JP Z,PW_ONEXT
         CP 6
-        JR Z,PW_ONEXT
+        JP Z,PW_ONEXT
         CP 14
-        JR Z,PW_ONEXT
+        JP Z,PW_ONEXT
         CP 17
-        JR Z,PW_ONEXT
+        JP Z,PW_ONEXT
         CP 21
-        JR Z,PW_ONEXT
+        JP Z,PW_ONEXT
         CP 22
         JP NZ,PT_UNSUP
 PW_ONEXT:

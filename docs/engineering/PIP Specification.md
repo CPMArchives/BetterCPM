@@ -1285,3 +1285,63 @@ real media before claiming complete HEX support. Tests currently qualify the
 record validator against the pinned source rules, including 33/34-byte bounds,
 uppercase digits, checksums, arbitrary record types, incomplete spans and XOFF.
 No claim of a completed HEX transfer follows from these foundation tests.
+
+
+## Build 019 — text H/I transfers and correction workflow
+
+Explicit source H or I now enables the bounded HEX text-transfer path. It
+scans past noise to a colon, buffers records across source record boundaries,
+validates them with PH_PARSE, and emits each valid data record followed by CR/LF.
+A zero-length prefix enters DRI's end-of-tape drain through text EOF; H emits
+that complete tail, including EOF, then CR/LF. I omits the tail but still emits
+the historical final CR/LF. Record type is not interpreted or restricted.
+
+Invalid digits, checksum errors and records reaching DRI's 79-character error
+threshold display the offending saved record and CORRECT ERROR, TYPE RETURN
+OR CTL-Z. A response other than Ctrl-Z resumes colon scanning; Ctrl-Z ends the
+current HEX source and preserves accepted output for normal destination close.
+EOF without a zero-length terminator asks END OF FILE, CTL-Z?; Ctrl-Z confirms
+completion. This is the historical HEX recovery workflow, distinct from fatal
+transaction failure and SUBMIT cancellation. Existing verification, staged
+replacement, error cleanup and source-list processing remain shared.
+
+Input U/L/Z and extraction run before HEX parsing; output formatting runs after
+validation. This increment qualifies text HEX sources only and rejects COM/[O]
+HEX combinations during preflight. Automatic reader-to-.HEX selection remains
+unimplemented. XOFF handling is explicitly diagnosed as unfinished and fails
+the transaction safely; preserving/rewriting partial output during that flush
+belongs to the next block-transfer increment.
+
+Tests cover records crossing 128-byte boundaries, maximum record size, H/I
+end tails, verification, input patch hooks, correction/retry, missing-terminator
+confirmation and unsupported XOFF cleanup. Real cpmsim H/I/HV output is
+byte-for-byte equal to the pinned DRI binary. Remaining HEX qualification
+includes XOFF, automatic reader selection, object interactions and broader
+real-media recovery cases. PIP remains development-only.
+
+
+## Build 020 — block transfer and HEX XOFF handling
+
+B now selects the character transfer path and suppresses XOFF (13h) when its
+output is a disk file. It preserves XOFF on character sinks and on explicit
+console echo. HEX input skips XOFF while scanning, validating and draining
+records, regardless of B, matching DRI SAVECHAR. Recovery prompts and H/I
+end-tail rules from Build 019 remain unchanged.
+
+DRI WRITEDEST writes only complete 128-byte records; CLEARBUFF retains the
+partial record without padding. BetterCP/M's existing character writer already
+writes and verifies every complete record immediately. Consequently an XOFF
+flush has no additional complete records to write: it leaves PT_DATA and
+PC_OPOS intact. No FCB rewind, duplicate write or provisional padding is needed.
+This equivalence qualifies the user-visible block/XOFF behavior without adopting
+DRI's larger two-buffer organization. Final EOF alone pads the last record.
+
+Tests cover XOFF at empty, partial, exact and multi-record boundaries, repeated
+XOFF, verification, text-device input, character output, explicit echo, object
+disk copies and injected disk-write cleanup. Real cpmsim B/BV/BE output and
+H/I/HV input with interspersed XOFF match the pinned DRI binary. The HEX validator
+still has a bounded record buffer. Automatic reader-to-HEX selection, object
+HEX interactions, console interruption and broader platform qualification remain
+open; B on object-mode peripheral input is not yet implemented. This entry
+supersedes Build 019's temporary unsupported-XOFF diagnostic. PIP remains
+development-only.

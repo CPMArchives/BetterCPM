@@ -1,4 +1,4 @@
-; DRI HEXRECORD foundation. Not yet connected to H/I transfer dispatch.
+; DRI HEXRECORD validator, used by the text H/I transfer layer.
 ; HL/B: immutable input span beginning with colon, at most 255 bytes.
 ; A: 0 valid data, 1 zero-length terminator prefix, 2 invalid digit/form,
 ;    3 checksum error, 4 record too long, 5 more input required.
