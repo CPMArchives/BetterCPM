@@ -5,7 +5,8 @@
 Status: revised target contract recorded on 2026-10-12. Resident TYPE is
 implemented in RCP Build 007 on 2026-10-13. TYPE.COM Build 001 implements
 shared selection and streaming transformations. Build 002 adds bidirectional
-page replay; explicit file navigation remains pending.
+page replay. Build 003 adds explicit file navigation; final qualification
+remains pending.
 The user interface is in user-guide section 4.4.
 
 Uses the shared [DU selector](208%20Extended%20DU%20Syntax.md) and utility
@@ -345,6 +346,11 @@ In paged mode:
 
 ```
 
+File movement is boundary-oriented rather than a fixed page distance. For
+example, if only a few lines of the current file lie above the screen, `<`
+moves back only as far as its beginning and puts the banner at the top; it
+must not move a whole page into the preceding file.
+
 < behaves as follows:
 
 * if not already at the beginning of the current file, jump to the beginning of the current file;
@@ -373,10 +379,16 @@ The final page remains displayed so that the user may navigate backward.
 At end of the selection:
 
 * next-page commands are no-ops;
-* > is a no-op;
+* > is a no-op only when the page anchor belongs to the last selected file;
 * TYPE.COM may sound the console bell or give another minimal indication;
 * backward movement remains available;
 * ^Q exits.
+
+A final page may start in an earlier file and include later files below it.
+In that case `>` still moves to the next file boundary, placing that file's
+banner at the top even though it was already visible mid-screen. This is the
+maintainer's clarification of 2026-10-13 and takes precedence over the earlier
+unconditional final-EOF `>` no-op rule.
 
 This preserves bidirectional navigation through the completed display.
 
@@ -832,3 +844,46 @@ captures verify page transitions and return to the prompt, and the complete DMK
 image remains unchanged. Both platform campaigns confirm Ctrl-C is Next while
 waiting for a page command and Ctrl-Q exits. The Model 4 campaign retains its
 invocation, captures, media and executable hash in the report directory.
+
+
+## Transient file-navigation increment — 2026-10-13
+
+TYPE.COM Build 003 implements `<`/`>` using the starting file of the page.
+Paged selection counts the complete unique source sequence before display to
+establish navigation bounds. Empty files retain their own ordinal and banner.
+An unpaged invocation retains its two-match banner probe.
+
+`<` goes to the current file's banner unless already at its beginning; from
+there it goes to the previous file. The distance may be less than a screenful.
+`>` goes to the next file's banner, including when that banner was already
+visible lower on the final page. Only the last anchored file blocks `>`.
+Movement beyond selection bounds leaves the page unchanged and sounds a bell.
+
+A boundary jump clears/homes through the current BetterCP/M native console
+control (28, the same operation as CLS), suppresses the inter-file blank
+separator, and places the banner on the first display row. Other page redraws
+also clear/home. Rendering anchors now use 32-bit absolute display-row offsets,
+rather than integer page numbers, so page movement after an arbitrary file
+boundary can be reconstructed without rounding back to an unrelated page.
+The per-page DU/name anchor and beginning-of-file flag remain independent of
+later files shown on that page. Row replay includes skipped separator rows in
+its absolute coordinates. A source change that removes the requested ordinal
+clamps to the last available selected file.
+
+The executable is 4,334 bytes; native ZSM4/LINK and cross assembly are identical.
+`test_type_files.py` covers mixed page/file movement, a partial backward jump
+near a file's beginning, multi-DU order, empty files, selection bounds, and
+file boundaries on final cross-file pages. Existing streaming, paging and
+utility-version regressions pass. Platform file-navigation qualification uses
+`test_type_file_media.py`, retaining transcripts/screens, media and executable
+hashes. Full TYPE release qualification remains separate from this milestone.
+
+
+The file-navigation media campaigns passed on cpmsim and Model 4/trs80gp with
+whole-disk immutability. Model 4 captures independently check that a file
+boundary banner occupies display row zero after forward and backward jumps.
+The second test command needs a post-WBOOT input delay in the harness, so the
+keyboard scanner is ready after the new prompt appears; the campaign retains
+an intermediate command-entry capture as evidence. Empty files and final-page
+boundaries are exercised in a separate short-file sequence. No production
+keyboard or BIOS change is part of this increment.

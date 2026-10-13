@@ -4,7 +4,7 @@ from test_type_streaming import run
 import re
 from pathlib import Path
 A=(1,3,b'A       TXT');B=(1,3,b'B       TXT')
-PROMPT='MORE -- ,/^R back; ./Space/^C next; ^Q quit.'
+PROMPT='MORE -- ,/^R back; ./Space/^C next; </> files; ^Q quit.'
 
 def main():
     lines=b''.join(f'ROW {i:02d}\r\n'.encode() for i in range(50))

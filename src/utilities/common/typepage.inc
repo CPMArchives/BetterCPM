@@ -1,6 +1,11 @@
-; Transient TYPE page replay. 32-bit logical page indices, no bounded history.
+; Transient TYPE page replay. 32-bit display-row anchors, no bounded history.
 ; Current platforms expose an 80-column, 24-row console; one row is for MORE.
 TP_INIT:
+        XOR A
+        LD (TP_MODE),A
+        LD (TP_NOSEP),A
+        INC A
+        LD (TP_CLEAR),A
         XOR A
         LD HL,TP_TARG
         LD B,4
@@ -26,7 +31,11 @@ TP_ZERO:
         LD (HL),A
         INC HL
         DJNZ TP_ZERO
-        JP TP_EQUAL
+        CALL TP_EQUAL
+        LD A,(TP_MODE)
+        OR A
+        RET Z
+        JP TP_HIDDEN
 TP_EQUAL:
         LD HL,TP_CUR
         LD DE,TP_TARG
@@ -46,26 +55,37 @@ TP_HIDDEN:
         LD (TP_SHOW),A
         RET
 TP_ADV:
-        LD HL,TP_CUR
-        LD B,4
-TP_INC:
-        INC (HL)
-        JR NZ,TP_INCDONE
-        INC HL
-        DJNZ TP_INC
-TP_INCDONE:
         XOR A
         LD (TP_ROWS),A
         LD (TP_FULL),A
         INC A
         LD (TP_NEW),A
         JP TP_EQUAL
+TP_VISIBLE:
+        XOR A
+        LD (TP_ROWS),A
+        LD (TP_FULL),A
+        INC A
+        LD (TP_NEW),A
+        LD (TP_SHOW),A
+        RET
 ; A=one rendered byte. Caller preserves all registers.
 TP_PUT:
         LD (TP_BYTE),A
         LD A,(TP_ACT)
         OR A
         RET NZ
+        LD A,(TP_SHOW)
+        OR A
+        JR NZ,TP_BOUNDARY
+        LD A,(TP_MODE)
+        OR A
+        JR NZ,TP_OUTPUT
+        CALL TP_EQUAL
+        LD A,(TP_SHOW)
+        OR A
+        CALL NZ,TP_VISIBLE
+TP_BOUNDARY:
         LD A,(TP_FULL)
         OR A
         JR Z,TP_OUTPUT
@@ -134,7 +154,21 @@ TP_BACK:
         DEC A
         LD (TP_COL),A
         RET
+TP_GLOBAL:
+        LD HL,TP_CUR
+        LD B,4
+TP_RINC:
+        INC (HL)
+        JR NZ,TP_RDONE
+        INC HL
+        DJNZ TP_RINC
+TP_RDONE:
+        RET
 TP_ROW:
+        CALL TP_GLOBAL
+        LD A,(TP_SHOW)
+        OR A
+        RET Z
         LD HL,TP_ROWS
         INC (HL)
         LD A,(HL)
@@ -174,6 +208,10 @@ TP_KEYS:
         JR Z,TP_PREV
         CP ','
         JR Z,TP_PREV
+        CP '<'
+        JP Z,TP_LEFT
+        CP '>'
+        JP Z,TP_RIGHT
         CP 3
         JR Z,TP_NEXT
         CP '.'
@@ -185,37 +223,33 @@ TP_NEXT:
         OR A
         JR NZ,TP_BELL
         CALL TP_ERASE
-        ; Target advances with current page so forward paging stays visible.
-        LD HL,TP_TARG
-        LD B,4
-TP_TINC:
-        INC (HL)
-        JR NZ,TP_READY
-        INC HL
-        DJNZ TP_TINC
-TP_READY:
+        LD A,1
+        LD (TP_CLEAR),A
+        LD HL,TP_CUR
+        LD DE,TP_TARG
+        LD BC,4
+        LDIR
         RET
 TP_PREV:
-        LD HL,TP_TARG
+        LD HL,TP_TOP
         LD B,4
         XOR A
 TP_NONZERO:
         OR (HL)
         INC HL
         DJNZ TP_NONZERO
-        JR Z,TP_BELL
+        JP Z,TP_BELL
         CALL TP_ERASE
-        LD HL,TP_TARG
-        LD B,4
-TP_DEC:
-        LD A,(HL)
-        DEC (HL)
-        OR A
-        JR NZ,TP_REDO
-        INC HL
-        DJNZ TP_DEC
+        LD HL,TP_TOP
+        LD DE,TP_TARG
+        LD BC,4
+        LDIR
+        CALL TP_SUB23
+        XOR A
+        LD (TP_MODE),A
 TP_REDO:
         LD A,1
+        LD (TP_CLEAR),A
         LD (TP_ACT),A
         RET
 TP_QUIT:
@@ -245,10 +279,43 @@ TP_SPACE:
         LD C,2
         JP BDOS
 TP_INDENT:
+        LD A,(TP_CLEAR)
+        OR A
+        JR Z,TP_CLEAN
+        XOR A
+        LD (TP_CLEAR),A
+        LD E,28                     ; BetterCP/M native clear/home, as CLS uses
+        LD C,2
+        CALL BDOS
+TP_CLEAN:
         XOR A
         LD (TP_NEW),A
         LD A,(T_FFIRST)
         LD (TP_BEGIN),A
+        OR A
+        JR NZ,TP_BIND
+        LD A,(TP_COL)
+        OR A
+        JR NZ,TP_BIND
+        LD HL,TP_CUR
+        LD DE,T_HROW
+        LD B,4
+TP_HCHECK:
+        LD A,(DE)
+        CP (HL)
+        JR NZ,TP_BIND
+        INC HL
+        INC DE
+        DJNZ TP_HCHECK
+        LD A,1
+        LD (TP_BEGIN),A
+TP_BIND:
+        LD HL,(T_FIDX)
+        LD (TP_AIDX),HL
+        LD HL,TP_CUR
+        LD DE,TP_TOP
+        LD BC,4
+        LDIR
         LD A,(RF_DRIVE)
         LD (TP_ANCH),A
         LD A,(RF_USER)
@@ -276,21 +343,99 @@ TP_FINAL:
         LD A,(TP_SHOW)
         OR A
         JR NZ,TP_LAST
+        LD A,(TP_MODE)
+        OR A
+        JR Z,TP_CLAMP
+        ; A selected file vanished before replay reached its ordinal.
+        LD HL,(T_FIDX)
+        LD (TP_WANT),HL
+        JP TP_REDO
+TP_CLAMP:
         ; The files changed and now end before the requested page: clamp/replay.
         LD HL,TP_CUR
         LD DE,TP_TARG
         LD BC,4
         LDIR
-        LD A,1
-        LD (TP_ACT),A
-        RET
+        CALL TP_SUB23
+        JP TP_REDO
 TP_LAST:
         LD A,1
         LD (TP_EOF),A
         JP TP_WAIT
-TP_MORE: DB 'MORE -- ,/^R back; ./Space/^C next; ^Q quit.$'
+ ; Subtract one screenful from a row anchor, clamping underflow to zero.
+TP_SUB23:
+        LD HL,TP_TARG
+        LD B,23
+        LD C,4
+        OR A
+TP_SUB:
+        LD A,(HL)
+        SBC A,B
+        LD (HL),A
+        LD B,0
+        INC HL
+        DEC C
+        JR NZ,TP_SUB
+        RET NC
+        XOR A
+        LD HL,TP_TARG
+        LD B,4
+TP_SZERO:
+        LD (HL),A
+        INC HL
+        DJNZ TP_SZERO
+        RET
+TP_LEFT:
+        LD HL,(TP_AIDX)
+        LD A,(TP_BEGIN)
+        OR A
+        JR Z,TP_JUMP
+        DEC HL
+        LD A,H
+        OR L
+        JP Z,TP_BELL
+        JR TP_JUMP
+TP_RIGHT:
+        LD HL,(TP_AIDX)
+        LD DE,(T_TOTAL)
+        OR A
+        SBC HL,DE
+        JP NC,TP_BELL
+        LD HL,(TP_AIDX)
+        INC HL
+TP_JUMP:
+        LD (TP_WANT),HL
+        CALL TP_ERASE
+        LD A,1
+        LD (TP_MODE),A
+        JP TP_REDO
+TP_GFILE:
+        LD A,(TP_MODE)
+        OR A
+        RET Z
+        LD HL,(T_FIDX)
+        LD DE,(TP_WANT)
+        OR A
+        SBC HL,DE
+        RET NZ
+        XOR A
+        LD (TP_MODE),A
+        LD (TP_COL),A
+        INC A
+        LD (TP_NOSEP),A
+        CALL TP_GLOBAL
+        LD HL,TP_CUR
+        LD DE,TP_TARG
+        LD BC,4
+        LDIR
+        JP TP_VISIBLE
+TP_MORE: DB 'MORE -- ,/^R back; ./Space/^C next; </> files; ^Q quit.$'
 TP_TARG: DS 4
 TP_CUR: DS 4
+TP_TOP: DS 4
+TP_AIDX: DW 0
+TP_WANT: DW 0
+TP_MODE: DB 0
 TP_ROWS: DB 0
 TP_COL: DB 0
 TP_FULL: DB 0
@@ -302,3 +447,5 @@ TP_BYTE: DB 0
 TP_NEW: DB 0
 TP_ANCH: DS 13
 TP_BEGIN: DB 0
+TP_CLEAR: DB 0
+TP_NOSEP: DB 0

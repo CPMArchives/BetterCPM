@@ -4,7 +4,7 @@ import argparse,hashlib,json,shutil,subprocess
 from pathlib import Path
 from test_z80pack_sysgen_install import session
 ROOT=Path(__file__).resolve().parents[1]
-PROMPT=b'MORE -- ,/^R back; ./Space/^C next; ^Q quit.'
+PROMPT=b'MORE -- ,/^R back; ./Space/^C next; </> files; ^Q quit.'
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('--image-dir',type=Path,required=True);p.add_argument('--report',type=Path,required=True);a=p.parse_args()
