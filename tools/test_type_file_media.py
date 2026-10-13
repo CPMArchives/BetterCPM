@@ -14,7 +14,7 @@ def main():
     work=a.report.resolve();work.mkdir(parents=True,exist_ok=False)
     def rows(letter,n):return b''.join(f'{letter} ROW {i:02d}\r\n'.encode() for i in range(n))+b'\x1a'
     fixtures=[('AFILE.TXT',rows('A',5),3,1),('BFILE.TXT',rows('B',50),3,2),('CFILE.TXT',rows('C',1),3,0),
-              ('AFILE.TXT',rows('A',1),5,0),('BFILE.TXT',b'',5,4),('CFILE.TXT',rows('C',1),5,0)]
+              ('AFILE.TXT',rows('A',1),5,0),('BFILE.TXT',b'',5,4),('CFILE.TXT',rows('C',1),5,0),('TABS.TXT',b'\tA\tB\r\n\x1a',7,0)]
     binary=(ROOT/'build/utilities/TYPE.COM').read_bytes()
     if a.platform=='z80pack':
         assert a.image_dir
@@ -38,6 +38,8 @@ def main():
         steps += [(b'>',b'\x07',60),(b'<',PROMPT.encode(),60),(b'\x11',b'A0>_ ',60)]
         text=session(sim,work/'disks',steps,work/'short.txt')
         assert text.count(b'A5:BFILE.TXT')==3 and text.count(b'C ROW 00')==4,text[-3000:]
+        text=session(sim,work/'disks',[(b':TYPE A7:TABS.TXT /P\r',PROMPT.encode(),60),(b'\x11',b'A0>_ ',60)],work/'tabs.txt')
+        assert b'        A       B' in text,'native BDOS tab column mismatch'
         assert disk.read_bytes()==before,'file navigation changed source media'
     else:
         disk=work/'a.dmk';original=medium([('TYPE.COM',binary),*fixtures]);disk.write_bytes(original)
@@ -51,14 +53,17 @@ def main():
         invocation+=['-id','1000']+keys(':TYPE A5:*.TXT /P\r')+['-id','2000','-it','-iw',PROMPT,'-it']
         for key in ('>','>','>','<'):
             invocation+=keys(key)+['-id','2000','-it']
+        invocation+=keys('\x11')+['-iw','A0>','-it']
+        invocation+=['-id','1000']+keys(':TYPE A7:TABS.TXT /P\r')+['-iw',PROMPT,'-it']
         invocation+=keys('\x11')+['-iw','A0>','-it','-ix']
         (work/'invocation.json').write_text(json.dumps(invocation,indent=2)+'\n')
         run(invocation,cwd=work,timeout=300,check=True)
         captures=sorted(work.glob('trs80-text-*.bin'),key=lambda f:int(f.stem.rsplit('-',1)[1]));texts=[screen(f) for f in captures]
         for f,text in zip(captures,texts):f.with_suffix('.txt').write_text(text)
-        assert len(texts)==17,len(texts)
+        assert len(texts)==19,len(texts)
         for i,name in [(2,'A3:BFILE.TXT'),(3,'A3:AFILE.TXT'),(5,'A3:BFILE.TXT'),(6,'A3:CFILE.TXT'),(8,'A3:BFILE.TXT'),(12,'A5:BFILE.TXT'),(13,'A5:CFILE.TXT'),(14,'A5:CFILE.TXT'),(15,'A5:BFILE.TXT')]:
             assert texts[i].splitlines()[0].startswith('---------- '+name+' ----------'),(i,texts[i])
+        assert texts[17].splitlines()[0].startswith('        A       B'),texts[17]
         assert disk.read_bytes()==original,'file navigation changed Model 4 media'
     (work/'evidence.json').write_text(json.dumps({'result':'PASS','platform':a.platform,'type_sha256':hashlib.sha256(binary).hexdigest(),'whole_disk_unchanged':True,'file_boundaries_at_final_EOF':True},indent=2)+'\n')
     print(f'PASS: {a.platform} TYPE file boundaries, final cross-file EOF, empty files, previous-file behavior and unchanged disk')

@@ -27,7 +27,7 @@ def main():
     out,_=run('/P B3:*.TXT',{a:(rows('A',17),0),b:(rows('B',50),0)},responses='.<\x11',observe=observe)
     assert observed[1][0]==bytes((1,3))+b[2] and observed[1][1]==0,observed
     assert observed[2][0]==bytes((1,3))+b[2] and observed[2][1]==1,observed
-    last_repaint=out.split('\x1c')[-1]
+    last_repaint=out.split('\x1c')[-1].lstrip('\r')
     assert last_repaint.startswith('---------- B3:B.TXT ----------') and 'A ROW' not in last_repaint,last_repaint
     empty=(1,3,b'EMPTY   TXT');last=(1,3,b'ZLAST   TXT')
     observed.clear()
@@ -40,7 +40,7 @@ def main():
     assert [value[0] for value in observed]==[bytes((1,3))+k[2] for k in (a,b,c,c,b,a)],observed
     assert out.count('\x07')==1,out
     # A boundary jump clears/homes, then starts with the banner itself.
-    repaints=out.split('\x1c')
+    repaints=[part.lstrip('\r') for part in out.split('\x1c')]
     assert repaints[2].startswith('---------- B3:B.TXT ----------'),repaints[2]
     assert repaints[3].startswith('---------- B3:C.TXT ----------'),repaints[3]
     # Across drives/user areas, next-file navigation follows the selected sequence.

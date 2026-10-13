@@ -28,6 +28,11 @@ def main():
     # Caret controls expand before row accounting; /CTL takes precedence over tabs.
     out,_=run('/P /CTL /T B3:A.TXT',{A:(b'\t'*920+b'NEXT\x1a',0)},responses='.\x11')
     assert out.count('^I')==920 and out.count(PROMPT)==2 and out.index(PROMPT)<out.index('NEXT'),out
+    # Native clear/home and BDOS's cooked tab counter must agree.
+    out,_=run('/P B3:A.TXT',{A:(b'\tA\tB\x1a',0)},responses='\x11',cooked_output=True)
+    assert '\x1c\r        A       B' in out,out
+    out,_=run('/P /7 B3:A.TXT',{A:(b'\x9a'*1840+b'NEXT\x1a',0)},responses='.\x11')
+    assert out.count(PROMPT)==2 and out.index(PROMPT)<out.index('NEXT'),out
     # A cross-file page is continuous; banners consume real display rows.
     out,_=run('/P B3:*.TXT',{A:(b'A LINE\r\n',0),B:(b'B LINE\r\n',0)},responses='\x11')
     assert out.count(PROMPT)==1 and 'B3:A.TXT' in out and 'B3:B.TXT' in out,out

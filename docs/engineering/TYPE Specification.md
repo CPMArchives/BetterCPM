@@ -2,12 +2,10 @@
 
 
 
-Status: revised target contract recorded on 2026-10-12. Resident TYPE is
-implemented in RCP Build 007 on 2026-10-13. TYPE.COM Build 001 implements
-shared selection and streaming transformations. Build 002 adds bidirectional
-page replay. Build 003 adds explicit file navigation; final qualification
-remains pending.
-The user interface is in user-guide section 4.4.
+Status: resident TYPE (RCP Build 007) and transient TYPE.COM Build 004 are
+implemented and qualified on the supported 80-by-24 cpmsim and Model 4 platforms
+as of 2026-10-13. See [TYPE Qualification](TYPE%20Qualification.md) for scope and
+ordinary-output abort behavior. The user interface is in user-guide section 4.4.
 
 Uses the shared [DU selector](208%20Extended%20DU%20Syntax.md) and utility
 version/build convention. Supersedes the historical
@@ -28,8 +26,11 @@ becomes display data 1Ah; `/7 /CTL` renders it as `^Z`. Without `/CTL`, that
 transformed byte passes through the ordinary display path without another EOF
 test.
 
-Option placement/repetition, geometry fallbacks, selection capacity and exact
-page-prompt presentation remain routine implementation/qualification details.
+Options are repeatable whitespace-delimited tokens before or after one source
+operand. Current platforms use 80 columns and 24 rows; no console-geometry query
+exists in the current ABI. Paged selection admits at most 65,535 unique files
+and rejects counter overflow before opening a file. Page prompts and ordinary
+output abort behavior are qualified below.
 Audit resident growth against RCP's current carrier limit; no BDOS or CPX ABI
 expansion is authorized by this specification.
 
@@ -333,7 +334,11 @@ While TYPE.COM is waiting for a paged-mode navigation command:
 
 and does not mean abort.
 ^Q is the explicit TYPE.COM exit key.
-Outside paged input mode, TYPE.COM does not redefine Ctrl-C. Normal console/BDOS Ctrl-C handling applies.
+Outside paged input mode, TYPE.COM does not redefine Ctrl-C. Normal console/BDOS
+Ctrl-C handling applies. BDOS warm boot abandons the utility before its cleanup
+runs, so this abrupt abort retains the active file's drive/user area. Caller-DU
+restoration applies to normal completion and controlled paged quit. This same
+standard abort exception applies to resident TYPE during ordinary output.
 This distinction is intentional and shall be documented.
 
 ## 12. Multi-File Navigation
@@ -887,3 +892,27 @@ keyboard scanner is ready after the new prompt appears; the campaign retains
 an intermediate command-entry capture as evidence. Empty files and final-page
 boundaries are exercised in a separate short-file sequence. No production
 keyboard or BIOS change is part of this increment.
+
+
+## Final qualification — 2026-10-13
+
+Build 004 fixes native tab alignment after page clear/home: control 28 homes
+physical output but does not reset the cooked BDOS column. A following CR now
+synchronizes that column before raw TAB output. Row accounting for remaining
+data bytes, including transformed 9Ah -> 1Ah under `/7`, follows the cooked
+BDOS one-cell column model rather than treating transformed control data as EOF
+or zero width. Use `/CTL` for a predictable visible representation of controls.
+
+A checked source-ordinal increment rejects overflow instead of wrapping the
+16-bit selected-file index. The private stack reserves 128 bytes; the fixture
+observed 30 bytes used while exercising rendering, paging and file jumps, with
+a 16-byte low-end guard intact. The executable is 4,383 bytes and is native/cross
+byte-identical. BDOS, BIOS, CCP and RCP production code do not grow.
+
+Both platform campaigns qualify final cross-file EOF, empty-file boundaries,
+actual row-zero banners, native BDOS tab expansion and unchanged disk images.
+All assembled-code streaming/page/file/limit tests and utility-version tests
+pass. Ordinary output cancellation is separately qualified for both resident
+and transient TYPE with real BDOS Ctrl-S/Ctrl-C, retaining the active DU as
+required by standard WBOOT behavior. Controlled paged exit restores the caller.
+See [TYPE Qualification](TYPE%20Qualification.md) for reproduction and limits.

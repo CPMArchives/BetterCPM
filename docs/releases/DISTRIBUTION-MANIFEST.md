@@ -31,6 +31,7 @@ All membership or layout changes require discussion with the maintainer.
 - STAT.COM
 - SUBMIT.COM
 - PIP.COM
+- ED.COM: planned DU-aware adaptation of existing ED source for 1.0.
 - DISK.FDB
 - WHEREIS.COM: planned; include once implemented.
 - RCP.CPX: required resident command package.
@@ -39,13 +40,12 @@ All membership or layout changes require discussion with the maintainer.
 - BYE.COM: cpmsim-only simulator exit command.
 - ZPRTC.RSX: cpmsim clock provider only.
 - FREHDCLK.RSX: Model 4/FreHD clock provider only; requires FreHD hardware/emulation.
-- General-purpose full-screen editor: exact program TBD.
 
 ## Utilities Disk
 
 - XSUB.COM
 - DUMP.COM
-- DRI ED.COM for BetterCP/M 1.0. A BetterCP/M-compatible replacement is later work.
+- General-purpose full-screen editor: adopt an existing program; exact program TBD.
 - ZSM4
 - LINK
 - Debugger: TBD.
