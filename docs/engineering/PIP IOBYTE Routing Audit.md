@@ -21,6 +21,7 @@ Run `python3 tools/audit_iobyte_routing.py`, then
 | --- | ---: | ---: | ---: | ---: |
 | Model 4, table dispatch | 636 | 787 | 151 | 638 |
 | Model 4, CRT-only compact dispatch | 636 | 692 | 56 | 638 |
+| Model 4, compact dispatch plus monitor hooks | 636 | 756 | 120 | 638 |
 | cpmsim, table dispatch and host device ports | 372 | 537 | 165 | 638 |
 
 The compact Model 4 candidate implements the supported CRT endpoint, BAT
@@ -41,8 +42,9 @@ Re-running `tools/audit_monitor_memory.py` against the current baseline gives
 previous review. BDOS is now 3,553 bytes; the combined candidate is 3,452.
 The earlier repack calculation allows 122 additional BIOS bytes, subject to
 qualification. Compact routing (56) plus the monitor hook prototype (64) is
-120 bytes: a provisional two-byte margin. These independently measured
-prototypes have **not** yet been integrated or jointly qualified. Table-based
+120 bytes: a provisional two-byte margin. The combined routing/monitor prototype now assembles to 756 bytes, confirming
+the 120-byte total. Its dispatch is qualified as described below; production
+repacking and provider lifecycle integration remain pending. Table-based
 Model 4 routing would exceed that budget even before monitor hooks.
 
 ## Actual cpmsim endpoints
@@ -82,3 +84,45 @@ Before production adoption:
 
 This audit closes the initial sizing question, not the 1.0 IOBYTE requirement
 or PIP's final release qualification.
+
+## Combined prototype qualification, 14 October 2026
+
+The audit builder now emits `trs80m4/combined`, composing compact IOBYTE routing
+with the previously specified multiplex monitor hooks. CRT console paths and
+CRT list output reach monitor dispatch; the raw backend entry bypasses both
+IOBYTE and the provider, preventing recursive dispatch. Cold initialization
+selects the baseline backend. This does not implement RSX publication/rebinding.
+
+The dispatch campaign executes 1,792 cases each for the compact router, combined
+baseline and combined active test provider: **5,376 cases** total. It also checks
+raw output/status/input while a provider is active. Endpoints remain stubbed;
+real keyboard/video behavior and provider relocation are not covered.
+
+The current 3,452-byte BDOS and 942-byte disk saving candidates pass the existing
+isolated behavioral campaigns: public BIOS/BDOS contracts, grouped extents (480
+cases), error recovery (24 combinations), retries (112 cases), differential
+geometry (8,400 cases), and transfer length setup. Observed private BDOS stack
+high-water is 28 bytes within its retained 40-byte allocation. These tests do
+not establish WD controller timing or a final packed image.
+
+`tools/test_native_memory_candidates.py` stages private cpmsim disks to compare
+the candidate BDOS, disk service and combined Model 4 BIOS against native
+ZSM4/LINK output. Audit sources and binaries remain separate from production.
+
+Native ZSM4/LINK qualification passed for all three isolated candidates:
+
+| Candidate | Bytes | Native/cross result |
+| --- | ---: | --- |
+| Combined BDOS savings | 3,452 | Identical |
+| Combined disk-service savings | 942 | Identical |
+| Model 4 compact routing plus monitor hooks | 756 | Identical |
+
+The private native-build harness sends a harmless initial carriage return to
+wake the emulator terminal before waiting for its prompt, and preserves a final
+CR/LF before the source-file Ctrl-Z terminator. Native output is compared only
+against the isolated audit images; it does not replace production artifacts.
+
+These results qualify the source transformations and combined dispatch well
+enough to proceed to production repacking. They do not close the remaining BAT
+status policy, monitor-provider lifecycle, packed boot/real-media qualification,
+or PIP physical-alias availability decisions.

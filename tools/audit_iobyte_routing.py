@@ -153,6 +153,59 @@ BIOREADR:
         RET""", source, count=1)
 
 
+def monitor_hooks(source: str) -> str:
+    """Compose the existing multiplex monitor prototype with CRT routing.
+
+    Hook only the CRT paths. Raw backend access cannot re-enter IOBYTE or
+    monitor dispatch. Provider publication/lifecycle remains outside this audit.
+    """
+    replacements = [('JP Z,PL_CONOT', 'JP Z,MH_OUT'),
+                    ('JP PL_CONOT', 'JP MH_OUT'),
+                    ('CALL PL_CONST', 'LD A,1\n        CALL MC_CALL'),
+                    ('CALL PL_CONIN', 'LD A,2\n        CALL MC_CALL'),
+                    ('JP      PL_CURSOR', 'JP      MH_CUR')]
+    for old, new in replacements:
+        assert source.count(old) == 1, old
+        source = source.replace(old, new, 1)
+    source = source.replace('BIOBOOT:',
+        'MONCALL: JP MC_CALL\nMONRAW: JP MC_RAW\nMONBASE: JP MC_BASE\n\nBIOBOOT:', 1)
+    source = source.replace('        CALL    PL_INIT',
+                            '        CALL MC_BASE\n        CALL    PL_INIT', 1)
+    return source.replace('        .DEPHASE', """
+MH_OUT:
+        XOR A
+        JP MC_CALL
+MH_CUR:
+        LD A,3
+MC_CALL:
+        LD HL,(MP_MON)
+        JP (HL)
+MC_RAW:
+        OR A
+        JP Z,PL_CONOT
+        DEC A
+        JP Z,PL_CONST
+        DEC A
+        JP Z,PL_CONIN
+        DEC A
+        JP Z,PL_CURSOR
+        DEC A
+        JR Z,MC_CLEAR
+        DEC A
+        RET Z
+        LD A,0FFH
+        RET
+MC_CLEAR:
+        LD C,01CH
+        JP PL_CONOT
+MC_BASE:
+        LD HL,MC_RAW
+        LD (MP_MON),HL
+        RET
+MP_MON: DW 0
+        .DEPHASE""", 1)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--assembler', type=Path, default=Path('/Users/nathanael/bin/z80asm'))
@@ -168,18 +221,18 @@ def main():
             source = source[:a] + (ROOT / 'src/platform/z80pack/recordio.inc').read_text() + source[b:]
             source = source.replace('        INCLUDE biosplat.inc', (ROOT / 'src/platform/z80pack/biosplat.inc').read_text())
         sizes = []
-        for routed in ((False, True) if host else (False, True, 'compact')):
-            stage = args.output / name / ('compact' if routed == 'compact' else 'router' if routed else 'baseline')
+        for routed in ((False, True) if host else (False, True, 'compact', 'combined')):
+            stage = args.output / name / (routed if isinstance(routed, str) else 'router' if routed else 'baseline')
             stage.mkdir(parents=True, exist_ok=True)
             if not host:
                 for file in ('m4cons.inc', 'm4scroll.inc', 'reload.inc'):
                     (stage / file).write_text(expand_layout((ROOT / 'src/platform/trs80m4' / file).read_text()))
                 (stage / 'biosplat.inc').write_text((ROOT / 'src/bios/biosplat.inc').read_text())
-            sizes.append(len(assemble(compact_model4(source) if routed == 'compact' else router(source, host) if routed else source, 'bios', LAYOUT['BIOS'], stage, args.assembler)))
-        rows.append(dict(platform=name, baseline=sizes[0], prototype=sizes[1], growth=sizes[1]-sizes[0], allocation=638, compact=sizes[2] if not host else None))
+            sizes.append(len(assemble(monitor_hooks(compact_model4(source)) if routed == 'combined' else compact_model4(source) if routed == 'compact' else router(source, host) if routed else source, 'bios', LAYOUT['BIOS'], stage, args.assembler)))
+        rows.append(dict(platform=name, baseline=sizes[0], prototype=sizes[1], growth=sizes[1]-sizes[0], allocation=638, compact=sizes[2] if not host else None, combined=sizes[3] if not host else None))
     (args.output / 'sizes.json').write_text(json.dumps(rows, indent=2)+'\n')
     for row in rows:
-        print(f"{row['platform']}: {row['baseline']} -> {row['prototype']} bytes (+{row['growth']}); allocation 638; compact {row['compact']}")
+        print(f"{row['platform']}: {row['baseline']} -> {row['prototype']} bytes (+{row['growth']}); allocation 638; compact {row['compact']}; combined {row['combined']}")
 
 
 if __name__ == '__main__':
