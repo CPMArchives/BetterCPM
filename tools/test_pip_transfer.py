@@ -5,11 +5,12 @@ from test_bios import SENTINEL
 
 def key(d,u,name):
  stem,_,ext=name.partition('.');return (d,u,(stem.ljust(8)+ext.ljust(3)).encode())
-def execute(tail,files,fail=None,answer='N',readonly=0,unused=None,exm=0,patch_out=False,input_bytes=b'',patch_in=False):
+def execute(tail,files,fail=None,answer='N',readonly=0,unused=None,exm=0,patch_out=False,input_bytes=b'',patch_in=False,break_keys=(),break_at=1):
  c=cpu();c.mem[0:3]=bytes((0xC3,SENTINEL&255,SENTINEL>>8));c.mem[5:8]=bytes((0xDB,254,0xC9));c.mem[0x80]=len(tail);c.mem[0x81:0x81+len(tail)]=tail.encode()
  if patch_out:c.mem[0x106:0x109]=bytes((0xDB,253,0xC9))
  if patch_in:c.mem[0x103:0x106]=bytes((0xDB,252,0xC9))
  inputs=iter(input_bytes)
+ breaks=list(break_keys);polls=0
  files={k:[bytes(v[0]),v[1]] for k,v in files.items()};state={'drive':0,'user':5,'dma':0x80};out=[];calls=[];writes=[]
  def kf(p):return (state['drive'],state['user'],bytes(v&127 for v in c.mem[p+1:p+12]))
  def record(p):return ((c.mem[p+14]&63)*32+(c.mem[p+12]&31))*128+c.mem[p+32]
@@ -18,7 +19,13 @@ def execute(tail,files,fail=None,answer='N',readonly=0,unused=None,exm=0,patch_o
  def io(port):
   if port==252:c.mem[0x109]=next(inputs);return 0
   if port==253:out.append(chr(c.c));return 0
+  nonlocal polls
   f=c.c;p=c.de;calls.append(f)
+  if f==11:
+   polls+=1;return 255 if breaks and polls>=break_at else 0
+  if f==6:
+   assert c.e==255 and breaks
+   return breaks.pop(0)
   if f==0:c.pc=SENTINEL;return 0
   if f==25:return state['drive']
   if f==32:
@@ -148,7 +155,7 @@ def main():
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT',batch)
  assert fs[queue]==[b'BATCH',0]
  out,fs,calls,_=execute('/VER',batch)
- assert 'Build 020' in out and fs[queue]==[b'BATCH',0] and calls==[9]
+ assert 'Build 021' in out and fs[queue]==[b'BATCH',0] and calls==[9]
  for protection in ['cancel','roqueue','rodrive']:
   protected_batch={**batch,queue:(b'BATCH',1 if protection=='roqueue' else 0)}
   out,fs,_,_=execute('BAD',protected_batch,fail='cancel' if protection=='cancel' else None,readonly=1 if protection=='rodrive' else 0)

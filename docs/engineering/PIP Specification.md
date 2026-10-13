@@ -1345,3 +1345,34 @@ HEX interactions, console interruption and broader platform qualification remain
 open; B on object-mode peripheral input is not yet implemented. This entry
 supersedes Build 019's temporary unsupported-XOFF diagnostic. PIP remains
 development-only.
+
+
+## Build 021 — console interruption and reader-stop handling
+
+Character transfers now poll the console at DRI's text line boundaries or
+every 256 characters for object data. Ctrl-Z at a poll is treated as source
+EOF. Any other queued character reports `ABORTED`, cancels the pending
+`A0:$$$.SUB` stream, removes the staged destination when possible, and leaves
+the prior destination intact. The console source itself does not poll, matching
+DRI's CON path.
+
+For BLOCK and HEX transfers from INP or RDR, PIP polls before each input read.
+Ctrl-Z ends that source. Any other queued character reports `READER STOPPING`
+and returns XOFF to the existing block or HEX handling. This follows DRI's
+reader-stop workflow; it does not treat that pre-read key as an invocation abort.
+Single-file direct disk copies continue through the record-copy path, which
+does not use DRI's character-level console polling.
+
+The implementation uses BDOS console-status and direct-input calls, then
+echoes the consumed key to match the historical cooked console read while
+avoiding a warm-boot path. Transfer cleanup remains centralized, so source DU,
+caller DU and DMA restoration use the established transaction paths.
+
+The new interruption fixtures cover Ctrl-Z EOF, invocation abort with old-file
+preservation and staging cleanup, INP/RDR BLOCK stop/EOF behavior, object
+polling cadence, and text polling after an object source. All 18
+in-memory PIP test scripts pass. Real cpmsim comparisons for ordinary
+concatenation, wildcard copying, BLOCK/HEX modes, SUBMIT cancellation, and the
+keyboard-abort cleanup path also pass on disposable media. Native ZSM4/LINK
+matches the 13,666-byte development artifact. Model 4 interruption behavior and broader final utility
+qualification remain open; PIP remains development-only.

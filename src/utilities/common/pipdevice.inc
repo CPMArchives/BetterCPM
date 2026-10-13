@@ -92,12 +92,22 @@ PI_VALID:
         SCF
         RET
 PI_BEGIN:
+        XOR A
+        LD (PC_BINARY),A
         CALL PE_INIT
         LD A,1
         LD (PI_ACTIVE),A
         LD A,40
         LD (PI_LEFT),A
 PI_READ:
+        CALL PB_READER
+        OR A
+        JR Z,PI_FETCH
+        CP 1
+        JP Z,PC_NEXT
+        LD A,13H
+        JR PI_FEED
+PI_FETCH:
         LD A,(OP_DATA+81)
         CP 19
         JR Z,PI_NULL
@@ -120,8 +130,14 @@ PI_PATCH:
         LD A,(0109H)
 PI_CHAR:
         CALL PX_CHAR
+        LD E,A
+        LD A,(PB_ABORT)
+        OR A
+        JP NZ,PT_ABORTED
+        LD A,E
         CP 01AH
         JP Z,PC_NEXT
+PI_FEED:
         CALL PE_FEED
         OR A
         JP NZ,PT_WFAIL
@@ -198,6 +214,7 @@ PX_CHAR:
         XOR A
         LD (PX_EFLAG),A
 PX_INPUT:
+        CALL PB_CHAR
         LD A,(PX_RAW)
         LD E,A
         LD A,(OP_DATA+149)

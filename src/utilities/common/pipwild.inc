@@ -87,6 +87,9 @@ PW_ONEXT:
         LD (PW_COPIED),A
         LD HL,0
         LD (PW_NEXT),HL
+        XOR A
+        LD (PB_COUNT),A
+        LD (PB_ABORT),A
         LD A,1
         LD (PW_ACTIVE),A
 PW_SCAN:
