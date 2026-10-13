@@ -28,17 +28,20 @@ def expanded_source():
         if old not in resident:
             raise ValueError('resident REN adapter anchor changed: ' + old)
         resident = resident.replace(old, new, 1)
-    adapt('JR NZ,RF_NEXT\n', 'JR Z,RFT_UNPROTECTED\n        CALL R_PROTECTED\n        JP RF_NEXT\nRFT_UNPROTECTED:\n')
+    adapt('JR NZ,RF_NEXT\n', 'JR Z,RFT_UNPROTECTED\n        LD A,(R_PMODE)\n        OR A\n        JR NZ,RFT_UNPROTECTED\n        CALL R_PROTECTED\n        JP RF_NEXT\nRFT_UNPROTECTED:\n')
     adapt('JR Z,RF_NEXT                 ; same-name mapping is a no-op',
           'JR NZ,RFT_CHANGED\n        CALL R_SAME\n        JP RF_NEXT\nRFT_CHANGED:')
     adapt('CALL RF_SELECT\n', 'CALL RF_SELECT\n        CALL R_DUSTART\n')
     adapt('JR C,RF_DONE\n', 'JR C,RF_DONE\n        CALL R_SEEN\n        JP C,RF_STEP\n')
     adapt('JP NZ,BC_REXISTS', 'JP NZ,R_COLLISION')
-    adapt('RF_RENAME:\n', 'RF_RENAME:\n        CALL R_BEFORE\n        JP C,RF_NEXT\nR_MUTATE:\n        CALL R_DRIVEWR\n        JP C,R_FAILURE\n')
+    adapt('RF_RENAME:\n', 'RF_RENAME:\n        CALL R_BEFORE\n        JP C,RF_NEXT\nR_MUTATE:\n        CALL R_DRIVEWR\n        JP C,R_FAILURE\n        CALL R_PREP\n        JP C,R_FAILURE\n')
     adapt('JP Z,RF_FAILED\n        JP RF_NEXT',
           'JP Z,R_FAILURE\n        CALL R_SUCCESS\n        JP RF_NEXT')
     adapt('JP NZ,RF_READONLY', 'JP NZ,R_FAILURE')
     adapt('JP C,RF_READONLY', 'JP C,R_FAILURE')
+    adapt('LD A,(RF_ATTR)\n        AND 1\n        JP NZ,R_FAILURE',
+          'LD A,(R_PMODE)\n        OR A\n        JR NZ,RFT_POK\n        LD A,(RF_ATTR)\n        AND 1\n        JP NZ,R_FAILURE\nRFT_POK:')
+    adapt('LD DE,RF_FILE\n        LD C,23\n        CALL BDOS', 'CALL R_DO')
     code += resident
     era = (ROOT / 'src/cpx/era-resident.inc').read_text(encoding='ascii')
     code += era[era.index('RE_CAPTURE:'):era.index('RE_FAILED:')]

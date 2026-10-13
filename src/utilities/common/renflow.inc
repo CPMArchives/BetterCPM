@@ -107,6 +107,8 @@ R_OPTYES:
         JR Z,R_SETYES
         CP 3
         JR Z,R_SETNO
+        CP 7
+        JR Z,R_SETP
         CP 4
         JR Z,R_SETDRY
         SUB 4
@@ -123,6 +125,10 @@ R_SETYES:
 R_SETNO:
         LD A,2
         LD (R_POLICY),A
+        JR R_RESUME
+R_SETP:
+        LD A,1
+        LD (R_PMODE),A
         JR R_RESUME
 R_SETDRY:
         LD A,1
@@ -390,8 +396,8 @@ R_COUNTNUM:
         LD A,1
         LD (R_COMMA),A
         RET
-R_OPTWORDS: DB '/C',0,'/Y',0,'/N',0,'/DRY',0,'/Q',0,'/QQ',0,0
-R_OPTFLAGS: DB 1,2,3,4,5,6
+R_OPTWORDS: DB '/C',0,'/Y',0,'/N',0,'/DRY',0,'/Q',0,'/QQ',0,'/P',0,0
+R_OPTFLAGS: DB 1,2,3,4,5,6,7
 R_POLICY: DB 0
 R_CONFIRM: DB 0
 R_YEXPLICIT: DB 0
@@ -695,3 +701,159 @@ R_FAILASK: DB ' - Failed. R/S/A/? ','$'
 R_FHELP: DB 'R Retry, S Skip file, A Abort remainder.',13,10,'$'
 R_FAILLINE: DB ' [FAILED]',13,10,'$'
 R_FAILMSG: DB ' FAILED','$'
+
+; /P snapshots all filename attribute bits before temporarily clearing RO.
+; Differing per-extent attributes cannot be preserved by public Function 30;
+; reject that case before any attribute write rather than normalize it silently.
+R_PREP:
+        XOR A
+        LD (R_UNRO),A
+        LD A,(R_PMODE)
+        OR A
+        RET Z
+        CALL RF_FCB
+        LD HL,RF_BEST
+        LD DE,RF_FILE+1
+        LD BC,11
+        LDIR
+        LD A,'?'
+        LD (RF_FILE+12),A
+        XOR A
+        LD (R_AFIRST),A
+        LD DE,RF_FILE
+        LD C,17
+R_ASCAN:
+        CALL BDOS
+        CP 0FFH
+        JR Z,R_ASEND
+        ADD A,A
+        ADD A,A
+        ADD A,A
+        ADD A,A
+        ADD A,A
+        LD E,A
+        LD D,0
+        LD HL,BC_DMA+1
+        ADD HL,DE
+        LD DE,R_SAVED
+        LD B,11
+        LD A,(R_AFIRST)
+        OR A
+        JR NZ,R_ACHECK
+R_ACOPY:
+        LD A,(HL)
+        AND 80H
+        LD (DE),A
+        INC HL
+        INC DE
+        DJNZ R_ACOPY
+        LD A,1
+        LD (R_AFIRST),A
+        JR R_ANEXT
+R_ACHECK:
+        LD A,(HL)
+        AND 80H
+        LD C,A
+        LD A,(DE)
+        CP C
+        JR NZ,R_AMIXED
+        INC HL
+        INC DE
+        DJNZ R_ACHECK
+R_ANEXT:
+        LD DE,RF_FILE
+        LD C,18
+        JR R_ASCAN
+R_AMIXED:
+        LD DE,R_MIXMSG
+        CALL BC_PRINT
+        SCF
+        RET
+R_ASEND:
+        LD A,(R_AFIRST)
+        OR A
+        SCF
+        RET Z
+        LD A,(R_SAVED+8)
+        OR A
+        RET Z
+        CALL R_OLDFCB
+        CALL R_APATTR
+        RES 7,(HL)
+        LD A,1
+        LD (R_UNRO),A
+        LD DE,RF_FILE
+        LD C,30
+        CALL BDOS
+        CP 0FFH
+        JR Z,R_CLEARFAIL
+        OR A
+        RET
+R_CLEARFAIL:
+        CALL R_OLDFCB
+        CALL R_RESTORE
+        SCF
+        RET
+R_OLDFCB:
+        CALL RF_FCB
+        LD HL,RF_BEST
+        LD DE,RF_FILE+1
+        LD BC,11
+        LDIR
+        RET
+R_APATTR:
+        LD HL,RF_FILE+1
+        LD DE,R_SAVED
+        LD B,11
+R_APLOOP:
+        LD A,(HL)
+        AND 7FH
+        LD C,A
+        LD A,(DE)
+        OR C
+        LD (HL),A
+        INC HL
+        INC DE
+        DJNZ R_APLOOP
+        LD HL,RF_FILE+9
+        RET
+R_DO:
+        LD DE,RF_FILE
+        LD C,23
+        CALL BDOS
+        LD (R_RESULT),A
+        LD A,(R_UNRO)
+        OR A
+        JR Z,R_DORET
+        CALL R_OLDFCB
+        LD A,(R_RESULT)
+        CP 0FFH
+        JR Z,R_DOREPAIR
+        LD HL,RF_NAME
+        LD DE,RF_FILE+1
+        LD BC,11
+        LDIR
+R_DOREPAIR:
+        CALL R_RESTORE
+R_DORET:
+        LD A,(R_RESULT)
+        RET
+R_RESTORE:
+        CALL R_APATTR
+        LD DE,RF_FILE
+        LD C,30
+        CALL BDOS
+        CP 0FFH
+        RET NZ
+        ; Do not continue or retry the original rename with uncertain protection.
+        LD DE,R_REPMSG
+        CALL BC_PRINT
+        CALL R_FAILCOUNT
+        JP R_ABORT
+R_PMODE: DB 0
+R_UNRO: DB 0
+R_AFIRST: DB 0
+R_RESULT: DB 0FFH
+R_SAVED: DS 11
+R_MIXMSG: DB 'Inconsistent extent attributes; rename refused.',13,10,'$'
+R_REPMSG: DB 'Unable to restore file attributes; command aborted.',13,10,'$'
