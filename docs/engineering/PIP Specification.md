@@ -875,3 +875,40 @@ protected queues, drive protection, failed deletion and DU restoration.
 switches to A7, invokes invalid PIP syntax, and never reaches its next copy.
 The A0 queue is removed, an unrelated A7 same-named file is unchanged, and the
 prompt remains A7. Native ZSM4/LINK matches the 9,596-byte development artifact.
+
+
+## Exact disk concatenation — Build 006
+
+The development port now accepts a named destination and two or more exact disk
+sources, each with independent DU inheritance and G/O/R/V/W parameters. All
+source operand kinds, supported parameters, configured-drive bounds and
+destination/staging aliases are checked before transfer I/O. Wildcards, devices
+and transformations remain unsupported. Later source-open/read failures clean
+up the staging file and leave the old destination intact.
+
+Concatenation follows DRI's character path: text sources stop at the first 1Ah;
+.COM sources and sources with O contribute complete disk records, including
+1Ah and physical padding. High-bit data bytes are retained. A partial output
+record is padded with 1Ah, with DRI's unused-byte field set on close. Empty
+sources, exact record boundaries and multiple extents are supported. The
+standalone single-source fast path remains unchanged.
+
+The shared writer verifies each emitted record when the current source has V.
+A record crossing a source boundary uses the source active when that record is
+written. Final RO replacement authorization uses W from the last source, as
+in the reference close path. The 128-byte output buffer is intentionally small;
+matching DRI's larger-buffer verification cadence and character-path console
+interruption handling remain qualification/implementation work. No new ARC
+policy is introduced.
+
+Fixtures cover mixed DUs, text/object sources, empty inputs, binary bytes,
+partial/full records, multi-extents, SYS admission, late missing sources,
+staging conflicts, unsupported late options, verification failures and RO
+replacement. The real cpmsim campaign in `tools/test_pip_concat_media.py`
+compares mixed-user multi-extent text concatenation and COM/text concatenation
+with the pinned DRI binary. Both ordinary cpmtools extraction and complete
+physical record data match. For the latter inspection only, S1 is cleared on a
+separate image copy because cpmtools treats it as used bytes whereas the DRI
+character path stores unused bytes; the executed disk is not changed by this
+normalization. Native ZSM4/LINK matches the 10,244-byte development artifact.
+Model 4 transfer qualification and full PIP completion remain pending.

@@ -1,10 +1,11 @@
-; First DRI fast-copy transaction: one exact disk source, named/drive destination.
+; Shared disk transaction: exact fast copy or exact-source concatenation.
 ; Supported effective parameters G/O/R/V/W. Others fail before any file I/O.
 PT_COPY:
         XOR A
         LD (PT_SRCOPEN),A
         LD (PT_CREATED),A
         LD (PT_TOPEN),A
+        LD (PC_MULTI),A
         LD HL,PT_RR
         LD (HL),A
         INC HL
@@ -13,7 +14,10 @@ PT_COPY:
         LD (HL),A
         LD A,(PP_COUNT)
         CP 2
-        JP NZ,PT_UNSUP
+        JR Z,PT_SINGLE
+        LD A,1
+        LD (PC_MULTI),A
+PT_SINGLE:
         LD A,(OP_DATA+80)
         CP 2
         JP NZ,PT_UNSUP
@@ -99,6 +103,15 @@ PT_DNAMED:
         CALL PT_EQUAL
         JP Z,PT_IDENT
 PT_PREFLIGHT:
+        CALL PC_CHECK
+        OR A
+        JR Z,PT_CHECKED
+        CP 2
+        JP Z,PT_IDENT
+        CP 3
+        JP Z,PT_DRIVEERR
+        JP PT_UNSUP
+PT_CHECKED:
         CALL PT_SOURCE
         LD DE,PT_SFCB
         LD C,15
@@ -165,6 +178,9 @@ PT_TZERO:
         LD A,1
         LD (PT_CREATED),A
         LD (PT_TOPEN),A
+        LD A,(PC_MULTI)
+        OR A
+        JP NZ,PC_BEGIN
 PT_LOOP:
         CALL PT_SOURCE
         LD DE,PT_DATA
@@ -177,6 +193,11 @@ PT_LOOP:
         JP Z,PT_EOF
         OR A
         JP NZ,PT_READERR
+        CALL PT_FLUSH
+        OR A
+        JP NZ,PT_WFAIL
+        JP PT_LOOP
+PT_FLUSH:
         CALL PT_DEST
         LD DE,PT_DATA
         LD C,26
@@ -185,7 +206,7 @@ PT_LOOP:
         LD C,21
         CALL 5
         OR A
-        JP NZ,PT_WRITEERR
+        JR NZ,PT_WBAD
         LD A,(OP_DATA+145)
         OR A
         JR Z,PT_ADVANCE
@@ -204,27 +225,43 @@ PT_LOOP:
         LD C,33
         CALL 5
         OR A
-        JP NZ,PT_VERIFYERR
+        JR NZ,PT_VBAD
         LD HL,PT_DATA
         LD DE,PT_VBUF
         LD B,128
 PT_COMPARE:
         LD A,(DE)
         CP (HL)
-        JP NZ,PT_VERIFYERR
+        JR NZ,PT_VBAD
         INC HL
         INC DE
         DJNZ PT_COMPARE
 PT_ADVANCE:
         LD HL,PT_RR
         INC (HL)
-        JP NZ,PT_LOOP
+        JR NZ,PT_WOK
         INC HL
         INC (HL)
-        JP NZ,PT_LOOP
+        JR NZ,PT_WOK
         INC HL
         INC (HL)
-        JP NZ,PT_LOOP
+        JR NZ,PT_WOK
+        LD A,3
+        RET
+PT_WOK:
+        XOR A
+        RET
+PT_WBAD:
+        LD A,1
+        RET
+PT_VBAD:
+        LD A,2
+        RET
+PT_WFAIL:
+        CP 1
+        JP Z,PT_WRITEERR
+        CP 2
+        JP Z,PT_VERIFYERR
         JP PT_READERR
 PT_EOF:
         LD DE,PT_SFCB
@@ -236,6 +273,7 @@ PT_EOF:
         ; DRI direct copies preserve SFUB (unused bytes in the last record).
         LD A,(PT_SFCB+13)
         LD (PT_TFCB+13),A
+PT_FINAL:
         LD DE,PT_TFCB
         LD C,16
         CALL 5
