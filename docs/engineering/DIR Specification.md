@@ -1,6 +1,7 @@
 # BetterCP/M 1.0 transient DIR specification
 
-Status: implemented for the retained 1.0 contract. DIR.COM is self-contained and
+Status: ordinary DIR is implemented for the retained 1.0 contract. The accepted
+[/WHEREIS amendment](DIR%20WHEREIS%20Specification.md) is implemented in Build 003. DIR.COM is self-contained and
 works with RCP unloaded. It supports shared selectors and attribute predicates,
 file grouping, K/S/E units, all retained sort modes, attribute display, columns,
 paging, per-DU totals and once-per-drive free space. Explicit :DIR/.DIR works;

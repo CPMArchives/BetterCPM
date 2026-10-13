@@ -4,6 +4,8 @@
 DP_PARSE:
         LD (DP_DU),DE
         XOR A
+        LD (DW_MODE),A
+        LD (DW_OTHER),A
         LD (DP_ERROR),A
         LD (DP_HAS),A
         LD (DP_ALEN),A
@@ -72,6 +74,8 @@ DP_RESUME:
         LD B,A
         JR DP_TOKEN
 DP_DONE:
+        CALL DW_PARSE
+        RET C
         LD HL,DP_ARG
         LD A,(DP_ALEN)
         LD B,A
@@ -84,6 +88,11 @@ DP_BAD:
 DP_OPTION:
         LD A,1
         LD (DP_ERROR),A
+        LD A,(DP_LEN)
+        CP 8
+        JP Z,DW_LONG
+        LD A,1
+        LD (DW_OTHER),A
         LD A,(DP_LEN)
         CP 2
         JP Z,DP_ATTR

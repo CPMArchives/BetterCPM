@@ -2157,6 +2157,41 @@ replaces the separate R3 helper files. Keep the container matched to the
 BetterCP/M system build; use the distribution builder to install both together.
 
 
+### DIR /WHEREIS file-location mode
+
+Available in DIR Build 003.
+
+`DIR /WHEREIS` locates filenames across drives and user areas. It searches
+only directories, includes system files by default, and reports each logical
+file once as `DU:FILENAME`, followed by `1 MATCH` or `n MATCHES`.
+
+```text
+:DIR /WHEREIS ED.COM
+:DIR /WHEREIS B:ED.COM
+:DIR /WHEREIS B[-]:*.COM[$SYS]
+```
+
+The first searches all configured drives and users 0–31. The second searches
+B at the current user only; the third searches all users on B, restricted to
+system COM files. Only a completely unqualified operand gets global scope.
+Existing DU selectors, bounded wildcards and attribute predicates apply.
+Exactly one filespec is required. The option may precede or follow it.
+
+Ordinary DIR display switches `/A`, `/P`, `/Z`, `/C=` and `/S=` cannot be
+combined with `/WHEREIS`. `/VER` remains standalone-only. No paging or
+confirmation prompts are specified for this mode.
+
+No matches produces `DIR: No matches found.` If a recoverable drive or
+read failure prevents a complete search, the results or no-match message are
+followed by `Search incomplete.` The original DU is restored on controlled
+completion. The directory search uses read-only BIOS calls to return recoverable failures
+without BDOS recovery prompts. Memory-capacity failures also mark the search
+incomplete.
+
+Resident DIR reports `DIR: Use :DIR.` without automatic handoff. Retype
+the full command with a leading colon or period. No separate WHEREIS.COM is
+planned on the system disk.
+
 ### Resident feature guidance (1.0)
 
 Resident commands provide basic operations using the shared file selector.
@@ -2165,7 +2200,7 @@ file operation and point to explicit invocation. For example:
 
 ```text
 A0>DIR /C=2
-Resident command does not support this feature. Use :DIR.
+DIR: Use :DIR.
 A0>:DIR /C=2
 ```
 
@@ -2174,7 +2209,7 @@ leading colon (or period). If the program is absent, explicit invocation uses
 the ordinary missing-command response. Automatic handoff and `/HANDOFF`
 controls are post-1.0 work.
 
-The recognized transient-only switches are DIR `/A`, `/P`, `/Z[=K|S|E]`,
+The recognized transient-only switches are DIR `/WHEREIS`, `/A`, `/P`, `/Z[=K|S|E]`,
 `/C=1|2|4` and `/S=N|T|Z[+|-]` or `/S=U`; ERA `/Y`, `/Q`, `/C`, `/R`, `/D`;
 TYPE `/7`, `/T`, `/CTL`; REN `/C`, `/Y`, `/N`, `/DRY`, `/P`, `/Q`, `/QQ`;
 and COPY `/B`, `/V`, `/BACKUP`. Resident TYPE still supports `/P`; resident

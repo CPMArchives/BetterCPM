@@ -107,23 +107,17 @@ RH_NONE:
         OR A
         RET
 RH_HINT:
+        LD E,13
+        LD C,2
+        CALL 00005H
+        LD E,10
+        LD C,2
+        CALL 00005H
+        CALL RH_NAME
         LD DE,RH_MSG
         LD C,9
         CALL 00005H
-        ; Print the matched command from the original line without a private copy.
-        LD HL,(BC_CMDPTR)
-        LD A,(BC_KEYLEN)
-        LD B,A
-RH_NAME:
-        LD E,(HL)
-        LD C,2
-        PUSH BC
-        PUSH HL
-        CALL 00005H
-        POP HL
-        POP BC
-        INC HL
-        DJNZ RH_NAME
+        CALL RH_NAME
         LD DE,RH_SUFFIX
         LD C,9
         CALL 00005H
@@ -133,9 +127,25 @@ RH_NAME:
         POP BC
         SCF
         RET
-RH_MSG: DB 13,10,'Resident command does not support this feature. Use :','$'
+RH_NAME:
+        LD HL,(BC_CMDPTR)
+        LD A,(BC_KEYLEN)
+        LD B,A
+RH_NLOOP:
+        LD E,(HL)
+        LD C,2
+        PUSH BC
+        PUSH HL
+        CALL 00005H
+        POP HL
+        POP BC
+        INC HL
+        DJNZ RH_NLOOP
+        RET
+RH_MSG: DB ': Use :','$'
 RH_SUFFIX: DB '.',13,10,'$'
 RH_OPTABLE:
+        DB 'D',7,'WHEREIS'
         DB 'D',1,'A'
         DB 'D',1,'P'
         DB 'D',1,'Z'
