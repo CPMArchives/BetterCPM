@@ -21,7 +21,8 @@ def main():
     count=0
     for name in identities():
         if name=='RCP':continue
-        image=(ROOT/f'build/utilities/{name}.COM').read_bytes()
+        artifact=ROOT/('build/pip-development/PIP.COM' if name=='PIP' else f'build/utilities/{name}.COM')
+        image=artifact.read_bytes()
         for tail in ['/VER',' /ver  ','/VER x','x /VER','/VER /VER','/VER /B']:
             c=runner(image);data=tail.encode();c.mem[128]=len(data);c.mem[129:129+len(data)]=data
             c.run(256,limit=100000)

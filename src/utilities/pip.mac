@@ -1,0 +1,178 @@
+; PIP foundation. Development-only command parser; no transfer engine yet.
+        CSEG
+        .PHASE  0100H
+        JP P_START
+        RET                         ; historical INP: patch entry, 0103h
+        DB 0,0
+        RET                         ; historical OUT: patch entry, 0106h
+        DB 0,0
+        DB 01AH                     ; historical INP data byte, 0109h
+        REPT 246
+        DB 0
+        ENDM
+P_START:
+        LD SP,P_STACK
+        CALL P_VCHECK
+        JP C,00000H
+        LD C,25
+        CALL 5
+        LD (P_DRIVE),A
+        LD E,0FFH
+        LD C,32
+        CALL 5
+        LD (P_USER),A
+        LD A,(0080H)
+        OR A
+        JR Z,P_LOOP
+        LD HL,0081H
+        LD B,A
+        CALL PP_PARSE
+        JR P_REPORT
+P_LOOP:
+        LD DE,P_PROMPT
+        LD C,9
+        CALL 5
+        XOR A
+        LD (P_LINE+1),A
+        LD DE,P_LINE
+        LD C,10
+        CALL 5
+        LD DE,P_NL
+        LD C,9
+        CALL 5
+        LD A,(P_LINE+1)
+        OR A
+        JR Z,P_EXIT
+        LD B,A
+        LD HL,P_LINE+2
+        CALL PP_PARSE
+        CALL P_MESSAGE
+        JR P_LOOP
+P_REPORT:
+        CALL P_MESSAGE
+P_EXIT:
+        LD C,0
+        JP 5
+P_MESSAGE:
+        LD DE,P_INVALID
+        JR C,P_PRINT
+        LD DE,P_DEVM
+P_PRINT:
+        LD C,9
+        JP 5
+P_VCHECK:
+        XOR A
+        LD (PP_BRACK),A
+        LD (PP_STRING),A
+        LD HL,0081H
+        LD A,(0080H)
+        LD B,A
+PV_SCAN:
+        LD A,B
+        OR A
+        RET Z
+        LD A,(PP_STRING)
+        OR A
+        JR Z,PV_CHAR
+        LD A,(HL)
+        CP 01AH
+        JR NZ,PV_NEXT
+        XOR A
+        LD (PP_STRING),A
+        JR PV_NEXT
+PV_CHAR:
+        LD A,(HL)
+        CP '['
+        JR Z,PV_OPEN
+        CP ']'
+        JR Z,PV_CLOSE
+        LD A,(PP_BRACK)
+        OR A
+        JR Z,PV_SLASH
+        LD A,(HL)
+        AND 0DFH
+        CP 'S'
+        JR Z,PV_STRING
+        CP 'Q'
+        JR NZ,PV_NEXT
+PV_STRING:
+        LD A,1
+        LD (PP_STRING),A
+        JR PV_NEXT
+PV_OPEN:
+        LD A,1
+        LD (PP_BRACK),A
+        JR PV_NEXT
+PV_CLOSE:
+        XOR A
+        LD (PP_BRACK),A
+        JR PV_NEXT
+PV_SLASH:
+        LD A,(HL)
+        CP '/'
+        JR NZ,PV_NEXT
+        LD A,L
+        CP 081H
+        JR Z,PV_TRY
+        DEC HL
+        LD A,(HL)
+        INC HL
+        CP ' '
+        JR NZ,PV_NEXT
+PV_TRY:
+        PUSH HL
+        PUSH BC
+        LD IX,UV_WORD
+        LD C,4
+PV_MATCH:
+        LD A,B
+        OR A
+        JR Z,PV_MISS
+        LD A,(HL)
+        OR 020H
+        LD E,A
+        LD A,(IX+0)
+        CP E
+        JR NZ,PV_MISS
+        INC IX
+        INC HL
+        DEC B
+        DEC C
+        JR NZ,PV_MATCH
+        LD A,B
+        OR A
+        JR Z,PV_FOUND
+        LD A,(HL)
+        CP ' '
+        JR NZ,PV_MISS
+PV_FOUND:
+        POP BC
+        POP HL
+        LD HL,0081H
+        LD A,(0080H)
+        LD B,A
+        LD DE,UV_TEXT
+        JP UV_QUERY
+PV_MISS:
+        POP BC
+        POP HL
+PV_NEXT:
+        INC HL
+        DEC B
+        JP NZ,PV_SCAN
+        OR A
+        RET
+P_PROMPT: DB '*$'
+P_NL: DB 13,10,'$'
+P_INVALID: DB 'INVALID FORMAT',13,10,'$'
+P_DEVM: DB 'PIP development parser: transfer engine not implemented.',13,10,'$'
+P_LINE: DB 127,0
+        DS 128
+P_DRIVE: DB 0
+P_USER: DB 0
+; @pip-parser@
+; @utility-version PIP@
+        DS 128
+P_STACK:
+        .DEPHASE
+        END
