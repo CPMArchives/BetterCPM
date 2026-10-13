@@ -9,7 +9,7 @@ def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('--image-dir',type=Path,default=ROOT/'build/z80pack')
     parser.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim')
-    parser.add_argument('--reference',action='store_true',help='Also run the pinned DRI binary (currently exposes a BetterCP/M compatibility timeout).')
+    parser.add_argument('--reference',action='store_true',help='Also run the pinned DRI binary and require a normal warm return.')
     parser.add_argument('--clear-source-arc',action='store_true',help='Diagnostic control: keep RO/SYS but clear ARC on seeded sources.')
     args=parser.parse_args();report=ROOT/'build/test-results/pip-wildcard';report.mkdir(parents=True,exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='pip-wild-',dir='/private/tmp') as tmp:
@@ -47,6 +47,9 @@ def main():
             logical=i*32;offset=boot+skew[logical//size]*size+logical%size;e=data[offset:offset+32]
             if e[0] in (3,4,6):
                 name=bytes(v&127 for v in e[1:12]);attrs[(e[0],name)]=sum((e[9+j]>>7)<<j for j in range(3))
+                if name.startswith(b'PW') and name!=b'PWMULTI DAT':
+                    used=(e[15]*128+int(fields['blocksize'])-1)//int(fields['blocksize'])
+                    assert bytes(e[16+used:32])==bytes(16-used),('stale allocation map',e[0],name,list(e[16:32]))
         for name in expected:
             if name=='PWMULTI.DAT':continue
             stem,ext=name.split('.');packed=(stem.ljust(8)+ext).encode()

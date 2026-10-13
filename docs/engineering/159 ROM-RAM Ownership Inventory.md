@@ -98,3 +98,20 @@ shift translation and direct status dispatch keep the BIOS within its existing
 Montezuma punctuation support retains five console-state bytes at EBD9h–EBDDh.
 Arithmetic key decoding and shared cursor stores reduce emitted BIOS size to
 636/638 bytes; relocation/RAM totals and subsystem boundaries stay unchanged.
+
+
+### BDOS Make qualification update (2026-10-13)
+
+Canonical RC/allocation initialization for reused Make FCBs shares the existing
+new-extent initialization and iterator increment code. BDOS is 3,553 bytes
+(previously 3,555). Its source live-state range becomes E430h–E474h and its
+private stack E475h–E49Ch. Their sizes and ROM-profile RAM placements do not
+change. The template source is updated in both ownership and RAM-placement
+metadata. Unloaded TPA remains 53 KiB plus one byte.
+
+Measured immutable ROM source is 5,368 bytes, with 7,780 bytes used before the
+initializer and 668 bytes spare. After the 22-byte initializer, the pack uses
+7,802 bytes with 646 spare. Relocation discovers 754 packed-code references:
+432 immutable-ROM and 322 live-RAM targets; all 773 layout words are accounted
+for. These measured assertions replace the previous counts without changing
+the accepted allocation or public interface.

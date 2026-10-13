@@ -319,12 +319,17 @@ def main() -> None:
         0x3A, 0x04, 0x73, 0x3C, 0x32, 0x04, 0x73, 0xAF, 0xC9))
     cpu.mem[FCB:FCB + 36] = bytes(36)
     cpu.mem[FCB + 1:FCB + 12] = b"NEW     COM"
+    # DRI PIP reuses this allocation-map space for its rename target.
+    cpu.mem[FCB + 15:FCB + 32] = b"\x09\x50PWOLD   DA\xd4\x00\x04\x80\x09"
     made = call(22, FCB)
     require(made == 2,
             f"Make did not select the first free slot: A={made:02X} writes={cpu.mem[0x7304]} "
             f"mode={cpu.mem[state['UB_ITMODE']]} pos={cpu.mem[state['UB_ITPOS']]} "
             f"dirty={cpu.mem[state['UB_DIRTY']]}")
     require(cpu.mem[0x7304] == 1, "Make did not flush exactly one directory sector")
+    require(bytes(cpu.mem[FCB + 15:FCB + 32]) == bytes(17) and
+            bytes(cpu.mem[LAYOUT['DIRBUF'] + 79:LAYOUT['DIRBUF'] + 96]) == bytes(17),
+            "Make published stale RC/allocation bytes from a reused FCB")
     require(bytes(cpu.mem[LAYOUT['DIRBUF'] + 64:LAYOUT['DIRBUF'] + 76]) ==
             bytes((7,)) + b"NEW     COM",
             "Make did not initialize the cached directory entry")
