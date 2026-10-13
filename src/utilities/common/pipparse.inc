@@ -115,8 +115,7 @@ PP_END:
         LD A,(PP_COUNT)
         CP 2
         JR C,PP_BAD
-        OR A
-        RET
+        JP OP_PLAN
 PP_STORE:
         LD HL,(PP_START)
         LD A,(PP_LENGTH)
