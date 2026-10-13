@@ -8,7 +8,7 @@ ROOT=Path(__file__).resolve().parents[1]
 BUILD=ROOT/'build/pip-development'
 def expanded_source():
  text=(ROOT/'src/utilities/pip.mac').read_text()
- text=text.replace('; @pip-parser@',(ROOT/'src/utilities/common/pipparse.inc').read_text())
+ text=text.replace('; @pip-parser@',(ROOT/'src/utilities/common/pipparse.inc').read_text()+'\n'+(ROOT/'src/utilities/common/pipoperand.inc').read_text())
  return expand_versions(text)
 def main():
  p=argparse.ArgumentParser();p.add_argument('--assembler',type=Path,default=Path('/Users/nathanael/bin/z80asm'));args=p.parse_args()

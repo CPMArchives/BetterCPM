@@ -20,8 +20,9 @@ is not implemented and the distribution manifest remains planned.
   the newer COPY wildcard restrictions on valid historical PIP invocations.
 - ARC policy is settled: retain DRI behavior for now. Audit and port the pinned
   source's actual attribute operations without adding modernized ARC behavior.
-- Close the INP/OUT patch-address compatibility choice. Distinguish user-visible
-  device behavior from binary patch-layout compatibility.
+- Retain the original INP/OUT patch-page layout as the implementation
+  compatibility default; qualify actual driver calls when device transfers are
+  implemented. This default can be revised by the maintainer before closure.
 - Audit physical aliases and IOBYTE routing on both platforms. The roadmap
   already identifies IOBYTE compatibility as an unfinished 1.0 requirement.
   A documented unavailable device may fail; an implemented alias must route
@@ -51,8 +52,9 @@ is not implemented and the distribution manifest remains planned.
   SETUPDEST removes a prior same-stem .$$$ file before creating a new one.
   Source compatibility tests and explicit failure-safety rules must cover these
   operations rather than assuming temporary-file use is globally atomic.
-- The INP/OUT patch-layout decision remains open. The development foundation
-  provisionally reserves the source layout: INP 0103h, OUT 0106h, data 0109h,
+- The implementation keeps the original INP/OUT patch layout as a conservative
+  compatibility default (the maintainer has not yet answered that separate
+  preference question). The development foundation reserves the source layout: INP 0103h, OUT 0106h, data 0109h,
   reserved space through 01FFh. No device transfer is implemented yet.
 - ERROR cancels a historical .SUB queue in the captured user; the BetterCP/M
   port must implement the equivalent against its authoritative A0 submit queue,
@@ -756,3 +758,49 @@ That gives PIP a very clear identity:
 > **DRI PIP, but it understands BetterCP/M's drive/user namespace.**
 
 That is probably the strongest 1.0 design. PPIP should inform our implementation and later enhancements, but I don't yet see a PPIP extension compelling enough to justify muddying the compatibility clone.
+
+## Operand-parser increment — Build 002
+
+The development build now parses each disk/file/device operand and retains a
+bounded array of 80-byte descriptors before any transfer work. There are up to
+64 descriptors, the maximum possible number of minimal operands in a 127-byte
+command tail; this is not a new command-length restriction. Each descriptor
+contains operand kind, device code, drive/user, wildcard and explicit-user
+flags, a 36-byte FCB, the historical 26-byte parameter array, and S/Q extraction
+string spans. It contains no live disk pointers or resident private addresses.
+
+Disk qualifiers support A–P plus conventional one/two-digit users 0–31, including
+leading zeros and user-only notation. Unspecified drive/user independently
+inherit the captured caller DU. A bare drive retains caller user. Actual
+configured-drive execution checks belong to the later transfer engine. Device
+names take precedence over DU interpretation; the pinned 21-name PIP 1.5 table
+is retained. Recognition does not claim physical availability or emulate the
+IRD hardware reader on unsupported machines.
+
+Native users must be in range and no more than two digits. [G] is accepted
+through 31, defaults to 1 without digits like the source, and rejects an explicit
+DU-user conflict even when the values agree. Repeated historical [G] parameters
+without a DU user retain last-value behavior. Other numeric parameter values
+use the reference's byte arithmetic. S/Q spans can contain spaces, commas,
+equals signs and brackets; their 1Ah terminators are required. Parameter
+execution/transformation remains unimplemented.
+
+PIP wildcard fields follow the reference scanner: star fills the remainder
+of a field with question marks; characters after a filled field are invalid.
+This deliberately does not import COPY's repeated-star normalization or its
+selector/predicate grammar. File names and device keywords are case folded
+without modifying the caller's input buffer.
+
+Command-plan checks reject wildcard file destinations, file-destination
+parameters, invalid source/sink device directions, wildcard sources outside
+the single-source destination-drive form, and concatenation to a bare drive.
+DEST=DRIVE: inherits DEST's exact name for the source, retaining the source DU
+and parameters. File identity, temporary-name collisions, attributes and other
+I/O safety checks remain prerequisites for the transfer engine.
+
+The 7,758-byte Build 002 development artifact is byte-identical under native
+ZSM4/LINK. Operand, framing, extraction, interactive and pure-version fixtures
+pass; shared identity checks pass. No file I/O is implemented or invoked, and
+the system-disk manifest still marks PIP planned. A validated command continues
+to print the explicit development-only message. The next increment is the
+transactional disk transfer path and its failure/cleanup qualification.
