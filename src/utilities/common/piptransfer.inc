@@ -2,6 +2,7 @@
 ; Supported effective parameters G/O/R/V/W. Others fail before any file I/O.
 PT_COPY:
         XOR A
+        LD (PT_STATUS),A
         LD (PT_SRCOPEN),A
         LD (PT_CREATED),A
         LD (PT_TOPEN),A
@@ -23,7 +24,7 @@ PT_SINGLE:
         JP NZ,PT_UNSUP
         LD A,(OP_DATA+84)
         OR A
-        JP NZ,PT_UNSUP
+        JP NZ,PW_START
         LD A,(OP_DATA)
         CP 4
         JP Z,PT_UNSUP
@@ -163,6 +164,14 @@ PT_TCLEAR:
         LD (HL),A
         INC HL
         DJNZ PT_TCLEAR
+        LD A,(PW_ACTIVE)
+        OR A
+        JR Z,PT_TATTR
+        LD A,(PW_ARC)
+        LD HL,PT_TFCB+11
+        OR (HL)
+        LD (HL),A
+PT_TATTR:
         LD HL,PT_TFCB+12
         LD B,24
         XOR A
@@ -401,6 +410,8 @@ PT_RENAMEERR:
         LD (PT_CREATED),A
         LD DE,PT_RENMSG
 PT_FAIL:
+        LD A,1
+        LD (PT_STATUS),A
         CALL PT_PRINT
         CALL P_CANCEL
 PT_CLEAN:
@@ -448,6 +459,7 @@ PT_PRINT:
 PT_SRCOPEN: DB 0
 PT_CREATED: DB 0
 PT_TOPEN: DB 0
+PT_STATUS: DB 0
 PT_RR: DS 3
 PT_SFCB: DS 36
 PT_DFCB: DS 36

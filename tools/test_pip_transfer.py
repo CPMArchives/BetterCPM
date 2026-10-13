@@ -5,7 +5,7 @@ from test_bios import SENTINEL
 
 def key(d,u,name):
  stem,_,ext=name.partition('.');return (d,u,(stem.ljust(8)+ext.ljust(3)).encode())
-def execute(tail,files,fail=None,answer='N',readonly=0,unused=None):
+def execute(tail,files,fail=None,answer='N',readonly=0,unused=None,exm=0):
  c=cpu();c.mem[0:3]=bytes((0xC3,SENTINEL&255,SENTINEL>>8));c.mem[5:8]=bytes((0xDB,254,0xC9));c.mem[0x80]=len(tail);c.mem[0x81:0x81+len(tail)]=tail.encode()
  files={k:[bytes(v[0]),v[1]] for k,v in files.items()};state={'drive':0,'user':5,'dma':0x80};out=[];calls=[];writes=[]
  def kf(p):return (state['drive'],state['user'],bytes(v&127 for v in c.mem[p+1:p+12]))
@@ -22,11 +22,32 @@ def execute(tail,files,fail=None,answer='N',readonly=0,unused=None):
   if f==14:state['drive']=c.e;return 0
   if f==26:state['dma']=c.de;return 0
   if f==29:c.hl=readonly;return 0
+  if f==31:c.hl=0x7000;c.mem[0x7004]=exm;return 0
   if f==9:
    while c.mem[p]!=36:out.append(chr(c.mem[p]));p+=1
    return 0
   if f==1:return ord(answer)
+  if f==2:out.append(chr(c.e));c.bc=0;c.hl=0;return 0
   k=kf(p)
+  if f in (17,18):
+   if f==17:
+    pattern=k[2]
+    state['search']=[]
+    for name in sorted(files):
+     if name[:2]!=k[:2] or not all(a==63 or a==b for a,b in zip(pattern,name[2])):continue
+     length=len(files[name][0]);group=16384*(exm+1)
+     for start in range(0,max(length,1),group):
+      extent=start//16384+min(exm,max(0,(min(group,length-start)-1)//16384))
+      if c.mem[p+12]==63 or extent==c.mem[p+12]:state['search'].append((name,extent))
+    state['searchpos']=0
+   else:state['searchpos']+=1
+   index=state['searchpos']
+   if index>=len(state['search']):return 255
+   name,extent=state['search'][index];slot=index%4;start=state['dma']+32*slot
+   c.mem[start:start+32]=bytes(32);c.mem[start]=name[1];c.mem[start+1:start+12]=name[2]
+   for bit in range(3):c.mem[start+9+bit]|=((files[name][1]>>bit)&1)<<7
+   c.mem[start+12]=extent&31;c.mem[start+14]=extent//32
+   return slot
   if f==15:
    if k not in files:return 255
    c.mem[p+13]=(-len(files[k][0]))%128
@@ -75,7 +96,7 @@ def execute(tail,files,fail=None,answer='N',readonly=0,unused=None):
    c.mem[state['dma']:state['dma']+128]=data;return 0
   raise AssertionError(('unexpected BDOS',f))
  c.port_read=io;c.run(256,limit=8000000)
- assert state=={'drive':0,'user':5,'dma':0x80},state
+ assert {k:state[k] for k in ('drive','user','dma')}=={'drive':0,'user':5,'dma':0x80},state
  return ''.join(out),files,calls,writes
 
 def main():
@@ -108,7 +129,7 @@ def main():
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT', {**base,t:(b'OLD TEMP',1)});assert 'CANNOT REMOVE TEMPORARY' in out and fs[t]==[b'OLD TEMP',1]
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT', {**base,t:(b'OLD TEMP',6)});assert fs[d]==[expected,0]
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT', {s:(b'',0)});assert fs[d]==[b'',0]
- for command in ['LST:=A2:SRC.DAT','B7:=A2:*.DAT','B7:D=A2:SRC.DAT[U]','B7:D=A2:SRC.DAT,A2:SRC.DAT[U]']:
+ for command in ['LST:=A2:SRC.DAT','B7:=A2:*.DAT[U]','B7:D=A2:SRC.DAT[U]','B7:D=A2:SRC.DAT,A2:SRC.DAT[U]']:
   out,fs,calls,_=execute(command,base);assert 'not implemented' in out and not any(f in calls for f in (19,22,23))
  queue=key(0,0,'$$$.SUB');other=key(1,7,'$$$.SUB')
  batch={**base,queue:(b'BATCH',0),other:(b'UNRELATED',0)}
@@ -120,7 +141,7 @@ def main():
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT',batch)
  assert fs[queue]==[b'BATCH',0]
  out,fs,calls,_=execute('/VER',batch)
- assert 'Build 006' in out and fs[queue]==[b'BATCH',0] and calls==[9]
+ assert 'Build 007' in out and fs[queue]==[b'BATCH',0] and calls==[9]
  for protection in ['cancel','roqueue','rodrive']:
   protected_batch={**batch,queue:(b'BATCH',1 if protection=='roqueue' else 0)}
   out,fs,_,_=execute('BAD',protected_batch,fail='cancel' if protection=='cancel' else None,readonly=1 if protection=='rodrive' else 0)

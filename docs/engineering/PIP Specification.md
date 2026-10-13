@@ -4,7 +4,7 @@ Status: received proposal, 2026-10-13; not a completed implementation contract.
 Historical claims below require verification against the pinned DRI manual,
 source and binary reference. The discussion-thread citation markers have been
 removed because their underlying sources were not supplied. A development-only ZSM4 implementation now provides operand parsing and the
-first exact disk-copy path. Full DRI compatibility remains incomplete, and the
+disk-copy, concatenation and wildcard paths. Full DRI compatibility remains incomplete, and the
 distribution manifest remains planned.
 
 ## Work review: remaining closure
@@ -912,3 +912,70 @@ separate image copy because cpmtools treats it as used bytes whereas the DRI
 character path stores unused bytes; the executed disk is not changed by this
 normalization. Native ZSM4/LINK matches the 10,244-byte development artifact.
 Model 4 transfer qualification and full PIP completion remain pending.
+
+
+## Wildcard disk copying — Build 007
+
+A single wildcard disk source now copies matching logical files to a destination
+DU, using G/O/R/V/W. Same-DU wildcard copies are rejected before enumeration,
+as in DRI PIP. Unsupported transformations are rejected before transfer I/O.
+The directory search restarts after each transaction and skips the previously
+visited entries, avoiding dependence on search state surviving file operations.
+The scan is bounded by the configured directory; no list proportional to the
+number of matched files is retained.
+
+The scan uses an all-extent pattern and the selected disk's DPB extent mask to
+choose each logical file's first extent group. This is necessary on BetterCP/M
+media with EXM nonzero: a literal extent-zero Search First currently omits
+files whose first grouped directory entry has EX=1. The pinned DRI PIP binary
+exhibits that omission on the same media. This implementation avoids the
+omission locally; the underlying BDOS Search First extent-group compatibility
+issue remains a separate qualification finding. No BDOS code or allocation
+changes are included in this increment.
+
+SYS sources require R; RO sources may be read. Matching names are printed under
+`COPYING -`; no admitted match reports `NOT FOUND` and cancels SUBMIT. A
+recoverable file-copy failure stops the wildcard invocation. The current development wildcard path preserves ARC and clears RO/SYS.
+This attribute handling is not yet a qualified DRI compatibility result: the
+original DRI BDOS rename routine copies the complete new name/type bytes,
+including their attribute bits, whereas BetterCP/M rename retains the old
+directory attribute bits. PIP must account for that difference before this
+increment is considered complete.
+
+Fixtures cover restarted scans, SYS/RO/ARC selection, multi-extent data, no
+matches, same-DU rejection, verification and replacement failures. Native
+ZSM4/LINK matches the 10,974-byte development artifact. The real cpmsim wildcard campaign passes for complete record data,
+SYS/RO admission, ARC preservation and a larger file whose first grouped
+extent has EX=1. These attribute expectations follow the pinned DRI source.
+The optional `--reference` campaign currently times out after the stock DRI
+binary reports its final small file; no successful live wildcard binary
+equivalence claim is made. That separate BetterCP/M/reference compatibility
+finding still needs diagnosis. This staged increment is not a distribution
+utility.
+
+
+### Wildcard compatibility investigation — 2026-10-13
+
+The reference timeout reproduces on an independently rebuilt current system
+disk, with RCP loaded and unloaded. A saved cpmsim core places execution in the
+command-environment reloader's hard-failure loop after the last copy; it is not
+an active PIP copy loop. The loader workspace still contains the final record
+of PIPREF.COM when reconstruction fails. This observation does not establish
+the underlying corruption or failed-I/O cause.
+
+Changing DMA and exhausting a directory search in small transient probes both
+return normally, including from A6. The reference wildcard campaign returns
+normally when ARC is cleared on the seeded sources while RO/SYS are retained.
+Retaining ARC while clearing RO/SYS reproduces the failure. The repeatable
+control is `tools/test_pip_wildcard_media.py --reference --clear-source-arc`;
+without the latter option the ARC-dependent reload failure remains unresolved.
+
+The original DRI BDOS source at the same pinned upstream revision,
+`src/bdos.ASM`, implements rename through `copy$dir` with the twelve-byte new
+user/name/type portion. BetterCP/M's `UB_RNCOPY` retains each existing attribute
+bit and masks the incoming name byte. Consequently, confirming the intended
+DRI PIP wildcard attributes requires accounting for this ABI behavior rather
+than inferring the final attributes solely from temporary-file creation. No
+BDOS, BIOS or reloader production changes were made during this investigation.
+The wildcard increment remains in development pending attribute closure and
+diagnosis of the reference's ARC-dependent warm-return failure.
