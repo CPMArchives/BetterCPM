@@ -20,7 +20,7 @@ def main():
     # Fake disk adapter behind the real protected file loader. This retains
     # real OPEN/FCB/NEXT behavior while injecting deterministic disk failures.
     source=f'''        ASEG
-        ORG 0{0xE49F:04X}H
+        ORG 0{LAYOUT['EXTENSIONS']:04X}H
         JP NOOP
         JP NOOP
         JP OPEN
@@ -62,12 +62,12 @@ BAD:    POP BC
         END
 '''
     with tempfile.TemporaryDirectory() as td:
-        work=Path(td);stub=assemble(Path.home()/'bin/z80asm',source,work/'stub.bin',work/'stub.lst',0xE49F)
+        work=Path(td);stub=assemble(Path.home()/'bin/z80asm',source,work/'stub.bin',work/'stub.lst',LAYOUT['EXTENSIONS'])
         def run(slot,length=120,failure=255,record=None):
             c=Z80(b'');c.mem[STREAM:STREAM+len(data)]=data
             loader=(ROOT/'build/system/fileloader.bin').read_bytes()
             c.mem[LAYOUT['FILE']:LAYOUT['FILE']+len(loader)]=loader
-            c.mem[0xE49F:0xE49F+len(stub)]=stub
+            c.mem[LAYOUT['EXTENSIONS']:LAYOUT['EXTENSIONS']+len(stub)]=stub
             io=(ROOT/'build/system/rsxio.bin').read_bytes();assert len(io)<=256
             c.mem[IO:IO+len(io)]=io;c.mem[NAME]=slot*8 if record is None else record
             c.mem[LIMIT]=length;c.mem[FAILREC]=failure

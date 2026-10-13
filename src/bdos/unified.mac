@@ -1,5 +1,7 @@
         INCLUDE layout.inc
 
+; MEMORY_SAVINGS_V1: qualified shared helpers; preserve public call contracts.
+
 ; ********************************************************************************
 ; *                           BetterCP/M Unified BDOS                            *
 ; *                                                                              *
@@ -75,6 +77,8 @@ UB_KEEPDIR:                             ; retain dirty directory cache
         LD      E,(HL)
         INC     HL
         LD      D,(HL)
+        LD      HL,UB_RETA
+        PUSH    HL
         PUSH    DE
         PUSH    IX
         POP     DE
@@ -123,7 +127,7 @@ UB_RETHL:                               ; return value in HL
 
 UB_VERSION:                             ; return CP/M version
         LD      A,022H
-        JR      UB_RETA
+        RET
 
   ; U10 -- the complete CP/M 2.2 character-I/O surface.  All cooked output
   ; converges here, so console echo, Function 2 and Function 9 share tab,
@@ -131,7 +135,7 @@ UB_VERSION:                             ; return CP/M version
 
 UB_READER:                              ; read reader device
         CALL    BIO_RDRIN
-        JR      UB_RETA
+        RET
 
 UB_PUNCH:                               ; write punch device
         LD      C,E
@@ -144,11 +148,11 @@ UB_LIST:                                ; write list device
 
 UB_OUTOK:                               ; outok
         XOR     A
-        JR      UB_RETA
+        RET
 
 UB_GETIO:                               ; return I/O byte
         LD      A,(0003H)
-        JR      UB_RETA
+        RET
 
 UB_SETIO:                               ; set I/O byte
         LD      A,E
@@ -160,11 +164,11 @@ UB_CONST:                               ; return console status
         OR      A
         JR      NZ,UB_READY
         CALL    BIO_CONST
-        JR      UB_RETA
+        RET
 
 UB_READY:                               ; report ready state
         LD      A,0FFH
-        JR      UB_RETA
+        RET
 
   ; Direct console I/O bypasses cooked echo and control interpretation.
 
@@ -186,11 +190,11 @@ UB_DIN:                                 ; din
         JR      NZ,UB_DGET
         CALL    BIO_CONST
         OR      A
-        JR      Z,UB_RETA
+        RET     Z
 
 UB_DGET:                                ; dget
         CALL    UB_GETIN
-        JR      UB_RETA
+        RET
 
 ; -------------------------------------------------------------------------------
 ; Cooked Console Input
@@ -205,7 +209,7 @@ UB_CONIN:                               ; read cooked console character
         CP      19                      ; ^S waits for one key and is consumed
         JR      Z,UB_PAUSE
         CALL    UB_ECHO
-        JR      UB_RETA
+        RET
 
 UB_TOGGLE:                              ; toggle control state
         LD      A,(UB_LISTE)
@@ -573,7 +577,7 @@ UB_RESET:                               ; reset disk system
         CALL    UB_CONTEXT
         JP      NZ,UB_BAD
         XOR     A
-        JP      UB_RETA
+        RET
 
 UB_SELECT:                              ; select default drive
         LD      A,E
@@ -585,7 +589,7 @@ UB_SELECT:                              ; select default drive
         LD      A,C
         LD      (UB_DRIVE),A
         XOR     A
-        JP      UB_RETA
+        RET
 
 UB_LOGINV:                              ; return login vector
         LD      HL,(UBS_LOGIN)
@@ -593,12 +597,12 @@ UB_LOGINV:                              ; return login vector
 
 UB_CURDSK:                              ; return default drive
         LD      A,(UB_DRIVE)
-        JP      UB_RETA
+        RET
 
 UB_SETDMA:                              ; set DMA address
         LD      (UB_DMA),DE
         XOR     A
-        JP      UB_RETA
+        RET
 
 UB_GETALV:                              ; return allocation-vector pointer
         CALL    UB_CURRENT
@@ -612,7 +616,7 @@ UB_WRPROT:                              ; write-protect current drive
         LD      HL,UB_RDONLY
         CALL    UB_SETBIT
         XOR     A
-        JP      UB_RETA
+        RET
 
 UB_ROVEC:                               ; return read-only vector
         LD      HL,(UB_RDONLY)
@@ -626,7 +630,7 @@ UB_GETDPB:                              ; return DPB pointer
 
 UB_PTRBAD:                              ; ptrbad
         XOR     A
-        JP      UB_RETA
+        RET
 
 UB_USER:                                ; get or set user number
         LD      A,E
@@ -637,7 +641,7 @@ UB_USER:                                ; get or set user number
 
 UB_GETUSR:                              ; getusr
         LD      A,(UB_USERNO)
-        JP      UB_RETA
+        RET
 
 UB_RSTDRV:                              ; reset selected drives
         LD      A,D                     ; retain caller's reset mask
@@ -668,7 +672,7 @@ UB_RSTDRV:                              ; reset selected drives
         LD      (UB_RDONLY),HL
         XOR     A
         LD      (UB_VALID),A            ; next file/pointer call reselects as needed
-        JP      UB_RETA
+        RET
 
 UB_BAD:                                 ; reject invalid request
         LD      A,0FFH
@@ -735,35 +739,25 @@ UB_CTXBAD:                              ; ctxbad
 ; Login/Read-Only Bit Vectors
 ; -------------------------------------------------------------------------------
 
-UB_SETBIT:                              ; setbit
+UB_SETBIT:
+        CALL    UA_MASK
+        OR      (HL)
+        LD      (HL),A
+        RET
+UB_TESTBIT:
+        CALL    UA_MASK
+        AND     (HL)
+        RET
+UA_MASK:
         LD      A,C
         CP      8
         JR      C,UB_BTLOW
         INC     HL
         SUB     8
-
-UB_BTLOW:                               ; btlow
+UB_BTLOW:
         PUSH    BC
         CALL    UB_LOMASK
         POP     BC
-        OR      (HL)
-        LD      (HL),A
-        RET
-
-  ; Return NZ when bit C is set in the two-byte vector at HL.
-
-UB_TESTBIT:                             ; testbit
-        LD      A,C
-        CP      8
-        JR      C,UB_TBLOW
-        INC     HL
-        SUB     8
-
-UB_TBLOW:                               ; tblow
-        PUSH    BC
-        CALL    UB_LOMASK
-        POP     BC
-        AND     (HL)
         RET
 
 UB_LOMASK:                              ; lomask
@@ -903,7 +897,7 @@ UB_SEARCH:                              ; search
         LD      BC,128
         LDIR
         LD      A,(UB_ITRET)
-        JP      UB_RETA
+        RET
 
   ; Return A=slot and HL=entry for the next configured match. NZ means end/error.
 
@@ -1057,7 +1051,7 @@ UB_ITINIT:                              ; initialize directory iterator
 UB_OPEN:                                ; open file
         CALL    UB_ACTIVATE
         JP      C,UB_BAD
-        JP      UB_RETA
+        RET
 
 UB_ACTIVATE:                            ; activate
         CALL    UB_OPENCORE
@@ -1151,7 +1145,7 @@ UB_OPMISS:                              ; opmiss
 
 UB_CLOSE:                               ; close file
         CALL    UB_CCORE
-        JP      UB_RETA
+        RET
 
 UB_CCORE:                               ; ccore
         LD      (UB_ITFCB),DE
@@ -1211,22 +1205,15 @@ UB_PUBLISH:                             ; publish FCB range without changing cal
 
 UB_MAKE:                                ; make file
         CALL    UB_MAKECORE
-        JP      UB_RETA
+        RET
 
 UB_MAKECORE:                            ; makecore
         CALL    UB_MCTX
         JR      NZ,UB_MBAD
         LD      HL,(UB_ITFCB)
         INC     HL
-        LD      B,11
-
-UB_MKNAME:                              ; mkname
-        LD      A,(HL)
-        AND     07FH
-        CP      '?'
+        CALL    UA_NAME
         JR      Z,UB_MBAD
-        INC     HL
-        DJNZ    UB_MKNAME
         XOR     A
         LD      C,11
         CALL    UB_ITINIT
@@ -1310,7 +1297,7 @@ UB_DDONE:                               ; ddone
         CALL    UB_ALLOGIN              ; rebuild ownership after releasing extents
         JP      NZ,UB_BAD
         XOR     A
-        JP      UB_RETA
+        RET
 
   ; Configure an all-extent, wildcard-name scan for the caller's current user.
 
@@ -1344,30 +1331,20 @@ UB_RENAME:                              ; rename file
         CP      C
         JP      NZ,UB_BAD
 
-UB_RNAMES:                              ; rnames
+UB_RNAMES:
         PUSH    IX
         POP     HL
         INC     HL
-        LD      DE,16
-        LD      B,11
-
-UB_RNCHK:                               ; rnchk
-        LD      A,(HL)
-        AND     07FH
-        CP      '?'
+        PUSH    HL
+        CALL    UA_NAME
         JP      Z,UB_BAD
+        POP     HL
+        LD      DE,16
         ADD     HL,DE
-        LD      A,(HL)
-        AND     07FH
-        CP      '?'
+        CALL    UA_NAME
         JP      Z,UB_BAD
-        OR      A
-        SBC     HL,DE
-        INC     HL
-        DJNZ    UB_RNCHK
         PUSH    IX
         POP     HL
-        LD      DE,16
         ADD     HL,DE
         LD      (UB_ITFCB),HL           ; reject an already-existing target name
         XOR     A
@@ -1400,31 +1377,16 @@ UB_RNPASS:                              ; rnpass
         EX      DE,HL
         LD      B,11
 
-UB_RNCOPY:                              ; rncopy
-        LD      A,(HL)
-        AND     080H
-        LD      C,A
-        LD      A,(DE)
-        AND     07FH
-        OR      C
-        LD      (HL),A
-        INC     HL
-        INC     DE
-        DJNZ    UB_RNCOPY
+        LD      C,07FH
+        CALL    UA_MERGE
         POP     HL
         LD      A,1
         LD      (UB_FOUND),A
         LD      (UB_DIRTY),A
         JR      UB_RNPASS
 
-UB_RNDONE:                              ; rndone
-        LD      A,(UB_FOUND)
-        OR      A
-        JP      Z,UB_BAD
-        CALL    UB_DIRFLUSH
-        JP      NZ,UB_BAD
-        XOR     A
-        JP      UB_RETA
+UB_RNDONE:
+        JP      UB_ATDONE
 
   ; Function 30 applies only the FCB's high attribute bits to all matching
   ; extents. Low seven-bit name/type characters and bytes 12..31 are untouched.
@@ -1449,17 +1411,8 @@ UB_ATPASS:                              ; atpass
         INC     DE
         LD      B,11
 
-UB_ATCOPY:                              ; atcopy
-        LD      A,(HL)
-        AND     07FH
-        LD      C,A
-        LD      A,(DE)
-        AND     080H
-        OR      C
-        LD      (HL),A
-        INC     HL
-        INC     DE
-        DJNZ    UB_ATCOPY
+        LD      C,080H
+        CALL    UA_MERGE
         POP     HL
         LD      A,1
         LD      (UB_FOUND),A
@@ -1473,7 +1426,7 @@ UB_ATDONE:                              ; atdone
         CALL    UB_DIRFLUSH
         JP      NZ,UB_BAD
         XOR     A
-        JP      UB_RETA
+        RET
 
   ; Function 35 reduces every exact-name extent to its exclusive logical end
   ; record: ((S2*32 + EX)*128 + RC). The largest candidate becomes FCB R0..R2.
@@ -1487,15 +1440,8 @@ UB_SIZE:                                ; compute file size
         JP      NZ,UB_BAD
         LD      HL,(UB_ITFCB)
         INC     HL
-        LD      B,11
-
-UB_SZNAME:                              ; szname
-        LD      A,(HL)
-        AND     07FH
-        CP      '?'
+        CALL    UA_NAME
         JP      Z,UB_BAD
-        INC     HL
-        DJNZ    UB_SZNAME
         CALL    UB_DSETUP
         XOR     A
         LD      (UB_FOUND),A
@@ -1526,7 +1472,7 @@ UB_SZDONE:                              ; szdone
         LD      BC,3
         LDIR
         XOR     A
-        JP      UB_RETA
+        RET
 
   ; Function 36 and Size share this conversion from S2:EX plus an 8-bit record
   ; field into the 24-bit random-record form. HL=FCB/entry and C=record offset.
@@ -1604,7 +1550,7 @@ UB_SETRR:                               ; set random record from sequential posi
         LD      BC,3
         LDIR
         XOR     A
-        JP      UB_RETA
+        RET
 
   ; Function 20 is the first U09 client. EOF is an ordinary result (1); invalid
   ; mapping or physical failure uses the provisional FF error result.
@@ -1624,7 +1570,7 @@ UB_RBAD:                                ; rbad
 
 UB_READ:                                ; read sequential record
         CALL    UB_READCORE
-        JP      UB_RETA
+        RET
 
 UB_READCORE:                            ; readcore
         CALL    UB_FCBDRV
@@ -1667,7 +1613,7 @@ UB_WRITE:                               ; write sequential record
         XOR     A
         LD      (UB_ZMODE),A
         CALL    UB_WCORE
-        JP      UB_RETA
+        RET
 
 UB_WCORE:                               ; wcore
         CALL    UB_MCTX                 ; same drive selection and R/O gate as Make
@@ -1833,7 +1779,7 @@ UB_RRETURN:                             ; rreturn
         AND     07FH
         LD      (IX+32),A               ; random I/O positions CR; only sequential advances it
         POP     AF
-        JP      UB_RETA
+        RET
 
   ; Function 40 zeroes every record of a newly allocated block before the
   ; requested random write.  The flushed directory buffer is reusable scratch,
@@ -2167,12 +2113,11 @@ UB_ALLOGIN:                             ; rebuild allocation vector
         LD      HL,(UB_DSM)
         LD      DE,8
         ADD     HL,DE
+        LD      B,3
+UA_DIV1:
         SRL     H
         RR      L
-        SRL     H
-        RR      L
-        SRL     H
-        RR      L
+        DJNZ    UA_DIV1
         LD      B,L
         LD      HL,(UB_ALVP)
         XOR     A
@@ -2314,14 +2259,9 @@ UB_AFFULL:                              ; affull
 
 UB_ALADDR:                              ; locate allocation-vector bit
         LD      HL,(UB_DSM)
-        LD      A,D
-        CP      H
-        JR      C,UB_AAVAL
-        JR      NZ,UB_AABAD
-        LD      A,E
-        CP      L
-        JR      C,UB_AAVAL
-        JR      NZ,UB_AABAD
+        OR      A
+        SBC     HL,DE
+        JR      C,UB_AABAD
 
 UB_AAVAL:                               ; aaval
         LD      A,E
@@ -2329,12 +2269,11 @@ UB_AAVAL:                               ; aaval
         LD      C,A
         LD      H,D
         LD      L,E
+        LD      B,3
+UA_DIV2:
         SRL     H
         RR      L
-        SRL     H
-        RR      L
-        SRL     H
-        RR      L
+        DJNZ    UA_DIV2
         LD      DE,(UB_ALVP)
         ADD     HL,DE
         LD      B,C
@@ -2445,14 +2384,12 @@ UB_DIRPOS:                              ; dirpos
 
 UB_POSITION:                            ; position BIOS for logical record
         LD      DE,(UB_DPBC)            ; SPT
-        LD      BC,0
-
-UB_POSDIV:                              ; posdiv
+        LD      BC,0FFFFH
         OR      A
-        SBC     HL,DE
-        JR      C,UB_POSDONE
+UB_POSDIV:
         INC     BC
-        JR      UB_POSDIV
+        SBC     HL,DE
+        JR      NC,UB_POSDIV
 
 UB_POSDONE:                             ; posdone
         ADD     HL,DE                   ; HL=remainder sector, BC=track
@@ -2632,6 +2569,28 @@ UB_SECMESSAGE:                          ; secmessage
 ; -------------------------------------------------------------------------------
 ; Core BDOS State
 ; -------------------------------------------------------------------------------
+
+UA_MERGE:
+        LD      A,(DE)
+        XOR     (HL)
+        AND     C
+        XOR     (HL)
+        LD      (HL),A
+        INC     HL
+        INC     DE
+        DJNZ    UA_MERGE
+        RET
+
+UA_NAME:
+        LD      B,11
+UA_NLOOP:
+        LD      A,(HL)
+        AND     07FH
+        CP      '?'
+        RET     Z
+        INC     HL
+        DJNZ    UA_NLOOP
+        RET
 
 UB_OLDSP:       DW      0               ; caller stack pointer
 UB_OLDIX:       DW      0               ; saved caller IX

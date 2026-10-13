@@ -1,4 +1,6 @@
         INCLUDE layout.inc
+
+; MEMORY_SAVINGS_V1: qualified shared helpers; preserve public call contracts.
         INCLUDE bioslinks.inc
         INCLUDE hardware.inc
 
@@ -316,36 +318,21 @@ DC_CYL:                                 ; derive physical cylinder
         LD (DC_IDTRK),A
         LD HL,(BIO_SECTOR)
         LD B,(IX+18)
+        LD C,L
         LD A,1
         INC B
-
-DC_QMASK:                               ; derive quarter-sector mask
+DC_QMASK:
         DJNZ DC_QSHIFT
         JR DC_QDONE
-
-DC_QSHIFT:                              ; scale quarter-sector index
+DC_QSHIFT:
         ADD A,A
-        JR DC_QMASK
-
-DC_QDONE:                               ; finish quarter-sector mapping
-        DEC A
-        AND L
-        LD (BIO_QUART),A
-        LD B,(IX+18)
-        INC B
-
-; -------------------------------------------------------------------------------
-; Sector Division and Translation
-; -------------------------------------------------------------------------------
-
-DC_DIV:                                 ; divide logical sector by physical size
-        DJNZ DC_DIVSHIFT
-        JR DC_DIVDONE
-
-DC_DIVSHIFT:                            ; scale physical-sector divisor
         SRL H
         RR L
-        JR DC_DIV
+        JR DC_QMASK
+DC_QDONE:
+        DEC A
+        AND C
+        LD (BIO_QUART),A
 
 DC_DIVDONE:                             ; finish sector division
         LD A,L
@@ -455,19 +442,11 @@ DC_TRY:                                 ; prepare controller transfer
         LD A,(DC_COMMAND)
         OUT (FDCCOMMAND),A
         LD HL,(DC_BUFFER)
-        LD A,(DC_SIZE)
+        CALL DA_LEN
+        LD A,D
         OR A
-        LD A,1
-        JR Z,DC_BSET
-        LD A,(DC_SIZE)
-        DEC A
-        LD B,A
-        LD A,1
-        JR Z,DC_BSET
-
-DC_BLSH:                                ; derive transfer block count
-        ADD A,A
-        DJNZ DC_BLSH
+        JR NZ,DC_BSET
+        INC A
 
 DC_BSET:                                ; set transfer block count
         LD (DC_NBLK),A
@@ -516,16 +495,7 @@ DC_INVBUF:                              ; invert write buffer
         AND 010H
         RET Z
         LD HL,(DC_BUFFER)
-        LD DE,128
-        LD A,(DC_SIZE)
-        OR A
-        JR Z,DC_INVERT
-
-DC_INVSH:                               ; scale inversion length
-        SLA E
-        RL D
-        DEC A
-        JR NZ,DC_INVSH
+        CALL DA_LEN
 
 DC_INVERT:                              ; invert next buffer byte
         LD A,(HL)
@@ -767,6 +737,18 @@ DC_DLOOP:                               ; execute millisecond delay
 ; -------------------------------------------------------------------------------
 ; Format Request Descriptor
 ; -------------------------------------------------------------------------------
+
+DA_LEN:
+        LD DE,128
+        LD A,(DC_SIZE)
+        OR A
+        RET Z
+DC_INVSH:
+        SLA E
+        RL D
+        DEC A
+        JR NZ,DC_INVSH
+        RET
 
 DC_INFO:                                ; format request descriptor
         DB 'B','D','C','F',5,4,4,64

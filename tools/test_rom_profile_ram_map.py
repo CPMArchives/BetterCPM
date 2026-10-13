@@ -31,6 +31,8 @@ def main() -> None:
         row["disposition"] in (
             "relocate to ROM-profile RAM", "retain in ROM-profile RAM")
     }
+    source_starts = {row["object"]: row["current_start"] for row in ownership
+                     if row["platform"] in ("all", "z80pack")}
     placement = rows(RAM_MAP)
     mapped = {row["source_object"] for row in placement if row["kind"] == "object"}
     if mapped != set(required):
@@ -54,6 +56,8 @@ def main() -> None:
         if row["kind"] == "object":
             if size != required[row["source_object"]]:
                 raise AssertionError(f"{row['entry']} size differs from ownership inventory")
+            if row["template_start"] != "none" and row["template_start"] != source_starts[row["source_object"]]:
+                raise AssertionError(f"{row['entry']} template source drifted from ownership inventory")
             object_bytes += size
         else:
             if row["source_object"] != "none":

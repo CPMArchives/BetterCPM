@@ -8,12 +8,12 @@ descriptor-header	reserved	none	D644	D646	3	copy	D644	live descriptor magic and 
 extension-control-live	object	extension-control-live	D647	D657	17	copy	D647	live extension-control descriptor fields
 cpx-profile	object	cpx-profile	D658	D680	41	copy	D658	persistent CPX reconstruction profile
 gateway-tail-reserve	reserved	none	D681	D6BB	59	zero	none	fixed gateway growth and ROM-entry trampolines
-bdos-live-state	object	bdos-live-state	D6BC	D700	69	copy	E430	BDOS persistent and call-local state
+bdos-live-state	object	bdos-live-state	D6BC	D700	69	copy	E3CB	BDOS persistent and call-local state
 bdos-stack	object	bdos-stack	D701	D728	40	zero	none	private BDOS stack
 extension-live-state	object	extension-live-state	D729	D72D	5	zero	none	extension dispatcher call state
-physical-drive-profiles	object	z80pack-physical-drive-profiles	D72E	D745	24	copy	E9B6	live z80pack physical-drive profiles
-disk-session-state	object	z80pack-disk-session-state	D746	D753	14	copy	E9CE	z80pack disk transfer state
-bios-disk-state	object	z80pack-bios-disk-state	D754	D75F	12	copy	EB03	BIOS logical and physical disk state
+physical-drive-profiles	object	z80pack-physical-drive-profiles	D72E	D745	24	copy	E951	live z80pack physical-drive profiles
+disk-session-state	object	z80pack-disk-session-state	D746	D753	14	copy	E969	z80pack disk transfer state
+bios-disk-state	object	z80pack-bios-disk-state	D754	D75F	12	copy	EA8C	BIOS logical and physical disk state
 file-stream-fcb	object	file-stream-fcb	D760	D783	36	zero	none	protected carrier-stream FCB
 live-disk-tables	object	z80pack-live-disk-tables	D784	D9C3	576	copy-fixup	ED17	live DPH bindings, ALV and CSV records
 rsx-profile	object	rsx-profile	D9C4	D9EC	41	zero	none	active RSX reconstruction profile

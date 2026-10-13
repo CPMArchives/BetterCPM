@@ -229,10 +229,10 @@ def main():
                     (stage / file).write_text(expand_layout((ROOT / 'src/platform/trs80m4' / file).read_text()))
                 (stage / 'biosplat.inc').write_text((ROOT / 'src/bios/biosplat.inc').read_text())
             sizes.append(len(assemble(monitor_hooks(compact_model4(source)) if routed == 'combined' else compact_model4(source) if routed == 'compact' else router(source, host) if routed else source, 'bios', LAYOUT['BIOS'], stage, args.assembler)))
-        rows.append(dict(platform=name, baseline=sizes[0], prototype=sizes[1], growth=sizes[1]-sizes[0], allocation=638, compact=sizes[2] if not host else None, combined=sizes[3] if not host else None))
+        rows.append(dict(platform=name, baseline=sizes[0], prototype=sizes[1], growth=sizes[1]-sizes[0], allocation=LAYOUT["FILE"]-LAYOUT["BIOS"], compact=sizes[2] if not host else None, combined=sizes[3] if not host else None))
     (args.output / 'sizes.json').write_text(json.dumps(rows, indent=2)+'\n')
     for row in rows:
-        print(f"{row['platform']}: {row['baseline']} -> {row['prototype']} bytes (+{row['growth']}); allocation 638; compact {row['compact']}; combined {row['combined']}")
+        print(f"{row['platform']}: {row['baseline']} -> {row['prototype']} bytes (+{row['growth']}); allocation {row['allocation']}; compact {row['compact']}; combined {row['combined']}")
 
 
 if __name__ == '__main__':

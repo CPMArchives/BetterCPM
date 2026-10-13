@@ -25,6 +25,10 @@ def replace_once(text: str, old: str, new: str) -> str:
 
 
 def bdos_candidates(text: str, groups: tuple[str, ...]) -> str:
+    # These candidates are now production source. Re-audits validate the
+    # adopted image rather than applying its transformations a second time.
+    if "MEMORY_SAVINGS_V1" in text:
+        return text
     if "bounds" in groups:
         text = replace_once(text, """        LD      HL,(UB_DSM)
         LD      A,D
@@ -205,6 +209,10 @@ UA_NAME:""")
 
 
 def disk_candidates(text: str, groups: tuple[str, ...]) -> str:
+    # These candidates are now production source. Re-audits validate the
+    # adopted image rather than applying its transformations a second time.
+    if "MEMORY_SAVINGS_V1" in text:
+        return text
     if "geometry" in groups:
         start, end = text.index("        LD B,(IX+18)\n", text.index("DC_CYL:")), text.index("DC_DIVDONE:")
         text = text[:start] + """        LD B,(IX+18)
