@@ -429,6 +429,22 @@ for COM/O sources. Do not describe O as universally overriding text EOF.
 This distinction is verified against the pinned DRI binary by the Build 024
 single-file and concatenation qualification cases.
 
+O on INP/RDR/CON input also ignores Ctrl-Z, and these streams have no physical
+file EOF. Ordinary object input therefore continues until interruption or I/O
+failure. H/I retains its logical HEX termination rules even with O. NUL and EOF
+pseudo-sources remain finite special operations. INP/RDR object input polls the
+console every 256 characters; a non-Ctrl-Z key aborts through transaction
+cleanup. CON uses its existing BDOS console-input path.
+
+**Retained source-list EOF carryover:** after a disk source consumes physical
+EOF, a following non-HEX object-mode reader inherits DRI's HARDEOF/NSOURCE
+condition. It fetches its first extracted character, discards it and ends that
+source without appending reader data. This also applies after an empty disk
+file. A disk source that stops at logical Ctrl-Z has not consumed physical EOF
+and does not trigger the condition. Opening another disk source resets it;
+H/I reader transfers ignore it and use their own logical termination. This
+source-list quirk is deliberately retained and qualified against DRI.
+
 ---
 
 # 14. Historical PIP Parameters
@@ -1472,3 +1488,42 @@ continuation after Q. Native ZSM4/LINK matches the 13,672-byte development
 artifact. This supersedes the earlier object-extraction preflight restriction.
 Object peripheral input, physical device routing and final platform
 qualification remain open; PIP remains development-only.
+
+
+## Build 025 — object-mode peripheral input
+
+O is now accepted on supported logical input devices and propagates object mode
+into source processing, extraction and console polling. Ctrl-Z is copied as
+ordinary object data for INP/RDR/CON input. Unlike a disk source, a standalone device
+stream has no physical EOF; it continues until an operator interruption or I/O
+failure. A Ctrl-Z returned by the BLOCK reader-stop poll also remains object
+data. H/I still terminates on logical EOF and completes the existing HEX
+workflow, including automatic INP-to-HEX selection. NUL/EOF retain their finite
+special behavior. No invented peripheral EOF condition is introduced.
+
+INP/RDR object input uses the 256-character console polling interval. Aborting
+reaches the established staging cleanup, old-destination preservation and A0
+SUBMIT cancellation. CON continues to use BDOS 1; qualification of warm-boot
+interruptions remains part of the platform work. The engineering/user notes
+and source comments state that O device input does not end on Ctrl-Z.
+
+All 18 in-memory PIP scripts pass. Fixtures cover INP/RDR Ctrl-Z object data
+followed by abort, and CON object HEX completion. Eight deterministic real
+cpmsim comparisons against DRI pass, including object INP H, object RDR I and
+object INP H+S. The expanded comparison writes outputs to a separate disposable
+drive so its test programs do not consume the output disk's capacity. A real
+cpmsim default-INP O transfer also reaches the object console poll, aborts and
+preserves the old destination; the existing text abort/queue check passes in
+the same campaign. Native ZSM4/LINK matches the 13,745-byte development artifact.
+
+Seven additional real cpmsim source-list cases match DRI. The retained disk-EOF
+carryover condition is represented by PC_HARD: new disk input resets it and a
+consumed physical EOF sets it. An ordinary object reader then discards its first
+extracted character and ends; HEX ignores that condition. Source comments and
+section 13 explicitly document the rule. Cases include COM-to-INP/RDR O,
+COM-to-INP O+S, text physical EOF, empty files, disk-to-HEX reader and HEX
+reader-to-disk lists. Fixtures also confirm that logical Ctrl-Z alone does not
+set the carried physical EOF condition.
+
+Physical IOBYTE/device routing, further compatibility coverage and final
+Model 4/platform qualification remain open. PIP remains development-only.

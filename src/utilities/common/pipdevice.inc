@@ -92,7 +92,11 @@ PI_VALID:
         SCF
         RET
 PI_BEGIN:
-        XOR A
+        ; Standalone O streams have no physical EOF. Ctrl-Z is data until H/I
+        ; terminates, an operator aborts, or I/O fails. DRI disk EOF carryover
+        ; for later object readers is preserved by HH_PUT's plain path.
+        ; CON retains BDOS 1 input; INP/RDR use the object console-poll cadence.
+        LD A,(OP_DATA+138)            ; SIMPLECOM sets SCOM from OBJ
         LD (PC_BINARY),A
         CALL PE_INIT
         LD A,1
@@ -104,7 +108,10 @@ PI_READ:
         OR A
         JR Z,PI_FETCH
         CP 1
-        JP Z,PC_NEXT
+        JR NZ,PI_STOPX
+        LD A,1AH
+        JR PI_EOFTEST
+PI_STOPX:
         LD A,13H
         JR PI_FEED
 PI_FETCH:
@@ -135,8 +142,20 @@ PI_CHAR:
         OR A
         JP NZ,PT_ABORTED
         LD A,E
+PI_EOFTEST:
+        LD (PI_VALUE),A
+        LD A,(HH_MODE)
+        OR A
+        JR NZ,PI_TEXTE
+        LD A,(PC_BINARY)
+        OR A
+        JR NZ,PI_OBJECT
+PI_TEXTE:
+        LD A,(PI_VALUE)
         CP 01AH
         JP Z,PC_NEXT
+PI_OBJECT:
+        LD A,(PI_VALUE)
 PI_FEED:
         CALL PE_FEED
         OR A
@@ -199,6 +218,7 @@ PI_FLUSH:
         JP PT_FLUSH
 PI_ACTIVE: DB 0
 PI_LEFT: DB 0
+PI_VALUE: DB 0
 
 ; DRI GETSOURCEC order: strip parity, then upper case (takes precedence
 ; over lower case). Transform before testing text EOF, including parity EOF.

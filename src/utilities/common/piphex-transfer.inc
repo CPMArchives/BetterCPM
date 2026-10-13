@@ -41,8 +41,29 @@ HH_PUT:
         LD (HH_CHAR),A
         LD A,(HH_MODE)
         OR A
+        JR NZ,HH_HEX
+        ; Retained DRI source-list quirk: GETSOURCE runs before READ_EOF.
+        ; An object reader after consumed disk EOF inherits HARDEOF/NSOURCE,
+        ; discards its first extracted character and ends. HEX ignores that
+        ; disk EOF state and uses logical termination. A new disk resets it.
+        LD A,(PI_ACTIVE)
+        OR A
+        JR Z,HH_PLAIN
+        LD A,(PC_BINARY)
+        OR A
+        JR Z,HH_PLAIN
+        LD A,(PC_HARD)
+        OR A
+        JR Z,HH_PLAIN
+        LD A,1
+        LD (PE_DONE),A
+        XOR A
+        RET
+HH_PLAIN:
         LD A,(HH_CHAR)
-        JP Z,PF_PUT
+        JP PF_PUT
+HH_HEX:
+        LD A,(HH_CHAR)
         CP 13H
         JR NZ,HH_NOTX
         ; Complete records are already flushed by PI_PUT. Preserve the

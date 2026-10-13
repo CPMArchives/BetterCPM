@@ -70,6 +70,8 @@ PC_COPT:
         JR Z,PC_CSKIP
         CP 25
         JR Z,PC_CSKIP
+        CP 14                        ; O also applies to character sources
+        JR Z,PC_CSKIP
         PUSH HL
         LD HL,(PC_PTR)
         LD A,(HL)
@@ -155,6 +157,7 @@ PC_BEGIN:
         CALL PE_INIT
         XOR A
         LD (PC_BINARY),A
+        LD (PC_HARD),A                ; DRI SETUPSOURCE resets HARDEOF
         ; Retained DRI dispatch quirk: SIMPLECOPY does not OR OBJ into SCOM.
         ; With character options (S/Q, B, U, etc.), a lone disk-to-disk source
         ; uses physical EOF only for .COM, even if [O] is present. SIMPLECOM
@@ -196,7 +199,11 @@ PC_READ:
         LD C,20
         CALL 5
         CP 1
-        JP Z,PC_NEXT
+        JR NZ,PC_RSTAT
+        LD A,1
+        LD (PC_HARD),A                ; source consumed physical EOF
+        JP PC_NEXT
+PC_RSTAT:
         OR A
         JP NZ,PT_READERR
         XOR A
@@ -320,6 +327,7 @@ PC_MULTI: DB 0
 PC_LEFT: DB 0
 PC_PTR: DW 0
 PC_BINARY: DB 0
+PC_HARD: DB 0
 PC_OPOS: DB 0
 PC_IPOS: DB 0
 PC_CHARV: DB 0

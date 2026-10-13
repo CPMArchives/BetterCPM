@@ -2246,3 +2246,18 @@ O does not universally override text EOF.
 
 See the [PIP engineering specification](../engineering/PIP%20Specification.md)
 for the qualified compatibility rules.
+
+
+On INP/RDR/CON input, O also makes Ctrl-Z an ordinary data byte. A plain object
+device stream has no file EOF and continues until interruption or an I/O
+failure. H/I still uses HEX termination with O. INP/RDR object transfers poll
+for console interruption every 256 characters; a non-Ctrl-Z key aborts through
+PIP's cleanup path. CON retains its normal BDOS console-input controls.
+
+
+PIP also retains DRI's source-list EOF carryover quirk: after a disk source
+reaches physical EOF, a following ordinary object-mode reader fetches and
+discards its first extracted character, then ends without appending reader
+data. An empty disk file triggers the same behavior. Stopping a disk source at
+logical Ctrl-Z does not. Another disk source resets the state; H/I reader
+transfers use their own HEX termination and are unaffected.
