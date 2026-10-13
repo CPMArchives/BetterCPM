@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""DRI text HEX transfer: records, end tails, recovery and staging."""
+"""DRI text/object HEX transfer: records, end tails, recovery and staging."""
 from test_pip_transfer import execute,key
 from test_pip_hex import record
 
@@ -39,6 +39,13 @@ def main():
  out,fs,_,_=execute('B7:DEST.HEX=A2:SRC.HEX[HV]',{src:(b'\x13'.join(bytes([v]) for v in data),0)})
  assert out=='' and fs[dest][0].startswith(base+ending+b'\r\n')
  out,fs,_,_=execute('B7:DEST.HEX=A2:SRC.HEX[OH]',{src:(data,0)})
- assert 'not implemented' in out and dest not in fs
+ assert out=='' and fs[dest][0].startswith(base+ending+b'\r\n')
+ obj=key(0,2,'SRC.COM')
+ for option in ['H','I','OHV']:
+  out,fs,_,_=execute('B7:DEST.HEX=A2:SRC.COM['+option+']',{obj:(data+b'AFTER EOF MUST NOT COPY',0)})
+  expected=base+(ending if 'I' not in option else b'')+b'\r\n'
+  assert out=='' and fs[dest][0]==expected.ljust(((len(expected)+127)//128)*128,b'\x1a'),(option,out)
+ out,fs,_,_=execute('B7:DEST.HEX=A2:SRC.COM[H]',{obj:(records[0]+b'\x1aAFTER EOF',0)},answer='\x1a')
+ assert 'END OF FILE, CTL-Z?' in out and fs[dest][0]==(records[0]+b'\r\n').ljust(128,b'\x1a')
  print('PASS: PIP H/I record transfer, zero-length drain, EOF/correction prompts, retry and XOFF suppression')
 if __name__=='__main__':main()

@@ -1403,3 +1403,28 @@ It uses the reserved driver page for deterministic reader data; all resulting
 files match byte for byte. Native ZSM4/LINK matches the 13,703-byte development
 artifact. Object-mode HEX/peripheral combinations, physical routing and final
 platform qualification remain open. PIP remains development-only.
+
+
+## Build 023 — HEX processing of object disk sources
+
+H/I now accepts both implicit object sources (.COM) and explicit O disk sources.
+DRI READTAPE reads GETSOURCE directly, so Ctrl-Z terminates HEX input even when
+the source is marked object. This differs from ordinary object copying, whose
+READ_EOF path uses physical disk EOF. The HEX character path now follows that
+rule before zero-length-tail completion and destination close; bytes after
+Ctrl-Z are not copied or interpreted as additional HEX data.
+
+The existing validator, H/I end-record policy, correction prompts, XOFF handling,
+verification and staged replacement remain shared. S/Q with object sources is
+still rejected during preflight: its interaction with physical EOF needs its
+own qualification. Object-mode peripheral input also remains pending.
+
+All 18 in-memory PIP regression scripts pass. HEX fixtures cover .COM and O
+sources, H/I/V, trailing bytes after Ctrl-Z and missing terminal-record
+confirmation. Real cpmsim comparisons with the pinned DRI binary pass for
+explicit O text-named sources (OH/OI/OHV), implicit .COM sources (H/I/HV), and
+the established text H/I/HV cases, with interspersed XOFF. Native ZSM4/LINK
+matches the 13,697-byte development artifact. This build removes the former
+blanket object-HEX preflight restriction while retaining object-extraction
+checks. PIP remains development-only; physical routing and final platform
+qualification remain open.

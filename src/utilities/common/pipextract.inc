@@ -108,21 +108,13 @@ PE_PTR: DW 0
 PE_SERROR: DB 'START NOT FOUND',13,10,'$'
 PE_QERROR: DB 'QUIT NOT FOUND',13,10,'$'
 
-; This increment qualifies extraction only for text sources. Reject object
-; extraction before any transfer I/O rather than assume peripheral EOF rules.
+; S/Q extraction remains text-only. HEX uses GETSOURCE's Ctrl-Z termination
+; even for COM/[O] sources and is qualified independently.
 PE_VALID:
-        LD HL,(PC_PTR)
-        LD DE,51
-        ADD HL,DE
-        LD A,(HL)
-        INC HL
-        OR (HL)
-        LD E,A
         LD HL,(PC_PTR)
         LD BC,60
         ADD HL,BC
         LD A,(HL)
-        OR E
         INC HL
         INC HL
         OR (HL)

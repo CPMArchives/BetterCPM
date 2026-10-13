@@ -155,7 +155,7 @@ def main():
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT',batch)
  assert fs[queue]==[b'BATCH',0]
  out,fs,calls,_=execute('/VER',batch)
- assert 'Build 022' in out and fs[queue]==[b'BATCH',0] and calls==[9]
+ assert 'Build 023' in out and fs[queue]==[b'BATCH',0] and calls==[9]
  for protection in ['cancel','roqueue','rodrive']:
   protected_batch={**batch,queue:(b'BATCH',1 if protection=='roqueue' else 0)}
   out,fs,_,_=execute('BAD',protected_batch,fail='cancel' if protection=='cancel' else None,readonly=1 if protection=='rodrive' else 0)
