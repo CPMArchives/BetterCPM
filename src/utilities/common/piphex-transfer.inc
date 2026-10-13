@@ -1,5 +1,5 @@
-; Text H/I transfer integration. The bounded validator handles complete
-; records; this layer scans colon boundaries and drains zero-length tails.
+; H/I transfer integration. HEX consumes Ctrl-Z EOF even for COM/[O] input.
+; The bounded validator handles records; this layer scans and drains tails.
 HH_INIT:
         XOR A
         LD (HH_COUNT),A

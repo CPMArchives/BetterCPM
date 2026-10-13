@@ -205,9 +205,13 @@ PC_CHAR:
         LD A,(PB_ABORT)
         OR A
         JP NZ,PT_ABORTED
+        LD A,(HH_MODE)
+        OR A
+        JR NZ,PC_EOFT
         LD A,(PC_BINARY)
         OR A
         JR NZ,PC_PUT
+PC_EOFT:
         LD A,(PC_CHARV)
         CP 01AH
         JP Z,PC_NEXT
