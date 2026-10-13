@@ -1075,3 +1075,28 @@ Tests cover empty/exact/partial/multiple record boundaries, reader parity,
 fixed INP patch ABI, NUL/EOF contents, preflight rejection and injected write,
 verify, close and rename failures. Device interruption and object/peripheral
 termination rules remain unfinished; this is still a development-only utility.
+
+
+## Build 011 — mixed source lists and device-to-device transfers
+
+The common source-list engine now accepts exact disk files alongside CON:,
+RDR:, INP:, NUL: and EOF:. Sources are processed in order without record
+padding between sources. Each text input's terminating 1Ah ends that source;
+EOF: instead inserts a literal 1Ah and continues with later sources. NUL:
+inserts exactly 40 zero bytes. Padding occurs only at the final disk record.
+
+These lists can target a named disk file or CON:, LST:, PUN: and OUT:.
+Device-to-device transfers use the same logical routes and patch contracts
+already qualified in Builds 009/010. Disk sources retain G/O/R support;
+text-device sources still reject object mode and transformations. [V]/[W]
+remain disk-destination options. Complete-list validation checks unavailable
+devices, unsupported parameters and disk staging/source aliases before reading
+input, writing output or modifying a destination.
+
+Regression coverage includes both disk-first and device-first lists, DU changes,
+reader parity, special-source boundaries, every logical sink, default/modified
+patch hooks and rejection of invalid later operands before output. Shared reader
+and source-switch code replaces the duplicate first-source device setup; the
+cross/native image is 11,474 bytes, eleven fewer than Build 010. Physical aliases,
+transformations, HEX and interruption qualification remain open, and PIP is
+still excluded from distribution disks.

@@ -18,7 +18,7 @@ def main():
   assert out=='' and fs[dest][0]==prefix.ljust(128,b'\x1a') and not any(f in calls for f in (1,3))
  out,fs,_,_=execute('B7:DEST.DAT=INP:',{})
  assert out=='' and fs[dest]==[b'',0]
- for tail in ['B7:DEST.DAT=CON:[O]','B7:DEST.DAT=CON:,NUL:','B7:=CON:','B7:DEST.DAT=PTR:']:
+ for tail in ['B7:DEST.DAT=CON:[O]','B7:=CON:','B7:DEST.DAT=PTR:']:
   out,fs,calls,_=execute(tail,{dest:(b'old',0)})
   assert ('not implemented' in out or 'INVALID FORMAT' in out) and fs[dest]==[b'old',0]
   assert not any(f in calls for f in (1,3,19,22,23))
