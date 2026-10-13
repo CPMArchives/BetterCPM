@@ -5,13 +5,20 @@ from pathlib import Path
 from test_z80pack_sysgen_install import session
 ROOT=Path(__file__).resolve().parents[1]
 def main():
- p=argparse.ArgumentParser();p.add_argument('--formatting',action='store_true');p.add_argument('--numbering',action='store_true');p.add_argument('--echo',action='store_true');p.add_argument('--hex',action='store_true');p.add_argument('--hex-object',action='store_true');p.add_argument('--hex-com',action='store_true');p.add_argument('--block',action='store_true');p.add_argument('--image-dir',type=Path,default=ROOT/'build/z80pack');p.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim');args=p.parse_args()
- report=ROOT/('build/test-results/pip-hex-object' if args.hex_object or args.hex_com else 'build/test-results/pip-block' if args.block else 'build/test-results/pip-hex-transfer' if args.hex else 'build/test-results/pip-echo' if args.echo else 'build/test-results/pip-number' if args.numbering else 'build/test-results/pip-format' if args.formatting else 'build/test-results/pip-extract');report.mkdir(parents=True,exist_ok=True)
+ p=argparse.ArgumentParser();p.add_argument('--hex-extraction',action='store_true');p.add_argument('--object-direct',action='store_true');p.add_argument('--extract-object',action='store_true');p.add_argument('--extract-com',action='store_true');p.add_argument('--formatting',action='store_true');p.add_argument('--numbering',action='store_true');p.add_argument('--echo',action='store_true');p.add_argument('--hex',action='store_true');p.add_argument('--hex-object',action='store_true');p.add_argument('--hex-com',action='store_true');p.add_argument('--block',action='store_true');p.add_argument('--image-dir',type=Path,default=ROOT/'build/z80pack');p.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim');args=p.parse_args()
+ if args.hex_extraction:args.hex_com=True
+ report=ROOT/('build/test-results/pip-hex-extract' if args.hex_extraction else 'build/test-results/pip-object-direct' if args.object_direct else 'build/test-results/pip-object-extract' if args.extract_object or args.extract_com else 'build/test-results/pip-hex-object' if args.hex_object or args.hex_com else 'build/test-results/pip-block' if args.block else 'build/test-results/pip-hex-transfer' if args.hex else 'build/test-results/pip-echo' if args.echo else 'build/test-results/pip-number' if args.numbering else 'build/test-results/pip-format' if args.formatting else 'build/test-results/pip-extract');report.mkdir(parents=True,exist_ok=True)
  with tempfile.TemporaryDirectory(prefix='pip-extract-',dir='/private/tmp') as temporary:
   work=Path(temporary);shutil.copytree(args.image_dir/'disks',work/'disks');shutil.copy2(args.image_dir/'diskdefs',work/'diskdefs');disk=work/'disks/drivea.dsk'
   def install(path,target):subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(disk),str(path),target],cwd=work,check=True)
-  source=work/('TEXT.COM' if args.hex_com else 'TEXT.TXT');source.write_bytes(b'x'*126+b'STARTbodyQUITafter\x1a')
+  source=work/('TEXT.COM' if args.hex_com or args.extract_com else 'TEXT.TXT');source.write_bytes(b'x'*126+b'STARTbodyQUITafter\x1a')
   cases=[b'SSTART\x1aQQUIT\x1a',b'QQUIT\x1a',b'USSTART\x1a',b'S\x1a',b'Q\x1a']
+  if args.extract_object or args.extract_com:
+   source.write_bytes(b'x'*126+b'\x1aST\x1aARTbodyQUITafter\x1aTAIL')
+   if args.extract_object:cases=[b'O'+option for option in cases]
+  if args.object_direct:
+   source.write_bytes(b'abc\x13defXtail\x1aAFTER EOF')
+   cases=[b'OB',b'OU',b'OQdef\x1a']
   if args.formatting:
    source.write_bytes(b'A\tB\x0cC\r\nLONGTEXT\tZ\nD\r\tEND\x1a')
    cases=[b'T8F',b'T4D3',b'T255']
@@ -27,6 +34,10 @@ def main():
    cases=[b'OH',b'OI',b'OHV'] if args.hex_object else [b'H',b'I',b'HV']
    source.write_bytes(b'\x13'.join(bytes([v]) for v in source.read_bytes()))
    if args.hex_object or args.hex_com:source.write_bytes(source.read_bytes()+b'AFTER EOF MUST NOT COPY')
+  if args.hex_extraction:
+   from test_pip_hex import record
+   source.write_bytes(b'noiseSTART'+record(b'ABC')+b'\n:00000001FF\r\nENDjunk\x1aAFTER EOF')
+   cases=[b'HSSTART\x1a',b'ISSTART\x1a',b'HVQEND\x1a']
   if args.block:
    source.write_bytes(b'A'*127+b'\x13'+b'B'*132+b'\x13C\x1a')
    cases=[b'B',b'BV',b'BE']
@@ -35,7 +46,7 @@ def main():
   for i,options in enumerate(cases):
    for prefix,binary in [('OUR',ROOT/'build/pip-development/PIP.COM'),('REF',ROOT/'third_party/dri-pip/PIP-1.5-reference.COM')]:
     data=binary.read_bytes();assert data[0]==0xc3
-    command=(prefix+str(i)+'.TXT='+source.name+'[G3').encode()+options+b']'
+    command=(prefix+str(i)+'.TXT='+source.name+'[G3').encode()+options+b']'+(b',EOF:' if args.extract_object else b'')
     tail=bytes([len(command)])+command+b'\r'
     # Tiny appended launcher supplies literal 1Ah delimiters in the command
     # tail. The current CCP editor filters typed Ctrl-Z; no keyboard assumption.
@@ -51,5 +62,5 @@ def main():
     subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(disk),'4:'+name,str(out)],cwd=work,check=True)
     return out.read_bytes()
    assert extract('OUR')==extract('REF'),i
- print('PASS: cpmsim '+('B block transfer' if args.block else 'object HEX transfer' if args.hex_object or args.hex_com else 'H/I HEX transfer' if args.hex else 'E echo' if args.echo else 'N/P numbering' if args.numbering else 'T/F/D formatting' if args.formatting else 'S/Q text extraction')+' matches pinned DRI PIP')
+ print('PASS: cpmsim '+('object HEX with S/Q' if args.hex_extraction else 'single-file object option dispatch' if args.object_direct else 'object S/Q extraction' if args.extract_object or args.extract_com else 'B block transfer' if args.block else 'object HEX transfer' if args.hex_object or args.hex_com else 'H/I HEX transfer' if args.hex else 'E echo' if args.echo else 'N/P numbering' if args.numbering else 'T/F/D formatting' if args.formatting else 'S/Q text extraction')+' matches pinned DRI PIP')
 if __name__=='__main__':main()

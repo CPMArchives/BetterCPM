@@ -96,8 +96,6 @@ PC_CSKIP:
         INC HL
         INC C
         DJNZ PC_COPT
-        CALL PE_VALID
-        JP C,PC_BAD
         LD HL,(PC_PTR)
         LD A,(HL)
         CP 4
@@ -157,9 +155,19 @@ PC_BEGIN:
         CALL PE_INIT
         XOR A
         LD (PC_BINARY),A
+        ; Retained DRI dispatch quirk: SIMPLECOPY does not OR OBJ into SCOM.
+        ; With character options (S/Q, B, U, etc.), a lone disk-to-disk source
+        ; uses physical EOF only for .COM, even if [O] is present. SIMPLECOM
+        ; (concatenation/device output) also honors [O]. O-only direct record
+        ; copies bypass this character path and already use physical EOF.
         LD A,(OP_DATA+138)
         OR A
-        JR NZ,PC_BIN
+        JR Z,PC_EXT
+        LD A,(PC_MULTI)
+        LD HL,PD_ACTIVE
+        OR (HL)
+        JR NZ,PC_BIN                 ; SIMPLECOM combines SCOM with OBJ
+PC_EXT:                              ; SIMPLECOPY derives SCOM from .COM
         LD HL,PT_SFCB+9
         LD A,(HL)
         AND 7FH

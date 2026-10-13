@@ -12,7 +12,7 @@ def main():
   assert len(writes)==(len(expected)+127)//128
  data=bytes(range(256))
  out,fs,_,_=execute('B7:DEST.TXT=A2:SRC.TXT[BO]',{src:(data,0)})
- assert out=='' and fs[dest][0]==data.replace(b'\x13',b'')+b'\x1a'
+ assert out=='' and fs[dest][0]==data[:26].replace(b'\x13',b'').ljust(128,b'\x1a')
  out,fs,_,_=execute('B7:DEST.TXT=INP:[BV]',{},input_bytes=b'A\x13B\x13\x1a',patch_in=True)
  assert out=='' and fs[dest][0]==b'AB'+b'\x1a'*126
  out,_,_,_=execute('CON:=INP:[B]',{},input_bytes=b'A\x13B\x1a',patch_in=True)

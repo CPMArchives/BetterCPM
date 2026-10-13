@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Text extraction matches the pinned DRI one-character lookahead rules."""
+"""Text/object extraction matches the pinned DRI one-character lookahead rules."""
 from test_pip_transfer import execute,key
 EOF='\x1a'
 def main():
@@ -24,8 +24,16 @@ def main():
  two=key(2,3,'TWO.TXT')
  out,fs,_,_=execute('B7:DEST.TXT=A2:SRC.TXT[QEND'+EOF+'],C3:TWO.TXT[SSTART'+EOF+']',{src:(b'oneENDtail\x1a',0),two:(b'xxSTARTtwo\x1a',0)})
  assert fs[dest][0]==b'oneEND\r\nSTARTtwo'+b'\x1a'*112
- for tail in ['CON:=A2:SRC.COM[Sx'+EOF+']','B7:DEST.TXT=A2:SRC.TXT[OSx'+EOF+']']:
-  out,_,calls,_=execute(tail,{src:(b'x\x1a',0)})
-  assert 'not implemented' in out and not any(f in calls for f in (20,22,2))
- print('PASS: PIP text S/Q inclusion, lookahead, empty strings, record boundaries, source reset and missing-string cleanup')
+ obj=key(0,2,'SRC.COM')
+ data=b'xx\x1aST\x1aARTbodyQUITafter\x1aTAIL'
+ expected=b'\x1a\x1aSTARTbodyQUIT\r\n\x1after\x1aTAIL'+b'\x1a'*((-len(data))%128)
+ for name,options in [('SRC.COM','SSTART'+EOF+'QQUIT'+EOF),('SRC.TXT','OSSTART'+EOF+'QQUIT'+EOF)]:
+  source=key(0,2,name)
+  suffix=',EOF:' if name.endswith('.TXT') else ''
+  out,fs,_,_=execute('B7:DEST.TXT=A2:'+name+'['+options+']'+suffix,{source:(data,0)})
+  result=expected+(b'\x1a' if suffix else b'')
+  assert out=='' and fs[dest][0]==result.ljust(((len(result)+127)//128)*128,b'\x1a'),(name,out,fs[dest])
+ out,fs,_,_=execute('B7:DEST.TXT=A2:SRC.TXT[OSSTART'+EOF+']',{src:(data,0),dest:(b'old',0)})
+ assert 'START NOT FOUND' in out and fs[dest]==[b'old',0]
+ print('PASS: PIP text/object S/Q inclusion, lookahead, empty strings, record boundaries, source reset and missing-string cleanup')
 if __name__=='__main__':main()

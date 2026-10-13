@@ -410,7 +410,24 @@ COM files are treated as non-ASCII/object data automatically.
 
 For normal ASCII transfers, `1Ah` is the CP/M EOF convention and PIP appends appropriate EOF output.
 
-The `O` parameter forces object transfer and prevents `1Ah` from terminating the data stream.
+### Retained DRI O-parameter dispatch exception
+
+The pinned DRI implementation applies O differently on its two transfer paths.
+On the generic concatenation/device path, O enables object input: embedded
+`1Ah` bytes are copied and physical disk EOF ends the source. On a single
+file-to-file character transfer (including S/Q, B or case conversion), DRI's
+SIMPLECOPY path derives object mode from the source's COM extension and does
+not combine it with O. A non-COM source therefore still stops at `1Ah` even
+when O is present. BetterCP/M deliberately retains this observed behavior.
+
+For example, `PIP DEST.DAT=SOURCE.DAT[OU]` uses text EOF, whereas
+`PIP DEST.DAT=SOURCE.DAT[OU],SECOND.DAT` uses object EOF for SOURCE.DAT and
+then concatenates SECOND.DAT. O-only direct record copies already copy complete
+physical records. HEX H/I is a separate exception: it terminates on Ctrl-Z even
+for COM/O sources. Do not describe O as universally overriding text EOF.
+
+This distinction is verified against the pinned DRI binary by the Build 024
+single-file and concatenation qualification cases.
 
 ---
 
@@ -1428,3 +1445,30 @@ matches the 13,697-byte development artifact. This build removes the former
 blanket object-HEX preflight restriction while retaining object-extraction
 checks. PIP remains development-only; physical routing and final platform
 qualification remain open.
+
+
+## Build 024 — object S/Q extraction and DRI dispatch compatibility
+
+S/Q now supports object disk input. Embedded Ctrl-Z bypasses pattern matching
+without clearing partial-match state. Ordinary object copying emits that byte
+and continues to physical EOF. A Q match consumes its lookahead, emits
+CR/LF/Ctrl-Z, then continues reading the remaining object input. Text and HEX
+paths retain logical EOF termination. This follows DRI GETSOURCE/READ_EOF,
+including the interaction of object extraction with H/I.
+
+Qualification also exposed the retained O dispatch exception documented in
+section 13: single-file character transfers use the COM extension to select
+object mode; concatenation/device transfers additionally honor O. The common
+source-mode selection now reproduces both paths. Source comments at PC_BEGIN
+and the extraction implementation explain this behavior. O-only direct record
+copies remain physical copies.
+
+All 18 in-memory PIP regression scripts pass. Real cpmsim comparisons match the
+pinned DRI binary for five implicit COM extraction cases, five explicit O
+concatenation cases, three single-file O dispatch cases (B/U/Q), three object
+HEX+S/Q cases, and the established five text extraction cases. Cases include
+embedded Ctrl-Z within a partial start match, record boundaries, empty S/Q and
+continuation after Q. Native ZSM4/LINK matches the 13,672-byte development
+artifact. This supersedes the earlier object-extraction preflight restriction.
+Object peripheral input, physical device routing and final platform
+qualification remain open; PIP remains development-only.

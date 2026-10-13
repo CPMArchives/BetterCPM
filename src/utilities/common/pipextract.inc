@@ -1,5 +1,10 @@
 ; DRI GETSOURCE extraction: matching does not retry overlaps and succeeds
 ; on the character AFTER the string. Original operand strings remain read-only.
+; Object mode is supplied by the DRI dispatch rules in PC_BEGIN: .COM, or [O]
+; on the concatenation/device path. Embedded Ctrl-Z bypasses S/Q matching;
+; object READ_EOF copies it and continues to physical EOF. A Q match inserts
+; CR/LF/Ctrl-Z and resumes object input after discarding its lookahead. HEX
+; instead ends on logical Ctrl-Z, including Q's synthetic EOF.
 PE_INIT:
         CALL HH_INIT
         XOR A
@@ -12,6 +17,8 @@ PE_INIT:
         RET
 PE_FEED:
         LD (PE_CHAR),A
+        CP 1AH                       ; GETSOURCE bypasses matching on Ctrl-Z
+        JP Z,HH_PUT
         LD A,(PE_START)
         OR A
         JR Z,PE_QTEST
@@ -60,7 +67,24 @@ PE_QTEST:
         OR A
         RET NZ
         LD A,10
+        CALL HH_PUT
+        OR A
+        RET NZ
+        LD A,(PC_BINARY)
+        OR A
+        RET Z
+        LD A,(HH_MODE)
+        OR A
+        JR NZ,PE_QDONE
+        ; Object READ_EOF ignores the synthetic EOF after Q's CR/LF and
+        ; resumes physical input. The consumed lookahead is discarded.
+        XOR A
+        LD (PE_DONE),A
+        LD A,1AH
         JP HH_PUT
+PE_QDONE:
+        XOR A
+        RET
 PE_CURRENT:
         LD A,(PE_CHAR)
         JP HH_PUT
@@ -107,44 +131,3 @@ PE_LEFT: DB 0
 PE_PTR: DW 0
 PE_SERROR: DB 'START NOT FOUND',13,10,'$'
 PE_QERROR: DB 'QUIT NOT FOUND',13,10,'$'
-
-; S/Q extraction remains text-only. HEX uses GETSOURCE's Ctrl-Z termination
-; even for COM/[O] sources and is qualified independently.
-PE_VALID:
-        LD HL,(PC_PTR)
-        LD BC,60
-        ADD HL,BC
-        LD A,(HL)
-        INC HL
-        INC HL
-        OR (HL)
-        RET Z
-        LD HL,(PC_PTR)
-        LD DE,58
-        ADD HL,DE
-        LD A,(HL)
-        OR A
-        JR NZ,PE_VBAD
-        LD HL,(PC_PTR)
-        LD DE,17
-        ADD HL,DE
-        LD A,(HL)
-        AND 7FH
-        CP 'C'
-        JR NZ,PE_VOK
-        INC HL
-        LD A,(HL)
-        AND 7FH
-        CP 'O'
-        JR NZ,PE_VOK
-        INC HL
-        LD A,(HL)
-        AND 7FH
-        CP 'M'
-        JR Z,PE_VBAD
-PE_VOK:
-        OR A
-        RET
-PE_VBAD:
-        SCF
-        RET

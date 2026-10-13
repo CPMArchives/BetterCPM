@@ -2217,3 +2217,32 @@ COPY/MOVE keep their existing overwrite switch. `/VER` remains supported.
 Unknown tokens and other invalid syntax retain ordinary resident behavior.
 Selection of protected files does not itself enable destructive or override
 features.
+
+
+### PIP object-mode compatibility (development)
+
+PIP is still under development and is not yet included on the System Disk.
+Its O parameter retains a DRI compatibility exception worth remembering.
+
+A single file-to-file transfer with character options such as S/Q, B or U uses
+object EOF only when the source has a COM extension. O does not change that
+path's EOF rule for other extensions. For example:
+
+```text
+PIP DEST.DAT=SOURCE.DAT[OU]
+```
+
+still stops SOURCE.DAT at its first Ctrl-Z byte. In a concatenation or device
+transfer, O does enable object input. For example:
+
+```text
+PIP DEST.DAT=SOURCE.DAT[OU],SECOND.DAT
+```
+
+copies SOURCE.DAT through physical EOF, then appends SECOND.DAT. An O-only
+direct record copy also copies physical records. HEX processing with H/I
+terminates at Ctrl-Z even for object sources. These are retained DRI behaviors;
+O does not universally override text EOF.
+
+See the [PIP engineering specification](../engineering/PIP%20Specification.md)
+for the qualified compatibility rules.
