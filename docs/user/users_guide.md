@@ -1396,8 +1396,8 @@ confirmation, preview, override and reporting options above belong to REN.COM.
 
 TYPE displays text on the console. Resident TYPE is the small core command;
 TYPE.COM is planned to provide the fuller paging facility. Resident TYPE is
-implemented; the enhanced transient interface below remains the proposed 1.0
-target.
+implemented. TYPE.COM currently implements shared selection and streaming
+transformations; enhanced transient paging below remains the proposed 1.0 target.
 
 Both forms use the shared filespec, DU selector and attribute predicates:
 
@@ -1424,7 +1424,11 @@ stream files without normal paging pauses. A multi-file selection prints a
 banner such as `---------- B3:README.TXT ----------` before each file. A single
 exact file may omit the banner.
 
-| Option | Proposed effect |
+Current TYPE.COM Build 001 supports `/7`, `/T`, `/CTL` and `/VER`. It accepts
+options before or after the source operand. Transient `/P` is pending and is
+rejected by this intermediate build; resident `/P` remains available.
+
+| Option | Effect (transient `/P` remains planned) |
 | --- | --- |
 | `/P` | Forward/backward paging and file navigation |
 | `/7` | Strip the high bit from displayed bytes; test raw 1Ah for EOF first |
