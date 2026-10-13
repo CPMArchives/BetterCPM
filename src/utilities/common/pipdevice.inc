@@ -40,21 +40,7 @@ PD_DOPTIONS:
         LD DE,PT_SFCB
         LD BC,36
         LDIR
-        CALL PT_SOURCE
-        LD DE,PT_SFCB
-        LD C,15
-        CALL 5
-        CP 0FFH
-        JP Z,PT_NOFILE
-        LD A,1
-        LD (PT_SRCOPEN),A
-        LD A,(PT_SFCB+10)
-        AND 80H
-        JP Z,PC_BEGIN
-        LD A,(OP_DATA+141)
-        OR A
-        JP Z,PT_NOFILE
-        JP PC_BEGIN
+        JP PC_OPEN
 PD_PUT:
         LD E,A
         LD A,(PD_FUNCTION)
@@ -69,46 +55,15 @@ PD_PATCH:
 PD_ACTIVE: DB 0
 PD_FUNCTION: DB 0
 
-; Single text-device source to a named disk file. Staging/verification and
+; Text-device sources in the common source list. Staging/verification and
 ; replacement remain the same transaction as disk copies.
 PI_START:
-        LD A,(PP_COUNT)
-        CP 2
-        JP NZ,PT_UNSUP
         LD A,(OP_DATA)
         CP 2
         JP NZ,PT_UNSUP
         LD A,(OP_DATA+2)
         CP 4
         JP NC,PT_DRIVEERR
-        LD A,(OP_DATA+81)
-        OR A                       ; INP
-        JR Z,PI_ACCEPT
-        CP 5                       ; RDR
-        JR Z,PI_ACCEPT
-        CP 18                      ; CON
-        JR Z,PI_ACCEPT
-        CP 19                      ; NUL, exactly 40 bytes
-        JR Z,PI_ACCEPT
-        CP 20                      ; EOF, one literal 1Ah
-        JP NZ,PT_UNSUP
-PI_ACCEPT:
-        LD HL,OP_DATA+124
-        LD B,26
-        LD C,0
-PI_OPTIONS:
-        LD A,(HL)
-        OR A
-        JR Z,PI_SKIP
-        LD A,C
-        CP 21
-        JR Z,PI_SKIP
-        CP 22
-        JP NZ,PT_UNSUP
-PI_SKIP:
-        INC HL
-        INC C
-        DJNZ PI_OPTIONS
         LD HL,OP_DATA+44
         LD B,26
 PI_DOPTIONS:
@@ -120,9 +75,23 @@ PI_DOPTIONS:
         LD A,1
         LD (PI_ACTIVE),A
         JP PT_INPUTSET
+; Carry set for an unavailable or output-only source.
+PI_VALID:
+        OR A
+        RET Z
+        CP 5
+        RET Z
+        CP 18
+        RET Z
+        CP 19
+        RET Z
+        CP 20
+        RET Z
+        SCF
+        RET
 PI_BEGIN:
-        XOR A
-        LD (PC_OPOS),A
+        LD A,1
+        LD (PI_ACTIVE),A
         LD A,40
         LD (PI_LEFT),A
 PI_READ:
@@ -148,7 +117,7 @@ PI_PATCH:
         LD A,(0109H)
 PI_CHAR:
         CP 01AH
-        JP Z,PC_END
+        JP Z,PC_NEXT
         CALL PI_PUT
         JP PI_READ
 PI_NULL:
@@ -157,12 +126,17 @@ PI_NULL:
         LD HL,PI_LEFT
         DEC (HL)
         JP NZ,PI_READ
-        JP PC_END
+        JP PC_NEXT
 PI_EOFCHAR:
         LD A,01AH
         CALL PI_PUT
-        JP PC_END
+        JP PC_NEXT
 PI_PUT:
+        LD E,A
+        LD A,(PD_ACTIVE)
+        OR A
+        LD A,E
+        JP NZ,PD_PUT
         PUSH AF
         LD A,(PC_OPOS)
         LD E,A

@@ -97,7 +97,7 @@ PT_DNAMED:
         JP Z,PT_IDENT
         LD A,(PI_ACTIVE)
         OR A
-        JP NZ,PT_TARGET
+        JP NZ,PT_PREFLIGHT
         LD A,(OP_DATA+2)
         LD HL,OP_DATA+82
         CP (HL)
@@ -124,6 +124,9 @@ PT_PREFLIGHT:
         JP Z,PT_DRIVEERR
         JP PT_UNSUP
 PT_CHECKED:
+        LD A,(PI_ACTIVE)
+        OR A
+        JP NZ,PT_TARGET
         CALL PT_SOURCE
         LD DE,PT_SFCB
         LD C,15

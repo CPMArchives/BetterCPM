@@ -1,4 +1,4 @@
-; Exact disk concatenation, sharing the staging transaction with fast copies.
+; Exact disk/device concatenation, sharing the staging transaction with fast copies.
 ; All operand kinds/options and staging aliases are checked before transfer I/O.
 PC_CHECK:
         LD A,(PP_COUNT)
@@ -11,6 +11,8 @@ PC_CHECK:
 PC_CLOOP:
         LD HL,(PC_PTR)
         LD A,(HL)
+        CP 4
+        JR Z,PC_CDEVICE
         CP 2
         JP NZ,PC_BAD
         INC HL
@@ -23,6 +25,13 @@ PC_CLOOP:
         LD A,(HL)
         OR A
         JP NZ,PC_BAD
+        JR PC_CPARAM
+PC_CDEVICE:
+        INC HL
+        LD A,(HL)
+        CALL PI_VALID
+        JP C,PC_BAD
+PC_CPARAM:
         LD HL,(PC_PTR)
         LD DE,44
         ADD HL,DE
@@ -32,6 +41,12 @@ PC_COPT:
         LD A,(HL)
         OR A
         JR Z,PC_CSKIP
+        PUSH HL
+        LD HL,(PC_PTR)
+        LD A,(HL)
+        POP HL
+        CP 4
+        JR Z,PC_CDEVOPT
         LD A,C
         CP 6
         JR Z,PC_CSKIP
@@ -39,6 +54,7 @@ PC_COPT:
         JR Z,PC_CSKIP
         CP 17
         JR Z,PC_CSKIP
+PC_CDEVOPT:
         LD A,(PD_ACTIVE)
         OR A
         JP NZ,PC_BAD
@@ -52,6 +68,9 @@ PC_CSKIP:
         INC C
         DJNZ PC_COPT
         LD HL,(PC_PTR)
+        LD A,(HL)
+        CP 4
+        JR Z,PC_CNEXT
         INC HL
         INC HL
         LD A,(PD_ACTIVE)
@@ -188,15 +207,19 @@ PC_CONT:
         JP Z,PC_READ
         JR PC_CHAR
 PC_NEXT:
+        LD A,(PT_SRCOPEN)
+        OR A
+        JR Z,PC_NOCLOSE
         CALL PT_SOURCE
         LD DE,PT_SFCB
         LD C,16
         CALL 5
         XOR A
         LD (PT_SRCOPEN),A
+PC_NOCLOSE:
         LD HL,PC_LEFT
         DEC (HL)
-        JR Z,PC_END
+        JP Z,PC_END
         LD HL,(PC_PTR)
         LD DE,80
         ADD HL,DE
@@ -208,6 +231,12 @@ PC_NEXT:
         LD DE,PT_SFCB
         LD BC,36
         LDIR
+PC_OPEN:
+        LD A,(OP_DATA+80)
+        CP 4
+        JP Z,PI_BEGIN
+        XOR A
+        LD (PI_ACTIVE),A
         CALL PT_SOURCE
         LD DE,PT_SFCB
         LD C,15
