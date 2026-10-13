@@ -43,6 +43,7 @@ def execute(tail,files,fail=None,answer='N',readonly=0):
    assert k not in files
    attr=sum((c.mem[p+9+i]>>7)<<i for i in range(3));files[k]=[b'',attr];return 0
   if f==19:
+   if fail=='read_cleanup' and k[2].endswith(b'$$$'):return 255
    if fail=='delete' and not k[2].endswith(b'$$$'):return 255
    if k not in files:return 255
    assert not files[k][1]&1,'unsafe RO delete'
@@ -55,7 +56,7 @@ def execute(tail,files,fail=None,answer='N',readonly=0):
    files[target]=files.pop(k);return 0
   if f==20:
    n=record(p)
-   if fail=='read' and n==1:return 2
+   if fail in ('read','read_cleanup') and n==1:return 2
    data=files[k][0];start=n*128
    if start>=len(data):return 1
    c.mem[state['dma']:state['dma']+128]=data[start:start+128].ljust(128,b'\x1a');advance(p,n);return 0
@@ -88,6 +89,9 @@ def main():
   assert diagnostic in out and fs[s]==[payload,5] and fs[d]==[b'OLD DESTINATION',0] and t not in fs,(failure,out,fs.keys())
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT[V]',base,fail='rename')
  assert 'CANNOT RENAME' in out and t in fs and fs[t][0]==expected and d not in fs
+ out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT',base,fail='read_cleanup')
+ assert 'DISK READ ERROR' in out and 'CLEANUP FAILED: temporary file remains.' in out
+ assert t in fs and fs[d]==[b'OLD DESTINATION',0] and fs[s]==[payload,5]
  protected={**base,d:(b'OLD DESTINATION',1)}
  for answer,param in [('N',''),('Y',''),('N','[W]')]:
   out,fs,calls,_=execute('B7:DEST.DAT=A2:SRC.DAT'+param,protected,answer=answer)
