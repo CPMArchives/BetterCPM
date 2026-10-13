@@ -2,9 +2,9 @@
 
 
 
-Status: revised target contract recorded on 2026-10-12. Implementation and
-qualification of the enhanced behavior remain separate work. The proposed user
-interface is in user-guide section 4.4.
+Status: revised target contract recorded on 2026-10-12. Resident TYPE is
+implemented in RCP Build 007 on 2026-10-13. Enhanced TYPE.COM remains pending.
+The user interface is in user-guide section 4.4.
 
 Uses the shared [DU selector](208%20Extended%20DU%20Syntax.md) and utility
 version/build convention. Supersedes the historical
@@ -687,3 +687,58 @@ The defining implementation rule is:
 TYPE displays text and may page through it. It does not become a general interactive file-inspection environment.
 Any feature that requires persistent interactive navigation beyond page/file movement, dynamically changes the interpretation of the file, or turns TYPE into a screen-oriented inspection tool belongs in VIEW.COM.
 This specification deliberately keeps TYPE.COM substantially more capable than resident TYPE, while preserving TYPE's identity as a text-display command rather than a full viewer.
+
+
+## Resident implementation — 2026-10-13
+
+RCP Build 007 uses the shared selector transaction and concrete-file scanner.
+The complete syntax and supported A:–D: drive domain are validated before file
+access. Sources use the common scanner's unique lexical filename order within
+DU bitmap order; each concrete file is displayed once even with multiple
+physical extents. RO/SYS do not suppress display; attribute predicates alone
+control admission.
+
+`/P` is a separate token before or after the single source operand; repetition
+is harmless. Unsupported switches and extra operands are rejected before
+opening files. `/VER` retains the common version-query path without file
+access. Automatic handoff is still separate work.
+
+Unpaged output streams raw text through BDOS Function 2, including literal `$`
+and high-bit bytes, until raw 1Ah or sequential EOF. Empty files remain in the
+sequence. A CR/LF-delimited dashed separator appears between successfully opened
+files. Open/read failures report a short diagnostic, skip the file and continue.
+Files are closed and the caller DU is restored on normal completion and paged
+Ctrl-C cancellation.
+
+Resident paging counts source LF bytes across the selection, pausing every 23
+lines with `--More--`. Space and `.` continue; other keys are ignored, and
+Ctrl-C cancels. This is the permitted small resident accounting model; rendered
+rows, configurable geometry and bidirectional navigation belong to TYPE.COM.
+Separator rows do not contribute to this source-line counter.
+
+TYPE was the last resident caller of the legacy DU parser. Removing that dead
+resident parser and its unused exact-name helper makes the final RCP payload
+6,785 bytes, 95 bytes smaller than Build 006. Rounded allocation remains 6,912
+bytes; 744 relocations retain the existing 1,536-byte carrier header. Native
+ZSM4/LINK and cross assembly produce identical payloads. BDOS, the CPX ABI and
+protected-state layout are unchanged. Legacy transient expansions retain their
+old parser until TYPE.COM is implemented separately.
+
+`tools/test_resident_type.py` executes relocated production carriers at 4000h,
+8101h and A000h. It covers selectors/predicates, protected display, duplicate
+extents, empty files, literal `$`, raw EOF/high-bit data, both forward keys,
+paging cancellation, open/read failure continuation, invalid syntax before file
+access and caller-DU restoration. Shared-selector, resident REN mapping and
+utility-version regressions also pass. Real-media qualification uses
+`tools/test_resident_type_media.py` with disposable disks and no TYPE.COM.
+
+
+Real BetterCP/M media campaigns passed on cpmsim and Model 4/trs80gp with no
+TYPE.COM installed. They verify protected-file display through compound
+selectors, separators, raw text EOF, invalid syntax, resident version reporting
+and unchanged selected-file contents/attributes. cpmsim additionally verifies
+Space/`.` paging continuation and Ctrl-C cancellation with return to the caller
+DU. Model 4 uses a SUBMIT sequence; its queue changes are excluded from the
+selected-file immutability check. The representative Model 4 campaign does not
+exercise interactive paging keys; those are covered by cpmsim and relocated
+assembled-code tests.

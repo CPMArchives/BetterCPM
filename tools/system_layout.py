@@ -82,6 +82,12 @@ def expand_layout(text: str) -> str:
             text = text.replace('        LD      (BC_CWILD),A\n', '')
             text = text.replace('        LD      A,(BC_MVFLAG)\n        AND     1\n        LD      (BC_MVFLAG),A\n', '')
         if 'CPXBASE         EQU     00100H' not in text:
+            type_start = text.index('BC_TYPE:')
+            type_end = text.index('; ================================================================================', type_start)
+            text = text[:type_start] + (ROOT / 'src/cpx/type-select.inc').read_text(encoding='ascii') + '\n' + text[type_end:]
+            # TYPE was the final resident caller of the legacy DU parser.
+            text = text[:text.index('BC_DUSEL:')] + text[text.index('BC_BDERR:'):]
+            text = text[:text.index('BC_RNOQ:')] + text[text.index('; ================================================================================', text.index('BC_RNOQ:')):]
             era_start = text.index('BC_ERA:')
             era_end = text.index('; ================================================================================', era_start)
             text = text[:era_start] + (ROOT / 'src/cpx/era-resident.inc').read_text(encoding='ascii') + '\n' + text[era_end:]
