@@ -42,6 +42,10 @@ PC_COPT:
         OR A
         JR Z,PC_CSKIP
         LD A,C
+        CP 16
+        JR Z,PC_CSKIP
+        CP 18
+        JR Z,PC_CSKIP
         CP 11
         JR Z,PC_CSKIP
         CP 20
@@ -74,6 +78,8 @@ PC_CSKIP:
         INC HL
         INC C
         DJNZ PC_COPT
+        CALL PE_VALID
+        JP C,PC_BAD
         LD HL,(PC_PTR)
         LD A,(HL)
         CP 4
@@ -127,6 +133,7 @@ PC_DRIVE:
         LD A,3
         RET
 PC_BEGIN:
+        CALL PE_INIT
         XOR A
         LD (PC_BINARY),A
         LD A,(OP_DATA+138)
@@ -181,40 +188,23 @@ PC_CHAR:
         CP 01AH
         JP Z,PC_NEXT
 PC_PUT:
-        LD A,(PD_ACTIVE)
-        OR A
-        JR Z,PC_DISKPUT
         LD A,(PC_CHARV)
-        CALL PD_PUT
-        LD HL,PC_IPOS
-        INC (HL)
-        JP PC_CONT
-PC_DISKPUT:
-        LD A,(PC_OPOS)
-        LD E,A
-        LD D,0
-        LD HL,PT_DATA
-        ADD HL,DE
-        LD A,(PC_CHARV)
-        LD (HL),A
-        LD HL,PC_IPOS
-        INC (HL)
-        LD HL,PC_OPOS
-        INC (HL)
-        LD A,(HL)
-        CP 128
-        JR NZ,PC_CONT
-        XOR A
-        LD (HL),A
-        CALL PT_FLUSH
+        CALL PE_FEED
         OR A
         JP NZ,PT_WFAIL
+        LD A,(PE_DONE)
+        OR A
+        JP NZ,PC_NEXT
+        LD HL,PC_IPOS
+        INC (HL)
 PC_CONT:
         LD A,(PC_IPOS)
         CP 128
         JP Z,PC_READ
         JR PC_CHAR
 PC_NEXT:
+        CALL PE_CHECK
+        JP C,PT_FAIL
         LD A,(PT_SRCOPEN)
         OR A
         JR Z,PC_NOCLOSE
