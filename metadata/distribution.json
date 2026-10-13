@@ -20,7 +20,10 @@
         "z80pack",
         "trs80gp"
       ],
-      "user": 0
+      "user": 0,
+      "features": [
+        "/WHEREIS"
+      ]
     },
     {
       "name": "ERA.COM",
@@ -219,15 +222,6 @@
         "trs80gp"
       ],
       "user": 0
-    },
-    {
-      "name": "WHEREIS.COM",
-      "status": "planned",
-      "reason": "Selected; implementation pending",
-      "targets": [
-        "z80pack",
-        "trs80gp"
-      ]
     },
     {
       "name": "BYE.COM",

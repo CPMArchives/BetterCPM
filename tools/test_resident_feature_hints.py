@@ -38,7 +38,7 @@ def execute(command,base):
  return ''.join(output),calls
 
 def main():
- cases={'DIR':['/C=2','/S=N-','/Z=E','/A','/P'], 'ERA':['/D','/Y','/C','/R','/Q'],
+ cases={'DIR':['/WHEREIS','/C=2','/S=N-','/Z=E','/A','/P'], 'ERA':['/D','/Y','/C','/R','/Q'],
         'TYPE':['/7','/CTL','/T'], 'REN':['/DRY','/QQ','/C','/P'], 'COPY':['/V','/B','/BACKUP']}
  for base in (0x4000,0x8101,0xA000):
   for command,options in cases.items():
@@ -49,7 +49,7 @@ def main():
      assert not any(f not in (2,9) for f in calls),(command,calls)
   for command in ('DIR','ERA','TYPE','REN','COPY','MOVE','USER','CLS','VER'):
    out,_=execute(command+' /VER',base)
-   assert 'BetterCP/M '+command in out and 'Build 008' in out
+   assert 'BetterCP/M '+command in out and 'Build 009' in out
   for text in ('DIR /C=3','DIR /S=X','DIR /AAA','ERA /DRV','TYPE /CTLX','TYPE /BAD','DIR B3:F*A.TXT'):
    out,_=execute(text,base)
    assert 'Use :' not in out,(text,out)

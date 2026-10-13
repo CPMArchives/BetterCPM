@@ -174,6 +174,8 @@ def dir_source() -> str:
         "        CSEG\n        .PHASE  ", "        ASEG\n        ORG     ").replace(
         "        .DEPHASE\n", "")
     text = expand_layout(text)
+    text = text.replace('        LD BC,0\n        LD (RD_INDEX),BC',
+                        '        LD A,(DW_MODE)\n        OR A\n        JP NZ,DW_START\n        LD BC,0\n        LD (RD_INDEX),BC', 1)
     text = text.replace('        CALL DU_NEXT\n        JP C,BC_DURST', '        CALL DU_NEXT\n        JP C,DX_FINISH', 1)
     text = text.replace('        CALL FS_PARSE\n        JP C,BC_DBAD\n',
                         '        CALL DP_PARSE\n        JP C,DP_REJECT\n', 1)
@@ -188,6 +190,10 @@ def dir_source() -> str:
         encoding='ascii') + '\n' + text[end:]
     metrics = (ROOT / 'src/utilities/common/dirmetrics.inc').read_text(encoding='ascii')
     options = (ROOT / 'src/utilities/dir-options.inc').read_text(encoding='ascii')
+    whereis = (ROOT / 'src/utilities/dir-whereis.inc').read_text(encoding='ascii')
+    raw = (ROOT / 'src/utilities/common/eraraw.inc').read_text(encoding='ascii')
+    raw = raw[:raw.index('; ER_WRITE:')] + raw[raw.index('ER_POS:'):]
+    whereis += raw
     paging = (ROOT / 'src/utilities/dir-paging.inc').read_text(encoding='ascii')
     columns = (ROOT / 'src/utilities/dir-columns.inc').read_text(encoding='ascii')
     free = (ROOT / 'src/utilities/common/diskfree.inc').read_text(encoding='ascii')
@@ -228,7 +234,7 @@ DT_TOTAL: DS 12
     decimal = decimal[decimal.index('CTR_DEC:\n'):decimal.index('CTR_RUN:')]
     decimal = decimal.replace('CTR_', 'DTD_')
     decimal += 'DTD_NUM: DS 4\nDTD_DIG: DS 10\nDTD_PTR: DW 0\nDT_BUFFER:\n'
-    return text.replace('        END\n', hook + options + metrics + paging + columns + free + decimal + '\n        END\n', 1)
+    return text.replace('        END\n', hook + options + metrics + paging + columns + free + whereis + decimal + '\n        END\n', 1)
 
 
 def main() -> None:

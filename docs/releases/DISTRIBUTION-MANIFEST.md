@@ -18,7 +18,7 @@ All membership or layout changes require discussion with the maintainer.
 
 - README.TXT: introductory ASCII text in user 0, from `src/distribution/README.TXT`.
 
-- DIR.COM
+- DIR.COM: includes the `/WHEREIS` file-location mode.
 - ERA.COM
 - TYPE.COM
 - REN.COM
@@ -33,7 +33,6 @@ All membership or layout changes require discussion with the maintainer.
 - PIP.COM
 - ED.COM: planned DU-aware adaptation of existing ED source for 1.0.
 - DISK.FDB
-- WHEREIS.COM: planned; include once implemented.
 - RCP.CPX: required resident command package.
 - CPX.COM and RSX.COM: extension managers.
 - R3PACK.RSX: required RSX-manager runtime container.
