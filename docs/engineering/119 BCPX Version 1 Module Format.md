@@ -140,6 +140,14 @@ The agreed diagnostic sequence is defined in architecture specification 16
 and `COPY Utility.md`; the exact backward-compatible handoff signaling ABI is
 still to be specified and qualified.
 
+Implementation order: finish TYPE/TYPE.COM, then perform a memory-fit audit
+before implementing automatic handoff. Measure the final CCP and RCP payloads,
+rounded allocations, relocation/header capacity, protected policy storage and
+cold/WBOOT reload paths. Prototype the handoff and policy-control growth against
+those actual baselines; confirm the unloaded 53K TPA contract and zero BDOS
+growth. Report any required memory/layout change before proceeding. This audit
+is a prerequisite, not merely a final validation check.
+
 Before implementation closure, measure cold reset, removal and control code,
 including overlay limits; require zero BDOS growth. Test all lifetime rules,
 per-command independence, absent/present transients and preservation of

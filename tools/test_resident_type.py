@@ -2,10 +2,10 @@
 """Execute relocated resident TYPE with read-only BDOS fixtures."""
 import re, struct
 from pathlib import Path
-from test_bios import Z80
+from test_bios import Z80, SENTINEL
 ROOT = Path(__file__).resolve().parents[1]
 
-def execute(tail, files, responses='', base=0x8000, open_fail=(), read_fail=()):
+def execute(tail, files, responses='', base=0x8000, open_fail=(), read_fail=(), transient=False):
     carrier = (ROOT/'build/cpx/RCP.CPX').read_bytes()
     linked, size = struct.unpack_from('<HH', carrier, 10)
     count, _, payload, table = struct.unpack_from('<4H', carrier, 22)
@@ -20,6 +20,12 @@ def execute(tail, files, responses='', base=0x8000, open_fail=(), read_fail=()):
     c.mem[5:8] = bytes((0xDB,254,0xC9))
     c.mem[0x2000:0x2000+len(tail)] = tail.encode()
     c.hl=0x2000; c.b=len(tail)
+    if transient:
+        binary = (ROOT/'build/utilities/TYPE.COM').read_bytes()
+        c.mem[0x100:0x100+len(binary)] = binary
+        c.mem[0:3] = bytes((0xC3,SENTINEL&255,SENTINEL>>8))
+        c.mem[0x80] = len(tail)
+        c.mem[0x81:0x81+len(tail)] = tail.encode()
     state = dict(drive=0,user=2,dma=0x80,rows=[],index=0,reads=0)
     output=[]; actions=[]; keys=iter(responses)
     def io(port):
@@ -59,7 +65,7 @@ def execute(tail, files, responses='', base=0x8000, open_fail=(), read_fail=()):
             if start>=len(data):return 1
             c.mem[state['dma']:state['dma']+128]=data[start:start+128].ljust(128,b'\x1a');return 0
         raise AssertionError(('unexpected/mutating BDOS call',f))
-    c.port_read=io;c.run(addr('BC_TYPE'),limit=3000000)
+    c.port_read=io;c.run(0x100 if transient else addr('BC_TYPE'),limit=3000000)
     assert (state['drive'],state['user'])==(0,2),'caller DU not restored'
     return ''.join(output), actions
 

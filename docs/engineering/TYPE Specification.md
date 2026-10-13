@@ -3,7 +3,8 @@
 
 
 Status: revised target contract recorded on 2026-10-12. Resident TYPE is
-implemented in RCP Build 007 on 2026-10-13. Enhanced TYPE.COM remains pending.
+implemented in RCP Build 007 on 2026-10-13. TYPE.COM Build 001 implements
+shared selection and streaming transformations; enhanced paging remains pending.
 The user interface is in user-guide section 4.4.
 
 Uses the shared [DU selector](208%20Extended%20DU%20Syntax.md) and utility
@@ -742,3 +743,42 @@ DU. Model 4 uses a SUBMIT sequence; its queue changes are excluded from the
 selected-file immutability check. The representative Model 4 campaign does not
 exercise interactive paging keys; those are covered by cpmsim and relocated
 assembled-code tests.
+
+
+## Transient streaming increment — 2026-10-13
+
+TYPE.COM Build 001 links the shared DU/filespec/attribute engine and the common
+unique-file scanner into its own executable. It does not call or require RCP.
+Sources follow the shared lexical order within DU bitmap order; duplicate
+physical extents are displayed once. Syntax/domain checks finish before file
+access. Multi-file selections have qualified banners; wildcard single matches
+also receive a banner. A single exact match omits it. Empty selected files have
+no synthetic content.
+
+`/7`, `/T` and `/CTL` are independent, repeatable, whitespace-delimited tokens
+before or after the single source operand. `/VER` uses the shared pure query
+path. Bare TYPE, additional operands and unknown switches are rejected before
+file access. Raw 1Ah ends text before any transformation. `/CTL` renders raw or
+transformed control data, normalizes CR/LF line structure without executing the
+visible controls, and takes precedence over `/T`. A pending CR survives record
+boundaries and is flushed on EOF or read failure. Source contents/attributes
+are unchanged and the caller DU is restored. Open/read failures report the
+qualified filename, abandon that file and continue without prompts.
+
+The executable is 3,223 bytes; native ZSM4/LINK and cross builds are byte-identical.
+Assembled-code streaming tests cover protected display, selectors, banners,
+empty/multi-extent files, high-bit/raw EOF distinctions, tab/control precedence,
+CR/LF across record boundaries, error continuation, version purity and invalid
+syntax before file access. Bidirectional paging, page anchors, file navigation,
+geometry and backward-history reconstruction are the next increment. `/P` is
+explicitly rejected by this intermediate build; the historical forward-only
+transient pager is retired rather than presented as the settled `/P` contract.
+The resident forward-only `/P` remains available.
+
+
+The streaming media campaign passed under cpmsim and Model 4/trs80gp using
+`tools/test_resident_type_media.py --transient`. It checks version reporting,
+compound selection of protected files, banners, visible line-end controls,
+option placement, unsupported `/P`, raw EOF suppression and unchanged selected
+file contents/attributes. The resident fixture and utility-version regressions
+also passed after adding TYPE's independent utility identity.

@@ -1,272 +1,491 @@
-; ********************************************************************************
-; *                         BetterCP/M TYPE Utility                              *
-; *                                                                              *
-; * Portable transient text-file display utility with optional page-at-a-time   *
-; * output. Accepts one exact filename plus optional /P, reads through public    *
-; * CP/M file services, and permits console abort while displaying or paused.    *
-; ********************************************************************************
-
-
-BDOS    EQU     0005H
-FCB     EQU     005CH
-DMA     EQU     0080H
-
+; BetterCP/M TYPE.COM: shared selection and streaming text transformations.
+; Bidirectional paging is a subsequent implementation increment.
+BDOS EQU 5
+BC_DMA EQU 80H
         CSEG
         .PHASE  0103H
-
-; ================================================================================
-; =                              TYPE File Display                               =
-; =                                                                              =
-; = Validates the exact input filespec, opens the file, reads sequential records, and =
-; = displays text until CP/M EOF, console abort, or read failure.                =
-; ================================================================================
-; -------------------------------------------------------------------------------
-; Open and Sequential Read
-; -------------------------------------------------------------------------------
-
-START:                                  ; enter TYPE utility
-        CALL    OPTIONS
-        JP      Z,SYNTAX
-        LD      HL,FCB+1
-        CALL    NOQUEST
-        JP      Z,SYNTAX
-        LD      DE,FCB
-        LD      C,15
-        CALL    BDOS
-        INC     A
-        JP      Z,SYNTAX
-        LD      DE,DMA
-        LD      C,26
-        CALL    BDOS
-        XOR     A
-        LD      (LINES),A
-        LD      DE,NEWLINE
-        LD      C,9
-        CALL    BDOS
-
-READ:                                   ; read next file record
-        LD      DE,FCB
-        LD      C,20
-        CALL    BDOS
-        OR      A
-        JR      Z,BLOCK
-        CP      1
-        JR      Z,DONE
-        LD      DE,READERR
-        JR      ERROR
-
-; ================================================================================
-; =                         Character Output and Paging                          =
-; =                                                                              =
-; = Processes each character, tracks displayed lines, pauses at page boundaries when /P =
-; = is active, and handles console abort during output or pause.                 =
-; ================================================================================
-; -------------------------------------------------------------------------------
-; Record Display
-; -------------------------------------------------------------------------------
-
-BLOCK:                                  ; display current input record
-        LD      HL,DMA
-        LD      B,128
-
-CHAR:                                   ; process next file character
-        LD      A,(HL)
-        CP      01AH
-        JR      Z,DONE
-        PUSH    HL
-        PUSH    BC
-        LD      E,A
-        LD      C,2
-        CALL    BDOS
-        POP     BC
-        POP     HL
-        LD      A,(HL)
-        CP      10
-        JR      NZ,NEXT
-        PUSH    HL
-        CALL    LINE
-        POP     HL
-
-NEXT:                                   ; advance display pointer
-        INC     HL
-        DJNZ    CHAR
-        JR      READ
-
-; -------------------------------------------------------------------------------
-; Line Counting and Pause
-; -------------------------------------------------------------------------------
-
-LINE:                                   ; count displayed line
-        LD      A,(PAGED)
-        OR      A
-        RET     Z
-        LD      HL,LINES
-        INC     (HL)
-        LD      A,(HL)
-        CP      23
-        RET     C
-        XOR     A
-        LD      (HL),A
-        PUSH    BC
-        PUSH    DE
-        LD      DE,MORE
-        LD      C,9
-        CALL    BDOS
-
-; -------------------------------------------------------------------------------
-; Paged Pause
-; -------------------------------------------------------------------------------
-
-WAIT:                                   ; pause paged output
-        LD      E,0FFH
-        LD      C,6
-        CALL    BDOS
-        OR      A
-        JR      Z,WAIT
-        CP      3
-        JR      Z,ABORT
-        CP      ' '
-        JR      NZ,WAIT
-        LD      DE,ERASE
-        LD      C,9
-        CALL    BDOS
-        POP     DE
-        POP     BC
+START:
+        LD SP,T_STACK
+        CALL UV_CHECK
+        LD HL,81H
+        LD A,(80H)
+        LD B,A
+        PUSH HL
+        PUSH BC
+T_UPPER:
+        LD A,B
+        OR A
+        JR Z,T_UPDONE
+        LD A,(HL)
+        CP 'a'
+        JR C,T_UPNEXT
+        CP 'z'+1
+        JR NC,T_UPNEXT
+        AND 5FH
+        LD (HL),A
+T_UPNEXT:
+        INC HL
+        DJNZ T_UPPER
+T_UPDONE:
+        POP BC
+        POP HL
+        CALL RE_CAPTURE
+        CALL T_OPTIONS
+        JP C,T_BAD
+        LD A,(T_LEN)
+        OR A
+        JP Z,T_BAD
+        LD B,A
+        LD HL,(T_SRC)
+        LD A,(BC_DSAVE)
+        LD D,A
+        LD A,(BC_USAVE)
+        LD E,A
+        CALL FS_PARSE
+        JP C,T_BAD
+        CALL RE_DVALID
+        JP C,T_DRIVE
+        ; Determine whether banners are needed before streaming any contents.
+        CALL T_RESET
+        CALL T_NEXT
+        JP C,T_NOFILE
+        CALL T_NEXT
+        LD A,1
+        JR NC,T_BSET
+        LD HL,FS_FCB+1
+        LD B,11
+T_WILD:
+        LD A,(HL)
+        CP '?'
+        LD A,1
+        JR Z,T_BSET
+        INC HL
+        DJNZ T_WILD
+        XOR A
+T_BSET:
+        LD (T_BANNER),A
+        CALL T_RESET
+T_FILE:
+        CALL T_NEXT
+        JP C,T_DONE
+        XOR A
+        LD (T_COL),A
+        LD (T_CR),A
+        LD A,(T_BANNER)
+        OR A
+        CALL NZ,T_HEAD
+        CALL RF_FCB
+        LD HL,RF_LAST
+        LD DE,RF_FILE+1
+        LD BC,11
+        LDIR
+        LD DE,RF_FILE
+        LD C,15
+        CALL BDOS
+        INC A
+        JR Z,T_OPEN
+T_READ:
+        LD DE,BC_DMA
+        LD C,26
+        CALL BDOS
+        LD DE,RF_FILE
+        LD C,20
+        CALL BDOS
+        OR A
+        JR Z,T_BLOCK
+        CP 1
+        JR Z,T_CLOSE
+        CALL T_FLUSH
+        CALL T_CONTEXT
+        LD DE,T_RERROR
+        CALL BC_PRINT
+        JR T_CLOSE
+T_BLOCK:
+        LD HL,BC_DMA
+        LD B,128
+T_CHAR:
+        LD A,(HL)
+        CP 1AH                      ; EOF only on the raw source byte
+        JR Z,T_CLOSE
+        PUSH HL
+        PUSH BC
+        CALL T_RENDER
+        POP BC
+        POP HL
+        INC HL
+        DJNZ T_CHAR
+        JR T_READ
+T_CLOSE:
+        CALL T_FLUSH
+        LD DE,RF_FILE
+        LD C,16
+        CALL BDOS
+        JP T_FILE
+T_OPEN:
+        CALL T_CONTEXT
+        LD DE,T_OERROR
+        CALL BC_PRINT
+        JP T_FILE
+T_NOFILE:
+        LD DE,T_NOMATCH
+        JR T_REPORT
+T_BAD:
+        LD DE,T_SYNTAX
+        JR T_REPORT
+T_DRIVE:
+        LD DE,T_DRIVEM
+T_REPORT:
+        CALL BC_PRINT
+T_DONE:
+        CALL BC_DURST
+        JP 0
+; Parse one operand and separate /7, /T, /CTL tokens in any position.
+T_OPTIONS:
+        XOR A
+        LD (T_LEN),A
+        LD (T_SEVEN),A
+        LD (T_TABS),A
+        LD (T_CTL),A
+T_OPT:
+        CALL T_TRIM
+        LD A,B
+        OR A
+        RET Z
+        PUSH HL
+        LD C,0
+T_TOKEN:
+        LD A,(HL)
+        CP ' '
+        JR Z,T_TEND
+        INC HL
+        INC C
+        DJNZ T_TOKEN
+T_TEND:
+        POP IX
+        PUSH HL
+        PUSH BC
+        LD A,(IX+0)
+        CP '/'
+        JR NZ,T_OPER
+        LD A,C
+        CP 2
+        JR Z,T_SHORT
+        CP 4
+        JR NZ,T_OBAD
+        LD A,(IX+1)
+        CP 'C'
+        JR NZ,T_OBAD
+        LD A,(IX+2)
+        CP 'T'
+        JR NZ,T_OBAD
+        LD A,(IX+3)
+        CP 'L'
+        JR NZ,T_OBAD
+        LD A,1
+        LD (T_CTL),A
+        JR T_OADV
+T_SHORT:
+        LD A,(IX+1)
+        CP '7'
+        JR Z,T_O7
+        CP 'T'
+        JR NZ,T_OBAD
+        LD A,1
+        LD (T_TABS),A
+        JR T_OADV
+T_O7:
+        LD A,1
+        LD (T_SEVEN),A
+        JR T_OADV
+T_OPER:
+        LD A,(T_LEN)
+        OR A
+        JR NZ,T_OBAD
+        LD A,C
+        LD (T_LEN),A
+        LD (T_SRC),IX
+T_OADV:
+        POP BC
+        POP HL
+        JR T_OPT
+T_OBAD:
+        POP BC
+        POP HL
+        SCF
         RET
-
-ABORT:                                  ; abort TYPE display
-        LD      C,0
-        JP      BDOS
-
-DONE:                                   ; return to CCP
-        LD      C,0
-        JP      BDOS
-
-SYNTAX:                                 ; report TYPE syntax error
-        LD      DE,QMARK
-
-ERROR:                                  ; report file read error
-        LD      C,9
-        CALL    BDOS
-        JR      DONE
-
-  ; Validate one filename followed by either nothing or the exact option /P.
-
-; ================================================================================
-; =                           Command-Line Validation                            =
-; =                                                                              =
-; = Requires one filename followed by either nothing or the exact /P option and rejects =
-; = trailing operands or wildcard filespecs.                                     =
-; ================================================================================
-; -------------------------------------------------------------------------------
-; Filename and /P Parse
-; -------------------------------------------------------------------------------
-
-OPTIONS:                                ; validate TYPE command tail
-        XOR     A
-        LD      (PAGED),A
-        LD      A,(DMA)
-        LD      B,A
-        LD      HL,DMA+1
-
-OSKIP:                                  ; skip leading option spaces
-        LD      A,B
-        OR      A
-        RET     Z
-        LD      A,(HL)
-        CP      ' '
-        JR      NZ,ONAME
-        INC     HL
-        DEC     B
-        JR      OSKIP
-
-ONAME:                                  ; scan filename operand
-        LD      A,(HL)
-        CP      ' '
-        JR      Z,OAFTER
-        INC     HL
-        DJNZ    ONAME
-        LD      A,1
-        OR      A
+T_TRIM:
+        LD A,B
+        OR A
+        RET Z
+        LD A,(HL)
+        CP ' '
+        RET NZ
+        INC HL
+        DEC B
+        JR T_TRIM
+; Common scanner iteration; no live directory cursor survives a file read.
+T_RESET:
+        LD BC,0
+        LD (RF_INDEX),BC
+        XOR A
+        LD (T_INDU),A
         RET
-
-OAFTER:                                 ; scan text after filename
-        INC     HL
-        DEC     B
-        JR      Z,OGOOD
-        LD      A,(HL)
-        CP      ' '
-        JR      Z,OAFTER
-        CP      '/'
-        JR      NZ,OBAD
-        INC     HL
-        DEC     B
-        JR      Z,OBAD
-        LD      A,(HL)
-        CP      'P'
-        JR      NZ,OBAD
-        INC     HL
-        DEC     B
-
-OTRAIL:                                 ; validate trailing text
-        LD      A,B
-        OR      A
-        JR      Z,OPAGE
-        LD      A,(HL)
-        CP      ' '
-        JR      NZ,OBAD
-        INC     HL
-        DEC     B
-        JR      OTRAIL
-
-OPAGE:                                  ; enable paged output
-        LD      A,1
-        LD      (PAGED),A
-
-OGOOD:                                  ; accept TYPE syntax
-        LD      A,1
-        OR      A
+T_NEXT:
+        LD A,(T_INDU)
+        OR A
+        JR NZ,T_FIND
+T_DU:
+        LD BC,(RF_INDEX)
+        CALL DU_NEXT
+        RET C
+        LD (RF_INDEX),BC
+        LD A,D
+        LD (RF_DRIVE),A
+        LD A,E
+        LD (RF_USER),A
+        CALL RF_SELECT
+        XOR A
+        LD HL,RF_LAST
+        LD B,11
+T_ZERO:
+        LD (HL),A
+        INC HL
+        DJNZ T_ZERO
+        INC A
+        LD (T_INDU),A
+T_FIND:
+        CALL RF_FIND
+        JR C,T_DU
+        LD HL,RF_BEST
+        LD DE,RF_LAST
+        LD BC,11
+        LDIR
+        OR A
         RET
-
-OBAD:                                   ; reject invalid TYPE syntax
-        XOR     A
+T_HEAD:
+        LD DE,T_DASH
+        CALL BC_PRINT
+        CALL T_NAME
+        LD DE,T_TAIL
+        JP BC_PRINT
+T_CONTEXT:
+        LD DE,T_PREFIX
+        CALL BC_PRINT
+T_NAME:
+        LD A,(RF_DRIVE)
+        ADD A,'A'
+        CALL T_OUT
+        LD A,(RF_USER)
+        LD B,0
+T_TENS:
+        CP 10
+        JR C,T_DIGITS
+        SUB 10
+        INC B
+        JR T_TENS
+T_DIGITS:
+        PUSH AF
+        LD A,B
+        OR A
+        JR Z,T_ONES
+        ADD A,'0'
+        CALL T_OUT
+T_ONES:
+        POP AF
+        ADD A,'0'
+        CALL T_OUT
+        LD A,':'
+        CALL T_OUT
+        LD HL,RF_LAST
+        LD B,8
+        CALL T_FIELD
+        LD A,(RF_LAST+8)
+        CP ' '
+        RET Z
+        LD A,'.'
+        CALL T_OUT
+        LD HL,RF_LAST+8
+        LD B,3
+T_FIELD:
+        LD A,(HL)
+        CP ' '
+        CALL NZ,T_OUT
+        INC HL
+        DJNZ T_FIELD
         RET
-
-; -------------------------------------------------------------------------------
-; Wildcard Rejection
-; -------------------------------------------------------------------------------
-
-NOQUEST:                                ; reject wildcard filespec
-        LD      B,11
-
-NQLOOP:                                 ; scan FCB for wildcards
-        LD      A,(HL)
-        CP      '?'
-        RET     Z
-        INC     HL
-        DJNZ    NQLOOP
-        LD      A,1
-        OR      A
+; Transform after raw EOF detection. /CTL takes precedence over /T.
+T_RENDER:
+        LD C,A
+        LD A,(T_SEVEN)
+        OR A
+        LD A,C
+        JR Z,T_DISPLAY
+        AND 7FH
+T_DISPLAY:
+        LD C,A
+        LD A,(T_CTL)
+        OR A
+        LD A,C
+        JR Z,T_NORMAL
+        PUSH AF
+        LD A,(T_CR)
+        OR A
+        JR Z,T_NOTCR
+        XOR A
+        LD (T_CR),A
+        POP AF
+        CP 10
+        JR Z,T_LFMARK
+        PUSH AF
+        CALL T_NEWLINE
+T_NOTCR:
+        POP AF
+        CP 13
+        JR Z,T_CRMARK
+        CP 10
+        JR Z,T_LFMARK
+        CP 32
+        JR C,T_CARET
+        CP 127
+        JR Z,T_DEL
+        JR T_EMIT
+T_CRMARK:
+        LD A,13
+        CALL T_CARET
+        LD A,1
+        LD (T_CR),A
         RET
-
-; ================================================================================
-; =                           TYPE Messages and State                            =
-; =                                                                              =
-; = Defines output/paging messages and the flags/counters retained by the transient utility. =
-; ================================================================================
-; -------------------------------------------------------------------------------
-; Messages and State
-; -------------------------------------------------------------------------------
-
-NEWLINE: DB    13,10,'$'                ; newline string
-READERR: DB    13,10,'READ ERROR',13,10,'$' ; read-error message
-QMARK:   DB    13,10,'?',13,10,'$'      ; syntax-error marker
-MORE:    DB    '--More--$'              ; paging prompt
-ERASE:   DB    8,' ',8,8,' ',8,8,' ',8,8,' ',8 ; paging-prompt erase text
-         DB    8,' ',8,8,' ',8,8,' ',8,8,' ',8,'$'
-
-PAGED:   DB    0                        ; paging-enabled flag
-LINES:   DB    0                        ; displayed-line count
-
+T_LFMARK:
+        LD A,10
+        CALL T_CARET
+        JP T_NEWLINE
+T_DEL:
+        LD A,63
+        JR T_MARK
+T_CARET:
+        ADD A,64
+T_MARK:
+        PUSH AF
+        LD A,'^'
+        CALL T_EMIT
+        POP AF
+        JP T_EMIT
+T_NORMAL:
+        CP 9
+        JR NZ,T_EMIT
+        LD A,(T_TABS)
+        OR A
+        LD A,9
+        JR Z,T_RAWTAB
+T_TAB:
+        LD A,' '
+        CALL T_EMIT
+        LD A,(T_COL)
+        AND 7
+        JR NZ,T_TAB
+        RET
+T_RAWTAB:
+        CALL T_OUT
+        LD A,(T_COL)
+        OR 7
+        INC A
+        LD (T_COL),A
+        RET
+T_EMIT:
+        CALL T_OUT
+        CP 13
+        JR Z,T_COLZERO
+        CP 10
+        RET Z
+        CP 8
+        JR Z,T_BACK
+        LD HL,T_COL
+        INC (HL)
+        RET
+T_BACK:
+        LD A,(T_COL)
+        OR A
+        RET Z
+        DEC A
+        LD (T_COL),A
+        RET
+T_COLZERO:
+        XOR A
+        LD (T_COL),A
+        RET
+T_FLUSH:
+        LD A,(T_CR)
+        OR A
+        RET Z
+        XOR A
+        LD (T_CR),A
+T_NEWLINE:
+        LD A,13
+        CALL T_OUT
+        LD A,10
+        CALL T_OUT
+        JR T_COLZERO
+T_OUT:
+        PUSH AF
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        LD E,A
+        LD C,2
+        CALL BDOS
+        POP HL
+        POP DE
+        POP BC
+        POP AF
+        RET
+BC_PRINT:
+        LD C,9
+        JP BDOS
+BC_DURST:
+        LD A,(BC_DSAVE)
+        LD E,A
+        LD C,14
+        CALL BDOS
+        LD A,(BC_USAVE)
+        LD E,A
+        LD C,32
+        JP BDOS
+; @type-selector@
+; @utility-version TYPE@
+BC_DSAVE: DB 0
+BC_USAVE: DB 0
+BC_DIREP: DW 0
+BC_ALL: DB '*.*'
+BC_INPTR: DW 0
+BC_INLEN: DB 0
+BC_FCBPTR: DW 0
+RF_INDEX: DW 0
+RF_DRIVE: DB 0
+RF_USER: DB 0
+RF_ATTR: DB 0
+RF_SEARCH: DS 36
+RF_FILE: DS 36
+RF_LAST: DS 11
+RF_BEST: DS 11
+RF_CAND: DS 11
+T_SRC: DW 0
+T_LEN: DB 0
+T_SEVEN: DB 0
+T_TABS: DB 0
+T_CTL: DB 0
+T_COL: DB 0
+T_CR: DB 0
+T_INDU: DB 0
+T_BANNER: DB 0
+T_DASH: DB 13,10,'---------- $'
+T_TAIL: DB ' ----------',13,10,'$'
+T_PREFIX: DB 13,10,'TYPE $'
+T_OERROR: DB ' - Cannot open.',13,10,'$'
+T_RERROR: DB ' - Read error.',13,10,'$'
+T_SYNTAX: DB 'Invalid filespec.',13,10,'$'
+T_DRIVEM: DB 'Invalid drive.',13,10,'$'
+T_NOMATCH: DB 'NO FILE',13,10,'$'
+        DS 128
+T_STACK:
         .DEPHASE
-        END     START
+        END START
