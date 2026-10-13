@@ -1537,3 +1537,10 @@ reserved 64-byte monitor hooks this provisionally fits the earlier 122-byte
 recovery budget. Production adoption still requires the memory refactor,
 combined qualification and a settled platform device/status contract. PIP's
 physical aliases remain unavailable; this audit does not change Build 025.
+
+The follow-up qualification composes the compact Model 4 router with monitor
+hooks into one 756-byte candidate. Its 5,376 dispatch checks pass with endpoints
+stubbed, and native ZSM4/LINK reproduces this image, the 3,452-byte candidate
+BDOS and the 942-byte candidate disk service byte for byte. Existing isolated
+BDOS/disk behavioral campaigns also pass. Production repacking and platform
+qualification remain the next steps; PIP Build 025 is unchanged.
