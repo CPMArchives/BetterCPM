@@ -19,7 +19,7 @@ def main():
  assert out.encode('latin1')==payload
  out,_,_,_=execute('CON:=A:ONE.DAT[G2]',files)
  assert out=='first\r\n'
- for tail in ['CON:=A2:ONE.DAT,B7:TWO.DAT[E]','LST:=A2:*.DAT','CON:[V]=A2:ONE.DAT','PUN:=A2:ONE.DAT[V]','CRT:=A2:ONE.DAT']:
+ for tail in ['CON:=A2:ONE.DAT,B7:TWO.DAT[H]','LST:=A2:*.DAT','CON:[V]=A2:ONE.DAT','PUN:=A2:ONE.DAT[V]','CRT:=A2:ONE.DAT']:
   out,_,calls,_=execute(tail,files)
   assert ('not implemented' in out or 'INVALID FORMAT' in out) and not any(f in calls for f in (2,4,5,20)),(tail,out,calls)
  out,_,_,_=execute('CON:=A2:ONE.DAT',{source:(b'SYSTEM\x1a',2)})

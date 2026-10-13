@@ -144,6 +144,14 @@ PI_EOFCHAR:
         JP PC_NEXT
 PI_PUT:
         LD E,A
+        LD A,(PX_EFLAG)
+        OR A
+        JR Z,PI_NORMAL
+        LD C,2
+        CALL 5
+        XOR A
+        RET
+PI_NORMAL:
         LD A,(PD_ACTIVE)
         OR A
         LD A,E
@@ -177,6 +185,18 @@ PI_LEFT: DB 0
 ; DRI GETSOURCEC order: strip parity, then upper case (takes precedence
 ; over lower case). Transform before testing text EOF, including parity EOF.
 PX_CHAR:
+        LD (PX_RAW),A
+        LD A,(OP_DATA+128)
+        OR A
+        JR Z,PX_INPUT
+        LD A,1
+        LD (PX_EFLAG),A
+        LD A,(PX_RAW)
+        CALL PF_PUT
+        XOR A
+        LD (PX_EFLAG),A
+PX_INPUT:
+        LD A,(PX_RAW)
         LD E,A
         LD A,(OP_DATA+149)
         OR A
@@ -206,3 +226,6 @@ PX_LOWER:
         RET NC
         OR 20H
         RET
+
+PX_RAW: DB 0
+PX_EFLAG: DB 0

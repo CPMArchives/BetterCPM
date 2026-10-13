@@ -1195,3 +1195,24 @@ pinned DRI binary. PRN: remains unavailable pending physical LPT routing
 qualification: DRI forces that assignment, so it cannot yet be treated as a
 plain synonym for the current LST route. Its formatting prerequisites are now
 implemented. PIP remains development-only.
+
+
+## Build 016 — source echo
+
+E echoes each fetched source character through the logical console before
+U/L/Z conversion, extraction or text EOF testing. Echo uses the same output
+formatting layer as the destination, as in DRI GETSOURCEC/PUTDEST; column,
+number and page state are therefore shared, not independently duplicated.
+The terminating text EOF and extraction lookahead character are echoed when
+fetched. RDR input has already undergone its mandatory parity stripping.
+NUL:/EOF: special sources retain direct emission and do not pass through the
+input echo layer. E0 disables echo. CON input retains its usual BDOS echo in
+addition to explicit PIP E behavior.
+
+Exact E copies use the character path. Echo output itself cannot write or
+flush disk staging; the source's destination transaction and cleanup remain
+unchanged. Emulator tests cover raw versus transformed echo, parity EOF,
+extraction, duplicated console output and DRI's shared tab/number-state effects.
+Real cpmsim E/U, E/N and E/T cases match pinned DRI destination output.
+Physical routing, PRN, HEX, block/abort behavior and final platform qualification
+remain open. PIP remains development-only.

@@ -18,7 +18,7 @@ def main():
     assert 'NOT FOUND' in out and fs=={k:list(v) for k,v in source.items()}
     out,fs,_,_=execute('B7:=A2:*.DAT[RV]',source,exm=1)
     assert out.count('MULTI.DAT')==1 and fs[key(1,7,'MULTI.DAT')][0].startswith(b'X'*33001)
-    for command in ['A2:=A2:*.DAT','B7:=A2:*.DAT[E]']:
+    for command in ['A2:=A2:*.DAT','B7:=A2:*.DAT[H]']:
         out,fs,calls,_=execute(command,source)
         assert fs=={k:list(v) for k,v in source.items()} and not any(f in calls for f in (17,18,19,22,23))
     out,fs,_,_=execute('B7:=A2:*.DAT[V]',source,fail='verify')
