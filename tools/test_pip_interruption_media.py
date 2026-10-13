@@ -63,8 +63,12 @@ def main():
             (b':PIPDEV A7:DEST.TXT=A2:SOURCE.TXT[U]\rX',
              b'ABORTED', 30),
             (b'', b'A0>_ ', 30),
+            # Default INP returns Ctrl-Z. O must keep reading it until the
+            # queued key reaches the 256-byte object console poll.
+            (b':PIPDEV A7:DEST.TXT=INP:[O]\rX', b'ABORTED', 30),
+            (b'', b'A0>_ ', 30),
         ], report / 'transcript.txt')
-        assert b'ABORTED' in transcript, transcript.decode(errors='replace')
+        assert transcript.count(b'ABORTED') == 2, transcript.decode(errors='replace')
 
         listing = run('cpmls', '-T', 'raw', '-f', 'bettercpm-default',
                       str(disk), cwd=work).lower()

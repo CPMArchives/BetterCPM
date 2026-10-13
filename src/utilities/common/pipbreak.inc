@@ -21,7 +21,6 @@ PB_CHAR:
         LD A,(OP_DATA+81)
         CP 18                        ; CON consumes its own input
         RET Z
-        JR PB_TEXT
 PB_DISK:
         LD A,(PC_BINARY)
         OR A

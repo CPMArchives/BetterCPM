@@ -18,8 +18,15 @@ def main():
   assert out.encode()==b'onepatch'+bytes(40)+b'\x1atwo' and fs=={k:list(v) for k,v in files.items()}
  out,fs,_,_=execute('LST:=RDR:',{},input_bytes=b'\xc1\x9a')
  assert out=='A' and fs=={}
+ obj=key(0,2,'PREFIX.COM');payload=b'OBJECT'.ljust(128,b'\0')
+ for options in ['O','OSnoise\x1a']:
+  out,fs,_,_=execute('C4:DEST.DAT=A2:PREFIX.COM,INP:['+options+']',{obj:(payload,0)},input_bytes=b'noiseNEXT\x1a',patch_in=True)
+  assert out=='' and fs[dest][0]==payload,(options,out,fs)
+ logical=key(0,2,'LOGICAL.TXT')
+ out,fs,_,_=execute('C4:DEST.DAT=A2:LOGICAL.TXT,INP:[O]',{logical:(b'prefix\x1a',0),dest:(b'old',0)},input_bytes=b'\x1a'*512,patch_in=True,break_keys=[ord('X')])
+ assert 'ABORTED' in out and fs[dest]==[b'old',0]
  for tail in ['LST:=NUL:,CON:[X]','C4:DEST.DAT=NUL:,PTR:',
-              'C4:DEST.DAT=CON:,C4:DEST.$$$','C4:DEST.DAT=A2:ONE.DAT,CON:[O]']:
+              'C4:DEST.DAT=CON:,C4:DEST.$$$','C4:DEST.DAT=A2:ONE.DAT,CON:[X]']:
   out,fs,calls,_=execute(tail,files)
   assert out and not any(f in calls for f in (1,3,4,5,20,21,22,23)),(tail,out,calls)
  print('PASS: PIP mixed disk/device sources, special-source boundaries, device-to-device and full-list preflight')

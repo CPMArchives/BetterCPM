@@ -36,6 +36,8 @@ def main():
  assert out=='' and fs[key(1,7,'DEST.TXT')][0].startswith(data[:-1])
  out,fs,_,_=execute('B7:DEST.HEX=INP:,RDR:',{},input_bytes=data+b'raw-reader\x1a',patch_in=True)
  assert out=='' and fs[dest][0].startswith(base+ending+b'\r\nraw-reader')
+ out,fs,_,_=execute('B7:DEST.HEX=CON:[OH]',{},input_bytes=data)
+ assert out=='' and fs[dest][0].startswith(base+ending+b'\r\n')
  out,fs,_,_=execute('B7:DEST.HEX=A2:SRC.HEX[HV]',{src:(b'\x13'.join(bytes([v]) for v in data),0)})
  assert out=='' and fs[dest][0].startswith(base+ending+b'\r\n')
  out,fs,_,_=execute('B7:DEST.HEX=A2:SRC.HEX[OH]',{src:(data,0)})

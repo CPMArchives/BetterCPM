@@ -13,12 +13,16 @@ def main():
    assert 20 not in calls
  out,fs,_,_=execute('B7:DEST.DAT=RDR:',{},input_bytes=b'\xc1\x9a')
  assert fs[dest][0]==b'A'+b'\x1a'*127
+ for device in ['INP','RDR']:
+  out,fs,calls,writes=execute('B7:DEST.DAT='+device+':[O]',{dest:(b'old',0)},input_bytes=b'\x1a'*512,patch_in=True,break_keys=[ord('X')])
+  assert 'ABORTED' in out and fs[dest]==[b'old',0] and temp not in fs
+  assert writes,'object input stopped at Ctrl-Z instead of reaching the console poll'
  for device,prefix in [('NUL',bytes(40)),('EOF',b'\x1a')]:
   out,fs,calls,_=execute('B7:DEST.DAT='+device+':',{})
   assert out=='' and fs[dest][0]==prefix.ljust(128,b'\x1a') and not any(f in calls for f in (1,3))
  out,fs,_,_=execute('B7:DEST.DAT=INP:',{})
  assert out=='' and fs[dest]==[b'',0]
- for tail in ['B7:DEST.DAT=CON:[O]','B7:=CON:','B7:DEST.DAT=PTR:']:
+ for tail in ['B7:=CON:','B7:DEST.DAT=PTR:']:
   out,fs,calls,_=execute(tail,{dest:(b'old',0)})
   assert ('not implemented' in out or 'INVALID FORMAT' in out or 'DEVICE UNAVAILABLE' in out) and fs[dest]==[b'old',0]
   assert not any(f in calls for f in (1,3,19,22,23))

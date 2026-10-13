@@ -10,6 +10,7 @@ PT_COPY:
         LD (PD_ACTIVE),A
         LD (PI_ACTIVE),A
         LD (PX_EFLAG),A
+        LD (PC_HARD),A
         LD A,(PW_ACTIVE)
         OR A
         JR NZ,PT_COLUMN

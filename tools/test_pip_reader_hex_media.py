@@ -64,18 +64,19 @@ def main():
     report.mkdir(parents=True, exist_ok=True)
     payload = b'noise\r\n' + record(b'ABC') + b'\n:00000001FF\r\n\x1a'
     cases = [('INP', 'HEX', ''), ('RDR', 'HEX', ''),
-             ('INP', 'TXT', ''), ('RDR', 'HEX', 'H'), ('INP', 'HEX', 'I')]
+             ('INP', 'TXT', ''), ('RDR', 'HEX', 'H'), ('INP', 'HEX', 'I'), ('INP', 'HEX', 'OH'), ('RDR', 'HEX', 'OI'), ('INP', 'HEX', 'OHSnoise\x1a')]
     with tempfile.TemporaryDirectory(prefix='pip-reader-', dir='/private/tmp') as tmp:
         work = Path(tmp)
         shutil.copytree(args.image_dir/'disks', work/'disks')
         shutil.copy2(args.image_dir/'diskdefs', work/'diskdefs')
         disk = work/'disks/drivea.dsk'
+        output_disk = work/'disks/driveb.dsk'
         commands = [(b'A4:\r', b'A4>_ ', 30)]
         for i, (device, ext, options) in enumerate(cases):
             for prefix, binary in [('OUR', ROOT/'build/pip-development/PIP.COM'),
                                    ('REF', ROOT/'third_party/dri-pip/PIP-1.5-reference.COM')]:
                 name = prefix + str(i)
-                command = (name+'.'+ext+'='+device+':'+('['+options+']' if options else '')).encode()
+                command = ('B:'+name+'.'+ext+'='+device+':'+('['+options+']' if options else '')).encode()
                 program = work/(name+'.COM')
                 program.write_bytes(launcher(binary, command, payload))
                 subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(disk),str(program),'0:'+program.name],cwd=work,check=True)
@@ -86,7 +87,7 @@ def main():
             for prefix in ('OUR', 'REF'):
                 name = prefix+str(i)+'.'+ext
                 output = work/name
-                subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(disk),'4:'+name,str(output)],cwd=work,check=True)
+                subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(output_disk),'4:'+name,str(output)],cwd=work,check=True)
                 outputs.append(output.read_bytes())
             assert outputs[0] == outputs[1], (cases[i], outputs)
     print('PASS: automatic INP HEX, ordinary RDR/TXT, explicit H and I match pinned DRI PIP')
