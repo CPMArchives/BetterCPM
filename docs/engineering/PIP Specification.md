@@ -1256,3 +1256,32 @@ Tests exercise every unavailable source/sink alias, first and later sources,
 unchanged existing destination data and absence of input/output, IOBYTE-set,
 record-transfer and file-mutation calls. PIP remains development-only; HEX,
 block/interruption behavior and final qualification remain open.
+
+
+## Build 018 — bounded HEX record-validator foundation
+
+The pinned DRI HEXRECORD uses an 80-byte buffer and reports RECORD TOO LONG
+when its saved character count reaches 79. Consequently the largest ordinary
+record admitted by that implementation has 33 data bytes (77 saved characters).
+It accepts uppercase hex digits, sums length/address/type/data/checksum modulo
+256, and does not restrict the record-type byte. A zero length returns the
+end-of-tape path before address/type/checksum validation; that path consumes
+its remaining tail through EOF separately. XOFF is skipped while reading a
+record and requests output-buffer handling. These are DRI PIP rules, not a
+new modern Intel HEX format policy.
+
+The internal PH_PARSE foundation accepts an immutable span starting with colon
+and reports valid record, zero-length terminator prefix, invalid digit/form,
+checksum error, too-long record or need-more-input. It records consumed input,
+saved record bytes, load address/type and skipped XOFF. Scratch storage is
+bounded, and parse calls reset their state. PH_PARSE does not perform I/O or
+modify the supplied input span.
+
+This increment deliberately leaves H/I transfer dispatch disabled. Integration
+still needs colon scanning, buffering across records, end-of-tape drain,
+I's end-record suppression, output CR/LF normalization, XOFF flush behavior,
+and DRI's correction/EOF prompts. The historical behavior must be compared on
+real media before claiming complete HEX support. Tests currently qualify the
+record validator against the pinned source rules, including 33/34-byte bounds,
+uppercase digits, checksums, arbitrary record types, incomplete spans and XOFF.
+No claim of a completed HEX transfer follows from these foundation tests.
