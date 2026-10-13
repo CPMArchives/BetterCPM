@@ -1123,3 +1123,29 @@ Tests cover all 256 byte values in object mode, ASCII boundaries, U/L precedence
 parity-generated EOF, device routes, source-scoped mixed transformations,
 wildcard attributes and verification. Unsupported formatting/extraction/HEX
 parameters still fail preflight. PIP remains development-only.
+
+
+## Build 013 — text start/quit extraction
+
+Text sources support S and Q strings terminated by literal 1Ah in the operand.
+The pinned DRI algorithm matches exact bytes after U/L/Z transformations,
+resets its match on mismatch without retrying overlaps, and recognizes a match
+on the following non-EOF character. S suppresses preceding text and includes
+the matched start string and that following character. Q includes the quit
+string, replaces the following character with CR/LF, and ends that source.
+Empty S starts immediately; empty Q emits CR/LF upon the first non-EOF input.
+Each source resets its matcher. Missing S/Q strings report START NOT FOUND or
+QUIT NOT FOUND, cancel SUBMIT and remove incomplete disk staging output.
+
+Extraction works across record boundaries, wildcard text files and mixed disk/
+logical-device sources. Operand string storage remains read-only. NUL:/EOF:
+retain direct special-source behavior. This increment rejects COM or [O]
+extraction before transfer I/O; object/extraction interaction remains a separate
+compatibility qualification item rather than an inferred termination policy.
+
+The emulator regression checks inclusion, lookahead, overlap, empty strings,
+source reset, wildcard attributes and missing-string cleanup. A real cpmsim
+campaign compares disk output with pinned DRI PIP for five S/Q cases, including
+record boundaries and empty strings. Its small appended launchers supply raw
+command-tail delimiters because the current CCP editor filters typed Ctrl-Z.
+That editor behavior is not changed here. PIP remains development-only.

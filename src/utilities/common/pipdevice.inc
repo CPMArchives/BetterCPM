@@ -90,6 +90,7 @@ PI_VALID:
         SCF
         RET
 PI_BEGIN:
+        CALL PE_INIT
         LD A,1
         LD (PI_ACTIVE),A
         LD A,40
@@ -119,11 +120,18 @@ PI_CHAR:
         CALL PX_CHAR
         CP 01AH
         JP Z,PC_NEXT
-        CALL PI_PUT
+        CALL PE_FEED
+        OR A
+        JP NZ,PT_WFAIL
+        LD A,(PE_DONE)
+        OR A
+        JP NZ,PC_NEXT
         JP PI_READ
 PI_NULL:
         XOR A
         CALL PI_PUT
+        OR A
+        JP NZ,PT_WFAIL
         LD HL,PI_LEFT
         DEC (HL)
         JP NZ,PI_READ
@@ -131,13 +139,19 @@ PI_NULL:
 PI_EOFCHAR:
         LD A,01AH
         CALL PI_PUT
+        OR A
+        JP NZ,PT_WFAIL
         JP PC_NEXT
 PI_PUT:
         LD E,A
         LD A,(PD_ACTIVE)
         OR A
         LD A,E
-        JP NZ,PD_PUT
+        JR Z,PI_DISK
+        CALL PD_PUT
+        XOR A
+        RET
+PI_DISK:
         PUSH AF
         LD A,(PC_OPOS)
         LD E,A
@@ -150,15 +164,13 @@ PI_PUT:
         INC (HL)
         LD A,(HL)
         CP 128
-        RET NZ
+        JR Z,PI_FLUSH
+        XOR A
+        RET
+PI_FLUSH:
         XOR A
         LD (HL),A
-        CALL PT_FLUSH
-        OR A
-        RET Z
-        ; Unwind PI_PUT before the shared failure path returns to the caller.
-        POP HL
-        JP PT_WFAIL
+        JP PT_FLUSH
 PI_ACTIVE: DB 0
 PI_LEFT: DB 0
 

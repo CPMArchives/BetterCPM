@@ -64,7 +64,7 @@ def execute(tail,files,fail=None,answer='N',readonly=0,unused=None,exm=0,patch_o
    if k[2].endswith(b'$$$') and fail is None:
     source_lengths=[len(v[0]) for name,v in files.items() if name[2].startswith(b'SRC')]
     if unused is not None:assert c.mem[p+13]==unused
-    elif source_lengths and c.mem[addr('PP_COUNT')]==2 and not any(c.mem[addr('OP_DATA')+i] for i in (135,144,149)):assert c.mem[p+13]==(-source_lengths[0])%128
+    elif source_lengths and c.mem[addr('PP_COUNT')]==2 and not any(c.mem[addr('OP_DATA')+i] for i in (135,140,142,144,149)):assert c.mem[p+13]==(-source_lengths[0])%128
    return 0
   if f==22:
    if fail=='make':return 255
@@ -148,7 +148,7 @@ def main():
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT',batch)
  assert fs[queue]==[b'BATCH',0]
  out,fs,calls,_=execute('/VER',batch)
- assert 'Build 012' in out and fs[queue]==[b'BATCH',0] and calls==[9]
+ assert 'Build 013' in out and fs[queue]==[b'BATCH',0] and calls==[9]
  for protection in ['cancel','roqueue','rodrive']:
   protected_batch={**batch,queue:(b'BATCH',1 if protection=='roqueue' else 0)}
   out,fs,_,_=execute('BAD',protected_batch,fail='cancel' if protection=='cancel' else None,readonly=1 if protection=='rodrive' else 0)
