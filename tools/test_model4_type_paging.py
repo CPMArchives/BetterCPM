@@ -6,7 +6,7 @@ from test_disk_utilities import ROOT,medium,keys
 from test_sysgen_install import screen
 from run_trs80_command import DEFAULT_EMULATOR
 from trs80gp_launch import run
-PROMPT='MORE -- ,/^R back; ./Space/^C next; ^Q quit.'
+PROMPT='MORE -- ,/^R back; ./Space/^C next; </> files; ^Q quit.'
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('--report',type=Path,required=True);a=p.parse_args()

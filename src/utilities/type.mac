@@ -45,11 +45,28 @@ T_UPDONE:
         JP C,T_BAD
         CALL RE_DVALID
         JP C,T_DRIVE
-        ; Determine whether banners are needed before streaming any contents.
+        ; Count selected files for paged file-navigation bounds.
+        ; Unpaged display still stops its banner probe after two matches.
         CALL T_RESET
         CALL T_NEXT
         JP C,T_NOFILE
         CALL T_NEXT
+        JR C,T_COUNTEND
+        LD A,(T_PAGED)
+        OR A
+        JR Z,T_COUNTEND
+T_COUNT:
+        CALL T_NEXT
+        JR NC,T_COUNT
+T_COUNTEND:
+        LD HL,(T_FIDX)
+        LD (T_TOTAL),HL
+        LD A,H
+        OR A
+        LD A,1
+        JR NZ,T_BSET
+        LD A,L
+        CP 2
         LD A,1
         JR NC,T_BSET
         LD HL,FS_FCB+1
@@ -70,6 +87,7 @@ T_FILE:
         CALL TP_CHECK
         CALL T_NEXT
         JP C,T_DONE
+        CALL TP_GFILE
         LD A,1
         LD (T_FFIRST),A
         XOR A
@@ -251,6 +269,7 @@ T_TRIM:
 T_RESET:
         LD BC,0
         LD (RF_INDEX),BC
+        LD (T_FIDX),BC
         XOR A
         LD (T_INDU),A
         RET
@@ -284,10 +303,32 @@ T_FIND:
         LD DE,RF_LAST
         LD BC,11
         LDIR
+        LD HL,(T_FIDX)
+        INC HL
+        LD (T_FIDX),HL
         OR A
         RET
 T_HEAD:
+        LD HL,TP_CUR
+        LD DE,T_HROW
+        LD BC,4
+        LDIR
+        LD A,(TP_NOSEP)
+        OR A
+        LD DE,T_DASH+2
+        JR NZ,T_HNOSEP
+        LD HL,T_HROW
+        LD B,4
+T_HINC:
+        INC (HL)
+        JR NZ,T_HPREFIX
+        INC HL
+        DJNZ T_HINC
+T_HPREFIX:
         LD DE,T_DASH
+T_HNOSEP:
+        XOR A
+        LD (TP_NOSEP),A
         CALL BC_PRINT
         CALL T_NAME
         LD DE,T_TAIL
@@ -553,6 +594,9 @@ T_BANNER: DB 0
 T_PAGED: DB 0
 T_ISOPEN: DB 0
 T_FFIRST: DB 0
+T_FIDX: DW 0
+T_TOTAL: DW 0
+T_HROW: DS 4
 T_DASH: DB 13,10,'---------- $'
 T_TAIL: DB ' ----------',13,10,'$'
 T_PREFIX: DB 13,10,'TYPE $'

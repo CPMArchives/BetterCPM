@@ -1397,8 +1397,8 @@ confirmation, preview, override and reporting options above belong to REN.COM.
 TYPE displays text on the console. Resident TYPE is the small core command;
 TYPE.COM is planned to provide the fuller paging facility. Resident TYPE is
 implemented. TYPE.COM currently implements shared selection and streaming
-transformations and bidirectional paging. Explicit transient file navigation
-below remains the proposed 1.0 target.
+transformations, bidirectional paging and explicit file navigation. Final
+TYPE.COM release qualification is still in progress.
 
 Both forms use the shared filespec, DU selector and attribute predicates:
 
@@ -1425,13 +1425,12 @@ stream files without normal paging pauses. A multi-file selection prints a
 banner such as `---------- B3:README.TXT ----------` before each file. A single
 exact file may omit the banner.
 
-Current TYPE.COM Build 002 supports `/P`, `/7`, `/T`, `/CTL` and `/VER`. Options
-may precede or follow the source operand. Page movement is implemented; `<` and
-`>` file movement is still pending and those keys currently do nothing.
+Current TYPE.COM Build 003 supports `/P`, `/7`, `/T`, `/CTL` and `/VER`. Options
+may precede or follow the source operand. Page and file movement are implemented.
 
 | Option | Effect |
 | --- | --- |
-| `/P` | Forward/backward paging; file navigation remains planned |
+| `/P` | Forward/backward paging and file-boundary navigation |
 | `/7` | Strip the high bit from displayed bytes; test raw 1Ah for EOF first |
 | `/T` | Expand tabs to fixed 8-column stops |
 | `/CTL` | Show controls as caret notation; overrides `/T` for tabs |
@@ -1462,12 +1461,18 @@ ordinary output, normal console/BDOS Ctrl-C handling still applies.
 Esc does not quit TYPE.COM. Movement beyond the first or last selected file
 stays at the nearest valid position. A page may contain the end of one file,
 the next banner and the beginning of the next file. At the end of the final file, the final page remains displayed until Ctrl-Q.
-Next-page and next-file commands then do nothing; backward navigation remains
-available. Backward page navigation has no fixed history limit: older pages are rebuilt
+Next-page commands then do nothing; backward navigation remains available.
+`>` still visits a later file boundary when the page starts in an earlier file.
+At the last anchored file, `>` does nothing. Backward page navigation has no fixed history limit: older pages are rebuilt
 by rereading from the start of the selection. This may be slow on floppy media.
 
 The current file is the file at the top-of-page anchor, even if the page later
 crosses into another file. A banner at the top belongs to the file it introduces.
+`>` places the next file's banner at the top, even if it is already visible
+mid-screen. `<` moves back only as far as the current file's beginning, putting
+its banner at the top; this may be a partial-screen movement. Another `<` from
+there visits the previous file. Boundary jumps redraw the screen.
+
 An empty file is valid: multi-file display prints its banner and continues,
 without an `[EMPTY]` marker. Empty files remain available to file navigation but
 do not create a fictitious content page.
