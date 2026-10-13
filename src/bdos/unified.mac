@@ -996,11 +996,7 @@ UB_ITFOUND:                             ; itfound
         LD      A,(UB_ITPOS)
         AND     3
         LD      (UB_ITRET),A
-        PUSH    HL
-        LD      HL,(UB_ITPOS)
-        INC     HL
-        LD      (UB_ITPOS),HL
-        POP     HL
+        CALL    UB_ITSTEP
         LD      A,(UB_ITRET)
         OR      A                       ; preserve slot and clear carry
         RET
@@ -1015,12 +1011,16 @@ UB_ITMISS:                              ; itmiss
         POP     HL
 
 UB_ITADV:                               ; itadv
+        CALL    UB_ITSTEP
+        JP      UB_ITER
+
+UB_ITSTEP:                              ; shared iterator advance
         PUSH    HL
         LD      HL,(UB_ITPOS)
         INC     HL
         LD      (UB_ITPOS),HL
         POP     HL
-        JP      UB_ITER
+        RET
 
 UB_ITDONE:                              ; itdone
         LD      A,0FFH
@@ -1239,7 +1239,21 @@ UB_MKFREE:                              ; mkfree
         CALL    UB_ITINIT
         CALL    UB_ITER
         JR      C,UB_MBAD               ; directory full or physical read failure
-        LD      (UB_ITRET),A
+        ; UB_ITER already retained the successful directory slot.
+        ; Reused FCB maps may contain rename text, not allocation numbers.
+        PUSH    HL
+        PUSH    IX
+        POP     HL
+        LD      DE,15
+        ADD     HL,DE
+        XOR     A
+        LD      B,17
+
+UB_NEWCLR:                              ; newclr
+        LD      (HL),A
+        INC     HL
+        DJNZ    UB_NEWCLR
+        POP     HL
         LD      A,(UB_USERNO)
         LD      (HL),A
         INC     HL
@@ -1953,18 +1967,8 @@ UB_EXTMAKE:                             ; extmake
   ; Otherwise a failed growth write appears to have lengthened the file.
         CALL    UB_ALFREE
         JP      NZ,UB_FULL
-  ; A new extent owns no blocks yet. Clear the old map here, where random
-  ; seeks and sequential rollover meet; otherwise a seek can alias old data.
-        PUSH    IX
-        POP     HL
-        LD      DE,15
-        ADD     HL,DE
-        LD      B,17
-
-UB_NEWCLR:                              ; newclr
-        LD      (HL),A
-        INC     HL
-        DJNZ    UB_NEWCLR
+  ; A new extent owns no blocks yet. The common Make publisher clears its
+  ; map for both random seeks and sequential rollover, avoiding old-data aliases.
         CALL    UB_MKFREE
         OR      A
         RET

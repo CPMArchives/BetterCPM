@@ -999,3 +999,32 @@ The real cpmsim campaign also passes: selected data and source attributes are
 unchanged, and destinations receive all three source attribute states.
 Native ZSM4/LINK matches the 11,075-byte development artifact. The independent
 ARC-dependent warm-return failure of the pinned DRI binary remains unresolved.
+
+
+### ARC/warm-return finding closed: reused FCB Make initialization
+
+The failure was in production BDOS Function 22, not ARC semantics or PIP's
+copy loop. Make copied the caller's stale record count and allocation bytes
+into the new directory entry. DRI PIP reuses FCB bytes 16–31 for the previous
+rename target, so subsequent creates published filename characters as block
+numbers. The ARC bit made a character exceed this disk's DSM; disk
+reinitialization rejected the corrupt allocation map and the command reloader
+halted. Clearing ARC merely hid the invalid-block diagnostic: it did not make
+the stale allocation map safe. Reserved system-disk bytes were unchanged.
+
+Make now clears RC and the allocation map after obtaining a free entry and
+before publication. New-extent creation uses that same initialization instead
+of a private duplicate loop. Iterator position updates are also shared and a
+redundant slot store is removed. BDOS shrinks from 3,555 to 3,553 bytes; public
+entry points, fixed allocations, RAM object sizes and the 53K TPA boundary are
+unchanged. ROM address inventories and measured assertions are regenerated.
+
+The production regression seeds a reused FCB with rename text, including a
+high-bit type character. It rejects the original implementation and passes
+with the correction. Existing unified BDOS directory, allocation, extent and
+record-transfer tests pass. Native ZSM4/LINK produces identical 3,553-byte BDOS
+code. The formerly failing cpmsim wildcard reference campaign now returns to
+the prompt with ARC set and produces matching record data. Both rebuilt cpmsim and Model 4 distribution disks pass boot qualification.
+The media regression also checks that unused allocation slots remain zero.
+The separate extent-zero Search First/EXM compatibility finding remains open; the PIP port
+already avoids that omission through its all-extent scan.
