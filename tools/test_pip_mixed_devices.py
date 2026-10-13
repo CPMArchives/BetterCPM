@@ -18,7 +18,7 @@ def main():
   assert out.encode()==b'onepatch'+bytes(40)+b'\x1atwo' and fs=={k:list(v) for k,v in files.items()}
  out,fs,_,_=execute('LST:=RDR:',{},input_bytes=b'\xc1\x9a')
  assert out=='A' and fs=={}
- for tail in ['LST:=NUL:,CON:[N]','C4:DEST.DAT=NUL:,PTR:',
+ for tail in ['LST:=NUL:,CON:[E]','C4:DEST.DAT=NUL:,PTR:',
               'C4:DEST.DAT=CON:,C4:DEST.$$$','C4:DEST.DAT=A2:ONE.DAT,CON:[O]']:
   out,fs,calls,_=execute(tail,files)
   assert out and not any(f in calls for f in (1,3,4,5,20,21,22,23)),(tail,out,calls)

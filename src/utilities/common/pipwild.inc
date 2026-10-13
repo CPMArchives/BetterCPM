@@ -4,6 +4,10 @@ PW_START:
         CP 2
         JP NZ,PT_UNSUP
         LD A,(OP_DATA)
+        CP 13
+        JR Z,PW_ONEXT
+        CP 15
+        JR Z,PW_ONEXT
         CP 3
         JP NZ,PT_UNSUP
         LD A,(OP_DATA+2)

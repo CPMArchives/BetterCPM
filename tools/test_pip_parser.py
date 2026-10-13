@@ -50,7 +50,7 @@ def main():
   bad,parts=scan(text);assert bad and not parts,(text,parts)
  tail='A='+','.join('B' for _ in range(63));assert len(tail)==127
  bad,parts=scan(tail);assert not bad and len(parts)==64
- out,calls=invocation('/VER');assert 'BetterCP/M PIP 1.0 (Build 014)' in out and calls==[9],(out,calls)
+ out,calls=invocation('/VER');assert 'BetterCP/M PIP 1.0 (Build 015)' in out and calls==[9],(out,calls)
  out,calls=invocation('A=B[Shello /VER, world\x1a]');assert 'NO FILE' in out and 'Invalid /VER' not in out
  out,calls=invocation('A=B /VER');assert 'Invalid /VER usage.' in out and calls==[9]
  out,calls=invocation('',keys=['PRN:=CON:','BAD','']);assert out.count('*')==3 and 'transfer engine not implemented' in out and 'INVALID FORMAT' in out
