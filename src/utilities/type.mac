@@ -303,11 +303,23 @@ T_FIND:
         LD DE,RF_LAST
         LD BC,11
         LDIR
+        CALL T_BUMP
+        JP C,T_CAPERR
+        OR A
+        RET
+T_BUMP:
         LD HL,(T_FIDX)
         INC HL
+        LD A,H
+        OR L
+        SCF
+        RET Z
         LD (T_FIDX),HL
         OR A
         RET
+T_CAPERR:
+        LD DE,T_CAPMSG
+        JP T_REPORT
 T_HEAD:
         LD HL,TP_CUR
         LD DE,T_HROW
@@ -605,6 +617,7 @@ T_RERROR: DB ' - Read error.',13,10,'$'
 T_SYNTAX: DB 'Invalid filespec.',13,10,'$'
 T_DRIVEM: DB 'Invalid drive.',13,10,'$'
 T_NOMATCH: DB 'NO FILE',13,10,'$'
+T_CAPMSG: DB 'Too many selected files.',13,10,'$'
         DS 128
 T_STACK:
         .DEPHASE

@@ -211,18 +211,19 @@
       ]
     },
     {
-      "name": "WHEREIS.COM",
+      "name": "ED.COM",
       "status": "planned",
-      "reason": "Selected; implementation pending",
+      "reason": "DU-aware adaptation of existing ED source selected for 1.0; source/build audit, implementation and qualification pending",
       "targets": [
         "z80pack",
         "trs80gp"
-      ]
+      ],
+      "user": 0
     },
     {
-      "name": "Full-screen editor",
+      "name": "WHEREIS.COM",
       "status": "planned",
-      "reason": "Program selection pending",
+      "reason": "Selected; implementation pending",
       "targets": [
         "z80pack",
         "trs80gp"

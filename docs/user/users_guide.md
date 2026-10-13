@@ -1397,8 +1397,8 @@ confirmation, preview, override and reporting options above belong to REN.COM.
 TYPE displays text on the console. Resident TYPE is the small core command;
 TYPE.COM is planned to provide the fuller paging facility. Resident TYPE is
 implemented. TYPE.COM currently implements shared selection and streaming
-transformations, bidirectional paging and explicit file navigation. Final
-TYPE.COM release qualification is still in progress.
+transformations, bidirectional paging and explicit file navigation. Both forms
+are qualified on the current 80-column, 24-row platforms.
 
 Both forms use the shared filespec, DU selector and attribute predicates:
 
@@ -1425,7 +1425,7 @@ stream files without normal paging pauses. A multi-file selection prints a
 banner such as `---------- B3:README.TXT ----------` before each file. A single
 exact file may omit the banner.
 
-Current TYPE.COM Build 003 supports `/P`, `/7`, `/T`, `/CTL` and `/VER`. Options
+Current TYPE.COM Build 004 supports `/P`, `/7`, `/T`, `/CTL` and `/VER`. Options
 may precede or follow the source operand. Page and file movement are implemented.
 
 | Option | Effect |
@@ -1456,7 +1456,10 @@ In transient paged mode:
 | Ctrl-Q | Quit |
 
 Ctrl-C means next page only while TYPE.COM waits for a paging command. During
-ordinary output, normal console/BDOS Ctrl-C handling still applies.
+ordinary output, normal console/BDOS Ctrl-C handling still applies. This abrupt
+warm boot retains the displayed file's drive and user area; TYPE cannot run its
+cleanup after BDOS aborts it. Normal completion and Ctrl-Q at a paged prompt
+restore your original drive and user area.
 
 Esc does not quit TYPE.COM. Movement beyond the first or last selected file
 stays at the nearest valid position. A page may contain the end of one file,

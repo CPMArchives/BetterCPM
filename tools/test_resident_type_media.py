@@ -22,7 +22,7 @@ def main():
     if a.transient:
         commands=[':TYPE /VER',':TYPE A[3,5]:[ $RW]',':TYPE /CTL A[3,5]:*.TXT[$RO,$SYS]',
                   ':TYPE A3:ONE.TXT /7 /T',':TYPE /CTL /T A3:ONE.TXT',':TYPE A5:TWO.TXT /Z']
-        expected=['BetterCP/M TYPE 1.0 (Build 003)','Invalid filespec.','TYPE ONE $ TEXT^M^J',
+        expected=['BetterCP/M TYPE 1.0 (Build 004)','Invalid filespec.','TYPE ONE $ TEXT^M^J',
                   'TYPE ONE $ TEXT','TYPE ONE $ TEXT^M^J','Invalid filespec.']
     module=(ROOT/'build/cpx/RCP.CPX').read_bytes()
     if a.platform=='z80pack':

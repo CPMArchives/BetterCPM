@@ -121,8 +121,7 @@ TP_COUNT:
         JR Z,TP_TAB
         CP 8
         JR Z,TP_BACK
-        CP 32
-        RET C
+        ; Other bytes follow the cooked BDOS single-cell column model.
         LD HL,TP_COL
         INC (HL)
         LD A,(HL)
@@ -285,6 +284,10 @@ TP_INDENT:
         XOR A
         LD (TP_CLEAR),A
         LD E,28                     ; BetterCP/M native clear/home, as CLS uses
+        LD C,2
+        CALL BDOS
+        ; Clear/home is not CR to cooked BDOS: synchronize its tab column.
+        LD E,13
         LD C,2
         CALL BDOS
 TP_CLEAN:
