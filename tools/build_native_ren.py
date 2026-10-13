@@ -40,7 +40,12 @@ def main() -> None:
         source = work / "REN.MAC"
         from build_ren import expanded_source
         expanded = work / 'expanded.mac'
-        expanded.write_text(expanded_source(), encoding='ascii')
+        from build_native_rcp_transients import initialized_workspace
+        import re
+        text = initialized_workspace(expanded_source())
+        text = re.sub(r'(?m)^\s+DS\s+(\d+)\s*$',
+                      r'        REPT \1\n        DB 0FFH\n        ENDM', text)
+        expanded.write_text(text, encoding='ascii')
         source.write_bytes(cpm_text(expanded))
         run("cpmcp", "-f", "ibm-3740", str(disks / "drivec.dsk"),
             str(source), "0:REN.MAC")

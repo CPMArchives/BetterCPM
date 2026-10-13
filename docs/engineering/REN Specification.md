@@ -1,10 +1,11 @@
 # REN / REN.COM — BetterCP/M Engineering Specification
 
-Status: resident core subset implemented on 2026-10-11; transient core selection
-and mapping increment implemented on 2026-10-12. Full transient workflow remains
-in progress. The current resident behavior
-is documented in [Resident REN Selection](Resident%20REN%20Selection.md).
-The planned user interface is in user-guide section 4.3.
+Status: resident behavior is documented in
+[Resident REN Selection](Resident%20REN%20Selection.md). Transient REN Build 005
+implements the workflow below. Native assembler parity and representative
+cpmsim and Model 4 media qualification passed on 2026-10-13; see
+[REN Qualification](REN%20Qualification.md). The user interface is in user-guide
+section 4.3.
 
 Uses the shared [DU syntax](208%20Extended%20DU%20Syntax.md),
 [COPY template rules](COPY%20Specification.md), and
@@ -35,7 +36,7 @@ implementation and qualification must follow separately.
   overwrite is authorized.
 - `/P` preserves original attributes and refuses inconsistent per-extent
   attributes before mutation. Attribute restoration failure aborts the remainder.
-  Native build parity and physical platform qualification remain pending.
+  Native build parity and representative physical platform qualification passed.
 
 ## 1. Purpose
 
@@ -1134,3 +1135,15 @@ unprotect/restoration failures, differing extent attributes, drive protection
 and no-write policy precedence. All preceding execution regressions pass.
 Native parity, real BDOS/media behavior and physical platform qualification
 remain outstanding; fixture tests alone do not establish release completion.
+
+
+## Qualification — 2026-10-13
+
+The Build 005 native ZSM4/LINK result is byte-identical to the cross-assembled
+5,553-byte image. Real BetterCP/M BDOS qualification passed under cpmsim and
+trs80gp, including all eight RO/SYS/ARC combinations, multi-extent contents and
+whole-media dry-run immutability. cpmsim additionally passed collision help,
+replacement-name validation, confirmation, destination-ledger exclusion,
+multi-DU selection and invalid-command immutability. Failure injection remains
+covered by the assembled-code fixture suite rather than real disk faults.
+See [REN Qualification](REN%20Qualification.md) for scope and reproduction.
