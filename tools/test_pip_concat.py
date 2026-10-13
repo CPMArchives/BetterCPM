@@ -23,7 +23,7 @@ def main():
     assert 'NO FILE' in out and fs[d]==[b'OLD',0] and t not in fs
     out,fs,_,_=execute('B7:DEST.TXT=A2:ONE.TXT,C3:TWO.TXT[R]',files,unused=122)
     assert fs[d][0].startswith(b'onetwo') and fs[b][1]==2
-    for late in ['C3:MISSING.TXT','B7:DEST.$$$','B7:DEST.TXT','C3:TWO.TXT[U]']:
+    for late in ['C3:MISSING.TXT','B7:DEST.$$$','B7:DEST.TXT','C3:TWO.TXT[T8]']:
         out,fs,_,_=execute('B7:DEST.TXT=A2:ONE.TXT,'+late,files)
         assert fs[d]==[b'OLD',0] and t not in fs and fs[a]==[b'one\x1a',0],out
     for failure in ['verify','verify_read','write','close']:

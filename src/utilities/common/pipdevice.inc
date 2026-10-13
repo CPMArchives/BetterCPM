@@ -116,6 +116,7 @@ PI_PATCH:
         CALL 0103H
         LD A,(0109H)
 PI_CHAR:
+        CALL PX_CHAR
         CP 01AH
         JP Z,PC_NEXT
         CALL PI_PUT
@@ -160,3 +161,36 @@ PI_PUT:
         JP PT_WFAIL
 PI_ACTIVE: DB 0
 PI_LEFT: DB 0
+
+; DRI GETSOURCEC order: strip parity, then upper case (takes precedence
+; over lower case). Transform before testing text EOF, including parity EOF.
+PX_CHAR:
+        LD E,A
+        LD A,(OP_DATA+149)
+        OR A
+        LD A,E
+        JR Z,PX_CASE
+        AND 7FH
+PX_CASE:
+        LD E,A
+        LD A,(OP_DATA+144)
+        OR A
+        JR Z,PX_LOWER
+        LD A,E
+        CP 'a'
+        RET C
+        CP 'z'+1
+        RET NC
+        AND 0DFH
+        RET
+PX_LOWER:
+        LD A,(OP_DATA+135)
+        OR A
+        LD A,E
+        RET Z
+        CP 'A'
+        RET C
+        CP 'Z'+1
+        RET NC
+        OR 20H
+        RET

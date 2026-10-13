@@ -1,5 +1,5 @@
 ; Shared disk transaction: exact fast copy or exact-source concatenation.
-; Supported effective parameters G/O/R/V/W. Others fail before any file I/O.
+; Supported effective parameters G/L/O/R/U/V/W/Z. Others fail before file I/O.
 PT_COPY:
         XOR A
         LD (PT_STATUS),A
@@ -50,6 +50,12 @@ PT_OPTIONS:
         OR A
         JR Z,PT_ONEXT
         LD A,C
+        CP 11
+        JR Z,PT_ONEXT
+        CP 20
+        JR Z,PT_ONEXT
+        CP 25
+        JR Z,PT_ONEXT
         CP 6
         JR Z,PT_ONEXT
         CP 14
@@ -204,8 +210,13 @@ PT_TZERO:
         LD A,(PI_ACTIVE)
         OR A
         JP NZ,PI_BEGIN
-        LD A,(PC_MULTI)
-        OR A
+        LD A,(OP_DATA+135)
+        LD HL,OP_DATA+144
+        OR (HL)
+        LD HL,OP_DATA+149
+        OR (HL)
+        LD HL,PC_MULTI
+        OR (HL)
         JP NZ,PC_BEGIN
 PT_LOOP:
         CALL PT_SOURCE

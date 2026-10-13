@@ -1100,3 +1100,26 @@ and source-switch code replaces the duplicate first-source device setup; the
 cross/native image is 11,474 bytes, eleven fewer than Build 010. Physical aliases,
 transformations, HEX and interruption qualification remain open, and PIP is
 still excluded from distribution disks.
+
+
+## Build 012 — upper/lower case and parity stripping
+
+Source parameters U, L and Z now work across exact disk copies, wildcard
+copies, mixed source lists and logical input/output transfers. Z strips bit 7
+first; U converts ASCII a..z to A..Z, while L converts A..Z to a..z. U takes
+precedence when both are present, matching DRI GETSOURCEC. Other characters
+are unchanged. Each source has its own parameters. Reader input retains its
+historical unconditional parity stripping.
+
+Transformations run before text EOF testing, so 9Ah becomes EOF under Z.
+COM or [O] disk sources remain bounded by physical EOF and transform every
+record byte, including 1Ah. A transformed single disk source uses the character
+copy path rather than direct record transfer; its final partial record receives
+1Ah padding. NUL:/EOF: retain their direct special-source emission semantics.
+Verification checks the transformed written records, and wildcard destination
+attributes continue to use the established post-rename attribute operation.
+
+Tests cover all 256 byte values in object mode, ASCII boundaries, U/L precedence,
+parity-generated EOF, device routes, source-scoped mixed transformations,
+wildcard attributes and verification. Unsupported formatting/extraction/HEX
+parameters still fail preflight. PIP remains development-only.
