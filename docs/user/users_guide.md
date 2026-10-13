@@ -1395,8 +1395,9 @@ confirmation, preview, override and reporting options above belong to REN.COM.
 #### 4.4 TYPE — Display Text Files
 
 TYPE displays text on the console. Resident TYPE is the small core command;
-TYPE.COM provides the fuller paging facility. The enhanced interface below is
-**the proposed 1.0 target, not a statement that it is implemented today**.
+TYPE.COM is planned to provide the fuller paging facility. Resident TYPE is
+implemented; the enhanced transient interface below remains the proposed 1.0
+target.
 
 Both forms use the shared filespec, DU selector and attribute predicates:
 
@@ -1415,7 +1416,8 @@ suitable viewer or DUMP for those tasks.
 **Resident TYPE.** Without `/P`, stream the selected files continuously, with a
 simple separator between files. `/P` provides forward paging; Space and `.`
 advance one page. Backward and file navigation are transient features. The
-resident abort mechanism remains subject to implementation qualification.
+resident Ctrl-C cancels at the paging prompt. Resident paging pauses after
+every 23 source line feeds; long-line screen wrapping is not counted.
 
 **TYPE.COM.** Force transient execution with `:TYPE` or `.TYPE`. Without `/P`,
 stream files without normal paging pauses. A multi-file selection prints a

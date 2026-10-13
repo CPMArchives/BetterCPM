@@ -62,10 +62,10 @@ def main() -> None:
         require("DRIVE B TEXT" in output and "A0>" in output,
                 "drive-qualified TYPE failed or changed the current DU")
 
-        require("?" in run("TYPE MISSING.TXT", drive_a, drive_b),
+        require("NO FILE" in run("TYPE MISSING.TXT", drive_a, drive_b),
                 "missing TYPE target did not report a command error")
-        require("?" in run("TYPE R*.TXT", drive_a, drive_b),
-                "TYPE accepted an ambiguous filename")
+        require("ALPHA" in run("TYPE R*.TXT", drive_a, drive_b),
+                "resident TYPE wildcard selection failed")
 
         paused = run("TYPE LONG.TXT /P", drive_a, drive_b)
         require("--More--" in paused and "LINE 30" not in paused,
