@@ -1397,7 +1397,8 @@ confirmation, preview, override and reporting options above belong to REN.COM.
 TYPE displays text on the console. Resident TYPE is the small core command;
 TYPE.COM is planned to provide the fuller paging facility. Resident TYPE is
 implemented. TYPE.COM currently implements shared selection and streaming
-transformations; enhanced transient paging below remains the proposed 1.0 target.
+transformations and bidirectional paging. Explicit transient file navigation
+below remains the proposed 1.0 target.
 
 Both forms use the shared filespec, DU selector and attribute predicates:
 
@@ -1424,13 +1425,13 @@ stream files without normal paging pauses. A multi-file selection prints a
 banner such as `---------- B3:README.TXT ----------` before each file. A single
 exact file may omit the banner.
 
-Current TYPE.COM Build 001 supports `/7`, `/T`, `/CTL` and `/VER`. It accepts
-options before or after the source operand. Transient `/P` is pending and is
-rejected by this intermediate build; resident `/P` remains available.
+Current TYPE.COM Build 002 supports `/P`, `/7`, `/T`, `/CTL` and `/VER`. Options
+may precede or follow the source operand. Page movement is implemented; `<` and
+`>` file movement is still pending and those keys currently do nothing.
 
-| Option | Effect (transient `/P` remains planned) |
+| Option | Effect |
 | --- | --- |
-| `/P` | Forward/backward paging and file navigation |
+| `/P` | Forward/backward paging; file navigation remains planned |
 | `/7` | Strip the high bit from displayed bytes; test raw 1Ah for EOF first |
 | `/T` | Expand tabs to fixed 8-column stops |
 | `/CTL` | Show controls as caret notation; overrides `/T` for tabs |
@@ -1462,8 +1463,8 @@ Esc does not quit TYPE.COM. Movement beyond the first or last selected file
 stays at the nearest valid position. A page may contain the end of one file,
 the next banner and the beginning of the next file. At the end of the final file, the final page remains displayed until Ctrl-Q.
 Next-page and next-file commands then do nothing; backward navigation remains
-available. Backward page navigation is not limited by the internal history
-cache: older positions are reconstructed when needed.
+available. Backward page navigation has no fixed history limit: older pages are rebuilt
+by rereading from the start of the selection. This may be slow on floppy media.
 
 The current file is the file at the top-of-page anchor, even if the page later
 crosses into another file. A banner at the top belongs to the file it introduces.
@@ -1472,8 +1473,8 @@ without an `[EMPTY]` marker. Empty files remain available to file navigation but
 do not create a fictitious content page.
 
 Transient pages count display rows, including screen-edge spillover, rather
-than source lines. TYPE.COM uses the configured console dimensions and reserves
-a prompt row: normally 23 file-display rows on a 24-row console. Tabs advance
+than source lines. The current platforms use an 80-column, 24-row console;
+TYPE.COM reserves a prompt row, leaving 23 file-display rows. Tabs advance
 to 8-column stops for page accounting even without `/T`. Resident accounting
 may be simpler to keep its implementation small.
 

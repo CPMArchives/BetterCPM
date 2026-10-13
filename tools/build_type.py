@@ -33,7 +33,9 @@ def expanded_source():
     start = rcp.index('BC_PFCB:')
     code += rcp[start:rcp.index('; ================================================================================', start)]
     code += rcp[rcp.index('BC_WCMP:'):rcp.index('BC_CSELS:')]
-    return expand_versions(SOURCE.read_text(encoding='ascii').replace('; @type-selector@', code))
+    text = SOURCE.read_text(encoding='ascii').replace('; @type-selector@', code)
+    text = text.replace('; @type-paging@', (common/'typepage.inc').read_text(encoding='ascii'))
+    return expand_versions(text)
 
 
 def main() -> None:

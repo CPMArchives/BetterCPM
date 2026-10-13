@@ -4,7 +4,8 @@
 
 Status: revised target contract recorded on 2026-10-12. Resident TYPE is
 implemented in RCP Build 007 on 2026-10-13. TYPE.COM Build 001 implements
-shared selection and streaming transformations; enhanced paging remains pending.
+shared selection and streaming transformations. Build 002 adds bidirectional
+page replay; explicit file navigation remains pending.
 The user interface is in user-guide section 4.4.
 
 Uses the shared [DU selector](208%20Extended%20DU%20Syntax.md) and utility
@@ -782,3 +783,52 @@ compound selection of protected files, banners, visible line-end controls,
 option placement, unsupported `/P`, raw EOF suppression and unchanged selected
 file contents/attributes. The resident fixture and utility-version regressions
 also passed after adding TYPE's independent utility identity.
+
+
+## Transient page replay increment — 2026-10-13
+
+TYPE.COM Build 002 accepts `/P` anywhere among the option tokens. Rendering
+counts screen rows using the current platform baseline of 80 columns and 24
+rows, reserving one row for the page prompt. Long lines, banners, expanded tabs
+and visible-control pairs contribute to row accounting. Raw tabs advance to
+8-column stops. Prompts are emitted outside page accounting; partial final
+lines remain visible above the prompt.
+
+Space, `.` and Ctrl-C advance; `,` and Ctrl-R go backward; Ctrl-Q quits. Input
+uses BDOS Function 6, so Ctrl-C is consumed as Next only at the prompt. Escape
+and unrelated keys are ignored. Backward movement at the first page and forward
+movement at final EOF are no-ops with a bell. Final EOF retains the displayed
+page for backward navigation. A single empty exact file does not invent a
+content page or a paging prompt.
+
+The page anchor records the DU/name associated with the first rendered byte of
+the page. A lower file banner does not change it. A page beginning with a new
+file's banner belongs to that file. The implementation uses a 32-bit logical
+page index and reconstructs previous pages from the selection's start instead
+of retaining a fixed anchor cache. It suppresses replay output until reaching
+the target. This preserves unrestricted history but may make backward paging
+slow on floppy systems. It does not snapshot file contents; if changed contents
+end before a replay target, it clamps to and redisplays the final available page.
+
+The executable is 3,938 bytes. Native ZSM4/LINK and cross assembly match.
+`test_type_paging.py` covers all page-key aliases, final and exact-full-page EOF,
+row wrapping, visible controls, source changes during replay, page/file-anchor
+binding and reconstruction through ten pages. Streaming, resident TYPE and
+utility-version regressions pass. `test_type_paging_media.py` qualifies the
+actual Ctrl-C/Ctrl-R/Ctrl-Q path under cpmsim and compares the complete source
+disk after navigation.
+
+Explicit `<`/`>` file movement is the next increment; those keys currently do
+nothing. Full TYPE.COM release qualification remains pending. There is no
+configurable-console query in the current console ABI; the implementation uses
+the established 80-by-24 platform geometry and needs geometry review when a
+configuration/provider interface is introduced. No BDOS or resident growth is
+introduced by this transient implementation.
+
+
+`test_model4_type_paging.py` also passed the same forward/backward/final-EOF
+sequence through actual Model 4 keyboard matrix events in trs80gp. Screen
+captures verify page transitions and return to the prompt, and the complete DMK
+image remains unchanged. Both platform campaigns confirm Ctrl-C is Next while
+waiting for a page command and Ctrl-Q exits. The Model 4 campaign retains its
+invocation, captures, media and executable hash in the report directory.
