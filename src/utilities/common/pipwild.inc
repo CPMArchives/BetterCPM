@@ -31,6 +31,12 @@ PW_OPT:
         OR A
         JR Z,PW_ONEXT
         LD A,C
+        CP 3
+        JR Z,PW_ONEXT
+        CP 5
+        JR Z,PW_ONEXT
+        CP 19
+        JR Z,PW_ONEXT
         CP 16
         JR Z,PW_ONEXT
         CP 18

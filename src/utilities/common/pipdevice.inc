@@ -129,7 +129,7 @@ PI_CHAR:
         JP PI_READ
 PI_NULL:
         XOR A
-        CALL PI_PUT
+        CALL PF_PUT
         OR A
         JP NZ,PT_WFAIL
         LD HL,PI_LEFT
@@ -138,7 +138,7 @@ PI_NULL:
         JP PC_NEXT
 PI_EOFCHAR:
         LD A,01AH
-        CALL PI_PUT
+        CALL PF_PUT
         OR A
         JP NZ,PT_WFAIL
         JP PC_NEXT
