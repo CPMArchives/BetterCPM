@@ -137,6 +137,18 @@ PW_FOUND:
         JP Z,PW_SCAN
 PW_ADMIT:
         LD HL,(PW_ENTRY)
+        LD DE,9
+        ADD HL,DE
+        LD DE,PW_ATTR
+        LD B,3
+PW_FLAGS:
+        LD A,(HL)
+        AND 80H
+        LD (DE),A
+        INC HL
+        INC DE
+        DJNZ PW_FLAGS
+        LD HL,(PW_ENTRY)
         LD DE,11
         ADD HL,DE
         LD A,(HL)
@@ -216,6 +228,7 @@ PW_EXIT:
         JP PT_RESTORE
 PW_ACTIVE: DB 0
 PW_ARC: DB 0
+PW_ATTR: DS 3
 PW_EXM: DB 0
 PW_COPIED: DB 0
 PW_SLOT: DB 0

@@ -339,7 +339,29 @@ PT_INSTALL:
         JP Z,PT_RENAMEERR
         XOR A
         LD (PT_CREATED),A
-        JP PT_CLEAN
+        LD A,(PW_ACTIVE)
+        OR A
+        JP Z,PT_CLEAN
+        LD HL,PT_DFCB+9
+        LD DE,PW_ATTR
+        LD B,3
+PT_ATCOPY:
+        LD A,(HL)
+        AND 7FH
+        LD C,A
+        LD A,(DE)
+        OR C
+        LD (HL),A
+        INC HL
+        INC DE
+        DJNZ PT_ATCOPY
+        LD DE,PT_DFCB
+        LD C,30
+        CALL 5
+        CP 0FFH
+        JP NZ,PT_CLEAN
+        LD DE,PT_AMSG
+        JP PT_FAIL
 PT_SOURCE:
         LD A,(OP_DATA+82)
         LD D,A
@@ -460,6 +482,7 @@ PT_SRCOPEN: DB 0
 PT_CREATED: DB 0
 PT_TOPEN: DB 0
 PT_STATUS: DB 0
+PT_AMSG: DB 'CANNOT SET DESTINATION ATTRIBUTES',13,10,'$'
 PT_RR: DS 3
 PT_SFCB: DS 36
 PT_DFCB: DS 36

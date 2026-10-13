@@ -9,7 +9,7 @@ def main():
         admitted=[k for k in source if k[2].endswith(b'DAT') and ('R' in option or not source[k][1]&2)]
         for k in admitted:
             dest=(1,7,k[2]);payload,attr=source[k]
-            assert fs[dest]==[payload.ljust((len(payload)+127)//128*128,b'\x1a'),attr&4]
+            assert fs[dest]==[payload.ljust((len(payload)+127)//128*128,b'\x1a'),attr]
         assert all(fs[k]==list(v) for k,v in source.items())
         assert out.count('COPYING -')==1 and out.count('MULTI.DAT')==1
         assert calls.count(17)>1 and 18 in calls
@@ -26,6 +26,10 @@ def main():
     protected={**source,key(1,7,'ONE.DAT'):(b'OLD',1)}
     out,fs,_,_=execute('B7:=A2:*.DAT[W]',protected)
     assert fs[key(1,7,'ONE.DAT')][0].startswith(b'one')
+    out,fs,_,_=execute('B7:=A2:*.DAT[R]',source,fail='attributes')
+    assert 'CANNOT SET DESTINATION ATTRIBUTES' in out
+    assert key(1,7,'FOUR.DAT') in fs and key(1,7,'MULTI.DAT') not in fs
+    assert all(fs[k]==list(v) for k,v in source.items())
     print('PASS: PIP wildcard restarted scans, mixed attributes, multi-extents, no-match and failure handling')
 
 if __name__=='__main__':main()

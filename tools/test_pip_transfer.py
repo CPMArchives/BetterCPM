@@ -72,6 +72,7 @@ def execute(tail,files,fail=None,answer='N',readonly=0,unused=None,exm=0):
    assert not files[k][1]&1,'unsafe RO delete'
    del files[k];return 0
   if f==30:
+   if fail=='attributes':return 255
    files[k][1]=sum((c.mem[p+9+i]>>7)<<i for i in range(3));return 0
   if f==23:
    if fail=='rename':return 255
@@ -141,7 +142,7 @@ def main():
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT',batch)
  assert fs[queue]==[b'BATCH',0]
  out,fs,calls,_=execute('/VER',batch)
- assert 'Build 007' in out and fs[queue]==[b'BATCH',0] and calls==[9]
+ assert 'Build 008' in out and fs[queue]==[b'BATCH',0] and calls==[9]
  for protection in ['cancel','roqueue','rodrive']:
   protected_batch={**batch,queue:(b'BATCH',1 if protection=='roqueue' else 0)}
   out,fs,_,_=execute('BAD',protected_batch,fail='cancel' if protection=='cancel' else None,readonly=1 if protection=='rodrive' else 0)

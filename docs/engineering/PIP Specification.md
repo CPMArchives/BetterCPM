@@ -979,3 +979,23 @@ than inferring the final attributes solely from temporary-file creation. No
 BDOS, BIOS or reloader production changes were made during this investigation.
 The wildcard increment remains in development pending attribute closure and
 diagnosis of the reference's ARC-dependent warm-return failure.
+
+
+## Wildcard final attributes — Build 008
+
+Wildcard copies now apply the source RO, SYS and ARC attributes to the final
+destination after transfer, verification, staging close and rename succeed.
+This explicitly reproduces DRI PIP with original DRI BDOS rename semantics;
+BetterCP/M's ordinary rename preserves existing attributes and is unchanged.
+The temporary file remains writable during transfer. Named fast copies and
+concatenation retain their existing behavior; no new ARC policy is introduced.
+
+A failure of the final Function 30 call reports
+`CANNOT SET DESTINATION ATTRIBUTES`, cancels SUBMIT and stops the wildcard
+invocation. The completed destination is retained with whatever attributes
+were successfully established; this is an error after data replacement, not
+an atomic rollback. Fixtures cover this case and source preservation.
+The real cpmsim campaign also passes: selected data and source attributes are
+unchanged, and destinations receive all three source attribute states.
+Native ZSM4/LINK matches the 11,075-byte development artifact. The independent
+ARC-dependent warm-return failure of the pinned DRI binary remains unresolved.
