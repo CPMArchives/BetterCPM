@@ -202,6 +202,9 @@ PC_CHAR:
         LD A,(HL)
         CALL PX_CHAR
         LD (PC_CHARV),A
+        LD A,(PB_ABORT)
+        OR A
+        JP NZ,PT_ABORTED
         LD A,(PC_BINARY)
         OR A
         JR NZ,PC_PUT

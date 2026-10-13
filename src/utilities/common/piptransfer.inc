@@ -15,6 +15,8 @@ PT_COPY:
         JR NZ,PT_COLUMN
         XOR A
         LD (PF_COL),A
+        LD (PB_COUNT),A
+        LD (PB_ABORT),A
         CALL PN_INIT
 PT_COLUMN:
         XOR A
@@ -497,6 +499,9 @@ PT_TEMPERR:
 PT_NOSPACE:
         LD DE,PT_SPMSG
         JR PT_FAIL
+PT_ABORTED:
+        LD DE,PB_AMSG
+        JP PT_FAIL
 PT_READERR:
         LD DE,PT_RDMSG
         JR PT_FAIL

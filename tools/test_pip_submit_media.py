@@ -23,6 +23,9 @@ def main():
         disk=work/'disks/drivea.dsk'
         def install(path,target):
             subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(disk),str(path),target],cwd=work,check=True)
+        existing=subprocess.run(['cpmls','-T','raw','-f','bettercpm-default',str(disk)],cwd=work,check=True,capture_output=True,text=True).stdout
+        if 'submit.com' in existing.lower():
+            subprocess.run(['cpmrm','-f','bettercpm-default',str(disk),'0:SUBMIT.COM'],cwd=work,check=True)
         install(ROOT/'build/pip-development/PIP.COM','0:PIPDEV.COM')
         install(ROOT/'build/utilities/SUBMIT.COM','0:SUBMIT.COM')
         keep=work/'KEEP.SUB';keep.write_bytes(b'UNRELATED USER QUEUE\r\n')
