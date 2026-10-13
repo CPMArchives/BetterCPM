@@ -14,6 +14,8 @@ P_START:
         LD SP,P_STACK
         CALL P_VCHECK
         JP C,00000H
+        XOR A
+        LD (PW_ACTIVE),A
         LD C,25
         CALL 5
         LD (P_DRIVE),A
@@ -58,6 +60,8 @@ P_MESSAGE:
         JR C,P_ERROR
         JP PT_COPY
 P_ERROR:
+        LD A,1
+        LD (PT_STATUS),A
         CALL P_PRINT
         JP P_CANCEL
 P_PRINT:
