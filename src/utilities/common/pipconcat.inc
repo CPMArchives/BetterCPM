@@ -42,6 +42,8 @@ PC_COPT:
         OR A
         JR Z,PC_CSKIP
         LD A,C
+        CP 4
+        JR Z,PC_CSKIP
         CP 13
         JR Z,PC_CSKIP
         CP 15
