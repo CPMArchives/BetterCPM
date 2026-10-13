@@ -207,7 +207,7 @@
     {
       "name": "PIP.COM",
       "status": "planned",
-      "reason": "No integrated source or approved adopted artifact yet",
+      "reason": "DRI-compatible ZSM4 port in progress; development parser exists, transfer engine and qualification pending",
       "targets": [
         "z80pack",
         "trs80gp"

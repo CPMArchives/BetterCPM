@@ -1,0 +1,22 @@
+{
+  "upstream": "https://github.com/ivop/cpm22-from-source",
+  "commit": "1f1767dad466674f267beeb5aa00b9dbe4eaca52",
+  "path": "src/pip.plm",
+  "source_identity": "PIP VERS 1.5, copyright (c) 1979 Digital Research",
+  "sha256": "4118b602c04e738c3341d8e2f41b91a97d9e0226b7842cce22da8308472cea07",
+  "role": "behavioral reference for ZSM4 port; not compiled by production build",
+  "reference_binary": {
+    "artifact": "PIP-1.5-reference.COM",
+    "bytes": 7424,
+    "sha256": "3edca419e4fe5643d21ef62f064ed4c432344b568742f11aca5c887297f3a4ae",
+    "upstream": "https://github.com/udo-munk/z80pack",
+    "commit": "b7a6fa36a2ee185a73727dc5b56ac1af40679e81",
+    "disk_path": "cpmsim/disks/library/cpm22-1.dsk",
+    "disk_sha256": "86ac7cb1bdd6bac05fe6299b50f94cb26a047022ce00135fbecf7bbc5d3303d2",
+    "filesystem": "ibm-3740",
+    "entry": "0:PIP.COM",
+    "identity": "COPYRIGHT (C) 1979, DIGITAL RESEARCH, PIP VERS 1.5",
+    "source_equivalence": "matching embedded identity and patch layout; full byte/behavior equivalence remains qualification work"
+  },
+  "manual_edition": "pending pinning"
+}
