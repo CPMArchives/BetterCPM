@@ -8,6 +8,7 @@ PT_COPY:
         LD (PT_TOPEN),A
         LD (PC_MULTI),A
         LD (PD_ACTIVE),A
+        LD (PI_ACTIVE),A
         LD HL,PT_RR
         LD (HL),A
         INC HL
@@ -24,6 +25,8 @@ PT_SINGLE:
         CP 4
         JP Z,PD_START
         LD A,(OP_DATA+80)
+        CP 4
+        JP Z,PI_START
         CP 2
         JP NZ,PT_UNSUP
         LD A,(OP_DATA+84)
@@ -35,6 +38,7 @@ PT_SINGLE:
         LD A,(OP_DATA+2)
         CP 4
         JP NC,PT_DRIVEERR
+PT_INPUTSET:
         LD A,(OP_DATA+82)
         CP 4
         JP NC,PT_DRIVEERR
@@ -91,6 +95,9 @@ PT_DNAMED:
         LD DE,PT_TFCB+1
         CALL PT_EQUAL
         JP Z,PT_IDENT
+        LD A,(PI_ACTIVE)
+        OR A
+        JP NZ,PT_TARGET
         LD A,(OP_DATA+2)
         LD HL,OP_DATA+82
         CP (HL)
@@ -191,6 +198,9 @@ PT_TZERO:
         LD A,1
         LD (PT_CREATED),A
         LD (PT_TOPEN),A
+        LD A,(PI_ACTIVE)
+        OR A
+        JP NZ,PI_BEGIN
         LD A,(PC_MULTI)
         OR A
         JP NZ,PC_BEGIN

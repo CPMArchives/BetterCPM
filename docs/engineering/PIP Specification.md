@@ -1051,3 +1051,27 @@ contract, multi-DU concatenation, high-byte/binary output, SYS admission,
 preflight rejection and read-error cleanup. Disk-copy, concatenation and
 wildcard regressions remain required. PIP stays development-only pending
 input devices, physical routing, transformations, HEX and full qualification.
+
+
+## Build 010 — text-device input and special sources
+
+A single `CON:`, `RDR:` or `INP:` source can now write a named disk file.
+Input ends at 1Ah. Reader input strips parity, matching the pinned DRI source;
+CON uses BDOS 1 and RDR uses BDOS 3. INP calls 0103h and reads the returned
+byte at 0109h; the default hook supplies EOF. `NUL:` supplies exactly 40 zero
+bytes and `EOF:` supplies one literal 1Ah byte. Partial records are padded
+with 1Ah, and empty input creates an empty file.
+
+The complete request is validated before input or disk mutation. This bounded
+increment supports source [V] and [W], but rejects [O], transformations,
+physical aliases, mixed-source lists and unnamed destination DUs. Device input
+uses the existing staging transaction: verify each written record when requested,
+close before replacement, and retain completed staging data if final rename
+fails. As in existing disk copies, a rename failure after deletion of the old
+name cannot restore that old destination. Recoverable failures cancel SUBMIT
+and restore the caller's DU/DMA.
+
+Tests cover empty/exact/partial/multiple record boundaries, reader parity,
+fixed INP patch ABI, NUL/EOF contents, preflight rejection and injected write,
+verify, close and rename failures. Device interruption and object/peripheral
+termination rules remain unfinished; this is still a development-only utility.
