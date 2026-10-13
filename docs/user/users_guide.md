@@ -1219,6 +1219,7 @@ This illustrates a broader BetterCP/M design principle: the utilities expose suf
 Resident `REN` renames files in place:
 
     REN template=source
+    REN source template
 
 Examples:
 
@@ -1237,12 +1238,12 @@ Name and extension are separate fields. Repeated terminal stars are equivalent
 to one star; characters following a star run are invalid. The historical `_`
 separator is also accepted when no `=` is present.
 
-Before renaming anything, REN checks the complete selection. Invalid generated
-names, duplicate targets within a DU, existing target files, and read-only
-files or drives reject the operation. Another selected source is also an
-existing target: rename chains and swaps are rejected. Identical target names
-in different DUs are permitted. A file mapped to its own name is unchanged.
-System files are included unless an attribute expression excludes them.
+REN validates the complete command syntax before renaming. It processes selected
+files in filename order within each DU. Read-only and system files are skipped,
+even when explicitly selected. An existing target stops the command; another
+selected source is also an existing target, so rename chains and swaps are not
+resolved. Earlier renames remain in place. Identical target names in different
+DUs are permitted. A file mapped to its own name is unchanged.
 
 REN preserves contents and attributes and restores the caller's DU. An
 unexpected failure during execution stops the command; previously completed
@@ -1250,9 +1251,9 @@ renames are not rolled back.
 
 ##### Transient REN
 
-The following is the **planned REN interface**, recorded in the
+The transient REN interface is recorded in the
 [REN engineering specification](../engineering/REN%20Specification.md).
-Implementation is in progress. The transient supports both operand orders,
+The transient supports both operand orders,
 shared multi-DU and attribute selection, positional templates, `/C`, `/Y`, `/N`,
 `/DRY`, `/P`, `/Q`, `/QQ` and standalone `/VER`. Switches may appear as separate tokens
 before, between or after the operands. `/DRY` lists proposed mappings and
