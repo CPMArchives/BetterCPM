@@ -1527,3 +1527,13 @@ set the carried physical EOF condition.
 
 Physical IOBYTE/device routing, further compatibility coverage and final
 Model 4/platform qualification remain open. PIP remains development-only.
+
+## Follow-up — BIOS IOBYTE routing sizing audit
+
+The [PIP IOBYTE Routing Audit](PIP%20IOBYTE%20Routing%20Audit.md) records the
+remaining routing gap, isolated assembly measurements and qualification limits.
+A compact Model 4 router measures 56 additional BIOS bytes; together with the
+reserved 64-byte monitor hooks this provisionally fits the earlier 122-byte
+recovery budget. Production adoption still requires the memory refactor,
+combined qualification and a settled platform device/status contract. PIP's
+physical aliases remain unavailable; this audit does not change Build 025.
