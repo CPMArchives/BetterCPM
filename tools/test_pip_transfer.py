@@ -43,6 +43,7 @@ def execute(tail,files,fail=None,answer='N',readonly=0):
    assert k not in files
    attr=sum((c.mem[p+9+i]>>7)<<i for i in range(3));files[k]=[b'',attr];return 0
   if f==19:
+   if fail=='cancel' and k==key(0,0,'$$$.SUB'):return 255
    if fail=='read_cleanup' and k[2].endswith(b'$$$'):return 255
    if fail=='delete' and not k[2].endswith(b'$$$'):return 255
    if k not in files:return 255
@@ -98,7 +99,7 @@ def main():
   assert fs[d][0]==(b'OLD DESTINATION' if answer=='N' and not param else expected)
   assert (1 in calls)==(not param)
  for tail in ['A2:SRC.DAT=A2:SRC.DAT','A2:SRC.$$$=A2:SRC.DAT','A2:SRC.TXT=A2:SRC.$$$']:
-  out,fs,calls,writes=execute(tail,base);assert 'staging-name conflict' in out and not any(f in calls for f in (15,19,22,23))
+  out,fs,calls,writes=execute(tail,base);assert 'staging-name conflict' in out and not any(f in calls for f in (19,22,23))
  out,fs,calls,_=execute('B7:DEST.DAT=A2:SRC.DAT',base,readonly=2);assert 'DRIVE IS R/O' in out and fs=={k:list(v) for k,v in base.items()}
  sysbase={s:(payload,2),d:(b'OLD DESTINATION',0)}
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT',sysbase);assert 'NO FILE' in out and fs[d][0]==b'OLD DESTINATION'
@@ -107,6 +108,21 @@ def main():
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT', {**base,t:(b'OLD TEMP',6)});assert fs[d]==[expected,0]
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT', {s:(b'',0)});assert fs[d]==[b'',0]
  for command in ['LST:=A2:SRC.DAT','B7:=A2:*.DAT','B7:D=A2:SRC.DAT[U]','B7:D=A2:SRC.DAT,A2:SRC.DAT']:
-  out,fs,calls,_=execute(command,base);assert 'not implemented' in out and not any(f in calls for f in (15,19,22,23))
+  out,fs,calls,_=execute(command,base);assert 'not implemented' in out and not any(f in calls for f in (19,22,23))
+ queue=key(0,0,'$$$.SUB');other=key(1,7,'$$$.SUB')
+ batch={**base,queue:(b'BATCH',0),other:(b'UNRELATED',0)}
+ for command in ['BAD','B7:DEST.DAT=A2:MISSING.DAT','B7:D=A2:SRC.DAT[U]']:
+  out,fs,_,_=execute(command,batch)
+  assert queue not in fs and fs[other]==[b'UNRELATED',0] and fs[d]==[b'OLD DESTINATION',0]
+ out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT',batch,fail='read')
+ assert queue not in fs and fs[other]==[b'UNRELATED',0] and t not in fs
+ out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT',batch)
+ assert fs[queue]==[b'BATCH',0]
+ out,fs,calls,_=execute('/VER',batch)
+ assert 'Build 005' in out and fs[queue]==[b'BATCH',0] and calls==[9]
+ for protection in ['cancel','roqueue','rodrive']:
+  protected_batch={**batch,queue:(b'BATCH',1 if protection=='roqueue' else 0)}
+  out,fs,_,_=execute('BAD',protected_batch,fail='cancel' if protection=='cancel' else None,readonly=1 if protection=='rodrive' else 0)
+  assert 'CANNOT CANCEL SUBMIT QUEUE' in out and queue in fs and fs[other]==[b'UNRELATED',0]
  print('PASS: exact PIP record copy, V/W/R, DU restoration, guarded replacement and injected transaction failures')
 if __name__=='__main__':main()

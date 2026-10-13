@@ -1,4 +1,4 @@
-; PIP foundation. Development-only command parser; no transfer engine yet.
+; Development PIP: parser and staged disk transfer implementation.
         CSEG
         .PHASE  0100H
         JP P_START
@@ -55,11 +55,73 @@ P_EXIT:
         JP 5
 P_MESSAGE:
         LD DE,P_INVALID
-        JR C,P_PRINT
+        JR C,P_ERROR
         JP PT_COPY
+P_ERROR:
+        CALL P_PRINT
+        JP P_CANCEL
 P_PRINT:
         LD C,9
         JP 5
+; DRI errors cancel SUBMIT. BetterCP/M's stream is always A0:$$$.SUB.
+; Preserve the operation's current DU; only a present writable queue is deleted.
+P_CANCEL:
+        LD C,25
+        CALL 5
+        PUSH AF
+        LD E,0FFH
+        LD C,32
+        CALL 5
+        PUSH AF
+        LD E,0
+        LD C,14
+        CALL 5
+        LD E,0
+        LD C,32
+        CALL 5
+        LD HL,P_SUBFCB+12
+        LD B,24
+        XOR A
+PC_ZERO:
+        LD (HL),A
+        INC HL
+        DJNZ PC_ZERO
+        LD DE,P_SUBFCB
+        LD C,15
+        CALL 5
+        CP 0FFH
+        JR Z,PC_DONE
+        LD A,(P_SUBFCB+9)
+        AND 80H
+        JR NZ,PC_WARN
+        LD C,29
+        CALL 5
+        LD A,L
+        AND 1
+        JR NZ,PC_WARN
+        LD DE,P_SUBFCB
+        LD C,19
+        CALL 5
+        CP 0FFH
+        JR NZ,PC_DONE
+PC_WARN:
+        LD DE,P_SUBMSG
+        CALL P_PRINT
+PC_DONE:
+        POP AF
+        LD E,A
+        LD C,32
+        CALL 5
+        POP AF
+        LD E,A
+        LD C,14
+        CALL 5
+        LD DE,0080H
+        LD C,26
+        JP 5
+P_SUBFCB: DB 1,'$$$     SUB'
+        DS 24
+P_SUBMSG: DB 'CANNOT CANCEL SUBMIT QUEUE',13,10,'$'
 P_VCHECK:
         XOR A
         LD (PP_BRACK),A

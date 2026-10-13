@@ -323,13 +323,13 @@ PT_EQLOOP:
         RET
 PT_UNSUP:
         LD DE,P_DEVM
-        JP PT_PRINT
+        JP P_ERROR
 PT_IDENT:
         LD DE,PT_IDMSG
-        JP PT_PRINT
+        JP P_ERROR
 PT_DRIVEERR:
         LD DE,PT_DRM
-        JP PT_PRINT
+        JP P_ERROR
 PT_NOFILE:
         LD DE,PT_NOMSG
         JR PT_FAIL
@@ -364,6 +364,7 @@ PT_RENAMEERR:
         LD DE,PT_RENMSG
 PT_FAIL:
         CALL PT_PRINT
+        CALL P_CANCEL
 PT_CLEAN:
         LD A,(PT_SRCOPEN)
         OR A
