@@ -1254,15 +1254,18 @@ The following is the **planned REN interface**, recorded in the
 [REN engineering specification](../engineering/REN%20Specification.md).
 Implementation is in progress. The transient supports both operand orders,
 shared multi-DU and attribute selection, positional templates, `/C`, `/Y`, `/N`,
-`/DRY`, `/Q`, `/QQ` and standalone `/VER`. Switches may appear as separate tokens
+`/DRY`, `/P`, `/Q`, `/QQ` and standalone `/VER`. Switches may appear as separate tokens
 before, between or after the operands. `/DRY` lists proposed mappings and
 suppresses every rename; `/N` also suppresses writes without requiring `/C`.
 `/Y` and `/QQ` skip existing targets and continue. `/QQ` preserves an explicit
 `/N`; `/DRY /QQ` is silent. The last `/Y` or `/N`, and the last `/Q` or `/QQ`, wins.
 Use `:REN` to request the transient explicitly.
 
-Protection override (`/P`) remains pending.
-RO/SYS files are skipped. Interactive collisions now offer `N/S/A/?`: supply a
+`/P` permits selected RO/SYS files to be renamed while preserving their
+attributes. Without `/P`, RO/SYS files are skipped. `/P` does not override a
+read-only drive. Files whose extents have inconsistent attributes are refused
+before changes. If attributes cannot be restored after an operation, REN stops
+and reports the problem; earlier changes remain in effect. Interactive collisions now offer `N/S/A/?`: supply a
 new literal name, skip the file, abort the remainder, or display help. Invalid
 replacement names reprompt; blank returns to the collision menu. Backspace/DEL
 edits, Ctrl-U clears the response, and Ctrl-C aborts the remainder. Earlier

@@ -33,9 +33,9 @@ implementation and qualification must follow separately.
   replacement names. Positional mappings also remain idempotent. Targets overlapping
   still-existing selected sources remain collisions; no cycle solving or
   overwrite is authorized.
-- `/P` remains pending and must preserve original attributes when overriding
-  protection. Native build parity and physical platform qualification remain
-  pending.
+- `/P` preserves original attributes and refuses inconsistent per-extent
+  attributes before mutation. Attribute restoration failure aborts the remainder.
+  Native build parity and physical platform qualification remain pending.
 
 ## 1. Purpose
 
@@ -1108,3 +1108,29 @@ help, no repeated confirmation, skip, partial-success abort/Ctrl-C, unattended
 quiet behavior, a target appearing between failure and retry, and read-only
 drives. Native assembler parity and physical platform qualification remain
 pending; the fixture tests are not a claim of real-media qualification.
+
+## Protection override increment — 2026-10-13
+
+REN Build 005 implements `/P` for both RO and SYS without broadening selection.
+Before mutation it snapshots every high attribute bit in the eleven filename
+bytes across all physical source extents. Uniform attributes are preserved;
+inconsistent per-extent bits are refused before writes because public Function
+30 cannot reconstruct distinct per-extent assignments. No normalization or raw
+directory rewrite is attempted.
+
+Read-only files are temporarily made writable using Function 30, renamed using
+Function 23, and restored under the resulting name. A failed rename restores
+attributes under the original name before offering ordinary failure recovery.
+A failed unprotect operation also attempts repair before reporting failure.
+Restoration failure emits an explicit diagnostic (subject to `/QQ`) and aborts
+the remainder; it does not retry an already moved source or silently continue.
+The affected file is counted as failed, even if its directory name was changed.
+`/P` does not override drive-level read-only status. `/DRY`, `/N`, self-mapping,
+collision skips and negative confirmation perform no attribute writes.
+
+Cross assembly succeeds at 5,553 bytes. Protection execution tests cover all
+eight RO/SYS/ARC combinations, selection independence, failed-rename repair,
+unprotect/restoration failures, differing extent attributes, drive protection
+and no-write policy precedence. All preceding execution regressions pass.
+Native parity, real BDOS/media behavior and physical platform qualification
+remain outstanding; fixture tests alone do not establish release completion.

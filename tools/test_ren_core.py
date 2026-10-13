@@ -3,7 +3,7 @@
 from pathlib import Path
 from test_bios import Z80, SENTINEL
 ROOT=Path(__file__).resolve().parents[1]
-def run(tail, files, responses='', ledger_capacity=None, rename_failures=None, racing_target=False, drive_ro=False):
+def run(tail, files, responses='', ledger_capacity=None, rename_failures=None, racing_target=False, drive_ro=False, attr_failures=None):
  responses=iter(responses)
  c=Z80(b''); image=(ROOT/'build/utilities/REN.COM').read_bytes()
  c.mem[0x100:0x100+len(image)]=image;c.mem[0:3]=bytes((0xC3,SENTINEL&255,SENTINEL>>8))
@@ -37,7 +37,7 @@ def run(tail, files, responses='', ledger_capacity=None, rename_failures=None, r
     p=address('R_LIMIT');c.mem[p:p+2]=limit.to_bytes(2,'little')
    if f==17:
     pat=bytes(c.mem[c.de+1:c.de+12])
-    state['rows']=[(k,v) for k,v in files.items() if k[:2]==(state['drive'],state['user']) and all(a==63 or a==b for a,b in zip(pat,k[2]))]
+    state['rows']=[(k,attr) for k,v in files.items() for attr in (v if isinstance(v,tuple) else (v,)) if k[:2]==(state['drive'],state['user']) and all(a==63 or a==b for a,b in zip(pat,k[2]))]
     state['index']=0
    i=state['index']
    if i>=len(state['rows']):return 255
@@ -46,6 +46,12 @@ def run(tail, files, responses='', ledger_capacity=None, rename_failures=None, r
    for b in range(3):row[9+b]|=((attr>>b)&1)*128
    c.mem[state['dma']:state['dma']+32]=row
    return 0
+  if f==30:
+   name=bytes(x&127 for x in c.mem[c.de+1:c.de+12]);key=(state['drive'],state['user'],name)
+   if attr_failures and attr_failures.pop(0):return 255
+   assert key in files
+   files[key]=sum((c.mem[c.de+9+b]>>7)<<b for b in range(3))
+   return 0
   if f==23:
    old=(state['drive'],state['user'],bytes(c.mem[c.de+1:c.de+12]));new=(old[0],old[1],bytes(c.mem[c.de+17:c.de+28]))
    if rename_failures and rename_failures.get(old,0):
@@ -53,6 +59,7 @@ def run(tail, files, responses='', ledger_capacity=None, rename_failures=None, r
     if racing_target:files[new]=4
     return 255
    assert old in files and new not in files
+   if any(v&1 for v in (files[old] if isinstance(files[old],tuple) else (files[old],))):return 255
    files[new]=files.pop(old);mutations.append((old,new));return 0
   raise AssertionError(f)
  c.port_read=io;c.run(0x100,limit=2000000)
@@ -80,6 +87,6 @@ def main():
  changes,out=run('B1:*.* X*.*',{(1,1,a):0,(1,1,b):0})
  assert len(changes)==2
  changes,out=run('/VER',{})
- assert not changes and 'BetterCP/M REN 1.0 (Build 004)' in out
+ assert not changes and 'BetterCP/M REN 1.0 (Build 005)' in out
  print('PASS: transient REN operand orders, multi-DU, predicates, attributes, protection, dry run, invalid syntax, caller DU and version')
 if __name__=='__main__':main()
