@@ -11,7 +11,8 @@ RESERVATIONS = (
     ("Active RSX table", LAYOUT["RSX_STATE"], 41),
     ("Reload/CCP stack", LAYOUT["STACK_LOW"], LAYOUT["STACK_TOP"] - LAYOUT["STACK_LOW"]),
     ("Directory buffer", LAYOUT["DIRBUF"], 128),
-    ("Physical/module buffer", LAYOUT["MODULEBUF"], 512),
+    ("Physical-sector buffer", LAYOUT["MODULEBUF"], 512),
+    ("Module/config upper buffer", LAYOUT["MODULEBUF"] + 512, LAYOUT["RAM_END"] - LAYOUT["MODULEBUF"] - 512),
 )
 
 
@@ -23,6 +24,13 @@ def ranges():
 
 def main():
     entries = ranges()
+    borrowed = [entry for entry in entries if entry[1] < LAYOUT["TPA"]]
+    entries = [entry for entry in entries if entry[1] >= LAYOUT["TPA"]]
+    # The finished transient's reload stack is borrowed from the TPA. It is
+    # reported separately, not counted as permanent protected memory.
+    for name, base, size in borrowed:
+        assert base + size <= LAYOUT["TPA"]
+        print(f"TPA borrow: {base:04X}..{base+size-1:04X} {size} bytes {name}")
     end = LAYOUT["TPA"]
     occupied = 0
     print("Protected range    Bytes  Component")

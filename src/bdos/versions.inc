@@ -18,7 +18,7 @@ BV_C_API:      DB      '1.0','$'        ; CCP API version
 BV_C_IMP:      DB      '1.3','$'        ; CCP implementation version
 BV_D_ID:       DB      'BDOS','$'       ; BDOS subsystem identifier
 BV_D_API:      DB      '1.2','$'        ; BDOS API version
-BV_D_IMP:      DB      '1.6','$'        ; BDOS implementation version
+BV_D_IMP:      DB      '1.7','$'        ; BDOS implementation version
 BV_I_ID:       DB      'BIOS','$'       ; BIOS subsystem identifier
 BV_I_API:      DB      '1.5','$'        ; BIOS API version
-BV_I_IMP:      DB      '1.9','$'        ; BIOS implementation version
+BV_I_IMP:      DB      '1.10','$'       ; BIOS implementation version

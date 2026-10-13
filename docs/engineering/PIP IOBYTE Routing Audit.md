@@ -126,3 +126,11 @@ These results qualify the source transformations and combined dispatch well
 enough to proceed to production repacking. They do not close the remaining BAT
 status policy, monitor-provider lifecycle, packed boot/real-media qualification,
 or PIP physical-alias availability decisions.
+
+## Production memory recovery
+
+The [Resident Memory Repack Qualification](Resident%20Memory%20Repack%20Qualification.md)
+records adoption of the qualified savings and real-media checks. The BIOS now
+has a 757-byte allocation with 121 bytes free before routing/hooks. Stamping the
+new BIOS implementation number consumes one byte of the provisional 122-byte
+budget; the 756-byte combined prototype still fits with one byte spare.

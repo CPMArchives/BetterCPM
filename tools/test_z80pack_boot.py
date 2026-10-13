@@ -21,6 +21,8 @@ NEXT:   LD HL,FCB+12
         LD (HL),0
         LDIR
         LD DE,FCB
+        LD A,'M'
+        LD (STAGE),A
         LD C,22
         CALL 5
         INC A
@@ -35,11 +37,15 @@ FILL:   LD A,B
         LD C,26
         CALL 5
         LD DE,FCB
+        LD A,'W'
+        LD (STAGE),A
         LD C,21
         CALL 5
         OR A
         JP NZ,FAIL
         LD DE,FCB
+        LD A,'C'
+        LD (STAGE),A
         LD C,16
         CALL 5
         INC A
@@ -50,6 +56,8 @@ FILL:   LD A,B
         LD (HL),0
         LDIR
         LD DE,FCB
+        LD A,'O'
+        LD (STAGE),A
         LD C,15
         CALL 5
         INC A
@@ -60,10 +68,14 @@ FILL:   LD A,B
         LD (HL),0
         LDIR
         LD DE,FCB
+        LD A,'R'
+        LD (STAGE),A
         LD C,20
         CALL 5
         OR A
         JP NZ,FAIL
+        LD A,'V'
+        LD (STAGE),A
         LD HL,BUFFER
         LD B,128
 CHECK:  LD A,(HL)
@@ -78,12 +90,20 @@ CHECK:  LD A,(HL)
         JP C,NEXT
         LD DE,OK
         JR REPORT
-FAIL:   LD DE,BAD
+FAIL:   LD A,(STAGE)
+        LD E,A
+        LD C,2
+        CALL 5
+        LD E,32
+        LD C,2
+        CALL 5
+        LD DE,BAD
 REPORT: LD C,9
         CALL 5
         JP 0
 OK:     DB 'Z80PACK FILE IO PASS',13,10,'$'
 BAD:    DB 'Z80PACK FILE IO FAILED',13,10,'$'
+STAGE:  DB 0
 FCB:    DB 2,'PROBE   DAT'
         DS 24
 BUFFER: DS 128
@@ -91,6 +111,10 @@ BUFFER: DS 128
 '''
   probe=assemble(Path.home()/'bin/z80asm',source,w/'IOTEST.COM',w/'probe.lst',0x100)
   subprocess.run(['cpmcp','-f','bettercpm-default',str(w/'disks/drivea.dsk'),str(w/'IOTEST.COM'),'0:IOTEST.COM'],cwd=w,check=True)
+  # The development image can fill all 64 directory slots after IOTEST
+  # is installed. Free one unused diagnostic slot on this private copy so
+  # PROBE.DAT can be created; never alter the source image.
+  subprocess.run(['cpmrm','-f','bettercpm-default',str(w/'disks/drivea.dsk'),'0:STATTST.COM'],cwd=w,check=True)
   (w/'CPMTOOLS.TXT').write_bytes(b'Created with cpmtools\r\n')
   subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(w/'disks/driveb.dsk'),str(w/'CPMTOOLS.TXT'),'0:CPMTOOLS.TXT'],cwd=w,check=True)
   target=w/'disks/drivec.dsk'

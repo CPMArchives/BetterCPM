@@ -75,19 +75,22 @@ def main() -> None:
         binary = assemble(Path("/Users/nathanael/bin/z80asm"), SOURCE,
                           program, work / "tpafill.lst", 0x100)
         assert len(binary) < 0xE0, "test code overlaps its private stack"
+        commands = ("TPAFILL", "CPX LIST", "RSX LOAD HELLO", "TPAFILL R",
+                    "RSXTEST", "RSX UNLOAD HELLO", "CPX LIST")
+        batch = work / "CASE.SUB"
+        batch.write_bytes(("\r\n".join(commands) + "\r\n").encode("ascii") + b"\x1a")
         disk = work / "packed.dmk"
         subprocess.run(["python3", str(ROOT / "tools/build_trs80_boot.py"),
-                        "--include", str(program), "--output", str(disk)],
+                        "--include", str(program), "--include", str(batch), "--output", str(disk)],
                        cwd=ROOT, check=True, capture_output=True)
         # Each execution overwrites the CCP and all CPX code, including the
         # old C000h/C100h kernel locations. The second also has a live RSX.
-        commands = ("TPAFILL", "CPX LIST", "RSX LOAD HELLO", "TPAFILL R",
-                    "RSXTEST", "RSX UNLOAD HELLO", "CPX LIST")
+        # SUBMIT advances only after each warm boot completes. Timed typing of
+        # every command can drop whole lines while disk-backed reload is busy.
         invocation = [str(DEFAULT_EMULATOR), "-m4", "-batch", "-turbo",
-                      "-d0", str(disk), "-id", "3000"]
-        for command in commands:
-            invocation.extend(key_args(command + "\r"))
-            invocation.extend(("-id", "3000"))
+                      "-d0", str(disk), "-id", "15000"]
+        invocation.extend(key_args("SUBMIT CASE\r"))
+        invocation.extend(("-id", "120000"))
         invocation.extend(("-it", "-ix"))
         subprocess.run(invocation, cwd=work, check=True)
         screen = (work / "trs80-text-0.bin").read_bytes()[:80 * 24]

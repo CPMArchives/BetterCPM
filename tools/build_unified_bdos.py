@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/bdos/unified.mac"
 BUILD = ROOT / "build/bdos"
 BASE = LAYOUT["BDOS"]
-LIMIT = 3584
+LIMIT = LAYOUT["EXTENSIONS"] - BASE
 
 
 def main() -> None:

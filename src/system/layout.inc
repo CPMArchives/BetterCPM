@@ -18,9 +18,11 @@
 
 LY_SYS          EQU     0D5C4H          ; resident system gateway base
 LY_BDOS         EQU     0D6BCH          ; unified BDOS base
-LY_EXT          EQU     0E49FH          ; protected extension-services base
-LY_DISK         EQU     0E648H          ; resident disk-service base
-LY_BIOS         EQU     0EA08H          ; compatibility BIOS base
+; Qualified memory savings reserve BIOS routing/monitor space at unchanged TPA.
+; Rebuild all layout-dependent components together after these bases change.
+LY_EXT          EQU     0E43AH          ; protected extension-services base
+LY_DISK         EQU     0E5E3H          ; resident disk-service base
+LY_BIOS         EQU     0E991H          ; compatibility BIOS base
 LY_FILE         EQU     0EC86H          ; shared file-loader base
 LY_TAB          EQU     0ED17H          ; resident disk-table base
 LY_RSTA         EQU     0EF57H          ; resident-state workspace base

@@ -8,14 +8,16 @@ from collections import Counter
 from pathlib import Path
 
 from build_rom_pack import component_inputs
+from system_layout import LAYOUT
 
 # Allocation publication shares Close/Make paths: -3 RAM references,
 # +2 ROM references; each remaining operand still undergoes independent checks.
 # Grouped-extent compaction removes one absolute jump and two scratch-word
-# references; the measured resident and live-state ranges remain unchanged.
+# references. The qualified shared helpers remove another 15 address words;
+# private live-state addresses follow the repacked layout.
 EXPECTED_REFERENCES = {
     "gateway": 23,
-    "bdos": 515,
+    "bdos": 500,
     "extensions": 57,
     "disk": 82,
     "bios": 64,
@@ -24,14 +26,14 @@ EXPECTED_REFERENCES = {
 }
 EXPECTED_DISCOVERED = {
     "gateway": 26,
-    "bdos": 515,
+    "bdos": 500,
     "extensions": 57,
     "disk": 82,
     "bios": 64,
     "fileloader": 13,
     "tables": 16,
 }
-EXPECTED_CLASSES = {"immutable-rom": 432, "live-ram": 322}
+EXPECTED_CLASSES = {"immutable-rom": 418, "live-ram": 321}
 EXPECTED_OVERLAY_CLASSES = {"immutable-rom": 3, "live-ram": 102}
 EXPECTED_OVERLAY_REFERENCES = 105
 
@@ -63,7 +65,7 @@ def main() -> None:
         raise AssertionError("packed-code reference counts changed")
     if inventory["target_class_counts"] != EXPECTED_CLASSES:
         raise AssertionError("ROM/RAM reference classification changed")
-    if inventory["reference_count"] != 754:
+    if inventory["reference_count"] != 739:
         raise AssertionError("packed-code reference total changed")
     if (inventory["overlay_discovered_word_count"] !=
             EXPECTED_OVERLAY_REFERENCES or
@@ -142,7 +144,7 @@ def main() -> None:
                   if "STKTOP" in row["source"]]
     extension_entries = [row for row in inventory["references"]
                          if row["component"] == "bdos" and
-                         row["old_target"] == 0xE49F and
+                         row["old_target"] == LAYOUT["EXTENSIONS"] and
                          "LY_EXT" in row["source"]]
     if (len(stack_tops) != 4 or
             any(row["target_class"] != "live-ram" for row in stack_tops)):
@@ -150,8 +152,8 @@ def main() -> None:
     if (len(extension_entries) != 2 or
             any(row["target_class"] != "immutable-rom"
                 for row in extension_entries)):
-        raise AssertionError("E49Fh extension entries lost ROM semantics")
-    print("ROM address inventory verified: 754 packed-code words and 105 CONFIG "
+        raise AssertionError("Extension entry references lost ROM semantics")
+    print("ROM address inventory verified: 739 packed-code words and 105 CONFIG "
           "overlay words; no unresolved references")
 
 

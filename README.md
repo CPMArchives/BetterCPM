@@ -1,6 +1,6 @@
 # BetterCP/M
 
-BetterCP/M is a compact, maintainable CP/M-compatible operating system for Z80-class computers.
+BetterCP/M is a compact, maintainable CP/M-compatible operating system for Z80-class computers. The current development release identity is BetterCP/M 0.3.
 
 The project begins with CP/M 2.2 as its compatibility baseline while redesigning the operating system around explicit interfaces, documented state, reproducible builds, portable hardware boundaries, and independently testable subsystems. The objective is not simply to reproduce Digital Research CP/M source code, but to provide a clean and well-specified CP/M environment that remains practical on small 8-bit systems.
 

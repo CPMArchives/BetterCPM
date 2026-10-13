@@ -414,3 +414,12 @@ selects a single multiplexed entry and prepared rebind. Isolated assembly adds
 fits existing padding. Dispatch tests pass with a fake provider. Metadata
 selection, real transaction integration, warm-return reset and packed/ROM
 qualification remain pending; these results do not install a monitor.
+
+## Production adoption, 14 October 2026
+
+The [Resident Memory Repack Qualification](Resident%20Memory%20Repack%20Qualification.md)
+records adoption of the 101-byte BDOS and 18-byte Model 4 disk savings, current
+addresses, native parity and real-media RAM/ROM qualification. Unloaded TPA stays
+53K. BIOS allocation is now 757 bytes with 121 bytes free; the version-stamping
+cost consumes one byte of the original provisional 122-byte budget. The routing
+and monitor-hook prototype fits that allocation, but is not yet production code.

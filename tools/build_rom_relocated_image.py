@@ -7,6 +7,7 @@ import hashlib
 import json
 from collections import Counter
 from pathlib import Path
+from system_layout import LAYOUT
 
 
 def digest(data: bytes) -> str:
@@ -113,7 +114,7 @@ def build(pack: Path, inventory_path: Path, output: Path) -> dict[str, object]:
         "entries": {
             "system_init": packed_entry(pack_manifest, "gateway", 0xD5C4),
             "system_boot": packed_entry(pack_manifest, "gateway", 0xD5E4),
-            "bios_boot": packed_entry(pack_manifest, "bios", 0xEA08),
+            "bios_boot": packed_entry(pack_manifest, "bios", LAYOUT["BIOS"]),
             "bdos": pack_manifest["candidate_entry_inputs"]["bdos"],
             "ram_template": pack_manifest["candidate_entry_inputs"]["template"],
             "cold_initializer": pack_manifest["candidate_entry_inputs"]["cold_initializer"],
