@@ -5,7 +5,7 @@ from test_bios import SENTINEL
 
 def key(d,u,name):
  stem,_,ext=name.partition('.');return (d,u,(stem.ljust(8)+ext.ljust(3)).encode())
-def execute(tail,files,fail=None,answer='N',readonly=0):
+def execute(tail,files,fail=None,answer='N',readonly=0,unused=None):
  c=cpu();c.mem[0:3]=bytes((0xC3,SENTINEL&255,SENTINEL>>8));c.mem[5:8]=bytes((0xDB,254,0xC9));c.mem[0x80]=len(tail);c.mem[0x81:0x81+len(tail)]=tail.encode()
  files={k:[bytes(v[0]),v[1]] for k,v in files.items()};state={'drive':0,'user':5,'dma':0x80};out=[];calls=[];writes=[]
  def kf(p):return (state['drive'],state['user'],bytes(v&127 for v in c.mem[p+1:p+12]))
@@ -36,7 +36,8 @@ def execute(tail,files,fail=None,answer='N',readonly=0):
    if fail=='close' and k[2].endswith(b'$$$'):return 255
    if k[2].endswith(b'$$$') and fail is None:
     source_lengths=[len(v[0]) for name,v in files.items() if name[2].startswith(b'SRC')]
-    if source_lengths:assert c.mem[p+13]==(-source_lengths[0])%128
+    if unused is not None:assert c.mem[p+13]==unused
+    elif source_lengths and c.mem[addr('PP_COUNT')]==2:assert c.mem[p+13]==(-source_lengths[0])%128
    return 0
   if f==22:
    if fail=='make':return 255
@@ -107,7 +108,7 @@ def main():
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT', {**base,t:(b'OLD TEMP',1)});assert 'CANNOT REMOVE TEMPORARY' in out and fs[t]==[b'OLD TEMP',1]
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT', {**base,t:(b'OLD TEMP',6)});assert fs[d]==[expected,0]
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT', {s:(b'',0)});assert fs[d]==[b'',0]
- for command in ['LST:=A2:SRC.DAT','B7:=A2:*.DAT','B7:D=A2:SRC.DAT[U]','B7:D=A2:SRC.DAT,A2:SRC.DAT']:
+ for command in ['LST:=A2:SRC.DAT','B7:=A2:*.DAT','B7:D=A2:SRC.DAT[U]','B7:D=A2:SRC.DAT,A2:SRC.DAT[U]']:
   out,fs,calls,_=execute(command,base);assert 'not implemented' in out and not any(f in calls for f in (19,22,23))
  queue=key(0,0,'$$$.SUB');other=key(1,7,'$$$.SUB')
  batch={**base,queue:(b'BATCH',0),other:(b'UNRELATED',0)}
@@ -119,7 +120,7 @@ def main():
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT',batch)
  assert fs[queue]==[b'BATCH',0]
  out,fs,calls,_=execute('/VER',batch)
- assert 'Build 005' in out and fs[queue]==[b'BATCH',0] and calls==[9]
+ assert 'Build 006' in out and fs[queue]==[b'BATCH',0] and calls==[9]
  for protection in ['cancel','roqueue','rodrive']:
   protected_batch={**batch,queue:(b'BATCH',1 if protection=='roqueue' else 0)}
   out,fs,_,_=execute('BAD',protected_batch,fail='cancel' if protection=='cancel' else None,readonly=1 if protection=='rodrive' else 0)
