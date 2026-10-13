@@ -56,7 +56,7 @@ P_EXIT:
 P_MESSAGE:
         LD DE,P_INVALID
         JR C,P_PRINT
-        LD DE,P_DEVM
+        JP PT_COPY
 P_PRINT:
         LD C,9
         JP 5

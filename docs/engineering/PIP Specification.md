@@ -3,8 +3,9 @@
 Status: received proposal, 2026-10-13; not a completed implementation contract.
 Historical claims below require verification against the pinned DRI manual,
 source and binary reference. The discussion-thread citation markers have been
-removed because their underlying sources were not supplied. A development-only ZSM4 parser foundation is now present; the transfer engine
-is not implemented and the distribution manifest remains planned.
+removed because their underlying sources were not supplied. A development-only ZSM4 implementation now provides operand parsing and the
+first exact disk-copy path. Full DRI compatibility remains incomplete, and the
+distribution manifest remains planned.
 
 ## Work review: remaining closure
 
@@ -67,12 +68,10 @@ framing that respects bracket parameters and S/Q strings delimited by 1Ah.
 scanner can represent the full 127-byte command-tail limit, including 64
 minimal operand spans, and leaves input unchanged on success and failure.
 
-It is not a working file/device interchange utility: operand grammar, DU
-encoding, parameter semantics and transfer operations are still to be ported.
-Valid framed commands explicitly report that the transfer engine is not
-implemented. It is not installed on distribution disks. Initial parser/version fixtures and native ZSM4/LINK parity pass for the
-1,570-byte foundation. The shared identity tests also cover its isolated
-development path. These checks qualify only the foundation, not PIP transfers.
+Build 003 supports the exact disk-copy subset described below. Unsupported
+transfer forms still report an explicit development-only diagnostic. It is not
+installed on distribution disks. The initial 1,570-byte foundation qualified
+only framing and identity; later increments have separate qualification below.
 
 The received draft follows; remaining historical/provenance details are not
 closed merely by implementing command framing.
@@ -804,3 +803,39 @@ pass; shared identity checks pass. No file I/O is implemented or invoked, and
 the system-disk manifest still marks PIP planned. A validated command continues
 to print the explicit development-only message. The next increment is the
 transactional disk transfer path and its failure/cleanup qualification.
+
+
+## Exact disk-copy increment — Build 003
+
+The development implementation copies one exact disk source to one named file
+or a single destination DU, using source parameters G, O, R, V and W. Devices,
+concatenation, wildcard expansion and other transformations remain unsupported;
+they are rejected before file I/O. Execution currently uses configured A–D
+drives. This is a staged implementation, not release-ready PIP.
+
+The DRI fast path copies complete 128-byte records, including bytes after 1Ah,
+and preserves the source FCB unused-byte field in the destination. Source
+attributes remain unchanged; newly created destinations are writable ordinary
+files with ARC clear, matching the reference for this path. SYS sources require
+R. V rereads and compares copied records. W authorizes replacement of a
+read-only destination; otherwise the DRI Y/N prompt is used.
+
+Copies use a .$$$ staging file. The old destination survives transfer,
+verification and successful staging close. Self-copy and staging-name conflicts
+are rejected before file I/O. A protected preexisting staging file is retained
+and reported as an error. This guard is deliberately stricter than DRI's
+unconditional staging deletion.
+
+Replacement deletes the old destination before renaming the staging file, as
+in DRI PIP; this is not an atomic replacement or power-loss guarantee. If rename
+fails, the completed staging file is retained. Recoverable transfer failures
+attempt staging cleanup and restore the caller DU and default DMA. Fatal BDOS
+errors, interrupted cleanup, SUBMIT cancellation and cleanup-error reporting
+remain to be qualified or implemented.
+
+Fixtures cover multi-extent data, verification, RO authorization, staging
+protection, DU restoration and injected read/write/verify/make/close/delete/
+rename failures. A real cpmsim campaign compared a multi-extent SYS source
+copied with RV against the pinned DRI PIP 1.5 binary: extracted source and both
+outputs match byte for byte, including the partial final record and trailing
+data after 1Ah. Model 4 transfer qualification remains pending.
