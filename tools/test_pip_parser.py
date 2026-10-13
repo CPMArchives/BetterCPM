@@ -19,12 +19,17 @@ def scan(text):
  assert bytes(c.mem[0x6000:0x6000+len(text)])==text.encode()
  return c.carry,out
 def invocation(text,keys=()):
- c=cpu();c.mem[0:3]=bytes((0xC3,SENTINEL&255,SENTINEL>>8));c.mem[0x80]=len(text);c.mem[0x81:0x81+len(text)]=text.encode();c.mem[5:8]=bytes((0xDB,254,0xC9));output=[];calls=[];lines=iter(keys)
+ c=cpu();c.mem[0:3]=bytes((0xC3,SENTINEL&255,SENTINEL>>8));c.mem[0x80]=len(text);c.mem[0x81:0x81+len(text)]=text.encode();c.mem[5:8]=bytes((0xDB,254,0xC9));output=[];calls=[];lines=iter(keys);state={'drive':1,'user':7}
  def io(port):
   calls.append(c.c)
   if c.c==0:c.pc=SENTINEL;return 0
-  if c.c==25:return 1
-  if c.c==32:return 7
+  if c.c==25:return state['drive']
+  if c.c==32:
+   if c.e!=255:state['user']=c.e
+   return state['user']
+  if c.c==14:state['drive']=c.e;return 0
+  if c.c==26:return 0
+  if c.c==15:return 255
   if c.c==10:
    line=next(lines);c.mem[c.de+1]=len(line);c.mem[c.de+2:c.de+2+len(line)]=line.encode();return 0
   if c.c==9:
@@ -33,6 +38,7 @@ def invocation(text,keys=()):
    return 0
   raise AssertionError(('unexpected/mutating BDOS',c.c))
  c.port_read=io;c.run(256,limit=100000)
+ assert state=={'drive':1,'user':7}
  return ''.join(output),calls
 def main():
  cases={'B:=A:*.COM':['B:','A:*.COM'], ' NEW.TXT = A3:ONE.TXT, B7:TWO.TXT ':['NEW.TXT','A3:ONE.TXT','B7:TWO.TXT'],
@@ -44,7 +50,7 @@ def main():
   bad,parts=scan(text);assert bad and not parts,(text,parts)
  tail='A='+','.join('B' for _ in range(63));assert len(tail)==127
  bad,parts=scan(tail);assert not bad and len(parts)==64
- out,calls=invocation('/VER');assert 'BetterCP/M PIP 1.0 (Build 004)' in out and calls==[9],(out,calls)
+ out,calls=invocation('/VER');assert 'BetterCP/M PIP 1.0 (Build 005)' in out and calls==[9],(out,calls)
  out,calls=invocation('A=B[Shello /VER, world\x1a]');assert 'transfer engine not implemented' in out and 'Invalid /VER' not in out
  out,calls=invocation('A=B /VER');assert 'Invalid /VER usage.' in out and calls==[9]
  out,calls=invocation('',keys=['LST:=CON:','BAD','']);assert out.count('*')==3 and 'transfer engine not implemented' in out and 'INVALID FORMAT' in out

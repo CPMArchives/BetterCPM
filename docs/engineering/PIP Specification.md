@@ -830,8 +830,8 @@ Replacement deletes the old destination before renaming the staging file, as
 in DRI PIP; this is not an atomic replacement or power-loss guarantee. If rename
 fails, the completed staging file is retained. Recoverable transfer failures
 attempt staging cleanup and restore the caller DU and default DMA. Fatal BDOS
-errors, interrupted cleanup, SUBMIT cancellation and cleanup-error reporting
-remain to be qualified or implemented.
+errors and interrupted cleanup remain to be qualified. Later increments below
+add staging-deletion reporting and SUBMIT cancellation.
 
 Fixtures cover multi-extent data, verification, RO authorization, staging
 protection, DU restoration and injected read/write/verify/make/close/delete/
@@ -849,5 +849,29 @@ restores the caller DU and default DMA. The staging file is available for
 inspection or manual removal; its presence does not imply a complete copy.
 A fixture injects both a source read failure and a staging deletion failure,
 checking that the old destination and source survive and both errors appear.
-This closes staging-deletion reporting only; fatal BDOS errors and SUBMIT
-cancellation remain pending.
+This increment closes staging-deletion reporting only; Build 005 below adds
+SUBMIT cancellation. Fatal BDOS errors remain pending.
+
+## Error/SUBMIT increment — Build 005
+
+Following DRI PIP's error policy, ordinary parser errors, unsupported transfer
+forms, preflight failures and recoverable transfer errors cancel the pending
+SUBMIT stream. BetterCP/M's queue is specifically `A0:$$$.SUB`; PIP does not
+delete same-named files in the caller's or source/destination user areas.
+Operand/preflight failures still perform no transfer-file mutation, but may
+inspect and remove the command queue. Successful transfers and standalone
+`/VER` leave the queue intact; `/VER` remains pure console output.
+
+Cancellation preserves the operation's current DU before its ordinary cleanup
+restores the invocation's caller DU and DMA. An absent queue requires no delete.
+A read-only queue, read-only A drive or reported deletion failure produces
+`CANNOT CANCEL SUBMIT QUEUE`. PIP does not clear queue protection or claim that
+the batch stopped if deletion failed. Fatal directory/media errors remain
+subject to the existing BDOS paths, not this recoverable-error policy.
+
+Fixtures cover parser/preflight/transfer cancellation, success and `/VER`,
+protected queues, drive protection, failed deletion and DU restoration.
+`tools/test_pip_submit_media.py` qualifies the real cpmsim SUBMIT path: a batch
+switches to A7, invokes invalid PIP syntax, and never reaches its next copy.
+The A0 queue is removed, an unrelated A7 same-named file is unchanged, and the
+prompt remains A7. Native ZSM4/LINK matches the 9,596-byte development artifact.
