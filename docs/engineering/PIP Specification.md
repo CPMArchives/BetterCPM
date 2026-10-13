@@ -1149,3 +1149,25 @@ campaign compares disk output with pinned DRI PIP for five S/Q cases, including
 record boundaries and empty strings. Its small appended launchers supply raw
 command-tail delimiters because the current CCP editor filters typed Ctrl-Z.
 That editor behavior is not changed here. PIP remains development-only.
+
+
+## Build 014 — tabs, form-feed filtering and line limits
+
+Source Tn expands tabs to the next n-column stop; T0 leaves tabs intact.
+F removes form feeds. Dn suppresses printable characters beyond column n,
+while retaining control characters; D0 disables that limit. These follow the
+pinned DRI output layer after extraction and input case/parity conversion.
+Column accounting is byte-sized, counts printable characters even when D
+suppresses them, resets only on CR, and survives concatenated source changes.
+An unexpanded tab does not advance that historical column counter. Form-feed
+filtering precedes tab/column handling.
+
+The shared output layer serves exact/wildcard disk copies, mixed source lists,
+logical devices and special sources. Formatted single-file disk copies use
+the character path and final EOF padding. Verification covers expanded output.
+Unsupported line numbering, paging, echo and HEX options remain rejected.
+
+Tests cover tab widths including 0/255, CR versus LF, filtering, limits,
+source continuity, wildcard attributes, multi-record expansions and write-failure
+cleanup. Real cpmsim T/F/D cases are compared against the pinned DRI binary
+via tools/test_pip_extract_media.py --formatting. PIP remains development-only.

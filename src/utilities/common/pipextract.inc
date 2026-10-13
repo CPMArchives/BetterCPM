@@ -36,7 +36,7 @@ PE_SLOOP:
         LD A,(HL)
         INC HL
         LD (PE_PTR),HL
-        CALL PI_PUT
+        CALL PF_PUT
         OR A
         RET NZ
         LD HL,PE_LEFT
@@ -55,14 +55,14 @@ PE_QTEST:
         LD A,1
         LD (PE_DONE),A
         LD A,13
-        CALL PI_PUT
+        CALL PF_PUT
         OR A
         RET NZ
         LD A,10
-        JP PI_PUT
+        JP PF_PUT
 PE_CURRENT:
         LD A,(PE_CHAR)
-        JP PI_PUT
+        JP PF_PUT
 PE_TEST:
         LD E,A                       ; length
         LD A,(PE_MATCH)
