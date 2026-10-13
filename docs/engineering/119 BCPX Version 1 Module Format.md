@@ -85,8 +85,11 @@ split preserves CCP compatibility while allowing the CPX format to evolve.
 
 ## RCP-owned protected shadow policy
 
-Accepted design addition; implementation and lifecycle qualification remain
-pending. This policy does not alter the BCPX carrier or its eight-byte live
+Post-1.0 design: automatic handoff and its protected policy lifecycle are
+deferred by the maintainer on 2026-10-13. The requirements below are retained
+for that future work; no policy byte is reserved or controlled in 1.0.
+Resident commands instead provide explicit-transient guidance for recognized
+transient-only switches. See `Resident Feature Guidance.md`. This policy does not alter the BCPX carrier or its eight-byte live
 header, and it does not introduce a general shadow-state allocator.
 
 RCP's per-command automatic-handoff policy shall reside in protected runtime
@@ -140,8 +143,10 @@ The agreed diagnostic sequence is defined in architecture specification 16
 and `COPY Utility.md`; the exact backward-compatible handoff signaling ABI is
 still to be specified and qualified.
 
-Implementation order: finish TYPE/TYPE.COM, then perform a memory-fit audit
-before implementing automatic handoff. Measure the final CCP and RCP payloads,
+The prerequisite audit after TYPE completion is recorded in
+`Resident Handoff Memory Audit.md`. Its overlay/header constraints informed the
+decision to defer automatic handoff. Before future implementation, repeat the
+memory-fit audit. Measure the final CCP and RCP payloads,
 rounded allocations, relocation/header capacity, protected policy storage and
 cold/WBOOT reload paths. Prototype the handoff and policy-control growth against
 those actual baselines; confirm the unloaded 53K TPA contract and zero BDOS
@@ -176,7 +181,7 @@ SUBMIT and cold startup commands use the same dispatch entry as console commands
 
 This is a bounded exception to the 1.0 command-resolution freeze. The CPX
 return ABI is unchanged: carry still means handled versus unrecognized.
-Automatic handoff and protected policy lifecycle remain pending; they are
+Automatic handoff and protected policy lifecycle are deferred post-1.0; they are
 not implied by explicit-prefix support.
 
 The CCP grows 35 bytes, from 5,341 to 5,376 bytes. Its rounded allocation remains

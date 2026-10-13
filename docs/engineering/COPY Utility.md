@@ -292,7 +292,12 @@ Shared code remains 3,733 bytes, rounded RCP allocation 3,840 bytes, and BDOS
 transient features, CPX-to-transient handoff, and the full release conformance
 campaign remain separate work.
 
-## CPX-to-transient handoff — agreed diagnostic sequence
+## CPX-to-transient handoff — deferred post-1.0 design
+
+Decision 2026-10-13: automatic handoff and `/HANDOFF=ON|OFF` controls are
+post-1.0 work. Resident COPY instead recognizes `/B`, `/V` and `/BACKUP` as
+transient-only options and points to `:COPY` before any copying. The following
+sequence and suppression requirements remain future design, not 1.0 behavior.
 
 The user selected the simpler diagnostic-before-handoff approach. It
 supersedes the earlier proposal to retain a fallback diagnostic pointer or

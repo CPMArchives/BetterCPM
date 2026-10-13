@@ -491,7 +491,7 @@ Both prefixes have the same meaning. Place the prefix before any command DU
 qualifier. Arguments retain their normal meaning. The same forms work in
 SUBMIT files. A missing program reports the ordinary `?` lookup failure;
 there is no fallback to the resident command. This explicitly selects the
-transient program; automatic CPX-to-transient handoff remains unimplemented.
+transient program; automatic CPX-to-transient handoff is deferred until post-1.0.
 
 #### 3.7 CPX Commands
 
@@ -699,7 +699,7 @@ DIR [options] [location:filespec[attribute-expression]]
 
 Omitting the location uses the current drive/user. Omitting the filespec uses
 `*.*`. To select the transient explicitly, use `:DIR` or `.DIR`; automatic
-handoff from resident DIR is still pending. The examples below describe the
+handoff from resident DIR is deferred until post-1.0. The examples below describe the
 implemented transient behavior.
 
 ##### Selecting locations and files
@@ -1709,7 +1709,7 @@ allocation total:
 ```
 
 These extended forms require `COPY.COM`. Use `:COPY` or `.COPY` to select it
-explicitly while automatic resident-to-transient handoff remains pending.
+explicitly while automatic resident-to-transient handoff is deferred until post-1.0.
 
 
 ##### COPY attribute selection and backup
@@ -2155,3 +2155,30 @@ Keep `R3PACK.RSX` on the System Disk in A0:. The RSX manager reads its
 internal helper slots automatically; do not load it as an extension. It
 replaces the separate R3 helper files. Keep the container matched to the
 BetterCP/M system build; use the distribution builder to install both together.
+
+
+### Resident feature guidance (1.0)
+
+Resident commands provide basic operations using the shared file selector.
+For recognized switches requiring a transient utility, they stop before any
+file operation and point to explicit invocation. For example:
+
+```text
+A0>DIR /C=2
+Resident command does not support this feature. Use :DIR.
+A0>:DIR /C=2
+```
+
+The message does not launch the program. Retype the complete command with a
+leading colon (or period). If the program is absent, explicit invocation uses
+the ordinary missing-command response. Automatic handoff and `/HANDOFF`
+controls are post-1.0 work.
+
+The recognized transient-only switches are DIR `/A`, `/P`, `/Z[=K|S|E]`,
+`/C=1|2|4` and `/S=N|T|Z[+|-]` or `/S=U`; ERA `/Y`, `/Q`, `/C`, `/R`, `/D`;
+TYPE `/7`, `/T`, `/CTL`; REN `/C`, `/Y`, `/N`, `/DRY`, `/P`, `/Q`, `/QQ`;
+and COPY `/B`, `/V`, `/BACKUP`. Resident TYPE still supports `/P`; resident
+COPY/MOVE keep their existing overwrite switch. `/VER` remains supported.
+Unknown tokens and other invalid syntax retain ordinary resident behavior.
+Selection of protected files does not itself enable destructive or override
+features.
