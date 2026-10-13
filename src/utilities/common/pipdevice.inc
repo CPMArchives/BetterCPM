@@ -9,7 +9,7 @@ PD_START:
         CP 14                      ; PUN
         JR Z,PD_PUNCH
         CP 18                      ; CON
-        JP NZ,PT_UNSUP
+        JP NZ,PT_DEVICEERR
         LD A,2
         JR PD_SELECTED
 PD_LIST:
@@ -34,6 +34,8 @@ PD_DOPTIONS:
         INC HL
         DJNZ PD_DOPTIONS
         CALL PC_CHECK
+        CP 4
+        JP Z,PT_DEVICEERR
         OR A
         JP NZ,PT_UNSUP
         LD HL,OP_DATA+88

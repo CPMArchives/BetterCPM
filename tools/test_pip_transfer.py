@@ -136,7 +136,7 @@ def main():
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT', {**base,t:(b'OLD TEMP',1)});assert 'CANNOT REMOVE TEMPORARY' in out and fs[t]==[b'OLD TEMP',1]
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT', {**base,t:(b'OLD TEMP',6)});assert fs[d]==[expected,0]
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT', {s:(b'',0)});assert fs[d]==[b'',0]
- for command in ['PRN:=A2:SRC.DAT','B7:=A2:*.DAT[H]','B7:D=A2:SRC.DAT[H]','B7:D=A2:SRC.DAT,A2:SRC.DAT[H]']:
+ for command in ['B7:=A2:*.DAT[H]','B7:D=A2:SRC.DAT[H]','B7:D=A2:SRC.DAT,A2:SRC.DAT[H]']:
   out,fs,calls,_=execute(command,base);assert 'not implemented' in out and not any(f in calls for f in (19,22,23))
  queue=key(0,0,'$$$.SUB');other=key(1,7,'$$$.SUB')
  batch={**base,queue:(b'BATCH',0),other:(b'UNRELATED',0)}
@@ -148,7 +148,7 @@ def main():
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT',batch)
  assert fs[queue]==[b'BATCH',0]
  out,fs,calls,_=execute('/VER',batch)
- assert 'Build 016' in out and fs[queue]==[b'BATCH',0] and calls==[9]
+ assert 'Build 017' in out and fs[queue]==[b'BATCH',0] and calls==[9]
  for protection in ['cancel','roqueue','rodrive']:
   protected_batch={**batch,queue:(b'BATCH',1 if protection=='roqueue' else 0)}
   out,fs,_,_=execute('BAD',protected_batch,fail='cancel' if protection=='cancel' else None,readonly=1 if protection=='rodrive' else 0)

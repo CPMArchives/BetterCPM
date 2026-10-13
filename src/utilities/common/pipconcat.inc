@@ -30,7 +30,7 @@ PC_CDEVICE:
         INC HL
         LD A,(HL)
         CALL PI_VALID
-        JP C,PC_BAD
+        JP C,PC_DEVICE
 PC_CPARAM:
         LD HL,(PC_PTR)
         LD DE,44
@@ -140,6 +140,9 @@ PC_BAD:
         RET
 PC_IDENT:
         LD A,2
+        RET
+PC_DEVICE:
+        LD A,4
         RET
 PC_DRIVE:
         LD A,3

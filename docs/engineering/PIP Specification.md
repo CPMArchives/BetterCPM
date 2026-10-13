@@ -1216,3 +1216,43 @@ extraction, duplicated console output and DRI's shared tab/number-state effects.
 Real cpmsim E/U, E/N and E/T cases match pinned DRI destination output.
 Physical routing, PRN, HEX, block/abort behavior and final platform qualification
 remain open. PIP remains development-only.
+
+
+## Build 017 — physical-device routing audit and unavailable-device errors
+
+The shared BIOS currently does not dispatch character devices through IOBYTE.
+BIOCONIN calls the fixed platform console and masks to seven bits. BIOLIST and
+BIOPUNCH return without output, and BIOREADR returns 1Ah. These definitions
+are common to Model 4 and z80pack. The z80pack cold initializer sets IOBYTE
+95h, but the byte is assignment metadata rather than an implemented router.
+STAT's existing documentation already records actual BIOS routing as an open
+1.0 requirement. Relevant sources are src/bios/bios.mac and
+src/platform/z80pack/biosplat.inc; see engineering specifications 48 and 128.
+
+DRI's physical aliases temporarily assign IOBYTE: LPT/PRN=80h, UL1=C0h,
+PTP=10h, UP1=20h, UP2=30h, TTY=00h, CRT=01h, UC1=03h, PTR=04h,
+UR1=08h and UR2=0Ch, then restore it after each call. Without a BIOS router,
+implementing those writes in PIP would silently use the same fixed device.
+IRD is a separate Intel/ICOM hardware reader, also absent on these platforms.
+Neither case can be qualified merely by passing the generic BDOS call.
+
+PIP now reports DEVICE UNAVAILABLE for these physical aliases, including PRN,
+before any source read, character transfer or destination mutation. The common
+source-list preflight propagates that specific error even when an unavailable
+alias appears later in a mixed list. Error handling retains SUBMIT cancellation.
+IOBYTE is not modified. Logical CON/RDR/LST/PUN remain the existing BIOS routes:
+RDR currently supplies EOF; LST/PUN currently discard output. INP/OUT retain
+patch hooks. An instrumented test can qualify their BDOS call routing without
+claiming a real printer or reader exists on either distribution platform.
+
+To enable physical aliases later, qualify the BIOS selector matrix, implemented
+hardware/host endpoints, fallback policy for absent endpoints, temporary
+assignment restoration, and both direct BIOS and BDOS callers. PRN additionally
+forces N1 and supplies T8/P60 when the source tab/page parameters are zero,
+as in DRI SIMPLECOM. N/T/P formatting prerequisites are implemented. This audit
+adds no BIOS/BDOS growth or new routing ABI and does not close that roadmap item.
+
+Tests exercise every unavailable source/sink alias, first and later sources,
+unchanged existing destination data and absence of input/output, IOBYTE-set,
+record-transfer and file-mutation calls. PIP remains development-only; HEX,
+block/interruption behavior and final qualification remain open.
