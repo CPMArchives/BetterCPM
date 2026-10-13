@@ -41,6 +41,13 @@ PC_COPT:
         LD A,(HL)
         OR A
         JR Z,PC_CSKIP
+        LD A,C
+        CP 11
+        JR Z,PC_CSKIP
+        CP 20
+        JR Z,PC_CSKIP
+        CP 25
+        JR Z,PC_CSKIP
         PUSH HL
         LD HL,(PC_PTR)
         LD A,(HL)
@@ -165,6 +172,7 @@ PC_CHAR:
         LD HL,PC_INPUT
         ADD HL,DE
         LD A,(HL)
+        CALL PX_CHAR
         LD (PC_CHARV),A
         LD A,(PC_BINARY)
         OR A
