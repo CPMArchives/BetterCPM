@@ -39,6 +39,10 @@ PC_COPT:
         JR Z,PC_CSKIP
         CP 17
         JR Z,PC_CSKIP
+        LD A,(PD_ACTIVE)
+        OR A
+        JP NZ,PC_BAD
+        LD A,C
         CP 21
         JR Z,PC_CSKIP
         CP 22
@@ -50,6 +54,9 @@ PC_CSKIP:
         LD HL,(PC_PTR)
         INC HL
         INC HL
+        LD A,(PD_ACTIVE)
+        OR A
+        JR NZ,PC_CNEXT
         LD A,(OP_DATA+2)
         CP (HL)
         JR NZ,PC_CNEXT
@@ -147,6 +154,15 @@ PC_CHAR:
         CP 01AH
         JP Z,PC_NEXT
 PC_PUT:
+        LD A,(PD_ACTIVE)
+        OR A
+        JR Z,PC_DISKPUT
+        LD A,(PC_CHARV)
+        CALL PD_PUT
+        LD HL,PC_IPOS
+        INC (HL)
+        JP PC_CONT
+PC_DISKPUT:
         LD A,(PC_OPOS)
         LD E,A
         LD D,0
@@ -208,6 +224,9 @@ PC_NEXT:
         JP Z,PT_NOFILE
         JP PC_BEGIN
 PC_END:
+        LD A,(PD_ACTIVE)
+        OR A
+        JP NZ,PT_CLEAN
         LD A,(PC_OPOS)
         OR A
         JR Z,PC_CLOSED

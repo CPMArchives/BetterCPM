@@ -7,6 +7,7 @@ PT_COPY:
         LD (PT_CREATED),A
         LD (PT_TOPEN),A
         LD (PC_MULTI),A
+        LD (PD_ACTIVE),A
         LD HL,PT_RR
         LD (HL),A
         INC HL
@@ -19,6 +20,9 @@ PT_COPY:
         LD A,1
         LD (PC_MULTI),A
 PT_SINGLE:
+        LD A,(OP_DATA)
+        CP 4
+        JP Z,PD_START
         LD A,(OP_DATA+80)
         CP 2
         JP NZ,PT_UNSUP

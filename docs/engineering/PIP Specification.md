@@ -56,7 +56,7 @@ distribution manifest remains planned.
 - The implementation keeps the original INP/OUT patch layout as a conservative
   compatibility default (the maintainer has not yet answered that separate
   preference question). The development foundation reserves the source layout: INP 0103h, OUT 0106h, data 0109h,
-  reserved space through 01FFh. No device transfer is implemented yet.
+  reserved space through 01FFh. Logical output transfers are now implemented in Build 009; device input and physical aliases remain unfinished.
 - ERROR cancels a historical .SUB queue in the captured user; the BetterCP/M
   port must implement the equivalent against its authoritative A0 submit queue,
   not accidentally remove a same-named unrelated source-user file.
@@ -1028,3 +1028,26 @@ the prompt with ARC set and produces matching record data. Both rebuilt cpmsim a
 The media regression also checks that unused allocation slots remain zero.
 The separate extent-zero Search First/EXM compatibility finding remains open; the PIP port
 already avoids that omission through its all-extent scan.
+
+
+## Build 009 — logical character output
+
+Exact disk sources can be copied or concatenated to `CON:`, `LST:`, `PUN:`
+and the fixed `OUT:` patch entry. Logical sinks call BDOS functions 2, 5 and 4
+respectively, preserving the existing BIOS assignment. OUT calls 0106h with
+the character in C, as in the pinned DRI source. Its default RET discards output.
+No physical alias is claimed by this increment.
+
+The complete operand list is validated before any source read or character
+output. Source G/O/R parameters are supported; transformations, verification,
+overwrite parameters and destination qualifiers fail before output begins.
+Text stops at 1Ah; COM or [O] sources transfer complete physical records.
+Concatenation reuses the disk-source reader and restores the captured DU and
+DMA on return. Read failures can leave partial peripheral output, report the
+error and cancel SUBMIT; peripheral output cannot be rolled back.
+
+Regression coverage checks logical function routing, the OUT register/entry
+contract, multi-DU concatenation, high-byte/binary output, SYS admission,
+preflight rejection and read-error cleanup. Disk-copy, concatenation and
+wildcard regressions remain required. PIP stays development-only pending
+input devices, physical routing, transformations, HEX and full qualification.
