@@ -1376,3 +1376,30 @@ concatenation, wildcard copying, BLOCK/HEX modes, SUBMIT cancellation, and the
 keyboard-abort cleanup path also pass on disposable media. Native ZSM4/LINK
 matches the 13,666-byte development artifact. Model 4 interruption behavior and broader final utility
 qualification remain open; PIP remains development-only.
+
+
+## Build 022 — automatic high-speed reader HEX selection
+
+For a named disk destination with extension HEX, the pinned DRI source enables
+H automatically for reader devices preceding RDR in its device table. Those
+devices are INP, IRD, PTR, UR1 and UR2. INP is presently the supported executable
+case; the physical aliases retain their unavailable-device diagnostic. The
+logical RDR device is outside that automatic rule: `DEST.HEX=RDR:` remains an
+ordinary text transfer unless H or I is requested. The reference binary confirms
+this distinction despite the source's broad reader wording.
+
+`DEST.HEX=INP:` now uses the existing bounded HEX validation, correction,
+zero-length-tail and XOFF workflow automatically. Its effective H state also
+enables the pre-read console stop poll. Explicit I still suppresses the terminal
+record. A TXT destination, disk-file source, console source or pseudo-source
+does not gain automatic HEX processing. Per-source initialization prevents the
+automatic state from becoming a command-wide default.
+
+All 18 in-memory PIP regression scripts pass, including automatic HEX input and
+its reader-stop behavior. `tools/test_pip_reader_hex_media.py` compares five
+cases against the pinned DRI binary in real cpmsim: automatic INP-to-HEX,
+ordinary RDR-to-HEX, ordinary INP-to-TXT, explicit RDR H and explicit INP I.
+It uses the reserved driver page for deterministic reader data; all resulting
+files match byte for byte. Native ZSM4/LINK matches the 13,703-byte development
+artifact. Object-mode HEX/peripheral combinations, physical routing and final
+platform qualification remain open. PIP remains development-only.

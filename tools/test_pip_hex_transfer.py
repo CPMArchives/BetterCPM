@@ -25,6 +25,17 @@ def main():
   assert message in out and fs[dest]==[b'',0]
  out,fs,_,_=execute('B7:DEST.HEX=INP:[H]',{},input_bytes=data,patch_in=True)
  assert out=='' and fs[dest][0].startswith(base+ending+b'\r\n')
+ out,fs,_,_=execute('B7:DEST.HEX=INP:',{},input_bytes=data,patch_in=True)
+ assert out=='' and fs[dest][0].startswith(base+ending+b'\r\n')
+ out,fs,_,_=execute('B7:DEST.HEX=INP:',{},input_bytes=data,patch_in=True,break_keys=[ord('X')])
+ assert 'READER STOPPING' in out and fs[dest][0].startswith(base+ending+b'\r\n')
+ for device,patch in [('RDR',False),('CON',False)]:
+  out,fs,_,_=execute('B7:DEST.HEX='+device+':',{},input_bytes=data,patch_in=patch)
+  assert out=='' and fs[dest][0].startswith(data[:-1]),(device,out)
+ out,fs,_,_=execute('B7:DEST.TXT=INP:',{},input_bytes=data,patch_in=True)
+ assert out=='' and fs[key(1,7,'DEST.TXT')][0].startswith(data[:-1])
+ out,fs,_,_=execute('B7:DEST.HEX=INP:,RDR:',{},input_bytes=data+b'raw-reader\x1a',patch_in=True)
+ assert out=='' and fs[dest][0].startswith(base+ending+b'\r\nraw-reader')
  out,fs,_,_=execute('B7:DEST.HEX=A2:SRC.HEX[HV]',{src:(b'\x13'.join(bytes([v]) for v in data),0)})
  assert out=='' and fs[dest][0].startswith(base+ending+b'\r\n')
  out,fs,_,_=execute('B7:DEST.HEX=A2:SRC.HEX[OH]',{src:(data,0)})

@@ -14,7 +14,26 @@ HH_INIT:
         RET NZ
         LD A,(OP_DATA+81)
         CP 19
-        RET C
+        JR NC,HH_PSEUD
+        CP 5                         ; high-speed readers precede RDR
+        RET NC
+        LD A,(OP_DATA)
+        CP 2                         ; named disk destination
+        RET NZ
+        LD A,(OP_DATA+17)
+        CP 'H'
+        RET NZ
+        LD A,(OP_DATA+18)
+        CP 'E'
+        RET NZ
+        LD A,(OP_DATA+19)
+        CP 'X'
+        RET NZ
+        LD A,1
+        LD (OP_DATA+131),A            ; effective H also enables reader polling
+        LD (HH_MODE),A
+        RET
+HH_PSEUD:
         XOR A                       ; pseudo-sources bypass READTAPE
         LD (HH_MODE),A
         RET
