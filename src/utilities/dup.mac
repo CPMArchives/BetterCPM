@@ -11,6 +11,8 @@
 FDBMODE EQU 1
         CALL    UV_CHECK                ; standalone utility identity
         LD SP,04000H
+        CALL DCPARSE
+        JP C,DCBAD
         CALL INIT
         LD B,0
         CALL API
@@ -73,6 +75,21 @@ DSAVE:  LD HL,(PHYBUF)                  ; save platform control image
 DMAIN:  LD SP,04000H                    ; enter DUP main menu
         CALL CLEANUP
         JP NZ,RESTFAIL
+        LD A,(DCMODE)
+        OR A
+        JR Z,DCMENU
+        LD A,(DCRUN)
+        OR A
+        JP NZ,DONE
+        INC A
+        LD (DCRUN),A
+        LD A,(DCMODE)
+        CP 1
+        JP Z,DFORMAT
+        CP 2
+        JP Z,DCOPY
+        JP DCHECK
+DCMENU:
         LD HL,DTITLE
         CALL HEADER
         LD HL,DMENU
@@ -103,13 +120,9 @@ DFORMAT:XOR A                           ; format selected disk
         LD HL,DFHEAD
         CALL HEADER
         LD HL,DFASK
-        CALL PUTS
-        CALL CHOICE
-        CP 3
+        CALL ASKDRV
+        CP 0FFH
         JP Z,DMAIN
-        SUB 'A'
-        CP 4
-        JR NC,DFORMAT
         LD (DLOG),A
         LD (REQ),A
         LD DE,REQ
@@ -256,10 +269,16 @@ DIOERR: LD (STATUS),A                   ; dioerr
         CALL CRLF
         CALL LOCATION
         CALL CRLF
-        CALL PAUSE
+        CALL DCPAUSE
         JP DMAIN
 
-DERR:   CALL ERROR                      ; derr
+DERR:   LD A,(DCMODE)
+        OR A
+        JR Z,DCERR
+        LD HL,ERRMSG
+        CALL PUTS
+        JP DMAIN
+DCERR:  CALL ERROR                      ; derr
         JP DMAIN
 
 DREPORT:PUSH HL                         ; dreport
@@ -267,7 +286,7 @@ DREPORT:PUSH HL                         ; dreport
         POP HL
         JP NZ,RESTFAIL
         CALL PUTS
-        CALL PAUSE
+        CALL DCPAUSE
         JP DMAIN
 
   ; Common exit housekeeping. No warm boot is allowed to strand a temporary
@@ -353,7 +372,18 @@ GETBAD: LD A,1                          ; getbad
 ; Drive Selection
 ; -------------------------------------------------------------------------------
 
-ASKDRV: CALL PUTS                       ; askdrv
+ASKDRV: LD A,(DCMODE)
+        OR A
+        JR Z,DCASK
+        LD A,(DCNEXT)
+        INC A
+        LD (DCNEXT),A
+        CP 1
+        LD A,(DCFIRST)
+        RET Z
+        LD A,(DCSECOND)
+        RET
+DCASK:  CALL PUTS                       ; askdrv
         CALL CHOICE
         CP 3
         JR Z,ASKBAD
@@ -1335,6 +1365,8 @@ SSREADY:LD A,C                          ; ssready
 ; -------------------------------------------------------------------------------
 ; Track Stream Header
 ; -------------------------------------------------------------------------------
+
+        INCLUDE dup-cli.inc
 
 STREAM: LD HL,TRACKBF                   ; build write-track stream
         LD (STRPTR),HL
