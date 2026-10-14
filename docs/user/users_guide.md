@@ -2226,6 +2226,95 @@ BetterCP/M ED 1.0 (Build nnn)
 `nnn` is the assigned ED build number. `/VER` must appear alone; it is invalid
 with a filename or output DU, and is not an editing command at the `*` prompt.
 
+#### 4.18 PIP — Peripheral Interchange Program
+
+PIP provides the traditional CP/M transfer interface, including concatenation,
+character devices and text transformations. Use destination-first assignment:
+
+```text
+PIP destination=source
+PIP destination=source1,source2
+PIP B:=A:*.COM
+PIP B3:REPORT.TXT=A7:REPORT.TXT
+```
+
+PIP without a command tail opens a `*` prompt for successive assignments.
+An empty input line exits. `PIP /VER` currently prints
+`BetterCP/M PIP 1.0 (Build 026)` and exits; it must be used alone.
+
+Each disk operand inherits the invocation’s drive and user unless qualified.
+Single DU forms and user-only forms are supported, with users 0–31. Historical
+`[Gn]` selects a source user; do not combine it with an explicit user on the
+same operand. Compound DU selectors and COPY-style attribute expressions are
+not PIP syntax. PIP keeps its historical wildcard rules.
+
+Text copying and concatenation stop each source at Ctrl-Z. Object mode `[O]`
+and automatic COM-file handling provide physical-record copying where the
+historical dispatch rules apply. In a single file-to-file transfer using S/Q,
+`[O]` on a text-named source does not override text EOF; COM sources and the
+concatenation/device paths follow the separately qualified DRI behavior.
+
+Put transfer parameters on the affected source:
+
+```text
+PIP B:OUT.TXT=A:IN.TXT[UV]
+PIP B:JOIN.TXT=A:ONE.TXT,A:TWO.TXT
+PIP LST:=README.TXT[NT8]
+```
+
+| Parameter | Effect |
+| --- | --- |
+| B | Block-mode input buffering |
+| Dn | Limit output columns |
+| E | Echo transfer to the console |
+| F | Filter input form feeds |
+| Gn | Read from user n |
+| H / I | Intel HEX processing / suppress zero-length records |
+| L / U | Convert to lowercase / uppercase |
+| N / N2 | Number lines |
+| O | Object transfer |
+| Pn | Page ejects; P or P1 uses 60 lines |
+| Qs / Ss | Quit at / start at a string |
+| R | Include SYS sources |
+| Tn | Expand tabs to n-column stops |
+| V | Verify disk output |
+| W | Authorize replacement of a read-only destination |
+| Z | Clear input parity/high bits |
+
+S/Q strings require an actual Ctrl-Z byte as their terminator. They are not
+terminated by the two printable characters `^Z`. HEX processing retains DRI’s
+bounded record and interactive correction behavior.
+
+Logical devices are CON, RDR, PUN and LST. Physical aliases depend on the target:
+
+| Target | Available physical aliases |
+| --- | --- |
+| Model 4 | CRT |
+| cpmsim | TTY, CRT, PTR, PTP, LPT, PRN |
+
+PRN selects LPT and applies DRI’s line-numbering, default T8 and default
+60-line pagination. Unsupported physical aliases, including IRD and user
+devices without a backend, report `DEVICE UNAVAILABLE` before transfer I/O.
+On the routed BIOS, unavailable logical selections are likewise refused.
+INP/OUT retain their historical patch entries; NUL and EOF are special sources.
+
+Physical-device calls temporarily select their endpoint and restore IOBYTE on
+return. Cooked console input retains DRI’s fatal Ctrl-C warm-boot behavior:
+that nonreturning path does not perform ordinary PIP cleanup or restore the
+interrupted per-call assignment. Normal transfer polling uses the qualified
+cleanup paths. Avoid treating character-device calls as a recoverable disk-I/O
+error interface. cpmsim auxiliary input/output uses the host’s configured pipe
+or file facilities; a missing host input is not a portable recoverable error.
+
+Disk output uses a temporary file and guarded replacement. Read/write,
+verification and replacement failures are reported; a failed command cancels
+an active SUBMIT queue where permitted. This is not power-loss atomicity.
+PIP follows its DRI attribute behavior rather than COPY’s ARC policy; use COPY
+for the BetterCP/M backup workflow.
+
+See the [PIP engineering specification](../engineering/PIP%20Specification.md)
+for detailed compatibility cases and qualification limits.
+
 ### 5. Batch Processing
 5.1 SUBMIT 5.2 SUB Files 5.3 Parameters and Substitution 5.4 XSUB 5.5 Batch Execution and Termination 5.6 Examples
 

@@ -2,6 +2,8 @@
 
 ## Status
 
+The production implementation is now qualified. See [PIP completion qualification](PIP%20Completion%20Qualification.md). The measurements below record the earlier isolated experiments.
+
 Measured on 14 October 2026 against main after PR 272. These are isolated
 assembly experiments. No production BIOS, BDOS, memory layout or PIP behavior
 has changed. PIP physical aliases continue to report `DEVICE UNAVAILABLE`.

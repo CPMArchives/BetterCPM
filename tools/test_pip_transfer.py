@@ -5,10 +5,16 @@ from test_bios import SENTINEL
 
 def key(d,u,name):
  stem,_,ext=name.partition('.');return (d,u,(stem.ljust(8)+ext.ljust(3)).encode())
-def execute(tail,files,fail=None,answer='N',readonly=0,unused=None,exm=0,patch_out=False,input_bytes=b'',patch_in=False,break_keys=(),break_at=1):
+def execute(tail,files,fail=None,answer='N',readonly=0,unused=None,exm=0,patch_out=False,input_bytes=b'',patch_in=False,break_keys=(),break_at=1,device_caps=None):
  c=cpu();c.mem[0:3]=bytes((0xC3,SENTINEL&255,SENTINEL>>8));c.mem[5:8]=bytes((0xDB,254,0xC9));c.mem[0x80]=len(tail);c.mem[0x81:0x81+len(tail)]=tail.encode()
  if patch_out:c.mem[0x106:0x109]=bytes((0xDB,253,0xC9))
  if patch_in:c.mem[0x103:0x106]=bytes((0xDB,252,0xC9))
+ if device_caps is not None:
+  c.setword(1,0x8003);c.mem[3]=0x95
+  c.mem[0x7000:0x7004]=b'BV\x01\x03';c.setword(0x7016,0x7040);c.mem[0x7040:0x7044]=b'1.6$'
+  c.mem[0x803f:0x8043]=bytes([0x21,device_caps&255,device_caps>>8,0xc9])
+  for v in [9,21]:c.mem[0x8000+v:0x8003+v]=bytes([0xdb,251,0xc9])
+  for v in [12,15,18]:c.mem[0x8000+v:0x8003+v]=bytes([0xdb,253,0xc9])
  inputs=iter(input_bytes)
  breaks=list(break_keys);polls=0
  files={k:[bytes(v[0]),v[1]] for k,v in files.items()};state={'drive':0,'user':5,'dma':0x80};out=[];calls=[];writes=[]
@@ -17,10 +23,13 @@ def execute(tail,files,fail=None,answer='N',readonly=0,unused=None,exm=0,patch_o
  def advance(p,n):
   n+=1;c.mem[p+32]=n%128;c.mem[p+12]=(n//128)%32;c.mem[p+14]=n//4096
  def io(port):
+  port &= 255
+  if port==251:return next(inputs)
   if port==252:c.mem[0x109]=next(inputs);return 0
   if port==253:out.append(chr(c.c));return 0
   nonlocal polls
   f=c.c;p=c.de;calls.append(f)
+  if f==180:c.hl=0x7000 if device_caps is not None else 0;return 0
   if f==11:
    polls+=1;return 255 if breaks and polls>=break_at else 0
   if f==6:
@@ -71,7 +80,7 @@ def execute(tail,files,fail=None,answer='N',readonly=0,unused=None,exm=0,patch_o
    if k[2].endswith(b'$$$') and fail is None:
     source_lengths=[len(v[0]) for name,v in files.items() if name[2].startswith(b'SRC')]
     if unused is not None:assert c.mem[p+13]==unused
-    elif source_lengths and c.mem[addr('PP_COUNT')]==2 and not any(c.mem[addr('OP_DATA')+i] for i in (125,127,128,129,131,132,135,137,139,140,142,143,144,149)):assert c.mem[p+13]==(-source_lengths[0])%128
+    elif source_lengths and c.mem[addr('OP_DATA')+80]==2 and c.mem[addr('PP_COUNT')]==2 and not any(c.mem[addr('OP_DATA')+i] for i in (125,127,128,129,131,132,135,137,139,140,142,143,144,149)):assert c.mem[p+13]==(-source_lengths[0])%128
    return 0
   if f==22:
    if fail=='make':return 255
@@ -110,6 +119,7 @@ def execute(tail,files,fail=None,answer='N',readonly=0,unused=None,exm=0,patch_o
    c.mem[state['dma']:state['dma']+128]=data;return 0
   raise AssertionError(('unexpected BDOS',f))
  c.port_read=io;c.run(256,limit=8000000)
+ if device_caps is not None:assert c.mem[3]==0x95,'IOBYTE leaked'
  assert {k:state[k] for k in ('drive','user','dma')}=={'drive':0,'user':5,'dma':0x80},state
  return ''.join(out),files,calls,writes
 
@@ -144,7 +154,7 @@ def main():
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT', {**base,t:(b'OLD TEMP',6)});assert fs[d]==[expected,0]
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT', {s:(b'',0)});assert fs[d]==[b'',0]
  for command in ['B7:=A2:*.DAT[X]','B7:D=A2:SRC.DAT[X]','B7:D=A2:SRC.DAT,A2:SRC.DAT[X]']:
-  out,fs,calls,_=execute(command,base);assert 'not implemented' in out and not any(f in calls for f in (19,22,23))
+  out,fs,calls,_=execute(command,base);assert 'INVALID FORMAT' in out and not any(f in calls for f in (19,22,23))
  queue=key(0,0,'$$$.SUB');other=key(1,7,'$$$.SUB')
  batch={**base,queue:(b'BATCH',0),other:(b'UNRELATED',0)}
  for command in ['BAD','B7:DEST.DAT=A2:MISSING.DAT','B7:D=A2:SRC.DAT[X]']:
@@ -155,7 +165,7 @@ def main():
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT',batch)
  assert fs[queue]==[b'BATCH',0]
  out,fs,calls,_=execute('/VER',batch)
- assert 'Build 025' in out and fs[queue]==[b'BATCH',0] and calls==[9]
+ assert 'Build 026' in out and fs[queue]==[b'BATCH',0] and calls==[9]
  for protection in ['cancel','roqueue','rodrive']:
   protected_batch={**batch,queue:(b'BATCH',1 if protection=='roqueue' else 0)}
   out,fs,_,_=execute('BAD',protected_batch,fail='cancel' if protection=='cancel' else None,readonly=1 if protection=='rodrive' else 0)

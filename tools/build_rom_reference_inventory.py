@@ -48,7 +48,7 @@ def shift_layout(path: Path, delta: int) -> None:
     path.write_text(text, encoding="ascii")
 
 
-def alternate_build(delta: int) -> dict[str, bytes]:
+def alternate_build(delta: int, boot_format: dict | None = None) -> dict[str, bytes]:
     with tempfile.TemporaryDirectory(prefix=f"bettercpm-rom-ref-{delta:03x}-") as temporary:
         clone = Path(temporary) / "BetterCPM"
         shutil.copytree(
@@ -56,9 +56,12 @@ def alternate_build(delta: int) -> dict[str, bytes]:
             ignore=shutil.ignore_patterns(".git", "build", "__pycache__", "*.pyc"))
         shift_layout(clone / "src/system/layout.inc", delta)
         output = clone / "alternate"
+        command = [sys.executable, str(clone / "tools/build_z80pack_image.py"),
+                   "--resident-only", "--output", str(output)]
+        if boot_format:
+            command += ["--fdf", boot_format["fdf"], "--format", boot_format["format"]]
         result = subprocess.run(
-            [sys.executable, str(clone / "tools/build_z80pack_image.py"),
-             "--resident-only", "--output", str(output)],
+            command,
             cwd=clone, text=True, stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT)
         if result.returncode:
@@ -269,7 +272,9 @@ def build(z80pack_build: Path, pack: Path, output: Path) -> dict[str, object]:
         "tables": z80pack_build / "tables.lst",
         "config": z80pack_build / "config.lst",
     }
-    shifted = [(alternate_build(delta), delta) for delta in DELTAS]
+    fmt_path = z80pack_build / "boot-format.json"
+    boot_format = json.loads(fmt_path.read_text()) if fmt_path.exists() else None
+    shifted = [(alternate_build(delta, boot_format), delta) for delta in DELTAS]
     live = live_target_ranges()
     references = []
     overlay_references = []

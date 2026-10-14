@@ -18,5 +18,14 @@
     "identity": "COPYRIGHT (C) 1979, DIGITAL RESEARCH, PIP VERS 1.5",
     "source_equivalence": "matching embedded identity and patch layout; full byte/behavior equivalence remains qualification work"
   },
-  "manual_edition": "pending pinning"
+  "manual_edition": {
+    "title": "Digital Research CP/M Operating System Manual",
+    "edition_evidence": "Copyright page: First Printing, July 1982",
+    "section": "CP/M command descriptions: Peripheral Interchange Program (PIP)",
+    "upstream": "https://bitsavers.trailing-edge.com/pdf/digitalResearch/cpm/CPM_Operating_System_Manual_Jul82.pdf",
+    "catalog": "https://bitsavers.computerhistory.org/pdf/digitalResearch/cpm/",
+    "bytes": 9796253,
+    "sha256": "1cb4aec4fe99ae1958c2ef4e46d2910b5b913072ce188003c464d8258f89d44e",
+    "repository_copy": "not vendored; retrieval identity and hash retained; not a build dependency"
+  }
 }

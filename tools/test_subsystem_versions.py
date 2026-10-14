@@ -16,7 +16,7 @@ EXPECTED = {
     "CPX": ("1.0", "1.3", "completed"),
     "BDOS": ("1.2", "1.7", "completed"),
     "RSX": ("1.0", "1.2", "completed"),
-    "BIOS": ("1.5", "1.10", "completed"),
+    "BIOS": ("1.6", "1.11", "completed"),
 }
 
 

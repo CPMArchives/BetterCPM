@@ -1,6 +1,8 @@
 ; Logical character sinks. Validate the entire source list before output.
 ; Physical aliases and formatting parameters remain separately qualified.
 PD_START:
+        LD A,0FFH
+        LD (PD_PHYS),A
         LD A,(OP_DATA+1)
         CP 6                       ; OUT patch
         JR Z,PD_OUT
@@ -9,7 +11,14 @@ PD_START:
         CP 14                      ; PUN
         JR Z,PD_PUNCH
         CP 18                      ; CON
-        JP NZ,PT_DEVICEERR
+        JR Z,PD_CON
+        CALL DV_OUTOK
+        JP C,PT_DEVICEERR
+        LD A,(OP_DATA+1)
+        LD (PD_PHYS),A
+        LD A,2
+        JR PD_SELECTED
+PD_CON:
         LD A,2
         JR PD_SELECTED
 PD_LIST:
@@ -22,6 +31,8 @@ PD_OUT:
         XOR A
 PD_SELECTED:
         LD (PD_FUNCTION),A
+        CALL DV_LOGOUT
+        JP C,PT_DEVICEERR
         LD A,1
         LD (PD_ACTIVE),A
         ; Destination qualifiers are not silently ignored.
@@ -45,6 +56,13 @@ PD_DOPTIONS:
         JP PC_OPEN
 PD_PUT:
         LD E,A
+        LD A,(PD_PHYS)
+        CP 0FFH
+        JR Z,PD_LOGIC
+        LD C,E
+        LD B,1
+        JP DV_RAW
+PD_LOGIC:
         LD A,(PD_FUNCTION)
         OR A
         JR Z,PD_PATCH
@@ -56,6 +74,7 @@ PD_PATCH:
         JP 0106H
 PD_ACTIVE: DB 0
 PD_FUNCTION: DB 0
+PD_PHYS: DB 0FFH
 
 ; Text-device sources in the common source list. Staging/verification and
 ; replacement remain the same transaction as disk copies.
@@ -82,15 +101,14 @@ PI_VALID:
         OR A
         RET Z
         CP 5
-        RET Z
+        JP Z,DV_LOGIN
         CP 18
-        RET Z
+        JP Z,DV_LOGIN
         CP 19
         RET Z
         CP 20
         RET Z
-        SCF
-        RET
+        JP DV_INOK
 PI_BEGIN:
         ; Standalone O streams have no physical EOF. Ctrl-Z is data until H/I
         ; terminates, an operator aborts, or I/O fails. DRI disk EOF carryover
@@ -125,6 +143,13 @@ PI_FETCH:
         CP 5
         LD C,3
         JR Z,PI_READER
+        CP 18
+        JR Z,PI_CON
+        LD B,0
+        CALL DV_RAW
+        AND 7FH                    ; same parity policy as DRI reader input
+        JR PI_CHAR
+PI_CON:
         LD C,1
         CALL 5
         JR PI_CHAR

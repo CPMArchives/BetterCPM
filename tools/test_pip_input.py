@@ -24,7 +24,7 @@ def main():
  assert out=='' and fs[dest]==[b'',0]
  for tail in ['B7:=CON:','B7:DEST.DAT=PTR:']:
   out,fs,calls,_=execute(tail,{dest:(b'old',0)})
-  assert ('not implemented' in out or 'INVALID FORMAT' in out or 'DEVICE UNAVAILABLE' in out) and fs[dest]==[b'old',0]
+  assert ('INVALID FORMAT' in out or 'INVALID FORMAT' in out or 'DEVICE UNAVAILABLE' in out) and fs[dest]==[b'old',0]
   assert not any(f in calls for f in (1,3,19,22,23))
  out,fs,calls,_=execute('B7:DEST.DAT=NUL:[W]',{dest:(b'old',1)})
  assert fs[dest][0]==bytes(40)+b'\x1a'*88 and 1 not in calls

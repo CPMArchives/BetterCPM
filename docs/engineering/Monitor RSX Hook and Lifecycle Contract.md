@@ -57,9 +57,9 @@ their offsets. Append three private JMP vectors:
 
 | BIOS offset | Entry | Purpose |
 |---:|---|---|
-| +63 | MONCALL | Route the selected operation through the current binding |
-| +66 | MONRAW | Execute the basic backend directly, bypassing the monitor |
-| +69 | MONBASE | Set the binding to the basic backend; manager/cold-init use |
+| +66 | MONCALL | Route the selected operation through the current binding |
+| +69 | MONRAW | Execute the basic backend directly, bypassing the monitor |
+| +72 | MONBASE | Set the binding to the basic backend; manager/cold-init use |
 
 The provider uses MONRAW for supported basic operations without recursion.
 Its platform-specific renderer may additionally use build-generated internal
@@ -199,3 +199,8 @@ real terminal input/replies require their own provider campaigns.
 ## Provider behavior
 
 [Monitor Provider Behavioral Requirements](Monitor%20Provider%20Behavioral%20Requirements.md) defines the MM-style ADM-3A and VT52 personalities, input/reply queue semantics and qualification cases.
+
+The BIOS 1.6 character-capability query occupies +63. Existing vectors at
++0..+60 are unchanged. The reserved monitor vectors therefore start at +66;
+the combined routing/capability/monitor prototype is 757 bytes and fits the
+757-byte BIOS allocation without reducing unloaded TPA.

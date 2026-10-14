@@ -9,6 +9,7 @@
 ; ********************************************************************************
 
 
+; IOBYTE_ROUTING_V1: qualified compact CRT router and capability query.
 BIOSBASE        EQU     LY_BIOS+0
 BIO_PHYBF       EQU     LY_BUF          ; 1024-byte shared physical-sector buffer
 BIO_DIRBF       EQU     LY_DIR
@@ -42,7 +43,7 @@ BIOS:                                   ; public BIOS jump table
         JP      BIOWBOOT
         JP      BIOCONST
         JP      BIOCONIN
-        JP      PL_CONOT
+        JP      BIOCONOT
         JP      BIOLIST
         JP      BIOPUNCH
         JP      BIOREADR
@@ -90,6 +91,9 @@ BIORLOAD:                               ; platform reloader-load vector
 ; Cold and Warm Entry
 ; -------------------------------------------------------------------------------
 
+BIOCHCAP:                               ; private character capability query, BIOS+63
+        JP IO_CAPS
+
 BIOBOOT:                                ; cold boot entry
         CALL    PL_INIT
   ; 08-Sep-2026: BOOT must begin on A even when called from another drive.
@@ -113,34 +117,46 @@ BIOWBOOT:                               ; warm boot entry
 ; Console Input
 ; -------------------------------------------------------------------------------
 
-BIOCONST:                               ; return console status
-        CALL    PL_CONST
-        OR      A
-        RET     Z
-        LD      A,0FFH
+BIOCONST:
+        CALL IO_CON
+        JR Z,IO_STAT
+        XOR A
         RET
-
-BIOCONIN:                               ; read console character
-        CALL    PL_CONIN
-        AND     07FH
+IO_STAT:
+        CALL PL_CONST
+        OR A
+        RET Z
+IO_READY:
+        LD A,0FFH
         RET
-
-
-  ; Optional logical devices are explicitly unassigned in the scaffold.
-
-; -------------------------------------------------------------------------------
-; Optional Character Devices
-; -------------------------------------------------------------------------------
-
-BIOLIST:                                ; write list device
-
-BIOPUNCH:                               ; write punch device
+BIOCONIN:
+        CALL IO_CON
+        JP NZ,BIOREADR
+IO_INPUT:
+        CALL PL_CONIN
+        AND 07FH
         RET
-
-BIOREADR:                               ; read reader device
-        LD      A,01AH
+BIOCONOT:
+        CALL IO_CON
+        JP Z,PL_CONOT
+        CP 1
+        RET NZ
+        JP BIOLIST
+IO_CON:
+        LD A,(0003H)
+        AND 3
+        DEC A
         RET
-
+BIOLIST:
+        CALL BIOLSTST
+        OR A
+        RET Z
+        JP PL_CONOT
+BIOPUNCH:
+        RET
+BIOREADR:
+        LD A,01AH
+        RET
 ; ================================================================================
 ; =                     Disk Selection and Transfer Services                     =
 ; =                                                                              =
@@ -240,8 +256,12 @@ BIO_SLOT:                               ; select quarter-sector slot
 ; List Status
 ; -------------------------------------------------------------------------------
 
-BIOLSTST:                               ; return list-device status
-        XOR     A
+BIOLSTST:
+        LD A,(0003H)
+        AND 0C0H
+        CP 040H
+        JP Z,IO_READY
+        XOR A
         RET
 
   ; BC is the zero-based logical sector; DE is XLT or zero.  Return HL.
@@ -305,6 +325,10 @@ B_PDrive:                               ; physical drive
 BIO_PSEC:                               ; physical sector
         DB      1
         INCLUDE biosplat.inc
+
+IO_CAPS:
+        LD HL,02002H                    ; CRT console and CRT list only
+        RET
 
         .DEPHASE
         END

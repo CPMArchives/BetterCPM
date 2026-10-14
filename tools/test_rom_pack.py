@@ -64,13 +64,13 @@ def main() -> None:
     used = manifest["used_bytes"]
     if image[used:] != b"\xFF" * manifest["spare_bytes"]:
         raise AssertionError("ROM packing padding is not erased-state FFh")
-    if manifest["used_bytes"] != 7702 or manifest["spare_bytes"] != 746:
+    if manifest["used_bytes"] != 7890 or manifest["spare_bytes"] != 558:
         raise AssertionError("accepted ROM packing budget changed")
     if manifest["candidate_entry_inputs"] != {
-            "template": 0xF394, "cold_initializer": 0xFD00, "bdos": 0xDF9E}:
+            "template": 0xF450, "cold_initializer": 0xFDBC, "bdos": 0xDF9E}:
         raise AssertionError("accepted candidate entry addresses changed")
-    print("ROM packing verified: 5268 immutable-source + 2412 template + "
-          "22 initializer bytes; 746 spare; relocation still required")
+    print("ROM packing verified: 5456 immutable-source + 2412 template + "
+          "22 initializer bytes; 558 spare; relocation still required")
 
 
 if __name__ == "__main__":

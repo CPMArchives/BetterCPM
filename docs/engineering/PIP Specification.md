@@ -1,11 +1,11 @@
-# PIP.COM Engineering Specification — Draft
+# PIP.COM Engineering Specification
 
-Status: received proposal, 2026-10-13; not a completed implementation contract.
-Historical claims below require verification against the pinned DRI manual,
-source and binary reference. The discussion-thread citation markers have been
-removed because their underlying sources were not supplied. A development-only ZSM4 implementation now provides operand parsing and the
-disk-copy, concatenation and wildcard paths. Full DRI compatibility remains incomplete, and the
-distribution manifest remains planned.
+Status: implementation complete at Build 026, subject to the named final
+qualification results in [PIP Completion Qualification](PIP%20Completion%20Qualification.md).
+The implementation retains DRI PIP 1.5 assignment syntax and transfer behavior,
+adds BetterCP/M DU operands and standalone `/VER`, and ships on both System
+Disks. Historical increment notes below remain as development evidence; the
+completion report supersedes their pending/development-only status statements.
 
 ## Work review: remaining closure
 

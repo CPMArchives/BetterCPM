@@ -27,7 +27,7 @@ def main():
     # destination to return, proving this entry does not initialize IOBYTE.
     bios = (ROOT/'build/bios/bios.bin').read_bytes()
     from system_layout import LAYOUT
-    for value in (0, 0x6A, 0xFF):
+    for value in (0, 0x55, 0xFF):
         m = Z80(bios); m.mem[3] = value
         target = m.word(LAYOUT['BIOS']+4)
         assert m.mem[target] == 0xC3
@@ -37,7 +37,7 @@ def main():
 
     def files(work):
         result = {}
-        for name, expected in [('IODEF',0x95),('IOKEEP',0x6A)]:
+        for name, expected in [('IODEF',0x95),('IOKEEP',0x55)]:
             source = f''' ORG 100H
  LD C,7
  CALL 5
@@ -59,7 +59,7 @@ FAIL: DB '{name} FAIL',13,10,'$'
             result[name+'.COM'] = assemble(Path.home()/'bin/z80asm', source,
                 work/(name+'.COM'),work/(name+'.lst'),0x100)
         result['IOSET.COM'] = assemble(Path.home()/'bin/z80asm',
-            ' ORG 100H\n LD E,06AH\n LD C,8\n CALL 5\n RET\n END\n',
+            ' ORG 100H\n LD E,055H\n LD C,8\n CALL 5\n RET\n END\n',
             work/'IOSET.COM',work/'IOSET.lst',0x100)
         return result
 
