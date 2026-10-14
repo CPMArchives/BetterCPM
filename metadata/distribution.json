@@ -216,7 +216,7 @@
     {
       "name": "ED.COM",
       "status": "planned",
-      "reason": "DU-aware adaptation of existing ED source selected for 1.0; source/build audit, implementation and qualification pending",
+      "reason": "CP/M 2.2 behavioral ZSM4 reimplementation; engineering spec and source/binary baseline pinned; implementation and qualification pending",
       "targets": [
         "z80pack",
         "trs80gp"
