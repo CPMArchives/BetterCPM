@@ -44,6 +44,14 @@ def main():
     change(1,b'ADM3A   ')
     old=cpu.word(stage.LOW)
     assert cpu.word(binding)==old+syms['AM_ENTRY']-0x8000
+    extension=(ROOT/'build/system/extensions.bin').read_bytes()
+    cpu.mem[LAYOUT['EXTENSIONS']:LAYOUT['EXTENSIONS']+len(extension)]=extension
+    request=0x7000
+    cpu.mem[request:request+20]=bytes([1,20,0,0])+b'MCON'+bytes([1,0])+bytes(10)
+    cpu.de=request
+    cpu.c=182
+    cpu.run(LAYOUT['EXTENSIONS'],limit=20000)
+    assert cpu.a==0 and cpu.word(request+12)==cpu.word(binding), ('actual MCON lookup',cpu.a,hex(cpu.word(request+12)),hex(cpu.word(binding)))
     output(22)  # persistent reverse mode
     for char in b'\x1b0\x1b=!':output(char)  # hidden cursor and partial row address
     change(2,b'HELLO   ')
@@ -63,7 +71,7 @@ def main():
     assert cpu.word(binding)==basic
     assert cpu.word(6)==LAYOUT['TPA'] and cpu.mem[stage.RSTCOUNT]==0
     assert cpu.word(bios['M4CURSOR'])==0xF800+91
-    print('PASS: actual ADM3A install, upward movement with partial parser/modes, subsequent output, unload and 53K TPA restoration')
+    print('PASS: actual ADM3A install/service lookup, upward movement with partial parser/modes, subsequent output, unload and 53K TPA restoration')
 
 
 if __name__=='__main__':main()

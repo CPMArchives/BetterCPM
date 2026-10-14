@@ -161,12 +161,13 @@ Isolated Model 4 assembly produced:
 |---|---:|---:|---|
 | BIOS dispatch/backend access | 636 | 700 | +64 bytes against the 122-byte candidate budget |
 | Scheduler | 494 | 496 | Fits exactly before the existing +310h handoff |
-| Persistent publisher region | 105 | 105 | Rebind fits existing padding; continuation offsets unchanged |
+| Persistent publisher region | 105 | 107 | Request word moved beyond continuation; entry offsets unchanged |
 | Commit overlay | 1007 | unchanged | 1012-byte executable/data prefix |
 
 The scheduler uses one CALL to MONBASE and shortens an existing nearby JP to JR.
-The publisher consumes padding before its fixed continuation; the request +35
-load and target store need no growth in its current 105-byte region. These are
+The publisher uses a 107-byte region after correcting a request-word overlap
+with its fixed continuation. Continuation and resolver-pointer offsets stay
+unchanged; request storage now follows the resolver-pointer word. These are
 isolated assembly results, not proof that every preparation change fits. The
 prospective-profile scanner/validator and caller scratch changes remain to be
 implemented and measured. Do not add another helper file or enlarge the 1KiB

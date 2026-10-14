@@ -1,4 +1,4 @@
-; ADM-3A development test utility: foundation checks only.
+; ADM-3A development qualification utility; run only with ADM3A.RSX.
 BDOS EQU 5
         CSEG
         .PHASE 0100H
@@ -7,7 +7,7 @@ START:
         LD C,182
         CALL BDOS
         OR A
-        JR NZ,NO_MONITOR
+        JP NZ,NO_MONITOR
         LD HL,(LOOKUP+12)
         LD (SERVICE),HL
         LD A,4
@@ -35,16 +35,87 @@ START:
         CALL BDOS
         LD A,4
         CALL INVOKE
+        LD DE,MOVEMENT
+        CALL PRINT
+        CALL PAUSE
+        LD A,4
+        CALL INVOKE
+        LD DE,VIDEO
+        CALL PRINT
+        LD DE,HIDE_CURSOR
+        CALL PRINT
+        LD A,3
+        LD C,0
+        CALL INVOKE
+        OR A
+        JP NZ,BAD_CURSOR
+        LD DE,SHOW_CURSOR
+        CALL PRINT
+        LD A,3
+        LD C,0
+        CALL INVOKE
+        OR A
+        JP Z,BAD_CURSOR
+        LD DE,CURSOR_OK
+        CALL PRINT
+        CALL PAUSE
+        LD A,4
+        CALL INVOKE
+        LD DE,KEYBOARD
+        CALL PRINT
+        LD C,1
+        CALL BDOS
+        CP 'A'
+        JP NZ,BAD_KEY
+        LD C,1
+        CALL BDOS
+        CP ':'
+        JP NZ,BAD_KEY
+        LD C,1
+        CALL BDOS
+        CP '['
+        JP NZ,BAD_KEY
+        LD C,1
+        CALL BDOS
+        CP ']'
+        JP NZ,BAD_KEY
+        LD A,4
+        CALL INVOKE
         LD DE,DONE
         CALL PRINT
         JP 0
+BAD_CURSOR:
+        LD DE,CURSOR_FAIL
+        CALL PRINT
+        JP 0
+BAD_KEY:
+        LD DE,KEY_FAIL
+        CALL PRINT
+        JP 0
+PAUSE:
+        LD DE,WAIT
+        CALL PRINT
+        LD C,1
+        JP BDOS
 NO_MONITOR:
         LD DE,MISSING
         CALL PRINT
         JP 0
 PRINT:
-        LD C,9
-        JP BDOS
+        ; Cursor coordinates can contain 24h ('$'), so BDOS 9 is unsuitable.
+        ; Use zero-terminated streams and standard character output instead.
+        EX DE,HL
+PRINT_NEXT:
+        LD A,(HL)
+        OR A
+        RET Z
+        LD E,A
+        PUSH HL
+        LD C,2
+        CALL BDOS
+        POP HL
+        INC HL
+        JR PRINT_NEXT
 INVOKE:
         LD HL,(SERVICE)
         JP (HL)
@@ -54,13 +125,45 @@ LOOKUP: DB 1,20,0,0,'MCON',1,0
         DW 0
         DB 0,0
 SERVICE: DW 0
-TITLE: DB 'ADM3A foundation test -- requires ADM3A.RSX.',13,10,'$'
-POSITION: DB 27,'=',32+5,32+10,'$'
-MARKER: DB 'Marker: row 5, column 10 (zero-based).',13,10,'$'
-WAIT: DB 'Press a key to continue.',13,10,'$'
-PARTIAL: DB 27,'=',32+1,'$'
-RESET_TEXT: DB 'Parser reset: this text should remain readable.',13,10,'$'
-DONE: DB 'Foundation checks complete. Full MM qualification pending.',13,10,'$'
-MISSING: DB 'No MCON provider loaded. Load the development ADM3A.RSX.',13,10,'$'
+TITLE: DB 'ADM3A test -- requires ADM3A.RSX.',13,10,0
+POSITION: DB 27,'=',32+5,32+10,0
+MARKER: DB 'Marker: row 5, column 10 (zero-based).',13,10,0
+WAIT: DB 'Press a key to continue.',13,10,0
+PARTIAL: DB 27,'=',32+1,0
+RESET_TEXT: DB 'Parser reset: this text should remain readable.',13,10,0
+MOVEMENT:
+        DB 'Movement: the following rows should read LEFT, TAB, RIGHT and HOME.',13,10
+        DB 27,'=',34,32,'LEFX',8,'T'
+        DB 27,'=',35,32,'T',9,'AB'
+        DB 27,'=',36,32,'RIGH',12,8,'T'
+        DB 27,'=',37,32,'HOME',13,10,11,13
+        DB 27,'=',39,32,'TAB should put AB at column 8. Other words are contiguous.',13,10
+        DB 27,'=',40,32,'Right-edge wrap and scrolling are checked by the binary suite.',13,10,0
+VIDEO:
+        DB 'Video: NORMAL / reversed ON / normal OFF / reversed TOGGLE / normal.',13,10
+        DB 'NORMAL ',15,'ON ',14,'OFF ',22,'TOGGLE ',22,'NORMAL',13,10,7
+        DB 'A bell should sound once.',13,10
+        DB 27,'=',37,32,'Erase EOL: KEEP remove-me'
+        DB 27,'=',37,47,21
+        DB 27,'=',38,32,'Erase EOS: KEEP remove-me'
+        DB 27,'=',38,47,23
+        DB 27,'=',40,32,'Line operations below should show A, blank, C, D; no B.'
+        DB 27,'=',42,32,'LINE A'
+        DB 27,'=',43,32,'LINE B'
+        DB 27,'=',44,32,'LINE C'
+        DB 27,'=',45,32,'LINE D'
+        DB 27,'=',43,39,28
+        DB 27,'=',44,39,29
+        DB 27,'=',48,32,0
+HIDE_CURSOR: DB 27,'0',0
+SHOW_CURSOR: DB 27,'1',0
+CURSOR_OK: DB 'Cursor OFF/ON query passed.',13,10,0
+CURSOR_FAIL: DB 'Cursor OFF/ON query failed. Test incomplete.',13,10,0
+KEYBOARD:
+        DB 'Keyboard: type uppercase A, then colon, then [ and ].',13,10
+        DB 'Use the working Model 4 keyboard layout. No ENTER is required.',13,10,0
+KEY_FAIL: DB 13,10,'Keyboard mismatch. Record the key and layout; test incomplete.',13,10,0
+DONE: DB 'ADMTST keyboard checks passed. Confirm visual pages and bell separately.',13,10,0
+MISSING: DB 'No MCON provider loaded. Load the development ADM3A.RSX.',13,10,0
         .DEPHASE
         END
