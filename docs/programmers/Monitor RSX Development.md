@@ -140,3 +140,14 @@ expands TAB using BDOS's own column counter, which terminal cursor-address
 sequences do not update. See the [native ADM-3A campaign](../engineering/ADM3A%20Native%20Qualification.md)
 for intermediate screenshots, original-application scope, audio checks and
 real unload/TPA checks.
+
+
+## VT52 development example
+
+`src/rsx/vt52.mac` illustrates a personality translating through MONRAW into an
+ANSI host transport, with byte-sized cursor/parser state and shared output,
+address-formatting and movement routines. `tools/build_vt52.py` and
+`src/utilities/vt52tst.mac` build only development artifacts. See
+[VT52 foundation qualification](../engineering/VT52%20Provider%20Foundation%20Qualification.md)
+for supported controls, host-geometry assumptions and remaining gates. It is
+not yet a generic monitor template or a released VT52 implementation.

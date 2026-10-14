@@ -1,0 +1,87 @@
+; VT52 foundation exercise; use only the cpmsim VT52 provider.
+BDOS EQU 5
+        CSEG
+        .PHASE 0100H
+START:
+        LD DE,LOOKUP
+        LD C,182
+        CALL BDOS
+        OR A
+        JP NZ,MISSING
+        LD HL,(LOOKUP+12)
+        LD (SERVICE),HL
+        LD A,4
+        CALL INVOKE
+        LD DE,PAGE1
+        CALL PRINT
+        CALL PAUSE
+        LD DE,PARTIAL
+        CALL PRINT
+        LD A,5
+        CALL INVOKE
+        LD DE,RESETMSG
+        CALL PRINT
+        CALL PAUSE
+        LD A,4
+        CALL INVOKE
+        LD DE,PAGE2
+        CALL PRINT
+        CALL PAUSE
+        LD A,4
+        CALL INVOKE
+        LD DE,DONE
+        CALL PRINT
+        JP 0
+MISSING:
+        LD DE,NONE
+        CALL PRINT
+        JP 0
+PAUSE:
+        LD DE,WAIT
+        CALL PRINT
+        LD C,1
+        JP BDOS
+INVOKE:
+        LD HL,(SERVICE)
+        JP (HL)
+PRINT:
+        EX DE,HL
+NEXT:
+        LD A,(HL)
+        OR A
+        RET Z
+        LD E,A
+        PUSH HL
+        LD C,6
+        CALL BDOS
+        POP HL
+        INC HL
+        JR NEXT
+LOOKUP: DB 1,20,0,0,'MCON',1,0
+        DW 0,0
+        DB 0,0
+        DW 0
+        DB 0,0
+SERVICE: DW 0
+PAGE1:
+        DB 'VT52 foundation test -- load VT52.RSX under cpmsim.',13,10
+        DB 27,'Y',37,42,'Marker: row 5, column 10.'
+        DB 27,'Y',39,32,'T',9,'AB'
+        DB 27,'Y',40,32,'TAB: AB should be at column 8.'
+        DB 27,'Y',42,110,'ABC'
+        DB 27,'Y',44,32,'Right margin: A at col 78, C at col 79; no B, no wrap.'
+        DB 27,'Y',46,32,0
+PARTIAL: DB 27,'Y',33,0
+RESETMSG: DB 'Parser reset: readable text after incomplete address.',13,10,0
+PAGE2:
+        DB 'VT52 erase tests: KEEP remains on both lines.',13,10
+        DB 27,'Y',36,32,'EOL KEEP remove-me'
+        DB 27,'Y',36,40,27,'K'
+        DB 27,'Y',38,32,'EOS KEEP remove-me'
+        DB 27,'Y',38,40,27,'J'
+        DB 27,'Y',40,32,'LF scrolls at bottom; ESC B does not. Binary tests check both.',13,10,0
+WAIT: DB 13,10,'Press a key to continue.',13,10,0
+DONE: DB 'VT52 foundation exercise complete. Full qualification pending.',13,10,0
+NONE: DB 'No MCON provider loaded. Load the development VT52.RSX.',13,10,0
+        .DEPHASE
+        END

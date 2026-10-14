@@ -1,0 +1,251 @@
+; Development VT52 personality for cpmsim's ANSI host console.
+; Identification, graphics and keypad/reply handling remain release gates.
+BASE EQU 08000H
+        CSEG
+        .PHASE BASE
+VT_NEXT: DW 5
+VT_DISP: DW VT_CHAIN
+        DB 0,0
+        DW 0
+VT_CHAIN:
+        LD HL,(VT_NEXT)
+        JP (HL)
+VT_ENTRY:
+        OR A
+        JP Z,VT_OUT
+        CP 4
+        JP Z,VT_CLEAR
+        CP 5
+        JP Z,VT_RESET
+VT_RAW:
+        LD HL,(1)
+        LD DE,66
+        ADD HL,DE
+        JP (HL)
+VT_EMIT:
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        XOR A
+        CALL VT_RAW
+        POP HL
+        POP DE
+        POP BC
+        RET
+VT_STR:
+        LD C,(HL)
+        INC HL
+        LD A,C
+        OR A
+        RET Z
+        CALL VT_EMIT
+        JR VT_STR
+VT_RESET:
+        XOR A
+        LD (VT_STATE),A
+        RET
+VT_CLEAR:
+        CALL VT_RESET
+        XOR A
+        LD (VT_ROW),A
+        LD (VT_COL),A
+        LD HL,VT_CLS
+        JP VT_STR
+VT_OUT:
+        LD A,(VT_STATE)
+        OR A
+        JP Z,VT_NORM
+        CP 1
+        JP Z,VT_ESC
+        CP 2
+        JR Z,VT_GOTR
+        LD A,C
+        CP 32
+        JR C,VT_DONE
+        SUB 32
+        CP 80
+        JR C,VT_SETCL
+        LD A,79
+VT_SETCL:
+        LD (VT_COL),A
+VT_DONE:
+        CALL VT_RESET
+        JP VT_POS
+VT_GOTR:
+        LD A,C
+        CP 32
+        JR C,VT_KEEP
+        SUB 32
+        CP 24
+        JR NC,VT_KEEP
+        LD (VT_ROW),A
+VT_KEEP:
+        LD A,3
+        LD (VT_STATE),A
+        RET
+VT_NORM:
+        LD A,C
+        CP 27
+        JR Z,VT_BEGIN
+        CP 127
+        RET Z
+        CP 32
+        JP NC,VT_PRINT
+        CP 7
+        JP Z,VT_EMIT
+        CP 8
+        JP Z,VT_LEFT
+        CP 9
+        JP Z,VT_TAB
+        CP 10
+        JP Z,VT_LF
+        CP 13
+        JR Z,VT_CR
+        RET
+VT_BEGIN:
+        LD A,1
+        LD (VT_STATE),A
+        RET
+VT_CR:
+        XOR A
+        LD (VT_COL),A
+        JP VT_POS
+VT_PRINT:
+        CALL VT_EMIT
+        LD A,(VT_COL)
+        CP 79
+        JP Z,VT_POS                     ; cancel ANSI delayed wrap at the margin
+        INC A
+        LD (VT_COL),A
+        RET
+VT_ESC:
+        CALL VT_RESET
+        LD A,C
+        CP 'Y'
+        JR Z,VT_ADDR
+        CP 'H'
+        JR Z,VT_HOME
+        CP 'A'
+        JP Z,VT_UP
+        CP 'B'
+        JP Z,VT_DOWN
+        CP 'C'
+        JP Z,VT_RIGHT
+        CP 'D'
+        JP Z,VT_LEFT
+        CP 'I'
+        JP Z,VT_RLF
+        CP 'J'
+        JR Z,VT_EOS
+        CP 'K'
+        JR Z,VT_EOL
+        RET                             ; development containment, not historical qualification
+VT_ADDR:
+        LD A,2
+        LD (VT_STATE),A
+        RET
+VT_HOME:
+        XOR A
+        LD (VT_ROW),A
+        LD (VT_COL),A
+        JP VT_POS
+VT_EOS:
+        LD HL,VT_SJ
+        JP VT_STR
+VT_EOL:
+        LD HL,VT_SK
+        JP VT_STR
+VT_UP:
+        LD A,(VT_ROW)
+        OR A
+        RET Z
+        DEC A
+        LD (VT_ROW),A
+        JP VT_POS
+VT_DOWN:
+        LD A,(VT_ROW)
+        CP 23
+        RET Z
+        INC A
+        LD (VT_ROW),A
+        JP VT_POS
+VT_LEFT:
+        LD A,(VT_COL)
+        OR A
+        RET Z
+        DEC A
+        LD (VT_COL),A
+        JP VT_POS
+VT_RIGHT:
+        LD A,(VT_COL)
+        CP 79
+        RET Z
+        INC A
+        LD (VT_COL),A
+        JP VT_POS
+VT_TAB:
+        LD A,(VT_COL)
+        CP 72
+        JP NC,VT_RIGHT
+        AND 0F8H
+        ADD A,8
+        LD (VT_COL),A
+        JP VT_POS
+VT_LF:
+        CALL VT_EMIT                    ; ANSI LF preserves column and scrolls
+        LD A,(VT_ROW)
+        CP 23
+        RET Z
+        INC A
+        LD (VT_ROW),A
+        RET
+VT_RLF:
+        LD A,(VT_ROW)
+        OR A
+        JP NZ,VT_UP
+        LD HL,VT_RI                     ; ANSI reverse index scrolls at top
+        JP VT_STR
+VT_POS:
+        LD HL,VT_CSI
+        CALL VT_STR
+        LD A,(VT_ROW)
+        INC A
+        CALL VT_DEC
+        LD C,';'
+        CALL VT_EMIT
+        LD A,(VT_COL)
+        INC A
+        CALL VT_DEC
+        LD C,'H'
+        JP VT_EMIT
+VT_DEC:
+        LD B,0
+VT_TENS:
+        CP 10
+        JR C,VT_DIGIT
+        SUB 10
+        INC B
+        JR VT_TENS
+VT_DIGIT:
+        PUSH AF
+        LD A,B
+        OR A
+        JR Z,VT_UNITS
+        ADD A,'0'
+        LD C,A
+        CALL VT_EMIT
+VT_UNITS:
+        POP AF
+        ADD A,'0'
+        LD C,A
+        JP VT_EMIT
+VT_CSI: DB 27,'[',0
+VT_CLS: DB 27,'[2J',27,'[H',0
+VT_SJ: DB 27,'[0J',0
+VT_SK: DB 27,'[0K',0
+VT_RI: DB 27,'M',0
+VT_STATE: DB 0
+VT_ROW: DB 0
+VT_COL: DB 0
+        .DEPHASE
+        END
