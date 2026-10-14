@@ -1,0 +1,62 @@
+{
+  "role": "Read-only reference inputs for the BetterCP/M behavioral Z80 reimplementation; not production build inputs or distribution programs",
+  "retrieved": "2026-10-14",
+  "source_archive": {
+    "supplied_name": "cpm2-plm(1).zip",
+    "sha256": "706cc4c90d35d6c1f2b521309b539207b5bc54fea034b01c377a5f50e8bf348f",
+    "bytes": 273825,
+    "member": "cpm2-plm/ED.PLM",
+    "catalog": "https://www.cpm.z80.de/source.html",
+    "archive_note": "Supplied ZIP is a macOS repack with __MACOSX entries. Archive README identifies Caldera PLM.ZIP and records a BDOS-only difference. Original upstream ZIP hash has not been independently verified."
+  },
+  "source": {
+    "artifact": "ED.PLM",
+    "sha256": "8e3d68d21e5e92c11c789f17578133f2e45f675d103b335702632617c67b4a07",
+    "bytes": 50062,
+    "identity": "DRI ED; comments record PRL changes May 1979 and CP/M 2.0 changes August 1979",
+    "normalization": "none; original CR/LF and source bytes retained"
+  },
+  "reference_binary": {
+    "artifact": "ED-CPM22-reference.COM",
+    "sha256": "adeeb92c897bd6a07579f06d163bd6ded549842203a5459c88a93d26c65fe85f",
+    "bytes": 6656,
+    "upstream": "https://github.com/udo-munk/z80pack",
+    "commit": "b7a6fa36a2ee185a73727dc5b56ac1af40679e81",
+    "disk_path": "cpmsim/disks/library/cpm22-1.dsk",
+    "disk_sha256": "86ac7cb1bdd6bac05fe6299b50f94cb26a047022ce00135fbecf7bbc5d3303d2",
+    "filesystem": "ibm-3740",
+    "entry": "0:ED.COM",
+    "identity": "COPYRIGHT (C) 1979, DIGITAL RESEARCH",
+    "role": "Stock CP/M 2.2 behavioral oracle, extracted without rebuilding or patching"
+  },
+  "archive_binary": {
+    "artifact": "ED-source-archive-reference.COM",
+    "member": "cpm2-plm/ED.COM",
+    "bytes": 6563,
+    "sha256": "713ac9fd3a13b2a65d4825c2034faeaa9c2ecff88cc17ce51404c1fa71c66ad3",
+    "role": "Comparison evidence only; not the qualification oracle"
+  },
+  "supplementary_manual": {
+    "supplied_name": "ED.pdf",
+    "title": "ED: A Context Editor for the CP/M Disk System, User's Manual",
+    "edition_evidence": "Cover and copyright page say copyright 1976, 1978; no numbered edition is asserted",
+    "bytes": 1740290,
+    "sha256": "1dcf505565cc84cb40470704c49e560336daa26a59058f94dae9fef541762d68",
+    "role": "Earlier historical background, not evidence that a feature belongs to CP/M 2.2"
+  },
+  "known_discrepancies": [
+    "Archive ED.COM is 6,563 bytes; stock disk ED.COM is 6,656 bytes and has 3,025 differing bytes in the common prefix. Differences are not just trailing padding. Source/binary behavioral equivalence remains to be qualified.",
+    "Supplied HTML manual ZIP has a third-edition September 1983 index, but its ch2.htm is a web challenge page rather than the ED chapter; do not use it as a chapter reference.",
+    "No latest-revision claim is made; the selected CP/M 2.2 source and stock oracle define the implementation baseline."
+  ],
+  "manual_edition": {
+    "title": "Digital Research CP/M Operating System Manual",
+    "edition_evidence": "Copyright page: First Printing, July 1982",
+    "section": "Section 2: The CP/M Editor",
+    "upstream": "https://bitsavers.trailing-edge.com/pdf/digitalResearch/cpm/CPM_Operating_System_Manual_Jul82.pdf",
+    "catalog": "https://bitsavers.computerhistory.org/pdf/digitalResearch/cpm/",
+    "bytes": 9796253,
+    "sha256": "1cb4aec4fe99ae1958c2ef4e46d2910b5b913072ce188003c464d8258f89d44e",
+    "repository_copy": "not vendored; retrieval identity and hash retained; not a build dependency"
+  }
+}

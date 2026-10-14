@@ -2045,6 +2045,178 @@ memory. If an operand is invalid, no partial modification is performed.
 resident set of memory inspection, modification, loading, execution, and saving
 commands.
 
+#### 4.16 STAT — Extended DU File Inspection
+
+STAT accepts extended DU selectors when reporting file statistics:
+
+    STAT B[3,5]:*.COM
+    STAT B[5-3]:*.DAT $S
+    STAT B[-]:*.COM
+    STAT [A0,C[3,5,7-11],5]:*.DAT
+
+A drive's bracketed list selects users on that drive. `[-]` selects users
+0–31; open endpoints and descending ranges are accepted. Compound lists
+combine locations. A user-only term inherits the caller's original drive;
+a drive-only term inherits the original user. Duplicate locations are visited
+once, in drive-major/user-minor order. `[*]` is invalid as a user selector.
+Filename wildcards retain the bounded 8.3 rules.
+
+Each location has a DU heading, and every file result includes its DU. Empty
+locations report `File Not Found`. An unavailable drive is identified and
+inspection continues with the remaining locations. The caller's drive and
+user are restored on completion.
+
+An explicit filename or pattern is required after an extended selector.
+`$S` adds logical file size. Extended selectors currently support inspection
+only: attribute options and drive-wide commands such as `DSK:` and `=R/O`
+are rejected. Conventional single-DU STAT commands retain their existing
+behavior and output.
+
+#### 4.17 ED — Context Editor (planned for 1.0)
+
+ED is the standard CP/M 2.2 context editor, reimplemented for BetterCP/M with
+drive/user addressing. It edits one text file at a time through commands at the
+`*` prompt. It is a line-oriented editor; it does not provide a full-screen
+interface or cursor-key navigation.
+
+Implementation and qualification are pending. The following describes the
+accepted interface; ED is not yet included in generated System Disks.
+
+##### Starting ED
+
+```text
+ED filespec
+ED filespec output-du:
+ED /VER
+```
+
+| Example | Source | Output/work location |
+| --- | --- | --- |
+| `ED NOTES.TXT` | Current drive/user | Source DU |
+| `ED B:NOTES.TXT` | B, current user | Source DU |
+| `ED B7:NOTES.TXT` | B, user 7 | B7 |
+| `ED 7:NOTES.TXT` | Current drive, user 7 | Source DU |
+| `ED B7:NOTES.TXT C3:` | B, user 7 | C3 |
+| `ED B:NOTES.TXT 7:` | B, current user | Caller’s drive, user 7 |
+
+Drive letters accept either case. Users are 0–31. Omitted drive/user parts of
+invocation operands refer to the DU at the time ED was started. Without a second
+operand, the source DU is also the output/work DU. The second operand is a
+location ending in `:`, not a replacement filename.
+
+ED requires one exact 8.3 filename. Wildcards, DU sets and attribute qualifiers
+are invalid: `*.TXT`, `B[-]:NOTES.TXT` and `NOTES.TXT[$RO]` cannot be edited.
+
+##### How editing works
+
+ED reads source text into a working buffer. Commands move the current position,
+show text and change that buffer. The buffer need not hold the entire file.
+Text already written goes into a work file; unread text remains in the source.
+An existing source is not automatically loaded into the buffer when ED starts.
+
+For a new file, enter `I` and press Enter at ED’s prompt. Type the text, pressing
+Enter after each line. Press Ctrl-Z to leave insert mode. Enter `B` to return to
+the beginning of the buffer, then `T` to display the current line. Enter `E` on
+its own to finish and save.
+
+For an existing file, `1A` brings in one source line. `B` returns to the buffer’s
+beginning and `T` displays a line. Load further text with `A` as needed. For a
+large file, work in portions using `A` and `W`; loading the whole file can exceed
+the buffer. `E` finishes the edit, including remaining source text as required.
+
+##### Command reference
+
+Most commands accept a count before their letter. For example, `5L` moves
+forward five lines and `-2L` moves back two. Counts and signs are command-specific:
+zero does not have one universal meaning. `#` is ED’s large-count notation.
+
+| Command | Purpose |
+| --- | --- |
+| `A` | Read source lines into the buffer |
+| `B`, `-B` | Move to the buffer’s beginning or end |
+| `C` | Move by characters |
+| `D` | Delete characters |
+| `K` | Delete lines |
+| `L` | Move by lines |
+| `T` | Display text lines |
+| `P` | Move and display pages |
+| Enter | Move/type using ED’s carriage-return command |
+| `I` | Insert text |
+| `F` | Find a string in the buffer |
+| `N` | Search onward through the file |
+| `S` | Replace a matching string |
+| `J` | Find, insert and remove text between specified strings |
+| `M` | Repeat an ED command sequence |
+| `R` | Insert text from a library file |
+| `X` | Transfer text through ED’s temporary library |
+| `U`, `-U` | Enable or disable uppercase translation |
+| `V`, `-V` | Enable or disable line-number verification |
+| `0V` | Show buffer use/capacity |
+| `W` | Write buffered lines to the work output |
+| `Z` | Delay, principally within macros |
+| `E` | Finish, save and exit |
+| `H` | Save and restart editing from the head |
+| `O` | Abandon changes and resume from the original |
+| `Q` | Quit without committing the edit |
+
+Enter `E`, `H`, `O` and `Q` as standalone commands, without numeric counts or
+other commands on the same line. `H` saves; `O` and `Q` abandon changes. They are
+not interchangeable ways to leave the editor.
+
+String commands retain CP/M 2.2’s syntax. Ctrl-Z separates or terminates strings
+where required; Enter can terminate a command line. Search and substitution use
+literal strings, not regular expressions. Command letter case can affect string
+conversion; do not assume that changing an entire command line to uppercase is
+harmless. Insert-mode editing controls retain their historical ED meanings.
+
+##### Reading library text
+
+`R` reads one library file, inserting its text into the buffer. The historical
+`.LIB` convention remains. A library filename can use a simple DU, for example:
+
+```text
+RB7:HEADER.LIB
+R7:HEADER.LIB
+```
+
+Terminate the filename using ED’s ordinary command/string syntax. A user-only
+location names the caller’s drive and the specified user. Library reads do not
+accept ranges, wildcards or lists. `X` retains ED’s separate temporary-library
+facility; it is not a general copy command.
+
+##### Saving, backups and protection
+
+For a same-DU edit of `B7:NOTES.TXT`, the work file is `B7:NOTES.$$$`. A successful
+`E` replaces the source with the edited result and keeps the former source as
+`B7:NOTES.BAK`. Only ED’s historical backup generation is kept; an existing
+`.BAK` can be removed as part of ED’s historical file workflow. Keep any backup
+you need under another name before editing.
+
+With alternate output, the edited result goes to the specified output/work DU,
+while the old source is backed up in its source DU. An existing final filename
+in an alternate output DU is rejected rather than silently replaced. ED adds no
+overwrite prompt, force switch or numbered-backup facility.
+
+RO and SYS files retain the original ED protection behavior. ED does not clear
+attributes automatically and does not accept attribute selectors or overrides.
+Quitting or interrupting an edit does not commit it; temporary-file leftovers
+follow historical ED behavior. Disk-full, directory-full and command errors use
+ED’s original recovery rules and diagnostics, including `BREAK` messages.
+
+Do not assume ED always restores the DU from which it was invoked. Exit-location
+behavior follows DRI ED and extends to the output user area. Exact exit DU and
+error details will be documented after reference qualification.
+
+##### Version identification
+
+```text
+ED /VER
+BetterCP/M ED 1.0 (Build nnn)
+```
+
+`nnn` is the assigned ED build number. `/VER` must appear alone; it is invalid
+with a filename or output DU, and is not an editing command at the `*` prompt.
+
 ### 5. Batch Processing
 5.1 SUBMIT 5.2 SUB Files 5.3 Parameters and Substitution 5.4 XSUB 5.5 Batch Execution and Termination 5.6 Examples
 
@@ -2103,33 +2275,6 @@ This is installation, not system generation.
 ## Appendixes
 A. Command Summary B. Command-Line Editing Keys C. File Attributes D. Control Characters E. BetterCP/M 1.0 Compatibility Notes F. Error Messages — possibly instead of Chapter 11 depending on size G. Glossary — only BetterCP/M/CP/M terminology actually worth defining
 
-
-#### 4.16 STAT — Extended DU File Inspection
-
-STAT accepts extended DU selectors when reporting file statistics:
-
-    STAT B[3,5]:*.COM
-    STAT B[5-3]:*.DAT $S
-    STAT B[-]:*.COM
-    STAT [A0,C[3,5,7-11],5]:*.DAT
-
-A drive's bracketed list selects users on that drive. `[-]` selects users
-0–31; open endpoints and descending ranges are accepted. Compound lists
-combine locations. A user-only term inherits the caller's original drive;
-a drive-only term inherits the original user. Duplicate locations are visited
-once, in drive-major/user-minor order. `[*]` is invalid as a user selector.
-Filename wildcards retain the bounded 8.3 rules.
-
-Each location has a DU heading, and every file result includes its DU. Empty
-locations report `File Not Found`. An unavailable drive is identified and
-inspection continues with the remaining locations. The caller's drive and
-user are restored on completion.
-
-An explicit filename or pattern is required after an extended selector.
-`$S` adds logical file size. Extended selectors currently support inspection
-only: attribute options and drive-wide commands such as `DSK:` and `=R/O`
-are rejected. Conventional single-DU STAT commands retain their existing
-behavior and output.
 
 ### Utility version identification
 

@@ -31,7 +31,7 @@ All membership or layout changes require discussion with the maintainer.
 - STAT.COM
 - SUBMIT.COM
 - PIP.COM
-- ED.COM: planned DU-aware adaptation of existing ED source for 1.0.
+- ED.COM: planned DRI CP/M 2.2 behavioral reimplementation in Z80/ZSM4, with simple DU addressing and /VER; [engineering specification](../engineering/ED%20Specification.md) and reference baseline recorded.
 - DISK.FDB
 - RCP.CPX: required resident command package.
 - CPX.COM and RSX.COM: extension managers.
