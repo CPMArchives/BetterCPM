@@ -217,7 +217,7 @@ SYSGEN /VER
 prints:
 
 ```text
-BetterCP/M SYSGEN 1.0 (Build 001)
+BetterCP/M SYSGEN 1.0 (Build 002)
 ```
 
 and returns directly to the CCP without disk installation activity. The version

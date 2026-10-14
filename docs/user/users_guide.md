@@ -2502,7 +2502,7 @@ accepted. The complete package is buffered before writing, so package mode
 does not require its source drive to be physically different from the target.
 Destination restrictions still apply.
 
-`SYSGEN /VER` currently prints `BetterCP/M SYSGEN 1.0 (Build 001)` and exits
+`SYSGEN /VER` currently prints `BetterCP/M SYSGEN 1.0 (Build 002)` and exits
 without installation. It must be used alone.
 
 #### 10.3 Validate and confirm installation
