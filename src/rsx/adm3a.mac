@@ -1,6 +1,6 @@
         INCLUDE backend.inc
 ; MM-style ADM-3A development provider. Movement/erase/scroll are implemented;
-; bell, reverse and line operations remain gates. Do not ship as complete.
+; 0Fh and line-operation semantics remain gates. Do not ship as complete.
 RSXBASE         EQU     08000H
         CSEG
         .PHASE RSXBASE
@@ -32,14 +32,9 @@ AM_CURSOR:
         LD A,3
         JP AM_RAW
 AM_CLEAR:
-        XOR A
-        LD (AM_STATE),A
-        LD HL,0F800H
-        LD DE,0F801H
-        LD BC,1919
-        LD (HL),020H
-        LDIR
-        JP AM_HOME                     ; never reset keyboard state
+        CALL AM_RESET
+        CALL AM_HOME
+        JP AM_EOS                      ; share mode-aware erase; no keyboard reset
 AM_RESET:
         XOR A
         LD (AM_STATE),A
@@ -119,6 +114,12 @@ AM_NORMAL:
         JP Z,AM_BEGIN
         CP 26
         JP Z,AM_CLEAR
+        CP 7
+        JP Z,AM_BELL
+        CP 14
+        JP Z,AM_REV_OFF
+        CP 22
+        JP Z,AM_REV_TOGGLE
         CP 8
         JP Z,AM_LEFT
         CP 9
@@ -146,7 +147,9 @@ AM_NORMAL:
         RET
 AM_PRINT:
         LD HL,(M4CURSOR)
-        LD (HL),C
+        LD A,(AM_REVERSE)
+        OR C
+        LD (HL),A
 AM_RIGHT:
         LD HL,(M4CURSOR)
         INC HL
@@ -249,13 +252,44 @@ AM_EOS:
         LD C,L
         EX DE,HL
 AM_FILL:
-        ; Nonzero bounded length; cursor/column remain unchanged.
-        LD (HL),32
+        ; Erasures and scroll fill use the current MM reverse-video mode.
+        LD A,(AM_REVERSE)
+        OR 32
+        LD D,A
+AM_FILL_NEXT:
+        LD (HL),D
         INC HL
         DEC BC
         LD A,B
         OR C
-        JR NZ,AM_FILL
+        JR NZ,AM_FILL_NEXT
+        RET
+AM_REV_OFF:
+        XOR A
+        LD (AM_REVERSE),A
+        RET
+AM_REV_TOGGLE:
+        LD A,(AM_REVERSE)
+        XOR 080H
+        LD (AM_REVERSE),A
+        RET
+AM_BELL:
+        ; Model 4 sound port: bounded 256 cycles, each half held for 100 writes.
+        ; No BDOS, keyboard polling or mutation of display/parser state.
+        LD C,0
+AM_TONE:
+        LD A,1
+        LD B,100
+AM_HIGH:
+        OUT (090H),A
+        DJNZ AM_HIGH
+        XOR A
+        LD B,100
+AM_LOW:
+        OUT (090H),A
+        DJNZ AM_LOW
+        DEC C
+        JR NZ,AM_TONE
         RET
 AM_BEGIN:
         LD A,1
@@ -264,5 +298,6 @@ AM_BEGIN:
 AM_STATE: DB 0
 AM_PENDING_ROW: DB 0
 AM_VISIBLE: DB 1
+AM_REVERSE: DB 0
         .DEPHASE
         END

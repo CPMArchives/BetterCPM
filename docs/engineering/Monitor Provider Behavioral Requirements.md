@@ -202,7 +202,10 @@ The audit establishes `15h/18h` as EOL erase, `17h/19h` as EOS erase, `1Ch` inse
 
 ## 5.1 Reverse Video `0Fh`
 
-The reconstructed source routine reached by `0Fh` **toggles** reverse video even though its descriptive comment says that the control turns reverse video on.
+The initial audit described the reconstructed `0Fh` path as a toggle, conflicting
+with its reverse-ON comment. Source reinspection during implementation found
+that this path clears A before XORing 80h, which instead suggests reverse ON.
+The original-binary comparison remains required before freezing the behavior.
 
 The audit explicitly recommends confirmation against the selected MM binary before promising this behavior. [MM compatibility audit](Bounded%20Monitor%20Memory%20and%20Efficiency%20Review.md).
 
@@ -215,6 +218,13 @@ Therefore:
 ```
 
 No final 1.0 behavioral claim shall be made for `0Fh` until that comparison is complete.
+
+Implementation-stage source reinspection found that the archived reconstructed
+`shiftinhandler` executes `XOR A` before reaching `XOR 80h`, while the 16h
+handler first loads the existing flag. That path suggests 0Fh sets reverse ON,
+rather than toggling. This corrects the earlier source-reading inference but
+does not close the original-binary qualification gate; 0Fh remains UNRESOLVED.
+
 
 ---
 
