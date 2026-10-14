@@ -1,6 +1,6 @@
         INCLUDE backend.inc
-; MM-style ADM-3A provider foundation. Unqualified personality controls remain
-; outside this first stage; do not ship as a completed terminal implementation.
+; MM-style ADM-3A development provider. Movement/erase/scroll are implemented;
+; bell, reverse and line operations remain gates. Do not ship as complete.
 RSXBASE         EQU     08000H
         CSEG
         .PHASE RSXBASE
@@ -17,9 +17,9 @@ AM_ENTRY:
         CP 3
         JR Z,AM_CURSOR
         CP 4
-        JR Z,AM_CLEAR
+        JP Z,AM_CLEAR
         CP 5
-        JR Z,AM_RESET
+        JP Z,AM_RESET
 AM_RAW:
         LD HL,(1)
         LD DE,66                        ; MONRAW = WBOOT+66
@@ -39,11 +39,7 @@ AM_CLEAR:
         LD BC,1919
         LD (HL),020H
         LDIR
-        LD HL,0F800H
-        LD (M4CURSOR),HL
-        XOR A
-        LD (M4COLUMN),A                 ; clear video without resetting keyboard state
-        RET
+        JP AM_HOME                     ; never reset keyboard state
 AM_RESET:
         XOR A
         LD (AM_STATE),A
@@ -117,14 +113,150 @@ AM_ADDRESS:
         RET
 AM_NORMAL:
         LD A,C
+        CP 32
+        JP NC,AM_PRINT
         CP 27
-        JR Z,AM_BEGIN
+        JP Z,AM_BEGIN
         CP 26
         JP Z,AM_CLEAR
-        ; Ordinary output uses the basic renderer during the foundation stage.
-        ; The full MM movement/erase/reverse/line renderer is the next stage.
+        CP 8
+        JP Z,AM_LEFT
+        CP 9
+        JP Z,AM_TAB
+        CP 10
+        JP Z,AM_DOWN
+        CP 11
+        JP Z,AM_UP
+        CP 12
+        JP Z,AM_RIGHT
+        CP 13
+        JP Z,AM_CR
+        CP 21
+        JP Z,AM_EOL
+        CP 24
+        JP Z,AM_EOL
+        CP 23
+        JP Z,AM_EOS
+        CP 25
+        JP Z,AM_EOS
+        CP 30
+        JP Z,AM_HOME
+        ; Unsupported and not-yet-qualified controls are consumed. In particular
+        ; 1Ch must not reach the basic renderer, where it means clear screen.
+        RET
+AM_PRINT:
+        LD HL,(M4CURSOR)
+        LD (HL),C
+AM_RIGHT:
+        LD HL,(M4CURSOR)
+        INC HL
+        LD A,(M4COLUMN)
+        INC A
+        CP 80
+        JR C,AM_SETCOL
         XOR A
-        JP AM_RAW
+        LD (M4COLUMN),A
+        JP AM_SCROLL
+AM_SETCOL:
+        LD (M4COLUMN),A
+AM_STORE:
+        LD (M4CURSOR),HL
+        RET
+AM_LEFT:
+        LD HL,(M4CURSOR)
+        LD DE,0F800H
+        OR A
+        SBC HL,DE
+        RET Z
+        ADD HL,DE
+        DEC HL
+        LD A,(M4COLUMN)
+        OR A
+        JR NZ,AM_LEFT_COLUMN
+        LD A,80
+AM_LEFT_COLUMN:
+        DEC A
+        JR AM_SETCOL
+AM_TAB:
+        ; Cursor movement only; tab does not overwrite intervening cells.
+        CALL AM_RIGHT
+        LD A,(M4COLUMN)
+        AND 7
+        JR NZ,AM_TAB
+        RET
+AM_DOWN:
+        LD HL,(M4CURSOR)
+        LD DE,80
+        ADD HL,DE
+AM_SCROLL:
+        LD DE,0FF80H
+        OR A
+        SBC HL,DE
+        JR C,AM_WITHIN_SCREEN
+        ADD HL,DE
+        LD DE,80
+        OR A
+        SBC HL,DE
+        LD (M4CURSOR),HL
+        ; Move rows 1..23 up and clear the newly exposed bottom row.
+        LD HL,0F850H
+        LD DE,0F800H
+        LD BC,1840
+        LDIR
+        LD HL,0FF30H
+        LD BC,80
+        JP AM_FILL
+AM_WITHIN_SCREEN:
+        ADD HL,DE
+        JR AM_STORE
+AM_UP:
+        LD HL,(M4CURSOR)
+        LD DE,0F850H
+        OR A
+        SBC HL,DE
+        RET C
+        LD DE,0F800H
+        ADD HL,DE
+        JR AM_STORE
+AM_CR:
+        LD HL,(M4CURSOR)
+        LD A,(M4COLUMN)
+        LD E,A
+        LD D,0
+        OR A
+        SBC HL,DE
+        XOR A
+        JR AM_SETCOL
+AM_HOME:
+        LD HL,0F800H
+        XOR A
+        JP AM_SETCOL
+AM_EOL:
+        LD A,(M4COLUMN)
+        LD B,A
+        LD A,80
+        SUB B
+        LD C,A
+        LD B,0
+        LD HL,(M4CURSOR)
+        JR AM_FILL
+AM_EOS:
+        LD HL,0FF80H
+        LD DE,(M4CURSOR)
+        OR A
+        SBC HL,DE
+        LD B,H
+        LD C,L
+        EX DE,HL
+AM_FILL:
+        ; Nonzero bounded length; cursor/column remain unchanged.
+        LD (HL),32
+        INC HL
+        DEC BC
+        LD A,B
+        OR C
+        JR NZ,AM_FILL
+        RET
 AM_BEGIN:
         LD A,1
         LD (AM_STATE),A
