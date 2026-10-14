@@ -5,7 +5,8 @@
 
 This specification consolidates the current `DUP.COM` implementation, disk-format definition contract, Montezuma Micro DUP analysis, backend capability qualification, and the committed BetterCP/M 1.0 command-line interface.
 
-Except where explicitly marked as **committed 1.0 work**, the specification documents implemented or qualified behavior rather than redesigning DUP.
+This specification documents implemented behavior. Qualification scope is
+stated separately for each backend and command-line entry.
 
 The command-line FORMAT, COPY, and CHECK entry points defined here are committed BetterCP/M 1.0 functionality. They invoke the same operation paths, validations, destructive confirmations, safeguards, and cleanup as the corresponding interactive operations.
 
@@ -313,7 +314,7 @@ DUP /VER
 prints:
 
 ```text
-BetterCP/M DUP 1.0 (Build 001)
+BetterCP/M DUP 1.0 (Build 002)
 ```
 
 and returns directly to the CCP.
@@ -1487,7 +1488,9 @@ Backend-capability closure is complete for those cases.
 
 ## 74. Command-line qualification required for 1.0
 
-Because direct FORMAT/COPY/CHECK invocation is committed 1.0 work rather than behavior present in the current interactive implementation, release qualification must additionally exercise the command-line entry points.
+Release qualification must exercise direct FORMAT/COPY/CHECK entry points
+as well as interactive operation. The implementation’s focused evidence is
+recorded in the command-line qualification report.
 
 At minimum:
 
@@ -1635,7 +1638,7 @@ DUP /VER
 prints:
 
 ```text
-BetterCP/M DUP 1.0 (Build 001)
+BetterCP/M DUP 1.0 (Build 002)
 ```
 
 The retained interactive title is:
@@ -1648,34 +1651,17 @@ The two identities are intentionally distinct.
 
 ---
 
-## 82. Implementation-status distinction
+## 82. Implementation status
 
-For clarity, the 1.0 specification contains both established behavior and committed remaining work.
+Interactive FORMAT/COPY/CHECK and direct `/FORMAT`, `/COPY`, and `/CHECK` are
+implemented. Both interfaces share the same operation engines, validation,
+confirmations and binding cleanup. Direct forms bypass selection prompts and
+ordinary completion pauses, then return to the CCP. Restoration failure still
+requires the existing retry interaction.
 
-**Already implemented/qualified:**
-
-- interactive FORMAT/COPY/CHECK;
-- physical-media safeguards;
-- format and copy verification;
-- temporary-binding restoration;
-- bootstrap cylinder-binding normalization;
-- backend capability behavior;
-- `/VER`;
-- Model 4 and z80pack qualification described above.
-
-**Committed BetterCP/M 1.0 implementation work:**
-
-```text
-DUP /FORMAT drive:
-DUP /COPY source: destination:
-DUP /CHECK drive:
-```
-
-These direct forms must dispatch into the existing operation paths and preserve all existing safeguards.
-
-
-Command-line FORMAT and COPY still require interactive confirmation and are
-not unattended operations. Direct CHECK requires no confirmation.
+See [command-line qualification](DUP%20Command-Line%20Qualification.md) for
+parser, dispatcher, media and interruption evidence. Final release
+qualification remains separate.
 
 ## Supporting references
 

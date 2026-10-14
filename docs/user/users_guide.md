@@ -2332,7 +2332,7 @@ DUP
 ```
 
 Use BREAK (`Ctrl-C`) to exit the main menu. At drive-selection prompts,
-`Ctrl-C` returns to the menu. Direct command-line operations are committed for 1.0 but not yet implemented:
+`Ctrl-C` returns to the menu. Direct command-line operations are also available:
 
 ```text
 DUP /FORMAT B:
@@ -2340,14 +2340,14 @@ DUP /COPY A: B:
 DUP /CHECK C:
 ```
 
-These forms will use the same operation engines and drive restrictions. FORMAT
-and COPY will still require `Y/N` confirmation; no unattended bypass is planned.
-CHECK will need no confirmation. Direct operations will return to the CCP after
+These forms use the same operation engines and drive restrictions. FORMAT
+and COPY still require `Y/N` confirmation; there is no unattended bypass.
+CHECK needs no confirmation. Direct operations return to the CCP after
 completion, refusal, interruption, or failure, with required cleanup completed.
-Until implemented, use the interactive menu.
+If binding restoration fails, its retry prompt remains interactive.
 
 `DUP /VER` displays the utility identity and exits. Its current output is
-`BetterCP/M DUP 1.0 (Build 001)`. The older version number in the interactive
+`BetterCP/M DUP 1.0 (Build 002)`. The older version number in the interactive
 menu title is separate from this release/build identity.
 
 DUP requires about 51K of available transient memory. If loaded extensions

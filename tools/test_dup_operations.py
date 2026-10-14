@@ -168,6 +168,15 @@ def main():
       ('\r',1000),('\x03',2500),('DSET CHECK\r',2500)]
     if mode in ('copy','bad','mixed','same'):
       steps += [('DUP\r',5000),('C',500),('B',10000),('\r',1000),('\x03',2500)]
+    if '--direct' in sys.argv:
+      # Keep observation timing/indices identical while bypassing menu prompts.
+      steps[1]=('DUP /COPY B: C:\r',5000)
+      steps[8]=('DUP /COPY B: C:\r',5000)
+      for i in [2,3,4,6,9,10,11,13,14]:
+        steps[i]=('',steps[i][1])
+      if len(steps)>16:
+        steps[16]=('DUP /CHECK B:\r',5000)
+        for i in [17,18,19,20]:steps[i]=('',steps[i][1])
     args=[str(DEFAULT_EMULATOR),'-m4','-batch','-turbo']
     for i,l in enumerate('abc'):args += [f'-d{i}',str(w/f'{l}.dmk')]
     args+=['-id','3000']

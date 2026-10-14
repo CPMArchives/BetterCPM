@@ -23,6 +23,7 @@ def main() -> None:
                         default=Path.home() / "projects/git/z80pack/cpmsim/cpmsim")
     parser.add_argument("--unsupported", action="store_true",
                         help="exercise mixed-sector pre-write rejection")
+    parser.add_argument("--direct", action="store_true", help="qualify /FORMAT entry")
     args = parser.parse_args()
     image = args.image_dir.resolve()
     simulator = args.simulator.expanduser().resolve()
@@ -89,12 +90,15 @@ def main() -> None:
                 expect("Choose the letter of the drive to change:")
                 os.write(terminal, b"\003")
                 expect("A0>_ ")
-            os.write(terminal, b"DUP\r")
-            expect("Your choice:")
-            os.write(terminal, b"A")
-            expect("Choose logical drive")
-            expect("Your choice:")
-            os.write(terminal, b"B")
+            if args.direct:
+                os.write(terminal, b"DUP /FORMAT B:\r")
+            else:
+                os.write(terminal, b"DUP\r")
+                expect("Your choice:")
+                os.write(terminal, b"A")
+                expect("Choose logical drive")
+                expect("Your choice:")
+                os.write(terminal, b"B")
             expect("Format this disk? [Y/N]")
             os.write(terminal, b"Y")
             if args.unsupported:
@@ -102,9 +106,10 @@ def main() -> None:
             else:
                 expect("Tracks written and verified: 00080", 120)
                 expect("Format complete.")
-            os.write(terminal, b"\r")
-            expect("Your choice:")
-            os.write(terminal, b"\003")
+            if not args.direct:
+                os.write(terminal, b"\r")
+                expect("Your choice:")
+                os.write(terminal, b"\003")
             expect("A0>_ ")
             os.write(terminal, b"BYE\r")
             expect("System halted")
