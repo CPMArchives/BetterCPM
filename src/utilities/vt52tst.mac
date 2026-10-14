@@ -3,6 +3,7 @@ BDOS EQU 5
         CSEG
         .PHASE 0100H
 START:
+        CALL UV_CHECK
         LD DE,LOOKUP
         LD C,182
         CALL BDOS
@@ -106,7 +107,8 @@ PAGE2:
         DB 27,'Y',38,40,27,'J'
         DB 27,'Y',40,32,'LF scrolls at bottom; ESC B does not. Binary tests check both.',13,10,0
 WAIT: DB 13,10,'Press a key to continue.',13,10,0
-DONE: DB 'VT52 foundation exercise complete. Full qualification pending.',13,10,0
-NONE: DB 'No MCON provider loaded. Load the development VT52.RSX.',13,10,0
+DONE: DB 'VT52 monitor exercise complete.',13,10,0
+NONE: DB 'No MCON provider loaded. Load VT52.RSX.',13,10,0
+; @utility-version VT52TST@
         .DEPHASE
         END

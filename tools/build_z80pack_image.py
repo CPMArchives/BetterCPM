@@ -175,7 +175,7 @@ def main():
  for name in ('RCP.CPX','HELLO.CPX'):files.append((name,(ROOT/'build/cpx'/name).read_bytes()))
  # Model 4-only monitor tests do not belong in the cpmsim development disk.
  for f in sorted((ROOT/'build/utilities').glob('*.COM')):
-  if f.name!='ADMTST.COM':files.append((f.name,f.read_bytes()))
+  if f.name not in ('ADMTST.COM','VT52TST.COM'):files.append((f.name,f.read_bytes()))
  for name,data in cpm_tools_files(ROOT):files.append((name,data))
  for name in ('HELLO.RSX','ECHO.RSX','BATCHIO.RSX','FDF.RSX','P2DOS.RSX','ZPRTC.RSX','STATEFUL.RSX'):files.append((name,(ROOT/'build/rsx'/name).read_bytes()))
  files.append(('R3PACK.RSX',(ROOT/'build/system/R3PACK.RSX').read_bytes()))

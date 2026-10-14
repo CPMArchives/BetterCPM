@@ -272,6 +272,26 @@
       ],
       "user": 0,
       "role": "ADM-3A monitor test utility"
+    },
+    {
+      "name": "VT52.RSX",
+      "artifact": "build/rsx/VT52.RSX",
+      "status": "implemented",
+      "targets": [
+        "z80pack"
+      ],
+      "user": 0,
+      "role": "VT52-to-ANSI host monitor"
+    },
+    {
+      "name": "VT52TST.COM",
+      "artifact": "build/utilities/VT52TST.COM",
+      "status": "implemented",
+      "targets": [
+        "z80pack"
+      ],
+      "user": 0,
+      "role": "VT52 monitor test utility"
     }
   ],
   "cold_start_command": "SUBMIT STARTUP"

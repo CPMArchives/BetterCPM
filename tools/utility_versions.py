@@ -9,7 +9,7 @@ def identities():
     result = {}
     for row in rows:
         name, version, build = row['utility'], row['version'], int(row['build'])
-        if name in result or not re.fullmatch(r'[A-Z]+', name) or not re.fullmatch(r'\d+\.\d+', version) or build < 1:
+        if name in result or not re.fullmatch(r'[A-Z][A-Z0-9]+', name) or not re.fullmatch(r'\d+\.\d+', version) or build < 1:
             raise ValueError('invalid utility identity: ' + str(row))
         result[name] = (version, build)
     return result
@@ -24,7 +24,7 @@ def strings(name, resident=False, label='UV_TEXT'):
 
 def expand_versions(text):
     query = (ROOT / 'src/utilities/common/version.inc').read_text()
-    match = re.search(r'; @utility-version ([A-Z]+)@', text)
+    match = re.search(r'; @utility-version ([A-Z][A-Z0-9]*)@', text)
     if match:
         name = match[1]
         text = text.replace(match[0], strings(name) + query.replace('; @version-banner@', '        LD DE,UV_TEXT'))

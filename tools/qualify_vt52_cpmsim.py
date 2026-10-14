@@ -42,16 +42,21 @@ def main():
     for name,path in [('VT52.RSX','build/vt52-development/VT52.RSX'),
                       ('VT52TST.COM','build/vt52-development/VT52TST.COM'),
                       ('HELLO.RSX','build/rsx/HELLO.RSX')]:
+        existing=subprocess.check_output(['cpmls','-T','raw','-f','bettercpm-default',str(image)],cwd=work,text=True).upper().split()
+        if name in existing:
+            subprocess.run(['cpmrm','-T','raw','-f','bettercpm-default',str(image),'0:'+name],cwd=work,check=True)
         subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(image),str(ROOT/path),'0:'+name],cwd=work,check=True)
     prompt=b'A0>_ '
     trace=session(simulator,disks,[
+        (b'VT52TST /VER\r',b'BetterCP/M VT52TST 1.0 (Build 001)',10),
+        (b'',prompt,10),
         (b'RSX LOAD HELLO\r',prompt,30),
         (b'RSX LOAD VT52\r',prompt,30),
         (b'RSX UNLOAD HELLO\r',prompt,30),
         (b'VT52TST\r',b'Press a key to continue.',30),
         (b' ',b'Press a key to continue.',10),
         (b' ',b'Press a key to continue.',10),
-        (b' ',b'VT52 foundation exercise complete.',10),
+        (b' ',b'VT52 monitor exercise complete.',10),
         (b'',prompt,10),
         (b'RSX UNLOAD VT52\r',prompt,30),
         (b'RSX LIST\r',b'TPA available: 53K',10),

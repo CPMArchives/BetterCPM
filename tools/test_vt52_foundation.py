@@ -154,7 +154,7 @@ def main():
             cpu.run(256,limit=100000)
             if available:
                 assert len(pauses)==3,(base,pauses,bytes(messages),cpu.mem[syms['VQ_COUNT']+base-0x8000])
-                assert b'VT52 foundation exercise complete.' in messages
+                assert b'VT52 monitor exercise complete.' in messages
                 assert b'\x1b[6;11H' in bytes(output)
                 assert b'\x1b[11;80H' in bytes(output)
                 assert b'\x1b[0K' in bytes(output) and b'\x1b[0J' in bytes(output)
