@@ -2791,3 +2791,24 @@ discards its first extracted character, then ends without appending reader
 data. An empty disk file triggers the same behavior. Stopping a disk source at
 logical Ctrl-Z does not. Another disk source resets the state; H/I reader
 transfers use their own HEX termination and are unaffected.
+
+
+### Model 4 ADM-3A monitor
+
+The Model 4 system disk supplies ADM3A.RSX and loads it from STARTUP.SUB after
+the sign-on banner. It supports the MM-style ADM-3A screen codes used by
+historical Model 4 CP/M software. Programs still need to be configured for that
+terminal; unrelated machine-specific hardware access is not made portable.
+
+With this monitor and its manager loaded, TPA is 51K. To recover the unloaded
+53K environment, run `RSX UNLOAD ADM3A`. To restore the monitor, run
+`RSX LOAD ADM3A`. Warm boot preserves the loaded monitor; the cold-boot script
+runs only at cold boot. Editing STARTUP.SUB lets you omit automatic loading.
+
+`ADMTST` displays control-test pages and asks you to type uppercase A, colon,
+opening bracket and closing bracket. Check the displayed instructions and
+listen for the bell. `ADMTST /VER` prints its version without requiring a loaded
+monitor. The test utility requires ADM3A rather than another MCON personality.
+
+ADM3A is Model 4-specific. Do not load it under cpmsim; VT52 and ANSI/VT100
+providers for that backend are separate implementations.

@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Build the unshipped Model 4 ADM-3A provider foundation."""
+"""Build the Model 4 ADM-3A provider and its standalone test utility."""
 import argparse
 import re
 from pathlib import Path
 from build_ccp import assemble
 from build_cpx_module import relocation_offsets
 from build_rsx_module import make_module
+from utility_versions import expand_versions
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT/'build/monitor-development'
@@ -28,13 +29,17 @@ def main():
     relocs=relocation_offsets(code,alternate,0x101)
     table=(OUT/'adm3a.lst').read_text(errors='replace')
     entry=int(re.search(r'^([0-9a-f]{4})\s+.*\bAM_ENTRY:',table,re.M)[1],16)-0x8000
-    carrier=make_module(name='ADM3A',version=(0,1),services=[],linked_base=0x8000,
+    carrier=make_module(name='ADM3A',version=(1,0),services=[],linked_base=0x8000,
                         code=code,relocations=relocs,reconstruction_class='STATEFUL',
                         callable_services=[(b'MCON',1,0,entry,1)])
     (OUT/'ADM3A.RSX').write_bytes(carrier)
-    test=(ROOT/'src/utilities/admtst.mac').read_text().replace('        CSEG\n        .PHASE ', '        ASEG\n        ORG ').replace('        .DEPHASE\n','')
+    test=expand_versions((ROOT/'src/utilities/admtst.mac').read_text()).replace('        CSEG\n        .PHASE ', '        ASEG\n        ORG ').replace('        .DEPHASE\n','')
     assemble(args.assembler,test,OUT/'ADMTST.COM',OUT/'admtst.lst',0x100)
-    print(f'ADM3A development foundation: {len(code)} payload bytes; {len(relocs)} relocations; not distributed')
+    for folder,name,data in [('rsx','ADM3A.RSX',carrier),('utilities','ADMTST.COM',(OUT/'ADMTST.COM').read_bytes())]:
+        destination=ROOT/'build'/folder
+        destination.mkdir(parents=True,exist_ok=True)
+        (destination/name).write_bytes(data)
+    print(f'ADM3A provider: {len(code)} payload bytes; {len(relocs)} relocations; Model 4 backend')
 
 
 if __name__=='__main__':main()

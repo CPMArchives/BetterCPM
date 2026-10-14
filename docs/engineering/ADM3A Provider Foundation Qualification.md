@@ -3,11 +3,12 @@
 ## Status
 
 This records the development stages of the Model 4 MM-style ADM-3A provider,
-not a released terminal personality. It is deliberately excluded from the
-system disk, ordinary RSX build output and cold-boot startup.
+now qualified for the native Model 4 target. Its release artifacts and test
+utility are integrated into the Model 4 system-disk manifest and cold startup.
 
-`tools/build_adm3a.py` builds `ADM3A.RSX` and `ADMTST.COM` under
-`build/monitor-development/`, using the current Model 4 BIOS listing for the
+`tools/build_adm3a.py` builds release `ADM3A.RSX` under `build/rsx` and
+`ADMTST.COM` under `build/utilities`, keeping development copies/listings under
+`build/monitor-development`, using the current Model 4 BIOS listing for the
 backend cursor and column addresses. Rebuild the provider whenever that BIOS
 changes. This is a backend-specific dependency, not a new portable BIOS ABI.
 
@@ -91,16 +92,13 @@ coordinates may contain 24h, so BDOS's dollar-terminated output cannot safely
 send them. Automated utility checks cover marker placement, both visual pages,
 line results, bell writes, successful keyboard input and the mismatch path.
 
-## Remaining release gates
+## Qualification scope
 
-Qualify keyboard/cursor presentation and run
-native and an appropriate ROM-backed Model 4 target, if available, with representative
-ADM-3A software.
-The selected binary now settles 0Fh and insert/delete-line behavior, and the
-actual carrier has passed controlled production lifecycle execution. Those
-checks do not substitute for actual-media and application qualification. Add
-the provider and test utility to distribution only after remaining gates pass.
-
+Native visual, keyboard, bell and original-application opening-screen checks
+now pass as recorded in the follow-up below. The carrier and test utility are
+integrated into the Model 4 distribution. These checks do not certify physical
+hardware, every historical keyboard configuration, all functions of the MM
+application, or a ROM-backed Model 4 target. The cpmsim ROM backend is distinct.
 
 ## Native trs80gp execution
 
@@ -127,3 +125,14 @@ The existing protected ROM qualification target is cpmsim. ADM3A.RSX advertises
 Model 4 backend compatibility only; loading it into that ROM target cannot
 qualify Model 4 rendering. A ROM-backed Model 4 rendering claim requires an
 appropriate target rather than relabeling the cpmsim campaign.
+
+
+## Native visual and application follow-up
+
+The subsequent native campaigns capture intermediate pages, check raw TAB
+placement and reverse-video bytes, record the provider bell, exercise the
+original MM CONFIG opening screen, and confirm 53K TPA after unload. See
+[ADM-3A native qualification](ADM3A%20Native%20Qualification.md) for reproducible
+runs and limits. ADMTST now uses BDOS 6 raw output for its control streams;
+ordinary BDOS character output would expand TAB before reaching the provider.
+Distribution integration remains a separate step.

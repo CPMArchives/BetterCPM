@@ -17,7 +17,16 @@
       "artifact": "src/distribution/STARTUP.SUB",
       "status": "implemented",
       "targets": [
-        "z80pack",
+        "z80pack"
+      ],
+      "user": 0,
+      "role": "editable cold-boot startup script"
+    },
+    {
+      "name": "STARTUP.SUB",
+      "artifact": "src/distribution/trs80gp/STARTUP.SUB",
+      "status": "implemented",
+      "targets": [
         "trs80gp"
       ],
       "user": 0,
@@ -243,6 +252,26 @@
         "z80pack"
       ],
       "user": 0
+    },
+    {
+      "name": "ADM3A.RSX",
+      "artifact": "build/rsx/ADM3A.RSX",
+      "status": "implemented",
+      "targets": [
+        "trs80gp"
+      ],
+      "user": 0,
+      "role": "Model 4 MM-style ADM-3A monitor"
+    },
+    {
+      "name": "ADMTST.COM",
+      "artifact": "build/utilities/ADMTST.COM",
+      "status": "implemented",
+      "targets": [
+        "trs80gp"
+      ],
+      "user": 0,
+      "role": "ADM-3A monitor test utility"
     }
   ],
   "cold_start_command": "SUBMIT STARTUP"

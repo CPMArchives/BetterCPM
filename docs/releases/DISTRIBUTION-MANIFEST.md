@@ -17,7 +17,7 @@ All membership or layout changes require discussion with the maintainer.
 ## System Disk
 
 - README.TXT: introductory ASCII text in user 0, from `src/distribution/README.TXT`.
-- STARTUP.SUB: editable user-0 startup script; initially runs `:VER /BANNER`.
+- STARTUP.SUB: editable user-0 startup script; runs `:VER /BANNER`, then loads ADM3A on Model 4.
 
 - DIR.COM: includes the `/WHEREIS` file-location mode.
 - ERA.COM
@@ -39,6 +39,8 @@ All membership or layout changes require discussion with the maintainer.
 - R3PACK.RSX: required RSX-manager runtime container.
 - BYE.COM: cpmsim-only simulator exit command.
 - ZPRTC.RSX: cpmsim clock provider only.
+- ADM3A.RSX: MM-style ADM-3A monitor provider for Model 4 only.
+- ADMTST.COM: ADM-3A visual, cursor, bell and keyboard test utility, Model 4 only.
 - FREHDCLK.RSX: Model 4/FreHD clock provider only; requires FreHD hardware/emulation.
 
 ## Utilities Disk
@@ -103,9 +105,17 @@ membership. Both representations must be updated together for approved changes.
 ## Default cold-start command
 
 Both distribution images save `SUBMIT STARTUP` in their existing BCST startup
-record. `A0:STARTUP.SUB` initially contains `:VER /BANNER`, supplying the cold-boot sign-on
-without permanent BIOS code. Warm boot does not rerun the cold-start command.
+record. `A0:STARTUP.SUB` supplies the cold-boot sign-on through `:VER /BANNER`
+without permanent BIOS code. The Model 4 script then runs `RSX LOAD ADM3A`;
+the cpmsim script currently contains only the banner command. Warm boot does not rerun the cold-start command.
 Users may edit the script or change/disable the saved command through CONFIG.
 A missing script reports the ordinary SUBMIT error and returns to the prompt.
 No ECHO command is supplied; ECHO.RSX is a diagnostic extension, not a shell
 command or distribution component.
+
+
+The Model 4 monitor build uses `tools/build_adm3a.py`, called by the complete
+system build. Release artifacts are `build/rsx/ADM3A.RSX` and
+`build/utilities/ADMTST.COM`; development listings/copies remain under
+`build/monitor-development`. These are explicit Model 4 manifest entries and
+are not placed on the cpmsim disk. Its VT52/ANSI providers remain separate work.

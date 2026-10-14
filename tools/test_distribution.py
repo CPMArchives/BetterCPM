@@ -38,6 +38,18 @@ class DistributionGates(unittest.TestCase):
             self.assertEqual(len(selected), 2)
             self.assertEqual(omitted, [])
 
+    def test_platform_monitor_startup(self):
+        root=Path(__file__).resolve().parents[1]
+        manifest=json.loads((root/'metadata/distribution.json').read_text())
+        for target,expected in [('trs80gp',True),('z80pack',False)]:
+            entries=[e for e in manifest['system_disk'] if target in e['targets']]
+            scripts=[e for e in entries if e['name']=='STARTUP.SUB']
+            self.assertEqual(len(scripts),1)
+            data=(root/scripts[0]['artifact']).read_bytes()
+            self.assertEqual(b'RSX LOAD ADM3A' in data,expected)
+            for name in ['ADM3A.RSX','ADMTST.COM']:
+                self.assertEqual(any(e['name']==name for e in entries),expected)
+
     def test_capacity_accounts_for_directory_and_extents(self):
         geometry={'block':1024,'blocks':5,'directory_blocks':2,'entries':1}
         with self.assertRaises(ValueError):
