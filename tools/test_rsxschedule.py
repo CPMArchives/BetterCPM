@@ -25,7 +25,7 @@ def fixture(cpu: Z80, base: int, marker: int) -> bytes:
 
 
 def run(old_bases: tuple[int, int], new_bases: tuple[int, int]) -> None:
-    cpu = Z80(b"")
+    cpu = Z80((ROOT / "build/bios/bios.bin").read_bytes())
     mover = (ROOT / "build/system/rsxmover.bin").read_bytes()
     scheduler = (ROOT / "build/system/rsxschedule.bin").read_bytes()
     cpu.mem[MOVER:MOVER + len(mover)] = mover
@@ -57,7 +57,7 @@ def run(old_bases: tuple[int, int], new_bases: tuple[int, int]) -> None:
 
 
 def rejected_mixed_direction() -> None:
-    cpu = Z80(b"")
+    cpu = Z80((ROOT / "build/bios/bios.bin").read_bytes())
     mover = (ROOT / "build/system/rsxmover.bin").read_bytes()
     scheduler = (ROOT / "build/system/rsxschedule.bin").read_bytes()
     cpu.mem[MOVER:MOVER + len(mover)] = mover

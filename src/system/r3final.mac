@@ -81,7 +81,7 @@ RF_HAVECOUNT:                           ; validate the prospective profile count
   ; descriptor are durable until commit has completed.
         LD      HL,(RF_CURSOR)
         LD      (RF_CREQ),HL
-        LD      DE,35
+        LD      DE,37
         OR      A
         ADD     HL,DE
         JP      C,RF_BAD
@@ -193,6 +193,11 @@ RF_TOP:                                 ; store the empty-profile boundary
         CALL    RF_PRIMARY
         POP     HL
         CALL    RF_PUTDE
+  ; Selection preparation is introduced in the next stage. Until then every
+  ; production profile publishes the basic target, never an unvalidated MCON.
+  ; MONRAW is an immutable JP MC_RAW, so reading its operand has no side effects.
+        LD      DE,(LY_BIOS+70)
+        CALL    RF_PUTDE               ; extended request +35 monitor target
         LD      HL,(RF_PUB)
         LD      DE,LY_SYS+084H
         CALL    RF_PUTDE

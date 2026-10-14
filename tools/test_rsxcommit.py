@@ -34,7 +34,7 @@ PAGEZERO = 0x6608
 
 
 def setup(bad_snapshot_size: bool = False, overlap_snapshot: bool = False) -> tuple[Z80, bytes]:
-    cpu = Z80(b"")
+    cpu = Z80((ROOT / "build/bios/bios.bin").read_bytes())
     for address, name in ((MOVER, "rsxmover"), (SCHEDULER, "rsxschedule"),
                           (COMMIT, "rsxcommit")):
         code = (ROOT / f"build/system/{name}.bin").read_bytes()
@@ -107,7 +107,7 @@ def main() -> None:
         assert cpu.word(HEAD) == OLD_STATEFUL and cpu.word(GEN) == 7
 
     # Removing the final provider publishes the empty profile and discards it.
-    cpu = Z80(b"")
+    cpu = Z80((ROOT / "build/bios/bios.bin").read_bytes())
     for address, name in ((MOVER, "rsxmover"), (SCHEDULER, "rsxschedule"),
                           (COMMIT, "rsxcommit")):
         code = (ROOT / f"build/system/{name}.bin").read_bytes()

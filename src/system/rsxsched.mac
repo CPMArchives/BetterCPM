@@ -1,3 +1,4 @@
+        INCLUDE layout.inc
 ; ********************************************************************************
 ; *                    BetterCP/M RSX Move Scheduler                             *
 ; *                                                                              *
@@ -184,7 +185,8 @@ RS_VNEXT:                               ; advance validation scan
 ; Execution Setup
 ; -------------------------------------------------------------------------------
 
-RS_PREPARE:                             ; prepare movement execution
+RS_PREPARE:                             ; all validation passed: detach before movement
+        CALL    LY_BIOS+72             ; MONBASE, including an empty profile
         XOR     A
         LD      (RS_MOVES),A
         LD      A,(RS_COUNT)
@@ -307,7 +309,7 @@ RS_NEXT:                                ; advance scheduled move
         LD      A,(RS_COUNT)
         CP      B
         JP      NZ,RS_EXEC
-        JP      RS_DONE
+        JR      RS_DONE
 
 ; -------------------------------------------------------------------------------
 ; Reverse Schedule

@@ -172,7 +172,7 @@ def invoke(cpu: Z80, bootstrap: bytes, operation: int, name: bytes,
 
 def main() -> None:
     sources = (SOURCE_BASE, SOURCE_BASE+15360, SOURCE_BASE+16384)
-    cpu = Z80(b"")
+    cpu = Z80((ROOT / "build/bios/bios.bin").read_bytes())
     for (_name, relative), address in zip(FILES, sources):
         data = (ROOT / relative).read_bytes()
         cpu.mem[address:address + 1024] = data.ljust(1024, b"\0")
