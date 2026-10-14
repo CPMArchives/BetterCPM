@@ -13,7 +13,7 @@ changes. This is a backend-specific dependency, not a new portable BIOS ABI.
 
 The carrier uses STATEFUL reconstruction, one MCON 1.0 descriptor, Model 4
 compatibility bit 0001h, and an ordinary pass-through BDOS entry. The current
-payload is 496 bytes, with 47 static relocation slots and a 512-byte allocation
+payload is 583 bytes, with 55 static relocation slots and a 768-byte allocation
 including its runtime descriptor. Loading it also incurs the existing RSX
 manager allocation if that manager is not already present.
 
@@ -40,17 +40,18 @@ The third stage implements 0Eh reverse OFF, 16h reverse toggle and the Model 4
 bell. Reverse mode sets video-memory bit 7 on printable output and blank cells
 created by EOL/EOS erase, clear and scrolling. Parser reset and clear preserve
 this persistent mode. Clear/home shares the mode-aware EOS erase routine,
-keeping the allocation at 512 bytes including the descriptor. Bell writes
+avoiding a separate mode-aware clear implementation. Bell writes
 256 bounded high/low cycles to port 90h, with
 100 writes per half-cycle, without changing screen, cursor or terminal modes.
 Automated pulse checks establish the output pattern, not audible emulator or
 hardware qualification.
 
-Control 0Fh and insert/delete line remain qualification gates.
-Those bytes are consumed in this development stage, not passed to the basic
-renderer; that prevents 1Ch from accidentally clearing the screen. Consuming
-required controls is temporary containment, not implementation of the MM
-contract. No application compatibility claim is made yet.
+The fourth stage implements 0Fh reverse ON and whole-row insert/delete.
+These now match the selected original MM 2.32 binary, including bottom-row
+clearing, unchanged cursor and reverse-mode blank fills. Unassigned controls
+are consumed rather than passed to the basic renderer. See
+[original MM console qualification](Original%20MM%202.32%20Console%20Qualification.md).
+Application/emulator qualification remains necessary before distribution.
 
 ## Automated and manual checks
 
@@ -79,10 +80,9 @@ for this check.
 
 ## Remaining release gates
 
-Implement the full MM renderer and input contract; qualify actual installation,
-retained-state relocation and unload; run the dedicated utility on native and
-ROM-backed Model 4 builds. Resolve control 0Fh reverse-video behavior and
-insert/delete-line edge semantics against an original MM binary before freezing
-those behaviors. The reconstructed reference source alone does not settle
-those two historical questions. Add completed provider builds and test utilities
-to the distribution only after these gates pass.
+Expand the dedicated test utility, qualify keyboard/cursor presentation and run
+native and ROM-backed Model 4 builds with representative ADM-3A software.
+The selected binary now settles 0Fh and insert/delete-line behavior, and the
+actual carrier has passed controlled production lifecycle execution. Those
+checks do not substitute for actual-media and application qualification. Add
+the provider and test utility to distribution only after remaining gates pass.
