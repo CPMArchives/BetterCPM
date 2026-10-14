@@ -3,15 +3,16 @@
 Design worked out 2026-10-12 against the production BIOS and Stage-3 manager.
 This is the implementation design for the accepted
 [1.0 monitor decision](../architecture/31%20Terminal%20Monitor%20RSX.md), not a
-claim of installed monitor support. The BIOS dispatch foundation is now implemented
-and qualified; production metadata selection, transactions and terminal providers
-remain pending. The transactional detach/publication spine is now implemented;
-MCON 1.0 descriptor validation is installed in the shared metadata phase; see
-[metadata qualification](Monitor%20Metadata%20Qualification.md).
-Prospective selection, duplicate-profile rejection and retained-service
-reconciliation are now installed; see [selection qualification](Monitor%20Selection%20Qualification.md).
-Command-return reset and internal clear/home migration remain pending. See
-[commit-spine qualification](Monitor%20Commit%20Spine%20Qualification.md) and [BIOS hook qualification](Monitor%20BIOS%20Hook%20Qualification.md).
+claim that terminal personalities are installed. The BIOS dispatch foundation,
+transactional detach/publication, MCON descriptor validation, prospective selection,
+duplicate rejection and retained-service reconciliation are implemented. Command-return
+reset and internal clear/home migration are now implemented; see
+[return/clear qualification](Monitor%20Return%20and%20Clear%20Qualification.md).
+Terminal provider implementations and rendering/input qualification remain pending.
+See [metadata qualification](Monitor%20Metadata%20Qualification.md),
+[selection qualification](Monitor%20Selection%20Qualification.md),
+[commit-spine qualification](Monitor%20Commit%20Spine%20Qualification.md) and
+[BIOS hook qualification](Monitor%20BIOS%20Hook%20Qualification.md).
 This is a bounded private monitor interface, not the post-1.0 TCAP API.
 
 ## One binding, one provider

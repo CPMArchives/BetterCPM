@@ -50,6 +50,8 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False,
     module = MODULE.read_bytes()
     allocation = struct.unpack_from("<H", module, 10)[0]
     machine = Z80(b"")
+    machine.mem[LAYOUT["BIOS"]+66:LAYOUT["BIOS"]+70] = b'\x32\x00\xf7\xc9'
+    machine.mem[0xF700] = 0xCC
     reloader = RELOADER.read_bytes()
     machine.mem[BASE:BASE + len(reloader)] = reloader
     # Function 37 is the reloader's only BDOS dependency.  This unit test
@@ -79,7 +81,7 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False,
                      0xC3, 0x50, 0x50))
     open_stub = bytes((
         0x7E, 0xFE, 0x52, 0x11, 0x00, 0x20, 0x28, 0x03,
-        0x11, 0x00, 0x40, 0xEB, 0x22, 0x00, 0x59,
+        0x11, 0x00, 0x48, 0xEB, 0x22, 0x00, 0x59,
         0x22, 0x02, 0x59, 0xAF, 0xC9,
     ))
     next_stub = bytes((
@@ -99,7 +101,7 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False,
         basic_module = BASIC_MODULE.read_bytes()
         hello_module = HELLO_MODULE.read_bytes()
         machine.mem[0x2000:0x2000 + len(basic_module)] = basic_module
-        machine.mem[0x4000:0x4000 + len(hello_module)] = hello_module
+        machine.mem[0x4800:0x4800 + len(hello_module)] = hello_module
         machine.mem[(LAYOUT["SYSTEM"] + 0x94)] = 2
         machine.mem[(LAYOUT["SYSTEM"] + 0x96):(LAYOUT["SYSTEM"] + 0x9E)] = b"RCP     "
         machine.mem[(LAYOUT["SYSTEM"] + 0x9E):(LAYOUT["SYSTEM"] + 0xA6)] = b"HELLO   "
@@ -139,7 +141,8 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False,
         0xEB,                   # return HL=destination+512 like M4_READ
         0xAF, 0xC9,             # success
     ))
-    machine.mem[PHYSICAL_READ:PHYSICAL_READ + len(reader)] = reader
+    machine.mem[0x5800:0x5800 + len(reader)] = reader
+    machine.mem[PHYSICAL_READ:PHYSICAL_READ + 3] = b"\xc3\x00\x58"
     machine.mem[SYSTEM_WBOOT:SYSTEM_WBOOT + 2] = bytes((0x18, 0xFE))
     try:
         machine.run(BASE, limit=200000)
@@ -153,6 +156,7 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False,
                 f"malformed CPX stopped at {machine.pc:04X}h, not CRFAIL")
         return b""
     expected = relocated(module, target)
+    require(machine.mem[0xF700] == 5, "reconstruction did not reset monitor sequence")
     actual = bytes(machine.mem[target:target + len(expected)])
     mismatch = next((index for index, pair in enumerate(zip(actual, expected))
                      if pair[0] != pair[1]), None)

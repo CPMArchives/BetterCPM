@@ -49,7 +49,7 @@ def main():
      assert not any(f not in (2,9) for f in calls),(command,calls)
   for command in ('DIR','ERA','TYPE','REN','COPY','MOVE','USER','CLS','VER'):
    out,_=execute(command+' /VER',base)
-   assert 'BetterCP/M '+command in out and 'Build 009' in out
+   assert 'BetterCP/M '+command in out and 'Build 010' in out
   for text in ('DIR /C=3','DIR /S=X','DIR /AAA','ERA /DRV','TYPE /CTLX','TYPE /BAD','DIR B3:F*A.TXT'):
    out,_=execute(text,base)
    assert 'Use :' not in out,(text,out)

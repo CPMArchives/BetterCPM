@@ -33,6 +33,7 @@ def symbol(name: str) -> int:
 
 def cpu() -> Z80:
     machine = Z80(b"")
+    machine.mem[LAYOUT["BIOS"]+66] = 0xC9  # isolated prompt fixture: monitor reset is a no-op
     module = MODULE.read_bytes()
     _magic, _version, header_sectors, link, size, _allocation, _entry, count = (
         struct.unpack_from("<4sBBHHHHH", module))

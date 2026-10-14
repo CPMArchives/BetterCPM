@@ -15,7 +15,7 @@ BCV_SYSTEM:     DB      'System','$'    ; system name
 BCV_RELEASE:    DB      '0.3','$'       ; system release
 BV_C_ID:       DB      'CCP','$'        ; CCP subsystem identifier
 BV_C_API:      DB      '1.0','$'        ; CCP API version
-BV_C_IMP:      DB      '1.3','$'        ; CCP implementation version
+BV_C_IMP:      DB      '1.4','$'        ; CCP implementation version
 BV_D_ID:       DB      'BDOS','$'       ; BDOS subsystem identifier
 BV_D_API:      DB      '1.2','$'        ; BDOS API version
 BV_D_IMP:      DB      '1.7','$'        ; BDOS implementation version

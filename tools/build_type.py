@@ -35,6 +35,7 @@ def expanded_source():
     code += rcp[rcp.index('BC_WCMP:'):rcp.index('BC_CSELS:')]
     text = SOURCE.read_text(encoding='ascii').replace('; @type-selector@', code)
     text = text.replace('; @type-paging@', (common/'typepage.inc').read_text(encoding='ascii'))
+    text = text.replace('; @monitor-console@', (common/'monitorconsole.inc').read_text())
     return expand_versions(text)
 
 

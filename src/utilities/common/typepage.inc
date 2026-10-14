@@ -283,9 +283,7 @@ TP_INDENT:
         JR Z,TP_CLEAN
         XOR A
         LD (TP_CLEAR),A
-        LD E,28                     ; BetterCP/M native clear/home, as CLS uses
-        LD C,2
-        CALL BDOS
+        CALL UI_CLEAR               ; explicit clear/home, not a terminal control byte
         ; Clear/home is not CR to cooked BDOS: synchronize its tab column.
         LD E,13
         LD C,2
@@ -452,3 +450,5 @@ TP_ANCH: DS 13
 TP_BEGIN: DB 0
 TP_CLEAR: DB 0
 TP_NOSEP: DB 0
+
+; @monitor-console@
