@@ -55,7 +55,7 @@ BAD: DB 'IOBYTE LEAKED',13,10,'$'
             writer=threading.Thread(target=feed,daemon=True);writer.start()
             transcript=session(a.simulator,w/'disks',commands,report/(name+'.txt'))
             writer.join(timeout=5)
-            assert not writer.is_alive(),'reader feeder did not complete' 
+            assert not writer.is_alive(),'reader feeder did not complete'
             assert transcript.count(b'IOBYTE PRESERVED')==4 and b'IOBYTE LEAKED' not in transcript,transcript[-1000:]
             assert (w/'disks/driveb.dsk').exists(),str(list((w/'disks').iterdir()))
             dest=w/'read.txt';subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(w/'disks/driveb.dsk'),'0:READ.TXT',str(dest)],cwd=w,check=True)
