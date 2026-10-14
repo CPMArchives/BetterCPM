@@ -13,10 +13,6 @@ from system_layout import LAYOUT
 out=root/'build/audit/monitor-efficiency/hooks-multiplex'
 assemble(source('rsxmover.mac','RMBASE',0x7000),'mover-fixture',0x7000,out,Path('/Users/nathanael/bin/z80asm'))
 s=source('rsxsched.mac','RSBASE',LAYOUT['CONFIG']+0x120)
-s=s.replace('RS_PREPARE:','RS_PREPARE:\n        CALL    0%04XH\n;' % (LAYOUT['BIOS']+72),1)
-old='        JP      NZ,RS_EXEC\n        JP      RS_DONE'
-assert s.count(old)==1
-s=s.replace(old,'        JP      NZ,RS_EXEC\n        JR      RS_DONE')
 d=assemble(s,'scheduler',LAYOUT['CONFIG']+0x120,out,Path('/Users/nathanael/bin/z80asm'))
 assert len(d)<=0x310-0x120
 fixture_source=re.sub(r'^RSBASE\s+EQU\s+.*$', 'RSBASE          EQU     07800H', s, flags=re.M)
@@ -25,9 +21,6 @@ ls=(out/'bios.lst').read_text()
 m=re.search(r'^([0-9a-f]{4})\s+.*\bMP_MON:',ls,re.M|re.I);assert m
 cell=int(m[1],16)
 s=source('r3pst.mac','RTBASE',LAYOUT['CONFIG']+0x38f)
-old='        LD      (DE),A\n        XOR     A\n        RET'
-assert s.count(old)==1
-s=s.replace(old,'        LD      (DE),A\n        LD      HL,(RT_REQ)\n        LD      DE,35\n        ADD     HL,DE\n        LD      E,(HL)\n        INC     HL\n        LD      D,(HL)\n        EX      DE,HL\n        LD      (0%04XH),HL\n        XOR     A\n        RET' % cell)
 d2=assemble(s,'publisher',LAYOUT['CONFIG']+0x38f,out,Path('/Users/nathanael/bin/z80asm'))
 report={'scheduler_bytes':len(d),'scheduler_region_capacity':496,'publisher_bytes':len(d2),'commit_bytes_unchanged':1007,'commit_prefix_capacity':1012,'note':'Assembly size only; request offset 35 and transaction integration are prototypes.'}
 (out/'binding-sizes.json').write_text(json.dumps(report,indent=2)+'\n')

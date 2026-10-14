@@ -293,7 +293,7 @@ FACT:   DW      0
 def invoke(stub: bytes, carrier: bytes, name: bytes, *, operation: int = 1,
            high: int = WORK_HIGH,
            retained: tuple[bytes, ...] = (), final: bytes = b"") -> tuple[Z80, bytes]:
-    cpu = Z80(b"")
+    cpu = Z80((ROOT / "build/bios/bios.bin").read_bytes())
     io = (ROOT / "build/system/rsxio.bin").read_bytes()
     io_base = high - 0xF00 + 0x400
     cpu.mem[io_base:io_base + len(io)] = io

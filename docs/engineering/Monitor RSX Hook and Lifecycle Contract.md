@@ -5,7 +5,9 @@ This is the implementation design for the accepted
 [1.0 monitor decision](../architecture/31%20Terminal%20Monitor%20RSX.md), not a
 claim of installed monitor support. The BIOS dispatch foundation is now implemented
 and qualified; production metadata selection, transactions and terminal providers
-remain pending. See [BIOS hook qualification](Monitor%20BIOS%20Hook%20Qualification.md).
+remain pending. The transactional detach/publication spine is now implemented;
+MCON selection and retained-service reconciliation remain the next gate. See
+[commit-spine qualification](Monitor%20Commit%20Spine%20Qualification.md) and [BIOS hook qualification](Monitor%20BIOS%20Hook%20Qualification.md).
 This is a bounded private monitor interface, not the post-1.0 TCAP API.
 
 ## One binding, one provider

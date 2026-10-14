@@ -5,4 +5,4 @@
 ; * Do not edit by hand.                                                         *
 ; ********************************************************************************
 
-RS_VERSION: DB 13,10,'Resident System Extension facility: API 1.0; implementation 1.2','$',13,10,'$' ; RSX facility version string
+RS_VERSION: DB 13,10,'Resident System Extension facility: API 1.0; implementation 1.3','$',13,10,'$' ; RSX facility version string

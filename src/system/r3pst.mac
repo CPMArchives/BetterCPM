@@ -7,7 +7,8 @@
   ; Runs from the tail of R3MOVE after live movement has become infallible
   ; and before generation publication. DE addresses the commit request:
   ; +27 prospective 41-byte state, +29 live state, +31 public request,
-  ; and +33 returned primary service.
+  ; +33 returned primary service, and +35 prepared monitor target.
+  ; This entry is called only for extended mode-one publication.
   ; Names and service numbers are copied before the count. The count is the
   ; profile-local validity boundary, while the later reconstruction generation
   ; is the transaction-wide commit marker. Readers therefore see either the old
@@ -60,6 +61,25 @@ RT_ENTRY:                               ; publish prepared persistent profile fi
         INC     DE
         LD      A,(HL)
         LD      (DE),A
+  ; HL is request+34. Resolve the binding cell through the immutable MONCALL
+  ; trampoline rather than importing a platform-specific mutable address.
+  ; MONCALL is JP MC_CALL; MC_CALL begins LD HL,(MP_MON). This private API 1.7
+  ; layout is shared by both platform builds and their relocated ROM image.
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        PUSH    DE                     ; prepared prospective target
+        LD      HL,(LY_BIOS+67)        ; MC_CALL address from MONCALL
+        INC     HL                     ; LD HL,(nn) operand
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        EX      DE,HL                  ; protected binding cell
+        POP     DE
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D                ; before final generation publication
         XOR     A
         RET
 
