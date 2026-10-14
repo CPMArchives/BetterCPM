@@ -73,6 +73,8 @@ VT_OUT:
 VT_SETCL:
         LD (VT_COL),A
 VT_DONE:
+        LD A,(VT_PEND)
+        LD (VT_ROW),A
         CALL VT_RESET
         JP VT_POS
 VT_GOTR:
@@ -82,7 +84,7 @@ VT_GOTR:
         SUB 32
         CP 24
         JR NC,VT_KEEP
-        LD (VT_ROW),A
+        LD (VT_PEND),A
 VT_KEEP:
         LD A,3
         LD (VT_STATE),A
@@ -147,6 +149,8 @@ VT_ESC:
         JR Z,VT_EOL
         RET                             ; development containment, not historical qualification
 VT_ADDR:
+        LD A,(VT_ROW)
+        LD (VT_PEND),A
         LD A,2
         LD (VT_STATE),A
         RET
@@ -198,19 +202,35 @@ VT_TAB:
         LD (VT_COL),A
         JP VT_POS
 VT_LF:
-        CALL VT_EMIT                    ; ANSI LF preserves column and scrolls
         LD A,(VT_ROW)
         CP 23
-        RET Z
+        JR Z,VT_BLF
+        CALL VT_EMIT
+        LD A,(VT_ROW)
         INC A
         LD (VT_ROW),A
         RET
+VT_BLF:
+        CALL VT_LIMIT                  ; bound scrolling even in a taller host
+        LD C,10
+        CALL VT_EMIT
+        JP VT_FULL
 VT_RLF:
         LD A,(VT_ROW)
         OR A
         JP NZ,VT_UP
-        LD HL,VT_RI                     ; ANSI reverse index scrolls at top
-        JP VT_STR
+        CALL VT_LIMIT
+        LD HL,VT_RI
+        CALL VT_STR
+        JP VT_FULL
+VT_LIMIT:
+        LD HL,VT_AREA
+        CALL VT_STR
+        JP VT_POS
+VT_FULL:
+        LD HL,VT_ALL
+        CALL VT_STR
+        JP VT_POS
 VT_POS:
         LD HL,VT_CSI
         CALL VT_STR
@@ -314,8 +334,11 @@ VT_CLS: DB 27,'[2J',27,'[H',0
 VT_SJ: DB 27,'[0J',0
 VT_SK: DB 27,'[0K',0
 VT_RI: DB 27,'M',0
+VT_AREA: DB 27,'[1;24r',0
+VT_ALL: DB 27,'[r',0
 VT_STATE: DB 0
 VT_ROW: DB 0
+VT_PEND: DB 0
 VT_COL: DB 0
         .DEPHASE
         END
