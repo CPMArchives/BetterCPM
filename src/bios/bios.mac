@@ -69,7 +69,7 @@ BIOPHREAD:                              ; platform physical-read vector
         JP      LY_DISK+15
 
 BIOCURSOR:                              ; platform cursor vector
-        JP      PL_CURSOR
+        JP      MH_CUR
 
 BIOOVLOAD:                              ; platform overlay-load vector
         JP      PL_OVLOAD
@@ -94,7 +94,12 @@ BIORLOAD:                               ; platform reloader-load vector
 BIOCHCAP:                               ; private character capability query, BIOS+63
         JP IO_CAPS
 
+MONCALL: JP MC_CALL
+MONRAW: JP MC_RAW
+MONBASE: JP MC_BASE
+
 BIOBOOT:                                ; cold boot entry
+        CALL MC_BASE
         CALL    PL_INIT
   ; 08-Sep-2026: BOOT must begin on A even when called from another drive.
   ; WBOOT preserves the caller's drive; reset it only on this cold entry.
@@ -123,7 +128,8 @@ BIOCONST:
         XOR A
         RET
 IO_STAT:
-        CALL PL_CONST
+        LD A,1
+        CALL MC_CALL
         OR A
         RET Z
 IO_READY:
@@ -133,12 +139,13 @@ BIOCONIN:
         CALL IO_CON
         JP NZ,BIOREADR
 IO_INPUT:
-        CALL PL_CONIN
+        LD A,2
+        CALL MC_CALL
         AND 07FH
         RET
 BIOCONOT:
         CALL IO_CON
-        JP Z,PL_CONOT
+        JP Z,MH_OUT
         CP 1
         RET NZ
         JP BIOLIST
@@ -151,7 +158,7 @@ BIOLIST:
         CALL BIOLSTST
         OR A
         RET Z
-        JP PL_CONOT
+        JP MH_OUT
 BIOPUNCH:
         RET
 BIOREADR:
@@ -330,5 +337,41 @@ IO_CAPS:
         LD HL,02002H                    ; CRT console and CRT list only
         RET
 
+
+MH_OUT:
+        XOR A
+        JP MC_CALL
+MH_CUR:
+        LD A,3
+MC_CALL:
+        LD HL,(MP_MON)
+        JP (HL)
+MC_RAW:
+        OR A
+        JP Z,PL_CONOT
+        DEC A
+        JP Z,PL_CONST
+        DEC A
+        JP Z,PL_CONIN
+        DEC A
+        JP Z,PL_CURSOR
+        DEC A
+        JR Z,MC_CLEAR
+        DEC A
+        RET Z
+        LD A,0FFH
+        RET
+MC_CLEAR:
+        LD C,01CH
+        JP PL_CONOT
+MC_BASE:
+        LD HL,MC_RAW
+        LD (MP_MON),HL
+        RET
+; BIOS-owned binding: only cold initialization and validated manager publication
+; may store this word. No production provider is bound until lifecycle commit
+; integration is qualified. MONRAW must never re-enter IOBYTE or MC_CALL.
+MP_MON: DW 0
+MP_MON_END:
         .DEPHASE
         END

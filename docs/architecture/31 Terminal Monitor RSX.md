@@ -1,7 +1,8 @@
 # Terminal monitor RSX for BetterCP/M 1.0
 
-Accepted design: 2026-10-12. Implementation and two-platform qualification
-are pending. This decision selects the bounded RSX approach from the
+Accepted design: 2026-10-12. The BIOS dispatch foundation is implemented;
+RSX lifecycle integration and terminal providers remain pending. See
+[BIOS hook qualification](../engineering/Monitor%20BIOS%20Hook%20Qualification.md). This decision selects the bounded RSX approach from the
 [monitor memory review](../engineering/Bounded%20Monitor%20Memory%20and%20Efficiency%20Review.md).
 It does not claim that the audit prototypes are production monitor providers.
 

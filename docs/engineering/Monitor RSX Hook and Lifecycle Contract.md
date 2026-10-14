@@ -3,8 +3,9 @@
 Design worked out 2026-10-12 against the production BIOS and Stage-3 manager.
 This is the implementation design for the accepted
 [1.0 monitor decision](../architecture/31%20Terminal%20Monitor%20RSX.md), not a
-claim of installed monitor support. Isolated dispatch and size probes exist;
-production metadata selection, transactions and terminal providers are pending.
+claim of installed monitor support. The BIOS dispatch foundation is now implemented
+and qualified; production metadata selection, transactions and terminal providers
+remain pending. See [BIOS hook qualification](Monitor%20BIOS%20Hook%20Qualification.md).
 This is a bounded private monitor interface, not the post-1.0 TCAP API.
 
 ## One binding, one provider
