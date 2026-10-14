@@ -533,3 +533,9 @@ The following are deliberately open:
 
 These details shall be fixed by engineering specifications and executable
 tests before third-party binary compatibility is promised.
+
+## Monitor providers
+
+See [Developing monitor RSXs](Monitor%20RSX%20Development.md) for the MCON
+contract, backend compatibility, state/relocation requirements and dedicated
+test utilities for additional terminal personalities.
