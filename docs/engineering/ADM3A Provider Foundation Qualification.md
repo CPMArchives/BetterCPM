@@ -2,7 +2,7 @@
 
 ## Status
 
-This is the first development stage of the Model 4 MM-style ADM-3A provider,
+This records the first two development stages of the Model 4 MM-style ADM-3A provider,
 not a released terminal personality. It is deliberately excluded from the
 system disk, ordinary RSX build output and cold-boot startup.
 
@@ -13,7 +13,7 @@ changes. This is a backend-specific dependency, not a new portable BIOS ABI.
 
 The carrier uses STATEFUL reconstruction, one MCON 1.0 descriptor, Model 4
 compatibility bit 0001h, and an ordinary pass-through BDOS entry. The current
-payload is 208 bytes, with 19 static relocation slots and a 256-byte allocation
+payload is 447 bytes, with 38 static relocation slots and a 512-byte allocation
 including its runtime descriptor. Loading it also incurs the existing RSX
 manager allocation if that manager is not already present.
 
@@ -29,12 +29,18 @@ manager allocation if that manager is not already present.
   invoking platform initialization or resetting keyboard state.
 - Other operations use MONRAW directly, avoiding dispatch recursion.
 
-Ordinary output currently delegates to the basic renderer. Consequently this
-stage does **not** promise MM tab, cursor movement, erase, reverse-video,
-insert/delete-line or bell semantics. In particular, forwarding a control byte
-to the basic renderer can produce different behavior from MM CP/M. Do not use
-this foundation to qualify an application or describe it as a completed ADM-3A
-emulation.
+The second stage implements printable output, cross-row backspace, 8-column
+cursor-only tabs, down/scroll, clamped up, wrapping right, carriage return,
+EOL/EOS erasure and home. Printable output at the bottom-right scrolls, while
+line feed preserves the current column. EOL/EOS erase includes the cursor cell
+and does not move it. The renderer shares advancement, scrolling and bounded
+fill routines rather than depending on the basic console's control meanings.
+
+Bell, reverse-video controls and insert/delete line remain unimplemented.
+Those bytes are consumed in this development stage, not passed to the basic
+renderer; that prevents 1Ch from accidentally clearing the screen. Consuming
+required controls is temporary containment, not implementation of the MM
+contract. No application compatibility claim is made yet.
 
 ## Automated and manual checks
 
@@ -44,6 +50,13 @@ reset, visibility, clear/home, printable output and raw bypass. It also runs
 the assembled development utility with controlled BDOS lookup and input,
 checking missing-provider preflight, marker placement, partial-address reset
 and both key pauses. This fixture does not replace RSX lifecycle qualification.
+
+`tools/test_adm3a_screen.py` checks all 1,920 cursor positions for twelve screen
+operations at both load addresses (46,080 cases). Each case checks complete
+framebuffer contents, cursor/column coherence and guard bytes immediately
+outside video memory. It also checks ignored controls and containment of the
+unfinished controls. These tests establish the specified screen operations;
+they do not settle the explicitly unresolved historical behaviors.
 
 For a manual development check, load only this ADM3A provider and run ADMTST.
 The marker should appear at zero-based row 5, column 10. Press a key, confirm
