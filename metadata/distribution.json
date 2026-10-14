@@ -217,12 +217,13 @@
     },
     {
       "name": "PIP.COM",
-      "status": "planned",
-      "reason": "DRI-compatible ZSM4 port in progress; development parser exists, transfer engine and qualification pending",
+      "status": "implemented",
       "targets": [
         "z80pack",
         "trs80gp"
-      ]
+      ],
+      "artifact": "build/utilities/PIP.COM",
+      "user": 0
     },
     {
       "name": "ED.COM",

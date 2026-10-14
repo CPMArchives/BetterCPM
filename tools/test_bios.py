@@ -854,6 +854,10 @@ def install_drive_tables(cpu: Z80, dph_base: int = LAYOUT["TABLES"],
 def main() -> None:
     data = IMAGE.read_bytes()
     cpu = Z80(data)
+    cpu.mem[3] = 0x95                    # actual cold default selects CRT
+    listing = IMAGE.with_suffix('.lst').read_text(errors='replace')
+    def console_symbol(name):
+        return int(re.search(r'^([0-9a-f]{4})\s+.*?\b'+name+':',listing,re.M|re.I)[1],16)
     install_drive_tables(cpu)
 
     def entry(index: int) -> int:
@@ -886,8 +890,7 @@ def main() -> None:
     require(read_impl == LAYOUT["DISK"] + 15,
             "private physical read does not use the common disk engine")
 
-    const_impl = cpu.word(entries[2] + 1)
-    platform_const = cpu.word(const_impl + 1)
+    platform_const = console_symbol('M4_STAT')
     cpu.mem[platform_const:platform_const + 2] = bytes((0xAF, 0xC9))
     cpu.run(entries[2])
     require(cpu.a == 0, "CONST empty result is not 00h")
@@ -952,16 +955,15 @@ def main() -> None:
         require(cpu.a == code, 'arrow history control code changed')
     cpu.mem[0xF440] = 0
 
-    conin_impl = cpu.word(entries[3] + 1)
-    platform_conin = cpu.word(conin_impl + 1)
+    platform_conin = console_symbol('M4_IN')
     cpu.mem[platform_conin:platform_conin + 3] = bytes((0x3E, 0xC1, 0xC9))
     cpu.run(entries[3])
     require(cpu.a == 0x41, "CONIN did not clear parity")
 
-    conout_impl = cpu.word(entries[4] + 1)
-    platform_conout = conout_impl
+    platform_conout = console_symbol('M4_SCROLL_OUT')
 
     scroll_cpu = Z80(data)
+    scroll_cpu.mem[3] = 0x95
     scroll_cpu.mem[0xF800:0xFF80] = bytes((0x20,)) * 1920
     scroll_cpu.mem[0xFF80] = 0xA5
     for character in range(ord("A"), ord("Z")):
@@ -977,6 +979,7 @@ def main() -> None:
             "CONOUT wrote beyond Model 4 video RAM")
 
     wrap_cpu = Z80(data)
+    wrap_cpu.mem[3] = 0x95
     wrap_cpu.mem[0xF800:0xFF80] = bytes((0x20,)) * 1920
     wrap_cpu.mem[0xFF80] = 0x5A
     for _ in range(1920):
@@ -990,6 +993,7 @@ def main() -> None:
 
     # A BS must move the display cursor, not occupy a character cell.
     back_cpu = Z80(data)
+    back_cpu.mem[3] = 0x95
     back_cpu.mem[0xF800:0xFF80] = b" " * 1920
     back_cpu.mem[0xF7FF] = 0xA5
     for value in b"\x08ABC\x08X":

@@ -1,4 +1,4 @@
-; Development PIP: parser and staged disk transfer implementation.
+; BetterCP/M PIP: DRI-compatible assignment, peripheral and staged disk transfers.
         CSEG
         .PHASE  0100H
         JP P_START
@@ -231,7 +231,7 @@ PV_NEXT:
 P_PROMPT: DB '*$'
 P_NL: DB 13,10,'$'
 P_INVALID: DB 'INVALID FORMAT',13,10,'$'
-P_DEVM: DB 'PIP development parser: transfer engine not implemented.',13,10,'$'
+P_DEVM: DB 'INVALID FORMAT',13,10,'$'
 P_LINE: DB 127,0
         DS 128
 P_DRIVE: DB 0

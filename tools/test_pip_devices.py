@@ -21,7 +21,7 @@ def main():
  assert out=='first\r\n'
  for tail in ['CON:=A2:ONE.DAT,B7:TWO.DAT[X]','LST:=A2:*.DAT','CON:[V]=A2:ONE.DAT','PUN:=A2:ONE.DAT[V]','CRT:=A2:ONE.DAT']:
   out,_,calls,_=execute(tail,files)
-  assert ('not implemented' in out or 'INVALID FORMAT' in out or 'DEVICE UNAVAILABLE' in out) and not any(f in calls for f in (2,4,5,20)),(tail,out,calls)
+  assert ('INVALID FORMAT' in out or 'INVALID FORMAT' in out or 'DEVICE UNAVAILABLE' in out) and not any(f in calls for f in (2,4,5,20)),(tail,out,calls)
  out,_,_,_=execute('CON:=A2:ONE.DAT',{source:(b'SYSTEM\x1a',2)})
  assert out=='NO FILE\r\n'
  out,_,_,_=execute('CON:=A2:ONE.DAT[R]',{source:(b'SYSTEM\x1a',2)})

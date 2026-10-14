@@ -38,6 +38,7 @@ def main():
  if fmt.reserved_records < 160:raise SystemExit(f'{fmt.name}: reserved area has {fmt.reserved_records} records; 160 required')
  if fmt.raw_tracks>255 or fmt.raw_track_bytes//128>255:raise SystemExit(f'{fmt.name}: bootstrap geometry exceeds 8-bit cpmsim ports')
  out.mkdir(parents=True,exist_ok=True)
+ (out/'boot-format.json').write_text(json.dumps({'fdf':str(args.fdf.resolve()),'format':fmt.name})+'\n')
  disks=out/'disks'
  if disks.exists():raise SystemExit(f'{disks} exists; use a new --output to preserve test media')
  def asm(name,text,base,limit):
@@ -51,14 +52,13 @@ def main():
  for name in names:
   subprocess.run([sys.executable,str(ROOT/'tools'/f'build_{name}.py')],check=True,stdout=subprocess.DEVNULL)
  bios_source=read('src/bios/bios.mac')
- # cpmsim port 5 is its CP/M 2 RDR: input.  Keep the common unassigned-reader
- # leaf for machines without a provider and substitute the z80pack binding
- # without enlarging the tightly packed resident BIOS.
- reader_pattern=r'(BIOREADR:[^\n]*\n)\s*LD\s+A,01AH\n\s*RET'
- bios_source,replacements=re.subn(reader_pattern,
-                                  r'\1        IN      A,(5)\n        RET',
-                                  bios_source,count=1)
- if replacements != 1:raise ValueError('common READER leaf changed')
+ a=bios_source.index('BIOCONST:');b=bios_source.index('; ================================================================================',a)
+ bios_source=bios_source[:a]+read('src/platform/z80pack/chario.inc')+bios_source[b:]
+ bios_source=bios_source.replace('LD HL,02002H', 'LD HL,07337H')
+ import re
+ bios_source=re.sub(r'BIOLSTST:[^\n]*\n(?:.*\n)*?(?=BIOSECTR:)',
+     'BIOLSTST:\n        LD A,(0003H)\n'+ '        RRCA\n'*6 +
+     '        LD HL,IO_LS\n        JP IO_JUMP\n\n',bios_source,count=1)
  a=bios_source.index('BIOREAD:');b=bios_source.index('; LISTST',a)
  bios_source=bios_source[:a]+read('src/platform/z80pack/recordio.inc')+bios_source[b:]
  bios=asm('bios',bios_source.replace('        INCLUDE biosplat.inc',read('src/platform/z80pack/biosplat.inc')),L['BIOS'],L['FILE']-L['BIOS'])

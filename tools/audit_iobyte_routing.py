@@ -98,6 +98,8 @@ IO_LSTAT:
 
 def compact_model4(source: str) -> str:
     """Model 4 has CRT only: omit dispatch tables for unavailable endpoints."""
+    if "IOBYTE_ROUTING_V1" in source:
+        return source
     source = source.replace('JP      PL_CONOT', 'JP      BIOCONOT', 1)
     start = source.index('BIOCONST:')
     end = source.index('; ================================================================================', start)

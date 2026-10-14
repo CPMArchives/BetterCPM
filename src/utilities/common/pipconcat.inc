@@ -276,6 +276,35 @@ PC_NOCLOSE:
         LD BC,36
         LDIR
 PC_OPEN:
+        ; DRI PRN is LPT with N=1, default T8 and default P60 (encoded P=1).
+        ; Apply after each source's parameters, excluding synthetic NUL/EOF.
+        LD A,(PD_ACTIVE)
+        OR A
+        JR Z,PC_PLAIN
+        LD A,(OP_DATA+1)
+        CP 9
+        JR NZ,PC_PLAIN
+        LD A,(OP_DATA+80)
+        CP 4
+        JR NZ,PC_PRN
+        LD A,(OP_DATA+81)
+        CP 19
+        JR NC,PC_PLAIN
+PC_PRN:
+        LD A,1
+        LD (OP_DATA+137),A
+        LD A,(OP_DATA+143)
+        OR A
+        JR NZ,PC_PAGE
+        LD A,8
+        LD (OP_DATA+143),A
+PC_PAGE:
+        LD A,(OP_DATA+139)
+        OR A
+        JR NZ,PC_PLAIN
+        LD A,1
+        LD (OP_DATA+139),A
+PC_PLAIN:
         LD A,(OP_DATA+80)
         CP 4
         JP Z,PI_BEGIN

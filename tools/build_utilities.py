@@ -27,6 +27,7 @@ BUILDERS = (
     "era",
     "ren",
     "type",
+    "pip",
     "warm",
     "stat",
     "time",

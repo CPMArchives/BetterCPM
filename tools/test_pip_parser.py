@@ -22,6 +22,7 @@ def invocation(text,keys=()):
  c=cpu();c.mem[0:3]=bytes((0xC3,SENTINEL&255,SENTINEL>>8));c.mem[0x80]=len(text);c.mem[0x81:0x81+len(text)]=text.encode();c.mem[5:8]=bytes((0xDB,254,0xC9));output=[];calls=[];lines=iter(keys);state={'drive':1,'user':7}
  def io(port):
   calls.append(c.c)
+  if c.c==180:c.hl=0;return 0
   if c.c==11:return 0
   if c.c==0:c.pc=SENTINEL;return 0
   if c.c==25:return state['drive']
@@ -51,7 +52,7 @@ def main():
   bad,parts=scan(text);assert bad and not parts,(text,parts)
  tail='A='+','.join('B' for _ in range(63));assert len(tail)==127
  bad,parts=scan(tail);assert not bad and len(parts)==64
- out,calls=invocation('/VER');assert 'BetterCP/M PIP 1.0 (Build 025)' in out and calls==[9],(out,calls)
+ out,calls=invocation('/VER');assert 'BetterCP/M PIP 1.0 (Build 026)' in out and calls==[9],(out,calls)
  out,calls=invocation('A=B[Shello /VER, world\x1a]');assert 'NO FILE' in out and 'Invalid /VER' not in out
  out,calls=invocation('A=B /VER');assert 'Invalid /VER usage.' in out and calls==[9]
  out,calls=invocation('',keys=['PRN:=CON:','BAD','']);assert out.count('*')==3 and 'DEVICE UNAVAILABLE' in out and 'INVALID FORMAT' in out

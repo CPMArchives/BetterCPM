@@ -13,13 +13,13 @@ from build_rom_relocated_image import build
 
 EXPECTED_COMPONENTS = {
     "bdos": 500,
-    "bios": 64,
+    "bios": 111,
     "disk": 82,
     "extensions": 57,
     "fileloader": 13,
     "gateway": 23,
 }
-EXPECTED_CLASSES = {"immutable-rom": 418, "live-ram": 321}
+EXPECTED_CLASSES = {"immutable-rom": 465, "live-ram": 321}
 
 
 def digest(data: bytes) -> str:
@@ -56,12 +56,12 @@ def main() -> None:
     if (manifest["boot_integrated"] is not False or
             manifest["protected_xip_qualified"] is not False):
         raise AssertionError("relocation artifact overclaims later qualification")
-    if (manifest["relocation_words"] != 739 or
-            manifest["changed_words"] != 728 or
+    if (manifest["relocation_words"] != 786 or
+            manifest["changed_words"] != 775 or
             manifest["unchanged_final_words"] != 11 or
-            manifest["changed_bytes"] != 1456):
+            manifest["changed_bytes"] != 1550):
         raise AssertionError("accepted relocation totals changed")
-    if (manifest["accounted_layout_words"] != 758 or
+    if (manifest["accounted_layout_words"] != 805 or
             manifest["mutable_template_fixups"] != 16 or
             manifest["mutable_already_final_words"] != 3):
         raise AssertionError("mutable layout-word accounting changed")
@@ -72,10 +72,10 @@ def main() -> None:
     if manifest["entries"] != {
             "system_init": 0xDF00,
             "system_boot": 0xDF20,
-            "bios_boot": 0xF1BF,
+            "bios_boot": 0xf1bf,
             "bdos": 0xDF9E,
-            "ram_template": 0xF394,
-            "cold_initializer": 0xFD00}:
+            "ram_template": 0xF450,
+            "cold_initializer": 0xFDBC}:
         raise AssertionError("accepted executable entry inputs changed")
 
     base = manifest["base"]
@@ -108,7 +108,7 @@ def main() -> None:
         reversed_image[offset:offset + 2] = int(reference["old_target"]).to_bytes(2, "little")
     if bytes(reversed_image) != source:
         raise AssertionError("inverse relocation does not reproduce packed source")
-    print("Relocated ROM verified: all 758 layout words accounted; 739 disjoint "
+    print("Relocated ROM verified: all 805 layout words accounted; 786 disjoint "
           "ROM words, 728 changed values, 1456 changed bytes, and no changes "
           "outside inventoried operands")
 

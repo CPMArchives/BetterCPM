@@ -13,7 +13,7 @@ bdos-stack	object	bdos-stack	D701	D728	40	zero	none	private BDOS stack
 extension-live-state	object	extension-live-state	D729	D72D	5	zero	none	extension dispatcher call state
 physical-drive-profiles	object	z80pack-physical-drive-profiles	D72E	D745	24	copy	E951	live z80pack physical-drive profiles
 disk-session-state	object	z80pack-disk-session-state	D746	D753	14	copy	E969	z80pack disk transfer state
-bios-disk-state	object	z80pack-bios-disk-state	D754	D75F	12	copy	EA8C	BIOS logical and physical disk state
+bios-disk-state	object	z80pack-bios-disk-state	D754	D75F	12	copy	EB44	BIOS logical and physical disk state
 file-stream-fcb	object	file-stream-fcb	D760	D783	36	zero	none	protected carrier-stream FCB
 live-disk-tables	object	z80pack-live-disk-tables	D784	D9C3	576	copy-fixup	ED17	live DPH bindings, ALV and CSV records
 rsx-profile	object	rsx-profile	D9C4	D9EC	41	zero	none	active RSX reconstruction profile

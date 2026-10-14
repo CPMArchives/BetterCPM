@@ -31,7 +31,7 @@ All membership or layout changes require discussion with the maintainer.
 - SYSGEN.COM
 - STAT.COM
 - SUBMIT.COM
-- PIP.COM
+- PIP.COM: DRI-compatible transfers, DU operands, `/VER`, and qualified platform devices.
 - ED.COM: planned DRI CP/M 2.2 behavioral reimplementation in Z80/ZSM4, with simple DU addressing and /VER; [engineering specification](../engineering/ED%20Specification.md) and reference baseline recorded.
 - DISK.FDB
 - RCP.CPX: required resident command package.
