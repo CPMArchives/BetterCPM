@@ -32,7 +32,9 @@ SUBASE          EQU     07200H
 ; Request Decode and Capacity
 ; -------------------------------------------------------------------------------
 
-SU_ENTRY:                               ; enter pointer-slot union preparer
+SU_ENTRY: JP SU_UNION
+SU_MONITOR: JP MS_ENTRY                  ; +3, six-byte monitor preparation request
+SU_UNION:                               ; enter pointer-slot union preparer
         LD      (SU_REQ),DE
         EX      DE,HL
         LD      E,(HL)
@@ -304,6 +306,197 @@ SU_RCNT:        DB      0               ; runtime slots remaining
 SU_CAP:         DB      0               ; output capacity
 SU_NOUT:        DB      0               ; union entries emitted
 SU_SEEN:        DB      0               ; slot-validation flag
+
+
+; Shared monitor-selection preparation, reached at overlay+3.
+; DE -> {normalized facts, eight-byte plan record, durable target word}.
+; Every retained callable descriptor must still match its validated carrier.
+; No live mutation or callback; publish the durable target only on success.
+MS_ENTRY:
+        EX DE,HL
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD (MS_FACTS),DE
+        INC HL
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD (MS_PLAN),DE
+        INC HL
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD (MS_TARGET),DE
+        LD HL,0
+        LD (MS_PENDING),HL
+        LD HL,(MS_FACTS)
+        LD DE,17
+        ADD HL,DE
+        LD A,(HL)
+        CP 3
+        JP NC,MS_BAD
+        LD (MS_COUNT),A
+        LD (MS_LEFT),A
+        INC HL
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD (MS_SOURCE),DE
+        LD HL,(MS_PLAN)
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD (MS_OLD),DE
+        LD A,D
+        OR E
+        JR Z,MS_LOOP
+        EX DE,HL
+        LD DE,4
+        ADD HL,DE
+        LD A,(MS_COUNT)
+        CP (HL)
+        JP NZ,MS_BAD
+        INC HL
+        LD A,(HL)
+        OR A
+        JP NZ,MS_BAD
+        INC HL
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD (MS_OFFSET),DE
+        ; Descriptors occupy exactly the allocation tail, as R3SNAP emits.
+        LD A,(MS_COUNT)
+        LD L,A
+        LD H,0
+        ADD HL,HL
+        LD B,H
+        LD C,L
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,BC                      ; count * 10
+        ADD HL,DE
+        JP C,MS_BAD
+        EX DE,HL
+        LD HL,(MS_PLAN)
+        LD BC,4
+        ADD HL,BC
+        LD C,(HL)
+        INC HL
+        LD B,(HL)
+        EX DE,HL
+        OR A
+        SBC HL,BC
+        JP NZ,MS_BAD
+        LD HL,(MS_OFFSET)
+        LD DE,8
+        OR A
+        SBC HL,DE
+        JP C,MS_BAD
+MS_LOOP:
+        LD A,(MS_LEFT)
+        OR A
+        JP Z,MS_FINISH
+        LD HL,(MS_OLD)
+        LD A,H
+        OR L
+        JR Z,MS_ID
+        LD DE,(MS_OFFSET)
+        ADD HL,DE
+        LD (MS_LIVE),HL
+        LD A,(MS_COUNT)
+        LD (MS_TRIES),A
+MS_FIND:
+        LD HL,(MS_SOURCE)
+        LD DE,(MS_LIVE)
+        LD B,10
+MS_COMPARE:
+        LD A,(DE)
+        CP (HL)
+        JR NZ,MS_NEXTLIVE
+        INC DE
+        INC HL
+        DJNZ MS_COMPARE
+        JR MS_ID
+MS_NEXTLIVE:
+        LD HL,MS_TRIES
+        DEC (HL)
+        JP Z,MS_BAD
+        LD HL,(MS_LIVE)
+        LD DE,10
+        ADD HL,DE
+        LD (MS_LIVE),HL
+        JR MS_FIND
+MS_ID:
+        LD HL,(MS_SOURCE)
+        LD DE,MS_MCON
+        LD B,4
+MS_IDLOOP:
+        LD A,(DE)
+        CP (HL)
+        JR NZ,MS_NEXT
+        INC DE
+        INC HL
+        DJNZ MS_IDLOOP
+        ; MCON class/version/capability and executable entry were normalized.
+        INC HL
+        INC HL
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        PUSH DE
+        LD HL,(MS_PLAN)
+        INC HL
+        INC HL
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        POP HL
+        ADD HL,DE
+        JP C,MS_BAD
+        LD (MS_PENDING),HL
+        LD HL,(MS_TARGET)
+        LD A,(HL)
+        INC HL
+        OR (HL)
+        JP NZ,MS_BAD                   ; second provider before any live change
+MS_NEXT:
+        LD HL,(MS_SOURCE)
+        LD DE,10
+        ADD HL,DE
+        LD (MS_SOURCE),HL
+        LD HL,MS_LEFT
+        DEC (HL)
+        JP MS_LOOP
+MS_FINISH:
+        LD DE,(MS_PENDING)
+        LD A,D
+        OR E
+        JR Z,MS_OK
+        LD HL,(MS_TARGET)
+        LD (HL),E
+        INC HL
+        LD (HL),D
+MS_OK:
+        XOR A
+        RET
+MS_BAD:
+        LD A,0FFH
+        OR A
+        RET
+MS_MCON: DB 'MCON'
+MS_FACTS: DW 0
+MS_PLAN: DW 0
+MS_TARGET: DW 0
+MS_PENDING: DW 0
+MS_SOURCE: DW 0
+MS_OLD: DW 0
+MS_LIVE: DW 0
+MS_OFFSET: DW 0
+MS_COUNT: DB 0
+MS_LEFT: DB 0
+MS_TRIES: DB 0
 
         .DEPHASE
         END

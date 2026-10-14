@@ -85,7 +85,7 @@ RD_OPERATION:                           ; accept transactional removal
   ; request, and both descriptor vectors remain durable through commit.
         LD      HL,(RD_LOW)
         LD      (RD_CTX),HL
-        LD      DE,23
+        LD      DE,25
         OR      A
         ADD     HL,DE
         JP      C,RD_BAD
@@ -321,6 +321,10 @@ RD_ZCURRENT:                            ; clear current retained-member fields
         INC     HL
         DJNZ    RD_ZCURRENT
         LD      (HL),05BH
+        INC     HL
+        LD      (HL),A
+        INC     HL
+        LD      (HL),A                  ; no prospective monitor selected yet
         LD      HL,RD_NMOVE
         CALL    RD_OVER
         JP      NZ,RD_BAD

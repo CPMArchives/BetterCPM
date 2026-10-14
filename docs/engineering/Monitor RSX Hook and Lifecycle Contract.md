@@ -9,7 +9,8 @@ remain pending. The transactional detach/publication spine is now implemented;
 MCON 1.0 descriptor validation is installed in the shared metadata phase; see
 [metadata qualification](Monitor%20Metadata%20Qualification.md).
 Prospective selection, duplicate-profile rejection and retained-service
-reconciliation remain the next gate. See
+reconciliation are now installed; see [selection qualification](Monitor%20Selection%20Qualification.md).
+Command-return reset and internal clear/home migration remain pending. See
 [commit-spine qualification](Monitor%20Commit%20Spine%20Qualification.md) and [BIOS hook qualification](Monitor%20BIOS%20Hook%20Qualification.md).
 This is a bounded private monitor interface, not the post-1.0 TCAP API.
 

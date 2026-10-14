@@ -21,8 +21,8 @@ def main() -> None:
         "        CSEG\n        .PHASE  ", "        ASEG\n        ORG     ").replace(
             "        .DEPHASE\n", "")
     data = assemble(args.assembler, text, OUTPUT, OUTPUT.with_suffix(".lst"), BASE)
-    if not 0 < len(data) <= 512:
-        raise SystemExit(f"RSX slot preparer exceeds 512 bytes: {len(data)}")
+    if not 0 < len(data) <= 1024:
+        raise SystemExit(f"RSX slot preparer exceeds 1024 bytes: {len(data)}")
     print(f"RSX slot preparer bytes: {len(data)}")
 
 

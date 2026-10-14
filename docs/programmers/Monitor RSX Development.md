@@ -6,11 +6,13 @@ Micro behavior on Model 4) and VT52 are the initial planned providers, each
 with a dedicated test utility. Their completed implementations will be added
 as worked examples here. This guide does not claim those providers exist yet.
 
-The BIOS hooks and transactional detach/publication spine are installed.
-MCON descriptor validation is installed; prospective profile selection,
-duplicate-provider rejection, retained live-descriptor reconciliation and
-command-return/reset integration remain implementation gates. Do not distribute
-or promise automatic activation of a provider until those gates are qualified.
+The BIOS hooks, transactional detach/publication, descriptor validation,
+prospective selection, duplicate-provider rejection and retained live-descriptor
+reconciliation are installed. Valid MCON carriers now bind through normal RSX
+transactions. Command-return reset, internal clear/home integration and the
+initial terminal providers remain implementation gates. Do not describe the
+terminal personalities as released until those gates and rendering/input
+qualification pass.
 
 ## Select a personality and a backend
 

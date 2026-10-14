@@ -88,7 +88,23 @@ KP_ENTRY:                               ; enter retained member preparer
         LD      A,(KP_CLASS)
         CP      B
         JP      NZ,KP_BAD
+        LD      HL,(KP_FACTS)
+        LD      (KP_MREQ),HL
+        LD      HL,(KP_PLAN)
+        LD      (KP_MREQ+2),HL
+        LD      HL,(KP_CTX)
+        LD      DE,23
+        ADD     HL,DE
+        LD      (KP_MREQ+4),HL
+        LD      HL,KP_NSLOTS
+        CALL    KP_OVER
+        JP      NZ,KP_BAD
+        LD      DE,KP_MREQ
+        CALL    CFGB+3
+        OR      A
+        JP      NZ,KP_BAD
         CALL    KP_GETCURSOR
+        LD      A,(KP_CLASS)            ; selector callback clobbers classification A
         OR      A
         JP      Z,KP_SLESS
         CP      1
@@ -160,9 +176,7 @@ KP_SFUL:                                ; prepare retained pointer-slot union
         LD      (KP_UREQ+11),A
         LD      A,0CCH
         LD      (KP_UREQ+12),A
-        LD      HL,KP_NSLOTS
-        CALL    KP_OVER
-        JP      NZ,KP_BAD
+        ; R3SLOTS remains resident from the monitor-selection check above.
         LD      DE,KP_UREQ
         CALL    CFGB
         OR      A
@@ -519,6 +533,7 @@ KP_CAP:         DB      0               ; worst-case union capacity
 KP_COUNT:       DB      0               ; returned union count
 KP_UREQ:        DS      13              ; pointer-union request
 KP_SREQ:        DS      23              ; snapshot request
+KP_MREQ:        DS      6
 KP_HREQ:        DS      6               ; replacement-overlay handoff request
 
         .DEPHASE
