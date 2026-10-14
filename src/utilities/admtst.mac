@@ -1,0 +1,66 @@
+; ADM-3A development test utility: foundation checks only.
+BDOS EQU 5
+        CSEG
+        .PHASE 0100H
+START:
+        LD DE,LOOKUP
+        LD C,182
+        CALL BDOS
+        OR A
+        JR NZ,NO_MONITOR
+        LD HL,(LOOKUP+12)
+        LD (SERVICE),HL
+        LD A,4
+        CALL INVOKE
+        LD DE,TITLE
+        CALL PRINT
+        LD DE,POSITION
+        CALL PRINT
+        LD DE,MARKER
+        CALL PRINT
+        LD DE,WAIT
+        CALL PRINT
+        LD C,1
+        CALL BDOS
+        ; Abandon a partially supplied row/column address before normal output.
+        LD DE,PARTIAL
+        CALL PRINT
+        LD A,5
+        CALL INVOKE
+        LD DE,RESET_TEXT
+        CALL PRINT
+        LD DE,WAIT
+        CALL PRINT
+        LD C,1
+        CALL BDOS
+        LD A,4
+        CALL INVOKE
+        LD DE,DONE
+        CALL PRINT
+        JP 0
+NO_MONITOR:
+        LD DE,MISSING
+        CALL PRINT
+        JP 0
+PRINT:
+        LD C,9
+        JP BDOS
+INVOKE:
+        LD HL,(SERVICE)
+        JP (HL)
+LOOKUP: DB 1,20,0,0,'MCON',1,0
+        DW 0,0
+        DB 0,0
+        DW 0
+        DB 0,0
+SERVICE: DW 0
+TITLE: DB 'ADM3A foundation test -- requires ADM3A.RSX.',13,10,'$'
+POSITION: DB 27,'=',32+5,32+10,'$'
+MARKER: DB 'Marker: row 5, column 10 (zero-based).',13,10,'$'
+WAIT: DB 'Press a key to continue.',13,10,'$'
+PARTIAL: DB 27,'=',32+1,'$'
+RESET_TEXT: DB 'Parser reset: this text should remain readable.',13,10,'$'
+DONE: DB 'Foundation checks complete. Full MM qualification pending.',13,10,'$'
+MISSING: DB 'No MCON provider loaded. Load the development ADM3A.RSX.',13,10,'$'
+        .DEPHASE
+        END
