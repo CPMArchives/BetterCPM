@@ -10,6 +10,7 @@ FOLDER = ROOT / 'build/audit/monitor-efficiency/hooks-multiplex'
 
 def main():
     cpu, symbols = load(FOLDER)
+    cpu.mem[3] = 0x55
     cell = symbols['MP_MON']
     raw = symbols['MC_RAW']
     # Reset covers cold initialization and detaching before movement.
@@ -17,9 +18,9 @@ def main():
     assert cpu.word(cell) == raw
     for index in range(17):
         assert cpu.mem[LAYOUT['BIOS'] + index * 3] == 0xC3
-    assert symbols['MONCALL'] == LAYOUT['BIOS'] + 63
-    assert symbols['MONRAW'] == LAYOUT['BIOS'] + 66
-    assert symbols['MONBASE'] == LAYOUT['BIOS'] + 69
+    assert symbols['MONCALL'] == LAYOUT['BIOS'] + 66
+    assert symbols['MONRAW'] == LAYOUT['BIOS'] + 69
+    assert symbols['MONBASE'] == LAYOUT['BIOS'] + 72
 
     # Fake provider records operation and input byte, returning FEh.
     provider = 0x8000

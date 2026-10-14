@@ -161,6 +161,8 @@ def monitor_hooks(source: str) -> str:
     Hook only the CRT paths. Raw backend access cannot re-enter IOBYTE or
     monitor dispatch. Provider publication/lifecycle remains outside this audit.
     """
+    if "MONCALL: JP MC_CALL" in source:
+        return source
     replacements = [('JP Z,PL_CONOT', 'JP Z,MH_OUT'),
                     ('JP PL_CONOT', 'JP MH_OUT'),
                     ('CALL PL_CONST', 'LD A,1\n        CALL MC_CALL'),

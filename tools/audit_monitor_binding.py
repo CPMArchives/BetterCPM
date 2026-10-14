@@ -13,7 +13,7 @@ from system_layout import LAYOUT
 out=root/'build/audit/monitor-efficiency/hooks-multiplex'
 assemble(source('rsxmover.mac','RMBASE',0x7000),'mover-fixture',0x7000,out,Path('/Users/nathanael/bin/z80asm'))
 s=source('rsxsched.mac','RSBASE',LAYOUT['CONFIG']+0x120)
-s=s.replace('RS_PREPARE:','RS_PREPARE:\n        CALL    0%04XH\n;' % (LAYOUT['BIOS']+69),1)
+s=s.replace('RS_PREPARE:','RS_PREPARE:\n        CALL    0%04XH\n;' % (LAYOUT['BIOS']+72),1)
 old='        JP      NZ,RS_EXEC\n        JP      RS_DONE'
 assert s.count(old)==1
 s=s.replace(old,'        JP      NZ,RS_EXEC\n        JR      RS_DONE')

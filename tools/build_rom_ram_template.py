@@ -18,7 +18,7 @@ MUTABLE_COMPONENT_BYTES = {
     "bdos.bin": 109,
     "extensions.bin": 5,
     "disk.bin": 38,
-    "bios.bin": 12,
+    "bios.bin": 14,
     "fileloader.bin": 36,
     "tables.bin": 576,
 }

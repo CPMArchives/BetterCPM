@@ -854,6 +854,7 @@ def install_drive_tables(cpu: Z80, dph_base: int = LAYOUT["TABLES"],
 def main() -> None:
     data = IMAGE.read_bytes()
     cpu = Z80(data)
+    cpu.run(BASE + 72)  # basic binding before isolated console use
     cpu.mem[3] = 0x95                    # actual cold default selects CRT
     listing = IMAGE.with_suffix('.lst').read_text(errors='replace')
     def console_symbol(name):
@@ -871,12 +872,12 @@ def main() -> None:
 
     boot_target = cpu.word(entries[0] + 1)
     require(cpu.mem[boot_target] == 0xCD and
-            cpu.mem[boot_target + 8] == 0xC3 and
-            BASE <= cpu.word(boot_target + 9) < BASE + len(data),
+            cpu.mem[boot_target + 11] == 0xC3 and
+            BASE <= cpu.word(boot_target + 12) < BASE + len(data),
             "BOOT does not initialize the platform then reconstruct commands")
     warm_target = cpu.word(entries[1] + 1)
     require(cpu.mem[warm_target] == 0xC3 and
-            cpu.word(warm_target + 1) == cpu.word(boot_target + 9),
+            cpu.word(warm_target + 1) == cpu.word(boot_target + 12),
             "WBOOT does not enter command-image restoration")
     private_read = BASE + 17 * 3
     private_cursor = private_read + 3
@@ -963,6 +964,7 @@ def main() -> None:
     platform_conout = console_symbol('M4_SCROLL_OUT')
 
     scroll_cpu = Z80(data)
+    scroll_cpu.run(BASE + 72)  # basic binding before isolated console use
     scroll_cpu.mem[3] = 0x95
     scroll_cpu.mem[0xF800:0xFF80] = bytes((0x20,)) * 1920
     scroll_cpu.mem[0xFF80] = 0xA5
@@ -979,6 +981,7 @@ def main() -> None:
             "CONOUT wrote beyond Model 4 video RAM")
 
     wrap_cpu = Z80(data)
+    wrap_cpu.run(BASE + 72)  # basic binding before isolated console use
     wrap_cpu.mem[3] = 0x95
     wrap_cpu.mem[0xF800:0xFF80] = bytes((0x20,)) * 1920
     wrap_cpu.mem[0xFF80] = 0x5A
@@ -993,6 +996,7 @@ def main() -> None:
 
     # A BS must move the display cursor, not occupy a character cell.
     back_cpu = Z80(data)
+    back_cpu.run(BASE + 72)  # basic binding before isolated console use
     back_cpu.mem[3] = 0x95
     back_cpu.mem[0xF800:0xFF80] = b" " * 1920
     back_cpu.mem[0xF7FF] = 0xA5

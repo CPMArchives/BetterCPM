@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def check(profile, provider=False):
     cpu, labels = load(ROOT / 'build/audit/iobyte/trs80m4' / profile)
-    if profile == 'combined':
+    if 'MONBASE' in labels:
         cpu.run(labels['MONBASE'])
     if provider:
         # Multiplex callback: status=ready, input=C1h, output tag=66h.
@@ -46,7 +46,7 @@ def check(profile, provider=False):
             assert cpu.c == ord('X')
             assert cpu.mem[3] == byte
             count += 1
-    if profile == 'combined':
+    if 'MONBASE' in labels:
         for selector, expected in [(0, 0x77), (1, 1), (2, 0xC1)]:
             cpu.a = selector
             cpu.run(labels['MONRAW'])

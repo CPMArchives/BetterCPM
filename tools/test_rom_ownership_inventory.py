@@ -12,8 +12,8 @@ from system_layout import LAYOUT
 ROOT = Path(__file__).resolve().parents[1]
 INVENTORY = ROOT / "metadata/rom-ram-ownership.tsv"
 
-RELOCATION_BYTES = {"trs80": 2253, "z80pack": 2251}
-ROM_RAM_BYTES = {"trs80": 2256, "z80pack": 2254}
+RELOCATION_BYTES = {"trs80": 2255, "z80pack": 2253}
+ROM_RAM_BYTES = {"trs80": 2258, "z80pack": 2256}
 STORAGE_CLASSES = {
     "bounded PDS state",
     "fixed subsystem state",
@@ -41,6 +41,8 @@ ANCHORS = {
     "trs80-bios-disk-state": ("bios/bios.lst:BIO_DRIVE", "bios/bios.lst:M4_INIT"),
     "trs80-bios-console-state": ("bios/bios.lst:M4CURSOR", "bios/bios.lst:M4_SCROLL_OUT"),
     "z80pack-bios-disk-state": ("bios.lst:BIO_DRIVE", "bios.lst:PL_INIT"),
+    "trs80-monitor-binding": ("bios/bios.lst:MP_MON", "bios/bios.lst:MP_MON_END"),
+    "z80pack-monitor-binding": ("bios.lst:MP_MON", "bios.lst:MP_MON_END"),
     "file-stream-fcb": ("system/fileloader.lst:FL_FCB", LAYOUT["TABLES"]),
     "trs80-live-disk-tables": ("system/tables.lst:DPH0", LAYOUT["RSX_STATE"]),
     "z80pack-live-disk-tables": ("tables.lst:ZDPH0", LAYOUT["RSX_STATE"]),

@@ -53,8 +53,8 @@ def main() -> None:
             covered += count
     if covered != manifest["immutable_source_bytes"]:
         raise AssertionError("immutable fragment coverage is incomplete")
-    if sum(component["mutable_bytes"] for component in manifest["components"]) != 866:
-        raise AssertionError("mutable complement is not the accepted 866 source bytes")
+    if sum(component["mutable_bytes"] for component in manifest["components"]) != 868:
+        raise AssertionError("mutable complement is not the accepted 868 source bytes")
 
     for segment, filename in zip(manifest["segments"], ("ram-init.bin", "cold-init.bin")):
         data = (args.artifacts.resolve() / filename).read_bytes()
@@ -64,13 +64,13 @@ def main() -> None:
     used = manifest["used_bytes"]
     if image[used:] != b"\xFF" * manifest["spare_bytes"]:
         raise AssertionError("ROM packing padding is not erased-state FFh")
-    if manifest["used_bytes"] != 7890 or manifest["spare_bytes"] != 558:
+    if manifest["used_bytes"] != 7952 or manifest["spare_bytes"] != 496:
         raise AssertionError("accepted ROM packing budget changed")
     if manifest["candidate_entry_inputs"] != {
-            "template": 0xF450, "cold_initializer": 0xFDBC, "bdos": 0xDF9E}:
+            "template": 0xF48E, "cold_initializer": 0xFDFA, "bdos": 0xDF9E}:
         raise AssertionError("accepted candidate entry addresses changed")
-    print("ROM packing verified: 5456 immutable-source + 2412 template + "
-          "22 initializer bytes; 558 spare; relocation still required")
+    print("ROM packing verified: 5518 immutable-source + 2412 template + "
+          "22 initializer bytes; 496 spare; relocation still required")
 
 
 if __name__ == "__main__":

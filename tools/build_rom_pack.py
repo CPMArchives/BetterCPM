@@ -14,8 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 OWNERSHIP = ROOT / "metadata/rom-ram-ownership.tsv"
 ROM_BASE = 0xDF00
 ROM_END = 0x10000
-EXPECTED_IMMUTABLE = 5456
-EXPECTED_MUTABLE = 866
+EXPECTED_IMMUTABLE = 5518
+EXPECTED_MUTABLE = 868
 
 
 def digest(data: bytes) -> str:
