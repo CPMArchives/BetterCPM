@@ -2,7 +2,7 @@
 
 ## Status
 
-This records the first two development stages of the Model 4 MM-style ADM-3A provider,
+This records the development stages of the Model 4 MM-style ADM-3A provider,
 not a released terminal personality. It is deliberately excluded from the
 system disk, ordinary RSX build output and cold-boot startup.
 
@@ -13,7 +13,7 @@ changes. This is a backend-specific dependency, not a new portable BIOS ABI.
 
 The carrier uses STATEFUL reconstruction, one MCON 1.0 descriptor, Model 4
 compatibility bit 0001h, and an ordinary pass-through BDOS entry. The current
-payload is 447 bytes, with 38 static relocation slots and a 512-byte allocation
+payload is 496 bytes, with 47 static relocation slots and a 512-byte allocation
 including its runtime descriptor. Loading it also incurs the existing RSX
 manager allocation if that manager is not already present.
 
@@ -36,7 +36,17 @@ line feed preserves the current column. EOL/EOS erase includes the cursor cell
 and does not move it. The renderer shares advancement, scrolling and bounded
 fill routines rather than depending on the basic console's control meanings.
 
-Bell, reverse-video controls and insert/delete line remain unimplemented.
+The third stage implements 0Eh reverse OFF, 16h reverse toggle and the Model 4
+bell. Reverse mode sets video-memory bit 7 on printable output and blank cells
+created by EOL/EOS erase, clear and scrolling. Parser reset and clear preserve
+this persistent mode. Clear/home shares the mode-aware EOS erase routine,
+keeping the allocation at 512 bytes including the descriptor. Bell writes
+256 bounded high/low cycles to port 90h, with
+100 writes per half-cycle, without changing screen, cursor or terminal modes.
+Automated pulse checks establish the output pattern, not audible emulator or
+hardware qualification.
+
+Control 0Fh and insert/delete line remain qualification gates.
 Those bytes are consumed in this development stage, not passed to the basic
 renderer; that prevents 1Ch from accidentally clearing the screen. Consuming
 required controls is temporary containment, not implementation of the MM
@@ -55,7 +65,9 @@ and both key pauses. This fixture does not replace RSX lifecycle qualification.
 operations at both load addresses (46,080 cases). Each case checks complete
 framebuffer contents, cursor/column coherence and guard bytes immediately
 outside video memory. It also checks ignored controls and containment of the
-unfinished controls. These tests establish the specified screen operations;
+unfinished controls. It additionally checks reverse OFF/toggle, persistent mode
+across reset/clear, reverse blank fills and bottom-row scrolling, and all 51,200
+bell writes at each load address. These tests establish the specified screen operations;
 they do not settle the explicitly unresolved historical behaviors.
 
 For a manual development check, load only this ADM3A provider and run ADMTST.

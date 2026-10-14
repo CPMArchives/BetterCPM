@@ -59,14 +59,56 @@ def main():
                     cases+=1
         # Ignored controls and deliberately unfinished controls must not leak
         # into the basic renderer or accidentally clear the screen.
-        for char in list(range(7))+list(range(16,21))+[7,14,15,22,28,29,31]:
+        for char in list(range(7))+list(range(16,21))+[15,28,29,31]:
             cpu.mem[0xF800:0xFF80]=pattern
             cpu.setword(bios['M4CURSOR'],0xF864)
             cpu.mem[bios['M4COLUMN']]=20
             output(char)
             assert cpu.mem[0xF800:0xFF80]==pattern
             assert cpu.word(bios['M4CURSOR'])==0xF864
-    print(f'PASS: {cases} relocated screen/cursor cases, guarded video boundaries and control containment')
+        def invoke(op):
+            cpu.a=op
+            cpu.run(entry,limit=15000)
+        output(22)
+        reverse=syms['AM_REVERSE']+base-0x8000
+        assert cpu.mem[reverse]==128
+        invoke(5)
+        assert cpu.mem[reverse]==128
+        invoke(4)
+        assert cpu.mem[reverse]==128
+        assert cpu.mem[0xF800:0xFF80]==b'\xa0'*1920
+        output(ord('A'))
+        assert cpu.mem[0xF800]==193
+        for char,length in [(21,79),(24,79),(23,1919),(25,1919)]:
+            cpu.mem[0xF800:0xFF80]=pattern
+            cpu.setword(bios['M4CURSOR'],0xF801)
+            cpu.mem[bios['M4COLUMN']]=1
+            output(char)
+            assert cpu.mem[0xF801:0xF801+length]==b'\xa0'*length
+            assert cpu.mem[0xF800]==pattern[0]
+        cpu.setword(bios['M4CURSOR'],0xFF7F)
+        cpu.mem[bios['M4COLUMN']]=79
+        output(ord('Z'))
+        assert cpu.mem[0xFF2F]==ord('Z')|128
+        assert cpu.mem[0xFF30:0xFF80]==b'\xa0'*80
+        output(22)
+        assert cpu.mem[reverse]==0
+        output(22)
+        output(14)
+        assert cpu.mem[reverse]==0
+        output(ord('N'))
+        assert cpu.mem[0xFF30]==ord('N')
+        before=(bytes(cpu.mem[0xF800:0xFF80]),cpu.word(bios['M4CURSOR']),
+                cpu.mem[bios['M4COLUMN']],cpu.mem[reverse])
+        pulses=[]
+        cpu.port_write=lambda port,value:pulses.append((port&255,value))
+        cpu.a,cpu.c=0,7
+        cpu.run(entry,limit=120000)
+        assert len(pulses)==51200
+        assert pulses==([(0x90,1)]*100+[(0x90,0)]*100)*256
+        assert before==(bytes(cpu.mem[0xF800:0xFF80]),cpu.word(bios['M4CURSOR']),
+                        cpu.mem[bios['M4COLUMN']],cpu.mem[reverse])
+    print(f'PASS: {cases} relocated screen/cursor cases, guarded video boundaries control containment, reverse modes and bounded bell pulses')
 
 
 if __name__=='__main__':main()

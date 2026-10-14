@@ -33,7 +33,7 @@ def main():
         def call(op,c=0):
             cpu.a,cpu.c=op,c
             sp=cpu.sp
-            cpu.run(entry,limit=10000)
+            cpu.run(entry,limit=15000)
             assert cpu.sp==sp
             return cpu.a
         for row in range(256):
@@ -93,7 +93,7 @@ def test_utility(code, table, slots, bios):
         def emit(char):
             saved={k:getattr(cpu,k) for k in ['a','b','c','d','e','h','l','pc','z','carry']}
             cpu.a,cpu.c=0,char
-            cpu.run(entry,limit=10000)
+            cpu.run(entry,limit=15000)
             for k,v in saved.items():setattr(cpu,k,v)
         def bdos(port,value):
             assert port&255==254
@@ -112,7 +112,7 @@ def test_utility(code, table, slots, bios):
                 cpu.a=ord(' ')
             else:raise AssertionError(f'unexpected BDOS function {cpu.c}')
         cpu.port_write=bdos
-        cpu.run(256,limit=100000)
+        cpu.run(256,limit=150000)
         if available:
             assert len(pauses)==2
             assert pauses[0][410:].startswith(b'Marker: row 5, column 10 (zero-based).'), repr(pauses[0][400:480])
