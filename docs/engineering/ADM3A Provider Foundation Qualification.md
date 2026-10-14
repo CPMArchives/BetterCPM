@@ -60,7 +60,7 @@ addresses, checks all 65,536 wire row/column pairs at each address, and checks
 reset, visibility, clear/home, printable output and raw bypass. It also runs
 the assembled development utility with controlled BDOS lookup and input,
 checking missing-provider preflight, marker placement, partial-address reset
-and both key pauses. This fixture does not replace RSX lifecycle qualification.
+and the expanded visual/keyboard phases. This fixture does not replace RSX lifecycle qualification.
 
 `tools/test_adm3a_screen.py` checks all 1,920 cursor positions for twelve screen
 operations at both load addresses (46,080 cases). Each case checks complete
@@ -71,18 +71,59 @@ across reset/clear, reverse blank fills and bottom-row scrolling, and all 51,200
 bell writes at each load address. These tests establish the specified screen operations;
 they do not settle the explicitly unresolved historical behaviors.
 
-For a manual development check, load only this ADM3A provider and run ADMTST.
-The marker should appear at zero-based row 5, column 10. Press a key, confirm
-the parser-reset message remains readable, then press a key again. The final
-clear should put the completion message at the top. ADMTST looks up MCON; it
-does not identify the personality, so another MCON provider must not be used
-for this check.
+## Expanded ADMTST
+
+Load only ADM3A.RSX and run ADMTST. Four pauses present addressing/reset,
+movement and video pages. Movement includes backspace, tab, right, carriage
+return, line feed and up. The video page exercises reverse ON/OFF/toggle,
+EOL/EOS erase, insert/delete line, bell, and cursor OFF/ON service queries.
+The line pattern should read A, a blank row, C and D: B is deleted. Cursor query
+checks do not establish visible blinking/presentation by themselves.
+
+Then type uppercase A, colon, opening bracket and closing bracket, without
+ENTER. A mismatch reports the test incomplete; successful input prints
+`ADMTST keyboard checks passed.` Visual appearance and audible bell require
+separate observation. The utility resolves MCON rather than identifying a
+personality; do not use another provider for these checks.
+
+Coordinate streams use zero termination and BDOS character output: encoded
+coordinates may contain 24h, so BDOS's dollar-terminated output cannot safely
+send them. Automated utility checks cover marker placement, both visual pages,
+line results, bell writes, successful keyboard input and the mismatch path.
 
 ## Remaining release gates
 
-Expand the dedicated test utility, qualify keyboard/cursor presentation and run
-native and ROM-backed Model 4 builds with representative ADM-3A software.
+Qualify keyboard/cursor presentation and run
+native and an appropriate ROM-backed Model 4 target, if available, with representative
+ADM-3A software.
 The selected binary now settles 0Fh and insert/delete-line behavior, and the
 actual carrier has passed controlled production lifecycle execution. Those
 checks do not substitute for actual-media and application qualification. Add
 the provider and test utility to distribution only after remaining gates pass.
+
+
+## Native trs80gp execution
+
+The expanded utility ran from private media based on the Model 4 distribution
+image, with the current ADM3A.RSX, ADMTST.COM and corrected R3PACK.RSX installed.
+The test loaded ADM3A, advanced all four pauses, supplied `A:[]`, unloaded the
+provider, and captured the final screen. The capture contains:
+
+```
+ADMTST keyboard checks passed. Confirm visual pages and bell separately.
+A0>RSX UNLOAD ADM3A
+A0>
+```
+
+The generated capture is `build/monitor-development/admtst-native-screen.bin`.
+This establishes actual service lookup, execution of the visual-control streams
+and cursor queries, character input and return/unload on the native Model 4
+build. It does not establish the intermediate pages' visible appearance or
+an audible bell, because the capture is taken after their pages are cleared.
+Those remain separate observation gates, along with a representative real
+ADM-3A application.
+
+The existing protected ROM qualification target is cpmsim. ADM3A.RSX advertises
+Model 4 backend compatibility only; loading it into that ROM target cannot
+qualify Model 4 rendering. A ROM-backed Model 4 rendering claim requires an
+appropriate target rather than relabeling the cpmsim campaign.

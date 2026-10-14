@@ -67,14 +67,14 @@ def main():
         assert cpu.word(bios['M4CURSOR'])==0xF801
         assert call(6)==255
     test_utility(code, table, slots, bios)
-    print('PASS: development utility preflight, addressing, reset and two key pauses')
+    print('PASS: development utility preflight, addressing, reset, visual pages, bell and keyboard input')
     print('PASS: 131072 address sequences, relocation, parser reset, cursor visibility, basic clear and raw bypass')
 
 
 def test_utility(code, table, slots, bios):
     """Run the real utility with controlled BDOS and real provider output."""
     image=(OUT/'ADMTST.COM').read_bytes()
-    for available in [False, True]:
+    for available,bad_key in [(False,False),(True,False),(True,True)]:
         cpu=Z80((ROOT/'build/bios/bios.bin').read_bytes())
         cpu.mem[256:256+len(image)]=image
         cpu.setword(1,LAYOUT['BIOS']+3)
@@ -90,34 +90,48 @@ def test_utility(code, table, slots, bios):
         entry=table['AM_ENTRY']+base-0x8000
         output=bytearray()
         pauses=[]
+        answers=iter(b'    X' if bad_key else b'    A:[]')
+        pulses=[]
         def emit(char):
             saved={k:getattr(cpu,k) for k in ['a','b','c','d','e','h','l','pc','z','carry']}
             cpu.a,cpu.c=0,char
-            cpu.run(entry,limit=15000)
+            cpu.run(entry,limit=120000)
             for k,v in saved.items():setattr(cpu,k,v)
         def bdos(port,value):
+            if port&255==0x90:
+                pulses.append(value)
+                return
             assert port&255==254
             if cpu.c==182:
                 assert bytes(cpu.mem[cpu.de+4:cpu.de+10])==b'MCON\x01\x00'
                 cpu.setword(cpu.de+12,entry)
                 cpu.a=0 if available else 255
-            elif cpu.c==9:
-                end=cpu.mem.index(36,cpu.de)
-                text=bytes(cpu.mem[cpu.de:end])
-                output.extend(text)
-                if available:
-                    for char in text:emit(char)
+            elif cpu.c==2:
+                output.append(cpu.e)
+                if available:emit(cpu.e)
             elif cpu.c==1:
                 pauses.append(bytes(cpu.mem[0xF800:0xFF80]))
-                cpu.a=ord(' ')
+                cpu.a=next(answers)
             else:raise AssertionError(f'unexpected BDOS function {cpu.c}')
         cpu.port_write=bdos
         cpu.run(256,limit=150000)
-        if available:
-            assert len(pauses)==2
+        if available and bad_key:
+            assert len(pauses)==5
+            assert b'Keyboard mismatch.' in output
+            assert b'ADMTST keyboard checks passed.' not in output
+        elif available:
+            assert len(pauses)==8
             assert pauses[0][410:].startswith(b'Marker: row 5, column 10 (zero-based).'), repr(pauses[0][400:480])
             assert b'Parser reset: this text should remain readable.' in pauses[1]
-            assert bytes(cpu.mem[0xF800:0xFF80]).startswith(b'Foundation checks complete.')
+            assert bytes(cpu.mem[0xF800:0xFF80]).startswith(b'ADMTST keyboard checks passed.')
+            assert len(pulses)==51200
+            assert pauses[2][160:164]==b'LEFT',repr(pauses[2])
+            assert pauses[2][248:250]==b'AB'
+            assert pauses[2][320:325]==b'RIGHT'
+            assert pauses[3][800:806]==b'LINE A'
+            assert pauses[3][880:960]==b' '*80
+            assert pauses[3][960:966]==b'LINE C'
+            assert pauses[3][1040:1046]==b'LINE D'
             assert cpu.mem[table['AM_STATE']+base-0x8000]==0
         else:
             assert not pauses

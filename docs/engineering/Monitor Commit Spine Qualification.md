@@ -30,7 +30,7 @@ now include the real BIOS hook primitives rather than an uninitialized vector.
 
 ## Size and validation
 
-Scheduler: 496 bytes, exactly its existing region. Publisher: 105 bytes,
+Scheduler: 496 bytes, exactly its existing region. Publisher: 107 bytes after the request-storage overlap fix,
 continuation offsets unchanged. Finalizer: 914 bytes, within its 1,012-byte
 prefix. Commit engine: unchanged at 1,007 bytes. R3PACK remains 15,360 bytes
 and the manager reservation remains 1KiB. No permanent BIOS/BDOS growth or
@@ -60,3 +60,25 @@ basic-target default with the prepared target. Warm-return sequence reset,
 internal clear/home migration, ADM-3A/VT52 providers and their test utilities
 remain pending. Do not describe this intermediate stage as installed monitor
 support.
+
+
+## Resolver restoration regression
+
+Expanded ADMTST exposed a post-commit failure: a provider could be installed
+and listed, while Function 182 could not resolve MCON. The publisher's RT_REQ
+word overlapped the first byte of fixed RT_CONT. Moving RT_REQ after RT_IMAGE
+adds two helper bytes, stays within the existing move overlay, and preserves
+the continuation offsets and permanent memory layout.
+
+The publication test now checks that publication leaves continuation code
+unchanged and executes its prefetched-resolver copy. The actual ADM3A lifecycle
+check now invokes the real Function-182 gateway after installation, verifying
+that its entry matches the published monitor binding. Existing selection,
+movement and unload checks also pass with the correction.
+
+
+A native trs80gp run of the corrected helper and expanded ADMTST reached its
+keyboard-success message, then unloaded ADM3A and returned to the CCP. The
+previous private run with the overlapping helper loaded/listed ADM3A but could
+not look up MCON. This actual-emulator before/after agrees with the new resolver
+restoration and post-transaction service-lookup regression checks.

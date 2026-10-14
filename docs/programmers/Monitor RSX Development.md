@@ -125,3 +125,10 @@ Its clear operation fills video memory without reinitializing the keyboard.
 See [ADM-3A foundation qualification](../engineering/ADM3A%20Provider%20Foundation%20Qualification.md)
 for build dependencies, checks and remaining gates. This example is incomplete;
 copying its basic-renderer fallback does not implement a new terminal personality.
+
+
+ADMTST now includes movement, reverse/erase/line-operation pages, bell and cursor
+queries, and a short keyboard check. Its character-output routine is also an
+example of safely sending coordinate bytes that can include 24h; BDOS 9 would
+prematurely terminate such a stream. A successful keyboard result is separate
+from visual and audible qualification.

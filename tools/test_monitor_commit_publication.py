@@ -46,6 +46,18 @@ def main():
     assert cpu.word(binding) == provider
     assert cpu.word(public + 12) == 0xFFFF
     assert cpu.word(commit.GEN) == generation + 1 and cpu.mem.stores == 1
+    # The request word must not overwrite the fixed continuation's first byte.
+    continuation=publisher+0x50
+    expected_code=image[0x50:0x67]
+    assert bytes(cpu.mem[continuation:continuation+len(expected_code)])==expected_code
+    source=0x7000
+    restored=bytes((i%251 for i in range(0x3F4)))
+    cpu.mem[source:source+len(restored)]=restored
+    cpu.setword(publisher+0x67,source)
+    cpu.a=0
+    cpu.run(continuation,limit=100000)
+    assert bytes(cpu.mem[LAYOUT['RSX']:LAYOUT['RSX']+len(restored)])==restored
+    assert cpu.sp==0x5F00
     # A rejected scheduler plan must not detach the original binding.
     rejected, _ = commit.setup(bad_snapshot_size=True)
     rejected.setword(binding, 0x9100)
