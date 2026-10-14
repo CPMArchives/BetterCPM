@@ -1,3 +1,4 @@
+        INCLUDE layout.inc
 ; Phase-3 BRSX metadata normalizer.
 ;
 ; DE -> request:
@@ -240,6 +241,9 @@ RXM_IDOK:
         JP      C,RXM_SVCFIT
         JP      NZ,RXM_BAD
 RXM_SVCFIT:
+        CALL    RXM_MONITOR
+        OR      A
+        JP      NZ,RXM_BAD
         LD      HL,(RXM_DATA)
         LD      DE,(RXM_CURSOR)
         LD      BC,10
@@ -410,6 +414,56 @@ RXM_PUBLISH:
         LD      (HL),1
         XOR     A
         RET
+
+; MCON is a reserved callable identity, not an ordinary opaque service.
+; Check every candidate and retained carrier before publishing metadata facts.
+; Binding/duplicate-profile selection remains the preparation phase's concern.
+RXM_MONITOR:
+        LD      HL,(RXM_DATA)
+        LD      DE,RXM_MCON
+        LD      B,4
+RXM_MID:
+        LD      A,(DE)
+        CP      (HL)
+        JR      NZ,RXM_MOK             ; other callable identities unchanged
+        INC     DE
+        INC     HL
+        DJNZ    RXM_MID
+        LD      A,(HL)                 ; major/minor exactly 1.0
+        CP      1
+        JR      NZ,RXM_MBAD
+        INC     HL
+        LD      A,(HL)
+        OR      A
+        JR      NZ,RXM_MBAD
+        LD      HL,(RXM_FACTS)
+        LD      DE,20
+        ADD     HL,DE
+        LD      A,(HL)
+        CP      1                      ; STATEFUL is mandatory
+        JR      NZ,RXM_MBAD
+        CALL    LY_BIOS+63             ; already installed BIOS character query
+        LD      A,L
+        AND     1                      ; host TTY exists only on cpmsim
+        INC     A                      ; Model 4 bit 0 / cpmsim bit 1
+        LD      B,A
+        LD      HL,(RXM_DATA)
+        LD      DE,8
+        ADD     HL,DE
+        LD      A,(HL)
+        CP      B                      ; exactly the matching backend bit
+        JR      NZ,RXM_MBAD
+        INC     HL
+        LD      A,(HL)
+        OR      A                      ; no other capability bits
+        JR      NZ,RXM_MBAD
+RXM_MOK:
+        XOR     A
+        RET
+RXM_MBAD:
+        LD      A,0FFH
+        RET
+RXM_MCON:      DB      'MCON'
 
 RXM_BAD:
         LD      A,0FFH
