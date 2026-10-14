@@ -113,3 +113,15 @@ terminal compatibility. Record unsupported behavior explicitly.
 
 A general TCAP capability schema, terminal database and broader discovery API
 remain post-1.0 work. Do not treat the 1.0 backend bits as that future schema.
+
+## First development example: ADM-3A
+
+The unshipped foundation is in `src/rsx/adm3a.mac`, with its builder in
+`tools/build_adm3a.py` and development test utility in `src/utilities/admtst.mac`.
+It illustrates the callable entry, ordinary chain pass-through, static
+relocation, parser storage, MONRAW bypass and direct Model 4 cursor updates.
+Its clear operation fills video memory without reinitializing the keyboard.
+
+See [ADM-3A foundation qualification](../engineering/ADM3A%20Provider%20Foundation%20Qualification.md)
+for build dependencies, checks and remaining gates. This example is incomplete;
+copying its basic-renderer fallback does not implement a new terminal personality.
