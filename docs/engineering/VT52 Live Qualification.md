@@ -77,8 +77,9 @@ Graphics and alternate/auxiliary keypad support are optional in the accepted
 unsupported, and identification remains ESC / K. Abstract arrow/keypad events
 are a backend concern: the provider does not invent them from arbitrary host
 bytes. Unresolved historical parser cases remain research-only with bounded
-recovery. Release version/build identities, distribution/startup selection and
-protected-ROM execution remain subsequent integration/qualification work.
+recovery. Release integration now supplies module version 1.0 and VT52TST 1.0 Build 001.
+Both files are included on the cpmsim disk; startup selection remains unchanged.
+Protected-ROM execution passed as recorded below.
 
 ## Protected-ROM cpmsim qualification
 
@@ -100,5 +101,7 @@ from that disposable copy to make directory space. Original media are untouched.
 The source checkout for the simulator can be selected with `--z80pack-source`.
 
 Evidence: `build/vt52-development/live/cpmsim-oetl2jp2/transcript.bin`.
-Release identities, normal distribution inclusion and startup policy remain
-separate work.
+The release-identity campaign also passed against fresh distribution media,
+including `/VER` before loading a monitor and the protected-ROM lifecycle.
+The cpmsim system disk contains 24 files with 174K free; ED.COM remains planned.
+Automatic startup selection remains separate work.

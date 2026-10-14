@@ -2,11 +2,11 @@
 
 ## Status and build
 
-The first VT52 development stage targets cpmsim with an ANSI host terminal.
-It is not distributed or loaded by startup. ADM3A's Model 4 release is unchanged.
+VT52 targets cpmsim with an ANSI host terminal.
+It is included on the cpmsim distribution disk but is not loaded by startup. ADM3A's Model 4 release is unchanged.
 
 `tools/build_vt52.py` emits VT52.RSX, VT52TST.COM and listings under
-`build/vt52-development`. The carrier is STATEFUL, module version 0.1, with an
+`build/vt52-development`. The carrier is STATEFUL, module version 1.0, with an
 MCON 1.0 callable service and backend bit 0002h. The ordinary RSX entry passes
 unclaimed BDOS calls through the next link. Payload is 653 bytes, with 116 static
 relocation slots and a 768-byte allocation including the runtime descriptor.

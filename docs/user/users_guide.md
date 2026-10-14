@@ -2812,3 +2812,22 @@ monitor. The test utility requires ADM3A rather than another MCON personality.
 
 ADM3A is Model 4-specific. Do not load it under cpmsim; VT52 and ANSI/VT100
 providers for that backend are separate implementations.
+
+### VT52 monitor on cpmsim
+
+The cpmsim system disk includes VT52.RSX, which translates VT52 screen
+commands into ANSI output for a macOS or Linux terminal. Use a terminal window
+of at least 80 columns and 24 rows. Only one monitor provider can be loaded.
+
+Load it with `RSX LOAD VT52`, then run `CLS` before starting screen software.
+Configure that software for VT52. Translation happens inside the loaded RSX;
+no cpmsim terminal translation setting is required.
+
+`VT52TST` exercises identification, positioning, tab stops and erasure with
+three keypress pauses. `VT52TST /VER` prints
+`BetterCP/M VT52TST 1.0 (Build 001)` without requiring a loaded monitor.
+
+Use `RSX UNLOAD VT52` to recover its memory. With no other RSXs loaded,
+the available TPA returns to 53K. The normal cold-boot script does not load
+VT52 automatically. Graphics, keypad modes and host arrow-key translation
+are outside this provider's supported subset.
