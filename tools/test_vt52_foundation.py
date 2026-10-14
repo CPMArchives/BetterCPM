@@ -75,13 +75,15 @@ def main():
                     elif seq==b'\x09':
                         c=min(79,col+1) if col>=72 else (col//8+1)*8
                         expected=position(r,c) if col<79 else b''
-                    elif seq==b'\x0a':r=min(23,row+1);expected=b'\n'
+                    elif seq==b'\x0a':
+                        r=min(23,row+1)
+                        expected=b'\n' if row<23 else b'\x1b[1;24r'+position(row,col)+b'\n\x1b[r'+position(row,col)
                     elif seq==b'\x0d':c=0;expected=position(r,c)
                     elif seq==b'\x1bA':r=max(0,row-1);expected=position(r,c) if row else b''
                     elif seq==b'\x1bB':r=min(23,row+1);expected=position(r,c) if row<23 else b''
                     elif seq==b'\x1bC':c=min(79,col+1);expected=position(r,c) if col<79 else b''
                     elif seq==b'\x1bH':r,c=0,0;expected=position(r,c)
-                    elif seq==b'\x1bI':r=max(0,row-1);expected=position(r,c) if row else b'\x1bM'
+                    elif seq==b'\x1bI':r=max(0,row-1);expected=position(r,c) if row else b'\x1b[1;24r'+position(row,col)+b'\x1bM\x1b[r'+position(row,col)
                     elif seq==b'\x1bJ':expected=b'\x1b[0J'
                     elif seq==b'\x1bK':expected=b'\x1b[0K'
                     assert send(seq)==expected,(base,row,col,seq,output,expected)
@@ -91,8 +93,9 @@ def main():
         cpu.mem[rowaddr],cpu.mem[coladdr]=5,10
         assert send(b'\x1bY\x7f\x7f')==position(5,79)
         for prefix in [b'\x1b',b'\x1bY',b'\x1bY!']:
-            send(prefix)
             old=(cpu.mem[rowaddr],cpu.mem[coladdr])
+            send(prefix)
+            assert (cpu.mem[rowaddr],cpu.mem[coladdr])==old
             output.clear();call(5)
             assert cpu.mem[state]==0 and not output
             assert (cpu.mem[rowaddr],cpu.mem[coladdr])==old
@@ -104,6 +107,15 @@ def main():
         assert call(1)==255
         assert call(2)==ord('a')
         assert call(6)==255
+        # Research finals remain non-contractual, but must recover safely.
+        for final in set(range(256))-set(b'YHABCDIJKZ'):
+            old=(cpu.mem[rowaddr],cpu.mem[coladdr])
+            count=cpu.mem[syms['VQ_COUNT']+base-0x8000]
+            assert send(bytes([27,final]))==b''
+            assert cpu.mem[state]==0
+            assert (cpu.mem[rowaddr],cpu.mem[coladdr])==old
+            assert cpu.mem[syms['VQ_COUNT']+base-0x8000]==count
+
         # Execute the assembled utility with controlled service lookup/input.
         image=(OUT/'VT52TST.COM').read_bytes()
         cpu.mem[256:256+len(image)]=image

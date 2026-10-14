@@ -20,15 +20,21 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def session(simulator: Path, disks: Path,
             commands: list[tuple[bytes, bytes, float]],
-            transcript_path: Path | None = None) -> bytes:
+            transcript_path: Path | None = None, *,
+            rom_image: Path | None = None, rom_start: str | None = None) -> bytes:
     environment = dict(os.environ)
     environment["PATH"] = (str(simulator.parent / "srctools") +
                            os.pathsep + environment["PATH"])
+    if rom_start is not None:
+        environment["CPMSIM_ROM_START"] = rom_start
+    arguments = [str(simulator), "-z", "-d", str(disks)]
+    if rom_image is not None:
+        arguments.extend(["-x", str(rom_image)])
     child, terminal = pty.fork()
     if child == 0:
         os.chdir(disks.parent)
         os.execve(str(simulator),
-                  [str(simulator), "-z", "-d", str(disks)], environment)
+                  arguments, environment)
     transcript = bytearray()
     pending = bytearray()
 

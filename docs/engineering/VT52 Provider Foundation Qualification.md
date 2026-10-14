@@ -8,7 +8,7 @@ It is not distributed or loaded by startup. ADM3A's Model 4 release is unchanged
 `tools/build_vt52.py` emits VT52.RSX, VT52TST.COM and listings under
 `build/vt52-development`. The carrier is STATEFUL, module version 0.1, with an
 MCON 1.0 callable service and backend bit 0002h. The ordinary RSX entry passes
-unclaimed BDOS calls through the next link. Payload is 589 bytes, with 100 static
+unclaimed BDOS calls through the next link. Payload is 653 bytes, with 116 static
 relocation slots and a 768-byte allocation including the runtime descriptor.
 Its cursor/parser and queue-index storage contains bytes, not internal runtime pointers.
 
@@ -38,11 +38,17 @@ containment. This does not settle the specification's outstanding historical
 parser questions. Low invalid coordinate parameters currently retain the
 corresponding coordinate; that is provisional and not a compatibility claim.
 
-The foundation assumes an ANSI host configured for 80 columns and 24 rows with
-ordinary full-screen scrolling and LF semantics. Larger windows, altered host
-scroll regions, terminal mode normalization and resize behavior are live
-qualification/design gates. In particular, byte-stream tests cannot establish
-that host LF scrolls at logical row 23 in a taller window.
+The host must provide at least 80 columns and 24 rows, ANSI cursor addressing,
+erasure and scrolling margins, and ordinary origin/LF modes. Boundary LF and
+reverse-LF temporarily set rows 1..24 as the scrolling area and explicitly
+restore full host margins and cursor position afterward. Independent rendering
+checks now cover 80x24 and 100x40 hosts. Arbitrary pre-existing host modes,
+smaller windows and resizing during a sequence are not qualified.
+
+Cursor address rows remain pending until the column arrives. Resetting a partial
+address therefore leaves both the host cursor and committed provider coordinates
+unchanged. Clear or explicit home/address establishes initial host/provider
+cursor coherence after a load; manual use should run CLS before screen work.
 
 ## Identification and input queue
 
@@ -89,8 +95,10 @@ expansion and dollar-termination of encoded coordinate bytes.
 
 ## Remaining work
 
-Qualify live input/reply behavior, graphics/keypad scope and host geometry; resolve outstanding parser cases from the selected historical
-reference. Qualify real RSX installation/movement/unload and host rendering,
-then test real VT52-configured software (a local WordStar VT52 disk is available).
+Complete release build/version/manifest integration and document optional
+graphics/keypad omission; preserve research-only parser cases from the selected historical
+reference. The actual carrier now passes production relocation/lookup/unload, live
+cpmsim utility checks and an unchanged VT52 WordStar edit/save run. See
+[VT52 live qualification](VT52%20Live%20Qualification.md) for evidence and limits.
 Add /VER, normal build/distribution entries and startup only when qualified.
 VT52TST looks up MCON, not a personality name; use it only with the VT52 provider.
