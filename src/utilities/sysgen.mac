@@ -95,6 +95,9 @@ PANAME: LD A,(DE)                       ; paname
         INC DE
         INC HL
         DJNZ PANAME
+        CALL PAPACK
+        OR A
+        JP NZ,PABAD
         LD A,(FCB2)
         DEC A
         CP 4
@@ -127,6 +130,12 @@ PADRIVES:                               ; padrives
         INC HL
         DEC C
         CP ':'
+        JR NZ,PABAD
+        LD A,C
+        OR A
+        JR Z,PABAD
+        LD A,(HL)
+        CP ' '
         JR NZ,PABAD
         CALL PASKIP
         JR C,PABAD
@@ -176,6 +185,87 @@ PASKIP:LD A,C                           ; paskip
 
 PANONSP:OR A                            ; panonsp
         RET
+
+  ; FCBs identify the file but do not prove the complete invocation is valid.
+  ; Accept exactly [A-D:]SYSTEM.SYS followed by one B-D: destination. No DU,
+  ; wildcard, trailing operand or joined tokens may trigger package reads.
+PAPACK:
+        LD A,(TAIL)
+        LD C,A
+        LD HL,TAIL+1
+        CALL PASKIP
+        JP C,PABAD
+        LD A,C
+        CP 2
+        JP C,PABAD
+        INC HL
+        LD A,(HL)
+        DEC HL
+        CP ':'
+        JR NZ,PAPNAME
+        LD A,(HL)
+        AND 05FH
+        SUB 'A'
+        CP 4
+        JP NC,PABAD
+        INC HL
+        INC HL
+        DEC C
+        DEC C
+PAPNAME:
+        LD DE,PAPTEXT
+        LD B,10
+PAPCHAR:
+        LD A,C
+        OR A
+        JP Z,PABAD
+        LD A,(HL)
+        CP 'a'
+        JR C,PAPCASE
+        CP 'z'+1
+        JR NC,PAPCASE
+        AND 05FH
+PAPCASE:
+        LD (PAPBYTE),A
+        LD A,(DE)
+        PUSH HL
+        LD HL,PAPBYTE
+        CP (HL)
+        POP HL
+        JP NZ,PABAD
+        INC HL
+        INC DE
+        DEC C
+        DJNZ PAPCHAR
+        LD A,C
+        OR A
+        JP Z,PABAD
+        LD A,(HL)
+        CP ' '
+        JP NZ,PABAD
+        CALL PASKIP
+        JP C,PABAD
+        LD A,C
+        CP 2
+        JP C,PABAD
+        LD A,(HL)
+        AND 05FH
+        SUB 'B'
+        CP 3
+        JP NC,PABAD
+        INC HL
+        DEC C
+        LD A,(HL)
+        CP ':'
+        JP NZ,PABAD
+        INC HL
+        DEC C
+        CALL PASKIP
+        JP NC,PABAD
+        XOR A
+        RET
+PAPTEXT: DB 'SYSTEM.SYS'
+PAPBYTE: DB 0
 
   ; Read and validate the version-1, TRS-80 SYSTEM.SYS package.
 
