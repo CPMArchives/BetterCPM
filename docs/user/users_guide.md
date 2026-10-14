@@ -2332,8 +2332,19 @@ DUP
 ```
 
 Use BREAK (`Ctrl-C`) to exit the main menu. At drive-selection prompts,
-`Ctrl-C` returns to the menu. DUP has no direct `/FORMAT` or `/CHECK`
-command-line operation.
+`Ctrl-C` returns to the menu. Direct command-line operations are committed for 1.0 but not yet implemented:
+
+```text
+DUP /FORMAT B:
+DUP /COPY A: B:
+DUP /CHECK C:
+```
+
+These forms will use the same operation engines and drive restrictions. FORMAT
+and COPY will still require `Y/N` confirmation; no unattended bypass is planned.
+CHECK will need no confirmation. Direct operations will return to the CCP after
+completion, refusal, interruption, or failure, with required cleanup completed.
+Until implemented, use the interactive menu.
 
 `DUP /VER` displays the utility identity and exits. Its current output is
 `BetterCP/M DUP 1.0 (Build 001)`. The older version number in the interactive
@@ -2441,8 +2452,118 @@ records the detailed behavior and qualified backend boundaries.
 Probably a relatively short chapter.
 
 ### 10. Installing BetterCP/M
-10.1 BetterCP/M Distribution Media 10.2 Preparing a System Disk 10.3 Installing BetterCP/M with SYSGEN 10.4 Preserving Files During Installation 10.5 Booting the Installed System 10.6 Installation Problems and Recovery
-This is installation, not system generation.
+
+#### 10.1 What SYSGEN installs
+
+`SYSGEN` installs BetterCP/M into an already prepared disk’s reserved system
+area. It does not format the disk or copy distribution utilities into its
+filesystem. Use CONFIG and DUP to establish a compatible format when preparation
+is needed. Formatting with DUP erases data; installing with SYSGEN preserves
+records outside its system-area write range.
+
+The installed system payload is 160 records (20,480 bytes). A SYSTEM.SYS package
+contains a separate header plus that payload: 161 records (20,608 bytes).
+The package header is not written into the installed system area.
+
+#### 10.2 Select the source and destination
+
+Supported forms are:
+
+```text
+SYSGEN
+SYSGEN source: destination:
+SYSGEN [drive:]SYSTEM.SYS destination:
+SYSGEN /VER
+```
+
+With no operands, SYSGEN takes its system image from A: and prompts for a
+destination B:–D:. For explicit disk-source installation, the source is A:–D:
+and the destination is B:–D:, for example:
+
+```text
+SYSGEN A: B:
+SYSGEN C: D:
+```
+
+Source and destination must resolve to different physical drives. Physical
+drive 0 is protected from destination writes even if logical letters are
+remapped.
+
+To install from a package, use the canonical filename SYSTEM.SYS:
+
+```text
+SYSGEN SYSTEM.SYS B:
+SYSGEN C:SYSTEM.SYS B:
+```
+
+A drive-qualified package name is supported; a DU form such as
+`B7:SYSTEM.SYS` is not part of this interface. Arbitrary package names are not
+accepted. The complete package is buffered before writing, so package mode
+does not require its source drive to be physically different from the target.
+Destination restrictions still apply.
+
+`SYSGEN /VER` currently prints `BetterCP/M SYSGEN 1.0 (Build 001)` and exits
+without installation. It must be used alone.
+
+#### 10.3 Validate and confirm installation
+
+The target needs compatible bootstrap geometry and at least 160 reserved
+logical records. It may have a larger filesystem or additional reserved
+records. A true data-only format without a compatible system area is refused;
+SYSGEN cannot create that area or convert its geometry.
+
+SYSGEN buffers the source, validates compatibility, and prepares destination
+settings before requesting confirmation:
+
+```text
+The destination system area will be replaced.
+Files outside the reserved system tracks will be preserved.
+Proceed (Y/N)?
+```
+
+Check the displayed logical and physical target before answering. Only `Y`
+begins writing. Command-line installation still requires this confirmation;
+it is not unattended, and there is no confirmation-bypass switch.
+
+Package validation checks the expected header and exact length, complete
+readability, and suitability for the destination. It does not verify a
+whole-payload checksum or guarantee detection of every possible corruption.
+Use a trusted system package.
+
+#### 10.4 Installation and existing files
+
+SYSGEN patches its buffered image for the destination, writes records 1–159,
+and writes boot record 0 last. Every written record is immediately reread and
+compared byte for byte. Only complete verification produces:
+
+```text
+System installed and verified. The destination is bootable.
+```
+
+SYSGEN writes only the 160 payload records. Filesystem records and extra
+reserved records beyond that range remain unchanged. It does not install
+COM utilities or other files; those require separate file copying.
+
+#### 10.5 Interruption and recovery
+
+BREAK (`Ctrl-C`) exits the interactive drive prompt without writing. During
+installation it stops between bounded record operations. An interruption or
+I/O failure can leave a partial system area, and the destination may not boot.
+SYSGEN reports the failure without claiming successful installation; its
+filesystem write boundary remains unchanged.
+
+There is no rollback of a partially installed system area. Correct the media
+or source problem and repeat installation from a valid source. Writing record
+0 last reduces risk but does not make installation power-loss atomic.
+
+After successful installation, the target contains the installed boot system.
+Distribution files and any desired startup script must also be present for the
+intended operating environment. SYSGEN does not create SYSTEM.SYS or provide a
+separate verify-only mode; SYSBUILD produces the package, and installation
+includes its own read-back verification.
+
+See the [SYSGEN engineering specification](../engineering/SYSGEN%20Specification.md)
+for the detailed installation and qualification contracts.
 
 ### 11. Messages and Troubleshooting
 11.1 Command Errors 11.2 File and Disk Errors 11.3 Configuration Errors 11.4 CPX/RSX Errors 11.5 Startup and Boot Problems 11.6 Recovery Procedures

@@ -1,87 +1,346 @@
 # BetterCP/M DUP.COM Engineering Specification
-**BetterCP/M 1.0 — Consolidated Engineering Specification**  
-**Status:** Documentation consolidation of existing implementation and qualified behavior.  
-**Utility:** `DUP.COM`  
-**Current implementation title:** `BetterCP/M 2.2 Disk Utility Program version 1.14`
+**BetterCP/M 1.0**
+**Utility:** `DUP.COM`
+**Status:** Authoritative 1.0 engineering contract
 
-This specification consolidates the current `DUP.COM` implementation, disk-format definition contract, Montezuma Micro DUP analysis, and backend qualification results. It does not redesign DUP or introduce new 1.0 functionality.
+This specification consolidates the current `DUP.COM` implementation, disk-format definition contract, Montezuma Micro DUP analysis, backend capability qualification, and the committed BetterCP/M 1.0 command-line interface.
 
-Where this specification labels behavior **Implemented**, it is present in the current `dup.mac`. Where it labels behavior **Qualified**, the cited backend qualification has exercised that behavior. Additional backend claims require separate qualification; observed behavior is not generalized beyond the cited evidence.
+Except where explicitly marked as **committed 1.0 work**, the specification documents implemented or qualified behavior rather than redesigning DUP.
+
+The command-line FORMAT, COPY, and CHECK entry points defined here are committed BetterCP/M 1.0 functionality. They invoke the same operation paths, validations, destructive confirmations, safeguards, and cleanup as the corresponding interactive operations.
 
 ---
 
-# 1. Purpose
+## 1. Purpose
 
 `DUP.COM` is BetterCP/M's transient physical disk utility.
 
 It provides three operations:
 
 ```text
-A   Format a disk
-B   Copy a disk
-C   Check a disk for errors
+FORMAT   Format a disk
+COPY     Copy a disk
+CHECK    Check a disk for errors
 ```
 
-DUP operates below the CP/M file level. It uses the selected logical drive's installed disk binding and BetterCP/M's public disk-control services to operate on the physical geometry and sector payloads represented by installed bindings.
+These operations are available both:
 
-DUP is deliberately not:
+- through DUP's interactive menu; and
+- through direct command-line invocation.
 
-- a file copier;
+DUP operates below the CP/M file level. It uses the selected logical drive's installed disk binding and BetterCP/M's public disk-control services.
+
+DUP is not:
+
+- a file-copy utility;
 - a disk-image file utility;
-- an FDB editor;
-- a disk-format catalog editor;
 - a filesystem repair utility;
-- a general disk-configuration utility.
+- an FDB editor;
+- a CONFIG replacement;
+- a flux-level or archival track copier.
 
-`CONFIG` remains responsible for persistent drive bindings. `DISK.FDB` describes disk formats. DUP consumes those bindings and backend capabilities to perform physical operations.
+`CONFIG` establishes persistent drive bindings. `DISK.FDB` describes disk formats. DUP operates on installed bindings subject to the physical capabilities of the active backend.
 
 ---
 
-# 2. Architectural boundary
+# COMMAND-LINE INTERFACE
 
-DUP separates three concepts that must not be conflated:
+## 2. Supported invocation
 
-1. **Disk-format description**
-2. **Installed logical-drive binding**
-3. **Backend physical capability**
-
-A format's presence in `DISK.FDB` means that BetterCP/M can describe that format. It does **not** mean that every platform backend can physically format, copy, or otherwise reproduce that medium.
-
-The format pipeline is:
+BetterCP/M 1.0 supports:
 
 ```text
-DISK.FDF -> FDFCOMP -> DISK.FDB -> CONFIG -> installed drive binding
-                                                |
-                                                v
-                                              DUP
-                                                |
-                                                v
-                                      platform/backend capability
+DUP
+DUP /FORMAT drive:
+DUP /COPY source: destination:
+DUP /CHECK drive:
+DUP /VER
 ```
 
-The FDB supplies normalized disk-format information. The installed binding is the runtime authority. The backend determines whether a requested physical operation can actually be performed.
+Examples:
 
-Accordingly:
+```text
+DUP /FORMAT B:
+DUP /COPY A: B:
+DUP /CHECK C:
+DUP /VER
+```
 
-> A structurally valid FDB definition is not a guarantee of formatter support.
+`DUP` with no operands enters the interactive menu.
 
-A backend may support ordinary CP/M access to a binding while rejecting DUP's raw format operation for that same binding.
+The direct forms bypass only the menu and the corresponding drive-selection prompts. They do **not** bypass:
 
-This distinction is already qualified on z80pack.
+- validation;
+- physical-drive protection;
+- compatibility testing;
+- destructive confirmation;
+- verification;
+- interruption handling;
+- temporary-binding restoration.
+
+Thus command-line access is another entry path to the same operations, not a second implementation of them.
 
 ---
 
-# 3. Invocation
+## 3. Command-line operation names
 
-## 3.1 Normal operation
+The operation keywords are:
 
-DUP is primarily interactive.
+```text
+/FORMAT
+/COPY
+/CHECK
+/VER
+```
+
+They are case-insensitive under normal BetterCP/M command parsing.
+
+Only one operation may be specified in an invocation.
+
+Examples of invalid combinations include:
+
+```text
+DUP /FORMAT B: /CHECK B:
+DUP /COPY A: B: /VER
+```
+
+`/VER` remains standalone.
+
+Unknown options or malformed operands are errors and return to the CCP without performing media operations.
+
+---
+
+## 4. Drive operand syntax
+
+DUP command-line drive operands are simple logical-drive specifications:
+
+```text
+A:
+B:
+C:
+D:
+```
+
+They are not BetterCP/M object selectors.
+
+The following are not DUP drive operands:
+
+```text
+B7:
+B[0-3]:
+B:*.COM
+[ A:, B: ]
+```
+
+DUP works on physical media through logical-drive bindings; CP/M user areas and file specifications are irrelevant.
+
+---
+
+## 5. `/FORMAT` command-line form
+
+Syntax:
+
+```text
+DUP /FORMAT drive:
+```
+
+Example:
+
+```text
+DUP /FORMAT B:
+```
+
+The drive must be one of:
+
+```text
+A:
+B:
+C:
+D:
+```
+
+The command-line drive replaces the interactive FORMAT drive prompt.
+
+All normal FORMAT preflight validation is performed.
+
+The destructive confirmation is still displayed:
+
+```text
+Insert target disk. ALL DATA ON THIS PHYSICAL DISK WILL BE LOST.
+Ctrl-C stops between tracks.
+Format this disk? [Y/N]
+```
+
+Only `Y` begins formatting.
+
+There is no BetterCP/M 1.0 command-line option that suppresses this confirmation.
+
+---
+
+## 6. `/COPY` command-line form
+
+Syntax:
+
+```text
+DUP /COPY source: destination:
+```
+
+Example:
+
+```text
+DUP /COPY A: B:
+```
+
+The source may be:
+
+```text
+A:
+B:
+C:
+D:
+```
+
+The destination may be:
+
+```text
+B:
+C:
+D:
+```
+
+This preserves the existing interactive restrictions.
+
+The command-line operands replace the source- and destination-drive prompts.
+
+All normal COPY validation remains mandatory, including:
+
+- source binding validation;
+- destination binding validation;
+- protected system-drive check;
+- distinct-physical-drive check;
+- bootstrap binding normalization;
+- source/destination format comparison;
+- destination backend capability validation;
+- temporary-binding installation where required.
+
+The normal destructive confirmation remains mandatory:
+
+```text
+Copy ALL sectors from X to Y? Destination contents will be erased. [Y/N]
+```
+
+Only `Y` begins the copy.
+
+There is no BetterCP/M 1.0 force/no-confirm switch.
+
+---
+
+## 7. `/CHECK` command-line form
+
+Syntax:
+
+```text
+DUP /CHECK drive:
+```
+
+Example:
+
+```text
+DUP /CHECK C:
+```
+
+The drive may be:
+
+```text
+A:
+B:
+C:
+D:
+```
+
+The drive operand replaces the interactive CHECK drive prompt.
+
+CHECK then enters the same read-only scan used by interactive operation C.
+
+Because CHECK is non-destructive, no confirmation is required.
+
+---
+
+## 8. Command-line error behavior
+
+A malformed command-line invocation must fail before disk work begins.
+
+Examples include:
+
+```text
+DUP /FORMAT
+DUP /FORMAT E:
+DUP /COPY A:
+DUP /COPY A: E:
+DUP /CHECK B: C:
+```
+
+A syntax failure returns to the CCP rather than dropping into the interactive menu.
+
+A syntactically valid operation which later fails binding or backend validation reports the same diagnostic that the corresponding interactive path would report.
+
+Direct command-line invocation must not weaken any operation safeguard.
+
+---
+
+## 9. Command-line interruption and completion
+
+Once an operation begins, command-line FORMAT, COPY, and CHECK behave identically to their interactive equivalents.
+
+`^C` retains its existing operation-specific semantics.
+
+At operation completion or failure, the direct command-line form returns to the CCP rather than requiring the user to navigate back through the interactive menu.
+
+### Implementation requirement
+
+The command-line dispatcher should enter the existing FORMAT, COPY, or CHECK operation path after supplying the already-parsed logical drive operand(s), rather than duplicating the disk-operation engine.
+
+This minimizes code growth and prevents divergence between interactive and command-line behavior.
+
+---
+
+## 10. `/VER`
+
+```text
+DUP /VER
+```
+
+prints:
+
+```text
+BetterCP/M DUP 1.0 (Build 001)
+```
+
+and returns directly to the CCP.
+
+No disk initialization or operation is performed.
+
+This version identity is distinct from the retained legacy interactive title:
+
+```text
+BetterCP/M 2.2 Disk Utility Program version 1.14
+```
+
+The `2.2` and `1.14` in the interactive title are not the BetterCP/M utility release/build identity.
+
+---
+
+# INTERACTIVE INTERFACE
+
+## 11. Interactive main menu
+
+Running:
 
 ```text
 DUP
 ```
 
-displays its title and main menu:
+displays:
 
 ```text
 BetterCP/M 2.2 Disk Utility Program version 1.14
@@ -93,71 +352,114 @@ BetterCP/M 2.2 Disk Utility Program version 1.14
 Select [ A - C ], or BREAK (^C) to exit.
 ```
 
-There is no established BetterCP/M 1.0 command-line syntax for directly requesting FORMAT, COPY, or CHECK.
-
-Forms such as:
+Selections are:
 
 ```text
-DUP A: B:
-DUP /FORMAT B:
-DUP /CHECK C:
+A   FORMAT
+B   COPY
+C   CHECK
+^C  Exit DUP
 ```
 
-are therefore **not part of this specification**.
+Invalid selections redisplay the menu.
 
-Adding such forms would be a future feature, not documentation consolidation.
+Interactive operation and direct command-line operation are functionally equivalent once their required drive operands have been obtained.
 
 ---
 
-# 4. `/VER`
+# ARCHITECTURE
 
-**Implemented through the common utility-version mechanism.**
+## 12. Architectural boundary
 
-`DUP /VER` is standalone and currently prints:
+DUP distinguishes:
 
-```text
-BetterCP/M DUP 1.0 (Build 001)
-```
+1. disk-format description;
+2. installed logical-drive binding;
+3. backend physical capability.
 
-It exits without entering the disk menu or operating on media. Combining `/VER`
-with other operands is invalid. Version and build values come from the common
-utility-version metadata and may advance with subsequent changes.
-
-This identity is distinct from the retained legacy interactive title:
+The format pipeline is:
 
 ```text
-BetterCP/M 2.2 Disk Utility Program version 1.14
+DISK.FDF
+   |
+   v
+FDFCOMP
+   |
+   v
+DISK.FDB
+   |
+   v
+CONFIG
+   |
+   v
+installed BIOS / drive binding
+   |
+   v
+DUP
+   |
+   v
+platform/backend physical capability
 ```
 
-The legacy title must not be interpreted as the BetterCP/M utility release version.
+`DISK.FDB` describes a format.
+
+The installed binding is the runtime authority.
+
+The backend determines whether the requested physical operation can actually be performed.
+
+Therefore:
+
+> A valid FDB format definition does not imply that every backend can physically format or reproduce that medium.
+
+A backend may support ordinary CP/M access to a binding while rejecting DUP's raw-format operation for that same format.
 
 ---
 
-# 5. Runtime requirements
+## 13. Runtime requirements
 
-DUP is a transient utility and requires approximately 51 KiB of transient memory.
+DUP is transient and requires approximately 51 KiB of transient memory.
 
-The current implementation refuses operation when insufficient TPA is available:
+If insufficient TPA is available:
 
 ```text
 DUP needs 51K of transient memory.
 ```
 
-DUP keeps its physical work buffers, track-format stream, copy buffer, sector cache, and optional cached platform control image in transient memory.
+DUP keeps its large working state transient, including:
 
-This is intentional: DUP's physical-media support must not require large permanent resident buffers merely to accelerate an occasional disk utility.
+- track-format stream;
+- copy buffer;
+- physical-sector cache;
+- verification buffers;
+- optional cached platform control image.
 
-On platforms advertising the private fast-format entry, DUP caches the platform control image for the duration of the utility and restores it before each format-track call. This removes the earlier repeated system-disk overlay loading without enlarging the resident disk/control allocations.
-
-The qualified implementation retained the 53 KiB BetterCP/M TPA target.
+The qualified implementation preserves the BetterCP/M 53 KiB unloaded TPA target.
 
 ---
 
-# 6. Drive model
+## 14. Backend access
 
-DUP operates on the currently installed BetterCP/M logical-drive bindings.
+DUP uses BetterCP/M public BIOS and disk-control interfaces.
 
-The present interface exposes:
+Common DUP code must not directly depend on:
+
+- machine-specific controller ports;
+- NMI handlers;
+- private hardware addresses.
+
+Machine-specific physical operations remain behind the backend interface.
+
+Where a backend advertises the private fast-format entry, DUP may cache the platform formatting-control image in transient memory.
+
+Otherwise it uses the ordinary public disk-control operation.
+
+This optimization must not change DUP's correctness semantics.
+
+---
+
+## 15. Logical-drive range
+
+DUP recognizes:
 
 ```text
 A:
@@ -166,118 +468,128 @@ C:
 D:
 ```
 
-DUP obtains the selected logical drive's normalized disk binding through the public disk-control API without logging into the filesystem.
+DUP obtains the installed binding without logging into the filesystem.
 
-This is important because DUP must operate on the **entire medium**, including:
-
-- system/reserved tracks;
-- directory sectors;
-- allocated file sectors;
-- unallocated sectors;
-- deleted-file data;
-- other sectors not represented by currently live directory entries.
-
-Filesystem-level file selection plays no role in DUP.
+This allows operation on all sector payloads represented by the binding regardless of filesystem allocation state.
 
 ---
 
-# 7. Physical-drive protection
+## 16. Physical system-drive protection
 
-Physical drive 0 is the protected BetterCP/M system disk for destructive DUP operations.
+Physical drive 0 is protected against destructive DUP operations.
 
-The current implementation refuses to FORMAT physical drive 0:
+FORMAT refuses a logical binding resolving to physical drive 0:
 
 ```text
 Physical drive 0 is the protected system disk.
 ```
 
-COPY likewise refuses physical drive 0 as the destination.
+COPY likewise refuses physical drive 0 as its destination.
 
-This protection is based on the physical drive associated with the selected logical binding, not merely on its logical letter.
+Protection follows the physical binding rather than the logical drive letter.
 
-Thus remapping a logical drive does not circumvent system-disk protection.
+The protected system medium may still be:
 
-CHECK is read-only and may inspect a binding associated with the protected physical drive.
-
-COPY may also use the protected/system medium as a **source**, because the source is not written.
+- a COPY source;
+- a CHECK target.
 
 ---
 
-# 8. FORMAT operation
+# FORMAT
 
-## 8.1 Selection
+## 17. FORMAT entry
 
-From the main menu:
+FORMAT can be entered either interactively:
 
 ```text
+DUP
 A
 ```
 
-selects FORMAT.
+or directly:
 
-DUP prompts:
+```text
+DUP /FORMAT B:
+```
+
+In interactive mode DUP asks:
 
 ```text
 Choose logical drive [ A - D ], or ^C to return.
 ```
 
-The operator selects one currently configured logical drive.
+In command-line mode the supplied drive replaces that prompt.
 
-`^C` returns to the main menu without modifying media.
+All subsequent FORMAT semantics are identical.
 
-## 8.2 Format selection
+---
 
-DUP does **not** present the FDB catalog and does not ask the operator to choose a disk-format name.
+## 18. FORMAT format selection
 
-FORMAT uses the disk format already installed in the selected logical drive's binding.
+FORMAT uses the format already present in the selected logical drive's installed binding.
+
+DUP does not present the FDB catalog and does not select a new persistent format.
 
 Conceptually:
 
 ```text
-CONFIG chooses/binds format
+CONFIG chooses persistent format
         |
         v
-logical drive binding
+installed logical binding
         |
         v
 DUP FORMAT
 ```
 
-DUP displays the selected logical drive, physical drive, and available format identification before destructive operation.
-
-To format a disk using another format, the binding must first be established by the normal disk-configuration mechanism.
-
-DUP is not an alternative CONFIG interface.
+To use another format, the desired binding must first be established through the normal configuration mechanism.
 
 ---
 
-# 9. FORMAT validation before destruction
+## 19. FORMAT display
 
-Before asking the user to erase the disk, DUP validates what it can validate generically.
+Before destructive operation, DUP identifies:
 
-The current formatter checks, among other things:
+- logical drive;
+- physical drive;
+- current format description where available.
 
-- the selected logical binding is valid;
-- the physical drive is valid;
-- the target is not protected physical drive 0;
-- the sector-size code is supported;
+This applies to both interactive and command-line FORMAT.
+
+---
+
+## 20. FORMAT preflight validation
+
+Before destructive confirmation DUP validates, among other things:
+
+- logical binding exists;
+- physical drive is valid;
+- physical drive is not protected drive 0;
+- sector-size encoding is supported;
 - physical-sector count is nonzero;
-- the current implementation's sector-count limit is not exceeded;
-- required FDF semantics can be interpreted;
-- a complete write-track stream can be constructed;
-- the generated stream fits within the permitted physical revolution capacity.
+- physical-sector count fits current runtime limits;
+- required FDF semantics are understood;
+- a complete write-track stream can be built;
+- the generated stream fits supported track capacity.
 
-Current implementation limits include at most 32 physical sectors per surface and physical sector sizes represented by the supported 128/256/512/1024-byte size codes.
+Current runtime arrays permit at most 32 physical sectors per surface.
 
-These are implementation/backend limits, not limits of the FDF source language itself.
+Supported sector sizes are:
 
-The generic FDF language can describe formats which a particular BetterCP/M backend cannot use.
+```text
+128
+256
+512
+1024
+```
+
+These are DUP/backend implementation limits, not FDF language limits.
 
 ---
 
-# 10. FORMAT confirmation
+## 21. FORMAT confirmation
 
-After generic validation and before any destructive operation, DUP displays a destructive warning:
+After successful validation:
 
 ```text
 Insert target disk. ALL DATA ON THIS PHYSICAL DISK WILL BE LOST.
@@ -287,494 +599,555 @@ Format this disk? [Y/N]
 
 Only `Y` proceeds.
 
-Any other answer returns without formatting.
+This confirmation is required for both:
 
-Unlike the historical MM DUP behavior analyzed during development, BetterCP/M DUP does not depend on a successful probe of an existing sector to decide whether a disk deserves a destruction warning.
+```text
+interactive FORMAT
+```
 
-The BetterCP/M warning is unconditional for FORMAT.
+and:
+
+```text
+DUP /FORMAT drive:
+```
+
+Command-line selection does not imply unattended destruction.
 
 ---
 
-# 11. Physical format description
+## 22. Physical geometry consumed by FORMAT
 
-DUP consumes the normalized physical geometry in the installed disk binding.
+DUP uses normalized geometry from the installed binding, including as applicable:
 
-Relevant format information can include:
-
-- number of cylinders;
-- one or two sides;
+- cylinders;
+- sides;
 - physical-sector count;
 - sector IDs;
-- uniform or mixed physical-sector sizes;
-- FM or MFM encoding;
-- inverted payload convention;
+- uniform or mixed sector sizes;
+- FM/MFM encoding;
+- payload inversion;
 - logical-track topology;
 - side ordering;
 - track-ID convention;
 - sector-ID convention.
 
-The FDF specification remains authoritative for the meaning and validation of those fields.
-
-DUP does not reinterpret the original Montezuma Micro FDF grammar directly.
+The Disk Format Definition Specification remains authoritative for those semantics.
 
 ---
 
-# 12. FORMAT track construction
+## 23. FDB description versus backend capability
 
-The current formatter constructs a complete physical write-track stream in transient memory.
+A format's presence in `DISK.FDB` establishes that it can be described by the BetterCP/M format model.
 
-It produces the appropriate:
+It does not establish that the current backend can physically generate it.
 
-- track gaps;
-- sync fields;
+A valid binding may therefore still result in:
+
+```text
+This format is not supported by this formatter.
+```
+
+The format must not be silently approximated.
+
+---
+
+## 24. Track construction
+
+DUP constructs a complete physical write-track stream in transient memory.
+
+It emits the appropriate:
+
+- gaps;
+- synchronization fields;
 - ID address marks;
-- cylinder/track IDs;
-- side IDs;
+- cylinder/track identifiers;
+- side identifiers;
 - physical sector IDs;
-- sector-size fields;
+- size fields;
 - CRC-generation tokens;
 - data address marks;
-- erased sector contents;
-- end-of-track padding.
+- erased payload data;
+- track-tail padding.
 
-FM and MFM streams use the controller conventions supported by the backend.
+Newly formatted logical payloads correspond to CP/M erased data:
 
-Newly formatted sector payloads correspond to CP/M erased data (`E5h`) after normal inversion handling.
+```text
+E5h
+```
 
-Where an FDF definition specifies inverted data, inversion remains part of the BIOS/binding semantics rather than changing the logical erased-byte requirement.
-
----
-
-# 13. Rotational layout
-
-`SECTOR_IDS` specifies the format's logical physical-sector order for BetterCP/M's current formatter.
-
-The broader FDF specification deliberately does not claim to reproduce every historical formatter's exact rotational layout.
-
-A valid DUP-created disk must preserve the format's required:
-
-- IDs;
-- sizes;
-- encoding;
-- topology;
-- inversion semantics;
-- logical contents.
-
-Exact flux or historical track-layout replication is not a DUP 1.0 requirement.
-
-COPY therefore means physical-medium content duplication within the BetterCP/M disk-format model, not archival flux-level cloning.
+after normal inversion handling.
 
 ---
 
-# 14. FORMAT execution
+## 25. Physical-order policy
 
-Formatting proceeds one physical surface at a time.
+DUP creates a compatible physical track according to the installed format definition.
 
-For each cylinder/side:
+It does not promise to reproduce every historical formatter's exact rotational or flux layout.
 
-1. DUP constructs the write-track stream.
-2. The backend formats that physical surface.
-3. DUP immediately rereads the resulting sectors.
-4. DUP verifies that every logical 128-byte record contains the expected erased `E5h` data.
-5. Only after successful verification does it advance to the next surface.
+Required semantics include:
 
-This immediate format-and-verify behavior is intentional.
+- correct sector IDs;
+- correct sector sizes;
+- correct encoding;
+- correct topology;
+- correct inversion semantics;
+- correct logical contents.
 
-BetterCP/M does **not** reproduce MM DUP's separate final reverse verification pass.
-
----
-
-# 15. FORMAT verification strength
-
-BetterCP/M's FORMAT verification is stronger than the historical MM behavior studied during development.
-
-The historical MM checker established essentially that each sector was readable without selected controller errors.
-
-BetterCP/M additionally compares the returned contents against the expected erased data.
-
-Successful BetterCP/M FORMAT therefore means both:
-
-- the formatted sectors can be read successfully; and
-- the returned logical payload contains the intended erased contents.
+Exact historical flux reproduction is outside DUP 1.0.
 
 ---
 
-# 16. FORMAT retries
+## 26. FORMAT execution order
 
-The physical write-track operation uses bounded retry behavior.
+For each physical surface:
 
-The current implementation permits up to three attempts for a failed format-track request.
+1. build the write-track stream;
+2. format the surface;
+3. reread the surface;
+4. compare its logical payload against expected erased `E5h`;
+5. count the surface as verified;
+6. proceed to the next surface.
 
-Write protection is not retried because retrying cannot make a protected disk writable.
-
-There are no unbounded retry loops.
-
-A failure reports the applicable controller/backend status.
+Verification therefore occurs immediately after each surface is formatted.
 
 ---
 
-# 17. FORMAT completion
+## 27. FORMAT verification
 
-DUP separately counts successfully written and verified physical surfaces.
+Successful FORMAT requires:
 
-It does not report success merely because the cylinder iterator reaches its endpoint.
+- sectors to be readable; and
+- returned payload to contain the expected erased contents.
 
-On success, it reports the number of tracks/surfaces written and verified followed by:
+This is stronger than the historical MM checker, which primarily verified readability.
+
+---
+
+## 28. FORMAT retries
+
+The current write-track path performs bounded retry.
+
+Up to three attempts may be made where retry is meaningful.
+
+Write protection is not repeatedly retried.
+
+There is no unbounded retry loop.
+
+---
+
+## 29. FORMAT interruption and completion
+
+On success:
 
 ```text
 Format complete.
 ```
 
-If the operation is interrupted or verification fails, it does not issue the successful completion message.
+DUP separately accounts for successfully formatted and verified physical surfaces.
+
+On interruption:
+
+```text
+Format aborted. Disk is only partly formatted.
+```
+
+No interrupted FORMAT may report successful completion.
+
+A direct `/FORMAT` invocation returns to the CCP after completion, refusal, interruption, or failure.
+
+Interactive FORMAT returns to DUP's menu.
 
 ---
 
-# 18. COPY operation
+# COPY
 
-Selecting:
+## 30. COPY entry
+
+COPY can be entered interactively:
 
 ```text
+DUP
 B
 ```
 
-from the main menu enters whole-disk COPY.
+or directly:
 
-COPY duplicates all sector payloads represented by the source’s installed binding. It does not operate at the filesystem level.
+```text
+DUP /COPY A: B:
+```
 
-It is not equivalent to `COPY.COM` or PIP.
-
----
-
-# 19. COPY source selection
-
-The prompt is:
+Interactive prompts are:
 
 ```text
 Source logical drive [ A - D ], ^C returns.
-```
-
-Valid source logical drives are therefore A through D.
-
-`^C` returns to the main menu.
-
-The source may be the protected system physical drive because COPY never writes to the source.
-
-DUP obtains and retains the complete source binding for the operation.
-
----
-
-# 20. COPY destination selection
-
-The destination prompt is:
-
-```text
 Destination logical drive [ B - D ], ^C returns.
 ```
 
-The current implementation therefore does not permit logical A as the COPY destination.
+Command-line operands replace these two prompts.
 
-The selected destination must also:
-
-- resolve to a valid physical drive;
-- not resolve to physical drive 0;
-- not refer to the same physical drive as the source.
+The rest of COPY is identical.
 
 ---
 
-# 21. Same physical drive
+## 31. COPY meaning
+
+COPY duplicates:
+
+> **all sector payloads represented by the installed source binding**
+
+It is not file-by-file copying.
+
+It is also not flux-level physical cloning.
+
+---
+
+## 32. COPY source restrictions
+
+Source logical drives:
+
+```text
+A:
+B:
+C:
+D:
+```
+
+The protected system disk may be a source because COPY does not write to it.
+
+---
+
+## 33. COPY destination restrictions
+
+Destination logical drives:
+
+```text
+B:
+C:
+D:
+```
+
+The destination must:
+
+- have a valid installed binding;
+- resolve to a valid physical drive;
+- not resolve to physical drive 0;
+- not resolve to the same physical drive as the source.
+
+These restrictions apply identically to interactive and `/COPY` invocation.
+
+---
+
+## 34. Same-physical-drive restriction
 
 COPY requires two distinct physical drives.
 
-It explicitly rejects source and destination logical bindings that alias the same physical drive:
+If source and destination logical bindings alias the same physical drive:
 
 ```text
 Source and destination must be different physical drives.
 ```
 
-Thus DUP 1.0 does **not** implement single-drive disk swapping.
-
-This restriction applies even if source and destination are represented by different logical letters.
-
-No RAM-buffered whole-disk single-drive copy mode is specified.
+BetterCP/M 1.0 provides no single-drive disk-swapping COPY mode.
 
 ---
 
-# 22. Source and destination format comparison
+## 35. Bootstrap cylinder-binding normalization
 
-## COPY source-binding normalization
+Before comparing source and destination formats, DUP normalizes the bootstrap cylinder-based source binding when necessary.
 
-Before comparing the source format with the destination binding, DUP normalizes the bootstrap cylinder-based source representation when necessary.
+The bootstrap binding may express one CP/M logical track as an entire physical cylinder.
 
-The bootstrap binding may describe one CP/M logical track as an entire physical cylinder. COPY converts that transient representation into the equivalent surface-track form used by ordinary destination bindings:
+DUP converts its transient COPY description to equivalent surface-track form by:
 
-- the cylinder-track indication is converted to the corresponding surface-track topology;
-- SPT is adjusted from records per cylinder to records per surface;
-- OFF is adjusted from reserved cylinders to the equivalent number of reserved surface tracks.
+- changing the cylinder-track representation to the corresponding surface-track topology;
+- halving SPT from records per cylinder to records per surface;
+- doubling OFF from reserved cylinders to reserved surface tracks.
 
-This transformation does **not** alter source media and does not translate copied payload bytes. It produces an equivalent transient format description so that DUP can compare and install the source format using the ordinary destination-binding contract.
+This normalization:
 
-The normalized representation is used for COPY compatibility and temporary destination binding only. It does not rewrite the source's persistent configuration.
+- does not modify source media;
+- does not modify the persistent source binding;
+- does not alter payload bytes.
 
+It exists solely so COPY can compare the source with ordinary destination bindings and use the ordinary destination setter.
 
-DUP compares the normalized source-format binding with the destination binding after preserving the destination's physical-drive identity.
+---
 
-Two cases result.
+## 36. Source/destination format comparison
 
-## 22.1 Matching format
+After normalization DUP compares source format semantics with the destination binding while preserving the destination's physical identity.
 
-If source and destination bindings describe the same disk format, COPY does not reformat the destination.
+### Matching format
 
-It copies the sector payloads directly using the existing destination format.
+If they match, COPY uses the existing destination format and does not reformat each destination surface.
 
-## 22.2 Different format
+### Different format
 
-If the destination format differs, DUP reports:
+If they differ:
 
 ```text
 Destination format differs. Copy will format it to match the source.
 ```
 
-DUP then temporarily constructs a destination binding using:
+DUP constructs a temporary destination binding combining:
 
-- the source disk-format semantics;
-- the destination physical drive.
+- source format semantics;
+- destination physical drive.
 
-The destination backend validates this temporary binding **before destructive copy begins**.
-
-This is where the distinction between format description and backend capability becomes critical.
-
-A source format may be perfectly valid in the FDB yet impossible for the destination backend to format.
-
-In that case COPY must reject the operation rather than proceed with an approximation.
+The destination backend validates this binding before destructive copying proceeds.
 
 ---
 
-# 23. Temporary destination binding
+## 37. Temporary destination binding
 
-When COPY requires the destination to assume the source format, DUP saves the destination's original complete binding.
+DUP saves the original destination binding before installing a temporary source-format binding.
 
-It then installs a temporary source-format binding for the physical destination.
+The temporary binding is not persistent CONFIG state.
 
-This temporary change exists only to perform the COPY operation.
+The saved destination binding must be restored after:
 
-It is **not** a permanent CONFIG change.
-
-The original destination binding must be restored on:
-
-- successful copy;
-- operator cancellation;
-- copy error;
+- successful completion;
+- declined confirmation;
+- COPY failure;
 - interruption;
-- return to the main menu;
-- ordinary utility exit.
+- normal operation termination.
 
 ---
 
-# 24. COPY confirmation
+## 38. COPY confirmation
 
-Before writing the destination, DUP shows the physical source and destination and warns:
+Before destructive copy:
 
 ```text
 Copy ALL sectors from X to Y? Destination contents will be erased. [Y/N]
 ```
 
-Only `Y` begins the destructive copy.
+Only `Y` proceeds.
 
-If the user declines after DUP installed a temporary destination binding, normal cleanup restores the original binding before returning to the menu.
+This confirmation is mandatory for both interactive and command-line COPY.
+
+There is no `/FORCE`, `/YES`, or other confirmation-bypass option in BetterCP/M 1.0.
 
 ---
 
-# 25. Whole-disk COPY semantics
+## 39. COPY content semantics
 
-COPY does not log into the filesystem or enumerate directory entries.
-
-It copies **all sector payloads represented by the installed source binding**, including payloads corresponding to:
+COPY copies all sector payloads represented by the installed source binding, including payloads corresponding to:
 
 - reserved/system areas;
-- directory sectors;
+- directories;
 - allocated files;
 - deleted-file contents;
-- unallocated filesystem space;
-- other sectors represented by the binding.
+- unallocated space;
+- other represented sectors.
 
-COPY therefore reproduces the disk contents exposed through the BetterCP/M disk-format model rather than merely copying visible files.
+DUP does not enumerate the filesystem.
 
-It is **not** a flux-level or track-image duplication facility. COPY does not promise preservation of physical details that are not represented by the binding, including:
+---
 
-- arbitrary gap layout;
-- exact historical rotational placement;
+## 40. COPY is not a flux clone
+
+COPY does not promise preservation of physical information outside the BetterCP/M binding model, such as:
+
+- exact historical gap placement;
+- exact arbitrary rotational layout;
 - deleted-data address marks;
 - weak sectors;
-- undocumented controller metadata;
+- undocumented address marks;
 - flux-transition timing;
-- other track-level artifacts outside the BetterCP/M format model.
+- other controller metadata.
 
-When destination reformatting is required, DUP constructs a valid destination representation of the source format and then copies the represented sector payloads into it.
-
----
-
-# 26. COPY surface sequence
-
-For each physical source surface, the current implementation uses the following sequence:
-
-1. **Read the entire source surface into transient memory.**
-2. If the destination must be reformatted:
-   1. construct the destination format stream;
-   2. format the destination surface;
-   3. reread it;
-   4. verify erased `E5h` contents.
-3. Write the buffered source records to the destination.
-4. Reread the destination records.
-5. Compare the read-back bytes against the buffered source bytes.
-6. Continue to the next surface.
-
-A source surface is therefore read successfully **before** the corresponding destination surface is destroyed.
-
-This differs intentionally from the historical MM order identified during reverse engineering.
+COPY is a whole-medium sector-payload copy within the BetterCP/M disk-format model.
 
 ---
 
-# 27. COPY buffer limit
+## 41. Source-surface buffering
 
-COPY buffers one source surface at a time.
+COPY buffers one complete source physical surface at a time.
 
-The implementation requires the number of 128-byte logical records on that surface to fit the transient copy buffer.
-
-The current check rejects a surface requiring 65 or more records; therefore the existing implementation supports up to 64 128-byte logical records per buffered surface.
-
-A format which exceeds that current utility limit is unsupported by DUP even if it can be represented in FDF.
-
-This is another example of:
+The current buffer supports at most:
 
 ```text
-describable format != DUP-supported operation
+64 logical 128-byte records
 ```
+
+A surface requiring 65 or more records is rejected.
+
+This limit applies even if the FDF language can validly describe the format.
 
 ---
 
-# 28. COPY verification
+## 42. COPY execution order
 
-COPY verification is byte-for-byte at the logical 128-byte record level.
+For each source surface:
 
-After writing a destination surface, DUP rereads it and compares it with the source bytes retained in transient memory.
+1. read the complete source surface into transient memory;
+2. if destination reformatting is required:
+   1. build its track stream;
+   2. format the destination surface;
+   3. reread it;
+   4. verify erased `E5h` payload;
+3. write the buffered source payloads;
+4. reread the destination;
+5. compare destination data byte-for-byte against the buffered source;
+6. proceed to the next surface.
 
-A mismatch is reported as status `FEh`:
+Thus source data is safely obtained before the corresponding destination surface is destroyed.
+
+---
+
+## 43. COPY verification
+
+Every written destination payload is reread and compared with source data.
+
+A mismatch is represented by:
+
+```text
+FEh
+```
+
+and reported:
 
 ```text
 Read-back data does not match.
 ```
 
-This is deliberately stronger than the historical MM DUP checker, which verified readability but did not compare the copied payload against the original copy buffer.
-
-A successful COPY therefore requires actual destination data agreement, not merely readable sectors.
+Readability alone is insufficient for successful COPY.
 
 ---
 
-# 29. COPY completion
+## 44. COPY completion
 
-Only after all physical surfaces have been copied and verified does DUP report:
+Only after every represented source surface has been copied and byte-verified:
 
 ```text
 Copy complete; destination verified.
 ```
 
-The original logical-drive binding is restored before normal operation resumes where a temporary binding was used.
+If a temporary binding was used, DUP restores the destination's prior logical configuration.
 
-If the physical disk has been reformatted to the source format, restoration of the old logical binding does **not** change the physical disk back.
-
-DUP therefore reports:
+If the physical media has now been reformatted to another format:
 
 ```text
 Destination configuration restored. Use CONFIG for the copied format.
 ```
 
-The operator must use CONFIG if the new physical medium is to become the persistent format associated with that logical drive.
+This preserves the boundary:
 
-This separation is intentional:
+```text
+DUP     changes media
+CONFIG  changes persistent configuration
+```
 
-> DUP changes media; CONFIG changes persistent drive configuration.
+A direct `/COPY` invocation returns to the CCP after cleanup.
+
+Interactive COPY returns to DUP's menu.
 
 ---
 
-# 30. CHECK operation
+# CHECK
 
-Selecting:
+## 45. CHECK entry
+
+CHECK can be entered interactively:
 
 ```text
+DUP
 C
 ```
 
-enters CHECK.
+or directly:
 
-DUP prompts for a logical drive A through D.
+```text
+DUP /CHECK C:
+```
 
-CHECK is non-destructive.
+Interactive mode prompts for the drive.
 
-It uses the currently installed binding to walk the complete physical medium.
+Command-line mode supplies it directly.
+
+Both use the same CHECK engine.
 
 ---
 
-# 31. CHECK behavior
+## 46. CHECK is read-only
 
-CHECK reads each physical sector represented by the binding.
+CHECK performs no writes.
 
-It validates that the medium can be read through the selected geometry and reports errors with physical location information.
+It does not:
 
-CHECK does not:
-
-- modify sector contents;
 - format tracks;
+- rewrite sectors;
 - repair filesystem structures;
-- compare data against an external reference;
-- require that unused sectors contain `E5h`.
+- alter directories;
+- restore erased data;
+- compare with a reference medium;
+- require free space to contain `E5h`.
 
-Its purpose is physical read verification.
+CHECK tests readability of the sector payloads represented by the installed binding.
 
 ---
 
-# 32. CHECK error continuation
+## 47. CHECK behavior
 
-Unlike FORMAT and COPY, CHECK is intended to continue after ordinary read failures.
+CHECK traverses the complete medium represented by the selected binding.
 
-On the first failing logical record belonging to a physical sector, DUP:
+Ordinary read failures are reported and accumulated rather than immediately terminating the scan.
 
-1. identifies the affected physical sector;
-2. reports the error;
-3. increments the error count;
-4. skips the remaining logical records belonging to that already-failed physical sector;
-5. continues with subsequent sectors.
+---
 
-Thus the final count corresponds to physical sectors encountered as unreadable, rather than repeatedly counting every 128-byte subrecord in one bad larger sector.
+## 48. Physical-sector error counting
 
-At completion:
+When a logical-record read fails inside a larger physical sector, DUP:
+
+1. identifies the corresponding physical sector;
+2. reports the failure;
+3. increments the error count once;
+4. skips the remaining logical records in that failed physical sector;
+5. continues with the next sector.
+
+A failed 1024-byte sector is therefore counted once, not eight times.
+
+The error count is a word value.
+
+---
+
+## 49. CHECK completion
+
+Normal completion:
 
 ```text
 Check complete. Unreadable sectors: n
 ```
 
-is displayed.
+This establishes sector readability only.
 
-The error counter is a word value; BetterCP/M does not reproduce MM's historical one-byte wraparound behavior.
+It does not establish filesystem semantic correctness.
+
+A direct `/CHECK` invocation then returns to the CCP.
+
+Interactive CHECK returns to DUP's menu.
 
 ---
 
-# 33. CHECK interruption
+## 50. CHECK interruption
 
-If the operator interrupts CHECK, DUP reports:
+On interruption:
 
 ```text
 Check stopped. No disk contents changed.
 ```
 
-Because CHECK is read-only, interruption leaves the medium unchanged.
+CHECK is read-only.
 
 ---
 
-# 34. Error diagnostics
+# ERRORS AND INTERRUPTION
 
-DUP reports useful physical context for read, write, verification, and comparison errors.
+## 51. Error-location reporting
 
-Diagnostics include, where applicable:
+DUP reports available physical context such as:
 
 ```text
 Cylinder n, side n
@@ -783,9 +1156,11 @@ record n
 error status n
 ```
 
-The current status explanations include:
+---
 
-| Status/bit | Meaning reported by DUP |
+## 52. Status interpretation
+
+| Status | Meaning |
 |---|---|
 | `1` | Request failed or drive did not respond |
 | `2` | Unsupported operation or disk address |
@@ -793,300 +1168,306 @@ The current status explanations include:
 | bit 7 | Drive not ready; check inserted disk |
 | bit 6 | Disk is write protected |
 | bit 4 | Sector/track not found; check disk format |
-| bit 3 | CRC error; data could not be read reliably |
+| bit 3 | CRC error: sector data could not be read reliably |
 | bit 2 | Data transfer failed |
 | otherwise | Disk I/O failed |
 
-Status 1 remains deliberately broad because older adapters combine validation and timeout-type failures.
+Status 1 remains deliberately broad because older adapters combine several failure classes.
 
 ---
 
-# 35. Fatal versus continuing errors
+## 53. Error continuation
 
-For FORMAT and COPY, a data error or verification failure stops the current destructive operation.
+FORMAT and COPY stop when an error makes continued destructive operation unsafe.
 
-DUP does not continue blindly after a failed destination write or byte comparison.
+CHECK normally continues after ordinary unreadable-sector errors.
 
-CHECK behaves differently: ordinary media read failures are accumulated and checking continues.
-
-Backend or binding errors that prevent meaningful continued operation may still terminate CHECK.
-
-The exact distinction follows the current implementation/backend status path rather than an invented universal controller-error taxonomy.
+Backend or binding failures which make meaningful continuation impossible may terminate CHECK.
 
 ---
 
-# 36. Interruption
+## 54. BREAK / `^C`
 
 DUP recognizes BREAK / `^C`.
 
-At menus and drive-selection prompts it returns or exits as indicated by the prompt.
+At interactive menus and drive prompts, it performs the indicated return or exit.
 
-During long physical operations DUP polls for interruption between bounded units of work.
+During physical operations it is polled at bounded safe points.
 
-It does not attempt to interrupt an already-issued physical controller/backend request in the middle of that request.
+DUP does not attempt to cancel an already-issued backend/controller request in mid-transfer.
 
-Consequences are reported explicitly.
+Command-line operations use the same interruption paths.
 
-For FORMAT:
+---
+
+## 55. Interrupted FORMAT
 
 ```text
 Format aborted. Disk is only partly formatted.
 ```
 
-For COPY:
+---
+
+## 56. Interrupted COPY
 
 ```text
 Operation stopped. Destination may be partly written.
 ```
 
-For CHECK:
+The source remains unchanged.
+
+---
+
+## 57. Interrupted CHECK
 
 ```text
 Check stopped. No disk contents changed.
 ```
 
-No interrupted destructive operation may report successful completion.
+---
+
+# BINDING RESTORATION
+
+## 58. Cleanup requirement
+
+DUP must never knowingly leave a temporary COPY destination binding installed.
+
+The common cleanup path:
+
+1. restores the saved destination binding;
+2. clears the temporary-change state;
+3. resets stale drive/alias state.
+
+This requirement applies equally to interactive and command-line COPY.
 
 ---
 
-# 37. Restoration after interruption or error
+## 59. Restoration failure
 
-Temporary COPY bindings must be restored regardless of why the operation terminates.
-
-The common cleanup path restores the saved destination binding and resets BetterCP/M's drive/alias state.
-
-The implementation deliberately does not warm-boot away from a temporary binding.
-
-If restoration itself fails, DUP reports:
+If restoration fails:
 
 ```text
 Cannot restore destination configuration. Press a key to retry.
 ```
 
-It retains the saved binding and returns through a retry path.
+DUP retains the saved binding and retries rather than claiming successful cleanup.
 
-It must not claim successful cleanup while the temporary binding remains installed.
-
----
-
-# 38. Backend capability boundary
-
-DUP's common transient code is portable at the BetterCP/M API level.
-
-Machine-specific controller I/O does not belong in the common DUP implementation.
-
-This is a deliberate departure from historical MM DUP, which contained a transient Model 4 controller driver using controller ports, an NMI handler, and MM-private drive records.
-
-BetterCP/M instead uses:
-
-- standard BIOS entry points for logical-record transfer;
-- the public disk-control interface for bindings and raw format operations;
-- optional advertised platform acceleration where available.
-
-The common DUP code must not assume direct access to Model 4 FDC ports or other platform-specific hardware.
+A command-line invocation must not simply return to the CCP while DUP knows the temporary binding remains installed.
 
 ---
 
-# 39. Model 4 qualified capability
+## 60. Drive-state reset
 
-The retained Model 4 DUP qualification covers:
+After restoration, DUP performs the required system drive reset so subsequent CP/M activity observes the restored configuration.
 
-- ordinary disk copies;
+---
+
+# BACKEND CAPABILITY
+
+## 61. Capability stack
+
+An operation is supported only when all applicable layers permit it:
+
+```text
+valid FDB semantics
+        +
+valid installed binding
+        +
+DUP implementation limits
+        +
+backend physical capability
+```
+
+Being valid at one layer does not guarantee validity at the next.
+
+---
+
+## 62. Generic rejection cases
+
+DUP may reject an operation because of:
+
+- invalid logical binding;
+- invalid physical drive;
+- protected destination physical drive 0;
+- source/destination physical-drive aliasing;
+- unsupported required format semantics;
+- unsupported sector size;
+- zero physical sectors;
+- excessive physical-sector count;
+- track stream exceeding physical capacity;
+- COPY surface exceeding transient-buffer size;
+- destination backend rejecting the temporary source-format binding;
+- backend lacking the requested raw-format capability.
+
+Unsupported formats must not be silently approximated.
+
+---
+
+## 63. Model 4 qualified behavior
+
+The retained Model 4 qualification covers:
+
+- ordinary copies;
 - matching-format copies;
 - mixed-sector FDF copies;
 - source CRC errors;
 - destination write protection;
 - interruption;
-- temporary binding restoration;
-- preservation of source media;
-- preservation of system media;
+- temporary-binding restoration;
+- source preservation;
+- system-media preservation;
 - return to the command environment.
 
-Successful copies are independently compared at the physical-sector payload level and followed by DUP CHECK.
-
-The mixed-sector qualification demonstrates that the BetterCP/M Model 4 backend can perform the required raw formatting for the tested mixed-sector FDF medium.
-
-This is **qualified behavior**.
+Successful copies are independently compared at the physical-sector payload level and exercised through DUP CHECK.
 
 ---
 
-# 40. z80pack qualified capability
+## 64. z80pack qualified behavior
 
-The z80pack backend is qualified to FORMAT and verify a complete **uniform** raw image.
+z80pack is qualified to FORMAT and verify a complete uniform raw image.
 
-The mixed-sector qualification establishes a deliberate boundary:
+Its tested mixed-sector case establishes:
 
 1. the normalized MM SUPER binding can be installed;
-2. ordinary access to that binding is accepted;
-3. DUP requests the physical/raw formatting operation;
-4. the z80pack backend returns **unsupported**;
-5. no target byte is changed.
+2. normal access to that binding is supported;
+3. DUP requests raw physical formatting;
+4. the backend returns unsupported;
+5. the tested operation changes no target byte.
 
-Thus:
+That no-modification guarantee is specifically established for the qualified z80pack mixed-sector rejection case.
 
-> z80pack's ability to understand a normalized mixed-sector binding does not imply that its raw formatter can create that medium.
-
-This is the canonical example of why FDB description and backend formatter capability remain separate.
+This specification does not generalize it into a universal guarantee for all future backend unsupported returns.
 
 ---
 
-# 41. Explicit supported/rejected cases
+## 65. FDB capability distinction
 
-## 41.1 Implemented generic behavior
+The FDB architecture distinguishes:
 
-DUP supports formats within both:
+1. malformed format data;
+2. structurally valid definitions requiring unsupported semantics;
+3. supported definitions incompatible with the selected backend/hardware.
 
-- the current normalized binding/utility limits; and
-- the selected backend's physical capabilities.
+DUP preserves those distinctions.
 
-It supports uniform sector sizes and the currently implemented mixed-size representation.
-
-It understands the established BetterCP/M topology and sector-mapping semantics used by the current bindings.
-
-## 41.2 Rejected before destructive operation where possible
-
-DUP rejects:
-
-- invalid logical bindings;
-- protected physical destination 0;
-- source and destination aliases of the same physical drive;
-- unsupported sector-size codes;
-- zero or excessive physical-sector counts for the current formatter;
-- format streams that exceed physical track capacity;
-- copy surfaces too large for the transient surface buffer;
-- backend-incompatible temporary destination bindings.
-
-## 41.3 Backend rejection
-
-Even after generic DUP validation succeeds, a backend may return unsupported for a physical operation.
-
-That is a valid capability result, not evidence that the FDB entry is invalid.
-
-The backend must not silently substitute a different format.
-
-For the qualified z80pack mixed-sector case, unsupported is returned before modifying target media.
-
-The no-modification result is established for the qualified z80pack mixed-sector
-path. The cited evidence does not establish a universal guarantee that every
-unsupported result from every present or future backend precedes all media
-modification. Such a guarantee requires a separate backend-interface contract
-and qualification.
+Backend inability to format a medium does not make its FDB definition invalid.
 
 ---
 
-# 42. FDB semantics versus DUP capability
+# FORMAT-MODEL LIMITS
 
-`DISK.FDB` may contain formats exceeding a particular DUP/backend combination's capability.
+## 66. Sector payloads versus physical metadata
 
-Examples include:
+Throughout this specification:
 
-- more sectors than the current binding/runtime arrays support;
-- mixed sector sizes unsupported by a raw formatter;
-- topology requiring semantics unsupported by a backend;
-- physical timing requirements which the hardware/backend cannot provide.
+> COPY means copy all sector payloads represented by the installed binding.
 
-FDB processing distinguishes:
+It does not mean:
 
-1. malformed database;
-2. structurally valid descriptor with unsupported required semantics;
-3. valid supported descriptor incompatible with the selected drive/backend.
+> duplicate every physical feature present on the medium.
 
-DUP operates only after a usable binding exists, but a usable binding for normal CP/M access still does not prove raw-format capability.
+This distinction is normative.
 
 ---
 
-# 43. System-media preservation
+## 67. Mixed-size sectors
 
-DUP's destructive safeguards must protect the configured system medium.
+BetterCP/M's normalized FDF/FDB model can represent mixed-size physical sectors.
 
-Qualification explicitly checks preservation of system media in ordinary, error, write-protected, and interrupted operation cases.
+DUP understands the current packed sector-size representation.
 
-No COPY or FORMAT path may accidentally modify the source or protected system disk while operating on another physical destination.
+Backend support remains separate.
 
----
+The tested Model 4 path supports the qualified mixed-sector case.
 
-# 44. Source preservation
-
-COPY reads but never writes its source.
-
-The source surface is captured before the corresponding destination surface is formatted or overwritten.
-
-Qualified error cases verify source preservation.
-
-A CRC/read error on the source stops destructive progress for that surface rather than writing data known to be incomplete or unreliable.
+The z80pack raw formatter rejects the qualified mixed-sector case.
 
 ---
 
-# 45. Utility cleanup and drive reset
+## 68. Logical-track topology
 
-Returning to the main menu invokes DUP's cleanup path.
+DUP uses topology from the normalized binding, including supported concepts such as:
 
-After temporary-binding restoration, DUP performs the system drive-reset operation used to discard stale logical-drive/alias state.
+- surface-based logical tracks;
+- cylinder-based logical tracks;
+- side ordering;
+- side direction;
+- track-ID conventions;
+- sector-ID conventions.
 
-The purpose is to ensure subsequent CP/M disk operations use the restored current configuration.
-
-DUP must not leave cached aliases referring to the temporary COPY binding.
+COPY normalizes the established bootstrap cylinder representation before destination comparison.
 
 ---
 
-# 46. Historical MM behavior that is not normative
+# HISTORICAL MONTEZUMA MICRO RELATIONSHIP
 
-The Montezuma Micro DUP analysis is supporting evidence, not BetterCP/M's behavior specification.
+## 69. Supporting evidence only
 
-BetterCP/M intentionally differs in several respects.
+The Montezuma Micro DUP reverse engineering informed BetterCP/M's design but does not define BetterCP/M behavior.
+
+---
+
+## 70. Intentional differences
 
 Historical MM DUP:
 
-- contained a Model 4-specific transient controller driver;
-- used MM-private physical-drive/DPB structures;
-- formatted the destination before reading the corresponding source cylinder during COPY;
-- checked readability rather than performing BetterCP/M's byte-for-byte copy comparison;
-- performed FORMAT's verification as a separate reverse pass;
-- had a one-byte bad-sector counter;
-- used a successful initial sector read as a “not blank” test.
+- contained its own Model 4 controller driver;
+- used direct controller/NMI facilities;
+- used MM-private physical drive structures;
+- performed FORMAT verification as a later reverse pass;
+- primarily checked copied-sector readability;
+- formatted a destination cylinder before reading its corresponding source cylinder;
+- used a one-byte bad-sector count;
+- used a readable-sector probe in its destruction-warning logic.
 
-BetterCP/M does **not** need to reproduce those details.
+BetterCP/M:
 
-The retained lessons are architectural and behavioral where they have already been implemented: transient physical disk handling, bounded errors, useful diagnostics, and efficient access to physical formatter support.
+- puts hardware-specific operations behind a backend;
+- verifies immediately after formatting;
+- byte-compares copied payload;
+- reads source data before destroying its corresponding destination surface;
+- uses a wider error counter;
+- always issues the destructive FORMAT warning.
 
----
-
-# 47. Performance architecture
-
-The original BetterCP/M formatting path repeatedly reloaded format-control code from system disk during the inner formatting loop.
-
-The current implementation can instead use an advertised private platform entry to cache the necessary control image in transient memory.
-
-On the Model 4 development path this reduced a measured full 800K format/verify run from approximately 341 seconds to approximately 51 seconds while retaining:
-
-- immediate verification;
-- all 1,600 sectors verified;
-- byte-comparison policy;
-- unchanged resident disk/control allocations.
-
-z80pack advertises no such private acceleration and uses the ordinary public operation.
-
-This optimization is optional backend capability. It must not change DUP's externally visible correctness contract.
+These are deliberate BetterCP/M behaviors.
 
 ---
 
-# 48. Completion and error claims
+# PERFORMANCE
 
-DUP may report FORMAT success only after every required physical surface has been formatted and verified.
+## 71. Fast-format support
 
-DUP may report COPY success only after every required source surface has been read, written to the destination, and byte-verified.
+A backend may advertise a private fast-format entry.
 
-CHECK completion reports the number of unreadable physical sectors encountered.
+The current Model 4 implementation can cache its formatting-control image in transient storage and restore it before each write-track operation.
 
-An interrupted or failed operation must report the corresponding partial-operation status, not the normal completion message.
+This removes repeated system-disk accesses from the inner formatting loop.
 
 ---
 
-# 49. Qualification status for BetterCP/M 1.0
+## 72. Correctness invariance
 
-The DUP backend-capability qualification is closed for the retained automated matrix.
+Whether DUP uses:
 
-Current evidence includes:
+```text
+advertised private fast-format entry
+```
+
+or:
+
+```text
+ordinary public disk-control operation
+```
+
+the visible FORMAT and verification contract remains unchanged.
+
+---
+
+# RELEASE QUALIFICATION
+
+## 73. Existing automated qualification
+
+The retained qualification includes:
 
 ```text
 test_dup_operations.py copy
@@ -1100,58 +1481,201 @@ test_z80pack_dup_format.py
 test_z80pack_dup_format.py --unsupported
 ```
 
-The qualification report states that backend-capability closure is complete.
-
-Native installation and final two-platform release qualification remain separate final release work; this specification does not convert those outstanding release tasks into DUP design changes.
+Backend-capability closure is complete for those cases.
 
 ---
 
-# 50. 1.0 behavioral summary
+## 74. Command-line qualification required for 1.0
 
-DUP 1.0 is the existing interactive three-function physical disk utility:
+Because direct FORMAT/COPY/CHECK invocation is committed 1.0 work rather than behavior present in the current interactive implementation, release qualification must additionally exercise the command-line entry points.
+
+At minimum:
+
+```text
+DUP /FORMAT B:
+DUP /COPY A: B:
+DUP /CHECK B:
+DUP /VER
+```
+
+Qualification must establish that command-line entry produces the same:
+
+- binding selection;
+- validation;
+- confirmation;
+- media operation;
+- verification;
+- interruption;
+- error behavior;
+- temporary-binding restoration;
+
+as the corresponding interactive operation.
+
+Negative parser cases should include malformed/missing drives and invalid destination selection.
+
+No duplicate disk-operation implementation should be accepted merely to provide command-line entry.
+
+---
+
+# BETTERCP/M 1.0 SUMMARY
+
+## 75. Supported command forms
 
 ```text
 DUP
-    A  FORMAT
-    B  COPY
-    C  CHECK
+DUP /FORMAT drive:
+DUP /COPY source: destination:
+DUP /CHECK drive:
+DUP /VER
 ```
 
-with standalone:
+Examples:
+
+```text
+DUP /FORMAT B:
+DUP /COPY A: B:
+DUP /CHECK C:
+DUP /VER
+```
+
+---
+
+## 76. Interactive operations
+
+```text
+A   FORMAT
+B   COPY
+C   CHECK
+```
+
+Interactive and command-line forms share the same operation engine.
+
+---
+
+## 77. Core FORMAT contract
+
+FORMAT:
+
+- accepts interactive or `/FORMAT drive:` entry;
+- uses the selected drive's installed binding;
+- refuses protected physical drive 0;
+- validates formatting capability before destruction where possible;
+- always requires destructive confirmation;
+- creates physical tracks according to the installed format;
+- writes erased payload data;
+- immediately rereads and verifies it;
+- uses bounded retry;
+- reports interrupted media as partly formatted.
+
+---
+
+## 78. Core COPY contract
+
+COPY:
+
+- accepts interactive or `/COPY source: destination:` entry;
+- copies all sector payloads represented by the installed source binding;
+- requires distinct physical source and destination drives;
+- accepts A-D as source and B-D as destination;
+- protects destination physical drive 0;
+- preserves the source;
+- normalizes the bootstrap cylinder-based binding where necessary;
+- temporarily binds the destination to source format semantics when required;
+- confirms before destruction;
+- reads source data before overwriting the corresponding destination surface;
+- rereads and byte-compares destination data;
+- restores the original destination binding;
+- does not persistently alter CONFIG state;
+- is not a flux-level clone.
+
+---
+
+## 79. Core CHECK contract
+
+CHECK:
+
+- accepts interactive or `/CHECK drive:` entry;
+- is read-only;
+- scans all sector payloads represented by the binding;
+- reports location and error status;
+- counts failed physical sectors appropriately;
+- continues after ordinary unreadable-sector failures;
+- reports a final unreadable-sector count.
+
+---
+
+## 80. Command-line safeguard contract
+
+Direct command-line access is a convenience and automation interface, not an unsafe shortcut.
+
+Accordingly:
+
+```text
+DUP /FORMAT B:
+```
+
+still confirms before formatting, and:
+
+```text
+DUP /COPY A: B:
+```
+
+still confirms before erasing the destination.
+
+BetterCP/M 1.0 defines no confirmation-bypass option.
+
+---
+
+## 81. Version identity
 
 ```text
 DUP /VER
 ```
 
-printing:
+prints:
 
 ```text
 BetterCP/M DUP 1.0 (Build 001)
 ```
 
-Its principal contracts are:
+The retained interactive title is:
 
-- FORMAT uses the selected logical drive's installed binding.
-- FORMAT constructs physical tracks according to the format geometry supported by the backend.
-- FORMAT warns before destruction.
-- FORMAT immediately rereads and verifies erased payload contents.
-- COPY requires distinct physical source and destination drives.
-- COPY protects physical system drive 0 from destination writes.
-- COPY preserves the source.
-- COPY normalizes the bootstrap cylinder-based binding into equivalent surface-track form before destination-format comparison where required.
-- COPY copies all sector payloads represented by the installed source binding; it is not a flux-level or arbitrary track-metadata clone.
-- COPY reformats the destination when its binding differs from the normalized source format and the destination backend supports that format.
-- COPY reads each source surface before destroying or overwriting the corresponding destination surface.
-- COPY rereads and byte-compares written payloads.
-- CHECK is read-only and continues over ordinary unreadable sectors.
-- `^C` interrupts operations at bounded safe points.
-- interrupted destructive operations are explicitly reported as partial.
-- temporary destination bindings are restored before normal operation resumes, or restoration is retried on failure.
-- CONFIG remains responsible for persistent drive configuration.
-- FDB format description and backend physical capability are distinct.
-- a valid FDB/binding does not imply every backend can physically format that medium.
-- the z80pack mixed-sector qualification specifically establishes rejection without target modification for that tested unsupported path.
-- machine-specific controller operations remain behind the BetterCP/M disk/backend interface.
+```text
+BetterCP/M 2.2 Disk Utility Program version 1.14
+```
+
+The two identities are intentionally distinct.
+
+---
+
+## 82. Implementation-status distinction
+
+For clarity, the 1.0 specification contains both established behavior and committed remaining work.
+
+**Already implemented/qualified:**
+
+- interactive FORMAT/COPY/CHECK;
+- physical-media safeguards;
+- format and copy verification;
+- temporary-binding restoration;
+- bootstrap cylinder-binding normalization;
+- backend capability behavior;
+- `/VER`;
+- Model 4 and z80pack qualification described above.
+
+**Committed BetterCP/M 1.0 implementation work:**
+
+```text
+DUP /FORMAT drive:
+DUP /COPY source: destination:
+DUP /CHECK drive:
+```
+
+These direct forms must dispatch into the existing operation paths and preserve all existing safeguards.
+
+
+Command-line FORMAT and COPY still require interactive confirmation and are
+not unattended operations. Direct CHECK requires no confirmation.
 
 ## Supporting references
 
