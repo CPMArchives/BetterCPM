@@ -1,6 +1,6 @@
         INCLUDE backend.inc
 ; MM-style ADM-3A development provider. Movement/erase/scroll are implemented;
-; 0Fh and line-operation semantics remain gates. Do not ship as complete.
+; Original MM 2.32 qualifies reverse and line operations; emulator checks remain.
 RSXBASE         EQU     08000H
         CSEG
         .PHASE RSXBASE
@@ -116,8 +116,14 @@ AM_NORMAL:
         JP Z,AM_CLEAR
         CP 7
         JP Z,AM_BELL
+        CP 15
+        JP Z,AM_ON
+        CP 28
+        JP Z,AM_INSERT
+        CP 29
+        JP Z,AM_DELETE
         CP 14
-        JP Z,AM_REV_OFF
+        JP Z,AM_OFF
         CP 22
         JP Z,AM_REV_TOGGLE
         CP 8
@@ -142,8 +148,8 @@ AM_NORMAL:
         JP Z,AM_EOS
         CP 30
         JP Z,AM_HOME
-        ; Unsupported and not-yet-qualified controls are consumed. In particular
-        ; 1Ch must not reach the basic renderer, where it means clear screen.
+        ; Unassigned MM control bytes are consumed, never sent to the basic
+        ; renderer with its different control meanings.
         RET
 AM_PRINT:
         LD HL,(M4CURSOR)
@@ -264,7 +270,50 @@ AM_FILL_NEXT:
         OR C
         JR NZ,AM_FILL_NEXT
         RET
-AM_REV_OFF:
+AM_LINE:
+        ; HL = beginning of cursor row, BC = bytes to beginning of last row.
+        LD HL,(M4CURSOR)
+        LD A,(M4COLUMN)
+        LD E,A
+        LD D,0
+        OR A
+        SBC HL,DE
+        EX DE,HL
+        LD HL,0FF30H
+        OR A
+        SBC HL,DE
+        LD B,H
+        LD C,L
+        EX DE,HL                       ; preserves zero flag for last-row case
+        RET
+AM_INSERT:
+        CALL AM_LINE
+        JR Z,AM_LASTROW
+        PUSH HL
+        LD HL,0FF2FH
+        LD DE,0FF7FH
+        LDDR
+        POP HL
+        LD BC,80
+        JP AM_FILL
+AM_DELETE:
+        CALL AM_LINE
+        JR Z,AM_LASTROW
+        PUSH HL
+        LD DE,80
+        ADD HL,DE
+        POP DE
+        LDIR
+AM_LASTROW:
+        LD HL,0FF30H
+        LD BC,80
+        JP AM_FILL
+AM_ON:
+        ; Original MM 2.32 dispatch reaches an unconditional reverse-ON path.
+        LD A,080H
+        LD (AM_REVERSE),A
+        RET
+AM_OFF:
         XOR A
         LD (AM_REVERSE),A
         RET

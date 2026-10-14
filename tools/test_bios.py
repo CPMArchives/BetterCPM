@@ -709,6 +709,14 @@ class Z80:
                     self.hl = (self.hl + 1) & 0xFFFF
                     self.de = (self.de + 1) & 0xFFFF
                 self.bc = 0
+            elif op == 0xED and self.mem[self.pc] == 0xB8:  # LDDR
+                self.pc += 1
+                count = self.bc
+                for _ in range(count):
+                    self.mem[self.de] = self.mem[self.hl]
+                    self.hl = (self.hl - 1) & 0xFFFF
+                    self.de = (self.de - 1) & 0xFFFF
+                self.bc = 0
             elif op == 0xC0:            # RET NZ
                 if not self.z:
                     self.pc = self.pop()

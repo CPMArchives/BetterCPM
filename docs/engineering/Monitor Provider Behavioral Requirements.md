@@ -182,7 +182,7 @@ The current provisional MM 2.32 behavioral contract is:
 | `0Ch` | Cursor right | REQUIRED |
 | `0Dh` | Carriage return | REQUIRED |
 | `0Eh` | Reverse video OFF | REQUIRED |
-| `0Fh` | Reverse-video action | **UNRESOLVED** |
+| `0Fh` | Reverse video ON | REQUIRED; selected MM 2.32 binary qualified |
 | `10h–14h` | Ignore | REQUIRED |
 | `15h` | Erase to end of line | REQUIRED |
 | `16h` | Toggle reverse video | REQUIRED |
@@ -191,8 +191,8 @@ The current provisional MM 2.32 behavioral contract is:
 | `19h` | Erase to end of screen | REQUIRED |
 | `1Ah` | Clear screen and home | REQUIRED |
 | `1Bh` | Begin escape sequence | REQUIRED |
-| `1Ch` | Insert line | REQUIRED command; exact edge behavior to qualify |
-| `1Dh` | Delete line | REQUIRED command; exact edge behavior to qualify |
+| `1Ch` | Insert line | REQUIRED; selected MM 2.32 binary qualified |
+| `1Dh` | Delete line | REQUIRED; selected MM 2.32 binary qualified |
 | `1Eh` | Home | REQUIRED |
 | `1Fh` | Ignore | REQUIRED |
 
@@ -202,29 +202,20 @@ The audit establishes `15h/18h` as EOL erase, `17h/19h` as EOS erase, `1Ch` inse
 
 ## 5.1 Reverse Video `0Fh`
 
-The initial audit described the reconstructed `0Fh` path as a toggle, conflicting
-with its reverse-ON comment. Source reinspection during implementation found
-that this path clears A before XORing 80h, which instead suggests reverse ON.
-The original-binary comparison remains required before freezing the behavior.
-
-The audit explicitly recommends confirmation against the selected MM binary before promising this behavior. [MM compatibility audit](Bounded%20Monitor%20Memory%20and%20Efficiency%20Review.md).
-
-Therefore:
+The selected original MM 2.32 disk binary establishes:
 
 ```text
 0Eh   reverse OFF
 16h   reverse TOGGLE
-0Fh   UNRESOLVED pending binary qualification
+0Fh   reverse ON (idempotent)
 ```
 
-No final 1.0 behavioral claim shall be made for `0Fh` until that comparison is complete.
-
-Implementation-stage source reinspection found that the archived reconstructed
-`shiftinhandler` executes `XOR A` before reaching `XOR 80h`, while the 16h
-handler first loads the existing flag. That path suggests 0Fh sets reverse ON,
-rather than toggling. This corrects the earlier source-reading inference but
-does not close the original-binary qualification gate; 0Fh remains UNRESOLVED.
-
+The earlier toggle inference was incorrect. The original 0Fh table dispatch
+clears A before XORing 80h; it does not load the previous mode. Both initial
+mode states and repeated 0Fh calls were executed against the selected binary.
+See [original MM console qualification](Original%20MM%202.32%20Console%20Qualification.md)
+for the image identity and reproducible checks. This closes this historical
+question for the selected compatibility target, not every MM release.
 
 ---
 
@@ -385,16 +376,19 @@ The audited MM reference implements:
 
 These commands are therefore part of the required MM personality.
 
-However, before freezing framebuffer-level edge semantics, qualification shall verify against the selected MM binary:
+The selected original MM 2.32 binary now qualifies these exact semantics:
 
-- which row is inserted/deleted relative to cursor position;
-- which direction existing rows shift;
-- what happens to the discarded edge row;
-- what fills the newly created row;
-- whether cursor row and column change;
-- interaction with reverse-video state if relevant.
+- The operated row is the cursor's current row, regardless of column.
+- Insert shifts that row and subsequent rows down, discards the old bottom row,
+  and fills the current row with blanks.
+- Delete shifts subsequent rows up and fills the bottom row with blanks.
+- On the bottom row, both commands clear the entire bottom row.
+- Cursor row and column remain unchanged.
+- New blanks use the current reverse mode (20h normally, A0h reversed).
 
-The commands themselves are no longer unresolved; only exact edge semantics await qualification.
+All 24 rows and 80 columns, both reverse modes and both commands were checked
+against the selected binary, then compared with the provider at two load
+addresses. [Original MM console qualification](Original%20MM%202.32%20Console%20Qualification.md).
 
 ---
 
@@ -1175,14 +1169,9 @@ Expected:
 
 ## MM-12 — `0Fh`
 
-**RESEARCH TEST pending binary qualification.**
+Send 0Fh with reverse initially OFF and initially ON; repeat the command.
 
-Determine whether it:
-
-- sets reverse ON; or
-- toggles reverse.
-
-Do not make normative until confirmed.
+Expected: reverse ON in every case. Following printable text uses reverse video.
 
 ---
 
@@ -1292,9 +1281,9 @@ Expected ordinary printable `A`.
 
 `1Ch`.
 
-Required command.
-
-Framebuffer-level expected result to be frozen after MM-binary qualification.
+Required: shift current and later rows down, discard the old bottom row and
+blank the current row. On row 23, clear that row. Preserve cursor position;
+blank cells use the current reverse mode.
 
 ---
 
@@ -1302,9 +1291,8 @@ Framebuffer-level expected result to be frozen after MM-binary qualification.
 
 `1Dh`.
 
-Required command.
-
-Framebuffer-level expected result to be frozen after MM-binary qualification.
+Required: shift subsequent rows up and blank the bottom row. On row 23, clear
+that row. Preserve cursor position; blank cells use the current reverse mode.
 
 ---
 
@@ -1668,14 +1656,8 @@ The current unresolved set is intentionally small.
 
 ### MM
 
-1. **`0Fh` reverse-video semantics**
-   Reconstructed code toggles; comment implies ON. Verify against selected MM binary.
-
-2. **Insert-line exact semantics**
-   Command existence is established; exact edge effects need qualification.
-
-3. **Delete-line exact semantics**
-   Same.
+The selected MM 2.32 binary closes 0Fh and insert/delete-line semantics.
+See [original MM console qualification](Original%20MM%202.32%20Console%20Qualification.md).
 
 4. **Special Model 4 keyboard mappings**
    Historical MM tables were configurable; freeze only the selected target mapping.

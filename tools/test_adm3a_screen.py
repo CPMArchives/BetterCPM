@@ -59,7 +59,7 @@ def main():
                     cases+=1
         # Ignored controls and deliberately unfinished controls must not leak
         # into the basic renderer or accidentally clear the screen.
-        for char in list(range(7))+list(range(16,21))+[15,28,29,31]:
+        for char in list(range(7))+list(range(16,21))+[31]:
             cpu.mem[0xF800:0xFF80]=pattern
             cpu.setword(bios['M4CURSOR'],0xF864)
             cpu.mem[bios['M4COLUMN']]=20
