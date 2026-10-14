@@ -2,6 +2,7 @@
 """Execute relocated resident TYPE with read-only BDOS fixtures."""
 import re, struct
 from pathlib import Path
+from system_layout import LAYOUT
 from test_bios import Z80, SENTINEL
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -18,17 +19,24 @@ def execute(tail, files, responses='', base=0x8000, open_fail=(), read_fail=(), 
         return int(re.search(r'^([0-9a-f]{4})\s+.*?\b'+name+':', listing, re.M|re.I)[1],16)-linked+base
     c = Z80(b''); c.mem[base:base+size] = image
     c.mem[5:8] = bytes((0xDB,254,0xC9))
+    c.setword(1, LAYOUT['BIOS']+3)
+    c.mem[LAYOUT['BIOS']+66:LAYOUT['BIOS']+69] = bytes((0xDB,253,0xC9))
     c.mem[0x2000:0x2000+len(tail)] = tail.encode()
     c.hl=0x2000; c.b=len(tail)
     if transient:
         binary = (ROOT/'build/utilities/TYPE.COM').read_bytes()
         c.mem[0x100:0x100+len(binary)] = binary
-        c.mem[0:3] = bytes((0xC3,SENTINEL&255,SENTINEL>>8))
+        c.mem[0:3] = bytes((0xC3,(LAYOUT['BIOS']+3)&255,(LAYOUT['BIOS']+3)>>8))
+        c.mem[LAYOUT['BIOS']+3:LAYOUT['BIOS']+6] = bytes((0xC3,SENTINEL&255,SENTINEL>>8))
         c.mem[0x80] = len(tail)
         c.mem[0x81:0x81+len(tail)] = tail.encode()
     state = dict(drive=0,user=2,dma=0x80,rows=[],index=0,reads=0)
     output=[]; actions=[]; keys=iter(responses)
     def io(port):
+        if port&255 == 253:
+            assert c.a == 4
+            output.append(chr(28))  # model the basic clear operation in this display fixture
+            return 0
         assert port&255==254
         f=c.c; actions.append(f)
         if observe is not None:observe(c, f)

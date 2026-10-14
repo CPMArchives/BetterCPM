@@ -49,7 +49,7 @@ def main() -> None:
     require("BetterCP/M 0.3" in output, "RCP VER did not report the version")
     output = run("VER /V", run_delay=800)
     for line in (
-        "Command environment: API 1.0; implementation 1.3",
+        "Command environment: API 1.0; implementation 1.4",
         "Basic Disk Operating System: API 1.2; implementation 1.6",
         "Basic Input/Output System: API 1.5; implementation 1.9",
     ):

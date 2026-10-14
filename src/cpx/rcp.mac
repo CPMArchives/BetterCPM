@@ -1924,7 +1924,7 @@ BC_CSETDU:                              ; csetdu
         LD      C,32
         JP      BDOS
 
-  ; CLS is currently expressed through the Model 4 console's 1CH clear-screen
+  ; CLS uses the explicit monitor clear/home operation rather than a personality's
   ; byte. Preserve this platform fact visibly until BetterCP/M defines a
   ; portable terminal-capability service for CPXs.
 
@@ -1942,9 +1942,8 @@ BC_CLR:                                 ; execute CLS command
         LD      A,B
         OR      A
         JR      NZ,BC_CLRBAD
-        LD      E,01CH
-        LD      C,2
-        JP      BDOS
+        LD      A,4
+        JP      LY_BIOS+66             ; internal clear/home, independent of personality
 
 BC_CLRBAD:                              ; clrbad
         LD      DE,BC_RQMARK

@@ -63,6 +63,8 @@ CCP_ENTRY:                              ; initialize CCP stack
 ; -------------------------------------------------------------------------------
 
 CCP_LOOP:                               ; prompt for and dispatch next command
+        LD      A,5
+        CALL    LY_BIOS+66              ; resident-command returns bypass warm boot
         LD      DE,CCP_PROMPT
         LD      C,9
         CALL    BDOS

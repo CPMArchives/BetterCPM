@@ -1729,3 +1729,12 @@ ADM-3A and VT52 therefore serve two roles:
 2. the first validation of an architecture intended eventually to support a broad range of CP/M terminal environments.
 
 The general TCAP database, terminal discovery system and permanent post-1.0 terminal architecture remain future work.
+
+## Third 1.0 personality: ANSI/VT100
+
+The committed 1.0 provider set is MM-style ADM-3A, VT52 and a bounded
+ANSI/VT100-compatible personality, each with its own test utility. ANSI/VT100
+is intended for cpmsim hosted by macOS Terminal and compatible Linux terminals.
+Its precise supported subset and input/reply behavior still need a normative
+specification; this addition does not promise full xterm emulation. ANSI host
+rendering is performed by the RSX backend, not by cpmsim.

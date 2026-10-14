@@ -57,6 +57,8 @@ CRSTART:                                ; enter command-environment reloader
 
 CRBODY:                                 ; begin reconstruction body
         LD      SP,CRSTKTOP
+        LD      A,5
+        CALL    LY_BIOS+66              ; reset unfinished monitor output before reconstruction
   ; 07-Sep-2026 -- a BIOS caller may leave another physical drive selected
   ; without changing BDOS's cached A: context. Do not reload RCP.CPX from
   ; that drive using A:'s old DPB. Invalidate before the first file lookup.
@@ -100,9 +102,8 @@ CRCPXLP:                                ; process next persistent CPX
   ; copy ordinary files.  A newly installed disk must therefore reach the
   ; bare CCP when an optional CPX named by the old profile is not yet present.
   ; Once a carrier opens, malformed data still takes the hard failure path.
-        LD      A,(CRCOUNT)
-        DEC     A
-        LD      (CRCOUNT),A
+        LD      HL,CRCOUNT
+        DEC     (HL)                   ; next profile iteration reloads A
         JR      CRCPXLP
 
 ; ================================================================================
@@ -147,9 +148,8 @@ CRLINK:                                 ; link loaded CPX into chain
 CRLINKD:                                ; finish CPX link
         LD      HL,(CRBASE)
         LD      (CRPREV),HL
-        LD      A,(CRCOUNT)
-        DEC     A
-        LD      (CRCOUNT),A
+        LD      HL,CRCOUNT
+        DEC     (HL)                   ; next profile iteration reloads A
         JR      CRCPXLP
 
 ; -------------------------------------------------------------------------------

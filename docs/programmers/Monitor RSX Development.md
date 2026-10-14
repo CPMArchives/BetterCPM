@@ -2,15 +2,16 @@
 
 BetterCP/M 1.0 uses a bounded monitor-provider interface to add terminal
 personalities that the basic console does not implement. ADM-3A (Montezuma
-Micro behavior on Model 4) and VT52 are the initial planned providers, each
+Micro behavior on Model 4), VT52 and an ANSI/VT100-compatible subset are the
+committed 1.0 providers, each
 with a dedicated test utility. Their completed implementations will be added
 as worked examples here. This guide does not claim those providers exist yet.
 
 The BIOS hooks, transactional detach/publication, descriptor validation,
 prospective selection, duplicate-provider rejection and retained live-descriptor
 reconciliation are installed. Valid MCON carriers now bind through normal RSX
-transactions. Command-return reset, internal clear/home integration and the
-initial terminal providers remain implementation gates. Do not describe the
+transactions. Command-return reset and internal clear/home integration are installed.
+The initial terminal providers remain implementation and qualification gates. Do not describe the
 terminal personalities as released until those gates and rendering/input
 qualification pass.
 

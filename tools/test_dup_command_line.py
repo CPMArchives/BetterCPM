@@ -33,6 +33,6 @@ def main():
     for tail in ['/VER','/VER /CHECK B:']:
         c=runner(image);data=tail.encode();c.mem[128]=len(data);c.mem[129:129+len(data)]=data
         c.run(256,limit=100000)
-        assert output(c)==('BetterCP/M DUP 1.0 (Build 002)\r\n' if tail=='/VER' else 'Invalid /VER usage.\r\n')
+        assert output(c)==('BetterCP/M DUP 1.0 (Build 003)\r\n' if tail=='/VER' else 'Invalid /VER usage.\r\n')
     print('DUP command parsing, direct engine dispatch, one-shot exit and /VER checks pass')
 if __name__=='__main__':main()

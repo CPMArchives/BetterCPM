@@ -48,8 +48,7 @@ PAUSE:  LD HL,WAITMSG
         RET
 ; HL = heading. One inverse row, then a blank row.
 HEADER: PUSH HL
-        LD A,28
-        CALL PUTC
+        CALL UI_CLEAR
         POP HL
         LD B,79
 HEADLP: LD A,(HL)
@@ -586,3 +585,5 @@ HASREV: DB 0
         IF FDBMODE EQ 0
         INCLUDE disk/builtins.inc
         ENDIF
+
+; @monitor-console@

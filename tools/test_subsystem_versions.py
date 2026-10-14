@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MATRIX = ROOT / "metadata/subsystem-versions.tsv"
 EXPECTED = {
     "BetterCP/M": ("-", "0.3", "completed baseline"),
-    "CCP": ("1.0", "1.3", "completed"),
+    "CCP": ("1.0", "1.4", "completed"),
     "CPX": ("1.0", "1.3", "completed"),
     "BDOS": ("1.2", "1.7", "completed"),
     "RSX": ("1.0", "1.5", "completed"),

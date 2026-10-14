@@ -29,7 +29,7 @@ def main():
         c=runner(image);data=tail.encode()
         c.mem[128]=len(data);c.mem[129:129+len(data)]=data
         c.run(256,limit=100000)
-        expected=('BetterCP/M SYSGEN 1.0 (Build 002)\r\n' if tail=='/VER'
+        expected=('BetterCP/M SYSGEN 1.0 (Build 003)\r\n' if tail=='/VER'
                   else 'Invalid /VER usage.\r\n')
         assert output(c)==expected,(tail,output(c))
     print(f'{len(valid)+len(invalid)} SYSGEN command-tail and no-source-I/O checks pass')

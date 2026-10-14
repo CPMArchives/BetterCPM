@@ -1166,8 +1166,7 @@ WDIGSHOW:PUSH HL                        ; wdigshow
 ; Heading Output
 ; -------------------------------------------------------------------------------
 
-HEADER: LD A,28                         ; header
-        CALL PUTC
+HEADER: CALL UI_CLEAR                   ; explicit internal clear/home
         LD B,79
 
 HEADLP: LD A,(HL)                       ; headlp
@@ -1301,4 +1300,5 @@ BOOTBIND:DS 64                          ; bootbind
 REQ:    DS 80                           ; configuration API request
 ; @utility-version SYSGEN@
 
+; @monitor-console@
         END

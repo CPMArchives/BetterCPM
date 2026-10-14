@@ -1,6 +1,6 @@
 component	identity	interface_version	implementation_version	status	notes
 BetterCP/M	System release	-	0.3	completed baseline	System release identity; not an aggregate API version
-CCP	Command environment	1.0	1.3	completed	CCP-owned stack and disposable warm-boot loader
+CCP	Command environment	1.0	1.4	completed	CCP-owned stack and disposable warm-boot loader
 CPX	Command Processor Extension facility	1.0	1.3	completed	Versioned name-based profile control
 BDOS	Basic Disk Operating System	1.2	1.7	completed	Qualified shared helpers and compact return paths; public interface unchanged
 RSX	Resident System Extension facility	1.0	1.5	completed	On-demand manager and stack; active allocation reported in TPA

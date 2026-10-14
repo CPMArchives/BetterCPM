@@ -10,8 +10,12 @@ It does not claim that the audit prototypes are production monitor providers.
 
 BetterCP/M 1.0 will provide terminal emulation through a loadable monitor RSX,
 with compact BIOS hooks and the existing basic console as the fallback.
-The general terminal target is VT52. The Model 4 target is the ADM-3A behavior
-historically provided by Montezuma Micro CP/M. Use one active monitor provider;
+The three committed 1.0 personalities are ADM-3A (the Montezuma Micro behavior
+on Model 4), VT52, and a defined ANSI/VT100-compatible subset. Each requires
+its own test utility. ANSI/VT100 is intended for ordinary cpmsim use in macOS
+and compatible Linux terminals; its precise supported subset must be specified
+and qualified. cpmsim providers render host output through ANSI sequences;
+this translation belongs to the RSX, not cpmsim itself. Use one active monitor provider;
 platform-specific builds may share parser and rendering source where useful.
 No requirement to keep both personalities simultaneously resident is imposed.
 
