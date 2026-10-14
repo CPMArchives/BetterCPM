@@ -13,6 +13,17 @@
       "user": 0
     },
     {
+      "name": "STARTUP.SUB",
+      "artifact": "src/distribution/STARTUP.SUB",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0,
+      "role": "editable cold-boot startup script"
+    },
+    {
       "name": "DIR.COM",
       "artifact": "build/utilities/DIR.COM",
       "status": "implemented",
@@ -232,5 +243,6 @@
       ],
       "user": 0
     }
-  ]
+  ],
+  "cold_start_command": "SUBMIT STARTUP"
 }

@@ -21,6 +21,23 @@ class DistributionGates(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             selected_files(m,'z80pack',Path('/nonexistent'))
 
+    def test_startup_requires_script_and_submit(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / 'submit').write_bytes(b'program')
+            manifest = {'cold_start_command': 'SUBMIT STARTUP', 'system_disk': [
+                {'name': 'SUBMIT.COM', 'targets': ['z80pack'], 'status': 'implemented',
+                 'artifact': 'submit', 'user': 0}]}
+            with self.assertRaisesRegex(ValueError, 'requires SUBMIT.COM and STARTUP.SUB'):
+                selected_files(manifest, 'z80pack', root)
+            (root / 'startup').write_bytes(b'VER\r\n\x1a')
+            manifest['system_disk'].append(
+                {'name': 'STARTUP.SUB', 'targets': ['z80pack'], 'status': 'implemented',
+                 'artifact': 'startup', 'user': 0})
+            selected, omitted = selected_files(manifest, 'z80pack', root)
+            self.assertEqual(len(selected), 2)
+            self.assertEqual(omitted, [])
+
     def test_capacity_accounts_for_directory_and_extents(self):
         geometry={'block':1024,'blocks':5,'directory_blocks':2,'entries':1}
         with self.assertRaises(ValueError):

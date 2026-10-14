@@ -250,6 +250,12 @@ def main() -> None:
     text = text.replace("        CSEG\n        .PHASE  ",
                         "        ASEG\n        ORG     ").replace(
                             "        .DEPHASE\n", "")
+    # Banner belongs to the transient; keep RCP relocation and allocation limits.
+    banner_code, banner_data = (SOURCE.parent / "ver-banner.inc").read_text(
+        encoding="ascii").split("; @banner-data@\n")
+    text = text.replace("BC_VERLONG:                             ; verlong\n",
+                        "BC_VERLONG:                             ; verlong\n" + banner_code)
+    text = text.replace("BC_VERSION:", banner_data + "BC_VERSION:", 1)
     listing = BUILD / "rcp-transient.lst"
     base = assemble(args.assembler, text, BUILD / "rcp-transient.bin",
                     listing, ORIGIN)

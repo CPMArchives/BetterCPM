@@ -93,3 +93,16 @@ user documentation has been selected yet; host documentation remains here.
 These are distributions of the current implemented state. They are not final
 1.0 release candidates and do not replace the remaining conformance campaign
 or the cpmsim reproducibility requirement.
+
+
+Distribution cold boot runs `SUBMIT STARTUP`. The selected `STARTUP.SUB` is an
+ASCII, CR/LF script with a CP/M EOF marker and initially contains `:VER /BANNER`. The
+builder installs it in A0: and writes a checksummed BCST command record using
+each platform’s physical record mapping. Development/test image builders retain
+their disabled startup default so scripted qualification can choose its own
+command. This setting adds no permanent BIOS code and does not reduce the core 53K TPA.
+
+The introductory banner belongs to `VER.COM`. Resident `VER /BANNER` uses the
+existing `VER: Use :VER.` feature hint. The script explicitly invokes
+`:VER /BANNER`, avoiding dependence on automatic handoff. The banner change
+leaves BIOS and BDOS sizes unchanged and preserves the RCP rounded allocation.

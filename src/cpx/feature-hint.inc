@@ -145,6 +145,7 @@ RH_NLOOP:
 RH_MSG: DB ': Use :','$'
 RH_SUFFIX: DB '.',13,10,'$'
 RH_OPTABLE:
+        DB 'V',6,'BANNER'
         DB 'D',7,'WHEREIS'
         DB 'D',1,'A'
         DB 'D',1,'P'
