@@ -43,6 +43,7 @@ def main():
             assert port&255==1
             output.append(value)
         cpu.port_write=write
+        test_queue(cpu,entry,base,syms,output)
         cpu.port_read=lambda port:3 if port&255==0 else ord('a')
         def call(op,char=0):
             sp=cpu.sp
@@ -100,7 +101,7 @@ def main():
         assert cpu.mem[rowaddr]==cpu.mem[coladdr]==cpu.mem[state]==0
         assert send(b'\x00\x7f')==b''
         assert send(b'\x07')==b'\x07'
-        assert call(1)==1  # raw transport; public BIOS normalizes the status
+        assert call(1)==255
         assert call(2)==ord('a')
         assert call(6)==255
         # Execute the assembled utility with controlled service lookup/input.
@@ -122,6 +123,11 @@ def main():
                     assert bytes(cpu.mem[cpu.de+4:cpu.de+10])==b'MCON\x01\x00'
                     cpu.setword(cpu.de+12,entry)
                     cpu.a=0 if available else 255
+                elif cpu.c==6 and cpu.e==255:
+                    saved={k:getattr(cpu,k) for k in ['b','c','d','e','h','l','pc','z','carry']}
+                    value=call(2)
+                    for k,v in saved.items():setattr(cpu,k,v)
+                    cpu.a=value
                 elif cpu.c==6:
                     messages.append(cpu.e)
                     if available:
@@ -135,7 +141,7 @@ def main():
             cpu.port_write=bdos
             cpu.run(256,limit=100000)
             if available:
-                assert len(pauses)==3
+                assert len(pauses)==3,(base,pauses,bytes(messages),cpu.mem[syms['VQ_COUNT']+base-0x8000])
                 assert b'VT52 foundation exercise complete.' in messages
                 assert b'\x1b[6;11H' in bytes(output)
                 assert b'\x1b[11;80H' in bytes(output)
@@ -146,6 +152,80 @@ def main():
         cpu.port_write=write
 
     print(f'PASS: {cases} relocated VT52 cursor/control cases, ANSI translation, reset/clear and raw input bypass')
+
+
+def test_queue(cpu,entry,base,syms,output):
+    from collections import deque
+    addresses={name:syms[name]+base-0x8000 for name in ['VQ_HEAD','VQ_TAIL','VQ_COUNT','VQ_DATA']}
+    reads=[]
+    hardware=deque()
+    def read(port):
+        if port&255==0:return int(bool(hardware))
+        assert port&255==1 and hardware
+        value=hardware.popleft()
+        reads.append(value)
+        return value
+    cpu.port_read=read
+    def call(op,char=0):
+        sp=cpu.sp
+        cpu.a,cpu.c=op,char
+        cpu.run(entry,limit=10000)
+        assert cpu.sp==sp
+        return cpu.a
+    def identify():
+        before=len(output)
+        call(0,27);call(0,ord('Z'))
+        assert len(output)==before
+    for phase in range(16):
+        cpu.mem[addresses['VQ_HEAD']]=cpu.mem[addresses['VQ_TAIL']]=phase
+        cpu.mem[addresses['VQ_COUNT']]=0
+        hardware.clear();hardware.extend(b'AB')
+        reads.clear()
+        assert call(1)==255 and reads==[ord('A')]
+        for _ in range(5):
+            identify()
+        # A + five whole replies fills all 16 slots; another reply is dropped.
+        assert cpu.mem[addresses['VQ_COUNT']]==16
+        identify()
+        assert cpu.mem[addresses['VQ_COUNT']]==16
+        expected=deque(b'A'+b'\x1b/K'*5)
+        for prefix in [b'\x1b',b'\x1bY',b'\x1bY!']:
+            for byte in prefix:call(0,byte)
+            call(5)
+            assert cpu.mem[addresses['VQ_COUNT']]==16
+        call(4)
+        assert cpu.mem[addresses['VQ_COUNT']]==16
+        while expected:
+            head=cpu.mem[addresses['VQ_HEAD']]
+            count=cpu.mem[addresses['VQ_COUNT']]
+            for _ in range(3):assert call(1)==255
+            assert cpu.mem[addresses['VQ_HEAD']]==head
+            assert cpu.mem[addresses['VQ_COUNT']]==count
+            assert reads==[ord('A')]
+            assert call(2)==expected.popleft()
+        assert call(2)==ord('B') and reads==[ord('A'),ord('B')]
+        assert call(1)==0
+    # Exercise capacity 0..16 without relying on a particular ring start.
+    for capacity_used in range(17):
+        cpu.mem[addresses['VQ_HEAD']]=cpu.mem[addresses['VQ_TAIL']]=0
+        cpu.mem[addresses['VQ_COUNT']]=0
+        hardware.clear()
+        for _ in range(6):identify()
+        assert cpu.mem[addresses['VQ_COUNT']]==15
+        # Queue a key once empty; then rebuild occupancy by complete replies
+        # and partial consumption to cover every remaining-free-space boundary.
+        while cpu.mem[addresses['VQ_COUNT']]:call(2)
+        hardware.append(ord('Q'));call(1)
+        for _ in range(5):identify()
+        for _ in range(16-capacity_used):call(2)
+        before=cpu.mem[addresses['VQ_COUNT']]
+        snapshot=bytes(cpu.mem[addresses['VQ_DATA']:addresses['VQ_DATA']+16])
+        identify()
+        assert cpu.mem[addresses['VQ_COUNT']]==before+(3 if before<=13 else 0)
+        if before>13:
+            assert bytes(cpu.mem[addresses['VQ_DATA']:addresses['VQ_DATA']+16])==snapshot
+    while cpu.mem[addresses['VQ_COUNT']]:call(2)
+    print('PASS: queue ordering, all 16 ring phases/17 capacity boundaries, atomic overflow and reset/clear preservation')
 
 
 if __name__=='__main__':main()

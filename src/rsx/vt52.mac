@@ -1,5 +1,5 @@
 ; Development VT52 personality for cpmsim's ANSI host console.
-; Identification, graphics and keypad/reply handling remain release gates.
+; Bounded identification/input queue; live terminal qualification remains.
 BASE EQU 08000H
         CSEG
         .PHASE BASE
@@ -13,6 +13,10 @@ VT_CHAIN:
 VT_ENTRY:
         OR A
         JP Z,VT_OUT
+        CP 1
+        JP Z,VQ_STAT
+        CP 2
+        JP Z,VQ_INPUT
         CP 4
         JP Z,VT_CLEAR
         CP 5
@@ -121,6 +125,8 @@ VT_PRINT:
 VT_ESC:
         CALL VT_RESET
         LD A,C
+        CP 'Z'
+        JP Z,VQ_IDENT
         CP 'Y'
         JR Z,VT_ADDR
         CP 'H'
@@ -239,6 +245,70 @@ VT_UNITS:
         ADD A,'0'
         LD C,A
         JP VT_EMIT
+VQ_STAT:
+        LD A,(VQ_COUNT)
+        OR A
+        JR NZ,VQ_READY
+        ; Observing a raw key enqueues it without consuming logical input.
+        LD A,1
+        CALL VT_RAW
+        OR A
+        RET Z
+        LD A,2
+        CALL VT_RAW
+        LD C,A
+        CALL VQ_PUT
+VQ_READY:
+        LD A,0FFH
+        RET
+VQ_INPUT:
+        LD A,(VQ_COUNT)
+        OR A
+        JR NZ,VQ_GET
+        LD A,2
+        JP VT_RAW
+VQ_GET:
+        LD A,(VQ_HEAD)
+        LD E,A
+        LD D,0
+        LD HL,VQ_DATA
+        ADD HL,DE
+        LD C,(HL)
+        INC A
+        AND 15
+        LD (VQ_HEAD),A
+        LD HL,VQ_COUNT
+        DEC (HL)
+        LD A,C
+        RET
+VQ_IDENT:
+        ; Reserve all three bytes before touching the ring. Newest reply loses
+        ; on overflow; queued keyboard/replies and their order remain intact.
+        LD A,(VQ_COUNT)
+        CP 14
+        RET NC
+        LD C,27
+        CALL VQ_PUT
+        LD C,'/'
+        CALL VQ_PUT
+        LD C,'K'
+VQ_PUT:
+        LD A,(VQ_TAIL)
+        LD E,A
+        LD D,0
+        LD HL,VQ_DATA
+        ADD HL,DE
+        LD (HL),C
+        INC A
+        AND 15
+        LD (VQ_TAIL),A
+        LD HL,VQ_COUNT
+        INC (HL)
+        RET
+VQ_HEAD: DB 0
+VQ_TAIL: DB 0
+VQ_COUNT: DB 0
+VQ_DATA: DS 16
 VT_CSI: DB 27,'[',0
 VT_CLS: DB 27,'[2J',27,'[H',0
 VT_SJ: DB 27,'[0J',0

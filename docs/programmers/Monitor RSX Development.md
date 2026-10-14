@@ -151,3 +151,10 @@ address-formatting and movement routines. `tools/build_vt52.py` and
 [VT52 foundation qualification](../engineering/VT52%20Provider%20Foundation%20Qualification.md)
 for supported controls, host-geometry assumptions and remaining gates. It is
 not yet a generic monitor template or a released VT52 implementation.
+
+
+VT52 now also demonstrates a bounded byte-indexed reply ring. It enqueues ESC Z
+identification replies atomically, preserves queued bytes across reset/clear,
+and observes backend keyboard bytes during status polling only when its logical
+queue is empty. This preserves provider-observed ordering without pretending
+to know when an unread physical key arrived.
