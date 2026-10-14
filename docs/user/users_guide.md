@@ -30,6 +30,13 @@ During a cold boot, the operating system initializes its system state, establish
 
 A warm boot returns control to the operating system without performing a complete cold initialization. As in conventional CP/M, programs can terminate by returning through the CP/M warm-boot mechanism. BetterCP/M reconstructs the command environment as necessary and returns to the command prompt while preserving system state that is defined to survive a warm boot.
 
+The distribution disks save `SUBMIT STARTUP` as the cold-start command.
+`STARTUP.SUB` in A0: initially runs `:VER /BANNER`, displaying the current system identity.
+Edit that script to customize startup. Warm boot does not rerun it. CONFIG can
+change or disable the saved startup command; a missing script produces SUBMIT’s
+normal error and leaves the command prompt available. There is no standalone
+ECHO command in 1.0 at present.
+
 Normal operation begins at the command prompt.
 
 ##### 1.2.1 Terminal monitor (planned for 1.0)
@@ -1865,8 +1872,10 @@ Example:
 `VER` is supplied as a resident command by `RCP.CPX`. It identifies the
 running BetterCP/M system and its release version.
 
-[TBD — expand this entry when the final BetterCP/M 1.0 VER display and any
-additional version-reporting options are finalized.]
+`VER /V` adds subsystem version details. `:VER /BANNER` prints the introductory
+sign-on banner used by the distribution startup script. These options must be
+used alone. The banner is supplied by VER.COM; resident `VER /BANNER` reports
+`VER: Use :VER.`.
 
 #### 4.10 SAVE — Save Memory to a File
 
@@ -2254,12 +2263,178 @@ The mapping and capacity checks in section 4.6 still apply before any writes.
 This should be user-oriented throughout.
 
 ### 7. Configuring BetterCP/M
-7.1 CONFIG 7.2 Active and Saved Configuration 7.3 Applying and Saving Changes 7.4 System Devices 7.5 Keyboard and Console Settings 7.6 Printer and List-Device Settings 7.7 Serial Configuration 7.8 Disk Configuration 7.9 Startup Command 7.10 Platform-Specific Options 7.11 Configuration Recovery
-This chapter will need adjustment to the final CONFIG implementation.
+
+#### 7.1 CONFIG — Current configuration utility
+
+Run `CONFIG` to enter the console menu. `CONFIG /VER` displays the utility’s
+version and build number; it must be used alone. CONFIG works without a monitor
+RSX or a full-screen terminal.
+
+CONFIG currently provides drive configuration, startup-command editing, and
+save operations. It distinguishes the settings in use now, pending changes,
+and defaults saved for subsequent startup. Changing a live setting does not
+necessarily change its saved default.
+
+The save menu offers two scopes: save pending cold-boot changes only, or save
+all current settings as startup defaults. Choose the first to preserve saved
+drive defaults when a current drive setting is only temporary. Choose the
+second when the current settings should become the defaults. CONFIG verifies
+writes and attempts restoration after recoverable save failures. A power loss
+during saving can still require recovery.
+
+#### 7.2 Startup command
+
+Use CONFIG’s startup-command menu (`J`) to inspect or edit the pending command.
+Editing it does not execute it or save it automatically. Use the save menu to
+make the change persistent. An empty command disables automatic startup.
+
+Distribution disks default to `SUBMIT STARTUP`. The command runs once at cold
+boot; ordinary warm boot does not repeat it. Development and test images may
+have startup disabled. The supplied A0:STARTUP.SUB invokes `:VER /BANNER`.
+Edit that script to add ordinary startup commands such as loading an RSX.
+
+#### 7.3 Drive configuration
+
+CONFIG uses DISK.FDB to select available format definitions; it is not a format
+database editor. Drive settings and activation rules depend on the platform.
+Keep current settings separate from saved boot defaults, and follow the menu’s
+validation and save results before relying on a new configuration.
+
+#### 7.4 Planned extensions — not yet implemented
+
+The [CONFIG engineering specification](../engineering/CONFIG%20Specification.md)
+records planned command-line equivalents for interactive configuration,
+including `/STARTUP="command line"`, `/SHOW`, and a defaults/reset operation.
+Their apply/save behavior must be settled before implementation; these are not
+currently supported commands.
+
+Configurable persistent IOBYTE defaults, printer tab/line-ending/form-feed
+policies, and serial-port settings are candidates for 1.0, subject to runtime
+memory and backend qualification. Unsupported features will not appear as
+working menu options. STAT remains the utility for live IOBYTE assignments.
+
+CONFIG does not manage keyboard mappings, monitor personalities, clocks, or
+RSX loading and unloading. Use the dedicated subsystem utilities and startup
+scripts for those facilities. Search paths and named directories remain
+post-1.0 work.
 
 ### 8. Disk Operations
-8.1 DUP — Disk Utility Program 8.2 Disk Formats 8.3 Inspecting Disks 8.4 Preparing and Formatting Media 8.5 Copying Disks 8.6 Other DUP Operations 8.7 Unsupported Formats and Operations 8.8 Safe Media Handling
-Again, final DUP functionality determines the exact subsections.
+
+#### 8.1 DUP — Format, copy, and check disks
+
+`DUP` operates on disks rather than individual files. Run it to open the menu:
+
+```text
+DUP
+    A  Format a disk
+    B  Copy a disk
+    C  Check a disk for errors
+```
+
+Use BREAK (`Ctrl-C`) to exit the main menu. At drive-selection prompts,
+`Ctrl-C` returns to the menu. DUP has no direct `/FORMAT` or `/CHECK`
+command-line operation.
+
+`DUP /VER` displays the utility identity and exits. Its current output is
+`BetterCP/M DUP 1.0 (Build 001)`. The older version number in the interactive
+menu title is separate from this release/build identity.
+
+DUP requires about 51K of available transient memory. If loaded extensions
+leave insufficient room, it reports that requirement without beginning an
+operation.
+
+#### 8.2 Choose the correct drive and format
+
+DUP uses the format already assigned to a logical drive. It does not offer a
+format catalogue; use CONFIG to establish the required binding first. Check
+the displayed logical and physical drives before confirming any operation.
+
+The current interface selects drives A through D. FORMAT and COPY destination
+writes are prohibited on physical drive 0, the protected system drive. This
+protection follows the physical drive even when logical letters are remapped.
+CHECK may read it, and COPY may use it as a source.
+
+A format listed in DISK.FDB is not necessarily supported for formatting by
+both backends. DUP reports unsupported operations rather than substituting a
+different format. The qualified z80pack mixed-sector formatting rejection
+leaves the target unchanged; do not assume this guarantee covers every backend
+failure.
+
+#### 8.3 Format a disk
+
+Choose `A`, then the logical drive A–D. FORMAT uses that drive’s assigned
+format. After validation, DUP warns that all data on the physical target disk
+will be lost and asks for `Y/N` confirmation. Only `Y` proceeds.
+
+Formatting creates tracks and immediately rereads their data to verify the
+expected erased contents. Success reports the written and verified track
+count and `Format complete.` A write or verification failure stops the
+operation. Write-track retries are bounded; write protection is not retried.
+
+`Ctrl-C` stops between bounded operations. An aborted disk is only partly
+formatted and must not be treated as successfully prepared.
+
+#### 8.4 Copy a disk
+
+Choose `B`, select a source A–D and a destination B–D. COPY requires two
+different physical drives; it does not support single-drive disk swapping.
+The source is read only. Physical drive 0 cannot be the destination.
+
+If the destination’s assigned format matches the source, DUP copies without
+reformatting. If it differs, DUP reports that it will format the destination
+to match the source and validates a temporary destination binding. Confirm
+only after checking both physical drives: destination contents will be erased.
+
+COPY includes all sector payloads represented by the source binding, including
+system areas, directories, deleted-file data, and free space. It is not a
+flux-level or arbitrary track-image clone and does not preserve unrepresented
+physical artifacts such as weak sectors or deleted-data address marks.
+
+Each source surface is read before its corresponding destination surface is
+overwritten. DUP then rereads the destination and compares its bytes with the
+buffered source. Success is reported as:
+
+```text
+Copy complete; destination verified.
+```
+
+When a temporary destination binding was used, DUP restores the old
+configuration. This does not undo the physical disk’s new format. Use CONFIG
+to assign the copied format before normal access to that medium, and save it
+if it should become the startup default.
+
+A failed or interrupted copy may leave the destination partly written. COPY
+stops after data errors rather than continuing with unreliable contents.
+
+#### 8.5 Check a disk
+
+Choose `C`, then a drive A–D. CHECK reads the sectors represented by the current
+binding without changing their contents. It checks physical readability;
+it does not repair the filesystem or compare against another disk.
+
+Ordinary read errors are reported with physical location information and
+checking continues. A bad physical sector is counted once, even when it
+contains several logical records. Completion reports:
+
+```text
+Check complete. Unreadable sectors: n
+```
+
+`Ctrl-C` stops checking without changing disk contents. Errors that prevent
+meaningful continued operation may terminate the check.
+
+#### 8.6 Errors and cleanup
+
+DUP reports errors such as drive not ready, write protection, missing sectors,
+CRC failures, unsupported operations, and read-back mismatches. An error or
+interruption is not successful completion.
+
+Temporary COPY bindings are restored before returning to normal operation.
+If restoration fails, DUP asks for a key to retry and retains the saved
+configuration. Follow that recovery path; it has not yet completed cleanup.
+
+The [DUP engineering specification](../engineering/DUP%20Specification.md)
+records the detailed behavior and qualified backend boundaries.
 
 ### 9. Date and Time
 9.1 BetterCP/M Clock Support 9.2 TIME 9.3 Displaying the Date and Time 9.4 Setting the Date and Time 9.5 Read-Only Clock Providers 9.6 P2DOS Compatibility

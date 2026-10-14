@@ -17,6 +17,7 @@ All membership or layout changes require discussion with the maintainer.
 ## System Disk
 
 - README.TXT: introductory ASCII text in user 0, from `src/distribution/README.TXT`.
+- STARTUP.SUB: editable user-0 startup script; initially runs `:VER /BANNER`.
 
 - DIR.COM: includes the `/WHEREIS` file-location mode.
 - ERA.COM
@@ -98,3 +99,13 @@ manifest. No HELLO, STATEFUL, diagnostic, or conformance-test packages are shipp
 `metadata/distribution.json` is the machine-readable System Disk projection of
 this document. It records build/status/target information separately from disk
 membership. Both representations must be updated together for approved changes.
+
+## Default cold-start command
+
+Both distribution images save `SUBMIT STARTUP` in their existing BCST startup
+record. `A0:STARTUP.SUB` initially contains `:VER /BANNER`, supplying the cold-boot sign-on
+without permanent BIOS code. Warm boot does not rerun the cold-start command.
+Users may edit the script or change/disable the saved command through CONFIG.
+A missing script reports the ordinary SUBMIT error and returns to the prompt.
+No ECHO command is supplied; ECHO.RSX is a diagnostic extension, not a shell
+command or distribution component.

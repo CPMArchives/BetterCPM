@@ -127,6 +127,10 @@ def selected_files(manifest, target, root):
     keys = [(c['user'], c['name']) for c, _ in selected]
     if len(keys) != len(set(keys)):
         raise ValueError('duplicate manifest destination')
+    if manifest.get('cold_start_command') == 'SUBMIT STARTUP':
+        required = {(0, 'SUBMIT.COM'), (0, 'STARTUP.SUB')}
+        if not required.issubset(set(keys)):
+            raise ValueError('SUBMIT STARTUP requires SUBMIT.COM and STARTUP.SUB in user 0')
     return selected, omitted
 
 
@@ -143,8 +147,11 @@ def capacity(files, g):
             'free_bytes': (available-allocation)*g['block'], 'directory_entries': extents}
 
 
-def construct(target, root, out, files, g):
+def construct(target, root, out, files, g, cold_start_command=""):
     """Reuse freshly assembled system tracks; recreate the filesystem from artifacts."""
+    from startup_record import build as startup_record
+    from system_layout import LAYOUT
+    startup = startup_record(cold_start_command, system_base=LAYOUT['SYSTEM'])
     raw = out / 'system.raw'
     if target == 'z80pack':
         from fdf_format import select_fdf
@@ -157,12 +164,21 @@ def construct(target, root, out, files, g):
             track, within = divmod(record, f.spt)
             at = track*f.raw_track_bytes + f.raw_record_map()[within]*128
             image[at:at+128] = source[at:at+128]
+        # BCST occupies logical records 1 and 2, which need not be adjacent
+        # physical records in a skewed host image.
+        for index in range(2):
+            record = index + 1
+            track, within = divmod(record, f.spt)
+            at = track*f.raw_track_bytes + f.raw_record_map()[within]*128
+            image[at:at+128] = startup[index*128:(index+1)*128]
         raw.write_bytes(image)
         shutil.copy2(root / 'build/z80pack/diskdefs', out / 'diskdefs')
     else:
         from add_cpm_file_to_dmk import extract_raw
         source = extract_raw((root / 'build/trs80/BetterCPM-Extended-80T-DS-System-790K.dmk').read_bytes())
-        raw.write_bytes(source[:g['reserved']]+b'\xe5'*(len(source)-g['reserved']))
+        image = bytearray(source[:g['reserved']]+b'\xe5'*(len(source)-g['reserved']))
+        image[128:384] = startup
+        raw.write_bytes(image)
         (out / 'diskdefs').write_text('diskdef bettercpm-default\n seclen 512\n tracks 160\n sectrk 10\n blocksize 2048\n maxdir 128\n skew 1\n boottrk 4\n os 2.2\nend\n')
     for i, (component, data) in enumerate(files):
         artifact = out / f'artifact-{i}'
@@ -197,6 +213,8 @@ def validate_files(raw, out, files, g):
 
 
 def boot(target, image, out, root, simulator, emulator):
+    from version_metadata import rows as version_rows
+    identity = 'BetterCP/M ' + next(row['implementation_version'] for row in version_rows() if row['component'] == 'BetterCP/M')
     if target == 'z80pack':
         from test_z80pack_sysgen_install import session
         disks = out / 'disks'
@@ -210,6 +228,8 @@ def boot(target, image, out, root, simulator, emulator):
                        (b'RSX LIST\r', b'A0>_ ', 60)], out/'boot.txt').decode(errors='replace')
         if 'RCP' not in text or 'BetterCP/M' not in text or 'ZPRTC : BDOS' not in text:
             raise ValueError('cpmsim boot/system/provider identity missing')
+        if text.count(identity) != 2:
+            raise ValueError('cold banner missing or repeated on warm boot; see boot.txt')
         if 'Error' in text or 'NOT FOUND' in text:
             raise ValueError('cpmsim command failure; see boot.txt')
         # A second private boot proves BYE returns control to the host.
@@ -244,13 +264,15 @@ exit [lindex $status 3]
         private = out / 'boot-test.dmk'
         shutil.copy2(image, private)
         command = [str(emulator), '-m4', '-batch', '-turbo', '-ktx',
-                   '-d0', str(private), '-id', '3000', '-it']
+                   '-d0', str(private), '-id', '15000', '-it']
         command += key_args('CPX LIST\r')+['-id','3000','-it']
         command += key_args('VER\r')+['-id','3000','-it','-ix']
         launch(command, cwd=out, timeout=180)
         initial = screen(out/'trs80-text-0.bin')
         final = screen(out/'trs80-text-2.bin')
         (out/'boot.txt').write_text(initial+'\n'+final)
+        if 'BetterCP/M' not in initial:
+            raise ValueError('Model 4 cold startup banner missing; see boot.txt')
         if 'A0>' not in initial or 'BetterCP/M' not in final or 'RCP' not in final:
             raise ValueError('Model 4 boot/system identity missing; see boot.txt')
     return 'PASS'
@@ -331,7 +353,7 @@ def main():
             files, omitted = selected_files(manifest, target, root)
             g = geometry(target, root)
             totals = capacity(files, g)
-            raw = construct(target, root, out, files, g)
+            raw = construct(target, root, out, files, g, manifest.get('cold_start_command', ''))
             included = validate_files(raw, out, files, g)
             name = f'BetterCPM-Distribution-{target}-'+('332K.dsk' if target=='z80pack' else '80T-DS-System.dmk')
             image = out/name
@@ -343,6 +365,7 @@ def main():
                 verify(image.read_bytes(), require_blank=False)
             boot_result = boot(target,image,out,root,a.simulator.resolve(),a.emulator.resolve())
             report = {'target':target, 'format':g['format'], 'image':name,
+                      'cold_start_command':manifest.get('cold_start_command', ''),
                       'sha256':digest(image.read_bytes()), 'source':identity,
                       'manifest_sha256':digest(MANIFEST.read_bytes()),
                       'tools':{n:digest(Path(shutil.which(n)).read_bytes()) for n in ['cpmcp','cpmls','fsck.cpm']},
