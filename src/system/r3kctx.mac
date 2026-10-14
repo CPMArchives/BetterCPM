@@ -112,7 +112,7 @@ KC_ENTRY:                               ; enter retained context constructor
         SBC     HL,DE
         JP      NZ,KC_BAD
         LD      HL,(KC_CTX)
-        LD      DE,23
+        LD      DE,25
         ADD     HL,DE
         JP      C,KC_BAD
         LD      (KC_START),HL
@@ -228,6 +228,33 @@ KC_ZCURRENT:                            ; clear current retained inputs
         INC     HL
         DJNZ    KC_ZCURRENT
         LD      (HL),05AH
+        INC     HL
+        XOR     A
+        LD      (HL),A
+        INC     HL
+        LD      (HL),A                  ; +23 prospective monitor target, zero=none
+        LD      HL,(KC_FACTS)
+        LD      (KC_MREQ),HL
+        LD      A,(KC_OCNT)
+        ADD     A,A
+        ADD     A,A
+        ADD     A,A
+        LD      E,A
+        LD      D,0
+        LD      HL,(KC_PLAN)
+        ADD     HL,DE
+        LD      (KC_MREQ+2),HL
+        LD      HL,(KC_CTX)
+        LD      DE,23
+        ADD     HL,DE
+        LD      (KC_MREQ+4),HL
+        LD      HL,KC_NSLOTS
+        CALL    KC_OVER
+        JP      NZ,KC_BAD
+        LD      DE,KC_MREQ
+        CALL    CFGB+3
+        OR      A
+        JP      NZ,KC_BAD
         LD      HL,KC_NMOVE
         CALL    KC_OVER
         JP      NZ,KC_BAD
@@ -269,6 +296,8 @@ KC_BAD:                                 ; reject context construction
         RET
 
 KC_NMOVE:       DB      R3MOVE_RECORD      ; safe handoff overlay slot
+KC_NSLOTS:      DB      R3SLOTS_RECORD
+KC_MREQ:        DS      6
 KC_NKEEP:       DB      R3KEEP_RECORD      ; retained carrier loader slot
 KC_CTX:         DW      0               ; retained context seed
 KC_FACTS:       DW      0               ; candidate normalized facts

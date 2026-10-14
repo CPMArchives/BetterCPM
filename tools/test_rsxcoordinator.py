@@ -340,6 +340,27 @@ def invoke(stub: bytes, carrier: bytes, name: bytes, *, operation: int = 1,
         struct.pack("<HH", WORK_LOW, high)
     cpu.mem[REQUEST:REQUEST + len(request)] = request
     cpu.mem[LIVE_LOW:LIVE_HIGH] = b"\x5A" * (LIVE_HIGH - LIVE_LOW)
+    # Retained fixtures need the canonical callable header/descriptors that a
+    # committed snapshot owns; selection now reconciles those with the carrier.
+    old_base = LAYOUT["RSX"]
+    for stem in retained:
+        module = selected_stateful if stem == b"STATEFUL" else hello
+        allocation = int.from_bytes(module[14:16], 'little')
+        old_base -= allocation
+        metadata = int.from_bytes(module[30:32], 'little')
+        descriptors = []
+        cursor = metadata + 12
+        for _ in range(module[metadata + 7]):
+            kind, length = module[cursor:cursor + 2]
+            if kind == 2:
+                descriptors.append(module[cursor + 2:cursor + 12])
+            cursor += length + 2
+        offset = allocation - 10 * len(descriptors)
+        cpu.mem[old_base + 4:old_base + 6] = bytes((len(descriptors), 0))
+        cpu.setword(old_base + 6, offset)
+        for descriptor in descriptors:
+            cpu.mem[old_base + offset:old_base + offset + 10] = descriptor
+            offset += 10
     before_live = bytes(cpu.mem[LIVE_LOW:LIVE_HIGH])
     cpu.de = REQUEST
     cpu.sp = 0x5700
@@ -376,7 +397,7 @@ def main() -> None:
         assert cpu.word(snap_descriptor) == snapshot
         assert cpu.word(snap_descriptor + 2) == allocation
         assert cpu.word(snap_descriptor + 4) == cpu.word(FACTS + 8)
-        assert cpu.word(FACTS + 24) == snapshot + allocation + 23
+        assert cpu.word(FACTS + 24) == snapshot + allocation + 25
         assert cpu.mem[snapshot:snapshot + 4] == b"\0\0\0\0"
         assert cpu.mem[snapshot + 4:snapshot + 6] == b"\x01\0"
         assert cpu.word(snapshot + 6) == allocation - 10
@@ -392,10 +413,10 @@ def main() -> None:
              cpu.word(FACTS + 6)) & 0xFFFF
 
         cpu, _ = invoke(stub, stateful, b"STATEFUL",
-                        high=FACTS + 386 + 0xF00)
+                        high=FACTS + 388 + 0xF00)
         assert cpu.a == 0 and cpu.hl == FACTS
         cpu, _ = invoke(stub, stateful, b"STATEFUL",
-                        high=FACTS + 385 + 0xF00)
+                        high=FACTS + 387 + 0xF00)
         assert cpu.a == 0xFF and cpu.word(REQUEST + 12) == 0xA5A5
 
         cpu, _ = invoke(stub, hello, b"HELLO   ")
@@ -421,7 +442,7 @@ def main() -> None:
         assert cpu.mem[second + 6:second + 8] == b"\x01\xFF"
         snap_descriptors = FACTS + 88
         snapshot = snap_descriptors + 12 + 6 + 23
-        retained_snapshot = snapshot + new_allocation + 23
+        retained_snapshot = snapshot + new_allocation + 25
         assert cpu.word(snap_descriptors) == retained_snapshot
         assert cpu.word(snap_descriptors + 2) == old_allocation
         assert cpu.word(snap_descriptors + 4) == int.from_bytes(
@@ -439,7 +460,7 @@ def main() -> None:
         snapshots = FACTS + 88
         unions = snapshots + 12
         candidate_snapshot = unions + 6 + 23
-        durable_union = candidate_snapshot + candidate_allocation + 23
+        durable_union = candidate_snapshot + candidate_allocation + 25
         assert cpu.mem[snapshots:snapshots + 4] == b"\0" * 4
         assert cpu.word(snapshots + 4) == int.from_bytes(
             stateful[16:18], "little")
@@ -472,11 +493,11 @@ def main() -> None:
         assert stateful_allocation == cpu.word(FACTS + 46 + 4)
 
         cpu, _ = invoke(stub, stateful, b"STATEFUL",
-                        high=FACTS + 2502 + 0xF00,
+                        high=FACTS + 2504 + 0xF00,
                         retained=(b"HELLO   ",))
         assert cpu.a == 0
         cpu, _ = invoke(stub, stateful, b"STATEFUL",
-                        high=FACTS + 2501 + 0xF00,
+                        high=FACTS + 2503 + 0xF00,
                         retained=(b"HELLO   ",))
         assert cpu.a == 0xFF and cpu.word(REQUEST + 12) == 0xA5A5
         cpu, _ = invoke(stub, stateful, b"STATEFUL",
