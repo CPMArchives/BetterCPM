@@ -52,6 +52,11 @@ def main():
             assert bytes(cpu.mem[0xF800:0xFF80])==display
         for char in b'\x1b0':call(0,char)
         assert call(3)==0
+        hidden_screen=bytes(cpu.mem[0xF800:0xFF80])
+        hidden_cursor=cpu.word(bios['M4CURSOR'])
+        call(3,ord('X'))
+        assert cpu.word(bios['M4CURSOR'])==hidden_cursor
+        assert bytes(cpu.mem[0xF800:0xFF80])==hidden_screen
         call(5)
         assert call(3)==0
         for char in b'\x1b1':call(0,char)
@@ -106,7 +111,7 @@ def test_utility(code, table, slots, bios):
                 assert bytes(cpu.mem[cpu.de+4:cpu.de+10])==b'MCON\x01\x00'
                 cpu.setword(cpu.de+12,entry)
                 cpu.a=0 if available else 255
-            elif cpu.c==2:
+            elif cpu.c==6:
                 output.append(cpu.e)
                 if available:emit(cpu.e)
             elif cpu.c==1:

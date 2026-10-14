@@ -12,7 +12,7 @@ COMPONENTS = (
     "stateful_test_rsx", "stattst",
     "rsxloader", "rsxresolver",
     "rsx_runtime_overlays", "fileloader", "system", "utilities",
-    "trs80_boot", "system_package",
+    "trs80_boot", "adm3a", "system_package",
 )
 if __name__ == "__main__":
     for component in COMPONENTS:

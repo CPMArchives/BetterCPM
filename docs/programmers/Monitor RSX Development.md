@@ -4,16 +4,16 @@ BetterCP/M 1.0 uses a bounded monitor-provider interface to add terminal
 personalities that the basic console does not implement. ADM-3A (Montezuma
 Micro behavior on Model 4), VT52 and an ANSI/VT100-compatible subset are the
 committed 1.0 providers, each
-with a dedicated test utility. Their completed implementations will be added
-as worked examples here. This guide does not claim those providers exist yet.
+with a dedicated test utility. The native Model 4 ADM3A provider and ADMTST
+are now implemented; VT52 and ANSI/VT100 remain separate implementation work.
 
 The BIOS hooks, transactional detach/publication, descriptor validation,
 prospective selection, duplicate-provider rejection and retained live-descriptor
 reconciliation are installed. Valid MCON carriers now bind through normal RSX
 transactions. Command-return reset and internal clear/home integration are installed.
-The initial terminal providers remain implementation and qualification gates. Do not describe the
-terminal personalities as released until those gates and rendering/input
-qualification pass.
+Provider-specific qualification remains required. Native Model 4 ADM3A now
+has the recorded implementation and qualification described below; that does
+not qualify the other personalities or another hardware backend.
 
 ## Select a personality and a backend
 
@@ -116,15 +116,16 @@ remain post-1.0 work. Do not treat the 1.0 backend bits as that future schema.
 
 ## First development example: ADM-3A
 
-The unshipped foundation is in `src/rsx/adm3a.mac`, with its builder in
+The Model 4 implementation is in `src/rsx/adm3a.mac`, with its builder in
 `tools/build_adm3a.py` and development test utility in `src/utilities/admtst.mac`.
 It illustrates the callable entry, ordinary chain pass-through, static
 relocation, parser storage, MONRAW bypass and direct Model 4 cursor updates.
 Its clear operation fills video memory without reinitializing the keyboard.
 
 See [ADM-3A foundation qualification](../engineering/ADM3A%20Provider%20Foundation%20Qualification.md)
-for build dependencies, checks and remaining gates. This example is incomplete;
-copying its basic-renderer fallback does not implement a new terminal personality.
+for build dependencies, checks and remaining gates. This example uses Model 4 video memory and BIOS-owned cursor state. A new
+personality must implement its own specified semantics rather than relabeling
+this provider.
 
 
 ADMTST now includes movement, reverse/erase/line-operation pages, bell and cursor
@@ -132,3 +133,10 @@ queries, and a short keyboard check. Its character-output routine is also an
 example of safely sending coordinate bytes that can include 24h; BDOS 9 would
 prematurely terminate such a stream. A successful keyboard result is separate
 from visual and audible qualification.
+
+
+For control-stream tests, ADMTST uses BDOS 6 raw console output. Standard BDOS 2
+expands TAB using BDOS's own column counter, which terminal cursor-address
+sequences do not update. See the [native ADM-3A campaign](../engineering/ADM3A%20Native%20Qualification.md)
+for intermediate screenshots, original-application scope, audio checks and
+real unload/TPA checks.
