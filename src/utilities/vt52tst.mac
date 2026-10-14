@@ -10,6 +10,25 @@ START:
         JP NZ,MISSING
         LD HL,(LOOKUP+12)
         LD (SERVICE),HL
+        LD DE,IDENT
+        CALL PRINT
+        LD A,5
+        CALL INVOKE                    ; reset must preserve completed reply
+        LD E,255
+        LD C,6
+        CALL BDOS
+        CP 27
+        JP NZ,BAD_ID
+        LD E,255
+        LD C,6
+        CALL BDOS
+        CP '/'
+        JP NZ,BAD_ID
+        LD E,255
+        LD C,6
+        CALL BDOS
+        CP 'K'
+        JP NZ,BAD_ID
         LD A,4
         CALL INVOKE
         LD DE,PAGE1
@@ -30,6 +49,10 @@ START:
         LD A,4
         CALL INVOKE
         LD DE,DONE
+        CALL PRINT
+        JP 0
+BAD_ID:
+        LD DE,ID_FAIL
         CALL PRINT
         JP 0
 MISSING:
@@ -63,8 +86,10 @@ LOOKUP: DB 1,20,0,0,'MCON',1,0
         DW 0
         DB 0,0
 SERVICE: DW 0
+IDENT: DB 27,'Z',0
+ID_FAIL: DB 'VT52 identification reply failed. Test incomplete.',13,10,0
 PAGE1:
-        DB 'VT52 foundation test -- load VT52.RSX under cpmsim.',13,10
+        DB 'VT52 test -- identification reply ESC / K passed.',13,10
         DB 27,'Y',37,42,'Marker: row 5, column 10.'
         DB 27,'Y',39,32,'T',9,'AB'
         DB 27,'Y',40,32,'TAB: AB should be at column 8.'

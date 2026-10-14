@@ -8,14 +8,14 @@ It is not distributed or loaded by startup. ADM3A's Model 4 release is unchanged
 `tools/build_vt52.py` emits VT52.RSX, VT52TST.COM and listings under
 `build/vt52-development`. The carrier is STATEFUL, module version 0.1, with an
 MCON 1.0 callable service and backend bit 0002h. The ordinary RSX entry passes
-unclaimed BDOS calls through the next link. Payload is 456 bytes, with 80 static
-relocation slots and a 512-byte allocation including the runtime descriptor.
-Its cursor/parser storage contains bytes, not internal runtime pointers.
+unclaimed BDOS calls through the next link. Payload is 589 bytes, with 100 static
+relocation slots and a 768-byte allocation including the runtime descriptor.
+Its cursor/parser and queue-index storage contains bytes, not internal runtime pointers.
 
 The entry uses the existing MONRAW hook derived from the running WBOOT vector.
 No cpmsim change or built-in emulator VT52 translation is required: the RSX
-translates VT52 output into ANSI bytes. Input/status currently pass through;
-identification replies and terminal key modes are not implemented yet.
+translates VT52 output into ANSI bytes. Input/status now merge keyboard bytes and identification replies in a bounded
+queue; terminal key modes remain unimplemented.
 
 ## Implemented output
 
@@ -44,6 +44,23 @@ scroll regions, terminal mode normalization and resize behavior are live
 qualification/design gates. In particular, byte-stream tests cannot establish
 that host LF scrolls at logical row 23 in a taller window.
 
+## Identification and input queue
+
+ESC Z enqueues ESC / K without changing display coordinates or emitting host
+output. A 16-byte ring has byte-sized head/tail/count fields and reserves all
+three reply bytes before writing. Insufficient capacity drops the entire newest
+reply. Existing keyboard/reply bytes and their order are preserved.
+
+When the logical queue is empty, status polls MONRAW and may enqueue one observed
+keyboard byte. A nonempty queue returns ready without further backend reads.
+Repeated status calls never remove logical bytes. Input pops the oldest queued
+byte or uses raw blocking input when empty. Thus provider-observed keyboard
+bytes stay ahead of later replies; unread backend bytes need not precede a reply
+that was already generated. Parser reset and clear preserve the input queue.
+
+No polling is added to identification generation, and no attempt is made to infer
+abstract arrow/keypad events from arbitrary host character bytes.
+
 ## Checks
 
 Build an actual cpmsim BIOS with `tools/build_z80pack_image.py`, then run
@@ -58,6 +75,13 @@ high clipping, interrupted-sequence reset, clear, ignored controls, bell and
 raw input/status bypass. Expected ANSI byte streams and provider coordinates
 are checked independently. These are not rendered-terminal screenshots.
 
+The queue campaign runs at both load addresses and checks all 16 ring phases
+and all 17 occupancy boundaries: keyboard A before five complete replies,
+keyboard B afterward, repeated non-consuming status, atomic overflow and
+preservation across reset/clear. It also verifies that identification produces
+no screen output. The utility generates an ID request, resets its output parser,
+and reads the three reply bytes through raw non-echoing console input.
+
 The assembled VT52TST utility is exercised with controlled BDOS service lookup
 and keyboard input: missing-provider preflight, all three pauses, raw addressed
 output, erasure and parser reset. Its raw-output strings avoid both BDOS TAB
@@ -65,8 +89,7 @@ expansion and dollar-termination of encoded coordinate bytes.
 
 ## Remaining work
 
-Implement identification/reply queues, graphics, keypad and required input
-semantics; resolve outstanding parser cases from the selected historical
+Qualify live input/reply behavior, graphics/keypad scope and host geometry; resolve outstanding parser cases from the selected historical
 reference. Qualify real RSX installation/movement/unload and host rendering,
 then test real VT52-configured software (a local WordStar VT52 disk is available).
 Add /VER, normal build/distribution entries and startup only when qualified.
