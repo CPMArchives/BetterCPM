@@ -5,7 +5,7 @@ personalities that the basic console does not implement. ADM-3A (Montezuma
 Micro behavior on Model 4), VT52 and an ANSI/VT100-compatible subset are the
 committed 1.0 providers, each
 with a dedicated test utility. The native Model 4 ADM3A provider and ADMTST
-are now implemented; VT52 and ANSI/VT100 remain separate implementation work.
+are implemented, as are cpmsim VT52 and the bounded ANSI/VT100 provider.
 
 The BIOS hooks, transactional detach/publication, descriptor validation,
 prospective selection, duplicate-provider rejection and retained live-descriptor
@@ -147,10 +147,10 @@ real unload/TPA checks.
 `src/rsx/vt52.mac` illustrates a personality translating through MONRAW into an
 ANSI host transport, with byte-sized cursor/parser state and shared output,
 address-formatting and movement routines. `tools/build_vt52.py` and
-`src/utilities/vt52tst.mac` build only development artifacts. See
+`src/utilities/vt52tst.mac` generate development listings and release artifacts. See
 [VT52 foundation qualification](../engineering/VT52%20Provider%20Foundation%20Qualification.md)
 for supported controls, host-geometry assumptions and remaining gates. It is
-not yet a generic monitor template or a released VT52 implementation.
+a released implementation, rather than a generic table-only template.
 
 
 VT52 now also demonstrates a bounded byte-indexed reply ring. It enqueues ESC Z
@@ -158,3 +158,105 @@ identification replies atomically, preserves queued bytes across reset/clear,
 and observes backend keyboard bytes during status polling only when its logical
 queue is empty. This preserves provider-observed ordering without pretending
 to know when an unread physical key arrived.
+
+## Start from the editable host template
+
+For a small new host-terminal personality, copy and edit:
+
+- `src/rsx/monitor-template/host.mac`: MCON dispatch, chain entry, parser and raw transport.
+- `src/rsx/monitor-template/ansi-demo.inc`: incoming-control translation tables and clear/home bytes.
+
+Build the supplied example from the repository root:
+
+```sh
+python3 tools/build_monitor_template.py
+```
+
+This emits `build/monitor-template/MONDEMO.RSX`, payload binaries and listings.
+The default module is development version 0.1, STATEFUL, MCON 1.0, host backend
+bit 0002h. Its payload is 205 bytes with 26 static relocations and a 256-byte
+runtime allocation including the service descriptor. It adds no permanent
+BIOS/BDOS code. It is not on the distribution disk or normal startup path.
+
+To use your copies and a distinct module name:
+
+```sh
+python3 tools/build_monitor_template.py --engine /path/to/host.mac --profile /path/to/profile.inc --name MYMON --output /path/to/output
+```
+
+Names contain 1–8 uppercase letters/digits, beginning with a letter. Preserve
+the `BASE EQU 08000H`, `TP_ENTRY`, `TP_CLS`, `TP_BYTES`, `TP_CODES` and `TP_END`
+labels and the `INCLUDE profile.inc` marker when using this builder. The builder
+assembles at two origins, derives static relocations and verifies reproduction
+of the alternate image. It also checks table byte counts, unique keys and
+terminators before writing a carrier. The profile tables must remain in their
+supplied order, ending at TP_END.
+
+### What to change in the tables
+
+`TP_CLS` starts with a byte count followed by the exact bytes needed to clear
+and home the selected host. `TP_BYTES` maps incoming ordinary byte values to
+counted output strings. `TP_CODES` maps the byte after ESC to counted output
+strings. Each translation entry is `key, count, data...`; a zero key ends the
+table. A zero count consumes a key without producing output. Counts include
+all emitted bytes, including ESC and any binary zero; these are not
+zero-terminated strings and must not be printed with BDOS function 9.
+
+For example, this entry maps incoming ESC H to ANSI home:
+
+```asm
+        DB 'H',3,27,'[H'
+```
+
+The supplied sample accepts ordinary ASCII, FF clear/home and ESC H/J/K/A/B/C/D
+for home, erase and relative movement. Unmapped ordinary bytes pass through
+MONRAW. NUL and DEL are ignored; ESC is reserved for the parser. Unknown ESC
+finals are consumed, and another ESC restarts the pending command. Thus this
+example is a deliberately small teaching grammar, not full VT52 or ADM-3A.
+All emitted strings go to the basic host backend; they do not reenter the
+personality parser. The caller must select a host that understands those codes.
+
+### When table edits are insufficient
+
+A protocol with coordinate parameters, CSI numbers, persistent modes, keyboard
+translation or terminal replies needs custom parsing/state routines. Use the
+VT52 implementation for bounded coordinates and ordered replies, and
+`src/rsx/ansi.mac` for buffered CSI parsing and incomplete-sequence reset.
+Adding an escape string to a table does not implement its parameter semantics.
+
+The starter deliberately stores pending state as a byte and table offsets are
+computed from relocated instructions. There are no mutable internal pointer
+words. If custom handlers introduce such pointers, declare the runtime pointer
+slots required by the BRSX lifecycle; the starter builder does not infer them.
+Modify the builder accordingly before claiming relocation safety.
+
+This starter targets cpmsim-compatible host output only. Changing its backend
+bit to 0001h does not turn it into a Model 4 renderer. For that platform, use
+ADM3A's generated hardware symbols and renderer as the backend reference.
+
+### Test before shipping a new personality
+
+```sh
+python3 tools/test_monitor_template.py --bios /path/to/host-build
+python3 tools/build_monitor_template.py
+python3 tools/test_monitor_template_lifecycle.py --bios /path/to/host-build
+```
+
+The first test builds the sample and an edited profile, executes each at two
+relocated addresses, checks binary output, clear/reset, unknown/restarted ESC
+commands and input/status, and rejects an incorrect table count. The second
+executes the actual RSX manager: HELLO loads before MONDEMO, an ESC is left
+pending, HELLO unload moves MONDEMO, the command completes at its new address,
+MCON lookup follows the new binding, and unloading restores the basic monitor
+and 53K TPA. These checks use the assembled host BIOS in the instruction runner.
+
+Copy your carrier onto disposable media; unload any existing monitor, then use
+`RSX LOAD MYMON`, `CLS`, and your dedicated screen/input test utility. Finish
+with `RSX UNLOAD MYMON` and verify TPA recovery. Qualify real terminal rendering,
+applications and protected-ROM behavior separately, following the released
+providers' campaigns. A passing starter test does not qualify a newly edited
+protocol or host. Keep your carrier outside the system-disk manifest until its
+own qualification is complete.
+
+This is source scaffolding, not a runtime TCAP database, universal terminal
+translator or new BIOS ABI. The general TCAP design remains post-1.0 work.
