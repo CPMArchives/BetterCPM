@@ -935,3 +935,107 @@ failures are fully qualified. Later rename failure policy remains outstanding.
 Ordinary real-entry E/Q/O/H and split-DU sessions still pass on BetterCP/M:
 `build/ed-development/lifecycle/run-6o3alfd3`. Native/cross builds match at
 **8,521 bytes**.
+
+
+## Rename return-code audit
+
+DRI ED.PLM FINIS checks CLOSE but calls both RENAME operations without checking
+return status. `tools/qualify_ed_rename.py` repeats both fault boundaries in the
+pinned official binary and the real BetterCP/M development entry on stock CP/M.
+The test gate occupies a reserved area above the lowered TPA ceiling, injects
+FFH on one selected rename, and restores the BDOS/warmboot vectors on exit.
+A no-fault control verifies byte-identical normal saved output in both editors.
+
+| Editor / failure | Directory entries after E |
+| --- | --- |
+| Either / no failure | Original text in CASE.BAK; edited text in CASE.TXT |
+| DRI / original-to-BAK fails | Two CASE.TXT entries: original and edited text |
+| BetterCP/M / original-to-BAK fails | Original CASE.TXT and edited CASE.$$$ |
+| Either / work-to-original fails | Original CASE.BAK and edited CASE.$$$ |
+
+All six cases assert exact record bytes and directory-entry counts. Duplicate
+names are extracted from disposable image copies after giving each entry a
+unique name; cpmtools handles sector skew. The evidence images are unchanged.
+This decoder is restricted to the one-extent IBM 3740 test fixture.
+Evidence: `build/ed-development/rename/run-t3719e2a`.
+
+BetterCP/M's existing primitive already stops at the first failed rename and
+never blindly repeats the sequence. At the audit stage its lifecycle owner returned that status without a dedicated
+diagnostic. The user subsequently approved the safe exit and established that
+compatibility does not require reproducing confirmed DRI bugs; the correction
+below supersedes the earlier pending policy.
+
+
+## Model 4 initial lifecycle qualification
+
+`tools/test_model4_ed.py` launches trs80gp through the established macOS
+application wrapper and types real keyboard-matrix events. It uses private
+system/data DMKs and the actual EDDEV entry, not the fixed-buffer test loop.
+Four cases pass: standalone /VER, B7 save, confirmed Q discard and H save/restart
+followed by a second edit/save. The completion marker is checked on screen;
+physical data media are then decoded to verify exact logical text, BAK state,
+absence of stale work output and preservation of a same-named user-0 sentinel.
+The /VER case leaves the data DMK byte-for-byte unchanged.
+
+Evidence: `build/ed-development/model4-entry-01/evidence.json`, with per-case
+invocations, captures and copied disks. This qualifies basic Model 4 lifecycle,
+not every command, protection condition or real media-full failure. Rename
+policy and remaining failure/release integration work are still outstanding.
+
+
+## Approved DRI defect corrections
+
+The lifecycle owner now reports `Rename failed. Edited text retained in work
+file.` on either failed rename and restores the captured caller DU/DMA before
+exiting. It does not close again, rename again, roll back, or delete source,
+backup or work output. Known RO errors retain their specific handling. Unit
+tests cover both phases, retained status and a caller in user 31. The live
+six-case fixture verifies the diagnostic only in BetterCP/M fault cases and
+asserts every original/edited record remains recoverable under distinct names.
+Evidence: `build/ed-development/rename/run-qn3010zs`.
+
+The same policy supersedes the earlier decision to preserve DRI's counted-J
+state bug. Each J iteration now resets forward search state. Two iterations on
+`A old B A more B` produce `AXB AXB`; a requested third iteration fails with #
+while retaining both completed edits. An independent test verifies equivalence
+to two separate J operations. Thirteen oracle workflows qualify: eleven still
+match DRI, while two explicitly assert the pinned DRI defective result and the
+corrected BetterCP/M result. The oracle expectations were not erased.
+Evidence: `build/ed-development/juxtapose/run-yqc5mjs_`.
+
+Both corrections are documented in source comments, the engineering contract
+and the user guide. Engineering policy 203 records the general requirement to
+correct confirmed DRI defects while retaining independent evidence. Earlier
+chronological entries describing deliberate J preservation are superseded.
+
+All 25 ED module regressions pass with these corrections. Native ZSM4/LINK
+and cross assembly match at **8,584 bytes**. The earlier Model 4 lifecycle
+evidence predates these two fixes; exact release-artifact platform and real
+media-full qualification remain part of the unfinished release checks.
+
+
+## Actual disk and directory capacity exhaustion
+
+`tools/qualify_ed_capacity.py` uses the unmodified EDDEV entry on private
+BetterCP/M cpmsim disks. Unlike the earlier fault gate, these cases fill the
+real CP/M directory or allocation map. Source text is in B7, the captured caller
+is A0, and no backup exists before the test.
+
+- All 64 directory entries occupied: work creation fails, the original remains,
+  no work/backup appears, and the complete data image remains byte-identical.
+- No data blocks free: work creation succeeds but saving cannot write its first
+  record. The original remains and the empty work file is retained.
+- One 2K block free: save writes exactly 2,048 bytes, then exhausts the disk.
+  The complete original remains; the closed work file contains precisely the
+  written prefix, with no invented completion or padding.
+
+Each case reports `DISK OR DIRECTORY FULL` once, exits to A0, and creates no
+BAK or published replacement. Host-side probes establish exhaustion before ED
+runs; directory-full and allocation-full fixtures are distinguished explicitly.
+Evidence: `build/ed-development/capacity/run-9zucsoip`.
+
+The final capacity repeat additionally compares every original file record,
+including padding: `build/ed-development/capacity/run-wzc0zmrm`. The expanded
+rename campaign passes eight control/fault cases, including both H failure
+phases exiting without a restart: `build/ed-development/rename/run-6nfscp3l`.
+No editor bytes changed in this qualification stage; ED remains 8,584 bytes.

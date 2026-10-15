@@ -141,8 +141,8 @@ EG_MOVE:
         RET Z
         CALL EB_RIGHT
         JP EG_MOVE
-; DRI counted J deliberately retains DIRECTION/FIRST between FIND calls.
-; FIRST is a logical unsigned offset; preserve its wraparound semantics.
+; J uses a logical unsigned offset to move back for deletion. Each new
+; iteration clears reverse mode; retaining it was DRI's counted-J defect.
 EG_BACKMODE:
         LD HL,(EB_FRONT)
         LD DE,(EB_FIRST)

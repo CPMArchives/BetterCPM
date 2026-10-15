@@ -57,7 +57,17 @@ Where a normative architecture specification, implementation contract, compatibi
 
 Implementation behavior must not silently redefine the requirement.
 
-### 2.1 Test changes
+### 2.1 Confirmed DRI defects
+
+Compatibility does not require reproducing confirmed DRI bugs. When a defect
+is established, correct it and document the correction in source comments,
+engineering specifications and user documentation. Retain the reference
+behavior as explicit evidence and test the corrected behavior independently.
+A discrepancy alone is not proof of a DRI bug, and a test must not be changed
+merely to excuse an implementation mismatch. Historical functionality and
+ordinary behavior remain the compatibility baseline.
+
+### 2.2 Test changes
 
 A failing test must not be weakened, removed, or rewritten merely because BetterCP/M fails it.
 

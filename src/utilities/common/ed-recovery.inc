@@ -1,5 +1,6 @@
 ; Known DRI setup, stream and work-close UI. Carry A=1 means exit ready.
-; Other rename failures are deliberately returned raw for later qualification.
+; Confirmed DRI bug: FINIS ignored rename status and could create duplicate
+; names. Stop at failure, preserve work/source/backup and report before exit.
 FD_BEGIN:
         CALL FS_SETUP
         JP C,FD_SETUPERR
@@ -55,7 +56,9 @@ FD_RENAME:
         JP FD_ROFAIL
 FD_UNHANDLED:
         POP AF
-        RET
+        LD (FD_STATUS),A
+        LD DE,FD_RENMSG
+        JP FD_ABORT
 FD_SETUPERR:
         CP 1
         JP Z,FD_CLASH
@@ -107,6 +110,7 @@ FD_READONLY: DB '** FILE IS READ/ONLY **',13,10,'$'
 FD_EXISTS: DB 'FILE EXISTS, ERASE IT',13,10,'$'
 FD_SYS: DB '"SYSTEM" FILE NOT ACCESSIBLE',13,10,'$'
 FD_DISK: DB 'DISK OR DIRECTORY FULL',13,10,'$'
+FD_RENMSG: DB 'Rename failed. Edited text retained in work file.',13,10,'$'
 FD_STATUS: DB 0
 FD_BDOS: DB 13,10,'Bdos Err On $'
 FD_FILE_RO: DB ': File R/O$'

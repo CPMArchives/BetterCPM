@@ -35,10 +35,17 @@ def main():
         # Failed F preserves prior matches; still compare the resulting cursor.
         expected=text[:cursor]+b'|'+text[cursor:]
         actual=saved.read_bytes().rstrip(b'\x1a')
-        assert actual==expected,(line,actual,expected)
-        results.append({'command_hex':line.hex(),'text_hex':text.hex(),'cursor':cursor})
+        # Preserve evidence of DRI's confirmed counted-J bug, not its output.
+        dri_bugs={1:b'AXX|XB A more B',2:b'AXX|XXXXB A more B'}
+        if number in dri_bugs:
+            assert actual==dri_bugs[number],(line,actual)
+            assert expected==b'AXB AX|B',(line,expected)
+            assert bad==(number==2),(line,bad,flag)
+        else:
+            assert actual==expected,(line,actual,expected)
+        results.append({'command_hex':line.hex(),'text_hex':text.hex(),'cursor':cursor,'dri_saved_hex':actual.hex(),'intentional_bug_correction':number in (1,2)})
     (work/'results.json').write_text(json.dumps(results,indent=2)+'\n')
-    print(f'PASS: {len(cases)} stock ED J juxtaposition workflows match text and cursor; {work}')
+    print(f'PASS: {len(cases)} J workflows qualified: 11 DRI matches and two explicit counted-J bug corrections; {work}')
 
 
 if __name__=='__main__':main()
