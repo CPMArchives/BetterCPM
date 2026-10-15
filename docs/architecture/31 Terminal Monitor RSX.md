@@ -1,10 +1,14 @@
 # Terminal monitor RSX for BetterCP/M 1.0
 
-Accepted design: 2026-10-12. The BIOS dispatch foundation is implemented;
-RSX lifecycle integration and terminal providers remain pending. See
-[BIOS hook qualification](../engineering/Monitor%20BIOS%20Hook%20Qualification.md). This decision selects the bounded RSX approach from the
-[monitor memory review](../engineering/Bounded%20Monitor%20Memory%20and%20Efficiency%20Review.md).
-It does not claim that the audit prototypes are production monitor providers.
+Accepted design: 2026-10-12. Implementation closure: 2026-10-15. The BIOS
+hooks, transactional RSX lifecycle, command-return reset and explicit clear
+paths are implemented. ADM3A, VT52 and the bounded ANSI/VT100 provider ship
+with their test utilities on the appropriate target disks. See
+[monitor implementation closure](../engineering/Monitor%201.0%20Implementation%20Closure.md)
+for evidence and remaining qualification limits. The original design selected
+the bounded RSX approach from the
+[monitor memory review](../engineering/Bounded%20Monitor%20Memory%20and%20Efficiency%20Review.md);
+its audit prototypes are not the production providers.
 
 ## Scope and terminal personalities
 
@@ -13,11 +17,11 @@ with compact BIOS hooks and the existing basic console as the fallback.
 The three committed 1.0 personalities are ADM-3A (the Montezuma Micro behavior
 on Model 4), VT52, and a defined ANSI/VT100-compatible subset. Each requires
 its own test utility. ANSI/VT100 is intended for ordinary cpmsim use in macOS
-and compatible Linux terminals; its precise supported subset must be specified
-and qualified. cpmsim providers render host output through ANSI sequences;
+and compatible Linux terminals; its supported subset and qualification are
+recorded in the [ANSI provider record](../engineering/ANSI%20Provider%20Foundation%20Qualification.md). cpmsim providers render host output through ANSI sequences;
 this translation belongs to the RSX, not cpmsim itself. Use one active monitor provider;
 platform-specific builds may share parser and rendering source where useful.
-No requirement to keep both personalities simultaneously resident is imposed.
+Only one monitor provider may be resident at a time.
 
 This supplies a de facto TCAP capability: the loaded provider supplies the
 console's terminal personality. `TCAP` is a working name, not a frozen filename,
@@ -52,9 +56,10 @@ operation. This fallback does not promise full ADM-3A or VT52 emulation.
 ## Startup and lifetime
 
 Use the existing saved cold-start command to run a SUBMIT script, for example
-`SUBMIT STARTUP`. The script loads the appropriate platform monitor through
-ordinary RSX management. Final provider and script filenames will be settled
-with the implementation and added to the distribution manifest. No special
+`SUBMIT STARTUP`. The Model 4 STARTUP.SUB loads ADM3A through ordinary RSX management after
+the banner. The cpmsim script remains banner-only; users can load VT52 or ANSI
+explicitly or edit the script. Provider and script filenames are recorded in
+the distribution manifest. No special
 BIOS monitor-file search or autoload mechanism is required.
 
 The saved startup command runs once on cold boot. Warm boot preserves the
@@ -68,8 +73,8 @@ Publish a provider only when its installation is committed. Rebind external
 hook targets after movement, restore the basic backend before releasing the
 provider, and preserve or restore the prior binding on rollback. Ordinary
 STATEFUL repair of pointers inside a module does not by itself repair pointers
-owned by BIOS. The exact binding/lifecycle contract remains to be implemented
-and qualified; do not silently impose COLD_ONLY restrictions to avoid it.
+owned by BIOS. The implemented binding/lifecycle contract supports STATEFUL
+providers, retained movement and unloading; no COLD_ONLY restriction is used.
 
 ## Memory policy
 
@@ -87,11 +92,14 @@ qualification candidates, not permission to adopt unverified production changes.
 
 The implementation design and isolated feasibility probes are recorded in
 [Monitor RSX Hook and Lifecycle Contract](../engineering/Monitor%20RSX%20Hook%20and%20Lifecycle%20Contract.md).
-The production integration remains pending.
+Production integration and the selected qualification campaigns are complete.
+See the implementation closure for the difference between these completed
+contracts and release-wide testing still to be performed.
 
 ## Implementation acceptance
 
-Before declaring this complete, qualify both platforms for:
+The implemented interface is qualified through the shared and target-specific
+campaigns linked in the closure record, covering:
 
 - BIOS and BDOS console paths, documented terminal controls and screen behavior;
 - basic-console operation with no provider or after failed installation;
@@ -99,11 +107,10 @@ Before declaring this complete, qualify both platforms for:
 - ROM ownership, register/stack contracts and unloaded/loaded memory accounting;
 - command editing and cursor behavior while terminal parsing is active.
 
-Resolve the Model 4 control-code conflict explicitly: the present internal
-clear-screen byte is 1Ch, whereas the MM reference uses it for insert-line.
-Update internal callers or define the profile boundary without silently breaking
-either contract. The VT52 audit sample implements only a screen-control subset;
-its size and parser checks do not establish complete terminal compatibility.
+The Model 4 control-code conflict is resolved: internal clear/home callers use
+operation 4 rather than inserting literal 1Ch into terminal output. MM-style
+ADM3A retains 1Ch insert-line behavior. The production VT52 provider supersedes
+the audit sample and has its own live, application and protected-ROM evidence.
 
 ## Provider behavior
 

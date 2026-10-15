@@ -1,0 +1,104 @@
+{
+  "oracle_sha256": "adeeb92c897bd6a07579f06d163bd6ded549842203a5459c88a93d26c65fe85f",
+  "cases": {
+    "new-E": {
+      "exit_du": "A0",
+      "files": {
+        "A:TEST.TXT": {
+          "exported_bytes": 117,
+          "text_hex": "48656c6c6f20776f726c64"
+        },
+        "A:TEST.BAK": {
+          "exported_bytes": 0,
+          "text_hex": ""
+        },
+        "A:TEST.$$$": null,
+        "B:TEST.TXT": null,
+        "B:TEST.BAK": null,
+        "B:TEST.$$$": null
+      }
+    },
+    "new-Q": {
+      "exit_du": "A0",
+      "files": {
+        "A:TEST.TXT": {
+          "exported_bytes": 0,
+          "text_hex": ""
+        },
+        "A:TEST.BAK": null,
+        "A:TEST.$$$": null,
+        "B:TEST.TXT": null,
+        "B:TEST.BAK": null,
+        "B:TEST.$$$": null
+      }
+    },
+    "existing-E": {
+      "exit_du": "A0",
+      "files": {
+        "A:TEST.TXT": {
+          "exported_bytes": 111,
+          "text_hex": "4f726967696e616c20736f757263650d0a"
+        },
+        "A:TEST.BAK": {
+          "exported_bytes": 18,
+          "text_hex": "4f726967696e616c20736f757263650d0a"
+        },
+        "A:TEST.$$$": null,
+        "B:TEST.TXT": null,
+        "B:TEST.BAK": null,
+        "B:TEST.$$$": null
+      }
+    },
+    "existing-Q": {
+      "exit_du": "A0",
+      "files": {
+        "A:TEST.TXT": {
+          "exported_bytes": 18,
+          "text_hex": "4f726967696e616c20736f757263650d0a"
+        },
+        "A:TEST.BAK": null,
+        "A:TEST.$$$": null,
+        "B:TEST.TXT": null,
+        "B:TEST.BAK": null,
+        "B:TEST.$$$": null
+      }
+    },
+    "split-E": {
+      "exit_du": "B0",
+      "files": {
+        "A:TEST.TXT": null,
+        "A:TEST.BAK": {
+          "exported_bytes": 18,
+          "text_hex": "4f726967696e616c20736f757263650d0a"
+        },
+        "A:TEST.$$$": null,
+        "B:TEST.TXT": {
+          "exported_bytes": 111,
+          "text_hex": "4f726967696e616c20736f757263650d0a"
+        },
+        "B:TEST.BAK": null,
+        "B:TEST.$$$": null
+      }
+    },
+    "collision": {
+      "exit_du": "B0",
+      "files": {
+        "A:TEST.TXT": {
+          "exported_bytes": 18,
+          "text_hex": "4f726967696e616c20736f757263650d0a"
+        },
+        "A:TEST.BAK": {
+          "exported_bytes": 13,
+          "text_hex": "4f6c64206261636b75700d0a"
+        },
+        "A:TEST.$$$": null,
+        "B:TEST.TXT": {
+          "exported_bytes": 14,
+          "text_hex": "44657374696e6174696f6e0d0a"
+        },
+        "B:TEST.BAK": null,
+        "B:TEST.$$$": null
+      }
+    }
+  }
+}

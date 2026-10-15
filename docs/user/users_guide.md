@@ -2170,7 +2170,11 @@ zero does not have one universal meaning. `#` is ED’s large-count notation.
 
 Enter `E`, `H`, `O` and `Q` as standalone commands, without numeric counts or
 other commands on the same line. `H` saves; `O` and `Q` abandon changes. They are
-not interchangeable ways to leave the editor.
+not interchangeable ways to leave the editor. `Q` asks the historical
+`Q-(Y/N)?` question; answer `Y` to quit. Opening a new file creates an empty
+source file, which can remain after `Q`. An older `.BAK` is removed when the
+edit is initialized, so quitting preserves the original source but does not
+preserve an earlier backup generation.
 
 String commands retain CP/M 2.2’s syntax. Ctrl-Z separates or terminates strings
 where required; Enter can terminate a command line. Search and substitution use

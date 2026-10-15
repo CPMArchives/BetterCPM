@@ -1,0 +1,23 @@
+; ED development front end. Not installed as ED.COM until editing is complete.
+BDOS EQU 5
+        CSEG
+        .PHASE  0100H
+ED_START:
+        LD SP,ED_STACK
+        CALL UV_CHECK
+        CALL EI_PARSE
+        LD DE,ED_BAD
+        JP C,ED_PRINT
+        LD DE,ED_STAGE
+ED_PRINT:
+        LD C,9
+        CALL BDOS
+        JP 0
+ED_BAD: DB 'Invalid filespec.',13,10,'$'
+ED_STAGE: DB 'ED development front end: editing engine not yet available.',13,10,'$'
+; @ed-invocation@
+; @utility-version ED@
+        DS 128
+ED_STACK:
+        .DEPHASE
+        END

@@ -5,7 +5,7 @@
 BetterCP/M ED targets DRI's CP/M 2.2 context editor, with only simple DU addressing
 and standalone `/VER` added. This is a behavioral Z80/ZSM4 reimplementation.
 The reference source is not compiled by BetterCP/M, and no PL/M toolchain is
-added to its build. Implementation has not started.
+added to its build. The invocation/build foundation has started; the editing engine is not yet implemented.
 
 The [accepted engineering specification](ED%20Specification.md) governs scope.
 Exact artifact identities are in
@@ -102,3 +102,13 @@ CP/M 2.2 namespace. Library names remain single-file operands, not selectors.
 The reference artifacts are not installed as BetterCP/M ED.COM. ED stays planned
 in the System Disk manifest until the Z80 implementation and qualification are
 complete. The full-screen editor remains a separate Utilities Disk item.
+
+## Initial executable fixtures
+
+`tools/qualify_ed_reference.py` now captures new/existing E and Q behavior,
+backup/work states, split output and destination collision. Both
+`tools/fixtures/ed-initial-oracle-cpm22.json` and
+`tools/fixtures/ed-initial-oracle.json` reproduce against the pinned binary.
+The former is the stock-CP/M behavioral target; the latter records current
+BetterCP/M host differences rather than blessing them as ED semantics. See
+[implementation qualification](ED%20Implementation%20Qualification.md).
