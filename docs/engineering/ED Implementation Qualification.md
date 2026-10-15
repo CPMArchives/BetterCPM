@@ -28,7 +28,8 @@ utilities or distribution media. EDDEV is deliberately not named ED.COM.
 `tools/build_native_ed.py` runs ZSM4/LINK on copied stock CP/M media and compares
 the linked output with the cross build. It accepts explicit simulator, system
 disk, blank template and tool-directory arguments for other installations.
-The tested front end is **1,053 byte-identical bytes**. The prospective utility
+The initial front end was **1,053 byte-identical bytes**; the expanded buffer
+core below is 1,649 byte-identical bytes. The prospective utility
 identity is ED 1.0 Build 001; the shared `/VER` implementation is reused.
 No PL/M compiler or historical source image is part of this build.
 
@@ -93,3 +94,84 @@ commands against the stock oracle. Add file streaming and completion only with
 verified source/work/backup transitions, error exits and reserved-byte behavior.
 Keep ED off the distribution until the complete accepted specification passes
 normal and failure qualification on both supported platforms.
+
+## In-memory buffer and first commands — 2026-10-15
+
+`common/ed-buffer.inc` now implements a caller-sized gap buffer. The prefix is
+text before the cursor and the suffix is text after it; moving the gap
+preserves logical text. Insertion/deletion operate at the cursor. Initialization
+rejects empty/reversed bounds without replacing an existing valid context.
+No fixed text-buffer size or final ED memory-capacity promise is introduced.
+The final integration must reserve command workspace, stacks and I/O buffers
+below the actual transient ceiling before supplying the editable region.
+
+`common/ed-command.inc` executes the initial inline command subset: I/i, B, C,
+D and U, with negative/count/# forms where applicable. Counts wrap at 16 bits
+as in the reference; movement/deletion saturate at the buffer boundary.
+Uppercase I translates inserted text, lowercase i follows global U state,
+un-terminated inline text gains CR/LF, and Ctrl-L inserts CR/LF. Completed
+commands remain applied on subsequent error or overflow, as required by ED.
+
+These are internal routines, not an interactive editor yet. Standalone I/i
+returns a private “enter interactive insertion” result to its future caller;
+it must not be mistaken for an automatic empty-line insertion. The console,
+line-number verification, line/type commands and source/work file streams
+remain unimplemented. The public EDDEV entry continues to report that editing
+is unavailable and never opens files. No partial editor is distributed.
+
+The following checks pass:
+
+- `tools/test_ed_buffer.py`: 5,000 deterministic operations against an independent
+  text/cursor model, memory canaries, full-gap movement, partial insertion
+  overflow, invalid initialization, signed/count/case commands and insert handoff.
+- `tools/qualify_ed_commands.py`: ten command sequences against the pinned stock
+  ED binary on copied stock CP/M media. A final inserted marker exposes the
+  oracle's cursor position; saved text and marker position match the new core.
+  Evidence: `build/ed-development/commands/run-s0_lof4i`.
+- Native ZSM4/LINK versus cross build: **1,649 identical bytes**. Prior invocation
+  and standalone-version checks continue to pass.
+
+The command campaign does not validate final ED file commits: the stock binary
+performs the disk save, while the new implementation is checked in memory.
+Next comes interactive insertion, line movement/deletion/type and streaming,
+followed by full commit/recovery behavior and the remaining accepted commands.
+
+## Line ranges and text display — 2026-10-15
+
+The internal command core now includes L, K, T, V and -V. Forward line ranges
+end after the requested LF; zero/backward ranges reach the current or prior
+line starts. K removes that range and leaves the cursor at its surviving
+boundary. T selects the same range but restores the cursor before output.
+It reads across the gap without allocating or flattening a second text buffer.
+
+Verification starts enabled. T prints right-aligned five-column line numbers
+and the original prefix spacing at line starts. -V suppresses those prefixes.
+Tabs expand to eight-column stops, other C0 characters use caret notation, and
+CR/LF retain their historical behavior. T polls keyboard status at line starts;
+an available key is consumed and returns the historical `#` interruption flag
+without altering text or cursor. Standalone 0V currently returns a private
+request for the future console caller to format the memory report; it is not
+falsely treated as -V.
+
+Updated checks pass:
+
+- `tools/qualify_ed_commands.py`: **19** stock-ED text/cursor workflows, now
+  including L/K, zero/backward ranges and whole-buffer saturation. Evidence:
+  `build/ed-development/commands/run-pawmka3h`.
+- `tools/qualify_ed_type.py`: **seven** stock-ED displays and cursor positions,
+  including verification, signed T ranges, partial lines, tabs/control bytes
+  and a final LF. Evidence: `build/ed-development/type/run-aotipcnh`.
+- `tools/test_ed_lines.py`: independent output expectations plus output
+  interruption, cursor preservation and the pending 0V handoff.
+- Existing buffer, invocation and shared version tests continue to pass. Native
+  ZSM4/LINK and cross builds now match at **2,301 bytes**.
+
+The stock display campaign deliberately synchronizes through a separate B
+command after setup. Inline Ctrl-L insertion can print intermediate asterisks;
+using the first one as the final prompt queues a new key during T and causes
+a legitimate interruption. This was a harness timing issue, not an ED parser
+change. No sleeps or reduced interruption behavior are used to hide it.
+
+The interactive console, insert-mode editing controls, 0V report, file streaming
+and the remaining accepted commands still require implementation. EDDEV's
+public entry remains an explicit development front end, with no file writes.
