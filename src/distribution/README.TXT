@@ -16,6 +16,7 @@ GETTING STARTED
   TYPE README.TXT /P  Read with simple resident paging.
   :DIR /C=2           Run DIR.COM with a two-column display.
   STAT                Inspect disk status.
+  ED NOTES.TXT        Edit one text file with the CP/M context editor.
   CPX LIST            List installed command packages.
   RSX LIST            List loaded resident extensions.
 
@@ -70,6 +71,7 @@ build instructions and the distribution manifest:
   https://github.com/CPMArchives/BetterCPM
 
 The user guide is docs/user/users_guide.md. Packaging notes are under
-docs/releases/. PIP, WHEREIS and a full-screen editor are planned additions;
-they are not included on the current System Disk.
+docs/releases/. PIP and ED are included on the System Disk. Search for files
+with :DIR /WHEREIS filespec. A full-screen editor is planned for the Utilities
+Disk; it is not part of this System Disk.
 

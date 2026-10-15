@@ -32,7 +32,7 @@ All membership or layout changes require discussion with the maintainer.
 - STAT.COM
 - SUBMIT.COM
 - PIP.COM: DRI-compatible transfers, DU operands, `/VER`, and qualified platform devices.
-- ED.COM: planned DRI CP/M 2.2 behavioral reimplementation in Z80/ZSM4, with simple DU addressing and /VER; [engineering specification](../engineering/ED%20Specification.md) and reference baseline recorded.
+- ED.COM: DRI CP/M 2.2 behavioral reimplementation in Z80/ZSM4, with simple DU addressing, `/VER`, and documented DRI defect corrections; [engineering specification](../engineering/ED%20Specification.md).
 - DISK.FDB
 - RCP.CPX: required resident command package.
 - CPX.COM and RSX.COM: extension managers.

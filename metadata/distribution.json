@@ -236,13 +236,13 @@
     },
     {
       "name": "ED.COM",
-      "status": "planned",
-      "reason": "CP/M 2.2 behavioral ZSM4 reimplementation; engineering spec and source/binary baseline pinned; implementation and qualification pending",
+      "status": "implemented",
       "targets": [
         "z80pack",
         "trs80gp"
       ],
-      "user": 0
+      "user": 0,
+      "artifact": "build/utilities/ED.COM"
     },
     {
       "name": "BYE.COM",

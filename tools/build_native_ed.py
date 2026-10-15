@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the ED development front end with ZSM4/LINK and require byte parity."""
+"""Build ED with ZSM4/LINK and require byte parity."""
 from __future__ import annotations
 
 import argparse
@@ -80,6 +80,7 @@ expect eof
         run("cpmcp", "-f", "ibm-3740", str(disks / "driveb.dsk"),
             "0:ED.COM", str(native_com))
         cross = (BUILD / "EDDEV.COM").read_bytes()
+        assert cross == (ROOT/'build/utilities/ED.COM').read_bytes()
         native = native_com.read_bytes()[:len(cross)]
         (BUILD / "ED-native.COM").write_bytes(native)
         if native != cross:

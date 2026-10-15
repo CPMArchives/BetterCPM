@@ -1039,3 +1039,35 @@ including padding: `build/ed-development/capacity/run-wzc0zmrm`. The expanded
 rename campaign passes eight control/fault cases, including both H failure
 phases exiting without a restart: `build/ed-development/rename/run-6nfscp3l`.
 No editor bytes changed in this qualification stage; ED remains 8,584 bytes.
+
+
+## ED.COM distribution integration
+
+`tools/build_ed.py` now publishes `build/utilities/ED.COM`, retaining EDDEV.COM
+as an identical qualification alias. The native builder verifies that both
+aliases match ZSM4/LINK output: **8,584 bytes**, SHA-256
+`374acc6031899869c0edceb078f5eccf660209158599f87eeee40e4b2975b897`.
+Both System Disk manifests select that exact artifact. Ten distribution gate
+tests and 166 common utility/version checks pass.
+
+Clean isolated builds pass filesystem validation, extraction/hash validation
+of every manifest file, and boot checks on both platforms. Both boot checks
+execute the installed ED /VER. The cpmsim disk has 27 files and 160K free;
+the Model 4 disk has 24 files and 612K free. No planned manifest entries remain.
+Evidence: `/private/tmp/ed-system-releases-03/release-c926007ed263-2a0b060713b7`,
+with per-target reports, extracted artifacts, boot captures and build logs.
+These reports capture actual source-input hashes as well as the base commit;
+this integration work was uncommitted when built.
+
+The cpmsim clean build previously depended on packing the larger development
+file inventory first, which overflowed after adding ED. Distribution builds now
+request a system-track-only base and construct the filesystem directly from the
+manifest. The default development builder remains qualified and keeps its prior
+inventory. Its reserved system tracks and disk definitions match the new base
+byte-for-byte. Evidence: `/private/tmp/ed-development-disk-check-01` and its log.
+The README and user/manifest documentation now describe ED and DIR /WHEREIS as
+available and place the separate full-screen editor on the Utilities Disk.
+
+This closes ED implementation and System Disk inclusion. Release-wide
+validation remains, including broader applications, additional boundary and
+protection combinations, and the Utilities/CP/M Tools distribution inventories.
