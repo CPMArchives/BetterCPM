@@ -11,6 +11,8 @@ BUILD=ROOT/'build/ed-development'
 def expanded_source():
     text=(ROOT/'src/utilities/ed.mac').read_text()
     text=text.replace('; @ed-invocation@',(ROOT/'src/utilities/common/ed-invocation.inc').read_text())
+    for part in ('buffer','command','lines','type'):
+        text=text.replace('; @ed-'+part+'@',(ROOT/'src/utilities/common'/('ed-'+part+'.inc')).read_text())
     return expand_versions(text)
 
 
@@ -20,7 +22,7 @@ def main():
     args=p.parse_args();BUILD.mkdir(parents=True,exist_ok=True)
     text=expanded_source().replace('        CSEG\n        .PHASE  ','        ASEG\n        ORG     ').replace('        .DEPHASE\n','')
     data=assemble(args.assembler,text,BUILD/'EDDEV.COM',BUILD/'ed.lst',0x100)
-    print(f'ED invocation foundation: {len(data)} bytes; EDDEV.COM is not a usable editor or distribution artifact')
+    print(f'ED development core: {len(data)} bytes; EDDEV.COM is not a usable editor or distribution artifact')
 
 
 if __name__=='__main__':main()

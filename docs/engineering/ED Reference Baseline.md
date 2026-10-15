@@ -5,7 +5,7 @@
 BetterCP/M ED targets DRI's CP/M 2.2 context editor, with only simple DU addressing
 and standalone `/VER` added. This is a behavioral Z80/ZSM4 reimplementation.
 The reference source is not compiled by BetterCP/M, and no PL/M toolchain is
-added to its build. The invocation/build foundation has started; the editing engine is not yet implemented.
+added to its build. The invocation/build foundation has started; the text buffer, first inline/line commands and T display are now checked against the stock oracle, while the interactive/file engine remains incomplete.
 
 The [accepted engineering specification](ED%20Specification.md) governs scope.
 Exact artifact identities are in
