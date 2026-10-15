@@ -208,3 +208,20 @@ file engine. Rubout at an empty buffer and other boundary diagnostics need
 broader reference coverage. Source/work-file streaming, remaining commands,
 commit/recovery and the previously recorded S1/Close compatibility issue remain
 open. EDDEV remains unshipped and its public entry does not open files.
+
+## Source record stream foundation — 2026-10-15
+
+`ed-source.inc` reads an already opened, caller-owned source FCB one record at
+a time. It selects the source user and private DMA before each sequential read.
+The owner remains responsible for opening/closing the stream and restoring DU
+and DMA. As in DRI GETSOURCE, bytes are preserved without case conversion and
+Ctrl-Z terminates text. Physical EOF also becomes sticky; later calls do not
+read more records. Other BDOS statuses remain distinct errors and leave the
+private record buffer empty. No automatic retry or FCB rollback is promised.
+
+`tools/test_ed_source.py` verifies record crossings, NUL/high-bit preservation,
+text/physical EOF, error propagation, a simulated subsequent successful read,
+and reinitialization. This is a BDOS-stub test; live file integration is still
+pending. Existing buffer, console, input and line tests pass. Native ZSM4/LINK
+and cross builds match at **3,571 bytes**. This foundation is not yet connected
+to A, file setup or completion, and does not create or alter files.
