@@ -385,7 +385,62 @@ Some drive changes may be pending until cold boot.
 
 CONFIG must preserve the existing distinction between current, pending, and saved drive configuration.
 
-The exact command-line grammar for drive manipulation remains to be specified against the actual backend interfaces.
+Build 006 provides the physical-profile form below. Logical bindings, format
+selection and format-workbench command-line forms remain implementation work.
+
+## 12.6 Physical-profile command line (Build 006)
+
+```text
+CONFIG /PHYSICAL=n /TYPE=inches /TRACKS=count /SIDES=count /STEP=ms /SPINUP=quarters /SETTLE=ms
+```
+
+`/PHYSICAL=0` through `/PHYSICAL=3` must come first, followed by at least one
+field. Each field is optional, appears at most once, and may appear in any order.
+Names are case-insensitive; values are unsigned decimal bytes. Fields must be
+separated by whitespace. No combination with `/SHOW`, `/STARTUP`, `/DEFAULT` or
+`/VER` is specified. The whole tail, including all field values and duplicates,
+is checked before INIT, catalogue/file access or any configuration mutation.
+
+| Field | Accepted values | Meaning |
+| --- | --- | --- |
+| `/TYPE` | 5, 8 | Existing profile drive type in inches |
+| `/TRACKS` | 35, 40, 77, 80 | Existing menu's track-count choices |
+| `/SIDES` | 1, 2 | Available drive sides |
+| `/STEP` | 6, 12, 20, 30 | Milliseconds, converted to backend codes 0–3 |
+| `/SPINUP` | 0–16 | Quarter-second units |
+| `/SETTLE` | 0–255 | Head-settling milliseconds |
+
+For example:
+
+```text
+CONFIG /PHYSICAL=1 /TRACKS=80 /SIDES=2 /STEP=6
+```
+
+This changes active state only, matching menu F. Unspecified fields are read
+from the current physical profile and retained. All supplied fields are merged
+into a private request and submitted in one public configuration-API update;
+backend validation remains authoritative. The supported scope is the existing
+six-field physical-profile API on the two shipped backends, not a new generic
+hardware-capability schema. Physical timing effects depend on the backend.
+No DISK.FDB load, save confirmation, completion keypress or disk save occurs.
+The result reports `Disk configuration changed (until cold boot).` To persist
+it, enter CONFIG later and explicitly choose save-all-current settings. It does
+not create invocation-private pending state that disappears on exit.
+
+Both menu F and this CLI now query A:'s current binding before a physical update.
+If the proposed track/side limits cannot support that binding, or its query
+fails, reject before committing any profile or detaching any binding. This is a
+geometry guard, not detection of the actual attached drive hardware.
+
+After a successful profile update, incompatible non-system bindings are detached
+and their BDOS login/allocation state reset as in the existing physical-first
+menu behavior. Every cleanup query/detach is checked. A failure after the
+profile update reports `Drive profile changed; binding cleanup incomplete.`;
+it must not claim either complete success or that nothing changed. Live profile
+application and subsequent binding cleanup are not a transactional disk save.
+The operator may need to retry or reconfigure affected logical bindings.
+A failure before committing the physical update reports
+`Cannot safely apply drive profile. Nothing changed.` without a pause.
 
 ---
 
@@ -999,9 +1054,11 @@ CONFIG /VER
 CONFIG /SHOW
 CONFIG /STARTUP="command line"
 CONFIG /STARTUP=""
+CONFIG /PHYSICAL=n /field=value [...]
 ```
 
-`/SHOW` has the saved-drive-inspection limitation described in section 16.
+Physical field operands use the slash-prefixed names in section 12.6. `/SHOW`
+includes separate active and CRC-validated saved drive settings.
 
 Proposed/new; not currently available:
 
@@ -1025,7 +1082,8 @@ CONFIG /SERIAL:n DSR=ON|OFF
 CONFIG /SERIAL:n XONXOFF=ON|OFF
 ```
 
-Drive command-line syntax remains intentionally unresolved until reconciled with the existing drive configuration contract.
+Logical-drive binding, format-selection and workbench command-line syntax remain
+unresolved until reconciled with the existing drive configuration contract.
 
 ## Existing contract references
 

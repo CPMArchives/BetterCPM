@@ -14,9 +14,9 @@ The spec's cost/backend gates remain required for proposed runtime facilities.
 | /SHOW | Active and saved physical/logical settings, saved startup; embedded CRC-32 validation; no external reference |
 | /STARTUP="..." | Confirmed, verified startup-only save; does not execute command |
 | /DEFAULT | Pending-only semantics agreed; implementation/default-domain sources open |
-| Drive command-line parity | Open; retain existing drive storage/activation contracts |
+| Drive command-line parity | Build 006 physical fields implemented; logical binding/format/workbench forms open |
 | Persistent IOBYTE, printer and serial | Required runtime-cost/backend audits open |
-| Native build | Build 005 dual-profile ZSM4/LINK and cross assembly match at 13,413 bytes |
+| Native build | Build 006 dual-profile ZSM4/LINK and cross assembly match at 14,124 bytes |
 
 The no-longer-offered keyboard/video sections are outside CONFIG's 1.0 scope;
 printer/serial/IOBYTE entries may be added only when actual supported facilities
@@ -171,3 +171,39 @@ The Model 4 combined active/pending save, cold-boot checks and recoverable-write
 rollback campaign also passes without the reference file. Both inspection and
 save-all entry points reject CRC/layout/geometry/read failures before requesting
 confirmation or writes. Native parity remains 13,413 bytes with both records.
+
+## Build 006: physical-profile command-line parity
+
+The named `/PHYSICAL=n` form updates one active profile with one or more
+validated fields, preserving unspecified values and the existing separate-save
+contract. It needs no format catalogue and performs no filesystem writes.
+The whole request is validated before INIT. Public backend validation remains
+in force. Boot A:'s track/side compatibility is now checked before physical
+changes through either menu F or CLI; incompatible non-system bindings retain
+the established detach/reset behavior. Cleanup failures are reported as partial
+changes, never as full success or no change.
+
+`test_config_physical_cli.py` checks constrained values, step-code translation,
+malformed/duplicate/late-invalid operands before any I/O, merged profile commits,
+boot geometry protection, safe boot timing, rejected profile/guard reads,
+detach/reset operations, and injected cleanup query/detach failures.
+`qualify_config_physical_cli.py` reads all active physical/logical state through
+an independent public-API probe. On private cpmsim disks without DISK.FDB it
+checks compound updates, boot-geometry rejection, invalid-tail atomicity, safe
+boot timing, unchanged disk bytes and restoration on cold boot. Evidence:
+`build/config-physical-cli/run-czc2h09a`.
+Native ZSM4/LINK and cross output match at 14,124 bytes with both CRC records.
+
+Logical binding/format selection/workbench CLI, `/DEFAULT`, and the required
+IOBYTE/printer/serial audits remain open. This increment does not declare full
+CONFIG specification alignment.
+
+Model 4 CLI qualification also passes:
+`build/test-results/config-physical-cli-model4/run-3klbruf8`.
+Independent API snapshots prove the compound profile change, incompatible-binding
+detachment and rejected boot shrink; the complete DMK remains byte-identical.
+The fixed-delay harness waits for floppy loads before sending later commands.
+Unit checks cover the existing menu PHSAVE entry as well as CLI application, so
+the new boot guard is exercised through both paths. Parser/startup failure and
+166 utility identity checks pass. No resident BIOS/BDOS bytes are added; the
+transient has 1,492 bytes left before its existing 3E00h program/stack boundary.
