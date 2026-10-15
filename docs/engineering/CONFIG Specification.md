@@ -385,8 +385,8 @@ Some drive changes may be pending until cold boot.
 
 CONFIG must preserve the existing distinction between current, pending, and saved drive configuration.
 
-Build 006 provides the physical-profile form below. Logical bindings, format
-selection and format-workbench command-line forms remain implementation work.
+Builds 006–007 provide physical-profile and logical binding/format-selection
+forms below. Format-workbench field editing remains command-line implementation work.
 
 ## 12.6 Physical-profile command line (Build 006)
 
@@ -441,6 +441,51 @@ application and subsequent binding cleanup are not a transactional disk save.
 The operator may need to retry or reconfigure affected logical bindings.
 A failure before committing the physical update reports
 `Cannot safely apply drive profile. Nothing changed.` without a pause.
+
+
+## 12.7 Logical binding command line (Build 007)
+
+```text
+CONFIG /LOGICAL=B /PHYSICAL=1 /FORMAT="MM 80T DS DATA"
+CONFIG /LOGICAL=C /UNBIND
+```
+
+These forms apply one active logical binding, or mark it unconfigured. They do
+not save defaults, touch file contents, or ask for confirmation/completion keys.
+Use the separate save-all-current action to persist the result. A: remains the
+protected boot binding and is rejected during parsing; targets are B through D.
+
+Operands have the order shown. Physical indexes are 0–3. The quoted format is
+an exact catalogue display description, compared case-insensitively with its
+32-byte space padding; it is not a catalogue row number, source-file long name,
+prefix or wildcard. Require 1–32 printable ASCII characters with at least one
+non-space character. No quote escapes are defined. Control characters, extra
+operands, combinations with other operations and malformed tails fail before
+INIT or catalogue access. A valid quoted `/VER` substring is data, not a version
+option. Normal command-tail length bounds still apply.
+
+Resolve the complete catalogue before selecting an entry: unknown or duplicate
+case-insensitive display descriptions fail. A unique match must pass the shared
+FDB normalization/support checks, the existing physical track/side compatibility
+check, and final backend logical-binding validation before commit. No failed
+lookup, catalogue read, compatibility check or rejected backend request may
+change an active binding. After success reset exactly the selected logical
+drive's BDOS login/allocation state, as in the menu binding path.
+
+`/UNBIND` requires no catalogue and uses the existing backend unconfigured marker
+without erasing the remaining format fields. Named binding loads and validates
+DISK.FDB through the existing current-drive/A: lookup. Missing or corrupt
+catalogues return with the existing diagnostic and no CLI pause. Interactive
+catalogue errors retain their existing pause. The FDB reader's consumer abort
+target makes that policy explicit; DUP retains its identical existing binary.
+
+Unknown, ambiguous or unsupported formats report
+`Unknown, ambiguous, or unsupported format. Nothing changed.`. Compatibility or
+backend failures report `Cannot apply logical binding. Nothing changed.`.
+Successful binding or unbinding reports the existing until-cold-boot message.
+
+The shipped catalogue currently has unique display descriptions; a replacement
+catalogue with duplicate names must be corrected or selected through the menu.
 
 ---
 
@@ -1055,6 +1100,8 @@ CONFIG /SHOW
 CONFIG /STARTUP="command line"
 CONFIG /STARTUP=""
 CONFIG /PHYSICAL=n /field=value [...]
+CONFIG /LOGICAL=B /PHYSICAL=1 /FORMAT="name"
+CONFIG /LOGICAL=B /UNBIND
 ```
 
 Physical field operands use the slash-prefixed names in section 12.6. `/SHOW`
@@ -1082,8 +1129,8 @@ CONFIG /SERIAL:n DSR=ON|OFF
 CONFIG /SERIAL:n XONXOFF=ON|OFF
 ```
 
-Logical-drive binding, format-selection and workbench command-line syntax remain
-unresolved until reconciled with the existing drive configuration contract.
+Format-workbench field-edit command-line syntax remains unresolved; physical
+profiles and logical binding/format-selection forms are specified in section 12.
 
 ## Existing contract references
 

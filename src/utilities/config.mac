@@ -14,6 +14,8 @@ FDBMODE EQU 1
         LD A,(CF_MODE)
         CP 2
         JR Z,CF_VDONE
+        CP 4
+        JR Z,CF_VDONE                  ; quoted format names are data
 CF_VGATE:
         CALL UV_CHECK                  ; standalone identity before any disk access
 CF_VDONE:
@@ -24,6 +26,8 @@ CF_VDONE:
         LD A,(CF_MODE)
         CP 3
         JP Z,CD_APPLY                  ; physical CLI needs no format catalogue
+        CP 5
+        JP Z,CL_UNBIND
         CALL FDBLOAD
         XOR A
         LD (STSTATE),A
@@ -33,6 +37,8 @@ CF_VDONE:
         JP Z,CF_SHOW
         CP 2
         JP Z,CF_START
+        CP 4
+        JP Z,CL_BIND
 
 ; ================================================================================
 ; =                               CONFIG Main Menu                               =
@@ -1930,7 +1936,7 @@ CD_PARSE:
         LD C,A
         LD DE,CD_PHOPT
         CALL CF_MATCH
-        RET C
+        JP C,CL_PARSE
         CALL CD_NUM
         RET C
         CP 4
@@ -2174,6 +2180,224 @@ CD_PTR: DW 0
 CD_VALS:DS 6
 PHFAIL: DB 0
 
+CF_FATAL:
+        CALL PUTS
+        LD A,(CF_MODE)
+        OR A
+        CALL Z,PAUSE
+        JP DONE
+
+; Named logical bindings: first validate the complete tail, then resolve a
+; unique catalogue description. No catalogue row number becomes a script ABI.
+CL_PARSE:
+        LD HL,(CF_PTR)
+        LD A,(CF_LEFT)
+        LD C,A
+        LD DE,CL_LKEY
+        CALL CF_MATCH
+        RET C
+        LD A,C
+        OR A
+        JP Z,CF_BAD
+        LD A,(HL)
+        AND 05FH
+        SUB 'A'
+        CP 1
+        JP C,CF_BAD                    ; A: is the protected boot binding
+        CP 4
+        JP NC,CF_BAD
+        LD (CL_DRIVE),A
+        INC HL
+        DEC C
+        CALL CL_GAP
+        RET C
+        LD (CL_PTR),HL
+        LD A,C
+        LD (CL_LEFT),A
+        LD DE,CL_UKEY
+        CALL CF_MATCH
+        JR C,CL_TRYB
+        CALL CF_SKIP
+        JP NZ,CF_BAD
+        LD A,5
+        JR CL_MODE
+CL_TRYB:
+        LD HL,(CL_PTR)
+        LD A,(CL_LEFT)
+        LD C,A
+        LD DE,CD_PHOPT
+        CALL CF_MATCH
+        RET C
+        CALL CD_NUM
+        RET C
+        CP 4
+        JP NC,CF_BAD
+        LD (CL_PHYS),A
+        CALL CF_SKIP
+        LD DE,CL_FKEY
+        CALL CF_MATCH
+        RET C
+        PUSH HL
+        PUSH BC
+        LD HL,CL_NAME
+        LD DE,CL_NAME+1
+        LD BC,31
+        LD (HL),32
+        LDIR
+        POP BC
+        POP HL
+        LD DE,CL_NAME
+        LD B,0
+        XOR A
+        LD (CL_NON),A
+CL_STRING:
+        LD A,C
+        OR A
+        JP Z,CF_BAD
+        LD A,(HL)
+        INC HL
+        DEC C
+        CP '"'
+        JR Z,CL_CLOSE
+        CP 32
+        JP C,CF_BAD
+        CP 127
+        JP NC,CF_BAD
+        PUSH AF
+        LD A,B
+        CP 32
+        JR NC,CL_LONG
+        POP AF
+        CALL CL_UPPER
+        LD (DE),A
+        CP 32
+        JR Z,CL_SPACE
+        LD A,1
+        LD (CL_NON),A
+CL_SPACE:
+        INC DE
+        INC B
+        JR CL_STRING
+CL_LONG:POP AF
+        JP CF_BAD
+CL_CLOSE:
+        LD A,(CL_NON)
+        OR A
+        JP Z,CF_BAD
+        CALL CF_SKIP
+        JP NZ,CF_BAD
+        LD A,4
+CL_MODE:LD (CF_MODE),A
+        OR A
+        RET
+CL_GAP: LD A,C
+        OR A
+        JP Z,CF_BAD
+        LD A,(HL)
+        CP 32
+        JR Z,CL_SKIP
+        CP 9
+        JP NZ,CF_BAD
+CL_SKIP:CALL CF_SKIP
+        OR A
+        RET
+CL_UPPER:
+        CP 'a'
+        RET C
+        CP 'z'+1
+        RET NC
+        AND 05FH
+        RET
+
+CL_BIND:
+        XOR A
+        LD (CL_INDEX),A
+        LD (CL_FOUND),A
+CL_SCAN:
+        LD A,(CL_INDEX)
+        LD B,A
+        LD A,(FCOUNT)
+        CP B
+        JR Z,CL_RESOLVE
+        LD A,B
+        CALL FDBNAME
+        JR C,CL_FMTERR
+        LD DE,CL_NAME
+        LD B,32
+CL_CMP: LD A,(HL)
+        CALL CL_UPPER
+        LD C,A
+        LD A,(DE)
+        CP C
+        JR NZ,CL_NEXT
+        INC HL
+        INC DE
+        DJNZ CL_CMP
+        LD A,(CL_FOUND)
+        OR A
+        JR NZ,CL_FMTERR                ; reject duplicate exact descriptions
+        INC A
+        LD (CL_FOUND),A
+        LD A,(CL_INDEX)
+        LD (CL_CHOS),A
+CL_NEXT:LD A,(CL_INDEX)
+        INC A
+        LD (CL_INDEX),A
+        JR CL_SCAN
+CL_RESOLVE:
+        LD A,(CL_FOUND)
+        OR A
+        JR Z,CL_FMTERR
+        LD A,(CL_CHOS)
+        CALL FDBBIND
+        JR C,CL_FMTERR
+        LD A,(CL_PHYS)
+        CALL COMPAT
+        JR NZ,CL_ERROR
+        LD HL,BIND
+        LD DE,REQ+1
+        LD BC,64
+        LDIR
+        LD A,(CL_PHYS)
+        JR CL_COMMIT
+CL_UNBIND:
+        LD A,255
+CL_COMMIT:
+        LD (REQ+1),A
+        LD A,(CL_DRIVE)
+        LD (REQ),A
+        LD DE,REQ
+        LD B,4
+        CALL API
+        JR NZ,CL_ERROR
+        LD A,(CL_DRIVE)
+        CALL RESETLOG
+        LD HL,SAVED
+        CALL PUTS
+        JP DONE
+CL_FMTERR:
+        LD HL,CL_BADFMT
+        JR CL_REPORT
+CL_ERROR:
+        LD HL,CL_BADLOG
+CL_REPORT:
+        CALL PUTS
+        JP DONE
+CL_LKEY:DB '/LOGICAL=',0
+CL_UKEY:DB '/UNBIND',0
+CL_FKEY:DB '/FORMAT="',0
+CL_BADFMT:DB 'Unknown, ambiguous, or unsupported format. Nothing changed.',13,10,0
+CL_BADLOG:DB 'Cannot apply logical binding. Nothing changed.',13,10,0
+CL_DRIVE:DB 0
+CL_PHYS:DB 0
+CL_LEFT:DB 0
+CL_PTR: DW 0
+CL_NON: DB 0
+CL_INDEX:DB 0
+CL_FOUND:DB 0
+CL_CHOS:DB 0
+CL_NAME:DS 32
+
 ; @utility-title CONFIG@
 
 MAINMSG:DB 'Configuration options:',13,10,13,10 ; main-menu text
@@ -2303,6 +2527,7 @@ STSUBFCB:DB 1,'$$$     ','SUB'          ; A: stock command stream
 STSUBBUF:DS 128                         ; one counted submitted command
         INCLUDE disk/sysgen.inc
         INCLUDE disk/common.inc
+FDBABORT EQU CF_FATAL
         INCLUDE disk/fdbread.inc
 ; @utility-version CONFIG@
 

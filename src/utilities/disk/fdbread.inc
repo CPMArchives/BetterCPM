@@ -1,6 +1,7 @@
 ; FDB VERSION-1 NATIVE READER FOUNDATION -- 01-Oct-2026
 ; Load DISK.FDB into FDFRAM, then validate its framing and whole-file CRC.
 ; FDBVALID remains separately callable for focused host-side qualification.
+; Consumer supplies FDBABORT: fatal diagnostic policy with HL = message.
 
 ; Open DISK.FDB on the current drive, falling back to A:, and validate its
 ; framing before the transitional text-catalogue path reuses FDFRAM.
@@ -67,10 +68,10 @@ FDBFILEBAD:
         LD C,26
         CALL BDOS
         LD HL,FDBBADMSG
-        JP FATAL
+        JP FDBABORT
 FDBMISSING:
         LD HL,FDBNOMSG
-        JP FATAL
+        JP FDBABORT
 
 FDBVALID:
         LD HL,(FDBLEN)
