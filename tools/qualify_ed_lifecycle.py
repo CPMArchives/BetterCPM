@@ -15,6 +15,7 @@ ROOT=Path(__file__).resolve().parents[1]
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--better',action='store_true')
+    parser.add_argument('--oracle',action='store_true',help='Run the same stock-CP/M expectations against pinned DRI ED')
     parser.add_argument('--diskdefs',type=Path)
     args=parser.parse_args()
     template=Path.home()/'projects/git/z80pack/cpmsim/disks/library/cpm22-1.dsk'
@@ -39,12 +40,12 @@ def main():
         JP C,LT_BAD
 LT_LOOP:
         CALL EU_READ
-        CP 'E'
-        JP NZ,LT_LOOP
-        CALL EF_DRAIN
+        OR A
+        JP Z,LT_LOOP
+        CALL FQ_ACT
         JP C,LT_BAD
-        CALL FP_COMMIT
-        JP C,LT_BAD
+        OR A
+        JP Z,LT_LOOP
         JP 0
 LT_BAD:
         LD A,(FP_STEP)
@@ -60,32 +61,52 @@ LT_ERROR: DB 'LIFECYCLE FAILED',13,10,'$'
 '''+source[end:]
     source=source.replace('        CSEG\n        .PHASE  ','        ASEG\n        ORG     ').replace('        .DEPHASE\n','')
     binary=work/'EDTEST.COM';assemble(Path.home()/'bin/z80asm',source,binary,work/'test.lst',256)
+    if args.oracle:
+        assert not args.better, '--oracle uses stock CP/M to avoid the known S1 baseline difference'
+        binary=ROOT/'third_party/dri-ed/ED-CPM22-reference.COM'
+        assert hashlib.sha256(binary.read_bytes()).hexdigest()=='adeeb92c897bd6a07579f06d163bd6ded549842203a5459c88a93d26c65fe85f'
     body=b'Old Mixed\r\nsecond line\r\n'
-    for case in ('new','existing','split'):
+    for case in ('new','existing','split','quit','new-quit','original','head','split-head'):
         here=work/case;here.mkdir();disks=here/'disks';disks.mkdir()
         if args.better:shutil.copy2(args.diskdefs,here/'diskdefs')
         for drive in ('a','b'):shutil.copy2(template,disks/f'drive{drive}.dsk')
         def copy(host,drive,name):subprocess.run(['cpmcp','-T','raw','-f',fmt,str(disks/f'drive{drive}.dsk'),str(host),'0:'+name],cwd=here,check=True)
         copy(binary,'a','EDTEST.COM')
-        if case!='new':
+        if case not in ('new','new-quit'):
             seed=here/'seed.txt';seed.write_bytes(body+b'\x1a');copy(seed,'a','CASE.TXT')
-        operand=b'CASE.TXT'+(b' B:' if case=='split' else b'')
-        session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,[
-            (b'EDTEST '+operand+b'\r',b'*',10),
-            (b'iNEW\x1a\r',b'*',10),(b'E\r',(b'B0>_ ' if case=='split' else b'A0>_ ') if args.better else b'A>',10),
-            (b'A:BYE\r',b'System halted',10)],here/'transcript.bin',initial_prompt=b'A0>_ ' if args.better else b'A>')
+        operand=b'CASE.TXT'+(b' B:' if case.startswith('split') else b'')
+        commands=[(b'EDTEST '+operand+b'\r',b'*',10),(b'iNEW\x1a\r',b'*',10)]
+        if case in ('quit','new-quit'):
+            commands.extend([(b'Q\r',b'(Y/N)?',10),(b'Y',b'A0>_ ' if args.better else b'A>',10)])
+        else:
+            if case in ('original','head','split-head'):commands.append((b'U-V\r',b'*',10))
+            if case=='original':commands.extend([(b'O\r',b'(Y/N)?',10),(b'Y',b'*',10),(b'iagain\x1a\r',b'*',10)])
+            if case in ('head','split-head'):commands.extend([(b'H\r',b'*',10),(b'iagain\x1a\r',b'*',10)])
+            prompt=(b'B0>_ ' if case=='split' else b'A0>_ ') if args.better else (b'B>' if case=='split' else b'A>')
+            commands.append((b'E\r',prompt,10))
+        commands.append((b'A:BYE\r',b'System halted',10))
+        session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,commands,here/'transcript.bin',initial_prompt=b'A0>_ ' if args.better else b'A>')
         assert b'LIFECYCLE FAILED' not in (here/'transcript.bin').read_bytes()
         def extract(drive,name):
             target=here/(drive+'-'+name)
             subprocess.run(['cpmcp','-T','raw','-f',fmt,str(disks/f'drive{drive}.dsk'),'0:'+name,str(target)],cwd=here,check=True)
             return target.read_bytes()
         result=extract('b' if case=='split' else 'a','case.txt')
+        if case in ('quit','new-quit'):
+            expected=body if case=='quit' else b''
+            assert result.rstrip(b'\x1a')==expected,(case,result)
+            listing=subprocess.run(['cpmls','-T','raw','-f',fmt,str(disks/'drivea.dsk')],cwd=here,check=True,stdout=subprocess.PIPE).stdout.upper()
+            assert b'CASE.$$$' not in listing and b'CASE.BAK' not in listing
+            continue
         expected=b'NEW'+(body if case!='new' else b'')
+        if case=='original':expected=b'AGAIN'+body
+        if case in ('head','split-head'):expected=b'AGAINNEW'+body
         assert result==expected+b'\x1a'*((-len(expected))%128),(case,result)
-        backup=extract('a','case.bak')
-        assert backup.rstrip(b'\x1a')==(body if case!='new' else b''),(case,backup)
-    platform='BetterCP/M' if args.better else 'stock CP/M'
-    print(f'PASS: live new/existing/split setup, completion and backup publication on {platform}; {work}')
+        backup=extract('b' if case=='split-head' else 'a','case.bak')
+        expected_backup=(b'NEW'+body) if case in ('head','split-head') else (body if case!='new' else b'')
+        assert backup.rstrip(b'\x1a')==expected_backup,(case,backup)
+    platform='BetterCP/M' if args.better else ('stock CP/M / DRI oracle' if args.oracle else 'stock CP/M')
+    print(f'PASS: live setup/save, Q, O, H and split-DU H on {platform}; {work}')
 
 
 if __name__=='__main__':main()
