@@ -1,4 +1,4 @@
-; ED development editor. Not installed as ED.COM until qualification is complete.
+; BetterCP/M ED editor. EDDEV.COM is an identical qualification artifact.
 BDOS EQU 5
         CSEG
         .PHASE  0100H

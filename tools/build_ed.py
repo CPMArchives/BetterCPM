@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the unshipped ED editor; no PL/M build dependency."""
+"""Build the ED editor; no PL/M build dependency."""
 import argparse
 from pathlib import Path
 from build_ccp import assemble
@@ -22,7 +22,10 @@ def main():
     args=p.parse_args();BUILD.mkdir(parents=True,exist_ok=True)
     text=expanded_source().replace('        CSEG\n        .PHASE  ','        ASEG\n        ORG     ').replace('        .DEPHASE\n','')
     data=assemble(args.assembler,text,BUILD/'EDDEV.COM',BUILD/'ed.lst',0x100)
-    print(f'ED development core: {len(data)} bytes; EDDEV.COM remains an unshipped development artifact')
+    release=ROOT/'build/utilities/ED.COM'
+    release.parent.mkdir(parents=True,exist_ok=True)
+    release.write_bytes(data)
+    print(f'ED.COM: {len(data)} bytes; EDDEV.COM is the identical qualification copy')
 
 
 if __name__=='__main__':main()

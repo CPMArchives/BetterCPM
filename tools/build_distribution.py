@@ -75,7 +75,7 @@ def current_build(work, target, identity, reuse):
     # SYSBUILD utility metadata currently depends on the common system build.
     run([sys.executable, 'tools/build_complete_system.py'], root, root / 'common-build.log')
     if target == 'z80pack':
-        run([sys.executable, 'tools/build_z80pack_image.py'], root, root / 'build.log')
+        run([sys.executable, 'tools/build_z80pack_image.py', '--system-tracks-only'], root, root / 'build.log')
     else:
         shutil.copy2(root / 'common-build.log', root / 'build.log')
     if target == 'z80pack':
@@ -214,6 +214,8 @@ def validate_files(raw, out, files, g):
 
 def boot(target, image, out, root, simulator, emulator):
     from version_metadata import rows as version_rows
+    from utility_versions import banner as utility_banner
+    ed_identity = utility_banner('ED')
     identity = 'BetterCP/M ' + next(row['implementation_version'] for row in version_rows() if row['component'] == 'BetterCP/M')
     if target == 'z80pack':
         from test_z80pack_sysgen_install import session
@@ -224,10 +226,13 @@ def boot(target, image, out, root, simulator, emulator):
             shutil.copy2(root / f'build/z80pack/disks/drive{letter}.dsk', disks / f'drive{letter}.dsk')
         text = session(simulator, disks, [(b'CPX LIST\r', b'A0>_ ', 60),
                        (b'VER\r', b'A0>_ ', 60),
+                       (b'ED /VER\r', b'A0>_ ', 60),
                        (b'RSX LOAD ZPRTC\r', b'A0>_ ', 60),
                        (b'RSX LIST\r', b'A0>_ ', 60)], out/'boot.txt').decode(errors='replace')
         if 'RCP' not in text or 'BetterCP/M' not in text or 'ZPRTC : BDOS' not in text:
             raise ValueError('cpmsim boot/system/provider identity missing')
+        if ed_identity not in text:
+            raise ValueError('installed ED identity missing; see boot.txt')
         if text.count(identity) != 2:
             raise ValueError('cold banner missing or repeated on warm boot; see boot.txt')
         if 'Error' in text or 'NOT FOUND' in text:
@@ -266,11 +271,14 @@ exit [lindex $status 3]
         command = [str(emulator), '-m4', '-batch', '-turbo', '-ktx',
                    '-d0', str(private), '-id', '15000', '-it']
         command += key_args('CPX LIST\r')+['-id','3000','-it']
-        command += key_args('VER\r')+['-id','3000','-it','-ix']
+        command += key_args('VER\r')+['-id','3000','-it']
+        command += key_args('ED /VER\r')+['-id','3000','-it','-ix']
         launch(command, cwd=out, timeout=180)
         initial = screen(out/'trs80-text-0.bin')
-        final = screen(out/'trs80-text-2.bin')
+        final = screen(out/'trs80-text-3.bin')
         (out/'boot.txt').write_text(initial+'\n'+final)
+        if ed_identity not in final:
+            raise ValueError('Model 4 installed ED identity missing; see boot.txt')
         if 'BetterCP/M' not in initial:
             raise ValueError('Model 4 cold startup banner missing; see boot.txt')
         if 'A0>' not in initial or 'BetterCP/M' not in final or 'RCP' not in final:
@@ -373,7 +381,6 @@ def main():
                       'included':included, 'omitted':omitted, **totals,
                       'validation':{'filesystem':'PASS','file_integrity':'PASS','boot':boot_result},
                       'issues':['Existing core VER reports BetterCP/M 0.3; version presentation requires separate review',
-                                'PIP adoption/integration and editor selection pending',
                                 'Utilities/CPM Tools media and additional on-disk documentation deferred']}
             (out/'report.json').write_text(json.dumps(report,indent=2)+'\n')
             shutil.copy2(root/'build.log',out/'build.log')

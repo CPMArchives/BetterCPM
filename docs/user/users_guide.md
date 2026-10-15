@@ -2081,15 +2081,16 @@ only: attribute options and drive-wide commands such as `DSK:` and `=R/O`
 are rejected. Conventional single-DU STAT commands retain their existing
 behavior and output.
 
-#### 4.17 ED — Context Editor (planned for 1.0)
+#### 4.17 ED — Context Editor
 
 ED is the standard CP/M 2.2 context editor, reimplemented for BetterCP/M with
 drive/user addressing. It edits one text file at a time through commands at the
 `*` prompt. It is a line-oriented editor; it does not provide a full-screen
 interface or cursor-key navigation.
 
-Implementation and qualification are pending. The following describes the
-accepted interface; ED is not yet included in generated System Disks.
+ED.COM is included on both generated System Disks. Release-wide validation
+continues; see the ED engineering qualification record for test coverage and
+limits.
 
 ##### Starting ED
 

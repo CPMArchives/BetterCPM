@@ -50,6 +50,15 @@ class DistributionGates(unittest.TestCase):
             for name in ['ADM3A.RSX','ADMTST.COM']:
                 self.assertEqual(any(e['name']==name for e in entries),expected)
 
+    def test_system_editor_manifest(self):
+        root=Path(__file__).resolve().parents[1]
+        manifest=json.loads((root/'metadata/distribution.json').read_text())
+        entries=[e for e in manifest['system_disk'] if e['name']=='ED.COM']
+        self.assertEqual(len(entries),1)
+        self.assertEqual(entries[0]['status'],'implemented')
+        self.assertEqual(entries[0]['artifact'],'build/utilities/ED.COM')
+        self.assertEqual(set(entries[0]['targets']),{'z80pack','trs80gp'})
+
     def test_capacity_accounts_for_directory_and_extents(self):
         geometry={'block':1024,'blocks':5,'directory_blocks':2,'entries':1}
         with self.assertRaises(ValueError):

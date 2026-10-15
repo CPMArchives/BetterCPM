@@ -22,6 +22,77 @@ def symbols(path):
 def normalized(text):
  return text.replace('        CSEG\n        .PHASE  ','        ASEG\n        ORG     ').replace('        .DEPHASE\n','')
 
+def disk_definition(fmt):
+ # cpmtools skewtab entries are zero-based raw-sector ordinals.
+ ordered_ids=sorted(fmt.sector_ids)
+ logical_to_raw=[ordered_ids.index(sector_id) for sector_id in fmt.sector_ids]
+ # cpmtools maps each logical physical sector through this zero-based table.
+ skew=','.join(map(str,logical_to_raw))
+ diskdefs=f'''diskdef bettercpm-default
+ seclen {fmt.sector_bytes}
+ tracks {fmt.raw_tracks}
+ sectrk {fmt.physical_sectors}
+ blocksize {fmt.block_bytes}
+ maxdir {fmt.drm+1}
+ skewtab {skew}
+ boottrk {fmt.off}
+ os 2.2
+end
+diskdef bettercpm-ccs-40ds
+ seclen {fmt.sector_bytes}
+ tracks {fmt.raw_tracks}
+ sectrk {fmt.physical_sectors}
+ blocksize {fmt.block_bytes}
+ maxdir {fmt.drm+1}
+ skewtab {skew}
+ boottrk {fmt.off}
+ os 2.2
+end
+'''
+ diskdefs+='''diskdef bettercpm-mm-standard-system
+ seclen 256
+ tracks 40
+ sectrk 18
+ blocksize 2048
+ maxdir 128
+ skew 2
+ boottrk 2
+ os 2.2
+end
+diskdef bettercpm-mm-80t-ds-data
+ seclen 512
+ tracks 160
+ sectrk 10
+ blocksize 2048
+ maxdir 128
+ skew 2
+ boottrk 0
+ os 2.2
+end
+diskdef bettercpm-ampro-little-board
+ seclen 512
+ tracks 40
+ sectrk 10
+ blocksize 2048
+ maxdir 64
+ skew 0
+ boottrk 2
+ os 2.2
+end
+diskdef bettercpm-ampro-little-board-ds
+ seclen 512
+ tracks 80
+ sectrk 10
+ blocksize 2048
+ maxdir 128
+ skew 0
+ boottrk 2
+ os 2.2
+end
+'''
+ return diskdefs
+
+
 def main():
  p=argparse.ArgumentParser()
  p.add_argument('--output',type=Path,default=ROOT/'build/z80pack')
@@ -30,6 +101,8 @@ def main():
  p.add_argument('--format',default=DEFAULT_FORMAT,
                 help='exact DISK.FDF format name')
  p.add_argument('--fdf',type=Path,default=ROOT/'third_party/montezuma/DISK.FDF')
+ p.add_argument('--system-tracks-only',action='store_true',
+                help='emit reserved system tracks and diskdefs for manifest-driven distribution')
  p.add_argument('--resident-only',action='store_true',
                 help='stop after resident artifacts for shifted-layout analysis')
  args=p.parse_args();out=args.output.resolve()
@@ -169,13 +242,27 @@ def main():
  put(92,bytes(1021)+gateway_tail,1024)
  put(100,rsx_overlay(ROOT/'build/system/rsxresolver.bin'),1024)
  put(108,(ROOT/'build/ccp/ccp.rlm').read_bytes(),13*512)
+ if args.system_tracks_only:
+  # The distribution builder supplies its own filesystem from its manifest.
+  # Do not first pack the unrelated, larger development/test file inventory.
+  raw=bytearray(b'\xe5'*fmt.image_bytes)
+  for record in range(fmt.reserved_records):
+   track,within=divmod(record,fmt.spt)
+   at=track*fmt.raw_track_bytes+record_map[within]*128
+   raw[at:at+128]=logical[record*128:(record+1)*128]
+  disks.mkdir()
+  for letter in 'abcd':(disks/f'drive{letter}.dsk').write_bytes(raw)
+  (out/'diskdefs').write_text(disk_definition(fmt))
+  return
  # CP/M 2.2, 1K allocation blocks, byte block numbers, 64 directory entries.
  from sysgen_image import sysgen_image
  files=[('SYSGEN.DAT',sysgen_image(bytes(resident),L['SYSTEM'],52,8,fmt.spt))]
  for name in ('RCP.CPX','HELLO.CPX'):files.append((name,(ROOT/'build/cpx'/name).read_bytes()))
- # Model 4-only monitor tests do not belong in the cpmsim development disk.
+ # The small development disk keeps its existing test inventory. ED is
+ # installed by its isolated campaigns and the manifest-driven System Disk.
+ # Model 4-only monitor tests likewise do not belong on this disk.
  for f in sorted((ROOT/'build/utilities').glob('*.COM')):
-  if f.name not in ('ADMTST.COM','VT52TST.COM','ANSITST.COM'):files.append((f.name,f.read_bytes()))
+  if f.name not in ('ADMTST.COM','VT52TST.COM','ANSITST.COM','ED.COM'):files.append((f.name,f.read_bytes()))
  for name,data in cpm_tools_files(ROOT):files.append((name,data))
  for name in ('HELLO.RSX','ECHO.RSX','BATCHIO.RSX','FDF.RSX','P2DOS.RSX','ZPRTC.RSX','STATEFUL.RSX'):files.append((name,(ROOT/'build/rsx'/name).read_bytes()))
  files.append(('R3PACK.RSX',(ROOT/'build/system/R3PACK.RSX').read_bytes()))
@@ -287,74 +374,7 @@ def main():
  for letter in ('b','c','d'):
   (rom_disks/f'drive{letter}.dsk').symlink_to(
       Path('../disks')/f'drive{letter}.dsk')
- # cpmtools skewtab entries are zero-based raw-sector ordinals.
- ordered_ids=sorted(fmt.sector_ids)
- logical_to_raw=[ordered_ids.index(sector_id) for sector_id in fmt.sector_ids]
- # cpmtools maps each logical physical sector through this zero-based table.
- skew=','.join(map(str,logical_to_raw))
- diskdefs=f'''diskdef bettercpm-default
- seclen {fmt.sector_bytes}
- tracks {fmt.raw_tracks}
- sectrk {fmt.physical_sectors}
- blocksize {fmt.block_bytes}
- maxdir {fmt.drm+1}
- skewtab {skew}
- boottrk {fmt.off}
- os 2.2
-end
-diskdef bettercpm-ccs-40ds
- seclen {fmt.sector_bytes}
- tracks {fmt.raw_tracks}
- sectrk {fmt.physical_sectors}
- blocksize {fmt.block_bytes}
- maxdir {fmt.drm+1}
- skewtab {skew}
- boottrk {fmt.off}
- os 2.2
-end
-'''
- diskdefs+='''diskdef bettercpm-mm-standard-system
- seclen 256
- tracks 40
- sectrk 18
- blocksize 2048
- maxdir 128
- skew 2
- boottrk 2
- os 2.2
-end
-diskdef bettercpm-mm-80t-ds-data
- seclen 512
- tracks 160
- sectrk 10
- blocksize 2048
- maxdir 128
- skew 2
- boottrk 0
- os 2.2
-end
-diskdef bettercpm-ampro-little-board
- seclen 512
- tracks 40
- sectrk 10
- blocksize 2048
- maxdir 64
- skew 0
- boottrk 2
- os 2.2
-end
-diskdef bettercpm-ampro-little-board-ds
- seclen 512
- tracks 80
- sectrk 10
- blocksize 2048
- maxdir 128
- skew 0
- boottrk 2
- os 2.2
-end
-'''
- (out/'diskdefs').write_text(diskdefs)
+ (out/'diskdefs').write_text(disk_definition(fmt))
  simulator=args.simulator.expanduser().resolve()
  if not simulator.is_file():raise SystemExit(f'missing cpmsim simulator: {simulator}')
  (out/'launch-z80pack.command').write_text('#!/bin/sh\ncd -- "$(dirname -- "$0")" || exit 1\nPATH="'+str(simulator.parent/'srctools')+':$PATH"\nexport PATH\nexec "'+str(simulator)+'" -z -d "$PWD/disks" "$@"\n')

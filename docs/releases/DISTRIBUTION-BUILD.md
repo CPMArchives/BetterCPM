@@ -106,3 +106,19 @@ The introductory banner belongs to `VER.COM`. Resident `VER /BANNER` uses the
 existing `VER: Use :VER.` feature hint. The script explicitly invokes
 `:VER /BANNER`, avoiding dependence on automatic handoff. The banner change
 leaves BIOS and BDOS sizes unchanged and preserves the RCP rounded allocation.
+
+
+### ED integration and cpmsim base media
+
+ED is built by `tools/build_ed.py` as `build/utilities/ED.COM`. The development
+alias `build/ed-development/EDDEV.COM` has identical bytes; native ED qualification
+checks both against ZSM4/LINK output. The System Disk manifest installs ED on
+both targets, and both boot checks execute `ED /VER` from the constructed disk.
+
+For cpmsim, the isolated distribution build requests `--system-tracks-only`
+from `tools/build_z80pack_image.py`. This supplies reserved system records and
+matching disk definitions without first packing the unrelated development/test
+file inventory into the small disk. The distribution builder still creates and
+validates the complete filesystem solely from the authoritative manifest.
+The ordinary cpmsim development disk keeps its existing test inventory; ED is
+installed by isolated ED campaigns and by the distribution builder.
