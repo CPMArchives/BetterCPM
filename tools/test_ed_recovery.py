@@ -13,6 +13,8 @@ def main():
             while c.mem[i]!=36:out.append(c.mem[i]);i+=1
             return 0
         if c.c==16:assert c.de==s['FS_WORK'];return 255
+        if c.c==1:return 13
+        if c.c==2:out.append(c.e);return 0
         if c.c in (14,32,26):return 0
         raise AssertionError(('destructive/unexpected BDOS',c.c))
     c.port_read=io
@@ -31,6 +33,12 @@ def main():
     out.clear();ops.clear();c.a=2
     assert call('FD_FATAL')==(True,1) and c.mem[s['FD_STATUS']]==2
     assert [n for n,_ in ops]==[14,32,16,9,14,32,26]
+    out.clear();ops.clear();c.mem[s['FQ_STAGE']]=1;c.mem[s['FP_STEP']]=1;c.mem[s['FS_RO']]=128;c.a=255
+    assert call('FD_ACTIONERR')==(True,1)
+    assert bytes(out)==b'\r\nBdos Err On A: File R/O\r\n'
+    assert sum(n==1 for n,_ in ops)==1 and not any(n in (16,19,23) for n,_ in ops)
+    out.clear();ops.clear();c.mem[s['FS_RO']]=0;c.a=255
+    assert call('FD_ACTIONERR')==(True,255) and not ops
     print('PASS: stock setup diagnostics, NEW/RO notices, failed recovery close and caller DU/DMA exit')
 
 

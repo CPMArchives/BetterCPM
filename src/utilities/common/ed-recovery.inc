@@ -38,6 +38,17 @@ FD_SETERR:
         JP FD_SETUPERR
 FD_RAW:
         POP AF
+        PUSH AF
+        LD A,(FS_RO)
+        OR A
+        JP Z,FD_UNHANDLED
+        LD A,(FP_STEP)
+        CP 1
+        JP NZ,FD_UNHANDLED
+        POP AF
+        JP FD_ROFAIL
+FD_UNHANDLED:
+        POP AF
         RET
 FD_SETUPERR:
         CP 1
@@ -59,6 +70,7 @@ FD_SYSTEM:
         LD DE,FD_SYS
 FD_ABORT:
         CALL FD_PRINT
+FD_EXIT:
         LD A,(EI_CDRV)
         LD (FQ_DRIVE),A
         LD A,(EI_CUSR)
@@ -66,6 +78,21 @@ FD_ABORT:
         LD A,1
         SCF
         RET
+FD_ROFAIL:
+        LD DE,FD_BDOS
+        CALL FD_PRINT
+        LD A,(EI_SDRV)
+        ADD A,'A'
+        LD E,A
+        LD C,2
+        CALL 5
+        LD DE,FD_FILE_RO
+        CALL FD_PRINT
+        LD C,1
+        CALL 5
+        LD DE,FD_NEWLINE
+        CALL FD_PRINT
+        JP FD_EXIT
 FD_PRINT:
         LD C,9
         JP 5
@@ -75,3 +102,6 @@ FD_EXISTS: DB 'FILE EXISTS, ERASE IT',13,10,'$'
 FD_SYS: DB '"SYSTEM" FILE NOT ACCESSIBLE',13,10,'$'
 FD_DISK: DB 'DISK OR DIRECTORY FULL',13,10,'$'
 FD_STATUS: DB 0
+FD_BDOS: DB 13,10,'Bdos Err On $'
+FD_FILE_RO: DB ': File R/O$'
+FD_NEWLINE: DB 13,10,'$'

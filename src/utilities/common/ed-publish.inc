@@ -27,6 +27,9 @@ FP_COMMIT:
         JP Z,FP_FAIL
         LD A,1
         LD (FP_STEP),A
+        LD A,(FS_RO)
+        OR A
+        JP NZ,FP_PROTECT          ; avoid a host BDOS reboot before owner exits
         CALL FP_NAMES
         LD HL,EI_FCB
         LD DE,FP_RENAME
@@ -87,6 +90,10 @@ FP_NAMES:
         LDIR
         RET
 FP_FAIL:
+        SCF
+        RET
+FP_PROTECT:
+        LD A,255
         SCF
         RET
 FP_EARLY:
