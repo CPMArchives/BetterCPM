@@ -344,3 +344,39 @@ Setup returns diagnostic categories and raw status to its future command-loop
 owner. It does not yet print those diagnostics, close/publish output, clean up
 on quit/restart, or restore the required exit DU. Those operations and their
 failure behavior remain pending, along with the S1/Close compatibility audit.
+
+## Close and publication primitives — 2026-10-15
+
+`ed-publish.inc` now closes finalized work output, renames the source to BAK
+in its source DU, then renames $$$ to the original filename in the output DU.
+Both names in each rename FCB carry an explicit drive. A live split-drive
+BetterCP/M run failed its final rename with an implicit new-name drive; explicit
+binding passes on both systems and avoids relying on that default resolution.
+
+The reserved S1 byte is zeroed before Close. The unused padding count remains
+in EW_PAD rather than being published as ISIS-II metadata. This produces stock
+CP/M's record-aligned exported output under BetterCP/M without changing BDOS.
+The general BDOS treatment of reserved S1 remains a separate validation issue.
+
+The primitive records completed phases and refuses repeated publication after
+an attempt. On a failed close or rename it returns the raw status without
+attempting rollback or continuing to the next mutation. This is an internal
+boundary, not yet the final user-visible recovery policy; stock DRI source
+does not inspect rename return statuses, so failure compatibility still needs
+explicit qualification before the lifecycle owner is finalized.
+
+- `tools/test_ed_publish.py`: exact close/rename order, source/output DU binding,
+  S1 normalization, pre-finalization rejection, repeated-attempt rejection and
+  file preservation at each injected failure boundary.
+- `tools/qualify_ed_lifecycle.py`: a test-only editor loop runs real new,
+  existing and split-drive setup/save/publication on stock CP/M and BetterCP/M.
+  It verifies exact output records and original backup text. Evidence:
+  `build/ed-development/lifecycle/run-iaqj1itj` (stock),
+  `build/ed-development/lifecycle/run-6tc8nlvk` (BetterCP/M).
+  BetterCP/M invocation requires `--better --diskdefs PATH`.
+- ED regressions pass; native ZSM4/LINK and cross builds match at **5,053 bytes**.
+
+EDTEST.COM is generated only inside the isolated qualification directory. It
+is not ED.COM and does not establish final diagnostics, exit DU, quit/restart,
+recovery, protected-source behavior or Model 4 qualification. The public
+development entry and System Disk planned status remain unchanged.
