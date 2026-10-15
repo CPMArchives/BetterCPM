@@ -2172,6 +2172,11 @@ For compatibility, counted `J` retains a DRI ED quirk that can duplicate text
 between iterations. Use one `J` operation at a time when you want each operation
 to start with fresh movement state.
 
+For `M`, counts of 0, 1 or an omitted count repeat until a command fails or
+you interrupt. A larger count runs that many iterations, then reports the
+historical `#` break. Macro bodies form a continuous command stream; terminate
+inserted/search strings with Ctrl-Z. Macros cannot nest.
+
 Enter `E`, `H`, `O` and `Q` as standalone commands, without numeric counts or
 other commands on the same line. `H` saves; `O` and `Q` abandon changes. They are
 not interchangeable ways to leave the editor. `Q` asks the historical

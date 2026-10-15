@@ -3,14 +3,15 @@
 from test_ed_buffer import context
 
 
-def setup(source,editing=b'',read_error=False,write_error=False):
-    c,s,call,state,run=context(1024);reads=0;writes=[];dma=0;calls=[]
+def setup(source,editing=b'',read_error=False,write_error=False,execution_limit=200000):
+    c,s,call,state,run=context(1024,execution_limit=execution_limit);reads=0;writes=[];dma=0;calls=[]
     padded=source+b'\x1a'*(128-len(source)%128)
     records=[padded[i:i+128] for i in range(0,len(padded),128)]
     c.mem[5:8]=bytes((0xdb,254,0xc9))
     def io(port):
         nonlocal reads,dma
         calls.append(c.c)
+        if c.c==11:return 0
         if c.c==32:assert c.e in (3,7);return 0
         if c.c==26:dma=c.de;return 0
         if c.c==20:
