@@ -114,6 +114,7 @@ FS_TEMP:
         LD A,(EI_OUSR)
         CALL EW_INIT
         CALL EF_INIT
+        CALL FP_INIT
         XOR A
         RET
 FS_SRC:
