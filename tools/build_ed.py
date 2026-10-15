@@ -11,7 +11,7 @@ BUILD=ROOT/'build/ed-development'
 def expanded_source():
     text=(ROOT/'src/utilities/ed.mac').read_text()
     text=text.replace('; @ed-invocation@',(ROOT/'src/utilities/common/ed-invocation.inc').read_text())
-    for part in ('buffer','command','lines','type','input','console','source','append','output','write','finish','files','publish','lifecycle','recovery','find','substitute','juxtapose','autoscan','macro','library'):
+    for part in ('buffer','command','lines','type','input','console','source','append','output','write','finish','files','publish','lifecycle','recovery','find','substitute','juxtapose','autoscan','macro','library','transfer'):
         text=text.replace('; @ed-'+part+'@',(ROOT/'src/utilities/common'/('ed-'+part+'.inc')).read_text())
     return expand_versions(text)
 

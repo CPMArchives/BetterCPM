@@ -37,6 +37,7 @@ ED_STAGE: DB 'ED development front end: editing engine not yet available.',13,10
 ; @ed-autoscan@
 ; @ed-macro@
 ; @ed-library@
+; @ed-transfer@
 ; @utility-version ED@
         DS 128
 ED_STACK:

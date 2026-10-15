@@ -1,0 +1,54 @@
+{
+  "same-O": {
+    "missing_R": false,
+    "files": {
+      "a:CASE.TXT": "6c696e65206f6e650d0a6c696e65206f6e650d0a726573740d0a",
+      "a:CASE.BAK": "6c696e65206f6e650d0a726573740d0a",
+      "a:CASE.$$$": null,
+      "a:X$$$$$$$.LIB": null,
+      "b:CASE.TXT": null,
+      "b:CASE.BAK": null,
+      "b:CASE.$$$": null,
+      "b:X$$$$$$$.LIB": null
+    }
+  },
+  "same-H": {
+    "missing_R": false,
+    "files": {
+      "a:CASE.TXT": "6c696e65206f6e650d0a6c696e65206f6e650d0a726573740d0a",
+      "a:CASE.BAK": "6c696e65206f6e650d0a726573740d0a",
+      "a:CASE.$$$": null,
+      "a:X$$$$$$$.LIB": null,
+      "b:CASE.TXT": null,
+      "b:CASE.BAK": null,
+      "b:CASE.$$$": null,
+      "b:X$$$$$$$.LIB": null
+    }
+  },
+  "split-O": {
+    "missing_R": false,
+    "files": {
+      "a:CASE.TXT": null,
+      "a:CASE.BAK": "6c696e65206f6e650d0a726573740d0a",
+      "a:CASE.$$$": null,
+      "a:X$$$$$$$.LIB": "",
+      "b:CASE.TXT": "004c49422020202020436c696e65206f6e650d0a726573740d0a",
+      "b:CASE.BAK": null,
+      "b:CASE.$$$": null,
+      "b:X$$$$$$$.LIB": null
+    }
+  },
+  "split-H": {
+    "missing_R": true,
+    "files": {
+      "a:CASE.TXT": "6c696e65206f6e650d0a726573740d0a",
+      "a:CASE.BAK": null,
+      "a:CASE.$$$": null,
+      "a:X$$$$$$$.LIB": null,
+      "b:CASE.TXT": null,
+      "b:CASE.BAK": "6c696e65206f6e650d0a726573740d0a",
+      "b:CASE.$$$": null,
+      "b:X$$$$$$$.LIB": null
+    }
+  }
+}

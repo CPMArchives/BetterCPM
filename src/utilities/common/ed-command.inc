@@ -3,6 +3,7 @@
 ; Commands before an error remain applied. A/N use the initialized source;
 ; W/N use initialized work output. Other initial commands use memory/console.
 EC_INIT:
+        CALL GX_INIT
         XOR A
         LD (EC_UPPER),A
         LD (ET_COL),A
@@ -27,6 +28,7 @@ EC_EXEC:
         LD (EC_PTR),HL
         LD A,B
         LD (EC_LEFT),A
+        LD (EC_SIZE),A
 EC_NEXT:
         LD A,(GM_ACTIVE)
         OR A
@@ -35,6 +37,8 @@ EC_NEXT:
         OR A
         RET Z
 EC_MACNEXT:
+        LD A,(EC_LEFT)
+        LD (EC_ATSTART),A
         CALL EC_GET
         LD (EC_WHERE),A
         CP 'I'
@@ -105,6 +109,8 @@ EC_DISP:
         LD (EC_NEG),A               ; DRI zero distance implies backward
 EC_SELECT:
         LD A,(EC_CMD)
+        CP 13
+        JP Z,EC_RETURN
         CP 'F'
         JP Z,EC_FIND
         CP 'S'
@@ -117,6 +123,8 @@ EC_SELECT:
         JP Z,EC_MACRO
         CP 'R'
         JP Z,EC_LIBRARY
+        CP 'X'
+        JP Z,EC_XCMD
         CP 'W'
         JP Z,EC_WRITE
         CP 'A'
@@ -164,6 +172,27 @@ EC_MACRO:
         JP EC_NEXT
 EC_LIBRARY:
         CALL GR_RUN
+        RET C
+        JP EC_NEXT
+EC_XCMD:
+        CALL GX_RUN
+        RET C
+        JP EC_NEXT
+EC_RETURN:
+        LD A,(GM_ACTIVE)
+        OR A
+        JP NZ,EC_NEXT
+        LD A,(EC_SIZE)
+        LD B,A
+        LD A,(EC_ATSTART)
+        CP B
+        JP NZ,EC_NEXT            ; CR is move/type only as the first command
+        CALL EL_MOVE
+        LD HL,1
+        LD (EC_COUNT),HL
+        XOR A
+        LD (EC_NEG),A
+        CALL ET_TYPE
         RET C
         JP EC_NEXT
 EC_APP:
@@ -338,6 +367,8 @@ EC_PTR: DW 0
 EC_IOERR: DB 0
 EC_RAW: DB 0
 EC_PREFIX: DB 0
+EC_SIZE: DB 0
+EC_ATSTART: DB 0
 EC_LEFT: DB 0
 EC_COUNT: DW 0
 EC_NEG: DB 0

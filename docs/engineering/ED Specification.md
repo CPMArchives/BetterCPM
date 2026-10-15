@@ -643,6 +643,15 @@ the BetterCP/M implementation shall reproduce its observable naming/location/lif
 
 Its internal implementation need not match DRI.
 
+Approved compatibility exception: fix DRI's split-restart transfer bugs rather
+than reproduce corrupted text, a lost transfer lookup or orphaned files.
+An active transfer remains bound to the DU where its first X created it across
+O/H, even when H swaps source/output DUs. Bare R reads that bound file and its
+preserved pending bytes. Zero X clears the active transfer; normal or fatal
+exit removes it from its bound DU. A subsequent new transfer binds to the
+then-current source DU. The pinned DRI failure states are retained as evidence,
+not as the required BetterCP/M output for these cases.
+
 ---
 
 ## 31. Internal Work-File Locations

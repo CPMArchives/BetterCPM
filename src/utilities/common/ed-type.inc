@@ -1,6 +1,9 @@
 ; T selects the same signed line range as L, but restores the cursor before
 ; output. Logical byte lookup crosses the gap without flattening the buffer.
 ET_TYPE:
+        CALL ET_SELECT
+        JP ET_READY
+ET_SELECT:
         LD HL,(EB_FRONT)
         LD (ET_ORIG),HL
         CALL EL_MOVE
@@ -18,13 +21,15 @@ ET_RESTORE:
         LD DE,(ET_ORIG)
         OR A
         SBC HL,DE
-        JP Z,ET_READY
+        JP Z,ET_RREADY
         JP C,ET_RIGHT
         CALL EB_LEFT
         JP ET_RESTORE
 ET_RIGHT:
         CALL EB_RIGHT
         JP ET_RESTORE
+ET_RREADY:
+        RET
 ET_READY:
         LD HL,(EB_BASE)
         LD (ET_LINE),HL

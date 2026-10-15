@@ -15,7 +15,7 @@ def main():
     work=Path(tempfile.mkdtemp(prefix='run-',dir=parent));binary=build_testloop(work)
     template=ROOT/'build/z80pack/disks/library/BetterCPM-Distribution-z80pack-332K.dsk'
     body=b'Original in user seven\r\n'
-    for case in ('same-drive','split','head','quit','library'):
+    for case in ('same-drive','split','head','quit','library','transfer'):
         here=work/case;here.mkdir();disks=here/'disks';disks.mkdir();shutil.copy2(args.diskdefs,here/'diskdefs')
         for drive in ('a','b'):shutil.copy2(template,disks/f'drive{drive}.dsk')
         def tool(*cmd):return subprocess.run(cmd,cwd=here,check=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE).stdout
@@ -38,6 +38,7 @@ def main():
         outdrive='a' if case=='same-drive' else 'b'
         commands=[(f'EDTEST A7:CASE.TXT {outdrive.upper()}19:\r'.encode(),b'*',10),
                   (b'iNEW\x1a\r',b'*',10)]
+        if case=='transfer':commands[1:]=[(b'#a\r',b'*',10),(b'Bx-Br\r',b'*',10)]
         if case=='library':
             commands[1:1]=[(b'rB19:header.lib\r',b'*',10),(b'r19:header.lib\r',b'*',10),(b'rdefault\r',b'*',10)]
         if case=='quit':
@@ -58,7 +59,9 @@ def main():
             assert get('b',19,'CASE.BAK')==b'NEW'+body
         else:
             prefix=b'from B19 from A19 from A7 ' if case=='library' else b''
-            assert get(outdrive,19,'CASE.TXT')==prefix+b'NEW'+body
+            expected=body+body if case=='transfer' else prefix+b'NEW'+body
+            assert get(outdrive,19,'CASE.TXT')==expected
+            assert get('a',7,'X$$$$$$$.LIB') is None
             assert get('a',7,'CASE.BAK')==body and get('a',7,'CASE.TXT') is None
     print(f'PASS: A7/A19/B19 save, split H, caller-DU Q, library DU/default resolution, exit prompts and user-zero sentinels; {work}')
 

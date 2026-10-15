@@ -2207,6 +2207,15 @@ location names the caller’s drive and the specified user. Library reads do not
 accept ranges, wildcards or lists. `X` retains ED’s separate temporary-library
 facility; it is not a general copy command.
 
+Bare `R` reads the transfer library, including its pending buffered text.
+For historical compatibility, uppercase `R` translates disk-record text but
+copies the pending transfer tail unchanged.
+
+Transfers remain available across `O` and `H`, including split-DU restarts.
+An active transfer stays in the DU where it was created until `0X` or exit
+cleans it up. This fixes DRI bugs that could corrupt pending text, lose the
+transfer lookup or leave an orphan transfer file after a split-drive restart.
+
 ##### Saving, backups and protection
 
 For a same-DU edit of `B7:NOTES.TXT`, the work file is `B7:NOTES.$$$`. A successful
