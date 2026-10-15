@@ -170,14 +170,26 @@ ET_COLUMN:
         INC A
         LD (ET_COL),A
 ET_EMIT:
+        LD A,(ET_MUTE)
+        OR A
+        JP NZ,ET_RETURN
         LD C,2
         CALL 5
+ET_RETURN:
         POP HL
         POP DE
         POP BC
         POP AF
         RET
 ET_NUMBER:
+        CALL ET_DECIMAL
+        LD A,':'
+        CALL ET_TTY
+        LD A,' '
+        CALL ET_TTY
+        LD A,(ET_LABEL)
+        JP ET_TTY
+ET_DECIMAL:
         LD HL,(ET_LINE)
         LD DE,ET_POWERS
         LD (ET_DIV),DE
@@ -217,11 +229,7 @@ ET_NONZERO:
 ET_DIGOUT:
         CALL ET_TTY
         DJNZ ET_DIGIT
-        LD A,':'
-        CALL ET_TTY
-        LD A,' '
-        CALL ET_TTY
-        JP ET_TTY
+        RET
 ET_POWERS: DW 10000,1000,100,10,1
 ET_ORIG: DW 0
 ET_PTR: DW 0
@@ -231,3 +239,7 @@ ET_DIV: DW 0
 ET_PREV: DB 0
 ET_COL: DB 0
 ET_LEAD: DB 0
+
+ET_MUTE: DB 0
+
+ET_LABEL: DB 32

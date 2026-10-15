@@ -175,3 +175,36 @@ change. No sleeps or reduced interruption behavior are used to hide it.
 The interactive console, insert-mode editing controls, 0V report, file streaming
 and the remaining accepted commands still require implementation. EDDEV's
 public entry remains an explicit development front end, with no file writes.
+
+## Interactive insertion and console turns — 2026-10-15
+
+`ed-input.inc` now implements interactive insertion, including CR/LF, case
+translation, NUL, tab/control bytes, Ctrl-L, Ctrl-U, Ctrl-X, Ctrl-R,
+backspace and rubout. Partial insertion survives buffer exhaustion, and the
+error identifies the actual failing byte. `ed-console.inc` owns one console
+turn: numbered prompts, buffered command entry, interactive insertion,
+blank-line movement/type, errors and 0V memory reporting. Standalone E/H
+return file-action requests; O/Q first require the historical Y/N response.
+These requests do not perform file operations. The caller must eventually
+own the streams, commits and command loop.
+
+Qualification:
+
+- `tools/qualify_ed_input.py`: **16** saved-text workflows match the pinned
+  stock ED on stock CP/M. Evidence: `build/ed-development/input/run-6to4ayir`.
+  Retype/backspace input is paced against observed output so later keystrokes
+  do not spuriously interrupt the reference's internal T operation.
+- `tools/test_ed_input.py`: insertion controls, boundary backspace, partial
+  overflow, uppercase mode and control-byte preservation.
+- `tools/test_ed_console.py`: prompts, action requests, confirmations,
+  memory-report formatting, blank-line behavior and lowercase overflow
+  diagnostics. Only console BDOS calls are permitted by the test stub.
+- Existing invocation, buffer and line/display checks pass. Native ZSM4/LINK
+  and cross builds produce **3,333 identical bytes**.
+
+This qualifies the in-memory routines and console turns, not complete file
+editing. The final buffer allocation and exact 0V capacity still depend on the
+file engine. Rubout at an empty buffer and other boundary diagnostics need
+broader reference coverage. Source/work-file streaming, remaining commands,
+commit/recovery and the previously recorded S1/Close compatibility issue remain
+open. EDDEV remains unshipped and its public entry does not open files.

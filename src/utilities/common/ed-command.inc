@@ -5,6 +5,7 @@ EC_INIT:
         XOR A
         LD (EC_UPPER),A
         LD (ET_COL),A
+        LD (ET_MUTE),A
         INC A
         LD (EC_VERIFY),A
         RET
@@ -70,6 +71,7 @@ EC_DISP:
         LD (EC_WHERE),A
         CALL EI_UP
         LD (EC_CMD),A
+        LD (EC_WHERE),A
         LD HL,(EC_COUNT)
         LD A,H
         OR L
@@ -182,6 +184,7 @@ EC_INLOOP:
         OR A
         JP Z,EC_EOL
         CALL EC_GET
+        LD (EC_WHERE),A
         CP 26
         JP Z,EC_NEXT
         OR A
@@ -194,22 +197,31 @@ EC_INLOOP:
         LD A,C
         CALL NZ,EI_UP
         LD C,A
+        LD (EC_WHERE),A
         CALL EB_PUT
         JP C,EC_FULL
         JP EC_INLOOP
 EC_CRLF:
         LD C,13
+        LD A,C
+        LD (EC_WHERE),A
         CALL EB_PUT
         JP C,EC_FULL
         LD C,10
+        LD A,C
+        LD (EC_WHERE),A
         CALL EB_PUT
         JP C,EC_FULL
         JP EC_INLOOP
 EC_EOL:
         LD C,13
+        LD A,C
+        LD (EC_WHERE),A
         CALL EB_PUT
         JP C,EC_FULL
         LD C,10
+        LD A,C
+        LD (EC_WHERE),A
         CALL EB_PUT
         JP C,EC_FULL
         JP EC_NEXT
