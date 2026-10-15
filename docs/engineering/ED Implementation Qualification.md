@@ -909,3 +909,29 @@ keyboard polls. This is test pacing, not an editor behavior change.
 All 25 ED module regression scripts pass after the parser changes. Native
 ZSM4/LINK and cross assembly match at **8,510 bytes**. Final publication-error,
 platform and distribution qualification remain outstanding.
+
+
+## Failed final work close
+
+The lifecycle owner previously returned a raw publication error when the first
+work-file close failed. The real entry then exited without the expected
+recovery diagnostic or caller-DU/DMA cleanup. DRI ED.PLM FINIS explicitly checks
+CLOSE for FFH and calls FERR, which attempts CLOSE again before reporting
+`DISK OR DIRECTORY FULL` and rebooting. ED now routes FP_STEP=0 failures through
+that existing recovery path. RO handling and later rename failures remain
+separate; this change does not add rollback or repeat the rename sequence.
+
+`tools/test_ed_recovery.py` checks the recovery close, diagnostic, captured
+status and caller-DU/DMA restoration, with no delete/rename calls. The live
+fault campaign now injects a one-shot FFH final-close failure on a copied
+BetterCP/M disk. The recovery close succeeds: original text remains unchanged,
+complete edited output remains under CASE.$$$ with ordinary record padding,
+and no CASE.BAK is created. Existing read/second-record write fault cases pass.
+Evidence: `build/ed-development/faults/run-cbna38p7`.
+
+This is an injected BDOS-status test, not a claim that real disk-full and media
+failures are fully qualified. Later rename failure policy remains outstanding.
+
+Ordinary real-entry E/Q/O/H and split-DU sessions still pass on BetterCP/M:
+`build/ed-development/lifecycle/run-6o3alfd3`. Native/cross builds match at
+**8,521 bytes**.

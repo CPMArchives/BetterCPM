@@ -52,7 +52,7 @@ LT_ERROR: DB 'LIFECYCLE FAILED',13,10,'$'
         assert fault is None
         source=production
     if fault:
-        assert fault in (20,21)
+        assert fault in (16,20,21)
         source=source.replace('LT_LOOP:\n', '        CALL FZ_INSTALL\nLT_LOOP:\n',1)
         source=source.replace('LT_READY:\n        JP 0','LT_READY:\n        LD HL,(FZ_JUMP+1)\n        LD (6),HL\n        JP 0',1)
         shim='''
@@ -78,6 +78,16 @@ FZ_FAIL:
         RET
 FZ_COUNT: DB ALLOW_RECORDS
 '''
+        if fault==16:
+            shim=shim.replace('FZ_FAIL:\n        LD A,2\n        RET','''FZ_FAIL:
+        LD A,(FZ_ONCE)
+        OR A
+        JP Z,FZ_JUMP
+        XOR A
+        LD (FZ_ONCE),A
+        LD A,255
+        RET
+FZ_ONCE: DB 1''')
         shim=shim.replace('FAULT_FUNCTION',str(fault)).replace('ALLOW_RECORDS',str(int(fault==21)))
         source=source.replace('; ED invocation only:',shim+'\n; ED invocation only:',1)
     source=source.replace('        CSEG\n        .PHASE  ','        ASEG\n        ORG     ').replace('        .DEPHASE\n','')
