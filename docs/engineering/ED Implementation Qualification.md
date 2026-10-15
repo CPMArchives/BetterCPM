@@ -723,3 +723,71 @@ with an active X transfer's pending bytes remains part of the X implementation.
 X transfer output/pending-tail and lifetime handling, extended R diagnostic
 boundaries, remaining page/delay/return forms and release integration remain
 pending. EDDEV is still not distributed.
+
+## X transfer foundation and bare-R tail — 2026-10-15
+
+`ed-transfer.inc` now copies forward line ranges without moving the editing
+cursor, appending to X$$$$$$$.LIB in the source DU. It creates the transfer on
+first use; zero X clears it and resets pending bytes. Full 128-byte records
+are deferred until the next byte arrives, as in DRI PUTXFER. Write/create
+errors set the shared I/O status for fatal recovery. Transfer cleanup is
+called during normal/fatal exit preparation.
+
+Bare R closes an active transfer FCB, reads its disk records, then inserts its
+pending bytes. The pending tail is copied verbatim: unlike READFILE's disk
+bytes, it is not case-translated by uppercase R. This historical record-boundary
+quirk is retained in code comments and tests. The shared nonmoving range
+selector was factored from T; seven stock T display comparisons still pass.
+
+- `tools/qualify_ed_transfer.py`: **11** stock-ED text/cursor workflows pass,
+  including append/clear, repeated R, nonmoving ranges and disk/pending-tail
+  case behavior. Evidence: `build/ed-development/transfer/run-ubnnqqy6`.
+- `tools/test_ed_transfer.py`: deferred writes, raw controls in pending bytes,
+  cleanup, write failure and preserved editing cursor/text.
+- The live DU campaign includes X/R followed by an A7-to-B19 save and verifies
+  transfer cleanup in A7. ED regressions pass; native/cross builds match at
+  **8,050 bytes**.
+
+Transfer lifetime across O/H, especially a split-DU H that changes the source
+location, still requires an oracle campaign. The current active transfer keeps
+its creation-DU binding; DRI's source-disk selection during subsequent transfer
+operations must be audited before freezing that behavior. Existing-file and
+protection/error cases also remain. This is an internal foundation, not a claim
+that X's full lifecycle or ED.COM is complete.
+
+## Transfer restart fix and numeric Enter — 2026-10-15
+
+The pinned DRI transfer-lifetime campaign reproduced split-drive failures
+twice with identical file snapshots: O inserted corrupted pending bytes and
+left an orphan source-drive transfer file; H made bare R miss the transfer.
+Same-DU O/H preserved data. Evidence:
+`build/ed-development/transfer-lifetime/run-kq0fu2ha`, repeated at
+`run-a8jhkf5f`. `tools/fixtures/ed-transfer-lifetime-dri.json` records those
+observations against the already pinned ED binary and stock disk hashes.
+
+The user approved fixing these bugs and documenting the exception. Existing
+independent transfer storage and creation-DU binding provide the safe behavior:
+O/H retain the file and pending bytes, bare R uses that binding, and exit
+cleanup targets the bound DU. Zero X clears the active transfer before a later
+new X binds to the current source. Source comments, the accepted spec and user
+guide now state this deliberate exception to bug-for-bug DRI compatibility.
+
+`tools/fixtures/ed-transfer-lifetime-safe.json` gives explicit noncorrupt output
+and cleanup expectations for BetterCP/M. The same four-case campaign passes
+the safe expectations on stock CP/M (`run-5d40uhxn`) and BetterCP/M
+(`run-haqci0a2`). Oracle mode continues to compare the original failing states;
+it does not overwrite or normalize them to the approved behavior.
+
+Numeric Enter is also implemented. A first-command count/sign followed by CR
+moves the corresponding line range and types one forward line. Blank Enter
+uses the same path. CR after an earlier command does not become an additional
+movement/type operation; macro stream handling remains separate.
+
+- `tools/test_ed_return.py`: signed/count/zero/blank Enter and ignored trailing
+  CR, with independent output/cursor expectations.
+- `tools/qualify_ed_return.py`: **nine** stock-ED cursor/text workflows pass.
+  Evidence: `build/ed-development/return/run-bvwxcm9_`.
+- ED regressions pass; native ZSM4/LINK and cross builds match at **8,103 bytes**.
+
+P paging, Z timing, extended transfer/error cases, final memory/entry and
+previously listed release qualification remain pending.

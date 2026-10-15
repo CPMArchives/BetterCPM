@@ -65,6 +65,8 @@ FQ_QUIT:
         LD A,(EI_CUSR)
 FQ_LEAVE:
         LD (FQ_USER),A
+        CALL GX_CLEAN
+        LD A,(FQ_USER)
         AND 15
         RLCA
         RLCA

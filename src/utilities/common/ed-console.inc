@@ -28,7 +28,7 @@ EU_NORMAL:
         OR A
         JP NZ,EU_RUN
         LD HL,EU_BLANK
-        LD B,2
+        LD B,1
         JP EU_EXEC
 EU_RUN:
         LD B,A
@@ -138,7 +138,7 @@ EU_SAY:
 EU_BREAK: DB 'BREAK "',0
 EU_AT: DB '" AT ',0
 EU_YN: DB '-(Y/N)?',0
-EU_BLANK: DB 'LT'
+EU_BLANK: DB 13
 EU_FLAG: DB 0
 EU_REQ: DB 0
 EU_REPLY: DB 0

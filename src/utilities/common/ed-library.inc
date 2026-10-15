@@ -15,6 +15,7 @@ GR_CASE:
         XOR A
         LD (GR_LEN),A
         LD (GR_DOT),A
+        LD (GR_BARE),A
 GR_COLLECT:
         CALL EC_GET
         LD (EC_WHERE),A
@@ -49,6 +50,9 @@ GR_PARSE:
         LD A,(GR_LEN)
         OR A
         JP NZ,GR_LOCATION
+        LD A,1
+        LD (GR_BARE),A
+        CALL GX_CLOSE
         LD HL,GR_XNAME
         LD DE,EI_TOKEN
         LD BC,13
@@ -56,10 +60,25 @@ GR_PARSE:
         LD A,1
         LD (GR_DOT),A
 GR_LOCATION:
+        ; Intentional DRI split-restart fix: bare R uses the active transfer's
+        ; creation DU rather than the possibly swapped current source DU.
+        LD A,(GR_BARE)
+        OR A
+        JP Z,GR_DEFAULT
+        LD A,(GX_ACTIVE)
+        OR A
+        JP Z,GR_DEFAULT
+        LD A,(GX_DRIVE)
+        LD (EI_DRV),A
+        LD A,(GX_USER)
+        LD (EI_USR),A
+        JP GR_BASE
+GR_DEFAULT:
         LD A,(EI_SDRV)
         LD (EI_DRV),A
         LD A,(EI_SUSR)
         LD (EI_USR),A
+GR_BASE:
         CALL EI_LOCREST
         JP C,EC_BAD
         LD A,(EI_QUAL)
@@ -123,7 +142,7 @@ GR_RECORD:
         LD C,20
         CALL 5
         OR A
-        RET NZ
+        JP NZ,GR_DONE
         XOR A
         LD (GR_POS),A
 GR_BYTE:
@@ -151,6 +170,9 @@ GR_BYTE:
         JP Z,GR_RECORD
         JP GR_BYTE
 GR_DONE:
+        LD A,(GR_BARE)
+        OR A
+        JP NZ,GX_TAIL
         XOR A
         RET
 GR_LONG:
@@ -169,6 +191,7 @@ GR_UPPER: DB 0
 GR_DRIVE: DB 0
 GR_USER: DB 0
 GR_POS: DB 0
+GR_BARE: DB 0
 GR_SAVED: DS 36
 GR_FCB: DS 36
 GR_DATA: DS 128
