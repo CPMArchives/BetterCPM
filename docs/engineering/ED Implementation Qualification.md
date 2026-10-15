@@ -380,3 +380,57 @@ EDTEST.COM is generated only inside the isolated qualification directory. It
 is not ED.COM and does not establish final diagnostics, exit DU, quit/restart,
 recovery, protected-source behavior or Model 4 qualification. The public
 development entry and System Disk planned status remain unchanged.
+
+## Authorized lifecycle actions — 2026-10-15
+
+`ed-lifecycle.inc` now consumes authorized E/H/O/Q requests from the console.
+E drains and publishes output, then selects the output DU for its caller.
+H drains/publishes, swaps the complete source/output DUs, reopens and resets
+the text buffer. O reopens the original source/output pair without publishing
+the abandoned edit. H/O preserve global U and verification mode. Q deletes
+the current work file and selects the captured caller DU. O/Q authorization
+remains in EU_READ; no extra prompt is introduced by the lifecycle routines.
+
+The live campaign now covers eight cases: new/existing/split saves, existing
+and new-file Q, O, H, and split-DU H. The file-state and output expectations
+pass against pinned DRI ED on stock CP/M and the new test loop on stock CP/M
+and BetterCP/M. U/-V before O/H and lowercase insertion after restarting check
+that modes survive. Evidence:
+
+- `build/ed-development/lifecycle/run-rs2o2o6h` (DRI oracle);
+- `build/ed-development/lifecycle/run-9u9ew32i` (BetterCP/M);
+- `build/ed-development/lifecycle/run-zp340gus` (new code on stock CP/M,
+  preceding the added mode-preservation assertion).
+
+Use `tools/qualify_ed_lifecycle.py --oracle` for pinned DRI comparison or
+`--better --diskdefs PATH` for BetterCP/M. ED regressions pass; native and cross
+builds match at **5,184 bytes**.
+
+These routines select exit DU but do not implement final platform warm-return
+mechanics: the stock-CP/M test loop returns to A after split E, while DRI ED
+updates its saved CCP drive and returns to B. This remains an explicit open
+integration item. Error diagnostics/recovery policy, protected-source cases,
+full user-area lifecycle qualification and Model 4 testing remain pending.
+
+## Exit-location integration — 2026-10-15
+
+The lifecycle exit helper now selects the intended full BDOS DU, restores DMA
+to 0080H, and updates the legacy packed CCP boot byte at 0004H. Stock CP/M
+uses that byte on warm return; its user nibble represents 0..15. BetterCP/M's
+full 0..31 user selection is passed separately through BDOS 32 and is not
+truncated to the legacy nibble. E targets output DU; Q targets captured caller
+DU. The caller still performs the actual jump to warm boot.
+
+This closes the previously recorded stock test-loop split-E exit difference:
+the new code now returns to B, as does the DRI oracle. The eight-case live
+lifecycle campaign passes on both stock CP/M and BetterCP/M, including mode
+preservation and split-DU H. Evidence:
+`build/ed-development/lifecycle/run-gq_gj2ua` (stock),
+`build/ed-development/lifecycle/run-bmyjikrr` (BetterCP/M).
+
+`tools/test_ed_exit.py` checks all 512 drive/user combinations, full BDOS user
+selection, packed-byte encoding and DMA restoration. ED regressions pass;
+native ZSM4/LINK and cross builds match at **5,225 bytes**. Live nonzero-user
+and Model 4 return paths, failure exits and final recovery diagnostics remain
+to be qualified. The production entry is still the unshipped development
+front end; these checks exercise the isolated test-only loop.
