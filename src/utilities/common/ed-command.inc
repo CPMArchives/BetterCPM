@@ -70,6 +70,7 @@ EC_NUMLOOP:
         CP '9'+1
         JP C,EC_NUMLOOP
 EC_DISP:
+        LD (EC_RAW),A
         LD (EC_WHERE),A
         CALL EI_UP
         LD (EC_CMD),A
@@ -82,6 +83,8 @@ EC_DISP:
         LD (EC_NEG),A               ; DRI zero distance implies backward
 EC_SELECT:
         LD A,(EC_CMD)
+        CP 'F'
+        JP Z,EC_FIND
         CP 'W'
         JP Z,EC_WRITE
         CP 'A'
@@ -105,6 +108,10 @@ EC_SELECT:
         JP EC_BAD
 EC_WRITE:
         CALL EX_RUN
+        RET C
+        JP EC_NEXT
+EC_FIND:
+        CALL EG_RUN
         RET C
         JP EC_NEXT
 EC_APP:
@@ -267,6 +274,7 @@ EC_FULL:
         RET
 EC_PTR: DW 0
 EC_IOERR: DB 0
+EC_RAW: DB 0
 EC_LEFT: DB 0
 EC_COUNT: DW 0
 EC_NEG: DB 0

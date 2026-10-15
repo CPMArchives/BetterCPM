@@ -38,6 +38,8 @@ def main():
     result,out=turn(b'0V');assert result==(False,0) and out.endswith(b'   56/   64\r\n')
     result,out=turn(b'B');assert result==(False,0)
     result,out=turn(b'');assert result==(False,0) and out.endswith(b'def') and text()[1]==5
+    result,out=turn(b'fmissing')
+    assert result==(False,0) and b'BREAK "#" AT \r\r\n' in out
     result,out=turn(b'i',b'q'*57)
     assert result==(False,0) and b'BREAK ">" AT q\r\n' in out
     assert len(text()[0])==64  # successful bytes survive the overflow
