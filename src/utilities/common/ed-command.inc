@@ -85,6 +85,10 @@ EC_SELECT:
         LD A,(EC_CMD)
         CP 'F'
         JP Z,EC_FIND
+        CP 'S'
+        JP Z,EC_SUB
+        CP 'J'
+        JP Z,EC_JUXT
         CP 'W'
         JP Z,EC_WRITE
         CP 'A'
@@ -112,6 +116,14 @@ EC_WRITE:
         JP EC_NEXT
 EC_FIND:
         CALL EG_RUN
+        RET C
+        JP EC_NEXT
+EC_SUB:
+        CALL GS_RUN
+        RET C
+        JP EC_NEXT
+EC_JUXT:
+        CALL GJ_RUN
         RET C
         JP EC_NEXT
 EC_APP:

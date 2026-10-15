@@ -2168,6 +2168,10 @@ zero does not have one universal meaning. `#` is ED’s large-count notation.
 | `O` | Abandon changes and resume from the original |
 | `Q` | Quit without committing the edit |
 
+For compatibility, counted `J` retains a DRI ED quirk that can duplicate text
+between iterations. Use one `J` operation at a time when you want each operation
+to start with fresh movement state.
+
 Enter `E`, `H`, `O` and `Q` as standalone commands, without numeric counts or
 other commands on the same line. `H` saves; `O` and `Q` abandon changes. They are
 not interchangeable ways to leave the editor. `Q` asks the historical
