@@ -546,3 +546,31 @@ These qualification additions required no production-code changes. The prior
 **5,615-byte** native/cross result still applies. Dynamic attribute changes,
 other publication failures, actual disk exhaustion and Model 4 qualification
 remain open; broader ED commands are still unimplemented.
+
+## Literal F search — 2026-10-15
+
+`ed-find.inc` now implements counted F/f searches in the current buffer.
+Uppercase F uppercases the collected pattern; lowercase f follows global U.
+Text itself is compared literally. Ctrl-Z or CR terminates the string; Ctrl-L
+adds CR/LF, NUL is rejected, and the historical scratch threshold allows 99
+bytes before overflow. Zero count collects without searching; negative
+nonzero count is rejected.
+
+Search scans only the suffix after the editing cursor. A successful match
+moves the cursor through its final byte; repeated matches do not overlap.
+A failed attempt leaves the cursor unchanged, retaining any earlier counted
+matches. Misses return #, with the terminating command character retained for
+the historical BREAK diagnostic. No regex, wildcard or source autoscan is
+introduced by F.
+
+- `tools/qualify_ed_find.py`: **13** pinned stock-ED workflows match text and
+  marker-derived cursor position, including count failure, case, empty pattern,
+  mid-buffer starts, subsequent commands and CR/LF patterns. Evidence:
+  `build/ed-development/find/run-2stdqac_`.
+- `tools/test_ed_find.py`: independent cursor/flag expectations, separators,
+  NUL and exact scratch overflow boundaries, including expanded Ctrl-L.
+- Console checks include the failed-search BREAK diagnostic. Existing ED
+  regressions pass; native ZSM4/LINK and cross builds match at **5,958 bytes**.
+
+N autoscan, S substitution, J juxtaposition and M macros remain unimplemented.
+The search primitive is internal to the unshipped development editor.
