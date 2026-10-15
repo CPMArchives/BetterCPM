@@ -39,6 +39,13 @@ def main():
     assert sum(n==1 for n,_ in ops)==1 and not any(n in (16,19,23) for n,_ in ops)
     out.clear();ops.clear();c.mem[s['FS_RO']]=0;c.a=255
     assert call('FD_ACTIONERR')==(True,255) and not ops
+    # A failed initial work close is FINIS -> FERR: retry close once,
+    # diagnose, then restore the caller DU/DMA without any renames.
+    out.clear();ops.clear();c.mem[s['FP_STEP']]=0;c.a=255
+    assert call('FD_ACTIONERR')==(True,1)
+    assert bytes(out)==b'DISK OR DIRECTORY FULL\r\n'
+    assert c.mem[s['FD_STATUS']]==255
+    assert [n for n,_ in ops]==[14,32,16,9,14,32,26]
     print('PASS: stock setup diagnostics, NEW/RO notices, failed recovery close and caller DU/DMA exit')
 
 

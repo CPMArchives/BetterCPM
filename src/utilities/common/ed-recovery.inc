@@ -1,5 +1,5 @@
-; Known DRI setup and stream-error UI. Carry A=1 means diagnostic + exit ready.
-; Publication failures are deliberately returned raw for later qualification.
+; Known DRI setup, stream and work-close UI. Carry A=1 means exit ready.
+; Other rename failures are deliberately returned raw for later qualification.
 FD_BEGIN:
         CALL FS_SETUP
         JP C,FD_SETUPERR
@@ -39,6 +39,12 @@ FD_SETERR:
 FD_RAW:
         POP AF
         PUSH AF
+        LD A,(FP_STEP)
+        OR A
+        JP NZ,FD_RENAME
+        POP AF
+        JP FD_FATAL              ; DRI FINIS calls FERR when work close fails
+FD_RENAME:
         LD A,(FS_RO)
         OR A
         JP Z,FD_UNHANDLED
