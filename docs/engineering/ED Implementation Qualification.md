@@ -865,3 +865,47 @@ cases, Model 4 qualification and distribution integration remain outstanding.
 BetterCP/M real-entry evidence: `build/ed-development/lifecycle/run-yzbvar7x`.
 Native ZSM4/LINK and cross assembly match at **8,373 bytes**. All existing
 module regressions pass after entry integration.
+
+
+## Composable memory reports
+
+The initial `0V` implementation returned a private event to the console layer,
+which discarded the remainder of the command line. DRI ED's V branch prints
+its report and continues dispatch. ED now calls the same report formatter from
+the command interpreter and continues normally, including inside an M macro.
+The formatter remains shared; no new command syntax is introduced.
+
+Five pinned-stock-ED comparisons cover `0V2C`, repeated reports and movement,
+a counted macro containing a report, editing after a report and a later invalid
+command. They compare saved text and cursor placement; absolute memory totals
+remain allocation-dependent. `tools/qualify_ed_composition.py` records results.
+Line/console tests also verify report bytes and subsequent operations. Entry,
+invocation, macro and paging/delay regressions pass. Native/cross builds match
+at **8,368 bytes**, five fewer than the preceding stage.
+
+
+## Absolute line references and broader composition audit
+
+The command parser had omitted DRI's numeric trailing colon (`n:`) and leading
+colon (`:n` command range) forms. Both now use the existing global line state,
+including EB_BASE after W, to derive relative direction/distance. Equal-line
+references retain backward/zero semantics; forward leading-colon ranges include
+the target line. Existing line movement/range primitives handle buffer edges.
+No source reread or new disk access is introduced.
+
+- Sixteen pinned-DRI composition cases pass, covering memory reports, absolute
+  forward/backward/equal/out-of-range references, deletion, following commands
+  and macros: `build/ed-development/composition/run-gv32qhjr`.
+- Ten pinned-DRI T display/cursor cases pass, including leading-colon forward,
+  backward and partial-current-line ranges:
+  `build/ed-development/type/run-y4cen3qt`.
+- Independent line tests verify global references with EB_BASE set to 10,
+  representing text already written out of the buffer.
+
+The oracle fixture now separates insertion from the tested command with a B
+prompt barrier, preventing queued test input from interrupting macro/display
+keyboard polls. This is test pacing, not an editor behavior change.
+
+All 25 ED module regression scripts pass after the parser changes. Native
+ZSM4/LINK and cross assembly match at **8,510 bytes**. Final publication-error,
+platform and distribution qualification remain outstanding.

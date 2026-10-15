@@ -2147,6 +2147,7 @@ zero does not have one universal meaning. `#` is ED’s large-count notation.
 | `D` | Delete characters |
 | `K` | Delete lines |
 | `L` | Move by lines |
+| `n:` | Move to absolute line `n` within the buffered text |
 | `T` | Display text lines |
 | `P` | Move and display pages |
 | Enter | Move/type using ED’s carriage-return command |
@@ -2167,6 +2168,12 @@ zero does not have one universal meaning. `#` is ED’s large-count notation.
 | `H` | Save and restart editing from the head |
 | `O` | Abandon changes and resume from the original |
 | `Q` | Quit without committing the edit |
+
+Absolute line references use file line numbers, including lines already written
+out of memory. For example, `3:` moves to line 3, and `:3T` displays from the
+current position through line 3 when that line is ahead. They operate only on
+buffered text; they do not reload earlier text. Commands can follow a reference
+on the same line, such as `3:2C`.
 
 For compatibility, counted `J` retains a DRI ED quirk that can duplicate text
 between iterations. Use one `J` operation at a time when you want each operation

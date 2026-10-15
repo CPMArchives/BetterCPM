@@ -49,6 +49,7 @@ EC_MACNEXT:
         XOR A
         LD (EC_NEG),A
         LD (EC_PREFIX),A
+        LD (EC_ABS),A
         LD HL,1
         LD (EC_COUNT),HL
         LD A,(EC_WHERE)
@@ -59,6 +60,8 @@ EC_MACNEXT:
         LD (EC_PREFIX),A
         CALL EC_GET
 EC_NUMBER:
+        CP ':'
+        JP Z,EC_COLON
         CP '#'
         JP NZ,EC_DIGITS
         LD A,1
@@ -75,9 +78,15 @@ EC_DIGITS:
         PUSH AF
         LD A,1
         LD (EC_PREFIX),A
-        POP AF
+        LD A,(EC_ABS)
+        OR A
+        JP NZ,EC_NUMSET
+        LD A,2
+        LD (EC_ABS),A
+EC_NUMSET:
         LD HL,0
         LD (EC_COUNT),HL
+        POP AF
 EC_NUMLOOP:
         SUB '0'
         LD E,A
@@ -96,7 +105,42 @@ EC_NUMLOOP:
         JP C,EC_DISP
         CP '9'+1
         JP C,EC_NUMLOOP
+        JP EC_DISP
+EC_COLON:
+        LD A,1
+        LD (EC_ABS),A
+        LD (EC_PREFIX),A
+        CALL EC_GET
+        LD HL,0
+        LD (EC_COUNT),HL
+        CP '0'
+        JP C,EC_DISP
+        CP '9'+1
+        JP C,EC_NUMLOOP
 EC_DISP:
+        PUSH AF
+        LD A,(EC_ABS)
+        CP 1
+        JP Z,EC_ABSLEAD
+        CP 2
+        JP NZ,EC_ABSNO
+        POP AF
+        CP ':'
+        JP NZ,EC_DISPATCH
+        CALL EC_RELDIST
+        LD A,'L'
+        JP EC_DISPATCH
+EC_ABSLEAD:
+        CALL EC_RELDIST
+        LD A,(EC_NEG)
+        OR A
+        JP NZ,EC_ABSNO
+        LD HL,(EC_COUNT)
+        INC HL
+        LD (EC_COUNT),HL
+EC_ABSNO:
+        POP AF
+EC_DISPATCH:
         LD (EC_RAW),A
         LD (EC_WHERE),A
         CALL EI_UP
@@ -226,8 +270,31 @@ EC_VCMD:
         LD (EC_VERIFY),A
         JP EC_NEXT
 EC_STATE:
-        LD A,2                      ; caller must format the 0V memory report
-        SCF
+        CALL EU_MEMORY              ; 0V is an ordinary composable command
+        JP EC_NEXT
+; DRI RELDISTANCE: absolute numbers refer to the current global line.
+EC_RELDIST:
+        LD HL,(EC_COUNT)
+        PUSH HL
+        CALL IN_LINE
+        POP HL
+        LD DE,(ET_LINE)
+        OR A
+        SBC HL,DE
+        JP C,EC_RELNEG
+        JP Z,EC_RELNEG
+        XOR A
+        LD (EC_NEG),A
+        LD (EC_COUNT),HL
+        RET
+EC_RELNEG:
+        LD DE,0
+        EX DE,HL
+        OR A
+        SBC HL,DE
+        LD (EC_COUNT),HL
+        LD A,1
+        LD (EC_NEG),A
         RET
 EC_LINES:
         CALL EL_MOVE
@@ -393,3 +460,5 @@ EC_UPPER: DB 0
 EC_TRANS: DB 0
 
 EC_VERIFY: DB 1
+
+EC_ABS: DB 0

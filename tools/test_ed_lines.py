@@ -26,11 +26,22 @@ def main():
     check(b'-T',b'    1:  one\r\n    2:  tw',7)
     check(b'B-V#T',b'one\r\ntwo\r\nthree',0)
     check(b'V#T',b'    1:  one\r\n    2:  two\r\n    3:  three',0)
+    check(b'B3:',b'',10)
+    check(b'1:',b'',0)
+    check(b':2T',b'    1:  one\r\n    2:  two\r\n',0)
+    check(b'2:2C:2T',b'    2:  tw',7)
+    check(b'2:',b'',5)
+    # Absolute references remain global after previously written lines.
+    c.mem[s['EB_BASE']:s['EB_BASE']+2]=(10).to_bytes(2,'little')
+    check(b'12:',b'',10)
+    check(b'10:',b'',0)
+    c.mem[s['EB_BASE']:s['EB_BASE']+2]=(1).to_bytes(2,'little')
     output.clear();ready[0]=True
     assert run(b'T')[0]==(True,ord('#'))
     assert text()[1]==0 and bytes(output)==b'    1:  '
     assert calls[-2:]==[11,1]
-    assert run(b'0V')[0]==(True,2) # console caller formats memory report later
+    check(b'0V2C',b'  497/  512\r\n',2)
+    check(b'0VB0V#C',b'  497/  512\r\n  497/  512\r\n',15)
     c2,s2,_,_,run2=context(64);c2.mem[5:8]=bytes((0xdb,254,0xc9));out=[]
     def io2(port):
         if c2.c==2:out.append(c2.e);return 0

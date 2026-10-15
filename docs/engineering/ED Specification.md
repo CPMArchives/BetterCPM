@@ -433,6 +433,17 @@ No menus, slash-command editor mode, or full-screen interface are added.
 
 The official CP/M 2.2 ED command set shall be reproduced.
 
+Historical absolute line addressing is included. `n:` moves to line `n` by
+converting the global line number to an ordinary relative L operation. A leading
+colon, as in `:nT` or `:nK`, derives the command's direction and distance from the
+current global line number. Forward ranges include the target line; backward
+and equal-line ranges retain the corresponding DRI zero/backward semantics.
+References use the current line including lines already written out of memory,
+and movement remains bounded by the text currently in the buffer. They do not
+implicitly reread previously written text. Numeric parsing retains the ordinary
+16-bit count behavior. Commands may follow `n:` on the same command line.
+
+
 The compatibility target includes the historical commands for:
 
 - append;

@@ -36,6 +36,7 @@ def main():
     result,out=turn(b'H');assert result==(False,ord('H'))
     result,out=turn(b'2q');assert result==(False,0) and b'BREAK "?" AT Q\r\n' in out
     result,out=turn(b'0V');assert result==(False,0) and out.endswith(b'   56/   64\r\n')
+    result,out=turn(b'0V2C');assert result==(False,0) and text()[1]==2
     result,out=turn(b'B');assert result==(False,0)
     result,out=turn(b'');assert result==(False,0) and out.endswith(b'def') and text()[1]==5
     result,out=turn(b'fmissing')
