@@ -2201,6 +2201,7 @@ RB7:HEADER.LIB
 R7:HEADER.LIB
 ```
 
+An unqualified name uses the source DU; an omitted extension defaults to `.LIB`.
 Terminate the filename using ED’s ordinary command/string syntax. A user-only
 location names the caller’s drive and the specified user. Library reads do not
 accept ranges, wildcards or lists. `X` retains ED’s separate temporary-library

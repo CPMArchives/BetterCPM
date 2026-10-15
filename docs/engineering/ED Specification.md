@@ -617,6 +617,14 @@ R[A0,B3]:HEADER.LIB
 
 The command still reads one library file at a time.
 
+An unqualified library name uses the current source DU, extending DRI's
+source-disk lookup. For a qualified operand, missing components inherit the
+captured caller DU, consistent with the documented simple-DU grammar.
+An omitted extension defaults to LIB;
+an explicitly supplied extension is retained by the BetterCP/M simple-filespec
+extension. Parsing a library operand must not replace the primary source's
+filespec or the captured caller DU.
+
 This is not a multi-file selector facility.
 
 ---

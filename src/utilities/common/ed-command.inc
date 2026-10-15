@@ -43,6 +43,7 @@ EC_MACNEXT:
         JP Z,EC_INSLC
         XOR A
         LD (EC_NEG),A
+        LD (EC_PREFIX),A
         LD HL,1
         LD (EC_COUNT),HL
         LD A,(EC_WHERE)
@@ -50,10 +51,13 @@ EC_MACNEXT:
         JP NZ,EC_NUMBER
         LD A,1
         LD (EC_NEG),A
+        LD (EC_PREFIX),A
         CALL EC_GET
 EC_NUMBER:
         CP '#'
         JP NZ,EC_DIGITS
+        LD A,1
+        LD (EC_PREFIX),A
         LD HL,0FFFFH
         LD (EC_COUNT),HL
         CALL EC_GET
@@ -63,6 +67,10 @@ EC_DIGITS:
         JP C,EC_DISP
         CP '9'+1
         JP NC,EC_DISP
+        PUSH AF
+        LD A,1
+        LD (EC_PREFIX),A
+        POP AF
         LD HL,0
         LD (EC_COUNT),HL
 EC_NUMLOOP:
@@ -107,6 +115,8 @@ EC_SELECT:
         JP Z,EC_AUTOSCAN
         CP 'M'
         JP Z,EC_MACRO
+        CP 'R'
+        JP Z,EC_LIBRARY
         CP 'W'
         JP Z,EC_WRITE
         CP 'A'
@@ -150,6 +160,10 @@ EC_AUTOSCAN:
         JP EC_NEXT
 EC_MACRO:
         CALL GM_DEFINE
+        RET C
+        JP EC_NEXT
+EC_LIBRARY:
+        CALL GR_RUN
         RET C
         JP EC_NEXT
 EC_APP:
@@ -323,6 +337,7 @@ EC_FULL:
 EC_PTR: DW 0
 EC_IOERR: DB 0
 EC_RAW: DB 0
+EC_PREFIX: DB 0
 EC_LEFT: DB 0
 EC_COUNT: DW 0
 EC_NEG: DB 0

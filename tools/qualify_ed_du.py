@@ -15,7 +15,7 @@ def main():
     work=Path(tempfile.mkdtemp(prefix='run-',dir=parent));binary=build_testloop(work)
     template=ROOT/'build/z80pack/disks/library/BetterCPM-Distribution-z80pack-332K.dsk'
     body=b'Original in user seven\r\n'
-    for case in ('same-drive','split','head','quit'):
+    for case in ('same-drive','split','head','quit','library'):
         here=work/case;here.mkdir();disks=here/'disks';disks.mkdir();shutil.copy2(args.diskdefs,here/'diskdefs')
         for drive in ('a','b'):shutil.copy2(template,disks/f'drive{drive}.dsk')
         def tool(*cmd):return subprocess.run(cmd,cwd=here,check=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE).stdout
@@ -30,9 +30,16 @@ def main():
         put(binary.read_bytes(),'a',0,'EDTEST.COM')
         put(body+b'\x1a','a',7,'CASE.TXT')
         put(b'Caller sentinel\x1a','a',0,'CASE.TXT');put(b'Other drive sentinel\x1a','b',0,'CASE.TXT')
+        if case=='library':
+            put(b'from B19 \x1a','b',19,'HEADER.LIB')
+            put(b'from A19 \x1a','a',19,'HEADER.LIB')
+            put(b'from A7 \x1a','a',7,'DEFAULT.LIB')
+            put(b'WRONG CALLER LIBRARY\x1a','a',0,'DEFAULT.LIB')
         outdrive='a' if case=='same-drive' else 'b'
         commands=[(f'EDTEST A7:CASE.TXT {outdrive.upper()}19:\r'.encode(),b'*',10),
                   (b'iNEW\x1a\r',b'*',10)]
+        if case=='library':
+            commands[1:1]=[(b'rB19:header.lib\r',b'*',10),(b'r19:header.lib\r',b'*',10),(b'rdefault\r',b'*',10)]
         if case=='quit':
             commands.extend([(b'Q\r',b'(Y/N)?',10),(b'Y',b'A0>_ ',10)])
         else:
@@ -50,9 +57,10 @@ def main():
             assert get('a',7,'CASE.TXT')==b'AGAINNEW'+body
             assert get('b',19,'CASE.BAK')==b'NEW'+body
         else:
-            assert get(outdrive,19,'CASE.TXT')==b'NEW'+body
+            prefix=b'from B19 from A19 from A7 ' if case=='library' else b''
+            assert get(outdrive,19,'CASE.TXT')==prefix+b'NEW'+body
             assert get('a',7,'CASE.BAK')==body and get('a',7,'CASE.TXT') is None
-    print(f'PASS: A7/A19/B19 save, split H, caller-DU Q, exit prompts and user-zero sentinels; {work}')
+    print(f'PASS: A7/A19/B19 save, split H, caller-DU Q, library DU/default resolution, exit prompts and user-zero sentinels; {work}')
 
 
 if __name__=='__main__':main()
