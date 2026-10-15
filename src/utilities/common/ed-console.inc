@@ -1,5 +1,6 @@
 ; One console turn. Caller owns file streams and the command loop.
-; A=0: processed/reprompt; A=E/H/O/Q: authorized standalone file action.
+; Carry clear A=0: reprompt; A=E/H/O/Q: authorized standalone file action.
+; Carry A=1: fatal stream diagnostic printed and caller DU/DMA ready for exit.
 EU_READ:
         CALL EU_PROMPT
         LD DE,EU_BUFFER
@@ -41,6 +42,9 @@ EU_EXEC:
         JP Z,EU_MEMORY
 EU_ERROR:
         LD (EU_FLAG),A
+        LD A,(EC_IOERR)
+        OR A
+        JP NZ,FD_FATAL
         CALL IN_CRLF
         LD HL,EU_BREAK
         CALL EU_SAY

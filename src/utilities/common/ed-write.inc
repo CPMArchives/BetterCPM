@@ -92,6 +92,7 @@ EX_OK:
         RET
 EX_FAIL:
         LD (EX_ERROR),A
+        LD (EC_IOERR),A
         LD A,'?'
         SCF
         RET

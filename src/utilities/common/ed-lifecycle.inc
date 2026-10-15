@@ -2,6 +2,10 @@
 ; Carry=raw/category error; clear A=0 restart, A=1 exit requested.
 ; Exit selects full BDOS DU, restores DMA and updates the legacy CCP boot byte.
 FQ_ACT:
+        LD (FQ_CMD),A
+        XOR A
+        LD (FQ_STAGE),A
+        LD A,(FQ_CMD)
         CP 'Q'
         JP Z,FQ_QUIT
         CP 'O'
@@ -14,6 +18,8 @@ FQ_SAVE:
         LD (FQ_CMD),A
         CALL EF_DRAIN
         RET C
+        LD A,1
+        LD (FQ_STAGE),A
         CALL FP_COMMIT
         RET C
         LD A,(FQ_CMD)
@@ -37,6 +43,8 @@ FQ_SWAP:
         LD A,B
         LD (EI_OUSR),A
 FQ_REOPEN:
+        LD A,2
+        LD (FQ_STAGE),A
         CALL FS_SETUP
         RET C
         LD HL,(EB_FIRST)
@@ -83,3 +91,4 @@ FQ_LEAVE:
 FQ_CMD: DB 0
 FQ_DRIVE: DB 0
 FQ_USER: DB 0
+FQ_STAGE: DB 0

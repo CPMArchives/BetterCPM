@@ -2,6 +2,8 @@
 ; On overflow/error, successful reads remain applied and cursor stays at end.
 ; Source must have been opened and ES_INIT called by the file owner.
 EA_RUN:
+        XOR A
+        LD (EA_ERROR),A
         LD A,(EC_NEG)
         OR A
         JP Z,EA_START
@@ -56,6 +58,7 @@ EA_LINE:
         CP 1
         JP Z,EA_DONE
         LD (EA_ERROR),A
+        LD (EC_IOERR),A
         LD A,'?'
         SCF
         RET

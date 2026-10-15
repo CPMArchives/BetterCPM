@@ -12,6 +12,7 @@ EC_INIT:
         RET
 EC_RUN:
         XOR A
+        LD (EC_IOERR),A
         LD (ET_COL),A
         LD (EC_PTR),HL
         LD A,B
@@ -265,6 +266,7 @@ EC_FULL:
         SCF
         RET
 EC_PTR: DW 0
+EC_IOERR: DB 0
 EC_LEFT: DB 0
 EC_COUNT: DW 0
 EC_NEG: DB 0
