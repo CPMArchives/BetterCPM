@@ -22,6 +22,9 @@ GJ_REPEAT:
         LD (EC_COUNT),HL
         XOR A
         LD (EG_OFFSET),A
+        ; Correct DRI's counted-J bug: each iteration must search forward.
+        ; The previous deletion left backward movement state and duplicated text.
+        LD (EG_REVERSE),A
         LD A,(GJ_FIRST)
         LD (EG_PATTERN),A
         CALL EG_FIND

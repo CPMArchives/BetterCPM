@@ -5,8 +5,8 @@ from test_ed_substitute import substitute
 
 def main():
     cases=[(b'BEGIN old END tail',b'jBEGIN\x1aNEW\x1aEND',b'BEGINNEWEND tail',8,False),
-           (b'A old B A more B',b'2jA\x1aX\x1aB',b'AXXXB A more B',3,False),
-           (b'A old B A more B',b'3jA\x1aX\x1aB',b'AXXXXXXB A more B',3,False),
+           (b'A old B A more B',b'2jA\x1aX\x1aB',b'AXB AXB',6,False),
+           (b'A old B A more B',b'3jA\x1aX\x1aB',b'AXB AXB',6,True),
            (b'A old B',b'jA\x1a\x1aB',b'AB',1,False),
            (b'A old B',b'jA\x1aX\x1aZ',b'AX old B',2,True),
            (b'old B',b'jA\x1aX\x1aB',b'old B',0,True),
@@ -16,6 +16,10 @@ def main():
     for body,line,want,pos,bad in cases:
         result,state=substitute(body,line)
         assert result[0]==bad and state==(want,pos),(line,result,state)
+    # Counted execution equals independent successive operations; a third
+    # missing match must preserve the first two edits and report failure.
+    body=b'A old B A more B'
+    assert substitute(body,b'2jA\x1aX\x1aB')==substitute(body,b'jA\x1aX\x1aB\x1ajA\x1aX\x1aB')
     assert substitute(b'AxxxB',b'jA\x1aLONG\x1aB',6)==((True,ord('>')),(b'ALxxxB',2))
     assert substitute(b'A old B',b'-jA\x1aX\x1aB')[0]==(True,ord('?'))
     assert substitute(b'x',b'0j'+b'a'*33+b'\x1a'+b'b'*33+b'\x1a'+b'c'*33)[0]==(False,0)

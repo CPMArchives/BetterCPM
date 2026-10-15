@@ -35,13 +35,17 @@ BetterCP/M ED may use different:
 - temporary internal representations;
 - optimization strategies;
 
-provided user-visible behavior remains compatible.
+provided user-visible behavior remains compatible, except for documented
+corrections to confirmed DRI bugs. Compatibility is not a requirement to
+reproduce defects. Confirm a defect with source/binary evidence, correct it,
+and record the changed behavior in source comments and engineering/user
+documentation. This rule supersedes stricter bug-preservation wording below.
 
 The PL/M source is expected to be the fastest and safest implementation reference, and a relatively direct translation is encouraged where convenient, but internal structural equivalence is **not** itself a requirement.
 
 The objective is:
 
-> **Official CP/M 2.2 ED behavior, with BetterCP/M DU addressing and `/VER`; nothing more.**
+> **Official CP/M 2.2 ED functionality, with BetterCP/M DU addressing, `/VER`, and documented corrections to confirmed DRI bugs.**
 
 ---
 
@@ -582,10 +586,13 @@ No regex or wildcard search is added.
 Compatibility finding: counted `J` retains DRI's internal backward movement
 state between iterations. It can therefore duplicate text rather than apply
 the apparent find/insert/delete operation independently at successive matches.
-This behavior is confirmed against the pinned CP/M 2.2 binary and is preserved;
-it must not be silently normalized while the target remains DRI compatibility.
+This behavior is confirmed against the pinned CP/M 2.2 binary. The initial
+implementation preserved it; BetterCP/M now resets movement state before each
+iteration. Counted J behaves like successive independent J operations, and a
+missing later match reports failure while preserving completed edits.
 For example, from the beginning of `A old B A more B`, `2jA^ZX^ZB` produces
-`AXXXB A more B` (`^Z` denotes the actual Ctrl-Z byte).
+`AXXXB A more B` in DRI, while BetterCP/M produces `AXB AXB` (`^Z` denotes
+the actual Ctrl-Z byte).
 
 ---
 
@@ -740,7 +747,23 @@ ED shall reproduce DRI behavior for conditions including:
 - illegal filespec;
 - buffer exhaustion.
 
-Diagnostics and recoverability shall follow the official behavior.
+Diagnostics and recoverability shall follow the official behavior except for
+confirmed bug corrections documented here.
+
+DRI FINIS ignores rename return codes. BetterCP/M shall stop after either save
+rename fails, print:
+
+```text
+Rename failed. Edited text retained in work file.
+```
+
+and return to the captured caller DU with default DMA restored. It shall not
+retry the rename sequence, roll back, or delete the remaining source, backup
+or work files. If original-to-BAK fails, the original and edited work file
+remain. If work-to-original fails, the original remains under BAK and the
+edited work file remains. This applies to both E and H; H shall not restart
+after failed publication. Known read-only handling retains its specific
+diagnostic. The correction avoids DRI's duplicate-name failure state.
 
 ---
 

@@ -2175,9 +2175,9 @@ current position through line 3 when that line is ahead. They operate only on
 buffered text; they do not reload earlier text. Commands can follow a reference
 on the same line, such as `3:2C`.
 
-For compatibility, counted `J` retains a DRI ED quirk that can duplicate text
-between iterations. Use one `J` operation at a time when you want each operation
-to start with fresh movement state.
+Counted `J` applies each iteration independently. This corrects a DRI bug that
+could duplicate text between iterations. If a later match is missing, completed
+edits remain and ED reports the search failure.
 
 For `M`, counts of 0, 1 or an omitted count repeat until a command fails or
 you interrupt. A larger count runs that many iterations, then reports the
@@ -2196,6 +2196,13 @@ not interchangeable ways to leave the editor. `Q` asks the historical
 source file, which can remain after `Q`. An older `.BAK` is removed when the
 edit is initialized, so quitting preserves the original source but does not
 preserve an earlier backup generation.
+
+If saving reports `Rename failed. Edited text retained in work file.`, ED stops
+and returns to the caller’s drive/user. The edited text remains in the `.$$$`
+work file. The original remains under its original name if the first rename
+failed, or under `.BAK` if the second failed. Preserve these files for recovery;
+ED does not retry or roll back the renames. This fixes a DRI bug that could
+create duplicate filenames after a failed rename.
 
 String commands retain CP/M 2.2’s syntax. Ctrl-Z separates or terminates strings
 where required; Enter can terminate a command line. Search and substitution use

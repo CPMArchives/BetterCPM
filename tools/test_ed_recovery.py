@@ -37,8 +37,13 @@ def main():
     assert call('FD_ACTIONERR')==(True,1)
     assert bytes(out)==b'\r\nBdos Err On A: File R/O\r\n'
     assert sum(n==1 for n,_ in ops)==1 and not any(n in (16,19,23) for n,_ in ops)
-    out.clear();ops.clear();c.mem[s['FS_RO']]=0;c.a=255
-    assert call('FD_ACTIONERR')==(True,255) and not ops
+    for step in (1,2):
+        out.clear();ops.clear();c.mem[s['FS_RO']]=0;c.mem[s['FP_STEP']]=step;c.a=255
+        assert call('FD_ACTIONERR')==(True,1)
+        assert bytes(out)==b'Rename failed. Edited text retained in work file.\r\n'
+        assert c.mem[s['FD_STATUS']]==255
+        assert [n for n,_ in ops]==[9,14,32,26]
+        assert ops[-3:]==[(14,2),(32,31),(26,128)]
     # A failed initial work close is FINIS -> FERR: retry close once,
     # diagnose, then restore the caller DU/DMA without any renames.
     out.clear();ops.clear();c.mem[s['FP_STEP']]=0;c.a=255
