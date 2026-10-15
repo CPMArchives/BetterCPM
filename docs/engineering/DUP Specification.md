@@ -314,7 +314,7 @@ DUP /VER
 prints:
 
 ```text
-BetterCP/M DUP 1.0 (Build 002)
+BetterCP/M DUP 1.0 (Build 003)
 ```
 
 and returns directly to the CCP.
@@ -1638,7 +1638,7 @@ DUP /VER
 prints:
 
 ```text
-BetterCP/M DUP 1.0 (Build 002)
+BetterCP/M DUP 1.0 (Build 003)
 ```
 
 The retained interactive title is:

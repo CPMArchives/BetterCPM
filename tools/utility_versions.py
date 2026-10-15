@@ -23,6 +23,8 @@ def strings(name, resident=False, label='UV_TEXT'):
     return f"{label}:\n        DB '{banner(name, resident)}',13,10,'$'\n"
 
 def expand_versions(text):
+    text = re.sub(r'; @utility-title ([A-Z][A-Z0-9]*)@',
+                  lambda m: "TITLE: DB '" + banner(m[1]) + "',0", text)
     query = (ROOT / 'src/utilities/common/version.inc').read_text()
     match = re.search(r'; @utility-version ([A-Z][A-Z0-9]*)@', text)
     if match:

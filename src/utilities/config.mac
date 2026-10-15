@@ -9,13 +9,27 @@
         ASEG
         ORG 0100H
 FDBMODE EQU 1
-        CALL    UV_CHECK                ; standalone utility identity
+        CALL CF_PARSE                  ; valid quoted command text is not options
+        JR C,CF_VGATE
+        LD A,(CF_MODE)
+        CP 2
+        JR Z,CF_VDONE
+CF_VGATE:
+        CALL UV_CHECK                  ; standalone identity before any disk access
+CF_VDONE:
         LD SP,04000H
+        CALL CF_PARSE
+        JP C,CF_USAGE
         CALL INIT
         CALL FDBLOAD
         XOR A
         LD (STSTATE),A
         LD (STDIRTY),A
+        LD A,(CF_MODE)
+        CP 1
+        JP Z,CF_SHOW
+        CP 2
+        JP Z,CF_START
 
 ; ================================================================================
 ; =                               CONFIG Main Menu                               =
@@ -44,14 +58,7 @@ MAIN:   LD HL,TITLE                     ; enter CONFIG utility
         JP Z,PHYSMENU
         CP 'G'
         JP Z,LOGMENU
-        CP 'A'
-        JP C,MAIN
-        CP 'J'
-        JP NC,MAIN
-        LD HL,NOTYET
-        CALL PUTS
-        CALL PAUSE
-        JP MAIN
+        JP MAIN                    ; only implemented domains are offered
 
 ; ================================================================================
 ; =                         Physical Drive Configuration                         =
@@ -126,40 +133,8 @@ PHNONOTE:                               ; physical nonote
         XOR A
         LD (FIELD),A
 
-PHFIELDS:                               ; physical fields
-        LD A,(FIELD)
-        CALL LABEL
-        LD A,(FIELD)
-        ADD A,A
-        LD L,A
-        LD H,0
-        LD DE,FLDNAMES
-        ADD HL,DE
-        LD E,(HL)
-        INC HL
-        LD D,(HL)
-        EX DE,HL
-        CALL PUTS
-        LD A,(FIELD)
-        INC A
-        LD L,A
-        LD H,0
-        LD DE,PHREQ
-        ADD HL,DE
-        LD A,(HL)
-        LD (OLDVAL),A
-        LD A,(FIELD)
-        CP 3
-        LD A,(OLDVAL)
-        JR NZ,PHDEC
-        LD L,A
-        LD H,0
-        LD DE,STEPTAB
-        ADD HL,DE
-        LD A,(HL)
-
-PHDEC:  CALL DECOUT                     ; physical dec
-        CALL CRLF
+PHFIELDS:
+        CALL PHPRINT
         LD A,(FIELD)
         INC A
         LD (FIELD),A
@@ -815,7 +790,7 @@ STSAVE:LD A,(STSTATE)                  ; save pending cold changes only
         CALL PUTS
         CALL KEY
         CP 'Y'
-        JP NZ,SAVEMENU
+        JP NZ,CF_CANCEL
         CALL STLOAD                    ; preserve installed BCST for rollback
         JP NZ,STSAVEIO
         LD HL,TRACKBF
@@ -891,9 +866,48 @@ STSAVEIO:
 STSAVEREPORT:
         CALL CRLF
         CALL PUTS
+        LD A,(CF_MODE)
+        CP 2
+        JP Z,DONE
         CALL PAUSE
         CALL FDBLOAD                   ; save workspace overlays the catalogue
         JP SAVEMENU
+
+PHPRINT:                               ; physical fields
+        LD A,(FIELD)
+        CALL LABEL
+        LD A,(FIELD)
+        ADD A,A
+        LD L,A
+        LD H,0
+        LD DE,FLDNAMES
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        CALL PUTS
+        LD A,(FIELD)
+        INC A
+        LD L,A
+        LD H,0
+        LD DE,PHREQ
+        ADD HL,DE
+        LD A,(HL)
+        LD (OLDVAL),A
+        LD A,(FIELD)
+        CP 3
+        LD A,(OLDVAL)
+        JR NZ,PHDEC
+        LD L,A
+        LD H,0
+        LD DE,STEPTAB
+        ADD HL,DE
+        LD A,(HL)
+
+PHDEC:  CALL DECOUT                     ; physical dec
+        CALL CRLF
+        RET
 
 ; ================================================================================
 ; =                         Saved Startup Command                                =
@@ -1519,22 +1533,265 @@ EDCOPY: DS 64                           ; workbench copy
 ; Main and Physical Menu Text
 ; -------------------------------------------------------------------------------
 
-TITLE:  DB 'BetterCP/M 2.2 CONFIG version 1.01',0 ; utility title
+; Complete command-tail validation precedes INIT, FDB I/O or settings changes.
+CF_PARSE:
+        XOR A
+        LD (CF_MODE),A
+        LD A,(80H)
+        CP 128
+        JP NC,CF_BAD
+        LD C,A
+        LD HL,81H
+        CALL CF_SKIP
+        RET Z
+        LD (CF_PTR),HL
+        LD A,C
+        LD (CF_LEFT),A
+        LD DE,CF_SHOPT
+        CALL CF_MATCH
+        JR C,CF_TRYST
+        CALL CF_SKIP
+        JP NZ,CF_BAD
+        LD A,1
+        LD (CF_MODE),A
+        OR A
+        RET
+CF_TRYST:
+        LD HL,(CF_PTR)
+        LD A,(CF_LEFT)
+        LD C,A
+        LD DE,CF_STOP
+        CALL CF_MATCH
+        RET C
+        LD DE,CF_TEXT
+        LD B,0
+CF_STRING:
+        LD A,C
+        OR A
+        JP Z,CF_BAD
+        LD A,(HL)
+        INC HL
+        DEC C
+        CP '"'
+        JR Z,CF_CLOSE
+        CP 32
+        JP C,CF_BAD
+        CP 127
+        JP NC,CF_BAD
+        LD (DE),A
+        INC DE
+        INC B
+        JR CF_STRING
+CF_CLOSE:
+        LD A,B
+        LD (CF_LEN),A
+        CALL CF_SKIP
+        JP NZ,CF_BAD
+        LD A,2
+        LD (CF_MODE),A
+        OR A
+        RET
+CF_MATCH:
+        LD A,(DE)
+        OR A
+        RET Z
+        LD B,A
+        LD A,C
+        OR A
+        JP Z,CF_BAD
+        LD A,(HL)
+        CP 'a'
+        JR C,CF_CMP
+        CP 'z'+1
+        JR NC,CF_CMP
+        AND 5FH
+CF_CMP: CP B
+        JP NZ,CF_BAD
+        INC HL
+        INC DE
+        DEC C
+        JR CF_MATCH
+CF_SKIP:
+        LD A,C
+        OR A
+        RET Z
+        LD A,(HL)
+        CP 32
+        JR Z,CF_ADV
+        CP 9
+        RET NZ
+CF_ADV: INC HL
+        DEC C
+        JR CF_SKIP
+CF_BAD: SCF
+        RET
+CF_USAGE:
+        LD HL,CF_BADMSG
+        CALL PUTS
+        JP DONE
+CF_CANCEL:
+        LD A,(CF_MODE)
+        CP 2
+        JP Z,DONE
+        JP SAVEMENU
+CF_START:
+        CALL STFETCH
+        LD A,(STSTATE)
+        CP 2
+        JP Z,STSAVEINVALID
+        CALL STDEFAULT
+        LD A,(CF_LEN)
+        LD (STPEND+8),A
+        OR A
+        JR Z,CF_STREADY
+        LD B,A
+        LD A,1
+        LD (STPEND+7),A
+        LD HL,CF_TEXT
+        LD DE,STPEND+16
+CF_STCOPY:
+        LD A,(HL)
+        LD (DE),A
+        INC HL
+        INC DE
+        DJNZ CF_STCOPY
+CF_STREADY:
+        CALL STCHECKSUM
+        LD A,1
+        LD (STSTATE),A
+        LD (STDIRTY),A
+        JP STSAVE
+CF_SHOW:
+        LD HL,TITLE
+        CALL PUTS
+        CALL CRLF
+        LD HL,CF_ACTIVE
+        CALL PUTS
+        XOR A
+        LD (PHINDEX),A
+CF_PLOOP:
+        LD A,(PHINDEX)
+        LD (PHREQ),A
+        CALL DECOUT
+        CALL CRLF
+        LD DE,PHREQ
+        LD B,1
+        CALL API
+        JP NZ,CF_READERR
+        XOR A
+        LD (FIELD),A
+CF_FIELDS:
+        CALL PHPRINT
+        LD A,(FIELD)
+        INC A
+        LD (FIELD),A
+        CP 6
+        JR C,CF_FIELDS
+        LD A,(PHINDEX)
+        INC A
+        LD (PHINDEX),A
+        CP 4
+        JR C,CF_PLOOP
+        LD HL,CF_LOGMSG
+        CALL PUTS
+        XOR A
+        LD (LOGIDX),A
+CF_LLOOP:
+        LD A,(LOGIDX)
+        ADD A,'A'
+        CALL PUTC
+        LD A,':'
+        CALL PUTC
+        LD A,32
+        CALL PUTC
+        LD A,(LOGIDX)
+        LD (REQ),A
+        LD DE,REQ
+        LD B,3
+        CALL API
+        JP NZ,CF_READERR
+        LD A,(REQ+1)
+        CP 255
+        JR Z,CF_UNBOUND
+        CALL DECOUT
+        LD HL,COLON
+        CALL PUTS
+        LD HL,REQ+1
+        LD DE,CURB
+        LD BC,64
+        LDIR
+        CALL FDBCURNAME
+        JR CF_LNEXT
+CF_UNBOUND:
+        LD HL,UNDEF
+        CALL PUTS
+CF_LNEXT:
+        CALL CRLF
+        LD A,(LOGIDX)
+        INC A
+        LD (LOGIDX),A
+        CP 4
+        JR C,CF_LLOOP
+        LD HL,CF_SAVED
+        CALL PUTS
+        CALL STFETCH
+        LD A,(STSTATE)
+        CP 2
+        JR Z,CF_SBAD
+        LD A,(STPEND+8)
+        OR A
+        JR Z,CF_SOFF
+        LD B,A
+        LD HL,STPEND+16
+CF_SPRINT:
+        LD A,(HL)
+        CALL PUTC
+        INC HL
+        DJNZ CF_SPRINT
+        CALL CRLF
+        JR CF_SUMMARY
+CF_SOFF:
+        LD HL,CF_OFFMSG
+        CALL PUTS
+        JR CF_SUMMARY
+CF_SBAD:
+        LD HL,CF_UNKNOWN
+        CALL PUTS
+CF_SUMMARY:
+        LD HL,CF_PENDING
+        CALL PUTS
+        JP DONE
+CF_READERR:
+        LD HL,CF_ERROR
+        CALL PUTS
+        JP DONE
+CF_SHOPT: DB '/SHOW',0
+CF_STOP: DB '/STARTUP="',0
+CF_BADMSG: DB 'Invalid CONFIG usage.',13,10,0
+CF_ACTIVE: DB 'Active physical-drive profiles:',13,10,0
+CF_LOGMSG: DB 'Active logical-drive bindings:',13,10,0
+CF_SAVED: DB 'Saved cold-start command: ',0
+CF_OFFMSG: DB 'disabled',13,10,0
+CF_UNKNOWN: DB 'unreadable or invalid',13,10,0
+CF_PENDING: DB 'Pending changes: none (new invocation).',13,10
+        DB 'Saved drive defaults: not inspected by /SHOW.',13,10,0
+CF_ERROR: DB 'Cannot inspect drive configuration.',13,10,0
+CF_MODE: DB 0
+CF_LEFT: DB 0
+CF_PTR: DW 0
+CF_LEN: DB 0
+CF_TEXT: DS 127
+
+; @utility-title CONFIG@
 
 MAINMSG:DB 'Configuration options:',13,10,13,10 ; main-menu text
-        DB '[ A ] System device assignments',13,10
-        DB '[ B ] Keyboard definitions',13,10
-        DB '[ C ] Video display definitions',13,10
-        DB '[ D ] Parallel printer definitions',13,10
-        DB '[ E ] Serial port definitions',13,10
         DB '[ F ] Disk drive definitions',13,10
         DB '[ G ] Disk format definitions',13,10
         DB '[ H ] Save current configuration on disk (SYSGEN)',13,10,13,10
         DB '[ I ] Create or edit a disk format',13,10
         DB '[ J ] Startup command',13,10,13,10
-        DB 'Select [ A - J ], or BREAK (^C) to exit.',13,10,0
+        DB 'Select [ F - J ], or BREAK (^C) to exit.',13,10,0
 
-NOTYET: DB 'Feature not yet implemented.',13,10,0 ; notyet
 
 PHYHEAD:DB 'Disk drive selections',0    ; physical yhead
 

@@ -7,7 +7,7 @@ adds BetterCP/M DU operands and standalone `/VER`, and ships on both System
 Disks. Historical increment notes below remain as development evidence; the
 completion report supersedes their pending/development-only status statements.
 
-## Work review: remaining closure
+## Historical work review — superseded by Build 026 completion
 
 - Source and reference binary are pinned below; pin the corresponding manual
   edition and complete behavioral comparison before freezing compatibility.
