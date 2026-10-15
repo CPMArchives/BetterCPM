@@ -11,6 +11,8 @@ EB_INIT:
         LD (EB_FRONT),HL
         LD (EB_BACK),DE
         LD (EB_LIMIT),DE
+        LD HL,1
+        LD (EB_BASE),HL
         OR A
         RET
 EB_PUT:
@@ -96,3 +98,5 @@ EB_FIRST: DW 0
 EB_FRONT: DW 0
 EB_BACK: DW 0
 EB_LIMIT: DW 0
+
+EB_BASE: DW 1

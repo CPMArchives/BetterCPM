@@ -24,6 +24,8 @@ ED_STAGE: DB 'ED development front end: editing engine not yet available.',13,10
 ; @ed-console@
 ; @ed-source@
 ; @ed-append@
+; @ed-output@
+; @ed-write@
 ; @utility-version ED@
         DS 128
 ED_STACK:

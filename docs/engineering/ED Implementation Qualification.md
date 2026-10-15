@@ -250,3 +250,51 @@ the generic command error pending integration with the file-error owner.
 
 The source owner must still open the FCB and initialize the stream. EDDEV's
 public entry remains unchanged; work-file writing and completion are next.
+
+## Work-file record output foundation — 2026-10-15
+
+`ed-output.inc` accepts bytes for an already opened caller-owned work FCB,
+selecting its user and private DMA for sequential writes. Finish pads only a
+partial record with Ctrl-Z; empty and exact-record output add no extra record,
+matching DRI FINIS's alignment rule. EW_PAD exposes the unused-byte count for
+the future close owner; this does not settle the open S1 publication issue.
+Repeated successful finish performs no disk I/O, and subsequent insertion is
+rejected. The file owner still handles create, close, rename and final DU/DMA.
+
+Any nonzero write status is latched with the pending record intact. Later put
+or finish calls return the same error without another disk operation. There is
+no automatic retry of a potentially advanced sequential FCB. In particular,
+when a full record fails to flush, the next proposed byte is not accepted.
+
+`tools/test_ed_output.py` covers 0/1/127/128/129/255/256/257/1,024 bytes,
+byte preservation, padding counts, finish idempotence, sealed-stream rejection,
+and statuses 1/2/255 during full-record and final-partial writes. These use a
+BDOS stub; actual work-file lifecycle and live write-failure qualification
+remain pending. Editing/source regressions pass, and native ZSM4/LINK matches
+the cross build at **4,070 bytes**. This stage is not yet connected to W/E.
+
+## W output command — 2026-10-15
+
+W/w now sends counted lines from the buffer's beginning to the initialized
+work-file stream and removes accepted bytes. The surviving part of the original
+editing cursor is restored on success. Zero count writes whole lines until at
+most half the buffer remains; negative nonzero counts are rejected. An explicit
+buffer line base advances for each removed LF and is used by display/input
+line numbering. Source input is unaffected.
+
+On write failure, already accepted output stays in the output stream, the
+first unaccepted byte remains in the editing buffer, and the cursor stays at
+that boundary. EX_ERROR retains the raw status; the command currently reports
+a generic error pending file-owner integration. A subsequent command cannot
+silently retry the latched output failure.
+
+- `tools/qualify_ed_write.py`: six stock-ED output/cursor workflows pass.
+  Evidence: `build/ed-development/write/run-65m32h07`.
+- `tools/test_ed_write.py`: counts, partial final lines, surviving cursor,
+  half-buffer writes, line base and failure retention.
+- Output, source, append, buffer, console, insertion, line and invocation tests
+  pass. Native ZSM4/LINK and cross builds match at **4,283 bytes**.
+
+The output foundation and W implementation remain development-only. File
+creation, close/publication, E/H/O/Q lifecycle and the remaining commands still
+need integration and live qualification before ED.COM can be distributed.
