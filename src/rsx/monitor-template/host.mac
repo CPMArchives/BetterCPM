@@ -1,0 +1,109 @@
+; Host monitor starter: table-driven byte and ESC-final translation.
+; This is a deliberately small example, not full ADM-3A or VT52 emulation.
+BASE EQU 08000H
+        CSEG
+        .PHASE BASE
+TP_NEXT: DW 5
+TP_DISP: DW TP_CHAIN
+        DB 0,0
+        DW 0
+TP_CHAIN:
+        LD HL,(TP_NEXT)
+        JP (HL)
+TP_ENTRY:
+        OR A
+        JP Z,TP_OUT
+        CP 1
+        JP Z,TP_STAT
+        CP 4
+        JP Z,TP_CLEAR
+        CP 5
+        JP Z,TP_RESET
+TP_RAW:
+        LD HL,(1)
+        LD DE,66
+        ADD HL,DE
+        JP (HL)
+TP_STAT:
+        CALL TP_RAW
+        OR A
+        RET Z
+        LD A,255
+        RET
+TP_EMIT:
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        XOR A
+        CALL TP_RAW
+        POP HL
+        POP DE
+        POP BC
+        RET
+TP_RESET:
+        XOR A
+        LD (TP_STATE),A
+        RET
+TP_CLEAR:
+        CALL TP_RESET
+        LD HL,TP_CLS
+        JP TP_SEND
+TP_OUT:
+        LD A,C
+        CP 27
+        JP Z,TP_ESC
+        LD A,(TP_STATE)
+        OR A
+        JP NZ,TP_FINAL
+        LD A,C
+        OR A
+        RET Z
+        CP 127
+        RET Z
+        LD HL,TP_BYTES
+        CALL TP_MATCH
+        RET C
+        JP TP_EMIT
+TP_ESC:
+        LD A,1
+        LD (TP_STATE),A
+        RET
+TP_FINAL:
+        CALL TP_RESET
+        LD HL,TP_CODES
+        JP TP_MATCH
+; A table entry is key, length, then length bytes. Key zero terminates.
+; No stored pointers: byte-sized parser state is safe across manager movement.
+TP_MATCH:
+        LD A,(HL)
+        OR A
+        RET Z                         ; OR clears carry: no match
+        INC HL
+        CP C
+        JP Z,TP_FOUND
+        LD E,(HL)
+        LD D,0
+        INC HL
+        ADD HL,DE
+        JP TP_MATCH
+TP_FOUND:
+        CALL TP_SEND
+        SCF
+        RET
+TP_SEND:
+        LD B,(HL)
+        INC HL
+        LD A,B
+        OR A
+        RET Z                         ; zero length consumes without output
+TP_LOOP:
+        LD C,(HL)
+        INC HL
+        CALL TP_EMIT
+        DJNZ TP_LOOP
+        RET
+TP_STATE: DB 0
+        INCLUDE profile.inc
+TP_END:
+        .DEPHASE
+        END
