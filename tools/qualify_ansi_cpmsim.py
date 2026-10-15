@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run real ANSI load/movement, identification utility and unload on private cpmsim media."""
+"""Run real ANSI load/movement, screen utility and unload on private cpmsim media."""
 import argparse
 import shutil
 import subprocess
@@ -48,12 +48,14 @@ def main():
         subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(image),str(ROOT/path),'0:'+name],cwd=work,check=True)
     prompt=b'A0>_ '
     trace=session(simulator,disks,[
+        (b'ANSITST /VER\r',b'BetterCP/M ANSITST 1.0 (Build 001)',10),
+        (b'',prompt,10),
         (b'RSX LOAD HELLO\r',prompt,30),
         (b'RSX LOAD ANSI\r',prompt,30),
         (b'RSX UNLOAD HELLO\r',prompt,30),
         (b'ANSITST\r',b'Press a key to continue.',30),
         (b' ',b'Press a key to continue.',10),
-        (b' ',b'ANSI foundation exercise complete.',10),
+        (b' ',b'ANSI monitor exercise complete.',10),
         (b'',prompt,10),
         (b'RSX UNLOAD ANSI\r',prompt,30),
         (b'RSX LIST\r',b'TPA available: 53K',10),
