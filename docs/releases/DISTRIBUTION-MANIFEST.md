@@ -29,7 +29,6 @@ All membership or layout changes require discussion with the maintainer.
 - DUP.COM
 - TIME.COM
 - SYSGEN.COM
-- SYSGEN.DAT: required, platform/build-specific CONFIG saved-drive inspection and save-all reference (about 7K); installed in user 0 on both System Disks.
 - STAT.COM
 - SUBMIT.COM
 - PIP.COM: DRI-compatible transfers, DU operands, `/VER`, and qualified platform devices.

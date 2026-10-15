@@ -2423,13 +2423,15 @@ and saved drive settings are listed separately: a temporary active change need
 not match the next cold-boot default. It reports no private pending changes for
 the new invocation. Inspection never asks for save confirmation.
 
-Saved drive inspection requires the matching `A:SYSGEN.DAT` reference for this
-system build, also used by “save all current settings.” Both System Disks
-include this required data file in user 0. If that file is missing,
-invalid, or does not match the installed boot system, CONFIG reports the problem
-instead of displaying unverified defaults. Active settings and the saved startup
-command already displayed remain available. The reference must come from the
-same platform and build; do not substitute one from a different disk image.
+CONFIG validates the installed system's layout, geometry and fixed bytes before
+showing saved drive settings or saving all settings. Build 005 uses an embedded
+CRC-32 fingerprint; no SYSGEN.DAT file is needed. If the system does not match,
+CONFIG reports the problem instead of showing unverified saved drive defaults
+or writing a configuration. Use CONFIG from the matching system build.
+
+The CRC detects accidental corruption or a mismatched build; it is not a
+cryptographic authenticity check. Editable configuration fields are excluded,
+so a previously saved drive configuration remains valid.
 
 #### 7.2 Startup command
 

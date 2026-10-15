@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from build_distribution import capacity, selected_files, current_build, digest, publish_named, publish_generation, validate_config_reference
+from build_distribution import capacity, selected_files, current_build, digest, publish_named, publish_generation, validate_config_fingerprint
 
 
 class DistributionGates(unittest.TestCase):
@@ -59,39 +59,31 @@ class DistributionGates(unittest.TestCase):
         self.assertEqual(entries[0]['artifact'],'build/utilities/ED.COM')
         self.assertEqual(set(entries[0]['targets']),{'z80pack','trs80gp'})
 
-    def test_config_reference_manifest(self):
+    def test_config_fingerprint_manifest(self):
         root=Path(__file__).resolve().parents[1]
         manifest=json.loads((root/'metadata/distribution.json').read_text())
-        for target,folder in [('z80pack','z80pack'),('trs80gp','trs80')]:
-            entries=[e for e in manifest['system_disk']
-                     if e['name']=='SYSGEN.DAT' and target in e['targets']]
-            self.assertEqual(len(entries),1)
-            self.assertEqual(entries[0]['artifact'],f'build/{folder}/SYSGEN.DAT')
-            self.assertEqual(entries[0]['status'],'implemented')
-            self.assertEqual(entries[0]['user'],0)
+        self.assertFalse(any(e['name']=='SYSGEN.DAT' for e in manifest['system_disk']))
 
-    def test_config_reference_matches_installed_carrier(self):
+    def test_config_fingerprint_matches_installed_carrier(self):
         import struct
-        from sysgen_image import sysgen_image
+        from config_validation import validation_record
         from system_layout import LAYOUT
-        from build_trs80_boot import config_reference
         with tempfile.TemporaryDirectory() as temporary:
             root=Path(temporary);raw=root/'system.raw'
             base=LAYOUT['SYSTEM'];resident=bytearray(52*128)
             resident[:8]=b'BDCF'+bytes((5,4,4,64))
             struct.pack_into('<HH',resident,8,base+64,base+96)
             image=bytearray(80*128);image[8*128:60*128]=resident;raw.write_bytes(image)
-            reference=sysgen_image(resident,base,52,8,80)
-            self.assertEqual(config_reference(resident),reference)
-            config=({'name':'CONFIG.COM','user':0},b'program')
-            files=[config,({'name':'SYSGEN.DAT','user':0},reference)]
-            validate_config_reference('trs80gp',raw,files,root)
-            with self.assertRaisesRegex(ValueError,'requires matching'):
-                validate_config_reference('trs80gp',raw,[config],root)
-            for bad in [reference[:-128],sysgen_image(resident,base,52,8,36),
-                        reference[:128]+bytes([reference[128]^1])+reference[129:]]:
-                with self.assertRaisesRegex(ValueError,'does not match'):
-                    validate_config_reference('trs80gp',raw,[config,({'name':'SYSGEN.DAT','user':0},bad)],root)
+            record=validation_record(resident,base,52,8,80)
+            files=[({'name':'CONFIG.COM','user':0},b'program'+record)]
+            validate_config_fingerprint('trs80gp',raw,files,root)
+            for bad in [b'program',record[:-1],validation_record(resident,base,52,8,36),
+                        record+record]:
+                with self.assertRaisesRegex(ValueError,'fingerprint does not match'):
+                    validate_config_fingerprint('trs80gp',raw,[({'name':'CONFIG.COM','user':0},bad)],root)
+            image[8*128+500]^=1;raw.write_bytes(image)
+            with self.assertRaisesRegex(ValueError,'fingerprint does not match'):
+                validate_config_fingerprint('trs80gp',raw,files,root)
 
     def test_capacity_accounts_for_directory_and_extents(self):
         geometry={'block':1024,'blocks':5,'directory_blocks':2,'entries':1}

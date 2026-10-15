@@ -188,15 +188,13 @@ def construct(target, root, out, files, g, cold_start_command=""):
     return raw
 
 
-def validate_config_reference(target, raw, files, root):
-    """CONFIG's reference must describe the actual installed carrier, not another target."""
-    from sysgen_image import sysgen_image
+def validate_config_fingerprint(target, raw, files, root):
+    """CONFIG must contain the CRC/layout record for the installed resident carrier."""
+    from config_validation import validation_record
     from system_layout import LAYOUT
     names = {c['name']: data for c, data in files if c['user'] == 0}
     if 'CONFIG.COM' not in names:
         return
-    if 'SYSGEN.DAT' not in names:
-        raise ValueError('CONFIG.COM requires matching user-0 SYSGEN.DAT')
     image = raw.read_bytes()
     if target == 'z80pack':
         from fdf_format import select_fdf
@@ -212,9 +210,9 @@ def validate_config_reference(target, raw, files, root):
             return image[n*128:(n+1)*128]
         spt = 80
     carrier = b''.join(record(n) for n in range(8, 60))
-    expected = sysgen_image(carrier, LAYOUT['SYSTEM'], 52, 8, spt)
-    if names['SYSGEN.DAT'] != expected:
-        raise ValueError('SYSGEN.DAT does not match installed system carrier/geometry')
+    expected = validation_record(carrier, LAYOUT['SYSTEM'], 52, 8, spt)
+    if names['CONFIG.COM'].count(expected) != 1:
+        raise ValueError('CONFIG.COM fingerprint does not match installed system carrier/geometry')
 
 
 def validate_files(raw, out, files, g):
@@ -391,7 +389,7 @@ def main():
             g = geometry(target, root)
             totals = capacity(files, g)
             raw = construct(target, root, out, files, g, manifest.get('cold_start_command', ''))
-            validate_config_reference(target, raw, files, root)
+            validate_config_fingerprint(target, raw, files, root)
             included = validate_files(raw, out, files, g)
             name = f'BetterCPM-Distribution-{target}-'+('332K.dsk' if target=='z80pack' else '80T-DS-System.dmk')
             image = out/name
@@ -409,7 +407,7 @@ def main():
                       'tools':{n:digest(Path(shutil.which(n)).read_bytes()) for n in ['cpmcp','cpmls','fsck.cpm']},
                       'emulator_sha256':digest((a.simulator if target=='z80pack' else a.emulator).read_bytes()),
                       'included':included, 'omitted':omitted, **totals,
-                      'validation':{'filesystem':'PASS','file_integrity':'PASS','config_reference':'PASS','boot':boot_result},
+                      'validation':{'filesystem':'PASS','file_integrity':'PASS','config_fingerprint':'PASS','boot':boot_result},
                       'issues':['Existing core VER reports BetterCP/M 0.3; version presentation requires separate review',
                                 'Utilities/CPM Tools media and additional on-disk documentation deferred']}
             (out/'report.json').write_text(json.dumps(report,indent=2)+'\n')

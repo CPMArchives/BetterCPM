@@ -11,7 +11,7 @@ from pathlib import Path
 from fdf_format import select_fdf
 from build_z80pack_image import DEFAULT_FORMAT
 from startup_record import build
-from sysgen_image import sysgen_image
+from config_validation import validation_record
 from system_layout import LAYOUT
 from test_config_sysgen import probe
 from test_z80pack_sysgen_install import session
@@ -28,24 +28,29 @@ def main():
         return track*fmt.raw_track_bytes+fmt.raw_record_map()[within]*128
     original=(ROOT/'build/z80pack/disks/library/BetterCPM-Distribution-z80pack-332K.dsk').read_bytes()
     carrier=b''.join(original[offset(r):offset(r)+128] for r in range(8,60))
-    reference=sysgen_image(carrier,LAYOUT['SYSTEM'],52,8,fmt.spt)
+    record=validation_record(carrier,LAYOUT['SYSTEM'],52,8,fmt.spt)
+    config=(ROOT/'build/utilities/CONFIG.COM').read_bytes()
+    assert config.count(record)==1,'build CONFIG with matching cpmsim fingerprint first'
     signature=carrier.index(b'BDCF'+bytes((5,4,4,64)))
     physical=struct.unpack_from('<H',carrier,signature+8)[0]-LAYOUT['SYSTEM']
     saved_delay=carrier[physical+6+5]
     results=[]
-    for name in ('different','missing','invalid','wrong-build'):
+    for name in ('different','wrong-crc','wrong-layout'):
         here=work/name;here.mkdir();disks=here/'disks';disks.mkdir()
         shutil.copy2(a.diskdefs,here/'diskdefs');image=disks/'drivea.dsk';image.write_bytes(original)
         subprocess.run(['cpmrm','-T','raw','-f','bettercpm-default',str(image),'0:CONFIG.COM'],cwd=here,check=True)
         def install(label,data):
             path=here/label;path.write_bytes(data)
             subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(image),str(path),'0:'+label],cwd=here,check=True)
-        install('CONFIG.COM',(ROOT/'build/utilities/CONFIG.COM').read_bytes())
-        if name!='missing':
-            data=bytearray(reference)
-            if name=='invalid':data[0]=0
-            if name=='wrong-build':data[128]^=1
-            install('SYSGEN.DAT',data)
+        # Prove inspection is independent of the old reference, even when the
+        # template is a pre-CRC disk which still carries that file.
+        listing=subprocess.run(['cpmls','-T','raw','-f','bettercpm-default',str(image)],cwd=here,check=True,capture_output=True).stdout.lower().split()
+        if b'sysgen.dat' in listing:
+            subprocess.run(['cpmrm','-T','raw','-f','bettercpm-default',str(image),'0:SYSGEN.DAT'],cwd=here,check=True)
+        data=bytearray(config);at=config.index(record)
+        if name=='wrong-crc':data[at+16]^=1
+        if name=='wrong-layout':data[at+10]^=1
+        install('CONFIG.COM',data)
         setup=probe(here,fault=False)
         install('SETUP.COM',setup)
         data=bytearray(image.read_bytes());startup=build('',system_base=LAYOUT['SYSTEM'])
@@ -66,11 +71,10 @@ def main():
             assert b'B: 1:' in trace.split(b'Saved logical-drive bindings:',1)[1]
         else:
             assert b'Saved physical-drive profiles:' not in trace,trace
-            diagnostic=b'Boot disk does not match' if name=='wrong-build' else b'Missing or invalid A:SYSGEN.DAT'
-            assert diagnostic in trace,trace
+            assert b'Boot disk does not match' in trace,trace
         results.append({'case':name,'result':'PASS'})
     (work/'results.json').write_text(json.dumps(results,indent=2)+'\n')
-    print('PASS: saved/active distinction, missing/invalid/wrong-build reference, image unchanged;',work)
+    print('PASS: saved/active distinction, no reference file, wrong CRC/layout rejection, image unchanged;',work)
 
 
 if __name__=='__main__':main()

@@ -136,26 +136,6 @@
       "user": 0
     },
     {
-      "name": "SYSGEN.DAT",
-      "artifact": "build/z80pack/SYSGEN.DAT",
-      "status": "implemented",
-      "targets": [
-        "z80pack"
-      ],
-      "user": 0,
-      "role": "build-specific CONFIG saved-drive inspection and save-all reference"
-    },
-    {
-      "name": "SYSGEN.DAT",
-      "artifact": "build/trs80/SYSGEN.DAT",
-      "status": "implemented",
-      "targets": [
-        "trs80gp"
-      ],
-      "user": 0,
-      "role": "build-specific CONFIG saved-drive inspection and save-all reference"
-    },
-    {
       "name": "STAT.COM",
       "artifact": "build/utilities/STAT.COM",
       "status": "implemented",

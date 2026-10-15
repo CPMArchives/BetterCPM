@@ -153,13 +153,6 @@ def install_files(raw: bytearray,
             next_entry += 1
 
 
-def config_reference(resident: bytes) -> bytes:
-    """Build-specific CONFIG reference, identical to the development disk copy."""
-    from sysgen_image import sysgen_image
-    return sysgen_image(resident, LAYOUT["SYSTEM"], LAYOUT["BOOT_SECTORS"] * 4,
-                        SYSTEM_FIRST_LOGICAL_INDEX * 4, 80)
-
-
 def install(boot: bytes, stage1: bytes, resident: bytes, command: bytes,
             files: list[tuple[str, bytes]]) -> bytes:
     raw = bytearray([0xE5]) * RAW_SIZE
@@ -220,8 +213,7 @@ def install(boot: bytes, stage1: bytes, resident: bytes, command: bytes,
         raise ValueError("command module overlaps the CP/M filesystem")
     raw[command_start:command_start + command_capacity] = command.ljust(
         command_capacity, b"\x00")
-    reference = config_reference(resident)
-    install_files(raw, files + [("SYSGEN.DAT", reference)])
+    install_files(raw, files)
     image = build(bytes(raw))
     verify(image, require_blank=False)
     return image
@@ -416,7 +408,6 @@ def main() -> None:
     output = args.output.resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_bytes(image)
-    (BUILD / "SYSGEN.DAT").write_bytes(config_reference(resident))
     for path in (BUILD / "boot.bin", BUILD / "stage1.bin", output):
         try:
             label = path.relative_to(ROOT)

@@ -123,16 +123,18 @@ validates the complete filesystem solely from the authoritative manifest.
 The ordinary cpmsim development disk keeps its existing test inventory; ED is
 installed by isolated ED campaigns and by the distribution builder.
 
-## CONFIG reference data
+## CONFIG compatibility fingerprint
 
-Both System Disks include user-0 SYSGEN.DAT, required by CONFIG's saved-drive
-inspection and save-all operation. The builders emit separate artifacts at
-`build/z80pack/SYSGEN.DAT` and `build/trs80/SYSGEN.DAT`; the cpmsim
-system-tracks-only build emits its artifact before returning. The files are
-platform/build-specific and are not interchangeable. They are distinct from
-SYSGEN.COM's SYSTEM.SYS installation package.
+CONFIG Build 005 replaces the external SYSGEN.DAT reference with embedded
+20-byte layout/geometry/CRC-32 records. Neither System Disk needs SYSGEN.DAT.
+The ordinary common build generates its Model 4 record from the freshly built
+resident image. After assembling its platform resident image, the cpmsim builder
+explicitly rebuilds CONFIG with a second record for that image and geometry.
+It does not discover records from leftover output directories. Native ZSM4/LINK
+uses the same generated `build/utilities/config-validation.inc` as cross assembly.
 
-Before publishing a distribution, the builder compares the complete reference
-(header, geometry and 52-record payload) against that disk's installed resident
-carrier. Missing, stale or other-platform references fail qualification. The
-ordinary filesystem check also verifies the installed file against its artifact.
+The distribution gate independently derives the expected record from the actual
+installed carrier (including cpmsim sector skew) and requires it exactly once in
+CONFIG.COM. A mismatched or missing fingerprint fails before publication.
+The checksum's exact normalization and corruption-detection limits are described
+in the [CONFIG specification](../engineering/CONFIG%20Specification.md).

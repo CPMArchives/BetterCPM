@@ -18,10 +18,23 @@ def builtin_source():
 def main():
     p=argparse.ArgumentParser()
     p.add_argument('--assembler',type=Path,default=Path.home()/'bin/z80asm')
+    p.add_argument('--config-extra-resident',type=Path)
+    p.add_argument('--config-extra-spt',type=int)
     args=p.parse_args()
     out=ROOT/'build/utilities'
     out.mkdir(parents=True,exist_ok=True)
     builtin=builtin_source()
+    from config_validation import validation_record,assembly
+    from system_layout import LAYOUT
+    records=[validation_record((ROOT/'build/system/resident.bin').read_bytes(),
+             LAYOUT['SYSTEM'],52,8,80)]
+    if args.config_extra_resident:
+        if not args.config_extra_spt:p.error('--config-extra-spt required')
+        records.append(validation_record(args.config_extra_resident.read_bytes(),
+                       LAYOUT['SYSTEM'],52,8,args.config_extra_spt))
+    validation=assembly(records)
+    (out/'config-validation.inc').write_text(validation)
+
     ccp = (ROOT/'build/ccp/ccp.bin').read_bytes()
     rlm = (ROOT/'build/ccp/ccp.rlm').read_bytes()
     relocations = int.from_bytes(rlm[14:16], 'little')
@@ -48,6 +61,7 @@ def main():
             (ROOT/'src/utilities/disk/sysgen.inc').read_text()).replace('        INCLUDE disk/common.inc',
             (ROOT/'src/utilities/disk/common.inc').read_text()).replace('        INCLUDE disk/fdbread.inc',
             (ROOT/'src/utilities/disk/fdbread.inc').read_text()).replace('        INCLUDE disk/builtins.inc', builtin)
+        text=text.replace('; @config-validation@',validation)
         text=text.replace('; @monitor-console@', (ROOT/'src/utilities/common/monitorconsole.inc').read_text())
         data=assemble(args.assembler,text,out/(stem.upper()+'.COM'),out/(stem+'.lst'),0x100)
         if len(data)>0x3D00:
