@@ -567,6 +567,14 @@ This includes:
 
 No regex or wildcard search is added.
 
+Compatibility finding: counted `J` retains DRI's internal backward movement
+state between iterations. It can therefore duplicate text rather than apply
+the apparent find/insert/delete operation independently at successive matches.
+This behavior is confirmed against the pinned CP/M 2.2 binary and is preserved;
+it must not be silently normalized while the target remains DRI compatibility.
+For example, from the beginning of `A old B A more B`, `2jA^ZX^ZB` produces
+`AXXXB A more B` (`^Z` denotes the actual Ctrl-Z byte).
+
 ---
 
 ## 28. Verification Mode

@@ -574,3 +574,58 @@ introduced by F.
 
 N autoscan, S substitution, J juxtaposition and M macros remain unimplemented.
 The search primitive is internal to the unshipped development editor.
+
+## S substitution — 2026-10-15
+
+`ed-substitute.inc` now uses the shared collector and literal search for S/s.
+Pattern and replacement occupy the same scratch area with a combined 99-byte
+usable limit. Case translation applies to both strings according to command
+case/global U, with the same Ctrl-Z/CR terminators and Ctrl-L expansion as F.
+Each match is removed and its replacement inserted; the cursor ends after the
+replacement. Empty replacement deletes, and empty pattern follows the DRI
+insertion behavior while there is suffix text to search.
+
+Repeated substitutions retain prior successful changes on a later miss.
+Overflow likewise retains the matched-text removal and replacement bytes that
+fitted, matching the source's nontransactional editing model. Zero count only
+collects the strings; negative nonzero count is rejected.
+
+- `tools/qualify_ed_substitute.py`: **13** stock-ED text/cursor comparisons pass,
+  including count failure, deletion, case, empty pattern, subsequent commands,
+  CR/LF and combined scratch boundaries. Evidence:
+  `build/ed-development/substitute/run-ggomvs1f`.
+- `tools/test_ed_substitute.py`: independent results, partial overflow, NUL and
+  scratch limits. The shared-collector refactor also passes all 13 F oracle
+  cases (`build/ed-development/find/run-9fdshyr5`).
+- ED regressions pass; native ZSM4/LINK and cross builds match at **6,092 bytes**.
+
+N autoscan, J juxtaposition, M macros and auxiliary-file commands remain
+pending. The public EDDEV entry remains an unshipped development front end.
+
+## J juxtaposition and counted-command compatibility — 2026-10-15
+
+`ed-juxtapose.inc` collects first-match, inserted-middle and end-match strings
+in the shared bounded scratch region. A single J preserves both matched
+delimiters, inserts the middle text and deletes the interval before the end
+delimiter. Missing first match leaves text unchanged; missing end match retains
+the inserted middle and cursor. Partial overflow retains bytes that fitted.
+
+Oracle work exposed DRI's retained DIRECTION/FIRST state in counted J. Later
+FIND calls can leave the cursor at a prior boundary, and subsequent pointer
+restoration duplicates characters. The implementation preserves this through
+explicit reverse-search movement state and an unsigned logical FIRST offset.
+This is deliberately documented in source comments, the accepted engineering
+spec and the user guide. It is not a new generalized search mode. A subsequent
+F/S/J command resets its state through the shared collector initialization.
+
+- `tools/qualify_ed_juxtapose.py`: **13** stock-ED text/cursor comparisons pass,
+  including 2J/3J, both missing-match paths, empty strings, case, CR/LF and
+  commands following J. Evidence:
+  `build/ed-development/juxtapose/run-i6gmzysg`.
+- `tools/test_ed_juxtapose.py`: independent normal/count-quirk expectations,
+  scratch limit, rejected negative count and partial overflow.
+- Shared F/S oracle suites still pass all 13 cases each. ED regressions pass;
+  native ZSM4/LINK and cross builds match at **6,327 bytes**.
+
+N autoscan, M macros, auxiliary-file commands and other previously listed
+release integration/qualification work remain pending.
