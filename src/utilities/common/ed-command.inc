@@ -1,7 +1,7 @@
 ; Initial ED command-line core: inline I, B, C, D, U and signed counts.
 ; HL = exact command bytes, B = length. Returns carry on failure, A='?' or '>'.
-; Commands before an error remain applied. A uses the owner's initialized source
-; stream; the other initial commands operate on memory/console only.
+; Commands before an error remain applied. A/N use the initialized source;
+; W/N use initialized work output. Other initial commands use memory/console.
 EC_INIT:
         XOR A
         LD (EC_UPPER),A
@@ -11,6 +11,16 @@ EC_INIT:
         LD (EC_VERIFY),A
         RET
 EC_RUN:
+        LD (GM_STACK),SP
+        XOR A
+        LD (GM_ACTIVE),A
+        CALL EC_EXEC
+        PUSH AF
+        XOR A
+        LD (GM_ACTIVE),A
+        POP AF
+        RET
+EC_EXEC:
         XOR A
         LD (EC_IOERR),A
         LD (ET_COL),A
@@ -18,9 +28,13 @@ EC_RUN:
         LD A,B
         LD (EC_LEFT),A
 EC_NEXT:
+        LD A,(GM_ACTIVE)
+        OR A
+        JP NZ,EC_MACNEXT
         LD A,(EC_LEFT)
         OR A
         RET Z
+EC_MACNEXT:
         CALL EC_GET
         LD (EC_WHERE),A
         CP 'I'
@@ -89,6 +103,10 @@ EC_SELECT:
         JP Z,EC_SUB
         CP 'J'
         JP Z,EC_JUXT
+        CP 'N'
+        JP Z,EC_AUTOSCAN
+        CP 'M'
+        JP Z,EC_MACRO
         CP 'W'
         JP Z,EC_WRITE
         CP 'A'
@@ -124,6 +142,14 @@ EC_SUB:
         JP EC_NEXT
 EC_JUXT:
         CALL GJ_RUN
+        RET C
+        JP EC_NEXT
+EC_AUTOSCAN:
+        CALL GN_RUN
+        RET C
+        JP EC_NEXT
+EC_MACRO:
+        CALL GM_DEFINE
         RET C
         JP EC_NEXT
 EC_APP:
@@ -209,13 +235,20 @@ EC_INSLC:
         LD A,(EC_UPPER)
 EC_INSERT:
         LD (EC_TRANS),A
+        LD A,(GM_ACTIVE)
+        OR A
+        JP NZ,EC_INLOOP
         LD A,(EC_LEFT)
         OR A
         JP Z,EC_INPUT
 EC_INLOOP:
+        LD A,(GM_ACTIVE)
+        OR A
+        JP NZ,EC_INCHAR
         LD A,(EC_LEFT)
         OR A
         JP Z,EC_EOL
+EC_INCHAR:
         CALL EC_GET
         LD (EC_WHERE),A
         CP 26
@@ -259,6 +292,9 @@ EC_EOL:
         JP C,EC_FULL
         JP EC_NEXT
 EC_GET:
+        LD A,(GM_ACTIVE)
+        OR A
+        JP NZ,GM_GET
         LD A,(EC_LEFT)
         OR A
         JP Z,EC_CR

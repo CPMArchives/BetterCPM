@@ -629,3 +629,62 @@ F/S/J command resets its state through the shared collector initialization.
 
 N autoscan, M macros, auxiliary-file commands and other previously listed
 release integration/qualification work remain pending.
+
+## N autoscan — 2026-10-15
+
+`ed-autoscan.inc` now searches the current suffix with the shared collector
+and literal matcher. On a miss it checks for interruption, writes the whole
+editing buffer to work output, appends whole source lines until at least half
+the buffer is occupied, returns to its beginning and searches again. Counted
+searches preserve prior matches and output. Empty refill at EOF returns #.
+Zero count only collects the string; negative nonzero count is rejected.
+
+The implementation follows DRI's whole-batch algorithm: no overlap is retained
+between a written batch and the next refill. It does not promise an arbitrary
+streaming match across those boundaries. Source conversion follows global U;
+pattern conversion follows N/n plus U. Stream failures set the shared raw I/O
+status and use the console's existing fatal recovery route.
+
+- `tools/qualify_ed_autoscan.py`: **eight** stock-ED output/cursor comparisons
+  pass, including counted/missing matches, case, zero count and a command after
+  N. The bounded new buffer performs multiple refills over the 1,500-byte
+  prefix. Evidence: `build/ed-development/autoscan/run-x7nqeplj`.
+- `tools/test_ed_autoscan.py`: multi-batch scanning, lossless completion,
+  EOF/count handling, global case, read/write errors, interruption before
+  mutation and the no-overlap boundary behavior. The emulator helper accepts
+  an explicit larger instruction budget for these larger stream workflows;
+  its existing default and other test limits are unchanged.
+- ED regressions pass; native ZSM4/LINK and cross builds match at **6,443 bytes**.
+
+M macros, R/X auxiliary-file handling, page/delay and remaining numeric-return
+forms, final memory allocation/entry and prior release qualification items
+remain pending. EDDEV is still unshipped.
+
+## M macro command stream — 2026-10-15
+
+`ed-macro.inc` captures the remainder of the command line, retaining Ctrl-Z
+string separators. M uppercases the definition; m follows global U. Counts
+0/1/omitted repeat until a command fails or a key interrupts. A larger count
+executes that many iterations and ends with the historical # break. Empty
+definition does nothing, negative nonzero counts and nested M are rejected.
+
+Macro input is a continuous byte stream, not repeated isolated EC_RUN calls.
+An unterminated insertion/search string can therefore read through an iteration
+boundary. READC-equivalent polling occurs before each macro byte. A terminal
+macro count or interruption restores the saved command-run stack frame, even
+from inside a collector; ordinary failures also clear macro-active state before
+return. Existing edits remain applied. The next console command cannot inherit
+the old macro stream.
+
+- `tools/qualify_ed_macro.py`: **13** stock-ED text/cursor comparisons pass,
+  including finite/unbounded counts, command-definition case, continuous
+  insertion, repeated substitution/find and nested-macro rejection. Evidence:
+  `build/ed-development/macro/run-pxj93tmx`.
+- `tools/test_ed_macro.py`: independent expected text/flags, empty definition,
+  keyboard interruption and subsequent-command/stack cleanup.
+- ED regressions and live lifecycle checks pass; native ZSM4/LINK and cross
+  builds match at **6,835 bytes**.
+
+Macro support does not implement commands still missing elsewhere (notably
+R/X auxiliary files and page/delay/remaining return forms). Final memory and
+production-entry integration plus earlier qualification gaps remain pending.

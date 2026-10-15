@@ -8,12 +8,12 @@ ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'build/ed-development'
 
 
-def context(capacity=64):
+def context(capacity=64,execution_limit=200000):
     c=Z80(b'');data=(OUT/'EDDEV.COM').read_bytes();c.mem[256:256+len(data)]=data
     s=symbols(OUT/'ed.lst');base=0x6000;end=base+capacity
     c.mem[base-16:base]=b'G'*16;c.mem[end:end+16]=b'H'*16
     def call(label):
-        stack=c.sp;c.run(s[label],limit=200000);assert c.sp==stack
+        stack=c.sp;c.run(s[label],limit=execution_limit);assert c.sp==stack
         assert bytes(c.mem[base-16:base])==b'G'*16
         assert bytes(c.mem[end:end+16])==b'H'*16
         return c.carry,c.a
