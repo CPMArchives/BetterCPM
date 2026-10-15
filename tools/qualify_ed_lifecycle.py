@@ -12,6 +12,75 @@ from test_z80pack_sysgen_install import session
 ROOT=Path(__file__).resolve().parents[1]
 
 
+def build_testloop(work,fault=None):
+    source=expanded_source();start=source.index('ED_START:');end=source.index('ED_BAD:')
+    source=source[:start]+'''ED_START:
+        LD SP,ED_STACK
+        CALL EI_PARSE
+        JP C,LT_BAD
+        LD HL,6000H
+        LD DE,0C000H
+        CALL EB_INIT
+        CALL EC_INIT
+        CALL FD_BEGIN
+        JP C,LT_READY
+LT_LOOP:
+        CALL EU_READ
+        JP C,LT_READY
+        OR A
+        JP Z,LT_LOOP
+        CALL FD_ACT
+        JP C,LT_READY
+        OR A
+        JP Z,LT_LOOP
+LT_READY:
+        JP 0
+LT_BAD:
+        LD A,(FP_STEP)
+        ADD A,48
+        LD E,A
+        LD C,2
+        CALL 5
+        LD DE,LT_ERROR
+        LD C,9
+        CALL 5
+        JP 0
+LT_ERROR: DB 'LIFECYCLE FAILED',13,10,'$'
+'''+source[end:]
+    if fault:
+        assert fault in (20,21)
+        source=source.replace('LT_LOOP:\n', '        CALL FZ_INSTALL\nLT_LOOP:\n',1)
+        source=source.replace('LT_READY:\n        JP 0','LT_READY:\n        LD HL,(FZ_JUMP+1)\n        LD (6),HL\n        JP 0',1)
+        shim='''
+FZ_INSTALL:
+        LD HL,(6)
+        LD (FZ_JUMP+1),HL
+        LD HL,FZ_GATE
+        LD (6),HL
+        RET
+FZ_GATE:
+        LD A,C
+        CP FAULT_FUNCTION
+        JP NZ,FZ_JUMP
+        LD A,(FZ_COUNT)
+        OR A
+        JP Z,FZ_FAIL
+        DEC A
+        LD (FZ_COUNT),A
+FZ_JUMP:
+        JP 0
+FZ_FAIL:
+        LD A,2
+        RET
+FZ_COUNT: DB ALLOW_RECORDS
+'''
+        shim=shim.replace('FAULT_FUNCTION',str(fault)).replace('ALLOW_RECORDS',str(int(fault==21)))
+        source=source.replace('; ED invocation only:',shim+'\n; ED invocation only:',1)
+    source=source.replace('        CSEG\n        .PHASE  ','        ASEG\n        ORG     ').replace('        .DEPHASE\n','')
+    binary=work/'EDTEST.COM';assemble(Path.home()/'bin/z80asm',source,binary,work/'test.lst',256)
+    return binary
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--better',action='store_true')
@@ -27,40 +96,7 @@ def main():
         fmt='bettercpm-default'
     parent=ROOT/'build/ed-development/lifecycle';parent.mkdir(parents=True,exist_ok=True)
     work=Path(tempfile.mkdtemp(prefix='run-',dir=parent))
-    source=expanded_source();start=source.index('ED_START:');end=source.index('ED_BAD:')
-    source=source[:start]+'''ED_START:
-        LD SP,ED_STACK
-        CALL EI_PARSE
-        JP C,LT_BAD
-        LD HL,6000H
-        LD DE,0C000H
-        CALL EB_INIT
-        CALL EC_INIT
-        CALL FS_SETUP
-        JP C,LT_BAD
-LT_LOOP:
-        CALL EU_READ
-        OR A
-        JP Z,LT_LOOP
-        CALL FQ_ACT
-        JP C,LT_BAD
-        OR A
-        JP Z,LT_LOOP
-        JP 0
-LT_BAD:
-        LD A,(FP_STEP)
-        ADD A,48
-        LD E,A
-        LD C,2
-        CALL 5
-        LD DE,LT_ERROR
-        LD C,9
-        CALL 5
-        JP 0
-LT_ERROR: DB 'LIFECYCLE FAILED',13,10,'$'
-'''+source[end:]
-    source=source.replace('        CSEG\n        .PHASE  ','        ASEG\n        ORG     ').replace('        .DEPHASE\n','')
-    binary=work/'EDTEST.COM';assemble(Path.home()/'bin/z80asm',source,binary,work/'test.lst',256)
+    binary=build_testloop(work)
     if args.oracle:
         assert not args.better, '--oracle uses stock CP/M to avoid the known S1 baseline difference'
         binary=ROOT/'third_party/dri-ed/ED-CPM22-reference.COM'

@@ -434,3 +434,58 @@ native ZSM4/LINK and cross builds match at **5,225 bytes**. Live nonzero-user
 and Model 4 return paths, failure exits and final recovery diagnostics remain
 to be qualified. The production entry is still the unshipped development
 front end; these checks exercise the isolated test-only loop.
+
+## Setup diagnostics and save-stream recovery — 2026-10-15
+
+`ed-recovery.inc` supplies the established NEW FILE and read-only notices,
+destination-collision and system-source diagnostics, and DRI's DISK OR
+DIRECTORY FULL path. The storage-error path attempts Close on the work FCB,
+even if Close itself fails, then selects caller DU and restores DMA for exit.
+It does not delete the recovery work file or rename anything. Setup wrappers
+and save-stream errors use this path; authorized O/H restarts print any new
+setup notices without resetting editing modes.
+
+Publication errors remain raw errors for later policy qualification. FQ_STAGE
+distinguishes stream, publication and reopen/setup failures so a rename failure
+cannot be silently classified as a confirmed DRI stream-error case.
+
+- `tools/test_ed_recovery.py` checks exact message text, NEW/RO notices, no
+  close on collision/system rejection, attempted close on disk error even when
+  it returns failure, and caller DU/DMA preparation without destructive cleanup.
+- The diagnostic-wrapped test loop passes all eight live lifecycle cases on
+  BetterCP/M (`build/ed-development/lifecycle/run-fzcch5_u`) and stock CP/M
+  (`build/ed-development/lifecycle/run-xabej4af`).
+- ED regressions pass; native and cross builds match at **5,496 bytes**.
+
+This is not complete error-path qualification. Ordinary A/W stream errors
+still need routing from the console dispatcher into the storage-error owner;
+disk-full/read-error behavior needs live fault injection, and rename failures
+and protected-source completion still need DRI-oracle comparison. EDDEV is
+unchanged as a public development front end and remains unshipped.
+
+## Ordinary A/W stream-error routing — 2026-10-15
+
+The command core now records a distinct raw stream-error status for A/W.
+EU_READ routes those failures to the recovery owner rather than printing
+BREAK and continuing. It returns carry/A=1 after the diagnostic, recovery-close
+attempt and caller DU/DMA preparation; its owner must warm-return. A new command
+clears the status so an unrelated command error cannot inherit it. Append also
+clears its per-operation error at entry. Buffer exhaustion remains an ordinary
+command error, not a disk failure.
+
+- `tools/test_ed_stream_recovery.py`: console A/W failures, failed recovery
+  close, retained unaccepted buffer text, exact diagnostic without BREAK, no
+  destructive cleanup, and command-error-state reset.
+- `tools/qualify_ed_faults.py --diskdefs PATH`: a test-only BDOS shim injects
+  status 2 on A's source read or W's second record write while other calls use
+  real BetterCP/M. The original source is preserved. Read failure leaves an
+  empty recovery file; second-record write failure leaves the successfully
+  written first 128 bytes in $$$, with no BAK publication. Evidence:
+  `build/ed-development/faults/run-l75msol3`.
+
+The injection establishes handling of returned error statuses, not physical
+media failure or actual disk exhaustion. The shim exists only in isolated
+EDTEST.COM, restores the BDOS vector before warm return, and is absent from
+the development core. The ordinary live lifecycle and ED regressions pass;
+native ZSM4/LINK and cross builds match at **5,517 bytes**. Protected-source,
+rename-failure, real-capacity and Model 4 qualification remain open.
