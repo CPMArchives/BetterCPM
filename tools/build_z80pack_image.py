@@ -242,6 +242,9 @@ def main():
  put(92,bytes(1021)+gateway_tail,1024)
  put(100,rsx_overlay(ROOT/'build/system/rsxresolver.bin'),1024)
  put(108,(ROOT/'build/ccp/ccp.rlm').read_bytes(),13*512)
+ from sysgen_image import sysgen_image
+ reference=sysgen_image(bytes(resident),L['SYSTEM'],52,8,fmt.spt)
+ (out/'SYSGEN.DAT').write_bytes(reference)
  if args.system_tracks_only:
   # The distribution builder supplies its own filesystem from its manifest.
   # Do not first pack the unrelated, larger development/test file inventory.
@@ -255,8 +258,7 @@ def main():
   (out/'diskdefs').write_text(disk_definition(fmt))
   return
  # CP/M 2.2, 1K allocation blocks, byte block numbers, 64 directory entries.
- from sysgen_image import sysgen_image
- files=[('SYSGEN.DAT',sysgen_image(bytes(resident),L['SYSTEM'],52,8,fmt.spt))]
+ files=[('SYSGEN.DAT',reference)]
  for name in ('RCP.CPX','HELLO.CPX'):files.append((name,(ROOT/'build/cpx'/name).read_bytes()))
  # The small development disk keeps its existing test inventory. ED is
  # installed by its isolated campaigns and the manifest-driven System Disk.

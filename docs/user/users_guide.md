@@ -2418,9 +2418,18 @@ writes and attempts restoration after recoverable save failures. A power loss
 during saving can still require recovery.
 
 Use `CONFIG /SHOW` for read-only inspection of active physical profiles, active
-logical bindings and the saved cold-start command. It reports no private pending
-changes for the new invocation. Saved drive defaults are not yet inspected by
-this command; its output states that limitation explicitly.
+logical bindings, the saved cold-start command, and saved drive defaults. Active
+and saved drive settings are listed separately: a temporary active change need
+not match the next cold-boot default. It reports no private pending changes for
+the new invocation. Inspection never asks for save confirmation.
+
+Saved drive inspection requires the matching `A:SYSGEN.DAT` reference for this
+system build, also used by “save all current settings.” Both System Disks
+include this required data file in user 0. If that file is missing,
+invalid, or does not match the installed boot system, CONFIG reports the problem
+instead of displaying unverified defaults. Active settings and the saved startup
+command already displayed remain available. The reference must come from the
+same platform and build; do not substitute one from a different disk image.
 
 #### 7.2 Startup command
 
@@ -2455,8 +2464,8 @@ validation and save results before relying on a new configuration.
 #### 7.4 Planned extensions — not yet implemented
 
 The [CONFIG engineering specification](../engineering/CONFIG%20Specification.md)
-records remaining command-line equivalents for drive configuration, completed
-saved-drive inspection, and `/DEFAULT`. The agreed defaults operation will
+records remaining command-line equivalents for drive configuration and
+`/DEFAULT`. The agreed defaults operation will
 load pending settings only, without automatic activation or saving; it is not
 yet implemented.
 

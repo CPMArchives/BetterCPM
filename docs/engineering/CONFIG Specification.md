@@ -674,7 +674,7 @@ In particular, adding a CONFIG field does not by itself justify new resident ser
 ---
 
 # 16. `/SHOW`
-**Status: partially implemented in Build 003; saved-drive inspection remains open**
+**Status: drive/startup inspection implemented in Build 004; distribution reference-file integration included**
 
 A command-line inspection facility is desirable:
 
@@ -707,11 +707,22 @@ It must not accumulate unrelated information such as:
 
 Those remain the responsibility of their respective utilities.
 
-Build 003 reports active physical profiles, active logical bindings, the saved
+Build 004 reports active physical profiles, active logical bindings, the saved
 cold-start command and the absence of private pending changes in this new
-invocation. Saved drive defaults are explicitly reported as not inspected;
-that part of the inspection contract remains implementation work. `/SHOW`
-does not modify settings or require completion keypresses.
+invocation, then separately reports saved physical profiles and logical bindings.
+It reuses the existing CONFIG save-all reference/header/geometry/carrier
+validation through the read-only point. It does not fetch active state into the
+proposed carrier, activate saved settings, ask for confirmation, or enter writes.
+The matching `A:SYSGEN.DAT` reference is required; missing/invalid/mismatched
+references or recoverable read errors produce the existing diagnostic and return
+without printing unverified saved drive values. Previously printed active and
+startup information remains valid. The editable table fields are copied to
+private transient storage before restoring the shared FDB catalogue workspace.
+`/SHOW` does not modify settings or require completion keypresses.
+
+The maintainer approved including the required platform/build-specific
+SYSGEN.DAT on both System Disks. The builders emit the same reference used by
+their development images, including in the cpmsim system-tracks-only path.
 
 ---
 

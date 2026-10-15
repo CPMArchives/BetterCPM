@@ -122,3 +122,17 @@ file inventory into the small disk. The distribution builder still creates and
 validates the complete filesystem solely from the authoritative manifest.
 The ordinary cpmsim development disk keeps its existing test inventory; ED is
 installed by isolated ED campaigns and by the distribution builder.
+
+## CONFIG reference data
+
+Both System Disks include user-0 SYSGEN.DAT, required by CONFIG's saved-drive
+inspection and save-all operation. The builders emit separate artifacts at
+`build/z80pack/SYSGEN.DAT` and `build/trs80/SYSGEN.DAT`; the cpmsim
+system-tracks-only build emits its artifact before returning. The files are
+platform/build-specific and are not interchangeable. They are distinct from
+SYSGEN.COM's SYSTEM.SYS installation package.
+
+Before publishing a distribution, the builder compares the complete reference
+(header, geometry and 52-record payload) against that disk's installed resident
+carrier. Missing, stale or other-platform references fail qualification. The
+ordinary filesystem check also verifies the installed file against its artifact.

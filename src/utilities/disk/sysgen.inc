@@ -9,7 +9,13 @@ SGOLD   EQU 04080H
 SGSTOLD EQU 05A80H
 SGNEW   EQU 06000H
 SGDMA   EQU 08000H
-SYSGEN: LD HL,SGTITLE
+SYSGEN: LD A,(CF_MODE)                 ; /SHOW shares validation/read path only
+        CP 1
+        JR NZ,SGEDIT
+        XOR A
+        LD (SGSTFLAG),A
+        JP SGNOSTATE
+SGEDIT: LD HL,SGTITLE
         CALL HEADER
         LD A,(STDIRTY)                  ; retain pending-state participation
         LD (SGSTFLAG),A
@@ -186,6 +192,11 @@ SGMASK: PUSH AF
         CALL SGSIZE
         CALL SGCMP
         JP NZ,SGWRONG
+; Inspection stops here: the installed carrier has been checked against this
+; build, masking only the established editable fields. Never reach save logic.
+        LD A,(CF_MODE)
+        CP 1
+        JP Z,CF_SDRIVES
 ; Fetch the live definitions through the public API. Leave DPH pointers,
 ; allocation maps and other running scratch alone -- they are not defaults.
         XOR A
@@ -318,6 +329,9 @@ SGIOERR:LD HL,SGREADMSG
 SGSTBAD:LD HL,SGSTBADMSG
 SGREPORT:CALL CRLF
         CALL PUTS
+        LD A,(CF_MODE)
+        CP 1
+        JP Z,DONE                      ; inspection never pauses or saves
         CALL PAUSE
 SGEXIT: LD DE,1
         LD C,37
