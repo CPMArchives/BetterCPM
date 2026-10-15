@@ -113,6 +113,7 @@ EI_LOC:
         LD (EI_DRV),A
         LD A,(EI_CUSR)
         LD (EI_USR),A
+EI_LOCREST:
         XOR A
         LD (EI_QUAL),A
         LD HL,EI_TOKEN

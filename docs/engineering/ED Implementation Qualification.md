@@ -688,3 +688,38 @@ the old macro stream.
 Macro support does not implement commands still missing elsewhere (notably
 R/X auxiliary files and page/delay/remaining return forms). Final memory and
 production-entry integration plus earlier qualification gaps remain pending.
+
+## Named R library input — 2026-10-15
+
+`ed-library.inc` now reads an exact library file into the editing cursor using
+an independent FCB and record buffer. R uppercases input; r follows global U.
+Ctrl-Z terminates file text, while NUL and other data bytes are retained.
+Numeric prefixes are rejected. Missing Open returns the historical O break;
+nonzero library sequential-read statuses end input as in DRI READFILE rather
+than using the primary-source fatal-read policy. Buffer exhaustion retains
+inserted bytes and returns >.
+
+Unqualified names use the current source DU. Qualified operands inherit missing
+components from the captured caller, preserving the user guide's user-only
+drive rule. Omitted extension means LIB; explicit extensions are preserved. A temporary
+save/restore protects the main EI_FCB while the shared bounded filename parser
+constructs the independent library FCB. No caller or primary source DU is
+recaptured or changed. Bare R can read an existing X$$$$$$$.LIB; integration
+with an active X transfer's pending bytes remains part of the X implementation.
+
+- `tools/qualify_ed_library.py`: **eight** stock-ED text/cursor comparisons pass
+  for historical basename/LIB, case, missing file, numeric-prefix rejection,
+  following commands and pre-existing transfer-library input. Evidence:
+  `build/ed-development/library/run-l6nlkcd3`.
+- `tools/test_ed_library.py`: default/source-DU inheritance, B19 and user-only
+  forms, explicit extension, main-filespec preservation, multiple records,
+  controls, invalid selectors, overflow and nonzero-read termination.
+- The live DU campaign now includes rB19:header.lib, r19:header.lib and rdefault
+  in one A7-to-B19 save. It verifies insertion from B19, A19 and A7, ignoring
+  a conflicting caller-user library and preserving the main backup/output.
+  Evidence: `build/ed-development/du/run-g14syy_f`.
+- ED regressions pass; native ZSM4/LINK and cross builds match at **7,434 bytes**.
+
+X transfer output/pending-tail and lifetime handling, extended R diagnostic
+boundaries, remaining page/delay/return forms and release integration remain
+pending. EDDEV is still not distributed.
