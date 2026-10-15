@@ -292,6 +292,26 @@
       ],
       "user": 0,
       "role": "VT52 monitor test utility"
+    },
+    {
+      "name": "ANSI.RSX",
+      "artifact": "build/rsx/ANSI.RSX",
+      "status": "implemented",
+      "targets": [
+        "z80pack"
+      ],
+      "user": 0,
+      "role": "Bounded ANSI/VT100 host monitor"
+    },
+    {
+      "name": "ANSITST.COM",
+      "artifact": "build/utilities/ANSITST.COM",
+      "status": "implemented",
+      "targets": [
+        "z80pack"
+      ],
+      "user": 0,
+      "role": "ANSI/VT100 monitor test utility"
     }
   ],
   "cold_start_command": "SUBMIT STARTUP"

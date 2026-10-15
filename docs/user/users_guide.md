@@ -2831,3 +2831,25 @@ Use `RSX UNLOAD VT52` to recover its memory. With no other RSXs loaded,
 the available TPA returns to 53K. The normal cold-boot script does not load
 VT52 automatically. Graphics, keypad modes and host arrow-key translation
 are outside this provider's supported subset.
+
+### ANSI/VT100 monitor on cpmsim
+
+The cpmsim system disk supplies ANSI.RSX and ANSITST.COM. For software
+configured to use the supported ANSI/VT100 controls, load `RSX LOAD ANSI`
+and run `CLS` before starting the program. Use a compatible macOS or Linux
+terminal; the host window supplies screen dimensions and wrapping behavior.
+Unload any other monitor provider first. Only one can be active.
+
+This bounded subset supports cursor movement, erasure, text attributes, scroll
+regions, cursor save/restore and cursor visibility. It does not provide full
+VT100 emulation: terminal queries, character-set selection, keypad modes and
+VT52-mode switching are unsupported. Applications must restore any attributes,
+scroll region or cursor visibility they change before exiting.
+
+`ANSITST` shows positioning, reverse-video, erase and parser-reset checks with
+two keypress pauses. `ANSITST /VER` prints
+`BetterCP/M ANSITST 1.0 (Build 001)` without requiring a monitor.
+`RSX UNLOAD ANSI` releases the provider; with no other RSXs loaded, TPA returns
+to 53K. Startup does not automatically choose ANSI. The unchanged TE VT100 editor has passed an open/edit/save/exit test. Its
+standard configuration needs an 80-column, 25-row host window. This does not
+imply full VT100 emulation or compatibility with every application.

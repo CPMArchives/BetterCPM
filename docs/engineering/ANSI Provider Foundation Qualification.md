@@ -3,7 +3,7 @@
 ## Scope
 
 ANSI.RSX is the bounded cpmsim host personality for the third 1.0 monitor
-target. This development stage is not included on distribution disks or loaded
+target. The release integration includes it on the cpmsim distribution disk; it is not loaded
 at startup. It forwards supported ANSI controls to a compatible host terminal;
 it does not claim full VT100 or xterm emulation. Host geometry and wrapping
 apply, rather than the VT52 provider's fixed 80 by 24 logical screen.
@@ -45,7 +45,7 @@ relocation uses static operand relocation rather than runtime buffer pointers.
 
 ## Build and qualification
 
-`tools/build_ansi.py` emits development ANSI.RSX 0.1, ANSITST.COM and listings
+`tools/build_ansi.py` emits ANSI.RSX 1.0, ANSITST.COM and listings
 under `build/ansi-development`. The provider exposes MCON 1.0 with host backend
 bit 0002h and STATEFUL reconstruction. Current payload: 460 bytes and 83 static
 relocations, with a 512-byte runtime allocation including the service descriptor.
@@ -60,8 +60,9 @@ positioning, reverse video and erasure. Dependencies are in
 
 ANSITST is an initial interactive positioning/attribute/erase/reset exercise.
 Actual manager relocation and protected-ROM lifecycle now pass. Application
-qualification, expanded utility coverage and release integration remain next
-stages. No historical terminal compatibility beyond this subset is
+qualification now passes for the TE VT100 editor as recorded below; expanded
+utility coverage remains available for later qualification. No historical
+terminal compatibility beyond this subset is
 implied by the development module.
 
 ## Live qualification
@@ -86,7 +87,47 @@ violation. Evidence: `build/ansi-development/live/cpmsim-ppwgk32r/transcript.bin
 
 These campaigns qualify ordinary and protected-ROM cpmsim behavior and screen
 rendering through the independent terminal model. They do not certify every
-macOS/Linux terminal configuration or a separate Model 4 ROM target. The local
-WordStar collection currently contains VT52 and Hazeltine installations, so
-application qualification must use a separately configured ANSI/VT100 program.
-No existing application binary has been silently repatched.
+macOS/Linux terminal configuration or a separate Model 4 ROM target. The local WordStar collection contains VT52 and Hazeltine installations.
+Application qualification instead uses the unchanged upstream TE VT100 build;
+no existing application binary has been silently repatched.
+
+Release integration supplies ANSITST 1.0 Build 001 with standalone `/VER`, normal complete-build generation and cpmsim-only distribution entries. Pure version and invalid-usage checks pass without monitor lookup. Core callback code and its 512-byte allocation are unchanged. Startup remains banner-only.
+
+The fresh release disk boot-qualified with 26 files and 170K free. Release
+ANSITST version reporting, screen rendering, live movement and unload passed
+on ordinary cpmsim (`build/ansi-development/live/cpmsim-cq00c7lp`) and with
+enforced ROM protection (`build/ansi-development/live/cpmsim-famg9syp`).
+
+## Independent application qualification: TE
+
+The upstream [TE editor](https://github.com/MiguelVis/te) provides a ready-built
+VT100/WordStar-key adaptation. Its `te_ws100.c` uses BIOS console calls, decimal
+CSI cursor addressing, CSI J/K erasure and SGR reverse/normal video.
+The tested reference commit is `95d1d33be82513825bd7d455f0f5af06539a6b9f`.
+
+Unmodified reference files, SHA-256:
+
+```text
+TE_WS100.COM  8e5d56d8a645c4e725992af4540573a7229d7aab8491d509b70c27538fd42d6f
+TE_WS100.CF   22f3f316e84c66bd3d3a929b7076a12a1368501745f5e3400984c88e02f43841
+```
+
+`tools/qualify_ansi_te.py --reference <local-te-checkout> --diskdefs
+<host-build>/diskdefs` stages the binary as TE.COM and its configuration as
+TE.CF on copied media. It loads ANSI, clears the screen, opens ANSITEST.TXT,
+inserts `ANSI EDIT CHECK`, selects Save and Exit from the editor's own menu,
+and verifies the changed file by reading it back from the disk image. It then
+unloads ANSI and confirms an empty registry and 53K TPA.
+
+Independent pyte rendering of the actual application output checks the initial
+filename header and document text on 80 by 25 and 100 by 40 host screens.
+The unchanged upstream configuration requests 25 rows; this application campaign
+therefore requires at least 80 columns by 25 rows.
+Evidence: `build/ansi-development/te/run-qf7acbgv`, containing the transcript,
+reference identities, saved document and decoded screen text.
+
+This qualifies an ordinary cpmsim open/edit/save/exit workflow with this binary.
+It does not claim all TE commands, every terminal implementation, or a
+protected-ROM application run. Protected-ROM qualification above covers the
+provider lifecycle and ANSITST. Neither the upstream binary nor configuration
+is added to the BetterCP/M distribution or repository.

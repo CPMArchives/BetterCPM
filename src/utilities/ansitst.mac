@@ -3,6 +3,7 @@ BDOS EQU 5
         CSEG
         .PHASE 0100H
 START:
+        CALL UV_CHECK
         LD DE,LOOKUP
         LD C,182
         CALL BDOS
@@ -67,7 +68,8 @@ PAGE1:
 PARTIAL: DB 27,'[12;',0
 RESETMSG: DB ' Parser reset: readable text after incomplete address.',13,10,0
 WAIT: DB 13,10,'Press a key to continue.',13,10,0
-DONE: DB 'ANSI foundation exercise complete.',13,10,0
-NONE: DB 'No MCON provider loaded. Load the development ANSI.RSX.',13,10,0
+DONE: DB 'ANSI monitor exercise complete.',13,10,0
+NONE: DB 'No MCON provider loaded. Load ANSI.RSX.',13,10,0
+; @utility-version ANSITST@
         .DEPHASE
         END
