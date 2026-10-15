@@ -2402,6 +2402,9 @@ Run `CONFIG` to enter the console menu. `CONFIG /VER` displays the utility’s
 version and build number; it must be used alone. CONFIG works without a monitor
 RSX or a full-screen terminal.
 
+The menu offers implemented entries F through J; keyboard, video, printer and
+serial placeholders are not displayed.
+
 CONFIG currently provides drive configuration, startup-command editing, and
 save operations. It distinguishes the settings in use now, pending changes,
 and defaults saved for subsequent startup. Changing a live setting does not
@@ -2414,11 +2417,28 @@ second when the current settings should become the defaults. CONFIG verifies
 writes and attempts restoration after recoverable save failures. A power loss
 during saving can still require recovery.
 
+Use `CONFIG /SHOW` for read-only inspection of active physical profiles, active
+logical bindings and the saved cold-start command. It reports no private pending
+changes for the new invocation. Saved drive defaults are not yet inspected by
+this command; its output states that limitation explicitly.
+
 #### 7.2 Startup command
 
 Use CONFIG’s startup-command menu (`J`) to inspect or edit the pending command.
 Editing it does not execute it or save it automatically. Use the save menu to
 make the change persistent. An empty command disables automatic startup.
+
+Command-line startup editing is also available:
+
+```text
+CONFIG /STARTUP="SUBMIT STARTUP"
+CONFIG /STARTUP=""
+```
+
+These forms ask for the existing save confirmation, then save and verify only
+the startup command for the next cold boot. They do not execute it or save
+current drive settings. Answering N leaves the disk unchanged. Text inside
+quotes is preserved as command data, including `/VER`.
 
 Distribution disks default to `SUBMIT STARTUP`. The command runs once at cold
 boot; ordinary warm boot does not repeat it. Development and test images may
@@ -2435,10 +2455,10 @@ validation and save results before relying on a new configuration.
 #### 7.4 Planned extensions — not yet implemented
 
 The [CONFIG engineering specification](../engineering/CONFIG%20Specification.md)
-records planned command-line equivalents for interactive configuration,
-including `/STARTUP="command line"`, `/SHOW`, and a defaults/reset operation.
-Their apply/save behavior must be settled before implementation; these are not
-currently supported commands.
+records remaining command-line equivalents for drive configuration, completed
+saved-drive inspection, and `/DEFAULT`. The agreed defaults operation will
+load pending settings only, without automatic activation or saving; it is not
+yet implemented.
 
 Configurable persistent IOBYTE defaults, printer tab/line-ending/form-feed
 policies, and serial-port settings are candidates for 1.0, subject to runtime

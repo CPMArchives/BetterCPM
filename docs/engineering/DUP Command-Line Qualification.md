@@ -1,6 +1,6 @@
 # DUP direct operation entry points
 
-DUP Build 002 implements the [1.0 command-line contract](DUP%20Specification.md):
+DUP Build 002 introduced (retained in current Build 003) the [1.0 command-line contract](DUP%20Specification.md):
 
 ```text
 DUP /FORMAT drive:

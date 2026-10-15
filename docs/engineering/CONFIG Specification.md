@@ -1,9 +1,11 @@
 # BetterCP/M CONFIG.COM Engineering Specification
-**Version 1.0 — Revised Draft; implementation deferred**
+**Version 1.0 — Revised engineering baseline; alignment in progress**
 
-This document records the intended CONFIG evolution. It does not claim that
-proposed command-line operations or runtime extensions are implemented. Existing
-CONFIG contracts remain authoritative until explicitly superseded.
+This document is the current CONFIG engineering baseline. Alignment is in
+progress; proposed runtime extensions remain subject to their explicit audit
+gates. Existing storage, active/pending/saved and verification contracts remain
+authoritative. See [alignment qualification](CONFIG%20Specification%20Alignment.md)
+for implemented behavior, remaining gaps and evidence.
 
 ## 1. Purpose
 
@@ -298,7 +300,13 @@ CONFIG /STARTUP="SUBMIT STARTUP"
 CONFIG /STARTUP=""
 ```
 
-The command text is preserved for later CCP execution.
+The command text is preserved for later CCP execution. `/STARTUP=` saves only
+the startup record for the next cold boot; it does not execute the command or
+capture active drive settings. It retains the existing Y/N confirmation and
+verified-write/rollback path. Declining returns to the CCP without a change.
+An empty quoted string disables startup. The complete tail must validate before
+initialization or disk access. Text inside the quotes is command data, including
+literal `/VER` tokens. The CCP tail limit includes the option and quote overhead.
 
 ---
 
@@ -666,7 +674,7 @@ In particular, adding a CONFIG field does not by itself justify new resident ser
 ---
 
 # 16. `/SHOW`
-**Status: proposed new CONFIG work**
+**Status: partially implemented in Build 003; saved-drive inspection remains open**
 
 A command-line inspection facility is desirable:
 
@@ -699,7 +707,11 @@ It must not accumulate unrelated information such as:
 
 Those remain the responsibility of their respective utilities.
 
-Because `/SHOW` does not currently exist, it is implementation work, not merely documentation of existing behavior.
+Build 003 reports active physical profiles, active logical bindings, the saved
+cold-start command and the absence of private pending changes in this new
+invocation. Saved drive defaults are explicitly reported as not inspected;
+that part of the inspection contract remains implementation work. `/SHOW`
+does not modify settings or require completion keypresses.
 
 ---
 
@@ -714,12 +726,12 @@ A proposed command is:
 CONFIG /DEFAULT
 ```
 
-Before freezing this command, implementation must define precisely whether it:
-
-- loads defaults as pending settings;
-- immediately activates them;
-- immediately saves them;
-- or offers/selects among those operations.
+Maintainer decision: `/DEFAULT` loads defaults into private pending state only.
+It does not immediately activate or save them. The operator remains in the
+interactive session and uses explicit activation/save operations. It must not
+exit while implying that invocation-private pending state will survive.
+Default sources and supported-domain coverage must be specified and qualified
+before this operation is implemented. `/DEFAULT` remains unimplemented.
 
 It must not bypass CONFIG's established active/pending/saved distinctions.
 
@@ -943,14 +955,16 @@ Established:
 ```text
 CONFIG
 CONFIG /VER
+CONFIG /SHOW
+CONFIG /STARTUP="command line"
+CONFIG /STARTUP=""
 ```
+
+`/SHOW` has the saved-drive-inspection limitation described in section 16.
 
 Proposed/new; not currently available:
 
 ```text
-CONFIG /STARTUP="command line"
-CONFIG /STARTUP=""
-CONFIG /SHOW
 CONFIG /DEFAULT
 
 CONFIG /IOBYTE logical=physical [...]
