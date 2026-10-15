@@ -2177,6 +2177,11 @@ you interrupt. A larger count runs that many iterations, then reports the
 historical `#` break. Macro bodies form a continuous command stream; terminate
 inserted/search strings with Ctrl-Z. Macros cannot nest.
 
+`P` moves by 23 lines and displays a page; `0P` displays from the current
+position. `Z` uses the historical CPU-timed delay, so its nominal half-second
+unit runs faster on accelerated emulators. `0Z` waits for a key; Ctrl-Z breaks
+the command or macro.
+
 Enter `E`, `H`, `O` and `Q` as standalone commands, without numeric counts or
 other commands on the same line. `H` saves; `O` and `Q` abandon changes. They are
 not interchangeable ways to leave the editor. `Q` asks the historical

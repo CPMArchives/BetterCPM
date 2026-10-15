@@ -1,4 +1,4 @@
-; ED development front end. Not installed as ED.COM until editing is complete.
+; ED development editor. Not installed as ED.COM until qualification is complete.
 BDOS EQU 5
         CSEG
         .PHASE  0100H
@@ -8,13 +8,45 @@ ED_START:
         CALL EI_PARSE
         LD DE,ED_BAD
         JP C,ED_PRINT
-        LD DE,ED_STAGE
+        CALL ED_MEMORY
+        LD DE,ED_NOMEM
+        JP C,ED_PRINT
+        CALL EC_INIT
+        CALL FD_BEGIN
+        JP C,ED_EXIT
+ED_LOOP:
+        CALL EU_READ
+        JP C,ED_EXIT
+        OR A
+        JP Z,ED_LOOP
+        CALL FD_ACT
+        JP C,ED_EXIT
+        OR A
+        JP Z,ED_LOOP
+ED_EXIT:
+        JP 0
 ED_PRINT:
         LD C,9
         CALL BDOS
         JP 0
+; The current BDOS gateway is the TPA ceiling, including any loaded RSXs.
+; Code, private I/O buffers and downward-growing stack precede ED_STACK.
+; Require at least 1K text space before FS_SETUP can mutate any disk file.
+ED_MEMORY:
+        LD HL,(6)
+        LD DE,ED_STACK
+        OR A
+        SBC HL,DE
+        RET C
+        LD DE,1024
+        OR A
+        SBC HL,DE
+        RET C
+        LD HL,ED_STACK
+        LD DE,(6)
+        JP EB_INIT
 ED_BAD: DB 'Invalid filespec.',13,10,'$'
-ED_STAGE: DB 'ED development front end: editing engine not yet available.',13,10,'$'
+ED_NOMEM: DB 'NO MEMORY',13,10,'$'
 ; @ed-invocation@
 ; @ed-buffer@
 ; @ed-command@
@@ -38,6 +70,8 @@ ED_STAGE: DB 'ED development front end: editing engine not yet available.',13,10
 ; @ed-macro@
 ; @ed-library@
 ; @ed-transfer@
+; @ed-delay@
+; @ed-page@
 ; @utility-version ED@
         DS 128
 ED_STACK:
