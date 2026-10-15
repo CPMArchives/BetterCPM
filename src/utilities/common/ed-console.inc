@@ -42,6 +42,7 @@ EU_EXEC:
         JP Z,EU_MEMORY
 EU_ERROR:
         LD (EU_FLAG),A
+        LD (EC_FLAG),A
         LD A,(EC_IOERR)
         OR A
         JP NZ,FD_FATAL

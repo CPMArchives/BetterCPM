@@ -8,6 +8,7 @@ EC_INIT:
         LD (EC_UPPER),A
         LD (ET_COL),A
         LD (ET_MUTE),A
+        LD (EC_FLAG),A
         INC A
         LD (EC_VERIFY),A
         RET
@@ -125,6 +126,10 @@ EC_SELECT:
         JP Z,EC_LIBRARY
         CP 'X'
         JP Z,EC_XCMD
+        CP 'P'
+        JP Z,EC_PAGE
+        CP 'Z'
+        JP Z,EC_DELAY
         CP 'W'
         JP Z,EC_WRITE
         CP 'A'
@@ -193,6 +198,14 @@ EC_RETURN:
         XOR A
         LD (EC_NEG),A
         CALL ET_TYPE
+        RET C
+        JP EC_NEXT
+EC_PAGE:
+        CALL GP_RUN
+        RET C
+        JP EC_NEXT
+EC_DELAY:
+        CALL GZ_RUN
         RET C
         JP EC_NEXT
 EC_APP:
@@ -368,6 +381,7 @@ EC_IOERR: DB 0
 EC_RAW: DB 0
 EC_PREFIX: DB 0
 EC_SIZE: DB 0
+EC_FLAG: DB 0
 EC_ATSTART: DB 0
 EC_LEFT: DB 0
 EC_COUNT: DW 0

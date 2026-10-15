@@ -12,8 +12,9 @@ from test_z80pack_sysgen_install import session
 ROOT=Path(__file__).resolve().parents[1]
 
 
-def build_testloop(work,fault=None):
+def build_testloop(work,fault=None,real_entry=False):
     source=expanded_source();start=source.index('ED_START:');end=source.index('ED_BAD:')
+    production=source
     source=source[:start]+'''ED_START:
         LD SP,ED_STACK
         CALL EI_PARSE
@@ -47,6 +48,9 @@ LT_BAD:
         JP 0
 LT_ERROR: DB 'LIFECYCLE FAILED',13,10,'$'
 '''+source[end:]
+    if real_entry:
+        assert fault is None
+        source=production
     if fault:
         assert fault in (20,21)
         source=source.replace('LT_LOOP:\n', '        CALL FZ_INSTALL\nLT_LOOP:\n',1)
@@ -84,6 +88,7 @@ FZ_COUNT: DB ALLOW_RECORDS
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--better',action='store_true')
+    parser.add_argument('--real-entry',action='store_true',help='Use the actual editor startup and TPA allocation')
     parser.add_argument('--oracle',action='store_true',help='Run the same stock-CP/M expectations against pinned DRI ED')
     parser.add_argument('--diskdefs',type=Path)
     args=parser.parse_args()
@@ -96,7 +101,7 @@ def main():
         fmt='bettercpm-default'
     parent=ROOT/'build/ed-development/lifecycle';parent.mkdir(parents=True,exist_ok=True)
     work=Path(tempfile.mkdtemp(prefix='run-',dir=parent))
-    binary=build_testloop(work)
+    binary=build_testloop(work,real_entry=args.real_entry)
     if args.oracle:
         assert not args.better, '--oracle uses stock CP/M to avoid the known S1 baseline difference'
         binary=ROOT/'third_party/dri-ed/ED-CPM22-reference.COM'

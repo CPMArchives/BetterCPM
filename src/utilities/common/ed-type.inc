@@ -82,6 +82,11 @@ ET_LOOP:
         LD A,(EC_VERIFY)
         OR A
         CALL NZ,ET_NUMBER
+        ; DRI advances its relative number when a line prefix is visited,
+        ; not on every LF. A display starting mid-line retains that quirk.
+        LD HL,(ET_LINE)
+        INC HL
+        LD (ET_LINE),HL
         LD C,11
         CALL 5
         OR A
@@ -96,12 +101,6 @@ ET_BODY:
         CALL ET_GET
         LD (ET_PREV),A
         CALL ET_PRINT
-        LD A,(ET_PREV)
-        CP 10
-        JP NZ,ET_ADV
-        LD HL,(ET_LINE)
-        INC HL
-        LD (ET_LINE),HL
 ET_ADV:
         LD HL,(ET_PTR)
         INC HL

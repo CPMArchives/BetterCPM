@@ -1,8 +1,9 @@
 # ED.COM Engineering Specification
 
-Status: accepted 1.0 specification; invocation/build foundation is implemented.
-The text buffer, initial inline/line commands and T display are implemented internally; the
-interactive/file engine is not complete, and ED.COM remains planned.
+Status: accepted 1.0 specification; all command groups have initial implementations.
+The development editor now uses its real startup, bounded TPA allocation and file
+lifecycle. Final compatibility, failure, platform and release qualification remain
+incomplete, and ED.COM remains planned for distribution.
 This is a behavioral Z80/ZSM4 reimplementation, not a PL/M build dependency.
 The source and stock-binary baseline is pinned in
 [ED Reference Baseline](ED%20Reference%20Baseline.md) and

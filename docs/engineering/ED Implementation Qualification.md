@@ -791,3 +791,77 @@ movement/type operation; macro stream handling remains separate.
 
 P paging, Z timing, extended transfer/error cases, final memory/entry and
 previously listed release qualification remain pending.
+
+## P paging and Z delay — 2026-10-15
+
+P now moves by 23 lines in its requested direction, types 23 forward lines,
+and waits after each page. Zero P types from the cursor without movement or
+wait. Counted paging stops at the first/end range as in DRI PAGE. The shared
+display counter now advances when a line prefix is visited, preserving DRI's
+partial-line numbering behavior: a display beginning mid-line does not advance
+its first later visible prefix as though it had printed the preceding one.
+
+Z implements positive counted waits, zero-count key acknowledgment, Ctrl-Z
+break and keyboard interruption. WAIT polls twenty times around TIME(250).
+The pinned ED TIME routine at 1A11H uses a 12-count inner loop; the new delay
+loop has identical instruction bytes apart from relocated jump addresses.
+This is a CPU-timed nominal half-second unit around 2 MHz, not a wall-clock
+guarantee on accelerated emulators or different CPU clocks. No clock RSX or
+new BIOS/BDOS service is required.
+
+The original FLAG variable is declared but not initialized before the first
+WAIT/0Z interruption. The oracle printed AFH in this campaign. BetterCP/M
+initializes its break flag to zero and thereafter retains the prior assigned
+flag; it does not expose stale TPA contents. Delay qualification records both
+observed flags rather than treating an uninitialized byte as a required UI.
+
+- `tools/qualify_ed_page.py`: **11** stock-ED output/cursor cases pass, including
+  current, forward/backward/count/edge pages and partial-line display.
+  Evidence: `build/ed-development/page/run-7vmqjxjx`.
+- `tools/qualify_ed_delay.py`: **seven** count/key/interruption/macro outcomes
+  pass, with the initial undefined-flag distinction recorded explicitly.
+  Evidence: `build/ed-development/delay/run-w0lmrk7z`.
+- `tools/test_ed_page_delay.py`: independent page results, polling/key counts,
+  negative rejection, preserved break flags and relocated delay-loop parity.
+- Existing seven T oracle displays and ED regressions pass; live lifecycle
+  remains qualified. Native/cross builds match at **8,358 bytes**.
+
+All planned command groups now have initial implementations. This does not
+mean ED.COM is complete: final memory allocation and production entry,
+command-composition/boundary audit, remaining file/protection/failure cases,
+Model 4 qualification and distribution integration remain required.
+
+
+## Real editor entry and memory allocation
+
+The development executable now enters the editor instead of printing a placeholder.
+After standalone `/VER` handling and complete operand validation, ED uses the
+current BDOS gateway address at 0006H as its exclusive text-buffer ceiling.
+This respects a lowered gateway for loaded resident extensions. The buffer begins
+at ED_STACK, immediately above the program's private downward-growing stack;
+source, work and transfer record buffers are already part of the program image.
+At least 1,024 text bytes must remain. Otherwise `NO MEMORY` is printed before
+any source/work file is opened, created, deleted or renamed.
+
+This allocation differs internally from DRI's separate dynamically sized disk
+buffers. `0V` reports actual free/total text-buffer bytes; equal byte capacity to
+DRI ED is not claimed. Existing bounded insertion/append overflow rules remain.
+The 128-byte private stack is excluded from the text buffer.
+
+- `tools/test_ed_entry.py`: below-base, empty, below-minimum, exact-minimum and
+  multiple lowered ceilings; first/last byte guards; insufficient-memory and
+  invalid-selector exits before any mutating BDOS call.
+- `tools/test_ed_invocation.py`: standalone `/VER` remains a pure print/exit.
+- `tools/qualify_ed_lifecycle.py --real-entry`: eight complete create/save,
+  Q/O/H and split-DU sessions through the actual startup, rather than replacing
+  it with the earlier fixed-address test loop. Stock CP/M evidence:
+  `build/ed-development/lifecycle/run-u1t83ami`.
+
+The earlier fixed-buffer fixtures remain available for repeatable command and
+fault tests. This stage does not enable distribution installation. Command
+composition, unresolved publication failures, remaining protection/boundary
+cases, Model 4 qualification and distribution integration remain outstanding.
+
+BetterCP/M real-entry evidence: `build/ed-development/lifecycle/run-yzbvar7x`.
+Native ZSM4/LINK and cross assembly match at **8,373 bytes**. All existing
+module regressions pass after entry integration.
