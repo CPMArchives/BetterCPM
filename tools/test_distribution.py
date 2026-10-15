@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from build_distribution import capacity, selected_files, current_build, digest, publish_named, publish_generation
+from build_distribution import capacity, selected_files, current_build, digest, publish_named, publish_generation, validate_config_fingerprint
 
 
 class DistributionGates(unittest.TestCase):
@@ -58,6 +58,32 @@ class DistributionGates(unittest.TestCase):
         self.assertEqual(entries[0]['status'],'implemented')
         self.assertEqual(entries[0]['artifact'],'build/utilities/ED.COM')
         self.assertEqual(set(entries[0]['targets']),{'z80pack','trs80gp'})
+
+    def test_config_fingerprint_manifest(self):
+        root=Path(__file__).resolve().parents[1]
+        manifest=json.loads((root/'metadata/distribution.json').read_text())
+        self.assertFalse(any(e['name']=='SYSGEN.DAT' for e in manifest['system_disk']))
+
+    def test_config_fingerprint_matches_installed_carrier(self):
+        import struct
+        from config_validation import validation_record
+        from system_layout import LAYOUT
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary);raw=root/'system.raw'
+            base=LAYOUT['SYSTEM'];resident=bytearray(52*128)
+            resident[:8]=b'BDCF'+bytes((5,4,4,64))
+            struct.pack_into('<HH',resident,8,base+64,base+96)
+            image=bytearray(80*128);image[8*128:60*128]=resident;raw.write_bytes(image)
+            record=validation_record(resident,base,52,8,80)
+            files=[({'name':'CONFIG.COM','user':0},b'program'+record)]
+            validate_config_fingerprint('trs80gp',raw,files,root)
+            for bad in [b'program',record[:-1],validation_record(resident,base,52,8,36),
+                        record+record]:
+                with self.assertRaisesRegex(ValueError,'fingerprint does not match'):
+                    validate_config_fingerprint('trs80gp',raw,[({'name':'CONFIG.COM','user':0},bad)],root)
+            image[8*128+500]^=1;raw.write_bytes(image)
+            with self.assertRaisesRegex(ValueError,'fingerprint does not match'):
+                validate_config_fingerprint('trs80gp',raw,files,root)
 
     def test_capacity_accounts_for_directory_and_extents(self):
         geometry={'block':1024,'blocks':5,'directory_blocks':2,'entries':1}

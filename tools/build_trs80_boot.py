@@ -213,11 +213,7 @@ def install(boot: bytes, stage1: bytes, resident: bytes, command: bytes,
         raise ValueError("command module overlaps the CP/M filesystem")
     raw[command_start:command_start + command_capacity] = command.ljust(
         command_capacity, b"\x00")
-    from sysgen_image import sysgen_image
-    reference = sysgen_image(resident, LAYOUT["SYSTEM"],
-                             LAYOUT["BOOT_SECTORS"] * 4,
-                             SYSTEM_FIRST_LOGICAL_INDEX * 4, 80)
-    install_files(raw, files + [("SYSGEN.DAT", reference)])
+    install_files(raw, files)
     image = build(bytes(raw))
     verify(image, require_blank=False)
     return image

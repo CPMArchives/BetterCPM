@@ -674,7 +674,7 @@ In particular, adding a CONFIG field does not by itself justify new resident ser
 ---
 
 # 16. `/SHOW`
-**Status: partially implemented in Build 003; saved-drive inspection remains open**
+**Status: drive/startup inspection implemented; Build 005 uses embedded CRC-32 validation**
 
 A command-line inspection facility is desirable:
 
@@ -707,11 +707,52 @@ It must not accumulate unrelated information such as:
 
 Those remain the responsibility of their respective utilities.
 
-Build 003 reports active physical profiles, active logical bindings, the saved
+Build 005 reports active physical profiles, active logical bindings, the saved
 cold-start command and the absence of private pending changes in this new
-invocation. Saved drive defaults are explicitly reported as not inspected;
-that part of the inspection contract remains implementation work. `/SHOW`
-does not modify settings or require completion keypresses.
+invocation, then separately reports saved physical profiles and logical bindings.
+It reads the carrier, checks the public layout and geometry, and verifies its
+fixed bytes with the embedded build fingerprint described below. Inspection
+cannot enter activation or writes. Recoverable read errors or incompatibility
+produce a diagnostic and return without unverified saved drive values. Previously
+printed active and startup information remains available. Editable table fields
+are copied to private transient storage before restoring the FDB catalogue.
+`/SHOW` does not require completion keypresses or SYSGEN.DAT.
+
+## 16.1 Embedded build validation for inspection and save-all
+
+The former 6,784-byte external reference is replaced by a 20-byte record per
+supported platform/layout: the 16-byte build/layout/geometry descriptor followed
+by a four-byte little-endian CRC-32. Records are generated from the actual
+assembled carrier; public configuration table addresses and BIOS record geometry
+select a compatible record. Existing table bounds and reserved-track checks
+remain required before carrier access. Ambiguous records are rejected at build time.
+
+The checksum is CRC-32/ISO-HDLC (reflected polynomial EDB88320h, initial value
+FFFFFFFFh, final XOR FFFFFFFFh; `123456789` gives CBF43926h). It covers all 52
+128-byte resident-carrier records, including their padding, starting at logical
+record 8. Normalize only these existing editable ranges to zero:
+
+- 24 bytes at the physical-profile table;
+- 64 binding bytes at offset 16 of each of the four 80-byte logical-drive entries.
+
+The first 16 bytes of every logical-drive entry remain covered. No other bytes
+are omitted. BCST startup records 1–2 are separate and retain their existing
+format/checksum validation and verified-write/rollback rules.
+
+CONFIG reads the installed carrier into its proposed buffer and copies the exact
+original to rollback storage before normalization. After a successful CRC check,
+it restores the unmodified carrier bytes to the proposed buffer before inspecting
+or merging active settings. A mismatch returns before confirmation, activation
+or any save. Existing per-record differences, write verification and rollback
+continue to use exact original bytes, not the normalized checksum input.
+
+CRC-32 is an accidental-corruption/build-mismatch check. It replaces the earlier
+exact reference comparison and therefore admits a nonzero checksum collision
+risk; it is not cryptographic authentication. It does not validate the contents
+of editable fields merely because they are excluded from the fingerprint.
+No permanent BIOS/BDOS storage or ABI expansion is required. SYSGEN.DAT is no
+longer shipped or used. CONFIG must still be built for the installed system;
+runtime discovery cannot establish that a foreign system's layout is safe.
 
 ---
 

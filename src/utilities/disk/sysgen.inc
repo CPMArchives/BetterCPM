@@ -1,6 +1,6 @@
 ; CONFIG H -- SAVE ALL CURRENT STARTUP DEFAULTS.  07-Sep-2026
-; Keep SYSGEN out of the resident system. The reference file belongs to
-; this particular build; compare its fixed bytes before touching a track.
+; Keep saving out of the resident system. Embedded build records validate
+; fixed carrier bytes with CRC-32 before any editable defaults are used.
 ; 4000 = header, 4080 = original, 5A80 = startup old, 6000 = proposed,
 ; 8000 = readback. The carrier may use no more than its assigned 52 records.
 ; These buffers borrow the format catalogue. FDBLOAD puts it back on exit.
@@ -9,7 +9,13 @@ SGOLD   EQU 04080H
 SGSTOLD EQU 05A80H
 SGNEW   EQU 06000H
 SGDMA   EQU 08000H
-SYSGEN: LD HL,SGTITLE
+SYSGEN: LD A,(CF_MODE)                 ; /SHOW shares validation/read path only
+        CP 1
+        JR NZ,SGEDIT
+        XOR A
+        LD (SGSTFLAG),A
+        JP SGNOSTATE
+SGEDIT: LD HL,SGTITLE
         CALL HEADER
         LD A,(STDIRTY)                  ; retain pending-state participation
         LD (SGSTFLAG),A
@@ -25,49 +31,43 @@ SYSGEN: LD HL,SGTITLE
         CALL STVALID
         JP NZ,SGSTBAD
 SGNOSTATE:
-        LD HL,SGFCB+12
-        LD DE,SGFCB+13
-        LD BC,23
-        LD (HL),0
-        LDIR
-        LD DE,SGFCB
-        LD C,15
-        CALL BDOS
-        INC A
-        JP Z,SGFILE
+; Select an embedded build record by the actual BIOS record geometry. The
+; existing public-address and bounds checks below then validate its layout.
+        CALL SGDISKSET
+        JP NZ,SGIOERR
+        LD HL,SGVALID
+SGVPICK:
         LD DE,SGHEAD
-        CALL SGREADF
-        JP NZ,SGFILE
-        LD HL,SGHEAD
-        LD DE,SGMAGIC
-        LD BC,6
-        CALL SGCMP
-        JP NZ,SGFILE
-        LD A,(SGHEAD+6)
+        LD BC,16
+        LDIR
+        LD DE,SGCRCEX
+        LD BC,4
+        LDIR
+        PUSH HL
+        LD HL,(SGHEAD+14)
+        LD BC,(SGSPT)
         OR A
-        JP Z,SGFILE
-        CP 53
-        JP NC,SGFILE
-        LD (SGCOUNT),A
-        LD HL,SGOLD
-SGLOAD: LD (SGPTR),HL
-        EX DE,HL
-        CALL SGREADF
-        JP NZ,SGFILE
-        LD HL,(SGPTR)
-        LD DE,128
+        SBC HL,BC
+        JR NZ,SGVNEXT
+        LD B,0
+        CALL API
+        LD DE,8
         ADD HL,DE
-        LD A,(SGCOUNT)
-        DEC A
-        LD (SGCOUNT),A
-        JR NZ,SGLOAD
-        LD DE,SGDMA
-        CALL SGREADF
-        CP 1
-        JP NZ,SGFILE
-        LD DE,SGFCB
-        LD C,16
-        CALL BDOS
+        LD DE,SGHEAD+10
+        LD BC,4
+        CALL SGCMP
+        JR Z,SGVFOUND
+SGVNEXT:
+        POP HL
+        LD DE,SGVEND
+        PUSH HL
+        OR A
+        SBC HL,DE
+        POP HL
+        JR C,SGVPICK
+        JP SGWRONG
+SGVFOUND:
+        POP HL
 ; Obtain the table addresses from the running BIOS, not a build address.
         LD B,0
         CALL API
@@ -162,11 +162,15 @@ SGDISK: CALL SGPTRS
         JP NZ,SGIOERR
         CALL SGNEXT
         JR NZ,SGDISK
-; Replace only the reference's editable bytes with their on-disk values.
-; It then remains a complete original image, ready for a possible undo.
+; Preserve the exact original carrier for rollback. Normalize a private copy
+; for CRC validation; editable fields never contribute to the fingerprint.
+        LD HL,SGNEW
+        LD DE,SGOLD
+        CALL SGSIZE
+        LDIR
         LD HL,(SGPHOFF)
         LD BC,24
-        CALL SGMERGE
+        CALL SGZERO
         LD HL,(SGLOFF)
         LD DE,16
         ADD HL,DE
@@ -174,18 +178,31 @@ SGDISK: CALL SGPTRS
 SGMASK: PUSH AF
         PUSH HL
         LD BC,64
-        CALL SGMERGE
+        CALL SGZERO
         POP HL
         LD DE,80
         ADD HL,DE
         POP AF
         DEC A
         JR NZ,SGMASK
+        LD HL,SGNEW
+        CALL SGSIZE
+        CALL SGCRC32
+        LD HL,SGCRC
+        LD DE,SGCRCEX
+        LD BC,4
+        CALL SGCMP
+        JP NZ,SGWRONG
+; Restore saved configuration fields after the check, before inspection/editing.
         LD HL,SGOLD
         LD DE,SGNEW
         CALL SGSIZE
-        CALL SGCMP
-        JP NZ,SGWRONG
+        LDIR
+; Inspection stops here: the installed carrier has been checked against this
+; build, masking only the established editable fields. Never reach save logic.
+        LD A,(CF_MODE)
+        CP 1
+        JP Z,CF_SDRIVES
 ; Fetch the live definitions through the public API. Leave DPH pointers,
 ; allocation maps and other running scratch alone -- they are not defaults.
         XOR A
@@ -309,8 +326,6 @@ SGRSTATE:
         JP Z,SGREPORT
         LD HL,SGDAMAGED
         JP SGREPORT
-SGFILE: LD HL,SGFILEMSG
-        JR SGREPORT
 SGWRONG:LD HL,SGWRONGMSG
         JR SGREPORT
 SGIOERR:LD HL,SGREADMSG
@@ -318,20 +333,16 @@ SGIOERR:LD HL,SGREADMSG
 SGSTBAD:LD HL,SGSTBADMSG
 SGREPORT:CALL CRLF
         CALL PUTS
+        LD A,(CF_MODE)
+        CP 1
+        JP Z,DONE                      ; inspection never pauses or saves
         CALL PAUSE
 SGEXIT: LD DE,1
         LD C,37
         CALL BDOS
         CALL FDBLOAD
         JP MAIN
-SGREADF:LD C,26
-        CALL BDOS
-        LD DE,SGFCB
-        LD C,20
-        CALL BDOS
-        OR A
-        RET
-; Check a table is wholly inside the reference. Return its relative offset.
+; Check a table is wholly inside the carrier. Return its relative offset.
 SGRANGE:LD DE,(SGHEAD+8)
         OR A
         SBC HL,DE
@@ -355,18 +366,85 @@ SGSIZE: LD A,(SGHEAD+6)
         LD B,C
         LD C,A
         RET
-SGMERGE:LD DE,SGNEW
+SGZERO: LD DE,SGNEW
         ADD HL,DE
-        PUSH HL
-        LD DE,SGNEW-SGOLD
-        OR A
-        SBC HL,DE
-        EX DE,HL
-        POP HL
-        LDIR
+SGZLOOP:LD (HL),0
+        INC HL
+        DEC BC
+        LD A,B
+        OR C
+        JR NZ,SGZLOOP
         RET
 
-; Read installed startup defaults into the gap after the reference image.
+; CRC-32/ISO-HDLC: reflected polynomial EDB88320, init/final xor FFFFFFFF.
+; HL=bytes, BC=length. Result is little endian in SGCRC. This is a build-
+; compatibility/corruption check, not authentication of untrusted system code.
+SGCRC32:
+        LD DE,SGCRC
+        LD A,255
+        LD (DE),A
+        INC DE
+        LD (DE),A
+        INC DE
+        LD (DE),A
+        INC DE
+        LD (DE),A
+        LD A,B
+        OR C
+        JR Z,SGCRFINI
+SGCRBYTE:
+        LD A,(SGCRC)
+        XOR (HL)
+        LD (SGCRC),A
+        INC HL
+        PUSH HL
+        PUSH BC
+        LD B,8
+SGCRBIT:
+        LD HL,SGCRC+3
+        SRL (HL)
+        DEC HL
+        RR (HL)
+        DEC HL
+        RR (HL)
+        DEC HL
+        RR (HL)
+        JR NC,SGCRNEXT
+        LD A,(HL)
+        XOR 020H
+        LD (HL),A
+        INC HL
+        LD A,(HL)
+        XOR 083H
+        LD (HL),A
+        INC HL
+        LD A,(HL)
+        XOR 0B8H
+        LD (HL),A
+        INC HL
+        LD A,(HL)
+        XOR 0EDH
+        LD (HL),A
+SGCRNEXT:
+        DJNZ SGCRBIT
+        POP BC
+        POP HL
+        DEC BC
+        LD A,B
+        OR C
+        JR NZ,SGCRBYTE
+SGCRFINI:
+        LD HL,SGCRC
+        LD B,4
+SGCRFINAL:
+        LD A,(HL)
+        CPL
+        LD (HL),A
+        INC HL
+        DJNZ SGCRFINAL
+        RET
+
+; Read installed startup defaults into the gap after the original carrier.
 SGSTRD: LD A,(SGSTFLAG)
         OR A
         RET Z
@@ -582,18 +660,17 @@ SGDSBAD:LD A,1
         OR A
         RET
 SGTITLE:DB 'Save all current settings as startup defaults',0
-SGMAGIC:DB 'BCSG',1,5
 SGASK:  DB 'Save all current settings on system disk A: (Y/N)? ',0
 SGOK:   DB 13,10,'All current settings saved and verified.',13,10,0
-SGFILEMSG:DB 'Missing or invalid A:SYSGEN.DAT for this build.',13,10,0
 SGWRONGMSG:DB 'Boot disk does not match this system. Nothing saved.',13,10,0
 SGREADMSG:DB 'Cannot read boot system records. Nothing saved.',13,10,0
 SGSTBADMSG:DB 'Pending startup command is invalid. Edit or clear it first.',13,10,0
 SGRESTORED:DB 'Save failed. Original configuration restored.',13,10,0
 SGDAMAGED:DB 'Save failed; restoration also failed.',13,10
         DB 'Boot disk may be damaged. Use your backup.',13,10,0
-SGFCB:  DB 1,'SYSGEN  DAT'
-        DS 24
+SGCRC:  DS 4
+SGCRCEX:DS 4
+; @config-validation@
 SGCOUNT:DB 0
 SGINDEX:DB 0
 SGDRIVE:DB 0

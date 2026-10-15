@@ -188,6 +188,33 @@ def construct(target, root, out, files, g, cold_start_command=""):
     return raw
 
 
+def validate_config_fingerprint(target, raw, files, root):
+    """CONFIG must contain the CRC/layout record for the installed resident carrier."""
+    from config_validation import validation_record
+    from system_layout import LAYOUT
+    names = {c['name']: data for c, data in files if c['user'] == 0}
+    if 'CONFIG.COM' not in names:
+        return
+    image = raw.read_bytes()
+    if target == 'z80pack':
+        from fdf_format import select_fdf
+        from build_z80pack_image import DEFAULT_FORMAT
+        f = select_fdf(root / 'third_party/montezuma/DISK.FDF', DEFAULT_FORMAT)
+        def record(n):
+            track, within = divmod(n, f.spt)
+            at = track*f.raw_track_bytes + f.raw_record_map()[within]*128
+            return image[at:at+128]
+        spt = f.spt
+    else:
+        def record(n):
+            return image[n*128:(n+1)*128]
+        spt = 80
+    carrier = b''.join(record(n) for n in range(8, 60))
+    expected = validation_record(carrier, LAYOUT['SYSTEM'], 52, 8, spt)
+    if names['CONFIG.COM'].count(expected) != 1:
+        raise ValueError('CONFIG.COM fingerprint does not match installed system carrier/geometry')
+
+
 def validate_files(raw, out, files, g):
     listing = run(['cpmls', '-f', g['definition'], raw], out).decode()
     tokens = listing.lower().split()
@@ -362,6 +389,7 @@ def main():
             g = geometry(target, root)
             totals = capacity(files, g)
             raw = construct(target, root, out, files, g, manifest.get('cold_start_command', ''))
+            validate_config_fingerprint(target, raw, files, root)
             included = validate_files(raw, out, files, g)
             name = f'BetterCPM-Distribution-{target}-'+('332K.dsk' if target=='z80pack' else '80T-DS-System.dmk')
             image = out/name
@@ -379,7 +407,7 @@ def main():
                       'tools':{n:digest(Path(shutil.which(n)).read_bytes()) for n in ['cpmcp','cpmls','fsck.cpm']},
                       'emulator_sha256':digest((a.simulator if target=='z80pack' else a.emulator).read_bytes()),
                       'included':included, 'omitted':omitted, **totals,
-                      'validation':{'filesystem':'PASS','file_integrity':'PASS','boot':boot_result},
+                      'validation':{'filesystem':'PASS','file_integrity':'PASS','config_fingerprint':'PASS','boot':boot_result},
                       'issues':['Existing core VER reports BetterCP/M 0.3; version presentation requires separate review',
                                 'Utilities/CPM Tools media and additional on-disk documentation deferred']}
             (out/'report.json').write_text(json.dumps(report,indent=2)+'\n')

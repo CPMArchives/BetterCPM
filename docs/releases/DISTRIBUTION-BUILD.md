@@ -122,3 +122,19 @@ file inventory into the small disk. The distribution builder still creates and
 validates the complete filesystem solely from the authoritative manifest.
 The ordinary cpmsim development disk keeps its existing test inventory; ED is
 installed by isolated ED campaigns and by the distribution builder.
+
+## CONFIG compatibility fingerprint
+
+CONFIG Build 005 replaces the external SYSGEN.DAT reference with embedded
+20-byte layout/geometry/CRC-32 records. Neither System Disk needs SYSGEN.DAT.
+The ordinary common build generates its Model 4 record from the freshly built
+resident image. After assembling its platform resident image, the cpmsim builder
+explicitly rebuilds CONFIG with a second record for that image and geometry.
+It does not discover records from leftover output directories. Native ZSM4/LINK
+uses the same generated `build/utilities/config-validation.inc` as cross assembly.
+
+The distribution gate independently derives the expected record from the actual
+installed carrier (including cpmsim sector skew) and requires it exactly once in
+CONFIG.COM. A mismatched or missing fingerprint fails before publication.
+The checksum's exact normalization and corruption-detection limits are described
+in the [CONFIG specification](../engineering/CONFIG%20Specification.md).

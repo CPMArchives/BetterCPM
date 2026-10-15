@@ -1760,6 +1760,96 @@ CF_SBAD:
 CF_SUMMARY:
         LD HL,CF_PENDING
         CALL PUTS
+        LD HL,CF_SDMSG
+        CALL PUTS
+        JP SYSGEN                      ; same build/geometry validation, no writes
+
+; Snapshot only editable saved fields before restoring the format catalogue,
+; which shares SGHEAD/SGOLD/SGNEW workspace. DPH pointers are never installed.
+CF_SDRIVES:
+        LD HL,(SGPHOFF)
+        LD DE,SGNEW
+        ADD HL,DE
+        LD DE,CF_PHY
+        LD BC,24
+        LDIR
+        LD HL,(SGLOFF)
+        LD DE,SGNEW+16
+        ADD HL,DE
+        LD DE,CF_LOG
+        LD A,4
+CF_SCOPY:
+        PUSH AF
+        LD BC,64
+        LDIR
+        LD BC,16
+        ADD HL,BC
+        POP AF
+        DEC A
+        JR NZ,CF_SCOPY
+        CALL FDBLOAD
+        LD HL,CF_SPHY
+        CALL PUTS
+        XOR A
+        LD (PHINDEX),A
+        LD HL,CF_PHY
+CF_SPLOOP:
+        LD DE,PHREQ+1
+        LD BC,6
+        LDIR
+        PUSH HL
+        LD A,(PHINDEX)
+        CALL DECOUT
+        CALL CRLF
+        XOR A
+        LD (FIELD),A
+CF_SFIELD:
+        CALL PHPRINT
+        LD A,(FIELD)
+        INC A
+        LD (FIELD),A
+        CP 6
+        JR C,CF_SFIELD
+        POP HL
+        LD A,(PHINDEX)
+        INC A
+        LD (PHINDEX),A
+        CP 4
+        JR C,CF_SPLOOP
+        LD HL,CF_SLOG
+        CALL PUTS
+        XOR A
+        LD (LOGIDX),A
+        LD HL,CF_LOG
+CF_SLLOOP:
+        LD DE,CURB
+        LD BC,64
+        LDIR
+        PUSH HL
+        LD A,(LOGIDX)
+        ADD A,'A'
+        CALL PUTC
+        LD HL,COLON
+        CALL PUTS
+        LD A,(CURB)
+        CP 255
+        JR Z,CF_SUNDEF
+        CALL DECOUT
+        LD HL,COLON
+        CALL PUTS
+        CALL FDBCURNAME
+        JR CF_SLNEXT
+CF_SUNDEF:
+        LD HL,UNDEF
+        CALL PUTS
+CF_SLNEXT:
+        CALL CRLF
+        POP HL
+        LD A,(LOGIDX)
+        INC A
+        LD (LOGIDX),A
+        CP 4
+        JR C,CF_SLLOOP
         JP DONE
 CF_READERR:
         LD HL,CF_ERROR
@@ -1774,7 +1864,12 @@ CF_SAVED: DB 'Saved cold-start command: ',0
 CF_OFFMSG: DB 'disabled',13,10,0
 CF_UNKNOWN: DB 'unreadable or invalid',13,10,0
 CF_PENDING: DB 'Pending changes: none (new invocation).',13,10
-        DB 'Saved drive defaults: not inspected by /SHOW.',13,10,0
+        DB 0
+CF_SDMSG: DB 'Saved drive defaults (system disk A:):',13,10,0
+CF_SPHY: DB 'Saved physical-drive profiles:',13,10,0
+CF_SLOG: DB 'Saved logical-drive bindings:',13,10,0
+CF_PHY: DS 24
+CF_LOG: DS 256
 CF_ERROR: DB 'Cannot inspect drive configuration.',13,10,0
 CF_MODE: DB 0
 CF_LEFT: DB 0

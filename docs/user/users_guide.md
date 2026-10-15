@@ -2418,9 +2418,20 @@ writes and attempts restoration after recoverable save failures. A power loss
 during saving can still require recovery.
 
 Use `CONFIG /SHOW` for read-only inspection of active physical profiles, active
-logical bindings and the saved cold-start command. It reports no private pending
-changes for the new invocation. Saved drive defaults are not yet inspected by
-this command; its output states that limitation explicitly.
+logical bindings, the saved cold-start command, and saved drive defaults. Active
+and saved drive settings are listed separately: a temporary active change need
+not match the next cold-boot default. It reports no private pending changes for
+the new invocation. Inspection never asks for save confirmation.
+
+CONFIG validates the installed system's layout, geometry and fixed bytes before
+showing saved drive settings or saving all settings. Build 005 uses an embedded
+CRC-32 fingerprint; no SYSGEN.DAT file is needed. If the system does not match,
+CONFIG reports the problem instead of showing unverified saved drive defaults
+or writing a configuration. Use CONFIG from the matching system build.
+
+The CRC detects accidental corruption or a mismatched build; it is not a
+cryptographic authenticity check. Editable configuration fields are excluded,
+so a previously saved drive configuration remains valid.
 
 #### 7.2 Startup command
 
@@ -2455,8 +2466,8 @@ validation and save results before relying on a new configuration.
 #### 7.4 Planned extensions — not yet implemented
 
 The [CONFIG engineering specification](../engineering/CONFIG%20Specification.md)
-records remaining command-line equivalents for drive configuration, completed
-saved-drive inspection, and `/DEFAULT`. The agreed defaults operation will
+records remaining command-line equivalents for drive configuration and
+`/DEFAULT`. The agreed defaults operation will
 load pending settings only, without automatic activation or saving; it is not
 yet implemented.
 
