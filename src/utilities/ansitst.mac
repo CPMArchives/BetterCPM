@@ -1,0 +1,73 @@
+; ANSI foundation exercise; requires the ANSI host personality.
+BDOS EQU 5
+        CSEG
+        .PHASE 0100H
+START:
+        LD DE,LOOKUP
+        LD C,182
+        CALL BDOS
+        OR A
+        JP NZ,MISSING
+        LD HL,(LOOKUP+12)
+        LD (SERVICE),HL
+        LD A,4
+        CALL INVOKE
+        LD DE,PAGE1
+        CALL PRINT
+        CALL PAUSE
+        LD DE,PARTIAL
+        CALL PRINT
+        LD A,5
+        CALL INVOKE
+        LD DE,RESETMSG
+        CALL PRINT
+        CALL PAUSE
+        LD A,4
+        CALL INVOKE
+        LD DE,DONE
+        CALL PRINT
+        JP 0
+MISSING:
+        LD DE,NONE
+        CALL PRINT
+        JP 0
+PAUSE:
+        LD DE,WAIT
+        CALL PRINT
+        LD C,1
+        JP BDOS
+INVOKE:
+        LD HL,(SERVICE)
+        JP (HL)
+PRINT:
+        EX DE,HL
+NEXT:
+        LD A,(HL)
+        OR A
+        RET Z
+        LD E,A
+        PUSH HL
+        LD C,6
+        CALL BDOS
+        POP HL
+        INC HL
+        JR NEXT
+LOOKUP: DB 1,20,0,0,'MCON',1,0
+        DW 0,0
+        DB 0,0
+        DW 0
+        DB 0,0
+SERVICE: DW 0
+PAGE1:
+        DB 'ANSI monitor foundation test',13,10
+        DB 27,'[6;11HMarker: row 5, column 10.'
+        DB 27,'[8;1HNormal ',27,'[7mReverse',27,'[0m Normal'
+        DB 27,'[10;1HErase KEEP remove-me',27,'[10;12H',27,'[K'
+        DB 27,'[12;1HCheck position, reverse video, and erased suffix.',0
+PARTIAL: DB 27,'[12;',0
+RESETMSG: DB ' Parser reset: readable text after incomplete address.',13,10,0
+WAIT: DB 13,10,'Press a key to continue.',13,10,0
+DONE: DB 'ANSI foundation exercise complete.',13,10,0
+NONE: DB 'No MCON provider loaded. Load the development ANSI.RSX.',13,10,0
+        .DEPHASE
+        END

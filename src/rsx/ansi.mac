@@ -1,0 +1,222 @@
+; Bounded ANSI/VT100 host personality. No BDOS calls from callbacks.
+; Pending sequences are private until complete; reset cannot strand host ESC.
+BASE EQU 08000H
+        CSEG
+        .PHASE BASE
+AN_NEXT: DW 5
+AN_DISP: DW AN_CHAIN
+        DB 0,0
+        DW 0
+AN_CHAIN:
+        LD HL,(AN_NEXT)
+        JP (HL)
+AN_ENTRY:
+        OR A
+        JP Z,AN_OUT
+        CP 4
+        JP Z,AN_CLEAR
+        CP 5
+        JP Z,AN_RESET
+AN_RAW:
+        LD HL,(1)
+        LD DE,66
+        ADD HL,DE
+        JP (HL)
+AN_EMIT:
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        XOR A
+        CALL AN_RAW
+        POP HL
+        POP DE
+        POP BC
+        RET
+AN_RESET:
+        XOR A
+        LD (AN_STATE),A
+        LD (AN_COUNT),A
+        RET
+AN_CLEAR:
+        CALL AN_RESET
+        LD HL,AN_CLS
+        LD B,7
+        JP AN_SEND
+AN_SEND:
+        LD C,(HL)
+        INC HL
+        CALL AN_EMIT
+        DJNZ AN_SEND
+        RET
+AN_OUT:
+        LD A,C
+        CP 24                         ; CAN and SUB cancel pending sequences
+        JP Z,AN_RESET
+        CP 26
+        JP Z,AN_RESET
+        LD A,(AN_STATE)
+        CP 4
+        JP Z,AS_BODY
+        CP 5
+        JP Z,AS_ESC
+        LD A,C
+        CP 27
+        JP Z,AN_BEGIN
+        LD A,(AN_STATE)
+        OR A
+        JP Z,AN_NORMAL
+        CP 1
+        JP Z,AN_ESC
+        CP 3
+        JP Z,AN_DROP
+        JP AN_CSI
+AN_NORMAL:
+        LD A,C
+        CP 127
+        RET Z
+        JP AN_EMIT
+AN_BEGIN:
+        LD A,1
+        LD (AN_STATE),A
+        LD A,27
+        LD (AN_BUFFER),A
+        LD A,1
+        LD (AN_COUNT),A
+        RET
+AN_ESC:
+        LD A,C
+        CP '['
+        JP Z,AN_CSI_BEGIN
+        CP ']'
+        JP Z,AS_BEGIN
+        CP 'P'
+        JP Z,AS_BEGIN
+        CP '7'
+        JP Z,AN_ESC_OK
+        CP '8'
+        JP Z,AN_ESC_OK
+        CP 'D'
+        JP Z,AN_ESC_OK
+        CP 'E'
+        JP Z,AN_ESC_OK
+        CP 'M'
+        JP Z,AN_ESC_OK
+        JP AN_RESET
+AN_ESC_OK:
+        CALL AN_APPEND
+        JP AN_FLUSH
+AN_CSI_BEGIN:
+        CALL AN_APPEND
+        LD A,2
+        LD (AN_STATE),A
+        RET
+AN_APPEND:
+        LD A,(AN_COUNT)
+        LD E,A
+        LD D,0
+        LD HL,AN_BUFFER
+        ADD HL,DE
+        LD (HL),C
+        INC A
+        LD (AN_COUNT),A
+        RET
+AN_CSI:
+        LD A,(AN_COUNT)
+        CP 31                         ; reserve one final byte in 32-byte buffer
+        JP NC,AN_OVERFLOW
+        LD A,C
+        CP 40H
+        JP NC,AN_FINAL
+        CP ';'
+        JP Z,AN_PARAM
+        CP '0'
+        JP C,AN_BAD
+        CP ':'
+        JP C,AN_PARAM
+        CP '?'
+        JP NZ,AN_BAD
+        LD A,(AN_COUNT)
+        CP 2
+        JP NZ,AN_BAD
+AN_PARAM:
+        JP AN_APPEND
+AN_FINAL:
+        CP 7FH
+        JP NC,AN_BAD
+        CALL AN_APPEND
+        LD A,(AN_BUFFER+2)
+        CP '?'
+        JP Z,AN_PRIVATE
+        LD HL,AN_CODES
+AN_FIND:
+        LD A,(HL)
+        OR A
+        JP Z,AN_RESET
+        CP C
+        JP Z,AN_FLUSH
+        INC HL
+        JP AN_FIND
+AN_PRIVATE:
+        LD A,(AN_COUNT)
+        CP 6
+        JP NZ,AN_RESET
+        LD A,(AN_BUFFER+3)
+        CP '2'
+        JP NZ,AN_RESET
+        LD A,(AN_BUFFER+4)
+        CP '5'
+        JP NZ,AN_RESET
+        LD A,C
+        CP 'h'
+        JP Z,AN_FLUSH
+        CP 'l'
+        JP NZ,AN_RESET
+AN_FLUSH:
+        LD A,(AN_COUNT)
+        LD B,A
+        LD HL,AN_BUFFER
+        CALL AN_SEND
+        JP AN_RESET
+AN_BAD:
+        LD A,3
+        LD (AN_STATE),A
+AN_DROP:
+        LD A,C
+        CP 40H
+        RET C
+        CP 7FH
+        RET NC
+        JP AN_RESET
+AN_OVERFLOW:
+        LD A,3
+        LD (AN_STATE),A
+        JP AN_DROP
+AS_BEGIN:
+        LD A,4
+        LD (AN_STATE),A
+        RET
+AS_BODY:
+        LD A,C
+        CP 7
+        JP Z,AN_RESET
+        CP 27
+        RET NZ
+        LD A,5
+        LD (AN_STATE),A
+        RET
+AS_ESC:
+        LD A,C
+        CP 92                         ; ST = ESC backslash
+        JP Z,AN_RESET
+        CP 7
+        JP Z,AN_RESET
+        CP 27
+        RET Z
+        JP AS_BEGIN
+AN_STATE: DB 0
+AN_COUNT: DB 0
+AN_BUFFER: DS 32
+AN_CODES: DB 'ABCDHfJKmrsu',0
+AN_CLS: DB 27,'[2J',27,'[H'
+        .DEPHASE
+        END
