@@ -489,3 +489,60 @@ EDTEST.COM, restores the BDOS vector before warm return, and is absent from
 the development core. The ordinary live lifecycle and ED regressions pass;
 native ZSM4/LINK and cross builds match at **5,517 bytes**. Protected-source,
 rename-failure, real-capacity and Model 4 qualification remain open.
+
+## Protected-source baseline and read-only save — 2026-10-15
+
+`tools/qualify_ed_protected.py` now checks RO, SYS and RO+SYS against pinned
+DRI ED. SYS-only rejects entry without removing the older BAK. RO and RO+SYS
+display the read-only warning, permit editing, and Q preserves the original
+while removing the work file; the older BAK is removed during setup. These
+states also pass on the new BetterCP/M test loop. Evidence:
+`build/ed-development/protected/run-xywzsskd` (oracle),
+`build/ed-development/protected/run-e4h84yu9` (BetterCP/M).
+
+The additional `--save-readonly` case establishes DRI's save failure: close
+edited output, stop before source backup/publication with Bdos Err On A: File
+R/O, accept a key and warm-return, leaving original and edited $$$ intact.
+The new owner detects source RO after work close and reproduces that behavior
+without letting a host BDOS reboot bypass its DU/DMA exit handling. No
+attribute is cleared, no override is offered and no rename is attempted.
+Non-RO publication failures remain outside this special case.
+
+The save test verifies the complete recoverable edited text as well as source,
+backup/temp states and diagnostic/acknowledgment. Evidence:
+`build/ed-development/protected/run-8ni8p7c2` (oracle),
+`build/ed-development/protected/run-1yvydjyj` (BetterCP/M).
+The new stock-CP/M loop also passes this RO-save scenario. Publication and
+recovery unit checks cover close-only preservation, one acknowledgment, no
+destructive cleanup and unchanged handling of unrelated rename failures.
+Normal live lifecycle and ED regressions pass; native and cross builds match
+at **5,615 bytes**.
+
+Protected split-DU saves, RO+SYS completion, attribute changes during editing,
+other rename failures, actual disk exhaustion and Model 4 behavior remain
+qualification work. This does not mark ED.COM complete or distributable.
+
+## Expanded protection and live DU isolation — 2026-10-15
+
+The protected campaign now accepts `--split`, `--readonly-system`, and
+BetterCP/M-only `--users` (source A7, output user 19). Stock DRI ED passes
+split-drive RO-save and RO+SYS-save recovery expectations. The new loop passes
+the combined RO+SYS source in A7 with recovery output in B19 and caller-DU
+return. Evidence:
+
+- `build/ed-development/protected/run-s5nvmhlb` (oracle split RO save);
+- `build/ed-development/protected/run-sa8954gy` (oracle RO+SYS save);
+- `build/ed-development/protected/run-usayjfqp` (BetterCP/M A7/B19 RO+SYS).
+
+`tools/qualify_ed_du.py --diskdefs PATH` adds four live unprotected cases:
+A7 to A19 on the same drive, A7 to B19, split-DU H followed by another save,
+and Q returning to caller A0. It checks output/backup contents, actual exit
+prompts and preservation of same-named user-zero sentinel files on both
+drives. Evidence: `build/ed-development/du/run-d5sh0i5a`. Missing-file checks
+remove the prior extraction first and require a newly created result, since
+cpmcp can return success for an unmatched pattern.
+
+These qualification additions required no production-code changes. The prior
+**5,615-byte** native/cross result still applies. Dynamic attribute changes,
+other publication failures, actual disk exhaustion and Model 4 qualification
+remain open; broader ED commands are still unimplemented.
