@@ -1,6 +1,7 @@
 # ED.COM Engineering Specification
 
-Status: accepted 1.0 specification; BetterCP/M ED implementation has not started.
+Status: accepted 1.0 specification; invocation/build foundation is implemented.
+The editing engine is not yet implemented, and ED.COM remains planned.
 This is a behavioral Z80/ZSM4 reimplementation, not a PL/M build dependency.
 The source and stock-binary baseline is pinned in
 [ED Reference Baseline](ED%20Reference%20Baseline.md) and
@@ -1023,3 +1024,13 @@ simple DU: addressing
 ```
 
 Everything else should be traceable to the official CP/M 2.2 ED source, binary, or documentation.
+## Implementation qualification notes — 2026-10-15
+
+The initial front end and stock-oracle fixtures are recorded in
+[ED implementation qualification](ED%20Implementation%20Qualification.md).
+Historical behavior must come from the stock binary on stock CP/M, not solely
+from running that binary under BetterCP/M. In particular, the initial collision
+case returns on the caller drive under stock CP/M but on the output drive under
+the current BetterCP/M host. ED error exits must reproduce the former, extended
+to explicit DU state. Reserved S1 publication also differs and requires audit.
+These are qualification findings, not new editor features.

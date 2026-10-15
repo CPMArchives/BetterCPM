@@ -21,7 +21,8 @@ ROOT = Path(__file__).resolve().parents[1]
 def session(simulator: Path, disks: Path,
             commands: list[tuple[bytes, bytes, float]],
             transcript_path: Path | None = None, *,
-            rom_image: Path | None = None, rom_start: str | None = None) -> bytes:
+            rom_image: Path | None = None, rom_start: str | None = None,
+            initial_prompt: bytes = b"A0>_ ") -> bytes:
     environment = dict(os.environ)
     environment["PATH"] = (str(simulator.parent / "srctools") +
                            os.pathsep + environment["PATH"])
@@ -60,7 +61,7 @@ def session(simulator: Path, disks: Path,
         del pending[:end]
 
     try:
-        expect(b"A0>_ ", 30)
+        expect(initial_prompt, 30)
         for outgoing, wanted, timeout in commands:
             os.write(terminal, outgoing)
             expect(wanted, timeout)

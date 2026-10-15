@@ -11,7 +11,7 @@ COMPONENTS = (
     "test_service_rsx", "svctest",
     "stateful_test_rsx", "stattst",
     "rsxloader", "rsxresolver",
-    "rsx_runtime_overlays", "fileloader", "system", "utilities",
+    "rsx_runtime_overlays", "fileloader", "system", "utilities", "ed",
     "trs80_boot", "adm3a", "vt52", "ansi", "system_package",
 )
 if __name__ == "__main__":
