@@ -81,6 +81,8 @@ EC_DISP:
         LD (EC_NEG),A               ; DRI zero distance implies backward
 EC_SELECT:
         LD A,(EC_CMD)
+        CP 'W'
+        JP Z,EC_WRITE
         CP 'A'
         JP Z,EC_APP
         CP 'B'
@@ -100,6 +102,10 @@ EC_SELECT:
         CP 'V'
         JP Z,EC_VCMD
         JP EC_BAD
+EC_WRITE:
+        CALL EX_RUN
+        RET C
+        JP EC_NEXT
 EC_APP:
         CALL EA_RUN
         RET C

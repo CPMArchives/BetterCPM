@@ -26,7 +26,7 @@ ET_RIGHT:
         CALL EB_RIGHT
         JP ET_RESTORE
 ET_READY:
-        LD HL,1
+        LD HL,(EB_BASE)
         LD (ET_LINE),HL
         LD A,10
         LD (ET_PREV),A

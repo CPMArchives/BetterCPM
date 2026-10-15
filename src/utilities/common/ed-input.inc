@@ -241,7 +241,7 @@ IN_CRLF:
         LD A,10
         JP ET_TTY
 IN_LINE:
-        LD HL,1
+        LD HL,(EB_BASE)
         LD (ET_LINE),HL
         LD HL,(EB_FIRST)
 IN_SCAN:
