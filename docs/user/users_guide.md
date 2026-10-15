@@ -2433,6 +2433,35 @@ The CRC detects accidental corruption or a mismatched build; it is not a
 cryptographic authenticity check. Editable configuration fields are excluded,
 so a previously saved drive configuration remains valid.
 
+Physical drive fields can also be changed from the command line:
+
+```text
+CONFIG /PHYSICAL=1 /TRACKS=80 /SIDES=2 /STEP=6
+```
+
+Specify physical drive `0`–`3` first, then one or more of these fields:
+
+| Field | Values |
+| --- | --- |
+| `/TYPE=` | 5 or 8 inches |
+| `/TRACKS=` | 35, 40, 77 or 80 |
+| `/SIDES=` | 1 or 2 |
+| `/STEP=` | 6, 12, 20 or 30 milliseconds |
+| `/SPINUP=` | 0–16 quarter-seconds |
+| `/SETTLE=` | 0–255 milliseconds |
+
+Unspecified fields retain their current values. Duplicate fields, invalid values
+and extra operands are rejected before changes. These commands apply live
+settings and return immediately; they do not save boot defaults or ask for a
+save confirmation. To make a change persistent, use CONFIG's save-all-current
+menu separately. Physical timing effects depend on the platform.
+
+A change that cannot support A:'s current track/side requirements is rejected.
+Incompatible bindings on other logical drives are unconfigured after a physical
+profile changes, as with the menu. If CONFIG reports “Drive profile changed;
+binding cleanup incomplete,” the profile has changed but some binding checks or
+changes failed; retry or inspect and correct the affected logical bindings.
+
 #### 7.2 Startup command
 
 Use CONFIG’s startup-command menu (`J`) to inspect or edit the pending command.
@@ -2466,8 +2495,8 @@ validation and save results before relying on a new configuration.
 #### 7.4 Planned extensions — not yet implemented
 
 The [CONFIG engineering specification](../engineering/CONFIG%20Specification.md)
-records remaining command-line equivalents for drive configuration and
-`/DEFAULT`. The agreed defaults operation will
+records remaining command-line equivalents for logical-drive binding, format
+selection/workbench editing, and `/DEFAULT`. The agreed defaults operation will
 load pending settings only, without automatic activation or saving; it is not
 yet implemented.
 

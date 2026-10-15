@@ -21,6 +21,9 @@ CF_VDONE:
         CALL CF_PARSE
         JP C,CF_USAGE
         CALL INIT
+        LD A,(CF_MODE)
+        CP 3
+        JP Z,CD_APPLY                  ; physical CLI needs no format catalogue
         CALL FDBLOAD
         XOR A
         LD (STSTATE),A
@@ -225,12 +228,21 @@ PHSAVE: LD B,A                          ; save physical profile
         LD DE,PHREQ
         ADD HL,DE
         LD (HL),B
+        CALL PHSAFE
+        JP NZ,PHERROR
         LD DE,PHREQ
         LD B,2
         CALL API
         JR NZ,PHERROR
         CALL PHCLEAN
-        LD A,(CHECKPH)
+        LD A,(PHFAIL)
+        OR A
+        JR Z,PHCOK
+        LD HL,CD_PART
+        CALL PUTS
+        CALL PAUSE
+        JP PHEDIT
+PHCOK:  LD A,(CHECKPH)
         OR A
         JP Z,PHEDIT
         LD A,1
@@ -247,8 +259,37 @@ PHERROR:CALL ERROR                      ; physical error
 ; Detach Incompatible Logical Bindings
 ; -------------------------------------------------------------------------------
 
+; Check proposed limits against A:'s current binding before committing them.
+; Read failure is rejection. No active profile or binding has changed yet.
+PHSAFE: XOR A
+        LD (REQ),A
+        LD DE,REQ
+        LD B,3
+        CALL API
+        RET NZ
+        LD A,(PHINDEX)
+        LD HL,REQ+1
+        CP (HL)
+        JR NZ,PHGOOD
+        LD A,(PHREQ+2)
+        LD HL,REQ+17
+        CP (HL)
+        JR C,PHBAD
+        LD A,(REQ+20)
+        AND 060H
+        JR Z,PHGOOD
+        LD A,(PHREQ+3)
+        CP 2
+        JR NZ,PHBAD
+PHGOOD: XOR A
+        RET
+PHBAD:  LD A,1
+        OR A
+        RET
+
 PHCLEAN:XOR A                           ; detach incompatible logical bindings
         LD (CHECKPH),A
+        LD (PHFAIL),A
         INC A
         LD (LOGIDX),A
 
@@ -257,7 +298,7 @@ PHCLP: LD A,(LOGIDX)                    ; physical clp
         LD DE,REQ
         LD B,3
         CALL API
-        JR NZ,PHCNEXT
+        JR NZ,PHCFAIL
         LD A,(REQ+1)
         CP 0FFH
         JR Z,PHCNEXT
@@ -283,11 +324,15 @@ PHCDET:LD A,(LOGIDX)                    ; physical cdet
         LD DE,REQ
         LD B,4
         CALL API
-        JR NZ,PHCNEXT
+        JR NZ,PHCFAIL
         LD A,(LOGIDX)
         CALL RESETLOG
         LD A,1
         LD (CHECKPH),A
+
+        JR PHCNEXT
+PHCFAIL:LD A,1
+        LD (PHFAIL),A
 
 PHCNEXT:                                ; physical cnext
         LD A,(LOGIDX)
@@ -1562,7 +1607,7 @@ CF_TRYST:
         LD C,A
         LD DE,CF_STOP
         CALL CF_MATCH
-        RET C
+        JP C,CD_PARSE
         LD DE,CF_TEXT
         LD B,0
 CF_STRING:
@@ -1876,6 +1921,258 @@ CF_LEFT: DB 0
 CF_PTR: DW 0
 CF_LEN: DB 0
 CF_TEXT: DS 127
+
+ ; Physical CLI edits the active profile only. All tail parsing and value
+ ; validation finish before INIT or any configuration/file operation.
+CD_PARSE:
+        LD HL,(CF_PTR)
+        LD A,(CF_LEFT)
+        LD C,A
+        LD DE,CD_PHOPT
+        CALL CF_MATCH
+        RET C
+        CALL CD_NUM
+        RET C
+        CP 4
+        JP NC,CF_BAD
+        LD (CD_DRIVE),A
+        XOR A
+        LD (CD_MASK),A
+CD_LOOP:
+        CALL CF_SKIP
+        JR Z,CD_END
+        LD (CD_PTR),HL
+        LD A,C
+        LD (CD_LEFT),A
+        XOR A
+        LD (CD_FIELD),A
+CD_FIND:
+        LD A,(CD_FIELD)
+        ADD A,A
+        LD L,A
+        LD H,0
+        LD DE,CD_NAMES
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD HL,(CD_PTR)
+        LD A,(CD_LEFT)
+        LD C,A
+        CALL CF_MATCH
+        JR NC,CD_MATCH
+        LD A,(CD_FIELD)
+        INC A
+        LD (CD_FIELD),A
+        CP 6
+        JR C,CD_FIND
+        JP CF_BAD
+CD_MATCH:
+        CALL CD_NUM
+        RET C
+        PUSH HL
+        PUSH BC
+        CALL CD_VALID
+        POP BC
+        POP HL
+        RET C
+        PUSH HL
+        LD A,(CD_FIELD)
+        LD L,A
+        LD H,0
+        LD DE,CD_BITS
+        ADD HL,DE
+        LD A,(CD_MASK)
+        AND (HL)
+        JR NZ,CD_DUP
+        LD A,(CD_MASK)
+        OR (HL)
+        LD (CD_MASK),A
+        LD A,(CD_FIELD)
+        LD L,A
+        LD H,0
+        LD DE,CD_VALS
+        ADD HL,DE
+        ; CD_VALUE survives table address calculation and preserves tail BC.
+        LD A,(CD_VALUE)
+        LD (HL),A
+        POP HL
+        JP CD_LOOP
+CD_DUP: POP HL
+        JP CF_BAD
+CD_END: LD A,(CD_MASK)
+        OR A
+        JP Z,CF_BAD
+        LD A,3
+        LD (CF_MODE),A
+        OR A
+        RET
+
+; Bounded decimal byte, followed by whitespace or end of tail. No signs,
+; wrapping, abbreviated values or concatenated options are accepted.
+CD_NUM: LD A,C
+        OR A
+        JP Z,CF_BAD
+        LD A,(HL)
+        SUB '0'
+        CP 10
+        JP NC,CF_BAD
+        LD D,0
+CD_DIGIT:
+        LD A,(HL)
+        SUB '0'
+        LD B,A
+        LD A,D
+        CP 26
+        JP NC,CF_BAD
+        ADD A,A
+        LD E,A
+        ADD A,A
+        ADD A,A
+        ADD A,E
+        ADD A,B
+        JP C,CF_BAD
+        LD D,A
+        INC HL
+        DEC C
+        JR Z,CD_NEND
+        LD A,(HL)
+        CP '0'
+        JR C,CD_NSEP
+        CP ':'
+        JR C,CD_DIGIT
+CD_NSEP:
+        CP 32
+        JR Z,CD_NEND
+        CP 9
+        JP NZ,CF_BAD
+CD_NEND:LD A,D
+        OR A
+        RET
+
+; Return the stored value (step milliseconds become backend codes 0..3).
+CD_VALID:
+        LD D,A
+        LD (CD_VALUE),A
+        LD A,(CD_FIELD)
+        OR A
+        JR Z,CD_TYPE
+        CP 1
+        JR Z,CD_TRACK
+        CP 2
+        JR Z,CD_SIDE
+        CP 3
+        JR Z,CD_STEP
+        CP 4
+        JR NZ,CD_VOK
+        LD A,D
+        CP 17
+        JP NC,CF_BAD
+        JR CD_VOK
+CD_TYPE:LD A,D
+        CP 5
+        JR Z,CD_VOK
+        CP 8
+        JP NZ,CF_BAD
+        JR CD_VOK
+CD_SIDE:LD A,D
+        DEC A
+        CP 2
+        JP NC,CF_BAD
+        JR CD_VOK
+CD_TRACK:
+        LD HL,TRKTAB
+        JR CD_TABLE
+CD_STEP:LD HL,STEPTAB
+CD_TABLE:
+        LD B,4
+        LD E,0
+CD_TLOOP:
+        LD A,D
+        CP (HL)
+        JR Z,CD_TFOUND
+        INC HL
+        INC E
+        DJNZ CD_TLOOP
+        JP CF_BAD
+CD_TFOUND:
+        LD A,(CD_FIELD)
+        CP 3
+        JR NZ,CD_VOK
+        LD A,E
+        LD (CD_VALUE),A
+CD_VOK: LD A,(CD_VALUE)
+        OR A
+        RET
+
+CD_APPLY:
+        LD A,(CD_DRIVE)
+        LD (PHINDEX),A
+        LD (PHREQ),A
+        LD DE,PHREQ
+        LD B,1
+        CALL API
+        JR NZ,CD_ERROR
+        LD A,(CD_MASK)
+        LD HL,CD_VALS
+        LD DE,PHREQ+1
+        LD B,6
+CD_MERGE:
+        RRCA
+        PUSH AF
+        JR NC,CD_MNEXT
+        LD A,(HL)
+        LD (DE),A
+CD_MNEXT:
+        POP AF
+        INC HL
+        INC DE
+        DJNZ CD_MERGE
+        CALL PHSAFE
+        JR NZ,CD_ERROR
+        LD DE,PHREQ
+        LD B,2
+        CALL API
+        JR NZ,CD_ERROR
+        CALL PHCLEAN
+        LD A,(PHFAIL)
+        OR A
+        JR Z,CD_SUCCESS
+        LD HL,CD_PART
+        CALL PUTS
+        JP DONE
+CD_SUCCESS:
+        LD HL,SAVED
+        CALL PUTS
+        LD A,(CHECKPH)
+        OR A
+        JP Z,DONE
+        LD HL,PHDETMSG
+        CALL PUTS
+        JP DONE
+CD_ERROR:
+        LD HL,CD_ERRMSG
+        CALL PUTS
+        JP DONE
+CD_PHOPT:DB '/PHYSICAL=',0
+CD_NAMES:DW CD_OPT0,CD_OPT1,CD_OPT2,CD_OPT3,CD_OPT4,CD_OPT5
+CD_OPT0:DB '/TYPE=',0
+CD_OPT1:DB '/TRACKS=',0
+CD_OPT2:DB '/SIDES=',0
+CD_OPT3:DB '/STEP=',0
+CD_OPT4:DB '/SPINUP=',0
+CD_OPT5:DB '/SETTLE=',0
+CD_BITS:DB 1,2,4,8,16,32
+CD_ERRMSG:DB 'Cannot safely apply drive profile. Nothing changed.',13,10,0
+CD_PART:DB 'Drive profile changed; binding cleanup incomplete.',13,10,0
+CD_DRIVE:DB 0
+CD_FIELD:DB 0
+CD_MASK:DB 0
+CD_VALUE:DB 0
+CD_LEFT:DB 0
+CD_PTR: DW 0
+CD_VALS:DS 6
+PHFAIL: DB 0
 
 ; @utility-title CONFIG@
 
