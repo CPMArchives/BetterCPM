@@ -20,7 +20,7 @@ def main():
     parent=ROOT/'build/ed-development/type';parent.mkdir(parents=True,exist_ok=True)
     work=Path(tempfile.mkdtemp(prefix='run-',dir=parent));results=[]
     base=b'ione\x0ctwo\x0cthree\x1aB'
-    cases=[(base,line) for line in [b'#T',b'-V#T',b'L2C0T',b'L2C-T',b'0T']]
+    cases=[(base,line) for line in [b'#T',b'-V#T',b'L2C0T',b'L2C-T',b'0T',b':3T',b'2:2C:2T',b'3::1T']]
     cases += [(b'iA\tB\x01\x1aB',b'-VT'),(b'iabc\x0c\x1aB',b'#T')]
     for number,(setup,line) in enumerate(cases):
         here=work/str(number);here.mkdir();disks=here/'disks';disks.mkdir()

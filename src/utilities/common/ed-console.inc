@@ -38,8 +38,6 @@ EU_EXEC:
         JP NC,EU_DONE
         CP 1
         JP Z,EU_INSERT
-        CP 2
-        JP Z,EU_MEMORY
 EU_ERROR:
         LD (EU_FLAG),A
         LD (EC_FLAG),A
@@ -128,7 +126,7 @@ EU_MEMORY:
         LD (ET_LINE),HL
         CALL ET_DECIMAL
         CALL IN_CRLF
-        JP EU_DONE
+        RET
 EU_SAY:
         LD A,(HL)
         INC HL
