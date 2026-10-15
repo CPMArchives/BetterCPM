@@ -1,6 +1,7 @@
 ; Initial ED command-line core: inline I, B, C, D, U and signed counts.
 ; HL = exact command bytes, B = length. Returns carry on failure, A='?' or '>'.
-; Commands before an error remain applied. No file or console operations.
+; Commands before an error remain applied. A uses the owner's initialized source
+; stream; the other initial commands operate on memory/console only.
 EC_INIT:
         XOR A
         LD (EC_UPPER),A
@@ -80,6 +81,8 @@ EC_DISP:
         LD (EC_NEG),A               ; DRI zero distance implies backward
 EC_SELECT:
         LD A,(EC_CMD)
+        CP 'A'
+        JP Z,EC_APP
         CP 'B'
         JP Z,EC_BEGIN
         CP 'C'
@@ -97,6 +100,10 @@ EC_SELECT:
         CP 'V'
         JP Z,EC_VCMD
         JP EC_BAD
+EC_APP:
+        CALL EA_RUN
+        RET C
+        JP EC_NEXT
 EC_TYPE:
         CALL ET_TYPE
         RET C

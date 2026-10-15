@@ -225,3 +225,28 @@ and reinitialization. This is a BDOS-stub test; live file integration is still
 pending. Existing buffer, console, input and line tests pass. Native ZSM4/LINK
 and cross builds match at **3,571 bytes**. This foundation is not yet connected
 to A, file setup or completion, and does not create or alter files.
+
+## Append command — 2026-10-15
+
+A/a now connects the source reader to the gap buffer. It reads the requested
+number of LF-terminated lines at the buffer's end, then restores the original
+editing cursor. A final unterminated line is retained. Global U controls case
+conversion, matching DRI READLINE; the command letter's case alone does not
+uppercase source text. Zero count appends whole lines until at least half the
+buffer is occupied. Negative nonzero counts are rejected.
+
+Space is checked before consuming each source byte. Overflow retains inserted
+bytes and leaves the cursor at the buffer end; a byte that could not fit stays
+unread. Other read errors remain available in EA_ERROR and currently return
+the generic command error pending integration with the file-error owner.
+
+- `tools/qualify_ed_append.py`: six workflows match stock ED saved text and
+  marker-derived cursor placement. The comparison includes unread source, which
+  stock E copies through at completion. Evidence:
+  `build/ed-development/append/run-th2ky023`.
+- `tools/test_ed_append.py`: counts, EOF, cursor preservation, global uppercase,
+  half-buffer append, rejected negative counts and overflow without byte loss.
+- Native ZSM4/LINK and cross builds match at **3,763 bytes**.
+
+The source owner must still open the FCB and initialize the stream. EDDEV's
+public entry remains unchanged; work-file writing and completion are next.
