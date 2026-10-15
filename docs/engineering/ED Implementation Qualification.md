@@ -298,3 +298,49 @@ silently retry the latched output failure.
 The output foundation and W implementation remain development-only. File
 creation, close/publication, E/H/O/Q lifecycle and the remaining commands still
 need integration and live qualification before ED.COM can be distributed.
+
+## Completion data drain — 2026-10-15
+
+`ed-finish.inc` connects the buffer, source reader and work output for the data
+portion of normal completion: write all remaining editing text, copy unread
+source verbatim up to EOF, then finalize the output records. Global U affects
+appended source but does not translate the unread tail copied by completion,
+matching DRI TERMINATE. Successful repeated drain does no further disk I/O.
+
+If output rejects a byte already fetched from the source, that byte is retained
+explicitly. Raw errors are returned and EF_DONE remains clear. This stage does
+not close or rename files and must not be confused with a successful E command.
+
+- `tools/test_ed_finish.py`: integrated streams, prior A/W, unread tail, case,
+  padding, repeated finish, read errors and retained pending output bytes.
+- `tools/qualify_ed_finish.py`: six workflows match stock ED's **exact exported
+  output records**, including padding. Evidence:
+  `build/ed-development/finish/run-hwwgsgt1`.
+- Existing ED regression tests pass. Native ZSM4/LINK and cross builds match
+  at **4,391 bytes**.
+
+The comparison checks data output only: stock ED performs real file setup and
+publication, while the new drain runs against simulated opened streams. File
+creation, close/backup/rename, quit/restart and recovery remain unimplemented.
+
+## File setup owner — 2026-10-15
+
+`ed-files.inc` prepares the source and work FCBs after validated invocation.
+For different DUs it checks destination collision before any mutation, then
+opens or creates the source. It retains NEW/RO flags for future diagnostics.
+The source's RO warning takes precedence over SYS rejection as in DRI SETUP.
+It removes old backups in the source/output DUs, removes stale output $$$,
+creates the work file and initializes both record streams and the data drain.
+Directory operations use private DMA and explicit drive/user selection.
+
+`tools/test_ed_files.py` checks exact simulated BDOS operation order for new
+and existing sources, same-DU setup, same-drive/different-user collisions,
+destination collision without mutation, RO/SYS handling and source/work create
+failures. Native ZSM4/LINK and cross builds match at **4,805 bytes**; existing
+editing/stream tests pass. These are simulated-directory checks, not yet live
+file-lifecycle qualification. The public EDDEV entry remains unchanged.
+
+Setup returns diagnostic categories and raw status to its future command-loop
+owner. It does not yet print those diagnostics, close/publish output, clean up
+on quit/restart, or restore the required exit DU. Those operations and their
+failure behavior remain pending, along with the S1/Close compatibility audit.
