@@ -9,6 +9,27 @@ new ABI or change to the 1.0 memory and reconstruction contracts.
 Read alongside the [unified module model investigation](POST-1.0-UNIFIED-MODULE-MODEL.md)
 and [terminal architecture outline](POST-1.0-TERMINAL-ARCHITECTURE-OUTLINE.md).
 
+## Primary objective: increase usable TPA
+
+The architectural review's primary focus is increasing usable TPA beyond the
+1.0 baseline. Code efficiency, shared code, feature-by-feature cost/benefit
+assessment and prioritization, and relocation of suitable core functionality
+into optional unloadable RSXs are all in scope. Reclaimable CPXs and overlays
+are alternatives to measure, not goals in themselves. These suggestions are
+non-exhaustive: broaden the review to other mechanisms and architectures when
+measurements justify them, without treating this agenda as a locked solution
+list. Compare net TPA after
+loader, dispatch, state, workspace and recovery costs, in both default and
+optional loaded configurations.
+
+A central investigation is how Z-System balanced features and memory usage.
+Study identified source versions/configurations, compare equivalent services and
+guarantees, and use the findings to prioritize BetterCP/M changes. Do not assume
+that a smaller resident component implies greater usable TPA without accounting
+for reserved holes, reclaimable code, external helpers and other memory costs.
+See the [roadmap review mandate](../releases/1.0-ROADMAP.md#post-10-architectural-review)
+for required measurements and the distinction from current 1.0 validation.
+
 ## Broader use of disk overlays
 
 The RSX manager already uses disk-loaded management helpers, consolidated for
