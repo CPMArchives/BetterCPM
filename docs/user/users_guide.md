@@ -2486,6 +2486,22 @@ confirmation or completion prompt. Save all current settings separately if the
 binding should survive cold boot. `/UNBIND` does not require DISK.FDB. A named
 binding with a missing or corrupt catalogue reports the error and returns.
 
+To adjust individual fields of an existing active format binding:
+
+```text
+CONFIG /EDIT=B /CKS=16
+```
+
+Use B–D. Named scalar fields include `SPT`, `BSH`, `BLM`, `EXM`, `DSM`,
+`DRM`, `AL0`, `AL1`, `CKS`, `OFF`, `CYLINDERS`, `SECTORS`, `SIZE`, `FLAGS`,
+`SIZEMAP`, and `PHYSICAL`. Values are unsigned decimal; each field may appear
+once. CONFIG preserves unspecified fields and rejects unsupported combinations.
+These are expert format-definition controls: they change how existing media is
+interpreted, so use values appropriate to its actual format. They do not format
+or erase the disk. Changes are active only; save separately to retain them.
+No format catalogue is needed. Sector IDs and individual sector sizes still use
+menu I.
+
 #### 7.2 Startup command
 
 Use CONFIG’s startup-command menu (`J`) to inspect or edit the pending command.

@@ -489,6 +489,44 @@ catalogue with duplicate names must be corrected or selected through the menu.
 
 ---
 
+## Scalar format-workbench command line (Build 008)
+
+```text
+CONFIG /EDIT=B /CKS=16
+CONFIG /EDIT=C /SPT=40 /BSH=4 /BLM=15
+```
+
+`/EDIT=B` through `/EDIT=D` must appear first, followed by one or more named
+scalar fields. A: is protected. Fields may appear in any order, once each:
+
+| Field | Workbench meaning | Decimal storage range |
+| --- | --- | --- |
+| PHYSICAL | Physical drive | 0–255; final binding must select 0–3 |
+| SPT | 128-byte records per track | 0–65535 |
+| BSH, BLM, EXM | Block shift, block mask, extent mask | 0–255 each |
+| DSM, DRM | Last allocation block, last directory entry | 0–65535 each |
+| AL0, AL1 | Directory allocation masks | 0–255 each |
+| CKS, OFF | Directory check size, reserved tracks | 0–65535 each |
+| CYLINDERS, SECTORS | Cylinders, physical sectors per track | 0–255 each |
+| SIZE, FLAGS, SIZEMAP | Maximum size code, format flags, explicit size-map flag | 0–255 each |
+
+These are parser storage ranges, not promises that every numeric value or
+combination is supported. Existing backend validation remains authoritative.
+Unsigned decimal, case-insensitive names and whitespace separators are required.
+Duplicate/unknown fields, overflow and extra commands fail before INIT or I/O.
+
+The command starts with the selected active 64-byte binding, changes only named
+scalar fields, checks physical geometry and submits the complete record through
+the existing validated binding API. Failure before commit leaves active state
+unchanged. Success resets only that logical drive's BDOS login state. This is
+active-only, requires no DISK.FDB, and returns without a prompt; persistence
+requires the separate save-all operation. It does not format or write media.
+Sector-ID and size-map slot editing remain interactive; their CLI is still open.
+An unbound drive must first receive a valid binding, or an edit must supply a
+valid physical drive and complete backend-valid fields.
+
+---
+
 # 13. Persistent IOBYTE defaults
 **Status: proposed 1.0 extension pending runtime-cost audit**
 
@@ -1129,8 +1167,8 @@ CONFIG /SERIAL:n DSR=ON|OFF
 CONFIG /SERIAL:n XONXOFF=ON|OFF
 ```
 
-Format-workbench field-edit command-line syntax remains unresolved; physical
-profiles and logical binding/format-selection forms are specified in section 12.
+Scalar format-workbench command-line fields are specified in section 12.
+Sector-ID and size-map slot command-line syntax remains unresolved.
 
 ## Existing contract references
 
