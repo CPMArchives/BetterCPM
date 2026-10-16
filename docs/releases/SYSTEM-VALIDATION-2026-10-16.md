@@ -28,7 +28,7 @@ The source checkout was clean and was not modified. A private clone at
 | Stage | Status | Evidence / next work |
 | --- | --- | --- |
 | 1. Clean builds, contents, boot, baseline console/memory | In progress; initial gates pass | Both distributions pass build/boot/integrity; focused BIOS/CCP and native editing/unload pass. Additional console/startup-failure/repeated-return cases remain. |
-| 2. Fresh conformance suite | Partial groups pass on both platforms | Fresh ENTRYTST, CPUTEST, ECOTEST, BDOSTEST required, DIRTEST safe, FILETEST required and RANDTEST safe results below. Selected console, disk/BIOS/error and native Model 4 checks also pass below; remaining cases and CCP procedures are still pending. |
+| 2. Fresh conformance suite | Partial groups pass on both platforms | Fresh ENTRYTST, CPUTEST, ECOTEST, BDOSTEST required, DIRTEST safe, FILETEST required and RANDTEST safe results below. Selected console, disk/BIOS/error and native Model 4 checks also pass below; remaining cases and CCP procedures are still pending; V004 is open below. |
 | 3. CPX/RSX lifecycle, relocation, ROM protection | Protected ROM candidate campaigns pass | Fresh V002/V003 guarded ROM, lifecycle, workspace and stack results below; wider RAM/native lifecycle coverage remains. |
 | 4. Resident/transient command integration | Not run | Selectors, protection, prompts, explicit transient invocation, feature diagnostics and caller-state restoration. |
 | 5. Utility operations and failure recovery | Not run | System-disk utilities only; disposable images and independent filesystem inspection. |
@@ -803,3 +803,62 @@ separate publication gate remains enforced; final acceptance must still rebuild
 from an agreed stable revision. Fresh conformance is still partial: manual,
 terminal, fault, device and remaining platform cases require their explicit
 procedures and cannot be inferred from these aggregate counts.
+
+
+### Repeated transient termination and reconstruction
+
+`run_validation_ccp_returns.py` executes the pinned CCPTEST's selected 0025
+(JMP 0000h) and 0028 (entry RET) procedures, plus an independent fixture making
+a real BDOS Function 0 call. Every return is followed by a separately assembled
+public-state witness which checks drive, user and the page-zero TPA ceiling.
+Three cycles of all routes in A0, B3 and B31 pass: 27 external observations.
+The final CPX list contains RCP, the RSX list is empty, and the cold-start banner
+appears exactly once across the entire session. These are external procedure
+verdicts, not fabricated suite PASS rows. Reference image hashes are unchanged.
+
+Evidence: `ccp-returns/ccp-returns-e4011fqm/` contains the final normal-mode run,
+fixture hashes, full transcript and result manifest. The earlier equivalent
+27-case run is retained in `ccp-returns/ccp-returns-qw5suc4l/`; counts overlap.
+The image is the production-built V003 cpmsim candidate.
+
+The full-TPA mode uses 424-record (54,272-byte) patterned programs on private B0
+media. It independently verifies every payload byte beyond the first two code
+records before exercising RET, JMP 0000h or Function 0. A preceding PAINT.COM
+fills that region with 5Ah, returns through protected WBOOT, and lets the new
+load distinguish stale memory from genuinely loaded A5h records. The program
+code stays below the painted region. Only private copies are exercised.
+
+With caller A0, all three routes pass for three cycles after overwriting CCP
+code. A 425-record program with the same executable prefix is independently
+extracted to verify installed bytes, then rejected without executing its marker
+or reporting an unknown file/disk error; the caller's state and working prompt
+return. This gives 10 external user-zero observations in
+`ccp-full-tpa/ccp-returns-ngxj73j9/`. It does not close cross-user coverage.
+
+### V004 — open: cross-user command loads stop at a physical extent
+
+The full-TPA run from caller B3, explicitly loading B0:ERET, executes a truncated
+program. After the independent pre-paint, the first wrong payload byte is at
+4100h and remains 5Ah: the next record after the first 16 KiB of the COM was not
+loaded. Same-user A0 loads pass. The failing probe returns through WBOOT to B3,
+but its failure marker prevents a pass verdict. Source review finds
+CCP_LURST restores the caller's user before CL_NEXT finishes sequential reads;
+the next extent lookup therefore occurs in the caller's user rather than the
+file's lookup user. Normal EOF is then accepted prematurely.
+
+Reproduction evidence on V003:
+`ccp-full-tpa/ccp-returns-_1ehbm51/` (with pre-paint and diagnostic first address).
+Earlier unpainted runs are retained in `ccp-returns-0c18ozxw/` and
+`ccp-returns-pt1b05ri/`; stale A5h data from prior successful loads hid the first
+missing region, so their first differing address was later in memory.
+A repeat on the older V002b candidate gives the same 4100h/5Ah witness in
+`ccp-full-tpa-v002/ccp-returns-_m9s4mvt/`. V004 therefore predates V003's page-zero
+fix. Failure manifests retain completed observations, fixture/baseline hashes
+and the failure text. No full cross-user or oversized-all-context pass is claimed.
+
+V004 remains an unresolved validation blocker. The correction must retain the
+lookup user for every extent read while still restoring the caller before
+program entry, on failure and for lifecycle callbacks. Load-abort context and
+the fixed resident-memory/stack budgets must also be checked; moving restoration
+without qualifying those paths would be insufficient. No production change for
+V004 has been made in this tranche. Fresh conformance remains incomplete.

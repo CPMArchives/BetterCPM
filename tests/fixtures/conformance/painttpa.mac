@@ -1,0 +1,10 @@
+; Paint the reclaimable TPA beyond this program's first two records. This
+; deliberately overwrites CCP/CPX memory, then uses protected WBOOT to recover.
+        ORG 100H
+        LD HL,0200H
+        LD DE,0201H
+        LD BC,@COUNT@
+        LD (HL),05AH
+        LDIR
+        JP 0
+        END
