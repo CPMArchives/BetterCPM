@@ -317,6 +317,10 @@ BX_ENTRY:
         JR Z,BX_MOVE
         CP 19
         JP Z,BE_ENTRY
+        CP 22
+        JP Z,BM_SET
+        CP 24
+        JP Z,BI_ENTRY
         CP 20
         JP Z,BH_STYLE
         CP 21
@@ -335,7 +339,7 @@ BX_QUERY:
         XOR A
         RET
 BX_DESC: DB 'SCX',1,0,12,0,0
-        DW 01FH                      ; motion, position, rendition, styled glyph
+        DW 0BFH                      ; motion, position, rendition, styled glyph
         DB 0FFH,7                    ; all flags, indexed and RGB color
 HM_ENTRY:
         CP 5
@@ -580,6 +584,75 @@ BE_ENTRY:
         JR Z,BE_FINAL
         LD C,'J'
 BE_FINAL:
+        CALL B_EMIT
+        XOR A
+        RET
+
+; SCX 22: zero parameters retain the endpoint's default screen bounds.
+; A nonzero bottom must be greater than the effective top.
+BM_SET:
+        LD A,H
+        OR L
+        JR NZ,BM_TOP
+        INC HL
+BM_TOP:
+        LD A,D
+        OR E
+        JR Z,BM_VALID
+        PUSH HL
+        OR A
+        SBC HL,DE
+        POP HL
+        JP NC,B_BAD
+BM_VALID:
+        LD (HM_ARG),HL
+        LD (HM_COL),DE
+        LD A,D
+        OR E
+        JR NZ,BM_EMIT
+        LD HL,BM_RESET
+        CALL B_STR                    ; restore endpoint's full-height default
+BM_EMIT:
+        LD HL,B_CSI
+        CALL B_STR
+        LD HL,(HM_ARG)
+        CALL HM_DEC
+        LD C,';'
+        CALL B_EMIT
+        LD HL,(HM_COL)
+        LD A,H
+        OR L
+        CALL NZ,HM_DEC                ; omitted bottom means endpoint default
+        LD C,'r'
+        CALL B_EMIT
+        XOR A
+        RET
+BM_RESET: DB 27,'[r',27,'[H',0
+; SCX 24: host supplies scrolling margins and actual geometry.
+BI_ENTRY:
+        LD A,B
+        CP 3
+        JP NC,B_BAD
+        PUSH BC
+        CALL BH_APPLY
+        POP BC
+        LD A,B
+        LD C,'D'
+        OR A
+        JR Z,BI_SEND
+        DEC A
+        JR NZ,BI_REVERSE
+        LD C,13
+        CALL B_EMIT
+        LD C,'D'
+        JR BI_SEND
+BI_REVERSE:
+        LD C,'M'
+BI_SEND:
+        PUSH BC
+        LD C,27
+        CALL B_EMIT
+        POP BC
         CALL B_EMIT
         XOR A
         RET

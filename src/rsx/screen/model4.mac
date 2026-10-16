@@ -227,6 +227,10 @@ SX_ENTRY:
         JP Z,SX_MOVE
         CP 19
         JP Z,SE_ENTRY
+        CP 22
+        JP Z,SM_SET
+        CP 24
+        JP Z,SI_ENTRY
         CP 20
         JP Z,SX_STYLE
         CP 21
@@ -268,7 +272,7 @@ SX_QUERY:
         XOR A
         RET
 SX_DESC: DB 'SCX',1,0,12,24,80
-        DW 01FH
+        DW 0BFH
         DB 060H,0                    ; reverse + conceal, no physical color
 SX_MOVE:
         LD A,B
@@ -402,27 +406,8 @@ SX_MARK:
         XOR A
         RET
 SX_WNEXT:
-        LD HL,(M4CURSOR)
-        INC HL                       ; from column 79 to next row column 0
-        LD DE,0FF80H
-        OR A
-        SBC HL,DE
-        ADD HL,DE
-        JR C,SX_WPOS
-        LD A,(SX_ATTR)
-        AND 32
-        LD C,32
-        JR Z,SX_SCROLL
-        LD C,160
-SX_SCROLL:
-        CALL S_UP
-        LD HL,0FF30H
-SX_WPOS:
-        LD (M4CURSOR),HL
-        XOR A
-        LD (M4COLUMN),A
-        LD (SX_PEND),A
-        RET
+        LD B,1                        ; wrap is index plus carriage return
+        JP SI_ENTRY
 SX_PEND: DB 0
 SX_ATTR: DB 0,0,0,0,0,0,0,0,0
 
@@ -490,4 +475,203 @@ SE_COUNT:
         XOR A
         RET
 SE_MODE: DB 0
+
+; SCX 22: HL/DE are one-based top/bottom, zero means screen default.
+; Reject invalid margins before mutation; setting margins homes the cursor.
+SM_SET:
+        LD A,H
+        OR D
+        JP NZ,S_BAD
+        LD A,L
+        OR A
+        JR NZ,SM_TOP
+        INC A
+SM_TOP:
+        DEC A
+        CP 24
+        JP NC,S_BAD
+        LD B,A
+        LD A,E
+        OR A
+        JR NZ,SM_BOT
+        LD A,24
+SM_BOT:
+        DEC A
+        CP 24
+        JP NC,S_BAD
+        CP B
+        JP C,S_BAD
+        JP Z,S_BAD
+        LD (SM_BOTTOM),A
+        LD A,B
+        LD (SM_TOPROW),A
+        LD BC,0
+        JP SX_APPLY
+SM_TOPROW: DB 0
+SM_BOTTOM: DB 23
+; Current physical row/column. Do not change the cursor or wrap latch.
+SM_CUR:
+        LD HL,(M4CURSOR)
+        LD DE,0F800H
+        OR A
+        SBC HL,DE
+        LD DE,80
+        LD B,0
+SM_DIV:
+        OR A
+        SBC HL,DE
+        JR C,SM_FOUND
+        INC B
+        JR SM_DIV
+SM_FOUND:
+        ADD HL,DE
+        LD C,L
+        RET
+; SCX 24: B=0 index, 1 next line, 2 reverse index.
+SI_ENTRY:
+        LD A,B
+        CP 3
+        JP NC,S_BAD
+        LD (SI_KIND),A
+        CALL SM_CUR
+        LD A,(SI_KIND)
+        CP 1
+        JR NZ,SI_COLUMN
+        LD C,0
+SI_COLUMN:
+        LD A,(SI_KIND)
+        CP 2
+        JR Z,SI_REVERSE
+        LD A,(SM_BOTTOM)
+        CP B
+        JR Z,SI_UP
+        LD A,B
+        CP 23
+        JR Z,SI_APPLY
+        INC B
+        JR SI_APPLY
+SI_REVERSE:
+        LD A,(SM_TOPROW)
+        CP B
+        JR Z,SI_DOWN
+        LD A,B
+        OR A
+        JR Z,SI_APPLY
+        DEC B
+SI_APPLY:
+        JP SX_APPLY
+SI_UP:
+        XOR A
+        JR SI_SCROLL
+SI_DOWN:
+        LD A,1
+SI_SCROLL:
+        PUSH BC
+        PUSH AF
+        LD A,(SX_ATTR)
+        AND 32
+        RLCA
+        RLCA
+        OR 32
+        LD E,A
+        LD A,(SM_TOPROW)
+        LD B,A
+        LD A,(SM_BOTTOM)
+        LD C,A
+        POP AF
+        CALL RG_ENTRY
+        POP BC
+        JR SI_APPLY
+SI_KIND: DB 0
+RG_ENTRY:
+        CP 2
+        JP NC,RG_BAD
+        LD (RG_DIR),A
+        LD A,E
+        AND 127
+        CP 32
+        JP NZ,RG_BAD
+        LD A,C
+        CP 24
+        JP NC,RG_BAD
+        CP B
+        JP C,RG_BAD
+        LD A,E
+        LD (RG_FILL),A
+        LD A,B
+        CALL RG_ADDR
+        LD (RG_TOP),HL
+        LD A,C
+        CALL RG_ADDR
+        LD (RG_BOT),HL
+        LD A,C
+        SUB B
+        LD L,A
+        LD H,0
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,HL
+        LD D,H
+        LD E,L
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,DE                     ; (bottom-top)*80 bytes
+        LD B,H
+        LD C,L
+        LD A,B
+        OR C
+        JR Z,RG_SINGLE
+        LD A,(RG_DIR)
+        OR A
+        JR NZ,RG_DOWN
+        LD DE,(RG_TOP)
+        LD HL,80
+        ADD HL,DE
+        LDIR
+        LD HL,(RG_BOT)
+        JR RG_BLANK
+RG_DOWN:
+        LD HL,(RG_BOT)
+        LD DE,79
+        ADD HL,DE
+        EX DE,HL                      ; end of destination
+        LD HL,(RG_BOT)
+        DEC HL                        ; end of source
+        LDDR
+RG_SINGLE:
+        LD HL,(RG_TOP)
+RG_BLANK:
+        LD A,(RG_FILL)
+        LD B,80
+RG_PAINT:
+        LD (HL),A
+        INC HL
+        DJNZ RG_PAINT
+        XOR A
+        RET
+RG_BAD:
+        LD A,255
+        RET
+RG_ADDR:
+        PUSH BC
+        LD L,A
+        LD H,0
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,HL
+        LD D,H
+        LD E,L
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,DE
+        LD DE,0F800H
+        ADD HL,DE
+        POP BC
+        RET
+RG_TOP: DW 0
+RG_BOT: DW 0
+RG_FILL: DB 32
+RG_DIR: DB 0
         END
