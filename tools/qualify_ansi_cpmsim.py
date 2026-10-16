@@ -11,6 +11,7 @@ ROOT=Path(__file__).resolve().parents[1]
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--portable-candidate',action='store_true',help='install private typed candidate and its full-SCX backend on disposable media')
     parser.add_argument('--image',type=Path,default=ROOT/'build/z80pack/disks/library/BetterCPM-Distribution-z80pack-332K.dsk')
     parser.add_argument('--diskdefs',type=Path,required=True)
     parser.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim')
@@ -39,15 +40,18 @@ def main():
         # Only disposable qualification media: free development-test directory slots.
         for name in ('RSX2TST.COM','RSXTEST.COM','STATTST.COM','SVCTEST.COM','HELLO.RSX'):
             subprocess.run(['cpmrm','-T','raw','-f','bettercpm-default',str(image),'0:'+name],cwd=work,check=True)
-    for name,path in [('ANSI.RSX','build/ansi-development/ANSI.RSX'),
-                      ('ANSITST.COM','build/ansi-development/ANSITST.COM'),
-                      ('HELLO.RSX','build/rsx/HELLO.RSX')]:
+    provider='build/ansi-portable-candidate' if args.portable_candidate else 'build/ansi-development'
+    files=[('ANSI.RSX',provider+'/ANSI.RSX'),('ANSITST.COM',provider+'/ANSITST.COM'),('HELLO.RSX','build/rsx/HELLO.RSX')]
+    if args.portable_candidate:
+        files.extend([('ANSISCRN.RSX','build/screen-backends/ANSISCRN.RSX'),('R3PACK.RSX','build/system/R3PACK.RSX')])
+        if rom_image:raise ValueError('portable ROM qualification requires freshly relocated ROM overlays; use RAM until its matching ROM pack is built')
+    for name,path in files:
         existing=subprocess.check_output(['cpmls','-T','raw','-f','bettercpm-default',str(image)],cwd=work,text=True).upper().split()
         if name in existing:
             subprocess.run(['cpmrm','-T','raw','-f','bettercpm-default',str(image),'0:'+name],cwd=work,check=True)
         subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(image),str(ROOT/path),'0:'+name],cwd=work,check=True)
     prompt=b'A0>_ '
-    trace=session(simulator,disks,[
+    commands=[
         (b'ANSITST /VER\r',b'BetterCP/M ANSITST 1.0 (Build 001)',10),
         (b'',prompt,10),
         (b'RSX LOAD HELLO\r',prompt,30),
@@ -59,7 +63,16 @@ def main():
         (b'',prompt,10),
         (b'RSX UNLOAD ANSI\r',prompt,30),
         (b'RSX LIST\r',b'TPA available: 53K',10),
-        (b'BYE\r',b'System halted',10)],work/'transcript.bin',rom_image=rom_image,rom_start='DF00' if rom_image else None)
+        (b'BYE\r',b'System halted',10)]
+    if args.portable_candidate:
+        commands.insert(3,(b'RSX LOAD ANSISCRN\r',prompt,30))
+        index=next(i for i,command in enumerate(commands) if command[0]==b'ANSITST\r')
+        commands.insert(index,(b'RSX LIST\r',prompt,10))
+        index=next(i for i,command in enumerate(commands) if command[0]==b'RSX LIST\r' and i>index)
+        commands.insert(index,(b'RSX UNLOAD ANSISCRN\r',prompt,30))
+    trace=session(simulator,disks,commands,work/'transcript.bin',rom_image=rom_image,rom_start='DF00' if rom_image else None)
+    if args.portable_candidate:assert b'ANSI : BDOS 255' in trace
+
     if rom_image:
         assert b'ROM QUALIFICATION ACTIVE START=DF00' in trace
         assert b'ROM WRITE VIOLATION' not in trace

@@ -417,7 +417,8 @@ RXM_PUBLISH:
 
 ; MCON and SCRN are reserved callable identities. Validate their common
 ; platform-bound ABI before either can enter the live callable registry.
-; MCON 1.1 declares a portable frontend with a private binding word at +12.
+; MCON 1.1/1.2 declare portable frontends with a binding word at +12.
+; SCRN 1.1 promises full SCX controls; MCON 1.2 requires that revision.
 ; Its complete dependency and repair-word exclusions are validated by the
 ; prospective-profile preparer before any live publication.
 RXM_MONITOR:
@@ -437,13 +438,18 @@ RXM_SCREEN:
         LD      A,(HL)
         OR      A
         JR      Z,RXM_LEGACY
-        CP      1
-        JR      NZ,RXM_MBAD
-        ; Only MCON 1.1 is portable. SCRN remains platform-bound 1.0.
+        CP      3
+        JR      NC,RXM_MBAD
+        LD      B,A
         LD      HL,(RXM_DATA)
         LD      A,(HL)
         CP      'M'
+        JR      Z,RXM_PORTABLE
+        LD      A,B
+        CP      1                      ; SCRN 1.1 promises the full SCX mask
         JR      NZ,RXM_MBAD
+        JR      RXM_LEGACY
+RXM_PORTABLE:                           ; MCON 1.1 basic / 1.2 full SCX required
         LD      HL,(RXM_FACTS)
         LD      DE,20
         ADD     HL,DE

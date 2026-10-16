@@ -310,7 +310,7 @@ SU_SEEN:        DB      0               ; slot-validation flag
 
 ; Shared monitor-selection preparation, reached at overlay+3.
 ; DE -> {normalized facts, eight-byte plan record, durable selection state}.
-; State = {monitor entry, portable link-word address, backend entry}; legacy
+; State = {monitor entry, link-word address, backend entry, required/provided minor}; legacy
 ; monitors touch only the first word. MCON 1.1 owns payload word +12; dispatch remains at +8.
 ; Every retained callable descriptor must still match its validated carrier.
 ; No live mutation or callback; publish the durable target only on success.
@@ -443,6 +443,12 @@ MS_ID:
         LD DE,MS_SCRN
         CALL MS_ISID
         JP NZ,MS_NEXT
+        INC HL                         ; SCRN ABI minor from validated descriptor
+        LD A,(HL)
+        LD HL,(MS_TARGET)
+        LD DE,7
+        ADD HL,DE
+        LD (HL),A                      ; prospective backend capability generation
         LD HL,(MS_TARGET)
         LD DE,4
         ADD HL,DE
@@ -453,6 +459,13 @@ MS_FRONT:
         LD A,(HL)
         OR A
         JR Z,MS_ADDRESS                ; legacy monitor has no external link
+        DEC A                          ; 1.1 requires SCRN 1.0, 1.2 requires 1.1
+        PUSH HL
+        LD HL,(MS_TARGET)
+        LD DE,6
+        ADD HL,DE
+        LD (HL),A
+        POP HL
         INC HL                         ; portable callback offset
         CALL MS_BODY
         OR A

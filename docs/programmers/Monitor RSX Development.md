@@ -388,3 +388,14 @@ with the standalone SGR checks. Its provisional MCON 1.2 descriptor is rejected
 by the current manager; do not present it as an installable provider. Default
 builds retain the working host ANSI carrier. See the ANSI Portable Backend Audit
 for exact coverage and remaining capability-admission/application qualification.
+
+
+Full-control portable personalities now declare MCON 1.2 (STATEFUL, capability
+0004h, manager-owned backend word +12). They require SCRN 1.1, which promises
+SCX discovery and operations 17–24. MCON 1.1 still requires only SCRN 1.0.
+The manager checks this compatibility from metadata before publication; it does
+not invoke screen callbacks during preparation. Current backends advertise SCRN
+1.1 while preserving their legacy callable operations. The private ANSI candidate
+can now be installed with a matching updated manager/backend, but it is not yet
+the default distribution provider. Use `qualify_ansi_cpmsim.py
+--portable-candidate` on disposable RAM media for its current live exercise.

@@ -27,11 +27,12 @@ def frontend(*,slot=12,repairs=(),runtime=(),dual=False,capabilities=4,minor=1,r
 
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--bios',type=Path,default=ROOT/'build/bios')
+    parser=argparse.ArgumentParser();parser.add_argument('--full-scx',action='store_true',help='require MCON 1.2 / SCRN 1.1 admission')
+    parser.add_argument('--bios',type=Path,default=ROOT/'build/bios')
     args=parser.parse_args();bios=args.bios
     syms=symbols(bios/'bios.lst');bits=1 if 'M4CURSOR' in syms else 2
     out=ROOT/'build/test-results/monitor-backend-binding';out.mkdir(parents=True,exist_ok=True)
-    goodfront=frontend();goodback=backend(bits=bits)
+    goodfront=frontend(minor=2 if args.full_scx else 1);goodback=backend(bits=bits,minor=1 if args.full_scx else 0)
     (out/'PORTMON.RSX').write_bytes(goodfront);(out/'SCRTEST.RSX').write_bytes(goodback)
     alternate=bytearray(goodback);alternate[32:40]=b'SCRALT  '
     (out/'SCRALT.RSX').write_bytes(alternate)
@@ -78,11 +79,19 @@ def main():
         assert cpu.a==42
         return frontbase
     change(1,'PORTMON',False)            # no backend: rollback before detach
-    change(1,'HELLO');change(1,'SCRTEST')
+    change(1,'HELLO')
+    if args.full_scx:
+        oldback=backend(bits=bits)
+        cpu.mem[0xB800:0xB800+len(oldback)]=oldback
+        change(1,'SCRTEST')
+        change(1,'PORTMON',False)        # existing SCRN is insufficient, not missing
+        change(2,'SCRTEST')
+        cpu.mem[0xB800:0xB800+len(goodback)]=goodback
+    change(1,'SCRTEST')
     for image in [frontend(repairs=(11,)),frontend(repairs=(12,)),frontend(repairs=(13,)),
                   frontend(runtime=(12,)),frontend(runtime=(13,)),
                   frontend(slot=127),frontend(dual=True),frontend(capabilities=0),
-                  frontend(capabilities=0x104),frontend(minor=2),
+                  frontend(capabilities=0x104),frontend(minor=3),
                   frontend(reconstruction='STATELESS'),frontend(reconstruction='STATE_PRESERVING'),
                   frontend(reconstruction='COLD_ONLY'),frontend(dispatch=10),frontend(entry=13)]:
         cpu.mem[0xBC00:0xBC00+len(image)]=image

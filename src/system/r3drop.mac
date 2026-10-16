@@ -85,7 +85,7 @@ RD_OPERATION:                           ; accept transactional removal
   ; request, and both descriptor vectors remain durable through commit.
         LD      HL,(RD_LOW)
         LD      (RD_CTX),HL
-        LD      DE,29
+        LD      DE,31
         OR      A
         ADD     HL,DE
         JP      C,RD_BAD
@@ -322,11 +322,11 @@ RD_ZCURRENT:                            ; clear current retained-member fields
         DJNZ    RD_ZCURRENT
         LD      (HL),05BH
         INC     HL
-        LD      B,6
+        LD      B,8
 RD_ZMON:
         LD      (HL),A
         INC     HL
-        DJNZ    RD_ZMON                 ; target, dependent slot, backend entry
+        DJNZ    RD_ZMON                 ; target, dependent slot, backend entry, required/provided minors
         LD      HL,RD_NMOVE
         CALL    RD_OVER
         JP      NZ,RD_BAD
