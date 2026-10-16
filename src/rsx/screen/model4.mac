@@ -1,0 +1,222 @@
+; Build-matched Model 4 hardware backend. No terminal grammar lives here.
+        INCLUDE backend.inc
+BASE EQU 08000H
+        ASEG
+        ORG BASE
+S_NEXT: DW 5
+S_DISP: DW S_CHAIN
+        DW 0,0
+S_CHAIN:
+        LD HL,(S_NEXT)
+        JP (HL)
+S_ENTRY:
+        CP 6
+        JR NC,S_SWITCH
+        OR A
+        JR NZ,S_RAW
+        LD A,C
+        CP 7
+        JP Z,S_BELL
+        XOR A
+S_RAW:
+        LD HL,(1)
+        LD DE,66
+        ADD HL,DE
+        JP (HL)
+S_SWITCH:
+        SUB 6
+        CP 10
+        JP NC,S_BAD
+        PUSH AF
+        CP 2
+        JR C,S_ARGOK
+        CP 6
+        JR Z,S_ARGOK
+        CP 9
+        JR NC,S_ARGOK
+        LD A,C
+        AND 127
+        CP 32
+        JR Z,S_ARGOK
+        POP AF
+        JP S_BAD
+S_ARGOK:
+        POP AF
+        ADD A,A
+        LD E,A
+        LD D,0
+        LD HL,S_TABLE
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        JP (HL)
+S_BAD:
+        LD A,255
+        RET
+S_TABLE:
+        DW S_POS,S_PUT,S_EOL,S_EOS,S_UP,S_DOWN,S_QUERY,S_INSERT,S_DELETE,S_VIS
+S_QUERY:
+        LD HL,S_DESC
+        RET
+S_DESC: DB 'SCR',1,0,24,80
+        DW 0FFFFH
+S_POS:
+        LD A,B
+        CP 24
+        JR NC,S_BAD
+        LD A,C
+        CP 80
+        JR NC,S_BAD
+        LD L,B
+        LD H,0
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,HL
+        LD D,H
+        LD E,L
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,DE
+        LD E,C
+        LD D,0
+        ADD HL,DE
+        LD DE,0F800H
+        ADD HL,DE
+        LD (M4CURSOR),HL
+        LD A,C
+        LD (M4COLUMN),A
+        RET
+S_PUT:
+        LD A,C
+        AND 127
+        CP 32
+        JP C,S_BAD
+        CP 127
+        JP NC,S_BAD
+        LD HL,(M4CURSOR)
+        LD (HL),C
+        LD A,(M4COLUMN)
+        CP 79
+        RET Z
+        INC A
+        LD (M4COLUMN),A
+        INC HL
+        LD (M4CURSOR),HL
+        RET
+S_EOL:
+        LD A,C
+        LD (S_FILLBYTE),A
+        LD A,(M4COLUMN)
+        LD B,A
+        LD A,80
+        SUB B
+        LD C,A
+        LD B,0
+        LD HL,(M4CURSOR)
+        JP S_FILL
+S_EOS:
+        LD A,C
+        LD (S_FILLBYTE),A
+        LD HL,0FF80H
+        LD DE,(M4CURSOR)
+        OR A
+        SBC HL,DE
+        LD B,H
+        LD C,L
+        EX DE,HL
+        JP S_FILL
+S_UP:
+        LD A,C
+        LD (S_FILLBYTE),A
+        LD HL,0F850H
+        LD DE,0F800H
+        LD BC,1840
+        LDIR
+        LD HL,0FF30H
+        JP S_BLANK
+S_DOWN:
+        LD A,C
+        LD (S_FILLBYTE),A
+        LD HL,0FF2FH
+        LD DE,0FF7FH
+        LD BC,1840
+        LDDR
+        LD HL,0F800H
+S_BLANK:
+        LD BC,80
+S_FILL:
+        LD A,(S_FILLBYTE)
+        LD D,A
+S_LOOP:
+        LD (HL),D
+        INC HL
+        DEC BC
+        LD A,B
+        OR C
+        JR NZ,S_LOOP
+        RET
+S_LINE:
+        LD A,C
+        LD (S_FILLBYTE),A
+        LD HL,(M4CURSOR)
+        LD A,(M4COLUMN)
+        LD E,A
+        LD D,0
+        OR A
+        SBC HL,DE
+        EX DE,HL
+        LD HL,0FF30H
+        OR A
+        SBC HL,DE
+        LD B,H
+        LD C,L
+        EX DE,HL
+        RET
+S_INSERT:
+        CALL S_LINE
+        JR Z,S_LAST
+        PUSH HL
+        LD HL,0FF2FH
+        LD DE,0FF7FH
+        LDDR
+        POP HL
+        JP S_BLANK
+S_DELETE:
+        CALL S_LINE
+        JR Z,S_LAST
+        PUSH HL
+        LD DE,80
+        ADD HL,DE
+        POP DE
+        LDIR
+S_LAST:
+        LD HL,0FF30H
+        JP S_BLANK
+S_VIS:
+        LD A,C
+        CP 2
+        JP NC,S_BAD
+        ; Model 4 cursor presentation is drawn by the MCON private operation.
+        ; The personality owns visibility and must gate that operation.
+        RET
+S_BELL:
+        LD C,0
+S_TONE:
+        LD A,1
+        LD B,100
+S_HIGH:
+        OUT (090H),A
+        DJNZ S_HIGH
+        XOR A
+        LD B,100
+S_LOW:
+        OUT (090H),A
+        DJNZ S_LOW
+        DEC C
+        JR NZ,S_TONE
+        RET
+S_FILLBYTE: DB 32
+        END
