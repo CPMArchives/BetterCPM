@@ -16,7 +16,7 @@ The spec's cost/backend gates remain required for proposed runtime facilities.
 | /DEFAULT | Build 010 prepares pending SUBMIT STARTUP only; drives unchanged; explicit save required |
 | Drive command-line parity | Builds 006–007 physical fields and logical binding/format selection implemented; Build 008 scalar workbench fields implemented; Build 009 single-slot sector-map fields implemented |
 | Persistent IOBYTE, printer and serial | Build 011 disk-boot IOBYTE implemented; printer and serial support deferred to post-1.0 |
-| Native build | Build 012 ZSM4/LINK and cross assembly match at 15,431 bytes |
+| Native build | Build 013 dual-profile ZSM4/LINK and cross assembly match at 15,457 bytes |
 
 The no-longer-offered keyboard/video sections are outside CONFIG's 1.0 scope;
 printer/serial/IOBYTE entries may be added only when actual supported facilities
@@ -406,3 +406,12 @@ lists A–E or S and retains BREAK (^C) exit. Submenu controls are unchanged.
 The dispatch regression exercises all six destinations and exit. Native and
 cross builds are byte-identical at 15,431 bytes in this qualification.
 Earlier build notes below/above describing F–K document historical assignments.
+
+
+## Build 013: shared version-parser stack correction
+
+CONFIG incorporates the common `/VER` character comparison correction from
+system-validation V002. The A–E/S menu and configuration behavior are unchanged.
+The recognizer uses two fewer peak stack bytes and four fewer code bytes; the
+qualified dual-profile native/cross image is 15,457 bytes. Earlier size notes
+record their specific historical profile/build inputs.

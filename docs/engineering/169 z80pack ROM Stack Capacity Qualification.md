@@ -10,8 +10,8 @@ execution and WBOOT reconstruction:
 | Stack | Range | Capacity | High-water | Reserve |
 | --- | --- | ---: | ---: | ---: |
 | Command reloader | `04C0h..04FFh` | 64 | 20 | 44 |
-| System reconstruction | `D618h..D637h` | 32 | 22 | 10 |
-| Unified BDOS | `D701h..D728h` | 40 | 26 | 14 |
+| System reconstruction | `D618h..D637h` | 32 | 24 | 8 |
+| Unified BDOS | `D701h..D728h` | 40 | 28 | 12 |
 
 The independent unified-BDOS recovery campaign also reaches 26 bytes while
 covering its success, ignore and abort paths. No measured stack approaches its
@@ -66,3 +66,28 @@ Retained stack capacity is now measured rather than inferred. Engineering
 Specification 170 supplies the workspace-lifetime evidence. Engineering
 Specification 171 corrects and qualifies the isolated ROM-profile RSX path; it
 confirmed that stack capacity was not the cause.
+
+
+## System validation update — 2026-10-16
+
+Fresh protected execution initially found 26/32 system-stack bytes used, leaving
+six rather than the required eight. A private emulator trace identifies the
+maximum in CPX.COM's shared `/VER` recognizer before its private-stack setup,
+not in reconstruction or the V001 BDOS extent fix. The recognizer temporarily
+saved HL to compare a command character with the fixed version token.
+
+`version.inc` now compares `((token XOR input) AND DFh)` without altering HL.
+This preserves the previous `(input OR 20h) == token` matching for `/ver`, saves
+one PUSH/POP pair and four code bytes, and leaves all caller registers intact.
+It benefits every utility and resident query sharing this source; their build
+identities advance accordingly. No stack reservation, TPA boundary or minimum
+reserve is changed.
+
+The repeated protected campaign passes the unchanged eight-byte gate with the
+measurements above. It exercises CPX load/list/unload, reconstruction, RSX
+load/list/unload, and unloaded 53K TPA. Guard primitive and workspace-lifetime
+checks also pass. `test_version_stack.py` independently checks every possible
+byte at each token position, normal/invalid requests, preserved caller
+registers, and a maximum of 24 pre-private-stack bytes. All 166 existing utility
+identity/fall-through checks pass. Evidence is recorded in the system-validation
+ledger; original failing measurements remain retained.

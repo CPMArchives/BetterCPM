@@ -20,3 +20,15 @@ Current transient RCP-derived binaries retain their existing complete-package so
 - DIR option reset/failure atomicity (27 valid, 38 invalid), rendered columns (176 cases), and allocation metrics (450 cases) pass.
 
 The existing `tools/test_subsystem_versions.py` stops because it still requires README to say BetterCP/M 0.3. README had already been changed to 1.0 development before this increment; this obsolete expectation is not evidence of a utility-version failure and was not broadened into a subsystem-release revision here.
+
+
+## 2026-10-16 stack regression
+
+The shared recognizer's character comparison no longer pushes HL as temporary
+storage. XOR plus a DFh mask gives the same case-insensitive `/ver` comparison,
+reducing code by four bytes and peak nested stack use by two bytes. This matters
+for utilities which check their identity before establishing a private stack.
+`test_version_stack.py` exhausts all 256 byte values in all four token positions
+and requires a 24-byte maximum including the transient return frame. Existing
+166 identity, dispatch and fall-through checks pass. All utility build counters
+advance because their linked copy of this common code changes.

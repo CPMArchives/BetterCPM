@@ -45,13 +45,12 @@ UV_MATCH:
         LD A,B
         OR A
         JR Z,UV_NOM
-        LD A,(HL)
-        OR 020H
-        PUSH HL
-        LD H,A
+        ; Compare case-insensitively without borrowing HL as scratch.
+        ; V002: the extra PUSH/POP here left only six system-stack bytes
+        ; when a transient checked /VER before establishing its own stack.
         LD A,(DE)
-        CP H
-        POP HL
+        XOR (HL)
+        AND 0DFH
         JR NZ,UV_NOM
         INC HL
         INC DE

@@ -28,8 +28,8 @@ The source checkout was clean and was not modified. A private clone at
 | Stage | Status | Evidence / next work |
 | --- | --- | --- |
 | 1. Clean builds, contents, boot, baseline console/memory | In progress; initial gates pass | Both distributions pass build/boot/integrity; focused BIOS/CCP and native editing/unload pass. Additional console/startup-failure/repeated-return cases remain. |
-| 2. Fresh conformance suite | Started | All 13 programs rebuilt; cpmsim CPUTEST executed. Other programs and Model 4 suite runs remain. |
-| 3. CPX/RSX lifecycle, relocation, ROM protection | Not run in this campaign | Run against this baseline; previous monitor qualification is background evidence only. |
+| 2. Fresh conformance suite | Partial cpmsim groups pass | Fresh ENTRYTST, CPUTEST, ECOTEST, BDOSTEST required, DIRTEST safe, FILETEST required and RANDTEST safe results below. Console, disk/BIOS/error/CCP procedures and Model 4 suite runs remain. |
+| 3. CPX/RSX lifecycle, relocation, ROM protection | Protected ROM candidate campaign passes | Fresh V002 guarded ROM, lifecycle, workspace and stack results below; wider RAM/native lifecycle coverage remains. |
 | 4. Resident/transient command integration | Not run | Selectors, protection, prompts, explicit transient invocation, feature diagnostics and caller-state restoration. |
 | 5. Utility operations and failure recovery | Not run | System-disk utilities only; disposable images and independent filesystem inspection. |
 | 6. Monitors and applications | Not run | Fresh cross-platform campaign; do not substitute earlier feature-specific results. |
@@ -215,7 +215,7 @@ original clean 8127eab build and corrected candidate independently emit 812
 across 18 files with zero unresolved references. The assertion now uses that
 verified count; no unresolved reference is admitted.
 
-**V002 — open ROM system-stack reserve failure.** The protected ROM run
+**V002 — corrected; protected ROM reserve and lifecycle checks pass.** The protected ROM run
 completed its scripted cold/warm boot and CPX/RSX lifecycle commands without
 a protection violation, but its final system-stack reserve check fails:
 26 bytes used from 32, leaving six bytes; acceptance requires at least eight.
@@ -232,3 +232,120 @@ before reaching directory tests; it patches a BIOS leaf assuming older console
 routing. No full unit-suite pass is claimed from it. The new focused extent
 regression executes the production comparison directly; original ENTRYTST
 provides independent public-BDOS coverage of the actual defect.
+
+
+## V002 correction
+
+A private guarded-emulator trace (`stack-audit/trace.log` and the retained
+`/private/tmp/bettercpm-stack-trace/transcript.txt`) locates the deepest stack
+writes in CPX.COM's UV_MATCH before it installs its private stack. The shared
+recognizer saves HL merely to compare one character. Replacing that operation
+with XOR/DFh-mask comparison saves two peak stack bytes and four code bytes.
+This is independent of the preceding V001 BDOS change. Stack sizes, minimum
+reserve, public interfaces and unloaded 53K TPA remain unchanged.
+
+- `stack-audit/version-stack.log`: all byte substitutions at each of four token
+  positions preserve the old match behavior; caller registers retained; peak
+  24/32 bytes, reserve eight.
+- `stack-audit/utility-versions.log`: 166 existing identity/resident-dispatch/
+  invalid-usage/fall-through checks pass on freshly rebuilt programs.
+- `stack-audit/native-cpx_utility.log`: CPX.COM 910 bytes, native/cross identical.
+- `stack-audit/native-config.log`: dual-profile CONFIG 15,457 bytes, native/cross
+  identical. CONFIG is now Build 013; other linked consumers' build counters
+  also advance for the common-source fix.
+- `stack-audit/rom-xip.log`: full protected-ROM execution, guard primitives,
+  CPX/RSX lifecycle and workspace-lifetime campaign pass with fresh development
+  media `/private/tmp/bettercpm-validation-v002-rom-media/`.
+
+| Stack | Used/capacity | Reserve |
+| --- | ---: | ---: |
+| Loader | 20/64 | 44 |
+| System | 24/32 | 8 |
+| BDOS | 28/40 | 12 |
+
+The protected ROM manifest and high-water report are retained in that media's
+`rom/rom-xip-qualification.json` and `rom/rom-stack-qualification.json`.
+Original failed runs are not relabelled. Native Model 4 and wider conformance
+coverage remain separate pending campaign work.
+
+
+The post-fix returning regression repeats all four selected groups with zero
+failures/errors: ENTRYTST 25 pass, BDOSTEST gateway 9 pass/5 observed, CPUTEST
+2 pass/1 observed, ECOTEST 1 pass. The same 22 excluded/manual rows remain
+not-run. Evidence is in `stack-audit/returning/` (entrytst-ymqvjg44,
+bdostest-go9wct1o, cputest-cyqm6yjo, ecotest-gcgp2fn2). Native RCP payload parity
+also passes at 7,146 bytes (`stack-audit/native-rcp.log`).
+
+An initial V002 distribution build correctly refused publication because the
+new regression-test source was added while the build was running. Its candidate
+is retained, not published; the subsequent V002b build starts from unchanged
+inputs including that test. This is a provenance guard, not a runtime failure.
+
+
+Final V002b candidate qualification passes both platforms: filesystem, file
+integrity, CONFIG fingerprint and native boot. The release is `/private/tmp/bettercpm-validation-v002b/release-39f450442dbc-608a1bd7f308`.
+The cpmsim conformance reference is hash-identical to the published image.
+
+| Target | SHA-256 |
+| --- | --- |
+| z80pack | `a6590279ff439f04902b7bd16ce3dde8cf5b3c58cc674264b0dfadf21cb9ea46` |
+| trs80gp | `f84377b81af00db7e34f2003c47c24b8e7f06304dedc7aff88739a09f02f0b0a` |
+
+Evidence: `stack-audit/v002b-distribution-build.log`. V002 is closed; broader
+system-wide validation remains in progress. This local candidate includes
+uncommitted changes after PR #352 and does not claim a clean release revision.
+
+
+## File and directory conformance continuation
+
+The returning runner now prepares a private System Disk A and expendable data
+media B/C/D in the same known format. Programs and canonical runtime payload
+are installed on B, including user-one BTUSR and RO-marked BTRO; C gets the
+canonical BFILE-000 record. Search-pair names are installed for BDOSTEST. D is
+prepared for RANDTEST lifecycle and FILETEST required coverage with a
+128-record BTFULL (record 127 contains FULL-127), BTREL, and allocation filler;
+zero-length files fill the remaining directory slots. Geometry and extent
+capacity come from the selected disk definition. Each program gets a new media
+set; originals remain unchanged. Fixture source hashes and transcripts are
+retained. The runner additionally records initial/final private disk hashes.
+
+| Selected group | Pass | Fail/error | Not-run | Evidence under file-directory |
+| --- | ---: | ---: | ---: | --- |
+| DIRTEST /SAFE | 49 | 0 | 0 listed | dirtest-evgrncfc |
+| FILETEST /SAFE | 28 | 0 | 0 listed | filetest-d9jgxsvl |
+| FILETEST /GROUP:REQUIRED | 68 | 0 | 2 | filetest-hafxnow6 |
+| RANDTEST /SAFE | 39 | 0 | 2 | randtest-y5dkoj2g |
+| BDOSTEST /GROUP:REQUIRED | 56 | 0 | 3 | bdostest-xiyiqdd4 |
+
+`/SAFE` selects subsets; zero listed not-run does not mean all catalog items
+were exercised. FILETEST required coverage supersedes its narrower safe group
+for coverage counting; BDOSTEST required similarly includes prior gateway
+checks. No failures remain in these prepared groups; full conformance is not
+yet complete and Model 4 execution is still pending for these groups.
+
+Instrument corrections (initial evidence retained):
+
+- DIRTEST's first attempt stopped at Bad Sector after two passes because the
+  runner had not mounted C for explicit-drive search. That attempt was stopped,
+  not counted as a completed group. Fresh C/D images and the cross fixture
+  resolved it.
+- RANDTEST initially reported 0556 failing and 0557 passing with Prereq=FF
+  because D lacked BTFULL. Neither initial result is accepted as evidence of
+  the lifecycle contract. The prepared D run reports Prereq=00 for both and
+  passes 0556/0557. Missing prerequisite is an instrument failure here, not an
+  OS failure or a pass for 0557.
+- Expanded FILETEST initially failed 0253 because its D fixture was data-full
+  but still had free directory slots (`filetest-bnkaajlb`). Adding the missing
+  zero-length directory fillers produces the complete passing required group.
+
+These issues reinforce that an aggregate's advertised safe/required label is
+not a substitute for auditing each case's fixture requirements. No suite source
+or oracle was changed to obtain the passing results.
+
+
+Final fingerprinted reruns (`file-directory-final/`) retain the same results:
+
+- `bdostest-dr5lfj6o`: BDOSTEST /GROUP:REQUIRED — 56 pass; 3 listed not-run; zero fail/error.
+- `dirtest-aqui_a1e`: DIRTEST /SAFE — 49 pass; 0 listed not-run; zero fail/error.
+- `filetest-ejxhw4h6`: FILETEST /GROUP:REQUIRED — 68 pass; 2 listed not-run; zero fail/error.
+- `randtest-u68ftu1_`: RANDTEST /SAFE — 39 pass; 2 listed not-run; zero fail/error.
