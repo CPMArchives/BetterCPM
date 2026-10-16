@@ -7,6 +7,7 @@ from pathlib import Path
 from add_cpm_file_to_dmk import extract_raw, add_file, build
 from build_trs80_boot import FILESYSTEM_FIRST_SECTOR, SECTOR_SIZE, DIRECTORY_ENTRIES
 from run_trs80_command import key_args, DEFAULT_EMULATOR
+from trs80gp_launch import run as launch
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -17,17 +18,21 @@ def main():
     parser.add_argument('--emulator',type=Path,default=DEFAULT_EMULATOR)
     parser.add_argument('--application',action='store_true',help='capture original MM CONFIG startup instead of ADMTST pages')
     parser.add_argument('--bell',action='store_true',help='record the provider bell with emulator sound effects muted')
-    parser.add_argument('--manual-load',action='store_true',help='load ADM3A explicitly when testing an older image without monitor startup')
+    parser.add_argument('--editing-trace',action='store_true',help='capture immediately after typed editing input, without claiming qualification')
+    parser.add_argument('--editing',action='store_true',help='check command-line Backspace with the loaded monitor')
+    parser.add_argument('--manual-load',action='store_true',help='legacy option; the private startup script now always loads the pair')
     args=parser.parse_args()
-    if args.bell and args.application:parser.error('choose one campaign')
+    if args.editing_trace:args.editing=True
+    if sum([args.bell,args.application,args.editing])>1:parser.error('choose one campaign')
     parent=ROOT/'build/monitor-development/native-campaign'
     parent.mkdir(parents=True,exist_ok=True)
-    out=Path(tempfile.mkdtemp(prefix='bell-' if args.bell else ('application-' if args.application else 'pages-'),dir=parent))
+    out=Path(tempfile.mkdtemp(prefix='bell-' if args.bell else ('application-' if args.application else ('editing-' if args.editing else 'pages-')),dir=parent))
     raw=extract_raw(args.image.read_bytes())
     for index in range(DIRECTORY_ENTRIES):
         offset=FILESYSTEM_FIRST_SECTOR*SECTOR_SIZE+index*32
-        if raw[offset+1:offset+9] in [b'R3PACK  ',b'ADM3A   ',b'ADMTST  ']:raw[offset]=229
+        if raw[offset+1:offset+9] in [b'R3PACK  ',b'ADM3A   ',b'ADMTST  ',b'M4SCRN  ',b'STARTUP ']:raw[offset]=229
     files=[('R3PACK.RSX',ROOT/'build/system/R3PACK.RSX'),
+           ('M4SCRN.RSX',ROOT/'build/screen-backends/M4SCRN.RSX'),
            ('ADM3A.RSX',ROOT/'build/monitor-development/ADM3A.RSX'),
            ('ADMTST.COM',ROOT/'build/monitor-development/ADMTST.COM')]
     if args.application:
@@ -37,26 +42,39 @@ def main():
     if args.bell:
         # Standard CP/M raw console output BEL, followed by warm return.
         add_file(raw,'BELLTST.COM',bytes.fromhex('0e061e07cd0500c30000'))
+    if args.editing:
+        add_file(raw,'READY.COM',bytes.fromhex('110b010e09cd0500c30000')+b'\x1aMONITOR EDIT READY\r\n$')
+        add_file(raw,'ENDCHK.SUB',b'RSX UNLOAD ADM3A\r\nRSX UNLOAD M4SCRN\r\nRSX LIST\r\n\x1a')
+    program='READY' if args.editing else ('BELLTST' if args.bell else ('MMCONF' if args.application else 'ADMTST'))
+    startup=(':VER /BANNER\r\nRSX LOAD M4SCRN\r\nRSX LOAD ADM3A\r\n'+program+'\r\n')
+    if not args.application and not args.editing:
+        startup+='RSX UNLOAD ADM3A\r\nRSX UNLOAD M4SCRN\r\nRSX LIST\r\n'
+    add_file(raw,'STARTUP.SUB',startup.encode('ascii')+b'\x1a')
     image=out/'private-system.dmk'
     image.write_bytes(build(bytes(raw)))
-    command=[str(args.emulator),'-m4','-batch','-turbo','-d0',str(image),'-itime','15000','-id','15000']
-    if args.manual_load:command+=key_args('RSX LOAD ADM3A\r')+['-id','6000']
+    command=[str(args.emulator),'-m4','-batch','-turbo','-ktx','-d0',str(image),'-itime','15000']
     if args.bell:
-        command+=['-sfmute','-ir','audio']+key_args('BELLTST\r')
-        command+=['-id','1200','-ir','audio','-it','-ics','-ix']
+        command+=['-sfmute','-ir','audio','-iw','No RSXs loaded','-iw','TPA available: 53K',
+                  '-id','120','-ir','audio','-it','-ics','-ix']
+    elif args.editing:
+        command+=['-iw','MONITOR EDIT READY','-id','6000']
+        if args.editing_trace:command+=['-it','-ics']
+        command+=key_args('RSX LISX\x08T\r',delay=60)
+        if args.editing_trace:
+            command+=['-id','1500','-it','-ics','-ix']
+        else:
+            command+=['-iw','TPA available:','-id','6000','-it','-ics']
+        if not args.editing_trace:command+=key_args('SUBMIT ENDCHK\r',delay=60)+['-iw','No RSXs loaded','-iw','TPA available: 53K','-id','120','-it','-ics','-ix']
     elif args.application:
-        command+=key_args('MMCONF\r')+['-id','4000','-it','-ics','-ix']
+        command+=['-iw','Your choice:','-id','120','-it','-ics','-ix']
     else:
-        command+=key_args('ADMTST\r')
         for index,marker in enumerate(['Marker: row 5','Parser reset:','TAB should put','Cursor OFF/ON query passed.']):
-            if index:command+=key_args(' ')+['-id','300']
+            if index:command+=key_args(' ',delay=60)
             command+=['-iw',marker,'-iw','Press a key to continue.','-id','120','-it','-ics']
-        command+=key_args(' ')+['-id','300','-iw','No ENTER is required.']
-        command+=key_args('A:[]')+['-iw','ADMTST keyboard checks passed.','-id','120','-it','-ics']
-        command+=['-iw','A0>','-id','600']
-        command+=key_args('RSX UNLOAD ADM3A\r')+['-id','6000']
-        command+=key_args('RSX LIST\r')+['-id','2000','-it','-ics','-ix']
-    subprocess.run(command,cwd=out,check=True)
+        command+=key_args(' ',delay=60)+['-iw','No ENTER is required.']
+        command+=key_args('A:[]',delay=60)+['-iw','ADMTST keyboard checks passed.','-id','120','-it','-ics']
+        command+=['-iw','No RSXs loaded','-iw','TPA available: 53K','-id','120','-it','-ics','-ix']
+    launch(command,cwd=out,check=True,timeout=240)
     captures=sorted(out.glob('trs80-text-*.bin'))
     assert captures,'no emulator captures'
     for path in captures:
@@ -65,6 +83,16 @@ def main():
         for row in range(24):
             line=bytes(c&127 for c in data[80*row:80*(row+1)]).decode('ascii').rstrip()
             if line:print(line)
+    if args.editing_trace:
+        print('Diagnostic editing capture only; no qualification claimed')
+        return
+    if args.editing:
+        assert len(captures)==2
+        first=bytes(c&127 for c in captures[0].read_bytes()[:1920])
+        final=bytes(c&127 for c in captures[1].read_bytes()[:1920])
+        assert b'A0>RSX LIST' in first and b'ADM3A' in first and b'M4SCRN' in first
+        assert b'No RSXs loaded' in final and b'TPA available: 53K' in final
+        print('PASS: real Model 4 command-line Backspace/redisplay with portable ADM3A and unload/53K')
     if args.application:
         screen=bytes(c&127 for c in captures[0].read_bytes()[:1920])
         for marker in [b'CONFIG version 3.10',b'Configuration options:',
@@ -87,7 +115,7 @@ def main():
         crossings=sum((a>center)!=(b>center) for a,b in zip(values,values[1:]))
         assert crossings==512,('unexpected bell waveform',crossings)
         print(f'PASS: native bell recording with 512 transitions, effects muted: {recordings[0]}')
-    elif not args.application:
+    elif not args.application and not args.editing:
         assert len(captures)==6
         movement=captures[2].read_bytes()
         assert movement[160:164]==b'LEFT'

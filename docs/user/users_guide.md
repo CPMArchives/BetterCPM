@@ -3009,25 +3009,37 @@ logical Ctrl-Z does not. Another disk source resets the state; H/I reader
 transfers use their own HEX termination and are unaffected.
 
 
-### Model 4 ADM-3A monitor
+### MM-style ADM-3A monitor
 
-The Model 4 system disk supplies ADM3A.RSX and loads it from STARTUP.SUB after
-the sign-on banner. It supports the MM-style ADM-3A screen codes used by
-historical Model 4 CP/M software. Programs still need to be configured for that
-terminal; unrelated machine-specific hardware access is not made portable.
+ADM3A.RSX supports the MM-style ADM-3A screen controls used by historical
+Model 4 CP/M software. The same personality is supplied on both System Disks.
+It uses M4SCRN.RSX on Model 4 or ANSISCRN.RSX under cpmsim with an ANSI host
+terminal. Programs still need to be configured for MM-style ADM-3A controls;
+unrelated hardware access is not made portable.
 
-With this monitor and its manager loaded, TPA is 51K. To recover the unloaded
-53K environment, run `RSX UNLOAD ADM3A`. To restore the monitor, run
-`RSX LOAD ADM3A`. Warm boot preserves the loaded monitor; the cold-boot script
-runs only at cold boot. Editing STARTUP.SUB lets you omit automatic loading.
+The Model 4 STARTUP.SUB loads M4SCRN first, then ADM3A, clears the screen and
+prints the sign-on banner.
+On cpmsim, startup leaves the basic console active. To select ADM3A there, run:
 
-`ADMTST` displays control-test pages and asks you to type uppercase A, colon,
-opening bracket and closing bracket. Check the displayed instructions and
-listen for the bell. `ADMTST /VER` prints its version without requiring a loaded
-monitor. The test utility requires ADM3A rather than another MCON personality.
+```text
+RSX LOAD ANSISCRN
+RSX LOAD ADM3A
+CLS
+```
 
-ADM3A is Model 4-specific. Do not load it under cpmsim; VT52 and ANSI/VT100
-providers for that backend are separate implementations.
+Only one personality can be active. To change personalities, unload the current
+one first. If the matching backend is already loaded, reuse it. Run `CLS` after loading
+a personality to initialize its screen position. To recover the
+53K baseline, unload ADM3A, then M4SCRN or ANSISCRN, and any other loaded RSXs.
+Warm boot retains the pair. Edit STARTUP.SUB to omit automatic loading.
+
+`ADMTST` displays control-test pages and asks for uppercase A, colon and both
+brackets. Check movement, reverse video, line operations and the bell.
+`ADMTST /VER` prints `BetterCP/M ADMTST 1.0 (Build 002)` without a monitor.
+On the ANSI host, glyphs outside printable ASCII appear as `?` with their
+reverse attribute retained. Model 4 retains its original video-byte glyphs.
+With ADM3A and its backend/manager loaded, the recorded cpmsim TPA is 50K.
+The Model 4 backend must match the BIOS build supplied on its disk.
 
 ### Portable VT52 monitor
 

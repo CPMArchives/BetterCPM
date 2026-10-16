@@ -53,6 +53,13 @@ and must not be assumed to retain its caller value at provider entry.
 | 4 | Internal clear screen and home | Clear/home and reset any incomplete output sequence |
 | 5 | Reset incomplete terminal sequence | Discard parser continuation; retain screen, position and normal terminal modes |
 
+Private cursor presentation follows BDOS Function 178: C=0 queries availability;
+a nonzero character draws it in reverse and **advances** like ordinary output.
+Both the personality's logical cursor and the renderer must advance together.
+It is not a write-and-hold operation. A portable personality can implement this
+through typed cell output even when the basic host backend has no private
+cursor service.
+
 Honor the existing BIOS calling/register contracts and balance the stack. The
 provider may use its own bounded state but must not recursively enter routed
 console operations, invoke BDOS, allocate, load an overlay or mutate the RSX

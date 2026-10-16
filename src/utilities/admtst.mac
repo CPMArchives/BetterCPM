@@ -162,10 +162,10 @@ CURSOR_OK: DB 'Cursor OFF/ON query passed.',13,10,0
 CURSOR_FAIL: DB 'Cursor OFF/ON query failed. Test incomplete.',13,10,0
 KEYBOARD:
         DB 'Keyboard: type uppercase A, then colon, then [ and ].',13,10
-        DB 'Use the working Model 4 keyboard layout. No ENTER is required.',13,10,0
+        DB 'Use the configured keyboard layout. No ENTER is required.',13,10,0
 KEY_FAIL: DB 13,10,'Keyboard mismatch. Record the key and layout; test incomplete.',13,10,0
 DONE: DB 'ADMTST keyboard checks passed. Confirm visual pages and bell separately.',13,10,0
-MISSING: DB 'No MCON provider loaded. Load the development ADM3A.RSX.',13,10,0
+MISSING: DB 'No MCON provider loaded. Load ADM3A.RSX and its screen backend.',13,10,0
 ; @utility-version ADMTST@
         .DEPHASE
         END

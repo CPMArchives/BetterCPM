@@ -52,6 +52,18 @@ def main():
         assert cpu.mem[0xF0CB]==128
         control(15)
         assert cpu.mem[0xF0CB]==128
+    cpu.port_write=lambda port,value:None
+    for reverse in (0,128):
+        for value in range(32,256):
+            cpu.mem[0xF0C8]=0
+            cpu.setword(0xF0C9,0)
+            cpu.mem[0xF0CB]=reverse
+            cpu.mem[0xF800]=32
+            cpu.c=value
+            cpu.run(0xEF48,limit=20000)
+            assert cpu.mem[0xF800]==value|reverse,(reverse,value)
+            assert cpu.word(0xF0C9)==0x100
+    print('PASS: original MM 2.32 prints all 448 ordinary-byte/reverse combinations literally')
     pattern=bytes(33+(i//80)%90 for i in range(1920))
     cases=0
     for row in range(24):

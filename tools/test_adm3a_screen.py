@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Check assembled MM screen controls against the frozen cursor/erase contract."""
-from test_adm3a_foundation import ROOT, OUT, symbols
+from test_adm3a_foundation import ROOT, OUT, symbols, bind_backend, set_position
 from system_layout import LAYOUT
 from test_bios import Z80
 
@@ -22,6 +22,7 @@ def main():
             value=int.from_bytes(code[slot:slot+2],'little')+base-0x8000
             relocated[slot:slot+2]=value.to_bytes(2,'little')
         cpu.mem[base:base+len(code)]=relocated
+        bind_backend(cpu,base,syms)
         entry=syms['AM_ENTRY']+base-0x8000
         def output(char):
             cpu.a,cpu.c=0,char
@@ -33,7 +34,7 @@ def main():
                     cpu.mem[0xF800:0xFF80]=pattern
                     cpu.mem[0xF7FF]=0xA5
                     cpu.mem[0xFF80]=0x5A
-                    cpu.setword(bios['M4CURSOR'],0xF800+offset)
+                    set_position(cpu,base,syms,bios,0xF800+offset)
                     cpu.mem[bios['M4COLUMN']]=col
                     expected=bytearray(pattern)
                     target=offset
@@ -61,7 +62,7 @@ def main():
         # into the basic renderer or accidentally clear the screen.
         for char in list(range(7))+list(range(16,21))+[31]:
             cpu.mem[0xF800:0xFF80]=pattern
-            cpu.setword(bios['M4CURSOR'],0xF864)
+            set_position(cpu,base,syms,bios,0xF864)
             cpu.mem[bios['M4COLUMN']]=20
             output(char)
             assert cpu.mem[0xF800:0xFF80]==pattern
@@ -81,12 +82,12 @@ def main():
         assert cpu.mem[0xF800]==193
         for char,length in [(21,79),(24,79),(23,1919),(25,1919)]:
             cpu.mem[0xF800:0xFF80]=pattern
-            cpu.setword(bios['M4CURSOR'],0xF801)
+            set_position(cpu,base,syms,bios,0xF801)
             cpu.mem[bios['M4COLUMN']]=1
             output(char)
             assert cpu.mem[0xF801:0xF801+length]==b'\xa0'*length
             assert cpu.mem[0xF800]==pattern[0]
-        cpu.setword(bios['M4CURSOR'],0xFF7F)
+        set_position(cpu,base,syms,bios,0xFF7F)
         cpu.mem[bios['M4COLUMN']]=79
         output(ord('Z'))
         assert cpu.mem[0xFF2F]==ord('Z')|128

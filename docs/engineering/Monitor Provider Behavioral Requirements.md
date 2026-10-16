@@ -207,6 +207,20 @@ The audit establishes `15h/18h` as EOL erase, `17h/19h` as EOS erase, `1Ch` inse
 
 ---
 
+## 5.0 Ordinary display bytes
+
+The selected MM 2.32 binary writes every ordinary output byte from 20h through
+FFh as a literal video byte, ORed with the current reverse-mode bit. The original
+binary check covers all 448 byte/reverse combinations. This is distinct from
+interpreting bytes 00h..1Fh as the control table above.
+
+Portable ADM3A retains that cell value and one-character advance. The Model 4
+backend preserves the exact video byte. An ASCII-host backend substitutes `?`
+for glyphs whose low seven bits are outside printable ASCII (20h..7Eh), retaining
+the reverse attribute. Such cell values must never be emitted as host terminal
+controls. This is a bounded glyph fallback, not a promise to reproduce the
+Model 4 character generator on an unrelated terminal.
+
 ## 5.1 Reverse Video `0Fh`
 
 The selected original MM 2.32 disk binary establishes:

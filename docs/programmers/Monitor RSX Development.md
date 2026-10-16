@@ -3,9 +3,9 @@
 BetterCP/M 1.0 uses a bounded monitor-provider interface to add terminal
 personalities that the basic console does not implement. ADM-3A (Montezuma
 Micro behavior on Model 4), VT52 and an ANSI/VT100-compatible subset are the
-committed 1.0 providers, each
-with a dedicated test utility. The native Model 4 ADM3A provider and ADMTST
-are implemented, as are cpmsim VT52 and the bounded ANSI/VT100 provider.
+committed 1.0 providers, each with a dedicated test utility. VT52 uses the
+portable personality/backend interface. ADM3A is being qualified on that same
+interface; the bounded ANSI/VT100 provider still uses the legacy host path.
 
 The BIOS hooks, transactional detach/publication, descriptor validation,
 prospective selection, duplicate-provider rejection and retained live-descriptor
@@ -117,19 +117,27 @@ terminal compatibility. Record unsupported behavior explicitly.
 A general TCAP capability schema, terminal database and broader discovery API
 remain post-1.0 work. Do not treat the 1.0 backend bits as that future schema.
 
-## First development example: ADM-3A
+## ADM-3A development example
 
-The Model 4 implementation is in `src/rsx/adm3a.mac`, with its builder in
-`tools/build_adm3a.py` and development test utility in `src/utilities/admtst.mac`.
-It illustrates the callable entry, ordinary chain pass-through, static
-relocation, parser storage, MONRAW bypass and direct Model 4 cursor updates.
-Its clear operation fills video memory without reinitializing the keyboard.
+`src/rsx/adm3a.mac` implements MM-style parsing using the shared screen API;
+`tools/build_adm3a.py` builds the identical portable carrier for either backend.
+It owns coordinates, reverse mode, visibility and incomplete-address state.
+Movement, fills, scrolling, lines and bell use typed backend operations. No
+Model 4 symbols or hardware addresses occur in the personality. See
+[portable ADM3A integration](../engineering/ADM3A%20Portable%20Backend%20Integration.md)
+for qualification and remaining gates.
 
-See [ADM-3A foundation qualification](../engineering/ADM3A%20Provider%20Foundation%20Qualification.md)
-for build dependencies, checks and remaining gates. This example uses Model 4 video memory and BIOS-owned cursor state. A new
-personality must implement its own specified semantics rather than relabeling
-this provider.
+Ordinary MM output includes literal video bytes beyond ASCII. The Model 4
+backend preserves them; the ANSI-host backend uses a visible `?` fallback for
+unavailable glyphs. It must never send such bytes as terminal controls. New
+personalities can restrict their own output repertoire independently.
 
+Private cursor presentation is a draw-and-advance operation. Query returns
+support/availability; a nonzero character is drawn in reverse and advances by
+the personality's ordinary movement rules. It must keep both logical and
+physical cursor coordinates coherent. ADM3A's hidden mode suppresses draws and
+returns zero to queries; its visible mode provides the service on both backends.
+VT52 also provides it through typed cells, clamping at the right margin.
 
 ADMTST now includes movement, reverse/erase/line-operation pages, bell and cursor
 queries, and a short keyboard check. Its character-output routine is also an
@@ -259,7 +267,8 @@ Modify the builder accordingly before claiming relocation safety.
 
 This starter targets cpmsim-compatible host output only. Changing its backend
 bit to 0001h does not turn it into a Model 4 renderer. For that platform, use
-ADM3A's generated hardware symbols and renderer as the backend reference.
+`src/rsx/screen/model4.mac` and its builder as the hardware backend reference.
+The portable ADM3A parser itself imports no hardware symbols.
 
 ### Test before shipping a new personality
 
@@ -308,5 +317,6 @@ A backend alone is permitted. No dependency callbacks run during commit.
 
 This lifecycle interface is implemented and CPU-qualified. Screen-backend builds and their operation contract now exist as a standalone
 checkpoint. Portable VT52 is now on both distribution disks with its matching backend.
-Full conversion of ADM3A and ANSI and a portable editable starter remain open. See the
+Portable ADM3A integration is now being qualified; ANSI conversion and a portable
+editable starter remain open. See the
 [production integration record](../engineering/Monitor%20Backend%20Production%20Integration.md).

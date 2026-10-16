@@ -1,6 +1,4 @@
-        INCLUDE backend.inc
-; MM-style ADM-3A development provider. Movement/erase/scroll are implemented;
-; Original MM 2.32 qualifies reverse and line operations; emulator checks remain.
+; Portable MM-style ADM-3A personality; rendering uses the bound SCRN service.
 RSXBASE         EQU     08000H
         CSEG
         .PHASE RSXBASE
@@ -11,26 +9,41 @@ AM_DISPATCH_WORD: DW AM_CHAIN
 AM_CHAIN:
         LD HL,(AM_NEXT)
         JP (HL)
+AM_BACKEND: DW 0                       ; manager-owned MCON 1.1 word at +12
 AM_ENTRY:
         OR A
         JP Z,AM_OUTPUT
+        CP 1
+        JP Z,AM_RAW
+        CP 2
+        JP Z,AM_RAW
         CP 3
         JR Z,AM_CURSOR
         CP 4
         JP Z,AM_CLEAR
         CP 5
         JP Z,AM_RESET
+        LD A,255
+        RET
 AM_RAW:
-        LD HL,(1)
-        LD DE,66                        ; MONRAW = WBOOT+66
-        ADD HL,DE
+        LD HL,(AM_BACKEND)
         JP (HL)
 AM_CURSOR:
         LD A,(AM_VISIBLE)
         OR A
         RET Z
-        LD A,3
-        JP AM_RAW
+        LD A,C
+        OR A
+        LD A,1
+        RET Z                          ; logical MM cursor visibility query
+        LD A,C
+        OR 128
+        LD C,A
+        PUSH DE                        ; BF_CURSOR inspects original E after return
+        CALL AM_PRINT
+        POP DE
+        LD A,1
+        RET
 AM_CLEAR:
         CALL AM_RESET
         CALL AM_HOME
@@ -53,28 +66,11 @@ AM_OUTPUT:
         JR C,AM_COLUMN_OK
         LD A,79
 AM_COLUMN_OK:
-        LD (M4COLUMN),A
-        LD B,A
+        LD (AM_COLPOS),A
         LD A,(AM_PENDING_ROW)
-        LD L,A
-        LD H,0
-        ; row*80 = row*16 + row*64; all addresses are external video memory.
-        ADD HL,HL
-        ADD HL,HL
-        ADD HL,HL
-        ADD HL,HL
-        LD D,H
-        LD E,L
-        ADD HL,HL
-        ADD HL,HL
-        ADD HL,DE
-        LD E,B
-        LD D,0
-        ADD HL,DE
-        LD DE,0F800H
-        ADD HL,DE
-        LD (M4CURSOR),HL
-        JP AM_RESET
+        LD (AM_ROWPOS),A
+        CALL AM_RESET
+        JP AM_POSITION
 AM_ROW:
         LD A,C
         SUB 32
@@ -97,11 +93,15 @@ AM_ESCAPE:
         RET NZ                         ; unknown selector consumed
         LD A,1
         LD (AM_VISIBLE),A
-        RET
+        LD C,A
+        LD A,15
+        JP AM_RAW
 AM_HIDE:
         XOR A
         LD (AM_VISIBLE),A
-        RET
+        LD C,A
+        LD A,15
+        JP AM_RAW
 AM_ADDRESS:
         LD A,2
         LD (AM_STATE),A
@@ -152,162 +152,101 @@ AM_NORMAL:
         ; renderer with its different control meanings.
         RET
 AM_PRINT:
-        LD HL,(M4CURSOR)
         LD A,(AM_REVERSE)
         OR C
-        LD (HL),A
+        LD C,A
+        LD A,7
+        CALL AM_RAW
+        LD A,(AM_COLPOS)
+        CP 79
+        JR Z,AM_RIGHT                  ; MM wraps; backend primitive clamps
+        INC A
+        LD (AM_COLPOS),A
+        RET
 AM_RIGHT:
-        LD HL,(M4CURSOR)
-        INC HL
-        LD A,(M4COLUMN)
+        LD A,(AM_COLPOS)
         INC A
         CP 80
         JR C,AM_SETCOL
         XOR A
-        LD (M4COLUMN),A
-        JP AM_SCROLL
+        LD (AM_COLPOS),A
+        JP AM_DOWN
 AM_SETCOL:
-        LD (M4COLUMN),A
-AM_STORE:
-        LD (M4CURSOR),HL
-        RET
+        LD (AM_COLPOS),A
+        JP AM_POSITION
 AM_LEFT:
-        LD HL,(M4CURSOR)
-        LD DE,0F800H
-        OR A
-        SBC HL,DE
-        RET Z
-        ADD HL,DE
-        DEC HL
-        LD A,(M4COLUMN)
+        LD A,(AM_COLPOS)
         OR A
         JR NZ,AM_LEFT_COLUMN
+        LD A,(AM_ROWPOS)
+        OR A
+        RET Z
+        DEC A
+        LD (AM_ROWPOS),A
         LD A,80
 AM_LEFT_COLUMN:
         DEC A
         JR AM_SETCOL
 AM_TAB:
-        ; Cursor movement only; tab does not overwrite intervening cells.
         CALL AM_RIGHT
-        LD A,(M4COLUMN)
+        LD A,(AM_COLPOS)
         AND 7
         JR NZ,AM_TAB
         RET
 AM_DOWN:
-        LD HL,(M4CURSOR)
-        LD DE,80
-        ADD HL,DE
+        LD A,(AM_ROWPOS)
+        CP 23
+        JR Z,AM_SCROLL
+        INC A
+        LD (AM_ROWPOS),A
+        JR AM_POSITION
 AM_SCROLL:
-        LD DE,0FF80H
-        OR A
-        SBC HL,DE
-        JR C,AM_WITHIN_SCREEN
-        ADD HL,DE
-        LD DE,80
-        OR A
-        SBC HL,DE
-        LD (M4CURSOR),HL
-        ; Move rows 1..23 up and clear the newly exposed bottom row.
-        LD HL,0F850H
-        LD DE,0F800H
-        LD BC,1840
-        LDIR
-        LD HL,0FF30H
-        LD BC,80
-        JP AM_FILL
-AM_WITHIN_SCREEN:
-        ADD HL,DE
-        JR AM_STORE
+        CALL AM_FILL_VALUE
+        LD A,10
+        CALL AM_RAW
+        JR AM_POSITION
 AM_UP:
-        LD HL,(M4CURSOR)
-        LD DE,0F850H
+        LD A,(AM_ROWPOS)
         OR A
-        SBC HL,DE
-        RET C
-        LD DE,0F800H
-        ADD HL,DE
-        JR AM_STORE
+        RET Z
+        DEC A
+        LD (AM_ROWPOS),A
+        JR AM_POSITION
 AM_CR:
-        LD HL,(M4CURSOR)
-        LD A,(M4COLUMN)
-        LD E,A
-        LD D,0
-        OR A
-        SBC HL,DE
         XOR A
         JR AM_SETCOL
 AM_HOME:
-        LD HL,0F800H
         XOR A
-        JP AM_SETCOL
-AM_EOL:
-        LD A,(M4COLUMN)
+        LD (AM_ROWPOS),A
+        JR AM_SETCOL
+AM_POSITION:
+        LD A,(AM_ROWPOS)
         LD B,A
-        LD A,80
-        SUB B
+        LD A,(AM_COLPOS)
         LD C,A
-        LD B,0
-        LD HL,(M4CURSOR)
-        JR AM_FILL
-AM_EOS:
-        LD HL,0FF80H
-        LD DE,(M4CURSOR)
-        OR A
-        SBC HL,DE
-        LD B,H
-        LD C,L
-        EX DE,HL
-AM_FILL:
-        ; Erasures and scroll fill use the current MM reverse-video mode.
+        LD A,6
+        JP AM_RAW
+AM_FILL_VALUE:
         LD A,(AM_REVERSE)
         OR 32
-        LD D,A
-AM_FILL_NEXT:
-        LD (HL),D
-        INC HL
-        DEC BC
-        LD A,B
-        OR C
-        JR NZ,AM_FILL_NEXT
+        LD C,A
         RET
-AM_LINE:
-        ; HL = beginning of cursor row, BC = bytes to beginning of last row.
-        LD HL,(M4CURSOR)
-        LD A,(M4COLUMN)
-        LD E,A
-        LD D,0
-        OR A
-        SBC HL,DE
-        EX DE,HL
-        LD HL,0FF30H
-        OR A
-        SBC HL,DE
-        LD B,H
-        LD C,L
-        EX DE,HL                       ; preserves zero flag for last-row case
-        RET
+AM_EOL:
+        CALL AM_FILL_VALUE
+        LD A,8
+        JP AM_RAW
+AM_EOS:
+        CALL AM_FILL_VALUE
+        LD A,9
+        JP AM_RAW
 AM_INSERT:
-        CALL AM_LINE
-        JR Z,AM_LASTROW
-        PUSH HL
-        LD HL,0FF2FH
-        LD DE,0FF7FH
-        LDDR
-        POP HL
-        LD BC,80
-        JP AM_FILL
+        CALL AM_FILL_VALUE
+        LD A,13
+        JP AM_RAW
 AM_DELETE:
-        CALL AM_LINE
-        JR Z,AM_LASTROW
-        PUSH HL
-        LD DE,80
-        ADD HL,DE
-        POP DE
-        LDIR
-AM_LASTROW:
-        LD HL,0FF30H
-        LD BC,80
-        JP AM_FILL
+        CALL AM_FILL_VALUE
+        LD A,14
+        JP AM_RAW
 AM_ON:
         ; Original MM 2.32 dispatch reaches an unconditional reverse-ON path.
         LD A,080H
@@ -323,27 +262,15 @@ AM_REV_TOGGLE:
         LD (AM_REVERSE),A
         RET
 AM_BELL:
-        ; Model 4 sound port: bounded 256 cycles, each half held for 100 writes.
-        ; No BDOS, keyboard polling or mutation of display/parser state.
-        LD C,0
-AM_TONE:
-        LD A,1
-        LD B,100
-AM_HIGH:
-        OUT (090H),A
-        DJNZ AM_HIGH
+        LD C,7
         XOR A
-        LD B,100
-AM_LOW:
-        OUT (090H),A
-        DJNZ AM_LOW
-        DEC C
-        JR NZ,AM_TONE
-        RET
+        JP AM_RAW
 AM_BEGIN:
         LD A,1
         LD (AM_STATE),A
         RET
+AM_ROWPOS: DB 0
+AM_COLPOS: DB 0
 AM_STATE: DB 0
 AM_PENDING_ROW: DB 0
 AM_VISIBLE: DB 1

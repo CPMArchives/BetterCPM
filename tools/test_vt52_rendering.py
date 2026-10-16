@@ -103,10 +103,15 @@ def main():
             assert cells()[320:400]==b'KEEP'+b' '*76
             address(6,10);send(b'\x1bJ')
             assert cells()[490:]==b' '*(1920-490)
-            # Private software-cursor presentation must not advance position.
+            # Private cursor presentation advances exactly like ordinary output.
             before=(cpu.mem[syms['VT_ROW']+frontend-0x8000],cpu.mem[syms['VT_COL']+frontend-0x8000])
+            cpu.de=ord('_')
             call(3,ord('_'))
-            assert before==(cpu.mem[syms['VT_ROW']+frontend-0x8000],cpu.mem[syms['VT_COL']+frontend-0x8000])
+            assert cpu.de==ord('_')
+            assert cells()[before[0]*80+before[1]]==ord('_')|128
+            assert (before[0],min(79,before[1]+1))==(cpu.mem[syms['VT_ROW']+frontend-0x8000],cpu.mem[syms['VT_COL']+frontend-0x8000])
+            address(23,79);call(3,ord('X'))
+            assert cpu.mem[syms['VT_COL']+frontend-0x8000]==79 and cells()[-1]==ord('X')|128
             print(f'PASS: identical portable VT52 through {name} at {base:04X}; screen, margins, scroll, erase and reset')
 
 

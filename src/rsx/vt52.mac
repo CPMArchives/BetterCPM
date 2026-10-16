@@ -31,8 +31,18 @@ VT_RAW:
         LD HL,(VT_BACKEND)
         JP (HL)
 VT_CURSOR:
-        LD A,3                         ; draw/query without advancing logical cursor
-        JP VT_RAW
+        LD A,C
+        OR A
+        LD A,1
+        RET Z                          ; typed cells provide cursor presentation
+        LD A,C
+        OR 128
+        LD C,A
+        PUSH DE                        ; BF_CURSOR inspects original E after return
+        CALL VT_PRINT
+        POP DE                  ; advance by this personality's rules
+        LD A,1
+        RET
 VT_EMIT:
         PUSH BC
         PUSH DE

@@ -87,7 +87,19 @@ def main():
                 assert cells() == before[:640]+bytes([fill])*80+before[640:-80]
                 before=cells(); call(14,col=fill)
                 assert cells() == before[:640]+before[720:]+bytes([fill])*80
-            for op,row,col in [(6,24,0),(6,0,80),(7,0,31),(7,0,127),(8,0,33),(9,0,0),(10,0,65),(13,0,65),(15,0,2),(16,0,0)]:
+            # Literal display bytes never become terminal controls. Model 4
+            # preserves every byte; ASCII hosts substitute unsupported glyphs.
+            for value in range(256):
+                call(6,2,3);call(7,col=value)
+                glyph=value&127
+                expected=value if name=='M4SCRN' or 32<=glyph<127 else (value&128)|ord('?')
+                assert cells()[163]==expected,(name,value,cells()[163],expected)
+            # EOS must fill all subsequent rows in the requested rendition,
+            # even on ANSI hosts whose erase command uses default attributes.
+            for fill in (160,32):
+                call(6,3,11);before=cells();call(9,col=fill)
+                assert cells()==before[:251]+bytes([fill])*(1920-251)
+            for op,row,col in [(6,24,0),(6,0,80),(8,0,33),(9,0,0),(10,0,65),(13,0,65),(15,0,2),(16,0,0)]:
                 before=cells(); wire=len(output)
                 assert call(op,row,col)==255, (name,op)
                 assert cells()==before and len(output)==wire, (name,op,'mutated')
