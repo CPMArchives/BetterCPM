@@ -3077,24 +3077,48 @@ Graphics, keypad modes and host arrow-key translation are outside this
 provider's supported subset. This is not a general TCAP database or support
 for arbitrary hardware; another display platform needs a compatible backend.
 
-### ANSI/VT100 monitor on cpmsim
+### ANSI/VT100 monitor
 
-The cpmsim system disk supplies ANSI.RSX and ANSITST.COM. For software
-configured to use the supported ANSI/VT100 controls, load `RSX LOAD ANSI`
-and run `CLS` before starting the program. Use a compatible macOS or Linux
-terminal; the host window supplies screen dimensions and wrapping behavior.
-Unload any other monitor provider first. Only one can be active.
+Both system disks supply the same portable ANSI.RSX personality and ANSITST.COM.
+Load the platform's screen backend before ANSI. Starting with no monitor loaded:
+
+```text
+Model 4:  RSX LOAD M4SCRN
+          RSX LOAD ANSI
+
+cpmsim:   RSX LOAD ANSISCRN
+          RSX LOAD ANSI
+```
+
+If the Model 4 startup has already loaded ADM3A and M4SCRN, use
+`RSX UNLOAD ADM3A`, keep M4SCRN loaded, then `RSX LOAD ANSI`. Only one monitor
+personality can be active. Run `CLS` before starting the application. The manager
+rejects an older backend that lacks ANSI's required full-control service revision;
+use the matching manager and backend supplied on the disk.
+
+The Model 4 backend renders on its physical 80-column, 24-row screen. Under
+cpmsim, use a compatible ANSI-capable macOS or Linux terminal; the host window
+supplies its actual dimensions and wrapping. Model 4 displays reverse video and
+conceal; other styles and colors are retained logically but have no physical
+effect. Host rendering depends on the terminal's capabilities.
 
 This bounded subset supports cursor movement, erasure, text attributes, scroll
 regions, cursor save/restore and cursor visibility. It does not provide full
 VT100 emulation: terminal queries, character-set selection, keypad modes and
-VT52-mode switching are unsupported. Applications must restore any attributes,
-scroll region or cursor visibility they change before exiting.
+VT52-mode switching are unsupported. Numeric lists are bounded; unknown SGR
+attributes are ignored, and malformed extended-color groups do not partially
+change rendition. Applications must restore any attributes, scroll region or
+cursor visibility they change before exiting.
 
 `ANSITST` shows positioning, reverse-video, erase and parser-reset checks with
 two keypress pauses. `ANSITST /VER` prints
 `BetterCP/M ANSITST 1.0 (Build 001)` without requiring a monitor.
-`RSX UNLOAD ANSI` releases the provider; with no other RSXs loaded, TPA returns
-to 53K. Startup does not automatically choose ANSI. The unchanged TE VT100 editor has passed an open/edit/save/exit test. Its
-standard configuration needs an 80-column, 25-row host window. This does not
-imply full VT100 emulation or compatibility with every application.
+Unload ANSI first, then the backend if it is no longer needed:
+`RSX UNLOAD ANSI`, followed by `RSX UNLOAD M4SCRN` or `RSX UNLOAD ANSISCRN`.
+With no other RSXs loaded, TPA returns to 53K. Startup does not automatically
+choose ANSI.
+
+The unchanged TE VT100 editor has passed an open/edit/save/exit test on cpmsim.
+Its standard configuration needs an 80-column, 25-row host window, so that
+configuration is not qualified for the 24-row Model 4. This does not imply full
+VT100 emulation or compatibility with every application.

@@ -18,6 +18,7 @@ def main():
     parser.add_argument('--rom-build',type=Path,help='Qualify protected ROM from this platform build instead of --image')
     parser.add_argument('--z80pack-source',type=Path,default=Path.home()/'projects/git/z80pack')
     args=parser.parse_args()
+    if args.rom_build:args.rom_build=args.rom_build.resolve()
     parent=ROOT/'build/ansi-development/live'
     parent.mkdir(parents=True,exist_ok=True)
     work=Path(tempfile.mkdtemp(prefix='cpmsim-',dir=parent))
@@ -42,9 +43,8 @@ def main():
             subprocess.run(['cpmrm','-T','raw','-f','bettercpm-default',str(image),'0:'+name],cwd=work,check=True)
     provider='build/ansi-portable-candidate' if args.portable_candidate else 'build/ansi-development'
     files=[('ANSI.RSX',provider+'/ANSI.RSX'),('ANSITST.COM',provider+'/ANSITST.COM'),('HELLO.RSX','build/rsx/HELLO.RSX')]
-    if args.portable_candidate:
-        files.extend([('ANSISCRN.RSX','build/screen-backends/ANSISCRN.RSX'),('R3PACK.RSX','build/system/R3PACK.RSX')])
-        if rom_image:raise ValueError('portable ROM qualification requires freshly relocated ROM overlays; use RAM until its matching ROM pack is built')
+    container=args.rom_build/'rom/rsx-overlays/R3PACK.RSX' if rom_image else ROOT/'build/system/R3PACK.RSX'
+    files.extend([('ANSISCRN.RSX','build/screen-backends/ANSISCRN.RSX'),('R3PACK.RSX',container)])
     for name,path in files:
         existing=subprocess.check_output(['cpmls','-T','raw','-f','bettercpm-default',str(image)],cwd=work,text=True).upper().split()
         if name in existing:
@@ -64,14 +64,13 @@ def main():
         (b'RSX UNLOAD ANSI\r',prompt,30),
         (b'RSX LIST\r',b'TPA available: 53K',10),
         (b'BYE\r',b'System halted',10)]
-    if args.portable_candidate:
-        commands.insert(3,(b'RSX LOAD ANSISCRN\r',prompt,30))
-        index=next(i for i,command in enumerate(commands) if command[0]==b'ANSITST\r')
-        commands.insert(index,(b'RSX LIST\r',prompt,10))
-        index=next(i for i,command in enumerate(commands) if command[0]==b'RSX LIST\r' and i>index)
-        commands.insert(index,(b'RSX UNLOAD ANSISCRN\r',prompt,30))
+    commands.insert(3,(b'RSX LOAD ANSISCRN\r',prompt,30))
+    index=next(i for i,command in enumerate(commands) if command[0]==b'ANSITST\r')
+    commands.insert(index,(b'RSX LIST\r',prompt,10))
+    index=next(i for i,command in enumerate(commands) if command[0]==b'RSX LIST\r' and i>index)
+    commands.insert(index,(b'RSX UNLOAD ANSISCRN\r',prompt,30))
     trace=session(simulator,disks,commands,work/'transcript.bin',rom_image=rom_image,rom_start='DF00' if rom_image else None)
-    if args.portable_candidate:assert b'ANSI : BDOS 255' in trace
+    assert b'ANSI : BDOS 255' in trace
 
     if rom_image:
         assert b'ROM QUALIFICATION ACTIVE START=DF00' in trace

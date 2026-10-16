@@ -3,9 +3,9 @@
 BetterCP/M 1.0 uses a bounded monitor-provider interface to add terminal
 personalities that the basic console does not implement. ADM-3A (Montezuma
 Micro behavior on Model 4), VT52 and an ANSI/VT100-compatible subset are the
-committed 1.0 providers, each with a dedicated test utility. VT52 uses the
-portable personality/backend interface. ADM3A is being qualified on that same
-interface; the bounded ANSI/VT100 provider still uses the legacy host path.
+committed 1.0 providers, each with a dedicated test utility. All three use the
+portable personality/backend interface. ADM3A and VT52 require the basic screen
+contract; ANSI requires the full SCX control contract.
 
 The BIOS hooks, transactional detach/publication, descriptor validation,
 prospective selection, duplicate-provider rejection and retained live-descriptor
@@ -23,8 +23,9 @@ not make direct hardware access or unrelated machine-specific BIOS extensions
 portable. Reuse the shared monitor interface for another personality; do not
 invent a BDOS-only interceptor, which would miss direct BIOS console callers.
 
-New portable personalities use MCON 1.1 with capability 0004h and the manager-
-bound SCRN reference described below. The hardware-specific SCRN 1.0 backend
+Portable personalities use MCON 1.1 (basic controls) or MCON 1.2 (full SCX)
+with capability 0004h and the manager-bound SCRN reference described below.
+The hardware-specific SCRN 1.0/1.1 backend
 advertises exactly 0001h for Model 4 or 0002h for cpmsim. Legacy MCON 1.0
 providers use those platform bits directly; that includes the historical host
 starter. These bits are not a terminal-capability database.
@@ -32,7 +33,7 @@ starter. These bits are not a terminal-capability database.
 ## Build the carrier
 
 Use the existing BRSX-v2 builder, tools/build_rsx_module.py. A portable
-personality advertises callable MCON 1.1, capability 0004h, STATEFUL, with its
+personality advertises callable MCON 1.1 or 1.2, capability 0004h, STATEFUL, with its
 entry offset measured from the payload base. Preserve the canonical chain at
 +8, initially zero backend word at +12 and executable callback at +14 or later.
 The manager owns the external reference after load. See the integration section
@@ -381,21 +382,24 @@ Portable ANSI still needs parser conversion and activation-time capability
 checks before using these operations in production.
 
 
-A private portable ANSI integration candidate is available with
-`python3 tools/build_ansi.py --portable-candidate`. It exercises the complete
-bounded parser against typed SCX operations and shares `screen/rendition.inc`
-with the standalone SGR checks. Its provisional MCON 1.2 descriptor is rejected
-by the current manager; do not present it as an installable provider. Default
-builds retain the working host ANSI carrier. See the ANSI Portable Backend Audit
-for exact coverage and remaining capability-admission/application qualification.
-
-
 Full-control portable personalities now declare MCON 1.2 (STATEFUL, capability
 0004h, manager-owned backend word +12). They require SCRN 1.1, which promises
 SCX discovery and operations 17–24. MCON 1.1 still requires only SCRN 1.0.
 The manager checks this compatibility from metadata before publication; it does
 not invoke screen callbacks during preparation. Current backends advertise SCRN
-1.1 while preserving their legacy callable operations. The private ANSI candidate
-can now be installed with a matching updated manager/backend, but it is not yet
-the default distribution provider. Use `qualify_ansi_cpmsim.py
---portable-candidate` on disposable RAM media for its current live exercise.
+1.1 while preserving their legacy callable operations. Portable ANSI is the
+default build. `qualify_ansi_cpmsim.py` exercises it on disposable media; use
+`--rom-build` with freshly relocated matching overlays for guarded-ROM checks.
+
+
+### Production portable ANSI
+
+Normal `tools/build_ansi.py` now builds the portable personality from
+`src/rsx/ansi.mac`, `ansi-dispatch.inc` and shared `screen/rendition.inc`.
+The duplicate candidate source has been removed. `--portable-candidate` remains
+a private-output option for the same source, not a separate implementation.
+ANSI provider 1.1 declares MCON 1.2 and requires SCRN 1.1. Its callback forwards
+all typed parameters intact through the manager-bound +12 word; it generates no
+host escape sequences. The backend owns physical encoding and rendition limits.
+Normal build output is the installable `build/rsx/ANSI.RSX` plus ANSITST.COM.
+See the ANSI Portable Backend Audit for the production qualification record.

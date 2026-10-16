@@ -1,14 +1,15 @@
 # Unloadable screen backend ABI 1.0
 
-Status: backend implementation checkpoint, 2026-10-16. The standalone build
-produces `M4SCRN.RSX` and `ANSISCRN.RSX`; each platform's System Disk now includes
-its backend for portable VT52. See [VT52 integration](VT52%20Portable%20Backend%20Integration.md)
-for native/live/ROM/distribution checks. ADM3A and ANSI personality conversion
-and full release qualification remain in progress.
+Status: production portable integration, 2026-10-16. Each System Disk includes
+its hardware backend. ADM3A, VT52 and ANSI use the shared personality/backend
+model. See [ANSI qualification](ANSI%20Portable%20Backend%20Audit.md#production-activation-and-qualification)
+and [VT52 integration](VT52%20Portable%20Backend%20Integration.md) for evidence.
+System-wide release validation remains separate.
 
-A backend advertises STATEFUL callable service `SCRN` 1.0, with capability 1
-for Model 4 or 2 for cpmsim. Selection and the manager-owned MCON 1.1 reference
-are defined in [production integration](Monitor%20Backend%20Production%20Integration.md).
+Current backends advertise STATEFUL callable `SCRN` 1.1, with capability 1 for
+Model 4 or 2 for cpmsim. MCON 1.1 uses the basic contract; MCON 1.2 requires
+full SCX controls. Legacy SCRN 1.0 operations retain their calling convention.
+Selection and manager-owned references follow the admission rules below.
 There is one backend per active profile. Load it before a dependent personality;
 unload the personality before the backend. Loaded allocations reduce TPA;
 these modules add no permanent BIOS or BDOS code.

@@ -22,13 +22,14 @@ def main():
     disks=work/'disks';disks.mkdir();image=disks/'drivea.dsk'
     shutil.copy2(args.image,image);shutil.copy2(args.diskdefs,work/'diskdefs')
     document=work/'ANSITEST.TXT';document.write_bytes(b'ORIGINAL ANSI DOCUMENT\r\n\x1a')
-    files=[('ANSI.RSX',ROOT/'build/ansi-development/ANSI.RSX'),('TE.COM',args.reference/'TE_WS100.COM'),('TE.CF',args.reference/'TE_WS100.CF'),('ANSITEST.TXT',document)]
+    files=[('ANSISCRN.RSX',ROOT/'build/screen-backends/ANSISCRN.RSX'),('R3PACK.RSX',ROOT/'build/system/R3PACK.RSX'),('ANSI.RSX',ROOT/'build/ansi-development/ANSI.RSX'),('TE.COM',args.reference/'TE_WS100.COM'),('TE.CF',args.reference/'TE_WS100.CF'),('ANSITEST.TXT',document)]
     for name,path in files:
         names=subprocess.check_output(['cpmls','-T','raw','-f','bettercpm-default',str(image)],cwd=work,text=True).upper().split()
         if name in names:subprocess.run(['cpmrm','-T','raw','-f','bettercpm-default',str(image),'0:'+name],cwd=work,check=True)
         subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(image),str(path),'0:'+name],cwd=work,check=True)
     prompt=b'A0>_ '
     trace=session(args.simulator,disks,[
+        (b'RSX LOAD ANSISCRN\r',prompt,30),
         (b'RSX LOAD ANSI\r',prompt,30),
         (b'CLS\r',prompt,10),
         (b'TE ANSITEST.TXT\r',b' = menu',30),
@@ -36,6 +37,7 @@ def main():
         (b'S',b' = back): ',20),
         (b'X',prompt,20),
         (b'RSX UNLOAD ANSI\r',prompt,30),
+        (b'RSX UNLOAD ANSISCRN\r',prompt,30),
         (b'RSX LIST\r',b'TPA available: 53K',10),
         (b'BYE\r',b'System halted',10)],work/'transcript.bin')
     import pyte
