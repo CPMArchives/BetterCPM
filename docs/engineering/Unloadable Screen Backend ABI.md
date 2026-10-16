@@ -77,7 +77,7 @@ must contain neither Model 4 addresses nor host ANSI output strings.
 
 Run `python3 tools/build_screen_backends.py` after building the Model 4 BIOS.
 Payloads and listings go in `build/screen-backends/`; carriers are also copied
-to `build/rsx/`. Provider 1.3 payloads: Model 4 703 bytes, 768 allocated; ANSI-host
+to `build/rsx/`. Provider 1.4 payloads: Model 4 810 bytes, 1024 allocated; ANSI-host
 1,091 bytes, 1,280 allocated. The allocation includes carrier/runtime overhead and
 alignment. These are optional loaded costs, with zero permanent growth.
 
@@ -231,3 +231,38 @@ Before activating a portable ANSI personality, admission must establish that its
 backend supplies all required controls, not merely SCRN 1.0. Current optional
 capability discovery does not by itself change the manager's dependency rules.
 No existing ANSI carrier is switched to the new path in this checkpoint.
+
+
+### SCX erasure integration (provider 1.4)
+
+Operation 19 takes B=0 for the current line or B=1 for the screen, and
+C=0 for cursor through end, C=1 for beginning through cursor, or C=2 for
+all. Endpoints include the cursor cell. Other arguments return 255 before
+changing state or output. Success returns zero. The cursor and delayed-wrap
+state are preserved. With a pending wrap, suffix erasure starts logically after
+the last-column cell: line suffix is empty and screen suffix begins on the next
+row. Prefix and entire-line/screen forms still include the last-column cell.
+This agrees with the ANSI-host endpoint model and is explicit in the Model 4
+implementation; it does not consume the deferred wrap. Erased cells use the stored canonical rendition;
+Model 4 physically implements reverse blanks and host output uses CSI J/K
+under the canonical attributes. The host endpoint supplies its actual geometry.
+The operation mask is now 001Fh. This adds no permanent BIOS/BDOS bytes.
+
+`tools/test_screen_erasure.py` checks 288 cases across both relocated carriers,
+including 80x24, 80x25 and 100x40 host geometries, inclusive ranges, reverse/RGB
+blank attributes, cursor preservation and atomic invalid arguments. These are
+CPU/terminal-model checks. Additional qualification passed through public SCRN
+lookup on live cpmsim RAM and protected-ROM builds, with styled inclusive prefix
+erasure verified from captured output. Both restore 53K after unload. Evidence:
+`build/screen-rendition-live/cpmsim-mqn9kle9` (RAM) and
+`build/screen-rendition-live/cpmsim-eli53q8s` (guarded ROM).
+The manager lifecycle test also executes erasure through the rebound callback
+after moving the backend, then confirms pending wrapping and 53K unload.
+Native/cross assembly parity passes for both backends and the manager helpers.
+Model 4 erasure is CPU/VRAM-qualified; this checkpoint does not claim a native
+visual erasure exercise.
+
+Provider 1.4 payloads are M4SCRN 810 bytes/1024 allocated/69 relocations and
+ANSISCRN 1141 bytes/1280 allocated/196 relocations. Model 4 grows by one loaded
+256-byte page; host allocation is unchanged. Unloaded permanent memory is
+unchanged.

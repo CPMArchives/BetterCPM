@@ -93,6 +93,10 @@ def main():
         assert cpu.mem[backend_base+backsyms['SX_PEND']-0x8000]==1
     else:
         assert cpu.word(backend_base+backsyms['BH_PTR']-0x8000)==0
+    # Erase through the rebound callback without consuming deferred wrapping.
+    cpu.a,cpu.b,cpu.c=19,0,0
+    cpu.run(cpu.word(new+12),limit=200000);assert cpu.a==0
+    assert cells()[11*80+79]&127==ord('R')
     cpu.a,cpu.c=21,ord('S');cpu.run(cpu.word(new+12),limit=200000);assert cpu.a==0
     assert cells()[12*80]&127==ord('S')
     for label,value in [('AM_STATE',3),('AM_ROWPOS',0),('AM_PENDING_ROW',1),('AM_REVERSE',128),('AM_VISIBLE',0)]:

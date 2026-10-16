@@ -346,3 +346,13 @@ legacy fixed cells retain their existing clamp/advance contract. See the
 The portable ANSI carrier and developer starter still require the remaining
 controls and dependency validation; changing an existing carrier's capability
 word alone does not provide those guarantees.
+
+
+SCX provider 1.4 adds operation 19 (mask bit 2): B selects line (0) or
+screen (1); C selects suffix (0), prefix (1), or all (2). Erasure uses the copied
+canonical rendition and preserves cursor/deferred wrapping. In a pending-wrap
+state, suffix begins after the rightmost cell. Validate arguments before any
+output; return 255 on unsupported targets/modes. See the Screen Backend ABI for
+the exact range contract and qualification limits. A portable ANSI frontend must
+still check all of its required controls before activation; erasure alone does
+not complete the portable ANSI conversion.

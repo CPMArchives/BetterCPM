@@ -225,6 +225,8 @@ SX_ENTRY:
         JP Z,SX_QUERY
         CP 17
         JP Z,SX_MOVE
+        CP 19
+        JP Z,SE_ENTRY
         CP 20
         JP Z,SX_STYLE
         CP 21
@@ -266,7 +268,7 @@ SX_QUERY:
         XOR A
         RET
 SX_DESC: DB 'SCX',1,0,12,24,80
-        DW 01BH
+        DW 01FH
         DB 060H,0                    ; reverse + conceal, no physical color
 SX_MOVE:
         LD A,B
@@ -423,4 +425,69 @@ SX_WPOS:
         RET
 SX_PEND: DB 0
 SX_ATTR: DB 0,0,0,0,0,0,0,0,0
+
+; SCX 19: B=0 line / 1 screen, C=0 suffix / 1 prefix / 2 all.
+; Inclusive endpoints; preserve physical cursor and delayed-wrap state.
+SE_ENTRY:
+        LD A,B
+        CP 2
+        JP NC,S_BAD
+        LD A,C
+        CP 3
+        JP NC,S_BAD
+        LD (SE_MODE),A
+        LD HL,0F800H
+        LD DE,0FF80H
+        LD A,B
+        OR A
+        JR NZ,SE_RANGE
+        LD HL,(M4CURSOR)
+        LD A,(M4COLUMN)
+        LD C,A
+        LD B,0
+        OR A
+        SBC HL,BC
+        LD D,H
+        LD E,L
+        PUSH HL
+        LD HL,80
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+SE_RANGE:
+        LD A,(SE_MODE)
+        OR A
+        JR Z,SE_FROM
+        CP 1
+        JR NZ,SE_COUNT
+        LD DE,(M4CURSOR)
+        INC DE
+        JR SE_COUNT
+SE_FROM:
+        LD HL,(M4CURSOR)
+        LD A,(SX_PEND)
+        OR A
+        JR Z,SE_COUNT
+        INC HL                       ; pending wrap is logically past the cell
+SE_COUNT:
+        PUSH HL
+        EX DE,HL
+        OR A
+        SBC HL,DE
+        LD B,H
+        LD C,L
+        POP HL
+        LD A,B
+        OR C
+        RET Z                        ; suffix at pending line end is empty
+        LD A,(SX_ATTR)
+        AND 32
+        RLCA
+        RLCA
+        OR 32
+        LD (S_FILLBYTE),A
+        CALL S_FILL
+        XOR A
+        RET
+SE_MODE: DB 0
         END
