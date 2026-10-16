@@ -15,7 +15,7 @@ The spec's cost/backend gates remain required for proposed runtime facilities.
 | /STARTUP="..." | Confirmed, verified startup-only save; does not execute command |
 | /DEFAULT | Pending-only semantics agreed; implementation/default-domain sources open |
 | Drive command-line parity | Builds 006–007 physical fields and logical binding/format selection implemented; workbench field CLI open |
-| Persistent IOBYTE, printer and serial | Required runtime-cost/backend audits open |
+| Persistent IOBYTE, printer and serial | Backend/space findings recorded in [runtime audit](CONFIG%20Runtime%20Audit.md); persistence and runtime prototype costs remain open |
 | Native build | Build 007 dual-profile ZSM4/LINK and cross assembly match at 14,716 bytes |
 
 The no-longer-offered keyboard/video sections are outside CONFIG's 1.0 scope;
