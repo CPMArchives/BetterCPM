@@ -2583,9 +2583,11 @@ The [CONFIG engineering specification](../engineering/CONFIG%20Specification.md)
 records the runtime and backend gates for remaining proposals. Drive workbench
 CLI and startup-only `/DEFAULT` are implemented as described above.
 
-Printer tab/line-ending/form-feed policies and serial-port settings are candidates for 1.0, subject to runtime
-memory and backend qualification. Unsupported features will not appear as
-working menu options. STAT remains the utility for live IOBYTE assignments.
+Printer tab/line-ending/form-feed policies and serial-port configuration are
+deferred to post-1.0. CONFIG 1.0 offers no printer-transformation or serial-settings
+menu entries or command-line switches. Existing auxiliary I/O remains available.
+STAT remains the utility for live IOBYTE assignments; CONFIG retains saved
+disk-boot IOBYTE configuration.
 
 CONFIG does not manage keyboard mappings, monitor personalities, clocks, or
 RSX loading and unloading. Use the dedicated subsystem utilities and startup

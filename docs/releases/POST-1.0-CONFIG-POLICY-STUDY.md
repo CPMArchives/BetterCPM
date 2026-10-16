@@ -736,3 +736,22 @@ Remaining work:
 
 Keep the prototype outside release images. This decision defers the printer
 feature; it does not decide the separate serial-settings proposal.
+
+## Serial support follow-up — 2026-10-16
+
+**Maintainer decision: schedule serial support and CONFIG serial configuration
+for post-1.0.** Use the [backend audit](../engineering/CONFIG%20Serial%20Backend%20Audit.md)
+and [peripheral RSX audit](../engineering/CONFIG%20Peripheral%20RSX%20Audit.md)
+as the starting point. This supersedes the earlier statement that serial
+scheduling was undecided.
+
+Implement a real Model 4 UART backend before exposing settings. Define supported
+rates/framing, readiness, CTS/DSR and XON/XOFF behavior, OS routing, capability
+publication, live/saved state and startup replay. Measure resident/optional
+cost and qualify lifecycle changes while preserving 53K unloaded TPA. Test
+trs80gp TCP/IP and supported host serial connections against their actual
+capabilities. cpmsim's current auxiliary byte endpoint does not supply UART
+configuration registers; retain that transport without presenting fake controls.
+
+The generic eight-port ceiling is not a promise of eight implemented ports or
+universal rates. Existing auxiliary I/O remains available in 1.0.

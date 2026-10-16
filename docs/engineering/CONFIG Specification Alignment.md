@@ -15,7 +15,7 @@ The spec's cost/backend gates remain required for proposed runtime facilities.
 | /STARTUP="..." | Confirmed, verified startup-only save; does not execute command |
 | /DEFAULT | Build 010 prepares pending SUBMIT STARTUP only; drives unchanged; explicit save required |
 | Drive command-line parity | Builds 006–007 physical fields and logical binding/format selection implemented; Build 008 scalar workbench fields implemented; Build 009 single-slot sector-map fields implemented |
-| Persistent IOBYTE, printer and serial | Build 011 disk-boot IOBYTE implemented; printer deferred to post-1.0; serial proposal remains open |
+| Persistent IOBYTE, printer and serial | Build 011 disk-boot IOBYTE implemented; printer and serial support deferred to post-1.0 |
 | Native build | Build 011 dual-profile ZSM4/LINK and cross assembly match at 15,450 bytes |
 
 The no-longer-offered keyboard/video sections are outside CONFIG's 1.0 scope;
@@ -381,3 +381,18 @@ to post-1.0. Earlier statements that no deferral was approved describe the audit
 or prototype stage and are superseded for printer work. Preserve this evidence
 for the [post-1.0 work item](../releases/POST-1.0-CONFIG-POLICY-STUDY.md#printer-rsx-implementation-follow-up--2026-10-16).
 The separate serial proposal remains undecided.
+
+## Serial backend inventory — 2026-10-16
+
+The [serial backend audit](CONFIG%20Serial%20Backend%20Audit.md) distinguishes
+trs80gp UART capability from missing BetterCP/M driver support and cpmsim
+auxiliary byte transport from a configurable UART. Serial scheduling remains
+a maintainer decision; no new controls or driver are implemented here.
+
+## Serial scheduling decision — 2026-10-16
+
+The maintainer has deferred serial support and CONFIG serial configuration to
+post-1.0, superseding earlier statements that serial scheduling remained open.
+Both proposed peripheral facilities are therefore outside the 1.0 release
+gates. This closes their scope decisions; it does not claim they are implemented
+or declare all CONFIG/release validation complete.
