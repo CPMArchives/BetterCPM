@@ -28,8 +28,8 @@ The source checkout was clean and was not modified. A private clone at
 | Stage | Status | Evidence / next work |
 | --- | --- | --- |
 | 1. Clean builds, contents, boot, baseline console/memory | In progress; initial gates pass | Both distributions pass build/boot/integrity; focused BIOS/CCP and native editing/unload pass. Additional console/startup-failure/repeated-return cases remain. |
-| 2. Fresh conformance suite | Partial cpmsim groups pass | Fresh ENTRYTST, CPUTEST, ECOTEST, BDOSTEST required, DIRTEST safe, FILETEST required and RANDTEST safe results below. Selected console, disk/BIOS/error and native Model 4 checks also pass below; remaining cases and CCP procedures are still pending. |
-| 3. CPX/RSX lifecycle, relocation, ROM protection | Protected ROM candidate campaign passes | Fresh V002 guarded ROM, lifecycle, workspace and stack results below; wider RAM/native lifecycle coverage remains. |
+| 2. Fresh conformance suite | Partial groups pass on both platforms | Fresh ENTRYTST, CPUTEST, ECOTEST, BDOSTEST required, DIRTEST safe, FILETEST required and RANDTEST safe results below. Selected console, disk/BIOS/error and native Model 4 checks also pass below; remaining cases and CCP procedures are still pending. |
+| 3. CPX/RSX lifecycle, relocation, ROM protection | Protected ROM candidate campaigns pass | Fresh V002/V003 guarded ROM, lifecycle, workspace and stack results below; wider RAM/native lifecycle coverage remains. |
 | 4. Resident/transient command integration | Not run | Selectors, protection, prompts, explicit transient invocation, feature diagnostics and caller-state restoration. |
 | 5. Utility operations and failure recovery | Not run | System-disk utilities only; disposable images and independent filesystem inspection. |
 | 6. Monitors and applications | Not run | Fresh cross-platform campaign; do not substitute earlier feature-specific results. |
@@ -741,3 +741,65 @@ probe also passes on an unchanged production carrier in
 V003 is corrected and live-qualified on cpmsim. The native Model 4 post-fix run,
 guarded-ROM regression and final rebuilt-image acceptance remain pending; earlier
 native results explicitly refer to V002b. Conformance validation remains partial.
+
+### V003 guarded-ROM regression
+
+Fresh ROM media were rebuilt from the pushed V003 CCP source in
+`/private/tmp/bettercpm-validation-v003-rom-media/`. The locked-ROM qualification
+passes execute-in-place, CPU writes, DMA writes, attempted guest unlock/boundary
+changes, reset protection and unchanged ordinary mode. The integrated boot
+campaign also passes CPX/RSX load/list/reconstruction/unload and workspace checks.
+ROM external inventories remain 44 reloader references, 72 CCP references and
+812 address words across 18 RSX-overlay files; no accepted boundary was relaxed.
+
+Measured stack high-water values are unchanged: system 24/32 bytes (8 reserve),
+BDOS 28/40 (12 reserve), loader 20/64 (44 reserve). The workspace remains 1024
+bytes with its three qualified exclusive lifetimes and 907-byte CONFIG overlay.
+Evidence: `ccp-returning/v003-rom-build.log`, `v003-rom-xip.log` and the copied
+hash-bound qualification reports in `v003-rom-reports/`. These results close
+V003's guarded-ROM regression pending item; native post-fix evidence follows.
+
+The independent production-image probe was also repeated in user 31 on A and B,
+loading explicitly from A0. It publishes drive 00/01 at 0004h while Function 32
+still returns user 1Fh, then returns to the original DU. Evidence:
+`ccp-returning/v003-production-user31/`. The drive-byte fix therefore does not
+truncate BetterCP/M's extended user state in this live qualification.
+
+### V003 native build publication gate
+
+The isolated Model 4 production build passed filesystem/file integrity, CONFIG
+binding and boot/CPX/VER/ED identity checks. Publication was then correctly
+blocked because `tools/run_validation_model4.py` changed while the build ran.
+The snapshot input manifest was compared with current inputs: this validation
+runner is the only changed input; every runtime source, metadata and third-party
+input is unchanged. `v003-native-source-diff.json` records that comparison.
+
+The qualified private candidate is retained at
+`/private/tmp/bettercpm-validation-v003-native-work/candidate-bettercpm-dist-kzh01wwh/trs80gp/`,
+with report/image/source hashes bound to 2fc1b8b. It is used only for private
+post-fix conformance, not published as an immutable release. The publication
+gate was not bypassed. The build log is `v003-native-distribution.log`.
+
+
+### V003 native post-fix conformance
+
+The hash-verified, unpublished Model 4 candidate passes both fresh pinned groups:
+CCPTEST /GROUP:REQUIRED reports 12 pass, zero fail/error; ENTRYTST
+/GROUP:REQUIRED reports 25 pass, zero fail/error. Manual cards remain not run.
+Evidence: `v003-native-ccp/model4-returning-9djlv_40/`, with private media,
+program/baseline/emulator hashes, native captures and decoded final screens.
+As elsewhere, the screenshots retain the summaries and trailing rows rather
+than every scrolled item. All 29 shipped files remain unchanged in the
+independent post-run extraction audit, and ENT40.$$$ is absent. Reference image
+hashes are unchanged and the emulator exited normally.
+
+The native runner now exposes this two-group `--group ccp` campaign. It retains
+its conservative reconstruction delay between commands, but omits the unused
+final delay after the last retained result; it then exits explicitly. No
+conformance predicate or stack/memory limit was relaxed.
+
+V003's targeted post-fix native and guarded-ROM regressions now pass. The
+separate publication gate remains enforced; final acceptance must still rebuild
+from an agreed stable revision. Fresh conformance is still partial: manual,
+terminal, fault, device and remaining platform cases require their explicit
+procedures and cannot be inferred from these aggregate counts.
