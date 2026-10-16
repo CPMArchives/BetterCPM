@@ -7,6 +7,7 @@ from pathlib import Path
 
 from system_layout import LAYOUT
 from test_bios import SENTINEL, Z80, require
+from test_system import bdos_symbol
 from test_ccp import call as call_ccp
 from test_ccp import cpu as ccp_cpu
 from test_ccp import symbol as ccp_symbol
@@ -55,14 +56,32 @@ def main() -> None:
             "cold invalidation did not become an empty history-v1 object")
 
     warm, seed = seeded_system()
-    # SYS_WARM asks BDOS Function 25 for the current drive before entering the
-    # common reconstruction body. Supply one fixed result and return.
-    warm.mem[LAYOUT["BDOS"]:LAYOUT["BDOS"] + 3] = bytes((0x3E, 0x02, 0xC9))
+    # Warm entry reads protected core state after recovering a loader abort.
+    warm.mem[bdos_symbol("UB_DRIVE")] = 2
     warm.run(gateway_symbol("SYS_WARM"))
     require(bytes(warm.mem[history_base:history_base + len(seed)]) == seed,
             "warm entry changed valid persistent history")
 
-    print("cold entry reset history; warm entry preserved it")
+    for caller in (0, 3, 31):
+        aborted, seed = seeded_system()
+        aborted.mem[0x46] = caller
+        aborted.mem[0x48] = 1
+        aborted.mem[bdos_symbol("UB_USERNO")] = (caller + 1) & 31
+        aborted.mem[bdos_symbol("UB_DRIVE")] = 1
+        aborted.run(gateway_symbol("SYS_WARM"))
+        require(aborted.mem[bdos_symbol("UB_USERNO")] == caller and aborted.mem[0x48] == 0,
+                "WBOOT did not recover and disarm an abandoned lookup user")
+        require(aborted.a == 1, "lookup recovery changed the warm drive")
+        require(bytes(aborted.mem[history_base:history_base + len(seed)]) == seed,
+                "lookup recovery changed history")
+    ordinary, _ = seeded_system()
+    ordinary.mem[0x46] = 3
+    ordinary.mem[0x48] = 0
+    ordinary.mem[bdos_symbol("UB_USERNO")] = 31
+    ordinary.run(gateway_symbol("SYS_WARM"))
+    require(ordinary.mem[bdos_symbol("UB_USERNO")] == 31,
+            "ordinary WBOOT reverted a program's user selection")
+    print("cold/warm history and armed/disarmed loader-abort user recovery passed")
 
 
 if __name__ == "__main__":

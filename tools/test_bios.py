@@ -565,14 +565,15 @@ class Z80:
                 mask = 0x40 if self.mem[self.pc] == 0x77 else 0x80
                 self.pc += 1
                 self.z = not bool(self.a & mask)
-            elif op == 0xCB and self.mem[self.pc] == 0x7E:  # BIT 7,(HL)
+            elif op == 0xCB and self.mem[self.pc] in (0x46, 0x7E):  # BIT 0/7,(HL)
+                mask = 1 << ((self.mem[self.pc] >> 3) & 7)
                 self.pc += 1
-                self.z = not bool(self.mem[self.hl] & 0x80)
-            elif op == 0xCB and self.mem[self.pc] in (0xBE, 0xFE):  # RES/SET 7,(HL)
+                self.z = not bool(self.mem[self.hl] & mask)
+            elif op == 0xCB and self.mem[self.pc] in (0x86, 0xBE, 0xFE):  # RES 0/7 or SET 7,(HL)
                 operation = self.mem[self.pc]
                 self.pc += 1
-                if operation == 0xBE:
-                    self.mem[self.hl] &= 0x7F
+                if operation < 0xC0:
+                    self.mem[self.hl] &= ~(1 << ((operation >> 3) & 7))
                 else:
                     self.mem[self.hl] |= 0x80
             elif op == 0xCB and self.mem[self.pc] == 0x20:  # SLA B

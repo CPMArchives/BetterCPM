@@ -21,6 +21,7 @@ def main():
     parser.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim')
     parser.add_argument('--cycles',type=int,default=3)
     parser.add_argument('--full-tpa',action='store_true')
+    parser.add_argument('--lookup-user',type=int,choices=range(32),default=0)
     parser.add_argument('--du-scope',choices=('all','a0'),default='all')
     args=parser.parse_args()
     assert args.cycles>0
@@ -54,8 +55,8 @@ def main():
             assert len(code)<=256
             file.write_bytes(code.ljust(capacity,b'\xa5'))
             sources[file.name]={'source_template_sha256':sha(path),'binary_sha256':sha(file),'bytes':capacity}
-            subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(disks/'driveb.dsk'),str(file),'0:'+file.name],cwd=work,check=True)
-            full_methods.append((route,'B0:'+name))
+            subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(disks/'driveb.dsk'),str(file),str(args.lookup_user)+':'+file.name],cwd=work,check=True)
+            full_methods.append((route,f'B{args.lookup_user}:'+name))
         paint_source=ROOT/'tests/fixtures/conformance/painttpa.mac'
         paint=work/'PAINT.COM'
         assemble(Path.home()/'bin/z80asm',paint_source.read_text().replace('@COUNT@',str(capacity-257)),paint,work/'paint.lst',0x100)
@@ -63,9 +64,9 @@ def main():
         sources[paint.name]={'source_template_sha256':sha(paint_source),'binary_sha256':sha(paint),'fill_byte':'5A'}
         oversized=work/'OVERRET.COM'
         oversized.write_bytes((work/'ERET.COM').read_bytes()+bytes(128))
-        subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(disks/'driveb.dsk'),str(oversized),'0:'+oversized.name],cwd=work,check=True)
+        subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(disks/'driveb.dsk'),str(oversized),str(args.lookup_user)+':'+oversized.name],cwd=work,check=True)
         exported=work/'oversize-extracted.bin'
-        subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(disks/'driveb.dsk'),'0:OVERRET.COM',str(exported)],cwd=work,check=True)
+        subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(disks/'driveb.dsk'),f'{args.lookup_user}:OVERRET.COM',str(exported)],cwd=work,check=True)
         assert exported.read_bytes()==oversized.read_bytes()
         sources[oversized.name]={'binary_sha256':sha(oversized),'bytes':oversized.stat().st_size,'installed_bytes_verified':True}
     trace=work/'transcript.bin';results=[]
@@ -97,7 +98,7 @@ def main():
                     results.append({'drive':drive,'user':user,'cycle':cycle+1,'method':method,'public_state':expected.decode(),'status':'PASS'})
         if args.full_tpa:
             before=trace.read_bytes()
-            yield (b'B0:OVERRET\r',prompt,30)
+            yield (f'B{args.lookup_user}:OVERRET\r'.encode(),prompt,30)
             delta=trace.read_bytes()[len(before):]
             assert b'FULL-TPA RET ENTERED' not in delta
             assert b'?\r\n' not in delta and b'Bad Sector' not in delta
@@ -119,7 +120,7 @@ def main():
         raise
     assert transcript.count(b'Type TYPE README.TXT for more')==1,'cold startup repeated on warm return'
     assert sha(original)==report['sha256']
-    result={'baseline_sha256':report['sha256'],'suite_program_sha256':sha(program),'simulator_sha256':sha(args.simulator),'fixtures':sources,'cases':results,'cold_banner_count':1,'cpx_rcp_reconstructed':True,'no_rsxs_loaded':True,'full_tpa':args.full_tpa,'du_scope':args.du_scope,'scope':'external termination/reconstruction observations, not fabricated suite PASS rows; full-TPA evidence only when full_tpa=true; no I/O-fault claim'}
+    result={'baseline_sha256':report['sha256'],'suite_program_sha256':sha(program),'simulator_sha256':sha(args.simulator),'fixtures':sources,'cases':results,'cold_banner_count':1,'cpx_rcp_reconstructed':True,'no_rsxs_loaded':True,'full_tpa':args.full_tpa,'du_scope':args.du_scope,'lookup_user':args.lookup_user,'scope':'external termination/reconstruction observations, not fabricated suite PASS rows; full-TPA evidence only when full_tpa=true; no I/O-fault claim'}
     (work/'result.json').write_text(json.dumps(result,indent=2)+'\n')
     print(json.dumps({'pass':len(results),'evidence':str(work)},indent=2))
 

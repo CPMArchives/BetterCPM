@@ -19,6 +19,20 @@ for live drive/user state, including BetterCP/M users 16..31. Validation V003
 corrected an uninitialized 0004h; the eight added CCP bytes leave its allocation,
 resident BIOS/BDOS sizes and unloaded 53K TPA unchanged.
 
+Validation V004 corrected a distinct cross-user extent bug. The CCP captures the
+actual opened-file user (including A0 fallback), restores the caller for CPX
+shutdown, then reselects the lookup user for the protected sequential reader.
+Every physical extent therefore belongs to the opened file's user. The saved
+caller user is restored before execution or a returning load failure.
+
+Reserved page-zero CCP workspace 0046h/0048h holds the saved user and active
+lookup marker. Successful EOF disarms recovery before entering the COM. If a
+final BIOS I/O error is abandoned with Ctrl-C, the stable WBOOT entry invokes
+EXT+15 to restore the caller before reconstructing the command environment;
+that path does not depend on the overwritten CCP or abandoned call frames.
+An ordinary program's later user selection is preserved because recovery is
+already disarmed. No new public BDOS or BIOS interface is introduced.
+
 The permanent reader loads one 128-byte record into protected buffer memory,
 checks the inclusive last destination byte against the active ECB_TPATOP,
 and copies only fitting records into the TPA. EOF permits execution; other
@@ -36,7 +50,8 @@ persistent history, and the protected core are above the applicable ceiling.
 
 The gateway uses its existing initialization padding for entry/exit code.
 Private adapter vectors are packed at EXT+3 (login), +6 (open), +9 (read), with
-+12 entering the COM reader; all source consumers move together. Extensions
++12 entering the COM reader and +15 recovering abandoned lookup context; all
+source consumers move together. Extensions
 grow from 399 to 425 bytes, consuming 26 previously spare bytes after BDOS.
 No TPA, history, sector buffer or drive capacity is removed. Builder checks
 protect the FCB and gateway entry offsets. These are private internal entries,
@@ -81,3 +96,27 @@ target before returning from its entry point.  It proves that entry RET does
 not invoke that public hook, that the command environment is reconstructed,
 and that a following VER command runs.  This closes compatibility item 0509
 without changing the 54,273-byte TPA or any resident allocation.
+
+## V004 memory and regression qualification (2026-10-16)
+
+The correction adds 25 CCP bytes (5,475 / 5,632; 488 relocations), without
+changing its allocation. Gateway remains 248 bytes and extensions 425 bytes;
+BIOS and BDOS are unchanged. Shared extension return code, a paired adjacent
+drive/user save, and a shared oversize finish fund the protected abort path.
+The builder rejects nonadjacent core drive/user state. Gateway restores DMA by
+writing the exact linked core field, and uses JP (HL) for CCP resumption.
+
+The ROM address inventory changes from 800 to 799 immutable code operands
+(gateway 24, extensions 55). Dual shifted-layout discovery leaves no unresolved
+targets or unexplained changed bytes; the independently regenerated relocation
+and guarded execution tests remain required. Measured protected stack use is
+24/32 system, 28/40 BDOS and 18/64 reconstruction loader. These are observed
+margins, not proofs of all possible paths.
+
+Full-TPA patterned loads from lookup users 0 and 7 pass repeated RET, JP 0 and
+Function 0 returns from A0, B3 and B31 on cpmsim. The tests prepaint memory first;
+oversized input never executes. A one-shot READ fault after the load reaches
+C000h and overwrites the CCP prefix confirms Ctrl-C reconstruction restores
+B31 after loading from B7. A0 fallback and program-selected user preservation
+are separately exercised. The validation ledger records platform evidence and
+remaining campaign scope.

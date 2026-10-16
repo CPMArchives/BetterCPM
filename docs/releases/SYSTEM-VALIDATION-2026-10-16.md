@@ -28,7 +28,7 @@ The source checkout was clean and was not modified. A private clone at
 | Stage | Status | Evidence / next work |
 | --- | --- | --- |
 | 1. Clean builds, contents, boot, baseline console/memory | In progress; initial gates pass | Both distributions pass build/boot/integrity; focused BIOS/CCP and native editing/unload pass. Additional console/startup-failure/repeated-return cases remain. |
-| 2. Fresh conformance suite | Partial groups pass on both platforms | Fresh ENTRYTST, CPUTEST, ECOTEST, BDOSTEST required, DIRTEST safe, FILETEST required and RANDTEST safe results below. Selected console, disk/BIOS/error and native Model 4 checks also pass below; remaining cases and CCP procedures are still pending; V004 is open below. |
+| 2. Fresh conformance suite | Partial groups pass on both platforms | Fresh ENTRYTST, CPUTEST, ECOTEST, BDOSTEST required, DIRTEST safe, FILETEST required and RANDTEST safe results below. Selected console, disk/BIOS/error and native Model 4 checks also pass below; remaining cases and CCP procedures are still pending; V004 correction is partially qualified below. |
 | 3. CPX/RSX lifecycle, relocation, ROM protection | Protected ROM candidate campaigns pass | Fresh V002/V003 guarded ROM, lifecycle, workspace and stack results below; wider RAM/native lifecycle coverage remains. |
 | 4. Resident/transient command integration | Not run | Selectors, protection, prompts, explicit transient invocation, feature diagnostics and caller-state restoration. |
 | 5. Utility operations and failure recovery | Not run | System-disk utilities only; disposable images and independent filesystem inspection. |
@@ -835,7 +835,7 @@ or reporting an unknown file/disk error; the caller's state and working prompt
 return. This gives 10 external user-zero observations in
 `ccp-full-tpa/ccp-returns-ngxj73j9/`. It does not close cross-user coverage.
 
-### V004 — open: cross-user command loads stop at a physical extent
+### V004 — correction implemented; native full-TPA qualification pending
 
 The full-TPA run from caller B3, explicitly loading B0:ERET, executes a truncated
 program. After the independent pre-paint, the first wrong payload byte is at
@@ -856,9 +856,136 @@ A repeat on the older V002b candidate gives the same 4100h/5Ah witness in
 fix. Failure manifests retain completed observations, fixture/baseline hashes
 and the failure text. No full cross-user or oversized-all-context pass is claimed.
 
-V004 remains an unresolved validation blocker. The correction must retain the
+At the end of the preceding tranche, V004 was an unresolved validation blocker.
+The correction needed to retain the
 lookup user for every extent read while still restoring the caller before
 program entry, on failure and for lifecycle callbacks. Load-abort context and
 the fixed resident-memory/stack budgets must also be checked; moving restoration
-without qualifying those paths would be insufficient. No production change for
-V004 has been made in this tranche. Fresh conformance remains incomplete.
+without qualifying those paths would have been insufficient. No production change for
+V004 had been made at that point. The qualification below supersedes that status;
+fresh conformance remains incomplete.
+
+#### V004 correction and evidence
+
+The CCP now retains the actual opened-file user through all protected extent
+reads, while CPX shutdown still sees the caller. Successful execution and
+returning errors restore the original user. An armed page-zero lookup marker
+also lets stable WBOOT recover the caller before reconstruction when BIOS
+Ctrl-C bypasses normal reader return. Successful EOF disarms it; a program's
+own later user selection is not reverted.
+
+This correction has passed:
+
+- `v004-full-tpa/ccp-returns-kdl0s3w9/`: 27 repeated full-TPA cases with lookup
+  user 0 from callers A0/B3/B31, plus oversize rejection (28 external checks).
+- `v004-user7-full-tpa/ccp-returns-kh5i7usr/`: the same 28 checks with lookup
+  user 7. Independent prepaint prevents missing records being hidden by old data.
+- `v004-loader-abort-final/loader-abort-pi7xab3a/`: one-shot final BIOS
+  READ fault while the protected destination is at least C000h, after CCP-prefix
+  overwrite; Ctrl-C returns from B7 lookup to B31 with RCP reconstructed and
+  no partial program executed. This uses empty RSX reconstruction slots only
+  on the isolated no-RSX fixture. It does not qualify controller retries.
+- `v004-fallback-userchange/`: full-size unqualified A0 fallback from B31;
+  separate program changes user to 5 and returns to B5, proving ordinary
+  WBOOT does not revert a program-selected user.
+- `v004-ccp/ccptest-25abh_v0/`: fresh pinned CCPTEST required group, 12 pass,
+  29 not-run; no fail/error rows.
+- Assembled loader result providers (EOF 1, logical failure 2, final error FF,
+  and oversize), with ordinary/fallback lookup, assert read-user selection,
+  caller-user CPX shutdown, arguments, page-zero drive and execution boundaries.
+  Cold/warm history tests cover armed recovery for callers 0/3/31 and disarmed
+  ordinary user preservation. Focused CCP tests pass.
+- Native ZSM4/LINK gateway assembly is byte-identical (248 bytes).
+
+The cpmsim candidate is
+`/private/tmp/bettercpm-validation-v004b/release-31eb7b0f96a8-7fbdbe2c5bb5/z80pack`.
+Its report records the full input hashes (dirty candidate atop 31eb7b0).
+Full ROM media is `/private/tmp/bettercpm-validation-v004-rom-media`; guarded
+CPU/DMA protection, boot, transient returns and CPX/RSX lifecycle pass. The
+initial XIP attempt used system-tracks-only output without `rom-config.json`;
+it failed for that missing artifact, then passed after the complete ROM build.
+No runtime failure is inferred from the incomplete test setup.
+
+Memory remains: 53K unloaded TPA, gateway 248 bytes, BDOS 3,454 bytes, extension
+425 bytes and Model 4 BIOS 757 bytes. CCP is now 5,475 / 5,632 bytes, allocation
+unchanged; module 6,499 / 6,656 bytes, 488 relocations. Guarded ROM stack use:
+system 24/32, BDOS 28/40, loader 18/64. The address inventory has 799 code
+operands (475 ROM, 324 RAM), all accounted, plus 105 CONFIG overlay operands.
+
+`test_system.py` still stops at its old console port fixture (`IN without a
+controlled port fixture`); repeating it against the unchanged V003 resident
+reproduces the same failure. It is not counted as a pass or a new V004 defect.
+Fresh conformance and the overall validation campaign remain incomplete.
+
+The fresh V004 ENTRYTST required run also passes: 25 pass, 13 not-run in
+`v004-entry/entrytst-fk5ggchb/`. Function-182 empty/active gateway tests,
+subsystem-version checks and BDOS-178 portable cursor checks (ADM3A/VT52 through
+both backends) pass after sharing the extension epilogue/cursor setup.
+
+Native full-TPA qualification is **not complete**. The production Model 4
+candidate boot/filesystem qualification passed, but source-identity publication
+correctly rejected runner/build-helper changes during the build. Its retained
+candidate is
+`/private/tmp/bettercpm-validation-v004-native-work/candidate-bettercpm-dist-kh6savgh/trs80gp`.
+`v004-native-source-diff.json` confirms no runtime-source difference from the
+current fix; the candidate is not represented as a published release.
+
+Preliminary native full-TPA captures were stopped after finding excessive
+fixed delays and an unmet unloaded-profile prerequisite. The final isolated
+fixture replaces only STARTUP.SUB with a banner-only script and explicitly
+waits for D501h before proceeding. Its extracted startup text is independently
+verified. Nevertheless no automated capture checkpoint was reached after more
+than six minutes, and repeated live UI inspection failed with ScreenCaptureKit
+-3811. The owned process was stopped. Cause of the missing checkpoint remains
+unestablished; neither an OS failure nor an emulator cause is inferred.
+`v004-native-isolated/model4-full-tpa-lnywz2m8/incomplete.json` retains this
+status, arguments and private images. No native full-TPA pass is claimed.
+The new runner requires route-specific success markers, post-command public
+state, oversize rejection and independent shipped-file audits (excluding the
+predeclared STARTUP.SUB fixture change). This native check must be completed
+before V004 is fully closed in the validation campaign.
+
+#### Manual Model 4 evidence supplied 2026-10-16, 21:25–21:32
+
+The user supplied two screenshots from the prepared manual fixture. The first
+shows `STATE D=00 U=00 TOP=D501` and A0 prompt. The second shows navigation to
+B31, `A0:PAINT`, `FULL-TPA RET ENTERED`, then
+`STATE D=01 U=1F TOP=D501` and B31 prompt. In context of the requested manual
+procedure this records a passing full-TPA RET check with preserved caller DU
+and unloaded ceiling. The ERET and STATE invocation lines themselves are not
+visible in the second screenshot; the success marker and resulting state are.
+Copies and screenshot hashes are retained in `v004-manual-model4/` with an
+observation manifest. This supersedes the absence of native RET evidence,
+not the incomplete automated run. JUMP, Function 0, oversize rejection and the
+independent post-run file audit are still pending; no whole-native-run pass
+is claimed.
+
+The 21:38 user screenshot adds `FULL-TPA JUMP ENTERED` followed by a subsequent
+B31 command prompt, and `FULL-TPA FUNCTION0 ENTERED` followed by
+`STATE D=01 U=1F TOP=D501` and B31 prompt. These record manual JUMP and
+Function-0 behavioral passes; the per-JUMP state output itself is not visible.
+Oversize rejection and independent post-run file audit remain pending.
+
+### V005 — open: interactive command termination overwrites the command line
+
+The same manual screenshots show immediate transient output replacing its
+invocation line. Source inspection confirms CCP_EDFIN redraws the final command
+and emits CR (13) without LF (10) before dispatch. This explains why programs
+that begin with printable text overwrite the command, while programs that
+supply their own leading newline appear normal. The submitted-command echo
+already emits CR/LF. This is a CCP presentation issue; no emulator cause is
+required to explain it. A correction and focused command-editor verification
+are pending, separately from V004's loader qualification.
+
+#### Manual oversize result, 21:40
+
+The user screenshot shows B31 invoking `A7:OVERRET`, then
+`STATE D=01 U=1F TOP=D501` without an intervening FULL-TPA success marker.
+The subsequent state witness establishes rejection returned control without
+executing the oversized program and preserved caller drive/user and TPA.
+The final prompt is outside the screenshot crop. Evidence and hash are retained
+as `v004-manual-model4/oversize.png`. All requested manual behavioral checks
+(initial ceiling, RET, JUMP, Function 0, oversized-file rejection) now have
+user-supplied evidence. The automated capture run remains incomplete and the
+independent native post-run file audit remains pending; neither is inferred
+from these manual screenshots. V005's command-line newline defect remains open.

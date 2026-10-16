@@ -175,7 +175,7 @@ def main():
  tables+='ZALV: DS 128\nZCSV: DS 128\n'
  tables+='        END\n'
  tab=asm('tables',tables,L['TABLES'],L['RSX_STATE']-L['TABLES'])
- gateway=asm('gateway',read('src/system/gateway.mac'),L['SYSTEM'],L['BDOS']-L['SYSTEM'])
+ gateway=asm('gateway',read('src/system/gateway.mac').replace('        INCLUDE core.inc',core),L['SYSTEM'],L['BDOS']-L['SYSTEM'])
  if args.resident_only:
   return
  subprocess.run([sys.executable,str(ROOT/'tools/test_rom_ownership_inventory.py'),
