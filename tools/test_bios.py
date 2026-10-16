@@ -340,9 +340,10 @@ class Z80:
                 self.carry = self.a < self.c
                 self.a = (self.a - self.c) & 0xFF
                 self.z = self.a == 0
-            elif op == 0x93:            # SUB E
-                self.carry = self.a < self.e
-                self.a = (self.a - self.e) & 0xFF
+            elif op in (0x92, 0x93):    # SUB D / SUB E
+                operand = self.d if op == 0x92 else self.e
+                self.carry = self.a < operand
+                self.a = (self.a - operand) & 0xFF
                 self.z = self.a == 0
             elif op == 0x3D:            # DEC A
                 self.a = (self.a - 1) & 0xFF

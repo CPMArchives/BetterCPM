@@ -623,7 +623,13 @@ See [cold-operand qualification and layout](CONFIG%20Cold%20IOBYTE.md).
 ---
 
 # 14. Printer configuration
-**Status: proposed 1.0 extension pending runtime-cost audit**
+**Status: deferred to post-1.0 by maintainer decision, 2026-10-16**
+
+The proposal below is retained for future implementation, not as a 1.0 release
+requirement. See the [prototype](Printer%20RSX%20Prototype.md) and
+[post-1.0 work item](../releases/POST-1.0-CONFIG-POLICY-STUDY.md#printer-rsx-implementation-follow-up--2026-10-16).
+References below to possible 1.0 inclusion record the earlier proposal and are
+superseded by this decision. The separate serial proposal is unchanged.
 
 The proposed printer facility is deliberately narrow.
 

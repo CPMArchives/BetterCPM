@@ -1,0 +1,149 @@
+; Experimental printer RSX payload; not installed by normal builds.
+; Prototype policy: 8-bit columns, page/width 1..255. CR counts one line;
+; immediately following LF does not count twice. FF at page boundary advances
+; a full page. These choices are test assumptions, not a specification freeze.
+BASE EQU 08000H
+RAW EQU 07004H
+ ORG BASE
+ DW 5
+ DW CHAIN
+ DB 0,0
+ DW 0
+CHAIN: LD HL,(BASE)
+ JP (HL)
+; PSET: A=0 query (HL -> 3 config bytes); A=1 set B=modes,D=page,E=width.
+; Modes: bit0 suppress LF after CR, bit1 simulate FF, bit2 expand TAB.
+; Validate before any mutation. Setting resets stream counters.
+SET: OR A
+ JR Z,QUERY
+ CP 1
+ JR NZ,BAD
+ LD A,B
+ CP 8
+ JR NC,BAD
+ LD A,D
+ OR A
+ JR Z,BAD
+ LD A,E
+ OR A
+ JR Z,BAD
+ LD A,B
+ LD (MODE),A
+ LD A,D
+ LD (PAGE),A
+ LD A,E
+ LD (WIDTH),A
+ XOR A
+ LD (PREV),A
+ LD (LINE),A
+ LD (COL),A
+ RET
+QUERY: LD HL,MODE
+ XOR A
+ RET
+BAD: LD A,255
+ RET
+OUT: LD A,C
+ CP 10
+ JR NZ,NOTLF
+ LD A,(PREV)
+ CP 13
+ JR NZ,LFONLY
+ LD A,(MODE)
+ AND 1
+ JR NZ,SAVE
+ JR EMIT
+LFONLY: CALL NEWLINE
+ JR EMIT
+NOTLF: CP 13
+ JR NZ,NOTCR
+ XOR A
+ LD (COL),A
+ CALL NEWLINE
+ JR EMIT
+NOTCR: CP 12
+ JR NZ,NOTFF
+ LD A,(MODE)
+ AND 2
+ JR Z,FFNATIVE
+ LD A,(PAGE)
+ LD B,A
+ LD A,(LINE)
+ LD D,A
+ LD A,B
+ SUB D
+ LD B,A
+ PUSH BC
+ LD C,10
+FFLOOP: CALL RAWOUT
+ DJNZ FFLOOP
+ POP BC
+FFNATIVE: XOR A
+ LD (LINE),A
+ LD (COL),A
+ LD A,(MODE)
+ AND 2
+ JR NZ,SAVE
+ JR EMIT
+NOTFF: CP 9
+ JR NZ,ORDINARY
+ LD A,(MODE)
+ AND 4
+ JR Z,EMIT
+ LD A,(WIDTH)
+ LD D,A
+ LD A,(COL)
+MODULO: CP D
+ JR C,REMAIN
+ SUB D
+ JR MODULO
+REMAIN: LD E,A
+ LD A,D
+ SUB E
+ LD B,A
+ PUSH BC
+ LD C,32
+TABLOOP: CALL RAWOUT
+ LD A,(COL)
+ INC A
+ LD (COL),A
+ DJNZ TABLOOP
+ POP BC
+ JR SAVE
+ORDINARY: CP 32
+ JR C,EMIT
+ LD A,(COL)
+ INC A
+ LD (COL),A
+EMIT: CALL RAWOUT
+SAVE: LD A,C
+ LD (PREV),A
+ RET
+NEWLINE: LD A,(LINE)
+ INC A
+ LD D,A
+ LD A,(PAGE)
+ CP D
+ LD A,D
+ JR NZ,LINESET
+ XOR A
+LINESET: LD (LINE),A
+ RET
+; Raw BIOS may clobber registers: protect filter loop and caller byte.
+RAWOUT: PUSH AF
+ PUSH BC
+ PUSH DE
+ PUSH HL
+ CALL RAW
+ POP HL
+ POP DE
+ POP BC
+ POP AF
+ RET
+MODE: DB 0
+PAGE: DB 66
+WIDTH: DB 8
+PREV: DB 0
+LINE: DB 0
+COL: DB 0
+ END

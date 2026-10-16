@@ -106,3 +106,18 @@ do not expose nonfunctional controls or assume host auxiliary files are UARTs.
 
 The last three remain proposals requiring decisions and implementation evidence;
 this audit does not declare CONFIG complete or approve their deferral.
+
+## Printer/serial RSX follow-up — 2026-10-16
+
+The [peripheral RSX audit](CONFIG%20Peripheral%20RSX%20Audit.md) records measured
+BDOS-filter coverage, lifecycle and capability limits, hardware-only serial
+setup, memory accounting and historical Montezuma Micro evidence. It approves
+neither implementation nor deferral. Build 011 IOBYTE behavior is unchanged.
+
+## Scheduling decision — 2026-10-16
+
+The maintainer has now deferred the printer RSX feature and CONFIG integration
+to post-1.0. Earlier statements that no deferral was approved describe the audit
+or prototype stage and are superseded for printer work. Preserve this evidence
+for the [post-1.0 work item](../releases/POST-1.0-CONFIG-POLICY-STUDY.md#printer-rsx-implementation-follow-up--2026-10-16).
+The separate serial proposal remains undecided.
