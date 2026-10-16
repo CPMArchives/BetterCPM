@@ -3049,6 +3049,13 @@ CCP_LTAIL0:                             ; build transient command tail
         LD      C,26
         CALL    BDOS
         CALL    CCP_LURST               ; lifecycle observes the caller's DU state
+  ; V003: publish the caller's default drive at transient entry. DRI's CCP
+  ; restores the drive-only byte here, after temporary lookup selection; its
+  ; packed user/drive prompt state is not the COM-entry contract. BDOS remains
+  ; authoritative for BetterCP/M's full 0..31 user and warm-start state.
+        LD      C,25
+        CALL    BDOS
+        LD      (0004H),A
         LD      E,0FFH
         LD      C,32
         CALL    BDOS

@@ -11,6 +11,14 @@ FCB into the protected module reader's idle 36-byte FCB, selects the physical
 buffer as staging DMA, and transfers control to a protected system-stack entry.
 The module reader's code remains intact: no overlay restoration is needed.
 
+At loader handoff, after restoring the caller's DU from any temporary
+qualified or fallback lookup, the CCP writes the caller's default-drive number
+(0=A through 15=P) to page-zero byte 0004h. This is the transient-entry drive
+byte, not a packed user/drive value. BDOS Functions 25 and 32 remain authoritative
+for live drive/user state, including BetterCP/M users 16..31. Validation V003
+corrected an uninitialized 0004h; the eight added CCP bytes leave its allocation,
+resident BIOS/BDOS sizes and unloaded 53K TPA unchanged.
+
 The permanent reader loads one 128-byte record into protected buffer memory,
 checks the inclusive last destination byte against the active ECB_TPATOP,
 and copies only fitting records into the TPA. EOF permits execution; other

@@ -14,7 +14,7 @@ import tempfile
 from pathlib import Path
 from test_z80pack_sysgen_install import session
 
-COMMANDS={'ENTRYTST':'/GROUP:REQUIRED','ECOTEST':'/GROUP:REQUIRED','CPUTEST':'/ALL','BDOSTEST':'/GROUP:REQUIRED','DIRTEST':'/SAFE','FILETEST':'/SAFE','RANDTEST':'/SAFE','DISKTEST':'/SAFE','BIOSTEST':'/SAFE','ERRTEST':'/SAFE'}
+COMMANDS={'CCPTEST':'/GROUP:REQUIRED','ENTRYTST':'/GROUP:REQUIRED','ECOTEST':'/GROUP:REQUIRED','CPUTEST':'/ALL','BDOSTEST':'/GROUP:REQUIRED','DIRTEST':'/SAFE','FILETEST':'/SAFE','RANDTEST':'/SAFE','DISKTEST':'/SAFE','BIOSTEST':'/SAFE','ERRTEST':'/SAFE'}
 
 
 def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
