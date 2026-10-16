@@ -25,10 +25,10 @@ All membership or layout changes require discussion with the maintainer.
 - REN.COM
 - VER.COM
 - COPY.COM
-- CONFIG.COM
-- DUP.COM
+- CONFIG.COM: [engineering specification](../engineering/CONFIG%20Specification.md).
+- DUP.COM: [engineering specification](../engineering/DUP%20Specification.md).
 - TIME.COM
-- SYSGEN.COM
+- SYSGEN.COM: [engineering specification](../engineering/SYSGEN%20Specification.md).
 - STAT.COM
 - SUBMIT.COM
 - PIP.COM: DRI-compatible transfers, DU operands, `/VER`, and qualified platform devices.

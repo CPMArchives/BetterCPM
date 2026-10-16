@@ -40,7 +40,7 @@ DUP is not:
 - a CONFIG replacement;
 - a flux-level or archival track copier.
 
-`CONFIG` establishes persistent drive bindings. `DISK.FDB` describes disk formats. DUP operates on installed bindings subject to the physical capabilities of the active backend.
+`CONFIG` establishes active drive bindings and separately saves startup defaults. `DISK.FDB` describes disk formats. DUP operates on installed bindings subject to the physical capabilities of the active backend.
 
 ---
 
@@ -534,7 +534,7 @@ DUP does not present the FDB catalog and does not select a new persistent format
 Conceptually:
 
 ```text
-CONFIG chooses persistent format
+CONFIG chooses active format
         |
         v
 installed logical binding
@@ -1038,7 +1038,7 @@ This preserves the boundary:
 
 ```text
 DUP     changes media
-CONFIG  changes persistent configuration
+CONFIG  applies bindings and separately saves defaults
 ```
 
 A direct `/COPY` invocation returns to the CCP after cleanup.
@@ -1662,6 +1662,14 @@ requires the existing retry interaction.
 See [command-line qualification](DUP%20Command-Line%20Qualification.md) for
 parser, dispatcher, media and interruption evidence. Final release
 qualification remains separate.
+
+## Related utility contracts
+
+[CONFIG](CONFIG%20Specification.md) owns binding selection and saved defaults.
+[SYSGEN](SYSGEN%20Specification.md) installs the protected system while preserving
+the filesystem. DUP COPY instead replaces all represented sector payloads,
+including the filesystem and reserved records. Its bootstrap normalization is
+only a transient COPY representation; it does not save source configuration.
 
 ## Supporting references
 
