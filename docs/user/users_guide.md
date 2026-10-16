@@ -2462,6 +2462,30 @@ profile changes, as with the menu. If CONFIG reports “Drive profile changed;
 binding cleanup incomplete,” the profile has changed but some binding checks or
 changes failed; retry or inspect and correct the affected logical bindings.
 
+To assign a catalogue format to a logical drive:
+
+```text
+CONFIG /LOGICAL=C /PHYSICAL=1 /FORMAT="MM 80T DS DATA"
+```
+
+Use the exact format description displayed by CONFIG's format-selection menu,
+inside double quotes. Matching ignores letter case. Unknown or ambiguous names,
+unsupported formats, and incompatible physical geometry are rejected without
+changing the binding. The entire command is checked before catalogue access.
+The format catalogue must be available on the current drive or A:.
+
+To detach a logical drive without erasing its media:
+
+```text
+CONFIG /LOGICAL=C /UNBIND
+```
+
+Both commands accept B–D; A: is protected. These change active state only and
+reset the selected drive's login/allocation information. They return without a
+confirmation or completion prompt. Save all current settings separately if the
+binding should survive cold boot. `/UNBIND` does not require DISK.FDB. A named
+binding with a missing or corrupt catalogue reports the error and returns.
+
 #### 7.2 Startup command
 
 Use CONFIG’s startup-command menu (`J`) to inspect or edit the pending command.
@@ -2495,8 +2519,8 @@ validation and save results before relying on a new configuration.
 #### 7.4 Planned extensions — not yet implemented
 
 The [CONFIG engineering specification](../engineering/CONFIG%20Specification.md)
-records remaining command-line equivalents for logical-drive binding, format
-selection/workbench editing, and `/DEFAULT`. The agreed defaults operation will
+records remaining command-line equivalents for format-workbench field editing
+and `/DEFAULT`. The agreed defaults operation will
 load pending settings only, without automatic activation or saving; it is not
 yet implemented.
 

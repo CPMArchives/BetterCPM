@@ -14,9 +14,9 @@ The spec's cost/backend gates remain required for proposed runtime facilities.
 | /SHOW | Active and saved physical/logical settings, saved startup; embedded CRC-32 validation; no external reference |
 | /STARTUP="..." | Confirmed, verified startup-only save; does not execute command |
 | /DEFAULT | Pending-only semantics agreed; implementation/default-domain sources open |
-| Drive command-line parity | Build 006 physical fields implemented; logical binding/format/workbench forms open |
+| Drive command-line parity | Builds 006–007 physical fields and logical binding/format selection implemented; workbench field CLI open |
 | Persistent IOBYTE, printer and serial | Required runtime-cost/backend audits open |
-| Native build | Build 006 dual-profile ZSM4/LINK and cross assembly match at 14,124 bytes |
+| Native build | Build 007 dual-profile ZSM4/LINK and cross assembly match at 14,716 bytes |
 
 The no-longer-offered keyboard/video sections are outside CONFIG's 1.0 scope;
 printer/serial/IOBYTE entries may be added only when actual supported facilities
@@ -207,3 +207,37 @@ Unit checks cover the existing menu PHSAVE entry as well as CLI application, so
 the new boot guard is exercised through both paths. Parser/startup failure and
 166 utility identity checks pass. No resident BIOS/BDOS bytes are added; the
 transient has 1,492 bytes left before its existing 3E00h program/stack boundary.
+
+## Build 007: logical binding and format-selection CLI
+
+Add `/LOGICAL=B /PHYSICAL=1 /FORMAT="name"` and `/LOGICAL=B /UNBIND` with
+active-only state and separate persistence. Parsing rejects A:, extra operands,
+overlong/control/empty quoted names and malformed fields before INIT/I/O.
+Format names use the displayed 32-byte catalogue description, not unstable row
+numbers. Unique case-insensitive resolution, shared FDB normalization, geometry
+compatibility and backend validation all precede mutation. Success resets only
+the selected logical drive. Unbinding needs no FDB. Catalogue failures now return
+without pausing for CONFIG CLI callers while retaining interactive behavior;
+DUP's abort alias resolves to its existing target and its binary is unchanged.
+
+`test_config_logical_cli.py` checks parser bounds and version-data handling,
+unknown/duplicate/unsupported formats, incompatible geometry, backend failures,
+unbind/reset behavior and CLI-versus-interactive catalogue error policy.
+`qualify_config_logical_cli.py` exercises the real validated catalogue, malformed
+CRC and missing files, ambiguous names with a repaired catalogue checksum,
+actual backend binding/unbind, incompatible geometry, cold-boot restoration and
+byte-identical disk media. Evidence: `build/config-logical-cli/run-33r7bwqh`.
+Native ZSM4/LINK matches cross output at 14,716 bytes with two CRC records.
+Existing physical CLI/parser/startup recovery, all 107 native FDB bindings and
+166 utility identity checks pass.
+
+Format-workbench field CLI, `/DEFAULT`, and peripheral audits remain open.
+The transient has 900 bytes left before its existing code/stack boundary;
+no resident BIOS/BDOS storage or ABI growth is introduced.
+
+Model 4 qualification passes using real Shift-2 quotation-mark chords:
+`build/test-results/config-logical-cli-model4/run-1c2svxt0`.
+Independent snapshots check the complete binding after catalogue-based format
+selection, unbind preserving its remaining fields, unrelated active state and
+byte-identical disk media. The batch keyboard helper now supports the existing
+Model 4 quote chord; no OS keyboard-driver change is involved.
