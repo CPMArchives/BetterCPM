@@ -367,3 +367,15 @@ host output delegates actual geometry and scrolling to the terminal. See the
 ABI for validation, blank-rendition and host-dimension limits. Operation 23
 remains unsupported; portable ANSI admission and cursor save/restore are still
 required before converting the production frontend.
+
+
+SCX provider 1.6 completes the currently assigned mask (00FFh) with operation
+23: B=0 saves cursor and canonical rendition into one reusable slot; B=1
+restores it. Restore before save and other actions return 255 atomically.
+Another save replaces the slot; repeated restore is allowed. Restore cancels
+pending wrapping. Margins and cursor visibility are not part of the slot.
+The ANSI-host backend owns the terminal's DECSC/DECRC slot, so raw callers must
+not overwrite that slot between SCX save/restore calls. Host current bounds can
+constrain restored positions. See the ABI for full state and relocation rules.
+Portable ANSI still needs parser conversion and activation-time capability
+checks before using these operations in production.
