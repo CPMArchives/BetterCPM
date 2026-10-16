@@ -489,3 +489,42 @@ hash is unchanged. The earlier nine-case run is retained in
 13-case result. These checks do not establish timing, other editing controls,
 control-key recovery or native Model 4 input behavior. No OS defect was found
 in this subset.
+
+### Console control editing and terminal-outcome recovery
+
+The expanded external observer now covers 19 cases on the same unchanged
+candidate. Added cases 0116/0118/0119/0120/0121 check literal DEL input,
+Ctrl-E physical continuation, Ctrl-R retained-line redisplay, Ctrl-U line
+deletion and Ctrl-X visual erasure, checking both returned buffers and rendered
+screen contents before confirmation. Case 0117 has a separate terminal-outcome
+oracle: initial Ctrl-C reaches the CCP without the Function 10 return diagnostic
+or confirmation prompt, then VER succeeds and BYE halts normally. It is recorded
+as an external recovery pass, not a nonexistent suite PASS row.
+
+All 19 pass in `console-controls/constest-input-e2o8j_mz/`. Its result records
+pyte's version as well as its module location. The initial 18-case expansion is
+retained in `console-controls/constest-input-exo0ejyy/`. These totals supersede,
+rather than add to, the earlier 13-case input coverage. No OS changes were
+required. Native Model 4 input, blocking/queue timing, printer echo and further
+console/device cases remain outside this evidence.
+
+### Console readiness and blocking input
+
+The final expanded run, `console-readiness/constest-input-nntpnd90/`, records
+22 successful cases: 21 required (including externally observed 0117 recovery)
+and one DRI-CONSOLE profile case, 0104. Added required case 0085 reports A=00
+with an emptied queue. Case 0092 produces no output during an externally
+monitored 0.5-second interval, then echoes the supplied B and returns A=42.
+Profile case 0104 consumes the single supplied K after Function 11 detects it,
+echoes it once and returns A=4B. No extra input is supplied to release it.
+
+The session helper now supports a silence expectation which monitors the PTY
+throughout the interval and rejects pending or newly arriving output. Two
+provider tests verify a quiet interval and rejection of premature output.
+This establishes the bounded observation, not arbitrary-duration timing.
+
+An initial runner expected 0104's result to have required classification R;
+the pinned suite correctly printed profile classification X and the runner
+timed out at the CCP. That transcript is retained under `console-readiness/`.
+The runner was corrected to preserve X, and the complete rerun passed. No OS
+change was made. Totals overlap earlier console-input runs; do not add them.
