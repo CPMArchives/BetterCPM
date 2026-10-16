@@ -319,6 +319,8 @@ BX_ENTRY:
         JP Z,BE_ENTRY
         CP 22
         JP Z,BM_SET
+        CP 23
+        JP Z,BS_ENTRY
         CP 24
         JP Z,BI_ENTRY
         CP 20
@@ -339,7 +341,7 @@ BX_QUERY:
         XOR A
         RET
 BX_DESC: DB 'SCX',1,0,12,0,0
-        DW 0BFH                      ; motion, position, rendition, styled glyph
+        DW 0FFH                      ; motion, position, rendition, styled glyph
         DB 0FFH,7                    ; all flags, indexed and RGB color
 HM_ENTRY:
         CP 5
@@ -656,4 +658,44 @@ BI_SEND:
         CALL B_EMIT
         XOR A
         RET
+
+; SCX 23: a reusable single save slot, not a stack. Host DECSC/DECRC
+; supplies physical cursor storage; canonical rendition lives in this RSX.
+; This backend owns the endpoint save slot while it is in use.
+BS_ENTRY:
+        LD A,B
+        OR A
+        JR Z,BS_SAVE
+        CP 1
+        JP NZ,B_BAD
+        LD A,(BS_VALID)
+        OR A
+        JP Z,B_BAD
+        LD HL,BS_ATTR
+        LD DE,BH_ATTR
+        LD BC,9
+        LDIR
+        LD HL,BS_REST
+        CALL B_STR
+        XOR A
+        LD (BH_MODE),A
+        CALL BH_APPLY
+        JR BS_STASH                   ; retain the slot after restoration
+BS_SAVE:
+        CALL BH_APPLY
+        LD HL,BH_ATTR
+        LD DE,BS_ATTR
+        LD BC,9
+        LDIR
+        LD A,1
+        LD (BS_VALID),A
+BS_STASH:
+        LD HL,BS_ESC
+        CALL B_STR
+        XOR A
+        RET
+BS_ESC: DB 27,'7',0
+BS_REST: DB 27,'8',0
+BS_VALID: DB 0
+BS_ATTR: DB 0,0,0,0,0,0,0,0,0
         END

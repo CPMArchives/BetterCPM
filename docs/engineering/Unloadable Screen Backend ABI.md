@@ -77,7 +77,7 @@ must contain neither Model 4 addresses nor host ANSI output strings.
 
 Run `python3 tools/build_screen_backends.py` after building the Model 4 BIOS.
 Payloads and listings go in `build/screen-backends/`; carriers are also copied
-to `build/rsx/`. Provider 1.5 payloads: Model 4 1090 bytes, 1280 allocated; ANSI-host
+to `build/rsx/`. Provider 1.6 payloads: Model 4 1182 bytes, 1280 allocated; ANSI-host
 1,091 bytes, 1,280 allocated. The allocation includes carrier/runtime overhead and
 alignment. These are optional loaded costs, with zero permanent growth.
 
@@ -316,3 +316,52 @@ a native visual region exercise remains part of validation.
 Payload/allocation/relocation counts: M4SCRN 1090/1280/106, ANSISCRN
 1267/1280/216. Model 4 adds one loaded page over provider 1.4; host allocation is
 unchanged. No permanent BIOS/BDOS bytes or TPA-boundary changes are introduced.
+
+
+### SCX cursor/rendition save integration (provider 1.6)
+
+SCX operation 23 takes B=0 to save and B=1 to restore. There is one reusable
+slot: another save replaces it; restoring does not consume it. Restoring before
+the first save, or an action other than 0/1, returns 255 without changing state
+or output. Success returns zero. The operation mask is now 00FFh (all currently
+assigned operations 17–24); SCRN and SCX descriptor versions remain 1.0.
+
+The saved state contains cursor position and the entire nine-byte canonical
+rendition, including physically unsupported Model 4 attributes/colors. Margins
+are independent and are neither saved nor restored. Restore cancels deferred
+wrapping, so the next glyph overwrites the saved cell rather than wrapping from
+a saved right-edge position. Saving does not consume an existing pending wrap.
+Cursor visibility is not part of this slot.
+
+Model 4 stores the physical cursor/column and rendition in backend state. The
+saved video address is an external hardware address, not a self-pointer to be
+relocated. ANSI-host uses the endpoint's DECSC/DECRC cursor slot and keeps its
+own copy of canonical rendition; it reapplies the copied rendition on restore
+and retains the endpoint slot for repeated restoration. The backend owns that
+endpoint slot while active. A client must not independently overwrite it through
+raw ESC 7/8 and then expect SCX restoration to retain its previous position.
+Host restoration follows the endpoint's current bounds/margins; changing those
+bounds can constrain a previously saved position. Saving/restoring arbitrary
+external terminal state is not part of this API.
+
+Saved state survives manager compaction. The lifecycle test saves at a pending
+right-edge wrap before moving backend/personality, then restores and writes
+through the rebound callback twice, checks canonical state, and unloads to 53K.
+`tools/test_screen_cursor_save.py` passes 288 continuation cases at two relocated
+addresses and 80x24/80x25/100x40 host sizes, plus unset-slot, replacement,
+repeated-restore, margin-independence and atomic invalid-action checks. Existing
+legacy screen, motion, erasure, rendition and margin suites pass. The legacy
+invalid-operation fixture now uses 255 rather than the already supported erase
+operation 19. Native/cross assembly parity passes for both backends.
+
+Live public-service lookup and repeated restoration pass on cpmsim RAM
+(`build/screen-rendition-live/cpmsim-mqlfeza0`) and protected ROM
+(`build/screen-rendition-live/cpmsim-l6wxuqaa`). All seven ROM guards pass, no ROM
+writes occur, and unloading restores 53K. Model 4 remains CPU/VRAM-qualified for
+these typed controls; native visual validation remains pending.
+
+Payload/allocation/relocation counts: M4SCRN 1182/1280/120 and ANSISCRN
+1357/1536/232. Host allocation grows by one loaded 256-byte page; Model 4
+allocation is unchanged. No permanent BIOS/BDOS bytes change. Portable ANSI
+parser conversion and complete backend capability admission remain necessary;
+this checkpoint alone does not switch the production ANSI personality.

@@ -99,7 +99,7 @@ def main():
             for fill in (160,32):
                 call(6,3,11);before=cells();call(9,col=fill)
                 assert cells()==before[:251]+bytes([fill])*(1920-251)
-            for op,row,col in [(6,24,0),(6,0,80),(8,0,33),(9,0,0),(10,0,65),(13,0,65),(15,0,2),(19,0,0)]:
+            for op,row,col in [(6,24,0),(6,0,80),(8,0,33),(9,0,0),(10,0,65),(13,0,65),(15,0,2),(255,0,0)]:
                 before=cells(); wire=len(output)
                 assert call(op,row,col)==255, (name,op)
                 assert cells()==before and len(output)==wire, (name,op,'mutated')

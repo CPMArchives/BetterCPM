@@ -83,6 +83,7 @@ def main():
     cpu.a,cpu.hl,cpu.de=22,4,20;cpu.run(backend_entry,limit=200000);assert cpu.a==0
     cpu.a,cpu.hl,cpu.de=18,12,80;cpu.run(backend_entry,limit=200000);assert cpu.a==0
     cpu.a,cpu.c=21,ord('R');cpu.run(backend_entry,limit=200000);assert cpu.a==0
+    cpu.a,cpu.b=23,0;cpu.run(backend_entry,limit=200000);assert cpu.a==0
     change(2,b'HELLO   ')
     new=cpu.word(stage.LOW)
     assert new>old and cpu.word(binding)==new+syms['AM_ENTRY']-0x8000
@@ -103,6 +104,12 @@ def main():
     assert cells()[11*80+79]&127==ord('R')
     cpu.a,cpu.c=21,ord('S');cpu.run(cpu.word(new+12),limit=200000);assert cpu.a==0
     assert cells()[12*80]&127==ord('S')
+    # A saved cursor/rendition slot must survive the same compaction.
+    for char in b'TU':
+        cpu.a,cpu.b=23,1;cpu.run(cpu.word(new+12),limit=200000);assert cpu.a==0
+        cpu.a,cpu.c=21,char;cpu.run(cpu.word(new+12),limit=200000);assert cpu.a==0
+        assert cells()[11*80+79]&127==char
+        assert bytes(cpu.mem[backend_base+attr_offset:backend_base+attr_offset+9])==rendition
     for label,value in [('AM_STATE',3),('AM_ROWPOS',0),('AM_PENDING_ROW',1),('AM_REVERSE',128),('AM_VISIBLE',0)]:
         assert cpu.mem[new+syms[label]-0x8000]==value,label
     emitted.clear();call(0,32+10)

@@ -25,7 +25,7 @@ def main():
                     assert cpu.sp==sp
                     return cpu.a
                 assert call(16)==0
-                expected=b'SCX\x01\x00\x0c'+(b'\x18\x50' if name=='M4SCRN' else b'\0\0')+(b'\xbf\0\x60\0' if name=='M4SCRN' else b'\xbf\0\xff\x07')
+                expected=b'SCX\x01\x00\x0c'+(b'\x18\x50' if name=='M4SCRN' else b'\0\0')+(b'\xff\0\x60\0' if name=='M4SCRN' else b'\xff\0\xff\x07')
                 assert bytes(cpu.mem[cpu.hl:cpu.hl+12])==expected
                 for op in range(5):
                     for n in [0,1,9,10,24,25,40,80,100,255,256,9999,10000,65535]:
