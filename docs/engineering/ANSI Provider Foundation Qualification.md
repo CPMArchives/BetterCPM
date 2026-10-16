@@ -1,5 +1,8 @@
 # ANSI/VT100 host provider foundation
 
+This records the historical host-only foundation. Production ANSI now uses the
+portable parser/backend path; see [current qualification](ANSI%20Portable%20Backend%20Audit.md#production-activation-and-qualification).
+
 ## Scope
 
 ANSI.RSX is the bounded cpmsim host personality for the third 1.0 monitor

@@ -1,8 +1,9 @@
 # Portable ANSI/VT100 backend audit and region prototypes
 
-Status: implementation preparation after portable ADM3A, 2026-10-16.
-The production ANSI.RSX is unchanged. This is not a completed portable ANSI
-provider or a published SCRN ABI extension.
+Status: production portable ANSI activation qualified, 2026-10-16.
+The experiments and intermediate checkpoints below are historical. See
+[production activation](#production-activation-and-qualification) for the current
+provider, test evidence and remaining release-validation boundary.
 
 ## Existing commitments
 
@@ -211,3 +212,61 @@ A live cpmsim RAM candidate exercise passes with matching overlays and 53K
 recovery (`build/ansi-development/live/cpmsim-u3ysk1k7`). Normal builds still use
 the original ANSI personality; activation and remaining application/ROM/native
 screen/distribution validation are the next checkpoint.
+
+
+## Production activation and qualification
+
+Normal `tools/build_ansi.py` now builds portable ANSI provider 1.1 (MCON 1.2,
+SCRN 1.1 required). `src/rsx/ansi.mac` is the only parser source, with typed
+dispatch in `ansi-dispatch.inc` and shared SGR logic in `screen/rendition.inc`.
+The separate candidate source has been removed. `--portable-candidate` only
+selects private output for that same source; it no longer selects different
+semantics. Payload remains 1466 bytes, 207 relocations, 1536-byte allocation.
+Both system disks now contain ANSI.RSX and ANSITST.COM with the matching backend.
+The startup default is unchanged (ADM3A on Model 4); switching personalities is
+explicit. Load a backend first and unload the personality before the backend.
+
+Qualification of the production build:
+
+- 340 assembled-code parser streams through both actual backends, independent
+  load addresses, buffer guards, cancellation, numeric saturation, atomic SGR,
+  saved rendition, private/query filtering, regions and larger host geometry.
+- Shared rendition interpretation: 1164 cases; native ZSM4/LINK matches the
+  1466-byte production payload. All changed admission helpers also match native
+  output. Existing backend control suites and manager compatibility matrices
+  remain qualified by their recorded checkpoints.
+- Actual-manager production lifecycle on Model 4 and cpmsim: partial CSI and
+  saved rendition survive movement, repeated restore and incremental SGR work,
+  public lookup resolves MCON 1.2, removing a needed backend fails, and full
+  unload restores 53K.
+- Live cpmsim RAM: `build/ansi-development/live/cpmsim-aro4_dtp`.
+  Load, movement by removing HELLO, both ANSITST phases, unload/53K and BYE pass.
+- Guarded ROM: `build/ansi-development/live/cpmsim-hpd0nucm`. Fresh matching
+  ROM-relocated overlays resolve 812 address words with no unresolved targets.
+  All seven guard primitives pass; ANSI load/movement/screen/reset/unload pass
+  without ROM writes and restore 53K. RAM overlays are never used in that profile.
+- Unchanged upstream TE editor: `build/ansi-development/te/run-svo8o3g8`.
+  Its original COM/config open a document, edit, save and exit; saved output is
+  checked. Captured output renders on 80x25 and 100x40 host screens. Its 25-row
+  configuration is not claimed to run unchanged on Model 4's 24-row screen.
+- Native trs80gp: `build/ansi-development/native-campaign/pages-ayiczfi0`.
+  Captured video RAM and screen images verify marker position, reverse cells,
+  erase suffix, parser-reset text and clean 53K unload. The first screen image
+  was visually inspected; reverse video and positioning agree with the assertions.
+- Fresh isolated distributions: `/private/tmp/bettercpm-ansi-production-qualified-work/`.
+  Both build and boot qualification pass: cpmsim 30 files/148K free; Model 4
+  29 files/596K free; no planned omissions. A sandboxed native launch failed to
+  open its temporary app wrapper; rerunning boot qualification with native
+  emulator access used the already fresh isolated builds and passed.
+  `tools/test_distribution.py` passes all 13 gates, including both-platform
+  ANSI/ANSITST/backend inclusion.
+
+Scope remains the documented bounded ANSI/VT100 subset. This is not full VT100,
+xterm, arbitrary hardware, a TCAP database, or a claim that every application's
+terminal assumptions have been validated. Model 4 retains canonical attributes
+but physically implements reverse/conceal; host capabilities and geometry apply
+through ANSISCRN. Unsupported queries, charset/keypad modes and VT52 switching
+remain outside the interface. No permanent BIOS/BDOS memory was added; unloading
+returns to 53K. Broader system-wide validation and a fresh conformance-suite run
+are the next release phase, with fixes arising from that validation kept in the
+same phase.

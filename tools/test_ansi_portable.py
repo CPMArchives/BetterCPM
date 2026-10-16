@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
 """Exercise private typed ANSI candidate on actual relocated screen backends."""
+import argparse
 import pyte
 from test_screen_backends import fixture,load,ROOT
 from test_vt52_foundation import symbols
 
 
-def main():
-    out=ROOT/'build/ansi-portable-candidate';cases=0
+def main(production=False):
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--bios','--cpmsim-bios',dest='bios',type=type(ROOT),default=ROOT/'build/audit/release-090-z80pack')
+    args=parser.parse_args()
+    out=ROOT/('build/ansi-development' if production else 'build/ansi-portable-candidate');cases=0
     for name in ('M4SCRN','ANSISCRN'):
         for front,back in [(0x9000,0x6000),(0x4001,0x8101)]:
-            cpu,old,cells,wire=fixture(name,back,cpmsim_bios=ROOT/'build/audit/release-090-z80pack')
+            cpu,old,cells,wire=fixture(name,back,cpmsim_bios=args.bios)
             syms=load(cpu,out,'ansi',front)
             cpu.setword(front+12,cpu.backend_entry)
             entry=front+syms['AN_ENTRY']-0x8000
@@ -89,7 +93,7 @@ def main():
                     send(f'\x1b[{height};{width}H\x1b7\x1b[1;1H\x1b8Z'.encode())
                     assert screen.buffer[height-1][width-1].data=='Z'
             print(f'PASS {name} frontend {front:04X}/backend {back:04X}: typed ANSI dispatch, SGR/save, bounded parser and cancellation')
-    print(f'PASS {cases} portable ANSI streams; private candidate only')
+    print(f'PASS {cases} portable ANSI streams; assembled portable ANSI')
 
 
 if __name__=='__main__':main()

@@ -133,4 +133,10 @@ for qualification scope. These optional loaded modules add no permanent core
 memory. The Model 4 backend must be built with the supplied BIOS.
 
 
-The cpmsim disk additionally supplies `ANSI.RSX` and `ANSITST.COM`, built by `tools/build_ansi.py` into `build/rsx` and `build/utilities`. They are not selected automatically at startup. The unchanged TE VT100 editor passes the basic application campaign; see the provider qualification record for the supported subset and test limits.
+Both system disks supply the same portable `ANSI.RSX` and `ANSITST.COM`, built
+by `tools/build_ansi.py` into `build/rsx` and `build/utilities`. Load the matching
+full-control backend first: M4SCRN on Model 4, ANSISCRN on cpmsim. ANSI is not
+selected automatically at startup. The unchanged TE VT100 editor passes the
+cpmsim application campaign with a 25-row host window; that configuration is not
+qualified for the 24-row Model 4. See the provider qualification record for the
+supported subset and test limits.

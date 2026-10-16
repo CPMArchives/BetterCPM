@@ -10,16 +10,17 @@ from system_layout import LAYOUT
 import test_rsx_stage3 as stage
 
 
-def main():
+def main(production=False):
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--bios',type=Path,default=ROOT/'build/bios')
     args=parser.parse_args()
+    provider='build/ansi-development' if production else 'build/ansi-portable-candidate'
     bios=symbols(args.bios/'bios.lst');origin=bios['MONRAW']-69
     model4='M4CURSOR' in bios;backend='M4SCRN' if model4 else 'ANSISCRN'
     cpu=Z80(b'');image=(args.bios/'bios.bin').read_bytes()
     cpu.mem[origin:origin+len(image)]=image;cpu.setword(1,origin+3)
     stage.FILES=(("R3PACK  ","build/system/R3PACK.RSX"),("HELLO   ","build/rsx/HELLO.RSX"),
-        (backend.ljust(8),f"build/screen-backends/{backend}.RSX"),("ANSI    ","build/ansi-portable-candidate/ANSI.RSX"))
+        (backend.ljust(8),f"build/screen-backends/{backend}.RSX"),("ANSI    ",provider+"/ANSI.RSX"))
     sources=(0x7100,0xAD00,0xB000,0xB800)
     # Keep synthetic disk bytes above transaction RAM/stack and below the
     # lowest prospective live allocation; larger ANSI otherwise overwrites them.
@@ -40,7 +41,7 @@ def main():
     for address,value in [(stage.HEAD,0),(stage.LOW,LAYOUT['RSX']),(stage.TPA,LAYOUT['TPA']),(6,LAYOUT['TPA']),(stage.GEN,1)]:cpu.setword(address,value)
     cpu.mem[stage.RSTCOUNT:stage.RSTCOUNT+41]=bytes(41)
     bootstrap=(ROOT/'build/system/r3entry.bin').read_bytes()
-    syms=symbols(ROOT/'build/ansi-portable-candidate/ansi.lst')
+    syms=symbols(ROOT/provider/'ansi.lst')
     def change(op,name,ok=True):
         before=(cpu.word(binding),cpu.word(stage.GEN),cpu.word(6),bytes(cpu.mem[stage.RSTCOUNT:stage.RSTCOUNT+41]))
         stage.invoke(cpu,bootstrap,op,name.ljust(8).encode())

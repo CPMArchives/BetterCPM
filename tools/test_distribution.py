@@ -61,7 +61,7 @@ class DistributionGates(unittest.TestCase):
         for target,backend,other in [('trs80gp','M4SCRN.RSX','ANSISCRN.RSX'),
                                      ('z80pack','ANSISCRN.RSX','M4SCRN.RSX')]:
             names={e['name'] for e in manifest['system_disk'] if target in e['targets'] and e['status']=='implemented'}
-            self.assertTrue({'VT52.RSX','VT52TST.COM',backend}.issubset(names))
+            self.assertTrue({'VT52.RSX','VT52TST.COM','ANSI.RSX','ANSITST.COM',backend}.issubset(names))
             self.assertNotIn(other,names)
 
     def test_system_editor_manifest(self):

@@ -302,17 +302,19 @@
       "artifact": "build/rsx/ANSI.RSX",
       "status": "implemented",
       "targets": [
-        "z80pack"
+        "z80pack",
+        "trs80gp"
       ],
       "user": 0,
-      "role": "Bounded ANSI/VT100 host monitor"
+      "role": "Portable bounded ANSI/VT100 monitor personality"
     },
     {
       "name": "ANSITST.COM",
       "artifact": "build/utilities/ANSITST.COM",
       "status": "implemented",
       "targets": [
-        "z80pack"
+        "z80pack",
+        "trs80gp"
       ],
       "user": 0,
       "role": "ANSI/VT100 monitor test utility"

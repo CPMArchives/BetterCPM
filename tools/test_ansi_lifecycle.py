@@ -15,6 +15,10 @@ def main():
     parser.add_argument('--reject-portable-candidate',action='store_true',help='prove portable ANSI cannot replace the monitor with an insufficient backend')
     parser.add_argument('--bios',type=Path,default=ROOT/'build/z80pack')
     args=parser.parse_args()
+    if not args.reject_portable_candidate:
+        from test_ansi_portable_lifecycle import main as portable_main
+        portable_main(production=True)
+        return
     bios=symbols(args.bios/'bios.lst')
     base=bios['MONRAW']-69
     cpu=Z80(b'')
@@ -66,36 +70,6 @@ def main():
         assert cpu.word(binding)==basic and cpu.word(6)==LAYOUT['TPA']
         print('PASS: portable ANSI rejected atomically with an insufficient SCRN 1.0 backend; unload/53K')
         return
-    change(1,b'HELLO   ');change(1,b'ANSI    ')
-    old=cpu.word(stage.LOW)
-    assert cpu.word(binding)==old+syms['AN_ENTRY']-0x8000
-    emitted.clear()
-    for char in b'\x1b[12;':call(0,char)
-    assert emitted==[]
-    change(2,b'HELLO   ')
-    new=cpu.word(stage.LOW)
-    assert new>old and cpu.word(binding)==new+syms['AN_ENTRY']-0x8000
-    assert cpu.mem[new+syms['AN_STATE']-0x8000]==2
-    assert cpu.mem[new+syms['AN_COUNT']-0x8000]==5
-    start=new+syms['AN_BUFFER']-0x8000
-    assert bytes(cpu.mem[start:start+5])==b'\x1b[12;'
-    emitted.clear()
-    for char in b'15H':call(0,char)
-    assert bytes(emitted)==b'\x1b[12;15H'
-    for char in b'\x1b[7;':call(0,char)
-    call(5);emitted.clear();call(0,ord('X'))
-    assert bytes(emitted)==b'X'
-    extension=(ROOT/'build/system/extensions.bin').read_bytes()
-    cpu.mem[LAYOUT['EXTENSIONS']:LAYOUT['EXTENSIONS']+len(extension)]=extension
-    request=0x7000
-    cpu.mem[request:request+20]=bytes([1,20,0,0])+b'MCON'+bytes([1,0])+bytes(10)
-    cpu.de=request;cpu.c=182
-    cpu.run(LAYOUT['EXTENSIONS'],limit=20000)
-    assert cpu.a==0 and cpu.word(request+12)==cpu.word(binding)
-    change(2,b'ANSI    ')
-    assert cpu.word(binding)==basic and cpu.word(6)==LAYOUT['TPA']
-    assert cpu.mem[stage.RSTCOUNT]==0
-    print('PASS: actual ANSI install, partial-sequence relocation, continuation, service lookup and 53K unload')
 
 
 if __name__=='__main__':main()

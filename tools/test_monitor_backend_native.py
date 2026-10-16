@@ -29,6 +29,7 @@ def main():
     units=[
         ('VT52','src/rsx/vt52.mac','build/vt52-development/vt52.bin'),
         ('ADM3A','src/rsx/adm3a.mac','build/monitor-development/adm3a.bin'),
+        ('ANSI','src/rsx/ansi.mac','build/ansi-development/ansi.bin'),
         ('M4SCRN','src/rsx/screen/model4.mac','build/screen-backends/M4SCRN.bin'),
         ('ANSISCRN','src/rsx/screen/ansi-host.mac','build/screen-backends/ANSISCRN.bin'),
         ('R3KPRE','src/system/r3kpre.mac','build/system/r3kpre.bin'),
@@ -39,13 +40,13 @@ def main():
         ('R3PROF','src/system/r3prof.mac','build/system/r3profile.bin'),
         ('R3KCTX','src/system/r3kctx.mac','build/system/r3kctx.bin'),
         ('R3DROP','src/system/r3drop.mac','build/system/r3drop.bin')]
-    if args.portable_ansi:units.append(('ANSIPORT','src/rsx/ansi-portable.mac','build/ansi-portable-candidate/ansi.bin'))
+    if args.portable_ansi:units.append(('ANSIPORT','src/rsx/ansi.mac','build/ansi-portable-candidate/ansi.bin'))
     for stem,source,reference in units:
         work=Path(tempfile.mkdtemp(prefix=stem+'-',dir=out));disks=work/'disks';disks.mkdir()
         shutil.copy2(SYSTEM,disks/'drivea.dsk')
         for drive in 'bcd':blank(TEMPLATE,disks/f'drive{drive}.dsk')
         text=(ROOT/source).read_text().replace('        INCLUDE backend.inc',bindings)
-        if stem=='ANSIPORT':
+        if stem in ('ANSI','ANSIPORT'):
             text=text.replace('        INCLUDE ansi-dispatch.inc',(ROOT/'src/rsx/ansi-dispatch.inc').read_text()).replace('        INCLUDE screen/rendition.inc',(ROOT/'src/rsx/screen/rendition.inc').read_text())
         if stem.startswith('R3'):
             from build_rsx_runtime_overlays import source as overlay_source
