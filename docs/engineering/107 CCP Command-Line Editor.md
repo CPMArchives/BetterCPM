@@ -35,6 +35,12 @@ cell is reversed. Platforms without attribute support receive the earlier
 visible-underscore fallback. No ANSI or terminal-specific cursor escapes are
 required, and the marker is removed before command execution.
 
+Accepting an interactive command emits CR followed by LF after the final
+redraw, including an empty command. Subsequent command/program output starts
+on a fresh physical line even if it has no leading newline. This CCP display
+rule does not change BDOS Function 10, whose buffered-console contract remains
+separate. Validation V005 corrected the previous CR-only completion.
+
 Console output is treated as destructive of working registers.  In particular,
 the redraw routine reconstructs its command-tail pointer after emitting the
 cursor rather than assuming that a console service preserves `HL`. This
