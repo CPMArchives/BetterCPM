@@ -28,7 +28,7 @@ The source checkout was clean and was not modified. A private clone at
 | Stage | Status | Evidence / next work |
 | --- | --- | --- |
 | 1. Clean builds, contents, boot, baseline console/memory | In progress; initial gates pass | Both distributions pass build/boot/integrity; focused BIOS/CCP and native editing/unload pass. Additional console/startup-failure/repeated-return cases remain. |
-| 2. Fresh conformance suite | Partial cpmsim groups pass | Fresh ENTRYTST, CPUTEST, ECOTEST, BDOSTEST required, DIRTEST safe, FILETEST required and RANDTEST safe results below. Console, disk/BIOS/error/CCP procedures and Model 4 suite runs remain. |
+| 2. Fresh conformance suite | Partial cpmsim groups pass | Fresh ENTRYTST, CPUTEST, ECOTEST, BDOSTEST required, DIRTEST safe, FILETEST required and RANDTEST safe results below. Selected console, disk/BIOS/error and native Model 4 checks also pass below; remaining cases and CCP procedures are still pending. |
 | 3. CPX/RSX lifecycle, relocation, ROM protection | Protected ROM candidate campaign passes | Fresh V002 guarded ROM, lifecycle, workspace and stack results below; wider RAM/native lifecycle coverage remains. |
 | 4. Resident/transient command integration | Not run | Selectors, protection, prompts, explicit transient invocation, feature diagnostics and caller-state restoration. |
 | 5. Utility operations and failure recovery | Not run | System-disk utilities only; disposable images and independent filesystem inspection. |
@@ -528,3 +528,27 @@ the pinned suite correctly printed profile classification X and the runner
 timed out at the CCP. That transcript is retained under `console-readiness/`.
 The runner was corrected to preserve X, and the complete rerun passed. No OS
 change was made. Totals overlap earlier console-input runs; do not add them.
+
+### Native Model 4 input observations
+
+`run_validation_model4_input.py` boots a separate private copy of the unchanged
+V002b Model 4 System Disk for each case and supplies actual keyboard-matrix
+events. The normal startup monitor configuration is retained. The runner does
+not insert guest-buffer bytes and does not answer the suite's Y/N confirmation.
+It captures the screen at that prompt, then independently checks the literal
+returned buffer and the final visible input, including preservation of the
+prompt. These are external observations, not suite PASS rows.
+
+All three selected cases pass:
+
+- 0106: AB followed by Enter displays AB and returns count 02/data [AB].
+- 0115: AB, Backspace, C, Enter displays AC and returns count 02/data [AC].
+- 0121: AB, Ctrl-X, CD, Enter erases AB, preserves the prompt, displays CD and
+  returns count 02/data [CD].
+
+Evidence: `model4-input/model4-input-18qrinln/` contains per-case private images,
+native screen-memory captures, decoded screens and a result manifest with
+baseline/program/emulator hashes and keystrokes. The original baseline hash is
+unchanged. Each emulator exited after its capture. No OS defect was found.
+This small native subset does not establish other editing controls, timing,
+other monitor configurations or return-to-CCP behavior for these cards.
