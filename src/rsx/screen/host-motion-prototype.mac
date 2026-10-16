@@ -1,0 +1,96 @@
+; Experimental geometry-neutral typed host cursor operations.
+; A=0 up, 1 down, 2 right, 3 left, 4 position. HL=count/row, DE=column.
+; Coordinates are one-based, zero uses the terminal's default of one.
+; This endpoint delegates bounds/wrapping to the host; it does not query or
+; assume host dimensions. No production SCRN descriptor is changed.
+        ASEG
+        ORG 08000H
+HM_ENTRY:
+        CP 5
+        JP NC,HM_BAD
+        LD (HM_OP),A
+        LD (HM_ARG),HL
+        LD (HM_COL),DE
+        LD C,27
+        CALL HM_EMIT
+        LD C,'['
+        CALL HM_EMIT
+        LD HL,(HM_ARG)
+        CALL HM_DEC
+        LD A,(HM_OP)
+        CP 4
+        JR NZ,HM_FINAL
+        LD C,';'
+        CALL HM_EMIT
+        LD HL,(HM_COL)
+        CALL HM_DEC
+HM_FINAL:
+        LD A,(HM_OP)
+        LD E,A
+        LD D,0
+        LD HL,HM_CODES
+        ADD HL,DE
+        LD C,(HL)
+        CALL HM_EMIT
+        XOR A
+        RET
+HM_BAD:
+        LD A,255
+        RET
+HM_DEC:
+        LD DE,10000
+        XOR A
+        LD (HM_SEEN),A
+        CALL HM_DIGIT
+        LD DE,1000
+        CALL HM_DIGIT
+        LD DE,100
+        CALL HM_DIGIT
+        LD DE,10
+        CALL HM_DIGIT
+        LD A,L
+        ADD A,'0'
+        LD C,A
+        JP HM_EMIT
+HM_DIGIT:
+        LD B,0
+HM_SUB:
+        OR A
+        SBC HL,DE
+        JR C,HM_END
+        INC B
+        JR HM_SUB
+HM_END:
+        ADD HL,DE
+        LD A,B
+        OR A
+        JR NZ,HM_NONZ
+        LD A,(HM_SEEN)
+        OR A
+        RET Z
+HM_NONZ:
+        LD A,1
+        LD (HM_SEEN),A
+        LD A,B
+        ADD A,'0'
+        LD C,A
+HM_EMIT:
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        LD HL,(1)
+        LD DE,66
+        ADD HL,DE
+        XOR A
+        CALL HM_JUMP
+        POP HL
+        POP DE
+        POP BC
+        RET
+HM_JUMP:
+        JP (HL)
+HM_CODES: DB 'ABCDH'
+HM_OP: DB 0
+HM_SEEN: DB 0
+HM_ARG: DW 0
+HM_COL: DW 0

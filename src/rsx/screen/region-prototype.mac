@@ -1,0 +1,96 @@
+; Experimental Model 4 region primitive, not a published SCRN operation.
+; A=0 scroll up / 1 down, B=top, C=bottom, E=20h/A0h fill.
+; Validated before mutation. Physical cursor storage is never touched.
+        ASEG
+        ORG 08000H
+RG_ENTRY:
+        CP 2
+        JP NC,RG_BAD
+        LD (RG_DIR),A
+        LD A,E
+        AND 127
+        CP 32
+        JP NZ,RG_BAD
+        LD A,C
+        CP 24
+        JP NC,RG_BAD
+        CP B
+        JP C,RG_BAD
+        LD A,E
+        LD (RG_FILL),A
+        LD A,B
+        CALL RG_ADDR
+        LD (RG_TOP),HL
+        LD A,C
+        CALL RG_ADDR
+        LD (RG_BOT),HL
+        LD A,C
+        SUB B
+        LD L,A
+        LD H,0
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,HL
+        LD D,H
+        LD E,L
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,DE                     ; (bottom-top)*80 bytes
+        LD B,H
+        LD C,L
+        LD A,B
+        OR C
+        JR Z,RG_SINGLE
+        LD A,(RG_DIR)
+        OR A
+        JR NZ,RG_DOWN
+        LD DE,(RG_TOP)
+        LD HL,80
+        ADD HL,DE
+        LDIR
+        LD HL,(RG_BOT)
+        JR RG_BLANK
+RG_DOWN:
+        LD HL,(RG_BOT)
+        LD DE,79
+        ADD HL,DE
+        EX DE,HL                      ; end of destination
+        LD HL,(RG_BOT)
+        DEC HL                        ; end of source
+        LDDR
+RG_SINGLE:
+        LD HL,(RG_TOP)
+RG_BLANK:
+        LD A,(RG_FILL)
+        LD B,80
+RG_PAINT:
+        LD (HL),A
+        INC HL
+        DJNZ RG_PAINT
+        XOR A
+        RET
+RG_BAD:
+        LD A,255
+        RET
+RG_ADDR:
+        PUSH BC
+        LD L,A
+        LD H,0
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,HL
+        LD D,H
+        LD E,L
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,DE
+        LD DE,0F800H
+        ADD HL,DE
+        POP BC
+        RET
+RG_TOP: DW 0
+RG_BOT: DW 0
+RG_FILL: DB 32
+RG_DIR: DB 0
