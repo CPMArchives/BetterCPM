@@ -64,20 +64,28 @@ def run(command: Sequence[str], *, cwd: Path, timeout: int,
                 raise subprocess.TimeoutExpired(invocation, timeout)
             time.sleep(0.02)
         pid = int(pid_file.read_text(encoding="ascii"))
-        while True:
+        try:
+            while True:
+                try:
+                    os.kill(pid, 0)
+                except ProcessLookupError:
+                    return subprocess.CompletedProcess(invocation, 0)
+                if time.monotonic() >= deadline:
+                    os.kill(pid, signal.SIGTERM)
+                    for _ in range(50):
+                        time.sleep(0.02)
+                        try:
+                            os.kill(pid, 0)
+                        except ProcessLookupError:
+                            break
+                    else:
+                        os.kill(pid, signal.SIGKILL)
+                    raise subprocess.TimeoutExpired(invocation, timeout)
+                time.sleep(0.05)
+        except BaseException:
+            # A cancelled capture must not leave a batch emulator waiting.
             try:
-                os.kill(pid, 0)
-            except ProcessLookupError:
-                return subprocess.CompletedProcess(invocation, 0)
-            if time.monotonic() >= deadline:
                 os.kill(pid, signal.SIGTERM)
-                for _ in range(50):
-                    time.sleep(0.02)
-                    try:
-                        os.kill(pid, 0)
-                    except ProcessLookupError:
-                        break
-                else:
-                    os.kill(pid, signal.SIGKILL)
-                raise subprocess.TimeoutExpired(invocation, timeout)
-            time.sleep(0.05)
+            except ProcessLookupError:
+                pass
+            raise

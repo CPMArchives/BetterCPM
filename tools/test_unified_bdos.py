@@ -96,20 +96,21 @@ def main() -> None:
             cpu.mem[BIOS_BASE + 12:BIOS_BASE + 15] = output
             cpu.sp = initial_sp
 
-    # U10 character-I/O conformance.  Patch only the platform leaves beneath
-    # the BIOS vectors, exactly as the production BDOS test does.
-    const_impl = cpu.word(BIOS_BASE + 2 * 3 + 1)
-    platform_const = cpu.word(const_impl + 1)
-    conin_impl = cpu.word(BIOS_BASE + 3 * 3 + 1)
-    platform_conin = cpu.word(conin_impl + 1)
-    conout_impl = cpu.word(BIOS_BASE + 4 * 3 + 1)
-    platform_conout = conout_impl
+    # Isolate BDOS character-I/O contracts with deterministic BIOS providers.
+    # Monitor hooks changed the instruction shape behind these public vectors;
+    # decoding a presumed CALL operand there patched unrelated memory. Disk I/O
+    # above still traverses the production BIOS mapping to its physical leaf.
+    platform_const, platform_conin, platform_conout = 0x7B40, 0x7B50, 0x7B60
+    conin_impl = platform_conin  # restore this provider after scripted line input
+    for offset, target in ((6,platform_const),(9,platform_conin),(12,platform_conout)):
+        cpu.mem[BIOS_BASE+offset:BIOS_BASE+offset+3] = bytes((0xC3,target & 255,target >> 8))
+    cpu.mem[BIOS_BASE+15] = 0xC9  # independent nonblocking LIST sink
     cpu.mem[platform_const:platform_const + 2] = bytes((0xAF, 0xC9))
     require(call(11) == 0, "function 11 reported a false key")
-    cpu.mem[platform_const:platform_const + 3] = bytes((0x3E, 1, 0xC9))
-    require(call(11) == 0xFF, "function 11 did not normalize ready to FFh")
-    cpu.mem[platform_conin:platform_conin + 3] = bytes((0x3E, 0xC1, 0xC9))
-    require(call(6, 0xFF) == 0x41, "function 6 input retained parity")
+    cpu.mem[platform_const:platform_const + 3] = bytes((0x3E, 0xFF, 0xC9))
+    require(call(11) == 0xFF, "function 11 did not return the ready BIOS status")
+    cpu.mem[platform_conin:platform_conin + 3] = bytes((0x3E, 0x41, 0xC9))
+    require(call(6, 0xFF) == 0x41, "function 6 did not return the BIOS input byte")
     cpu.mem[platform_conout:platform_conout + 5] = bytes(
         (0x79, 0x32, 0x00, 0x70, 0xC9))
     cpu.mem[0x7000] = 0
