@@ -42,7 +42,8 @@ CONFIG /EDIT=B /CKS=16
 only the next cold-start command; it does not execute it. Drive updates are
 active-only and require a separate save-all action to persist. Complete requests
 validate before changes. Scalar and single-slot sector-map `/EDIT` fields are implemented. `/DEFAULT`
-and gated peripheral proposals remain open. Explicit size-map edits require
+prepares only `SUBMIT STARTUP` in private pending state and continues in the
+startup menu; drive defaults are untouched. Gated peripheral proposals remain open. Explicit size-map edits require
 FDF.RSX validation before commit, through both menu I and CLI.
 
 H offers two scopes. Scope A saves pending cold-boot changes only; in the

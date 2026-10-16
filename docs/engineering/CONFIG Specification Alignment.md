@@ -13,7 +13,7 @@ The spec's cost/backend gates remain required for proposed runtime facilities.
 | Full command-tail validation | Implemented before INIT, catalogue reads or changes |
 | /SHOW | Active and saved physical/logical settings, saved startup; embedded CRC-32 validation; no external reference |
 | /STARTUP="..." | Confirmed, verified startup-only save; does not execute command |
-| /DEFAULT | Pending-only semantics agreed; implementation/default-domain sources open |
+| /DEFAULT | Build 010 prepares pending SUBMIT STARTUP only; drives unchanged; explicit save required |
 | Drive command-line parity | Builds 006–007 physical fields and logical binding/format selection implemented; Build 008 scalar workbench fields implemented; Build 009 single-slot sector-map fields implemented |
 | Persistent IOBYTE, printer and serial | Backend/space findings recorded in [runtime audit](CONFIG%20Runtime%20Audit.md); persistence and runtime prototype costs remain open |
 | Native build | Build 007 dual-profile ZSM4/LINK and cross assembly match at 14,716 bytes |
@@ -296,3 +296,38 @@ state snapshots: `build/test-results/config-map-cli-model4/run-y6f4ymoz`.
 The accepted ID changes only its selected byte; duplicate and inconsistent-size
 requests preserve the complete binding and unrelated state. The whole DMK is
 unchanged. This is focused qualification, not a clean distribution rebuild.
+
+## Build 009 clean distribution follow-through
+
+Fresh isolated System Disk builds pass filesystem/file-integrity, embedded
+CONFIG validation-profile and boot qualification for both platforms. Evidence:
+`/private/tmp/config009-distribution/release-c5e405067313-5a0f762c00d1`.
+
+The cpmsim image has 27 files and 156K free; Model 4 has 24 files and 608K free.
+No planned manifest entries are omitted. This closes Build 009's previously
+pending clean-distribution rebuild; it does not qualify unimplemented CONFIG
+proposals or constitute final release validation.
+
+## Build 010: startup-only pending default
+
+The maintainer excluded drive defaults from `/DEFAULT` for now. The command
+builds canonical pending `SUBMIT STARTUP`, marks it unsaved and enters the
+interactive startup menu. No automatic test, activation or save occurs. Existing
+H confirmation, verified save and rollback remain authoritative. Distribution
+startup metadata and the user-visible default agree. Broader domains are excluded.
+
+`test_config_defaults.py` checks standalone parsing, invalid tails before I/O,
+the exact BCST bytes against the independent host encoder, pending markers and
+interactive continuation with no backend/disk calls. Existing parser/startup-save
+and 166 identity checks pass. Native ZSM4/LINK matches at 15,561 bytes with one
+validation profile: 55 bytes remain, or 35 with a second profile. Resident
+memory and transient stack/workspace boundaries are unchanged.
+
+`qualify_config_defaults.py` proves real cpmsim exit/decline preservation and
+explicit confirmed save. Independent state snapshots show every active drive
+byte unchanged; disk comparison permits only BCST changes on accepted save.
+Evidence: `build/config-defaults/run-aj_m1q78`. Model 4 also passes: `build/test-results/config-default-model4/run-bec74lgw`.
+Actual keyboard input displays the pending SUBMIT STARTUP command, then exits
+without saving; independent state snapshots and the complete DMK are unchanged.
+A fresh Build 010 distribution rebuild remains pending. The preceding Build 009
+fresh System Disk qualification is recorded above.

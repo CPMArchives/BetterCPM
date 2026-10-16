@@ -2520,6 +2520,17 @@ Use CONFIG’s startup-command menu (`J`) to inspect or edit the pending command
 Editing it does not execute it or save it automatically. Use the save menu to
 make the change persistent. An empty command disables automatic startup.
 
+To prepare the default startup command:
+
+```text
+CONFIG /DEFAULT
+```
+
+This prepares `SUBMIT STARTUP` as an **unsaved pending command**, then opens
+CONFIG's startup menu. Drive settings remain unchanged. It does not run the
+command or alter STARTUP.SUB. Inspect or edit it, then use H to save it with the
+normal confirmation. Exiting without saving discards the pending replacement.
+
 Command-line startup editing is also available:
 
 ```text
@@ -2547,10 +2558,8 @@ validation and save results before relying on a new configuration.
 #### 7.4 Planned extensions — not yet implemented
 
 The [CONFIG engineering specification](../engineering/CONFIG%20Specification.md)
-records remaining command-line equivalents for format-workbench field editing
-and `/DEFAULT`. The agreed defaults operation will
-load pending settings only, without automatic activation or saving; it is not
-yet implemented.
+records the runtime and backend gates for remaining proposals. Drive workbench
+CLI and startup-only `/DEFAULT` are implemented as described above.
 
 Configurable persistent IOBYTE defaults, printer tab/line-ending/form-feed
 policies, and serial-port settings are candidates for 1.0, subject to runtime
