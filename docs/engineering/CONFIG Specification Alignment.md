@@ -14,7 +14,7 @@ The spec's cost/backend gates remain required for proposed runtime facilities.
 | /SHOW | Active and saved physical/logical settings, saved startup; embedded CRC-32 validation; no external reference |
 | /STARTUP="..." | Confirmed, verified startup-only save; does not execute command |
 | /DEFAULT | Pending-only semantics agreed; implementation/default-domain sources open |
-| Drive command-line parity | Builds 006–007 physical fields and logical binding/format selection implemented; Build 008 scalar workbench fields implemented; sector-map CLI open |
+| Drive command-line parity | Builds 006–007 physical fields and logical binding/format selection implemented; Build 008 scalar workbench fields implemented; Build 009 single-slot sector-map fields implemented |
 | Persistent IOBYTE, printer and serial | Backend/space findings recorded in [runtime audit](CONFIG%20Runtime%20Audit.md); persistence and runtime prototype costs remain open |
 | Native build | Build 007 dual-profile ZSM4/LINK and cross assembly match at 14,716 bytes |
 
@@ -263,3 +263,36 @@ late-invalid request and protected A: request using independent public-API state
 snapshots. Whole disk images remain unchanged; cold boot restores saved state.
 Evidence: `build/config-edit-cli/run-dg__oori`. This increment has not yet had a
 new Model 4 interactive campaign or clean distribution rebuild.
+
+## Build 009: sector-map slot CLI and explicit-map validation
+
+`/EDIT=B /SLOT=1 /ID=200` edits an ID; `/CODE=0` through `/CODE=3` edits its
+packed size. One physical-order slot is accepted per invocation, optionally with
+scalar changes in the same validated request. Missing slots/values, duplicates,
+byte/slot/code overflow and late invalid fields fail before I/O. The CLI shares
+menu I's first-mixed seeding and bit packing; startup text and edit scratch now
+reuse exclusive transient storage, without changing the stack or workspace map.
+
+A live negative test exposed the setter's legacy uniform fast path dropping an
+explicit size map. CONFIG now invokes FDF.RSX's checked normalization before
+committing explicit maps, through both menu and CLI. Missing support and invalid
+maps leave active state unchanged. The underlying BIOS setter is unchanged;
+this is a CONFIG precommit safety correction, documented in source and manuals.
+
+Unit checks cover all 32 packed slots and four size codes on uniform and mixed
+starting maps, preserved bytes, parser rejection before I/O and FDF validation
+success/failure. Existing scalar/physical/logical/parser and 166 identity checks
+pass. Native ZSM4/LINK matches at 15,411 bytes with one validation profile:
+205 transient bytes remain, or 185 with a second profile. No resident growth.
+
+The real cpmsim campaign accepts an ID edit and a consistent mixed-size edit
+with FDF.RSX, rejects duplicate IDs, missing mixed support, invalid operands and
+protected A:, and checks every active byte, unchanged disk images and cold reset.
+Evidence: `build/config-edit-cli/run-afkjidqv`. The programmer guide's SYSGEN
+size statement is corrected to 3,700 bytes for Build 003 in this increment.
+
+Model 4 qualification passes with actual matrix-key input and four independent
+state snapshots: `build/test-results/config-map-cli-model4/run-y6f4ymoz`.
+The accepted ID changes only its selected byte; duplicate and inconsistent-size
+requests preserve the complete binding and unrelated state. The whole DMK is
+unchanged. This is focused qualification, not a clean distribution rebuild.

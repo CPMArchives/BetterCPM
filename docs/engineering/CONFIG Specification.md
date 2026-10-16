@@ -386,8 +386,8 @@ Some drive changes may be pending until cold boot.
 CONFIG must preserve the existing distinction between current, pending, and saved drive configuration.
 
 Builds 006–008 provide physical-profile, logical binding/format-selection and
-scalar format-workbench forms below. Sector-ID and size-map slot editing remain
-command-line implementation work.
+scalar format-workbench forms below. Build 009 adds sector-ID and size-map
+slot command-line editing.
 
 ## 12.6 Physical-profile command line (Build 006)
 
@@ -522,9 +522,40 @@ the existing validated binding API. Failure before commit leaves active state
 unchanged. Success resets only that logical drive's BDOS login state. This is
 active-only, requires no DISK.FDB, and returns without a prompt; persistence
 requires the separate save-all operation. It does not format or write media.
-Sector-ID and size-map slot editing remain interactive; their CLI is still open.
+Sector-ID and size-map slots also accept the Build 009 forms below.
 An unbound drive must first receive a valid binding, or an edit must supply a
 valid physical drive and complete backend-valid fields.
+
+---
+
+## Sector-map slot command line (Build 009)
+
+```text
+CONFIG /EDIT=B /SLOT=1 /ID=200
+CONFIG /EDIT=B /SPT=35 /SLOT=1 /CODE=0
+```
+
+`SLOT` is a one-based physical-order slot, 1–32. `ID` is the physical sector
+ID, 0–255. `CODE` is 0–3 for 128/256/512/1024-byte sectors. A slot requires
+`ID`, `CODE`, or both; neither field is allowed without a slot. Each operand
+appears once. Scalar fields may accompany the slot edit, in any order after
+`/EDIT=`, so SPT/maximum size and the map can be made consistent in one commit.
+One slot is edited per invocation. Other slots and unspecified fields survive.
+Duplicate IDs or inconsistent geometry are rejected by the existing backend.
+To exchange two IDs under uniqueness constraints, use an unused temporary ID or
+make multiple private edits in menu I before applying them together.
+
+The first size edit seeds all 32 packed slots from the current uniform size;
+subsequent edits preserve other packed slots. The menu and CLI share this code.
+Explicit size maps require FDF.RSX's checked normalization service before the
+binding setter is called. Missing support or an inconsistent map fails without
+an active update. This also closes a menu I safety gap: the legacy setter's
+uniform fast path could discard a requested size map while reporting success.
+CONFIG now validates the explicit map first instead of silently losing it.
+
+These are active binding-definition changes, not physical formatting. All
+normal backend limits, separate-save semantics and selected-drive reset apply.
+No disk write or confirmation occurs for these CLI commands.
 
 ---
 
@@ -1169,8 +1200,7 @@ CONFIG /SERIAL:n DSR=ON|OFF
 CONFIG /SERIAL:n XONXOFF=ON|OFF
 ```
 
-Scalar format-workbench command-line fields are specified in section 12.
-Sector-ID and size-map slot command-line syntax remains unresolved.
+Scalar and sector-map slot command-line fields are specified in section 12.
 
 ## Consolidation and implementation boundary
 
@@ -1178,7 +1208,7 @@ This specification is the reconciled CONFIG baseline. The implemented command
 summary above and sections 12 and 16 take precedence over older implementation
 notes describing A–E placeholders, an external SYSGEN.DAT reference, or wholly
 missing drive CLI support. The two save scopes and separate storage domains
-remain unchanged. `/DEFAULT`, sector-map CLI parity and the gated IOBYTE, printer
+remain unchanged. `/DEFAULT`, the gated IOBYTE, printer
 and serial proposals remain open; consolidation does not approve them or claim
 complete CONFIG qualification. See the [alignment record](CONFIG%20Specification%20Alignment.md)
 and [runtime audit](CONFIG%20Runtime%20Audit.md) for evidence and remaining gates.

@@ -660,6 +660,11 @@ class Z80:
                 self.carry = bool(self.l & 0x80)
                 self.l = (self.l << 1) & 0xFF
                 self.z = self.l == 0
+            elif op == 0xCB and self.mem[self.pc] == 0x22:  # SLA D
+                self.pc += 1
+                self.carry = bool(self.d & 0x80)
+                self.d = (self.d << 1) & 255
+                self.z = self.d == 0
             elif op == 0xCB and self.mem[self.pc] == 0x23:  # SLA E
                 self.pc += 1
                 self.carry = bool(self.e & 0x80)
@@ -742,6 +747,9 @@ class Z80:
                 self.z, self.carry = self.a == 0, False
             elif op == 0xA3:            # AND E
                 self.a &= self.e
+                self.z, self.carry = self.a == 0, False
+            elif op == 0xB2:            # OR D
+                self.a |= self.d
                 self.z, self.carry = self.a == 0, False
             elif op == 0xB4:            # OR H
                 self.a |= self.h
