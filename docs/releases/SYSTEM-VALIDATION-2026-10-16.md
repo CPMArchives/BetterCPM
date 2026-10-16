@@ -349,3 +349,120 @@ Final fingerprinted reruns (`file-directory-final/`) retain the same results:
 - `dirtest-aqui_a1e`: DIRTEST /SAFE — 49 pass; 0 listed not-run; zero fail/error.
 - `filetest-ejxhw4h6`: FILETEST /GROUP:REQUIRED — 68 pass; 2 listed not-run; zero fail/error.
 - `randtest-u68ftu1_`: RANDTEST /SAFE — 39 pass; 2 listed not-run; zero fail/error.
+
+
+## Console, BIOS, disk and logical-error continuation
+
+On private copies of the same hash-verified V002b cpmsim candidate:
+
+| Group | Pass | Observed | Not-run | Evidence under console-disk |
+| --- | ---: | ---: | ---: | --- |
+| BIOSTEST /SAFE | 5 | 11 | 30 | biostest-zzmarq0q |
+| ERRTEST /SAFE | 5 | 12 | 26 | errtest-ztf0_tv3 |
+| DISKTEST /SAFE | 7 | 0 | 0 listed | disktest-w25l0xbc |
+| DISKTEST /GROUP:REQUIRED | 11 | 0 | 6 | disktest-yqmuvvr8 |
+| CONSTEST /0052 through /0058 | 7 | 0 | other cases unselected | constest-output-h1ktac5e |
+
+All selected checks pass with zero fail/error. Disk required coverage includes
+the safe rows, so those seven are not additional unique passes. Its prepared D
+has full allocation but available directory slots (unlike FILETEST 0253's
+full-directory fixture). After the suite's allocation-failure/release checks,
+host cpmtools extracts BTFULL and compares every byte with the original
+128-record control file; the data is unchanged. The six terminal procedures
+remain not-run, not implicit passes.
+
+`run_validation_console.py` supplies each confirmation only after independently
+matching literal OBSERVED bytes and EXPECTED framing for the reviewed case.
+It does not parse the utility's own EXPECTED text into an oracle or blindly
+answer Yes. The seven cases cover Functions 2/9, literal dollar output,
+termination/empty strings and CR/LF. They do not qualify rendering, timing,
+input editing, or separate character devices.
+
+Instrument findings retained separately:
+
+- CONSTEST /SAFE still invokes confirmation prompts for required output cards,
+  despite its aggregate-mode commentary. The unattended run was stopped at
+  0052; no aggregate result is accepted. This selector is removed from the
+  generic unattended runner. Other interactive cases need explicit scripts.
+- DISKTEST's protection rows require a mounted B, even without destructive
+  scratch work. Its initial A-only run stopped at Bad Sector. Mounting private
+  B/C/D resolved it. The required allocation aggregate intentionally finishes
+  on A after Function 13; correcting the runner's expected return prompt
+  resolved a capture timeout after the already-completed eleven passing rows.
+
+### BDOS unit instrument repair and recovery coverage
+
+The old foundation harness decoded presumed CALL operands behind BIOS console
+vectors. Monitor routing had changed that instruction shape. It now supplies
+explicit deterministic public-BIOS character providers, including a
+nonblocking LIST sink and the BIOS-required FFh ready/7-bit input conventions.
+The test no longer purports to verify normalization inside a replaced BIOS
+provider. The production physical-read mapping remains in use for disk tests;
+fresh BIOS conformance and live console observations are separate evidence.
+
+With that instrument corrected, the current emitted 3,454-byte BDOS passes its
+foundation (directory/allocation/extents/record transfers, A/B/A workspace
+reconstruction; 26-byte private-stack high-water). The recovery campaign
+passes 24 wrapper success/ignore/abort combinations, then filesystem foundation
+paths with faults injected after candidate physical I/O (28-byte high-water).
+Evidence: `console-disk/bdos-foundation.log` and `bdos-recovery.log`.
+These are assembled-code unit/injection checks, not substitutes for ERRTEST
+physical-fault procedures and real operator recovery through a live CCP.
+
+
+### Live final-BIOS operator recovery
+
+`run_validation_faults.py` boots three separate private cpmsim disks, installs
+the reviewed FAULTMORE boundary provider and canonical BTONE, and observes the
+real candidate BDOS operator path. The provider first completes a healthy read,
+then installs one-shot failing final READ/WRITE entries, restoring each vector
+before reporting failure. It counts both provider hits.
+
+Fresh results (`console-disk/operator-recovery-k11vx70z/`):
+
+- With no answer, Bad Sector is printed and the read caller remains suspended
+  through a 0.5-second observation window.
+- I resumes the read and write callers; both failing provider calls are counted.
+- Ctrl-C abandons the read caller, rebuilds the CCP, and permits VER and BYE.
+
+All three pass, with source/program/fixture/emulator hashes, full transcripts,
+and original-image hash preservation recorded. This qualifies the final-BIOS
+boundary and live recovery; it does not prove controller retry behavior or
+promise data after ignored errors. No individual unexecuted ERRTEST fault card
+is relabelled as a pass. The separate 17-vector BIOS contract campaign also
+passes character transport, 80 reads/writes, failure paths and sector
+translation (`console-disk/bios-vectors.log`).
+
+### Model 4 first run and capture correction
+
+The first native run retained CPU and ecology screens, with 2 and 1 required
+passes respectively. DISKTEST /SAFE reported failures in 0373/0375/0376/0377.
+The runner incorrectly waited only for a passing summary, leaving the emulator
+idle at the CCP after the failed report. The user supplied a screenshot of the
+completed failures; it is retained with the original private disks and screens
+in `console-disk/model4-returning-vdyug6ff/`.
+
+The secondary fixture was also incorrectly formatted: default Model 4 B has
+OFF=0 and 800K data capacity, whereas the runner retained A's 20K system-track
+prefix. The corrected B image is entirely E5-formatted data. The runner now
+waits for the last row regardless of pass/fail, captures the completed report,
+and records failed results before raising an error. LaunchServices cleanup now
+terminates its own emulator if a capture is cancelled; normal/cancel/timeout
+paths are covered by `test_trs80gp_launch.py`. No OS code was changed for these
+instrument corrections. The corrected native rerun determines whether the
+four original reports are explained by that fixture mismatch.
+
+
+The corrected Model 4 screenshot now shows all seven DISKTEST /SAFE rows
+passing, including 0373/0375/0376/0377. With the boot prefix removed from OFF=0
+B, those original reports are resolved as a fixture error; no OS change or
+weaker disk oracle was needed. The same run retains CPU and ecology passing
+screens. This is the first fresh native Model 4 suite subset in this campaign,
+not a substitute for the still-pending wider Model 4 groups.
+
+
+Final native capture result: `console-disk/model4-returning-3ewl9l9z/result.json`
+records three passing groups (CPU 2 required, ecology 1, disk state 7), with
+program/fixture/emulator/baseline hashes and retained native screen captures.
+The baseline DMK hash remains unchanged. `model4-corrected.log` records normal
+completion of the emulator and capture runner.
