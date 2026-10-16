@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def session(simulator: Path, disks: Path,
-            commands: list[tuple[bytes, bytes, float]],
+            commands: list[tuple[bytes, bytes | None, float]],
             transcript_path: Path | None = None, *,
             rom_image: Path | None = None, rom_start: str | None = None,
             initial_prompt: bytes = b"A0>_ ") -> bytes:
@@ -39,7 +39,20 @@ def session(simulator: Path, disks: Path,
     transcript = bytearray()
     pending = bytearray()
 
-    def expect(wanted: bytes, timeout: float) -> None:
+    def expect(wanted: bytes | None, timeout: float) -> None:
+        # None is an external silence oracle: continue reading the PTY during
+        # the whole interval, rather than sleeping while output goes unseen.
+        if wanted is None:
+            if pending:
+                raise AssertionError(f"unexpected pending output: {bytes(pending)!r}")
+            ready, _, _ = select.select([terminal], [], [], timeout)
+            if ready:
+                data = os.read(terminal, 65536)
+                transcript.extend(data)
+                if transcript_path is not None:
+                    transcript_path.write_bytes(transcript)
+                raise AssertionError(f"expected silence for {timeout}s; received {data!r}")
+            return
         deadline = time.monotonic() + timeout
         while wanted not in pending:
             remaining = deadline - time.monotonic()
