@@ -8,7 +8,7 @@ descriptor-header	reserved	none	D644	D646	3	copy	D644	live descriptor magic and 
 extension-control-live	object	extension-control-live	D647	D657	17	copy	D647	live extension-control descriptor fields
 cpx-profile	object	cpx-profile	D658	D680	41	copy	D658	persistent CPX reconstruction profile
 gateway-tail-reserve	reserved	none	D683	D6BB	57	zero	none	fixed gateway growth and ROM-entry trampolines
-bdos-live-state	object	bdos-live-state	D6BC	D700	69	copy	E3CB	BDOS persistent and call-local state
+bdos-live-state	object	bdos-live-state	D6BC	D700	69	copy	E3CD	BDOS persistent and call-local state
 bdos-stack	object	bdos-stack	D701	D728	40	zero	none	private BDOS stack
 extension-live-state	object	extension-live-state	D729	D72D	5	zero	none	extension dispatcher call state
 physical-drive-profiles	object	z80pack-physical-drive-profiles	D72E	D745	24	copy	E951	live z80pack physical-drive profiles

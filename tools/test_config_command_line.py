@@ -51,8 +51,24 @@ def main():
         return image[start-256:end]
     assert zstring('TITLE')==banner('CONFIG').encode()
     menu=zstring('MAINMSG')
-    assert all(f'[ {x} ]'.encode() not in menu for x in 'ABCDE')
-    assert all(f'[ {x} ]'.encode() in menu for x in 'FGHIJ')
+    assert all(f'[ {x} ]'.encode() not in menu for x in 'FGHIJK')
+    assert all(f'[ {x} ]'.encode() in menu for x in 'ABCDES')
+    # Exercise the actual dispatch without entering any setting or save code.
+    targets={'A':'STARTMENU','B':'IO_MENU','C':'PHYSMENU','D':'LOGMENU',
+             'E':'EDITDRIVE','S':'SAVEMENU',chr(3):'DONE'}
+    for key,target in targets.items():
+        c,_=setup('')
+        reached=[]
+        for label in ('HEADER','PUTS'):
+            c.mem[address(listing,label)]=0xC9
+        choice=address(listing,'CHOICE')
+        c.mem[choice:choice+3]=bytes((0x3E,ord(key),0xC9))
+        for label in targets.values():
+            at=address(listing,label)
+            c.mem[at:at+5]=bytes((0x3E,list(targets.values()).index(label),0xD3,253,0xC9))
+        c.port_write=lambda port,value: reached.append(value)
+        c.run(address(listing,'MAIN'),limit=10000)
+        assert reached==[list(targets.values()).index(target)],(key,target,reached)
     print('PASS: CONFIG menu/identity, full-tail parser, quoted startup text, invalid requests and pure /VER')
 
 

@@ -6,8 +6,8 @@ command-history	all	D504	D5C3	192	built-in command history	cold boot through war
 system-stack	all	D618	D637	32	system gateway	one system-entry pass	fresh stack	fresh stack	stack	none	none	relocate to ROM-profile RAM
 extension-control-live	all	D647	D657	17	system gateway	boot session	copy descriptor defaults then publish live values	preserve or reconstruct by field	fixed subsystem state	none	gateway descriptor defaults	relocate to ROM-profile RAM
 cpx-profile	all	D658	D680	41	command reconstruction	boot session	copy default profile	preserve across warm boot	fixed subsystem state	none	default CPX profile	relocate to ROM-profile RAM
-bdos-live-state	all	E3CB	E40F	69	BDOS	boot session and individual calls	initialize CP/M defaults	preserve persistent fields; reset call-local fields	fixed subsystem state	none	BDOS state defaults	relocate to ROM-profile RAM
-bdos-stack	all	E410	E437	40	BDOS	one public BDOS call	fresh stack	fresh stack	stack	none	none	relocate to ROM-profile RAM
+bdos-live-state	all	E3CD	E411	69	BDOS	boot session and individual calls	initialize CP/M defaults	preserve persistent fields; reset call-local fields	fixed subsystem state	none	BDOS state defaults	relocate to ROM-profile RAM
+bdos-stack	all	E412	E439	40	BDOS	one public BDOS call	fresh stack	fresh stack	stack	none	none	relocate to ROM-profile RAM
 extension-live-state	all	E591	E595	5	extension dispatcher	one extension or adapter call	clear	clear or overwrite before use	fixed subsystem state	none	none	relocate to ROM-profile RAM
 trs80-physical-drive-profiles	trs80	E96E	E985	24	disk service	boot session	copy default physical profiles	preserve live configuration	fixed subsystem state	none	TRS-80 physical-profile defaults	relocate to ROM-profile RAM
 trs80-disk-session-state	trs80	E986	E990	11	disk service	boot session and individual transfers	initialize invalid/no-selection defaults	preserve selection; reset invalidated context	fixed subsystem state	none	TRS-80 disk session defaults	relocate to ROM-profile RAM

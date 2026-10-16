@@ -73,17 +73,17 @@ MAIN:   LD HL,TITLE                     ; enter CONFIG utility
         CALL CHOICE
         CP 3
         JP Z,DONE
-        CP 'H'
+        CP 'S'
         JP Z,SAVEMENU
-        CP 'I'
+        CP 'E'
         JP Z,EDITDRIVE
-        CP 'J'
+        CP 'A'
         JP Z,STARTMENU
-        CP 'K'
+        CP 'B'
         JP Z,IO_MENU
-        CP 'F'
+        CP 'C'
         JP Z,PHYSMENU
-        CP 'G'
+        CP 'D'
         JP Z,LOGMENU
         JP MAIN                    ; only implemented domains are offered
 
@@ -3030,13 +3030,13 @@ CL_NAME:DS 32
 ; @utility-title CONFIG@
 
 MAINMSG:DB 'Configuration options:',13,10,13,10 ; main-menu text
-        DB '[ F ] Disk drive definitions',13,10
-        DB '[ G ] Disk format definitions',13,10
-        DB '[ H ] Save current configuration on disk (SYSGEN)',13,10,13,10
-        DB '[ I ] Create or edit a disk format',13,10
-        DB '[ J ] Startup command',13,10
-        DB '[ K ] Cold-boot IOBYTE',13,10,13,10
-        DB 'Select [ F - J ], or BREAK (^C) to exit.',13,10,0
+        DB '[ A ] Startup command',13,10,13,10
+        DB '[ B ] Cold-boot IOBYTE',13,10,13,10
+        DB '[ C ] Disk drive definitions',13,10
+        DB '[ D ] Disk format definitions',13,10
+        DB '[ E ] Create or edit a disk format',13,10,13,10
+        DB '[ S ] Save current configuration on disk (SYSGEN)',13,10,13,10,13,10
+        DB 'Select [ A - E or S ], or BREAK (^C) to exit.',13,10,0
 
 
 PHYHEAD:DB 'Disk drive selections',0    ; physical yhead

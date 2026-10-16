@@ -17,7 +17,7 @@ from system_layout import LAYOUT
 # private live-state addresses follow the repacked layout.
 EXPECTED_REFERENCES = {
     "gateway": 23,
-    "bdos": 500,
+    "bdos": 501,
     "extensions": 57,
     "disk": 82,
     "bios": 124,
@@ -26,14 +26,14 @@ EXPECTED_REFERENCES = {
 }
 EXPECTED_DISCOVERED = {
     "gateway": 26,
-    "bdos": 500,
+    "bdos": 501,
     "extensions": 57,
     "disk": 82,
     "bios": 124,
     "fileloader": 13,
     "tables": 16,
 }
-EXPECTED_CLASSES = {"immutable-rom": 476, "live-ram": 323}
+EXPECTED_CLASSES = {"immutable-rom": 476, "live-ram": 324}
 EXPECTED_OVERLAY_CLASSES = {"immutable-rom": 3, "live-ram": 102}
 EXPECTED_OVERLAY_REFERENCES = 105
 
@@ -65,7 +65,7 @@ def main() -> None:
         raise AssertionError("packed-code reference counts changed")
     if inventory["target_class_counts"] != EXPECTED_CLASSES:
         raise AssertionError("ROM/RAM reference classification changed")
-    if inventory["reference_count"] != 799:
+    if inventory["reference_count"] != 800:
         raise AssertionError("packed-code reference total changed")
     if (inventory["overlay_discovered_word_count"] !=
             EXPECTED_OVERLAY_REFERENCES or
@@ -153,7 +153,7 @@ def main() -> None:
             any(row["target_class"] != "immutable-rom"
                 for row in extension_entries)):
         raise AssertionError("Extension entry references lost ROM semantics")
-    print("ROM address inventory verified: 799 packed-code words and 105 CONFIG "
+    print("ROM address inventory verified: 800 packed-code words and 105 CONFIG "
           "overlay words; no unresolved references")
 
 

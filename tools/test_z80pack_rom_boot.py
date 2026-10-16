@@ -32,10 +32,10 @@ def main() -> None:
     if (manifest["boot_integrated"] is not True or
             manifest["protected_xip_qualified"] is not False):
         raise AssertionError("ROM boot manifest overclaims or omits boot status")
-    if (manifest["entry"] != 0xFE10 or manifest["stub_bytes"] != 34 or
+    if (manifest["entry"] != 0xFE12 or manifest["stub_bytes"] != 34 or
             manifest["reloader_reference_count"] != 44 or
             manifest["ccp_external_reference_count"] != 72 or
-            manifest["spare_bytes"] != 462):
+            manifest["spare_bytes"] != 460):
         raise AssertionError("accepted ROM boot layout changed")
     config_report = json.loads(
         (image / "rom/rom-config.json").read_text(encoding="ascii"))
@@ -177,6 +177,10 @@ expect eof
                 }
                 for match in pattern.finditer(transcript)
             }
+            # Retain high-water evidence even when reserve acceptance fails.
+            args.stack_report.write_text(
+                json.dumps({"stacks": stacks}, indent=2, sort_keys=True) + "\n",
+                encoding="ascii")
             expected = {
                 "loader": (LAYOUT["STACK_LOW"], LAYOUT["STACK_TOP"],
                            LAYOUT["STACK_TOP"] - LAYOUT["STACK_LOW"]),
@@ -192,9 +196,6 @@ expect eof
                     raise AssertionError(f"{name} stack layout changed: {measured}")
                 if measured["used"] <= 0 or measured["margin"] < 8:
                     raise AssertionError(f"{name} stack lacks measured reserve: {measured}")
-            args.stack_report.write_text(
-                json.dumps({"stacks": stacks}, indent=2, sort_keys=True) + "\n",
-                encoding="ascii")
     protected = f" under enforced {args.rom_start}h protection" if args.rom_start else ""
     print("ROM cold entry verified" + protected + ": RAM initialized, relocated "
           "BIOS BOOT entered, relocated disk reloader reached A0>, DIR, "

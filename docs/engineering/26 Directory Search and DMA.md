@@ -19,7 +19,8 @@ The current implementation supports:
 - drive `?`, meaning the current drive across all user numbers;
 - `?` wildcards in filename, type, and extent fields through `EX`;
 - comparison with filename/type attribute bits masked; and
-- five-bit comparison of a non-wildcard `EX` value.
+- five-bit comparison of a non-wildcard `EX` value with both values grouped
+  by the active DPB extent mask (`EXM`).
 
 Ordinary Search First clears FCB `S2` automatically. The special all-user
 drive-`?` form preserves it. Explicit drives B through P remain unavailable
@@ -89,3 +90,19 @@ bytes for BDOS.
 Engineering Specification 27 completes the unchanged-FCB portion of function
 16 without media mutation. The next increment can add the directory writeback
 and validation required for a dirty Close commit.
+
+
+## Validation correction: extent-group comparison
+
+System validation on 2026-10-16 found that literal EX comparison rejected an
+EX=0 search for a 16,768-byte file stored as EX=1 on an EXM=1 disk. Function 17
+now compares `(FCB.EX XOR directory.EX) AND NOT EXM AND 1Fh`, consistent with
+DRI CP/M 2.2 `searchext`/`compext`. Filename/type comparisons and EX='?' remain
+unchanged; name-only iterators used by other file operations do not compare EX.
+The default DMA was already correct and is unchanged.
+
+The field-index calculation is shared with the comparison, saving four bytes;
+the complete fix adds two resident bytes. BDOS occupies its existing 3,454-byte
+reservation, and unloaded TPA remains 53K. Internal state moves two bytes;
+ROM ownership/template anchors and measured relocation counts follow the new
+build. No public descriptor or interface grows.
