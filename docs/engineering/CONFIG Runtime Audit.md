@@ -121,3 +121,10 @@ to post-1.0. Earlier statements that no deferral was approved describe the audit
 or prototype stage and are superseded for printer work. Preserve this evidence
 for the [post-1.0 work item](../releases/POST-1.0-CONFIG-POLICY-STUDY.md#printer-rsx-implementation-follow-up--2026-10-16).
 The separate serial proposal remains undecided.
+
+## Serial scheduling follow-through — 2026-10-16
+
+The maintainer has also moved serial support and CONFIG serial configuration
+to post-1.0. This supersedes the earlier open serial decision. See the
+[backend audit](CONFIG%20Serial%20Backend%20Audit.md) and
+[roadmap](../releases/POST-1.0-CONFIG-POLICY-STUDY.md#serial-support-follow-up--2026-10-16).
