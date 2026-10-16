@@ -685,3 +685,59 @@ Instrument corrections are retained separately:
   the passing checks. Audits were rerun on the same retained disks, and the
   result manifest now contains both successful audits. Future results remain
   pending/error until audits complete, separately from the suite verdict.
+
+### Native Model 4 BDOS required group
+
+The prepared native BDOSTEST /GROUP:REQUIRED run passes 56 cases, with zero
+failures/errors, on the unchanged V002b Model 4 candidate. Three manual required
+procedures remain not run. Evidence: `model4-bdos/bdostest-ksglji1p/`, including
+fixture/program/baseline/emulator hashes, the readiness and final native screen
+captures, and initial/final private disk hashes. Both data filesystems pass the
+explicit-raw extent/connectivity checks. All 29 shipped System Disk files are
+unchanged in the independent record-byte audit. No native BDOS defect was found
+in this selected group.
+
+### V003 — transient-entry page-zero drive byte
+
+Fresh pinned CCPTEST /GROUP:REQUIRED on V002b reports 11 passes, one failure
+(0007), and 29 not-run cards in `ccp-returning/ccptest-myd99ji8/`. An independent
+probe confirms page-zero 0004h=AFh while BDOS reports drive A/user 0; source review
+finds no CCP initialization of that byte. The probe's source, assembly and
+transcript are retained in `ccp-returning/pagezero-itofokb_/`.
+
+DRI's [CP/M 2.2 CCP source](https://github.com/brouhaha/cpm22/blob/master/ccp.asm)
+(`saveuser`, `setdiska`, `readcom`) distinguishes packed prompt-time user/drive
+state from the drive-only byte used after command acquisition. The fix publishes
+the caller's default drive from Function 25 immediately after temporary lookup
+DU restoration and before protected loader handoff. BDOS still owns live drive
+and the full 0..31 user state; 0004h is not made authoritative for warm start.
+The command-entry contract is recorded in FULL-TPA-COM-LOADING.md.
+
+The CCP grows 5442 to 5450 bytes; allocation stays 5632, relocations stay 488,
+and the module is 6474 bytes within the 6656-byte carrier. No BIOS/BDOS layout or
+unloaded TPA change is needed. Focused CCP parsing/navigation/CPX tests pass.
+The loader EOF/error/fallback providers now also verify the published caller
+drive, starting with a poisoned 0004h; all eight combinations pass.
+
+The diagnostic carrier candidate passes 12 automatic CCP cases and 25 entry
+cases. Its independent A0/A3/B3 probe loads A0:PZPROBE while correctly publishing
+the caller's drive and retaining its user. The first diagnostic probe mistakenly
+used drive-only A:PZPROBE while in user 3, where the file was absent; that failed
+instrument transcript is retained separately in `v003-candidate/`, not called
+an OS regression. The corrected DU probe is in `v003-candidate-du/`.
+
+An isolated production cpmsim System Disk was then rebuilt and qualified from
+current sources, not patched media:
+`/private/tmp/bettercpm-validation-v003/release-575684f2c167-7ea54835900f/z80pack/`.
+Its source-input hashes identify the local V003 change atop 575684f; this is not
+a claim of a clean merged release revision. Boot, manifest, file integrity,
+CONFIG binding and filesystem qualification pass (`v003-distribution.log`).
+On this rebuilt image, CCPTEST reports 12 pass/29 not run in
+`ccp-production/ccptest-iny0q020/`, and ENTRYTST reports 25 pass/13 not run in
+`ccp-production/entrytst-t78fg4ut/`. No failures/errors. The independent caller-DU
+probe also passes on an unchanged production carrier in
+`ccp-returning/v003-production-probe/`. Original reference hashes are unchanged.
+
+V003 is corrected and live-qualified on cpmsim. The native Model 4 post-fix run,
+guarded-ROM regression and final rebuilt-image acceptance remain pending; earlier
+native results explicitly refer to V002b. Conformance validation remains partial.

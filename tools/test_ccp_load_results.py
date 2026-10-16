@@ -4,9 +4,11 @@ from pathlib import Path
 from build_ccp import assemble
 from test_ccp import cpu,symbol,BASE
 from system_layout import LAYOUT
-R=Path(__file__).resolve().parents[1];W=R/'build/compatibility/loader-results';W.mkdir(exist_ok=True)
+R=Path(__file__).resolve().parents[1];W=R/'build/compatibility/loader-results';W.mkdir(parents=True,exist_ok=True)
 source='''        ORG %d
         LD A,C
+        CP 25
+        JR Z,DRIVE
         CP 32
         JR Z,USER
         CP 26
@@ -28,6 +30,8 @@ OPEN:   LD HL,0F109H
         LD A,0FFH
         RET
 FOUND:  XOR A
+        RET
+DRIVE:  LD A,3
         RET
 USER:   LD A,E
         CP 0FFH
@@ -59,7 +63,7 @@ PROGRAM: DB 03EH,1,032H,4,0F1H,0C3H,0FFH,0FFH
 stub=assemble(Path('/Users/nathanael/bin/z80asm'),source,W/'provider.bin',W/'provider.lst',LAYOUT['BDOS'])
 for fallback in (0,1):
  for result in (1,2,0xFF,0):
-  m=cpu();m.sp=0xF300;m.mem[0xF108]=fallback
+  m=cpu();m.sp=0xF300;m.mem[0xF108]=fallback;m.mem[4]=0xAF
   for key,name in [('SYSTEM','gateway'),('EXTENSIONS','extensions')]:
    data=(R/f'build/system/{name}.bin').read_bytes();base=LAYOUT[key];m.mem[base:base+len(data)]=data
   m.mem[0:3]=bytes([0xc3,0xff,0xff])  # record warm-boot handoff without rebuilding
@@ -81,6 +85,7 @@ for fallback in (0,1):
    raise AssertionError(f'COM probe stopped at {m.pc:04X}h SP={m.sp:04X}h head={m.word(LAYOUT["SYSTEM"]+0x86):04X} shutdown={m.mem[0xF107]:02X} stack={stack}') from error
   assert m.mem[0xF106]==7,'caller user was not restored'
   assert m.mem[0xF107]==1 and m.word(LAYOUT['SYSTEM']+0x86)==0,'COM handoff did not shut down the CPX chain exactly once'
+  assert m.mem[4]==3, 'page-zero drive did not follow caller-context loader handoff'
   if result==1:
    assert m.mem[0xF104]==1,'EOF did not execute the complete image'
    assert m.mem[0x5d:0x65]==b'ONE     ' and m.mem[0x6d:0x75]==b'TWO     '
