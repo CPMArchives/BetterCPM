@@ -28,9 +28,9 @@ The source checkout was clean and was not modified. A private clone at
 | Stage | Status | Evidence / next work |
 | --- | --- | --- |
 | 1. Clean builds, contents, boot, baseline console/memory | In progress; initial gates pass | Both distributions pass build/boot/integrity; focused BIOS/CCP and native editing/unload pass. Additional console/startup-failure/repeated-return cases remain. |
-| 2. Fresh conformance suite | Partial groups pass on both platforms | Fresh ENTRYTST, CPUTEST, ECOTEST, BDOSTEST required, DIRTEST safe, FILETEST required and RANDTEST safe results below. Selected console, disk/BIOS/error and native Model 4 checks also pass below; remaining cases and CCP procedures are still pending; V004 correction is partially qualified below. |
+| 2. Fresh conformance suite | Partial groups pass on both platforms | Fresh ENTRYTST, CPUTEST, ECOTEST, BDOSTEST required, DIRTEST safe, FILETEST required and RANDTEST safe results below. Selected console, disk/BIOS/error and native Model 4 checks also pass below; remaining cases and CCP procedures are still pending; V004 passes the cpmsim and manual-native checks with the post-run audit below. |
 | 3. CPX/RSX lifecycle, relocation, ROM protection | Protected ROM candidate campaigns pass | Fresh V002/V003 guarded ROM, lifecycle, workspace and stack results below; wider RAM/native lifecycle coverage remains. |
-| 4. Resident/transient command integration | Not run | Selectors, protection, prompts, explicit transient invocation, feature diagnostics and caller-state restoration. |
+| 4. Resident/transient command integration | Partial; four resident ecology procedures pass on cpmsim | Selectors, protection, prompts, explicit transient invocation, feature diagnostics and caller-state restoration. |
 | 5. Utility operations and failure recovery | Not run | System-disk utilities only; disposable images and independent filesystem inspection. |
 | 6. Monitors and applications | Not run | Fresh cross-platform campaign; do not substitute earlier feature-specific results. |
 | 7. End-to-end release workflows | Not run | User sessions, configuration persistence, system export/install and reboot. |
@@ -835,7 +835,7 @@ or reporting an unknown file/disk error; the caller's state and working prompt
 return. This gives 10 external user-zero observations in
 `ccp-full-tpa/ccp-returns-ngxj73j9/`. It does not close cross-user coverage.
 
-### V004 — correction implemented; native full-TPA qualification pending
+### V004 — corrected: cpmsim and manual-native qualification plus file audit
 
 The full-TPA run from caller B3, explicitly loading B0:ERET, executes a truncated
 program. After the independent pre-paint, the first wrong payload byte is at
@@ -1017,3 +1017,62 @@ The V005 cpmsim candidate also passes a fresh one-cycle full-TPA return run:
 RET, JP 0 and Function 0 from A0/B3/B31 plus oversize rejection (10 external
 checks), in `v005-full-tpa/ccp-returns-697tmih9/`. This verifies the presentation
 change did not regress the newly corrected cross-user loader paths.
+
+## Post-loader validation continuation
+
+### Native manual-test disk audit — PASS
+
+After the user's RET, JUMP, Function-0 and oversize observations, a stable host
+snapshot was taken of `/private/tmp/BetterCPM-manual-loader/a.dmk`; hashes before
+and after copying matched. Snapshot SHA-256:
+`1deac72546d51801f6220b356cab8d5914a50785757b755de0fd282750b1cd6c`.
+No emulator was launched or modified for this audit.
+
+Independent extraction compares all 28 shipped files other than the declared
+STARTUP.SUB override against the original candidate: every file is unchanged.
+The banner-only STARTUP.SUB and all six fixtures (STATE, PAINT, ERET, EJUMP,
+EFN0, OVERRET) also match their expected contents at record granularity in the
+correct users. The reserved system area is byte-identical, and read-only
+`fsck.cpm -T raw` passes extent-field/connectivity checks. Evidence, extraction
+outputs, hashes, audit runner and filesystem report are in
+`v004-manual-model4/post-run-audit/`.
+
+This closes V004's outstanding independent native disk audit. Together with
+the manual screenshots and cpmsim fault/boundary results, the requested loader
+checks pass. The earlier automatic native capture remains an incomplete
+instrument run, not a retroactive pass. Final merged-revision acceptance and
+other campaign stages still remain.
+
+### ECOTEST external resident-command procedures — cpmsim PASS
+
+The pinned, unmodified `suite/src/ECOTEST.ASM` procedures for 0569, 0575,
+0577 and 0579 were exercised at the real CCP on private V005 disks.
+`tools/run_validation_resident_ecology.py` records the procedure-source,
+runner, simulator and fixture hashes. Final evidence:
+`resident-ecology/resident-ecology-qozlon94/`.
+
+- **0569 semantic set:** DIR lists the actual padded KEEP.TXT entry; REN changes
+  KEEP.TXT to NEW.TXT; TYPE emits its known content; ERA removes NEW.TXT;
+  USER 3 is independently observed through public state, then restored. SAVE
+  is verified as described below. The caller returns to A0 and test files
+  are removed.
+- **0575 SAVE mapping:** resident POKE initializes every byte 0100h..01FFh to
+  00h..FFh, with no transient execution or warm reconstruction before
+  `SAVE 1 ECOSAVE.COM`. Independent host extraction proves the file is exactly
+  256 bytes with that pattern. It is then erased through resident ERA.
+- **0577 TYPE byte stream:** an exact 128-byte record contains graphics, CR/LF
+  and BEL (07h), without padding or an embedded text EOF. The captured output
+  contains the complete exact record. This tests control-byte transport;
+  terminal presentation is not substituted for byte evidence.
+- **0579 ordinary recovery:** DIR, ERA, REN and TYPE use missing filenames;
+  SAVE uses an invalid page count. Each emits the expected diagnostic, returns
+  a usable B0 prompt, preserves D=01/U=00/TOP=D501, and permits a subsequent
+  resident TYPE of the known file.
+
+Both sessions terminate normally. Independent checks find the B: scratch
+filesystem empty and clean, the A0 STATE fixture removed, and all 30 shipped
+System Disk files byte-identical to the baseline. The original baseline hash
+is unchanged. Five bad-command subcases and the other three observations are
+not eight new suite rows: these are external evidence for four manual cards.
+The suite's aggregate output is not rewritten. Native equivalents and the
+remaining manual/device/terminal-outcome cases are still outstanding.
