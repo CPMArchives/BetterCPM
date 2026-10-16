@@ -431,8 +431,7 @@ def main():
                       'emulator_sha256':digest((a.simulator if target=='z80pack' else a.emulator).read_bytes()),
                       'included':included, 'omitted':omitted, **totals,
                       'validation':{'filesystem':'PASS','file_integrity':'PASS','config_fingerprint':'PASS','boot':boot_result},
-                      'issues':['Existing core VER reports BetterCP/M 0.3; version presentation requires separate review',
-                                'Utilities/CPM Tools media and additional on-disk documentation deferred']}
+                      'issues':['Utilities/CPM Tools media and additional on-disk documentation deferred']}
             (out/'report.json').write_text(json.dumps(report,indent=2)+'\n')
             shutil.copy2(root/'build.log',out/'build.log')
             reports.append((out,image,report))

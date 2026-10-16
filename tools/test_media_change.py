@@ -92,6 +92,6 @@ for p in sorted(W.glob('trs80-text-*.bin')):
 (W/'screens.txt').write_text('\n\n--- SCREEN ---\n\n'.join(s));print(W);print(s[-1])
 
 if mode=='write':
- assert 'Disk R/O' in s[-1] and 'WRITE CALLER RESUMED' not in s[-1] and 'BetterCP/M 0.3' in s[-1]
+ assert 'Disk R/O' in s[-1] and 'WRITE CALLER RESUMED' not in s[-1] and 'BetterCP/M 0.90' in s[-1]
 if mode=='reset':
  assert 'RESET AND NEW FILE PASSED' in s[-1] and 'FIXTURE FAILED' not in s[-1]

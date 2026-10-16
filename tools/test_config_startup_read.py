@@ -96,7 +96,7 @@ def main() -> None:
     run_case("test-disabled", image,
              ("There is no pending startup command to test.",),
              ("T",))
-    run_case("test-now", image, ("BetterCP/M 0.3",),
+    run_case("test-now", image, ("BetterCP/M 0.90",),
              ("E", "VER\r", "T"), final_delay=5000)
 
     maximum = extract_raw(image)

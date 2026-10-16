@@ -40,7 +40,8 @@ EX_ENTRY:                               ; enter protected extension layer
         JP Z,LY_DISK
         LD      (EX_OLDSP),SP
         PUSH    IX
-        LD      A,C
+  ; Entry A still holds C: LD (EX_OLDSP),SP and PUSH IX preserve it.
+  ; Reuse it so the longer 0.90 release string fits the existing region.
         CP      176
         JR      Z,BF_CPXCTL
         CP      177

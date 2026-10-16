@@ -20,7 +20,9 @@ Direct results skip ordinary completion pauses and return to the CCP through
 binding cleanup. Restoration failure retains the interactive retry; it cannot
 be bypassed by direct invocation. There is no confirmation-bypass option.
 
-DUP is 8,247 bytes, an increase of 378 transient bytes over the prior build.
+Current Build 003 DUP is 8,267 bytes. The original Build 002 command-line
+change added 378 transient bytes; that historical delta is not the current
+binary size.
 BIOS, BDOS, RCP and permanent RAM allocations are unchanged. No new disk backend
 service or command-tail extension is introduced.
 

@@ -19,7 +19,7 @@ BC_VLEN:
 BC_VOPT:       DB      '/BANNER'
 BC_VBANT:      DB      13,10
                DB      '------------------------------',13,10
-               DB      '        BetterCP/M 0.3',13,10
+               DB      '        BetterCP/M 0.90',13,10
                DB      'An enhanced CP/M-compatible OS',13,10
                DB      '             ----',13,10
                DB      'Type TYPE README.TXT for more',13,10

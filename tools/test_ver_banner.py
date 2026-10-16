@@ -5,7 +5,7 @@ from test_utility_versions import runner, output, address
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED = "\r\n" + "\r\n".join([
     "------------------------------",
-    "        BetterCP/M 0.3",
+    "        BetterCP/M 0.90",
     "An enhanced CP/M-compatible OS",
     "             ----",
     "Type TYPE README.TXT for more",
@@ -22,7 +22,7 @@ def main():
         c.b = len(data)
         c.run(address(listing, "BC_VER"), limit=100000)
         expected = EXPECTED if tail == "/BANNER" else (
-            "\r\nBetterCP/M 0.3\r\n" if not tail else "\r\n?\r\n")
+            "\r\nBetterCP/M 0.90\r\n" if not tail else "\r\n?\r\n")
         assert output(c) == expected, (tail, repr(output(c)))
     resident = (ROOT / "build/cpx/rcp.bin").read_bytes()
     listing = (ROOT / "build/cpx/rcp.lst").read_text()
