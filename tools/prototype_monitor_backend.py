@@ -52,7 +52,8 @@ def allocation_probe(core,backend):
     stage.FILES=(("R3PACK  ","build/system/R3PACK.RSX"),
                  (backend['name'].ljust(8),str((OUT/(backend['name']+'.RSX')).relative_to(ROOT))),
                  (core['name'].ljust(8),str((OUT/(core['name']+'.RSX')).relative_to(ROOT))))
-    cpu=Z80((ROOT/'build/bios/bios.bin').read_bytes())
+    biosdir=ROOT/('build/bios' if backend['name']=='PM4SCR' else 'build/audit/release-090-z80pack')
+    cpu=Z80((biosdir/'bios.bin').read_bytes())
     for (_,path),address in zip(stage.FILES,(0x7800,0xB800,0xBC00)):
         image=(ROOT/path).read_bytes();cpu.mem[address:address+len(image)]=image
     with tempfile.TemporaryDirectory() as temporary:

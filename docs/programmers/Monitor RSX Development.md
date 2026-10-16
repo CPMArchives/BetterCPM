@@ -269,3 +269,15 @@ own qualification is complete.
 
 This is source scaffolding, not a runtime TCAP database, universal terminal
 translator or new BIOS ABI. The general TCAP design remains post-1.0 work.
+
+## Unloadable backend integration status
+
+`SCRN` is reserved for screen-backend callable metadata. The production
+normalizer currently requires ABI 1.0, STATEFUL reconstruction and exactly the
+matching Model 4/cpmsim platform capability, using the same admission checks as
+MCON. This reserves and validates the identity; it does not yet implement
+personality dependencies or publish the prototype operation table as a final
+ABI. Do not cache a SCRN lookup address inside a movable personality and assume
+that the existing manager will repair it. Dependent monitor activation remains
+unsupported until profile validation and commit-time rebinding are integrated.
+See the [production integration record](../engineering/Monitor%20Backend%20Production%20Integration.md).
