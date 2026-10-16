@@ -2,7 +2,7 @@ utility	version	build
 STAT	1.0	1
 COPY	1.0	1
 DIR	1.0	3
-CONFIG	1.0	11
+CONFIG	1.0	12
 DUP	1.0	3
 TIME	1.0	1
 SYSGEN	1.0	4

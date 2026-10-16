@@ -109,8 +109,8 @@ This is one suite program on one target, not a complete conformance result.
   Disk omissions. Record this for the separate documentation-alignment phase;
   it is not an OS failure or a reason to change validated runtime artifacts.
 
-No OS defect has been identified by the executed checks so far. Most campaign
-coverage remains pending, so that statement is not an acceptance verdict.
+The initial baseline checks did not identify an OS defect. The subsequent
+returning-suite checks below found V001; validation is not an acceptance verdict.
 
 ## Immediate continuation
 
@@ -119,3 +119,116 @@ multi-drive suite fixtures and the current capture runner, then execute the
 remaining conformance programs, retaining per-item classifications and explicit
 operator/fault-injection requirements. Fix blocking defects as found and rerun
 the affected checks before broadening the campaign.
+
+
+## Returning-suite continuation
+
+`tools/run_validation_returning.py` prepares fresh private baseline copies,
+checks baseline and rebuilt program hashes, retains per-item classifications,
+and verifies that the immutable reference image remains unchanged.
+
+- ENTRYTST /GROUP:REQUIRED: 23 pass, 2 fail (0023/0024), 13 not-run.
+  Evidence: `build/validation/8127eab/returning/entrytst-1uthwa_n/`.
+- ENTRYTST /0023 reproduces alone: `entrytst-q96azx64/`.
+- ECOTEST /GROUP:REQUIRED initially failed 0513 because the runner omitted
+  the documented one-record BTONE.DAT fixture (`ecotest-cvstux1t/`). The runner
+  now verifies and installs that fixture. A fresh run (`ecotest-4be9cj4p/`)
+  reports 1 pass, 0 fail/error, 4 not-run. This is a resolved instrument issue;
+  the first transcript remains retained, not relabelled as a pass.
+
+**V001 — corrected; original returning-suite regression passes.** ENTRYTST's FCB
+requests EX=0, while its 16,768-byte file has EX=1 in this disk's EXM=1
+physical extent. An independent probe returns FF with EX=0 even after explicit
+DMA=0080h, but succeeds with EX='?' and writes the expected default DMA.
+The loader already resets the DMA correctly. DRI's
+[BDOS source, `searchloop`/`searchext` and `compext`](https://github.com/brouhaha/cpm22/blob/master/bdos.asm)
+masks EXM bits when comparing extents; BetterCP/M's UB_ITLIT currently compares
+literal low-five-bit EX values. Thus these failing rows expose a search
+compatibility defect, not a default-DMA defect or an invalid test. Correct the
+comparison within the resident budget, add focused EXM coverage, and rerun the
+original unmodified suite before closing V001.
+
+The first focused-BDOS attempt also found an instrument prerequisite: this
+isolated distribution build does not generate `build/bdos/directory.bin`, which
+`test_bdos.py` expects. No BDOS pass is claimed from that unsuccessful launch.
+
+## CONFIG menu change during validation
+
+CONFIG Build 012 rearranges the menu to A startup, B IOBYTE, C drives,
+D formats, E format editor and S save. All destinations plus Ctrl-C exit pass
+the dispatch check; native ZSM4/LINK and cross assembly are byte-identical at
+15,431 bytes. This is a post-baseline candidate and must be included in the next
+qualified distribution build; it does not alter the immutable 8127eab evidence.
+
+
+## V001 correction and candidate qualification
+
+The corrected production iterator masks EXM on both FCB and directory EX.
+A shared field-index calculation saves four bytes, keeping the net growth to
+two bytes: BDOS is now 3,454/3,454 bytes, with no TPA or public ABI change.
+Native ZSM4/LINK and host assembly are byte-identical. Focused execution covers
+EXM 0/1/3/7/15, same/different groups, EX high bits, wildcard EX, name mismatch,
+and the name-only path. Evidence: `v001-native-bdos-qualified.log` and
+`v001-extent-groups.log` beneath `build/validation/8127eab/`.
+
+The two-byte code growth shifts BDOS state/template anchors. Checked ownership
+and ROM packing measurements are updated: 5,520 immutable source bytes,
+800 packed-code relocation words (one additional live DPB reference), ROM boot
+entry FE12h, 460 bytes spare after boot integration. These are measured updates;
+no inventory completeness or protection checks are removed.
+
+A clean isolated candidate build, including CONFIG Build 012, passed both
+platforms' filesystem, file-integrity, CONFIG-fingerprint and boot gates:
+`/private/tmp/bettercpm-validation-v001i/release-d58b15bf0646-7935825168c7/`.
+This candidate is based on d58b15b plus local changes, **not** a new clean Git
+revision. Its source-input hashes are retained in the reports.
+
+| Target | Files | Free | SHA-256 |
+| --- | ---: | ---: | --- |
+| cpmsim | 30 | 148 KiB | `2bb183647e6cdb36c111bb071088d1470add0ab446cd5ae9221a3ebfb2472e93` |
+| Model 4 | 29 | 596 KiB | `b63d062ebe38249ed24490414f9f5df572efcecced6af080b7e43e0ba0619a54` |
+
+The conformance reference copy is hash-identical to that published candidate.
+Original, unmodified rebuilt suite programs report:
+
+| Command | Pass | Fail/error | Observed | Not-run/excluded | Evidence directory under v001-returning |
+| --- | ---: | ---: | ---: | ---: | --- |
+| ENTRYTST /GROUP:REQUIRED | 25 | 0 | 0 | 13 | entrytst-wuj1mz44 |
+| BDOSTEST /GROUP:GATEWAY | 9 | 0 | 5 | 3 | bdostest-8od1sn6o |
+| CPUTEST /ALL | 2 | 0 | 1 | 2 | cputest-u2rj9vbi |
+| ECOTEST /GROUP:REQUIRED | 1 | 0 | 0 | 4 | ecotest-gpsuks2j |
+
+These are selected returning checks on cpmsim, not complete suite coverage or
+fresh Model 4 conformance. Baseline BDOSTEST gateway evidence is additionally
+retained in `returning/bdostest-rhk7z7gn/`.
+
+## Guarded ROM continuation and next finding
+
+The distribution build intentionally uses system-tracks-only media; guarded
+ROM lifecycle testing additionally requires dedicated ROM development disks
+and relocated CONFIG fixtures. These were freshly generated in
+`/private/tmp/bettercpm-validation-v001-rom-media/`. An earlier missing-fixture
+attempt is retained and is not counted as an execution failure.
+
+The guard harness still expected 704 runtime-overlay relocations. Both the
+original clean 8127eab build and corrected candidate independently emit 812
+across 18 files with zero unresolved references. The assertion now uses that
+verified count; no unresolved reference is admitted.
+
+**V002 — open ROM system-stack reserve failure.** The protected ROM run
+completed its scripted cold/warm boot and CPX/RSX lifecycle commands without
+a protection violation, but its final system-stack reserve check fails:
+26 bytes used from 32, leaving six bytes; acceptance requires at least eight.
+Guard primitive checks also pass (CPU/DMA writes and guest guard changes are
+rejected). This is **not** a guarded-ROM campaign pass. No assertion has been
+relaxed. Determine whether the reserve loss predates V001, identify the deepest
+call path, recover the required reserve, and repeat the guarded campaign.
+Evidence: `v001-rom-xip-full.log` and `v001-rom-xip-retained.log`. High-water
+reports are now saved before reserve validation so failing measurements survive.
+Workspace-lifetime validation following the failed stack gate has not run.
+
+The older `test_unified_bdos.py` also fails its console-ready instrumentation
+before reaching directory tests; it patches a BIOS leaf assuming older console
+routing. No full unit-suite pass is claimed from it. The new focused extent
+regression executes the production comparison directly; original ENTRYTST
+provides independent public-BDOS coverage of the actual defect.

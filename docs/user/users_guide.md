@@ -2402,7 +2402,21 @@ Run `CONFIG` to enter the console menu. `CONFIG /VER` displays the utility’s
 version and build number; it must be used alone. CONFIG works without a monitor
 RSX or a full-screen terminal.
 
-The menu offers implemented entries F through K; keyboard, video, printer and
+The menu groups startup settings first, followed by disk definitions and saving:
+
+```text
+[ A ] Startup command
+
+[ B ] Cold-boot IOBYTE
+
+[ C ] Disk drive definitions
+[ D ] Disk format definitions
+[ E ] Create or edit a disk format
+
+[ S ] Save current configuration on disk (SYSGEN)
+```
+
+Select A–E or S, or press BREAK (^C) to exit. Keyboard, video, printer and
 serial placeholders are not displayed.
 
 CONFIG currently provides drive configuration, startup-command editing, saved
@@ -2511,12 +2525,12 @@ CONFIG /EDIT=B /SPT=35 /SLOT=1 /CODE=0
 code, or both. Size edits require FDF.RSX and consistent SPT/size settings; CONFIG
 rejects unsupported or inconsistent requests. The example values illustrate
 syntax, not a format suitable for every disk. The first size edit seeds the
-remaining slots from the uniform size. Duplicate IDs are rejected; menu I lets
+remaining slots from the uniform size. Duplicate IDs are rejected; menu E lets
 you prepare several private edits before applying the complete map together.
 
 #### 7.2 Startup command
 
-Use CONFIG’s startup-command menu (`J`) to inspect or edit the pending command.
+Use CONFIG’s startup-command menu (`A`) to inspect or edit the pending command.
 Editing it does not execute it or save it automatically. Use the save menu to
 make the change persistent. An empty command disables automatic startup.
 
@@ -2558,7 +2572,7 @@ validation and save results before relying on a new configuration.
 #### Saved disk-boot device assignment
 
 STAT changes the live IOBYTE. To save a separate value for the next disk cold
-boot, use CONFIG menu K or:
+boot, use CONFIG menu B or:
 
 ```text
 CONFIG /IOBYTE=85

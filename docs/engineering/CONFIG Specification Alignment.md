@@ -8,7 +8,7 @@ The spec's cost/backend gates remain required for proposed runtime facilities.
 
 | Requirement | Current status |
 | --- | --- |
-| Implemented domains only in menu | F–J retained; K adds saved disk-boot IOBYTE in Build 011; A–E placeholders removed |
+| Implemented domains only in menu | Build 012: A startup, B cold-boot IOBYTE, C drives, D formats, E format editor, S save |
 | Utility identity | Menu and /VER use the same metadata-owned version/build |
 | Full command-tail validation | Implemented before INIT, catalogue reads or changes |
 | /SHOW | Active and saved physical/logical settings, saved startup; embedded CRC-32 validation; no external reference |
@@ -16,7 +16,7 @@ The spec's cost/backend gates remain required for proposed runtime facilities.
 | /DEFAULT | Build 010 prepares pending SUBMIT STARTUP only; drives unchanged; explicit save required |
 | Drive command-line parity | Builds 006–007 physical fields and logical binding/format selection implemented; Build 008 scalar workbench fields implemented; Build 009 single-slot sector-map fields implemented |
 | Persistent IOBYTE, printer and serial | Build 011 disk-boot IOBYTE implemented; printer and serial support deferred to post-1.0 |
-| Native build | Build 011 dual-profile ZSM4/LINK and cross assembly match at 15,450 bytes |
+| Native build | Build 012 ZSM4/LINK and cross assembly match at 15,431 bytes |
 
 The no-longer-offered keyboard/video sections are outside CONFIG's 1.0 scope;
 printer/serial/IOBYTE entries may be added only when actual supported facilities
@@ -396,3 +396,13 @@ post-1.0, superseding earlier statements that serial scheduling remained open.
 Both proposed peripheral facilities are therefore outside the 1.0 release
 gates. This closes their scope decisions; it does not claim they are implemented
 or declare all CONFIG/release validation complete.
+
+
+## Build 012: main-menu organization
+
+Startup and IOBYTE are now A and B; drive, format and format-editor menus
+are C, D and E; save is S. Blank lines separate these groups. The prompt
+lists A–E or S and retains BREAK (^C) exit. Submenu controls are unchanged.
+The dispatch regression exercises all six destinations and exit. Native and
+cross builds are byte-identical at 15,431 bytes in this qualification.
+Earlier build notes below/above describing F–K document historical assignments.

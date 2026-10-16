@@ -958,19 +958,24 @@ UB_ITCMP:                               ; itcmp
         CP      '?'
         JR      Z,UB_ITCHAR
 
-UB_ITLIT:                               ; itlit
-        LD      A,(DE)
-        AND     07FH
+UB_ITLIT:                               ; itlit -- A is already seven-bit pattern
         LD      C,A
         LD      A,(UB_ITLEN)
-        CP      12
+        SUB     B                       ; zero-based field index; EX follows 11 chars
+        CP      11
         JR      NZ,UB_ITBASE
-        LD      A,B
-        CP      1
-        JR      NZ,UB_ITBASE
+  ; CP/M 2.2 Search First compares physical extent groups, not literal EX.
+  ; V001: EX=0 must find EX=1 when EXM=1 (e.g. a 17K file in 2K blocks).
+  ; XOR first so both FCB and directory EX have EXM/high bits masked equally.
         LD      A,(HL)
+        XOR     C
+        LD      C,A
+        LD      A,(UB_DPBC+4)
+        CPL
+        AND     C
         AND     01FH
-        JR      UB_ITEQ
+        JR      NZ,UB_ITMISS
+        JR      UB_ITCHAR
 
 UB_ITBASE:                              ; itbase
         LD      A,(HL)

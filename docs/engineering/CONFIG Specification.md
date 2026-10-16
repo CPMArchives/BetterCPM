@@ -421,7 +421,7 @@ For example:
 CONFIG /PHYSICAL=1 /TRACKS=80 /SIDES=2 /STEP=6
 ```
 
-This changes active state only, matching menu F. Unspecified fields are read
+This changes active state only, matching menu C. Unspecified fields are read
 from the current physical profile and retained. All supplied fields are merged
 into a private request and submitted in one public configuration-API update;
 backend validation remains authoritative. The supported scope is the existing
@@ -432,7 +432,7 @@ The result reports `Disk configuration changed (until cold boot).` To persist
 it, enter CONFIG later and explicitly choose save-all-current settings. It does
 not create invocation-private pending state that disappears on exit.
 
-Both menu F and this CLI now query A:'s current binding before a physical update.
+Both menu C and this CLI now query A:'s current binding before a physical update.
 If the proposed track/side limits cannot support that binding, or its query
 fails, reject before committing any profile or detaching any binding. This is a
 geometry guard, not detection of the actual attached drive hardware.
@@ -547,13 +547,13 @@ appears once. Scalar fields may accompany the slot edit, in any order after
 One slot is edited per invocation. Other slots and unspecified fields survive.
 Duplicate IDs or inconsistent geometry are rejected by the existing backend.
 To exchange two IDs under uniqueness constraints, use an unused temporary ID or
-make multiple private edits in menu I before applying them together.
+make multiple private edits in menu E before applying them together.
 
 The first size edit seeds all 32 packed slots from the current uniform size;
 subsequent edits preserve other packed slots. The menu and CLI share this code.
 Explicit size maps require FDF.RSX's checked normalization service before the
 binding setter is called. Missing support or an inconsistent map fails without
-an active update. This also closes a menu I safety gap: the legacy setter's
+an active update. This also closes a menu E safety gap: the legacy setter's
 uniform fast path could discard a requested size map while reporting success.
 CONFIG now validates the explicit map first instead of silently losing it.
 
@@ -1252,3 +1252,13 @@ CONFIG saves settings on the current system disk;
 - [Pending-only save scope](198%20CONFIG%20Pending-Only%20Save%20Scope.md)
 - [All-current save scope](199%20CONFIG%20All-Current%20Save%20Scope.md)
 - [Compiled IOBYTE cold default](IOBYTE-COLD-DEFAULT.md)
+
+
+## Main-menu organization (Build 012)
+
+The main menu assigns A to Startup command, B to Cold-boot IOBYTE,
+C to Disk drive definitions, D to Disk format definitions, E to Create or
+edit a disk format, and S to Save current configuration on disk (SYSGEN).
+Separate startup, IOBYTE, disk, and save groups with blank lines. The selection
+prompt is `Select [ A - E or S ], or BREAK (^C) to exit.` These keys replace
+the former F–K assignments; submenu keys and setting semantics are unchanged.
