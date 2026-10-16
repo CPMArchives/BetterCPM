@@ -18,11 +18,20 @@ warm entry and runs two fresh cpmsim sessions, checking Function 7 against the
 page-zero value, Function 8, WBOOT and RSX reconstruction. This does not claim a
 new complete Model 4 media campaign or protected-ROM runtime campaign.
 
-## Routing limitation
+## Current routing and persistence boundary
 
-The current BIOS does not decode all IOBYTE selectors. Model 4 exposes fixed
-console functions and unassigned reader/punch/list leaves; cpmsim substitutes
-its host reader. Initialization makes the published default deterministic; it
-does not provide missing routing. STAT/device qualification must establish and
-resolve the platform capability contract separately, without assuming every
-assignment printed by STAT corresponds to a functioning physical device.
+The shared IOBYTE routing and character-device capability query now exist.
+Model 4 advertises CRT console and CRT list output (`IO_CAPS=2002h`); its
+reader returns EOF and its punch is unassigned. LST=CRT uses the monitor output
+path; LST=LPT does not imply a physical printer driver exists.
+
+cpmsim advertises `7337h`. Its character dispatcher routes console, reader,
+punch and list selections to the supported console, auxiliary and printer
+leaves. Auxiliary input/output uses port 5; printer status/output uses ports
+2/3. See `src/platform/z80pack/chario.inc` and the platform builder's capability
+constant. These endpoints do not provide a baud/parity/flow-control API.
+
+STAT changes live assignments; no CONFIG persistent IOBYTE control has yet
+been implemented. The compiled 95h cold default remains unchanged. The
+persistence alternatives and remaining audit work are recorded in
+[CONFIG Runtime Audit](CONFIG%20Runtime%20Audit.md).
