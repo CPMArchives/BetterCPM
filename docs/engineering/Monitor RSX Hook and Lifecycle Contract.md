@@ -33,7 +33,7 @@ rejected before mutation; switching personalities uses UNLOAD followed by LOAD.
 There is a usable basic console between those commands. Atomic replacement is
 outside this bounded contract. The existing four-provider profile limit remains.
 
-For this implementation, capability bit 0 identifies the Model 4 backend and
+For legacy MCON 1.0, capability bit 0 identifies the Model 4 backend and
 bit 1 the cpmsim backend. Exactly one must match the running platform, with other
 bits zero. Validate MCON version, class, capabilities and entry bounds before
 commit, including retained members. Do not bind a mismatched platform binary.
@@ -213,3 +213,27 @@ The BIOS 1.6 character-capability query occupies +63. Existing vectors at
 +0..+60 are unchanged. The reserved monitor vectors therefore start at +66;
 the combined routing/capability/monitor prototype is 757 bytes and fits the
 757-byte BIOS allocation without reducing unloaded TPA.
+
+
+## Portable frontend and unloadable backend extension — 2026-10-16
+
+The manager additionally supports MCON 1.1 with capability `0004h`, declaring a
+portable frontend with a backend-reference word at payload +12. The common
+header and canonical dispatch at +8 are unchanged; callback entry is +14 or
+later. The word is initially null and excluded from ordinary relocation/runtime
+pointer repair, including any overlapping word. A compatible, platform-bound
+SCRN 1.0 provider supplies the final reference.
+
+The prospective preparation context is now 29 bytes (+23 monitor, +25 frontend
+word, +27 backend). The production extended commit request is 41 bytes (+35
+monitor, +37 frontend word, +39 backend). A validated store trampoline at
+R3MOVE+330h applies the cross-module reference after movement, then enters the
+existing persistent publisher at +38Fh. Generation remains the final store.
+Legacy mode-one fixtures at +38Fh and mode-zero requests retain their formats.
+
+Missing/duplicate backends, dual-role carriers and removal of a still-required
+backend fail before detach. Unrelated reconstruction also re-resolves the pair.
+No new BIOS hook or permanent word is needed. The [production integration
+record](Monitor%20Backend%20Production%20Integration.md) documents exact checks,
+size budgets and synthetic lifecycle evidence. Full screen semantics and
+converted provider qualification are still pending.

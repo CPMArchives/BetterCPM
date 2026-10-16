@@ -10,7 +10,9 @@
 
 ; This is the transaction's last fallible phase. It reserves and validates all
 ; commit scratch, constructs the complete publication record, and prefetches the
-; resolver before replacing itself. No disk operation is permitted after live
+; resolver before replacing itself. Context +25/+27 declares an optional
+; frontend/backend reference, appended at commit request +37/+39. Both target
+; addresses were prepared from the final plan. No disk operation is permitted after live
 ; movement starts because a late read failure could no longer restore the old
 ; profile safely.
 
@@ -81,7 +83,7 @@ RF_HAVECOUNT:                           ; validate the prospective profile count
   ; descriptor are durable until commit has completed.
         LD      HL,(RF_CURSOR)
         LD      (RF_CREQ),HL
-        LD      DE,37
+        LD      DE,41
         OR      A
         ADD     HL,DE
         JP      C,RF_BAD
@@ -181,7 +183,7 @@ RF_TOP:                                 ; store the empty-profile boundary
         POP     HL
         LD      (HL),A                  ; operation becomes returned committed count
         INC     HL
-        LD      DE,CFGB+038FH
+        LD      DE,CFGB+0330H
         CALL    RF_PUTDE               ; persistent-state publisher
         LD      DE,(RF_PSTATE)
         CALL    RF_PUTDE
@@ -207,6 +209,31 @@ RF_TOP:                                 ; store the empty-profile boundary
 RF_MONREADY:
         POP     HL
         CALL    RF_PUTDE               ; extended request +35 validated target
+        PUSH    HL
+        LD      HL,(RF_CTX)
+        LD      DE,25
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        LD      C,(HL)
+        INC     HL
+        LD      B,(HL)
+        LD      A,D
+        OR      E
+        JR      Z,RF_LINKOK
+        LD      A,B
+        OR      C
+        JR      NZ,RF_LINKOK
+        POP     HL
+        JP      RF_BAD                 ; dependent frontend lost its backend
+RF_LINKOK:
+        POP     HL
+        CALL    RF_PUTDE               ; +37 frontend-owned word, zero=none
+        LD      D,B
+        LD      E,C
+        CALL    RF_PUTDE               ; +39 final backend entry
         LD      HL,(RF_PUB)
         LD      DE,LY_SYS+084H
         CALL    RF_PUTDE

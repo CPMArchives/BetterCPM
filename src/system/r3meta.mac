@@ -417,8 +417,9 @@ RXM_PUBLISH:
 
 ; MCON and SCRN are reserved callable identities. Validate their common
 ; platform-bound ABI before either can enter the live callable registry.
-; Portable MCON/dependency binding is a later, separately validated interface;
-; this does not accept a dependent frontend merely because SCRN is present.
+; MCON 1.1 declares a portable frontend with a private binding word at +12.
+; Its complete dependency and repair-word exclusions are validated by the
+; prospective-profile preparer before any live publication.
 RXM_MONITOR:
         LD      HL,(RXM_DATA)
         LD      DE,RXM_MCON
@@ -429,13 +430,50 @@ RXM_MONITOR:
         CALL    RXM_ISID
         JR      NZ,RXM_MOK             ; other identities remain opaque
 RXM_SCREEN:
-        LD      A,(HL)                 ; major/minor exactly 1.0
+        LD      A,(HL)                 ; major exactly 1; minor selected below
         CP      1
         JR      NZ,RXM_MBAD
         INC     HL
         LD      A,(HL)
         OR      A
+        JR      Z,RXM_LEGACY
+        CP      1
         JR      NZ,RXM_MBAD
+        ; Only MCON 1.1 is portable. SCRN remains platform-bound 1.0.
+        LD      HL,(RXM_DATA)
+        LD      A,(HL)
+        CP      'M'
+        JR      NZ,RXM_MBAD
+        LD      HL,(RXM_FACTS)
+        LD      DE,20
+        ADD     HL,DE
+        LD      A,(HL)
+        CP      1
+        JR      NZ,RXM_MBAD
+        LD      HL,(RXM_DATA)
+        LD      DE,8
+        ADD     HL,DE
+        LD      A,(HL)
+        CP      4                      ; portable screen-backend capability
+        JR      NZ,RXM_MBAD
+        INC     HL
+        LD      A,(HL)
+        OR      A
+        JR      NZ,RXM_MBAD
+        LD      HL,(RXM_CODE)
+        LD      DE,14
+        OR      A
+        SBC     HL,DE
+        JR      C,RXM_MBAD             ; private backend word at payload +12
+        LD      HL,(RXM_PAYLOAD)
+        LD      DE,12
+        ADD     HL,DE
+        LD      A,(HL)
+        INC     HL
+        OR      (HL)
+        JR      NZ,RXM_MBAD             ; initially null, manager-owned thereafter
+        RET
+RXM_LEGACY:
         LD      HL,(RXM_FACTS)
         LD      DE,20
         ADD     HL,DE

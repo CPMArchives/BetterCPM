@@ -397,7 +397,7 @@ def main() -> None:
         assert cpu.word(snap_descriptor) == snapshot
         assert cpu.word(snap_descriptor + 2) == allocation
         assert cpu.word(snap_descriptor + 4) == cpu.word(FACTS + 8)
-        assert cpu.word(FACTS + 24) == snapshot + allocation + 25
+        assert cpu.word(FACTS + 24) == snapshot + allocation + 29
         assert cpu.mem[snapshot:snapshot + 4] == b"\0\0\0\0"
         assert cpu.mem[snapshot + 4:snapshot + 6] == b"\x01\0"
         assert cpu.word(snapshot + 6) == allocation - 10
@@ -413,10 +413,10 @@ def main() -> None:
              cpu.word(FACTS + 6)) & 0xFFFF
 
         cpu, _ = invoke(stub, stateful, b"STATEFUL",
-                        high=FACTS + 388 + 0xF00)
+                        high=FACTS + 392 + 0xF00)
         assert cpu.a == 0 and cpu.hl == FACTS
         cpu, _ = invoke(stub, stateful, b"STATEFUL",
-                        high=FACTS + 387 + 0xF00)
+                        high=FACTS + 391 + 0xF00)
         assert cpu.a == 0xFF and cpu.word(REQUEST + 12) == 0xA5A5
 
         cpu, _ = invoke(stub, hello, b"HELLO   ")
@@ -442,7 +442,7 @@ def main() -> None:
         assert cpu.mem[second + 6:second + 8] == b"\x01\xFF"
         snap_descriptors = FACTS + 88
         snapshot = snap_descriptors + 12 + 6 + 23
-        retained_snapshot = snapshot + new_allocation + 25
+        retained_snapshot = snapshot + new_allocation + 29
         assert cpu.word(snap_descriptors) == retained_snapshot
         assert cpu.word(snap_descriptors + 2) == old_allocation
         assert cpu.word(snap_descriptors + 4) == int.from_bytes(
@@ -460,7 +460,7 @@ def main() -> None:
         snapshots = FACTS + 88
         unions = snapshots + 12
         candidate_snapshot = unions + 6 + 23
-        durable_union = candidate_snapshot + candidate_allocation + 25
+        durable_union = candidate_snapshot + candidate_allocation + 29
         assert cpu.mem[snapshots:snapshots + 4] == b"\0" * 4
         assert cpu.word(snapshots + 4) == int.from_bytes(
             stateful[16:18], "little")
@@ -493,11 +493,11 @@ def main() -> None:
         assert stateful_allocation == cpu.word(FACTS + 46 + 4)
 
         cpu, _ = invoke(stub, stateful, b"STATEFUL",
-                        high=FACTS + 2504 + 0xF00,
+                        high=FACTS + 2508 + 0xF00,
                         retained=(b"HELLO   ",))
         assert cpu.a == 0
         cpu, _ = invoke(stub, stateful, b"STATEFUL",
-                        high=FACTS + 2503 + 0xF00,
+                        high=FACTS + 2507 + 0xF00,
                         retained=(b"HELLO   ",))
         assert cpu.a == 0xFF and cpu.word(REQUEST + 12) == 0xA5A5
         cpu, _ = invoke(stub, stateful, b"STATEFUL",

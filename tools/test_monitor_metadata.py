@@ -52,7 +52,7 @@ def legacy_cases(identity):
 
 def main():
     count=sum(legacy_cases(identity) for identity in [b'MCON', b'SCRN'])
-    print(f'PASS: {count} MCON/SCRN version/class/platform cases; dependent MCON remains fail-closed; other callable identities unchanged')
+    print(f'PASS: {count} MCON/SCRN version/class/platform cases; unsupported/invalid dependent MCON remains rejected; other callable identities unchanged')
 
 
 if __name__ == '__main__':

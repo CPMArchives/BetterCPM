@@ -418,7 +418,7 @@ PF_RELOCWORDS:                          ; static list and count
   ; candidate snapshot. R3KCTX reconstructs the durable layout from these
   ; three roots and the persistent profile count.
         LD      HL,(PF_SEND)
-        LD      DE,25
+        LD      DE,29
         ADD     HL,DE
         JP      C,PF_BAD
         LD      DE,(PF_HIGH)

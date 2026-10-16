@@ -112,7 +112,7 @@ KC_ENTRY:                               ; enter retained context constructor
         SBC     HL,DE
         JP      NZ,KC_BAD
         LD      HL,(KC_CTX)
-        LD      DE,25
+        LD      DE,29
         ADD     HL,DE
         JP      C,KC_BAD
         LD      (KC_START),HL
@@ -230,9 +230,11 @@ KC_ZCURRENT:                            ; clear current retained inputs
         LD      (HL),05AH
         INC     HL
         XOR     A
+        LD      B,6
+KC_ZMON:
         LD      (HL),A
         INC     HL
-        LD      (HL),A                  ; +23 prospective monitor target, zero=none
+        DJNZ    KC_ZMON                 ; +23 target, +25 slot, +27 backend
         LD      HL,(KC_FACTS)
         LD      (KC_MREQ),HL
         LD      A,(KC_OCNT)
