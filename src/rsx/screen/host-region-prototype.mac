@@ -1,0 +1,147 @@
+; Experimental ANSI-host region primitive, not a published SCRN operation.
+; A=0 up / 1 down, B=top, C=bottom, E=20h/A0h fill (fixed 80x24).
+; Save/restore physical cursor and rendition; leave host margins full-screen.
+        ASEG
+        ORG 08000H
+HR_ENTRY:
+        CP 2
+        JP NC,HR_BAD
+        LD (HR_DIR),A
+        LD A,E
+        AND 127
+        CP 32
+        JP NZ,HR_BAD
+        LD A,C
+        CP 24
+        JP NC,HR_BAD
+        CP B
+        JP C,HR_BAD
+        LD (HR_BOT),A
+        LD A,B
+        LD (HR_TOP),A
+        LD A,E
+        LD (HR_FILL),A
+        LD HL,HR_SAVE
+        CALL HR_STR
+        ; A single-row region cannot use DECSTBM (top must be < bottom).
+        LD A,(HR_TOP)
+        LD B,A
+        LD A,(HR_BOT)
+        CP B
+        JR Z,HR_ONE
+        LD HL,HR_CSI
+        CALL HR_STR
+        LD A,(HR_TOP)
+        INC A
+        CALL HR_DEC
+        LD C,';'
+        CALL HR_EMIT
+        LD A,(HR_BOT)
+        INC A
+        CALL HR_DEC
+        LD C,'r'
+        CALL HR_EMIT
+        LD A,(HR_DIR)
+        OR A
+        JR NZ,HR_DOWN
+        LD A,(HR_BOT)
+        CALL HR_POS
+        LD C,10
+        CALL HR_EMIT
+        JR HR_ONE
+HR_DOWN:
+        LD A,(HR_TOP)
+        CALL HR_POS
+        LD HL,HR_REV
+        CALL HR_STR
+HR_ONE:
+        LD A,(HR_DIR)
+        OR A
+        LD A,(HR_BOT)
+        JR Z,HR_BLANK
+        LD A,(HR_TOP)
+HR_BLANK:
+        CALL HR_POS
+        LD HL,HR_NORM
+        LD A,(HR_FILL)
+        AND 128
+        JP Z,HR_STYLE
+        LD HL,HR_INVERT
+HR_STYLE:
+        CALL HR_STR
+        LD B,80
+HR_PAINT:
+        LD C,32
+        CALL HR_EMIT
+        DJNZ HR_PAINT
+        LD HL,HR_RESTORE
+        CALL HR_STR
+        XOR A
+        RET
+HR_BAD:
+        LD A,255
+        RET
+HR_POS:
+        PUSH AF
+        LD HL,HR_CSI
+        CALL HR_STR
+        POP AF
+        INC A
+        CALL HR_DEC
+        LD HL,HR_COLUMN
+        JP HR_STR
+HR_DEC:
+        LD B,0
+HR_TENS:
+        CP 10
+        JR C,HR_UNITS
+        SUB 10
+        INC B
+        JR HR_TENS
+HR_UNITS:
+        PUSH AF
+        LD A,B
+        OR A
+        JR Z,HR_LAST
+        ADD A,'0'
+        LD C,A
+        CALL HR_EMIT
+HR_LAST:
+        POP AF
+        ADD A,'0'
+        LD C,A
+        JP HR_EMIT
+HR_STR:
+        LD C,(HL)
+        INC HL
+        LD A,C
+        OR A
+        RET Z
+        CALL HR_EMIT
+        JR HR_STR
+HR_EMIT:
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        LD HL,(1)
+        LD DE,66
+        ADD HL,DE
+        XOR A
+        CALL HR_JUMP
+        POP HL
+        POP DE
+        POP BC
+        RET
+HR_JUMP:
+        JP (HL)
+HR_SAVE: DB 27,'7',0
+HR_REV: DB 27,'M',0
+HR_CSI: DB 27,'[',0
+HR_COLUMN: DB ';1H',0
+HR_NORM: DB 27,'[0m',0
+HR_INVERT: DB 27,'[0;7m',0
+HR_RESTORE: DB 27,'[r',27,'8',0
+HR_DIR: DB 0
+HR_TOP: DB 0
+HR_BOT: DB 0
+HR_FILL: DB 32
