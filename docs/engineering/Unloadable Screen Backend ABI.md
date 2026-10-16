@@ -1,9 +1,10 @@
 # Unloadable screen backend ABI 1.0
 
 Status: backend implementation checkpoint, 2026-10-16. The standalone build
-produces `M4SCRN.RSX` and `ANSISCRN.RSX`. They are not yet installed on the
-System Disks. Personality conversion and full release qualification remain in
-progress; existing shipping personalities retain their current behavior.
+produces `M4SCRN.RSX` and `ANSISCRN.RSX`; each platform's System Disk now includes
+its backend for portable VT52. See [VT52 integration](VT52%20Portable%20Backend%20Integration.md)
+for native/live/ROM/distribution checks. ADM3A and ANSI personality conversion
+and full release qualification remain in progress.
 
 A backend advertises STATEFUL callable service `SCRN` 1.0, with capability 1
 for Model 4 or 2 for cpmsim. Selection and the manager-owned MCON 1.1 reference

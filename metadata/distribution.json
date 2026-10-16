@@ -278,17 +278,19 @@
       "artifact": "build/rsx/VT52.RSX",
       "status": "implemented",
       "targets": [
-        "z80pack"
+        "z80pack",
+        "trs80gp"
       ],
       "user": 0,
-      "role": "Native VT52 wire monitor; requires a VT52-capable endpoint"
+      "role": "Portable VT52 personality; requires the matching unloadable screen backend"
     },
     {
       "name": "VT52TST.COM",
       "artifact": "build/utilities/VT52TST.COM",
       "status": "implemented",
       "targets": [
-        "z80pack"
+        "z80pack",
+        "trs80gp"
       ],
       "user": 0,
       "role": "VT52 monitor test utility"
@@ -312,6 +314,26 @@
       ],
       "user": 0,
       "role": "ANSI/VT100 monitor test utility"
+    },
+    {
+      "name": "M4SCRN.RSX",
+      "artifact": "build/rsx/M4SCRN.RSX",
+      "status": "implemented",
+      "targets": [
+        "trs80gp"
+      ],
+      "user": 0,
+      "role": "Model 4 screen backend for portable monitor personalities"
+    },
+    {
+      "name": "ANSISCRN.RSX",
+      "artifact": "build/rsx/ANSISCRN.RSX",
+      "status": "implemented",
+      "targets": [
+        "z80pack"
+      ],
+      "user": 0,
+      "role": "ANSI-host screen backend for portable monitor personalities"
     }
   ],
   "cold_start_command": "SUBMIT STARTUP"

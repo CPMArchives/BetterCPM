@@ -23,18 +23,21 @@ not make direct hardware access or unrelated machine-specific BIOS extensions
 portable. Reuse the shared monitor interface for another personality; do not
 invent a BDOS-only interceptor, which would miss direct BIOS console callers.
 
-The current compatibility bits are 0001h for Model 4 and 0002h for cpmsim.
-Advertise exactly the matching bit, with all other bits zero. These identify
-backend compatibility, not a portable terminal-capability database. Adding a
-new hardware backend requires an explicit contract extension; choosing another
-terminal personality on an existing backend does not.
+New portable personalities use MCON 1.1 with capability 0004h and the manager-
+bound SCRN reference described below. The hardware-specific SCRN 1.0 backend
+advertises exactly 0001h for Model 4 or 0002h for cpmsim. Legacy MCON 1.0
+providers use those platform bits directly; that includes the historical host
+starter. These bits are not a terminal-capability database.
 
 ## Build the carrier
 
-Use the existing BRSX-v2 builder, tools/build_rsx_module.py. Advertise one callable
-service named MCON, version 1.0, with the entry offset measured from the payload
-base and the matching capability word. The entry must lie inside executable
-payload, at offset 8 or greater. Use STATEFUL reconstruction class.
+Use the existing BRSX-v2 builder, tools/build_rsx_module.py. A portable
+personality advertises callable MCON 1.1, capability 0004h, STATEFUL, with its
+entry offset measured from the payload base. Preserve the canonical chain at
++8, initially zero backend word at +12 and executable callback at +14 or later.
+The manager owns the external reference after load. See the integration section
+below for relocation exclusions. Existing platform-bound MCON 1.0 examples
+instead permit callbacks at +8 or later and require no SCRN dependency.
 
 Declare static relocation slots for address operands and runtime pointer slots
 for mutable words that can hold internal allocation addresses. Both kinds must
@@ -144,23 +147,23 @@ real unload/TPA checks.
 
 ## VT52 development example
 
-`src/rsx/vt52.mac` parses the accepted VT52 subset and emits native VT52
-controls through MONRAW. Positioning uses `ESC Y row+32 column+32`; clear/home
-uses `ESC H ESC J`. No ANSI sequences or platform video-memory symbols occur
-in its renderer. The complete address is buffered before any wire output, so
-parser reset cannot leave the endpoint waiting for a coordinate.
+`src/rsx/vt52.mac` is being converted to portable MCON 1.1. It parses VT52
+commands into typed SCRN operations rather than emitting terminal strings.
+The same assembled carrier is tested with M4SCRN (Model 4 video memory) and
+ANSISCRN (cpmsim with an ANSI host). A backend must be loaded first; the manager
+fills the private reference at payload +12. A partial address does not change
+the displayed cursor until complete. Provider version is 1.2; the user exercise
+remains VT52TST.
 
-The same source contains no machine-specific rendering, but its current carrier
-still advertises MCON backend bit 1 (cpmsim). This is not yet a universal backend
-ABI: MCON bits identify platforms, and MONRAW exposes basic character I/O rather
-than portable screen operations. Model 4 MONRAW does not interpret VT52. Do not
-claim that this carrier renders VT52 on Model 4 or that native VT52 output works
-on an ANSI-only host. See the [native VT52 correction audit](../engineering/VT52%20Native%20Correction%20Qualification.md).
-
-`tools/build_vt52.py` and `src/utilities/vt52tst.mac` generate the carrier and
-exercise. The independent wire model in `tools/test_vt52_rendering.py` accepts
-native VT52 only. Real VT52 endpoint/application testing remains necessary;
-older ANSI-adapter evidence is historical.
+`tools/test_vt52_foundation.py` exercises parsing against a controlled screen
+service; `tools/test_vt52_rendering.py` executes both actual renderers.
+`tools/test_vt52_lifecycle.py` executes the production manager with the real
+pair, checking dependency rejection, state preservation, rebinding and unload.
+Native ZSM4/LINK parity, live cpmsim/trs80gp exercises, original VT52 WordStar
+edit/save, protected-ROM cpmsim and clean distribution boot checks now pass;
+see the [integration evidence](../engineering/VT52%20Portable%20Backend%20Integration.md). The earlier native-wire audit describes the superseded
+implementation, not the new frontend's output. See the
+[screen backend ABI](../engineering/Unloadable%20Screen%20Backend%20ABI.md).
 
 VT52 now also demonstrates a bounded byte-indexed reply ring. It enqueues ESC Z
 identification replies atomically, preserves queued bytes across reset/clear,
@@ -169,6 +172,21 @@ queue is empty. This preserves provider-observed ordering without pretending
 to know when an unread physical key arrived.
 
 ## Start from the editable host template
+
+The fill-in control-code starter below remains available for simple host-output
+providers. It is a legacy MCON 1.0 example, not the new portable MCON 1.1
+personality template. Do not change its platform bit and assume it has become
+portable. The ongoing conversion separates incoming protocol parsing from the
+hardware backend; see the [screen backend ABI](../engineering/Unloadable%20Screen%20Backend%20ABI.md).
+
+For a new physical terminal with mostly fixed output strings, a backend template
+can hold its clear, erase and movement codes. Parameterized addressing still
+needs its encoding routine. For a new application-facing terminal personality,
+its incoming codes map to shared screen operations, with parsing for any
+parameters, modes or replies. These are distinct extension tasks. The intended
+portable starter should make the simple cases table edits while keeping those
+required routines explicit; the current host starter does not yet provide that
+portable scaffolding.
 
 For a small new host-terminal personality, copy and edit:
 
@@ -288,7 +306,7 @@ before its personality, and remove the personality before removing the backend.
 At most one of each role is allowed; a carrier cannot advertise both roles.
 A backend alone is permitted. No dependency callbacks run during commit.
 
-This lifecycle interface is implemented and CPU-qualified. Complete converted
-personalities and screen-backend builds are not yet packaged; the prototype
-screen-operation table is not a finished behavioral contract. See the
+This lifecycle interface is implemented and CPU-qualified. Screen-backend builds and their operation contract now exist as a standalone
+checkpoint. Portable VT52 is now on both distribution disks with its matching backend.
+Full conversion of ADM3A and ANSI and a portable editable starter remain open. See the
 [production integration record](../engineering/Monitor%20Backend%20Production%20Integration.md).

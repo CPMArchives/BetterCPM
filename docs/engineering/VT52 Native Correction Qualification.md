@@ -1,5 +1,9 @@
 # VT52 native wire correction and portability audit
 
+Historical record: the portable MCON/SCRN implementation supersedes this native-wire
+checkpoint. See [portable backend integration](VT52%20Portable%20Backend%20Integration.md)
+for current architecture and qualification.
+
 Status: 2026-10-16. Native wire correction implemented and focused-qualified.
 The full portable-backend requirement remains open. This is not final release
 or physical-terminal display qualification.

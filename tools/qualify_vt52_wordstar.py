@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exercise native VT52 WordStar edit/save on disposable media.
+"""Exercise VT52-configured WordStar through the portable monitor edit/save on disposable media.
 
 This checks application behavior and captured wire output, not physical display.
 """
@@ -25,7 +25,9 @@ def main():
     disks=work/'disks';disks.mkdir()
     image=disks/'drivea.dsk';shutil.copy2(args.image,image)
     shutil.copy2(args.diskdefs,work/'diskdefs')
-    files=[('VT52.RSX',ROOT/'build/vt52-development/VT52.RSX')]
+    files=[('VT52.RSX',ROOT/'build/vt52-development/VT52.RSX'),
+           ('ANSISCRN.RSX',ROOT/'build/screen-backends/ANSISCRN.RSX'),
+           ('R3PACK.RSX',ROOT/'build/system/R3PACK.RSX')]
     for name in ['WS.COM','WSMSGS.OVR','WSOVLY1.OVR']:
         path=work/name
         subprocess.run(['cpmcp','-f','ibm-3740',str(args.reference),'0:'+name.lower(),str(path)],check=True)
@@ -39,14 +41,16 @@ def main():
         subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(image),str(path),'0:'+name],cwd=work,check=True)
     prompt=b'A0>_ '
     trace=session(args.simulator,disks,[
+        (b'RSX LOAD ANSISCRN\r',prompt,30),
         (b'RSX LOAD VT52\r',prompt,30),
         (b'CLS\r',prompt,10),
         (b'WS VT52TEST.TXT\r',b'WordStar',30),
         (b'VT52 EDIT CHECK\x0b\x18',prompt,30),
         (b'RSX UNLOAD VT52\r',prompt,30),
+        (b'RSX UNLOAD ANSISCRN\r',prompt,30),
         (b'BYE\r',b'System halted',10)],work/'transcript.bin')
-    native=trace[trace.index(b'\x1bH\x1bJ'):trace.index(b'RSX UNLOAD VT52')]
-    assert b'\x1bY' in native and b'\x1b[' not in native
+    rendered=trace[trace.index(b'\x1b[1;1H'):trace.index(b'RSX UNLOAD VT52')]
+    assert b'\x1b[' in rendered and b'\x1bY' not in rendered
     saved=work/'saved.txt'
     subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(image),'0:vt52test.txt',str(saved)],cwd=work,check=True)
     assert b'VT52 EDIT CHECK' in saved.read_bytes(),saved.read_bytes()

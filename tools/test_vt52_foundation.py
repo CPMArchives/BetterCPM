@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Execute VT52 screen foundation against the cpmsim BIOS at two load addresses."""
+"""Execute portable VT52 parsing against a controlled screen-service recorder."""
 import argparse
 import re
 from pathlib import Path
@@ -39,9 +39,27 @@ def main():
         coladdr=syms['VT_COL']+base-0x8000
         state=syms['VT_STATE']+base-0x8000
         output=[]
+        # Test backend: raw operations use the actual BIOS; typed screen calls
+        # reach a controlled recorder. Normalize them to native VT52 strings
+        # solely as a compact parser oracle, not as actual frontend wire output.
+        cpu.mem[0x7000:0x7012]=bytes.fromhex('fe0630082a010011420019e9d3fec9')+bytes(3)
+        cpu.setword(base+12,0x7000)
+        def record(value):
+            if value==6:output.extend([27,ord('Y'),cpu.b+32,cpu.c+32])
+            elif value==7:
+                output.append(cpu.c)
+                if cpu.mem[coladdr]==79:
+                    output.extend([27,ord('Y'),cpu.mem[rowaddr]+32,111])
+            elif value==8:output.extend(b'\x1bK')
+            elif value==9:output.extend(b'\x1bJ')
+            elif value==10:output.append(10)
+            elif value==11:output.extend(b'\x1bI')
+            else:raise AssertionError(('unexpected screen operation',value))
         def write(port,value):
-            assert port&255==1
-            output.append(value)
+            if port&255==254:record(value)
+            else:
+                assert port&255==1
+                output.append(value)
         cpu.port_write=write
         test_queue(cpu,entry,base,syms,output)
         cpu.port_read=lambda port:3 if port&255==0 else ord('a')
@@ -77,7 +95,7 @@ def main():
                         expected=position(r,c) if col<79 else b''
                     elif seq==b'\x0a':
                         r=min(23,row+1)
-                        expected=b'\n'
+                        expected=position(r,c) if row<23 else b'\n'
                     elif seq==b'\x0d':c=0;expected=position(r,c)
                     elif seq==b'\x1bA':r=max(0,row-1);expected=position(r,c) if row else b''
                     elif seq==b'\x1bB':r=min(23,row+1);expected=position(r,c) if row<23 else b''
@@ -100,7 +118,7 @@ def main():
             assert cpu.mem[state]==0 and not output
             assert (cpu.mem[rowaddr],cpu.mem[coladdr])==old
         output.clear();call(4)
-        assert bytes(output)==b'\x1bH\x1bJ'
+        assert bytes(output)==position(0,0)+b'\x1bJ'
         assert cpu.mem[rowaddr]==cpu.mem[coladdr]==cpu.mem[state]==0
         assert send(b'\x00\x7f')==b''
         assert send(b'\x07')==b'\x07'
@@ -127,6 +145,9 @@ def main():
             output.clear()
             messages=bytearray()
             def bdos(port,value):
+                if port&255==254 and cpu.pc==0x700E:
+                    record(value)
+                    return
                 if port&255==1:
                     output.append(value)
                     return
@@ -163,7 +184,7 @@ def main():
                 assert not pauses and messages.startswith(b'No MCON provider loaded.')
         cpu.port_write=write
 
-    print(f'PASS: {cases} relocated VT52 cursor/control cases, native VT52 wire output, reset/clear and raw input bypass')
+    print(f'PASS: {cases} relocated VT52 cursor/control cases, typed screen-service calls, reset/clear and raw input bypass')
 
 
 def test_queue(cpu,entry,base,syms,output):

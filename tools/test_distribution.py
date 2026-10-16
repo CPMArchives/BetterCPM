@@ -50,6 +50,15 @@ class DistributionGates(unittest.TestCase):
             for name in ['ADM3A.RSX','ADMTST.COM']:
                 self.assertEqual(any(e['name']==name for e in entries),expected)
 
+    def test_portable_vt52_backend_manifest(self):
+        root=Path(__file__).resolve().parents[1]
+        manifest=json.loads((root/'metadata/distribution.json').read_text())
+        for target,backend,other in [('trs80gp','M4SCRN.RSX','ANSISCRN.RSX'),
+                                     ('z80pack','ANSISCRN.RSX','M4SCRN.RSX')]:
+            names={e['name'] for e in manifest['system_disk'] if target in e['targets'] and e['status']=='implemented'}
+            self.assertTrue({'VT52.RSX','VT52TST.COM',backend}.issubset(names))
+            self.assertNotIn(other,names)
+
     def test_system_editor_manifest(self):
         root=Path(__file__).resolve().parents[1]
         manifest=json.loads((root/'metadata/distribution.json').read_text())
