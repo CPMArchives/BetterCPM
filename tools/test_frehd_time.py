@@ -61,15 +61,15 @@ def main() -> None:
     if not re.search(rb"20[0-9]{2}-[01][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]:[0-5][0-9]",
                      display):
         raise SystemExit(f"TIME did not display a clock sample: {display!r}")
-    if b"BetterCP/M 0.3" not in display:
+    if b"BetterCP/M 0.90" not in display:
         raise SystemExit("TIME did not return to a working CCP prompt")
     provider = run("TIME /PROVIDER", report / "provider")
     for expected in (b"Provider: FREHDCLK", b"TIME service ABI 01.00",
-                     b"GET, read-only", b"BetterCP/M 0.3"):
+                     b"GET, read-only", b"BetterCP/M 0.90"):
         if expected not in provider:
             raise SystemExit(f"provider report lacks {expected!r}: {provider!r}")
     rejected = run("TIME /SET 01 00 12 34 56", report / "set")
-    for expected in (b"Clock provider does not support SET.", b"BetterCP/M 0.3"):
+    for expected in (b"Clock provider does not support SET.", b"BetterCP/M 0.90"):
         if expected not in rejected:
             raise SystemExit(f"SET rejection lacks {expected!r}: {rejected!r}")
     if b"Clock set." in rejected:

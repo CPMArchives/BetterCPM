@@ -1663,6 +1663,9 @@ See [command-line qualification](DUP%20Command-Line%20Qualification.md) for
 parser, dispatcher, media and interruption evidence. Final release
 qualification remains separate.
 
+The [2026-10-16 alignment audit](DUP%20Specification%20Alignment.md) confirms
+current source alignment and records fresh focused regression evidence.
+
 ## Related utility contracts
 
 [CONFIG](CONFIG%20Specification.md) owns binding selection and saved defaults.

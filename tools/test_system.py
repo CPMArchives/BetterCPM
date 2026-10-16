@@ -159,7 +159,11 @@ def main() -> None:
     platform_conin = cpu.word(conin_impl + 1)
     cpu.mem[platform_conin:platform_conin + 3] = bytes((0x3E, 0xC1, 0xC9))
     conout_impl = cpu.word(BIOS_BASE + 4 * 3 + 1)
-    platform_conout = cpu.word(conout_impl + 1)
+    # Monitor routing means BIOCONOT is no longer a direct JP to the screen
+    # leaf. Resolve the physical output symbol instead of decoding its operand.
+    from test_utility_versions import address
+    platform_conout = address((ROOT / "build/bios/bios.lst").read_text(
+        errors="replace"), "M4_SCROLL_OUT")
     cpu.mem[platform_conout:platform_conout + 5] = bytes(
         (0x79, 0x32, 0x00, 0x70, 0xC9))
     cpu.mem[0x7060:0x7069] = bytes((0x2A, 0x70, 0x70, 0x7E, 0x23,
@@ -569,7 +573,7 @@ def main() -> None:
     # Earlier BDOS coverage deliberately leaves user 31 selected. WBOOT must
     # preserve it, and the reconstructed CCP must derive that live state for
     # every prompt rather than silently reverting its display to user zero.
-    require(transcript.count(b"A31>") >= 3 and b"BetterCP/M 0.3" in transcript,
+    require(transcript.count(b"A31>") >= 3 and b"BetterCP/M 0.90" in transcript,
             f"WBOOT/Function-0 CCP transcript is incomplete at PC={cpu.pc:04X}: "
             f"in={cpu.word(0x7080):04X} out={cpu.word(0x7090):04X} "
             f"ccp={bytes(cpu.mem[ccp_base:ccp_base + 0x2A]).hex()} {transcript[:160]!r}")

@@ -74,7 +74,7 @@ def main() -> None:
     aborted = run(image, workspace, 'abort', [(2400, chr(3)), (8000, 'VER\\r')])
     require('READ CALLER RESUMED' not in aborted,
             'Control-C returned to the interrupted read caller')
-    require('BetterCP/M 0.3' in aborted,
+    require('BetterCP/M 0.90' in aborted,
             'Control-C did not leave a usable command environment')
 
     print(workspace)

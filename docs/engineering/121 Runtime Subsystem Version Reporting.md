@@ -2,7 +2,7 @@
 
 Status: implemented
 
-`VER` remains the concise release query and prints `BetterCP/M 0.3`. `VER /V`
+`VER` remains the concise release query and prints `BetterCP/M 0.90`. `VER /V`
 prints that release followed by the identity, API version, and implementation
 version of the fixed CCP, BDOS, and BIOS components. CPX and RSX facility
 versions belong to their respective managers and are reported by `CPX /V` and
