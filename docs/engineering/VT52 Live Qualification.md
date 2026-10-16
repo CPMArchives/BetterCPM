@@ -1,5 +1,10 @@
 # VT52 live and lifecycle qualification
 
+**Historical ANSI-adapter evidence.** The native VT52 correction supersedes
+these output-format and host-rendering claims. See [current correction and
+remaining gates](VT52%20Native%20Correction%20Qualification.md). Retained test
+results below describe the earlier artifact, not the corrected native carrier.
+
 ## Changes uncovered by qualification
 
 Direct addressing now commits its row only when the column completes the

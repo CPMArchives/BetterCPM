@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Exercise an unchanged local VT52 WordStar binary with a disposable document."""
+"""Exercise native VT52 WordStar edit/save on disposable media.
+
+This checks application behavior and captured wire output, not physical display.
+"""
 import argparse
 import hashlib
 import shutil
@@ -30,15 +33,20 @@ def main():
     document=work/'VT52TEST.TXT';document.write_bytes(b'ORIGINAL VT52 DOCUMENT\r\n\x1a')
     files.append(('VT52TEST.TXT',document))
     for name,path in files:
+        existing=subprocess.check_output(['cpmls','-T','raw','-f','bettercpm-default',str(image)],cwd=work,text=True).upper().split()
+        if name in existing:
+            subprocess.run(['cpmrm','-T','raw','-f','bettercpm-default',str(image),'0:'+name],cwd=work,check=True)
         subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(image),str(path),'0:'+name],cwd=work,check=True)
     prompt=b'A0>_ '
-    session(args.simulator,disks,[
+    trace=session(args.simulator,disks,[
         (b'RSX LOAD VT52\r',prompt,30),
         (b'CLS\r',prompt,10),
         (b'WS VT52TEST.TXT\r',b'WordStar',30),
         (b'VT52 EDIT CHECK\x0b\x18',prompt,30),
         (b'RSX UNLOAD VT52\r',prompt,30),
         (b'BYE\r',b'System halted',10)],work/'transcript.bin')
+    native=trace[trace.index(b'\x1bH\x1bJ'):trace.index(b'RSX UNLOAD VT52')]
+    assert b'\x1bY' in native and b'\x1b[' not in native
     saved=work/'saved.txt'
     subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(image),'0:vt52test.txt',str(saved)],cwd=work,check=True)
     assert b'VT52 EDIT CHECK' in saved.read_bytes(),saved.read_bytes()

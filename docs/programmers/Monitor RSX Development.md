@@ -144,14 +144,23 @@ real unload/TPA checks.
 
 ## VT52 development example
 
-`src/rsx/vt52.mac` illustrates a personality translating through MONRAW into an
-ANSI host transport, with byte-sized cursor/parser state and shared output,
-address-formatting and movement routines. `tools/build_vt52.py` and
-`src/utilities/vt52tst.mac` generate development listings and release artifacts. See
-[VT52 foundation qualification](../engineering/VT52%20Provider%20Foundation%20Qualification.md)
-for supported controls, host-geometry assumptions and remaining gates. It is
-a released implementation, rather than a generic table-only template.
+`src/rsx/vt52.mac` parses the accepted VT52 subset and emits native VT52
+controls through MONRAW. Positioning uses `ESC Y row+32 column+32`; clear/home
+uses `ESC H ESC J`. No ANSI sequences or platform video-memory symbols occur
+in its renderer. The complete address is buffered before any wire output, so
+parser reset cannot leave the endpoint waiting for a coordinate.
 
+The same source contains no machine-specific rendering, but its current carrier
+still advertises MCON backend bit 1 (cpmsim). This is not yet a universal backend
+ABI: MCON bits identify platforms, and MONRAW exposes basic character I/O rather
+than portable screen operations. Model 4 MONRAW does not interpret VT52. Do not
+claim that this carrier renders VT52 on Model 4 or that native VT52 output works
+on an ANSI-only host. See the [native VT52 correction audit](../engineering/VT52%20Native%20Correction%20Qualification.md).
+
+`tools/build_vt52.py` and `src/utilities/vt52tst.mac` generate the carrier and
+exercise. The independent wire model in `tools/test_vt52_rendering.py` accepts
+native VT52 only. Real VT52 endpoint/application testing remains necessary;
+older ANSI-adapter evidence is historical.
 
 VT52 now also demonstrates a bounded byte-indexed reply ring. It enqueues ESC Z
 identification replies atomically, preserves queued bytes across reset/clear,

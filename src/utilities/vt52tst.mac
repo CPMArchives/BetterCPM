@@ -1,4 +1,4 @@
-; VT52 foundation exercise; use only the cpmsim VT52 provider.
+; Native VT52 exercise; requires VT52.RSX and a VT52-capable endpoint.
 BDOS EQU 5
         CSEG
         .PHASE 0100H

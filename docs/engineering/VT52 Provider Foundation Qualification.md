@@ -1,5 +1,10 @@
 # VT52 provider foundation qualification
 
+**Historical ANSI-adapter evidence.** The native VT52 correction supersedes
+these output-format and host-rendering claims. See [current correction and
+remaining gates](VT52%20Native%20Correction%20Qualification.md). Retained test
+results below describe the earlier artifact, not the corrected native carrier.
+
 ## Status and build
 
 VT52 targets cpmsim with an ANSI host terminal.

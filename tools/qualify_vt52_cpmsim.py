@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Run real VT52 load/movement, identification utility and unload on private cpmsim media."""
+"""Qualify native VT52 transport/lifecycle on private cpmsim media.
+
+Captured bytes are checked; this does not qualify a physical terminal display.
+"""
 import argparse
 import shutil
 import subprocess
@@ -48,7 +51,7 @@ def main():
         subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(image),str(ROOT/path),'0:'+name],cwd=work,check=True)
     prompt=b'A0>_ '
     trace=session(simulator,disks,[
-        (b'VT52TST /VER\r',b'BetterCP/M VT52TST 1.0 (Build 001)',10),
+        (b'VT52TST /VER\r',b'BetterCP/M VT52TST 1.0 (Build 002)',10),
         (b'',prompt,10),
         (b'RSX LOAD HELLO\r',prompt,30),
         (b'RSX LOAD VT52\r',prompt,30),
@@ -65,9 +68,13 @@ def main():
         assert b'ROM QUALIFICATION ACTIVE START=DF00' in trace
         assert b'ROM WRITE VIOLATION' not in trace
     assert b'identification reply ESC / K passed.' in trace
+    native = trace[trace.index(b'\x1bH\x1bJ'):trace.index(b'VT52 monitor exercise complete.')]
+    assert b'\x1bY%*' in native and b'\x1bY*o' in native
+    assert b'\x1bK' in native and b'\x1bJ' in native
+    assert b'\x1b[' not in native, 'ANSI CSI leaked into native VT52 exercise'
     assert b'No RSXs loaded' in trace
     assert b'identification reply failed' not in trace
-    print(f'PASS: live cpmsim VT52 load/movement, identification, three utility phases, unload/53K and BYE; {work}')
+    print(f'PASS: live cpmsim native VT52 transport, load/movement, identification, three utility phases, unload/53K and BYE; {work}')
 
 
 if __name__=='__main__':main()

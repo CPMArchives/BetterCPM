@@ -1,5 +1,10 @@
 # Monitor 1.0 implementation closure
 
+**VT52 status reopened:** the completion statement below is historical for the
+former ANSI adapter. Native wire output is corrected, but portable backend and
+native endpoint/application qualification remain open. See [current VT52
+correction](VT52%20Native%20Correction%20Qualification.md).
+
 Status: 2026-10-15. The bounded 1.0 monitor implementation is complete for its
 stated personalities and backends. This is an implementation milestone, not
 a declaration that BetterCP/M 1.0 or every terminal configuration is qualified.

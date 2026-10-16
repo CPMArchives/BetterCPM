@@ -2,6 +2,13 @@
 
 Accepted behavioral implementation basis, 2026-10-12. Historical cases explicitly marked unresolved remain qualification gates; this document does not claim installed or fully qualified provider support.
 
+## Current VT52 implementation boundary
+
+The native wire correction emits VT52 rather than ANSI, but still uses the
+cpmsim-bound MCON carrier. This document remains the behavioral requirement,
+not a claim that all backends satisfy it. Portable backend binding and native
+endpoint display qualification remain open; see the [correction audit](VT52%20Native%20Correction%20Qualification.md).
+
 ## 1. Scope
 
 This specification defines the externally observable behavior of the initial BetterCP/M monitor personalities:
