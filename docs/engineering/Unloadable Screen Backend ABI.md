@@ -77,8 +77,8 @@ must contain neither Model 4 addresses nor host ANSI output strings.
 
 Run `python3 tools/build_screen_backends.py` after building the Model 4 BIOS.
 Payloads and listings go in `build/screen-backends/`; carriers are also copied
-to `build/rsx/`. Provider 1.2 payloads: Model 4 545 bytes, 768 allocated; ANSI-host
-831 bytes, 1,024 allocated. The allocation includes carrier/runtime overhead and
+to `build/rsx/`. Provider 1.3 payloads: Model 4 703 bytes, 768 allocated; ANSI-host
+1,091 bytes, 1,280 allocated. The allocation includes carrier/runtime overhead and
 alignment. These are optional loaded costs, with zero permanent growth.
 
 Run `tools/test_screen_backends.py` with the environment described in
@@ -151,3 +151,83 @@ for actual Model 4 command editing and unload/53K; and
 `build/monitor-development/live/cpmsim-o3hlii3d/` for guarded-ROM cpmsim with
 fresh matching relocated overlays and no ROM-write violations. The Model 4
 loaded backend/ADM3A pair now reports 50K; unloading both restores 53K.
+
+
+## Rendition and styled-glyph integration checkpoint
+
+Provider 1.3 retains SCRN 1.0 and SCX 1.0. SCX discovery now reports operation
+mask 001Bh: relative movement (17), position (18), rendition (20), and styled
+glyph (21). Erasure (19) is still unimplemented and returns 255.
+
+Operation 20 takes HL pointing to nine bytes: flags, foreground kind, three
+foreground color bytes, background kind, three background color bytes. Kind 0
+is default, 1 is a palette index in the first color byte, and 2 is RGB. Flags,
+from bit 0 to 7, mean bold, faint, italic, underline, blink, reverse, conceal,
+strike. Both color kinds are validated before any state/output change. Invalid
+kinds return 255; success returns zero. The entire record is copied into the
+backend, so the caller's buffer need not remain live after the call.
+
+Model 4 retains the full record and renders reverse/conceal. Its advertised
+rendition mask is 60h and color mask zero. Unsupported physical styles/colors
+are inert rather than rejected, making the physical limit visible through
+capability discovery. The ANSI-host rendition mask is FFh and color mask 7
+(base palette, 256-color palette and RGB). This describes the controls the
+backend encodes; physical host attribute/color support remains endpoint-dependent.
+Its palette encoding uses CSI 38/48;5 and RGB uses CSI 38/48;2. The host does not
+receive any raw application escape sequence through this interface.
+
+Operation 21 takes printable ASCII C=32..126 and uses the stored rendition.
+It returns zero; invalid glyphs return 255 without writing or changing pending
+wrap. Unlike operation 7, this operation follows ANSI delayed wrapping: writing
+the rightmost cell leaves a pending wrap, taken by the next glyph. Explicit
+positioning or relative motion cancels pending wrap. At the bottom, writing the
+next glyph scrolls and fills the new line in the current rendition. Host output
+retains its actual dimensions; Model 4 uses 80x24. Private margins are not yet
+part of this control slice.
+
+The host caches styled mode, invalidates legacy rendition on a style change,
+and restores canonical rendition after a legacy cell/fill. Legacy callers keep
+their original normal/reverse behavior. Typed control callers still synchronize
+with operation 6 before using the fixed-cell tracker. Model 4's pending-wrap
+byte and canonical record survive manager movement. The host's temporary
+internal color pointer is cleared before callback return, so no undeclared
+runtime pointer survives relocation.
+
+Qualified checkpoint payloads: M4SCRN 703 bytes/768 allocated/60 relocations; ANSISCRN
+1,091 bytes/1,280 allocated/188 relocations. Model 4's allocation is unchanged
+from provider 1.2; the host adds 256 loaded bytes. No permanent BIOS/BDOS or
+manager code changes are needed in this increment.
+
+`tools/test_screen_rendition.py` checks 3,072 attribute/palette cases across
+both actual backends at two relocation addresses, plus RGB, atomic invalid
+records/glyphs, cached rendering, legacy/styled switching, delayed wrap and
+bottom scrolling. Host tests include 80x25 and 100x40 geometry. The independent
+pyte model does not represent faint/conceal: those host encodings are checked
+on the wire; Model 4 conceal is checked directly in video RAM.
+
+`tools/test_adm3a_lifecycle.py` now retains nondefault canonical state and a
+right-edge pending wrap across unrelated-module removal, then continues styled
+output through the repaired callback. Both platform manager tests pass, along
+with existing ADM3A/VT52 screen tests and native ZSM4/LINK parity.
+
+`tools/qualify_screen_rendition_cpmsim.py --diskdefs <build>/diskdefs` generates a
+private transient test, resolves SCRN through public Function 182, checks SCX
+capabilities, renders RGB/reverse text, switches legacy/styled output, restores
+normal rendition, and unloads to 53K. Its captured output is independently
+rendered by pyte. The test is not a new distribution utility. Ordinary live
+cpmsim passes; local evidence is `build/screen-rendition-live/cpmsim-6dzo4gfv/`.
+Protected-ROM public lookup/rendering passes with the matching relocated
+container and no ROM-write violations; evidence is
+`build/screen-rendition-live/cpmsim-8j0gjvkz/`. Both clean System Disk builds/boots
+pass (`/private/tmp/bettercpm-rendition-qualified-work/` locally). Actual Model 4
+legacy command editing and unload/53K pass with the new backend;
+`build/monitor-development/native-campaign/editing-95tsk5qs/`. This native campaign
+checks compatibility, while direct SCX rendition semantics are covered by the
+assembled-code/video-RAM tests rather than a native SCX visual exercise.
+The production ANSI personality remains unchanged; parser integration, erasure,
+margins, save/restore/index and release application qualification remain open.
+
+Before activating a portable ANSI personality, admission must establish that its
+backend supplies all required controls, not merely SCRN 1.0. Current optional
+capability discovery does not by itself change the manager's dependency rules.
+No existing ANSI carrier is switched to the new path in this checkpoint.
