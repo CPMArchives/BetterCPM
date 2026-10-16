@@ -1,0 +1,317 @@
+; Audit prototype only. Identical personality binary on both backend targets.
+; MODE=0 MM/ADM3A, 1 VT52, 2 bounded ANSI. Missing production features are
+; listed in the audit; this is not a replacement for shipping providers.
+        ASEG
+        ORG 08000H
+P_NEXT: DW 5
+P_DISP: DW P_CHAIN
+        DW 0,0
+P_CHAIN:
+        LD HL,(P_NEXT)
+        JP (HL)
+P_ENTRY:
+        OR A
+        JP Z,P_OUT
+        CP 4
+        JR Z,P_CLEAR
+        CP 5
+        JR Z,P_RESET
+        JP P_BACK
+P_BACK:
+        LD HL,(P_BACKEND)
+        JP (HL)
+P_RESET:
+        XOR A
+        LD (P_STATE),A
+        LD (P_PARAM),A
+        LD (P_FIRST),A
+        RET
+P_CLEAR:
+        CALL P_RESET
+        XOR A
+        LD (P_ROW),A
+        LD (P_COL),A
+        CALL P_POS
+        LD A,9
+        JP P_BACK
+P_POS:
+        LD A,(P_ROW)
+        LD B,A
+        LD A,(P_COL)
+        LD C,A
+        LD A,6
+        JP P_BACK
+P_OUT:
+        LD A,(P_STATE)
+        OR A
+        JP Z,P_NORMAL
+        CP 1
+        JP Z,P_ESCAPE
+        CP 2
+        JP Z,P_ROWBYTE
+        CP 3
+        JP Z,P_COLBYTE
+        JP P_CSI
+P_NORMAL:
+        LD A,C
+        CP 27
+        JR Z,P_BEGIN
+        CP 32
+        JP NC,P_PRINT
+        CP 13
+        JR Z,P_CR
+        CP 10
+        JP Z,P_LF
+        CP 8
+        JP Z,P_LEFT
+        IF MODE = 0
+        CP 26
+        JP Z,P_CLEAR
+        CP 30
+        JP Z,P_HOME
+        CP 21
+        JP Z,P_EOL
+        CP 23
+        JP Z,P_EOS
+        CP 15
+        JP Z,P_REVERSE
+        CP 14
+        JP Z,P_VIDEO0
+        ENDIF
+        RET
+P_BEGIN:
+        LD A,1
+        LD (P_STATE),A
+        RET
+P_CR:
+        XOR A
+        LD (P_COL),A
+        JP P_POS
+P_PRINT:
+        LD A,(P_RFLAG)
+        OR C
+        LD C,A
+        LD A,7
+        CALL P_BACK
+        LD A,(P_COL)
+        CP 79
+        JR Z,P_MARGIN
+        INC A
+        LD (P_COL),A
+        JP P_POS
+P_MARGIN:
+        IF MODE = 1
+        JP P_POS
+        ELSE
+        XOR A
+        LD (P_COL),A
+        JP P_LF
+        ENDIF
+P_HOME:
+        XOR A
+        LD (P_ROW),A
+        LD (P_COL),A
+        JP P_POS
+P_LF:
+        LD A,(P_ROW)
+        CP 23
+        JR Z,P_SCROLL
+        INC A
+        LD (P_ROW),A
+        JP P_POS
+P_SCROLL:
+        LD A,10
+        CALL P_BACK
+        JP P_POS
+P_LEFT:
+        LD A,(P_COL)
+        OR A
+        JR Z,P_LEFT_EDGE
+        DEC A
+        LD (P_COL),A
+        JP P_POS
+P_LEFT_EDGE:
+        IF MODE = 0
+        LD A,(P_ROW)
+        OR A
+        RET Z
+        DEC A
+        LD (P_ROW),A
+        LD A,79
+        LD (P_COL),A
+        JP P_POS
+        ELSE
+        RET
+        ENDIF
+P_EOL:
+        LD A,8
+        JP P_BACK
+P_EOS:
+        LD A,9
+        JP P_BACK
+P_REVERSE:
+        LD A,128
+        LD (P_RFLAG),A
+        RET
+P_VIDEO0:
+        XOR A
+        LD (P_RFLAG),A
+        RET
+P_ESCAPE:
+        CALL P_RESET
+        LD A,C
+        IF MODE = 0
+        CP '='
+        ELSE
+        IF MODE = 1
+        CP 'Y'
+        ELSE
+        CP '['
+        JR NZ,P_IGNORE
+        LD A,4
+        LD (P_STATE),A
+        RET
+        ENDIF
+        ENDIF
+        IF MODE < 2
+        JR Z,P_ADDRESS
+        CP 'H'
+        JP Z,P_HOME
+        CP 'J'
+        JP Z,P_EOS
+        CP 'K'
+        JP Z,P_EOL
+        IF MODE = 1
+        CP 'I'
+        JR Z,P_RLF
+        ENDIF
+        ENDIF
+P_IGNORE:
+        RET
+P_ADDRESS:
+        LD A,2
+        LD (P_STATE),A
+        RET
+P_ROWBYTE:
+        LD A,C
+        SUB 32
+        CP 24
+        JR C,P_ROW_OK
+        IF MODE = 1
+        LD A,(P_ROW)
+        ELSE
+        LD A,23
+        ENDIF
+P_ROW_OK:
+        LD (P_PENDING),A
+        LD A,3
+        LD (P_STATE),A
+        RET
+P_COLBYTE:
+        LD A,C
+        SUB 32
+        CP 80
+        JR C,P_COL_OK
+        LD A,79
+P_COL_OK:
+        LD (P_COL),A
+        LD A,(P_PENDING)
+        LD (P_ROW),A
+        CALL P_RESET
+        JP P_POS
+P_RLF:
+        LD A,(P_ROW)
+        OR A
+        JR Z,P_SDOWN
+        DEC A
+        LD (P_ROW),A
+        JP P_POS
+P_SDOWN:
+        LD A,11
+        CALL P_BACK
+        JP P_POS
+; Small bounded decimal accumulator: only 0..99 accepted in this prototype.
+P_CSI:
+        LD A,C
+        CP '0'
+        JR C,P_FINAL
+        CP '9'+1
+        JR NC,P_FINAL
+        SUB '0'
+        LD E,A
+        LD A,(P_PARAM)
+        CP 10
+        JP NC,P_RESET
+        ADD A,A
+        LD D,A
+        ADD A,A
+        ADD A,A
+        ADD A,D
+        ADD A,E
+        LD (P_PARAM),A
+        RET
+P_FINAL:
+        CP ';'
+        JR NZ,P_CSI_END
+        LD A,(P_PARAM)
+        LD (P_FIRST),A
+        XOR A
+        LD (P_PARAM),A
+        RET
+P_CSI_END:
+        CP 'H'
+        JR Z,P_ANSI_POS
+        CP 'J'
+        JR Z,P_ANSI_ERASE
+        CP 'K'
+        JR Z,P_AK
+        CP 'm'
+        JR Z,P_ANSI_ATTR
+        JP P_RESET
+P_ANSI_POS:
+        LD A,(P_FIRST)
+        OR A
+        JR Z,P_AROW_ZERO
+        DEC A
+P_AROW_ZERO:
+        CP 24
+        JP NC,P_RESET
+        LD (P_ROW),A
+        LD A,(P_PARAM)
+        OR A
+        JR Z,P_ACOL_ZERO
+        DEC A
+P_ACOL_ZERO:
+        CP 80
+        JP NC,P_RESET
+        LD (P_COL),A
+        CALL P_RESET
+        JP P_POS
+P_ANSI_ERASE:
+        LD A,(P_PARAM)
+        CP 2
+        JP Z,P_CLEAR
+        CALL P_RESET
+        JP P_EOS
+P_AK:
+        CALL P_RESET
+        JP P_EOL
+P_ANSI_ATTR:
+        LD A,(P_PARAM)
+        PUSH AF
+        CALL P_RESET
+        POP AF
+        CP 7
+        JP Z,P_REVERSE
+        OR A
+        JP Z,P_VIDEO0
+        RET
+P_BACKEND: DW 0
+P_ROW: DB 0
+P_COL: DB 0
+P_PENDING: DB 0
+P_RFLAG: DB 0
+P_STATE: DB 0
+P_PARAM: DB 0
+P_FIRST: DB 0
+        END

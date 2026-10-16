@@ -1,0 +1,140 @@
+; Isolated binding preparer, NOT integrated with production transactions.
+; B=count (0..8), C=backend platform, HL=normalized 10-byte records:
+; role(1 frontend/2 backend), platform(0 portable), ABI major/minor,
+; final base word, payload length word, backend-entry/frontend-slot offset word.
+; Success A=0, DE=final frontend slot, HL=final backend entry (zero if no front).
+; No live payload is modified; caller must stage/apply the validated fixup.
+        ASEG
+        ORG 07000H
+BP_ENTRY:
+        LD A,B
+        CP 9
+        JP NC,BP_BAD
+        LD (BP_LEFT),A
+        LD A,C
+        LD (BP_PLAT),A
+        LD (BP_PTR),HL
+        LD HL,0
+        LD (BP_FRONT),HL
+        LD (BP_BACK),HL
+BP_LOOP:
+        LD A,(BP_LEFT)
+        OR A
+        JP Z,BP_DONE
+        LD HL,(BP_PTR)
+        LD A,(HL)
+        CP 1
+        JR Z,BP_ROLE_OK
+        CP 2
+        JP NZ,BP_BAD
+BP_ROLE_OK:
+        LD (BP_ROLE),A
+        INC HL
+        LD A,(BP_ROLE)
+        CP 1
+        LD A,(HL)
+        JR NZ,BP_BPLAT
+        OR A
+        JP NZ,BP_BAD
+        JR BP_VERSION
+BP_BPLAT:
+        LD B,A
+        LD A,(BP_PLAT)
+        CP B
+        JP NZ,BP_BAD
+BP_VERSION:
+        INC HL
+        LD A,(HL)
+        CP 1
+        JP NZ,BP_BAD
+        INC HL
+        LD A,(HL)
+        OR A
+        JP NZ,BP_BAD
+        INC HL
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD (BP_BASE),DE
+        INC HL
+        LD C,(HL)
+        INC HL
+        LD B,(HL)
+        INC HL
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD A,D
+        OR A
+        JR NZ,BP_RANGE
+        LD A,E
+        CP 8
+        JP C,BP_BAD
+BP_RANGE:
+        LD H,D
+        LD L,E
+        LD A,(BP_ROLE)
+        CP 1
+        JR NZ,BP_BOUND
+        INC HL
+        LD A,H
+        OR L
+        JP Z,BP_BAD
+BP_BOUND:
+        OR A
+        SBC HL,BC
+        JP NC,BP_BAD
+        LD HL,(BP_BASE)
+        ADD HL,DE
+        JP C,BP_BAD
+        ; Zero is reserved for absence, not a valid live provider address.
+        LD A,H
+        OR L
+        JP Z,BP_BAD
+        EX DE,HL
+        LD HL,BP_FRONT
+        LD A,(BP_ROLE)
+        CP 1
+        JR Z,BP_SAVE
+        LD HL,BP_BACK
+BP_SAVE:
+        LD A,(HL)
+        INC HL
+        OR (HL)
+        JP NZ,BP_BAD
+        LD (HL),D
+        DEC HL
+        LD (HL),E
+        LD HL,(BP_PTR)
+        LD DE,10
+        ADD HL,DE
+        LD (BP_PTR),HL
+        LD HL,BP_LEFT
+        DEC (HL)
+        JP BP_LOOP
+BP_DONE:
+        LD DE,(BP_FRONT)
+        LD A,D
+        OR E
+        JR Z,BP_NONE
+        LD HL,(BP_BACK)
+        LD A,H
+        OR L
+        JR Z,BP_BAD
+        XOR A
+        RET
+BP_NONE:
+        LD HL,0
+        XOR A
+        RET
+BP_BAD:
+        LD A,255
+        RET
+BP_PTR: DW 0
+BP_BASE: DW 0
+BP_FRONT: DW 0
+BP_BACK: DW 0
+BP_LEFT: DB 0
+BP_PLAT: DB 0
+BP_ROLE: DB 0
+        END
