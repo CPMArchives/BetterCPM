@@ -5,7 +5,8 @@
 
 This specification consolidates the current `SYSGEN.COM` implementation and its qualification behavior. It documents the existing interactive and command-line installation paths, `SYSTEM.SYS` package installation, destination validation, system-area protection, write ordering, verification, and interruption behavior.
 
-SYSGEN installs BetterCP/M into the reserved system area of compatible media. It does not format disks and does not modify the destination filesystem area.
+SYSGEN installs BetterCP/M into the reserved system area of compatible media. It does not format disks. Installation preserves the destination filesystem;
+export writes a package file through ordinary filesystem services.
 
 ---
 
@@ -18,9 +19,10 @@ The system image may come from either:
 1. a bootable BetterCP/M source disk; or
 2. a `SYSTEM.SYS` package.
 
-SYSGEN operates directly on the reserved system records through the BIOS. It does not copy files to the destination filesystem.
+Installation operates directly on reserved system records through the BIOS.
+Export reads those records and writes a package through ordinary CP/M file I/O.
 
-Its fundamental contract is:
+Its installation contract is:
 
 > **Replace the destination's BetterCP/M system area while preserving all data outside that reserved area.**
 
@@ -30,9 +32,9 @@ SYSGEN is not:
 - a general disk copier;
 - a filesystem utility;
 - a disk-format converter;
-- a system-package builder.
+- a compiler/build-product composer (that remains SYSBUILD’s role).
 
-`DUP` and `CONFIG` establish suitable media and drive bindings. `SYSBUILD` produces the canonical `SYSTEM.SYS` package. SYSGEN installs the system onto already compatible media.
+`DUP` and `CONFIG` establish suitable media and drive bindings. `SYSBUILD` produces the canonical `SYSTEM.SYS` package. SYSGEN installs the system onto already compatible media and can export installed system records to a package.
 
 ---
 
@@ -45,7 +47,9 @@ BetterCP/M 1.0 supports:
 ```text
 SYSGEN
 SYSGEN source: destination:
-SYSGEN [drive:]SYSTEM.SYS destination:
+SYSGEN [drive:]package destination:
+SYSGEN source: [drive:]package
+SYSGEN source:
 SYSGEN /VER
 ```
 
@@ -60,13 +64,15 @@ SYSGEN C:SYSTEM.SYS B:
 SYSGEN /VER
 ```
 
-These forms represent three operating modes:
+These forms provide installation and export:
 
 | Form | Source | Destination |
 |---|---|---|
 | `SYSGEN` | bootable system on `A:` | prompted `B:`–`D:` |
 | `SYSGEN A: B:` | explicit bootable source drive | explicit destination |
-| `SYSGEN SYSTEM.SYS B:` | package file | explicit destination |
+| `SYSGEN SYSTEM.SYS B:` | exact package file | explicit installation destination |
+| `SYSGEN A: B:BASE090.SYS` | installed system records | package in B: current user |
+| `SYSGEN A:` | installed system records | SYSTEM.SYS in caller’s current DU |
 
 The command-line paths invoke the same installation, validation, confirmation, writing, and verification machinery as the interactive path.
 
@@ -145,7 +151,7 @@ This mode obtains the system image directly from the source disk's reserved syst
 Syntax:
 
 ```text
-SYSGEN [drive:]SYSTEM.SYS destination:
+SYSGEN [drive:]package destination:
 ```
 
 Examples:
@@ -155,17 +161,12 @@ SYSGEN SYSTEM.SYS B:
 SYSGEN C:SYSTEM.SYS B:
 ```
 
-The filename is the canonical:
-
-```text
-SYSTEM.SYS
-```
-
-A simple drive qualification is permitted because SYSGEN uses the normal FCB drive field while matching the canonical 8.3 filename.
-
-Arbitrary package filenames are not part of the 1.0 interface. SYSGEN does not
-implement DU/user-area parsing or user switching. A form such as
-`B7:SYSTEM.SYS` is not specified.
+Package filenames are exact CP/M 8.3 names with an optional A:–D: drive
+prefix. SYSTEM.SYS remains the default export name; arbitrary names permit a
+library of system-track snapshots. No wildcards, compound selectors, DU/user
+syntax, paths, or user switching are supported. Unqualified files use the
+caller’s current drive and user. The parser validates the complete counted tail
+and builds private FCBs rather than trusting the CCP-prepared FCBs.
 
 The destination is:
 
@@ -186,7 +187,7 @@ Malformed or unsupported invocations report the usage form and return to the CCP
 The implemented usage is:
 
 ```text
-Usage: SYSGEN, SYSGEN A: B:, or SYSGEN SYSTEM.SYS B:
+Usage: SYSGEN | A: B: | package B: | A: package | /VER
 ```
 
 This message illustrates the accepted forms; the drive letters shown are examples rather than a statement that the source must specifically be `A:`.
@@ -194,12 +195,11 @@ This message illustrates the accepted forms; the drive letters shown are example
 Examples of invalid syntax include:
 
 ```text
-SYSGEN A:
 SYSGEN A: A:
 SYSGEN SYSTEM.SYS
 SYSGEN E: B:
 SYSGEN A: E:
-SYSGEN OTHER.SYS B:
+SYSGEN B7:OTHER.SYS B:
 ```
 
 Some syntactically valid commands may subsequently fail because of physical-drive or geometry restrictions.
@@ -217,7 +217,7 @@ SYSGEN /VER
 prints:
 
 ```text
-BetterCP/M SYSGEN 1.0 (Build 003)
+BetterCP/M SYSGEN 1.0 (Build 004)
 ```
 
 and returns directly to the CCP without disk installation activity. The version
@@ -739,36 +739,71 @@ The destination's existing filesystem definition remains otherwise intact.
 
 # `SYSTEM.SYS` RESPONSIBILITY
 
-## 32. Package production
+## 32. Package production and disk export
 
-SYSGEN consumes `SYSTEM.SYS`.
-
-It does not create it.
-
-The canonical native build path remains:
-
-```text
-system source/products
-        |
-        v
-SYSBUILD
-        |
-        v
-SYSTEM.SYS
-        |
-        v
-SYSGEN
-```
-
-Providing an extraction mode such as:
+SYSBUILD composes a new package from build products. SYSGEN instead snapshots
+an installed disk’s canonical 160 protected records, preserving payload bytes,
+saved startup command, IOBYTE defaults and saved drive configuration. It does
+not capture unsaved live changes, whole-disk data or arbitrary track ranges.
 
 ```text
-SYSGEN A: SYSTEM.SYS
+SYSGEN A:                     ; default SYSTEM.SYS in caller DU
+SYSGEN A: B:BASE090.SYS        ; named snapshot
+SYSGEN B:BASE090.SYS C:        ; install named snapshot
 ```
 
-is not part of BetterCP/M 1.0.
+Source drives are A:–D:. Explicit package drives are A:–D:; an unqualified
+package uses the caller drive. Source and output may share a physical disk
+because all system records are buffered before any output file is created.
+Only filesystem output changes; no protected source record is written.
 
-This avoids creating a second, potentially divergent package-production mechanism.
+Export emits the existing version-1 128-byte BCSY header plus the unmodified
+20,480-byte payload: exactly 161 records, 20,608 bytes. Header fields use the
+existing package magic/version/count/base contract. The source binding comes
+from the saved A: binding inside the installed resident carrier, not unsaved
+live settings. Validate descriptor version, binding bounds, reserved capacity
+and normalized geometry against the binding used for reads before file output.
+Structural checks and byte comparison do not establish a whole-payload checksum
+or prove that an arbitrary source image is semantically sound.
+
+Publication uses reserved names SYSGEN.$$$ and SYSGEN.BAK in the output DU.
+These two names cannot be export targets. If either exists or cannot be checked,
+stop and preserve it. Other exact filenames are permitted, including names
+without an extension. A new final file needs no destructive confirmation.
+Existing RO or SYS packages are not replaced. For an ordinary existing file:
+
+```text
+Replace existing package (Y/N)?
+```
+
+Only Y permits replacement. Write header/payload into SYSGEN.$$$, close it,
+reopen and compare every byte, require immediate EOF, and check close status.
+Rename the old final to SYSGEN.BAK if replacing, then rename the verified temp
+to the requested final name. Reopen and byte-verify the final before reporting:
+
+```text
+Package exported and verified.
+```
+
+Delete the backup only after successful final verification. If that deletion
+fails, report successful export and that SYSGEN.BAK remains.
+
+On recoverable pre-publication write/close/verification failure or Ctrl-C, close
+and attempt to delete the incomplete temporary file. If deletion fails, report
+the retained incomplete SYSGEN.$$$. Never remove a pre-existing recovery file.
+A read failure before output leaves output files untouched.
+
+On any rename or final-verification failure, stop and retain remaining files;
+report publication failure and direct inspection of the chosen output,
+SYSGEN.$$$ and SYSGEN.BAK. Do not attempt automatic rollback after a failed
+rename: multi-extent directory updates need not be atomic. Do not claim success
+or power-loss safety. A nonreturning BDOS/media abort may likewise leave a
+recovery file. Preserve/recover these files before retrying.
+
+SYSGEN needs at least 36K TPA for its existing 4000h–8FFFh payload buffer.
+A pre-initialization guard rejects a lower boundary; /VER remains pure.
+Ctrl-C is checked between output records; in-flight BIOS/file calls are not
+asynchronously cancelled.
 
 ---
 
@@ -868,7 +903,9 @@ This establishes the no-write guarantee for this qualified preflight refusal pat
 ```text
 SYSGEN
 SYSGEN source: destination:
-SYSGEN [drive:]SYSTEM.SYS destination:
+SYSGEN [drive:]package destination:
+SYSGEN source: [drive:]package
+SYSGEN source:
 SYSGEN /VER
 ```
 
@@ -893,7 +930,8 @@ SYSGEN accepts:
 
 - interactive `A:` system-disk source;
 - explicit A-D system-disk source;
-- canonical `[drive:]SYSTEM.SYS` package source.
+- exact `[drive:]package` file source;
+- disk-to-package export, defaulting to SYSTEM.SYS for a source-only invocation.
 
 All required source data is validated and buffered before destination installation begins.
 
@@ -959,8 +997,7 @@ BetterCP/M 1.0 SYSGEN does not:
 - format disks;
 - create or change disk geometry;
 - install onto incompatible data-only formats;
-- create `SYSTEM.SYS`;
-- perform arbitrary system-package extraction;
+- extract arbitrary track ranges or filesystem contents;
 - provide a verify-only mode;
 - provide an unattended confirmation-bypass switch;
 - copy filesystem files.
@@ -969,7 +1006,8 @@ BetterCP/M 1.0 SYSGEN does not:
 
 ## 45. Final 1.0 design status
 
-No substantial new SYSGEN functionality is required for BetterCP/M 1.0.
+Build 004 adds named package input and installed-system export under section 32.
+Release qualification remains separate from focused export/installation tests.
 
 The implemented command interface already provides direct source/destination selection:
 
@@ -980,11 +1018,11 @@ SYSGEN SYSTEM.SYS B:
 
 alongside the traditional interactive mode.
 
-The 1.0 engineering work is therefore principally consolidation and qualification rather than redesign. The existing command-line access, cross-format compatibility rules, data-only refusal, package validation, filesystem preservation, destination patching, record-zero-last installation order, and byte-for-byte read-back verification are the normative SYSGEN behavior.
+The 1.0 engineering work includes the bounded export addition and qualification. The existing command-line access, cross-format compatibility rules, data-only refusal, package validation, filesystem preservation, destination patching, record-zero-last installation order, and byte-for-byte read-back verification are the normative SYSGEN behavior.
 
 ## Consolidated package and preservation boundary
 
-The 161-record SYSTEM.SYS file is an input container; only its 160 payload
+The 161-record package file is an input/output container; only its 160 payload
 records enter the destination system area. Neither the header nor any ordinary
 source file is installed. Preserve both the filesystem and reserved records
 beyond payload record 159. Mandatory confirmation applies equally to disk and
@@ -996,6 +1034,9 @@ system area is not rolled back. Report the failure and require reinstallation.
 See [conformance qualification](SYSGEN%20Conformance%20Qualification.md) for
 command parsing, populated-target preservation, cold boot and data-only refusal
 evidence; focused qualification does not declare a final release.
+
+Current Build 004 export, native byte parity and focused platform evidence are
+recorded in [export qualification](SYSGEN%20Export%20Qualification.md).
 
 ## Supporting references
 

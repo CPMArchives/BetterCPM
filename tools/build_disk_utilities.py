@@ -70,6 +70,8 @@ def main():
             (ROOT/'src/utilities/disk/sysgen.inc').read_text()).replace('        INCLUDE disk/common.inc',
             (ROOT/'src/utilities/disk/common.inc').read_text()).replace('        INCLUDE disk/fdbread.inc',
             (ROOT/'src/utilities/disk/fdbread.inc').read_text()).replace('        INCLUDE disk/builtins.inc', builtin)
+        text=text.replace('        INCLUDE sysgen-parse.inc', (ROOT/'src/utilities/sysgen-parse.inc').read_text())
+        text=text.replace('        INCLUDE sysgen-export.inc', (ROOT/'src/utilities/sysgen-export.inc').read_text())
         text=text.replace('; @config-validation@',validation).replace('; @config-iobyte@',io_meta)
         text=text.replace('; @monitor-console@', (ROOT/'src/utilities/common/monitorconsole.inc').read_text())
         data=assemble(args.assembler,text,out/(stem.upper()+'.COM'),out/(stem+'.lst'),0x100)

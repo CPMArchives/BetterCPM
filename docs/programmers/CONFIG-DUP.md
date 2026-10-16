@@ -10,8 +10,9 @@ CONFIG, DUP and SYSGEN are ordinary transient programs. Utility release/build
 identities come from standalone `/VER` and `metadata/utility-versions.tsv`;
 DUP's legacy interactive 1.14 title is separate from that identity. They require
 BetterCP/M disk ABI 5 and four logical drives. CONFIG needs 43 KiB of
-transient space; allow 51 KiB for DUP and its private copy buffer. SYSGEN Build 003 is
-3,700 bytes (about 3.6 KiB). They add no resident allocation: maximum TPA remains
+transient space; allow 51 KiB for DUP and its private copy buffer. SYSGEN Build 004 is
+5,518 bytes (about 5.4 KiB) and requires 36K TPA for its package buffer.
+They add no resident allocation: maximum TPA remains
 54,273 bytes when no RSXs are installed.
 
 Run `CONFIG` or `DUP` at the command prompt. Keep the compiled `DISK.FDB` on
@@ -199,13 +200,16 @@ SYSGEN installs BetterCP/M on a prepared B:, C: or D: disk. It accepts:
 ```text
 SYSGEN
 SYSGEN source: destination:
-SYSGEN [drive:]SYSTEM.SYS destination:
+SYSGEN [drive:]package destination:
+SYSGEN source: [drive:]package
+SYSGEN source:
 SYSGEN /VER
 ```
 
 Bare `SYSGEN` retains the interactive running-A: workflow. The drive form
 obtains the canonical 160-record system image from a bootable source. The file
-form installs the versioned package produced by `SYSBUILD`. Use CONFIG G to
+form installs a versioned package produced by SYSBUILD or an installed-disk
+snapshot exported by SYSGEN. Exact 8.3 names permit a package library. Use CONFIG G to
 assign a SYSTEM format to the destination and DUP A to format the media first.
 SYSGEN rejects undefined drives, physical drive 0, disk-source/destination aliases,
 incompatible bootstrap geometry, and targets with fewer than 160 reserved
@@ -421,3 +425,17 @@ through cancellation, CRC failure, write protection and interruption. The
 z80pack path formats and verifies uniform raw media and rejects mixed-sector
 formatting before writing. Native installation and final two-platform release
 qualification remain separate Item 5 work.
+
+### Installed-system package export
+
+SYSGEN source: exports to SYSTEM.SYS in the caller DU; an explicit exact
+filename selects another package. It preserves protected source payload bytes
+and derives header binding metadata from the saved resident carrier. The
+160-record payload includes saved configuration, not unsaved live state.
+
+Export verifies SYSGEN.$$$ before publication, confirms replacement of ordinary
+existing output, protects RO/SYS files, and uses SYSGEN.BAK to retain old output
+until final verification. Existing recovery names are never overwritten. A
+failed rename stops without rollback because directory extents may have changed
+partially; retain remaining files for recovery. This adds no resident code.
+See SYSGEN specification section 32 for exact bounds and failure behavior.

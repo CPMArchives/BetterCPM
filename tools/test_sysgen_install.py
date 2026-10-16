@@ -83,14 +83,19 @@ def screen(path: Path) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--package", type=Path,
-                        help="install this natively produced SYSTEM.SYS file")
+                        help="install this SYSTEM.SYS-format package")
+    parser.add_argument("--package-name", default="SYSTEM.SYS",
+                        help="exact package filename to exercise")
     args = parser.parse_args()
+    import re
+    if not re.fullmatch(r'[A-Za-z0-9_]{1,8}\.[A-Za-z0-9_]{1,3}', args.package_name):
+        parser.error('package-name must be a simple 8.3 filename')
     shutil.rmtree(OUT, ignore_errors=True)
     OUT.mkdir(parents=True)
     setup = setup_program()
     extras = [("SETBSYS.COM", setup)]
     if args.package:
-        extras.append(("SYSTEM.SYS", args.package.read_bytes()))
+        extras.append((args.package_name, args.package.read_bytes()))
     source = medium(tuple(extras))
     (OUT / "source.dmk").write_bytes(source)
 
@@ -103,14 +108,14 @@ def main() -> None:
     command = [str(DEFAULT_EMULATOR), "-m4", "-batch", "-turbo",
                "-d0", str(OUT / "source.dmk"),
                "-d1", str(OUT / "target.dmk"), "-id", "2500"]
-    command += key_args("SETBSYS\r") + ["-id", "1500", "-it"]
+    command += key_args("SETBSYS\r") + ["-id", "7000", "-it"]
     if args.package:
-        command += key_args("SYSGEN SYSTEM.SYS B:\r") + ["-id", "2000", "-it"]
+        command += key_args(f"SYSGEN {args.package_name} B:\r", delay=25) + ["-itime", "0", "-iw", "Proceed (Y/N)?", "-it"]
     else:
-        command += key_args("SYSGEN\r") + ["-id", "1200", "-it"]
-        command += key_args("B") + ["-id", "800", "-it"]
-    command += key_args("Y") + ["-id", "35000", "-it", "-ix"]
-    run_trs80gp(command, cwd=OUT, check=True, timeout=70)
+        command += key_args("SYSGEN\r", delay=25) + ["-itime", "0", "-iw", "Destination drive", "-it"]
+        command += key_args("B") + ["-itime", "0", "-iw", "Proceed (Y/N)?", "-it"]
+    command += key_args("Y") + ["-itime", "0", "-iw", "System installed and verified", "-it", "-ix"]
+    run_trs80gp(command, cwd=OUT, check=True, timeout=180)
     captures = sorted(OUT.glob("trs80-text-*.bin"))
     texts = [screen(path) for path in captures]
     for i, text in enumerate(texts):

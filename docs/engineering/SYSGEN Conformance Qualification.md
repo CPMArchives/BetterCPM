@@ -1,5 +1,9 @@
 # SYSGEN 1.0 specification conformance
 
+For current Build 004 named input/export and native/platform evidence, see
+[export qualification](SYSGEN%20Export%20Qualification.md). The installation
+report below records the earlier Build 002 increment.
+
 The consolidated [SYSGEN specification](SYSGEN%20Specification.md) retains the
 existing installation engine. The audit identified a command-tail validation
 gap in package mode: the two CCP-prepared FCBs could identify SYSTEM.SYS and a
