@@ -1076,3 +1076,55 @@ is unchanged. Five bad-command subcases and the other three observations are
 not eight new suite rows: these are external evidence for four manual cards.
 The suite's aggregate output is not rewritten. Native equivalents and the
 remaining manual/device/terminal-outcome cases are still outstanding.
+
+### Read-only terminal procedures — eight fresh cpmsim passes
+
+`tools/run_validation_readonly_outcomes.py` exercises the pinned, byte-verified
+RANDTEST and DISKTEST binaries against independent private V005 image copies.
+Final evidence: `readonly-terminal/readonly-outcomes-_rydhwb7/`, including the
+executed runner, transcripts, prepared whole-disk copies, per-case results,
+filesystem checks and extracted System Disk files.
+
+| Items | Attempt | Observed terminal outcome |
+| --- | --- | --- |
+| 0368, 0369 | Sequential/random write to file-read-only BTRO.DAT | File R/O, then usable B0 prompt |
+| 0379 | Make on software-protected D: | Disk R/O, then usable D0 prompt |
+| 0380, 0381 | Sequential/random write on protected D: | Disk R/O, then usable D0 prompt |
+| 0382 | Delete on protected D: | Disk R/O, then usable D0 prompt |
+| 0383 | Rename on protected D: | Disk R/O, then usable D0 prompt |
+| 0384 | Mutation after protection | Disk R/O, then usable D0 prompt |
+
+All eight protected disks are byte-identical before and after their attempts,
+including the complete directory and data area. Independent checks verify the
+BTRO read-only T1 bit remains set and every protected filesystem is clean.
+Every case then executes the public-state witness (correct selected drive,
+user zero, TOP=D501), resident VER and BYE. All 30 shipped A0 files are extracted
+and compared independently after each case; none changes. The immutable
+baseline hash is unchanged. D: was prepared with the canonical 128-record
+BTFULL, release record and allocation filler; its selection occurs through the
+suite's real operator gate, not a patched test.
+
+These are external terminal outcomes, not in-process PASS rows. The returning
+aggregate reports still list their terminal cards as not-run; those reports
+are not edited. The suite binaries/sources and frozen protection oracles are
+unchanged. Native equivalents remain outstanding.
+
+Profile distinction: the pinned terminal-outcome workflow describes DRI's key
+acknowledgement. Existing BetterCP/M specification 74 and the earlier protected-
+disk qualification instead use the diagnostic followed by immediate WBOOT.
+The provider explicitly tests that established BetterCP/M profile without
+injecting a stray acknowledgement into the resumed CCP. These results do not
+claim DRI acknowledgement/presentation equivalence.
+
+Instrument note: an initial compact eight-case run passed the protection
+checks (`readonly-outcomes-ewuyztt1/`). A strengthened report-mode attempt
+(`readonly-outcomes-0ep96y8x/`) then stopped on a harness expectation for a
+`LEDGER` preamble. Source review confirms pinned RANDTEST's INDHEAD emits only
+the report header before its terminal call; the CASE/LEDGER block is deferred
+until result reporting, which WBOOT prevents. The revised provider matches
+`REQUESTED_SCOPE /0368` or `/0369` from the executable's canonicalized report
+header, or DISKTEST's explicit numbered request, before accepting the expected
+diagnostic and external recovery. The intermediate failed assertion is not an
+OS failure or a completed group. A subsequent eight-case run passed
+(`readonly-outcomes-37kfbymh/`); the final run above additionally audits all
+shipped files after each case and is the accepted evidence.
