@@ -77,9 +77,12 @@ def preflight_data(work, fixtures):
             assert decoded[:len(expected)]==expected, 'misplaced fixture data: '+fixture['name']
             if fixture['name']=='BTRO.DAT':assert matched[0][9]&128, 'RO fixture attribute missing'
             files.append({'user':fixture['user'],'name':fixture['name'],'source_sha256':fixture['sha256'],'bytes':len(expected)})
+        for fixture in fixtures:
+            if fixture['drive'].lower()==letter and 'free_blocks' in fixture:
+                assert 400-len(used)==fixture['free_blocks'], 'incorrect free-space fixture'
         if letter=='d':
             assert len(entries)==128 and used==set(range(400)), 'D must be directory- and allocation-full'
-        results[letter]={'raw_sha256':sha(work/f'{letter}.raw'),'live_entries':len(entries),'allocated_blocks_including_directory':len(used),'verified_files':files}
+        results[letter]={'raw_sha256':sha(work/f'{letter}.raw'),'live_entries':len(entries),'allocated_blocks_including_directory':len(used),'free_allocation_blocks':400-len(used),'verified_files':files}
     (work/'fixture-preflight.json').write_text(json.dumps(results,indent=2)+'\n')
     return results
 
@@ -88,7 +91,7 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     for name in ('baseline','suite','output'):
         parser.add_argument('--'+name,type=Path,required=True)
-    parser.add_argument('--program',choices=('DIRTEST','BDOSTEST','FILETEST'),required=True)
+    parser.add_argument('--program',choices=('DIRTEST','BDOSTEST','FILETEST','RANDTEST'),required=True)
     args=parser.parse_args()
     report=json.loads((args.baseline/'report.json').read_text())
     original=args.baseline/report['image']
@@ -107,7 +110,8 @@ def main():
     # wrong physical tracks. A cpmcp round trip can hide the same mapping bug.
     (work/'diskdefs').write_text('diskdef native-data\n seclen 512\n tracks 160\n sectrk 10\n blocksize 2048\n maxdir 128\n skew 1\n boottrk 0\n os 2.2\nend\n')
     blank=b'\xe5'*len(extract_raw(original.read_bytes()))
-    data={letter:work/f'{letter}.raw' for letter in ('bcd' if args.program=='FILETEST' else 'bc')}
+    full_drive=args.program in ('FILETEST','RANDTEST')
+    data={letter:work/f'{letter}.raw' for letter in ('bcd' if full_drive else 'bc')}
     for path in data.values():path.write_bytes(blank)
     fixtures=[]
     def install(path,name,user=0,drive='b'):
@@ -123,7 +127,18 @@ def main():
     install(cross,cross.name,drive='c')
     if args.program=='BDOSTEST':
         for name in ('BDSA.TMP','BDSB.TMP'):install(payload/'BTEMPTY.DAT',name)
-    if args.program=='FILETEST':
+    if args.program=='RANDTEST':
+        # Case 0346 writes until allocation exhaustion. Native random writes
+        # take seconds apiece: leave one 2K block free, not 128K. The other
+        # required writers each create one single-block temporary file, then
+        # delete it; extent-crossing reads use the preinstalled BIG fixture.
+        # This bounds exhaustion without changing the suite or its oracle.
+        used=2+sum(math.ceil(fixture['bytes']/2048) for fixture in fixtures
+                   if fixture['drive']=='B' and 'source' in fixture)
+        filler=work/'RANDFILL.DAT';filler.write_bytes(bytes((400-1-used)*2048))
+        install(filler,filler.name)
+        fixtures.append({'drive':'B','free_blocks':1,'purpose':'bounded allocation exhaustion for 0346'})
+    if full_drive:
         control=bytearray(128*128);control[-128:-120]=b'FULL-127'
         control_file=work/'BTFULL.DAT';control_file.write_bytes(control)
         release=work/'BTREL.DAT';release.write_bytes(bytes(128))
@@ -135,16 +150,16 @@ def main():
         fixtures.append({'drive':'D','full_directory':128,'allocated_blocks':400,'directory_blocks':2})
     preflight=preflight_data(work,fixtures)
     for letter,path in data.items():(work/f'{letter}.dmk').write_bytes(build(path.read_bytes()))
-    selector='/SAFE' if args.program=='DIRTEST' else '/GROUP:REQUIRED'
+    selector='/SAFE' if args.program in ('DIRTEST','RANDTEST') else '/GROUP:REQUIRED'
     last='0566  ' if args.program=='DIRTEST' else '0531  '
-    passes={'DIRTEST':49,'BDOSTEST':56,'FILETEST':68}[args.program]
-    if args.program=='FILETEST':last='Summary: '
+    passes={'DIRTEST':49,'BDOSTEST':56,'FILETEST':68,'RANDTEST':39}[args.program]
+    if full_drive:last='Summary: '
     expected=f'Summary: {passes} pass, 0 fail, 0 error'
     command=[str(DEFAULT_EMULATOR),'-m4','-batch','-turbo','-ktx','-d0',str(image),'-d1',str(work/'b.dmk'),'-d2',str(work/'c.dmk'),'-itime','15000','-iw','Type TYPE README.TXT for more','-id','6000']
-    if args.program=='FILETEST':command += ['-d3',str(work/'d.dmk')]
+    if full_drive:command += ['-d3',str(work/'d.dmk')]
     command+=key_args('B:\r')+['-id','6000','-it']
     command+=key_args(args.program+' '+selector+'\r')+['-iw',last,'-id','120','-it','-ix']
-    initial={letter:sha(work/f'{letter}.dmk') for letter in ('abcd' if args.program=='FILETEST' else 'abc')}
+    initial={letter:sha(work/f'{letter}.dmk') for letter in ('abcd' if full_drive else 'abc')}
     try:
         run(command,cwd=work,timeout=900)
     except Exception as error:
@@ -155,7 +170,7 @@ def main():
     assert any(line.startswith('B0>') for line in ready.splitlines()), 'drive-change readiness capture was not the B prompt'
     text=screen(work/'trs80-text-1.bin')
     (work/'screen.txt').write_text(text+'\n')
-    result={'baseline_sha256':report['sha256'],'program_sha256':sha(program),'emulator_sha256':sha(DEFAULT_EMULATOR),'fixtures':fixtures,'fixture_preflight':preflight,'read_only_fixture':'B0:BTRO.DAT','command':args.program+' '+selector,'expected_summary':expected,'suite_status':'PASS' if expected in text else 'FAIL','status':'PENDING_AUDIT','initial_disks':initial,'final_disks':{letter:sha(work/f'{letter}.dmk') for letter in ('abcd' if args.program=='FILETEST' else 'abc')},'scope':'native final aggregate summary and trailing rows; manual/excluded cards are not passes; no complete scrolling transcript'}
+    result={'baseline_sha256':report['sha256'],'program_sha256':sha(program),'emulator_sha256':sha(DEFAULT_EMULATOR),'fixtures':fixtures,'fixture_preflight':preflight,'read_only_fixture':'B0:BTRO.DAT','command':args.program+' '+selector,'expected_summary':expected,'suite_status':'PASS' if expected in text else 'FAIL','status':'PENDING_AUDIT','initial_disks':initial,'final_disks':{letter:sha(work/f'{letter}.dmk') for letter in ('abcd' if full_drive else 'abc')},'scope':'native final aggregate summary and trailing rows; manual/excluded cards are not passes; no complete scrolling transcript'}
     (work/'result.json').write_text(json.dumps(result,indent=2)+'\n')
     assert sha(original)==report['sha256']
     try:

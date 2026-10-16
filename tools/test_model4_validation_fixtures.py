@@ -24,9 +24,12 @@ def main():
             raw[block*2048:block*2048+len(chunk)]=chunk
         (work/'b.raw').write_bytes(raw);(work/'c.raw').write_bytes(b'\xe5'*819200)
         fixture={'drive':'B','user':7,'name':'BTRO.DAT','source':str(source),'sha256':hashlib.sha256(payload).hexdigest()}
-        checked=preflight_data(work,[fixture])
+        checked=preflight_data(work,[fixture,{'drive':'B','free_blocks':389}])
         assert checked['b']['allocated_blocks_including_directory']==11
         assert checked['b']['verified_files'][0]['bytes']==len(payload)
+        try:preflight_data(work,[fixture,{'drive':'B','free_blocks':388}])
+        except AssertionError as error:assert 'incorrect free-space fixture' in str(error)
+        else:raise AssertionError('incorrect free-space declaration passed')
         def rejected(data,diagnostic):
             (work/'b.raw').write_bytes(data)
             try:preflight_data(work,[fixture])
@@ -39,7 +42,7 @@ def main():
         rejected(shared,'duplicate allocation block')
         hole=bytearray(raw);hole[15]=127
         rejected(hole,'hole in dense fixture extents')
-    print('Native fixture decoder verifies dense extents, 16-bit blocks and RO; rejects misplaced/shared data and extent holes.')
+    print('Native fixture decoder verifies dense extents, 16-bit blocks and RO; rejects misplaced/shared data, extent holes and incorrect free-space declarations.')
 
 
 if __name__=='__main__':main()

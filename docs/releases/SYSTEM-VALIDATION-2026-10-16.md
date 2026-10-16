@@ -28,7 +28,7 @@ The source checkout was clean and was not modified. A private clone at
 | Stage | Status | Evidence / next work |
 | --- | --- | --- |
 | 1. Clean builds, contents, boot, baseline console/memory | In progress; initial gates pass | Both distributions pass build/boot/integrity; focused BIOS/CCP and native editing/unload pass. Additional console/startup-failure/repeated-return cases remain. |
-| 2. Fresh conformance suite | Partial groups pass on both platforms | Fresh ENTRYTST, CPUTEST, ECOTEST, BDOSTEST required, DIRTEST safe, FILETEST required and RANDTEST safe results below. Selected console, disk/BIOS/error and native Model 4 checks also pass below; remaining cases and CCP procedures are still pending; V004 passes the cpmsim and manual-native checks with the post-run audit below. V006 replaces invalid native FILE/BDOS fixture evidence with corrected 68-pass and 56-pass runs. |
+| 2. Fresh conformance suite | Partial groups pass on both platforms | Fresh ENTRYTST, CPUTEST, ECOTEST, BDOSTEST required, DIRTEST safe, FILETEST required and RANDTEST safe results below. Selected console, disk/BIOS/error and native Model 4 checks also pass below; remaining cases and CCP procedures are still pending; V004 passes the cpmsim and manual-native checks with the post-run audit below. V006 replaces invalid native FILE/BDOS fixture evidence with corrected 68-pass and 56-pass runs. V007 adds native RANDTEST: 39 pass, 2 manual not-run, with bounded exhaustion media. |
 | 3. CPX/RSX lifecycle, relocation, ROM protection | Protected ROM candidate campaigns pass | Fresh V002/V003 guarded ROM, lifecycle, workspace and stack results below; wider RAM/native lifecycle coverage remains. |
 | 4. Resident/transient command integration | Partial; four resident ecology procedures pass on cpmsim | Selectors, protection, prompts, explicit transient invocation, feature diagnostics and caller-state restoration. |
 | 5. Utility operations and failure recovery | Not run | System-disk utilities only; disposable images and independent filesystem inspection. |
@@ -1249,3 +1249,109 @@ isolated report and RAM checkpoint use the unchanged suite binary. A manual
 post-run audit recheck initially supplied a relative working path twice; the
 retained open error was corrected by using the absolute evidence directory,
 and all final audits above then passed on the same images.
+
+## V007: native random-I/O exhaustion fixture corrected
+
+The native RANDTEST `/SAFE` run reached passing card 0345 but did not produce
+an aggregate result before the runner's 900-second timeout. Retained evidence
+is `build/validation/8127eab/v007-native-random/randtest-d2xai76k/`.
+This is incomplete evidence, not a pass and not yet an attributed OS defect.
+The independently decoded B: fixture starts with exactly 64 free 2K blocks;
+its free blocks are 336 through 399, exercising 16-bit allocation numbers.
+D: is prepared allocation- and directory-full for the later failure cases.
+
+Card 0346 writes random records until BDOS returns a failure, without normal
+intermediate output. `tools/build_rand0346_diagnostic.py` makes a separately
+named `R346DBG.COM` from the pinned source without changing the suite. It
+prints before preparation, before random writes at record 000000h and every
+128 records thereafter, and prints the stopping record and BDOS return code
+when the loop returns. Record numbers and return codes are hexadecimal.
+Checkpoint printing preserves the loop's registers and flags and leaves its
+DMA address unchanged. The test's existing success criterion and cleanup
+remain in place. This instrument is diagnostic only: acceptance still needs
+the unchanged suite to complete after the cause is resolved.
+
+The diagnostic copy assembles with zero errors (36,236 bytes). Its source,
+listing and source/binary hashes are retained in the separate
+`v007-native-random/diagnostic-0346/` evidence directory. An isolated native
+run was captured; the following investigation supersedes the suspected-stall
+interpretation, but the original timeout remains incomplete evidence.
+
+### Exhaustion fixture diagnosis
+
+The first diagnostic was intentionally stopped after a 100-second observation
+window, with no second 128-record checkpoint. A finer diagnostic
+(`--every-write`) reports before and after each write, preserving all loop
+registers and flags. A focused CPU execution check verifies AF/BC/DE/HL/SP
+preservation, including the disk-full return A=02h. In
+`v007-native-random/diagnostic-0346-each-write/`, the 30-second observation
+shows records 0 through 3 returning successfully and record 4 starting. The
+test is making slow progress; absence of a coarse checkpoint is not a hang.
+The requested automated RAM dump produced no retained RAM file and supplies
+no additional evidence.
+
+The separately retained `diagnostic-0346-one-free-block/` starts with exactly
+one free 2K allocation block, number 399. Records 0 through 15 succeed;
+record 16 (000010h) returns 02h, followed by:
+
+```text
+0346  P  R  Prereq/Open=00; random-I/O=02
+Summary: 1 pass, 0 fail, 0 error
+```
+
+Post-run independent raw-block decoding verifies every B: input unchanged,
+the temporary file absent and one free block restored. The filesystem check
+passes. This is an instrumented diagnosis, not unchanged-suite qualification.
+
+The native RANDTEST runner now leaves one free block. The other required
+writers each use a single-block temporary file and remove it; reads crossing
+extents use preinstalled canonical fixtures. This bounds card 0346 to 16
+successful writes while retaining its actual allocation-exhaustion oracle
+and a 16-bit block number. No OS code or pinned suite code was changed.
+The unchanged `/SAFE` rerun on this fixture completes in
+`build/validation/8127eab/v007-native-random-bounded/randtest-5f9phoe3/`:
+
+```text
+Summary: 39 pass, 0 fail, 0 error, 0 observations, 2 not-run
+```
+
+The program hash remains the pinned suite's
+`041bddda388acdf9284566ab7c410ca5a520198b78a3973ba1af1d84a329f2c0`.
+The final capture explicitly shows card 0346 passing with random-I/O=02h.
+Cards 0368 and 0369 remain listed not-run; their native external read-only
+terminal-outcome procedures are still pending. They are not aggregate passes.
+
+B:/C:/D: filesystem checks pass. Independent post-run direct-block decoding
+verifies all original input contents and exact live-file inventories, including
+restoration of B:'s one free block and removal of all temporary files. D: is
+byte-identical to the full fixture, hash
+`5722a607cc9d6393d69e81f6ae41d416ff3a0c3c64639197e104b808e1598409`.
+All 29 shipped A: files are unchanged and match their manifest source hashes;
+the immutable System Disk baseline is unchanged. Executed runner/audit sources,
+fixture preflight, trailing screen/summary and post-run audits are retained.
+This capture does not provide a complete scrolling transcript.
+
+The fixture decoder regression checks pass, including rejection of an incorrect
+free-space declaration. The bounded correctness run requires no OS memory
+growth or behavior change. The diagnostic demonstrates continuing writes,
+not a reproduced write-loop hang. It does not establish acceptable performance.
+
+### Open performance finding: unexpectedly slow native random writes
+
+Reducing the fixture resolves the conformance-run duration, not the underlying
+performance concern. The short diagnostic shows four successful writes in a
+30-second observation window. An hours-long duration for filling 128K was an
+extrapolation from that sample, not a completed timed measurement. Console
+instrumentation and emulator timing effects have not been separated from OS
+disk-path costs. Do not classify this as ordinary floppy latency without that
+investigation.
+
+Measure identical sequential and random writes without per-record console
+output, recording elapsed time and exact successful record counts. Compare
+low and high allocation blocks and sparse versus densely occupied directories.
+Count directory scans, physical sector reads/writes and allocation-vector work
+per operation, and verify emulator speed/latency settings. Compare the same
+workload with a historical Model 4 CP/M baseline where practical. Distinguish
+instrumentation, emulator timing, BIOS caching/mapping and BDOS algorithm costs
+before attributing the slowdown. This performance finding remains open; the
+39-pass result establishes correctness only on the bounded fixture.
