@@ -1192,8 +1192,8 @@ CCP_EDTXLP:                             ; print one edited-line character
 
 CCP_EDFIN:                              ; finish command-line editing
 
-  ; Remove the visual cursor before command execution, then preserve CP/M's
-  ; final-carriage-return presentation.
+  ; Remove the visual cursor and finish the command with CR/LF. A transient
+  ; may print immediately without supplying its own leading newline.
 
         LD      E,13
         LD      C,2
@@ -1210,6 +1210,9 @@ CCP_EDFIN:                              ; finish command-line editing
         LD      C,2
         CALL    BDOS
         LD      E,13
+        LD      C,2
+        CALL    BDOS
+        LD      E,10
         LD      C,2
         CALL    BDOS
         LD      A,(CCP_COUNT)

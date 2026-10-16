@@ -379,6 +379,8 @@ For example, if a filename has been mistyped, the cursor can be moved back to th
 
 Editing affects only the command currently being entered. The command is not interpreted or executed until it is submitted.
 
+Pressing `RETURN` finishes the command line and moves to a new display line before the command produces output.
+
 The complete command-line editing key assignments are summarized in Appendix B.
 
 #### 3.4 Command History

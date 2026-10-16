@@ -966,7 +966,7 @@ B31 command prompt, and `FULL-TPA FUNCTION0 ENTERED` followed by
 Function-0 behavioral passes; the per-JUMP state output itself is not visible.
 Oversize rejection and independent post-run file audit remain pending.
 
-### V005 — open: interactive command termination overwrites the command line
+### V005 — corrected: interactive command termination overwrites the command line
 
 The same manual screenshots show immediate transient output replacing its
 invocation line. Source inspection confirms CCP_EDFIN redraws the final command
@@ -974,8 +974,8 @@ and emits CR (13) without LF (10) before dispatch. This explains why programs
 that begin with printable text overwrite the command, while programs that
 supply their own leading newline appear normal. The submitted-command echo
 already emits CR/LF. This is a CCP presentation issue; no emulator cause is
-required to explain it. A correction and focused command-editor verification
-are pending, separately from V004's loader qualification.
+required to explain it. The correction below is separate from V004's loader
+qualification.
 
 #### Manual oversize result, 21:40
 
@@ -989,3 +989,31 @@ as `v004-manual-model4/oversize.png`. All requested manual behavioral checks
 user-supplied evidence. The automated capture run remains incomplete and the
 independent native post-run file audit remains pending; neither is inferred
 from these manual screenshots. V005's command-line newline defect remains open.
+
+#### V005 correction and verification
+
+Interactive completion now emits LF immediately after its final CR. The
+completed command therefore remains visible when a program starts printing
+without its own leading newline. Empty commands also complete with CR/LF.
+BDOS Function 10, submitted-command echo and command contents are unchanged.
+The CCP gains seven bytes: 5,482 / 5,632; module 6,506 / 6,656; 488 relocations.
+No resident allocation or unloaded 53K TPA change occurs.
+
+`tools/test_ccp_command_newline.py` first failed against the old assembled
+CCP with `b'\rA0> \r'`. It now captures exact final CR/LF for empty, bare and
+argument-bearing commands, including an interior logical cursor, and verifies
+that immediate newline-free output follows the LF. Focused CCP tests and all
+eight protected loader-result-provider combinations also pass.
+
+A clean isolated cpmsim distribution build passes at
+`/private/tmp/bettercpm-validation-v005/release-da2a8d821492-3c2103f18c0d/z80pack`.
+`v005-command-newline/` retains the live transcript, fixture source/binary,
+runner and hashes: both `PROBE` and `PROBE ONE.TXT` are followed by literal
+CR/LF before `NEWLINE PROBE`, whose program deliberately emits no leading
+newline. Empty-line entry also returns to a prompt. These are live cpmsim
+observations, not a native Model 4 visual pass.
+
+The V005 cpmsim candidate also passes a fresh one-cycle full-TPA return run:
+RET, JP 0 and Function 0 from A0/B3/B31 plus oversize rejection (10 external
+checks), in `v005-full-tpa/ccp-returns-697tmih9/`. This verifies the presentation
+change did not regress the newly corrected cross-user loader paths.
