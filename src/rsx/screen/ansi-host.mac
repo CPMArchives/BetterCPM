@@ -1,0 +1,256 @@
+; Production screen primitives to an ANSI-capable 80x24 host endpoint.
+; The hardware/transport choice is in this module, never in a personality.
+        ASEG
+        ORG 08000H
+B_NEXT: DW 5
+B_DISP: DW B_CHAIN
+        DW 0,0
+B_CHAIN:
+        LD HL,(B_NEXT)
+        JP (HL)
+SB_ENTRY:
+        CP 6
+        JP C,B_RAW
+        SUB 6
+        CP 10
+        JR NC,B_BAD
+        PUSH AF
+        CP 2
+        JR C,B_ARGOK
+        CP 6
+        JR Z,B_ARGOK
+        CP 9
+        JR NC,B_ARGOK
+        LD A,C
+        AND 127
+        CP 32
+        JR Z,B_ARGOK
+        POP AF
+        JP B_BAD
+B_ARGOK:
+        POP AF
+        ADD A,A
+        LD E,A
+        LD D,0
+        LD HL,B_TABLE
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        JP (HL)
+B_BAD:
+        LD A,255
+        RET
+B_RAW:
+        LD HL,(1)
+        LD DE,66
+        ADD HL,DE
+        JP (HL)
+B_EMIT:
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        XOR A
+        CALL B_RAW
+        POP HL
+        POP DE
+        POP BC
+        RET
+B_STR:
+        LD C,(HL)
+        INC HL
+        LD A,C
+        OR A
+        RET Z
+        CALL B_EMIT
+        JR B_STR
+B_TABLE:
+        DW B_POS,B_PUT,B_EOL,B_EOS,B_UP,B_DOWN,B_QUERY,B_INSERT,B_DELETE,B_VIS
+B_QUERY:
+        LD HL,B_DESC
+        RET
+B_DESC: DB 'SCR',1,0,24,80
+        DW 0FFFFH
+B_POS:
+        LD A,B
+        CP 24
+        JR NC,B_BAD
+        LD A,C
+        CP 80
+        JR NC,B_BAD
+        LD (B_COL),A
+        LD A,B
+        LD (B_ROW),A
+B_POSITION:
+        LD HL,B_CSI
+        CALL B_STR
+        LD A,(B_ROW)
+        INC A
+        CALL B_DEC
+        LD C,';'
+        CALL B_EMIT
+        LD A,(B_COL)
+        INC A
+        CALL B_DEC
+        LD C,'H'
+        JP B_EMIT
+B_DEC:
+        LD B,0
+B_TENS:
+        CP 10
+        JR C,B_UNIT
+        SUB 10
+        INC B
+        JR B_TENS
+B_UNIT:
+        PUSH AF
+        LD A,B
+        OR A
+        JR Z,B_LAST
+        ADD A,'0'
+        LD C,A
+        CALL B_EMIT
+B_LAST:
+        POP AF
+        ADD A,'0'
+        LD C,A
+        JP B_EMIT
+B_PUT:
+        LD A,C
+        AND 127
+        CP 32
+        JP C,B_BAD
+        CP 127
+        JP NC,B_BAD
+        CALL B_ATTR
+        LD A,C
+        AND 127
+        LD C,A
+        CALL B_EMIT
+        LD A,(B_COL)
+        CP 79
+        JP Z,B_POSITION                ; cancel ANSI delayed wrap only at edge
+        INC A
+        LD (B_COL),A
+        RET
+B_ATTR:
+        LD A,C
+        AND 128
+        LD B,A
+        LD A,(B_STYLE)
+        CP B
+        RET Z
+        LD A,B
+        LD (B_STYLE),A
+        PUSH BC
+        LD HL,B_NORMAL
+        OR A
+        JR Z,B_SETATTR
+        LD HL,B_REVERSE
+B_SETATTR:
+        CALL B_STR
+        POP BC
+        RET
+B_EOL:
+        CALL B_ATTR
+        LD HL,B_K
+        JP B_STR
+B_EOS:
+        CALL B_ATTR
+        LD HL,B_J
+        JP B_STR
+B_UP:
+        LD A,C
+        LD (B_FILL),A
+        CALL B_ATTR
+        CALL B_AREA
+        LD HL,B_BOTTOM
+        CALL B_STR
+        LD C,10
+        CALL B_EMIT
+        CALL B_BLANK
+        JR B_RESTORE
+B_DOWN:
+        LD A,C
+        LD (B_FILL),A
+        CALL B_ATTR
+        CALL B_AREA
+        LD HL,B_HOME
+        CALL B_STR
+        LD HL,B_RI
+        CALL B_STR
+        CALL B_BLANK
+B_RESTORE:
+        LD HL,B_ALL
+        CALL B_STR
+        JP B_POSITION
+B_AREA:
+        LD HL,B_MARGIN
+        CALL B_STR
+        JP B_POSITION
+B_INSERT:
+        LD A,C
+        LD (B_FILL),A
+        CALL B_ATTR
+        CALL B_AREA
+        LD HL,B_IL
+        CALL B_STR
+        CALL B_BLANK
+        JP B_RESTORE
+B_DELETE:
+        LD A,C
+        LD (B_FILL),A
+        CALL B_ATTR
+        CALL B_AREA
+        LD HL,B_DL
+        CALL B_STR
+        LD HL,B_BOTTOM
+        CALL B_STR
+        CALL B_BLANK
+        JP B_RESTORE
+; Paint a full newly inserted line, independent of host erase rendition.
+; Address column zero on the current physical row, without changing saved cursor.
+B_BLANK:
+        LD C,13
+        CALL B_EMIT
+        LD B,80
+B_BLLOOP:
+        LD A,(B_FILL)
+        LD C,A
+        PUSH BC
+        CALL B_ATTR
+        LD C,32
+        CALL B_EMIT
+        POP BC
+        DJNZ B_BLLOOP
+        RET
+B_FILL: DB 32
+B_VIS:
+        LD A,C
+        CP 2
+        JP NC,B_BAD
+        LD A,C
+        OR A
+        LD HL,B_HIDE
+        JP Z,B_STR
+        LD HL,B_SHOW
+        JP B_STR
+B_IL: DB 27,'[L',0
+B_DL: DB 27,'[M',0
+B_HIDE: DB 27,'[?25l',0
+B_SHOW: DB 27,'[?25h',0
+B_BOTTOM: DB 27,'[24;1H',0
+B_HOME: DB 27,'[H',0
+B_STYLE: DB 255
+B_CSI: DB 27,'[',0
+B_NORMAL: DB 27,'[0m',0
+B_REVERSE: DB 27,'[7m',0
+B_K: DB 27,'[0K',0
+B_J: DB 27,'[0J',0
+B_RI: DB 27,'M',0
+B_MARGIN: DB 27,'[1;24r',0
+B_ALL: DB 27,'[r',0
+B_ROW: DB 0
+B_COL: DB 0
+        END
