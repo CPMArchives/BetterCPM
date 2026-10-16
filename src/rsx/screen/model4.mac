@@ -71,6 +71,8 @@ S_POS:
         LD A,C
         CP 80
         JR NC,S_BAD
+        XOR A
+        LD (SX_PEND),A                ; explicit positioning cancels delayed wrap
         LD L,B
         LD H,0
         ADD HL,HL
@@ -223,6 +225,10 @@ SX_ENTRY:
         JP Z,SX_QUERY
         CP 17
         JP Z,SX_MOVE
+        CP 20
+        JP Z,SX_STYLE
+        CP 21
+        JP Z,SX_GLYPH
         CP 18
         JP NZ,S_BAD
         LD A,H
@@ -260,8 +266,8 @@ SX_QUERY:
         XOR A
         RET
 SX_DESC: DB 'SCX',1,0,12,24,80
-        DW 3
-        DB 0,0
+        DW 01BH
+        DB 060H,0                    ; reverse + conceal, no physical color
 SX_MOVE:
         LD A,B
         CP 4
@@ -336,4 +342,85 @@ SX_YSET:
         JP SX_APPLY
 SX_DIR: DB 0
 SX_STEP: DB 0
+; Canonical rendition: flags, foreground kind/RGB, background kind/RGB.
+; Unsupported physical attributes/colors remain in state but have no effect.
+SX_STYLE:
+        PUSH HL
+        INC HL
+        LD A,(HL)
+        CP 3
+        JR NC,SX_SBAD
+        LD DE,4
+        ADD HL,DE
+        LD A,(HL)
+        CP 3
+        JR NC,SX_SBAD
+        POP HL
+        LD DE,SX_ATTR
+        LD BC,9
+        LDIR
+        XOR A
+        RET
+SX_SBAD:
+        POP HL
+        JP S_BAD
+SX_GLYPH:
+        LD A,C
+        CP 32
+        JP C,S_BAD
+        CP 127
+        JP NC,S_BAD
+        PUSH BC
+        LD A,(SX_PEND)
+        OR A
+        CALL NZ,SX_WNEXT
+        POP BC
+        LD A,(SX_ATTR)
+        AND 64
+        JR Z,SX_VCHAR
+        LD C,32
+SX_VCHAR:
+        LD A,(SX_ATTR)
+        AND 32
+        JR Z,SX_NCHAR
+        LD A,C
+        OR 128
+        LD C,A
+SX_NCHAR:
+        LD A,(M4COLUMN)
+        CP 79
+        JR Z,SX_MARK
+        CALL S_PUT
+        XOR A
+        RET
+SX_MARK:
+        CALL S_PUT
+        LD A,1
+        LD (SX_PEND),A                ; ANSI wrap is deferred until the next glyph
+        XOR A
+        RET
+SX_WNEXT:
+        LD HL,(M4CURSOR)
+        INC HL                       ; from column 79 to next row column 0
+        LD DE,0FF80H
+        OR A
+        SBC HL,DE
+        ADD HL,DE
+        JR C,SX_WPOS
+        LD A,(SX_ATTR)
+        AND 32
+        LD C,32
+        JR Z,SX_SCROLL
+        LD C,160
+SX_SCROLL:
+        CALL S_UP
+        LD HL,0FF30H
+SX_WPOS:
+        LD (M4CURSOR),HL
+        XOR A
+        LD (M4COLUMN),A
+        LD (SX_PEND),A
+        RET
+SX_PEND: DB 0
+SX_ATTR: DB 0,0,0,0,0,0,0,0,0
         END

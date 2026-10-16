@@ -76,10 +76,25 @@ def main():
     assert cpu.word(binding)==old+syms['AM_ENTRY']-0x8000
     check_link(old)
     for char in b'\x0f\x1b0\x1b=!':call(0,char)
+    rendition=bytes([33,2,10,128,250,1,200,0,0])
+    cpu.mem[0x7000:0x7009]=rendition
+    backend_entry=cpu.word(old+12)
+    cpu.a,cpu.hl=20,0x7000;cpu.run(backend_entry,limit=200000);assert cpu.a==0
+    cpu.a,cpu.hl,cpu.de=18,12,80;cpu.run(backend_entry,limit=200000);assert cpu.a==0
+    cpu.a,cpu.c=21,ord('R');cpu.run(backend_entry,limit=200000);assert cpu.a==0
     change(2,b'HELLO   ')
     new=cpu.word(stage.LOW)
     assert new>old and cpu.word(binding)==new+syms['AM_ENTRY']-0x8000
     check_link(new)
+    backend_base=new+front_size
+    attr_offset=backsyms['SX_ATTR' if model4 else 'BH_ATTR']-0x8000
+    assert bytes(cpu.mem[backend_base+attr_offset:backend_base+attr_offset+9])==rendition
+    if model4:
+        assert cpu.mem[backend_base+backsyms['SX_PEND']-0x8000]==1
+    else:
+        assert cpu.word(backend_base+backsyms['BH_PTR']-0x8000)==0
+    cpu.a,cpu.c=21,ord('S');cpu.run(cpu.word(new+12),limit=200000);assert cpu.a==0
+    assert cells()[12*80]&127==ord('S')
     for label,value in [('AM_STATE',3),('AM_ROWPOS',0),('AM_PENDING_ROW',1),('AM_REVERSE',128),('AM_VISIBLE',0)]:
         assert cpu.mem[new+syms[label]-0x8000]==value,label
     emitted.clear();call(0,32+10)

@@ -334,3 +334,15 @@ from control/raw screen output back to fixed-cell output, explicitly synchronize
 with operation 6. See the [calling contract](../engineering/Unloadable%20Screen%20Backend%20ABI.md).
 Do not assume this first slice supplies rendition, wrapping, margins or a complete
 portable ANSI personality; those operations remain subsequent integration work.
+
+
+Provider 1.3 extends the optional SCX mask with rendition (operation 20) and
+styled glyphs (21). Query the rendition and color masks before promising a
+physical style: Model 4 supports reverse/conceal; the host backend encodes all
+eight flags and palette/RGB colors. Records are copied and invalid color kinds
+are rejected before output/state changes. Styled glyphs use delayed wrap;
+legacy fixed cells retain their existing clamp/advance contract. See the
+[record and wrapping contract](../engineering/Unloadable%20Screen%20Backend%20ABI.md).
+The portable ANSI carrier and developer starter still require the remaining
+controls and dependency validation; changing an existing carrier's capability
+word alone does not provide those guarantees.

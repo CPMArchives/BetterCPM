@@ -145,6 +145,8 @@ B_PRINT:
         LD (B_COL),A
         RET
 B_ATTR:
+        XOR A
+        LD (BH_MODE),A               ; legacy rendition supersedes styled mode
         LD A,C
         AND 128
         LD B,A
@@ -313,6 +315,10 @@ BX_ENTRY:
         JR Z,BX_QUERY
         CP 17
         JR Z,BX_MOVE
+        CP 20
+        JP Z,BH_STYLE
+        CP 21
+        JP Z,BH_GLYPH
         CP 18
         JP NZ,B_BAD
         LD A,4
@@ -327,8 +333,8 @@ BX_QUERY:
         XOR A
         RET
 BX_DESC: DB 'SCX',1,0,12,0,0
-        DW 3                        ; relative motion and position implemented
-        DB 0,0                      ; rendition/color operations not yet exposed
+        DW 01BH                      ; motion, position, rendition, styled glyph
+        DB 0FFH,7                    ; all flags, indexed and RGB color
 HM_ENTRY:
         CP 5
         JP NC,HM_BAD
@@ -418,4 +424,130 @@ HM_OP: DB 0
 HM_SEEN: DB 0
 HM_ARG: DW 0
 HM_COL: DW 0
+; Validate the complete canonical record before changing output or state.
+BH_STYLE:
+        PUSH HL
+        INC HL
+        LD A,(HL)
+        CP 3
+        JR NC,BH_BAD
+        LD DE,4
+        ADD HL,DE
+        LD A,(HL)
+        CP 3
+        JR NC,BH_BAD
+        POP HL
+        LD DE,BH_ATTR
+        LD BC,9
+        LDIR
+        XOR A
+        LD (BH_MODE),A
+        CALL BH_APPLY
+        XOR A
+        RET
+BH_BAD:
+        POP HL
+        JP B_BAD
+BH_GLYPH:
+        LD A,C
+        CP 32
+        JP C,B_BAD
+        CP 127
+        JP NC,B_BAD
+        PUSH BC
+        CALL BH_APPLY
+        POP BC
+        CALL B_EMIT                  ; native host wrapping, no fixed-cell tracker
+        XOR A
+        RET
+BH_APPLY:
+        LD A,(BH_MODE)
+        OR A
+        RET NZ
+        LD HL,B_NORMAL
+        CALL B_STR
+        LD HL,BH_FLAGS
+        LD B,8
+        LD C,1
+BH_BITS:
+        LD A,(BH_ATTR)
+        AND C
+        JR Z,BH_NEXT
+        PUSH HL
+        PUSH BC
+        LD A,(HL)
+        CALL BH_CODE
+        POP BC
+        POP HL
+BH_NEXT:
+        INC HL
+        SLA C
+        DJNZ BH_BITS
+        LD HL,BH_ATTR+1
+        LD A,38
+        CALL BH_COLOR
+        LD HL,BH_ATTR+5
+        LD A,48
+        CALL BH_COLOR
+        LD A,1
+        LD (BH_MODE),A
+        LD A,255
+        LD (B_STYLE),A               ; force legacy writes to restore their mode
+        RET
+BH_CODE:
+        PUSH AF
+        LD HL,B_CSI
+        CALL B_STR
+        POP AF
+        CALL BH_NUMBER
+        LD C,'m'
+        JP B_EMIT
+BH_NUMBER:
+        LD L,A
+        LD H,0
+        JP HM_DEC
+BH_COLOR:
+        LD (BH_KIND),A
+        LD A,(HL)
+        OR A
+        RET Z
+        LD (BH_TYPE),A
+        INC HL
+        LD (BH_PTR),HL
+        LD HL,B_CSI
+        CALL B_STR
+        LD A,(BH_KIND)
+        CALL BH_NUMBER
+        LD C,';'
+        CALL B_EMIT
+        LD A,(BH_TYPE)
+        CP 1
+        LD C,'5'
+        LD B,1
+        JR Z,BH_CMODE
+        LD C,'2'
+        LD B,3
+BH_CMODE:
+        CALL B_EMIT
+BH_PART:
+        LD C,';'
+        CALL B_EMIT
+        LD HL,(BH_PTR)
+        LD A,(HL)
+        INC HL
+        LD (BH_PTR),HL
+        PUSH BC
+        CALL BH_NUMBER
+        POP BC
+        DJNZ BH_PART
+        LD HL,0
+        LD (BH_PTR),HL               ; no runtime internal pointer survives a call
+        LD C,'m'
+        JP B_EMIT
+BH_FLAGS: DB 1,2,3,4,5,7,8,9
+BH_ATTR: DB 0,0,0,0,0,0,0,0,0
+BH_MODE: DB 0
+BH_KIND: DB 0
+BH_TYPE: DB 0
+BH_PTR: DW 0
         END
