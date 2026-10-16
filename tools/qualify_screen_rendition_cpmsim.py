@@ -102,6 +102,7 @@ ERROR: DB 'SCX CHECK FAILED',13,10,'$'
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--erasure',action='store_true',help='also qualify styled inclusive erasure')
     parser.add_argument('--diskdefs',type=Path,required=True)
     parser.add_argument('--image',type=Path,default=ROOT/'build/z80pack/disks/library/BetterCPM-Distribution-z80pack-332K.dsk')
     parser.add_argument('--rom-build',type=Path,help='use a matching protected-ROM build and its relocated overlays')
@@ -126,8 +127,29 @@ def main():
         names=subprocess.check_output(['cpmls','-T','raw','-f','bettercpm-default',str(image)],cwd=work,text=True).upper().split()
         for name in ('RSX2TST.COM','RSXTEST.COM'):
             if name in names:subprocess.run(['cpmrm','-T','raw','-f','bettercpm-default',str(image),'0:'+name],cwd=work,check=True)
-    (work/'test.mac').write_text(SOURCE)
-    assemble(Path.home()/'bin/z80asm',SOURCE,work/'SCXTEST.COM',work/'test.lst',0x100)
+    source=SOURCE
+    if args.erasure:
+        source=source.replace('        AND 24\n        CP 24','        AND 28\n        CP 28')
+        source=source.replace('        LD HL,NORMAL','''        LD HL,14
+        LD DE,1
+        LD A,18
+        CALL GO
+        LD HL,ERASETXT
+        CALL TEXT
+        LD HL,14
+        LD DE,3
+        LD A,18
+        CALL GO
+        LD B,0
+        LD C,1
+        LD A,19
+        CALL GO
+        OR A
+        JP NZ,FAILED
+        LD HL,NORMAL''',1)
+        source=source.replace("MARK: DB 'MARK',0", "ERASETXT: DB 'ABCDE',0\nMARK: DB 'MARK',0")
+    (work/'test.mac').write_text(source)
+    assemble(Path.home()/'bin/z80asm',source,work/'SCXTEST.COM',work/'test.lst',0x100)
     for name,path in [('R3PACK.RSX',container),('ANSISCRN.RSX',ROOT/'build/screen-backends/ANSISCRN.RSX'),('SCXTEST.COM',work/'SCXTEST.COM')]:
         existing=subprocess.check_output(['cpmls','-T','raw','-f','bettercpm-default',str(image)],cwd=work,text=True).upper().split()
         if name in existing:subprocess.run(['cpmrm','-T','raw','-f','bettercpm-default',str(image),'0:'+name],cwd=work,check=True)
@@ -148,6 +170,12 @@ def main():
     assert screen.buffer[7][1].data=='N' and screen.buffer[7][1].reverse
     assert screen.buffer[7][1].fg=='0a80fa'
     assert screen.display[9].startswith('SCX CHECK PASSED')
+    if args.erasure:
+        assert screen.display[13][:5]=='   DE'
+        for x in range(3):
+            cell=screen.buffer[13][x]
+            assert cell.reverse and cell.bold and cell.fg=='0a80fa'
+        print('PASS live inclusive styled prefix erasure')
     print(f'PASS live public SCRN lookup, capability discovery, RGB/reverse rendering, legacy/styled switching, unload/53K: {work}')
 
 

@@ -25,7 +25,7 @@ def main():
                     assert cpu.sp==sp
                     return cpu.a
                 assert call(16)==0
-                expected=b'SCX\x01\x00\x0c'+(b'\x18\x50' if name=='M4SCRN' else b'\0\0')+(b'\x1b\0\x60\0' if name=='M4SCRN' else b'\x1b\0\xff\x07')
+                expected=b'SCX\x01\x00\x0c'+(b'\x18\x50' if name=='M4SCRN' else b'\0\0')+(b'\x1f\0\x60\0' if name=='M4SCRN' else b'\x1f\0\xff\x07')
                 assert bytes(cpu.mem[cpu.hl:cpu.hl+12])==expected
                 for op in range(5):
                     for n in [0,1,9,10,24,25,40,80,100,255,256,9999,10000,65535]:
@@ -39,7 +39,7 @@ def main():
                         cases+=1
                 # Invalid controls emit/write nothing; descriptor query is inert.
                 before=bytes(cpu.mem[0xF800:0xFF80]);start=len(wire)
-                for op,direction in [(17,4),(17,255),(19,0),(255,0)]:
+                for op,direction in [(17,4),(17,255),(19,2),(255,0)]:
                     assert call(op,direction)==255
                 assert call(16)==0
                 assert len(wire)==start and bytes(cpu.mem[0xF800:0xFF80])==before

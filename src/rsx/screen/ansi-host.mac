@@ -315,6 +315,8 @@ BX_ENTRY:
         JR Z,BX_QUERY
         CP 17
         JR Z,BX_MOVE
+        CP 19
+        JP Z,BE_ENTRY
         CP 20
         JP Z,BH_STYLE
         CP 21
@@ -333,7 +335,7 @@ BX_QUERY:
         XOR A
         RET
 BX_DESC: DB 'SCX',1,0,12,0,0
-        DW 01BH                      ; motion, position, rendition, styled glyph
+        DW 01FH                      ; motion, position, rendition, styled glyph
         DB 0FFH,7                    ; all flags, indexed and RGB color
 HM_ENTRY:
         CP 5
@@ -550,4 +552,35 @@ BH_MODE: DB 0
 BH_KIND: DB 0
 BH_TYPE: DB 0
 BH_PTR: DW 0
+
+; SCX 19: host geometry and inclusive erasure are owned by the endpoint.
+; Validate before emitting anything. CSI J/K preserve cursor position and
+; retain pending wrap; active canonical rendition supplies erased-cell style.
+BE_ENTRY:
+        LD A,B
+        CP 2
+        JP NC,B_BAD
+        LD A,C
+        CP 3
+        JP NC,B_BAD
+        PUSH BC
+        CALL BH_APPLY
+        LD HL,B_CSI
+        CALL B_STR
+        POP BC
+        PUSH BC
+        LD A,C
+        ADD A,'0'
+        LD C,A
+        CALL B_EMIT
+        POP BC
+        LD A,B
+        OR A
+        LD C,'K'
+        JR Z,BE_FINAL
+        LD C,'J'
+BE_FINAL:
+        CALL B_EMIT
+        XOR A
+        RET
         END
