@@ -415,20 +415,20 @@ RXM_PUBLISH:
         XOR     A
         RET
 
-; MCON is a reserved callable identity, not an ordinary opaque service.
-; Check every candidate and retained carrier before publishing metadata facts.
-; Binding/duplicate-profile selection remains the preparation phase's concern.
+; MCON and SCRN are reserved callable identities. Validate their common
+; platform-bound ABI before either can enter the live callable registry.
+; Portable MCON/dependency binding is a later, separately validated interface;
+; this does not accept a dependent frontend merely because SCRN is present.
 RXM_MONITOR:
         LD      HL,(RXM_DATA)
         LD      DE,RXM_MCON
-        LD      B,4
-RXM_MID:
-        LD      A,(DE)
-        CP      (HL)
-        JR      NZ,RXM_MOK             ; other callable identities unchanged
-        INC     DE
-        INC     HL
-        DJNZ    RXM_MID
+        CALL    RXM_ISID
+        JR      Z,RXM_SCREEN
+        LD      HL,(RXM_DATA)
+        LD      DE,RXM_SCRN
+        CALL    RXM_ISID
+        JR      NZ,RXM_MOK             ; other identities remain opaque
+RXM_SCREEN:
         LD      A,(HL)                 ; major/minor exactly 1.0
         CP      1
         JR      NZ,RXM_MBAD
@@ -463,7 +463,18 @@ RXM_MOK:
 RXM_MBAD:
         LD      A,0FFH
         RET
+RXM_ISID:
+        LD      B,4
+RXM_MID:
+        LD      A,(DE)
+        CP      (HL)
+        RET     NZ
+        INC     DE
+        INC     HL
+        DJNZ    RXM_MID
+        RET
 RXM_MCON:      DB      'MCON'
+RXM_SCRN:      DB      'SCRN'
 
 RXM_BAD:
         LD      A,0FFH
