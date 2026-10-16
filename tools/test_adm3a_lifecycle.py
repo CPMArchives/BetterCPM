@@ -80,6 +80,7 @@ def main():
     cpu.mem[0x7000:0x7009]=rendition
     backend_entry=cpu.word(old+12)
     cpu.a,cpu.hl=20,0x7000;cpu.run(backend_entry,limit=200000);assert cpu.a==0
+    cpu.a,cpu.hl,cpu.de=22,4,20;cpu.run(backend_entry,limit=200000);assert cpu.a==0
     cpu.a,cpu.hl,cpu.de=18,12,80;cpu.run(backend_entry,limit=200000);assert cpu.a==0
     cpu.a,cpu.c=21,ord('R');cpu.run(backend_entry,limit=200000);assert cpu.a==0
     change(2,b'HELLO   ')
@@ -91,8 +92,11 @@ def main():
     assert bytes(cpu.mem[backend_base+attr_offset:backend_base+attr_offset+9])==rendition
     if model4:
         assert cpu.mem[backend_base+backsyms['SX_PEND']-0x8000]==1
+        assert cpu.mem[backend_base+backsyms['SM_TOPROW']-0x8000]==3
+        assert cpu.mem[backend_base+backsyms['SM_BOTTOM']-0x8000]==19
     else:
         assert cpu.word(backend_base+backsyms['BH_PTR']-0x8000)==0
+        assert screen.margins==(3,19)
     # Erase through the rebound callback without consuming deferred wrapping.
     cpu.a,cpu.b,cpu.c=19,0,0
     cpu.run(cpu.word(new+12),limit=200000);assert cpu.a==0

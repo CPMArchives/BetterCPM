@@ -102,6 +102,7 @@ ERROR: DB 'SCX CHECK FAILED',13,10,'$'
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--margins',action='store_true',help='also qualify scroll margins and index controls')
     parser.add_argument('--erasure',action='store_true',help='also qualify styled inclusive erasure')
     parser.add_argument('--diskdefs',type=Path,required=True)
     parser.add_argument('--image',type=Path,default=ROOT/'build/z80pack/disks/library/BetterCPM-Distribution-z80pack-332K.dsk')
@@ -148,6 +149,68 @@ def main():
         JP NZ,FAILED
         LD HL,NORMAL''',1)
         source=source.replace("MARK: DB 'MARK',0", "ERASETXT: DB 'ABCDE',0\nMARK: DB 'MARK',0")
+    if args.margins:
+        source=source.replace('        AND 24\n        CP 24','        AND 184\n        CP 184').replace('        AND 28\n        CP 28','        AND 188\n        CP 188')
+        source=source.replace('        LD HL,NORMAL','''        LD HL,15
+        LD DE,1
+        LD A,18
+        CALL GO
+        LD HL,OUTSIDE
+        CALL TEXT
+        LD HL,19
+        LD DE,1
+        LD A,18
+        CALL GO
+        LD HL,OUTSIDE
+        CALL TEXT
+        LD HL,16
+        LD DE,1
+        LD A,18
+        CALL GO
+        LD HL,ROWAAA
+        CALL TEXT
+        LD HL,17
+        LD DE,1
+        LD A,18
+        CALL GO
+        LD HL,ROWBBB
+        CALL TEXT
+        LD HL,18
+        LD DE,1
+        LD A,18
+        CALL GO
+        LD HL,ROWCCC
+        CALL TEXT
+        LD HL,16
+        LD DE,18
+        LD A,22
+        CALL GO
+        OR A
+        JP NZ,FAILED
+        LD HL,18
+        LD DE,1
+        LD A,18
+        CALL GO
+        LD B,0
+        LD A,24
+        CALL GO
+        OR A
+        JP NZ,FAILED
+        LD HL,16
+        LD DE,1
+        LD A,18
+        CALL GO
+        LD B,2
+        LD A,24
+        CALL GO
+        OR A
+        JP NZ,FAILED
+        LD HL,0
+        LD DE,0
+        LD A,22
+        CALL GO
+        LD HL,NORMAL''',1)
+        source=source.replace("MARK: DB 'MARK',0","OUTSIDE: DB 'OUTSIDE',0\nROWAAA: DB 'AAA',0\nROWBBB: DB 'BBB',0\nROWCCC: DB 'CCC',0\nMARK: DB 'MARK',0")
     (work/'test.mac').write_text(source)
     assemble(Path.home()/'bin/z80asm',source,work/'SCXTEST.COM',work/'test.lst',0x100)
     for name,path in [('R3PACK.RSX',container),('ANSISCRN.RSX',ROOT/'build/screen-backends/ANSISCRN.RSX'),('SCXTEST.COM',work/'SCXTEST.COM')]:
@@ -176,6 +239,11 @@ def main():
             cell=screen.buffer[13][x]
             assert cell.reverse and cell.bold and cell.fg=='0a80fa'
         print('PASS live inclusive styled prefix erasure')
+    if args.margins:
+        assert screen.display[14].startswith('OUTSIDE') and screen.display[18].startswith('OUTSIDE')
+        assert screen.display[15].strip()==''
+        assert screen.display[16].startswith('BBB') and screen.display[17].startswith('CCC')
+        print('PASS live margin scrolling/reverse index and preserved outer rows')
     print(f'PASS live public SCRN lookup, capability discovery, RGB/reverse rendering, legacy/styled switching, unload/53K: {work}')
 
 

@@ -356,3 +356,14 @@ output; return 255 on unsupported targets/modes. See the Screen Backend ABI for
 the exact range contract and qualification limits. A portable ANSI frontend must
 still check all of its required controls before activation; erasure alone does
 not complete the portable ANSI conversion.
+
+
+SCX provider 1.5 adds operation 22 for margins (HL/DE one-based top/bottom,
+zero means screen defaults), and operation 24 for index (B=0), next line (B=1)
+and reverse index (B=2). Query operation 16: the supported-operation mask is now
+00BFh. Margin setting homes the cursor, and these index operations cancel
+pending wrapping. Model 4 implements region movement in the unloadable backend;
+host output delegates actual geometry and scrolling to the terminal. See the
+ABI for validation, blank-rendition and host-dimension limits. Operation 23
+remains unsupported; portable ANSI admission and cursor save/restore are still
+required before converting the production frontend.

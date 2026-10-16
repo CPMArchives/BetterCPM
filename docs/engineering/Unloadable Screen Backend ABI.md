@@ -77,7 +77,7 @@ must contain neither Model 4 addresses nor host ANSI output strings.
 
 Run `python3 tools/build_screen_backends.py` after building the Model 4 BIOS.
 Payloads and listings go in `build/screen-backends/`; carriers are also copied
-to `build/rsx/`. Provider 1.4 payloads: Model 4 810 bytes, 1024 allocated; ANSI-host
+to `build/rsx/`. Provider 1.5 payloads: Model 4 1090 bytes, 1280 allocated; ANSI-host
 1,091 bytes, 1,280 allocated. The allocation includes carrier/runtime overhead and
 alignment. These are optional loaded costs, with zero permanent growth.
 
@@ -266,3 +266,53 @@ Provider 1.4 payloads are M4SCRN 810 bytes/1024 allocated/69 relocations and
 ANSISCRN 1141 bytes/1280 allocated/196 relocations. Model 4 grows by one loaded
 256-byte page; host allocation is unchanged. Unloaded permanent memory is
 unchanged.
+
+
+### SCX margins and index integration (provider 1.5)
+
+The operation mask is 00BFh: operations 17–22 and 24, excluding 23.
+Operation 23 remains unsupported; cursor save/restore is not yet implemented.
+The callable descriptor remains SCRN 1.0 and discovery remains SCX 1.0.
+
+Operation 22 sets scrolling margins. HL is the one-based top row and DE the
+one-based bottom row; zero selects the screen default (top 1, bottom last row).
+At least two rows are required. Setting margins homes the cursor at physical
+row/column zero and clears pending wrapping. The Model 4 validates its physical
+24-row bounds before mutation; host geometry remains endpoint-managed, as with
+positioning. Both backends reject a nonzero bottom not greater than the effective
+top before emitting or changing state. Success returns zero, rejection 255.
+A host cannot report rejection based on unknown physical screen dimensions.
+
+Operation 24 takes B=0 for index, B=1 for next line (index plus carriage return),
+and B=2 for reverse index. Other values return 255 without state/output changes.
+Index/reverse index preserve the column; next line selects column zero. All
+three clear pending wrapping. At the corresponding margin they scroll only the
+selected region, preserving rows outside it. Otherwise they move one physical
+row, stopping at the physical screen edge. Model 4 styled wrapping also uses the
+selected region, and paints newly exposed rows with canonical reverse blanks.
+Legacy fixed-cell scrolling remains full-screen. ANSI-host output sends index
+or reverse-index controls under the current canonical rendition; actual blank
+attributes and movement outside margins follow the host terminal. The terminal
+model used by tests supplies default attributes on newly exposed rows, so tests
+verify Model 4 physical fills separately rather than claiming identical host
+blank rendition. Next-line output is CR followed by ESC D, avoiding reliance on
+the endpoint's newline-mode treatment of ESC E.
+
+Margin bounds are initialized to the full Model 4 screen and retained through
+RSX movement. Host margins live in the terminal and survive backend relocation;
+the manager test verifies both forms alongside canonical rendition, deferred
+wrapping, rebound service calls and 53K unload.
+
+`tools/test_screen_margins.py` passes 640 region/index/wrap cases at two load
+addresses, including 80x24, 80x25 and 100x40 host screens, plus default reset,
+invalid arguments and Model 4 movement outside margins. Existing motion,
+erasure and rendition tests pass, as does native assembly parity. A live cpmsim
+public-service exercise verifies forward/reverse scrolling and unchanged outer
+rows (`build/screen-rendition-live/cpmsim-6jpqfg8c`), with a matching protected-ROM
+run at `build/screen-rendition-live/cpmsim-9a4s0xkt` (all seven ROM guards pass,
+no ROM writes, clean unload/53K). Model 4 has CPU/VRAM evidence;
+a native visual region exercise remains part of validation.
+
+Payload/allocation/relocation counts: M4SCRN 1090/1280/106, ANSISCRN
+1267/1280/216. Model 4 adds one loaded page over provider 1.4; host allocation is
+unchanged. No permanent BIOS/BDOS bytes or TPA-boundary changes are introduced.
