@@ -8,15 +8,15 @@ The spec's cost/backend gates remain required for proposed runtime facilities.
 
 | Requirement | Current status |
 | --- | --- |
-| Implemented domains only in menu | Corrected: F–J retained; A–E placeholders removed |
+| Implemented domains only in menu | F–J retained; K adds saved disk-boot IOBYTE in Build 011; A–E placeholders removed |
 | Utility identity | Menu and /VER use the same metadata-owned version/build |
 | Full command-tail validation | Implemented before INIT, catalogue reads or changes |
 | /SHOW | Active and saved physical/logical settings, saved startup; embedded CRC-32 validation; no external reference |
 | /STARTUP="..." | Confirmed, verified startup-only save; does not execute command |
 | /DEFAULT | Build 010 prepares pending SUBMIT STARTUP only; drives unchanged; explicit save required |
 | Drive command-line parity | Builds 006–007 physical fields and logical binding/format selection implemented; Build 008 scalar workbench fields implemented; Build 009 single-slot sector-map fields implemented |
-| Persistent IOBYTE, printer and serial | Backend/space findings recorded in [runtime audit](CONFIG%20Runtime%20Audit.md); persistence and runtime prototype costs remain open |
-| Native build | Build 007 dual-profile ZSM4/LINK and cross assembly match at 14,716 bytes |
+| Persistent IOBYTE, printer and serial | Build 011 disk-boot IOBYTE implemented; printer/serial runtime and backend proposals remain open |
+| Native build | Build 011 dual-profile ZSM4/LINK and cross assembly match at 15,450 bytes |
 
 The no-longer-offered keyboard/video sections are outside CONFIG's 1.0 scope;
 printer/serial/IOBYTE entries may be added only when actual supported facilities
@@ -331,3 +331,38 @@ Actual keyboard input displays the pending SUBMIT STARTUP command, then exits
 without saving; independent state snapshots and the complete DMK are unchanged.
 A fresh Build 010 distribution rebuild remains pending. The preceding Build 009
 fresh System Disk qualification is recorded above.
+
+## Build 010 clean distribution follow-through
+
+Both fresh isolated System Disks pass filesystem/file-integrity, embedded CONFIG
+validation-profile and boot qualification:
+`/private/tmp/config010-distribution/release-eb3c8458ea4f-be28d4fab5a4`.
+
+cpmsim: 27 files, 156K free. Model 4: 24 files, 608K free. No planned manifest
+entries are omitted. This closes the Build 010 distribution rebuild gap; final
+release validation and the explicit scope decisions for persistent IOBYTE,
+printer and serial proposals remain separate. The generic save-state wording
+now explicitly distinguishes pending startup edits from applied active drives.
+
+## Build 011: persistent disk-boot IOBYTE
+
+The maintainer approved a verified patch of the compiled cold-store operand.
+[Implementation and qualification](CONFIG%20Cold%20IOBYTE.md) records the
+symbol-generated metadata, CRC and capability gates, confirmed writes, rollback,
+separate live/saved reporting, immutable-ROM boundary, private-buffer relocation
+and focused platform evidence. Printer and serial work remains open, without
+an approved deferral. CONFIG's 43K transient requirement preserves 53K unloaded
+TPA and leaves 166 bytes below its code/stack cap with both validation profiles.
+
+Build 011 fresh distribution qualification passes both platforms, including the
+new independent cold-descriptor publication gate:
+`/private/tmp/config011-distribution/release-eb3c8458ea4f-6350c59856d1`.
+
+cpmsim: 27 files, 156K free; Model 4: 24 files, 608K free. No planned manifest
+entries are omitted. Filesystem/file-integrity and ordinary boot checks pass.
+This is not a declaration of final release validation or printer/serial completion.
+
+The final Model 4 combined active-plus-pending save campaign also passes after
+private-buffer relocation, including typed startup input, saved-drive/startup
+cold checks and injected-write rollback: `build/test-results/config-save-all`.
+DUP is byte-identical to the preceding binary.

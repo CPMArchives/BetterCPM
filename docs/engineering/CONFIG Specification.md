@@ -82,11 +82,12 @@ CONFIG functionality falls into three categories.
 
 ## 4.1 Existing architecture
 
-These configuration domains already exist conceptually or structurally and remain part of CONFIG:
+These configuration domains are implemented in CONFIG:
 
 ```text
 STARTUP
 DRIVE
+Disk-boot IOBYTE
 ```
 
 ## 4.2 Proposed 1.0 extensions pending runtime-cost qualification
@@ -94,7 +95,6 @@ DRIVE
 These are desirable CONFIG additions but require auditing of the corresponding resident/runtime support before they become firm 1.0 commitments:
 
 ```text
-IOBYTE defaults
 PRINTER
 SERIAL
 ```
@@ -205,7 +205,10 @@ If printer, serial, or persistent IOBYTE support does not qualify for 1.0, CONFI
 
 CONFIG must preserve the existing save model.
 
-Interactive edits become pending changes.
+Interactive edits follow their domain contracts. Startup-command edits remain
+private pending changes. The format workbench edits a private binding until
+Apply; successful drive updates change active state without saving defaults.
+Do not infer a general pending-drive reset facility from this state model.
 
 CONFIG distinguishes between:
 
@@ -560,56 +563,62 @@ No disk write or confirmation occurs for these CLI commands.
 
 ---
 
-# 13. Persistent IOBYTE defaults
-**Status: proposed 1.0 extension pending runtime-cost audit**
+# 13. Persistent disk-boot IOBYTE (Build 011)
+**Status: implemented for the qualified Model 4 and cpmsim disk-boot profiles**
 
-The intended division of responsibility is:
-
-```text
-STAT      live/current IOBYTE assignment
-CONFIG    persistent cold-boot default
-```
-
-CONFIG must not replace `STAT DEV:` or `STAT CON:=...` as the normal live logical-device interface.
-
-## 13.1 Proposed behavior
-
-BetterCP/M already initializes IOBYTE to the compiled cold-boot default `95h`
-(CON=CRT, RDR=PTR, PUN=PTP, LST=LPT) and preserves live changes across warm boot.
-The proposed extension is persistent user configuration of that default, not
-the introduction of cold initialization itself.
-
-If implemented, CONFIG stores the IOBYTE value restored during cold initialization.
-
-Changing the live IOBYTE with STAT does not automatically alter the persistent CONFIG value.
-
-Likewise, changing the saved CONFIG default need not immediately modify the current IOBYTE.
-
-## 13.2 Runtime audit requirement
-
-Before this feature becomes mandatory for 1.0, implementation must determine:
-
-- where the saved IOBYTE default is stored;
-- where it is restored during cold boot;
-- additional resident bytes required, if any;
-- interaction with the existing boot/default architecture.
-
-If the runtime cost is disproportionate, persistent IOBYTE management may be deferred.
-
-## 13.3 Proposed command form
+STAT owns live IOBYTE assignment. CONFIG owns the separately saved disk-boot
+default. It patches the build-published operand of `LD A,095H; LD (0003H),A`
+in Model 4 stage one or cpmsim's stored BIOS initializer. No boot instructions,
+resident storage, BDOS calls or descriptor ABI are added. Unloaded TPA stays 53K.
 
 ```text
-CONFIG /IOBYTE logical=physical
+CONFIG /IOBYTE=85
+CONFIG /IOBYTE=149
 ```
 
-Example:
+The operand is an unsigned decimal byte. 85 is 55h (CRT console, PTR reader,
+PTP punch, CRT list); 149 is the compiled 95h default (same, but LPT list).
+The complete request must validate before INIT/I/O. Extra operands, signs and
+overflow are rejected. CON must remain CRT: both current platforms support it,
+so CONFIG cannot save a console route that would strand the next boot.
 
-```text
-CONFIG /IOBYTE CON:=CRT:
-CONFIG /IOBYTE LST:=LPT:
-```
+Changed routes require the running platform's character capability bit. Existing
+unchanged placeholder routes may be retained. An explicit 149 restores the
+compiled factory assignment even when a placeholder such as Model 4 LPT has no
+physical implementation. This does not make that device functional.
 
-Exact grammar remains subject to implementation qualification.
+Menu K provides the same confirmed-save operation. `/SHOW` distinguishes the
+live byte from the saved disk-boot byte, in decimal. It reports an unavailable
+saved byte if build/record/read validation fails, without inventing a default.
+This is a direct confirmed save, not another pending field in H's save scopes.
+`/DEFAULT` still resets only the pending startup command.
+
+Before confirmation, CONFIG chooses build-generated metadata by qualified boot
+geometry, reads the containing 128-byte record and checks its CRC-32 after
+normalizing only the operand to compiled 95h. The build resolves the explicit
+`IO_COLD` assembly symbol and checks the five-byte instruction contract; it never
+searches for a byte value. The current stored byte must retain CON=CRT. The
+builder independently checks that the embedded descriptor matches the installed
+boot code before publishing a System Disk.
+
+On Y, CONFIG changes only the operand, writes the record and compares all 128
+bytes on readback. A failed write or comparison attempts verified restoration
+of the original record, including the potentially partially written record.
+Restoration failure reports possible damage. N and validation/read failures make
+no write. Power loss during a physical sector write can still require recovery
+from another boot disk; this is not a power-loss transaction.
+
+The live byte at 0003h is unchanged. Warm boots preserve it. Next disk cold boot
+uses the saved operand. Save-all retains that operand, and its resident CRC check
+normalizes the cpmsim operand to the compiled value while checking all other
+immutable bytes. SYSGEN's existing copy of the installed loader/carrier preserves
+the operand in disk/package payloads; it does not synthesize a new IOBYTE value.
+
+The setting belongs to the boot disk. It does not rewrite ROM firmware or change
+an immutable ROM's cold default. A ROM default change requires rebuilding that
+ROM; saving a disk default must not be described as changing firmware.
+
+See [cold-operand qualification and layout](CONFIG%20Cold%20IOBYTE.md).
 
 ---
 
@@ -1183,6 +1192,7 @@ CONFIG /PHYSICAL=n /field=value [...]
 CONFIG /LOGICAL=B /PHYSICAL=1 /FORMAT="name"
 CONFIG /LOGICAL=B /UNBIND
 CONFIG /EDIT=B /CKS=16
+CONFIG /IOBYTE=85
 ```
 
 Physical field operands use the slash-prefixed names in section 12.6. `/SHOW`
@@ -1191,8 +1201,6 @@ includes separate active and CRC-validated saved drive settings.
 Proposed/new; not currently available:
 
 ```text
-CONFIG /IOBYTE logical=physical [...]
-
 CONFIG /PRINTER:LINE=RAW|SUPPRESSLF
 CONFIG /PRINTER:FF=NATIVE|SIMULATE
 CONFIG /PRINTER:PAGELENGTH=n
@@ -1216,7 +1224,7 @@ This specification is the reconciled CONFIG baseline. The implemented command
 summary above and sections 12 and 16 take precedence over older implementation
 notes describing A–E placeholders, an external SYSGEN.DAT reference, or wholly
 missing drive CLI support. The two save scopes and separate storage domains
-remain unchanged. The gated IOBYTE, printer
+remain unchanged. The gated printer
 and serial proposals remain open; consolidation does not approve them or claim
 complete CONFIG qualification. See the [alignment record](CONFIG%20Specification%20Alignment.md)
 and [runtime audit](CONFIG%20Runtime%20Audit.md) for evidence and remaining gates.

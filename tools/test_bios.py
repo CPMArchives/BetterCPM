@@ -748,6 +748,9 @@ class Z80:
             elif op == 0xA3:            # AND E
                 self.a &= self.e
                 self.z, self.carry = self.a == 0, False
+            elif op == 0xAB:            # XOR E
+                self.a ^= self.e
+                self.z, self.carry = self.a == 0, False
             elif op == 0xB2:            # OR D
                 self.a |= self.d
                 self.z, self.carry = self.a == 0, False

@@ -2402,11 +2402,11 @@ Run `CONFIG` to enter the console menu. `CONFIG /VER` displays the utility’s
 version and build number; it must be used alone. CONFIG works without a monitor
 RSX or a full-screen terminal.
 
-The menu offers implemented entries F through J; keyboard, video, printer and
+The menu offers implemented entries F through K; keyboard, video, printer and
 serial placeholders are not displayed.
 
-CONFIG currently provides drive configuration, startup-command editing, and
-save operations. It distinguishes the settings in use now, pending changes,
+CONFIG currently provides drive configuration, startup-command editing, saved
+disk-boot IOBYTE assignment, and save operations. It distinguishes the settings in use now, pending changes,
 and defaults saved for subsequent startup. Changing a live setting does not
 necessarily change its saved default.
 
@@ -2555,14 +2555,35 @@ database editor. Drive settings and activation rules depend on the platform.
 Keep current settings separate from saved boot defaults, and follow the menu’s
 validation and save results before relying on a new configuration.
 
+#### Saved disk-boot device assignment
+
+STAT changes the live IOBYTE. To save a separate value for the next disk cold
+boot, use CONFIG menu K or:
+
+```text
+CONFIG /IOBYTE=85
+```
+
+Values are **decimal**: 85 (55h) selects CRT console, PTR reader, PTP punch and
+CRT list. 149 (95h) restores BetterCP/M's compiled assignment, with LPT list.
+`CONFIG /SHOW` displays both the live and saved bytes. The command requires Y
+before saving, verifies the write and attempts restoration on an ordinary
+failure. It does not change the live assignment; STAT remains the live control.
+`/DEFAULT` does not reset this saved byte.
+
+The console must remain CRT, and changed device routes must be supported by the
+platform. Retaining a compiled placeholder route does not implement its device.
+The value is stored in this disk's boot code. It applies to subsequent disk
+boots, not to an immutable ROM's default. If power is lost during the boot-sector
+write, recovery from another boot disk may be necessary.
+
 #### 7.4 Planned extensions — not yet implemented
 
 The [CONFIG engineering specification](../engineering/CONFIG%20Specification.md)
 records the runtime and backend gates for remaining proposals. Drive workbench
 CLI and startup-only `/DEFAULT` are implemented as described above.
 
-Configurable persistent IOBYTE defaults, printer tab/line-ending/form-feed
-policies, and serial-port settings are candidates for 1.0, subject to runtime
+Printer tab/line-ending/form-feed policies and serial-port settings are candidates for 1.0, subject to runtime
 memory and backend qualification. Unsupported features will not appear as
 working menu options. STAT remains the utility for live IOBYTE assignments.
 

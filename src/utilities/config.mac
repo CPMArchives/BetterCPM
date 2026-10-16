@@ -9,6 +9,9 @@
         ASEG
         ORG 0100H
 FDBMODE EQU 1
+; CONFIG-private scratch A800h-ABDFh is disjoint from catalogue, track stream,
+; save/rollback buffers and the 3E00h-3FFFh stack. Every buffer is initialized
+; before use. The entry guard requires AC00h below the current BDOS boundary.
         CALL CF_PARSE                  ; valid quoted command text is not options
         JR C,CF_VGATE
         LD A,(CF_MODE)
@@ -22,14 +25,23 @@ CF_VDONE:
         LD SP,04000H
         CALL CF_PARSE
         JP C,CF_USAGE
+        LD HL,(6)
+        LD DE,0AC00H                  ; private CONFIG scratch ends before AC00h
+        OR A
+        SBC HL,DE
+        JP C,CF_NOMEM
         CALL INIT
         LD A,(CF_MODE)
+        CP 8
+        JP Z,IO_APPLY
         CP 3
         JP Z,CD_APPLY                  ; physical CLI needs no format catalogue
         CP 6
         JP Z,CE_APPLY
         CP 5
         JP Z,CL_UNBIND
+        CP 1
+        JP Z,CF_SHOW
         CALL FDBLOAD
         XOR A
         LD (STSTATE),A
@@ -67,6 +79,8 @@ MAIN:   LD HL,TITLE                     ; enter CONFIG utility
         JP Z,EDITDRIVE
         CP 'J'
         JP Z,STARTMENU
+        CP 'K'
+        JP Z,IO_MENU
         CP 'F'
         JP Z,PHYSMENU
         CP 'G'
@@ -1037,7 +1051,9 @@ STFETCHBAD:
         LD (STSTATE),A
         RET
 
-STEDIT:LD HL,STEDITMSG                 ; replace pending command
+STEDIT:LD A,126
+        LD (STLINE),A
+        LD HL,STEDITMSG                 ; replace pending command
         CALL PUTS
         XOR A
         LD (STLINE+1),A
@@ -1581,7 +1597,7 @@ EDPTR:  DW 0                            ; workbench ptr
 
 EDINPUT:DS 6                            ; workbench input
 
-EDCOPY: DS 64                           ; workbench copy
+EDCOPY EQU 0AAA0H                           ; workbench copy
 
 ; ================================================================================
 ; =                          CONFIG Messages and State                           =
@@ -1622,13 +1638,253 @@ CF_TRYDEF:
         LD C,A
         LD DE,CF_DEFOPT
         CALL CF_MATCH
-        JR C,CF_TRYST
+        JP C,IO_PARSE
         CALL CF_SKIP
         JP NZ,CF_BAD
         LD A,7
         LD (CF_MODE),A
         OR A
         RET
+; Saved IOBYTE patches one verified build-owned operand, never the live byte.
+IO_PARSE:
+        LD HL,(CF_PTR)
+        LD A,(CF_LEFT)
+        LD C,A
+        LD DE,IO_KEY
+        CALL CF_MATCH
+        JP C,CF_TRYST
+        CALL CD_NUM
+        RET C
+        LD (IO_NEW),A
+        AND 3
+        CP 1                           ; preserve a usable CRT console at boot
+        JP NZ,CF_BAD
+        CALL CF_SKIP
+        JP NZ,CF_BAD
+        LD A,8
+        LD (CF_MODE),A
+        OR A
+        RET
+IO_PICK:
+        LD HL,IO_VALID
+IO_PICKLOOP:
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        INC HL
+        LD A,D
+        OR E
+        JR Z,IO_NOFIELD
+        PUSH HL
+        LD HL,(SGSPT)
+        OR A
+        SBC HL,DE
+        POP HL
+        JR Z,IO_PICKED
+        LD DE,8
+        ADD HL,DE
+        JR IO_PICKLOOP
+IO_PICKED:
+        DEC HL
+        DEC HL
+        LD DE,IO_DESC
+        LD BC,10
+        LDIR
+        XOR A
+        RET
+IO_NOFIELD:
+        LD A,1
+        OR A
+        RET
+IO_MASK:
+        CALL IO_PICK
+        RET NZ
+        LD HL,(IO_DESC+4)
+        LD A,H
+        AND L
+        CP 255
+        RET Z                          ; Model 4 operand is outside resident carrier
+        LD DE,SGNEW
+        ADD HL,DE
+        LD A,(HL)
+        AND 3
+        CP 1
+        RET NZ
+        LD (HL),095H                   ; restore compiled value for fingerprint only
+        XOR A
+        RET
+IO_READ:
+        CALL SGDISKSET
+        RET NZ
+        CALL IO_PICK
+        RET NZ
+        XOR A
+        LD (SGHEAD+7),A
+        LD A,(IO_DESC+2)
+        LD (SGINDEX),A
+        LD HL,SGOLD
+        LD (SGIOBUF),HL
+        XOR A
+        CALL SGIO
+        RET NZ
+        LD HL,SGOLD
+        LD DE,SGNEW
+        LD BC,128
+        LDIR
+        LD A,(IO_DESC+3)
+        LD E,A
+        LD D,0
+        LD HL,SGNEW
+        ADD HL,DE
+        LD (IO_PTR),HL
+        LD A,(HL)
+        LD (IO_OLD),A
+        AND 3
+        CP 1
+        RET NZ
+        LD (HL),095H
+        LD HL,SGNEW
+        LD BC,128
+        CALL SGCRC32
+        LD HL,SGCRC
+        LD DE,IO_DESC+6
+        LD BC,4
+        CALL SGCMP
+        RET NZ
+        RET
+IO_APPLY:
+        CALL IO_READ
+        JP NZ,IO_BAD
+        LD A,(IO_NEW)
+        CP 095H
+        JR Z,IO_CAPDONE                ; explicit return to compiled factory routes
+        LD A,63
+        CALL SGBIOS                    ; real platform capability bitmap
+        LD A,(IO_OLD)
+        LD D,A
+        LD A,(IO_NEW)
+        LD E,A
+        LD C,4
+IO_CAPLOOP:
+        LD A,D
+        XOR E
+        AND 3
+        JR Z,IO_CAPNEXT                ; retain unchanged compiled placeholder routes
+        LD A,E
+        AND 3
+        LD B,A
+        INC B
+        LD A,1
+IO_BIT: DEC B
+        JR Z,IO_BITDONE
+        RLCA
+        JR IO_BIT
+IO_BITDONE:
+        AND L
+        JP Z,IO_BAD
+IO_CAPNEXT:
+        LD A,D
+        RRCA
+        RRCA
+        LD D,A
+        LD A,E
+        RRCA
+        RRCA
+        LD E,A
+        LD B,4
+IO_CAPSHIFT:
+        SRL H
+        RR L
+        DJNZ IO_CAPSHIFT
+        DEC C
+        JR NZ,IO_CAPLOOP
+IO_CAPDONE:
+        LD HL,IO_ASK
+        CALL PUTS
+        CALL KEY
+        CP 'Y'
+        JP NZ,IO_RETURN
+        LD HL,SGOLD
+        LD DE,SGNEW
+        LD BC,128
+        LDIR
+        LD HL,(IO_PTR)
+        LD A,(IO_NEW)
+        LD (HL),A
+        LD HL,SGNEW
+        LD (SGIOBUF),HL
+        LD A,1
+        CALL SGIO
+        JR NZ,IO_ROLL
+        CALL SGVERIFY
+        JR NZ,IO_ROLL
+        LD HL,IO_OK
+        JR IO_REPORT
+IO_ROLL:
+        LD HL,SGOLD
+        LD (SGIOBUF),HL
+        CALL STRESTORE
+        LD HL,SVRESTOK
+        JR Z,IO_REPORT
+        LD HL,STDAMAGED
+        JR IO_REPORT
+IO_BAD: LD HL,IO_ERROR
+IO_REPORT:
+        CALL PUTS
+IO_RETURN:
+        LD A,(CF_MODE)
+        OR A
+        JP NZ,DONE
+IO_BACK:
+        CALL FDBLOAD
+        JP MAIN
+IO_MENU:
+        CALL IO_SHOW
+        LD HL,IO_PROMPT
+        CALL PUTS
+        CALL EDNUMBER
+        JR C,IO_BACK
+        LD A,D
+        OR A
+        JR NZ,IO_MBAD
+        LD A,E
+        AND 3
+        CP 1
+        JR NZ,IO_MBAD
+        LD A,E
+        LD (IO_NEW),A
+        JP IO_APPLY
+IO_MBAD:
+        CALL ERROR
+        JR IO_BACK
+IO_PROMPT: DB 'New disk-boot IOBYTE (decimal): ',0
+IO_SHOW:
+        LD HL,IO_LIVE
+        CALL PUTS
+        LD C,7
+        CALL BDOS
+        CALL DECOUT
+        CALL CRLF
+        CALL IO_READ
+        LD HL,IO_UNKNOWN
+        JP NZ,PUTS
+        LD HL,IO_SAVED
+        CALL PUTS
+        LD A,(IO_OLD)
+        CALL DECOUT
+        JP CRLF
+IO_LIVE: DB 'Live IOBYTE (decimal): ',0
+IO_SAVED: DB 'Saved disk-boot IOBYTE (decimal): ',0
+IO_UNKNOWN: DB 'Saved disk-boot IOBYTE unavailable.',13,10,0
+IO_KEY: DB '/IOBYTE=',0
+IO_ASK: DB 'Save disk-boot IOBYTE (Y/N)? ',0
+IO_OK: DB 'Disk-boot IOBYTE saved; live unchanged.',13,10,0
+IO_ERROR: DB 'Cannot save cold IOBYTE. Nothing changed.',13,10,0
+IO_NEW: DB 0
+IO_OLD: DB 0
+IO_PTR: DW 0
+IO_DESC: DS 10
+
 CF_TRYST:
         LD HL,(CF_PTR)
         LD A,(CF_LEFT)
@@ -1758,6 +2014,8 @@ CF_DEFOPT: DB '/DEFAULT',0
 CF_DEFCMD: DB 'SUBMIT STARTUP'
 CF_DEFMSG: DB 'Startup default pending; drives unchanged.',13,10,0
 CF_SHOW:
+        CALL IO_SHOW
+        CALL FDBLOAD                   ; IO_READ borrows catalogue workspace
         LD HL,TITLE
         CALL PUTS
         CALL CRLF
@@ -1964,16 +2222,16 @@ CF_PENDING: DB 'Pending changes: none (new invocation).',13,10
 CF_SDMSG: DB 'Saved drive defaults (system disk A:):',13,10,0
 CF_SPHY: DB 'Saved physical-drive profiles:',13,10,0
 CF_SLOG: DB 'Saved logical-drive bindings:',13,10,0
-CF_PHY: DS 24
-CF_LOG: DS 256
+CF_PHY EQU 0A980H
+CF_LOG EQU 0A880H
 CF_ERROR: DB 'Cannot inspect drive configuration.',13,10,0
 CF_MODE: DB 0
 CF_LEFT: DB 0
 CF_PTR: DW 0
 CF_LEN: DB 0
-CF_TEXT:
-CE_SEEN: DS 19
-CE_VALS: DS 108
+CF_TEXT EQU 0A800H
+CE_SEEN EQU 0A800H
+CE_VALS EQU 0A813H
 
  ; Physical CLI edits the active profile only. All tail parsing and value
  ; validation finish before INIT or any configuration/file operation.
@@ -2227,6 +2485,10 @@ CD_PTR: DW 0
 CD_VALS:DS 6
 PHFAIL: DB 0
 
+CF_NOMEM:
+        LD HL,CF_MEMMSG
+        JP CF_FATAL
+CF_MEMMSG: DB 'Not enough transient memory (43K required).',13,10,0
 CF_FATAL:
         CALL PUTS
         LD A,(CF_MODE)
@@ -2772,7 +3034,8 @@ MAINMSG:DB 'Configuration options:',13,10,13,10 ; main-menu text
         DB '[ G ] Disk format definitions',13,10
         DB '[ H ] Save current configuration on disk (SYSGEN)',13,10,13,10
         DB '[ I ] Create or edit a disk format',13,10
-        DB '[ J ] Startup command',13,10,13,10
+        DB '[ J ] Startup command',13,10
+        DB '[ K ] Cold-boot IOBYTE',13,10,13,10
         DB 'Select [ F - J ], or BREAK (^C) to exit.',13,10,0
 
 
@@ -2886,12 +3149,11 @@ CHECKPH:DB 0                            ; checkph
 PHNOTICE:DB 0                           ; physical notice
 STSTATE:DB 0                            ; 0 unloaded, 1 valid, 2 invalid source
 STDIRTY:DB 0                            ; pending command differs from disk
-STLINE: DB 126,0                        ; BDOS counted-line input
-        DS 126
-STPEND: DS 256                          ; canonical pending BCST record
+STLINE EQU 0AB60H                      ; initialized before counted-line input
+STPEND EQU 0A9A0H                          ; canonical pending BCST record
 STSUBFCB:DB 1,'$$$     ','SUB'          ; A: stock command stream
         DS 24
-STSUBBUF:DS 128                         ; one counted submitted command
+STSUBBUF EQU 0AAE0H                         ; one counted submitted command
         INCLUDE disk/sysgen.inc
         INCLUDE disk/common.inc
 FDBABORT EQU CF_FATAL

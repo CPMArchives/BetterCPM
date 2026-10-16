@@ -215,6 +215,28 @@ def validate_config_fingerprint(target, raw, files, root):
         raise ValueError('CONFIG.COM fingerprint does not match installed system carrier/geometry')
 
 
+def validate_config_cold_patch(target, raw, files, root):
+    """Independently bind CONFIG's cold operand metadata to installed bytes/symbols."""
+    from iobyte_config import descriptor
+    from system_layout import LAYOUT
+    program=next((data for c,data in files if c['name']=='CONFIG.COM' and c['user']==0),None)
+    if program is None:return
+    image=raw.read_bytes()
+    if target=='z80pack':
+        from fdf_format import select_fdf
+        from build_z80pack_image import DEFAULT_FORMAT
+        fmt=select_fdf(root/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT)
+        def record(n):
+            t,i=divmod(n,fmt.spt);at=t*fmt.raw_track_bytes+fmt.raw_record_map()[i]*128
+            return image[at:at+128]
+        code=b''.join(record(n) for n in range(8,60))
+        expected=descriptor(code,LAYOUT['SYSTEM'],(root/'build/z80pack/bios.lst').read_text(),fmt.spt,8)
+    else:
+        expected=descriptor(image[512:1024],0x5000,(root/'build/trs80/stage1.lst').read_text(),80,4)
+    if program.count(expected)!=1:
+        raise ValueError('CONFIG.COM cold IOBYTE patch descriptor does not match installed boot code')
+
+
 def validate_files(raw, out, files, g):
     listing = run(['cpmls', '-f', g['definition'], raw], out).decode()
     tokens = listing.lower().split()
@@ -390,6 +412,7 @@ def main():
             totals = capacity(files, g)
             raw = construct(target, root, out, files, g, manifest.get('cold_start_command', ''))
             validate_config_fingerprint(target, raw, files, root)
+            validate_config_cold_patch(target, raw, files, root)
             included = validate_files(raw, out, files, g)
             name = f'BetterCPM-Distribution-{target}-'+('332K.dsk' if target=='z80pack' else '80T-DS-System.dmk')
             image = out/name

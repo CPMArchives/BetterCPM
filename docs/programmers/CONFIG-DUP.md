@@ -9,7 +9,7 @@ current interfaces; historical measurements below retain their original versions
 CONFIG, DUP and SYSGEN are ordinary transient programs. Utility release/build
 identities come from standalone `/VER` and `metadata/utility-versions.tsv`;
 DUP's legacy interactive 1.14 title is separate from that identity. They require
-BetterCP/M disk ABI 5 and four logical drives. CONFIG needs 42 KiB of
+BetterCP/M disk ABI 5 and four logical drives. CONFIG needs 43 KiB of
 transient space; allow 51 KiB for DUP and its private copy buffer. SYSGEN Build 003 is
 3,700 bytes (about 3.6 KiB). They add no resident allocation: maximum TPA remains
 54,273 bytes when no RSXs are installed.
@@ -23,7 +23,7 @@ a guessed name.
 
 ## CONFIG
 
-The main menu retains implemented MM letter assignments F through J; A–E
+The main menu retains implemented MM letter assignments F through K; A–E
 placeholders have been removed. Active drive changes take effect immediately
 and survive warm boot. Current direct forms include:
 
@@ -36,6 +36,7 @@ CONFIG /PHYSICAL=1 /TRACKS=80 /SIDES=2 /STEP=6
 CONFIG /LOGICAL=B /PHYSICAL=1 /FORMAT="MM 80T DS DATA"
 CONFIG /LOGICAL=B /UNBIND
 CONFIG /EDIT=B /CKS=16
+CONFIG /IOBYTE=85
 ```
 
 `/SHOW` distinguishes active and saved state. `/STARTUP=` confirms and saves
@@ -115,6 +116,11 @@ five source inconsistencies remain under investigation. This count is validation
 coverage, not verification of 107 physical formats. Optional FDF.RSX provides
 extended ordering and mixed-size mapping. Load it before assigning such formats;
 unloading it detaches dependent B-D bindings and restores its TPA allocation.
+
+CONFIG Build 011 stores disk-boot IOBYTE through an explicitly generated
+cold-operand descriptor, with confirmed/verified single-record writes and
+rollback. It leaves live IOBYTE unchanged. See [cold operand contract](../engineering/CONFIG%20Cold%20IOBYTE.md)
+for metadata, scratch ownership, CRC normalization and the immutable-ROM boundary.
 
 ## DUP
 
