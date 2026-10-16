@@ -127,3 +127,70 @@ save/restore still need equivalent integration checks. There is no published
 operation-number assignment, production descriptor change or completed portable
 ANSI carrier in this increment. All prototype costs are unloadable candidate
 costs, not permanent memory growth.
+
+
+## Typed parser candidate checkpoint — 2026-10-16
+
+The complete private candidate is `src/rsx/ansi-portable.mac` plus
+`ansi-dispatch.inc`. Build it with `python3 tools/build_ansi.py
+--portable-candidate`; output stays under `build/ansi-portable-candidate/`.
+Normal builds still select the existing 460-byte host personality. A byte hash
+check confirms rebuilding normal ANSI produces the identical production carrier.
+The temporary separate parser source permits qualification before activation;
+it is not intended as a second permanently maintained ANSI personality.
+
+The candidate retains the existing bounded byte-state machine: 31-byte sequence
+limit, CAN/SUB reset, restart on ESC, overflow discard through final byte, and
+suppression of unknown/private commands, queries, OSC and DCS. Validated sequences
+now dispatch to typed backend operations instead of replaying host escape bytes:
+movement/position, J/K erasure, SGR, margins, CSI s/u and ESC 7/8 save/restore,
+ESC D/E/M index/next-line/reverse-index, and exact ?25h/l visibility. Printable
+ASCII uses styled glyph output. CR/LF/backspace use typed movement/index so the
+Model 4 honors the selected scroll region; other ordinary bytes retain the raw
+platform path. Physical cursor presentation remains delegated to the backend,
+with visibility gated by the personality.
+
+Numeric lists are bounded to sixteen words and accumulated with saturation at
+65535, never wrapping large values into a different active command. Missing
+parameters are zero and receive backend defaults. Excess parameters for motion,
+position and erasure cause that command to be ignored; unsupported erase modes
+are ignored. This is an explicit bounded portable interpretation, not a promise
+to duplicate every endpoint's handling of malformed or irrelevant parameters.
+The portable SGR set is the canonical flags, normal/bright palette, indexed/RGB
+colors and resets already qualified by the rendition interpreter. Unknown SGR
+values are ignored; malformed extended-color groups fail atomically. Broader
+host-specific SGR behavior is not silently claimed portable and remains part of
+the compatibility/application review before activation.
+
+The SGR implementation is now shared source (`screen/rendition.inc`) used by
+both the candidate and the standalone experiment. Its scratch input pointer is
+cleared on success/failure; the dispatcher likewise clears its buffer pointer
+before returning. Saved cursor restoration also restores the interpreter's
+canonical record, so later incremental SGR changes start from the restored
+state. Before a first save, restore selects home/default rendition. Later saves
+replace the reusable slot. Margins remain backend state.
+
+Candidate payload: 1466 bytes, 207 static relocation operands, 1536-byte loaded
+allocation including callable descriptor. Local relative branches brought it
+below the existing 232-entry carrier limit; there is no carrier-format growth.
+The candidate uses a provisional MCON 1.2 descriptor with the manager-owned word
+at +12. The current manager deliberately rejects that descriptor. Actual-manager
+tests on both platform BIOS profiles prove rejection even with a backend loaded,
+unchanged live binding/registry/TPA/generation, and clean unload to 53K.
+
+`tools/test_ansi_portable.py` passes 340 streams through actual assembled
+front/back code, with frontend/backend relocation varied independently. It checks
+rendering, canonical colors, malformed atomic SGR, save/repeated restore,
+visibility, movement/defaults, margins, parser cancellation/overflow, guards and
+cleared scratch pointers. Host cases also exercise 80x25 and 100x40 last-row/right-
+edge output and saved positions. The shared SGR experiment passes 1164 cases.
+`tools/test_monitor_backend_native.py --portable-ansi` proves native ZSM4/LINK
+byte parity for the candidate as well as the current backends/manager helpers.
+Existing production ANSI foundation and lifecycle tests still pass unchanged.
+
+This checkpoint is CPU/terminal-model and native assembly evidence, not installed
+portable ANSI qualification. Remaining work: define and implement admission of
+only sufficiently capable backends, activate the converted personality, qualify
+partial-parser/saved-rendition compaction through the real manager, and rerun live
+applications, RAM/ROM cpmsim, native Model 4 and clean distribution paths. No
+permanent BIOS/BDOS bytes are added here and no distribution identity changes.

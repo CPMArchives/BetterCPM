@@ -379,3 +379,12 @@ not overwrite that slot between SCX save/restore calls. Host current bounds can
 constrain restored positions. See the ABI for full state and relocation rules.
 Portable ANSI still needs parser conversion and activation-time capability
 checks before using these operations in production.
+
+
+A private portable ANSI integration candidate is available with
+`python3 tools/build_ansi.py --portable-candidate`. It exercises the complete
+bounded parser against typed SCX operations and shares `screen/rendition.inc`
+with the standalone SGR checks. Its provisional MCON 1.2 descriptor is rejected
+by the current manager; do not present it as an installable provider. Default
+builds retain the working host ANSI carrier. See the ANSI Portable Backend Audit
+for exact coverage and remaining capability-admission/application qualification.
