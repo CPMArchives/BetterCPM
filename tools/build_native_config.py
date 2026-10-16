@@ -48,6 +48,7 @@ def main() -> None:
             text=expand_layout(SOURCE.read_text())
             for name in ('sysgen','common','fdbread'):
                 text=text.replace('        INCLUDE disk/'+name+'.inc', (ROOT/'src/utilities/disk'/(name+'.inc')).read_text())
+            text=text.replace('; @config-iobyte@',(ROOT/'build/utilities/config-iobyte.inc').read_text())
             text=text.replace('; @config-validation@',(ROOT/'build/utilities/config-validation.inc').read_text())
             text=text.replace('; @monitor-console@',(ROOT/'src/utilities/common/monitorconsole.inc').read_text())
             text=text.replace('        ASEG\n        ORG 0100H','        CSEG\n        .PHASE 0100H',1)

@@ -185,6 +185,8 @@ SGMASK: PUSH AF
         POP AF
         DEC A
         JR NZ,SGMASK
+        CALL IO_MASK
+        JP NZ,SGWRONG
         LD HL,SGNEW
         CALL SGSIZE
         CALL SGCRC32
@@ -671,6 +673,7 @@ SGDAMAGED:DB 'Save failed; restoration also failed.',13,10
 SGCRC:  DS 4
 SGCRCEX:DS 4
 ; @config-validation@
+; @config-iobyte@
 SGCOUNT:DB 0
 SGINDEX:DB 0
 SGDRIVE:DB 0

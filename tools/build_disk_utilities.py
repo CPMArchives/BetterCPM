@@ -35,6 +35,15 @@ def main():
     validation=assembly(records)
     (out/'config-validation.inc').write_text(validation)
 
+    from iobyte_config import descriptor,assembly as io_assembly
+    from build_trs80_boot import assemble as boot_assemble,SOURCE,BUILD,STAGE1_ADDRESS
+    stage=boot_assemble(args.assembler,SOURCE/'stage1.mac',BUILD/'stage1.bin',STAGE1_ADDRESS)
+    io_records=[descriptor(stage,STAGE1_ADDRESS,(BUILD/'stage1.lst').read_text(),80,4)]
+    if args.config_extra_resident:
+        io_records.append(descriptor(args.config_extra_resident.read_bytes(),LAYOUT['SYSTEM'],
+                          (args.config_extra_resident.parent/'bios.lst').read_text(),args.config_extra_spt,8))
+    io_meta=io_assembly(io_records)
+    (out/'config-iobyte.inc').write_text(io_meta)
     ccp = (ROOT/'build/ccp/ccp.bin').read_bytes()
     rlm = (ROOT/'build/ccp/ccp.rlm').read_bytes()
     relocations = int.from_bytes(rlm[14:16], 'little')
@@ -61,7 +70,7 @@ def main():
             (ROOT/'src/utilities/disk/sysgen.inc').read_text()).replace('        INCLUDE disk/common.inc',
             (ROOT/'src/utilities/disk/common.inc').read_text()).replace('        INCLUDE disk/fdbread.inc',
             (ROOT/'src/utilities/disk/fdbread.inc').read_text()).replace('        INCLUDE disk/builtins.inc', builtin)
-        text=text.replace('; @config-validation@',validation)
+        text=text.replace('; @config-validation@',validation).replace('; @config-iobyte@',io_meta)
         text=text.replace('; @monitor-console@', (ROOT/'src/utilities/common/monitorconsole.inc').read_text())
         data=assemble(args.assembler,text,out/(stem.upper()+'.COM'),out/(stem+'.lst'),0x100)
         if len(data)>0x3D00:

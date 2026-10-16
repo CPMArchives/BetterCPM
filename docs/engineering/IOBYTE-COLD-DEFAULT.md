@@ -31,7 +31,7 @@ leaves. Auxiliary input/output uses port 5; printer status/output uses ports
 2/3. See `src/platform/z80pack/chario.inc` and the platform builder's capability
 constant. These endpoints do not provide a baud/parity/flow-control API.
 
-STAT changes live assignments; no CONFIG persistent IOBYTE control has yet
-been implemented. The compiled 95h cold default remains unchanged. The
-persistence alternatives and remaining audit work are recorded in
-[CONFIG Runtime Audit](CONFIG%20Runtime%20Audit.md).
+STAT changes live assignments. CONFIG Build 011 can save a disk-specific cold
+default by patching the build-owned operand, without adding boot instructions.
+Fresh builds still compile 95h. See [CONFIG Cold IOBYTE](CONFIG%20Cold%20IOBYTE.md)
+for the qualified persistence contract; the earlier runtime audit is historical.

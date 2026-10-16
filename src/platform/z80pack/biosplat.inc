@@ -16,6 +16,7 @@
 PL_INIT:                                ; initialize CPMSIM platform state
   ; RAM and ROM cold boots share this entry; warm boot bypasses it.
   ; 95h selects CON=CRT, RDR=PTR, PUN=PTP and LST=LPT.
+IO_COLD:
         LD A,095H
         LD (0003H),A
         XOR A

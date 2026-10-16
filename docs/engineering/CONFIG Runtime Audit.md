@@ -2,6 +2,11 @@
 
 ## Scope and status — 2026-10-16
 
+The original persistent-IOBYTE findings below are superseded by Build 011
+[implementation and qualification](CONFIG%20Cold%20IOBYTE.md). Its disk-operand
+patch and private-buffer relocation add no resident bytes. Printer/serial
+findings remain open; no deferral has been approved.
+
 This is a source/backend and existing-memory audit of the gated proposals in
 CONFIG specification sections 13–15. It does not qualify new runtime code or
 silently remove those proposals. No BIOS, BDOS, persistence format or utility

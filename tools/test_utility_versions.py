@@ -6,6 +6,8 @@ from test_bios import Z80
 from utility_versions import banner, identities
 ROOT=Path(__file__).resolve().parents[1]
 def address(listing,name):
+    equ=re.search(r"\b"+re.escape(name)+r"\s+EQU\s+0?([0-9a-f]+)H",listing,re.I)
+    if equ:return int(equ[1],16)
     return int(re.search(r'^([0-9a-f]{4})\s+.*?\b'+name+':',listing,re.M|re.I)[1],16)
 def runner(image,base=256):
     c=Z80(b'');c.mem[base:base+len(image)]=image
