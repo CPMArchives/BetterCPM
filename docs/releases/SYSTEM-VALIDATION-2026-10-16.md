@@ -466,3 +466,26 @@ records three passing groups (CPU 2 required, ecology 1, disk state 7), with
 program/fixture/emulator/baseline hashes and retained native screen captures.
 The baseline DMK hash remains unchanged. `model4-corrected.log` records normal
 completion of the emulator and capture runner.
+
+### Independently observed console input
+
+After PR #354, the unchanged V002b candidate was tested with the pinned,
+unmodified CONSTEST under cpmsim. `run_validation_console_input.py` supplies
+confirmation only after checking literal returned bytes and independently
+rendering the input echo with pyte. It does not accept the suite's printed
+EXPECTED text as its oracle.
+
+All 13 selected required cases pass: 0083/0084 (Function 6 returned character
+and no echo), 0093/0094 (Function 1 returned character and echo), and
+0106/0108/0109/0111/0112/0113/0114/0115/0122 (Function 10 returned buffers,
+CR/LF termination, one-character capacity, echo, Backspace and prompt-column
+preservation). Every case returns to the CCP, followed by a normal BYE halt.
+
+Evidence: `console-input/constest-input-305q8ijr/` contains the full transcript
+and result manifest with baseline, program and simulator hashes, keystrokes,
+expected returned bytes and the observer module location. The original image
+hash is unchanged. The earlier nine-case run is retained in
+`console-input/constest-input-pwi0agwq/`; its counts overlap, not add to, the
+13-case result. These checks do not establish timing, other editing controls,
+control-key recovery or native Model 4 input behavior. No OS defect was found
+in this subset.
