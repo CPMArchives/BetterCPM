@@ -37,6 +37,8 @@ def build_support(assembler: Path) -> None:
         if not match:
             raise SystemExit(f"unified core lacks internal symbol {name}")
         symbols[name] = int(match[1], 16)
+    if symbols["UB_USERNO"] != symbols["UB_DRIVE"] + 1:
+        raise SystemExit("paired adapter save requires adjacent drive/user state")
     core = "".join(f"{name} EQU 0{address:04X}H\n"
                    for name, address in symbols.items())
     (BUILD / "core.inc").write_text(core, encoding="ascii")
@@ -107,7 +109,8 @@ def main() -> None:
     gateway = BUILD / "gateway.bin"
     with tempfile.TemporaryDirectory(prefix="bettercpm-system-") as temporary:
         staged = Path(temporary) / SOURCE.name
-        staged.write_text(expand_layout(text), encoding="ascii")
+        staged.write_text(expand_layout(text).replace("        INCLUDE core.inc",
+                          (BUILD / "core.inc").read_text()), encoding="ascii")
         subprocess.run([str(args.assembler), "-fb", f"-o{gateway}",
                         f"-l{BUILD / 'gateway.lst'}", staged.name],
                        check=True, cwd=staged.parent)

@@ -39,6 +39,10 @@ def main() -> None:
             blank(args.disk_template, disks / f"drive{drive}.dsk")
         source = work / "GATEWAY.MAC"
         source.write_bytes(cpm_text(SOURCE))
+        core = work / "CORE.INC"
+        core.write_bytes(cpm_text(BUILD / "core.inc"))
+        run("cpmcp", "-f", "ibm-3740", str(disks / "driveb.dsk"),
+            str(core), "0:CORE.INC")
         run("cpmcp", "-f", "ibm-3740", str(disks / "drivec.dsk"),
             str(source), "0:GATEWAY.MAC")
         for tool in ("ZSM4.COM", "LINK.COM"):

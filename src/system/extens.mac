@@ -15,6 +15,7 @@
         JP      AD_OPEN
         JP      AD_READ
         JP      CL_NEXT
+        JP      CL_ABORT
 
         INCLUDE core.inc
 CPTCOUNT        EQU     LY_SYS+094H
@@ -72,11 +73,7 @@ EX_RETURN:                              ; return extension status
 EX_RETHL:                               ; return extension value in HL
         LD      A,L
         LD      B,H
-        POP     IX
-        LD      SP,(EX_OLDSP)
-        RET
-
-EX_RET182:                              ; return Function-182 result
+EX_RET182:                              ; shared epilogue preserves Function-182 registers
         POP     IX
         LD      SP,(EX_OLDSP)
         RET
@@ -216,8 +213,7 @@ BF_VERSION:                             ; return protected version descriptor
 ; -------------------------------------------------------------------------------
 
 BF_CURSOR:                              ; perform platform cursor service
-        LD      A,E
-        LD      C,A
+        LD      C,E                     ; MH_CUR supplies its own selector in A
         CALL    BIOCURSOR
         OR      A
         JP      Z,EX_RETURN
@@ -268,10 +264,8 @@ AD_READ:                                ; adapter sequential read
 AD_CALL:                                ; call unified filesystem
         LD      HL,(UB_DMA)
         PUSH    HL
-        LD      A,(UB_DRIVE)
-        PUSH    AF
-        LD      A,(UB_USERNO)
-        PUSH    AF
+        LD      HL,(UB_DRIVE)           ; adjacent drive/user bytes, one saved pair
+        PUSH    HL
         XOR     A
         LD      (UB_USERNO),A
         LD      A,C
@@ -283,10 +277,8 @@ AD_CALL:                                ; call unified filesystem
 AD_INVOKE:                              ; invoke filesystem adapter
         CALL    COREBDOS
         LD      C,A
-        POP     AF
-        LD      (UB_USERNO),A
-        POP     AF
-        LD      (UB_DRIVE),A
+        POP     HL
+        LD      (UB_DRIVE),HL
         POP     HL
         LD      (UB_DMA),HL
         LD      A,C
@@ -333,10 +325,20 @@ CL_END:                                 ; finish module read
         DEC A                           ; EOF=1 is success; other errors stay nonzero
         JP LY_COMDONE
 
-CL_BIG:                                 ; reject oversized module
-        POP HL
-        LD A,1
-        JP LY_COMDONE
+CL_BIG:                                 ; reject oversized module through common finish
+        LD A,2
+        JR CL_END
+
+CL_ABORT:                               ; restore lookup context before WBOOT rebuild
+  ; CCP_LUACT/LUSAV survive full-TPA overwrite in reserved page-zero workspace.
+  ; A BIOS I/O abort bypasses CL_END and the system-stack return frames.
+        LD HL,0048H
+        BIT 0,(HL)
+        RET Z
+        RES 0,(HL)
+        LD A,(0046H)
+        LD (UB_USERNO),A
+        RET
 
 ; ================================================================================
 ; =                           Extension Working State                            =

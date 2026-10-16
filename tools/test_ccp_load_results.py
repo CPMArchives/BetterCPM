@@ -35,15 +35,26 @@ DRIVE:  LD A,3
         RET
 USER:   LD A,E
         CP 0FFH
-        LD A,7
+        LD A,(0F10AH)
         RET Z
         LD A,E
         LD (0F106H),A
+        LD (0F10AH),A
         RET
 DMA:    LD (0F100H),DE
         XOR A
         RET
-READ:   LD HL,0F102H
+READ:   LD A,(0F108H)
+        OR A
+        LD A,(0F10AH)
+        JR NZ,READZERO
+        CP 7
+        JR READCHECK
+READZERO: OR A
+READCHECK: JR Z,READOK
+        LD A,1
+        LD (0F10BH),A
+READOK: LD HL,0F102H
         INC (HL)
         LD A,(HL)
         CP 1
@@ -63,7 +74,7 @@ PROGRAM: DB 03EH,1,032H,4,0F1H,0C3H,0FFH,0FFH
 stub=assemble(Path('/Users/nathanael/bin/z80asm'),source,W/'provider.bin',W/'provider.lst',LAYOUT['BDOS'])
 for fallback in (0,1):
  for result in (1,2,0xFF,0):
-  m=cpu();m.sp=0xF300;m.mem[0xF108]=fallback;m.mem[4]=0xAF
+  m=cpu();m.sp=0xF300;m.mem[0xF108]=fallback;m.mem[0xF10A]=7;m.mem[4]=0xAF
   for key,name in [('SYSTEM','gateway'),('EXTENSIONS','extensions')]:
    data=(R/f'build/system/{name}.bin').read_bytes();base=LAYOUT[key];m.mem[base:base+len(data)]=data
   m.mem[0:3]=bytes([0xc3,0xff,0xff])  # record warm-boot handoff without rebuilding
@@ -73,7 +84,8 @@ for fallback in (0,1):
   m.setword(LAYOUT['SYSTEM']+0x8c,BASE)
   head,shutdown=0x8000,0x8010
   m.mem[head:head+8]=bytes(6)+shutdown.to_bytes(2,'little')
-  m.mem[shutdown:shutdown+5]=bytes((0x21,0x07,0xF1,0x34,0xC9))
+  callback=bytes((0x3A,0x0A,0xF1,0xFE,7,0x28,5,0x3E,1,0x32,0x0C,0xF1,0x21,7,0xF1,0x34,0xC9))
+  m.mem[shutdown:shutdown+len(callback)]=callback
   m.setword(LAYOUT['SYSTEM']+0x86,head)
   command=b'PROBE ONE.TXT TWO.DAT';m.mem[symbol('CCP_COUNT')]=len(command);start=symbol('CCP_DATA');m.mem[start:start+len(command)]=command
   m.mem[0x5c:0x80]=bytes([0xa5])*36;m.mem[0xF103]=result
@@ -83,10 +95,13 @@ for fallback in (0,1):
   except AssertionError as error:
    stack=bytes(m.mem[m.sp:m.sp+12]).hex()
    raise AssertionError(f'COM probe stopped at {m.pc:04X}h SP={m.sp:04X}h head={m.word(LAYOUT["SYSTEM"]+0x86):04X} shutdown={m.mem[0xF107]:02X} stack={stack}') from error
+  assert m.mem[0xF10C]==0, 'CPX shutdown observed lookup user rather than caller user'
+  assert m.mem[0xF10B]==0, 'sequential reader used caller user instead of lookup user'
   assert m.mem[0xF106]==7,'caller user was not restored'
   assert m.mem[0xF107]==1 and m.word(LAYOUT['SYSTEM']+0x86)==0,'COM handoff did not shut down the CPX chain exactly once'
   assert m.mem[4]==3, 'page-zero drive did not follow caller-context loader handoff'
   if result==1:
+   assert m.mem[0x48]==0, 'successful loader left abort recovery armed'
    assert m.mem[0xF104]==1,'EOF did not execute the complete image'
    assert m.mem[0x5d:0x65]==b'ONE     ' and m.mem[0x6d:0x75]==b'TWO     '
    assert m.mem[0x81:0x91]==b' ONE.TXT TWO.DAT'

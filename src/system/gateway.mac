@@ -1,4 +1,5 @@
         INCLUDE layout.inc
+        INCLUDE core.inc
 
 ; ********************************************************************************
 ; *                   BetterCP/M Resident System Gateway                         *
@@ -54,10 +55,10 @@ SYS_COMDONE:                            ; handle transient program return
         PUSH AF
         LD C,32
         CALL BDOS
-        LD DE,0080H
-        LD C,26
-        CALL BDOS
+        LD HL,0080H
+        LD (UB_DMA),HL
         POP AF
+        LD (0048H),A                    ; EOF clears lookup recovery; errors WBOOT
         OR A
         JP NZ,0000H
   ; Patch 2026-09-08: DRI's CCP calls a transient, so its entry RET bypasses
@@ -110,8 +111,8 @@ SYS_WARM:                               ; perform warm system entry
   ; disk state to A internally, but CP/M warm boot resumes the command processor
   ; on the drive from which the transient returned.
         LD      SP,SYS_STKTOP
-        LD      C,25
-        CALL    BDOS
+        CALL    LY_EXT+00FH             ; also handles nonreturning loader I/O abort
+        LD      A,(UB_DRIVE)
 
 ; ================================================================================
 ; =                      Command Environment Reconstruction                      =
@@ -146,8 +147,7 @@ SYS_RESUME:                             ; resume reconstructed CCP
   ; The CCP address is configuration state. A stable gateway must consult the
   ; descriptor rather than embed a direct jump to the current default address.
         LD      HL,(ECB_CCPBASE)
-        PUSH    HL
-        RET
+        JP      (HL)
 
 SYS_STOP:                               ; halt after fatal gateway failure
         JR      SYS_STOP

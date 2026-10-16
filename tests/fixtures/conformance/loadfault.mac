@@ -1,0 +1,24 @@
+; One-shot loader READ fault. Installed in unused empty RSX reconstruction slots;
+; never changes the slot count. Only the isolated no-RSX 512-byte test image is
+; supported. Ordinary reconstruction uses the healthy READ path. After CPX
+; shutdown, wait until the protected COM destination is at least C000h, then
+; restore the READ vector and report a final BIOS error. The CCP/CPX region
+; prefix has already been overwritten; only the protected handoff stack is consulted.
+        ORG @HOOK@
+        LD A,(0048H)
+        OR A
+        JR Z,HEALTHY
+        LD HL,(@CPXHEAD@)
+        LD A,H
+        OR L
+        JR NZ,HEALTHY
+        LD HL,(@DEST@)
+        LD A,H
+        CP 0C0H
+        JR C,HEALTHY
+        LD HL,(HEALTHY+1)
+        LD (@READPTR@),HL
+        LD A,1
+        RET
+HEALTHY: JP 0
+        END
