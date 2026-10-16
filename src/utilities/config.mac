@@ -766,6 +766,8 @@ EDAPPLY:LD HL,EDCOPY                    ; apply edited logical binding
         LDIR
         LD A,(EDDRIVE)
         LD (REQ),A
+        CALL EDCHECK
+        JP NZ,EDINVALID
         LD DE,REQ
         LD B,4
         CALL API
@@ -1381,6 +1383,9 @@ EDSIZEIN:LD HL,EDSIZEQ                  ; workbench sizein
         CP 4
         JP NC,EDINVALID
         LD (EDNEW),A
+        CALL EDSIZESET
+        JP EDSHOW
+EDSIZESET:
   ; On the first mixed edit seed every slot from the old uniform length.
         LD A,(EDCOPY+52)
         OR A
@@ -1433,7 +1438,7 @@ EDMERGE:LD A,E                          ; workbench merge
         AND (HL)
         OR D
         LD (HL),A
-        JP EDSHOW
+        RET
   ; Read a decimal word using our own console input, so BREAK is local.
   ; Re-use the FDF scanner's overflow check. ENTER alone leaves it alone.
 
@@ -1928,7 +1933,9 @@ CF_MODE: DB 0
 CF_LEFT: DB 0
 CF_PTR: DW 0
 CF_LEN: DB 0
-CF_TEXT: DS 127
+CF_TEXT:
+CE_SEEN: DS 19
+CE_VALS: DS 108
 
  ; Physical CLI edits the active profile only. All tail parsing and value
  ; validation finish before INIT or any configuration/file operation.
@@ -2216,7 +2223,7 @@ CE_PARSE:
         PUSH BC
         LD HL,CE_SEEN
         LD DE,CE_SEEN+1
-        LD BC,15
+        LD BC,18
         LD (HL),0
         LDIR
         POP BC
@@ -2245,7 +2252,7 @@ CE_FIND:
         LD A,(EDFIELD)
         INC A
         LD (EDFIELD),A
-        CP 16
+        CP 19
         JR C,CE_FIND
         JP CF_BAD
 CE_FOUND:
@@ -2263,6 +2270,9 @@ CE_FOUND:
         OR A
         JP NZ,CE_BADPOP
         INC (HL)
+        LD A,(EDFIELD)
+        CP 16
+        JR NC,CE_BYTE
         CALL EDADDR
         POP DE
         LD A,(EDWIDTH)
@@ -2271,6 +2281,26 @@ CE_FOUND:
         LD A,D
         OR A
         JR NZ,CE_BAD2
+        JR CE_STORE
+CE_BYTE:
+        POP DE
+        LD A,D
+        OR A
+        JR NZ,CE_BAD2
+        LD A,(EDFIELD)
+        CP 16
+        JR NZ,CE_CODE
+        LD A,E
+        DEC A
+        CP 32
+        JR NC,CE_BAD2
+CE_CODE:
+        LD A,(EDFIELD)
+        CP 18
+        JR NZ,CE_STORE
+        LD A,E
+        CP 4
+        JR NC,CE_BAD2
 CE_STORE:
         LD A,(EDFIELD)
         ADD A,A
@@ -2284,7 +2314,15 @@ CE_STORE:
         POP BC
         POP HL
         CALL CF_SKIP
-        JR NZ,CE_LOOP
+        JP NZ,CE_LOOP
+        LD A,(CE_SEEN+17)
+        LD B,A
+        LD A,(CE_SEEN+18)
+        OR B
+        LD B,A
+        LD A,(CE_SEEN+16)
+        CP B
+        JP NZ,CF_BAD                  ; slot requires ID or code, and vice versa
         LD A,6
         LD (CF_MODE),A
         OR A
@@ -2396,6 +2434,7 @@ CE_NEXT:
         LD (EDFIELD),A
         CP 16
         JR C,CE_MERGE
+        CALL CE_MAP
         LD HL,EDCOPY
         LD DE,BIND
         LD BC,64
@@ -2409,11 +2448,52 @@ CE_NEXT:
         LD DE,REQ+1
         LD BC,64
         LDIR
-        LD A,(EDCOPY)
+        CALL EDCHECK
+        JP NZ,CL_ERROR
+        LD A,(REQ+1)
         JP CL_COMMIT
+ ; One physical-order slot per invocation; repeat commands for additional slots.
+CE_MAP:
+        LD A,(CE_SEEN+16)
+        OR A
+        RET Z
+        LD A,(CE_VALS+32)
+        DEC A
+        LD (EDSAVE),A
+        LD E,A
+        LD D,0
+        LD A,(CE_SEEN+17)
+        OR A
+        JR Z,CE_MAPSIZE
+        LD HL,EDCOPY+20
+        ADD HL,DE
+        LD A,(CE_VALS+34)
+        LD (HL),A
+CE_MAPSIZE:
+        LD A,(CE_SEEN+18)
+        OR A
+        RET Z
+        LD A,(CE_VALS+36)
+        LD (EDNEW),A
+        JP EDSIZESET
+; The legacy setter's uniform fast path clears a size map when SPT still
+; matches uniform geometry. Validate explicit maps first, rather than report
+; success after silently dropping a requested size edit. Shared with menu I.
+EDCHECK:
+        LD A,(REQ+53)
+        OR A
+        RET Z
+        LD IX,REQ
+        LD BC,002B7H
+        CALL BDOS
+        LD DE,04644H
+        OR A
+        SBC HL,DE
+        RET
 CE_KEY: DB '/EDIT=',0
 CE_NAMES: DW CE_N0,CE_N1,CE_N2,CE_N3,CE_N4,CE_N5,CE_N6,CE_N7
         DW CE_N8,CE_N9,CE_N10,CE_N11,CE_N12,CE_N13,CE_N14,CE_N15
+        DW CE_N16,CE_N17,CE_N18
 CE_N0: DB '/PHYSICAL=',0
 CE_N1: DB '/SPT=',0
 CE_N2: DB '/BSH=',0
@@ -2430,8 +2510,11 @@ CE_N12: DB '/SECTORS=',0
 CE_N13: DB '/SIZE=',0
 CE_N14: DB '/FLAGS=',0
 CE_N15: DB '/SIZEMAP=',0
-CE_SEEN: DS 16
-CE_VALS: DS 32
+CE_N16: DB '/SLOT=',0
+CE_N17: DB '/ID=',0
+CE_N18: DB '/CODE=',0
+; CLI parsing modes are exclusive: startup text and edit scratch never coexist.
+
 
 ; Named logical bindings: first validate the complete tail, then resolve a
 ; unique catalogue description. No catalogue row number becomes a script ABI.

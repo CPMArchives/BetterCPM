@@ -10,8 +10,8 @@ CONFIG, DUP and SYSGEN are ordinary transient programs. Utility release/build
 identities come from standalone `/VER` and `metadata/utility-versions.tsv`;
 DUP's legacy interactive 1.14 title is separate from that identity. They require
 BetterCP/M disk ABI 5 and four logical drives. CONFIG needs 42 KiB of
-transient space; allow 51 KiB for DUP and its private copy buffer. SYSGEN is
-under 3 KiB. They add no resident allocation: maximum TPA remains
+transient space; allow 51 KiB for DUP and its private copy buffer. SYSGEN Build 003 is
+3,700 bytes (about 3.6 KiB). They add no resident allocation: maximum TPA remains
 54,273 bytes when no RSXs are installed.
 
 Run `CONFIG` or `DUP` at the command prompt. Keep the compiled `DISK.FDB` on
@@ -41,8 +41,9 @@ CONFIG /EDIT=B /CKS=16
 `/SHOW` distinguishes active and saved state. `/STARTUP=` confirms and saves
 only the next cold-start command; it does not execute it. Drive updates are
 active-only and require a separate save-all action to persist. Complete requests
-validate before changes. Scalar `/EDIT` fields are implemented; sector-ID and
-size-map slot CLI, `/DEFAULT`, and gated peripheral proposals remain open.
+validate before changes. Scalar and single-slot sector-map `/EDIT` fields are implemented. `/DEFAULT`
+and gated peripheral proposals remain open. Explicit size-map edits require
+FDF.RSX validation before commit, through both menu I and CLI.
 
 H offers two scopes. Scope A saves pending cold-boot changes only; in the
 current implementation that means the optional startup command. Scope B saves

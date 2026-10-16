@@ -2499,8 +2499,20 @@ once. CONFIG preserves unspecified fields and rejects unsupported combinations.
 These are expert format-definition controls: they change how existing media is
 interpreted, so use values appropriate to its actual format. They do not format
 or erase the disk. Changes are active only; save separately to retain them.
-No format catalogue is needed. Sector IDs and individual sector sizes still use
-menu I.
+No format catalogue is needed. Sector slots can also be edited directly:
+
+```text
+CONFIG /EDIT=B /SLOT=1 /ID=200
+CONFIG /EDIT=B /SPT=35 /SLOT=1 /CODE=0
+```
+
+`SLOT` is physical order 1–32; `ID` is 0–255; `CODE` is 0–3 for
+128/256/512/1024-byte sectors. Edit one slot per command, supplying an ID, size
+code, or both. Size edits require FDF.RSX and consistent SPT/size settings; CONFIG
+rejects unsupported or inconsistent requests. The example values illustrate
+syntax, not a format suitable for every disk. The first size edit seeds the
+remaining slots from the uniform size. Duplicate IDs are rejected; menu I lets
+you prepare several private edits before applying the complete map together.
 
 #### 7.2 Startup command
 

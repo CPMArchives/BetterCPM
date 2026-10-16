@@ -42,7 +42,7 @@ def main():
         c=cpu('/edit=c /spt=40 /dsm=500 /bsh=4');c.run(a('CF_PARSE'),limit=200000)
         assert not c.carry
         old=bytearray(range(64));old[0]=255 if fault=='unbound' else 1
-        old[16]=40;old[19]=0
+        old[16]=40;old[19]=0;old[52]=0
         active=bytearray(old);ops=[];resets=[]
         c.mem[a('API'):a('API')+3]=bytes((0xdb,232,0xc9))
         def io(port):
@@ -64,5 +64,51 @@ def main():
             expected[3]=4;expected[6:8]=(500).to_bytes(2,'little')
             assert active==expected and ops==[3,1,4] and resets==[4]
         else:assert active==old and not resets,(fault,ops)
-    print('PASS CONFIG scalar workbench CLI: bounds, pre-I/O rejection, merged commit and failures')
+    for tail in ['/EDIT=B /SLOT=0 /ID=1','/EDIT=B /SLOT=33 /ID=1',
+                 '/EDIT=B /SLOT=256 /ID=1','/EDIT=B /SLOT=1',
+                 '/EDIT=B /ID=1','/EDIT=B /CODE=2',
+                 '/EDIT=B /SLOT=2 /ID=256','/EDIT=B /SLOT=2 /CODE=4',
+                 '/EDIT=B /SLOT=2 /CODE=65535',
+                 '/EDIT=B /SLOT=2 /CODE=1 /CODE=2']:
+        c=cpu(tail);c.run(a('CF_PARSE'),limit=200000);assert c.carry,tail
+        c=cpu(tail);out=[]
+        def invalid_io(port):
+            assert c.c==2,('invalid map performed I/O',tail,c.c)
+            out.append(c.e);return 0
+        c.port_read=invalid_io;c.run(256,limit=200000)
+        assert bytes(out)==b'Invalid CONFIG usage.\r\n'
+    for mixed in [False,True]:
+        for slot in range(1,33):
+            for code in range(4):
+                # All packed bit positions, first mixed seeding, existing-map
+                # preservation and ID range endpoints share the menu engine.
+                c=cpu('/EDIT=B /CODE='+str(code)+' /ID=255 /SLOT='+str(slot))
+                c.run(a('CF_PARSE'),limit=200000);assert not c.carry,(slot,code)
+                old=bytearray(range(64));old[18]=2;old[52]=int(mixed)
+                c.mem[a('EDCOPY'):a('EDCOPY')+64]=old
+                c.run(a('CE_MAP'),limit=200000)
+                expected=bytearray(old);expected[20+slot-1]=255
+                if not mixed:expected[53:61]=bytes([0xaa])*8
+                expected[52]=1
+                pos=53+(slot-1)//4;shift=2*((slot-1)%4)
+                expected[pos]=(expected[pos]&~(3<<shift))|(code<<shift)
+                assert c.mem[a('EDCOPY'):a('EDCOPY')+64]==expected,(mixed,slot,code)
+    c=cpu('/EDIT=B /SLOT=32 /ID=0');c.run(a('CF_PARSE'),limit=200000)
+    old=bytearray(range(64));c.mem[a('EDCOPY'):a('EDCOPY')+64]=old
+    c.run(a('CE_MAP'),limit=200000);old[51]=0
+    assert c.mem[a('EDCOPY'):a('EDCOPY')+64]==old
+    for ok in [False,True]:
+        c=cpu('');c.mem[a('REQ')+53]=1;calls=[]
+        def map_io(port):
+            assert c.c==183 and c.b==2
+            calls.append(c.ix)
+            c.hl=0x4644 if ok else 0xffff
+            return 0
+        c.port_read=map_io;c.run(a('EDCHECK'),limit=200000)
+        assert c.z==ok and calls==[a('REQ')]
+    # The same validation must precede the menu and CLI setter calls.
+    source=(ROOT/'src/utilities/config.mac').read_text()
+    assert 'CALL EDCHECK\n        JP NZ,EDINVALID' in source
+    assert 'CALL EDCHECK\n        JP NZ,CL_ERROR' in source
+    print('PASS CONFIG workbench CLI: scalar bounds, map packing, pre-I/O rejection, merged commit and explicit-map validation')
 if __name__=='__main__':main()
