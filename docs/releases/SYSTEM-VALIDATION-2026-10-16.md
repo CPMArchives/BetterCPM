@@ -28,7 +28,7 @@ The source checkout was clean and was not modified. A private clone at
 | Stage | Status | Evidence / next work |
 | --- | --- | --- |
 | 1. Clean builds, contents, boot, baseline console/memory | In progress; initial gates pass | Both distributions pass build/boot/integrity; focused BIOS/CCP and native editing/unload pass. Additional console/startup-failure/repeated-return cases remain. |
-| 2. Fresh conformance suite | Partial groups pass on both platforms | Fresh ENTRYTST, CPUTEST, ECOTEST, BDOSTEST required, DIRTEST safe, FILETEST required and RANDTEST safe results below. Selected console, disk/BIOS/error and native Model 4 checks also pass below; remaining cases and CCP procedures are still pending; V004 passes the cpmsim and manual-native checks with the post-run audit below. |
+| 2. Fresh conformance suite | Partial groups pass on both platforms | Fresh ENTRYTST, CPUTEST, ECOTEST, BDOSTEST required, DIRTEST safe, FILETEST required and RANDTEST safe results below. Selected console, disk/BIOS/error and native Model 4 checks also pass below; remaining cases and CCP procedures are still pending; V004 passes the cpmsim and manual-native checks with the post-run audit below. V006 replaces invalid native FILE/BDOS fixture evidence with corrected 68-pass and 56-pass runs. |
 | 3. CPX/RSX lifecycle, relocation, ROM protection | Protected ROM candidate campaigns pass | Fresh V002/V003 guarded ROM, lifecycle, workspace and stack results below; wider RAM/native lifecycle coverage remains. |
 | 4. Resident/transient command integration | Partial; four resident ecology procedures pass on cpmsim | Selectors, protection, prompts, explicit transient invocation, feature diagnostics and caller-state restoration. |
 | 5. Utility operations and failure recovery | Not run | System-disk utilities only; disposable images and independent filesystem inspection. |
@@ -688,6 +688,10 @@ Instrument corrections are retained separately:
 
 ### Native Model 4 BDOS required group
 
+Qualification correction (V006): the initial fixtures below were later found
+to have misplaced data. Preserve the printed result as historical output;
+acceptance requires the corrected-fixture rerun documented under V006.
+
 The prepared native BDOSTEST /GROUP:REQUIRED run passes 56 cases, with zero
 failures/errors, on the unchanged V002b Model 4 candidate. Three manual required
 procedures remain not run. Evidence: `model4-bdos/bdostest-ksglji1p/`, including
@@ -1128,3 +1132,120 @@ diagnostic and external recovery. The intermediate failed assertion is not an
 OS failure or a completed group. A subsequent eight-case run passed
 (`readonly-outcomes-37kfbymh/`); the final run above additionally audits all
 shipped files after each case and is the accepted evidence.
+
+
+## V006 native FILETEST — host fixture mapping corrected
+
+PR 365 and PR 366 are merged. The cpmsim read-only terminal outcomes from
+PR 366 still do not qualify native equivalents.
+
+A fresh isolated production Model 4 image containing the cross-user loader and
+interactive CR/LF fixes passed build, boot and distribution integrity gates:
+`/private/tmp/bettercpm-validation-v006-native/release-0f4b28052ee5-de016a44feeb/trs80gp`.
+No OS source or binary changed during this investigation.
+
+### Initial failure and independent diagnosis
+
+`v006-native-file/filetest-x5a4fuzj/` returned 50 pass, 18 fail, zero error,
+zero observations and two not-run. Failed items were 0167, 0172, 0173, 0174,
+0175, 0179, 0219, 0220, 0221, 0222, 0223, 0224, 0226, 0228, 0229, 0230,
+0231 and 0243. This is retained as output from invalid fixture media, not an
+accepted OS failure result or a completed qualification.
+
+The unchanged `/0172:REPORT` reproduced Open=03, Read=00 and a failed record
+comparison. An instruction trace showed failure on the first byte. A separate
+run stopped at the comparison entry (PC=2CCA) and saved physical RAM before
+WBOOT could overwrite the transient. The expected marker at B383 was intact
+(`ONE`), while the entire guarded DMA record at B644 contained E5. Its FCB
+correctly named BTONE.DAT and declared allocation block 46; the raw bytes at
+46*2048=94208 were indeed E5. Host extraction nevertheless returned the
+canonical `ONE-000` record, actually stored at raw offset 186368.
+
+Evidence and diagnostic scope are retained in
+`v006-native-file-investigation/`, including the unchanged isolated-case
+report, instruction trace, paused RAM snapshot, shipped-file audit and
+`finding.json`. The RAM snapshot is a diagnostic checkpoint, not a suite pass.
+All 29 shipped A: files remained unchanged during the isolated returning case.
+
+A minimal host-only reproduction created separate 128-byte A/B/C/D files.
+With `-T raw`, the second file declared block 3 (offset 6144), but its bytes
+were written at offset 11264. Subsequent host extraction used the same wrong
+mapping, concealing the error. With `-T raw,pcw800`, all four files occupied
+their declared physical blocks. The existing cpmtools/LibDsk versions are
+recorded in the campaign environment; the behavior is consistent with the
+[upstream geometry-probe robustness fix](https://sources.debian.org/patches/cpmtools/2.23-7/cpmtools-libdsk-probe-robustness.patch/),
+which describes retained incorrect sidedness after a failed geometry probe.
+Pinning the raw driver alone does not pin its geometry.
+
+### Corrected native qualification
+
+The native runner now explicitly selects `raw,pcw800` for these 80-cylinder,
+two-sided, 10x512-byte-sector raw images. This changes the host fixture/audit
+path, not guest disk geometry or any BIOS/BDOS code. Before launching, an
+independent decoder walks raw directory entries and 16-bit allocation maps,
+checks every fixture's contents against its source, checks dense extent
+boundaries, checks the RO fixture attribute, rejects shared/out-of-range blocks, and
+verifies all 128 D: entries and 400 blocks (including its directory) are used.
+It rejects the original misplaced BTONE fixture. Host-tool round trips are
+not used as the sole proof of placement.
+
+`v006-native-file-corrected/filetest-36j_o_hf/` reports:
+
+```text
+Summary: 68 pass, 0 fail, 0 error, 0 observations, 2 not-run
+```
+
+This uses the unchanged pinned suite binary and the same V006 OS image.
+All 18 apparent failures disappear with correct fixture placement. Native
+manual terminal cards 0368/0369 remain not-run; the summary is not edited to
+count the earlier cpmsim external outcomes as native passes. Captures retain
+drive readiness, final summary and trailing rows, not a full scrolling trace.
+
+Post-run B:/C:/D: filesystem checks pass. D: is byte-identical to its initial
+fully allocated fixture (SHA-256
+`5722a607cc9d6393d69e81f6ae41d416ff3a0c3c64639197e104b808e1598409`).
+All 29 shipped A: files are unchanged and, using explicit geometry, each also
+matches its manifest source hash. The immutable baseline hash is unchanged.
+The final independent preflight and stricter audit functions were rerun on the
+retained images after additional decoder hardening during the native run;
+`final-verification/` and the additional result fields retain those checks.
+Future runner invocations save the executed runner and shared audit source.
+
+`test_model4_validation_fixtures.py` passes a dense two-extent fixture with a
+16-bit block above 255 and an RO attribute. It rejects displaced record data,
+shared allocation and a missing record at the extent boundary. The focused
+unified BDOS mapping/stack test also passes (3454 bytes; 26-byte private-stack
+high-water). No memory footprint or unloaded 53K TPA changes were required.
+
+### Impact on earlier native evidence and diagnostic limits
+
+A retrospective direct-block audit of all initial fixtures in
+`model4-directory/dirtest-irm5e5c6/` passes; its original 49-pass DIR result
+retains its canonical fixture premise. The earlier native BDOSTEST media
+(`model4-bdos/bdostest-ksglji1p/`) does show the mapping fault: its declared
+BTONE block contains `BIG-096`. Its printed 56-pass result is retained as
+historical output but requires a corrected-fixture rerun before acceptance.
+The replacement run on V006 is
+`v006-native-bdos-corrected/bdostest-8csddn9w/`:
+
+```text
+Summary: 56 pass, 0 fail, 0 error, 0 observations
+3 manual REQUIRED procedures were listed but not run.
+```
+
+All its fixtures pass the independent direct-block decoder before launch.
+Both data filesystems pass explicit-geometry checks; all 29 shipped A: files
+match their manifest hashes and are unchanged. Its executed runner and shared
+audit source are retained with the result. The three manual required cards
+remain not-run. This corrected-fixture result supersedes the earlier native
+BDOS qualification.
+
+The abandoned diagnostic attempts supplied no additional verdicts. One waited
+for aggregate `Summary:` in individual report mode (which emits `END_CASE`);
+a shorter-wait attempt supplied no usable capture. Later added startup/probe
+files used the same faulty host mapping and did not produce usable reports.
+These runs were stopped. They are not additional OS failures. The accepted
+isolated report and RAM checkpoint use the unchanged suite binary. A manual
+post-run audit recheck initially supplied a relative working path twice; the
+retained open error was corrected by using the absolute evidence directory,
+and all final audits above then passed on the same images.
