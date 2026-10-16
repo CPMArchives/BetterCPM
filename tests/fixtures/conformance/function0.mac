@@ -1,0 +1,10 @@
+; A real Function 0 call, with a visible witness if it incorrectly returns.
+        ORG 100H
+        LD C,0
+        CALL 5
+        LD DE,FAILMSG
+        LD C,9
+        CALL 5
+        JP 0
+FAILMSG: DB 'FUNCTION ZERO RETURNED',13,10,'$'
+        END

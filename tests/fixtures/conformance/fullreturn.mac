@@ -1,0 +1,51 @@
+; Fill/pad the carrier with A5h. Verify all loaded records beyond the first
+; before exercising the selected protected return/reconstruction route.
+        ORG 100H
+        LD HL,0200H
+        LD BC,@COUNT@
+CHECK:  LD A,(HL)
+        CP 0A5H
+        JR NZ,BAD
+        INC HL
+        DEC BC
+        LD A,B
+        OR C
+        JR NZ,CHECK
+        LD DE,GOODMSG
+        LD C,9
+        CALL 5
+@EXIT@
+BAD:    PUSH HL
+        LD DE,BADMSG
+        LD C,9
+        CALL 5
+        POP HL
+        PUSH HL
+        LD A,H
+        CALL HEX
+        POP HL
+        PUSH HL
+        LD A,L
+        CALL HEX
+        POP HL
+        LD A,(HL)
+        CALL HEX
+        JP 0
+HEX:    PUSH AF
+        RRCA
+        RRCA
+        RRCA
+        RRCA
+        CALL NIB
+        POP AF
+NIB:    AND 0FH
+        ADD A,'0'
+        CP '9'+1
+        JR C,OUT
+        ADD A,7
+OUT:    LD E,A
+        LD C,2
+        JP 5
+GOODMSG: DB 'FULL-TPA @ROUTE@ ENTERED',13,10,'$'
+BADMSG: DB 'FULL-TPA PATTERN OR RETURN FAILED',13,10,'$'
+        END
