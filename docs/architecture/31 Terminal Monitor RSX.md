@@ -5,7 +5,9 @@ hooks, transactional RSX lifecycle, command-return reset and explicit clear
 paths are implemented. ADM3A, VT52 and the bounded ANSI/VT100 provider ship
 with their test utilities on the appropriate target disks. See
 [monitor implementation closure](../engineering/Monitor%201.0%20Implementation%20Closure.md)
-for evidence and remaining qualification limits. The original design selected
+for evidence and remaining qualification limits. VT52 completion is reopened:
+native wire output is corrected, but portable backend and native display
+qualification are still required. The original design selected
 the bounded RSX approach from the
 [monitor memory review](../engineering/Bounded%20Monitor%20Memory%20and%20Efficiency%20Review.md);
 its audit prototypes are not the production providers.
@@ -18,8 +20,10 @@ The three committed 1.0 personalities are ADM-3A (the Montezuma Micro behavior
 on Model 4), VT52, and a defined ANSI/VT100-compatible subset. Each requires
 its own test utility. ANSI/VT100 is intended for ordinary cpmsim use in macOS
 and compatible Linux terminals; its supported subset and qualification are
-recorded in the [ANSI provider record](../engineering/ANSI%20Provider%20Foundation%20Qualification.md). cpmsim providers render host output through ANSI sequences;
-this translation belongs to the RSX, not cpmsim itself. Use one active monitor provider;
+recorded in the [ANSI provider record](../engineering/ANSI%20Provider%20Foundation%20Qualification.md). ANSI.RSX renders ANSI host output. Corrected VT52.RSX emits native VT52
+controls and requires a VT52 endpoint; it no longer translates to ANSI.
+VT52 portable-backend and native endpoint qualification remain open; see the
+[native correction audit](../engineering/VT52%20Native%20Correction%20Qualification.md). Use one active monitor provider;
 platform-specific builds may share parser and rendering source where useful.
 Only one monitor provider may be resident at a time.
 

@@ -281,7 +281,7 @@
         "z80pack"
       ],
       "user": 0,
-      "role": "VT52-to-ANSI host monitor"
+      "role": "Native VT52 wire monitor; requires a VT52-capable endpoint"
     },
     {
       "name": "VT52TST.COM",

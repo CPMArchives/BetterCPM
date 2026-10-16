@@ -3029,19 +3029,23 @@ monitor. The test utility requires ADM3A rather than another MCON personality.
 ADM3A is Model 4-specific. Do not load it under cpmsim; VT52 and ANSI/VT100
 providers for that backend are separate implementations.
 
-### VT52 monitor on cpmsim
+### Native VT52 monitor
 
-The cpmsim system disk includes VT52.RSX, which translates VT52 screen
-commands into ANSI output for a macOS or Linux terminal. Use a terminal window
-of at least 80 columns and 24 rows. Only one monitor provider can be loaded.
+VT52.RSX now emits native VT52 screen controls. It does not translate them into
+ANSI. Connect cpmsim to an 80-column, 24-row VT52-capable terminal or terminal
+emulator, configure the application for VT52, load `RSX LOAD VT52`, and run
+`CLS` before starting screen software. Only one monitor provider can be loaded.
+For an ordinary ANSI terminal, use ANSI.RSX with ANSI-configured software.
+Loading VT52.RSX does not turn an ANSI-only terminal into a VT52 terminal.
 
-Load it with `RSX LOAD VT52`, then run `CLS` before starting screen software.
-Configure that software for VT52. Translation happens inside the loaded RSX;
-no cpmsim terminal translation setting is required.
+The current carrier is still restricted to the cpmsim backend. It does not
+provide Model 4 screen rendering, and the broader portable-backend requirement
+is not yet complete. Native terminal display and application qualification
+remain release gates; earlier ANSI-adapter results do not establish them.
 
 `VT52TST` exercises identification, positioning, tab stops and erasure with
 three keypress pauses. `VT52TST /VER` prints
-`BetterCP/M VT52TST 1.0 (Build 001)` without requiring a loaded monitor.
+`BetterCP/M VT52TST 1.0 (Build 002)` without requiring a loaded monitor.
 
 Use `RSX UNLOAD VT52` to recover its memory. With no other RSXs loaded,
 the available TPA returns to 53K. The normal cold-boot script does not load

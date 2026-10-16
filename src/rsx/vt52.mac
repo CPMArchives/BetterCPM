@@ -1,5 +1,7 @@
-; Development VT52 personality for cpmsim's ANSI host console.
-; Bounded identification/input queue; live terminal qualification remains.
+; Native VT52 monitor on a byte-stream console connected to a VT52 endpoint.
+; No ANSI translation or platform video-memory access. The current MCON
+; carrier still binds to the cpmsim backend; portable backend selection remains
+; a separate ABI gate. Buffer incomplete addressing before emitting any bytes.
 BASE EQU 08000H
         CSEG
         .PHASE BASE
@@ -120,7 +122,7 @@ VT_PRINT:
         CALL VT_EMIT
         LD A,(VT_COL)
         CP 79
-        JP Z,VT_POS                     ; cancel ANSI delayed wrap at the margin
+        JP Z,VT_POS                     ; retain the native VT52 right margin
         INC A
         LD (VT_COL),A
         RET
@@ -211,58 +213,27 @@ VT_LF:
         LD (VT_ROW),A
         RET
 VT_BLF:
-        CALL VT_LIMIT                  ; bound scrolling even in a taller host
+        ; A native VT52 scrolls on LF at its bottom row and retains column.
         LD C,10
-        CALL VT_EMIT
-        JP VT_FULL
+        JP VT_EMIT
 VT_RLF:
         LD A,(VT_ROW)
         OR A
         JP NZ,VT_UP
-        CALL VT_LIMIT
         LD HL,VT_RI
-        CALL VT_STR
-        JP VT_FULL
-VT_LIMIT:
-        LD HL,VT_AREA
-        CALL VT_STR
-        JP VT_POS
-VT_FULL:
-        LD HL,VT_ALL
-        CALL VT_STR
-        JP VT_POS
+        JP VT_STR
 VT_POS:
-        LD HL,VT_CSI
-        CALL VT_STR
-        LD A,(VT_ROW)
-        INC A
-        CALL VT_DEC
-        LD C,';'
+        ; Native address: ESC Y, row+32, column+32. No CSI/decimal output.
+        LD C,27
         CALL VT_EMIT
-        LD A,(VT_COL)
-        INC A
-        CALL VT_DEC
-        LD C,'H'
-        JP VT_EMIT
-VT_DEC:
-        LD B,0
-VT_TENS:
-        CP 10
-        JR C,VT_DIGIT
-        SUB 10
-        INC B
-        JR VT_TENS
-VT_DIGIT:
-        PUSH AF
-        LD A,B
-        OR A
-        JR Z,VT_UNITS
-        ADD A,'0'
+        LD C,'Y'
+        CALL VT_EMIT
+        LD A,(VT_ROW)
+        ADD A,32
         LD C,A
         CALL VT_EMIT
-VT_UNITS:
-        POP AF
-        ADD A,'0'
+        LD A,(VT_COL)
+        ADD A,32
         LD C,A
         JP VT_EMIT
 VQ_STAT:
@@ -329,13 +300,10 @@ VQ_HEAD: DB 0
 VQ_TAIL: DB 0
 VQ_COUNT: DB 0
 VQ_DATA: DS 16
-VT_CSI: DB 27,'[',0
-VT_CLS: DB 27,'[2J',27,'[H',0
-VT_SJ: DB 27,'[0J',0
-VT_SK: DB 27,'[0K',0
-VT_RI: DB 27,'M',0
-VT_AREA: DB 27,'[1;24r',0
-VT_ALL: DB 27,'[r',0
+VT_CLS: DB 27,'H',27,'J',0
+VT_SJ: DB 27,'J',0
+VT_SK: DB 27,'K',0
+VT_RI: DB 27,'I',0
 VT_STATE: DB 0
 VT_ROW: DB 0
 VT_PEND: DB 0

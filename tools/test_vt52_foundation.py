@@ -55,7 +55,7 @@ def main():
             output.clear()
             for char in chars:call(0,char)
             return bytes(output)
-        def position(row,col):return f'\x1b[{row+1};{col+1}H'.encode()
+        def position(row,col):return bytes([27, ord('Y'), row+32, col+32])
         for row in range(24):
             for col in range(80):
                 cpu.mem[rowaddr],cpu.mem[coladdr]=0,0
@@ -77,15 +77,15 @@ def main():
                         expected=position(r,c) if col<79 else b''
                     elif seq==b'\x0a':
                         r=min(23,row+1)
-                        expected=b'\n' if row<23 else b'\x1b[1;24r'+position(row,col)+b'\n\x1b[r'+position(row,col)
+                        expected=b'\n'
                     elif seq==b'\x0d':c=0;expected=position(r,c)
                     elif seq==b'\x1bA':r=max(0,row-1);expected=position(r,c) if row else b''
                     elif seq==b'\x1bB':r=min(23,row+1);expected=position(r,c) if row<23 else b''
                     elif seq==b'\x1bC':c=min(79,col+1);expected=position(r,c) if col<79 else b''
                     elif seq==b'\x1bH':r,c=0,0;expected=position(r,c)
-                    elif seq==b'\x1bI':r=max(0,row-1);expected=position(r,c) if row else b'\x1b[1;24r'+position(row,col)+b'\x1bM\x1b[r'+position(row,col)
-                    elif seq==b'\x1bJ':expected=b'\x1b[0J'
-                    elif seq==b'\x1bK':expected=b'\x1b[0K'
+                    elif seq==b'\x1bI':r=max(0,row-1);expected=position(r,c) if row else b'\x1bI'
+                    elif seq==b'\x1bJ':expected=b'\x1bJ'
+                    elif seq==b'\x1bK':expected=b'\x1bK'
                     assert send(seq)==expected,(base,row,col,seq,output,expected)
                     assert (cpu.mem[rowaddr],cpu.mem[coladdr])==(r,c),(row,col,seq)
                     cases+=1
@@ -100,7 +100,7 @@ def main():
             assert cpu.mem[state]==0 and not output
             assert (cpu.mem[rowaddr],cpu.mem[coladdr])==old
         output.clear();call(4)
-        assert bytes(output)==b'\x1b[2J\x1b[H'
+        assert bytes(output)==b'\x1bH\x1bJ'
         assert cpu.mem[rowaddr]==cpu.mem[coladdr]==cpu.mem[state]==0
         assert send(b'\x00\x7f')==b''
         assert send(b'\x07')==b'\x07'
@@ -155,15 +155,15 @@ def main():
             if available:
                 assert len(pauses)==3,(base,pauses,bytes(messages),cpu.mem[syms['VQ_COUNT']+base-0x8000])
                 assert b'VT52 monitor exercise complete.' in messages
-                assert b'\x1b[6;11H' in bytes(output)
-                assert b'\x1b[11;80H' in bytes(output)
-                assert b'\x1b[0K' in bytes(output) and b'\x1b[0J' in bytes(output)
+                assert b'\x1bY%*' in bytes(output)
+                assert b'\x1bY*o' in bytes(output)
+                assert b'\x1bK' in bytes(output) and b'\x1bJ' in bytes(output)
                 assert cpu.mem[state]==0
             else:
                 assert not pauses and messages.startswith(b'No MCON provider loaded.')
         cpu.port_write=write
 
-    print(f'PASS: {cases} relocated VT52 cursor/control cases, ANSI translation, reset/clear and raw input bypass')
+    print(f'PASS: {cases} relocated VT52 cursor/control cases, native VT52 wire output, reset/clear and raw input bypass')
 
 
 def test_queue(cpu,entry,base,syms,output):

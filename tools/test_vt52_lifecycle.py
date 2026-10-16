@@ -57,7 +57,7 @@ def main():
     for label,value in [('VT_STATE',3),('VT_ROW',0),('VT_PEND',1),('VQ_COUNT',2)]:
         assert cpu.mem[new+syms[label]-0x8000]==value,label
     emitted.clear();call(0,32+10)
-    assert bytes(emitted)==b'\x1b[2;11H'
+    assert bytes(emitted)==b'\x1bY!*'
     call(5);assert call(1)==255
     assert call(2)==ord('/') and call(2)==ord('K') and call(1)==0
     extension=(ROOT/'build/system/extensions.bin').read_bytes()
