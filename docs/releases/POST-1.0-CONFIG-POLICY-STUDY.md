@@ -711,3 +711,28 @@ illustrative candidates. The research should produce a bounded evidence and
 cost matrix before any broad CONFIG redesign. Start with command environment,
 NDR/PATH, startup, and SUBMIT policy; expand only where concrete evidence
 justifies it. No speculative 1.0 ABI fields or allocations are authorized.
+
+## Printer RSX implementation follow-up — 2026-10-16
+
+**Maintainer decision: schedule the printer RSX work for post-1.0.** Retain the
+[peripheral audit](../engineering/CONFIG%20Peripheral%20RSX%20Audit.md) and
+[working prototype](../engineering/Printer%20RSX%20Prototype.md) as the starting
+point. This item covers LF suppression, simulated formfeed, tab expansion and
+CONFIG management of the optional printer provider.
+
+Measured prototype: 249-byte payload, 512-byte loaded allocation, and 19 bytes
+for the basic permanent hook/cold call before production manager integration.
+These are prototype measurements, not a qualified whole-system fit.
+
+Remaining work:
+
+- Recover BIOS space while preserving 53K unloaded TPA; measure complete manager
+  integration, including safe publication, movement, reconstruction and unload.
+- Freeze line/page/tab semantics, removing the prototype's column-wrap and
+  backspace limitations; define readiness and failed-output accounting.
+- Provide CONFIG inspection, validated updates, persistence and startup replay.
+- Qualify BIOS/BDOS printer paths, IOBYTE routing, capabilities, failures, native
+  builds and both distribution targets.
+
+Keep the prototype outside release images. This decision defers the printer
+feature; it does not decide the separate serial-settings proposal.

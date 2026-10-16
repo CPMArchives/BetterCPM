@@ -15,7 +15,7 @@ The spec's cost/backend gates remain required for proposed runtime facilities.
 | /STARTUP="..." | Confirmed, verified startup-only save; does not execute command |
 | /DEFAULT | Build 010 prepares pending SUBMIT STARTUP only; drives unchanged; explicit save required |
 | Drive command-line parity | Builds 006–007 physical fields and logical binding/format selection implemented; Build 008 scalar workbench fields implemented; Build 009 single-slot sector-map fields implemented |
-| Persistent IOBYTE, printer and serial | Build 011 disk-boot IOBYTE implemented; printer/serial runtime and backend proposals remain open |
+| Persistent IOBYTE, printer and serial | Build 011 disk-boot IOBYTE implemented; printer deferred to post-1.0; serial proposal remains open |
 | Native build | Build 011 dual-profile ZSM4/LINK and cross assembly match at 15,450 bytes |
 
 The no-longer-offered keyboard/video sections are outside CONFIG's 1.0 scope;
@@ -366,3 +366,18 @@ The final Model 4 combined active-plus-pending save campaign also passes after
 private-buffer relocation, including typed startup input, saved-drive/startup
 cold checks and injected-write rollback: `build/test-results/config-save-all`.
 DUP is byte-identical to the preceding binary.
+
+## Printer/serial RSX follow-up — 2026-10-16
+
+The [peripheral RSX audit](CONFIG%20Peripheral%20RSX%20Audit.md) records measured
+BDOS-filter coverage, lifecycle and capability limits, hardware-only serial
+setup, memory accounting and historical Montezuma Micro evidence. It approves
+neither implementation nor deferral. Build 011 IOBYTE behavior is unchanged.
+
+## Scheduling decision — 2026-10-16
+
+The maintainer has now deferred the printer RSX feature and CONFIG integration
+to post-1.0. Earlier statements that no deferral was approved describe the audit
+or prototype stage and are superseded for printer work. Preserve this evidence
+for the [post-1.0 work item](../releases/POST-1.0-CONFIG-POLICY-STUDY.md#printer-rsx-implementation-follow-up--2026-10-16).
+The separate serial proposal remains undecided.
