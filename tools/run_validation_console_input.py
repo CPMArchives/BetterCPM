@@ -82,6 +82,49 @@ def main():
         observed.append({'case': 104, 'classification': 'profile', 'keys_hex': '4b', 'return_a_hex': '4b', 'oracle': 'one supplied key survives Function 11 and is echoed once by Function 1'})
         yield (b'Y', b'0104  P  X', 30)
         yield (b'', b'A0>_ ', 30)
+        yield (b'CONSTEST /0107\r', b'Maximum is 1. Type Z only; call must return without Enter: ', 30)
+        before = trace.read_bytes()
+        yield (b'Z', b'Expect count 01 and data [Q]: ', 30)
+        delta = trace.read_bytes()[len(before):]
+        echo, result = delta.split(b'\r\nOBSERVED: count=', 1)
+        assert result.startswith(b'01; data=[Z]\r\n')
+        assert display(before+echo) == display(before+b'Z')
+        before = trace.read_bytes()
+        yield (b'Q\r', confirmation, 30)
+        delta = trace.read_bytes()[len(before):]
+        echo, result = delta.split(b'\r\nOBSERVED: count=', 1)
+        assert result.startswith(b'01; data=[Q]\r\n')
+        assert display(before+echo) == display(before+b'Q')
+        observed.append({'case': 107, 'keys_hex': '5a510d', 'buffers': ['5a', '51'], 'oracle': 'maximum 1 returns without Enter; maximum byte FF accepts Q and returns on Enter'})
+        yield (b'Y', b'0107  P  R', 30)
+        yield (b'', b'A0>_ ', 30)
+
+        yield (b'CONSTEST /0101\r', b'The input call must pause until resumed and finally return X: ', 30)
+        yield (b'\x13', None, 0.25)
+        yield (b'\x11', None, 0.25)
+        before = trace.read_bytes()
+        yield (b'X', confirmation, 30)
+        assert trace.read_bytes()[len(before):].startswith(b'X\r\nOBSERVED: final return A=58\r\n')
+        observed.append({'case': 101, 'keys_hex': '131158', 'return_a_hex': '58', 'silence_seconds': [0.25, 0.25]})
+        yield (b'Y', b'0101  P  R', 30)
+        yield (b'', b'A0>_ ', 30)
+        echo_cases = [
+            (95, b'Press Enter; cursor should return to column zero: ', b'\r', b'\r\r\nOBSERVED: return A=0D\r\n'),
+            (96, b'Press Ctrl-J; cursor should advance one line: ', b'\n', b'\n\r\nOBSERVED: return A=0A\r\n'),
+            (97, b'After ABC, press Backspace; X should overwrite C:\r\nABC', b'\x08', b'\x08X\r\nEXPECTED: display ends as ABX.\r\n'),
+            (98, b'After A, press TAB; B should land at next tab stop:\r\nA', b'\t', b'       B\r\nEXPECTED: TAB was expanded to the next eight-column stop.\r\n'),
+            (99, b'Press Ctrl-A; nothing should appear between brackets: [', b'\x01', b']\r\nOBSERVED: return A=01\r\n'),
+            (100, b'After A, press TAB; B should use the shared next tab stop:\r\nA', b'\t', b'       B\r\nEXPECTED: Function 1 TAB used the column established by Function 9.\r\n'),
+        ]
+        for number, prompt, key, expected in echo_cases:
+            yield (f'CONSTEST /{number:04d}\r'.encode(), prompt, 30)
+            before = trace.read_bytes()
+            yield (key, confirmation, 30)
+            delta = trace.read_bytes()[len(before):]
+            assert delta.startswith(expected), (number, delta)
+            observed.append({'case': number, 'keys_hex': key.hex(), 'expected_prefix_hex': expected.hex(), 'oracle': 'literal control echo and cursor movement bytes'})
+            yield (b'Y', f'{number:04d}  P  R'.encode(), 30)
+            yield (b'', b'A0>_ ', 30)
         direct = [
             (83, b'Press K now: ', b'K', b'\r\nOBSERVED: return A=4B', b''),
             (84, b'Press U; nothing should appear between these brackets: [', b'U', b']\r\nOBSERVED: return A=55', b']'),
