@@ -640,3 +640,48 @@ raw media, files and a final directory listing retained beside it. The runner
 now performs that audit automatically for entry-group runs. The first run's
 audit was applied to its retained disk after the emulator completed. No OS
 change was required.
+
+### Native Model 4 directory conformance
+
+`run_validation_model4_directory.py` prepares separate private B/C data media
+with OFF=0, 400 allocation blocks and 128 directory entries. It installs the
+pinned DIRTEST and canonical suite fixtures on B, BTUSR.DAT in users 0 and 1,
+read-only BTRO.DAT, and the canonical BTBFILE.DAT on C. The normal V002b System
+Disk and startup monitor configuration remain on A. Program, fixture, emulator
+and baseline hashes are recorded with before/after private-disk hashes.
+
+The completed run in `model4-directory/dirtest-irm5e5c6/` reports:
+
+```text
+Summary: 49 pass, 0 fail, 0 error, 0 observations
+```
+
+Its final native screen includes row 0566 and the summary; automatic exit after
+that capture is intentional. It is not a crash. The capture retains trailing
+rows rather than a complete scrolling transcript. Coverage includes searches,
+extents, cross-drive behavior, scoped delete/rename, attributes and user areas.
+Manual/protected-error procedures excluded by /SAFE remain untested.
+
+Independent post-run checks pass for both exercised data filesystems, with
+`fsck.cpm -T raw -n` checking extent fields/connectivity. All 29 shipped files
+on A remain byte-identical to their original CP/M records. `data-audit.json`,
+`file-audit/`, raw extractions, filesystem logs and native captures are retained.
+No OS defect was found in this group. Native BDOSTEST remains next; the runner
+supports its separately prepared BDSA/BDSB fixture but it has not yet been run.
+
+Instrument corrections are retained separately:
+
+- `dirtest-fd1ondpo/`: a short drive-change delay lost part of the command.
+- `dirtest-lc5ju1a3/`: the emulator's B-prompt text wait failed to advance despite
+  a visible idle prompt. Both were stopped without a suite verdict; their
+  private media and `instrument.json` are retained.
+- The successful rerun uses a conservative drive-change delay and captures the
+  ready B prompt before supplying the command. The native runner allows a
+  longer overall timeout for subsequent filesystem groups.
+- The first post-run C filesystem invocation omitted explicit raw image type;
+  cpmtools autodetection reported a misleading open error despite the file
+  existing. With `-T raw`, both data disks pass. The original error is retained
+  as `c-filesystem-autodetect.txt`; no image or OS code was changed to obtain
+  the passing checks. Audits were rerun on the same retained disks, and the
+  result manifest now contains both successful audits. Future results remain
+  pending/error until audits complete, separately from the suite verdict.
