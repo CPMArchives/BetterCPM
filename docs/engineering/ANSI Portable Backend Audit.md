@@ -194,3 +194,20 @@ only sufficiently capable backends, activate the converted personality, qualify
 partial-parser/saved-rendition compaction through the real manager, and rerun live
 applications, RAM/ROM cpmsim, native Model 4 and clean distribution paths. No
 permanent BIOS/BDOS bytes are added here and no distribution identity changes.
+
+
+## Capability admission checkpoint
+
+The provisional candidate contract is now admitted as MCON 1.2, requiring SCRN
+1.1 (complete SCX control set). Current backends declare that revision; older
+personalities remain compatible. The manager compares validated prospective
+metadata before publication, with no callbacks during preparation. See the
+Screen Backend ABI for the temporary two-byte context extension and exact
+version rules. Actual-manager tests now execute the complete parser on both
+platform profiles, including partial-sequence and saved-rendition compaction.
+The old negative candidate test now deliberately downgrades the backend's
+metadata to valid SCRN 1.0 and proves incompatible admission remains atomic.
+A live cpmsim RAM candidate exercise passes with matching overlays and 53K
+recovery (`build/ansi-development/live/cpmsim-u3ysk1k7`). Normal builds still use
+the original ANSI personality; activation and remaining application/ROM/native
+screen/distribution validation are the next checkpoint.

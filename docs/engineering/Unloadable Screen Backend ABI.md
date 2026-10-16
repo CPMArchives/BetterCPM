@@ -365,3 +365,56 @@ Payload/allocation/relocation counts: M4SCRN 1182/1280/120 and ANSISCRN
 allocation is unchanged. No permanent BIOS/BDOS bytes change. Portable ANSI
 parser conversion and complete backend capability admission remain necessary;
 this checkpoint alone does not switch the production ANSI personality.
+
+
+### Full-control admission (provider 1.7; SCRN 1.1 / MCON 1.2)
+
+SCRN callable revision 1.1 now declares the complete SCX 1.0 control contract:
+operation 16 discovers the twelve-byte SCX record and its mask includes all
+operations 17–24 (00FFh). The canonical rendition record and operation arguments
+remain as specified above. Physical rendition support is still advertised by the
+flags/colors masks; the revision does not promise color hardware on Model 4.
+Legacy operations 0–15 and the fixed-cell SCR descriptor remain compatible.
+Current Model 4 and ANSI-host backends advertise SCRN 1.1, provider version 1.7;
+payload sizes, allocations and relocation counts are unchanged from 1.6.
+
+MCON callable revision 1.2 is the portable full-control frontend: STATEFUL,
+capability 0004h, canonical chain/entry constraints and manager-owned word at
+payload +12 as for MCON 1.1. It requires a selected SCRN revision at least 1.1.
+MCON 1.1 continues to accept SCRN 1.0 or 1.1. Legacy MCON 1.0 platform rules
+are unchanged. Future unknown revisions remain rejected. An older backend is
+not upgraded merely because its implementation happens to understand some SCX
+operations: it must declare the full service contract.
+
+Admission trusts validated service metadata, as other callable ABI contracts do;
+preparation does not execute backend callbacks or probe live screen state. The
+prospective profile records the frontend's required and backend's provided minor
+revisions and compares them before publication. Incompatible/missing backends,
+ambiguous roles, malformed declarations and removal of a required backend fail
+without changing the live monitor, registry, generation or TPA.
+
+The internal transaction context grows from 29 to 31 bytes: existing monitor
+entry/link/backend fields stay at +23/+25/+27; +29/+30 contain required/provided
+SCRN minor revisions. Load and removal constructors initialize both bytes and
+reserve the larger context. This is temporary preparation RAM, not resident
+memory or public descriptor growth. The finalizer performs the comparison before
+any live movement. All changed code remains in existing fixed overlay slots:
+metadata 974 bytes, slot preparation 923, profile 984, retained context 479,
+removal 969, finalizer 982. No BIOS/BDOS image growth or R3PACK slot-count change.
+
+The matrix tests exercise old and full-control frontends/backends on both BIOS
+profiles, including rejection with an existing but insufficient backend. Actual
+portable ANSI manager tests cover admission, partial-parser/rendition/saved-slot
+compaction, rebound calls, backend-removal rejection, public MCON 1.2 lookup and
+clean 53K unload. The in-memory file fixture now guards its source images against
+overlap with loaded allocations; expanded ANSI/backends no longer fit its old
+placement. Stage-3 transaction regression and native assembly parity pass for
+all changed manager helpers.
+
+A live cpmsim run with matching RAM overlays admits the private candidate,
+relocates it by removing HELLO, passes both ANSITST phases and unloads to 53K:
+`build/ansi-development/live/cpmsim-u3ysk1k7`. Default distribution builds still
+select the previous host ANSI implementation. Production activation and complete
+application/ROM/native-screen/distribution qualification remain pending. ROM
+qualification must rebuild the matching ROM-relocated R3PACK; a RAM container
+must never be injected into a ROM profile.

@@ -45,7 +45,7 @@ def main():
     bootstrap=(ROOT/'build/system/r3entry.bin').read_bytes()
     stage.invoke(cpu,bootstrap,1,b'MONTEST ');assert cpu.a==0
     cases=[dict(bits=0),dict(bits=2),dict(bits=3),dict(bits=0x101),
-           dict(major=0),dict(major=2),dict(minor=1),
+           dict(major=0),dict(major=2),dict(minor=2),
            dict(reconstruction='STATELESS'),dict(reconstruction='STATE_PRESERVING'),
            dict(reconstruction='COLD_ONLY')]
     for args in cases:

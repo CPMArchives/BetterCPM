@@ -33,7 +33,12 @@ def main():
         ('ANSISCRN','src/rsx/screen/ansi-host.mac','build/screen-backends/ANSISCRN.bin'),
         ('R3KPRE','src/system/r3kpre.mac','build/system/r3kpre.bin'),
         ('R3FINAL','src/system/r3final.mac','build/system/r3final.bin'),
-        ('R3SCHED','src/system/rsxsched.mac','build/system/r3sched.bin')]
+        ('R3SCHED','src/system/rsxsched.mac','build/system/r3sched.bin'),
+        ('R3META','src/system/r3meta.mac','build/system/r3metadata.bin'),
+        ('R3SLOTS','src/system/rsxslots.mac','build/system/r3slots.bin'),
+        ('R3PROF','src/system/r3prof.mac','build/system/r3profile.bin'),
+        ('R3KCTX','src/system/r3kctx.mac','build/system/r3kctx.bin'),
+        ('R3DROP','src/system/r3drop.mac','build/system/r3drop.bin')]
     if args.portable_ansi:units.append(('ANSIPORT','src/rsx/ansi-portable.mac','build/ansi-portable-candidate/ansi.bin'))
     for stem,source,reference in units:
         work=Path(tempfile.mkdtemp(prefix=stem+'-',dir=out));disks=work/'disks';disks.mkdir()
@@ -47,7 +52,10 @@ def main():
             from system_layout import LAYOUT
             symbol,address={'R3KPRE':('KPBASE',LAYOUT['RSX']),
                 'R3FINAL':('RFBASE',LAYOUT['RSX']),
-                'R3SCHED':('RSBASE',LAYOUT['CONFIG']+0x120)}[stem]
+                'R3SCHED':('RSBASE',LAYOUT['CONFIG']+0x120),
+                'R3META':('RMBASE',LAYOUT['CONFIG']),'R3SLOTS':('SUBASE',LAYOUT['CONFIG']),
+                'R3PROF':('PFBASE',LAYOUT['RSX']),'R3KCTX':('KCBASE',LAYOUT['RSX']),
+                'R3DROP':('RDBASE',LAYOUT['RSX'])}[stem]
             text=overlay_source(Path(source).name,symbol,address)
             # z80asm fills DS with FF, native ZSM4/LINK with zero. Make the
             # cross-assembler's padding explicit for byte-parity comparison.

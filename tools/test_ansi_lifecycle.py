@@ -12,7 +12,7 @@ import test_rsx_stage3 as stage
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--reject-portable-candidate',action='store_true',help='prove unadmitted MCON 1.2 cannot replace the live monitor')
+    parser.add_argument('--reject-portable-candidate',action='store_true',help='prove portable ANSI cannot replace the monitor with an insufficient backend')
     parser.add_argument('--bios',type=Path,default=ROOT/'build/z80pack')
     args=parser.parse_args()
     bios=symbols(args.bios/'bios.lst')
@@ -29,7 +29,11 @@ def main():
         stage.FILES=(("R3PACK  ","build/system/R3PACK.RSX"),(backend.ljust(8),f'build/screen-backends/{backend}.RSX'),("ANSI    ","build/ansi-portable-candidate/ANSI.RSX"))
     sources=(0x7800,0xB400,0xC000 if args.reject_portable_candidate else 0xB800)
     for (_,path),address in zip(stage.FILES,sources):
-        image=(ROOT/path).read_bytes();cpu.mem[address:address+len(image)]=image
+        image=bytearray((ROOT/path).read_bytes())
+        if args.reject_portable_candidate and path.endswith(backend+'.RSX'):
+            metadata=int.from_bytes(image[30:32],'little')
+            ident=image.index(b'SCRN',metadata);image[ident+5]=0
+        cpu.mem[address:address+len(image)]=image
     with tempfile.TemporaryDirectory() as temporary:stub=stage.file_stub(Path(temporary),sources)
     cpu.mem[LAYOUT['FILE']:LAYOUT['FILE']+len(stub)]=stub
     cpu.mem[base+60:base+63]=b'\xaf\xc9\0'
@@ -60,7 +64,7 @@ def main():
         assert cpu.mem[stage.RSTCOUNT]==count
         change(2,backend.ljust(8).encode())
         assert cpu.word(binding)==basic and cpu.word(6)==LAYOUT['TPA']
-        print('PASS: unadmitted portable ANSI candidate rejected atomically with backend present; unload/53K')
+        print('PASS: portable ANSI rejected atomically with an insufficient SCRN 1.0 backend; unload/53K')
         return
     change(1,b'HELLO   ');change(1,b'ANSI    ')
     old=cpu.word(stage.LOW)

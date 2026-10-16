@@ -31,7 +31,7 @@ def main():
     test=expand_versions((ROOT/'src/utilities/ansitst.mac').read_text()).replace('        CSEG\n        .PHASE 0100H','        ASEG\n        ORG 0100H').replace('        .DEPHASE\n','')
     assemble(args.assembler,test,OUT/'ANSITST.COM',OUT/'ansitst.lst',0x100)
     if args.portable_candidate:
-        print(f'Private portable ANSI candidate: {len(code)} bytes, {len(relocations)} relocations; MCON 1.2 (not admitted by current manager)')
+        print(f'Private portable ANSI candidate: {len(code)} bytes, {len(relocations)} relocations; MCON 1.2 (requires SCRN 1.1; not selected by default builds)')
         return
     for folder,name,data in [('rsx','ANSI.RSX',carrier),('utilities','ANSITST.COM',(OUT/'ANSITST.COM').read_bytes())]:
         destination=ROOT/'build'/folder

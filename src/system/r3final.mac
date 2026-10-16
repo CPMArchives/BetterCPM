@@ -47,6 +47,14 @@ RF_ENTRY:                               ; enter transaction finalizer
         JP      NZ,RF_BAD
 RF_MARKOK:                              ; accept a prepared transaction context
         LD      HL,(RF_CTX)
+        LD      DE,29
+        ADD     HL,DE
+        LD      B,(HL)                 ; required SCRN minor from portable frontend
+        INC     HL
+        LD      A,(HL)                 ; provided SCRN minor from prospective backend
+        CP      B
+        JP      C,RF_BAD               ; reject incompatible pair before publication
+        LD      HL,(RF_CTX)
         LD      E,(HL)
         INC     HL
         LD      D,(HL)
