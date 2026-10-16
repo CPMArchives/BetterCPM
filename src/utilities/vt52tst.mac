@@ -1,4 +1,4 @@
-; Native VT52 exercise; requires VT52.RSX and a VT52-capable endpoint.
+; VT52 exercise; requires portable VT52.RSX and the platform SCRN backend.
 BDOS EQU 5
         CSEG
         .PHASE 0100H

@@ -1,7 +1,6 @@
-; Native VT52 monitor on a byte-stream console connected to a VT52 endpoint.
-; No ANSI translation or platform video-memory access. The current MCON
-; carrier still binds to the cpmsim backend; portable backend selection remains
-; a separate ABI gate. Buffer incomplete addressing before emitting any bytes.
+; Portable VT52 personality: terminal grammar and ordered replies only.
+; MCON 1.1 binds the unloadable SCRN backend at the private word +12.
+; No hardware addresses, BIOS symbol imports or host escape generation.
 BASE EQU 08000H
         CSEG
         .PHASE BASE
@@ -12,6 +11,7 @@ VT_DISP: DW VT_CHAIN
 VT_CHAIN:
         LD HL,(VT_NEXT)
         JP (HL)
+VT_BACKEND: DW 0                        ; offset 12, manager-owned cross-module word
 VT_ENTRY:
         OR A
         JP Z,VT_OUT
@@ -19,15 +19,20 @@ VT_ENTRY:
         JP Z,VQ_STAT
         CP 2
         JP Z,VQ_INPUT
+        CP 3
+        JP Z,VT_CURSOR
         CP 4
         JP Z,VT_CLEAR
         CP 5
         JP Z,VT_RESET
+        LD A,255
+        RET
 VT_RAW:
-        LD HL,(1)
-        LD DE,66
-        ADD HL,DE
+        LD HL,(VT_BACKEND)
         JP (HL)
+VT_CURSOR:
+        LD A,3                         ; draw/query without advancing logical cursor
+        JP VT_RAW
 VT_EMIT:
         PUSH BC
         PUSH DE
@@ -38,14 +43,6 @@ VT_EMIT:
         POP DE
         POP BC
         RET
-VT_STR:
-        LD C,(HL)
-        INC HL
-        LD A,C
-        OR A
-        RET Z
-        CALL VT_EMIT
-        JR VT_STR
 VT_RESET:
         XOR A
         LD (VT_STATE),A
@@ -55,8 +52,10 @@ VT_CLEAR:
         XOR A
         LD (VT_ROW),A
         LD (VT_COL),A
-        LD HL,VT_CLS
-        JP VT_STR
+        CALL VT_POS
+        LD C,32
+        LD A,9
+        JP VT_RAW
 VT_OUT:
         LD A,(VT_STATE)
         OR A
@@ -119,10 +118,11 @@ VT_CR:
         LD (VT_COL),A
         JP VT_POS
 VT_PRINT:
-        CALL VT_EMIT
+        LD A,7
+        CALL VT_RAW
         LD A,(VT_COL)
         CP 79
-        JP Z,VT_POS                     ; retain the native VT52 right margin
+        RET Z                          ; backend writes and clamps within the row
         INC A
         LD (VT_COL),A
         RET
@@ -162,11 +162,13 @@ VT_HOME:
         LD (VT_COL),A
         JP VT_POS
 VT_EOS:
-        LD HL,VT_SJ
-        JP VT_STR
+        LD C,32
+        LD A,9
+        JP VT_RAW
 VT_EOL:
-        LD HL,VT_SK
-        JP VT_STR
+        LD C,32
+        LD A,8
+        JP VT_RAW
 VT_UP:
         LD A,(VT_ROW)
         OR A
@@ -207,35 +209,27 @@ VT_LF:
         LD A,(VT_ROW)
         CP 23
         JR Z,VT_BLF
-        CALL VT_EMIT
-        LD A,(VT_ROW)
         INC A
         LD (VT_ROW),A
-        RET
+        JP VT_POS
 VT_BLF:
-        ; A native VT52 scrolls on LF at its bottom row and retains column.
-        LD C,10
-        JP VT_EMIT
+        LD C,32
+        LD A,10
+        JP VT_RAW
 VT_RLF:
         LD A,(VT_ROW)
         OR A
         JP NZ,VT_UP
-        LD HL,VT_RI
-        JP VT_STR
+        LD C,32
+        LD A,11
+        JP VT_RAW
 VT_POS:
-        ; Native address: ESC Y, row+32, column+32. No CSI/decimal output.
-        LD C,27
-        CALL VT_EMIT
-        LD C,'Y'
-        CALL VT_EMIT
         LD A,(VT_ROW)
-        ADD A,32
-        LD C,A
-        CALL VT_EMIT
+        LD B,A
         LD A,(VT_COL)
-        ADD A,32
         LD C,A
-        JP VT_EMIT
+        LD A,6
+        JP VT_RAW
 VQ_STAT:
         LD A,(VQ_COUNT)
         OR A
@@ -299,11 +293,8 @@ VQ_PUT:
 VQ_HEAD: DB 0
 VQ_TAIL: DB 0
 VQ_COUNT: DB 0
-VQ_DATA: DS 16
-VT_CLS: DB 27,'H',27,'J',0
-VT_SJ: DB 27,'J',0
-VT_SK: DB 27,'K',0
-VT_RI: DB 27,'I',0
+; Explicit bytes keep native and cross assembler payloads identical.
+VQ_DATA: DB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 VT_STATE: DB 0
 VT_ROW: DB 0
 VT_PEND: DB 0

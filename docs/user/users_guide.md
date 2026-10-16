@@ -3029,28 +3029,41 @@ monitor. The test utility requires ADM3A rather than another MCON personality.
 ADM3A is Model 4-specific. Do not load it under cpmsim; VT52 and ANSI/VT100
 providers for that backend are separate implementations.
 
-### Native VT52 monitor
+### Portable VT52 monitor
 
-VT52.RSX now emits native VT52 screen controls. It does not translate them into
-ANSI. Connect cpmsim to an 80-column, 24-row VT52-capable terminal or terminal
-emulator, configure the application for VT52, load `RSX LOAD VT52`, and run
-`CLS` before starting screen software. Only one monitor provider can be loaded.
-For an ordinary ANSI terminal, use ANSI.RSX with ANSI-configured software.
-Loading VT52.RSX does not turn an ANSI-only terminal into a VT52 terminal.
+VT52.RSX interprets the supported VT52 controls from an application and calls
+an unloadable screen backend. The same VT52.RSX runs on both platforms:
+M4SCRN.RSX renders on the Model 4 screen; ANSISCRN.RSX sends ANSI output to
+cpmsim's host terminal. Use an ANSI-compatible macOS/Linux terminal with an
+80-column, 24-row display area for the latter. Configure the application for
+VT52 in either case.
 
-The current carrier is still restricted to the cpmsim backend. It does not
-provide Model 4 screen rendering, and the broader portable-backend requirement
-is not yet complete. Native terminal display and application qualification
-remain release gates; earlier ANSI-adapter results do not establish them.
+Only one monitor personality can be active. On Model 4, first run
+`RSX UNLOAD ADM3A` if the startup script loaded it. Then load the backend and
+personality in that order:
+
+```text
+Model 4:  RSX LOAD M4SCRN
+cpmsim:   RSX LOAD ANSISCRN
+
+Either:   RSX LOAD VT52
+          CLS
+          VT52TST
+```
 
 `VT52TST` exercises identification, positioning, tab stops and erasure with
 three keypress pauses. `VT52TST /VER` prints
 `BetterCP/M VT52TST 1.0 (Build 002)` without requiring a loaded monitor.
 
-Use `RSX UNLOAD VT52` to recover its memory. With no other RSXs loaded,
-the available TPA returns to 53K. The normal cold-boot script does not load
-VT52 automatically. Graphics, keypad modes and host arrow-key translation
-are outside this provider's supported subset.
+Unload in the reverse order: `RSX UNLOAD VT52`, followed by
+`RSX UNLOAD M4SCRN` or `RSX UNLOAD ANSISCRN`. The manager prevents removing a
+backend still needed by a loaded personality. With no other RSXs loaded,
+TPA returns to 53K. Startup does not automatically choose VT52. The Model 4
+backend must match the BIOS build supplied on its disk.
+
+Graphics, keypad modes and host arrow-key translation are outside this
+provider's supported subset. This is not a general TCAP database or support
+for arbitrary hardware; another display platform needs a compatible backend.
 
 ### ANSI/VT100 monitor on cpmsim
 

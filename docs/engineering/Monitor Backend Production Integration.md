@@ -22,10 +22,12 @@ Other callable identities retain their opaque version/capability semantics.
 No metadata record type, descriptor size or public BDOS/BIOS vector changed.
 Unknown metadata records remain errors.
 
-These rules establish admission to the callable registry, not backend selection
-or screen-operation semantics. No production screen backend is yet packaged.
-The prototype operation table remains a candidate pending complete personality
-requirements (including reverse fill and insert/delete line handling).
+These rules establish admission to the callable registry. The subsequent
+[screen ABI and backend checkpoint](Unloadable%20Screen%20Backend%20ABI.md)
+defines production primitives including reverse fill and insert/delete line.
+[Portable VT52 integration](VT52%20Portable%20Backend%20Integration.md) records
+conversion, lifecycle and distribution qualification; this section preserves
+the admission increment’s original scope.
 
 The manager also accepts portable MCON 1.1 under the binding contract below.
 Legacy MCON 1.0 providers continue to use their existing platform-bound checks
