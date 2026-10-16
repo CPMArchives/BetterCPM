@@ -650,12 +650,15 @@ class Z80:
                 self.carry = bool(self.b & 1)
                 self.b = (self.b >> 1) | (0x80 if old_carry else 0)
                 self.z = self.b == 0
-            elif op == 0xCB and self.mem[self.pc] == 0x1D:  # RR L
+            elif op == 0xCB and self.mem[self.pc] in (0x1B, 0x1D):  # RR E / RR L
+                register = 'e' if self.mem[self.pc] == 0x1B else 'l'
                 self.pc += 1
                 old_carry = self.carry
-                self.carry = bool(self.l & 1)
-                self.l = (self.l >> 1) | (0x80 if old_carry else 0)
-                self.z = self.l == 0
+                value = getattr(self, register)
+                self.carry = bool(value & 1)
+                value = (value >> 1) | (0x80 if old_carry else 0)
+                setattr(self, register, value)
+                self.z = value == 0
             elif op == 0xCB and self.mem[self.pc] == 0x25:  # SLA L
                 self.pc += 1
                 self.carry = bool(self.l & 0x80)

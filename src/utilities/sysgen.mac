@@ -3,14 +3,12 @@
 ; *                                                                              *
 ; * Installs a BetterCP/M protected-system package on configured SYSTEM media.   *
 ; * Supports interactive A:-source, explicit source/destination drives, and      *
-; * SYSTEM.SYS input; the destination filesystem is never touched.               *
+; * Package input and disk-to-file export; installation preserves files.        *
 ; ********************************************************************************
 
         ASEG
         ORG 0100H
 BDOS    EQU 5
-FCB1    EQU 005CH
-FCB2    EQU 006CH
 TAIL    EQU 0080H
 IMAGE   EQU 04000H
 BUFFER  EQU 03000H
@@ -21,6 +19,11 @@ SYSBASE EQU 0D5C4H
 
         CALL    UV_CHECK                ; standalone utility identity
         LD SP,03F00H
+        LD HL,(6)
+        LD DE,IMAGE+SYSRECS*128
+        OR A
+        SBC HL,DE
+        JP C,XLOWMEM
         CALL INIT
         LD HL,(1)                       ; page zero WBOOT jump follows the BIOS base
         DEC HL
@@ -71,201 +74,20 @@ AGAIN:  LD HL,TITLE                     ; again
         JP NZ,IOFAIL
         JP INPUTREADY
 
-  ; Accept either SYSTEM.SYS <drive>: or <source>: <destination>: using the
-  ; two default FCBs prepared by the CCP.
+  ; Validate counted operands and build private FCBs for exact package names.
+  ; Drive-only operands select system tracks; source-only selects export.
 
 ; ================================================================================
 ; =                             Command-Line Parsing                             =
 ; =                                                                              =
-; = Parses SYSTEM.SYS <drive>: or <source>: <destination>: from the CCP command tail and =
-; = selects package-file or boot-disk source mode.                               =
+; = Parses exact package and drive operands from the counted command tail and =
+; = selects package installation, disk installation, or system-track export.                               =
 ; ================================================================================
 ; -------------------------------------------------------------------------------
 ; Explicit Argument Forms
 ; -------------------------------------------------------------------------------
 
-PARSEARGS:                              ; parse explicit SYSGEN arguments
-        LD HL,FCB1+1
-        LD DE,SYSNAME
-        LD B,11
-
-PANAME: LD A,(DE)                       ; paname
-        CP (HL)
-        JR NZ,PADRIVES
-        INC DE
-        INC HL
-        DJNZ PANAME
-        CALL PAPACK
-        OR A
-        JP NZ,PABAD
-        LD A,(FCB2)
-        DEC A
-        CP 4
-        JR NC,PABAD
-        OR A
-        JR Z,PABAD
-        LD (DEST),A
-        LD A,1
-        LD (FILEMODE),A
-        JP LOADFILE
-
-PADRIVES:                               ; padrives
-        LD A,(TAIL)
-        LD C,A
-        LD HL,TAIL+1
-        CALL PASKIP
-        JR C,PABAD
-        LD A,(HL)
-        INC HL
-        DEC C
-        AND 05FH
-        SUB 'A'
-        CP 4
-        JR NC,PABAD
-        LD (SOURCEDEV),A
-        LD A,C
-        OR A
-        JR Z,PABAD
-        LD A,(HL)
-        INC HL
-        DEC C
-        CP ':'
-        JR NZ,PABAD
-        LD A,C
-        OR A
-        JR Z,PABAD
-        LD A,(HL)
-        CP ' '
-        JR NZ,PABAD
-        CALL PASKIP
-        JR C,PABAD
-        LD A,(HL)
-        INC HL
-        DEC C
-        AND 05FH
-        SUB 'A'
-        CP 4
-        JR NC,PABAD
-        OR A
-        JR Z,PABAD
-        LD (DEST),A
-        LD A,C
-        OR A
-        JR Z,PABAD
-        LD A,(HL)
-        INC HL
-        DEC C
-        CP ':'
-        JR NZ,PABAD
-        CALL PASKIP
-        JR NC,PABAD
-        CALL LOADDISK
-        RET Z
-        LD (STATUS),A
-        LD A,3
-        OR A
-        RET
-
-PABAD:  LD A,1                          ; pabad
-        OR A
-        RET
-
-  ; Skip spaces in the counted command tail. Carry means end of input.
-
-PASKIP:LD A,C                           ; paskip
-        OR A
-        SCF
-        RET Z
-        LD A,(HL)
-        CP ' '
-        JR NZ,PANONSP
-        INC HL
-        DEC C
-        JR PASKIP
-
-PANONSP:OR A                            ; panonsp
-        RET
-
-  ; FCBs identify the file but do not prove the complete invocation is valid.
-  ; Accept exactly [A-D:]SYSTEM.SYS followed by one B-D: destination. No DU,
-  ; wildcard, trailing operand or joined tokens may trigger package reads.
-PAPACK:
-        LD A,(TAIL)
-        LD C,A
-        LD HL,TAIL+1
-        CALL PASKIP
-        JP C,PABAD
-        LD A,C
-        CP 2
-        JP C,PABAD
-        INC HL
-        LD A,(HL)
-        DEC HL
-        CP ':'
-        JR NZ,PAPNAME
-        LD A,(HL)
-        AND 05FH
-        SUB 'A'
-        CP 4
-        JP NC,PABAD
-        INC HL
-        INC HL
-        DEC C
-        DEC C
-PAPNAME:
-        LD DE,PAPTEXT
-        LD B,10
-PAPCHAR:
-        LD A,C
-        OR A
-        JP Z,PABAD
-        LD A,(HL)
-        CP 'a'
-        JR C,PAPCASE
-        CP 'z'+1
-        JR NC,PAPCASE
-        AND 05FH
-PAPCASE:
-        LD (PAPBYTE),A
-        LD A,(DE)
-        PUSH HL
-        LD HL,PAPBYTE
-        CP (HL)
-        POP HL
-        JP NZ,PABAD
-        INC HL
-        INC DE
-        DEC C
-        DJNZ PAPCHAR
-        LD A,C
-        OR A
-        JP Z,PABAD
-        LD A,(HL)
-        CP ' '
-        JP NZ,PABAD
-        CALL PASKIP
-        JP C,PABAD
-        LD A,C
-        CP 2
-        JP C,PABAD
-        LD A,(HL)
-        AND 05FH
-        SUB 'B'
-        CP 3
-        JP NC,PABAD
-        INC HL
-        DEC C
-        LD A,(HL)
-        CP ':'
-        JP NZ,PABAD
-        INC HL
-        DEC C
-        CALL PASKIP
-        JP NC,PABAD
-        XOR A
-        RET
-PAPTEXT: DB 'SYSTEM.SYS'
-PAPBYTE: DB 0
+        INCLUDE sysgen-parse.inc
 
   ; Read and validate the version-1, TRS-80 SYSTEM.SYS package.
 
@@ -280,7 +102,7 @@ PAPBYTE: DB 0
 ; -------------------------------------------------------------------------------
 
 LOADFILE:                               ; load SYSTEM.SYS package
-        LD DE,FCB1
+        LD DE,XARG1
         LD C,15
         CALL BDOS
         INC A
@@ -288,7 +110,7 @@ LOADFILE:                               ; load SYSTEM.SYS package
         LD DE,PKGHEADER
         LD C,26
         CALL BDOS
-        LD DE,FCB1
+        LD DE,XARG1
         LD C,20
         CALL BDOS
         OR A
@@ -315,7 +137,7 @@ LFRD:   PUSH BC                         ; lfrd
         EX DE,HL
         LD C,26
         CALL BDOS
-        LD DE,FCB1
+        LD DE,XARG1
         LD C,20
         CALL BDOS
         POP HL
@@ -325,12 +147,12 @@ LFRD:   PUSH BC                         ; lfrd
         LD DE,128
         ADD HL,DE
         DJNZ LFRD
-        LD DE,FCB1
+        LD DE,XARG1
         LD C,20
         CALL BDOS
         CP 1
         JR NZ,LFERR
-        LD DE,FCB1
+        LD DE,XARG1
         LD C,16
         CALL BDOS
         XOR A
@@ -449,6 +271,9 @@ RCLP:   LD A,D                          ; rclp
         JR RCLP
 
 INPUTREADY:                             ; inputready
+        LD A,(XEXPORT)
+        OR A
+        JP NZ,XEXPORTGO
         LD A,(DEST)
         LD (REQ),A
         LD DE,REQ
@@ -1240,7 +1065,7 @@ PKGMSG:DB 13,10,'The system package is invalid or cannot represent the destinati
 
 SOURCEMSG:DB 13,10,'Source system read failed at logical record ',0 ; sourcemsg
 
-USAGEMSG:DB 13,10,'Usage: SYSGEN, SYSGEN A: B:, or SYSGEN SYSTEM.SYS B:',13,10,0 ; usagemsg
+USAGEMSG:DB 13,10,'Usage: SYSGEN | A: B: | package B: | A: package | /VER',13,10,0 ; usagemsg
 
 PROTMSG:DB 13,10,'Physical drive 0 is protected as the running system disk.',13,10,0 ; protmsg
 
@@ -1260,8 +1085,6 @@ STOPMSG:DB 13,10,'Installation stopped. The destination may not boot.',13,10 ; s
 ABIMSG:DB 'SYSGEN requires BetterCP/M disk BIOS ABI 5.',13,10,0 ; abimsg
 
 MAGIC:  DB 'BDCF',5,4,4,64              ; magic
-
-SYSNAME:DB 'SYSTEM  SYS'                ; sysname
 
 PKGMAGIC:DB 'BCSY',1,1,160,0,0C4H,0D5H  ; pkgmagic
 
@@ -1298,6 +1121,7 @@ EXPECT: DS 64                           ; expect
 BOOTBIND:DS 64                          ; bootbind
 
 REQ:    DS 80                           ; configuration API request
+        INCLUDE sysgen-export.inc
 ; @utility-version SYSGEN@
 
 ; @monitor-console@

@@ -2748,7 +2748,9 @@ Supported forms are:
 ```text
 SYSGEN
 SYSGEN source: destination:
-SYSGEN [drive:]SYSTEM.SYS destination:
+SYSGEN [drive:]package destination:
+SYSGEN source: [drive:]package
+SYSGEN source:
 SYSGEN /VER
 ```
 
@@ -2765,7 +2767,7 @@ Source and destination must resolve to different physical drives. Physical
 drive 0 is protected from destination writes even if logical letters are
 remapped.
 
-To install from a package, use the canonical filename SYSTEM.SYS:
+To install from a package, use SYSTEM.SYS or another exact 8.3 filename:
 
 ```text
 SYSGEN SYSTEM.SYS B:
@@ -2773,12 +2775,12 @@ SYSGEN C:SYSTEM.SYS B:
 ```
 
 A drive-qualified package name is supported; a DU form such as
-`B7:SYSTEM.SYS` is not part of this interface. Arbitrary package names are not
-accepted. The complete package is buffered before writing, so package mode
+`B7:SYSTEM.SYS` is not part of this interface. Wildcards and selectors are not
+accepted; named packages such as `B:BASE090.SYS` are supported. The complete package is buffered before writing, so package mode
 does not require its source drive to be physically different from the target.
 Destination restrictions still apply.
 
-`SYSGEN /VER` currently prints `BetterCP/M SYSGEN 1.0 (Build 002)` and exits
+`SYSGEN /VER` currently prints `BetterCP/M SYSGEN 1.0 (Build 004)` and exits
 without installation. It must be used alone.
 
 #### 10.3 Validate and confirm installation
@@ -2788,8 +2790,8 @@ logical records. It may have a larger filesystem or additional reserved
 records. A true data-only format without a compatible system area is refused;
 SYSGEN cannot create that area or convert its geometry.
 
-SYSGEN buffers the source, validates compatibility, and prepares destination
-settings before requesting confirmation:
+SYSGEN validates destination compatibility before requesting confirmation.
+It fully buffers and patches the source before the first destination write:
 
 ```text
 The destination system area will be replaced.
@@ -2834,9 +2836,36 @@ or source problem and repeat installation from a valid source. Writing record
 
 After successful installation, the target contains the installed boot system.
 Distribution files and any desired startup script must also be present for the
-intended operating environment. SYSGEN does not create SYSTEM.SYS or provide a
-separate verify-only mode; SYSBUILD produces the package, and installation
-includes its own read-back verification.
+intended operating environment. SYSBUILD composes new packages from build
+products; SYSGEN can save installed system records as described below. There
+is no separate verify-only mode; installation includes read-back verification.
+
+#### 10.6 Save system tracks to a package
+
+```text
+SYSGEN A:
+SYSGEN A: B:BASE090.SYS
+SYSGEN B:BASE090.SYS C:
+```
+
+The first saves A:’s installed system as SYSTEM.SYS in your current drive/user.
+The second saves a named package; the third installs it after the usual Y/N
+confirmation. Different names let you keep a library of system configurations.
+The snapshot includes saved settings, not unsaved live changes or ordinary files.
+Export needs 36K TPA and preserves protected source records. It may store the
+package in the source disk’s filesystem.
+
+An existing ordinary package is replaced only after Y/N confirmation. RO and
+SYS files are protected. SYSGEN first writes and verifies SYSGEN.$$$, then
+publishes the chosen filename, using SYSGEN.BAK to retain a replaced package
+until final verification succeeds. These two names are reserved for recovery;
+if either already exists, export stops without overwriting it.
+
+On success, SYSGEN reports “Package exported and verified.” If publication fails,
+inspect the requested output, SYSGEN.$$$ and SYSGEN.BAK before retrying. Do not
+discard a recovery file until you have checked which contains the complete
+package. A failed multi-extent rename or power loss is not automatically rolled
+back. Incomplete temporary-file cleanup failures are reported explicitly.
 
 See the [SYSGEN engineering specification](../engineering/SYSGEN%20Specification.md)
 for the detailed installation and qualification contracts.
