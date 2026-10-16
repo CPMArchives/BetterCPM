@@ -385,8 +385,9 @@ Some drive changes may be pending until cold boot.
 
 CONFIG must preserve the existing distinction between current, pending, and saved drive configuration.
 
-Builds 006–007 provide physical-profile and logical binding/format-selection
-forms below. Format-workbench field editing remains command-line implementation work.
+Builds 006–008 provide physical-profile, logical binding/format-selection and
+scalar format-workbench forms below. Sector-ID and size-map slot editing remain
+command-line implementation work.
 
 ## 12.6 Physical-profile command line (Build 006)
 
@@ -1140,6 +1141,7 @@ CONFIG /STARTUP=""
 CONFIG /PHYSICAL=n /field=value [...]
 CONFIG /LOGICAL=B /PHYSICAL=1 /FORMAT="name"
 CONFIG /LOGICAL=B /UNBIND
+CONFIG /EDIT=B /CKS=16
 ```
 
 Physical field operands use the slash-prefixed names in section 12.6. `/SHOW`
@@ -1169,6 +1171,21 @@ CONFIG /SERIAL:n XONXOFF=ON|OFF
 
 Scalar format-workbench command-line fields are specified in section 12.
 Sector-ID and size-map slot command-line syntax remains unresolved.
+
+## Consolidation and implementation boundary
+
+This specification is the reconciled CONFIG baseline. The implemented command
+summary above and sections 12 and 16 take precedence over older implementation
+notes describing A–E placeholders, an external SYSGEN.DAT reference, or wholly
+missing drive CLI support. The two save scopes and separate storage domains
+remain unchanged. `/DEFAULT`, sector-map CLI parity and the gated IOBYTE, printer
+and serial proposals remain open; consolidation does not approve them or claim
+complete CONFIG qualification. See the [alignment record](CONFIG%20Specification%20Alignment.md)
+and [runtime audit](CONFIG%20Runtime%20Audit.md) for evidence and remaining gates.
+
+CONFIG saves settings on the current system disk;
+[SYSGEN](SYSGEN%20Specification.md) installs a system on another disk;
+[DUP](DUP%20Specification.md) formats, copies and checks media.
 
 ## Existing contract references
 

@@ -1,6 +1,14 @@
 # CONFIG.COM, DUP.COM and SYSGEN.COM
 
-CONFIG 1.01, DUP 1.14 and SYSGEN are ordinary transient programs. They require
+The consolidated engineering contracts are [CONFIG](../engineering/CONFIG%20Specification.md),
+[DUP](../engineering/DUP%20Specification.md) and
+[SYSGEN](../engineering/SYSGEN%20Specification.md). They distinguish implemented
+behavior, pending work and backend qualification. This guide summarizes their
+current interfaces; historical measurements below retain their original versions.
+
+CONFIG, DUP and SYSGEN are ordinary transient programs. Utility release/build
+identities come from standalone `/VER` and `metadata/utility-versions.tsv`;
+DUP's legacy interactive 1.14 title is separate from that identity. They require
 BetterCP/M disk ABI 5 and four logical drives. CONFIG needs 42 KiB of
 transient space; allow 51 KiB for DUP and its private copy buffer. SYSGEN is
 under 3 KiB. They add no resident allocation: maximum TPA remains
@@ -15,17 +23,35 @@ a guessed name.
 
 ## CONFIG
 
-The main menu retains the MM letter assignments. F through J have
-implementations; A–E explicitly report “Feature not yet implemented.” Active
-drive changes take effect immediately and survive warm boot.
+The main menu retains implemented MM letter assignments F through J; A–E
+placeholders have been removed. Active drive changes take effect immediately
+and survive warm boot. Current direct forms include:
+
+```text
+CONFIG /VER
+CONFIG /SHOW
+CONFIG /STARTUP="SUBMIT STARTUP"
+CONFIG /STARTUP=""
+CONFIG /PHYSICAL=1 /TRACKS=80 /SIDES=2 /STEP=6
+CONFIG /LOGICAL=B /PHYSICAL=1 /FORMAT="MM 80T DS DATA"
+CONFIG /LOGICAL=B /UNBIND
+CONFIG /EDIT=B /CKS=16
+```
+
+`/SHOW` distinguishes active and saved state. `/STARTUP=` confirms and saves
+only the next cold-start command; it does not execute it. Drive updates are
+active-only and require a separate save-all action to persist. Complete requests
+validate before changes. Scalar `/EDIT` fields are implemented; sector-ID and
+size-map slot CLI, `/DEFAULT`, and gated peripheral proposals remain open.
 
 H offers two scopes. Scope A saves pending cold-boot changes only; in the
 current implementation that means the optional startup command. Scope B saves
 the four active physical definitions and four active logical bindings together
 with pending cold-boot changes, whose values take precedence over installed
 defaults. Both scopes write the current system disk A:. The all-current scope
-requires the matching `A:SYSGEN.DAT`, generated with the system image. It checks
-the immutable resident carrier before confirmation, writes only changed
+uses embedded build/layout/geometry and CRC-32 validation of the immutable
+resident carrier before confirmation; SYSGEN.DAT is no longer used or shipped.
+It writes only changed
 configuration records, and verifies each write. A failed write or comparison
 triggers restoration of the original changed records; restoration failures are
 reported explicitly. This is not power-loss atomic.
@@ -34,8 +60,8 @@ cold boot then uses the saved settings. H does not install a new system on
 another disk and does not persist loaded RSXs: load FDF.RSX again before using
 bindings that require it. The z80pack geometry-v2 adapter supports runtime
 physical and logical settings for raw images.
-The reference file consumes disk space, not resident RAM. CONFIG temporarily
-borrows and then reloads its format catalogue while running H.
+The embedded validation descriptors are transient data, not resident RAM.
+CONFIG temporarily borrows and then reloads its format catalogue while running H.
 
 J maintains the optional cold-start command. It displays the saved command,
 allows a pending replacement or clear operation, and can test the pending
@@ -89,6 +115,18 @@ extended ordering and mixed-size mapping. Load it before assigning such formats;
 unloading it detaches dependent B-D bindings and restores its TPA allocation.
 
 ## DUP
+
+```text
+DUP
+DUP /FORMAT drive:
+DUP /COPY source: destination:
+DUP /CHECK drive:
+DUP /VER
+```
+
+Direct operations share the interactive engines and return to the CCP after
+cleanup. FORMAT and COPY retain mandatory Y/N confirmation; no bypass switch
+is defined. CHECK is read-only. `/VER` is standalone and performs no disk work.
 
 A formats a disk using the selected logical drive's current BIOS binding.
 Use CONFIG G or I first to choose another format. DUP displays the logical drive,
@@ -148,29 +186,38 @@ not check directory/allocation consistency or attempt repair.
 
 ## SYSGEN
 
-SYSGEN installs BetterCP/M on a prepared B:, C: or D: disk. It accepts three
-forms:
+SYSGEN installs BetterCP/M on a prepared B:, C: or D: disk. It accepts:
 
 ```text
 SYSGEN
-SYSGEN A: B:
-SYSGEN SYSTEM.SYS B:
+SYSGEN source: destination:
+SYSGEN [drive:]SYSTEM.SYS destination:
+SYSGEN /VER
 ```
 
 Bare `SYSGEN` retains the interactive running-A: workflow. The drive form
 obtains the canonical 160-record system image from a bootable source. The file
 form installs the versioned package produced by `SYSBUILD`. Use CONFIG G to
 assign a SYSTEM format to the destination and DUP A to format the media first.
-SYSGEN rejects undefined drives, physical drive 0, source/destination aliases,
+SYSGEN rejects undefined drives, physical drive 0, disk-source/destination aliases,
 incompatible bootstrap geometry, and targets with fewer than 160 reserved
-records.
+records. True data-only formats are refused before confirmation or writes;
+a populated compatible SYSTEM format is permitted. Every installation form
+requires `Y` at `Proceed (Y/N)?`; command-line selection does not bypass it.
+`/VER` is standalone and performs no installation.
+
+SYSTEM.SYS contains 161 records (20,608 bytes): one 128-byte header followed
+by the 160-record payload. The header is validated input metadata and is not
+installed. The installed payload occupies 20,480 bytes.
 
 The installer copies the canonical 160 128-byte records in the system area. This
 includes stage zero, stage one, the resident image, protected reloaders and
 controls, the CCP carrier, and the saved persistent defaults. It writes and
 immediately reads back each record, compares all 128 bytes, and reports success
-only after the complete area agrees. The boot record is written last so an
-interrupted operation does not receive BetterCP/M's stage-zero sector. Ctrl-C
+only after the complete area agrees. Records 1–159 are written and verified
+before record 0. This does not make
+installation atomic: an interrupted replacement may retain an old boot record
+and a partial system area. No system-area rollback is promised. Ctrl-C
 is accepted between records. A stopped or failed target may not boot and should
 be reinstalled.
 
@@ -185,7 +232,7 @@ Before writing, SYSGEN adapts the installed physical-drive-zero descriptor and
 A: binding to the prepared target. The target may therefore use a different
 CP/M filesystem layout, allocation geometry, or reserved-track count, provided
 its bootstrap geometry is compatible and its reserved area holds the complete
-20 KiB package. Records beyond the package but within a larger reserved area
+20 KiB payload. Records beyond the payload but within a larger reserved area
 are left unchanged.
 
 CONFIG H and SYSGEN have separate jobs. CONFIG H saves current settings into
@@ -197,11 +244,12 @@ components. Its header identifies the package version, platform, payload size,
 resident base, and built A: binding. SYSGEN validates the header and exact file
 length before it permits installation.
 
-The current z80pack adapter defines B: through D: as data disks with no reserved
-system tracks and does not permit runtime format changes. SYSGEN is included in
-that distribution but correctly rejects those drives. A z80pack installation
-target requires a future adapter definition with a writable SYSTEM area; the
-Model 4 path is the qualified 1.0 implementation today.
+Both Model 4 and z80pack have qualified compatible SYSTEM-target installation
+paths. z80pack also has a qualified true data-only refusal case that preserves
+the whole target. Runtime format changes and uniform raw formatting are
+supported within the adapter's limits; a valid runtime binding alone does not
+establish bootstrap compatibility. See the SYSGEN specification and its
+conformance qualification for the precise supported boundary.
 
 The UI uses the private inverse-character service when available, with plain
 text fallback. Configuration and console calls go through BDOS; sector transfers use the
@@ -348,9 +396,8 @@ byte comparisons. These are emulator wall times, not real-hardware timings.
 
 ## Frozen 1.0 completion status
 
-Text FDF and FDF.RSX exist. The production FDB compiler/reader remain
-implementation work; normalized bindings do not depend on future catalog
-availability for runtime meaning.
+Text FDF, FDF.RSX and the production FDB compiler/reader are implemented.
+Normalized bindings do not depend on catalogue availability for runtime meaning.
 
 CONFIG J can inspect, edit, clear, immediately test and save the optional
 startup command. Cold boot reads and validates the saved record after command-

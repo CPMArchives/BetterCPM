@@ -217,7 +217,7 @@ SYSGEN /VER
 prints:
 
 ```text
-BetterCP/M SYSGEN 1.0 (Build 002)
+BetterCP/M SYSGEN 1.0 (Build 003)
 ```
 
 and returns directly to the CCP without disk installation activity. The version
@@ -981,6 +981,22 @@ SYSGEN SYSTEM.SYS B:
 alongside the traditional interactive mode.
 
 The 1.0 engineering work is therefore principally consolidation and qualification rather than redesign. The existing command-line access, cross-format compatibility rules, data-only refusal, package validation, filesystem preservation, destination patching, record-zero-last installation order, and byte-for-byte read-back verification are the normative SYSGEN behavior.
+
+## Consolidated package and preservation boundary
+
+The 161-record SYSTEM.SYS file is an input container; only its 160 payload
+records enter the destination system area. Neither the header nor any ordinary
+source file is installed. Preserve both the filesystem and reserved records
+beyond payload record 159. Mandatory confirmation applies equally to disk and
+package sources after preflight; `/VER` performs no installation.
+
+Writing record zero last is an ordering safeguard, not a power-loss transaction:
+an existing boot record can remain on a failed target, and the partially replaced
+system area is not rolled back. Report the failure and require reinstallation.
+See [conformance qualification](SYSGEN%20Conformance%20Qualification.md) for
+command parsing, populated-target preservation, cold boot and data-only refusal
+evidence; focused qualification does not declare a final release.
+
 ## Supporting references
 
 - [Native installation qualification](204%20Native%20Installation%20Qualification.md)
