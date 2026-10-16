@@ -31,11 +31,12 @@ def audit_files(original, image, report, work):
         outputs=[]
         for label,disk in (('before',before),('after',after)):
             exported=audit/(label+'-'+name)
-            subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(disk),f'{user}:{name}',str(exported)],cwd=audit,check=True)
+            subprocess.run(['cpmcp','-T','raw,pcw800','-f','bettercpm-default',str(disk),f'{user}:{name}',str(exported)],cwd=audit,check=True)
             outputs.append(exported)
+        assert sha(outputs[0])==item['sha256'], 'baseline file differs from manifest: '+name
         assert outputs[0].read_bytes()==outputs[1].read_bytes(), 'shipped file changed: '+name
         files.append({'name':name,'user':user,'record_bytes':outputs[0].stat().st_size,'sha256':sha(outputs[1])})
-    listing=subprocess.check_output(['cpmls','-T','raw','-f','bettercpm-default',str(after)],cwd=audit,text=True)
+    listing=subprocess.check_output(['cpmls','-T','raw,pcw800','-f','bettercpm-default',str(after)],cwd=audit,text=True)
     (audit/'directory.txt').write_text(listing)
     assert 'ent40.$$$' not in listing.lower(), 'Function 40 scratch file remains'
     result={'unchanged_shipped_files':files,'scratch_file_absent':True}
