@@ -1,0 +1,261 @@
+; Private portable ANSI/VT100 candidate. No BDOS calls from callbacks.
+; Pending sequences are private until complete; reset cannot strand host ESC.
+BASE EQU 08000H
+        CSEG
+        .PHASE BASE
+AN_NEXT: DW 5
+AN_DISP: DW AN_CHAIN
+        DB 0,0
+        DW 0
+AN_CHAIN:
+        LD HL,(AN_NEXT)
+        JP (HL)
+AN_BACKEND: DW 0                    ; manager-owned word at payload +12
+AN_ENTRY:
+        OR A
+        JR Z,AN_OUT
+        CP 3
+        JR Z,AN_CURSOR
+        CP 4
+        JR Z,AN_CLEAR
+        CP 5
+        JP Z,AN_RESET
+AN_RAW:
+        PUSH HL
+        LD HL,(AN_BACKEND)
+        EX (SP),HL                    ; preserve typed HL/DE arguments
+        RET
+AN_CURSOR:
+        LD A,C
+        OR A
+        JR Z,AN_CRAW
+        LD A,(AN_VISIBLE)
+        OR A
+        RET Z
+AN_CRAW:
+        LD A,3
+        JP AN_RAW
+AN_EMIT:
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        XOR A
+        CALL AN_RAW
+        POP HL
+        POP DE
+        POP BC
+        RET
+AN_RESET:
+        XOR A
+        LD (AN_STATE),A
+        LD (AN_COUNT),A
+        RET
+AN_CLEAR:
+        CALL AN_RESET
+        LD B,1
+        LD C,2
+        LD A,19
+        CALL AN_RAW
+        LD HL,1
+        LD DE,1
+        LD A,18
+        JP AN_RAW
+AN_OUT:
+        LD A,C
+        CP 24                         ; CAN and SUB cancel pending sequences
+        JP Z,AN_RESET
+        CP 26
+        JP Z,AN_RESET
+        LD A,(AN_STATE)
+        CP 4
+        JP Z,AS_BODY
+        CP 5
+        JP Z,AS_ESC
+        LD A,C
+        CP 27
+        JR Z,AN_BEGIN
+        LD A,(AN_STATE)
+        OR A
+        JR Z,AN_NORMAL
+        CP 1
+        JR Z,AN_ESC
+        CP 3
+        JP Z,AN_DROP
+        JP AN_CSI
+AN_NORMAL:
+        LD A,C
+        CP 127
+        RET Z
+        CP 32
+        JR C,AN_CTRL
+        CP 127
+        JR NC,AN_EMIT
+        LD A,21
+        JP AN_RAW
+AN_CTRL:
+        CP 10
+        JR Z,AN_LF
+        CP 13
+        JR Z,AN_CR
+        CP 8
+        JP NZ,AN_EMIT
+        LD B,3
+        LD HL,1
+        JR AN_MOVE
+AN_CR:
+        LD B,3
+        LD HL,65535
+AN_MOVE:
+        LD A,17
+        JP AN_RAW
+AN_LF:
+        LD B,0
+        LD A,24
+        JP AN_RAW
+AN_BEGIN:
+        LD A,1
+        LD (AN_STATE),A
+        LD A,27
+        LD (AN_BUFFER),A
+        LD A,1
+        LD (AN_COUNT),A
+        RET
+AN_ESC:
+        LD A,C
+        CP '['
+        JR Z,AN_CSI_BEGIN
+        CP ']'
+        JP Z,AS_BEGIN
+        CP 'P'
+        JP Z,AS_BEGIN
+        CP '7'
+        JR Z,AN_ESC_OK
+        CP '8'
+        JR Z,AN_ESC_OK
+        CP 'D'
+        JR Z,AN_ESC_OK
+        CP 'E'
+        JR Z,AN_ESC_OK
+        CP 'M'
+        JR Z,AN_ESC_OK
+        JP AN_RESET
+AN_ESC_OK:
+        CALL AN_APPEND
+        JP AN_FLUSH
+AN_CSI_BEGIN:
+        CALL AN_APPEND
+        LD A,2
+        LD (AN_STATE),A
+        RET
+AN_APPEND:
+        LD A,(AN_COUNT)
+        LD E,A
+        LD D,0
+        LD HL,AN_BUFFER
+        ADD HL,DE
+        LD (HL),C
+        INC A
+        LD (AN_COUNT),A
+        RET
+AN_CSI:
+        LD A,(AN_COUNT)
+        CP 31                         ; reserve one final byte in 32-byte buffer
+        JP NC,AN_OVERFLOW
+        LD A,C
+        CP 40H
+        JR NC,AN_FINAL
+        CP ';'
+        JR Z,AN_PARAM
+        CP '0'
+        JR C,AN_BAD
+        CP ':'
+        JR C,AN_PARAM
+        CP '?'
+        JR NZ,AN_BAD
+        LD A,(AN_COUNT)
+        CP 2
+        JR NZ,AN_BAD
+AN_PARAM:
+        JR AN_APPEND
+AN_FINAL:
+        CP 7FH
+        JR NC,AN_BAD
+        CALL AN_APPEND
+        LD A,(AN_BUFFER+2)
+        CP '?'
+        JR Z,AN_PRIVATE
+        LD HL,AN_CODES
+AN_FIND:
+        LD A,(HL)
+        OR A
+        JP Z,AN_RESET
+        CP C
+        JR Z,AN_FLUSH
+        INC HL
+        JR AN_FIND
+AN_PRIVATE:
+        LD A,(AN_COUNT)
+        CP 6
+        JP NZ,AN_RESET
+        LD A,(AN_BUFFER+3)
+        CP '2'
+        JP NZ,AN_RESET
+        LD A,(AN_BUFFER+4)
+        CP '5'
+        JP NZ,AN_RESET
+        LD A,C
+        CP 'h'
+        JR Z,AN_FLUSH
+        CP 'l'
+        JP NZ,AN_RESET
+AN_FLUSH:
+        CALL AC_DISP
+        LD HL,0
+        LD (AC_PTR),HL               ; no parser-buffer pointer survives callback
+        JP AN_RESET
+AN_BAD:
+        LD A,3
+        LD (AN_STATE),A
+AN_DROP:
+        LD A,C
+        CP 40H
+        RET C
+        CP 7FH
+        RET NC
+        JP AN_RESET
+AN_OVERFLOW:
+        LD A,3
+        LD (AN_STATE),A
+        JR AN_DROP
+AS_BEGIN:
+        LD A,4
+        LD (AN_STATE),A
+        RET
+AS_BODY:
+        LD A,C
+        CP 7
+        JP Z,AN_RESET
+        CP 27
+        RET NZ
+        LD A,5
+        LD (AN_STATE),A
+        RET
+AS_ESC:
+        LD A,C
+        CP 92                         ; ST = ESC backslash
+        JP Z,AN_RESET
+        CP 7
+        JP Z,AN_RESET
+        CP 27
+        RET Z
+        JP AS_BEGIN
+AN_STATE: DB 0
+AN_COUNT: DB 0
+AN_BUFFER: DB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+AN_CODES: DB 'ABCDHfJKmrsu',0
+AN_VISIBLE: DB 1
+        INCLUDE ansi-dispatch.inc
+        INCLUDE screen/rendition.inc
+        .DEPHASE
+        END

@@ -9,7 +9,7 @@ ROOT=Path(__file__).resolve().parents[1]
 
 def main():
     out=ROOT/'build/screen-rendition-prototype';out.mkdir(parents=True,exist_ok=True)
-    source=(ROOT/'src/rsx/screen/rendition-prototype.mac').read_text()
+    source=(ROOT/'src/rsx/screen/rendition-prototype.mac').read_text().replace('        INCLUDE rendition.inc',(ROOT/'src/rsx/screen/rendition.inc').read_text())
     code=assemble(Path.home()/'bin/z80asm',source,out/'rendition.bin',out/'rendition.lst',0x8000)
     alt=assemble(Path.home()/'bin/z80asm',source.replace('08000H','08101H'),out/'rendition-alt.bin',out/'rendition-alt.lst',0x8101)
     slots=relocation_offsets(code,alt,0x101)

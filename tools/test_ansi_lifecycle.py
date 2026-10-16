@@ -12,6 +12,7 @@ import test_rsx_stage3 as stage
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--reject-portable-candidate',action='store_true',help='prove unadmitted MCON 1.2 cannot replace the live monitor')
     parser.add_argument('--bios',type=Path,default=ROOT/'build/z80pack')
     args=parser.parse_args()
     bios=symbols(args.bios/'bios.lst')
@@ -20,10 +21,13 @@ def main():
     image=(args.bios/'bios.bin').read_bytes()
     cpu.mem[base:base+len(image)]=image
     cpu.setword(1,base+3)
+    backend='M4SCRN' if 'M4CURSOR' in bios else 'ANSISCRN'
     stage.FILES=(("R3PACK  ","build/system/R3PACK.RSX"),
                  ("HELLO   ","build/rsx/HELLO.RSX"),
                  ("ANSI    ","build/ansi-development/ANSI.RSX"))
-    sources=(0x7800,0xB400,0xB800)
+    if args.reject_portable_candidate:
+        stage.FILES=(("R3PACK  ","build/system/R3PACK.RSX"),(backend.ljust(8),f'build/screen-backends/{backend}.RSX'),("ANSI    ","build/ansi-portable-candidate/ANSI.RSX"))
+    sources=(0x7800,0xB400,0xC000 if args.reject_portable_candidate else 0xB800)
     for (_,path),address in zip(stage.FILES,sources):
         image=(ROOT/path).read_bytes();cpu.mem[address:address+len(image)]=image
     with tempfile.TemporaryDirectory() as temporary:stub=stage.file_stub(Path(temporary),sources)
@@ -46,6 +50,18 @@ def main():
         cpu.a,cpu.c=op,char
         cpu.run(base+66,limit=20000)
         return cpu.a
+    if args.reject_portable_candidate:
+        change(1,backend.ljust(8).encode())
+        addresses=[binding,stage.HEAD,stage.LOW,stage.TPA,6,stage.GEN]
+        before=[cpu.word(address) for address in addresses]
+        count=cpu.mem[stage.RSTCOUNT]
+        stage.invoke(cpu,bootstrap,1,b'ANSI    ')
+        assert cpu.a!=0 and before==[cpu.word(address) for address in addresses]
+        assert cpu.mem[stage.RSTCOUNT]==count
+        change(2,backend.ljust(8).encode())
+        assert cpu.word(binding)==basic and cpu.word(6)==LAYOUT['TPA']
+        print('PASS: unadmitted portable ANSI candidate rejected atomically with backend present; unload/53K')
+        return
     change(1,b'HELLO   ');change(1,b'ANSI    ')
     old=cpu.word(stage.LOW)
     assert cpu.word(binding)==old+syms['AN_ENTRY']-0x8000
