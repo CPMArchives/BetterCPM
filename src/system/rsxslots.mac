@@ -309,7 +309,9 @@ SU_SEEN:        DB      0               ; slot-validation flag
 
 
 ; Shared monitor-selection preparation, reached at overlay+3.
-; DE -> {normalized facts, eight-byte plan record, durable target word}.
+; DE -> {normalized facts, eight-byte plan record, durable selection state}.
+; State = {monitor entry, portable link-word address, backend entry}; legacy
+; monitors touch only the first word. MCON 1.1 owns payload word +12; dispatch remains at +8.
 ; Every retained callable descriptor must still match its validated carrier.
 ; No live mutation or callback; publish the durable target only on success.
 MS_ENTRY:
@@ -330,6 +332,10 @@ MS_ENTRY:
         LD (MS_TARGET),DE
         LD HL,0
         LD (MS_PENDING),HL
+        LD (MS_SLOT),HL
+        LD (MS_LINK),HL
+        LD HL,(MS_TARGET)
+        LD (MS_DEST),HL
         LD HL,(MS_FACTS)
         LD DE,17
         ADD HL,DE
@@ -431,17 +437,77 @@ MS_NEXTLIVE:
 MS_ID:
         LD HL,(MS_SOURCE)
         LD DE,MS_MCON
-        LD B,4
-MS_IDLOOP:
-        LD A,(DE)
-        CP (HL)
-        JR NZ,MS_NEXT
-        INC DE
+        CALL MS_ISID
+        JR Z,MS_FRONT
+        LD HL,(MS_SOURCE)
+        LD DE,MS_SCRN
+        CALL MS_ISID
+        JP NZ,MS_NEXT
+        LD HL,(MS_TARGET)
+        LD DE,4
+        ADD HL,DE
+        LD (MS_DEST),HL                ; backend destination in durable context
+        JR MS_ADDRESS
+MS_FRONT:
+        INC HL                         ; ABI minor
+        LD A,(HL)
+        OR A
+        JR Z,MS_ADDRESS                ; legacy monitor has no external link
+        INC HL                         ; portable callback offset
+        CALL MS_BODY
+        OR A
+        JP NZ,MS_BAD
+        LD HL,(MS_FACTS)
+        LD DE,8                        ; normal BDOS dispatch offset
+        ADD HL,DE
+        CALL MS_CHAIN
+        OR A
+        JP NZ,MS_BAD
+        LD DE,12                       ; MCON 1.1 private binding word
+        LD (MS_LINK),DE
+        ; Cross-module words may not overlap self-relative repair words.
+        LD HL,(MS_FACTS)
+        LD DE,10
+        ADD HL,DE
+        LD E,(HL)
         INC HL
-        DJNZ MS_IDLOOP
-        ; MCON class/version/capability and executable entry were normalized.
+        LD D,(HL)
+        INC HL
+        LD B,(HL)
+        EX DE,HL
+        CALL MS_NOFIX
+        OR A
+        JP NZ,MS_BAD
+        LD HL,(MS_FACTS)
+        LD DE,14
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        INC HL
+        LD B,(HL)
+        EX DE,HL
+        CALL MS_NOFIX
+        OR A
+        JP NZ,MS_BAD
+        LD HL,(MS_PLAN)
         INC HL
         INC HL
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD HL,(MS_LINK)
+        ADD HL,DE
+        JP C,MS_BAD
+        LD (MS_SLOT),HL
+MS_ADDRESS:
+        LD HL,(MS_PENDING)
+        LD A,H
+        OR L
+        JP NZ,MS_BAD                   ; one role per carrier; reject dual-role modules
+        LD HL,(MS_SOURCE)
+        LD DE,6
+        ADD HL,DE
         LD E,(HL)
         INC HL
         LD D,(HL)
@@ -456,11 +522,11 @@ MS_IDLOOP:
         ADD HL,DE
         JP C,MS_BAD
         LD (MS_PENDING),HL
-        LD HL,(MS_TARGET)
+        LD HL,(MS_DEST)
         LD A,(HL)
         INC HL
         OR (HL)
-        JP NZ,MS_BAD                   ; second provider before any live change
+        JP NZ,MS_BAD                   ; duplicate role before any live change
 MS_NEXT:
         LD HL,(MS_SOURCE)
         LD DE,10
@@ -474,10 +540,20 @@ MS_FINISH:
         LD A,D
         OR E
         JR Z,MS_OK
-        LD HL,(MS_TARGET)
+        LD HL,(MS_DEST)
         LD (HL),E
         INC HL
         LD (HL),D
+        LD DE,(MS_SLOT)
+        LD A,D
+        OR E
+        JR Z,MS_OK
+        LD HL,(MS_TARGET)
+        INC HL
+        INC HL
+        LD (HL),E
+        INC HL
+        LD (HL),D                     ; final frontend-owned backend word
 MS_OK:
         XOR A
         RET
@@ -485,6 +561,75 @@ MS_BAD:
         LD A,0FFH
         OR A
         RET
+MS_ISID:
+        LD B,4
+MS_IDLOOP:
+        LD A,(DE)
+        CP (HL)
+        RET NZ
+        INC DE
+        INC HL
+        DJNZ MS_IDLOOP
+        RET
+MS_BODY:
+        LD B,(HL)
+        INC HL
+        LD A,(HL)
+        OR A
+        JR NZ,MS_BODYOK
+        LD A,B
+        CP 14
+        JR C,MS_BODYBAD
+MS_BODYOK:
+        XOR A
+        RET
+MS_BODYBAD:
+        LD A,255
+        RET
+MS_CHAIN:
+        LD B,(HL)
+        INC HL
+        LD A,(HL)
+        OR A
+        RET NZ
+        LD A,B
+        CP 8                           ; preserve canonical registry-chain offset
+        JR NZ,MS_BODYBAD
+        XOR A
+        RET
+MS_NOFIX:
+        LD A,B
+        OR A
+        RET Z
+MS_FIXLP:
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        INC HL
+        PUSH HL
+        LD HL,(MS_LINK)
+        OR A
+        SBC HL,DE
+        INC HL                        ; differences -1,0,+1 overlap the word
+        LD A,H
+        OR A
+        JR NZ,MS_FIXOK
+        LD A,L
+        CP 3
+        JR C,MS_FIXBAD
+MS_FIXOK:
+        POP HL
+        DJNZ MS_FIXLP
+        XOR A
+        RET
+MS_FIXBAD:
+        POP HL
+        LD A,255
+        RET
+MS_SLOT: DW 0
+MS_LINK: DW 0
+MS_DEST: DW 0
+MS_SCRN: DB 'SCRN'
 MS_MCON: DB 'MCON'
 MS_FACTS: DW 0
 MS_PLAN: DW 0

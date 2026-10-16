@@ -272,12 +272,23 @@ translator or new BIOS ABI. The general TCAP design remains post-1.0 work.
 
 ## Unloadable backend integration status
 
-`SCRN` is reserved for screen-backend callable metadata. The production
-normalizer currently requires ABI 1.0, STATEFUL reconstruction and exactly the
-matching Model 4/cpmsim platform capability, using the same admission checks as
-MCON. This reserves and validates the identity; it does not yet implement
-personality dependencies or publish the prototype operation table as a final
-ABI. Do not cache a SCRN lookup address inside a movable personality and assume
-that the existing manager will repair it. Dependent monitor activation remains
-unsupported until profile validation and commit-time rebinding are integrated.
-See the [production integration record](../engineering/Monitor%20Backend%20Production%20Integration.md).
+`SCRN` is reserved for screen-backend callable metadata: ABI 1.0, STATEFUL
+reconstruction and exactly the matching Model 4/cpmsim platform capability.
+Legacy MCON 1.0 remains platform-bound and independent of SCRN.
+
+Portable MCON 1.1 uses capability bit 2 only (`0004h`). Its canonical dispatch
+remains at payload +8; an initially null, manager-owned backend-reference word
+is at +12, and the monitor callback starts at +14 or later. Keep that word out
+of static and runtime self-pointer lists, including overlapping words at +11
+and +13. Do not initialize or retain a backend lookup address yourself.
+
+The manager validates the complete prospective pair and rebinds this word after
+movement, before monitor/generation publication. Load a compatible backend
+before its personality, and remove the personality before removing the backend.
+At most one of each role is allowed; a carrier cannot advertise both roles.
+A backend alone is permitted. No dependency callbacks run during commit.
+
+This lifecycle interface is implemented and CPU-qualified. Complete converted
+personalities and screen-backend builds are not yet packaged; the prototype
+screen-operation table is not a finished behavioral contract. See the
+[production integration record](../engineering/Monitor%20Backend%20Production%20Integration.md).

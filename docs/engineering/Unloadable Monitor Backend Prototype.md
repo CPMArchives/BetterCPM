@@ -1,5 +1,10 @@
 # Unloadable monitor backend prototype and cost audit
 
+**Production progress:** the prototype findings below are historical. The
+manager now implements the portable dependency/rebinding path described in the
+[production integration record](Monitor%20Backend%20Production%20Integration.md).
+The isolated PMON prototypes remain partial and do not activate that path.
+
 2026-10-16. **Prototype evidence, not a production implementation or frozen ABI.**
 
 ## Finding
