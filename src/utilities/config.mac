@@ -26,6 +26,8 @@ CF_VDONE:
         LD A,(CF_MODE)
         CP 3
         JP Z,CD_APPLY                  ; physical CLI needs no format catalogue
+        CP 6
+        JP Z,CE_APPLY
         CP 5
         JP Z,CL_UNBIND
         CALL FDBLOAD
@@ -1936,7 +1938,7 @@ CD_PARSE:
         LD C,A
         LD DE,CD_PHOPT
         CALL CF_MATCH
-        JP C,CL_PARSE
+        JP C,CE_PARSE
         CALL CD_NUM
         RET C
         CP 4
@@ -2186,6 +2188,250 @@ CF_FATAL:
         OR A
         CALL Z,PAUSE
         JP DONE
+
+; Scalar workbench CLI. Parse into private values before any backend access.
+CE_PARSE:
+        LD HL,(CF_PTR)
+        LD A,(CF_LEFT)
+        LD C,A
+        LD DE,CE_KEY
+        CALL CF_MATCH
+        JP C,CL_PARSE
+        LD A,C
+        OR A
+        JP Z,CF_BAD
+        LD A,(HL)
+        CALL CL_UPPER
+        SUB 'A'
+        CP 1
+        JP C,CF_BAD
+        CP 4
+        JP NC,CF_BAD
+        LD (CL_DRIVE),A
+        INC HL
+        DEC C
+        CALL CL_GAP
+        RET C
+        PUSH HL
+        PUSH BC
+        LD HL,CE_SEEN
+        LD DE,CE_SEEN+1
+        LD BC,15
+        LD (HL),0
+        LDIR
+        POP BC
+        POP HL
+CE_LOOP:
+        LD (CL_PTR),HL
+        LD A,C
+        LD (CL_LEFT),A
+        XOR A
+        LD (EDFIELD),A
+CE_FIND:
+        LD A,(EDFIELD)
+        ADD A,A
+        LD E,A
+        LD D,0
+        LD HL,CE_NAMES
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD HL,(CL_PTR)
+        LD A,(CL_LEFT)
+        LD C,A
+        CALL CF_MATCH
+        JR NC,CE_FOUND
+        LD A,(EDFIELD)
+        INC A
+        LD (EDFIELD),A
+        CP 16
+        JR C,CE_FIND
+        JP CF_BAD
+CE_FOUND:
+        CALL CE_NUM
+        RET C
+        PUSH HL
+        PUSH BC
+        PUSH DE
+        LD A,(EDFIELD)
+        LD E,A
+        LD D,0
+        LD HL,CE_SEEN
+        ADD HL,DE
+        LD A,(HL)
+        OR A
+        JP NZ,CE_BADPOP
+        INC (HL)
+        CALL EDADDR
+        POP DE
+        LD A,(EDWIDTH)
+        CP 2
+        JR Z,CE_STORE
+        LD A,D
+        OR A
+        JR NZ,CE_BAD2
+CE_STORE:
+        LD A,(EDFIELD)
+        ADD A,A
+        LD L,A
+        LD H,0
+        LD BC,CE_VALS
+        ADD HL,BC
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        POP BC
+        POP HL
+        CALL CF_SKIP
+        JR NZ,CE_LOOP
+        LD A,6
+        LD (CF_MODE),A
+        OR A
+        RET
+CE_BADPOP:
+        POP DE
+CE_BAD2:
+        POP BC
+        POP HL
+        JP CF_BAD
+
+; Unsigned decimal word with overflow checked before every addition.
+CE_NUM:
+        LD DE,0
+        LD A,C
+        OR A
+        JP Z,CF_BAD
+        LD A,(HL)
+        SUB '0'
+        CP 10
+        JP NC,CF_BAD
+CE_DIGIT:
+        LD A,(HL)
+        SUB '0'
+        PUSH HL
+        PUSH BC
+        PUSH DE
+        EX DE,HL
+        ADD HL,HL
+        JR C,CE_OVER
+        ADD HL,HL
+        JR C,CE_OVER
+        POP DE
+        PUSH DE
+        ADD HL,DE
+        JR C,CE_OVER
+        ADD HL,HL
+        JR C,CE_OVER
+        LD E,A
+        LD D,0
+        ADD HL,DE
+        JR C,CE_OVER
+        EX DE,HL
+        POP HL
+        POP BC
+        POP HL
+        INC HL
+        DEC C
+        RET Z
+        LD A,(HL)
+        CP '0'
+        JR C,CE_SEP
+        CP ':'
+        JR C,CE_DIGIT
+CE_SEP: CP 32
+        RET Z
+        CP 9
+        RET Z
+        JP CF_BAD
+CE_OVER:
+        POP DE
+        POP BC
+        POP HL
+        JP CF_BAD
+
+CE_APPLY:
+        LD A,(CL_DRIVE)
+        LD (REQ),A
+        LD DE,REQ
+        LD B,3
+        CALL API
+        JP NZ,CL_ERROR
+        LD HL,REQ+1
+        LD DE,EDCOPY
+        LD BC,64
+        LDIR
+        XOR A
+        LD (EDFIELD),A
+CE_MERGE:
+        LD A,(EDFIELD)
+        LD E,A
+        LD D,0
+        LD HL,CE_SEEN
+        ADD HL,DE
+        LD A,(HL)
+        OR A
+        JR Z,CE_NEXT
+        CALL EDADDR
+        PUSH HL
+        LD A,(EDFIELD)
+        ADD A,A
+        LD L,A
+        LD H,0
+        LD DE,CE_VALS
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        POP HL
+        LD (HL),E
+        LD A,(EDWIDTH)
+        CP 2
+        JR NZ,CE_NEXT
+        INC HL
+        LD (HL),D
+CE_NEXT:
+        LD A,(EDFIELD)
+        INC A
+        LD (EDFIELD),A
+        CP 16
+        JR C,CE_MERGE
+        LD HL,EDCOPY
+        LD DE,BIND
+        LD BC,64
+        LDIR
+        LD A,(EDCOPY)
+        CP 4
+        JP NC,CL_ERROR
+        CALL COMPAT
+        JP NZ,CL_ERROR
+        LD HL,EDCOPY
+        LD DE,REQ+1
+        LD BC,64
+        LDIR
+        LD A,(EDCOPY)
+        JP CL_COMMIT
+CE_KEY: DB '/EDIT=',0
+CE_NAMES: DW CE_N0,CE_N1,CE_N2,CE_N3,CE_N4,CE_N5,CE_N6,CE_N7
+        DW CE_N8,CE_N9,CE_N10,CE_N11,CE_N12,CE_N13,CE_N14,CE_N15
+CE_N0: DB '/PHYSICAL=',0
+CE_N1: DB '/SPT=',0
+CE_N2: DB '/BSH=',0
+CE_N3: DB '/BLM=',0
+CE_N4: DB '/EXM=',0
+CE_N5: DB '/DSM=',0
+CE_N6: DB '/DRM=',0
+CE_N7: DB '/AL0=',0
+CE_N8: DB '/AL1=',0
+CE_N9: DB '/CKS=',0
+CE_N10: DB '/OFF=',0
+CE_N11: DB '/CYLINDERS=',0
+CE_N12: DB '/SECTORS=',0
+CE_N13: DB '/SIZE=',0
+CE_N14: DB '/FLAGS=',0
+CE_N15: DB '/SIZEMAP=',0
+CE_SEEN: DS 16
+CE_VALS: DS 32
 
 ; Named logical bindings: first validate the complete tail, then resolve a
 ; unique catalogue description. No catalogue row number becomes a script ABI.

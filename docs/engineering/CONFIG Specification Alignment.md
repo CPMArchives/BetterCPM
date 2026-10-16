@@ -3,7 +3,7 @@
 ## Authority and current status
 
 The current CONFIG engineering specification is the implementation baseline.
-Builds 003–005 close inspection/startup gaps; they do not declare CONFIG complete.
+Builds 003–008 close inspection/startup and drive CLI gaps; they do not declare CONFIG complete.
 The spec's cost/backend gates remain required for proposed runtime facilities.
 
 | Requirement | Current status |
@@ -14,7 +14,7 @@ The spec's cost/backend gates remain required for proposed runtime facilities.
 | /SHOW | Active and saved physical/logical settings, saved startup; embedded CRC-32 validation; no external reference |
 | /STARTUP="..." | Confirmed, verified startup-only save; does not execute command |
 | /DEFAULT | Pending-only semantics agreed; implementation/default-domain sources open |
-| Drive command-line parity | Builds 006–007 physical fields and logical binding/format selection implemented; workbench field CLI open |
+| Drive command-line parity | Builds 006–007 physical fields and logical binding/format selection implemented; Build 008 scalar workbench fields implemented; sector-map CLI open |
 | Persistent IOBYTE, printer and serial | Backend/space findings recorded in [runtime audit](CONFIG%20Runtime%20Audit.md); persistence and runtime prototype costs remain open |
 | Native build | Build 007 dual-profile ZSM4/LINK and cross assembly match at 14,716 bytes |
 
@@ -241,3 +241,25 @@ Independent snapshots check the complete binding after catalogue-based format
 selection, unbind preserving its remaining fields, unrelated active state and
 byte-identical disk media. The batch keyboard helper now supports the existing
 Model 4 quote chord; no OS keyboard-driver change is involved.
+
+## Build 008: scalar format-workbench CLI
+
+`/EDIT=B` through `/EDIT=D` accepts named scalar fields, merges only supplied
+values into a private copy, checks physical compatibility and submits one
+validated backend update. Complete parsing precedes INIT and filesystem/backend
+access. It requires no catalogue and retains separate persistence. Numeric word
+and byte overflow, duplicate/unknown fields and A: are rejected. Sector-ID and
+size-map slot commands, `/DEFAULT`, and runtime proposal gates remain open.
+
+`test_config_edit_cli.py` covers all 16 named fields, word bounds, invalid tails
+before I/O, exact preservation of unrelated binding bytes, geometry/read/commit
+failures and selected-drive reset. Existing logical/physical CLI, common parser
+and 166 identity checks pass. Native ZSM4/LINK matches cross assembly at 15,294
+bytes with one embedded validation profile: 322 bytes below the transient cap.
+A second profile costs another 20 bytes. No resident bytes are added.
+
+`qualify_config_edit_cli.py` checks a real cpmsim accepted edit, backend rejection,
+late-invalid request and protected A: request using independent public-API state
+snapshots. Whole disk images remain unchanged; cold boot restores saved state.
+Evidence: `build/config-edit-cli/run-dg__oori`. This increment has not yet had a
+new Model 4 interactive campaign or clean distribution rebuild.
