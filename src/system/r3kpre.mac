@@ -140,6 +140,7 @@ KP_SFUL:                                ; prepare retained pointer-slot union
         ADD     A,A
         LD      E,A
         LD      D,0
+        RL      D                       ; byte count is twice the word count
         LD      HL,(KP_FACTS)
         LD      BC,46
         ADD     HL,BC
@@ -191,6 +192,7 @@ KP_SFUL:                                ; prepare retained pointer-slot union
         ADD     A,A
         LD      C,A
         LD      B,0
+        RL      B                       ; preserve size carry for >=128 words
         CALL    KP_RESERVE
         JP      NZ,KP_BAD
         LD      HL,(KP_TEMP)

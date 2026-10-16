@@ -98,6 +98,7 @@ RF_HAVECOUNT:                           ; validate the prospective profile count
         ADD     A,A
         LD      E,A
         LD      D,0
+        RL      D                       ; retain carry: 128..255 repair words need >255 bytes
         LD      HL,8
         ADD     HL,DE
         LD      (RF_MCAP),HL

@@ -153,17 +153,16 @@ RS_VSLOTS:                              ; validate repair-slot capacity
         CALL    RS_DESCRIPTOR
         INC     HL
         INC     HL
-        LD      A,(HL)
-        ADD     A,A
-        LD      E,A
-        LD      D,0
-        LD      HL,8
+        LD      L,(HL)
+        LD      H,0
+        ADD     HL,HL                   ; preserve the full repair-byte count
+        LD      DE,8
         ADD     HL,DE
         LD      DE,(RS_CAP)
         OR      A
         SBC     HL,DE
-        JP      C,RS_VNEXT
-        JP      Z,RS_VNEXT
+        JR      C,RS_VNEXT
+        JR      Z,RS_VNEXT
         JP      RS_BAD
 
 RS_BADPOP:                              ; reject invalid stateful population
@@ -222,7 +221,7 @@ RS_EXEC:                                ; execute one stateful move
         LD      A,(HL)
         POP     HL
         CP      1
-        JR      NZ,RS_NEXT
+        JP      NZ,RS_NEXT
         LD      E,(HL)
         INC     HL
         LD      D,(HL)
@@ -280,12 +279,15 @@ RS_EXEC:                                ; execute one stateful move
         LD      (HL),0
         INC     HL
         EX      DE,HL                   ; DE=scratch+8
-        POP     HL                      ; HL=slot union
-        LD      A,(RS_SCOUNT)
+        POP     HL                      ; HL=slot union; A still holds slot count
+        OR      A
+        JR      Z,RS_NOSLOTS            ; BC=0 must not invoke a 64K LDIR
         ADD     A,A
         LD      C,A
         LD      B,0
+        RL      B                       ; copy every repair word for counts >=128
         LDIR
+RS_NOSLOTS:
         LD      DE,(RS_SCRATCH)
         LD      HL,(RS_MOVER)
         LD      BC,RS_RETURN

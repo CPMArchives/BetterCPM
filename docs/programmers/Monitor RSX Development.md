@@ -320,3 +320,17 @@ checkpoint. Portable VT52 is now on both distribution disks with its matching ba
 Portable ADM3A integration is now being qualified; ANSI conversion and a portable
 editable starter remain open. See the
 [production integration record](../engineering/Monitor%20Backend%20Production%20Integration.md).
+
+
+## Optional geometry-neutral controls
+
+Backend provider 1.2 adds optional SCX 1.0 discovery through SCRN operation 16.
+Check its version, descriptor length and operation mask before calling new
+controls; a legacy backend returns 255. The first implemented controls are typed
+relative movement (17) and absolute positioning (18), using 16-bit arguments.
+They retain the host's actual geometry while Model 4 clamps to physical bounds.
+The original fixed-cell operations and descriptor stay unchanged. When switching
+from control/raw screen output back to fixed-cell output, explicitly synchronize
+with operation 6. See the [calling contract](../engineering/Unloadable%20Screen%20Backend%20ABI.md).
+Do not assume this first slice supplies rendition, wrapping, margins or a complete
+portable ANSI personality; those operations remain subsequent integration work.

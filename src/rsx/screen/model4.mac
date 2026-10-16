@@ -10,6 +10,8 @@ S_CHAIN:
         LD HL,(S_NEXT)
         JP (HL)
 S_ENTRY:
+        CP 16
+        JP NC,SX_ENTRY
         CP 6
         JR NC,S_SWITCH
         OR A
@@ -215,4 +217,123 @@ S_LOW:
         JR NZ,S_TONE
         RET
 S_FILLBYTE: DB 32
+; Optional SCX controls; leave the original fixed-cell interface unchanged.
+SX_ENTRY:
+        CP 16
+        JP Z,SX_QUERY
+        CP 17
+        JP Z,SX_MOVE
+        CP 18
+        JP NZ,S_BAD
+        LD A,H
+        OR A
+        LD A,23
+        JR NZ,SX_ROWOK
+        LD A,L
+        OR A
+        JR Z,SX_ROWOK
+        DEC A
+        CP 24
+        JR C,SX_ROWOK
+        LD A,23
+SX_ROWOK:
+        LD B,A
+        LD A,D
+        OR A
+        LD A,79
+        JR NZ,SX_COLOK
+        LD A,E
+        OR A
+        JR Z,SX_COLOK
+        DEC A
+        CP 80
+        JR C,SX_COLOK
+        LD A,79
+SX_COLOK:
+        LD C,A
+SX_APPLY:
+        CALL S_POS
+        XOR A
+        RET
+SX_QUERY:
+        LD HL,SX_DESC
+        XOR A
+        RET
+SX_DESC: DB 'SCX',1,0,12,24,80
+        DW 3
+        DB 0,0
+SX_MOVE:
+        LD A,B
+        CP 4
+        JP NC,S_BAD
+        LD (SX_DIR),A
+        LD A,H
+        OR A
+        LD A,255
+        JR NZ,SX_COUNT
+        LD A,L
+        OR A
+        JR NZ,SX_COUNT
+        INC A
+SX_COUNT:
+        LD (SX_STEP),A
+        LD HL,(M4CURSOR)
+        LD DE,0F800H
+        OR A
+        SBC HL,DE
+        LD DE,80
+        LD B,0
+SX_ROW:
+        OR A
+        SBC HL,DE
+        JR C,SX_FOUND
+        INC B
+        JR SX_ROW
+SX_FOUND:
+        ADD HL,DE
+        LD C,L
+        LD A,(SX_STEP)
+        LD E,A
+        LD A,(SX_DIR)
+        OR A
+        JR Z,SX_UP
+        CP 1
+        JR Z,SX_DOWN
+        CP 2
+        JR Z,SX_RIGHT
+        LD A,C
+        SUB E
+        JR NC,SX_LEFT
+        XOR A
+SX_LEFT:
+        LD C,A
+        JR SX_APPLY
+SX_RIGHT:
+        LD A,C
+        ADD A,E
+        JR C,SX_RMAX
+        CP 80
+        JR C,SX_LEFT
+SX_RMAX:
+        LD A,79
+        JR SX_LEFT
+SX_UP:
+        LD A,B
+        SUB E
+        JR NC,SX_YSET
+        XOR A
+        JR SX_YSET
+SX_DOWN:
+        LD A,B
+        ADD A,E
+        JR C,SX_DMAX
+        CP 24
+        JR C,SX_YSET
+SX_DMAX:
+        LD A,23
+SX_YSET:
+        LD B,A
+        JP SX_APPLY
+SX_DIR: DB 0
+SX_STEP: DB 0
         END
