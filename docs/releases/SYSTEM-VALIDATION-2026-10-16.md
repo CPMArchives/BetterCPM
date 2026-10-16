@@ -552,3 +552,91 @@ baseline/program/emulator hashes and keystrokes. The original baseline hash is
 unchanged. Each emulator exited after its capture. No OS defect was found.
 This small native subset does not establish other editing controls, timing,
 other monitor configurations or return-to-CCP behavior for these cards.
+
+### Character echo and flow-control continuation
+
+`console-echo/constest-input-peeneiha/` records 29 successful cases on the
+unchanged cpmsim candidate: 28 required (including the external 0117 recovery
+observation) and one DRI-CONSOLE profile case. Added cases 0095..0100 verify
+literal CR/LF echo, Backspace followed by X overwriting C, TAB expanded to
+seven spaces after column-one A, suppressed Ctrl-A echo with A=01, and shared
+Function 9/Function 1 column state. Expected echo bytes are independent literals
+checked before confirmation. The TAB checks assert spaces rather than merely
+accepting a host terminal's interpretation of a TAB byte.
+
+Case 0101 receives Ctrl-S, remains silent for 0.25 seconds, receives Ctrl-Q,
+remains silent for another 0.25 seconds, then receives X and echoes/returns
+exactly X (A=58). This is bounded live pause/resume evidence, not a general
+performance guarantee. The earlier 28-case expansion is retained in
+`console-echo/constest-input-c6q1o113/`; counts overlap. No OS change was needed.
+
+### Native control editing continuation
+
+The `--group controls` extension to the native input runner retains separate
+private disks and captures for Ctrl-E (0118), Ctrl-R (0119) and Ctrl-U (0120).
+All three returned-buffer and visible-line checks pass in
+`model4-controls/model4-input-hu9q5yhk/`: Ctrl-E continues physically while
+retaining ABCD; Ctrl-R redisplays the retained AB before appending CD; Ctrl-U
+starts a fresh line and returns only CD. The checks require the expected
+physical newline, not merely the concatenated characters. No suite confirmation
+is supplied for these three cards. Native Ctrl-C recovery is recorded separately
+when its terminal-outcome check completes.
+
+Native 0117 also reaches the CCP and executes resident VER /VER, leaving its
+version line and a final A0> prompt. The caller-return diagnostic and suite
+confirmation are absent. The first runner incorrectly also required the typed
+`A0>VER /VER` command to remain visible, so its original `result.json` reports
+that case FAIL. The retained screen contains the executed version output but
+not the command echo. This is an observer error, not an OS failure.
+
+The corrected `recovery_checks` requires the resident VER identity, final CCP
+prompt and absence of the caller-return/confirmation diagnostics; command echo
+is not a recovery contract. Four observer checks reject a startup banner,
+caller-return diagnostic and missing final prompt, while accepting a successful
+version result without command echo. Applying that corrected oracle to the
+unchanged native capture passes all four conditions. `recovery-reviewed.json`
+records that review and capture hashes separately; the original failure report
+is preserved. This was a review of retained evidence, not a new emulator run.
+The native batch therefore provides three editing observations plus one
+terminal-outcome recovery observation. No OS change was needed.
+
+### Counted-input maximum-byte continuation
+
+The expanded cpmsim run in `console-capacity/constest-input-3ap51m4z/` passes
+30 cases: 29 required, including the external 0117 recovery observation, plus
+one DRI-CONSOLE profile case. Added 0107 runs two Function 10 calls: maximum 1
+returns Z without Enter; maximum FFh accepts Q and returns on Enter. Both
+returned buffers and visible echoes are independently checked before the single
+case confirmation. This tests the maximum-byte settings, not filling all 255
+positions (the suite recipe enters only Q in its second call).
+
+The initial observer in `constest-input-gynprvlu/` incorrectly assumed only one
+CR before the reporter's OBSERVED line. The corrected observer separates the
+report at its literal CR/LF marker, checks the count/data and compares rendered
+input echo, matching the existing buffered-input oracle. The returned values
+were already correct; no OS change was made. Earlier run totals overlap.
+
+### Native Model 4 entry-contract group
+
+The returning runner's new `--group entry` executes the pinned, unmodified
+ENTRYTST /GROUP:REQUIRED on the unchanged V002b Model 4 System Disk, with its
+normal startup monitor configuration. The final native screen reports
+25 pass, 0 fail, 0 error, 0 observations. Required automatic checks include
+entry/page-zero and default DMA behavior, BDOS/BIOS structure access, IOBYTE
+coherence and Function 40 scratch-file writes. Manual cards remain not run;
+they are not promoted by the aggregate summary.
+
+Evidence: `model4-entry/model4-returning-thc9ovky/` retains private A/B disks,
+program/baseline/emulator hashes, native screen-memory captures and decoded
+screens. The final screen retains the aggregate summary and trailing rows;
+it is not a complete scrolling per-item transcript. The original DMK hash
+remains unchanged and the emulator exited normally.
+
+An independent post-run filesystem audit extracts all 29 shipped files from
+the original and exercised disk and compares their complete CP/M record bytes.
+All 29 are unchanged; ENT40.$$$ is absent after the Function 40 cleanup.
+`file-audit/result.json` records per-file hashes, with extracted before/after
+raw media, files and a final directory listing retained beside it. The runner
+now performs that audit automatically for entry-group runs. The first run's
+audit was applied to its retained disk after the emulator completed. No OS
+change was required.
