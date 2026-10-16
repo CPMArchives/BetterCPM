@@ -41,6 +41,8 @@ CF_VDONE:
         JP Z,CF_START
         CP 4
         JP Z,CL_BIND
+        CP 7
+        JP Z,CF_DEFAULT
 
 ; ================================================================================
 ; =                               CONFIG Main Menu                               =
@@ -1607,10 +1609,23 @@ CF_PARSE:
         LD (CF_LEFT),A
         LD DE,CF_SHOPT
         CALL CF_MATCH
-        JR C,CF_TRYST
+        JR C,CF_TRYDEF
         CALL CF_SKIP
         JP NZ,CF_BAD
         LD A,1
+        LD (CF_MODE),A
+        OR A
+        RET
+CF_TRYDEF:
+        LD HL,(CF_PTR)
+        LD A,(CF_LEFT)
+        LD C,A
+        LD DE,CF_DEFOPT
+        CALL CF_MATCH
+        JR C,CF_TRYST
+        CALL CF_SKIP
+        JP NZ,CF_BAD
+        LD A,7
         LD (CF_MODE),A
         OR A
         RET
@@ -1719,6 +1734,29 @@ CF_STREADY:
         LD (STSTATE),A
         LD (STDIRTY),A
         JP STSAVE
+ ; /DEFAULT resets only the private startup domain; saving remains explicit.
+CF_DEFAULT:
+        CALL STDEFAULT
+        LD HL,CF_DEFCMD
+        LD DE,STPEND+16
+        LD BC,14
+        LDIR
+        LD A,14
+        LD (STPEND+8),A
+        LD A,1
+        LD (STPEND+7),A
+        LD (STSTATE),A
+        LD (STDIRTY),A
+        CALL STCHECKSUM
+        XOR A
+        LD (CF_MODE),A                 ; from here, ordinary interactive behavior
+        LD HL,CF_DEFMSG
+        CALL PUTS
+        CALL PAUSE
+        JP STARTMENU
+CF_DEFOPT: DB '/DEFAULT',0
+CF_DEFCMD: DB 'SUBMIT STARTUP'
+CF_DEFMSG: DB 'Startup default pending; drives unchanged.',13,10,0
 CF_SHOW:
         LD HL,TITLE
         CALL PUTS

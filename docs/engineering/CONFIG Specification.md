@@ -139,6 +139,7 @@ The intended long-term command set includes forms such as:
 
 ```text
 CONFIG /SHOW
+CONFIG /DEFAULT
 CONFIG /STARTUP="SUBMIT STARTUP"
 CONFIG /PRINTER:TABS=EXPAND
 CONFIG /SERIAL:1 BAUD=9600
@@ -927,26 +928,35 @@ runtime discovery cannot establish that a foreign system's layout is safe.
 ---
 
 # 17. Defaults/reset facility
-**Status: proposed new CONFIG work**
+**Status: startup-only pending reset implemented in Build 010**
 
 A mechanism for restoring CONFIG-managed settings to platform/distribution defaults may be useful, but it must respect the existing domain storage architecture and save-state model.
 
-A proposed command is:
+The standalone command is:
 
 ```text
 CONFIG /DEFAULT
 ```
 
-Maintainer decision: `/DEFAULT` loads defaults into private pending state only.
-It does not immediately activate or save them. The operator remains in the
-interactive session and uses explicit activation/save operations. It must not
-exit while implying that invocation-private pending state will survive.
-Default sources and supported-domain coverage must be specified and qualified
-before this operation is implemented. `/DEFAULT` remains unimplemented.
+Maintainer decision and Build 010 behavior: `/DEFAULT` restores only the
+startup-command domain to `SUBMIT STARTUP`. Physical profiles, logical bindings,
+format definitions, IOBYTE and peripheral settings are outside this operation.
+The command is standalone; extra operands and combinations are rejected before
+INIT or I/O. It uses the existing interactive CONFIG/catalogue environment.
 
-It must not bypass CONFIG's established active/pending/saved distinctions.
+The generated canonical BCST record is private pending state, enabled with the
+14-byte command and a valid checksum. Nothing is executed, activated or saved.
+CONFIG reports “Startup default pending; drives unchanged.” and opens the
+startup menu after acknowledgment. The pending/unsaved status is displayed.
+The operator can inspect, edit, clear or explicitly test the command, then use
+H's existing save scope and Y/N confirmation to persist it. Exiting without
+saving discards the pending replacement. A declined save also preserves the
+installed record. Existing save verification/rollback remains in force.
 
-Therefore `/DEFAULT` remains provisional until its semantics are reconciled with the existing CONFIG model.
+This is the distribution startup default (`metadata/distribution.json`), not a
+reset of the contents of STARTUP.SUB. A future change to that default must keep
+CONFIG's default command and the distribution metadata aligned. Broader drive
+factory-default support is not specified for 1.0.
 
 ---
 
@@ -1181,8 +1191,6 @@ includes separate active and CRC-validated saved drive settings.
 Proposed/new; not currently available:
 
 ```text
-CONFIG /DEFAULT
-
 CONFIG /IOBYTE logical=physical [...]
 
 CONFIG /PRINTER:LINE=RAW|SUPPRESSLF
@@ -1208,7 +1216,7 @@ This specification is the reconciled CONFIG baseline. The implemented command
 summary above and sections 12 and 16 take precedence over older implementation
 notes describing A–E placeholders, an external SYSGEN.DAT reference, or wholly
 missing drive CLI support. The two save scopes and separate storage domains
-remain unchanged. `/DEFAULT`, the gated IOBYTE, printer
+remain unchanged. The gated IOBYTE, printer
 and serial proposals remain open; consolidation does not approve them or claim
 complete CONFIG qualification. See the [alignment record](CONFIG%20Specification%20Alignment.md)
 and [runtime audit](CONFIG%20Runtime%20Audit.md) for evidence and remaining gates.
