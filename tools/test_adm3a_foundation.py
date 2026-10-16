@@ -14,6 +14,22 @@ def symbols(path):
         r'^([0-9a-f]{4})\s+.*?\b([A-Z][A-Z0-9_]*):',path.read_text(errors='replace'),re.M)}
 
 
+def bind_backend(cpu, base, table):
+    from test_screen_backends import load
+    directory=ROOT/'build/screen-backends'
+    backend=0x5000
+    syms=load(cpu,directory,'M4SCRN',backend)
+    cpu.setword(base+12,syms['S_ENTRY']+backend-0x8000)
+
+
+def set_position(cpu, base, table, bios, address):
+    # Directed fixtures set both sides of the portable cursor precondition.
+    cpu.setword(bios['M4CURSOR'],address)
+    offset=address-0xF800
+    cpu.mem[table['AM_ROWPOS']+base-0x8000]=offset//80
+    cpu.mem[table['AM_COLPOS']+base-0x8000]=offset%80
+
+
 def main():
     blob=(OUT/'ADM3A.RSX').read_bytes()
     code=(OUT/'adm3a.bin').read_bytes()
@@ -28,6 +44,7 @@ def main():
             value=int.from_bytes(code[slot:slot+2],'little')+base-0x8000
             relocated[slot:slot+2]=value.to_bytes(2,'little')
         cpu.mem[base:base+len(code)]=relocated
+        bind_backend(cpu,base,table)
         cpu.setword(1,LAYOUT['BIOS']+3)
         entry=table['AM_ENTRY']+base-0x8000
         def call(op,c=0):
@@ -92,6 +109,7 @@ def test_utility(code, table, slots, bios):
             value=int.from_bytes(code[slot:slot+2],'little')+base-0x8000
             relocated[slot:slot+2]=value.to_bytes(2,'little')
         cpu.mem[base:base+len(code)]=relocated
+        bind_backend(cpu,base,table)
         entry=table['AM_ENTRY']+base-0x8000
         output=bytearray()
         pauses=[]

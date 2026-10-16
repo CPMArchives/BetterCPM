@@ -83,3 +83,14 @@ The VT52 integration gates in this increment pass. ADM3A and ANSI personality
 conversion remain separate work, along with the portable starter template. The editable host template is a legacy
 teaching example; it does not become portable merely by changing its capability
 word.
+
+## Private cursor correction during ADM3A integration
+
+Provider 1.3 is 559 bytes with 96 relocations. The earlier write-and-hold cursor
+assumption was wrong: BDOS Function 178 requires a draw-and-advance operation.
+The frontend now draws a reverse cell and advances its logical position through
+the same path as ordinary output, including right-edge clamping. The 49,920
+parser cases still pass, and explicit cursor-cell/position cases cover both
+renderers. Live cpmsim command-line correction with Backspace, the exercise and
+WordStar edit/save pass. This supersedes the earlier no-advance assertion in the
+rendering test; it does not change the VT52 ordinary-output grammar.

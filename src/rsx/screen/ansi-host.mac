@@ -120,9 +120,17 @@ B_PUT:
         LD A,C
         AND 127
         CP 32
-        JP C,B_BAD
+        JR C,B_GLYPH
         CP 127
-        JP NC,B_BAD
+        JR C,B_PRINT
+B_GLYPH:
+        ; No portable ASCII glyph exists for these display codes. Render one
+        ; visible cell without allowing a literal control byte onto the wire.
+        LD A,C
+        AND 128
+        OR '?'
+        LD C,A
+B_PRINT:
         CALL B_ATTR
         LD A,C
         AND 127
@@ -153,13 +161,56 @@ B_SETATTR:
         POP BC
         RET
 B_EOL:
+        LD A,C
+        LD (B_FILL),A
         CALL B_ATTR
+        LD A,(B_FILL)
+        AND 128
+        JR NZ,B_REOL
         LD HL,B_K
         JP B_STR
+B_REOL:
+        CALL B_TAIL
+        JP B_POSITION
+B_TAIL:
+        LD A,(B_COL)
+        LD B,A
+        LD A,80
+        SUB B
+        LD B,A
+        JP B_SPACES
 B_EOS:
+        LD A,C
+        LD (B_FILL),A
         CALL B_ATTR
+        LD A,(B_FILL)
+        AND 128
+        JR NZ,B_REOS
         LD HL,B_J
         JP B_STR
+B_REOS:
+        CALL B_TAIL
+        LD A,(B_ROW)
+        INC A
+        LD (B_SCAN),A
+B_ELOOP:
+        LD A,(B_SCAN)
+        CP 24
+        JP NC,B_POSITION
+        LD HL,B_CSI
+        CALL B_STR
+        LD A,(B_SCAN)
+        INC A
+        CALL B_DEC
+        LD HL,B_COLONE
+        CALL B_STR
+        CALL B_BLANK
+        LD A,(B_SCAN)
+        INC A
+        LD (B_SCAN),A
+        JR B_ELOOP
+B_SCAN: DB 0
+B_COLONE: DB ';1H',0
 B_UP:
         LD A,C
         LD (B_FILL),A
@@ -215,6 +266,7 @@ B_BLANK:
         LD C,13
         CALL B_EMIT
         LD B,80
+B_SPACES:
 B_BLLOOP:
         LD A,(B_FILL)
         LD C,A

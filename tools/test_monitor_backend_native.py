@@ -24,6 +24,7 @@ def main():
     results=[]
     for stem,source,reference in [
         ('VT52','src/rsx/vt52.mac','build/vt52-development/vt52.bin'),
+        ('ADM3A','src/rsx/adm3a.mac','build/monitor-development/adm3a.bin'),
         ('M4SCRN','src/rsx/screen/model4.mac','build/screen-backends/M4SCRN.bin'),
         ('ANSISCRN','src/rsx/screen/ansi-host.mac','build/screen-backends/ANSISCRN.bin')]:
         work=Path(tempfile.mkdtemp(prefix=stem+'-',dir=out));disks=work/'disks';disks.mkdir()

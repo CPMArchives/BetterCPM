@@ -2,7 +2,7 @@
 """Compare assembled provider line operations with the selected original MM binary."""
 import argparse
 from test_mm_adm3a_reference import reference, DEFAULT
-from test_adm3a_foundation import ROOT, OUT, symbols
+from test_adm3a_foundation import ROOT, OUT, symbols, bind_backend, set_position
 from system_layout import LAYOUT
 from test_bios import Z80
 
@@ -28,6 +28,7 @@ def main():
             value=int.from_bytes(code[slot:slot+2],'little')+base-0x8000
             relocated[slot:slot+2]=value.to_bytes(2,'little')
         cpu.mem[base:base+len(code)]=relocated
+        bind_backend(cpu,base,syms)
         entry=syms['AM_ENTRY']+base-0x8000
         reverse_address=syms['AM_REVERSE']+base-0x8000
         for old in [0,128]:
@@ -48,7 +49,7 @@ def main():
                         original.mem[0xF0CB]=reverse
                         original.c=char
                         original.run(0xEFD9,limit=20000)
-                        cpu.setword(bios['M4CURSOR'],0xF800+80*row+col)
+                        set_position(cpu,base,syms,bios,0xF800+80*row+col)
                         cpu.mem[bios['M4COLUMN']]=col
                         cpu.mem[reverse_address]=reverse
                         cpu.a,cpu.c=0,char

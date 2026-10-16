@@ -258,16 +258,18 @@
       "artifact": "build/rsx/ADM3A.RSX",
       "status": "implemented",
       "targets": [
+        "z80pack",
         "trs80gp"
       ],
       "user": 0,
-      "role": "Model 4 MM-style ADM-3A monitor"
+      "role": "Portable MM-style ADM-3A personality; requires the matching screen backend"
     },
     {
       "name": "ADMTST.COM",
       "artifact": "build/utilities/ADMTST.COM",
       "status": "implemented",
       "targets": [
+        "z80pack",
         "trs80gp"
       ],
       "user": 0,

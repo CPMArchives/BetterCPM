@@ -90,12 +90,8 @@ S_POS:
         LD (M4COLUMN),A
         RET
 S_PUT:
-        LD A,C
-        AND 127
-        CP 32
-        JP C,S_BAD
-        CP 127
-        JP NC,S_BAD
+        ; A cell is a literal display byte. Preserve MM's complete video-byte
+        ; repertoire; controls are interpreted only by the personality.
         LD HL,(M4CURSOR)
         LD (HL),C
         LD A,(M4COLUMN)

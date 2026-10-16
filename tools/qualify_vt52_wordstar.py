@@ -40,12 +40,13 @@ def main():
             subprocess.run(['cpmrm','-T','raw','-f','bettercpm-default',str(image),'0:'+name],cwd=work,check=True)
         subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(image),str(path),'0:'+name],cwd=work,check=True)
     prompt=b'A0>_ '
+    monitor_prompt=b'A0>\x1b[7m '
     trace=session(args.simulator,disks,[
         (b'RSX LOAD ANSISCRN\r',prompt,30),
-        (b'RSX LOAD VT52\r',prompt,30),
-        (b'CLS\r',prompt,10),
+        (b'RSX LOAD VT52\r',monitor_prompt,30),
+        (b'CLS\r',monitor_prompt,10),
         (b'WS VT52TEST.TXT\r',b'WordStar',30),
-        (b'VT52 EDIT CHECK\x0b\x18',prompt,30),
+        (b'VT52 EDIT CHECK\x0b\x18',monitor_prompt,30),
         (b'RSX UNLOAD VT52\r',prompt,30),
         (b'RSX UNLOAD ANSISCRN\r',prompt,30),
         (b'BYE\r',b'System halted',10)],work/'transcript.bin')

@@ -48,7 +48,12 @@ class DistributionGates(unittest.TestCase):
             data=(root/scripts[0]['artifact']).read_bytes()
             self.assertEqual(b'RSX LOAD ADM3A' in data,expected)
             for name in ['ADM3A.RSX','ADMTST.COM']:
-                self.assertEqual(any(e['name']==name for e in entries),expected)
+                self.assertTrue(any(e['name']==name for e in entries))
+            self.assertEqual(b'RSX LOAD M4SCRN' in data,expected)
+            if expected:
+                self.assertLess(data.index(b'RSX LOAD M4SCRN'),data.index(b'RSX LOAD ADM3A'))
+                self.assertLess(data.index(b'RSX LOAD ADM3A'),data.index(b'CLS'))
+                self.assertLess(data.index(b'CLS'),data.index(b':VER /BANNER'))
 
     def test_portable_vt52_backend_manifest(self):
         root=Path(__file__).resolve().parents[1]

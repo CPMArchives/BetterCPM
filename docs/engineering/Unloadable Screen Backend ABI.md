@@ -25,7 +25,7 @@ Calls must be serialized and cannot reenter the backend.
 | --- | --- | --- |
 | 0..5 | Basic console operations | Existing MONRAW convention; 0 is basic output, 1 status, 2 input, 3 private cursor, 4 clear, 5 reset |
 | 6 | Position | B=row 0..23, C=column 0..79 |
-| 7 | Write cell | C=ASCII 32..126, optionally OR 80h for reverse; advance within row, clamped at column 79 |
+| 7 | Write cell | C=literal display byte, bit 7 selecting reverse; advance within row, clamped at column 79 |
 | 8 | Erase to end of line | C=20h normal blank or A0h reverse blank; cursor unchanged |
 | 9 | Erase to end of screen | Same fill and cursor rules |
 | 10 | Scroll screen up one line | Same fill and cursor rules; fill bottom line |
@@ -48,9 +48,15 @@ by a backend.
 
 ## Implementations
 
-`M4SCRN` writes Model 4 video RAM, with bit 7 as reverse. It imports the current
-BIOS's M4CURSOR and M4COLUMN addresses at build time, as the existing ADM3A
-implementation does. It must be distributed with that matching BIOS build;
+`M4SCRN` writes the literal display byte to Model 4 video RAM, with bit 7 as
+reverse. Cell output accepts all byte values; the personality interprets terminal
+controls before making a cell call. Printable ASCII glyphs (low seven bits
+32..126) are portable. Other glyphs are backend-specific: Model 4 preserves the
+video byte exactly, while the ANSI-host backend substitutes `?`, retaining bit
+7's reverse attribute and advancing once. It never emits a cell's control-code
+value as a host terminal control. This widens operation 7's original accepted
+range without changing valid ASCII calls or the SCRN 1.0 descriptor. It imports the current
+BIOS's M4CURSOR and M4COLUMN addresses at build time. It must be distributed with that matching BIOS build;
 it is not a portable hardware driver. Its cursor is presented by the
 personality's private-cursor operation; the personality must honor its own
 visibility state. Bell uses the existing Model 4 port-90 tone sequence.
@@ -60,8 +66,8 @@ assumes an ANSI-capable host endpoint with at least 80x24 cells and the normal
 full-screen scrolling region. It uses addressing, SGR normal/reverse, erase,
 insert/delete line, reverse index and cursor visibility. Line operations reset
 the host's scrolling region to the full screen; private application margins
-are not retained. Newly introduced lines are painted explicitly because host
-terminals differ in their treatment of reverse-video blank fills. Physical
+are not retained. Newly introduced lines and reverse EOL/EOS blanks are painted explicitly because
+host terminals differ in their treatment of reverse-video blank fills. Physical
 host terminal modes remain outside this ABI.
 
 These hardware/transport choices belong to the backend. A portable personality
@@ -71,8 +77,8 @@ must contain neither Model 4 addresses nor host ANSI output strings.
 
 Run `python3 tools/build_screen_backends.py` after building the Model 4 BIOS.
 Payloads and listings go in `build/screen-backends/`; carriers are also copied
-to `build/rsx/`. Model 4 payload: 372 bytes, 512 allocated; ANSI-host payload:
-523 bytes, 768 allocated. The allocation includes carrier/runtime overhead and
+to `build/rsx/`. Model 4 payload: 359 bytes, 512 allocated; ANSI-host payload:
+620 bytes, 768 allocated. The allocation includes carrier/runtime overhead and
 alignment. These are optional loaded costs, with zero permanent growth.
 
 Run `tools/test_screen_backends.py` with the environment described in

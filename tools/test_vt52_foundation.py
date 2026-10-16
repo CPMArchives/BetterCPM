@@ -9,7 +9,7 @@ OUT=ROOT/'build/vt52-development'
 
 
 def symbols(path):
-    return {name:int(address,16) for address,name in re.findall(r'^([0-9a-f]{4})\s+.*?\b([A-Z][A-Z0-9_]*):',path.read_text(),re.M)}
+    return {name:int(address,16) for address,name in re.findall(r'^([0-9a-f]{4})\s+.*?\b([A-Z][A-Z0-9_]*):',path.read_text(errors='replace'),re.M)}
 
 
 def main():

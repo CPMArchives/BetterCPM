@@ -318,19 +318,21 @@ exit [lindex $status 3]
         private = out / 'boot-test.dmk'
         shutil.copy2(image, private)
         command = [str(emulator), '-m4', '-batch', '-turbo', '-ktx',
-                   '-d0', str(private), '-id', '15000', '-it']
-        command += key_args('CPX LIST\r')+['-id','3000','-it']
-        command += key_args('VER\r')+['-id','3000','-it']
-        command += key_args('ED /VER\r')+['-id','3000','-it','-ix']
-        launch(command, cwd=out, timeout=180)
+                   '-d0', str(private), '-itime', '15000',
+                   '-iw', 'Type TYPE README.TXT for more', '-id', '6000', '-it']
+        command += key_args('CPX LIST\r')+['-iw','RCP','-id','6000','-it']
+        command += key_args('VER\r')+['-iw',identity,'-id','6000','-it']
+        command += key_args('ED /VER\r')+['-iw',ed_identity,'-id','6000','-it','-ix']
+        launch(command, cwd=out, timeout=300)
         initial = screen(out/'trs80-text-0.bin')
+        cpx = screen(out/'trs80-text-1.bin')
         final = screen(out/'trs80-text-3.bin')
-        (out/'boot.txt').write_text(initial+'\n'+final)
+        (out/'boot.txt').write_text(initial+'\n'+cpx+'\n'+final)
         if ed_identity not in final:
             raise ValueError('Model 4 installed ED identity missing; see boot.txt')
         if 'BetterCP/M' not in initial:
             raise ValueError('Model 4 cold startup banner missing; see boot.txt')
-        if 'A0>' not in initial or 'BetterCP/M' not in final or 'RCP' not in final:
+        if 'A0>' not in initial or 'BetterCP/M' not in final or 'RCP' not in cpx:
             raise ValueError('Model 4 boot/system identity missing; see boot.txt')
     return 'PASS'
 
