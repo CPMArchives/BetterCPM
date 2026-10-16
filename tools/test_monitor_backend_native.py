@@ -26,11 +26,24 @@ def main():
         ('VT52','src/rsx/vt52.mac','build/vt52-development/vt52.bin'),
         ('ADM3A','src/rsx/adm3a.mac','build/monitor-development/adm3a.bin'),
         ('M4SCRN','src/rsx/screen/model4.mac','build/screen-backends/M4SCRN.bin'),
-        ('ANSISCRN','src/rsx/screen/ansi-host.mac','build/screen-backends/ANSISCRN.bin')]:
+        ('ANSISCRN','src/rsx/screen/ansi-host.mac','build/screen-backends/ANSISCRN.bin'),
+        ('R3KPRE','src/system/r3kpre.mac','build/system/r3kpre.bin'),
+        ('R3FINAL','src/system/r3final.mac','build/system/r3final.bin'),
+        ('R3SCHED','src/system/rsxsched.mac','build/system/r3sched.bin')]:
         work=Path(tempfile.mkdtemp(prefix=stem+'-',dir=out));disks=work/'disks';disks.mkdir()
         shutil.copy2(SYSTEM,disks/'drivea.dsk')
         for drive in 'bcd':blank(TEMPLATE,disks/f'drive{drive}.dsk')
         text=(ROOT/source).read_text().replace('        INCLUDE backend.inc',bindings)
+        if stem.startswith('R3'):
+            from build_rsx_runtime_overlays import source as overlay_source
+            from system_layout import LAYOUT
+            symbol,address={'R3KPRE':('KPBASE',LAYOUT['RSX']),
+                'R3FINAL':('RFBASE',LAYOUT['RSX']),
+                'R3SCHED':('RSBASE',LAYOUT['CONFIG']+0x120)}[stem]
+            text=overlay_source(Path(source).name,symbol,address)
+            # z80asm fills DS with FF, native ZSM4/LINK with zero. Make the
+            # cross-assembler's padding explicit for byte-parity comparison.
+            text=re.sub(r'\bDS\s+(\d+)',lambda m:'DB '+','.join(['0FFH']*int(m[1])),text)
         if '        ASEG' in text:
             text,count=re.subn(r'        ASEG\n        ORG\s+([^\n]+)',r'        CSEG\n        .PHASE \1',text,count=1)
             assert count==1

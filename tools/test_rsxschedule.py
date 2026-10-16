@@ -77,6 +77,41 @@ def rejected_mixed_direction() -> None:
     assert cpu.mem[0x8000:0x8400] == before
 
 
+def repair_count_boundaries() -> None:
+    # Exercise the actual scheduler/mover together. Both byte-length conversion
+    # and copying must retain the carry across 127 -> 128 words.
+    for count in (0, 1, 127, 128, 144, 255):
+        for short in (False, True):
+            cpu = Z80((ROOT/'build/bios/bios.bin').read_bytes())
+            for address, name in [(MOVER, 'rsxmover.bin'), (SCHEDULER, 'rsxschedule.bin')]:
+                image = (ROOT/'build/system'/name).read_bytes()
+                cpu.mem[address:address+len(image)] = image
+            old, new, size = 0x8000, 0x8400, 0x400
+            original = bytearray(b'Z'*size)
+            for i in range(count):original[i*2:i*2+2] = (old+0x300).to_bytes(2, 'little')
+            cpu.mem[old:old+size] = original
+            slots = b''.join((i*2).to_bytes(2, 'little') for i in range(count))
+            slot_base = 0x6800
+            cpu.mem[slot_base:slot_base+len(slots)] = slots
+            cpu.mem[PLAN:PLAN+8] = struct.pack('<HHHBB', old, new, size, 1, 0)
+            cpu.mem[DESCRIPTORS:DESCRIPTORS+3] = struct.pack('<HB', slot_base, count)
+            capacity = 8+2*count-int(short)
+            cpu.mem[REQUEST:REQUEST+13] = struct.pack('<HHBBHHH', PLAN, DESCRIPTORS, 1, 0, SCRATCH, capacity, MOVER)+b'\xcc'
+            cpu.mem[SCRATCH+capacity:SCRATCH+capacity+8] = b'G'*8
+            before = bytes(cpu.mem[old:new+size])
+            cpu.de=REQUEST;cpu.sp=0x5F00;cpu.run(SCHEDULER, limit=100000)
+            assert cpu.sp==0x5F00,(count,short,hex(cpu.sp))
+            if short:
+                assert cpu.a==255 and bytes(cpu.mem[old:new+size])==before, count
+                assert cpu.mem[REQUEST+12]==0xCC
+            else:
+                expected=bytearray(original)
+                for i in range(count):expected[i*2:i*2+2]=(new+0x300).to_bytes(2, 'little')
+                assert cpu.a==0 and cpu.mem[REQUEST+12]==1, count
+                assert bytes(cpu.mem[new:new+size])==expected, count
+            assert bytes(cpu.mem[SCRATCH+capacity:SCRATCH+capacity+8])==b'G'*8, count
+
+
 def main() -> None:
     # Upward compaction must run in profile order or the lower image overwrites
     # the source of the higher image before it can be preserved.
@@ -84,8 +119,9 @@ def main() -> None:
     # Downward movement uses reverse profile order for the symmetric reason.
     run((0x8100, 0x8000), (0x8000, 0x7F00))
     rejected_mixed_direction()
+    repair_count_boundaries()
     print("RSX scheduler orders multiple upward/downward STATEFUL moves safely "
-          "and rejects mixed-direction plans before mutation")
+          "and rejects mixed-direction plans before mutation; repair counts 0/1/127/128/144/255 pass with guarded capacity checks")
 
 
 if __name__ == "__main__":
