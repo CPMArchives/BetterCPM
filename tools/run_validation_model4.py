@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Boot a private Model 4 System Disk and capture small returning suite groups."""
+"""Boot a private Model 4 System Disk and capture selected returning suite groups."""
 import argparse
 import hashlib
 import json
@@ -49,7 +49,7 @@ def main():
     p.add_argument('--baseline',type=Path,required=True)
     p.add_argument('--suite',type=Path,required=True)
     p.add_argument('--output',type=Path,required=True)
-    p.add_argument('--group',choices=('small','entry','ccp'),default='small')
+    p.add_argument('--group',choices=('small','entry','ccp','bios-error'),default='small')
     a=p.parse_args()
     report=json.loads((a.baseline/'report.json').read_text())
     original=a.baseline/report['image']
@@ -58,7 +58,9 @@ def main():
     a.output.mkdir(parents=True,exist_ok=True)
     work=Path(tempfile.mkdtemp(prefix='model4-returning-',dir=a.output.resolve()))
     raw=extract_raw(original.read_bytes());programs={}
-    names=('CCPTEST','ENTRYTST') if a.group=='ccp' else (('ENTRYTST',) if a.group=='entry' else ('CPUTEST','ECOTEST','DISKTEST'))
+    names=(('BIOSTEST','ERRTEST') if a.group=='bios-error' else
+           ('CCPTEST','ENTRYTST') if a.group=='ccp' else
+           ('ENTRYTST',) if a.group=='entry' else ('CPUTEST','ECOTEST','DISKTEST'))
     for name in names:
         program=a.suite/f'suite/build/{name}.COM'
         assert sha(program)==hashes[name+'.COM']
@@ -77,6 +79,9 @@ def main():
         checks=[('ENTRYTST /GROUP:REQUIRED','0617  ','Summary: 25 pass, 0 fail, 0 error')]
     if a.group=='ccp':
         checks=[('CCPTEST /GROUP:REQUIRED','0621  ','Summary: 12 pass, 0 fail, 0 error'),('ENTRYTST /GROUP:REQUIRED','0617  ','Summary: 25 pass, 0 fail, 0 error')]
+    if a.group=='bios-error':
+        checks=[('BIOSTEST /SAFE','0622  ','Summary: 5 pass, 0 fail, 0 error'),
+                ('ERRTEST /SAFE','0410  ','Summary: 5 pass, 0 fail, 0 error')]
     args=[str(DEFAULT_EMULATOR),'-m4','-batch','-turbo','-ktx','-d0',str(image),'-d1',str(secondary),
           '-itime','15000','-iw','Type TYPE README.TXT for more','-id','6000','-it']
     for index,(command,last_row,expected) in enumerate(checks):
@@ -89,7 +94,7 @@ def main():
         text=screen(work/f'trs80-text-{index}.bin')
         (work/f'case-{index}.txt').write_text(text+'\n')
         captures.append({'command':command,'expected_summary':expected,'status':'PASS' if expected in text else 'FAIL','screen':f'case-{index}.txt'})
-    audit=audit_files(original,image,report,work) if a.group in ('entry','ccp') else None
+    audit=audit_files(original,image,report,work) if a.group in ('entry','ccp','bios-error') else None
     assert sha(original)==report['sha256']
     result={'baseline_sha256':report['sha256'],'programs':programs,'fixture_sha256':sha(fixture),
             'emulator_sha256':sha(DEFAULT_EMULATOR),'captures':captures,'file_audit':audit,
