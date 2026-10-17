@@ -28,12 +28,12 @@ The source checkout was clean and was not modified. A private clone at
 | Stage | Status | Evidence / next work |
 | --- | --- | --- |
 | 1. Clean builds, contents, boot, baseline console/memory | In progress; initial gates pass | Both distributions pass build/boot/integrity; focused BIOS/CCP and native editing/unload pass. Additional console/startup-failure/repeated-return cases remain. |
-| 2. Fresh conformance suite | Partial groups pass on both platforms | Fresh ENTRYTST, CPUTEST, ECOTEST, BDOSTEST required, DIRTEST safe, FILETEST required and RANDTEST safe results below. Selected console, disk/BIOS/error and native Model 4 checks also pass below; remaining cases and CCP procedures are still pending; V004 passes the cpmsim and manual-native checks with the post-run audit below. V006 replaces invalid native FILE/BDOS fixture evidence with corrected 68-pass and 56-pass runs. V007 adds native RANDTEST: 39 pass, 2 manual not-run, with bounded exhaustion media. |
-| 3. CPX/RSX lifecycle, relocation, ROM protection | Protected ROM candidate campaigns pass | Fresh V002/V003 guarded ROM, lifecycle, workspace and stack results below; wider RAM/native lifecycle coverage remains. |
-| 4. Resident/transient command integration | Partial; four resident ecology procedures pass on cpmsim | Selectors, protection, prompts, explicit transient invocation, feature diagnostics and caller-state restoration. |
-| 5. Utility operations and failure recovery | Not run | System-disk utilities only; disposable images and independent filesystem inspection. |
-| 6. Monitors and applications | Not run | Fresh cross-platform campaign; do not substitute earlier feature-specific results. |
-| 7. End-to-end release workflows | Not run | User sessions, configuration persistence, system export/install and reboot. |
+| 2. Fresh conformance suite | Selected returning groups pass on both platforms | V010–V012 refresh production BDOS/file/random and native DIR/CCP/entry/CPU/ecology/disk-safe, BIOS/error-safe and selected console evidence. Manual, device, terminal-outcome and applicability gaps remain explicitly open. |
+| 3. CPX/RSX lifecycle, relocation, ROM protection | Earlier guarded campaigns pass; refresh incomplete | Production integration passes independent reference/relocation checks and complete dependent builds. Fresh integrated guarded-ROM execution and wider RAM/native lifecycle coverage remain. |
+| 4. Resident/transient command integration | Partial; fresh native file workflow passes | V013 covers shipped resident/transient COPY/REN/TYPE/ERA and PIP across users. Broader selectors, protection, recovery and caller-state cases remain. |
+| 5. Utility operations and failure recovery | Partial; selected shipped ED/CONFIG checks pass | V013–V014 verify native ED save/backup and cpmsim ED E/Q/H plus CONFIG startup decline/save. DUP/SYSGEN/media operations and broader failure recovery remain. |
+| 6. Monitors and applications | Selected cross-platform regressions pass | V013–V014 exercise all three shipped monitor/backend pairs, native file workflows and cpmsim TYPE paging/file boundaries. Broader applications, audio/manual/device and exhaustive protocol coverage are not implied. |
+| 7. End-to-end release workflows | Partial; CONFIG startup cold boot passes | V014 confirms saved startup executes only on next cold boot. Other complete user sessions, export/install/reboot and release workflows remain. |
 | 8. Closure and final acceptance reruns | Not run | Resolve failures, identify accepted limits, rebuild and rerun against final revision/images. |
 
 A status of not run is not a pass. Observations and explicit suite exclusions
