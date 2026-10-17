@@ -1601,3 +1601,15 @@ The runner verifies the pinned suite binary and unchanged reference image;
 these are returning-group observations, not independent post-run filesystem
 acceptance or completion of deferred terminal outcomes. Native Model 4 and
 full release qualification remain in progress.
+
+
+The complete isolated two-platform distribution build subsequently exits zero.
+Accepted generation:
+`/private/tmp/bettercpm-v010-production-r2/releases/release-833d1b8129eb-6492f1365985/`.
+Both z80pack and trs80gp System Disks pass their distribution qualification:
+30 files/148K free and 29 files/596K free respectively, with no planned manifest
+items missing. Build transcript: `/private/tmp/random-production-r2.log`.
+This closes the dependent distribution-build gate, including rebuilt package
+and CONFIG references; it does not close native Model 4 conformance, independent
+post-run filesystem audits, or broader runtime qualification. The generation
+was captured from 833d1b8 before the subsequent documentation-only commits.
