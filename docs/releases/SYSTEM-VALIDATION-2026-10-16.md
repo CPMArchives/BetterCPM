@@ -28,12 +28,12 @@ The source checkout was clean and was not modified. A private clone at
 | Stage | Status | Evidence / next work |
 | --- | --- | --- |
 | 1. Clean builds, contents, boot, baseline console/memory | In progress; initial gates pass | Both distributions pass build/boot/integrity; focused BIOS/CCP and native editing/unload pass. Additional console/startup-failure/repeated-return cases remain. |
-| 2. Fresh conformance suite | Partial groups pass on both platforms | Fresh ENTRYTST, CPUTEST, ECOTEST, BDOSTEST required, DIRTEST safe, FILETEST required and RANDTEST safe results below. Selected console, disk/BIOS/error and native Model 4 checks also pass below; remaining cases and CCP procedures are still pending; V004 passes the cpmsim and manual-native checks with the post-run audit below. V006 replaces invalid native FILE/BDOS fixture evidence with corrected 68-pass and 56-pass runs. V007 adds native RANDTEST: 39 pass, 2 manual not-run, with bounded exhaustion media. |
-| 3. CPX/RSX lifecycle, relocation, ROM protection | Protected ROM candidate campaigns pass | Fresh V002/V003 guarded ROM, lifecycle, workspace and stack results below; wider RAM/native lifecycle coverage remains. |
-| 4. Resident/transient command integration | Partial; four resident ecology procedures pass on cpmsim | Selectors, protection, prompts, explicit transient invocation, feature diagnostics and caller-state restoration. |
-| 5. Utility operations and failure recovery | Not run | System-disk utilities only; disposable images and independent filesystem inspection. |
-| 6. Monitors and applications | Not run | Fresh cross-platform campaign; do not substitute earlier feature-specific results. |
-| 7. End-to-end release workflows | Not run | User sessions, configuration persistence, system export/install and reboot. |
+| 2. Fresh conformance suite | Selected returning groups pass on both platforms | V010–V012 refresh production BDOS/file/random and native DIR/CCP/entry/CPU/ecology/disk-safe, BIOS/error-safe and selected console evidence. Manual, device, terminal-outcome and applicability gaps remain explicitly open. |
+| 3. CPX/RSX lifecycle, relocation, ROM protection | Earlier guarded campaigns pass; refresh incomplete | Production integration passes independent reference/relocation checks and complete dependent builds. Fresh integrated guarded-ROM execution and wider RAM/native lifecycle coverage remain. |
+| 4. Resident/transient command integration | Partial; fresh native file workflow passes | V013 covers shipped resident/transient COPY/REN/TYPE/ERA and PIP across users. Broader selectors, protection, recovery and caller-state cases remain. |
+| 5. Utility operations and failure recovery | Partial; selected shipped ED/CONFIG checks pass | V013–V014 verify native ED save/backup and cpmsim ED E/Q/H plus CONFIG startup decline/save. DUP/SYSGEN/media operations and broader failure recovery remain. |
+| 6. Monitors and applications | Selected cross-platform regressions pass | V013–V014 exercise all three shipped monitor/backend pairs, native file workflows and cpmsim TYPE paging/file boundaries. Broader applications, audio/manual/device and exhaustive protocol coverage are not implied. |
+| 7. End-to-end release workflows | Partial; CONFIG startup cold boot passes | V014 confirms saved startup executes only on next cold boot. Other complete user sessions, export/install/reboot and release workflows remain. |
 | 8. Closure and final acceptance reruns | Not run | Resolve failures, identify accepted limits, rebuild and rerun against final revision/images. |
 
 A status of not run is not a pass. Observations and explicit suite exclusions
@@ -1879,3 +1879,79 @@ backend regression, broader utility/application scenarios (including TYPE paging
 and CONFIG/DUP/SYSGEN persistence/media operations), and later campaign stages
 remain separate work. Audio/manual/device tests remain deferred as recorded;
 whole-system validation is not complete.
+
+
+## V014 — cpmsim shipped monitors and broader applications
+
+Native results are pushed in PR 375. These cpmsim runs retain all shipped
+programs/providers from the same qualified production generation. New runners
+copy the release images, add only disposable data fixtures and independently
+compare all 30 shipped files with their manifest hashes and original contents.
+All accepted runs below pass final filesystem checks, and the immutable
+baseline remains unchanged. Terminal rendering uses pyte 0.8.2 from
+`/private/tmp/vt52-qualification-venv/`; it is a software terminal oracle,
+not physical-terminal qualification. No OS change was required.
+
+### Shipped personality + ANSISCRN pairs — PASS
+
+Evidence under `/private/tmp/bettercpm-v014-cpmsim/`:
+
+| Pair | Evidence |
+| --- | --- |
+| ADM3A + ANSISCRN | adm3a-0c907kgn |
+| VT52 + ANSISCRN | vt52-jkg7xyq5 |
+| ANSI + ANSISCRN | ansi-jfcgyyii |
+
+All three verify loaded-pair listings, rendered first-page position, shipped
+test-utility completion, unload of both providers and restored 53K TPA.
+ADM3A checks cursor queries, visibility controls and keyboard input; VT52 checks
+its identification reply and ANSI-host erase/address output without leaked
+VT52 addresses. ANSI checks rendered reverse attributes, erased suffix and
+parser reset. These are selected RAM-profile backend regressions, not guarded
+ROM, audio, exhaustive protocol or physical host-terminal certification.
+
+### TYPE with ANSI monitor — PASS
+
+Accepted evidence under `/private/tmp/bettercpm-v014-applications-r2/`:
+
+- `type-paging-jqfddvhf`: Ctrl-C/Space forward, comma/Ctrl-R back, EOF no-op
+  bell and Ctrl-Q quit. Hidden bytes after Ctrl-Z are not displayed and the
+  source file remains unchanged.
+- `type-boundaries-4kxkaaq1`: the continuous final page includes both file
+  banners; `>` brings the second banner to row zero even at final EOF, and
+  `<` restores the first banner to row zero. Both sources remain unchanged.
+
+The first checker incorrectly required the initial display's banner on row
+zero. The initial display has a leading blank line; the navigation pages do
+put the selected banner on row zero. Retained captures establish that distinction.
+The corrected checker allows an initial margin but keeps strict row-zero
+assertions for `>` and `<`. No TYPE implementation change was made.
+
+### ED and CONFIG lifecycle — PASS
+
+Accepted evidence under `/private/tmp/bettercpm-v014-lifecycle/`:
+
+| Case | Evidence | Checked behavior |
+| --- | --- | --- |
+| ED E | ed-save-bcadn6_n | User-7 save, original backup, user-0 sentinel, output-DU exit |
+| ED Q | ed-quit-xab4grdl | Discard preserves original, no backup/work file, caller-DU exit |
+| ED H then E | ed-head-ifhlmh8x | Save/restart composition and final backup contents |
+| CONFIG decline | config-startup-N-j68wv63f | Startup record unchanged |
+| CONFIG save | config-startup-Y-iwuh_3e6 | Verified startup save; VER executes on next cold boot |
+
+ED's first checker expected A0 after successful E. The current ED spec section
+39 preserves output-DU exit behavior; the observed B7 prompt is correct. The
+corrected checker requires B7 after E and A0 after Q, then explicitly returns
+to A0 before shutdown. The earlier timeout/transcript is retained as an
+instrument failure, not an OS failure.
+
+ED input, backups and the user-0 sentinel are independently extracted and
+compared; no CASE.$$$ remains. CONFIG saves do not immediately execute the
+new command. An independent reserved-area comparison confirms that system
+bytes outside the two startup records remain unchanged. All 30 shipped files
+and final filesystems pass in every accepted scenario. Aggregate logs,
+executed runners, transcripts and per-case results are retained.
+
+Broader DUP/SYSGEN/media-operation regression, additional utility scenarios,
+guarded-ROM and manual/device outcomes remain separate campaign work.
+These successful subsets do not complete system-wide validation.
