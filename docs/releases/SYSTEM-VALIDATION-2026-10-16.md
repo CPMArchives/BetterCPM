@@ -1532,3 +1532,52 @@ cross-platform/ROM and error-recovery qualification, and broader regression
 coverage of unclosed and cross-extent write/zero-fill/read lifecycles. The two
 native manual read-only outcomes remain unqualified for this candidate.
 These measurements do not close all write-performance concerns.
+
+
+### Deferred non-automated coverage after PR 370
+
+PR 370 is merged. At the user's request, tests not completed automatically
+are recorded here for later attention; no operator action is requested now.
+Neither the private candidate results nor the following deferrals establish
+whole-system acceptance. The production BDOS integration remains in progress.
+
+| Coverage | Outstanding evidence / disposition |
+| --- | --- |
+| Native FILETEST/RANDTEST 0368, 0369 | File-read-only sequential/random writes, recovery to the CCP, and independent unchanged-disk audits. The two aggregate not-run rows remain not run. Earlier V005 cpmsim external outcomes passed; they do not qualify the new BDOS integration. |
+| Native DISKTEST 0379–0384 | Software-protected-disk Make, sequential/random write, Delete, Rename and post-protection mutation terminal outcomes, recovery and unchanged-disk audits. Earlier cpmsim external outcomes passed; native equivalents remain outstanding. |
+| BDOSTEST 0143, 0420, 0519 | Three manual REQUIRED cards: prepared SCRATCH /BLANK fixture, buffered-input session, and BIOS resource inspection. Corrected native required runs explicitly leave these not run. |
+| BDOSTEST 0154 | Unavailable-drive terminal procedure, classified as a manual/profile case; applicability and accepted platform outcome must be recorded separately. |
+| Native ECOTEST 0569, 0575, 0577, 0579 | Real-CCP semantic, SAVE, TYPE-byte-stream and ordinary command-recovery procedures. Earlier V005 cpmsim external evidence exists; corresponding native transcripts remain outstanding. |
+| Remaining console, BIOS, error, CCP and device/media procedures | Retain the individual observed/not-run results in the preceding ledger. Review applicability and perform required operator/device procedures later; optional, unsupported and out-of-scope rows must be distinguished from missing required coverage. |
+
+This is the deferred manual/external-evidence register, not a claim that every
+catalog not-run row is an applicable manual test. Visual monitor and application
+checks and the other later campaign stages also remain separate from the
+returning conformance tests. Automated production rebuild, ROM, recovery and
+regression qualification continues independently; a skipped test is never
+converted to a pass merely because another platform or an earlier image passed.
+
+
+## V010 — production same-extent integration, qualification in progress
+
+Promote the audited same-extent path to production BDOS 1.8 (API unchanged).
+BDOS remains exactly 3454 bytes, with frozen mutable-state/stack addresses and
+53K unloaded TPA preserved. The historical prototype generator now directs
+integrated trees to the production test instead of reapplying the patch.
+
+The production guarded decoder/activation matrix passes, including 27,648
+position/transition cases, the grouped activation/comparison checks and RES
+flag preservation. Public service inventory and injected I/O recovery checks
+pass. Recovery stack high-water is 28 of 40 bytes, identical to the baseline;
+the normal foundation measurement of 26 bytes is not a universal maximum.
+
+The first dependent rebuild stopped at stale ROM reference-count expectations.
+Removing four wrapper CALL operands and one absolute JP operand reduces the
+inventory by five words. The updated checks retain independent decoding,
+classification, target validation and shifted-layout checks: 794 references,
+470 immutable-ROM targets and 324 live-RAM targets. Independent relocation
+verification passes with 783 changed words, 11 already-final words and 1548
+changed bytes. This was a qualification expectation failure, not a runtime
+failure. A fresh complete distribution rebuild and rebuilt-image runtime
+qualification remain outstanding; private V009 image results do not substitute
+for them. Deferred manual coverage is listed above and remains unqualified.

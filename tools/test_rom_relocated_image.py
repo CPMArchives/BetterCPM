@@ -12,14 +12,14 @@ from pathlib import Path
 from build_rom_relocated_image import build
 
 EXPECTED_COMPONENTS = {
-    "bdos": 501,
+    "bdos": 496,
     "bios": 124,
     "disk": 82,
     "extensions": 55,
     "fileloader": 13,
     "gateway": 24,
 }
-EXPECTED_CLASSES = {"immutable-rom": 475, "live-ram": 324}
+EXPECTED_CLASSES = {"immutable-rom": 470, "live-ram": 324}
 
 
 def digest(data: bytes) -> str:
@@ -56,12 +56,12 @@ def main() -> None:
     if (manifest["boot_integrated"] is not False or
             manifest["protected_xip_qualified"] is not False):
         raise AssertionError("relocation artifact overclaims later qualification")
-    if (manifest["relocation_words"] != 799 or
-            manifest["changed_words"] != 788 or
+    if (manifest["relocation_words"] != 794 or
+            manifest["changed_words"] != 783 or
             manifest["unchanged_final_words"] != 11 or
-            manifest["changed_bytes"] != 1558):
+            manifest["changed_bytes"] != 1548):
         raise AssertionError("accepted relocation totals changed")
-    if (manifest["accounted_layout_words"] != 818 or
+    if (manifest["accounted_layout_words"] != 813 or
             manifest["mutable_template_fixups"] != 16 or
             manifest["mutable_already_final_words"] != 3):
         raise AssertionError("mutable layout-word accounting changed")
@@ -108,9 +108,10 @@ def main() -> None:
         reversed_image[offset:offset + 2] = int(reference["old_target"]).to_bytes(2, "little")
     if bytes(reversed_image) != source:
         raise AssertionError("inverse relocation does not reproduce packed source")
-    print("Relocated ROM verified: all 818 layout words accounted; 799 disjoint "
-          "ROM words, 789 changed values, 1560 changed bytes, and no changes "
-          "outside inventoried operands")
+    print(f"Relocated ROM verified: all {manifest['accounted_layout_words']} layout words accounted; "
+          f"{manifest['relocation_words']} disjoint ROM words, "
+          f"{manifest['changed_words']} changed values, {manifest['changed_bytes']} changed bytes, "
+          "and no changes outside inventoried operands")
 
 
 if __name__ == "__main__":
