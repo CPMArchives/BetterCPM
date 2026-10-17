@@ -1581,3 +1581,23 @@ changed bytes. This was a qualification expectation failure, not a runtime
 failure. A fresh complete distribution rebuild and rebuilt-image runtime
 qualification remain outstanding; private V009 image results do not substitute
 for them. Deferred manual coverage is listed above and remains unqualified.
+
+
+### Fresh production cpmsim observations
+
+Native ZSM4/DRI LINK produces 3454 byte-identical production BDOS 1.8 bytes
+(`NATIVE-BDOS-BUILD.LOG`). The fresh isolated z80pack candidate under
+`/private/tmp/bettercpm-v010-production-r2/work/candidate-bettercpm-dist-34e1j4kw/z80pack/`
+was used for independent private-copy returning runs. Evidence under
+`/private/tmp/bettercpm-v010-production-runtime/`:
+
+| Group | Evidence directory | Pass | Not run | Fail/error rows |
+| --- | --- | ---: | ---: | ---: |
+| FILETEST /GROUP:REQUIRED | filetest-ej22jbix | 68 | 2 | 0 |
+| RANDTEST /SAFE | randtest-olkp97ng | 39 | 2 | 0 |
+| BDOSTEST /GROUP:REQUIRED | bdostest-l_rw1g3a | 56 | 3 | 0 |
+
+The runner verifies the pinned suite binary and unchanged reference image;
+these are returning-group observations, not independent post-run filesystem
+acceptance or completion of deferred terminal outcomes. Native Model 4 and
+full release qualification remain in progress.
