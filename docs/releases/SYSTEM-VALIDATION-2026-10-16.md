@@ -2362,3 +2362,43 @@ protection, payload/filesystem preservation and reboot workflow. It does not
 claim fresh exhaustive interactive/cross-format/source-error/write-failure
 coverage, real-floppy fault behavior or power-loss safety. Broader utility and
 manual/device coverage remains open; system-wide validation is not complete.
+
+
+## V021 — shipped cpmsim ERA selection, protection and destructive erase
+
+Executed the unchanged V017 production System Disk with disposable secondary
+media. The resident/transient runner completed 21 sessions: resident multi-user
+selection and unconditional RO/SYS protection, unsupported-option `Use :ERA`
+diagnostic, transient branch-specific explicit protection admission, negated
+aliases, unattended RO skipping, one RO authorization with `/C`, quiet-mode
+confirmation, cancellation, invalid input before mutation, duplicate DU scope,
+per-file confirmation and exact-file confirmation. Independent directory reads
+and surviving-file byte comparisons verified the results after each operation.
+
+The destructive runner verified multi-extent allocated-block zeroing, exact
+`E5 00 ... 00` directory scrubbing, cross-user shared-block preservation while
+zeroing unshared blocks, explicitly admitted RO deletion with `/R`, empty-file
+and batch deletion, cancellation with byte-identical media, and one combined RO
+and destructive authorization. The shared-block fixture deliberately introduces
+a cross-link before deletion; its surviving owner's block is checked byte for
+byte. No modified ERA binary or injected BDOS wrapper is used in these runs.
+
+Both runners audited all 30 shipped files against the manifest and immutable
+baseline, and checked both System Disk and final secondary filesystems clean.
+No production utility or OS change was required.
+
+Evidence:
+- `/private/tmp/bettercpm-v021-r2-era-protection/result.json`
+- `/private/tmp/bettercpm-v021-era-destructive/result.json`
+
+Each directory retains the executed runner, transcripts, fixture bytes, disks,
+file audits and filesystem results. The initial ordinary run completed all
+operation assertions but failed at the runner's final filesystem command because
+`-n` followed the image argument; this was a harness error. The fresh r2 run
+corrected option ordering and included the resident cases. It is the accepted
+ordinary result.
+
+Scope is selected shipped cpmsim utility workflows. Native Model 4 repetition,
+injected I/O failures, raw-write recovery, physical devices and power-loss
+behavior are not newly qualified here. Stages 4/5 remain partial; system-wide
+validation is not complete.
