@@ -1613,3 +1613,64 @@ This closes the dependent distribution-build gate, including rebuilt package
 and CONFIG references; it does not close native Model 4 conformance, independent
 post-run filesystem audits, or broader runtime qualification. The generation
 was captured from 833d1b8 before the subsequent documentation-only commits.
+
+
+## V011 — native production integration qualification
+
+PR 371 is merged as `7e905ae`. All tracked source/tool/metadata inputs from
+accepted generation `release-833d1b8129eb-6492f1365985` match the merged tree;
+subsequent differences were documentation only. Native runs use private copies
+of that generation, System Disk SHA-256
+`5d562d5cbd00eaebab8870251d7f233c480bebf5aeb13edf6a564d77366d6312`.
+The pinned suite binaries are unchanged. Evidence is retained under
+`/private/tmp/bettercpm-v010-native/`.
+
+### Native RANDTEST — PASS
+
+`randtest-d8r_3fxj` completes RANDTEST /SAFE with 39 pass, zero fail/error,
+and two manual read-only cards not run. The final capture retains the aggregate
+summary and trailing rows, not a complete scrolling transcript. Before boot,
+the independent raw-block decoder checks canonical file contents, dense
+extents, 16-bit allocation maps, RO attributes, one free B: allocation block,
+and the completely full D: fixture. Its corruption-rejection self-test passes.
+
+Post-run B:/C:/D: filesystem checks pass. The separate retained
+`audit-inputs.py` re-decodes every original input against source bytes and
+checks exact live-file inventories: all input files survive unchanged, B:
+again has one free block, and D: remains byte-identical to its full fixture.
+All 29 shipped A: files match their manifest hashes and remain unchanged.
+The immutable baseline hash is unchanged. Native required FILETEST is next;
+other groups and the deferred manual register remain open.
+
+
+### Native FILETEST — PASS
+
+`filetest-b6_wiwvx` completes FILETEST /GROUP:REQUIRED with 68 pass, zero
+fail/error and two manual cards not run. The runner's independent raw fixture
+preflight, explicit-geometry post-run filesystem checks, unchanged-full-D:
+check and all 29 shipped-file manifest/content checks pass. The retained
+post-run `audit-inputs.py` additionally decodes every original B:/C:/D: input
+against its canonical source and checks exact live-file inventories; all pass.
+The baseline image is unchanged. Final summary/trailing-row captures do not
+constitute a complete scrolling transcript. BDOSTEST required qualification
+continues next; no deferred manual card is promoted to PASS.
+
+
+### Native BDOSTEST — PASS
+
+`bdostest-1co8eu3l` completes BDOSTEST /GROUP:REQUIRED with 56 pass, zero
+fail/error and three manual REQUIRED procedures not run. Both data filesystems
+pass. Independent post-run decoding verifies every original B:/C: input and
+exact live-file inventories, and all 29 shipped A: files match their manifest
+hashes and remain unchanged. The baseline image is unchanged. The retained
+runner/audit sources, readiness/final captures and result JSON document the
+run. No complete scrolling transcript or manual outcome is claimed.
+
+### Remaining native coverage
+
+The fresh production file/random/BDOS gates above are complete. Fresh native
+DIR, CPU/ecology/disk-safe, CCP/entry and focused application/monitor regression
+coverage remain to be progressed separately; earlier image results are retained
+as historical evidence. The deferred manual/external-evidence register remains
+open at the user's request. System-wide validation is not complete, and these
+three successful groups do not imply completion of other campaign stages.
