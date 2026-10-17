@@ -1727,3 +1727,76 @@ verdict in the selected groups. Focused console/BIOS/error and application/
 monitor regression, applicability review, and later validation stages still
 remain. The deferred manual/external-evidence register stays open. These
 results do not close system-wide validation.
+
+
+## V012 — native console, BIOS and safe-error continuation
+
+PR 373 is merged as `88caf71`. The production generation and pinned suite are
+unchanged from V011. The native returning runner gains a `bios-error` group,
+waiting for each catalog's final row before capturing its summary, and runs
+both suites on private media. Evidence:
+`/private/tmp/bettercpm-v012-native/model4-returning-jt1wu2vy/`.
+
+| Native group | Pass | Fail | Error | Observed | Untested/not-run |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| BIOSTEST /SAFE | 5 | 0 | 0 | 11 | 30 |
+| ERRTEST /SAFE | 5 | 0 | 0 | 12 | 26 |
+
+All 29 shipped files match their manifest hashes and remain unchanged. The
+additional retained `audit-filesystem.py` verifies the final System Disk
+filesystem, and the baseline hash remains unchanged. Captures contain summaries
+and trailing rows, not a full scrolling transcript. Untested BIOS procedures
+include required, profile and out-of-scope cards; this is not full BIOS/fault
+coverage. Observed behavior without a portable guarantee is not counted as a
+pass. Deferred manual/external procedures remain open.
+
+
+### Native basic console observations — PASS
+
+`/private/tmp/bettercpm-v012-native/model4-input-uyyb8g_h/` independently
+observes CONSTEST 0106 (AB/Enter), 0115 (AB/Backspace/C) and 0121
+(AB/Ctrl-X/CD). All three display the expected edit while preserving the
+prompt and return the exact expected count/data buffer. Keyboard-matrix events
+are supplied through trs80gp; guest input buffers are not patched. The runner
+does not answer the suite's Y/N confirmation, so these are external observations,
+not fabricated suite PASS rows.
+
+Each case uses its own private disk and retains the native screen capture,
+keystrokes and program/emulator/baseline hashes. Retained `audit-files.py`
+independently checks all 29 shipped files against their manifest and original
+contents after every case and verifies each final System Disk filesystem.
+All pass, and the immutable baseline remains unchanged. Native line controls
+and Ctrl-C recovery continue separately.
+
+
+### Native line controls and Ctrl-C recovery — PASS
+
+`/private/tmp/bettercpm-v012-native/model4-input-x5gsbz40/` independently
+observes four additional cases, each from a fresh cold boot:
+
+| Case | Native observation |
+| --- | --- |
+| 0118 | Ctrl-E starts a new display line and retains ABCD in the returned buffer. |
+| 0119 | Ctrl-R redisplays the retained text and returns ABCD. |
+| 0120 | Ctrl-U starts a new line, discards the old input and returns CD. |
+| 0117 | Initial Ctrl-C abandons the interrupted caller; VER /VER executes and a final A0 prompt is usable. |
+
+All literal buffer/display predicates pass. Recovery requires executed resident
+VER version output, the final prompt and absence of the caller-return marker
+or suite confirmation. The four observer regression tests pass, including
+rejection of startup-banner-only and failed-recovery transcripts. These are
+external observations, not suite confirmation/PASS rows. Retained
+`audit-files.py` verifies clean filesystems and all 29 shipped files against
+their manifest/original contents after every case. All pass; the baseline is
+unchanged. Combined with the basic group, seven distinct native console cases
+are observed successfully. No OS change is required.
+
+### Coverage limits and next work
+
+This batch closes the selected native BIOS-safe, error-safe and seven console
+observation checks. It does not establish every console timing/queue/device
+property, controlled physical-media fault behavior, or every BIOS catalog
+procedure. Untested/manual items remain in the deferred register rather than
+being inferred from safe-group successes. Application/monitor regression and
+the remaining campaign stages still require separate qualification; whole-
+system validation is not complete.
