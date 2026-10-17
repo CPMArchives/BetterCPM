@@ -561,6 +561,9 @@ class Z80:
                 self.carry = self.a < value
                 self.a = (self.a - value) & 0xFF
                 self.z = self.a == 0
+            elif op == 0xCB and self.mem[self.pc] == 0xBF:  # RES 7,A; flags unchanged
+                self.pc += 1
+                self.a &= 0x7F
             elif op == 0xCB and self.mem[self.pc] in (0x77, 0x7F):  # BIT 6/7,A
                 mask = 0x40 if self.mem[self.pc] == 0x77 else 0x80
                 self.pc += 1
