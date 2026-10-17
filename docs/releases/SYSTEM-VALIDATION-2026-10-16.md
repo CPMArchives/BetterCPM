@@ -31,9 +31,9 @@ The source checkout was clean and was not modified. A private clone at
 | 2. Fresh conformance suite | Selected returning groups pass on both platforms | V010–V012 refresh production BDOS/file/random and native DIR/CCP/entry/CPU/ecology/disk-safe, BIOS/error-safe and selected console evidence. Manual, device, terminal-outcome and applicability gaps remain explicitly open. |
 | 3. CPX/RSX lifecycle, relocation, ROM protection | Automated checks pass after cold-start fix | V016 identifies and clears an uninitialized cold-entry loader-recovery flag. Poisoned-RAM initializer test, 32 pristine-media cold boots and guarded lifecycle/stack/workspace checks pass. Focused production monitor relocation checks pass on both backends (V015). Deferred manual/device checks remain explicit. |
 | 4. Resident/transient command integration | Partial; fresh native file workflow passes | V013 covers shipped resident/transient COPY/REN/TYPE/ERA and PIP across users. Broader selectors, protection, recovery and caller-state cases remain. |
-| 5. Utility operations and failure recovery | Partial; selected shipped ED/CONFIG checks pass | V013–V014 verify ED/CONFIG cases; V017 adds shipped cpmsim DUP format/copy/check and SYSGEN named export/reinstall/reboot, including declines and preservation. Native media workflows and broader failure recovery remain. |
+| 5. Utility operations and failure recovery | Partial; selected ED/CONFIG/DUP/SYSGEN checks pass | V013–V014 verify ED/CONFIG cases; V017 adds shipped cpmsim DUP format/copy/check and SYSGEN named export/reinstall/reboot; V018 adds native named SYSGEN and controlled recovery/parser checks. Native DUP, disk-source SYSGEN and broader failure recovery remain. |
 | 6. Monitors and applications | Selected cross-platform regressions pass | V013–V014 exercise all three shipped monitor/backend pairs, native file workflows and cpmsim TYPE paging/file boundaries. Broader applications, audio/manual/device and exhaustive protocol coverage are not implied. |
-| 7. End-to-end release workflows | Partial; CONFIG startup cold boot passes | V014 confirms saved startup executes only on next cold boot. V017 adds cpmsim named system export/install/reboot. Native equivalents and other complete release workflows remain. |
+| 7. End-to-end release workflows | Partial; CONFIG startup cold boot passes | V014 confirms saved startup executes only on next cold boot. V017 adds cpmsim named system export/install/reboot. V018 verifies the native named-package round trip. Other complete release workflows remain. |
 | 8. Closure and final acceptance reruns | Not run | Resolve failures, identify accepted limits, rebuild and rerun against final revision/images. |
 
 A status of not run is not a pass. Observations and explicit suite exclusions
@@ -2135,3 +2135,61 @@ failure. The successful second build uses authorized native-launch permissions
 and logs to `/private/tmp/v017-r2-distribution.log`. Native DUP/SYSGEN workflows,
 broader utility recovery matrices, manual/device checks and final acceptance
 remain open; these selected cpmsim results do not close stage 5.
+
+
+## V018 — native named SYSGEN and controlled media-utility recovery
+
+PR 378 contains V017. Continue against its independently built Model 4
+System Disk, SHA-256
+`58ef6d3e84ff367991d847f9939524785444ee7636bd4b38e1070d9f74f5b4f5`.
+`run_validation_model4_media.py` keeps all shipped programs unchanged and
+adds only a private SETBSYS helper using public disk-control calls to configure
+B as a compatible SYSTEM destination. Source/target disks, command invocations,
+screen captures and independently extracted packages are retained beneath
+`/private/tmp/bettercpm-v018-native-media/`; aggregate log:
+`/private/tmp/v018-native-media.log`.
+
+### Controlled recovery and parser checks — PASS after stale test correction
+
+Execute the existing emitted-code tests against the isolated V017 build, and
+verify tested SYSGEN/DUP binaries match the manifest hashes. Provenance and
+logs are retained in `/private/tmp/bettercpm-v018-controlled/`.
+
+- SYSGEN's 24 export/package/failure cases pass: exact new/default/replacement
+  output, decline, reserved recovery-name collisions, RO/SYS protection,
+  read/create/write/close/verification/delete failures, partial and failed
+  renames, final verification and retained backup, Ctrl-C, descriptor/pointer
+  and geometry rejection, and the 36K boundary guard.
+- SYSGEN's 32 command tails plus standalone/invalid combined version requests
+  pass; invalid tails cannot enter either source loader.
+- DUP's valid/invalid command parsing, direct engine dispatch, one-shot exit
+  and standalone/invalid combined version requests pass.
+
+The first parser runs fail only their hard-coded version expectations: they
+expect SYSGEN Build 004 and DUP Build 003 while the manifest-qualified binaries
+are Build 005 and Build 004. Replace those stale test literals with the shared
+utility-version metadata. Retain both failed and corrected logs; no production
+utility change is made. These controlled filesystem/BIOS fault fixtures do not
+claim real physical fault injection or power-loss safety.
+
+### Native named-package round trip — PASS
+
+- Export BASE090.SYS on B: exact 161-record package, with all 160 payload
+  records equal to the source system area. Output system area and every
+  pre-existing output file/directory entry are unchanged.
+- Install B:BASE090.SYS onto B itself after explicit Proceed confirmation.
+  Package input is fully buffered; the containing disk's entire filesystem
+  remains byte-identical. All installed payload bytes match the source except
+  the documented binding normalization at offset 7030, E0h to A0h.
+- The installed target cold-boots under native trs80gp and runs ED /VER.
+  Independent audits preserve all 29 shipped files on both source and target;
+  both filesystems check clean. The reference distribution hash is unchanged.
+- Supplemental independent comparison confirms every source protected-system
+  byte remains unchanged after export and installation; the sentinel also
+  survives the installed-system cold boot. Evidence:
+  `/private/tmp/v018-native-source-preservation.log`.
+
+Successful result: `/private/tmp/bettercpm-v018-native-media/sysgen-r42k6jzl/result.json`.
+There is no production OS change in V018. Broader native DUP, disk-source
+SYSGEN, refusal/attribute/recovery matrices and deferred manual/device checks
+remain open. These selected checks do not close utility validation.
