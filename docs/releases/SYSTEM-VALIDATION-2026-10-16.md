@@ -1674,3 +1674,56 @@ coverage remain to be progressed separately; earlier image results are retained
 as historical evidence. The deferred manual/external-evidence register remains
 open at the user's request. System-wide validation is not complete, and these
 three successful groups do not imply completion of other campaign stages.
+
+
+### Native DIRTEST — PASS
+
+On the same source-identical production generation, DIRTEST /SAFE completes
+with 49 pass, zero fail/error and zero observations. Evidence:
+`/private/tmp/bettercpm-v011-native/dirtest-zn178x45/`.
+Independent fixture preflight and post-run direct-block decoding pass; all
+original B:/C: input contents and exact live-file inventories are preserved.
+Both data filesystems pass, all 29 shipped A: files match their manifest hashes
+and remain unchanged, and the immutable baseline hash is unchanged. The retained
+runner/audit scripts and result JSON document these checks. Final summary and
+trailing-row captures are not a complete scrolling transcript.
+
+
+### Native CCP and entry/return — PASS
+
+`/private/tmp/bettercpm-v011-native/model4-returning-pmrlb1_3/` completes
+CCPTEST /GROUP:REQUIRED (12 pass) and ENTRYTST /GROUP:REQUIRED (25 pass), both
+with zero fail/error. The final captures retain summaries and trailing rows, including visible
+not-run cards; they do not provide a complete catalog count. Manual and
+excluded cards are not promoted to passes. All 29 shipped A: files
+match their manifest hashes and remain unchanged; Function 40 scratch is absent.
+An additional retained `audit-filesystem.py` verifies the final System Disk
+filesystem with explicit geometry. The baseline hash remains unchanged.
+These are selected returning-group results, not complete terminal/CCP coverage.
+
+
+### Native CPU, ecology and disk-safe — PASS
+
+`/private/tmp/bettercpm-v011-native/model4-returning-s2927d1c/` completes:
+
+| Group | Pass | Fail | Error | Observed | Explicit not-run |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| CPUTEST /ALL | 2 | 0 | 0 | 1 | 2 |
+| ECOTEST /GROUP:REQUIRED | 1 | 0 | 0 | 0 | 4 |
+| DISKTEST /SAFE | 7 | 0 | 0 | 0 | Summary does not enumerate exclusions |
+
+The saved screens contain successive summaries; each verdict is matched to its
+own command. Observations/not-run are not passes, and /SAFE is not a claim of
+full DISKTEST coverage. The independent post-run filesystem check passes;
+all 29 shipped files match their manifest hashes and remain unchanged. The
+secondary B: raw image remains exactly E5-filled throughout. Retained
+`audit-filesystem.py` reproduces these checks. The baseline remains unchanged.
+
+### Campaign position after these runs
+
+Fresh native production returning groups now cover random, file, BDOS,
+directory, CCP, entry, CPU, ecology and disk-safe checks, with no failure/error
+verdict in the selected groups. Focused console/BIOS/error and application/
+monitor regression, applicability review, and later validation stages still
+remain. The deferred manual/external-evidence register stays open. These
+results do not close system-wide validation.
