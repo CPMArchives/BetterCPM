@@ -31,7 +31,7 @@ The source checkout was clean and was not modified. A private clone at
 | 2. Fresh conformance suite | Selected returning groups pass on both platforms | V010–V012 refresh production BDOS/file/random and native DIR/CCP/entry/CPU/ecology/disk-safe, BIOS/error-safe and selected console evidence. Manual, device, terminal-outcome and applicability gaps remain explicitly open. |
 | 3. CPX/RSX lifecycle, relocation, ROM protection | Automated checks pass after cold-start fix | V016 identifies and clears an uninitialized cold-entry loader-recovery flag. Poisoned-RAM initializer test, 32 pristine-media cold boots and guarded lifecycle/stack/workspace checks pass. Focused production monitor relocation checks pass on both backends (V015). Deferred manual/device checks remain explicit. |
 | 4. Resident/transient command integration | Partial; fresh native file workflow passes | V013 covers shipped resident/transient COPY/REN/TYPE/ERA and PIP across users. Broader selectors, protection, recovery and caller-state cases remain. |
-| 5. Utility operations and failure recovery | Partial; selected ED/CONFIG/DUP/SYSGEN checks pass | V013–V014 verify ED/CONFIG cases; V017 adds shipped cpmsim DUP format/copy/check and SYSGEN named export/reinstall/reboot; V018 adds native named SYSGEN and controlled recovery/parser checks. Native DUP, disk-source SYSGEN and broader failure recovery remain. |
+| 5. Utility operations and failure recovery | Partial; selected ED/CONFIG/DUP/SYSGEN checks pass | V013–V014 verify ED/CONFIG cases; V017 adds shipped cpmsim DUP format/copy/check and SYSGEN named export/reinstall/reboot; V018 adds native named SYSGEN and controlled recovery/parser checks. V019 adds native DUP format/copy/check/CRC recovery; disk-source SYSGEN and broader utility recovery remain. |
 | 6. Monitors and applications | Selected cross-platform regressions pass | V013–V014 exercise all three shipped monitor/backend pairs, native file workflows and cpmsim TYPE paging/file boundaries. Broader applications, audio/manual/device and exhaustive protocol coverage are not implied. |
 | 7. End-to-end release workflows | Partial; CONFIG startup cold boot passes | V014 confirms saved startup executes only on next cold boot. V017 adds cpmsim named system export/install/reboot. V018 verifies the native named-package round trip. Other complete release workflows remain. |
 | 8. Closure and final acceptance reruns | Not run | Resolve failures, identify accepted limits, rebuild and rerun against final revision/images. |
@@ -2193,3 +2193,111 @@ Successful result: `/private/tmp/bettercpm-v018-native-media/sysgen-r42k6jzl/res
 There is no production OS change in V018. Broader native DUP, disk-source
 SYSGEN, refusal/attribute/recovery matrices and deferred manual/device checks
 remain open. These selected checks do not close utility validation.
+
+
+## V019 — shipped native DUP physical-media workflows
+
+PR 379 contains V018. Native DUP uses the unchanged V017 Model 4 System Disk,
+SHA-256 `58ef6d3e84ff367991d847f9939524785444ee7636bd4b38e1070d9f74f5b4f5`.
+`run_validation_model4_dup.py` preserves all shipped executables and adds only
+a private public-API binding witness for bounded geometry/recovery fixtures.
+Full-format coverage uses the default 80-cylinder, double-sided data binding;
+copy/recovery coverage uses two cylinders and both sides, including a reserved
+track, with a mismatched destination requiring temporary reconfiguration.
+
+### Memory precondition / first attempt
+
+The initial native run stops at the expected `DUP needs 51K of transient
+memory.` diagnostic: the default monitor pair leaves only 50K. The native
+screen was inspected; independent host comparisons confirm both disposable
+B/C DMKs remain unchanged. Stop only the owned waiting test emulator and retain
+this as an observation, not a passing disk-operation campaign. Evidence:
+`/private/tmp/bettercpm-v019-native-dup/decline-eqcxg5tn/` and
+`/private/tmp/v019-native-dup.log`.
+
+The corrected runner unloads ADM3A, then M4SCRN, and explicitly captures
+`No RSXs loaded` / `TPA available: 53K` before testing DUP. This follows the
+engineering specification's 51K requirement; no OS or utility change is needed.
+The intended cases are protected/declined operations, full interactive format
+and direct CHECK, direct COPY with binding restoration, and a source CRC error
+with unchanged destination and a one-error CHECK count. The subsections below record each completed native case and its independent
+media checks; none of the preparatory or interrupted attempts is counted as a pass.
+
+Documentation alignment note: the user guide's DUP `/VER` example still says
+Build 002 and the consolidated engineering examples say Build 003; the
+qualified utility is Build 004. Runtime memory requirements are
+already documented correctly. Track this example for the separate documentation
+alignment phase rather than changing executable version metadata to match it.
+
+### Native refusal/decline — PASS
+
+The corrected diagnostic run completes at
+`/private/tmp/bettercpm-v019-r4-native-dup/decline-zvbc3u_8/`.
+Its captures show 53K with no RSXs, physical-drive-zero protection, the FORMAT
+B confirmation, the COPY B-to-C confirmation, and the final binding witness.
+Both B/C DMKs compare byte-for-byte equal to their pre-operation images.
+The entire A system area and all 29 shipped files are unchanged; the source
+filesystem checks clean and the immutable baseline hash is unchanged.
+
+Two intervening runner attempts were stopped while awaiting subsequent negative
+case markers, and remain incomplete: `/private/tmp/bettercpm-v019-r2-native-dup/`
+and `/private/tmp/bettercpm-v019-r3-native-dup/`. A short post-LIST interval did
+not establish a completed warm return; increase that interval. The diagnostic
+attempt also captures each negative confirmation before sending N, rather than
+relying on a repeated generic `[Y/N]` marker that can remain on screen from an
+earlier operation. Both expected prompts appear and the independent final
+checks pass. These instrument attempts are not classified as OS failures or
+passing disk-operation campaigns. Retain all aggregate logs in
+`/private/tmp/v019*-native-dup.log`.
+
+### Full default native format/check — PASS
+
+`/private/tmp/bettercpm-v019-r4-native-dup/format-1dspirl5/` exercises the
+interactive FORMAT menu, then direct `/CHECK B:` after normal menu exit.
+DUP reports 160 surfaces written and verified. Independent decoding checks
+all 1600 sector IDs (1–10 on each cylinder/side), 512-byte sizes, header CRCs,
+data CRCs and every erased payload byte (E5h). CHECK reports zero unreadable
+sectors. The unused C disk is unchanged. Source system area, all 29 shipped
+files, filesystem integrity and immutable baseline hash are preserved.
+
+### Native mismatched-format copy/check — PASS
+
+`/private/tmp/bettercpm-v019-r4-native-dup/copy-rm0xw5s0/` runs direct COPY from
+a two-cylinder, double-sided source onto a destination initially configured
+single-sided. Patterned 128-byte portions detect stale/repeated cache data.
+DUP reformats the required destination surfaces and verifies the copy.
+Independent decoding checks all 40 copied physical-sector payloads and CRCs,
+including the reserved track; destination bytes after those four surfaces
+remain unchanged. The source DMK is byte-identical. The public-API witness
+confirms the original destination binding is restored, CHECK reports zero
+unreadable sectors, normal A0 return is captured, and source system area/all
+29 shipped files/filesystem/reference hash remain unchanged.
+
+
+### Native CRC failure and read-only CHECK — PASS
+
+`/private/tmp/bettercpm-v019-r4-native-dup/crc-ovi54rwx/` corrupts only the data
+CRC of physical sector ID 3 on the first source surface. COPY reports that CRC
+error, does not claim completion, and stops before writing the destination.
+The entire destination DMK remains unchanged, as does the source (including its
+intentional bad CRC). The destination binding is restored. A subsequent CHECK
+continues and reports exactly one unreadable sector, then returns normally.
+Source system area, all 29 shipped files, filesystem integrity and immutable
+baseline hash are preserved. This is a native emulator CRC-fault fixture, not
+a claim about every real-floppy failure or power-loss scenario.
+
+### Batch result and limits
+
+All four selected native cases pass. Aggregate results:
+`/private/tmp/bettercpm-v019-r4-native-dup/summary-all.json`; aggregate log:
+`/private/tmp/v019-r4-native-dup.log`. Each result's runner identity matches
+its retained executed source; every case preserves the 29 shipped files.
+The first source-sector fixture is independently decoded before execution to
+verify all 1600 ID/header/data CRCs and distinct sub-record payload patterns.
+The damaged-source case then flips exactly one data-CRC byte.
+
+No production OS/utility or permanent-memory change is made. The default 50K
+monitor profile is insufficient for DUP by contract; all operation passes have
+an explicit unloaded 53K witness. Remaining utility validation includes native
+disk-source SYSGEN, broader protection/selector/interruption/recovery matrices,
+other utilities and deferred manual/device work. Stage 5 is still partial.
