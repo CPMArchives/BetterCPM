@@ -1355,3 +1355,78 @@ workload with a historical Model 4 CP/M baseline where practical. Distinguish
 instrumentation, emulator timing, BIOS caching/mapping and BDOS algorithm costs
 before attributing the slowdown. This performance finding remains open; the
 39-pass result establishes correctness only on the bounded fixture.
+
+
+## V008: native write-path performance measurements
+
+The native write-speed concern remains open, but is now reproduced without
+per-record diagnostic output. `tools/run_validation_native_write_profile.py`
+builds a separate PERF8 probe. Each measured phase writes eight 128-byte A5h
+records to a fresh file, using Function 21 or Function 34. NOP trace fences
+exclude preparation, console boundary messages, Close, Delete and warm boot.
+The random phase uses record numbers 0–7 in the same extent. The sequential
+phase sets the same random-record field before each call, so probe-loop work
+is comparable. No production OS code is changed.
+
+Both runs use the immutable V006 native System Disk, the same emulator, Model 4,
+`-turbo`, the same eight-record workload and native 800K data geometry. Results
+are emulated CPU t-states including controller waits, not host wall-clock
+benchmarks or a measured original-hardware throughput claim.
+
+| Data fixture | Sequential t-states | Random t-states | Random/sequential | Logical BIOS reads, seq/random | Logical BIOS writes, seq/random |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Empty directory, first free block 2 | 14,461,090 | 26,630,160 | 1.84 | 1 / 8 | 9 / 16 |
+| Dense directory, first free block 399 | 27,302,780 | 224,440,792 | 8.22 | 17 / 272 | 9 / 16 |
+
+The dense fixture contains 64 live directory extents and one free block; it is
+not a fully occupied directory. Directory occupancy and data-block position
+vary together in this comparison, so their individual timing contributions
+have not been isolated. The read-count difference directly establishes much
+more directory I/O. Trace counts are filtered between the probe fences, rather
+than including program loading or boot activity.
+
+Evidence directories under `build/validation/8127eab/`:
+
+- `v008-write-profile-dense/native-write-v_b8qc25/`
+- `v008-write-profile-empty/native-write-62ijcwg8/`
+
+The empty-disk run also traces resident physical-transfer request vectors:
+sequential uses 10 reads and 9 writes; random uses 24 reads and 16 writes.
+These are request-entry counts, not counts of controller retry attempts. The
+dense run did not include those physical vectors in its trace; its physical
+counts are not claimed as measured.
+
+Source attribution: production `src/bdos/unified.mac` has UB_RDECODE call
+UB_CCORE for a populated dirty FCB before decoding each random position.
+UB_RWCOMMON then calls UB_EXTENT/UB_ACTIVATE, scanning to reopen the requested
+extent even when it is the same extent. UB_PUBLISH also finds the directory
+entry to commit changed metadata. The repeated scans account for the large
+logical read count on the dense fixture. In `src/bios/bios.mac`, BIO_PREP
+invokes the resident physical read for each logical transfer; BIOWRITE then
+invokes the physical write. There is no physical-sector cache-hit bypass in
+this path. Source behavior and measured request counts support an OS I/O-cost
+finding; simulated disk latency amplifies those requests. Neither measurement
+establishes that emulator latency itself is excessive or faulty.
+
+Both probes finish successfully. Independent post-run checks verify the eight
+A5h payload records in block 399 or 2, original live directory entries and all
+allocated input blocks unchanged, temporary file absent, clean B: filesystem,
+and all 29 shipped System Disk files unchanged and matching manifest hashes.
+Deleted scratch slots and unallocated data can legitimately retain test bytes.
+
+The first run's initial host trace parser rejected reused TPA fence addresses;
+the instruction trace and completed native capture were retained. Reanalysis
+matches the fence NOP opcode, excluding earlier boot/loader instructions at
+those addresses, and accepts padded t-state fields. The original executed
+runner and corrected analysis source are both retained. The empty-disk run
+uses the corrected parser directly. A later independent payload check was
+recorded in each result. These are profiling-tool corrections, not OS test
+failures or new emulator runs.
+
+Next: audit a same-extent random-I/O fast path that retains dirty active FCB
+state instead of closing/reopening it unnecessarily. Qualify compatibility,
+allocation publication, cross-extent transitions, error recovery and protected
+ROM behavior, and audit memory cost before production changes. The unloaded
+53K TPA contract remains in force. Physical-sector caching is a separate
+potential optimization with buffer-invalidation and memory costs; it has not
+been implemented or approved by these measurements.
