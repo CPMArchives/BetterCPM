@@ -54,6 +54,10 @@ def main() -> None:
         actual = memory[LAYOUT["TPA"]:LAYOUT["TPA"] + len(template)]
         require(actual == expected,
                 f"cold initializer produced the wrong RAM image for BDOS {bdos:04X}h")
+        require(memory[0x48] == 0,
+                "cold entry left interrupted-lookup recovery active")
+        require(memory[0x46] == 0xA5,
+                "cold entry needlessly modified the inactive saved user")
         require(memory[TEMPLATE_ADDRESS:TEMPLATE_ADDRESS + len(template)] == template,
                 "cold initializer modified its immutable template")
         require(memory[LAYOUT["TPA"] - 1] == 0xA5 and

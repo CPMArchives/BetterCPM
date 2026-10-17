@@ -32,10 +32,10 @@ def main() -> None:
     if (manifest["boot_integrated"] is not True or
             manifest["protected_xip_qualified"] is not False):
         raise AssertionError("ROM boot manifest overclaims or omits boot status")
-    if (manifest["entry"] != 0xFE12 or manifest["stub_bytes"] != 34 or
+    if (manifest["entry"] != 0xFE15 or manifest["stub_bytes"] != 34 or
             manifest["reloader_reference_count"] != 44 or
             manifest["ccp_external_reference_count"] != 72 or
-            manifest["spare_bytes"] != 460):
+            manifest["spare_bytes"] != 457):
         raise AssertionError("accepted ROM boot layout changed")
     config_report = json.loads(
         (image / "rom/rom-config.json").read_text(encoding="ascii"))

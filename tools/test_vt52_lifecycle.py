@@ -27,7 +27,14 @@ def main():
                  ("HELLO   ","build/rsx/HELLO.RSX"),
                  (backend.ljust(8),"build/screen-backends/"+backend+".RSX"),
                  ("VT52    ","build/vt52-development/VT52.RSX"))
-    sources=(0x7800,0xB400,0xB800,0xC000)
+    # Synthetic disk bytes must not overlap prospective live allocations.
+    # VT52's envelope extends beyond its resident payload; C000 placed its
+    # trailing metadata inside the loaded profile and broke reconstruction.
+    sources=(0x7100,0xAD00,0xB000,0xB800)
+    low=LAYOUT['RSX']-sum(int.from_bytes((ROOT/path).read_bytes()[14:16],'little')
+                          for _,path in stage.FILES[1:])
+    assert all(address+len((ROOT/path).read_bytes())<=low
+               for (_,path),address in zip(stage.FILES,sources))
     for (_,path),address in zip(stage.FILES,sources):
         image=(ROOT/path).read_bytes();cpu.mem[address:address+len(image)]=image
     with tempfile.TemporaryDirectory() as temporary:stub=stage.file_stub(Path(temporary),sources)

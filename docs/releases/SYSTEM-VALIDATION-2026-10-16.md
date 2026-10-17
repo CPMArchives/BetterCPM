@@ -29,7 +29,7 @@ The source checkout was clean and was not modified. A private clone at
 | --- | --- | --- |
 | 1. Clean builds, contents, boot, baseline console/memory | In progress; initial gates pass | Both distributions pass build/boot/integrity; focused BIOS/CCP and native editing/unload pass. Additional console/startup-failure/repeated-return cases remain. |
 | 2. Fresh conformance suite | Selected returning groups pass on both platforms | V010–V012 refresh production BDOS/file/random and native DIR/CCP/entry/CPU/ecology/disk-safe, BIOS/error-safe and selected console evidence. Manual, device, terminal-outcome and applicability gaps remain explicitly open. |
-| 3. CPX/RSX lifecycle, relocation, ROM protection | Earlier guarded campaigns pass; refresh incomplete | Production integration passes independent reference/relocation checks and complete dependent builds. Fresh integrated guarded-ROM execution and wider RAM/native lifecycle coverage remain. |
+| 3. CPX/RSX lifecycle, relocation, ROM protection | Automated checks pass after cold-start fix | V016 identifies and clears an uninitialized cold-entry loader-recovery flag. Poisoned-RAM initializer test, 32 pristine-media cold boots and guarded lifecycle/stack/workspace checks pass. Focused production monitor relocation checks pass on both backends (V015). Deferred manual/device checks remain explicit. |
 | 4. Resident/transient command integration | Partial; fresh native file workflow passes | V013 covers shipped resident/transient COPY/REN/TYPE/ERA and PIP across users. Broader selectors, protection, recovery and caller-state cases remain. |
 | 5. Utility operations and failure recovery | Partial; selected shipped ED/CONFIG checks pass | V013–V014 verify native ED save/backup and cpmsim ED E/Q/H plus CONFIG startup decline/save. DUP/SYSGEN/media operations and broader failure recovery remain. |
 | 6. Monitors and applications | Selected cross-platform regressions pass | V013–V014 exercise all three shipped monitor/backend pairs, native file workflows and cpmsim TYPE paging/file boundaries. Broader applications, audio/manual/device and exhaustive protocol coverage are not implied. |
@@ -1955,3 +1955,97 @@ executed runners, transcripts and per-case results are retained.
 Broader DUP/SYSGEN/media-operation regression, additional utility scenarios,
 guarded-ROM and manual/device outcomes remain separate campaign work.
 These successful subsets do not complete system-wide validation.
+
+
+## V015 — resumed guarded ROM and lifecycle checks
+
+PR 376 is merged according to the user. Build/tests run with normal sandbox
+permissions; no execution escalation was needed. The full ROM media is rebuilt
+at `/private/tmp/bettercpm-v015-rom-media/`. Its 3454-byte BDOS is byte-identical
+to the qualified production integration (SHA-256
+`8e2fabb75c84c95c573bc4d90b0d7a112f99e112a1b275c9df03b3c0479c222f`).
+ROM image SHA-256:
+`e294ea58af1c78300b4176246a06e5f6da24422d190cb67aa48b529609860052`.
+Evidence/log copies and the explicit open status are in
+`/private/tmp/bettercpm-v015-lifecycle/`; retained diagnostic source and media
+are in `/private/tmp/bettercpm-v015-diagnostic/`.
+
+### Guarded repeat — PASS, acceptance still OPEN
+
+The guard primitive probes reject CPU writes, DMA writes, guest unlocking and
+boundary changes, and verify reset protection and ordinary-mode behavior.
+The first full campaign boots at A9 rather than A0, so its prompt gate fails.
+An unmodified repeat passes protected execution at DF00h, cold/warm returns,
+CPX load/list/reconstruction/unload and RSX load/list/unload. The 1024-byte
+workspace lifetime check passes with the 907-byte CONFIG control overlay.
+Measured stack high-water/reserve: system 24/32 (8 spare), BDOS 28/40 (12 spare),
+loader 18/64 (46 spare). These measurements apply to the successful campaign.
+
+A private emulator copy traces writes to the relocated user-state byte and
+boots at A0 in that diagnostic run; this does not explain or dismiss the first
+failure. After removing the write trace, three independent pristine-media cold
+boots yield A0, A0, then A24 (initial display includes A<0). The last run fails
+its A0 gate. Both wrong-user outcomes remain unresolved; passing repeats do
+not close the ROM cold-start acceptance gate. The generated per-run XIP report
+records the successful campaign only; campaign-status.json and this ledger
+explicitly retain the unresolved failure. No release acceptance is claimed.
+
+### Focused monitor/RSX relocation — PASS after fixture correction
+
+Assembled-code lifecycle tests pass with both ANSISCRN and M4SCRN backends:
+ADM3A parser/mode state, VT52 partial-address/queued-reply state, and production
+ANSI parser/saved-rendition state survive movement. Tests also cover blocked
+backend removal while bound, public service lookup, continuation and unload
+back to the baseline/53K boundary. These are controlled CPU fixtures, not six
+new native-emulator campaigns. Production ANSI is selected explicitly; an
+initial private-candidate ANSI test is not substituted for it.
+
+VT52 initially fails removing HELLO because its synthetic disk envelope at
+C000 extends into the prospective live profile. Source metadata is overwritten
+by the installation itself. Move synthetic disk bytes to the existing ANSI
+fixture's safe addresses and assert complete file envelopes stay below the
+prospective live allocation. The corrected test passes on both backend profiles.
+This changes only the test fixture, not the manager or VT52 implementation.
+Original failure/diagnostic and corrected logs are retained.
+
+Next core work is to isolate the intermittent ROM cold-start wrong-user state.
+Manual/device outcomes and later campaign stages remain open as before.
+
+
+## V016 — ROM cold-start recovery flag fix
+
+The V015 wrong-user failure is an OS initialization defect, not an emulator
+latency or prompt-detection issue. Instrumenting CPU writes, DMA writes and
+reads of relocated UB_USERNO (D6C1h) reproduces the failure. In one failed boot,
+the first nonzero store is at EE05h in relocated CL_ABORT, writing EBh; the
+prompt initially displays AG5 before subsequent context restoration masks
+the user to 11. No DMA write causes the corruption.
+
+CL_ABORT interprets page-zero 0048h bit 0 as an active interrupted lookup and
+restores the saved user at 0046h. On a ROM cold start these bytes are
+uninitialized; reconstruction reaches CL_ABORT before the CCP initializes
+them. Clear the active flag in the ROM-only cold initializer. Warm entry
+preserves genuine loader recovery. The change adds three ROM bytes, with no
+resident RAM, BIOS or BDOS growth and no change to the 53K unloaded TPA.
+The integrated ROM now has 457 spare bytes and entry FE15h.
+
+Validation:
+
+- Full z80pack development/ROM-media build passes, including independent
+  packing, relocation and cold-initializer execution checks. The initializer
+  test begins with poisoned A5h RAM, requires the recovery flag to be zero
+  and leaves the inactive saved-user byte untouched.
+- 32 separate untraced guarded-simulator cold boots on fresh disk copies all
+  reach the unchanged strict A0 prompt gate and halt normally.
+- Full protected-ROM campaign passes: guard primitives, cold/warm return,
+  transient execution, CPX reconstruction/unload, RSX load/unload and 53K
+  restoration. Workspace lifetime checks pass. Stack usage/reserve remains
+  system 24/32 (8 spare), BDOS 28/40 (12 spare), loader 18/64 (46 spare).
+
+Evidence: `/private/tmp/v016-rom-build.log`,
+`/private/tmp/v016-cold-repeats.log`, `/private/tmp/v016-rom-xip.log`,
+`/private/tmp/bettercpm-v016-rom-media/rom/` and retained diagnostic traces
+`/private/tmp/bettercpm-v015-diagnostic/readtrace-*/transcript.bin`.
+ROM SHA-256: `757d38cb0ccec92ccb3624501e45ad64b90cc0c3f79487b2c75695143535b918`.
+The wrong-user gate is resolved; this does not close deferred manual/device
+checks or declare whole-system validation complete.
