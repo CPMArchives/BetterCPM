@@ -29,7 +29,7 @@ The source checkout was clean and was not modified. A private clone at
 | --- | --- | --- |
 | 1. Clean builds, contents, boot, baseline console/memory | In progress; initial gates pass | Both distributions pass build/boot/integrity; focused BIOS/CCP and native editing/unload pass. Additional console/startup-failure/repeated-return cases remain. |
 | 2. Fresh conformance suite | Selected returning groups pass on both platforms | V010–V012 refresh production BDOS/file/random and native DIR/CCP/entry/CPU/ecology/disk-safe, BIOS/error-safe and selected console evidence. Manual, device, terminal-outcome and applicability gaps remain explicitly open. |
-| 3. CPX/RSX lifecycle, relocation, ROM protection | Open: intermittent ROM cold-start wrong user | V015 guarded repeat passes protection, lifecycle and stack/workspace checks, but cold boots also reach A9/A24 instead of A0. ROM acceptance remains open. Focused production monitor relocation tests pass on both backend profiles after correcting VT52 fixture overlap. |
+| 3. CPX/RSX lifecycle, relocation, ROM protection | Automated checks pass after cold-start fix | V016 identifies and clears an uninitialized cold-entry loader-recovery flag. Poisoned-RAM initializer test, 32 pristine-media cold boots and guarded lifecycle/stack/workspace checks pass. Focused production monitor relocation checks pass on both backends (V015). Deferred manual/device checks remain explicit. |
 | 4. Resident/transient command integration | Partial; fresh native file workflow passes | V013 covers shipped resident/transient COPY/REN/TYPE/ERA and PIP across users. Broader selectors, protection, recovery and caller-state cases remain. |
 | 5. Utility operations and failure recovery | Partial; selected shipped ED/CONFIG checks pass | V013–V014 verify native ED save/backup and cpmsim ED E/Q/H plus CONFIG startup decline/save. DUP/SYSGEN/media operations and broader failure recovery remain. |
 | 6. Monitors and applications | Selected cross-platform regressions pass | V013–V014 exercise all three shipped monitor/backend pairs, native file workflows and cpmsim TYPE paging/file boundaries. Broader applications, audio/manual/device and exhaustive protocol coverage are not implied. |
@@ -2010,3 +2010,42 @@ Original failure/diagnostic and corrected logs are retained.
 
 Next core work is to isolate the intermittent ROM cold-start wrong-user state.
 Manual/device outcomes and later campaign stages remain open as before.
+
+
+## V016 — ROM cold-start recovery flag fix
+
+The V015 wrong-user failure is an OS initialization defect, not an emulator
+latency or prompt-detection issue. Instrumenting CPU writes, DMA writes and
+reads of relocated UB_USERNO (D6C1h) reproduces the failure. In one failed boot,
+the first nonzero store is at EE05h in relocated CL_ABORT, writing EBh; the
+prompt initially displays AG5 before subsequent context restoration masks
+the user to 11. No DMA write causes the corruption.
+
+CL_ABORT interprets page-zero 0048h bit 0 as an active interrupted lookup and
+restores the saved user at 0046h. On a ROM cold start these bytes are
+uninitialized; reconstruction reaches CL_ABORT before the CCP initializes
+them. Clear the active flag in the ROM-only cold initializer. Warm entry
+preserves genuine loader recovery. The change adds three ROM bytes, with no
+resident RAM, BIOS or BDOS growth and no change to the 53K unloaded TPA.
+The integrated ROM now has 457 spare bytes and entry FE15h.
+
+Validation:
+
+- Full z80pack development/ROM-media build passes, including independent
+  packing, relocation and cold-initializer execution checks. The initializer
+  test begins with poisoned A5h RAM, requires the recovery flag to be zero
+  and leaves the inactive saved-user byte untouched.
+- 32 separate untraced guarded-simulator cold boots on fresh disk copies all
+  reach the unchanged strict A0 prompt gate and halt normally.
+- Full protected-ROM campaign passes: guard primitives, cold/warm return,
+  transient execution, CPX reconstruction/unload, RSX load/unload and 53K
+  restoration. Workspace lifetime checks pass. Stack usage/reserve remains
+  system 24/32 (8 spare), BDOS 28/40 (12 spare), loader 18/64 (46 spare).
+
+Evidence: `/private/tmp/v016-rom-build.log`,
+`/private/tmp/v016-cold-repeats.log`, `/private/tmp/v016-rom-xip.log`,
+`/private/tmp/bettercpm-v016-rom-media/rom/` and retained diagnostic traces
+`/private/tmp/bettercpm-v015-diagnostic/readtrace-*/transcript.bin`.
+ROM SHA-256: `757d38cb0ccec92ccb3624501e45ad64b90cc0c3f79487b2c75695143535b918`.
+The wrong-user gate is resolved; this does not close deferred manual/device
+checks or declare whole-system validation complete.

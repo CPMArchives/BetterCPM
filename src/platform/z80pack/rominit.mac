@@ -5,15 +5,15 @@
 ; *                    z80pack ROM Cold Initialization                           *
 ; *                                                                              *
 ; * Copies the accepted RAM template, publishes the live BDOS gateway, and       *
-; * invalidates persistent history on a true cold entry.                         *
+; * invalidates persistent history and loader recovery on true cold entry.     *
 ; ********************************************************************************
 
   ; Entry contract:
   ;   HL = immutable RAM-template address
   ;   IX = immutable BDOS entry address
   ;   SP = valid stack outside LY_TPA through LY_TPA+RI_BYTES-1
-  ; The routine is position independent. It changes only the accepted RAM image
-  ; and the caller's ordinary register/flag state.
+  ; The routine is position independent. It changes only the accepted RAM image,
+  ; the page-zero loader recovery flag, and ordinary register/flag state.
 
         ASEG
         ORG     RI_ORIGIN
@@ -21,8 +21,8 @@
 ; ================================================================================
 ; =                         Cold RAM Instantiation                               =
 ; =                                                                              =
-; = Copies the immutable defaults, then constructs the two runtime-owned objects =
-; = whose representations are deliberately absent from the template.             =
+; = Copies immutable defaults, publishes the gateway, and invalidates cold-only   =
+; = history and interrupted-lookup state absent from the template.                =
 ; ================================================================================
 
 RI_INIT:                                ; instantiate the complete live RAM image
@@ -36,6 +36,11 @@ RI_INIT:                                ; instantiate the complete live RAM imag
 
         XOR     A                       ; history owner sees an invalid signature
         LD      (LY_HIST),A
+  ; Cold RAM has no interrupted lookup to recover. CL_ABORT runs during
+  ; reconstruction before the CCP can initialize this page-zero workspace.
+  ; A random active bit otherwise restores an uninitialized saved user.
+  ; Warm entry deliberately preserves the flag for genuine loader aborts.
+        LD      (0048H),A
         RET
 
         END
