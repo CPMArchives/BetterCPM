@@ -1430,3 +1430,105 @@ ROM behavior, and audit memory cost before production changes. The unloaded
 53K TPA contract remains in force. Physical-sector caching is a separate
 potential optimization with buffer-invalidation and memory costs; it has not
 been implemented or approved by these measurements.
+
+
+## V009: private same-extent random-I/O candidate audit
+
+Production BDOS remains unchanged. `tools/audit_random_same_extent.py` emits
+baseline and candidate copies under `build/audit/random-same-extent/` for
+bounded qualification. The candidate compares the requested logical EX/S2 with
+a populated active FCB before deciding to close and reopen it. Same-extent
+operations retain live RC/allocation/dirty state. A zero-RC FCB takes the normal
+activation path, preserving lookup through bare search FCBs and the existing
+empty-file behavior. An EX byte with high flags also conservatively takes the
+normal path. R2 rejection still occurs before FCB mutation.
+
+The decoder returns carry to request ordinary extent activation; random callers
+preserve that flag while supplying their read/write mode. Real extent changes
+still close the old populated extent before changing its stored EX/S2 and
+activating the target. Common
+read/write cores retain their drive, geometry and protection gates. RES 7,A
+updates CR without destroying the carry result. The focused CPU interpreter
+now implements this actual Z80 opcode with unchanged flags.
+
+### Memory and ABI
+
+The candidate recovers space through four fall-through wrappers (Close, Make,
+sequential Read and sequential Write), four ordinary tail calls in console
+services, and one in-range relative branch. A compact random-position decoder
+uses R0 bit 7 as the carry input while forming EX from R1. There is no new
+resident state and no reduction in private-stack capacity.
+
+The unpadded candidate is 3452 bytes versus the baseline's 3454. Two zero bytes
+before mutable state keep the linked state addresses, including OLDSP, DMA,
+drive/user, console state, and both stack boundaries identical to the baseline.
+Thus the tested candidate still occupies exactly 3454 bytes. No BIOS, extension
+or TPA boundary moves; the unloaded 53K contract is preserved by construction.
+The host audit asserts these invariants and leaves production source unchanged.
+
+### CPU and assembler checks
+
+`test_random_same_extent_candidate.py` passes 27,648 position/transition cases,
+covering every R1 value, both halves of R0, S2 changes, zero/populated RC and
+clean/dirty FCB state. It verifies preserved live fields and random position,
+required slow-path Close calls, carry output, and stack balance. Its fake Close
+clobbers ordinary registers to verify saved decoded positions survive a call.
+
+The exact candidate also passes the existing unified-BDOS public-call tests,
+480 grouped-activation cases and the existing grouped directory-comparison
+matrix, with runtime writes to BDOS code rejected by the CPU harness. Fixtures
+are installed before execution; fixture patching is not counted as an allowed
+OS code write. The measured private-stack high-water remains 26 bytes of 40.
+This is guarded CPU coverage, not complete protected-ROM profile qualification.
+
+ZSM4/DRI LINK emits 3454 byte-identical candidate bytes. The first build invocation
+lacked cpmsim's helper directory on PATH and could not boot the assembler disk;
+correcting the tool environment produces the accepted native build. It is not
+an OS or candidate failure. Host/native logs and CPU results are retained in
+the audit directory.
+
+### Native performance comparison
+
+A private copy of the V006 System Disk has only its installed 3454-byte BDOS
+payload replaced, after verifying it equals the baseline emitted binary.
+Every other raw byte is preserved and all core state addresses remain pinned.
+The report labels this image a private comparison baseline: its packaged system
+and CONFIG validation references are deliberately still the baseline and it is
+not distributable. No saved-configuration or SYSGEN operations are qualified
+with it. Production integration must rebuild all dependent artifacts.
+
+On the same dense data image and eight-record PERF8 workload as V008:
+
+| Measured phase | Baseline t-states | Candidate t-states | Logical reads, baseline/candidate | Logical writes, baseline/candidate |
+| --- | ---: | ---: | ---: | ---: |
+| Sequential | 27,302,780 | 27,302,730 | 17 / 17 | 9 / 9 |
+| Random, same extent | 224,440,792 | 37,038,063 | 272 / 34 | 16 / 9 |
+
+This is about 6.06 times faster in emulated CPU cycles for the random phase;
+no per-record console output is inside the measured interval. The zero-RC
+fallback and allocation publication still cause initial directory work. No
+physical-sector cache is added. The candidate trace also counts 43 physical
+read requests and 9 physical write requests in the random phase; these are
+request entries, not controller retry attempts.
+
+Evidence: `build/audit/random-same-extent/native-dense-profile/native-write-3f74sdmy/`.
+The final eight A5h records, preserved input blocks/live entries, removed
+temporary file, clean filesystem and all 29 shipped System Disk files pass
+independent audits. Native candidate equality with the current emitted audit
+binary is checked after the run. Sequential performance is essentially unchanged.
+
+The unchanged native RANDTEST /SAFE candidate run completes with 39 pass,
+zero fail, zero error and two manual read-only cases not run. Evidence:
+`native-random-required/randtest-od146s_1/` under the audit directory. All
+B:/C:/D: inputs match their canonical source bytes; exact live-file inventories
+are restored, B: again has one free block, D: remains byte-identical to its full
+fixture, and all filesystems are clean. All 29 shipped A: files are unchanged.
+The code is still a private payload comparison, not a rebuilt release.
+
+Additional focused checks cover 24 high-EX-flag fallback cases and all 256 flag
+values for RES 7,A with four input bytes (1024 instruction cases). Before
+production promotion, remaining gates include full dependent rebuilds,
+cross-platform/ROM and error-recovery qualification, and broader regression
+coverage of unclosed and cross-extent write/zero-fill/read lifecycles. The two
+native manual read-only outcomes remain unqualified for this candidate.
+These measurements do not close all write-performance concerns.
