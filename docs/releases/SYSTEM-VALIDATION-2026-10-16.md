@@ -31,9 +31,9 @@ The source checkout was clean and was not modified. A private clone at
 | 2. Fresh conformance suite | Selected returning groups pass on both platforms | V010–V012 refresh production BDOS/file/random and native DIR/CCP/entry/CPU/ecology/disk-safe, BIOS/error-safe and selected console evidence. Manual, device, terminal-outcome and applicability gaps remain explicitly open. |
 | 3. CPX/RSX lifecycle, relocation, ROM protection | Automated checks pass after cold-start fix | V016 identifies and clears an uninitialized cold-entry loader-recovery flag. Poisoned-RAM initializer test, 32 pristine-media cold boots and guarded lifecycle/stack/workspace checks pass. Focused production monitor relocation checks pass on both backends (V015). Deferred manual/device checks remain explicit. |
 | 4. Resident/transient command integration | Partial; fresh native file workflow passes | V013 covers shipped resident/transient COPY/REN/TYPE/ERA and PIP across users. Broader selectors, protection, recovery and caller-state cases remain. |
-| 5. Utility operations and failure recovery | Partial; selected ED/CONFIG/DUP/SYSGEN checks pass | V013–V014 verify ED/CONFIG cases; V017 adds shipped cpmsim DUP format/copy/check and SYSGEN named export/reinstall/reboot; V018 adds native named SYSGEN and controlled recovery/parser checks. V019 adds native DUP format/copy/check/CRC recovery; disk-source SYSGEN and broader utility recovery remain. |
+| 5. Utility operations and failure recovery | Partial; selected ED/CONFIG/DUP/SYSGEN checks pass | V013–V014 verify ED/CONFIG cases; V017 adds shipped cpmsim DUP format/copy/check and SYSGEN named export/reinstall/reboot; V018 adds native named SYSGEN and controlled recovery/parser checks. V019 adds native DUP format/copy/check/CRC recovery; V020 adds native disk-source SYSGEN safeguards/install/reboot. Broader utility recovery and selector/protection coverage remain. |
 | 6. Monitors and applications | Selected cross-platform regressions pass | V013–V014 exercise all three shipped monitor/backend pairs, native file workflows and cpmsim TYPE paging/file boundaries. Broader applications, audio/manual/device and exhaustive protocol coverage are not implied. |
-| 7. End-to-end release workflows | Partial; CONFIG startup cold boot passes | V014 confirms saved startup executes only on next cold boot. V017 adds cpmsim named system export/install/reboot. V018 verifies the native named-package round trip. Other complete release workflows remain. |
+| 7. End-to-end release workflows | Partial; CONFIG startup cold boot passes | V014 confirms saved startup executes only on next cold boot. V017 adds cpmsim named system export/install/reboot. V018 verifies the native named-package round trip; V020 verifies disk-source installation/reboot. Other complete release workflows remain. |
 | 8. Closure and final acceptance reruns | Not run | Resolve failures, identify accepted limits, rebuild and rerun against final revision/images. |
 
 A status of not run is not a pass. Observations and explicit suite exclusions
@@ -2301,3 +2301,64 @@ monitor profile is insufficient for DUP by contract; all operation passes have
 an explicit unloaded 53K witness. Remaining utility validation includes native
 disk-source SYSGEN, broader protection/selector/interruption/recovery matrices,
 other utilities and deferred manual/device work. Stage 5 is still partial.
+
+
+## V020 — shipped native disk-source SYSGEN
+
+PR 380 is merged according to the user. Continue with the unchanged V017
+Model 4 System Disk, SHA-256
+`58ef6d3e84ff367991d847f9939524785444ee7636bd4b38e1070d9f74f5b4f5`.
+`run_validation_model4_sysgen_disk.py` retains the shipped SYSGEN and all other
+release files; only private public-API helpers are added to configure B as
+SYSTEM media and map logical C onto physical A/B for refusal checks.
+The default monitor profile remains loaded; SYSGEN's 36K requirement fits it.
+No runtime-source or permanent-memory change is made.
+
+### Confirmation and physical alias safeguards — PASS
+
+Native captures at
+`/private/tmp/bettercpm-v020-native-sysgen-disk/sysgen-disk-odtam5mz/refusals/`
+show the `SYSGEN A: B:` Proceed question, normal return after N, refusal when
+B and C resolve to the same physical disk, and physical-drive-zero protection
+when C aliases A. The complete destination DMK remains byte-for-byte unchanged;
+the source's entire protected system area also remains unchanged.
+These alias checks use distinct logical letters and real installed bindings,
+not parser rejection of identical letters.
+
+Confirmed installation and cold boot are reported separately below; these
+refusal results are not counted as successful installation evidence.
+Aggregate log: `/private/tmp/v020-native-sysgen-disk.log`.
+
+### Confirmed disk-source installation — PASS
+
+After the refusal checks, replace every destination system-area byte with A5h
+while preserving its populated filesystem. `SYSGEN A: B:` still stops for
+Proceed confirmation; only the following Y enables installation. The native
+utility reports installation and verification complete. Independently compare
+every installed system byte with the source: the only difference is the
+specified boot-binding normalization at offset 7030, E0h to A0h.
+The entire filesystem beyond 20,480 bytes is byte-preserved, including KEEP.TXT,
+and the source protected system area is unchanged. Before/after raw images,
+confirmation/completion captures and invocation are retained in the V020 work
+directory. The final cold-boot/file-audit result follows below.
+
+
+### Installed cold boot and file integrity — PASS
+
+Boot a new native emulator instance directly from the installed B disk as
+physical drive zero. Its saved startup loads the normal monitor pair, prints
+the banner, and the installed ED /VER command completes at A0. The installed
+protected area is unchanged by cold boot and KEEP.TXT survives. Independent
+manifest/hash audits preserve all 29 shipped files on both source and target;
+both filesystems check clean and the immutable baseline hash is unchanged.
+
+Final result: `/private/tmp/bettercpm-v020-native-sysgen-disk/sysgen-disk-odtam5mz/result.json`.
+The recorded runner hash matches the retained executed source. Refusal and
+installation screens, exact before/after system bytes, file extractions, helper
+listings and emulator invocations are retained with that result.
+
+This completes the selected native explicit disk-source confirmation, alias
+protection, payload/filesystem preservation and reboot workflow. It does not
+claim fresh exhaustive interactive/cross-format/source-error/write-failure
+coverage, real-floppy fault behavior or power-loss safety. Broader utility and
+manual/device coverage remains open; system-wide validation is not complete.
