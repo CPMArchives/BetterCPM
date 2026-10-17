@@ -27,7 +27,7 @@
         LD A,ZB_SLOTS
         OUT (19),A
         LD HL,LY_SYS
-        LD E,8
+        LD DE,8                         ; D remains zero throughout bootstrap
         LD B,52
 
 ; ================================================================================
@@ -39,7 +39,7 @@
 
 ZB_NEXT:                                ; load next resident-image record
         LD A,E
-        LD C,0
+        LD C,D
 
 ZB_DIV: CP ZB_SLOTS                     ; divide record number by sectors per track
         JR C,ZB_POS
@@ -50,7 +50,6 @@ ZB_DIV: CP ZB_SLOTS                     ; divide record number by sectors per tr
 ZB_POS: PUSH DE                         ; position and read resident-image record
         PUSH HL
         LD E,A
-        LD D,0
         LD HL,ZB_MAP
         ADD HL,DE
         LD A,(HL)
@@ -77,12 +76,18 @@ ZB_POS: PUSH DE                         ; position and read resident-image recor
 
 ZB_ADV: INC E                           ; advance resident-image destination
         DJNZ ZB_NEXT
+  ; Cold reconstruction must not interpret bootstrap bytes at 0048H as
+  ; interrupted-lookup state and restore the byte at 0046H as a saved user.
+  ; Clear only after the last read: page zero still holds executing boot code.
+        XOR A
+        LD (0048H),A
         JP LY_BIOS
 
 ZB_FAIL:LD A,'!'                        ; halt after bootstrap read failure
         OUT (1),A
+  ; Interrupts remain disabled and CPMSIM has no bootstrap NMI source.
+  ; This terminal HALT needs no restart loop; retain the 128-byte boot limit.
         HALT
-        JR ZB_FAIL
 
 ; -------------------------------------------------------------------------------
 ; Bootstrap Disk Mapping

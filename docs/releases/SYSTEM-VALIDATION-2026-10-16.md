@@ -31,9 +31,9 @@ The source checkout was clean and was not modified. A private clone at
 | 2. Fresh conformance suite | Selected returning groups pass on both platforms | V010–V012 refresh production BDOS/file/random and native DIR/CCP/entry/CPU/ecology/disk-safe, BIOS/error-safe and selected console evidence. Manual, device, terminal-outcome and applicability gaps remain explicitly open. |
 | 3. CPX/RSX lifecycle, relocation, ROM protection | Automated checks pass after cold-start fix | V016 identifies and clears an uninitialized cold-entry loader-recovery flag. Poisoned-RAM initializer test, 32 pristine-media cold boots and guarded lifecycle/stack/workspace checks pass. Focused production monitor relocation checks pass on both backends (V015). Deferred manual/device checks remain explicit. |
 | 4. Resident/transient command integration | Partial; fresh native file workflow passes | V013 covers shipped resident/transient COPY/REN/TYPE/ERA and PIP across users. Broader selectors, protection, recovery and caller-state cases remain. |
-| 5. Utility operations and failure recovery | Partial; selected shipped ED/CONFIG checks pass | V013–V014 verify native ED save/backup and cpmsim ED E/Q/H plus CONFIG startup decline/save. DUP/SYSGEN/media operations and broader failure recovery remain. |
+| 5. Utility operations and failure recovery | Partial; selected shipped ED/CONFIG checks pass | V013–V014 verify ED/CONFIG cases; V017 adds shipped cpmsim DUP format/copy/check and SYSGEN named export/reinstall/reboot, including declines and preservation. Native media workflows and broader failure recovery remain. |
 | 6. Monitors and applications | Selected cross-platform regressions pass | V013–V014 exercise all three shipped monitor/backend pairs, native file workflows and cpmsim TYPE paging/file boundaries. Broader applications, audio/manual/device and exhaustive protocol coverage are not implied. |
-| 7. End-to-end release workflows | Partial; CONFIG startup cold boot passes | V014 confirms saved startup executes only on next cold boot. Other complete user sessions, export/install/reboot and release workflows remain. |
+| 7. End-to-end release workflows | Partial; CONFIG startup cold boot passes | V014 confirms saved startup executes only on next cold boot. V017 adds cpmsim named system export/install/reboot. Native equivalents and other complete release workflows remain. |
 | 8. Closure and final acceptance reruns | Not run | Resolve failures, identify accepted limits, rebuild and rerun against final revision/images. |
 
 A status of not run is not a pass. Observations and explicit suite exclusions
@@ -2049,3 +2049,89 @@ Evidence: `/private/tmp/v016-rom-build.log`,
 ROM SHA-256: `757d38cb0ccec92ccb3624501e45ad64b90cc0c3f79487b2c75695143535b918`.
 The wrong-user gate is resolved; this does not close deferred manual/device
 checks or declare whole-system validation complete.
+
+
+## V017 — shipped cpmsim DUP/SYSGEN media workflows and disk cold-state fix
+
+Continue stage 5 with the shipped DUP and SYSGEN binaries, without replacing
+utilities with development binaries. `run_validation_cpmsim_media.py` retains
+private source/target disks, transcripts, independent file extraction,
+filesystem checks, all 30 shipped-file comparisons and per-case results.
+The fixture saves `:VER /BANNER` as its startup command to avoid SUBMIT's
+filesystem writes obscuring source-preservation comparisons; this changes
+protected startup configuration only, not the shipped command files.
+
+### Disk cold-start finding and fix
+
+The first run passes DUP format/copy/check and reaches the SYSGEN restored
+system's prompt, but fails its banner-count oracle: the fixture used resident
+`VER /BANNER` instead of `:VER /BANNER`. The transcript also exposes an OS
+initialization defect distinct from that fixture error: a cold A32 prompt
+briefly precedes A0 redisplay. Preserve the original run at
+`/private/tmp/bettercpm-v017-cpmsim-media/` and its log
+`/private/tmp/v017-cpmsim-media.log`; it is not passing round-trip evidence.
+
+The disk bootstrap leaves its own bytes at the same page-zero recovery
+addresses implicated in V016. In the previous cpmsim boot record, 0048h is
+7Dh (active bit set) and 0046h is 20h: CL_ABORT restores user 32 on cold
+reconstruction. Command editing later masks it to zero. Fix both disk cold
+loaders to clear the active flag before BIOS BOOT. Warm reconstruction remains
+unchanged. The cpmsim clear happens after the final resident read because
+page zero still holds executing bootstrap instructions. Keep its 128-byte
+limit by retaining zero in D, reusing it for C, and removing the unreachable
+restart after the interrupt-disabled terminal HALT. The Model 4 stage-one
+loader uses the zero result of its final sector counter decrement.
+
+`test_cold_boot_lookup_state.py` executes both emitted disk loaders with three
+poisoned-RAM patterns. It checks the cpmsim flag, all 52 physical record
+requests across track boundaries, destination addresses and the 128-byte limit;
+it checks Model 4 flag clearing with controlled successful sector transport.
+The old cpmsim loader fails this new regression; both corrected loaders pass.
+The small CPU fixture now accepts DI/EI while delivering no interrupts; the
+existing 17 BIOS-vector and disk-path contracts still pass. This controlled
+Model 4 check does not substitute for native boot qualification.
+
+### Corrected cpmsim workflows — PASS
+
+- DUP FORMAT decline leaves every target byte unchanged. Formatting A is
+  rejected as protected. Confirmed B format writes/verifies every raw byte as
+  E5h; subsequent CHECK reports zero unreadable sectors.
+- DUP COPY decline leaves both disks unchanged. Confirmed copy equals every
+  source byte, source is unchanged, and subsequent CHECK reports zero
+  unreadable sectors.
+- SYSGEN exports the named BASE090.SYS package with exactly 161 records;
+  its 160 payload records independently match the source's mapped system
+  records, including saved startup. Export preserves source and output
+  system area. Replacement decline preserves the entire output disk;
+  confirmed replacement preserves package bytes and leaves no recovery names.
+- Named installation decline preserves every target byte. Confirmed install
+  preserves the entire target filesystem and an independently extracted
+  user-7 sentinel, then the installed disk cold-boots and executes its saved
+  startup and an explicit banner command. All observed prompts must be A0;
+  a later valid redisplay cannot hide an invalid initial prompt.
+
+All three cases verify all 30 shipped source files and check source/target
+filesystems. Evidence: `/private/tmp/bettercpm-v017-fixed-cpmsim-media/` and
+`/private/tmp/v017-fixed-cpmsim-media.log`. The tested cpmsim candidate SHA-256
+is `8ea8a419901a1e6a62ef4f3d80af2e5635f851ac06bc8608fdeb7d5f6df2c4da`;
+it matches the separately rebuilt second candidate byte-for-byte.
+
+No permanent RAM increase: both platforms' BDOS (3454 bytes), BIOS (757),
+gateway (248) and file loader (145) remain byte-identical to V010 production.
+The Model 4 cold loader grows from 315 to 318 bytes inside its 512-byte slot;
+cpmsim's first-record loader remains exactly 128 bytes. CONFIG's generated
+fingerprint and cold-IOBYTE descriptor checks pass against the rebuilt media.
+
+Fresh isolated distribution rebuild and real boot qualification pass on both
+platforms. Both reports pass filesystem, included-file integrity, CONFIG
+fingerprint and boot gates; no System Disk manifest omissions. cpmsim has
+30 files/148 KiB free; Model 4 has 29 files/596 KiB free. Native Model 4 cold
+startup, CPX LIST, VER and ED /VER complete normally.
+
+Published evidence generation: `/private/tmp/bettercpm-v017-r2-distribution/release-17e28637d18c-b25e85846766`.
+The first ordinary-permission native launcher attempt was blocked by macOS
+LaunchServices; its log is `/private/tmp/v017-distribution.log`, not an OS
+failure. The successful second build uses authorized native-launch permissions
+and logs to `/private/tmp/v017-r2-distribution.log`. Native DUP/SYSGEN workflows,
+broader utility recovery matrices, manual/device checks and final acceptance
+remain open; these selected cpmsim results do not close stage 5.
