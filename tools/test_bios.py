@@ -72,6 +72,8 @@ class Z80:
             self.pc += 1
             if op == 0x00:              # NOP
                 pass
+            elif op in (0xF3, 0xFB):    # DI/EI; fixture delivers no interrupts
+                pass
             elif op == 0xC3:              # JP nn
                 self.pc = self.word(self.pc)
             elif op in (0xC2, 0xCA, 0xD2, 0xDA):  # JP NZ/Z/NC/C,nn

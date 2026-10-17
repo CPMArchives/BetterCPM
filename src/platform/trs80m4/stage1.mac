@@ -56,6 +56,9 @@ SYSLOAD:                                ; load next resident-system sector
         DEC     A
         LD      (SYSLEFT),A
         JR      NZ,SYSLOAD
+  ; A is zero after the final sector. A true cold start has no interrupted
+  ; lookup to recover; leave warm reconstruction's recovery state untouched.
+        LD      (0048H),A
         JP      SYSBOOT
 
 SYSERROR:                               ; halt after system-load failure
