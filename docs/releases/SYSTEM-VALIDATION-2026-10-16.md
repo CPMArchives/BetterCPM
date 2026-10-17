@@ -1800,3 +1800,82 @@ procedure. Untested/manual items remain in the deferred register rather than
 being inferred from safe-group successes. Application/monitor regression and
 the remaining campaign stages still require separate qualification; whole-
 system validation is not complete.
+
+
+## V013 — shipped-image monitor and application regression
+
+The console/BIOS/error record is pushed in PR 374. These next regressions use
+private copies of the same qualified production generation. Existing shipped
+programs, RSXs and STARTUP.SUB are left intact; only private exercise scripts
+and completion witnesses are added. This avoids substituting development
+binaries for the release artifacts under validation.
+
+### Native ADM-3A and VT52 — PASS
+
+Evidence under `/private/tmp/bettercpm-v013-native/`:
+
+| Pair | Evidence | Selected checks |
+| --- | --- | --- |
+| ADM3A + M4SCRN | adm3a-17i2vb52 | Positioned text, parser reset, movement/tab, reverse video, line erasure, cursor query, keyboard A:[], unload/53K |
+| VT52 + M4SCRN | vt52-61p9zlpw | Positioned text, tab/margin, parser reset, EOL/EOS erasure, unload/53K |
+
+Each run verifies the loaded pair, completes the shipped test utility, unloads
+both providers, observes no RSXs loaded and 53K TPA, then executes an independent
+completion witness. All 29 shipped files match their manifest hashes and remain
+unchanged; final System Disk filesystems are clean and baseline hashes unchanged.
+These are selected screen-memory assertions, not exhaustive protocol coverage
+or an audible-bell qualification.
+
+The first ADM-3A checker used a 23-byte slice for a 24-byte marker. Its assertion
+failed after all seven captures had been retained. Correcting the checker and
+running the full capture/integrity audit on those same images passes. The
+original executed runner and failure log remain alongside the corrected audit
+source/result; no OS or monitor code changed. The new `--audit-only` mode
+rechecks retained captures without relaunching or modifying the test disk.
+
+
+### Native ANSI — PASS
+
+`/private/tmp/bettercpm-v013-native/ansi-nvfgfw3z/` passes the shipped ANSI +
+M4SCRN regression: text at row 5/column 10, reverse attributes only on the
+selected word, erased suffix, parser reset and unload of both providers with
+53K TPA restored. An independent completion witness executes afterward.
+All 29 shipped files match their manifest hashes and remain unchanged; the
+filesystem is clean and baseline hash unchanged. This closes the selected
+three-personality Model 4 screen regression, not every ANSI/VT100 feature or
+cross-platform/real-terminal compatibility. Audio remains separately untested.
+
+
+### Native shipped file utilities and ED — PASS
+
+`/private/tmp/bettercpm-v013-native/applications-y4tjmfvc/` exercises the shipped
+binaries on a private System Disk and disposable B: data disk. PIP copies B1's
+source; transient COPY /V /B copies it to B3; transient REN renames the PIP copy;
+transient TYPE displays its ALPHA/BETA text; transient ERA /Y removes it.
+Resident COPY/REN/TYPE/ERA repeat the ordinary workflow on a separate B3 name.
+Two independent display captures verify the actual TYPE text, with a clear-screen
+witness between paths so stale output cannot satisfy the second check.
+
+ED then inserts NEW before an existing B7:CASE.TXT and saves. Independent raw
+file decoding verifies NEWOLD text, the original OLD text in CASE.BAK, the
+unchanged user-0 CASE.TXT sentinel and unchanged B1 source/B3 verified copy.
+The exact five-file final inventory contains no renamed/erased intermediates
+or CASE.$$$. Distinct output-only completion witnesses establish execution
+through both the file workflow and ED save. This smoke case does not separately
+qualify caller-DU restoration, every error path, paging or every utility option.
+
+Both final filesystems pass explicit-geometry checks. All 29 shipped files,
+including STARTUP.SUB, match their manifest hashes and remain unchanged; the
+immutable baseline remains unchanged. The executed runner, invocation, screen
+captures and result JSON are retained. Original run logs are archived in each
+V013 evidence directory, including the first ADM checker assertion failure.
+No OS change is required by these regressions.
+
+### Remaining application/monitor coverage
+
+This batch qualifies selected native screen tests for all three personalities
+and a representative shipped file-utility/ED workflow. cpmsim/host-terminal
+backend regression, broader utility/application scenarios (including TYPE paging
+and CONFIG/DUP/SYSGEN persistence/media operations), and later campaign stages
+remain separate work. Audio/manual/device tests remain deferred as recorded;
+whole-system validation is not complete.
