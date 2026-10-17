@@ -1,6 +1,7 @@
         INCLUDE layout.inc
 
 ; MEMORY_SAVINGS_V1: qualified shared helpers; preserve public call contracts.
+; RANDOM_SAME_EXTENT_V1: retain populated active FCBs without close/reopen.
 
 ; ********************************************************************************
 ; *                           BetterCP/M Unified BDOS                            *
@@ -134,8 +135,7 @@ UB_VERSION:                             ; return CP/M version
   ; column, printer-echo and flow-control behavior without a second layer.
 
 UB_READER:                              ; read reader device
-        CALL    BIO_RDRIN
-        RET
+        JP      BIO_RDRIN
 
 UB_PUNCH:                               ; write punch device
         LD      C,E
@@ -163,8 +163,7 @@ UB_CONST:                               ; return console status
         LD      A,(UB_PENDING)
         OR      A
         JR      NZ,UB_READY
-        CALL    BIO_CONST
-        RET
+        JP      BIO_CONST
 
 UB_READY:                               ; report ready state
         LD      A,0FFH
@@ -193,8 +192,7 @@ UB_DIN:                                 ; din
         RET     Z
 
 UB_DGET:                                ; dget
-        CALL    UB_GETIN
-        RET
+        JP      UB_GETIN
 
 ; -------------------------------------------------------------------------------
 ; Cooked Console Input
@@ -208,8 +206,7 @@ UB_CONIN:                               ; read cooked console character
         JR      Z,UB_TOGGLE
         CP      19                      ; ^S waits for one key and is consumed
         JR      Z,UB_PAUSE
-        CALL    UB_ECHO
-        RET
+        JP      UB_ECHO
 
 UB_TOGGLE:                              ; toggle control state
         LD      A,(UB_LISTE)
@@ -1149,8 +1146,6 @@ UB_OPMISS:                              ; opmiss
 ; -------------------------------------------------------------------------------
 
 UB_CLOSE:                               ; close file
-        CALL    UB_CCORE
-        RET
 
 UB_CCORE:                               ; ccore
         LD      (UB_ITFCB),DE
@@ -1209,8 +1204,6 @@ UB_PUBLISH:                             ; publish FCB range without changing cal
 ; -------------------------------------------------------------------------------
 
 UB_MAKE:                                ; make file
-        CALL    UB_MAKECORE
-        RET
 
 UB_MAKECORE:                            ; makecore
         CALL    UB_MCTX
@@ -1391,7 +1384,7 @@ UB_RNPASS:                              ; rnpass
         JR      UB_RNPASS
 
 UB_RNDONE:
-        JP      UB_ATDONE
+        JR      UB_ATDONE
 
   ; Function 30 applies only the FCB's high attribute bits to all matching
   ; extents. Low seven-bit name/type characters and bytes 12..31 are untouched.
@@ -1574,8 +1567,6 @@ UB_RBAD:                                ; rbad
 ; -------------------------------------------------------------------------------
 
 UB_READ:                                ; read sequential record
-        CALL    UB_READCORE
-        RET
 
 UB_READCORE:                            ; readcore
         CALL    UB_FCBDRV
@@ -1617,8 +1608,6 @@ UB_REOF:                                ; reof
 UB_WRITE:                               ; write sequential record
         XOR     A
         LD      (UB_ZMODE),A
-        CALL    UB_WCORE
-        RET
 
 UB_WCORE:                               ; wcore
         CALL    UB_MCTX                 ; same drive selection and R/O gate as Make
@@ -1751,8 +1740,8 @@ UB_DROMESSAGE:                          ; dromessage
 
 UB_RREAD:                               ; read random record
         CALL    UB_RDECODE
-        XOR     A
-        CALL    UB_EXTENT
+        LD      A,0
+        CALL    C,UB_EXTENT
         JP      C,UB_BAD
         PUSH    IX
         POP     DE
@@ -1772,7 +1761,7 @@ UB_RWRITE:                              ; write random record
 UB_RWCOMMON:                            ; rwcommon
         CALL    UB_RDECODE
         LD      A,1
-        CALL    UB_EXTENT
+        CALL    C,UB_EXTENT
         JP      C,UB_BAD
         PUSH    IX
         POP     DE
@@ -1863,33 +1852,50 @@ UB_RDECODE:                             ; decode random-record position
         LD      A,6
         JP      UB_RETA
 
-UB_RVALID:                              ; rvalid
-  ; Save a dirty extent BEFORE decoding the new position.  Reopening its old
-  ; directory image used to throw away unclosed random writes and zero fill.
-  ; A bare search FCB has no records to commit.
+UB_RVALID:
+  ; R1:R0 >> 7 supplies logical EX/S2. RLA consumes
+  ; R0 bit 7 carried by ADD; AND discards the unrelated high EX bits.
+        LD      A,(IX+33)
+        ADD     A,A
+        LD      A,(IX+34)
+        LD      H,A
+  ; A zero-RC FCB may be a bare search FCB, not an activated empty file.
+  ; Keep its normal lookup. Upper EX flags conservatively take that path too.
+        RLA
+        AND     01FH
+        LD      L,A
+        LD      A,H
+        RRCA
+        RRCA
+        RRCA
+        RRCA
+        AND     0FH
+        LD      H,A
         LD      A,(IX+15)
         OR      A
-        CALL    NZ,UB_CCORE
-        LD      A,(IX+34)               ; R1
-        LD      C,A
-        RRCA
-        RRCA
-        RRCA
-        RRCA
-        AND     0FH
-        LD      (IX+14),A               ; decoded S2
-        LD      A,C
-        AND     0FH
-        ADD     A,A
-        LD      C,A                     ; EX bits 1..4
-        LD      A,(IX+33)               ; R0
-        LD      B,A
-        RLCA
-        AND     1
-        OR      C
-        LD      (IX+12),A
-        LD      A,B
-        AND     07FH
+        JR      Z,UR_DECODE
+        LD      A,(IX+14)
+        AND     03FH
+        CP      H
+        JR      NZ,UR_SWITCH
+        LD      A,(IX+12)
+        CP      L
+        JR      Z,UR_POSITION
+UR_SWITCH:
+  ; RC is nonzero on both incoming branches; preserve the decoded target
+  ; across Close. A genuine extent change must still commit dirty state.
+        PUSH    HL
+        CALL    UB_CCORE
+        POP     HL
+UR_DECODE:
+        LD      (IX+14),H
+        LD      (IX+12),L
+        SCF
+UR_POSITION:
+  ; RES changes the position without changing the carry result: NC keeps
+  ; the live FCB, C asks the random caller to activate the decoded extent.
+        LD      A,(IX+33)
+        RES     7,A
         LD      (IX+32),A
         RET
 
@@ -2597,6 +2603,7 @@ UA_NLOOP:
         DJNZ    UA_NLOOP
         RET
 
+        DB 0,0 ; preserve frozen live-state and private-stack addresses
 UB_OLDSP:       DW      0               ; caller stack pointer
 UB_OLDIX:       DW      0               ; saved caller IX
 UB_DRIVE:       DB      0               ; default drive

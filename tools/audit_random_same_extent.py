@@ -11,6 +11,8 @@ root=Path(__file__).resolve().parents[1]
 p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,default=root/'build/audit/random-same-extent');args=p.parse_args()
 out=args.output.resolve();out.mkdir(parents=True,exist_ok=True)
 s=(root/'src/bdos/unified.mac').read_text()
+if 'RANDOM_SAME_EXTENT_V1' in s:
+ raise SystemExit('Candidate already integrated. Use test_random_same_extent_candidate.py --production; reproduce the private audit from commit 0d8e2db.')
 original=s
 (out/'baseline.mac').write_text(s)
 s=s.replace('        CALL    UB_RDECODE\n        XOR     A\n        CALL    UB_EXTENT','        CALL    UB_RDECODE\n        LD      A,0\n        CALL    C,UB_EXTENT')
