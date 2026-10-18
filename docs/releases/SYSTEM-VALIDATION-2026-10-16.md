@@ -31,7 +31,7 @@ The source checkout was clean and was not modified. A private clone at
 | 2. Fresh conformance suite | Selected returning groups pass on both platforms | V010–V012 refresh production BDOS/file/random and native DIR/CCP/entry/CPU/ecology/disk-safe, BIOS/error-safe and selected console evidence. Manual, device, terminal-outcome and applicability gaps remain explicitly open. |
 | 3. CPX/RSX lifecycle, relocation, ROM protection | Selected checks pass; V031 XSUB finding corrected and qualified (V032) | V016 identifies and clears an uninitialized cold-entry loader-recovery flag. Poisoned-RAM initializer test, 32 pristine-media cold boots and guarded lifecycle/stack/workspace checks pass. Focused production monitor relocation checks pass on both backends (V015). Deferred manual/device checks remain explicit. |
 | 4. Resident/transient command integration | Partial; fresh native file workflow passes | V013 covers native file workflows. V021/V023–V027 add shipped cpmsim ERA/REN/COPY/MOVE/DIR/STAT/TYPE selectors, protection, reporting and controlled recovery. Broader native repetition and caller-state cases remain. |
-| 5. Utility operations and failure recovery | Partial; V033-F1 malformed CPX recovery remains open | V013–V014 verify ED/CONFIG cases; V017 adds shipped cpmsim DUP format/copy/check and SYSGEN named export/reinstall/reboot; V018 adds native named SYSGEN and controlled recovery/parser checks. V019 adds native DUP format/copy/check/CRC recovery; V020 adds native disk-source SYSGEN safeguards/install/reboot. V021/V023–V028 add cpmsim selector/protection/reporting and controlled COPY/TYPE/ED/CONFIG recovery checks. V029–V032 add manager/batch/PIP checks and correct XSUB retirement. V033 adds manager refusal coverage but finds a malformed CPX hard-stop. Native repetition and broader device faults remain. |
+| 5. Utility operations and failure recovery | Partial; V033-F1 corrected and qualified in V034 | V013–V014 verify ED/CONFIG cases; V017 adds shipped cpmsim DUP format/copy/check and SYSGEN named export/reinstall/reboot; V018 adds native named SYSGEN and controlled recovery/parser checks. V019 adds native DUP format/copy/check/CRC recovery; V020 adds native disk-source SYSGEN safeguards/install/reboot. V021/V023–V028 add cpmsim selector/protection/reporting and controlled COPY/TYPE/ED/CONFIG recovery checks. V029–V032 add manager/batch/PIP checks and correct XSUB retirement. V033 adds manager refusal coverage; V034 corrects its malformed CPX hard-stop on both platforms. Native repetition and broader device faults remain. |
 | 6. Monitors and applications | Selected cross-platform regressions pass | V013–V014 exercise all three shipped monitor/backend pairs, native file workflows and cpmsim TYPE paging/file boundaries. Broader applications, audio/manual/device and exhaustive protocol coverage are not implied. |
 | 7. End-to-end release workflows | Partial; CONFIG startup cold boot passes | V014 confirms saved startup executes only on next cold boot. V017 adds cpmsim named system export/install/reboot. V018 verifies the native named-package round trip; V020 verifies disk-source installation/reboot. Other complete release workflows remain. |
 | 8. Closure and final acceptance reruns | Not run | Resolve failures, identify accepted limits, rebuild and rerun against final revision/images. |
@@ -2861,3 +2861,77 @@ reproduction and failure text are in
 OPEN_FINDING, never PASS. Do not count the positive manager cases as resolving
 this finding or claim Step 7 closure. Next: audit bounded carrier-validation and
 profile rollback/reconstruction recovery before changing production behavior.
+
+
+## V034 — optional malformed CPX recovery; V033-F1 corrected
+
+The reloader now saves each optional carrier's allocation boundary before
+loading. Failed header/layout/read/reset/relocation/entry validation restores
+that boundary and discards the candidate without linking it or invoking its
+callbacks. It prints CPX? plus CR/LF, preserves preceding valid CPXs and
+continues to later profile entries and the required CCP. Persistent names are
+retained for inspection/removal. Missing optional carriers remain silently
+skipped; required CCP failure and initial directory-login failure retain their
+existing hard-failure behavior. This is not an arbitrary-memory-corruption or
+power-loss recovery guarantee.
+
+Space is recovered by eliminating the entry jump and duplicate CPX-kind flag,
+and using CRHEAD as the first pending link destination so first/later CPXs use
+one linking path. Model 4 reloader: 930 -> 932 bytes in the same 932-byte slot.
+The cpmsim variant is 924 bytes; its ROM relocation manifest has 45 resolved
+references. Fresh comparisons show BDOS (3,454), BIOS (757) and the permanent
+resident image (6,588) byte-identical to the V032 build. No protected layout or
+allocation changes; native unloaded memory remains 53K.
+
+Fresh isolated System Disks were built and published locally under
+`/private/tmp/bettercpm-v034-distribution/release-5761c0f03a09-9df8d69de02d/`.
+Both pass build, configuration fingerprint, file-integrity, filesystem and
+real-emulator boot checks. cpmsim has 30 files/148K free; Model 4 has 29/596K.
+The report's revision is the V033 parent commit, with the actual uncommitted
+fix inputs hashed in its source identity. It is a validation generation, not a
+final merged-revision acceptance release. The initial native launch failed
+under sandboxed LaunchServices; the successful retry reused only hash-verified
+identical build artifacts with native launch permission. Retained build logs:
+`/private/tmp/bettercpm-v034-build.log` and `bettercpm-v034-build-retry.log`.
+
+Accepted evidence:
+
+- `/private/tmp/bettercpm-v034-unit/result.json`: assembled reloader tests cover
+  ordinary and alternate CCP placement, one/two valid CPXs, malformed signature,
+  ABI/flags/size/allocation/section/entry/lifecycle/relocation metadata, first
+  header/payload/relocation-header read failures and stream-reset failure.
+  A late second-carrier rejection preserves the first valid CPX; a valid later
+  CPX loads after a failed first carrier. The restored CCP placement proves
+  allocation rollback; configured names remain and rejected carriers are not
+  published. Required malformed CCP still reaches CRFAIL. Existing monitor
+  prompt/reconstruction reset tests also pass. Executed tests/helpers, logs
+  and unchanged-core binary comparisons are retained.
+- `/private/tmp/bettercpm-v034-cpmsim-refusals/result.json`: the original
+  successful manager-refusal/profile-preservation checks pass against the new
+  built image. All 30 shipped files remain identical; filesystem clean.
+- `/private/tmp/bettercpm-v034-r2-cpmsim-recovery/result.json`: bad CPX warns and
+  reaches the prompt, RCP remains usable, the bad configured name remains
+  inspectable, an ordinary transient returns through reconstruction, and
+  explicit CPX UNLOAD removes it. Loading ANSI/ANSISCRN while the bad carrier
+  remains also passes, exercising the warning through the existing monitor
+  output path. Removing the bad entry stops warnings; unloading monitor
+  providers restores 53K. All shipped files remain unchanged; filesystem clean.
+  The earlier recovery run also passed without the added monitor-output case.
+- `/private/tmp/bettercpm-v034-native-cpx-recovery/result.json`: native Model 4
+  startup batch adds BAD.CPX, captures CPX? plus both RCP.CPX/BAD.CPX in the
+  configured list and reaches BAD CPX RECOVERY REACHED. A second submitted
+  batch removes BAD, lists RCP, reports no RSXs/53K and reaches BAD CPX REMOVED
+  SAFELY without further warnings. All 28 other shipped files remain unchanged;
+  STARTUP.SUB is the sole declared changed shipped fixture, bypassing optional
+  monitor startup for this independent test. The extracted final filesystem
+  passes fsck.cpm. No original baseline media changed.
+
+Specifications, the programmer guide and the user manual now distinguish
+configured profile names from successfully active CPXs and explain recovery
+and repeated warnings. The separate CPX Carrier Recovery Safety audit records
+the allocation/link/publication reasoning. V033-F1 is corrected within this
+bounded optional-carrier contract. The historical --malformed-cpx oracle is
+for unfixed images; --recover-malformed-cpx is the positive current regression.
+Native ED/CONFIG recovery, remaining device/manual applicability reviews and
+final merged-source acceptance reruns remain open; Step 7 and whole-system
+validation are not declared complete.
