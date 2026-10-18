@@ -24,7 +24,7 @@ check does not silently change the independent suite's printed status to PASS.
 
 | Coverage | Current disposition | Required closure |
 | --- | --- | --- |
-| Native 0368–0369 and 0379–0384 | OPEN: terminal read-only outcomes | Reach each selected failing call; capture diagnostic and return to a usable CCP; prove protected disk bytes and attributes unchanged. Reuse the cpmsim external-outcome approach with native instrumentation. No operator is inherently required. |
+| Native 0368–0369 and 0379–0384 | Closed for the selected V034 image by V038 | Eight external native outcomes passed: selected diagnostic, usable CCP, caller B0/53K, unchanged protected media and shipped files. This is not DRI key-acknowledgement equivalence or a final merged-source rerun. |
 | BDOSTEST 0143 | OPEN: required media-change procedure | Use disposable, restorable media; exercise change detection and read-only protection. Record the selected-drive/media assumptions and byte audit. |
 | BDOSTEST 0420 | OPEN: required buffered-input procedure | Show Function 10 uses DE rather than DMA, preserving independent DMA sentinels. This can be automated. |
 | BDOSTEST 0519 | OPEN: required BIOS-resource procedure | Observe selected-drive DPH/DPB/allocation resources across the specified operations. This can be automated. |
@@ -40,8 +40,9 @@ check does not silently change the independent suite's printed status to PASS.
 
 No blanket manual exclusion is approved by this review. Any later exclusion must
 name the card, target, contract, reason and replacement evidence or remaining gap.
-The next bounded automation batch should address native read-only terminal
-outcomes; the three BDOS procedures and four native ecology transcripts follow.
+V038 closes the selected native read-only terminal outcomes. The next bounded
+automation batch should address the three BDOS procedures and four native
+ecology transcripts.
 Live host devices and operator observations can then be closed with named profiles.
 
 ## Device basis
