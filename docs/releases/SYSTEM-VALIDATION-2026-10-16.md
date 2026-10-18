@@ -2520,3 +2520,44 @@ fsck.cpm and the immutable release image hash is unchanged. Audit summary:
 `/private/tmp/bettercpm-v025-audit.json`. These controlled tests do not qualify
 real-floppy faults, native Model 4 repetition or power-loss behavior. Validation
 remains incomplete.
+
+
+## V026 — shipped DIR/WHEREIS/STAT scopes, extents and attributes
+
+Fifteen sessions on disposable copies of the V023 cpmsim System Disk passed.
+Resident DIR rejects /WHEREIS with Use :DIR. Transient global search finds each
+logical multi-extent file once across B0, B3 and C31. Drive-only qualification
+inherits current user; B[-] expands users; SYS predicates filter correctly.
+No-match output and invalid option combinations are distinguished. Resident and
+transient ordinary DIR list both an empty and multi-extent file once. STAT
+reports the latter as 260 records, 34K allocated and two physical entries.
+All reporting leaves both secondary disks byte-identical.
+
+STAT $R/O, $SYS, $R/W and $DIR changes match independently constructed full-disk
+expectations: only the requested attribute bit changes across both selected
+physical extents. Payload bytes, other users/files and the second disk remain
+unchanged. All 30 System Disk files match the release manifest; its filesystem
+and the ordinary secondary filesystem check clean. Accepted evidence:
+`/private/tmp/bettercpm-v026-r3-dir-stat/result.json` with executed runner,
+transcripts, media, file audits and filesystem checks.
+
+Host fsck.cpm rejects valid BetterCP/M user 31 as CP/M 2.2 status 1F. The C31
+fixture is independently proven unchanged; allocation/connectivity is checked
+on a separate copy changing only its directory user byte from 31 to unused
+user 15. The original is preserved. The JSON explicitly records this narrower
+filesystem-check scope; this is not a claim that host fsck accepted user 31.
+
+The first run used $RO (selector spelling) instead of STAT's $R/O update syntax;
+STAT correctly rejected it. The corrected r2 passed operations but stopped on
+that host fsck limitation. The fresh r3 run includes both harness corrections
+and passed completely. No production behavior changed.
+
+Two controlled tests also passed against manifest-matched fresh binaries:
+`test_dir_whereis.py` covers scope, attributes, extent deduplication, ordering,
+bounded memory and recoverable BIOS open/read errors with Search incomplete;
+`test_z80pack_stat_files.capacity_probe()` covers EXM=0 extent collapsing,
+384-summary capacity and overflow. Evidence:
+`/private/tmp/bettercpm-v026-whereis-fixture/result.json` and
+`/private/tmp/bettercpm-v026-stat-capacity/result.json`.
+These are controlled fixtures, not physical hardware failures. Native repetition
+and remaining utility/device recovery checks remain open; validation is incomplete.
