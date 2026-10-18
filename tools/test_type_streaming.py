@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Execute transient TYPE streaming and display transforms with a BDOS fixture."""
 from test_resident_type import execute
+from utility_versions import banner
 
 def run(tail, files, **kwargs):
     before=files.copy()
@@ -24,7 +25,7 @@ def main():
     out,_=run('B3:*.TXT',states)
     assert all(out.count(f'STATE {n}')==1 for n in range(8)),out
     out,calls=run('/ver',{})
-    assert 'BetterCP/M TYPE 1.0 (Build 005)' in out and not any(f in calls for f in (15,17,20,25,32))
+    assert banner('TYPE') in out and not any(f in calls for f in (15,17,20,25,32))
     out,_=run('B3:*.TXT',fixtures,open_fail=(a,))
     assert 'TYPE B3:A.TXT - Cannot open.' in out and 'BETA' in out,out
     out,_=run('B3:*.TXT',fixtures,read_fail=(a,))

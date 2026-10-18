@@ -3,6 +3,7 @@
 from test_type_streaming import run
 import re
 from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
 A=(1,3,b'A       TXT');B=(1,3,b'B       TXT')
 PROMPT='MORE -- ,/^R back; ./Space/^C next; </> files; ^Q quit.'
 
@@ -37,7 +38,7 @@ def main():
     out,_=run('/P B3:*.TXT',{A:(b'A LINE\r\n',0),B:(b'B LINE\r\n',0)},responses='\x11')
     assert out.count(PROMPT)==1 and 'B3:A.TXT' in out and 'B3:B.TXT' in out,out
     # The current file is the page's first-byte anchor, not the last file shown.
-    listing=(Path(__file__).resolve().parents[1]/'build/utilities/type.lst').read_text()
+    listing=(ROOT/'build/utilities/type.lst').read_text()
     anchor=int(re.search(r'^([0-9a-f]{4})\s+.*?\bTP_ANCH:',listing,re.M|re.I)[1],16)
     anchors=[]
     def observe(c, service):
