@@ -31,7 +31,7 @@ The source checkout was clean and was not modified. A private clone at
 | 2. Fresh conformance suite | Selected returning groups pass on both platforms | V010–V012 refresh production BDOS/file/random and native DIR/CCP/entry/CPU/ecology/disk-safe, BIOS/error-safe and selected console evidence. Manual, device, terminal-outcome and applicability gaps remain explicitly open. |
 | 3. CPX/RSX lifecycle, relocation, ROM protection | Selected checks pass; V031 XSUB finding corrected and qualified (V032) | V016 identifies and clears an uninitialized cold-entry loader-recovery flag. Poisoned-RAM initializer test, 32 pristine-media cold boots and guarded lifecycle/stack/workspace checks pass. Focused production monitor relocation checks pass on both backends (V015). Deferred manual/device checks remain explicit. |
 | 4. Resident/transient command integration | Partial; fresh native file workflow passes | V013 covers native file workflows. V021/V023–V027 add shipped cpmsim ERA/REN/COPY/MOVE/DIR/STAT/TYPE selectors, protection, reporting and controlled recovery. Broader native repetition and caller-state cases remain. |
-| 5. Utility operations and failure recovery | Partial; V033-F1 corrected and qualified in V034 | V013–V014 verify ED/CONFIG cases; V017 adds shipped cpmsim DUP format/copy/check and SYSGEN named export/reinstall/reboot; V018 adds native named SYSGEN and controlled recovery/parser checks. V019 adds native DUP format/copy/check/CRC recovery; V020 adds native disk-source SYSGEN safeguards/install/reboot. V021/V023–V028 add cpmsim selector/protection/reporting and controlled COPY/TYPE/ED/CONFIG recovery checks. V029–V032 add manager/batch/PIP checks and correct XSUB retirement. V033 adds manager refusal coverage; V034 corrects its malformed CPX hard-stop on both platforms. V035 adds fresh native CONFIG combined save, third-write rollback and cold activation. Native ED recovery and remaining device/manual reviews remain. |
+| 5. Utility operations and failure recovery | Partial; V033-F1 corrected and qualified in V034 | V013–V014 verify ED/CONFIG cases; V017 adds shipped cpmsim DUP format/copy/check and SYSGEN named export/reinstall/reboot; V018 adds native named SYSGEN and controlled recovery/parser checks. V019 adds native DUP format/copy/check/CRC recovery; V020 adds native disk-source SYSGEN safeguards/install/reboot. V021/V023–V028 add cpmsim selector/protection/reporting and controlled COPY/TYPE/ED/CONFIG recovery checks. V029–V032 add manager/batch/PIP checks and correct XSUB retirement. V033 adds manager refusal coverage; V034 corrects its malformed CPX hard-stop on both platforms. V035 adds fresh native CONFIG combined save, third-write rollback and cold activation. V036 adds seven native ED recovery scenarios. Remaining coverage/manual/device reviews and final acceptance reruns remain. |
 | 6. Monitors and applications | Selected cross-platform regressions pass | V013–V014 exercise all three shipped monitor/backend pairs, native file workflows and cpmsim TYPE paging/file boundaries. Broader applications, audio/manual/device and exhaustive protocol coverage are not implied. |
 | 7. End-to-end release workflows | Partial; CONFIG startup cold boot passes | V014 confirms saved startup executes only on next cold boot. V017 adds cpmsim named system export/install/reboot. V018 verifies the native named-package round trip; V020 verifies disk-source installation/reboot. Other complete release workflows remain. |
 | 8. Closure and final acceptance reruns | Not run | Resolve failures, identify accepted limits, rebuild and rerun against final revision/images. |
@@ -2999,3 +2999,84 @@ qualify physical power loss, permanent media faults or every CONFIG operation.
 Native ED failure-recovery repetition and the remaining manual/device
 applicability review are next. Step 7 and final merged-source acceptance
 reruns remain open.
+
+
+## V036 — native ED failure-recovery checks
+
+All cases use the shipped ED.COM from the V034 qualified native System Disk,
+matched to its manifest (`a1faa59fcdf5fbad43d37e58cd34bdb96706dfbe0025134d4f7cb98a7c03f171`).
+The runner is `tools/run_validation_model4_ed_recovery.py`. Private A:/B: media
+and a declared STARTUP.SUB fixture bypass optional monitor startup. ED is invoked
+from caller A5 against source user B7; a supplemental state probe checks drive A,
+user 5 and the unchanged D501h gateway/53K boundary after recovery. This is the
+state visible after warm reconstruction, not an independent observation of ED's
+pre-WBOOT DMA restoration (covered by V028 controlled fixtures).
+
+Accepted completed groups:
+
+- `/private/tmp/bettercpm-v036-native-ed-setup/result.json`: alternate-output
+  collision reports FILE EXISTS, ERASE IT; SYS source reports SYSTEM FILE NOT
+  ACCESSIBLE with its historical quotes. Source/destination backups, stale-work
+  sentinels, attributes and user-0 sentinels remain unchanged. A read-only source
+  accepts insertion into the private editing buffer but refuses publication with
+  File R/O. The protected original stays intact and edited work remains under
+  ROFILE.$$$. Each error returns to A5 and the state probe passes.
+- `/private/tmp/bettercpm-v036-native-ed-directory-full/result.json`: a valid
+  128-entry directory contains the existing source and zero-length filler files.
+  Work-file creation fails, ED reports DISK OR DIRECTORY FULL, and the complete
+  B: logical image remains byte-identical. Caller-state probe passes.
+- `/private/tmp/bettercpm-v036-native-ed-disk-full/result.json`: a valid fixture
+  allocates all 400 blocks, including the two directory blocks. Host preparation
+  supplies a real filler file; no guest loop fills the disk. An empty work entry
+  can be created but the first output allocation fails on E. ED reports DISK OR
+  DIRECTORY FULL, preserves the original and every filler/sentinel byte, retains
+  an empty work file and returns to A5/53K. Both full fixtures independently pass
+  fsck before and after execution.
+
+- `/private/tmp/bettercpm-v036-r2-native-ed-rename/result.json`: both E save
+  rename boundaries pass. Failing original-to-BAK preserves the original and
+  edited work file without creating a backup. Failing work-to-original leaves
+  the original in BAK and edited text in $$$, with no final TXT. Both report
+  Rename failed. Edited text retained in work file. and return to caller A5 at
+  53K. User-0 namesakes remain intact. The trace at 9005h/9010h positively shows
+  exactly three rename requests and two failure returns across both cases:
+  there is no blind retry after either failure. No duplicate live names remain.
+
+The rename group patches only the first three RAM bytes of the known native
+BDOS dispatcher to jump to a supplemental hook at 9000h. All other calls and
+non-failing rename calls replay the original LD A,C / SUB 176 prefix before
+jumping to its unchanged remainder. The failure returns A=FFh and HL=00FFh
+without entering the lower implementation. The hook survives reconstruction
+but changes neither the page-zero TPA gateway nor any disk-carried code. It is
+qualification instrumentation, not an RSX or a distributable extension: the
+scratch address is safe only for these small-text fixtures and must not be used
+with arbitrary programs or large ED buffers. The separate verify-hook.py and
+hook-forwarding.json check ordinary-call arithmetic/flags, register/stack
+preservation and the two one-shot return policies against the assembled hooks.
+Native traces corroborate the actual fault boundaries. This does not simulate
+physical controller read errors or power loss.
+
+Every group preserves the other 28 shipped files, leaves system-track bytes
+unchanged, and passes final independent System Disk/data-disk filesystem checks.
+The modified STARTUP.SUB is a declared fixture; extra STATE/HOOK programs are
+supplemental files, never replacements for shipped ED.COM. Original baseline
+images are unchanged. Before/after raw media, assembled helper sources/listings,
+executed runner copies, invocations, captures, traces, program hashes and file
+comparisons are retained. The same ED hash is used in all groups.
+
+The initial rename run is excluded as an instrument failure. Its second '*'
+wait matched the preceding editor prompt still on screen, so later keystrokes
+arrived while ED was loading; the retained capture shows A0:STATE being parsed
+as an ED command. The work-content assertion rejected that run. The accepted
+repeat explicitly clears the screen between invocations, waits for fresh output,
+and checks the state marker after the final STATE invocation. The first failed
+run remains in /private/tmp/bettercpm-v036-native-ed-rename with its exclusion
+record and is not an extra pass or an OS finding.
+
+No production change was needed. These seven native cases fill the recorded
+representative ED recovery gap; V028 still supplies the controlled read/write,
+close, transfer and broader publication matrices. This batch uses E for native
+rename failures; H and arbitrary controller failures are not newly qualified
+here. Next is the remaining coverage and manual/device applicability review,
+followed by final merged-source acceptance reruns. Step 7 and whole-system
+validation are not declared complete.
