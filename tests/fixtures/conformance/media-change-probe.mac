@@ -1,0 +1,93 @@
+; OR-0143 external native removable-media witness. Private fixtures only.
+        ORG 100H
+        LD A,(82H)
+        LD (MODE),A
+        LD E,1
+        LD C,14
+        CALL 5
+        LD C,31
+        CALL 5
+        LD DE,11
+        ADD HL,DE
+        LD A,(HL)
+        INC HL
+        OR (HL)
+        JP Z,BAD
+        LD DE,OLD
+        LD C,17
+        CALL 5
+        CP 4
+        JP NC,BAD
+        LD C,29
+        CALL 5
+        BIT 1,L
+        JP NZ,BAD
+        LD DE,SWAP
+        CALL PRINT
+        LD C,1
+        CALL 5
+; Evict the shared directory cache through a known A: file, then require NEW.
+        LD DE,ANCHOR
+        LD C,17
+        CALL 5
+        CP 4
+        JP NC,BAD
+        LD DE,NEW
+        LD C,17
+        CALL 5
+        CP 4
+        JP NC,BAD
+        LD C,29
+        CALL 5
+        BIT 1,L
+        JP Z,BAD
+        LD DE,PROTECTED
+        CALL PRINT
+        LD A,(MODE)
+        CP 'R'
+        JR Z,RESET
+        LD DE,CREATED
+        LD C,22
+        CALL 5
+        LD DE,RESUMED
+        JR FAILED
+RESET:  LD DE,2
+        LD C,37
+        CALL 5
+        LD C,29
+        CALL 5
+        BIT 1,L
+        JP NZ,BAD
+        LD DE,CREATED
+        LD C,22
+        CALL 5
+        CP 4
+        JP NC,BAD
+        LD DE,CREATED
+        LD C,16
+        CALL 5
+        CP 4
+        JP NC,BAD
+        LD DE,RECOVERED
+        CALL PRINT
+        JP 0
+BAD:    LD DE,ERROR
+FAILED: CALL PRINT
+        JP 0
+PRINT:  LD C,9
+        JP 5
+MODE:   DB 0
+SWAP:   DB 13,10,'OR-0143 SWAP LOGGED B NOW',13,10,'$'
+PROTECTED: DB 13,10,'OR-0143 REPLACEMENT READ AND PROTECTED',13,10,'$'
+RECOVERED: DB 'OR-0143 RESET AND CREATE PASS',13,10,'$'
+RESUMED: DB 'OR-0143 FAIL WRITE CALLER RESUMED',13,10,'$'
+ERROR:  DB 'OR-0143 FIXTURE OR PROTECTION FAIL',13,10,'$'
+OLD:    DB 2,'OLD     TXT'
+        DB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+NEW:    DB 2,'NEW     TXT'
+        DB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+ANCHOR: DB 1,'ANCHOR  DAT'
+        DB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+CREATED:DB 2,'CREATED TXT'
+        DB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        END

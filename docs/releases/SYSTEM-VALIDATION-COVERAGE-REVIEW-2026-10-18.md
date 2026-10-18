@@ -25,7 +25,7 @@ check does not silently change the independent suite's printed status to PASS.
 | Coverage | Current disposition | Required closure |
 | --- | --- | --- |
 | Native 0368–0369 and 0379–0384 | Closed for the selected V034 image by V038 | Eight external native outcomes passed: selected diagnostic, usable CCP, caller B0/53K, unchanged protected media and shipped files. This is not DRI key-acknowledgement equivalence or a final merged-source rerun. |
-| BDOSTEST 0143 | OPEN: required media-change procedure | Use disposable, restorable media; exercise change detection and read-only protection. Record the selected-drive/media assumptions and byte audit. |
+| BDOSTEST 0143 | Selected native witnesses pass in V040 | Real emulator media exchange detects the changed directory and protects it; Make is rejected without mutation. A separate Function 37 reset permits one empty-file creation. CKS-enabled fixtures only; final merged-source rerun remains required. |
 | BDOSTEST 0420 | Selected native witness passes in V039 | One controlled Function 10 input line updates the DE buffer; DMA and surrounding guards remain unchanged. Retain final merged-source rerun. |
 | BDOSTEST 0519 | Selected native witness passes in V039 | A/B/A selections expose BDOS DPB/ALV pointers matching the selected BIOS DPH, without fixed addresses or a uniqueness requirement. Retain final merged-source rerun. |
 | Native ECOTEST 0569, 0575, 0577, 0579 | OPEN: external transcripts | Qualify resident semantics, SAVE page mapping, TYPE bytes and ordinary-command recovery on native Model 4. Earlier cpmsim results do not close native coverage. |
@@ -36,13 +36,14 @@ check does not silently change the independent suite's printed status to PASS.
 | Physical host terminal/keyboard observations | MANUAL PENDING where claimed | Record terminal type, loaded personality/backend, positioning, erase, reverse and keyboard observations. Software-terminal checks cover selected semantics, not every real terminal or keyboard. |
 | Clock-setting providers | Capability/profile review | Preserve the real host clock. Qualify supported provider behavior with a controlled clock fixture; verify unsupported-setting refusal. Do not treat a controlled provider as a physical-clock result. |
 | Outside-scope/non-guaranteed suite cards | Explicit classification | Keep observations and outside-scope cards separate from passes. In particular 0625/0627 are outside the generic suite claim; BetterCP/M's own Z80/platform commitments still require their separate checks. |
+| Native batch input anomaly in V040 | OBSERVED; cause unassigned | Initial command was captured as A0*MEDIA rather than A0:MEDIA and never reached the probe. Repeat with slower, simpler entry passed; retain this observation for final native input regression and investigate if reproducible. It is neither a media-change verdict nor proof of a keyboard fix. |
 | Final acceptance | OPEN | Rebuild from the final merged revision; rerun applicable conformance, application/monitor regressions and disk integrity checks; resolve or explain each applicable failure and preserve artifacts. |
 
 No blanket manual exclusion is approved by this review. Any later exclusion must
 name the card, target, contract, reason and replacement evidence or remaining gap.
 V038 closes the selected native read-only terminal outcomes. The next bounded
-automation work remains for media-change card 0143 and four native ecology
-transcripts; V039 supplies selected native witnesses for 0420 and 0519.
+automation work remains for four native ecology transcripts. V039 and V040
+supply selected native witnesses for the three BDOS documentary cards.
 Live host devices and operator observations can then be closed with named profiles.
 
 ## Device basis

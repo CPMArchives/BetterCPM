@@ -3189,3 +3189,55 @@ That instrument failure is not an OS finding or an additional passing execution.
 Remaining work includes media-change card 0143, native ecology transcripts,
 BIOS/error evidence reconciliation, device/profile closure and final clean-source
 acceptance reruns. Step 7 and overall validation remain incomplete.
+
+## V040 — native media-change protection and explicit-reset recovery
+
+`tests/fixtures/conformance/media-change-probe.mac` and
+`tools/run_validation_model4_media_change.py` supply external native witnesses
+for OR-0143. The runner uses the pinned suite oracle-definition identity and
+the same V034 System Disk generation used by V038/V039. It does not modify
+independent-suite sources or invent suite PASS rows. STARTUP.SUB is a declared
+no-monitor fixture; MEDIA, STATE and ANCHOR are supplemental files.
+
+Two separate cold-boot executions use private, healthy native DATA disks. The
+probe logs B, requires a nonzero DPB CKS, finds OLD.TXT and verifies that B is
+initially writable. It then waits while trs80gp actually ejects that disk and
+inserts a different disk containing NEW.TXT. After reading a known A file to
+evict the shared directory cache, it requires the replacement directory to be
+readable and Function 29 to report B protected. FCBs are fully initialized;
+no live host directory mutation stands in for emulator media replacement.
+
+- `/private/tmp/bettercpm-v040-r2-native-media-write/result.json`: PASS. The
+  subsequent Make produces Disk R/O and abandons its caller. The complete
+  replacement logical disk remains byte-identical; no CREATED.TXT appears.
+- `/private/tmp/bettercpm-v040-native-media-reset/result.json`: PASS. Function
+  37 resets B, its read-only bit clears, and Make/Close create an empty
+  CREATED.TXT. The prior NEW.TXT contents and extent entries are unchanged.
+  Exactly one previously free directory entry changes, with no changes outside
+  the directory and no allocated file-data block.
+
+In both executions, the old logical medium remains unchanged. STATE and VER
+prove subsequent command execution at B0, user zero and TOP=D501 (53K). The
+other 28 shipped System Disk files and system tracks remain unchanged, both
+fixture filesystems and the System Disk pass independent checks, and the
+original distribution baseline remains unchanged. Each evidence directory
+retains the exact executed runner, assembled sources/listings/binaries,
+invocation, text captures, images and file/directory audits. No production
+change was required. The two runs use the same probe binary; the repeat runner
+uses slower entry and invokes MEDIA without the unnecessary A0 qualifier.
+
+The first write trial in `/private/tmp/bettercpm-v040-native-media-write` is
+excluded: its capture shows A0*MEDIA instead of A0:MEDIA, and it never reaches
+the probe's swap handshake. Its owned waiting emulator was stopped and its
+exclusion record retained. The capture establishes an input anomaly, not its
+cause; this review does not assign it to the emulator, harness or guest driver.
+The later slower invocation and its qualified STATE command work, but do not
+prove the anomaly fixed. Retain it for final native input regression and
+investigate if reproducible. It supplies no media-change pass or fail verdict.
+
+These are selected CKS-enabled removable-media witnesses, not a hardware
+change-sensor guarantee or proof that all possible replacement directories
+have different checksums. The write case uses the existing immediate-WBOOT
+error profile. The reset case tests explicit recovery; automatic relogging is
+not claimed. Final merged-source acceptance, four native ecology transcripts,
+BIOS/error evidence reconciliation and device/profile closure remain open.
