@@ -2438,3 +2438,41 @@ failures, mixed extents, policy precedence and collision input handling.
 Logs: `/private/tmp/bettercpm-v023-ren-faults/`. These are BDOS fixtures, not
 injected physical media failures. No production fix was needed. Native repetition
 and broader media fault coverage remain open; validation is incomplete.
+
+
+## V024 — shipped cpmsim COPY/MOVE media validation
+
+Fifteen sessions on disposable copies of the fresh V023 System Disk passed:
+resident source-first and assignment COPY; transient `/B /V` wildcard copy
+including all eight RO/SYS/ARC combinations and a 33,280-byte multi-extent
+binary; skip-existing immutability; verified writable replacement; read-only
+target protection; self-copy refusal; compound ARC/not-SYS predicate; empty-file
+verification; invalid trailing option, overlong destination and invalid drive
+domain before mutation; successful resident MOVE; read-only source refusal;
+and collision refusal. Independent extracted payloads and per-extent attributes
+were checked. Successful MOVE removes its source only after producing the
+expected destination; refused RO/collision moves leave both disks byte-identical.
+All commands return to A0. No MOVE.COM is shipped; these MOVE checks exercise
+the resident implementation.
+
+All 30 shipped files remain unchanged against the manifest. The System Disk and
+both final secondary filesystems check clean. Accepted evidence:
+`/private/tmp/bettercpm-v024-r2-copy-move/result.json`, retaining executed runner,
+commands, transcripts, fixtures, extracted files and disks. The first run stopped
+on an obsolete test expectation that RO MOVE should copy then fail to delete;
+the current resident contract instead rejects the source during preflight.
+The fresh r2 run verifies complete media preservation for that refusal.
+
+Against the manifest-matched fresh COPY binary, `test_copy_mapping.py` and
+`test_copy_reporting.py` passed (positional mapping/conflicts, allocation maps
+and unsigned decimal boundaries). Logs: `/private/tmp/bettercpm-v024-copy-core/`.
+`test_copy_filespec.py` initially failed looking up BC_CVALID in resident RCP:
+resident COPY now uses the shared selector and that private symbol is absent.
+The test now explicitly covers only the transient validator/options; it passes
+against the same fresh build. Resident shared-selector behavior is covered by
+public media tests rather than pretending the removed private routine ran.
+
+No production change was required. These checks do not newly qualify native
+Model 4 repetition, injected read/write/close/verification failures, interactive
+COPY recovery or power-loss behavior. Broader recovery coverage and remaining
+utilities remain open; system-wide validation is incomplete.
