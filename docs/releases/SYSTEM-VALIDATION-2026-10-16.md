@@ -29,7 +29,7 @@ The source checkout was clean and was not modified. A private clone at
 | --- | --- | --- |
 | 1. Clean builds, contents, boot, baseline console/memory | In progress; initial gates pass | Both distributions pass build/boot/integrity; focused BIOS/CCP and native editing/unload pass. Additional console/startup-failure/repeated-return cases remain. |
 | 2. Fresh conformance suite | Selected returning groups pass on both platforms | V010–V012 refresh production BDOS/file/random and native DIR/CCP/entry/CPU/ecology/disk-safe, BIOS/error-safe and selected console evidence. Manual, device, terminal-outcome and applicability gaps remain explicitly open. |
-| 3. CPX/RSX lifecycle, relocation, ROM protection | Automated checks pass after cold-start fix | V016 identifies and clears an uninitialized cold-entry loader-recovery flag. Poisoned-RAM initializer test, 32 pristine-media cold boots and guarded lifecycle/stack/workspace checks pass. Focused production monitor relocation checks pass on both backends (V015). Deferred manual/device checks remain explicit. |
+| 3. CPX/RSX lifecycle, relocation, ROM protection | Selected checks pass; XSUB retirement contract finding open (V031) | V016 identifies and clears an uninitialized cold-entry loader-recovery flag. Poisoned-RAM initializer test, 32 pristine-media cold boots and guarded lifecycle/stack/workspace checks pass. Focused production monitor relocation checks pass on both backends (V015). Deferred manual/device checks remain explicit. |
 | 4. Resident/transient command integration | Partial; fresh native file workflow passes | V013 covers native file workflows. V021/V023–V027 add shipped cpmsim ERA/REN/COPY/MOVE/DIR/STAT/TYPE selectors, protection, reporting and controlled recovery. Broader native repetition and caller-state cases remain. |
 | 5. Utility operations and failure recovery | Partial; selected ED/CONFIG/DUP/SYSGEN checks pass | V013–V014 verify ED/CONFIG cases; V017 adds shipped cpmsim DUP format/copy/check and SYSGEN named export/reinstall/reboot; V018 adds native named SYSGEN and controlled recovery/parser checks. V019 adds native DUP format/copy/check/CRC recovery; V020 adds native disk-source SYSGEN safeguards/install/reboot. V021/V023–V028 add cpmsim selector/protection/reporting and controlled COPY/TYPE/ED/CONFIG recovery checks. Remaining utilities, native repetition and broader device faults remain. |
 | 6. Monitors and applications | Selected cross-platform regressions pass | V013–V014 exercise all three shipped monitor/backend pairs, native file workflows and cpmsim TYPE paging/file boundaries. Broader applications, audio/manual/device and exhaustive protocol coverage are not implied. |
@@ -2702,3 +2702,51 @@ Physical printer/serial/reader endpoints were not exercised by these controlled
 fixtures. Broader host-endpoint repetition, native Model 4 PIP repetition,
 XSUB/full-TPA batch-input coverage, reviewed manual/device exclusions and final
 acceptance rebuild/reruns remain. System-wide validation is incomplete.
+
+
+## V031 — full-TPA batch continuation and open XSUB retirement finding
+
+The shipped SUBMIT/CCP path continues a batch after a 54,272-byte transient
+reclaims CCP/CPX memory, executes the next command, deletes the queue and reports
+53K TPA. All shipped files remain unchanged and the System Disk checks clean.
+Supplemental XSUB/BATCHIO binaries from the same isolated build (not on the
+System Disk manifest) supply Function-10 input to a 52,736-byte FULLIN probe,
+which verifies BATCHFULL and returns to continue the remaining batch command.
+This is core integration coverage, not Utilities Disk release validation.
+
+**Open finding V031-F1:** after the queue is exhausted, the next application's
+Function-10 call retires BATCHIO and warm-boots instead of falling through to
+normal console input. Reproduction: run XSUB, consume a submitted line and the
+remaining batch command, then run INPUT.COM. It returns to A0 without printing
+INPUT OK or waiting for the program's line input. RSX LIST subsequently reports
+no RSXs and 53K. A first exploratory test incorrectly expected immediate
+retirement at queue exhaustion; the next probe established the more material
+console-fallback discrepancy.
+
+`docs/engineering/129 Stock-Compatible SUBMIT and XSUB.md` promises pass-through
+after stream exhaustion. `src/rsx/batchio.mac` BI_RETIRE instead calls Function
+177 then JP 0000H, with a comment warning that the transaction may consume command
+workspace; BI_CONSOLE exists but that path is not reached from retirement.
+The cause is therefore in guest code/contract alignment, not emulator keyboard
+translation. No compatibility exception or specification relaxation is approved.
+A fix needs a retirement/workspace safety audit; simply removing the warm boot
+is not established safe. This remains unresolved and is not counted as conformance.
+
+Retained reproduction and positive checks:
+`/private/tmp/bettercpm-v031-r3-batch/result.json` has overall status
+OPEN_CONTRACT_FINDING. Per-case PASS describes only the asserted batch-input,
+cleanup and memory-recovery observations; the XSUB case includes contract_finding.
+Executed runners, full-sized helpers/listings, supplemental binary hashes,
+transcripts, media and all 30 shipped-file comparisons are retained there.
+Exploratory first/r2 runs are incomplete, not extra passes.
+
+Shipped SUBMIT failure cases separately pass: a nonexistent submitted command
+cancels the remainder without executing its marker, and invalid $X reports
+Parameter Error. Both delete $$$.SUB, preserve all shipped files and leave a
+clean filesystem. Evidence:
+`/private/tmp/bettercpm-v031-submit-errors/result.json`.
+
+No production code changed. XSUB remains a supplemental fixture outside the
+current System Disk manifest, but its documented core integration contract must
+be resolved or explicitly reviewed before validation closure. Final acceptance
+reruns and remaining native/device applicability reviews also remain open.
