@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Execute COPY's exact-filespec validator in CPX and transient builds."""
+"""Execute transient COPY's private exact-filespec and option validators."""
 import re
 from pathlib import Path
 from test_bios import Z80
@@ -11,8 +11,9 @@ def main():
     invalid = ['', '.COM', 'ABCDEFGHI.COM', 'FILE.ABCD', 'FILE..COM',
                'F*X.DAT', 'F?.DAT', 'FILE:COM', 'FILE=COM', 'FILE COM',
                'FILE.COM EXTRA', 'FILE.\x01', 'FILE.\x7f']
+    # Resident COPY now uses the shared selector, not BC_CVALID. Its public
+    # malformed-input and no-write behavior is covered by media tests.
     for binary_path, listing_path, origin in [
-            ('build/cpx/rcp.bin', 'build/cpx/rcp.lst', 0x8000),
             ('build/utilities/COPY.COM', 'build/utilities/copy-transient.lst', 0x100)]:
         binary = (ROOT / binary_path).read_bytes()
         listing = (ROOT / listing_path).read_text()
@@ -141,7 +142,7 @@ def main():
             assert tuple(c.mem[transient_address(n)] for n in
                          ('BC_OVER','CT_SKIP','CT_BATCH','CTV_ON'))==flags,text
             assert c.mem[transient_address('CT_BACK')]==int('/BACKUP' in text),text
-    print('COPY CPX/transient filespec and transient /O-/S option parsing passed')
+    print('Transient COPY filespec and /O-/S option parsing passed')
 
 
 if __name__ == '__main__':
