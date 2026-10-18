@@ -2476,3 +2476,47 @@ No production change was required. These checks do not newly qualify native
 Model 4 repetition, injected read/write/close/verification failures, interactive
 COPY recovery or power-loss behavior. Broader recovery coverage and remaining
 utilities remain open; system-wide validation is incomplete.
+
+
+## V025 — controlled cpmsim COPY verification and I/O failure recovery
+
+Ran `test_z80pack_copy_verify_flow.py` and `test_z80pack_copy_errors.py` using
+private copies of the fresh V023 release. Both tests used the isolated build at
+`/private/tmp/bettercpm-v023-work/z80pack` after its unmodified COPY.COM SHA was
+matched to the release manifest. Test-only binary changes inject failures;
+this is not a claim that the unchanged shipped binary encountered physical
+hardware errors. No production code was changed.
+
+Verification flow passed normal multi-extent copies, rejected option combinations,
+unattended comparison failure, help and invalid recovery input, skip, Ctrl-C
+cleanup, ordinary copying without `/V`, batch continuation and successful retry.
+Source contents survived and successful destinations retain the expected RO/SYS
+attributes. Evidence: `/private/tmp/bettercpm-v025-verify-flow/evidence.json`.
+
+Five one-shot I/O cases passed: source read failure, destination write failure,
+close failure, disk-full stop and incomplete-destination cleanup failure.
+Successful preceding files remain intact; failed partial outputs are removed
+unless cleanup itself fails; later files continue for recoverable errors and
+stop for disk-full/cleanup failure. Source ARC handling matches successful versus
+failed/stopped files, failure accounting is correct, and execution returns A0.
+Evidence: `/private/tmp/bettercpm-v025-r2-copy-errors/evidence.json`.
+
+The error test now checks copy-out exit status only for expected surviving files,
+and independently checks existence for absent ones. A preliminary assertion
+incorrectly required cpmcp to return nonzero for a missing wildcard match; this
+host version returns zero without creating a file. That trial stopped during
+postcondition checking, not during guest recovery. The fresh r2 run is accepted.
+
+Each accepted directory retains its executed test source, test binaries, media,
+transcripts and evidence. To reproduce, stage release copies as drives a..d with
+its diskdefs, import each test module from the current tools directory, set its
+ROOT to the manifest-matched isolated build and invoke main with --image-dir
+pointing at that runtime and --report pointing at a fresh directory.
+
+Independent audit `/private/tmp/audit-v025.py` checked all other 29 shipped files
+in all six test environments against manifest hashes; COPY.COM is explicitly
+excluded because fault injection replaces it. All final disks check clean with
+fsck.cpm and the immutable release image hash is unchanged. Audit summary:
+`/private/tmp/bettercpm-v025-audit.json`. These controlled tests do not qualify
+real-floppy faults, native Model 4 repetition or power-loss behavior. Validation
+remains incomplete.
