@@ -42,23 +42,34 @@ normal CPX/transient dispatcher.  The file is the durable continuation: a warm
 boot can reconstruct every byte of the CCP and CPXs without losing the next
 command.
 
-`XSUB.COM` installs `BATCHIO.RSX` through BetterCP/M Function 202.  BATCHIO owns
-its FCB, record buffer, remembered DMA address, and Function-10 adapter inside
-protected dynamically allocated memory.  When it later observes that the
-stream is absent it requests operation 4, a deferred profile retirement.  The
-manager removes the reconstruction record immediately but waits for WBOOT to
-rebuild the chain, avoiding the unsafe act of overwriting a module while that
-module is executing.  The manager still occupies its original packed slot and
-the persistent RSX table keeps its original size and ownership.
+`XSUB.COM` installs `BATCHIO.RSX` through BetterCP/M Function 202. BATCHIO owns
+its FCB, record buffer, remembered DMA address and Function-10 adapter in its
+existing protected allocation.
+
+When a Function-10 call finds an absent, malformed or unreadable queue, BATCHIO
+uses the normal console input path and returns to that same application. It
+must not invoke a retirement transaction from the suspended input call: current
+Function 177 operation 4 uses low TPA transaction workspace and may relocate or
+remove the executing provider. Warm-booting there would discard the application.
+
+After console fallback, BATCHIO marks itself idle. A subsequently present valid
+queue clears that mark. If the application explicitly invokes BDOS Function 0
+while idle, its TPA is disposable: BATCHIO may then request operation 4 and finish
+by warm boot. An explicit `RSX UNLOAD BATCHIO` is also a safe reclamation route.
+Direct BIOS warm boot/RET reconstruction may leave BATCHIO loaded, with normal
+console fallback still available. Automatic reclamation on every BIOS return
+is not promised by this bounded implementation. Its fixed allocation remains
+512 bytes; there is no permanent BIOS/BDOS growth and unloading restores the
+ordinary 53K target.
 
 ## Memory cost
 
 | Component | File/code bytes | Protected cost |
 |---|---:|---:|
-| `SUBMIT.COM` | 3,274 | none after return |
-| `XSUB.COM` | 151 | none after return |
-| `BATCHIO.RSX` | 436 | 512 while active |
-| BRSX manager | 893 | existing 1,024 charge while any BRSX is active |
+| `SUBMIT.COM` | 3,540 | none after return |
+| `XSUB.COM` | 362 | none after return |
+| `BATCHIO.RSX` | 502 code | 512 while active |
+| Packed manager/resolver | on-demand overlays | existing 1,024 charge while any BRSX is active |
 | CCP submitted reader | included in 3,066-byte CCP | no new fixed allocation |
 
 With no RSX, the maximum record-aligned COM remains 54,272 bytes

@@ -41,6 +41,13 @@ BI_DISPATCH:                            ; intercept BDOS call
         OR      A
         CALL    NZ,BI_ANNOUNCE          ; a reconstructed instance is now active
         LD      A,C
+        OR      A
+        JR      NZ,BI_NOTBOOT
+        LD      A,(BI_IDLE)
+        OR      A
+        JP      NZ,BI_RETIRE             ; caller explicitly abandoned its TPA
+        LD      A,C
+BI_NOTBOOT:
         CP      26                      ; remember the application's DMA address
         JR      Z,BI_SETDMA
         CP      10                      ; XSUB only supplies buffered console input
@@ -145,7 +152,9 @@ BI_READLN:                              ; supply next submitted input line
         LD      C,15
         CALL    BI_FCALL
         INC     A
-        JR      Z,BI_RETIRE             ; no submission: retire, then use Function 10
+        JR      Z,BI_CONDONE            ; no submission: preserve the suspended caller
+        XOR     A
+        LD      (BI_IDLE),A              ; a newly present stream is active again
         LD      A,(BI_SUBRC)
         OR      A
         JR      Z,BI_BADSUB
@@ -221,6 +230,8 @@ BI_CONSUME:                             ; consume submitted record
 BI_FILEOP:                              ; close or delete submit stream
         LD      DE,BI_SUBFCB
         CALL    BI_FCALL
+        CP      0FFH                    ; successful Close may return directory slot 0..3
+        JR      Z,BI_BADSUB              ; failed consumption must not replay the queue
         XOR     A
         LD      L,A
         LD      H,A
@@ -238,7 +249,12 @@ BI_BADSUB:                              ; discard malformed submit stream
         LD      C,19
         CALL    BI_FCALL
 
-BI_RETIRE:                              ; retire exhausted submit stream
+BI_CONDONE:                             ; EOF must not destroy an input caller
+        LD      A,1
+        LD      (BI_IDLE),A
+        JP      BI_CONSOLE
+
+BI_RETIRE:                              ; only an explicit BDOS Function 0 is safe
         LD      DE,BI_REQUEST
         LD      C,177                   ; transaction commits before rebuilding the CCP
         CALL    BI_CALL
@@ -275,6 +291,7 @@ BI_BUFFER:                              ; protected submit record buffer
 
 BI_UDMA:        DW      0080H           ; caller DMA address
 BI_USERBUF:     DW      0080H           ; caller Function-10 buffer
+BI_IDLE:        DB      0               ; console fallback observed since reconstruction
 BI_FRESH:       DB      1               ; warm-start announcement flag
 BI_REQUEST:     DB      2,4,0,0,'BATCHIO ',0,0,0,0,0,0 ; saved BDOS request
 

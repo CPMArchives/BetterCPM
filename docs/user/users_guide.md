@@ -2363,6 +2363,20 @@ for detailed compatibility cases and qualification limits.
 ### 5. Batch Processing
 5.1 SUBMIT 5.2 SUB Files 5.3 Parameters and Substitution 5.4 XSUB 5.5 Batch Execution and Termination 5.6 Examples
 
+#### XSUB after batch input ends
+
+XSUB supplies submitted lines to programs using buffered console input. Once
+its batch queue ends, input comes from your keyboard and the same program
+continues normally. A malformed queue is discarded before console fallback.
+
+BATCHIO may remain listed after the batch ends. It retires when an idle provider
+receives an explicit BDOS Function 0 warm boot. Programs returning directly
+through the BIOS may leave it loaded. To reclaim its memory explicitly, use:
+
+    RSX UNLOAD BATCHIO
+
+With no other RSXs loaded, unloading restores 53K TPA.
+
 #### 5.7 COPY in Batch Files
 
 A SUBMIT file executes a sequence of commands; it does not automatically make

@@ -28,11 +28,17 @@ def main():
         if xsub:
             for name,part in [('XSUB.COM','utilities'),('BATCHIO.RSX','rsx')]:
                 source=a.build_root/'build'/part/name;put('a',0,name,source.read_bytes());extras[name]=sha(source)
-        if xsub:put('a',0,'INPUT.COM',input_probe(w))
+        if xsub:
+            probe=input_probe(w);put('a',0,'INPUT.COM',probe)
+            # Proof-only variant prints the same result, then requests BDOS 0.
+            boot=bytearray(probe);off=boot.index(bytes.fromhex('0e09cd0500c9'))+2
+            boot[off:off+3]=bytes((0xc3,))+ (0x100+len(boot)).to_bytes(2,'little')
+            boot+=bytes.fromhex('cd05000e00c30500');put('a',0,'INPUT0.COM',boot)
         script=(b'XSUB\r\n' if xsub else b'')+program.encode()+b'\r\n'+(b'BATCHFULL\r\n' if xsub else b'')+b'TYPE B3:DONE.TXT\r\n\x1a'
         put('a',0,'V031.SUB',script);before=(w/'disks/driveb.dsk').read_bytes()
         steps=[(b'SUBMIT V031\r',b'BATCH RETURN COMPLETED',90),(b'',b'A0>_ ',30),(b'RSX LIST\r',b'A0>_ ',30)]
-        if xsub:steps += [(b'INPUT\r',b'A0>_ ',30),(b'RSX LIST\r',b'A0>_ ',30)]
+        if xsub:steps += [(b'INPUT\rBATCHFULL\r',b'INPUT OK',30),(b'',b'A0>_ ',30),(b'RSX LIST\r',b'A0>_ ',30),
+                          (b'INPUT0\rBATCHFULL\r',b'INPUT OK',30),(b'',b'A0>_ ',30),(b'RSX LIST\r',b'A0>_ ',30)]
         steps += [(b'BYE\r',b'System halted',30)]
         trace=session(sim,w/'disks',steps,w/'transcript.bin')
         assert (b'FULLIN OK' if xsub else b'FULLTPA OK') in trace and b'FAILED' not in trace
@@ -43,9 +49,9 @@ def main():
         assert not any(raw[i]<32 and bytes(v&127 for v in raw[i+1:i+12])==b'$$$     SUB' for i in range(0,len(raw),32))
         shipped=audit(base,report,w,w/'disks/drivea.dsk')
         r={'status':'PASS','xsub':xsub,'probe_bytes':len(binary),'probe_sha256':sha(w/('fixture-'+program+'.COM')),
-           'contract_finding':('BATCHIO retires by WBOOT instead of console fall-through on exhausted queue' if xsub else None),'supplemental_nonmanifest_files':extras,'baseline_sha256':report['sha256'],'runner_sha256':sha(Path(__file__)),
+           'contract_finding':None,'supplemental_nonmanifest_files':extras,'baseline_sha256':report['sha256'],'runner_sha256':sha(Path(__file__)),
            'simulator_sha256':sha(sim),'unchanged_shipped_files':shipped}
         (w/'result.json').write_text(json.dumps(r,indent=2)+'\n');results.append(r);print(program,'PASS',w,flush=True)
-    (a.output/'result.json').write_text(json.dumps({'status':'OPEN_CONTRACT_FINDING','cases':results},indent=2)+'\n')
+    (a.output/'result.json').write_text(json.dumps({'status':'PASS','cases':results},indent=2)+'\n')
 
 if __name__=='__main__':main()
