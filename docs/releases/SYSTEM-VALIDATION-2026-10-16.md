@@ -31,7 +31,7 @@ The source checkout was clean and was not modified. A private clone at
 | 2. Fresh conformance suite | Selected returning groups pass on both platforms | V010–V012 refresh production BDOS/file/random and native DIR/CCP/entry/CPU/ecology/disk-safe, BIOS/error-safe and selected console evidence. Manual, device, terminal-outcome and applicability gaps remain explicitly open. |
 | 3. CPX/RSX lifecycle, relocation, ROM protection | Selected checks pass; V031 XSUB finding corrected and qualified (V032) | V016 identifies and clears an uninitialized cold-entry loader-recovery flag. Poisoned-RAM initializer test, 32 pristine-media cold boots and guarded lifecycle/stack/workspace checks pass. Focused production monitor relocation checks pass on both backends (V015). Deferred manual/device checks remain explicit. |
 | 4. Resident/transient command integration | Partial; fresh native file workflow passes | V013 covers native file workflows. V021/V023–V027 add shipped cpmsim ERA/REN/COPY/MOVE/DIR/STAT/TYPE selectors, protection, reporting and controlled recovery. Broader native repetition and caller-state cases remain. |
-| 5. Utility operations and failure recovery | Partial; V033-F1 corrected and qualified in V034 | V013–V014 verify ED/CONFIG cases; V017 adds shipped cpmsim DUP format/copy/check and SYSGEN named export/reinstall/reboot; V018 adds native named SYSGEN and controlled recovery/parser checks. V019 adds native DUP format/copy/check/CRC recovery; V020 adds native disk-source SYSGEN safeguards/install/reboot. V021/V023–V028 add cpmsim selector/protection/reporting and controlled COPY/TYPE/ED/CONFIG recovery checks. V029–V032 add manager/batch/PIP checks and correct XSUB retirement. V033 adds manager refusal coverage; V034 corrects its malformed CPX hard-stop on both platforms. Native repetition and broader device faults remain. |
+| 5. Utility operations and failure recovery | Partial; V033-F1 corrected and qualified in V034 | V013–V014 verify ED/CONFIG cases; V017 adds shipped cpmsim DUP format/copy/check and SYSGEN named export/reinstall/reboot; V018 adds native named SYSGEN and controlled recovery/parser checks. V019 adds native DUP format/copy/check/CRC recovery; V020 adds native disk-source SYSGEN safeguards/install/reboot. V021/V023–V028 add cpmsim selector/protection/reporting and controlled COPY/TYPE/ED/CONFIG recovery checks. V029–V032 add manager/batch/PIP checks and correct XSUB retirement. V033 adds manager refusal coverage; V034 corrects its malformed CPX hard-stop on both platforms. V035 adds fresh native CONFIG combined save, third-write rollback and cold activation. Native ED recovery and remaining device/manual reviews remain. |
 | 6. Monitors and applications | Selected cross-platform regressions pass | V013–V014 exercise all three shipped monitor/backend pairs, native file workflows and cpmsim TYPE paging/file boundaries. Broader applications, audio/manual/device and exhaustive protocol coverage are not implied. |
 | 7. End-to-end release workflows | Partial; CONFIG startup cold boot passes | V014 confirms saved startup executes only on next cold boot. V017 adds cpmsim named system export/install/reboot. V018 verifies the native named-package round trip; V020 verifies disk-source installation/reboot. Other complete release workflows remain. |
 | 8. Closure and final acceptance reruns | Not run | Resolve failures, identify accepted limits, rebuild and rerun against final revision/images. |
@@ -2935,3 +2935,67 @@ for unfixed images; --recover-malformed-cpx is the positive current regression.
 Native ED/CONFIG recovery, remaining device/manual applicability reviews and
 final merged-source acceptance reruns remain open; Step 7 and whole-system
 validation are not declared complete.
+
+
+## V035 — native CONFIG combined save and write-failure rollback
+
+Shipped CONFIG.COM is matched to the qualified V034 Model 4 System Disk at
+`/private/tmp/bettercpm-v034-distribution/release-5761c0f03a09-9df8d69de02d/trs80gp`.
+No production source or binary is changed. The new runner is
+`tools/run_validation_model4_config_recovery.py`; it uses private media and
+supplemental SETUP/CHECK probes, not replacement utility binaries.
+
+SETUP uses Function 181 to change active physical-drive-0 head settling to 20ms and
+logical B's physical binding to 2. Native keyboard input edits CONFIG's pending
+startup command to VER, then selects S/B to save active plus pending defaults.
+STARTUP.SUB is a declared fixture containing only :VER /BANNER, so optional
+monitor allocations cannot overlap the qualification hook at 9000h.
+
+Accepted cases:
+
+- `/private/tmp/bettercpm-v035-r3-config-rollback/result.json`: a one-shot BIOS
+  write hook fails the third write, after both pending startup records have
+  been written. The instruction trace positively records six hook entries and
+  exactly one failure-branch instruction at 900Bh. CONFIG reports
+  Save failed. Original configuration restored. All 20,480 reserved system-area
+  bytes exactly match the pre-test copy. A failed save is not counted as a
+  successful configuration change.
+- `/private/tmp/bettercpm-v035-config-save/result.json`: CONFIG reports all
+  current settings saved and verified. Exactly 19 reserved-area bytes change,
+  wholly within the pending startup record and documented editable drive-default
+  fields. The two startup records exactly match an independently constructed
+  VER record. A separate cold boot executes VER; CHECK then reads Function 181
+  and verifies both saved drive defaults. That cold boot leaves logical media
+  unchanged.
+
+Both cases preserve all 28 other shipped files, pass fsck.cpm, and leave the
+immutable reference image unchanged. The startup batch's temporary $$$.SUB
+leaves 159 changed bytes in a deleted directory slot and its previously free
+block. The analyzer explicitly identifies that deleted queue, proves its block
+was not owned by an original live file, and permits no other filesystem-byte
+changes. Those scratch remnants are not failed CONFIG rollback or unexplained
+changes in protected system records. STARTUP.SUB is the sole declared changed
+shipped fixture and remains unchanged during each run.
+
+Instrument history is retained rather than promoted to extra passes. The first
+run and r2 were stopped at stalled waits and have INCOMPLETE records. r3 uses
+ordinary save-menu body text instead of its inverse-video heading, captures
+before/after waits, and records the fault trace. Its initial checker sorted
+captures lexicographically; numeric sorting is required once capture indices
+reach 10. Factoring the analysis then exposed two missing local bindings,
+which were corrected. An initial whole-media comparison also incorrectly
+included the cold-start batch's deleted-queue remnants; the corrected oracle
+compares the full reserved area and independently bounds the precise scratch
+changes. Existing captures/media were reanalyzed without rerunning their native
+first sessions. Execution and analysis source hashes are recorded separately;
+original runners, corrected analyzers, invocations, traces and media remain.
+The successful-save evidence additionally includes the fresh cold-boot run.
+The hand-encoded test hook's change from failure 2 to failure 3 is recorded in
+fault-patch.json; it patches only the supplemental SETUP.COM and is corroborated
+by the native trace.
+
+This closes the recorded native combined CONFIG save/rollback gap. It does not
+qualify physical power loss, permanent media faults or every CONFIG operation.
+Native ED failure-recovery repetition and the remaining manual/device
+applicability review are next. Step 7 and final merged-source acceptance
+reruns remain open.
