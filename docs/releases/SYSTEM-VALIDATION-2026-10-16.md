@@ -31,7 +31,7 @@ The source checkout was clean and was not modified. A private clone at
 | 2. Fresh conformance suite | Selected returning groups pass on both platforms | V010–V012 refresh production BDOS/file/random and native DIR/CCP/entry/CPU/ecology/disk-safe, BIOS/error-safe and selected console evidence. Manual, device, terminal-outcome and applicability gaps remain explicitly open. |
 | 3. CPX/RSX lifecycle, relocation, ROM protection | Automated checks pass after cold-start fix | V016 identifies and clears an uninitialized cold-entry loader-recovery flag. Poisoned-RAM initializer test, 32 pristine-media cold boots and guarded lifecycle/stack/workspace checks pass. Focused production monitor relocation checks pass on both backends (V015). Deferred manual/device checks remain explicit. |
 | 4. Resident/transient command integration | Partial; fresh native file workflow passes | V013 covers native file workflows. V021/V023–V027 add shipped cpmsim ERA/REN/COPY/MOVE/DIR/STAT/TYPE selectors, protection, reporting and controlled recovery. Broader native repetition and caller-state cases remain. |
-| 5. Utility operations and failure recovery | Partial; selected ED/CONFIG/DUP/SYSGEN checks pass | V013–V014 verify ED/CONFIG cases; V017 adds shipped cpmsim DUP format/copy/check and SYSGEN named export/reinstall/reboot; V018 adds native named SYSGEN and controlled recovery/parser checks. V019 adds native DUP format/copy/check/CRC recovery; V020 adds native disk-source SYSGEN safeguards/install/reboot. Broader utility recovery and selector/protection coverage remain. |
+| 5. Utility operations and failure recovery | Partial; selected ED/CONFIG/DUP/SYSGEN checks pass | V013–V014 verify ED/CONFIG cases; V017 adds shipped cpmsim DUP format/copy/check and SYSGEN named export/reinstall/reboot; V018 adds native named SYSGEN and controlled recovery/parser checks. V019 adds native DUP format/copy/check/CRC recovery; V020 adds native disk-source SYSGEN safeguards/install/reboot. V021/V023–V028 add cpmsim selector/protection/reporting and controlled COPY/TYPE/ED/CONFIG recovery checks. Remaining utilities, native repetition and broader device faults remain. |
 | 6. Monitors and applications | Selected cross-platform regressions pass | V013–V014 exercise all three shipped monitor/backend pairs, native file workflows and cpmsim TYPE paging/file boundaries. Broader applications, audio/manual/device and exhaustive protocol coverage are not implied. |
 | 7. End-to-end release workflows | Partial; CONFIG startup cold boot passes | V014 confirms saved startup executes only on next cold boot. V017 adds cpmsim named system export/install/reboot. V018 verifies the native named-package round trip; V020 verifies disk-source installation/reboot. Other complete release workflows remain. |
 | 8. Closure and final acceptance reruns | Not run | Resolve failures, identify accepted limits, rebuild and rerun against final revision/images. |
@@ -2595,3 +2595,42 @@ remaining PIP/device and SUBMIT/TIME/VER/CPX/RSX utility cases, and explicit
 cross-platform repetition/applicability decisions. Previously recorded manual
 and hardware-only suite gaps remain deferred. This batch does not close core
 acceptance: final clean rebuild/reruns and reviewed coverage closure remain.
+
+
+## V028 — ED/CONFIG controlled failure recovery
+
+Nine assembled-code suites passed through
+`tools/run_validation_ed_config_recovery.py`. ED.COM and CONFIG.COM were first
+matched to the V023 release manifest; EDDEV.COM was separately verified
+byte-identical to shipped ED.COM. Fixtures execute those binaries with controlled
+BDOS/BIOS return values. No OS or utility production code was changed.
+
+ED checks cover setup ordering, existing destination and create failures,
+source/output DU isolation, protected files, read/write failures, attempted
+recovery close (including failed close), exact diagnostics and caller DU/DMA
+restoration. Save-drain failures retain unaccepted text. Publication tests check
+close-before-rename ordering and both rename-failure boundaries, preserving the
+remaining original/backup/work files under the documented DRI-bug correction.
+Transfer tests cover pending/deferred data, cleanup and write failure.
+
+CONFIG checks cover startup save with failed first or second writes, successful
+restoration and failed rollback warnings; saved IOBYTE decline, validation,
+read/write/verification/rollback failures, supported-device gates and live
+IOBYTE preservation. CRC-32 oracle vectors, masked editable fields, immutable
+byte corruption, geometry/layout rejection and disk-read failures pass. Invalid
+saved-image cases retain original rollback data and avoid writes/prompts where
+specified. Failed rollback is not reported as successful restoration.
+
+Accepted result: `/private/tmp/bettercpm-v028-r2-ed-config/result.json`.
+The directory retains the executed runner and test sources, helper hashes,
+manifest-matched program hashes and individual logs. Earlier exploratory logs
+in `/private/tmp/bettercpm-v028-ed-config/` also pass, but r2 is the complete,
+repeatable nine-suite batch. The runner takes --build-root, --baseline and a
+fresh --output directory; it does not rebuild or replace release binaries.
+
+This is controlled instruction-level recovery coverage, not native Model 4
+fault injection, physical hardware failure or power-loss qualification. Native
+combined CONFIG save/rollback and broader live ED recovery repetitions remain
+explicitly unclosed. Remaining PIP/device and SUBMIT/TIME/VER/CPX/RSX coverage,
+reviewed exclusions and final acceptance reruns also remain. System-wide
+validation is incomplete.
