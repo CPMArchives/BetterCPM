@@ -1,0 +1,133 @@
+; Supplemental external witnesses for frozen OR-0420 and OR-0519.
+; No independent-suite source or result rows are modified.
+        ORG 100H
+        LD HL,DMA
+        LD B,128
+FILL:   LD (HL),0A5H
+        INC HL
+        DJNZ FILL
+        LD DE,DMA
+        LD C,26
+        CALL 5
+        LD DE,INPUTMSG
+        LD C,9
+        CALL 5
+        LD DE,BUFFER
+        LD C,10
+        CALL 5
+        LD A,(GUARD1)
+        CP 05AH
+        JP NZ,BAD420
+        LD A,(GUARD2)
+        CP 05AH
+        JP NZ,BAD420
+        LD A,(BUFFER)
+        CP 16
+        JP NZ,BAD420
+        LD A,(BUFFER+1)
+        CP 8
+        JP NZ,BAD420
+        LD HL,BUFFER+2
+        LD DE,EXPECTED
+        LD B,8
+CMP:    LD A,(DE)
+        CP (HL)
+        JP NZ,BAD420
+        INC DE
+        INC HL
+        DJNZ CMP
+        LD B,10
+TAIL:   LD A,(HL)
+        CP 0CCH
+        JP NZ,BAD420
+        INC HL
+        DJNZ TAIL
+        LD HL,DMA
+        LD B,128
+DMACHK: LD A,(HL)
+        CP 0A5H
+        JP NZ,BAD420
+        INC HL
+        DJNZ DMACHK
+        LD DE,OK420
+        LD C,9
+        CALL 5
+        XOR A
+        LD (DRIVE),A
+        CALL CHECKDRIVE
+        LD A,1
+        LD (DRIVE),A
+        CALL CHECKDRIVE
+        XOR A
+        LD (DRIVE),A
+        CALL CHECKDRIVE
+        LD DE,OK519
+        LD C,9
+        CALL 5
+        RET
+; Select through BDOS, then compare its public resource pointers against the
+; selected BIOS DPH. No fixed resource addresses or cross-drive uniqueness.
+CHECKDRIVE:
+        LD A,(DRIVE)
+        LD E,A
+        LD C,14
+        CALL 5
+        LD HL,(1)
+        LD DE,24
+        ADD HL,DE
+        LD A,(DRIVE)
+        LD C,A
+        LD E,0
+        CALL INDIRECT
+        LD A,H
+        OR L
+        JP Z,BAD519
+        LD DE,10
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD (DPBPTR),DE
+        INC HL
+        INC HL
+        INC HL
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD (ALVPTR),DE
+        LD C,31
+        CALL 5
+        LD DE,(DPBPTR)
+        OR A
+        SBC HL,DE
+        JP NZ,BAD519
+        LD C,27
+        CALL 5
+        LD DE,(ALVPTR)
+        OR A
+        SBC HL,DE
+        JP NZ,BAD519
+        RET
+INDIRECT: JP (HL)
+BAD420: LD DE,ERR420
+        JR FAIL
+BAD519: LD DE,ERR519
+FAIL:   LD C,9
+        CALL 5
+        JP 0
+INPUTMSG: DB '0420 INPUT READY: type BUFFER42 then ENTER',13,10,'$'
+OK420: DB 13,10,'OR-0420 PASS: DE buffer only; DMA and guards unchanged',13,10,'$'
+OK519: DB 'OR-0519 PASS: BIOS DPH matches BDOS DPB and ALV for A B A',13,10,'$'
+ERR420: DB 13,10,'OR-0420 FAIL',13,10,'$'
+ERR519: DB 13,10,'OR-0519 FAIL',13,10,'$'
+EXPECTED: DB 'BUFFER42'
+DRIVE: DB 0
+DPBPTR: DW 0
+ALVPTR: DW 0
+GUARD1: DB 05AH
+BUFFER: DB 16,0CCH
+        DB 0CCH,0CCH,0CCH,0CCH,0CCH,0CCH,0CCH,0CCH,0CCH
+        DB 0CCH,0CCH,0CCH,0CCH,0CCH,0CCH,0CCH,0CCH,0CCH
+GUARD2: DB 05AH
+DMA:    DS 128
+        END

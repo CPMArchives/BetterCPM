@@ -3145,3 +3145,47 @@ write protection, controller fault injection, or in-process suite PASS rows.
 No production changes were required. This closes the selected native read-only
 terminal-outcome gap. Three BDOS procedures, native ecology transcripts,
 device/profile reconciliation and final clean-source acceptance remain open.
+
+## V039 — native supplemental BDOS oracle witnesses
+
+The pinned suite lists BDOSTEST 0420 and 0519 as manual documentary procedures;
+its ordinary run does not execute their oracle. Supplemental source
+`tests/fixtures/conformance/bdos-manual-probes.mac` and
+`tools/run_validation_model4_bdos_probes.py` exercise those oracles externally,
+without modifying suite sources or synthesizing suite PASS rows.
+
+Accepted evidence is `/private/tmp/bettercpm-v039-r2-native-bdos/result.json`,
+with the executed runner, probe and state sources/listings/binaries, invocation,
+native captures, media before/after, shipped-file audit and filesystem checks
+alongside it. The suite is pinned at
+`a9a878fcd2e36698c7e856654a85847a004fdd20`; the oracle-definition file is hashed.
+The System Disk is the same V034 generation used in V038, not a final merged
+acceptance rebuild. STARTUP.SUB is the declared no-monitor startup fixture.
+
+- OR-0420: Set DMA to a separate 128-byte A5-filled region. Supply Function 10
+  a guarded DE buffer, enter BUFFER42, and verify length eight and exact text.
+  The DMA region, maximum-length byte, unused tail and surrounding guards remain
+  unchanged. This is one ordinary input-line witness, not the full editing-key
+  or buffer-boundary matrix.
+- OR-0519: Select A, B, then A through BDOS; obtain each selected drive's DPH
+  through the public BIOS SELDSK jump entry; compare the corresponding DPB and
+  allocation-vector pointers against Functions 31 and 27. No resource address
+  or cross-drive pointer uniqueness is assumed. This qualifies the two configured
+  fixture drives, not arbitrary bindings, removable-media changes or every format.
+
+Both witnesses pass. Afterward STATE reports drive A, user 0 and TOP=D501 (53K),
+and VER runs and returns to the prompt. The complete B data disk remains
+byte-identical, the other 28 shipped files and System Disk system tracks remain
+unchanged, both filesystems pass independent checks, and the original baseline
+is unchanged. No production code change was required.
+
+The first trial, `/private/tmp/bettercpm-v039-native-bdos`, is excluded. The
+initial probe added a trailing-CR storage assertion not required by OR-0420.
+It printed OR-0420 FAIL and never reached OR-0519; the owned waiting emulator
+was stopped. Its exclusion record and executed source are retained. The corrected
+probe checks the oracle's counted input without requiring a stored terminator.
+That instrument failure is not an OS finding or an additional passing execution.
+
+Remaining work includes media-change card 0143, native ecology transcripts,
+BIOS/error evidence reconciliation, device/profile closure and final clean-source
+acceptance reruns. Step 7 and overall validation remain incomplete.
