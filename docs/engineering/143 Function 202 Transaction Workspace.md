@@ -41,10 +41,12 @@ stack and at or below the current page-zero TPA ceiling. Thus transaction
 scratch is memory the utility actually owns; the operating system does not
 guess that an arbitrary fixed TPA address is unused.
 
-The resident BATCHIO provider also emits request version 2 for deferred
-retirement operation 4. That operation schedules removal for warm boot and
-does not construct a transaction, so its workspace words remain zero and are
-not consumed.
+The resident BATCHIO provider emits request version 2 for retirement operation
+4 only after console fallback and an explicit application BDOS Function 0.
+The production implementation constructs the removal transaction using disposable
+low TPA and completes by warm boot; it fills workspace bounds internally. The
+request words are initially zero, but this is not a non-destructive scheduling
+operation and must not run inside an application Function-10 input call.
 
 This adds no protected-memory allocation and does not reduce the default TPA.
 The next increment uses this bounded workspace to construct the prospective

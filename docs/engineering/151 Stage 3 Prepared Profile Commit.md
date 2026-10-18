@@ -78,8 +78,9 @@ The resolver and commit dependencies are read before the commit starts. Resolver
 restoration after commit is a bounded memory copy, with no file operation that
 could fail after publication. These bytes are transient workspace, not a new
 permanent PDS allocation. Production `RSX.COM` supplies bounds that leave space
-for prospective resident allocations. BATCHIO retirement deliberately consumes
-the disposable command workspace and warm boots after success or failure; a
+for prospective resident allocations. BATCHIO retirement, restricted to an idle provider receiving explicit BDOS
+Function 0, deliberately consumes disposable application workspace and warm boots
+after success or failure; a
 successful commit never returns through the removed provider.
 
 ## Qualification

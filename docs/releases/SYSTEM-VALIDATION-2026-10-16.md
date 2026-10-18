@@ -29,7 +29,7 @@ The source checkout was clean and was not modified. A private clone at
 | --- | --- | --- |
 | 1. Clean builds, contents, boot, baseline console/memory | In progress; initial gates pass | Both distributions pass build/boot/integrity; focused BIOS/CCP and native editing/unload pass. Additional console/startup-failure/repeated-return cases remain. |
 | 2. Fresh conformance suite | Selected returning groups pass on both platforms | V010–V012 refresh production BDOS/file/random and native DIR/CCP/entry/CPU/ecology/disk-safe, BIOS/error-safe and selected console evidence. Manual, device, terminal-outcome and applicability gaps remain explicitly open. |
-| 3. CPX/RSX lifecycle, relocation, ROM protection | Selected checks pass; XSUB retirement contract finding open (V031) | V016 identifies and clears an uninitialized cold-entry loader-recovery flag. Poisoned-RAM initializer test, 32 pristine-media cold boots and guarded lifecycle/stack/workspace checks pass. Focused production monitor relocation checks pass on both backends (V015). Deferred manual/device checks remain explicit. |
+| 3. CPX/RSX lifecycle, relocation, ROM protection | Selected checks pass; V031 XSUB finding corrected and qualified (V032) | V016 identifies and clears an uninitialized cold-entry loader-recovery flag. Poisoned-RAM initializer test, 32 pristine-media cold boots and guarded lifecycle/stack/workspace checks pass. Focused production monitor relocation checks pass on both backends (V015). Deferred manual/device checks remain explicit. |
 | 4. Resident/transient command integration | Partial; fresh native file workflow passes | V013 covers native file workflows. V021/V023–V027 add shipped cpmsim ERA/REN/COPY/MOVE/DIR/STAT/TYPE selectors, protection, reporting and controlled recovery. Broader native repetition and caller-state cases remain. |
 | 5. Utility operations and failure recovery | Partial; selected ED/CONFIG/DUP/SYSGEN checks pass | V013–V014 verify ED/CONFIG cases; V017 adds shipped cpmsim DUP format/copy/check and SYSGEN named export/reinstall/reboot; V018 adds native named SYSGEN and controlled recovery/parser checks. V019 adds native DUP format/copy/check/CRC recovery; V020 adds native disk-source SYSGEN safeguards/install/reboot. V021/V023–V028 add cpmsim selector/protection/reporting and controlled COPY/TYPE/ED/CONFIG recovery checks. Remaining utilities, native repetition and broader device faults remain. |
 | 6. Monitors and applications | Selected cross-platform regressions pass | V013–V014 exercise all three shipped monitor/backend pairs, native file workflows and cpmsim TYPE paging/file boundaries. Broader applications, audio/manual/device and exhaustive protocol coverage are not implied. |
@@ -2750,3 +2750,63 @@ No production code changed. XSUB remains a supplemental fixture outside the
 current System Disk manifest, but its documented core integration contract must
 be resolved or explicitly reviewed before validation closure. Final acceptance
 reruns and remaining native/device applicability reviews also remain open.
+
+
+## V032 — safe XSUB console fallback; V031-F1 corrected
+
+The retirement audit confirmed that Function 177 operation 4 fills workspace
+bounds internally, consumes low TPA and may remove/relocate the executing
+provider. Returning from that transaction into an arbitrary Function-10 caller
+is unsafe; simply removing the old JP 0000H is not a valid correction.
+
+BATCHIO now marks itself idle and chains to normal console input when the queue
+is absent, malformed or unreadable. The same application resumes. A newly valid
+queue clears idle. Only a later explicit BDOS Function 0 while idle invokes the
+retirement transaction, at a point where the application has relinquished its
+TPA. RSX UNLOAD is also safe. A direct BIOS return may leave BATCHIO loaded;
+automatic reclamation on every BIOS return is not promised. Specifications 129,
+143 and 151 and the user's manual now describe this precise boundary. The
+separate XSUB Console Retirement Safety audit records the reasoning.
+
+The expanded fault test also found that queue Close/Delete results were ignored.
+Failure now enters queue cleanup and console fallback, preventing stale replay.
+The status check accepts valid Close directory-slot results 0..3 and treats FF
+as failure. An intermediate trial incorrectly treated nonzero success as an
+error; that trial is excluded. Final unit coverage includes successful slot 3.
+
+Final BATCHIO code is 502 bytes (previously 474), still in its 512-byte allocation.
+SUBMIT and XSUB utility binaries are byte-identical. Fresh comparison confirms
+unchanged BDOS (3,454), BIOS (757) and resident image (6,588) bytes. No permanent
+allocation or unloaded 53K reduction was introduced.
+
+Accepted evidence:
+- `/private/tmp/bettercpm-v032-unit/result.json`: absent/empty/read-error/
+  oversized/close-error queues, application memory/DU/DMA/stack preservation,
+  Function-0-only retirement, valid Close slot 3 and new-stream reactivation.
+- `/private/tmp/bettercpm-v032-r4-xsub-fixed/result.json`: ordinary and active-XSUB
+  full-TPA batch continuation, real console input returning to the application,
+  explicit Function-0 retirement and 53K recovery on cpmsim. Both cases preserve
+  all 30 shipped files and check their System Disk filesystem clean.
+- `/private/tmp/bettercpm-v032-r5-native-xsub/result.json`: final-module native
+  Model 4 test. A zero-length Function-10 request returns to its caller and prints
+  CONSOLE FALLBACK RETURNED; the old bug would warm-boot before that marker.
+  Captures positively show `(xsub active)` before the probe, then no RSXs and
+  53K after its explicit Function 0. Supplemental BATCHIO carrier hash matches
+  the final built module. The 28 other shipped files remain unchanged; STARTUP.SUB
+  is a declared fixture replaced with XSUB/zero-probe commands to avoid optional
+  monitor startup and keyboard-timing ambiguity. The active-provider capture was
+  additionally checked before accepting this run. The final extracted native
+  filesystem also passes fsck.cpm (raw,pcw800) in file-audit/filesystem-final.txt.
+
+The native baseline is the hash-identified fresh candidate at
+`/private/tmp/bettercpm-v032-build-work/candidate-bettercpm-dist-kegsocmx/trs80gp`.
+Its build/boot/file checks passed, but publication was correctly refused when
+new test files changed source identity during the build. It is not a published
+release. Earlier long native attempts were incomplete, and two shorter
+keyboard-driven attempts dropped commands before XSUB finished loading; none
+are counted as passes. The accepted native probe eliminates that timing oracle.
+
+V031-F1 is resolved within the documented safe retirement boundary. Final
+whole-system clean-source rebuild/reruns, native/device coverage review and
+release acceptance remain outstanding; this fix does not declare validation
+complete.
