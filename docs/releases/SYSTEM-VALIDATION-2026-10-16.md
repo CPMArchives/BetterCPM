@@ -31,7 +31,7 @@ The source checkout was clean and was not modified. A private clone at
 | 2. Fresh conformance suite | Selected returning groups pass on both platforms | V010–V012 refresh production BDOS/file/random and native DIR/CCP/entry/CPU/ecology/disk-safe, BIOS/error-safe and selected console evidence. Manual, device, terminal-outcome and applicability gaps remain explicitly open. |
 | 3. CPX/RSX lifecycle, relocation, ROM protection | Selected checks pass; V031 XSUB finding corrected and qualified (V032) | V016 identifies and clears an uninitialized cold-entry loader-recovery flag. Poisoned-RAM initializer test, 32 pristine-media cold boots and guarded lifecycle/stack/workspace checks pass. Focused production monitor relocation checks pass on both backends (V015). Deferred manual/device checks remain explicit. |
 | 4. Resident/transient command integration | Partial; fresh native file workflow passes | V013 covers native file workflows. V021/V023–V027 add shipped cpmsim ERA/REN/COPY/MOVE/DIR/STAT/TYPE selectors, protection, reporting and controlled recovery. Broader native repetition and caller-state cases remain. |
-| 5. Utility operations and failure recovery | Partial; selected ED/CONFIG/DUP/SYSGEN checks pass | V013–V014 verify ED/CONFIG cases; V017 adds shipped cpmsim DUP format/copy/check and SYSGEN named export/reinstall/reboot; V018 adds native named SYSGEN and controlled recovery/parser checks. V019 adds native DUP format/copy/check/CRC recovery; V020 adds native disk-source SYSGEN safeguards/install/reboot. V021/V023–V028 add cpmsim selector/protection/reporting and controlled COPY/TYPE/ED/CONFIG recovery checks. Remaining utilities, native repetition and broader device faults remain. |
+| 5. Utility operations and failure recovery | Partial; V033-F1 malformed CPX recovery remains open | V013–V014 verify ED/CONFIG cases; V017 adds shipped cpmsim DUP format/copy/check and SYSGEN named export/reinstall/reboot; V018 adds native named SYSGEN and controlled recovery/parser checks. V019 adds native DUP format/copy/check/CRC recovery; V020 adds native disk-source SYSGEN safeguards/install/reboot. V021/V023–V028 add cpmsim selector/protection/reporting and controlled COPY/TYPE/ED/CONFIG recovery checks. V029–V032 add manager/batch/PIP checks and correct XSUB retirement. V033 adds manager refusal coverage but finds a malformed CPX hard-stop. Native repetition and broader device faults remain. |
 | 6. Monitors and applications | Selected cross-platform regressions pass | V013–V014 exercise all three shipped monitor/backend pairs, native file workflows and cpmsim TYPE paging/file boundaries. Broader applications, audio/manual/device and exhaustive protocol coverage are not implied. |
 | 7. End-to-end release workflows | Partial; CONFIG startup cold boot passes | V014 confirms saved startup executes only on next cold boot. V017 adds cpmsim named system export/install/reboot. V018 verifies the native named-package round trip; V020 verifies disk-source installation/reboot. Other complete release workflows remain. |
 | 8. Closure and final acceptance reruns | Not run | Resolve failures, identify accepted limits, rebuild and rerun against final revision/images. |
@@ -2810,3 +2810,54 @@ V031-F1 is resolved within the documented safe retirement boundary. Final
 whole-system clean-source rebuild/reruns, native/device coverage review and
 release acceptance remain outstanding; this fix does not declare validation
 complete.
+
+## V033 — extension-manager refusal review; malformed CPX finding
+
+Resumed from merged PR 392 (`99ab506`). The user's eleven-step plan calls
+utility operations Step 7; this ledger's condensed table calls it stage 5.
+Those labels describe the same utility-validation work, not two completed gates.
+The coverage review does not close that gate: native ED/CONFIG recovery,
+physical device applicability, broader manager failure cases and final clean
+acceptance reruns remain explicit.
+
+The shipped V023 managers pass a fresh cpmsim run on disposable media:
+`/private/tmp/bettercpm-v033-r5-manager-refusals/result.json`. Invalid verbs,
+missing operands and incorrect module extensions produce usage diagnostics.
+Missing and malformed RSX loads report module/profile errors. Failed RSX loads
+with ANSI/ANSISCRN active retain both listed providers; subsequently unloading
+both restores no RSXs and 53K. RCP remains available and DIR /VER succeeds.
+All 30 shipped files remain manifest-identical and the final filesystem checks
+clean. The immutable baseline is unchanged. The runner is
+`tools/run_validation_cpmsim_manager_refusals.py`.
+
+Missing CPX carriers are intentionally allowed persistent profile entries:
+CPX LOAD MISSING returns silently; CPX LIST shows MISSING.CPX, and removing it
+restores the original profile. Source `ccprelod.mac` explicitly skips missing
+optional carriers, allowing a newly SYSGEN-installed disk to reach the bare CCP.
+Absent CPX/RSX unloads are idempotent, not diagnostic failures. Initial runner
+expectations incorrectly required errors for these cases (and a usage message
+for RSX UNLOAD *); that exploratory oracle is excluded. The accepted runner
+asserts the documented/profile behavior without claiming an absent unload is a
+rejected mutation. r3 passed the narrower oracle; r5 additionally witnesses the
+missing CPX profile entry before removal.
+
+**Open finding V033-F1:** CPX LOAD BAD with a one-record, invalid-header BAD.CPX
+never returns to the prompt within 30 seconds. Reproduced both after other
+manager requests and independently on a pristine boot with only BAD.CPX added.
+The header fixture begins INVALID HEADER and is zero-padded to 128 bytes.
+The loader rejects its signature and deliberately enters CRFAIL's self-loop.
+Function 176 appends the name before this reconstruction; CPX.COM does not
+preflight the carrier. Thus header rejection prevents executing malformed code,
+but leaves no interactive recovery path in the running session. This is a guest
+recovery gap, not slow floppy emulation. No files on the original baseline were
+modified; only disposable media contains the bad fixture.
+
+The repeatable isolated-mode OPEN_FINDING result is retained in
+`/private/tmp/bettercpm-v033-r4-bad-cpx/result.json`. The first campaign timeout is retained in
+`/private/tmp/bettercpm-v033-manager-refusals/transcript.bin`; the independent
+reproduction and failure text are in
+`/private/tmp/bettercpm-v033-isolated-bad-cpx/`. A repeatable isolated mode is
+`--malformed-cpx` with a fresh output directory. A timeout in that mode is an
+OPEN_FINDING, never PASS. Do not count the positive manager cases as resolving
+this finding or claim Step 7 closure. Next: audit bounded carrier-validation and
+profile rollback/reconstruction recovery before changing production behavior.
