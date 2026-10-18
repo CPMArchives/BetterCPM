@@ -2668,3 +2668,37 @@ batch input, interrupted or nested SUBMIT, physical clocks, exhaustive CPX/RSX
 manager errors or native Model 4 repetition. Those remain separate coverage
 items alongside PIP/device checks, reviewed manual exclusions and final clean
 acceptance reruns. System-wide validation remains incomplete.
+
+
+## V030 — shipped PIP release workflows and controlled device/error coverage
+
+The unchanged V023 PIP passed a private cpmsim campaign comparing multi-user,
+multi-extent verified text concatenation and uppercase transformation with the
+pinned DRI PIP 1.5 reference. Concatenated physical records also match an
+independent expected byte string, including text EOF and padding. Binary wildcard
+copy with verification preserves all object bytes, console output succeeds, and
+source file contents remain intact. DRI S1 unused-byte metadata is cleared only
+on a separate inspection copy for full-record host extraction; runtime media is
+not normalized. No release binary is replaced: the reference is an extra
+PIPREF.COM fixture on the private System Disk.
+
+All 30 shipped files match manifest hashes; both final filesystems check clean
+and the immutable baseline is unchanged. Evidence:
+`/private/tmp/bettercpm-v030-pip/result.json`, with executed runner, reference
+hash, transcript, media, fixtures and physical-record comparisons.
+
+Five controlled suites passed against a pip-development/PIP.COM verified
+identical to shipped PIP.COM: test_pip_transfer, test_pip_transform,
+test_pip_devices, test_pip_physical_devices and test_pip_interruption. They cover
+transaction failure cleanup and guarded replacement, verify/overwrite/read-only
+policy, DU restoration, transforms, binary/text EOF, concatenation preflight,
+logical sinks, patch ABI, unavailable physical-device rejection before mutation,
+IOBYTE/device capability behavior and text/object/reader interruption handling.
+Evidence: `/private/tmp/bettercpm-v030-pip-fixtures/result.json`, with tests,
+helper hashes and logs. The transfer test's stale Build 026 expectation now uses
+utility-version metadata (shipped Build 027). No production fix was needed.
+
+Physical printer/serial/reader endpoints were not exercised by these controlled
+fixtures. Broader host-endpoint repetition, native Model 4 PIP repetition,
+XSUB/full-TPA batch-input coverage, reviewed manual/device exclusions and final
+acceptance rebuild/reruns remain. System-wide validation is incomplete.
