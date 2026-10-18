@@ -2634,3 +2634,37 @@ combined CONFIG save/rollback and broader live ED recovery repetitions remain
 explicitly unclosed. Remaining PIP/device and SUBMIT/TIME/VER/CPX/RSX coverage,
 reviewed exclusions and final acceptance reruns also remain. System-wide
 validation is incomplete.
+
+
+## V029 — shipped SUBMIT/TIME/VER/CPX/RSX workflows
+
+One private cpmsim session passed shipped /VER identities for VER, TIME, SUBMIT,
+CPX and RSX, then a two-command SUBMIT script with $1 substitution, ordered
+execution, physical EOF without final CR and $$$.SUB cleanup. Script input on
+B3 remains byte-identical. The script's final record is explicitly space padded:
+an initial NUL-padded host fixture made NULs part of the command and was rejected
+as an invalid filespec; that fixture is not the accepted EOF case.
+
+TIME reports no provider before load and after unload, discovers ZPRTC, and
+reads its calendar record while loaded. No real clock SET is performed.
+CPX unloads RCP, reports its absence, reloads it and executes resident DIR /VER.
+ANSI with ANSISCRN loads, appears in RSX LIST, then both unload and RSX LIST
+reports no RSXs and 53K TPA. The final BYE returns to the host.
+
+All 30 shipped files match manifest hashes; System Disk and input-disk filesystems
+check clean, and the immutable baseline remains unchanged. Accepted evidence:
+`/private/tmp/bettercpm-v029-r2-managers/result.json`, with executed runner,
+transcript, script/input fixtures, media and filesystem/hash checks.
+
+Two manifest-matched TIME instruction-level suites also passed: test_time_errors
+and test_time_set. They cover native status routing, unsupported SET, malformed
+records, provider failures, strict SET parsing, canonical request construction
+and GET/provider dispatch. Evidence:
+`/private/tmp/bettercpm-v029-time-fixtures/result.json`, retained test sources
+and logs. SET in these suites uses controlled memory fixtures only.
+
+No production change was needed. This does not newly qualify XSUB/full-TPA
+batch input, interrupted or nested SUBMIT, physical clocks, exhaustive CPX/RSX
+manager errors or native Model 4 repetition. Those remain separate coverage
+items alongside PIP/device checks, reviewed manual exclusions and final clean
+acceptance reruns. System-wide validation remains incomplete.
