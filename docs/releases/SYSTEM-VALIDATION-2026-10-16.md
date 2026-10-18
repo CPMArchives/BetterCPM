@@ -30,7 +30,7 @@ The source checkout was clean and was not modified. A private clone at
 | 1. Clean builds, contents, boot, baseline console/memory | In progress; initial gates pass | Both distributions pass build/boot/integrity; focused BIOS/CCP and native editing/unload pass. Additional console/startup-failure/repeated-return cases remain. |
 | 2. Fresh conformance suite | Selected returning groups pass on both platforms | V010–V012 refresh production BDOS/file/random and native DIR/CCP/entry/CPU/ecology/disk-safe, BIOS/error-safe and selected console evidence. Manual, device, terminal-outcome and applicability gaps remain explicitly open. |
 | 3. CPX/RSX lifecycle, relocation, ROM protection | Automated checks pass after cold-start fix | V016 identifies and clears an uninitialized cold-entry loader-recovery flag. Poisoned-RAM initializer test, 32 pristine-media cold boots and guarded lifecycle/stack/workspace checks pass. Focused production monitor relocation checks pass on both backends (V015). Deferred manual/device checks remain explicit. |
-| 4. Resident/transient command integration | Partial; fresh native file workflow passes | V013 covers shipped resident/transient COPY/REN/TYPE/ERA and PIP across users. Broader selectors, protection, recovery and caller-state cases remain. |
+| 4. Resident/transient command integration | Partial; fresh native file workflow passes | V013 covers native file workflows. V021/V023–V027 add shipped cpmsim ERA/REN/COPY/MOVE/DIR/STAT/TYPE selectors, protection, reporting and controlled recovery. Broader native repetition and caller-state cases remain. |
 | 5. Utility operations and failure recovery | Partial; selected ED/CONFIG/DUP/SYSGEN checks pass | V013–V014 verify ED/CONFIG cases; V017 adds shipped cpmsim DUP format/copy/check and SYSGEN named export/reinstall/reboot; V018 adds native named SYSGEN and controlled recovery/parser checks. V019 adds native DUP format/copy/check/CRC recovery; V020 adds native disk-source SYSGEN safeguards/install/reboot. Broader utility recovery and selector/protection coverage remain. |
 | 6. Monitors and applications | Selected cross-platform regressions pass | V013–V014 exercise all three shipped monitor/backend pairs, native file workflows and cpmsim TYPE paging/file boundaries. Broader applications, audio/manual/device and exhaustive protocol coverage are not implied. |
 | 7. End-to-end release workflows | Partial; CONFIG startup cold boot passes | V014 confirms saved startup executes only on next cold boot. V017 adds cpmsim named system export/install/reboot. V018 verifies the native named-package round trip; V020 verifies disk-source installation/reboot. Other complete release workflows remain. |
@@ -2561,3 +2561,37 @@ bounded memory and recoverable BIOS open/read errors with Search incomplete;
 `/private/tmp/bettercpm-v026-stat-capacity/result.json`.
 These are controlled fixtures, not physical hardware failures. Native repetition
 and remaining utility/device recovery checks remain open; validation is incomplete.
+
+
+## V027 — shipped TYPE navigation and controlled read recovery
+
+Four private cpmsim sessions on the unchanged V023 System Disk passed long
+cross-file paging, forward/backward file jumps, final-EOF bounds/bell, short
+files with an empty middle file, tab expansion and resident ordinary output.
+RO/SYS source fixtures remain readable. The complete secondary source image is
+byte-identical after all sessions; all 30 shipped System Disk files match the
+manifest and both final filesystems check clean. Evidence:
+`/private/tmp/bettercpm-v027-type/result.json`, with executed runner, fixtures,
+transcripts and disks. These stream-level checks supplement the earlier rendered
+monitor/backend first-row checks; they do not newly claim visual screen placement.
+
+Four controlled fixture suites passed against manifest-matched TYPE.COM and
+RCP.CPX from the fresh isolated build: test_type_streaming, test_type_paging,
+test_type_files and test_type_limits. Coverage includes shared selection,
+transforms, EOF/record boundaries, open/read-error reporting and continuation,
+bidirectional replay/history reconstruction, anchor-based file jumps, empty
+files, cross-DU ordering, row arithmetic, 65,535-file selection bounds and
+private stack guards (30/128 bytes observed). Evidence and retained test sources:
+`/private/tmp/bettercpm-v027-type-fixtures/result.json`.
+
+Two initial fixture failures were harness issues: streaming expected obsolete
+Build 005 rather than metadata-owned Build 006; paging ignored the isolated build
+root for its listing. Both tests were corrected and rerun successfully. No
+production OS or TYPE change was required. Controlled BDOS fixtures do not
+qualify real-media failure behavior.
+
+Remaining stage-5 work includes filling the ED/CONFIG failure-recovery matrix,
+remaining PIP/device and SUBMIT/TIME/VER/CPX/RSX utility cases, and explicit
+cross-platform repetition/applicability decisions. Previously recorded manual
+and hardware-only suite gaps remain deferred. This batch does not close core
+acceptance: final clean rebuild/reruns and reviewed coverage closure remain.
