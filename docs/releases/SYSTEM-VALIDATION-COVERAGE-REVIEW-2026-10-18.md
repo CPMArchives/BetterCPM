@@ -20,6 +20,15 @@ acceptance requires a clean merged-source build and fresh applicable-suite runs,
 with exact input identities and retained per-card output. A focused external
 check does not silently change the independent suite's printed status to PASS.
 
+## Step 7 boundary after reconciliation
+
+V043 supersedes the earlier broad descriptions of Step 7's remaining work.
+[The Step 7 reconciliation](SYSTEM-VALIDATION-STEP7-RECONCILIATION-2026-10-18.md)
+identifies exactly four closure items: restore lost ERA/DUP/SYSGEN evidence and
+exercise live PIP endpoints/selected native capability paths. BIOS/error cards,
+monitor/input observations and final acceptance remain broader campaign work.
+This distinction does not waive them or declare overall completion.
+
 ## Remaining-work register
 
 | Coverage | Current disposition | Required closure |

@@ -31,7 +31,7 @@ The source checkout was clean and was not modified. A private clone at
 | 2. Fresh conformance suite | Selected returning groups pass on both platforms | V010–V012 refresh production BDOS/file/random and native DIR/CCP/entry/CPU/ecology/disk-safe, BIOS/error-safe and selected console evidence. Manual, device, terminal-outcome and applicability gaps remain explicitly open. |
 | 3. CPX/RSX lifecycle, relocation, ROM protection | Selected checks pass; V031 XSUB finding corrected and qualified (V032) | V016 identifies and clears an uninitialized cold-entry loader-recovery flag. Poisoned-RAM initializer test, 32 pristine-media cold boots and guarded lifecycle/stack/workspace checks pass. Focused production monitor relocation checks pass on both backends (V015). Deferred manual/device checks remain explicit. |
 | 4. Resident/transient command integration | Partial; fresh native file workflow passes | V013 covers native file workflows. V021/V023–V027 add shipped cpmsim ERA/REN/COPY/MOVE/DIR/STAT/TYPE selectors, protection, reporting and controlled recovery. Broader native repetition and caller-state cases remain. |
-| 5. Utility operations and failure recovery | Partial; V033-F1 corrected and qualified in V034 | V013–V014 verify ED/CONFIG cases; V017 adds shipped cpmsim DUP format/copy/check and SYSGEN named export/reinstall/reboot; V018 adds native named SYSGEN and controlled recovery/parser checks. V019 adds native DUP format/copy/check/CRC recovery; V020 adds native disk-source SYSGEN safeguards/install/reboot. V021/V023–V028 add cpmsim selector/protection/reporting and controlled COPY/TYPE/ED/CONFIG recovery checks. V029–V032 add manager/batch/PIP checks and correct XSUB retirement. V033 adds manager refusal coverage; V034 corrects its malformed CPX hard-stop on both platforms. V035 adds fresh native CONFIG combined save, third-write rollback and cold activation. V036 adds seven native ED recovery scenarios. Remaining coverage/manual/device reviews and final acceptance reruns remain. |
+| 5. Utility operations and failure recovery (original Step 7) | OPEN: four named closure items; V043 reconciliation | Seven utility groups have sufficient selected evidence. Restore missing ERA, DUP and SYSGEN audit bundles (S7-01–03), then qualify actual PIP host endpoints and selected native capability gates (S7-04). BIOS/error reconciliation, monitor/input observations and final acceptance reruns are tracked in their own stages, not counted as Step 7 gaps. See SYSTEM-VALIDATION-STEP7-RECONCILIATION-2026-10-18.md. |
 | 6. Monitors and applications | Selected cross-platform regressions pass | V013–V014 exercise all three shipped monitor/backend pairs, native file workflows and cpmsim TYPE paging/file boundaries. Broader applications, audio/manual/device and exhaustive protocol coverage are not implied. |
 | 7. End-to-end release workflows | Partial; CONFIG startup cold boot passes | V014 confirms saved startup executes only on next cold boot. V017 adds cpmsim named system export/install/reboot. V018 verifies the native named-package round trip; V020 verifies disk-source installation/reboot. Other complete release workflows remain. |
 | 8. Closure and final acceptance reruns | Not run | Resolve failures, identify accepted limits, rebuild and rerun against final revision/images. |
@@ -3379,3 +3379,31 @@ BDOS procedures and four ecology cards. BIOS/error evidence reconciliation,
 applicable live devices/profiles, the observed input anomaly review and final
 clean merged-source acceptance remain open. Step 7 and overall validation are
 not declared complete.
+
+## V043 — Step 7 evidence reconciliation and closure decision
+
+Reconciled the original utility operations/failure-recovery checklist, rather
+than carrying all broader system-validation work under Step 7. Authoritative
+scope, requirement mapping, evidence limits and the exact remaining checklist:
+[SYSTEM-VALIDATION-STEP7-RECONCILIATION-2026-10-18.md](SYSTEM-VALIDATION-STEP7-RECONCILIATION-2026-10-18.md).
+The accompanying evidence JSON records 34 result-record checks: 29 retained
+PASS results and five unavailable historical result files. This review does not
+rerun target programs or independently reanalyze every retained raw capture.
+
+Decision: Step 7 is not yet closed. Seven utility groups satisfy its selected
+operational/recovery coverage; four named items remain: restore the missing ERA,
+DUP and SYSGEN audit bundles, and exercise PIP's actual supported host endpoints
+plus selected native capability gates. The first three are bounded evidence
+restoration after the documented pre-V023 loss, not new utility implementations.
+V034 manifests confirm byte-identical ordinary utility/RCP binaries across the
+two platforms; selected native integration and target-independent fault evidence
+are combined without demanding an unbounded two-platform Cartesian rerun.
+CONFIG's distinct platform binaries retain their separate native qualification.
+
+BIOS/error conformance-card review, monitor/keyboard observations, the recorded
+input anomaly and final clean-source acceptance are explicitly separate work.
+They remain open but are no longer reasons for calling Step 7 partial. The live
+PIP endpoint gap stays in Step 7 because device operations are part of its stated
+utility requirements. Close Step 7 when S7-01–S7-04 pass and no utility-contract
+finding remains unresolved. No new runtime verdict, defect, waiver or release
+acceptance is claimed by this reconciliation.
