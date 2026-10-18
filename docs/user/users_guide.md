@@ -1,11 +1,3 @@
-Let's begin with **Chapter 1: Introduction** of the BetterCP/M 1.0 User's Guide.
-
-We'll use the existing Markdown guide as our technical foundation, but rewrite the chapter in the friendlier, more approachable style we've agreed upon.
-
-The goal is to introduce BetterCP/M, explain its relationship to CP/M 2.2, and give readers a sense of what makes it different—without overwhelming them with technical details.
-
----
-
 # BetterCP/M 1.0 User's Guide
 
 ## Chapter 1 — Introduction
