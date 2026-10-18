@@ -2402,3 +2402,39 @@ Scope is selected shipped cpmsim utility workflows. Native Model 4 repetition,
 injected I/O failures, raw-write recovery, physical devices and power-loss
 behavior are not newly qualified here. Stages 4/5 remain partial; system-wide
 validation is not complete.
+
+
+## V023 — restored campaign and fresh shipped REN validation
+
+After PR 382 merged, the temporary campaign checkout and retained evidence were
+no longer present. Restored an isolated checkout at e1633a9 without modifying the
+user's repository. The previously reported, unpushed V022 REN runner and evidence
+were lost; the results below are fresh reruns, not recovered evidence. Historical
+`/private/tmp` evidence links above should not be assumed to remain available.
+
+Built and boot-qualified a fresh cpmsim System Disk from merged source:
+`/private/tmp/bettercpm-v023-distribution/release-e1633a91c034-2bc6ff44e934/z80pack`. Image SHA-256: `8ea8a419901a1e6a62ef4f3d80af2e5635f851ac06bc8608fdeb7d5f6df2c4da`.
+The manifest contains 30 files with 148K free. The build's boot, ED identity,
+clock-provider and host-exit checks passed.
+
+The unchanged disk passed 12 resident/transient REN sessions. Physical-directory
+and extracted-payload checks verified all eight RO/SYS/ARC combinations,
+multi-extent preservation, `/P`, safe default skips, byte-identical dry-run and
+invalid-option media, collision help/invalid replacement/confirmation,
+destination-ledger behavior, both operand orders and compound users. Resident
+REN preserved multi-extent contents, skipped explicitly selected RO/SYS files
+and reported `Use :REN` for `/P`. Unattended collisions preserved both files.
+All 30 shipped files remain unchanged; all three final filesystems check clean.
+
+Evidence: `/private/tmp/bettercpm-v023-ren-media/evidence.json`, including executed
+runner, transcripts, images and extracted-file comparisons. Version checks use
+utility metadata rather than the inherited test's stale Build 005 expectation.
+
+Four controlled suites passed against the fresh isolated build after its
+REN.COM hash was matched to the manifest: `test_ren_failure.py`,
+`test_ren_protection.py`, `test_ren_workflow.py`, `test_ren_collision.py`.
+They cover retry/help/skip/abort, target races, read-only drives, attribute repair
+failures, mixed extents, policy precedence and collision input handling.
+Logs: `/private/tmp/bettercpm-v023-ren-faults/`. These are BDOS fixtures, not
+injected physical media failures. No production fix was needed. Native repetition
+and broader media fault coverage remain open; validation is incomplete.
