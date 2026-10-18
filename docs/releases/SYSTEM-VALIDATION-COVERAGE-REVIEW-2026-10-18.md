@@ -26,8 +26,8 @@ check does not silently change the independent suite's printed status to PASS.
 | --- | --- | --- |
 | Native 0368–0369 and 0379–0384 | Closed for the selected V034 image by V038 | Eight external native outcomes passed: selected diagnostic, usable CCP, caller B0/53K, unchanged protected media and shipped files. This is not DRI key-acknowledgement equivalence or a final merged-source rerun. |
 | BDOSTEST 0143 | OPEN: required media-change procedure | Use disposable, restorable media; exercise change detection and read-only protection. Record the selected-drive/media assumptions and byte audit. |
-| BDOSTEST 0420 | OPEN: required buffered-input procedure | Show Function 10 uses DE rather than DMA, preserving independent DMA sentinels. This can be automated. |
-| BDOSTEST 0519 | OPEN: required BIOS-resource procedure | Observe selected-drive DPH/DPB/allocation resources across the specified operations. This can be automated. |
+| BDOSTEST 0420 | Selected native witness passes in V039 | One controlled Function 10 input line updates the DE buffer; DMA and surrounding guards remain unchanged. Retain final merged-source rerun. |
+| BDOSTEST 0519 | Selected native witness passes in V039 | A/B/A selections expose BDOS DPB/ALV pointers matching the selected BIOS DPH, without fixed addresses or a uniqueness requirement. Retain final merged-source rerun. |
 | Native ECOTEST 0569, 0575, 0577, 0579 | OPEN: external transcripts | Qualify resident semantics, SAVE page mapping, TYPE bytes and ordinary-command recovery on native Model 4. Earlier cpmsim results do not close native coverage. |
 | BIOSTEST/ERRTEST documentary cards | OPEN: per-card reconciliation | Map retained external evidence and fresh suite output to the candidate cards below. Do not count documentary listings as execution, or declare all candidates missing merely from their initial status. |
 | Unavailable-drive card 0154 and interactive physical-error profiles | PROFILE REVIEW | Apply the documented BetterCP/M error/restart contract, including its immediate warm-start behavior. Do not claim the interactive DRI acknowledgement profile passed if no acknowledgement exists. Required recovery/data-safety checks remain required. |
@@ -41,8 +41,8 @@ check does not silently change the independent suite's printed status to PASS.
 No blanket manual exclusion is approved by this review. Any later exclusion must
 name the card, target, contract, reason and replacement evidence or remaining gap.
 V038 closes the selected native read-only terminal outcomes. The next bounded
-automation batch should address the three BDOS procedures and four native
-ecology transcripts.
+automation work remains for media-change card 0143 and four native ecology
+transcripts; V039 supplies selected native witnesses for 0420 and 0519.
 Live host devices and operator observations can then be closed with named profiles.
 
 ## Device basis
