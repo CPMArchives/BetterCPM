@@ -3080,3 +3080,22 @@ rename failures; H and arbitrary controller failures are not newly qualified
 here. Next is the remaining coverage and manual/device applicability review,
 followed by final merged-source acceptance reruns. Step 7 and whole-system
 validation are not declared complete.
+
+## V037 — remaining coverage and manual/device applicability review
+
+Reviewed the pinned 627-card independent suite catalog and native BIOS/error
+source tables against the campaign's deferred register, retained evidence and
+current platform device routing. See
+[SYSTEM-VALIDATION-COVERAGE-REVIEW-2026-10-18.md](SYSTEM-VALIDATION-COVERAGE-REVIEW-2026-10-18.md).
+
+The review separates automatable required gaps, profile-specific behavior,
+physical observations and outside-scope cards. It explicitly retains native
+read-only terminal outcomes, three BDOS procedures, four native ecology
+transcripts, live cpmsim endpoints and final merged-source reruns as open work.
+The BIOS/error appendix lists candidate documentary cards for reconciliation;
+initial table status is not an outstanding execution count. Early historical
+results whose temporary artifacts disappeared are not promoted to retained
+evidence. No new runtime pass, production change or blanket exclusion is claimed.
+
+Next: native read-only terminal-outcome coverage, followed by the remaining
+BDOS/ecology procedures and device/profile closure. Step 7 remains partial.
