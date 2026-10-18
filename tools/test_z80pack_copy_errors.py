@@ -33,7 +33,9 @@ def main():
   assert b'1 FILE FAILED' in t,t
   if cleanup:assert b'INCOMPLETE DESTINATION CLEANUP FAILED' in t
   for name,exists in [('A',True),('B',cleanup),('C',not stop)]:
-   f=d/('out-'+name);cpm('cpmcp','d','0:'+name+'.DAT',f);assert f.exists()==exists,(label,name)
+   f=d/('out-'+name)
+   result=subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(disks['d']),'0:'+name+'.DAT',str(f)],cwd=d,capture_output=True)
+   assert (not exists or result.returncode==0) and f.exists()==exists,(label,name,result.stderr)
    if exists and name!='B':assert f.read_bytes()==name.encode()*256
   raw=disks['b'].read_bytes();directory=b''.join(raw[6*18*256+s*256:6*18*256+(s+1)*256] for s in [0,4,8,12,16,2,6,10])
   for name,arc in [('A',False),('B',True),('C',stop)]:
