@@ -3241,3 +3241,49 @@ have different checksums. The write case uses the existing immediate-WBOOT
 error profile. The reset case tests explicit recovery; automatic relogging is
 not claimed. Final merged-source acceptance, four native ecology transcripts,
 BIOS/error evidence reconciliation and device/profile closure remain open.
+
+## V041 — native resident semantics and SAVE page mapping
+
+`tools/run_validation_model4_ecology.py` executes external procedures for
+ECOTEST 0569 and 0575, using the pinned oracle/procedure source at
+`a9a878fcd2e36698c7e856654a85847a004fdd20`. The selected V034 native System Disk
+is copied privately, with STARTUP.SUB as a declared no-monitor fixture. STATE
+is supplemental. All production resident code is unchanged.
+
+Evidence: `/private/tmp/bettercpm-v041-native-ecology/result.json`, with 30
+native captures, invocation and per-command expectations, source/listing/binary
+for STATE and each marker, before/after media, extracted ECOSAVE.COM and file
+and filesystem audits. The exact executed runner is retained alongside them.
+`/private/tmp/bettercpm-v041-review.py` and the evidence directory's
+`supplemental-review.json` independently check the positive DIR output and exact
+saved page, recording both executed and current runner hashes. The committed
+runner adds that same positive DIR assertion after the captured execution;
+this is an analysis strengthening, not a second target execution.
+
+Both selected external witnesses pass:
+
+- Put marker DIR.COM, ERA.COM, REN.COM, SAVE.COM, TYPE.COM and USER.COM on B.
+  Unprefixed resident commands execute without printing any marker. DIR lists
+  KEEP.TXT; REN moves it to NEW.TXT; TYPE reads its unique contents; ERA removes
+  it and DIR reports NO FILE. USER 3 plus STATE shows B3, then USER 0 restores
+  B0. Every marker's contents and directory entries remain unchanged.
+- Resident POKE primes addresses 0100h–01FFh with bytes 00h–FFh, with no
+  transient primer or warm reconstruction between priming and SAVE. SAVE 1
+  ECOSAVE.COM produces exactly those 256 bytes. Independent filesystem parsing
+  and extraction verify length and every byte, rather than accepting a message
+  or assuming command completion. No transient marker executes.
+
+STATE subsequently reports B0/TOP=D501; the runner returns to A, where STATE
+and VER execute and finish at A0/53K. The final B directory contains only the
+unchanged markers and the exact SAVE artifact: KEEP/NEW are absent. The private
+SAVE artifact and marker files are intentionally retained for audit rather than
+claimed erased from the evidence disk. The original distribution remains
+unchanged; system tracks and all other 28 shipped files are preserved, and
+independent System Disk and scratch filesystem checks pass.
+
+These witnesses do not close native TYPE byte-stream card 0577: a correct
+visible text line cannot prove preservation of control bytes or EOF behavior.
+They also do not close bad-operand/collision/no-space recovery card 0579.
+Those two transcripts, BIOS/error evidence reconciliation, device/profile
+closure and final merged-source acceptance remain open. No production fix was
+needed. Step 7 and whole-system validation remain incomplete.
