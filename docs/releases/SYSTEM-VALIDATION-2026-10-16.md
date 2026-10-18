@@ -3287,3 +3287,95 @@ They also do not close bad-operand/collision/no-space recovery card 0579.
 Those two transcripts, BIOS/error evidence reconciliation, device/profile
 closure and final merged-source acceptance remain open. No production fix was
 needed. Step 7 and whole-system validation remain incomplete.
+
+## V042 — native TYPE bytes and ordinary command failure recovery
+
+This batch supplies selected external native witnesses for ECOTEST 0577/0579.
+It uses the V034 native generation and pinned independent-suite revision
+`a9a878fcd2e36698c7e856654a85847a004fdd20`, not a final merged-source acceptance
+build. Every session uses private disks, a declared no-monitor STARTUP.SUB and
+supplemental helpers. No production source, suite source or suite PASS row is
+changed.
+
+### Ordinary recovery — PASS
+
+`tools/run_validation_model4_ecology_recovery.py` retains evidence in:
+
+- `/private/tmp/bettercpm-v042-native-recovery-ordinary/result.json`: seven
+  bad-operand/missing-source/collision cases. DIR, ERA, REN and TYPE reject
+  missing files; REN rejects FIRST.TXT to existing SECOND.TXT; SAVE rejects
+  a nonnumeric count and an extra filename operand. Each diagnostic is followed
+  by an executed STATE witness at B0/53K and successful TYPE of KEEP.TXT.
+  Namesake marker programs do not execute. The entire B logical image remains
+  byte-identical, including both collision sentinels.
+- `/private/tmp/bettercpm-v042-native-recovery-full/result.json`: the host builds
+  a valid fixture occupying all 400 native allocation blocks. SAVE 1 NOSPACE.COM
+  reports NO SPACE and recovers. It leaves one empty NOSPACE.COM entry; every
+  prior file and extent entry remains unchanged, with no modification outside
+  the directory. STATE and TYPE KEEP.TXT subsequently succeed at B0/53K.
+
+Both sessions restore caller A0 and execute STATE and VER. All other 28 shipped
+files, system tracks and the original baseline are unchanged; independent
+System Disk and fixture filesystem checks pass. The valid full fixture is
+prepared directly rather than filled by a slow guest write loop.
+
+The initial post-run analyzer incorrectly required the CLS command text to
+remain visible after CLS had erased it. The corrected analyzer checks its fresh
+prompt, while requiring the command and expected output on all other captures.
+No target execution is repeated or promoted from a partial capture set.
+`--analyze-only` reviews retained media/captures without launching the emulator
+or rebuilding images. Exact executed and analysis runner sources/hashes are
+retained separately. A first full-disk analysis also hit a host metadata
+NameError after its audits; that analyzer and audit directory are retained as
+analysis-attempt-1 artifacts, and the completed corrected analysis supplies the
+PASS record. These are analysis defects, not OS failures.
+
+### TYPE byte stream — PASS
+
+`tools/run_validation_model4_type_bytes.py` retains evidence in
+`/private/tmp/bettercpm-v042-native-type-bytes/result.json`, with `console.bin`,
+`byte-spans.json`, fixture media, captures, assembled helper sources/listings,
+executed/analyzer sources, invocation, file audits and instrument checks.
+
+The temporary recorder intercepts the public BIOS CONOUT jump vector in RAM,
+logs C into a bounded 4096-byte buffer and forwards to the original target.
+It saves/restores AF/BC/DE/HL and leaves the caller's stack intact. Twelve
+controlled instruction-fixture checks exercise ordinary forwarding, the modeled
+Z/C flags, register/stack preservation and both sides of the overflow boundary.
+The full flag byte is saved/restored by PUSH/POP AF; the fixture does not model
+all individual flag bits. Overflow is flagged rather than written beyond the
+capture buffer. HSTOP restores the original vector before writing the log to
+private B:CONSOLE.BIN. The recorded stream is 2,904 bytes, below the limit.
+
+This is test-only instrumentation at 9000h–A1FFh for the selected small helpers
+and resident-command workload. It changes no TPA gateway or disk-carried code
+and is not a distributable RSX or safe instrumentation for arbitrary programs.
+The fixtures require no loaded monitor, so capture occurs before video rendering.
+Subsequent STATE/VER execution corroborates working console/command recovery.
+
+Exact byte comparisons pass for ordinary text (15 bytes), an empty file,
+BEL/backspace/form-feed controls (23 bytes including surrounding graphic text),
+1Ah cutoff (11 emitted bytes, with the post-cutoff sentinel absent), and a full
+256-byte two-record file ending at physical EOF without 1Ah. Missing-file TYPE
+reports NO FILE and returns. Only command/CCP CR/LF framing is permitted around
+each exact payload; presentation effects are not substituted for captured
+control bytes. This does not claim TAB passthrough: cooked BDOS output expands
+tabs before the BIOS boundary, and no TAB fixture is included.
+
+The first stream analyzer selected an intermediate command-line redraw as the
+start of output. Native CCP redraws its input as characters arrive; the corrected
+analyzer requires the complete CR/LF-terminated command line. It then reviews
+the same unchanged retained stream. Executed and corrected analyzer sources are
+separately retained and hashed. No target rerun or production change is implied
+by this parser correction.
+
+The TYPE fixture files and directory entries remain unchanged; the sole added
+B file is the capture artifact. All other 28 shipped files and system tracks
+remain unchanged, both filesystems pass independent checks, and the original
+baseline remains unchanged. Final caller state is A0 with TOP=D501 (53K).
+
+V039–V042 now supply selected native external witnesses for the three deferred
+BDOS procedures and four ecology cards. BIOS/error evidence reconciliation,
+applicable live devices/profiles, the observed input anomaly review and final
+clean merged-source acceptance remain open. Step 7 and overall validation are
+not declared complete.

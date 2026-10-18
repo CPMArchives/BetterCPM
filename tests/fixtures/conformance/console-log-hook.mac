@@ -1,0 +1,29 @@
+; Test-only BIOS CONOUT forwarding hook, below resident memory for small fixtures.
+; 9100 pointer, 9102 overflow, 9103 original target, 9105 vector operand address.
+        ORG 9000H
+        PUSH AF
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        LD HL,(9100H)
+        LD DE,0A200H
+        OR A
+        SBC HL,DE
+        JR C,STORE
+        LD A,1
+        LD (9102H),A
+        JR FORWARD
+STORE:  LD HL,(9100H)
+        LD (HL),C
+        INC HL
+        LD (9100H),HL
+FORWARD:POP HL
+        POP DE
+        POP BC
+        POP AF
+; Preserve HL and the original return stack while tail-jumping dynamically.
+        PUSH HL
+        LD HL,(9103H)
+        EX (SP),HL
+        RET
+        END
