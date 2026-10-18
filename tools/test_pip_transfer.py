@@ -2,6 +2,7 @@
 """PIP exact disk transaction, guarded replacement and injected failure cleanup."""
 from test_pip_parser import cpu,addr
 from test_bios import SENTINEL
+from utility_versions import banner
 
 def key(d,u,name):
  stem,_,ext=name.partition('.');return (d,u,(stem.ljust(8)+ext.ljust(3)).encode())
@@ -165,7 +166,7 @@ def main():
  out,fs,_,_=execute('B7:DEST.DAT=A2:SRC.DAT',batch)
  assert fs[queue]==[b'BATCH',0]
  out,fs,calls,_=execute('/VER',batch)
- assert 'Build 026' in out and fs[queue]==[b'BATCH',0] and calls==[9]
+ assert banner('PIP') in out and fs[queue]==[b'BATCH',0] and calls==[9]
  for protection in ['cancel','roqueue','rodrive']:
   protected_batch={**batch,queue:(b'BATCH',1 if protection=='roqueue' else 0)}
   out,fs,_,_=execute('BAD',protected_batch,fail='cancel' if protection=='cancel' else None,readonly=1 if protection=='rodrive' else 0)
