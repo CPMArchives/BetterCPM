@@ -3099,3 +3099,49 @@ evidence. No new runtime pass, production change or blanket exclusion is claimed
 
 Next: native read-only terminal-outcome coverage, followed by the remaining
 BDOS/ecology procedures and device/profile closure. Step 7 remains partial.
+
+## V038 — native read-only terminal outcomes
+
+`tools/run_validation_model4_readonly.py` executes the pinned, unmodified
+RANDTEST cases 0368/0369 and DISKTEST cases 0379–0384 against independent private
+Model 4 disks. The baseline is the V034 generation
+`/private/tmp/bettercpm-v034-distribution/release-5761c0f03a09-9df8d69de02d/trs80gp`;
+this is selected-image regression evidence, not final merged-source acceptance.
+STARTUP.SUB is a declared fixture that omits monitor loading. Supplemental STATE
+and the pinned suite executable are added without replacing a shipped utility.
+
+Evidence directories are `/private/tmp/bettercpm-v038-native-ro-ITEM`, with ITEM
+0368, 0369, 0379, 0380, 0381, 0382, 0383 or 0384. Each retains its exact executed
+runner, invocation, source/listing for STATE, native text captures, before/after
+media, result and shipped-file comparisons. The suite revision is
+`a9a878fcd2e36698c7e856654a85847a004fdd20`; executable hashes are checked against
+its build manifest. The retained supplemental audit is
+`/private/tmp/bettercpm-v038-audit.py`, with combined results in
+`/private/tmp/bettercpm-v038-final-audit.json`.
+
+All eight selected external procedures pass. File read-only sequential/random
+writes produce File R/O. Whole-disk protection rejects Make, sequential write,
+random write, Delete, Rename and the post-protection mutation with Disk R/O.
+Captures positively identify the selected request; subsequent STATE and VER
+invocations establish a usable command environment at B0 and TOP=D501 (53K).
+Every protected logical disk remains byte-identical, including live attributes
+and unallocated space. BTRO remains present and RO in both file cases. System
+tracks and the other 28 shipped files remain unchanged. Independent filesystem
+checks pass for protected fixtures and the System Disk, and the original
+baseline image remains unchanged.
+
+The first four executions saved the initial runner; later executions saved
+small audit-strengthening revisions. Each executed copy is retained and hashed.
+The final supplemental audit applies the stronger VER-after-STATE check and
+System Disk filesystem check to all eight captures/images without rerunning or
+misrepresenting their executed source. It also verifies the suite revision,
+protocol hash and protected BTRO attribute. The committed runner incorporates
+these checks for subsequent executions.
+
+These results use the existing BetterCP/M engineering-specification 74 terminal
+profile: diagnostic followed by immediate WBOOT, with no key acknowledgement.
+They do not claim DRI interactive acknowledgement equivalence, physical media
+write protection, controller fault injection, or in-process suite PASS rows.
+No production changes were required. This closes the selected native read-only
+terminal-outcome gap. Three BDOS procedures, native ecology transcripts,
+device/profile reconciliation and final clean-source acceptance remain open.
