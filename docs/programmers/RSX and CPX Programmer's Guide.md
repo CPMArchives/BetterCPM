@@ -333,6 +333,17 @@ Configuration changes affect the active reconstruction table, then terminate
 through WBOOT so fixed resident code performs all relocation. The manager is
 never required to move or overwrite the environment in which it is executing.
 
+Function 176 mutates the reconstruction profile; its successful return does
+not certify an on-disk carrier. Missing optional CPXs are skipped. An opened
+CPX which fails carrier validation or loading prints `CPX?` with CR/LF and is
+omitted from the prospective chain. Its allocation is rolled back, no entry or
+callback is invoked from that carrier, earlier valid CPXs remain linked, and
+later entries are attempted. The profile is retained for inspection/removal;
+`CPX LIST` shows configured names including unavailable or rejected carriers.
+`CPX UNLOAD name` therefore remains usable after such a failure. Lifecycle
+initialization failure after a valid carrier has loaded is distinct and follows
+section 7.4's reverse shutdown and empty-chain recovery contract.
+
 BetterCP/M Function 176 mediates CPX profile control. `DE` points to this
 12-byte version-1 request block and is preserved:
 

@@ -53,7 +53,7 @@ CRSTKTOP        EQU     LY_STKT
 ; -------------------------------------------------------------------------------
 
 CRSTART:                                ; enter command-environment reloader
-        JP      CRBODY
+  ; Fall through: the entry jump is unnecessary in this fixed carrier.
 
 CRBODY:                                 ; begin reconstruction body
         LD      SP,CRSTKTOP
@@ -73,6 +73,7 @@ CRBODY:                                 ; begin reconstruction body
         LD      HL,0
         LD      (ECB_CPXHEAD),HL
         LD      (CRHEAD),HL
+        LD      HL,CRHEAD              ; first link targets the prospective head
         LD      (CRPREV),HL
         LD      A,(CPTCOUNT)
         CP      9
@@ -101,7 +102,9 @@ CRCPXLP:                                ; process next persistent CPX
   ; 08-Sep-2026 -- SYSGEN writes the complete protected system but does not
   ; copy ordinary files.  A newly installed disk must therefore reach the
   ; bare CCP when an optional CPX named by the old profile is not yet present.
-  ; Once a carrier opens, malformed data still takes the hard failure path.
+  ; A failed optional carrier is now discarded too; the profile remains
+  ; available for CPX UNLOAD from the recovered command environment.
+CRCPXNEXT:                              ; skip missing or failed optional carrier
         LD      HL,CRCOUNT
         DEC     (HL)                   ; next profile iteration reloads A
         JR      CRCPXLP
@@ -121,25 +124,31 @@ CROPEN:                                 ; open configured CPX carrier
         LD      (CRFILE),A
         LD      HL,CRCPXMAG
         LD      (CRMAGPTR),HL
+  ; CRLOAD can consume allocation and write a partial payload before failure.
+  ; None of it is linked or initialized yet. Restore the saved boundary before
+  ; continuing; do not publish pointers into the discarded module. This also
+  ; handles read/reset/relocation/lifecycle validation errors, not just magic.
+        LD      HL,(CRBOUND)
+        PUSH    HL
         CALL    CRLOAD
-        JP      NZ,CRFAIL
+        POP     HL
+        JR      Z,CRACCEPT
+        LD      (CRBOUND),HL
+        LD      DE,CRCPXERR
+        LD      C,9
+        CALL    LY_BDOS                 ; fixed diagnostic; no CPX callback runs
+        JR      CRCPXNEXT
+
+CRACCEPT:                               ; link only a complete valid CPX
         LD      HL,(CRBASE)
         LD      (HL),0
         INC     HL
         LD      (HL),0
+  ; CRPREV points to CRHEAD for the first module, otherwise to the previous
+  ; module's next-link word. One linking path covers both cases.
         LD      HL,(CRPREV)
-        LD      A,H
-        OR      L
-        JR      NZ,CRLINK
-        LD      HL,(CRBASE)
-        LD      (CRHEAD),HL
-        JR      CRLINKD
 
-; -------------------------------------------------------------------------------
-; Link Loaded CPX
-; -------------------------------------------------------------------------------
-
-CRLINK:                                 ; link loaded CPX into chain
+CRLINK:                                 ; link loaded CPX through pending tail
         LD      DE,(CRBASE)
         LD      (HL),E
         INC     HL
@@ -212,8 +221,6 @@ CRMAGLP:                                ; match carrier signature
   ; Preserve the established BCM1 command-module carrier while normalizing its
   ; fields into the same private descriptor used by BCPX.  This explicit split
   ; replaces the former accidental assumption that both formats shared offsets.
-        XOR     A
-        LD      (CRISCPX),A
         LD      HL,(MODBUF+6)
         LD      (CRMLINK),HL
         LD      HL,(MODBUF+8)
@@ -248,8 +255,6 @@ CRNCPX:                                 ; normalize BCPX carrier header
         LD      A,H
         OR      L                       ; v1 defines no nonzero flag bits
         JP      NZ,CRBAD
-        LD      A,1
-        LD      (CRISCPX),A
         LD      HL,(MOD_LINK)
         LD      (CRMLINK),HL
         LD      HL,(MOD_SIZE)
@@ -489,7 +494,7 @@ CRBAD:                                  ; reject malformed module
 ; -------------------------------------------------------------------------------
 
 CRENTRY:                                ; publish relocated module entry
-        LD      A,(CRISCPX)
+        LD      A,(CRFILE)
         OR      A
         JR      Z,CRGOOD
         LD      DE,(CRMENTRY)
@@ -620,6 +625,7 @@ CRFAIL:                                 ; halt after reconstruction failure
 
 CRCCPMAG:      DB      'B','C','M','1',1,2 ; CCP carrier signature
 CRCPXMAG:      DB      'B','C','P','X',1,1 ; CPX carrier signature
+CRCPXERR:      DB      'CPX?',13,10,'$'  ; optional carrier reconstruction failed
 
 ; -------------------------------------------------------------------------------
 ; Loader State
@@ -632,7 +638,7 @@ CRMAGPTR:      DW      0                ; expected signature pointer
 CRTPTR:        DW      0                ; temporary pointer
 CRBOUND:       DW      0                ; upper allocation boundary
 CRBASE:        DW      0                ; module runtime base
-CRPREV:        DW      0                ; previous CPX descriptor
+CRPREV:        DW      0                ; pending next-link destination (head or CPX)
 CRDEST:        DW      0                ; payload destination
 CRLEFT:        DW      0                ; payload bytes remaining
 CRSKIP:        DW      0                ; header bytes to skip
@@ -644,7 +650,6 @@ CRMRELOCS:     DW      0                ; module relocation count
 CRMHEADSZ:     DW      0                ; module header size
 CRMPAYLOAD:    DW      0                ; module payload offset
 CRMRELTABLE:   DW      0                ; module relocation-table offset
-CRISCPX:       DB      0                ; CPX-module flag
 CRDELTA:       DW      0                ; module relocation delta
 CRCOUNT:       DB      0                ; relocation entries remaining
 CRSLOT:        DB      0                ; current CPX profile slot

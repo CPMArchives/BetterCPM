@@ -59,6 +59,18 @@ applies each relocation against the calculated runtime base, writes the
 validated entry address into the common runtime header, and links the module
 in persistent-table order.
 
+A missing optional carrier is skipped. If an opened optional CPX fails header,
+layout, read/reset, relocation or entry-point validation, reconstruction prints
+`CPX?` followed by CR/LF, discards that module and restores its pre-load
+allocation boundary. No rejected module is linked or initialized. Earlier
+valid modules remain intact, and later profile entries are still considered.
+The persistent name is retained: `CPX LIST` enumerates configured names, not
+proof that every carrier became active. Use `CPX UNLOAD name` to remove an
+unusable entry, or repair the carrier before another reconstruction. The
+warning repeats on reconstruction while the invalid carrier remains present.
+Required CCP-carrier failures and initial directory-login failures still take
+the existing hard-failure path; they are not optional-module recovery.
+
 After constructing the complete prospective chain, the reloader calls present
 initialization entries in configured order and publishes the chain only after
 all succeed.  Before a transient program reclaims the live command environment,

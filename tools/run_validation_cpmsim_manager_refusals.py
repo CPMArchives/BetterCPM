@@ -15,8 +15,11 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     for name in ('baseline', 'output'):
         p.add_argument('--' + name, type=Path, required=True)
-    p.add_argument('--malformed-cpx', action='store_true',
-                   help='Reproduce the known hard-stop finding in isolation')
+    modes = p.add_mutually_exclusive_group()
+    modes.add_argument('--recover-malformed-cpx', action='store_true',
+                       help='Require safe recovery and explicit profile removal')
+    modes.add_argument('--malformed-cpx', action='store_true',
+                   help='Historical oracle: reproduce the hard-stop on an unfixed baseline')
     a = p.parse_args()
     base = a.baseline.resolve()
     w = a.output.resolve()
@@ -50,7 +53,7 @@ def main():
         for text in ('LOAD MISSING', 'LOAD BAD', 'UNLOAD MISSING'):
             if command_name == 'CPX':
                 # Missing carriers are permitted profile entries; malformed ones
-                # currently hard-stop reconstruction (separate finding mode).
+                # checked by the separate recovery/historical-finding modes.
                 if text == 'LOAD BAD':
                     continue
                 command(command_name + ' ' + text, None)
@@ -70,6 +73,22 @@ def main():
     command('RSX LIST', b'No RSXs loaded')
     steps.append((b'BYE\r', b'System halted', 30))
     sim = Path.home() / 'projects/git/z80pack/cpmsim/cpmsim'
+    if a.recover_malformed_cpx:
+        cases = []
+        steps = []
+        command('CPX LOAD BAD', b'CPX?')
+        command('CPX LIST', b'BAD.CPX')
+        command(':VER /VER', banner('VER').encode())
+        command('RSX LOAD ANSISCRN', b'CPX?')
+        command('RSX LOAD ANSI', b'CPX?')
+        command('CPX LIST', b'BAD.CPX')
+        command('CPX UNLOAD BAD', None)
+        command('CPX LIST', b'RCP.CPX')
+        command('DIR /VER', banner('DIR', resident=True).encode())
+        command('RSX UNLOAD ANSI', None)
+        command('RSX UNLOAD ANSISCRN', None)
+        command('RSX LIST', b'TPA available: 53K')
+        steps.append((b'BYE\r', b'System halted', 30))
     if a.malformed_cpx:
         steps = [(b'CPX LOAD BAD\r', prompt, 30)]
     try:
@@ -89,6 +108,12 @@ def main():
         output = trace[start:end]
         if diagnostic is not None:
             assert diagnostic in output, (text, output)
+        if a.recover_malformed_cpx and text == 'CPX LIST':
+            assert b'RCP.CPX' in output
+            if b'BAD.CPX' in diagnostic:
+                assert b'CPX?' in output
+            else:
+                assert b'BAD.CPX' not in output and b'CPX?' not in output
         if text == 'RSX LIST':
             assert b'TPA available: 53K' in output if b'No RSXs' in output else b'ANSISCRN : BDOS 255' in output
         observations.append({'command': text, 'status': 'PASS'})
@@ -99,7 +124,8 @@ def main():
         'status': 'PASS', 'cases': observations, 'unchanged_shipped_files': matched,
         'runner_sha256': sha(Path(__file__)), 'simulator_sha256': sha(sim),
         'baseline_sha256': report['sha256'],
-        'scope': 'shipped cpmsim managers; syntax and malformed RSX rejection, optional missing CPX profile entry/removal, missing RSX rejection, idempotent absent unload, live profile preservation and 53K recovery; malformed CPX is a separate open finding; not exhaustive transaction fault injection'
+        'recovered_malformed_cpx': a.recover_malformed_cpx,
+        'scope': 'shipped cpmsim managers; syntax and malformed RSX rejection, optional missing CPX profile entry/removal, missing RSX rejection, idempotent absent unload, live profile preservation and 53K recovery; malformed CPX recovery is checked only in the explicit recovery mode; not exhaustive transaction fault injection'
     }, indent=2) + '\n')
     print('PASS extension-manager refusal and recovery checks', w)
 

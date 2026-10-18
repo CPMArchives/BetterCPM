@@ -2410,6 +2410,24 @@ The mapping and capacity checks in section 4.6 still apply before any writes.
 6.1 BetterCP/M Extensions 6.2 CPXs 6.3 Listing CPXs 6.4 Loading and Unloading CPXs 6.5 RSXs 6.6 Listing RSXs 6.7 Loading and Unloading RSXs 6.8 Extension Order and Memory Use 6.9 Warm Boot and Extension Persistence 6.10 Recovery
 This should be user-oriented throughout.
 
+#### 6.10 Recovering from an unusable CPX
+
+If an optional CPX file cannot be loaded or fails validation, BetterCP/M prints
+`CPX?` and continues to the command prompt with the other usable extensions.
+The rejected extension's commands are unavailable. Its name remains in the
+configured profile, so `CPX LIST` can still show it; this does not mean it
+loaded successfully. Remove it with, for example:
+
+```text
+CPX UNLOAD BAD
+```
+
+Alternatively, replace the damaged carrier with a valid copy. Until the entry
+is removed or repaired, the warning can recur when the command environment is
+reloaded after programs run. A missing optional CPX file is skipped without
+that warning. This recovery does not cover a damaged required command
+processor or an unreadable boot disk.
+
 ### 7. Configuring BetterCP/M
 
 #### 7.1 CONFIG — Current configuration utility
