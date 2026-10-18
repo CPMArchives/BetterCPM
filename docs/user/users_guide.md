@@ -562,3 +562,502 @@ Restarting the computer normally performs a cold boot.
 An ordinary CP/M warm boot returns control to the operating environment without necessarily reinitializing the entire machine.
 
 The distinction matters when using resident extensions or saved startup configuration, but for everyday operation the familiar CP/M rule remains a useful one: finish your work, make sure your files are saved, and return to the command prompt before stopping the system.
+
+# Chapter 4 — Working with Drives and Files
+
+BetterCP/M retains the familiar CP/M system of disk drives, user areas, and file names. If you've used CP/M before, you'll recognize most of the conventions described in this chapter.
+
+BetterCP/M also introduces some useful extensions, particularly in the way drives, user areas, and files can be specified in commands.
+
+This chapter explains how to work with files and disks during ordinary operation. The complete syntax and options for individual commands are provided in Part II, *Command and Utility Reference*.
+
+## 4.1 Drives and User Areas
+
+### Disk Drives
+
+Like conventional CP/M, BetterCP/M identifies disk drives by letters.
+
+Drives are named `A:` through `P:`, although the number actually available depends on your computer and its configuration.
+
+The current drive is shown in the command prompt:
+
+```text
+A>
+```
+
+To select another drive, enter its letter followed by a colon:
+
+```text
+A>B:
+B>
+```
+
+The prompt changes to indicate that drive B is now selected.
+
+You can also refer to files on another drive without changing the current drive.
+
+For example:
+
+```text
+A>DIR B:
+```
+
+displays the directory of drive B while leaving drive A selected.
+
+Similarly:
+
+```text
+A>TYPE B:README.TXT
+```
+
+displays `README.TXT` from drive B.
+
+### User Areas
+
+CP/M divides each disk into numbered user areas.
+
+BetterCP/M retains this convention, allowing files to be organized into separate logical areas on the same disk.
+
+The standard CP/M user areas are numbered 0 through 15. BetterCP/M also supports extended user-area facilities where provided by its commands and configuration.
+
+User areas are useful for organizing files by project, application, or purpose.
+
+For example, you might keep programming tools in one user area, source files in another, and application data in a third.
+
+Files in different user areas are ordinarily treated as belonging to separate collections, even when they reside on the same disk.
+
+To select user area 5, enter:
+
+```text
+A>5:
+A5>
+```
+
+The prompt now indicates drive A, user area 5.
+
+To return to user area 0:
+
+```text
+A5>0:
+A>
+```
+
+### Drive/User Specifications
+
+BetterCP/M provides a convenient way to specify a drive and user area together.
+
+A **drive/user specification**, often abbreviated **DU**, combines the drive letter and user number.
+
+For example:
+
+```text
+A0:
+B3:
+C12:
+```
+
+These identify drive A/user 0, drive B/user 3, and drive C/user 12, respectively.
+
+To select drive B, user area 3, enter:
+
+```text
+A>B3:
+B3>
+```
+
+You can also use a DU specification when referring to a file:
+
+```text
+A>TYPE B3:README.TXT
+```
+
+This displays `README.TXT` from drive B, user area 3, without changing the current drive or user area.
+
+The ability to specify a drive and user area directly is particularly useful when working with files distributed across several user areas.
+
+Not every conventional CP/M program understands BetterCP/M's extended DU notation. It is a feature of the BetterCP/M command environment and of utilities that explicitly support it.
+
+Programs using the standard CP/M programming interface continue to operate according to conventional CP/M drive and user-area rules.
+
+## 4.2 File Names and File Specifications
+
+BetterCP/M uses the standard CP/M file-naming convention.
+
+A file name consists of a name of up to eight characters and an optional file type of up to three characters, separated by a period.
+
+For example:
+
+```text
+README.TXT
+STAT.COM
+MYPROG.ASM
+DATA
+```
+
+The file type often indicates the purpose of the file.
+
+Some common examples are:
+
+| File type | Common purpose |
+|---|---|
+| `.COM` | Executable program |
+| `.ASM` | Assembly-language source |
+| `.TXT` | Text file |
+| `.SUB` | SUBMIT command file |
+| `.BAK` | Backup file |
+| `.HEX` | Intel hexadecimal object file |
+| `.PRN` | Assembly listing |
+
+These are conventions rather than restrictions imposed by the filesystem.
+
+A file named `REPORT.TXT`, for example, is not required to contain text merely because its file type is `.TXT`.
+
+### File Specifications
+
+A **file specification**, or **filespec**, identifies a file and may include a drive and user area.
+
+For example:
+
+```text
+README.TXT
+B:README.TXT
+B3:README.TXT
+```
+
+The first refers to `README.TXT` in the current drive and user area.
+
+The second refers to the file on drive B, using the applicable user area.
+
+The third explicitly identifies the file in drive B, user area 3.
+
+If the current prompt is:
+
+```text
+A2>
+```
+
+then:
+
+```text
+TYPE README.TXT
+```
+
+displays `README.TXT` from drive A, user area 2.
+
+By contrast:
+
+```text
+TYPE B3:README.TXT
+```
+
+displays the file from drive B, user area 3.
+
+BetterCP/M commands use file specifications extensively, and many accept the extended DU notation.
+
+The individual command descriptions identify which forms are supported.
+
+## 4.3 Wildcards
+
+Wildcards allow a single file specification to refer to several files.
+
+BetterCP/M retains the standard CP/M wildcard characters:
+
+- `?` matches a character in a particular position.
+- `*` is a convenient abbreviation for matching the remaining characters in a file name or file type.
+
+For example:
+
+```text
+A>DIR *.COM
+```
+
+lists files with the `.COM` file type.
+
+Similarly:
+
+```text
+A>DIR LETTER.*
+```
+
+lists files named `LETTER`, regardless of their file type.
+
+To list all applicable files:
+
+```text
+A>DIR *.*
+```
+
+### Using Question Marks
+
+A question mark matches any character in the corresponding position.
+
+For example:
+
+```text
+A>DIR TEST?.COM
+```
+
+can match:
+
+```text
+TEST1.COM
+TEST2.COM
+TESTA.COM
+```
+
+Wildcards are especially useful when performing operations on groups of related files.
+
+For example:
+
+```text
+A>DIR B3:*.ASM
+```
+
+lists assembly-language source files in drive B, user area 3.
+
+### Wildcards and File Operations
+
+Many BetterCP/M commands accept wildcards.
+
+For example, you can use them to select files for copying, deleting, or examining.
+
+However, **not every command permits wildcards in every operand**.
+
+Some operations require an explicit destination filename, while others can operate on groups of files.
+
+The command reference explains the rules for each command.
+
+Be especially careful when using wildcards with commands that modify or delete files. A specification such as `*.*` can select every applicable file in a directory.
+
+## 4.4 File Attributes
+
+In addition to its name and file type, a CP/M file can have attributes that affect how it is treated.
+
+BetterCP/M supports the familiar read-only, system, and archive attributes.
+
+### Read-Only Files
+
+The **read-only (R/O)** attribute protects a file against ordinary operations that would modify or erase it.
+
+This is useful for files that should not be changed accidentally, such as important programs or reference data.
+
+BetterCP/M respects read-only protection.
+
+Some utilities provide explicit options for overriding this protection, but such operations should be used carefully.
+
+### System Files
+
+The **system (SYS)** attribute identifies a file as a system file.
+
+Some directory commands may omit system files from their ordinary listings unless instructed to include them.
+
+In BetterCP/M 1.0, the SYS attribute does not automatically make a file visible across different user areas. Normal drive and user-area rules continue to apply.
+
+### Archive Files
+
+The **archive (ARC)** attribute can be used to identify files for backup or other file-management purposes.
+
+BetterCP/M preserves this attribute where appropriate, but does not impose a universal automatic backup policy based on it.
+
+Individual utilities may provide options that make use of archive attributes.
+
+### Examining and Changing Attributes
+
+BetterCP/M provides utilities for displaying and changing file attributes.
+
+For example, STAT can be used to examine file information and perform supported attribute operations.
+
+The complete procedures are described in the STAT command reference.
+
+## 4.5 Changing Disks
+
+Many CP/M computers use removable storage media.
+
+Whether you're working with physical floppy disks or disk images attached to an emulator, it's important to understand how BetterCP/M handles changes in media.
+
+**Never remove or replace a disk while an operation is reading from or writing to it.**
+
+Doing so can interrupt a file operation and may damage files or directory information.
+
+CP/M maintains information about the disks it is using. If a disk is replaced without the operating system recognizing the change, information associated with the previous disk could otherwise be used incorrectly.
+
+To help prevent this, BetterCP/M retains CP/M's protective behavior when a disk change is detected or suspected.
+
+In some circumstances, a disk may be treated as read-only until the operating system has safely recognized the new medium.
+
+If BetterCP/M reports that a disk has become read-only after a media change, follow the appropriate disk-reset or warm-boot procedure before attempting further writes.
+
+Do not attempt to force a write merely to bypass the warning.
+
+### A Practical Precaution
+
+When working with removable disks, it's good practice to finish the current operation and return to the command prompt before changing media.
+
+If you're using an emulator, follow its procedure for replacing or remounting disk images.
+
+The details vary between systems, so consult the appropriate platform documentation when necessary.
+
+## 4.6 Disk Capacity and Free Space
+
+Not all CP/M disks have the same capacity.
+
+The amount of storage available depends on the disk format, which determines how the disk is organized and how much space is available for files.
+
+BetterCP/M supports different disk formats through its disk and system configuration facilities.
+
+### File Storage
+
+CP/M allocates file space in units called **allocation blocks**.
+
+An allocation block contains a fixed amount of disk space, determined by the disk format.
+
+A small file may occupy an entire allocation block, even if it contains only a few bytes of data.
+
+Consequently, the amount of free space on a disk does not always decrease by exactly the size of each file written to it.
+
+### Directory Capacity
+
+A CP/M disk also has a limited number of directory entries.
+
+Directory entries contain the information used to identify and locate files.
+
+This means that a disk can sometimes have unused storage space but insufficient directory capacity to create additional files.
+
+If you encounter this situation, deleting unneeded files or using a disk format with a larger directory may resolve the problem.
+
+### Examining Disk Information
+
+BetterCP/M provides utilities for examining disk capacity, available space, and related information.
+
+STAT provides disk and file information, while other utilities can examine or configure supported disk formats.
+
+Chapter 10 explains disk operations in more detail.
+
+For complete command syntax, consult the appropriate entries in Part II.
+
+## 4.7 Copying, Moving, and Managing Files
+
+BetterCP/M provides familiar file-management commands together with additional facilities that make it easier to work across drives and user areas.
+
+The most commonly used operations are listing files, copying them, moving them, renaming them, and deleting files that are no longer needed.
+
+### Listing Files
+
+To display the files in the current drive and user area:
+
+```text
+A>DIR
+```
+
+To list files on another drive:
+
+```text
+A>DIR B:
+```
+
+To list files in a particular drive and user area:
+
+```text
+A>DIR B3:
+```
+
+BetterCP/M's DIR utility provides additional options for selecting, sorting, and displaying files.
+
+### Copying Files
+
+COPY creates a copy of a file while leaving the original in place.
+
+For example:
+
+```text
+A>COPY README.TXT B:README.TXT
+```
+
+copies `README.TXT` from the current drive and user area to drive B.
+
+BetterCP/M also supports copying files between explicitly specified user areas.
+
+For example:
+
+```text
+A>COPY B3:REPORT.TXT C2:REPORT.TXT
+```
+
+copies the file from drive B, user area 3, to drive C, user area 2.
+
+COPY provides additional options for handling existing destination files, preserving attributes, and performing other file-management operations.
+
+### Moving Files
+
+MOVE transfers a file from one location to another.
+
+Unlike COPY, MOVE is intended to remove the file from its original location after the move has been completed successfully.
+
+For example:
+
+```text
+A>MOVE REPORT.TXT B:REPORT.TXT
+```
+
+moves `REPORT.TXT` from the current drive and user area to drive B.
+
+Moving files can be convenient when reorganizing disks or user areas.
+
+However, remember that MOVE changes the location of the original file. If you want to retain the original, use COPY instead.
+
+### Renaming Files
+
+REN changes a file's name.
+
+For example:
+
+```text
+A>REN NEWNAME.TXT=OLDNAME.TXT
+```
+
+renames `OLDNAME.TXT` to `NEWNAME.TXT`.
+
+Renaming is useful for organizing files, changing file types, or assigning more descriptive names.
+
+BetterCP/M provides additional REN options beyond the conventional CP/M command.
+
+### Deleting Files
+
+ERA deletes files.
+
+For example:
+
+```text
+A>ERA OLD.DAT
+```
+
+deletes `OLD.DAT` from the current drive and user area.
+
+Wildcards can be used to select multiple files:
+
+```text
+A>ERA *.BAK
+```
+
+This selects backup files matching the specification.
+
+**Use particular care with ERA.** Deleting files may make their contents unrecoverable.
+
+BetterCP/M provides additional ERA facilities, including options for confirmation and handling protected files.
+
+### Choosing the Right Command
+
+COPY, MOVE, REN, and ERA perform different operations.
+
+COPY duplicates files.
+
+MOVE relocates files.
+
+REN changes their names.
+
+ERA removes them.
+
+These distinctions are straightforward, but they become especially important when working with wildcard specifications or files on different drives.
+
+For complete descriptions of these commands, including their options, confirmation behavior, and error messages, consult Part II, *Command and Utility Reference*.
+
