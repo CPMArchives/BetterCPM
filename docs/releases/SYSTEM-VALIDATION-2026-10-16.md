@@ -32,7 +32,7 @@ The source checkout was clean and was not modified. A private clone at
 | 3. CPX/RSX lifecycle, relocation, ROM protection | Selected checks pass; V031 XSUB finding corrected and qualified (V032) | V016 identifies and clears an uninitialized cold-entry loader-recovery flag. Poisoned-RAM initializer test, 32 pristine-media cold boots and guarded lifecycle/stack/workspace checks pass. Focused production monitor relocation checks pass on both backends (V015). Deferred manual/device checks remain explicit. |
 | 4. Resident/transient command integration | Partial; fresh native file workflow passes | V013 covers native file workflows. V021/V023–V027 add shipped cpmsim ERA/REN/COPY/MOVE/DIR/STAT/TYPE selectors, protection, reporting and controlled recovery. Broader native repetition and caller-state cases remain. |
 | 5. Utility operations and failure recovery (original Step 7) | CLOSED — V044 | S7-01–S7-04 PASS: restored ERA/DUP/SYSGEN evidence and actual cpmsim PIP endpoints plus native verified copy, CRT and unavailable-device gates. Retained raw archive and hashed result index. Broader conformance, monitor/input, device/profile and final acceptance work remain separate. |
-| 6. Monitors and applications | Selected cross-platform regressions pass | V013–V014 exercise all three shipped monitor/backend pairs, native file workflows and cpmsim TYPE paging/file boundaries. Broader applications, audio/manual/device and exhaustive protocol coverage are not implied. |
+| 6. Monitors and applications (original Step 8) | IN PROGRESS — bounded S8-01–05 review started 19 October | V013–V014 exercise all three shipped monitor/backend pairs, native file workflows and cpmsim TYPE paging/file boundaries. Broader applications, audio/manual/device and exhaustive protocol coverage are not implied. |
 | 7. End-to-end release workflows | Partial; CONFIG startup cold boot passes | V014 confirms saved startup executes only on next cold boot. V017 adds cpmsim named system export/install/reboot. V018 verifies the native named-package round trip; V020 verifies disk-source installation/reboot. Other complete release workflows remain. |
 | 8. Closure and final acceptance reruns | Not run | Resolve failures, identify accepted limits, rebuild and rerun against final revision/images. |
 
@@ -3466,3 +3466,49 @@ observations (including the unassigned V040 anomaly), end-to-end workflow review
 and final clean merged-source acceptance remain outside this closed step.
 Documentation alignment follows validation; Utilities and CP/M Tools disks
 remain separate qualification work.
+
+## Step 8 started — 19 October 2026
+
+The [Step 8 checklist](SYSTEM-VALIDATION-STEP8-2026-10-19.md) records five finite
+monitor/application evidence items. Refreshing all three shipped personalities
+on both backends because V013/V014 raw temporary bundles are absent; historical
+PASS records remain historical. New runs retain file integrity, native screen
+and host/software-terminal distinctions. No Step 8 completion is claimed yet.
+Step 7 remains closed. The remaining order is monitor/application validation,
+release workflows, findings/regressions and final clean-source acceptance,
+then documentation alignment and the separately qualified additional disks.
+
+## V045 — Step 8 protocol and application evidence, partial
+
+[Step 8 progress and finite checklist](SYSTEM-VALIDATION-STEP8-2026-10-19.md)
+records all three cpmsim shipped monitor/backend PASS results, native ADM3A
+screen/keyboard PASS, both-backend protocol/relocation and six manager-lifecycle
+PASS cases, unchanged VT52 WordStar edit/save/return and native historical MM
+CONFIG opening-menu PASS. The
+[evidence index](SYSTEM-VALIDATION-STEP8-EVIDENCE-2026-10-19.json) identifies
+retained results and a verified archive outside temporary storage.
+
+Native VT52/ANSI refreshed screen checks and input/operator-profile disposition
+remain open. Incomplete host-entered SUBMIT attempts have no monitor verdict;
+the guest startup-script retry declares its STARTUP.SUB fixture and keeps other
+shipped files unchanged. No production change, Step 8 closure, physical-terminal
+certification or final acceptance is claimed. Detailed scopes and limits are
+recorded in the Step 8 progress entry.
+
+## V046 — remaining native VT52 and ANSI checks PASS
+
+Both native refreshed display cases pass their complete capture and independent
+integrity audits. VT52 verifies positioned text, margins/tab, reset and EOL/EOS
+erasure; ANSI verifies positioned text, selected reverse cells, erased suffix
+and reset. Both complete their shipped exercises, unload personality and
+M4SCRN, restore 53K, and execute an independent witness. The declared startup
+fixture is the only changed shipped file; all 28 other shipped files and system
+tracks remain unchanged, filesystems are clean and immutable baselines match.
+
+The [Step 8 evidence index](SYSTEM-VALIDATION-STEP8-EVIDENCE-2026-10-19.json)
+retains exact result and archive hashes. The new native bundle includes raw
+captures, executed runners, before/after media and audits, and excluded retry
+artifacts. It is saved outside temporary storage and verified per file.
+S8-01/S8-02 now have passing selected three-personality coverage on both targets;
+Step 8 remains open for the final contract/application/profile disposition and
+input/operator review described in its checklist. No production code changed.

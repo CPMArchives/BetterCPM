@@ -1,0 +1,59 @@
+{
+  "status": "PARTIAL_STEP8_NOT_CLOSED",
+  "archive": {
+    "path": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/validation-evidence/BetterCPM-Step8-V045-initial.tar.gz",
+    "sha256": "ae8fee3ba5c5952db2b919904a23e016a92d0785f3dedb9257e919e45f046ef3",
+    "bytes": 2925598,
+    "verified_files": 1043
+  },
+  "accepted_results": {
+    "bettercpm-v045-cpmsim-monitors/adm3a-br6gqptn/result.json": {
+      "sha256": "d2826d7c431f2a9019804d98bf1e42d4fd45775461041e251ee132b73892efa3",
+      "status": "PASS"
+    },
+    "bettercpm-v045-cpmsim-monitors/ansi-r5ki4eoq/result.json": {
+      "sha256": "067a4642368636047894ed473994036040e77b6a34ae423ca4aa2c2a3eec7488",
+      "status": "PASS"
+    },
+    "bettercpm-v045-cpmsim-monitors/vt52-90ursxb8/result.json": {
+      "sha256": "0717d51472e7142ee456445f86f44eeeec822ec4d77ecbf13ff4bb8d305b61e8",
+      "status": "PASS"
+    },
+    "bettercpm-v045-native-monitors/adm3a-_ij1e5hk/result.json": {
+      "sha256": "704f3716c90d1d3d3f8449df602c59453595e15d083d69fcb682a93011b4e094",
+      "status": "PASS"
+    },
+    "bettercpm-v045-r3-protocols/result.json": {
+      "sha256": "2fb01cae72211cbf7219aa7278b37809f00a97778da8c9c8e982c48db7f24517",
+      "status": "PASS"
+    },
+    "bettercpm-v045-lifecycle/result.json": {
+      "sha256": "3ed9239b614b64bc7ff5ec16918b11ba688c060bc3ecafd682d47c641893042f",
+      "status": "PASS"
+    },
+    "bettercpm-v045-r2-wordstar/run-avkvk1hk/result.json": {
+      "sha256": "8bf7889929ed0a0454149797390e3a0ebcf331abe2d377c02ebe5c64cc59a253",
+      "status": "PASS"
+    },
+    "bettercpm-v045-mmconfig/result.json": {
+      "sha256": "c93489e732631fb9476200d757e2d951241f75baf54bc6762799bcf29743f66b",
+      "status": "PASS"
+    },
+    "bettercpm-v045-r5-native-monitors/vt52-2gk8vx00/result.json": {
+      "sha256": "1bb8c23da61a1cb32a120dc38c52c0c81a69b86e591eac55745e9f54c18b6f74",
+      "status": "PASS"
+    },
+    "bettercpm-v045-r5-native-monitors/ansi-6luy6xgj/result.json": {
+      "sha256": "fd04a6e63dac6071b42063e6a5a1658b40214f15078b3089a51c8dfed7999c52",
+      "status": "PASS"
+    }
+  },
+  "baseline": "V044 source 5f3f3f38bb11 and archive referenced by SYSTEM-VALIDATION-STEP7-CLOSURE-2026-10-19.json",
+  "limits": "Step 8 remains open for input-anomaly/operator-profile review and final contract/evidence disposition. Native ADM3A, VT52 and ANSI refreshed display checks all pass. This is not final release acceptance.",
+  "native_archive": {
+    "path": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/validation-evidence/BetterCPM-Step8-V046-native-monitors.tar.gz",
+    "sha256": "7abd7779860997eb952a1efa8b5097d7b45076e8254e5ab3f447905aef1d17df",
+    "bytes": 2895798,
+    "verified_files": 432
+  }
+}

@@ -2,7 +2,7 @@
 """Exercise shipped monitor personalities against a qualified Model 4 image."""
 import argparse,json,shutil,tempfile,subprocess
 from pathlib import Path
-from add_cpm_file_to_dmk import extract_raw,add_file
+from add_cpm_file_to_dmk import extract_raw,add_file,FILESYSTEM_FIRST_SECTOR,SECTOR_SIZE,DIRECTORY_ENTRIES
 from build_montezuma_extended_790k import build
 from run_validation_model4 import sha,audit_files
 from run_trs80_command import DEFAULT_EMULATOR,key_args
@@ -13,6 +13,7 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     for name in ('baseline','output'):p.add_argument('--'+name,type=Path,required=True)
     p.add_argument('--monitor',choices=('ADM3A','VT52','ANSI'),required=True)
+    p.add_argument('--scripted-start',action='store_true',help='replace only STARTUP.SUB with the private exercise queue to avoid host SUBMIT entry timing')
     p.add_argument('--audit-only',type=Path,help='check retained captures without relaunching or changing the test image')
     a=p.parse_args();report=json.loads((a.baseline/'report.json').read_text())
     original=a.baseline/report['image'];assert report['target']=='trs80gp' and sha(original)==report['sha256']
@@ -22,22 +23,30 @@ def main():
     image=w/'a.dmk';marker='MONITOR REGRESSION FINISHED'
     if not a.audit_only:
         raw=extract_raw(original.read_bytes())
-        # Keep every shipped file, including STARTUP.SUB, untouched. Add only
-        # a private exercise script and output-only completion witness.
+        # Preserve shipped providers. Default entry keeps STARTUP.SUB intact;
+        # scripted entry explicitly replaces it with a private test queue.
         script=['RSX UNLOAD ADM3A','RSX UNLOAD M4SCRN','RSX LOAD M4SCRN',
                 'RSX LOAD '+a.monitor,'RSX LIST',program,'RSX UNLOAD '+a.monitor,
                 'RSX UNLOAD M4SCRN','RSX LIST','MREGDONE']
+        if a.scripted_start:
+            script.insert(script.index(program),'MREGWAIT')
+            add_file(raw,'MREGWAIT.COM',bytes.fromhex('1110010e09cd05000e01cd0500c30000')+b'MREG READY$')
+            for index in range(DIRECTORY_ENTRIES):
+                at=FILESYSTEM_FIRST_SECTOR*SECTOR_SIZE+index*32
+                if raw[at]==0 and raw[at+1:at+12]==b'STARTUP SUB':raw[at]=0xE5
+            add_file(raw,'STARTUP.SUB',(':VER /BANNER\r\n'+'\r\n'.join(script)+'\r\n\x1a').encode())
         add_file(raw,'MREG.SUB',('\r\n'.join(script)+'\r\n\x1a').encode())
         add_file(raw,'MREGDONE.COM',bytes.fromhex('110b010e09cd0500c30000')+('\r\n'+marker+'\r\n$').encode())
         image.write_bytes(build(bytes(raw)))
     cmd=[str(DEFAULT_EMULATOR),'-m4','-batch','-turbo','-ktx','-d0',str(image),'-itime','15000',
-         '-iw','Type TYPE README.TXT for more','-id','6000']+key_args('SUBMIT MREG\r')
+         '-iw','Type TYPE README.TXT for more','-id','6000']+( [] if a.scripted_start else key_args('SUBMIT MREG\r',delay=25))
     stages=[]
     def capture(label,*wait):
         stages.append(label)
         for text in wait:cmd.extend(['-iw',text])
         cmd.extend(['-id','120','-it'])
     capture('loaded','TPA available:')
+    if a.scripted_start:cmd+=['-iw','MREG READY']+key_args(' ',delay=60)
     capture('position','Marker: row 5','Press a key to continue.')
     cmd+=key_args(' ',delay=60)
     capture('reset','Parser reset:','Press a key to continue.')
@@ -79,13 +88,15 @@ def main():
         assert text['position'][720:800].rstrip()==b'Erase KEEP'
     assert b'No RSXs loaded' in text['unloaded'] and b'TPA available: 53K' in text['unloaded'] and marker.encode() in text['unloaded']
     audit_root=w if not (w/'file-audit').exists() else Path(tempfile.mkdtemp(prefix='reaudit-',dir=w))
-    audit=audit_files(original,image,report,audit_root)
+    audit_report=dict(report,included=[f for f in report['included'] if not (a.scripted_start and f['name']=='STARTUP.SUB')])
+    audit=audit_files(original,image,audit_report,audit_root)
     check=subprocess.run(['fsck.cpm','-T','raw,pcw800','-f','bettercpm-default','-n',str(audit_root/'file-audit/after.raw')],cwd=audit_root/'file-audit',capture_output=True,text=True)
     (w/'filesystem.txt').write_text(check.stdout+check.stderr);assert check.returncode==0
     assert sha(original)==report['sha256']
+    assert extract_raw(original.read_bytes())[:20480]==extract_raw(image.read_bytes())[:20480], 'system tracks changed'
     (w/'result.json').write_text(json.dumps({'status':'PASS','monitor':a.monitor,'baseline_sha256':report['sha256'],
         'emulator_sha256':sha(DEFAULT_EMULATOR),'executed_runner_sha256':sha(w/'executed-runner.py'),'audit_runner_sha256':sha(Path(__file__)),'stages':stages,'system_file_audit':audit,
-        'filesystem_status':check.returncode,'scope':'shipped Model 4 monitor/backend pair; selected screen-memory assertions and unload/53K; no audible bell or exhaustive protocol claim'},indent=2)+'\n')
+        'startup_fixture_replaced':a.scripted_start,'system_tracks_unchanged':True,'filesystem_status':check.returncode,'scope':'shipped Model 4 monitor/backend pair; selected screen-memory assertions and unload/53K; no audible bell or exhaustive protocol claim'},indent=2)+'\n')
     print(w,flush=True)
 
 
