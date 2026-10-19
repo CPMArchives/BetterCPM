@@ -563,6 +563,8 @@ An ordinary CP/M warm boot returns control to the operating environment without 
 
 The distinction matters when using resident extensions or saved startup configuration, but for everyday operation the familiar CP/M rule remains a useful one: finish your work, make sure your files are saved, and return to the command prompt before stopping the system.
 
+---
+
 # Chapter 4 — Working with Drives and Files
 
 BetterCP/M retains the familiar CP/M system of disk drives, user areas, and file names. If you've used CP/M before, you'll recognize most of the conventions described in this chapter.
@@ -1060,4 +1062,1172 @@ ERA removes them.
 These distinctions are straightforward, but they become especially important when working with wildcard specifications or files on different drives.
 
 For complete descriptions of these commands, including their options, confirmation behavior, and error messages, consult Part II, *Command and Utility Reference*.
+
+Below are **Chapters 5–7 of the BetterCP/M 1.0 User's Guide**, presented together for review.
+
+They follow the style established in Chapters 1–4: friendly, practical, and aimed at users rather than operating-system developers. Detailed command syntax belongs in Part II, while these chapters explain how to use the facilities in everyday work.
+
+Chapter 5 incorporates our agreed wording for command history: **Ctrl-K and Ctrl-J are the documented controls for v1.0; arrow-key behavior depends on the keyboard and terminal configuration.**
+
+The material draws on the earlier User's Guide, including its descriptions of SUBMIT, XSUB, COPY, and CONFIG. These are editorial drafts, not changes to the GitHub repository.
+
+---
+
+# Chapter 5 — The Command Environment
+
+The command processor is the part of BetterCP/M you'll use most often. It accepts commands, starts programs, and provides the familiar CP/M prompt.
+
+If you've used CP/M before, you already know the basics. BetterCP/M retains the traditional command-line environment while adding conveniences such as command editing, command history, and more flexible ways of finding and running programs.
+
+This chapter introduces those facilities and explains how they work together.
+
+## 5.1 Entering Commands
+
+When BetterCP/M is ready to accept a command, it displays a prompt:
+
+```text
+A>
+```
+
+The prompt identifies the current drive and, when appropriate, the current user area.
+
+Enter a command by typing its name, followed by any required arguments, and pressing `RETURN`.
+
+For example:
+
+```text
+A>DIR
+```
+
+displays the directory of the current drive and user area.
+
+To display a text file:
+
+```text
+A>TYPE README.TXT
+```
+
+Commands are not case-sensitive, so:
+
+```text
+A>dir
+```
+
+has the same meaning as `DIR`.
+
+Many commands accept additional arguments or options. For example:
+
+```text
+A>DIR B3:*.COM
+```
+
+lists executable files in drive B, user area 3.
+
+BetterCP/M accepts commands provided directly by the command processor, commands supplied by resident extensions, and ordinary programs stored on disk.
+
+For most purposes, you needn't worry about the distinction. You enter the command in the same general way regardless of where it comes from.
+
+The complete syntax for individual commands is given in Part II, *Command and Utility Reference*.
+
+## 5.2 Command-Line Editing
+
+Anyone who has used a command-line operating system knows how frustrating it can be to type a long command, discover a mistake, and have to enter the entire line again.
+
+BetterCP/M makes this easier by allowing you to edit a command before executing it.
+
+You can move the cursor through the command line, correct characters, insert new text, and remove unwanted text.
+
+For example, suppose you enter:
+
+```text
+A>COPY B3:REPROT.TXT C2:REPORT.TXT
+```
+
+but notice that you've mistyped `REPORT` as `REPROT`.
+
+Rather than erase the entire command and start over, you can move the cursor back to the mistake and correct it.
+
+The command isn't executed until you press `RETURN`, so you can make as many corrections as necessary before submitting it.
+
+BetterCP/M uses editing conventions familiar to users of WordStar and other CP/M programs, although not every command-line function uses the same keys as WordStar.
+
+The complete key assignments are listed in Appendix B, *Command-Line Editing Keys*.
+
+## 5.3 Command History
+
+BetterCP/M remembers previously entered commands, allowing you to recall, edit, and execute them again without retyping the entire command.
+
+Press **Ctrl-K** to recall an earlier command, or **Ctrl-J** to move forward through the command history.
+
+Depending on your computer's keyboard and terminal configuration, the Up and Down arrow keys may also provide these functions.
+
+For example, suppose you've just entered:
+
+```text
+A>COPY B3:REPORT.TXT C2:REPORT.TXT
+```
+
+and then realize that you also want to copy another file.
+
+Instead of retyping the command, recall it from history, change the filename, and press `RETURN`.
+
+The recalled command behaves just like one you've typed yourself. You can execute it unchanged or edit it first.
+
+Command history remains available after ordinary programs finish and return to the prompt. It also survives a normal warm boot.
+
+A cold boot begins with an empty history.
+
+Because history storage is limited, older entries are eventually discarded as new commands are entered.
+
+Command history is especially convenient when working with long file specifications or commands containing several options.
+
+## 5.4 Selecting Drives and User Areas
+
+BetterCP/M provides several convenient ways to move among drives and user areas.
+
+To select drive B:
+
+```text
+A>B:
+B>
+```
+
+To select user area 5 on the current drive:
+
+```text
+B>5:
+B5>
+```
+
+To select both a drive and user area:
+
+```text
+B5>C3:
+C3>
+```
+
+This selects drive C, user area 3.
+
+BetterCP/M refers to a drive and user-area combination as a **drive/user**, often abbreviated **DU**.
+
+You can also specify a drive and user area when entering a command without changing your current selection.
+
+For example:
+
+```text
+A2>DIR B3:
+A2>
+```
+
+displays the directory of drive B, user area 3, and then returns to the unchanged prompt.
+
+This is useful when working with files scattered across several drives or user areas.
+
+Chapter 4 provides a fuller explanation of drive/user specifications.
+
+## 5.5 Resident and Transient Commands
+
+BetterCP/M distinguishes between two kinds of commands: **resident** and **transient**.
+
+A resident command is already available in memory as part of the active command environment. It can be executed without first loading a separate program from disk.
+
+A transient command is an ordinary executable program, usually stored in a `.COM` file. BetterCP/M loads it when needed and executes it in the Transient Program Area.
+
+Some familiar commands are available in both forms.
+
+For example, the standard resident command package provides commands such as DIR, ERA, REN, TYPE, COPY, and MOVE.
+
+Their transient counterparts may offer additional capabilities.
+
+### Choosing a Transient Command Explicitly
+
+Ordinarily, you enter a command without specifying whether it should be resident or transient.
+
+For example:
+
+```text
+A>DIR
+```
+
+uses the available resident command when one is installed.
+
+However, BetterCP/M also allows you to request the transient version explicitly.
+
+Prefix the command name with a colon:
+
+```text
+A>:DIR
+```
+
+This tells BetterCP/M to run `DIR.COM` rather than the resident DIR command.
+
+A period can also be used:
+
+```text
+A>.DIR
+```
+
+The two prefixes have the same purpose.
+
+This is particularly useful when the transient utility offers additional options not supported by its resident counterpart.
+
+For example:
+
+```text
+A>:DIR /WHEREIS ED.COM
+```
+
+uses the transient DIR utility's file-location facility.
+
+The command descriptions in Part II identify features that require transient execution.
+
+## 5.6 Command Search and Execution
+
+When you enter a command, BetterCP/M determines how to execute it.
+
+It first recognizes commands that select drives or user areas. It then checks commands built into the command processor, followed by those supplied by installed Command Processor Extensions.
+
+If none of these recognizes the command, BetterCP/M looks for a transient program.
+
+### Finding Programs
+
+When you enter an ordinary program name without specifying a drive or user area, BetterCP/M searches the current drive and user area first.
+
+If the program isn't found there, it searches drive A, user area 0.
+
+For example, suppose you're working in user area 3 on drive B:
+
+```text
+B3>
+```
+
+You enter:
+
+```text
+B3>MYPROG
+```
+
+BetterCP/M first looks for `MYPROG.COM` in B3:.
+
+If it isn't found there, BetterCP/M looks in A0:.
+
+This is convenient because commonly used programs can be kept in A0: while your working files remain in other locations.
+
+If a program is found in A0:, it runs with your original drive and user area still selected.
+
+You can therefore keep applications in A0: without having to move your working files there.
+
+### Specifying a Program's Location
+
+You can also identify a program's location explicitly:
+
+```text
+B3>C2:MYPROG
+```
+
+This tells BetterCP/M to look for the program in C2:.
+
+When a location is explicitly specified, BetterCP/M uses that location rather than searching A0: as a fallback.
+
+The same general lookup rules apply when you explicitly request a transient program using the `:` or `.` prefix.
+
+### Running Programs
+
+When BetterCP/M finds a transient program, it loads the program and starts it.
+
+For example:
+
+```text
+A>MYPROG INPUT.DAT
+```
+
+runs `MYPROG.COM` and supplies `INPUT.DAT` as a command-line argument.
+
+The program receives its arguments through the conventional CP/M command-line environment.
+
+When it finishes, BetterCP/M restores the command environment and displays the prompt again.
+
+These facilities allow ordinary CP/M programs to run without needing to know how BetterCP/M's enhanced command processor works internally.
+
+## 5.7 Command Processor Extensions
+
+Command Processor Extensions, or **CPXs**, allow additional commands to become part of the resident command environment.
+
+The standard BetterCP/M configuration includes `RCP.CPX`, which provides commonly used commands such as:
+
+```text
+DIR  ERA  TYPE  REN  USER
+CLS  VER  COPY  MOVE
+```
+
+Because these commands are resident, they're available without loading separate transient programs.
+
+Additional CPXs can be installed to provide other commands.
+
+More than one CPX can be active at a time, allowing the command environment to be customized for different purposes.
+
+For example, a user might load an extension providing specialized commands for a particular application or working environment.
+
+CPXs can be listed, loaded, and unloaded while the system is running.
+
+Chapter 8 explains how to manage resident extensions. For complete CPX command syntax and options, consult the CPX entry in Part II.
+
+## 5.8 Interrupting Commands and Programs
+
+Most commands return to the BetterCP/M prompt when their work is complete.
+
+Sometimes, however, you may need to interrupt a command before it finishes.
+
+Many CP/M programs recognize **Ctrl-C** as a request to stop the current operation.
+
+BetterCP/M commands also use Ctrl-C where appropriate to abandon an operation and return control to the command environment.
+
+The exact effect depends on the program being executed.
+
+Some programs may ignore Ctrl-C, while others recognize it only at particular points.
+
+A warm boot also returns control to the operating system and restores the command environment.
+
+### Interrupting Disk Operations
+
+Be particularly careful when interrupting commands that modify files or disks.
+
+For example, if a disk-copying operation is writing data when it is interrupted, the destination disk may be incomplete.
+
+Likewise, interrupting a file operation can leave a partially written file.
+
+Whenever possible, allow disk operations to finish normally.
+
+If an operation fails or is interrupted unexpectedly, examine the affected files or media before continuing.
+
+BetterCP/M's utilities provide error messages and, where appropriate, recovery procedures to help deal with these situations.
+
+# Chapter 6 — Batch Processing
+
+BetterCP/M can execute a series of commands automatically, saving you the trouble of entering the same instructions over and over again.
+
+This facility is called **batch processing**. If you've used Digital Research CP/M before, you'll already be familiar with SUBMIT, the utility that reads commands from a file and executes them in sequence.
+
+BetterCP/M retains the traditional CP/M batch-processing environment, including SUBMIT command files and the XSUB extension, while allowing batch files to take advantage of BetterCP/M's enhanced commands and utilities.
+
+Batch processing is particularly useful for repetitive tasks such as assembling programs, copying files, preparing working disks, or performing a series of operations that you would otherwise enter individually.
+
+This chapter introduces batch processing and shows how to create and use command files. Complete descriptions of SUBMIT and XSUB are provided in Part II, *Command and Utility Reference*.
+
+## 6.1 Introduction to Batch Processing
+
+Suppose you're working on an assembly-language program. Each time you make a change, you might need to assemble the source file, load the resulting program, and run a test.
+
+You could enter each command separately, but if you perform the same sequence repeatedly, it's more convenient to place the commands in a file.
+
+For example, a command file might contain:
+
+```text
+ASM MYPROG
+LOAD MYPROG
+MYPROG
+```
+
+Instead of typing these commands individually, you can instruct BetterCP/M to execute the entire sequence.
+
+The commands are processed in order, just as though you had entered them at the command prompt.
+
+A batch file can contain ordinary CP/M commands, BetterCP/M commands, and the names of transient programs. Commands supplied by resident extensions can also be used, provided the necessary extensions are loaded.
+
+Batch files are especially convenient for operations that require several steps but little interaction with the user.
+
+## 6.2 SUBMIT and SUB Files
+
+BetterCP/M uses the familiar CP/M **SUBMIT** utility to execute command files.
+
+A SUBMIT file is an ordinary text file containing commands, usually with the file type `.SUB`.
+
+For example, you might create a file named:
+
+```text
+BACKUP.SUB
+```
+
+containing:
+
+```text
+DIR
+COPY *.ASM B:
+DIR B:
+```
+
+The first command displays the current directory. The second copies the selected assembly-language source files to drive B. The third displays the directory of drive B so you can examine the results.
+
+To execute the file, enter:
+
+```text
+A>SUBMIT BACKUP
+```
+
+SUBMIT reads the commands from `BACKUP.SUB` and arranges for them to be executed in sequence.
+
+You don't need to type the `.SUB` extension when invoking SUBMIT.
+
+### Creating a SUBMIT File
+
+Because SUBMIT files contain ordinary text, you can create them with any CP/M text editor.
+
+For example, you could use ED to create `BACKUP.SUB`, enter the commands you want executed, and save the file.
+
+You can also prepare SUBMIT files on another computer and transfer them to your CP/M system, provided they are saved in a suitable text format.
+
+Each command should appear on its own line.
+
+When writing a SUBMIT file, it's generally best to use commands that you have already tested individually. This is particularly important for commands that modify or delete files.
+
+### Running a SUBMIT File
+
+To execute a command file named `BUILD.SUB`, enter:
+
+```text
+A>SUBMIT BUILD
+```
+
+BetterCP/M processes the commands in the file in sequence.
+
+The commands are executed in the normal command environment, so they can use the same drives, user areas, and resident facilities available at the command prompt.
+
+A command file can also invoke ordinary transient programs.
+
+If a program or command cannot be found, or if an operation fails, the result depends on the command and the batch-processing facilities involved. Don't assume that every failure will be ignored or that subsequent commands will always execute.
+
+For important procedures, especially those that modify disks or files, test the complete sequence before relying on it for unattended operation.
+
+## 6.3 Parameters and Substitution
+
+SUBMIT files can be made more flexible by accepting parameters.
+
+Rather than creating a separate command file for every program you want to assemble, you can create one file that accepts the program name as an argument.
+
+For example, suppose `BUILD.SUB` contains:
+
+```text
+ASM $1
+LOAD $1
+$1
+```
+
+Here, `$1` represents the first parameter supplied when SUBMIT is invoked.
+
+To assemble and run a program named `TEST`, enter:
+
+```text
+A>SUBMIT BUILD TEST
+```
+
+SUBMIT substitutes `TEST` for `$1`, producing the equivalent of:
+
+```text
+ASM TEST
+LOAD TEST
+TEST
+```
+
+This allows a single SUBMIT file to be reused with different programs.
+
+### Using Multiple Parameters
+
+A SUBMIT file can accept more than one parameter.
+
+For example, a file named `COPYFILE.SUB` might contain:
+
+```text
+COPY $1 $2
+```
+
+You could then enter:
+
+```text
+A>SUBMIT COPYFILE REPORT.TXT B:REPORT.TXT
+```
+
+The resulting command would be:
+
+```text
+COPY REPORT.TXT B:REPORT.TXT
+```
+
+This is a simple example, but parameter substitution becomes particularly useful in longer command files.
+
+### Parameter Substitution Is Textual
+
+SUBMIT substitutes parameter text into the command file. It doesn't interpret the meaning of the resulting command.
+
+For example, if a parameter contains a filename, SUBMIT places that filename into the command wherever the corresponding parameter reference appears.
+
+The command that eventually executes is responsible for interpreting the filename, options, and other arguments.
+
+This distinction is useful to remember when constructing more elaborate command files.
+
+It also means that an incorrect parameter can produce an incorrect command. When a SUBMIT file performs destructive operations, take care to verify the parameters before executing it.
+
+## 6.4 XSUB
+
+Ordinary SUBMIT files execute commands entered at the command-processor level. Some programs, however, ask for additional input after they have started.
+
+For example, a program might display a prompt asking for a filename, an option, or some other information.
+
+Normally, the user must type a response at the keyboard.
+
+**XSUB extends batch processing by allowing a SUBMIT file to supply input to programs that read from the console.**
+
+This makes it possible to automate certain interactive programs that would otherwise require someone to sit at the keyboard.
+
+### How XSUB Works
+
+Consider a program that prompts for two filenames:
+
+```text
+Source file:
+Destination file:
+```
+
+Without XSUB, you would start the program and type the filenames when requested.
+
+With XSUB, a suitably prepared command file can supply those responses automatically.
+
+XSUB works with programs that obtain their input through the supported CP/M buffered console-input interface.
+
+It does not automatically provide input to every program. Software that reads the keyboard directly, uses its own device drivers, or employs other input methods may not be compatible with XSUB.
+
+### Using XSUB
+
+XSUB is normally activated as part of a SUBMIT procedure.
+
+Once active, it allows subsequent submitted input to be passed to compatible programs.
+
+The exact arrangement of commands and responses depends on the program being automated. Consult the XSUB command reference for the supported invocation procedure and any restrictions.
+
+### Returning to Keyboard Input
+
+BetterCP/M's XSUB facility allows a program to continue receiving ordinary keyboard input after its submitted input has been exhausted.
+
+For example, a program may receive its initial responses from the batch file and then continue interactively.
+
+This is useful when only part of a program's operation needs to be automated.
+
+XSUB uses resident support while supplying batch input. In some circumstances, that support may remain loaded after the batch has finished.
+
+If necessary, it can be removed with:
+
+```text
+A>RSX UNLOAD BATCHIO
+```
+
+This releases the resident batch-input facility when it is no longer needed.
+
+For additional information about managing resident extensions, see Chapter 8.
+
+## 6.5 Batch Execution and Termination
+
+A SUBMIT file is executed as a sequence of commands, but there are some important differences between entering commands manually and allowing them to execute automatically.
+
+### Interactive Commands
+
+A command executed from a SUBMIT file does not necessarily become noninteractive.
+
+For example, a file-copying command may ask whether an existing destination file should be replaced.
+
+If the command normally requires confirmation, it may still require confirmation when executed from a SUBMIT file.
+
+This is particularly important when preparing batch files that you intend to run unattended.
+
+BetterCP/M provides options for some utilities that allow you to specify how such situations should be handled.
+
+### Interrupting a Batch
+
+Batch execution can be interrupted by commands, programs, or operating-system conditions that terminate the current batch procedure.
+
+The precise behavior depends on the program involved and the way it returns control to the operating system.
+
+If a batch operation is interrupted, do not assume that all commands in the file have been executed.
+
+For example, a batch that copies several files may have copied some files successfully before encountering an error.
+
+Before restarting such a procedure, examine the files or disks involved to determine which operations have already completed.
+
+### Errors During Batch Processing
+
+Some commands report errors and return control to the command processor. Others may terminate the active batch procedure.
+
+The presence of an error message does not necessarily tell you whether subsequent commands will execute.
+
+For this reason, a batch file should not be treated as an automatic error-recovery system.
+
+When preparing an important batch procedure, test how its commands behave when a file is missing, a destination already exists, or a disk operation fails.
+
+### Warm Boots and Batch Processing
+
+CP/M uses warm boots as part of its normal program-execution environment.
+
+BetterCP/M preserves the mechanisms needed for conventional SUBMIT operation, allowing batch execution to continue across ordinary program execution where appropriate.
+
+Resident extensions used by the batch environment are also subject to BetterCP/M's normal extension-management rules.
+
+A cold boot, however, establishes a new operating session rather than continuing a previous batch procedure.
+
+## 6.6 Practical Examples
+
+The following examples illustrate some common uses of batch processing.
+
+### Example 1: Assembling a Program
+
+Suppose you frequently assemble and run a program while developing it.
+
+Create `BUILD.SUB` containing:
+
+```text
+ASM $1
+LOAD $1
+$1
+```
+
+To build and run `TEST`, enter:
+
+```text
+A>SUBMIT BUILD TEST
+```
+
+This executes the equivalent of:
+
+```text
+ASM TEST
+LOAD TEST
+TEST
+```
+
+You can use the same command file for another program simply by changing the parameter.
+
+### Example 2: Copying Source Files
+
+Suppose you want to copy all assembly-language source files from one user area to another.
+
+Create `SOURCES.SUB` containing:
+
+```text
+COPY B1:*.ASM C3:
+DIR C3:*.ASM
+```
+
+Then enter:
+
+```text
+A>SUBMIT SOURCES
+```
+
+The first command copies the selected files. The second displays the destination directory.
+
+If destination files already exist, COPY may request confirmation before replacing them.
+
+For unattended execution, you can use COPY's batch option.
+
+### Example 3: Copying Files Without Prompts
+
+BetterCP/M's COPY utility provides a `/B` option for batch-oriented operation.
+
+For example:
+
+```text
+COPY B1:*.DAT C3: /B
+```
+
+This copies matching files without stopping to ask how existing destination files should be handled.
+
+If a writable destination already exists, COPY reports `FILE EXISTS` for that file and continues with the remaining files.
+
+It does not automatically overwrite the existing file.
+
+You can specify a different policy explicitly.
+
+To overwrite existing writable destination files:
+
+```text
+COPY B1:*.DAT C3: /B /O
+```
+
+To skip existing destination files:
+
+```text
+COPY B1:*.DAT C3: /B /S
+```
+
+In both cases, files without existing destinations are copied normally.
+
+Read-only destination files remain protected.
+
+The `/B` option applies to COPY itself. It does not make other commands in the SUBMIT file noninteractive.
+
+For the complete description of COPY's options, consult the COPY command reference.
+
+### Example 4: Customizing System Startup
+
+BetterCP/M uses a SUBMIT file as part of its normal startup configuration.
+
+The standard distribution provides:
+
+```text
+STARTUP.SUB
+```
+
+The configured cold-start command is:
+
+```text
+SUBMIT STARTUP
+```
+
+The supplied startup file initially displays the BetterCP/M identification banner.
+
+You can edit this file to perform additional operations automatically when the system starts.
+
+For example, startup commands can load resident extensions needed for your preferred working environment.
+
+Because the startup procedure runs automatically, it's best to test new commands individually before adding them to `STARTUP.SUB`.
+
+A mistake in an ordinary batch file is inconvenient. A mistake in a startup file can make every cold boot inconvenient until the file is corrected.
+
+Chapter 7 explains how to configure the startup command, while Chapter 8 describes loading and managing resident extensions.
+
+---
+
+# Chapter 7 — Configuring BetterCP/M
+
+BetterCP/M provides several facilities for customizing the operating environment to suit your computer and the way you prefer to work.
+
+You can change the command executed when the system starts, configure disk drives and formats, select peripheral devices, and save settings for subsequent sessions.
+
+Most of these operations are performed using **CONFIG**, BetterCP/M's system configuration utility.
+
+If you've used conventional CP/M, you'll be familiar with the idea of configuring the BIOS and regenerating a system disk to accommodate different hardware. BetterCP/M makes many of these operations more convenient by providing configuration facilities that can be used from the command prompt.
+
+Some settings can be changed while the system is running. Others must be saved to the system disk and take effect the next time BetterCP/M starts.
+
+This chapter explains how to use these facilities. Complete descriptions of CONFIG and the related utilities appear in Part II, *Command and Utility Reference*.
+
+## 7.1 Configuration Facilities
+
+BetterCP/M distinguishes between settings currently in use and settings saved for future system startup.
+
+This distinction is important because changing a setting does not necessarily make that change permanent.
+
+For example, you might temporarily configure a drive to read a particular disk format. That configuration can remain active during your current session without becoming the default the next time you boot BetterCP/M.
+
+Similarly, changing the system's startup command does not immediately execute the new command. Instead, it determines what BetterCP/M will execute during a subsequent cold boot.
+
+### Current and Saved Settings
+
+There are two principal kinds of configuration changes.
+
+**Current settings** affect the operating environment that is running now. These may include drive assignments, disk formats, and peripheral-device selections.
+
+**Saved settings** are stored with the operating system so that they can be restored during a later cold boot.
+
+BetterCP/M allows you to make temporary changes without necessarily replacing your saved configuration.
+
+This is useful when experimenting with different disk formats or working with hardware that is only occasionally connected.
+
+For example, you might normally use drive B with one disk format but temporarily configure it to read a disk prepared on another CP/M computer.
+
+Once you've finished, you can restore your usual configuration without having permanently changed the system.
+
+### Platform-Dependent Settings
+
+Not every configuration option is available on every computer.
+
+Some settings depend on the capabilities of the BIOS, disk controller, or other hardware.
+
+A computer with physical floppy drives may provide options for drive geometry and timing that have little meaning on a system using emulated storage.
+
+Likewise, a peripheral device must actually be supported by the computer and its BIOS before BetterCP/M can use it.
+
+The CONFIG utility provides access to supported configuration facilities, while the platform documentation describes any machine-specific requirements.
+
+## 7.2 Using CONFIG
+
+CONFIG is BetterCP/M's principal system configuration utility.
+
+To start it, enter:
+
+```text
+A>CONFIG
+```
+
+CONFIG displays a menu of available configuration operations.
+
+The configuration menu groups together the facilities used to control startup behavior, device assignments, disk drives, and disk formats.
+
+A typical BetterCP/M 1.0 configuration menu includes:
+
+```text
+[ A ] Startup command
+
+[ B ] Cold-boot IOBYTE
+
+[ C ] Disk drive definitions
+[ D ] Disk format definitions
+[ E ] Create or edit a disk format
+
+[ S ] Save current configuration on disk (SYSGEN)
+```
+
+Select the letter corresponding to the operation you want to perform.
+
+CONFIG does not require a full-screen terminal monitor. It can be used through the ordinary BetterCP/M console.
+
+### Examining the Current Configuration
+
+Before making changes, it's often useful to examine the settings already in use.
+
+Enter:
+
+```text
+A>CONFIG /SHOW
+```
+
+CONFIG displays information about the current system configuration, including the active drive settings and saved startup information.
+
+Where applicable, it distinguishes between settings currently in use and those saved for the next cold boot.
+
+This is particularly useful when you've made temporary changes and want to determine whether they will survive a restart.
+
+The `/SHOW` option is informational. It does not modify the configuration.
+
+### Making Changes
+
+Some CONFIG operations change the running system immediately. Others prepare changes that must be saved before they become permanent.
+
+For example, changing a drive assignment can affect how BetterCP/M accesses that drive during the current session.
+
+Changing the saved startup command, on the other hand, affects what happens during a later cold boot.
+
+CONFIG identifies when a change requires saving.
+
+**Before making significant changes to your system configuration, it's good practice to keep a working backup of the system disk.**
+
+An incorrect disk configuration can make a drive inaccessible until its settings are corrected. Changes to the saved boot configuration can also affect the system's ability to start normally.
+
+## 7.3 Startup Commands
+
+BetterCP/M can execute a command automatically during a cold boot.
+
+This provides a convenient way to establish your preferred working environment whenever the system starts.
+
+The standard distribution uses:
+
+```text
+SUBMIT STARTUP
+```
+
+as its saved startup command.
+
+This causes BetterCP/M to execute the commands contained in `STARTUP.SUB`.
+
+The supplied startup file initially displays the BetterCP/M identification banner. You can edit the file to perform additional operations.
+
+For example, you might use it to load resident extensions or select facilities that you normally want available.
+
+### Editing STARTUP.SUB
+
+Because `STARTUP.SUB` is an ordinary SUBMIT file, you can edit it using a text editor.
+
+For example, a startup file might contain:
+
+```text
+:VER /BANNER
+RSX LOAD M4SCRN
+RSX LOAD ADM3A
+CLS
+```
+
+This example displays the system banner, loads a screen backend and an ADM-3A terminal personality, and clears the screen.
+
+The example is appropriate only for a system that provides the named screen backend and terminal extension. Other platforms may require different commands.
+
+Chapter 8 explains resident extension management, while Chapter 9 describes terminal support.
+
+### Changing the Startup Command
+
+You can change the saved startup command using CONFIG.
+
+For example:
+
+```text
+A>CONFIG /STARTUP="SUBMIT STARTUP"
+```
+
+sets the startup command to `SUBMIT STARTUP`.
+
+To disable automatic startup commands:
+
+```text
+A>CONFIG /STARTUP=""
+```
+
+CONFIG requests confirmation before saving the change.
+
+The new command takes effect during a subsequent cold boot. It is not executed immediately.
+
+### Restoring the Default Startup Command
+
+CONFIG also provides a convenient way to prepare the standard startup command:
+
+```text
+A>CONFIG /DEFAULT
+```
+
+This prepares `SUBMIT STARTUP` as the startup command and opens the relevant configuration menu.
+
+The change is not automatically saved. You can inspect or modify it before committing it to the system disk.
+
+### Cold Boots and Warm Boots
+
+The startup command is executed during a cold boot.
+
+It is not repeated during an ordinary warm boot.
+
+This distinction is especially useful when loading resident extensions. An extension loaded during cold startup can remain available throughout the session, even after transient programs terminate.
+
+There is ordinarily no need to reload the extension after each warm boot.
+
+For a complete description of startup-command options, consult the CONFIG reference in Part II.
+
+## 7.4 Drive Configuration
+
+BetterCP/M can work with a variety of disk formats, including formats used by other CP/M systems.
+
+Because different computers use different disk drives and controllers, BetterCP/M separates the characteristics of a physical drive from the format of the disk being used.
+
+CONFIG provides facilities for examining and changing both.
+
+### Physical Drives and Logical Drives
+
+A **physical drive** is the actual disk drive or storage device connected to the computer.
+
+A **logical drive** is the drive letter, such as `A:` or `B:`, through which BetterCP/M accesses that device.
+
+The distinction allows BetterCP/M to associate a logical drive with a particular physical device and disk format.
+
+For example, you might configure logical drive B to use a physical drive containing a disk written in a format different from your usual system disks.
+
+The available assignments depend on the computer and its BIOS.
+
+### Examining Drive Settings
+
+To examine the current configuration, enter:
+
+```text
+A>CONFIG /SHOW
+```
+
+CONFIG displays the active drive settings and, where available, the corresponding saved defaults.
+
+This is a useful first step before making changes.
+
+You can also examine drive definitions through CONFIG's interactive menus.
+
+### Selecting a Disk Format
+
+CONFIG provides a catalog of disk-format definitions.
+
+When assigning a format to a drive, you can select an appropriate definition from this catalog rather than entering all the disk parameters individually.
+
+For example:
+
+```text
+A>CONFIG /LOGICAL=C /PHYSICAL=1 /FORMAT="MM 80T DS DATA"
+```
+
+This assigns logical drive C to physical drive 1 using the named disk format.
+
+The format name must match a definition available in the system's format catalog. The example is illustrative; the correct format depends on the disk and drive you're using.
+
+CONFIG checks whether the requested format is compatible with the selected physical drive before applying the assignment.
+
+You can also select formats through the interactive configuration menus.
+
+### Temporarily Changing a Drive
+
+One of the advantages of BetterCP/M's configuration facilities is that drive assignments can be changed without necessarily changing the saved startup configuration.
+
+Suppose you need to read a disk from another CP/M computer.
+
+You can select an appropriate format, use the disk, and then restore your usual drive configuration.
+
+If you don't save the temporary assignment, it won't replace your normal cold-boot defaults.
+
+This makes it easier to work with different disk formats without maintaining a separate operating-system disk for each configuration.
+
+### Removing a Drive Assignment
+
+A logical drive can also be disconnected from its current assignment.
+
+For example:
+
+```text
+A>CONFIG /LOGICAL=C /UNBIND
+```
+
+removes the active assignment for logical drive C.
+
+This does not erase or format the disk. It simply removes the logical drive's association with the physical device.
+
+BetterCP/M protects drive A from this operation because of its importance to the running system.
+
+### Creating and Editing Disk Formats
+
+CONFIG also provides facilities for creating and modifying disk-format definitions.
+
+These are useful when working with disks whose characteristics are not already represented in the format catalog.
+
+However, they require an accurate understanding of the disk's organization.
+
+An incorrect format definition can cause BetterCP/M to interpret the disk incorrectly, potentially making files inaccessible or placing existing data at risk if the disk is written.
+
+For ordinary operation, use an existing format definition whenever possible.
+
+The CONFIG command reference describes the available format-editing facilities. More detailed information about disk organization and format definitions is provided in the technical documentation.
+
+## 7.5 Console and Device Configuration
+
+Like conventional CP/M, BetterCP/M provides logical device assignments for console, reader, punch, and list operations.
+
+These assignments allow programs to use standard CP/M device interfaces without necessarily knowing which physical device provides them.
+
+BetterCP/M retains the traditional **IOBYTE** mechanism for selecting these assignments.
+
+### The IOBYTE
+
+The IOBYTE is a system value used to select logical device assignments.
+
+For example, it can determine which supported device is used for list output or other conventional CP/M character-device operations.
+
+The available choices depend on the computer and its BIOS.
+
+An IOBYTE assignment does not create a device or provide a driver for hardware that the system doesn't support. It merely selects among the device facilities available through the BIOS.
+
+### Changing Device Assignments
+
+BetterCP/M distinguishes between the IOBYTE currently in use and the value saved for the next disk cold boot.
+
+The STAT utility provides facilities for changing the live IOBYTE assignment.
+
+CONFIG allows you to save a separate assignment that will be established during a subsequent cold boot.
+
+For example:
+
+```text
+A>CONFIG /IOBYTE=85
+```
+
+requests that decimal value 85 be saved as the cold-boot IOBYTE.
+
+CONFIG asks for confirmation before saving the change.
+
+The command does not change the current IOBYTE. To change the active assignment, use STAT.
+
+You can examine the current and saved values with:
+
+```text
+A>CONFIG /SHOW
+```
+
+### Choosing Device Assignments
+
+Before changing the IOBYTE, make sure the requested assignment is supported by your computer.
+
+Some traditional CP/M device names refer to hardware that may not exist on a particular system.
+
+For example, selecting a printer interface does not make a printer available unless the BIOS provides the corresponding output facility.
+
+BetterCP/M also requires the console assignment to remain compatible with its supported console environment.
+
+For the available device assignments and their meanings, consult the STAT and CONFIG command references.
+
+Platform-specific documentation describes any additional requirements or limitations.
+
+## 7.6 Saving Configuration Changes
+
+Many BetterCP/M configuration changes can be made temporarily.
+
+To retain them after a cold boot, you must save the appropriate settings to the system disk.
+
+CONFIG provides facilities for doing this, using BetterCP/M's system-generation services.
+
+### Temporary and Permanent Changes
+
+Suppose you temporarily change a drive assignment to read a disk from another computer.
+
+You may want to use that configuration for the remainder of the current session without making it your permanent default.
+
+In that case, you can leave the saved configuration unchanged.
+
+On the other hand, if you've installed a new disk drive or established a configuration you intend to use regularly, you'll probably want to save it.
+
+BetterCP/M allows you to distinguish between these situations.
+
+### Saving from CONFIG
+
+CONFIG's main menu includes:
+
+```text
+[ S ] Save current configuration on disk (SYSGEN)
+```
+
+This option provides access to the system-configuration saving facilities.
+
+CONFIG distinguishes between saving pending cold-boot changes and saving the current configuration as the new startup defaults.
+
+These operations are not necessarily equivalent.
+
+For example, you might have changed the startup command while also temporarily reassigning a disk drive.
+
+Saving only the pending cold-boot changes allows you to retain the new startup command without making the temporary drive assignment permanent.
+
+Saving the current configuration as the new defaults is appropriate when you want those active settings restored during future cold boots.
+
+CONFIG presents the available choices and requests confirmation before writing the saved configuration.
+
+### Verifying the Configuration
+
+After saving, it's good practice to examine the configuration again:
+
+```text
+A>CONFIG /SHOW
+```
+
+Check that the saved settings correspond to what you intended.
+
+If you've changed startup settings, remember that they won't take effect until the next cold boot.
+
+If you've changed drive assignments, verify that the appropriate drives and formats remain available.
+
+### Protecting Your System Disk
+
+Saving configuration changes modifies information associated with the operating system on disk.
+
+For this reason, you should keep a backup of a known working system configuration.
+
+This is particularly important when changing disk-drive assignments or other settings needed to boot the computer.
+
+If a saved configuration prevents the system from starting correctly, a backup system disk may be needed to restore a working environment.
+
+CONFIG performs checks when saving settings, but no software can protect against every possible hardware failure or interruption.
+
+Avoid resetting or switching off the computer while configuration information is being written.
+
+### Returning to a Known Configuration
+
+If you're experimenting with unfamiliar disk formats or device assignments, consider retaining a separate system disk with your normal configuration.
+
+This gives you a convenient way to return to a known working system if an experiment produces unexpected results.
+
+For ordinary use, however, BetterCP/M's configuration facilities should allow you to make most supported changes without rebuilding the operating system manually.
+
+The CONFIG and SYSGEN command references provide complete instructions for saving and restoring system configurations.
+
+---
 
