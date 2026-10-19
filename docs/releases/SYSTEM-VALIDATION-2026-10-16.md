@@ -31,7 +31,7 @@ The source checkout was clean and was not modified. A private clone at
 | 2. Fresh conformance suite | Selected returning groups pass on both platforms | V010–V012 refresh production BDOS/file/random and native DIR/CCP/entry/CPU/ecology/disk-safe, BIOS/error-safe and selected console evidence. Manual, device, terminal-outcome and applicability gaps remain explicitly open. |
 | 3. CPX/RSX lifecycle, relocation, ROM protection | Selected checks pass; V031 XSUB finding corrected and qualified (V032) | V016 identifies and clears an uninitialized cold-entry loader-recovery flag. Poisoned-RAM initializer test, 32 pristine-media cold boots and guarded lifecycle/stack/workspace checks pass. Focused production monitor relocation checks pass on both backends (V015). Deferred manual/device checks remain explicit. |
 | 4. Resident/transient command integration | Partial; fresh native file workflow passes | V013 covers native file workflows. V021/V023–V027 add shipped cpmsim ERA/REN/COPY/MOVE/DIR/STAT/TYPE selectors, protection, reporting and controlled recovery. Broader native repetition and caller-state cases remain. |
-| 5. Utility operations and failure recovery (original Step 7) | OPEN: four named closure items; V043 reconciliation | Seven utility groups have sufficient selected evidence. Restore missing ERA, DUP and SYSGEN audit bundles (S7-01–03), then qualify actual PIP host endpoints and selected native capability gates (S7-04). BIOS/error reconciliation, monitor/input observations and final acceptance reruns are tracked in their own stages, not counted as Step 7 gaps. See SYSTEM-VALIDATION-STEP7-RECONCILIATION-2026-10-18.md. |
+| 5. Utility operations and failure recovery (original Step 7) | CLOSED — V044 | S7-01–S7-04 PASS: restored ERA/DUP/SYSGEN evidence and actual cpmsim PIP endpoints plus native verified copy, CRT and unavailable-device gates. Retained raw archive and hashed result index. Broader conformance, monitor/input, device/profile and final acceptance work remain separate. |
 | 6. Monitors and applications | Selected cross-platform regressions pass | V013–V014 exercise all three shipped monitor/backend pairs, native file workflows and cpmsim TYPE paging/file boundaries. Broader applications, audio/manual/device and exhaustive protocol coverage are not implied. |
 | 7. End-to-end release workflows | Partial; CONFIG startup cold boot passes | V014 confirms saved startup executes only on next cold boot. V017 adds cpmsim named system export/install/reboot. V018 verifies the native named-package round trip; V020 verifies disk-source installation/reboot. Other complete release workflows remain. |
 | 8. Closure and final acceptance reruns | Not run | Resolve failures, identify accepted limits, rebuild and rerun against final revision/images. |
@@ -3407,3 +3407,62 @@ PIP endpoint gap stays in Step 7 because device operations are part of its state
 utility requirements. Close Step 7 when S7-01–S7-04 pass and no utility-contract
 finding remains unresolved. No new runtime verdict, defect, waiver or release
 acceptance is claimed by this reconciliation.
+
+## V044 — Step 7 closed: restored evidence and live PIP endpoints
+
+**Original Step 7 (condensed stage 5) is CLOSED, 19 October 2026.** All four
+finite V043 closure items passed. This closes selected utility operations and
+failure recovery, not overall system validation or final release acceptance.
+The [closure result index](SYSTEM-VALIDATION-STEP7-CLOSURE-2026-10-19.json)
+identifies each accepted result by path and SHA-256 and records the independently
+reopened, per-file-verified evidence archive outside temporary storage.
+
+Baseline: clean committed snapshot `5f3f3f38bb11`, isolated source/build roots
+and fresh qualified distribution images. Ordinary shipped binaries match V034;
+no production OS or utility implementation changed in this restoration. This
+snapshot is not presented as final clean merged-release acceptance.
+
+- **S7-01 PASS:** 21 ERA protection/selection/confirmation sessions; destructive
+  multi-extent zeroing, directory scrub, shared-block/cross-user preservation,
+  overrides and cancellation; eight controlled data/scrub failure cases.
+- **S7-02 PASS:** cpmsim format/copy/check plus all four native DUP groups:
+  protected-drive/decline, format/check, patterned copy, and CRC recovery.
+  Independently checked native format across 1,600 sectors, copy payloads,
+  refusal preservation, bindings, filesystem and shipped-file integrity.
+  Controlled direct-command/parser checks also pass.
+- **S7-03 PASS:** cpmsim named export/install and native named-package and
+  disk-source installations, exact package/system bytes, containing-filesystem
+  and sentinel preservation, alias/protected-target refusals and installed
+  cold boots. Controlled suites cover 32 command tails, 24 export/recovery
+  cases, and ten structural package validation/read-failure cases.
+- **S7-04 PASS:** actual cpmsim printer, auxiliary punch and FIFO reader bytes
+  agree with pinned DRI PIP reference output; CRT output and EOF behavior pass.
+  Each alias restores the initial IOBYTE 41h. The reader's physical 128-byte
+  record is independently inspected: cpmtools exports 118 bytes because of
+  its S1 interpretation, shared by the reference, so host extraction length
+  alone is not used as the physical-record oracle. Native shipped PIP passes
+  verified multi-DU copy and CRT output. Unavailable LPT/PTR aliases reject
+  before data-disk mutation or destination creation; subsequent STATE/VER
+  return witnesses confirm A0 and TOP=D501 (53K).
+
+Native PIP fixtures replace STARTUP.SUB only to select a no-monitor test queue;
+all other shipped files and system tracks remain unchanged. Supplemental state
+helpers do not replace the utility under test. PIP correctly cancels SUBMIT on
+errors, so rejection recovery commands are entered after a bounded delay.
+Earlier feeder races, an incorrect host extraction-length oracle, a canceled
+SUBMIT tail and unsuitable screen waits are excluded harness attempts, not
+passes or production defect claims. Their available artifacts are retained.
+
+The archive contains raw captures, executed runners, helper sources/listings,
+before/after disks, file/filesystem audits, build artifacts and result records.
+The index supplies its location and SHA-256. Historical V017–V021 raw-evidence
+loss remains documented; fresh V044 passes restore the required evidence rather
+than retroactively relabeling those missing bundles as retained.
+
+No physical UART/printer hardware operation, exhaustive failure permutation,
+independent-suite card status change or final release acceptance is claimed.
+BIOS/error-card reconciliation, applicable device/profile checks, monitor/input
+observations (including the unassigned V040 anomaly), end-to-end workflow review
+and final clean merged-source acceptance remain outside this closed step.
+Documentation alignment follows validation; Utilities and CP/M Tools disks
+remain separate qualification work.

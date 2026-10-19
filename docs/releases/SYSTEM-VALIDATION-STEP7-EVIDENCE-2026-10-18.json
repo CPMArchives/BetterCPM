@@ -292,5 +292,6 @@
     "SYSGEN.COM": true,
     "RCP.CPX": true,
     "CONFIG.COM": true
-  }
+  },
+  "historical_snapshot_note": "V043 availability audit retained unchanged; current Step 7 decision is CLOSED in V044. See SYSTEM-VALIDATION-STEP7-CLOSURE-2026-10-19.json."
 }

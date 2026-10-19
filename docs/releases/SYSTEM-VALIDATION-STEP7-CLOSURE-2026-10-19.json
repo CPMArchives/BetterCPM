@@ -1,0 +1,94 @@
+{
+  "step7_status": "CLOSED",
+  "date": "2026-10-19",
+  "baseline_source_revision": "5f3f3f38bb11",
+  "closure_items": {
+    "S7-01": {
+      "status": "PASS",
+      "results": [
+        "bettercpm-v044-era-protection/result.json",
+        "bettercpm-v044-era-destructive/result.json",
+        "bettercpm-v044-controlled-complete/result.json"
+      ]
+    },
+    "S7-02": {
+      "status": "PASS",
+      "results": [
+        "bettercpm-v044-cpmsim-media/media-summary.json",
+        "bettercpm-v044-native-dup/summary-all.json",
+        "bettercpm-v044-controlled-complete/result.json"
+      ]
+    },
+    "S7-03": {
+      "status": "PASS",
+      "results": [
+        "bettercpm-v044-cpmsim-media/media-summary.json",
+        "bettercpm-v044-native-package/sysgen-5_nlzo60/result.json",
+        "bettercpm-v044-native-disk-install/sysgen-disk-4wj_e51s/result.json",
+        "bettercpm-v044-controlled-complete/result.json"
+      ]
+    },
+    "S7-04": {
+      "status": "PASS",
+      "results": [
+        "bettercpm-v044-r3-pip-endpoints/result.json",
+        "bettercpm-v044-r3-native-pip-positive/result.json",
+        "bettercpm-v044-r5-native-pip-lpt/result.json",
+        "bettercpm-v044-r5-native-pip-ptr/result.json"
+      ]
+    }
+  },
+  "result_records": {
+    "bettercpm-v044-era-protection/result.json": {
+      "sha256": "1756a524b573e6fea4d0af82be2bd7b0e115f0ab493c3830467cc02ee59abca1",
+      "status": "PASS"
+    },
+    "bettercpm-v044-era-destructive/result.json": {
+      "sha256": "38ac5fd85da520812359ff5c453d89c4b372ccaa49ab7173b1517ef097795606",
+      "status": "PASS"
+    },
+    "bettercpm-v044-controlled-complete/result.json": {
+      "sha256": "f5c35980c24764e28cdd5fe09a71abb8b3a4effe92d627773dc849d47f964f6f",
+      "status": "PASS"
+    },
+    "bettercpm-v044-cpmsim-media/media-summary.json": {
+      "sha256": "f12b3f76535e708a2a41fb8cd17a99e9a5daf11ef694e2760a597f534c5824a4",
+      "status": "PASS"
+    },
+    "bettercpm-v044-native-dup/summary-all.json": {
+      "sha256": "ecec659912631f0f9a48615d677a58a487a3215aaf3f95db1b8ac0b5a8704b45",
+      "status": "PASS"
+    },
+    "bettercpm-v044-native-package/sysgen-5_nlzo60/result.json": {
+      "sha256": "4e2a9a35ad6584e2e2f13ef57c030b48c5e61a8e98b128bdb02c38ee077ff874",
+      "status": "PASS"
+    },
+    "bettercpm-v044-native-disk-install/sysgen-disk-4wj_e51s/result.json": {
+      "sha256": "2828bbfc33143af2f77cb7c8e10a45ecb34f00bcca53ea19d929b009e6ddcb02",
+      "status": "PASS"
+    },
+    "bettercpm-v044-r3-pip-endpoints/result.json": {
+      "sha256": "d624dd6635cad6f8bb0304201a55425adf9d31de04b713bc55a6a84ba53485d2",
+      "status": "PASS"
+    },
+    "bettercpm-v044-r3-native-pip-positive/result.json": {
+      "sha256": "4db7cd182418ab3a1d5ba2f6594dcac78317135d174750244141c00d6a9688ac",
+      "status": "PASS"
+    },
+    "bettercpm-v044-r5-native-pip-lpt/result.json": {
+      "sha256": "08b2c797d982310a4eac1a47d1d8fba9aec86aded7d7f705f473c762f3f0cb3c",
+      "status": "PASS"
+    },
+    "bettercpm-v044-r5-native-pip-ptr/result.json": {
+      "sha256": "4267b0fa337398941fc87e9ac8b667df40d9f2d3dfcf732b81144309252f6268",
+      "status": "PASS"
+    }
+  },
+  "archive": {
+    "path": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/validation-evidence/BetterCPM-Step7-V044.tar.gz",
+    "sha256": "2be98b3faffa56e83b2f764f94fa8df204dbcad283fefe6b124b45d2453c4ee2",
+    "bytes": 25094679,
+    "verified_files": 5803
+  },
+  "limits": "Selected operational/recovery coverage only; no physical-hardware, exhaustive fault matrix, or final merged-release acceptance claim."
+}
