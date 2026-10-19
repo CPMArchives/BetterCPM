@@ -30,7 +30,7 @@ def main():
                 'RSX UNLOAD M4SCRN','RSX LIST','MREGDONE']
         if a.scripted_start:
             script.insert(script.index(program),'MREGWAIT')
-            add_file(raw,'MREGWAIT.COM',bytes.fromhex('0e01cd0500c30000'))
+            add_file(raw,'MREGWAIT.COM',bytes.fromhex('1110010e09cd05000e01cd0500c30000')+b'MREG READY$')
             for index in range(DIRECTORY_ENTRIES):
                 at=FILESYSTEM_FIRST_SECTOR*SECTOR_SIZE+index*32
                 if raw[at]==0 and raw[at+1:at+12]==b'STARTUP SUB':raw[at]=0xE5
@@ -46,7 +46,7 @@ def main():
         for text in wait:cmd.extend(['-iw',text])
         cmd.extend(['-id','120','-it'])
     capture('loaded','TPA available:')
-    if a.scripted_start:cmd+=key_args(' ',delay=60)
+    if a.scripted_start:cmd+=['-iw','MREG READY']+key_args(' ',delay=60)
     capture('position','Marker: row 5','Press a key to continue.')
     cmd+=key_args(' ',delay=60)
     capture('reset','Parser reset:','Press a key to continue.')

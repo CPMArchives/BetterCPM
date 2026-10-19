@@ -107,3 +107,8 @@ one-character pause after RSX LIST now separates identity capture from the
 screen exercise. Those incomplete attempts are excluded as harness evidence,
 not monitor failures. This does not resolve the separate initial host-command
 entry observation.
+
+The pause fixture also announces `MREG READY` before the harness injects its
+continuation key, preventing a second race while the helper loads. Initial
+results remain partial; native VT52/ANSI are not counted from loaded-pair
+captures alone.
