@@ -57,7 +57,7 @@ def main():
     image = w / 'a.dmk'; image.write_bytes(build(bytes(raw)))
     secondary = w / 'b.dmk'; secondary.write_bytes(build(bytes(before_raw)))
     shutil.copy2(__file__, w / 'executed-runner.py')
-    cmd = [str(DEFAULT_EMULATOR), '-m4', '-batch', '-turbo', '-ktx', '-d0', str(image), '-d1', str(secondary), '-itime', '15000', '-iw', 'Type TYPE README.TXT for more', '-id', '6000']
+    cmd = [str(DEFAULT_EMULATOR), '-m4', '-batch', '-turbo', '-ktx', '-d0', str(image), '-d1', str(secondary), '-itime', '15000']
     if a.group == 'positive':
         cmd += ['-iw', 'MODEL FOUR PIP TRANSFER', '-id', '120', '-it',
                 '-iw', 'NATIVE PIP WORKFLOW COMPLETE', '-id', '6000', '-it', '-ix']
