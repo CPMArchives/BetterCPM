@@ -35,6 +35,18 @@ def main():
    if name=='test_ansi_portable':mod.main(production=True)
    else:mod.main()
   (a.output/(name+'.log')).write_text(log.getvalue());results[name]={'status':'PASS','source_sha256':sha(source)}
+ from test_vt52_foundation import symbols
+ bells={}
+ for name,folder,stem,label in [('ADM3A','monitor-development','adm3a','AM_ENTRY'),('VT52','vt52-development','vt52','VT_ENTRY'),('ANSI','ansi-development','ansi','AN_ENTRY')]:
+  cpu,old,cells,wire=fixture('ANSISCRN',0x6000)
+  syms=backend.load(cpu,a.cpmsim_build/'build'/folder,stem,0x7000)
+  cpu.setword(0x7000+12,cpu.backend_entry)
+  entry=0x7000+syms[label]-0x8000
+  cpu.a=4;cpu.run(entry,limit=300000);wire.clear()
+  cpu.a=0;cpu.c=7;cpu.run(entry,limit=300000)
+  assert bytes(wire)==b'\x07',(name,wire)
+  bells[name]='07'
+ results['host_bell_wire']={'status':'PASS','bytes':bells}
  shutil.copy2(__file__,a.output/'executed-runner.py')
  (a.output/'result.json').write_text(json.dumps({'status':'PASS','matched_release_carriers':matched,'tests':results,'runner_sha256':sha(Path(__file__)),'scope':'Assembled production personalities through relocated Model 4 and ANSI-host backends; CPU-model and software-terminal assertions, not native execution or physical-terminal observation.'},indent=2)+'\n')
  print('PASS bounded production monitor protocol checks',a.output)
