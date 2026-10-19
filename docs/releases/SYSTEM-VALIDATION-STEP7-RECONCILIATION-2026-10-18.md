@@ -1,6 +1,16 @@
 # Step 7 utility-validation reconciliation — 18 October 2026
 
-## Decision
+## Closure update — 19 October 2026
+
+**Step 7 CLOSED in V044.** All four finite closure items below now have retained
+PASS results. The original reconciliation and its missing-evidence findings
+remain below as historical context; the open statuses describe V043, not the
+current decision. See [closure evidence](SYSTEM-VALIDATION-STEP7-CLOSURE-2026-10-19.json)
+and the V044 campaign entry for accepted runs, archive identity and limits.
+No unresolved utility-contract finding remains within this selected scope.
+Overall system acceptance remains open.
+
+## Original V043 decision
 
 **Step 7 is not closed. Exactly four named utility items remain below.** Seven
 other utility groups have sufficient selected operational/recovery evidence for

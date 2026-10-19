@@ -1,6 +1,6 @@
 # System validation coverage and device review — 2026-10-18
 
-This review follows V036. It does not declare Step 7 or system acceptance complete.
+This review began after V036. V044 closes Step 7; system acceptance remains open.
 The Utilities Disk and CP/M Tools disk remain outside this campaign.
 
 ## Evidence rules
@@ -29,6 +29,11 @@ exercise live PIP endpoints/selected native capability paths. BIOS/error cards,
 monitor/input observations and final acceptance remain broader campaign work.
 This distinction does not waive them or declare overall completion.
 
+V044 update (19 October 2026): all four items PASS; **Step 7 CLOSED**.
+See [closure evidence](SYSTEM-VALIDATION-STEP7-CLOSURE-2026-10-19.json).
+The remaining register below still tracks broader validation; live cpmsim PIP
+endpoint operation and selected native alias rejection are now satisfied.
+
 ## Remaining-work register
 
 | Coverage | Current disposition | Required closure |
@@ -41,7 +46,7 @@ This distinction does not waive them or declare overall completion.
 | Native ECOTEST 0577, 0579 | Selected native witnesses pass in V042 | TYPE BIOS-output bytes are captured and compared for text, empty/control/EOF/multi-record fixtures; seven ordinary failures and allocation-full SAVE recover with disk/file audits. Final merged-source reruns remain required. |
 | BIOSTEST/ERRTEST documentary cards | OPEN: per-card reconciliation | Map retained external evidence and fresh suite output to the candidate cards below. Do not count documentary listings as execution, or declare all candidates missing merely from their initial status. |
 | Unavailable-drive card 0154 and interactive physical-error profiles | PROFILE REVIEW | Apply the documented BetterCP/M error/restart contract, including its immediate warm-start behavior. Do not claim the interactive DRI acknowledgement profile passed if no acknowledgement exists. Required recovery/data-safety checks remain required. |
-| Live cpmsim printer and auxiliary reader/punch | OPEN: supported endpoint checks | Exercise the emulator's configured host endpoints and compare exact host bytes, EOF/readiness and routing. V030 controlled device tests do not establish live endpoint operation. |
+| Live cpmsim printer and auxiliary reader/punch | PASS — V044 actual endpoints | Exact printer/punch/FIFO input bytes, physical reader record, EOF and IOBYTE restoration agree with the DRI reference. Controlled V030 fixtures are not substituted for this live execution. |
 | Model 4 unavailable printer/UART aliases | Capability rejection contract | Validate rejection before mutation; do not claim physical-device operation. Printer transformations and serial configuration are deferred features, not implemented 1.0 controls awaiting an operator. |
 | Physical host terminal/keyboard observations | MANUAL PENDING where claimed | Record terminal type, loaded personality/backend, positioning, erase, reverse and keyboard observations. Software-terminal checks cover selected semantics, not every real terminal or keyboard. |
 | Clock-setting providers | Capability/profile review | Preserve the real host clock. Qualify supported provider behavior with a controlled clock fixture; verify unsupported-setting refusal. Do not treat a controlled provider as a physical-clock result. |

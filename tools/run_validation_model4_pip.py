@@ -62,11 +62,11 @@ def main():
         cmd += ['-iw', 'MODEL FOUR PIP TRANSFER', '-id', '120', '-it',
                 '-iw', 'NATIVE PIP WORKFLOW COMPLETE', '-id', '6000', '-it', '-ix']
     else:
-        # PIP intentionally cancels SUBMIT on errors. Wait for the returned
-        # blank prompt, not the A0> prefix still present on its command line.
-        cmd += ['-iw', 'DEVICE UNAVAILABLE', '-it', '-iw', 'A0> ', '-id', '120']
-        cmd += key_args('STATE\r',delay=25) + ['-iw','STATE D=00 U=00 TOP=D501','-it','-iw','A0> ','-id','120']
-        cmd += key_args('VER\r',delay=25) + ['-iw','BetterCP/M 0.90','-iw','A0> ','-id','120','-it','-ix']
+        # PIP intentionally cancels SUBMIT on errors. Allow reconstruction
+        # before typing: a blank-prompt screen match is not reliable here.
+        cmd += ['-iw', 'DEVICE UNAVAILABLE', '-it', '-id', '6000']
+        cmd += key_args('STATE\r',delay=25) + ['-iw','STATE D=00 U=00 TOP=D501','-it','-id','6000']
+        cmd += key_args('VER\r',delay=25) + ['-iw','BetterCP/M 0.90','-id','6000','-it','-ix']
     (w / 'invocation.json').write_text(json.dumps(cmd, indent=2) + '\n')
     run(cmd, cwd=w, timeout=1800, check=True)
     captures = sorted(w.glob('trs80-text-*.bin'), key=lambda f: int(f.stem.rsplit('-', 1)[1]))
