@@ -1,0 +1,296 @@
+{
+  "scope": "Step 7 evidence availability and recorded verdict audit; not new runtime execution or final acceptance",
+  "step7_status": "OPEN_FOUR_NAMED_ITEMS",
+  "existing_result_files": 29,
+  "evidence": [
+    {
+      "family": "DIR/STAT",
+      "path": "/private/tmp/bettercpm-v026-r3-dir-stat/result.json",
+      "exists_at_review": true,
+      "sha256": "9b770faa254b40a886cf75e4c4705444058d10db09e832afa6c3448655d8f5a9",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "DIR/STAT",
+      "path": "/private/tmp/bettercpm-v026-whereis-fixture/result.json",
+      "exists_at_review": true,
+      "sha256": "d10ea2ee65445a3a0e42d8bf00df3af8666bbf4f9454301a7fd54a8d9b497f36",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "DIR/STAT",
+      "path": "/private/tmp/bettercpm-v026-stat-capacity/result.json",
+      "exists_at_review": true,
+      "sha256": "1798722aa758416eb58f849f6aeb0017eb7ba907dc6967b638f0d761dae7e898",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "COPY/MOVE",
+      "path": "/private/tmp/bettercpm-v024-r2-copy-move/result.json",
+      "exists_at_review": true,
+      "sha256": "56a5c702fda9e3522ccd27881ff848d510368330462505e60b87662c5132d93a",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "COPY/MOVE",
+      "path": "/private/tmp/bettercpm-v025-verify-flow/evidence.json",
+      "exists_at_review": true,
+      "sha256": "9fef523f76b4d4b7ca8d5cc8da668e528ee2528871125f3622e0688ecaa8f19b",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "COPY/MOVE",
+      "path": "/private/tmp/bettercpm-v025-r2-copy-errors/evidence.json",
+      "exists_at_review": true,
+      "sha256": "6d579be1b00c9d0511b67d60436de877578d4e91479ec90e750feedcd0171c58",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "REN",
+      "path": "/private/tmp/bettercpm-v023-ren-media/evidence.json",
+      "exists_at_review": true,
+      "sha256": "6adac6bfdc357d969d0fa740b70b93f83a5dbbe83446fe66ebf46624fbfd338a",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "TYPE",
+      "path": "/private/tmp/bettercpm-v027-type/result.json",
+      "exists_at_review": true,
+      "sha256": "109309989aea151d8da49be03261dfe3c634bfd88c7e3606c87cebbb48cec5e1",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "TYPE",
+      "path": "/private/tmp/bettercpm-v027-type-fixtures/result.json",
+      "exists_at_review": true,
+      "sha256": "1811c93eec4201fd5c4f45311d94db074bea4d94e1c33331efd3ed6423f7dbd0",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "TYPE",
+      "path": "/private/tmp/bettercpm-v042-native-type-bytes/result.json",
+      "exists_at_review": true,
+      "sha256": "253e98e8822d086063e71122c47fa2bf8e6c4c031bfcba12e482c1aed5e62f39",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "ED",
+      "path": "/private/tmp/bettercpm-v028-r2-ed-config/result.json",
+      "exists_at_review": true,
+      "sha256": "373e1bab1877e6ae5622f9a0275f39d2a034b696c834538dccb19af94bd122e2",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "ED",
+      "path": "/private/tmp/bettercpm-v036-native-ed-setup/result.json",
+      "exists_at_review": true,
+      "sha256": "b55057f85538e22cc083a71305e5d631acf98dc8bcba46c0dd56e0d66428563c",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "ED",
+      "path": "/private/tmp/bettercpm-v036-native-ed-directory-full/result.json",
+      "exists_at_review": true,
+      "sha256": "c0283008c60bf3bedf743237cbbf68d5b15ea1c9e01c8f916f7bf842e7bd2bc9",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "ED",
+      "path": "/private/tmp/bettercpm-v036-native-ed-disk-full/result.json",
+      "exists_at_review": true,
+      "sha256": "6bad58820ee26421ca7d2f7905528050070c568253b08c97fc381d51bd01feda",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "ED",
+      "path": "/private/tmp/bettercpm-v036-r2-native-ed-rename/result.json",
+      "exists_at_review": true,
+      "sha256": "768e7f4e1fcff10f1c28b62e6fa952e9f96d37b47e6adbe82a13704ad43cb48a",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "CONFIG",
+      "path": "/private/tmp/bettercpm-v028-r2-ed-config/result.json",
+      "exists_at_review": true,
+      "sha256": "373e1bab1877e6ae5622f9a0275f39d2a034b696c834538dccb19af94bd122e2",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "CONFIG",
+      "path": "/private/tmp/bettercpm-v035-config-save/result.json",
+      "exists_at_review": true,
+      "sha256": "afeca2710f625a0ef5f2bc41a92b31ced0ac4f56483eeaa953d0042a93f5e7e8",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "CONFIG",
+      "path": "/private/tmp/bettercpm-v035-r3-config-rollback/result.json",
+      "exists_at_review": true,
+      "sha256": "34db51b56a3021e0bb6f652a3c7426b6997fe6c3b06ca4cf96176430cd5147c8",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "PIP",
+      "path": "/private/tmp/bettercpm-v030-pip/result.json",
+      "exists_at_review": true,
+      "sha256": "550f999125d5b1dea1b535df857f0826dd6998654c3d94a06e35426d091e9d32",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "PIP",
+      "path": "/private/tmp/bettercpm-v030-pip-fixtures/result.json",
+      "exists_at_review": true,
+      "sha256": "1a95034cc2fb02390e4f0c061d1a43f5b1efb9fe854224504547664b617f1129",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "SUBMIT/TIME/VER/CPX/RSX",
+      "path": "/private/tmp/bettercpm-v029-r2-managers/result.json",
+      "exists_at_review": true,
+      "sha256": "8f3be5d5edb7a70b6921f82090e495008269a80a708367f942375c136552848c",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "SUBMIT/TIME/VER/CPX/RSX",
+      "path": "/private/tmp/bettercpm-v029-time-fixtures/result.json",
+      "exists_at_review": true,
+      "sha256": "6fd6f1363d31d590d98601c49ba1821f8a1a03ee75325ec14782c9dc420956d8",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "SUBMIT/TIME/VER/CPX/RSX",
+      "path": "/private/tmp/bettercpm-v031-submit-errors/result.json",
+      "exists_at_review": true,
+      "sha256": "1cc74395c4a3484de46fa84879dc439fa0af45d09d4d786d90c472c69a24b1cb",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "SUBMIT/TIME/VER/CPX/RSX",
+      "path": "/private/tmp/bettercpm-v032-unit/result.json",
+      "exists_at_review": true,
+      "sha256": "199f64af4e00660ca197752619eeab17fb124bdc81d9833ee90d4c009d21ad6e",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "SUBMIT/TIME/VER/CPX/RSX",
+      "path": "/private/tmp/bettercpm-v032-r4-xsub-fixed/result.json",
+      "exists_at_review": true,
+      "sha256": "aff34175d9a5a50b3b777194cf77e728a3432f186aa78ef1768571edd773ad97",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "SUBMIT/TIME/VER/CPX/RSX",
+      "path": "/private/tmp/bettercpm-v032-r5-native-xsub/result.json",
+      "exists_at_review": true,
+      "sha256": "62b60c1e315ec432da713f7f06e5cdfdf462ce8943e293e24d0ac4418950988b",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "SUBMIT/TIME/VER/CPX/RSX",
+      "path": "/private/tmp/bettercpm-v034-unit/result.json",
+      "exists_at_review": true,
+      "sha256": "a833892db2d0472d970c0bef1c135310d7fcb9f3c08a1834f8571595f1841d93",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "SUBMIT/TIME/VER/CPX/RSX",
+      "path": "/private/tmp/bettercpm-v034-r2-cpmsim-recovery/result.json",
+      "exists_at_review": true,
+      "sha256": "d1c662592bbca7dd62f566effbfa96d4cbbffd122474bede9080ef6070cf2a95",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "SUBMIT/TIME/VER/CPX/RSX",
+      "path": "/private/tmp/bettercpm-v034-native-cpx-recovery/result.json",
+      "exists_at_review": true,
+      "sha256": "4b6a0720407f9699a364a6969788992f9b710b156ca68d43a93e6112234d402e",
+      "reported_verdict": "PASS"
+    },
+    {
+      "family": "ERA",
+      "path": "/private/tmp/bettercpm-v021-r2-era-protection/result.json",
+      "exists_at_review": false,
+      "disposition": "historical ledger result; raw bundle unavailable, not a fresh or reverified pass"
+    },
+    {
+      "family": "ERA",
+      "path": "/private/tmp/bettercpm-v021-era-destructive/result.json",
+      "exists_at_review": false,
+      "disposition": "historical ledger result; raw bundle unavailable, not a fresh or reverified pass"
+    },
+    {
+      "family": "DUP",
+      "path": "/private/tmp/bettercpm-v019-r4-native-dup/summary-all.json",
+      "exists_at_review": false,
+      "disposition": "historical ledger result; raw bundle unavailable, not a fresh or reverified pass"
+    },
+    {
+      "family": "SYSGEN",
+      "path": "/private/tmp/bettercpm-v018-native-media/sysgen-r42k6jzl/result.json",
+      "exists_at_review": false,
+      "disposition": "historical ledger result; raw bundle unavailable, not a fresh or reverified pass"
+    },
+    {
+      "family": "SYSGEN",
+      "path": "/private/tmp/bettercpm-v020-native-sysgen-disk/sysgen-disk-odtam5mz/result.json",
+      "exists_at_review": false,
+      "disposition": "historical ledger result; raw bundle unavailable, not a fresh or reverified pass"
+    }
+  ],
+  "byte_identical_v034_artifacts": [
+    {
+      "name": "DIR.COM",
+      "sha256": "3f2f6064a709cecccd04067cc5a42bd426b0668e55288fdb27b79211a27d8da2"
+    },
+    {
+      "name": "REN.COM",
+      "sha256": "ee2027053bbf8e7e323e4fe1e935e74f4736021235d0c7502b8d8fd417e6c039"
+    },
+    {
+      "name": "COPY.COM",
+      "sha256": "3ef09b63474ee94a7abdbc15cdaa671820a6041a021bdc59d0b5192630625b60"
+    },
+    {
+      "name": "ERA.COM",
+      "sha256": "70f7b2f3f856269ae1088ce43aef39e2bd81f57e3fd4df65c706e992331dd8cc"
+    },
+    {
+      "name": "TYPE.COM",
+      "sha256": "76afd076cf475232ad76505d6ac57378d20bc23e3fc328f85c48b154084284a4"
+    },
+    {
+      "name": "ED.COM",
+      "sha256": "a1faa59fcdf5fbad43d37e58cd34bdb96706dfbe0025134d4f7cb98a7c03f171"
+    },
+    {
+      "name": "PIP.COM",
+      "sha256": "14abee313a4679a6a339f915c675e405197128cfc26d1aae8013702fc19fd40b"
+    },
+    {
+      "name": "DUP.COM",
+      "sha256": "5bc2d837771c9ac94b9c4f274fa84899a2f32f76eb5488b773ed4f52b90431e9"
+    },
+    {
+      "name": "SYSGEN.COM",
+      "sha256": "7dc9dedad2ea23ea993f7caf684927f9852bf2e28d57d659349dd9ab7369d570"
+    },
+    {
+      "name": "RCP.CPX",
+      "sha256": "35d71ccf5fa529da113acf0ebbde032b36c43e9dd4959eede82a51110ad3f11f"
+    }
+  ],
+  "config_platform_specific": true,
+  "v023_to_v034_cpmsim_binary_identity": {
+    "DIR.COM": true,
+    "REN.COM": true,
+    "COPY.COM": true,
+    "ERA.COM": true,
+    "TYPE.COM": true,
+    "ED.COM": true,
+    "PIP.COM": true,
+    "DUP.COM": true,
+    "SYSGEN.COM": true,
+    "RCP.CPX": true,
+    "CONFIG.COM": true
+  }
+}

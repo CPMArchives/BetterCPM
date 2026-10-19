@@ -341,7 +341,8 @@ Possible candidates for investigation include:
 
 The later terminal-capability redesign is already deferred beyond 1.0 and may subsume some of this area.
 
-The investigation should avoid turning every editing key into a CONFIG option.
+Prefer coherent editing profiles over a collection of unrelated switches; the
+2026-10-18 follow-up below also authorizes exploring user-defined bindings.
 
 ---
 
@@ -755,3 +756,34 @@ configuration registers; retain that transport without presenting fake controls.
 
 The generic eight-port ceiling is not a promise of eight implemented ports or
 universal rates. Existing auxiliary I/O remains available in 1.0.
+
+
+## Command-line editing follow-up — 2026-10-18
+
+**Maintainer decision: defer configurable CCP editing until after 1.0.** Do not
+reopen the implementation during final system validation. BetterCP/M 1.0 keeps
+Ctrl-K for previous-command recall and Ctrl-J for next-command recall, with
+its existing Ctrl-E/Ctrl-X behavior unchanged.
+
+Explore CONFIG management of coherent editing profiles: WordStar-style
+Ctrl-E/Ctrl-X previous/next history, classic CP/M controls, other useful key
+sets, and optionally user-defined bindings. These are candidates rather than
+a frozen set of profiles, a chosen future default, or a committed keymap format.
+Scope the preference to the CCP command prompt; do not silently redefine BDOS
+buffered input used by applications.
+
+The intended user model is one persistent preference, surviving both warm and
+cold boots. A separate temporary mode that reverts at cold boot is not required.
+The CCP is reclaimable and reconstructed from disk: investigate storing the
+setting in its on-disk image, updated safely by CONFIG and applied on the next
+reload. Check carrier validation, setting identification, safe-write/recovery
+behavior, CCP size, and the distinction between a saved update and the editor
+already running. Avoid new permanent resident state where unnecessary.
+
+Also explore a future CONFIG.SYS as a common home for editing profiles or
+bindings. This is an alternative to embedding settings in the CCP, not an
+existing file contract or a requirement to implement two competing sources of
+truth. Resolve ownership, reload behavior, precedence, validation, and recovery
+before selecting a persistence mechanism. No CONFIG.SYS implementation, new
+storage allocation, runtime change, or additional 1.0 release gate is introduced
+by this roadmap item.

@@ -2,7 +2,6 @@
 """Regress shipped cpmsim monitor/backend pairs without replacing release files."""
 import argparse,json,shutil,subprocess,tempfile
 from pathlib import Path
-import pyte
 from run_validation_returning import sha
 from test_z80pack_sysgen_install import session
 
@@ -24,6 +23,7 @@ def audit(baseline,report,work,image):
 
 
 def main():
+    import pyte
     p=argparse.ArgumentParser(description=__doc__)
     for name in ('baseline','output'):p.add_argument('--'+name,type=Path,required=True)
     p.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim')

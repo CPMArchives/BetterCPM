@@ -20,6 +20,15 @@ acceptance requires a clean merged-source build and fresh applicable-suite runs,
 with exact input identities and retained per-card output. A focused external
 check does not silently change the independent suite's printed status to PASS.
 
+## Step 7 boundary after reconciliation
+
+V043 supersedes the earlier broad descriptions of Step 7's remaining work.
+[The Step 7 reconciliation](SYSTEM-VALIDATION-STEP7-RECONCILIATION-2026-10-18.md)
+identifies exactly four closure items: restore lost ERA/DUP/SYSGEN evidence and
+exercise live PIP endpoints/selected native capability paths. BIOS/error cards,
+monitor/input observations and final acceptance remain broader campaign work.
+This distinction does not waive them or declare overall completion.
+
 ## Remaining-work register
 
 | Coverage | Current disposition | Required closure |
@@ -29,7 +38,7 @@ check does not silently change the independent suite's printed status to PASS.
 | BDOSTEST 0420 | Selected native witness passes in V039 | One controlled Function 10 input line updates the DE buffer; DMA and surrounding guards remain unchanged. Retain final merged-source rerun. |
 | BDOSTEST 0519 | Selected native witness passes in V039 | A/B/A selections expose BDOS DPB/ALV pointers matching the selected BIOS DPH, without fixed addresses or a uniqueness requirement. Retain final merged-source rerun. |
 | Native ECOTEST 0569, 0575 | Selected native witnesses pass in V041 | Resident DIR/ERA/REN/SAVE/TYPE/USER semantics run despite namesake marker COMs; SAVE produces exactly the primed 256-byte page. Private evidence fixtures are retained; caller returns to A0/53K. |
-| Native ECOTEST 0577, 0579 | OPEN: external transcripts | Capture TYPE output as bytes and exercise the ordinary bad-operand/collision/no-space recovery matrix. Visible TYPE text in V041 is not byte-stream qualification. |
+| Native ECOTEST 0577, 0579 | Selected native witnesses pass in V042 | TYPE BIOS-output bytes are captured and compared for text, empty/control/EOF/multi-record fixtures; seven ordinary failures and allocation-full SAVE recover with disk/file audits. Final merged-source reruns remain required. |
 | BIOSTEST/ERRTEST documentary cards | OPEN: per-card reconciliation | Map retained external evidence and fresh suite output to the candidate cards below. Do not count documentary listings as execution, or declare all candidates missing merely from their initial status. |
 | Unavailable-drive card 0154 and interactive physical-error profiles | PROFILE REVIEW | Apply the documented BetterCP/M error/restart contract, including its immediate warm-start behavior. Do not claim the interactive DRI acknowledgement profile passed if no acknowledgement exists. Required recovery/data-safety checks remain required. |
 | Live cpmsim printer and auxiliary reader/punch | OPEN: supported endpoint checks | Exercise the emulator's configured host endpoints and compare exact host bytes, EOF/readiness and routing. V030 controlled device tests do not establish live endpoint operation. |
@@ -43,10 +52,10 @@ check does not silently change the independent suite's printed status to PASS.
 No blanket manual exclusion is approved by this review. Any later exclusion must
 name the card, target, contract, reason and replacement evidence or remaining gap.
 V038 closes the selected native read-only terminal outcomes. The next bounded
-automation work remains for native TYPE byte-stream and ordinary-command
-recovery transcripts. V041 supplies resident-semantic and SAVE witnesses;
-V039 and V040 supply selected native witnesses for the three BDOS documentary
-cards.
+work remains in BIOS/error evidence reconciliation, live device/profile
+closure, the recorded input anomaly review and final merged-source acceptance.
+V039–V042 supply selected native witnesses for the three BDOS documentary
+cards and four ecology procedures; those are not a final clean-source rerun.
 Live host devices and operator observations can then be closed with named profiles.
 
 ## Device basis
