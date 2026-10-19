@@ -9,11 +9,15 @@ from pathlib import Path
 
 from add_cpm_file_to_dmk import add_file, extract_raw
 from build_montezuma_extended_790k import RAW_SIZE, build, crc16
-from run_trs80_command import DEFAULT_EMULATOR, key_args
+from run_trs80_command import DEFAULT_EMULATOR, key_args as matrix_keys
 from run_validation_model4 import audit_files, sha
 from test_dup_operations import probe
 from test_sysgen_install import screen
 from trs80gp_launch import run
+
+
+def key_args(text, delay=25):
+    return matrix_keys(text, delay=delay)
 
 
 def sectors(image, count=160, check_crc=True):

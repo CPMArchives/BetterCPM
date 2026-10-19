@@ -9,7 +9,7 @@ from pathlib import Path
 
 from add_cpm_file_to_dmk import add_file, extract_raw
 from build_montezuma_extended_790k import build
-from run_trs80_command import DEFAULT_EMULATOR, key_args
+from run_trs80_command import DEFAULT_EMULATOR, key_args as matrix_keys
 from run_validation_model4 import audit_files, sha
 from test_model4_copy import files
 from test_sysgen_install import screen
@@ -17,6 +17,10 @@ import test_sysgen_install as installer
 from trs80gp_launch import run
 
 RESERVED = 20480
+
+
+def key_args(text, delay=25):
+    return matrix_keys(text, delay=delay)
 
 
 def main():
