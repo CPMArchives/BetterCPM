@@ -29,10 +29,10 @@ acceptance remains Step 11; do not label this baseline as that final revision.
 
 ## Finite checklist
 
-| Item | Required evidence | Initial status |
+| Item | Required evidence | Current status |
 | --- | --- | --- |
-| S8-01 | Shipped ADM3A, VT52 and ANSI with M4SCRN: dedicated test completion, native screen-memory attributes/position/erase/reset assertions, loaded-pair identity, unload and 53K restoration, shipped-file/filesystem audits | RUNNING: run_validation_model4_monitors.py, three personalities |
-| S8-02 | Same three personalities with ANSISCRN: captured host bytes, software-terminal rendering, protocol-specific queries, parser reset and unload/53K, file/filesystem audits | RUNNING: run_validation_cpmsim_monitors.py |
+| S8-01 | Shipped ADM3A, VT52 and ANSI with M4SCRN: dedicated test completion, native screen-memory attributes/position/erase/reset assertions, loaded-pair identity, unload and 53K restoration, shipped-file/filesystem audits | PASS — V045/V046: all three native pairs |
+| S8-02 | Same three personalities with ANSISCRN: captured host bytes, software-terminal rendering, protocol-specific queries, parser reset and unload/53K, file/filesystem audits | PASS — V045: all three cpmsim pairs |
 | S8-03 | Map documented screen subsets to executable evidence for wrap, scrolling/margins, rendition, cursor, malformed/incomplete sequence handling, switching and backend limits. Reuse current matching binary tests where retained; add only concrete missing checks. Explicitly distinguish Model 4's 80x24 monochrome display and software-terminal oracles from physical-terminal observations | OPEN: contract/evidence matrix |
 | S8-04 | Representative unmodified terminal applications with appropriate configurations: identify original binary/configuration and hashes, actual edit/save/return and independent saved-content checks. Retain native and host-backend evidence as appropriate; shipped TYPE/ED alone do not substitute for third-party application compatibility | OPEN: inspect available WordStar/TE fixtures and adapt qualification without replacing shipped providers |
 | S8-05 | Revisit the unassigned V040 native command-entry anomaly with bounded fresh entry/return checks. Record any physical terminal, keyboard or audible behavior still requiring an operator, with exact profile and reason; no blanket manual PASS or exclusion | OPEN: profile/review |
@@ -112,3 +112,35 @@ The pause fixture also announces `MREG READY` before the harness injects its
 continuation key, preventing a second race while the helper loads. Initial
 results remain partial; native VT52/ANSI are not counted from loaded-pair
 captures alone.
+
+## V046 — native VT52 and ANSI display checks complete
+
+Both remaining native personalities PASS using unchanged shipped providers:
+`bettercpm-v045-r5-native-monitors/vt52-2gk8vx00` and
+`bettercpm-v045-r5-native-monitors/ansi-6luy6xgj`. Their complete result records
+and archive hashes are in the [evidence index](SYSTEM-VALIDATION-STEP8-EVIDENCE-2026-10-19.json).
+
+- VT52: five captures verify loaded VT52/M4SCRN identity, row-5/column-10
+  positioning, tab/right-margin behavior, parser reset, EOL/EOS erasure,
+  test completion, both providers unloaded, 53K restored and a subsequent
+  independent completion witness.
+- ANSI: four captures verify ANSI/M4SCRN identity, positioning, reverse bits
+  only on the selected word, erased suffix, parser reset, test completion,
+  full unload/53K and the independent witness.
+- Read-only reaudits of both retained captures/media PASS. All 28 shipped files
+  other than the declared STARTUP.SUB fixture match baseline hashes and bytes;
+  system tracks remain exactly unchanged, filesystems pass independent checks,
+  and immutable original images retain their qualified hashes. Loaded TPA is
+  50K for VT52/M4SCRN and 49K for ANSI/M4SCRN; both restore 53K on unload.
+- The private guest queue, supplemental one-key pause and completion witness
+  are recorded fixtures. MREG READY gates input only after the pause helper has
+  loaded. Their presence is not a change to the shipped OS or provider payload.
+
+S8-01 and S8-02 are satisfied for the selected six-pair display regression.
+The native archive is saved outside temporary storage, reopened and verified
+against every file hash, including the excluded incomplete retry artifacts.
+Screen-memory assertions are actual native-emulator results, not substituted
+CPU-model or physical-terminal claims. Step 8 remains OPEN for final subset/
+application/profile disposition and S8-05 input/operator review. The guest
+startup fixture avoids initial host command-entry timing; it does not establish
+that the separate V040 input anomaly has been fixed.

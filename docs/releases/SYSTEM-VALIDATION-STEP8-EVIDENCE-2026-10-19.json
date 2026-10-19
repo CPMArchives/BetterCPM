@@ -38,8 +38,22 @@
     "bettercpm-v045-mmconfig/result.json": {
       "sha256": "c93489e732631fb9476200d757e2d951241f75baf54bc6762799bcf29743f66b",
       "status": "PASS"
+    },
+    "bettercpm-v045-r5-native-monitors/vt52-2gk8vx00/result.json": {
+      "sha256": "1bb8c23da61a1cb32a120dc38c52c0c81a69b86e591eac55745e9f54c18b6f74",
+      "status": "PASS"
+    },
+    "bettercpm-v045-r5-native-monitors/ansi-6luy6xgj/result.json": {
+      "sha256": "fd04a6e63dac6071b42063e6a5a1658b40214f15078b3089a51c8dfed7999c52",
+      "status": "PASS"
     }
   },
   "baseline": "V044 source 5f3f3f38bb11 and archive referenced by SYSTEM-VALIDATION-STEP7-CLOSURE-2026-10-19.json",
-  "limits": "Native VT52/ANSI refreshed display and input-anomaly/manual profile review still open; this is not Step 8 closure or release acceptance."
+  "limits": "Step 8 remains open for input-anomaly/operator-profile review and final contract/evidence disposition. Native ADM3A, VT52 and ANSI refreshed display checks all pass. This is not final release acceptance.",
+  "native_archive": {
+    "path": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/validation-evidence/BetterCPM-Step8-V046-native-monitors.tar.gz",
+    "sha256": "7abd7779860997eb952a1efa8b5097d7b45076e8254e5ab3f447905aef1d17df",
+    "bytes": 2895798,
+    "verified_files": 432
+  }
 }

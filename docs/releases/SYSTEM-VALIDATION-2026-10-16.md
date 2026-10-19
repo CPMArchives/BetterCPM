@@ -3494,3 +3494,21 @@ the guest startup-script retry declares its STARTUP.SUB fixture and keeps other
 shipped files unchanged. No production change, Step 8 closure, physical-terminal
 certification or final acceptance is claimed. Detailed scopes and limits are
 recorded in the Step 8 progress entry.
+
+## V046 — remaining native VT52 and ANSI checks PASS
+
+Both native refreshed display cases pass their complete capture and independent
+integrity audits. VT52 verifies positioned text, margins/tab, reset and EOL/EOS
+erasure; ANSI verifies positioned text, selected reverse cells, erased suffix
+and reset. Both complete their shipped exercises, unload personality and
+M4SCRN, restore 53K, and execute an independent witness. The declared startup
+fixture is the only changed shipped file; all 28 other shipped files and system
+tracks remain unchanged, filesystems are clean and immutable baselines match.
+
+The [Step 8 evidence index](SYSTEM-VALIDATION-STEP8-EVIDENCE-2026-10-19.json)
+retains exact result and archive hashes. The new native bundle includes raw
+captures, executed runners, before/after media and audits, and excluded retry
+artifacts. It is saved outside temporary storage and verified per file.
+S8-01/S8-02 now have passing selected three-personality coverage on both targets;
+Step 8 remains open for the final contract/application/profile disposition and
+input/operator review described in its checklist. No production code changed.

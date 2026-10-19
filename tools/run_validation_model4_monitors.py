@@ -93,9 +93,10 @@ def main():
     check=subprocess.run(['fsck.cpm','-T','raw,pcw800','-f','bettercpm-default','-n',str(audit_root/'file-audit/after.raw')],cwd=audit_root/'file-audit',capture_output=True,text=True)
     (w/'filesystem.txt').write_text(check.stdout+check.stderr);assert check.returncode==0
     assert sha(original)==report['sha256']
+    assert extract_raw(original.read_bytes())[:20480]==extract_raw(image.read_bytes())[:20480], 'system tracks changed'
     (w/'result.json').write_text(json.dumps({'status':'PASS','monitor':a.monitor,'baseline_sha256':report['sha256'],
         'emulator_sha256':sha(DEFAULT_EMULATOR),'executed_runner_sha256':sha(w/'executed-runner.py'),'audit_runner_sha256':sha(Path(__file__)),'stages':stages,'system_file_audit':audit,
-        'startup_fixture_replaced':a.scripted_start,'filesystem_status':check.returncode,'scope':'shipped Model 4 monitor/backend pair; selected screen-memory assertions and unload/53K; no audible bell or exhaustive protocol claim'},indent=2)+'\n')
+        'startup_fixture_replaced':a.scripted_start,'system_tracks_unchanged':True,'filesystem_status':check.returncode,'scope':'shipped Model 4 monitor/backend pair; selected screen-memory assertions and unload/53K; no audible bell or exhaustive protocol claim'},indent=2)+'\n')
     print(w,flush=True)
 
 
