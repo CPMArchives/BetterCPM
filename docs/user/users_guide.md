@@ -10582,3 +10582,3676 @@ For detailed information about developing RSXs, consult the *BetterCP/M Develope
 
 ---
 
+# Appendices
+
+# Appendix A — Command Summary
+
+This appendix provides a quick reference to the commands and utilities supplied with BetterCP/M 1.0.
+
+Commands are arranged alphabetically, with a brief description of their purpose and a reference to the section of this manual containing their detailed documentation.
+
+Some commands are available in both resident and transient forms. The resident version is normally executed when you enter the command name. To invoke the transient version explicitly, prefix its name with a colon (`:`) or period (`.`).
+
+For example:
+
+```text
+A>DIR
+A>:DIR
+```
+
+The first invokes resident DIR when available. The second explicitly requests `DIR.COM`.
+
+For an explanation of command syntax, options, and execution conventions, see Chapter 13.
+
+## A.1 Command Summary
+
+| Command | Description | Reference |
+|---|---|---|
+| **CLS** | Clear the console screen. | §15.2 |
+| **CONFIG** | Examine and modify system configuration, including startup settings, drives, disk formats, and the saved IOBYTE. | §16.1 |
+| **COPY** | Copy files between filenames, drives, and user areas. The transient version provides verification, backup, and additional file-selection options. | §14.5 |
+| **CPX** | List, load, and unload Command Processor Extensions. | §17.3 |
+| **DIR** | Display directory contents. The transient version provides sorting, sizes, paging, and additional display options. | §14.1 |
+| **DUP** | Format, copy, and check disks. | §16.4 |
+| **ERA** | Erase files. The transient version provides additional confirmation, protection, and destructive-erasure options. | §14.2 |
+| **GET** | Load a file into memory without executing it. | §15.5 |
+| **GO** | Execute a program image beginning at address `0100H`. | §15.6 |
+| **JUMP** | Transfer control to a specified memory address. | §15.7 |
+| **MOVE** | Move files between filenames, drives, and user areas, removing the source after successful copying. | §14.6 |
+| **PEEK / P** | Display memory contents in hexadecimal and ASCII form. | §15.8 |
+| **POKE** | Modify memory by storing hexadecimal bytes or literal text. | §15.9 |
+| **REN** | Rename files or change their file types. The transient version provides previews, confirmation, and additional options. | §14.3 |
+| **RSX** | List, load, and unload Resident System Extensions. | §17.4 |
+| **SAVE** | Save a specified number of 256-byte memory pages to a file. | §15.4 |
+| **STAT** | Display disk and file information, examine attributes, and manage supported logical-device assignments. | §16.2 |
+| **SUBMIT** | Execute commands stored in a `.SUB` batch file. | §17.1 |
+| **SYSGEN** | Install BetterCP/M onto a prepared disk or save an installed system image to a package file. | §16.5 |
+| **TIME** | Display the system date and time, identify the clock provider, or request a clock-setting operation. | §16.3 |
+| **TYPE** | Display text files. The transient version provides bidirectional paging and additional display options. | §14.4 |
+| **USER** | Select the current user area. | §15.1 |
+| **VER** | Display BetterCP/M version and system-identification information. | §15.3 |
+| **XSUB** | Supply submitted input to compatible programs through buffered console input. | §17.2 |
+
+## A.2 Commands by Function
+
+The following table groups commands according to their principal purpose.
+
+| Function | Commands |
+|---|---|
+| **File and directory management** | DIR, ERA, REN, TYPE, COPY, MOVE |
+| **Drive and user-area selection** | USER, direct drive/user commands |
+| **Console and system identification** | CLS, VER |
+| **Memory inspection and modification** | GET, GO, JUMP, PEEK, POKE, SAVE |
+| **System configuration** | CONFIG, STAT |
+| **Disk maintenance** | DUP, SYSGEN |
+| **Date and time** | TIME |
+| **Batch processing** | SUBMIT, XSUB |
+| **Resident extension management** | CPX, RSX |
+
+Some utilities serve more than one purpose. STAT, for example, provides both file information and logical-device assignment facilities.
+
+## A.3 Resident and Transient Commands
+
+BetterCP/M provides several commands in both resident and transient forms.
+
+| Command | Resident | Transient |
+|---|---|---|
+| CLS | Yes | `CLS.COM` |
+| COPY | Yes | `COPY.COM` |
+| DIR | Yes | `DIR.COM` |
+| ERA | Yes | `ERA.COM` |
+| REN | Yes | `REN.COM` |
+| TYPE | Yes | `TYPE.COM` |
+| VER | Yes | `VER.COM` |
+
+The resident versions are normally supplied by `RCP.CPX`.
+
+Transient versions may provide additional options or remain available when the resident command package is not loaded.
+
+To invoke a transient version explicitly, use:
+
+```text
+A>:COMMAND
+```
+
+or:
+
+```text
+A>.COMMAND
+```
+
+For example:
+
+```text
+A>:TYPE README.TXT /P
+```
+
+requests the transient TYPE utility.
+
+BetterCP/M 1.0 does not automatically switch to a transient version when a resident command encounters an unsupported option.
+
+### Core Resident Commands
+
+The following commands are provided directly by the command processor or its standard resident environment:
+
+| Command | Purpose |
+|---|---|
+| GET | Load memory |
+| GO | Execute at `0100H` |
+| JUMP | Execute at a specified address |
+| PEEK / P | Examine memory |
+| POKE | Modify memory |
+| SAVE | Save memory to a file |
+| USER | Select a user area |
+
+These commands do not require corresponding transient `.COM` files.
+
+## A.4 Common Command Forms
+
+The following examples illustrate frequently used commands.
+
+| Task | Command |
+|---|---|
+| List files | `DIR` |
+| List `.COM` files | `DIR *.COM` |
+| List files in B3 | `DIR B3:` |
+| Display a text file | `TYPE README.TXT` |
+| Copy a file | `COPY FILE.TXT B:` |
+| Copy all `.ASM` files | `COPY *.ASM B:` |
+| Move a file | `MOVE FILE.TXT B:` |
+| Rename a file | `REN NEW.TXT=OLD.TXT` |
+| Erase a file | `ERA OLD.TXT` |
+| Select user area 3 | `USER 3` |
+| Select drive B, user 3 | `B3:` |
+| Clear the screen | `CLS` |
+| Display the system version | `VER` |
+| Execute a batch file | `SUBMIT BUILD` |
+| List installed CPXs | `CPX LIST` |
+| List installed RSXs | `RSX LIST` |
+| Load an RSX | `RSX LOAD ADM3A` |
+| Display configuration | `CONFIG /SHOW` |
+| Display the time | `TIME` |
+| Identify the clock provider | `TIME /PROVIDER` |
+| Check a disk | `DUP /CHECK B:` |
+| Format a disk | `DUP /FORMAT B:` |
+| Copy a disk | `DUP /COPY A: B:` |
+| Install the operating system | `SYSGEN A: B:` |
+| Save a system image | `SYSGEN A:` |
+| Display memory | `PEEK 100` |
+| Modify memory | `POKE 100 00` |
+| Load a program image | `GET PROGRAM.COM` |
+| Execute a loaded program | `GO` |
+| Save memory | `SAVE 10 PROGRAM.COM` |
+
+These examples show common forms only. Consult the corresponding command reference for additional options and restrictions.
+
+## A.5 Utility Version Information
+
+BetterCP/M utilities generally support `/VER` to display their version and build information.
+
+For example:
+
+```text
+A>CONFIG /VER
+A>DUP /VER
+A>SYSGEN /VER
+```
+
+For utilities available in both resident and transient forms, the two implementations may report different build numbers.
+
+For example:
+
+```text
+A>DIR /VER
+A>:DIR /VER
+```
+
+identifies the resident and transient implementations respectively.
+
+The VER command itself identifies the operating system:
+
+```text
+A>VER
+```
+
+For more information, see Section 13.4, *Getting Help and Version Information*.
+
+## A.6 Additional Utilities
+
+The tables above cover the commands documented in Part II of this manual. They are not intended to be a complete inventory of every program distributed with BetterCP/M.
+
+The distribution also includes development tools, diagnostic programs, terminal tests, and supporting utilities.
+
+Examples include:
+
+| Utility | Purpose |
+|---|---|
+| **ASM** | Assemble 8080 assembly-language source programs. |
+| **DDT** | Debug machine-language programs. |
+| **ED** | Edit text files using the traditional CP/M context-editor interface. |
+| **LOAD** | Convert Intel hexadecimal object files into executable `.COM` files. |
+| **PIP** | Transfer and copy files and device data using CP/M's traditional PIP conventions. |
+| **SYSBUILD** | Construct BetterCP/M system-image packages from operating-system build products. |
+| **ADMTST** | Test the supported ADM-3A terminal facilities. |
+| **VT52TST** | Test the supported VT52 terminal facilities. |
+| **ANSITST** | Test the supported ANSI terminal facilities. |
+
+These programs have more specialized purposes than the general commands covered in Part II.
+
+Some warrant separate documentation, particularly the development tools and more substantial utilities.
+
+The documentation accompanying the BetterCP/M distribution provides further information about their use.
+
+---
+
+# Appendix B — Command-Line Editing Keys
+
+BetterCP/M provides command-line editing and command-history facilities that make it easier to enter, correct, and reuse commands.
+
+Instead of retyping an entire command after making a mistake, you can move the cursor to the error, correct it, and continue typing. You can also recall previously entered commands, modify them, and execute them again.
+
+BetterCP/M uses editing conventions familiar to users of WordStar and other CP/M programs, although some assignments differ.
+
+This appendix summarizes the command-line editing facilities described in Chapter 5.
+
+## B.1 Entering and Editing Commands
+
+Commands are entered at the BetterCP/M command prompt.
+
+For example:
+
+```text
+A>COPY REPORT.TXT B:
+```
+
+Press **Return** to execute the command.
+
+Before pressing Return, you can edit the command line. Editing changes only the command being entered; it does not affect files or execute any part of the command.
+
+### Basic Editing Operations
+
+The command editor provides facilities for moving the cursor, inserting characters, and deleting unwanted text.
+
+For example, suppose you've typed:
+
+```text
+A>COPY REPROT.TXT B:
+```
+
+You can move the cursor back to the misspelled filename, correct it to `REPORT.TXT`, and then press Return.
+
+You don't need to erase and reenter the entire command.
+
+### Editing-Key Conventions
+
+BetterCP/M follows several conventions familiar to users of WordStar-style editors.
+
+However, the command editor is not a complete WordStar editor, and its key assignments should not be assumed to match WordStar in every respect.
+
+The exact assignments for cursor movement and line editing should be taken from the command processor's supported keyboard interface.
+
+The key combinations listed below are those established for BetterCP/M 1.0.
+
+## B.2 Command History
+
+BetterCP/M maintains a history of previously entered commands.
+
+You can recall an earlier command, edit it, and execute it again without retyping the entire line.
+
+The command-history controls in BetterCP/M 1.0 are:
+
+| Key | Function |
+|---|---|
+| **Ctrl-K** | Recall the previous command |
+| **Ctrl-J** | Move forward to a newer command |
+| **Return** | Execute the displayed command |
+
+For example, suppose you've entered:
+
+```text
+A>COPY REPORT.TXT B:
+```
+
+To repeat the command, press Ctrl-K to recall it.
+
+You can then press Return to execute it again or edit the command before executing it.
+
+To move farther back through the history, press Ctrl-K again.
+
+To move toward more recently entered commands, press Ctrl-J.
+
+### Arrow Keys
+
+Depending on your computer's keyboard and terminal configuration, the Up and Down arrow keys may also provide command-history navigation.
+
+However, **arrow-key operation is platform-dependent and is not guaranteed**.
+
+On some CP/M systems, the cursor keys generate control characters associated with WordStar conventions, such as Ctrl-E for Up and Ctrl-X for Down.
+
+BetterCP/M 1.0 uses Ctrl-K and Ctrl-J for command-history navigation.
+
+Consequently, an Up or Down arrow key that generates Ctrl-E or Ctrl-X will not necessarily invoke the corresponding history function.
+
+For reliable command-history navigation, use Ctrl-K and Ctrl-J.
+
+### Editing Recalled Commands
+
+A recalled command can be edited just like a newly entered command.
+
+For example, suppose the history contains:
+
+```text
+A>COPY REPORT.TXT B:
+```
+
+You could recall it, change the destination drive, and execute:
+
+```text
+A>COPY REPORT.TXT C:
+```
+
+The recalled command is not executed until you press Return.
+
+### History Persistence
+
+Command history is maintained by the command environment rather than by individual transient programs.
+
+It remains available when a program finishes and returns control to the command processor.
+
+It also survives an ordinary warm boot.
+
+A cold boot begins with an empty command history.
+
+History storage is limited. As new commands are entered, older entries are eventually discarded.
+
+## B.3 Control Keys and Terminal Differences
+
+Control-key combinations are entered by holding Ctrl while pressing the corresponding key.
+
+For example, Ctrl-K means holding Ctrl and pressing K.
+
+On most terminals, control-key combinations produce character codes rather than distinct keyboard events.
+
+This distinction matters because different keyboards and terminal emulators may generate different codes for the same physical key.
+
+### Physical Keys and Control Characters
+
+An arrow key is not necessarily equivalent to a particular control-key combination.
+
+For example, one computer may generate a single control character when its Up arrow is pressed, while a terminal emulator may transmit a sequence of several characters.
+
+BetterCP/M can recognize a key only if the console environment supplies a representation that its command editor understands.
+
+Consequently, the behavior of physical cursor keys can vary between platforms.
+
+### WordStar Conventions
+
+Many CP/M applications use WordStar-style cursor controls.
+
+Common WordStar movement assignments include:
+
+| Key | Traditional WordStar function |
+|---|---|
+| Ctrl-E | Cursor up |
+| Ctrl-X | Cursor down |
+| Ctrl-S | Cursor left |
+| Ctrl-D | Cursor right |
+
+These conventions are useful when working with software that recognizes them.
+
+They should not, however, be confused with BetterCP/M's command-history assignments.
+
+In BetterCP/M 1.0, Ctrl-K and Ctrl-J are the documented history controls.
+
+## B.4 Keyboard Differences Between Platforms
+
+BetterCP/M runs on computers with different keyboard arrangements.
+
+Some provide dedicated cursor keys, while others rely heavily on control-key combinations.
+
+Terminal emulators may also translate host keyboard input before passing it to the emulated computer.
+
+For example, a modern keyboard may provide characters or keys that did not exist on the original computer.
+
+The emulator must translate those inputs into codes recognized by the emulated hardware or operating system.
+
+### TRS-80 Model 4 Keyboard
+
+The TRS-80 Model 4 keyboard lacks several punctuation characters found on modern keyboards.
+
+BetterCP/M retains Montezuma Micro-style keyboard combinations for entering these characters.
+
+| Character | Model 4 key combination |
+|---|---|
+| `[` | Ctrl-8 |
+| `]` | Ctrl-9 |
+| `{` | Ctrl-comma |
+| `}` | Ctrl-period |
+| `\` | Ctrl-/ |
+| `\|` | Ctrl-1 |
+| `~` | Ctrl-3 |
+| `^` | Ctrl-5 |
+| `` ` `` | Ctrl-7 |
+| `_` | Ctrl-minus |
+
+These combinations refer to the original Model 4 keyboard.
+
+When using an emulator, the host keyboard may require different physical keys to produce the corresponding Model 4 key signals.
+
+Shift may also be held with the indicated control-key combinations.
+
+### Terminal Emulators
+
+When using BetterCP/M through a terminal emulator, the emulator's keyboard configuration can affect which control characters reach the operating system.
+
+If a key does not behave as expected, check the terminal emulator's keyboard settings.
+
+In particular, do not assume that its arrow keys produce the same control codes as the original computer's cursor keys.
+
+For command-history navigation, Ctrl-K and Ctrl-J remain the documented BetterCP/M 1.0 controls.
+
+## B.5 Quick Reference
+
+The following table summarizes the established command-entry and history controls.
+
+| Key | Function |
+|---|---|
+| Return | Execute the current command |
+| Ctrl-K | Previous command in history |
+| Ctrl-J | Next command in history |
+| Up arrow | May recall an earlier command, depending on platform |
+| Down arrow | May select a newer command, depending on platform |
+
+Additional cursor-editing and deletion operations are available through the command editor, but their precise key assignments should be verified against the BetterCP/M 1.0 command-processor implementation before being added to this reference.
+
+For the control characters used by CP/M programs and terminal devices, see Appendix C, *Control Characters and Keyboard Conventions*.
+
+---
+
+# Appendix C — Control Characters and Keyboard Conventions
+
+CP/M was designed to operate with a wide variety of keyboards, consoles, printers, and terminals. Because these devices differed considerably, many programs relied on ASCII control characters rather than dedicated function keys.
+
+BetterCP/M retains the traditional CP/M character-oriented console interface while providing additional facilities for command-line editing, command history, and terminal support.
+
+This appendix describes the control characters commonly encountered when using BetterCP/M, explains their relationship to keyboard input, and identifies important differences between conventional CP/M behavior and BetterCP/M's command environment.
+
+For command-line editing keys, see Appendix B. For information about terminal emulation, see Chapter 9, *Terminal Support*.
+
+## C.1 Control Characters
+
+A control character is a character code traditionally used to perform an operation rather than display a printable symbol.
+
+ASCII defines 32 control characters, numbered `00H` through `1FH`, together with the Delete character (`7FH`).
+
+These include familiar operations such as carriage return, line feed, backspace, and horizontal tab.
+
+On many keyboards, a control character can be entered by holding the Ctrl key while pressing a letter.
+
+For example:
+
+```text
+Ctrl-M
+```
+
+produces ASCII carriage return (`0DH`) on a conventional ASCII keyboard.
+
+Similarly:
+
+```text
+Ctrl-J
+```
+
+produces ASCII line feed (`0AH`).
+
+The notation `^M` is often used as an abbreviation for Ctrl-M, particularly in CP/M documentation and program displays.
+
+Thus, `^M`, Ctrl-M, and ASCII `0DH` refer to the same character code.
+
+### ASCII Control Character Table
+
+| Hex | Decimal | Name | Common notation |
+|---|---:|---|---|
+| 00 | 0 | Null | NUL, ^@ |
+| 01 | 1 | Start of Heading | SOH, ^A |
+| 02 | 2 | Start of Text | STX, ^B |
+| 03 | 3 | End of Text | ETX, ^C |
+| 04 | 4 | End of Transmission | EOT, ^D |
+| 05 | 5 | Enquiry | ENQ, ^E |
+| 06 | 6 | Acknowledge | ACK, ^F |
+| 07 | 7 | Bell | BEL, ^G |
+| 08 | 8 | Backspace | BS, ^H |
+| 09 | 9 | Horizontal Tab | HT, ^I |
+| 0A | 10 | Line Feed | LF, ^J |
+| 0B | 11 | Vertical Tab | VT, ^K |
+| 0C | 12 | Form Feed | FF, ^L |
+| 0D | 13 | Carriage Return | CR, ^M |
+| 0E | 14 | Shift Out | SO, ^N |
+| 0F | 15 | Shift In | SI, ^O |
+| 10 | 16 | Data Link Escape | DLE, ^P |
+| 11 | 17 | Device Control 1 | DC1, ^Q |
+| 12 | 18 | Device Control 2 | DC2, ^R |
+| 13 | 19 | Device Control 3 | DC3, ^S |
+| 14 | 20 | Device Control 4 | DC4, ^T |
+| 15 | 21 | Negative Acknowledge | NAK, ^U |
+| 16 | 22 | Synchronous Idle | SYN, ^V |
+| 17 | 23 | End of Transmission Block | ETB, ^W |
+| 18 | 24 | Cancel | CAN, ^X |
+| 19 | 25 | End of Medium | EM, ^Y |
+| 1A | 26 | Substitute | SUB, ^Z |
+| 1B | 27 | Escape | ESC, ^[ |
+| 1C | 28 | File Separator | FS, ^\ |
+| 1D | 29 | Group Separator | GS, ^] |
+| 1E | 30 | Record Separator | RS, ^^ |
+| 1F | 31 | Unit Separator | US, ^_ |
+| 7F | 127 | Delete | DEL, ^? |
+
+The names in this table are the standard ASCII names. They do not imply that BetterCP/M assigns a special function to every character.
+
+The meaning of a control character depends on the program or console facility receiving it.
+
+For example, Ctrl-K has a particular meaning in BetterCP/M's command-history editor, but another program may interpret the same character differently.
+
+## C.2 Common CP/M Control Characters
+
+Several control characters have established uses in the traditional CP/M operating environment.
+
+These conventions are important because many CP/M applications expect them.
+
+### Ctrl-C — Interrupt or Warm Boot
+
+Ctrl-C (`03H`) is traditionally associated with interrupting an operation or returning to the command processor.
+
+In conventional CP/M, its effect depends on the console-input function and the program's handling of keyboard input.
+
+BetterCP/M retains the familiar Ctrl-C convention while allowing individual utilities to provide their own interruption behavior.
+
+For example, Ctrl-C can interrupt a DUP operation between disk operations.
+
+In other programs, Ctrl-C may terminate the current command and return control to the command processor.
+
+However, **Ctrl-C does not have identical behavior in every program**.
+
+Some utilities interpret it as part of their own interactive controls.
+
+For example, transient TYPE.COM uses Ctrl-C to advance to the next page while waiting at its paging prompt.
+
+Consult the individual utility reference when the distinction matters.
+
+### Ctrl-H — Backspace
+
+Ctrl-H (`08H`) is the ASCII backspace character.
+
+It is commonly used by character-oriented consoles to move the cursor backward or erase a character during input.
+
+The precise effect depends on the input routine and the console environment.
+
+Some keyboards provide a Backspace key that generates Ctrl-H. Others may generate DEL (`7FH`).
+
+Applications may recognize one or both.
+
+### Ctrl-I — Horizontal Tab
+
+Ctrl-I (`09H`) is the ASCII horizontal-tab character.
+
+In text files and console output, a tab normally advances to the next tab stop.
+
+The tab width depends on the program or terminal.
+
+For example, BetterCP/M's transient TYPE utility can expand tabs to eight-column stops using:
+
+```text
+A>:TYPE README.TXT /T
+```
+
+With `/CTL`, TYPE displays a tab as `^I` instead of expanding it.
+
+### Ctrl-J — Line Feed
+
+Ctrl-J (`0AH`) is ASCII line feed.
+
+Historically, line feed advances the output position to the next line without necessarily returning the cursor to the beginning of that line.
+
+In BetterCP/M 1.0's command editor, Ctrl-J is also assigned to moving forward through command history.
+
+This is a command-editor convention, not a redefinition of ASCII line feed.
+
+Other programs may continue to interpret Ctrl-J as line feed.
+
+### Ctrl-M — Carriage Return
+
+Ctrl-M (`0DH`) is ASCII carriage return.
+
+Carriage return traditionally moves the output position to the beginning of the current line.
+
+On CP/M consoles, pressing Return normally submits the current command or input line.
+
+Text files commonly use carriage return followed by line feed (`0DH 0AH`) to mark the end of a line.
+
+### Ctrl-P — Printer Echo
+
+In conventional CP/M, Ctrl-P is associated with printer echo, directing console output to the list device as well as the console.
+
+This behavior depends on the operating system's console handling and the available list-device support.
+
+Programs that bypass the normal console-output facilities may not participate in printer echo.
+
+The actual destination of list output depends on the BIOS and the current logical-device assignment.
+
+### Ctrl-S and Ctrl-Q — Output Control
+
+Ctrl-S (`13H`) and Ctrl-Q (`11H`) are commonly associated with pausing and resuming character output.
+
+They are also known as XOFF and XON in serial communications.
+
+In conventional CP/M console operation, Ctrl-S is commonly used to suspend scrolling output, with Ctrl-Q or another accepted key resuming it.
+
+The precise behavior depends on the console driver and application.
+
+BetterCP/M applications may also assign these keys to their own operations.
+
+For example, transient TYPE.COM uses Ctrl-Q to quit its interactive paging mode.
+
+Consequently, these characters should not be assumed to have one universal meaning throughout the system.
+
+### Ctrl-Z — End of Text
+
+Ctrl-Z (`1AH`) is traditionally used as an end-of-text marker in CP/M text files.
+
+CP/M stores files in 128-byte logical records, so the physical end of a text file does not always coincide with the end of its meaningful text.
+
+A Ctrl-Z character can mark the point at which text ends.
+
+For example, TYPE stops displaying a text file when it encounters the raw Ctrl-Z end-of-text marker.
+
+This convention is particularly important when transferring text files between CP/M and other operating systems.
+
+Not every CP/M file uses Ctrl-Z. Binary files may contain the value `1AH` as ordinary data.
+
+### Escape
+
+Escape (`1BH`) is used by many terminal-control protocols.
+
+For example, VT52 and ANSI/VT100 terminals use escape sequences to request operations such as cursor movement and screen clearing.
+
+An escape sequence consists of the Escape character followed by additional characters identifying the requested operation.
+
+BetterCP/M's terminal-monitor extensions interpret the supported sequences for their respective terminal personalities.
+
+See Chapter 9 for more information.
+
+## C.3 BetterCP/M Command-Line Control Keys
+
+BetterCP/M's command processor provides editing and history facilities beyond the traditional CP/M command line.
+
+Some of these facilities use control characters that also have conventional ASCII meanings.
+
+### Command History
+
+BetterCP/M 1.0 uses the following keys for command-history navigation:
+
+| Key | ASCII code | BetterCP/M command-editor function |
+|---|---|---|
+| Ctrl-K | 0BH | Recall an earlier command |
+| Ctrl-J | 0AH | Move toward newer commands |
+
+These assignments apply to the BetterCP/M command editor.
+
+They do not change the interpretation of these characters by ordinary CP/M applications.
+
+For example, a program reading console input through its own routines may treat Ctrl-J as line feed rather than as a history command.
+
+### Arrow Keys
+
+Some keyboards and terminal configurations may allow the Up and Down arrow keys to navigate command history.
+
+However, this behavior is platform-dependent.
+
+In particular, keyboards using WordStar-style cursor conventions may generate Ctrl-E for Up and Ctrl-X for Down.
+
+These are not the command-history assignments used by BetterCP/M 1.0.
+
+For reliable command-history navigation, use Ctrl-K and Ctrl-J.
+
+### Command Submission
+
+Pressing Return submits the command currently displayed at the prompt.
+
+Until Return is pressed, the command can be edited.
+
+Once submitted, BetterCP/M interprets the command name and arguments and begins the requested operation.
+
+For a description of the available command-line editing facilities, see Appendix B.
+
+## C.4 WordStar Keyboard Conventions
+
+WordStar was one of the most influential applications in the CP/M environment, and its keyboard conventions were adopted by many other programs.
+
+Because early computers often lacked dedicated cursor keys, WordStar used control-key combinations for movement and editing.
+
+The familiar cursor movement keys are:
+
+| Key | WordStar function |
+|---|---|
+| Ctrl-E | Cursor up |
+| Ctrl-X | Cursor down |
+| Ctrl-S | Cursor left |
+| Ctrl-D | Cursor right |
+
+These assignments form a convenient arrangement on a conventional keyboard.
+
+Other WordStar commands use combinations of control keys for operations such as moving by words, deleting text, and navigating through documents.
+
+### WordStar and BetterCP/M
+
+BetterCP/M uses some WordStar-style conventions in its command-line editor, but it is not a WordStar implementation.
+
+In particular, BetterCP/M 1.0 uses Ctrl-K and Ctrl-J for command-history navigation rather than Ctrl-E and Ctrl-X.
+
+Applications running under BetterCP/M retain their own keyboard conventions.
+
+For example, a WordStar-compatible editor may continue to use Ctrl-E and Ctrl-X for vertical cursor movement.
+
+The operating system does not require applications to adopt its command-history assignments.
+
+### Application-Specific Key Assignments
+
+Control characters can have different meanings in different programs.
+
+For example:
+
+| Key | Possible application-specific meaning |
+|---|---|
+| Ctrl-C | Interrupt, cancel, or another program-defined action |
+| Ctrl-J | Line feed or BetterCP/M history navigation |
+| Ctrl-K | WordStar command prefix or BetterCP/M history navigation |
+| Ctrl-Q | WordStar command prefix, flow control, or TYPE.COM quit |
+| Ctrl-S | Cursor left or output suspension |
+| Ctrl-X | Cursor down or another program-defined action |
+
+These differences are normal in the CP/M environment.
+
+When using an application, follow the keyboard conventions documented for that application.
+
+## C.5 Terminal Control Sequences
+
+Many CP/M applications use control sequences to manage full-screen displays.
+
+These sequences are distinct from ordinary command-line editing keys.
+
+A terminal-control sequence is a series of characters sent to the console to request an operation such as moving the cursor, clearing the screen, or changing a display attribute.
+
+### ADM-3A
+
+ADM-3A-compatible applications use the control sequences associated with the Lear Siegler ADM-3A terminal.
+
+BetterCP/M provides an ADM-3A terminal personality through:
+
+```text
+ADM3A.RSX
+```
+
+The supported implementation follows the Montezuma Micro-style ADM-3A conventions used by compatible TRS-80 Model 4 CP/M applications.
+
+### VT52
+
+VT52-compatible applications use escape sequences associated with the DEC VT52 terminal.
+
+BetterCP/M provides:
+
+```text
+VT52.RSX
+```
+
+This interprets the supported VT52 control sequences and passes the corresponding display operations to the installed screen backend.
+
+### ANSI/VT100
+
+ANSI and VT100-compatible applications commonly use escape sequences beginning with Escape followed by additional control characters.
+
+BetterCP/M provides:
+
+```text
+ANSI.RSX
+```
+
+This supports a useful subset of ANSI/VT100 terminal operations.
+
+It does not provide complete VT100 emulation.
+
+### Terminal Personalities and Screen Backends
+
+BetterCP/M separates terminal personalities from screen backends.
+
+The terminal personality determines which control sequences are recognized.
+
+The screen backend determines how the requested operations are performed on the computer's display.
+
+For example:
+
+```text
+A>RSX LOAD M4SCRN
+A>RSX LOAD VT52
+```
+
+establishes the VT52 environment using the TRS-80 Model 4 screen backend.
+
+For more information about supported terminal operations, see Chapter 9.
+
+## C.6 Keyboard Differences Between Platforms
+
+BetterCP/M supports computers and emulated environments with different keyboard arrangements.
+
+Some computers provide dedicated cursor keys, while others rely primarily on control-key combinations.
+
+Modern terminal emulators may translate host keyboard input into codes appropriate for the emulated computer.
+
+Consequently, the same physical key may produce different character codes on different systems.
+
+### TRS-80 Model 4
+
+The TRS-80 Model 4 keyboard lacks several punctuation characters found on modern keyboards.
+
+BetterCP/M retains Montezuma Micro-style keyboard combinations for entering these characters.
+
+| Character | Model 4 key combination |
+|---|---|
+| `[` | Ctrl-8 |
+| `]` | Ctrl-9 |
+| `{` | Ctrl-comma |
+| `}` | Ctrl-period |
+| `\` | Ctrl-/ |
+| `\|` | Ctrl-1 |
+| `~` | Ctrl-3 |
+| `^` | Ctrl-5 |
+| `` ` `` | Ctrl-7 |
+| `_` | Ctrl-minus |
+
+These combinations refer to the original Model 4 keyboard.
+
+An emulator may require different physical host keys to produce the corresponding Model 4 key signals.
+
+The translation depends on the emulator's keyboard configuration.
+
+### Terminal Emulators
+
+On systems using a terminal emulator, cursor keys may generate multi-character escape sequences rather than individual ASCII control characters.
+
+For example, an Up arrow might transmit an escape sequence instead of Ctrl-E.
+
+Whether BetterCP/M recognizes that sequence depends on the console environment.
+
+A terminal personality that interprets display-control sequences does not necessarily provide corresponding keyboard translation.
+
+The two facilities should not be confused.
+
+### When a Key Doesn't Work
+
+If a keyboard command does not behave as expected, first determine whether the problem occurs at the BetterCP/M command prompt or within an application.
+
+If it occurs at the command prompt, check the command editor's supported key assignments.
+
+If it occurs within an application, check that application's keyboard configuration.
+
+For full-screen applications, also verify that the appropriate terminal personality is loaded.
+
+When using an emulator, examine its keyboard-mapping settings.
+
+## C.7 Control Characters in Text Files
+
+Control characters can also appear as data within files.
+
+This is particularly common in CP/M text files, which often use carriage return and line feed to separate lines and Ctrl-Z to mark the end of meaningful text.
+
+### Line Endings
+
+CP/M text files conventionally use:
+
+```text
+0DH 0AH
+```
+
+to mark the end of a line.
+
+These are carriage return and line feed.
+
+This convention is also commonly called CR/LF.
+
+When transferring text files between CP/M and other operating systems, line-ending differences may need to be considered.
+
+### End-of-Text Marker
+
+The Ctrl-Z character (`1AH`) traditionally marks the end of meaningful text.
+
+For example, a file may contain:
+
+```text
+FIRST LINE<CR><LF>
+SECOND LINE<CR><LF>
+<Ctrl-Z>
+```
+
+The Ctrl-Z marker indicates that the remaining bytes in the file's final record are not part of the text.
+
+### Displaying Control Characters
+
+BetterCP/M's transient TYPE utility provides `/CTL` for displaying control characters in readable form.
+
+For example:
+
+```text
+A>:TYPE README.TXT /CTL
+```
+
+This displays control characters using caret notation.
+
+A tab appears as `^I`, while a form feed appears as `^L`.
+
+The raw Ctrl-Z end-of-text marker still terminates the display rather than appearing as ordinary file content.
+
+For additional information, see Section 14.4, *TYPE*.
+
+---
+
+# Appendix D — File Attributes and File Specifications
+
+BetterCP/M retains the familiar CP/M 2.2 file-naming conventions while extending the ways in which files can be selected and managed.
+
+In conventional CP/M, a file is identified by its name, file type, drive, and user area. BetterCP/M preserves these conventions and adds facilities for selecting files across multiple user areas, combining drive/user specifications, and filtering files according to their attributes.
+
+These extensions are particularly useful when working with large collections of files, performing backups, or managing files distributed across several user areas.
+
+This appendix describes BetterCP/M's file specifications, wildcard conventions, drive/user selectors, and file attributes. It also explains how these facilities are used by commands such as DIR, ERA, REN, COPY, MOVE, TYPE, and STAT.
+
+For an introduction to working with files, see Chapter 4, *Working with Drives and Files*. For the exact syntax accepted by individual utilities, consult Part II, *Command and Utility Reference*.
+
+## D.1 File Names and File Types
+
+BetterCP/M uses the standard CP/M 8.3 filename convention.
+
+A filename consists of a name containing up to eight characters and an optional file type containing up to three characters.
+
+The name and type are separated by a period.
+
+For example:
+
+```text
+REPORT.TXT
+PROGRAM.COM
+SOURCE.ASM
+BACKUP.BAK
+```
+
+The portion before the period is the filename. The portion after the period is the file type, sometimes called the extension.
+
+A file type is optional.
+
+For example:
+
+```text
+README
+```
+
+is a valid filename without a file type.
+
+### Letter Case
+
+BetterCP/M treats filenames without regard to letter case.
+
+For example:
+
+```text
+REPORT.TXT
+report.txt
+Report.Txt
+```
+
+all identify the same CP/M filename.
+
+For consistency, this manual generally displays filenames in uppercase.
+
+### File Types
+
+CP/M does not require every file type to have a particular meaning, but several conventions are widely used.
+
+| File type | Common purpose |
+|---|---|
+| `.COM` | Executable transient program |
+| `.ASM` | Assembly-language source |
+| `.HEX` | Intel hexadecimal object file |
+| `.SUB` | SUBMIT command file |
+| `.TXT` | Text file |
+| `.DOC` | Documentation |
+| `.BAK` | Backup copy |
+| `.SYS` | System-related file |
+| `.RSX` | BetterCP/M Resident System Extension |
+| `.CPX` | BetterCP/M Command Processor Extension |
+
+These conventions help identify a file's intended purpose, but the file type alone does not guarantee that its contents have the expected format.
+
+For example, renaming a text file to `.COM` does not make it an executable program.
+
+### Filename Restrictions
+
+File specifications must conform to CP/M's filename rules.
+
+Names longer than eight characters or file types longer than three characters are invalid.
+
+BetterCP/M's file-selection facilities also distinguish between literal filenames and wildcard patterns.
+
+Characters used as wildcard operators cannot be treated as ordinary filename characters in a file-selection expression.
+
+When a command rejects a filename, check its length, punctuation, and any wildcard characters.
+
+## D.2 Drive and User-Area Specifications
+
+CP/M organizes files by drive and user area.
+
+A drive is identified by a letter, such as `A:` or `B:`.
+
+A user area is identified by a number.
+
+BetterCP/M supports user areas 0 through 31.
+
+### Drive Specifications
+
+To identify a file on drive B:
+
+```text
+B:REPORT.TXT
+```
+
+If the user area is omitted, the current user area is used.
+
+For example, if the current user area is 3, the specification:
+
+```text
+B:REPORT.TXT
+```
+
+refers to `REPORT.TXT` on drive B, user area 3.
+
+### User-Area Specifications
+
+BetterCP/M allows a user area to be specified directly with the drive.
+
+For example:
+
+```text
+B3:REPORT.TXT
+```
+
+identifies `REPORT.TXT` on drive B, user area 3.
+
+A user-area specification can also be used without a drive letter:
+
+```text
+3:REPORT.TXT
+```
+
+This refers to user area 3 on the current drive.
+
+### Drive/User Abbreviations
+
+BetterCP/M uses the term **drive/user**, abbreviated **DU**, for a particular drive and user-area combination.
+
+For example:
+
+| Specification | Meaning |
+|---|---|
+| `A0:` | Drive A, user area 0 |
+| `A3:` | Drive A, user area 3 |
+| `B0:` | Drive B, user area 0 |
+| `B17:` | Drive B, user area 17 |
+| `3:` | User area 3 on the current drive |
+| `B:` | Drive B, current user area |
+
+When no drive or user area is specified, the current drive/user is used.
+
+### Changing the Current Drive/User
+
+You can change the current drive and user area directly at the command prompt.
+
+For example:
+
+```text
+A>B:
+B>
+```
+
+selects drive B.
+
+To select user area 3:
+
+```text
+B>3:
+B3>
+```
+
+To select both at once:
+
+```text
+B3>C5:
+C5>
+```
+
+These commands change the current working location.
+
+By contrast, supplying a drive/user qualification to a file-management command normally selects files in that location without changing the current drive/user.
+
+For example:
+
+```text
+A>DIR B3:*.COM
+```
+
+lists matching files in B3 and then returns to the original prompt.
+
+## D.3 Wildcard File Specifications
+
+Wildcards allow a command to select several files using a single specification.
+
+BetterCP/M supports the familiar CP/M wildcard characters:
+
+| Character | Meaning |
+|---|---|
+| `?` | Match one filename position |
+| `*` | Match the remainder of a filename or file-type field |
+
+The name and file-type fields are matched separately.
+
+### Question-Mark Wildcards
+
+A question mark matches one position in the filename or file type.
+
+For example:
+
+```text
+TEST?.COM
+```
+
+can match names such as:
+
+```text
+TEST1.COM
+TEST2.COM
+TESTA.COM
+```
+
+A pattern containing several question marks can match several corresponding positions.
+
+For example:
+
+```text
+FILE??.TXT
+```
+
+selects filenames matching the indicated positions.
+
+### Asterisk Wildcards
+
+An asterisk matches the remaining positions in its field.
+
+For example:
+
+```text
+*.COM
+```
+
+selects files with the `.COM` type.
+
+Similarly:
+
+```text
+REPORT.*
+```
+
+selects files named `REPORT` with different file types.
+
+The familiar specification:
+
+```text
+*.*
+```
+
+selects all filenames and file types, subject to any attribute restrictions imposed by the command.
+
+### BetterCP/M's Bounded Wildcard Rules
+
+BetterCP/M uses a consistent set of bounded 8.3 wildcard rules in its extended file-selection facilities.
+
+An asterisk must occupy the remainder of the filename or file-type field.
+
+For example, these patterns are valid:
+
+```text
+F?*.DAT
+F***.DAT
+```
+
+Repeated terminal asterisks are treated as equivalent to one asterisk.
+
+However, characters cannot follow an asterisk within the same field.
+
+Consequently, these patterns are invalid:
+
+```text
+F*A.DAT
+F**?.DAT
+```
+
+BetterCP/M reports:
+
+```text
+Invalid filespec.
+```
+
+This restriction avoids ambiguous wildcard interpretation and provides consistent behavior among the utilities using the shared file-selection facilities.
+
+### Wildcards and Protected Files
+
+Wildcards select filenames; they do not automatically override file protection.
+
+For example:
+
+```text
+ERA *.BAK
+```
+
+does not imply permission to erase read-only or system files.
+
+The treatment of protected files depends on the command and any explicit attribute-selection or protection options.
+
+For details, consult the ERA, REN, COPY, and MOVE references in Chapter 14.
+
+## D.4 Extended Drive/User Selectors
+
+BetterCP/M extends conventional CP/M file specifications by allowing commands to select files from several drive/user areas in a single operation.
+
+These extended specifications are called **drive/user selectors**, or **DU selectors**.
+
+They are supported by the enhanced file-management utilities, although not every command accepts every form.
+
+### Selecting One User Area
+
+A conventional BetterCP/M file specification identifies one drive/user area:
+
+```text
+B3:*.COM
+```
+
+This selects matching `.COM` files in drive B, user area 3.
+
+### Selecting Several User Areas
+
+A bracketed list selects several user areas on the same drive.
+
+For example:
+
+```text
+B[1,3,5]:*.COM
+```
+
+selects `.COM` files in user areas 1, 3, and 5 on drive B.
+
+A range can be specified with a hyphen:
+
+```text
+B[3-7]:*.ASM
+```
+
+This selects user areas 3 through 7.
+
+Lists and ranges can be combined:
+
+```text
+B[1,3,8-10]:*.DOC
+```
+
+This selects user areas 1, 3, 8, 9, and 10.
+
+### Selecting All User Areas
+
+The special selector `[-]` selects all supported user areas on a drive.
+
+For example:
+
+```text
+B[-]:*.COM
+```
+
+selects `.COM` files from user areas 0 through 31 on drive B.
+
+The notation:
+
+```text
+B[*]:*.COM
+```
+
+is not an alternative spelling and is invalid.
+
+Use `[-]` when you want all user areas.
+
+### Descending and Open-Ended Ranges
+
+BetterCP/M's extended selector language also supports descending and open-ended ranges.
+
+For example:
+
+```text
+B[5-3]:*.DAT
+```
+
+selects user areas 3, 4, and 5.
+
+The direction of the range does not change the order in which files are processed.
+
+Open-ended ranges allow one endpoint to be omitted, using the beginning or end of the supported user-area range.
+
+These facilities are useful when selecting groups of user areas without listing every number individually.
+
+### Selecting Several Drives
+
+Compound selectors allow locations on different drives to be combined.
+
+For example:
+
+```text
+[A0,B3]:*.DOC
+```
+
+selects `.DOC` files from A0 and B3.
+
+More elaborate selections are also possible:
+
+```text
+[A0,B[3-5],C[4,5,9]]:*.COM
+```
+
+This selects matching files from A0, B3 through B5, and C4, C5, and C9.
+
+### Inherited Drive and User Areas
+
+A compound selector can contain terms that omit either the drive or the user area.
+
+An omitted drive inherits the drive that was current when the command began.
+
+An omitted user area inherits the original current user area.
+
+For example:
+
+```text
+[A0,B[3-5],5]:*.COM
+```
+
+The final `5` refers to user area 5 on the original current drive.
+
+This behavior allows convenient selections without repeatedly specifying the same drive.
+
+### Duplicate Locations
+
+If a compound selector names the same drive/user area more than once, BetterCP/M processes that location only once.
+
+For example:
+
+```text
+[B3,B[3-5]]:*.COM
+```
+
+does not cause B3 to be processed twice.
+
+Selected locations are normally processed in drive-major, user-minor order.
+
+### Unsupported Drives
+
+The available logical drives depend on the computer and its configuration.
+
+BetterCP/M's current supported drive bindings ordinarily use drives A through D.
+
+An extended selector does not make an unavailable drive accessible.
+
+Different utilities may handle an unavailable selected drive differently. For example, one may reject the entire operation, while another may report the unavailable location and continue examining the remaining locations.
+
+Consult the command reference for the applicable behavior.
+
+## D.5 File Attributes
+
+CP/M stores several file attributes in directory entries.
+
+These attributes affect how files are displayed, protected, or selected by utilities.
+
+BetterCP/M retains the traditional attributes and provides extended facilities for selecting files according to their attribute settings.
+
+The principal attributes are:
+
+| Attribute | Meaning |
+|---|---|
+| RO | Read-only |
+| RW | Writable |
+| SYS | System |
+| DIR | Directory-visible, meaning SYS is clear |
+| ARC | Archive |
+
+RO and RW describe opposite states of the read-only attribute.
+
+Similarly, SYS and DIR describe opposite states of the system attribute.
+
+ARC is an independent attribute.
+
+### Read-Only Files
+
+A file marked read-only is protected against ordinary modification or deletion.
+
+This can help prevent accidental changes to important programs or data.
+
+For example, a utility may refuse to erase a read-only file unless the user explicitly authorizes the operation.
+
+BetterCP/M's enhanced ERA utility provides additional safeguards for read-only files.
+
+### System Files
+
+The SYS attribute identifies a file as a system file.
+
+In conventional CP/M, system files are normally omitted from ordinary directory listings.
+
+BetterCP/M retains this convention.
+
+For example:
+
+```text
+A>DIR
+```
+
+normally omits SYS files.
+
+An explicit attribute expression can select them:
+
+```text
+A>DIR *.*[$SYS]
+```
+
+This displays matching system files.
+
+The SYS attribute does not necessarily mean that a file is part of the operating system itself. It is a directory attribute that may also be used by applications or utilities.
+
+### Archive Attribute
+
+The ARC attribute is commonly associated with backup operations.
+
+BetterCP/M's COPY utility can use ARC to select files and manage their backup status.
+
+For example:
+
+```text
+A>:COPY /V /BACKUP B[-]:*.DOC[$ARC] D0:
+```
+
+This selects archive-marked `.DOC` files, copies and verifies them, and clears ARC on the source and destination after successful completion.
+
+However, ARC should not automatically be interpreted as a reliable record of every file changed since the previous backup.
+
+That depends on whether the software modifying files maintains the attribute appropriately.
+
+### Displaying Attributes
+
+The transient DIR utility provides `/A` to display file attributes.
+
+For example:
+
+```text
+A>:DIR /A
+```
+
+The attributes appear as a three-character field in SYS, RO, ARC order.
+
+| Display | Meaning |
+|---|---|
+| `---` | No attributes set |
+| `S--` | System |
+| `-R-` | Read-only |
+| `--A` | Archive |
+| `SR-` | System and read-only |
+| `S-A` | System and archive |
+| `-RA` | Read-only and archive |
+| `SRA` | All three attributes set |
+
+A hyphen indicates that the corresponding attribute is clear.
+
+The `/A` option displays attributes; it does not change them or select files according to their values.
+
+For attribute-based selection, use an attribute expression.
+
+## D.6 Attribute Expressions
+
+BetterCP/M allows several file-management commands to select files according to their attributes.
+
+An attribute expression is enclosed in square brackets immediately following the file specification.
+
+For example:
+
+```text
+*.COM[$ARC]
+```
+
+selects `.COM` files whose ARC attribute is set.
+
+### Attribute Names
+
+The supported attribute predicates are:
+
+| Predicate | Selects |
+|---|---|
+| `$RO` | Read-only files |
+| `$RW` | Writable files |
+| `$SYS` | System files |
+| `$DIR` | Files without SYS set |
+| `$ARC` | Files with ARC set |
+
+The aliases `$R/O` and `$R/W` are also accepted for `$RO` and `$RW`.
+
+### Logical Operators
+
+Attribute expressions support three logical operators:
+
+| Operator | Meaning |
+|---|---|
+| `!` | NOT |
+| `+` | AND |
+| `,` | OR |
+
+For example:
+
+```text
+*.COM[$ARC+!$SYS]
+```
+
+selects `.COM` files that have ARC set and SYS clear.
+
+Another example:
+
+```text
+*.DOC[$RO,$SYS]
+```
+
+selects `.DOC` files that are read-only or marked as system files.
+
+To select files without ARC:
+
+```text
+*.*[!$ARC]
+```
+
+### Operator Precedence
+
+When several operators appear in an expression, BetterCP/M evaluates them in the following order:
+
+1. NOT (`!`)
+2. AND (`+`)
+3. OR (`,`)
+
+For example:
+
+```text
+[$RO,$SYS+$ARC]
+```
+
+selects files that are read-only, or files that have both SYS and ARC set.
+
+It does not require read-only files to have ARC set.
+
+Parentheses are not supported in attribute expressions.
+
+### Attribute Selection Does Not Change Attributes
+
+An attribute expression normally selects files; it does not modify their attributes.
+
+For example:
+
+```text
+A>DIR *.COM[$ARC]
+```
+
+displays matching archive-marked files without changing them.
+
+Similarly:
+
+```text
+A>COPY *.COM[$ARC] B:
+```
+
+selects archive-marked files for copying but does not clear ARC on the source merely because the files were selected.
+
+Attribute modification requires a command or option that explicitly performs it.
+
+### Attribute Selection and File Protection
+
+Selecting a protected file does not necessarily authorize modifying or deleting it.
+
+For example:
+
+```text
+A>ERA *.DOC[$RO]
+```
+
+explicitly selects read-only files, but transient ERA may still require additional authorization before erasing them.
+
+The `/R` option permits erasure of selected read-only files:
+
+```text
+A>:ERA /R *.DOC[$RO]
+```
+
+Likewise, transient REN requires `/P` when renaming protected files.
+
+The exact protection rules depend on the command.
+
+In particular, ERA applies additional safeguards to files with SYS and RO attributes. A compound attribute expression must explicitly authorize the relevant protected attributes.
+
+Consult Section 14.2 for the complete ERA rules.
+
+## D.7 Destination Attribute Specifications
+
+Some BetterCP/M utilities allow attributes to be assigned to destination files.
+
+This is different from selecting source files by attribute.
+
+Transient COPY.COM provides destination attribute specifications.
+
+For example:
+
+```text
+A>:COPY A0:*.COM D0:[$RW,!$ARC]
+```
+
+This requests destination copies that are writable and have ARC clear.
+
+The source files are selected normally, while the destination expression specifies the attributes to apply after copying.
+
+### Source and Destination Expressions
+
+Consider:
+
+```text
+A>:COPY B2:*.DOC[$ARC] C0:[!$ARC] /V
+```
+
+The source expression:
+
+```text
+[$ARC]
+```
+
+selects files whose archive attribute is set.
+
+The destination expression:
+
+```text
+[!$ARC]
+```
+
+requests that ARC be cleared on the completed copies.
+
+The source files retain their original attributes unless another option explicitly changes them.
+
+### Destination Attribute Rules
+
+Destination attribute specifications use comma-separated assignments.
+
+They are not general Boolean selection expressions.
+
+For example:
+
+```text
+[$RW,!$ARC]
+```
+
+is valid as a destination attribute specification.
+
+Conflicting assignments, such as requesting both RO and RW, are invalid.
+
+Attributes not explicitly changed are preserved.
+
+Destination attribute settings do not override protection on an existing read-only destination file.
+
+### The /BACKUP Option
+
+COPY's `/BACKUP` option provides additional handling of the archive attribute.
+
+For example:
+
+```text
+A>:COPY /V /BACKUP B[-]:*.DOC[$ARC] D0:
+```
+
+After a successful copy and any requested verification, COPY clears ARC on both source and destination.
+
+Skipped, failed, or interrupted copies retain their source ARC status.
+
+The `/BACKUP` option takes precedence over a destination request to set ARC.
+
+For more information, see Section 14.5, *COPY*.
+
+## D.8 Compatibility and Command-Specific Restrictions
+
+BetterCP/M's extended file-selection facilities are intended to provide consistent behavior across commands, but not every command supports every feature.
+
+For example, DIR, ERA, REN, COPY, MOVE, and TYPE support extended source selection.
+
+STAT supports compound drive/user selectors for file inspection, but not for every attribute-modification or drive-wide operation.
+
+Some utilities also impose restrictions on the number of selected files or the destinations they accept.
+
+### Source and Destination Restrictions
+
+Commands that operate on several source files may require a single destination drive/user area.
+
+For example:
+
+```text
+A>COPY B[-]:*.DOC C3:
+```
+
+is valid because the destination identifies one location.
+
+A destination selector resolving to several user areas is not accepted by COPY.
+
+Similarly, REN changes filenames within their existing drive/user areas. It does not use destination drive/user specifications to relocate files.
+
+### Resident and Transient Differences
+
+Some commands provide additional capabilities in their transient versions.
+
+For example, transient COPY supports wildcard destination templates and destination attribute assignments.
+
+Resident COPY provides a smaller set of operations.
+
+When a command has both resident and transient forms, consult its reference entry to determine which features are available in each.
+
+Use the colon or period prefix to request the transient version explicitly.
+
+### File-Selection Errors
+
+BetterCP/M checks file specifications before carrying out operations.
+
+Invalid filenames, malformed wildcard patterns, and unsupported selectors produce errors.
+
+Commands that modify files generally validate the requested selection before beginning, helping prevent partial operations caused by malformed input.
+
+However, validation does not guarantee that every subsequent file operation will succeed.
+
+Disk errors, insufficient space, file protection, and destination conflicts may still interrupt an operation after some files have been processed.
+
+For this reason, use particular care with wildcard operations that modify or delete many files.
+
+### Further Reference
+
+For detailed command behavior, consult:
+
+- Chapter 14 — File and Directory Commands
+- Chapter 16 — System Utilities
+- Appendix E — BetterCP/M and CP/M 2.2 Compatibility Notes
+
+---
+
+# Appendix E — BetterCP/M and CP/M 2.2 Compatibility Notes
+
+BetterCP/M is intended to provide a compatible implementation of Digital Research CP/M 2.2 while extending its capabilities in ways useful to contemporary CP/M users.
+
+Compatibility is an important part of BetterCP/M's design. Existing CP/M programs should ordinarily be able to use the familiar operating-system services without modification, while users can take advantage of BetterCP/M's additional commands, utilities, and resident extensions.
+
+Nevertheless, compatibility does not mean that BetterCP/M behaves identically to Digital Research CP/M 2.2 in every respect.
+
+Some differences are deliberate extensions. Others reflect variations among historical CP/M implementations, differences in hardware, or the behavior of particular utilities.
+
+This appendix summarizes the principal compatibility considerations that may affect users running conventional CP/M software under BetterCP/M 1.0.
+
+It is not intended to reproduce the complete technical compatibility specification. Programmers requiring exact BDOS behavior, calling conventions, or implementation details should consult the *BetterCP/M Compatibility Documentation* and the appropriate programming references.
+
+## E.1 Compatibility Objectives
+
+BetterCP/M preserves the principal conventions of Digital Research CP/M 2.2.
+
+These include the familiar command environment, `.COM` executable format, drive and user-area organization, file-naming conventions, and standard operating-system interfaces.
+
+Programs that use conventional CP/M services should ordinarily require no changes.
+
+For example, a program that uses BDOS to open, read, write, and close files should continue to use those services in the expected manner.
+
+Likewise, programs that use the conventional console interface can continue to communicate through the BIOS and BDOS facilities provided by BetterCP/M.
+
+### Compatibility and Extensions
+
+BetterCP/M adds facilities beyond those provided by Digital Research CP/M 2.2.
+
+These include extended drive/user specifications, enhanced file-management utilities, resident extensions, terminal monitors, and clock services.
+
+These additions are intended to supplement conventional CP/M operation rather than require applications to adopt a new programming model.
+
+An ordinary CP/M program does not need to know whether BetterCP/M has an extended DIR utility or a resident terminal monitor installed.
+
+It can continue using the conventional interfaces.
+
+### Compatibility Is Not Hardware Emulation
+
+BetterCP/M provides an operating-system environment, not a universal emulator for every computer that historically ran CP/M.
+
+A program that communicates directly with a particular computer's hardware may not run correctly on another computer, even when both use compatible CP/M operating systems.
+
+For example, a program written specifically for the TRS-80 Model 4's video hardware may depend on memory addresses or hardware behavior not present on another system.
+
+BetterCP/M's terminal monitors can provide compatible terminal-control behavior, but they cannot make arbitrary hardware-specific programs portable.
+
+## E.2 Program Compatibility
+
+### Transient Programs
+
+BetterCP/M retains the conventional CP/M transient-program model.
+
+Executable programs normally use the `.COM` file type and begin execution at address `0100H`.
+
+BetterCP/M establishes the expected program environment, including the command tail, default File Control Blocks, and conventional page-zero facilities.
+
+Programs using these conventions should ordinarily run without modification.
+
+### Program Termination
+
+Conventional CP/M programs terminate by returning control to the operating system through the supported termination mechanisms.
+
+BetterCP/M preserves this behavior.
+
+When a transient program terminates, BetterCP/M restores the command environment and displays the command prompt.
+
+Resident extensions intended to survive ordinary warm boots remain available.
+
+### Available Memory
+
+The amount of memory available to a transient program depends on the system configuration.
+
+Resident extensions occupy memory that would otherwise be available to transient programs.
+
+Consequently, a program that fits in a conventional CP/M environment may encounter insufficient memory if several BetterCP/M extensions are loaded.
+
+If this occurs, unload extensions that are not needed for the program.
+
+This is a resource limitation rather than necessarily an incompatibility in the program's operating-system calls.
+
+### Programs That Modify System Memory
+
+Some historical CP/M programs make assumptions about the location or contents of the command processor, BDOS, BIOS, or other system structures.
+
+Such programs may rely on details of a particular CP/M implementation rather than on its documented programming interface.
+
+BetterCP/M does not guarantee compatibility with every such assumption.
+
+Programs that use documented operating-system entry points are generally more portable than programs that inspect or modify private system structures.
+
+## E.3 File and Disk Compatibility
+
+### File Naming
+
+BetterCP/M retains CP/M's 8.3 filename convention.
+
+Ordinary CP/M filenames and file types remain valid.
+
+BetterCP/M also retains conventional wildcard characters and file attributes.
+
+Its enhanced utilities provide additional file-selection capabilities, but ordinary programs are not required to use them.
+
+### User Areas
+
+Digital Research CP/M 2.2 conventionally provides user areas 0 through 15.
+
+BetterCP/M extends this range to 0 through 31.
+
+The additional user areas are a BetterCP/M facility.
+
+Programs that assume the conventional range may not recognize or manage files in the additional areas correctly.
+
+For maximum compatibility with conventional utilities, use user areas 0 through 15 when working with software that makes assumptions about the available range.
+
+### Drive/User Specifications
+
+BetterCP/M commands can accept explicit drive/user specifications such as:
+
+```text
+B3:REPORT.TXT
+```
+
+Some enhanced utilities also support compound selectors:
+
+```text
+B[-]:*.COM
+[A0,B3]:*.DOC
+```
+
+These forms are BetterCP/M command extensions.
+
+They are not part of the conventional CP/M 2.2 filename syntax understood by every application.
+
+A third-party CP/M program may interpret such arguments differently or reject them.
+
+Use conventional file specifications when invoking software that does not explicitly support BetterCP/M's extensions.
+
+### Disk Formats
+
+CP/M was used on many computers with different disk formats.
+
+BetterCP/M can support multiple formats through its drive-configuration facilities, subject to the capabilities of the computer and its disk controller.
+
+However, a disk that uses a valid CP/M filesystem is not necessarily physically readable by every CP/M computer.
+
+Differences in recording density, sector size, track organization, and controller capabilities can prevent direct interchange.
+
+BetterCP/M's CONFIG and DUP utilities help manage supported formats, but they do not eliminate hardware limitations.
+
+### File Attributes
+
+BetterCP/M retains conventional CP/M file attributes, including read-only and system attributes.
+
+Its enhanced utilities also support archive-attribute selection and management.
+
+Programs that use ordinary CP/M file operations can continue to use the conventional attributes.
+
+However, software that maintains file attributes independently may not follow BetterCP/M's extended backup conventions.
+
+In particular, the ARC attribute should not be assumed to identify every modified file unless the software involved maintains it appropriately.
+
+## E.4 Command Compatibility
+
+BetterCP/M retains the familiar CP/M command environment while extending several commands.
+
+Some extensions are available through resident commands, while others require transient utilities.
+
+### Resident and Transient Commands
+
+Digital Research CP/M 2.2 includes a small set of resident commands and uses transient programs for other operations.
+
+BetterCP/M follows the same general arrangement but supports additional resident commands through Command Processor Extensions.
+
+The standard resident command package, `RCP.CPX`, provides commands such as:
+
+```text
+DIR   ERA   TYPE   REN   USER
+CLS   VER   COPY   MOVE
+```
+
+Some commands are also available as transient programs.
+
+For example, DIR and `DIR.COM` provide related but different capabilities.
+
+The transient utility supports additional sorting, display, and file-search options.
+
+### Explicit Transient Execution
+
+BetterCP/M provides a way to execute a transient utility even when a resident command with the same name is available.
+
+Prefix the command with a colon or period:
+
+```text
+A>:DIR
+A>.DIR
+```
+
+Both forms explicitly request `DIR.COM`.
+
+This is a BetterCP/M extension to the conventional command environment.
+
+The prefixes are interpreted by BetterCP/M's command processor and do not change the executable filename.
+
+### Differences in Command Syntax
+
+Some BetterCP/M commands accept syntax that conventional CP/M utilities do not recognize.
+
+For example:
+
+```text
+A>COPY B[-]:*.DOC C3:
+```
+
+uses BetterCP/M's extended drive/user selection.
+
+Similarly:
+
+```text
+A>:DIR /S=Z-
+```
+
+uses a transient DIR option for sorting by allocated size in descending order.
+
+These facilities are useful when working within BetterCP/M, but they should not be assumed to exist on other CP/M implementations.
+
+### Compatibility of Command Files
+
+SUBMIT retains the familiar `.SUB` command-file convention and positional parameter substitution.
+
+However, a SUBMIT file containing BetterCP/M-specific commands or options may not run unchanged under Digital Research CP/M 2.2.
+
+For example, a batch file that invokes CONFIG or uses extended COPY options depends on BetterCP/M facilities.
+
+When preparing command files intended for several CP/M systems, restrict them to commands and syntax supported by all the target environments.
+
+### Conventional Utility Behavior
+
+BetterCP/M aims to preserve the familiar behavior of conventional CP/M utilities where compatibility matters.
+
+However, some enhanced utilities deliberately provide additional safeguards, confirmation prompts, or error-handling facilities.
+
+For example, transient ERA provides more extensive confirmation and file-protection controls than the traditional resident ERA command.
+
+Likewise, transient COPY offers verification, destination-collision handling, and backup operations.
+
+These differences are intentional and are documented in the corresponding command references.
+
+## E.5 Console and Terminal Compatibility
+
+### Conventional Console Services
+
+BetterCP/M retains the conventional CP/M console services used by ordinary applications.
+
+Programs that read and write characters through the supported BIOS and BDOS interfaces can continue to use those facilities.
+
+The actual keyboard and display hardware depend on the computer.
+
+### Terminal-Specific Applications
+
+Many historical CP/M applications were configured for a particular terminal.
+
+For example, a full-screen editor might expect ADM-3A or VT52 control sequences.
+
+BetterCP/M provides resident terminal personalities for:
+
+| Terminal | Extension |
+|---|---|
+| Montezuma Micro-style ADM-3A | `ADM3A.RSX` |
+| VT52 | `VT52.RSX` |
+| ANSI/VT100 subset | `ANSI.RSX` |
+
+These extensions interpret supported terminal-control sequences and pass the corresponding display operations to a screen backend.
+
+The application must still be configured for the appropriate terminal type.
+
+### Terminal Limitations
+
+BetterCP/M's terminal personalities provide supported subsets of the corresponding terminal behavior.
+
+They do not necessarily reproduce every feature of the original physical terminals.
+
+For example, ANSI support does not constitute complete VT100 emulation.
+
+Similarly, keyboard translation depends on the computer, BIOS, terminal emulator, and application.
+
+A terminal personality that interprets display sequences does not automatically guarantee that every physical key generates the codes expected by the application.
+
+### Direct Hardware Access
+
+Some applications bypass CP/M's console services and manipulate display hardware directly.
+
+These programs may be tied to a particular computer.
+
+BetterCP/M's terminal monitors do not automatically translate such hardware access.
+
+For best portability, use applications that communicate through conventional CP/M console services or supported terminal-control sequences.
+
+## E.6 Date and Time Compatibility
+
+Digital Research CP/M 2.2 did not define a general-purpose date-and-time service in its standard programming interface.
+
+Consequently, historical CP/M systems adopted several different clock interfaces.
+
+BetterCP/M provides a native clock service and an optional compatibility interface for programs using P2DOS-style clock functions.
+
+### Native Clock Support
+
+BetterCP/M's TIME utility obtains the date and time through a loadable clock provider.
+
+BetterCP/M 1.0 includes:
+
+| Provider | Environment |
+|---|---|
+| `FREHDCLK.RSX` | FreHD clock interface |
+| `ZPRTC.RSX` | z80pack/cpmsim clock interface |
+
+Both providers are read-only.
+
+They support obtaining the date and time but do not permit setting the underlying clock.
+
+The TIME utility implements a SET request, but the supplied providers reject it as unsupported.
+
+### P2DOS Compatibility
+
+BetterCP/M provides `P2DOS.RSX` for applications using the P2DOS-compatible date-and-time interface.
+
+The extension supplies the corresponding BDOS functions through BetterCP/M's native clock service.
+
+For example, under z80pack:
+
+```text
+A>RSX LOAD ZPRTC
+A>RSX LOAD P2DOS
+```
+
+This makes the P2DOS-compatible interface available to programs that use it.
+
+The P2DOS extension does not provide an independent hardware clock.
+
+Its capabilities depend on the installed native provider.
+
+Consequently, setting the clock remains unsupported with the standard read-only providers.
+
+### Compatibility Limits
+
+Programs using the conventional CP/M 2.2 programming interface do not require clock support.
+
+Programs depending on a particular manufacturer's proprietary clock interface may require additional compatibility facilities.
+
+BetterCP/M's native and P2DOS-compatible clock services should not be assumed to reproduce every historical CP/M clock interface.
+
+For more information, see Chapter 11, *Date and Time*.
+
+## E.7 Resident Extensions and Compatibility
+
+BetterCP/M provides two types of resident extensions:
+
+- **CPXs**, which add commands to the command processor.
+- **RSXs**, which provide services that remain available while programs execute.
+
+These are BetterCP/M facilities and are not part of the standard Digital Research CP/M 2.2 operating environment.
+
+### Command Processor Extensions
+
+CPXs allow additional commands to remain resident.
+
+Ordinary CP/M programs do not need to know whether a command is provided by a CPX or loaded from disk.
+
+However, programs that inspect the command processor's private memory structures may encounter differences from Digital Research CP/M.
+
+### Resident System Extensions
+
+RSXs provide optional services such as terminal support, clock providers, and batch input.
+
+They can remain installed across ordinary warm boots.
+
+Because RSXs occupy memory, they can reduce the available TPA.
+
+This may affect programs that require nearly all the memory available on a conventional CP/M system.
+
+Unloading unnecessary extensions can restore memory for such programs.
+
+### Extension Dependencies
+
+Some RSXs require supporting extensions.
+
+For example, a terminal personality depends on a suitable screen backend.
+
+Load the backend before the personality, and unload them in the reverse order.
+
+For additional information, see Chapter 8, *Resident Extensions*.
+
+## E.8 Compatibility Considerations for Existing Software
+
+Most conventional CP/M applications should require little or no special preparation beyond having the appropriate executable files and terminal configuration.
+
+However, several factors are worth checking when a program does not behave as expected.
+
+### Operating-System Interface
+
+Programs using documented CP/M 2.2 BDOS and BIOS services are generally more portable than programs relying on undocumented internal structures.
+
+If an application behaves differently under BetterCP/M, determine whether it uses conventional interfaces or makes assumptions about a particular implementation.
+
+### Terminal Configuration
+
+Full-screen applications must be configured for a supported terminal environment.
+
+If the display is incorrect, check the installed terminal personality and the application's terminal settings.
+
+Use the supplied terminal test utilities to verify the monitor independently of the application.
+
+### Memory Requirements
+
+Resident extensions reduce available transient memory.
+
+If a program reports insufficient memory, unload optional extensions that are not required for its operation.
+
+### File and Disk Assumptions
+
+Some programs assume particular disk capacities, drive arrangements, or user-area ranges.
+
+BetterCP/M's extended facilities do not automatically remove those assumptions.
+
+Use compatible disk formats and conventional file locations when working with software that has limited configuration options.
+
+### Program-Specific Installation
+
+Some historical CP/M applications require installation or configuration for a particular terminal, printer, or computer.
+
+These requirements remain relevant under BetterCP/M.
+
+The operating system cannot automatically determine every application-specific hardware assumption.
+
+Consult the application's original documentation when necessary.
+
+## E.9 Reporting Compatibility Problems
+
+If a conventional CP/M program behaves unexpectedly under BetterCP/M, the most useful first step is to determine whether the problem is reproducible.
+
+Record the program's name and version, the BetterCP/M version, the computer or emulator, and the circumstances under which the problem occurs.
+
+Where possible, determine whether the same program behaves differently under Digital Research CP/M 2.2 on an equivalent platform.
+
+This can help distinguish an operating-system compatibility issue from an application configuration problem or a hardware limitation.
+
+### Information to Record
+
+A useful compatibility report should identify:
+
+| Information | Example |
+|---|---|
+| Application | Program name and version |
+| Operating system | BetterCP/M release and build |
+| Platform | Computer or emulator |
+| Terminal configuration | Installed screen backend and personality |
+| Resident extensions | Output of `RSX LIST` and `CPX LIST` |
+| Disk configuration | Relevant drive and format assignments |
+| Problem | Expected behavior and observed behavior |
+
+Include the commands needed to reproduce the problem when possible.
+
+If the application displays an error message, record its exact wording.
+
+### Comparing with Digital Research CP/M
+
+When practical, test the same application under a known working Digital Research CP/M 2.2 installation.
+
+Use equivalent hardware or emulator configurations where possible.
+
+A difference in behavior may identify a compatibility issue, but it may also reflect different BIOS implementations, terminal settings, or disk formats.
+
+A controlled comparison is more useful than simply observing that a program works on one computer and fails on another.
+
+### Further Technical Documentation
+
+This appendix summarizes compatibility issues from the user's perspective.
+
+More detailed compatibility information is maintained separately, including documentation of the supported CP/M interfaces and the results of compatibility testing.
+
+Those documents are intended primarily for developers, system maintainers, and users investigating specific compatibility questions.
+
+For the programming interfaces themselves, consult the *BetterCP/M Developer's Guide* and the original Digital Research CP/M 2.2 documentation.
+
+---
+
+# Appendix F — System Messages and Error Reference
+
+BetterCP/M reports errors and other operating conditions through messages displayed at the console.
+
+Some messages originate in the command processor, while others are produced by individual utilities or resident extensions. A message may indicate a simple mistake, such as an incorrectly entered command, or a more serious problem involving disk access, system configuration, or program execution.
+
+This appendix provides a reference to the principal messages encountered when using BetterCP/M 1.0. It explains their meanings, identifies likely causes, and suggests appropriate corrective actions.
+
+The messages are grouped by subject rather than alphabetically. Related messages often have similar causes, and grouping them makes it easier to identify the underlying problem.
+
+**Messages shown in quotation marks or code blocks are intended to reproduce documented BetterCP/M wording.** Where a utility may produce several related messages, the description explains the condition without implying that every variation has identical wording.
+
+For general troubleshooting procedures, see Chapter 12, *Troubleshooting*. For command-specific restrictions and recovery options, consult Part II, *Command and Utility Reference*.
+
+## F.1 Command Processor Messages
+
+### `?`
+
+**Meaning:** BetterCP/M could not locate or recognize the requested command.
+
+For example:
+
+```text
+A>MYPROG
+?
+```
+
+The command processor first checks its resident commands and installed CPXs. If no command handles the name, it searches for a corresponding transient `.COM` program.
+
+For an unqualified command, BetterCP/M searches the current drive/user area and then `A0:`.
+
+If no executable program is found, the command fails.
+
+**What to do:** Check the spelling of the command and verify that the corresponding `.COM` file exists.
+
+For example:
+
+```text
+A>DIR *.COM
+A>DIR A0:*.COM
+```
+
+If the program is in another location, specify its drive and user area explicitly.
+
+A qualified command such as `B3:MYPROG` searches only the specified location; it does not fall back to `A0:`.
+
+### `CPX?`
+
+**Meaning:** An optional Command Processor Extension could not be loaded or failed validation.
+
+BetterCP/M continues to the command prompt with the remaining usable extensions.
+
+Commands supplied by the rejected CPX are unavailable.
+
+The extension may remain in the configured CPX list even though it did not load successfully.
+
+**What to do:** Examine the configured extensions:
+
+```text
+A>CPX LIST
+```
+
+If the affected extension is optional, remove its configured entry:
+
+```text
+A>CPX UNLOAD BAD
+```
+
+Replace `BAD` with the affected extension's name.
+
+Alternatively, replace the damaged extension file with a valid copy.
+
+The warning may recur when the command environment is restored until the problem is corrected.
+
+### `DIR: Use :DIR.`
+
+**Meaning:** The requested DIR operation requires the transient `DIR.COM` utility.
+
+For example:
+
+```text
+A>DIR /WHEREIS ED.COM
+DIR: Use :DIR.
+```
+
+The resident DIR command recognizes that the requested option belongs to the transient version.
+
+It does not automatically execute that version.
+
+**What to do:** Repeat the command with a colon or period prefix:
+
+```text
+A>:DIR /WHEREIS ED.COM
+```
+
+The same convention applies to other resident commands with transient-only options.
+
+### `VER: Use :VER.`
+
+**Meaning:** The requested VER operation is available through the transient utility rather than the resident command.
+
+For example:
+
+```text
+A>VER /BANNER
+VER: Use :VER.
+```
+
+**What to do:** Invoke the transient version:
+
+```text
+A>:VER /BANNER
+```
+
+### Invalid Command Syntax
+
+A command may report an error when its arguments are missing, malformed, or supplied in an unsupported order.
+
+The exact message depends on the command.
+
+**What to do:** Check the syntax in Part II.
+
+Pay particular attention to required operands, option placement, filename qualifications, and whether the command has resident and transient versions.
+
+## F.2 File and Directory Messages
+
+### `Invalid filespec.`
+
+**Meaning:** A file specification contains invalid syntax.
+
+Possible causes include an invalid filename, a malformed wildcard pattern, or an unsupported drive/user selector.
+
+For example:
+
+```text
+F*A.DAT
+```
+
+is invalid under BetterCP/M's bounded wildcard rules because characters follow the asterisk within the filename field.
+
+**What to do:** Correct the specification.
+
+A terminal asterisk must occupy the remainder of its filename or file-type field.
+
+For example:
+
+```text
+F*.DAT
+```
+
+is valid.
+
+### `NO FILE`
+
+**Meaning:** No files matched the requested selection.
+
+This may occur when the named file does not exist or when a wildcard or attribute expression matches no files.
+
+**What to do:** Check the current drive and user area, the filename, and any attribute restrictions.
+
+For example:
+
+```text
+A>DIR B3:*.COM
+```
+
+can help determine whether matching files exist in the expected location.
+
+### `File Not Found`
+
+**Meaning:** A requested file or matching selection could not be found.
+
+STAT may report this condition when examining an empty selected location.
+
+**What to do:** Verify the drive/user specification and filename.
+
+Remember that files in different user areas are distinct, even when they have identical names.
+
+### `FILE EXISTS`
+
+**Meaning:** A destination file already exists and the requested operation does not authorize replacing it.
+
+For example, COPY with `/B` but without `/O` or `/S` reports this condition for an existing writable destination.
+
+**What to do:** Determine whether the destination should be preserved, skipped, renamed, or replaced.
+
+For COPY, the appropriate options include:
+
+```text
+/B /O
+/B /S
+```
+
+The first permits replacement of existing writable files. The second skips them.
+
+Read-only destination files remain protected.
+
+### `COPY MADE; SOURCE NOT ERASED`
+
+**Meaning:** MOVE successfully created the destination file but could not remove the original.
+
+Both files may now exist.
+
+**What to do:** Examine the source and destination before taking further action.
+
+If the destination is complete and correct, you may delete the source manually.
+
+Do not assume that the original was removed.
+
+### `Invalid /VER usage.`
+
+**Meaning:** The `/VER` option was combined with arguments or options that the utility does not permit.
+
+Most BetterCP/M utilities require `/VER` to be used alone.
+
+**What to do:** Enter the utility name followed only by `/VER`.
+
+For example:
+
+```text
+A>COPY /VER
+```
+
+If the utility has a resident and transient version, use the appropriate invocation form.
+
+## F.3 Disk and Filesystem Messages
+
+Disk-related errors may originate in BDOS, the BIOS, or a utility performing disk operations.
+
+The exact wording depends on the operation and the platform.
+
+### Disk Read Error
+
+**Meaning:** The system could not reliably read the requested disk data.
+
+Possible causes include damaged media, an incorrect disk-format assignment, a drive problem, or an unavailable disk.
+
+**What to do:** Check that the correct disk is inserted and that its assigned format matches its actual organization.
+
+Use CONFIG to inspect the current drive settings:
+
+```text
+A>CONFIG /SHOW
+```
+
+If the disk remains readable, preserve important files before attempting further modifications.
+
+### Disk Write Error
+
+**Meaning:** A requested disk write failed.
+
+Possible causes include write protection, a full disk, damaged media, or a hardware problem.
+
+**What to do:** Check the disk's write-protection setting and available space.
+
+If the error occurs during a destructive disk operation, do not assume that the destination remains complete or usable.
+
+### Disk Full
+
+**Meaning:** The disk cannot accommodate the requested file data or directory entries.
+
+CP/M disks have limits on both data allocation and directory capacity.
+
+A disk may run out of directory entries even when some data blocks remain free.
+
+**What to do:** Remove unnecessary files, copy files to another disk, or use a suitable disk with greater capacity.
+
+### Read-Only Disk
+
+**Meaning:** The operating system is refusing writes to the selected disk.
+
+This may result from an explicit read-only condition or from disk-change protection.
+
+**What to do:** Determine why the disk is read-only before attempting further writes.
+
+If removable media were changed, use the appropriate disk-reset or warm-boot procedure.
+
+Do not force writes to a disk whose directory state may be inconsistent with the operating system's cached information.
+
+### Unavailable Drive
+
+**Meaning:** The requested logical drive is not configured or cannot be accessed.
+
+**What to do:** Examine the drive assignments with CONFIG.
+
+A logical drive may have been unbound, assigned to an unavailable physical drive, or configured with an unsuitable format.
+
+## F.4 DUP Messages
+
+DUP reports errors encountered while formatting, copying, and checking disks.
+
+### `Format complete.`
+
+**Meaning:** DUP completed the requested formatting operation and its verification.
+
+This is a successful completion message.
+
+### `Copy complete; destination verified.`
+
+**Meaning:** DUP copied the represented sector contents and verified the destination against the source data.
+
+This is a successful completion message.
+
+### `Check complete. Unreadable sectors: n`
+
+**Meaning:** DUP completed a physical readability check.
+
+The number `n` identifies the unreadable physical sectors encountered.
+
+For example:
+
+```text
+Check complete. Unreadable sectors: 0
+```
+
+indicates that the examined sectors were readable.
+
+It does not establish that the filesystem or individual files are logically correct.
+
+### `Format aborted. Disk is only partly formatted.`
+
+**Meaning:** Formatting was interrupted after the operation began.
+
+The destination disk may not be usable until it is formatted again.
+
+**What to do:** Correct the cause of the interruption and repeat formatting when safe.
+
+### `Operation stopped. Destination may be partly written.`
+
+**Meaning:** A disk-copy operation was interrupted.
+
+The source remains unchanged, but the destination may contain only part of the intended copy.
+
+**What to do:** Do not rely on the destination as a complete backup. Repeat the operation from a reliable source.
+
+### `Check stopped. No disk contents changed.`
+
+**Meaning:** A disk check was interrupted.
+
+CHECK is read-only, so the disk was not modified by the operation.
+
+However, the check is incomplete.
+
+### `Cannot restore destination configuration. Press a key to retry.`
+
+**Meaning:** DUP could not restore a temporary destination-drive assignment after a disk-copy operation.
+
+DUP retains the information required for restoration and requests another attempt.
+
+**What to do:** Follow the prompt and retry.
+
+Avoid resetting the system merely to dismiss the message, since the temporary configuration may still be active.
+
+### Disk Error Status
+
+DUP may report a numeric disk status together with the affected cylinder, side, sector, or record.
+
+The following status information is useful when interpreting those reports.
+
+| Status | Meaning |
+|---|---|
+| `1` | Request failed or drive did not respond |
+| `2` | Unsupported operation or disk address |
+| `FEh` | Read-back data did not match |
+| Bit 7 | Drive not ready |
+| Bit 6 | Disk write-protected |
+| Bit 4 | Sector or track not found |
+| Bit 3 | CRC error |
+| Bit 2 | Data transfer failed |
+| Other | Disk I/O failure |
+
+The bit descriptions identify conditions reported through the disk interface. They are not necessarily mutually exclusive.
+
+For additional information, see Section 16.4, *DUP*.
+
+## F.5 SYSGEN Messages
+
+SYSGEN reports conditions encountered while installing BetterCP/M or saving system-image packages.
+
+### `Physical drive 0 is protected as the running system disk.`
+
+**Meaning:** The requested installation destination resolves to physical drive 0.
+
+BetterCP/M protects this drive against SYSGEN destination writes.
+
+**What to do:** Select another suitable physical drive.
+
+Changing the logical drive letter does not bypass this protection.
+
+### `Source and destination refer to the same physical drive.`
+
+**Meaning:** A disk-source installation would read and write through the same physical drive.
+
+SYSGEN requires different physical drives for disk-to-disk installation.
+
+**What to do:** Select a different destination.
+
+### `The selected drive is undefined or unavailable.`
+
+**Meaning:** SYSGEN could not obtain a valid drive assignment for the requested source or destination.
+
+**What to do:** Examine the drive configuration and correct the assignment before retrying.
+
+### `Destination reserved system area is too small (160 records required).`
+
+**Meaning:** The destination does not provide enough reserved system space for BetterCP/M 1.0.
+
+SYSGEN requires at least 160 reserved 128-byte logical records.
+
+**What to do:** Use a disk format with a sufficiently large reserved system area.
+
+SYSGEN cannot create additional reserved space by itself.
+
+### `Destination bootstrap geometry is not supported by this system package.`
+
+**Meaning:** The destination's bootstrap geometry is incompatible with the system image being installed.
+
+**What to do:** Use a compatible destination format or a system image appropriate to the destination.
+
+SYSGEN does not perform disk-format conversion.
+
+### `The system package is invalid or cannot represent the destination.`
+
+**Meaning:** The system-image package failed validation or cannot be installed safely using the destination's configuration.
+
+**What to do:** Check the package and destination format.
+
+If necessary, obtain a valid system package or recreate it from a known working installation.
+
+### `The destination system area will be replaced.`
+
+**Meaning:** SYSGEN is requesting confirmation before installation.
+
+The accompanying message explains that files outside the reserved system tracks will be preserved.
+
+Only `Y` authorizes installation.
+
+### `System installed and verified. The destination is bootable.`
+
+**Meaning:** SYSGEN completed installation and verified the written system records.
+
+This is a successful completion message.
+
+It does not mean that all ordinary utility files or startup-support files have been copied to the destination.
+
+### `Installation stopped. The destination may not boot.`
+
+**Meaning:** Installation was interrupted after system-area writing began.
+
+The destination may contain an incomplete operating system.
+
+The filesystem area remains outside SYSGEN's write range.
+
+**What to do:** Repeat installation from a valid source after correcting the cause of the interruption.
+
+### `Package exported and verified.`
+
+**Meaning:** SYSGEN successfully saved and verified an installed operating-system image as a package file.
+
+The package contains the operating system and its saved configuration, but not ordinary files from the source disk.
+
+### `Replace existing package (Y/N)?`
+
+**Meaning:** The requested package filename already exists.
+
+Only `Y` authorizes replacement.
+
+Read-only and system files remain protected.
+
+### SYSGEN Recovery Files
+
+During package export, SYSGEN may use:
+
+```text
+SYSGEN.$$$
+SYSGEN.BAK
+```
+
+If an export fails, one or both files may remain.
+
+These are recovery files, not necessarily disposable temporary files.
+
+**What to do:** Examine the reported failure and preserve the files until you've determined whether they contain a valid package or the previous version.
+
+For additional information, see Section 16.5, *SYSGEN*.
+
+## F.6 Configuration Messages
+
+CONFIG reports errors involving startup settings, drive definitions, disk formats, and saved configuration information.
+
+### Invalid Configuration Value
+
+**Meaning:** A requested configuration value is outside its permitted range or is not supported by the selected field.
+
+For example, a physical-drive profile may specify an unsupported number of tracks or sides.
+
+**What to do:** Check the accepted values in the CONFIG reference.
+
+Do not assume that a value accepted by one platform is suitable for another.
+
+### Incompatible Drive Assignment
+
+**Meaning:** The requested disk-format definition is incompatible with the selected physical drive.
+
+**What to do:** Verify the drive's physical characteristics and the disk-format definition.
+
+A format that requires more tracks or sides than the drive supports cannot be assigned safely.
+
+### `Drive profile changed; binding cleanup incomplete`
+
+**Meaning:** CONFIG changed a physical-drive profile but could not complete all associated logical-binding checks or adjustments.
+
+The physical profile change has already occurred.
+
+**What to do:** Examine the affected logical-drive assignments and correct any incompatible bindings.
+
+Do not assume that the previous configuration remains completely intact.
+
+### Configuration Verification Failure
+
+**Meaning:** CONFIG could not verify the installed system information needed for the requested configuration operation.
+
+This can occur when the system image is damaged or CONFIG does not match the installed operating-system build.
+
+**What to do:** Use the CONFIG utility supplied with the corresponding BetterCP/M system build.
+
+If necessary, restore a known working system image.
+
+### Save Failure
+
+**Meaning:** CONFIG could not successfully write or verify the requested saved configuration.
+
+**What to do:** Check the disk and follow the reported recovery instructions.
+
+A failed save should not be treated as evidence that the new configuration will be available after a cold boot.
+
+For additional information, see Section 16.1, *CONFIG*.
+
+## F.7 Resident Extension Messages
+
+Resident extensions may report errors when being loaded, unloaded, or restored.
+
+### CPX Load Failure
+
+An optional CPX that fails validation may produce:
+
+```text
+CPX?
+```
+
+The system continues with the remaining usable command extensions.
+
+The affected commands are unavailable until the extension is repaired or removed.
+
+### RSX Load Failure
+
+**Meaning:** The requested RSX could not be installed.
+
+Possible causes include a missing or damaged extension file, an incompatible extension, insufficient memory, or an unavailable dependency.
+
+**What to do:** Check that the extension file exists and that its required supporting components are installed.
+
+For example, a terminal personality requires a compatible screen backend.
+
+### RSX Unload Failure
+
+**Meaning:** The requested extension could not be removed.
+
+One possible cause is that another resident extension still depends on it.
+
+**What to do:** Examine the installed extensions:
+
+```text
+A>RSX LIST
+```
+
+Unload dependent extensions before removing their supporting components.
+
+### Insufficient Resident Memory
+
+**Meaning:** The requested extension cannot be installed because insufficient suitable memory is available.
+
+**What to do:** Unload unnecessary extensions and retry.
+
+Resident extensions reduce the memory available to transient programs.
+
+For additional information, see Chapter 8, *Resident Extensions*, and Chapter 17, *Batch and Extension Commands*.
+
+## F.8 Date and Time Messages
+
+TIME reports errors when no clock provider is available, when a provider cannot obtain valid time information, or when an unsupported clock-setting operation is requested.
+
+### Clock Service Unavailable
+
+**Meaning:** TIME cannot access an installed clock provider.
+
+**What to do:** Load the appropriate provider for the platform.
+
+For example:
+
+```text
+A>RSX LOAD FREHDCLK
+```
+
+or:
+
+```text
+A>RSX LOAD ZPRTC
+```
+
+Then retry:
+
+```text
+A>TIME
+```
+
+### Clock Read Failure
+
+**Meaning:** The installed provider could not obtain a valid date and time.
+
+Possible causes include unavailable hardware, an emulator-interface problem, or invalid clock data.
+
+**What to do:** Check the platform's clock configuration.
+
+TIME cannot correct an inaccurate or unavailable underlying clock.
+
+### Clock Setting Unsupported
+
+**Meaning:** TIME accepted a SET request, but the installed clock provider does not support changing the clock.
+
+Both BetterCP/M 1.0 providers, `FREHDCLK.RSX` and `ZPRTC.RSX`, are read-only.
+
+**What to do:** Adjust the clock through the hardware or host environment, if supported.
+
+The TIME utility's SET syntax does not make a read-only provider writable.
+
+### Invalid SET Arguments
+
+**Meaning:** The arguments supplied to TIME's SET operation are malformed or outside the accepted ranges.
+
+The command requires five hexadecimal bytes:
+
+```text
+TIME /SET LL HH HR MN SC
+```
+
+These represent the native clock record, not an ordinary calendar-date string.
+
+**What to do:** Check the hexadecimal values and the required date-and-time representation.
+
+For additional information, see Section 16.3, *TIME*.
+
+## F.9 Common Interactive Prompts
+
+Some BetterCP/M utilities provide interactive prompts when an operation requires a decision.
+
+The available responses depend on the utility and the operation.
+
+### Yes/No Confirmation
+
+Many potentially destructive operations require explicit confirmation.
+
+For example, SYSGEN asks:
+
+```text
+Proceed (Y/N)?
+```
+
+Only `Y` authorizes the operation.
+
+Other responses cancel it.
+
+Do not assume that command-line invocation bypasses confirmation. DUP and SYSGEN retain their destructive-operation safeguards even when invoked with complete command-line arguments.
+
+### COPY File-Collision Prompt
+
+When COPY encounters an existing writable destination file, the transient utility may offer:
+
+```text
+Y/N/O/S/R/?
+```
+
+| Response | Meaning |
+|---|---|
+| Y | Replace this file |
+| N | Skip this file |
+| O | Replace this and subsequent writable collisions |
+| S | Skip this and subsequent writable collisions |
+| R | Enter a new destination filename |
+| ? | Display help |
+
+The O and S policies apply only to the current COPY invocation.
+
+### REN Name-Collision Prompt
+
+When transient REN encounters an existing destination filename, it may offer:
+
+```text
+File exists. N/S/A/?
+```
+
+| Response | Meaning |
+|---|---|
+| N | Enter a new filename |
+| S | Skip the file |
+| A | Abort the remaining operation |
+| ? | Display help |
+
+REN never overwrites an existing destination.
+
+### Retry, Skip, or Abort
+
+Some utilities offer recovery choices when an individual file operation fails.
+
+For example:
+
+```text
+R/S/A/?
+```
+
+The responses are:
+
+| Response | Meaning |
+|---|---|
+| R | Retry the operation |
+| S | Skip the affected file |
+| A | Abort the remaining operation |
+| ? | Display help |
+
+The availability of these choices depends on the utility.
+
+Noninteractive modes may follow a predetermined error policy instead of displaying a recovery prompt.
+
+### Help at Prompts
+
+When `?` appears among the available responses, entering it displays an explanation of the choices.
+
+Requesting help does not itself retry, skip, abort, or authorize an operation.
+
+The utility returns to the same decision after displaying the help text.
+
+## F.10 Interpreting Error Messages
+
+When an error occurs, the most useful first step is to determine which component reported it.
+
+A command-processor error usually concerns command recognition or program execution.
+
+A file-management error may involve filenames, attributes, destination conflicts, or disk space.
+
+A disk utility error may involve physical media, drive configuration, or unsupported operations.
+
+A resident-extension error may involve missing files, incompatible components, dependencies, or memory limitations.
+
+The following table provides a quick guide.
+
+| Symptom | Likely area to investigate |
+|---|---|
+| Command not recognized | Command name, `.COM` file location, CPX availability |
+| File not found | Filename, drive/user area, wildcard or attribute selection |
+| Destination already exists | COPY, MOVE, or REN collision handling |
+| File cannot be modified | Read-only or system attributes |
+| Disk cannot be read | Media, drive configuration, disk format |
+| Disk cannot be written | Write protection, capacity, media errors |
+| Program has insufficient memory | Loaded resident extensions, available TPA |
+| Full-screen display is incorrect | Terminal personality, screen backend, application configuration |
+| TIME cannot display the clock | Clock provider or underlying clock source |
+| System fails after configuration changes | Saved drive settings, startup command, system image |
+| System disk will not boot | Bootstrap compatibility, incomplete installation, damaged media |
+
+### When an Operation Fails Partway Through
+
+Some BetterCP/M operations process several files or disk records in sequence.
+
+If an error occurs, earlier operations may already have completed.
+
+For example, a multi-file COPY may have created several destination files before encountering an error.
+
+A multi-file REN may have renamed some files before encountering a name conflict.
+
+An interrupted DUP copy may leave the destination partly written.
+
+An interrupted SYSGEN installation may leave the destination's system area incomplete.
+
+**Do not assume that an interrupted operation has been automatically undone.**
+
+Examine the affected files or disks before retrying.
+
+### Preserving Evidence of a Problem
+
+If an error appears to be reproducible, record its exact wording.
+
+Also note the command entered, the current drive and user area, and any relevant configuration information.
+
+For problems involving resident extensions, the output of `CPX LIST` or `RSX LIST` may be useful.
+
+For disk-related problems, record the drive assignments and disk format.
+
+When reporting a compatibility problem, identify the application, BetterCP/M version, and computer or emulator.
+
+See Appendix E for additional guidance on compatibility reporting.
+
+---
+
+# Appendix G — Glossary
+
+This glossary defines the principal terms used throughout the BetterCP/M User's Guide.
+
+It includes terminology inherited from Digital Research CP/M 2.2, terms associated with BetterCP/M's extensions, and expressions commonly encountered when working with CP/M computers and software.
+
+The definitions are intended to help readers understand the manual rather than provide exhaustive technical descriptions. Where a subject requires more detailed treatment, references to the relevant chapters are provided.
+
+## A
+
+**Allocation Block**  
+A unit of disk space allocated to a file by the CP/M filesystem. An allocation block consists of one or more 128-byte logical records. The allocation-block size depends on the disk format.
+
+**Archive Attribute (ARC)**  
+A file attribute commonly used by backup utilities. BetterCP/M can select files according to their ARC status and provides facilities for clearing the attribute after successful backup operations. The attribute does not necessarily indicate whether a file has changed unless the software modifying it maintains the attribute appropriately. See Appendix D.
+
+**ASCII (American Standard Code for Information Interchange)**  
+A character-encoding standard used by CP/M for text and control characters. Standard ASCII defines 128 character codes, including printable characters and control codes such as carriage return, line feed, and Escape.
+
+**Attribute**  
+Information associated with a file that affects its treatment by the operating system or utilities. CP/M attributes include read-only, system, and archive. BetterCP/M provides extended facilities for selecting files according to their attributes.
+
+## B
+
+**Batch File**  
+A text file containing commands to be executed in sequence. BetterCP/M uses `.SUB` files with the SUBMIT utility for batch processing. See Chapter 6.
+
+**BDOS (Basic Disk Operating System)**  
+The portion of CP/M that provides standard operating-system services to programs, including file management, console input and output, and other system functions. Programs ordinarily access BDOS through the conventional CP/M calling interface.
+
+**BIOS (Basic Input/Output System)**  
+The hardware-dependent portion of CP/M. The BIOS provides low-level services for disk drives, the console, and other devices. Different computers require BIOS implementations suited to their hardware.
+
+**Boot**  
+The process of starting the operating system. A cold boot initializes a new operating session, while a warm boot returns control to the operating environment without performing a complete cold startup.
+
+**Boot Disk**  
+A disk containing the operating-system image and bootstrap information required to start the computer. A boot disk may also contain ordinary programs and data files.
+
+**Bootstrap**  
+The initial program or sequence of operations that loads the operating system into memory and transfers control to it.
+
+**BS (Backspace)**  
+ASCII control character `08H`, commonly generated by Ctrl-H or a Backspace key. Its treatment depends on the console or application.
+
+## C
+
+**CCP (Console Command Processor)**  
+The portion of CP/M responsible for accepting and interpreting commands entered at the console. BetterCP/M extends the conventional command environment through resident commands, command history, and Command Processor Extensions.
+
+**Cold Boot**  
+A complete operating-system startup that establishes a new session and initializes the configured environment. BetterCP/M executes its saved startup command during a cold boot. Command history begins empty, and the configured startup environment is established.
+
+**Command History**  
+A collection of previously entered commands retained by BetterCP/M's command processor. Commands can be recalled, edited, and executed again. BetterCP/M 1.0 uses Ctrl-K and Ctrl-J for history navigation. See Appendix B.
+
+**Command Processor Extension (CPX)**  
+A resident extension that adds commands to BetterCP/M's command processor. The standard resident command package is `RCP.CPX`. CPXs are managed using the CPX utility. See Chapter 8.
+
+**Command Tail**  
+The text following a transient program's name on the command line. CP/M makes this text available to the program using its conventional command-tail representation.
+
+**Console**  
+The keyboard and display, terminal, or equivalent device through which the user communicates with the operating system.
+
+**Control Character**  
+An ASCII character traditionally used for a control operation rather than as a printable symbol. Examples include carriage return, line feed, backspace, and Escape. See Appendix C.
+
+**CP/M (Control Program for Microcomputers)**  
+The operating system developed by Digital Research for microcomputers, particularly those using Intel 8080-compatible processors. CP/M 2.2 is the principal compatibility target for BetterCP/M.
+
+**CP/M 2.2**  
+The widely used Digital Research CP/M release that provides the standard operating-system interface and behavior BetterCP/M seeks to reproduce.
+
+**CPX**  
+See *Command Processor Extension*.
+
+**Current Configuration**  
+The system settings presently in use. These may differ from the settings saved for subsequent cold boots. See Chapter 7.
+
+## D
+
+**DDT (Dynamic Debugging Tool)**  
+Digital Research's machine-language debugging utility. DDT provides facilities for examining and modifying memory, disassembling instructions, and controlling program execution.
+
+**Directory**  
+The portion of a CP/M filesystem containing information about files, including their names, user areas, attributes, and allocated storage. Unlike hierarchical filesystems, conventional CP/M directories do not contain subdirectories.
+
+**Directory Entry**  
+A record in the CP/M directory describing a file or part of a file. A file may require several directory entries depending on its size and the disk format.
+
+**Disk Format**  
+The organization of a disk, including its physical recording characteristics and filesystem parameters. CP/M computers used many different formats, not all of which are interchangeable.
+
+**Disk-Format Definition**  
+A description of a disk's organization used by BetterCP/M to access it. Format definitions are selected and managed through CONFIG.
+
+**Drive**  
+A logical or physical storage device. CP/M identifies logical drives by letters such as A and B.
+
+**Drive/User (DU)**  
+A particular combination of logical drive and user area, such as `A0:` or `B3:`. BetterCP/M uses drive/user specifications extensively in its enhanced file-management commands.
+
+**DU Selector**  
+A BetterCP/M file-selection expression identifying one or more drive/user areas. For example, `B[-]:` selects all user areas on drive B. See Appendix D.
+
+## E
+
+**ED**  
+Digital Research's traditional CP/M context editor. ED is a line-oriented text editor operated through commands rather than a full-screen display.
+
+**End-of-Text Marker**  
+The Ctrl-Z character (`1AH`), traditionally used to indicate the end of meaningful text in CP/M text files.
+
+**Escape Sequence**  
+A sequence of character codes, commonly beginning with ASCII Escape (`1BH`), used to request terminal operations such as cursor movement or screen clearing.
+
+**Extent**  
+A unit of file organization represented by CP/M directory information. Large files may occupy multiple extents and directory entries.
+
+## F
+
+**FCB (File Control Block)**  
+A data structure used by CP/M programs to identify files and perform file operations through BDOS. Conventional CP/M programs use FCBs for opening, reading, writing, and managing files.
+
+**File Attribute**  
+See *Attribute*.
+
+**File Specification (Filespec)**  
+A filename, optionally accompanied by a drive/user qualification, wildcard characters, or supported attribute expressions. For example, `B3:*.COM[$ARC]` is an extended BetterCP/M file specification.
+
+**File Type**  
+The optional portion of a CP/M filename following the period. A file type contains up to three characters. Common examples include `.COM`, `.ASM`, `.TXT`, and `.SUB`.
+
+**FreHD**  
+A storage peripheral for the TRS-80 Model 4 and related systems. BetterCP/M provides a FreHD clock provider through `FREHDCLK.RSX`.
+
+## H
+
+**Hexadecimal**  
+A base-16 number system using digits 0–9 and letters A–F. Hexadecimal is commonly used when displaying memory addresses, machine instructions, and byte values. In this manual, hexadecimal values may be identified by an `H` suffix.
+
+**Host Computer**  
+The computer running an emulator or providing services to an emulated CP/M system. For example, z80pack may obtain date and time information from its host environment.
+
+## I
+
+**IOBYTE**  
+A conventional CP/M system value used to select logical character-device assignments. BetterCP/M retains the IOBYTE mechanism. STAT manages the live value, while CONFIG can save a value for subsequent disk cold boots.
+
+## L
+
+**Logical Drive**  
+A drive identified by a CP/M drive letter, such as A or B. BetterCP/M associates logical drives with physical devices and disk-format definitions.
+
+**Logical Record**  
+The standard 128-byte unit used by CP/M file and disk services. Physical disk sectors may contain one or more logical records.
+
+## M
+
+**Montezuma Micro**  
+A company known for its CP/M implementation for the TRS-80 Model 4. BetterCP/M retains compatibility with selected Montezuma Micro conventions, including its ADM-3A terminal behavior and keyboard arrangements.
+
+## P
+
+**P2DOS**  
+A CP/M-compatible operating-system implementation that introduced additional services, including date-and-time facilities. BetterCP/M provides optional P2DOS-compatible clock services through `P2DOS.RSX`.
+
+**Physical Drive**  
+The actual disk drive or storage device associated with a logical drive. BetterCP/M distinguishes physical-drive characteristics from logical-drive assignments.
+
+**PIP (Peripheral Interchange Program)**  
+The traditional CP/M utility for copying and transferring data between files and devices. PIP supports a variety of text and data-transfer options.
+
+**Program Image**  
+The machine-language instructions and associated data of a program as stored in a file or loaded into memory.
+
+## R
+
+**RCP (Resident Command Package)**  
+The standard BetterCP/M Command Processor Extension, supplied as `RCP.CPX`. It provides frequently used commands such as DIR, ERA, REN, TYPE, COPY, MOVE, CLS, and VER.
+
+**Read-Only Attribute (RO)**  
+A file attribute that protects a file against ordinary modification or deletion. BetterCP/M utilities may provide explicit facilities for handling protected files.
+
+**Resident Command**  
+A command available directly through the command processor or an installed CPX, without loading a separate transient `.COM` program.
+
+**Resident System Extension (RSX)**  
+A loadable component that provides services while other programs execute. BetterCP/M uses RSXs for terminal support, clock providers, batch input, and other facilities. See Chapter 8.
+
+**RSX**  
+See *Resident System Extension*.
+
+## S
+
+**Saved Configuration**  
+System settings stored for use during subsequent cold boots. Saved settings may differ from those currently active.
+
+**Sector**  
+A physical unit of disk storage. Sector sizes and organization depend on the disk format. A physical sector may contain several CP/M logical records.
+
+**SUBMIT**  
+The CP/M batch-processing utility that executes commands stored in `.SUB` files. BetterCP/M retains the familiar SUBMIT conventions. See Chapter 6.
+
+**System Area**  
+The reserved portion of a bootable CP/M disk containing operating-system and bootstrap information. SYSGEN installs BetterCP/M into this area.
+
+**System Attribute (SYS)**  
+A file attribute that ordinarily suppresses a file from conventional directory listings. The attribute does not necessarily mean that the file is part of the operating system.
+
+**System Image**  
+The operating-system code and associated configuration information installed in a disk's reserved system area. BetterCP/M system images can be saved and installed using SYSGEN.
+
+**SYSTEM.SYS**  
+The conventional filename for a BetterCP/M system-image package. Such packages contain the operating-system image and associated installation information.
+
+## T
+
+**Terminal**  
+A device or emulated environment providing keyboard input and character-oriented display output.
+
+**Terminal Monitor**  
+A resident facility that interprets supported terminal-control sequences and performs the corresponding display operations through a screen backend.
+
+**Terminal Personality**  
+An RSX that interprets the control sequences associated with a particular terminal type. BetterCP/M provides ADM-3A, VT52, and ANSI/VT100-subset personalities.
+
+**TPA (Transient Program Area)**  
+The region of memory available for ordinary CP/M programs. Resident extensions reduce the amount of TPA available to transient programs.
+
+**Transient Command**  
+A command implemented by a program loaded from disk, normally as a `.COM` file. BetterCP/M can explicitly invoke a transient command using a colon or period prefix.
+
+## U
+
+**User Area**  
+A numbered file-organization area within a CP/M drive. Conventional CP/M 2.2 supports user areas 0–15; BetterCP/M extends the range to 0–31.
+
+## V
+
+**VT52**  
+A DEC video terminal whose control sequences were supported by many CP/M applications. BetterCP/M provides a compatible terminal personality through `VT52.RSX`.
+
+**VT100**  
+A DEC video terminal associated with ANSI-style control sequences. BetterCP/M provides a supported subset of ANSI/VT100 behavior through `ANSI.RSX`.
+
+## W
+
+**Warm Boot**  
+A return to the CP/M command environment without performing a complete cold startup. BetterCP/M preserves supported resident extensions and command history across ordinary warm boots.
+
+**Wildcard**  
+A character used in a file specification to select several files. CP/M uses `?` and `*` as wildcard characters. BetterCP/M provides consistent bounded wildcard rules in its enhanced file-selection facilities.
+
+**WordStar**  
+A widely used CP/M word processor whose control-key conventions influenced many other programs. BetterCP/M uses some WordStar-style editing conventions, although its command-history assignments differ.
+
+## X
+
+**XSUB**  
+A CP/M batch-processing extension that allows compatible programs to receive submitted input through buffered console-input services. BetterCP/M provides this facility using resident batch-input support.
+
+## Z
+
+**Z80**  
+An 8-bit microprocessor developed by Zilog and widely used in CP/M computers. It is compatible with the Intel 8080 instruction set while providing additional instructions and facilities.
+
+**z80pack**  
+A collection of Z80 emulation tools, including cpmsim. BetterCP/M supports z80pack environments and provides a clock provider through `ZPRTC.RSX`.
+
+---
+
+# Appendix H — Further Reading and Technical Documentation
+
+BetterCP/M is accompanied by documentation covering its operation, programming interfaces, internal organization, and compatibility with Digital Research CP/M 2.2.
+
+This User's Guide is intended primarily for people using BetterCP/M. It explains how to operate the system, manage files and disks, configure the environment, and use the supplied commands and utilities.
+
+Readers who want to write programs, adapt BetterCP/M to another computer, investigate compatibility questions, or study the operating system's implementation will find additional information in the technical documentation.
+
+This appendix describes the principal documentation resources and explains where to look for further information.
+
+## H.1 BetterCP/M Documentation
+
+The BetterCP/M documentation is organized around the needs of different readers.
+
+Some documents introduce the operating system and its facilities. Others serve as programming references or provide detailed information for developers and system maintainers.
+
+The principal documentation categories are described below.
+
+### User's Guide
+
+**Audience:** BetterCP/M users.
+
+The *BetterCP/M User's Guide* is the document you are reading.
+
+It covers the operating environment, everyday commands, file management, disk operations, configuration, resident extensions, and other facilities needed for normal use.
+
+Part I introduces the system and explains common tasks.
+
+Part II provides detailed command and utility references.
+
+The appendices summarize commands, keyboard conventions, file specifications, compatibility considerations, and system messages.
+
+The User's Guide is not intended to describe the internal implementation of every facility.
+
+### Architecture Overview
+
+**Audience:** Experienced CP/M users, programmers, and developers interested in the organization of BetterCP/M.
+
+The *BetterCP/M Architecture Overview* describes the operating system's major components and how they work together.
+
+Subjects include the command processor, BDOS, BIOS, resident extensions, memory organization, and the relationships among the system's principal subsystems.
+
+The Architecture Overview provides a broader understanding of BetterCP/M's design without requiring readers to study every implementation detail.
+
+It is a useful starting point for anyone interested in how BetterCP/M works internally.
+
+### Developer's Guide
+
+**Audience:** Assembly-language programmers and developers writing software for BetterCP/M.
+
+The *BetterCP/M Developer's Guide* covers the programming interfaces available to applications and extensions.
+
+It explains how programs interact with the operating system and identifies the facilities available beyond conventional CP/M 2.2.
+
+Programmers writing ordinary CP/M applications should also consult Digital Research's original CP/M programming documentation.
+
+The Developer's Guide is particularly relevant when using BetterCP/M-specific interfaces or developing software that depends on its extensions.
+
+### Porting Guide
+
+**Audience:** Developers adapting BetterCP/M to additional computers.
+
+The *BetterCP/M Porting Guide* addresses the work required to bring BetterCP/M to another hardware platform.
+
+This includes the hardware-dependent portions of the operating system and the facilities that must be supplied by the target computer.
+
+The guide is intended for readers familiar with CP/M system organization and assembly-language programming.
+
+Ordinary users do not need the Porting Guide unless they are interested in adapting or maintaining a platform-specific implementation.
+
+### Engineering Specifications
+
+**Audience:** BetterCP/M developers, maintainers, and contributors.
+
+The engineering specifications document individual components and utilities in greater detail.
+
+They describe implementation requirements, interfaces, restrictions, compatibility behavior, and other technical contracts.
+
+For example, separate specifications cover facilities such as CONFIG, DUP, SYSGEN, and the clock providers.
+
+These documents are more detailed than the User's Guide and may include information about internal data structures, error handling, and implementation constraints.
+
+They are particularly useful when modifying BetterCP/M or investigating whether an implementation behaves according to its intended design.
+
+Engineering specifications are maintained in the repository's:
+
+```text
+docs/engineering/
+```
+
+directory.
+
+Because BetterCP/M is an actively developed project, consult the specification corresponding to the version or build you're working with.
+
+### Compatibility Documentation
+
+**Audience:** Developers, system maintainers, and users investigating differences between BetterCP/M and historical CP/M implementations.
+
+BetterCP/M's compatibility documentation examines the behavior of conventional CP/M interfaces and utilities.
+
+It records compatibility requirements, implementation differences, and results of compatibility testing.
+
+This documentation is useful when investigating a program that behaves differently under BetterCP/M than under Digital Research CP/M 2.2.
+
+Appendix E provides a user-level introduction to these issues.
+
+For detailed compatibility analysis, consult the dedicated compatibility documentation.
+
+## H.2 Utility Documentation
+
+BetterCP/M includes utilities ranging from simple commands to substantial programs with their own command languages and operating conventions.
+
+The frequently used commands are documented in Part II of this manual.
+
+More substantial utilities may have separate documentation.
+
+This follows a practice familiar from Digital Research CP/M, where programs such as ED, ASM, and DDT were documented individually.
+
+### Standard Utilities
+
+The User's Guide provides references for the principal BetterCP/M commands and system utilities.
+
+These include:
+
+| Utility | Documentation |
+|---|---|
+| DIR, ERA, REN, TYPE | Chapter 14 |
+| COPY, MOVE | Chapter 14 |
+| USER, CLS, VER | Chapter 15 |
+| GET, GO, JUMP, PEEK, POKE, SAVE | Chapter 15 |
+| CONFIG, STAT, TIME | Chapter 16 |
+| DUP, SYSGEN | Chapter 16 |
+| SUBMIT, XSUB | Chapter 17 |
+| CPX, RSX | Chapter 17 |
+
+These references describe the commands available to users, their syntax, options, and important restrictions.
+
+### Development Utilities
+
+BetterCP/M also provides development utilities, including traditional CP/M programming tools.
+
+Examples include:
+
+**ASM** — An assembler for Intel 8080 assembly-language programs.
+
+**LOAD** — A utility for converting Intel hexadecimal object files into executable CP/M programs.
+
+**DDT** — A machine-language debugger.
+
+**ED** — A line-oriented context editor.
+
+These programs have their own operating conventions and may require more extensive documentation than is appropriate for a single User's Guide entry.
+
+Where separate manuals are provided, they should be consulted for complete instructions.
+
+### Other Utilities
+
+Additional programs may be supplied for system construction, diagnostics, terminal testing, or specialized file operations.
+
+For example, SYSBUILD is intended primarily for constructing BetterCP/M system images.
+
+Terminal test utilities such as ADMTST, VT52TST, and ANSITST help verify supported terminal environments.
+
+The documentation accompanying each utility describes its intended use and any special requirements.
+
+Not every utility necessarily belongs in the User's Guide. Some are primarily intended for developers or system maintainers.
+
+## H.3 Digital Research CP/M Documentation
+
+Digital Research's original CP/M documentation remains an important reference for BetterCP/M users and programmers.
+
+BetterCP/M preserves the principal CP/M 2.2 programming conventions, so the original manuals provide useful background and detailed descriptions of the historical operating system.
+
+The following publications are particularly relevant.
+
+### CP/M Operating System Manual
+
+The *CP/M Operating System Manual* provides an introduction to CP/M and its operation.
+
+It covers the command environment, file organization, system utilities, and other facilities of the original operating system.
+
+Readers familiar with BetterCP/M may find it useful for understanding the historical conventions retained by the newer system.
+
+### CP/M 2.2 Interface Guide
+
+The *CP/M 2.2 Interface Guide* describes the programming interfaces provided by Digital Research CP/M.
+
+It is particularly important for programmers using BDOS and BIOS services.
+
+The guide documents the conventional calling interfaces and system behavior expected by CP/M applications.
+
+**A documentation caution:** Surviving editions and reprints of the CP/M Interface Guide are not necessarily identical. In particular, some editions omit the addendum describing BDOS functions 37 and 40.
+
+Programmers should ensure that their reference includes the CP/M 2.2 additions rather than relying solely on the main function summary, which may end at function 36.
+
+### CP/M 2.2 Alteration Guide
+
+The *CP/M 2.2 Alteration Guide* describes the procedures and interfaces involved in adapting CP/M to different computer systems.
+
+It is primarily intended for system programmers and hardware developers.
+
+The document is useful for understanding the historical division between the hardware-independent operating system and the machine-specific BIOS.
+
+BetterCP/M's own porting and engineering documentation should be used when adapting BetterCP/M itself.
+
+### ED, ASM, and DDT Documentation
+
+Digital Research also published documentation for its principal development utilities.
+
+These include:
+
+**ED** — The CP/M context editor.
+
+**ASM** — The CP/M assembler.
+
+**DDT** — The Dynamic Debugging Tool.
+
+These manuals remain useful for understanding the conventions and command languages of the traditional CP/M development environment.
+
+BetterCP/M's corresponding utility documentation should be consulted for any implementation-specific differences.
+
+## H.4 Other Historical CP/M Documentation
+
+Digital Research was not the only source of CP/M documentation.
+
+Computer manufacturers, software publishers, and independent authors produced manuals describing their own CP/M implementations and programming environments.
+
+These publications can be particularly useful when working with historical hardware or software.
+
+### Manufacturer Documentation
+
+Manufacturers frequently supplied CP/M manuals adapted to their computers.
+
+These might describe the machine's BIOS, disk formats, terminal characteristics, peripheral devices, and installation procedures.
+
+Examples include documentation published for systems from Morrow Designs, North Star Computers, Heath, and other CP/M manufacturers.
+
+Such manuals can help explain why software behaves differently on particular computers.
+
+However, manufacturer-specific conventions should not automatically be treated as standard CP/M behavior.
+
+### Independent Programming References
+
+Independent books and programming guides also provide valuable information about CP/M.
+
+For example, Sol Libes's *Programmer's Guide to CP/M* discusses programming techniques and the operating-system environment from the perspective of contemporary CP/M development.
+
+These publications may contain practical examples and explanations not found in Digital Research's official manuals.
+
+As with manufacturer documentation, readers should distinguish standard CP/M interfaces from implementation-specific techniques.
+
+### Historical Documentation and BetterCP/M
+
+Historical manuals are especially useful when investigating compatibility questions.
+
+For example, a program may rely on a particular terminal convention, disk layout, or undocumented operating-system behavior.
+
+Contemporary documentation can help identify the assumptions under which the program was originally written.
+
+BetterCP/M's compatibility documentation records the results of investigations into such behavior.
+
+## H.5 Online Resources
+
+The BetterCP/M source repository is the principal online resource for current project documentation.
+
+### BetterCP/M Repository
+
+The project is maintained at:
+
+**https://github.com/CPMArchives/BetterCPM**
+
+The repository contains source code, documentation, engineering specifications, and other project materials.
+
+The main documentation directory is:
+
+```text
+docs/
+```
+
+Engineering specifications are maintained under:
+
+```text
+docs/engineering/
+```
+
+Readers should consult the repository for the latest documentation corresponding to the current BetterCP/M development state.
+
+### Digital Research Documentation Archives
+
+Historical CP/M documentation is available through several online archives.
+
+One particularly useful collection is the Digital Research library maintained at:
+
+**http://www.cpm.z80.de/drilib.html**
+
+This collection includes scans of original Digital Research manuals and other CP/M-related publications.
+
+It is a valuable resource for comparing different editions of the documentation and examining the original programming interfaces.
+
+### Additional CP/M Resources
+
+Other online archives preserve CP/M software, disk images, manuals, source code, and historical discussions.
+
+These resources are useful when locating original application documentation, studying machine-specific implementations, or investigating compatibility problems.
+
+When using archived software or documentation, pay attention to the version and target computer.
+
+A manual describing one manufacturer's CP/M implementation may not accurately describe another.
+
+## H.6 Choosing the Right Documentation
+
+The following table summarizes where to begin when looking for additional information.
+
+| If you want to... | Consult... |
+|---|---|
+| Learn to use BetterCP/M | User's Guide, Part I |
+| Look up a command or utility | User's Guide, Part II |
+| Find command syntax quickly | Appendix A |
+| Learn command-line editing keys | Appendix B |
+| Understand control characters | Appendix C |
+| Use extended file specifications | Appendix D |
+| Understand CP/M compatibility differences | Appendix E |
+| Interpret system messages | Appendix F |
+| Look up terminology | Appendix G |
+| Understand BetterCP/M's internal organization | Architecture Overview |
+| Write applications or extensions | Developer's Guide |
+| Adapt BetterCP/M to another computer | Porting Guide |
+| Modify or maintain an operating-system component | Engineering Specifications |
+| Investigate compatibility behavior | Compatibility Documentation |
+| Study original CP/M programming interfaces | Digital Research CP/M 2.2 Interface Guide |
+| Study historical CP/M system adaptation | Digital Research CP/M 2.2 Alteration Guide |
+| Use a substantial development utility | Its individual utility manual |
+
+The User's Guide should ordinarily provide enough information for everyday operation.
+
+When a subject requires deeper technical treatment, the appropriate programming, architecture, or engineering document provides the next level of detail.
+
+---
