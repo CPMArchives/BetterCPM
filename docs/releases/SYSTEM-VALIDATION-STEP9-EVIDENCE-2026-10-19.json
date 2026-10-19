@@ -1,0 +1,27 @@
+{
+  "status": "STEP9_OPEN",
+  "baseline_source_revision": "5f3f3f38bb11",
+  "items": {
+    "S9-01": "PASS",
+    "S9-02": "RUNNING",
+    "S9-03": "PASS",
+    "S9-04": "RUNNING"
+  },
+  "archive": {
+    "path": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/validation-evidence/BetterCPM-Step9-V048-cpmsim.tar.gz",
+    "sha256": "ce950708fddf3a84fdd731211b94ac814fff931d45d70a369a928f03307b49b0",
+    "bytes": 2961962,
+    "verified_files": 811
+  },
+  "accepted_results": {
+    "bettercpm-v048-r3-cpmsim-workflow/result.json": {
+      "status": "PASS",
+      "sha256": "767a5822aba33744f61f27dcbcbe3f8c29c50b731593f6dc57e26c21d77d03d7"
+    },
+    "bettercpm-v048-config-install/result.json": {
+      "status": "PASS",
+      "sha256": "92cf0e66ac33ddd954c14723139eb1c9dded356f074d1868498be99c265d55d5"
+    }
+  },
+  "limits": "Selected continuous cpmsim sessions and integrated configured installation pass; no completed native workflow or final clean merged-source acceptance claimed. Excluded prompt-entry attempts are retained."
+}

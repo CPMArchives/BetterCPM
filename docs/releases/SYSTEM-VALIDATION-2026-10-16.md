@@ -33,7 +33,7 @@ The source checkout was clean and was not modified. A private clone at
 | 4. Resident/transient command integration | Partial; fresh native file workflow passes | V013 covers native file workflows. V021/V023–V027 add shipped cpmsim ERA/REN/COPY/MOVE/DIR/STAT/TYPE selectors, protection, reporting and controlled recovery. Broader native repetition and caller-state cases remain. |
 | 5. Utility operations and failure recovery (original Step 7) | CLOSED — V044 | S7-01–S7-04 PASS: restored ERA/DUP/SYSGEN evidence and actual cpmsim PIP endpoints plus native verified copy, CRT and unavailable-device gates. Retained raw archive and hashed result index. Broader conformance, monitor/input, device/profile and final acceptance work remain separate. |
 | 6. Monitors and applications (original Step 8) | CLOSED — V047 | All six native/cpmsim personality pairs, production protocol/lifecycle checks, selected unchanged external applications, native bells and bounded input regressions pass. Durable evidence and explicit profile limits are recorded in SYSTEM-VALIDATION-STEP8-2026-10-19.md. Historical input observation remains not reproduced; final acceptance is separate. |
-| 7. End-to-end release workflows | Partial; CONFIG startup cold boot passes | V014 confirms saved startup executes only on next cold boot. V017 adds cpmsim named system export/install/reboot. V018 verifies the native named-package round trip; V020 verifies disk-source installation/reboot. Other complete release workflows remain. |
+| 7. End-to-end release workflows (original Step 9) | IN PROGRESS — V048 | Continuous cpmsim user/cold-boot and CONFIG save/export/install/configured-cold-boot workflows PASS. Native counterparts running. Finite S9-01–04 checklist: SYSTEM-VALIDATION-STEP9-2026-10-19.md. |
 | 8. Closure and final acceptance reruns | Not run | Resolve failures, identify accepted limits, rebuild and rerun against final revision/images. |
 
 A status of not run is not a pass. Observations and explicit suite exclusions
@@ -3539,3 +3539,24 @@ are not certified by these emulator/CPU-model results. The documented Model 4
 Step 9 release workflows is next. Overall validation, remaining conformance
 accounting and final clean merged-source acceptance remain open. Documentation
 alignment and the Utilities/CP/M Tools disks follow in the agreed order.
+
+## V048 — Step 9 complete release sessions started
+
+The [Step 9 checklist](SYSTEM-VALIDATION-STEP9-2026-10-19.md) defines four finite
+workflow items. Continuous cpmsim user operation plus repeated returns/second
+cold boot PASS, including README, files across DUs, ED text/backup, attribute
+changes, erasure, SUBMIT and all three monitor personalities. The separate
+CONFIG startup/IOBYTE save, exact named package export, confirmed populated-media
+install and configured cold boot also PASS. Shipped-file, independent filesystem,
+sentinel, payload and immutable-baseline checks distinguish actual behavior from
+command echoes or success messages.
+
+Initial prompt-prefix harness attempts are excluded; the accepted workflow gates
+on complete editor readiness. Native integrated user and configuration/install
+counterparts are still running and have no final verdict yet. No production
+changes, Step 9 closure or final acceptance is claimed.
+
+V048 raw cpmsim evidence is retained outside temporary storage with per-file
+hash verification; see [the result/archive index](SYSTEM-VALIDATION-STEP9-EVIDENCE-2026-10-19.json).
+Native interim artifacts and a bounded startup-handoff diagnostic are not
+counted as completed workflow passes.
