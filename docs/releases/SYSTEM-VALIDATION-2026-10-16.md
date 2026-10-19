@@ -32,7 +32,7 @@ The source checkout was clean and was not modified. A private clone at
 | 3. CPX/RSX lifecycle, relocation, ROM protection | Selected checks pass; V031 XSUB finding corrected and qualified (V032) | V016 identifies and clears an uninitialized cold-entry loader-recovery flag. Poisoned-RAM initializer test, 32 pristine-media cold boots and guarded lifecycle/stack/workspace checks pass. Focused production monitor relocation checks pass on both backends (V015). Deferred manual/device checks remain explicit. |
 | 4. Resident/transient command integration | Partial; fresh native file workflow passes | V013 covers native file workflows. V021/V023–V027 add shipped cpmsim ERA/REN/COPY/MOVE/DIR/STAT/TYPE selectors, protection, reporting and controlled recovery. Broader native repetition and caller-state cases remain. |
 | 5. Utility operations and failure recovery (original Step 7) | CLOSED — V044 | S7-01–S7-04 PASS: restored ERA/DUP/SYSGEN evidence and actual cpmsim PIP endpoints plus native verified copy, CRT and unavailable-device gates. Retained raw archive and hashed result index. Broader conformance, monitor/input, device/profile and final acceptance work remain separate. |
-| 6. Monitors and applications (original Step 8) | IN PROGRESS — bounded S8-01–05 review started 19 October | V013–V014 exercise all three shipped monitor/backend pairs, native file workflows and cpmsim TYPE paging/file boundaries. Broader applications, audio/manual/device and exhaustive protocol coverage are not implied. |
+| 6. Monitors and applications (original Step 8) | CLOSED — V047 | All six native/cpmsim personality pairs, production protocol/lifecycle checks, selected unchanged external applications, native bells and bounded input regressions pass. Durable evidence and explicit profile limits are recorded in SYSTEM-VALIDATION-STEP8-2026-10-19.md. Historical input observation remains not reproduced; final acceptance is separate. |
 | 7. End-to-end release workflows | Partial; CONFIG startup cold boot passes | V014 confirms saved startup executes only on next cold boot. V017 adds cpmsim named system export/install/reboot. V018 verifies the native named-package round trip; V020 verifies disk-source installation/reboot. Other complete release workflows remain. |
 | 8. Closure and final acceptance reruns | Not run | Resolve failures, identify accepted limits, rebuild and rerun against final revision/images. |
 
@@ -3512,3 +3512,30 @@ artifacts. It is saved outside temporary storage and verified per file.
 S8-01/S8-02 now have passing selected three-personality coverage on both targets;
 Step 8 remains open for the final contract/application/profile disposition and
 input/operator review described in its checklist. No production code changed.
+
+## V047 — Step 8 closed: final input, bell and profile disposition
+
+**Original Step 8 (condensed stage 6) is CLOSED.** Its five finite checklist
+items are satisfied for the documented subsets and selected emulator/application
+profiles; see the [final disposition](SYSTEM-VALIDATION-STEP8-2026-10-19.md).
+The [evidence index](SYSTEM-VALIDATION-STEP8-EVIDENCE-2026-10-19.json) hashes 18
+accepted result records and three durable per-file-verified raw archives.
+
+Basic and ADM3A native input each pass A0:MEDIA + CR at 12/25/60-unit timings,
+qualified command execution, Backspace correction and clean return/unload to
+53K. All six raw samples contain colon 3Ah. V040 is not reproduced and remains
+a historical observation, with no claimed cause or fix; retain the focused
+input check for final acceptance. Three separately gated native bell recordings
+pass exactly 512 transitions each; host output is BEL 07h for all three
+personalities. Additional actual-manager selection checks pass both BIOS builds.
+
+The incomplete combined audio attempt and the first selection wrapper's leaked
+mutable request pointer are explicitly excluded; independent corrected cases
+pass. No production changes were made. Physical keyboard mappings/speakers,
+arbitrary terminals, exhaustive protocols and unsupported application hardware
+are not certified by these emulator/CPU-model results. The documented Model 4
+24-row monochrome limits and selected external application scopes are explicit.
+
+Step 9 release workflows is next. Overall validation, remaining conformance
+accounting and final clean merged-source acceptance remain open. Documentation
+alignment and the Utilities/CP/M Tools disks follow in the agreed order.

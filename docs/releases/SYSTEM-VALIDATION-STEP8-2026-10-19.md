@@ -4,6 +4,14 @@ Started 19 October 2026 after V044 closed Step 7. This is original Step 8,
 equivalent to stage 6 in the condensed campaign table. Overall acceptance
 remains open. Utilities Disk and CP/M Tools Disk are outside this campaign.
 
+## Current decision — V047
+
+**Step 8 CLOSED, 19 October 2026.** All five finite items are satisfied for the
+selected emulator/subset/application scope. The initial and intermediate statuses
+below remain historical progress records; the final disposition is at the end.
+No unresolved release-blocking monitor/application finding was identified.
+Overall system validation and final merged-source acceptance remain open.
+
 ## Remaining phase order
 
 1. Step 8: monitors and representative applications.
@@ -144,3 +152,71 @@ CPU-model or physical-terminal claims. Step 8 remains OPEN for final subset/
 application/profile disposition and S8-05 input/operator review. The guest
 startup fixture avoids initial host command-entry timing; it does not establish
 that the separate V040 input anomaly has been fixed.
+
+## V047 — final requirement and profile disposition
+
+| Item | Disposition | Evidence and limits |
+| --- | --- | --- |
+| S8-01 | PASS | All three native personality/M4SCRN pairs complete their dedicated exercises, screen-memory assertions, parser reset and unload/53K; independent filesystem/file audits pass. |
+| S8-02 | PASS | All three actual cpmsim/ANSISCRN pairs complete their exercises, protocol queries, captured-wire/software-terminal assertions and unload/53K. |
+| S8-03 | PASS, documented subsets | Both-backend relocated production protocol matrices and six actual-manager lifecycle cases cover wrap/scroll/margins, rendition/cursor, bounded parser cancellation/reset and movement. Additional manager-selection cases pass on both BIOS builds. Host BEL output is exactly 07h for all three personalities; three separate native recordings each contain exactly 512 threshold transitions, with emulator sound effects muted. |
+| S8-04 | PASS, selected external applications | Unchanged VT52 WordStar opens/edits/saves/returns on cpmsim, saved bytes are inspected, and unload restores 53K. Unchanged MM CONFIG opens its native ADM3A menu correctly; writes and MM-specific configuration are outside this witness. |
+| S8-05 | Bounded regression PASS; historical observation retained | Basic console and ADM3A/M4SCRN each receive exact A0:MEDIA + CR bytes at 12, 25 and 60-unit timings. All six samples contain colon 3Ah. Qualified A0:VER /VER executes afterward; Backspace repairs RSX LISX to RSX LIST; complete unload restores 53K. The old intermittent anomaly is not reproduced, not assigned a cause, and not claimed fixed. |
+
+### Contract coverage and explicit limits
+
+- Position, basic movement and erasure combine actual native pages with host
+  wire/rendering assertions. ADM3A wrap and reverse blank fills, VT52's clamped
+  right margin and bottom/reverse scroll, and ANSI margins/save/rendition and
+  malformed-sequence handling have independent production CPU-model checks.
+- Model 4 remains a physical 80-column, 24-row monochrome rendering target.
+  Native reverse cells are checked; canonical ANSI styles/colors are not a
+  promise of physical colors or a 25th row. The host backend's larger-geometry
+  assertions use a software terminal. The old 25-row TE configuration is not
+  promoted to Model 4 compatibility evidence.
+- Personality selection/rejection, movement and preserved parser state are
+  checked through the actual production manager in instruction fixtures;
+  synthetic selection providers are labeled as such. Dedicated native and live
+  cpmsim exercises establish real provider binding, return and unload behavior.
+  These are selected combinations, not an exhaustive protocol/application matrix.
+- Native audio recordings verify generated waveforms rather than merely nonzero
+  audio. No physical-speaker loudness, human hearing, real Model 4 hardware or
+  arbitrary physical terminal certification is claimed. Actual cpmsim PTY wire
+  and software-terminal results remain distinguished from those profiles.
+- Matrix-key injection exercises guest input and CCP editing, not the user's
+  macOS modifier remapping or every host keyboard layout. The historical V040
+  observation stays in the campaign as not reproduced. The final acceptance
+  pass must include the same focused input regression; no production fix is
+  inferred merely from success at a slower timing.
+
+### Final evidence and exclusions
+
+The [evidence index](SYSTEM-VALIDATION-STEP8-EVIDENCE-2026-10-19.json) now records
+18 hash-verified accepted PASS results and three durable raw archives. The V047
+archive contains native input captures/probe sources, three complete WAVs,
+executed runners, before/after media, filesystem/file audits, selection fixtures,
+and the extended production protocol/BEL-wire check. It was reopened and every
+archived file checked against its hash manifest.
+
+The combined audio attempt did not reach its final marker; its partial recording
+is excluded. Separate input-ready, per-personality captures all complete and
+pass. The first two-target selection wrapper reused a mutable fixture request
+pointer from the first target; resetting it to 0300h between targets makes both
+pass. A fresh diagnostic run shows no duplicate-load changes to the retained
+bytes. This is an excluded wrapper-state failure, not a production defect or an
+ignored failed result. Earlier capture-ordering/input-ready retries remain
+explicitly excluded as recorded in V045/V046.
+
+No OS, monitor payload, key mapping or permanent memory allocation changed.
+The frozen V044 images remain the baseline; this is not final merged-release
+acceptance. Step 9, complete release workflows, is next. Broader conformance and
+final acceptance accounting remain open in their proper campaign stages.
+
+A final live cpmsim switching session also PASSes ADM3A, VT52 and ANSI dedicated
+exercises in that order while retaining ANSISCRN between personalities. All
+three identities are observed, no missing-provider diagnostic occurs, full
+unload restores 53K, and every shipped file/filesystem audit passes. This is
+actual same-session switching evidence; synthetic manager fixtures are not used
+as a substitute for it. The incomplete native combined-audio queue remains
+excluded, not reclassified as a passing switching workflow. Complete native
+release sessions, including switching, remain part of Step 9.

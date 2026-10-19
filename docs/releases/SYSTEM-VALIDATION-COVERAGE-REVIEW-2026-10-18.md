@@ -1,6 +1,6 @@
 # System validation coverage and device review — 2026-10-18
 
-This review began after V036. V044 closes Step 7; system acceptance remains open.
+This review began after V036. V044 closes Step 7 and V047 closes Step 8; system acceptance remains open.
 The Utilities Disk and CP/M Tools disk remain outside this campaign.
 
 ## Evidence rules
@@ -131,3 +131,19 @@ individual rows. The list makes the next reconciliation finite and reviewable.
 | ERRTEST | 0397 | Abort restart details |
 | ERRTEST | 0586 | Physical-error abort abandons the interrupted caller |
 | ERRTEST | 0587 | Abort recovery establishes a usable command environment |
+
+## V047 monitor/input profile update
+
+Step 8 is closed for its documented emulator/subset/application scope; its
+[final disposition](SYSTEM-VALIDATION-STEP8-2026-10-19.md) supersedes earlier
+open monitor/profile language here. Six native raw-input samples (basic and
+ADM3A, three timings each) preserve colon 3Ah; qualified CCP entry, Backspace
+editing and unload/53K also pass. V040 remains a not-reproduced historical
+observation, not a claimed fix or an unresolved reproduced production failure.
+Include the focused input regression in final acceptance.
+
+Native waveform checks now pass separately for ADM3A/VT52/ANSI; host BEL wire
+checks pass all three. Physical hardware, speaker loudness/human hearing and
+host modifier remapping are not silently labeled PASS. Their boundaries are
+stated in the Step 8 disposition; no blanket certification of every physical
+terminal is made. Final merged-source/profile acceptance remains open.
