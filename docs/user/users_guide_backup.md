@@ -3170,3 +3170,401 @@ The unchanged TE VT100 editor has passed an open/edit/save/exit test on cpmsim.
 Its standard configuration needs an 80-column, 25-row host window, so that
 configuration is not qualified for the 24-row Model 4. This does not imply full
 VT100 emulation or compatibility with every application.
+
+---
+
+# Chapter 8 — Resident Extensions
+
+One of BetterCP/M's most useful features is its ability to add commands and system services without rebuilding the operating system.
+
+These additions are called **resident extensions**. Unlike ordinary transient programs, which are loaded when needed and normally disappear when they finish, resident extensions remain in memory and continue to provide their facilities while you work.
+
+BetterCP/M supports two principal kinds of extensions: Command Processor Extensions (CPXs) and Resident System Extensions (RSXs).
+
+This chapter explains how to use and manage them. You don't need to understand their internal workings to take advantage of the facilities they provide.
+
+For complete command syntax and options, consult the CPX and RSX entries in Part II, *Command and Utility Reference*.
+
+## 8.1 Introducing Resident Extensions
+
+In conventional CP/M, the command processor provides a small collection of built-in commands. Most other commands are transient programs loaded from disk.
+
+BetterCP/M extends this arrangement by allowing additional commands and services to remain resident.
+
+For example, a resident extension might provide frequently used file-management commands, add a new operating-system service, or support a particular terminal.
+
+Resident extensions offer several advantages.
+
+A resident command is immediately available without loading a separate program from disk each time it is used. A resident service can remain available while different applications execute. Extensions can also be loaded and unloaded to suit the work you're doing.
+
+There is a tradeoff, however: resident extensions occupy memory that would otherwise be available to transient programs.
+
+BetterCP/M allows you to choose which optional extensions to keep loaded, making it possible to balance additional facilities against available program memory.
+
+### Two Kinds of Extensions
+
+BetterCP/M distinguishes between two principal types.
+
+**Command Processor Extensions (CPXs)** add commands to the command environment. They are particularly useful for commands that you use frequently.
+
+**Resident System Extensions (RSXs)** provide services that remain available while other programs execute. Terminal monitors and certain batch-processing facilities are examples.
+
+Although both types remain resident, they serve different purposes and are managed separately.
+
+## 8.2 Command Processor Extensions
+
+A Command Processor Extension adds commands to BetterCP/M's command processor.
+
+The standard BetterCP/M environment includes a resident command package named `RCP.CPX`.
+
+This package provides familiar commands such as:
+
+```text
+DIR   ERA   TYPE   REN   USER
+CLS   VER   COPY   MOVE
+```
+
+These commands can be executed without loading separate `.COM` programs.
+
+For example:
+
+```text
+A>DIR
+```
+
+normally invokes the resident DIR command when the standard resident command package is installed.
+
+### Resident and Transient Versions
+
+Some BetterCP/M commands are available in both resident and transient forms.
+
+The resident version generally provides commonly used operations, while the transient version may offer additional options.
+
+For example, the transient DIR utility provides extended directory-display and file-search facilities.
+
+BetterCP/M allows you to request a transient program explicitly by prefixing its name with a colon:
+
+```text
+A>:DIR /WHEREIS ED.COM
+```
+
+This bypasses the resident DIR command and executes `DIR.COM`.
+
+A period can also be used as the prefix:
+
+```text
+A>.DIR /WHEREIS ED.COM
+```
+
+Both forms have the same meaning.
+
+This is useful when a resident command and a transient utility share a name but provide different capabilities.
+
+BetterCP/M 1.0 does not automatically switch to the transient version when you request an option supported only by that version. Instead, the resident command may tell you to invoke the transient utility explicitly.
+
+For example:
+
+```text
+A>DIR /WHEREIS ED.COM
+DIR: Use :DIR.
+```
+
+You can then enter:
+
+```text
+A>:DIR /WHEREIS ED.COM
+```
+
+For more information about resident and transient command execution, see Chapter 5.
+
+### Additional CPXs
+
+BetterCP/M is not limited to its standard resident command package.
+
+Additional CPXs can be installed to provide other commands.
+
+More than one CPX can be active at the same time. BetterCP/M maintains them in a defined order, which determines how their commands are considered when you enter a command name.
+
+Ordinarily, you need not be concerned with that order unless two extensions provide commands with the same name.
+
+The CPX command reference describes the available management operations.
+
+## 8.3 Listing Installed CPXs
+
+Before changing the resident command environment, it's useful to see which CPXs are currently configured.
+
+Enter:
+
+```text
+A>CPX LIST
+```
+
+BetterCP/M displays information about the configured command processor extensions.
+
+The list can help you identify which resident command packages are available and determine whether an optional extension is present.
+
+An extension's appearance in the configured list does not necessarily mean it loaded successfully. If an extension could not be loaded, BetterCP/M may retain its configured entry while reporting a warning.
+
+This distinction is useful when troubleshooting missing resident commands.
+
+## 8.4 Loading and Unloading CPXs
+
+BetterCP/M allows optional CPXs to be added to or removed from the active command environment.
+
+### Loading a CPX
+
+To load a command processor extension, use the CPX management command.
+
+For example, an extension named `TOOLS.CPX` would be requested with:
+
+```text
+A>CPX LOAD TOOLS
+```
+
+The extension must be available in the appropriate location and must be compatible with the running BetterCP/M system.
+
+Once successfully loaded, its commands become available through the normal command environment.
+
+You can enter those commands just as you would any other BetterCP/M command.
+
+### Unloading a CPX
+
+To remove an optional CPX, use:
+
+```text
+A>CPX UNLOAD TOOLS
+```
+
+After the extension has been removed, its commands are no longer available as resident commands.
+
+If corresponding transient programs are present, they may still be executed normally.
+
+Unloading an optional CPX is useful when you no longer need its commands or want to change the resident command environment.
+
+### A Note About Required Extensions
+
+Not every resident component is necessarily optional.
+
+Some facilities are part of the standard command environment or are required for the system to operate correctly.
+
+BetterCP/M's extension-management facilities enforce the applicable restrictions.
+
+If an extension cannot be removed, consult the reported message rather than attempting to bypass the restriction.
+
+## 8.5 Resident System Extensions
+
+Resident System Extensions provide services that remain available while other programs execute.
+
+Unlike CPXs, which add commands to the command processor, RSXs extend the operating environment itself.
+
+Terminal support is one of the most useful examples.
+
+A program written for a particular terminal may expect certain control sequences to move the cursor, clear the screen, or change the display.
+
+BetterCP/M can provide these facilities through resident terminal-monitor extensions.
+
+Other RSXs provide facilities such as support for batch input or disk-format services.
+
+### Listing RSXs
+
+To examine the installed resident system extensions, enter:
+
+```text
+A>RSX LIST
+```
+
+BetterCP/M displays the currently installed RSXs.
+
+This is useful when checking which services are available or determining whether an extension is still occupying memory.
+
+### Loading an RSX
+
+To load an RSX, use the RSX command.
+
+For example:
+
+```text
+A>RSX LOAD ADM3A
+```
+
+requests the ADM-3A terminal personality.
+
+Some RSXs depend on other extensions being loaded first.
+
+Terminal personalities, for example, require a suitable screen backend. The backend provides the connection to the computer's display, while the terminal personality interprets the control sequences expected by applications.
+
+The required loading order is described in Chapter 9.
+
+### Unloading an RSX
+
+To remove an RSX, enter:
+
+```text
+A>RSX UNLOAD ADM3A
+```
+
+BetterCP/M removes the extension when it can safely do so.
+
+An extension that is still needed by another resident component cannot necessarily be unloaded immediately.
+
+For example, a screen backend should not be removed while a terminal personality that depends on it remains active.
+
+In such cases, unload the dependent extension first.
+
+The RSX manager checks these relationships and reports operations that cannot be performed safely.
+
+## 8.6 Extension Order and Memory Use
+
+Resident extensions are loaded into memory and remain available until they are removed or the operating environment is reinitialized.
+
+Because CP/M systems have limited memory, the number and size of loaded extensions can matter.
+
+### Available Program Memory
+
+Ordinary CP/M programs execute in the Transient Program Area, or TPA.
+
+Resident extensions use memory that would otherwise be available to those programs.
+
+Consequently, loading an extension can reduce the maximum size of a transient program that BetterCP/M can execute.
+
+For example, you might load a terminal monitor to run a full-screen editor. While the monitor is active, less memory is available to the editor.
+
+If you later want to run a particularly large program that doesn't require terminal emulation, you can unload the monitor and recover the memory it occupied.
+
+This flexibility is one of the advantages of BetterCP/M's extension system.
+
+### Choosing Which Extensions to Load
+
+There's no particular advantage to loading every available extension simply because it exists.
+
+Instead, consider which facilities you actually use.
+
+Frequently used commands may be worth keeping resident.
+
+A terminal monitor may be essential when running a particular application but unnecessary when using ordinary command-line utilities.
+
+Specialized extensions can be loaded when needed and removed afterward.
+
+### Extension Dependencies
+
+Some extensions depend on other resident components.
+
+For example, a terminal personality may require a particular screen backend.
+
+These dependencies affect the order in which extensions must be loaded and unloaded.
+
+In general, load the supporting component first, followed by the extension that uses it.
+
+When removing them, reverse the order.
+
+Chapter 9 provides examples involving terminal monitors.
+
+## 8.7 Loading Extensions at Startup
+
+If you regularly use the same resident extensions, you may prefer to load them automatically when BetterCP/M starts.
+
+The standard BetterCP/M startup arrangement uses `STARTUP.SUB`, which is executed during a cold boot.
+
+You can add extension-loading commands to this file.
+
+For example, a system using an appropriate screen backend might include:
+
+```text
+RSX LOAD M4SCRN
+RSX LOAD ADM3A
+CLS
+```
+
+These commands load the screen backend, activate the ADM-3A terminal personality, and clear the display.
+
+The example is appropriate only for systems supporting the named backend.
+
+Other computers may require a different screen backend or terminal personality.
+
+Before adding extension-loading commands to your startup file, test them individually at the command prompt.
+
+Once you've confirmed that they work correctly, you can add them to `STARTUP.SUB`.
+
+Chapter 7 explains how to configure the startup command.
+
+## 8.8 Warm Boots and Extension Persistence
+
+One of the distinguishing characteristics of BetterCP/M's resident extension system is that supported extensions remain available across ordinary warm boots.
+
+In conventional CP/M, a warm boot returns control to the command environment after a program terminates.
+
+BetterCP/M retains this behavior while preserving the resident extensions that are intended to survive.
+
+For example, suppose you've loaded a terminal monitor and then started a full-screen editor.
+
+When you leave the editor and return to the command prompt, the terminal monitor remains installed.
+
+You can start another compatible application without loading the monitor again.
+
+Similarly, command processor extensions remain available as the command environment is restored after transient programs finish.
+
+A cold boot establishes a new operating session and loads the configured startup environment.
+
+If you want a particular extension available after every cold boot, include the appropriate loading commands in your startup configuration.
+
+## 8.9 Recovering from Extension Problems
+
+Resident extensions are normally straightforward to manage, but occasionally an extension may be missing, damaged, incompatible, or incorrectly configured.
+
+BetterCP/M provides safeguards intended to prevent an unusable optional extension from making the entire command environment unavailable.
+
+### An Unusable CPX
+
+If an optional CPX cannot be loaded or fails validation, BetterCP/M may display:
+
+```text
+CPX?
+```
+
+The system continues to the command prompt with the remaining usable extensions.
+
+Commands supplied by the rejected CPX will not be available.
+
+The extension may nevertheless remain in the configured list, so its appearance in `CPX LIST` does not necessarily indicate that it loaded successfully.
+
+To remove an unusable optional extension, enter:
+
+```text
+A>CPX UNLOAD BAD
+```
+
+where `BAD` is the name of the affected extension.
+
+Alternatively, replace the damaged extension file with a valid copy.
+
+Until the problem is corrected, the warning may recur when BetterCP/M restores the command environment.
+
+### An RSX Cannot Be Unloaded
+
+If BetterCP/M refuses to unload an RSX, another extension may still depend on it.
+
+For example, attempting to unload a screen backend while its terminal personality remains active can be rejected.
+
+Unload the terminal personality first, then remove the backend.
+
+### Insufficient Memory
+
+If a transient program reports insufficient memory, examine the resident extensions currently loaded.
+
+Some may no longer be needed.
+
+Unloading unnecessary extensions can restore memory to the TPA.
+
+### Recovering a Working Environment
+
+If you've made experimental changes to your startup configuration and encounter problems after a cold boot, return to a known working configuration.
+
+You may need to edit `STARTUP.SUB` to remove an unsuitable extension-loading command.
+
+Keeping a backup system disk is particularly useful when experimenting with resident extensions or other system configuration facilities.
+
+For additional troubleshooting information, see Chapter 12.
+
+---
+
+00
