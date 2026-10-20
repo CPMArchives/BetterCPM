@@ -1155,6 +1155,8 @@ The command isn't executed until you press `RETURN`, so you can make as many cor
 
 BetterCP/M uses editing conventions familiar to users of WordStar and other CP/M programs, although not every command-line function uses the same keys as WordStar.
 
+Use Ctrl-S/D to move left/right, Ctrl-A/F to move by word, Ctrl-G/H to delete at/left of the cursor, and Ctrl-V to toggle insert/overwrite. Ctrl-U or Ctrl-X discards the line. Ctrl-E continues on a new physical screen line without executing the command.
+
 The complete key assignments are listed in Appendix B, *Command-Line Editing Keys*.
 
 ## 5.3 Command History
@@ -1163,7 +1165,7 @@ BetterCP/M remembers previously entered commands, allowing you to recall, edit, 
 
 Press **Ctrl-K** to recall an earlier command, or **Ctrl-J** to move forward through the command history.
 
-Depending on your computer's keyboard and terminal configuration, the Up and Down arrow keys may also provide these functions.
+On the original Model 4 keyboard, Up and Down also navigate history. Host emulators and other consoles may translate arrow keys differently; Ctrl-K and Ctrl-J are the portable assignments.
 
 For example, suppose you've just entered:
 
@@ -1472,6 +1474,8 @@ SUBMIT reads the commands from `BACKUP.SUB` and arranges for them to be executed
 
 You don't need to type the `.SUB` extension when invoking SUBMIT.
 
+Keep drive A user 0 writable: SUBMIT and XSUB share the queue `A0:$$$.SUB`, even when the source script and working files are elsewhere. Queue access restores your drive/user context, so commands may change location without moving the queue. See the SUBMIT reference for limits and cancellation behavior.
+
 ### Creating a SUBMIT File
 
 Because SUBMIT files contain ordinary text, you can create them with any CP/M text editor.
@@ -1630,7 +1634,7 @@ XSUB is normally activated as part of a SUBMIT procedure.
 
 Once active, it allows subsequent submitted input to be passed to compatible programs.
 
-The exact arrangement of commands and responses depends on the program being automated. Consult the XSUB command reference for the supported invocation procedure and any restrictions.
+Put `XSUB` before the program, then put its buffered-input responses immediately after the program invocation. Section 17.2 gives a complete `XDEMO.SUB` procedure using ED and explains the Utilities Disk and BATCHIO requirements.
 
 ### Returning to Keyboard Input
 
@@ -5325,6 +5329,7 @@ It also provides sorting, file sizes, attribute display, paging, and directory s
 
 | Option | Description |
 |---|---|
+| `/WHEREIS` | Locate matching files across drives and user areas; see below |
 | `/A` | Display file attributes |
 | `/P` | Pause after each screenful |
 | `/Z` or `/Z=K` | Display allocated space in kilobytes |
@@ -5353,6 +5358,36 @@ The first sorts by filename, the second displays the largest files first, and th
 `/S=U` preserves the disk's directory-search order and does not accept a direction suffix.
 
 Name-ascending order is the default.
+
+### Locating Files with `/WHEREIS`
+
+Use transient DIR to find every location containing a matching filename:
+
+```text
+A>:DIR /WHEREIS ED.COM
+```
+
+`/WHEREIS` requires exactly one filespec. It searches directory names, not file contents, and does not change files or attributes. Wildcards and attribute expressions are supported.
+
+A completely unqualified filespec searches all configured accessible drives and users 0 through 31. Configured drives may still have missing or unreadable media. An explicit drive/user selector restricts the search:
+
+```text
+A>:DIR /WHEREIS B:ED.COM
+A>:DIR /WHEREIS B[-]:ED.COM
+A>:DIR /WHEREIS [A0,B[3-5]]:*.COM[$SYS]
+```
+
+`B:` uses the user area that was current when the command started. `B[-]:` searches every user area on B. The last example searches only A0 and B users 3–5 for system `.COM` files.
+
+Unlike ordinary DIR, `/WHEREIS` includes SYS files by default. An attribute expression can restrict the results; `[$DIR]`, for example, selects only files without SYS.
+
+Each logical file appears once per location, even if it occupies several directory extents. Results use `DU:FILENAME` form, such as `B3:ED.COM`, followed by a match count. Drives and users are visited in ascending order, with native directory order within each location. Even an exact filename search reports all matches in the selected scope.
+
+With no matches, DIR reports `DIR: No matches found.`. Recoverable unavailable-drive or directory-read errors are reported and the search continues elsewhere when safe. A skipped failure or directory-capacity limit adds `Search incomplete.`; a zero-match result in that case does not establish that the file is absent everywhere.
+
+This mode has no ordinary size, attribute-column, free-space, sorting, column-layout, or paging display. Do not combine `/WHEREIS` with `/A`, `/P`, `/Z`, `/C=`, `/S=`, or `/VER`; these combinations are rejected. Attribute predicates in the filespec remain valid. No `/B`, `/Y`, or `/Q` option is needed for unattended searches.
+
+Ctrl-C during console output follows the normal warm-boot cancellation behavior. On normal completion or recoverable errors, DIR preserves the caller's drive/user context; fatal system faults can end the search. Resident DIR does not implement this mode and reports `DIR: Use :DIR.`; use `:DIR` as shown above.
 
 ### Displaying File Sizes
 
@@ -7946,6 +7981,53 @@ A drive-qualified file specification can also be used:
 A>STAT B:REPORT.TXT
 ```
 
+### Syntax and Status Reports
+
+The supported forms are:
+
+```text
+STAT
+STAT filespec [$S|$R/O|$R/W|$SYS|$DIR]
+STAT d:
+STAT d:=R/O
+STAT DSK:
+STAT d:DSK:
+STAT USR:
+STAT DEV:
+STAT VAL:
+STAT MEM
+STAT CON:=device:
+STAT RDR:=device:
+STAT PUN:=device:
+STAT LST:=device:
+STAT target:
+```
+
+Here `d:` means a drive selection. Conventional operands also accept numeric user selectors such as `5:` and `C3:`. Temporary selections are restored before STAT returns. The alternatives inside square brackets on the filespec line are optional file options; type just the option you need, without those brackets or vertical bars.
+
+| Command | Information or action |
+|---|---|
+| `STAT` | Read/write status and free space for logged drives |
+| `STAT B:` | Free space on B at the current user |
+| `STAT DSK:` | Drive characteristics for logged drives |
+| `STAT B:DSK:` | Drive characteristics for B, including record/block capacity and directory limits |
+| `STAT USR:` | Current user and user areas containing files on the current drive |
+| `STAT DEV:` | Current logical-device assignments |
+| `STAT VAL:` | Valid file options and device assignments |
+| `STAT B:=R/O` | Temporarily mark B read-only |
+
+The drive read-only setting is cleared by the normal warm-start/reset path. STAT does not accept `B:=R/W`; use the normal reset procedure to clear the software lock. It does not override hardware write protection.
+
+### Memory Map
+
+```text
+A>STAT MEM
+```
+
+`STAT MEM` displays the current memory map, including protected system regions and RSXs, the CCP and CPXs, transient space, and page zero. Address ranges and byte counts identify what occupies memory.
+
+The final maximum-loadable-COM figure is rounded down to complete 128-byte load records. It can include the memory currently occupied by the reclaimable CCP and CPX command code. That figure describes how large a transient program can be loaded; it is not an additional free region to add to the map. Protected RSXs reduce that maximum. Use `RSX LIST` to identify optional services when investigating a memory shortage.
+
 ### Extended Drive/User Selection
 
 BetterCP/M extends STAT's file-inspection facilities to support explicit user areas and compound selections.
@@ -7996,25 +8078,42 @@ The distinction between logical file size and allocated disk space is important.
 
 ### File Attributes
 
-STAT provides conventional CP/M facilities for examining and changing supported file attributes.
+Use a file option to change attributes in one conventional drive/user location:
 
-These include read-only and system attributes.
+```text
+A>STAT REPORT.TXT $R/O
+A>STAT REPORT.TXT $R/W
+A>STAT B3:*.COM $SYS
+A>STAT B3:*.COM $DIR
+```
 
-Attribute operations can be useful when protecting important files or changing how files appear in directory listings.
+`$R/O` sets read-only protection; `$R/W` clears it. `$SYS` sets the system attribute, while `$DIR` clears SYS so ordinary directory listings can show the file. Wildcards apply the change to all matching files and their extents. These operations do not provide an ARC-setting option.
 
-Be careful when changing the attributes of operating-system or application files. A protected file may have been marked that way deliberately.
+Check the filespec before changing attributes, especially with wildcards. Disk write protection can prevent changes. In a `.SUB` source file, double each dollar sign, for example `STAT REPORT.TXT $$R/O`.
 
 ### Logical Device Assignments
 
-STAT also provides the conventional CP/M facilities for examining and changing logical device assignments through the IOBYTE.
+STAT examines and changes the live IOBYTE, which selects the logical console, reader, punch, and list devices:
 
-These assignments control the supported console, reader, punch, and list-device selections.
+```text
+A>STAT DEV:
+A>STAT LST:=CRT:
+A>STAT CRT:
+A>STAT VAL:
+```
 
-For example, a logical list device may be associated with a printer interface provided by the BIOS.
+The second command maps list output to CRT. The third is an inverse query: it lists every logical device currently assigned to CRT, or reports that CRT is not assigned. Queries do not change assignments or test whether hardware is ready.
 
-The available assignments depend on the computer.
+| Logical device | Accepted targets |
+|---|---|
+| `CON:` | `TTY:`, `CRT:`, `BAT:`, `UC1:` |
+| `RDR:` | `TTY:`, `PTR:`, `UR1:`, `UR2:` |
+| `PUN:` | `TTY:`, `PTP:`, `UP1:`, `UP2:` |
+| `LST:` | `TTY:`, `CRT:`, `LPT:`, `UL1:` |
 
-Changing an IOBYTE assignment does not create hardware support for a device that the BIOS does not provide.
+Several assignments may be supplied together, for example `STAT CON:=CRT: LST:=LPT:`. An inverse query accepts one target from this table, followed by a colon, with no additional operands. It reports matching logical devices in CON/RDR/PUN/LST order.
+
+The available hardware routes depend on the BIOS. An accepted IOBYTE value does not create a device or guarantee that a particular interface is supported. `BAT:` selects the conventional batch console arrangement using reader input and list output where supported; it does not activate SUBMIT or XSUB.
 
 ### Extended Selection Restrictions
 
@@ -9277,6 +9376,20 @@ For a literal dollar sign in the `.SUB` source, write `$$`. For example, write `
 
 The resulting command is interpreted by the command processor or utility that executes it.
 
+### Queue Location and Limits
+
+SUBMIT reads the `.SUB` source in the invoking user area, using the filename's drive qualifier when supplied. It always writes the shared command/input queue as `A0:$$$.SUB`. A0 must be writable and have room for the queue, even if the script and all working files are on another drive. Queue access restores the caller's drive/user context; commands may change drive or user without relocating the queue.
+
+The CCP consumes command lines from this queue. XSUB uses the same queue for buffered program input. Run one submitted procedure at a time; starting another procedure replaces the shared queue rather than creating an independent job.
+
+- The nine ordinary positional parameters are `$1` through `$9`; `$0` refers to the submitted command-file name from the invocation.
+- Parameters are separated by blanks. There is no quoting language for grouping a parameter containing spaces, and no named variables or defaults. A missing referenced parameter expands to empty text, so check that all required arguments are supplied. Invalid dollar references produce `Parameter Error`.
+- Each expanded command is limited to 125 bytes, after parameter, `$$`, and caret-control expansion. An overlong command produces `Command Too Long`.
+- The complete expanded procedure must fit the 2K aggregate command buffer, including its bookkeeping. This is not a 2K source-file allowance; a procedure with many short lines can also reach the limit and produce `Command Buffer Overflow`. Split a long procedure into smaller separately submitted jobs.
+- Empty source lines are omitted. `^A` through `^Z` in the source produce the corresponding control bytes; literal dollar signs require `$$`.
+
+The queue is deleted at normal exhaustion, after a bad submitted command, on console abort, and after malformed-queue or queue read/close failures. An ordinary supported warm boot can reconstruct the command environment and continue pending batch lines. Cancelling a procedure does not undo work already completed. With XSUB, queue exhaustion or an unusable queue returns buffered-input requests to the keyboard.
+
 ### Command Execution
 
 SUBMIT commands execute in the normal BetterCP/M command environment.
@@ -9396,13 +9509,41 @@ Programs that read the keyboard directly, use private input routines, or bypass 
 
 ### Using XSUB
 
-XSUB is normally activated as part of a SUBMIT procedure.
+The activation command is:
 
-The batch file can then supply input to compatible programs.
+```text
+XSUB
+```
 
-The supported invocation and placement of XSUB depend on the batch-processing arrangement.
+Place it before the program to be automated. `XSUB.COM` belongs to the **Utilities Disk**, not the current System Disk. Its protected companion, `BATCHIO.RSX`, must also be available to the RSX loader, along with the normal RSX-manager runtime. If your utility media lacks BATCHIO, obtain the matching companion before using XSUB. The current distribution manifest assigns XSUB to the Utilities Disk but does not separately specify where BATCHIO is packaged.
 
-Unlike an ordinary transient utility, XSUB provides resident support that can remain available while another program executes.
+Before running the example, make `XSUB.COM`, `ED.COM`, `TYPE.COM`, and `SUBMIT.COM` available on the command search path and `BATCHIO.RSX` available in the loader's search location. Keep A0 writable for the shared queue, and use a writable working drive/user where `XDEMO.TXT` does not already exist.
+
+Save this complete procedure as `XDEMO.SUB` in the working location:
+
+```text
+XSUB
+ED XDEMO.TXT
+IHELLO FROM XSUB^L^Z
+E
+:TYPE XDEMO.TXT
+```
+
+Type the caret sequences `^L` and `^Z` as two ordinary source characters each; SUBMIT converts them to control bytes. Run:
+
+```text
+A>SUBMIT XDEMO
+```
+
+XSUB activates BATCHIO. ED then receives `IHELLO FROM XSUB`, followed by the expanded controls, as its first buffered command line. Inline `I` inserts the text, Ctrl-L adds a line ending, and Ctrl-Z ends the inline insertion. ED receives `E` as its next command, saves the new file, and exits. The command processor resumes the remaining queue and TYPE displays:
+
+```text
+HELLO FROM XSUB
+```
+
+The response lines belong immediately after the program invocation because each BDOS Function 10 request consumes the next queue line. They are not separate CCP commands while the program is reading them. Supply exactly the responses the program will consume; leftover responses can otherwise be interpreted as commands, and extra input requests can consume intended later commands.
+
+This example deliberately uses ED's inline insertion command. ED's interactive `I` mode reads individual characters through Function 1, which XSUB does not supply. XSUB supports **BDOS Function 10 buffered console input**, not arbitrary keyboard input.
 
 ### Returning to Keyboard Input
 
@@ -10354,17 +10495,18 @@ To move toward more recently entered commands, press Ctrl-J.
 
 ### Arrow Keys
 
-Depending on your computer's keyboard and terminal configuration, the Up and Down arrow keys may also provide command-history navigation.
+The original Model 4 keyboard supplies these command-editor aliases:
 
-However, **arrow-key operation is platform-dependent and is not guaranteed**.
+| Physical key | Function |
+|---|---|
+| Left / Right | Move one character left / right |
+| Up / Down | Previous / next command in history (Ctrl-K / Ctrl-J) |
+| Clear | Toggle insert/overwrite (Ctrl-V) |
+| Shift-Left / DEL | Delete the character left of the cursor (Ctrl-H) |
 
-On some CP/M systems, the cursor keys generate control characters associated with WordStar conventions, such as Ctrl-E for Up and Ctrl-X for Down.
+Physical Left is distinct from Ctrl-H. Ctrl-E and Ctrl-X retain physical-line continuation and line-discard behavior; they do not navigate history.
 
-BetterCP/M 1.0 uses Ctrl-K and Ctrl-J for command-history navigation.
-
-Consequently, an Up or Down arrow key that generates Ctrl-E or Ctrl-X will not necessarily invoke the corresponding history function.
-
-For reliable command-history navigation, use Ctrl-K and Ctrl-J.
+Host-emulator keyboard translation and other console keyboards may produce different codes or escape sequences. The Model 4 assignments describe the original machine's keyboard signals. Use Ctrl-K/J for history if host arrow keys do not behave as expected.
 
 ### Editing Recalled Commands
 
@@ -10484,17 +10626,24 @@ For command-history navigation, Ctrl-K and Ctrl-J remain the documented BetterCP
 
 ## B.5 Quick Reference
 
-The following table summarizes the established command-entry and history controls.
+These assignments apply while the BetterCP/M command editor owns input at the prompt. Applications can assign different meanings to the same controls.
 
 | Key | Function |
 |---|---|
 | Return | Execute the current command |
-| Ctrl-K | Previous command in history |
-| Ctrl-J | Next command in history |
-| Up arrow | May recall an earlier command, depending on platform |
-| Down arrow | May select a newer command, depending on platform |
+| Ctrl-S / Ctrl-D | Move one character left / right |
+| Ctrl-A / Ctrl-F | Move to the previous / next word |
+| Ctrl-T | Delete the next word and adjacent spacing |
+| Ctrl-V | Toggle insert/overwrite |
+| Ctrl-G | Delete the character under the cursor |
+| Ctrl-H | Delete the character left of the cursor |
+| Ctrl-U / Ctrl-X | Discard the complete command line and redraw an empty prompt |
+| Ctrl-E | Continue the same command on a new physical screen line; do not execute it |
+| Ctrl-K / Ctrl-J | Previous / next command in history |
+| Ctrl-C | Abandon input, echo `^C`, and warm boot |
+| Ctrl-P | Toggle shared console printer echo to `LST:` |
 
-Additional cursor-editing and deletion operations are available through the command editor, but their precise key assignments should be verified against the BetterCP/M 1.0 command-processor implementation before being added to this reference.
+Ctrl-S moves the cursor at the prompt. During cooked console output it pauses scrolling until the next key; the resume key is consumed. Ctrl-P changes the shared console printer-echo state, so its effect can continue into transient programs.
 
 For the control characters used by CP/M programs and terminal devices, see Appendix C, *Control Characters and Keyboard Conventions*.
 
