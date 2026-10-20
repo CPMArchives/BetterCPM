@@ -11,15 +11,18 @@ from pathlib import Path
 
 from build_rom_relocated_image import build
 
+# Directory-full recovery compaction: two byte-store pairs become word stores,
+# Open uses IX directly, and shared branches/calls net one fewer ROM operand.
+# Shifted-assembly discovery and every relocated operand remain checked.
 EXPECTED_COMPONENTS = {
-    "bdos": 496,
+    "bdos": 492,
     "bios": 124,
     "disk": 82,
     "extensions": 55,
     "fileloader": 13,
     "gateway": 24,
 }
-EXPECTED_CLASSES = {"immutable-rom": 470, "live-ram": 324}
+EXPECTED_CLASSES = {"immutable-rom": 469, "live-ram": 321}
 
 
 def digest(data: bytes) -> str:
@@ -56,12 +59,12 @@ def main() -> None:
     if (manifest["boot_integrated"] is not False or
             manifest["protected_xip_qualified"] is not False):
         raise AssertionError("relocation artifact overclaims later qualification")
-    if (manifest["relocation_words"] != 794 or
-            manifest["changed_words"] != 783 or
+    if (manifest["relocation_words"] != 790 or
+            manifest["changed_words"] != 779 or
             manifest["unchanged_final_words"] != 11 or
-            manifest["changed_bytes"] != 1548):
+            manifest["changed_bytes"] != 1540):
         raise AssertionError("accepted relocation totals changed")
-    if (manifest["accounted_layout_words"] != 813 or
+    if (manifest["accounted_layout_words"] != 809 or
             manifest["mutable_template_fixups"] != 16 or
             manifest["mutable_already_final_words"] != 3):
         raise AssertionError("mutable layout-word accounting changed")

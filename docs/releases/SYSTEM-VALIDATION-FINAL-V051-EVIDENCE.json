@@ -1,0 +1,46 @@
+{
+  "status": "CORRECTION_QUALIFIED_ACCEPTANCE_OPEN",
+  "source_revision": "9f2affeae7c63f59f49c6354922238caeca0c486",
+  "source_checkout_clean": true,
+  "accepted_result_sha256": {
+    "/private/tmp/bettercpm-v051-r2-distribution/release-9f2affeae7c6-c5256ed8201d/z80pack/report.json": "daccb1386b32dd172fbb5482e90352e61b0bea8515bed1cafcd46019aae88fa4",
+    "/private/tmp/bettercpm-v051-r2-distribution/release-9f2affeae7c6-c5256ed8201d/trs80gp/report.json": "4b6ace3d3b1dd75e71856ecbce7198417199234fa523941d2f8f2da51d732ae8",
+    "/private/tmp/bettercpm-v051-directory-reference/result.json": "ea715a0ec7e10d2e94eda5cfdf88741482117e79095cd7718f1f878a1435b886",
+    "/private/tmp/bettercpm-v051-native-file/filetest-rtd_192f/result.json": "af21a6b9db6bf5b0abca194ffff03ec7e83ecea6109ae9f8c19af01237b0b74e",
+    "/private/tmp/bettercpm-v051-r2-native-directory-full/scoped-screen-review.json": "7f1e02fce5320d86927e4590726a1b4668c9c207c9ab60cf38aafeb7001ad86b",
+    "/private/tmp/bettercpm-v051-clean-model-checks/result.json": "65455e658e59b8db51d3bdbe32167c82fa8510929ddb85d579b1e7919efc051b",
+    "/private/tmp/bettercpm-v051-clean-documentary/result.json": "c2bcc4acac6e03bdcdc67ebdd46ce5ea7275bbe2806db8e8c6a9744f065bdec2",
+    "/private/tmp/bettercpm-v051-returning/bdostest-gf28e1r9/result.json": "04dc11c0f414914ff5223f7f42fabdcbaf1e61c831e2785d87e9ae58bd228a1b",
+    "/private/tmp/bettercpm-v051-returning/biostest-20q9125c/result.json": "d7390383017e577a69fffd5292e64ff9176b8e5e589ea688a6209e16b9e995eb",
+    "/private/tmp/bettercpm-v051-returning/ccptest-7macjm2e/result.json": "27a165704bb0a197f943f94f5c170ad8b3ade6db4cbbb861e4c414b59f11a33b",
+    "/private/tmp/bettercpm-v051-returning/cputest-f24stidt/result.json": "40def9e9d7f040d83823b54b6f0fe78d017b97f27131099cce7bc69ddb0d2a07",
+    "/private/tmp/bettercpm-v051-returning/dirtest-96cw8d5p/result.json": "ff0636334b3b9c7daa69576418a94dfc9ebcd79449be88330501cca8dce38e92",
+    "/private/tmp/bettercpm-v051-returning/disktest-j9isbr84/result.json": "206cfef525d71d6186e65de88ea166e409dcfb8d9df53fc40157811f7e4064d0",
+    "/private/tmp/bettercpm-v051-returning/ecotest-g5uoeb4w/result.json": "6caee7b18e93600d0a5aa8a8933bc46086de652be752bad603699e8791247364",
+    "/private/tmp/bettercpm-v051-returning/entrytst-ibg9rymq/result.json": "f5e5d7bf52681b111b78c74bc98fd8c17e0d8d0cfa3a084f188eaecedfaa32cc",
+    "/private/tmp/bettercpm-v051-returning/errtest-4abt941g/result.json": "885b30e517c05cc91396b1048e85acc6441550ba12f7947a5a286470f6bacb52",
+    "/private/tmp/bettercpm-v051-returning/filetest-gk12o2oo/result.json": "4f41654aa6c6f6c4382617d6ddfa08dadb7f31822c1ba5d5603829d3cf3c83a1",
+    "/private/tmp/bettercpm-v051-returning/randtest-1ae4epz_/result.json": "2f3b03b4abdcd1319138d2dd2accba067803fa51d28a54b7dabd0f2b6d593c19"
+  },
+  "archive": {
+    "archive": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/validation-evidence/BetterCPM-Final-V051-correction-evidence.tar.gz",
+    "sha256": "9872d3f6e47578f5c409ec7137aac15c18bc5c5310dfd83514e6af976fc8cbd6",
+    "bytes": 19942869,
+    "files": 5854,
+    "all_archived_files_reopened_and_verified": true,
+    "file_manifest": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/validation-evidence/BetterCPM-Final-V051-correction-files.json",
+    "file_manifest_sha256": "adb0b954672385602e60124e43a177e461932c3e19d00b1fe28d4766b481dd15"
+  },
+  "excluded_attempts": [
+    "Initial correction build: stale frozen ROM count assertions; no distribution published.",
+    "First native directory-full runner: repeated marker selected prior command output; raw correct guest output retained.",
+    "Repeated native runner unscoped FCB metadata: superseded by scoped-screen-review.json, with original result unchanged.",
+    "Prototype model attempts without PASS result are not accepted checks."
+  ],
+  "limits": [
+    "V050 card matrix remains an accounting of the original, failed candidate.",
+    "Fresh auxiliary endpoint remains blocked by a user-owned cpmsim session; no FIFO input was sent.",
+    "84 required evidence matches and 3 optional-profile cases still need reconciliation.",
+    "Fresh merged-source release acceptance is still required after the correction merges."
+  ]
+}

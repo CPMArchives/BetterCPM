@@ -19,9 +19,12 @@ from system_layout import LAYOUT
 # private live-state addresses follow the repacked layout.
 # Same-extent integration removes four wrapper CALL operands and one absolute
 # jump (now relative). No RAM targets or CONFIG operands are removed.
+# Directory-full recovery compaction: two byte-store pairs become word stores,
+# Open uses IX directly, and shared branches/calls net one fewer ROM operand.
+# Shifted-assembly discovery and every relocated operand remain checked.
 EXPECTED_REFERENCES = {
     "gateway": 24,
-    "bdos": 496,
+    "bdos": 492,
     "extensions": 55,
     "disk": 82,
     "bios": 124,
@@ -30,14 +33,14 @@ EXPECTED_REFERENCES = {
 }
 EXPECTED_DISCOVERED = {
     "gateway": 27,
-    "bdos": 496,
+    "bdos": 492,
     "extensions": 55,
     "disk": 82,
     "bios": 124,
     "fileloader": 13,
     "tables": 16,
 }
-EXPECTED_CLASSES = {"immutable-rom": 470, "live-ram": 324}
+EXPECTED_CLASSES = {"immutable-rom": 469, "live-ram": 321}
 EXPECTED_OVERLAY_CLASSES = {"immutable-rom": 3, "live-ram": 102}
 EXPECTED_OVERLAY_REFERENCES = 105
 
@@ -69,7 +72,7 @@ def main() -> None:
         raise AssertionError("packed-code reference counts changed")
     if inventory["target_class_counts"] != EXPECTED_CLASSES:
         raise AssertionError("ROM/RAM reference classification changed")
-    if inventory["reference_count"] != 794:
+    if inventory["reference_count"] != 790:
         raise AssertionError("packed-code reference total changed")
     if (inventory["overlay_discovered_word_count"] !=
             EXPECTED_OVERLAY_REFERENCES or
@@ -157,7 +160,7 @@ def main() -> None:
             any(row["target_class"] != "immutable-rom"
                 for row in extension_entries)):
         raise AssertionError("Extension entry references lost ROM semantics")
-    print("ROM address inventory verified: 794 packed-code words and 105 CONFIG "
+    print("ROM address inventory verified: 790 packed-code words and 105 CONFIG "
           "overlay words; no unresolved references")
 
 
