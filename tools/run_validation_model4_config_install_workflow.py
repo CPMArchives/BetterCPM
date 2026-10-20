@@ -68,8 +68,8 @@ def main():
 
     command = invocation()
     command += key_args('IO95\r',delay=60)+['-iw','LIVE IOBYTE 95 PASS','-id','6000','-it']
-    command += key_args('CONFIG /STARTUP="VER /VER"\r',delay=60)+['-iw','(Y/N)? ']+key_args('Y',delay=60)+['-iw','saved and verified','-id','6000']
-    command += key_args('CONFIG /IOBYTE=85\r',delay=60)+['-iw','(Y/N)? ']+key_args('Y',delay=60)+['-iw','Disk-boot IOBYTE saved; live unchanged.','-id','6000']
+    command += key_args('CONFIG /STARTUP="VER /VER"\r',delay=60)+['-iw','Save pending cold-boot changes on system disk A: (Y/N)?']+key_args('Y',delay=60)+['-iw','Pending cold-boot changes saved and verified.','-id','6000','-it']
+    command += key_args('CONFIG /IOBYTE=85\r',delay=60)+['-iw','Save disk-boot IOBYTE (Y/N)?']+key_args('Y',delay=60)+['-iw','Disk-boot IOBYTE saved; live unchanged.','-id','6000']
     command += key_args('IO95\r',delay=60)+['-iw','LIVE IOBYTE 95 PASS','-id','6000','-it']
     command += key_args('SETBSYS\r') + ['-iw', 'B SYSTEM READY', '-id', '6000']
     command += key_args('SYSGEN A: B:BASE090.SYS\r', delay=25)
@@ -79,7 +79,8 @@ def main():
     (export / 'invocation.json').write_text(json.dumps(command, indent=2) + '\n')
     run(command, cwd=export, timeout=600)
     export_texts=[screen(f) for f in sorted(export.glob('trs80-text*'))]
-    assert len(export_texts)==3 and all('LIVE IOBYTE 95 PASS' in t for t in export_texts[:2])
+    assert len(export_texts)==4 and all('LIVE IOBYTE 95 PASS' in export_texts[i] for i in (0,2))
+    assert 'Pending cold-boot changes saved and verified.' in export_texts[1]
     text=export_texts[-1]
     (export / 'screen.txt').write_text(text + '\n')
     assert 'Package exported and verified.' in text, text
@@ -98,6 +99,8 @@ def main():
         assert current[key] == (content, entries), key
     assert bytes(extract_raw(source.read_bytes()))[:RESERVED] == configured_source
     (work / 'BASE090.SYS').write_bytes(package)
+    (work / 'exported-target.raw').write_bytes(exported)
+    (work / 'configured-source.raw').write_bytes(bytes(extract_raw(source.read_bytes())))
 
     # Install from the named package back onto its own containing disk. The
     # utility must buffer its input and leave every filesystem byte untouched.
@@ -117,6 +120,7 @@ def main():
     assert 'System installed and verified.' in texts[1]
     installed = bytes(extract_raw(target.read_bytes()))
     assert installed[RESERVED:] == exported[RESERVED:]
+    (work / 'installed-target.raw').write_bytes(installed)
     # The sole defined payload change is the boot binding's surface/cylinder
     # track normalization; compare every byte rather than trusting the message.
     differences = [(i, before, after) for i, (before, after) in
@@ -130,7 +134,7 @@ def main():
                '-d0', str(target), '-itime', '15000',
                '-iw', 'BetterCP/M VER 1.0 (Resident', '-id', '6000']
     command += key_args('IO55\r',delay=60)+['-iw','LIVE IOBYTE 55 PASS','-id','6000','-it']
-    command += key_args('CONFIG /SHOW\r',delay=60)+['-iw','Saved disk-boot IOBYTE (decimal): 85','-id','6000','-it']
+    command += key_args('CONFIG /SHOW\r',delay=60)+['-iw','Saved disk-boot IOBYTE (decimal): 85','-it','-id','6000']
     command += key_args('TYPE KEEP.TXT\r',delay=60)+['-iw','PRESERVED ACROSS NAMED SYSTEM EXPORT AND INSTALL','-id','6000','-it','-ix']
     (cold / 'invocation.json').write_text(json.dumps(command, indent=2) + '\n')
     run(command, cwd=cold, timeout=300)

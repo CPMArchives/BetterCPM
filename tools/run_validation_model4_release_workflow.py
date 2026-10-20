@@ -23,14 +23,20 @@ def main():
     shutil.copy2(__file__,w/'executed-runner.py')
     raw=extract_raw(original.read_bytes())
     script=[':PIP B1:PCOPY.TXT=B1:SOURCE.TXT',':COPY /V /B B1:SOURCE.TXT B3:CCOPY.TXT',
-            ':REN B1:PCOPY.TXT RCOPY.TXT /Y',':TYPE B1:RCOPY.TXT',':ERA B1:RCOPY.TXT /Y',
+            ':REN B1:PCOPY.TXT RCOPY.TXT /Y',':TYPE B1:RCOPY.TXT','WFGATEA',':ERA B1:RCOPY.TXT /Y',
             'AREGCL','COPY B1:SOURCE.TXT B3:RESCOPY.TXT','REN B3:RESCOPY.TXT FINAL.TXT',
-            'TYPE B3:FINAL.TXT','ERA B3:FINAL.TXT',':DIR B[1,3]:*.TXT','AREGDONE']
+            'TYPE B3:FINAL.TXT','WFGATEB','ERA B3:FINAL.TXT',':DIR B[1,3]:*.TXT','AREGDONE']
     add_file(raw,'AREG.SUB',('\r\n'.join(script)+'\r\n\x1a').encode())
-    script.insert(2,'STAT B3:CCOPY.TXT $R/O')
-    script.insert(3,'STAT B3:CCOPY.TXT $R/W')
+    # SUBMIT expands dollar parameters; double each literal attribute marker.
+    script.insert(2,'STAT B3:CCOPY.TXT $$R/O')
+    script.insert(3,'STAT B3:CCOPY.TXT $$R/W')
     script.insert(4,':DIR /WHEREIS B[-]:SOURCE.TXT')
     script[-1:-1]=['COPY B1:SOURCE.TXT B3:REPEAT.TXT','ERA B3:REPEAT.TXT','COPY B1:SOURCE.TXT B3:REPEAT.TXT','ERA B3:REPEAT.TXT']
+    script += [':ED B7:CASE.TXT','EDREGEND','A0:',
+               'RSX UNLOAD ADM3A','RSX LOAD VT52','TYPE B7:CASE.TXT','WFGATEC',
+               'RSX UNLOAD VT52','RSX LOAD ANSI','TYPE B7:CASE.TXT','WFGATED',
+               'RSX UNLOAD ANSI','RSX UNLOAD M4SCRN','RSX LIST']
+    # Keep command dispatch inside SUBMIT; only ED and explicit gates read keys.
     # Regenerate the script after adding the integrated attribute/repeat stages.
     raw=extract_raw(original.read_bytes())
     add_file(raw,'AREG.SUB',('\r\n'.join(script)+'\r\n\x1a').encode())
@@ -44,24 +50,24 @@ def main():
     add_file(raw,'AREGCL.COM',bytes.fromhex('110b010e09cd0500c30000')+b'\x1aRESIDENT WORKFLOW START\r\n$')
     edmarker='ED SAVE REGRESSION FINISHED'
     add_file(raw,'EDREGEND.COM',bytes.fromhex('110b010e09cd0500c30000')+('\x1a'+edmarker+'\r\n$').encode())
+    # Hold both TYPE displays until the capture has acknowledged them.
+    for name in ('WFGATEA','WFGATEB','WFGATEC','WFGATED'):
+        add_file(raw,name+'.COM',bytes.fromhex('1112010e09cd05000e01cd05000e00c30500')+(name+' READY\r\n$').encode())
     image=w/'a.dmk';image.write_bytes(build(bytes(raw)))
     source=b'ALPHA\r\nBETA\r\n\x1a';old=b'OLD\r\n\x1a';sentinel=b'USER ZERO\r\n\x1a'
     braw=install_files([(1,'SOURCE.TXT',source),(7,'CASE.TXT',old),(0,'CASE.TXT',sentinel)])
     (w/'b-before.raw').write_bytes(braw);secondary=w/'b.dmk';secondary.write_bytes(build(braw))
     cmd=[str(DEFAULT_EMULATOR),'-m4','-batch','-turbo','-ktx','-d0',str(image),'-d1',str(secondary),'-itime','15000',
          '-iw','README PHASE READY','-id','120','-it']+key_args(' ')
-    cmd+=['-iw','ALPHA','-id','120','-it','-iw','RESIDENT WORKFLOW START',
-          '-iw','ALPHA','-id','120','-it','-iw',marker,'-id','120','-it']
-    # ED reads real keyboard input; save into user 7 while user 0 is a sentinel.
-    cmd+=['-id','6000']+key_args(':ED B7:CASE.TXT\r')+['-iw','*']
-    cmd+=key_args('INEW\x1a\r',delay=60)+['-iw','*']+key_args('E\r',delay=60)+['-id','6000']
-    cmd+=key_args('EDREGEND\r')+['-iw',edmarker,'-id','120','-it','-ix']
-    cmd=cmd[:-1]+['-id','6000']+key_args('A0:\r')+['-id','6000']
-    for name in ('VT52','ANSI'):
-        previous='ADM3A' if name=='VT52' else 'VT52'
-        cmd+=key_args('RSX UNLOAD '+previous+'\r')+['-id','6000']+key_args('RSX LOAD '+name+'\r')+['-id','6000']
-        cmd+=key_args('TYPE B7:CASE.TXT\r')+['-iw','NEWOLD','-id','120','-it','-id','6000']
-    cmd+=key_args('RSX UNLOAD ANSI\r')+['-id','6000']+key_args('RSX UNLOAD M4SCRN\r')+['-id','6000']+key_args('RSX LIST\r')+['-iw','No RSXs loaded','-iw','TPA available: 53K','-id','120','-it','-ix']
+    cmd+=['-iw','WFGATEA READY','-id','120','-it']+key_args(' ')
+    cmd+=['-iw','WFGATEB READY','-id','120','-it']+key_args(' ')
+    cmd+=['-iw',marker,'-id','120','-it']
+    # The queued ED command now owns the keyboard; no timed host command prefix.
+    cmd+=['-iw','*']+key_args('INEW\x1a\r',delay=60)+['-iw','*']+key_args('E\r',delay=60)
+    cmd+=['-iw',edmarker,'-id','120','-it']
+    for name in ('WFGATEC','WFGATED'):
+        cmd+=['-iw',name+' READY','-id','120','-it']+key_args(' ')
+    cmd+=['-iw','No RSXs loaded','-iw','TPA available: 53K','-id','120','-it','-ix']
     (w/'invocation.json').write_text(json.dumps(cmd,indent=2)+'\n');run(cmd,cwd=w,timeout=1800)
     captures=sorted(w.glob('trs80-text-*.bin'));assert len(captures)==8
     texts=[screen(path) for path in captures]

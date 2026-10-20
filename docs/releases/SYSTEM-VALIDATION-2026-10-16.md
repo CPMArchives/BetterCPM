@@ -33,7 +33,7 @@ The source checkout was clean and was not modified. A private clone at
 | 4. Resident/transient command integration | Partial; fresh native file workflow passes | V013 covers native file workflows. V021/V023–V027 add shipped cpmsim ERA/REN/COPY/MOVE/DIR/STAT/TYPE selectors, protection, reporting and controlled recovery. Broader native repetition and caller-state cases remain. |
 | 5. Utility operations and failure recovery (original Step 7) | CLOSED — V044 | S7-01–S7-04 PASS: restored ERA/DUP/SYSGEN evidence and actual cpmsim PIP endpoints plus native verified copy, CRT and unavailable-device gates. Retained raw archive and hashed result index. Broader conformance, monitor/input, device/profile and final acceptance work remain separate. |
 | 6. Monitors and applications (original Step 8) | CLOSED — V047 | All six native/cpmsim personality pairs, production protocol/lifecycle checks, selected unchanged external applications, native bells and bounded input regressions pass. Durable evidence and explicit profile limits are recorded in SYSTEM-VALIDATION-STEP8-2026-10-19.md. Historical input observation remains not reproduced; final acceptance is separate. |
-| 7. End-to-end release workflows (original Step 9) | IN PROGRESS — V048 | Continuous cpmsim user/cold-boot and CONFIG save/export/install/configured-cold-boot workflows PASS. Native counterparts running. Finite S9-01–04 checklist: SYSTEM-VALIDATION-STEP9-2026-10-19.md. |
+| 7. End-to-end release workflows (original Step 9) | CLOSED — V049 | S9-01–04 PASS: continuous cpmsim/native file, ED, SUBMIT, personality-switch and second-cold sessions; configured named export/install/cold boot on both platforms. Shipped files, complete installation filesystem, payload, sentinels and unloaded 53K checked. Durable archives/result hashes: SYSTEM-VALIDATION-STEP9-2026-10-19.md. |
 | 8. Closure and final acceptance reruns | Not run | Resolve failures, identify accepted limits, rebuild and rerun against final revision/images. |
 
 A status of not run is not a pass. Observations and explicit suite exclusions
@@ -3560,3 +3560,26 @@ V048 raw cpmsim evidence is retained outside temporary storage with per-file
 hash verification; see [the result/archive index](SYSTEM-VALIDATION-STEP9-EVIDENCE-2026-10-19.json).
 Native interim artifacts and a bounded startup-handoff diagnostic are not
 counted as completed workflow passes.
+
+## V049 — Step 9 closed with native integrated workflows
+
+All four finite [Step 9 items](SYSTEM-VALIDATION-STEP9-2026-10-19.md) now PASS.
+Native actual-keyboard ED, resident/transient file operations, SUBMIT dispatch,
+three personalities, complete unloading and a second cold boot pass independent
+file/media/filesystem checks. Native confirmed CONFIG startup/IOBYTE saves,
+named package export, containing-disk installation and installed cold boot also
+pass: live IOBYTE stays 95h until cold boot restores 55h; the exported payload
+and sole installation binding patch are exact; the complete containing filesystem
+and shipped files are preserved. Raw export/install snapshots and immediate
+settings-header capture are retained.
+
+Paused, ambiguous-screen and early-input harness attempts are excluded. The
+accepted runners use escaped SUBMIT dollars, explicit ready-message checkpoints,
+queued command dispatch and distinct complete confirmation gates. No production
+code changes were needed. The V049 archive has 501 independently verified file
+hashes; accepted result/review hashes are in the Step 9 evidence index.
+
+This closes original Step 9 only. Remaining conformance/manual/device-profile
+accounting, accepted-limit review and final clean merged-source/image acceptance
+remain the next closure work; documentation alignment and the separate Utilities
+and CP/M Tools disks remain outside this gate.

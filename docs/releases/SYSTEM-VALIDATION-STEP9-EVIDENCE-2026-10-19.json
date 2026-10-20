@@ -1,11 +1,11 @@
 {
-  "status": "STEP9_OPEN",
+  "status": "STEP9_CLOSED",
   "baseline_source_revision": "5f3f3f38bb11",
   "items": {
     "S9-01": "PASS",
-    "S9-02": "RUNNING",
+    "S9-02": "PASS",
     "S9-03": "PASS",
-    "S9-04": "RUNNING"
+    "S9-04": "PASS"
   },
   "archive": {
     "path": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/validation-evidence/BetterCPM-Step9-V048-cpmsim.tar.gz",
@@ -21,7 +21,30 @@
     "bettercpm-v048-config-install/result.json": {
       "status": "PASS",
       "sha256": "92cf0e66ac33ddd954c14723139eb1c9dded356f074d1868498be99c265d55d5"
+    },
+    "bettercpm-v049-queued-native-workflow/applications-z26c52nx/result.json": {
+      "status": "PASS",
+      "sha256": "f4040e9057506fd83ae7f1f2db9bc6414c4a944f1621b820c36cf95c86dda2fc"
+    },
+    "bettercpm-v049-queued-native-workflow/applications-z26c52nx/supplemental-review.json": {
+      "status": "PASS",
+      "sha256": "f703f76996100edb8efa9ab9cfe39b4d412790198469896d7012746263d33c91"
+    },
+    "bettercpm-v049-captured-config-install/sysgen-bk042gat/result.json": {
+      "status": "PASS",
+      "sha256": "21b0c531c4ab1746d802af3ffd399c4415aa7e8fc4decc9093e4bdc3bab1a12d"
+    },
+    "bettercpm-v049-captured-config-install/sysgen-bk042gat/supplemental-review.json": {
+      "status": "PASS",
+      "sha256": "744cff330d101166bbee3b972b4732a82425fc0283836b88edc050112c4cb3ad"
     }
   },
-  "limits": "Selected continuous cpmsim sessions and integrated configured installation pass; no completed native workflow or final clean merged-source acceptance claimed. Excluded prompt-entry attempts are retained."
+  "limits": "All four finite Step 9 workflows PASS on the hash-identified V044 runtime baseline. Native first-session STARTUP.SUB and supplemental ready/input witnesses are declared. Excluded attempts and diagnostics retained. No production change or final clean merged-source acceptance claimed.",
+  "closed_date": "2026-10-20",
+  "native_archive": {
+    "path": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/validation-evidence/BetterCPM-Step9-V049-native.tar.gz",
+    "sha256": "329107c95e689df85f4abb650d2dcbe5f62fe14ebe0bf6ca185a1a52ff5c88ba",
+    "bytes": 4839883,
+    "verified_files": 501
+  }
 }
