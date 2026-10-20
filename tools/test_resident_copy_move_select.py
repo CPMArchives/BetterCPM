@@ -22,6 +22,7 @@ def main():
  add(6,'SAME.DAT');add(7,'SAME.DAT');add(8,'E8.DAT');add(9,'E9.DAT');add(10,'E9.DAT')
  add(11,'READ.DAT',1);add(12,'OVER.DAT',4,257);add(10,'OVER.DAT',0,129,3)
  add(13,'SELF.DAT');add(13,'ONE.DAT');add(14,'G1.DAT');add(15,'G2.DAT');add(13,'Q1.DAT');add(14,'H1.DAT');add(15,'H2.DAT')
+ add(1,'DUONLY.DAT',4);add(2,'MANY1.DAT');add(3,'MANY2.DAT',2);add(1,'KEEP.DAT')
  # Each change is (source DU/name, target DU/name, delete source?).
  cases=[
   ('COPY [A1,A2]:C*.DAT A[10,11]:','COPY source destination',[]),
@@ -40,13 +41,17 @@ def main():
   ('COPY A11:READ.DAT A10:','',[(11,'READ.DAT',10,'READ.DAT',False)]),
   ('COPY A12:OVER.DAT A10: /O','',[(12,'OVER.DAT',10,'OVER.DAT',False)]),
   ('COPY A13:SELF.DAT A13:NEW.DAT','',[(13,'SELF.DAT',13,'NEW.DAT',False)]),
-  ('MOVE A10:MOVED.DAT:=A13:ONE.DAT','',[(13,'ONE.DAT',10,'MOVED.DAT',True)]),
+  ('MOVE A10:MOVED.DAT=A13:ONE.DAT','',[(13,'ONE.DAT',10,'MOVED.DAT',True)]),
   ('COPY A[-]:C*.DAT A10: /O','FILE EXISTS',[]),
   ('COPY A1:C1SYS.DAT[$RW+!$SYS] A10:','NO FILE',[]),
   ('COPY A1:C1SYS.DAT A10:READ.DAT /O','READ ONLY',[]),
   ('COPY [A14,A15,A3]:G*.DAT A3:','',[(14,'G1.DAT',3,'G1.DAT',False),(15,'G2.DAT',3,'G2.DAT',False)]),
   ('COPY A13:Q*.DAT A13:Q2.DAT /O','',[(13,'Q1.DAT',13,'Q2.DAT',False)]),
   ('MOVE [A14,A15,A4]:H*.DAT A4:','',[(14,'H1.DAT',4,'H1.DAT',True),(15,'H2.DAT',4,'H2.DAT',True)]),
+  ('MOVE A10:BAD.DAT:=A1:KEEP.DAT','COPY source destination',[]),
+  ('MOVE A10::=A1:KEEP.DAT','COPY source destination',[]),
+  ('MOVE A10:=A1:DUONLY.DAT','',[(1,'DUONLY.DAT',10,'DUONLY.DAT',True)]),
+  ('MOVE A[10,10]:=[A2,A3]:MANY*.DAT','',[(2,'MANY1.DAT',10,'MANY1.DAT',True),(3,'MANY2.DAT',10,'MANY2.DAT',True)]),
   ('MOVE A13:Q2*.DAT A13:Q3.DAT','',[(13,'Q2.DAT',13,'Q3.DAT',True)])]
  def cpm(tool,*args):return subprocess.run([tool,'-T','raw','-f','bettercpm-default',str(report/'disks/drivea.dsk'),*map(str,args)],cwd=report,check=True,stdout=subprocess.DEVNULL)
  observations=[]

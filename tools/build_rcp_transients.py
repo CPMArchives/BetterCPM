@@ -237,25 +237,31 @@ DT_TOTAL: DS 12
     return text.replace('        END\n', hook + options + metrics + paging + columns + free + whereis + decimal + '\n        END\n', 1)
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--assembler", type=Path,
-                        default=Path("/Users/nathanael/bin/z80asm"))
-    args = parser.parse_args()
-    BUILD.mkdir(parents=True, exist_ok=True)
+def transient_source() -> str:
+    """Prepare the shared transient body identically for both assemblers."""
     text = SOURCE.read_text(encoding="ascii")
     text = text.replace('; @rcp-shared-selector@', '')
     text = text.replace("CPXBASE         EQU     08000H",
                         "CPXBASE         EQU     00100H")
-    text = text.replace("        CSEG\n        .PHASE  ",
-                        "        ASEG\n        ORG     ").replace(
-                            "        .DEPHASE\n", "")
     # Banner belongs to the transient; keep RCP relocation and allocation limits.
     banner_code, banner_data = (SOURCE.parent / "ver-banner.inc").read_text(
         encoding="ascii").split("; @banner-data@\n")
     text = text.replace("BC_VERLONG:                             ; verlong\n",
                         "BC_VERLONG:                             ; verlong\n" + banner_code)
     text = text.replace("BC_VERSION:", banner_data + "BC_VERSION:", 1)
+    return text
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--assembler", type=Path,
+                        default=Path("/Users/nathanael/bin/z80asm"))
+    args = parser.parse_args()
+    BUILD.mkdir(parents=True, exist_ok=True)
+    text = transient_source()
+    text = text.replace("        CSEG\n        .PHASE  ",
+                        "        ASEG\n        ORG     ").replace(
+                            "        .DEPHASE\n", "")
     listing = BUILD / "rcp-transient.lst"
     base = assemble(args.assembler, text, BUILD / "rcp-transient.bin",
                     listing, ORIGIN)

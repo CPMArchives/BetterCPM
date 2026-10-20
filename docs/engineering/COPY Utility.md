@@ -1,5 +1,23 @@
 # COPY Utility: Incremental Implementation and Qualification
 
+## MOVE assignment correction — 2026-10-20
+
+COPY and MOVE both use `destination=source`. For example:
+
+```text
+MOVE B:MOVED.DAT=A:SOURCE.DAT
+MOVE B3:=A0:README.TXT
+```
+
+The second destination is `B3:`. Its colon is part of the DU specification;
+it is not part of the assignment operator. The parser preserves it just as COPY
+does. An extra separator colon after a filename or DU is rejected. The previous
+MOVE-only Pascal-style separator was an implementation error, not an intended
+compatibility rule. This correction supersedes the historical syntax below;
+old binary sizes and qualification evidence do not qualify the new parser.
+Command examples below are normalized to the current plain-equals syntax;
+the dated measurements and qualification results remain historical.
+
 ## Current closure — 2026-10-10
 
 A subsequent [inline-help prompt correction](Interactive%20Prompt%20Convention.md)
@@ -34,7 +52,7 @@ separate design work; no handoff ABI is introduced by this increment.
 
 The implementation is shared in `src/cpx/rcp.mac`; `build_rcp_transients.py`
 builds COPY.COM from the same command body. Both source/destination and
-`destination:=source` forms support explicit drive/user qualifiers and copy
+`destination=source` forms support explicit drive/user qualifiers and copy
 exact filenames or supported source wildcards. Existing destinations are refused
 unless `/O` is supplied; exact self-copies are always refused.
 R/O, SYS and ARC attributes are already copied after a successful destination
@@ -87,10 +105,10 @@ The shared parser clears the destination FCB normally and copies only the
 source's eleven filename bytes when the destination is just a DU. Effective
 source/destination drive and user remain separately captured. Existing data
 copying, close ordering and final attribute preservation are unchanged.
-The assignment form retains its existing `:=` separator: a DU-only destination
-can be written `COPY B4::=B1:SOURCE.DAT` (destination `B4:` plus separator `:=`).
-The ordinary source-first form is the simpler spelling. This does not change
-the existing meaning of an extensionless destination such as `B:=source`.
+The assignment operator is `=`. A DU-only destination is written
+`COPY B4:=B1:SOURCE.DAT`: destination `B4:` plus operator `=`. The source-first
+form remains available. `B:=source` selects drive B, rather than an
+extensionless filename B; a literal filename destination uses `B=source`.
 
 `tools/test_z80pack_copy_du.py --report <new-directory>` checks both profiles:
 CPX cases have no COPY.COM; transient cases unload RCP. Native transfers to
@@ -109,7 +127,7 @@ Handoff remains separate until the agreed common resident COPY work is done.
 
 The shared CPX/transient COPY now accepts a bounded source wildcard and a
 DU-only destination, for example `COPY B1:F?*.DAT C2:` or
-`COPY B4::=B1:F***.DAT`. Question marks match individual filename positions;
+`COPY B4:=B1:F***.DAT`. Question marks match individual filename positions;
 a terminal run of stars fills the rest of its field. Reject characters after
 that run, overlong fields, destination wildcards and wildcard MOVE. Each
 normalized filename is copied once even if it has multiple directory extents.
@@ -184,7 +202,7 @@ A single trailing `/O` explicitly allows replacing existing writable targets:
 ```text
 COPY B1:FOO.DAT C2:FOO.DAT /O
 COPY B1:*.DAT C2: /O
-COPY C2::=B1:*.DAT /O
+COPY C2:=B1:*.DAT /O
 ```
 
 Without `/O`, existing targets are refused. Self-copy remains refused even
@@ -421,7 +439,8 @@ not a requirement for this one-byte RCP implementation.
 Both COPY.COM and RCP.CPX now normalize `destination=source`, including
 `B4:=A1:*.COM` where the colon belongs to the destination DU. The extra
 separator colon in `B:OUT.DAT:=A:IN.DAT` is rejected. Source-first syntax
-remains available; MOVE retains its existing `:=` assignment.
+remains available. The later MOVE assignment correction uses the same plain
+`=` operator for MOVE; the former Pascal-style separator is obsolete.
 
 The shared body grows from 3,733 to 3,743 bytes; its 3,840-byte CPX allocation
 is unchanged. No BIOS, BDOS or CCP code changes are required.
