@@ -192,7 +192,7 @@ UB_DIN:                                 ; din
         RET     Z
 
 UB_DGET:                                ; dget
-        JP      UB_GETIN
+        JR      UB_GETIN
 
 ; -------------------------------------------------------------------------------
 ; Cooked Console Input
@@ -566,10 +566,10 @@ UB_RESET:                               ; reset disk system
         XOR     A
         LD      (UB_DRIVE),A
         LD      (UB_VALID),A
-        LD      (UBS_LOGIN),A
-        LD      (UBS_LOGIN+1),A
-        LD      (UB_RDONLY),A
-        LD      (UB_RDONLY+1),A
+        LD      H,A
+        LD      L,A
+        LD      (UBS_LOGIN),HL
+        LD      (UB_RDONLY),HL
         LD      C,A
         CALL    UB_CONTEXT
         JP      NZ,UB_BAD
@@ -641,22 +641,16 @@ UB_GETUSR:                              ; getusr
         RET
 
 UB_RSTDRV:                              ; reset selected drives
-        LD      A,D                     ; retain caller's reset mask
-        LD      B,A
-        LD      A,E
-        LD      C,A
         LD      HL,(UBS_LOGIN)
-        LD      A,C
+        LD      A,E                     ; complement caller reset mask once
         CPL
         LD      C,A
-        LD      A,L
-        AND     C
+        AND     L
         LD      L,A
-        LD      A,B
+        LD      A,D
         CPL
         LD      B,A
-        LD      A,H
-        AND     B
+        AND     H
         LD      H,A
         LD      (UBS_LOGIN),HL
         LD      HL,(UB_RDONLY)
@@ -726,8 +720,7 @@ UB_CTXBAD:                              ; ctxbad
         XOR     A
         LD      (UB_VALID),A
         LD      (UBS_COK),A
-        LD      A,1
-        OR      A
+        INC     A
         RET
 
   ; Set bit C (0..15) in the two-byte vector at HL.
@@ -1019,8 +1012,7 @@ UB_ITSTEP:                              ; shared iterator advance
         RET
 
 UB_ITDONE:                              ; itdone
-        LD      A,0FFH
-        OR      A
+        OR      0FFH
         SCF
         RET
 
@@ -1106,22 +1098,15 @@ UB_OPNEXT:                              ; opnext
         LD      A,C
         AND     B
         LD      C,A
-        LD      HL,(UB_ITFCB)
-        LD      DE,12
-        ADD     HL,DE
-        LD      A,(HL)
+        LD      A,(IX+12)               ; IX is the active caller FCB
         AND     B
         CP      C
         JR      NZ,UB_OPMISS
-        INC     HL
-        INC     HL
-        LD      A,(HL)
+        LD      A,(IX+14)
         AND     03FH
         LD      C,A                     ; requested S2, excluding private dirty bit
-        POP     HL
-        PUSH    HL
-        LD      DE,14
-        ADD     HL,DE
+        INC     HL                      ; retain entry+12 instead of rebuilding entry+14
+        INC     HL
         LD      A,(HL)
         AND     03FH
         CP      C
@@ -1217,13 +1202,17 @@ UB_MAKECORE:                            ; makecore
         CALL    UB_ITINIT
         CALL    UB_ITER
         JR      NC,UB_MBAD              ; any existing extent makes the name duplicate
+        CALL    UB_MKFREE
+        JR      C,UB_MBAD
+        RET
 
 UB_MKFREE:                              ; mkfree
         LD      A,1
         LD      C,11
         CALL    UB_ITINIT
         CALL    UB_ITER
-        JR      C,UB_MBAD               ; directory full or physical read failure
+        LD      A,5                     ; random-write directory-full status
+        RET     C                       ; let rollover restore its caller FCB
         ; UB_ITER already retained the successful directory slot.
         ; Reused FCB maps may contain rename text, not allocation numbers.
         PUSH    HL
@@ -1251,6 +1240,7 @@ UB_NEWCLR:                              ; newclr
         JR      NZ,UB_MBAD
         SET     7,(IX+14)               ; Close/Make leave the active FCB clean
         LD      A,(UB_ITRET)
+  ; UB_DIRWRITE cleared carry; SET and LD preserve it.
         RET
 
 UB_MBAD:                                ; mbad
@@ -1620,7 +1610,9 @@ UB_WCORE:                               ; wcore
         JR      NZ,UB_WCUR
         LD      A,1
         CALL    UB_NEXTEX
-        JP      C,UB_BAD
+        JR      NC,UB_WCUR
+        AND     3                       ; extent-full 5 -> sequential-full 1; blocks-full stays 2
+        RET
 
 UB_WCUR:                                ; wcur
         CALL    UB_RECMAP
@@ -1762,7 +1754,7 @@ UB_RWCOMMON:                            ; rwcommon
         CALL    UB_RDECODE
         LD      A,1
         CALL    C,UB_EXTENT
-        JP      C,UB_BAD
+        JP      C,UB_RETA               ; preserve allocation/directory-full distinction
         PUSH    IX
         POP     DE
         CALL    UB_WCORE
@@ -1835,8 +1827,8 @@ UB_ZWRITE:                              ; zwrite
 
 UB_ZFAIL:                               ; zfail
         POP     BC
-        LD      A,1
-        OR      A
+        XOR     A
+        INC     A
         RET
 
 ; -------------------------------------------------------------------------------
@@ -1923,12 +1915,13 @@ UB_EXTMAKE:                             ; extmake
   ; Do not publish an empty new extent when there is no room for its data.
   ; Otherwise a failed growth write appears to have lengthened the file.
         CALL    UB_ALFREE
-        JP      NZ,UB_FULL
+        LD      A,2
+        SCF                             ; preserve ALFREE Z: full returns NZ
+        RET     NZ
+UB_EXTFREE:
   ; A new extent owns no blocks yet. The common Make publisher clears its
   ; map for both random seeks and sequential rollover, avoiding old-data aliases.
-        CALL    UB_MKFREE
-        OR      A
-        RET
+        JP      UB_MKFREE
 
   ; Close a dirty write extent, advance EX/S2, clear CR, then use UB_EXTENT.
 
@@ -1937,6 +1930,11 @@ UB_EXTMAKE:                             ; extmake
 ; -------------------------------------------------------------------------------
 
 UB_NEXTEX:                              ; advance to next sequential extent
+  ; A failed activation must retain EX, S2 (including its clean bit), and CR.
+  ; Keep the snapshot on the bounded private stack, never in caller scratch.
+        LD      H,(IX+12)
+        LD      L,(IX+14)
+        PUSH    HL
         LD      (UB_IOMODE),A
         OR      A
         JR      Z,UB_NXCALC
@@ -1961,11 +1959,19 @@ UB_NXOPEN:                              ; nxopen
         XOR     A
         LD      (IX+32),A
         LD      A,(UB_IOMODE)
-        JR      UB_EXTENT
+        CALL    UB_EXTENT
+        JR      UB_NXRETURN
 
 UB_NXBAD:                               ; nxbad
+        LD      A,5
         SCF
-        RET
+UB_NXRETURN:
+        POP     HL
+        RET     NC
+        LD      (IX+12),H
+        LD      (IX+14),L
+        LD      (IX+32),128
+        RET                             ; LD preserves the activation-failure carry
 
   ; Map the current sequential record in UB_RFCB through EXM, BSH/BLM, the
   ; 8/16-bit allocation map, SPT/OFF, and BIOS sector translation.
@@ -2190,8 +2196,8 @@ UB_ALDONE:                              ; aldone
         OR      A
         SBC     HL,DE
         JR      Z,UB_ALOK               ; only actual directory exhaustion is successful
-        LD      A,1
-        OR      A
+        XOR     A
+        INC     A
         RET
 
 UB_ALOK:                                ; alok
@@ -2216,8 +2222,7 @@ UB_ALMARK:                              ; mark allocation block
         JR      UB_ALRET
 
 UB_ALMERR:                              ; almerr
-        LD      A,1
-        OR      A
+        SBC     A,A                     ; ALADDR failure carries: nonzero error
 
 UB_ALRET:                               ; alret
         POP     HL
@@ -2258,8 +2263,7 @@ UB_AFOUND:                              ; afound
         RET
 
 UB_AFFULL:                              ; affull
-        LD      A,1
-        OR      A
+        SBC     A,A                     ; DSM comparison carried: nonzero full result
         RET
 
   ; Translate block DE into allocation-vector byte HL and high-first mask A.
@@ -2360,8 +2364,8 @@ UB_DIRHIT:                              ; dirhit
         RET
 
 UB_DIRBAD:                              ; dirbad
-        LD      A,1
-        OR      A
+        XOR     A
+        INC     A
         RET
 
   ; Directory sectors, not entries, fit in one byte for the FDF catalogue.
@@ -2603,7 +2607,7 @@ UA_NLOOP:
         DJNZ    UA_NLOOP
         RET
 
-        DB 0,0 ; preserve frozen live-state and private-stack addresses
+
 UB_OLDSP:       DW      0               ; caller stack pointer
 UB_OLDIX:       DW      0               ; saved caller IX
 UB_DRIVE:       DB      0               ; default drive
