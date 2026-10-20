@@ -19,7 +19,10 @@ A uses the existing cylinder-based SPT and reserved-system-area convention;
 B-D use one CP/M track per surface and no reserved system area. Capacity
 names describe allocation space before directory/file use. No RSX is needed.
 Cold boot restores these records from the system image; CONFIG changes survive
-warm boot. CONFIG H saves current settings into A:'s resident carrier.
+warm boot. To save all active settings into A:'s resident carrier, run CONFIG,
+choose **S** (save), then **B** (save all current settings as startup defaults),
+and confirm the write. The save submenu's **A** choice saves only pending
+cold-boot changes, preserving the saved drive defaults.
 Standalone SYSGEN copies and verifies the complete reserved area onto a target
 configured with the same SYSTEM format, without altering its file area.
 

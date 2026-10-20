@@ -1,12 +1,84 @@
 # BetterCP/M 1.0 User's Guide
 
+## Contents
+
+[Part I — Using BetterCP/M](#part-i)
+
+- [Chapter 1 — Introduction](#chapter-1)
+- [Chapter 2 — An Overview of BetterCP/M](#chapter-2)
+- [Chapter 3 — Getting Started](#chapter-3)
+- [Chapter 4 — Working with Drives and Files](#chapter-4)
+- [Chapter 5 — The Command Environment](#chapter-5)
+- [Chapter 6 — Batch Processing](#chapter-6)
+- [Chapter 7 — Configuring BetterCP/M](#chapter-7)
+- [Chapter 8 — Resident Extensions](#chapter-8)
+- [Chapter 9 — Terminal Support](#chapter-9)
+- [Chapter 10 — Working with Disks](#chapter-10)
+- [Chapter 11 — Date and Time](#chapter-11)
+- [Chapter 12 — Troubleshooting](#chapter-12)
+
+[Part II — Command and Utility Reference](#part-ii)
+
+- [Chapter 13 — Introduction to the Command Reference](#chapter-13)
+  - [13.1 Command Syntax Conventions](#section-13-1)
+  - [13.2 Command Options](#section-13-2)
+  - [13.3 Resident and Transient Versions](#section-13-3)
+  - [13.4 Getting Help and Version Information](#section-13-4)
+- [Chapter 14 — File and Directory Commands](#chapter-14)
+  - [14.1 DIR — Display Directory](#section-14-1)
+  - [14.2 ERA — Erase Files](#section-14-2)
+  - [14.3 REN — Rename Files](#section-14-3)
+  - [14.4 TYPE — Display Text Files](#section-14-4)
+  - [14.5 COPY — Copy Files](#section-14-5)
+  - [14.6 MOVE — Move Files](#section-14-6)
+- [Chapter 15 — System and Environment Commands](#chapter-15)
+  - [15.1 USER — Select User Area](#section-15-1)
+  - [15.2 CLS — Clear Screen](#section-15-2)
+  - [15.3 VER — Display Version Information](#section-15-3)
+  - [15.4 SAVE — Save Memory to a File](#section-15-4)
+  - [15.5 GET — Load a File into Memory](#section-15-5)
+  - [15.6 GO — Execute at 0100H](#section-15-6)
+  - [15.7 JUMP — Execute at an Address](#section-15-7)
+  - [15.8 PEEK / P — Display Memory](#section-15-8)
+  - [15.9 POKE — Modify Memory](#section-15-9)
+- [Chapter 16 — System Utilities](#chapter-16)
+  - [16.1 CONFIG — System Configuration](#section-16-1)
+  - [16.2 STAT — System and File Statistics](#section-16-2)
+  - [16.3 TIME — Date and Time](#section-16-3)
+  - [16.4 DUP — Disk Utilities](#section-16-4)
+  - [16.5 SYSGEN — System Generation](#section-16-5)
+- [Chapter 17 — Batch and Extension Commands](#chapter-17)
+  - [17.1 SUBMIT — Batch Command Processing](#section-17-1)
+  - [17.2 XSUB — Extended Batch Input](#section-17-2)
+  - [17.3 CPX — Command Processor Extension Manager](#section-17-3)
+  - [17.4 RSX — Resident System Extension Management](#section-17-4)
+
+[Appendices](#appendices)
+
+- [Appendix A — Command Summary](#appendix-a)
+- [Appendix B — Command-Line Editing Keys](#appendix-b)
+- [Appendix C — Control Characters and Keyboard Conventions](#appendix-c)
+- [Appendix D — File Attributes and File Specifications](#appendix-d)
+- [Appendix E — BetterCP/M and CP/M 2.2 Compatibility Notes](#appendix-e)
+- [Appendix F — System Messages and Error Reference](#appendix-f)
+- [Appendix G — Glossary](#appendix-g)
+- [Appendix H — Further Reading and Technical Documentation](#appendix-h)
+
+Command forms and switches: [Appendix A](#appendix-a). Command-editor keys: [Appendix B](#appendix-b).
+
 ---
 
-# Part One
+<a id="part-i"></a>
 
-## Chapter 1 — Introduction
+## Part I — Using BetterCP/M
 
-### 1.1 What Is BetterCP/M?
+<a id="chapter-1"></a>
+
+### Chapter 1 — Introduction
+
+<a id="section-1-1"></a>
+
+#### 1.1 What Is BetterCP/M?
 
 BetterCP/M is an enhanced implementation of the CP/M operating system for Z80-based computers. It preserves the familiar CP/M 2.2 operating environment while adding new capabilities that make the system more convenient, flexible, and enjoyable to use.
 
@@ -20,7 +92,9 @@ BetterCP/M also introduces a system of resident extensions. These allow addition
 
 Despite these enhancements, BetterCP/M remains recognizably CP/M. Its purpose is not to replace the traditional CP/M environment with something entirely different, but to build upon it.
 
-### 1.2 BetterCP/M and Digital Research CP/M 2.2
+<a id="section-1-2"></a>
+
+#### 1.2 BetterCP/M and Digital Research CP/M 2.2
 
 BetterCP/M is designed to maintain compatibility with Digital Research's CP/M 2.2, one of the most widely used operating systems of the early microcomputer era.
 
@@ -38,9 +112,11 @@ These differences are generally invisible to conventional CP/M applications. Bet
 
 Compatibility is a fundamental design objective, but it should not be interpreted as a guarantee that every program written for every CP/M computer will work unchanged. Some programs depend on particular hardware, undocumented operating-system behavior, or features supplied by individual manufacturers.
 
-For additional information about compatibility, see Appendix E, *BetterCP/M and CP/M 2.2 Compatibility Notes*.
+For additional information about compatibility, see [Appendix E](#appendix-e), *BetterCP/M and CP/M 2.2 Compatibility Notes*.
 
-### 1.3 What's New in BetterCP/M?
+<a id="section-1-3"></a>
+
+#### 1.3 What's New in BetterCP/M?
 
 BetterCP/M introduces a number of enhancements to the traditional CP/M environment. Some are immediately apparent when using the command prompt; others provide additional capabilities for system configuration, software development, and everyday operation.
 
@@ -82,7 +158,9 @@ Perhaps the most important feature is what BetterCP/M does *not* require you to 
 
 You can continue using conventional CP/M applications, programming tools, and file formats while taking advantage of BetterCP/M's additional facilities.
 
-### 1.4 About This Manual
+<a id="section-1-4"></a>
+
+#### 1.4 About This Manual
 
 This manual explains how to install, configure, and use BetterCP/M 1.0.
 
@@ -102,30 +180,26 @@ Additional technical documentation is available for readers who want to understa
 
 You don't need those documents to use BetterCP/M. This User's Guide should provide the information necessary for ordinary operation.
 
-Below are **Chapters 2–4 of the BetterCP/M 1.0 User's Guide**, incorporating our latest decisions.
+<a id="chapter-2"></a>
 
-Chapter 2 provides a high-level architectural introduction. Chapter 3 covers getting started without tying the manual to particular machines; platform-specific instructions will be maintained separately. Chapter 4 introduces everyday file and disk operations, leaving complete command syntax and options to the reference section later in the manual.
-
-The chapters follow the friendly, practical style established in the approved Chapter 1. They draw on the existing BetterCP/M User's Guide, with unnecessary implementation details omitted.
-
----
-
-# Chapter 2 — An Overview of BetterCP/M
+### Chapter 2 — An Overview of BetterCP/M
 
 BetterCP/M builds upon the familiar organization of Digital Research's CP/M 2.2, but introduces several important changes to the way the operating system is organized and used.
 
 You don't need to understand its internal workings to use BetterCP/M. Nevertheless, a general understanding of how its major components fit together will help you appreciate what the system offers and how its additional facilities work.
 
-This chapter provides that introduction. Readers interested in a more detailed technical discussion should consult the *BetterCP/M Architecture Overview*.
+This chapter provides that introduction. Readers interested in a more detailed technical discussion should consult the [Overall System Architecture](../architecture/02%20Overall%20System%20Architecture.txt).
 
-## 2.1 The BetterCP/M Operating Environment
+<a id="section-2-1"></a>
+
+#### 2.1 The BetterCP/M Operating Environment
 
 Like conventional CP/M, BetterCP/M provides an environment in which programs can be loaded from disk, executed, and given access to files and peripheral devices.
 
 When the system is ready, it displays a command prompt:
 
 ```text
-A>
+A0>
 ```
 
 From this prompt, you can enter commands, run programs, manage files, and configure the operating environment.
@@ -138,7 +212,9 @@ BetterCP/M extends this environment with additional commands, improved command-l
 
 These additions are designed to work alongside conventional CP/M software rather than require applications to be rewritten.
 
-## 2.2 How BetterCP/M Is Organized
+<a id="section-2-2"></a>
+
+#### 2.2 How BetterCP/M Is Organized
 
 CP/M has traditionally been organized around three principal operating-system components: the Console Command Processor (CCP), the Basic Disk Operating System (BDOS), and the Basic Input/Output System (BIOS).
 
@@ -160,14 +236,16 @@ BetterCP/M also provides two important extension mechanisms:
 
 Together, these components provide the familiar CP/M environment while allowing BetterCP/M to offer capabilities beyond those of the original operating system.
 
-## 2.3 The Command Processor
+<a id="section-2-3"></a>
+
+#### 2.3 The Command Processor
 
 The command processor is the part of BetterCP/M with which users interact most frequently.
 
 When you enter a command such as:
 
 ```text
-A>DIR
+A0>DIR
 ```
 
 the command processor determines how to carry it out.
@@ -177,9 +255,9 @@ Some commands are provided directly by the command environment. Others are suppl
 For example:
 
 ```text
-A>DIR
-A>TYPE README.TXT
-A>MYPROG
+A0>DIR
+A0>TYPE README.TXT
+A0>MYPROG
 ```
 
 The first two commands perform familiar file operations. The third starts a program named `MYPROG.COM`, assuming it can be found.
@@ -194,9 +272,11 @@ The distinction between resident and transient commands is normally invisible du
 
 There are occasions when the distinction matters, however. BetterCP/M allows you to explicitly request a transient program, even when a resident command has the same name.
 
-Chapter 5 explains the command environment in greater detail.
+[Chapter 5](#chapter-5) explains the command environment in greater detail.
 
-## 2.4 Programs and Memory
+<a id="section-2-4"></a>
+
+#### 2.4 Programs and Memory
 
 Like CP/M 2.2, BetterCP/M provides a region of memory called the **Transient Program Area**, or **TPA**.
 
@@ -207,7 +287,7 @@ When you enter the name of a program, BetterCP/M locates its `.COM` file, loads 
 For example:
 
 ```text
-A>ED LETTER.TXT
+A0>ED LETTER.TXT
 ```
 
 starts the ED editor, provided the program is available.
@@ -226,9 +306,11 @@ BetterCP/M allows supported extensions to be unloaded when they are no longer ne
 
 For most users, the important point is simple: **loaded RSXs can reduce program memory; reclaimable CPX command code does not permanently reduce the maximum transient program size.**
 
-Chapter 8 explains how to manage extensions and examine their effect on available memory.
+[Chapter 8](#chapter-8) explains how to manage extensions and examine their effect on available memory.
 
-## 2.5 Disks and Files
+<a id="section-2-5"></a>
+
+#### 2.5 Disks and Files
 
 BetterCP/M retains the familiar CP/M disk and file organization.
 
@@ -262,9 +344,11 @@ These commands retain familiar CP/M conventions while offering additional option
 
 The underlying filesystem remains compatible with conventional CP/M disk organization. BetterCP/M's enhancements do not require ordinary CP/M applications to adopt a new file format.
 
-Chapter 4 explains how to work with drives and files.
+[Chapter 4](#chapter-4) explains how to work with drives and files.
 
-## 2.6 Resident Extensions
+<a id="section-2-6"></a>
+
+#### 2.6 Resident Extensions
 
 One of BetterCP/M's distinguishing features is its ability to load additional operating-system facilities into memory.
 
@@ -272,7 +356,7 @@ These facilities are called **resident extensions** because they remain availabl
 
 BetterCP/M provides two principal types.
 
-### Command Processor Extensions
+##### Command Processor Extensions
 
 A CPX adds commands to the command processor.
 
@@ -282,7 +366,7 @@ Because these commands are resident, they can be invoked without loading a separ
 
 Additional CPXs can be loaded when their commands are needed and unloaded when they are no longer required.
 
-### Resident System Extensions
+##### Resident System Extensions
 
 An RSX provides services that remain available to the operating environment and other programs.
 
@@ -294,7 +378,7 @@ BetterCP/M includes terminal facilities supporting several familiar terminal con
 
 These facilities allow supported applications to use the terminal environment they expect, even when the underlying display hardware differs.
 
-### Managing Extensions
+##### Managing Extensions
 
 BetterCP/M provides commands for examining, loading, and unloading resident extensions.
 
@@ -302,9 +386,11 @@ Extensions can also be loaded automatically during system startup, allowing you 
 
 Ordinary warm boots preserve supported resident extensions, so they need not be reloaded every time a program terminates.
 
-Chapter 8 explains how to use and manage extensions. For complete command syntax and options, consult the CPX and RSX entries in the Command Reference.
+[Chapter 8](#chapter-8) explains how to use and manage extensions. For complete command syntax and options, consult the CPX and RSX entries in the Command Reference.
 
-## 2.7 Hardware Independence
+<a id="section-2-7"></a>
+
+#### 2.7 Hardware Independence
 
 CP/M's separation of the operating system from the hardware-specific BIOS made it possible to run the same operating environment on many different computers.
 
@@ -324,15 +410,19 @@ Developers interested in adapting BetterCP/M to additional computers should cons
 
 ---
 
-# Chapter 3 — Getting Started
+<a id="chapter-3"></a>
+
+### Chapter 3 — Getting Started
 
 Getting started with BetterCP/M is much like getting started with conventional CP/M. Once the operating system has been prepared for your computer, you boot it, wait for the command prompt, and begin working.
 
 The exact steps required to prepare and start BetterCP/M depend on the computer or emulator you're using. Rather than duplicate those instructions here, this chapter describes the general process and introduces the facilities you'll encounter when the system starts.
 
-For installation and boot instructions specific to your computer, consult the *BetterCP/M Supported Platforms* documentation.
+For current platform preparation and launch instructions, see [Default high-capacity test disks](../platform/DEFAULT-TEST-DISKS.md) and the [z80pack / cpmsim adapter](../../src/platform/z80pack/README.md). For the selected System Disk build procedure, see [Building the current BetterCP/M System Disks](../releases/DISTRIBUTION-BUILD.md). These are working build/platform instructions; a consolidated Supported Platforms user manual is not yet available.
 
-## 3.1 Obtaining BetterCP/M
+<a id="section-3-1"></a>
+
+#### 3.1 Obtaining BetterCP/M
 
 BetterCP/M is distributed as a collection of operating-system files, utilities, and supporting documentation.
 
@@ -348,9 +438,11 @@ The precise contents of the distribution may vary between releases and platforms
 
 Before preparing a system, make sure you have obtained the files appropriate to your computer. A disk image intended for one machine may not boot on another, even though both machines use the Z80 processor.
 
-The *Supported Platforms* documentation identifies the available distributions and explains how to prepare them.
+Use the [distribution manifest](../releases/DISTRIBUTION-MANIFEST.md) to identify selected contents and [Building the current BetterCP/M System Disks](../releases/DISTRIBUTION-BUILD.md) for preparation. Check the release report accompanying the images you obtain.
 
-## 3.2 Preparing Your System
+<a id="section-3-2"></a>
+
+#### 3.2 Preparing Your System
 
 Before booting BetterCP/M, you'll need a supported computer or emulator and a suitable system disk.
 
@@ -366,9 +458,32 @@ The system disk may have sufficient free space for experimentation, but a separa
 
 If you're using physical removable media, it's a good idea to prepare a backup of the original system disk before making configuration changes.
 
-The platform documentation explains any special preparation required for your particular system.
+The [Model 4 test-disk instructions](../platform/DEFAULT-TEST-DISKS.md) and [z80pack / cpmsim adapter instructions](../../src/platform/z80pack/README.md) describe the current emulator setup. These documents include development history; use instructions that match your build and platform.
 
-## 3.3 Booting BetterCP/M
+##### What Is on Each Disk
+
+The System Disk contains the operating system and the following user-0 files. The two platform versions use different boot and BIOS implementations.
+
+| Platform | Selected System Disk files |
+|---|---|
+| Both platforms: file commands | `DIR.COM`, `ERA.COM`, `TYPE.COM`, `REN.COM`, `VER.COM`, `COPY.COM`, `PIP.COM`, `ED.COM` |
+| Both platforms: system utilities | `CONFIG.COM`, `DUP.COM`, `TIME.COM`, `SYSGEN.COM`, `STAT.COM`, `SUBMIT.COM`, `CPX.COM`, `RSX.COM` |
+| Both platforms: support files | `README.TXT`, `STARTUP.SUB`, `DISK.FDB`, `RCP.CPX`, `R3PACK.RSX` |
+| Both platforms: portable monitors and tests | `ADM3A.RSX`, `ADMTST.COM`, `VT52.RSX`, `VT52TST.COM`, `ANSI.RSX`, `ANSITST.COM` |
+| TRS-80 Model 4 / trs80gp only | `M4SCRN.RSX`, `FREHDCLK.RSX` (requires FreHD hardware or emulation) |
+| z80pack / cpmsim only | `ANSISCRN.RSX`, `ZPRTC.RSX`, `BYE.COM` |
+
+A supplied clock provider is available for explicit loading; neither platform loads one by default. Model 4 startup does load its screen backend and ADM-3A personality, as shown in [Section 7.3](#section-7-3).
+
+The separate **Utilities Disk** is selected for `XSUB.COM`, `DUMP.COM`, ZSM4 and LINK, along with additional tools whose exact selections remain pending. Utilities Disk assembly and the remaining selections are separate from the current System Disk. The **CP/M Tools Disk** is another separate collection, selected for SYSINFO, BIOSINFO, DISKINFO, MEMINFO and related portable diagnostics; it is not the System Disk or Utilities Disk.
+
+An implemented or buildable component is not automatically a selected distribution file. In particular, `CLS.COM`, `P2DOS.RSX`, the 104/105 clock-compatibility adapters, and `FDF.RSX` are not selected System Disk contents. CLS is available through `RCP.CPX`. Optional adapters and FDF support require separately prepared, compatible files; a maintainer can build these from the matching BetterCP/M source, then install extension files in A0 as described in [Section 8.2](#section-8-2). Diagnostic and conformance packages are also outside the selected distribution.
+
+Historical ASM, LOAD and DDT examples assume separately obtained compatible tools; these programs are not selected BetterCP/M disk contents. ED is supplied on the System Disk. Refer to the distribution manifest and the disk's release report for the approved inventory and any outstanding packaging decisions, rather than treating a development disk or build directory as a release inventory.
+
+<a id="section-3-3"></a>
+
+#### 3.3 Booting BetterCP/M
 
 Once your system has been prepared, start BetterCP/M using the normal boot procedure for your computer.
 
@@ -384,17 +499,17 @@ SUBMIT STARTUP
 
 This executes the commands contained in `STARTUP.SUB`, allowing the system to establish a preferred working environment.
 
-The supplied startup file initially displays the BetterCP/M identification banner. It can also be customized to perform other tasks, such as loading resident extensions.
+Startup differs by platform: cpmsim displays the banner; the Model 4 loads M4SCRN and ADM3A, clears the display, then shows the banner. [Section 7.3](#section-7-3) lists both supplied scripts and explains customization.
 
 When startup is complete, BetterCP/M displays its command prompt:
 
 ```text
-A>
+A0>
 ```
 
 The system is now ready to accept commands.
 
-### Cold Boots and Warm Boots
+##### Cold Boots and Warm Boots
 
 CP/M distinguishes between two kinds of system startup.
 
@@ -408,16 +523,18 @@ The startup command is executed during a cold boot, not during an ordinary warm 
 
 This distinction becomes useful when you begin customizing BetterCP/M. For example, an extension loaded during startup can remain available throughout the working session without needing to be loaded again after every program.
 
-Chapter 7 explains how to configure startup commands. Chapter 8 discusses the behavior of resident extensions during warm boots.
+[Chapter 7](#chapter-7) explains how to configure startup commands. [Chapter 8](#chapter-8) discusses the behavior of resident extensions during warm boots.
 
-## 3.4 The Command Prompt
+<a id="section-3-4"></a>
+
+#### 3.4 The Command Prompt
 
 When BetterCP/M is ready for a command, it displays a prompt identifying the current drive and user area.
 
-The simplest prompt is:
+The prompt always includes both the drive and decimal user number, including user zero. For example:
 
 ```text
-A>
+A0>
 ```
 
 This indicates that drive A is selected and the current user area is zero.
@@ -425,14 +542,14 @@ This indicates that drive A is selected and the current user area is zero.
 If you select another drive, the prompt changes accordingly:
 
 ```text
-A>B:
-B>
+A0>B:
+B0>
 ```
 
 BetterCP/M also allows you to select a user area directly:
 
 ```text
-A>5:
+A0>5:
 A5>
 ```
 
@@ -441,7 +558,7 @@ The prompt now indicates drive A, user area 5.
 You can select a drive and user area together:
 
 ```text
-A>B3:
+A0>B3:
 B3>
 ```
 
@@ -452,25 +569,27 @@ Throughout this manual, examples include the command prompt to show how commands
 For example:
 
 ```text
-A>DIR
+A0>DIR
 ```
 
 means that you type `DIR` and press `RETURN`.
 
-Chapter 4 explains drives and user areas in greater detail.
+[Chapter 4](#chapter-4) explains drives and user areas in greater detail.
 
-## 3.5 Your First Commands
+<a id="section-3-5"></a>
+
+#### 3.5 Your First Commands
 
 Once BetterCP/M displays its prompt, you can begin entering commands.
 
 If you've used CP/M before, many of these will already be familiar.
 
-### Displaying a Directory
+##### Displaying a Directory
 
 Enter:
 
 ```text
-A>DIR
+A0>DIR
 ```
 
 BetterCP/M displays the files in the current drive and user area.
@@ -478,49 +597,49 @@ BetterCP/M displays the files in the current drive and user area.
 You can also examine another drive without selecting it:
 
 ```text
-A>DIR B:
+A0>DIR B:
 ```
 
 Or examine a particular drive and user area:
 
 ```text
-A>DIR B3:
+A0>DIR B3:
 ```
 
-### Displaying a Text File
+##### Displaying a Text File
 
 To display the contents of a text file, use TYPE:
 
 ```text
-A>TYPE README.TXT
+A0>TYPE README.TXT
 ```
 
 The file's contents are displayed on the console.
 
 TYPE is useful for examining documentation, program listings, command files, and other ordinary text files.
 
-### Copying a File
+##### Copying a File
 
 BetterCP/M provides a COPY command for copying files between drives and user areas.
 
 For example:
 
 ```text
-A>COPY README.TXT B:README.TXT
+A0>COPY README.TXT B:README.TXT
 ```
 
 copies `README.TXT` from the current drive and user area to drive B.
 
 The original file remains unchanged.
 
-### Running a Program
+##### Running a Program
 
 To execute a transient program, enter its name without the `.COM` extension.
 
 For example:
 
 ```text
-A>MYPROG
+A0>MYPROG
 ```
 
 starts `MYPROG.COM`, provided BetterCP/M can locate it.
@@ -528,24 +647,26 @@ starts `MYPROG.COM`, provided BetterCP/M can locate it.
 If the program accepts command-line arguments, enter them after its name:
 
 ```text
-A>MYPROG INPUT.DAT
+A0>MYPROG INPUT.DAT
 ```
 
 The arguments are passed to the program using the conventional CP/M command-line environment.
 
-### Displaying System Information
+##### Displaying System Information
 
 BetterCP/M provides the VER command for displaying version information.
 
 ```text
-A>VER
+A0>VER
 ```
 
 This identifies the running BetterCP/M system.
 
-These examples are enough to begin exploring the command environment. Chapter 5 introduces its additional capabilities, while Part II provides the complete command reference.
+These examples are enough to begin exploring the command environment. [Chapter 5](#chapter-5) introduces its additional capabilities, while Part II provides the complete command reference.
 
-## 3.6 Restarting and Shutting Down
+<a id="section-3-6"></a>
+
+#### 3.6 Restarting and Shutting Down
 
 BetterCP/M follows the traditional CP/M model of operating on a computer that is started and stopped using the facilities provided by its hardware.
 
@@ -569,7 +690,9 @@ The distinction matters when using resident extensions or saved startup configur
 
 ---
 
-# Chapter 4 — Working with Drives and Files
+<a id="chapter-4"></a>
+
+### Chapter 4 — Working with Drives and Files
 
 BetterCP/M retains the familiar CP/M system of disk drives, user areas, and file names. If you've used CP/M before, you'll recognize most of the conventions described in this chapter.
 
@@ -577,9 +700,11 @@ BetterCP/M also introduces some useful extensions, particularly in the way drive
 
 This chapter explains how to work with files and disks during ordinary operation. The complete syntax and options for individual commands are provided in Part II, *Command and Utility Reference*.
 
-## 4.1 Drives and User Areas
+<a id="section-4-1"></a>
 
-### Disk Drives
+#### 4.1 Drives and User Areas
+
+##### Disk Drives
 
 Like conventional CP/M, BetterCP/M identifies disk drives by letters.
 
@@ -588,14 +713,14 @@ Drives are named `A:` through `P:`, although the number actually available depen
 The current drive is shown in the command prompt:
 
 ```text
-A>
+A0>
 ```
 
 To select another drive, enter its letter followed by a colon:
 
 ```text
-A>B:
-B>
+A0>B:
+B0>
 ```
 
 The prompt changes to indicate that drive B is now selected.
@@ -605,7 +730,7 @@ You can also refer to files on another drive without changing the current drive.
 For example:
 
 ```text
-A>DIR B:
+A0>DIR B:
 ```
 
 displays the directory of drive B while leaving drive A selected.
@@ -613,12 +738,12 @@ displays the directory of drive B while leaving drive A selected.
 Similarly:
 
 ```text
-A>TYPE B:README.TXT
+A0>TYPE B:README.TXT
 ```
 
 displays `README.TXT` from drive B.
 
-### User Areas
+##### User Areas
 
 CP/M divides each disk into numbered user areas.
 
@@ -635,7 +760,7 @@ Files in different user areas are ordinarily treated as belonging to separate co
 To select user area 5, enter:
 
 ```text
-A>5:
+A0>5:
 A5>
 ```
 
@@ -645,10 +770,10 @@ To return to user area 0:
 
 ```text
 A5>0:
-A>
+A0>
 ```
 
-### Drive/User Specifications
+##### Drive/User Specifications
 
 BetterCP/M provides a convenient way to specify a drive and user area together.
 
@@ -667,14 +792,14 @@ These identify drive A/user 0, drive B/user 3, and drive C/user 12, respectively
 To select drive B, user area 3, enter:
 
 ```text
-A>B3:
+A0>B3:
 B3>
 ```
 
 You can also use a DU specification when referring to a file:
 
 ```text
-A>TYPE B3:README.TXT
+A0>TYPE B3:README.TXT
 ```
 
 This displays `README.TXT` from drive B, user area 3, without changing the current drive or user area.
@@ -685,7 +810,9 @@ Not every conventional CP/M program understands BetterCP/M's extended DU notatio
 
 Programs using the standard CP/M programming interface continue to operate according to conventional CP/M drive and user-area rules.
 
-## 4.2 File Names and File Specifications
+<a id="section-4-2"></a>
+
+#### 4.2 File Names and File Specifications
 
 BetterCP/M uses the standard CP/M file-naming convention.
 
@@ -718,7 +845,7 @@ These are conventions rather than restrictions imposed by the filesystem.
 
 A file named `REPORT.TXT`, for example, is not required to contain text merely because its file type is `.TXT`.
 
-### File Specifications
+##### File Specifications
 
 A **file specification**, or **filespec**, identifies a file and may include a drive and user area.
 
@@ -762,7 +889,9 @@ BetterCP/M commands use file specifications extensively, and many accept the ext
 
 The individual command descriptions identify which forms are supported.
 
-## 4.3 Wildcards
+<a id="section-4-3"></a>
+
+#### 4.3 Wildcards
 
 Wildcards allow a single file specification to refer to several files.
 
@@ -774,7 +903,7 @@ BetterCP/M retains the standard CP/M wildcard characters:
 For example:
 
 ```text
-A>DIR *.COM
+A0>DIR *.COM
 ```
 
 lists files with the `.COM` file type.
@@ -782,7 +911,7 @@ lists files with the `.COM` file type.
 Similarly:
 
 ```text
-A>DIR LETTER.*
+A0>DIR LETTER.*
 ```
 
 lists files named `LETTER`, regardless of their file type.
@@ -790,17 +919,17 @@ lists files named `LETTER`, regardless of their file type.
 To list all applicable files:
 
 ```text
-A>DIR *.*
+A0>DIR *.*
 ```
 
-### Using Question Marks
+##### Using Question Marks
 
 A question mark matches any character in the corresponding position.
 
 For example:
 
 ```text
-A>DIR TEST?.COM
+A0>DIR TEST?.COM
 ```
 
 can match:
@@ -816,12 +945,12 @@ Wildcards are especially useful when performing operations on groups of related 
 For example:
 
 ```text
-A>DIR B3:*.ASM
+A0>DIR B3:*.ASM
 ```
 
 lists assembly-language source files in drive B, user area 3.
 
-### Wildcards and File Operations
+##### Wildcards and File Operations
 
 Many BetterCP/M commands accept wildcards.
 
@@ -835,13 +964,15 @@ The command reference explains the rules for each command.
 
 Be especially careful when using wildcards with commands that modify or delete files. A specification such as `*.*` can select every applicable file in a directory.
 
-## 4.4 File Attributes
+<a id="section-4-4"></a>
+
+#### 4.4 File Attributes
 
 In addition to its name and file type, a CP/M file can have attributes that affect how it is treated.
 
 BetterCP/M supports the familiar read-only, system, and archive attributes.
 
-### Read-Only Files
+##### Read-Only Files
 
 The **read-only (R/O)** attribute protects a file against ordinary operations that would modify or erase it.
 
@@ -851,7 +982,7 @@ BetterCP/M respects read-only protection.
 
 Some utilities provide explicit options for overriding this protection, but such operations should be used carefully.
 
-### System Files
+##### System Files
 
 The **system (SYS)** attribute identifies a file as a system file.
 
@@ -859,7 +990,7 @@ Some directory commands may omit system files from their ordinary listings unles
 
 In BetterCP/M 1.0, the SYS attribute does not automatically make a file visible across different user areas. Normal drive and user-area rules continue to apply.
 
-### Archive Files
+##### Archive Files
 
 The **archive (ARC)** attribute can be used to identify files for backup or other file-management purposes.
 
@@ -867,7 +998,7 @@ BetterCP/M preserves this attribute where appropriate, but does not impose a uni
 
 Individual utilities may provide options that make use of archive attributes.
 
-### Examining and Changing Attributes
+##### Examining and Changing Attributes
 
 BetterCP/M provides utilities for displaying and changing file attributes.
 
@@ -875,7 +1006,9 @@ For example, STAT can be used to examine file information and perform supported 
 
 The complete procedures are described in the STAT command reference.
 
-## 4.5 Changing Disks
+<a id="section-4-5"></a>
+
+#### 4.5 Changing Disks
 
 Many CP/M computers use removable storage media.
 
@@ -895,7 +1028,7 @@ If BetterCP/M reports that a disk has become read-only after a media change, fol
 
 Do not attempt to force a write merely to bypass the warning.
 
-### A Practical Precaution
+##### A Practical Precaution
 
 When working with removable disks, it's good practice to finish the current operation and return to the command prompt before changing media.
 
@@ -903,7 +1036,9 @@ If you're using an emulator, follow its procedure for replacing or remounting di
 
 The details vary between systems, so consult the appropriate platform documentation when necessary.
 
-## 4.6 Disk Capacity and Free Space
+<a id="section-4-6"></a>
+
+#### 4.6 Disk Capacity and Free Space
 
 Not all CP/M disks have the same capacity.
 
@@ -911,7 +1046,7 @@ The amount of storage available depends on the disk format, which determines how
 
 BetterCP/M supports different disk formats through its disk and system configuration facilities.
 
-### File Storage
+##### File Storage
 
 CP/M allocates file space in units called **allocation blocks**.
 
@@ -921,7 +1056,7 @@ A small file may occupy an entire allocation block, even if it contains only a f
 
 Consequently, the amount of free space on a disk does not always decrease by exactly the size of each file written to it.
 
-### Directory Capacity
+##### Directory Capacity
 
 A CP/M disk also has a limited number of directory entries.
 
@@ -931,52 +1066,54 @@ This means that a disk can sometimes have unused storage space but insufficient 
 
 If you encounter this situation, deleting unneeded files or using a disk format with a larger directory may resolve the problem.
 
-### Examining Disk Information
+##### Examining Disk Information
 
 BetterCP/M provides utilities for examining disk capacity, available space, and related information.
 
 STAT provides disk and file information, while other utilities can examine or configure supported disk formats.
 
-Chapter 10 explains disk operations in more detail.
+[Chapter 10](#chapter-10) explains disk operations in more detail.
 
 For complete command syntax, consult the appropriate entries in Part II.
 
-## 4.7 Copying, Moving, and Managing Files
+<a id="section-4-7"></a>
+
+#### 4.7 Copying, Moving, and Managing Files
 
 BetterCP/M provides familiar file-management commands together with additional facilities that make it easier to work across drives and user areas.
 
 The most commonly used operations are listing files, copying them, moving them, renaming them, and deleting files that are no longer needed.
 
-### Listing Files
+##### Listing Files
 
 To display the files in the current drive and user area:
 
 ```text
-A>DIR
+A0>DIR
 ```
 
 To list files on another drive:
 
 ```text
-A>DIR B:
+A0>DIR B:
 ```
 
 To list files in a particular drive and user area:
 
 ```text
-A>DIR B3:
+A0>DIR B3:
 ```
 
 BetterCP/M's DIR utility provides additional options for selecting, sorting, and displaying files.
 
-### Copying Files
+##### Copying Files
 
 COPY creates a copy of a file while leaving the original in place.
 
 For example:
 
 ```text
-A>COPY README.TXT B:README.TXT
+A0>COPY README.TXT B:README.TXT
 ```
 
 copies `README.TXT` from the current drive and user area to drive B.
@@ -986,14 +1123,14 @@ BetterCP/M also supports copying files between explicitly specified user areas.
 For example:
 
 ```text
-A>COPY B3:REPORT.TXT C2:REPORT.TXT
+A0>COPY B3:REPORT.TXT C2:REPORT.TXT
 ```
 
 copies the file from drive B, user area 3, to drive C, user area 2.
 
 COPY provides additional options for handling existing destination files, preserving attributes, and performing other file-management operations.
 
-### Moving Files
+##### Moving Files
 
 MOVE transfers a file from one location to another.
 
@@ -1002,7 +1139,7 @@ Unlike COPY, MOVE is intended to remove the file from its original location afte
 For example:
 
 ```text
-A>MOVE REPORT.TXT B:REPORT.TXT
+A0>MOVE REPORT.TXT B:REPORT.TXT
 ```
 
 moves `REPORT.TXT` from the current drive and user area to drive B.
@@ -1011,14 +1148,14 @@ Moving files can be convenient when reorganizing disks or user areas.
 
 However, remember that MOVE changes the location of the original file. If you want to retain the original, use COPY instead.
 
-### Renaming Files
+##### Renaming Files
 
 REN changes a file's name.
 
 For example:
 
 ```text
-A>REN NEWNAME.TXT=OLDNAME.TXT
+A0>REN NEWNAME.TXT=OLDNAME.TXT
 ```
 
 renames `OLDNAME.TXT` to `NEWNAME.TXT`.
@@ -1027,14 +1164,14 @@ Renaming is useful for organizing files, changing file types, or assigning more 
 
 BetterCP/M provides additional REN options beyond the conventional CP/M command.
 
-### Deleting Files
+##### Deleting Files
 
 ERA deletes files.
 
 For example:
 
 ```text
-A>ERA OLD.DAT
+A0>ERA OLD.DAT
 ```
 
 deletes `OLD.DAT` from the current drive and user area.
@@ -1042,7 +1179,7 @@ deletes `OLD.DAT` from the current drive and user area.
 Wildcards can be used to select multiple files:
 
 ```text
-A>ERA *.BAK
+A0>ERA *.BAK
 ```
 
 This selects backup files matching the specification.
@@ -1051,7 +1188,7 @@ This selects backup files matching the specification.
 
 BetterCP/M provides additional ERA facilities, including options for confirmation and handling protected files.
 
-### Choosing the Right Command
+##### Choosing the Right Command
 
 COPY, MOVE, REN, and ERA perform different operations.
 
@@ -1067,17 +1204,9 @@ These distinctions are straightforward, but they become especially important whe
 
 For complete descriptions of these commands, including their options, confirmation behavior, and error messages, consult Part II, *Command and Utility Reference*.
 
-Below are **Chapters 5–7 of the BetterCP/M 1.0 User's Guide**, presented together for review.
+<a id="chapter-5"></a>
 
-They follow the style established in Chapters 1–4: friendly, practical, and aimed at users rather than operating-system developers. Detailed command syntax belongs in Part II, while these chapters explain how to use the facilities in everyday work.
-
-Chapter 5 incorporates our agreed wording for command history: **Ctrl-K and Ctrl-J are the documented controls for v1.0; arrow-key behavior depends on the keyboard and terminal configuration.**
-
-The material draws on the earlier User's Guide, including its descriptions of SUBMIT, XSUB, COPY, and CONFIG. These are editorial drafts, not changes to the GitHub repository.
-
----
-
-# Chapter 5 — The Command Environment
+### Chapter 5 — The Command Environment
 
 The command processor is the part of BetterCP/M you'll use most often. It accepts commands, starts programs, and provides the familiar CP/M prompt.
 
@@ -1085,22 +1214,24 @@ If you've used CP/M before, you already know the basics. BetterCP/M retains the 
 
 This chapter introduces those facilities and explains how they work together.
 
-## 5.1 Entering Commands
+<a id="section-5-1"></a>
+
+#### 5.1 Entering Commands
 
 When BetterCP/M is ready to accept a command, it displays a prompt:
 
 ```text
-A>
+A0>
 ```
 
-The prompt identifies the current drive and, when appropriate, the current user area.
+The prompt identifies the current drive and user area, including zero.
 
 Enter a command by typing its name, followed by any required arguments, and pressing `RETURN`.
 
 For example:
 
 ```text
-A>DIR
+A0>DIR
 ```
 
 displays the directory of the current drive and user area.
@@ -1108,13 +1239,13 @@ displays the directory of the current drive and user area.
 To display a text file:
 
 ```text
-A>TYPE README.TXT
+A0>TYPE README.TXT
 ```
 
 Commands are not case-sensitive, so:
 
 ```text
-A>dir
+A0>dir
 ```
 
 has the same meaning as `DIR`.
@@ -1122,7 +1253,7 @@ has the same meaning as `DIR`.
 Many commands accept additional arguments or options. For example:
 
 ```text
-A>DIR B3:*.COM
+A0>DIR B3:*.COM
 ```
 
 lists executable files in drive B, user area 3.
@@ -1133,7 +1264,9 @@ For most purposes, you needn't worry about the distinction. You enter the comman
 
 The complete syntax for individual commands is given in Part II, *Command and Utility Reference*.
 
-## 5.2 Command-Line Editing
+<a id="section-5-2"></a>
+
+#### 5.2 Command-Line Editing
 
 Anyone who has used a command-line operating system knows how frustrating it can be to type a long command, discover a mistake, and have to enter the entire line again.
 
@@ -1144,7 +1277,7 @@ You can move the cursor through the command line, correct characters, insert new
 For example, suppose you enter:
 
 ```text
-A>COPY B3:REPROT.TXT C2:REPORT.TXT
+A0>COPY B3:REPROT.TXT C2:REPORT.TXT
 ```
 
 but notice that you've mistyped `REPORT` as `REPROT`.
@@ -1155,20 +1288,24 @@ The command isn't executed until you press `RETURN`, so you can make as many cor
 
 BetterCP/M uses editing conventions familiar to users of WordStar and other CP/M programs, although not every command-line function uses the same keys as WordStar.
 
-The complete key assignments are listed in Appendix B, *Command-Line Editing Keys*.
+Use Ctrl-S/D to move left/right, Ctrl-A/F to move by word, Ctrl-G/H to delete at/left of the cursor, and Ctrl-V to toggle insert/overwrite. Ctrl-U or Ctrl-X discards the line. Ctrl-E continues on a new physical screen line without executing the command.
 
-## 5.3 Command History
+The complete key assignments are listed in [Appendix B](#appendix-b), *Command-Line Editing Keys*.
+
+<a id="section-5-3"></a>
+
+#### 5.3 Command History
 
 BetterCP/M remembers previously entered commands, allowing you to recall, edit, and execute them again without retyping the entire command.
 
 Press **Ctrl-K** to recall an earlier command, or **Ctrl-J** to move forward through the command history.
 
-Depending on your computer's keyboard and terminal configuration, the Up and Down arrow keys may also provide these functions.
+On the original Model 4 keyboard, Up and Down also navigate history. Host emulators and other consoles may translate arrow keys differently; Ctrl-K and Ctrl-J are the portable assignments.
 
 For example, suppose you've just entered:
 
 ```text
-A>COPY B3:REPORT.TXT C2:REPORT.TXT
+A0>COPY B3:REPORT.TXT C2:REPORT.TXT
 ```
 
 and then realize that you also want to copy another file.
@@ -1185,21 +1322,23 @@ Because history storage is limited, older entries are eventually discarded as ne
 
 Command history is especially convenient when working with long file specifications or commands containing several options.
 
-## 5.4 Selecting Drives and User Areas
+<a id="section-5-4"></a>
+
+#### 5.4 Selecting Drives and User Areas
 
 BetterCP/M provides several convenient ways to move among drives and user areas.
 
 To select drive B:
 
 ```text
-A>B:
-B>
+A0>B:
+B0>
 ```
 
 To select user area 5 on the current drive:
 
 ```text
-B>5:
+B0>5:
 B5>
 ```
 
@@ -1227,65 +1366,26 @@ displays the directory of drive B, user area 3, and then returns to the unchange
 
 This is useful when working with files scattered across several drives or user areas.
 
-Chapter 4 provides a fuller explanation of drive/user specifications.
+[Chapter 4](#chapter-4) provides a fuller explanation of drive/user specifications.
 
-## 5.5 Resident and Transient Commands
+<a id="section-5-5"></a>
 
-BetterCP/M distinguishes between two kinds of commands: **resident** and **transient**.
+#### 5.5 Resident and Transient Commands
 
-A resident command is already available in memory as part of the active command environment. It can be executed without first loading a separate program from disk.
-
-A transient command is an ordinary executable program, usually stored in a `.COM` file. BetterCP/M loads it when needed and executes it in the Transient Program Area.
-
-Some familiar commands are available in both forms.
-
-For example, the standard resident command package provides commands such as DIR, ERA, REN, TYPE, COPY, and MOVE.
-
-Their transient counterparts may offer additional capabilities.
-
-### Choosing a Transient Command Explicitly
-
-Ordinarily, you enter a command without specifying whether it should be resident or transient.
-
-For example:
+A resident command is supplied by the active command environment; a transient utility is loaded from a `.COM` file. Some commands have both forms. For example:
 
 ```text
-A>DIR
+A0>DIR *.COM
+A0>:DIR /WHEREIS ED.COM
 ```
 
-uses the available resident command when one is installed.
+The first uses resident DIR when available. The leading colon in the second explicitly loads `DIR.COM`, whose additional `/WHEREIS` mode locates files across drives and users.
 
-However, BetterCP/M also allows you to request the transient version explicitly.
+Use this explicit form when you need a transient-only option. [Section 13.3](#section-13-3) gives the complete resident/transient selection rules; [Section 5.6](#section-5-6) explains where transient programs are found.
 
-Prefix the command name with a colon:
+<a id="section-5-6"></a>
 
-```text
-A>:DIR
-```
-
-This tells BetterCP/M to run `DIR.COM` rather than the resident DIR command.
-
-A period can also be used:
-
-```text
-A>.DIR
-```
-
-The two prefixes have the same purpose.
-
-This is particularly useful when the transient utility offers additional options not supported by its resident counterpart.
-
-For example:
-
-```text
-A>:DIR /WHEREIS ED.COM
-```
-
-uses the transient DIR utility's file-location facility.
-
-The command descriptions in Part II identify features that require transient execution.
-
-## 5.6 Command Search and Execution
+#### 5.6 Command Search and Execution
 
 When you enter a command, BetterCP/M determines how to execute it.
 
@@ -1293,7 +1393,7 @@ It first recognizes commands that select drives or user areas. It then checks co
 
 If none of these recognizes the command, BetterCP/M looks for a transient program.
 
-### Finding Programs
+##### Finding Programs
 
 When you enter an ordinary program name without specifying a drive or user area, BetterCP/M searches the current drive and user area first.
 
@@ -1321,7 +1421,7 @@ If a program is found in A0:, it runs with your original drive and user area sti
 
 You can therefore keep applications in A0: without having to move your working files there.
 
-### Specifying a Program's Location
+##### Specifying a Program's Location
 
 You can also identify a program's location explicitly:
 
@@ -1335,14 +1435,14 @@ When a location is explicitly specified, BetterCP/M uses that location rather th
 
 The same general lookup rules apply when you explicitly request a transient program using the `:` or `.` prefix.
 
-### Running Programs
+##### Running Programs
 
 When BetterCP/M finds a transient program, it loads the program and starts it.
 
 For example:
 
 ```text
-A>MYPROG INPUT.DAT
+A0>MYPROG INPUT.DAT
 ```
 
 runs `MYPROG.COM` and supplies `INPUT.DAT` as a command-line argument.
@@ -1353,7 +1453,9 @@ When it finishes, BetterCP/M restores the command environment and displays the p
 
 These facilities allow ordinary CP/M programs to run without needing to know how BetterCP/M's enhanced command processor works internally.
 
-## 5.7 Command Processor Extensions
+<a id="section-5-7"></a>
+
+#### 5.7 Command Processor Extensions
 
 Command Processor Extensions, or **CPXs**, allow additional commands to become part of the resident command environment.
 
@@ -1374,9 +1476,11 @@ For example, a user might load an extension providing specialized commands for a
 
 CPXs can be listed, loaded, and unloaded while the system is running.
 
-Chapter 8 explains how to manage resident extensions. For complete CPX command syntax and options, consult the CPX entry in Part II.
+[Chapter 8](#chapter-8) explains how to manage resident extensions. For complete CPX command syntax and options, consult the CPX entry in Part II.
 
-## 5.8 Interrupting Commands and Programs
+<a id="section-5-8"></a>
+
+#### 5.8 Interrupting Commands and Programs
 
 Most commands return to the BetterCP/M prompt when their work is complete.
 
@@ -1392,7 +1496,7 @@ Some programs may ignore Ctrl-C, while others recognize it only at particular po
 
 A warm boot also returns control to the operating system and restores the command environment.
 
-### Interrupting Disk Operations
+##### Interrupting Disk Operations
 
 Be particularly careful when interrupting commands that modify files or disks.
 
@@ -1406,7 +1510,9 @@ If an operation fails or is interrupted unexpectedly, examine the affected files
 
 BetterCP/M's utilities provide error messages and, where appropriate, recovery procedures to help deal with these situations.
 
-# Chapter 6 — Batch Processing
+<a id="chapter-6"></a>
+
+### Chapter 6 — Batch Processing
 
 BetterCP/M can execute a series of commands automatically, saving you the trouble of entering the same instructions over and over again.
 
@@ -1418,9 +1524,13 @@ Batch processing is particularly useful for repetitive tasks such as assembling 
 
 This chapter introduces batch processing and shows how to create and use command files. Complete descriptions of SUBMIT and XSUB are provided in Part II, *Command and Utility Reference*.
 
-## 6.1 Introduction to Batch Processing
+<a id="section-6-1"></a>
+
+#### 6.1 Introduction to Batch Processing
 
 Suppose you're working on an assembly-language program. Each time you make a change, you might need to assemble the source file, load the resulting program, and run a test.
+
+The ASM and LOAD examples in this chapter assume separately obtained compatible tools. They are not selected System Disk contents; [Section 3.2](#section-3-2) lists the standard files and the separate Utilities Disk selection.
 
 You could enter each command separately, but if you perform the same sequence repeatedly, it's more convenient to place the commands in a file.
 
@@ -1440,7 +1550,9 @@ A batch file can contain ordinary CP/M commands, BetterCP/M commands, and the na
 
 Batch files are especially convenient for operations that require several steps but little interaction with the user.
 
-## 6.2 SUBMIT and SUB Files
+<a id="section-6-2"></a>
+
+#### 6.2 SUBMIT and SUB Files
 
 BetterCP/M uses the familiar CP/M **SUBMIT** utility to execute command files.
 
@@ -1465,14 +1577,16 @@ The first command displays the current directory. The second copies the selected
 To execute the file, enter:
 
 ```text
-A>SUBMIT BACKUP
+A0>SUBMIT BACKUP
 ```
 
 SUBMIT reads the commands from `BACKUP.SUB` and arranges for them to be executed in sequence. The leading colon in `:COPY` forces the transient `COPY.COM` utility; make sure it is available on the command search path.
 
 You don't need to type the `.SUB` extension when invoking SUBMIT.
 
-### Creating a SUBMIT File
+Keep drive A user 0 writable: SUBMIT and XSUB share the queue `A0:$$$.SUB`, even when the source script and working files are elsewhere. Queue access restores your drive/user context, so commands may change location without moving the queue. See the SUBMIT reference for limits and cancellation behavior.
+
+##### Creating a SUBMIT File
 
 Because SUBMIT files contain ordinary text, you can create them with any CP/M text editor.
 
@@ -1484,12 +1598,12 @@ Each command should appear on its own line.
 
 When writing a SUBMIT file, it's generally best to use commands that you have already tested individually. This is particularly important for commands that modify or delete files.
 
-### Running a SUBMIT File
+##### Running a SUBMIT File
 
 To execute a command file named `BUILD.SUB`, enter:
 
 ```text
-A>SUBMIT BUILD
+A0>SUBMIT BUILD
 ```
 
 BetterCP/M processes the commands in the file in sequence.
@@ -1502,7 +1616,9 @@ If a program or command cannot be found, or if an operation fails, the result de
 
 For important procedures, especially those that modify disks or files, test the complete sequence before relying on it for unattended operation.
 
-## 6.3 Parameters and Substitution
+<a id="section-6-3"></a>
+
+#### 6.3 Parameters and Substitution
 
 SUBMIT files can be made more flexible by accepting parameters.
 
@@ -1521,7 +1637,7 @@ Here, `$1` represents the first parameter supplied when SUBMIT is invoked.
 To assemble and run a program named `TEST`, enter:
 
 ```text
-A>SUBMIT BUILD TEST
+A0>SUBMIT BUILD TEST
 ```
 
 SUBMIT substitutes `TEST` for `$1`, producing the equivalent of:
@@ -1534,7 +1650,7 @@ TEST
 
 This allows a single SUBMIT file to be reused with different programs.
 
-### Using Multiple Parameters
+##### Using Multiple Parameters
 
 A SUBMIT file can accept more than one parameter.
 
@@ -1547,7 +1663,7 @@ For example, a file named `COPYFILE.SUB` might contain:
 You could then enter:
 
 ```text
-A>SUBMIT COPYFILE REPORT.TXT B:REPORT.TXT
+A0>SUBMIT COPYFILE REPORT.TXT B:REPORT.TXT
 ```
 
 The resulting command would be:
@@ -1558,7 +1674,7 @@ The resulting command would be:
 
 This is a simple example, but parameter substitution becomes particularly useful in longer command files.
 
-### Literal Dollar Signs in Command Files
+##### Literal Dollar Signs in Command Files
 
 SUBMIT treats dollar signs as parameter markers. Write `$$` in a `.SUB` file wherever the executed command needs a literal `$`, including attribute selectors such as `$ARC`, `$RO`, and `$SYS`. An unescaped `$ARC` is an invalid parameter reference and causes `Parameter Error`.
 
@@ -1572,7 +1688,7 @@ DIR D0:*.DOC
 With the source and destination drives available, run:
 
 ```text
-A>SUBMIT ARCBACK
+A0>SUBMIT ARCBACK
 ```
 
 SUBMIT expands `$$ARC` to `$ARC`, so the first command executed is:
@@ -1583,7 +1699,7 @@ SUBMIT expands `$$ARC` to `$ARC`, so the first command executed is:
 
 This copies archived `.DOC` files from all user areas on B to D user 0, permits replacement of writable destination files, verifies each copy, and clears ARC after a successful backup. Read-only destinations remain protected. The leading colon selects the transient COPY utility. At the command prompt, type `$ARC` directly; the doubling is needed only in the `.SUB` source.
 
-### Parameter Substitution Is Textual
+##### Parameter Substitution Is Textual
 
 SUBMIT substitutes parameter text into the command file. It doesn't interpret the meaning of the resulting command.
 
@@ -1595,7 +1711,9 @@ This distinction is useful to remember when constructing more elaborate command 
 
 It also means that an incorrect parameter can produce an incorrect command. When a SUBMIT file performs destructive operations, take care to verify the parameters before executing it.
 
-## 6.4 XSUB
+<a id="section-6-4"></a>
+
+#### 6.4 XSUB
 
 Ordinary SUBMIT files execute commands entered at the command-processor level. Some programs, however, ask for additional input after they have started.
 
@@ -1607,7 +1725,7 @@ Normally, the user must type a response at the keyboard.
 
 This makes it possible to automate certain interactive programs that would otherwise require someone to sit at the keyboard.
 
-### How XSUB Works
+##### How XSUB Works
 
 Consider a program that prompts for two filenames:
 
@@ -1624,15 +1742,15 @@ XSUB works with programs that obtain their input through the supported CP/M buff
 
 It does not automatically provide input to every program. Software that reads the keyboard directly, uses its own device drivers, or employs other input methods may not be compatible with XSUB.
 
-### Using XSUB
+##### Using XSUB
 
 XSUB is normally activated as part of a SUBMIT procedure.
 
 Once active, it allows subsequent submitted input to be passed to compatible programs.
 
-The exact arrangement of commands and responses depends on the program being automated. Consult the XSUB command reference for the supported invocation procedure and any restrictions.
+Put `XSUB` before the program, then put its buffered-input responses immediately after the program invocation. [Section 17.2](#section-17-2) gives a complete `XDEMO.SUB` procedure using ED and explains the Utilities Disk and BATCHIO requirements.
 
-### Returning to Keyboard Input
+##### Returning to Keyboard Input
 
 BetterCP/M's XSUB facility allows a program to continue receiving ordinary keyboard input after its submitted input has been exhausted.
 
@@ -1645,18 +1763,20 @@ XSUB uses resident support while supplying batch input. In some circumstances, t
 If necessary, it can be removed with:
 
 ```text
-A>RSX UNLOAD BATCHIO
+A0>RSX UNLOAD BATCHIO
 ```
 
 This releases the resident batch-input facility when it is no longer needed.
 
-For additional information about managing resident extensions, see Chapter 8.
+For additional information about managing resident extensions, see [Chapter 8](#chapter-8).
 
-## 6.5 Batch Execution and Termination
+<a id="section-6-5"></a>
+
+#### 6.5 Batch Execution and Termination
 
 A SUBMIT file is executed as a sequence of commands, but there are some important differences between entering commands manually and allowing them to execute automatically.
 
-### Interactive Commands
+##### Interactive Commands
 
 A command executed from a SUBMIT file does not necessarily become noninteractive.
 
@@ -1668,7 +1788,7 @@ This is particularly important when preparing batch files that you intend to run
 
 BetterCP/M provides options for some utilities that allow you to specify how such situations should be handled.
 
-### Interrupting a Batch
+##### Interrupting a Batch
 
 Batch execution can be interrupted by commands, programs, or operating-system conditions that terminate the current batch procedure.
 
@@ -1680,7 +1800,7 @@ For example, a batch that copies several files may have copied some files succes
 
 Before restarting such a procedure, examine the files or disks involved to determine which operations have already completed.
 
-### Errors During Batch Processing
+##### Errors During Batch Processing
 
 Some commands report errors and return control to the command processor. Others may terminate the active batch procedure.
 
@@ -1690,7 +1810,7 @@ For this reason, a batch file should not be treated as an automatic error-recove
 
 When preparing an important batch procedure, test how its commands behave when a file is missing, a destination already exists, or a disk operation fails.
 
-### Warm Boots and Batch Processing
+##### Warm Boots and Batch Processing
 
 CP/M uses warm boots as part of its normal program-execution environment.
 
@@ -1700,11 +1820,13 @@ Resident extensions used by the batch environment are also subject to BetterCP/M
 
 A cold boot, however, establishes a new operating session rather than continuing a previous batch procedure.
 
-## 6.6 Practical Examples
+<a id="section-6-6"></a>
+
+#### 6.6 Practical Examples
 
 The following examples illustrate some common uses of batch processing.
 
-### Example 1: Assembling a Program
+##### Example 1: Assembling a Program
 
 Suppose you frequently assemble and run a program while developing it.
 
@@ -1719,7 +1841,7 @@ $1
 To build and run `TEST`, enter:
 
 ```text
-A>SUBMIT BUILD TEST
+A0>SUBMIT BUILD TEST
 ```
 
 This executes the equivalent of:
@@ -1732,7 +1854,7 @@ TEST
 
 You can use the same command file for another program simply by changing the parameter.
 
-### Example 2: Copying Source Files
+##### Example 2: Copying Source Files
 
 Suppose you want to copy all assembly-language source files from one user area to another.
 
@@ -1746,7 +1868,7 @@ DIR C3:*.ASM
 Then enter:
 
 ```text
-A>SUBMIT SOURCES
+A0>SUBMIT SOURCES
 ```
 
 The first command copies the selected files. The second displays the destination directory.
@@ -1755,7 +1877,7 @@ If destination files already exist, COPY may request confirmation before replaci
 
 For unattended execution, you can use COPY's batch option.
 
-### Example 3: Copying Files Without Prompts
+##### Example 3: Copying Files Without Prompts
 
 BetterCP/M's transient COPY utility provides a `/B` option for batch-oriented operation. Use `:COPY` to force `COPY.COM`, even when resident COPY is installed.
 
@@ -1793,7 +1915,7 @@ The `/B` option applies to COPY itself. It does not make other commands in the S
 
 For the complete description of COPY's options, consult the COPY command reference.
 
-### Example 4: Customizing System Startup
+##### Example 4: Customizing System Startup
 
 BetterCP/M uses a SUBMIT file as part of its normal startup configuration.
 
@@ -1809,7 +1931,7 @@ The configured cold-start command is:
 SUBMIT STARTUP
 ```
 
-The supplied startup file initially displays the BetterCP/M identification banner.
+The supplied startup file follows the platform-specific sequence listed in [Section 7.3](#section-7-3): banner only on cpmsim; screen backend, ADM-3A personality, screen clear, then banner on Model 4.
 
 You can edit this file to perform additional operations automatically when the system starts.
 
@@ -1819,11 +1941,13 @@ Because the startup procedure runs automatically, it's best to test new commands
 
 A mistake in an ordinary batch file is inconvenient. A mistake in a startup file can make every cold boot inconvenient until the file is corrected.
 
-Chapter 7 explains how to configure the startup command, while Chapter 8 describes loading and managing resident extensions.
+[Chapter 7](#chapter-7) explains how to configure the startup command, while [Chapter 8](#chapter-8) describes loading and managing resident extensions.
 
 ---
 
-# Chapter 7 — Configuring BetterCP/M
+<a id="chapter-7"></a>
+
+### Chapter 7 — Configuring BetterCP/M
 
 BetterCP/M provides several facilities for customizing the operating environment to suit your computer and the way you prefer to work.
 
@@ -1837,7 +1961,9 @@ Some settings can be changed while the system is running. Others must be saved t
 
 This chapter explains how to use these facilities. Complete descriptions of CONFIG and the related utilities appear in Part II, *Command and Utility Reference*.
 
-## 7.1 Configuration Facilities
+<a id="section-7-1"></a>
+
+#### 7.1 Configuration Facilities
 
 BetterCP/M distinguishes between settings currently in use and settings saved for future system startup.
 
@@ -1847,7 +1973,7 @@ For example, you might temporarily configure a drive to read a particular disk f
 
 Similarly, changing the system's startup command does not immediately execute the new command. Instead, it determines what BetterCP/M will execute during a subsequent cold boot.
 
-### Current and Saved Settings
+##### Current and Saved Settings
 
 There are two principal kinds of configuration changes.
 
@@ -1863,7 +1989,7 @@ For example, you might normally use drive B with one disk format but temporarily
 
 Once you've finished, you can restore your usual configuration without having permanently changed the system.
 
-### Platform-Dependent Settings
+##### Platform-Dependent Settings
 
 Not every configuration option is available on every computer.
 
@@ -1875,14 +2001,16 @@ Likewise, a peripheral device must actually be supported by the computer and its
 
 The CONFIG utility provides access to supported configuration facilities, while the platform documentation describes any machine-specific requirements.
 
-## 7.2 Using CONFIG
+<a id="section-7-2"></a>
+
+#### 7.2 Using CONFIG
 
 CONFIG is BetterCP/M's principal system configuration utility.
 
 To start it, enter:
 
 ```text
-A>CONFIG
+A0>CONFIG
 ```
 
 CONFIG displays a menu of available configuration operations.
@@ -1907,14 +2035,14 @@ Select the letter corresponding to the operation you want to perform.
 
 CONFIG does not require a full-screen terminal monitor. It can be used through the ordinary BetterCP/M console.
 
-### Examining the Current Configuration
+##### Examining the Current Configuration
 
 Before making changes, it's often useful to examine the settings already in use.
 
 Enter:
 
 ```text
-A>CONFIG /SHOW
+A0>CONFIG /SHOW
 ```
 
 CONFIG displays information about the current system configuration, including the active drive settings and saved startup information.
@@ -1925,7 +2053,7 @@ This is particularly useful when you've made temporary changes and want to deter
 
 The `/SHOW` option is informational. It does not modify the configuration.
 
-### Making Changes
+##### Making Changes
 
 Some CONFIG operations change the running system immediately. Others prepare changes that must be saved before they become permanent.
 
@@ -1939,7 +2067,9 @@ CONFIG identifies when a change requires saving.
 
 An incorrect disk configuration can make a drive inaccessible until its settings are corrected. Changes to the saved boot configuration can also affect the system's ability to start normally.
 
-## 7.3 Startup Commands
+<a id="section-7-3"></a>
+
+#### 7.3 Startup Commands
 
 BetterCP/M can execute a command automatically during a cold boot.
 
@@ -1955,37 +2085,30 @@ as its saved startup command.
 
 This causes BetterCP/M to execute the commands contained in `STARTUP.SUB`.
 
-The supplied startup file initially displays the BetterCP/M identification banner. You can edit the file to perform additional operations.
+##### Supplied STARTUP.SUB Files
 
-For example, you might use it to load resident extensions or select facilities that you normally want available.
+The default scripts are installed as `A0:STARTUP.SUB`. Each table cell lists the commands in execution order, one per source line:
 
-### Editing STARTUP.SUB
+| z80pack / cpmsim | TRS-80 Model 4 / trs80gp |
+|---|---|
+| `:VER /BANNER` | `RSX LOAD M4SCRN`<br>`RSX LOAD ADM3A`<br>`CLS`<br>`:VER /BANNER` |
 
-Because `STARTUP.SUB` is an ordinary SUBMIT file, you can edit it using a text editor.
+The Model 4 loads its screen backend before the ADM-3A terminal personality, clears the screen through resident CLS, and then displays the banner. cpmsim displays only the banner and does not select a terminal personality automatically. Neither script loads a clock provider.
 
-For example, a startup file might contain:
+##### Editing STARTUP.SUB
 
-```text
-:VER /BANNER
-RSX LOAD M4SCRN
-RSX LOAD ADM3A
-CLS
-```
+Because `STARTUP.SUB` is an ordinary SUBMIT file, you can edit it using a text editor. Test new commands individually before adding them. On Model 4, the backend and ADM3A are already loaded by the supplied script; do not append another copy of those commands just to obtain the default display environment.
 
-This example displays the system banner, loads a screen backend and an ADM-3A terminal personality, and clears the screen.
+[Chapter 8](#chapter-8) explains resident extension management, while [Chapter 9](#chapter-9) describes terminal support.
 
-The example is appropriate only for a system that provides the named screen backend and terminal extension. Other platforms may require different commands.
-
-Chapter 8 explains resident extension management, while Chapter 9 describes terminal support.
-
-### Changing the Startup Command
+##### Changing the Startup Command
 
 You can change the saved startup command using CONFIG.
 
 For example:
 
 ```text
-A>CONFIG /STARTUP="SUBMIT STARTUP"
+A0>CONFIG /STARTUP="SUBMIT STARTUP"
 ```
 
 sets the startup command to `SUBMIT STARTUP`.
@@ -1993,26 +2116,26 @@ sets the startup command to `SUBMIT STARTUP`.
 To disable automatic startup commands:
 
 ```text
-A>CONFIG /STARTUP=""
+A0>CONFIG /STARTUP=""
 ```
 
 CONFIG requests confirmation before saving the change.
 
 The new command takes effect during a subsequent cold boot. It is not executed immediately.
 
-### Restoring the Default Startup Command
+##### Restoring the Default Startup Command
 
 CONFIG also provides a convenient way to prepare the standard startup command:
 
 ```text
-A>CONFIG /DEFAULT
+A0>CONFIG /DEFAULT
 ```
 
 This prepares `SUBMIT STARTUP` as the startup command and opens the relevant configuration menu.
 
 The change is not automatically saved. You can inspect or modify it before committing it to the system disk.
 
-### Cold Boots and Warm Boots
+##### Cold Boots and Warm Boots
 
 The startup command is executed during a cold boot.
 
@@ -2024,7 +2147,9 @@ There is ordinarily no need to reload the extension after each warm boot.
 
 For a complete description of startup-command options, consult the CONFIG reference in Part II.
 
-## 7.4 Drive Configuration
+<a id="section-7-4"></a>
+
+#### 7.4 Drive Configuration
 
 BetterCP/M can work with a variety of disk formats, including formats used by other CP/M systems.
 
@@ -2032,7 +2157,7 @@ Because different computers use different disk drives and controllers, BetterCP/
 
 CONFIG provides facilities for examining and changing both.
 
-### Physical Drives and Logical Drives
+##### Physical Drives and Logical Drives
 
 A **physical drive** is the actual disk drive or storage device connected to the computer.
 
@@ -2044,12 +2169,12 @@ For example, you might configure logical drive B to use a physical drive contain
 
 The available assignments depend on the computer and its BIOS.
 
-### Examining Drive Settings
+##### Examining Drive Settings
 
 To examine the current configuration, enter:
 
 ```text
-A>CONFIG /SHOW
+A0>CONFIG /SHOW
 ```
 
 CONFIG displays the active drive settings and, where available, the corresponding saved defaults.
@@ -2058,7 +2183,7 @@ This is a useful first step before making changes.
 
 You can also examine drive definitions through CONFIG's interactive menus.
 
-### Selecting a Disk Format
+##### Selecting a Disk Format
 
 CONFIG provides a catalog of disk-format definitions.
 
@@ -2067,7 +2192,7 @@ When assigning a format to a drive, you can select an appropriate definition fro
 For example:
 
 ```text
-A>CONFIG /LOGICAL=C /PHYSICAL=1 /FORMAT="MM 80T DS DATA"
+A0>CONFIG /LOGICAL=C /PHYSICAL=1 /FORMAT="MM 80T DS DATA"
 ```
 
 This assigns logical drive C to physical drive 1 using the named disk format.
@@ -2078,7 +2203,7 @@ CONFIG checks whether the requested format is compatible with the selected physi
 
 You can also select formats through the interactive configuration menus.
 
-### Temporarily Changing a Drive
+##### Temporarily Changing a Drive
 
 One of the advantages of BetterCP/M's configuration facilities is that drive assignments can be changed without necessarily changing the saved startup configuration.
 
@@ -2090,14 +2215,14 @@ If you don't save the temporary assignment, it won't replace your normal cold-bo
 
 This makes it easier to work with different disk formats without maintaining a separate operating-system disk for each configuration.
 
-### Removing a Drive Assignment
+##### Removing a Drive Assignment
 
 A logical drive can also be disconnected from its current assignment.
 
 For example:
 
 ```text
-A>CONFIG /LOGICAL=C /UNBIND
+A0>CONFIG /LOGICAL=C /UNBIND
 ```
 
 removes the active assignment for logical drive C.
@@ -2106,7 +2231,7 @@ This does not erase or format the disk. It simply removes the logical drive's as
 
 BetterCP/M protects drive A from this operation because of its importance to the running system.
 
-### Creating and Editing Disk Formats
+##### Creating and Editing Disk Formats
 
 CONFIG also provides facilities for creating and modifying disk-format definitions.
 
@@ -2120,7 +2245,9 @@ For ordinary operation, use an existing format definition whenever possible.
 
 The CONFIG command reference describes the available format-editing facilities. More detailed information about disk organization and format definitions is provided in the technical documentation.
 
-## 7.5 Console and Device Configuration
+<a id="section-7-5"></a>
+
+#### 7.5 Console and Device Configuration
 
 Like conventional CP/M, BetterCP/M provides logical device assignments for console, reader, punch, and list operations.
 
@@ -2128,7 +2255,7 @@ These assignments allow programs to use standard CP/M device interfaces without 
 
 BetterCP/M retains the traditional **IOBYTE** mechanism for selecting these assignments.
 
-### The IOBYTE
+##### The IOBYTE
 
 The IOBYTE is a system value used to select logical device assignments.
 
@@ -2138,7 +2265,7 @@ The available choices depend on the computer and its BIOS.
 
 An IOBYTE assignment does not create a device or provide a driver for hardware that the system doesn't support. It merely selects among the device facilities available through the BIOS.
 
-### Changing Device Assignments
+##### Changing Device Assignments
 
 BetterCP/M distinguishes between the IOBYTE currently in use and the value saved for the next disk cold boot.
 
@@ -2149,7 +2276,7 @@ CONFIG allows you to save a separate assignment that will be established during 
 For example:
 
 ```text
-A>CONFIG /IOBYTE=85
+A0>CONFIG /IOBYTE=85
 ```
 
 requests that decimal value 85 be saved as the cold-boot IOBYTE.
@@ -2161,10 +2288,10 @@ The command does not change the current IOBYTE. To change the active assignment,
 You can examine the current and saved values with:
 
 ```text
-A>CONFIG /SHOW
+A0>CONFIG /SHOW
 ```
 
-### Choosing Device Assignments
+##### Choosing Device Assignments
 
 Before changing the IOBYTE, make sure the requested assignment is supported by your computer.
 
@@ -2178,7 +2305,9 @@ For the available device assignments and their meanings, consult the STAT and CO
 
 Platform-specific documentation describes any additional requirements or limitations.
 
-## 7.6 Saving Configuration Changes
+<a id="section-7-6"></a>
+
+#### 7.6 Saving Configuration Changes
 
 Many BetterCP/M configuration changes can be made temporarily.
 
@@ -2186,7 +2315,7 @@ To retain them after a cold boot, you must save the appropriate settings to the 
 
 CONFIG provides facilities for doing this, using BetterCP/M's system-generation services.
 
-### Temporary and Permanent Changes
+##### Temporary and Permanent Changes
 
 Suppose you temporarily change a drive assignment to read a disk from another computer.
 
@@ -2198,7 +2327,7 @@ On the other hand, if you've installed a new disk drive or established a configu
 
 BetterCP/M allows you to distinguish between these situations.
 
-### Saving from CONFIG
+##### Saving from CONFIG
 
 CONFIG's main menu includes:
 
@@ -2220,12 +2349,12 @@ Saving the current configuration as the new defaults is appropriate when you wan
 
 CONFIG presents the available choices and requests confirmation before writing the saved configuration.
 
-### Verifying the Configuration
+##### Verifying the Configuration
 
 After saving, it's good practice to examine the configuration again:
 
 ```text
-A>CONFIG /SHOW
+A0>CONFIG /SHOW
 ```
 
 Check that the saved settings correspond to what you intended.
@@ -2234,7 +2363,7 @@ If you've changed startup settings, remember that they won't take effect until t
 
 If you've changed drive assignments, verify that the appropriate drives and formats remain available.
 
-### Protecting Your System Disk
+##### Protecting Your System Disk
 
 Saving configuration changes modifies information associated with the operating system on disk.
 
@@ -2248,7 +2377,7 @@ CONFIG performs checks when saving settings, but no software can protect against
 
 Avoid resetting or switching off the computer while configuration information is being written.
 
-### Returning to a Known Configuration
+##### Returning to a Known Configuration
 
 If you're experimenting with unfamiliar disk formats or device assignments, consider retaining a separate system disk with your normal configuration.
 
@@ -2258,7 +2387,9 @@ For ordinary use, however, BetterCP/M's configuration facilities should allow yo
 
 ---
 
-# Chapter 8 — Resident Extensions
+<a id="chapter-8"></a>
+
+### Chapter 8 — Resident Extensions
 
 One of BetterCP/M's most useful features is its ability to add commands and system services without rebuilding the operating system.
 
@@ -2270,7 +2401,9 @@ This chapter explains how to use and manage them. You don't need to understand t
 
 For complete command syntax and options, consult the CPX and RSX entries in Part II, *Command and Utility Reference*.
 
-## 8.1 Introducing CPX and RSX Extensions
+<a id="section-8-1"></a>
+
+#### 8.1 Introducing CPX and RSX Extensions
 
 In conventional CP/M, the command processor provides a small collection of built-in commands. Most other commands are transient programs loaded from disk.
 
@@ -2284,7 +2417,7 @@ RSXs occupy protected memory that would otherwise be available to transient prog
 
 BetterCP/M allows you to choose which optional extensions to keep loaded, making it possible to balance additional facilities against available program memory.
 
-### Command Processor Extensions
+##### Command Processor Extensions
 
 A **Command Processor Extension**, or **CPX**, adds commands to BetterCP/M's command processor.
 
@@ -2302,7 +2435,7 @@ These commands can be executed without loading separate `.COM` programs.
 For example:
 
 ```text
-A>DIR
+A0>DIR
 ```
 
 normally invokes the resident DIR command when the standard resident command package is installed.
@@ -2312,7 +2445,7 @@ Some commands are available in both resident and transient forms. The resident v
 BetterCP/M allows you to request a transient program explicitly by prefixing its name with a colon:
 
 ```text
-A>:DIR /WHEREIS ED.COM
+A0>:DIR /WHEREIS ED.COM
 ```
 
 This bypasses the resident DIR command and executes `DIR.COM`.
@@ -2320,7 +2453,7 @@ This bypasses the resident DIR command and executes `DIR.COM`.
 A period can also be used as the prefix:
 
 ```text
-A>.DIR /WHEREIS ED.COM
+A0>.DIR /WHEREIS ED.COM
 ```
 
 Both forms have the same meaning.
@@ -2330,19 +2463,19 @@ BetterCP/M 1.0 does not automatically switch to the transient version when you r
 For example:
 
 ```text
-A>DIR /WHEREIS ED.COM
+A0>DIR /WHEREIS ED.COM
 DIR: Use :DIR.
 ```
 
 You can then enter:
 
 ```text
-A>:DIR /WHEREIS ED.COM
+A0>:DIR /WHEREIS ED.COM
 ```
 
-For more information about resident and transient command execution, see Chapter 5.
+For more information about resident and transient command execution, see [Chapter 5](#chapter-5).
 
-### Resident System Extensions
+##### Resident System Extensions
 
 A **Resident System Extension**, or **RSX**, provides services that remain available while other programs execute.
 
@@ -2358,7 +2491,9 @@ Other RSXs provide facilities such as support for batch input or disk-format ser
 
 CPXs are available in the command environment and are reconstructed after transient execution. RSXs remain in protected memory while applications run. They serve different purposes and are managed separately.
 
-## 8.2 Installing Extensions
+<a id="section-8-2"></a>
+
+#### 8.2 Installing Extensions
 
 Resident extensions are supplied as files that BetterCP/M can load when their facilities are needed.
 
@@ -2373,7 +2508,11 @@ VT52.RSX
 ANSI.RSX
 ```
 
-Before loading an extension, make sure its file is available in the location expected by BetterCP/M.
+Place normal `.CPX` and `.RSX` extension files on **drive A, user 0 (A0)** before loading them. The carrier loader uses A0 even when you run `CPX.COM` or `RSX.COM` from another drive/user. It does not use the transient-program current-location/A0 search sequence.
+
+Keep `R3PACK.RSX` in A0 as well. It is the RSX manager's required runtime container and must match the system build. `RSX.COM` alone is not sufficient. Keep the supplied container with the system files; it is an internal dependency, **not** a module to pass to `RSX LOAD`.
+
+Configured CPX files must remain in A0 after their commands become available. BetterCP/M rereads them when reconstructing the command environment after transient execution or warm boot. A missing carrier can leave a configured name listed without its commands being available.
 
 Extensions must also be compatible with the running operating system. An extension prepared for a different version or system configuration may not load successfully.
 
@@ -2385,44 +2524,26 @@ These supporting components must be loaded before the extensions that depend on 
 
 The documentation supplied with an extension should identify any such requirements.
 
-### Installing an Extension for Regular Use
+##### Installing an Extension for Regular Use
 
-If you frequently use a particular extension, you can arrange for it to be loaded automatically during system startup.
+Install compatible carriers in A0 and test their load commands at the prompt before adding them to `STARTUP.SUB`. Keep dependencies in order: screen backend first, terminal personality second.
 
-BetterCP/M normally uses `STARTUP.SUB` for this purpose.
+See [Section 7.3](#section-7-3) for the supplied platform scripts and startup editing, and [Section 9.1](#section-9-1) for terminal-loading procedures. Model 4 startup already loads M4SCRN and ADM3A; customize that sequence rather than adding duplicate loads.
 
-For example, a system using the Model 4 screen backend might include:
+<a id="section-8-3"></a>
 
-```text
-RSX LOAD M4SCRN
-RSX LOAD ADM3A
-CLS
-```
-
-These commands load the screen backend, activate the ADM-3A terminal personality, and clear the display.
-
-The example is appropriate only for systems supporting the named backend.
-
-Other computers may require a different screen backend or terminal personality.
-
-Before adding extension-loading commands to your startup file, test them individually at the command prompt.
-
-Once you've confirmed that they work correctly, you can add them to `STARTUP.SUB`.
-
-Chapter 7 explains how to configure startup commands.
-
-## 8.3 Listing Installed Extensions
+#### 8.3 Listing Installed Extensions
 
 Before changing the resident environment, it's useful to see which extensions are currently installed.
 
 BetterCP/M provides separate commands for examining CPXs and RSXs.
 
-### Listing CPXs
+##### Listing CPXs
 
 Enter:
 
 ```text
-A>CPX LIST
+A0>CPX LIST
 ```
 
 BetterCP/M displays information about the configured command processor extensions.
@@ -2433,12 +2554,12 @@ An extension's appearance in the configured list does not necessarily mean it lo
 
 This distinction is useful when troubleshooting missing resident commands.
 
-### Listing RSXs
+##### Listing RSXs
 
 To examine the installed resident system extensions, enter:
 
 ```text
-A>RSX LIST
+A0>RSX LIST
 ```
 
 BetterCP/M displays the currently installed RSXs.
@@ -2447,38 +2568,38 @@ This is useful when checking which services are available or determining whether
 
 The two lists serve different purposes. `CPX LIST` describes the resident command environment, while `RSX LIST` describes the installed resident system services.
 
-## 8.4 Loading and Unloading Extensions
+<a id="section-8-4"></a>
+
+#### 8.4 Loading and Unloading Extensions
 
 BetterCP/M allows optional extensions to be added to or removed from the active operating environment.
 
 This makes it possible to customize the system for different tasks without permanently incorporating every available facility.
 
-### Loading a CPX
+##### Loading a CPX
 
 To load a command processor extension, use the CPX management command.
 
 For example, an extension named `TOOLS.CPX` would be requested with:
 
 ```text
-A>CPX LOAD TOOLS
+A0>CPX LOAD TOOLS
 ```
 
-The extension must be available in the appropriate location and must be compatible with the running BetterCP/M system.
+The extension must be available as `A0:TOOLS.CPX` and compatible with the running system. Keep it there for command-environment reconstruction; see [Section 8.2](#section-8-2).
 
 Once successfully loaded, its commands become available through the normal command environment.
 
 You can enter those commands just as you would any other BetterCP/M command.
 
-More than one CPX can be active at the same time. BetterCP/M maintains them in a defined order, which determines how their commands are considered when you enter a command name.
+The CPX reconstruction profile has four slots, including the standard RCP entry. New names are appended and their commands are tried in profile order after built-in CCP commands. The first package that handles a command wins. See [Section 17.3](#section-17-3) for capacity, ordering and duplicate/absent-operation details.
 
-Ordinarily, you need not be concerned with that order unless two extensions provide commands with the same name.
-
-### Unloading a CPX
+##### Unloading a CPX
 
 To remove an optional CPX, use:
 
 ```text
-A>CPX UNLOAD TOOLS
+A0>CPX UNLOAD TOOLS
 ```
 
 After the extension has been removed, its commands are no longer available as resident commands.
@@ -2487,14 +2608,14 @@ If corresponding transient programs are present, they may still be executed norm
 
 Unloading an optional CPX is useful when you no longer need its commands or want to change the resident command environment.
 
-### Loading an RSX
+##### Loading an RSX
 
 To load an RSX, use the RSX command.
 
 For example:
 
 ```text
-A>RSX LOAD ADM3A
+A0>RSX LOAD ADM3A
 ```
 
 requests the ADM-3A terminal personality.
@@ -2503,14 +2624,14 @@ Some RSXs depend on other extensions being loaded first.
 
 Terminal personalities, for example, require a suitable screen backend. The backend provides the connection to the computer's display, while the terminal personality interprets the control sequences expected by applications.
 
-The required loading order is described in Chapter 9.
+The required loading order is described in [Chapter 9](#chapter-9).
 
-### Unloading an RSX
+##### Unloading an RSX
 
 To remove an RSX, enter:
 
 ```text
-A>RSX UNLOAD ADM3A
+A0>RSX UNLOAD ADM3A
 ```
 
 BetterCP/M removes the extension when it can safely do so.
@@ -2523,17 +2644,13 @@ In such cases, unload the dependent extension first.
 
 The RSX manager checks these relationships and reports operations that cannot be performed safely.
 
-### Required Extensions
+##### Required Extensions
 
-Not every resident component is necessarily optional.
+RCP supplies the standard resident commands, but the current CPX manager permits its removal. Doing so removes those commands; only built-in CCP commands and separately available transients remain. [Section 17.3](#section-17-3) explains restoring RCP and its place in the four-entry profile. RSX removals are separate operations and can be refused when dependencies make removal unsafe.
 
-Some facilities are part of the standard command environment or are required for the system to operate correctly.
+<a id="section-8-5"></a>
 
-BetterCP/M's extension-management facilities enforce the applicable restrictions.
-
-If an extension cannot be removed, consult the reported message rather than attempting to bypass the restriction.
-
-## 8.5 Extension Persistence
+#### 8.5 Extension Persistence
 
 One of the distinguishing characteristics of BetterCP/M's resident extension system is that supported extensions remain available across ordinary warm boots.
 
@@ -2549,43 +2666,19 @@ You can start another compatible application without loading the monitor again.
 
 Command processor extensions are reconstructed with the command environment after transient programs finish through a warm boot. Their command code can be overwritten by the transient program.
 
-### Cold Boots and Startup Configuration
+##### Cold Boots and Startup Configuration
 
-A cold boot establishes a new operating session and loads the configured startup environment.
+A cold boot establishes a new session. Extensions needed in every session must be loaded by the startup procedure. [Section 7.3](#section-7-3) contains the platform defaults and editing instructions; use [Section 8.2](#section-8-2) for carrier placement and dependencies.
 
-If you want a particular extension available after every cold boot, include the appropriate loading commands in your startup configuration.
+<a id="section-8-6"></a>
 
-The standard BetterCP/M startup arrangement uses `STARTUP.SUB`, which is executed during a cold boot.
-
-You can add extension-loading commands to this file.
-
-For example:
-
-```text
-RSX LOAD M4SCRN
-RSX LOAD ADM3A
-CLS
-```
-
-These commands load the screen backend, activate the ADM-3A terminal personality, and clear the display.
-
-The example is appropriate only for systems supporting the named backend.
-
-Other computers may require a different screen backend or terminal personality.
-
-Before adding extension-loading commands to your startup file, test them individually at the command prompt.
-
-Once you've confirmed that they work correctly, you can add them to `STARTUP.SUB`.
-
-Chapter 7 explains how to configure the startup command.
-
-## 8.6 Memory Considerations
+#### 8.6 Memory Considerations
 
 RSXs remain in protected memory until unloaded or the operating environment is reinitialized. CPX command code occupies reclaimable command-environment memory and is reconstructed after transient execution.
 
 Because CP/M systems have limited memory, the number and size of loaded extensions can matter.
 
-### Available Program Memory
+##### Available Program Memory
 
 Ordinary CP/M programs execute in the Transient Program Area, or TPA.
 
@@ -2599,7 +2692,7 @@ If you later want to run a particularly large program that doesn't require termi
 
 This flexibility is one of the advantages of BetterCP/M's extension system.
 
-### Choosing Which Extensions to Load
+##### Choosing Which Extensions to Load
 
 There's no particular advantage to loading every available extension simply because it exists.
 
@@ -2611,7 +2704,7 @@ A terminal monitor may be essential when running a particular application but un
 
 Specialized extensions can be loaded when needed and removed afterward.
 
-### Extension Dependencies
+##### Extension Dependencies
 
 Some extensions depend on other resident components.
 
@@ -2623,9 +2716,9 @@ In general, load the supporting component first, followed by the extension that 
 
 When removing them, reverse the order.
 
-Chapter 9 provides examples involving terminal monitors.
+[Chapter 9](#chapter-9) provides examples involving terminal monitors.
 
-### Recovering from Extension Problems
+##### Recovering from Extension Problems
 
 Resident extensions are normally straightforward to manage, but occasionally an extension may be missing, damaged, incompatible, or incorrectly configured.
 
@@ -2646,7 +2739,7 @@ The extension may nevertheless remain in the configured list, so its appearance 
 To remove an unusable optional extension, enter:
 
 ```text
-A>CPX UNLOAD BAD
+A0>CPX UNLOAD BAD
 ```
 
 where `BAD` is the name of the affected extension.
@@ -2659,11 +2752,13 @@ If BetterCP/M refuses to unload an RSX, another extension may still depend on it
 
 If a transient program reports insufficient memory, use `STAT MEM` and `RSX LIST` to examine memory use. Unloading unnecessary RSXs can restore memory to the TPA.
 
-For additional troubleshooting information, see Chapter 12.
+For additional troubleshooting information, see [Chapter 12](#chapter-12).
 
 ---
 
-# Chapter 9 — Terminal Support
+<a id="chapter-9"></a>
+
+### Chapter 9 — Terminal Support
 
 BetterCP/M provides terminal-monitor facilities that allow programs written for different terminal types to operate on supported computers.
 
@@ -2677,7 +2772,9 @@ BetterCP/M 1.0 includes support for Montezuma Micro-style ADM-3A, VT52, and a su
 
 This chapter explains how to select, load, and use these facilities. For complete RSX command syntax, consult Part II, *Command and Utility Reference*.
 
-## 9.1 The BetterCP/M Terminal Monitor
+<a id="section-9-1"></a>
+
+#### 9.1 The BetterCP/M Terminal Monitor
 
 In conventional CP/M, the BIOS provides the basic console input and output services used by application programs.
 
@@ -2689,7 +2786,7 @@ Historically, CP/M applications often supported several terminal types. The user
 
 BetterCP/M retains this approach while providing additional terminal support through resident extensions.
 
-### Terminal Personalities
+##### Terminal Personalities
 
 A **terminal personality** interprets the control sequences associated with a particular terminal.
 
@@ -2701,7 +2798,7 @@ An ANSI personality provides a supported subset of ANSI/VT100 terminal behavior.
 
 Only one terminal personality can be active at a time.
 
-### Screen Backends
+##### Screen Backends
 
 A terminal personality does not communicate directly with every possible display device.
 
@@ -2718,7 +2815,7 @@ From the user's perspective, the important distinction is straightforward:
 
 Both must be suitable for the system you're using.
 
-### Loading a Terminal Monitor
+##### Loading a Terminal Monitor
 
 Terminal monitors are loaded using BetterCP/M's RSX command.
 
@@ -2744,9 +2841,11 @@ CLS
 
 The correct backend depends on the computer or emulator.
 
-The *BetterCP/M Supported Platforms* documentation identifies the appropriate screen backend for each supported environment.
+The [distribution manifest](../releases/DISTRIBUTION-MANIFEST.md) identifies the platform screen backends: M4SCRN on Model 4 and ANSISCRN on cpmsim. See [Chapter 9](#chapter-9)'s procedures for loading the backend and personality.
 
-## 9.2 Selecting a Terminal Personality
+<a id="section-9-2"></a>
+
+#### 9.2 Selecting a Terminal Personality
 
 Before running a full-screen application, determine which terminal types it supports.
 
@@ -2770,7 +2869,7 @@ If the program expects ADM-3A control sequences, use the appropriate ADM-3A pers
 
 The terminal monitor does not automatically detect which terminal type an application expects.
 
-### Changing Personalities
+##### Changing Personalities
 
 Only one terminal personality can be active at a time.
 
@@ -2788,7 +2887,7 @@ If the appropriate screen backend is already loaded, you can continue using it.
 
 There is no need to unload and reload the backend merely to change terminal personalities, provided the backend supports the new personality.
 
-### Returning to the Basic Console
+##### Returning to the Basic Console
 
 If you no longer need terminal emulation, unload the active personality.
 
@@ -2808,7 +2907,9 @@ Removing the monitor releases the memory it occupied, making more memory availab
 
 This can be useful when running applications that do not require full-screen terminal support.
 
-## 9.3 ADM-3A Support
+<a id="section-9-3"></a>
+
+#### 9.3 ADM-3A Support
 
 BetterCP/M provides an ADM-3A terminal personality intended particularly for software using the Montezuma Micro-style ADM-3A conventions found on historical TRS-80 Model 4 CP/M systems.
 
@@ -2820,7 +2921,7 @@ ADM3A.RSX
 
 It can be used with either the Model 4 screen backend or the ANSI screen backend, depending on the platform.
 
-### Using ADM-3A on the Model 4
+##### Using ADM-3A on the Model 4
 
 On a TRS-80 Model 4 system, the screen backend is:
 
@@ -2831,30 +2932,30 @@ M4SCRN.RSX
 To load the ADM-3A environment:
 
 ```text
-A>RSX LOAD M4SCRN
-A>RSX LOAD ADM3A
-A>CLS
+A0>RSX LOAD M4SCRN
+A0>RSX LOAD ADM3A
+A0>CLS
 ```
 
 The Model 4 distribution normally loads the appropriate backend and ADM-3A personality during startup.
 
 If they are already installed, there is no need to load them again.
 
-### Using ADM-3A with an ANSI Host Terminal
+##### Using ADM-3A with an ANSI Host Terminal
 
 On a system using the ANSI screen backend, load:
 
 ```text
-A>RSX LOAD ANSISCRN
-A>RSX LOAD ADM3A
-A>CLS
+A0>RSX LOAD ANSISCRN
+A0>RSX LOAD ADM3A
+A0>CLS
 ```
 
 The ANSI backend translates the supported display operations into sequences understood by the host terminal.
 
 For best results, use a compatible terminal emulator.
 
-### Testing ADM-3A Support
+##### Testing ADM-3A Support
 
 BetterCP/M supplies a test utility named:
 
@@ -2865,7 +2966,7 @@ ADMTST.COM
 After loading the appropriate terminal monitor, enter:
 
 ```text
-A>ADMTST
+A0>ADMTST
 ```
 
 The utility displays a series of test screens and prompts designed to exercise the supported ADM-3A facilities.
@@ -2874,7 +2975,7 @@ These include cursor movement, reverse video, line operations, and other display
 
 The test also requests several keyboard characters to help confirm that the terminal environment is receiving the expected input.
 
-### Compatibility Considerations
+##### Compatibility Considerations
 
 The ADM-3A personality is intended to support the conventions used by compatible CP/M applications.
 
@@ -2884,7 +2985,9 @@ A program that communicates directly with display hardware rather than using the
 
 For ordinary terminal-oriented applications, however, the monitor provides a convenient way to reproduce the expected display behavior.
 
-## 9.4 VT52 Support
+<a id="section-9-4"></a>
+
+#### 9.4 VT52 Support
 
 The DEC VT52 was a widely supported video terminal, and many CP/M applications can be configured to use its control sequences.
 
@@ -2896,22 +2999,22 @@ VT52.RSX
 
 The same VT52 extension can be used on different supported platforms by loading the appropriate screen backend.
 
-### Loading the VT52 Monitor
+##### Loading the VT52 Monitor
 
 On a TRS-80 Model 4:
 
 ```text
-A>RSX LOAD M4SCRN
-A>RSX LOAD VT52
-A>CLS
+A0>RSX LOAD M4SCRN
+A0>RSX LOAD VT52
+A0>CLS
 ```
 
 On a system using the ANSI screen backend:
 
 ```text
-A>RSX LOAD ANSISCRN
-A>RSX LOAD VT52
-A>CLS
+A0>RSX LOAD ANSISCRN
+A0>RSX LOAD VT52
+A0>CLS
 ```
 
 These examples assume that no other terminal personality is currently active.
@@ -2921,14 +3024,14 @@ If another personality is loaded, unload it first.
 For example, if ADM-3A is active:
 
 ```text
-A>RSX UNLOAD ADM3A
-A>RSX LOAD VT52
-A>CLS
+A0>RSX UNLOAD ADM3A
+A0>RSX LOAD VT52
+A0>CLS
 ```
 
 You can retain the existing screen backend when changing personalities, provided it supports VT52.
 
-### Configuring Applications for VT52
+##### Configuring Applications for VT52
 
 When installing or configuring a full-screen application, select VT52 as its terminal type.
 
@@ -2938,7 +3041,7 @@ BetterCP/M's VT52 personality interprets the supported sequences and passes the 
 
 For systems using an ANSI host terminal, the host terminal should provide a suitable display area. An 80-column, 24-row configuration is appropriate for the supplied VT52 support.
 
-### Testing VT52 Support
+##### Testing VT52 Support
 
 BetterCP/M supplies a test utility named:
 
@@ -2949,7 +3052,7 @@ VT52TST.COM
 After loading the VT52 personality, enter:
 
 ```text
-A>VT52TST
+A0>VT52TST
 ```
 
 The utility exercises supported VT52 operations, including cursor positioning, tab stops, display erasure, and terminal identification.
@@ -2958,7 +3061,7 @@ It pauses during the test so you can examine the results.
 
 If the display behaves as expected, the monitor is ready for compatible applications.
 
-### VT52 Compatibility
+##### VT52 Compatibility
 
 BetterCP/M's VT52 personality supports the terminal facilities needed by compatible applications, but it is not intended to reproduce every possible hardware characteristic of a physical VT52.
 
@@ -2970,7 +3073,9 @@ These details depend on the computer, terminal emulator, and application configu
 
 For ordinary full-screen programs using supported VT52 control sequences, the monitor provides a convenient portable terminal environment.
 
-## 9.5 ANSI/VT100 Support
+<a id="section-9-5"></a>
+
+#### 9.5 ANSI/VT100 Support
 
 BetterCP/M also provides an ANSI terminal personality supporting a subset of the control sequences commonly associated with ANSI and DEC VT100 terminals.
 
@@ -2984,22 +3089,22 @@ ANSI.RSX
 
 As with the ADM-3A and VT52 personalities, ANSI support requires a suitable screen backend.
 
-### Loading the ANSI Monitor
+##### Loading the ANSI Monitor
 
 On a TRS-80 Model 4:
 
 ```text
-A>RSX LOAD M4SCRN
-A>RSX LOAD ANSI
-A>CLS
+A0>RSX LOAD M4SCRN
+A0>RSX LOAD ANSI
+A0>CLS
 ```
 
 On a system using the ANSI screen backend:
 
 ```text
-A>RSX LOAD ANSISCRN
-A>RSX LOAD ANSI
-A>CLS
+A0>RSX LOAD ANSISCRN
+A0>RSX LOAD ANSI
+A0>CLS
 ```
 
 If another terminal personality is active, unload it before loading ANSI.
@@ -3007,12 +3112,12 @@ If another terminal personality is active, unload it before loading ANSI.
 For example, to change from ADM-3A to ANSI while retaining the Model 4 screen backend:
 
 ```text
-A>RSX UNLOAD ADM3A
-A>RSX LOAD ANSI
-A>CLS
+A0>RSX UNLOAD ADM3A
+A0>RSX LOAD ANSI
+A0>CLS
 ```
 
-### Supported Display Facilities
+##### Supported Display Facilities
 
 The ANSI personality provides a useful selection of common terminal operations.
 
@@ -3026,7 +3131,7 @@ For example, a monochrome display cannot reproduce the full range of colors avai
 
 BetterCP/M provides the supported logical terminal behavior, while the screen backend determines how it appears on the physical display.
 
-### Testing ANSI Support
+##### Testing ANSI Support
 
 BetterCP/M supplies:
 
@@ -3037,7 +3142,7 @@ ANSITST.COM
 After loading the ANSI personality, enter:
 
 ```text
-A>ANSITST
+A0>ANSITST
 ```
 
 The test utility demonstrates several supported ANSI display operations.
@@ -3046,7 +3151,7 @@ These include cursor positioning, reverse video, erasure, and related screen-con
 
 The test pauses so you can inspect the display.
 
-### ANSI Is Not Complete VT100 Emulation
+##### ANSI Is Not Complete VT100 Emulation
 
 Although the ANSI personality supports many familiar ANSI/VT100 operations, it does not provide complete VT100 emulation.
 
@@ -3058,7 +3163,7 @@ For this reason, selecting VT100 in an application's installation program does n
 
 Where possible, consult the application's terminal requirements and use the supplied test utilities to verify the display environment.
 
-### Display Dimensions
+##### Display Dimensions
 
 Some full-screen programs assume a particular number of rows and columns.
 
@@ -3070,7 +3175,9 @@ When configuring a program, select the screen size appropriate to the computer o
 
 This is particularly important when moving applications between the Model 4's display and a modern host terminal.
 
-## 9.6 Configuring Applications for Your Terminal
+<a id="section-9-6"></a>
+
+#### 9.6 Configuring Applications for Your Terminal
 
 The terminal monitor provides the display environment, but applications must still be configured to use it.
 
@@ -3080,7 +3187,7 @@ Others provide several executable versions, each intended for a particular termi
 
 Before running a full-screen application, determine which terminal types it supports.
 
-### Choosing a Terminal Type
+##### Choosing a Terminal Type
 
 If an application supports ADM-3A, VT52, or ANSI/VT100, select the type corresponding to the BetterCP/M personality you've loaded.
 
@@ -3092,7 +3199,7 @@ The terminal personality and application configuration must agree.
 
 A program configured for VT52 will not necessarily display correctly when the ADM-3A personality is active.
 
-### A Typical Setup Procedure
+##### A Typical Setup Procedure
 
 Suppose you've obtained a full-screen editor that supports VT52.
 
@@ -3108,18 +3215,18 @@ A typical procedure would be:
 For example, on a system using the ANSI screen backend:
 
 ```text
-A>RSX LOAD ANSISCRN
-A>RSX LOAD VT52
-A>CLS
-A>VT52TST
-A>EDITOR
+A0>RSX LOAD ANSISCRN
+A0>RSX LOAD VT52
+A0>CLS
+A0>VT52TST
+A0>EDITOR
 ```
 
 Here, `EDITOR` represents the application you've installed.
 
 The actual configuration procedure depends on the application.
 
-### When the Display Looks Wrong
+##### When the Display Looks Wrong
 
 If a full-screen program produces misplaced text, unexpected characters, or incorrect cursor movement, the first thing to check is the terminal configuration.
 
@@ -3128,7 +3235,7 @@ Make sure the program is configured for the personality currently loaded.
 You can examine the installed RSXs with:
 
 ```text
-A>RSX LIST
+A0>RSX LIST
 ```
 
 If the wrong personality is active, unload it and load the correct one.
@@ -3141,35 +3248,19 @@ Some applications use terminal capabilities that are not supported by BetterCP/M
 
 Such programs may require their original hardware environment or additional configuration.
 
-### Loading Your Preferred Terminal at Startup
+##### Loading Your Preferred Terminal at Startup
 
-If you regularly use applications requiring a particular terminal, you can load the corresponding personality automatically during system startup.
+Follow [Section 7.3](#section-7-3) to customize `A0:STARTUP.SUB`, using the backend and personality already tested for your application. The supplied Model 4 script selects ADM3A; cpmsim leaves the basic console active. Ordinary warm boots preserve an installed monitor, and you can change personalities during the session.
 
-For example, a Model 4 system might include the following commands in `STARTUP.SUB`:
-
-```text
-RSX LOAD M4SCRN
-RSX LOAD ADM3A
-CLS
-```
-
-This establishes the ADM-3A environment whenever BetterCP/M performs a cold boot.
-
-Ordinary warm boots preserve the installed monitor, so it remains available while you work.
-
-You can still unload it or change personalities during the session.
-
-Chapter 7 explains how to configure startup commands, while Chapter 8 provides more information about managing resident extensions.
-
-### Returning to the Basic Console
+##### Returning to the Basic Console
 
 When you no longer need terminal emulation, unload the active personality and then its screen backend.
 
 For example:
 
 ```text
-A>RSX UNLOAD VT52
-A>RSX UNLOAD ANSISCRN
+A0>RSX UNLOAD VT52
+A0>RSX UNLOAD ANSISCRN
 ```
 
 The screen backend can be removed only when no remaining extension requires it.
@@ -3180,7 +3271,9 @@ If you subsequently need terminal emulation again, simply reload the appropriate
 
 ---
 
-# Chapter 10 — Working with Disks
+<a id="chapter-10"></a>
+
+### Chapter 10 — Working with Disks
 
 BetterCP/M provides utilities for preparing, copying, checking, and installing system disks. These facilities are useful whether you're maintaining an existing BetterCP/M installation, preparing additional working disks, or experimenting with different CP/M disk formats.
 
@@ -3198,7 +3291,9 @@ This chapter explains how to perform common disk-management operations. Complete
 
 Because disk-management operations can destroy existing data, read the instructions carefully before formatting or copying a disk.
 
-## 10.1 Disk Formats
+<a id="section-10-1"></a>
+
+#### 10.1 Disk Formats
 
 CP/M was used on a remarkable variety of computers, and those computers did not all use the same disk formats.
 
@@ -3208,9 +3303,9 @@ Consequently, a disk prepared on one CP/M computer might not be readable on anot
 
 BetterCP/M provides facilities for working with different disk formats, subject to the capabilities of the computer and its disk controller.
 
-### Physical and Logical Drives
+##### Physical and Logical Drives
 
-As discussed in Chapter 7, BetterCP/M distinguishes between physical and logical drives.
+As discussed in [Chapter 7](#chapter-7), BetterCP/M distinguishes between physical and logical drives.
 
 A **physical drive** is the actual disk drive or storage device.
 
@@ -3222,7 +3317,7 @@ For example, logical drive B might be configured to use a physical drive contain
 
 The available assignments depend on the computer and its BIOS.
 
-### Disk-Format Definitions
+##### Disk-Format Definitions
 
 BetterCP/M uses disk-format definitions to describe how disks are organized.
 
@@ -3235,7 +3330,7 @@ The CONFIG utility allows you to select an appropriate definition and associate 
 For example:
 
 ```text
-A>CONFIG /LOGICAL=C /PHYSICAL=1 /FORMAT="MM 80T DS DATA"
+A0>CONFIG /LOGICAL=C /PHYSICAL=1 /FORMAT="MM 80T DS DATA"
 ```
 
 This assigns logical drive C to physical drive 1 using the named disk format.
@@ -3244,7 +3339,7 @@ The format name must match an available definition, and the requested format mus
 
 The example illustrates the command's use; the correct format depends on the disk and hardware you're using.
 
-### Selecting the Correct Format
+##### Selecting the Correct Format
 
 Before accessing a disk, make sure its format matches the definition assigned to the logical drive.
 
@@ -3256,9 +3351,11 @@ If you're uncertain about a disk's format, avoid writing to it until you've iden
 
 The CONFIG utility provides facilities for examining and changing disk assignments.
 
-For more information, see Chapter 7, *Configuring BetterCP/M*.
+For more information, see [Chapter 7](#chapter-7), *Configuring BetterCP/M*.
 
-## 10.2 Formatting Disks
+<a id="section-10-2"></a>
+
+#### 10.2 Formatting Disks
 
 Formatting prepares a disk for use by establishing its physical track and sector organization.
 
@@ -3269,7 +3366,7 @@ DUP can format disks, copy entire disks, and check disks for physical read error
 To start DUP interactively, enter:
 
 ```text
-A>DUP
+A0>DUP
 ```
 
 The utility displays a menu similar to:
@@ -3282,7 +3379,7 @@ C  Check a disk for errors
 
 Select the operation you want to perform.
 
-### Formatting a Disk
+##### Formatting a Disk
 
 To format a disk, select option A from the DUP menu.
 
@@ -3302,21 +3399,21 @@ DUP requires explicit confirmation before proceeding.
 
 Only an affirmative response allows formatting to begin.
 
-### Formatting from the Command Line
+##### Formatting from the Command Line
 
 DUP also provides a direct command-line form.
 
 For example:
 
 ```text
-A>DUP /FORMAT B:
+A0>DUP /FORMAT B:
 ```
 
 requests formatting of drive B using its currently assigned disk format.
 
 The command still requires confirmation. The command-line form does not bypass the normal safeguards.
 
-### Format Verification
+##### Format Verification
 
 DUP verifies its formatting operations by reading back the formatted tracks.
 
@@ -3332,7 +3429,7 @@ If an error occurs, DUP reports the problem.
 
 An interrupted or failed format should not be treated as a successfully prepared disk.
 
-### Protected System Drive
+##### Protected System Drive
 
 BetterCP/M protects the physical system drive from destructive DUP operations.
 
@@ -3342,7 +3439,7 @@ This protection follows the physical drive, even if logical drive letters have b
 
 Other drives may be used as destinations when their configurations support the requested operation.
 
-### A Note About Available Formats
+##### A Note About Available Formats
 
 Not every disk format listed in BetterCP/M's format catalog can necessarily be created by every supported computer.
 
@@ -3352,7 +3449,9 @@ DUP reports unsupported operations rather than silently substituting another for
 
 Consult the platform documentation for information about the formats supported by your hardware.
 
-## 10.3 Copying Disks
+<a id="section-10-3"></a>
+
+#### 10.3 Copying Disks
 
 Copying an entire disk is different from copying individual files.
 
@@ -3362,12 +3461,12 @@ When you use DUP's disk-copying facility, BetterCP/M copies the disk's contents,
 
 This makes DUP particularly useful for preparing duplicate working disks or making backups of complete disks.
 
-### Starting a Disk Copy
+##### Starting a Disk Copy
 
 Start DUP:
 
 ```text
-A>DUP
+A0>DUP
 ```
 
 Select option B, *Copy a disk*.
@@ -3377,7 +3476,7 @@ DUP asks you to select a source drive and a destination drive.
 Alternatively, you can start the operation directly:
 
 ```text
-A>DUP /COPY A: B:
+A0>DUP /COPY A: B:
 ```
 
 This requests a copy from drive A to drive B.
@@ -3388,7 +3487,7 @@ The source disk is read, while the destination disk is written.
 
 Make sure you've selected the correct drives before confirming.
 
-### Using Two Drives
+##### Using Two Drives
 
 BetterCP/M 1.0 requires two different physical drives for DUP's disk-copying operation.
 
@@ -3396,7 +3495,7 @@ It does not support copying a disk by repeatedly swapping source and destination
 
 The destination must also satisfy the system's drive restrictions. In particular, physical drive 0 is protected against destructive disk-copy operations.
 
-### Copying Between Different Formats
+##### Copying Between Different Formats
 
 DUP uses the disk-format definitions currently assigned to the source and destination drives.
 
@@ -3408,7 +3507,7 @@ This is an important warning: **the destination's previous contents will be dest
 
 After checking the displayed source and destination drives, confirm the operation to proceed.
 
-### Copy Verification
+##### Copy Verification
 
 DUP verifies copied data by reading it back from the destination and comparing it with the source data.
 
@@ -3424,7 +3523,7 @@ If a read, write, or verification error occurs, DUP reports the problem.
 
 An interrupted or failed copy may leave the destination only partly written. Do not rely on such a disk as a complete backup.
 
-### After Copying
+##### After Copying
 
 If DUP temporarily changed the destination's disk-format assignment during copying, it restores the previous assignment when the operation finishes.
 
@@ -3434,20 +3533,22 @@ The disk now contains a copy of the source, so you may need to use CONFIG to ass
 
 If you intend to use that format regularly, you can save the new configuration as a startup default.
 
-Chapter 7 explains drive configuration in more detail.
+[Chapter 7](#chapter-7) explains drive configuration in more detail.
 
-## 10.4 Checking Disks
+<a id="section-10-4"></a>
+
+#### 10.4 Checking Disks
 
 DUP can also check a disk for physical read errors.
 
 This is useful when examining an unfamiliar disk, investigating suspected media problems, or checking whether a disk can be read reliably.
 
-### Starting a Disk Check
+##### Starting a Disk Check
 
 Start DUP:
 
 ```text
-A>DUP
+A0>DUP
 ```
 
 Select option C, *Check a disk for errors*.
@@ -3457,12 +3558,12 @@ DUP asks you to select the drive to examine.
 Alternatively, enter:
 
 ```text
-A>DUP /CHECK B:
+A0>DUP /CHECK B:
 ```
 
 This checks the disk in drive B.
 
-### What DUP Checks
+##### What DUP Checks
 
 DUP reads the sectors described by the disk-format definition assigned to the selected drive.
 
@@ -3472,7 +3573,7 @@ The operation does not modify the disk's contents.
 
 Unlike formatting and copying, checking a disk does not require confirmation before proceeding.
 
-### Understanding the Results
+##### Understanding the Results
 
 As DUP checks the disk, it reports read errors and their locations.
 
@@ -3486,7 +3587,7 @@ A count of zero means that DUP was able to read the sectors examined during that
 
 A nonzero count indicates that one or more sectors could not be read successfully.
 
-### What a Disk Check Does Not Do
+##### What a Disk Check Does Not Do
 
 DUP's disk check is a test of physical readability.
 
@@ -3498,7 +3599,7 @@ A disk can therefore pass DUP's readability check while still containing damaged
 
 If you suspect that important data has been corrupted, compare it with a known good copy or restore it from a backup.
 
-### Interrupting a Check
+##### Interrupting a Check
 
 You can interrupt a disk check with `Ctrl-C`.
 
@@ -3506,7 +3607,9 @@ Because the operation only reads the disk, interrupting it does not modify the d
 
 However, an interrupted check is incomplete and should not be treated as evidence that the entire disk is readable.
 
-## 10.5 Installing the Operating System
+<a id="section-10-5"></a>
+
+#### 10.5 Installing the Operating System
 
 Formatting a disk prepares its physical organization, but it does not necessarily make the disk bootable.
 
@@ -3514,7 +3617,7 @@ A CP/M system disk must also contain the operating system in the locations expec
 
 BetterCP/M provides **SYSGEN** for installing the operating system onto a suitably prepared disk.
 
-### What SYSGEN Does
+##### What SYSGEN Does
 
 SYSGEN writes the BetterCP/M operating-system image into the disk's reserved system area.
 
@@ -3531,14 +3634,14 @@ Consequently, preparing a complete system disk may involve several operations:
 
 The exact procedure depends on the disk format and computer.
 
-### Installing from Another System Disk
+##### Installing from Another System Disk
 
 SYSGEN can install BetterCP/M using an existing system disk as its source.
 
 For example:
 
 ```text
-A>SYSGEN A: B:
+A0>SYSGEN A: B:
 ```
 
 requests installation of the operating system from drive A onto drive B.
@@ -3547,14 +3650,14 @@ The source and destination must be different physical drives.
 
 As with DUP, BetterCP/M protects physical drive 0 against destination writes.
 
-### Installing from a System-Image File
+##### Installing from a System-Image File
 
 SYSGEN can also install BetterCP/M from a system-image package.
 
 For example:
 
 ```text
-A>SYSGEN SYSTEM.SYS B:
+A0>SYSGEN SYSTEM.SYS B:
 ```
 
 installs the operating system contained in `SYSTEM.SYS` onto drive B.
@@ -3564,12 +3667,12 @@ The package must be a valid BetterCP/M system image suitable for the destination
 A drive-qualified filename can also be used:
 
 ```text
-A>SYSGEN C:SYSTEM.SYS B:
+A0>SYSGEN C:SYSTEM.SYS B:
 ```
 
 This reads the system-image package from drive C and installs it onto drive B.
 
-### Confirming Installation
+##### Confirming Installation
 
 Before writing the system area, SYSGEN checks the destination and requests confirmation.
 
@@ -3597,7 +3700,7 @@ This confirms that the operating-system image has been installed and verified.
 
 It does not mean that every utility or supporting file required for your preferred working environment has been copied to the disk.
 
-### Existing Files
+##### Existing Files
 
 Unlike formatting, SYSGEN is designed to preserve ordinary files outside the reserved system area.
 
@@ -3609,7 +3712,9 @@ If an installation is interrupted or fails, the destination may no longer contai
 
 Keep a working system disk available when performing system installation or maintenance.
 
-## 10.6 Backing Up and Restoring System Disks
+<a id="section-10-6"></a>
+
+#### 10.6 Backing Up and Restoring System Disks
 
 A reliable backup is particularly important when working with system disks.
 
@@ -3617,14 +3722,14 @@ A damaged or incorrectly configured system disk may prevent your computer from b
 
 BetterCP/M provides several ways to preserve system disks and their contents.
 
-### Making a Complete Disk Copy
+##### Making a Complete Disk Copy
 
 For a complete disk backup, use DUP.
 
 For example:
 
 ```text
-A>DUP /COPY A: B:
+A0>DUP /COPY A: B:
 ```
 
 This copies the source disk to the destination, including the system area and ordinary file contents represented by the disk format.
@@ -3635,14 +3740,14 @@ DUP verifies the copied data before reporting successful completion.
 
 A complete disk copy is often the simplest way to preserve a working system configuration.
 
-### Saving the Operating System to a File
+##### Saving the Operating System to a File
 
 SYSGEN provides another useful facility: saving the installed operating system as a system-image package.
 
 For example:
 
 ```text
-A>SYSGEN A:
+A0>SYSGEN A:
 ```
 
 saves the operating system installed on drive A as `SYSTEM.SYS` in the current drive and user area.
@@ -3650,7 +3755,7 @@ saves the operating system installed on drive A as `SYSTEM.SYS` in the current d
 You can also specify a destination filename:
 
 ```text
-A>SYSGEN A: B:BASE090.SYS
+A0>SYSGEN A: B:BASE090.SYS
 ```
 
 This saves the installed system from drive A into the named package on drive B.
@@ -3659,7 +3764,7 @@ The package contains the operating-system image and its saved configuration info
 
 It does not contain ordinary files from the source disk.
 
-### Maintaining Several System Configurations
+##### Maintaining Several System Configurations
 
 System-image packages are particularly useful when maintaining several BetterCP/M configurations.
 
@@ -3672,14 +3777,14 @@ When you want to restore a particular configuration, install its package using S
 For example:
 
 ```text
-A>SYSGEN B:BASE090.SYS C:
+A0>SYSGEN B:BASE090.SYS C:
 ```
 
 This installs the saved system image onto drive C after the normal confirmation.
 
 The destination must have a compatible system area.
 
-### Restoring a System Disk
+##### Restoring a System Disk
 
 If a system disk becomes damaged, the appropriate recovery procedure depends on the extent of the damage.
 
@@ -3689,7 +3794,7 @@ If the disk's physical format or filesystem has been damaged, a complete restora
 
 If the disk itself is unreliable, replace the media before attempting restoration.
 
-### Protecting Your Backups
+##### Protecting Your Backups
 
 A backup is useful only if it can be read when needed.
 
@@ -3707,40 +3812,9 @@ Both can be valuable when maintaining a BetterCP/M system.
 
 ---
 
-These specifications resolve the uncertainties in Chapter 11. In particular, **BetterCP/M 1.0 implements the TIME utility's SET interface, but neither of its currently supported clock providers permits setting the clock.**
+<a id="chapter-11"></a>
 
-That distinction needs to be explicit in the User's Guide.
-
-I've now read all three documents:
-
-- [134 — FreHD Clock Provider](https://github.com/CPMArchives/BetterCPM/blob/main/docs/engineering/134%20FreHD%20Clock%20Provider.md)
-- [135 — z80pack Clock Provider](https://github.com/CPMArchives/BetterCPM/blob/main/docs/engineering/135%20z80pack%20Clock%20Provider.md)
-- [205 — TIME Utility SET](https://github.com/CPMArchives/BetterCPM/blob/main/docs/engineering/205%20TIME%20Utility%20Set.md)
-
-The principal corrections are:
-
-| Subject | Verified BetterCP/M 1.0 behavior |
-|---|---|
-| Display time | `TIME` |
-| Identify provider | `TIME /PROVIDER` |
-| Request clock setting | `TIME /SET LL HH HR MN SC` |
-| SET argument format | Five hexadecimal bytes, not a calendar date |
-| FreHD provider | `FREHDCLK.RSX`, read-only |
-| z80pack provider | `ZPRTC.RSX`, read-only |
-| Missing provider | TIME reports that the service is unavailable |
-| Unsupported SET | Provider returns a specific unsupported-operation error |
-| P2DOS compatibility | Provided through a separate `P2DOS.RSX` frontend |
-| Warm boots | Resident clock services survive ordinary warm boots |
-
-The specifications also confirm that both providers have been tested with the actual TIME utility and that rejected SET requests leave the clock unchanged.
-
-One point deserves special attention: the five-byte SET record contains a little-endian day count followed by packed-BCD hours, minutes, and seconds. That's quite different from the calendar-date input a user might reasonably expect.
-
-Rather than documenting SET as a convenient way to adjust the clock, we should explain it as an implemented interface intended for providers that support setting, while noting that the two current providers are read-only.
-
----
-+98
-# Chapter 11 — Date and Time
+### Chapter 11 — Date and Time
 
 BetterCP/M provides facilities for reading the system date and time through supported clock hardware or an emulator.
 
@@ -3754,7 +3828,9 @@ BetterCP/M 1.0 includes clock providers for FreHD and z80pack. Both support read
 
 This chapter explains how to use these facilities. Complete command syntax and options are provided in Part II, *Command and Utility Reference*.
 
-## 11.1 Clock Support
+<a id="section-11-1"></a>
+
+#### 11.1 Clock Support
 
 BetterCP/M provides a common clock interface that can be used with different hardware and emulated environments.
 
@@ -3766,7 +3842,7 @@ Under z80pack, BetterCP/M can obtain the date and time from the clock facilities
 
 Both arrangements use the same TIME utility.
 
-### Clock Providers
+##### Clock Providers
 
 Clock support is supplied by Resident System Extensions, or RSXs.
 
@@ -3784,13 +3860,13 @@ You must load the appropriate provider before using TIME.
 For example, on a Model 4 equipped with FreHD:
 
 ```text
-A>RSX LOAD FREHDCLK
+A0>RSX LOAD FREHDCLK
 ```
 
 Under z80pack:
 
 ```text
-A>RSX LOAD ZPRTC
+A0>RSX LOAD ZPRTC
 ```
 
 Once the provider is installed, TIME can obtain the current date and time.
@@ -3798,10 +3874,10 @@ Once the provider is installed, TIME can obtain the current date and time.
 You can examine the installed RSXs with:
 
 ```text
-A>RSX LIST
+A0>RSX LIST
 ```
 
-### Read-Only Clock Support
+##### Read-Only Clock Support
 
 Both BetterCP/M 1.0 clock providers are read-only.
 
@@ -3811,12 +3887,14 @@ This does not prevent programs from using the current date and time.
 
 It simply means that correcting an incorrect clock must be done through the facilities provided by the hardware, emulator, or host environment.
 
-## 11.2 Displaying the Date and Time
+<a id="section-11-2"></a>
+
+#### 11.2 Displaying the Date and Time
 
 To display the current date and time, enter:
 
 ```text
-A>TIME
+A0>TIME
 ```
 
 TIME obtains the date and time from the installed clock provider and displays the result.
@@ -3827,12 +3905,12 @@ For example, under z80pack, the provider reads the emulator's clock interface.
 
 On a Model 4 equipped with FreHD, the provider obtains the date and time maintained by FreHD.
 
-### Identifying the Clock Provider
+##### Identifying the Clock Provider
 
 To determine which clock provider is installed, enter:
 
 ```text
-A>TIME /PROVIDER
+A0>TIME /PROVIDER
 ```
 
 TIME displays information about the provider, including its name, supported interface version, and capabilities.
@@ -3841,7 +3919,7 @@ For example, this can help you determine whether BetterCP/M is using the FreHD o
 
 Both supplied providers identify themselves as supporting clock reads but not clock setting.
 
-### When No Provider Is Installed
+##### When No Provider Is Installed
 
 If you enter TIME without first loading a clock provider, the utility cannot obtain the current date and time.
 
@@ -3852,15 +3930,17 @@ To correct this, load the appropriate provider for your system.
 For example:
 
 ```text
-A>RSX LOAD ZPRTC
-A>TIME
+A0>RSX LOAD ZPRTC
+A0>TIME
 ```
 
 If a provider is already installed but TIME still cannot obtain the clock, the underlying hardware or emulator may not be supplying valid clock information.
 
 The appropriate remedy depends on the platform.
 
-## 11.3 Setting the Date and Time
+<a id="section-11-3"></a>
+
+#### 11.3 Setting the Date and Time
 
 BetterCP/M's TIME utility includes a command for requesting that a clock be set.
 
@@ -3870,7 +3950,7 @@ Consequently, attempts to set the clock through either provider are rejected.
 
 The SET facility is nevertheless implemented in TIME.COM and is available for use with clock providers that support it.
 
-### The SET Command
+##### The SET Command
 
 The command has the following form:
 
@@ -3889,14 +3969,14 @@ The first two bytes represent the day count, with the low byte first. The remain
 For example:
 
 ```text
-A>TIME /SET 01 00 12 34 56
+A0>TIME /SET 01 00 12 34 56
 ```
 
 requests day 1 of the CP/M clock epoch, January 1, 1978, at 12:34:56.
 
 The example illustrates the syntax. It will not set the clock when either of the standard BetterCP/M 1.0 providers is installed.
 
-### Unsupported Clock Setting
+##### Unsupported Clock Setting
 
 When a clock provider does not support setting the clock, TIME reports that the operation is unsupported.
 
@@ -3904,7 +3984,7 @@ The existing clock value is not changed.
 
 This is the expected result with both `FREHDCLK.RSX` and `ZPRTC.RSX`.
 
-### Invalid Date and Time Values
+##### Invalid Date and Time Values
 
 TIME checks the supplied hexadecimal values before requesting a clock-setting operation.
 
@@ -3914,11 +3994,13 @@ Invalid command arguments produce a usage message.
 
 For complete details of the accepted format, consult the TIME command reference.
 
-## 11.4 Clock Providers
+<a id="section-11-4"></a>
+
+#### 11.4 Clock Providers
 
 Although both supplied clock providers offer the same basic date-and-time service, they obtain their information differently.
 
-### FreHD Clock Provider
+##### FreHD Clock Provider
 
 The FreHD provider is supplied as:
 
@@ -3933,9 +4015,9 @@ FreHD maintains its clock information using a DS1307-compatible clock facility.
 To use it:
 
 ```text
-A>RSX LOAD FREHDCLK
-A>TIME
-A>TIME /PROVIDER
+A0>RSX LOAD FREHDCLK
+A0>TIME
+A0>TIME /PROVIDER
 ```
 
 The provider supports dates from 2000 through 2099.
@@ -3946,7 +4028,7 @@ FreHD's clock interface is also supported by suitable emulator configurations, a
 
 The actual availability of the clock depends on the computer or emulator configuration.
 
-### z80pack Clock Provider
+##### z80pack Clock Provider
 
 The z80pack provider is supplied as:
 
@@ -3959,9 +4041,9 @@ It obtains the date and time through the clock interface provided by z80pack/cpm
 To use it:
 
 ```text
-A>RSX LOAD ZPRTC
-A>TIME
-A>TIME /PROVIDER
+A0>RSX LOAD ZPRTC
+A0>TIME
+A0>TIME /PROVIDER
 ```
 
 Like the FreHD provider, ZPRTC is read-only.
@@ -3970,16 +4052,16 @@ It does not change the emulator's clock or its operating mode.
 
 The provider supports dates through 2099.
 
-### Changing Providers
+##### Changing Providers
 
 Clock providers are resident extensions.
 
-You can examine and manage them using the RSX commands described in Chapter 8.
+You can examine and manage them using the RSX commands described in [Chapter 8](#chapter-8).
 
 For example:
 
 ```text
-A>RSX LIST
+A0>RSX LIST
 ```
 
 displays the installed extensions.
@@ -3988,7 +4070,9 @@ The corresponding RSX management commands can be used to unload a provider when 
 
 Applications using BetterCP/M's clock service obtain their information through the common clock interface, rather than communicating directly with either FreHD or z80pack.
 
-## 11.5 Clock Availability and Reliability
+<a id="section-11-5"></a>
+
+#### 11.5 Clock Availability and Reliability
 
 The accuracy of BetterCP/M's date and time depends on the clock source.
 
@@ -3996,7 +4080,7 @@ If the underlying clock is incorrect, TIME will report an incorrect date or time
 
 If the source is unavailable or cannot provide a valid reading, TIME reports an error rather than inventing a time value.
 
-### Clock Errors
+##### Clock Errors
 
 A clock-reading operation may fail because the provider cannot communicate with the hardware or because the returned information is invalid.
 
@@ -4006,7 +4090,7 @@ Similarly, a clock provider may reject a reading whose date or time fields are i
 
 BetterCP/M's clock providers check the information they receive before returning it to TIME.
 
-### Reading the Clock During a Time Change
+##### Reading the Clock During a Time Change
 
 Clock values can change while they are being read.
 
@@ -4022,7 +4106,9 @@ These measures help prevent applications from receiving inconsistent combination
 
 They do not, however, correct an inaccurate underlying clock.
 
-## 11.6 Compatibility with CP/M Clock Facilities
+<a id="section-11-6"></a>
+
+#### 11.6 Compatibility with CP/M Clock Facilities
 
 Digital Research CP/M 2.2 did not provide a standard general-purpose date-and-time service.
 
@@ -4032,9 +4118,9 @@ One historically significant extension was the date-and-time interface provided 
 
 BetterCP/M provides compatibility with this interface through a separate resident extension.
 
-### P2DOS Compatibility
+##### P2DOS Compatibility
 
-The compatibility extension is supplied as:
+The optional compatibility extension is implemented as:
 
 ```text
 P2DOS.RSX
@@ -4048,15 +4134,15 @@ Instead, it obtains clock services through BetterCP/M's installed clock provider
 
 This means that the same provider can serve both native BetterCP/M applications and programs using the P2DOS-compatible interface.
 
-### Loading P2DOS Support
+##### Loading P2DOS Support
 
-To use the P2DOS-compatible clock facilities, load an appropriate clock provider and the P2DOS extension.
+`P2DOS.RSX` is not on the selected System Disk. To use it, obtain a compatible separately built carrier, install it in A0, then load an appropriate clock provider and the P2DOS extension. See [Section 3.2](#section-3-2), *What Is on Each Disk*, for distribution scope.
 
 For example, under z80pack:
 
 ```text
-A>RSX LOAD ZPRTC
-A>RSX LOAD P2DOS
+A0>RSX LOAD ZPRTC
+A0>RSX LOAD P2DOS
 ```
 
 Once installed, compatible programs can request clock information through the P2DOS interface.
@@ -4065,7 +4151,7 @@ As with the native TIME utility, the available operations depend on the provider
 
 Because the supplied providers are read-only, P2DOS-compatible requests to set the clock are not supported.
 
-### Conventional CP/M Applications
+##### Conventional CP/M Applications
 
 Ordinary CP/M 2.2 applications do not require these extensions.
 
@@ -4073,11 +4159,13 @@ They continue to use the standard CP/M programming interfaces.
 
 Applications that require date-and-time services, however, must use a supported clock interface and have access to an appropriate provider.
 
-For programming details, consult the *BetterCP/M Developer's Guide* and the relevant engineering specifications.
+For programming details, consult the [BetterCP/M RSX and CPX Programmer's Guide](../programmers/RSX%20and%20CPX%20Programmer%27s%20Guide.md) and the relevant engineering specifications.
 
 ---
 
-# Chapter 12 — Troubleshooting
+<a id="chapter-12"></a>
+
+### Chapter 12 — Troubleshooting
 
 BetterCP/M is designed to provide a reliable CP/M operating environment, but sooner or later you're likely to encounter a command that doesn't behave as expected, a disk that can't be read, or a program that refuses to run.
 
@@ -4087,20 +4175,22 @@ Sometimes the cause is as simple as a mistyped filename or an incorrect drive se
 
 This chapter describes common problems you may encounter when using BetterCP/M and suggests ways to resolve them.
 
-It isn't intended to catalog every possible error message. The complete message reference appears in Appendix F, *System Messages and Error Reference*. Individual commands and utilities are documented in Part II, *Command and Utility Reference*.
+It isn't intended to catalog every possible error message. The complete message reference appears in [Appendix F](#appendix-f), *System Messages and Error Reference*. Individual commands and utilities are documented in Part II, *Command and Utility Reference*.
 
 When troubleshooting, it's generally best to begin with the simplest explanation before making changes to the system configuration.
 
-## 12.1 Common Command Errors
+<a id="section-12-1"></a>
 
-### Command Not Found
+#### 12.1 Common Command Errors
+
+##### Command Not Found
 
 If BetterCP/M doesn't recognize a command, it may display a question mark or another command-related error.
 
 For example:
 
 ```text
-A>MYPROG
+A0>MYPROG
 ?
 ```
 
@@ -4133,7 +4223,7 @@ This requests `MYPROG.COM` from drive C, user area 2.
 
 Remember that an explicitly qualified program name restricts the search to the specified location.
 
-### A Command Doesn't Recognize an Option
+##### A Command Doesn't Recognize an Option
 
 Some BetterCP/M commands are available in both resident and transient versions.
 
@@ -4144,7 +4234,7 @@ For example, the resident DIR command doesn't provide every option available in 
 If you enter:
 
 ```text
-A>DIR /WHEREIS ED.COM
+A0>DIR /WHEREIS ED.COM
 ```
 
 BetterCP/M may respond:
@@ -4158,7 +4248,7 @@ This means the requested operation is available through the transient version.
 Enter:
 
 ```text
-A>:DIR /WHEREIS ED.COM
+A0>:DIR /WHEREIS ED.COM
 ```
 
 The colon tells BetterCP/M to execute the transient program rather than the resident command.
@@ -4167,9 +4257,9 @@ You can also use a period as the prefix.
 
 If the transient program isn't available, BetterCP/M reports the normal command-lookup failure.
 
-For more information, see Chapter 5, *The Command Environment*.
+For more information, see [Chapter 5](#chapter-5), *The Command Environment*.
 
-### Incorrect Command Syntax
+##### Incorrect Command Syntax
 
 If a command reports invalid syntax, check the order and spelling of its arguments.
 
@@ -4181,32 +4271,34 @@ A command may also require an option to appear separately from its filename argu
 
 Consult the command's reference entry in Part II for its accepted syntax.
 
-### Unexpected Interactive Prompts
+##### Unexpected Interactive Prompts
 
 Some commands request confirmation before modifying or replacing files.
 
 This can happen even when the command is executed from a SUBMIT file.
 
-For example, COPY may ask how to handle an existing destination file.
+For example, transient `COPY.COM` may ask how to handle an existing writable destination file. Resident COPY refuses that collision unless `/O` is supplied; it does not offer the transient utility's collision prompt.
 
 When a prompt offers several abbreviated responses, entering `?` may display an explanation of the available choices.
 
 If you're preparing a batch file, examine whether the command provides options for specifying its behavior without prompting.
 
-For example, COPY supports `/B` for batch-oriented operation.
+For batch-oriented copying, invoke the transient explicitly with `:COPY` and use its `/B` option. The resident command does not support `/B` or automatically switch to `COPY.COM`.
 
-Chapter 6 explains batch processing in more detail.
+[Chapter 6](#chapter-6) explains batch processing in more detail.
 
-## 12.2 File and Disk Problems
+<a id="section-12-2"></a>
 
-### File Not Found
+#### 12.2 File and Disk Problems
+
+##### File Not Found
 
 If a command reports that a file cannot be found, begin by checking the current drive and user area.
 
 For example:
 
 ```text
-A>DIR
+A0>DIR
 ```
 
 displays the files in the current location.
@@ -4214,7 +4306,7 @@ displays the files in the current location.
 If you believe the file is on another drive or in another user area, specify that location:
 
 ```text
-A>DIR B3:
+A0>DIR B3:
 ```
 
 Remember that files in different user areas are ordinarily treated as separate collections.
@@ -4226,12 +4318,12 @@ You can also use BetterCP/M's extended DIR facilities to search for a file.
 For example:
 
 ```text
-A>:DIR /WHEREIS REPORT.TXT
+A0>:DIR /WHEREIS REPORT.TXT
 ```
 
 This searches the configured drives and user areas according to the transient DIR utility's file-location rules.
 
-### Read-Only Files
+##### Read-Only Files
 
 If BetterCP/M refuses to modify or erase a file, check whether it has the read-only attribute.
 
@@ -4243,7 +4335,7 @@ If the file belongs to the operating system or an installed application, conside
 
 The STAT utility provides facilities for examining and changing file attributes.
 
-### A Disk Has Become Read-Only
+##### A Disk Has Become Read-Only
 
 BetterCP/M may treat a disk as read-only when it cannot safely determine that the disk currently in a drive matches the directory information already held by the operating system.
 
@@ -4257,7 +4349,7 @@ Do not attempt to bypass the protection by forcing a write.
 
 If the problem persists, check the disk's write-protection setting and the drive configuration.
 
-### A Disk Cannot Be Read
+##### A Disk Cannot Be Read
 
 A disk-read failure can have several causes.
 
@@ -4270,14 +4362,14 @@ If the disk was prepared on another CP/M computer, verify that the assigned form
 Use CONFIG to examine the current drive configuration:
 
 ```text
-A>CONFIG /SHOW
+A0>CONFIG /SHOW
 ```
 
 If the format is incorrect, select the appropriate definition before attempting further access.
 
 **Avoid writing to a disk whose format you're uncertain about.** An incorrect format assignment can cause existing data to be damaged.
 
-### Disk Full
+##### Disk Full
 
 A disk can run out of space even when its files appear relatively small.
 
@@ -4291,14 +4383,14 @@ You may also be able to use a disk format with greater capacity, provided your h
 
 Formatting a disk to change its organization destroys its existing contents, so preserve any important files first.
 
-### Suspected Disk Errors
+##### Suspected Disk Errors
 
 If a disk repeatedly produces read errors, DUP can examine its physical readability.
 
 For example:
 
 ```text
-A>DUP /CHECK B:
+A0>DUP /CHECK B:
 ```
 
 This checks the disk in drive B without modifying its contents.
@@ -4309,22 +4401,24 @@ A successful check means the examined sectors could be read. It does not guarant
 
 If the disk contains important data, preserve a readable copy before attempting repairs or other changes.
 
-Chapter 10 describes disk checking in more detail.
+[Chapter 10](#chapter-10) describes disk checking in more detail.
 
-## 12.3 Configuration Problems
+<a id="section-12-3"></a>
+
+#### 12.3 Configuration Problems
 
 An incorrect configuration can make a drive unavailable, prevent a startup command from running, or cause a peripheral device to behave unexpectedly.
 
 Fortunately, many configuration problems can be corrected without rebuilding the operating system.
 
-### Examining the Current Configuration
+##### Examining the Current Configuration
 
 When a configuration problem occurs, begin by examining the settings currently in use.
 
 Enter:
 
 ```text
-A>CONFIG /SHOW
+A0>CONFIG /SHOW
 ```
 
 CONFIG displays information about the active configuration and the settings saved for subsequent cold boots.
@@ -4335,7 +4429,7 @@ A drive that works during the current session may not be configured the same way
 
 Likewise, a temporary change may have been made without being saved.
 
-### A Drive Is No Longer Available
+##### A Drive Is No Longer Available
 
 If a logical drive becomes unavailable after a configuration change, check its assignment.
 
@@ -4349,7 +4443,7 @@ For example, a drive that was temporarily unbound can be assigned again using CO
 
 The correct settings depend on the computer and the disk format.
 
-### Configuration Changes Disappear After Restarting
+##### Configuration Changes Disappear After Restarting
 
 Some CONFIG operations affect only the current session.
 
@@ -4359,9 +4453,9 @@ This is normal behavior.
 
 To make a configuration permanent, use CONFIG's save facilities.
 
-Chapter 7 explains the distinction between temporary and saved settings.
+[Chapter 7](#chapter-7) explains the distinction between temporary and saved settings.
 
-### Device Assignments Don't Work
+##### Device Assignments Don't Work
 
 BetterCP/M retains CP/M's IOBYTE mechanism for selecting logical character devices.
 
@@ -4373,16 +4467,18 @@ Remember that STAT changes the live IOBYTE, while CONFIG can save a value for su
 
 Changing one does not necessarily change the other.
 
-## 12.4 Extension Problems
+<a id="section-12-4"></a>
+
+#### 12.4 Extension Problems
 
 BetterCP/M's resident extensions provide additional commands and system services, but problems can occur if an extension is missing, damaged, incompatible, or loaded in the wrong order.
 
-### A CPX Command Is Missing
+##### A CPX Command Is Missing
 
 If a command normally provided by a CPX is unavailable, examine the configured extensions:
 
 ```text
-A>CPX LIST
+A0>CPX LIST
 ```
 
 Check whether the expected extension is listed.
@@ -4393,7 +4489,7 @@ If it is listed but its commands remain unavailable, the extension may have fail
 
 An extension's appearance in the configured list does not necessarily guarantee that it is active.
 
-### The CPX? Warning
+##### The CPX? Warning
 
 If an optional CPX cannot be loaded or fails validation, BetterCP/M may display:
 
@@ -4410,7 +4506,7 @@ You can remove the unusable extension from the configured environment.
 For example:
 
 ```text
-A>CPX UNLOAD BAD
+A0>CPX UNLOAD BAD
 ```
 
 where `BAD` is the name of the affected extension.
@@ -4419,7 +4515,7 @@ Alternatively, replace the extension file with a valid copy.
 
 Until the problem is corrected, the warning may recur when BetterCP/M restores the command environment.
 
-### An RSX Cannot Be Loaded
+##### An RSX Cannot Be Loaded
 
 If an RSX fails to load, first check that its file is available and compatible with the running system.
 
@@ -4431,7 +4527,7 @@ If you attempt to load a terminal personality without its required backend, the 
 
 Load the supporting component first, then try again.
 
-### An RSX Cannot Be Unloaded
+##### An RSX Cannot Be Unloaded
 
 Some resident extensions depend on others.
 
@@ -4441,16 +4537,16 @@ For example, a terminal personality may depend on a screen backend.
 
 To remove the monitor, unload the terminal personality first, then unload the backend.
 
-Chapter 8 explains extension dependencies in greater detail.
+[Chapter 8](#chapter-8) explains extension dependencies in greater detail.
 
-### A Full-Screen Program Displays Incorrectly
+##### A Full-Screen Program Displays Incorrectly
 
 If a full-screen application displays misplaced text, unexpected characters, or incorrect cursor movement, check its terminal configuration.
 
 First, examine the installed RSXs:
 
 ```text
-A>RSX LIST
+A0>RSX LIST
 ```
 
 Make sure the expected terminal personality and screen backend are loaded.
@@ -4462,14 +4558,14 @@ For example, an application configured for VT52 should be used with BetterCP/M's
 You can also run the corresponding terminal test utility:
 
 ```text
-A>VT52TST
+A0>VT52TST
 ```
 
 If the test works correctly but the application does not, the application may be using unsupported terminal facilities or expecting different screen dimensions.
 
-Chapter 9 provides more information about terminal configuration and troubleshooting.
+[Chapter 9](#chapter-9) provides more information about terminal configuration and troubleshooting.
 
-### Insufficient Program Memory
+##### Insufficient Program Memory
 
 RSXs occupy protected memory that would otherwise be available to transient programs. CPX command code is reclaimable.
 
@@ -4479,13 +4575,15 @@ You may be able to unload facilities that aren't needed for the current task.
 
 For example, if you're no longer using a full-screen application, unloading its terminal personality and screen backend may recover enough memory to run a larger program.
 
-## 12.5 Startup and Boot Problems
+<a id="section-12-5"></a>
+
+#### 12.5 Startup and Boot Problems
 
 Startup problems can arise from damaged system disks, incorrect saved configurations, missing files, or unsuitable startup commands.
 
 The appropriate recovery procedure depends on how far the system gets before the problem occurs.
 
-### BetterCP/M Doesn't Boot
+##### BetterCP/M Doesn't Boot
 
 If BetterCP/M fails to start, begin with the simplest possibilities.
 
@@ -4501,7 +4599,7 @@ BetterCP/M system images are platform-specific, even though the operating enviro
 
 Consult the appropriate platform documentation for the expected boot procedure.
 
-### The System Boots but Reports Errors
+##### The System Boots but Reports Errors
 
 If BetterCP/M reaches the command prompt but displays errors during startup, the problem may involve the configured startup command.
 
@@ -4517,7 +4615,7 @@ If the file is missing or contains an invalid command, startup may report an err
 
 Check the startup file and any programs or extensions it invokes.
 
-### A Startup Extension Fails
+##### A Startup Extension Fails
 
 If `STARTUP.SUB` loads resident extensions, make sure the required files are present.
 
@@ -4529,7 +4627,7 @@ If a newly added startup command causes problems, remove it from `STARTUP.SUB` a
 
 Once the command works correctly, it can be restored to the startup procedure.
 
-### Saved Configuration Prevents Normal Operation
+##### Saved Configuration Prevents Normal Operation
 
 An incorrect saved drive configuration can make disks inaccessible after a cold boot.
 
@@ -4539,13 +4637,15 @@ If the system cannot boot far enough to run CONFIG, you may need to start from a
 
 This is one reason it's worth keeping an unmodified backup of a working BetterCP/M installation.
 
-## 12.6 Recovery Procedures
+<a id="section-12-6"></a>
+
+#### 12.6 Recovery Procedures
 
 When a problem occurs, the most important thing is to avoid making it worse.
 
 In particular, don't begin formatting disks, changing drive definitions, or overwriting files until you've identified the likely cause.
 
-### Begin with the Current State
+##### Begin with the Current State
 
 Before making changes, determine what still works.
 
@@ -4561,7 +4661,7 @@ Can the relevant utility run without performing a destructive operation?
 
 These observations can help distinguish a command problem from a configuration problem, a filesystem problem, or a hardware failure.
 
-### Preserve Important Files
+##### Preserve Important Files
 
 If a disk is producing errors but remains readable, preserve important files before attempting repairs.
 
@@ -4571,7 +4671,7 @@ Avoid unnecessary writes to the affected medium.
 
 If the disk appears physically unreliable, repeated attempts to modify it may make recovery more difficult.
 
-### Recovering from an Interrupted Disk Operation
+##### Recovering from an Interrupted Disk Operation
 
 Formatting, disk copying, and system installation can leave a destination disk incomplete if interrupted.
 
@@ -4587,14 +4687,14 @@ Correct the cause of the interruption and repeat the appropriate operation using
 
 Remember that formatting and disk copying are destructive operations.
 
-### Recovering a System Disk
+##### Recovering a System Disk
 
 If the operating system's reserved system area has been damaged, SYSGEN may be able to reinstall BetterCP/M without replacing ordinary files.
 
 For example:
 
 ```text
-A>SYSGEN SYSTEM.SYS B:
+A0>SYSGEN SYSTEM.SYS B:
 ```
 
 installs the operating system from a valid system-image package onto drive B.
@@ -4607,9 +4707,9 @@ However, it cannot repair a damaged filesystem or recover files that have been l
 
 If the disk's contents are extensively damaged, restoring a complete disk backup may be necessary.
 
-Chapter 10 explains the distinction between system installation and complete disk copying.
+[Chapter 10](#chapter-10) explains the distinction between system installation and complete disk copying.
 
-### Returning to a Known Working Configuration
+##### Returning to a Known Working Configuration
 
 If a problem began after changing system settings, consider restoring the previous configuration.
 
@@ -4619,7 +4719,7 @@ For saved changes, you may need to use CONFIG or reinstall a previously saved sy
 
 If you're experimenting with disk formats or resident extensions, maintaining a separate working system disk makes recovery considerably easier.
 
-### When to Consult the Technical Documentation
+##### When to Consult the Technical Documentation
 
 Most ordinary problems can be resolved using the procedures described in this manual.
 
@@ -4627,13 +4727,17 @@ Some problems, however, involve hardware behavior, BIOS configuration, or operat
 
 If a problem persists after checking the relevant commands and configuration settings, consult the platform documentation or the more detailed BetterCP/M technical guides.
 
-The *Architecture Overview* explains the organization of the operating system, while the *Porting Guide* and engineering specifications provide information for developers and system maintainers.
+[Overall System Architecture](../architecture/02%20Overall%20System%20Architecture.txt) explains the system organization. The [Build disk instructions](../programmers/BUILD-DISK.md), [platform material](../platform/), and [engineering records](../engineering/) support development and maintenance. [Appendix H](#appendix-h) distinguishes available references from planned manuals.
 
 ---
 
-# Part II — Command and Utility Reference
+<a id="part-ii"></a>
 
-# Chapter 13 — Introduction to the Command Reference
+## Part II — Command and Utility Reference
+
+<a id="chapter-13"></a>
+
+### Chapter 13 — Introduction to the Command Reference
 
 Part I introduced BetterCP/M's operating environment and explained how to use its principal facilities. Part II provides a detailed reference to the commands and utilities available under BetterCP/M 1.0.
 
@@ -4645,7 +4749,9 @@ Some commands are resident, some are transient programs, and some are available 
 
 The command descriptions are organized by function rather than by their internal implementation. Each entry explains what the command does, how to invoke it, what options are available, and any important restrictions or compatibility considerations.
 
-## 13.1 Command Syntax Conventions
+<a id="section-13-1"></a>
+
+#### 13.1 Command Syntax Conventions
 
 Throughout this reference, command syntax is presented using a consistent set of conventions.
 
@@ -4657,7 +4763,7 @@ COMMAND filespec [options]
 
 This is a description of the command's syntax, not a command to enter literally.
 
-### Command Names
+##### Command Names
 
 Command names are shown in uppercase letters:
 
@@ -4673,16 +4779,16 @@ BetterCP/M accepts command names without regard to letter case.
 For example:
 
 ```text
-A>DIR
-A>dir
-A>Dir
+A0>DIR
+A0>dir
+A0>Dir
 ```
 
 all request the same command.
 
 For clarity and consistency, the examples in this manual generally use uppercase command names.
 
-### Required Arguments
+##### Required Arguments
 
 Arguments that must be supplied are shown without enclosing brackets.
 
@@ -4697,12 +4803,12 @@ indicates that TYPE requires a file specification identifying the file to displa
 An example would be:
 
 ```text
-A>TYPE README.TXT
+A0>TYPE README.TXT
 ```
 
 The word `filespec` is a placeholder. Replace it with an actual filename or file specification.
 
-### Optional Arguments
+##### Optional Arguments
 
 Optional arguments are enclosed in square brackets.
 
@@ -4719,18 +4825,18 @@ The brackets are part of the syntax notation and are not normally typed.
 Thus, if a command accepts an optional `/P` switch, you might enter:
 
 ```text
-A>COMMAND README.TXT /P
+A0>COMMAND README.TXT /P
 ```
 
 or omit the switch:
 
 ```text
-A>COMMAND README.TXT
+A0>COMMAND README.TXT
 ```
 
 Some BetterCP/M commands also use square brackets as part of their actual file-selection syntax. In those cases, the command description explicitly identifies the brackets as characters that must be entered.
 
-### Alternative Forms
+##### Alternative Forms
 
 When a command accepts several forms, they are normally shown separately.
 
@@ -4754,7 +4860,7 @@ A|B
 
 the bar means that one of the alternatives is selected. It is not typed unless the command description explicitly says otherwise.
 
-### Repeated Arguments
+##### Repeated Arguments
 
 Some commands accept more than one filename, option, or other argument.
 
@@ -4764,14 +4870,14 @@ For example, a command may accept a list of source files, while another may perm
 
 Do not assume that a command accepting one filename can also accept several. The individual command entry defines the permitted forms.
 
-### Spaces
+##### Spaces
 
 Spaces normally separate a command name from its arguments and separate individual arguments from one another.
 
 For example:
 
 ```text
-A>COPY SOURCE.TXT B:SOURCE.TXT
+A0>COPY SOURCE.TXT B:SOURCE.TXT
 ```
 
 The command name, source file, and destination file are separate elements.
@@ -4781,14 +4887,14 @@ Some commands also accept arguments containing spaces when enclosed in quotation
 For example:
 
 ```text
-A>CONFIG /STARTUP="SUBMIT STARTUP"
+A0>CONFIG /STARTUP="SUBMIT STARTUP"
 ```
 
 The quotation marks preserve the startup command as a single argument.
 
 Quoting rules are command-specific. The presence of quotation marks in one command's syntax does not imply that every BetterCP/M command supports quoted arguments.
 
-### Numbers and Numeric Bases
+##### Numbers and Numeric Bases
 
 Unless otherwise stated, numeric arguments are decimal.
 
@@ -4808,17 +4914,17 @@ Where ambiguity is possible, the manual explicitly identifies hexadecimal values
 
 The suffix is an explanatory convention and should not be included in a command unless that command's syntax permits it.
 
-### Examples and the Command Prompt
+##### Examples and the Command Prompt
 
 Command examples generally include the BetterCP/M prompt:
 
 ```text
-A>DIR
+A0>DIR
 ```
 
 You type only the characters following the prompt.
 
-The prompt itself identifies the current drive and, where applicable, the user area.
+The prompt itself identifies both the current drive and user area, including zero.
 
 For example:
 
@@ -4830,7 +4936,9 @@ shows DIR being entered while drive B, user area 3, is selected.
 
 When several commands are shown together, each command is entered after the preceding operation has completed and the prompt has returned, unless otherwise indicated.
 
-## 13.2 Command Options
+<a id="section-13-2"></a>
+
+#### 13.2 Command Options
 
 Many BetterCP/M commands accept options that modify their behavior.
 
@@ -4839,14 +4947,14 @@ Options are commonly introduced by a slash (`/`).
 For example:
 
 ```text
-A>DIR /P
+A0>DIR /P
 ```
 
 The `/P` option requests paged directory output in the transient DIR utility.
 
 Other options may control sorting, file selection, confirmation, output formatting, or the treatment of existing files.
 
-### Options and Their Arguments
+##### Options and Their Arguments
 
 Some options consist of a switch alone:
 
@@ -4866,14 +4974,14 @@ For example, an option might accept a number, a filename, or a selection from se
 
 Do not assume that an option requiring a value can be used without one.
 
-### Combining Options
+##### Combining Options
 
 Some commands allow several options to be supplied together.
 
 For example:
 
 ```text
-A>:COPY B1:*.DAT C3: /B /O
+A0>:COPY B1:*.DAT C3: /B /O
 ```
 
 Here, `/B` requests batch-oriented operation, while `/O` specifies how existing writable destination files should be handled.
@@ -4884,7 +4992,7 @@ Other combinations may be invalid or mutually exclusive.
 
 Each command reference identifies the combinations it supports.
 
-### Option Placement
+##### Option Placement
 
 The permitted position of an option depends on the command.
 
@@ -4892,7 +5000,7 @@ Some commands accept options before or after a file specification. Others requir
 
 For this reason, the examples and syntax descriptions should be followed rather than assuming that all BetterCP/M utilities use identical option-placement rules.
 
-### Default Behavior
+##### Default Behavior
 
 When an option is omitted, the command uses its default behavior.
 
@@ -4902,7 +5010,7 @@ An option may change that behavior by instructing the command to overwrite, skip
 
 The command reference explains the defaults where they are important.
 
-### Interactive and Noninteractive Operation
+##### Interactive and Noninteractive Operation
 
 Some commands request information from the user while executing.
 
@@ -4916,7 +5024,7 @@ However, placing a command in a SUBMIT file does not automatically make it nonin
 
 If a command may prompt for input, consult its reference entry before using it in an unattended batch procedure.
 
-### File Selection and Attributes
+##### File Selection and Attributes
 
 Several BetterCP/M utilities support extended file-selection facilities.
 
@@ -4928,9 +5036,11 @@ These facilities are not necessarily available in every command.
 
 The reference entry identifies which selectors are supported and where they may appear.
 
-For an introduction to file specifications, wildcards, and attributes, see Chapter 4, *Working with Drives and Files*.
+For an introduction to file specifications, wildcards, and attributes, see [Chapter 4](#chapter-4), *Working with Drives and Files*.
 
-## 13.3 Resident and Transient Versions
+<a id="section-13-3"></a>
+
+#### 13.3 Resident and Transient Versions
 
 BetterCP/M distinguishes between resident commands and transient programs.
 
@@ -4940,7 +5050,7 @@ A **transient command** is an executable program that BetterCP/M loads when it i
 
 Some commands are available in both forms.
 
-### Why Two Versions?
+##### Why Two Versions?
 
 The resident versions of frequently used commands provide convenient access to common operations.
 
@@ -4952,12 +5062,12 @@ This arrangement allows BetterCP/M to provide useful commands without permanentl
 
 The resident version can remain compact, while the transient version provides more extensive functionality when needed.
 
-### Normal Command Execution
+##### Normal Command Execution
 
 When you enter:
 
 ```text
-A>DIR
+A0>DIR
 ```
 
 BetterCP/M uses the normal command-search procedure.
@@ -4970,9 +5080,9 @@ For an unqualified transient program name, BetterCP/M searches the current drive
 
 A program found in the current drive/user takes precedence over one found in `A0:`.
 
-For more information about command search and execution, see Chapter 5.
+For more information about command search and execution, see [Chapter 5](#chapter-5).
 
-### Explicit Transient Execution
+##### Explicit Transient Execution
 
 Sometimes you may want to execute a transient program even though a resident command with the same name is available.
 
@@ -4988,13 +5098,13 @@ Place either prefix immediately before the command name.
 For example:
 
 ```text
-A>:DIR
+A0>:DIR
 ```
 
 or:
 
 ```text
-A>.DIR
+A0>.DIR
 ```
 
 Both forms bypass the resident command and request the transient `DIR.COM` program.
@@ -5002,19 +5112,19 @@ Both forms bypass the resident command and request the transient `DIR.COM` progr
 The prefix can also be used with arguments:
 
 ```text
-A>:DIR /WHEREIS ED.COM
+A0>:DIR /WHEREIS ED.COM
 ```
 
 This invokes the transient DIR utility's file-location facility.
 
-### Drive/User Qualifications
+##### Drive/User Qualifications
 
 An explicit transient invocation can include a drive/user qualification.
 
 For example:
 
 ```text
-A>:B3:MYPROG ARGUMENTS
+A0>:B3:MYPROG ARGUMENTS
 ```
 
 This requests `MYPROG.COM` from drive B, user area 3.
@@ -5025,7 +5135,7 @@ A qualified invocation restricts the program search to the specified location.
 
 By contrast, an unqualified transient invocation follows the normal search procedure, including the fallback to `A0:`.
 
-### When the Resident Command Lacks an Option
+##### When the Resident Command Lacks an Option
 
 BetterCP/M 1.0 does not automatically transfer execution from a resident command to its transient counterpart when an option is unavailable.
 
@@ -5034,21 +5144,21 @@ Instead, certain resident commands recognize options that require the transient 
 For example:
 
 ```text
-A>DIR /WHEREIS ED.COM
+A0>DIR /WHEREIS ED.COM
 DIR: Use :DIR.
 ```
 
 You can then enter:
 
 ```text
-A>:DIR /WHEREIS ED.COM
+A0>:DIR /WHEREIS ED.COM
 ```
 
 The command is not automatically reissued.
 
 If the transient program cannot be found, BetterCP/M reports the normal command-lookup failure.
 
-### Differences Between Versions
+##### Differences Between Versions
 
 The resident and transient versions of a command may differ in several respects.
 
@@ -5060,20 +5170,22 @@ Where appropriate, each entry provides separate syntax descriptions for the resi
 
 Unless otherwise stated, examples apply to the form identified in the surrounding text.
 
-## 13.4 Getting Help and Version Information
+<a id="section-13-4"></a>
+
+#### 13.4 Getting Help and Version Information
 
 BetterCP/M provides several facilities for identifying commands, obtaining assistance during interactive operations, and examining software versions.
 
 Not every command supports the same help facilities, so the individual reference entries identify the available options.
 
-### Version Information
+##### Version Information
 
 BetterCP/M utilities generally support the `/VER` option for displaying version and build information.
 
 For example:
 
 ```text
-A>:DIR /VER
+A0>:DIR /VER
 ```
 
 identifies the transient DIR utility.
@@ -5091,7 +5203,7 @@ Resident commands can also report version information.
 For example:
 
 ```text
-A>DIR /VER
+A0>DIR /VER
 ```
 
 identifies the resident DIR implementation when it is available.
@@ -5100,7 +5212,7 @@ A resident version display identifies the command package containing the command
 
 This distinction is useful when comparing the resident and transient versions of a utility.
 
-### Version Numbers and Build Numbers
+##### Version Numbers and Build Numbers
 
 BetterCP/M distinguishes between a software version and a build number.
 
@@ -5122,14 +5234,14 @@ Resident commands supplied by the same command processor extension share the bui
 
 Consequently, the resident and transient versions of a command may report different build numbers even though both belong to BetterCP/M 1.0.
 
-### Using /VER
+##### Using /VER
 
 For BetterCP/M-owned utilities, `/VER` is normally used by itself.
 
 For example:
 
 ```text
-A>TIME /VER
+A0>TIME /VER
 ```
 
 The utility displays its identification and exits without performing its ordinary operation.
@@ -5144,14 +5256,14 @@ Invalid /VER usage.
 
 The `/VER` convention applies to BetterCP/M utilities. Third-party CP/M programs may use different conventions or provide no version-reporting facility.
 
-### System Version Information
+##### System Version Information
 
 BetterCP/M also provides the VER command for identifying the operating system.
 
 For example:
 
 ```text
-A>VER
+A0>VER
 ```
 
 displays the system version.
@@ -5160,7 +5272,7 @@ Additional VER options provide more detailed identification information, includi
 
 The complete forms are documented in the VER command reference.
 
-### Help at Interactive Prompts
+##### Help at Interactive Prompts
 
 Some BetterCP/M utilities provide help while waiting for a response.
 
@@ -5182,19 +5294,21 @@ Not every prompt supports this facility.
 
 Simple yes/no confirmations may require only `Y` or `N`, while paging prompts generally display their available controls directly.
 
-### When a Command Reports an Error
+##### When a Command Reports an Error
 
 If a command rejects an option or file specification, consult its reference entry.
 
 The entry describes the accepted syntax, supported options, restrictions, and important error conditions.
 
-For problems involving the operating environment rather than a particular command, see Chapter 12, *Troubleshooting*.
+For problems involving the operating environment rather than a particular command, see [Chapter 12](#chapter-12), *Troubleshooting*.
 
-Appendix F provides a reference to system messages and errors.
+[Appendix F](#appendix-f) provides a reference to system messages and errors.
 
 ---
 
-# Chapter 14 — File and Directory Commands
+<a id="chapter-14"></a>
+
+### Chapter 14 — File and Directory Commands
 
 BetterCP/M provides a collection of commands for listing, displaying, copying, renaming, moving, and deleting files. Most will be familiar to anyone who has used Digital Research CP/M, although BetterCP/M adds several useful capabilities.
 
@@ -5213,13 +5327,15 @@ Several commands are available in both resident and transient forms. The residen
 
 Where the two forms differ, the descriptions below identify those differences.
 
-## 14.1 DIR — Display Directory
+<a id="section-14-1"></a>
+
+#### 14.1 DIR — Display Directory
 
 **Purpose:** Displays files in the current or a specified drive and user area.
 
 DIR is available as both a resident command and a transient utility, `DIR.COM`.
 
-### Resident DIR
+##### Resident DIR
 
 The resident command accepts:
 
@@ -5233,10 +5349,10 @@ DIR DU:filespec
 For example:
 
 ```text
-A>DIR
-A>DIR *.COM
-A>DIR B:
-A>DIR B3:*.ASM
+A0>DIR
+A0>DIR *.COM
+A0>DIR B:
+A0>DIR B3:*.ASM
 ```
 
 Without arguments, DIR displays the files in the current drive and user area.
@@ -5246,9 +5362,9 @@ A file specification restricts the listing to matching files. Wildcards may be u
 BetterCP/M also supports extended drive/user selectors:
 
 ```text
-A>DIR B[-]:*.COM
-A>DIR B[3-5]:*.ASM
-A>DIR [A0,B3]:*.DOC
+A0>DIR B[-]:*.COM
+A0>DIR B[3-5]:*.ASM
+A0>DIR [A0,B3]:*.DOC
 ```
 
 Here, `B[-]:` selects all user areas on drive B, while `B[3-5]:` selects user areas 3 through 5.
@@ -5257,16 +5373,16 @@ The resident command displays each selected drive/user area separately and resto
 
 By default, system files are omitted.
 
-### Selecting Files by Attribute
+##### Selecting Files by Attribute
 
 DIR supports file-attribute expressions.
 
 For example:
 
 ```text
-A>DIR *.COM[$ARC]
-A>DIR *.DOC[$RO]
-A>DIR B[-]:*.COM[$ARC+!$SYS]
+A0>DIR *.COM[$ARC]
+A0>DIR *.DOC[$RO]
+A0>DIR B[-]:*.COM[$ARC+!$SYS]
 ```
 
 The available attribute names are:
@@ -5293,20 +5409,20 @@ An explicit attribute expression replaces DIR's normal suppression of system fil
 
 Attribute selection does not change file attributes.
 
-### Transient DIR.COM
+##### Transient DIR.COM
 
 The transient DIR utility provides additional display and file-selection options.
 
 Invoke it explicitly with:
 
 ```text
-A>:DIR
+A0>:DIR
 ```
 
 or:
 
 ```text
-A>.DIR
+A0>.DIR
 ```
 
 Both forms bypass the resident command.
@@ -5321,10 +5437,11 @@ The transient utility supports the same extended drive/user selectors and attrib
 
 It also provides sorting, file sizes, attribute display, paging, and directory summaries.
 
-### DIR.COM Options
+##### DIR.COM Options
 
 | Option | Description |
 |---|---|
+| `/WHEREIS` | Locate matching files across drives and user areas; see below |
 | `/A` | Display file attributes |
 | `/P` | Pause after each screenful |
 | `/Z` or `/Z=K` | Display allocated space in kilobytes |
@@ -5343,9 +5460,9 @@ Sorting options `/S=N`, `/S=T`, and `/S=Z` may be followed by `+` for ascending 
 For example:
 
 ```text
-A>:DIR /S=N
-A>:DIR /S=Z-
-A>:DIR /S=T+ *.COM
+A0>:DIR /S=N
+A0>:DIR /S=Z-
+A0>:DIR /S=T+ *.COM
 ```
 
 The first sorts by filename, the second displays the largest files first, and the third sorts matching files by file type.
@@ -5354,7 +5471,37 @@ The first sorts by filename, the second displays the largest files first, and th
 
 Name-ascending order is the default.
 
-### Displaying File Sizes
+##### Locating Files with `/WHEREIS`
+
+Use transient DIR to find every location containing a matching filename:
+
+```text
+A0>:DIR /WHEREIS ED.COM
+```
+
+`/WHEREIS` requires exactly one filespec. It searches directory names, not file contents, and does not change files or attributes. Wildcards and attribute expressions are supported.
+
+A completely unqualified filespec searches all configured accessible drives and users 0 through 31. Configured drives may still have missing or unreadable media. An explicit drive/user selector restricts the search:
+
+```text
+A0>:DIR /WHEREIS B:ED.COM
+A0>:DIR /WHEREIS B[-]:ED.COM
+A0>:DIR /WHEREIS [A0,B[3-5]]:*.COM[$SYS]
+```
+
+`B:` uses the user area that was current when the command started. `B[-]:` searches every user area on B. The last example searches only A0 and B users 3–5 for system `.COM` files.
+
+Unlike ordinary DIR, `/WHEREIS` includes SYS files by default. An attribute expression can restrict the results; `[$DIR]`, for example, selects only files without SYS.
+
+Each logical file appears once per location, even if it occupies several directory extents. Results use `DU:FILENAME` form, such as `B3:ED.COM`, followed by a match count. Drives and users are visited in ascending order, with native directory order within each location. Even an exact filename search reports all matches in the selected scope.
+
+With no matches, DIR reports `DIR: No matches found.`. Recoverable unavailable-drive or directory-read errors are reported and the search continues elsewhere when safe. A skipped failure or directory-capacity limit adds `Search incomplete.`; a zero-match result in that case does not establish that the file is absent everywhere.
+
+This mode has no ordinary size, attribute-column, free-space, sorting, column-layout, or paging display. Do not combine `/WHEREIS` with `/A`, `/P`, `/Z`, `/C=`, `/S=`, or `/VER`; these combinations are rejected. Attribute predicates in the filespec remain valid. No `/B`, `/Y`, or `/Q` option is needed for unattended searches.
+
+Ctrl-C during console output follows the normal warm-boot cancellation behavior. On normal completion or recoverable errors, DIR preserves the caller's drive/user context; fatal system faults can end the search. Resident DIR does not implement this mode and reports `DIR: Use :DIR.`; use `:DIR` as shown above.
+
+##### Displaying File Sizes
 
 Transient DIR displays the allocated space occupied by each file.
 
@@ -5363,23 +5510,23 @@ The default unit is kilobytes.
 To display allocated 128-byte records:
 
 ```text
-A>:DIR /Z=S
+A0>:DIR /Z=S
 ```
 
 To display the number of physical directory entries occupied by each file:
 
 ```text
-A>:DIR /Z=E
+A0>:DIR /Z=E
 ```
 
 These values describe allocated storage or directory usage, not necessarily the exact logical length of the file.
 
-### Displaying Attributes
+##### Displaying Attributes
 
 Use `/A` to include a three-character attribute field:
 
 ```text
-A>:DIR /A
+A0>:DIR /A
 ```
 
 The field contains the SYS, read-only, and ARC attributes, in that order.
@@ -5398,12 +5545,12 @@ The `/A` option displays attributes but does not select files based on them.
 
 To select files by attribute, use an attribute expression.
 
-### Paging and Columns
+##### Paging and Columns
 
 For long listings, use:
 
 ```text
-A>:DIR /P
+A0>:DIR /P
 ```
 
 DIR pauses after each screenful.
@@ -5415,14 +5562,14 @@ The transient utility normally chooses a suitable column layout automatically.
 You can request a particular number of columns:
 
 ```text
-A>:DIR /C=1
+A0>:DIR /C=1
 ```
 
 A one-column display is particularly convenient when file sizes and attributes are shown.
 
 If the requested number of columns cannot fit, DIR reports an error rather than silently changing the layout.
 
-### Directory Summaries
+##### Directory Summaries
 
 Transient DIR reports file counts and allocated-space totals.
 
@@ -5432,37 +5579,39 @@ Free space is reported once per selected drive rather than repeated for every us
 
 For example, selecting both B3 and B4 produces separate listings but only one free-space total for drive B.
 
-### Examples
+##### Examples
 
 Display all `.COM` files in user area 3 on drive B:
 
 ```text
-A>:DIR B3:*.COM
+A0>:DIR B3:*.COM
 ```
 
 Display archived files, excluding system files:
 
 ```text
-A>:DIR *.*[$ARC+!$SYS]
+A0>:DIR *.*[$ARC+!$SYS]
 ```
 
 Display the largest archived `.COM` files first, including their attributes:
 
 ```text
-A>:DIR /A /S=Z- B3:*.COM[$ARC]
+A0>:DIR /A /S=Z- B3:*.COM[$ARC]
 ```
 
 Display a paged, one-column listing:
 
 ```text
-A>:DIR /C=1 /P
+A0>:DIR /C=1 /P
 ```
 
 For ordinary directory listings, resident DIR is usually sufficient. Use transient DIR when you need sorting, sizes, paging, or more detailed information.
 
 ---
 
-## 14.2 ERA — Erase Files
+<a id="section-14-2"></a>
+
+#### 14.2 ERA — Erase Files
 
 **Purpose:** Removes one or more files from disk.
 
@@ -5470,23 +5619,23 @@ ERA is available as a resident command and as the more capable transient utility
 
 **Files erased by ERA may be unrecoverable.** Check wildcard specifications and drive/user selections carefully before confirming an erase operation.
 
-### Resident ERA
+##### Resident ERA
 
 The resident command accepts file specifications and BetterCP/M's extended drive/user selectors.
 
 For example:
 
 ```text
-A>ERA OLD.TXT
-A>ERA *.BAK
-A>ERA B3:*.TMP
-A>ERA B[-]:*.BAK
+A0>ERA OLD.TXT
+A0>ERA *.BAK
+A0>ERA B3:*.TMP
+A0>ERA B[-]:*.BAK
 ```
 
 It also accepts attribute expressions:
 
 ```text
-A>ERA B[-]:*.DOC[$ARC]
+A0>ERA B[-]:*.DOC[$ARC]
 ```
 
 The complete selection is checked before any files are erased.
@@ -5503,12 +5652,12 @@ Only `Y` proceeds.
 
 Resident ERA does not provide the extended confirmation, reporting, and destructive-erasure options available in the transient utility.
 
-### Transient ERA.COM
+##### Transient ERA.COM
 
 Invoke the transient utility explicitly:
 
 ```text
-A>:ERA
+A0>:ERA
 ```
 
 Its general syntax is:
@@ -5520,9 +5669,9 @@ ERA [options] filespec[attributes]
 For example:
 
 ```text
-A>:ERA OLD.DOC
-A>:ERA *.BAK
-A>:ERA B[-]:*.DOC
+A0>:ERA OLD.DOC
+A0>:ERA *.BAK
+A0>:ERA B[-]:*.DOC
 ```
 
 Unlike the resident command, transient ERA normally displays the files selected for deletion and requests confirmation.
@@ -5535,7 +5684,7 @@ TOM.DOC - Erase? Y/N
 
 For multiple files, it displays a list of the selected files and a summary before asking whether to proceed.
 
-### ERA.COM Options
+##### ERA.COM Options
 
 The documented erase controls are:
 
@@ -5551,14 +5700,14 @@ These options affect how files are selected, confirmed, and removed.
 
 Some options are intended for unattended operations, while others provide additional safeguards.
 
-### Confirmation
+##### Confirmation
 
 By default, transient ERA asks before deleting files.
 
 For example:
 
 ```text
-A>:ERA *.BAK
+A0>:ERA *.BAK
 ```
 
 displays the selected files and requests confirmation.
@@ -5566,7 +5715,7 @@ displays the selected files and requests confirmation.
 To request confirmation for each file:
 
 ```text
-A>:ERA /C *.BAK
+A0>:ERA /C *.BAK
 ```
 
 ERA first obtains the ordinary group confirmation and then asks about individual files.
@@ -5574,47 +5723,49 @@ ERA first obtains the ordinary group confirmation and then asks about individual
 To suppress ordinary confirmation prompts:
 
 ```text
-A>:ERA /Y *.BAK
+A0>:ERA /Y *.BAK
 ```
 
 This is useful in SUBMIT files, but should be used carefully.
 
-### Read-Only and System Files
+##### Read-Only and System Files
 
-Transient ERA provides additional controls for protected files.
+Transient ERA handles protected files in three stages:
 
-A broad erase does not automatically override read-only or system protection.
+1. **Selection:** the filespec and attribute expression must match the file.
+2. **Admission:** every protected attribute present (SYS and RO) must be explicitly admitted by the same OR branch that matches the file.
+3. **Read-only authorization:** an admitted RO file still needs `/R` or an interactive read-only confirmation before erasure.
 
-To select read-only files explicitly:
+A comma separates OR branches; `+` joins conditions within one branch. Positive `$SYS` and `$RO` admit their respective protected attributes. `!$DIR` and `!$RW` are equivalent admissions; additional negations follow the normal Boolean rules.
+
+| Expression | Selection and protection admission |
+|---|---|
+| `[$SYS+$RO]` | Selects and admits both protected attributes in one matching branch |
+| `[$SYS,$RO]` | Matches the file, but does not admit it: neither branch admits both attributes |
+| `[$SYS+$RO,$ARC]` | Admits a SYS+RO file through the first branch; a SYS+ARC file without RO matches only the ARC branch and remains protected |
+
+For example, to select and authorize erasure of SYS+RO `.DOC` files:
 
 ```text
-A>:ERA *.DOC[$RO]
+A0>:ERA /R *.DOC[$SYS+$RO]
 ```
 
-Without `/R`, ERA requests additional authorization before erasing a selected read-only file.
+Without `/R`, an admitted read-only file receives a separate read-only confirmation. With `/Y` but without `/R`, ERA skips read-only files without asking. `/R` does not broaden selection or admission and does not admit SYS files by itself. `/Y` suppresses confirmations; it does not bypass these protection rules.
 
-To authorize their erasure:
+For read-only files without SYS, the familiar form remains:
 
 ```text
-A>:ERA /R *.DOC[$RO]
+A0>:ERA /R *.DOC[$RO]
 ```
 
-The `/R` option does not broaden the file selection. It only affects the treatment of read-only files already selected.
+A file that also carries SYS needs SYS admitted in the same matching branch, as shown above. Check the selection carefully before authorizing an erase.
 
-Similarly, `/Y` does not automatically override read-only protection.
-
-System files must be deliberately selected through the appropriate attribute expression.
-
-A file with both SYS and read-only attributes requires authorization for both conditions.
-
-These safeguards help prevent broad wildcard operations from accidentally removing protected files.
-
-### Quiet Operation
+##### Quiet Operation
 
 Use `/Q` to suppress ordinary informational output:
 
 ```text
-A>:ERA /Q *.BAK
+A0>:ERA /Q *.BAK
 ```
 
 This does not suppress required confirmation.
@@ -5622,15 +5773,15 @@ This does not suppress required confirmation.
 For unattended operation, combine it with `/Y`:
 
 ```text
-A>:ERA /Y /Q *.BAK
+A0>:ERA /Y /Q *.BAK
 ```
 
-### Destructive Erase
+##### Destructive Erase
 
 The transient ERA utility provides a destructive-erasure option:
 
 ```text
-A>:ERA /D SECRET.DAT
+A0>:ERA /D SECRET.DAT
 ```
 
 This attempts to overwrite the file's allocated data with zeroes before removing its directory information.
@@ -5647,7 +5798,7 @@ Without `/Y`, destructive erase asks for confirmation even for one exact filenam
 
 `/Y` suppresses the destructive confirmation as well as ordinary confirmations. Use it only after checking the selection carefully. It does not imply `/R`: selected read-only files are skipped with `/Y` unless `/R` is also supplied. Without `/Y` or `/R`, ERA asks for separate read-only authorization. Neither option broadens the selection or bypasses file-selection protection rules. ERA reports incomplete destructive operations.
 
-### Error Handling
+##### Error Handling
 
 If an erase operation fails, ERA may offer:
 
@@ -5666,7 +5817,7 @@ The responses are:
 
 With `/Y`, ERA does not stop for this recovery prompt. It reports the failed file and continues when safe.
 
-### Completion Summary
+##### Completion Summary
 
 Transient ERA reports the results of the operation.
 
@@ -5678,43 +5829,45 @@ For example:
 
 The reported space freed represents allocated disk space released, rather than the exact logical lengths of the deleted files.
 
-### Examples
+##### Examples
 
 Erase a single file:
 
 ```text
-A>ERA OLD.TXT
+A0>ERA OLD.TXT
 ```
 
 Erase backup files in user area 3 on drive B:
 
 ```text
-A>ERA B3:*.BAK
+A0>ERA B3:*.BAK
 ```
 
 Erase archived files with individual confirmation:
 
 ```text
-A>:ERA /C B[-]:*.DOC[$ARC]
+A0>:ERA /C B[-]:*.DOC[$ARC]
 ```
 
 Erase selected files without ordinary confirmation:
 
 ```text
-A>:ERA /Y *.BAK
+A0>:ERA /Y *.BAK
 ```
 
 Destructively erase a file:
 
 ```text
-A>:ERA /D SECRET.DAT
+A0>:ERA /D SECRET.DAT
 ```
 
 For ordinary file deletion, resident ERA is usually sufficient. Use transient ERA when you need its additional confirmation, selection, or destructive-erasure facilities.
 
 ---
 
-## 14.3 REN — Rename Files
+<a id="section-14-3"></a>
+
+#### 14.3 REN — Rename Files
 
 **Purpose:** Changes the names or file types of existing files without changing their contents.
 
@@ -5722,7 +5875,7 @@ REN is available as both a resident command and a transient utility, `REN.COM`.
 
 Unlike COPY and MOVE, REN does not transfer files between drives or user areas. Each renamed file remains in its original location.
 
-### Resident REN
+##### Resident REN
 
 Resident REN accepts two equivalent forms:
 
@@ -5734,8 +5887,8 @@ REN template=source
 For example:
 
 ```text
-A>REN NEW.TXT=OLD.TXT
-A>REN OLD.TXT NEW.TXT
+A0>REN NEW.TXT=OLD.TXT
+A0>REN OLD.TXT NEW.TXT
 ```
 
 Both rename `OLD.TXT` to `NEW.TXT`.
@@ -5743,7 +5896,7 @@ Both rename `OLD.TXT` to `NEW.TXT`.
 BetterCP/M also supports wildcard rename templates:
 
 ```text
-A>REN *.DOC *.TXT
+A0>REN *.DOC *.TXT
 ```
 
 This changes the file type of matching `.DOC` files to `.TXT`, retaining their original names.
@@ -5751,19 +5904,19 @@ This changes the file type of matching `.DOC` files to `.TXT`, retaining their o
 You can select files in another drive or user area:
 
 ```text
-A>REN *.TXT=B3:*.DOC
+A0>REN *.TXT=B3:*.DOC
 ```
 
 The files remain in `B3:` after being renamed.
 
-### Renaming Several Files
+##### Renaming Several Files
 
 REN supports BetterCP/M's extended drive/user selectors.
 
 For example:
 
 ```text
-A>REN B[-]:*.DOC *.TXT
+A0>REN B[-]:*.DOC *.TXT
 ```
 
 renames matching files across all user areas on drive B.
@@ -5771,14 +5924,14 @@ renames matching files across all user areas on drive B.
 You can also use attribute expressions:
 
 ```text
-A>REN B[-]:*.DOC[$RW] *.TXT
+A0>REN B[-]:*.DOC[$RW] *.TXT
 ```
 
 This selects writable `.DOC` files.
 
 Read-only and system files are protected by the resident command, even when explicitly selected.
 
-### Rename Templates
+##### Rename Templates
 
 Rename templates determine how the new filename is constructed.
 
@@ -5787,7 +5940,7 @@ A literal character replaces the corresponding character in the source name. A q
 For example:
 
 ```text
-A>REN X?*.BAK=B3:FOOBAR.DOC
+A0>REN X?*.BAK=B3:FOOBAR.DOC
 ```
 
 produces `XOOBAR.BAK`.
@@ -5796,7 +5949,7 @@ The filename and file type are treated as separate fields.
 
 A template cannot specify another drive or user area. Use COPY or MOVE when you want to change a file's location.
 
-### Existing Destination Names
+##### Existing Destination Names
 
 REN never overwrites an existing file.
 
@@ -5806,14 +5959,14 @@ Any files successfully renamed before the conflict remain renamed.
 
 REN does not automatically undo earlier operations.
 
-### Transient REN.COM
+##### Transient REN.COM
 
 The transient utility provides additional confirmation, preview, protection, and reporting options.
 
 Invoke it explicitly:
 
 ```text
-A>:REN
+A0>:REN
 ```
 
 It accepts the same two operand arrangements:
@@ -5823,7 +5976,7 @@ REN source template
 REN template=source
 ```
 
-### REN.COM Options
+##### REN.COM Options
 
 | Option | Description |
 |---|---|
@@ -5836,14 +5989,14 @@ REN template=source
 | `/QQ` | Suppress most normal output |
 | `/VER` | Display version information |
 
-### Previewing a Rename
+##### Previewing a Rename
 
 When renaming several files, it's often useful to see what will happen before making changes.
 
 Use `/DRY`:
 
 ```text
-A>:REN /DRY B[-]:*.DOC *.TXT
+A0>:REN /DRY B[-]:*.DOC *.TXT
 ```
 
 REN displays the proposed filename changes without modifying the files.
@@ -5858,23 +6011,23 @@ The `/DRY` option takes precedence over options that would otherwise authorize r
 
 This makes it particularly useful when experimenting with wildcard templates.
 
-### Confirming Renames
+##### Confirming Renames
 
 Use `/C` to request confirmation for each eligible file:
 
 ```text
-A>:REN /C *.DOC *.TXT
+A0>:REN /C *.DOC *.TXT
 ```
 
 Use `/Y` when the operation should proceed without ordinary confirmation:
 
 ```text
-A>:REN /Y *.DOC *.TXT
+A0>:REN /Y *.DOC *.TXT
 ```
 
 Neither option overrides file protection.
 
-### Protected Files
+##### Protected Files
 
 By default, REN skips read-only and system files.
 
@@ -5883,7 +6036,7 @@ Transient REN provides `/P` to permit renaming explicitly selected protected fil
 For example:
 
 ```text
-A>:REN /P *.DOC[$RO] *.TXT
+A0>:REN /P *.DOC[$RO] *.TXT
 ```
 
 This selects read-only `.DOC` files and permits their renaming.
@@ -5892,7 +6045,7 @@ The files retain their attributes after the rename.
 
 The `/P` option does not broaden the file selection or override a read-only drive.
 
-### Name Conflicts
+##### Name Conflicts
 
 If a destination name already exists, transient REN can offer:
 
@@ -5913,7 +6066,7 @@ A replacement name must be a valid filename without a drive/user qualification.
 
 REN never silently overwrites an existing target.
 
-### Errors and Completion
+##### Errors and Completion
 
 If an operation fails, transient REN may offer Retry, Skip, or Abort.
 
@@ -5925,43 +6078,45 @@ On completion, REN reports the results, for example:
 12 FILES RENAMED, 2 SKIPPED, 1 FAILED
 ```
 
-### Examples
+##### Examples
 
 Rename one file:
 
 ```text
-A>REN NEWNAME.TXT=OLDNAME.TXT
+A0>REN NEWNAME.TXT=OLDNAME.TXT
 ```
 
 Change all `.DOC` files to `.TXT`:
 
 ```text
-A>REN *.DOC *.TXT
+A0>REN *.DOC *.TXT
 ```
 
 Preview renaming across all user areas on drive B:
 
 ```text
-A>:REN /DRY B[-]:*.DOC *.TXT
+A0>:REN /DRY B[-]:*.DOC *.TXT
 ```
 
 Rename selected read-only files:
 
 ```text
-A>:REN /P *.DOC[$RO] *.TXT
+A0>:REN /P *.DOC[$RO] *.TXT
 ```
 
 For ordinary renaming, resident REN is sufficient. Use transient REN when you need confirmation controls, previews, or protected-file handling.
 
 ---
 
-## 14.4 TYPE — Display Text Files
+<a id="section-14-4"></a>
+
+#### 14.4 TYPE — Display Text Files
 
 **Purpose:** Displays the contents of text files on the console.
 
 TYPE is available as a resident command and as the more capable transient utility `TYPE.COM`.
 
-### Resident TYPE
+##### Resident TYPE
 
 The basic form is:
 
@@ -5972,7 +6127,7 @@ TYPE filespec
 For example:
 
 ```text
-A>TYPE README.TXT
+A0>TYPE README.TXT
 ```
 
 TYPE displays the contents of `README.TXT`.
@@ -5980,9 +6135,9 @@ TYPE displays the contents of `README.TXT`.
 BetterCP/M also supports extended file selection:
 
 ```text
-A>TYPE B3:README.TXT
-A>TYPE B[-]:*.TXT
-A>TYPE [A0,B3]:*.DOC
+A0>TYPE B3:README.TXT
+A0>TYPE B[-]:*.TXT
+A0>TYPE [A0,B3]:*.DOC
 ```
 
 When several files are selected, TYPE displays them in sequence.
@@ -5991,12 +6146,12 @@ TYPE treats the conventional CP/M end-of-text character, Ctrl-Z (`1AH`), as the 
 
 It does not modify the files being displayed.
 
-### Resident Paging
+##### Resident Paging
 
 Resident TYPE supports forward paging with `/P`:
 
 ```text
-A>TYPE README.TXT /P
+A0>TYPE README.TXT /P
 ```
 
 The display pauses after a screenful of text.
@@ -6007,17 +6162,17 @@ Ctrl-C cancels the resident paged display.
 
 The resident command provides simple forward paging rather than the more extensive navigation facilities of `TYPE.COM`.
 
-### Transient TYPE.COM
+##### Transient TYPE.COM
 
 Invoke the transient utility explicitly:
 
 ```text
-A>:TYPE README.TXT
+A0>:TYPE README.TXT
 ```
 
 The transient version provides bidirectional paging, navigation between files, and several display options.
 
-### TYPE.COM Options
+##### TYPE.COM Options
 
 | Option | Description |
 |---|---|
@@ -6032,13 +6187,13 @@ Options may appear before or after the file specification.
 For example:
 
 ```text
-A>:TYPE README.TXT /P
-A>:TYPE README.TXT /7
-A>:TYPE README.TXT /T
-A>:TYPE README.TXT /CTL
+A0>:TYPE README.TXT /P
+A0>:TYPE README.TXT /7
+A0>:TYPE README.TXT /T
+A0>:TYPE README.TXT /CTL
 ```
 
-### Paging and Navigation
+##### Paging and Navigation
 
 With `/P`, transient TYPE provides the following controls:
 
@@ -6056,7 +6211,7 @@ At the end of the final file, TYPE leaves the last page displayed until you quit
 
 You can move backward through earlier pages without a fixed page-history limit, although revisiting distant pages may be slow on floppy disks.
 
-### Displaying Control Characters
+##### Displaying Control Characters
 
 The `/CTL` option displays control characters in a readable form.
 
@@ -6066,12 +6221,12 @@ This can be useful when examining text files containing unexpected control chara
 
 The `/T` option expands tabs into spaces for display. When `/CTL` is used, its control-character display takes precedence over ordinary tab expansion.
 
-### Displaying Several Files
+##### Displaying Several Files
 
 TYPE.COM can display files selected from several drive/user areas:
 
 ```text
-A>:TYPE B[-]:*.DOC /P
+A0>:TYPE B[-]:*.DOC /P
 ```
 
 When several files are selected, the utility identifies each file as it is displayed.
@@ -6080,7 +6235,7 @@ You can use `<` and `>` to move between file boundaries.
 
 This makes TYPE.COM useful for examining a collection of text files without returning to the command prompt after each one.
 
-### Limitations
+##### Limitations
 
 TYPE is intended for ordinary text files.
 
@@ -6088,41 +6243,43 @@ It does not provide binary inspection, decompression, text searching, or editing
 
 For those operations, use an appropriate specialized utility.
 
-### Examples
+##### Examples
 
 Display a file:
 
 ```text
-A>TYPE README.TXT
+A0>TYPE README.TXT
 ```
 
 Display a file with simple paging:
 
 ```text
-A>TYPE README.TXT /P
+A0>TYPE README.TXT /P
 ```
 
 Use the transient viewer with backward paging:
 
 ```text
-A>:TYPE README.TXT /P
+A0>:TYPE README.TXT /P
 ```
 
 Display control characters:
 
 ```text
-A>:TYPE README.TXT /CTL
+A0>:TYPE README.TXT /CTL
 ```
 
 Display all `.DOC` files across drive B's user areas:
 
 ```text
-A>:TYPE B[-]:*.DOC /P
+A0>:TYPE B[-]:*.DOC /P
 ```
 
 ---
 
-## 14.5 COPY — Copy Files
+<a id="section-14-5"></a>
+
+#### 14.5 COPY — Copy Files
 
 **Purpose:** Copies one or more files to another filename, drive, or user area.
 
@@ -6132,7 +6289,7 @@ The resident version provides the file-copying facilities needed for ordinary us
 
 COPY leaves the original files in place. If you want to transfer files to another location and remove the originals, use MOVE instead.
 
-### Resident COPY
+##### Resident COPY
 
 Resident COPY accepts two equivalent command forms:
 
@@ -6144,8 +6301,8 @@ COPY destination=source
 For example:
 
 ```text
-A>COPY README.TXT README.BAK
-A>COPY README.BAK=README.TXT
+A0>COPY README.TXT README.BAK
+A0>COPY README.BAK=README.TXT
 ```
 
 Both commands create `README.BAK` from `README.TXT`.
@@ -6153,7 +6310,7 @@ Both commands create `README.BAK` from `README.TXT`.
 You can also copy files between drives:
 
 ```text
-A>COPY README.TXT B:
+A0>COPY README.TXT B:
 ```
 
 This copies `README.TXT` to drive B, retaining its original filename.
@@ -6161,19 +6318,19 @@ This copies `README.TXT` to drive B, retaining its original filename.
 To copy a file into another user area:
 
 ```text
-A>COPY A3:REPORT.TXT B5:
+A0>COPY A3:REPORT.TXT B5:
 ```
 
 The destination file is created on drive B, user area 5.
 
-### Copying Several Files
+##### Copying Several Files
 
 COPY accepts wildcard file specifications.
 
 For example:
 
 ```text
-A>COPY *.ASM B:
+A0>COPY *.ASM B:
 ```
 
 copies the matching assembly-language source files to drive B.
@@ -6181,7 +6338,7 @@ copies the matching assembly-language source files to drive B.
 BetterCP/M also supports extended drive/user selectors:
 
 ```text
-A>COPY B[-]:*.DOC C3:
+A0>COPY B[-]:*.DOC C3:
 ```
 
 This selects `.DOC` files across all user areas on drive B and copies them to drive C, user area 3.
@@ -6189,30 +6346,30 @@ This selects `.DOC` files across all user areas on drive B and copies them to dr
 You can combine several locations:
 
 ```text
-A>COPY [A0,B[5-7],C3]:*.COM D3:
+A0>COPY [A0,B[5-7],C3]:*.COM D3:
 ```
 
 The destination must identify a single drive/user area.
 
 When several source files would produce the same destination filename, COPY rejects the conflicting selection rather than silently replacing one file with another.
 
-### Selecting Files by Attribute
+##### Selecting Files by Attribute
 
 Resident COPY supports file-attribute expressions.
 
 For example:
 
 ```text
-A>COPY B[-]:*.DOC[$RW+!$SYS] C4:
+A0>COPY B[-]:*.DOC[$RW+!$SYS] C4:
 ```
 
 This selects writable, non-system `.DOC` files from drive B's user areas.
 
-Attribute expressions use the same conventions described in Chapter 4 and Section 14.1.
+Attribute expressions use the same conventions described in [Chapter 4](#chapter-4) and [Section 14.1](#section-14-1).
 
 They determine which files are selected; they do not automatically change the attributes of the source files.
 
-### Existing Destination Files
+##### Existing Destination Files
 
 Resident COPY normally refuses to replace an existing destination file.
 
@@ -6221,19 +6378,21 @@ For example, if `B:README.TXT` already exists, an ordinary copy to that name wil
 Resident COPY provides `/O` to permit replacement of existing writable destination files:
 
 ```text
-A>COPY README.TXT B: /O
+A0>COPY README.TXT B: /O
 ```
 
 Read-only destination files remain protected.
 
 The option does not permit a copy operation to overwrite one of its own selected source files.
 
-### Copying to a New Filename
+COPY cannot roll back a replacement: after the old writable target is deleted, a later failure may leave neither the old target nor a complete replacement. Preserve a separate copy of an important existing destination before using `/O`. COPY preserves the source file; it does not restore the old destination.
+
+##### Copying to a New Filename
 
 When copying a single file, you can specify a different destination name:
 
 ```text
-A>COPY REPORT.TXT B:REPORT.BAK
+A0>COPY REPORT.TXT B:REPORT.BAK
 ```
 
 This creates `REPORT.BAK` on drive B.
@@ -6242,20 +6401,20 @@ For multiple-file selections, resident COPY retains the source filenames when th
 
 Wildcard destination templates are provided by the transient COPY utility.
 
-### Transient COPY.COM
+##### Transient COPY.COM
 
 The transient utility provides additional file-copying capabilities.
 
 Invoke it explicitly:
 
 ```text
-A>:COPY
+A0>:COPY
 ```
 
 or:
 
 ```text
-A>.COPY
+A0>.COPY
 ```
 
 The general command forms remain:
@@ -6267,7 +6426,7 @@ COPY destination=source
 
 However, COPY.COM supports additional source-selection, destination-naming, and file-management options.
 
-### COPY.COM Options
+##### COPY.COM Options
 
 | Option | Description |
 |---|---|
@@ -6281,7 +6440,7 @@ The `/O` and `/S` options are mutually exclusive.
 
 The `/B` and `/V` options can be combined with either.
 
-### Overwriting and Skipping Files
+##### Overwriting and Skipping Files
 
 By default, transient COPY requests instructions when an existing writable destination file would be replaced.
 
@@ -6302,7 +6461,7 @@ They do not permanently change COPY's behavior.
 
 Read-only destination files remain protected.
 
-### Renaming a Destination During Copying
+##### Renaming a Destination During Copying
 
 If an existing destination file would be overwritten, the R response allows you to supply a different filename.
 
@@ -6328,14 +6487,14 @@ The replacement name must be an exact CP/M filename, without wildcards or a driv
 
 If the new name also exists, COPY applies its normal collision handling to that name.
 
-### Batch-Oriented Copying
+##### Batch-Oriented Copying
 
 The `/B` option is intended for operations that should not stop for file-collision prompts.
 
 For example:
 
 ```text
-A>:COPY B1:*.DAT C3: /B
+A0>:COPY B1:*.DAT C3: /B
 ```
 
 If a writable destination already exists, COPY reports `FILE EXISTS` for that file and continues with the remaining files.
@@ -6347,25 +6506,27 @@ To specify the desired policy, combine `/B` with `/O` or `/S`.
 To overwrite existing writable destinations:
 
 ```text
-A>:COPY B1:*.DAT C3: /B /O
+A0>:COPY B1:*.DAT C3: /B /O
 ```
 
 To skip existing destinations:
 
 ```text
-A>:COPY B1:*.DAT C3: /B /S
+A0>:COPY B1:*.DAT C3: /B /S
 ```
 
 Read-only destinations remain protected in both cases.
 
+With `/O`, replacing a writable target can delete the old file before the new copy is complete. A later failure or abort does not restore it. `/V` detects verification failures but provides no rollback; preserve important existing destinations separately first.
+
 The `/B` option is useful in SUBMIT files, but it applies only to COPY. It does not make other commands in the batch noninteractive.
 
-### Verifying Copied Files
+##### Verifying Copied Files
 
 Use `/V` to request verification:
 
 ```text
-A>:COPY REPORT.TXT B: /V
+A0>:COPY REPORT.TXT B: /V
 ```
 
 After copying the file, COPY reopens the source and destination and compares their contents.
@@ -6380,14 +6541,14 @@ An incomplete destination is removed when possible, and COPY continues according
 
 For important backups, `/V` is recommended.
 
-### Wildcard Destination Templates
+##### Wildcard Destination Templates
 
 Transient COPY supports wildcard templates in destination filenames.
 
 For example:
 
 ```text
-A>:COPY C3:*.DOC=A4:*.COM
+A0>:COPY C3:*.DOC=A4:*.COM
 ```
 
 This copies matching `.COM` files from A4 to C3, changing their file type to `.DOC`.
@@ -6395,7 +6556,7 @@ This copies matching `.COM` files from A4 to C3, changing their file type to `.D
 A more selective template might be:
 
 ```text
-A>:COPY C3:X?*.BAK=A4:FOOBAR.COM
+A0>:COPY C3:X?*.BAK=A4:FOOBAR.COM
 ```
 
 This creates `XOOBAR.BAK`.
@@ -6404,14 +6565,14 @@ The destination template uses literal characters to replace source positions, qu
 
 The command validates the resulting destination names before copying.
 
-### Copying Files from Several User Areas
+##### Copying Files from Several User Areas
 
 Transient COPY supports extended source selectors.
 
 For example:
 
 ```text
-A>:COPY [A[-],B[-],C[-]]:*.COM D0:
+A0>:COPY [A[-],B[-],C[-]]:*.COM D0:
 ```
 
 This selects `.COM` files from all user areas on drives A, B, and C and copies them to D0.
@@ -6431,19 +6592,19 @@ If a selection exceeds the limit, COPY reports `COPY BATCH TOO LARGE` and does n
 Source files can also be selected by attribute. For example:
 
 ```text
-A>:COPY B[-]:*.COM[$ARC] D0:
+A0>:COPY B[-]:*.COM[$ARC] D0:
 ```
 
 This selects archive-marked `.COM` files using the attribute-expression conventions described under DIR.
 
-### Destination Attributes
+##### Destination Attributes
 
 Transient COPY allows destination attributes to be specified explicitly.
 
 For example:
 
 ```text
-A>:COPY A0:*.COM D0:[$RW,!$ARC]
+A0>:COPY A0:*.COM D0:[$RW,!$ARC]
 ```
 
 This requests writable destination copies with the archive attribute cleared.
@@ -6454,14 +6615,14 @@ The destination attribute expression is different from a source-selection expres
 
 It does not override protection on an existing read-only destination.
 
-### Backup Operations
+##### Backup Operations
 
 The `/BACKUP` option supports workflows using CP/M's archive attribute.
 
 For example:
 
 ```text
-A>:COPY /V /BACKUP B[-]:*.DOC[$ARC] D0:
+A0>:COPY /V /BACKUP B[-]:*.DOC[$ARC] D0:
 ```
 
 This selects `.DOC` files marked with the archive attribute, copies them to D0, verifies the copies, and clears the archive attribute on both source and destination after successful completion.
@@ -6474,17 +6635,19 @@ Similarly, `/BACKUP` does not automatically enable verification. Include `/V` wh
 
 **The archive attribute should not be assumed to identify every file changed since the last backup unless the software maintaining those files updates the attribute appropriately.**
 
-### Copy Errors and Recovery
+##### Copy Errors and Recovery
 
 COPY reports errors such as missing source files, unavailable destinations, insufficient disk space, read/write failures, and verification failures.
 
 The transient utility attempts to remove incomplete destination files when an operation fails.
 
+That cleanup does not restore an overwritten file. If replacement had already started, failure may leave neither the old target nor a complete replacement, even with `/V`. The source remains available, but an important old destination needs its own separate backup before `/O`.
+
 If that cleanup cannot be completed, COPY reports the problem and stops rather than leaving an incomplete file without warning.
 
 Previously completed copies remain available.
 
-### Completion Information
+##### Completion Information
 
 Transient COPY reports successful copies and their allocated sizes.
 
@@ -6496,53 +6659,55 @@ B1:FOO.COM -> D0:FOO.COM [2K]
 
 For multiple files, it also reports totals for copied, skipped, and failed files.
 
-### Examples
+##### Examples
 
 Copy a file:
 
 ```text
-A>COPY README.TXT B:
+A0>COPY README.TXT B:
 ```
 
 Copy a file under another name:
 
 ```text
-A>COPY REPORT.TXT B:REPORT.BAK
+A0>COPY REPORT.TXT B:REPORT.BAK
 ```
 
 Copy all assembly-language source files:
 
 ```text
-A>COPY *.ASM B:
+A0>COPY *.ASM B:
 ```
 
 Copy files across several user areas:
 
 ```text
-A>COPY B[-]:*.DOC C3:
+A0>COPY B[-]:*.DOC C3:
 ```
 
 Copy and verify:
 
 ```text
-A>:COPY /V *.COM B:
+A0>:COPY /V *.COM B:
 ```
 
 Copy without overwrite prompts, replacing existing writable files:
 
 ```text
-A>:COPY /B /O *.DAT B:
+A0>:COPY /B /O *.DAT B:
 ```
 
 Back up archive-marked files:
 
 ```text
-A>:COPY /V /BACKUP B[-]:*.DOC[$ARC] D0:
+A0>:COPY /V /BACKUP B[-]:*.DOC[$ARC] D0:
 ```
 
 ---
 
-## 14.6 MOVE — Move Files
+<a id="section-14-6"></a>
+
+#### 14.6 MOVE — Move Files
 
 **Purpose:** Moves one or more files to another filename, drive, or user area.
 
@@ -6552,7 +6717,7 @@ It provides a convenient way to reorganize files without separately copying them
 
 Unlike COPY, MOVE removes the source file after successfully creating the destination.
 
-### Command Syntax
+##### Command Syntax
 
 MOVE accepts two equivalent forms:
 
@@ -6564,7 +6729,7 @@ MOVE destination=source
 For example:
 
 ```text
-A>MOVE README.TXT B:
+A0>MOVE README.TXT B:
 ```
 
 moves `README.TXT` from the current drive and user area to drive B.
@@ -6572,19 +6737,19 @@ moves `README.TXT` from the current drive and user area to drive B.
 You can also write:
 
 ```text
-A>MOVE B:README.TXT=README.TXT
+A0>MOVE B:README.TXT=README.TXT
 ```
 
 Both commands have the same effect.
 
-### Moving Files Between User Areas
+##### Moving Files Between User Areas
 
 BetterCP/M allows files to be moved between user areas.
 
 For example:
 
 ```text
-A>MOVE A3:REPORT.TXT B5:
+A0>MOVE A3:REPORT.TXT B5:
 ```
 
 moves `REPORT.TXT` from A3 to B5.
@@ -6593,12 +6758,12 @@ The original file is removed only after the destination has been successfully cr
 
 This is particularly useful when reorganizing project files among user areas.
 
-### Moving Several Files
+##### Moving Several Files
 
 MOVE accepts wildcard specifications:
 
 ```text
-A>MOVE *.BAK B:
+A0>MOVE *.BAK B:
 ```
 
 This moves matching backup files to drive B.
@@ -6606,7 +6771,7 @@ This moves matching backup files to drive B.
 Extended drive/user selectors are also supported:
 
 ```text
-A>MOVE B[-]:*.DOC C3:
+A0>MOVE B[-]:*.DOC C3:
 ```
 
 This selects `.DOC` files across all user areas on drive B and moves them to C3.
@@ -6615,14 +6780,14 @@ The destination must identify a single drive/user area.
 
 If multiple source files would produce the same destination filename, MOVE rejects the conflicting selection.
 
-### Selecting Files by Attribute
+##### Selecting Files by Attribute
 
 MOVE supports BetterCP/M's shared file-selection expressions.
 
 For example:
 
 ```text
-A>MOVE B[-]:*.DOC[$RW+!$SYS] C4:
+A0>MOVE B[-]:*.DOC[$RW+!$SYS] C4:
 ```
 
 This selects writable, non-system `.DOC` files from drive B's user areas.
@@ -6631,21 +6796,21 @@ Read-only source files are protected.
 
 Attribute expressions determine which files are selected; they do not automatically override file protection.
 
-### Moving a File to a New Name
+##### Moving a File to a New Name
 
 MOVE can assign a new filename when moving a single file.
 
 For example:
 
 ```text
-A>MOVE REPORT.TXT B:REPORT.BAK
+A0>MOVE REPORT.TXT B:REPORT.BAK
 ```
 
 This moves the file to drive B and renames it `REPORT.BAK`.
 
 The original `REPORT.TXT` is removed after the destination has been successfully written.
 
-### Existing Destination Files
+##### Existing Destination Files
 
 MOVE does not overwrite existing destination files.
 
@@ -6657,7 +6822,7 @@ If you need to replace an existing destination, handle that file separately befo
 
 Be careful when removing existing files, particularly when working with wildcard specifications.
 
-### How MOVE Handles Files
+##### How MOVE Handles Files
 
 MOVE copies the file to its destination and removes the original only after the destination has been successfully written and closed.
 
@@ -6669,7 +6834,7 @@ However, an unexpected failure can interrupt a multi-file move after some files 
 
 Earlier completed moves are not automatically reversed.
 
-### Source Deletion Failures
+##### Source Deletion Failures
 
 Occasionally, MOVE may successfully create the destination but be unable to remove the original.
 
@@ -6683,15 +6848,15 @@ This means that the destination copy was created, but the source remains in plac
 
 You should examine both files before deciding whether to delete the original manually.
 
-### Moving Several Files Safely
+##### Moving Several Files Safely
 
 When moving a large group of files, it's wise to check the source and destination directories first.
 
 For example:
 
 ```text
-A>DIR B3:*.DOC
-A>DIR C4:*.DOC
+A0>DIR B3:*.DOC
+A0>DIR C4:*.DOC
 ```
 
 This allows you to identify possible filename conflicts before moving the files.
@@ -6699,18 +6864,18 @@ This allows you to identify possible filename conflicts before moving the files.
 You can then enter:
 
 ```text
-A>MOVE B3:*.DOC C4:
+A0>MOVE B3:*.DOC C4:
 ```
 
 Afterward, examine the destination:
 
 ```text
-A>DIR C4:*.DOC
+A0>DIR C4:*.DOC
 ```
 
 If MOVE reported an error, also examine the source to determine which files remain.
 
-### COPY or MOVE?
+##### COPY or MOVE?
 
 COPY and MOVE serve different purposes.
 
@@ -6722,47 +6887,49 @@ For important files, copying and verifying them before manually deleting the ori
 
 MOVE is convenient for routine file organization, but it should not be treated as a substitute for maintaining backups.
 
-### Examples
+##### Examples
 
 Move a file to another drive:
 
 ```text
-A>MOVE README.TXT B:
+A0>MOVE README.TXT B:
 ```
 
 Move a file to another user area:
 
 ```text
-A>MOVE A3:REPORT.TXT B5:
+A0>MOVE A3:REPORT.TXT B5:
 ```
 
 Move a file and change its name:
 
 ```text
-A>MOVE REPORT.TXT B:REPORT.BAK
+A0>MOVE REPORT.TXT B:REPORT.BAK
 ```
 
 Move all backup files:
 
 ```text
-A>MOVE *.BAK B:
+A0>MOVE *.BAK B:
 ```
 
 Move selected files from several user areas:
 
 ```text
-A>MOVE B[-]:*.DOC C3:
+A0>MOVE B[-]:*.DOC C3:
 ```
 
 Move writable, non-system files:
 
 ```text
-A>MOVE B[-]:*.DOC[$RW+!$SYS] C4:
+A0>MOVE B[-]:*.DOC[$RW+!$SYS] C4:
 ```
 
 ---
 
-# Chapter 15 — System and Environment Commands
+<a id="chapter-15"></a>
+
+### Chapter 15 — System and Environment Commands
 
 This chapter describes the commands used to manage the BetterCP/M operating environment, examine system information, and work directly with memory.
 
@@ -6786,13 +6953,15 @@ The memory-oriented commands are particularly useful when examining programs, te
 
 Because these commands can access memory directly, some require more care than ordinary file-management commands. In particular, executing arbitrary memory addresses or modifying operating-system memory can cause a program to fail or make the current session unusable.
 
-## 15.1 USER — Select User Area
+<a id="section-15-1"></a>
+
+#### 15.1 USER — Select User Area
 
 **Purpose:** Changes the current user area on the selected drive.
 
 BetterCP/M retains the conventional CP/M USER command while extending the available range of user areas.
 
-### Syntax
+##### Syntax
 
 ```text
 USER number
@@ -6803,7 +6972,7 @@ The number specifies a user area from 0 through 31.
 For example:
 
 ```text
-A>USER 3
+A0>USER 3
 A3>
 ```
 
@@ -6818,21 +6987,21 @@ A17>
 
 The prompt changes to reflect the new user area.
 
-### Direct User-Area Selection
+##### Direct User-Area Selection
 
 BetterCP/M also allows you to select a user area directly by entering its number followed by a colon.
 
 For example:
 
 ```text
-A>3:
+A0>3:
 A3>
 ```
 
 This is equivalent to:
 
 ```text
-A>USER 3
+A0>USER 3
 ```
 
 You can also select a drive and user area together:
@@ -6844,7 +7013,7 @@ B17>
 
 This selects drive B, user area 17.
 
-### User Areas and File Access
+##### User Areas and File Access
 
 Changing the current user area affects commands that do not explicitly specify another location.
 
@@ -6864,7 +7033,7 @@ A3>DIR B5:
 
 The current drive and user area remain unchanged after the command.
 
-### Compatibility
+##### Compatibility
 
 The USER command is retained for compatibility with conventional CP/M usage.
 
@@ -6872,43 +7041,45 @@ BetterCP/M supports user areas 0 through 31, extending the traditional CP/M 2.2 
 
 USER is a resident command. There is no separate transient `USER.COM`.
 
-For more information about drives and user areas, see Chapter 4.
+For more information about drives and user areas, see [Chapter 4](#chapter-4).
 
 ---
 
-## 15.2 CLS — Clear Screen
+<a id="section-15-2"></a>
+
+#### 15.2 CLS — Clear Screen
 
 **Purpose:** Clears the console display and returns the cursor to the upper-left corner.
 
-### Syntax
+##### Syntax
 
 ```text
 CLS
 ```
 
-### Example
+##### Example
 
 ```text
-A>CLS
+A0>CLS
 ```
 
 CLS clears the current display.
 
 This is useful when the screen has become cluttered with directory listings, program output, or command messages.
 
-### Resident and Transient Versions
+##### Resident and Transient Versions
 
 CLS is normally supplied as a resident command by `RCP.CPX`.
 
-A transient `CLS.COM` is also provided, allowing the command to remain available when the resident command package is not loaded.
+A transient `CLS.COM` can be built from the matching source, but is not selected System Disk content. Resident CLS through `RCP.CPX` is the standard supplied form. The following invocation requires a separately installed transient:
 
 To invoke the transient version explicitly:
 
 ```text
-A>:CLS
+A0>:CLS
 ```
 
-### Terminal Considerations
+##### Terminal Considerations
 
 The exact screen-clearing operation depends on the active console environment.
 
@@ -6918,17 +7089,19 @@ The visible result is normally a cleared screen with the cursor positioned at th
 
 The underlying method may differ between supported computers and terminal environments.
 
-For more information about terminal support, see Chapter 9.
+For more information about terminal support, see [Chapter 9](#chapter-9).
 
 ---
 
-## 15.3 VER — Display Version Information
+<a id="section-15-3"></a>
+
+#### 15.3 VER — Display Version Information
 
 **Purpose:** Displays information identifying the running BetterCP/M system.
 
 VER is useful when checking the operating-system release, identifying the installed software, or reporting a problem.
 
-### Syntax
+##### Syntax
 
 ```text
 VER
@@ -6938,38 +7111,38 @@ VER /BANNER
 
 The available forms provide different levels of information.
 
-### Displaying the System Version
+##### Displaying the System Version
 
 Enter:
 
 ```text
-A>VER
+A0>VER
 ```
 
 VER displays the BetterCP/M system identification and release version.
 
 This is the simplest way to determine which version of BetterCP/M is running.
 
-### Detailed Version Information
+##### Detailed Version Information
 
 To display additional subsystem information:
 
 ```text
-A>VER /V
+A0>VER /V
 ```
 
 The `/V` option provides more detailed identification information about the operating-system environment.
 
 This can be useful when comparing installations or determining whether a particular subsystem has been updated.
 
-### Displaying the Startup Banner
+##### Displaying the Startup Banner
 
 The transient VER utility provides the system identification banner used by the standard distribution's startup procedure.
 
 Enter:
 
 ```text
-A>:VER /BANNER
+A0>:VER /BANNER
 ```
 
 The `/BANNER` option is provided by `VER.COM`.
@@ -6977,7 +7150,7 @@ The `/BANNER` option is provided by `VER.COM`.
 If you attempt to use it with the resident command:
 
 ```text
-A>VER /BANNER
+A0>VER /BANNER
 ```
 
 BetterCP/M reports:
@@ -6988,7 +7161,7 @@ VER: Use :VER.
 
 You can then invoke the transient utility explicitly.
 
-### Resident and Transient Versions
+##### Resident and Transient Versions
 
 VER is normally available as a resident command through `RCP.CPX`.
 
@@ -6996,25 +7169,27 @@ The transient `VER.COM` provides additional facilities, including the startup ba
 
 As with other commands available in both forms, prefixing the command name with a colon or period requests the transient version.
 
-### Version Information for Individual Utilities
+##### Version Information for Individual Utilities
 
 Most BetterCP/M utilities also support `/VER` to display their own version and build information.
 
 For example:
 
 ```text
-A>:DIR /VER
+A0>:DIR /VER
 ```
 
 identifies the transient DIR utility.
 
 This is different from the VER command, which identifies the operating system itself.
 
-For additional information about utility version conventions, see Chapter 13.
+For additional information about utility version conventions, see [Chapter 13](#chapter-13).
 
 ---
 
-## 15.4 SAVE — Save Memory to a File
+<a id="section-15-4"></a>
+
+#### 15.4 SAVE — Save Memory to a File
 
 **Purpose:** Saves a specified number of 256-byte memory pages to a disk file.
 
@@ -7022,7 +7197,7 @@ SAVE is a core resident command retained from conventional CP/M.
 
 It is particularly useful when working with programs or data that have been loaded or modified directly in memory.
 
-### Syntax
+##### Syntax
 
 ```text
 SAVE pages filespec
@@ -7032,12 +7207,12 @@ The `pages` argument specifies the number of 256-byte pages to save.
 
 The memory is saved beginning at address `0100H`, the conventional start of the CP/M Transient Program Area.
 
-### Examples
+##### Examples
 
 Save ten pages:
 
 ```text
-A>SAVE 10 TEST.COM
+A0>SAVE 10 TEST.COM
 ```
 
 This writes 2,560 bytes from memory beginning at `0100H` into `TEST.COM`.
@@ -7045,18 +7220,18 @@ This writes 2,560 bytes from memory beginning at `0100H` into `TEST.COM`.
 Save forty pages to drive B:
 
 ```text
-A>SAVE 40 B:PROGRAM.COM
+A0>SAVE 40 B:PROGRAM.COM
 ```
 
 Save twenty pages to drive B, user area 3:
 
 ```text
-A>SAVE 20 B3:IMAGE.COM
+A0>SAVE 20 B3:IMAGE.COM
 ```
 
 BetterCP/M extends the conventional SAVE command by allowing drive/user-qualified destination file specifications.
 
-### Calculating the Number of Pages
+##### Calculating the Number of Pages
 
 Each page contains 256 bytes.
 
@@ -7074,29 +7249,29 @@ For example:
 
 If the data does not occupy an exact number of pages, the final saved page includes any remaining bytes within that page.
 
-### Using SAVE with GET and POKE
+##### Using SAVE with GET and POKE
 
 SAVE can be used with BetterCP/M's memory commands.
 
 For example, you might load a program with GET, modify several bytes with POKE, and then save the modified image under another filename.
 
 ```text
-A>GET PROGRAM.COM
-A>POKE 100 C3 00 80
-A>SAVE 10 MODIFIED.COM
+A0>GET PROGRAM.COM
+A0>POKE 100 C3 00 80
+A0>SAVE 10 MODIFIED.COM
 ```
 
 This example illustrates the general procedure. The number of pages saved must be appropriate to the size of the program or data.
 
 SAVE does not determine the logical size of the program automatically.
 
-### Resident Command
+##### Resident Command
 
 SAVE is implemented directly by the command processor.
 
 It is not provided as an ordinary transient utility because loading a transient `SAVE.COM` could overwrite the very memory that SAVE is intended to preserve.
 
-### Important Considerations
+##### Important Considerations
 
 SAVE writes the contents of memory as they exist when the command executes.
 
@@ -7108,7 +7283,9 @@ Likewise, saving too few pages truncates the intended image, while saving too ma
 
 ---
 
-## 15.5 GET — Load a File into Memory
+<a id="section-15-5"></a>
+
+#### 15.5 GET — Load a File into Memory
 
 **Purpose:** Loads a file into memory without executing it.
 
@@ -7116,7 +7293,7 @@ GET is useful when examining or modifying program images, preparing machine-lang
 
 Unlike ordinary program execution, GET returns to the command prompt after loading the file.
 
-### Syntax
+##### Syntax
 
 ```text
 GET filename
@@ -7127,51 +7304,51 @@ With one argument, GET loads the file beginning at address `0100H`.
 
 With two arguments, the first specifies the hexadecimal memory address at which loading begins.
 
-### Examples
+##### Examples
 
 Load a program at `0100H`:
 
 ```text
-A>GET PROGRAM.COM
+A0>GET PROGRAM.COM
 ```
 
 Load a file at address `8000H`:
 
 ```text
-A>GET 8000 DATA.BIN
+A0>GET 8000 DATA.BIN
 ```
 
 The address is hexadecimal.
 
 Leading zeroes are optional.
 
-### Examining Loaded Data
+##### Examining Loaded Data
 
 After loading a file, you can examine its contents with PEEK.
 
 For example:
 
 ```text
-A>GET PROGRAM.COM
-A>PEEK 100
+A0>GET PROGRAM.COM
+A0>PEEK 100
 ```
 
 This displays memory beginning at address `0100H`.
 
 You can also modify the loaded data with POKE.
 
-### Executing a Loaded Program
+##### Executing a Loaded Program
 
 A program loaded at `0100H` can subsequently be executed with GO:
 
 ```text
-A>GET PROGRAM.COM
-A>GO
+A0>GET PROGRAM.COM
+A0>GO
 ```
 
 Alternatively, JUMP can transfer control to a specified address.
 
-### Memory Protection
+##### Memory Protection
 
 GET checks whether the requested load would overwrite memory required by the active BetterCP/M command environment.
 
@@ -7183,13 +7360,15 @@ Nevertheless, GET is intended for users who understand the memory requirements o
 
 ---
 
-## 15.6 GO — Execute at 0100H
+<a id="section-15-6"></a>
+
+#### 15.6 GO — Execute at 0100H
 
 **Purpose:** Transfers control to address `0100H`, the conventional entry point for CP/M transient programs.
 
 GO is useful when executing a program image that has already been loaded into memory.
 
-### Syntax
+##### Syntax
 
 ```text
 GO [command tail]
@@ -7197,29 +7376,29 @@ GO [command tail]
 
 The command tail is optional.
 
-### Examples
+##### Examples
 
 Execute the program currently loaded at `0100H`:
 
 ```text
-A>GO
+A0>GO
 ```
 
 Execute it with a command-line argument:
 
 ```text
-A>GO INPUT.DAT
+A0>GO INPUT.DAT
 ```
 
 The command tail is supplied to the program using the normal CP/M transient-program conventions.
 
-### Using GO with GET
+##### Using GO with GET
 
 A common sequence is:
 
 ```text
-A>GET PROGRAM.COM
-A>GO
+A0>GET PROGRAM.COM
+A0>GO
 ```
 
 GET loads the program into memory.
@@ -7228,7 +7407,7 @@ GO then transfers control to it.
 
 This allows a program to be loaded, examined, or modified before execution.
 
-### Relationship to JUMP
+##### Relationship to JUMP
 
 GO is equivalent to:
 
@@ -7240,7 +7419,7 @@ Both transfer control to address `0100H`.
 
 GO is provided as a convenient shorthand for the most common CP/M program entry point.
 
-### Program Environment
+##### Program Environment
 
 Before transferring control, BetterCP/M establishes the normal CP/M transient-program environment.
 
@@ -7248,7 +7427,7 @@ This includes the expected command tail, default File Control Blocks, and other 
 
 Ordinary CP/M programs therefore receive the familiar execution environment.
 
-### Caution
+##### Caution
 
 GO does not verify that memory at `0100H` contains a valid program.
 
@@ -7258,13 +7437,15 @@ Use GO only when you know that an appropriate program has been loaded.
 
 ---
 
-## 15.7 JUMP — Execute at an Address
+<a id="section-15-7"></a>
+
+#### 15.7 JUMP — Execute at an Address
 
 **Purpose:** Transfers control to a specified memory address.
 
 JUMP extends the functionality of GO by allowing execution to begin at an address other than `0100H`.
 
-### Syntax
+##### Syntax
 
 ```text
 JUMP address [command tail]
@@ -7272,48 +7453,48 @@ JUMP address [command tail]
 
 The address is hexadecimal.
 
-### Examples
+##### Examples
 
 Execute at `0100H`:
 
 ```text
-A>JUMP 100
+A0>JUMP 100
 ```
 
 Execute at `8000H`:
 
 ```text
-A>JUMP 8000
+A0>JUMP 8000
 ```
 
 Execute at `0100H` with an argument:
 
 ```text
-A>JUMP 100 INPUT.DAT
+A0>JUMP 100 INPUT.DAT
 ```
 
-### Using JUMP with GET
+##### Using JUMP with GET
 
 JUMP can be used to execute a routine loaded at a nonstandard address.
 
 For example:
 
 ```text
-A>GET 8000 ROUTINE.BIN
-A>JUMP 8000
+A0>GET 8000 ROUTINE.BIN
+A0>JUMP 8000
 ```
 
 This loads `ROUTINE.BIN` at address `8000H` and transfers control to that address.
 
 The routine must be suitable for execution at the selected address.
 
-### Program Environment
+##### Program Environment
 
 Like GO, JUMP establishes the normal CP/M transient-program environment before transferring control.
 
 This includes the standard command-tail and default FCB arrangements.
 
-### Address Range
+##### Address Range
 
 JUMP accepts hexadecimal addresses from `0000H` through `FFFFH`.
 
@@ -7325,7 +7506,7 @@ Transferring control to an arbitrary address can cause the system to malfunction
 
 JUMP should therefore be used only when the contents and purpose of the target address are known.
 
-### Error Handling
+##### Error Handling
 
 If the address is missing or invalid, JUMP reports an error and returns to the command prompt.
 
@@ -7333,7 +7514,9 @@ It does not attempt to execute an invalid address specification.
 
 ---
 
-## 15.8 PEEK / P — Display Memory
+<a id="section-15-8"></a>
+
+#### 15.8 PEEK / P — Display Memory
 
 **Purpose:** Displays the contents of memory in hexadecimal and ASCII form.
 
@@ -7341,7 +7524,7 @@ PEEK provides a convenient way to examine memory without modifying its contents.
 
 The command can also be abbreviated to `P`.
 
-### Syntax
+##### Syntax
 
 ```text
 PEEK
@@ -7359,12 +7542,12 @@ P first last
 
 All addresses are hexadecimal.
 
-### Displaying Memory
+##### Displaying Memory
 
 To display memory beginning at address `0100H`, enter:
 
 ```text
-A>PEEK 100
+A0>PEEK 100
 ```
 
 PEEK displays 256 bytes beginning at the specified address.
@@ -7374,19 +7557,19 @@ The display includes hexadecimal byte values and their corresponding ASCII repre
 For example:
 
 ```text
-A>P 8000
+A0>P 8000
 ```
 
 displays 256 bytes beginning at address `8000H`.
 
-### Displaying an Address Range
+##### Displaying an Address Range
 
 You can specify both the first and last addresses to display.
 
 For example:
 
 ```text
-A>PEEK 100 1FF
+A0>PEEK 100 1FF
 ```
 
 This displays the inclusive range from `0100H` through `01FFH`.
@@ -7395,12 +7578,12 @@ The first address identifies the beginning of the range, while the second identi
 
 PEEK does not wrap around from `FFFFH` to `0000H`.
 
-### Continuing a Memory Display
+##### Continuing a Memory Display
 
 If you enter PEEK without an address:
 
 ```text
-A>PEEK
+A0>PEEK
 ```
 
 the first invocation begins at `0100H`.
@@ -7412,14 +7595,14 @@ This allows you to examine consecutive regions of memory without repeatedly calc
 For example:
 
 ```text
-A>PEEK
-A>PEEK
-A>PEEK
+A0>PEEK
+A0>PEEK
+A0>PEEK
 ```
 
 displays successive portions of memory.
 
-### Paging Through Memory
+##### Paging Through Memory
 
 PEEK supports interactive paging when displaying memory.
 
@@ -7436,15 +7619,15 @@ The following keys control navigation:
 
 These controls allow you to move forward and backward through the displayed memory.
 
-### Using PEEK with GET
+##### Using PEEK with GET
 
 PEEK is especially useful after loading a program or data file with GET.
 
 For example:
 
 ```text
-A>GET PROGRAM.COM
-A>PEEK 100
+A0>GET PROGRAM.COM
+A0>PEEK 100
 ```
 
 GET loads `PROGRAM.COM` into memory beginning at `0100H`.
@@ -7453,15 +7636,15 @@ PEEK then displays the first 256 bytes of the loaded image.
 
 You can examine additional portions by specifying other addresses or continuing the display.
 
-### Using PEEK with POKE
+##### Using PEEK with POKE
 
 PEEK can also be used to verify memory changes.
 
 For example:
 
 ```text
-A>POKE 200 48 45 4C 4C 4F
-A>PEEK 200
+A0>POKE 200 48 45 4C 4C 4F
+A0>PEEK 200
 ```
 
 The POKE command stores five bytes beginning at address `0200H`.
@@ -7470,17 +7653,17 @@ PEEK then displays the corresponding memory region.
 
 The hexadecimal values represent the ASCII characters `HELLO`.
 
-### Using PEEK with GET and POKE
+##### Using PEEK with GET and POKE
 
 PEEK is particularly useful alongside the other resident memory commands.
 
 For example:
 
 ```text
-A>GET PROGRAM.COM
-A>PEEK 100
-A>POKE 100 C3 00 80
-A>PEEK 100
+A0>GET PROGRAM.COM
+A0>PEEK 100
+A0>POKE 100 C3 00 80
+A0>PEEK 100
 ```
 
 This loads a program, examines its beginning, modifies three bytes, and displays the modified memory.
@@ -7488,7 +7671,7 @@ This loads a program, examines its beginning, modifies three bytes, and displays
 PEEK itself does not change memory.
 
 
-### Important Considerations
+##### Important Considerations
 
 PEEK displays the contents of memory as they exist when the command executes.
 
@@ -7502,7 +7685,9 @@ For disassembly and more advanced debugging operations, use an appropriate debug
 
 ---
 
-## 15.9 POKE — Modify Memory
+<a id="section-15-9"></a>
+
+#### 15.9 POKE — Modify Memory
 
 **Purpose:** Stores hexadecimal byte values or literal text directly into memory.
 
@@ -7512,7 +7697,7 @@ It can be used to patch a program image, enter small machine-language routines, 
 
 Unlike PEEK, **POKE changes memory contents**. Incorrect modifications can damage a loaded program or interfere with the operating system.
 
-### Syntax
+##### Syntax
 
 ```text
 POKE address byte [byte ...]
@@ -7526,12 +7711,12 @@ The address specifies where writing begins.
 
 Successive bytes are stored in consecutive memory locations.
 
-### Storing Hexadecimal Bytes
+##### Storing Hexadecimal Bytes
 
 For example:
 
 ```text
-A>POKE 100 C3 00 80
+A0>POKE 100 C3 00 80
 ```
 
 stores three bytes beginning at address `0100H`:
@@ -7546,14 +7731,14 @@ These bytes form a Z80 absolute jump instruction to address `8000H`.
 
 POKE stores the values exactly as specified. It does not interpret them as instructions while writing them.
 
-### Storing Text
+##### Storing Text
 
 POKE can also store literal text.
 
 For example:
 
 ```text
-A>POKE 200 "Hello
+A0>POKE 200 "Hello
 ```
 
 stores the ASCII characters `Hello` beginning at address `0200H`.
@@ -7562,44 +7747,44 @@ A quotation mark introduces literal text. All remaining characters on the comman
 
 A closing quotation mark is not required.
 
-### Combining Bytes and Text
+##### Combining Bytes and Text
 
 You can combine hexadecimal byte values with literal text.
 
 For example:
 
 ```text
-A>POKE 300 0D 0A "BetterCP/M
+A0>POKE 300 0D 0A "BetterCP/M
 ```
 
 This stores a carriage return (`0DH`) and line feed (`0AH`), followed by the ASCII characters in `BetterCP/M`.
 
 This is useful when constructing small data structures or preparing text containing control characters.
 
-### Examining the Results
+##### Examining the Results
 
 Use PEEK to examine the memory after making a change.
 
 For example:
 
 ```text
-A>POKE 200 "Hello
-A>PEEK 200
+A0>POKE 200 "Hello
+A0>PEEK 200
 ```
 
 PEEK displays the modified memory, including the hexadecimal values and ASCII representation.
 
-### Modifying a Loaded Program
+##### Modifying a Loaded Program
 
 POKE can be used with GET and SAVE to modify a program image.
 
 For example:
 
 ```text
-A>GET PROGRAM.COM
-A>POKE 120 00
-A>PEEK 120
-A>SAVE 10 MODIFIED.COM
+A0>GET PROGRAM.COM
+A0>POKE 120 00
+A0>PEEK 120
+A0>SAVE 10 MODIFIED.COM
 ```
 
 This sequence:
@@ -7611,7 +7796,7 @@ This sequence:
 
 The example illustrates the procedure rather than a useful program modification. The address, replacement value, and number of pages must be appropriate to the actual program.
 
-### Input Validation
+##### Input Validation
 
 POKE checks the address and hexadecimal byte operands before modifying memory.
 
@@ -7623,7 +7808,7 @@ This helps prevent accidental partial changes caused by mistyped commands.
 
 However, POKE cannot determine whether a valid address and byte sequence are appropriate for the program being modified.
 
-### Memory Safety
+##### Memory Safety
 
 POKE is intended for users who understand the memory locations they are changing.
 
@@ -7635,7 +7820,7 @@ If you're experimenting with machine-language programs, work with known memory l
 
 When modifying a loaded program, use PEEK to verify the changes before executing or saving it.
 
-### Using the Memory Commands Together
+##### Using the Memory Commands Together
 
 BetterCP/M provides a small collection of resident commands that can be used together for memory inspection, modification, loading, execution, and saving.
 
@@ -7654,7 +7839,9 @@ For more extensive debugging, including disassembly, breakpoints, and register e
 
 ---
 
-# Chapter 16 — System Utilities
+<a id="chapter-16"></a>
+
+### Chapter 16 — System Utilities
 
 BetterCP/M provides several utilities for configuring the operating system, examining files and disks, managing the system clock, and preparing or maintaining system disks.
 
@@ -7670,11 +7857,13 @@ This chapter covers five utilities:
 | DUP | Format, copy, and check disks |
 | SYSGEN | Install BetterCP/M and save system images |
 
-Chapter 7 introduced system configuration, Chapter 10 explained disk operations, and Chapter 11 covered date and time facilities. This chapter provides the corresponding command references.
+[Chapter 7](#chapter-7) introduced system configuration, [Chapter 10](#chapter-10) explained disk operations, and [Chapter 11](#chapter-11) covered date and time facilities. This chapter provides the corresponding command references.
 
 Because some of these utilities can modify disk structures or operating-system settings, pay particular attention to their confirmation procedures and restrictions.
 
-## 16.1 CONFIG — System Configuration
+<a id="section-16-1"></a>
+
+#### 16.1 CONFIG — System Configuration
 
 **Purpose:** Examines and modifies BetterCP/M's system configuration, including startup commands, disk-drive definitions, disk formats, and the saved cold-boot IOBYTE.
 
@@ -7682,7 +7871,7 @@ CONFIG provides both an interactive menu and command-line operations.
 
 It distinguishes between settings currently in use, changes prepared for saving, and settings already saved for subsequent cold boots.
 
-### Syntax
+##### Syntax
 
 The principal forms are:
 
@@ -7696,14 +7885,24 @@ CONFIG /IOBYTE=value
 CONFIG /VER
 ```
 
-Additional command-line forms are available for physical-drive profiles, logical-drive assignments, and disk-format definitions.
+The disk-configuration forms are:
 
-### Interactive Configuration
+```text
+CONFIG /PHYSICAL=n /field=value [/field=value ...]
+CONFIG /LOGICAL=B /PHYSICAL=n /FORMAT="description"
+CONFIG /LOGICAL=C /UNBIND
+CONFIG /EDIT=B /field=value [/field=value ...]
+CONFIG /EDIT=B /SLOT=n /ID=id /CODE=code
+```
+
+Use the slash-prefixed field names in the tables below. `B` and `C` are example logical drives; these operations accept B through D. Physical-profile selection accepts 0 through 3. The operation selector must come first. Names are case-insensitive and numeric values are unsigned decimal. Separate fields with whitespace. Do not combine these forms with `/SHOW`, startup/IOBYTE options, `/DEFAULT`, or `/VER`. Duplicate or unknown fields, extra operands and numeric overflow are rejected before changes begin.
+
+##### Interactive Configuration
 
 Enter:
 
 ```text
-A>CONFIG
+A0>CONFIG
 ```
 
 CONFIG displays a menu containing the available configuration operations:
@@ -7726,12 +7925,12 @@ Press Ctrl-C to leave the main menu.
 
 CONFIG operates through the ordinary console and does not require a terminal-monitor extension.
 
-### Displaying the Configuration
+##### Displaying the Configuration
 
 To examine the current configuration without changing it:
 
 ```text
-A>CONFIG /SHOW
+A0>CONFIG /SHOW
 ```
 
 This displays information about the active physical-drive profiles, logical-drive assignments, saved startup command, and saved drive defaults.
@@ -7740,7 +7939,7 @@ It also distinguishes between the live IOBYTE and the value saved for subsequent
 
 This is particularly useful when troubleshooting a configuration problem or determining whether temporary changes have been saved.
 
-### Startup Commands
+##### Startup Commands
 
 BetterCP/M can execute a command automatically during a cold boot.
 
@@ -7755,7 +7954,7 @@ This executes `STARTUP.SUB`, allowing the system to establish a preferred workin
 To change the saved startup command:
 
 ```text
-A>CONFIG /STARTUP="SUBMIT STARTUP"
+A0>CONFIG /STARTUP="SUBMIT STARTUP"
 ```
 
 CONFIG requests confirmation before saving the change.
@@ -7765,17 +7964,17 @@ The new command takes effect during a subsequent cold boot. It is not executed i
 To disable automatic startup commands:
 
 ```text
-A>CONFIG /STARTUP=""
+A0>CONFIG /STARTUP=""
 ```
 
 An empty startup command prevents BetterCP/M from automatically executing a command during cold startup.
 
-### Restoring the Default Startup Command
+##### Restoring the Default Startup Command
 
 Enter:
 
 ```text
-A>CONFIG /DEFAULT
+A0>CONFIG /DEFAULT
 ```
 
 This prepares `SUBMIT STARTUP` as the pending startup command and opens the appropriate configuration menu.
@@ -7786,79 +7985,105 @@ You can inspect or modify it before committing it to the system disk.
 
 `/DEFAULT` affects the startup command; it does not restore every configuration setting to its original value.
 
-### Physical-Drive Configuration
+##### Physical-Drive Configuration
 
 CONFIG provides command-line facilities for changing physical-drive characteristics.
 
 For example:
 
 ```text
-A>CONFIG /PHYSICAL=1 /TRACKS=80 /SIDES=2 /STEP=6
+A0>CONFIG /PHYSICAL=1 /TRACKS=80 /SIDES=2 /STEP=6
 ```
 
 This requests an 80-track, double-sided configuration for physical drive 1, with the specified step timing.
 
-The supported fields include:
+`/PHYSICAL=n` must come first, followed by at least one field. Supply each field at most once; the field order is otherwise free. Unspecified fields retain their current values.
 
-| Option | Purpose |
-|---|---|
-| `/PHYSICAL=` | Select the physical drive |
-| `/TYPE=` | Select 5-inch or 8-inch drive type |
-| `/TRACKS=` | Set the track count |
-| `/SIDES=` | Set the number of sides |
-| `/STEP=` | Set step timing |
-| `/SPINUP=` | Set spin-up delay |
-| `/SETTLE=` | Set head-settle delay |
+| Option | Accepted values | Units or meaning |
+|---|---|---|
+| `/PHYSICAL=` | 0–3 | Physical-drive index |
+| `/TYPE=` | 5 or 8 | Drive type in inches |
+| `/TRACKS=` | 35, 40, 77 or 80 | Track count |
+| `/SIDES=` | 1 or 2 | Available sides |
+| `/STEP=` | 6, 12, 20 or 30 | Milliseconds |
+| `/SPINUP=` | 0–16 | Quarter-second units |
+| `/SETTLE=` | 0–255 | Head-settling milliseconds |
 
-The accepted values depend on the field and the platform.
+Timing effects depend on the backend. CONFIG checks the proposed profile against A's current binding and rejects a change that cannot support the boot drive. After a successful update, incompatible non-system bindings are detached and their BDOS login state reset. If later cleanup fails, `Drive profile changed; binding cleanup incomplete.` means the profile did change and affected bindings need attention.
 
-Physical-drive changes affect the active configuration. They do not automatically replace the saved startup defaults.
+This form changes active settings only, requires no `DISK.FDB`, and neither prompts nor saves to disk. To retain the change across cold boot, use the separate save-all-current operation described below.
 
-### Logical-Drive Configuration
+##### Logical-Drive Configuration
 
 To associate a logical drive with a physical drive and disk format:
 
 ```text
-A>CONFIG /LOGICAL=C /PHYSICAL=1 /FORMAT="MM 80T DS DATA"
+A0>CONFIG /LOGICAL=C /PHYSICAL=1 /FORMAT="MM 80T DS DATA"
 ```
 
 This assigns logical drive C to physical drive 1 using the named format.
 
-The format name must match an available definition in the disk-format catalog.
+The operands must appear in the order shown: `/LOGICAL=`, `/PHYSICAL=`, then `/FORMAT=`. Logical targets are B–D and physical indexes are 0–3. The quoted format must exactly match a catalogue display description, ignoring letter case and trailing space padding. It accepts 1–32 printable ASCII characters with at least one non-space character; quote escapes, prefixes, wildcards and row numbers are not accepted.
+
+Named binding requires a valid `DISK.FDB`, using CONFIG's current-drive/A: catalogue lookup. Missing, corrupt, unknown, ambiguous or unsupported definitions leave the active binding unchanged.
 
 CONFIG checks that the requested assignment is compatible with the selected drive.
 
 To remove a logical-drive assignment:
 
 ```text
-A>CONFIG /LOGICAL=C /UNBIND
+A0>CONFIG /LOGICAL=C /UNBIND
 ```
 
 This disconnects logical drive C from its active assignment without erasing the disk.
 
-BetterCP/M protects drive A from these logical-binding changes.
+BetterCP/M protects drive A from binding, unbinding and format edits. `/UNBIND` requires no catalogue. Successful binding/unbinding resets only the selected drive's BDOS login state. These operations change active settings without saving, formatting or erasing media; use save-all-current to make them cold-boot defaults.
 
-### Editing Disk-Format Definitions
+##### Editing Disk-Format Definitions
 
 CONFIG provides facilities for editing the characteristics of an active disk-format assignment.
 
 For example:
 
 ```text
-A>CONFIG /EDIT=B /CKS=16
+A0>CONFIG /EDIT=B /CKS=16
 ```
 
-This changes the specified field of drive B's active format definition.
+`/EDIT=B` through `/EDIT=D` must come first and requires at least one scalar or slot change. Scalar fields may follow in any order, once each. CONFIG starts from the active 64-byte binding, merges the named changes privately, and submits one validated update.
 
-Other fields describe the disk's allocation, directory, sector, and physical organization.
+| Field | Meaning | Decimal storage range |
+|---|---|---|
+| `/PHYSICAL=` | Physical-drive index in the binding | 0–255; final binding must select 0–3 |
+| `/SPT=` | 128-byte records per track | 0–65535 |
+| `/BSH=`, `/BLM=`, `/EXM=` | Block shift, block mask, extent mask | 0–255 each |
+| `/DSM=`, `/DRM=` | Last allocation-block number, last directory-entry number | 0–65535 each |
+| `/AL0=`, `/AL1=` | Directory allocation masks | 0–255 each |
+| `/CKS=`, `/OFF=` | Directory check size, reserved tracks | 0–65535 each |
+| `/CYLINDERS=`, `/SECTORS=` | Cylinders, physical sectors per track | 0–255 each |
+| `/SIZE=`, `/FLAGS=`, `/SIZEMAP=` | Maximum sector-size code, format flags, explicit size-map flag | 0–255 each |
 
-These are advanced configuration facilities. An incorrect definition can cause BetterCP/M to interpret an existing disk incorrectly.
+These are storage limits, not a promise that every value or combination is valid. The physical geometry and backend rules still apply. Start with a valid binding; an unbound drive needs a complete valid definition before it can be used. Rejection before commit leaves active settings unchanged. A successful edit resets only that drive's BDOS login state.
 
-**Changing a disk-format definition does not format the disk.** It changes how BetterCP/M attempts to access it.
+To edit one sector-map entry:
 
-Use the interactive format editor or the command-line editing facilities only when you know the disk's actual organization.
+```text
+A0>CONFIG /EDIT=B /SLOT=1 /ID=200
+A0>CONFIG /EDIT=B /SPT=35 /SLOT=1 /CODE=0
+```
 
-### Saved IOBYTE
+| Option | Accepted values | Meaning |
+|---|---|---|
+| `/SLOT=` | 1–32 | One-based slot in physical sector order |
+| `/ID=` | 0–255 | Physical sector ID for that slot |
+| `/CODE=` | 0–3 | Packed size code: 0=128, 1=256, 2=512, 3=1024 bytes |
+
+A slot requires `/ID=`, `/CODE=`, or both. Neither value is accepted without `/SLOT=`. One slot is edited per invocation; scalar fields may accompany it after `/EDIT=`. Other slots and unspecified fields are preserved. The first explicit size edit seeds the other slots from the current uniform size. Duplicate IDs and inconsistent record/sector geometry are rejected. The examples show syntax; use values appropriate to the actual format.
+
+Explicit size maps require `FDF.RSX`'s checked normalization service before applying the binding. FDF is separately buildable and is not selected System Disk content; install a compatible `A0:FDF.RSX` and load it with `RSX LOAD FDF` when this service is needed. Missing support or invalid maps leave the active binding unchanged.
+
+These commands need no catalogue and make active changes without a confirmation or disk save. **Changing a binding definition does not format the disk.** An incorrect definition can make existing media inaccessible. Use the separate save-all-current operation to preserve validated changes across cold boot.
+
+##### Saved IOBYTE
 
 BetterCP/M retains CP/M's IOBYTE mechanism for selecting logical character devices.
 
@@ -7867,10 +8092,10 @@ STAT changes the live IOBYTE, while CONFIG can save a value for subsequent disk 
 For example:
 
 ```text
-A>CONFIG /IOBYTE=85
+A0>CONFIG /IOBYTE=85
 ```
 
-The value is decimal.
+The value is an unsigned decimal byte, 0–255.
 
 CONFIG requests confirmation before saving it.
 
@@ -7878,7 +8103,7 @@ This operation does not change the IOBYTE currently in use.
 
 The selected device assignments must be supported by the computer's BIOS.
 
-### Saving Configuration Changes
+##### Saving Configuration Changes
 
 CONFIG distinguishes between saving pending cold-boot changes and saving all current settings as the new startup defaults.
 
@@ -7888,25 +8113,33 @@ Saving only the pending startup change allows you to retain your existing saved 
 
 Saving all current settings makes the active configuration the new startup default.
 
-Use the save menu to select the appropriate operation.
+From the main menu choose **S**, then:
+
+```text
+[ A ] Save pending cold-boot changes only
+[ B ] Save all current settings as startup defaults
+BREAK (^C) returns without saving.
+```
+
+Choose **A** to retain saved drive defaults while saving pending cold-boot changes. Choose **B** to capture the active physical profiles and logical bindings as defaults as well. Follow the confirmation before the disk write. Active CLI disk changes survive leaving CONFIG but are lost on cold boot unless explicitly saved through **S**, **B**; they are not invocation-private pending edits.
 
 CONFIG verifies saved configuration writes and reports failures.
 
 **Keep a backup of a working system disk before making significant changes to saved configuration information.**
 
-### Version Information
+##### Version Information
 
 Enter:
 
 ```text
-A>CONFIG /VER
+A0>CONFIG /VER
 ```
 
 CONFIG displays its version and build identification without modifying the system.
 
 The option must be used alone.
 
-### Limitations
+##### Limitations
 
 CONFIG is not a general-purpose preferences editor.
 
@@ -7914,22 +8147,24 @@ BetterCP/M 1.0 does not use CONFIG to manage resident extensions, terminal perso
 
 Those facilities are managed through their respective commands and extensions.
 
-For an introduction to configuration procedures, see Chapter 7.
+For an introduction to configuration procedures, see [Chapter 7](#chapter-7).
 
 ---
 
-## 16.2 STAT — System and File Statistics
+<a id="section-16-2"></a>
+
+#### 16.2 STAT — System and File Statistics
 
 **Purpose:** Displays information about disks, files, and logical devices, and provides supported facilities for examining or changing file attributes and device assignments.
 
 STAT retains the familiar role of Digital Research's CP/M utility while adding support for BetterCP/M's extended drive/user specifications.
 
-### Basic Use
+##### Basic Use
 
 To examine the status of the current disk:
 
 ```text
-A>STAT
+A0>STAT
 ```
 
 STAT displays disk information according to the supported CP/M conventions.
@@ -7937,23 +8172,70 @@ STAT displays disk information according to the supported CP/M conventions.
 To examine a particular file:
 
 ```text
-A>STAT REPORT.TXT
+A0>STAT REPORT.TXT
 ```
 
 A drive-qualified file specification can also be used:
 
 ```text
-A>STAT B:REPORT.TXT
+A0>STAT B:REPORT.TXT
 ```
 
-### Extended Drive/User Selection
+##### Syntax and Status Reports
+
+The supported forms are:
+
+```text
+STAT
+STAT filespec [$S|$R/O|$R/W|$SYS|$DIR]
+STAT d:
+STAT d:=R/O
+STAT DSK:
+STAT d:DSK:
+STAT USR:
+STAT DEV:
+STAT VAL:
+STAT MEM
+STAT CON:=device:
+STAT RDR:=device:
+STAT PUN:=device:
+STAT LST:=device:
+STAT target:
+```
+
+Here `d:` means a drive selection. Conventional operands also accept numeric user selectors such as `5:` and `C3:`. Temporary selections are restored before STAT returns. The alternatives inside square brackets on the filespec line are optional file options; type just the option you need, without those brackets or vertical bars.
+
+| Command | Information or action |
+|---|---|
+| `STAT` | Read/write status and free space for logged drives |
+| `STAT B:` | Free space on B at the current user |
+| `STAT DSK:` | Drive characteristics for logged drives |
+| `STAT B:DSK:` | Drive characteristics for B, including record/block capacity and directory limits |
+| `STAT USR:` | Current user and user areas containing files on the current drive |
+| `STAT DEV:` | Current logical-device assignments |
+| `STAT VAL:` | Valid file options and device assignments |
+| `STAT B:=R/O` | Temporarily mark B read-only |
+
+The drive read-only setting is cleared by the normal warm-start/reset path. STAT does not accept `B:=R/W`; use the normal reset procedure to clear the software lock. It does not override hardware write protection.
+
+##### Memory Map
+
+```text
+A0>STAT MEM
+```
+
+`STAT MEM` displays the current memory map, including protected system regions and RSXs, the CCP and CPXs, transient space, and page zero. Address ranges and byte counts identify what occupies memory.
+
+The final maximum-loadable-COM figure is rounded down to complete 128-byte load records. It can include the memory currently occupied by the reclaimable CCP and CPX command code. That figure describes how large a transient program can be loaded; it is not an additional free region to add to the map. Protected RSXs reduce that maximum. Use `RSX LIST` to identify optional services when investigating a memory shortage.
+
+##### Extended Drive/User Selection
 
 BetterCP/M extends STAT's file-inspection facilities to support explicit user areas and compound selections.
 
 For example:
 
 ```text
-A>STAT B3:*.COM
+A0>STAT B3:*.COM
 ```
 
 examines matching files in drive B, user area 3.
@@ -7961,62 +8243,79 @@ examines matching files in drive B, user area 3.
 To examine several user areas:
 
 ```text
-A>STAT B[3,5]:*.COM
+A0>STAT B[3,5]:*.COM
 ```
 
 To examine all user areas on drive B:
 
 ```text
-A>STAT B[-]:*.COM
+A0>STAT B[-]:*.COM
 ```
 
 Compound selections are also supported:
 
 ```text
-A>STAT [A0,C[3,5,7-11],5]:*.DAT
+A0>STAT [A0,C[3,5,7-11],5]:*.DAT
 ```
 
 STAT processes the selected locations and identifies each result by its drive and user area.
 
 Duplicate locations are visited only once.
 
-### Displaying File Sizes
+##### Displaying File Sizes
 
 STAT provides the `$S` option for displaying logical file sizes.
 
 For example:
 
 ```text
-A>STAT B[3,5]:*.DAT $S
+A0>STAT B[3,5]:*.DAT $S
 ```
 
 This examines matching files in the selected user areas and includes the additional size information.
 
 The distinction between logical file size and allocated disk space is important. CP/M allocates storage in blocks, so a file's allocated space may exceed the amount of data it contains.
 
-### File Attributes
+##### File Attributes
 
-STAT provides conventional CP/M facilities for examining and changing supported file attributes.
+Use a file option to change attributes in one conventional drive/user location:
 
-These include read-only and system attributes.
+```text
+A0>STAT REPORT.TXT $R/O
+A0>STAT REPORT.TXT $R/W
+A0>STAT B3:*.COM $SYS
+A0>STAT B3:*.COM $DIR
+```
 
-Attribute operations can be useful when protecting important files or changing how files appear in directory listings.
+`$R/O` sets read-only protection; `$R/W` clears it. `$SYS` sets the system attribute, while `$DIR` clears SYS so ordinary directory listings can show the file. Wildcards apply the change to all matching files and their extents. These operations do not provide an ARC-setting option.
 
-Be careful when changing the attributes of operating-system or application files. A protected file may have been marked that way deliberately.
+Check the filespec before changing attributes, especially with wildcards. Disk write protection can prevent changes. In a `.SUB` source file, double each dollar sign, for example `STAT REPORT.TXT $$R/O`.
 
-### Logical Device Assignments
+##### Logical Device Assignments
 
-STAT also provides the conventional CP/M facilities for examining and changing logical device assignments through the IOBYTE.
+STAT examines and changes the live IOBYTE, which selects the logical console, reader, punch, and list devices:
 
-These assignments control the supported console, reader, punch, and list-device selections.
+```text
+A0>STAT DEV:
+A0>STAT LST:=CRT:
+A0>STAT CRT:
+A0>STAT VAL:
+```
 
-For example, a logical list device may be associated with a printer interface provided by the BIOS.
+The second command maps list output to CRT. The third is an inverse query: it lists every logical device currently assigned to CRT, or reports that CRT is not assigned. Queries do not change assignments or test whether hardware is ready.
 
-The available assignments depend on the computer.
+| Logical device | Accepted targets |
+|---|---|
+| `CON:` | `TTY:`, `CRT:`, `BAT:`, `UC1:` |
+| `RDR:` | `TTY:`, `PTR:`, `UR1:`, `UR2:` |
+| `PUN:` | `TTY:`, `PTP:`, `UP1:`, `UP2:` |
+| `LST:` | `TTY:`, `CRT:`, `LPT:`, `UL1:` |
 
-Changing an IOBYTE assignment does not create hardware support for a device that the BIOS does not provide.
+Several assignments may be supplied together, for example `STAT CON:=CRT: LST:=LPT:`. An inverse query accepts one target from this table, followed by a colon, with no additional operands. It reports matching logical devices in CON/RDR/PUN/LST order.
 
-### Extended Selection Restrictions
+The available hardware routes depend on the BIOS. An accepted IOBYTE value does not create a device or guarantee that a particular interface is supported. `BAT:` selects the conventional batch console arrangement using reader input and list output where supported; it does not activate SUBMIT or XSUB.
+
+##### Extended Selection Restrictions
 
 BetterCP/M's compound drive/user selectors are supported for file inspection.
 
@@ -8026,7 +8325,7 @@ In particular, extended selectors cannot be used with the conventional drive-wid
 
 For those operations, use the supported conventional single-location syntax.
 
-### STAT and CONFIG
+##### STAT and CONFIG
 
 STAT and CONFIG serve different purposes when managing device assignments.
 
@@ -8038,37 +8337,39 @@ The two facilities complement one another.
 
 For example, you can use STAT to test a supported device assignment before saving it as a startup default through CONFIG.
 
-### Examples
+##### Examples
 
 Examine the current disk:
 
 ```text
-A>STAT
+A0>STAT
 ```
 
 Examine files in user area 3:
 
 ```text
-A>STAT B3:*.COM
+A0>STAT B3:*.COM
 ```
 
 Examine files across all user areas on drive B:
 
 ```text
-A>STAT B[-]:*.COM
+A0>STAT B[-]:*.COM
 ```
 
 Display file sizes for selected user areas:
 
 ```text
-A>STAT B[3,5]:*.DAT $S
+A0>STAT B[3,5]:*.DAT $S
 ```
 
-For further information about drive/user specifications and file attributes, see Chapter 4.
+For further information about drive/user specifications and file attributes, see [Chapter 4](#chapter-4).
 
 ---
 
-## 16.3 TIME — Date and Time
+<a id="section-16-3"></a>
+
+#### 16.3 TIME — Date and Time
 
 **Purpose:** Displays the current date and time, identifies the installed clock provider, and provides an interface for requesting clock-setting operations.
 
@@ -8076,7 +8377,7 @@ TIME uses BetterCP/M's resident clock services. It does not communicate directly
 
 BetterCP/M 1.0 includes read-only clock providers for FreHD and z80pack.
 
-### Syntax
+##### Syntax
 
 ```text
 TIME
@@ -8086,12 +8387,12 @@ TIME /SET LL HH HR MN SC
 
 The first form displays the date and time. The second identifies the installed clock provider. The third requests a clock-setting operation.
 
-### Displaying the Date and Time
+##### Displaying the Date and Time
 
 Enter:
 
 ```text
-A>TIME
+A0>TIME
 ```
 
 TIME obtains the current date and time from the installed provider.
@@ -8101,25 +8402,25 @@ A provider must be loaded before TIME can obtain clock information.
 On a TRS-80 Model 4 equipped with FreHD:
 
 ```text
-A>RSX LOAD FREHDCLK
-A>TIME
+A0>RSX LOAD FREHDCLK
+A0>TIME
 ```
 
 Under z80pack/cpmsim:
 
 ```text
-A>RSX LOAD ZPRTC
-A>TIME
+A0>RSX LOAD ZPRTC
+A0>TIME
 ```
 
 If no clock provider is installed, TIME reports that the required service is unavailable.
 
-### Identifying the Provider
+##### Identifying the Provider
 
 Enter:
 
 ```text
-A>TIME /PROVIDER
+A0>TIME /PROVIDER
 ```
 
 TIME displays information about the installed clock provider, including its identity, interface version, and capabilities.
@@ -8133,7 +8434,7 @@ The two providers supplied with BetterCP/M 1.0 are:
 
 The provider information can help determine which clock service is active and whether it supports setting the clock.
 
-### Setting the Clock
+##### Setting the Clock
 
 TIME includes the following SET syntax:
 
@@ -8156,7 +8457,7 @@ The day count is measured from the CP/M clock epoch of December 31, 1977, with d
 For example:
 
 ```text
-A>TIME /SET 01 00 12 34 56
+A0>TIME /SET 01 00 12 34 56
 ```
 
 requests January 1, 1978, at 12:34:56.
@@ -8167,7 +8468,7 @@ TIME checks the arguments before requesting the operation.
 
 Malformed hexadecimal values, invalid BCD digits, and out-of-range time fields are rejected.
 
-### Clock-Setting Limitations
+##### Clock-Setting Limitations
 
 **Neither clock provider supplied with BetterCP/M 1.0 supports setting the clock.**
 
@@ -8177,15 +8478,15 @@ The existing clock value remains unchanged.
 
 The SET interface is implemented for compatibility with the native clock service and for use with providers that support writable clocks.
 
-### P2DOS Compatibility
+##### P2DOS Compatibility
 
-BetterCP/M provides a separate resident extension, `P2DOS.RSX`, for applications using the P2DOS-compatible clock interface.
+An optional, separately buildable `P2DOS.RSX` supplies the P2DOS-compatible clock interface. It is not selected System Disk content; install a compatible carrier in A0 before using the example below.
 
 To use it under z80pack:
 
 ```text
-A>RSX LOAD ZPRTC
-A>RSX LOAD P2DOS
+A0>RSX LOAD ZPRTC
+A0>RSX LOAD P2DOS
 ```
 
 P2DOS obtains its clock services through the installed native provider.
@@ -8194,11 +8495,13 @@ Because the supplied providers are read-only, P2DOS-compatible requests to set t
 
 The P2DOS extension is not required for ordinary use of TIME.
 
-For additional information about clock providers and their capabilities, see Chapter 11.
+For additional information about clock providers and their capabilities, see [Chapter 11](#chapter-11).
 
 ---
 
-## 16.4 DUP — Disk Utilities
+<a id="section-16-4"></a>
+
+#### 16.4 DUP — Disk Utilities
 
 **Purpose:** Formats disks, copies entire disks, and checks disks for physical read errors.
 
@@ -8216,7 +8519,7 @@ All three operations are available through DUP's interactive menu or directly fr
 
 **Formatting and disk copying can destroy existing data.** Always verify the selected drives before confirming either operation.
 
-### Syntax
+##### Syntax
 
 ```text
 DUP
@@ -8229,22 +8532,22 @@ DUP /VER
 For example:
 
 ```text
-A>DUP
-A>DUP /FORMAT B:
-A>DUP /COPY A: B:
-A>DUP /CHECK C:
+A0>DUP
+A0>DUP /FORMAT B:
+A0>DUP /COPY A: B:
+A0>DUP /CHECK C:
 ```
 
 The command-line forms use the same operations, validations, and safeguards as the interactive menu.
 
 There is no command-line option for bypassing destructive-operation confirmations.
 
-### Interactive Operation
+##### Interactive Operation
 
 To start DUP interactively, enter:
 
 ```text
-A>DUP
+A0>DUP
 ```
 
 DUP displays its main menu:
@@ -8263,7 +8566,7 @@ Press Ctrl-C to exit the main menu. At a drive-selection prompt, Ctrl-C returns 
 
 The current DUP interface supports logical drives A through D.
 
-### Drive and Format Selection
+##### Drive and Format Selection
 
 DUP uses the disk-format definition already assigned to each logical drive.
 
@@ -8274,7 +8577,7 @@ If you need to change a drive's format, use CONFIG before starting DUP.
 For example:
 
 ```text
-A>CONFIG
+A0>CONFIG
 ```
 
 You can then select the appropriate disk format and associate it with the desired logical drive.
@@ -8287,7 +8590,7 @@ A format listed in the system's catalog is not necessarily supported for every o
 
 DUP reports unsupported operations rather than substituting another format.
 
-### Protected System Drive
+##### Protected System Drive
 
 BetterCP/M protects physical drive 0 against destructive DUP operations.
 
@@ -8299,7 +8602,7 @@ The protected drive may still be read by CHECK or used as the source of a disk-c
 
 This safeguard helps prevent accidental destruction of the running system disk.
 
-### Formatting a Disk
+##### Formatting a Disk
 
 To format a disk interactively, start DUP and select option A.
 
@@ -8308,7 +8611,7 @@ DUP asks you to identify the logical drive to format.
 Alternatively, enter:
 
 ```text
-A>DUP /FORMAT B:
+A0>DUP /FORMAT B:
 ```
 
 This requests formatting of drive B using its currently assigned format.
@@ -8323,7 +8626,7 @@ Only `Y` proceeds.
 
 Make sure the correct disk is inserted and that its existing contents are no longer needed.
 
-#### Format Verification
+###### Format Verification
 
 DUP verifies formatting by reading back the formatted tracks.
 
@@ -8339,7 +8642,7 @@ An interrupted format may leave the disk only partly formatted.
 
 Do not treat such a disk as ready for normal use.
 
-#### Interrupting Formatting
+###### Interrupting Formatting
 
 Ctrl-C can interrupt formatting between disk operations.
 
@@ -8347,7 +8650,7 @@ An operation already in progress may finish before the interruption takes effect
 
 If formatting is interrupted, the destination disk may require formatting again before it can be used reliably.
 
-### Copying a Disk
+##### Copying a Disk
 
 DUP's COPY operation duplicates the contents of an entire disk.
 
@@ -8362,7 +8665,7 @@ DUP asks for the source and destination drives.
 Alternatively, enter:
 
 ```text
-A>DUP /COPY A: B:
+A0>DUP /COPY A: B:
 ```
 
 This requests a copy from drive A to drive B.
@@ -8371,7 +8674,7 @@ The source is read, while the destination is written.
 
 **The destination's previous contents will be replaced.**
 
-#### Two-Drive Requirement
+###### Two-Drive Requirement
 
 DUP requires two different physical drives for disk copying.
 
@@ -8381,7 +8684,7 @@ The destination must also satisfy the system's drive-protection restrictions.
 
 In particular, physical drive 0 cannot be used as the destination.
 
-#### Copying Between Different Formats
+###### Copying Between Different Formats
 
 DUP examines the format assignments of the source and destination.
 
@@ -8395,7 +8698,7 @@ DUP requests confirmation before replacing the destination's contents.
 
 Check both the logical and physical drive assignments before proceeding.
 
-#### Copy Verification
+###### Copy Verification
 
 DUP verifies copied data by reading it back from the destination and comparing it with the source data.
 
@@ -8413,7 +8716,7 @@ An interrupted or failed copy may leave the destination partly written.
 
 Do not rely on such a disk as a complete backup.
 
-#### What DUP Copies
+###### What DUP Copies
 
 DUP copies the sector contents represented by the source disk's configured format.
 
@@ -8425,7 +8728,7 @@ It does not reproduce physical characteristics outside the represented sector da
 
 For ordinary BetterCP/M and compatible CP/M disks, the operation provides a verified sector-data copy.
 
-#### Temporary Format Changes
+###### Temporary Format Changes
 
 When copying between different disk formats, DUP may temporarily change the destination's active format assignment.
 
@@ -8437,7 +8740,7 @@ After copying, use CONFIG to assign the copied format before accessing the desti
 
 If you intend to use that format regularly, save the appropriate configuration as the new startup default.
 
-### Checking a Disk
+##### Checking a Disk
 
 DUP's CHECK operation examines a disk for physical read errors without modifying its contents.
 
@@ -8450,14 +8753,14 @@ DUP asks you to select the drive to examine.
 Alternatively, enter:
 
 ```text
-A>DUP /CHECK B:
+A0>DUP /CHECK B:
 ```
 
 This checks the disk in drive B using its currently assigned format.
 
 Unlike FORMAT and COPY, CHECK does not require confirmation because it performs no writes.
 
-#### What CHECK Examines
+###### What CHECK Examines
 
 CHECK reads the sectors represented by the disk-format definition assigned to the selected drive.
 
@@ -8467,7 +8770,7 @@ Ordinary read errors do not necessarily stop the check. DUP continues examining 
 
 When a physical sector contains several logical CP/M records, an unreadable sector is counted once rather than once for each record it contains.
 
-#### Check Results
+###### Check Results
 
 When CHECK completes, DUP displays:
 
@@ -8487,7 +8790,7 @@ indicates that all sectors examined during the check were readable.
 
 A nonzero count indicates that one or more sectors could not be read.
 
-#### What CHECK Does Not Do
+###### What CHECK Does Not Do
 
 CHECK examines physical readability. It does not repair disks or validate the logical consistency of the filesystem.
 
@@ -8503,7 +8806,7 @@ A disk can pass CHECK while still containing damaged or incorrect files.
 
 If important data may have been corrupted, compare it with a known good copy or restore it from a backup.
 
-#### Interrupting a Check
+###### Interrupting a Check
 
 Press Ctrl-C to interrupt CHECK.
 
@@ -8517,7 +8820,7 @@ Check stopped. No disk contents changed.
 
 An interrupted check is incomplete and should not be treated as evidence that the entire disk is readable.
 
-### Errors and Recovery
+##### Errors and Recovery
 
 DUP reports errors encountered during disk operations.
 
@@ -8527,13 +8830,13 @@ Where possible, DUP identifies the physical location associated with the error.
 
 For example, it may report the cylinder, side, sector, or record involved.
 
-#### Drive Not Ready
+###### Drive Not Ready
 
 If DUP reports that a drive is not ready, check that the correct disk is inserted and that the drive is available.
 
 On an emulator, verify that the appropriate disk image is attached.
 
-#### Write Protection
+###### Write Protection
 
 If a destination disk is write-protected, DUP cannot format it or write copied data to it.
 
@@ -8541,7 +8844,7 @@ Check the disk's write-protection setting before retrying.
 
 Do not remove write protection unless you're certain the destination disk is the one you intend to modify.
 
-#### Unsupported Operations
+###### Unsupported Operations
 
 Some disk formats can be described by BetterCP/M's format catalog but cannot be formatted or copied using a particular hardware backend.
 
@@ -8549,7 +8852,7 @@ DUP reports unsupported operations rather than silently substituting another for
 
 If an operation is rejected, examine the drive configuration and consult the platform documentation.
 
-#### Read and Verification Errors
+###### Read and Verification Errors
 
 A read error indicates that DUP could not obtain the requested data reliably.
 
@@ -8559,7 +8862,7 @@ For FORMAT and COPY, errors that make continued operation unsafe cause DUP to st
 
 The destination may be incomplete and should not be treated as successfully prepared.
 
-#### Interrupted Operations
+###### Interrupted Operations
 
 DUP recognizes Ctrl-C during physical disk operations.
 
@@ -8575,7 +8878,7 @@ The consequences depend on the operation:
 
 An interrupted FORMAT or COPY should be repeated from a reliable source after the cause of the interruption has been corrected.
 
-### Restoring Temporary Drive Assignments
+##### Restoring Temporary Drive Assignments
 
 When DUP temporarily changes a destination drive's format assignment during copying, it attempts to restore the previous assignment before returning to the command prompt.
 
@@ -8591,7 +8894,7 @@ DUP retains the information needed to restore the previous assignment and does n
 
 Do not reset the computer merely to dismiss this message. Follow the recovery prompt unless a hardware failure makes further recovery impossible.
 
-### Memory Requirements
+##### Memory Requirements
 
 DUP requires approximately 51K of available transient program memory.
 
@@ -8599,55 +8902,57 @@ If resident extensions have reduced the available TPA below this requirement, DU
 
 You may be able to recover the required memory by unloading resident extensions that are no longer needed.
 
-For information about managing extensions, see Chapter 8.
+For information about managing extensions, see [Chapter 8](#chapter-8).
 
-### Version Information
+##### Version Information
 
 To display DUP's version and build identification, enter:
 
 ```text
-A>DUP /VER
+A0>DUP /VER
 ```
 
 DUP displays its identification and returns to the command prompt without performing a disk operation.
 
-### Examples
+##### Examples
 
 Start the interactive disk utility:
 
 ```text
-A>DUP
+A0>DUP
 ```
 
 Format drive B:
 
 ```text
-A>DUP /FORMAT B:
+A0>DUP /FORMAT B:
 ```
 
 Copy the contents of drive A to drive B:
 
 ```text
-A>DUP /COPY A: B:
+A0>DUP /COPY A: B:
 ```
 
 Check drive C for unreadable sectors:
 
 ```text
-A>DUP /CHECK C:
+A0>DUP /CHECK C:
 ```
 
 Display version information:
 
 ```text
-A>DUP /VER
+A0>DUP /VER
 ```
 
-For an introduction to disk formats, system disks, and backup procedures, see Chapter 10, *Working with Disks*.
+For an introduction to disk formats, system disks, and backup procedures, see [Chapter 10](#chapter-10), *Working with Disks*.
 
 ---
 
-## 16.5 SYSGEN — System Generation
+<a id="section-16-5"></a>
+
+#### 16.5 SYSGEN — System Generation
 
 **Purpose:** Installs BetterCP/M onto a prepared system disk or saves an installed operating system as a system-image file.
 
@@ -8661,7 +8966,7 @@ SYSGEN also provides the reverse operation: reading the installed operating syst
 
 **SYSGEN does not format disks or copy ordinary files.** It installs or saves the operating system itself.
 
-### Syntax
+##### Syntax
 
 BetterCP/M 1.0 supports the following forms:
 
@@ -8687,12 +8992,12 @@ The principal operations are:
 
 Source drives may be A through D. Installation destinations may be B through D, subject to physical-drive restrictions.
 
-### Interactive Installation
+##### Interactive Installation
 
 To start SYSGEN interactively, enter:
 
 ```text
-A>SYSGEN
+A0>SYSGEN
 ```
 
 SYSGEN uses drive A as the source system and prompts:
@@ -8711,7 +9016,7 @@ If the destination is suitable, SYSGEN displays the installation details and req
 
 Press Ctrl-C at the destination prompt to exit without modifying any disk.
 
-### Installing from Another System Disk
+##### Installing from Another System Disk
 
 To specify both drives directly, use:
 
@@ -8722,7 +9027,7 @@ SYSGEN source: destination:
 For example:
 
 ```text
-A>SYSGEN A: B:
+A0>SYSGEN A: B:
 ```
 
 This reads the installed BetterCP/M system from drive A and installs it onto drive B.
@@ -8730,7 +9035,7 @@ This reads the installed BetterCP/M system from drive A and installs it onto dri
 Another example is:
 
 ```text
-A>SYSGEN C: D:
+A0>SYSGEN C: D:
 ```
 
 This installs the system from drive C onto drive D.
@@ -8741,14 +9046,14 @@ Using different logical drive letters is not sufficient if both letters refer to
 
 SYSGEN checks the physical assignments and refuses an installation that would use the same physical drive as both source and destination.
 
-### Installing from SYSTEM.SYS
+##### Installing from SYSTEM.SYS
 
 SYSGEN can also install BetterCP/M from a system-image package.
 
 For example:
 
 ```text
-A>SYSGEN SYSTEM.SYS B:
+A0>SYSGEN SYSTEM.SYS B:
 ```
 
 This reads `SYSTEM.SYS` from the current drive and user area and installs its operating-system image onto drive B.
@@ -8756,7 +9061,7 @@ This reads `SYSTEM.SYS` from the current drive and user area and installs its op
 A drive-qualified package name can also be used:
 
 ```text
-A>SYSGEN C:SYSTEM.SYS B:
+A0>SYSGEN C:SYSTEM.SYS B:
 ```
 
 This reads the package from drive C.
@@ -8766,7 +9071,7 @@ The package filename need not be `SYSTEM.SYS`. Any valid, explicitly specified C
 For example:
 
 ```text
-A>SYSGEN B:BASE090.SYS C:
+A0>SYSGEN B:BASE090.SYS C:
 ```
 
 This installs the saved system image contained in `BASE090.SYS` onto drive C.
@@ -8775,7 +9080,7 @@ Package filenames do not support wildcard specifications, compound drive/user se
 
 An unqualified package name refers to the current drive and user area.
 
-### System-Image Packages
+##### System-Image Packages
 
 A BetterCP/M system-image package contains the operating-system image together with information needed to identify and install it correctly.
 
@@ -8795,7 +9100,7 @@ If the package is invalid or incompatible, SYSGEN refuses the operation before w
 
 A structurally valid package is not necessarily free from every possible form of corruption. Use system images obtained from a trusted source.
 
-### Preparing the Destination Disk
+##### Preparing the Destination Disk
 
 Before using SYSGEN, the destination disk must already have a suitable format.
 
@@ -8806,9 +9111,9 @@ If the disk needs to be formatted, use CONFIG to establish the appropriate disk-
 For example:
 
 ```text
-A>CONFIG
-A>DUP /FORMAT B:
-A>SYSGEN SYSTEM.SYS B:
+A0>CONFIG
+A0>DUP /FORMAT B:
+A0>SYSGEN SYSTEM.SYS B:
 ```
 
 This illustrates the general preparation sequence.
@@ -8817,7 +9122,7 @@ The correct format depends on the computer and the system image being installed.
 
 The destination must provide a compatible bootstrap arrangement and sufficient reserved space for BetterCP/M.
 
-### Compatible Disk Formats
+##### Compatible Disk Formats
 
 SYSGEN does not require the source and destination disks to have identical filesystem capacities.
 
@@ -8839,7 +9144,7 @@ If the destination's bootstrap geometry is incompatible, SYSGEN refuses the inst
 
 It does not attempt to convert the disk into a different format.
 
-### Protected System Drive
+##### Protected System Drive
 
 BetterCP/M protects physical drive 0 against SYSGEN destination writes.
 
@@ -8855,7 +9160,7 @@ Physical drive 0 is protected as the running system disk.
 
 This safeguard helps prevent accidental replacement of the operating system from which the computer is currently running.
 
-### Confirming Installation
+##### Confirming Installation
 
 Before writing to the destination, SYSGEN displays the installation information and requests confirmation.
 
@@ -8875,7 +9180,7 @@ The confirmation is required whether SYSGEN was started interactively or with co
 
 BetterCP/M 1.0 does not provide an option for bypassing this confirmation.
 
-### Preserving Existing Files
+##### Preserving Existing Files
 
 SYSGEN replaces the operating system in the reserved system area.
 
@@ -8891,7 +9196,7 @@ However, this protection does not mean that every disk is suitable.
 
 A disk with no compatible system area, or with insufficient reserved space, cannot be made bootable merely by running SYSGEN.
 
-### Installation and Verification
+##### Installation and Verification
 
 SYSGEN reads the complete source image before beginning destination writes.
 
@@ -8915,7 +9220,7 @@ Those files must be copied separately.
 
 For example, a complete system disk may also require the appropriate command utilities, resident extensions, and `STARTUP.SUB`.
 
-### Saving an Installed System to a Package
+##### Saving an Installed System to a Package
 
 SYSGEN can also read the operating system from a disk and save it as a `SYSTEM.SYS` package.
 
@@ -8924,7 +9229,7 @@ This is useful for preserving a working configuration, maintaining several syste
 To save the installed system from drive A:
 
 ```text
-A>SYSGEN A:
+A0>SYSGEN A:
 ```
 
 SYSGEN reads the system area from drive A and creates `SYSTEM.SYS` in the current drive and user area.
@@ -8932,7 +9237,7 @@ SYSGEN reads the system area from drive A and creates `SYSTEM.SYS` in the curren
 You can specify another filename and destination drive:
 
 ```text
-A>SYSGEN A: B:BASE090.SYS
+A0>SYSGEN A: B:BASE090.SYS
 ```
 
 This saves the installed system from drive A as `BASE090.SYS` on drive B.
@@ -8940,10 +9245,10 @@ This saves the installed system from drive A as `BASE090.SYS` on drive B.
 The resulting package can later be installed using:
 
 ```text
-A>SYSGEN B:BASE090.SYS C:
+A0>SYSGEN B:BASE090.SYS C:
 ```
 
-### What a Saved Package Contains
+##### What a Saved Package Contains
 
 A saved system package includes the installed BetterCP/M operating system and its saved configuration information.
 
@@ -8957,7 +9262,7 @@ For example, changes made to `STARTUP.SUB` are not captured in the system-image 
 
 To preserve both the operating system and its supporting files, use a complete disk backup.
 
-### Replacing an Existing Package
+##### Replacing an Existing Package
 
 If the requested output filename already exists, SYSGEN asks:
 
@@ -8977,7 +9282,7 @@ A successful operation displays:
 Package exported and verified.
 ```
 
-### Interrupted Package Export
+##### Interrupted Package Export
 
 SYSGEN takes precautions to avoid replacing an existing package with an incomplete one.
 
@@ -9000,7 +9305,7 @@ SYSGEN reports publication failures and identifies the files that should be insp
 
 The export procedure reduces the risk of losing an existing package, but it cannot guarantee recovery from every possible disk or power failure.
 
-### Interrupting Installation
+##### Interrupting Installation
 
 SYSGEN recognizes Ctrl-C during installation.
 
@@ -9018,13 +9323,13 @@ SYSGEN does not automatically restore the previous operating system after a part
 
 Correct the cause of the interruption and repeat installation from a valid source.
 
-### Installation Errors
+##### Installation Errors
 
 SYSGEN reports errors encountered while reading the source, validating the destination, writing system records, or verifying the installed image.
 
 Common causes include incompatible disk formats, insufficient reserved system space, unavailable drives, write protection, and read or write failures.
 
-#### Invalid System Package
+###### Invalid System Package
 
 If a system-image package is invalid or cannot be installed on the selected destination, SYSGEN may report:
 
@@ -9034,7 +9339,7 @@ The system package is invalid or cannot represent the destination.
 
 Check that the package is a valid BetterCP/M system image and that it is compatible with the destination.
 
-#### Incompatible Bootstrap Geometry
+###### Incompatible Bootstrap Geometry
 
 If the destination's bootstrap geometry is unsuitable, SYSGEN reports:
 
@@ -9046,7 +9351,7 @@ Use CONFIG to examine the destination's format assignment.
 
 SYSGEN cannot convert an incompatible disk format into a bootable one.
 
-#### Insufficient Reserved Space
+###### Insufficient Reserved Space
 
 If the destination does not provide enough reserved system space, SYSGEN reports:
 
@@ -9056,7 +9361,7 @@ Destination reserved system area is too small (160 records required).
 
 A disk with insufficient reserved space cannot accept the BetterCP/M 1.0 system image.
 
-#### Read and Write Failures
+###### Read and Write Failures
 
 If a source read fails, SYSGEN stops before beginning destination installation.
 
@@ -9064,7 +9369,7 @@ If a destination write or verification fails after installation has begun, the d
 
 Do not assume that such a disk is bootable.
 
-### Memory Requirements
+##### Memory Requirements
 
 Saving an installed system to a package requires at least 36K of available transient program memory.
 
@@ -9072,67 +9377,67 @@ If resident extensions have reduced the available TPA below this requirement, SY
 
 Unload unnecessary extensions before retrying.
 
-### Version Information
+##### Version Information
 
 To display SYSGEN's version and build identification:
 
 ```text
-A>SYSGEN /VER
+A0>SYSGEN /VER
 ```
 
 The utility displays its identification and returns to the command prompt without performing an installation or export.
 
-### Examples
+##### Examples
 
 Start interactive installation:
 
 ```text
-A>SYSGEN
+A0>SYSGEN
 ```
 
 Install from drive A onto drive B:
 
 ```text
-A>SYSGEN A: B:
+A0>SYSGEN A: B:
 ```
 
 Install from a system-image package:
 
 ```text
-A>SYSGEN SYSTEM.SYS B:
+A0>SYSGEN SYSTEM.SYS B:
 ```
 
 Install from a package on another drive:
 
 ```text
-A>SYSGEN C:SYSTEM.SYS B:
+A0>SYSGEN C:SYSTEM.SYS B:
 ```
 
 Save the installed system from drive A:
 
 ```text
-A>SYSGEN A:
+A0>SYSGEN A:
 ```
 
 Save the installed system under a specified filename:
 
 ```text
-A>SYSGEN A: B:BASE090.SYS
+A0>SYSGEN A: B:BASE090.SYS
 ```
 
 Restore a saved system image:
 
 ```text
-A>SYSGEN B:BASE090.SYS C:
+A0>SYSGEN B:BASE090.SYS C:
 ```
 
 Display version information:
 
 ```text
-A>SYSGEN /VER
+A0>SYSGEN /VER
 ```
 
-### SYSGEN, DUP, and SYSBUILD
+##### SYSGEN, DUP, and SYSBUILD
 
 BetterCP/M provides three utilities with related but distinct purposes.
 
@@ -9146,11 +9451,13 @@ For ordinary system maintenance, DUP and SYSGEN provide the facilities needed to
 
 SYSBUILD is primarily intended for developers and system builders preparing new operating-system images.
 
-For an introduction to disk preparation, installation, and backup procedures, see Chapter 10, *Working with Disks*.
+For an introduction to disk preparation, installation, and backup procedures, see [Chapter 10](#chapter-10), *Working with Disks*.
 
 ---
 
-# Chapter 17 — Batch and Extension Commands
+<a id="chapter-17"></a>
+
+### Chapter 17 — Batch and Extension Commands
 
 BetterCP/M provides facilities for automating command sequences and extending the operating environment without rebuilding the operating system.
 
@@ -9167,9 +9474,11 @@ This chapter covers four utilities:
 | CPX | Manage Command Processor Extensions |
 | RSX | Manage Resident System Extensions |
 
-Chapter 6 introduced batch processing, and Chapter 8 explained resident extensions. This chapter provides the corresponding command references.
+[Chapter 6](#chapter-6) introduced batch processing, and [Chapter 8](#chapter-8) explained resident extensions. This chapter provides the corresponding command references.
 
-## 17.1 SUBMIT — Batch Command Processing
+<a id="section-17-1"></a>
+
+#### 17.1 SUBMIT — Batch Command Processing
 
 **Purpose:** Executes a sequence of commands stored in a text file.
 
@@ -9177,7 +9486,7 @@ SUBMIT allows frequently used command sequences to be saved and executed without
 
 It retains the familiar CP/M batch-processing conventions, including `.SUB` files and positional parameter substitution.
 
-### Syntax
+##### Syntax
 
 ```text
 SUBMIT filename [parameters]
@@ -9188,12 +9497,12 @@ The filename identifies a SUBMIT command file. The `.SUB` extension is normally 
 For example:
 
 ```text
-A>SUBMIT BACKUP
+A0>SUBMIT BACKUP
 ```
 
 executes the commands contained in `BACKUP.SUB`.
 
-### Creating a SUBMIT File
+##### Creating a SUBMIT File
 
 A SUBMIT file is an ordinary text file containing commands.
 
@@ -9210,7 +9519,7 @@ DIR B:*.ASM
 To execute it:
 
 ```text
-A>SUBMIT BACKUP
+A0>SUBMIT BACKUP
 ```
 
 SUBMIT arranges for the commands to be executed in sequence.
@@ -9219,7 +9528,7 @@ The commands are interpreted by the normal BetterCP/M command environment.
 
 Consequently, a SUBMIT file can contain resident commands, transient programs, and commands provided by installed CPXs.
 
-### Parameters
+##### Parameters
 
 SUBMIT files can accept parameters supplied when the file is invoked.
 
@@ -9236,7 +9545,7 @@ $1
 Enter:
 
 ```text
-A>SUBMIT BUILD TEST
+A0>SUBMIT BUILD TEST
 ```
 
 SUBMIT substitutes `TEST` for `$1`, producing the equivalent of:
@@ -9249,7 +9558,7 @@ TEST
 
 This allows the same command file to be used with different programs.
 
-### Multiple Parameters
+##### Multiple Parameters
 
 A SUBMIT file can refer to several parameters.
 
@@ -9262,7 +9571,7 @@ For example, `COPYFILE.SUB` might contain:
 You could invoke it with:
 
 ```text
-A>SUBMIT COPYFILE REPORT.TXT B:REPORT.TXT
+A0>SUBMIT COPYFILE REPORT.TXT B:REPORT.TXT
 ```
 
 The resulting command would be:
@@ -9273,11 +9582,25 @@ The resulting command would be:
 
 Parameter substitution is textual. SUBMIT does not interpret filenames or options while performing the substitution.
 
-For a literal dollar sign in the `.SUB` source, write `$$`. For example, write `[$$ARC]` so the executed command receives `[$ARC]`. A bare `$ARC` causes `Parameter Error`. See Chapter 6, *Literal Dollar Signs in Command Files*, for a complete backup example.
+For a literal dollar sign in the `.SUB` source, write `$$`. For example, write `[$$ARC]` so the executed command receives `[$ARC]`. A bare `$ARC` causes `Parameter Error`. See [Chapter 6](#chapter-6), *Literal Dollar Signs in Command Files*, for a complete backup example.
 
 The resulting command is interpreted by the command processor or utility that executes it.
 
-### Command Execution
+##### Queue Location and Limits
+
+SUBMIT reads the `.SUB` source in the invoking user area, using the filename's drive qualifier when supplied. It always writes the shared command/input queue as `A0:$$$.SUB`. A0 must be writable and have room for the queue, even if the script and all working files are on another drive. Queue access restores the caller's drive/user context; commands may change drive or user without relocating the queue.
+
+The CCP consumes command lines from this queue. XSUB uses the same queue for buffered program input. Run one submitted procedure at a time; starting another procedure replaces the shared queue rather than creating an independent job.
+
+- The nine ordinary positional parameters are `$1` through `$9`; `$0` refers to the submitted command-file name from the invocation.
+- Parameters are separated by blanks. There is no quoting language for grouping a parameter containing spaces, and no named variables or defaults. A missing referenced parameter expands to empty text, so check that all required arguments are supplied. Invalid dollar references produce `Parameter Error`.
+- Each expanded command is limited to 125 bytes, after parameter, `$$`, and caret-control expansion. An overlong command produces `Command Too Long`.
+- The complete expanded procedure must fit the 2K aggregate command buffer, including its bookkeeping. This is not a 2K source-file allowance; a procedure with many short lines can also reach the limit and produce `Command Buffer Overflow`. Split a long procedure into smaller separately submitted jobs.
+- Empty source lines are omitted. `^A` through `^Z` in the source produce the corresponding control bytes; literal dollar signs require `$$`.
+
+The queue is deleted at normal exhaustion, after a bad submitted command, on console abort, and after malformed-queue or queue read/close failures. An ordinary supported warm boot can reconstruct the command environment and continue pending batch lines. Cancelling a procedure does not undo work already completed. With XSUB, queue exhaustion or an unusable queue returns buffered-input requests to the keyboard.
+
+##### Command Execution
 
 SUBMIT commands execute in the normal BetterCP/M command environment.
 
@@ -9287,11 +9610,11 @@ Ordinary warm boots preserve the batch-processing mechanisms needed to continue 
 
 A cold boot establishes a new operating session rather than continuing a previous batch.
 
-### Interactive Commands
+##### Interactive Commands
 
 A command executed from a SUBMIT file does not automatically become noninteractive.
 
-For example, COPY may ask whether an existing destination file should be replaced.
+For example, transient `COPY.COM` may ask whether an existing writable destination file should be replaced. Resident COPY instead refuses the collision unless `/O` is supplied. Use `:COPY` to select the transient utility explicitly.
 
 If the batch is intended to run unattended, use the command's supported options to specify the desired behavior.
 
@@ -9305,7 +9628,7 @@ uses COPY's batch option and requests replacement of existing writable destinati
 
 The `/B` option belongs to COPY. It does not change SUBMIT's behavior or make other commands noninteractive.
 
-### Errors and Interruptions
+##### Errors and Interruptions
 
 Errors during batch execution may interrupt the procedure or affect subsequent commands.
 
@@ -9317,7 +9640,7 @@ For example, if a batch copies several files and encounters an error partway thr
 
 Before restarting an interrupted batch, examine the results to determine which operations have completed.
 
-### Startup Files
+##### Startup Files
 
 BetterCP/M uses SUBMIT for its standard startup procedure.
 
@@ -9329,39 +9652,39 @@ SUBMIT STARTUP
 
 This executes `STARTUP.SUB`.
 
-The supplied startup file displays the BetterCP/M identification banner and can be customized to perform additional operations.
-
-For example, it may load resident extensions needed for a preferred working environment.
+[Section 7.3](#section-7-3) lists the supplied scripts in order. cpmsim displays the banner only; Model 4 already loads M4SCRN and ADM3A, clears the screen, then displays the banner. Edit `A0:STARTUP.SUB` to customize that sequence.
 
 The startup command is executed during a cold boot, not during an ordinary warm boot.
 
-For information about configuring startup behavior, see Chapter 7.
+For information about configuring startup behavior, see [Chapter 7](#chapter-7).
 
-### Examples
+##### Examples
 
 Execute a command file:
 
 ```text
-A>SUBMIT BACKUP
+A0>SUBMIT BACKUP
 ```
 
 Execute a command file with one parameter:
 
 ```text
-A>SUBMIT BUILD TEST
+A0>SUBMIT BUILD TEST
 ```
 
 Execute a command file with two parameters:
 
 ```text
-A>SUBMIT COPYFILE REPORT.TXT B:REPORT.TXT
+A0>SUBMIT COPYFILE REPORT.TXT B:REPORT.TXT
 ```
 
-For an introduction to batch processing, see Chapter 6.
+For an introduction to batch processing, see [Chapter 6](#chapter-6).
 
 ---
 
-## 17.2 XSUB — Extended Batch Input
+<a id="section-17-2"></a>
+
+#### 17.2 XSUB — Extended Batch Input
 
 **Purpose:** Allows compatible programs to receive input from a SUBMIT file through the CP/M buffered console-input interface.
 
@@ -9373,7 +9696,7 @@ For example, an editor or utility might ask for a filename or an option.
 
 XSUB extends batch processing by allowing submitted input to be supplied to such programs.
 
-### How XSUB Works
+##### How XSUB Works
 
 XSUB provides a resident input facility that cooperates with SUBMIT.
 
@@ -9394,17 +9717,45 @@ XSUB does not automatically support every interactive program.
 
 Programs that read the keyboard directly, use private input routines, or bypass the supported BDOS console-input interface may still require ordinary keyboard input.
 
-### Using XSUB
+##### Using XSUB
 
-XSUB is normally activated as part of a SUBMIT procedure.
+The activation command is:
 
-The batch file can then supply input to compatible programs.
+```text
+XSUB
+```
 
-The supported invocation and placement of XSUB depend on the batch-processing arrangement.
+Place it before the program to be automated. `XSUB.COM` belongs to the **Utilities Disk**, not the current System Disk. Its protected companion, `BATCHIO.RSX`, must be in A0, along with the matched-build `R3PACK.RSX` manager runtime. If your utility media lacks BATCHIO, obtain the matching companion before using XSUB. The current distribution manifest assigns XSUB to the Utilities Disk but does not separately specify where BATCHIO is packaged.
 
-Unlike an ordinary transient utility, XSUB provides resident support that can remain available while another program executes.
+Before running the example, make `XSUB.COM`, `ED.COM`, `TYPE.COM`, and `SUBMIT.COM` available on the command search path and `BATCHIO.RSX` and `R3PACK.RSX` available in A0. Keep A0 writable for the shared queue, and use a writable working drive/user where `XDEMO.TXT` does not already exist.
 
-### Returning to Keyboard Input
+Save this complete procedure as `XDEMO.SUB` in the working location:
+
+```text
+XSUB
+ED XDEMO.TXT
+IHELLO FROM XSUB^L^Z
+E
+:TYPE XDEMO.TXT
+```
+
+Type the caret sequences `^L` and `^Z` as two ordinary source characters each; SUBMIT converts them to control bytes. Run:
+
+```text
+A0>SUBMIT XDEMO
+```
+
+XSUB activates BATCHIO. ED then receives `IHELLO FROM XSUB`, followed by the expanded controls, as its first buffered command line. Inline `I` inserts the text, Ctrl-L adds a line ending, and Ctrl-Z ends the inline insertion. ED receives `E` as its next command, saves the new file, and exits. The command processor resumes the remaining queue and TYPE displays:
+
+```text
+HELLO FROM XSUB
+```
+
+The response lines belong immediately after the program invocation because each BDOS Function 10 request consumes the next queue line. They are not separate CCP commands while the program is reading them. Supply exactly the responses the program will consume; leftover responses can otherwise be interpreted as commands, and extra input requests can consume intended later commands.
+
+This example deliberately uses ED's inline insertion command. ED's interactive `I` mode reads individual characters through Function 1, which XSUB does not supply. XSUB supports **BDOS Function 10 buffered console input**, not arbitrary keyboard input.
+
+##### Returning to Keyboard Input
 
 When the submitted input has been exhausted, XSUB allows the program to continue receiving input from the keyboard.
 
@@ -9414,7 +9765,7 @@ This is useful when only the repetitive portion of an operation needs to be auto
 
 A malformed or unusable submitted-input queue is discarded before returning to ordinary console input.
 
-### Resident BATCHIO Support
+##### Resident BATCHIO Support
 
 BetterCP/M's XSUB facility uses a resident component named `BATCHIO`.
 
@@ -9427,18 +9778,18 @@ However, some program-termination paths may leave it resident.
 You can examine installed RSXs with:
 
 ```text
-A>RSX LIST
+A0>RSX LIST
 ```
 
 To remove BATCHIO explicitly:
 
 ```text
-A>RSX UNLOAD BATCHIO
+A0>RSX UNLOAD BATCHIO
 ```
 
 This releases its resident memory when it is no longer needed.
 
-### Memory Considerations
+##### Memory Considerations
 
 Like other resident extensions, BATCHIO occupies memory that would otherwise be available to transient programs.
 
@@ -9446,7 +9797,7 @@ Unloading it when no longer needed can restore available program memory.
 
 The exact amount recovered depends on the other resident extensions installed.
 
-### Limitations
+##### Limitations
 
 XSUB is intended for programs that use compatible buffered console-input services.
 
@@ -9456,11 +9807,13 @@ It does not guarantee automation of programs that communicate directly with keyb
 
 For ordinary command sequences that do not require input to running programs, SUBMIT alone is sufficient.
 
-For an introduction to XSUB and batch processing, see Chapter 6.
+For an introduction to XSUB and batch processing, see [Chapter 6](#chapter-6).
 
 ---
 
-## 17.3 CPX — Command Processor Extension Manager
+<a id="section-17-3"></a>
+
+#### 17.3 CPX — Command Processor Extension Manager
 
 **Purpose:** Displays, loads, and unloads Command Processor Extensions.
 
@@ -9472,7 +9825,7 @@ The standard BetterCP/M command environment includes `RCP.CPX`, which supplies f
 
 The CPX manager allows additional command packages to be installed or removed.
 
-### Command Forms
+##### Command Forms
 
 The principal CPX management commands are:
 
@@ -9482,22 +9835,22 @@ CPX LOAD name
 CPX UNLOAD name
 ```
 
-The `name` argument identifies the extension to be managed.
+The `name` argument is an unqualified CPX filename stem, with optional `.CPX`. Blank names, drive qualifiers, wildcards and other extensions are rejected.
 
 For example:
 
 ```text
-A>CPX LOAD TOOLS
+A0>CPX LOAD TOOLS
 ```
 
 requests the command package `TOOLS.CPX`.
 
-### Listing CPXs
+##### Listing CPXs
 
 To examine the configured command processor extensions, enter:
 
 ```text
-A>CPX LIST
+A0>CPX LIST
 ```
 
 BetterCP/M displays information about the configured CPX packages.
@@ -9510,7 +9863,7 @@ BetterCP/M may retain an extension's configured entry even when the correspondin
 
 Consequently, the presence of a name in `CPX LIST` does not by itself establish that its commands are available.
 
-### Loading a CPX
+##### Loading a CPX
 
 To load an additional command package, enter:
 
@@ -9521,46 +9874,44 @@ CPX LOAD name
 For example:
 
 ```text
-A>CPX LOAD TOOLS
+A0>CPX LOAD TOOLS
 ```
 
 BetterCP/M attempts to load the specified extension.
 
-The extension must be available in the expected location and compatible with the running BetterCP/M system.
+The file must be available as `A0:TOOLS.CPX` and compatible with the running system. Keep configured carriers in A0 for reconstruction after warm boot or transient execution.
 
 If loading succeeds, the commands supplied by the extension become available through the normal command environment.
 
 For example, if `TOOLS.CPX` provides a command named `TOOLS`, that command can be invoked directly:
 
 ```text
-A>TOOLS
+A0>TOOLS
 ```
 
 The actual commands provided depend on the extension.
 
-### Loading Several CPXs
+##### Loading Several CPXs
 
-BetterCP/M can maintain more than one CPX.
+BetterCP/M maintains an ordered **four-entry reconstruction profile**. The standard RCP entry occupies one slot, leaving three for additional packages. A configured entry still occupies its slot if its carrier is missing or fails validation.
 
-The command environment considers installed extensions in a defined order when resolving resident command names.
+`CPX LOAD name` appends a new name after the existing entries. Loading an already configured name is a successful no-op: it neither adds another entry nor changes the order. A fifth distinct entry is rejected without changing the profile.
 
-This matters when two extensions provide commands with the same name.
+Successfully reconstructed CPXs are consulted in profile order after the CCP's built-in commands and before transient lookup. The first CPX that handles a command wins. Appending a package therefore does not give it precedence over an earlier package providing the same command. `CPX LIST` shows the configured order.
 
-In ordinary use, you need not be concerned with the extension order unless a command name is duplicated.
-
-For example, installing another CPX that provides DIR may affect which resident DIR implementation is selected.
+`CPX UNLOAD name` removes the named entry and shifts later entries left, preserving their relative order. Unloading an absent name is a successful no-op. To deliberately reorder packages, remove and reload the affected entries in the desired order, keeping the four-entry limit in mind.
 
 If you need to execute a particular transient utility regardless of the resident command environment, use BetterCP/M's explicit transient-execution prefix:
 
 ```text
-A>:DIR
+A0>:DIR
 ```
 
 This bypasses resident command lookup.
 
-For more information about command search and execution, see Chapter 5.
+For more information about command search and execution, see [Chapter 5](#chapter-5).
 
-### Unloading a CPX
+##### Unloading a CPX
 
 To remove an optional command package, enter:
 
@@ -9571,7 +9922,7 @@ CPX UNLOAD name
 For example:
 
 ```text
-A>CPX UNLOAD TOOLS
+A0>CPX UNLOAD TOOLS
 ```
 
 After the extension has been removed, its commands are no longer available as resident commands.
@@ -9580,17 +9931,13 @@ Corresponding transient programs, if present, remain available through the ordin
 
 Unloading a CPX can be useful when you no longer need its commands or want to change the resident command environment.
 
-### Required Command Components
+##### Removing the Standard Command Package
 
-Not every command component is necessarily optional.
+RCP is part of the selected standard environment, but the current CPX profile manager does not reserve or lock its entry. `CPX UNLOAD RCP` is allowed. Removing it takes away commands supplied by RCP, including resident DIR, ERA, REN, TYPE, COPY, MOVE, CLS and VER. Built-in CCP commands and available transient utilities remain usable; a transient is available only if its file has been installed.
 
-Some components are required for normal BetterCP/M operation.
+For example, the System Disk supplies `DIR.COM` but does not supply `CLS.COM`. To restore the normal command package, keep `A0:RCP.CPX` available and enter `CPX LOAD RCP`. It is appended in the usual way, so check the resulting order with `CPX LIST`.
 
-The extension-management facilities enforce the applicable restrictions.
-
-If an extension cannot be unloaded, examine the reported error rather than attempting to bypass the restriction.
-
-### Recovering from an Unusable CPX
+##### Recovering from an Unusable CPX
 
 If an optional CPX file fails validation, BetterCP/M may display:
 
@@ -9607,7 +9954,7 @@ The rejected extension may nevertheless remain in the configured profile.
 For example:
 
 ```text
-A>CPX LIST
+A0>CPX LIST
 ```
 
 may still show the extension.
@@ -9615,7 +9962,7 @@ may still show the extension.
 To remove an unusable optional CPX, enter:
 
 ```text
-A>CPX UNLOAD BAD
+A0>CPX UNLOAD BAD
 ```
 
 where `BAD` is the name of the affected extension.
@@ -9626,7 +9973,7 @@ Until the problem is corrected, the warning may recur when BetterCP/M restores t
 
 A missing optional CPX file may simply be skipped without producing the same warning.
 
-### CPXs and Available Memory
+##### CPXs and Available Memory
 
 Command Processor Extensions occupy memory in the active command environment, but their command code is reclaimable, along with the CCP, when a transient program starts. BetterCP/M shuts down the active CPX chain before transferring control and reconstructs the command environment on warm boot.
 
@@ -9634,37 +9981,39 @@ Keeping a CPX configured makes its commands available at the prompt without perm
 
 Use `STAT MEM` to see the current CCP, CPX, and RSX regions and the maximum loadable COM size. The maximum can include the reclaimable CCP and CPX regions shown in the map.
 
-### CPX Examples
+##### CPX Examples
 
 List configured command extensions:
 
 ```text
-A>CPX LIST
+A0>CPX LIST
 ```
 
 Load an optional extension:
 
 ```text
-A>CPX LOAD TOOLS
+A0>CPX LOAD TOOLS
 ```
 
 Unload an optional extension:
 
 ```text
-A>CPX UNLOAD TOOLS
+A0>CPX UNLOAD TOOLS
 ```
 
 Request a transient utility rather than a resident command:
 
 ```text
-A>:DIR /WHEREIS ED.COM
+A0>:DIR /WHEREIS ED.COM
 ```
 
-For an introduction to CPXs and their relationship to the command environment, see Chapter 8, *Resident Extensions*.
+For an introduction to CPXs and their relationship to the command environment, see [Chapter 8](#chapter-8), *Resident Extensions*.
 
 ---
 
-## 17.4 RSX — Resident System Extension Management
+<a id="section-17-4"></a>
+
+#### 17.4 RSX — Resident System Extension Management
 
 **Purpose:** Lists, loads, and unloads Resident System Extensions (RSXs).
 
@@ -9674,7 +10023,9 @@ BetterCP/M uses RSXs for several purposes, including terminal emulation, clock s
 
 The RSX utility allows you to manage these extensions without rebuilding the operating system.
 
-### Syntax
+Normal carrier loading reads `A0:name.RSX`, regardless of the current drive/user. Keep the matched-build `R3PACK.RSX` runtime container in A0 too; it is required by the manager, not an extension to load with `RSX LOAD`. See [Section 8.2](#section-8-2) for installation details.
+
+##### Syntax
 
 The principal command forms are:
 
@@ -9689,17 +10040,17 @@ The `name` argument identifies the extension to be loaded or unloaded. The `.RSX
 For example:
 
 ```text
-A>RSX LOAD ADM3A
+A0>RSX LOAD ADM3A
 ```
 
 loads the ADM-3A terminal personality from `ADM3A.RSX`.
 
-### Listing Installed RSXs
+##### Listing Installed RSXs
 
 To display the currently installed Resident System Extensions, enter:
 
 ```text
-A>RSX LIST
+A0>RSX LIST
 ```
 
 BetterCP/M displays the installed extensions.
@@ -9708,7 +10059,7 @@ This is useful when determining which system services are available, checking wh
 
 For example, you might use RSX LIST to determine whether a terminal personality or clock provider is installed before running an application that requires it.
 
-### Loading an RSX
+##### Loading an RSX
 
 To load an extension, enter:
 
@@ -9719,7 +10070,7 @@ RSX LOAD name
 For example:
 
 ```text
-A>RSX LOAD FREHDCLK
+A0>RSX LOAD FREHDCLK
 ```
 
 loads the FreHD clock provider.
@@ -9729,7 +10080,7 @@ Once successfully loaded, the provider makes its supported clock services availa
 Another example is:
 
 ```text
-A>RSX LOAD VT52
+A0>RSX LOAD VT52
 ```
 
 which loads the VT52 terminal personality.
@@ -9738,7 +10089,7 @@ Some extensions require other resident components to be loaded first.
 
 The extension's documentation identifies these requirements.
 
-### Extension Dependencies
+##### Extension Dependencies
 
 Some RSXs depend on services provided by other extensions.
 
@@ -9751,8 +10102,8 @@ The backend must be loaded before the terminal personality.
 For example, on a TRS-80 Model 4:
 
 ```text
-A>RSX LOAD M4SCRN
-A>RSX LOAD ADM3A
+A0>RSX LOAD M4SCRN
+A0>RSX LOAD ADM3A
 ```
 
 The first command loads the Model 4 screen backend.
@@ -9762,13 +10113,13 @@ The second loads the ADM-3A terminal personality.
 On a system using the ANSI screen backend, the corresponding commands are:
 
 ```text
-A>RSX LOAD ANSISCRN
-A>RSX LOAD ADM3A
+A0>RSX LOAD ANSISCRN
+A0>RSX LOAD ADM3A
 ```
 
 These commands establish the supported ADM-3A display environment using the appropriate backend.
 
-### Unloading an RSX
+##### Unloading an RSX
 
 To remove an installed extension, enter:
 
@@ -9779,7 +10130,7 @@ RSX UNLOAD name
 For example:
 
 ```text
-A>RSX UNLOAD ADM3A
+A0>RSX UNLOAD ADM3A
 ```
 
 removes the ADM-3A terminal personality.
@@ -9788,15 +10139,15 @@ Once the extension has been removed, its services are no longer available.
 
 Unloading an extension also releases the memory occupied by that extension when the resident manager can reclaim it.
 
-### Unloading Dependent Extensions
+##### Unloading Dependent Extensions
 
 When several extensions depend on one another, remove them in the reverse order from which they were loaded.
 
 For example:
 
 ```text
-A>RSX UNLOAD ADM3A
-A>RSX UNLOAD M4SCRN
+A0>RSX UNLOAD ADM3A
+A0>RSX UNLOAD M4SCRN
 ```
 
 This removes the terminal personality before removing its supporting screen backend.
@@ -9805,15 +10156,15 @@ Attempting to remove a supporting extension while another component still requir
 
 If RSX reports that an extension cannot be unloaded, examine the installed extensions and their dependencies before trying again.
 
-### Changing Terminal Personalities
+##### Changing Terminal Personalities
 
 Only one terminal personality can be active at a time.
 
 To change from ADM-3A to VT52 while retaining the same screen backend:
 
 ```text
-A>RSX UNLOAD ADM3A
-A>RSX LOAD VT52
+A0>RSX UNLOAD ADM3A
+A0>RSX LOAD VT52
 ```
 
 The screen backend need not be reloaded if it remains installed and supports the new personality.
@@ -9821,27 +10172,27 @@ The screen backend need not be reloaded if it remains installed and supports the
 To verify the new environment, run the corresponding terminal test utility:
 
 ```text
-A>VT52TST
+A0>VT52TST
 ```
 
-For further information about terminal personalities, see Chapter 9, *Terminal Support*.
+For further information about terminal personalities, see [Chapter 9](#chapter-9), *Terminal Support*.
 
-### Clock Providers
+##### Clock Providers
 
 BetterCP/M provides loadable clock providers through the RSX system.
 
 For example, on a TRS-80 Model 4 with FreHD:
 
 ```text
-A>RSX LOAD FREHDCLK
-A>TIME
+A0>RSX LOAD FREHDCLK
+A0>TIME
 ```
 
 Under z80pack:
 
 ```text
-A>RSX LOAD ZPRTC
-A>TIME
+A0>RSX LOAD ZPRTC
+A0>TIME
 ```
 
 These providers allow TIME and compatible applications to obtain the current date and time.
@@ -9851,20 +10202,20 @@ Both providers supplied with BetterCP/M 1.0 are read-only.
 You can identify the active provider with:
 
 ```text
-A>TIME /PROVIDER
+A0>TIME /PROVIDER
 ```
 
-For more information, see Chapter 11, *Date and Time*, and Section 16.3, *TIME*.
+For more information, see [Chapter 11](#chapter-11), *Date and Time*, and [Section 16.3](#section-16-3), *TIME*.
 
-### P2DOS Clock Compatibility
+##### P2DOS Clock Compatibility
 
-BetterCP/M provides a separate RSX for compatibility with the P2DOS date-and-time interface.
+The optional `P2DOS.RSX` implements compatibility with the P2DOS date-and-time interface. It is not on the selected System Disk; the following example requires a compatible separately built carrier installed in A0.
 
 For example:
 
 ```text
-A>RSX LOAD ZPRTC
-A>RSX LOAD P2DOS
+A0>RSX LOAD ZPRTC
+A0>RSX LOAD P2DOS
 ```
 
 The first command loads the native clock provider.
@@ -9877,7 +10228,7 @@ Consequently, its capabilities depend on the installed provider.
 
 With the standard read-only providers, clock-setting requests are not supported.
 
-### Batch Input Support
+##### Batch Input Support
 
 BetterCP/M's XSUB facility uses a resident extension named `BATCHIO`.
 
@@ -9888,20 +10239,20 @@ BATCHIO may remain resident after the batch procedure has finished.
 To check whether it is installed:
 
 ```text
-A>RSX LIST
+A0>RSX LIST
 ```
 
 To remove it explicitly:
 
 ```text
-A>RSX UNLOAD BATCHIO
+A0>RSX UNLOAD BATCHIO
 ```
 
 This releases the resident batch-input facility when it is no longer needed.
 
-For additional information, see Section 17.2, *XSUB*.
+For additional information, see [Section 17.2](#section-17-2), *XSUB*.
 
-### RSXs and Program Memory
+##### RSXs and Program Memory
 
 Resident System Extensions occupy memory that would otherwise be available to transient programs.
 
@@ -9912,7 +10263,7 @@ For example, a terminal monitor may be useful while running a full-screen editor
 If a program reports insufficient memory, examine the installed RSXs:
 
 ```text
-A>RSX LIST
+A0>RSX LIST
 ```
 
 You may be able to unload extensions that are no longer needed.
@@ -9921,15 +10272,15 @@ Some utilities have substantial memory requirements. DUP, for example, requires 
 
 Unloading unnecessary extensions may provide sufficient space for such programs.
 
-### Warm Boots and Extension Persistence
+##### Warm Boots and Extension Persistence
 
 BetterCP/M preserves supported resident extensions across ordinary warm boots.
 
 For example, suppose you load a terminal monitor:
 
 ```text
-A>RSX LOAD M4SCRN
-A>RSX LOAD VT52
+A0>RSX LOAD M4SCRN
+A0>RSX LOAD VT52
 ```
 
 You can then run a compatible full-screen application.
@@ -9938,23 +10289,9 @@ When the application terminates and control returns to the command processor, th
 
 There is ordinarily no need to reload it after every program.
 
-A cold boot establishes a new operating session.
+A cold boot starts a new session. Use the supplied script and editing procedure in [Section 7.3](#section-7-3) to arrange automatic loading; normal carrier placement and dependencies are described in [Section 8.2](#section-8-2).
 
-If you want particular extensions loaded automatically whenever BetterCP/M starts, add the appropriate commands to `STARTUP.SUB`.
-
-For example:
-
-```text
-RSX LOAD M4SCRN
-RSX LOAD ADM3A
-CLS
-```
-
-The startup file is executed during a cold boot when the standard startup command is configured.
-
-For more information, see Chapter 7, *Configuring BetterCP/M*.
-
-### Extension Errors
+##### Extension Errors
 
 An RSX may fail to load because its file is missing, damaged, incompatible, or unsuitable for the current system.
 
@@ -9968,12 +10305,12 @@ If an extension cannot be unloaded, another resident component may still depend 
 
 Remove the dependent extension first.
 
-### Recovering from Extension Problems
+##### Recovering from Extension Problems
 
 If an RSX causes problems, begin by examining the installed extensions:
 
 ```text
-A>RSX LIST
+A0>RSX LIST
 ```
 
 If the affected extension can be safely removed, unload it.
@@ -9981,7 +10318,7 @@ If the affected extension can be safely removed, unload it.
 For example:
 
 ```text
-A>RSX UNLOAD VT52
+A0>RSX UNLOAD VT52
 ```
 
 If the problem began after adding an extension to `STARTUP.SUB`, remove the corresponding startup command and test the extension manually.
@@ -9990,293 +10327,170 @@ A cold boot can restore the configured startup environment, but it will also exe
 
 If that procedure contains an unsuitable extension-loading command, the problem may recur until the startup file is corrected.
 
-### Examples
+##### Examples
 
 List installed RSXs:
 
 ```text
-A>RSX LIST
+A0>RSX LIST
 ```
 
 Load a terminal screen backend:
 
 ```text
-A>RSX LOAD M4SCRN
+A0>RSX LOAD M4SCRN
 ```
 
 Load an ADM-3A terminal personality:
 
 ```text
-A>RSX LOAD ADM3A
+A0>RSX LOAD ADM3A
 ```
 
 Change to VT52:
 
 ```text
-A>RSX UNLOAD ADM3A
-A>RSX LOAD VT52
+A0>RSX UNLOAD ADM3A
+A0>RSX LOAD VT52
 ```
 
 Load the FreHD clock provider:
 
 ```text
-A>RSX LOAD FREHDCLK
+A0>RSX LOAD FREHDCLK
 ```
 
 Load z80pack clock support:
 
 ```text
-A>RSX LOAD ZPRTC
+A0>RSX LOAD ZPRTC
 ```
 
-Load P2DOS-compatible clock services:
+Load P2DOS-compatible clock services after separately installing the optional `P2DOS.RSX` in A0 and loading a native clock provider:
 
 ```text
-A>RSX LOAD P2DOS
+A0>RSX LOAD P2DOS
 ```
 
 Remove the batch-input extension:
 
 ```text
-A>RSX UNLOAD BATCHIO
+A0>RSX UNLOAD BATCHIO
 ```
 
 Unload a terminal monitor:
 
 ```text
-A>RSX UNLOAD VT52
-A>RSX UNLOAD M4SCRN
+A0>RSX UNLOAD VT52
+A0>RSX UNLOAD M4SCRN
 ```
 
-For an introduction to resident extensions and their use, see Chapter 8, *Resident Extensions*.
+For an introduction to resident extensions and their use, see [Chapter 8](#chapter-8), *Resident Extensions*.
 
-For detailed information about developing RSXs, consult the *BetterCP/M Developer's Guide*.
+For detailed information about developing RSXs, consult the [BetterCP/M RSX and CPX Programmer's Guide](../programmers/RSX%20and%20CPX%20Programmer%27s%20Guide.md).
 
 ---
 
-# Appendices
+<a id="appendices"></a>
 
-# Appendix A — Command Summary
+## Appendices
 
-This appendix provides a quick reference to the commands and utilities supplied with BetterCP/M 1.0.
+<a id="appendix-a"></a>
 
-Commands are arranged alphabetically, with a brief description of their purpose and a reference to the section of this manual containing their detailed documentation.
+### Appendix A — Command Summary
 
-Some commands are available in both resident and transient forms. The resident version is normally executed when you enter the command name. To invoke the transient version explicitly, prefix its name with a colon (`:`) or period (`.`).
+Use this appendix to find a command form or switch, then follow its reference for defaults, limits and protection rules. Bracketed syntax is optional; source/destination and filenames are placeholders. A leading `:` explicitly selects a transient utility. See [Section 13.1](#section-13-1) for notation and [Section 13.3](#section-13-3) for command selection.
 
-For example:
+<a id="section-a-1"></a>
 
-```text
-A>DIR
-A>:DIR
-```
+#### A.1 Command Syntax and Switches
 
-The first invokes resident DIR when available. The second explicitly requests `DIR.COM`.
+| Command | Common syntax | Options or limits to check | Reference |
+|---|---|---|---|
+| CLS | `CLS` | Resident in RCP; transient is separately buildable | [§15.2](#section-15-2) |
+| CONFIG | `CONFIG`, `CONFIG /SHOW` | Startup: `/STARTUP="command"`, `/DEFAULT`; saved byte: `/IOBYTE=n`; disk forms below | [§16.1](#section-16-1) |
+| COPY | `COPY source destination`, `COPY destination=source` | Resident `/O`; transient `:COPY` adds `/B`, `/S`, `/V`, `/BACKUP`; `/O` and `/S` are exclusive | [§14.5](#section-14-5) |
+| CPX | `CPX LIST`, `CPX LOAD name`, `CPX UNLOAD name` | Four profile entries including RCP; append order | [§17.3](#section-17-3) |
+| DIR | `DIR [filespec]` | Transient `/A`, `/P`, `/Z=K`, `/Z=S`, `/Z=E`, `/C=1`, `/C=2`, `/C=4`, `/S=N`, `/S=T`, `/S=Z`, `/S=U` | [§14.1](#section-14-1) |
+| DIR locator | `:DIR /WHEREIS filespec` | Exactly one operand; global default scope; do not combine with ordinary display switches | [§14.1](#section-14-1) |
+| DUP | `DUP`, `DUP /FORMAT d:`, `DUP /COPY s: d:`, `DUP /CHECK d:` | Physical drive 0 is protected against FORMAT and COPY destinations | [§16.4](#section-16-4) |
+| ERA | `ERA filespec`, `:ERA [options] filespec` | Transient `/Y`, `/Q`, `/C`, `/R`, `/D`; matching-branch protection still applies | [§14.2](#section-14-2) |
+| GET | `GET filename`, `GET address filename` | Hexadecimal address; returns without execution | [§15.5](#section-15-5) |
+| GO | `GO` | Executes at `0100H` | [§15.6](#section-15-6) |
+| JUMP | `JUMP address` | Hexadecimal address | [§15.7](#section-15-7) |
+| MOVE | `MOVE source destination`, `MOVE destination=source` | Deletes source only after successful copy; no destination overwrite | [§14.6](#section-14-6) |
+| PEEK / P | `PEEK`, `PEEK address`, `PEEK first last` | Hexadecimal addresses; `P` is the short name | [§15.8](#section-15-8) |
+| POKE | `POKE address byte [byte ...]` | Hexadecimal bytes; a double quote starts literal text | [§15.9](#section-15-9) |
+| REN | `REN source template`, `REN template=source` | Transient `/Y`, `/C`, `/P`, `/DRY`; preview with `/DRY` | [§14.3](#section-14-3) |
+| RSX | `RSX LIST`, `RSX LOAD name`, `RSX UNLOAD name` | Carriers and matched `R3PACK.RSX` in A0; respect dependencies | [§17.4](#section-17-4) |
+| SAVE | `SAVE pages filename` | Decimal count of 256-byte pages from `0100H` | [§15.4](#section-15-4) |
+| STAT | `STAT [filespec]`, `STAT MEM` | File options `$S`, `$R/O`, `$R/W`, `$SYS`, `$DIR`; status/device forms below | [§16.2](#section-16-2) |
+| SUBMIT | `SUBMIT filename [parameters]` | `$1`–`$9`, literal `$$`, 125 expanded bytes per line, 2K aggregate buffer; writable A0 queue | [§17.1](#section-17-1) |
+| SYSGEN | `SYSGEN source: target:`, `SYSGEN source:`, `SYSGEN package target:` | Install from disk/package or export installed system; target geometry must match | [§16.5](#section-16-5) |
+| TIME | `TIME`, `TIME /PROVIDER`, `TIME /SET LL HH HR MN SC` | SET takes five hexadecimal bytes; supplied providers are read-only | [§16.3](#section-16-3) |
+| TYPE | `TYPE filespec`, `:TYPE filespec /P` | `/P` selects transient paging | [§14.4](#section-14-4) |
+| USER | `USER n` | Decimal user 0–31; `B:`, `5:` and `C3:` also navigate | [§15.1](#section-15-1) |
+| VER | `VER`, `VER /V` | Transient `:VER /BANNER` displays the startup banner | [§15.3](#section-15-3) |
+| XSUB | `XSUB` before the program invocation in a `.SUB` procedure | Function-10 buffered input only; Utilities Disk component; full example in [§17.2](#section-17-2) | [§17.2](#section-17-2) |
 
-For an explanation of command syntax, options, and execution conventions, see Chapter 13.
+<a id="section-a-2"></a>
 
-## A.1 Command Summary
+#### A.2 Configuration and Status Forms
 
-| Command | Description | Reference |
+| Task | Syntax or choices | Reference |
 |---|---|---|
-| **CLS** | Clear the console screen. | §15.2 |
-| **CONFIG** | Examine and modify system configuration, including startup settings, drives, disk formats, and the saved IOBYTE. | §16.1 |
-| **COPY** | Copy files between filenames, drives, and user areas. The transient version provides verification, backup, and additional file-selection options. | §14.5 |
-| **CPX** | List, load, and unload Command Processor Extensions. | §17.3 |
-| **DIR** | Display directory contents. The transient version provides sorting, sizes, paging, and additional display options. | §14.1 |
-| **DUP** | Format, copy, and check disks. | §16.4 |
-| **ERA** | Erase files. The transient version provides additional confirmation, protection, and destructive-erasure options. | §14.2 |
-| **GET** | Load a file into memory without executing it. | §15.5 |
-| **GO** | Execute a program image beginning at address `0100H`. | §15.6 |
-| **JUMP** | Transfer control to a specified memory address. | §15.7 |
-| **MOVE** | Move files between filenames, drives, and user areas, removing the source after successful copying. | §14.6 |
-| **PEEK / P** | Display memory contents in hexadecimal and ASCII form. | §15.8 |
-| **POKE** | Modify memory by storing hexadecimal bytes or literal text. | §15.9 |
-| **REN** | Rename files or change their file types. The transient version provides previews, confirmation, and additional options. | §14.3 |
-| **RSX** | List, load, and unload Resident System Extensions. | §17.4 |
-| **SAVE** | Save a specified number of 256-byte memory pages to a file. | §15.4 |
-| **STAT** | Display disk and file information, examine attributes, and manage supported logical-device assignments. | §16.2 |
-| **SUBMIT** | Execute commands stored in a `.SUB` batch file. | §17.1 |
-| **SYSGEN** | Install BetterCP/M onto a prepared disk or save an installed system image to a package file. | §16.5 |
-| **TIME** | Display the system date and time, identify the clock provider, or request a clock-setting operation. | §16.3 |
-| **TYPE** | Display text files. The transient version provides bidirectional paging and additional display options. | §14.4 |
-| **USER** | Select the current user area. | §15.1 |
-| **VER** | Display BetterCP/M version and system-identification information. | §15.3 |
-| **XSUB** | Supply submitted input to compatible programs through buffered console input. | §17.2 |
+| Physical profile | `CONFIG /PHYSICAL=n /TRACKS=80 /SIDES=2 /STEP=6` | [§16.1](#section-16-1) |
+| Bind a logical drive | `CONFIG /LOGICAL=C /PHYSICAL=1 /FORMAT="MM 80T DS DATA"` | [§16.1](#section-16-1) |
+| Unbind | `CONFIG /LOGICAL=C /UNBIND` | [§16.1](#section-16-1) |
+| Edit an active binding | `CONFIG /EDIT=B /CKS=16` | [§16.1](#section-16-1) |
+| Edit one physical-order map slot | `CONFIG /EDIT=B /SLOT=1 /ID=200` | [§16.1](#section-16-1) |
+| Save active disk settings | Interactive CONFIG: **S**, then **B**; **A** saves pending cold-boot changes only | [§16.1](#section-16-1) |
+| Disk characteristics / users | `STAT DSK:`, `STAT B:DSK:`, `STAT USR:` | [§16.2](#section-16-2) |
+| Temporary drive read-only | `STAT B:=R/O` (cleared by normal warm-start/reset) | [§16.2](#section-16-2) |
+| Device inspection / legal values | `STAT DEV:`, `STAT VAL:`, `STAT CRT:` (inverse query) | [§16.2](#section-16-2) |
+| Live list-device assignment | `STAT LST:=CRT:` | [§16.2](#section-16-2) |
+| File protection / visibility | `STAT REPORT.TXT $R/O`, `$R/W`, `$SYS`, or `$DIR` | [§16.2](#section-16-2) |
+| Memory use | `STAT MEM` | [§16.2](#section-16-2) |
 
-## A.2 Commands by Function
+CONFIG disk commands change active state; saving is separate. Use the field tables in [Section 16.1](#section-16-1) for accepted values and dependencies. Bracketed multi-DU STAT selectors support inspection, optionally `$S`, rather than attribute changes. Double literal dollars when putting STAT or attribute selectors in a `.SUB` source.
 
-The following table groups commands according to their principal purpose.
+<a id="section-a-3"></a>
 
-| Function | Commands |
-|---|---|
-| **File and directory management** | DIR, ERA, REN, TYPE, COPY, MOVE |
-| **Drive and user-area selection** | USER, direct drive/user commands |
-| **Console and system identification** | CLS, VER |
-| **Memory inspection and modification** | GET, GO, JUMP, PEEK, POKE, SAVE |
-| **System configuration** | CONFIG, STAT |
-| **Disk maintenance** | DUP, SYSGEN |
-| **Date and time** | TIME |
-| **Batch processing** | SUBMIT, XSUB |
-| **Resident extension management** | CPX, RSX |
+#### A.3 Resident and Transient Commands
 
-Some utilities serve more than one purpose. STAT, for example, provides both file information and logical-device assignment facilities.
+Use `:COMMAND` or `.COMMAND` to bypass resident lookup. BetterCP/M does not automatically hand an unsupported resident option to a transient. DIR, ERA, REN, TYPE, COPY and VER have selected System Disk transients; `CLS.COM` is separately buildable. See [Section 13.3](#section-13-3) for the exact lookup rules and [Section 3.2](#section-3-2) for disk contents.
 
-## A.3 Resident and Transient Commands
+<a id="section-a-4"></a>
 
-BetterCP/M provides several commands in both resident and transient forms.
+#### A.4 Short Examples
 
-| Command | Resident | Transient |
-|---|---|---|
-| CLS | Yes | `CLS.COM` |
-| COPY | Yes | `COPY.COM` |
-| DIR | Yes | `DIR.COM` |
-| ERA | Yes | `ERA.COM` |
-| REN | Yes | `REN.COM` |
-| TYPE | Yes | `TYPE.COM` |
-| VER | Yes | `VER.COM` |
-
-The resident versions are normally supplied by `RCP.CPX`.
-
-Transient versions may provide additional options or remain available when the resident command package is not loaded.
-
-To invoke a transient version explicitly, use:
+Find a utility, preview a rename, or copy with explicit collision and verification policy:
 
 ```text
-A>:COMMAND
+A0>:DIR /WHEREIS ED.COM
+A0>:REN /DRY B[-]:*.DOC *.TXT
+A0>:COPY /B /O /V B1:*.DAT C3:
 ```
 
-or:
+`/O` can remove an existing writable target without rollback if the replacement fails; preserve important old targets separately. ERA's protection admission and `/Y`/`/R` rules are in [Section 14.2](#section-14-2). Complete worked batch and XSUB procedures are in [Chapter 6](#chapter-6) and [Section 17.2](#section-17-2).
 
-```text
-A>.COMMAND
-```
+<a id="section-a-5"></a>
 
-For example:
+#### A.5 Utility Version Information
 
-```text
-A>:TYPE README.TXT /P
-```
+Most utility programs accept standalone `/VER`, for example `CONFIG /VER`. Use `:DIR /VER` for the transient DIR identity. `VER` identifies the operating system; `VER /V` adds subsystem detail. See [Section 13.4](#section-13-4) for version conventions and restrictions.
 
-requests the transient TYPE utility.
+<a id="section-a-6"></a>
 
-BetterCP/M 1.0 does not automatically switch to a transient version when a resident command encounters an unsupported option.
+#### A.6 Additional Utilities
 
-### Core Resident Commands
-
-The following commands are provided directly by the command processor or its standard resident environment:
-
-| Command | Purpose |
-|---|---|
-| GET | Load memory |
-| GO | Execute at `0100H` |
-| JUMP | Execute at a specified address |
-| PEEK / P | Examine memory |
-| POKE | Modify memory |
-| SAVE | Save memory to a file |
-| USER | Select a user area |
-
-These commands do not require corresponding transient `.COM` files.
-
-## A.4 Common Command Forms
-
-The following examples illustrate frequently used commands.
-
-| Task | Command |
-|---|---|
-| List files | `DIR` |
-| List `.COM` files | `DIR *.COM` |
-| List files in B3 | `DIR B3:` |
-| Display a text file | `TYPE README.TXT` |
-| Copy a file | `COPY FILE.TXT B:` |
-| Copy all `.ASM` files | `COPY *.ASM B:` |
-| Move a file | `MOVE FILE.TXT B:` |
-| Rename a file | `REN NEW.TXT=OLD.TXT` |
-| Erase a file | `ERA OLD.TXT` |
-| Select user area 3 | `USER 3` |
-| Select drive B, user 3 | `B3:` |
-| Clear the screen | `CLS` |
-| Display the system version | `VER` |
-| Execute a batch file | `SUBMIT BUILD` |
-| List installed CPXs | `CPX LIST` |
-| List installed RSXs | `RSX LIST` |
-| Load an RSX | `RSX LOAD ADM3A` |
-| Display configuration | `CONFIG /SHOW` |
-| Display the time | `TIME` |
-| Identify the clock provider | `TIME /PROVIDER` |
-| Check a disk | `DUP /CHECK B:` |
-| Format a disk | `DUP /FORMAT B:` |
-| Copy a disk | `DUP /COPY A: B:` |
-| Install the operating system | `SYSGEN A: B:` |
-| Save a system image | `SYSGEN A:` |
-| Display memory | `PEEK 100` |
-| Modify memory | `POKE 100 00` |
-| Load a program image | `GET PROGRAM.COM` |
-| Execute a loaded program | `GO` |
-| Save memory | `SAVE 10 PROGRAM.COM` |
-
-These examples show common forms only. Consult the corresponding command reference for additional options and restrictions.
-
-## A.5 Utility Version Information
-
-BetterCP/M utilities generally support `/VER` to display their version and build information.
-
-For example:
-
-```text
-A>CONFIG /VER
-A>DUP /VER
-A>SYSGEN /VER
-```
-
-For utilities available in both resident and transient forms, the two implementations may report different build numbers.
-
-For example:
-
-```text
-A>DIR /VER
-A>:DIR /VER
-```
-
-identifies the resident and transient implementations respectively.
-
-The VER command itself identifies the operating system:
-
-```text
-A>VER
-```
-
-For more information, see Section 13.4, *Getting Help and Version Information*.
-
-## A.6 Additional Utilities
-
-The tables above cover the commands documented in Part II of this manual. They are not intended to be a complete inventory of every program distributed with BetterCP/M.
-
-The distribution also includes development tools, diagnostic programs, terminal tests, and supporting utilities.
-
-Examples include:
-
-| Utility | Purpose |
-|---|---|
-| **ASM** | Assemble 8080 assembly-language source programs. |
-| **DDT** | Debug machine-language programs. |
-| **ED** | Edit text files using the traditional CP/M context-editor interface. |
-| **LOAD** | Convert Intel hexadecimal object files into executable `.COM` files. |
-| **PIP** | Transfer and copy files and device data using CP/M's traditional PIP conventions. |
-| **SYSBUILD** | Construct BetterCP/M system-image packages from operating-system build products. |
-| **ADMTST** | Test the supported ADM-3A terminal facilities. |
-| **VT52TST** | Test the supported VT52 terminal facilities. |
-| **ANSITST** | Test the supported ANSI terminal facilities. |
-
-These programs have more specialized purposes than the general commands covered in Part II.
-
-Some warrant separate documentation, particularly the development tools and more substantial utilities.
-
-The documentation accompanying the BetterCP/M distribution provides further information about their use.
+[Section 3.2](#section-3-2) lists selected System Disk files, the separate Utilities Disk, and separately obtained or buildable tools. [Appendix H](#appendix-h) links the available utility, programming and build documentation. Implementation and development-disk presence do not establish distribution membership.
 
 ---
 
-# Appendix B — Command-Line Editing Keys
+<a id="appendix-b"></a>
+
+### Appendix B — Command-Line Editing Keys
 
 BetterCP/M provides command-line editing and command-history facilities that make it easier to enter, correct, and reuse commands.
 
@@ -10284,37 +10498,39 @@ Instead of retyping an entire command after making a mistake, you can move the c
 
 BetterCP/M uses editing conventions familiar to users of WordStar and other CP/M programs, although some assignments differ.
 
-This appendix summarizes the command-line editing facilities described in Chapter 5.
+This appendix summarizes the command-line editing facilities described in [Chapter 5](#chapter-5).
 
-## B.1 Entering and Editing Commands
+<a id="section-b-1"></a>
+
+#### B.1 Entering and Editing Commands
 
 Commands are entered at the BetterCP/M command prompt.
 
 For example:
 
 ```text
-A>COPY REPORT.TXT B:
+A0>COPY REPORT.TXT B:
 ```
 
 Press **Return** to execute the command.
 
 Before pressing Return, you can edit the command line. Editing changes only the command being entered; it does not affect files or execute any part of the command.
 
-### Basic Editing Operations
+##### Basic Editing Operations
 
 The command editor provides facilities for moving the cursor, inserting characters, and deleting unwanted text.
 
 For example, suppose you've typed:
 
 ```text
-A>COPY REPROT.TXT B:
+A0>COPY REPROT.TXT B:
 ```
 
 You can move the cursor back to the misspelled filename, correct it to `REPORT.TXT`, and then press Return.
 
 You don't need to erase and reenter the entire command.
 
-### Editing-Key Conventions
+##### Editing-Key Conventions
 
 BetterCP/M follows several conventions familiar to users of WordStar-style editors.
 
@@ -10324,7 +10540,9 @@ The exact assignments for cursor movement and line editing should be taken from 
 
 The key combinations listed below are those established for BetterCP/M 1.0.
 
-## B.2 Command History
+<a id="section-b-2"></a>
+
+#### B.2 Command History
 
 BetterCP/M maintains a history of previously entered commands.
 
@@ -10341,7 +10559,7 @@ The command-history controls in BetterCP/M 1.0 are:
 For example, suppose you've entered:
 
 ```text
-A>COPY REPORT.TXT B:
+A0>COPY REPORT.TXT B:
 ```
 
 To repeat the command, press Ctrl-K to recall it.
@@ -10352,39 +10570,40 @@ To move farther back through the history, press Ctrl-K again.
 
 To move toward more recently entered commands, press Ctrl-J.
 
-### Arrow Keys
+##### Arrow Keys
 
-Depending on your computer's keyboard and terminal configuration, the Up and Down arrow keys may also provide command-history navigation.
+The original Model 4 keyboard supplies these command-editor aliases:
 
-However, **arrow-key operation is platform-dependent and is not guaranteed**.
+| Physical key | Function |
+|---|---|
+| Left / Right | Move one character left / right |
+| Up / Down | Previous / next command in history (Ctrl-K / Ctrl-J) |
+| Clear | Toggle insert/overwrite (Ctrl-V) |
+| Shift-Left / DEL | Delete the character left of the cursor (Ctrl-H) |
 
-On some CP/M systems, the cursor keys generate control characters associated with WordStar conventions, such as Ctrl-E for Up and Ctrl-X for Down.
+Physical Left is distinct from Ctrl-H. Ctrl-E and Ctrl-X retain physical-line continuation and line-discard behavior; they do not navigate history.
 
-BetterCP/M 1.0 uses Ctrl-K and Ctrl-J for command-history navigation.
+Host-emulator keyboard translation and other console keyboards may produce different codes or escape sequences. The Model 4 assignments describe the original machine's keyboard signals. Use Ctrl-K/J for history if host arrow keys do not behave as expected.
 
-Consequently, an Up or Down arrow key that generates Ctrl-E or Ctrl-X will not necessarily invoke the corresponding history function.
-
-For reliable command-history navigation, use Ctrl-K and Ctrl-J.
-
-### Editing Recalled Commands
+##### Editing Recalled Commands
 
 A recalled command can be edited just like a newly entered command.
 
 For example, suppose the history contains:
 
 ```text
-A>COPY REPORT.TXT B:
+A0>COPY REPORT.TXT B:
 ```
 
 You could recall it, change the destination drive, and execute:
 
 ```text
-A>COPY REPORT.TXT C:
+A0>COPY REPORT.TXT C:
 ```
 
 The recalled command is not executed until you press Return.
 
-### History Persistence
+##### History Persistence
 
 Command history is maintained by the command environment rather than by individual transient programs.
 
@@ -10396,7 +10615,9 @@ A cold boot begins with an empty command history.
 
 History storage is limited. As new commands are entered, older entries are eventually discarded.
 
-## B.3 Control Keys and Terminal Differences
+<a id="section-b-3"></a>
+
+#### B.3 Control Keys and Terminal Differences
 
 Control-key combinations are entered by holding Ctrl while pressing the corresponding key.
 
@@ -10406,7 +10627,7 @@ On most terminals, control-key combinations produce character codes rather than 
 
 This distinction matters because different keyboards and terminal emulators may generate different codes for the same physical key.
 
-### Physical Keys and Control Characters
+##### Physical Keys and Control Characters
 
 An arrow key is not necessarily equivalent to a particular control-key combination.
 
@@ -10416,26 +10637,13 @@ BetterCP/M can recognize a key only if the console environment supplies a repres
 
 Consequently, the behavior of physical cursor keys can vary between platforms.
 
-### WordStar Conventions
+##### WordStar Conventions
 
-Many CP/M applications use WordStar-style cursor controls.
+Some command-editor controls follow WordStar conventions, but Ctrl-E/X keep CP/M continuation/discard behavior. Use the complete editor table in [Section B.5](#section-b-5). [Section C.4](#section-c-4) describes traditional application-level WordStar controls.
 
-Common WordStar movement assignments include:
+<a id="section-b-4"></a>
 
-| Key | Traditional WordStar function |
-|---|---|
-| Ctrl-E | Cursor up |
-| Ctrl-X | Cursor down |
-| Ctrl-S | Cursor left |
-| Ctrl-D | Cursor right |
-
-These conventions are useful when working with software that recognizes them.
-
-They should not, however, be confused with BetterCP/M's command-history assignments.
-
-In BetterCP/M 1.0, Ctrl-K and Ctrl-J are the documented history controls.
-
-## B.4 Keyboard Differences Between Platforms
+#### B.4 Keyboard Differences Between Platforms
 
 BetterCP/M runs on computers with different keyboard arrangements.
 
@@ -10447,7 +10655,7 @@ For example, a modern keyboard may provide characters or keys that did not exist
 
 The emulator must translate those inputs into codes recognized by the emulated hardware or operating system.
 
-### TRS-80 Model 4 Keyboard
+##### TRS-80 Model 4 Keyboard
 
 The TRS-80 Model 4 keyboard lacks several punctuation characters found on modern keyboards.
 
@@ -10472,7 +10680,7 @@ When using an emulator, the host keyboard may require different physical keys to
 
 Shift may also be held with the indicated control-key combinations.
 
-### Terminal Emulators
+##### Terminal Emulators
 
 When using BetterCP/M through a terminal emulator, the emulator's keyboard configuration can affect which control characters reach the operating system.
 
@@ -10482,25 +10690,36 @@ In particular, do not assume that its arrow keys produce the same control codes 
 
 For command-history navigation, Ctrl-K and Ctrl-J remain the documented BetterCP/M 1.0 controls.
 
-## B.5 Quick Reference
+<a id="section-b-5"></a>
 
-The following table summarizes the established command-entry and history controls.
+#### B.5 Quick Reference
+
+These assignments apply while the BetterCP/M command editor owns input at the prompt. Applications can assign different meanings to the same controls.
 
 | Key | Function |
 |---|---|
 | Return | Execute the current command |
-| Ctrl-K | Previous command in history |
-| Ctrl-J | Next command in history |
-| Up arrow | May recall an earlier command, depending on platform |
-| Down arrow | May select a newer command, depending on platform |
+| Ctrl-S / Ctrl-D | Move one character left / right |
+| Ctrl-A / Ctrl-F | Move to the previous / next word |
+| Ctrl-T | Delete the next word and adjacent spacing |
+| Ctrl-V | Toggle insert/overwrite |
+| Ctrl-G | Delete the character under the cursor |
+| Ctrl-H | Delete the character left of the cursor |
+| Ctrl-U / Ctrl-X | Discard the complete command line and redraw an empty prompt |
+| Ctrl-E | Continue the same command on a new physical screen line; do not execute it |
+| Ctrl-K / Ctrl-J | Previous / next command in history |
+| Ctrl-C | Abandon input, echo `^C`, and warm boot |
+| Ctrl-P | Toggle shared console printer echo to `LST:` |
 
-Additional cursor-editing and deletion operations are available through the command editor, but their precise key assignments should be verified against the BetterCP/M 1.0 command-processor implementation before being added to this reference.
+Ctrl-S moves the cursor at the prompt. During cooked console output it pauses scrolling until the next key; the resume key is consumed. Ctrl-P changes the shared console printer-echo state, so its effect can continue into transient programs.
 
-For the control characters used by CP/M programs and terminal devices, see Appendix C, *Control Characters and Keyboard Conventions*.
+For the control characters used by CP/M programs and terminal devices, see [Appendix C](#appendix-c), *Control Characters and Keyboard Conventions*.
 
 ---
 
-# Appendix C — Control Characters and Keyboard Conventions
+<a id="appendix-c"></a>
+
+### Appendix C — Control Characters and Keyboard Conventions
 
 CP/M was designed to operate with a wide variety of keyboards, consoles, printers, and terminals. Because these devices differed considerably, many programs relied on ASCII control characters rather than dedicated function keys.
 
@@ -10508,9 +10727,11 @@ BetterCP/M retains the traditional CP/M character-oriented console interface whi
 
 This appendix describes the control characters commonly encountered when using BetterCP/M, explains their relationship to keyboard input, and identifies important differences between conventional CP/M behavior and BetterCP/M's command environment.
 
-For command-line editing keys, see Appendix B. For information about terminal emulation, see Chapter 9, *Terminal Support*.
+For command-line editing keys, see [Appendix B](#appendix-b). For information about terminal emulation, see [Chapter 9](#chapter-9), *Terminal Support*.
 
-## C.1 Control Characters
+<a id="section-c-1"></a>
+
+#### C.1 Control Characters
 
 A control character is a character code traditionally used to perform an operation rather than display a printable symbol.
 
@@ -10540,7 +10761,7 @@ The notation `^M` is often used as an abbreviation for Ctrl-M, particularly in C
 
 Thus, `^M`, Ctrl-M, and ASCII `0DH` refer to the same character code.
 
-### ASCII Control Character Table
+##### ASCII Control Character Table
 
 | Hex | Decimal | Name | Common notation |
 |---|---:|---|---|
@@ -10584,13 +10805,15 @@ The meaning of a control character depends on the program or console facility re
 
 For example, Ctrl-K has a particular meaning in BetterCP/M's command-history editor, but another program may interpret the same character differently.
 
-## C.2 Common CP/M Control Characters
+<a id="section-c-2"></a>
+
+#### C.2 Common CP/M Control Characters
 
 Several control characters have established uses in the traditional CP/M operating environment.
 
 These conventions are important because many CP/M applications expect them.
 
-### Ctrl-C — Interrupt or Warm Boot
+##### Ctrl-C — Interrupt or Warm Boot
 
 Ctrl-C (`03H`) is traditionally associated with interrupting an operation or returning to the command processor.
 
@@ -10610,7 +10833,7 @@ For example, transient TYPE.COM uses Ctrl-C to advance to the next page while wa
 
 Consult the individual utility reference when the distinction matters.
 
-### Ctrl-H — Backspace
+##### Ctrl-H — Backspace
 
 Ctrl-H (`08H`) is the ASCII backspace character.
 
@@ -10622,7 +10845,7 @@ Some keyboards provide a Backspace key that generates Ctrl-H. Others may generat
 
 Applications may recognize one or both.
 
-### Ctrl-I — Horizontal Tab
+##### Ctrl-I — Horizontal Tab
 
 Ctrl-I (`09H`) is the ASCII horizontal-tab character.
 
@@ -10633,12 +10856,12 @@ The tab width depends on the program or terminal.
 For example, BetterCP/M's transient TYPE utility can expand tabs to eight-column stops using:
 
 ```text
-A>:TYPE README.TXT /T
+A0>:TYPE README.TXT /T
 ```
 
 With `/CTL`, TYPE displays a tab as `^I` instead of expanding it.
 
-### Ctrl-J — Line Feed
+##### Ctrl-J — Line Feed
 
 Ctrl-J (`0AH`) is ASCII line feed.
 
@@ -10650,7 +10873,7 @@ This is a command-editor convention, not a redefinition of ASCII line feed.
 
 Other programs may continue to interpret Ctrl-J as line feed.
 
-### Ctrl-M — Carriage Return
+##### Ctrl-M — Carriage Return
 
 Ctrl-M (`0DH`) is ASCII carriage return.
 
@@ -10660,7 +10883,7 @@ On CP/M consoles, pressing Return normally submits the current command or input 
 
 Text files commonly use carriage return followed by line feed (`0DH 0AH`) to mark the end of a line.
 
-### Ctrl-P — Printer Echo
+##### Ctrl-P — Printer Echo
 
 In conventional CP/M, Ctrl-P is associated with printer echo, directing console output to the list device as well as the console.
 
@@ -10670,7 +10893,7 @@ Programs that bypass the normal console-output facilities may not participate in
 
 The actual destination of list output depends on the BIOS and the current logical-device assignment.
 
-### Ctrl-S and Ctrl-Q — Output Control
+##### Ctrl-S and Ctrl-Q — Output Control
 
 Ctrl-S (`13H`) and Ctrl-Q (`11H`) are commonly associated with pausing and resuming character output.
 
@@ -10686,7 +10909,7 @@ For example, transient TYPE.COM uses Ctrl-Q to quit its interactive paging mode.
 
 Consequently, these characters should not be assumed to have one universal meaning throughout the system.
 
-### Ctrl-Z — End of Text
+##### Ctrl-Z — End of Text
 
 Ctrl-Z (`1AH`) is traditionally used as an end-of-text marker in CP/M text files.
 
@@ -10700,7 +10923,7 @@ This convention is particularly important when transferring text files between C
 
 Not every CP/M file uses Ctrl-Z. Binary files may contain the value `1AH` as ordinary data.
 
-### Escape
+##### Escape
 
 Escape (`1BH`) is used by many terminal-control protocols.
 
@@ -10710,52 +10933,17 @@ An escape sequence consists of the Escape character followed by additional chara
 
 BetterCP/M's terminal-monitor extensions interpret the supported sequences for their respective terminal personalities.
 
-See Chapter 9 for more information.
+See [Chapter 9](#chapter-9) for more information.
 
-## C.3 BetterCP/M Command-Line Control Keys
+<a id="section-c-3"></a>
 
-BetterCP/M's command processor provides editing and history facilities beyond the traditional CP/M command line.
+#### C.3 BetterCP/M Command-Line Control Keys
 
-Some of these facilities use control characters that also have conventional ASCII meanings.
+The complete command-editor key table is in [Section B.5](#section-b-5), with original Model 4 aliases in [Section B.2](#section-b-2). These prompt-level assignments do not redefine ASCII or the controls used by applications. For example, Ctrl-J is newer history at the prompt and can still be line feed inside a program.
 
-### Command History
+<a id="section-c-4"></a>
 
-BetterCP/M 1.0 uses the following keys for command-history navigation:
-
-| Key | ASCII code | BetterCP/M command-editor function |
-|---|---|---|
-| Ctrl-K | 0BH | Recall an earlier command |
-| Ctrl-J | 0AH | Move toward newer commands |
-
-These assignments apply to the BetterCP/M command editor.
-
-They do not change the interpretation of these characters by ordinary CP/M applications.
-
-For example, a program reading console input through its own routines may treat Ctrl-J as line feed rather than as a history command.
-
-### Arrow Keys
-
-Some keyboards and terminal configurations may allow the Up and Down arrow keys to navigate command history.
-
-However, this behavior is platform-dependent.
-
-In particular, keyboards using WordStar-style cursor conventions may generate Ctrl-E for Up and Ctrl-X for Down.
-
-These are not the command-history assignments used by BetterCP/M 1.0.
-
-For reliable command-history navigation, use Ctrl-K and Ctrl-J.
-
-### Command Submission
-
-Pressing Return submits the command currently displayed at the prompt.
-
-Until Return is pressed, the command can be edited.
-
-Once submitted, BetterCP/M interprets the command name and arguments and begins the requested operation.
-
-For a description of the available command-line editing facilities, see Appendix B.
-
-## C.4 WordStar Keyboard Conventions
+#### C.4 WordStar Keyboard Conventions
 
 WordStar was one of the most influential applications in the CP/M environment, and its keyboard conventions were adopted by many other programs.
 
@@ -10774,7 +10962,7 @@ These assignments form a convenient arrangement on a conventional keyboard.
 
 Other WordStar commands use combinations of control keys for operations such as moving by words, deleting text, and navigating through documents.
 
-### WordStar and BetterCP/M
+##### WordStar and BetterCP/M
 
 BetterCP/M uses some WordStar-style conventions in its command-line editor, but it is not a WordStar implementation.
 
@@ -10786,7 +10974,7 @@ For example, a WordStar-compatible editor may continue to use Ctrl-E and Ctrl-X 
 
 The operating system does not require applications to adopt its command-history assignments.
 
-### Application-Specific Key Assignments
+##### Application-Specific Key Assignments
 
 Control characters can have different meanings in different programs.
 
@@ -10805,7 +10993,9 @@ These differences are normal in the CP/M environment.
 
 When using an application, follow the keyboard conventions documented for that application.
 
-## C.5 Terminal Control Sequences
+<a id="section-c-5"></a>
+
+#### C.5 Terminal Control Sequences
 
 Many CP/M applications use control sequences to manage full-screen displays.
 
@@ -10813,7 +11003,7 @@ These sequences are distinct from ordinary command-line editing keys.
 
 A terminal-control sequence is a series of characters sent to the console to request an operation such as moving the cursor, clearing the screen, or changing a display attribute.
 
-### ADM-3A
+##### ADM-3A
 
 ADM-3A-compatible applications use the control sequences associated with the Lear Siegler ADM-3A terminal.
 
@@ -10825,7 +11015,7 @@ ADM3A.RSX
 
 The supported implementation follows the Montezuma Micro-style ADM-3A conventions used by compatible TRS-80 Model 4 CP/M applications.
 
-### VT52
+##### VT52
 
 VT52-compatible applications use escape sequences associated with the DEC VT52 terminal.
 
@@ -10837,7 +11027,7 @@ VT52.RSX
 
 This interprets the supported VT52 control sequences and passes the corresponding display operations to the installed screen backend.
 
-### ANSI/VT100
+##### ANSI/VT100
 
 ANSI and VT100-compatible applications commonly use escape sequences beginning with Escape followed by additional control characters.
 
@@ -10851,7 +11041,7 @@ This supports a useful subset of ANSI/VT100 terminal operations.
 
 It does not provide complete VT100 emulation.
 
-### Terminal Personalities and Screen Backends
+##### Terminal Personalities and Screen Backends
 
 BetterCP/M separates terminal personalities from screen backends.
 
@@ -10862,15 +11052,17 @@ The screen backend determines how the requested operations are performed on the 
 For example:
 
 ```text
-A>RSX LOAD M4SCRN
-A>RSX LOAD VT52
+A0>RSX LOAD M4SCRN
+A0>RSX LOAD VT52
 ```
 
 establishes the VT52 environment using the TRS-80 Model 4 screen backend.
 
-For more information about supported terminal operations, see Chapter 9.
+For more information about supported terminal operations, see [Chapter 9](#chapter-9).
 
-## C.6 Keyboard Differences Between Platforms
+<a id="section-c-6"></a>
+
+#### C.6 Keyboard Differences Between Platforms
 
 BetterCP/M supports computers and emulated environments with different keyboard arrangements.
 
@@ -10880,32 +11072,11 @@ Modern terminal emulators may translate host keyboard input into codes appropria
 
 Consequently, the same physical key may produce different character codes on different systems.
 
-### TRS-80 Model 4
+##### TRS-80 Model 4
 
-The TRS-80 Model 4 keyboard lacks several punctuation characters found on modern keyboards.
+[Section B.4](#section-b-4) contains the original Model 4 punctuation chords. Host emulators may require different physical keys to produce those signals; consult the emulator's keyboard mapping.
 
-BetterCP/M retains Montezuma Micro-style keyboard combinations for entering these characters.
-
-| Character | Model 4 key combination |
-|---|---|
-| `[` | Ctrl-8 |
-| `]` | Ctrl-9 |
-| `{` | Ctrl-comma |
-| `}` | Ctrl-period |
-| `\` | Ctrl-/ |
-| `\|` | Ctrl-1 |
-| `~` | Ctrl-3 |
-| `^` | Ctrl-5 |
-| `` ` `` | Ctrl-7 |
-| `_` | Ctrl-minus |
-
-These combinations refer to the original Model 4 keyboard.
-
-An emulator may require different physical host keys to produce the corresponding Model 4 key signals.
-
-The translation depends on the emulator's keyboard configuration.
-
-### Terminal Emulators
+##### Terminal Emulators
 
 On systems using a terminal emulator, cursor keys may generate multi-character escape sequences rather than individual ASCII control characters.
 
@@ -10917,7 +11088,7 @@ A terminal personality that interprets display-control sequences does not necess
 
 The two facilities should not be confused.
 
-### When a Key Doesn't Work
+##### When a Key Doesn't Work
 
 If a keyboard command does not behave as expected, first determine whether the problem occurs at the BetterCP/M command prompt or within an application.
 
@@ -10929,13 +11100,15 @@ For full-screen applications, also verify that the appropriate terminal personal
 
 When using an emulator, examine its keyboard-mapping settings.
 
-## C.7 Control Characters in Text Files
+<a id="section-c-7"></a>
+
+#### C.7 Control Characters in Text Files
 
 Control characters can also appear as data within files.
 
 This is particularly common in CP/M text files, which often use carriage return and line feed to separate lines and Ctrl-Z to mark the end of meaningful text.
 
-### Line Endings
+##### Line Endings
 
 CP/M text files conventionally use:
 
@@ -10951,7 +11124,7 @@ This convention is also commonly called CR/LF.
 
 When transferring text files between CP/M and other operating systems, line-ending differences may need to be considered.
 
-### End-of-Text Marker
+##### End-of-Text Marker
 
 The Ctrl-Z character (`1AH`) traditionally marks the end of meaningful text.
 
@@ -10965,14 +11138,14 @@ SECOND LINE<CR><LF>
 
 The Ctrl-Z marker indicates that the remaining bytes in the file's final record are not part of the text.
 
-### Displaying Control Characters
+##### Displaying Control Characters
 
 BetterCP/M's transient TYPE utility provides `/CTL` for displaying control characters in readable form.
 
 For example:
 
 ```text
-A>:TYPE README.TXT /CTL
+A0>:TYPE README.TXT /CTL
 ```
 
 This displays control characters using caret notation.
@@ -10981,11 +11154,13 @@ A tab appears as `^I`, while a form feed appears as `^L`.
 
 The raw Ctrl-Z end-of-text marker still terminates the display rather than appearing as ordinary file content.
 
-For additional information, see Section 14.4, *TYPE*.
+For additional information, see [Section 14.4](#section-14-4), *TYPE*.
 
 ---
 
-# Appendix D — File Attributes and File Specifications
+<a id="appendix-d"></a>
+
+### Appendix D — File Attributes and File Specifications
 
 BetterCP/M retains the familiar CP/M 2.2 file-naming conventions while extending the ways in which files can be selected and managed.
 
@@ -10995,9 +11170,11 @@ These extensions are particularly useful when working with large collections of 
 
 This appendix describes BetterCP/M's file specifications, wildcard conventions, drive/user selectors, and file attributes. It also explains how these facilities are used by commands such as DIR, ERA, REN, COPY, MOVE, TYPE, and STAT.
 
-For an introduction to working with files, see Chapter 4, *Working with Drives and Files*. For the exact syntax accepted by individual utilities, consult Part II, *Command and Utility Reference*.
+For an introduction to working with files, see [Chapter 4](#chapter-4), *Working with Drives and Files*. For the exact syntax accepted by individual utilities, consult Part II, *Command and Utility Reference*.
 
-## D.1 File Names and File Types
+<a id="section-d-1"></a>
+
+#### D.1 File Names and File Types
 
 BetterCP/M uses the standard CP/M 8.3 filename convention.
 
@@ -11026,7 +11203,7 @@ README
 
 is a valid filename without a file type.
 
-### Letter Case
+##### Letter Case
 
 BetterCP/M treats filenames without regard to letter case.
 
@@ -11042,7 +11219,7 @@ all identify the same CP/M filename.
 
 For consistency, this manual generally displays filenames in uppercase.
 
-### File Types
+##### File Types
 
 CP/M does not require every file type to have a particular meaning, but several conventions are widely used.
 
@@ -11063,7 +11240,7 @@ These conventions help identify a file's intended purpose, but the file type alo
 
 For example, renaming a text file to `.COM` does not make it an executable program.
 
-### Filename Restrictions
+##### Filename Restrictions
 
 File specifications must conform to CP/M's filename rules.
 
@@ -11075,7 +11252,9 @@ Characters used as wildcard operators cannot be treated as ordinary filename cha
 
 When a command rejects a filename, check its length, punctuation, and any wildcard characters.
 
-## D.2 Drive and User-Area Specifications
+<a id="section-d-2"></a>
+
+#### D.2 Drive and User-Area Specifications
 
 CP/M organizes files by drive and user area.
 
@@ -11085,7 +11264,7 @@ A user area is identified by a number.
 
 BetterCP/M supports user areas 0 through 31.
 
-### Drive Specifications
+##### Drive Specifications
 
 To identify a file on drive B:
 
@@ -11103,7 +11282,7 @@ B:REPORT.TXT
 
 refers to `REPORT.TXT` on drive B, user area 3.
 
-### User-Area Specifications
+##### User-Area Specifications
 
 BetterCP/M allows a user area to be specified directly with the drive.
 
@@ -11123,7 +11302,7 @@ A user-area specification can also be used without a drive letter:
 
 This refers to user area 3 on the current drive.
 
-### Drive/User Abbreviations
+##### Drive/User Abbreviations
 
 BetterCP/M uses the term **drive/user**, abbreviated **DU**, for a particular drive and user-area combination.
 
@@ -11140,15 +11319,15 @@ For example:
 
 When no drive or user area is specified, the current drive/user is used.
 
-### Changing the Current Drive/User
+##### Changing the Current Drive/User
 
 You can change the current drive and user area directly at the command prompt.
 
 For example:
 
 ```text
-A>B:
-B>
+A0>B:
+B0>
 ```
 
 selects drive B.
@@ -11156,7 +11335,7 @@ selects drive B.
 To select user area 3:
 
 ```text
-B>3:
+B0>3:
 B3>
 ```
 
@@ -11174,12 +11353,14 @@ By contrast, supplying a drive/user qualification to a file-management command n
 For example:
 
 ```text
-A>DIR B3:*.COM
+A0>DIR B3:*.COM
 ```
 
 lists matching files in B3 and then returns to the original prompt.
 
-## D.3 Wildcard File Specifications
+<a id="section-d-3"></a>
+
+#### D.3 Wildcard File Specifications
 
 Wildcards allow a command to select several files using a single specification.
 
@@ -11192,7 +11373,7 @@ BetterCP/M supports the familiar CP/M wildcard characters:
 
 The name and file-type fields are matched separately.
 
-### Question-Mark Wildcards
+##### Question-Mark Wildcards
 
 A question mark matches one position in the filename or file type.
 
@@ -11220,7 +11401,7 @@ FILE??.TXT
 
 selects filenames matching the indicated positions.
 
-### Asterisk Wildcards
+##### Asterisk Wildcards
 
 An asterisk matches the remaining positions in its field.
 
@@ -11248,7 +11429,7 @@ The familiar specification:
 
 selects all filenames and file types, subject to any attribute restrictions imposed by the command.
 
-### BetterCP/M's Bounded Wildcard Rules
+##### BetterCP/M's Bounded Wildcard Rules
 
 BetterCP/M uses a consistent set of bounded 8.3 wildcard rules in its extended file-selection facilities.
 
@@ -11280,7 +11461,7 @@ Invalid filespec.
 
 This restriction avoids ambiguous wildcard interpretation and provides consistent behavior among the utilities using the shared file-selection facilities.
 
-### Wildcards and Protected Files
+##### Wildcards and Protected Files
 
 Wildcards select filenames; they do not automatically override file protection.
 
@@ -11294,9 +11475,11 @@ does not imply permission to erase read-only or system files.
 
 The treatment of protected files depends on the command and any explicit attribute-selection or protection options.
 
-For details, consult the ERA, REN, COPY, and MOVE references in Chapter 14.
+For details, consult the ERA, REN, COPY, and MOVE references in [Chapter 14](#chapter-14).
 
-## D.4 Extended Drive/User Selectors
+<a id="section-d-4"></a>
+
+#### D.4 Extended Drive/User Selectors
 
 BetterCP/M extends conventional CP/M file specifications by allowing commands to select files from several drive/user areas in a single operation.
 
@@ -11304,7 +11487,7 @@ These extended specifications are called **drive/user selectors**, or **DU selec
 
 They are supported by the enhanced file-management utilities, although not every command accepts every form.
 
-### Selecting One User Area
+##### Selecting One User Area
 
 A conventional BetterCP/M file specification identifies one drive/user area:
 
@@ -11314,7 +11497,7 @@ B3:*.COM
 
 This selects matching `.COM` files in drive B, user area 3.
 
-### Selecting Several User Areas
+##### Selecting Several User Areas
 
 A bracketed list selects several user areas on the same drive.
 
@@ -11342,7 +11525,7 @@ B[1,3,8-10]:*.DOC
 
 This selects user areas 1, 3, 8, 9, and 10.
 
-### Selecting All User Areas
+##### Selecting All User Areas
 
 The special selector `[-]` selects all supported user areas on a drive.
 
@@ -11364,7 +11547,7 @@ is not an alternative spelling and is invalid.
 
 Use `[-]` when you want all user areas.
 
-### Descending and Open-Ended Ranges
+##### Descending and Open-Ended Ranges
 
 BetterCP/M's extended selector language also supports descending and open-ended ranges.
 
@@ -11382,7 +11565,7 @@ Open-ended ranges allow one endpoint to be omitted, using the beginning or end o
 
 These facilities are useful when selecting groups of user areas without listing every number individually.
 
-### Selecting Several Drives
+##### Selecting Several Drives
 
 Compound selectors allow locations on different drives to be combined.
 
@@ -11402,7 +11585,7 @@ More elaborate selections are also possible:
 
 This selects matching files from A0, B3 through B5, and C4, C5, and C9.
 
-### Inherited Drive and User Areas
+##### Inherited Drive and User Areas
 
 A compound selector can contain terms that omit either the drive or the user area.
 
@@ -11420,7 +11603,7 @@ The final `5` refers to user area 5 on the original current drive.
 
 This behavior allows convenient selections without repeatedly specifying the same drive.
 
-### Duplicate Locations
+##### Duplicate Locations
 
 If a compound selector names the same drive/user area more than once, BetterCP/M processes that location only once.
 
@@ -11434,7 +11617,7 @@ does not cause B3 to be processed twice.
 
 Selected locations are normally processed in drive-major, user-minor order.
 
-### Unsupported Drives
+##### Unsupported Drives
 
 The available logical drives depend on the computer and its configuration.
 
@@ -11446,7 +11629,9 @@ Different utilities may handle an unavailable selected drive differently. For ex
 
 Consult the command reference for the applicable behavior.
 
-## D.5 File Attributes
+<a id="section-d-5"></a>
+
+#### D.5 File Attributes
 
 CP/M stores several file attributes in directory entries.
 
@@ -11470,7 +11655,7 @@ Similarly, SYS and DIR describe opposite states of the system attribute.
 
 ARC is an independent attribute.
 
-### Read-Only Files
+##### Read-Only Files
 
 A file marked read-only is protected against ordinary modification or deletion.
 
@@ -11480,7 +11665,7 @@ For example, a utility may refuse to erase a read-only file unless the user expl
 
 BetterCP/M's enhanced ERA utility provides additional safeguards for read-only files.
 
-### System Files
+##### System Files
 
 The SYS attribute identifies a file as a system file.
 
@@ -11491,7 +11676,7 @@ BetterCP/M retains this convention.
 For example:
 
 ```text
-A>DIR
+A0>DIR
 ```
 
 normally omits SYS files.
@@ -11499,14 +11684,14 @@ normally omits SYS files.
 An explicit attribute expression can select them:
 
 ```text
-A>DIR *.*[$SYS]
+A0>DIR *.*[$SYS]
 ```
 
 This displays matching system files.
 
 The SYS attribute does not necessarily mean that a file is part of the operating system itself. It is a directory attribute that may also be used by applications or utilities.
 
-### Archive Attribute
+##### Archive Attribute
 
 The ARC attribute is commonly associated with backup operations.
 
@@ -11515,7 +11700,7 @@ BetterCP/M's COPY utility can use ARC to select files and manage their backup st
 For example:
 
 ```text
-A>:COPY /V /BACKUP B[-]:*.DOC[$ARC] D0:
+A0>:COPY /V /BACKUP B[-]:*.DOC[$ARC] D0:
 ```
 
 This selects archive-marked `.DOC` files, copies and verifies them, and clears ARC on the source and destination after successful completion.
@@ -11524,14 +11709,14 @@ However, ARC should not automatically be interpreted as a reliable record of eve
 
 That depends on whether the software modifying files maintains the attribute appropriately.
 
-### Displaying Attributes
+##### Displaying Attributes
 
 The transient DIR utility provides `/A` to display file attributes.
 
 For example:
 
 ```text
-A>:DIR /A
+A0>:DIR /A
 ```
 
 The attributes appear as a three-character field in SYS, RO, ARC order.
@@ -11553,7 +11738,9 @@ The `/A` option displays attributes; it does not change them or select files acc
 
 For attribute-based selection, use an attribute expression.
 
-## D.6 Attribute Expressions
+<a id="section-d-6"></a>
+
+#### D.6 Attribute Expressions
 
 BetterCP/M allows several file-management commands to select files according to their attributes.
 
@@ -11567,7 +11754,7 @@ For example:
 
 selects `.COM` files whose ARC attribute is set.
 
-### Attribute Names
+##### Attribute Names
 
 The supported attribute predicates are:
 
@@ -11581,7 +11768,7 @@ The supported attribute predicates are:
 
 The aliases `$R/O` and `$R/W` are also accepted for `$RO` and `$RW`.
 
-### Logical Operators
+##### Logical Operators
 
 Attribute expressions support three logical operators:
 
@@ -11613,7 +11800,7 @@ To select files without ARC:
 *.*[!$ARC]
 ```
 
-### Operator Precedence
+##### Operator Precedence
 
 When several operators appear in an expression, BetterCP/M evaluates them in the following order:
 
@@ -11633,14 +11820,14 @@ It does not require read-only files to have ARC set.
 
 Parentheses are not supported in attribute expressions.
 
-### Attribute Selection Does Not Change Attributes
+##### Attribute Selection Does Not Change Attributes
 
 An attribute expression normally selects files; it does not modify their attributes.
 
 For example:
 
 ```text
-A>DIR *.COM[$ARC]
+A0>DIR *.COM[$ARC]
 ```
 
 displays matching archive-marked files without changing them.
@@ -11648,21 +11835,21 @@ displays matching archive-marked files without changing them.
 Similarly:
 
 ```text
-A>COPY *.COM[$ARC] B:
+A0>COPY *.COM[$ARC] B:
 ```
 
 selects archive-marked files for copying but does not clear ARC on the source merely because the files were selected.
 
 Attribute modification requires a command or option that explicitly performs it.
 
-### Attribute Selection and File Protection
+##### Attribute Selection and File Protection
 
 Selecting a protected file does not necessarily authorize modifying or deleting it.
 
 For example:
 
 ```text
-A>ERA *.DOC[$RO]
+A0>ERA *.DOC[$RO]
 ```
 
 explicitly selects read-only files, but transient ERA may still require additional authorization before erasing them.
@@ -11670,18 +11857,20 @@ explicitly selects read-only files, but transient ERA may still require addition
 The `/R` option permits erasure of selected read-only files:
 
 ```text
-A>:ERA /R *.DOC[$RO]
+A0>:ERA /R *.DOC[$RO]
 ```
 
 Likewise, transient REN requires `/P` when renaming protected files.
 
 The exact protection rules depend on the command.
 
-In particular, ERA applies additional safeguards to files with SYS and RO attributes. A compound attribute expression must explicitly authorize the relevant protected attributes.
+For ERA, selection, protection admission and read-only authorization are separate. All protected attributes present must be admitted by the same matching OR branch: `[$SYS+$RO]` admits a SYS+RO file, while `[$SYS,$RO]` does not. `/R` only authorizes admitted RO files; it neither broadens the selection nor admits SYS. `/Y` without `/R` skips RO files unattended.
 
-Consult Section 14.2 for the complete ERA rules.
+Consult [Section 14.2](#section-14-2) for the complete ERA rules.
 
-## D.7 Destination Attribute Specifications
+<a id="section-d-7"></a>
+
+#### D.7 Destination Attribute Specifications
 
 Some BetterCP/M utilities allow attributes to be assigned to destination files.
 
@@ -11692,19 +11881,19 @@ Transient COPY.COM provides destination attribute specifications.
 For example:
 
 ```text
-A>:COPY A0:*.COM D0:[$RW,!$ARC]
+A0>:COPY A0:*.COM D0:[$RW,!$ARC]
 ```
 
 This requests destination copies that are writable and have ARC clear.
 
 The source files are selected normally, while the destination expression specifies the attributes to apply after copying.
 
-### Source and Destination Expressions
+##### Source and Destination Expressions
 
 Consider:
 
 ```text
-A>:COPY B2:*.DOC[$ARC] C0:[!$ARC] /V
+A0>:COPY B2:*.DOC[$ARC] C0:[!$ARC] /V
 ```
 
 The source expression:
@@ -11725,7 +11914,7 @@ requests that ARC be cleared on the completed copies.
 
 The source files retain their original attributes unless another option explicitly changes them.
 
-### Destination Attribute Rules
+##### Destination Attribute Rules
 
 Destination attribute specifications use comma-separated assignments.
 
@@ -11745,14 +11934,14 @@ Attributes not explicitly changed are preserved.
 
 Destination attribute settings do not override protection on an existing read-only destination file.
 
-### The /BACKUP Option
+##### The /BACKUP Option
 
 COPY's `/BACKUP` option provides additional handling of the archive attribute.
 
 For example:
 
 ```text
-A>:COPY /V /BACKUP B[-]:*.DOC[$ARC] D0:
+A0>:COPY /V /BACKUP B[-]:*.DOC[$ARC] D0:
 ```
 
 After a successful copy and any requested verification, COPY clears ARC on both source and destination.
@@ -11761,9 +11950,11 @@ Skipped, failed, or interrupted copies retain their source ARC status.
 
 The `/BACKUP` option takes precedence over a destination request to set ARC.
 
-For more information, see Section 14.5, *COPY*.
+For more information, see [Section 14.5](#section-14-5), *COPY*.
 
-## D.8 Compatibility and Command-Specific Restrictions
+<a id="section-d-8"></a>
+
+#### D.8 Compatibility and Command-Specific Restrictions
 
 BetterCP/M's extended file-selection facilities are intended to provide consistent behavior across commands, but not every command supports every feature.
 
@@ -11773,14 +11964,14 @@ STAT supports compound drive/user selectors for file inspection, but not for eve
 
 Some utilities also impose restrictions on the number of selected files or the destinations they accept.
 
-### Source and Destination Restrictions
+##### Source and Destination Restrictions
 
 Commands that operate on several source files may require a single destination drive/user area.
 
 For example:
 
 ```text
-A>COPY B[-]:*.DOC C3:
+A0>COPY B[-]:*.DOC C3:
 ```
 
 is valid because the destination identifies one location.
@@ -11789,7 +11980,7 @@ A destination selector resolving to several user areas is not accepted by COPY.
 
 Similarly, REN changes filenames within their existing drive/user areas. It does not use destination drive/user specifications to relocate files.
 
-### Resident and Transient Differences
+##### Resident and Transient Differences
 
 Some commands provide additional capabilities in their transient versions.
 
@@ -11801,7 +11992,7 @@ When a command has both resident and transient forms, consult its reference entr
 
 Use the colon or period prefix to request the transient version explicitly.
 
-### File-Selection Errors
+##### File-Selection Errors
 
 BetterCP/M checks file specifications before carrying out operations.
 
@@ -11815,17 +12006,19 @@ Disk errors, insufficient space, file protection, and destination conflicts may 
 
 For this reason, use particular care with wildcard operations that modify or delete many files.
 
-### Further Reference
+##### Further Reference
 
 For detailed command behavior, consult:
 
-- Chapter 14 — File and Directory Commands
-- Chapter 16 — System Utilities
-- Appendix E — BetterCP/M and CP/M 2.2 Compatibility Notes
+- [Chapter 14](#chapter-14) — File and Directory Commands
+- [Chapter 16](#chapter-16) — System Utilities
+- [Appendix E](#appendix-e) — BetterCP/M and CP/M 2.2 Compatibility Notes
 
 ---
 
-# Appendix E — BetterCP/M and CP/M 2.2 Compatibility Notes
+<a id="appendix-e"></a>
+
+### Appendix E — BetterCP/M and CP/M 2.2 Compatibility Notes
 
 BetterCP/M is intended to provide a compatible implementation of Digital Research CP/M 2.2 while extending its capabilities in ways useful to contemporary CP/M users.
 
@@ -11839,7 +12032,9 @@ This appendix summarizes the principal compatibility considerations that may aff
 
 It is not intended to reproduce the complete technical compatibility specification. Programmers requiring exact BDOS behavior, calling conventions, or implementation details should consult the *BetterCP/M Compatibility Documentation* and the appropriate programming references.
 
-## E.1 Compatibility Objectives
+<a id="section-e-1"></a>
+
+#### E.1 Compatibility Objectives
 
 BetterCP/M preserves the principal conventions of Digital Research CP/M 2.2.
 
@@ -11851,7 +12046,7 @@ For example, a program that uses BDOS to open, read, write, and close files shou
 
 Likewise, programs that use the conventional console interface can continue to communicate through the BIOS and BDOS facilities provided by BetterCP/M.
 
-### Compatibility and Extensions
+##### Compatibility and Extensions
 
 BetterCP/M adds facilities beyond those provided by Digital Research CP/M 2.2.
 
@@ -11863,7 +12058,7 @@ An ordinary CP/M program does not need to know whether BetterCP/M has an extende
 
 It can continue using the conventional interfaces.
 
-### Compatibility Is Not Hardware Emulation
+##### Compatibility Is Not Hardware Emulation
 
 BetterCP/M provides an operating-system environment, not a universal emulator for every computer that historically ran CP/M.
 
@@ -11873,9 +12068,11 @@ For example, a program written specifically for the TRS-80 Model 4's video hardw
 
 BetterCP/M's terminal monitors can provide compatible terminal-control behavior, but they cannot make arbitrary hardware-specific programs portable.
 
-## E.2 Program Compatibility
+<a id="section-e-2"></a>
 
-### Transient Programs
+#### E.2 Program Compatibility
+
+##### Transient Programs
 
 BetterCP/M retains the conventional CP/M transient-program model.
 
@@ -11885,7 +12082,7 @@ BetterCP/M establishes the expected program environment, including the command t
 
 Programs using these conventions should ordinarily run without modification.
 
-### Program Termination
+##### Program Termination
 
 Conventional CP/M programs terminate by returning control to the operating system through the supported termination mechanisms.
 
@@ -11895,19 +12092,19 @@ When a transient program terminates, BetterCP/M restores the command environment
 
 Resident extensions intended to survive ordinary warm boots remain available.
 
-### Available Memory
+##### Available Memory
 
 The amount of memory available to a transient program depends on the system configuration.
 
-Resident extensions occupy memory that would otherwise be available to transient programs.
+Loaded RSXs occupy protected memory that is unavailable to transient programs. The CCP and CPX command code are reclaimable and can be overwritten by a transient; BetterCP/M reconstructs the command environment on warm boot.
 
-Consequently, a program that fits in a conventional CP/M environment may encounter insufficient memory if several BetterCP/M extensions are loaded.
+A program may therefore encounter insufficient memory when RSXs are loaded, even though it fits without those services.
 
-If this occurs, unload extensions that are not needed for the program.
+Use `STAT MEM` to check the maximum loadable COM size and `RSX LIST` to identify services you can unload. Removing an unnecessary RSX can recover program memory; unloading a CPX does not increase the maximum COM size by its reclaimable command-code size.
 
 This is a resource limitation rather than necessarily an incompatibility in the program's operating-system calls.
 
-### Programs That Modify System Memory
+##### Programs That Modify System Memory
 
 Some historical CP/M programs make assumptions about the location or contents of the command processor, BDOS, BIOS, or other system structures.
 
@@ -11917,9 +12114,11 @@ BetterCP/M does not guarantee compatibility with every such assumption.
 
 Programs that use documented operating-system entry points are generally more portable than programs that inspect or modify private system structures.
 
-## E.3 File and Disk Compatibility
+<a id="section-e-3"></a>
 
-### File Naming
+#### E.3 File and Disk Compatibility
+
+##### File Naming
 
 BetterCP/M retains CP/M's 8.3 filename convention.
 
@@ -11929,7 +12128,7 @@ BetterCP/M also retains conventional wildcard characters and file attributes.
 
 Its enhanced utilities provide additional file-selection capabilities, but ordinary programs are not required to use them.
 
-### User Areas
+##### User Areas
 
 Digital Research CP/M 2.2 conventionally provides user areas 0 through 15.
 
@@ -11941,7 +12140,7 @@ Programs that assume the conventional range may not recognize or manage files in
 
 For maximum compatibility with conventional utilities, use user areas 0 through 15 when working with software that makes assumptions about the available range.
 
-### Drive/User Specifications
+##### Drive/User Specifications
 
 BetterCP/M commands can accept explicit drive/user specifications such as:
 
@@ -11964,7 +12163,7 @@ A third-party CP/M program may interpret such arguments differently or reject th
 
 Use conventional file specifications when invoking software that does not explicitly support BetterCP/M's extensions.
 
-### Disk Formats
+##### Disk Formats
 
 CP/M was used on many computers with different disk formats.
 
@@ -11976,7 +12175,7 @@ Differences in recording density, sector size, track organization, and controlle
 
 BetterCP/M's CONFIG and DUP utilities help manage supported formats, but they do not eliminate hardware limitations.
 
-### File Attributes
+##### File Attributes
 
 BetterCP/M retains conventional CP/M file attributes, including read-only and system attributes.
 
@@ -11988,13 +12187,15 @@ However, software that maintains file attributes independently may not follow Be
 
 In particular, the ARC attribute should not be assumed to identify every modified file unless the software involved maintains it appropriately.
 
-## E.4 Command Compatibility
+<a id="section-e-4"></a>
+
+#### E.4 Command Compatibility
 
 BetterCP/M retains the familiar CP/M command environment while extending several commands.
 
 Some extensions are available through resident commands, while others require transient utilities.
 
-### Resident and Transient Commands
+##### Resident and Transient Commands
 
 Digital Research CP/M 2.2 includes a small set of resident commands and uses transient programs for other operations.
 
@@ -12013,15 +12214,15 @@ For example, DIR and `DIR.COM` provide related but different capabilities.
 
 The transient utility supports additional sorting, display, and file-search options.
 
-### Explicit Transient Execution
+##### Explicit Transient Execution
 
 BetterCP/M provides a way to execute a transient utility even when a resident command with the same name is available.
 
 Prefix the command with a colon or period:
 
 ```text
-A>:DIR
-A>.DIR
+A0>:DIR
+A0>.DIR
 ```
 
 Both forms explicitly request `DIR.COM`.
@@ -12030,14 +12231,14 @@ This is a BetterCP/M extension to the conventional command environment.
 
 The prefixes are interpreted by BetterCP/M's command processor and do not change the executable filename.
 
-### Differences in Command Syntax
+##### Differences in Command Syntax
 
 Some BetterCP/M commands accept syntax that conventional CP/M utilities do not recognize.
 
 For example:
 
 ```text
-A>COPY B[-]:*.DOC C3:
+A0>COPY B[-]:*.DOC C3:
 ```
 
 uses BetterCP/M's extended drive/user selection.
@@ -12045,14 +12246,14 @@ uses BetterCP/M's extended drive/user selection.
 Similarly:
 
 ```text
-A>:DIR /S=Z-
+A0>:DIR /S=Z-
 ```
 
 uses a transient DIR option for sorting by allocated size in descending order.
 
 These facilities are useful when working within BetterCP/M, but they should not be assumed to exist on other CP/M implementations.
 
-### Compatibility of Command Files
+##### Compatibility of Command Files
 
 SUBMIT retains the familiar `.SUB` command-file convention and positional parameter substitution.
 
@@ -12062,7 +12263,7 @@ For example, a batch file that invokes CONFIG or uses extended COPY options depe
 
 When preparing command files intended for several CP/M systems, restrict them to commands and syntax supported by all the target environments.
 
-### Conventional Utility Behavior
+##### Conventional Utility Behavior
 
 BetterCP/M aims to preserve the familiar behavior of conventional CP/M utilities where compatibility matters.
 
@@ -12074,9 +12275,11 @@ Likewise, transient COPY offers verification, destination-collision handling, an
 
 These differences are intentional and are documented in the corresponding command references.
 
-## E.5 Console and Terminal Compatibility
+<a id="section-e-5"></a>
 
-### Conventional Console Services
+#### E.5 Console and Terminal Compatibility
+
+##### Conventional Console Services
 
 BetterCP/M retains the conventional CP/M console services used by ordinary applications.
 
@@ -12084,7 +12287,7 @@ Programs that read and write characters through the supported BIOS and BDOS inte
 
 The actual keyboard and display hardware depend on the computer.
 
-### Terminal-Specific Applications
+##### Terminal-Specific Applications
 
 Many historical CP/M applications were configured for a particular terminal.
 
@@ -12102,7 +12305,7 @@ These extensions interpret supported terminal-control sequences and pass the cor
 
 The application must still be configured for the appropriate terminal type.
 
-### Terminal Limitations
+##### Terminal Limitations
 
 BetterCP/M's terminal personalities provide supported subsets of the corresponding terminal behavior.
 
@@ -12114,7 +12317,7 @@ Similarly, keyboard translation depends on the computer, BIOS, terminal emulator
 
 A terminal personality that interprets display sequences does not automatically guarantee that every physical key generates the codes expected by the application.
 
-### Direct Hardware Access
+##### Direct Hardware Access
 
 Some applications bypass CP/M's console services and manipulate display hardware directly.
 
@@ -12124,7 +12327,9 @@ BetterCP/M's terminal monitors do not automatically translate such hardware acce
 
 For best portability, use applications that communicate through conventional CP/M console services or supported terminal-control sequences.
 
-## E.6 Date and Time Compatibility
+<a id="section-e-6"></a>
+
+#### E.6 Date and Time Compatibility
 
 Digital Research CP/M 2.2 did not define a general-purpose date-and-time service in its standard programming interface.
 
@@ -12132,7 +12337,7 @@ Consequently, historical CP/M systems adopted several different clock interfaces
 
 BetterCP/M provides a native clock service and an optional compatibility interface for programs using P2DOS-style clock functions.
 
-### Native Clock Support
+##### Native Clock Support
 
 BetterCP/M's TIME utility obtains the date and time through a loadable clock provider.
 
@@ -12149,17 +12354,17 @@ They support obtaining the date and time but do not permit setting the underlyin
 
 The TIME utility implements a SET request, but the supplied providers reject it as unsupported.
 
-### P2DOS Compatibility
+##### P2DOS Compatibility
 
-BetterCP/M provides `P2DOS.RSX` for applications using the P2DOS-compatible date-and-time interface.
+The optional, separately buildable `P2DOS.RSX` supports applications using the P2DOS-compatible date-and-time interface. It is not selected System Disk content; install a compatible carrier in A0 before using the example below.
 
 The extension supplies the corresponding BDOS functions through BetterCP/M's native clock service.
 
 For example, under z80pack:
 
 ```text
-A>RSX LOAD ZPRTC
-A>RSX LOAD P2DOS
+A0>RSX LOAD ZPRTC
+A0>RSX LOAD P2DOS
 ```
 
 This makes the P2DOS-compatible interface available to programs that use it.
@@ -12170,7 +12375,7 @@ Its capabilities depend on the installed native provider.
 
 Consequently, setting the clock remains unsupported with the standard read-only providers.
 
-### Compatibility Limits
+##### Compatibility Limits
 
 Programs using the conventional CP/M 2.2 programming interface do not require clock support.
 
@@ -12178,9 +12383,11 @@ Programs depending on a particular manufacturer's proprietary clock interface ma
 
 BetterCP/M's native and P2DOS-compatible clock services should not be assumed to reproduce every historical CP/M clock interface.
 
-For more information, see Chapter 11, *Date and Time*.
+For more information, see [Chapter 11](#chapter-11), *Date and Time*.
 
-## E.7 Resident Extensions and Compatibility
+<a id="section-e-7"></a>
+
+#### E.7 Resident Extensions and Compatibility
 
 BetterCP/M provides two types of resident extensions:
 
@@ -12189,7 +12396,7 @@ BetterCP/M provides two types of resident extensions:
 
 These are BetterCP/M facilities and are not part of the standard Digital Research CP/M 2.2 operating environment.
 
-### Command Processor Extensions
+##### Command Processor Extensions
 
 CPXs allow additional commands to remain resident.
 
@@ -12197,7 +12404,7 @@ Ordinary CP/M programs do not need to know whether a command is provided by a CP
 
 However, programs that inspect the command processor's private memory structures may encounter differences from Digital Research CP/M.
 
-### Resident System Extensions
+##### Resident System Extensions
 
 RSXs provide optional services such as terminal support, clock providers, and batch input.
 
@@ -12209,7 +12416,7 @@ This may affect programs that require nearly all the memory available on a conve
 
 Unloading unnecessary extensions can restore memory for such programs.
 
-### Extension Dependencies
+##### Extension Dependencies
 
 Some RSXs require supporting extensions.
 
@@ -12217,21 +12424,23 @@ For example, a terminal personality depends on a suitable screen backend.
 
 Load the backend before the personality, and unload them in the reverse order.
 
-For additional information, see Chapter 8, *Resident Extensions*.
+For additional information, see [Chapter 8](#chapter-8), *Resident Extensions*.
 
-## E.8 Compatibility Considerations for Existing Software
+<a id="section-e-8"></a>
+
+#### E.8 Compatibility Considerations for Existing Software
 
 Most conventional CP/M applications should require little or no special preparation beyond having the appropriate executable files and terminal configuration.
 
 However, several factors are worth checking when a program does not behave as expected.
 
-### Operating-System Interface
+##### Operating-System Interface
 
 Programs using documented CP/M 2.2 BDOS and BIOS services are generally more portable than programs relying on undocumented internal structures.
 
 If an application behaves differently under BetterCP/M, determine whether it uses conventional interfaces or makes assumptions about a particular implementation.
 
-### Terminal Configuration
+##### Terminal Configuration
 
 Full-screen applications must be configured for a supported terminal environment.
 
@@ -12239,13 +12448,13 @@ If the display is incorrect, check the installed terminal personality and the ap
 
 Use the supplied terminal test utilities to verify the monitor independently of the application.
 
-### Memory Requirements
+##### Memory Requirements
 
 Resident extensions reduce available transient memory.
 
 If a program reports insufficient memory, unload optional extensions that are not required for its operation.
 
-### File and Disk Assumptions
+##### File and Disk Assumptions
 
 Some programs assume particular disk capacities, drive arrangements, or user-area ranges.
 
@@ -12253,7 +12462,7 @@ BetterCP/M's extended facilities do not automatically remove those assumptions.
 
 Use compatible disk formats and conventional file locations when working with software that has limited configuration options.
 
-### Program-Specific Installation
+##### Program-Specific Installation
 
 Some historical CP/M applications require installation or configuration for a particular terminal, printer, or computer.
 
@@ -12263,7 +12472,9 @@ The operating system cannot automatically determine every application-specific h
 
 Consult the application's original documentation when necessary.
 
-## E.9 Reporting Compatibility Problems
+<a id="section-e-9"></a>
+
+#### E.9 Reporting Compatibility Problems
 
 If a conventional CP/M program behaves unexpectedly under BetterCP/M, the most useful first step is to determine whether the problem is reproducible.
 
@@ -12273,7 +12484,7 @@ Where possible, determine whether the same program behaves differently under Dig
 
 This can help distinguish an operating-system compatibility issue from an application configuration problem or a hardware limitation.
 
-### Information to Record
+##### Information to Record
 
 A useful compatibility report should identify:
 
@@ -12291,7 +12502,7 @@ Include the commands needed to reproduce the problem when possible.
 
 If the application displays an error message, record its exact wording.
 
-### Comparing with Digital Research CP/M
+##### Comparing with Digital Research CP/M
 
 When practical, test the same application under a known working Digital Research CP/M 2.2 installation.
 
@@ -12301,7 +12512,7 @@ A difference in behavior may identify a compatibility issue, but it may also ref
 
 A controlled comparison is more useful than simply observing that a program works on one computer and fails on another.
 
-### Further Technical Documentation
+##### Further Technical Documentation
 
 This appendix summarizes compatibility issues from the user's perspective.
 
@@ -12309,11 +12520,13 @@ More detailed compatibility information is maintained separately, including docu
 
 Those documents are intended primarily for developers, system maintainers, and users investigating specific compatibility questions.
 
-For the programming interfaces themselves, consult the *BetterCP/M Developer's Guide* and the original Digital Research CP/M 2.2 documentation.
+For the programming interfaces themselves, consult the [BetterCP/M RSX and CPX Programmer's Guide](../programmers/RSX%20and%20CPX%20Programmer%27s%20Guide.md) and the original Digital Research CP/M 2.2 documentation.
 
 ---
 
-# Appendix F — System Messages and Error Reference
+<a id="appendix-f"></a>
+
+### Appendix F — System Messages and Error Reference
 
 BetterCP/M reports errors and other operating conditions through messages displayed at the console.
 
@@ -12325,18 +12538,20 @@ The messages are grouped by subject rather than alphabetically. Related messages
 
 **Messages shown in quotation marks or code blocks are intended to reproduce documented BetterCP/M wording.** Where a utility may produce several related messages, the description explains the condition without implying that every variation has identical wording.
 
-For general troubleshooting procedures, see Chapter 12, *Troubleshooting*. For command-specific restrictions and recovery options, consult Part II, *Command and Utility Reference*.
+For general troubleshooting procedures, see [Chapter 12](#chapter-12), *Troubleshooting*. For command-specific restrictions and recovery options, consult Part II, *Command and Utility Reference*.
 
-## F.1 Command Processor Messages
+<a id="section-f-1"></a>
 
-### `?`
+#### F.1 Command Processor Messages
+
+##### `?`
 
 **Meaning:** BetterCP/M could not locate or recognize the requested command.
 
 For example:
 
 ```text
-A>MYPROG
+A0>MYPROG
 ?
 ```
 
@@ -12351,15 +12566,15 @@ If no executable program is found, the command fails.
 For example:
 
 ```text
-A>DIR *.COM
-A>DIR A0:*.COM
+A0>DIR *.COM
+A0>DIR A0:*.COM
 ```
 
 If the program is in another location, specify its drive and user area explicitly.
 
 A qualified command such as `B3:MYPROG` searches only the specified location; it does not fall back to `A0:`.
 
-### `CPX?`
+##### `CPX?`
 
 **Meaning:** An optional Command Processor Extension could not be loaded or failed validation.
 
@@ -12372,13 +12587,13 @@ The extension may remain in the configured CPX list even though it did not load 
 **What to do:** Examine the configured extensions:
 
 ```text
-A>CPX LIST
+A0>CPX LIST
 ```
 
 If the affected extension is optional, remove its configured entry:
 
 ```text
-A>CPX UNLOAD BAD
+A0>CPX UNLOAD BAD
 ```
 
 Replace `BAD` with the affected extension's name.
@@ -12387,14 +12602,14 @@ Alternatively, replace the damaged extension file with a valid copy.
 
 The warning may recur when the command environment is restored until the problem is corrected.
 
-### `DIR: Use :DIR.`
+##### `DIR: Use :DIR.`
 
 **Meaning:** The requested DIR operation requires the transient `DIR.COM` utility.
 
 For example:
 
 ```text
-A>DIR /WHEREIS ED.COM
+A0>DIR /WHEREIS ED.COM
 DIR: Use :DIR.
 ```
 
@@ -12405,29 +12620,29 @@ It does not automatically execute that version.
 **What to do:** Repeat the command with a colon or period prefix:
 
 ```text
-A>:DIR /WHEREIS ED.COM
+A0>:DIR /WHEREIS ED.COM
 ```
 
 The same convention applies to other resident commands with transient-only options.
 
-### `VER: Use :VER.`
+##### `VER: Use :VER.`
 
 **Meaning:** The requested VER operation is available through the transient utility rather than the resident command.
 
 For example:
 
 ```text
-A>VER /BANNER
+A0>VER /BANNER
 VER: Use :VER.
 ```
 
 **What to do:** Invoke the transient version:
 
 ```text
-A>:VER /BANNER
+A0>:VER /BANNER
 ```
 
-### Invalid Command Syntax
+##### Invalid Command Syntax
 
 A command may report an error when its arguments are missing, malformed, or supplied in an unsupported order.
 
@@ -12437,9 +12652,11 @@ The exact message depends on the command.
 
 Pay particular attention to required operands, option placement, filename qualifications, and whether the command has resident and transient versions.
 
-## F.2 File and Directory Messages
+<a id="section-f-2"></a>
 
-### `Invalid filespec.`
+#### F.2 File and Directory Messages
+
+##### `Invalid filespec.`
 
 **Meaning:** A file specification contains invalid syntax.
 
@@ -12465,7 +12682,7 @@ F*.DAT
 
 is valid.
 
-### `NO FILE`
+##### `NO FILE`
 
 **Meaning:** No files matched the requested selection.
 
@@ -12476,12 +12693,12 @@ This may occur when the named file does not exist or when a wildcard or attribut
 For example:
 
 ```text
-A>DIR B3:*.COM
+A0>DIR B3:*.COM
 ```
 
 can help determine whether matching files exist in the expected location.
 
-### `File Not Found`
+##### `File Not Found`
 
 **Meaning:** A requested file or matching selection could not be found.
 
@@ -12491,7 +12708,7 @@ STAT may report this condition when examining an empty selected location.
 
 Remember that files in different user areas are distinct, even when they have identical names.
 
-### `FILE EXISTS`
+##### `FILE EXISTS`
 
 **Meaning:** A destination file already exists and the requested operation does not authorize replacing it.
 
@@ -12510,7 +12727,7 @@ The first permits replacement of existing writable files. The second skips them.
 
 Read-only destination files remain protected.
 
-### `COPY MADE; SOURCE NOT ERASED`
+##### `COPY MADE; SOURCE NOT ERASED`
 
 **Meaning:** MOVE successfully created the destination file but could not remove the original.
 
@@ -12522,7 +12739,7 @@ If the destination is complete and correct, you may delete the source manually.
 
 Do not assume that the original was removed.
 
-### `Invalid /VER usage.`
+##### `Invalid /VER usage.`
 
 **Meaning:** The `/VER` option was combined with arguments or options that the utility does not permit.
 
@@ -12533,18 +12750,20 @@ Most BetterCP/M utilities require `/VER` to be used alone.
 For example:
 
 ```text
-A>COPY /VER
+A0>COPY /VER
 ```
 
 If the utility has a resident and transient version, use the appropriate invocation form.
 
-## F.3 Disk and Filesystem Messages
+<a id="section-f-3"></a>
+
+#### F.3 Disk and Filesystem Messages
 
 Disk-related errors may originate in BDOS, the BIOS, or a utility performing disk operations.
 
 The exact wording depends on the operation and the platform.
 
-### Disk Read Error
+##### Disk Read Error
 
 **Meaning:** The system could not reliably read the requested disk data.
 
@@ -12555,12 +12774,12 @@ Possible causes include damaged media, an incorrect disk-format assignment, a dr
 Use CONFIG to inspect the current drive settings:
 
 ```text
-A>CONFIG /SHOW
+A0>CONFIG /SHOW
 ```
 
 If the disk remains readable, preserve important files before attempting further modifications.
 
-### Disk Write Error
+##### Disk Write Error
 
 **Meaning:** A requested disk write failed.
 
@@ -12570,7 +12789,7 @@ Possible causes include write protection, a full disk, damaged media, or a hardw
 
 If the error occurs during a destructive disk operation, do not assume that the destination remains complete or usable.
 
-### Disk Full
+##### Disk Full
 
 **Meaning:** The disk cannot accommodate the requested file data or directory entries.
 
@@ -12580,7 +12799,7 @@ A disk may run out of directory entries even when some data blocks remain free.
 
 **What to do:** Remove unnecessary files, copy files to another disk, or use a suitable disk with greater capacity.
 
-### Read-Only Disk
+##### Read-Only Disk
 
 **Meaning:** The operating system is refusing writes to the selected disk.
 
@@ -12592,7 +12811,7 @@ If removable media were changed, use the appropriate disk-reset or warm-boot pro
 
 Do not force writes to a disk whose directory state may be inconsistent with the operating system's cached information.
 
-### Unavailable Drive
+##### Unavailable Drive
 
 **Meaning:** The requested logical drive is not configured or cannot be accessed.
 
@@ -12600,23 +12819,25 @@ Do not force writes to a disk whose directory state may be inconsistent with the
 
 A logical drive may have been unbound, assigned to an unavailable physical drive, or configured with an unsuitable format.
 
-## F.4 DUP Messages
+<a id="section-f-4"></a>
+
+#### F.4 DUP Messages
 
 DUP reports errors encountered while formatting, copying, and checking disks.
 
-### `Format complete.`
+##### `Format complete.`
 
 **Meaning:** DUP completed the requested formatting operation and its verification.
 
 This is a successful completion message.
 
-### `Copy complete; destination verified.`
+##### `Copy complete; destination verified.`
 
 **Meaning:** DUP copied the represented sector contents and verified the destination against the source data.
 
 This is a successful completion message.
 
-### `Check complete. Unreadable sectors: n`
+##### `Check complete. Unreadable sectors: n`
 
 **Meaning:** DUP completed a physical readability check.
 
@@ -12632,7 +12853,7 @@ indicates that the examined sectors were readable.
 
 It does not establish that the filesystem or individual files are logically correct.
 
-### `Format aborted. Disk is only partly formatted.`
+##### `Format aborted. Disk is only partly formatted.`
 
 **Meaning:** Formatting was interrupted after the operation began.
 
@@ -12640,7 +12861,7 @@ The destination disk may not be usable until it is formatted again.
 
 **What to do:** Correct the cause of the interruption and repeat formatting when safe.
 
-### `Operation stopped. Destination may be partly written.`
+##### `Operation stopped. Destination may be partly written.`
 
 **Meaning:** A disk-copy operation was interrupted.
 
@@ -12648,7 +12869,7 @@ The source remains unchanged, but the destination may contain only part of the i
 
 **What to do:** Do not rely on the destination as a complete backup. Repeat the operation from a reliable source.
 
-### `Check stopped. No disk contents changed.`
+##### `Check stopped. No disk contents changed.`
 
 **Meaning:** A disk check was interrupted.
 
@@ -12656,7 +12877,7 @@ CHECK is read-only, so the disk was not modified by the operation.
 
 However, the check is incomplete.
 
-### `Cannot restore destination configuration. Press a key to retry.`
+##### `Cannot restore destination configuration. Press a key to retry.`
 
 **Meaning:** DUP could not restore a temporary destination-drive assignment after a disk-copy operation.
 
@@ -12666,7 +12887,7 @@ DUP retains the information required for restoration and requests another attemp
 
 Avoid resetting the system merely to dismiss the message, since the temporary configuration may still be active.
 
-### Disk Error Status
+##### Disk Error Status
 
 DUP may report a numeric disk status together with the affected cylinder, side, sector, or record.
 
@@ -12686,13 +12907,15 @@ The following status information is useful when interpreting those reports.
 
 The bit descriptions identify conditions reported through the disk interface. They are not necessarily mutually exclusive.
 
-For additional information, see Section 16.4, *DUP*.
+For additional information, see [Section 16.4](#section-16-4), *DUP*.
 
-## F.5 SYSGEN Messages
+<a id="section-f-5"></a>
+
+#### F.5 SYSGEN Messages
 
 SYSGEN reports conditions encountered while installing BetterCP/M or saving system-image packages.
 
-### `Physical drive 0 is protected as the running system disk.`
+##### `Physical drive 0 is protected as the running system disk.`
 
 **Meaning:** The requested installation destination resolves to physical drive 0.
 
@@ -12702,7 +12925,7 @@ BetterCP/M protects this drive against SYSGEN destination writes.
 
 Changing the logical drive letter does not bypass this protection.
 
-### `Source and destination refer to the same physical drive.`
+##### `Source and destination refer to the same physical drive.`
 
 **Meaning:** A disk-source installation would read and write through the same physical drive.
 
@@ -12710,13 +12933,13 @@ SYSGEN requires different physical drives for disk-to-disk installation.
 
 **What to do:** Select a different destination.
 
-### `The selected drive is undefined or unavailable.`
+##### `The selected drive is undefined or unavailable.`
 
 **Meaning:** SYSGEN could not obtain a valid drive assignment for the requested source or destination.
 
 **What to do:** Examine the drive configuration and correct the assignment before retrying.
 
-### `Destination reserved system area is too small (160 records required).`
+##### `Destination reserved system area is too small (160 records required).`
 
 **Meaning:** The destination does not provide enough reserved system space for BetterCP/M 1.0.
 
@@ -12726,7 +12949,7 @@ SYSGEN requires at least 160 reserved 128-byte logical records.
 
 SYSGEN cannot create additional reserved space by itself.
 
-### `Destination bootstrap geometry is not supported by this system package.`
+##### `Destination bootstrap geometry is not supported by this system package.`
 
 **Meaning:** The destination's bootstrap geometry is incompatible with the system image being installed.
 
@@ -12734,7 +12957,7 @@ SYSGEN cannot create additional reserved space by itself.
 
 SYSGEN does not perform disk-format conversion.
 
-### `The system package is invalid or cannot represent the destination.`
+##### `The system package is invalid or cannot represent the destination.`
 
 **Meaning:** The system-image package failed validation or cannot be installed safely using the destination's configuration.
 
@@ -12742,7 +12965,7 @@ SYSGEN does not perform disk-format conversion.
 
 If necessary, obtain a valid system package or recreate it from a known working installation.
 
-### `The destination system area will be replaced.`
+##### `The destination system area will be replaced.`
 
 **Meaning:** SYSGEN is requesting confirmation before installation.
 
@@ -12750,7 +12973,7 @@ The accompanying message explains that files outside the reserved system tracks 
 
 Only `Y` authorizes installation.
 
-### `System installed and verified. The destination is bootable.`
+##### `System installed and verified. The destination is bootable.`
 
 **Meaning:** SYSGEN completed installation and verified the written system records.
 
@@ -12758,7 +12981,7 @@ This is a successful completion message.
 
 It does not mean that all ordinary utility files or startup-support files have been copied to the destination.
 
-### `Installation stopped. The destination may not boot.`
+##### `Installation stopped. The destination may not boot.`
 
 **Meaning:** Installation was interrupted after system-area writing began.
 
@@ -12768,13 +12991,13 @@ The filesystem area remains outside SYSGEN's write range.
 
 **What to do:** Repeat installation from a valid source after correcting the cause of the interruption.
 
-### `Package exported and verified.`
+##### `Package exported and verified.`
 
 **Meaning:** SYSGEN successfully saved and verified an installed operating-system image as a package file.
 
 The package contains the operating system and its saved configuration, but not ordinary files from the source disk.
 
-### `Replace existing package (Y/N)?`
+##### `Replace existing package (Y/N)?`
 
 **Meaning:** The requested package filename already exists.
 
@@ -12782,7 +13005,7 @@ Only `Y` authorizes replacement.
 
 Read-only and system files remain protected.
 
-### SYSGEN Recovery Files
+##### SYSGEN Recovery Files
 
 During package export, SYSGEN may use:
 
@@ -12797,13 +13020,15 @@ These are recovery files, not necessarily disposable temporary files.
 
 **What to do:** Examine the reported failure and preserve the files until you've determined whether they contain a valid package or the previous version.
 
-For additional information, see Section 16.5, *SYSGEN*.
+For additional information, see [Section 16.5](#section-16-5), *SYSGEN*.
 
-## F.6 Configuration Messages
+<a id="section-f-6"></a>
+
+#### F.6 Configuration Messages
 
 CONFIG reports errors involving startup settings, drive definitions, disk formats, and saved configuration information.
 
-### Invalid Configuration Value
+##### Invalid Configuration Value
 
 **Meaning:** A requested configuration value is outside its permitted range or is not supported by the selected field.
 
@@ -12813,7 +13038,7 @@ For example, a physical-drive profile may specify an unsupported number of track
 
 Do not assume that a value accepted by one platform is suitable for another.
 
-### Incompatible Drive Assignment
+##### Incompatible Drive Assignment
 
 **Meaning:** The requested disk-format definition is incompatible with the selected physical drive.
 
@@ -12821,7 +13046,7 @@ Do not assume that a value accepted by one platform is suitable for another.
 
 A format that requires more tracks or sides than the drive supports cannot be assigned safely.
 
-### `Drive profile changed; binding cleanup incomplete`
+##### `Drive profile changed; binding cleanup incomplete`
 
 **Meaning:** CONFIG changed a physical-drive profile but could not complete all associated logical-binding checks or adjustments.
 
@@ -12831,7 +13056,7 @@ The physical profile change has already occurred.
 
 Do not assume that the previous configuration remains completely intact.
 
-### Configuration Verification Failure
+##### Configuration Verification Failure
 
 **Meaning:** CONFIG could not verify the installed system information needed for the requested configuration operation.
 
@@ -12841,7 +13066,7 @@ This can occur when the system image is damaged or CONFIG does not match the ins
 
 If necessary, restore a known working system image.
 
-### Save Failure
+##### Save Failure
 
 **Meaning:** CONFIG could not successfully write or verify the requested saved configuration.
 
@@ -12849,13 +13074,15 @@ If necessary, restore a known working system image.
 
 A failed save should not be treated as evidence that the new configuration will be available after a cold boot.
 
-For additional information, see Section 16.1, *CONFIG*.
+For additional information, see [Section 16.1](#section-16-1), *CONFIG*.
 
-## F.7 Resident Extension Messages
+<a id="section-f-7"></a>
+
+#### F.7 Resident Extension Messages
 
 Resident extensions may report errors when being loaded, unloaded, or restored.
 
-### CPX Load Failure
+##### CPX Load Failure
 
 An optional CPX that fails validation may produce:
 
@@ -12867,7 +13094,7 @@ The system continues with the remaining usable command extensions.
 
 The affected commands are unavailable until the extension is repaired or removed.
 
-### RSX Load Failure
+##### RSX Load Failure
 
 **Meaning:** The requested RSX could not be installed.
 
@@ -12877,7 +13104,7 @@ Possible causes include a missing or damaged extension file, an incompatible ext
 
 For example, a terminal personality requires a compatible screen backend.
 
-### RSX Unload Failure
+##### RSX Unload Failure
 
 **Meaning:** The requested extension could not be removed.
 
@@ -12886,12 +13113,12 @@ One possible cause is that another resident extension still depends on it.
 **What to do:** Examine the installed extensions:
 
 ```text
-A>RSX LIST
+A0>RSX LIST
 ```
 
 Unload dependent extensions before removing their supporting components.
 
-### Insufficient Resident Memory
+##### Insufficient Resident Memory
 
 **Meaning:** The requested extension cannot be installed because insufficient suitable memory is available.
 
@@ -12899,13 +13126,15 @@ Unload dependent extensions before removing their supporting components.
 
 Resident extensions reduce the memory available to transient programs.
 
-For additional information, see Chapter 8, *Resident Extensions*, and Chapter 17, *Batch and Extension Commands*.
+For additional information, see [Chapter 8](#chapter-8), *Resident Extensions*, and [Chapter 17](#chapter-17), *Batch and Extension Commands*.
 
-## F.8 Date and Time Messages
+<a id="section-f-8"></a>
+
+#### F.8 Date and Time Messages
 
 TIME reports errors when no clock provider is available, when a provider cannot obtain valid time information, or when an unsupported clock-setting operation is requested.
 
-### Clock Service Unavailable
+##### Clock Service Unavailable
 
 **Meaning:** TIME cannot access an installed clock provider.
 
@@ -12914,22 +13143,22 @@ TIME reports errors when no clock provider is available, when a provider cannot 
 For example:
 
 ```text
-A>RSX LOAD FREHDCLK
+A0>RSX LOAD FREHDCLK
 ```
 
 or:
 
 ```text
-A>RSX LOAD ZPRTC
+A0>RSX LOAD ZPRTC
 ```
 
 Then retry:
 
 ```text
-A>TIME
+A0>TIME
 ```
 
-### Clock Read Failure
+##### Clock Read Failure
 
 **Meaning:** The installed provider could not obtain a valid date and time.
 
@@ -12939,7 +13168,7 @@ Possible causes include unavailable hardware, an emulator-interface problem, or 
 
 TIME cannot correct an inaccurate or unavailable underlying clock.
 
-### Clock Setting Unsupported
+##### Clock Setting Unsupported
 
 **Meaning:** TIME accepted a SET request, but the installed clock provider does not support changing the clock.
 
@@ -12949,7 +13178,7 @@ Both BetterCP/M 1.0 providers, `FREHDCLK.RSX` and `ZPRTC.RSX`, are read-only.
 
 The TIME utility's SET syntax does not make a read-only provider writable.
 
-### Invalid SET Arguments
+##### Invalid SET Arguments
 
 **Meaning:** The arguments supplied to TIME's SET operation are malformed or outside the accepted ranges.
 
@@ -12963,15 +13192,17 @@ These represent the native clock record, not an ordinary calendar-date string.
 
 **What to do:** Check the hexadecimal values and the required date-and-time representation.
 
-For additional information, see Section 16.3, *TIME*.
+For additional information, see [Section 16.3](#section-16-3), *TIME*.
 
-## F.9 Common Interactive Prompts
+<a id="section-f-9"></a>
+
+#### F.9 Common Interactive Prompts
 
 Some BetterCP/M utilities provide interactive prompts when an operation requires a decision.
 
 The available responses depend on the utility and the operation.
 
-### Yes/No Confirmation
+##### Yes/No Confirmation
 
 Many potentially destructive operations require explicit confirmation.
 
@@ -12987,7 +13218,7 @@ Other responses cancel it.
 
 Do not assume that command-line invocation bypasses confirmation. DUP and SYSGEN retain their destructive-operation safeguards even when invoked with complete command-line arguments.
 
-### COPY File-Collision Prompt
+##### COPY File-Collision Prompt
 
 When COPY encounters an existing writable destination file, the transient utility may offer:
 
@@ -13006,7 +13237,7 @@ Y/N/O/S/R/?
 
 The O and S policies apply only to the current COPY invocation.
 
-### REN Name-Collision Prompt
+##### REN Name-Collision Prompt
 
 When transient REN encounters an existing destination filename, it may offer:
 
@@ -13023,7 +13254,7 @@ File exists. N/S/A/?
 
 REN never overwrites an existing destination.
 
-### Retry, Skip, or Abort
+##### Retry, Skip, or Abort
 
 Some utilities offer recovery choices when an individual file operation fails.
 
@@ -13046,7 +13277,7 @@ The availability of these choices depends on the utility.
 
 Noninteractive modes may follow a predetermined error policy instead of displaying a recovery prompt.
 
-### Help at Prompts
+##### Help at Prompts
 
 When `?` appears among the available responses, entering it displays an explanation of the choices.
 
@@ -13054,7 +13285,9 @@ Requesting help does not itself retry, skip, abort, or authorize an operation.
 
 The utility returns to the same decision after displaying the help text.
 
-## F.10 Interpreting Error Messages
+<a id="section-f-10"></a>
+
+#### F.10 Interpreting Error Messages
 
 When an error occurs, the most useful first step is to determine which component reported it.
 
@@ -13082,7 +13315,7 @@ The following table provides a quick guide.
 | System fails after configuration changes | Saved drive settings, startup command, system image |
 | System disk will not boot | Bootstrap compatibility, incomplete installation, damaged media |
 
-### When an Operation Fails Partway Through
+##### When an Operation Fails Partway Through
 
 Some BetterCP/M operations process several files or disk records in sequence.
 
@@ -13100,7 +13333,7 @@ An interrupted SYSGEN installation may leave the destination's system area incom
 
 Examine the affected files or disks before retrying.
 
-### Preserving Evidence of a Problem
+##### Preserving Evidence of a Problem
 
 If an error appears to be reproducible, record its exact wording.
 
@@ -13112,11 +13345,13 @@ For disk-related problems, record the drive assignments and disk format.
 
 When reporting a compatibility problem, identify the application, BetterCP/M version, and computer or emulator.
 
-See Appendix E for additional guidance on compatibility reporting.
+See [Appendix E](#appendix-e) for additional guidance on compatibility reporting.
 
 ---
 
-# Appendix G — Glossary
+<a id="appendix-g"></a>
+
+### Appendix G — Glossary
 
 This glossary defines the principal terms used throughout the BetterCP/M User's Guide.
 
@@ -13124,13 +13359,13 @@ It includes terminology inherited from Digital Research CP/M 2.2, terms associat
 
 The definitions are intended to help readers understand the manual rather than provide exhaustive technical descriptions. Where a subject requires more detailed treatment, references to the relevant chapters are provided.
 
-## A
+#### A
 
 **Allocation Block**  
 A unit of disk space allocated to a file by the CP/M filesystem. An allocation block consists of one or more 128-byte logical records. The allocation-block size depends on the disk format.
 
 **Archive Attribute (ARC)**  
-A file attribute commonly used by backup utilities. BetterCP/M can select files according to their ARC status and provides facilities for clearing the attribute after successful backup operations. The attribute does not necessarily indicate whether a file has changed unless the software modifying it maintains the attribute appropriately. See Appendix D.
+A file attribute commonly used by backup utilities. BetterCP/M can select files according to their ARC status and provides facilities for clearing the attribute after successful backup operations. The attribute does not necessarily indicate whether a file has changed unless the software modifying it maintains the attribute appropriately. See [Appendix D](#appendix-d).
 
 **ASCII (American Standard Code for Information Interchange)**  
 A character-encoding standard used by CP/M for text and control characters. Standard ASCII defines 128 character codes, including printable characters and control codes such as carriage return, line feed, and Escape.
@@ -13138,10 +13373,10 @@ A character-encoding standard used by CP/M for text and control characters. Stan
 **Attribute**  
 Information associated with a file that affects its treatment by the operating system or utilities. CP/M attributes include read-only, system, and archive. BetterCP/M provides extended facilities for selecting files according to their attributes.
 
-## B
+#### B
 
 **Batch File**  
-A text file containing commands to be executed in sequence. BetterCP/M uses `.SUB` files with the SUBMIT utility for batch processing. See Chapter 6.
+A text file containing commands to be executed in sequence. BetterCP/M uses `.SUB` files with the SUBMIT utility for batch processing. See [Chapter 6](#chapter-6).
 
 **BDOS (Basic Disk Operating System)**  
 The portion of CP/M that provides standard operating-system services to programs, including file management, console input and output, and other system functions. Programs ordinarily access BDOS through the conventional CP/M calling interface.
@@ -13161,7 +13396,7 @@ The initial program or sequence of operations that loads the operating system in
 **BS (Backspace)**  
 ASCII control character `08H`, commonly generated by Ctrl-H or a Backspace key. Its treatment depends on the console or application.
 
-## C
+#### C
 
 **CCP (Console Command Processor)**  
 The portion of CP/M responsible for accepting and interpreting commands entered at the console. BetterCP/M extends the conventional command environment through resident commands, command history, and Command Processor Extensions.
@@ -13170,10 +13405,10 @@ The portion of CP/M responsible for accepting and interpreting commands entered 
 A complete operating-system startup that establishes a new session and initializes the configured environment. BetterCP/M executes its saved startup command during a cold boot. Command history begins empty, and the configured startup environment is established.
 
 **Command History**  
-A collection of previously entered commands retained by BetterCP/M's command processor. Commands can be recalled, edited, and executed again. BetterCP/M 1.0 uses Ctrl-K and Ctrl-J for history navigation. See Appendix B.
+A collection of previously entered commands retained by BetterCP/M's command processor. Commands can be recalled, edited, and executed again. BetterCP/M 1.0 uses Ctrl-K and Ctrl-J for history navigation. See [Appendix B](#appendix-b).
 
 **Command Processor Extension (CPX)**  
-A resident extension that adds commands to BetterCP/M's command processor. The standard resident command package is `RCP.CPX`. CPXs are managed using the CPX utility. See Chapter 8.
+A resident extension that adds commands to BetterCP/M's command processor. The standard resident command package is `RCP.CPX`. CPXs are managed using the CPX utility. See [Chapter 8](#chapter-8).
 
 **Command Tail**  
 The text following a transient program's name on the command line. CP/M makes this text available to the program using its conventional command-tail representation.
@@ -13182,7 +13417,7 @@ The text following a transient program's name on the command line. CP/M makes th
 The keyboard and display, terminal, or equivalent device through which the user communicates with the operating system.
 
 **Control Character**  
-An ASCII character traditionally used for a control operation rather than as a printable symbol. Examples include carriage return, line feed, backspace, and Escape. See Appendix C.
+An ASCII character traditionally used for a control operation rather than as a printable symbol. Examples include carriage return, line feed, backspace, and Escape. See [Appendix C](#appendix-c).
 
 **CP/M (Control Program for Microcomputers)**  
 The operating system developed by Digital Research for microcomputers, particularly those using Intel 8080-compatible processors. CP/M 2.2 is the principal compatibility target for BetterCP/M.
@@ -13194,9 +13429,9 @@ The widely used Digital Research CP/M release that provides the standard operati
 See *Command Processor Extension*.
 
 **Current Configuration**  
-The system settings presently in use. These may differ from the settings saved for subsequent cold boots. See Chapter 7.
+The system settings presently in use. These may differ from the settings saved for subsequent cold boots. See [Chapter 7](#chapter-7).
 
-## D
+#### D
 
 **DDT (Dynamic Debugging Tool)**  
 Digital Research's machine-language debugging utility. DDT provides facilities for examining and modifying memory, disassembling instructions, and controlling program execution.
@@ -13220,9 +13455,9 @@ A logical or physical storage device. CP/M identifies logical drives by letters 
 A particular combination of logical drive and user area, such as `A0:` or `B3:`. BetterCP/M uses drive/user specifications extensively in its enhanced file-management commands.
 
 **DU Selector**  
-A BetterCP/M file-selection expression identifying one or more drive/user areas. For example, `B[-]:` selects all user areas on drive B. See Appendix D.
+A BetterCP/M file-selection expression identifying one or more drive/user areas. For example, `B[-]:` selects all user areas on drive B. See [Appendix D](#appendix-d).
 
-## E
+#### E
 
 **ED**  
 Digital Research's traditional CP/M context editor. ED is a line-oriented text editor operated through commands rather than a full-screen display.
@@ -13236,7 +13471,7 @@ A sequence of character codes, commonly beginning with ASCII Escape (`1BH`), use
 **Extent**  
 A unit of file organization represented by CP/M directory information. Large files may occupy multiple extents and directory entries.
 
-## F
+#### F
 
 **FCB (File Control Block)**  
 A data structure used by CP/M programs to identify files and perform file operations through BDOS. Conventional CP/M programs use FCBs for opening, reading, writing, and managing files.
@@ -13253,7 +13488,7 @@ The optional portion of a CP/M filename following the period. A file type contai
 **FreHD**  
 A storage peripheral for the TRS-80 Model 4 and related systems. BetterCP/M provides a FreHD clock provider through `FREHDCLK.RSX`.
 
-## H
+#### H
 
 **Hexadecimal**  
 A base-16 number system using digits 0–9 and letters A–F. Hexadecimal is commonly used when displaying memory addresses, machine instructions, and byte values. In this manual, hexadecimal values may be identified by an `H` suffix.
@@ -13261,12 +13496,12 @@ A base-16 number system using digits 0–9 and letters A–F. Hexadecimal is com
 **Host Computer**  
 The computer running an emulator or providing services to an emulated CP/M system. For example, z80pack may obtain date and time information from its host environment.
 
-## I
+#### I
 
 **IOBYTE**  
 A conventional CP/M system value used to select logical character-device assignments. BetterCP/M retains the IOBYTE mechanism. STAT manages the live value, while CONFIG can save a value for subsequent disk cold boots.
 
-## L
+#### L
 
 **Logical Drive**  
 A drive identified by a CP/M drive letter, such as A or B. BetterCP/M associates logical drives with physical devices and disk-format definitions.
@@ -13274,12 +13509,12 @@ A drive identified by a CP/M drive letter, such as A or B. BetterCP/M associates
 **Logical Record**  
 The standard 128-byte unit used by CP/M file and disk services. Physical disk sectors may contain one or more logical records.
 
-## M
+#### M
 
 **Montezuma Micro**  
 A company known for its CP/M implementation for the TRS-80 Model 4. BetterCP/M retains compatibility with selected Montezuma Micro conventions, including its ADM-3A terminal behavior and keyboard arrangements.
 
-## P
+#### P
 
 **P2DOS**  
 A CP/M-compatible operating-system implementation that introduced additional services, including date-and-time facilities. BetterCP/M provides optional P2DOS-compatible clock services through `P2DOS.RSX`.
@@ -13293,7 +13528,7 @@ The traditional CP/M utility for copying and transferring data between files and
 **Program Image**  
 The machine-language instructions and associated data of a program as stored in a file or loaded into memory.
 
-## R
+#### R
 
 **RCP (Resident Command Package)**  
 The standard BetterCP/M Command Processor Extension, supplied as `RCP.CPX`. It provides frequently used commands such as DIR, ERA, REN, TYPE, COPY, MOVE, CLS, and VER.
@@ -13305,12 +13540,12 @@ A file attribute that protects a file against ordinary modification or deletion.
 A command available directly through the command processor or an installed CPX, without loading a separate transient `.COM` program.
 
 **Resident System Extension (RSX)**  
-A loadable component that provides services while other programs execute. BetterCP/M uses RSXs for terminal support, clock providers, batch input, and other facilities. See Chapter 8.
+A loadable component that provides services while other programs execute. BetterCP/M uses RSXs for terminal support, clock providers, batch input, and other facilities. See [Chapter 8](#chapter-8).
 
 **RSX**  
 See *Resident System Extension*.
 
-## S
+#### S
 
 **Saved Configuration**  
 System settings stored for use during subsequent cold boots. Saved settings may differ from those currently active.
@@ -13319,7 +13554,7 @@ System settings stored for use during subsequent cold boots. Saved settings may 
 A physical unit of disk storage. Sector sizes and organization depend on the disk format. A physical sector may contain several CP/M logical records.
 
 **SUBMIT**  
-The CP/M batch-processing utility that executes commands stored in `.SUB` files. BetterCP/M retains the familiar SUBMIT conventions. See Chapter 6.
+The CP/M batch-processing utility that executes commands stored in `.SUB` files. BetterCP/M retains the familiar SUBMIT conventions. See [Chapter 6](#chapter-6).
 
 **System Area**  
 The reserved portion of a bootable CP/M disk containing operating-system and bootstrap information. SYSGEN installs BetterCP/M into this area.
@@ -13333,7 +13568,7 @@ The operating-system code and associated configuration information installed in 
 **SYSTEM.SYS**  
 The conventional filename for a BetterCP/M system-image package. Such packages contain the operating-system image and associated installation information.
 
-## T
+#### T
 
 **Terminal**  
 A device or emulated environment providing keyboard input and character-oriented display output.
@@ -13350,12 +13585,12 @@ The region of memory available for ordinary CP/M programs. Resident extensions r
 **Transient Command**  
 A command implemented by a program loaded from disk, normally as a `.COM` file. BetterCP/M can explicitly invoke a transient command using a colon or period prefix.
 
-## U
+#### U
 
 **User Area**  
 A numbered file-organization area within a CP/M drive. Conventional CP/M 2.2 supports user areas 0–15; BetterCP/M extends the range to 0–31.
 
-## V
+#### V
 
 **VT52**  
 A DEC video terminal whose control sequences were supported by many CP/M applications. BetterCP/M provides a compatible terminal personality through `VT52.RSX`.
@@ -13363,7 +13598,7 @@ A DEC video terminal whose control sequences were supported by many CP/M applica
 **VT100**  
 A DEC video terminal associated with ANSI-style control sequences. BetterCP/M provides a supported subset of ANSI/VT100 behavior through `ANSI.RSX`.
 
-## W
+#### W
 
 **Warm Boot**  
 A return to the CP/M command environment without performing a complete cold startup. BetterCP/M preserves supported resident extensions and command history across ordinary warm boots.
@@ -13374,12 +13609,12 @@ A character used in a file specification to select several files. CP/M uses `?` 
 **WordStar**  
 A widely used CP/M word processor whose control-key conventions influenced many other programs. BetterCP/M uses some WordStar-style editing conventions, although its command-history assignments differ.
 
-## X
+#### X
 
 **XSUB**  
 A CP/M batch-processing extension that allows compatible programs to receive submitted input through buffered console-input services. BetterCP/M provides this facility using resident batch-input support.
 
-## Z
+#### Z
 
 **Z80**  
 An 8-bit microprocessor developed by Zilog and widely used in CP/M computers. It is compatible with the Intel 8080 instruction set while providing additional instructions and facilities.
@@ -13389,7 +13624,9 @@ A collection of Z80 emulation tools, including cpmsim. BetterCP/M supports z80pa
 
 ---
 
-# Appendix H — Further Reading and Technical Documentation
+<a id="appendix-h"></a>
+
+### Appendix H — Further Reading and Technical Documentation
 
 BetterCP/M is accompanied by documentation covering its operation, programming interfaces, internal organization, and compatibility with Digital Research CP/M 2.2.
 
@@ -13399,7 +13636,9 @@ Readers who want to write programs, adapt BetterCP/M to another computer, invest
 
 This appendix describes the principal documentation resources and explains where to look for further information.
 
-## H.1 BetterCP/M Documentation
+<a id="section-h-1"></a>
+
+#### H.1 BetterCP/M Documentation
 
 The BetterCP/M documentation is organized around the needs of different readers.
 
@@ -13407,7 +13646,7 @@ Some documents introduce the operating system and its facilities. Others serve a
 
 The principal documentation categories are described below.
 
-### User's Guide
+##### User's Guide
 
 **Audience:** BetterCP/M users.
 
@@ -13423,67 +13662,33 @@ The appendices summarize commands, keyboard conventions, file specifications, co
 
 The User's Guide is not intended to describe the internal implementation of every facility.
 
-### Architecture Overview
+##### Technical Manuals and Architecture References
 
-**Audience:** Experienced CP/M users, programmers, and developers interested in the organization of BetterCP/M.
+The [README documentation plan](../../README.md#documentation) groups the developing manuals into User Documentation, Programmer Documentation, Technical Manuals, and a Build & Development Guide. These families are still being developed; they are not four completed books.
 
-The *BetterCP/M Architecture Overview* describes the operating system's major components and how they work together.
+There is no separate completed manual titled *Architecture Overview* in the current repository. Start with [Overall System Architecture](../architecture/02%20Overall%20System%20Architecture.txt) and the [architecture specifications](../architecture/) for the current system contracts.
 
-Subjects include the command processor, BDOS, BIOS, resident extensions, memory organization, and the relationships among the system's principal subsystems.
+##### Programmer Documentation
 
-The Architecture Overview provides a broader understanding of BetterCP/M's design without requiring readers to study every implementation detail.
+Use the actual working reference, [BetterCP/M RSX and CPX Programmer's Guide](../programmers/RSX%20and%20CPX%20Programmer%27s%20Guide.md), for extension interfaces. It records its own status and includes later-version proposals, which are not promises of installed 1.0 features. [Developing monitor RSXs](../programmers/Monitor%20RSX%20Development.md) covers monitor development; [Runtime disk configuration, ABI version 5](../programmers/BIOS-DISK-CONFIG.md) covers the disk configuration interface.
 
-It is a useful starting point for anyone interested in how BetterCP/M works internally.
+This manual uses *Programmer Documentation* for the planned family and the exact titles above for available references. Earlier references to a generic *Developer's Guide* do not identify an additional completed manual. For ordinary CP/M applications, also consult the original Digital Research interface documentation.
 
-### Developer's Guide
+##### Build, Platform Preparation and Porting
 
-**Audience:** Assembly-language programmers and developers writing software for BetterCP/M.
+The consolidated *Build & Development Guide* is being developed; there is no separate completed *Porting Guide* at present. Current practical entry points are:
 
-The *BetterCP/M Developer's Guide* covers the programming interfaces available to applications and extensions.
+- [Building the current BetterCP/M System Disks](../releases/DISTRIBUTION-BUILD.md) — host-side distribution assembly and its current status.
+- [BetterCP/M build disk](../programmers/BUILD-DISK.md) — self-hosted native build, source volumes and installation.
+- [Default high-capacity test disks](../platform/DEFAULT-TEST-DISKS.md) — Model 4 test-disk preparation and launcher, with historical qualification notes.
+- [z80pack / cpmsim adapter](../../src/platform/z80pack/README.md) — that target's builder, launcher, media and platform requirements.
+- [Hardware Abstraction](../architecture/08%20Hardware%20Abstraction.txt) and [platform specifications](../platform/) — current architecture and platform material for maintainers.
 
-It explains how programs interact with the operating system and identifies the facilities available beyond conventional CP/M 2.2.
+##### Engineering Specifications and History
 
-Programmers writing ordinary CP/M applications should also consult Digital Research's original CP/M programming documentation.
+The [engineering records](../engineering/) contain implementation specifications, decisions and dated qualification results. They are supporting technical records, not a substitute for a finished user or porting manual. Check each document's status and date against the current source, [architecture specifications](../architecture/), and [1.0 implementation contracts](../releases/1.0-IMPLEMENTATION-CONTRACTS.md); an older milestone does not override later contracts or establish current release qualification.
 
-The Developer's Guide is particularly relevant when using BetterCP/M-specific interfaces or developing software that depends on its extensions.
-
-### Porting Guide
-
-**Audience:** Developers adapting BetterCP/M to additional computers.
-
-The *BetterCP/M Porting Guide* addresses the work required to bring BetterCP/M to another hardware platform.
-
-This includes the hardware-dependent portions of the operating system and the facilities that must be supplied by the target computer.
-
-The guide is intended for readers familiar with CP/M system organization and assembly-language programming.
-
-Ordinary users do not need the Porting Guide unless they are interested in adapting or maintaining a platform-specific implementation.
-
-### Engineering Specifications
-
-**Audience:** BetterCP/M developers, maintainers, and contributors.
-
-The engineering specifications document individual components and utilities in greater detail.
-
-They describe implementation requirements, interfaces, restrictions, compatibility behavior, and other technical contracts.
-
-For example, separate specifications cover facilities such as CONFIG, DUP, SYSGEN, and the clock providers.
-
-These documents are more detailed than the User's Guide and may include information about internal data structures, error handling, and implementation constraints.
-
-They are particularly useful when modifying BetterCP/M or investigating whether an implementation behaves according to its intended design.
-
-Engineering specifications are maintained in the repository's:
-
-```text
-docs/engineering/
-```
-
-directory.
-
-Because BetterCP/M is an actively developed project, consult the specification corresponding to the version or build you're working with.
-
-### Compatibility Documentation
+##### Compatibility Documentation
 
 **Audience:** Developers, system maintainers, and users investigating differences between BetterCP/M and historical CP/M implementations.
 
@@ -13493,11 +13698,13 @@ It records compatibility requirements, implementation differences, and results o
 
 This documentation is useful when investigating a program that behaves differently under BetterCP/M than under Digital Research CP/M 2.2.
 
-Appendix E provides a user-level introduction to these issues.
+[Appendix E](#appendix-e) provides a user-level introduction to these issues.
 
-For detailed compatibility analysis, consult the dedicated compatibility documentation.
+For detailed compatibility analysis, see the [compatibility documentation](../compatibility/) and the [README compatibility and testing section](../../README.md#compatibility-and-testing).
 
-## H.2 Utility Documentation
+<a id="section-h-2"></a>
+
+#### H.2 Utility Documentation
 
 BetterCP/M includes utilities ranging from simple commands to substantial programs with their own command languages and operating conventions.
 
@@ -13507,7 +13714,7 @@ More substantial utilities may have separate documentation.
 
 This follows a practice familiar from Digital Research CP/M, where programs such as ED, ASM, and DDT were documented individually.
 
-### Standard Utilities
+##### Standard Utilities
 
 The User's Guide provides references for the principal BetterCP/M commands and system utilities.
 
@@ -13515,22 +13722,22 @@ These include:
 
 | Utility | Documentation |
 |---|---|
-| DIR, ERA, REN, TYPE | Chapter 14 |
-| COPY, MOVE | Chapter 14 |
-| USER, CLS, VER | Chapter 15 |
-| GET, GO, JUMP, PEEK, POKE, SAVE | Chapter 15 |
-| CONFIG, STAT, TIME | Chapter 16 |
-| DUP, SYSGEN | Chapter 16 |
-| SUBMIT, XSUB | Chapter 17 |
-| CPX, RSX | Chapter 17 |
+| DIR, ERA, REN, TYPE | [Chapter 14](#chapter-14) |
+| COPY, MOVE | [Chapter 14](#chapter-14) |
+| USER, CLS, VER | [Chapter 15](#chapter-15) |
+| GET, GO, JUMP, PEEK, POKE, SAVE | [Chapter 15](#chapter-15) |
+| CONFIG, STAT, TIME | [Chapter 16](#chapter-16) |
+| DUP, SYSGEN | [Chapter 16](#chapter-16) |
+| SUBMIT, XSUB | [Chapter 17](#chapter-17) |
+| CPX, RSX | [Chapter 17](#chapter-17) |
 
 These references describe the commands available to users, their syntax, options, and important restrictions.
 
-### Development Utilities
+##### Development Utilities
 
-BetterCP/M also provides development utilities, including traditional CP/M programming tools.
+The System Disk supplies ED. The separate Utilities Disk selection includes ZSM4 and LINK. Traditional tools such as ASM, LOAD and DDT must be obtained separately if needed; they are not selected BetterCP/M distribution contents.
 
-Examples include:
+These familiar tools have distinct purposes:
 
 **ASM** — An assembler for Intel 8080 assembly-language programs.
 
@@ -13544,11 +13751,11 @@ These programs have their own operating conventions and may require more extensi
 
 Where separate manuals are provided, they should be consulted for complete instructions.
 
-### Other Utilities
+##### Other Utilities
 
 Additional programs may be supplied for system construction, diagnostics, terminal testing, or specialized file operations.
 
-For example, SYSBUILD is intended primarily for constructing BetterCP/M system images.
+For example, SYSBUILD is a system-construction tool, not a selected System Disk utility. See [Section 3.2](#section-3-2), *What Is on Each Disk*, for the distribution inventory.
 
 Terminal test utilities such as ADMTST, VT52TST, and ANSITST help verify supported terminal environments.
 
@@ -13556,7 +13763,9 @@ The documentation accompanying each utility describes its intended use and any s
 
 Not every utility necessarily belongs in the User's Guide. Some are primarily intended for developers or system maintainers.
 
-## H.3 Digital Research CP/M Documentation
+<a id="section-h-3"></a>
+
+#### H.3 Digital Research CP/M Documentation
 
 Digital Research's original CP/M documentation remains an important reference for BetterCP/M users and programmers.
 
@@ -13564,7 +13773,7 @@ BetterCP/M preserves the principal CP/M 2.2 programming conventions, so the orig
 
 The following publications are particularly relevant.
 
-### CP/M Operating System Manual
+##### CP/M Operating System Manual
 
 The *CP/M Operating System Manual* provides an introduction to CP/M and its operation.
 
@@ -13572,7 +13781,7 @@ It covers the command environment, file organization, system utilities, and othe
 
 Readers familiar with BetterCP/M may find it useful for understanding the historical conventions retained by the newer system.
 
-### CP/M 2.2 Interface Guide
+##### CP/M 2.2 Interface Guide
 
 The *CP/M 2.2 Interface Guide* describes the programming interfaces provided by Digital Research CP/M.
 
@@ -13584,7 +13793,7 @@ The guide documents the conventional calling interfaces and system behavior expe
 
 Programmers should ensure that their reference includes the CP/M 2.2 additions rather than relying solely on the main function summary, which may end at function 36.
 
-### CP/M 2.2 Alteration Guide
+##### CP/M 2.2 Alteration Guide
 
 The *CP/M 2.2 Alteration Guide* describes the procedures and interfaces involved in adapting CP/M to different computer systems.
 
@@ -13594,7 +13803,7 @@ The document is useful for understanding the historical division between the har
 
 BetterCP/M's own porting and engineering documentation should be used when adapting BetterCP/M itself.
 
-### ED, ASM, and DDT Documentation
+##### ED, ASM, and DDT Documentation
 
 Digital Research also published documentation for its principal development utilities.
 
@@ -13610,7 +13819,9 @@ These manuals remain useful for understanding the conventions and command langua
 
 BetterCP/M's corresponding utility documentation should be consulted for any implementation-specific differences.
 
-## H.4 Other Historical CP/M Documentation
+<a id="section-h-4"></a>
+
+#### H.4 Other Historical CP/M Documentation
 
 Digital Research was not the only source of CP/M documentation.
 
@@ -13618,7 +13829,7 @@ Computer manufacturers, software publishers, and independent authors produced ma
 
 These publications can be particularly useful when working with historical hardware or software.
 
-### Manufacturer Documentation
+##### Manufacturer Documentation
 
 Manufacturers frequently supplied CP/M manuals adapted to their computers.
 
@@ -13630,7 +13841,7 @@ Such manuals can help explain why software behaves differently on particular com
 
 However, manufacturer-specific conventions should not automatically be treated as standard CP/M behavior.
 
-### Independent Programming References
+##### Independent Programming References
 
 Independent books and programming guides also provide valuable information about CP/M.
 
@@ -13640,7 +13851,7 @@ These publications may contain practical examples and explanations not found in 
 
 As with manufacturer documentation, readers should distinguish standard CP/M interfaces from implementation-specific techniques.
 
-### Historical Documentation and BetterCP/M
+##### Historical Documentation and BetterCP/M
 
 Historical manuals are especially useful when investigating compatibility questions.
 
@@ -13650,11 +13861,13 @@ Contemporary documentation can help identify the assumptions under which the pro
 
 BetterCP/M's compatibility documentation records the results of investigations into such behavior.
 
-## H.5 Online Resources
+<a id="section-h-5"></a>
+
+#### H.5 Online Resources
 
 The BetterCP/M source repository is the principal online resource for current project documentation.
 
-### BetterCP/M Repository
+##### BetterCP/M Repository
 
 The project is maintained at:
 
@@ -13676,7 +13889,7 @@ docs/engineering/
 
 Readers should consult the repository for the latest documentation corresponding to the current BetterCP/M development state.
 
-### Digital Research Documentation Archives
+##### Digital Research Documentation Archives
 
 Historical CP/M documentation is available through several online archives.
 
@@ -13688,7 +13901,7 @@ This collection includes scans of original Digital Research manuals and other CP
 
 It is a valuable resource for comparing different editions of the documentation and examining the original programming interfaces.
 
-### Additional CP/M Resources
+##### Additional CP/M Resources
 
 Other online archives preserve CP/M software, disk images, manuals, source code, and historical discussions.
 
@@ -13698,7 +13911,9 @@ When using archived software or documentation, pay attention to the version and 
 
 A manual describing one manufacturer's CP/M implementation may not accurately describe another.
 
-## H.6 Choosing the Right Documentation
+<a id="section-h-6"></a>
+
+#### H.6 Choosing the Right Documentation
 
 The following table summarizes where to begin when looking for additional information.
 
@@ -13706,18 +13921,18 @@ The following table summarizes where to begin when looking for additional inform
 |---|---|
 | Learn to use BetterCP/M | User's Guide, Part I |
 | Look up a command or utility | User's Guide, Part II |
-| Find command syntax quickly | Appendix A |
-| Learn command-line editing keys | Appendix B |
-| Understand control characters | Appendix C |
-| Use extended file specifications | Appendix D |
-| Understand CP/M compatibility differences | Appendix E |
-| Interpret system messages | Appendix F |
-| Look up terminology | Appendix G |
-| Understand BetterCP/M's internal organization | Architecture Overview |
-| Write applications or extensions | Developer's Guide |
-| Adapt BetterCP/M to another computer | Porting Guide |
-| Modify or maintain an operating-system component | Engineering Specifications |
-| Investigate compatibility behavior | Compatibility Documentation |
+| Find command syntax quickly | [Appendix A](#appendix-a) |
+| Learn command-line editing keys | [Appendix B](#appendix-b) |
+| Understand control characters | [Appendix C](#appendix-c) |
+| Use extended file specifications | [Appendix D](#appendix-d) |
+| Understand CP/M compatibility differences | [Appendix E](#appendix-e) |
+| Interpret system messages | [Appendix F](#appendix-f) |
+| Look up terminology | [Appendix G](#appendix-g) |
+| Understand BetterCP/M's internal organization | [Overall System Architecture](../architecture/02%20Overall%20System%20Architecture.txt) |
+| Write applications or extensions | [RSX and CPX Programmer's Guide](../programmers/RSX%20and%20CPX%20Programmer%27s%20Guide.md); original CP/M interfaces for ordinary applications |
+| Adapt BetterCP/M to another computer | [Hardware Abstraction](../architecture/08%20Hardware%20Abstraction.txt), [platform specifications](../platform/) and current source; consolidated porting guidance is planned |
+| Modify or maintain an operating-system component | [Engineering records](../engineering/) and [current architecture contracts](../architecture/) |
+| Investigate compatibility behavior | [Compatibility documentation](../compatibility/) |
 | Study original CP/M programming interfaces | Digital Research CP/M 2.2 Interface Guide |
 | Study historical CP/M system adaptation | Digital Research CP/M 2.2 Alteration Guide |
 | Use a substantial development utility | Its individual utility manual |
