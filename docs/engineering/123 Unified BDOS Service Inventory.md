@@ -220,3 +220,26 @@ workspace independently. Passing functional tests does not waive this budget.
    meets the 3.5K hard ceiling.
 6. Remove `dirsvc.mac` and the private D600h service-vector ABI.
 
+
+### Directory-full extent rollover qualification
+
+Function 21 distinguishes exhausted directory capacity (`01h`) from exhausted
+allocation blocks (`02h`). If activating the next sequential extent fails,
+EX, S2 (including the private clean bit), CR and the remaining caller FCB bytes
+retain their entry values. The shared extent creator returns the failure to its
+caller; it must not take a nonlocal Make-failure exit past rollover cleanup.
+Function 22 still reports failed Make as `FFh`; random write reports an unavailable
+new directory extent as `05h`.
+
+`tools/test_bdos_extent_full.py` executes the emitted BDOS across clean/dirty
+FCBs, EX rollover, the S2 limit and 1K/2K allocation geometries. The actual DRI
+comparison is `tools/run_validation_sequential_directory_full.py`; native Model
+4 qualification is `tools/run_validation_model4_extent_full.py`. These are
+separate fixtures for directory exhaustion with free data blocks, rather than
+assuming an allocation-full test covers both errors.
+
+The correction retains the 3,454-byte BDOS allocation and unchanged live-state
+and 40-byte private-stack anchors. Open now reads the active IX FCB directly
+while retaining the directory-entry pointer, and disk reset clears each vector
+with a word store. These savings and equivalent short error/branch sequences
+pay for the caller-state restoration; unloaded TPA remains 53K.

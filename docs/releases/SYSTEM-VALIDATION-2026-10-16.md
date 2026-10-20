@@ -34,7 +34,7 @@ The source checkout was clean and was not modified. A private clone at
 | 5. Utility operations and failure recovery (original Step 7) | CLOSED — V044 | S7-01–S7-04 PASS: restored ERA/DUP/SYSGEN evidence and actual cpmsim PIP endpoints plus native verified copy, CRT and unavailable-device gates. Retained raw archive and hashed result index. Broader conformance, monitor/input, device/profile and final acceptance work remain separate. |
 | 6. Monitors and applications (original Step 8) | CLOSED — V047 | All six native/cpmsim personality pairs, production protocol/lifecycle checks, selected unchanged external applications, native bells and bounded input regressions pass. Durable evidence and explicit profile limits are recorded in SYSTEM-VALIDATION-STEP8-2026-10-19.md. Historical input observation remains not reproduced; final acceptance is separate. |
 | 7. End-to-end release workflows (original Step 9) | CLOSED — V049 | S9-01–04 PASS: continuous cpmsim/native file, ED, SUBMIT, personality-switch and second-cold sessions; configured named export/install/cold boot on both platforms. Shipped files, complete installation filesystem, payload, sentinels and unloaded 53K checked. Durable archives/result hashes: SYSTEM-VALIDATION-STEP9-2026-10-19.md. |
-| 8. Closure and final acceptance reruns | Not run | Resolve failures, identify accepted limits, rebuild and rerun against final revision/images. |
+| 8. Closure and final acceptance reruns | OPEN — V050 candidate blocked | Fresh clean images and expanded accounting found directory-full rollover defect; memory-neutral V051 correction qualified on development images. 84 required cards and three optional-profile reviews remain explicit. See SYSTEM-VALIDATION-FINAL-2026-10-20.md. |
 
 A status of not run is not a pass. Observations and explicit suite exclusions
 are recorded independently from required tests. No claim of system-wide
@@ -3583,3 +3583,22 @@ This closes original Step 9 only. Remaining conformance/manual/device-profile
 accounting, accepted-limit review and final clean merged-source/image acceptance
 remain the next closure work; documentation alignment and the separate Utilities
 and CP/M Tools disks remain outside this gate.
+
+## V050 — final clean-build accounting and directory-full finding
+
+See [final acceptance accounting](SYSTEM-VALIDATION-FINAL-2026-10-20.md). Fresh
+cpmsim/native candidate checks and the exact 627-card ledger are retained, along
+with the actual DRI comparison exposing an incorrect sequential-full status and
+FCB advance. Acceptance remains open. A memory-neutral BDOS correction is under
+qualification; original failed-candidate evidence remains immutable.
+
+## V051 — directory-full correction qualified, acceptance remains open
+
+Both clean corrected distributions build and boot. Actual DRI/cpmsim and native
+Model 4 Functions 21/34 return the expected 01h/05h; sequential FCB and failed-write
+media are unchanged. All 11 selected cpmsim returning groups, native FILETEST
+(68 required), focused boundary/stack, BIOS, recovery and ROM checks pass. BDOS
+remains 3,454 bytes and unloaded TPA 53K. The final-acceptance document and V051
+evidence index retain raw artifacts and explicit harness exclusions. Merge the
+correction, finish the named accounting/profile gates and then repeat final
+acceptance on the merged revision; overall validation is not closed.
