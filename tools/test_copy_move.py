@@ -6,6 +6,8 @@ import tempfile
 from pathlib import Path
 
 from run_trs80_command import DEFAULT_EMULATOR
+from add_cpm_file_to_dmk import extract_raw
+from test_model4_copy import files
 from test_save_compatibility import (
     build_data_image,
     build_image,
@@ -53,12 +55,19 @@ def main() -> None:
                 file_bytes(drive_b, "COPY.DAT", 0) == before,
                 "COPY overwrote an existing destination")
 
-        output = run("MOVE B:MOVED.DAT:=A:SOURCE.DAT", drive_a, drive_b, 15000)
+        output = run("MOVE B:MOVED.DAT=A:SOURCE.DAT", drive_a, drive_b, 15000)
         require(same_records(file_bytes(drive_b, "MOVED.DAT", 0), payload),
                 f"MOVE destination failed: {output!r}")
         require(file_bytes(drive_a, "SOURCE.DAT") is None,
                 "MOVE did not erase its source after a successful close")
         require("A0>" in output, "MOVE did not restore the caller DU")
+
+        output = run("MOVE B3:=B0:MOVED.DAT", drive_a, drive_b, 15000)
+        require(same_records(files(extract_raw(drive_b.read_bytes()))[(3, b'MOVED   DAT')][0], payload),
+                f"DU-only MOVE destination failed: {output!r}")
+        require(file_bytes(drive_b, "MOVED.DAT", 0) is None,
+                "DU-only MOVE did not erase its source")
+        require("A0>" in output, "DU-only MOVE did not restore the caller DU")
 
     print("COPY/MOVE syntax, cross-DU data, overwrite, erase, and restore passed")
 

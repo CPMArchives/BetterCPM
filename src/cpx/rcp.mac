@@ -1251,19 +1251,7 @@ BC_CFNXT:
         JR      BC_CFIND
 
 BC_CASSIGN:
-        LD      E,1                    ; COPY uses plain equals
-        LD      A,(BC_MVFLAG)
-        OR      A
-        JR      Z,BC_CAEQUAL
-        LD      A,C                    ; preserve MOVE's existing := form
-        OR      A
-        JP      Z,BC_CSYNT
-        DEC     HL
-        LD      A,(HL)
-        CP      ':'
-        JP      NZ,BC_CSYNT
-        DEC     C
-        INC     E
+        LD      E,1                    ; COPY and MOVE split on equals; keep DU colons
 BC_CAEQUAL:
         LD      A,C
         OR      A

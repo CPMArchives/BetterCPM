@@ -14,7 +14,8 @@ unchanged.
 The common COPY implementation qualified in PR #164 predates this consolidated
 contract. The first subsequent increment implements plain `destination=source`
 in both common COPY forms; the retired `destination:=source` spelling is rejected.
-MOVE retains its separately defined `:=` syntax. Transient-only features, Ctrl-C cleanup, handoff
+MOVE uses the same plain `=` assignment operator, preserving the colon in
+DU-only destinations such as `MOVE B3:=A0:README.TXT`. Transient-only features, Ctrl-C cleanup, handoff
 and protected session-policy controls are not claimed implemented by that
 qualification. See [COPY implementation and qualification record](COPY%20Utility.md)
 and [Engineering Specification 119](119%20BCPX%20Version%201%20Module%20Format.md).
