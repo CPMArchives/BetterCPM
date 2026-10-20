@@ -6097,371 +6097,6 @@ A>:TYPE B[-]:*.DOC /P
 
 ## 14.5 COPY — Copy Files
 
-**Purpose:** Copies one or more files to another filename, drive, or user area while preserving the originals.
-
-COPY is available as both a resident command and a transient utility, `COPY.COM`.
-
-The resident command handles ordinary file-copying operations. The transient utility adds destination filename templates, verification, backup facilities, and more extensive control over existing files.
-
-### Resident COPY
-
-COPY accepts two equivalent forms:
-
-```text
-COPY source destination
-COPY destination=source
-```
-
-For example:
-
-```text
-A>COPY README.TXT README.BAK
-A>COPY README.TXT B:
-A>COPY B:README.TXT=README.TXT
-```
-
-The first copies `README.TXT` to `README.BAK` in the current location.
-
-The second copies the file to drive B, retaining its name.
-
-The third uses the alternative destination-first syntax.
-
-### Copying Groups of Files
-
-Wildcards allow several files to be copied in one operation:
-
-```text
-A>COPY *.COM B:
-```
-
-BetterCP/M also supports drive/user specifications:
-
-```text
-A>COPY A3:*.ASM B7:
-```
-
-This copies matching assembly-language files from drive A, user area 3, to drive B, user area 7.
-
-More elaborate source selections are also supported:
-
-```text
-A>COPY B[-]:*.DOC[$RW+!$SYS] C4:
-```
-
-This selects writable, non-system `.DOC` files across all user areas on drive B and copies them to `C4:`.
-
-The destination must identify one drive/user area.
-
-When several files are selected, their original names are normally retained.
-
-### Existing Destination Files
-
-Resident COPY normally refuses to replace an existing destination file.
-
-To permit replacement of existing writable destinations, use `/O`:
-
-```text
-A>COPY README.TXT B: /O
-```
-
-Read-only destination files remain protected.
-
-The resident command also checks for invalid or conflicting source and destination selections before beginning the copy.
-
-For example, it refuses an operation that would overwrite one of the files selected as a source.
-
-### Transient COPY.COM
-
-The transient utility provides additional capabilities.
-
-Invoke it explicitly:
-
-```text
-A>:COPY
-```
-
-The same source-first and destination-first syntax forms are supported.
-
-### COPY.COM Options
-
-| Option | Description |
-|---|---|
-| `/O` | Replace existing writable destination files |
-| `/S` | Skip existing writable destination files |
-| `/B` | Operate without file-collision prompts |
-| `/V` | Verify copied data by rereading and comparing it |
-| `/BACKUP` | Clear archive attributes after successful backup processing |
-
-`/O` and `/S` cannot be combined.
-
-The other options may be used together where appropriate.
-
-### Copying with Verification
-
-To verify a copied file, use `/V`:
-
-```text
-A>:COPY /V README.TXT B:
-```
-
-After copying, COPY rereads the source and destination records and compares them.
-
-A successful comparison provides additional assurance that the destination contains the expected data.
-
-Verification is particularly useful when copying important files or working with unfamiliar media.
-
-If verification fails, COPY reports the problem and offers recovery choices.
-
-### Handling Existing Files
-
-Without an explicit collision policy, transient COPY asks what to do when a writable destination file already exists.
-
-The prompt offers:
-
-```text
-Y/N/O/S/R/?
-```
-
-The responses are:
-
-| Response | Meaning |
-|---|---|
-| Y | Overwrite this destination |
-| N | Skip this file |
-| O | Overwrite this and subsequent writable collisions |
-| S | Skip this and subsequent writable collisions |
-| R | Supply a different destination filename |
-| ? | Display help |
-
-The O and S responses apply only to the current COPY invocation.
-
-Read-only destinations remain protected.
-
-### Batch Operation
-
-For unattended operation, use `/B`.
-
-For example:
-
-```text
-A>:COPY B1:*.DAT C3: /B
-```
-
-COPY processes the selected files without stopping for collision decisions.
-
-If a writable destination already exists, `/B` alone reports `FILE EXISTS` and skips that copy as a failed operation.
-
-It does not silently overwrite the file.
-
-To overwrite existing writable destinations:
-
-```text
-A>:COPY B1:*.DAT C3: /B /O
-```
-
-To skip existing destinations:
-
-```text
-A>:COPY B1:*.DAT C3: /B /S
-```
-
-Read-only destinations remain protected in all three cases.
-
-The `/B` option affects COPY itself. It does not make an entire SUBMIT procedure noninteractive.
-
-### Destination Filename Templates
-
-Transient COPY supports wildcard destination templates.
-
-For example:
-
-```text
-A>:COPY C3:*.DOC=A4:*.COM
-```
-
-This copies matching `.COM` files from `A4:` to `C3:`, changing their file type to `.DOC`.
-
-A destination template can retain portions of the original filename while replacing others.
-
-For example:
-
-```text
-A>:COPY C3:X?*.BAK=A4:FOOBAR.COM
-```
-
-creates `XOOBAR.BAK`.
-
-Destination templates are available in the transient utility, not the resident command.
-
-### File Attributes
-
-COPY.COM supports attribute expressions when selecting source files.
-
-For example:
-
-```text
-A>:COPY B[-]:*.COM[$ARC] D0:
-```
-
-selects `.COM` files marked with the archive attribute.
-
-Attribute expressions use the same conventions described under DIR.
-
-COPY can also assign attributes to completed destination files.
-
-For example:
-
-```text
-A>:COPY A0:*.COM D0:[$RW,!$ARC]
-```
-
-requests writable destination copies with the archive attribute cleared.
-
-Unspecified attributes are preserved.
-
-Changing the requested destination attributes does not override the protection of an existing read-only destination.
-
-### Backup Processing
-
-The `/BACKUP` option provides additional support for file-backup procedures.
-
-For example:
-
-```text
-A>:COPY /V /BACKUP B[-]:*.COM[$ARC] D0:
-```
-
-This selects archive-marked `.COM` files, copies them to `D0:`, verifies the copies, and clears the archive attribute on both the source and destination after successful completion.
-
-If a file is skipped, fails to copy, or is interrupted, its source archive attribute is retained.
-
-The `/BACKUP` option does not automatically select archive-marked files. Use `[$ARC]` when you want to restrict the operation to files carrying that attribute.
-
-Nor does `/BACKUP` automatically enable verification. Add `/V` when verification is desired.
-
-### Copying Limits and Conflicts
-
-Transient COPY checks the selected files and destination mappings before beginning the operation.
-
-It refuses operations involving conflicting destination names, invalid mappings, or destinations that overlap selected source files.
-
-The current transient utility supports a maximum of 64 matched source files in one invocation.
-
-If a selection exceeds that limit, COPY reports:
-
-```text
-COPY BATCH TOO LARGE
-```
-
-and does not begin writing.
-
-For larger collections, divide the operation into smaller batches.
-
-### Errors and Recovery
-
-If a copy fails, COPY reports the affected file.
-
-Depending on the failure, it may offer recovery choices or continue with later files.
-
-An incomplete destination is normally removed when the operation fails.
-
-If that cleanup also fails, COPY reports the condition because an incomplete file may remain on disk.
-
-Earlier successfully completed copies are preserved.
-
-An interrupted batch is therefore not automatically rolled back.
-
-### Completion Information
-
-Transient COPY reports successful copies and their allocated sizes.
-
-For example:
-
-```text
-B1:FOO.COM -> D0:FOO.COM [2K]
-```
-
-For multiple files, it also reports totals for copied, skipped, and failed files.
-
-### Examples
-
-Copy one file:
-
-```text
-A>COPY README.TXT B:
-```
-
-Copy all `.ASM` files to another user area:
-
-```text
-A>COPY A3:*.ASM B7:
-```
-
-Copy and verify:
-
-```text
-A>:COPY /V README.TXT B:
-```
-
-Copy without collision prompts, skipping existing files:
-
-```text
-A>:COPY /B /S B1:*.DAT C3:
-```
-
-Back up archive-marked files with verification:
-
-```text
-A>:COPY /V /BACKUP B[-]:*.COM[$ARC] D0:
-```
-
----
-
-## 14.6 MOVE — Move Files
-
-**Purpose:** Transfers one or more files to another filename, drive, or user area, removing the originals after successful transfer.
-
-MOVE is similar to COPY, but it is intended to relocate files rather than duplicate them.
-
-BetterCP/M 1.0 provides MOVE as a resident command.
-
-### Syntax
-
-MOVE accepts source-first and destination-first forms:
-
-```text
-MOVE source destination
-MOVE destination=source
-```
-
-For example:
-
-```text
-A>MOVE README.TXT B:
-A>MOVE B:README.TXT=README.TXT
-```
-
-Both move `README.TXT` from the current location to drive B.
-
-### Moving Groups of Files
-
-MOVE accepts wildcards:
-
-```text
-A>MOVE *.BAK B:
-```
-
-It also supports drive/user specifications:
-
-```text
-A>MOVE A3
-
-We'll finish Chapter 14 with **Section 14.5 — COPY** and **Section 14.6 — MOVE**, following the structure and level of detail established in the preceding command references.
-
----
-
-## 14.5 COPY — Copy Files
-
 **Purpose:** Copies one or more files to another filename, drive, or user area.
 
 COPY is available as both a resident command and a transient utility, `COPY.COM`.
@@ -6764,6 +6399,16 @@ Transient COPY.COM supports a maximum of 64 matched source files in a single inv
 
 Larger selections must be divided into smaller operations.
 
+If a selection exceeds the limit, COPY reports `COPY BATCH TOO LARGE` and does not begin writing.
+
+Source files can also be selected by attribute. For example:
+
+```text
+A>:COPY B[-]:*.COM[$ARC] D0:
+```
+
+This selects archive-marked `.COM` files using the attribute-expression conventions described under DIR.
+
 ### Destination Attributes
 
 Transient COPY allows destination attributes to be specified explicitly.
@@ -6811,6 +6456,18 @@ The transient utility attempts to remove incomplete destination files when an op
 If that cleanup cannot be completed, COPY reports the problem and stops rather than leaving an incomplete file without warning.
 
 Previously completed copies remain available.
+
+### Completion Information
+
+Transient COPY reports successful copies and their allocated sizes.
+
+For example:
+
+```text
+B1:FOO.COM -> D0:FOO.COM [2K]
+```
+
+For multiple files, it also reports totals for copied, skipped, and failed files.
 
 ### Examples
 
@@ -7651,234 +7308,6 @@ It does not attempt to execute an invalid address specification.
 
 ## 15.8 PEEK / P — Display Memory
 
-**Purpose:** Displays memory contents in hexadecimal and ASCII form.
-
-PEEK is useful for examining loaded programs, checking data values, and inspecting memory while developing or debugging software.
-
-The abbreviated command `P` is equivalent to `PEEK`.
-
-### Syntax
-
-```text
-PEEK
-PEEK address
-PEEK first last
-```
-
-The abbreviated forms are:
-
-```text
-P
-P address
-P first last
-```
-
-All addresses are hexadecimal.
-
-### Examples
-
-Display memory beginning at `0100H`:
-
-```text
-A>PEEK 100
-```
-
-Display memory beginning at `8000H`:
-
-```text
-A>P 8000
-```
-
-Display an explicit range:
-
-```text
-A>PEEK 100 1FF
-```
-
-### Displaying 256 Bytes
-
-When one address is supplied, PEEK displays 256 bytes beginning at that address.
-
-For example:
-
-```text
-A>PEEK 100
-```
-
-displays the 256-byte region beginning at `0100H`.
-
-The output includes hexadecimal byte values and their corresponding ASCII representation where appropriate.
-
-### Displaying a Range
-
-When two addresses are supplied, PEEK displays the inclusive range from the first address through the last.
-
-For example:
-
-```text
-A>PEEK 100 1FF
-```
-
-displays memory from `0100H` through `01FFH`.
-
-The ending address is included.
-
-### Continuing a Display
-
-If no address is supplied, PEEK uses its remembered display position.
-
-The first invocation begins at `0100H`.
-
-Subsequent invocations continue from the byte following the previous display.
-
-For example:
-
-```text
-A>PEEK 100
-A>PEEK
-```
-
-The second command continues where the first left off.
-
-### Paging Controls
-
-During a paged display, the following controls are available:
-
-| Key | Action |
-|---|---|
-| Space, `.`, `>` | Display the next page |
-| `,`, `<` | Display the previous page |
-| Ctrl-C | Return to the command prompt |
-
-These controls make it convenient to examine consecutive regions of memory without entering a new address each time.
-
-### Address Boundaries
-
-PEEK does not wrap automatically from `FFFFH` back to `0000H`.
-
-This prevents an ordinary memory display from unexpectedly continuing at the beginning of the address space.
-
-### Using PEEK with GET and POKE
-
-PEEK is particularly useful alongside the other resident memory commands.
-
-For example:
-
-```text
-A>GET PROGRAM.COM
-A>PEEK 100
-A>POKE 100 C3 00 80
-A>PEEK 100
-```
-
-This loads a program, examines its beginning, modifies three bytes, and displays the modified memory.
-
-PEEK itself does not change memory.
-
----
-
-## 15.9 POKE — Modify Memory
-
-**Purpose:** Stores hexadecimal byte values or literal text directly into memory.
-
-POKE is useful for modifying loaded program images, preparing data, or testing small machine-language routines.
-
-Because it writes directly to memory, it should be used with care.
-
-### Syntax
-
-```text
-POKE address byte [byte ...]
-POKE address "text
-POKE address byte [byte ...] "text
-```
-
-The address and byte values are hexadecimal.
-
-A quotation mark introduces literal text. All remaining characters on the command line are stored as text.
-
-### Writing Hexadecimal Bytes
-
-For example:
-
-```text
-A>POKE 100 C3 00 80
-```
-
-writes three bytes beginning at address `0100H`:
-
-```text
-0100H  C3
-0101H  00
-0102H  80
-```
-
-The bytes are stored consecutively.
-
-### Writing Text
-
-POKE can also store literal text.
-
-For example:
-
-```text
-A>POKE 200 "Hello
-```
-
-writes the characters of `Hello` beginning at address `0200H`.
-
-The opening quotation mark identifies the beginning of the text.
-
-A closing quotation mark is not required by this command form.
-
-### Combining Bytes and Text
-
-Hexadecimal bytes and text can be combined.
-
-For example:
-
-```text
-A>POKE 300 0D 0A "BetterCP/M
-```
-
-This writes carriage return and line feed bytes, followed by the text `BetterCP/M`.
-
-This is useful when preparing data containing both control characters and printable text.
-
-### Input Validation
-
-POKE validates the address and hexadecimal byte operands before modifying memory.
-
-If an operand is invalid, the command rejects the operation without performing a partial modification.
-
-For example, an invalid hexadecimal byte does not cause the preceding valid bytes to be written before the error is reported.
-
-### Examining Changes
-
-Use PEEK to verify the contents of memory after a POKE operation.
-
-For example:
-
-```text
-A>POKE 100 C3 00 80
-A>PEEK 100
-```
-
-The second command displays the bytes beginning at `0100H`.
-
-### Saving Modified Memory
-
-After modifying a loaded program, you can use SAVE to write the memory image to a file.
-
-For example:
-
-```text
-A>GET PROGRAM.COM
-A>
-```
-
-## 15.8 PEEK / P — Display Memory
-
 **Purpose:** Displays the contents of memory in hexadecimal and ASCII form.
 
 PEEK provides a convenient way to examine memory without modifying its contents. It is particularly useful when inspecting loaded programs, examining data structures, or checking the results of changes made with POKE.
@@ -8013,6 +7442,24 @@ The POKE command stores five bytes beginning at address `0200H`.
 PEEK then displays the corresponding memory region.
 
 The hexadecimal values represent the ASCII characters `HELLO`.
+
+### Using PEEK with GET and POKE
+
+PEEK is particularly useful alongside the other resident memory commands.
+
+For example:
+
+```text
+A>GET PROGRAM.COM
+A>PEEK 100
+A>POKE 100 C3 00 80
+A>PEEK 100
+```
+
+This loads a program, examines its beginning, modifies three bytes, and displays the modified memory.
+
+PEEK itself does not change memory.
+
 
 ### Important Considerations
 
