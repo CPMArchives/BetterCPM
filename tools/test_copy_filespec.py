@@ -57,7 +57,8 @@ def main():
         for text, move, destination, source in [
                 ('B:OUT.DAT=A:IN.DAT', 0, 'B:OUT.DAT', 'A:IN.DAT'),
                 ('B4:=A1:*.COM', 0, 'B4:', 'A1:*.COM'),
-                ('B:OUT.DAT:=A:IN.DAT', 1, 'B:OUT.DAT', 'A:IN.DAT'),
+                ('B:OUT.DAT=A:IN.DAT', 1, 'B:OUT.DAT', 'A:IN.DAT'),
+                ('B3:=A0:README.TXT', 1, 'B3:', 'A0:README.TXT'),
                 ('A:IN.DAT B:OUT.DAT', 0, 'B:OUT.DAT', 'A:IN.DAT')]:
             cpu = Z80(b'')
             cpu.mem[origin:origin + len(binary)] = binary

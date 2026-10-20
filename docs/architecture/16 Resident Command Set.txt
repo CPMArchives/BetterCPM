@@ -110,8 +110,9 @@ COPY accepts both forms and normalizes them to the same operation:
   COPY destination=source
 
 The consolidated COPY Specification controls COPY syntax and capabilities;
-its plain = operator is a target change from the qualified := implementation.
-MOVE retains its separately implemented command syntax. It removes the source only after the
+both COPY and MOVE use the plain = assignment operator. In B3:=A0:README.TXT,
+the colon is part of destination B3:, not the operator. An exact destination
+is MOVE B:MOVED.DAT=A:SOURCE.DAT. MOVE removes the source only after the
 destination has been written and closed successfully.  A same-drive, same-user
 move may use a directory rename; a cross-drive or cross-user move copies and
 then erases.

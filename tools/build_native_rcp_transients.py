@@ -9,7 +9,10 @@ import tempfile
 from pathlib import Path
 from system_layout import expand_layout
 
-from build_rcp_transients import BUILD, COMMANDS, ROOT, SOURCE, copy_source, dir_source, symbol, transient
+from build_rcp_transients import (
+    BUILD, COMMANDS, ROOT, SOURCE, copy_source, dir_source, symbol, transient,
+    transient_source,
+)
 from build_native_trs80 import (
     DEFAULT_CPMSIM, DEFAULT_SYSTEM, DEFAULT_TEMPLATE, DEFAULT_TOOLS,
     blank, cpm_text, run,
@@ -43,9 +46,7 @@ def main() -> None:
         shutil.copy2(args.system_disk, disks / "drivea.dsk")
         for drive in "bcd":
             blank(args.disk_template, disks / f"drive{drive}.dsk")
-        text = expand_layout(SOURCE.read_text(encoding="ascii").replace(
-            '; @rcp-shared-selector@', '').replace(
-            "CPXBASE         EQU     08000H", "CPXBASE         EQU     00100H"))
+        text = expand_layout(transient_source())
         staged = work / "BASX.MAC"
         staged.write_bytes(initialized_workspace(text).replace("\n", "\r\n").encode("ascii") + b"\x1a")
         run("cpmcp", "-f", "ibm-3740", str(disks / "drivec.dsk"),
