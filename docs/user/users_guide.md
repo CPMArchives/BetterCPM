@@ -218,13 +218,13 @@ BetterCP/M preserves the conventional CP/M program-loading environment. This all
 
 Resident extensions introduce an additional consideration.
 
-Unlike ordinary transient programs, CPXs and RSXs can remain in memory while other programs execute. This makes their facilities continuously available, but it also means that the memory they occupy is unavailable to transient programs.
+CPXs supply commands while the command environment is active. Their command code, like the command processor itself, is reclaimable: a transient program can overwrite it. BetterCP/M reconstructs the command environment when control returns through a warm boot. RSXs remain in protected memory while programs execute, so their services stay available to applications.
 
-Loading an extension therefore involves a tradeoff: additional capabilities in exchange for some reduction in available program memory.
+Loading an RSX therefore involves a tradeoff: additional services in exchange for some reduction in available program memory.
 
 BetterCP/M allows supported extensions to be unloaded when they are no longer needed, releasing their memory for other uses.
 
-For most users, the important point is simple: **the more resident facilities you load, the less memory remains available for ordinary programs.**
+For most users, the important point is simple: **loaded RSXs can reduce program memory; reclaimable CPX command code does not permanently reduce the maximum transient program size.**
 
 Chapter 8 explains how to manage extensions and examine their effect on available memory.
 
@@ -1456,7 +1456,7 @@ containing:
 
 ```text
 DIR
-COPY *.ASM B:
+:COPY *.ASM B:
 DIR B:
 ```
 
@@ -1468,7 +1468,7 @@ To execute the file, enter:
 A>SUBMIT BACKUP
 ```
 
-SUBMIT reads the commands from `BACKUP.SUB` and arranges for them to be executed in sequence.
+SUBMIT reads the commands from `BACKUP.SUB` and arranges for them to be executed in sequence. The leading colon in `:COPY` forces the transient `COPY.COM` utility; make sure it is available on the command search path.
 
 You don't need to type the `.SUB` extension when invoking SUBMIT.
 
@@ -1541,7 +1541,7 @@ A SUBMIT file can accept more than one parameter.
 For example, a file named `COPYFILE.SUB` might contain:
 
 ```text
-COPY $1 $2
+:COPY $1 $2
 ```
 
 You could then enter:
@@ -1553,10 +1553,35 @@ A>SUBMIT COPYFILE REPORT.TXT B:REPORT.TXT
 The resulting command would be:
 
 ```text
-COPY REPORT.TXT B:REPORT.TXT
+:COPY REPORT.TXT B:REPORT.TXT
 ```
 
 This is a simple example, but parameter substitution becomes particularly useful in longer command files.
+
+### Literal Dollar Signs in Command Files
+
+SUBMIT treats dollar signs as parameter markers. Write `$$` in a `.SUB` file wherever the executed command needs a literal `$`, including attribute selectors such as `$ARC`, `$RO`, and `$SYS`. An unescaped `$ARC` is an invalid parameter reference and causes `Parameter Error`.
+
+For example, save these lines as `ARCBACK.SUB`:
+
+```text
+:COPY /B /O /V /BACKUP B[-]:*.DOC[$$ARC] D0:
+DIR D0:*.DOC
+```
+
+With the source and destination drives available, run:
+
+```text
+A>SUBMIT ARCBACK
+```
+
+SUBMIT expands `$$ARC` to `$ARC`, so the first command executed is:
+
+```text
+:COPY /B /O /V /BACKUP B[-]:*.DOC[$ARC] D0:
+```
+
+This copies archived `.DOC` files from all user areas on B to D user 0, permits replacement of writable destination files, verifies each copy, and clears ARC after a successful backup. Read-only destinations remain protected. The leading colon selects the transient COPY utility. At the command prompt, type `$ARC` directly; the doubling is needed only in the `.SUB` source.
 
 ### Parameter Substitution Is Textual
 
@@ -1714,7 +1739,7 @@ Suppose you want to copy all assembly-language source files from one user area t
 Create `SOURCES.SUB` containing:
 
 ```text
-COPY B1:*.ASM C3:
+:COPY B1:*.ASM C3:
 DIR C3:*.ASM
 ```
 
@@ -1732,12 +1757,12 @@ For unattended execution, you can use COPY's batch option.
 
 ### Example 3: Copying Files Without Prompts
 
-BetterCP/M's COPY utility provides a `/B` option for batch-oriented operation.
+BetterCP/M's transient COPY utility provides a `/B` option for batch-oriented operation. Use `:COPY` to force `COPY.COM`, even when resident COPY is installed.
 
 For example:
 
 ```text
-COPY B1:*.DAT C3: /B
+:COPY B1:*.DAT C3: /B
 ```
 
 This copies matching files without stopping to ask how existing destination files should be handled.
@@ -1751,13 +1776,13 @@ You can specify a different policy explicitly.
 To overwrite existing writable destination files:
 
 ```text
-COPY B1:*.DAT C3: /B /O
+:COPY B1:*.DAT C3: /B /O
 ```
 
 To skip existing destination files:
 
 ```text
-COPY B1:*.DAT C3: /B /S
+:COPY B1:*.DAT C3: /B /S
 ```
 
 In both cases, files without existing destinations are copied normally.
@@ -2255,7 +2280,7 @@ For example, a resident extension might provide frequently used file-management 
 
 Resident extensions offer several advantages. A resident command is immediately available without loading a separate program from disk each time it is used. A resident service can remain available while different applications execute. Extensions can also be loaded and unloaded to suit the work you're doing.
 
-There is a tradeoff, however: resident extensions occupy memory that would otherwise be available to transient programs.
+RSXs occupy protected memory that would otherwise be available to transient programs. CPX command code is reclaimable when a transient program starts.
 
 BetterCP/M allows you to choose which optional extensions to keep loaded, making it possible to balance additional facilities against available program memory.
 
@@ -2331,7 +2356,7 @@ BetterCP/M can provide these facilities through resident terminal-monitor extens
 
 Other RSXs provide facilities such as support for batch input or disk-format services.
 
-Although CPXs and RSXs both remain resident, they serve different purposes and are managed separately.
+CPXs are available in the command environment and are reconstructed after transient execution. RSXs remain in protected memory while applications run. They serve different purposes and are managed separately.
 
 ## 8.2 Installing Extensions
 
@@ -2522,7 +2547,7 @@ When you leave the editor and return to the command prompt, the terminal monitor
 
 You can start another compatible application without loading the monitor again.
 
-Similarly, command processor extensions remain available as the command environment is restored after transient programs finish.
+Command processor extensions are reconstructed with the command environment after transient programs finish through a warm boot. Their command code can be overwritten by the transient program.
 
 ### Cold Boots and Startup Configuration
 
@@ -2556,7 +2581,7 @@ Chapter 7 explains how to configure the startup command.
 
 ## 8.6 Memory Considerations
 
-Resident extensions are loaded into memory and remain available until they are removed or the operating environment is reinitialized.
+RSXs remain in protected memory until unloaded or the operating environment is reinitialized. CPX command code occupies reclaimable command-environment memory and is reconstructed after transient execution.
 
 Because CP/M systems have limited memory, the number and size of loaded extensions can matter.
 
@@ -2564,9 +2589,9 @@ Because CP/M systems have limited memory, the number and size of loaded extensio
 
 Ordinary CP/M programs execute in the Transient Program Area, or TPA.
 
-Resident extensions use memory that would otherwise be available to those programs.
+Loaded RSXs reduce the memory available to those programs. The CCP and CPX command code can be reclaimed for transient execution.
 
-Consequently, loading an extension can reduce the maximum size of a transient program that BetterCP/M can execute.
+Use `STAT MEM` to examine the current memory map and maximum loadable COM size. That maximum can include memory currently occupied by the reclaimable CCP and CPXs; it excludes protected RSX memory.
 
 For example, you might load a terminal monitor to run a full-screen editor. While the monitor is active, less memory is available to the editor.
 
@@ -2632,7 +2657,7 @@ Until the problem is corrected, the warning may recur when BetterCP/M restores t
 
 If BetterCP/M refuses to unload an RSX, another extension may still depend on it. Unload the dependent extension first, then remove the supporting component.
 
-If a transient program reports insufficient memory, examine the resident extensions currently loaded. Unloading unnecessary extensions can restore memory to the TPA.
+If a transient program reports insufficient memory, use `STAT MEM` and `RSX LIST` to examine memory use. Unloading unnecessary RSXs can restore memory to the TPA.
 
 For additional troubleshooting information, see Chapter 12.
 
@@ -4446,9 +4471,9 @@ Chapter 9 provides more information about terminal configuration and troubleshoo
 
 ### Insufficient Program Memory
 
-Resident extensions occupy memory that would otherwise be available to transient programs.
+RSXs occupy protected memory that would otherwise be available to transient programs. CPX command code is reclaimable.
 
-If a program reports insufficient memory, check which extensions are loaded.
+If a program reports insufficient memory, use `STAT MEM` and `RSX LIST` to check memory use and loaded services.
 
 You may be able to unload facilities that aren't needed for the current task.
 
@@ -4848,7 +4873,7 @@ Some commands allow several options to be supplied together.
 For example:
 
 ```text
-A>COPY B1:*.DAT C3: /B /O
+A>:COPY B1:*.DAT C3: /B /O
 ```
 
 Here, `/B` requests batch-oriented operation, while `/O` specifies how existing writable destination files should be handled.
@@ -5618,7 +5643,9 @@ Some allocation blocks may be shared with other live files. BetterCP/M preserves
 
 Hardware characteristics and disk errors can also prevent complete overwriting.
 
-Destructive erase requires explicit confirmation and reports incomplete operations.
+Without `/Y`, destructive erase asks for confirmation even for one exact filename. For multiple files, it uses a destructive-erasure warning and confirmation; `/Q` hides the manifest but does not authorize erasure.
+
+`/Y` suppresses the destructive confirmation as well as ordinary confirmations. Use it only after checking the selection carefully. It does not imply `/R`: selected read-only files are skipped with `/Y` unless `/R` is also supplied. Without `/Y` or `/R`, ERA asks for separate read-only authorization. Neither option broadens the selection or bypasses file-selection protection rules. ERA reports incomplete destructive operations.
 
 ### Error Handling
 
@@ -9176,7 +9203,7 @@ For example, a file named `BACKUP.SUB` might contain:
 
 ```text
 DIR *.ASM
-COPY *.ASM B:
+:COPY *.ASM B:
 DIR B:*.ASM
 ```
 
@@ -9229,7 +9256,7 @@ A SUBMIT file can refer to several parameters.
 For example, `COPYFILE.SUB` might contain:
 
 ```text
-COPY $1 $2
+:COPY $1 $2
 ```
 
 You could invoke it with:
@@ -9241,10 +9268,12 @@ A>SUBMIT COPYFILE REPORT.TXT B:REPORT.TXT
 The resulting command would be:
 
 ```text
-COPY REPORT.TXT B:REPORT.TXT
+:COPY REPORT.TXT B:REPORT.TXT
 ```
 
 Parameter substitution is textual. SUBMIT does not interpret filenames or options while performing the substitution.
+
+For a literal dollar sign in the `.SUB` source, write `$$`. For example, write `[$$ARC]` so the executed command receives `[$ARC]`. A bare `$ARC` causes `Parameter Error`. See Chapter 6, *Literal Dollar Signs in Command Files*, for a complete backup example.
 
 The resulting command is interpreted by the command processor or utility that executes it.
 
@@ -9269,7 +9298,7 @@ If the batch is intended to run unattended, use the command's supported options 
 For example:
 
 ```text
-COPY B1:*.DAT C3: /B /O
+:COPY B1:*.DAT C3: /B /O
 ```
 
 uses COPY's batch option and requests replacement of existing writable destination files.
@@ -9437,7 +9466,7 @@ For an introduction to XSUB and batch processing, see Chapter 6.
 
 A Command Processor Extension, or CPX, adds commands to BetterCP/M's command environment.
 
-Unlike an ordinary transient program, a CPX remains available after individual commands have finished. This allows frequently used commands to be provided without loading a separate `.COM` file each time.
+A CPX remains available between commands in the active command environment. Its command code can be reclaimed by transient programs and is reconstructed on warm boot. This allows frequently used commands to be provided at the prompt without loading a separate `.COM` file each time.
 
 The standard BetterCP/M command environment includes `RCP.CPX`, which supplies familiar commands such as DIR, ERA, REN, TYPE, COPY, and MOVE.
 
@@ -9599,15 +9628,11 @@ A missing optional CPX file may simply be skipped without producing the same war
 
 ### CPXs and Available Memory
 
-Command Processor Extensions occupy memory while installed.
+Command Processor Extensions occupy memory in the active command environment, but their command code is reclaimable, along with the CCP, when a transient program starts. BetterCP/M shuts down the active CPX chain before transferring control and reconstructs the command environment on warm boot.
 
-This memory is unavailable to ordinary transient programs.
+Keeping a CPX configured makes its commands available at the prompt without permanently subtracting its command-code size from the maximum transient program size. RSXs, by comparison, occupy protected memory while applications run.
 
-Loading additional command packages therefore involves a tradeoff between convenience and available program memory.
-
-For frequently used commands, keeping a CPX installed may be worthwhile.
-
-For commands used only occasionally, a transient utility may be more appropriate.
+Use `STAT MEM` to see the current CCP, CPX, and RSX regions and the maximum loadable COM size. The maximum can include the reclaimable CCP and CPX regions shown in the map.
 
 ### CPX Examples
 
