@@ -4277,13 +4277,13 @@ Some commands request confirmation before modifying or replacing files.
 
 This can happen even when the command is executed from a SUBMIT file.
 
-For example, COPY may ask how to handle an existing destination file.
+For example, transient `COPY.COM` may ask how to handle an existing writable destination file. Resident COPY refuses that collision unless `/O` is supplied; it does not offer the transient utility's collision prompt.
 
 When a prompt offers several abbreviated responses, entering `?` may display an explanation of the available choices.
 
 If you're preparing a batch file, examine whether the command provides options for specifying its behavior without prompting.
 
-For example, COPY supports `/B` for batch-oriented operation.
+For batch-oriented copying, invoke the transient explicitly with `:COPY` and use its `/B` option. The resident command does not support `/B` or automatically switch to `COPY.COM`.
 
 [Chapter 6](#chapter-6) explains batch processing in more detail.
 
@@ -9614,7 +9614,7 @@ A cold boot establishes a new operating session rather than continuing a previou
 
 A command executed from a SUBMIT file does not automatically become noninteractive.
 
-For example, COPY may ask whether an existing destination file should be replaced.
+For example, transient `COPY.COM` may ask whether an existing writable destination file should be replaced. Resident COPY instead refuses the collision unless `/O` is supplied. Use `:COPY` to select the transient utility explicitly.
 
 If the batch is intended to run unattended, use the command's supported options to specify the desired behavior.
 
@@ -12096,11 +12096,11 @@ Resident extensions intended to survive ordinary warm boots remain available.
 
 The amount of memory available to a transient program depends on the system configuration.
 
-Resident extensions occupy memory that would otherwise be available to transient programs.
+Loaded RSXs occupy protected memory that is unavailable to transient programs. The CCP and CPX command code are reclaimable and can be overwritten by a transient; BetterCP/M reconstructs the command environment on warm boot.
 
-Consequently, a program that fits in a conventional CP/M environment may encounter insufficient memory if several BetterCP/M extensions are loaded.
+A program may therefore encounter insufficient memory when RSXs are loaded, even though it fits without those services.
 
-If this occurs, unload extensions that are not needed for the program.
+Use `STAT MEM` to check the maximum loadable COM size and `RSX LIST` to identify services you can unload. Removing an unnecessary RSX can recover program memory; unloading a CPX does not increase the maximum COM size by its reclaimable command-code size.
 
 This is a resource limitation rather than necessarily an incompatibility in the program's operating-system calls.
 
