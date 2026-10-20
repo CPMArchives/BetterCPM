@@ -368,6 +368,27 @@ If you're using physical removable media, it's a good idea to prepare a backup o
 
 The platform documentation explains any special preparation required for your particular system.
 
+### What Is on Each Disk
+
+The System Disk contains the operating system and the following user-0 files. The two platform versions use different boot and BIOS implementations.
+
+| Platform | Selected System Disk files |
+|---|---|
+| Both platforms: file commands | `DIR.COM`, `ERA.COM`, `TYPE.COM`, `REN.COM`, `VER.COM`, `COPY.COM`, `PIP.COM`, `ED.COM` |
+| Both platforms: system utilities | `CONFIG.COM`, `DUP.COM`, `TIME.COM`, `SYSGEN.COM`, `STAT.COM`, `SUBMIT.COM`, `CPX.COM`, `RSX.COM` |
+| Both platforms: support files | `README.TXT`, `STARTUP.SUB`, `DISK.FDB`, `RCP.CPX`, `R3PACK.RSX` |
+| Both platforms: portable monitors and tests | `ADM3A.RSX`, `ADMTST.COM`, `VT52.RSX`, `VT52TST.COM`, `ANSI.RSX`, `ANSITST.COM` |
+| TRS-80 Model 4 / trs80gp only | `M4SCRN.RSX`, `FREHDCLK.RSX` (requires FreHD hardware or emulation) |
+| z80pack / cpmsim only | `ANSISCRN.RSX`, `ZPRTC.RSX`, `BYE.COM` |
+
+A supplied clock provider is available for explicit loading; neither platform loads one by default. Model 4 startup does load its screen backend and ADM-3A personality, as shown in Section 7.3.
+
+The separate **Utilities Disk** is selected for `XSUB.COM`, `DUMP.COM`, ZSM4 and LINK, along with additional tools whose exact selections remain pending. Utilities Disk assembly and the remaining selections are separate from the current System Disk. The **CP/M Tools Disk** is another separate collection, selected for SYSINFO, BIOSINFO, DISKINFO, MEMINFO and related portable diagnostics; it is not the System Disk or Utilities Disk.
+
+An implemented or buildable component is not automatically a selected distribution file. In particular, `CLS.COM`, `P2DOS.RSX`, the 104/105 clock-compatibility adapters, and `FDF.RSX` are not selected System Disk contents. CLS is available through `RCP.CPX`. Optional adapters and FDF support require separately prepared, compatible files; a maintainer can build these from the matching BetterCP/M source, then install extension files in A0 as described in Section 8.2. Diagnostic and conformance packages are also outside the selected distribution.
+
+Historical ASM, LOAD and DDT examples assume separately obtained compatible tools; these programs are not selected BetterCP/M disk contents. ED is supplied on the System Disk. Refer to the distribution manifest and the disk's release report for the approved inventory and any outstanding packaging decisions, rather than treating a development disk or build directory as a release inventory.
+
 ## 3.3 Booting BetterCP/M
 
 Once your system has been prepared, start BetterCP/M using the normal boot procedure for your computer.
@@ -384,7 +405,7 @@ SUBMIT STARTUP
 
 This executes the commands contained in `STARTUP.SUB`, allowing the system to establish a preferred working environment.
 
-The supplied startup file initially displays the BetterCP/M identification banner. It can also be customized to perform other tasks, such as loading resident extensions.
+Startup differs by platform: cpmsim displays the banner; the Model 4 loads M4SCRN and ADM3A, clears the display, then shows the banner. Section 7.3 lists both supplied scripts and explains customization.
 
 When startup is complete, BetterCP/M displays its command prompt:
 
@@ -1424,6 +1445,8 @@ This chapter introduces batch processing and shows how to create and use command
 
 Suppose you're working on an assembly-language program. Each time you make a change, you might need to assemble the source file, load the resulting program, and run a test.
 
+The ASM and LOAD examples in this chapter assume separately obtained compatible tools. They are not selected System Disk contents; Section 3.2 lists the standard files and the separate Utilities Disk selection.
+
 You could enter each command separately, but if you perform the same sequence repeatedly, it's more convenient to place the commands in a file.
 
 For example, a command file might contain:
@@ -1813,7 +1836,7 @@ The configured cold-start command is:
 SUBMIT STARTUP
 ```
 
-The supplied startup file initially displays the BetterCP/M identification banner.
+The supplied startup file follows the platform-specific sequence listed in Section 7.3: banner only on cpmsim; screen backend, ADM-3A personality, screen clear, then banner on Model 4.
 
 You can edit this file to perform additional operations automatically when the system starts.
 
@@ -1959,26 +1982,19 @@ as its saved startup command.
 
 This causes BetterCP/M to execute the commands contained in `STARTUP.SUB`.
 
-The supplied startup file initially displays the BetterCP/M identification banner. You can edit the file to perform additional operations.
+### Supplied STARTUP.SUB Files
 
-For example, you might use it to load resident extensions or select facilities that you normally want available.
+The default scripts are installed as `A0:STARTUP.SUB`. Each table cell lists the commands in execution order, one per source line:
+
+| z80pack / cpmsim | TRS-80 Model 4 / trs80gp |
+|---|---|
+| `:VER /BANNER` | `RSX LOAD M4SCRN`<br>`RSX LOAD ADM3A`<br>`CLS`<br>`:VER /BANNER` |
+
+The Model 4 loads its screen backend before the ADM-3A terminal personality, clears the screen through resident CLS, and then displays the banner. cpmsim displays only the banner and does not select a terminal personality automatically. Neither script loads a clock provider.
 
 ### Editing STARTUP.SUB
 
-Because `STARTUP.SUB` is an ordinary SUBMIT file, you can edit it using a text editor.
-
-For example, a startup file might contain:
-
-```text
-:VER /BANNER
-RSX LOAD M4SCRN
-RSX LOAD ADM3A
-CLS
-```
-
-This example displays the system banner, loads a screen backend and an ADM-3A terminal personality, and clears the screen.
-
-The example is appropriate only for a system that provides the named screen backend and terminal extension. Other platforms may require different commands.
+Because `STARTUP.SUB` is an ordinary SUBMIT file, you can edit it using a text editor. Test new commands individually before adding them. On Model 4, the backend and ADM3A are already loaded by the supplied script; do not append another copy of those commands just to obtain the default display environment.
 
 Chapter 8 explains resident extension management, while Chapter 9 describes terminal support.
 
@@ -2377,7 +2393,11 @@ VT52.RSX
 ANSI.RSX
 ```
 
-Before loading an extension, make sure its file is available in the location expected by BetterCP/M.
+Place normal `.CPX` and `.RSX` extension files on **drive A, user 0 (A0)** before loading them. The carrier loader uses A0 even when you run `CPX.COM` or `RSX.COM` from another drive/user. It does not use the transient-program current-location/A0 search sequence.
+
+Keep `R3PACK.RSX` in A0 as well. It is the RSX manager's required runtime container and must match the system build. `RSX.COM` alone is not sufficient. Keep the supplied container with the system files; it is an internal dependency, **not** a module to pass to `RSX LOAD`.
+
+Configured CPX files must remain in A0 after their commands become available. BetterCP/M rereads them when reconstructing the command environment after transient execution or warm boot. A missing carrier can leave a configured name listed without its commands being available.
 
 Extensions must also be compatible with the running operating system. An extension prepared for a different version or system configuration may not load successfully.
 
@@ -2467,15 +2487,13 @@ For example, an extension named `TOOLS.CPX` would be requested with:
 A>CPX LOAD TOOLS
 ```
 
-The extension must be available in the appropriate location and must be compatible with the running BetterCP/M system.
+The extension must be available as `A0:TOOLS.CPX` and compatible with the running system. Keep it there for command-environment reconstruction; see Section 8.2.
 
 Once successfully loaded, its commands become available through the normal command environment.
 
 You can enter those commands just as you would any other BetterCP/M command.
 
-More than one CPX can be active at the same time. BetterCP/M maintains them in a defined order, which determines how their commands are considered when you enter a command name.
-
-Ordinarily, you need not be concerned with that order unless two extensions provide commands with the same name.
+The CPX reconstruction profile has four slots, including the standard RCP entry. New names are appended and their commands are tried in profile order after built-in CCP commands. The first package that handles a command wins. See Section 17.3 for capacity, ordering and duplicate/absent-operation details.
 
 ### Unloading a CPX
 
@@ -2529,13 +2547,7 @@ The RSX manager checks these relationships and reports operations that cannot be
 
 ### Required Extensions
 
-Not every resident component is necessarily optional.
-
-Some facilities are part of the standard command environment or are required for the system to operate correctly.
-
-BetterCP/M's extension-management facilities enforce the applicable restrictions.
-
-If an extension cannot be removed, consult the reported message rather than attempting to bypass the restriction.
+RCP supplies the standard resident commands, but the current CPX manager permits its removal. Doing so removes those commands; only built-in CCP commands and separately available transients remain. Section 17.3 explains restoring RCP and its place in the four-entry profile. RSX removals are separate operations and can be refused when dependencies make removal unsafe.
 
 ## 8.5 Extension Persistence
 
@@ -4038,7 +4050,7 @@ BetterCP/M provides compatibility with this interface through a separate residen
 
 ### P2DOS Compatibility
 
-The compatibility extension is supplied as:
+The optional compatibility extension is implemented as:
 
 ```text
 P2DOS.RSX
@@ -4054,7 +4066,7 @@ This means that the same provider can serve both native BetterCP/M applications 
 
 ### Loading P2DOS Support
 
-To use the P2DOS-compatible clock facilities, load an appropriate clock provider and the P2DOS extension.
+`P2DOS.RSX` is not on the selected System Disk. To use it, obtain a compatible separately built carrier, install it in A0, then load an appropriate clock provider and the P2DOS extension. See Section 3.2, *What Is on Each Disk*, for distribution scope.
 
 For example, under z80pack:
 
@@ -6935,7 +6947,7 @@ This is useful when the screen has become cluttered with directory listings, pro
 
 CLS is normally supplied as a resident command by `RCP.CPX`.
 
-A transient `CLS.COM` is also provided, allowing the command to remain available when the resident command package is not loaded.
+A transient `CLS.COM` can be built from the matching source, but is not selected System Disk content. Resident CLS through `RCP.CPX` is the standard supplied form. The following invocation requires a separately installed transient:
 
 To invoke the transient version explicitly:
 
@@ -7731,7 +7743,17 @@ CONFIG /IOBYTE=value
 CONFIG /VER
 ```
 
-Additional command-line forms are available for physical-drive profiles, logical-drive assignments, and disk-format definitions.
+The disk-configuration forms are:
+
+```text
+CONFIG /PHYSICAL=n /field=value [/field=value ...]
+CONFIG /LOGICAL=B /PHYSICAL=n /FORMAT="description"
+CONFIG /LOGICAL=C /UNBIND
+CONFIG /EDIT=B /field=value [/field=value ...]
+CONFIG /EDIT=B /SLOT=n /ID=id /CODE=code
+```
+
+Use the slash-prefixed field names in the tables below. `B` and `C` are example logical drives; these operations accept B through D. Physical-profile selection accepts 0 through 3. The operation selector must come first. Names are case-insensitive and numeric values are unsigned decimal. Separate fields with whitespace. Do not combine these forms with `/SHOW`, startup/IOBYTE options, `/DEFAULT`, or `/VER`. Duplicate or unknown fields, extra operands and numeric overflow are rejected before changes begin.
 
 ### Interactive Configuration
 
@@ -7833,21 +7855,21 @@ A>CONFIG /PHYSICAL=1 /TRACKS=80 /SIDES=2 /STEP=6
 
 This requests an 80-track, double-sided configuration for physical drive 1, with the specified step timing.
 
-The supported fields include:
+`/PHYSICAL=n` must come first, followed by at least one field. Supply each field at most once; the field order is otherwise free. Unspecified fields retain their current values.
 
-| Option | Purpose |
-|---|---|
-| `/PHYSICAL=` | Select the physical drive |
-| `/TYPE=` | Select 5-inch or 8-inch drive type |
-| `/TRACKS=` | Set the track count |
-| `/SIDES=` | Set the number of sides |
-| `/STEP=` | Set step timing |
-| `/SPINUP=` | Set spin-up delay |
-| `/SETTLE=` | Set head-settle delay |
+| Option | Accepted values | Units or meaning |
+|---|---|---|
+| `/PHYSICAL=` | 0–3 | Physical-drive index |
+| `/TYPE=` | 5 or 8 | Drive type in inches |
+| `/TRACKS=` | 35, 40, 77 or 80 | Track count |
+| `/SIDES=` | 1 or 2 | Available sides |
+| `/STEP=` | 6, 12, 20 or 30 | Milliseconds |
+| `/SPINUP=` | 0–16 | Quarter-second units |
+| `/SETTLE=` | 0–255 | Head-settling milliseconds |
 
-The accepted values depend on the field and the platform.
+Timing effects depend on the backend. CONFIG checks the proposed profile against A's current binding and rejects a change that cannot support the boot drive. After a successful update, incompatible non-system bindings are detached and their BDOS login state reset. If later cleanup fails, `Drive profile changed; binding cleanup incomplete.` means the profile did change and affected bindings need attention.
 
-Physical-drive changes affect the active configuration. They do not automatically replace the saved startup defaults.
+This form changes active settings only, requires no `DISK.FDB`, and neither prompts nor saves to disk. To retain the change across cold boot, use the separate save-all-current operation described below.
 
 ### Logical-Drive Configuration
 
@@ -7859,7 +7881,9 @@ A>CONFIG /LOGICAL=C /PHYSICAL=1 /FORMAT="MM 80T DS DATA"
 
 This assigns logical drive C to physical drive 1 using the named format.
 
-The format name must match an available definition in the disk-format catalog.
+The operands must appear in the order shown: `/LOGICAL=`, `/PHYSICAL=`, then `/FORMAT=`. Logical targets are B–D and physical indexes are 0–3. The quoted format must exactly match a catalogue display description, ignoring letter case and trailing space padding. It accepts 1–32 printable ASCII characters with at least one non-space character; quote escapes, prefixes, wildcards and row numbers are not accepted.
+
+Named binding requires a valid `DISK.FDB`, using CONFIG's current-drive/A: catalogue lookup. Missing, corrupt, unknown, ambiguous or unsupported definitions leave the active binding unchanged.
 
 CONFIG checks that the requested assignment is compatible with the selected drive.
 
@@ -7871,7 +7895,7 @@ A>CONFIG /LOGICAL=C /UNBIND
 
 This disconnects logical drive C from its active assignment without erasing the disk.
 
-BetterCP/M protects drive A from these logical-binding changes.
+BetterCP/M protects drive A from binding, unbinding and format edits. `/UNBIND` requires no catalogue. Successful binding/unbinding resets only the selected drive's BDOS login state. These operations change active settings without saving, formatting or erasing media; use save-all-current to make them cold-boot defaults.
 
 ### Editing Disk-Format Definitions
 
@@ -7883,15 +7907,39 @@ For example:
 A>CONFIG /EDIT=B /CKS=16
 ```
 
-This changes the specified field of drive B's active format definition.
+`/EDIT=B` through `/EDIT=D` must come first and requires at least one scalar or slot change. Scalar fields may follow in any order, once each. CONFIG starts from the active 64-byte binding, merges the named changes privately, and submits one validated update.
 
-Other fields describe the disk's allocation, directory, sector, and physical organization.
+| Field | Meaning | Decimal storage range |
+|---|---|---|
+| `/PHYSICAL=` | Physical-drive index in the binding | 0–255; final binding must select 0–3 |
+| `/SPT=` | 128-byte records per track | 0–65535 |
+| `/BSH=`, `/BLM=`, `/EXM=` | Block shift, block mask, extent mask | 0–255 each |
+| `/DSM=`, `/DRM=` | Last allocation-block number, last directory-entry number | 0–65535 each |
+| `/AL0=`, `/AL1=` | Directory allocation masks | 0–255 each |
+| `/CKS=`, `/OFF=` | Directory check size, reserved tracks | 0–65535 each |
+| `/CYLINDERS=`, `/SECTORS=` | Cylinders, physical sectors per track | 0–255 each |
+| `/SIZE=`, `/FLAGS=`, `/SIZEMAP=` | Maximum sector-size code, format flags, explicit size-map flag | 0–255 each |
 
-These are advanced configuration facilities. An incorrect definition can cause BetterCP/M to interpret an existing disk incorrectly.
+These are storage limits, not a promise that every value or combination is valid. The physical geometry and backend rules still apply. Start with a valid binding; an unbound drive needs a complete valid definition before it can be used. Rejection before commit leaves active settings unchanged. A successful edit resets only that drive's BDOS login state.
 
-**Changing a disk-format definition does not format the disk.** It changes how BetterCP/M attempts to access it.
+To edit one sector-map entry:
 
-Use the interactive format editor or the command-line editing facilities only when you know the disk's actual organization.
+```text
+A>CONFIG /EDIT=B /SLOT=1 /ID=200
+A>CONFIG /EDIT=B /SPT=35 /SLOT=1 /CODE=0
+```
+
+| Option | Accepted values | Meaning |
+|---|---|---|
+| `/SLOT=` | 1–32 | One-based slot in physical sector order |
+| `/ID=` | 0–255 | Physical sector ID for that slot |
+| `/CODE=` | 0–3 | Packed size code: 0=128, 1=256, 2=512, 3=1024 bytes |
+
+A slot requires `/ID=`, `/CODE=`, or both. Neither value is accepted without `/SLOT=`. One slot is edited per invocation; scalar fields may accompany it after `/EDIT=`. Other slots and unspecified fields are preserved. The first explicit size edit seeds the other slots from the current uniform size. Duplicate IDs and inconsistent record/sector geometry are rejected. The examples show syntax; use values appropriate to the actual format.
+
+Explicit size maps require `FDF.RSX`'s checked normalization service before applying the binding. FDF is separately buildable and is not selected System Disk content; install a compatible `A0:FDF.RSX` and load it with `RSX LOAD FDF` when this service is needed. Missing support or invalid maps leave the active binding unchanged.
+
+These commands need no catalogue and make active changes without a confirmation or disk save. **Changing a binding definition does not format the disk.** An incorrect definition can make existing media inaccessible. Use the separate save-all-current operation to preserve validated changes across cold boot.
 
 ### Saved IOBYTE
 
@@ -7905,7 +7953,7 @@ For example:
 A>CONFIG /IOBYTE=85
 ```
 
-The value is decimal.
+The value is an unsigned decimal byte, 0–255.
 
 CONFIG requests confirmation before saving it.
 
@@ -7923,7 +7971,15 @@ Saving only the pending startup change allows you to retain your existing saved 
 
 Saving all current settings makes the active configuration the new startup default.
 
-Use the save menu to select the appropriate operation.
+From the main menu choose **S**, then:
+
+```text
+[ A ] Save pending cold-boot changes only
+[ B ] Save all current settings as startup defaults
+BREAK (^C) returns without saving.
+```
+
+Choose **A** to retain saved drive defaults while saving pending cold-boot changes. Choose **B** to capture the active physical profiles and logical bindings as defaults as well. Follow the confirmation before the disk write. Active CLI disk changes survive leaving CONFIG but are lost on cold boot unless explicitly saved through **S**, **B**; they are not invocation-private pending edits.
 
 CONFIG verifies saved configuration writes and reports failures.
 
@@ -8278,7 +8334,7 @@ The SET interface is implemented for compatibility with the native clock service
 
 ### P2DOS Compatibility
 
-BetterCP/M provides a separate resident extension, `P2DOS.RSX`, for applications using the P2DOS-compatible clock interface.
+An optional, separately buildable `P2DOS.RSX` supplies the P2DOS-compatible clock interface. It is not selected System Disk content; install a compatible carrier in A0 before using the example below.
 
 To use it under z80pack:
 
@@ -9442,9 +9498,7 @@ SUBMIT STARTUP
 
 This executes `STARTUP.SUB`.
 
-The supplied startup file displays the BetterCP/M identification banner and can be customized to perform additional operations.
-
-For example, it may load resident extensions needed for a preferred working environment.
+Section 7.3 lists the supplied scripts in order. cpmsim displays the banner only; Model 4 already loads M4SCRN and ADM3A, clears the screen, then displays the banner. Edit `A0:STARTUP.SUB` to customize that sequence.
 
 The startup command is executed during a cold boot, not during an ordinary warm boot.
 
@@ -9515,9 +9569,9 @@ The activation command is:
 XSUB
 ```
 
-Place it before the program to be automated. `XSUB.COM` belongs to the **Utilities Disk**, not the current System Disk. Its protected companion, `BATCHIO.RSX`, must also be available to the RSX loader, along with the normal RSX-manager runtime. If your utility media lacks BATCHIO, obtain the matching companion before using XSUB. The current distribution manifest assigns XSUB to the Utilities Disk but does not separately specify where BATCHIO is packaged.
+Place it before the program to be automated. `XSUB.COM` belongs to the **Utilities Disk**, not the current System Disk. Its protected companion, `BATCHIO.RSX`, must be in A0, along with the matched-build `R3PACK.RSX` manager runtime. If your utility media lacks BATCHIO, obtain the matching companion before using XSUB. The current distribution manifest assigns XSUB to the Utilities Disk but does not separately specify where BATCHIO is packaged.
 
-Before running the example, make `XSUB.COM`, `ED.COM`, `TYPE.COM`, and `SUBMIT.COM` available on the command search path and `BATCHIO.RSX` available in the loader's search location. Keep A0 writable for the shared queue, and use a writable working drive/user where `XDEMO.TXT` does not already exist.
+Before running the example, make `XSUB.COM`, `ED.COM`, `TYPE.COM`, and `SUBMIT.COM` available on the command search path and `BATCHIO.RSX` and `R3PACK.RSX` available in A0. Keep A0 writable for the shared queue, and use a writable working drive/user where `XDEMO.TXT` does not already exist.
 
 Save this complete procedure as `XDEMO.SUB` in the working location:
 
@@ -9623,7 +9677,7 @@ CPX LOAD name
 CPX UNLOAD name
 ```
 
-The `name` argument identifies the extension to be managed.
+The `name` argument is an unqualified CPX filename stem, with optional `.CPX`. Blank names, drive qualifiers, wildcards and other extensions are rejected.
 
 For example:
 
@@ -9667,7 +9721,7 @@ A>CPX LOAD TOOLS
 
 BetterCP/M attempts to load the specified extension.
 
-The extension must be available in the expected location and compatible with the running BetterCP/M system.
+The file must be available as `A0:TOOLS.CPX` and compatible with the running system. Keep configured carriers in A0 for reconstruction after warm boot or transient execution.
 
 If loading succeeds, the commands supplied by the extension become available through the normal command environment.
 
@@ -9681,15 +9735,13 @@ The actual commands provided depend on the extension.
 
 ### Loading Several CPXs
 
-BetterCP/M can maintain more than one CPX.
+BetterCP/M maintains an ordered **four-entry reconstruction profile**. The standard RCP entry occupies one slot, leaving three for additional packages. A configured entry still occupies its slot if its carrier is missing or fails validation.
 
-The command environment considers installed extensions in a defined order when resolving resident command names.
+`CPX LOAD name` appends a new name after the existing entries. Loading an already configured name is a successful no-op: it neither adds another entry nor changes the order. A fifth distinct entry is rejected without changing the profile.
 
-This matters when two extensions provide commands with the same name.
+Successfully reconstructed CPXs are consulted in profile order after the CCP's built-in commands and before transient lookup. The first CPX that handles a command wins. Appending a package therefore does not give it precedence over an earlier package providing the same command. `CPX LIST` shows the configured order.
 
-In ordinary use, you need not be concerned with the extension order unless a command name is duplicated.
-
-For example, installing another CPX that provides DIR may affect which resident DIR implementation is selected.
+`CPX UNLOAD name` removes the named entry and shifts later entries left, preserving their relative order. Unloading an absent name is a successful no-op. To deliberately reorder packages, remove and reload the affected entries in the desired order, keeping the four-entry limit in mind.
 
 If you need to execute a particular transient utility regardless of the resident command environment, use BetterCP/M's explicit transient-execution prefix:
 
@@ -9721,15 +9773,11 @@ Corresponding transient programs, if present, remain available through the ordin
 
 Unloading a CPX can be useful when you no longer need its commands or want to change the resident command environment.
 
-### Required Command Components
+### Removing the Standard Command Package
 
-Not every command component is necessarily optional.
+RCP is part of the selected standard environment, but the current CPX profile manager does not reserve or lock its entry. `CPX UNLOAD RCP` is allowed. Removing it takes away commands supplied by RCP, including resident DIR, ERA, REN, TYPE, COPY, MOVE, CLS and VER. Built-in CCP commands and available transient utilities remain usable; a transient is available only if its file has been installed.
 
-Some components are required for normal BetterCP/M operation.
-
-The extension-management facilities enforce the applicable restrictions.
-
-If an extension cannot be unloaded, examine the reported error rather than attempting to bypass the restriction.
+For example, the System Disk supplies `DIR.COM` but does not supply `CLS.COM`. To restore the normal command package, keep `A0:RCP.CPX` available and enter `CPX LOAD RCP`. It is appended in the usual way, so check the resulting order with `CPX LIST`.
 
 ### Recovering from an Unusable CPX
 
@@ -9814,6 +9862,8 @@ Resident System Extensions provide services that remain available while other pr
 BetterCP/M uses RSXs for several purposes, including terminal emulation, clock support, batch input, and other optional system facilities.
 
 The RSX utility allows you to manage these extensions without rebuilding the operating system.
+
+Normal carrier loading reads `A0:name.RSX`, regardless of the current drive/user. Keep the matched-build `R3PACK.RSX` runtime container in A0 too; it is required by the manager, not an extension to load with `RSX LOAD`. See Section 8.2 for installation details.
 
 ### Syntax
 
@@ -9999,7 +10049,7 @@ For more information, see Chapter 11, *Date and Time*, and Section 16.3, *TIME*.
 
 ### P2DOS Clock Compatibility
 
-BetterCP/M provides a separate RSX for compatibility with the P2DOS date-and-time interface.
+The optional `P2DOS.RSX` implements compatibility with the P2DOS date-and-time interface. It is not on the selected System Disk; the following example requires a compatible separately built carrier installed in A0.
 
 For example:
 
@@ -10170,7 +10220,7 @@ Load z80pack clock support:
 A>RSX LOAD ZPRTC
 ```
 
-Load P2DOS-compatible clock services:
+Load P2DOS-compatible clock services after separately installing the optional `P2DOS.RSX` in A0 and loading a native clock provider:
 
 ```text
 A>RSX LOAD P2DOS
@@ -10269,7 +10319,7 @@ BetterCP/M provides several commands in both resident and transient forms.
 
 | Command | Resident | Transient |
 |---|---|---|
-| CLS | Yes | `CLS.COM` |
+| CLS | Yes | `CLS.COM` (separately buildable; not on the System Disk) |
 | COPY | Yes | `COPY.COM` |
 | DIR | Yes | `DIR.COM` |
 | ERA | Yes | `ERA.COM` |
@@ -12300,7 +12350,7 @@ The TIME utility implements a SET request, but the supplied providers reject it 
 
 ### P2DOS Compatibility
 
-BetterCP/M provides `P2DOS.RSX` for applications using the P2DOS-compatible date-and-time interface.
+The optional, separately buildable `P2DOS.RSX` supports applications using the P2DOS-compatible date-and-time interface. It is not selected System Disk content; install a compatible carrier in A0 before using the example below.
 
 The extension supplies the corresponding BDOS functions through BetterCP/M's native clock service.
 
@@ -13677,9 +13727,9 @@ These references describe the commands available to users, their syntax, options
 
 ### Development Utilities
 
-BetterCP/M also provides development utilities, including traditional CP/M programming tools.
+The System Disk supplies ED. The separate Utilities Disk selection includes ZSM4 and LINK. Traditional tools such as ASM, LOAD and DDT must be obtained separately if needed; they are not selected BetterCP/M distribution contents.
 
-Examples include:
+These familiar tools have distinct purposes:
 
 **ASM** — An assembler for Intel 8080 assembly-language programs.
 
@@ -13697,7 +13747,7 @@ Where separate manuals are provided, they should be consulted for complete instr
 
 Additional programs may be supplied for system construction, diagnostics, terminal testing, or specialized file operations.
 
-For example, SYSBUILD is intended primarily for constructing BetterCP/M system images.
+For example, SYSBUILD is a system-construction tool, not a selected System Disk utility. See Section 3.2, *What Is on Each Disk*, for the distribution inventory.
 
 Terminal test utilities such as ADMTST, VT52TST, and ANSITST help verify supported terminal environments.
 
