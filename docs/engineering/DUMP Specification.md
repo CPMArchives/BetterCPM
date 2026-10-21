@@ -736,6 +736,15 @@ questions do not change the implemented DRI-compatible baseline above.
   and `80h` through `FFh`) shall appear as `.`. Do not strip high bits or send
   data bytes as terminal controls. The hexadecimal column always represents
   the original byte value; ASCII substitution does not alter search data.
+- Enhanced DUMP shall accept one exact filename in one drive/user area using
+  the existing shared BetterCP/M operand conventions, for example
+  `DUMP B7:FILE.COM`. Unqualified operands inherit the caller's drive and user;
+  drive-only qualification retains the caller's user. Do not introduce a
+  DUMP-specific DU grammar. Wildcards, compound selectors, multi-DU selections
+  and multiple files are excluded. Restore the caller's drive/user on normal
+  exit and on DUMP-handled error/cancellation paths. `/BARE` accepts ordinary
+  CP/M drive qualification only (for example `B:FILE.COM` in the current user)
+  and rejects enhanced user/DU qualification.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
