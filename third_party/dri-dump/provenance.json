@@ -1,0 +1,11 @@
+{
+  "reference_collection": "cpm-compatibility/investigations/042 - CP-M 2.2 Common Software Compatibility Assumptions/reference",
+  "source": "DUMP.ASM",
+  "executable": "software/DUMP.COM",
+  "sha256": {
+    "DUMP.ASM": "08c65ac03287ba71d5067301c020947f9d3d9f4734cfd78abfd14beb27c5b3ff",
+    "DUMP.COM": "f8dd3bb2c9c2082742307f5992f13f2d3057f9e40c55433637c0d59eac338044",
+    "LICENSE": "7aef658009d8b0a7300c8db2ae59ac7a3822c2723a0539a8194edfc5d291b094"
+  },
+  "limits": "Historical collection identifies these as DRI references. Source/executable build equivalence and an exact upstream release archive are not newly established here. The retained COM is the differential behavioral oracle."
+}

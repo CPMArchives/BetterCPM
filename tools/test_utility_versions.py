@@ -28,7 +28,11 @@ def main():
         for tail in ['/VER',' /ver  ','/VER x','x /VER','/VER /VER','/VER /B']:
             c=runner(image);data=tail.encode();c.mem[128]=len(data);c.mem[129:129+len(data)]=data
             c.run(256,limit=100000)
-            expected=banner(name)+'\r\n' if tail.strip().upper()=='/VER' else 'Invalid /VER usage.\r\n'
+            if name=='DUMP':
+                from build_dump import version_text
+                identity=version_text()
+            else:identity=banner(name)+'\r\n'
+            expected=identity if tail.strip().upper()=='/VER' else 'Invalid /VER usage.\r\n'
             assert output(c)==expected,(name,tail,output(c));count+=1
     image=(ROOT/'build/cpx/rcp.bin').read_bytes()
     listing=(ROOT/'build/cpx/rcp.lst').read_text()
