@@ -237,6 +237,22 @@ DT_TOTAL: DS 12
     return text.replace('        END\n', hook + options + metrics + paging + columns + free + whereis + decimal + '\n        END\n', 1)
 
 
+def release_banner() -> str:
+    """Static ASCII sign-on: metadata release, no assumed machine capabilities."""
+    from version_metadata import rows
+    release = next(row['implementation_version'] for row in rows()
+                   if row['component'] == 'BetterCP/M')
+    width = 62
+    edge = ' - - -' + ' ' * (width - 12) + '- - - '
+    side = '|' + ' ' * (width - 2) + '|'
+    lines = [edge, side, '|' + 'BetterCP/M'.center(width - 2) + '|',
+             ('Release ' + release).center(width).rstrip(), '',
+             'CP/M 2.2 Compatible System'.center(width).rstrip(), '',
+             'Type TYPE README.TXT for more'.center(width).rstrip(),
+             side, edge]
+    return '\r\n' + '\r\n'.join(lines) + '\r\n'
+
+
 def transient_source() -> str:
     """Prepare the shared transient body identically for both assemblers."""
     text = SOURCE.read_text(encoding="ascii")
@@ -248,6 +264,10 @@ def transient_source() -> str:
         encoding="ascii").split("; @banner-data@\n")
     text = text.replace("BC_VERLONG:                             ; verlong\n",
                         "BC_VERLONG:                             ; verlong\n" + banner_code)
+    lines = release_banner().split('\r\n')[1:-1]
+    data = '\n'.join("               DB '" + line + "',13,10" if line
+                     else "               DB 13,10" for line in lines)
+    banner_data = banner_data.replace('; @release-banner@', data)
     text = text.replace("BC_VERSION:", banner_data + "BC_VERSION:", 1)
     return text
 

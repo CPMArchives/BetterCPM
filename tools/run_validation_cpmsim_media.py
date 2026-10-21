@@ -195,7 +195,7 @@ def main():
     trace = session(args.simulator, boot / 'disks', [
         (b':VER /BANNER\r', b'A0>_ ', 30),
         (b'BYE\r', b'System halted', 30)], work / 'cold-boot.bin')
-    assert trace.count(b'An enhanced CP/M-compatible OS') >= 2
+    assert trace.count(b'CP/M 2.2 Compatible System') >= 2
     finish(work, disks, 'sysgen-roundtrip', 'Named 161-record export matches all 160 source records; decline/replace; declined/confirmed reinstall preserves user-7 sentinel and entire filesystem; installed disk cold-boots')
 
 

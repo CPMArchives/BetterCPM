@@ -59,6 +59,15 @@ Values such as processor, memory, console, and machine type must reflect the act
 
 The full banner appears on cold boot, not on every warm boot or return to the CCP.
 
+The current static `:VER /BANNER` implementation uses the same implied frame
+with the BetterCP/M name, metadata-owned release, compatibility statement and
+README guidance. It omits processor, memory, TPA, console, machine and drive
+fields because it does not query those capabilities. The sample hardware values
+above are illustrative and must not be copied into a static production banner.
+An explicit `:VER /BANNER` invocation may display the banner on demand; ordinary
+`VER` retains its concise version output. Startup invocation remains in
+`STARTUP.SUB`, outside the BIOS and permanent resident code.
+
 ## Reference Design: Utility Identification
 
 ```

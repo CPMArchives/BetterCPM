@@ -3,15 +3,25 @@
 from pathlib import Path
 from test_utility_versions import runner, output, address
 ROOT = Path(__file__).resolve().parents[1]
+from version_metadata import rows
+RELEASE = next(row['implementation_version'] for row in rows()
+               if row['component'] == 'BetterCP/M')
 EXPECTED = "\r\n" + "\r\n".join([
-    "------------------------------",
-    "        BetterCP/M 0.90",
-    "An enhanced CP/M-compatible OS",
-    "             ----",
-    "Type TYPE README.TXT for more",
-    "------------------------------",
+    " - - -" + " " * 50 + "- - - ",
+    "|" + " " * 60 + "|",
+    "|" + "BetterCP/M".center(60) + "|",
+    ("Release " + RELEASE).center(62).rstrip(),
+    "",
+    "CP/M 2.2 Compatible System".center(62).rstrip(),
+    "",
+    "Type TYPE README.TXT for more".center(62).rstrip(),
+    "|" + " " * 60 + "|",
+    " - - -" + " " * 50 + "- - - ",
 ]) + "\r\n"
 def main():
+    assert EXPECTED.isascii()
+    assert len(EXPECTED.splitlines()[1:]) == 10
+    assert max(map(len, EXPECTED.splitlines())) <= 80
     image = (ROOT / "build/utilities/VER.COM").read_bytes()
     listing = (ROOT / "build/utilities/rcp-transient.lst").read_text()
     for tail in ["/BANNER", "", "/BANNER X", "/BANN", "/BANNER /V"]:
@@ -22,7 +32,7 @@ def main():
         c.b = len(data)
         c.run(address(listing, "BC_VER"), limit=100000)
         expected = EXPECTED if tail == "/BANNER" else (
-            "\r\nBetterCP/M 0.90\r\n" if not tail else "\r\n?\r\n")
+            "\r\nBetterCP/M " + RELEASE + "\r\n" if not tail else "\r\n?\r\n")
         assert output(c) == expected, (tail, repr(output(c)))
     resident = (ROOT / "build/cpx/rcp.bin").read_bytes()
     listing = (ROOT / "build/cpx/rcp.lst").read_text()
