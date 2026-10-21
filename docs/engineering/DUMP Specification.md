@@ -592,7 +592,12 @@ questions do not change the implemented DRI-compatible baseline above.
   the visible page is eligible. It shall not implicitly restart at file offset
   zero; the user may first use `G` to position at zero when intending to search
   from the beginning. This settles the initial Find origin only; continuation,
-  overlap, wraparound and other search rules remain separate design decisions.
+  wraparound and other search rules remain separate design decisions.
+- Overlapping matches shall be reported. Next occurrence shall search from one
+  byte after the previous match's starting offset, not after the end of its
+  pattern. For example, searching `ABA` in `ABABA` finds matches at offsets
+  zero and two. This settles overlap handling; the effect of intervening paging
+  or Go To on the continuation anchor remains to be decided separately.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
