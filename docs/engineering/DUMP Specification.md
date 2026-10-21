@@ -768,6 +768,11 @@ questions do not change the implemented DRI-compatible baseline above.
   23 data rows on a 24-row Model 4 screen, or 39 on a backend reporting 40 rows.
   `/40` changes the data-row format, not the reported physical screen height;
   do not assume extra rows or usable columns that the backend does not report.
+- Before entering `/P`, verify that the reported screen dimensions fit the
+  selected data-row layout and at least one data row plus the shared bottom
+  row. If they do not, report the required dimensions and return to the CCP.
+  Do not truncate the layout or silently select `/40`. The diagnostic may
+  suggest `/40` when its compact layout would fit the reported screen.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
