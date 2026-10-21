@@ -693,6 +693,15 @@ questions do not change the implemented DRI-compatible baseline above.
   the shared bottom row, without a bell, modal prompt or acknowledgment.
   A partial final page remains visible until navigation away or quit; reaching
   EOF in the paged viewer does not itself exit the viewer.
+- Before entering `/P`, DUMP shall verify that the loaded monitor/provider
+  arrangement has a usable backend and supports the screen operations needed
+  for page redraw, cursor positioning and the shared bottom row. A loaded name
+  alone is not sufficient. If the capabilities are unavailable, issue a clear
+  diagnostic identifying the missing requirement and return to the CCP; do not
+  automatically load providers or silently substitute unpaged output. Ordinary
+  enhanced streaming output and `/BARE` shall remain usable without a loaded
+  monitor. The broader availability/usability problem is explicitly deferred
+  for architectural reconsideration, not considered solved by this requirement.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including

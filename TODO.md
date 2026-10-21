@@ -697,6 +697,13 @@ reconciliation gate precede the corresponding implementation program.
 
 ## Post-1.0 considerations
 
+- [ ] Revisit interactive utilities' dependence on explicitly loaded monitor
+  support. DUMP `/P` and VIEW expose the same usability gap: provider/backend
+  capabilities may be missing when a user invokes an interactive tool. Evaluate
+  a consistent system-wide policy rather than treating per-utility capability
+  checks as the final solution. DUMP initially diagnoses unavailable required
+  capabilities and returns; automatic loading and silent fallback are not
+  adopted by this follow-up item.
 - [ ] Consider an unloadable system-information RSX for SYSINFO. Load the
   provider temporarily, query additional system/platform capabilities through
   extended BDOS services, optionally save a snapshot such as `SYSTEM.INF`, then
