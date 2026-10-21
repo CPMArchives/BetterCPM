@@ -621,6 +621,13 @@ questions do not change the implemented DRI-compatible baseline above.
   pairs. The limit applies to decoded bytes, not the length of a spaced hex
   entry. Overlong patterns shall receive a clear diagnostic and permit re-entry;
   they shall never be silently truncated or searched as a shorter pattern.
+- If a valid new Find completes without a match, display `Pattern not found`
+  and leave the page unchanged. The new pattern becomes active, replacing the
+  previous pattern, so the user may reposition and continue searching for it
+  with `.` or `,`. Since no match has been established, continuation uses the
+  displayed page's first byte as its anchor (forward inclusive, backward
+  strictly before). This completed no-match outcome is distinct from ESC
+  cancellation, which preserves the previous pattern and continuation state.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
