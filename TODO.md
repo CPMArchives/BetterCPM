@@ -424,7 +424,7 @@ redistributable existing utility; an unchecked item does not by itself block
   selection such as `ARC /USQ README.TQT`; these are alternative candidate forms,
   not finalized syntax. Settle detection/selection rules and the supported
   SQ/USQ, CR/UNCR and CrLZH formats during the design phase.
-- [ ] Implement `DUMP.COM` against the [initial DRI-compatible specification](docs/engineering/DUMP%20Specification.md): native Z80/ZSM4, ordinary drive-qualified input and `/VER`; enhancements deferred until the clone baseline is established.
+- [x] Implement `DUMP.COM` against the [initial DRI-compatible specification](docs/engineering/DUMP%20Specification.md): native Z80/ZSM4, ordinary drive-qualified input and `/VER`; enhancements deferred until the clone baseline is established.
 - [x] Implement `SUBMIT.COM`.
 - [x] Implement `XSUB.COM`.
 - [ ] Implement `ED.COM`.

@@ -28,6 +28,7 @@ BUILDERS = (
     "ren",
     "type",
     "pip",
+    "dump",
     "warm",
     "stat",
     "time",

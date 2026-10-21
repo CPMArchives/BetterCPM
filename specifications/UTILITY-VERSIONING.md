@@ -16,6 +16,13 @@ Resident output:
 BetterCP/M DIR 1.0 (Resident, RCP Build 001)
 ```
 
+DUMP's new implementation uses the finalized
+[visual identity](VISUAL-IDENTITY.md) compact layout: `DUMP 1.0 (Build 001)`
+followed by the implied-corner BetterCP/M Utilities identification. Its version
+and build still come from the same metadata; standalone recognition, invalid-use
+handling and no-file-access requirements remain unchanged. Existing utilities
+are not restyled by this DUMP-specific change.
+
 All resident RCP commands share the RCP package identity and build sequence. Each independent transient utility has its own sequence. Existing CPX/RSX `/V` facility reporting and subsystem interface/implementation versions remain separate and unchanged. Adopted third-party binaries are outside this contract.
 
 ## Authoritative metadata and numbering

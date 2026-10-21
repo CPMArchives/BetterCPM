@@ -1,0 +1,130 @@
+; BetterCP/M DUMP: DRI-compatible record-based hex display, native Z80.
+; DRI DUMP.ASM defines the observable baseline, not instruction selection.
+; Any pending key stops at a line boundary WITHOUT consuming the key.
+; No close, DU parser, exact-byte EOF inference, or forced warm boot.
+BDOS    EQU     0005H
+FCB     EQU     005CH
+BUFFER  EQU     0080H
+        CSEG
+        .PHASE  0103H
+START:
+        LD      (OLDSP),SP
+        LD      SP,STKTOP
+        LD      HL,0081H
+        LD      A,(0080H)
+        LD      B,A
+        LD      DE,UV_TEXT
+        CALL    UV_QUERY
+        JP      C,RETURN
+        XOR     A
+        LD      (FCB+32),A
+        LD      DE,FCB
+        LD      C,15
+        CALL    BDOS
+        CP      0FFH
+        JR      NZ,OPENED
+        LD      DE,MISSING
+        LD      C,9
+        CALL    BDOS
+        JR      FINISH
+OPENED:
+        LD      A,128
+        LD      (INDEX),A
+        LD      HL,0
+LOOP:
+        PUSH    HL
+        CALL    NEXTBYTE
+        POP     HL
+        JR      C,FINISH
+        LD      B,A
+        LD      A,L
+        AND     15
+        JR      NZ,VALUE
+        CALL    NEWLINE
+        LD      C,11
+        CALL    SERVICE
+        RRCA
+        JR      C,FINISH
+        LD      A,H
+        CALL    HEXBYTE
+        LD      A,L
+        CALL    HEXBYTE
+VALUE:
+        INC     HL
+        LD      A,' '
+        CALL    CHARACTER
+        LD      A,B
+        CALL    HEXBYTE
+        JR      LOOP
+FINISH:
+        CALL    NEWLINE
+RETURN:
+        LD      SP,(OLDSP)
+        RET
+; Preserve the display registers across the public BDOS boundary.
+SERVICE:
+        PUSH    BC
+        PUSH    DE
+        PUSH    HL
+        CALL    BDOS
+        POP     HL
+        POP     DE
+        POP     BC
+        RET
+CHARACTER:
+        PUSH    DE
+        LD      E,A
+        LD      C,2
+        CALL    SERVICE
+        POP     DE
+        RET
+NEWLINE:
+        LD      A,13
+        CALL    CHARACTER
+        LD      A,10
+        JP      CHARACTER
+HEXBYTE:
+        PUSH    AF
+        RRCA
+        RRCA
+        RRCA
+        RRCA
+        CALL    NIBBLE
+        POP     AF
+NIBBLE:
+        AND     15
+        ADD     A,'0'
+        CP      '9'+1
+        JR      C,DIGIT
+        ADD     A,7
+DIGIT:
+        JP      CHARACTER
+NEXTBYTE:
+        LD      A,(INDEX)
+        CP      128
+        JR      NZ,BUFFERED
+        LD      DE,FCB
+        LD      C,20
+        CALL    BDOS
+        OR      A
+        JR      Z,BUFFERED
+        SCF
+        RET
+BUFFERED:
+        LD      E,A
+        LD      D,0
+        INC     A
+        LD      (INDEX),A
+        LD      HL,BUFFER
+        ADD     HL,DE
+        LD      A,(HL)
+        OR      A
+        RET
+MISSING: DB     13,10,'NO INPUT FILE PRESENT ON DISK$'
+; @dump-version@
+INDEX:  DB      0
+OLDSP:  DW      0
+        DS      128
+STKTOP:
+        .DEPHASE
+        END     START

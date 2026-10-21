@@ -1,6 +1,8 @@
 # BetterCP/M `DUMP.COM` Engineering Specification
 **Initial DRI-compatible baseline**
 
+Implementation and evidence: [DUMP Baseline Qualification](DUMP%20Baseline%20Qualification.md).
+
 ## 1. Purpose
 
 `DUMP.COM` displays the contents of a CP/M file as hexadecimal bytes.
