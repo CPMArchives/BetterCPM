@@ -794,6 +794,18 @@ questions do not change the implemented DRI-compatible baseline above.
   `Read error at XXXXXXXX` in the shared bottom row, using the failing byte
   offset in the enhanced eight-digit hexadecimal format. Do not report
   `Pattern not found` or `No further matches` for an incomplete search.
+- Parse and validate the complete command tail before opening the input file.
+  Unknown switches, invalid values, extra operands and incompatible option
+  combinations shall produce a diagnostic and return to the CCP, never fail
+  silently. Identify the offending option or operand where applicable; for
+  example, `DUMP: Unknown option /LEN.` Deferred `/LEN=` and `/FIND=` options
+  are unknown options in this version. Repeated independent flags are harmless;
+  for repeated value options such as `/FROM=`, the last valid value wins.
+  Every occurrence must be valid: a later valid occurrence does not excuse an
+  earlier malformed one. `/VER` remains standalone and `/BARE` rejects all
+  enhancement options. Diagnostic wording may distinguish unknown options,
+  invalid values and incompatible combinations rather than reporting only
+  generic invalid usage.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
