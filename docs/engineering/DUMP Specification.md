@@ -740,10 +740,24 @@ questions do not change the implemented DRI-compatible baseline above.
   ```
 
   A full row is 37 columns. Normal wide mode retains individually spaced hex
-  bytes. `/40` remains an invocation option, never applies to `/BARE`, and
+  bytes in the format specified below. `/40` remains an invocation option,
+  never applies to `/BARE`, and
   does not alter search or byte-offset semantics. `/40` is required in the
   initial enhanced release; inclusion is not conditional on implementation
   cost. It uses the same viewer, search and navigation behavior as wide mode.
+- A normal enhanced wide data row shall occupy 76 columns: eight uppercase
+  hexadecimal offset digits, two spaces, eight individually spaced byte
+  values, two spaces between the two eight-byte groups, eight more individually
+  spaced byte values, two spaces, and sixteen ASCII characters. For example:
+
+  ```text
+  00001230  00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E 0F  ................
+  ```
+
+  This format applies to enhanced streaming and paged wide output. It fits an
+  80-column screen without wrapping; `/P` shall require at least 76 reported
+  columns for wide data rows. `/BARE` retains its original hexadecimal-only
+  format.
 - The enhanced ASCII column shall display bytes `20h` through `7Eh`
   directly, including spaces. Every other byte (`00h` through `1Fh`, `7Fh`,
   and `80h` through `FFh`) shall appear as `.`. Do not strip high bits or send
