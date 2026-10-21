@@ -3602,3 +3602,15 @@ remains 3,454 bytes and unloaded TPA 53K. The final-acceptance document and V051
 evidence index retain raw artifacts and explicit harness exclusions. Merge the
 correction, finish the named accounting/profile gates and then repeat final
 acceptance on the merged revision; overall validation is not closed.
+
+
+## V052 — final acceptance complete
+
+All 430 required cards are accounted for: 428 qualified and two intentional A0
+lookup profile differences. Fresh clean merged-source acceptance passes on both
+System Disks, including the formerly blocked PIP host endpoints. Unloaded TPA
+remains 53K; the intact extent-full model measures 30/40 private stack bytes.
+See [final acceptance](SYSTEM-VALIDATION-FINAL-2026-10-20.md), its V052 matrix
+and evidence index for exact revisions, hashes, scopes and harness exclusions.
+The pending closure was recovered from its durable verified archive after its
+temporary checkout expired. Utilities/CPM Tools disks remain separate work.

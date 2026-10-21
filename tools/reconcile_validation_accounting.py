@@ -74,23 +74,25 @@ def main():
         review = json.loads(a.reviewed.read_text())
         assert review['baseline_sha256'] == report['sha256']
         for group in review['groups']:
-            assert group['status'] in ('PASS_CONTROLLED','PASS_EXTERNAL','FAIL') and group['scope']
+            assert group['status'] in ('PASS_CONTROLLED','PASS_EXTERNAL','PASS_NATIVE','PASS_PROFILE','PROFILE_DIFFERENCE','NOT_APPLICABLE','FAIL','BLOCKED') and group['scope']
             for source in group['evidence']:
                 assert sha(Path(source['path'])) == source['sha256'], source
                 evidence[source['path']] = source['sha256']
             for number in group['cards']:
                 assert number not in reviewed and number in canonical
+                classification = next(r['classification'] for r in catalog if r['ledger_entry'] == number)
+                assert group['status'] != 'NOT_APPLICABLE' or classification == 'OPTIONAL', number
                 reviewed[number] = group
     rows = []
     for case in catalog:
         number = case['ledger_entry']
         row, source = observed.get(number, ({}, ''))
         classification = case['classification']
-        if number in reviewed and reviewed[number]['status'] == 'FAIL':
-            status = 'FAIL'
+        if number in reviewed and reviewed[number]['status'] in ('FAIL','BLOCKED','PROFILE_DIFFERENCE'):
+            status = reviewed[number]['status']
         elif row.get('status') == 'P':
             status = 'PASS_SUITE'
-        elif number in reviewed and classification == 'REQUIRED':
+        elif number in reviewed and classification in ('REQUIRED','OPTIONAL'):
             status = reviewed[number]['status']
         elif number in external and classification == 'REQUIRED':
             status = 'PASS_EXTERNAL'
@@ -108,26 +110,29 @@ def main():
                      'executable': case['executable'], 'classification': classification,
                      'requirement': case['requirement'], 'oracle': oracles[number]['oracle'],
                      'cpmsim_suite_status': row.get('status', 'NOT_CAPTURED'),
-                     'cpmsim_accounting': status, 'suite_evidence': source,
+                     'accounting': status, 'suite_evidence': source,
                      'external_evidence': ';'.join(external.get(number, []) + [e['path'] for e in reviewed.get(number, {}).get('evidence', [])]),
                      'reviewed_scope': reviewed.get(number, {}).get('scope', ''),
-                     'native_card_status': 'SEPARATE_EVIDENCE_REVIEW'})
+                     'cpmsim_scope': reviewed.get(number, {}).get('platforms', {}).get('cpmsim', 'Actual suite/external row or shared-code oracle; see platform acceptance record'),
+                     'native_card_status': reviewed.get(number, {}).get('platforms', {}).get('model4', 'Native group/compiled-common-code evidence; no invented per-card transcript')})
     a.output.mkdir(parents=True, exist_ok=True)
     with (a.output / 'cards.tsv').open('w') as f:
         writer = csv.DictWriter(f, fieldnames=list(rows[0]), delimiter='\t', lineterminator='\n')
         writer.writeheader()
         writer.writerows(rows)
-    summary = {'status': 'ACCEPTANCE_BLOCKED' if any(r['cpmsim_accounting'] == 'FAIL' for r in rows) else 'ACCOUNTING_OPEN', 'source_revision': report['source']['revision'],
+    incomplete = any(r['accounting'] in ('OPEN_RECONCILIATION','OPTIONAL_PROFILE_REVIEW') for r in rows)
+    blocked = any(r['accounting'] in ('FAIL','BLOCKED') for r in rows)
+    summary = {'schema': 2, 'status': 'ACCEPTANCE_BLOCKED' if blocked else ('ACCOUNTING_OPEN' if incomplete else 'ACCOUNTING_RECONCILED'), 'source_revision': report['source']['revision'],
                'baseline_sha256': report['sha256'], 'suite_revision': revision,
                'catalog_sha256': sha(catalog_path), 'oracles_sha256': sha(oracle_path),
                'cards': len(rows), 'raw_printed_rows': raw_rows, 'captured_suite_rows': len(observed),
                'suite_counts': dict(collections.Counter(r[0]['status'] for r in observed.values())),
-               'accounting_counts': dict(collections.Counter(r['cpmsim_accounting'] for r in rows)),
+               'accounting_counts': dict(collections.Counter(r['accounting'] for r in rows)),
                'open_required_by_program': dict(collections.Counter(
-                   r['executable'] for r in rows if r['cpmsim_accounting'] == 'OPEN_RECONCILIATION')),
-               'open_required_cards': [r['card'] for r in rows if r['cpmsim_accounting'] == 'OPEN_RECONCILIATION'],
+                   r['executable'] for r in rows if r['accounting'] == 'OPEN_RECONCILIATION')),
+               'open_required_cards': [r['card'] for r in rows if r['accounting'] == 'OPEN_RECONCILIATION'],
                'evidence_sha256': evidence, 'cards_sha256': sha(a.output / 'cards.tsv'),
-               'limits': 'Not final acceptance. Open means not yet reconciled to an exact fresh oracle, not failed. Native group summaries, model checks and unnamed termination witnesses require separate card review; no pass rows are invented.'}
+               'limits': 'Card accounting only, not final release acceptance. Suite rows remain actual observations. Controlled/private-provider and platform scopes are explicit; PROFILE_DIFFERENCE is not generic CP/M PASS. Native aggregate/common-code evidence is not expanded into invented per-card transcripts. Independent release/device gates still apply.'}
     (a.output / 'summary.json').write_text(json.dumps(summary, indent=2) + '\n')
     print(json.dumps({k: summary[k] for k in ('cards', 'captured_suite_rows', 'suite_counts', 'accounting_counts', 'open_required_by_program')}, indent=2))
 

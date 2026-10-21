@@ -48,6 +48,10 @@ def main():
     assert len(captured) == 1
     cpu = captured[0]
     state = f.symbols()
+    emitted = f.IMAGE.read_bytes()
+    end = state['UB_OLDSP'] - f.BASE
+    cpu.mem[f.BASE:state['UB_OLDSP']] = emitted[:end]
+    assert bytes(cpu.mem[f.BASE:state['UB_OLDSP']]) == emitted[:end]
     sp = cpu.sp
 
     def call(number, value=0):

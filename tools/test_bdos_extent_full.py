@@ -23,8 +23,13 @@ def main():
     finally:
         foundation.Z80 = original
     cpu, = captured
-    memory = bytes(cpu.mem)
     labels = foundation.symbols()
+    emitted = foundation.IMAGE.read_bytes()
+    # Undo the foundation's legacy cache fixture before testing public rollover.
+    end = labels['UB_OLDSP'] - foundation.BASE
+    cpu.mem[foundation.BASE:labels['UB_OLDSP']] = emitted[:end]
+    assert bytes(cpu.mem[foundation.BASE:labels['UB_OLDSP']]) == emitted[:end]
+    memory = bytes(cpu.mem)
     sp = cpu.sp
     low = [labels['UB_STKTOP']]
     push = cpu.push

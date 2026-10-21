@@ -2,10 +2,10 @@
 
 ## Status
 
-**Acceptance remains open.** Steps 7, 8 and 9 remain closed for their recorded
-baselines. V050 starts final accounting and clean-build acceptance; it is not an
-accepted release. A fresh, independent disk-full oracle found a production defect
-which the selected returning suite groups do not exercise.
+**V052 acceptance is complete for the core OS and both System Disks**, for
+merged revision `408560d528e353288c903289c1a799015331dc30` and the exact images
+below. No release-blocking findings remain within that scope. The two A0 lookup
+profile differences are explicit; V050 remains a failed historical candidate.
 
 Scope remains the core OS and two System Disks. Documentation alignment follows
 validation; the Utilities and CP/M Tools disks have separate qualification.
@@ -138,7 +138,7 @@ accepted result hashes, raw evidence and verified durable archive. The original
 V050 failure remains a failure for those original bytes. This is a qualified
 correction checkpoint, **not closure of overall validation**.
 
-## Remaining acceptance gates
+## Historical gates following V051 (resolved by V052)
 
 1. Merge the V051 correction checkpoint. Its development-image DRI/native and
    affected regression checks pass; retain V050 as the failed candidate.
@@ -156,3 +156,84 @@ states and compiled artifacts. Every archived file was reopened and checked
 against its SHA-256 manifest. The evidence index records the durable local
 archive path, archive hash and manifest hash. This preserves the failed
 candidate rather than replacing its evidence with corrected results.
+
+
+## V052 — clean merged-source acceptance complete
+
+The isolated clean build of merged revision
+`408560d528e353288c903289c1a799015331dc30` passes boot, identity, manifest,
+CONFIG fingerprint, file-integrity and independent filesystem checks. The
+accepted images match the qualified V051 bytes:
+
+| Platform | SHA-256 | Files / free space |
+| --- | --- | --- |
+| cpmsim | `6823e809d2e52ab978bd37646b9f201ff3a074fc910fdd0ec1df780030e8fae2` | 30 / 148 KiB |
+| Model 4 | `e748de7d6cf2da503a1d5887c70568011bd8aeb5d3264a1d3113c369b17cc19e` | 29 / 596 KiB |
+
+The [V052 card matrix](SYSTEM-VALIDATION-FINAL-V052-CARDS.tsv) accounts for
+all 627 pinned-suite cards. Of 430 required cards, 273 have actual canonical
+suite passes, 99 reviewed external passes, 56 controlled compiled-code passes
+and two documented profile differences; none remains open, blocked or failed.
+Actual suite observations remain 273 pass, 115 not run and 24 observed among
+412 canonical captured rows. Supplemental evidence does not rewrite not-run
+suite rows into passes or invent native per-card transcripts from group counts.
+
+Cards 0493/0494 require current-DU-only command lookup in the generic oracle.
+BetterCP/M intentionally searches A0 after the current DU, as specified in
+[CCP Fixed A0 Lookup](../engineering/CCP%20Fixed%20A0%20Lookup.md). Current-DU
+precedence, exact qualified lookup and caller-DU restoration pass. These are
+profile differences, not generic CP/M passes. Optional Function 37 profile
+cards 0435/0523 pass; optional structured physical-error result card 0413 is
+not selected. Required ordinary operator error recovery is tested separately.
+The remaining classifications retain 119 non-guaranteed not run, 24 observed,
+one external profile observation and 50 outside baseline.
+
+The main acceptance cohort covers 25 cpmsim tasks, ten native tasks and six
+native workflow tasks. Forty completed directly. The initial cpmsim fault
+invocation omitted required host arguments and ran no guest test; its corrected
+invocation passes all three recovery scenarios. The fresh runs cover returning
+conformance groups, console input/output, read-only behavior, CCP/full-TPA
+returns, directory-full comparison with DRI, native documentary probes, monitor
+protocols and both backends, COPY/MOVE, batch operation, real media changes,
+configuration/export/install/cold boot and repeated release workflows. Independent
+before/after media, shipped-file and filesystem audits are retained.
+
+Supplemental compiled-code and actual cpmsim checks cover the previously open
+console, IOBYTE, error, BIOS, CCP and allocation cards, with private-provider
+and synthetic-controller limits stated per evidence group. Common BDOS/CCP
+bytes match across platforms. Fresh unchanged WordStar edit/save/return and
+historical MM CONFIG 3.10 opening-menu witnesses pass; the latter does not
+claim MM configuration writes. The actual native full-TPA run passes RET,
+jump-to-zero, Function 0 and oversize rejection from B31 using A7 programs.
+It uses queued SUBMIT commands and explicit input gates. The earlier fixed-delay
+attempt and legacy boundary startup/launch failures are excluded harness
+attempts, not guest failures or passes; their raw evidence remains retained.
+
+After the user exited their daily cpmsim normally, the fresh PIP printer and
+auxiliary endpoint check and DRI comparison passed, resolving the shared-endpoint
+blocker. No user session was killed or fed test input. No physical clock was
+changed. Emulator profiles do not certify physical printer, serial or clock
+hardware. Other hardware/profile limits remain as documented in Steps 7–9.
+
+The strengthened extent-full test restores the entire compiled instruction
+prefix instead of inheriting a legacy fixture cache patch. All 12 clean/dirty
+EX/S2 cases pass with **30/40 private stack bytes** used, superseding the old
+28-byte measurement. BDOS remains 3,454 bytes, CCP 5,482 bytes, and unloaded TPA
+53K. No production source changes followed these acceptance runs. Supplementary
+runners are hashed independently, not represented as part of tested revision 408560d.
+Accounting checks confirm that FAIL/BLOCKED/profile differences override suite
+passes and that required cards cannot be excluded as optional. Runner syntax
+and whitespace checks pass.
+
+The [V052 evidence index](SYSTEM-VALIDATION-FINAL-V052-EVIDENCE.json) identifies
+reviewed evidence and the durable 8,486-file archive. Every regular file was
+reopened and SHA-256 checked when archived. The pending closure checkout later
+expired before its commit was pushed; its runner sources and card matrix were
+recovered byte-for-byte from that verified archive, and this closure prose was
+reconstructed from the retained results. Recovery introduced no production
+changes or new test verdicts.
+
+Core OS/two-System-Disk validation is closed for those revision/image identities.
+Documentation is being completed independently (the User's Manual is complete).
+Utilities and CP/M Tools disks remain separate completion and qualification work.
+Future production changes require appropriate regression and acceptance checks.
