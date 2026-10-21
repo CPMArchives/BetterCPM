@@ -50,7 +50,7 @@ All membership or layout changes require discussion with the maintainer.
 - General-purpose full-screen editor: adopt an existing program; exact program TBD.
 - ZSM4
 - LINK
-- Debugger: TBD.
+- DDT.COM: selected debugger; begin with a behavioral clone of DRI DDT, then consider additional features. Implementation pending.
 - Standalone Z80 disassembler: exact program TBD.
 - Archive utility: likely LU or NULU; selection TBD.
 - Compression tools: SQ/USQ, CR/UNCR, CrLZH; exact artifacts TBD.

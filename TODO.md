@@ -411,7 +411,12 @@ redistributable existing utility; an unchecked item does not by itself block
 - [ ] Implement `ED.COM`.
 - [ ] Implement `ASM.COM`.
 - [ ] Implement `LOAD.COM`.
-- [ ] Implement `DDT.COM`.
+- [ ] Implement `DDT.COM`, the selected Utilities Disk debugger. Start with a
+  behavioral clone of DRI DDT, establishing its command and debugging behavior
+  as the baseline; consider additional features after that baseline is working.
+  Identify and retain the historical reference/version and its provenance before
+  implementation. Detailed engineering specification and extension scope remain
+  to be settled.
 - [ ] Implement a BetterCP/M `MOVCPM.COM` equivalent for supported memory and
   resident-system configurations.
 - [x] Implement `SYSGEN.COM` installation of the running A: system on a
