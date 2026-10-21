@@ -1,0 +1,527 @@
+{
+  "status": "PASS_WITH_DOCUMENTED_PROFILE_DIFFERENCES",
+  "scope": "Core OS and two System Disks only",
+  "source_revision": "408560d528e353288c903289c1a799015331dc30",
+  "accounting": {
+    "schema": 2,
+    "status": "ACCOUNTING_RECONCILED",
+    "source_revision": "408560d528e353288c903289c1a799015331dc30",
+    "baseline_sha256": "6823e809d2e52ab978bd37646b9f201ff3a074fc910fdd0ec1df780030e8fae2",
+    "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+    "catalog_sha256": "361d04e8455f282f673ab15f0d7563a0c6874355dac93b0862bdac1f00606028",
+    "oracles_sha256": "76369ebeb80e6a30e31d35dff73c038ab0cc9f74ac1b4dc5123bd953737ab6a0",
+    "cards": 627,
+    "raw_printed_rows": 414,
+    "captured_suite_rows": 412,
+    "suite_counts": {
+      "P": 273,
+      "-": 115,
+      "O": 24
+    },
+    "accounting_counts": {
+      "PASS_SUITE": 273,
+      "NOT_RUN_NONGUARANTEED": 119,
+      "PASS_CONTROLLED": 56,
+      "PASS_EXTERNAL": 99,
+      "OUTSIDE_BASELINE": 50,
+      "OBSERVED_EXTERNAL_PROFILE": 1,
+      "OBSERVED": 24,
+      "NOT_APPLICABLE": 1,
+      "PASS_PROFILE": 2,
+      "PROFILE_DIFFERENCE": 2
+    },
+    "open_required_by_program": {},
+    "open_required_cards": [],
+    "evidence_sha256": {
+      "/private/tmp/bettercpm-v052-accounting/returning/bdostest-vo0cw82u/result.json": "b6f194adc6defca050fe8dfc007285a3336d57f3a69d0b29bfb4ec063131a280",
+      "/private/tmp/bettercpm-v052-accounting/returning/biostest-qp5733u3/result.json": "8899fdea7f8ef209a85e997f91784b116d58cdc07d0883542f5676f570690d13",
+      "/private/tmp/bettercpm-v052-accounting/returning/ccptest-a_o4osam/result.json": "bc110fcc91e11234b628ed01b7bd606af138cdbbbf38945dec8aa86fb72fa982",
+      "/private/tmp/bettercpm-v052-accounting/returning/cputest-uevztzih/result.json": "f92a838b27784271dc99beffa867170c051075e47178cd20a8b4c41d44a58e3e",
+      "/private/tmp/bettercpm-v052-accounting/returning/dirtest-oflwomyg/result.json": "9b9c456d83e86243b0bb2359f2e18f8209c207601b00bf80f10385f3860980b6",
+      "/private/tmp/bettercpm-v052-accounting/returning/disktest-x90yebq1/result.json": "9dd3d3269d9c943c02e4366ef50ac98983cfd3836e48d8cf94836e7213ea4a72",
+      "/private/tmp/bettercpm-v052-accounting/returning/ecotest-m0s09usu/result.json": "3c415ce845f65e37e3badccb1f99eec19b93c104239b565466b058441995af7c",
+      "/private/tmp/bettercpm-v052-accounting/returning/entrytst-zo21o675/result.json": "bd206c073db7aebc0b716b323708b6f1f2a0d94e0304ee81c8c860d32b0b8b47",
+      "/private/tmp/bettercpm-v052-accounting/returning/errtest-7mi_dwms/result.json": "403f7bc9acdd960ed29029a205921a05abd9d100ae3dd379b2f0ff8398bdacb9",
+      "/private/tmp/bettercpm-v052-accounting/returning/filetest-2jsfkrmn/result.json": "8a561f6b376a459a74f72d89bd5bad579de6ef3450cf3dccc52027c276131f46",
+      "/private/tmp/bettercpm-v052-accounting/returning/randtest-s4xwl_cz/result.json": "bae06d8b113b4d0ab707db0764afbee89fca62b0d1f96f42ac07f013269ba564",
+      "/private/tmp/bettercpm-v052-accounting/external/console-output/constest-output-a8u1hmb8/result.json": "21f62fb914c5de9704449e808dfe850a08f5ae67e311fc26e498757d6f8d5a6c",
+      "/private/tmp/bettercpm-v052-accounting/external/console-input/constest-input-3co2beqk/result.json": "af05d2eb91510473a58476cb50ff29a58da897a0bde0964461315a5326364c53",
+      "/private/tmp/bettercpm-v052-accounting/external/readonly/readonly-outcomes-ppgeqag6/result.json": "598686ce6cd91a3ff405ce3f60b45cf1c9b7f5e1137f5b4dbd4986e3d92f7d1e",
+      "/private/tmp/bettercpm-v052-accounting/external/ecology/resident-ecology-f_rwyr7y/result.json": "eafa14f9cd0a414a0bfff7a3e0480647e0034f47f497395b177b730447ede48a",
+      "/private/tmp/bettercpm-v052-intact-documentary/result.json": "b9d079e81fcd0da1212201915ecd2ef6961c30384e17d3cfb8234b55b1bbc388",
+      "/private/tmp/bettercpm-v052-core-models/test_unified_bdos.txt": "55f7ed5e80319027e805af816711ee7bc7f7e5ccf97f5de54eb60a57a2ee8b47",
+      "/private/tmp/bettercpm-v052-core-models/test_ccp.txt": "9e80a8c675556443b8beb496c752182718b6793d418b23176777d585da9e92aa",
+      "/private/tmp/bettercpm-v052-acceptance/cpmsim/minimal-returns/ccp-returns-txy87twg/result.json": "822da3585afd99c95c339f28d9a439e7d3390642adc8507f9c10eb59ac7b6fdc",
+      "/private/tmp/bettercpm-v052-acceptance/cpmsim/full-tpa/ccp-returns-bu1vz8gb/result.json": "09689edd5199a90ba8e3894c463f436d44f001118d5f5a8724e3c691bb1e64b2",
+      "/private/tmp/bettercpm-v052-acceptance/cpmsim/batch/result.json": "d9adaea63f60bd170a1c20cf7173768b1486ac018a94a9e4d0692df874aaf97b",
+      "/private/tmp/bettercpm-v052-acceptance/cpmsim/directory-full/result.json": "ea715a0ec7e10d2e94eda5cfdf88741482117e79095cd7718f1f878a1435b886",
+      "/private/tmp/bettercpm-v052-intact-extent/result.txt": "373a2ae0e5d15fd4aa56997c2ee141eca2fe47cad0a4eb57a52a90a5d8dabae4",
+      "/private/tmp/bettercpm-v052-r3-character-accounting/result.json": "0e9217f31d9e089ee6c5f84dbb35fa89abb447bf04233a8505e10bb2549d546f",
+      "/private/tmp/bettercpm-v052-r3-failure-accounting/result.json": "b58c87825c2a844d6a536e9b555314d4595bcdad61b5b1388404127feab79cbe",
+      "/private/tmp/bettercpm-v052-r8-ccp-accounting/result.json": "41c635cde3c50ff2713b27208b69bbbb74ffb2d4f0fec31d227c40b35d21dace",
+      "/private/tmp/BetterCPM-pip-continuation/docs/engineering/CCP Fixed A0 Lookup.md": "e9806eeed46d378af49a4164ee29e653dde8496685648b388fe3fcdaf694204c",
+      "/private/tmp/bettercpm-v052-r2-cpmsim-media-change/result.json": "6a6dcbb6eb8e77995e9c62eacfddff6f3a714b1f8cd19132180ad6f95ab9cd5f",
+      "/private/tmp/bettercpm-v052-acceptance/workflows/media-write/result.json": "6662b245bc6b97c0daa149d9217f491c3cb32c0a41ddc50d2a21eaa7f0f3a9bd",
+      "/private/tmp/bettercpm-v052-acceptance/workflows/media-write/file-audit/result.json": "1d7fc0fb32c341321ff2339b69653a0c9f8024d6f1b979991fe615f91fd92cff",
+      "/private/tmp/bettercpm-v052-acceptance/workflows/media-reset/result.json": "63ae45608e286b0dab0895a1de73c1328bc941b62765469bd1177abd9a8949e7",
+      "/private/tmp/bettercpm-v052-acceptance/workflows/media-reset/file-audit/result.json": "1d7fc0fb32c341321ff2339b69653a0c9f8024d6f1b979991fe615f91fd92cff",
+      "/private/tmp/bettercpm-v052-core-models/test_bios.txt": "1d63b35c10e058bfc4a515884113392066f1aa18df285eb0c2b3d99f3140c0ef",
+      "/private/tmp/bettercpm-v052-core-models/result.json": "57d3b6d46814af8bdc5a5b7614ec0ebc6667b5bd59a885c251976cb0e6edab43",
+      "/private/tmp/bettercpm-v052-core-models/test_bios_retry.txt": "1e6a1e138786d898dd4d1ec8fcaa1e2fe0bb05e72026e744c85c0b0e1e755a91",
+      "/private/tmp/bettercpm-v052-acceptance/cpmsim/faults-r2/operator-recovery-ar54j3d3/result.json": "4edfa213d0278a52f4408fa923bc01a514ee62da99cf23f892e2bbcd19b75a20",
+      "/private/tmp/bettercpm-v052-acceptance/native/faults/result.json": "a015416de9be8f7811224619584aec97a5d0f25cfab5f86a8ca58fd5f7916586",
+      "/private/tmp/bettercpm-v052-acceptance/native/faults/abort/file-audit/result.json": "1d7fc0fb32c341321ff2339b69653a0c9f8024d6f1b979991fe615f91fd92cff",
+      "/private/tmp/bettercpm-v052-acceptance/native/faults/ignore/file-audit/result.json": "1d7fc0fb32c341321ff2339b69653a0c9f8024d6f1b979991fe615f91fd92cff",
+      "/private/tmp/bettercpm-v052-acceptance/native/faults/suspended/file-audit/result.json": "1d7fc0fb32c341321ff2339b69653a0c9f8024d6f1b979991fe615f91fd92cff",
+      "/private/tmp/BetterCPM-pip-continuation/docs/engineering/BDOS-BAD-SECTOR-RECOVERY.md": "9c562eb1777b2c952a5d6ebac76383f01a60695ee1ecf01517b8c1d80dd10e4c"
+    },
+    "cards_sha256": "0357a14eebd301dfcc292e16e3a2f30aeee2f1365fc51c18d147443cc6845227",
+    "limits": "Card accounting only, not final release acceptance. Suite rows remain actual observations. Controlled/private-provider and platform scopes are explicit; PROFILE_DIFFERENCE is not generic CP/M PASS. Native aggregate/common-code evidence is not expanded into invented per-card transcripts. Independent release/device gates still apply."
+  },
+  "components": {
+    "bdos": {
+      "bytes": 3454,
+      "sha256": "29e4e7202bf568686acc0551e72feab3715bb9dc4c9c6838f431c8f6d7322154"
+    },
+    "ccp": {
+      "bytes": 5482,
+      "sha256": "45a3bb4e5d58acc8bb93e9f15f4226dfbdc9602f39b27bd94d5e3cd74555e6b6"
+    }
+  },
+  "reviewed_groups": {
+    "baseline_sha256": "6823e809d2e52ab978bd37646b9f201ff3a074fc910fdd0ec1df780030e8fae2",
+    "groups": [
+      {
+        "cards": [
+          "0425",
+          "0433",
+          "0439",
+          "0445",
+          "0448",
+          "0473",
+          "0600",
+          "0606",
+          "0607"
+        ],
+        "status": "PASS_CONTROLLED",
+        "scope": "Executed allocation length/bit-map, guarded DPB OFF change/re-query/restore, independent logical BIOS endpoints under four IOBYTE values, both DMA sentinels across Functions 1..11, and raw BIOS versus cooked BDOS. Common production BDOS; synthetic providers/private DPB; not physical endpoint operation.",
+        "evidence": [
+          {
+            "path": "/private/tmp/bettercpm-v052-intact-documentary/result.json",
+            "sha256": "b9d079e81fcd0da1212201915ecd2ef6961c30384e17d3cfb8234b55b1bbc388"
+          }
+        ]
+      },
+      {
+        "cards": [
+          "0424",
+          "0426",
+          "0427"
+        ],
+        "status": "PASS_CONTROLLED",
+        "scope": "Production foundation: public Function 27 A/B/A maps follow known file ownership; reserved directory bits and live allocation checked. Private disk/DPB fixture; common production BDOS. Does not qualify sequential full-disk results.",
+        "evidence": [
+          {
+            "path": "/private/tmp/bettercpm-v052-intact-documentary/result.json",
+            "sha256": "b9d079e81fcd0da1212201915ecd2ef6961c30384e17d3cfb8234b55b1bbc388"
+          },
+          {
+            "path": "/private/tmp/bettercpm-v052-core-models/test_unified_bdos.txt",
+            "sha256": "55f7ed5e80319027e805af816711ee7bc7f7e5ccf97f5de54eb60a57a2ee8b47"
+          }
+        ]
+      },
+      {
+        "cards": [
+          "0013",
+          "0014"
+        ],
+        "status": "PASS_CONTROLLED",
+        "scope": "Actual relocated CCP default-FCB parser: bare/qualified B/D/P drives, independent star and question wildcards, and expected 12-byte FCB values. This is parser-model evidence, not a new live acquisition verdict.",
+        "evidence": [
+          {
+            "path": "/private/tmp/bettercpm-v052-core-models/test_ccp.txt",
+            "sha256": "9e80a8c675556443b8beb496c752182718b6793d418b23176777d585da9e92aa"
+          }
+        ]
+      },
+      {
+        "cards": [
+          "0025",
+          "0026",
+          "0028",
+          "0503",
+          "0504"
+        ],
+        "status": "PASS_EXTERNAL",
+        "scope": "Pinned CCPTEST /0025 and /0028 plus separate Function-0 transient; 27 successful actual cpmsim returns across A0/B3/B31 and repeated independent drive/user/TPA queries. Full-TPA reconstruction independently repeated.",
+        "evidence": [
+          {
+            "path": "/private/tmp/bettercpm-v052-acceptance/cpmsim/minimal-returns/ccp-returns-txy87twg/result.json",
+            "sha256": "822da3585afd99c95c339f28d9a439e7d3390642adc8507f9c10eb59ac7b6fdc"
+          },
+          {
+            "path": "/private/tmp/bettercpm-v052-acceptance/cpmsim/full-tpa/ccp-returns-bu1vz8gb/result.json",
+            "sha256": "09689edd5199a90ba8e3894c463f436d44f001118d5f5a8724e3c691bb1e64b2"
+          }
+        ]
+      },
+      {
+        "cards": [
+          "0501",
+          "0540"
+        ],
+        "status": "PASS_EXTERNAL",
+        "scope": "An independently extracted and length-checked oversized COM is rejected without executing its visible entry marker; caller drive/user/53K preserved. Oversize rejection witness only; physical read failures have separate error coverage.",
+        "evidence": [
+          {
+            "path": "/private/tmp/bettercpm-v052-acceptance/cpmsim/full-tpa/ccp-returns-bu1vz8gb/result.json",
+            "sha256": "09689edd5199a90ba8e3894c463f436d44f001118d5f5a8724e3c691bb1e64b2"
+          }
+        ]
+      },
+      {
+        "cards": [
+          "0620",
+          "0621"
+        ],
+        "status": "PASS_EXTERNAL",
+        "scope": "Shipped SUBMIT continuation and matching supplemental XSUB/BATCHIO supply and consume Function-10 input through full-TPA return, then normal console fallback and cleanup. Supplemental files are not added to the System Disk or counted as Utilities Disk qualification.",
+        "evidence": [
+          {
+            "path": "/private/tmp/bettercpm-v052-acceptance/cpmsim/batch/result.json",
+            "sha256": "d9adaea63f60bd170a1c20cf7173768b1486ac018a94a9e4d0692df874aaf97b"
+          }
+        ]
+      },
+      {
+        "cards": [
+          "0405",
+          "0516"
+        ],
+        "status": "PASS_EXTERNAL",
+        "scope": "Final merged production BDOS returns 01h unchanged FCB for sequential directory-full and 05h for random directory-full, compared with DRI; allocation-full 02h independently checked. Native directory-full repeated. Intact instruction prefix used, private stack 30 of 40 bytes.",
+        "evidence": [
+          {
+            "path": "/private/tmp/bettercpm-v052-acceptance/cpmsim/directory-full/result.json",
+            "sha256": "ea715a0ec7e10d2e94eda5cfdf88741482117e79095cd7718f1f878a1435b886"
+          },
+          {
+            "path": "/private/tmp/bettercpm-v052-intact-extent/result.txt",
+            "sha256": "373a2ae0e5d15fd4aa56997c2ee141eca2fe47cad0a4eb57a52a90a5d8dabae4"
+          }
+        ]
+      },
+      {
+        "cards": [
+          "0059",
+          "0060",
+          "0061",
+          "0062",
+          "0063",
+          "0064",
+          "0065",
+          "0066",
+          "0075",
+          "0076",
+          "0077",
+          "0078",
+          "0079",
+          "0081",
+          "0082",
+          "0091",
+          "0102",
+          "0123",
+          "0420",
+          "0436",
+          "0438",
+          "0440",
+          "0442",
+          "0444",
+          "0468",
+          "0469",
+          "0470",
+          "0471"
+        ],
+        "status": "PASS_CONTROLLED",
+        "scope": "Production instructions; synthetic logical BIOS and host-port endpoints. Not live printer/FIFO or physical-terminal qualification; flow ordering rather than wall-clock timing.",
+        "evidence": [
+          {
+            "path": "/private/tmp/bettercpm-v052-r3-character-accounting/result.json",
+            "sha256": "0e9217f31d9e089ee6c5f84dbb35fa89abb447bf04233a8505e10bb2549d546f"
+          }
+        ]
+      },
+      {
+        "cards": [
+          "0435",
+          "0523"
+        ],
+        "status": "PASS_PROFILE",
+        "scope": "Selected full Function 37 mask/reset profile: active, inactive, multiple, read-only and high masks; caller user/drive/DMA preserved; deferred relog verified using intact production BDOS instructions with private BIOS fixtures.",
+        "evidence": [
+          {
+            "path": "/private/tmp/bettercpm-v052-r3-failure-accounting/result.json",
+            "sha256": "b58c87825c2a844d6a536e9b555314d4595bcdad61b5b1388404127feab79cbe"
+          }
+        ]
+      },
+      {
+        "cards": [
+          "0370",
+          "0371",
+          "0458"
+        ],
+        "status": "PASS_CONTROLLED",
+        "scope": "Production BDOS instructions with declared private directory/DPB providers. Function 37 is selected and fully checked for inactive/current/multiple/read-only reset effects; no physical media-change claim.",
+        "evidence": [
+          {
+            "path": "/private/tmp/bettercpm-v052-r3-failure-accounting/result.json",
+            "sha256": "b58c87825c2a844d6a536e9b555314d4595bcdad61b5b1388404127feab79cbe"
+          }
+        ]
+      },
+      {
+        "cards": [
+          "0493",
+          "0494"
+        ],
+        "status": "PROFILE_DIFFERENCE",
+        "scope": "BetterCP/M deliberately supports fixed A0 fallback for unqualified command lookup. Current DU wins; explicitly qualified lookup stays exact. This differs from the generic current-DU-only oracle; not a generic CP/M pass.",
+        "evidence": [
+          {
+            "path": "/private/tmp/bettercpm-v052-r8-ccp-accounting/result.json",
+            "sha256": "41c635cde3c50ff2713b27208b69bbbb74ffb2d4f0fec31d227c40b35d21dace"
+          },
+          {
+            "path": "/private/tmp/BetterCPM-pip-continuation/docs/engineering/CCP Fixed A0 Lookup.md",
+            "sha256": "e9806eeed46d378af49a4164ee29e653dde8496685648b388fe3fcdaf694204c"
+          }
+        ]
+      },
+      {
+        "cards": [
+          "0015",
+          "0020",
+          "0027",
+          "0464",
+          "0465",
+          "0466",
+          "0475",
+          "0477",
+          "0479",
+          "0480",
+          "0481",
+          "0482",
+          "0483",
+          "0484",
+          "0485",
+          "0486",
+          "0487",
+          "0488",
+          "0489",
+          "0495",
+          "0567",
+          "0570",
+          "0572",
+          "0574",
+          "0578",
+          "0509",
+          "0590",
+          "0593",
+          "0595",
+          "0612",
+          "0519"
+        ],
+        "status": "PASS_EXTERNAL",
+        "scope": "Actual cpmsim CCP command, cold/warm recovery and public BDOS probe transcripts; private disposable images; raw observations retained.",
+        "evidence": [
+          {
+            "path": "/private/tmp/bettercpm-v052-r8-ccp-accounting/result.json",
+            "sha256": "41c635cde3c50ff2713b27208b69bbbb74ffb2d4f0fec31d227c40b35d21dace"
+          }
+        ]
+      },
+      {
+        "cards": [
+          "0143"
+        ],
+        "status": "PASS_EXTERNAL",
+        "scope": "Actual default CKS16 cpmsim media replacement on same inode and real native media swap: detect changed directory, protect writes, Function37 reset permits new creation. Independent exact media/file audits.",
+        "evidence": [
+          {
+            "path": "/private/tmp/bettercpm-v052-r2-cpmsim-media-change/result.json",
+            "sha256": "6a6dcbb6eb8e77995e9c62eacfddff6f3a714b1f8cd19132180ad6f95ab9cd5f"
+          },
+          {
+            "path": "/private/tmp/bettercpm-v052-acceptance/workflows/media-write/result.json",
+            "sha256": "6662b245bc6b97c0daa149d9217f491c3cb32c0a41ddc50d2a21eaa7f0f3a9bd"
+          },
+          {
+            "path": "/private/tmp/bettercpm-v052-acceptance/workflows/media-write/file-audit/result.json",
+            "sha256": "1d7fc0fb32c341321ff2339b69653a0c9f8024d6f1b979991fe615f91fd92cff"
+          },
+          {
+            "path": "/private/tmp/bettercpm-v052-acceptance/workflows/media-reset/result.json",
+            "sha256": "63ae45608e286b0dab0895a1de73c1328bc941b62765469bd1177abd9a8949e7"
+          },
+          {
+            "path": "/private/tmp/bettercpm-v052-acceptance/workflows/media-reset/file-audit/result.json",
+            "sha256": "1d7fc0fb32c341321ff2339b69653a0c9f8024d6f1b979991fe615f91fd92cff"
+          }
+        ]
+      },
+      {
+        "cards": [
+          "0390",
+          "0391",
+          "0431",
+          "0432",
+          "0449",
+          "0450",
+          "0453",
+          "0454",
+          "0456",
+          "0457"
+        ],
+        "status": "PASS_CONTROLLED",
+        "scope": "Compiled BIOS vectors, SELDSK absence, nonidentity SECTRAN, DPB geometry and 80 read/write mappings across four configured private fixtures; common BDOS logical/physical mapping and live filesystem results supplement, not physical hardware claims.",
+        "evidence": [
+          {
+            "path": "/private/tmp/bettercpm-v052-core-models/test_bios.txt",
+            "sha256": "1d63b35c10e058bfc4a515884113392066f1aa18df285eb0c2b3d99f3140c0ef"
+          },
+          {
+            "path": "/private/tmp/bettercpm-v052-core-models/test_unified_bdos.txt",
+            "sha256": "55f7ed5e80319027e805af816711ee7bc7f7e5ccf97f5de54eb60a57a2ee8b47"
+          },
+          {
+            "path": "/private/tmp/bettercpm-v052-core-models/result.json",
+            "sha256": "57d3b6d46814af8bdc5a5b7614ec0ebc6667b5bd59a885c251976cb0e6edab43"
+          }
+        ]
+      },
+      {
+        "cards": [
+          "0392"
+        ],
+        "status": "PASS_CONTROLLED",
+        "scope": "112 actual controller retry outcomes with read/write, transient/persistent error, polarity, sector-size and protection combinations; synthetic controller ports, not live media replacement.",
+        "evidence": [
+          {
+            "path": "/private/tmp/bettercpm-v052-core-models/test_bios_retry.txt",
+            "sha256": "1e6a1e138786d898dd4d1ec8fcaa1e2fe0bb05e72026e744c85c0b0e1e755a91"
+          }
+        ]
+      },
+      {
+        "cards": [
+          "0393",
+          "0394",
+          "0395",
+          "0396",
+          "0397",
+          "0581",
+          "0586",
+          "0587"
+        ],
+        "status": "PASS_EXTERNAL",
+        "scope": "Real injected read failures on disposable cpmsim/native media: Ignore, retry/resume and abort/recovery; independent healthy read, file and media audits. Logical directory-full is separately compared against DRI and does not become physical error.",
+        "evidence": [
+          {
+            "path": "/private/tmp/bettercpm-v052-acceptance/cpmsim/faults-r2/operator-recovery-ar54j3d3/result.json",
+            "sha256": "4edfa213d0278a52f4408fa923bc01a514ee62da99cf23f892e2bbcd19b75a20"
+          },
+          {
+            "path": "/private/tmp/bettercpm-v052-acceptance/native/faults/result.json",
+            "sha256": "a015416de9be8f7811224619584aec97a5d0f25cfab5f86a8ca58fd5f7916586"
+          },
+          {
+            "path": "/private/tmp/bettercpm-v052-acceptance/native/faults/abort/file-audit/result.json",
+            "sha256": "1d7fc0fb32c341321ff2339b69653a0c9f8024d6f1b979991fe615f91fd92cff"
+          },
+          {
+            "path": "/private/tmp/bettercpm-v052-acceptance/native/faults/ignore/file-audit/result.json",
+            "sha256": "1d7fc0fb32c341321ff2339b69653a0c9f8024d6f1b979991fe615f91fd92cff"
+          },
+          {
+            "path": "/private/tmp/bettercpm-v052-acceptance/native/faults/suspended/file-audit/result.json",
+            "sha256": "1d7fc0fb32c341321ff2339b69653a0c9f8024d6f1b979991fe615f91fd92cff"
+          },
+          {
+            "path": "/private/tmp/bettercpm-v052-acceptance/cpmsim/directory-full/result.json",
+            "sha256": "ea715a0ec7e10d2e94eda5cfdf88741482117e79095cd7718f1f878a1435b886"
+          }
+        ]
+      },
+      {
+        "cards": [
+          "0413"
+        ],
+        "status": "NOT_APPLICABLE",
+        "scope": "Optional structured physical-error-result profile was not selected for BetterCP/M 1.0. Ordinary documented Bad Sector operator recovery is tested separately; this exclusion does not waive required error handling.",
+        "evidence": [
+          {
+            "path": "/private/tmp/BetterCPM-pip-continuation/docs/engineering/BDOS-BAD-SECTOR-RECOVERY.md",
+            "sha256": "9c562eb1777b2c952a5d6ebac76383f01a60695ee1ecf01517b8c1d80dd10e4c"
+          }
+        ]
+      }
+    ]
+  },
+  "archive": {
+    "path": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/validation-evidence/BetterCPM-Final-V052-acceptance-evidence.tar.gz",
+    "sha256": "8077d84c88cbefe6c7571a1fed83ffaf1fbc14aca9bd235ac0c46b82ad8e9543",
+    "files": 8486,
+    "bytes": 42843473,
+    "manifest_sha256": "830730da96572a1c043b5227c7ddf0156f32b6d4ae9c7de44cc94044e1bbbf34"
+  },
+  "recovery_note": "Pending closure commit db23d63 was in an expired temporary checkout. Runner sources and matrix recovered byte-for-byte from its verified durable archive; closure prose reconstructed from the retained results. No tests rerun or production changes made during recovery.",
+  "supplemental": {
+    "character": {
+      "archive_member": "bettercpm-v052-r3-character-accounting/result.json",
+      "sha256": "0e9217f31d9e089ee6c5f84dbb35fa89abb447bf04233a8505e10bb2549d546f",
+      "status": "PASS"
+    },
+    "failure": {
+      "archive_member": "bettercpm-v052-r3-failure-accounting/result.json",
+      "sha256": "b58c87825c2a844d6a536e9b555314d4595bcdad61b5b1388404127feab79cbe",
+      "status": "PASS"
+    },
+    "ccp": {
+      "archive_member": "bettercpm-v052-r8-ccp-accounting/result.json",
+      "sha256": "41c635cde3c50ff2713b27208b69bbbb74ffb2d4f0fec31d227c40b35d21dace",
+      "status": "PASS"
+    },
+    "media": {
+      "archive_member": "bettercpm-v052-r2-cpmsim-media-change/result.json",
+      "sha256": "6a6dcbb6eb8e77995e9c62eacfddff6f3a714b1f8cd19132180ad6f95ab9cd5f",
+      "status": "PASS"
+    },
+    "documentary": {
+      "archive_member": "bettercpm-v052-intact-documentary/result.json",
+      "sha256": "b9d079e81fcd0da1212201915ecd2ef6961c30384e17d3cfb8234b55b1bbc388",
+      "status": "PASS"
+    },
+    "native-full-tpa": {
+      "archive_member": "bettercpm-v052-r2-native-full-tpa/model4-full-tpa-tszj9flp/result.json",
+      "sha256": "e23268daaa375c17f1f7dd10e59a41ef89172f651e1586ebaee21eae5584b17c",
+      "status": "PASS"
+    },
+    "endpoints": {
+      "archive_member": "bettercpm-v052-pip-endpoints/result.json",
+      "sha256": "a9d1b5d164e0f42e0645c73fca18132c38ea392861b56d27ce61c7798cac9414",
+      "status": "PASS"
+    },
+    "wordstar": {
+      "archive_member": "bettercpm-v052-wordstar/run-ue22zksa/result.json",
+      "sha256": "f8b62509ac8d76794083a28cb4f8d18e45af8a836b6628a028cac26edd1670f7",
+      "status": "PASS"
+    },
+    "mmconfig": {
+      "archive_member": "bettercpm-v052-native-mmconfig/result.json",
+      "sha256": "3a4564dd2ee11901dc8f3c806511e6ca4c599f1baea0af9a5d2f05cf08d52a2c",
+      "status": "PASS"
+    }
+  }
+}

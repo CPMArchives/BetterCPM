@@ -39,19 +39,43 @@ if a.prepare_only:
   'status':'PREPARED; not a test pass'}
  (work/'manual-fixture.json').write_text(json.dumps(manifest,indent=2)+'\n')
  print(json.dumps(manifest,indent=2));sys.exit(0)
-args=[str(DEFAULT_EMULATOR),'-m4','-batch','-turbo','-ktx','-d0',str(image),'-d1',str(secondary),'-itime','20000','-iw','Type TYPE README.TXT for more','-id','2000','-it']
-args+=key_args('A0:STATE\r')+['-id','120','-it','-iw','STATE D=00 U=00 TOP=D501','-id','2000']
-args+=key_args('B31:\r')+['-id','2000']
-for name,route in [('ERET','RET'),('EJUMP','JUMP'),('EFN0','FUNCTION0')]:
- args+=key_args('A0:PAINT\r')+['-id','2000']
- args+=key_args('A7:'+name+'\r')+['-iw','FULL-TPA '+route+' ENTERED','-id','2000','-it']
- args+=key_args('A0:STATE\r')+['-iw','STATE D=01 U=1F TOP=D501','-id','120','-it','-id','2000']
-args+=key_args('A7:OVERRET\r')+['-id','2000','-it']
-args+=key_args('A0:STATE\r')+['-iw','STATE D=01 U=1F TOP=D501','-id','120','-it','-ix']
+# Let SUBMIT queue commands across reconstruction. Fixed delays between PAINT
+# and the next COM can otherwise drop keystrokes while the CCP is reloading.
+from build_ccp import assemble
+shutil.copy2(__file__,work/'executed-runner.py')
+commands=['A0:STATE','B31:']
+for index,name in enumerate(('ERET','EJUMP','EFN0','OVERRET')):
+ if index<3:commands.append('A0:PAINT')
+ commands += ['A7:'+name,'A0:STATE',f'A0:NFG{index}']
+ source=f""" ORG 100H
+ LD DE,MSG
+ LD C,9
+ CALL 5
+ LD C,1
+ CALL 5
+ LD E,28
+ LD C,2
+ CALL 5
+ RET
+MSG: DB 'NATIVE FULL TPA GATE {index}',13,10,'$'
+ END
+"""
+ binary=assemble(Path.home()/'bin/z80asm',source,work/f'NFG{index}.COM',work/f'NFG{index}.lst',0x100)
+ (work/f'NFG{index}.asm').write_text(source);add_file(raw,f'NFG{index}.COM',binary)
+commands.append('A0:NFDONE')
+source=" ORG 100H\n LD DE,MSG\n LD C,9\n CALL 5\n RET\nMSG: DB 'NATIVE FULL TPA COMPLETE',13,10,'$'\n END\n"
+binary=assemble(Path.home()/'bin/z80asm',source,work/'NFDONE.COM',work/'NFDONE.lst',0x100)
+(work/'NFDONE.asm').write_text(source);add_file(raw,'NFDONE.COM',binary)
+script=('\r\n'.join(commands)+'\r\n\x1a').encode();(work/'FTPA.SUB').write_bytes(script);add_file(raw,'FTPA.SUB',script);image.write_bytes(build(bytes(raw)))
+args=[str(DEFAULT_EMULATOR),'-m4','-batch','-turbo','-ktx','-d0',str(image),'-d1',str(secondary),'-itime','20000','-iw','Type TYPE README.TXT for more','-id','6000','-it']
+args+=key_args('SUBMIT FTPA\r')
+for index in range(4):args+=['-iw',f'NATIVE FULL TPA GATE {index}','-id','120','-it']+key_args(' ')
+args+=['-iw','NATIVE FULL TPA COMPLETE','-id','6000','-it','-ix']
+(work/'invocation.json').write_text(json.dumps(args,indent=2)+'\n')
 try:
- run(args,cwd=work,timeout=600)
- if not all((work/f'trs80-text-{idx}.bin').is_file() for idx in range(10)):
-  raise AssertionError('native run did not reach all capture checkpoints')
+ run(args,cwd=work,timeout=1200)
+ if not all((work/f'trs80-text-{idx}.bin').is_file() for idx in range(6)):
+  raise AssertionError('native run did not reach all queued capture checkpoints')
 except BaseException as error:
  assert sha(original)==report['sha256'], 'reference image changed during incomplete run'
  (work/'incomplete.json').write_text(json.dumps({'status':'INCOMPLETE','error':str(error),
@@ -59,18 +83,19 @@ except BaseException as error:
   'baseline_sha256':sha(original)},indent=2)+'\n')
  raise
 captures=[]
-for idx in range(8):
- text=screen(work/f'trs80-text-{idx+2}.bin');(work/f'case-{idx}.txt').write_text(text+'\n')
+for index in range(4):
+ text=screen(work/f'trs80-text-{index+1}.bin');(work/f'case-{index}.txt').write_text(text+'\n')
  assert 'PATTERN OR RETURN FAILED' not in text
- if idx in (0,2,4):assert 'FULL-TPA '+('RET','JUMP','FUNCTION0')[idx//2]+' ENTERED' in text
- if idx in (1,3,5,7):
-  assert 'A0:STATE' in text
-  assert 'STATE D=01 U=1F TOP=D501' in text.rsplit('A0:STATE',1)[-1]
- if idx==6:
+ assert 'STATE D=01 U=1F TOP=D501' in text
+ assert f'NATIVE FULL TPA GATE {index}' in text
+ if index<3:assert 'FULL-TPA '+('RET','JUMP','FUNCTION0')[index]+' ENTERED' in text
+ else:
   assert 'A7:OVERRET' in text
-  assert 'FULL-TPA' not in text.rsplit('A7:OVERRET',1)[-1],'oversized command executed'
- captures.append({'screen':f'case-{idx}.txt','status':'PASS'})
+  assert 'FULL-TPA' not in text, 'oversized command executed'
+ captures.append({'screen':f'case-{index}.txt','status':'PASS'})
+final=screen(work/'trs80-text-5.bin');(work/'final.txt').write_text(final+'\n')
+assert 'NATIVE FULL TPA COMPLETE' in final and final.rstrip().endswith('B31>')
 audit_report=dict(report,included=[item for item in report['included'] if item['name']!='STARTUP.SUB'])
 audit=audit_files(original,image,audit_report,work);assert sha(original)==report['sha256']
 audit['declared_fixture_changes']=['STARTUP.SUB: banner only, no optional monitor profile']
-(work/'result.json').write_text(json.dumps({'status':'PASS','caller':'B31','lookup':'A7','captures':captures,'file_audit':audit,'baseline_sha256':sha(original),'emulator_sha256':sha(DEFAULT_EMULATOR),'fixtures':{name:sha(fixtures/name) for name in ['STATE.COM','PAINT.COM','ERET.COM','EJUMP.COM','EFN0.COM','OVERRET.COM']}},indent=2)+'\n');print(work)
+(work/'result.json').write_text(json.dumps({'status':'PASS','caller':'B31','lookup':'A7','captures':captures,'file_audit':audit,'baseline_sha256':sha(original),'emulator_sha256':sha(DEFAULT_EMULATOR),'queued_submit_and_explicit_input_gates':True,'fixtures':{name:sha(fixtures/name) for name in ['STATE.COM','PAINT.COM','ERET.COM','EJUMP.COM','EFN0.COM','OVERRET.COM']},'gate_sha256':{f'NFG{i}.COM':sha(work/f'NFG{i}.COM') for i in range(4)},'script_sha256':sha(work/'FTPA.SUB')},indent=2)+'\n');print(work)
