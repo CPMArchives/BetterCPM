@@ -566,3 +566,21 @@ DUMP filename
 ```
 
 > Read the named CP/M file sequentially and display every byte in uppercase hexadecimal, sixteen bytes per line, with a wrapping four-digit byte address at the left. At each line boundary, terminate if any console character is pending. Return directly to the CCP when EOF, interruption, or open failure occurs.
+
+
+## Enhanced viewer proposal — settled review decisions
+
+The proposed enhanced viewer remains under review; its other open design
+questions do not change the implemented DRI-compatible baseline above.
+
+- Retain Section 3's finalized implied-corner `/VER` display, with version and
+  build supplied by utility metadata. The proposed viewer must not revert to
+  the former single-line version presentation.
+- Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
+  remains the intended search interface in that proposal. Revisit command-line
+  search when a concrete invocation or SUBMIT workflow justifies it, including
+  what should be displayed or returned for a match, no match or error and whether
+  the operation should be interactive. The present CCP uppercases command-tail
+  text, including quoted text, so case-sensitive command-line ASCII search must
+  not be promised without a separately resolved input contract. No CCP change
+  or command-line search implementation is authorized by this decision.

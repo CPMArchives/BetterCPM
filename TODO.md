@@ -425,6 +425,11 @@ redistributable existing utility; an unchecked item does not by itself block
   not finalized syntax. Settle detection/selection rules and the supported
   SQ/USQ, CR/UNCR and CrLZH formats during the design phase.
 - [x] Implement `DUMP.COM` against the [initial DRI-compatible specification](docs/engineering/DUMP%20Specification.md): native Z80/ZSM4, ordinary drive-qualified input and `/VER`; enhancements deferred until the clone baseline is established.
+- [ ] Complete review of the enhanced DUMP viewer proposal before implementation.
+  Keep the finalized implied-corner `/VER` display. Defer command-line `/FIND=`;
+  retain interactive `F` in the viewer design and revisit command-line search
+  only for a concrete invocation/SUBMIT use case with defined result behavior.
+  See the [settled review decisions](docs/engineering/DUMP%20Specification.md#enhanced-viewer-proposal--settled-review-decisions).
 - [x] Implement `SUBMIT.COM`.
 - [x] Implement `XSUB.COM`.
 - [ ] Implement `ED.COM`.
