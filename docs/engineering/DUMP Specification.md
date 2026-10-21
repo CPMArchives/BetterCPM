@@ -806,6 +806,11 @@ questions do not change the implemented DRI-compatible baseline above.
   enhancement options. Diagnostic wording may distinguish unknown options,
   invalid values and incompatible combinations rather than reporting only
   generic invalid usage.
+- If a distinguishable read error prevents loading the initial `/P` page,
+  report the failing byte offset and return to the CCP. There is no previous
+  valid page to preserve; do not enter an empty viewer or display a partially
+  read initial page as complete. Restore the caller's drive/user and perform
+  normal DUMP cleanup on this error path.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
