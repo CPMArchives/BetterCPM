@@ -637,7 +637,7 @@ CCP_EDGET:                              ; read and decode editor keystroke
         JR      Z,CCP_EDCLEAR
         CP      22                      ; ^V: Insert/overwrite toggle
         JP      Z,CCP_EDTOG
-        CP      31                      ; Model 4 CLEAR remains an alias
+        CP      31                      ; legacy console insert alias; CLEAR is now ESC
         JP      Z,CCP_EDTOG
         CP      7                       ; ^G: delete character under cursor
         JP      Z,CCP_EDDEL

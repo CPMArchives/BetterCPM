@@ -78,3 +78,71 @@ chords; the original Model 4 signals are the qualified interface.
 The rebuilt emulator image passes all 42 expected CONIN bytes. A separate
 boot enters `:DIR *.*[$SYS]` through the punctuation chords and returns
 `NO FILE` followed by a fresh prompt, without a filespec error.
+
+
+## MM CLEAR/ESC restoration — 2026-10-22
+
+Restore the MM CP/M 2.32 BIOS `keytable`, `keytables` and `keytablec`
+conventions for CLEAR: unshifted and Shift-CLEAR return ESC (`1Bh`);
+Ctrl-CLEAR, including Ctrl+Shift variants, returns DEL (`7Fh`). BREAK still
+returns Ctrl-C (`03h`). This is a Model 4 driver correction for both real
+hardware and emulation, not an application-specific cancellation alias.
+The local historical source reference is
+`CPM/montezuma-micro/source-reference/mmcpm232/bios.asm`, lines 820–831.
+
+In [trs80gp](https://48k.ca/trs80gp.html#keyboard), Home activates CLEAR in
+Logical and Physical layouts; Physical Layout also maps the host apostrophe
+key to CLEAR. Its software keyboard has a `CLR` key. On a MacBook,
+[Fn–Left Arrow generates Home](https://support.apple.com/en-us/102650).
+Therefore the host entry sequence is Fn–Left for CLEAR/ESC, with Control added
+for DEL (using the user's remapped Control key if applicable). Host Esc is
+mapped to BREAK, so it remains Ctrl-C. These host shortcuts are documented
+mappings; the automated native test below injects the physical matrix rather
+than claiming an automated macOS host-event test.
+
+CLEAR is no longer the CCP's physical insert/overwrite alias. Ctrl-V retains
+that function; the CCP's old logical `1Fh` alias remains accepted for consoles
+that send it. The console-input change is global to applications; the CCP
+still has no Model 4 hardware knowledge.
+
+The implementation indexes special keys using the existing physical slot in
+E and reuses comparison flags for shifted punctuation. The ordinary Control
+mask has no redundant upper-bound test: reachable ordinary decoded characters
+are @.._, while special keys and punctuation are below @ (CLEAR is handled
+explicitly). Net code savings leave one byte, used as padding to retain the
+existing console-state anchors. The BIOS remains **757/757 bytes**; its five
+mutable console bytes and all memory-region allocations stay in place.
+Unloaded 53K TPA is unchanged. BIOS interface remains 1.7; implementation is 1.13.
+
+A fresh isolated complete Model 4 build and ROM/RAM ownership check pass.
+The compiled BIOS test passes all 17 vector contracts, 80 disk read/write
+mappings, failure paths, SECTRAN, connected matrix keys and punctuation, plus
+all eight CLEAR modifier combinations (none, either/both Shift, Control with
+none/either/both Shift).
+
+`tools/test_model4_keyboard_modifiers.py` reads actual public BIOS CONIN in
+trs80gp from a disposable copy. All **50 expected bytes** match, including
+`1B 1B 1B 7F 7F 7F 03 03` for CLEAR, either Shift-CLEAR, Control-CLEAR,
+Ctrl+either Shift-CLEAR, BREAK and Ctrl-BREAK. Existing debounce, rollover,
+punctuation chords and arrow mappings also pass. The reference image hash is
+`958c28035d3feec6482398dbdf21b66abaff27134567e4109b3415190386edec`;
+the runner verifies that image remains unchanged. The diagnostic clears its
+private screen first so startup text cannot contaminate its byte transcript.
+The first isolated build stopped at a console-state-address inventory mismatch;
+retaining the existing anchors resolves it without changing inventory contracts.
+
+These are new keyboard-change qualification results, not a claim that prior
+whole-release acceptance automatically covers a modified BIOS. Rebuild images
+from the updated source before expecting these mappings in daily sessions.
+
+The subsystem-version regression also now expects the already-released BDOS 1.9
+(the former 1.7 expectation was stale) and the new BIOS 1.13; generated metadata
+consistency checks pass. This does not change BDOS behavior or its version.
+
+Verified durable evidence archive:
+`validation-evidence/BetterCPM-MM-CLEAR-ESC-20261022.tar.gz` in the local CP/M
+project workspace; SHA-256
+`847927c208d936c21984cb63a46126f9340ebd80c9bee62fce987e7f30cac095`.
+It includes native captures/results, the immutable tested image, BIOS bytes and
+listing, complete-build state/log, runner sources and a per-file hash manifest.
+Every archived regular file was reopened and its hash verified.
