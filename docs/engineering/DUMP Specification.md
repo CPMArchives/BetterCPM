@@ -741,8 +741,9 @@ questions do not change the implemented DRI-compatible baseline above.
 
   A full row is 37 columns. Normal wide mode retains individually spaced hex
   bytes. `/40` remains an invocation option, never applies to `/BARE`, and
-  does not alter search or byte-offset semantics. This settles its layout;
-  the proposal's small implementation-cost gate remains in force.
+  does not alter search or byte-offset semantics. `/40` is required in the
+  initial enhanced release; inclusion is not conditional on implementation
+  cost. It uses the same viewer, search and navigation behavior as wide mode.
 - The enhanced ASCII column shall display bytes `20h` through `7Eh`
   directly, including spaces. Every other byte (`00h` through `1Fh`, `7Fh`,
   and `80h` through `FFh`) shall appear as `.`. Do not strip high bits or send
