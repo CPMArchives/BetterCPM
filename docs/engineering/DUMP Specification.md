@@ -665,6 +665,13 @@ questions do not change the implemented DRI-compatible baseline above.
   a clear diagnostic and retain the page, active pattern and continuation
   state unchanged. Empty-file behavior is a separate explicit case below;
   no out-of-range position shall wrap or be silently clamped.
+- With no explicit starting position, an empty file in enhanced mode shall
+  print `Empty file` and return normally without data rows or an interactive
+  viewer, including when `/P` was requested. An explicit `/FROM=0` (or any
+  other `/FROM=` value) on an empty file is out of range, since no byte exists;
+  apply the starting-position error rule instead. `/BARE` retains DRI behavior:
+  no data rows and no added empty-file diagnostic, with its ordinary terminating
+  CR/LF and direct return preserved.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
