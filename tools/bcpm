@@ -1,0 +1,685 @@
+#!/usr/bin/env bash
+#
+# bcpm - BetterCP/M control utility
+#
+# Possible workflow:
+#
+# 1. Create disk image with bcpm mkdisk
+# 2. Copy files onto disk image with bcpm cp
+# 3. Mount image as drive B, C or D with bcpm mount
+# 4. Launch z80pack with bcpm z, or trs80gp with bcpm t
+#
+
+set -euo pipefail
+
+repo="$HOME/projects/git/BetterCPM"
+z80packloc="$repo/build/z80pack-daily"
+distribution_builder="$repo/tools/build_distribution.py"
+cpmsim_distribution="$repo/build/z80pack/disks/library/BetterCPM-Distribution-z80pack-332K.dsk"
+disksloc="$z80packloc/disks"
+trs80_distribution="$repo/build/trs80/BetterCPM-Distribution-trs80gp-80T-DS-System.dmk"
+utilitiesloc="$repo/build/utilities-disks"
+cpmsim_utilities="$utilitiesloc/BetterCPM-Utilities-z80pack-332K.dsk"
+trs80_utilities="$utilitiesloc/BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk"
+trs80gp_exe="$HOME/trs80/trs80gp-2/mac/trs80gp.app/Contents/MacOS/trs80gp"
+prog="$(basename "$0")"
+
+usage()
+{
+    cat <<EOF2
+Usage: $prog COMMAND [arguments]
+
+BetterCP/M control utility.
+
+Commands:
+  build               Build z80pack and trs80gp distribution images
+  z                   Mount the z80pack distribution as drive A and launch cpmsim
+  t                   Launch trs80gp with the TRS-80 distribution disk
+  cp                  Copy files to a CP/M disk image
+  dir                 List files in a CP/M disk image
+  mkdisk              Create a blank CP/M disk image
+  mount               Attach a disk image to drive B, C, or D (z80pack cpmsim only)
+  convert             Convert 332K/800K raw disk images to/from DMK
+
+Use "$prog COMMAND -h" for help with a command.
+EOF2
+}
+
+cp_usage()
+{
+    cat <<EOF2
+Usage: $prog cp disk.img file [file ...]
+       $prog cp -h
+
+Copy files to a CP/M disk image.
+
+The disk format is determined automatically from the image size.
+
+Recognized formats:
+  180k    184320 bytes    bettercpm-mm-standard-system
+  200k    204800 bytes    bettercpm-ampro-little-board
+  332k    368640 bytes    bettercpm-default
+  400k    409600 bytes    bettercpm-ampro-little-board-ds
+  800k    819200 bytes    bettercpm-mm-80t-ds-data
+
+Options:
+  -h      Display this help
+EOF2
+}
+
+dir_usage()
+{
+    cat <<EOF2
+Usage: $prog dir disk.img
+       $prog dir -h
+
+List files in a CP/M disk image and report remaining free space.
+
+The disk format is determined automatically from the image size.
+DMK images are not supported by cpmtools; convert them to raw .dsk first.
+
+Recognized formats:
+  180k    184320 bytes    bettercpm-mm-standard-system
+  200k    204800 bytes    bettercpm-ampro-little-board
+  332k    368640 bytes    bettercpm-default
+  400k    409600 bytes    bettercpm-ampro-little-board-ds
+  800k    819200 bytes    bettercpm-mm-80t-ds-data
+
+Options:
+  -h      Display this help
+EOF2
+}
+
+mkdisk_usage()
+{
+    cat <<EOF2
+Usage: $prog mkdisk -f FORMAT disk.img
+       $prog mkdisk -h
+
+Create a blank CP/M disk image.
+
+Formats:
+  180k    bettercpm-mm-standard-system
+  200k    bettercpm-ampro-little-board
+  332k    bettercpm-default
+  400k    bettercpm-ampro-little-board-ds
+  800k    bettercpm-mm-80t-ds-data
+
+Options:
+  -f FORMAT   Select disk format
+  -h          Display this help
+EOF2
+}
+
+mount_usage()
+{
+    cat <<EOF2
+Usage: $prog mount {b|c|d} disk.img
+       $prog mount -h
+
+Attach a raw disk image to a BetterCP/M z80pack drive.
+
+Drives:
+  b, c, d
+
+Options:
+  -h      Display this help
+EOF2
+}
+
+convert_usage()
+{
+    cat <<EOF2
+Usage: $prog convert input.dsk output.dmk
+       $prog convert input.dmk output.dsk
+       $prog convert -h
+
+Convert BetterCP/M disk images between raw and DMK formats.
+The conversion direction and disk format are determined automatically.
+
+Supported formats:
+  332k    California Computer Systems (40T, DS, DD, 332K)
+          raw image size: 368640 bytes
+  800k    Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)
+          raw image size: 819200 bytes
+
+Options:
+  -h      Display this help
+EOF2
+}
+
+ensure_diskdefs()
+{
+    if [ ! -e diskdefs ] && [ ! -L diskdefs ]; then
+        ln -s "$z80packloc/diskdefs" diskdefs
+    fi
+}
+
+build_usage()
+{
+    cat <<EOF2
+Usage: $prog build
+       $prog build -h
+
+Build fresh System and provisional Utilities images for both emulators.
+Mount Utilities as drive B for subsequent launches.
+EOF2
+}
+
+z_usage()
+{
+    cat <<EOF2
+Usage: $prog z
+       $prog z -h
+
+Attach the z80pack distribution system image to drive A and launch cpmsim.
+Run "$prog build" first to generate fresh distribution images.
+EOF2
+}
+
+t_usage()
+{
+    cat <<EOF2
+Usage: $prog t
+       $prog t -h
+
+Launch trs80gp with the System Disk as A: and Utilities as B:.
+EOF2
+}
+
+mount_utilities_b()
+{
+    if [ ! -f "$cpmsim_utilities" ]; then
+        echo "$prog: Utilities disk not found; run '$prog build' first" >&2
+        return 1
+    fi
+    mkdir -p "$disksloc"
+    local driveb="$disksloc/driveb.dsk"
+    if [ -e "$driveb" ] && [ ! -L "$driveb" ]; then
+        echo "$prog: refusing to replace non-symlink drive B: $driveb" >&2
+        return 1
+    fi
+    ln -sfn "$cpmsim_utilities" "$driveb"
+    printf 'driveb.dsk -> %s\n' "$cpmsim_utilities"
+}
+
+cmd_t()
+{
+    if [ "$#" -eq 1 ] && [ "$1" = "-h" ]; then
+        t_usage
+        return 0
+    fi
+    if [ "$#" -ne 0 ]; then
+        t_usage >&2
+        exit 2
+    fi
+    if [ ! -f "$trs80_distribution" ]; then
+        echo "$prog t: distribution image not found: $trs80_distribution" >&2
+        echo "$prog t: run '$prog build' first" >&2
+        exit 1
+    fi
+    if [ ! -x "$trs80gp_exe" ]; then
+        echo "$prog t: trs80gp executable not found or not executable: $trs80gp_exe" >&2
+        exit 1
+    fi
+    if [ ! -f "$trs80_utilities" ]; then
+        echo "$prog t: Utilities disk not found; run '$prog build' first" >&2
+        exit 1
+    fi
+    # B: is Utilities. Keep the development/build disk available as C:.
+    "$trs80gp_exe" -frehd -d0 "$trs80_distribution" \
+        -d1 "$trs80_utilities" \
+        -d2 "$repo/build/trs80/BetterCPM-Build-80T-DS-800K.dmk" &
+}
+
+cmd_build()
+{
+    if [ "$#" -eq 1 ] && [ "$1" = "-h" ]; then
+        build_usage
+        return 0
+    fi
+    if [ "$#" -ne 0 ]; then
+        build_usage >&2
+        exit 2
+    fi
+    if [ ! -f "$distribution_builder" ]; then
+        echo "$prog build: builder not found: $distribution_builder" >&2
+        exit 1
+    fi
+    # Synchronize source before building distribution images.
+    cd "$repo"
+    git pull --ff-only
+    python3 "$distribution_builder"
+    local utilities_builder="$repo/tools/build_utilities_disk.py"
+    if [ ! -f "$utilities_builder" ]; then
+        # Installed companion supports the transition before the repository
+        # launcher integration has been merged/pulled.
+        utilities_builder="$(dirname "$0")/bcpm-utilities-builder.py"
+    fi
+    BCPM_REPO="$repo" python3 "$utilities_builder" --build
+    mount_utilities_b
+}
+
+cmd_z()
+{
+    if [ "$#" -eq 1 ] && [ "$1" = "-h" ]; then
+        z_usage
+        return 0
+    fi
+    if [ "$#" -ne 0 ]; then
+        z_usage >&2
+        exit 2
+    fi
+    if [ ! -f "$cpmsim_distribution" ]; then
+        echo "$prog z: distribution image not found: $cpmsim_distribution" >&2
+        echo "$prog z: run '$prog build' first" >&2
+        exit 1
+    fi
+    if [ ! -d "$disksloc" ]; then
+        echo "$prog z: cpmsim disk directory not found: $disksloc" >&2
+        exit 1
+    fi
+    local drivea="$disksloc/drivea.dsk"
+    if [ -e "$drivea" ] && [ ! -L "$drivea" ]; then
+        echo "$prog z: refusing to replace non-symlink drive A: $drivea" >&2
+        exit 1
+    fi
+    mount_utilities_b
+    ln -sfn "$cpmsim_distribution" "$drivea"
+    printf 'drivea.dsk -> %s\n' "$cpmsim_distribution"
+    cd "$z80packloc"
+    ./launch-z80pack.command
+}
+
+cmd_cp()
+{
+    if [ "$#" -eq 1 ] && [ "$1" = "-h" ]; then
+        cp_usage
+        return 0
+    fi
+
+    if [ "$#" -lt 2 ]; then
+        cp_usage >&2
+        exit 2
+    fi
+
+    local image="$1"
+    shift
+
+    case "${image,,}" in
+        *.dmk)
+            echo "$prog cp: cannot copy files directly to a DMK image: $image" >&2
+            echo "$prog cp: cpmtools requires a raw disk image (.dsk)." >&2
+            echo "$prog cp: convert it first with: $prog convert '$image' output.dsk" >&2
+            exit 2
+            ;;
+    esac
+
+    if [ ! -f "$image" ]; then
+        echo "$prog cp: disk image not found: $image" >&2
+        echo >&2
+        cp_usage >&2
+        exit 2
+    fi
+
+    local size format
+    size=$(wc -c < "$image" | tr -d ' ')
+
+    case "$size" in
+        184320) format="bettercpm-mm-standard-system" ;;
+        204800) format="bettercpm-ampro-little-board" ;;
+        368640) format="bettercpm-default" ;;
+        409600) format="bettercpm-ampro-little-board-ds" ;;
+        819200) format="bettercpm-mm-80t-ds-data" ;;
+        *)
+            echo "$prog cp: unrecognized disk image size: $size bytes" >&2
+            echo >&2
+            cp_usage >&2
+            exit 2
+            ;;
+    esac
+
+    local file
+    for file in "$@"; do
+        if [ ! -f "$file" ]; then
+            echo "$prog cp: file not found: $file" >&2
+            echo >&2
+            cp_usage >&2
+            exit 2
+        fi
+    done
+
+    ensure_diskdefs
+
+    cpmcp -T raw -f "$format" "$image" "$@" 0:
+    cpmls -T raw -f "$format" "$image"
+}
+
+cmd_dir()
+{
+    if [ "$#" -eq 1 ] && [ "$1" = "-h" ]; then
+        dir_usage
+        return 0
+    fi
+
+    if [ "$#" -ne 1 ]; then
+        dir_usage >&2
+        exit 2
+    fi
+
+    local image="$1"
+
+    case "${image,,}" in
+        *.dmk)
+            echo "$prog dir: cannot list files directly from a DMK image: $image" >&2
+            echo "$prog dir: cpmtools requires a raw disk image (.dsk)." >&2
+            echo "$prog dir: convert it first with: $prog convert '$image' output.dsk" >&2
+            exit 2
+            ;;
+    esac
+
+    if [ ! -f "$image" ]; then
+        echo "$prog dir: disk image not found: $image" >&2
+        echo >&2
+        dir_usage >&2
+        exit 2
+    fi
+
+    local size format
+    size=$(wc -c < "$image" | tr -d ' ')
+
+    case "$size" in
+        184320) format="bettercpm-mm-standard-system" ;;
+        204800) format="bettercpm-ampro-little-board" ;;
+        368640) format="bettercpm-default" ;;
+        409600) format="bettercpm-ampro-little-board-ds" ;;
+        819200) format="bettercpm-mm-80t-ds-data" ;;
+        *)
+            echo "$prog dir: unrecognized disk image size: $size bytes" >&2
+            echo >&2
+            dir_usage >&2
+            exit 2
+            ;;
+    esac
+
+    ensure_diskdefs
+    cpmls -T raw -f "$format" "$image"
+
+    # fsck.cpm reports allocation as "used/total blocks".  Run it
+    # read-only and convert the remaining allocation blocks to KiB.
+    local fsck_output allocation used total block_size free_k
+    fsck_output=$(fsck.cpm -n -T raw -f "$format" "$image" 2>&1) || {
+        echo "$fsck_output" >&2
+        exit 1
+    }
+    allocation=$(printf '%s\n' "$fsck_output" | sed -n 's/.*[, ]\([0-9][0-9]*\)\/\([0-9][0-9]*\) blocks.*/\1 \2/p' | tail -1)
+    if [ -z "$allocation" ]; then
+        echo "$prog dir: unable to determine free space from fsck.cpm output" >&2
+        exit 1
+    fi
+    read -r used total <<< "$allocation"
+
+    # cpmtools allocation-block sizes for the supported formats.
+    case "$format" in
+        bettercpm-mm-standard-system)       block_size=1024 ;;
+        bettercpm-ampro-little-board)      block_size=2048 ;;
+        bettercpm-default)                 block_size=2048 ;;
+        bettercpm-ampro-little-board-ds)   block_size=2048 ;;
+        bettercpm-mm-80t-ds-data)          block_size=4096 ;;
+        *)
+            echo "$prog dir: cannot determine allocation block size for format: $format" >&2
+            exit 1
+            ;;
+    esac
+
+    free_k=$(( (total - used) * block_size / 1024 ))
+    printf '\nFree space: %dK\n' "$free_k"
+}
+
+cmd_mkdisk()
+{
+    if [ "$#" -eq 1 ] && [ "$1" = "-h" ]; then
+        mkdisk_usage
+        return 0
+    fi
+
+    if [ "$#" -ne 3 ] || [ "$1" != "-f" ]; then
+        mkdisk_usage >&2
+        exit 2
+    fi
+
+    local format size
+    case "$2" in
+        180k)
+            format="bettercpm-mm-standard-system"
+            size=184320
+            ;;
+        200k)
+            format="bettercpm-ampro-little-board"
+            size=204800
+            ;;
+        332k)
+            format="bettercpm-default"
+            size=368640
+            ;;
+        400k)
+            format="bettercpm-ampro-little-board-ds"
+            size=409600
+            ;;
+        800k)
+            format="bettercpm-mm-80t-ds-data"
+            size=819200
+            ;;
+        *)
+            echo "$prog mkdisk: unknown format: $2" >&2
+            echo >&2
+            mkdisk_usage >&2
+            exit 2
+            ;;
+    esac
+
+    local image="$3"
+
+    ensure_diskdefs
+
+    if [ -e "$image" ] || [ -L "$image" ]; then
+        printf "'%s' already exists. Overwrite it? [y/N] " "$image"
+
+        local answer
+        if ! read -r answer; then
+            echo
+            exit 1
+        fi
+
+        case "$answer" in
+            y|Y|yes|YES|Yes)
+                rm -f -- "$image"
+                ;;
+            *)
+                echo "Cancelled."
+                exit 1
+                ;;
+        esac
+    fi
+
+    truncate -s "$size" "$image"
+    mkfs.cpm -f "$format" "$image"
+}
+
+cmd_convert()
+{
+    if [ "$#" -eq 1 ] && [ "$1" = "-h" ]; then
+        convert_usage
+        return 0
+    fi
+
+    if [ "$#" -ne 2 ]; then
+        convert_usage >&2
+        exit 2
+    fi
+
+    local input="$1"
+    local output="$2"
+    local root="$HOME/projects/git/BetterCPM"
+    local converter="$root/tools/convert_fdf_image.py"
+    local external_fdf="$root/third_party/montezuma/DISK.FDF"
+    local internal_fdf="$root/third_party/montezuma/DISK-INT.FDF"
+    local direction size fdf format cylinders
+
+    if [ ! -f "$input" ]; then
+        echo "$prog convert: input image not found: $input" >&2
+        echo >&2
+        convert_usage >&2
+        exit 2
+    fi
+
+    if [ ! -f "$converter" ]; then
+        echo "$prog convert: converter not found: $converter" >&2
+        exit 2
+    fi
+
+    case "$input:$output" in
+        *.dsk:*.dmk|*.DSK:*.DMK)
+            direction="raw-to-dmk"
+            size=$(wc -c < "$input" | tr -d ' ')
+            case "$size" in
+                368640)
+                    fdf="$external_fdf"
+                    format="California Computer Systems (40T, DS, DD, 332K)"
+                    ;;
+                819200)
+                    fdf="$internal_fdf"
+                    format="Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)"
+                    ;;
+                *)
+                    echo "$prog convert: unsupported raw image size: $size bytes" >&2
+                    echo >&2
+                    convert_usage >&2
+                    exit 2
+                    ;;
+            esac
+            ;;
+        *.dmk:*.dsk|*.DMK:*.DSK)
+            direction="dmk-to-raw"
+            size=$(wc -c < "$input" | tr -d ' ')
+            if [ "$size" -lt 16 ]; then
+                echo "$prog convert: DMK image is shorter than its 16-byte header" >&2
+                exit 2
+            fi
+            cylinders=$(od -An -tu1 -j1 -N1 "$input" | tr -d '[:space:]')
+            case "$cylinders" in
+                40)
+                    fdf="$external_fdf"
+                    format="California Computer Systems (40T, DS, DD, 332K)"
+                    ;;
+                80)
+                    fdf="$internal_fdf"
+                    format="Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)"
+                    ;;
+                *)
+                    echo "$prog convert: unsupported DMK cylinder count: $cylinders" >&2
+                    echo >&2
+                    convert_usage >&2
+                    exit 2
+                    ;;
+            esac
+            ;;
+        *)
+            echo "$prog convert: expected .dsk -> .dmk or .dmk -> .dsk" >&2
+            echo >&2
+            convert_usage >&2
+            exit 2
+            ;;
+    esac
+
+    if [ ! -f "$fdf" ]; then
+        echo "$prog convert: FDF file not found: $fdf" >&2
+        exit 2
+    fi
+
+    python3 "$converter" "$direction" "$input" "$output" \
+        --fdf "$fdf" --format "$format"
+}
+
+cmd_mount()
+{
+    if [ "$#" -eq 1 ] && [ "$1" = "-h" ]; then
+        mount_usage
+        return 0
+    fi
+
+    if [ "$#" -ne 2 ]; then
+        mount_usage >&2
+        exit 1
+    fi
+
+    local drive
+    case "$1" in
+        b|c|d)
+            drive="drive$1.dsk"
+            ;;
+        *)
+            echo "$prog mount: drive must be b, c, or d" >&2
+            echo >&2
+            mount_usage >&2
+            exit 1
+            ;;
+    esac
+
+    if [ ! -f "$2" ]; then
+        echo "$prog mount: disk image not found: $2" >&2
+        echo >&2
+        mount_usage >&2
+        exit 1
+    fi
+
+    local image
+    image="$(realpath "$2")"
+
+    ln -sfn "$image" "$disksloc/$drive"
+    printf '%s -> %s\n' "$drive" "$image"
+}
+
+if [ "$#" -eq 0 ]; then
+    usage >&2
+    exit 2
+fi
+
+command="$1"
+shift
+
+case "$command" in
+    -h|--help)
+        usage
+        ;;
+    build)
+        cmd_build "$@"
+        ;;
+    z)
+        cmd_z "$@"
+        ;;
+    t)
+        cmd_t "$@"
+        ;;
+    cp)
+        cmd_cp "$@"
+        ;;
+    dir)
+        cmd_dir "$@"
+        ;;
+    mkdisk)
+        cmd_mkdisk "$@"
+        ;;
+    mount)
+        cmd_mount "$@"
+        ;;
+    convert)
+        cmd_convert "$@"
+        ;;
+    *)
+        echo "$prog: unknown command: $command" >&2
+        echo >&2
+        usage >&2
+        exit 2
+        ;;
+esac
