@@ -718,6 +718,19 @@ questions do not change the implemented DRI-compatible baseline above.
   returned with a distinguishable failure. `/BARE` retains the DRI baseline:
   any nonzero sequential-read completion terminates without an added
   DUMP-specific read-error diagnostic.
+- When `/40` is included, its data rows shall use the accepted compact
+  eight-byte layout: eight offset digits, two spaces, four bytes as eight
+  contiguous hex digits, one space, four more bytes as eight contiguous hex
+  digits, two spaces, and eight ASCII characters. For example:
+
+  ```text
+  00001230  41424344 45464748  ABCDEFGH
+  ```
+
+  A full row is 37 columns. Normal wide mode retains individually spaced hex
+  bytes. `/40` remains an invocation option, never applies to `/BARE`, and
+  does not alter search or byte-offset semantics. This settles its layout;
+  the proposal's small implementation-cost gate remains in force.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
