@@ -672,6 +672,27 @@ questions do not change the implemented DRI-compatible baseline above.
   apply the starting-position error rule instead. `/BARE` retains DRI behavior:
   no data rows and no added empty-file diagnostic, with its ordinary terminating
   CR/LF and direct return preserved.
+- The paged viewer shall reserve exactly one bottom screen row shared between
+  command hints, status messages and interactive prompts. All other usable
+  screen rows display file data: 23 data rows on a 24-row screen. Wide mode
+  displays 16 bytes per data row, so that example shows up to 368 bytes per
+  full page; there is no fixed 16-data-row page limit. General screen geometry
+  discovery and fallback policy remain to be specified separately.
+- Normally the shared row shows command hints. A message such as `End of file`,
+  `Beginning of file`, `Pattern not found` or `Match at 00001237` temporarily
+  replaces those hints and remains until the next command. Once that command
+  is processed, show its resulting message or restore the hints. Input prompts
+  such as `Find:` or `Go to offset:` likewise replace the hints and remain
+  until submitted or cancelled; afterward show the resulting status or hints.
+  Messages and prompts shall replace/clear that row without scrolling or
+  overwriting the data area. No separate permanent message row is reserved.
+  Exact command-hint wording and prompt editing/overflow details remain open.
+- Page Up when already at the beginning and Page Down when the displayed page
+  already includes EOF shall leave the page and search continuation state
+  unchanged. Show `Beginning of file` or `End of file`, respectively, only in
+  the shared bottom row, without a bell, modal prompt or acknowledgment.
+  A partial final page remains visible until navigation away or quit; reaching
+  EOF in the paged viewer does not itself exit the viewer.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
