@@ -702,6 +702,13 @@ questions do not change the implemented DRI-compatible baseline above.
   enhanced streaming output and `/BARE` shall remain usable without a loaded
   monitor. The broader availability/usability problem is explicitly deferred
   for architectural reconsideration, not considered solved by this requirement.
+- In enhanced unpaged output, Ctrl-C shall stop the dump and return to the
+  CCP. Consume the Ctrl-C so it is not left pending for the next command
+  prompt. Other keys shall not be treated as dump-abort requests; no WordStar
+  navigation controls apply to this streaming mode. This does not change
+  Ctrl-C's Page Down role during normal `/P` navigation. `/BARE` preserves
+  DRI's any-pending-character interruption at each 16-byte line boundary,
+  without consuming that character.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
