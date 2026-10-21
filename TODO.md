@@ -405,13 +405,37 @@ redistributable existing utility; an unchecked item does not by itself block
   boundary probes. Warm start resets the login vector, so merely accessing B:
   in a previous invocation does not include it in a later all-drive report.
 
+- [ ] During archive-utility design, evaluate a general ARC/BARC command with
+  format-specific overlays and a common interface for member enumeration,
+  metadata, extraction, creation, addition, replacement and deletion. Final name
+  remains undecided. Distinguish archive containers from compression algorithms;
+  let handlers report supported capabilities, including read-only formats.
+  Consider keeping DU/filespec handling, prompts and safe temporary-file
+  replacement/recovery in the main utility. Measure overlay/workspace costs and
+  whether combined format/codec overlays are preferable to separate modules.
+  A possible first increment is listing/extraction for one format before adding
+  updates and further formats. This records design questions, not a frozen API,
+  implementation task. Compression and expansion are to be incorporated into
+  this utility. Also consider retaining familiar SQ/USQ commands for CP/M
+  muscle memory, either as separate utilities or SUBMIT wrappers (for example,
+  `USQ.SUB`) around ARC; availability and argument forwarding remain design
+  questions. Consider
+  general selection such as `ARC /EXPAND README.TQT` and explicit format
+  selection such as `ARC /USQ README.TQT`; these are alternative candidate forms,
+  not finalized syntax. Settle detection/selection rules and the supported
+  SQ/USQ, CR/UNCR and CrLZH formats during the design phase.
 - [ ] Implement `DUMP.COM`.
 - [x] Implement `SUBMIT.COM`.
 - [x] Implement `XSUB.COM`.
 - [ ] Implement `ED.COM`.
 - [ ] Implement `ASM.COM`.
 - [ ] Implement `LOAD.COM`.
-- [ ] Implement `DDT.COM`.
+- [ ] Implement `DDT.COM`, the selected Utilities Disk debugger. Start with a
+  behavioral clone of DRI DDT, establishing its command and debugging behavior
+  as the baseline; consider additional features after that baseline is working.
+  Identify and retain the historical reference/version and its provenance before
+  implementation. Detailed engineering specification and extension scope remain
+  to be settled.
 - [ ] Implement a BetterCP/M `MOVCPM.COM` equivalent for supported memory and
   resident-system configurations.
 - [x] Implement `SYSGEN.COM` installation of the running A: system on a
