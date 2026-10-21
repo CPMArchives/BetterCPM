@@ -826,6 +826,10 @@ questions do not change the implemented DRI-compatible baseline above.
   valid page to preserve; do not enter an empty viewer or display a partially
   read initial page as complete. Restore the caller's drive/user and perform
   normal DUMP cleanup on this error path.
+- During normal viewer navigation, unrecognized keys shall be ignored without
+  a bell, diagnostic or page movement. They shall not change the active search
+  pattern or continuation position. Interactive prompts retain their separate
+  text-entry and editing rules.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
