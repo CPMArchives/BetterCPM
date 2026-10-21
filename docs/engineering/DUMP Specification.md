@@ -639,6 +639,13 @@ questions do not change the implemented DRI-compatible baseline above.
   folding or text normalization is performed. Hex Find also matches exact
   decoded bytes (hexadecimal digit case affects notation only). No case-
   insensitive search option is included in the initial enhanced design.
+- On each successful Find or next/previous occurrence, place the display row
+  containing the match's first byte at the top of the data area and show the
+  exact starting offset in the status area, for example `Match at 00001237`.
+  Row alignment must not round the reported match offset. The numeric offset
+  identifies the match without requiring highlighting, reverse video or other
+  terminal-specific rendition. The final general offset-width contract remains
+  a separate display decision; the status offset must follow that contract.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
