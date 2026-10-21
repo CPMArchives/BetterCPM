@@ -616,6 +616,11 @@ questions do not change the implemented DRI-compatible baseline above.
   while it is being entered or searched, so cancellation can restore that
   prior state. Ctrl-C remains Page Down during normal viewer navigation; this
   decision does not introduce a Ctrl-G cancellation alias.
+- The maximum search pattern is 32 decoded bytes: up to 32 ASCII characters
+  or 64 hexadecimal digits, with optional spaces between hexadecimal byte
+  pairs. The limit applies to decoded bytes, not the length of a spaced hex
+  entry. Overlong patterns shall receive a clear diagnostic and permit re-entry;
+  they shall never be silently truncated or searched as a shorter pattern.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
