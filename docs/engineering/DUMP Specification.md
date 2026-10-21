@@ -686,7 +686,19 @@ questions do not change the implemented DRI-compatible baseline above.
   until submitted or cancelled; afterward show the resulting status or hints.
   Messages and prompts shall replace/clear that row without scrolling or
   overwriting the data area. No separate permanent message row is reserved.
-  Exact command-hint wording and prompt editing/overflow details remain open.
+  Exact command-hint wording remains open. Prompt editing follows the rules
+  below.
+- Text-entry prompts shall support the basic WordStar editing controls:
+  Ctrl-S moves the cursor one character left; Ctrl-D moves it one character
+  right; Ctrl-G deletes the character under the cursor; Ctrl-H (Backspace)
+  deletes the character immediately before the cursor. Movement or deletion
+  beyond either end leaves the input unchanged. Ordinary characters insert
+  at the cursor, shifting subsequent text to the right. These controls edit
+  the prompt input and shall not invoke viewer navigation or cancellation.
+  Enter submits the input and ESC cancels it. Long input scrolls horizontally
+  within the shared bottom row to keep the insertion point visible; it shall
+  not wrap into or overwrite the data area. Existing pattern-length and
+  offset-validation limits still apply; scrolling does not relax those limits.
 - Page Up when already at the beginning and Page Down when the displayed page
   already includes EOF shall leave the page and search continuation state
   unchanged. Show `Beginning of file` or `End of file`, respectively, only in
