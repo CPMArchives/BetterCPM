@@ -10578,8 +10578,15 @@ The original Model 4 keyboard supplies these command-editor aliases:
 |---|---|
 | Left / Right | Move one character left / right |
 | Up / Down | Previous / next command in history (Ctrl-K / Ctrl-J) |
-| Clear | Toggle insert/overwrite (Ctrl-V) |
+| Clear / Shift-Clear | Escape (ESC, `1Bh`) |
+| Ctrl-Clear | DEL (`7Fh`) |
 | Shift-Left / DEL | Delete the character left of the cursor (Ctrl-H) |
+
+CLEAR follows Montezuma Micro's ESC convention; use Ctrl-V to toggle
+insert/overwrite. In trs80gp, Home activates CLEAR. Physical Layout also maps
+the host apostrophe key to CLEAR; the software keyboard offers a `CLR` key.
+Host Esc activates BREAK, which produces Ctrl-C rather than ESC. See the
+[trs80gp keyboard reference](https://48k.ca/trs80gp.html#keyboard).
 
 Physical Left is distinct from Ctrl-H. Ctrl-E and Ctrl-X retain physical-line continuation and line-discard behavior; they do not navigate history.
 

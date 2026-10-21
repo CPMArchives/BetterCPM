@@ -50,8 +50,10 @@ prevents an interior cursor from exposing unrelated page-zero bytes as glyphs.
 
 The shared Model 4 BIOS publishes distinct internal logical bytes for physical
 Left and Right so they do not collide with `^H` and other ASCII controls.
-Control-letter chords are translated from the modifier row. Clear remains the
-physical Insert/overwrite toggle; Shift-Left produces DEL (`7Fh`). This remains
+Control-letter chords are translated from the modifier row. CLEAR and
+Shift-CLEAR produce ESC (`1Bh`), and Ctrl-CLEAR produces DEL (`7Fh`), restoring
+Montezuma Micro's keyboard convention. Shift-Left also produces DEL. Use Ctrl-V
+for the Insert/overwrite toggle; CLEAR is no longer its physical alias. This remains
 a platform binding: the CCP consumes logical bytes and does not inspect Model 4
 hardware.
 

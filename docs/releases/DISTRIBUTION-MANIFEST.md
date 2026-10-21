@@ -62,6 +62,24 @@ All membership or layout changes require discussion with the maintainer.
 - Broader development/userland tools generally belong here; individual additions
   still require selection.
 
+### Provisional daily Utilities media
+
+`tools/build_utilities_disk.py --build` assembles the currently implemented
+owned components: DUMP.COM, XSUB.COM and its required BATCHIO.RSX. It verifies
+file readback and the filesystem, and produces a 332K raw cpmsim image and an
+80T DS 800K data DMK for Model 4. Reports explicitly list pending selections;
+these are provisional daily media, not a fully qualified Utilities release.
+No third-party program is silently selected or substituted.
+
+The tracked `tools/bcpm` launcher mirrors the maintainer's personal script.
+After its ordinary System Disk build, `bcpm build` creates these Utilities media
+and mounts the raw image as cpmsim B:. `bcpm z` also selects Utilities as B:;
+`bcpm t` selects the native Utilities image as B: and the existing development
+build disk as C:. Neither automatically mounts the conformance suite. Replacing
+an existing cpmsim B: symlink preserves its old target; a regular disk file is
+never overwritten. Existing emulator sessions must be closed before rebuilding
+or switching mounted media.
+
 ## CP/M Tools Disk
 
 This is separate from the BetterCP/M Utilities Disk and derives from the

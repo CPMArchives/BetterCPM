@@ -21,4 +21,4 @@ BV_D_API:      DB      '1.2','$'        ; BDOS API version
 BV_D_IMP:      DB      '1.9','$'        ; BDOS implementation version
 BV_I_ID:       DB      'BIOS','$'       ; BIOS subsystem identifier
 BV_I_API:      DB      '1.7','$'        ; BIOS API version
-BV_I_IMP:      DB      '1.12','$'       ; BIOS implementation version
+BV_I_IMP:      DB      '1.13','$'       ; BIOS implementation version

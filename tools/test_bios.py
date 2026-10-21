@@ -971,6 +971,13 @@ def main() -> None:
     require(cpu.a == 127, "Shift-Left did not produce DEL")
     cpu.mem[0xF440] = cpu.mem[0xF480] = 0
 
+    # MM CLEAR semantics, both Shift keys and Control+Shift variants.
+    for modifiers, expected in [(0,27),(1,27),(2,27),(3,27),(4,127),(5,127),(6,127),(7,127)]:
+        cpu.mem[0xF440], cpu.mem[0xF480] = 2, modifiers
+        cpu.run(scan)
+        require(cpu.a == expected, f"CLEAR modifiers {modifiers}: {cpu.a:02X} != {expected:02X}")
+    cpu.mem[0xF440] = cpu.mem[0xF480] = 0
+
     # Check every connected ordinary matrix key after arithmetic decoding.
     rows = ('@ABCDEFG', 'HIJKLMNO', 'PQRSTUVW', 'XYZ', '01234567', '89:;,-./')
     for row, letters in enumerate(rows):

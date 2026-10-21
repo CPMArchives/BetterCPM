@@ -175,11 +175,11 @@ M4_NUMKEY:
 M4_PUNKEY:
         CP      48
         JR      C,M4_CHAR
-        SUB     48
-        LD      HL,M4_KEYTAB
-        LD      B,0
-        LD      C,A
-        ADD     HL,BC
+  ; E already holds the physical key slot. Index without destroying that
+  ; identity; this saves three bytes for MM-compatible CLEAR controls.
+        LD      HL,M4_KEYTAB-48
+        LD      D,0
+        ADD     HL,DE
         LD      A,(HL)
 M4_CHAR:
         LD      C,A
@@ -202,10 +202,15 @@ M4_CHAR:
         RET
 M4_CTRLLETTER:
         LD      A,C
+        CP      01BH                    ; MM Ctrl-CLEAR is DEL, not ESC
+        JR      NZ,M4_CTRLASCII
+        LD      A,07FH
+        RET
+M4_CTRLASCII:
         CP      '@'
         RET     C
-        CP      060H
-        RET     NC
+  ; Ordinary row decoding yields only @.._ here; punctuation and special
+  ; keys are below @. No upper-range test is needed before the control mask.
         AND     01FH
         RET
 
@@ -235,8 +240,7 @@ M4_KEYSHIFT:                            ; translate shifted key
         RET     NC
         CP      '0'
         RET     Z
-        CP      '1'
-        JR      C,M4_KADD16
+        JR      C,M4_KADD16              ; flags from CP '0'; equality returned
         SUB     10H                     ; 1..9, :, ; -> !..), *, +
         RET
 M4_KADD16:
@@ -248,12 +252,12 @@ M4_KADD16:
 ; -------------------------------------------------------------------------------
 
 M4_KEYTAB:                              ; keyboard translation table
-  ; Enter, Clear/Insert, Break, Up, Down, Left, Right, Space.
+  ; Enter, Clear/ESC, Break, Up, Down, Left, Right, Space.
   ; Restore normal arrow control codes; punctuation uses the MM chords.
         IF      M4_EDITOR_KEYS EQ 1
-        DB      13,31,3,11,10,28,29,' '
+        DB      13,27,3,11,10,28,29,' '
         ELSE
-        DB      13,31,3,11,10,8,9,' '
+        DB      13,27,3,11,10,8,9,' '
         ENDIF
 
   ; CTRL punctuation is indexed by the physical unshifted character ,..9.
@@ -262,6 +266,10 @@ M4_KEYTAB:                              ; keyboard translation table
         IF      M4_EDITOR_KEYS EQ 1
 M4_CTRLTAB:
         DB      '{','_','}',05CH,'0','|','2','~','4','^','6',060H,'[',']'
+        ENDIF
+
+        IF      M4_EDITOR_KEYS EQ 1
+        DB      0                       ; retain published mutable-state anchors
         ENDIF
 
 ; ================================================================================
