@@ -52,7 +52,7 @@ All membership or layout changes require discussion with the maintainer.
 - LINK
 - DDT.COM: selected debugger; begin with a behavioral clone of DRI DDT, then consider additional features. Implementation pending.
 - Standalone Z80 disassembler: exact program TBD.
-- Archive utility: likely LU or NULU; selection TBD.
+- Archive utility: likely LU or NULU; selection TBD. A general ARC/BARC utility with format-specific overlays is also a design candidate; see the archive-utility design item in [TODO](../../TODO.md).
 - Compression tools: SQ/USQ, CR/UNCR, CrLZH; exact artifacts TBD.
 - Broader development/userland tools generally belong here; individual additions
   still require selection.

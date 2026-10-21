@@ -405,6 +405,17 @@ redistributable existing utility; an unchecked item does not by itself block
   boundary probes. Warm start resets the login vector, so merely accessing B:
   in a previous invocation does not include it in a later all-drive report.
 
+- [ ] During archive-utility design, evaluate a general ARC/BARC command with
+  format-specific overlays and a common interface for member enumeration,
+  metadata, extraction, creation, addition, replacement and deletion. Final name
+  remains undecided. Distinguish archive containers from compression algorithms;
+  let handlers report supported capabilities, including read-only formats.
+  Consider keeping DU/filespec handling, prompts and safe temporary-file
+  replacement/recovery in the main utility. Measure overlay/workspace costs and
+  whether combined format/codec overlays are preferable to separate modules.
+  A possible first increment is listing/extraction for one format before adding
+  updates and further formats. This records design questions, not a frozen API,
+  implementation task or replacement of the selected distribution membership.
 - [ ] Implement `DUMP.COM`.
 - [x] Implement `SUBMIT.COM`.
 - [x] Implement `XSUB.COM`.
