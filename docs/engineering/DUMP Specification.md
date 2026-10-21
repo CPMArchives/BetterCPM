@@ -644,8 +644,13 @@ questions do not change the implemented DRI-compatible baseline above.
   exact starting offset in the status area, for example `Match at 00001237`.
   Row alignment must not round the reported match offset. The numeric offset
   identifies the match without requiring highlighting, reverse video or other
-  terminal-specific rendition. The final general offset-width contract remains
-  a separate display decision; the status offset must follow that contract.
+  terminal-specific rendition. Status offsets use the enhanced mode's fixed
+  eight-digit hexadecimal format.
+- Enhanced-mode offsets shall use exactly eight uppercase hexadecimal digits
+  with leading zeroes in data rows, Go To position displays and match/status
+  messages, for example `00001237`. They shall not wrap at 64 KiB. Position
+  input may use fewer digits; the accepted numeric syntax is specified
+  separately. `/BARE` retains four-digit offsets wrapping modulo 65536.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
