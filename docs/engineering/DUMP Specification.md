@@ -780,6 +780,13 @@ questions do not change the implemented DRI-compatible baseline above.
   Present the diagnostic and input using the shared bottom row; do not reserve
   another row. Only a successful Go To shall reposition the page and reset
   the search continuation anchor according to the navigation rules above.
+- Page Up shall move backward by one page's data capacity, clamping the
+  resulting page start to offset zero. Thus, after a search or Go To leaves
+  fewer than a full page of bytes above the current page, Page Up shall show
+  the first page rather than refuse to move. This also applies when moving
+  back from a partial final page. A successful movement resets the search
+  continuation anchor as specified above; Page Up at offset zero retains
+  the existing beginning-of-file boundary behavior.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
