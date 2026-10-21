@@ -668,6 +668,17 @@ reconciliation gate precede the corresponding implementation program.
 
 ## Post-1.0 considerations
 
+- [ ] Consider an unloadable system-information RSX for SYSINFO. Load the
+  provider temporarily, query additional system/platform capabilities through
+  extended BDOS services, optionally save a snapshot such as `SYSTEM.INF`, then
+  unload the provider and recover its TPA. Revisit the idea when finalizing the
+  SYSINFO specification as well as during post-1.0 planning. Distinguish OS-known
+  and configured information from safely detected capabilities and unknown
+  results; consider a common query interface with platform-specific providers.
+  Avoid speculative hardware probes, and treat a saved report as a potentially
+  stale snapshot rather than authoritative configuration. This is a future
+  consideration only: no provider ABI, file format, implementation or release
+  commitment is established here.
 - [ ] Conduct a measured architectural retrospective immediately after 1.0.
   Record actual byte usage, memory and overlay pressure, awkward interfaces,
   recurring implementation problems, and technical debt without changing the
