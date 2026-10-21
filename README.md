@@ -6,6 +6,8 @@ The project begins with CP/M 2.2 as its compatibility baseline while redesigning
 
 BetterCP/M has reached the **1.0 OS implementation milestone**: architecture Stages 1 through 8 and retained OS implementation Items 1 through 6 are complete. Utility selection and completion, release assembly, reproducible qualification tooling, and final release-candidate verification remain. This is a development milestone, not the declaration of a qualified 1.0 release.
 
+The finalized visual design is defined in the [BetterCP/M Visual Identity standard](specifications/VISUAL-IDENTITY.md).
+
 ## Goals
 
 BetterCP/M is designed around several principles:
