@@ -658,6 +658,13 @@ questions do not change the implemented DRI-compatible baseline above.
   numeric overflow shall be rejected rather than truncated or wrapped. A
   syntactically valid number must also pass the supported file-position and
   file-length bounds checks before repositioning.
+- Positions must identify an existing byte: for nonempty files the valid
+  interval is zero through file length minus one. An offset exactly at EOF
+  is out of range. Out-of-range `/FROM=` shall report a clear diagnostic and
+  exit without dumping file data. Out-of-range interactive `G` shall report
+  a clear diagnostic and retain the page, active pattern and continuation
+  state unchanged. Empty-file behavior is a separate explicit case below;
+  no out-of-range position shall wrap or be silently clamped.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
