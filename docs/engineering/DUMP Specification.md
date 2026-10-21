@@ -745,6 +745,11 @@ questions do not change the implemented DRI-compatible baseline above.
   exit and on DUMP-handled error/cancellation paths. `/BARE` accepts ordinary
   CP/M drive qualification only (for example `B:FILE.COM` in the current user)
   and rejects enhanced user/DU qualification.
+- Defer `/LEN=` from the initial enhanced version. `/FROM=` remains accepted;
+  do not implement or advertise a length-limited range option in this version.
+  Revisit `/LEN=` for a concrete bounded-dump or scripting workflow, with
+  explicit partial-row, EOF, overflow and `/P` interaction rules. Deferred
+  switches are not silently accepted or ignored.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
