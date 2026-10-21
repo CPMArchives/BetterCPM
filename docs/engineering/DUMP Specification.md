@@ -60,15 +60,27 @@ BetterCP/M additionally supports the standard utility version query:
 DUMP /VER
 ```
 
-with the normal project-owned version metadata:
+The version display shall follow the compact utility-identification layout in
+[BetterCP/M Visual Identity](../../specifications/VISUAL-IDENTITY.md):
 
 ```text
-BetterCP/M DUMP 1.0 (Build nnn)
+DUMP 1.0 (Build nnn)
+  - - -
+ | BetterCP/M Utilities
+ | Hexadecimal File Display
 ```
 
-`/VER` is standalone and performs no file access.
+The utility/version/build title begins at the primary margin. The short spaced
+hyphen rule and indented vertical strokes form a single implied corner beneath
+it. Use ordinary 7-bit ASCII and CR/LF line endings; no terminal-control,
+color or special-character support is required.
 
-The exact build number is supplied by BetterCP/M version metadata rather than being embedded independently in the DUMP implementation.
+`/VER` is standalone and performs no file access. This identification display
+appears only for `/VER`; ordinary dump output retains the DRI-compatible layout.
+
+The version and build number are supplied by BetterCP/M utility-version metadata,
+rather than maintained independently in the DUMP implementation. `nnn` is a
+placeholder for that metadata-owned build number.
 
 ---
 
@@ -535,8 +547,11 @@ The baseline should be qualified against at least the following cases:
     - termination does not require or cause an intentional warm boot.
 
 13. **`/VER`**
-    - prints only BetterCP/M version metadata;
-    - performs no input-file processing.
+    - prints the metadata-owned version/build and compact identification layout
+      specified in Section 3, including its ASCII framing and indentation;
+    - performs no file access;
+    - requires no monitor provider or terminal escape sequences;
+    - ordinary file dumping does not print this identification display.
 
 ---
 
