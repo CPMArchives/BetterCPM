@@ -634,6 +634,11 @@ questions do not change the implemented DRI-compatible baseline above.
   containing only spaces, treat it as empty and cancel in the same way. ASCII
   spaces are meaningful data and shall not be trimmed: a nonempty all-space
   entry selected as ASCII is a valid pattern, subject to the 32-byte limit.
+- ASCII Find shall match exact bytes, preserving the case entered at the
+  interactive prompt. `Hello` matches `Hello`, not `HELLO` or `hello`; no case
+  folding or text normalization is performed. Hex Find also matches exact
+  decoded bytes (hexadecimal digit case affects notation only). No case-
+  insensitive search option is included in the initial enhanced design.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
