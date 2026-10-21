@@ -609,6 +609,13 @@ questions do not change the implemented DRI-compatible baseline above.
   occurrence stops at the beginning of the file. If no further match exists in
   the requested direction, display `No further matches` and leave the displayed
   page unchanged. Do not silently restart at the opposite end of the file.
+- ESC (`1Bh`) shall cancel either interactive Find prompt (pattern entry or
+  Hex/ASCII selection) or an in-progress search. Cancellation returns to the
+  previously displayed page without replacing the previous active search
+  pattern or its continuation state. A new Find request remains provisional
+  while it is being entered or searched, so cancellation can restore that
+  prior state. Ctrl-C remains Page Down during normal viewer navigation; this
+  decision does not introduce a Ctrl-G cancellation alias.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
