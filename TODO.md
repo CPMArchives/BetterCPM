@@ -416,7 +416,10 @@ redistributable existing utility; an unchecked item does not by itself block
   A possible first increment is listing/extraction for one format before adding
   updates and further formats. This records design questions, not a frozen API,
   implementation task. Compression and expansion are to be incorporated into
-  this utility, rather than supplied as separate compression commands. Consider
+  this utility. Also consider retaining familiar SQ/USQ commands for CP/M
+  muscle memory, either as separate utilities or SUBMIT wrappers (for example,
+  `USQ.SUB`) around ARC; availability and argument forwarding remain design
+  questions. Consider
   general selection such as `ARC /EXPAND README.TQT` and explicit format
   selection such as `ARC /USQ README.TQT`; these are alternative candidate forms,
   not finalized syntax. Settle detection/selection rules and the supported

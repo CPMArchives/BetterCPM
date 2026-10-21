@@ -54,8 +54,9 @@ All membership or layout changes require discussion with the maintainer.
 - Standalone Z80 disassembler: exact program TBD.
 - Archive utility: likely LU or NULU; selection TBD. A general ARC/BARC utility with format-specific overlays is also a design candidate; see the archive-utility design item in [TODO](../../TODO.md).
 - Compression/expansion functions: incorporate SQ/USQ, CR/UNCR and CrLZH
-  format support into the planned ARC/BARC utility rather than distribute them
-  as separate commands. Command-line selection is to be designed; candidate
+  format support into the planned ARC/BARC utility. Familiar commands such as
+  SQ/USQ may also be supplied as separate utilities or SUBMIT wrappers such as
+  `USQ.SUB`; this remains a design question. Command-line selection is to be designed; candidate
   forms include `ARC /EXPAND README.TQT` and explicit `ARC /USQ README.TQT`.
   Final utility name, switches and supported format scope remain to be settled.
 - Broader development/userland tools generally belong here; individual additions
