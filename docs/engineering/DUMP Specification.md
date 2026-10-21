@@ -576,6 +576,17 @@ questions do not change the implemented DRI-compatible baseline above.
 - Retain Section 3's finalized implied-corner `/VER` display, with version and
   build supplied by utility metadata. The proposed viewer must not revert to
   the former single-line version presentation.
+- DUMP shall parse its own command tail, identify the single filename independently
+  of option order, and construct the file FCB before file access. Both
+  `DUMP /BARE FILE.COM` and `DUMP FILE.COM /BARE` shall work; the first
+  CCP-prepared default FCB must not be assumed to contain the filename.
+  In `/BARE`, the constructed FCB shall retain ordinary CP/M filename and optional
+  drive qualification in the caller's current user area; it shall not admit
+  enhanced DU selectors. The sealed compatibility contract covers subsequent
+  file reading, display, interruption and return behavior, while allowing this
+  command-line option syntax. This is a DUMP responsibility, not a CCP change.
+  This decision applies to the proposed enhanced version; the existing initial
+  clone above still uses the default FCB until that version is implemented.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
