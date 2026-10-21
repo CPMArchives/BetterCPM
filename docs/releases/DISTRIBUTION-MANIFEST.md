@@ -46,7 +46,7 @@ All membership or layout changes require discussion with the maintainer.
 ## Utilities Disk
 
 - XSUB.COM
-- DUMP.COM
+- DUMP.COM: initial DRI-compatible hexadecimal file display in Z80/ZSM4, plus `/VER`; [engineering specification](../engineering/DUMP%20Specification.md).
 - General-purpose full-screen editor: adopt an existing program; exact program TBD.
 - ZSM4
 - LINK
