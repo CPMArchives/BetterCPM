@@ -773,6 +773,13 @@ questions do not change the implemented DRI-compatible baseline above.
   row. If they do not, report the required dimensions and return to the CCP.
   Do not truncate the layout or silently select `/40`. The diagnostic may
   suggest `/40` when its compact layout would fit the reported screen.
+- In the Go To prompt, Enter with empty input or ESC shall cancel without
+  changing the displayed page, active search pattern or continuation state.
+  Invalid or out-of-range input shall produce a diagnostic and permit
+  correction in the same prompt, retaining the entered text for editing.
+  Present the diagnostic and input using the shared bottom row; do not reserve
+  another row. Only a successful Go To shall reposition the page and reset
+  the search continuation anchor according to the navigation rules above.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
