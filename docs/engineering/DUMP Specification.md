@@ -596,8 +596,15 @@ questions do not change the implemented DRI-compatible baseline above.
 - Overlapping matches shall be reported. Next occurrence shall search from one
   byte after the previous match's starting offset, not after the end of its
   pattern. For example, searching `ABA` in `ABABA` finds matches at offsets
-  zero and two. This settles overlap handling; the effect of intervening paging
-  or Go To on the continuation anchor remains to be decided separately.
+  zero and two.
+- Paging and successful Go To retain the active search pattern but reset its
+  continuation anchor to the new displayed page's first byte. After such
+  repositioning, next occurrence searches forward from that byte, inclusively;
+  previous occurrence searches for the nearest match starting strictly before
+  that byte. Without intervening repositioning, next/previous occurrence search
+  for a match starting strictly after/before the last successful match's start,
+  respectively, so overlapping matches remain eligible. A failed boundary or
+  invalid Go To that does not reposition the viewer does not reset this anchor.
 - Search shall not wrap automatically. Next occurrence stops at EOF; previous
   occurrence stops at the beginning of the file. If no further match exists in
   the requested direction, display `No further matches` and leave the displayed
