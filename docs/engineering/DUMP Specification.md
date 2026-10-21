@@ -709,6 +709,15 @@ questions do not change the implemented DRI-compatible baseline above.
   Ctrl-C's Page Down role during normal `/P` navigation. `/BARE` preserves
   DRI's any-pending-character interruption at each 16-byte line boundary,
   without consuming that character.
+- When BDOS returns a distinguishable read error to enhanced DUMP, do not
+  present it as normal EOF. Unpaged mode shall report the failing file offset
+  and stop. `/P` shall retain the last valid page and report the read error and
+  failing offset in the shared bottom row, rather than committing a partial
+  replacement page. Lower-level BDOS/BIOS operator recovery and nonreturning
+  aborts remain outside DUMP's control; this contract applies when control is
+  returned with a distinguishable failure. `/BARE` retains the DRI baseline:
+  any nonzero sequential-read completion terminates without an added
+  DUMP-specific read-error diagnostic.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
