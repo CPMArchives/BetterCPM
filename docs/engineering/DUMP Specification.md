@@ -676,8 +676,8 @@ questions do not change the implemented DRI-compatible baseline above.
   command hints, status messages and interactive prompts. All other usable
   screen rows display file data: 23 data rows on a 24-row screen. Wide mode
   displays 16 bytes per data row, so that example shows up to 368 bytes per
-  full page; there is no fixed 16-data-row page limit. General screen geometry
-  discovery and fallback policy remain to be specified separately.
+  full page; there is no fixed 16-data-row page limit. Screen geometry follows
+  the active backend's reported dimensions as specified below.
 - Normally the shared row shows command hints. A message such as `End of file`,
   `Beginning of file`, `Pattern not found` or `Match at 00001237` temporarily
   replaces those hints and remains until the next command. Once that command
@@ -750,6 +750,12 @@ questions do not change the implemented DRI-compatible baseline above.
   Revisit `/LEN=` for a concrete bounded-dump or scripting workflow, with
   explicit partial-row, EOF, overflow and `/P` interaction rules. Deferred
   switches are not silently accepted or ignored.
+- `/P` shall use the active screen backend's reported width and height rather
+  than assuming 80 columns by 24 rows. Reserve exactly one physical bottom row
+  for the shared interface, and use the remaining usable rows for file data:
+  23 data rows on a 24-row Model 4 screen, or 39 on a backend reporting 40 rows.
+  `/40` changes the data-row format, not the reported physical screen height;
+  do not assume extra rows or usable columns that the backend does not report.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
