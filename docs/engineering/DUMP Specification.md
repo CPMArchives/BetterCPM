@@ -731,6 +731,11 @@ questions do not change the implemented DRI-compatible baseline above.
   bytes. `/40` remains an invocation option, never applies to `/BARE`, and
   does not alter search or byte-offset semantics. This settles its layout;
   the proposal's small implementation-cost gate remains in force.
+- The enhanced ASCII column shall display bytes `20h` through `7Eh`
+  directly, including spaces. Every other byte (`00h` through `1Fh`, `7Fh`,
+  and `80h` through `FFh`) shall appear as `.`. Do not strip high bits or send
+  data bytes as terminal controls. The hexadecimal column always represents
+  the original byte value; ASCII substitution does not alter search data.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
