@@ -651,6 +651,13 @@ questions do not change the implemented DRI-compatible baseline above.
   messages, for example `00001237`. They shall not wrap at 64 KiB. Position
   input may use fewer digits; the accepted numeric syntax is specified
   separately. `/BARE` retains four-digit offsets wrapping modulo 65536.
+- `/FROM=` and interactive `G` shall accept one to eight hexadecimal digits,
+  optionally followed by `H` or `h`. Hexadecimal digits are case-insensitive:
+  `1237`, `1237H` and `00ff` are valid examples. Input is always hexadecimal,
+  never implicitly decimal. Signs, missing digits, invalid characters and
+  numeric overflow shall be rejected rather than truncated or wrapped. A
+  syntactically valid number must also pass the supported file-position and
+  file-length bounds checks before repositioning.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
