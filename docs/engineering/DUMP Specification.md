@@ -628,6 +628,12 @@ questions do not change the implemented DRI-compatible baseline above.
   displayed page's first byte as its anchor (forward inclusive, backward
   strictly before). This completed no-match outcome is distinct from ESC
   cancellation, which preserves the previous pattern and continuation state.
+- Enter with no pattern text cancels Find without an error or a search,
+  preserving the previous page, pattern and continuation state. No Hex/ASCII
+  prompt is needed for a zero-character entry. If Hex is selected for an entry
+  containing only spaces, treat it as empty and cancel in the same way. ASCII
+  spaces are meaningful data and shall not be trimmed: a nonempty all-space
+  entry selected as ASCII is a valid pattern, subject to the 32-byte limit.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
