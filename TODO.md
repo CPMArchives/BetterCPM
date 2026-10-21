@@ -415,7 +415,12 @@ redistributable existing utility; an unchecked item does not by itself block
   whether combined format/codec overlays are preferable to separate modules.
   A possible first increment is listing/extraction for one format before adding
   updates and further formats. This records design questions, not a frozen API,
-  implementation task or replacement of the selected distribution membership.
+  implementation task. Compression and expansion are to be incorporated into
+  this utility, rather than supplied as separate compression commands. Consider
+  general selection such as `ARC /EXPAND README.TQT` and explicit format
+  selection such as `ARC /USQ README.TQT`; these are alternative candidate forms,
+  not finalized syntax. Settle detection/selection rules and the supported
+  SQ/USQ, CR/UNCR and CrLZH formats during the design phase.
 - [ ] Implement `DUMP.COM`.
 - [x] Implement `SUBMIT.COM`.
 - [x] Implement `XSUB.COM`.

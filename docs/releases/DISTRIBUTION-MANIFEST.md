@@ -53,7 +53,11 @@ All membership or layout changes require discussion with the maintainer.
 - DDT.COM: selected debugger; begin with a behavioral clone of DRI DDT, then consider additional features. Implementation pending.
 - Standalone Z80 disassembler: exact program TBD.
 - Archive utility: likely LU or NULU; selection TBD. A general ARC/BARC utility with format-specific overlays is also a design candidate; see the archive-utility design item in [TODO](../../TODO.md).
-- Compression tools: SQ/USQ, CR/UNCR, CrLZH; exact artifacts TBD.
+- Compression/expansion functions: incorporate SQ/USQ, CR/UNCR and CrLZH
+  format support into the planned ARC/BARC utility rather than distribute them
+  as separate commands. Command-line selection is to be designed; candidate
+  forms include `ARC /EXPAND README.TQT` and explicit `ARC /USQ README.TQT`.
+  Final utility name, switches and supported format scope remain to be settled.
 - Broader development/userland tools generally belong here; individual additions
   still require selection.
 
