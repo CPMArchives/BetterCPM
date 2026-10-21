@@ -787,6 +787,13 @@ questions do not change the implemented DRI-compatible baseline above.
   back from a partial final page. A successful movement resets the search
   continuation anchor as specified above; Page Up at offset zero retains
   the existing beginning-of-file boundary behavior.
+- A distinguishable read error during search shall stop that search without
+  changing the displayed page or the previously committed search pattern and
+  continuation state. A new Find remains provisional until completion; a
+  failed continuation shall not advance its anchor. Show
+  `Read error at XXXXXXXX` in the shared bottom row, using the failing byte
+  offset in the enhanced eight-digit hexadecimal format. Do not report
+  `Pattern not found` or `No further matches` for an incomplete search.
 - Defer command-line `/FIND=` from the initial enhanced viewer. Interactive `F`
   remains the intended search interface in that proposal. Revisit command-line
   search when a concrete invocation or SUBMIT workflow justifies it, including
