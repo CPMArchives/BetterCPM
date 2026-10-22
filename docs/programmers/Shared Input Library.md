@@ -348,3 +348,39 @@ acknowledgment-only input is added. They have compiled and native-assembler
 qualification, not a claim of real-platform default/error screen integration.
 Use `tools/test_shared_ui_layouts.py`, then
 `tools/build_native_shared_ui.py --extra-fixture build/shared-ui/layouts.mac`.
+
+
+### Runnable reference consumer
+
+[`src/examples/uiexample.mac`](../../src/examples/uiexample.mac) is a complete
+consumer of the standard editor, word commands, text/choice controllers, default
+and choice-error layouts, and screen renderer. It is a developer example, not a
+distribution utility or an alteration to DUMP/CONFIG's prompt policies.
+
+Build it with `tools/build_ui_example.py`; output is
+`build/shared-ui/UIEX.COM`. It requires a callable SCRN backend with at least
+40 columns and four rows. On cpmsim load `ANSISCRN` and `ANSI`; on Model 4 load
+`M4SCRN` and `ADM3A`, then run `UIEX`. `UIEX /40` exercises a narrow prompt
+region on the same screen. The example's minimal command-tail handling uses
+any nonempty tail to select that demonstration; it is not a utility parser.
+
+The example clears through typed position/erase primitives, preserves separate
+body rows, and puts prompts/messages on the last row. Its keyboard hook uses
+unechoed direct BDOS 6 input. Rendering uses literal SCRN cells rather than
+cooked BDOS output, so redraws cannot consume Ctrl-S/Ctrl-C as console flow
+control. Application state is separate from provisional editing state.
+
+The deliberately simple validator rejects text `BAD` and choice `Y` to make
+correction/error paths easy to exercise. Start with `BAD`, press Enter, then
+Ctrl-Y to clear and restore the visible default; type a replacement or press
+Enter to accept `DEFAULT`. At the choice prompt, `Y` shows a diagnostic while
+retaining `(Y/N) [N]`; `N` or Enter completes the demonstration. Ctrl-C/ESC cancel
+locally. A final key returns to the CCP. No files are changed by the program.
+This validation policy is demonstration code, not shared library policy.
+
+Run `tools/test_ui_example.py` for compiled interaction checks. Real-platform
+campaigns are `tools/test_ui_example_live.py` (requires test-only `pyte`) and
+`tools/test_ui_example_model4.py`, on disposable images. Native assembly parity
+uses `tools/build_native_shared_ui.py --extra-fixture build/shared-ui/uiex.mac`.
+Use this example to adapt your application's own validation and restoration
+hooks; select only the modules it needs and remeasure its complete binary.

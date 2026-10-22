@@ -803,4 +803,5 @@ reconciliation gate precede the corresponding implementation program.
 - [x] Qualify compiled standard-library behavior, native/cross parity, actual module omission and per-profile code/state costs.
 - [x] Extract a shared screen field renderer and integrate DUMP, including runtime label widths and 255-byte scroll safety.
 - [x] Implement bounded standard separate-default and choice-error formatting, with compiled behavior and native assembly parity.
-- [ ] Integrate standard default/choice layouts into real consumer interactions and qualify both platforms before further migrations. Preserve ED/BDOS/CCP compatibility boundaries; audit CONFIG's remaining stack margin before enabling additional profiles.
+- [x] Integrate standard default/choice layouts into a runnable developer consumer and qualify both platforms. Preserve ED/BDOS/CCP compatibility boundaries.
+- [ ] Migrate further production prompts only where utility specifications permit; audit CONFIG's remaining stack margin before enabling additional profiles.

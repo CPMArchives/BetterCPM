@@ -152,3 +152,52 @@ These tests qualify formatting and assembly, not new screen transports. DUMP
 Build 003 and CONFIG Build 014 are unchanged by this increment. Production
 standard-default/choice-error consumer integration and real-platform screen
 qualification remain open; no such result is inferred from the CPU fixtures.
+
+
+## Integrated standard reference consumer
+
+`src/examples/uiexample.mac` is a runnable developer template, built as
+`build/shared-ui/UIEX.COM`, not a new distribution utility. It connects every
+standard layer to direct BDOS keyboard input and real callable SCRN primitives.
+The complete example is 2,789 bytes, including its hooks, display text, buffer,
+state and private stack; SHA-256:
+`af5169acc0c0396a6bf121fd1141ba728da8ad4c6a35e1759b0c926851da4f11`.
+Native ZSM4/LINK emits identical bytes.
+
+Compiled consumer checks cover six wide/compact interactions plus missing-backend
+rejection. They start with nonblank cells and independently model actual screen
+operations. Checks include separate-default acceptance, validation/correction,
+Ctrl-Y restoring the default, typed/default choice acceptance, preserved choice
+questions on errors, marked diagnostic shortening, local Ctrl-C/ESC cancellation,
+body-row preservation and command return. The existing 68 controller, 271 layout,
+252 screen-field and 252 choice-format checks also pass.
+
+Real cpmsim qualification uses shipped ANSISCRN/ANSI and independent pyte screens.
+It checks 80-column and narrow 40-column regions, `BAD` rejection, the next edit
+processed without an acknowledgment-only key, restored and accepted separate
+text defaults, immediate `Y` rejection with choices/default retained, Enter
+accepting `N`, marked shortening in the narrow layout, local cancellation,
+preserved body rows and return to CCP. Independent filesystem checks pass and
+the reference distribution image is unchanged.
+
+Early real-screen testing found an example integration mistake: operation 0
+was raw output, not screen clear. The example now explicitly positions at the
+origin and erases to end of screen. The compiled backend starts nonblank and
+rejects that incorrect operation, preventing the fixture from masking it again.
+A command-echo synchronization ambiguity and two expected-string length errors
+were test-harness issues; final checks wait for the actual prompt/caret and use
+the corrected expected content. No library or OS change was required.
+
+DUMP Build 003 and CONFIG Build 014 retain their qualified utility behavior.
+This record qualifies a real standard-controller consumer and provides reusable
+bindings; it does not claim that all production utilities have migrated or that
+new prompt policies have been added to their specifications.
+
+
+The final native trs80gp campaign also passes on the shipped M4SCRN/ADM3A pair.
+Actual 80x24 screen captures cover wide and narrow prompt regions, default
+restoration and Enter acceptance, correction, choice-error retention and marked
+shortening, Ctrl-C text cancellation, physical CLEAR choice cancellation, reverse
+caret cells, preserved body rows and CCP return. Independent filesystem checking
+passes and the source DMK is unchanged. These are direct Model 4 display results,
+not inferred from cpmsim's host output or the compiled cell model.
