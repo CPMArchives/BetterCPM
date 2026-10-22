@@ -1,0 +1,176 @@
+; BetterCP/M codec common code. Include codec.inc first, then this file.
+; Invoke CODEC_CODE once, in a code section outside execution fall-through.
+; No ORG, segment selection, END, data allocation or self-modifying code.
+; Z80 MACRO/ENDM syntax; emitted labels are library-internal ABI v1 helpers.
+; Requires 32 significant symbol characters (z80pack z80asm: -e32).
+; Verified with host z80asm 2.1; native ZSM4 assembly not yet qualified.
+; From the repository root: python3 tools/test_codec.py
+;
+; All helpers preserve IX/IY/alternate registers and stack balance.
+; AF/BC/DE/HL may change. Caller must save live registers around callbacks.
+; Unless otherwise noted helpers require a validated >=16-byte context.
+
+CODEC_CODE      MACRO
+
+; INIT path only: validate prefix size first, then configuration. Success
+; clears STATUS/DETAIL but preserves PHASE. Does not clear a prior failure
+; phase: algorithm INIT calls CX_READY after its own checks/reset succeed.
+; Size <16: C/CS_SPACE, E=0, absolutely no context writes (no latch).
+; Other failures: latched with CX_FAIL. No callbacks are invoked.
+CX_CHECK_BASE:
+        LD      L,(IX+CX_SIZE)
+        LD      H,(IX+CX_SIZE+1)
+        LD      A,H
+        OR      A
+        JR      NZ,CX_BASE_FIELDS
+        LD      A,L
+        CP      CX_PREFIX_SIZE
+        JR      NC,CX_BASE_FIELDS
+        LD      E,0
+        LD      A,CS_SPACE
+        SCF
+        RET
+CX_BASE_FIELDS:
+        LD      E,CD_ABI
+        LD      A,(IX+CX_ABI)
+        CP      CX_ABI_VERSION
+        JR      NZ,CX_BAD_CONFIG
+        LD      E,CD_OPTIONS
+        LD      A,(IX+CX_OPTIONS)
+        OR      A
+        JR      NZ,CX_BAD_CONFIG
+        LD      E,CD_RESERVED
+        LD      A,(IX+CX_RESERVED)
+        OR      A
+        JR      NZ,CX_BAD_CONFIG
+        LD      E,CD_READ
+        LD      A,(IX+CX_READ)
+        OR      (IX+CX_READ+1)
+        JR      Z,CX_BAD_CONFIG
+        JP      CX_OK
+CX_BAD_CONFIG:
+        LD      A,CS_CONFIG
+        JP      CX_FAIL
+
+; INIT path: HL = total algorithm context size required, including prefix.
+; Call only after CX_CHECK_BASE succeeds. Unsigned comparison; no clearing
+; of algorithm storage, no callbacks. Success preserves PHASE.
+CX_CHECK_SIZE:
+        LD      E,(IX+CX_SIZE)
+        LD      D,(IX+CX_SIZE+1)
+        OR      A                       ; clear carry before subtraction
+        SBC     HL,DE
+        JP      C,CX_OK
+        JP      Z,CX_OK
+        LD      E,0
+        LD      A,CS_SPACE
+        JP      CX_FAIL
+
+; Processing-entry guard: A = required phase. A failed context returns
+; its original status/detail unchanged. Other wrong phases latch CS_STATE,
+; with the actual phase as detail. Use before any callback or data access.
+CX_CHECK_STATE:
+        LD      E,(IX+CX_PHASE)
+        LD      D,A
+        LD      A,E
+        CP      CP_FAILED
+        JP      Z,CX_RETURN_STATUS
+        LD      A,D
+        CP      E
+        JP      Z,CX_OK
+        LD      A,CS_STATE
+        JP      CX_FAIL
+
+; Check optional capabilities before consuming input or producing output.
+; Call after a processing-entry guard, not on an unvalidated prefix.
+CX_CHECK_WRITE:
+        LD      A,(IX+CX_WRITE)
+        OR      (IX+CX_WRITE+1)
+        JP      NZ,CX_OK
+        LD      E,CD_WRITE
+        JP      CX_BAD_CONFIG
+CX_CHECK_REWIND:
+        LD      A,(IX+CX_REWIND)
+        OR      (IX+CX_REWIND+1)
+        JP      NZ,CX_OK
+        LD      E,0
+        LD      A,CS_NOREWIND
+        JP      CX_FAIL
+
+; Raw dispatch: address MUST be checked and configuration held stable.
+; Tail jump retains CALL's return address: callback RET returns to caller.
+; A and incoming flags reach the callback unchanged; result passes through
+; unchanged. Dispatch does not translate EOF/errors or update context state.
+CX_CALL_READ:
+        LD      L,(IX+CX_READ)
+        LD      H,(IX+CX_READ+1)
+        JP      (HL)
+CX_CALL_WRITE:
+        LD      L,(IX+CX_WRITE)
+        LD      H,(IX+CX_WRITE+1)
+        JP      (HL)
+CX_CALL_REWIND:
+        LD      L,(IX+CX_REWIND)
+        LD      H,(IX+CX_REWIND+1)
+        JP      (HL)
+
+; Translate a callback failure: A = reason, including zero for WRITE or
+; REWIND. READ's physical EOF (A=0) must instead be handled by the codec.
+CX_READ_ERROR:
+        LD      E,A
+        LD      A,CS_READ
+        JP      CX_FAIL
+CX_WRITE_ERROR:
+        LD      E,A
+        LD      A,CS_WRITE
+        JP      CX_FAIL
+CX_REWIND_ERROR:
+        LD      E,A
+        LD      A,CS_REWIND
+        JP      CX_FAIL
+
+; A = nonzero failure status (not CS_END), E = detail. Replaces state;
+; processing guards enforce latching. INIT may replace an old failure.
+CX_FAIL:
+        LD      (IX+CX_STATUS),A
+        LD      A,E
+        LD      (IX+CX_DETAIL),A
+        LD      (IX+CX_PHASE),CP_FAILED
+        LD      A,(IX+CX_STATUS)
+        SCF
+        RET
+
+; Return existing nonzero status without changing context or detail.
+CX_RETURN_STATUS:
+        LD      A,(IX+CX_STATUS)
+        SCF
+        RET
+
+; Success helpers must not be used to bypass a failed-context guard.
+; CX_OK does not change phase. A=0/NC; BC/DE/HL are unspecified.
+CX_READY:
+        LD      (IX+CX_PHASE),CP_READY
+        JR      CX_OK
+CX_DATA:
+        LD      (IX+CX_PHASE),CP_DATA
+        JR      CX_OK
+CX_DONE:
+        LD      (IX+CX_PHASE),CP_DONE
+CX_OK:
+        XOR     A
+        LD      (IX+CX_STATUS),A
+        LD      (IX+CX_DETAIL),A
+        RET
+
+; GET's verified normal completion: C/CS_END; clear stale detail.
+; Algorithm calls only after its format-specific integrity checks pass.
+CX_END:
+        LD      (IX+CX_PHASE),CP_DONE
+        XOR     A
+        LD      (IX+CX_DETAIL),A
+        LD      A,CS_END
+        LD      (IX+CX_STATUS),A
+        SCF
+        RET
+
+        ENDM
