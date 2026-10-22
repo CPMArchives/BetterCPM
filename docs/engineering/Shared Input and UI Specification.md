@@ -177,7 +177,7 @@ must respect each utility's specification and measured space budget.
 | COPY Build 005 | Choice controller plus append compatibility engine | Raw input, legacy overwrite/help/recovery policy, name editing and validation; MOVE unchanged |
 | REN Build 008 | Choice controller plus append-only compatibility event engine | Existing choices and filename echo/editing/overflow/validation policy |
 | ERA Build 004 | Standard choice-only controller with ERA compatibility binding | Existing Y/N and R/S/A/? retry, echo, help, Ctrl-C cancellation and unattended policy |
-| DUP Build 005 | Standard choice-only controller with shared one-key adapter | Only Y authorizes FORMAT/COPY; other responses decline |
+| DUP Build 006 | Choice controller shared across menus, drives and strict confirmation | Original CHOICE display/dispatch; command-line selection bypasses input; only Y authorizes FORMAT/COPY |
 | SYSGEN Build 006 | Standard choice-only controller with compatibility input adapter | Only Y authorizes; any other response declines |
 | UIEX developer example | Standard editor, words, text/choice controllers and layouts | Demonstration policy only; excluded from distribution manifests |
 

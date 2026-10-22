@@ -239,3 +239,5 @@ REN Build 008 replacement-name extraction is qualified separately in [REN Name F
 COPY Build 005 prompts and the MOVE compatibility audit are recorded in [COPY Shared Input Qualification](COPY%20Shared%20Input%20Qualification.md).
 
 PIP Build 028 protected replacement is recorded in [PIP Shared Input Qualification](PIP%20Shared%20Input%20Qualification.md). The [remaining-consumer audit](Shared%20Input%20Remaining%20Consumer%20Audit.md) separates eligible menus, CONFIG constraints and command/data boundaries.
+
+DUP Build 006 menu/drive contexts and confirmation isolation are recorded in [DUP Menu Input Qualification](DUP%20Menu%20Input%20Qualification.md).

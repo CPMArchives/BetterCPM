@@ -43,24 +43,12 @@ def main() -> None:
         for drive in "bcd":
             blank(args.disk_template, disks / f"drive{drive}.dsk")
         source = work / "DUP.MAC"
-        from system_layout import expand_layout
-        def expanded_source():
-            text=expand_layout(SOURCE.read_text())
-            from build_disk_utilities import builtin_source
-            text=text.replace('        INCLUDE dup-cli.inc',(ROOT/'src/utilities/dup-cli.inc').read_text())
-            for name in ('common','fdbread'):
-                text=text.replace('        INCLUDE disk/'+name+'.inc',
-                                  (ROOT/'src/utilities/disk'/(name+'.inc')).read_text())
-            text=text.replace('        INCLUDE disk/builtins.inc',builtin_source())
-            text=text.replace('; @monitor-console@',(ROOT/'src/utilities/common/monitorconsole.inc').read_text())
-            from shared_ui import expand_dup_ui
-            text=expand_dup_ui(text)
-            text=text.replace('        ASEG\n        ORG 0100H','        CSEG\n        .PHASE 0100H',1)
-            pos=text.rfind('        END')
-            return text[:pos]+'        .DEPHASE\n'+text[pos:]
+        from build_dup import expanded_source
         from build_native_rcp_transients import initialized_workspace
         import re
-        text = initialized_workspace(expanded_source())
+        text = expanded_source().replace('        ASEG\n        ORG 0100H','        CSEG\n        .PHASE 0100H',1)
+        pos=text.rfind('        END');text=text[:pos]+'        .DEPHASE\n'+text[pos:]
+        text = initialized_workspace(text)
         text = re.sub(r'(?m)^\s+DS\s+(\d+)\s*$',
                       r'        REPT \1\n        DB 0FFH\n        ENDM', text)
         text = re.sub(r'(?m)^([A-Z][A-Z0-9_]*:)?[ \t]*DS[ \t]+(\d+)[ \t]*(?:;[^\n]*)?$',

@@ -94,7 +94,7 @@ DCMENU:
         CALL HEADER
         LD HL,DMENU
         CALL PUTS
-        CALL CHOICE
+        CALL DP_MENU
         CP 3
         JP Z,DONE
         CP 'A'
@@ -384,7 +384,7 @@ ASKDRV: LD A,(DCMODE)
         LD A,(DCSECOND)
         RET
 DCASK:  CALL PUTS                       ; askdrv
-        CALL CHOICE
+        CALL DP_DRIVE
         CP 3
         JR Z,ASKBAD
         SUB 'A'
