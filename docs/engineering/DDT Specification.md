@@ -59,3 +59,9 @@ See [adaptation qualification](DDT%20Adaptation%20Qualification.md) for the meas
 ## Model 4 qualification closure
 
 Qualify the existing adaptation on a disposable, freshly constructed Model 4 system disk built with `tools/build_complete_system.py`, after a boot-only control reaches the CCP prompt. An older retained release disk that produces a blank control screen is not a valid DDT fixture. The harness must preserve the supplied source image, record its hash and the private test image, and check actual VRAM captures for editing, cancellation, debugger results and warm-boot return. No debugger or shared-input behavior changes are authorized by a fixture repair. Keep the historical reproduction and adaptation artifact hashes unchanged.
+
+## Utilities Disk release acceptance
+
+Accept DDT as a component of the existing provisional Utilities Disk; unrelated pending members do not become accepted or selected. Rebuild current system and Utilities artifacts, verify the packaged DDT hash on both raw cpmsim and native Model 4 data media, then mount only disposable System A: and Utilities B: copies. Launch `B:DDT` from A:, test the unchanged command language and shared editing, load a controlled debuggee from the caller's drive, and return through G0 and Ctrl-C/BREAK. Exercise Model 4's normal loaded monitor configuration as well as its real keyboard/display. Confirm command search/drive restoration, byte-identical source media, unchanged Utilities media and debuggee, and filesystem integrity after execution. Record the component verdict separately from whole-disk provisional status. Preserve both qualified DDT binary hashes and all historical reproduction inputs.
+
+See [Utilities release acceptance](DDT%20Utilities%20Release%20Acceptance.md) for the component verdict, image-bound receipts and remaining whole-disk scope.
