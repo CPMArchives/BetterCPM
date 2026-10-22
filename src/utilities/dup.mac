@@ -183,7 +183,7 @@ DFKNOWN:                                ; dfknown
         JP C,DUNSUP
         LD HL,CONFIRM
         CALL PUTS
-        CALL KEY
+        CALL DP_ASK
         CP 'Y'
         JP NZ,DMAIN
 
@@ -555,7 +555,7 @@ CPCONF: LD HL,CPHMSG                    ; cpconf
         CALL PUTC
         LD HL,COPYASK
         CALL PUTS
-        CALL KEY
+        CALL DP_ASK
         CP 'Y'
         JP NZ,DMAIN
         CALL CRLF
@@ -1664,6 +1664,7 @@ STRPTR: DW 0                            ; strptr
         INCLUDE disk/common.inc
 FDBABORT EQU FATAL
         INCLUDE disk/fdbread.inc
+; @dup-choice@
 ; @utility-version DUP@
 
         END

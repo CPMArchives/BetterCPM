@@ -805,4 +805,5 @@ reconciliation gate precede the corresponding implementation program.
 - [x] Implement bounded standard separate-default and choice-error formatting, with compiled behavior and native assembly parity.
 - [x] Integrate standard default/choice layouts into a runnable developer consumer and qualify both platforms. Preserve ED/BDOS/CCP compatibility boundaries.
 - [x] Migrate SYSGEN installation and package-replacement approval to the choice-only controller, preserving any-non-Y-declines policy and qualifying both platforms.
+- [x] Migrate DUP format/copy confirmation to the same one-key adapter as SYSGEN, preserving original safety policy.
 - [ ] Migrate further production prompts only where utility specifications permit; audit CONFIG's remaining stack margin before enabling additional profiles.

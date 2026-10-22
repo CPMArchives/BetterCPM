@@ -211,3 +211,13 @@ policy. It adds no editor or formatting buffer. Compiled safety, native parity,
 actual cpmsim round-trip and native Model 4 installation/cold-boot checks pass.
 See [SYSGEN shared input qualification](SYSGEN%20Shared%20Input%20Qualification.md)
 for exact code/state costs, hashes, scope and the incomplete all-utility sweep.
+
+
+## DUP production migration and common confirmation adapter
+
+DUP Build 005 uses the same `ui/confirm.inc` compatibility adapter as SYSGEN for
+FORMAT/COPY approval. SYSGEN remains byte-identical after extracting that common
+source. DUP's scoped key/configuration/version safety checks, parser/dispatch,
+native parity, real cpmsim FORMAT/COPY/CHECK and all four native Model 4 groups
+pass. See [DUP shared input qualification](DUP%20Shared%20Input%20Qualification.md)
+for exact sizes, hashes, media/file audits and fixture-accounting corrections.

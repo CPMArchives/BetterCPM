@@ -109,3 +109,10 @@ SYSGEN's installation and package-replacement confirmations select only the
 choice controller through `common/sysgeninput.inc`. The compatibility adapter
 preserves any-non-Y-declines behavior, original questions and no default; it
 adds no editor or formatting buffer. See the developer guide for measured cost.
+
+
+`confirm.inc` is the shared one-key compatibility adapter selected by DUP and
+SYSGEN. It preserves original any-non-Y-declines confirmation policy rather than
+introducing defaults or retries. Both utilities reuse their own uppercase,
+unechoed `KEY` routine. The selection helpers and developer guide describe the
+220-byte complete binding and its output contract.

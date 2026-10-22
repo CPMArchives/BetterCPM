@@ -22,10 +22,19 @@ def controller_source(*,text=True,choice=False):
     return '\n'.join((UI/(p+'.inc')).read_text() for p in parts)
 
 
+def confirmation_source():
+    binding=(UI/'confirm.inc').read_text()
+    modules=(UI/'events.inc').read_text()+'\n'+controller_source(text=False,choice=True)
+    return binding.replace('; @choice-modules@',modules)
+
+
 def expand_sysgen_ui(source):
     binding=(UI.parent/'sysgeninput.inc').read_text()
-    modules=(UI/'events.inc').read_text()+'\n'+controller_source(text=False,choice=True)
-    return source.replace('; @sysgen-choice@',binding.replace('; @choice-modules@',modules))
+    return source.replace('; @sysgen-choice@',binding.replace('; @confirmation@',confirmation_source()))
+
+
+def expand_dup_ui(source):
+    return source.replace('; @dup-choice@','DP_ASK:\n'+confirmation_source())
 
 
 def expand_config_ui(source):

@@ -80,6 +80,9 @@ def main():
         if stem=='sysgen':
             from shared_ui import expand_sysgen_ui
             text=expand_sysgen_ui(text)
+        if stem=='dup':
+            from shared_ui import expand_dup_ui
+            text=expand_dup_ui(text)
         data=assemble(args.assembler,text,out/(stem.upper()+'.COM'),out/(stem+'.lst'),0x100)
         if len(data)>0x3D00:
             raise SystemExit(f'{stem}: program overlaps private stack')
