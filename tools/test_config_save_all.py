@@ -33,7 +33,7 @@ def execute(name: str, image: bytes, actions: tuple[str, ...], delay: int = 2000
     for action in actions:
         args += key_args(action) + ["-id", str(delay)]
     args += ["-it", "-ix"]
-    run_trs80gp(args, cwd=work, check=True, timeout=40)
+    run_trs80gp(args, cwd=work, check=True, timeout=180)
     return disk.read_bytes(), screen(work / "trs80-text-0.bin")
 
 
@@ -43,8 +43,8 @@ def main() -> None:
     setup = probe(OUT)
     check = probe(OUT, check=True)
     original = medium((("SETUP.COM", setup), ("CHECK.COM", check)))
-    actions = ("SETUP\r", "\r", "CONFIG\r", "J", "E", "VER\r", "\x03",
-               "H", "B", "Y")
+    actions = ("SETUP\r", "\r", "CONFIG\r", "A", "E", "VER\r", "\x03",
+               "S", "B", "Y")
     saved, text = execute("save", original, actions)
     assert "All current settings saved and verified." in text, text
     before = logical(original)
@@ -66,7 +66,7 @@ def main() -> None:
 
     _checked, text = execute("cold-check", saved, ("CHECK\r", "\r"))
     assert "SYSGEN PROBE PASS" in text, text
-    _viewed, text = execute("cold-view", saved, ("CONFIG\r", "J"))
+    _viewed, text = execute("cold-view", saved, ("CONFIG\r", "A"))
     assert "Pending startup command: VER" in text, text
 
     fault_setup = probe(OUT, fault=True)

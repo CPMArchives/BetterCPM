@@ -74,6 +74,9 @@ def main():
         text=text.replace('        INCLUDE sysgen-export.inc', (ROOT/'src/utilities/sysgen-export.inc').read_text())
         text=text.replace('; @config-validation@',validation).replace('; @config-iobyte@',io_meta)
         text=text.replace('; @monitor-console@', (ROOT/'src/utilities/common/monitorconsole.inc').read_text())
+        if stem=='config':
+            from shared_ui import expand_config_ui
+            text=expand_config_ui(text)
         data=assemble(args.assembler,text,out/(stem.upper()+'.COM'),out/(stem+'.lst'),0x100)
         if len(data)>0x3D00:
             raise SystemExit(f'{stem}: program overlaps private stack')

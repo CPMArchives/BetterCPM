@@ -143,6 +143,7 @@ LABEL:  PUSH AF
         RET
 ; Read an unsigned byte. ENTER accepts the original value in OLDVAL.
 ; Carry means cancel/invalid. Input uses function 6, so ^C is ours.
+; @legacy-number-begin@
 NUMBER: XOR A
         LD (NUMVAL),A
         LD (NDIGIT),A
@@ -189,6 +190,7 @@ NUMEND: CALL CRLF
         RET
 NUMBAD: SCF
         RET
+; @legacy-number-end@
 ; API is deliberately independent of the loaded BIOS address.
 ; B = operation, DE = 80-byte request, A/Z = result.
 API:    LD C,181

@@ -9,7 +9,7 @@
         ASEG
         ORG 0100H
 FDBMODE EQU 1
-; CONFIG-private scratch A800h-ABDFh is disjoint from catalogue, track stream,
+; CONFIG-private scratch A800h-ABFFh is disjoint from catalogue, track stream,
 ; save/rollback buffers and the 3E00h-3FFFh stack. Every buffer is initialized
 ; before use. The entry guard requires AC00h below the current BDOS boundary.
         CALL CF_PARSE                  ; valid quoted command text is not options
@@ -193,7 +193,6 @@ PHFIELDS:
         CP 3
         JP Z,STEPS
         LD HL,NUMMSG
-        CALL PUTS
         CALL NUMBER
         JP C,PHEDIT
         JR PHSAVE
@@ -737,7 +736,6 @@ EDPRINT:EX DE,HL                        ; workbench print
         JP NC,EDSHOW
         LD (EDFIELD),A
         LD HL,EDVALUE
-        CALL PUTS
         CALL EDNUMBER
         JP C,EDSHOW
         PUSH DE
@@ -1051,28 +1049,11 @@ STFETCHBAD:
         LD (STSTATE),A
         RET
 
+; Shared editor admits printable ASCII only; pending state commits on Enter.
 STEDIT:LD A,126
-        LD (STLINE),A
-        LD HL,STEDITMSG                 ; replace pending command
-        CALL PUTS
-        XOR A
-        LD (STLINE+1),A
-        LD DE,STLINE
-        LD C,10
-        CALL BDOS
-        CALL CRLF
-        LD A,(STLINE+1)
-        OR A
-        JP Z,STARTMENU
-        LD B,A
-        LD HL,STLINE+2
-STEDCHK:LD A,(HL)
-        CP 32
-        JR C,STEDITBAD
-        CP 127
-        JR NC,STEDITBAD
-        INC HL
-        DJNZ STEDCHK
+        LD HL,STEDITMSG
+        CALL EDITNEW
+        JP C,STARTMENU
         CALL STDEFAULT
         LD A,1
         LD (STPEND+7),A
@@ -1088,12 +1069,6 @@ STEDCHK:LD A,(HL)
         LD (STSTATE),A
         LD (STDIRTY),A
         JP STARTMENU
-STEDITBAD:
-        LD HL,STCHARBAD
-        CALL PUTS
-        CALL PAUSE
-        JP STARTMENU
-
 STCLEAR:CALL STDEFAULT                 ; disable pending command
         LD A,1
         LD (STSTATE),A
@@ -1358,7 +1333,6 @@ EDSIZE: LD A,1                          ; workbench size
         LD (EDMODE),A
 
 EDSLOTIN:LD HL,EDSLOT                   ; workbench slotin
-        CALL PUTS
         CALL EDNUMBER
         JP C,EDSHOW
         LD A,D
@@ -1375,7 +1349,6 @@ EDSLOTIN:LD HL,EDSLOT                   ; workbench slotin
         OR A
         JP NZ,EDSIZEIN
         LD HL,EDID
-        CALL PUTS
         CALL EDNUMBER
         JP C,EDSHOW
         LD A,D
@@ -1391,7 +1364,6 @@ EDSLOTIN:LD HL,EDSLOT                   ; workbench slotin
         JP EDSHOW
 
 EDSIZEIN:LD HL,EDSIZEQ                  ; workbench sizein
-        CALL PUTS
         CALL EDNUMBER
         JP C,EDSHOW
         LD A,D
@@ -1464,55 +1436,53 @@ EDMERGE:LD A,E                          ; workbench merge
 ; Numeric Field Input
 ; -------------------------------------------------------------------------------
 
-EDNUMBER:LD HL,EDINPUT                  ; workbench number
-        LD (EDPTR),HL
-        XOR A
-        LD (EDCOUNT),A
-        LD (EDOVER),A
-
-EDKEY:  CALL KEY                        ; workbench key
-        CP 3
-        JR Z,EDCANCEL
+NUMBER: LD A,1
+        LD (CI_BYTE),A
+        CALL CI_NUM
+        RET NC
+        LD A,(CI_LAST)
         CP 13
-        JR Z,EDEND
-        CP '0'
-        JR C,EDKEY
-        CP '9'+1
-        JR NC,EDKEY
-        LD B,A
-        LD A,(EDCOUNT)
-        CP 5
-        JR C,EDTAKE
-        LD A,1
-        LD (EDOVER),A
-        JR EDKEY
-
-EDTAKE:                                 ; workbench take
-        INC A
-        LD (EDCOUNT),A
-        LD HL,(EDPTR)
-        LD (HL),B
-        INC HL
-        LD (EDPTR),HL
-        LD A,B
-        CALL PUTC
-        JR EDKEY
-
-EDEND:  CALL CRLF                       ; workbench end
-        LD A,(EDOVER)
+        SCF
+        RET NZ
+        LD A,(OLDVAL)
         OR A
-        JR NZ,EDCANCEL
-        LD A,(EDCOUNT)
-        OR A
-        JR Z,EDCANCEL
-        LD HL,(EDPTR)
-        LD (HL),','
-        LD HL,EDINPUT
-        LD (PARPTR),HL
-        JP PNUM
-
-EDCANCEL:SCF                            ; workbench cancel
         RET
+EDNUMBER:XOR A
+        LD (CI_BYTE),A
+CI_NUM: LD A,5
+        CALL EDITNEW
+        RET C
+EDVALID:LD A,(EDITLEN)
+        LD B,A
+        LD HL,EDITBUF
+EDVDIG: LD A,(HL)
+        CP '0'
+        JR C,EDVBAD
+        CP '9'+1
+        JR NC,EDVBAD
+        INC HL
+        DJNZ EDVDIG
+        LD (HL),','
+        LD HL,EDITBUF
+        LD (PARPTR),HL
+        CALL PNUM
+        JR C,EDVBAD
+        LD A,(CI_BYTE)
+        OR A
+        JR Z,EDVWORD
+        LD A,D
+        OR A
+        JR NZ,EDVBAD
+EDVWORD:CALL CI_CRLF
+        LD A,E
+        OR A
+        RET
+EDVBAD: LD HL,EDNUMBAD
+        CALL UIMESSAGE
+        CALL WAITEDIT
+        RET C
+        JR EDVALID
+EDNUMBAD:DB 'Invalid decimal value.',0
   ; Print HL unsigned, including directory counts beyond the old 255 limit.
 
 EDDEC:  LD DE,10000                     ; workbench dec
@@ -1550,15 +1520,15 @@ EDTITLE:DB 'Disk format workbench',0    ; workbench title
 EDASK:  DB 'Copy current format from logical drive [B-D] (^C returns):',13,10,0 ; workbench ask
 EDHELP: DB 'A-P Edit  Q Apply to drive  R IDs  S Sizes  ^C Discard',13,10,0 ; workbench help
 
-EDVALUE:DB 'Decimal value (ENTER keeps current, ^C cancels): ',0 ; workbench value
+EDVALUE:DB 'Decimal value: ',0 ; workbench value
 
-EDSLOT: DB 'Physical sector slot [1-32]: ',0 ; workbench slot
+EDSLOT: DB 'Sector slot (1..32): ',0 ; workbench slot
 
-EDSIZEQ:DB 'Size code [0=128, 1=256, 2=512, 3=1024]: ',0 ; workbench sizeq
+EDSIZEQ:DB 'Size code (0..3): ',0 ; workbench sizeq
 
 EDMODE: DB 0                            ; workbench mode
 EDNEW:  DB 0                            ; workbench new
-EDID:   DB 'Sector ID [0-255]: ',0      ; workbench id
+EDID:   DB 'Sector ID (0..255): ',0      ; workbench id
 EDOFFS: DB 0,1,1,2,3,1,4,1,5,1,6,2,8,2,10,1 ; workbench offs
         DB 11,1,12,2,14,2,16,1,17,1,18,1,19,1,52,1
 
@@ -1589,14 +1559,6 @@ EDFIELD:DB 0                            ; workbench field
 EDWIDTH:DB 0                            ; workbench width
 
 EDSAVE: DB 0                            ; workbench save
-EDOVER: DB 0                            ; workbench over
-
-EDCOUNT:DB 0                            ; workbench count
-
-EDPTR:  DW 0                            ; workbench ptr
-
-EDINPUT:DS 6                            ; workbench input
-
 EDCOPY EQU 0AAA0H                           ; workbench copy
 
 ; ================================================================================
@@ -1841,7 +1803,6 @@ IO_BACK:
 IO_MENU:
         CALL IO_SHOW
         LD HL,IO_PROMPT
-        CALL PUTS
         CALL EDNUMBER
         JR C,IO_BACK
         LD A,D
@@ -1857,7 +1818,7 @@ IO_MENU:
 IO_MBAD:
         CALL ERROR
         JR IO_BACK
-IO_PROMPT: DB 'New disk-boot IOBYTE (decimal): ',0
+IO_PROMPT: DB 'Disk-boot IOBYTE (decimal): ',0
 IO_SHOW:
         LD HL,IO_LIVE
         CALL PUTS
@@ -3060,7 +3021,7 @@ PHHELP: DB 13,10,'Select [ A - F ], or BREAK (^C) to return.',13,10,0 ; physical
 
 PHDETMSG:DB 13,10,'Incompatible logical drive binding unconfigured; use CONFIG G.',13,10,0 ; physical-drive binding invalidation message
 
-NUMMSG: DB 'New value (ENTER keeps current, ^C cancels): ',0 ; nummsg
+NUMMSG EQU EDVALUE
 TRKMSG: DB 13,10,'Track choices:',13,10 ; track-count msg
         DB '[ A ] 35',13,10,'[ B ] 40',13,10,'[ C ] 77',13,10,'[ D ] 80',13,10
         DB 'ENTER keeps current; ^C cancels.',13,10,0
@@ -3109,8 +3070,7 @@ STHELP: DB 13,10,'[ E ] Edit or replace command',13,10
         DB '[ C ] Clear and disable command',13,10
         DB '[ T ] Test pending command now',13,10
         DB 'BREAK (^C) returns without saving.',13,10,0
-STEDITMSG:DB 'New command (ENTER keeps current): ',0
-STCHARBAD:DB 'Command must contain printable ASCII characters.',13,10,0
+STEDITMSG:DB 'Command: ',0
 STTESTING:DB 13,10,'Testing pending startup command...',13,10,0
 STTESTNONE:DB 'There is no pending startup command to test.',13,10,0
 STTEST126:DB 'A 126-byte command can run at cold boot but cannot use Test now.',13,10,0
@@ -3154,10 +3114,29 @@ STPEND EQU 0A9A0H                          ; canonical pending BCST record
 STSUBFCB:DB 1,'$$$     ','SUB'          ; A: stock command stream
         DS 24
 STSUBBUF EQU 0AAE0H                         ; one counted submitted command
+; CONFIG uses shared basic input with local cancellation/DEL normalization.
+; @config-ui@
         INCLUDE disk/sysgen.inc
         INCLUDE disk/common.inc
 FDBABORT EQU CF_FATAL
         INCLUDE disk/fdbread.inc
 ; @utility-version CONFIG@
 
+; Caller-owned transient input state follows the existing counted-line buffer.
+EDITBUF EQU STLINE+2
+EDITLEN EQU STLINE+1
+EDITCUR EQU STLINE
+EDITSTART EQU 0ABE0H
+EDITMAX EQU 0ABE1H
+EDITPROMPT EQU 0ABE2H
+CI_LAST EQU 0ABE4H
+CI_BYTE EQU 0ABE5H
+UIREAD EQU CI_READ
+UIDRAW EQU CI_DRAW
+UICANCEL EQU CI_CRLF
+UIMESSAGE EQU CI_MESSAGE
+UILIMITMSG EQU CI_LIMIT
+UI_PUT EQU CI_PUT
+UI_MARK EQU CI_MARKER
+UI_COLUMNS EQU 79
         END

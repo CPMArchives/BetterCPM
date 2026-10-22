@@ -40,3 +40,28 @@ Rendering remains caller-owned. DUMP's renderer retains its prompt labels, SCRN 
 ## Qualification of the extraction
 
 The extracted DUMP remains 14,154 bytes, SHA-256 `1d1f260172e5d4cea26d32965b30f524a044a206aa659695f6c1f483f467e5c8`, identical to Build 002. This provides a strict behavior-preservation check in addition to the compiled DUMP regressions. It does not qualify the unimplemented standard profiles.
+
+## Inline renderer and CONFIG binding
+
+`inline.inc` renders one physical console line through `UI_PUT` and `UI_MARK`.
+Both hooks take A and preserve BC/DE/HL. The caller supplies `UI_COLUMNS`, shorter
+than its physical console width, and a NUL-terminated label at `EDITPROMPT`.
+The label must leave at least one input/cursor cell. The caller must ensure
+`EDITMAX + UI_COLUMNS <= 255` for this initial byte-indexed renderer. CONFIG
+uses 79 columns on its existing 80-column layout, a maximum 126-byte field,
+and short fixed labels. This is not terminal geometry detection or a 40-column
+CONFIG layout.
+
+The renderer clears/pads the row, scrolls input to keep the insertion point
+visible and marks that cell without requiring terminal cursor-position escapes.
+It does not own the screen or validate values. `configinput.inc` supplies direct
+BDOS 6 input/output, maps Ctrl-C to local ESC and DEL to Backspace, and uses the
+existing optional Function 178 for reverse-video marking. Direct output is
+required here: cooked BDOS output can intercept pending Ctrl-S/Ctrl-C during
+redraw. The fallback marker is an underscore.
+
+CONFIG reuses its counted startup buffer for the length-counted edit text and
+six otherwise unused private state bytes below its existing AC00h guard. Its
+numeric adapter performs decimal validation; save/activation policy remains in
+CONFIG. The standard extended editor, defaults and choice controller remain
+unimplemented and are not claimed by this basic migration.

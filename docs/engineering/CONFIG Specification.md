@@ -1262,3 +1262,40 @@ edit a disk format, and S to Save current configuration on disk (SYSGEN).
 Separate startup, IOBYTE, disk, and save groups with blank lines. The selection
 prompt is `Select [ A - E or S ], or BREAK (^C) to exit.` These keys replace
 the former F–K assignments; submenu keys and setting semantics are unchanged.
+
+## Shared input migration, Build 014
+
+CONFIG's startup-command replacement field and freeform decimal fields use the
+[shared input editor](Shared%20Input%20and%20UI%20Specification.md). This first
+migration uses its basic compatibility profile, not the complete future prompt
+controller. Menus, choice lists, confirmations and command-line parsing retain
+their existing contracts. No BDOS Function 10 or CCP behavior changes.
+
+Within these fields Ctrl-S/D move left/right, Ctrl-G deletes under the cursor,
+and Ctrl-H/Backspace or ASCII DEL deletes before it. Printable ASCII inserts at
+the cursor, preserving case and spaces. ESC and Ctrl-C cancel locally. Startup
+replacement begins empty; empty Enter preserves the pending command, and Clear
+remains the explicit way to disable it. Editing only updates private pending
+state, never executes or saves the command.
+
+Physical byte fields retain their empty-Enter current-value rule. Workbench and
+IOBYTE entry cancel on empty Enter as before. Decimal syntax/16-bit overflow
+errors, and physical byte overflow, retain the entered text for correction.
+Field-specific geometry, IOBYTE and hardware-policy checks retain their existing
+higher-level handling. Numeric input is bounded to five characters and startup
+input to 126, with insertion refusal rather than silent truncation at capacity.
+
+The inline renderer uses CONFIG's existing 80-column console layout, emitting
+at most 79 columns, with horizontal input scrolling and a visible insertion
+marker. It requires no loaded monitor/backend. On consoles supporting Function
+178, reverse video marks the cursor; otherwise an underscore provides a visible
+fallback. Active-field output uses direct console I/O, not cooked Function 2:
+cooked output polls input and can consume Ctrl-S or turn Ctrl-C into a warm boot.
+Ordinary menu output is unchanged.
+
+The engine shares the existing startup input buffer at AB60h and six state bytes
+at ABE0h..ABE5h. The AC00h entry guard and 3E00h..3FFFh private stack remain
+unchanged. The old duplicate append-only numeric reader is excluded only from
+CONFIG's expanded source; other consumers retain it. No permanent resident
+storage, ABI or unloaded-TPA cost is introduced. Extended word keys, defaults,
+choice modules and a general standard event interface remain subsequent work.

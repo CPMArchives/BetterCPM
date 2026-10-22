@@ -51,6 +51,8 @@ def main() -> None:
             text=text.replace('; @config-iobyte@',(ROOT/'build/utilities/config-iobyte.inc').read_text())
             text=text.replace('; @config-validation@',(ROOT/'build/utilities/config-validation.inc').read_text())
             text=text.replace('; @monitor-console@',(ROOT/'src/utilities/common/monitorconsole.inc').read_text())
+            from shared_ui import expand_config_ui
+            text=expand_config_ui(text)
             text=text.replace('        ASEG\n        ORG 0100H','        CSEG\n        .PHASE 0100H',1)
             pos=text.rfind('        END')
             return text[:pos]+'        .DEPHASE\n'+text[pos:]

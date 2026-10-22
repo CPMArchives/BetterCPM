@@ -415,3 +415,14 @@ system-validation V002. The A–E/S menu and configuration behavior are unchange
 The recognizer uses two fewer peak stack bytes and four fewer code bytes; the
 qualified dual-profile native/cross image is 15,457 bytes. Earlier size notes
 record their specific historical profile/build inputs.
+
+
+## Build 014: shared startup and numeric input
+
+Startup-command replacement and freeform decimal fields now use the shared
+basic editor with inline scrolling/cursor rendering and local cancellation.
+Existing save, rollback and active/pending/saved contracts are retained.
+[Qualification and scope](CONFIG%20Shared%20Input%20Qualification.md) identify
+the exact 15,552-byte dual-profile artifact, native parity, both live platforms,
+startup/save/rollback regressions and the remaining 64-byte stack margin.
+This is the basic profile; broader standard prompt features remain staged work.
