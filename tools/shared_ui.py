@@ -53,3 +53,9 @@ def expand_config_ui(source):
     unused,marker,after=rest.partition('; @legacy-number-end@')
     if not marker:raise ValueError('CONFIG common input end marker missing')
     return before+after
+
+
+def expand_ren_ui(source):
+    binding=(UI.parent/'reninput.inc').read_text()
+    modules=(UI/'events.inc').read_text()+'\n'+controller_source(text=False,choice=True)
+    return source.replace('; @ren-choice@',binding.replace('; @choice-modules@',modules))

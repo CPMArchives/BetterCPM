@@ -2,10 +2,11 @@
 """Execute transient REN's core against a directory/BDOS fixture."""
 from pathlib import Path
 from test_bios import Z80, SENTINEL
+from utility_versions import banner
 ROOT=Path(__file__).resolve().parents[1]
-def run(tail, files, responses='', ledger_capacity=None, rename_failures=None, racing_target=False, drive_ro=False, attr_failures=None):
+def run(tail, files, responses='', ledger_capacity=None, rename_failures=None, racing_target=False, drive_ro=False, attr_failures=None, image=None):
  responses=iter(responses)
- c=Z80(b''); image=(ROOT/'build/utilities/REN.COM').read_bytes()
+ c=Z80(b''); image=image if image is not None else (ROOT/'build/utilities/REN.COM').read_bytes()
  c.mem[0x100:0x100+len(image)]=image;c.mem[0:3]=bytes((0xC3,SENTINEL&255,SENTINEL>>8))
  c.mem[5:8]=bytes((0xDB,254,0xC9))
  c.mem[0x80]=len(tail);c.mem[0x81:0x81+len(tail)]=tail.encode()
@@ -87,6 +88,6 @@ def main():
  changes,out=run('B1:*.* X*.*',{(1,1,a):0,(1,1,b):0})
  assert len(changes)==2
  changes,out=run('/VER',{})
- assert not changes and 'BetterCP/M REN 1.0 (Build 005)' in out
+ assert not changes and banner('REN') in out
  print('PASS: transient REN operand orders, multi-DU, predicates, attributes, protection, dry run, invalid syntax, caller DU and version')
 if __name__=='__main__':main()

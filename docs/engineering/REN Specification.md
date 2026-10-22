@@ -1147,3 +1147,13 @@ replacement-name validation, confirmation, destination-ledger exclusion,
 multi-DU selection and invalid-command immutability. Failure injection remains
 covered by the assembled-code fixture suite rather than real disk faults.
 See [REN Qualification](REN%20Qualification.md) for scope and reproduction.
+
+## Build 007 shared-input integration
+
+Transient REN's Y/N confirmation, N/S/A/? collision and R/S/A/? recovery choices
+use the shared choice-only controller through a compatibility binding. Existing
+keys, echo, retry/help behavior, Ctrl-C abort and option precedence remain
+unchanged. Enter/ESC do not acquire new meanings. Rename and recovery operations
+remain caller-owned. The replacement-name text editor is unchanged in this
+increment. See [REN Shared Input Qualification](REN%20Shared%20Input%20Qualification.md)
+for memory costs, compatibility comparisons and native evidence.

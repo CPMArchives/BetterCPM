@@ -88,6 +88,7 @@ BC_NOFILE: DB 13,10,'NO FILE',13,10,'$'
 R_BADMSG: DB 13,10,'Invalid filespec.',13,10,'$'
 R_DUMSG: DB 13,10,'Invalid drive.',13,10,'$'
 ; @ren-workflow@
+; @ren-choice@
         DS 128
 R_STKTOP:
 R_HEAP:

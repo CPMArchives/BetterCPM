@@ -123,3 +123,8 @@ preserves ERA-specific invalid-key retry, Ctrl-C cancellation and the absence
 of Enter/ESC aliases. It does not reuse DUP/SYSGEN's any-non-Y-declines policy.
 The developer guide documents caller register/state contracts and the retained
 legacy confirmation reference used for differential tests.
+
+REN's `../reninput.inc` is another choice-only compatibility binding. Unlike the
+strict any-non-Y-declines adapter, it retries invalid responses and retains
+BDOS 1 echo plus full collision/recovery question repainting. Its filename editor
+remains separate. See the developer guide and REN shared-input qualification.

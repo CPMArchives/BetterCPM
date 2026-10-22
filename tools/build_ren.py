@@ -54,7 +54,8 @@ def expanded_source():
     code += rcp[rcp.index('BC_WCMP:'):rcp.index('BC_CSELS:')]
     text = SOURCE.read_text(encoding='ascii').replace('; @ren-selector@', code)
     text = text.replace('; @ren-workflow@', (common / 'renflow.inc').read_text(encoding='ascii'))
-    return expand_versions(text)
+    from shared_ui import expand_ren_ui
+    return expand_versions(expand_ren_ui(text))
 
 
 def main() -> None:
