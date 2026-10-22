@@ -1157,3 +1157,14 @@ unchanged. Enter/ESC do not acquire new meanings. Rename and recovery operations
 remain caller-owned. The replacement-name text editor is unchanged in this
 increment. See [REN Shared Input Qualification](REN%20Shared%20Input%20Qualification.md)
 for memory costs, compatibility comparisons and native evidence.
+
+
+## Build 008 replacement-name input extraction
+
+The replacement-name field now uses the shared append-only compatibility event
+engine. Existing cooked echo, ASCII uppercase conversion, 31-byte bound,
+BS/DEL deletion, Ctrl-U clear and Ctrl-C abort remain unchanged. Overflow stays
+invalid even after backspace; clear/reinitialization resets it. Blank submission
+returns to collision choices. Other bytes still reach the existing filename
+validator; ESC does not become a new cancellation alias. No rename, overwrite,
+attribute, ledger or recovery policy changes. See [qualification](REN%20Name%20Field%20Qualification.md).

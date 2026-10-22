@@ -457,58 +457,23 @@ R_NEWNAME:
 R_NEWPROM:
         LD DE,R_NEWMSG
         CALL BC_PRINT
-        XOR A
-        LD (R_ILEN),A
-        LD (R_IFULL),A
+        LD A,31
+        CALL UA_INIT
 R_INCHAR:
+        ; Keep the existing cooked BDOS echo and ASCII-only case conversion.
         LD C,1
         CALL BDOS
-        CP 3
-        JP Z,R_ABORT
-        CP 13
-        JR Z,R_INEND
-        CP 8
-        JR Z,R_BACK
-        CP 127
-        JR Z,R_BACK
-        CP 21
-        JR Z,R_RELINE
-        LD E,A
-        LD A,(R_ILEN)
-        CP 31
-        JR NC,R_OVER
-        LD L,A
-        LD H,0
-        LD BC,R_IBUF
-        ADD HL,BC
-        LD A,E
         CP 'a'
-        JR C,R_ISTORE
+        JR C,R_IKEY
         CP 'z'+1
-        JR NC,R_ISTORE
+        JR NC,R_IKEY
         AND 5FH
-R_ISTORE:
-        LD (HL),A
-        LD A,(R_ILEN)
-        INC A
-        LD (R_ILEN),A
-        JR R_INCHAR
-R_OVER:
-        LD A,1
-        LD (R_IFULL),A
-        JR R_INCHAR
-R_BACK:
-        LD A,(R_ILEN)
-        OR A
-        JR Z,R_INCHAR
-        DEC A
-        LD (R_ILEN),A
-        JR R_INCHAR
-R_RELINE:
-        XOR A
-        LD (R_ILEN),A
-        LD (R_IFULL),A
-        JR R_INCHAR
+R_IKEY:
+        CALL UA_KEY
+        CP UI_ABORT
+        JP Z,R_ABORT
+        CP UI_SEND
+        JR NZ,R_INCHAR
 R_INEND:
         CALL R_NEWLINE
         LD A,(R_IFULL)

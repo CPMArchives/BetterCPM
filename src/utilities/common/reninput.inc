@@ -1,5 +1,5 @@
 ; REN choice compatibility binding. Keep BDOS 1 echo and legacy folding.
-; The replacement-filename editor is separate and deliberately unchanged.
+; The replacement-filename compatibility engine is included below.
 ; Enter/ESC are invalid, Ctrl-C aborts, and invalid choices retry without
 ; consuming a second acknowledgment key. No implicit default or input flush.
 RU_YN:
@@ -102,3 +102,10 @@ UI_CLOSE EQU RU_IDLE
 UC_PAINT EQU RU_PAINT
 UC_ERROR EQU RU_IDLE
 ; @choice-modules@
+
+; Reuse the existing filename buffer and length/overflow state, no duplicate.
+UA_BUF EQU R_IBUF
+UA_LEN EQU R_ILEN
+UA_FULL EQU R_IFULL
+UA_MAX: DB 0
+; @append-module@

@@ -173,7 +173,7 @@ must respect each utility's specification and measured space budget.
 | --- | --- | --- |
 | DUMP Build 003 | Compatibility editor and shared screen-field renderer | Existing Find/Go To behavior and no invented defaults |
 | CONFIG Build 014 | Compatibility editor and compact inline renderer | Existing startup/numeric validation and save behavior |
-| REN Build 007 | Standard choice-only controller with REN compatibility binding | Existing confirmation/collision/recovery echo, retry, help, Ctrl-C and unattended policy; filename editor unchanged |
+| REN Build 008 | Choice controller plus append-only compatibility event engine | Existing choices and filename echo/editing/overflow/validation policy |
 | ERA Build 004 | Standard choice-only controller with ERA compatibility binding | Existing Y/N and R/S/A/? retry, echo, help, Ctrl-C cancellation and unattended policy |
 | DUP Build 005 | Standard choice-only controller with shared one-key adapter | Only Y authorizes FORMAT/COPY; other responses decline |
 | SYSGEN Build 006 | Standard choice-only controller with compatibility input adapter | Only Y authorizes; any other response declines |
@@ -184,3 +184,13 @@ may require an adapter rather than adopting standard retry/default behavior.
 Further migrations remain incremental, with specification review, size checks
 and appropriate native interaction/failure regressions. CONFIG's full profile
 still requires a space audit; ED/PIP compatibility boundaries remain intact.
+
+
+### Append-only compatibility extraction
+
+REN Build 008 selects `ui/append.inc` as a small event-only compatibility engine
+for its existing replacement-name field. This preserves append/BS/DEL/Ctrl-U,
+Ctrl-C abort, empty submission, literal raw input and sticky overflow until
+clear/reinitialization. REN retains echo, ASCII normalization, filename syntax,
+blank policy and application actions. This profile does not broaden or replace
+the standard editor contract; new fields should use the standard profile.

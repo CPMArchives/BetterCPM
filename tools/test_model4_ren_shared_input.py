@@ -28,7 +28,11 @@ def main():
  command(':REN /C FIRST.DAT TAKEN.DAT');capture('collision','File exists. N/S/A/?')
  cmd+=key_args('?',delay=25);capture('help','N New name, S Skip file, A Abort remainder.')
  cmd+=key_args('N',delay=25);capture('name','New name?')
- cmd+=key_args('NEW.DAT\r',delay=25);capture('replacement','Rename? Y/N')
+ # Invalid syntax and sticky overflow must reprompt without mutating files.
+ cmd+=key_args('BAD*.DAT\r',delay=25);capture('invalid-name','Invalid filename.')
+ cmd+=key_args('X'*32+'\x08'*28+'\r',delay=25)+['-id','1500','-it'];stages.append('overflow-name')
+ # Clear an overflowed current line, then correct a typo with backspace.
+ cmd+=key_args('X'*32+'\x15new.daz\x08t\r',delay=25);capture('replacement','Rename? Y/N')
  cmd+=key_args('Y',delay=25);capture('renamed','1 FILES RENAMED')
  cmd+=['-id','6000','-it','-ix'];stages.append('returned')
  (w/'invocation.json').write_text(json.dumps(cmd,indent=2)+'\n');run(cmd,cwd=w,timeout=900,check=True)
@@ -38,6 +42,8 @@ def main():
  assert 'Rename? Y/N' in texts['invalid'] and '1 SKIPPED' not in texts['invalid']
  assert 'A0>' in texts['cancel'] and 'A0>' in texts['returned']
  assert 'FIRST.DAT -> NEW.DAT' in texts['replacement']
+ assert texts['overflow-name'].count('Invalid filename.')>=2
+ assert 'Rename? Y/N' not in texts['overflow-name']
  after=extract_raw(disk.read_bytes());(w/'after.raw').write_bytes(after);now=files(after[20480:])
  assert (0,b'FIRST   DAT') not in now and now[0,b'NEW     DAT'][0]==before[0,b'FIRST   DAT'][0]
  for k,(payload,entries) in before.items():
@@ -46,6 +52,6 @@ def main():
  (w/'diskdefs').write_text('diskdef bettercpm-default\n seclen 512\n tracks 160\n sectrk 10\n blocksize 2048\n maxdir 128\n skew 1\n boottrk 4\n os 2.2\nend\n')
  fs=subprocess.run(['fsck.cpm','-T','raw,pcw800','-f','bettercpm-default','-n',str(w/'after.raw')],cwd=w,capture_output=True,text=True)
  (w/'filesystem.txt').write_text(fs.stdout+fs.stderr);assert fs.returncode==0
- (w/'result.json').write_text(json.dumps({'result':'PASS','ren_sha256':hashlib.sha256(binary).hexdigest(),'stages':stages,'scope':'native confirmation, invalid ESC/Enter/X, decline, Ctrl-C, collision/help, replacement name, authorization; unchanged other payloads/system records, clean filesystem. Fault recovery choices are CPU-qualified.'},indent=2)+'\n')
+ (w/'result.json').write_text(json.dumps({'result':'PASS','ren_sha256':hashlib.sha256(binary).hexdigest(),'stages':stages,'scope':'native choices plus invalid-name reprompt, sticky overflow after backspace, Ctrl-U clearing overflow, lowercase normalization and corrected replacement-name authorization; unchanged other payloads/system records, clean filesystem. Fault recovery choices are CPU-qualified.'},indent=2)+'\n')
  print('PASS: native Model 4 REN shared choices and independent file/media audit')
 if __name__=='__main__':main()
