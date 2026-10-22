@@ -237,6 +237,7 @@ P_LINE: DB 127,0
 P_DRIVE: DB 0
 P_USER: DB 0
 ; @pip-parser@
+; @pip-confirm@
 ; @utility-version PIP@
         DS 128
 P_STACK:

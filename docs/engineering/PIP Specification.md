@@ -1544,3 +1544,11 @@ stubbed, and native ZSM4/LINK reproduces this image, the 3,452-byte candidate
 BDOS and the 942-byte candidate disk service byte for byte. Existing isolated
 BDOS/disk behavioral campaigns also pass. Production repacking and platform
 qualification remain the next steps; PIP Build 025 is unchanged.
+
+
+## Build 028 shared confirmation integration
+
+Read-only destination replacement uses the shared one-key confirmation binding,
+retaining one cooked read, historical case folding/echo, Y-only approval,
+non-Y decline, W bypass and staged-file cleanup. No PIP command/data-input
+semantics change. See [qualification](PIP%20Shared%20Input%20Qualification.md).

@@ -142,3 +142,8 @@ overwrite/retry/cleanup logic. It selects choice plus append modules only.
 byte must retain its historical candidate-input meaning (COPY's Ctrl-U). It
 checks bounds and overflow but does not interpret the byte. Standard new fields
 should use the standard editor. MOVE has no current interactive prompt.
+
+
+PIP's `../pipinput.inc` reuses the one-key confirmation binding with a cooked
+BDOS 1 callback, preserving its echo and AND-DF folding. Only protected-file
+replacement approval is migrated; command/HEX/device input stays with PIP.

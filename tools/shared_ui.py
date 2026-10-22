@@ -66,3 +66,9 @@ def copy_ui_source():
     binding=(UI.parent/'copyinput.inc').read_text()
     modules=(UI/'events.inc').read_text()+'\n'+controller_source(text=False,choice=True)
     return binding.replace('; @choice-modules@',modules).replace('; @append-module@',(UI/'append.inc').read_text())
+
+
+def expand_pip_ui(source):
+    binding=(UI.parent/'pipinput.inc').read_text()
+    confirm=confirmation_source().replace('CALL KEY','CALL PU_KEY')
+    return source.replace('; @pip-confirm@',binding.replace('; @confirmation@',confirm))

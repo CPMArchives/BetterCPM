@@ -391,9 +391,7 @@ PT_FINAL:
         LD DE,PT_ASK
         LD C,9
         CALL 5
-        LD C,1
-        CALL 5
-        AND 0DFH
+        CALL UI_ASK
         CP 'Y'
         JR Z,PT_CLEARRO
         LD DE,PT_NOTDEL

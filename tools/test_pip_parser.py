@@ -3,6 +3,7 @@
 import re,struct,hashlib,json
 from pathlib import Path
 from test_bios import Z80,SENTINEL
+from utility_versions import banner
 ROOT=Path(__file__).resolve().parents[1]
 def cpu():
  c=Z80(b'');data=(ROOT/'build/pip-development/PIP.COM').read_bytes();c.mem[256:256+len(data)]=data
@@ -52,7 +53,7 @@ def main():
   bad,parts=scan(text);assert bad and not parts,(text,parts)
  tail='A='+','.join('B' for _ in range(63));assert len(tail)==127
  bad,parts=scan(tail);assert not bad and len(parts)==64
- out,calls=invocation('/VER');assert 'BetterCP/M PIP 1.0 (Build 026)' in out and calls==[9],(out,calls)
+ out,calls=invocation('/VER');assert banner('PIP') in out and calls==[9],(out,calls)
  out,calls=invocation('A=B[Shello /VER, world\x1a]');assert 'NO FILE' in out and 'Invalid /VER' not in out
  out,calls=invocation('A=B /VER');assert 'Invalid /VER usage.' in out and calls==[9]
  out,calls=invocation('',keys=['PRN:=CON:','BAD','']);assert out.count('*')==3 and 'DEVICE UNAVAILABLE' in out and 'INVALID FORMAT' in out
