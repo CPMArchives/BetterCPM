@@ -22,6 +22,12 @@ def controller_source(*,text=True,choice=False):
     return '\n'.join((UI/(p+'.inc')).read_text() for p in parts)
 
 
+def expand_sysgen_ui(source):
+    binding=(UI.parent/'sysgeninput.inc').read_text()
+    modules=(UI/'events.inc').read_text()+'\n'+controller_source(text=False,choice=True)
+    return source.replace('; @sysgen-choice@',binding.replace('; @choice-modules@',modules))
+
+
 def expand_config_ui(source):
     common=ROOT/'src/utilities/common'
     source=source.replace('; @config-ui@',(common/'configinput.inc').read_text())

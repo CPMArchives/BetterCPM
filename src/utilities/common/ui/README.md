@@ -103,3 +103,9 @@ For a complete runnable consumer, see `src/examples/uiexample.mac` and
 `tools/build_ui_example.py`. It connects the standard controllers and layouts
 to real callable SCRN primitives and direct keyboard input without changing
 existing utility contracts or distribution manifests.
+
+
+SYSGEN's installation and package-replacement confirmations select only the
+choice controller through `common/sysgeninput.inc`. The compatibility adapter
+preserves any-non-Y-declines behavior, original questions and no default; it
+adds no editor or formatting buffer. See the developer guide for measured cost.
