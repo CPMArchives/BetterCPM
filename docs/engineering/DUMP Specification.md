@@ -5,8 +5,9 @@
 ## 1. Status, scope and references
 
 This is the normative design for the enhanced DUMP. It supersedes the initial
-DRI-only specification and the subsequent review addendum. Enhanced behavior
-is specified here, not claimed implemented or qualified.
+DRI-only specification and the subsequent review addendum. DUMP 1.0 Build 002 implements this design. Qualification scope and limitations
+are recorded in [Enhanced DUMP Qualification](DUMP%20Enhanced%20Qualification.md);
+this is not a claim of final Utilities Disk acceptance.
 
 The implemented DUMP 1.0 Build 001 is the initial DRI-compatible Z80 clone with
 BetterCP/M `/VER`. Its evidence remains historical evidence for that binary:
@@ -43,7 +44,9 @@ shall parse its own command tail, identify the filename and construct its FCB.
 It must not assume the first CCP-prepared FCB names the file: in
 `DUMP /BARE FILE.COM`, that FCB may represent `/BARE`. No CCP change is required.
 
-Validate the entire tail before opening the file. Require exactly one exact
+Validate the entire tail syntactically before opening the file. File-dependent
+position bounds are checked after obtaining its length and before any data
+is displayed. Require exactly one exact
 filename except for standalone `/VER`. Reject missing or extra operands,
 wildcards, selectors, unknown switches, malformed values and incompatible
 combinations. Print a diagnostic identifying the offending option or operand
@@ -242,7 +245,10 @@ Text-entry prompts use these WordStar controls:
 Ordinary characters insert at the cursor, shifting following text right.
 Movement or deletion beyond an end leaves input unchanged. Long input scrolls
 horizontally within the shared row, keeping the insertion point visible; it
-must not wrap into data rows. Editing controls do not invoke viewer navigation
+must not wrap into data rows. Show a reverse-video cell at the insertion point,
+using the underlying character or an underscore at end of input; redraw it
+without leaving stale cursor cells. This is software-rendered so it also works
+on Model 4 without a hardware cursor. Editing controls do not invoke viewer navigation
 or cancellation. Existing pattern and offset limits remain in force.
 
 ## 9. Viewer navigation
@@ -448,18 +454,23 @@ The consolidated contract above resolves the superseded baseline-only default,
 old `/VER`, variable-width offsets, optional `/40`, default-FCB assumption,
 ambiguous search state and provisional `/FIND=`/`/LEN=` proposals.
 
-The following details still need explicit closure before implementation:
+Implementation resolves the remaining bounded details as follows:
 
-1. **Raw Find entry capacity.** The decoded limit is 32 bytes, but arbitrarily
-   many optional spaces cannot fit a bounded entry buffer. Define a finite raw
-   capacity and over-capacity response without reducing the decoded limit.
-2. **H/A choice errors.** Define how an invalid interpretation response is
-   reported and whether the pattern remains editable; it must not accidentally
-   accept a default interpretation or discard the previously active search.
-3. **Active-search reset.** No command currently clears an active pattern while
-   remaining in the viewer. Paging remains possible with Space/Ctrl-C/Ctrl-R;
-   decide whether that is sufficient or whether an explicit clear is useful.
+- Raw Find input is limited to 95 characters, enough for all 32 hexadecimal
+  bytes separated by single spaces. Further insertion is refused with an
+  input-limit message; existing text remains editable. The decoded limit is
+  still 32 bytes. Extra optional spaces do not grant an unbounded raw buffer.
+- Invalid H/A choices show `Choose H or A; ESC cancels` and reprompt without
+  changing the entered pattern or previously active search.
+- No explicit clear-search command is added. Paging remains available through
+  Space/Ctrl-C/Ctrl-R while `.` and `,` navigate occurrences. A new Find replaces
+  a pattern only on its committed outcome; cancellation does not clear it.
 
-These are recorded omissions, not permission to invent extra commands or change
-agreed behavior. Exact hint wording and minor presentation remain implementation
-choices within the single-row and screen-width constraints.
+All occurrences of `/FROM=` must also pass file bounds, even if superseded by
+another occurrence. The implementation retains the largest requested offset for
+that validation and the last requested value for initial positioning.
+
+Exact hint wording and minor presentation remain implementation choices within
+the single-row and screen-width constraints. Input uses unechoed direct-console
+reads so the command key is neither echoed through an unsynchronized monitor
+personality nor interpreted as cooked Ctrl-C abort.

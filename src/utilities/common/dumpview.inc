@@ -1,0 +1,540 @@
+; Callable SCRN discovery. Legacy descriptor gives actual callable cell geometry;
+; SCX zero geometry means host-managed, not detected host terminal dimensions.
+SCREENINIT:
+        LD DE,REQ
+        LD C,182
+        CALL SERVICE
+        OR A
+        JP NZ,SINONE
+        LD HL,(REQ+12)
+        LD (BACKEND),HL
+        LD A,H
+        OR L
+        JP Z,SINONE
+        LD A,12
+        CALL SCREENQUERY
+        LD DE,SIGNATURE
+        LD B,5
+SICHECK:
+        LD A,(DE)
+        CP (HL)
+        JP NZ,SINONE
+        INC HL
+        INC DE
+        DJNZ SICHECK
+        LD A,(HL)
+        LD (HEIGHT),A
+        CP 2
+        JP C,SIGEOM
+        DEC A
+        LD (ROWS),A
+        INC HL
+        LD A,(HL)
+        LD (WIDTH),A
+        LD B,76
+        LD A,(COMPACT)
+        OR A
+        JR Z,SIWIDTH
+        LD B,37
+SIWIDTH:
+        LD A,(WIDTH)
+        CP B
+        JR C,SIGEOM
+        INC HL
+        LD A,(HL)
+        AND 0C0H
+        CP 0C0H
+        JP NZ,SINONE
+        INC HL
+        LD A,(HL)
+        AND 11H
+        CP 11H
+        JP NZ,SINONE
+        LD HL,0
+        LD A,(ROWBYTES)
+        LD E,A
+        LD D,0
+        LD A,(ROWS)
+        LD B,A
+SICAP:
+        ADD HL,DE
+        DJNZ SICAP
+        LD (PAGESIZE),HL
+        OR A
+        RET
+SINONE:
+        LD DE,MONMSG
+        CALL MESSAGE
+        SCF
+        RET
+SIGEOM:
+        LD DE,GEOMMSG
+        CALL MESSAGE
+        LD HL,NUM76
+        LD A,(COMPACT)
+        OR A
+        JR Z,SIGPRINT
+        LD HL,NUM37
+SIGPRINT:
+        CALL TEXT
+        LD DE,COLMSG
+        CALL MESSAGE
+        SCF
+        RET
+; Screen wrapper preserves general registers/flags. QUERY additionally returns HL.
+SCREEN:
+        PUSH AF
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        CALL SCALL
+        POP HL
+        POP DE
+        POP BC
+        POP AF
+        RET
+SCREENQUERY:
+        PUSH BC
+        PUSH DE
+        CALL SCALL
+        POP DE
+        POP BC
+        RET
+SCALL:
+        PUSH HL
+        LD HL,(BACKEND)
+        EX (SP),HL
+        RET
+POSITION:
+        LD A,6
+        JP SCREEN
+CLEARLINE:
+        LD C,32
+        LD A,8
+        JP SCREEN
+BOTTOM:
+        LD A,(HEIGHT)
+        DEC A
+        LD B,A
+        LD C,0
+        CALL POSITION
+        JP CLEARLINE
+HINT:
+        CALL BOTTOM
+        LD HL,PAGEHINT
+        LD A,(ACTIVE)
+        OR A
+        JR Z,HINTTEXT
+        LD HL,FINDHINT
+HINTTEXT:
+        JP TEXT
+STATUS:
+        PUSH HL
+        CALL BOTTOM
+        POP HL
+        JP TEXT
+READSTATUS:
+        LD HL,READMSG
+        CALL STATUS
+        LD HL,ERRPOS
+        JP HEX32
+SCREENEXIT:
+        ; Restore routed console state through its clear/home operation before
+        ; returning from direct typed-screen rendering to the CCP personality.
+        LD HL,(1)
+        LD DE,63
+        ADD HL,DE
+        LD A,4
+        JP (HL)
+RENDER:
+        LD HL,PAGE
+        LD DE,DISPLAYPOS
+        CALL COPY32
+        LD HL,PAGEBUF
+        LD (RENDERPTR),HL
+        LD HL,(PAGECOUNT)
+        LD (REMAIN),HL
+        XOR A
+        LD (ROWNUM),A
+RENDERLOOP:
+        LD A,(ROWNUM)
+        LD B,A
+        LD C,0
+        CALL POSITION
+        CALL CLEARLINE
+        LD HL,(REMAIN)
+        LD A,H
+        OR L
+        JR Z,RENDERNEXT
+        CALL ROWOUT
+        LD HL,(REMAIN)
+        LD A,(ROWBYTES)
+        LD E,A
+        LD D,0
+        OR A
+        SBC HL,DE
+        LD (REMAIN),HL
+RENDERNEXT:
+        LD HL,ROWNUM
+        INC (HL)
+        LD A,(ROWS)
+        CP (HL)
+        JR NZ,RENDERLOOP
+        JP HINT
+VIEWLOOP:
+        CALL WAITKEY
+        CALL UPPER
+        CP 'Q'
+        JP Z,DEXIT
+        CP 'F'
+        JP Z,FIND
+        CP 'G'
+        JP Z,GOTO
+        CP 3
+        JP Z,PAGEDOWN
+        CP ' '
+        JP Z,PAGEDOWN
+        CP 18
+        JP Z,PAGEUP
+        CP '.'
+        JR Z,VLDOT
+        CP ','
+        JR Z,VLCOMMA
+        JP VIEWLOOP
+VLDOT:
+        LD A,(ACTIVE)
+        OR A
+        JP Z,PAGEDOWN
+        XOR A
+        LD (DIRECTION),A
+        JP CONTINUEFIND
+VLCOMMA:
+        LD A,(ACTIVE)
+        OR A
+        JP Z,PAGEUP
+        LD A,1
+        LD (DIRECTION),A
+        JP CONTINUEFIND
+PAGEDOWN:
+        LD HL,PAGE
+        LD DE,NEXT
+        CALL COPY32
+        LD HL,NEXT
+        LD DE,(PAGESIZE)
+        CALL ADD16
+        LD DE,LENGTH
+        CALL CMP32
+        JR C,DOMOVE
+        LD HL,ENDMSG
+        CALL STATUS
+        JP VIEWLOOP
+PAGEUP:
+        LD HL,PAGE
+        CALL NONZERO
+        JR NZ,PUMOVE
+        LD HL,BEGMSG
+        CALL STATUS
+        JP VIEWLOOP
+PUMOVE:
+        LD HL,PAGE
+        LD DE,NEXT
+        CALL COPY32
+        LD HL,(NEXT)
+        LD DE,(PAGESIZE)
+        OR A
+        SBC HL,DE
+        LD (NEXT),HL
+        LD HL,(NEXT+2)
+        LD DE,0
+        SBC HL,DE
+        LD (NEXT+2),HL
+        JR NC,DOMOVE
+        XOR A
+        LD HL,NEXT
+        LD (HL),A
+        INC HL
+        LD (HL),A
+        INC HL
+        LD (HL),A
+        INC HL
+        LD (HL),A
+DOMOVE:
+        CALL LOADPAGE
+        JR C,MOVEERROR
+        CALL COMMITPAGE
+        CALL RESETANCHOR
+        CALL RENDER
+        JP VIEWLOOP
+MOVEERROR:
+        CALL READSTATUS
+        JP VIEWLOOP
+RESETANCHOR:
+        LD HL,PAGE
+        LD DE,ANCHOR
+        CALL COPY32
+        XOR A
+        LD (MATCHED),A
+        RET
+GOTO:
+        LD HL,GOPROMPT
+        LD A,9
+        CALL EDITNEW
+        JP C,VIEWLOOP
+GOCHECK:
+        LD HL,EDITBUF
+        LD A,(EDITLEN)
+        LD B,A
+        LD DE,NEXT
+        CALL PARSEHEX
+        JR C,GOBAD
+        LD HL,NEXT
+        LD DE,LENGTH
+        CALL CMP32
+        JR NC,GOBAD
+        CALL ALIGNNEXT
+        JP DOMOVE
+GOBAD:
+        LD HL,BADINPUT
+        CALL STATUS
+        CALL WAITEDIT
+        JP C,VIEWLOOP
+        JR GOCHECK
+; Entry editor keeps raw case and ASCII spaces. 95 characters accommodate 32
+; separated hex pairs. H/A validation separately enforces decoded length.
+EDITNEW:
+        LD (EDITMAX),A
+        LD (EDITPROMPT),HL
+        XOR A
+        LD (EDITLEN),A
+        LD (EDITCUR),A
+        LD (EDITSTART),A
+        JP EDITLOOP
+WAITEDIT:
+        ; Keep invalid input editable; one key dismisses message and is handled
+        ; as an editor key rather than being lost.
+        CALL WAITKEY
+        PUSH AF
+        CALL EDITDRAW
+        POP AF
+        JP EDITKEY
+EDITLOOP:
+        CALL EDITDRAW
+EDITREAD:
+        CALL WAITKEY
+EDITKEY:
+        CP 27
+        JR Z,EDITCANCEL
+        CP 13
+        JR Z,EDITSUBMIT
+        CP 19
+        JR Z,EDITLEFT
+        CP 4
+        JR Z,EDITRIGHT
+        CP 8
+        JR Z,EDITBACK
+        CP 7
+        JP Z,EDITDELETE
+        CP 32
+        JR C,EDITREAD
+        CP 127
+        JR NC,EDITREAD
+        LD E,A
+        LD A,(EDITLEN)
+        LD B,A
+        LD A,(EDITMAX)
+        CP B
+        JR Z,EDITLIMIT
+        LD A,(EDITCUR)
+        LD C,A
+        LD HL,EDITBUF
+        LD A,B
+        LD D,0
+        PUSH DE
+        LD E,A
+        ADD HL,DE
+        POP DE
+EDITSHIFT:
+        LD A,B
+        CP C
+        JR Z,EDITINSERT
+        DEC HL
+        LD A,(HL)
+        INC HL
+        LD (HL),A
+        DEC HL
+        DEC B
+        JR EDITSHIFT
+EDITINSERT:
+        LD (HL),E
+        LD HL,EDITCUR
+        INC (HL)
+        LD HL,EDITLEN
+        INC (HL)
+        JP EDITLOOP
+EDITLIMIT:
+        LD HL,LIMITMSG
+        CALL STATUS
+        JR EDITREAD
+EDITCANCEL:
+        CALL HINT
+        SCF
+        RET
+EDITSUBMIT:
+        LD A,(EDITLEN)
+        OR A
+        JR Z,EDITCANCEL
+        OR A
+        RET
+EDITLEFT:
+        LD HL,EDITCUR
+        LD A,(HL)
+        OR A
+        JP Z,EDITREAD
+        DEC (HL)
+        JP EDITLOOP
+EDITRIGHT:
+        LD A,(EDITCUR)
+        LD HL,EDITLEN
+        CP (HL)
+        JP Z,EDITREAD
+        LD HL,EDITCUR
+        INC (HL)
+        JP EDITLOOP
+EDITBACK:
+        LD A,(EDITCUR)
+        OR A
+        JP Z,EDITREAD
+        DEC A
+        LD (EDITCUR),A
+EDITDELETE:
+        LD A,(EDITCUR)
+        LD B,A
+        LD A,(EDITLEN)
+        CP B
+        JP Z,EDITREAD
+        SUB B
+        DEC A
+        LD C,A
+        LD HL,EDITBUF
+        LD E,B
+        LD D,0
+        ADD HL,DE
+        LD D,H
+        LD E,L
+        INC HL
+        LD B,0
+        LD A,C
+        OR A
+        JR Z,EDITDECDONE
+        LDIR
+EDITDECDONE:
+        LD HL,EDITLEN
+        DEC (HL)
+        JP EDITLOOP
+EDITDRAW:
+        CALL BOTTOM
+        LD HL,(EDITPROMPT)
+        CALL TEXT
+        ; Prefix lengths are fixed: Find: =6, Go to offset: =14.
+        LD A,6
+        LD HL,(EDITPROMPT)
+        LD DE,GOPROMPT
+        OR A
+        SBC HL,DE
+        JR NZ,EDPREFIX
+        LD A,14
+EDPREFIX:
+        LD D,A
+        LD A,(WIDTH)
+        SUB D
+        DEC A
+        LD E,A
+        LD A,(EDITCUR)
+        LD B,A
+        LD A,(EDITSTART)
+        CP B
+        JR C,EDVISIBLE
+        JR Z,EDVISIBLE
+        LD A,B
+        LD (EDITSTART),A
+EDVISIBLE:
+        LD A,(EDITSTART)
+        ADD A,E
+        CP B
+        JR NC,EDSHOW
+        LD A,B
+        SUB E
+        LD (EDITSTART),A
+EDSHOW:
+        LD A,(EDITSTART)
+        LD C,A
+        LD A,(EDITLEN)
+        SUB C
+        LD B,A
+        LD A,E
+        CP B
+        JR NC,EDCOUNT
+        LD B,A
+EDCOUNT:
+        PUSH DE
+        LD HL,EDITBUF
+        LD E,C
+        LD D,0
+        ADD HL,DE
+        LD A,B
+        OR A
+        JR Z,EDCURSOR
+EDCHAR:
+        LD A,(HL)
+        CALL PUT
+        INC HL
+        DJNZ EDCHAR
+EDCURSOR:
+        POP DE
+        LD A,(EDITSTART)
+        LD C,A
+        LD A,(EDITCUR)
+        SUB C
+        ADD A,D
+        LD C,A
+        LD A,(HEIGHT)
+        DEC A
+        LD B,A
+        CALL POSITION
+        ; The Model 4 has no hardware text cursor. Draw a portable reverse
+        ; cell under the insertion point (underscore at end), then hold it.
+        PUSH BC
+        LD A,(EDITCUR)
+        LD E,A
+        LD D,0
+        LD HL,EDITBUF
+        ADD HL,DE
+        LD A,(EDITLEN)
+        CP E
+        JR Z,EDEOI
+        LD A,(HL)
+        JR EDGLYPH
+EDEOI:
+        LD A,'_'
+EDGLYPH:
+        OR 128
+        LD C,A
+        LD A,7
+        CALL SCREEN
+        POP BC
+        JP POSITION
+SIGNATURE: DB 'SCR',1,0
+NUM76: DB '76',0
+NUM37: DB '37',0
+
+; Unechoed input is essential: BDOS 1 would echo through a personality whose
+; parser cursor is not the direct screen editor's cursor. Direct input also
+; leaves Ctrl-C available as a viewer command rather than a cooked break.
+WAITKEY:
+        LD E,255
+        LD C,6
+        CALL SERVICE
+        OR A
+        JR Z,WAITKEY
+        RET
+WKEND:

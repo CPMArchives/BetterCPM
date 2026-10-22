@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the DRI-compatible Z80 DUMP utility with its visual /VER identity."""
+"""Build the enhanced read-only DUMP utility and sealed DRI compatibility path."""
 import argparse
 import hashlib
 from pathlib import Path
@@ -22,7 +22,13 @@ def expanded_source():
     text += "        DB ' | Hexadecimal File Display',13,10,'$'\n"
     query = (ROOT/'src/utilities/common/version.inc').read_text()
     text += query[query.index('\nUV_QUERY:') + 1:]
-    return (ROOT/'src/utilities/dump.mac').read_text().replace('; @dump-version@', text)
+    source = (ROOT/'src/utilities/dump.mac').read_text().replace('; @dump-version@', text)
+    common = ROOT/'src/utilities/common'
+    for part in ('parser', 'io', 'view', 'search', 'bare'):
+        name = 'dumpparse.inc' if part == 'parser' else 'dump'+part+'.inc'
+        source = source.replace('; @dump-'+part+'@', (common/name).read_text())
+    selector = (common/'duselect.inc').read_text() + '\n' + (common/'filespec.inc').read_text()
+    return source.replace('; @dump-selector@', selector)
 
 
 def main():
