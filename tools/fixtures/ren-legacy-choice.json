@@ -1,0 +1,6 @@
+{
+  "provenance": "REN choice input before shared-library migration, origin/main 2f3c932",
+  "confirmation": "        LD C,1\n        CALL BDOS",
+  "collision": "        CALL R_MAPPING\n        LD DE,R_COLMSG\n        CALL BC_PRINT\n        LD C,1\n        CALL BDOS",
+  "recovery": "        LD DE,R_FPRE\n        CALL BC_PRINT\n        LD HL,RF_BEST\n        CALL R_NAME\n        LD DE,R_FAILASK\n        CALL BC_PRINT\n        LD C,1\n        CALL BDOS"
+}

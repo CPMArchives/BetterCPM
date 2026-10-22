@@ -466,3 +466,19 @@ Native assembly uses `tools/build_native_era.py` with paths appropriate to your
 installed CP/M tools. See the ERA shared-input qualification for real-platform
 interaction and disk-state evidence; recovery fault injection remains a
 compiled-code qualification, not a claim of native hardware faults.
+
+### REN choice compatibility consumer
+
+`src/utilities/common/reninput.inc` binds confirmation (`RU_YN`), collision
+(`RU_COL`) and recovery (`RU_FAIL`) to the choice-only controller. The caller
+owns rename/help/retry/skip/abort policy. The binding retains cooked BDOS 1 echo
+and REN's historical AND-5F folding, preserves BC/DE/HL/IX, and returns a selected
+uppercase choice or byte 3 for Ctrl-C. No default, input flush or ESC alias is
+introduced. Invalid Y/N input silently retries; other contexts repaint their
+original full question.
+
+Build 007 is 5,856 bytes (+307 transient bytes), with the same 128-byte stack and
+no resident allocation. The rename ledger begins correspondingly later; its
+bounded refusal remains required. REN's replacement-filename editor has not yet
+been migrated: it is a separate compatibility assessment, not part of this
+choice adapter. See [qualification](../engineering/REN%20Shared%20Input%20Qualification.md).

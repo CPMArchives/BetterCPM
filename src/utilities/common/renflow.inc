@@ -167,8 +167,7 @@ R_BEFORE:
         LD DE,R_ASK
         CALL BC_PRINT
 R_ANSWER:
-        LD C,1
-        CALL BDOS
+        CALL RU_YN
         CP 3
         JP Z,R_ABORT
         AND 5FH
@@ -433,11 +432,7 @@ R_SKMSG: DB ' SKIPPED','$'
 
 ; Collision help and literal replacement name. No overwrite or cycle solving.
 R_COLPROM:
-        CALL R_MAPPING
-        LD DE,R_COLMSG
-        CALL BC_PRINT
-        LD C,1
-        CALL BDOS
+        CALL RU_COL
         CP 3
         JP Z,R_ABORT
         CP '?'
@@ -636,14 +631,7 @@ R_FAILURE:
         CP 2
         JR Z,R_FAILSKIP
 R_FAILPROM:
-        LD DE,R_FPRE
-        CALL BC_PRINT
-        LD HL,RF_BEST
-        CALL R_NAME
-        LD DE,R_FAILASK
-        CALL BC_PRINT
-        LD C,1
-        CALL BDOS
+        CALL RU_FAIL
         CP 3
         JR Z,R_FAILABORT
         CP '?'

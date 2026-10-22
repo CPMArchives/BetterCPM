@@ -2,6 +2,7 @@
 """Qualify transient REN against BetterCP/M BDOS and disposable cpmsim media."""
 import argparse, hashlib, json, shutil, subprocess
 from pathlib import Path
+from utility_versions import banner
 from test_z80pack_sysgen_install import session
 from test_z80pack_attributes import directory
 ROOT=Path(__file__).resolve().parents[1]
@@ -49,7 +50,7 @@ def main():
  put(5,'A.DOC',b'5'*128);put(7,'B.DOC',b'7'*128)
  text=execute(':REN *.TXT=B[5,7]:*.DOC');assert b'2 FILES RENAMED' in text
  check(5,'A.TXT',b'5'*128,0);check(7,'B.TXT',b'7'*128,0)
- text=execute(':REN /VER');assert b'BetterCP/M REN 1.0 (Build 005)' in text
+ text=execute(':REN /VER');assert banner('REN').encode() in text
  (work/'evidence.json').write_text(json.dumps({'result':'PASS','commands':cases,'ren_sha256':hashlib.sha256((ROOT/'build/utilities/REN.COM').read_bytes()).hexdigest(),'simulator_sha256':hashlib.sha256(sim.read_bytes()).hexdigest()},indent=2)+'\n')
  print('PASS: native BDOS REN all attributes, multi-extents, safe default, dry run, invalid syntax, interactive collision/help/confirmation, ledger and multi-DU')
 if __name__=='__main__':main()

@@ -231,3 +231,5 @@ exact-file approval display bug was corrected after native testing exposed it.
 See [ERA shared input qualification](ERA%20Shared%20Input%20Qualification.md) for
 legacy differential checks, code/heap costs, final hashes, compiled fault scope
 and actual cpmsim/native Model 4 interaction and destructive-media results.
+
+REN Build 007 choice migration has its own [qualification record](REN%20Shared%20Input%20Qualification.md); filename-entry migration is outside that increment.
