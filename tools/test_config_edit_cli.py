@@ -108,7 +108,7 @@ def main():
         assert c.z==ok and calls==[a('REQ')]
     # The same validation must precede the menu and CLI setter calls.
     source=(ROOT/'src/utilities/config.mac').read_text()
-    assert 'CALL EDCHECK\n        JP NZ,EDINVALID' in source
+    assert any('CALL EDCHECK\n        '+jump+' NZ,EDINVALID' in source for jump in ('JP','JR'))
     assert 'CALL EDCHECK\n        JP NZ,CL_ERROR' in source
     print('PASS CONFIG workbench CLI: scalar bounds, map packing, pre-I/O rejection, merged commit and explicit-map validation')
 if __name__=='__main__':main()

@@ -1299,3 +1299,19 @@ unchanged. The old duplicate append-only numeric reader is excluded only from
 CONFIG's expanded source; other consumers retain it. No permanent resident
 storage, ABI or unloaded-TPA cost is introduced. Extended word keys, defaults,
 choice modules and a general standard event interface remain subsequent work.
+
+
+## Shared choice implementation (Build 015)
+
+Menus and physical-drive attachment now read through the shared choice-only
+controller while retaining the original CHOICE presentation and caller dispatch.
+Pending startup saves, all-current saves and disk-boot IOBYTE saves use the same
+one-key compatibility binding: only Y/y authorizes, every other response declines.
+No default, extra retry, input flush or new cancel key is introduced. Startup and
+numeric editing retain their previously qualified shared editor profile.
+
+The dual-platform binary is 15,564 bytes and remains below the existing 3E00h
+private-stack boundary. Both validation profiles and IOBYTE descriptors, the
+AC00h scratch guard and all save/rollback behavior are retained. Space comes from
+identical constant storage and shorter local branches, with no feature removal.
+See [choice qualification](CONFIG%20Choice%20Input%20Qualification.md).

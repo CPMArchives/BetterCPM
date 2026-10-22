@@ -155,3 +155,7 @@ returns reset strict Y/N configuration. Common CONFIG/SYSGEN code is untouched.
 
 SYSGEN Build 007 also reuses its confirmation controller for destination B..D
 selection; `../sysgeninput.inc` restores the strict approval context on return.
+
+CONFIG Build 015 uses `../configchoice.inc` for legacy menu and approval keys.
+Its one-token transport retains the caller's key policy; the editor keeps its
+separate CI_READ binding. See the developer guide for context and size rules.

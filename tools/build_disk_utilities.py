@@ -75,8 +75,8 @@ def main():
         text=text.replace('; @config-validation@',validation).replace('; @config-iobyte@',io_meta)
         text=text.replace('; @monitor-console@', (ROOT/'src/utilities/common/monitorconsole.inc').read_text())
         if stem=='config':
-            from shared_ui import expand_config_ui
-            text=expand_config_ui(text)
+            from build_config import expanded_source
+            text=expanded_source()
         if stem=='sysgen':
             from shared_ui import expand_sysgen_ui
             text=expand_sysgen_ui(text)

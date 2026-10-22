@@ -43,16 +43,9 @@ def main() -> None:
         for drive in "bcd":
             blank(args.disk_template, disks / f"drive{drive}.dsk")
         source = work / "CONFIG.MAC"
-        from system_layout import expand_layout
         def expanded_source():
-            text=expand_layout(SOURCE.read_text())
-            for name in ('sysgen','common','fdbread'):
-                text=text.replace('        INCLUDE disk/'+name+'.inc', (ROOT/'src/utilities/disk'/(name+'.inc')).read_text())
-            text=text.replace('; @config-iobyte@',(ROOT/'build/utilities/config-iobyte.inc').read_text())
-            text=text.replace('; @config-validation@',(ROOT/'build/utilities/config-validation.inc').read_text())
-            text=text.replace('; @monitor-console@',(ROOT/'src/utilities/common/monitorconsole.inc').read_text())
-            from shared_ui import expand_config_ui
-            text=expand_config_ui(text)
+            from build_config import expanded_source as cross_source
+            text=cross_source()
             text=text.replace('        ASEG\n        ORG 0100H','        CSEG\n        .PHASE 0100H',1)
             pos=text.rfind('        END')
             return text[:pos]+'        .DEPHASE\n'+text[pos:]

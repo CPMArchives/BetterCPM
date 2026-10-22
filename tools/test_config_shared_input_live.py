@@ -26,13 +26,13 @@ def main():
         data[at:at+128]=record[i*128:(i+1)*128]
     image.write_bytes(data);before=bytes(data)
     commands=[(b'CONFIG /DEFAULT\r',b'Push ENTER for menu.',30),
-              (b'\r',b'Your choice: [',20),(b'E',b'Command:',20),
-              (b'Abc\x13\x07\x08Z\x04!\r',b'Your choice: [',20),
-              (b'E',b'Command:',20),(b'Cancelled\x1b',b'Your choice: [',20),
-              (b'\x03',b'Your choice: [',20),
+              (b'\r',b'Your choice: [ ]\x08\x08',20),(b'E',b'Command:',20),
+              (b'Abc\x13\x07\x08Z\x04!\r',b'Your choice: [ ]\x08\x08',20),
+              (b'E',b'Command:',20),(b'Cancelled\x1b',b'Your choice: [ ]\x08\x08',20),
+              (b'\x03',b'Your choice: [ ]\x08\x08',20),
               (b'B',b'Disk-boot IOBYTE (decimal):',30),
               (b'12X\r',b'Invalid decimal value.',20),
-              (b'\x08\x03',b'Your choice: [',20),
+              (b'\x08\x03',b'Your choice: [ ]\x08\x08',20),
               (b'\x03',b'A0>_ ',30),(b'BYE\r',b'System halted',20)]
     trace=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,commands,w/'transcript.bin')
     assert trace.count(b'Pending startup command: AZ!')>=2

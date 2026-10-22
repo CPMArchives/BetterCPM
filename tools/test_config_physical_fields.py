@@ -4,7 +4,29 @@ from pathlib import Path
 import tempfile
 
 from build_ccp import assemble
-from test_disk_utilities import run
+from test_disk_utilities import ROOT,medium
+from run_trs80_command import DEFAULT_EMULATOR,key_args
+from trs80gp_launch import run as run_emulator
+from test_sysgen_install import screen
+
+
+def run(work,name,steps,extras=()):
+    # This native check uses an isolated app and allows the cold boot and each
+    # full field to finish; early keystrokes can otherwise be consumed by output.
+    w=work/name;w.mkdir();image=medium(extras);disk=w/'a.dmk';disk.write_bytes(image)
+    args=[str(DEFAULT_EMULATOR),'-m4','-batch','-turbo','-ktx','-d0',str(disk),'-itime','30000','-id','6000']
+    for keys,_delay in steps:
+        args+=key_args(keys,delay=25)+['-id','5000' if keys.startswith('CONFIG') else '2000','-it']
+    args+=['-ix'];run_emulator(args,cwd=w,check=True,timeout=360)
+    captures=sorted(w.glob('trs80-text-*.bin'),key=lambda p:int(p.stem.rsplit('-',1)[1]))
+    assert len(captures)==len(steps)
+    out=ROOT/'build/config-choice-input/physical-fields';out.mkdir(parents=True,exist_ok=True)
+    result=[]
+    for i,p in enumerate(captures):
+        raw=p.read_bytes();text=screen(p);(out/f'{i:02d}.bin').write_bytes(raw);(out/f'{i:02d}.txt').write_text(text);result.append((text,raw))
+    assert disk.read_bytes()==image,'field edits wrote boot disk'
+    return result,w,image
+
 
 
 def main() -> None:
@@ -31,7 +53,7 @@ REQ:    DB 1,0FFH
             [
                 ("DETACH\r", 1800),
                 ("CONFIG\r", 2200),
-                ("F", 500),
+                ("C", 500),
                 ("B", 500),
                 ("A", 700),
                 ("A", 700),

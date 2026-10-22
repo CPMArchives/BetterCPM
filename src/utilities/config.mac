@@ -82,10 +82,10 @@ MAIN:   LD HL,TITLE                     ; enter CONFIG utility
         CP 'B'
         JP Z,IO_MENU
         CP 'C'
-        JP Z,PHYSMENU
+        JR Z,PHYSMENU
         CP 'D'
         JP Z,LOGMENU
-        JP MAIN                    ; only implemented domains are offered
+        JR MAIN                    ; only implemented domains are offered
 
 ; ================================================================================
 ; =                         Physical Drive Configuration                         =
@@ -123,10 +123,10 @@ PHLIST: LD A,(PHINDEX)                  ; list physical-drive profiles
         CALL PUTS
         CALL CHOICE
         CP 3
-        JP Z,MAIN
+        JR Z,MAIN
         SUB 'A'
         CP 4
-        JP NC,PHYSMENU
+        JR NC,PHYSMENU
         LD (PHINDEX),A
 
 ; -------------------------------------------------------------------------------
@@ -174,7 +174,7 @@ PHFIELDS:
         JP Z,PHYSMENU
         SUB 'A'
         CP 6
-        JP NC,PHEDIT
+        JR NC,PHEDIT
         LD (FIELD),A
         INC A
         LD L,A
@@ -185,13 +185,13 @@ PHFIELDS:
         LD (OLDVAL),A
         LD A,(FIELD)
         OR A
-        JP Z,INCHES
+        JR Z,INCHES
         CP 1
-        JP Z,TRACKS
+        JR Z,TRACKS
         CP 2
-        JP Z,SIDES
+        JR Z,SIDES
         CP 3
-        JP Z,STEPS
+        JR Z,STEPS
         LD HL,NUMMSG
         CALL NUMBER
         JP C,PHEDIT
@@ -220,7 +220,7 @@ TRACKS: LD HL,TRKMSG                    ; tracks
         JP Z,PHEDIT
         SUB 'A'
         CP 4
-        JP NC,TRACKS
+        JR NC,TRACKS
         LD L,A
         LD H,0
         LD DE,TRKTAB
@@ -237,7 +237,7 @@ STEPS:  LD HL,STEPMSG                   ; step-rate s
         JP Z,PHEDIT
         SUB 'A'
         CP 4
-        JP NC,STEPS
+        JR NC,STEPS
 
 ; -------------------------------------------------------------------------------
 ; Commit Physical Profile
@@ -252,7 +252,7 @@ PHSAVE: LD B,A                          ; save physical profile
         ADD HL,DE
         LD (HL),B
         CALL PHSAFE
-        JP NZ,PHERROR
+        JR NZ,PHERROR
         LD DE,PHREQ
         LD B,2
         CALL API
@@ -423,7 +423,7 @@ LOGNEXT:CALL CRLF                       ; logical next
         JP Z,MAIN
         SUB 'A'
         CP 4
-        JP NC,LOGMENU
+        JR NC,LOGMENU
         LD (LOGIDX),A
         OR A
         JR NZ,LOGSTART
@@ -514,7 +514,7 @@ PAGEPICK:CP 16                          ; format page pick
         ADD A,B
         LD (CHOSEN),A
         CALL FDBBIND
-        JP C,FORMATBAD
+        JR C,FORMATBAD
   ; Check whether any configured drive can accommodate the geometry.
         XOR A
         LD (CHECKPH),A
@@ -571,7 +571,7 @@ ATTACH: LD HL,LOGHEAD                   ; attach selected logical format
         CALL CRLF
         LD HL,ATTMSG
         CALL PUTS
-        CALL KEY
+        CALL CC_PICK
         CP 3
         JP Z,PAGEVIEW
         SUB '0'
@@ -664,9 +664,9 @@ EDITDRIVE:LD HL,EDTITLE                 ; open logical-format workbench
         JP Z,MAIN
         SUB 'A'
         CP 1
-        JP C,EDITDRIVE
+        JR C,EDITDRIVE
         CP 4
-        JP NC,EDITDRIVE
+        JR NC,EDITDRIVE
         LD (EDDRIVE),A
         LD (REQ),A
         LD DE,REQ
@@ -726,18 +726,18 @@ EDPRINT:EX DE,HL                        ; workbench print
         CP 3
         JP Z,MAIN
         CP 'Q'
-        JP Z,EDAPPLY
+        JR Z,EDAPPLY
         CP 'S'
         JP Z,EDSIZE
         CP 'R'
         JP Z,EDSECTOR
         SUB 'A'
         CP 16
-        JP NC,EDSHOW
+        JR NC,EDSHOW
         LD (EDFIELD),A
         LD HL,EDVALUE
         CALL EDNUMBER
-        JP C,EDSHOW
+        JR C,EDSHOW
         PUSH DE
         CALL EDADDR
         POP DE
@@ -746,7 +746,7 @@ EDPRINT:EX DE,HL                        ; workbench print
         JR Z,EDWORD
         LD A,D
         OR A
-        JP NZ,EDINVALID
+        JR NZ,EDINVALID
         LD (HL),E
         JP EDSHOW
 
@@ -781,11 +781,11 @@ EDAPPLY:LD HL,EDCOPY                    ; apply edited logical binding
         LD A,(EDDRIVE)
         LD (REQ),A
         CALL EDCHECK
-        JP NZ,EDINVALID
+        JR NZ,EDINVALID
         LD DE,REQ
         LD B,4
         CALL API
-        JP NZ,EDINVALID
+        JR NZ,EDINVALID
         LD A,(EDDRIVE)
         CALL RESETLOG
         LD HL,SAVED
@@ -841,9 +841,9 @@ SAVEMENU:                              ; choose saved-default scope
         CP 3
         JP Z,MAIN
         CP 'A'
-        JP Z,STSAVE
+        JR Z,STSAVE
         CP 'B'
-        JP NZ,SAVEMENU
+        JR NZ,SAVEMENU
         JP SYSGEN
 
 STSAVE:LD A,(STSTATE)                  ; save pending cold changes only
@@ -857,7 +857,7 @@ STSAVE:LD A,(STSTATE)                  ; save pending cold changes only
         JP Z,STSAVENONE
         LD HL,STSAVEASK
         CALL PUTS
-        CALL KEY
+        CALL CC_ASK
         CP 'Y'
         JP NZ,CF_CANCEL
         CALL STLOAD                    ; preserve installed BCST for rollback
@@ -1027,12 +1027,12 @@ STMENUS:LD HL,STHELP
         CP 3
         JP Z,MAIN
         CP 'E'
-        JP Z,STEDIT
+        JR Z,STEDIT
         CP 'C'
-        JP Z,STCLEAR
+        JR Z,STCLEAR
         CP 'T'
-        JP Z,STTEST
-        JP STARTMENU
+        JR Z,STTEST
+        JR STARTMENU
 
 STFETCH:CALL STLOAD                    ; establish private pending copy
         JR NZ,STFETCHBAD
@@ -1347,7 +1347,7 @@ EDSLOTIN:LD HL,EDSLOT                   ; workbench slotin
         LD (EDSAVE),A
         LD A,(EDMODE)
         OR A
-        JP NZ,EDSIZEIN
+        JR NZ,EDSIZEIN
         LD HL,EDID
         CALL EDNUMBER
         JP C,EDSHOW
@@ -1600,7 +1600,7 @@ CF_TRYDEF:
         LD C,A
         LD DE,CF_DEFOPT
         CALL CF_MATCH
-        JP C,IO_PARSE
+        JR C,IO_PARSE
         CALL CF_SKIP
         JP NZ,CF_BAD
         LD A,7
@@ -1743,7 +1743,7 @@ IO_BIT: DEC B
         JR IO_BIT
 IO_BITDONE:
         AND L
-        JP Z,IO_BAD
+        JR Z,IO_BAD
 IO_CAPNEXT:
         LD A,D
         RRCA
@@ -1763,9 +1763,9 @@ IO_CAPSHIFT:
 IO_CAPDONE:
         LD HL,IO_ASK
         CALL PUTS
-        CALL KEY
+        CALL CC_ASK
         CP 'Y'
-        JP NZ,IO_RETURN
+        JR NZ,IO_RETURN
         LD HL,SGOLD
         LD DE,SGNEW
         LD BC,128
@@ -1858,16 +1858,16 @@ CF_TRYST:
 CF_STRING:
         LD A,C
         OR A
-        JP Z,CF_BAD
+        JR Z,CF_BAD
         LD A,(HL)
         INC HL
         DEC C
         CP '"'
         JR Z,CF_CLOSE
         CP 32
-        JP C,CF_BAD
+        JR C,CF_BAD
         CP 127
-        JP NC,CF_BAD
+        JR NC,CF_BAD
         LD (DE),A
         INC DE
         INC B
@@ -1876,7 +1876,7 @@ CF_CLOSE:
         LD A,B
         LD (CF_LEN),A
         CALL CF_SKIP
-        JP NZ,CF_BAD
+        JR NZ,CF_BAD
         LD A,2
         LD (CF_MODE),A
         OR A
@@ -1888,7 +1888,7 @@ CF_MATCH:
         LD B,A
         LD A,C
         OR A
-        JP Z,CF_BAD
+        JR Z,CF_BAD
         LD A,(HL)
         CP 'a'
         JR C,CF_CMP
@@ -1896,7 +1896,7 @@ CF_MATCH:
         JR NC,CF_CMP
         AND 5FH
 CF_CMP: CP B
-        JP NZ,CF_BAD
+        JR NZ,CF_BAD
         INC HL
         INC DE
         DEC C
@@ -2269,7 +2269,7 @@ CD_MATCH:
         LD A,(CD_VALUE)
         LD (HL),A
         POP HL
-        JP CD_LOOP
+        JR CD_LOOP
 CD_DUP: POP HL
         JP CF_BAD
 CD_END: LD A,(CD_MASK)
@@ -2448,7 +2448,7 @@ PHFAIL: DB 0
 
 CF_NOMEM:
         LD HL,CF_MEMMSG
-        JP CF_FATAL
+        JR CF_FATAL
 CF_MEMMSG: DB 'Not enough transient memory (43K required).',13,10,0
 CF_FATAL:
         CALL PUTS
@@ -2529,7 +2529,7 @@ CE_FOUND:
         ADD HL,DE
         LD A,(HL)
         OR A
-        JP NZ,CE_BADPOP
+        JR NZ,CE_BADPOP
         INC (HL)
         LD A,(EDFIELD)
         CP 16
@@ -2755,7 +2755,8 @@ CE_KEY: DB '/EDIT=',0
 CE_NAMES: DW CE_N0,CE_N1,CE_N2,CE_N3,CE_N4,CE_N5,CE_N6,CE_N7
         DW CE_N8,CE_N9,CE_N10,CE_N11,CE_N12,CE_N13,CE_N14,CE_N15
         DW CE_N16,CE_N17,CE_N18
-CE_N0: DB '/PHYSICAL=',0
+; Identical option spelling shares storage with the physical CLI parser.
+CE_N0 EQU CD_PHOPT
 CE_N1: DB '/SPT=',0
 CE_N2: DB '/BSH=',0
 CE_N3: DB '/BLM=',0
@@ -3115,6 +3116,7 @@ STSUBFCB:DB 1,'$$$     ','SUB'          ; A: stock command stream
         DS 24
 STSUBBUF EQU 0AAE0H                         ; one counted submitted command
 ; CONFIG uses shared basic input with local cancellation/DEL normalization.
+; @config-choices@
 ; @config-ui@
         INCLUDE disk/sysgen.inc
         INCLUDE disk/common.inc

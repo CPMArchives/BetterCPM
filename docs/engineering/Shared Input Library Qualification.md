@@ -243,3 +243,5 @@ PIP Build 028 protected replacement is recorded in [PIP Shared Input Qualificati
 DUP Build 006 menu/drive contexts and confirmation isolation are recorded in [DUP Menu Input Qualification](DUP%20Menu%20Input%20Qualification.md).
 
 SYSGEN destination selection: [Build 007 qualification](SYSGEN%20Destination%20Input%20Qualification.md).
+
+CONFIG menus, physical attachment and save approvals: [Build 015 qualification](CONFIG%20Choice%20Input%20Qualification.md).
