@@ -65,7 +65,7 @@ All membership or layout changes require discussion with the maintainer.
 ### Provisional daily Utilities media
 
 `tools/build_utilities_disk.py --build` assembles the currently implemented
-owned components: DUMP.COM, DDT.COM, XSUB.COM and its required BATCHIO.RSX. DDT is the owned adaptation, not the historical reference; its Model 4 screen/input campaign passes on disposable current-system media. It verifies
+owned components: DUMP.COM, DDT.COM, XSUB.COM and its required BATCHIO.RSX. DDT is the owned adaptation, not the historical reference; its Model 4 screen/input campaign passes on disposable current-system media. DDT also passes [Utilities release acceptance](../engineering/DDT%20Utilities%20Release%20Acceptance.md) from B: beside normal System A: on both platforms. `--ddt-acceptance REPORT` binds that component verdict to the exact artifact and image hashes; it does not promote the whole disk. The builder verifies
 file readback and the filesystem, and produces a 332K raw cpmsim image and an
 80T DS 800K data DMK for Model 4. Reports explicitly list pending selections;
 these are provisional daily media, not a fully qualified Utilities release.
