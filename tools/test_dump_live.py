@@ -9,6 +9,7 @@ import tempfile
 from pathlib import Path
 from test_z80pack_sysgen_install import session
 from build_dump import version_text
+from test_dump_enhanced import row
 ROOT=Path(__file__).resolve().parents[1]
 sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
 
@@ -29,7 +30,7 @@ def main():
     commands=[(b'DUMP /VER\r',b'A0>_ ',15),(b'DUMP TEST.BIN\r',b'A0>_ ',20),(b'DUMP EMPTY.BIN\r',b'A0>_ ',15),(b'DUMP MISSING.BIN\r',b'A0>_ ',15),(b'A3:\r',b'A3>_ ',15)]
     commands.append((b'A0:DUMP A:TEST.BIN\r',b'A3>_ ',20))
     raw=session(a.simulator,disks,commands,transcript_path=work/'transcript.bin')
-    expected=b''.join(b'\r\n'+f'{i:04X}'.encode()+b''.join(f' {b:02X}'.encode() for b in payload[i:i+16]) for i in range(0,256,16))+b'\r\n'
+    expected=(''.join(row(payload,i)+'\r\n' for i in range(0,256,16))+'\r\n').encode()
     assert raw.count(expected)==2,'normal and cross-user invocation must dump exact records'
     assert version_text().encode() in raw
     assert b'NO INPUT FILE PRESENT ON DISK\r\n' in raw
@@ -37,7 +38,7 @@ def main():
         target=work/f'extracted-{user}.bin';run('cpmcp','-f','bettercpm-default',str(image),f'{user}:TEST.BIN',str(target));assert target.read_bytes()==payload
     run('fsck.cpm','-f','bettercpm-default','-n',str(image))
     assert sha(original)==report['sha256']
-    result={'status':'PASS','baseline_sha256':sha(original),'program_sha256':sha(ROOT/'build/utilities/DUMP.COM'),'transcript_sha256':sha(work/'transcript.bin'),'scope':'Live cpmsim on accepted V052 BetterCP/M image: version, exact 256-byte output, empty/missing input, A0 program invoked from A3 with caller user preserved; source data and baseline unchanged; filesystem check.'}
+    result={'status':'PASS','baseline_sha256':sha(original),'program_sha256':sha(ROOT/'build/utilities/DUMP.COM'),'transcript_sha256':sha(work/'transcript.bin'),'scope':'Enhanced DUMP live cpmsim on accepted V052 BetterCP/M image: version, exact 256-byte output, empty/missing input, A0 program invoked from A3 with caller user preserved; source data and baseline unchanged; filesystem check.'}
     (work/'result.json').write_text(json.dumps(result,indent=2)+'\n');print(work)
 
 

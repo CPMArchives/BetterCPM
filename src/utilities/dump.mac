@@ -1,130 +1,451 @@
-; BetterCP/M DUMP: DRI-compatible record-based hex display, native Z80.
-; DRI DUMP.ASM defines the observable baseline, not instruction selection.
-; Any pending key stops at a line boundary WITHOUT consuming the key.
-; No close, DU parser, exact-byte EOF inference, or forced warm boot.
-BDOS    EQU     0005H
-FCB     EQU     005CH
-BUFFER  EQU     0080H
+; Enhanced read-only DUMP. All addresses are file bytes, not text positions.
+; Public BDOS boundaries are hostile to BC/DE/HL; SERVICE preserves them.
+BDOS EQU 5
         CSEG
         .PHASE  0103H
 START:
-        LD      (OLDSP),SP
-        LD      SP,STKTOP
-        LD      HL,0081H
-        LD      A,(0080H)
-        LD      B,A
-        LD      DE,UV_TEXT
-        CALL    UV_QUERY
-        JP      C,RETURN
-        XOR     A
-        LD      (FCB+32),A
-        LD      DE,FCB
-        LD      C,15
-        CALL    BDOS
-        CP      0FFH
-        JR      NZ,OPENED
-        LD      DE,MISSING
-        LD      C,9
-        CALL    BDOS
-        JR      FINISH
-OPENED:
-        LD      A,128
-        LD      (INDEX),A
-        LD      HL,0
-LOOP:
-        PUSH    HL
-        CALL    NEXTBYTE
-        POP     HL
-        JR      C,FINISH
-        LD      B,A
-        LD      A,L
-        AND     15
-        JR      NZ,VALUE
-        CALL    NEWLINE
-        LD      C,11
-        CALL    SERVICE
-        RRCA
-        JR      C,FINISH
-        LD      A,H
-        CALL    HEXBYTE
-        LD      A,L
-        CALL    HEXBYTE
-VALUE:
-        INC     HL
-        LD      A,' '
-        CALL    CHARACTER
-        LD      A,B
-        CALL    HEXBYTE
-        JR      LOOP
-FINISH:
-        CALL    NEWLINE
+        LD (OLDSP),SP
+        LD SP,STKTOP
+        LD HL,STATE
+        LD DE,STATE+1
+        LD BC,STATEEND-STATE-1
+        LD (HL),0
+        LDIR
+        LD HL,0081H
+        LD A,(0080H)
+        LD B,A
+        LD DE,UV_TEXT
+        CALL UV_QUERY
+        JP C,RETURN
+        LD C,25
+        CALL SERVICE
+        LD (ODRIVE),A
+        LD E,255
+        LD C,32
+        CALL SERVICE
+        LD (OUSER),A
+        LD HL,0081H
+        LD DE,TAIL
+        LD A,(0080H)
+        LD C,A
+        LD B,0
+        LD A,C
+        OR A
+        JR Z,DNOTAIL
+        LDIR
+DNOTAIL:
+        XOR A
+        LD (DE),A
+        CALL DPARSE
+        JP C,DEXIT
+        LD A,(BARE)
+        OR A
+        JP NZ,DBARE
+        LD A,(USER)
+        LD E,A
+        LD C,32
+        CALL SERVICE
+        LD A,1
+        LD (CHANGED),A
+        LD DE,DFCB
+        LD C,15
+        CALL SERVICE
+        CP 255
+        JP Z,DMISSING
+        LD DE,DFCB
+        LD C,35
+        CALL SERVICE
+        CP 255
+        JP Z,DSIZEERR
+        ; Convert the 24-bit record count to a 32-bit byte length.
+        LD HL,DFCB+33
+        LD DE,LENGTH
+        LD BC,3
+        LDIR
+        LD HL,LENGTH
+        LD B,7
+DLENSHIFT:
+        SLA (HL)
+        INC HL
+        RL (HL)
+        INC HL
+        RL (HL)
+        INC HL
+        RL (HL)
+        LD HL,LENGTH
+        DJNZ DLENSHIFT
+        LD A,(FROMSET)
+        OR A
+        JR Z,DDEFAULT
+        LD HL,MAXFROM
+        LD DE,LENGTH
+        CALL CMP32
+        JP NC,DRANGE
+DDEFAULT:
+        LD HL,LENGTH
+        CALL NONZERO
+        JR NZ,DNONEMPTY
+        LD DE,EMPTYMSG
+        CALL MESSAGE
+        JP DEXIT
+DNONEMPTY:
+        LD HL,FROM
+        LD DE,NEXT
+        CALL COPY32
+        CALL ALIGNNEXT
+        LD A,(PAGED)
+        OR A
+        JP Z,DSTREAM
+        CALL SCREENINIT
+        JP C,DEXIT
+        CALL LOADPAGE
+        JP C,DINITIALERR
+        CALL COMMITPAGE
+        LD A,1
+        LD (VIEWING),A
+        CALL RENDER
+        JP VIEWLOOP
+DMISSING:
+        LD DE,MISSING
+        CALL MESSAGE
+        JP DEXIT
+DSIZEERR:
+        LD DE,SIZEMSG
+        CALL MESSAGE
+        JP DEXIT
+DRANGE:
+        LD DE,RANGEMSG
+        CALL MESSAGE
+DEXIT:
+        LD A,(VIEWING)
+        OR A
+        CALL NZ,SCREENEXIT
+        LD A,(CHANGED)
+        OR A
+        JR Z,DRESTDMA
+        LD A,(OUSER)
+        LD E,A
+        LD C,32
+        CALL SERVICE
+        LD A,(ODRIVE)
+        LD E,A
+        LD C,14
+        CALL SERVICE
+DRESTDMA:
+        LD DE,0080H
+        LD C,26
+        CALL SERVICE
 RETURN:
-        LD      SP,(OLDSP)
+        LD SP,(OLDSP)
         RET
-; Preserve the display registers across the public BDOS boundary.
 SERVICE:
-        PUSH    BC
-        PUSH    DE
-        PUSH    HL
-        CALL    BDOS
-        POP     HL
-        POP     DE
-        POP     BC
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        CALL BDOS
+        POP HL
+        POP DE
+        POP BC
         RET
 CHARACTER:
-        PUSH    DE
-        LD      E,A
-        LD      C,2
-        CALL    SERVICE
-        POP     DE
+        PUSH BC
+        PUSH DE
+        LD E,A
+        LD C,2
+        CALL SERVICE
+        POP DE
+        POP BC
         RET
 NEWLINE:
-        LD      A,13
-        CALL    CHARACTER
-        LD      A,10
-        JP      CHARACTER
+        LD A,13
+        CALL CHARACTER
+        LD A,10
+        JP CHARACTER
+MESSAGE:
+        LD C,9
+        JP SERVICE
+; Null-terminated internal strings, routed to console or literal screen cells.
+TEXT:
+        LD A,(HL)
+        OR A
+        RET Z
+        CALL PUT
+        INC HL
+        JR TEXT
+PUT:
+        PUSH AF
+        LD A,(VIEWING)
+        OR A
+        JR Z,PUTCON
+        POP AF
+        PUSH BC
+        LD C,A
+        LD A,7
+        CALL SCREEN
+        POP BC
+        RET
+PUTCON:
+        POP AF
+        JP CHARACTER
 HEXBYTE:
-        PUSH    AF
+        PUSH AF
         RRCA
         RRCA
         RRCA
         RRCA
-        CALL    NIBBLE
-        POP     AF
+        CALL NIBBLE
+        POP AF
 NIBBLE:
-        AND     15
-        ADD     A,'0'
-        CP      '9'+1
-        JR      C,DIGIT
-        ADD     A,7
-DIGIT:
-        JP      CHARACTER
+        AND 15
+        ADD A,'0'
+        CP '9'+1
+        JR C,NIBDONE
+        ADD A,7
+NIBDONE:
+        JP PUT
+HEX32:
+        PUSH HL
+        LD DE,3
+        ADD HL,DE
+        LD B,4
+HX32LOOP:
+        LD A,(HL)
+        CALL HEXBYTE
+        DEC HL
+        DJNZ HX32LOOP
+        POP HL
+        RET
+SPACE:
+        LD A,' '
+        JP PUT
+; Four-byte little-endian arithmetic. COPY/CMP preserve input pointers.
+COPY32:
+        PUSH BC
+        PUSH HL
+        PUSH DE
+        LD BC,4
+        LDIR
+        POP DE
+        POP HL
+        POP BC
+        RET
+CMP32:
+        PUSH HL
+        PUSH DE
+        PUSH BC
+        LD BC,3
+        ADD HL,BC
+        EX DE,HL
+        ADD HL,BC
+        EX DE,HL
+        LD B,4
+CMPLOOP:
+        LD A,(DE)
+        LD C,A
+        LD A,(HL)
+        CP C
+        JR NZ,CMPDONE
+        DEC HL
+        DEC DE
+        DJNZ CMPLOOP
+CMPDONE:
+        POP BC
+        POP DE
+        POP HL
+        RET
+NONZERO:
+        PUSH HL
+        PUSH BC
+        LD B,4
+        XOR A
+NZLOOP:
+        OR (HL)
+        INC HL
+        DJNZ NZLOOP
+        POP BC
+        POP HL
+        RET
+INC32:
+        PUSH HL
+        LD B,4
+I32:
+        INC (HL)
+        JR NZ,I32DONE
+        INC HL
+        DJNZ I32
+I32DONE:
+        POP HL
+        RET
+DEC32:
+        PUSH HL
+        LD B,4
+D32:
+        LD A,(HL)
+        DEC (HL)
+        OR A
+        JR NZ,I32DONE
+        INC HL
+        DJNZ D32
+        JR I32DONE
+; HL points to a 32-bit counter, DE unsigned increment. No >32-bit result used.
+ADD16:
+        PUSH HL
+        LD A,(HL)
+        ADD A,E
+        LD (HL),A
+        INC HL
+        LD A,(HL)
+        ADC A,D
+        LD (HL),A
+        INC HL
+        LD A,(HL)
+        ADC A,0
+        LD (HL),A
+        INC HL
+        LD A,(HL)
+        ADC A,0
+        LD (HL),A
+        POP HL
+        RET
+ALIGNNEXT:
+        LD A,(ROWBYTES)
+        DEC A
+        CPL
+        LD B,A
+        LD A,(NEXT)
+        AND B
+        LD (NEXT),A
+        RET
+UPPER:
+        CP 'a'
+        RET C
+        CP 'z'+1
+        RET NC
+        AND 0DFH
+        RET
+; @dump-parser@
+; @dump-io@
+; @dump-view@
+; @dump-search@
+; @dump-bare@
 NEXTBYTE:
-        LD      A,(INDEX)
-        CP      128
-        JR      NZ,BUFFERED
-        LD      DE,FCB
-        LD      C,20
-        CALL    BDOS
-        OR      A
-        JR      Z,BUFFERED
+        LD A,(INDEX)
+        CP 128
+        JR NZ,BUFFERED
+        LD DE,DBUFFER
+        LD C,26
+        CALL SERVICE
+        LD DE,DFCB
+        LD C,20
+        CALL SERVICE
+        OR A
+        JR Z,BUFFERED
         SCF
         RET
 BUFFERED:
-        LD      E,A
-        LD      D,0
-        INC     A
-        LD      (INDEX),A
-        LD      HL,BUFFER
-        ADD     HL,DE
-        LD      A,(HL)
-        OR      A
+        LD E,A
+        LD D,0
+        INC A
+        LD (INDEX),A
+        LD HL,DBUFFER
+        ADD HL,DE
+        LD A,(HL)
+        OR A
         RET
-MISSING: DB     13,10,'NO INPUT FILE PRESENT ON DISK$'
 ; @dump-version@
-INDEX:  DB      0
-OLDSP:  DW      0
-        DS      128
+DU_MAP: DS 64
+DU_WORK: DS 12
+; @dump-selector@
+BAREMISS: DB 13,10,'NO INPUT FILE PRESENT ON DISK$'
+MISSING: DB 13,10,'NO INPUT FILE PRESENT ON DISK',13,10,'$'
+SIZEMSG: DB 'DUMP: Cannot determine file length.',13,10,'$'
+RANGEMSG: DB 'DUMP: Starting offset out of range.',13,10,'$'
+EMPTYMSG: DB 'Empty file',13,10,'$'
+BADOPT: DB 'DUMP: Invalid option or operand: $'
+MONMSG: DB 'DUMP /P requires a callable SCRN screen backend.',13,10,'$'
+GEOMMSG: DB 'DUMP /P needs $'
+COLMSG: DB ' columns and 2 rows. Try /40 if it fits.',13,10,'$'
+READMSG: DB 'Read error at ',0
+BEGMSG: DB 'Beginning of file',0
+ENDMSG: DB 'End of file',0
+NOTMSG: DB 'Pattern not found',0
+NOMORE: DB 'No further matches',0
+MATCHMSG: DB 'Match at ',0
+GOPROMPT: DB 'Go to offset: ',0
+FIPROMPT: DB 'Find: ',0
+HAPROMPT: DB 'Search as (H)ex or (A)SCII?',0
+BADINPUT: DB 'Invalid input; edit and retry',0
+LIMITMSG: DB 'Input limit reached; edit or submit',0
+PAGEHINT: DB '^R Up ^C Down F Find G Go Q Quit',0
+FINDHINT: DB '., Match ^R^C Page F Find G Go Q Quit',0
+REQ: DB 1,20,0,0,'SCRN',1,0,0,0,0,0
+        DW 0,0,0,0
+OLDSP: DW 0
+STATE:
+ODRIVE: DB 0
+OUSER: DB 0
+USER: DB 0
+CHANGED: DB 0
+BARE: DB 0
+PAGED: DB 0
+COMPACT: DB 0
+FROMSET: DB 0
+FILESET: DB 0
+ROWBYTES: DB 0
+INDEX: DB 0
+VIEWING: DB 0
+CACHEVALID: DB 0
+FROM: DS 4
+MAXFROM: DS 4
+LENGTH: DS 4
+PAGE: DS 4
+NEXT: DS 4
+POS: DS 4
+ERRPOS: DS 4
+CAND: DS 4
+ANCHOR: DS 4
+CACHEKEY: DS 3
+RECORD: DS 3
+TOKEN: DW 0
+TOKLEN: DB 0
+FNPTR: DW 0
+FNLEN: DB 0
+BACKEND: DW 0
+WIDTH: DB 0
+HEIGHT: DB 0
+ROWS: DB 0
+PAGESIZE: DW 0
+PAGECOUNT: DW 0
+STAGECOUNT: DW 0
+ROWNUM: DB 0
+ROWINDEX: DB 0
+RENDERPTR: DW 0
+REMAIN: DW 0
+DISPLAYPOS: DS 4
+ACTIVE: DB 0
+MATCHED: DB 0
+DIRECTION: DB 0
+NEWSEARCH: DB 0
+PATLEN: DB 0
+TEMPlEN: DB 0
+EDITLEN: DB 0
+EDITCUR: DB 0
+EDITSTART: DB 0
+EDITMAX: DB 0
+EDITPROMPT: DW 0
+INPUTERR: DB 0
+CANCELLED: DB 0
+STATEEND:
+DFCB: DS 36
+TAIL: DS 128
+DBUFFER: DS 128
+CACHE: DS 128
+PATTERN: DS 32
+TEMPPAT: DS 32
+EDITBUF: DS 96
+PAGEBUF: DS 4064
+STAGEBUF: DS 4064
+        DS 512
 STKTOP:
         .DEPHASE
-        END     START
+        END START

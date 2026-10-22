@@ -1,5 +1,9 @@
 # DUMP initial baseline qualification
 
+Historical Build 001 record. The enhanced Build 002 is covered separately by
+[Enhanced DUMP Qualification](DUMP%20Enhanced%20Qualification.md); the current
+engineering specification preserves the initial display behavior under `/BARE`.
+
 Date: 2026-10-21. DUMP 1.0 Build 001 implements the
 [initial DRI-compatible specification](DUMP%20Specification.md). The only
 extension is standalone `/VER`, using the finalized visual identity. DU syntax,

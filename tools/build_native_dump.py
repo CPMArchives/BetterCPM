@@ -46,8 +46,8 @@ def main() -> None:
         from build_dump import expanded_source
         import re
         text = expanded_source()
-        text = re.sub(r'(?m)^\s+DS\s+(\d+)\s*$',
-                      r'        REPT \1\n        DB 0FFH\n        ENDM', text)
+        text = re.sub(r'(?m)^(?:(\w+:)\s*)? +DS +([0-9]+) *$',
+                      r'\1\n        REPT \2\n        DB 0FFH\n        ENDM', text)
         expanded = work / 'expanded.mac'
         expanded.write_text(text, encoding='ascii')
         source.write_bytes(cpm_text(expanded))

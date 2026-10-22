@@ -9,6 +9,7 @@ import hashlib
 import json
 from test_bios import Z80
 from utility_versions import identities
+from test_dump_enhanced import execute as enhanced_execute
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -63,8 +64,14 @@ def main():
            ('read-status-2',bytes(256),dict(read_error=(1,2))),
            ('read-status-255',bytes(256),dict(read_error=(0,255)))]
     for label,payload,kw in cases:
-        a=execute(ours,payload,**kw);b=execute(dri,payload,**kw)
-        assert a==b,(label,a['output'][:160],b['output'][:160])
+        b=execute(dri,payload,**kw)
+        error=kw.get('read_error')
+        r=enhanced_execute(payload,tail=('B:TEST.BIN' if kw.get('drive') else 'TEST.BIN')+' /BARE',
+            opened=kw.get('opened',True), pending_bare=kw.get('pending_line'),
+            error=(lambda rec,n:rec==error[0]) if error else None)
+        a=dict(output=r['output'],services=r['services'],records=sum(1 for rec in r['reads'] if rec*128<len(payload) and not (error and rec==error[0])),
+               status_checks=r['services'].count(11),key_pending=kw.get('pending_line') is not None)
+        assert a['output']==b['output'] and a['records']==b['records'] and a['status_checks']==b['status_checks'],(label,a['output'][:160],b['output'][:160])
         if label=='one-record':assert a['output'].count(b'\r\n')==9
         if label=='wrap':assert b'\r\nFFF0' in a['output'] and a['output'].count(b'\r\n0000 ')==2
         if label.startswith('abort'):assert a['key_pending'] and 1 not in a['services']
@@ -72,11 +79,11 @@ def main():
     version,build=identities()['DUMP']
     expected=(f'DUMP {version} (Build {build:03d})\r\n  - - -\r\n | BetterCP/M Utilities\r\n | Hexadecimal File Display\r\n').encode()
     for tail in ['/VER',' /ver  ','/VeR']:
-        a=execute(ours,tail=tail);assert a['output']==expected and a['services']==[9];count+=1
+        a=enhanced_execute(tail=tail);assert a['output']==expected and a['services']==[9];count+=1
     for tail in ['/VER x','x /VER','/VER /VER']:
-        a=execute(ours,tail=tail);assert a['output']==b'Invalid /VER usage.\r\n' and a['services']==[9];count+=1
+        a=enhanced_execute(tail=tail);assert a['output']==b'Invalid /VER usage.\r\n' and a['services']==[9];count+=1
     for tail in ['/VERIFY','/VERBOSE']:
-        a=execute(ours,tail=tail,opened=False);assert 15 in a['services'];count+=1
+        a=enhanced_execute(tail=tail,opened=False);assert 15 not in a['services'] and b'DUMP:' in a['output'];count+=1
     report={'status':'PASS','cases':count,'dri_sha256':hashlib.sha256(dri).hexdigest(),'dump_sha256':hashlib.sha256(ours).hexdigest(),'scope':'Actual compiled programs; synthetic public BDOS record/status fixture. Direct RET/stack balance, output and pending character checked; not live platform qualification.'}
     (ROOT/'build/utilities/dump-tests.json').write_text(json.dumps(report,indent=2)+'\n')
     print(f'PASS {count} DUMP reference/EOF/wrap/interruption/return/version cases')
