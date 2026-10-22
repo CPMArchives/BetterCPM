@@ -4,7 +4,7 @@ Behavior and migration policy are defined in the [Shared Input and UI Specificat
 
 ## Initial legacy editor
 
-`input.inc` is the behavior-preserving extraction of DUMP Build 002's editor. It implements insertion, Ctrl-S/D/G/H, ESC and empty-Enter cancellation, capacity refusal, and resume after validation failure. It does **not** yet implement standard-profile Ctrl-A/F/Y, Ctrl-C cancellation, DEL aliases, defaults, choices or distinct event results.
+`input.inc` is the behavior-preserving extraction of DUMP Build 002's editor. It implements insertion, Ctrl-S/D/G/H, ESC and empty-Enter cancellation, capacity refusal, and resume after validation failure. This compatibility profile does **not** enable standard-profile Ctrl-A/F/Y, Ctrl-C cancellation, DEL aliases, defaults, choices or distinct event results. Select the standard profile explicitly for those features.
 
 Include it once per assembled program. The `EDIT*` labels are reserved within that program. No buffer, screen backend or BDOS service is allocated by the module.
 
@@ -65,3 +65,18 @@ six otherwise unused private state bytes below its existing AC00h guard. Its
 numeric adapter performs decimal validation; save/activation policy remains in
 CONFIG. The standard extended editor, defaults and choice controller remain
 unimplemented and are not claimed by this basic migration.
+
+## Standard profiles
+
+The standard event engine, optional word commands, empty/default policies and
+choice-only controller are implemented alongside the preserved compatibility
+profile. Use `tools/shared_ui.input_source` and `controller_source` to select
+only the required code. `events.inc` defines result/policy constants;
+`wordstar.inc` is optional; `checks.inc` is shared once by `prompt.inc` and
+`choice.inc`. All work buffers and state remain caller-owned.
+
+See the [developer guide](../../../../docs/programmers/Shared%20Input%20Library.md)
+for the complete API, build selections, register contracts, examples, measured
+costs and rendering obligations. The new controllers do not yet replace either
+DUMP's or CONFIG's compatibility binding. No undo, overwrite, terminal escape
+parser or automatic screen-driver loading is introduced.

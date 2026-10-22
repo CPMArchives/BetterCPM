@@ -132,6 +132,7 @@ The project record documents architectural decisions, implementation milestones,
 - [`docs/architecture/`](docs/architecture/) — architectural specifications and design record;
 - [`docs/engineering/`](docs/engineering/) — implementation and qualification record;
 - [`docs/programmers/`](docs/programmers/) — current programming and development interfaces;
+- [Shared input library](docs/programmers/Shared%20Input%20Library.md) — reusable utility editors, prompts, choices and integration contracts;
 - [`docs/compatibility/`](docs/compatibility/) — compatibility requirements and evidence;
 - [`docs/platform/`](docs/platform/) — platform specifications and implementation material;
 - [`TODO.md`](TODO.md) — project backlog governed by the 1.0 roadmap.

@@ -439,3 +439,12 @@ until final verification. Existing recovery names are never overwritten. A
 failed rename stops without rollback because directory extents may have changed
 partially; retain remaining files for recovery. This adds no resident code.
 See SYSGEN specification section 32 for exact bounds and failure behavior.
+
+
+## Shared utility input
+
+CONFIG's startup-command and numeric fields use the shared basic input editor.
+For module selection, caller-owned storage, direct-console rendering, prompt
+policies and standard-profile APIs, see the [Shared Input Library](Shared%20Input%20Library.md).
+The standard profile is available for new clients; CONFIG's qualified Build 014
+continues using its explicitly adapted compatibility profile.

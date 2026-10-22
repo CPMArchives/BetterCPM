@@ -798,6 +798,7 @@ reconciliation gate precede the corresponding implementation program.
 
 - [x] Consolidate the accepted [shared input and UI specification](docs/engineering/Shared%20Input%20and%20UI%20Specification.md).
 - [x] Extract DUMP's legacy basic editor into shared source with caller-owned storage and keyboard/display hooks, preserving Build 002 bytes.
-- [ ] Implement the standard event interface, optional Ctrl-A/F/Y module, text-field Ctrl-C/DEL behavior, defaults, choices and empty policies; retain explicit compatibility adapters.
+- [x] Implement the standard event interface, optional Ctrl-A/F/Y module, text-field Ctrl-C/DEL behavior, defaults, choices and empty policies; retain explicit compatibility adapters. See the [developer guide](docs/programmers/Shared%20Input%20Library.md).
 - [x] Adapt CONFIG startup-command replacement and freeform numeric fields to the shared basic editor with an inline renderer; qualify native parity, both platforms and save/rollback. See [qualification](docs/engineering/CONFIG%20Shared%20Input%20Qualification.md).
-- [ ] Generalize rendering and qualify module omission, per-consumer memory cost, and both platform interactions before migrating further utilities. Preserve ED/BDOS/CCP compatibility boundaries.
+- [x] Qualify compiled standard-library behavior, native/cross parity, actual module omission and per-profile code/state costs.
+- [ ] Generalize standard default/choice rendering and qualify real consumer interactions on both platforms before further migrations. Preserve ED/BDOS/CCP compatibility boundaries; audit CONFIG's remaining stack margin before enabling additional profiles.
