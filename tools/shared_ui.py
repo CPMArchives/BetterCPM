@@ -34,7 +34,14 @@ def expand_sysgen_ui(source):
 
 
 def expand_dup_ui(source):
-    return source.replace('; @dup-choice@','DP_ASK:\n'+confirmation_source())
+    # Change only DUP's CHOICE reader, retaining its existing echo/layout.
+    start=source.index('CHOICE:');end=source.index('DECOUT:',start)
+    choice=source[start:end];assert choice.count('CALL KEY')==1
+    source=source[:start]+choice.replace('CALL KEY','CALL DU_PICK')+source[end:]
+    binding='DP_ASK:\n        XOR A\n        LD (DU_MODE),A\n'+confirmation_source()
+    binding=binding.replace('UIREAD EQU UY_READ','UIREAD EQU DU_READ')
+    binding=(UI.parent/'dupmenu.inc').read_text()+'\n'+binding
+    return source.replace('; @dup-choice@',binding)
 
 
 def expand_era_ui(source):

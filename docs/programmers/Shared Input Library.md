@@ -546,3 +546,20 @@ The [remaining-consumer audit](../engineering/Shared%20Input%20Remaining%20Consu
 identifies DUP/SYSGEN selection menus as next candidates and records CONFIG's
 64-byte margin against a 220-byte minimum confirmation binding. Preserve the
 explicit command-language and navigator boundaries listed there.
+
+
+### DUP menu and drive contexts
+
+Build 006 reuses DUP's existing choice controller for `DP_MENU` and `DP_DRIVE`.
+Only DUP's expanded common CHOICE input hook changes; its rendering and the
+caller-owned dispatch remain intact. Unknown bytes travel through an internal
+help member and return as their original KEY-folded value, preserving invalid
+selection behavior rather than adding a silent retry loop.
+
+The binding restores Y/N configuration and clears menu mode before returning.
+Keep this reset on every path: destructive confirmation must never inherit a
+menu list. Preserve DP_ASK's malformed-config refusal; do not simply initialize
+it over a corrupted configuration. Direct command-line drive selection bypasses
+input entirely. No second controller or text module is needed. The addition is
+109 transient bytes and two state bytes; no resident memory is allocated.
+See [qualification](../engineering/DUP%20Menu%20Input%20Qualification.md).

@@ -1695,3 +1695,12 @@ default, invalid-key retry, extra prompt or typeahead flush is introduced.
 Menu/drive selection, cleanup, destructive-write gates and the existing 51K TPA
 requirement remain unchanged. This is transient source reuse, not a new resident
 service or a change to disk-control APIs.
+
+
+## Build 006 menu input integration
+
+Interactive main-menu and drive choices now reuse the shared controller, with
+unchanged display, keys, invalid-input dispatch and Ctrl-C behavior. Strict
+Y-only destructive approval is isolated from menu contexts; command-line drive
+selection remains noninteractive. No disk-engine or cleanup change. See
+[DUP Menu Input Qualification](DUP%20Menu%20Input%20Qualification.md).

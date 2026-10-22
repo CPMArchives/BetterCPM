@@ -147,3 +147,8 @@ should use the standard editor. MOVE has no current interactive prompt.
 PIP's `../pipinput.inc` reuses the one-key confirmation binding with a cooked
 BDOS 1 callback, preserving its echo and AND-DF folding. Only protected-file
 replacement approval is migrated; command/HEX/device input stays with PIP.
+
+
+DUP's `../dupmenu.inc` shares its existing controller between main-menu, drive
+and destructive-approval contexts. Its CHOICE rendering is retained, and menu
+returns reset strict Y/N configuration. Common CONFIG/SYSGEN code is untouched.

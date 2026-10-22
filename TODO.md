@@ -812,6 +812,7 @@ reconciliation gate precede the corresponding implementation program.
 - [x] Adapt transient COPY overwrite/verification/name prompts to shared choice/append modules, preserving raw input/echo and application policy. MOVE has no interactive prompts; retain its contract.
 - [x] Adapt PIP protected-file replacement confirmation without changing command/HEX/device input; qualify all answer bytes and both platforms.
 - [x] Record remaining input consumers and CONFIG's measured size gate; preserve command-language and navigation boundaries.
-- [ ] Adapt remaining DUP menu/drive choices and SYSGEN destination selection, reusing their existing controller.
+- [x] Adapt DUP main-menu/drive choices, preserving presentation, caller dispatch and strict confirmation isolation.
+- [ ] Adapt SYSGEN destination selection, reusing its existing controller.
 - [ ] Preserve PIP/ED/debugger command-language boundaries in any further input migration.
 - [ ] Migrate further production prompts only where utility specifications permit; audit CONFIG's remaining stack margin before enabling additional profiles.

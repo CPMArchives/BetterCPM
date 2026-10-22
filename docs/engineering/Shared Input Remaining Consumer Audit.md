@@ -1,6 +1,6 @@
 # Shared input remaining consumer audit
 
-2026-10-22, after COPY Build 005 and PIP Build 028 integration.
+2026-10-22, after COPY Build 005, PIP Build 028 and DUP Build 006 integration.
 
 This inventory distinguishes input components already shared, remaining suitable
 candidates, and application command/data protocols that should retain their own
@@ -12,7 +12,7 @@ semantics. It does not claim that every keyboard read has been migrated.
 | CONFIG startup and freeform numeric fields | Shared editor and inline renderer | Retain current qualified profile |
 | CONFIG menu choices, drive selection and save approvals | Existing disk-common KEY/CHOICE and caller policy | Suitable choices, but full controller integration needs a separate space reduction first |
 | DUP FORMAT/COPY confirmation | Shared one-key controller | Already qualified |
-| DUP operation/recovery menus and drive selection | Existing disk-common CHOICE/ASKDRV | Suitable next increment; preserve caller dispatch, retry, Ctrl-C and display behavior |
+| DUP main menu and drive selection | Existing CHOICE display plus shared controller in Build 006 | Qualified; caller dispatch/cancellation and command-line bypass preserved |
 | SYSGEN install/package replacement approval | Shared one-key controller | Already qualified |
 | SYSGEN interactive destination B..D selection | Existing KEY/caller loop | Suitable next increment; preserve selection, repeated heading and Ctrl-C exit |
 | ERA confirmation/recovery | Shared choice controller | Already qualified |
@@ -29,8 +29,9 @@ semantics. It does not claim that every keyboard read has been migrated.
 
 `LD C,1` alone is not evidence of a console read. For example, STAT uses C as
 an exact-token length and decimal-printing state. Classification must include
-the subsequent call, not just a search for a register load. DUP and SYSGEN menus
-remain candidates even though their destructive confirmations already migrated.
+the subsequent call, not just a search for a register load. SYSGEN destination selection remains a candidate even though its destructive
+confirmations already migrated. DUP menu/drive integration is qualified in
+Build 006.
 
 ## CONFIG memory gate
 
@@ -54,10 +55,8 @@ The measured fixture/report is `build/pip-shared-input/config-budget.json`.
 
 ## Suggested next increments
 
-1. DUP menu/drive choices, using its existing linked choice controller and
-   preserving caller-specific invalid-input and recovery policies.
-2. SYSGEN destination-drive selection, reusing its existing controller.
-3. CONFIG code-size reduction and then its remaining choices, if the measured
+1. SYSGEN destination-drive selection, reusing its existing controller.
+2. CONFIG code-size reduction and then its remaining choices, if the measured
    result fits while retaining its existing safety and workspace contracts.
 
 Any further standard-profile behavior change should be deliberate and separately
