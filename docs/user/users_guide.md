@@ -7925,6 +7925,32 @@ Press Ctrl-C to leave the main menu.
 
 CONFIG operates through the ordinary console and does not require a terminal-monitor extension.
 
+##### Editing Startup and Numeric Fields
+
+In the startup-command field and freeform decimal fields, typing inserts at the
+cursor. Use Ctrl-S and Ctrl-D to move left and right, Ctrl-G to delete the
+character under the cursor, and Ctrl-H/Backspace or DEL to delete the preceding
+character. A reverse-video character marks the insertion point where supported;
+otherwise an underscore marks it. Long command text scrolls within the line.
+
+Enter submits the input. ESC or Ctrl-C cancels the field. On Model 4, CLEAR
+supplies ESC; in trs80gp, use Home, or Fn-Left Arrow on a MacBook.
+
+The startup replacement field starts empty. Empty Enter leaves the pending
+command unchanged; use the startup menu's Clear operation to disable it.
+Physical-drive byte fields keep their current value on empty Enter. Other
+freeform numeric fields cancel an empty entry. Decimal syntax or overflow errors
+leave the text available for correction; field-specific setting checks still
+follow their existing rules.
+
+Startup commands accept up to 126 characters and numeric fields up to five.
+At the limit, additional insertion is refused while movement and deletion
+remain available. These fields currently provide the basic editing keys above;
+word movement, whole-line deletion and undo are not yet available here.
+Editing does not save settings: use CONFIG's existing save operations and
+confirmations when you want to change disk-boot defaults.
+
+
 ##### Displaying the Configuration
 
 To examine the current configuration without changing it:

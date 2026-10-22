@@ -32,7 +32,7 @@ def run_case(name: str, image: bytes, expected: tuple[str, ...],
     args = [str(DEFAULT_EMULATOR), "-m4", "-batch", "-turbo", "-d0", str(disk),
             "-id", "2500"]
     args += key_args("CONFIG\r") + ["-id", "2000"]
-    args += key_args("J") + ["-id", "2000", "-it", "-ix"]
+    args += key_args("A") + ["-id", "2000", "-it", "-ix"]
     if actions:
         args = args[:-2]
         for index, action in enumerate(actions):
@@ -55,7 +55,7 @@ def run_pending_save(image: bytes) -> bytes:
     disk.write_bytes(image)
     args = [str(DEFAULT_EMULATOR), "-m4", "-batch", "-turbo", "-d0", str(disk),
             "-id", "2500"]
-    for action in ("CONFIG\r", "J", "E", "VER\r", "\x03", "H", "A", "Y"):
+    for action in ("CONFIG\r", "A", "E", "VER\r", "\x03", "S", "A", "Y"):
         args += key_args(action) + ["-id", "2000"]
     args += ["-it", "-ix"]
     run_trs80gp(args, cwd=work, check=True, timeout=35)
@@ -88,7 +88,7 @@ def main() -> None:
     run_case("edit", image,
              ("Pending startup command has not been saved.",
               "Pending startup command: VER"),
-             ("E", "VER\r", "\x03", "J"))
+             ("E", "VER\r", "\x03", "A"))
     run_case("clear", enabled_image,
              ("Pending startup command has not been saved.",
               "Pending startup command: disabled."),
