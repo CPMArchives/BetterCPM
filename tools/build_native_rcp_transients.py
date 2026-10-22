@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import shutil
 import tempfile
@@ -28,11 +29,14 @@ def initialized_workspace(text: str) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--cpmsim", type=Path, default=DEFAULT_CPMSIM)
-    parser.add_argument("--system-disk", type=Path, default=DEFAULT_SYSTEM)
-    parser.add_argument("--disk-template", type=Path, default=DEFAULT_TEMPLATE)
-    parser.add_argument("--tools", type=Path, default=DEFAULT_TOOLS)
+    base=Path.home()/'projects/git'
+    runtime=base/'z80pack/cpmsim'
+    parser.add_argument("--cpmsim", type=Path, default=DEFAULT_CPMSIM if DEFAULT_CPMSIM.is_file() else runtime/'cpmsim')
+    parser.add_argument("--system-disk", type=Path, default=DEFAULT_SYSTEM if DEFAULT_SYSTEM.is_file() else runtime/'disks/library/cpm22-62khd.dsk')
+    parser.add_argument("--disk-template", type=Path, default=DEFAULT_TEMPLATE if DEFAULT_TEMPLATE.is_file() else runtime/'disks/library/cpm22-1.dsk')
+    parser.add_argument("--tools", type=Path, default=DEFAULT_TOOLS if DEFAULT_TOOLS.is_dir() else base/'cpm-compatibility/suite/build-tools')
     args = parser.parse_args()
+    os.environ['PATH']=str(args.cpmsim.parent/'srctools')+os.pathsep+os.environ.get('PATH','')
     required = (args.cpmsim, args.system_disk, args.disk_template,
                 args.tools / "ZSM4.COM", args.tools / "LINK.COM", SOURCE,
                 BUILD / "rcp-transient.bin", BUILD / "rcp-transient.lst")

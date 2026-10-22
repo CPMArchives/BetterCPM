@@ -235,3 +235,5 @@ and actual cpmsim/native Model 4 interaction and destructive-media results.
 REN Build 007 choice migration has its own [qualification record](REN%20Shared%20Input%20Qualification.md); filename-entry migration is outside that increment.
 
 REN Build 008 replacement-name extraction is qualified separately in [REN Name Field Qualification](REN%20Name%20Field%20Qualification.md).
+
+COPY Build 005 prompts and the MOVE compatibility audit are recorded in [COPY Shared Input Qualification](COPY%20Shared%20Input%20Qualification.md).

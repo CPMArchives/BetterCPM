@@ -3,6 +3,7 @@
 ; No I/O, allocation, case conversion, filename validation or redraw.
 ; UA_INIT: A=capacity 1..255; clears length/overflow, returns UI_MORE.
 ; UA_KEY: A=raw byte; returns UI_MORE/SEND/ABORT/LIMIT, carry clear.
+; UA_PUT: A=literal byte, bypass controls; returns UI_MORE/LIMIT, carry clear.
 ; Ctrl-C aborts, CR submits even empty, BS/DEL remove last byte, Ctrl-U clears.
 ; Other bytes append literally. Overflow remains sticky after backspace and
 ; submission; only INIT/Ctrl-U resets it. Caller MUST reject overflowed input.
@@ -32,6 +33,8 @@ UA_KEY:
         JR Z,UA_BACK
         CP 21
         JR Z,UA_CLEAR
+UA_PUT:
+        ; Literal append entry for adapters with different control-key policies.
         LD E,A
         LD A,(UA_LEN)
         LD B,A
