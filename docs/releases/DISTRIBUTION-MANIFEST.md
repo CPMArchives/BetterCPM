@@ -50,7 +50,7 @@ All membership or layout changes require discussion with the maintainer.
 - General-purpose full-screen editor: adopt an existing program; exact program TBD.
 - ZSM4
 - LINK
-- DDT.COM: initial DRI-compatible debugger adaptation with shared line editing and `/VER`; [engineering specification](../engineering/DDT%20Specification.md). Exact historical reproduction is retained separately as the verification baseline. Model 4 real-screen qualification remains open; native/cross and BetterCP/M cpmsim qualification pass.
+- DDT.COM: initial DRI-compatible debugger adaptation with shared line editing and `/VER`; [engineering specification](../engineering/DDT%20Specification.md). Exact historical reproduction is retained separately as the verification baseline. Model 4 real-screen/physical-keyboard, native/cross and BetterCP/M cpmsim qualification pass; [Model 4 evidence](../engineering/DDT%20Model%204%20Qualification.md).
 - Standalone Z80 disassembler: exact program TBD.
 - Archive utility: likely LU or NULU; selection TBD. A general ARC/BARC utility with format-specific overlays is also a design candidate; see the archive-utility design item in [TODO](../../TODO.md).
 - Compression/expansion functions: incorporate SQ/USQ, CR/UNCR and CrLZH
@@ -65,7 +65,7 @@ All membership or layout changes require discussion with the maintainer.
 ### Provisional daily Utilities media
 
 `tools/build_utilities_disk.py --build` assembles the currently implemented
-owned components: DUMP.COM, DDT.COM, XSUB.COM and its required BATCHIO.RSX. DDT is the owned adaptation, not the historical reference; its Model 4 screen/input campaign remains unqualified. It verifies
+owned components: DUMP.COM, DDT.COM, XSUB.COM and its required BATCHIO.RSX. DDT is the owned adaptation, not the historical reference; its Model 4 screen/input campaign passes on disposable current-system media. It verifies
 file readback and the filesystem, and produces a 332K raw cpmsim image and an
 80T DS 800K data DMK for Model 4. Reports explicitly list pending selections;
 these are provisional daily media, not a fully qualified Utilities release.
