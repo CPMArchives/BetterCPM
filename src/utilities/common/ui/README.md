@@ -152,3 +152,6 @@ replacement approval is migrated; command/HEX/device input stays with PIP.
 DUP's `../dupmenu.inc` shares its existing controller between main-menu, drive
 and destructive-approval contexts. Its CHOICE rendering is retained, and menu
 returns reset strict Y/N configuration. Common CONFIG/SYSGEN code is untouched.
+
+SYSGEN Build 007 also reuses its confirmation controller for destination B..D
+selection; `../sysgeninput.inc` restores the strict approval context on return.

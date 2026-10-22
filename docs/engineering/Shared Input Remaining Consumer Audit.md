@@ -1,6 +1,6 @@
 # Shared input remaining consumer audit
 
-2026-10-22, after COPY Build 005, PIP Build 028 and DUP Build 006 integration.
+2026-10-22, after COPY Build 005, PIP Build 028 DUP Build 006 and SYSGEN Build 007 integration.
 
 This inventory distinguishes input components already shared, remaining suitable
 candidates, and application command/data protocols that should retain their own
@@ -14,7 +14,7 @@ semantics. It does not claim that every keyboard read has been migrated.
 | DUP FORMAT/COPY confirmation | Shared one-key controller | Already qualified |
 | DUP main menu and drive selection | Existing CHOICE display plus shared controller in Build 006 | Qualified; caller dispatch/cancellation and command-line bypass preserved |
 | SYSGEN install/package replacement approval | Shared one-key controller | Already qualified |
-| SYSGEN interactive destination B..D selection | Existing KEY/caller loop | Suitable next increment; preserve selection, repeated heading and Ctrl-C exit |
+| SYSGEN interactive destination B..D selection | Shared controller with unchanged KEY/caller loop in Build 007 | Qualified; repeated heading, B..D selection and Ctrl-C exit preserved |
 | ERA confirmation/recovery | Shared choice controller | Already qualified |
 | REN choices and replacement name | Shared choice/append compatibility modules | Already qualified |
 | COPY overwrite, verify recovery and replacement name | Shared choice/append compatibility modules | Already qualified |
@@ -29,9 +29,8 @@ semantics. It does not claim that every keyboard read has been migrated.
 
 `LD C,1` alone is not evidence of a console read. For example, STAT uses C as
 an exact-token length and decimal-printing state. Classification must include
-the subsequent call, not just a search for a register load. SYSGEN destination selection remains a candidate even though its destructive
-confirmations already migrated. DUP menu/drive integration is qualified in
-Build 006.
+the subsequent call, not just a search for a register load. SYSGEN destination selection and DUP menu/drive integration now share their
+existing controllers; neither adds a second controller or field editor.
 
 ## CONFIG memory gate
 
@@ -55,8 +54,7 @@ The measured fixture/report is `build/pip-shared-input/config-budget.json`.
 
 ## Suggested next increments
 
-1. SYSGEN destination-drive selection, reusing its existing controller.
-2. CONFIG code-size reduction and then its remaining choices, if the measured
+1. CONFIG code-size reduction and then its remaining choices, if the measured
    result fits while retaining its existing safety and workspace contracts.
 
 Any further standard-profile behavior change should be deliberate and separately

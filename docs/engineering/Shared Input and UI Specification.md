@@ -178,7 +178,7 @@ must respect each utility's specification and measured space budget.
 | REN Build 008 | Choice controller plus append-only compatibility event engine | Existing choices and filename echo/editing/overflow/validation policy |
 | ERA Build 004 | Standard choice-only controller with ERA compatibility binding | Existing Y/N and R/S/A/? retry, echo, help, Ctrl-C cancellation and unattended policy |
 | DUP Build 006 | Choice controller shared across menus, drives and strict confirmation | Original CHOICE display/dispatch; command-line selection bypasses input; only Y authorizes FORMAT/COPY |
-| SYSGEN Build 006 | Standard choice-only controller with compatibility input adapter | Only Y authorizes; any other response declines |
+| SYSGEN Build 007 | Shared choice controller for destination selection and confirmation | B..D selection and invalid-key redisplay preserved; only Y authorizes installation |
 | UIEX developer example | Standard editor, words, text/choice controllers and layouts | Demonstration policy only; excluded from distribution manifests |
 
 Select only modules an application actually needs. Utility-specific input policy

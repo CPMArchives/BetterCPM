@@ -563,3 +563,15 @@ it over a corrupted configuration. Direct command-line drive selection bypasses
 input entirely. No second controller or text module is needed. The addition is
 109 transient bytes and two state bytes; no resident memory is allocated.
 See [qualification](../engineering/DUP%20Menu%20Input%20Qualification.md).
+
+
+### SYSGEN destination context
+
+Build 007's `common/sysgeninput.inc` binds `SG_DRIVE` to the existing `UC_RUN`
+controller. `SG_READ` preserves KEY's returned byte in `SG_RAW`, using the `?`
+choice internally for unknown keys so the caller retains invalid-key dispatch.
+`SG_RESET` restores `UY_LIST`, count 2 and default 0 on every selection return.
+A malformed selection returns Ctrl-C without reading input or reusing a stale
+drive. `SG_ASK` selects confirmation mode but does not repair corrupt controller
+configuration: malformed approval configuration still fails closed without input.
+No second controller, input editor or field buffer is linked.

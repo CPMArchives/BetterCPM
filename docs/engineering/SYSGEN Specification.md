@@ -1056,3 +1056,19 @@ implementation change, not a change to the command or safety contract: only Y
 default, invalid keys do not start a retry loop, and pending input is not flushed.
 Original questions, filesystem recovery rules and the existing 36K TPA guard
 remain unchanged. The controller does not write application or disk state.
+
+
+## Shared destination selection (Build 007)
+
+Interactive destination selection now reuses the existing choice controller via
+`SG_DRIVE`. B through D (case-insensitive) select the same destination as before;
+Ctrl-C exits, and every other key repeats the existing heading and question.
+There is no default, input flush, extra prompt, or new cancellation alias.
+Command-line selection bypasses this interactive adapter.
+
+The adapter restores the strict confirmation context on every return. Only Y
+continues to authorize destructive operations. The program is 5,818 bytes,
+84 transient bytes more than Build 006; resident storage, TPA requirements,
+stack/work buffers and disk operations are unchanged.
+
+See [destination qualification](SYSGEN%20Destination%20Input%20Qualification.md).
