@@ -185,7 +185,8 @@ def main():
             assert dest.read_bytes() == original[(user,name)]
     all_names = {'NORMAL.DAT','READONLY.DAT','SYSTEM.DAT','BOTH.DAT'}
     text = execute(':ERA /VER', label='version')
-    assert b'BetterCP/M ERA 1.0 (Build 002)' in text
+    from utility_versions import banner
+    assert banner('ERA').encode() in text
     text = execute(':ERA /Y B1:*.DAT', label='safe-broad')
     assert b'1 FILES ERASED, 3 SKIPPED, 34K FREED' in text, text[-500:]
     remains(1, all_names-{'NORMAL.DAT'})

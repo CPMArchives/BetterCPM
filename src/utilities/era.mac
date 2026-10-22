@@ -216,9 +216,7 @@ E_FAILURE:
         OR A
         JR NZ,E_FAILED
 E_RECOVER:
-        LD DE,E_RECOV
-        CALL E_PRINT
-        CALL E_KEY
+        CALL EU_RCHO
         CP 3
         JP Z,E_CANCEL
         CP '?'
@@ -619,7 +617,14 @@ E_FIRST:
 E_FLOOP:
         LD A,(IX+14)
         CP 2
-        RET Z
+        JR NZ,E_FNEXT
+        ; Classification leaves E_CURRENT one past the collected list.
+        ; Bind the exact-file prompt to the selected record, not that sentinel.
+        PUSH IX
+        POP HL
+        LD (E_CURRENT),HL
+        RET
+E_FNEXT:
         LD DE,32
         ADD IX,DE
         JR E_FLOOP
@@ -977,7 +982,7 @@ E_SFREE:
         CALL E_PRINT
         JP E_DONE
 E_YN:
-        CALL E_KEY
+        CALL EU_YN
         CP 3
         SCF
         RET Z
@@ -1301,6 +1306,7 @@ E_MORE: DB 'MORE -- Space/ENTER for next page.$'
 E_PAGEEND: DB 13,10,'$'
 ; @era-selector@
 ; @utility-version ERA@
+; @era-choice@
 E_STACK: DS 256
 E_STKTOP:
 E_HEAP:
