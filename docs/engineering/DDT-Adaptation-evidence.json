@@ -1,0 +1,30 @@
+{
+  "status": "PASS_WITH_PLATFORM_LIMIT",
+  "artifact_sha256": "4b72c62b846dc3aaff673bf6b2fa3569c8fdc9887ca7927b3bf6ce3c357b6e46",
+  "archive_sha256": "a0eb0615958cfec857b335f7df860661da60355a4ec2b5a14e0e4635e96a0633",
+  "files": {
+    "build/ddt-development/historical-baseline-report.json": "60887f84479011c99f53ef0e72825beb8c04429b56d0600f13de7591c0fcf183",
+    "build/ddt-development/input-report.json": "6852bfd3a6bc572f3175fe9af9beab5bf4859da8267af56c7c54fcc2cad0f510",
+    "build/ddt-development/baseline-isolation-report.json": "46793367998bc707716a7c74f7a9848c71e6d1e67fc4c162ccc8b0bc4bed9902",
+    "build/ddt-development/native-report.json": "0edd53ecb9ce5a9ca079e59b8613c26724cbdec3efcccf447d8f5294e3e766fd",
+    "build/ddt-development/compatibility-report.json": "3f521803d41c65f4e6bdb894b4c79ac0089a5c8b39794d5ef311bb81465520c5",
+    "build/ddt-development/build-report.json": "e68ed1060065ec32335b281ae29759b1456eee5406da5ca3019aaf346a5af043",
+    "build/ddt-development/PAY1-native.log": "f8e85be17463151b4a7a22e7b7d988035397c1f8162711d145b2213adace2f5d",
+    "build/ddt-development/PAY0-native.log": "22d65bd869253341721bc2a01e74d69ee826501bbbd60f567fa51eb4e513ab9d",
+    "build/ddt-development/BOOT-native.log": "ddb35f4aa2013612bd7964721618fc970b2d9bf5b1263f237b07ae86af18a157",
+    "build/ddt-development/PAY2-native.log": "a729ec6d217b6c197c386dd7705c8d52c233d6ae51eb6326022bd894bb1ac358",
+    "build/ddt-development/model4-status.json": "1e54826e06c5a7e5e86715e5f49a11f48175d09e25bbd74c1bdefca04c2937f4",
+    "build/ddt-development/relocation.bitmap": "9333829c573a3a85231b9b74d6ebe6a8361d26ef23ce64e3740db6f598f01b1e",
+    "build/ddt-development/DDT.COM": "4b72c62b846dc3aaff673bf6b2fa3569c8fdc9887ca7927b3bf6ce3c357b6e46",
+    "build/ddt-development/live/session-ag1hatnp/transcript.bin": "62e3d1b1ac3a900cece1259afef856b3ed62a4482dd662c03f2f3d9aa058b399",
+    "build/ddt-development/live/session-ag1hatnp/report.json": "302975160aa8627c7428092b648e9023211a1e12f929ce67b867bcba657b85a8",
+    "build/ddt-development/live/session-ag1hatnp/TINY.HEX": "add6b1c3b6409ad72d73ba49c6035b539d55ab5ac147ed20388e4eb369555ee8",
+    "build/ddt-development/live/session-ag1hatnp/diskdefs": "c5f33ab22bc17e5533131b1ecb2a3ef3fc69262e52328261710d1955561b4ca5",
+    "build/ddt-development/live/session-ag1hatnp/TINY.COM": "924aa7fe54248b55f9633a9503646d97fbb5472f02fdfc9dbd6c55e1cff6dcc7",
+    "build/ddt-development/live/session-ag1hatnp/TINY-after.COM": "924aa7fe54248b55f9633a9503646d97fbb5472f02fdfc9dbd6c55e1cff6dcc7"
+  },
+  "limits": [
+    "Model 4 screen/keyboard qualification inconclusive",
+    "Global utility version suite blocked by stale/missing unrelated artifacts"
+  ]
+}

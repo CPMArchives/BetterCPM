@@ -8,7 +8,7 @@ BetterCP/M has reached the **1.0 OS implementation milestone**: architecture Sta
 
 The finalized visual design is defined in the [BetterCP/M Visual Identity standard](specifications/VISUAL-IDENTITY.md).
 
-The [BetterCP/M Utilities Manual](docs/user/utilities_manual.md) provides operating instructions for Utilities Disk programs, beginning with DUMP.
+The [BetterCP/M Utilities Manual](docs/user/utilities_manual.md) provides operating instructions for Utilities Disk programs, including DUMP and the initial DDT debugger adaptation.
 
 ## Goals
 

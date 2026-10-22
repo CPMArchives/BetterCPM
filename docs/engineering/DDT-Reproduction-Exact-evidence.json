@@ -1,0 +1,10 @@
+{
+  "file": "DDT-Reproduction-Exact-evidence.tar.gz",
+  "size": 1436917,
+  "sha256": "1bc418ed10128e70f1e84dd8d12a5fe551a03942413cb14c5a2403e95cd1bd7e",
+  "status": "PASS",
+  "ddt_sha256": "d79890f0a637aee317a255bdac6b27215b1ad4452a1b6da822828bcba5a49ecf",
+  "ddt_size": 4864,
+  "residue_bytes_explained": 245,
+  "ddt_reference_used_as_build_input": false
+}

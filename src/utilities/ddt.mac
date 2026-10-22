@@ -1,0 +1,10 @@
+; BetterCP/M DDT: source-preserving debugger core and shared input binding.
+; tools/build_ddt.py supplies the origin and syntax-aware DRI transcription.
+; The immutable historical sources and exact rebuild remain separate inputs.
+        ASEG
+        ORG @origin@
+; @ddt-core@
+        DS MODBAS+1000H-$
+; @ddt-input@
+; @ddt-shared@
+        END

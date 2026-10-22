@@ -29,6 +29,7 @@ BUILDERS = (
     "type",
     "pip",
     "dump",
+    "ddt",
     "warm",
     "stat",
     "time",

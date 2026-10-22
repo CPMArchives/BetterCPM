@@ -1,0 +1,37 @@
+{
+  "archive": "sources/cpm2-plm(1).zip",
+  "archive_sha256": "706cc4c90d35d6c1f2b521309b539207b5bc54fea034b01c377a5f50e8bf348f",
+  "members": {
+    "DDT1ASM.ASM": {
+      "archive_member": "cpm2-plm/DDT1ASM.ASM",
+      "size": 20361,
+      "sha256": "a79c505b027233e53551aac08a66c72a1a689c1c270d6ed450aae52fcf8d47d2"
+    },
+    "DDT0MOV.ASM": {
+      "archive_member": "cpm2-plm/DDT0MOV.ASM",
+      "size": 2246,
+      "sha256": "177203dfc92136cd78191f475413c0b9a82b0e815ee956b99ccd70098d47516f"
+    },
+    "ASM.COM": {
+      "archive_member": "cpm2-plm/ASM.COM",
+      "size": 8192,
+      "sha256": "ef403388a04f18d735984fe497f9fa5dbb48f114b52dab323e33e82073133c2c"
+    },
+    "DDT.COM": {
+      "archive_member": "cpm2-plm/DDT.COM",
+      "size": 4864,
+      "sha256": "d79890f0a637aee317a255bdac6b27215b1ad4452a1b6da822828bcba5a49ecf"
+    },
+    "MAC.COM": {
+      "archive_member": "cpm2-plm/MAC.COM",
+      "size": 11776,
+      "sha256": "aad715f607cfa02f922c24b4e57c36312fd876f76e03c584fac689dce690d08c"
+    },
+    "DDT2MON.ASM": {
+      "archive_member": "cpm2-plm/DDT2MON.ASM",
+      "size": 33946,
+      "sha256": "a685b7e94931ac08f8fc976bd7a2699c1224dd9dc2ad02424cc1b2278571ede8"
+    }
+  },
+  "license_note": "LICENSE retained from existing repository DRI reference collection; archive contains copyright headers but no separate license file. This does not establish a new archive provenance."
+}

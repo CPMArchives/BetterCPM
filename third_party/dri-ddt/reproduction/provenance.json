@@ -1,0 +1,27 @@
+{
+  "purpose": "Independent PIP source and historical toolchain used to regenerate DDT storage residue. No DDT reference bytes are input to residue generation.",
+  "pip_source": {
+    "url": "https://www.icl1900.co.uk/unix4fun/z80pack/ftp/cpm20src.tgz",
+    "archive_sha256": "bcefcf85ef1b9d117b9449ed3950b802222afe1c7a9c37db8ba117de66bb6244",
+    "archive_member": "disks/library/hd-cpm20src.dsk",
+    "disk_sha256": "5f726593b05fa9cc836e5bfb9952a85ac6ddc9b9b529e6a4939d7ae3d1370cb2",
+    "filesystem": "z80pack-hd",
+    "file": "0:PIP.PLM",
+    "extracted_sha256": "5782d9c8f411fb73997c7027cc3653c5abdd2b375960f07e5a39e184cdf6e9bb"
+  },
+  "tool_archive": {
+    "url": "https://www.icl1900.co.uk/unix4fun/z80pack/ftp/cpm22src.tgz",
+    "sha256": "4ac690619d57dcb661597dbebb09dbfce9000252fd86546d070eb15b59bcffc0",
+    "documentation": "https://www.icl1900.co.uk/unix4fun/z80pack/doc_cpm22_src.html"
+  },
+  "recipe": {
+    "compiler": "ISIS-II PL/M-80 V3.1",
+    "linker": "ISIS-II OBJECT LINKER V3.0",
+    "locater": "ISIS-II OBJECT LOCATER V3.0",
+    "stack_bytes": 64,
+    "seed_sha256": "2ccaa962a2df3f30cb0925fc641c8616d3f26192d3cd102666cd2f66b5fb45b5",
+    "pip_memory_origin": 256,
+    "ddt_work_origin": 2048
+  },
+  "limit": "An independently generated memory state explains every residue byte; the exact original DRI command sequence is not recovered."
+}

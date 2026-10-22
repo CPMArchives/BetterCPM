@@ -2,7 +2,7 @@
 
 This manual explains how to use the programs supplied on the BetterCP/M Utilities Disk. For the command prompt, drive and user areas, file management, configuration, and the System Disk commands, see the [BetterCP/M User’s Guide](users_guide.md).
 
-The Utilities Disk is being assembled separately from the System Disk. This manual currently covers the completed DUMP utility. Chapters for other utilities will be added as those programs are completed and selected for distribution.
+The Utilities Disk is being assembled separately from the System Disk. This manual covers DUMP and the initial DDT debugger adaptation. Chapters for other utilities will be added as those programs are completed and selected for distribution.
 
 ## Contents
 
@@ -18,6 +18,8 @@ The Utilities Disk is being assembled separately from the System Disk. This manu
   - [Editing an input prompt](#editing-an-input-prompt)
   - [Original CP/M display](#original-cpm-display)
   - [Messages and recovery](#messages-and-recovery)
+
+- [DDT debugger](#ddt-debugger)
 
 ## Using the Utilities Disk
 
@@ -249,3 +251,34 @@ Messages in the paged viewer occupy the bottom row, temporarily replacing the hi
 A later page-read failure keeps the last complete page and its search position. A search-read failure also preserves the previously committed pattern and position. If the first page cannot be read, DUMP reports the error and returns to the command prompt. Continuous output stops at a distinguishable read error and reports its position.
 
 DUMP restores the caller’s drive and user area on its own normal, cancelled, and handled-error exits. Lower-level disk recovery prompts or system aborts may take control before DUMP can handle the failure. DUMP does not repair a damaged file or disk.
+
+
+## DDT debugger
+
+Run `B0:DDT` to inspect or enter an 8080 program, or `B0:DDT PROGRAM.COM` to load a program first. A HEX file is also accepted. `B0:DDT /VER` displays the BetterCP/M utility identity without starting the debugger. The initial adaptation is DDT 1.0 Build 001.
+
+The debugger retains CP/M 2.2 DDT's command language. Addresses and numbers are hexadecimal. Commands execute when Enter is pressed.
+
+| Command | Purpose |
+| --- | --- |
+| `Aaddress` | Enter 8080 assembly instructions; a dot ends entry. |
+| `Dstart,end` | Display memory in hexadecimal and ASCII. |
+| `Fstart,end,byte` | Fill an inclusive memory range. |
+| `Gaddress,bp1,bp2` | Run with optional breakpoints. `G0` returns to CP/M. |
+| `Hvalue,value` | Show hexadecimal sum and difference. |
+| `Ifilename` then `R` | Select and read a COM or HEX input. |
+| `Lstart,end` | List memory as 8080 instructions. |
+| `Mstart,end,destination` | Move memory using DDT's existing forward-copy behavior. |
+| `Saddress` | Substitute bytes; empty Enter advances, a dot finishes. |
+| `Tcount` / `Ucount` | Trace or run a counted number of instructions without trace display. |
+| `X` / `Xregister` | Examine machine state or replace a register/flag value. |
+
+The usual omitted-operand and continuation forms remain available. This is an 8080 debugger: the program's use of Z80 code for editing does not add Z80 mnemonics to the debugger or extend its instruction-stepping model. Keep executable test programs and file copies separate from valuable work when modifying their memory.
+
+Line input uses the shared editor with a 32-character limit. Ctrl-S/D move the cursor, Ctrl-A/F move by words, Ctrl-H or DEL erase left, and Ctrl-G erases under the cursor. Ctrl-U, Ctrl-X and Ctrl-Y clear the provisional line. Enter submits even an empty line. Unassigned control keys, including TAB, do not enter command text; type the original command's spaces or commas. Excess characters sound the bell and remain unaccepted until space is made.
+
+Escape abandons the active interactive command and returns to the main `-` prompt. It does not undo earlier accepted assembly or substitution changes. Ctrl-C retains its historical warm-boot meaning. The original dot terminator remains available within assembly and substitution; it is not replaced by Escape. The existing address/register prefix stays visible while editing, with an underscore at end of input and a horizontally scrolling 24-cell field.
+
+DDT relocates below the current BDOS gateway and reduces the debuggee's available memory. This build reserves 20 pages (5120 bytes), compared with the historical debugger's 16 pages. It does not require a loaded screen backend or a monitor personality. Its file is 6528 bytes. The exact 4864-byte historical reference is preserved as a separate engineering baseline and is not the Utilities Disk program.
+
+BetterCP/M cpmsim command and input checks pass. The Model 4 real-screen/keyboard campaign is still open because the host's boot-only control also returned blank captures. The Utilities images remain provisional; native assembler parity is not a substitute for that platform check.

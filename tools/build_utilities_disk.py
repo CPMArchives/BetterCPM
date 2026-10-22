@@ -18,8 +18,8 @@ sys.path.insert(0,str(ROOT/"tools"))
 from fdf_format import select_fdf
 from build_z80pack_image import disk_definition, DEFAULT_FORMAT
 from convert_fdf_image import raw_to_dmk, dmk_to_raw
-COMPONENTS={'DUMP.COM':'build/utilities/DUMP.COM','XSUB.COM':'build/utilities/XSUB.COM','BATCHIO.RSX':'build/rsx/BATCHIO.RSX'}
-PENDING=['Full-screen editor (selection pending)','ZSM4 (release packaging pending)','LINK (release packaging pending)','DDT.COM (implementation pending)','Z80 disassembler (selection pending)','ARC/BARC and compression tools (design pending)']
+COMPONENTS={'DDT.COM':'build/utilities/DDT.COM','DUMP.COM':'build/utilities/DUMP.COM','XSUB.COM':'build/utilities/XSUB.COM','BATCHIO.RSX':'build/rsx/BATCHIO.RSX'}
+PENDING=['Full-screen editor (selection pending)','ZSM4 (release packaging pending)','LINK (release packaging pending)','Z80 disassembler (selection pending)','ARC/BARC and compression tools (design pending)']
 sha=lambda data:hashlib.sha256(data).hexdigest()
 
 
@@ -66,7 +66,7 @@ def main():
     p.add_argument('--build',action='store_true',help='freshly build owned Utilities components first')
     a=p.parse_args()
     if a.build:
-        for name in ['dump','batch']:subprocess.run([sys.executable,str(ROOT/'tools'/f'build_{name}.py')],cwd=ROOT,check=True)
+        for name in ['dump','ddt','batch']:subprocess.run([sys.executable,str(ROOT/'tools'/f'build_{name}.py')],cwd=ROOT,check=True)
     build(a.output.resolve(),a.artifacts.resolve())
 
 
