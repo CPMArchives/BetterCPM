@@ -54,4 +54,8 @@ The initial adaptation may change identity, editing presentation and resident fo
 
 ## Implemented qualification
 
-See [adaptation qualification](DDT%20Adaptation%20Qualification.md) for the measured footprint, build/test commands and remaining Model 4 display qualification. The initial implementation is 6528 bytes and reserves 20 resident pages.
+See [adaptation qualification](DDT%20Adaptation%20Qualification.md) for the measured footprint, build/test commands and completed Model 4 display qualification. The initial implementation is 6528 bytes and reserves 20 resident pages.
+
+## Model 4 qualification closure
+
+Qualify the existing adaptation on a disposable, freshly constructed Model 4 system disk built with `tools/build_complete_system.py`, after a boot-only control reaches the CCP prompt. An older retained release disk that produces a blank control screen is not a valid DDT fixture. The harness must preserve the supplied source image, record its hash and the private test image, and check actual VRAM captures for editing, cancellation, debugger results and warm-boot return. No debugger or shared-input behavior changes are authorized by a fixture repair. Keep the historical reproduction and adaptation artifact hashes unchanged.
