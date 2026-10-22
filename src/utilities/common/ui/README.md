@@ -91,3 +91,9 @@ guide for its caller-owned buffer and error contract.
 DUMP Build 003 is its first consumer. The caller clears/positions the prompt row
 and supplies literal-character, caret and position hooks. See the developer
 guide for geometry, register and state contracts.
+
+
+`default.inc` formats a separate bracketed default for an empty standard text
+field; `choiceerror.inc` retains the full choice question/default while bounding
+its diagnostic. Both use the common formatter buffer and width configuration.
+See the developer guide for preflight, error and direct-output requirements.

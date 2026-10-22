@@ -150,3 +150,10 @@ No native display qualification of a new consumer is implied by controller tests
 
 [Shared library qualification](Shared%20Input%20Library%20Qualification.md)
 records compiled behavior, native ZSM4 parity, actual module omission and costs.
+
+
+The optional default and choice-error layout modules now implement bracketed
+separate defaults and bounded diagnostics without hiding the full choice
+question/default. Geometry that cannot retain the essential content fails
+explicitly. These are transport-independent formatters with compiled/native
+qualification; production standard-controller screen integration remains open.

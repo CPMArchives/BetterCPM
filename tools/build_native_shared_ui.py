@@ -13,6 +13,8 @@ def main():
     p.add_argument('--system',type=Path,default=base/'z80pack/cpmsim/disks/library/cpm22-62khd.dsk')
     p.add_argument('--template',type=Path,default=base/'z80pack/cpmsim/disks/library/cpm22-1.dsk')
     p.add_argument('--tools',type=Path,default=base/'cpm-compatibility/suite/build-tools')
+    p.add_argument('--extra-fixture',type=Path,action='append',default=[],
+                   help='Previously cross-built .mac fixture, with matching .bin in build/shared-ui')
     a=p.parse_args();os.environ['PATH']=str(a.cpmsim.parent/'srctools')+os.pathsep+os.environ.get('PATH','')
     BUILD.mkdir(parents=True,exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='bcpm-native-ui-') as temporary:
@@ -20,10 +22,14 @@ def main():
         for drive in 'bcd':blank(a.template,disks/f'drive{drive}.dsk')
         for tool in ['ZSM4.COM','LINK.COM']:
             run('cpmcp','-f','ibm-3740',str(disks/'drived.dsk'),str(a.tools/tool),'0:'+tool)
-        names={profile:'UI'+str(i) for i,profile in enumerate(PROFILES)}
+        sources={profile:fixture_source(profile) for profile in PROFILES}
+        for extra in a.extra_fixture:
+            assert extra.stem not in sources,'duplicate fixture name'
+            sources[extra.stem]=extra.read_text(encoding='ascii')
+        names={profile:'UI'+str(i) for i,profile in enumerate(sources)}
         commands=f'set timeout 60\nspawn {a.cpmsim} -z -d {disks}\nexpect "A>"\nsend -- "B:\\r"\nexpect "B>"\n'
         for profile,name in names.items():
-            text=fixture_source(profile).replace('        ASEG\n        ORG 0100H','        CSEG\n        .PHASE 0100H',1)
+            text=sources[profile].replace('        ASEG\n        ORG 0100H','        CSEG\n        .PHASE 0100H',1)
             text=text.replace('        END\n','        .DEPHASE\n        END\n')
             source=w/(name+'.MAC');plain=w/(name+'.txt');plain.write_text(text,encoding='ascii');source.write_bytes(cpm_text(plain))
             run('cpmcp','-f','ibm-3740',str(disks/'drivec.dsk'),str(source),'0:'+source.name)
@@ -32,7 +38,7 @@ def main():
         result=run('expect','-c',commands,check=False)
         log=result.stdout+result.stderr;(BUILD/'NATIVE-UI-BUILD.LOG').write_text(log)
         assert result.returncode==0,log
-        assert log.count('Errors: 0')==len(PROFILES),log
+        assert log.count('Errors: 0')==len(sources),log
         reports={}
         for profile,name in names.items():
             target=w/(name+'.COM');run('cpmcp','-f','ibm-3740',str(disks/'driveb.dsk'),'0:'+target.name,str(target))
@@ -42,7 +48,7 @@ def main():
             (BUILD/(profile+'-native.bin')).write_bytes(native[:len(cross)])
             reports[profile]={'status':'PASS','bytes':len(cross)}
         (BUILD/'native-results.json').write_text(json.dumps(reports,indent=2)+'\n')
-        print('PASS: native ZSM4/LINK parity for all six shared UI profiles')
+        print(f'PASS: native ZSM4/LINK parity for {len(sources)} shared UI fixtures')
 
 
 if __name__=='__main__':main()
