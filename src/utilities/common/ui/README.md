@@ -80,3 +80,8 @@ for the complete API, build selections, register contracts, examples, measured
 costs and rendering obligations. The new controllers do not yet replace either
 DUMP's or CONFIG's compatibility binding. No undo, overwrite, terminal escape
 parser or automatic screen-driver loading is introduced.
+
+
+Optional `format.inc` formats validated choice questions with explicit width
+checking; it does not output text or replace a screen backend. See the developer
+guide for its caller-owned buffer and error contract.
