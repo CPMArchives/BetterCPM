@@ -429,3 +429,40 @@ buffers, stack and 51K TPA requirement. No resident allocation changes.
 `tools/test_dup_shared_choice.py` and `tools/test_sysgen_shared_choice.py` share
 the key-safety, invalid-configuration and version-purity campaign. Native DUP
 assembly/parity is available through `tools/build_native_dup.py`.
+
+
+### ERA confirmation and recovery compatibility consumer
+
+ERA Build 004 selects `common/erainput.inc` through `expand_era_ui()` in both
+build paths. It shares the choice-only controller, with two context-specific
+bindings: `EU_YN` returns uppercase Y/N or byte 3 for local cancellation;
+`EU_RCHO` returns uppercase R/S/A, literal `?`, or byte 3. Both preserve
+BC/DE/HL/IX. ERA's original caller retains echo/newline, help, accounting,
+retry/skip/abort, protected-file admission and unattended-mode decisions.
+
+The binding intentionally preserves ERA's existing policy. Invalid confirmation
+keys retry silently; invalid recovery keys repeat `R/S/A/?`. Enter and ESC are
+invalid in both contexts, while Ctrl-C cancels. There is no default, typeahead
+flush or new cancellation alias. Raw input still uses ERA's existing direct
+BDOS 6 reader. The adapter maps Enter/ESC to an invalid choice rather than
+adopting the generic controller's cancellation policy. Each entry resets its
+choice pointer/count/default and context; confirmations and recovery may share
+the controller state safely. `/Y` bypasses input in the application as before.
+
+The complete selection is 280 bytes: 185 controller code, 83 adapter code,
+six choice-list bytes and six state bytes. Replacing ERA's old recovery display
+site removes six bytes, for 274 bytes of migration growth. An additional
+8-byte safety correction binds the single-file prompt to the selected record
+rather than the classifier's one-past-list cursor. Final ERA is 7,897 bytes,
+282 larger than Build 003. Its existing 256-byte stack remains; the bounded
+selection heap begins 282 bytes later. No editor, formatting buffer or resident
+allocation is added.
+
+`tools/test_era_shared_choice.py` retains the original Y/N routine with source
+provenance and links it to the unchanged production console helpers. It compares
+all byte inputs, returned flags, echo, register/stack and typeahead behavior,
+then checks recovery choices, context switching and exact target naming.
+Native assembly uses `tools/build_native_era.py` with paths appropriate to your
+installed CP/M tools. See the ERA shared-input qualification for real-platform
+interaction and disk-state evidence; recovery fault injection remains a
+compiled-code qualification, not a claim of native hardware faults.

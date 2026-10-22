@@ -221,3 +221,13 @@ source. DUP's scoped key/configuration/version safety checks, parser/dispatch,
 native parity, real cpmsim FORMAT/COPY/CHECK and all four native Model 4 groups
 pass. See [DUP shared input qualification](DUP%20Shared%20Input%20Qualification.md)
 for exact sizes, hashes, media/file audits and fixture-accounting corrections.
+
+
+## ERA production choice/recovery consumer
+
+ERA Build 004 now uses an ERA-specific compatibility binding for Y/N and R/S/A/?,
+retaining its existing retry, echo, Ctrl-C and unattended policies. A pre-existing
+exact-file approval display bug was corrected after native testing exposed it.
+See [ERA shared input qualification](ERA%20Shared%20Input%20Qualification.md) for
+legacy differential checks, code/heap costs, final hashes, compiled fault scope
+and actual cpmsim/native Model 4 interaction and destructive-media results.

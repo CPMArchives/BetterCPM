@@ -154,6 +154,9 @@ class Z80:
                 elif sub == 0x21:        # LD IX,nn
                     self.ix = self.word(self.pc)
                     self.pc += 2
+                elif sub == 0x19:        # ADD IX,DE; Z is preserved
+                    total = self.ix + self.de
+                    self.ix, self.carry = total & 0xFFFF, total > 0xFFFF
                 elif sub == 0x23:
                     self.ix = (self.ix + 1) & 65535
                 elif sub == 0x22:        # LD (nn),IX

@@ -30,7 +30,8 @@ def expanded_source():
     start = rcp.index('BC_PFCB:')
     end = rcp.index('; ================================================================================', start)
     selector += rcp[start:end] + "\nBC_ALL: DB '*.*'\nBC_INPTR: DW 0\nBC_INLEN: DB 0\nBC_FCBPTR: DW 0\n"
-    return expand_versions(SOURCE.read_text(encoding='ascii').replace('; @era-selector@', selector))
+    from shared_ui import expand_era_ui
+    return expand_era_ui(expand_versions(SOURCE.read_text(encoding='ascii').replace('; @era-selector@', selector)))
 
 
 def main() -> None:

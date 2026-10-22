@@ -1104,3 +1104,21 @@ Do not add for ERA 1.0:
 The protections are part of ERA's design.
 
 ---
+
+
+## Shared input implementation (Build 004)
+
+Confirmation and R/S/A/? recovery use the shared choice-only controller through
+an ERA-specific compatibility binding. Existing confirmation echo, invalid-key
+retry, help, cancellation and protected-file/recovery rules remain unchanged:
+Ctrl-C cancels; Enter/ESC are invalid responses and do not gain new aliases.
+Invalid Y/N responses retry silently; invalid recovery responses repeat the
+question. No default or typeahead flush is added. `/Y` continues to bypass
+interactive input in application logic.
+
+Exact single-file approval must display the selected DU/name. Build 004 corrects
+a pre-existing cursor bug: classification leaves its cursor one past the
+collected list, and the first-eligible search now updates that cursor before
+rendering the approval question. The erase target was selected separately; the
+fix makes the displayed identity agree with it. This correction is documented
+in the source and the shared-input qualification record.

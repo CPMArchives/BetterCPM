@@ -116,3 +116,10 @@ SYSGEN. It preserves original any-non-Y-declines confirmation policy rather than
 introducing defaults or retries. Both utilities reuse their own uppercase,
 unechoed `KEY` routine. The selection helpers and developer guide describe the
 220-byte complete binding and its output contract.
+
+
+ERA uses `common/erainput.inc` for its Y/N and R/S/A/? contexts. This adapter
+preserves ERA-specific invalid-key retry, Ctrl-C cancellation and the absence
+of Enter/ESC aliases. It does not reuse DUP/SYSGEN's any-non-Y-declines policy.
+The developer guide documents caller register/state contracts and the retained
+legacy confirmation reference used for differential tests.

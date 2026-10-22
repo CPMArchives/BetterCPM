@@ -37,6 +37,12 @@ def expand_dup_ui(source):
     return source.replace('; @dup-choice@','DP_ASK:\n'+confirmation_source())
 
 
+def expand_era_ui(source):
+    binding=(UI.parent/'erainput.inc').read_text()
+    modules=(UI/'events.inc').read_text()+'\n'+controller_source(text=False,choice=True)
+    return source.replace('; @era-choice@',binding.replace('; @choice-modules@',modules))
+
+
 def expand_config_ui(source):
     common=ROOT/'src/utilities/common'
     source=source.replace('; @config-ui@',(common/'configinput.inc').read_text())
