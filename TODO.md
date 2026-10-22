@@ -793,3 +793,10 @@ reconciliation gate precede the corresponding implementation program.
   Define safe treatment of open FCBs, dirty buffers, and interrupted writes;
   start by considering relogging at the idle command prompt. Current work
   implements the CP/M 2.2 read-only response, not automatic relogging.
+
+## Shared utility input library
+
+- [x] Consolidate the accepted [shared input and UI specification](docs/engineering/Shared%20Input%20and%20UI%20Specification.md).
+- [x] Extract DUMP's legacy basic editor into shared source with caller-owned storage and keyboard/display hooks, preserving Build 002 bytes.
+- [ ] Implement the standard event interface, optional Ctrl-A/F/Y module, text-field Ctrl-C/DEL behavior, defaults, choices and empty policies; retain explicit compatibility adapters.
+- [ ] Generalize rendering and qualify module omission, per-consumer memory cost, and both platform interactions before migrating further utilities. Preserve ED/BDOS/CCP compatibility boundaries.

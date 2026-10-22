@@ -447,5 +447,11 @@ PAGEBUF: DS 4064
 STAGEBUF: DS 4064
         DS 512
 STKTOP:
+; Shared UI hook bindings follow their definitions for native/cross assemblers.
+UIREAD EQU WAITKEY
+UIDRAW EQU EDITDRAW
+UICANCEL EQU HINT
+UIMESSAGE EQU STATUS
+UILIMITMSG EQU LIMITMSG
         .DEPHASE
         END START
