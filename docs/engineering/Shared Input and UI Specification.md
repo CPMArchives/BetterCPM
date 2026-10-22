@@ -173,6 +173,7 @@ must respect each utility's specification and measured space budget.
 | --- | --- | --- |
 | DUMP Build 003 | Compatibility editor and shared screen-field renderer | Existing Find/Go To behavior and no invented defaults |
 | CONFIG Build 014 | Compatibility editor and compact inline renderer | Existing startup/numeric validation and save behavior |
+| COPY Build 005 | Choice controller plus append compatibility engine | Raw input, legacy overwrite/help/recovery policy, name editing and validation; MOVE unchanged |
 | REN Build 008 | Choice controller plus append-only compatibility event engine | Existing choices and filename echo/editing/overflow/validation policy |
 | ERA Build 004 | Standard choice-only controller with ERA compatibility binding | Existing Y/N and R/S/A/? retry, echo, help, Ctrl-C cancellation and unattended policy |
 | DUP Build 005 | Standard choice-only controller with shared one-key adapter | Only Y authorizes FORMAT/COPY; other responses decline |

@@ -508,3 +508,25 @@ state byte. Its caller retains BDOS 1 echo, ASCII-only uppercase conversion,
 newlines, blank-to-collision behavior, strict filename parsing and commit/abort.
 Build 008 is 5,884 bytes (+28 over Build 007), with the same 128-byte stack and
 no resident allocation. See [qualification](../engineering/REN%20Name%20Field%20Qualification.md).
+
+### COPY prompt compatibility binding
+
+`common/copyinput.inc`, selected only by the transient COPY builder, binds
+`CU_OW` overwrite choices and `CU_VER` verification choices to the choice
+controller. Raw BDOS 6 input waits through no-key/CR/LF and retains Ctrl-C.
+Unknown input (including ESC) maps to the explicit help member while retaining
+the original folded byte for the caller's existing echo/help path. Application
+code alone owns overwrite/skip-all state and retry/cleanup. Do not substitute
+REN's invalid-input policy.
+
+COPY's replacement field reuses the append compatibility engine and existing
+126-byte storage. CR and LF submit; BS/DEL erase the last byte using the existing
+BS/space/BS echo. Ctrl-U is literal rather than clear. For such policy adapters,
+`UA_PUT` accepts a literal byte without interpreting editing controls and returns
+`UI_MORE` or `UI_LIMIT` with the same bounds/sticky-overflow behavior as ordinary
+append. The label emits no extra bytes in existing consumers. The caller must
+initialize valid state and validate the candidate before committing it.
+
+Build 005 is 12,010 bytes (+307 transient bytes), with no resident allocation or
+additional text buffer. MOVE currently has no interactive prompt to migrate.
+See [qualification](../engineering/COPY%20Shared%20Input%20Qualification.md).

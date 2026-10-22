@@ -135,6 +135,8 @@ def copy_source(text: str) -> str:
     scope += (ROOT / "src/utilities/common/attrselect.inc").read_text(encoding="ascii")
     scope += (ROOT / "src/utilities/common/operandqual.inc").read_text(encoding="ascii")
     scope += (ROOT / "src/utilities/common/duselect.inc").read_text(encoding="ascii")
+    from shared_ui import copy_ui_source
+    scope += copy_ui_source()
     state = """
 CT_BATCH: DB 0
 CT_CHOICE: DB 0

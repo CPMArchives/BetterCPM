@@ -124,22 +124,9 @@ CVVASK:
         LD DE,CVVASKM
         CALL BC_PRINT
 CVVREAD:
-        LD E,0FFH
-        LD C,6
-        CALL BDOS
-        OR A
-        JR Z,CVVREAD
+        CALL CU_VER
         CP 3
         JR Z,CVVABORT
-        CP 13
-        JR Z,CVVREAD
-        CP 10
-        JR Z,CVVREAD
-        CP 'a'
-        JR C,CVVANS
-        CP 'z'+1
-        JR NC,CVVANS
-        SUB 32
 CVVANS:
         LD (CT_CHOICE),A
         CALL BC_PCHAR

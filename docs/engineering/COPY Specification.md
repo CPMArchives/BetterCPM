@@ -1704,3 +1704,14 @@ COPY report is rejected before an archive is created.
 This closes this frozen binary's z80pack transient campaign, not Model 4 or
 full-release conformance. Model 4 qualification and CPX/CCP handoff remain
 separate. No BIOS/BDOS changes or new COPY behavior are introduced here.
+
+
+## Build 005 shared-input integration
+
+Transient COPY's overwrite, verification-recovery and replacement-name input
+now use the shared input library through compatibility bindings. Existing
+choices, invalid-response echo/help, CR/LF waiting/submission, Ctrl-C cleanup,
+BS/DEL editing, literal Ctrl-U, sticky overflow and filename/overlap validation
+are unchanged. No new behavior is added to resident COPY or MOVE. See
+[COPY Shared Input Qualification](COPY%20Shared%20Input%20Qualification.md)
+for costs and evidence.

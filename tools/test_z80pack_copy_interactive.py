@@ -115,6 +115,16 @@ def main():
     assert b'READ ONLY' in text
     check(7, {'A.DAT': old['A.DAT'], 'B.DAT': sources['B.DAT'],
               'C.DAT': old['C.DAT']}, 'rename-read-only-preserved')
+    # Preserve raw-field policy: Ctrl-U is literal/invalid, overflow remains
+    # sticky after backspace, and DEL edits the last byte without a new redraw.
+    text = execute('COPY B1:A.DAT B5:', [(b'R', b'New Name: '),
+        (b'AB\x15CD\r', b'New Name: '),
+        (b'X'*127+b'\x08'*125+b'\r', b'New Name: '),
+        (b'new2.daz\x7ft\r', b'A0>_ ')], 'shared-field-policy')
+    assert text.count(b'Invalid filename.')==2
+    f=report/'shared-field-result.dat';cpm('cpmcp',b,'5:NEW2.DAT',f)
+    assert f.read_bytes()==sources['A.DAT']
+    check(1,sources,'shared-field-sources')
     (report / 'evidence.json').write_text(json.dumps({'result': 'PASS',
         'choices': ['Y', 'N', 'O', 'S', 'R', '?'], 'invalid_response_reprompts': True,
         'policy_resets_between_invocations': True, 'ctrl_c_keeps_completed_files': True,

@@ -2,57 +2,25 @@
 CTRENAME:
         LD DE,CTRASK
         CALL BC_PRINT
-        XOR A
-        LD (CTRLEN),A
-        LD (CTROVER),A
+        LD A,126
+        CALL UA_INIT
 CTRREAD:
         LD E,0FFH
         LD C,6
         CALL BDOS
         OR A
         JR Z,CTRREAD
-        CP 3
-        JP Z,CTABORT
-        CP 13
-        JP Z,CTRLINE
         CP 10
-        JP Z,CTRLINE
-        CP 8
-        JR Z,CTRBACK
-        CP 127
-        JR Z,CTRBACK
-        CP 'a'
-        JR C,CTRSTORE
-        CP 'z'+1
-        JR NC,CTRSTORE
-        SUB 32
-CTRSTORE:
+        JR NZ,CTRCASE
+        LD A,13                    ; COPY has always submitted on CR or LF
+CTRCASE:
+        CALL UC_UPPER
         LD (CTRCHAR),A
-        LD A,(CTRLEN)
-        CP 126
-        JR NC,CTRFULL
-        LD E,A
-        LD D,0
-        LD HL,CTRBUF
-        ADD HL,DE
-        LD A,(CTRCHAR)
-        LD (HL),A
-        LD HL,CTRLEN
-        INC (HL)
-        CALL BC_PCHAR
-        JR CTRREAD
-CTRFULL:
-        LD A,1
-        LD (CTROVER),A
-        JR CTRREAD
-CTRBACK:
-        LD A,(CTRLEN)
-        OR A
-        JR Z,CTRREAD
-        DEC A
-        LD (CTRLEN),A
-        LD DE,CTRERASE
-        CALL BC_PRINT
+        CALL CU_EDIT
+        CP UI_ABORT
+        JP Z,CTABORT
+        CP UI_SEND
+        JP Z,CTRLINE
         JR CTRREAD
 CTRLINE:
         LD DE,BC_NL

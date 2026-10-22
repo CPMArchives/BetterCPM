@@ -135,3 +135,10 @@ It shares event constants, performs no I/O and owns no storage. The caller
 provides `UA_BUF`, `UA_LEN`, `UA_FULL`, `UA_MAX` and handles echo/validation.
 It preserves sticky overflow and literal raw-byte storage; it is not the
 standard profile for new prompts. See the developer guide for entry contracts.
+
+COPY's `../copyinput.inc` retains raw BDOS 6 choice/field policy and caller-owned
+overwrite/retry/cleanup logic. It selects choice plus append modules only.
+`UA_PUT` is the append engine's literal-byte entry for adapters where a control
+byte must retain its historical candidate-input meaning (COPY's Ctrl-U). It
+checks bounds and overflow but does not interpret the byte. Standard new fields
+should use the standard editor. MOVE has no current interactive prompt.

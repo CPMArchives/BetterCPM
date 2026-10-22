@@ -220,22 +220,9 @@ CTASK:
         LD      DE,CT_ASKM
         CALL    BC_PRINT
 CTREAD:
-        LD      E,0FFH
-        LD      C,6
-        CALL    BDOS                    ; direct input permits explicit Ctrl-C
-        OR      A
-        JR      Z,CTREAD
+        CALL    CU_OW
         CP      3
         JP      Z,CTABORT
-        CP      13
-        JR      Z,CTREAD
-        CP      10
-        JR      Z,CTREAD
-        CP      'a'
-        JR      C,CTANSWER
-        CP      'z'+1
-        JR      NC,CTANSWER
-        SUB     32
 CTANSWER:
         LD      (CT_CHOICE),A
         CALL    BC_PCHAR

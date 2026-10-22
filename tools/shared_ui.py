@@ -60,3 +60,9 @@ def expand_ren_ui(source):
     modules=(UI/'events.inc').read_text()+'\n'+controller_source(text=False,choice=True)
     binding=binding.replace('; @choice-modules@',modules).replace('; @append-module@',(UI/'append.inc').read_text())
     return source.replace('; @ren-choice@',binding)
+
+
+def copy_ui_source():
+    binding=(UI.parent/'copyinput.inc').read_text()
+    modules=(UI/'events.inc').read_text()+'\n'+controller_source(text=False,choice=True)
+    return binding.replace('; @choice-modules@',modules).replace('; @append-module@',(UI/'append.inc').read_text())
