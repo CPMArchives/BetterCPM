@@ -1,0 +1,311 @@
+; Runnable developer consumer, deliberately not a distribution utility.
+; Requires callable SCRN backend. No disk writes or resident changes.
+        ASEG
+        ORG 0100H
+        JP START
+START:
+        LD (OLDSP),SP
+        LD SP,STACKTOP
+        LD DE,REQ
+        LD C,182
+        CALL 5
+        OR A
+        JP NZ,NO_SCREEN
+        LD HL,(REQ+12)
+        LD (BACKEND),HL
+        LD A,H
+        OR L
+        JP Z,NO_SCREEN
+        LD A,12
+        CALL QUERY
+        LD DE,SIGNAT
+        LD B,5
+CHECKSIG:
+        LD A,(DE)
+        CP (HL)
+        JP NZ,NO_SCREEN
+        INC DE
+        INC HL
+        DJNZ CHECKSIG
+        LD A,(HL)
+        CP 4
+        JP C,NO_SCREEN
+        DEC A
+        LD (LASTROW),A
+        INC HL
+        LD A,(HL)
+        CP 40
+        JP C,NO_SCREEN
+        CP 80
+        JR C,SETWIDTH
+        LD A,79
+SETWIDTH:
+        LD (UF_WIDTH),A
+        LD A,(0080H)
+        OR A
+        JR Z,BEGIN
+        LD A,39
+        LD (UF_WIDTH),A
+BEGIN:
+        LD B,0
+        LD C,0
+        CALL POSITION
+        LD C,32
+        LD A,9
+        CALL SCREEN
+        LD HL,TITLE
+        CALL PRINT
+        LD B,2
+        LD C,0
+        CALL POSITION
+        LD HL,BODY
+        CALL PRINT
+        LD A,32
+        LD B,0
+        LD HL,LABEL
+        CALL UE_INIT
+        CALL UP_RUN
+        PUSH AF
+        LD B,1
+        LD C,0
+        CALL POSITION
+        POP AF
+        CP UI_ABORT
+        JR Z,TEXTCAN
+        LD A,(EDITLEN)
+        OR A
+        LD HL,EDITBUF
+        LD B,A
+        JR NZ,TEXTOUT
+        LD HL,DFLT
+        LD B,7
+TEXTOUT:
+        CALL COUNTED
+        JR ASK
+TEXTCAN:
+        LD HL,CANCEL
+        CALL PRINT
+ASK:
+        LD A,1
+        LD (PHASE),A
+        CALL UC_RUN
+        PUSH AF
+        LD B,3
+        LD C,0
+        CALL POSITION
+        POP AF
+        CP UI_ABORT
+        LD HL,CANCEL
+        JR Z,RESULT
+        LD HL,DONE
+RESULT:
+        CALL PRINT
+        CALL HOME
+        LD HL,QUITMSG
+        CALL PRINT
+        CALL UIREAD
+EXIT:
+        LD SP,(OLDSP)
+        RET
+NO_SCREEN:
+        LD DE,NOSCREEN
+        LD C,9
+        CALL 5
+        JP EXIT
+UIREAD:
+        LD E,255
+        LD C,6
+        CALL 5
+        OR A
+        JR Z,UIREAD
+        RET
+; Read-only application policy: BAD text and Y demonstrate correction paths.
+UI_VALID:
+        LD A,(PHASE)
+        OR A
+        JR NZ,VALIDCHO
+        LD A,B
+        CP 3
+        JR NZ,VALIDOK
+        LD A,(HL)
+        CP 'B'
+        JR NZ,VALIDOK
+        INC HL
+        LD A,(HL)
+        CP 'A'
+        JR NZ,VALIDOK
+        INC HL
+        LD A,(HL)
+        CP 'D'
+        JR NZ,VALIDOK
+        LD HL,TEXTERR
+        SCF
+        RET
+VALIDOK:
+        OR A
+        RET
+VALIDCHO:
+        LD A,(HL)
+        CP 'N'
+        RET Z
+        LD HL,CHOERR
+        SCF
+        RET
+UIDRAW:
+        CALL UT_TEXT
+        JP C,LAYFAIL
+        PUSH BC
+        CALL HOME
+        POP BC
+        LD D,B
+        CALL COUNTED
+        LD A,(UF_WIDTH)
+        JP UR_DRAW
+UC_PAINT:
+        LD HL,ASKLABEL
+        LD (UF_LABEL),HL
+        CALL UF_PICK
+        JP C,LAYFAIL
+        JP DRAWBUF
+UC_ERROR:
+        CALL UE_ERROR
+        JP C,LAYFAIL
+DRAWBUF:
+        PUSH BC
+        CALL HOME
+        POP BC
+        JP COUNTED
+UIMESSAGE:
+        PUSH HL
+        CALL HOME
+        POP HL
+        LD B,0
+        LD A,(UF_WIDTH)
+        LD B,A
+MSGLOOP:
+        LD A,(HL)
+        OR A
+        RET Z
+        CALL UR_PUT
+        INC HL
+        DJNZ MSGLOOP
+        RET
+LAYFAIL:
+        LD HL,LAYMSG
+        JP UIMESSAGE
+HOME:
+        LD A,(LASTROW)
+        LD B,A
+        LD C,0
+        CALL POSITION
+        LD C,32
+        LD A,8
+        JP SCREEN
+UR_POS:
+        LD A,(LASTROW)
+        LD B,A
+        JP POSITION
+POSITION:
+        LD A,6
+        JP SCREEN
+UR_MARK:
+        OR 128
+UR_PUT:
+        PUSH BC
+        LD C,A
+        LD A,7
+        CALL SCREEN
+        POP BC
+        RET
+COUNTED:
+        LD A,B
+        OR A
+        RET Z
+COUNTLOP:
+        LD A,(HL)
+        CALL UR_PUT
+        INC HL
+        DJNZ COUNTLOP
+        RET
+PRINT:
+        LD A,(HL)
+        OR A
+        RET Z
+        CALL UR_PUT
+        INC HL
+        JR PRINT
+SCREEN:
+        PUSH AF
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        CALL DISPATCH
+        POP HL
+        POP DE
+        POP BC
+        POP AF
+        RET
+QUERY:
+        PUSH BC
+        PUSH DE
+        CALL DISPATCH
+        POP DE
+        POP BC
+        RET
+DISPATCH:
+        PUSH HL
+        LD HL,(BACKEND)
+        EX (SP),HL
+        RET
+; @library@
+TITLE: DB 'Shared UI developer example',0
+BODY: DB 'Body sentinel: unchanged by prompts.',0
+LABEL: DB 'Value: ',0
+DFLT: DB 'DEFAULT'
+ASKLABEL: DB 'Accept? ',0
+OPTIONS: DB 'YN'
+TEXTERR: DB 'BAD is rejected; edit or cancel.',0
+CHOERR: DB 'Demo rejects Y; choose N or cancel.',0
+CANCEL: DB 'Cancelled',0
+DONE: DB 'Choice N accepted',0
+QUITMSG: DB 'Press a key to return.',0
+UILIMITMSG: DB 'Input limit reached.',0
+UI_NEED: DB 'A value is required.',0
+LAYMSG: DB 'Layout does not fit.',0
+NOSCREEN: DB 'UIEX requires callable SCRN (40 columns, 4 rows).',13,10,'$'
+SIGNAT: DB 'SCR',1,0
+REQ: DB 1,20,0,0,'SCRN',1,0,0,0,0,0
+        DW 0
+        DB 0,0,0,0,0,0
+BACKEND: DW 0
+OLDSP: DW 0
+LASTROW: DB 0
+PHASE: DB 0
+UF_LABEL: DW LABEL
+UF_WIDTH: DB 79
+UP_MODE: DB UP_DEF
+UP_DPTR: DW DFLT
+UP_DLEN: DB 7
+UC_LIST: DW OPTIONS
+UC_COUNT: DB 2
+UC_DEF: DB 'N'
+UC_VALUE: DB 0
+EDITLEN: DB 0
+EDITCUR: DB 0
+EDITSTART: DB 0
+EDITMAX: DB 32
+EDITPROMPT: DW LABEL
+EDITBUF:
+        REPT 32
+        DB 0
+        ENDM
+UF_BUF:
+        REPT 256
+        DB 0
+        ENDM
+        REPT 512
+        DB 0
+        ENDM
+STACKTOP:
+UI_CLOSE EQU HOME
+        END

@@ -97,3 +97,9 @@ guide for geometry, register and state contracts.
 field; `choiceerror.inc` retains the full choice question/default while bounding
 its diagnostic. Both use the common formatter buffer and width configuration.
 See the developer guide for preflight, error and direct-output requirements.
+
+
+For a complete runnable consumer, see `src/examples/uiexample.mac` and
+`tools/build_ui_example.py`. It connects the standard controllers and layouts
+to real callable SCRN primitives and direct keyboard input without changing
+existing utility contracts or distribution manifests.

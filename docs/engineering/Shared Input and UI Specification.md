@@ -157,3 +157,11 @@ separate defaults and bounded diagnostics without hiding the full choice
 question/default. Geometry that cannot retain the essential content fails
 explicitly. These are transport-independent formatters with compiled/native
 qualification; production standard-controller screen integration remains open.
+
+
+The runnable `src/examples/uiexample.mac` reference consumer binds the standard
+controllers, word editor, layout formatters and screen renderer to direct BDOS
+input and callable SCRN cells. It provides integrated interaction qualification
+and a practical developer template, without inventing defaults for existing
+utilities or adding another distribution utility. Further production migrations
+must respect each utility's specification and measured space budget.
