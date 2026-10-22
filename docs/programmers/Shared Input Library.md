@@ -405,3 +405,27 @@ same `expand_sysgen_ui` selection helper. The 5,734-byte program still uses its
 existing 4000h–8FFFh payload workspace and 36K TPA guard; unloaded OS TPA is
 unchanged. `tools/test_sysgen_shared_choice.py` checks every nonzero key byte,
 fail-closed configuration handling, typeahead preservation and /VER purity.
+
+
+### Shared one-key confirmation adapter and DUP
+
+`ui/confirm.inc` now supplies the common any-non-Y-declines adapter used by
+SYSGEN and DUP Build 005. The caller prints its original question, then calls
+`UI_ASK` (or its utility entry alias). Bind `KEY` to return an unechoed,
+uppercase-folded key. The adapter uses the shared choice-only controller,
+returns Y/N for those typed responses and zero for cancellation or malformed
+configuration, consumes one key and leaves typeahead untouched. It adds neither
+a default nor an invalid-key retry. Paint/close hooks intentionally do nothing.
+
+Select through `confirmation_source()`, `expand_sysgen_ui()` or `expand_dup_ui()`
+in `tools/shared_ui.py`. No editor, word module, field renderer or formatting
+buffer is included. The binding remains 220 bytes including two choice bytes
+and five controller-state bytes. Extracting it preserves SYSGEN Build 006's
+qualified binary exactly. DUP's two destructive format/copy approval sites call
+`DP_ASK`; its menus, drive selection and operation/cleanup logic are unchanged.
+DUP Build 005 is 8,483 bytes, 220 more than Build 004, with the same private
+buffers, stack and 51K TPA requirement. No resident allocation changes.
+
+`tools/test_dup_shared_choice.py` and `tools/test_sysgen_shared_choice.py` share
+the key-safety, invalid-configuration and version-purity campaign. Native DUP
+assembly/parity is available through `tools/build_native_dup.py`.

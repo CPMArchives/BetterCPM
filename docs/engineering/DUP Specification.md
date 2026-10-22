@@ -1684,3 +1684,14 @@ only a transient COPY representation; it does not save source configuration.
 
 Additional backend capability claims require their own named qualification;
 FDB representability and ordinary disk access alone do not establish them.
+
+
+## Shared confirmation implementation (Build 005)
+
+FORMAT and COPY use the shared choice-only controller through the common
+one-key compatibility adapter. The original questions and operation semantics
+remain unchanged: only Y/y authorizes, every other response declines. No
+default, invalid-key retry, extra prompt or typeahead flush is introduced.
+Menu/drive selection, cleanup, destructive-write gates and the existing 51K TPA
+requirement remain unchanged. This is transient source reuse, not a new resident
+service or a change to disk-control APIs.
