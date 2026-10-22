@@ -129,3 +129,26 @@ Developer bindings are documented in the shared library guide. CONFIG retains
 Build 014's qualified inline renderer and 64-byte stack margin. General standard
 text/default layout and choice-error presentation remain future integration
 work; these results do not claim those are implemented.
+
+
+## Standard default and choice-error layouts
+
+The optional `default.inc` (128 code bytes) formats a separate bracketed default
+only while the editable field is empty, reserving an insertion-caret cell.
+`choiceerror.inc` (64 bytes beyond the existing 148-byte choice formatter)
+retains the complete question/choices/default and appends a bounded diagnostic,
+using `~` to mark diagnostic shortening. Neither adds persistent state or I/O.
+
+271 compiled cases pass, covering empty/nonempty fields, every text policy,
+40/80-column and byte-limit widths, missing space, arithmetic overflow, invalid
+label/displayed diagnostic bytes, exact output/NUL lengths, controller/editor
+state, buffer guards, stack balance, default preservation and marked shortening.
+The existing 252 choice-format and 252 screen-renderer cases also pass.
+Native ZSM4/LINK parity passes for all six established profiles plus the new
+combined layout fixture. Developer bindings and preflight requirements are
+recorded in the shared library guide.
+
+These tests qualify formatting and assembly, not new screen transports. DUMP
+Build 003 and CONFIG Build 014 are unchanged by this increment. Production
+standard-default/choice-error consumer integration and real-platform screen
+qualification remain open; no such result is inferred from the CPU fixtures.

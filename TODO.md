@@ -802,4 +802,5 @@ reconciliation gate precede the corresponding implementation program.
 - [x] Adapt CONFIG startup-command replacement and freeform numeric fields to the shared basic editor with an inline renderer; qualify native parity, both platforms and save/rollback. See [qualification](docs/engineering/CONFIG%20Shared%20Input%20Qualification.md).
 - [x] Qualify compiled standard-library behavior, native/cross parity, actual module omission and per-profile code/state costs.
 - [x] Extract a shared screen field renderer and integrate DUMP, including runtime label widths and 255-byte scroll safety.
-- [ ] Generalize standard default/choice rendering and qualify real consumer interactions on both platforms before further migrations. Preserve ED/BDOS/CCP compatibility boundaries; audit CONFIG's remaining stack margin before enabling additional profiles.
+- [x] Implement bounded standard separate-default and choice-error formatting, with compiled behavior and native assembly parity.
+- [ ] Integrate standard default/choice layouts into real consumer interactions and qualify both platforms before further migrations. Preserve ED/BDOS/CCP compatibility boundaries; audit CONFIG's remaining stack margin before enabling additional profiles.

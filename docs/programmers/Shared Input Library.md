@@ -302,3 +302,49 @@ and its field validation. CONFIG retains its smaller inline renderer pending a
 space audit. This integration does not yet provide standard text/default layout
 or a general choice-error presentation. Run `tools/test_shared_ui_screen.py`
 and DUMP's compiled, native-build and real-platform screen checks after changes.
+
+
+### Standard separate-default prefix
+
+Select `default.inc` for `UT_TEXT`, which uses the text controller's validated
+configuration and caller-owned `UF_LABEL`, `UF_WIDTH`, and 256-byte `UF_BUF`.
+The label is NUL-terminated printable ASCII, including desired trailing spacing.
+An empty `UP_DEF` field formats `label[DEFAULT] `; once editing contains text,
+the prefix becomes just the label. Deleting back to empty restores the visible
+default. The default is never copied into or counted as editable input.
+
+Success returns A=0/carry clear, HL=buffer, B=prefix length, NUL appended. At
+least one cell remains for the insertion caret. Invalid labels, size overflow
+or insufficient width return A=7/carry set without changing the output buffer.
+AF/BC/DE/HL may change; editor/controller state and configuration do not. Call
+after `UP_RUN` has validated the default's pointer, length and printable data.
+The module adds 128 code bytes, no state beyond the common formatter bindings.
+
+A screen caller clears its shared prompt row, emits the prefix with direct
+output, then passes D=returned prefix length and A=`UF_WIDTH` to `UR_DRAW`.
+Handle a layout failure before reading input; controllers do not themselves
+interpret a rendering hook's return flags. A caller must preflight its longest
+possible prefix for the chosen geometry, or explicitly choose another layout.
+It must not silently drop a default to make a narrow field fit.
+
+### Choice validation diagnostics
+
+Select `choiceerror.inc` alongside `format.inc` and the choice controller.
+`UE_ERROR` takes HL pointing to a NUL-terminated printable diagnostic. It retains
+the complete question, choice list and default produced by `UF_PICK`, appends a
+space and as much diagnostic text as fits `UF_WIDTH`, and marks shortening with
+`~`. For example: `Erase? (Y/N) [N] Invalid value.`. There must be two spare
+cells beyond the complete question. Only diagnostic text may be shortened.
+
+Success returns A=0/carry clear, HL=buffer and B=length, NUL appended. Failure
+returns A=7/carry set; the buffer may contain partially formatted text and must
+not be drawn. Insufficient space requires another explicit caller layout.
+Displayed diagnostic bytes must be printable ASCII. This module adds 64 code
+bytes, no extra state, and preserves editor/choice configuration and state.
+
+Both routines format bytes only. They perform no terminal I/O, clear no rows,
+and consume no keys. The next key remains the controller's responsibility; no
+acknowledgment-only input is added. They have compiled and native-assembler
+qualification, not a claim of real-platform default/error screen integration.
+Use `tools/test_shared_ui_layouts.py`, then
+`tools/build_native_shared_ui.py --extra-fixture build/shared-ui/layouts.mac`.
