@@ -143,8 +143,9 @@ editor. `checks.inc` shares read-only validation and completion between them.
 
 The controllers require caller rendering/input hooks and application-owned
 state. A general standard renderer for default/choice layout and integration of
-the standard profile into existing utilities are subsequent work. Current
-DUMP/CONFIG binaries remain byte-identical under their compatibility selection.
+the standard profile into existing utilities are subsequent work. The original extraction retained byte-identical compatibility consumers; DUMP
+Build 003 subsequently adopts the shared screen-field renderer while retaining
+the compatibility editor. CONFIG remains unchanged.
 No native display qualification of a new consumer is implied by controller tests.
 
 [Shared library qualification](Shared%20Input%20Library%20Qualification.md)

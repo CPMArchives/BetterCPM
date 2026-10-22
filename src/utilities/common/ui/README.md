@@ -85,3 +85,9 @@ parser or automatic screen-driver loading is introduced.
 Optional `format.inc` formats validated choice questions with explicit width
 checking; it does not output text or replace a screen backend. See the developer
 guide for its caller-owned buffer and error contract.
+
+
+`screen.inc` provides backend-independent field scrolling and caret rendering;
+DUMP Build 003 is its first consumer. The caller clears/positions the prompt row
+and supplies literal-character, caret and position hooks. See the developer
+guide for geometry, register and state contracts.

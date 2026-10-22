@@ -29,6 +29,7 @@ def expanded_source():
         source = source.replace('; @dump-'+part+'@', (common/name).read_text())
     from shared_ui import input_source
     source = source.replace('; @ui-input@', input_source())
+    source = source.replace('; @ui-screen@', (common/'ui/screen.inc').read_text())
     selector = (common/'duselect.inc').read_text() + '\n' + (common/'filespec.inc').read_text()
     return source.replace('; @dump-selector@', selector)
 
