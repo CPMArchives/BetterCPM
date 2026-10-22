@@ -474,3 +474,11 @@ Exact hint wording and minor presentation remain implementation choices within
 the single-row and screen-width constraints. Input uses unechoed direct-console
 reads so the command key is neither echoed through an unsynchronized monitor
 personality nor interpreted as cooked Ctrl-C abort.
+
+## 16. Shared editor extraction
+
+The basic input engine is now shared source under `src/utilities/common/ui/`.
+DUMP retains its qualified legacy behavior and its own renderer and validation.
+The [Shared Input and UI Specification](Shared%20Input%20and%20UI%20Specification.md)
+defines the broader standard and staged migration; its new keys/defaults do not
+silently amend this DUMP contract.

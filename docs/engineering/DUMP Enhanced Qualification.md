@@ -132,3 +132,23 @@ The local CP/M project workspace retains
 source, exact cross/native binaries, compiled-code reports, both live platform
 captures, input-image identity and provisional Utilities media reports.
 The archive was reopened and every member hash verified.
+
+## Shared input source extraction, 2026-10-22
+
+The legacy basic editor now resides in `src/utilities/common/ui/input.inc`, with
+caller-owned state and bound keyboard, redraw, cancellation and message hooks.
+DUMP retains its renderer and Find/Go To validation. The native builder and
+cross builder both expand the shared source through `build_dump.expanded_source`.
+
+The cross-built result remains 14,154 bytes with SHA-256
+`1d1f260172e5d4cea26d32965b30f524a044a206aa659695f6c1f483f467e5c8`, identical
+to the previously qualified Build 002. Native ZSM4/LINK comparison passed for
+all 14,154 bytes. All 80 enhanced compiled cases and 19 DRI/version cases were
+rerun and passed. There is no utility-version increment because the executable
+bytes and behavior are unchanged.
+
+Native screen campaigns were not rerun for this source-only extraction: their
+previous evidence applies to the identical program bytes. These results do not
+qualify future standard-profile features such as word commands, defaults,
+Ctrl-C field cancellation or DEL aliases. The extraction is the first increment
+of the [Shared Input and UI Specification](Shared%20Input%20and%20UI%20Specification.md).
