@@ -61,7 +61,7 @@ AGAIN:  LD HL,TITLE                     ; again
         CALL HEADER
         LD HL,ASKDRV
         CALL PUTS
-        CALL KEY
+        CALL SG_DRIVE
         CP 3
         JP Z,0
         SUB 'B'

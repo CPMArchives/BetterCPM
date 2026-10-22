@@ -813,6 +813,6 @@ reconciliation gate precede the corresponding implementation program.
 - [x] Adapt PIP protected-file replacement confirmation without changing command/HEX/device input; qualify all answer bytes and both platforms.
 - [x] Record remaining input consumers and CONFIG's measured size gate; preserve command-language and navigation boundaries.
 - [x] Adapt DUP main-menu/drive choices, preserving presentation, caller dispatch and strict confirmation isolation.
-- [ ] Adapt SYSGEN destination selection, reusing its existing controller.
+- [x] Adapt SYSGEN destination selection, reusing its existing controller; qualify key compatibility and confirmation isolation.
 - [ ] Preserve PIP/ED/debugger command-language boundaries in any further input migration.
 - [ ] Migrate further production prompts only where utility specifications permit; audit CONFIG's remaining stack margin before enabling additional profiles.

@@ -30,7 +30,7 @@ def confirmation_source():
 
 def expand_sysgen_ui(source):
     binding=(UI.parent/'sysgeninput.inc').read_text()
-    return source.replace('; @sysgen-choice@',binding.replace('; @confirmation@',confirmation_source()))
+    return source.replace('; @sysgen-choice@',binding.replace('; @confirmation@',confirmation_source().replace('UIREAD EQU UY_READ','UIREAD EQU SG_READ')))
 
 
 def expand_dup_ui(source):
