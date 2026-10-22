@@ -301,99 +301,37 @@ GOBAD:
         JR GOCHECK
 ; Bind the shared editor to DUMP's keyboard and bottom-row renderer.
 ; @ui-input@
-; DUMP owns prompt labels, field geometry and software cursor rendering.
+; DUMP positions/clears the shared bottom row and measures its label.
 EDITDRAW:
         CALL BOTTOM
         LD HL,(EDITPROMPT)
-        CALL TEXT
-        ; Prefix lengths are fixed: Find: =6, Go to offset: =14.
-        LD A,6
-        LD HL,(EDITPROMPT)
-        LD DE,GOPROMPT
-        OR A
-        SBC HL,DE
-        JR NZ,EDPREFIX
-        LD A,14
-EDPREFIX:
-        LD D,A
-        LD A,(WIDTH)
-        SUB D
-        DEC A
-        LD E,A
-        LD A,(EDITCUR)
-        LD B,A
-        LD A,(EDITSTART)
-        CP B
-        JR C,EDVISIBLE
-        JR Z,EDVISIBLE
-        LD A,B
-        LD (EDITSTART),A
-EDVISIBLE:
-        LD A,(EDITSTART)
-        ADD A,E
-        CP B
-        JR NC,EDSHOW
-        LD A,B
-        SUB E
-        LD (EDITSTART),A
-EDSHOW:
-        LD A,(EDITSTART)
-        LD C,A
-        LD A,(EDITLEN)
-        SUB C
-        LD B,A
-        LD A,E
-        CP B
-        JR NC,EDCOUNT
-        LD B,A
-EDCOUNT:
-        PUSH DE
-        LD HL,EDITBUF
-        LD E,C
         LD D,0
-        ADD HL,DE
-        LD A,B
-        OR A
-        JR Z,EDCURSOR
-EDCHAR:
+EDLABEL:
         LD A,(HL)
+        OR A
+        JR Z,EDFIELD
         CALL PUT
         INC HL
-        DJNZ EDCHAR
-EDCURSOR:
-        POP DE
-        LD A,(EDITSTART)
-        LD C,A
-        LD A,(EDITCUR)
-        SUB C
-        ADD A,D
-        LD C,A
+        INC D
+        JR EDLABEL
+EDFIELD:
+        LD A,(WIDTH)
+        JP UR_DRAW
+UR_PUT EQU PUT
+UR_POS:
         LD A,(HEIGHT)
         DEC A
         LD B,A
-        CALL POSITION
-        ; The Model 4 has no hardware text cursor. Draw a portable reverse
-        ; cell under the insertion point (underscore at end), then hold it.
+        JP POSITION
+UR_MARK:
         PUSH BC
-        LD A,(EDITCUR)
-        LD E,A
-        LD D,0
-        LD HL,EDITBUF
-        ADD HL,DE
-        LD A,(EDITLEN)
-        CP E
-        JR Z,EDEOI
-        LD A,(HL)
-        JR EDGLYPH
-EDEOI:
-        LD A,'_'
-EDGLYPH:
         OR 128
         LD C,A
         LD A,7
         CALL SCREEN
         POP BC
-        JP POSITION
+        RET
+; @ui-screen@
 SIGNATURE: DB 'SCR',1,0
 NUM76: DB '76',0
 NUM37: DB '37',0

@@ -99,3 +99,33 @@ current case count. This is formatting evidence only; native assembler parity,
 real screen integration, standard text/default rendering and choice-error
 layout are not claimed by this increment. Existing DUMP/CONFIG consumers do not
 include this module and retain their qualified rendering paths.
+
+
+## Shared screen renderer and DUMP Build 003
+
+`screen.inc` extracts the screen field renderer behind caller-owned position,
+plain-character and caret hooks. DUMP measures prompt labels and uses this
+module instead of its private renderer. Its compatibility editing/validation
+contract remains unchanged. Scrolling compares cursor minus start, avoiding
+byte overflow with 255-byte fields. Invalid geometry fails before output.
+
+- 252 compiled screen cases pass: 40/80/255 columns, one-cell fields, invalid
+  geometry, empty/short/full 255-byte input, cursor/start combinations, exact
+  cell contents, caret positioning, stack and input/state preservation.
+- All 80 enhanced DUMP and 19 reference/version regressions pass.
+- Native ZSM4/LINK emits the same 14,177-byte DUMP Build 003 as the cross build.
+  SHA-256: `f36d1cdf49aa8d6099efe53e102e89b8a8d82401c27bef3ab45b0cb77f56b803`.
+  This is 23 bytes larger than Build 002; no resident code or allocation changes.
+- Real cpmsim with shipped ANSISCRN/ANSI passes both layouts, paging, Go To,
+  forward/backward Find, ESC cancellation and command return. Independent pyte
+  screen captures and filesystem checks are retained.
+- Real trs80gp Model 4 with shipped M4SCRN/ADM3A passes wide/compact page cells,
+  Ctrl-C Page Down, Go To with all four basic WordStar edit keys, software caret,
+  forward/backward Find, physical CLEAR cancellation and command return.
+  Native screen captures, unchanged viewed-file allocations/attributes and an
+  independent clean filesystem check are retained. Reference disks are unchanged.
+
+Developer bindings are documented in the shared library guide. CONFIG retains
+Build 014's qualified inline renderer and 64-byte stack margin. General standard
+text/default layout and choice-error presentation remain future integration
+work; these results do not claim those are implemented.

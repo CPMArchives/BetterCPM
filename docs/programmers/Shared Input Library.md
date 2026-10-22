@@ -277,3 +277,28 @@ returned bytes with direct output. Reserve any column that would trigger wrap;
 this routine neither discovers geometry nor draws a cursor. It also does not
 implement `UC_ERROR`: retaining choices alongside a validation diagnostic still
 requires the caller's layout. Test with `tools/test_shared_ui_format.py`.
+
+
+### Shared screen field renderer
+
+`screen.inc` exports `UR_DRAW` for either editor profile. The caller clears its
+prompt row, prints the label, and calls with A=screen width and D=printed label
+length. A label must leave at least one caret cell. Invalid geometry returns
+carry set/A=7 before output or state changes; success clears carry. Other
+registers may change. Valid initialized editor state is required.
+
+Bind `UR_PUT` (A=plain character), `UR_MARK` (A=caret character) and `UR_POS`
+(C=absolute column on the caller's prompt row). Character hooks preserve
+BC/DE/HL; the position hook preserves DE/HL. This module neither emits terminal
+escape sequences nor discovers geometry. It displays a horizontally scrolled
+field, reserves the final available cell for the caret, and positions the cursor
+back on that cell. The caret uses the underlying character or underscore at
+end of input. Only `EDITSTART` changes; there is no allocated renderer state.
+Scroll comparisons use subtraction so length/cursor 255 cannot wrap.
+
+DUMP Build 003 uses this renderer through its existing SCRN backend, with label
+lengths measured rather than hard-coded. It retains the compatibility editor
+and its field validation. CONFIG retains its smaller inline renderer pending a
+space audit. This integration does not yet provide standard text/default layout
+or a general choice-error presentation. Run `tools/test_shared_ui_screen.py`
+and DUMP's compiled, native-build and real-platform screen checks after changes.
