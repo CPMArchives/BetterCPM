@@ -1,0 +1,12 @@
+; Event and empty-input policy constants; no emitted bytes.
+UI_MORE EQU 0
+UI_SEND EQU 1
+UI_ABORT EQU 2
+UI_DEF EQU 3
+UI_LIMIT EQU 5
+UI_SKIP EQU 6
+UI_BAD EQU 7
+UP_CAN EQU 0
+UP_EMPTY EQU 1
+UP_NEED EQU 2
+UP_DEF EQU 3

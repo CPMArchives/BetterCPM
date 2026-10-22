@@ -129,3 +129,23 @@ Require compiled-code coverage for insertions/deletions, word boundaries, moveme
 Verify caller storage boundaries and register/stack contracts. Demonstrate omission of unused modules with basic, extended and choice-only builds when those profiles exist. Record code/state costs rather than assuming modularity guarantees small output.
 
 Retain native ZSM4/cross parity and DUMP regression evidence for extraction. Any changed rendering/input behavior requires appropriate cpmsim and native Model 4 checks at different supported field widths, including cursor visibility, scrolling and ESC. Do not report future-profile coverage as passed by legacy-profile tests.
+
+## 10. Standard profile implementation
+
+The standard profile is implemented as selected build-time source, with the
+[developer interface](../programmers/Shared%20Input%20Library.md) documenting
+entry points, result codes, storage, callbacks and examples. `input.inc` uses
+assembly-time selection so its insertion/deletion algorithm is shared with the
+legacy profile. `wordstar.inc` adds optional Ctrl-A/F/Y without extra state.
+`prompt.inc` provides empty policies, validated separate defaults and correction;
+`choice.inc` provides immediate, case-insensitive responses without linking the
+editor. `checks.inc` shares read-only validation and completion between them.
+
+The controllers require caller rendering/input hooks and application-owned
+state. A general standard renderer for default/choice layout and integration of
+the standard profile into existing utilities are subsequent work. Current
+DUMP/CONFIG binaries remain byte-identical under their compatibility selection.
+No native display qualification of a new consumer is implied by controller tests.
+
+[Shared library qualification](Shared%20Input%20Library%20Qualification.md)
+records compiled behavior, native ZSM4 parity, actual module omission and costs.

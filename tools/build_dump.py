@@ -27,7 +27,8 @@ def expanded_source():
     for part in ('parser', 'io', 'view', 'search', 'bare'):
         name = 'dumpparse.inc' if part == 'parser' else 'dump'+part+'.inc'
         source = source.replace('; @dump-'+part+'@', (common/name).read_text())
-    source = source.replace('; @ui-input@', (common/'ui/input.inc').read_text())
+    from shared_ui import input_source
+    source = source.replace('; @ui-input@', input_source())
     selector = (common/'duselect.inc').read_text() + '\n' + (common/'filespec.inc').read_text()
     return source.replace('; @dump-selector@', selector)
 
