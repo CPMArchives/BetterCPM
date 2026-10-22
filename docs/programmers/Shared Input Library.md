@@ -543,8 +543,8 @@ Build 028 adds 224 transient bytes, no text buffer and no resident allocation.
 See [qualification](../engineering/PIP%20Shared%20Input%20Qualification.md).
 
 The [remaining-consumer audit](../engineering/Shared%20Input%20Remaining%20Consumer%20Audit.md)
-identifies DUP/SYSGEN selection menus as next candidates and records CONFIG's
-64-byte margin against a 220-byte minimum confirmation binding. Preserve the
+records the qualified DUP/SYSGEN selections and CONFIG's resolved memory gate
+(Build 015 leaves 52 bytes before its unchanged private stack). Preserve the
 explicit command-language and navigator boundaries listed there.
 
 
@@ -575,3 +575,26 @@ A malformed selection returns Ctrl-C without reading input or reusing a stale
 drive. `SG_ASK` selects confirmation mode but does not repair corrupt controller
 configuration: malformed approval configuration still fails closed without input.
 No second controller, input editor or field buffer is linked.
+
+
+### CONFIG choice compatibility and footprint
+
+Build 015 binds menus, physical attachment and three save approvals through
+`common/configchoice.inc`. The caller retains its exact accepted-key, retry and
+confirmation policy. `CC_READ` saves KEY's byte and returns a single printable
+transport member to `UC_RUN`; `CC_PICK`/`CC_ASK` return that byte only after a
+successful controller event. A malformed configuration returns Ctrl-C without
+reading input, reusing an earlier answer or repairing bad state. Every save
+caller still compares against Y before any write.
+
+This binding uses one immutable token/list context, so menus and approvals cannot
+leave a different context active for each other. It deliberately does not invoke
+standard UI defaults or cancellation policies on legacy input. The editor's
+`UIREAD=CI_READ` remains separate: choice-module expansion selects `CC_INPUT`
+for its own read hook. No additional text buffer or resident memory is needed.
+
+Both cross and native CONFIG builders use `tools/build_config.py`'s identical
+source expansion. Generate both validation profiles and IOBYTE descriptors before
+measuring release size. Build 015 is 15,564 bytes with 52 bytes before 3E00h;
+the editor scratch and disk/recovery workspaces are unchanged. See
+[qualification](../engineering/CONFIG%20Choice%20Input%20Qualification.md).

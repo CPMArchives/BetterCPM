@@ -1,6 +1,6 @@
 # Shared input remaining consumer audit
 
-2026-10-22, after COPY Build 005, PIP Build 028 DUP Build 006 and SYSGEN Build 007 integration.
+2026-10-22, after COPY Build 005, PIP Build 028, DUP Build 006, SYSGEN Build 007 and CONFIG Build 015 integration.
 
 This inventory distinguishes input components already shared, remaining suitable
 candidates, and application command/data protocols that should retain their own
@@ -10,7 +10,7 @@ semantics. It does not claim that every keyboard read has been migrated.
 | --- | --- | --- |
 | DUMP Find/Go To | Shared compatibility editor and screen-field renderer | No forced command-navigation migration |
 | CONFIG startup and freeform numeric fields | Shared editor and inline renderer | Retain current qualified profile |
-| CONFIG menu choices, drive selection and save approvals | Existing disk-common KEY/CHOICE and caller policy | Suitable choices, but full controller integration needs a separate space reduction first |
+| CONFIG menu choices, drive selection and save approvals | Shared choice-only controller with existing CHOICE rendering/caller policy in Build 015 | Qualified; menus, physical attachment and all three save approvals migrated |
 | DUP FORMAT/COPY confirmation | Shared one-key controller | Already qualified |
 | DUP main menu and drive selection | Existing CHOICE display plus shared controller in Build 006 | Qualified; caller dispatch/cancellation and command-line bypass preserved |
 | SYSGEN install/package replacement approval | Shared one-key controller | Already qualified |
@@ -32,30 +32,25 @@ an exact-token length and decimal-printing state. Classification must include
 the subsequent call, not just a search for a register load. SYSGEN destination selection and DUP menu/drive integration now share their
 existing controllers; neither adds a second controller or field editor.
 
-## CONFIG memory gate
+## CONFIG memory gate resolved
 
-Current dual-platform CONFIG Build 014 is 15,552 bytes, SHA-256
-`2167646cfe1506405cd1834deaf26d3bc4712dc8a5911d04c26e9040fbfad9e4`.
-At origin 0100h it ends at 3DC0h, leaving 64 bytes before the existing 3E00h
-private-stack boundary. Both validation and IOBYTE descriptor records remain
-included.
+Dual-platform Build 014 was 15,552 bytes, leaving 64 bytes before the existing
+3E00h private stack. A naive added binding did not fit. Build 015 first recovers
+206 bytes: 49 short branches and 157 bytes of identical message/token storage.
+It then adds a 218-byte choice-only binding for a final 15,564 bytes, leaving
+52 bytes before the same stack boundary. Both 20-byte validation profiles and
+both disk-boot IOBYTE descriptors remain included. No workspace or resident
+allocation changed.
 
-The existing minimal shared confirmation binding assembles to 220 bytes,
-including its caller-owned choice state, with an external KEY callback. Adding
-it without code removal would exceed the present gate by 156 bytes. A full
-menu/text/layout profile costs more. Merely changing prompts or dropping a
-validation profile to make room is not this migration's contract.
+The compatibility binding transports one KEY event to the existing caller;
+it does not reinterpret menus, defaults or any-non-Y-declines save policy.
+The startup and numeric editor keep their separate reader and existing buffer.
+See [CONFIG choice qualification](CONFIG%20Choice%20Input%20Qualification.md).
 
-Keep the current stack, workspace, validation profiles and already-qualified
-editor integration. A subsequent bounded CONFIG refactor must demonstrate real
-savings and rerun affected configuration/save/recovery checks before adding
-controllers. This is not a TPA expansion or authorization to weaken validation.
-The measured fixture/report is `build/pip-shared-input/config-budget.json`.
+## Remaining scope
 
-## Suggested next increments
-
-1. CONFIG code-size reduction and then its remaining choices, if the measured
-   result fits while retaining its existing safety and workspace contracts.
-
-Any further standard-profile behavior change should be deliberate and separately
-qualified; source reuse alone does not authorize changing keys or defaults.
+The suitable prompted-field consumers in this audit are migrated. Application
+command/data protocols, navigation and acknowledgment pauses above intentionally
+retain their existing semantics. This is not a claim that every keyboard read
+must use a field editor. Any future standard-profile behavior change needs its
+own specification and qualification.

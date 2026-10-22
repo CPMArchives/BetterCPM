@@ -14,7 +14,7 @@ SYSGEN: LD A,(CF_MODE)                 ; /SHOW shares validation/read path only
         JR NZ,SGEDIT
         XOR A
         LD (SGSTFLAG),A
-        JP SGNOSTATE
+        JR SGNOSTATE
 SGEDIT: LD HL,SGTITLE
         CALL HEADER
         LD A,(STDIRTY)                  ; retain pending-state participation
@@ -264,7 +264,7 @@ SGLIVE: LD A,(SGDRIVE)
         JR NZ,SGLIVE
         LD HL,SGASK
         CALL PUTS
-        CALL KEY
+        CALL CC_ASK
         CP 'Y'
         JP NZ,SGEXIT
         CALL SGSTWR                    ; pending values override saved values
@@ -285,14 +285,14 @@ SGSKIP: CALL SGNEXT
         XOR A
         LD (STDIRTY),A
         LD HL,SGOK
-        JP SGREPORT
+        JR SGREPORT
 SGSTUNDO:                              ; failed startup write: restore it only
         CALL SGSTROLL
         LD HL,SGRESTORED
         OR A
-        JP Z,SGREPORT
+        JR Z,SGREPORT
         LD HL,SGDAMAGED
-        JP SGREPORT
+        JR SGREPORT
 ; Include the failing record in the undo: a failed write may be partial.
 ; This protects an ordinary I/O failure, not loss of power during SYSGEN.
 SGUNDO: LD A,(SGINDEX)
@@ -325,9 +325,9 @@ SGRSTATE:
         LD HL,SGRESTORED
         LD A,(SGFAILED)
         OR A
-        JP Z,SGREPORT
+        JR Z,SGREPORT
         LD HL,SGDAMAGED
-        JP SGREPORT
+        JR SGREPORT
 SGWRONG:LD HL,SGWRONGMSG
         JR SGREPORT
 SGIOERR:LD HL,SGREADMSG
@@ -559,7 +559,7 @@ SGPTRS: LD A,(SGINDEX)
         RET
 SGDIFF: CALL SGPTRS
         LD BC,128
-        JP SGCMP
+        JR SGCMP
 SGNEXT: LD A,(SGINDEX)
         INC A
         LD (SGINDEX),A
@@ -576,7 +576,7 @@ SGVERIFY:LD HL,(SGIOBUF)
         RET NZ
         LD DE,SGDMA
         LD BC,128
-        JP SGCMP
+        JR SGCMP
 ; A=0 read, A=1 write. SGIOBUF is the full 128-byte transfer buffer.
 SGIO:   LD (SGWRITE),A
         LD BC,0
@@ -666,10 +666,10 @@ SGASK:  DB 'Save all current settings on system disk A: (Y/N)? ',0
 SGOK:   DB 13,10,'All current settings saved and verified.',13,10,0
 SGWRONGMSG:DB 'Boot disk does not match this system. Nothing saved.',13,10,0
 SGREADMSG:DB 'Cannot read boot system records. Nothing saved.',13,10,0
-SGSTBADMSG:DB 'Pending startup command is invalid. Edit or clear it first.',13,10,0
+; CONFIG already owns these exact diagnostics; keep one copy of each.
+SGSTBADMSG EQU STSAVEBAD
 SGRESTORED:DB 'Save failed. Original configuration restored.',13,10,0
-SGDAMAGED:DB 'Save failed; restoration also failed.',13,10
-        DB 'Boot disk may be damaged. Use your backup.',13,10,0
+SGDAMAGED EQU STDAMAGED
 SGCRC:  DS 4
 SGCRCEX:DS 4
 ; @config-validation@

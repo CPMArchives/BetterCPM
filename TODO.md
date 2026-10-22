@@ -816,3 +816,5 @@ reconciliation gate precede the corresponding implementation program.
 - [x] Adapt SYSGEN destination selection, reusing its existing controller; qualify key compatibility and confirmation isolation.
 - [ ] Preserve PIP/ED/debugger command-language boundaries in any further input migration.
 - [ ] Migrate further production prompts only where utility specifications permit; audit CONFIG's remaining stack margin before enabling additional profiles.
+
+- [x] Migrate CONFIG remaining menus, physical attachment and save approvals to shared choices; retain dual validation profiles and existing stack/workspace after bounded code-size savings.

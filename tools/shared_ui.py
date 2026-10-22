@@ -59,7 +59,15 @@ def expand_config_ui(source):
     if not marker:raise ValueError('CONFIG common input marker missing')
     unused,marker,after=rest.partition('; @legacy-number-end@')
     if not marker:raise ValueError('CONFIG common input end marker missing')
-    return before+after
+    source=before+after
+    # CONFIG retains its existing CHOICE rendering, menu dispatch and one-key
+    # approval policy. The editor keeps CI_READ; only choice input uses CC_INPUT.
+    start=source.index('CHOICE:');end=source.index('DECOUT:',start)
+    choice=source[start:end];assert choice.count('CALL KEY')==1
+    source=source[:start]+choice.replace('CALL KEY','CALL CC_PICK')+source[end:]
+    binding=(common/'configchoice.inc').read_text()
+    modules=(UI/'events.inc').read_text()+'\n'+controller_source(text=False,choice=True).replace('UIREAD','CC_INPUT')
+    return source.replace('; @config-choices@',binding.replace('; @choice-modules@',modules))
 
 
 def expand_ren_ui(source):

@@ -172,7 +172,7 @@ must respect each utility's specification and measured space budget.
 | Consumer | Shared selection | Preserved policy |
 | --- | --- | --- |
 | DUMP Build 003 | Compatibility editor and shared screen-field renderer | Existing Find/Go To behavior and no invented defaults |
-| CONFIG Build 014 | Compatibility editor and compact inline renderer | Existing startup/numeric validation and save behavior |
+| CONFIG Build 015 | Compatibility editor, inline renderer and choice-only controller | Existing startup/numeric validation, menu dispatch and save policies retained |
 | PIP Build 028 | One-key compatibility controller for RO replacement only | Cooked echo, AND-DF folding, Y-only approval, any-other-key decline and W bypass; command/data loops untouched |
 | COPY Build 005 | Choice controller plus append compatibility engine | Raw input, legacy overwrite/help/recovery policy, name editing and validation; MOVE unchanged |
 | REN Build 008 | Choice controller plus append-only compatibility event engine | Existing choices and filename echo/editing/overflow/validation policy |
