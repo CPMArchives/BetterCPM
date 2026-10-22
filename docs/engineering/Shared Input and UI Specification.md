@@ -165,3 +165,19 @@ input and callable SCRN cells. It provides integrated interaction qualification
 and a practical developer template, without inventing defaults for existing
 utilities or adding another distribution utility. Further production migrations
 must respect each utility's specification and measured space budget.
+
+
+### Current production consumers
+
+| Consumer | Shared selection | Preserved policy |
+| --- | --- | --- |
+| DUMP Build 003 | Compatibility editor and shared screen-field renderer | Existing Find/Go To behavior and no invented defaults |
+| CONFIG Build 014 | Compatibility editor and compact inline renderer | Existing startup/numeric validation and save behavior |
+| SYSGEN Build 006 | Standard choice-only controller with compatibility input adapter | Only Y authorizes; any other response declines |
+| UIEX developer example | Standard editor, words, text/choice controllers and layouts | Demonstration policy only; excluded from distribution manifests |
+
+Select only modules an application actually needs. Utility-specific input policy
+may require an adapter rather than adopting standard retry/default behavior.
+Further migrations remain incremental, with specification review, size checks
+and appropriate native interaction/failure regressions. CONFIG's full profile
+still requires a space audit; ED/PIP compatibility boundaries remain intact.

@@ -384,7 +384,7 @@ COUNTED:LD A,H                          ; counted
         CALL CRLF
         LD HL,WARNING
         CALL PUTS
-        CALL KEY
+        CALL SG_ASK
         CP 'Y'
         JP NZ,0
         CALL CRLF
@@ -1124,5 +1124,6 @@ REQ:    DS 80                           ; configuration API request
         INCLUDE sysgen-export.inc
 ; @utility-version SYSGEN@
 
+; @sysgen-choice@
 ; @monitor-console@
         END

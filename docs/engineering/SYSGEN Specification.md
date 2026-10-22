@@ -1045,3 +1045,14 @@ recorded in [export qualification](SYSGEN%20Export%20Qualification.md).
 - [Utility versioning](../../specifications/UTILITY-VERSIONING.md)
 - [CONFIG specification](CONFIG%20Specification.md)
 - [DUP specification](DUP%20Specification.md)
+
+
+## Shared confirmation implementation (Build 006)
+
+Both destructive installation approval and existing-package replacement use the
+shared choice-only controller through a compatibility binding. This is an
+implementation change, not a change to the command or safety contract: only Y
+(case-insensitive) authorizes; every other response declines. Enter supplies no
+default, invalid keys do not start a retry loop, and pending input is not flushed.
+Original questions, filesystem recovery rules and the existing 36K TPA guard
+remain unchanged. The controller does not write application or disk state.

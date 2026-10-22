@@ -50,6 +50,8 @@ def main() -> None:
                 text=text.replace('        INCLUDE '+name+'.inc',
                                   (ROOT/'src/utilities'/(name+'.inc')).read_text())
             text=text.replace('; @monitor-console@',(ROOT/'src/utilities/common/monitorconsole.inc').read_text())
+            from shared_ui import expand_sysgen_ui
+            text=expand_sysgen_ui(text)
             text=text.replace('        ASEG\n        ORG 0100H','        CSEG\n        .PHASE 0100H',1)
             pos=text.rfind('        END')
             return text[:pos]+'        .DEPHASE\n'+text[pos:]

@@ -11,7 +11,7 @@ identities come from standalone `/VER` and `metadata/utility-versions.tsv`;
 DUP's legacy interactive 1.14 title is separate from that identity. They require
 BetterCP/M disk ABI 5 and four logical drives. CONFIG needs 43 KiB of
 transient space; allow 51 KiB for DUP and its private copy buffer. SYSGEN Build 004 is
-5,518 bytes (about 5.4 KiB) and requires 36K TPA for its package buffer.
+5,734 bytes (about 5.6 KiB) and requires 36K TPA for its package buffer.
 They add no resident allocation: maximum TPA remains
 54,273 bytes when no RSXs are installed.
 

@@ -166,7 +166,7 @@ XDRIVE:LD (XTEMP),A
         LD (XOLD),A
         LD HL,XREPLACE
         CALL PUTS
-        CALL KEY
+        CALL SG_ASK
         CP 'Y'
         JP NZ,0
 XCREATE:

@@ -384,3 +384,24 @@ campaigns are `tools/test_ui_example_live.py` (requires test-only `pyte`) and
 uses `tools/build_native_shared_ui.py --extra-fixture build/shared-ui/uiex.mac`.
 Use this example to adapt your application's own validation and restoration
 hooks; select only the modules it needs and remeasure its complete binary.
+
+
+### SYSGEN choice-only compatibility consumer
+
+SYSGEN Build 006 uses `common/sysgeninput.inc` for both installation approval
+and existing-package replacement. Its caller has already printed the original
+question, so paint/close hooks do nothing. The read adapter reuses SYSGEN's
+existing case-folding direct-input routine, passes Y/N to the choice controller,
+and maps every other response to local cancellation. `SG_ASK` returns Y or N
+for typed choices, zero for cancellation or bad configuration. This preserves
+SYSGEN's stricter existing rule: only Y authorizes, every other key declines.
+It deliberately does not adopt the standard controller's retry-on-invalid-key
+behavior or introduce a default, extra question or typeahead flush.
+
+The complete binding is 220 bytes (185 shared code, 28 adapter code, a two-byte
+choice list and five bytes of controller state). No editor, word module,
+formatting buffer or screen dependency is linked. Cross/native builders use the
+same `expand_sysgen_ui` selection helper. The 5,734-byte program still uses its
+existing 4000h–8FFFh payload workspace and 36K TPA guard; unloaded OS TPA is
+unchanged. `tools/test_sysgen_shared_choice.py` checks every nonzero key byte,
+fail-closed configuration handling, typeahead preservation and /VER purity.

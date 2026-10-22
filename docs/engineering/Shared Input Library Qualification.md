@@ -201,3 +201,13 @@ shortening, Ctrl-C text cancellation, physical CLEAR choice cancellation, revers
 caret cells, preserved body rows and CCP return. Independent filesystem checking
 passes and the source DMK is unchanged. These are direct Model 4 display results,
 not inferred from cpmsim's host output or the compiled cell model.
+
+
+## Production choice-only consumer: SYSGEN
+
+SYSGEN Build 006 migrates installation and package-replacement confirmations to
+the shared choice-only controller while preserving its stricter any-non-Y-declines
+policy. It adds no editor or formatting buffer. Compiled safety, native parity,
+actual cpmsim round-trip and native Model 4 installation/cold-boot checks pass.
+See [SYSGEN shared input qualification](SYSGEN%20Shared%20Input%20Qualification.md)
+for exact code/state costs, hashes, scope and the incomplete all-utility sweep.
