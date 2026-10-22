@@ -86,3 +86,16 @@ Generated evidence is under `build/shared-ui/`: sources, cross/native fixtures,
 listings, `results.json`, `native-results.json` and `NATIVE-UI-BUILD.LOG`. Reports
 identify all fixture hashes, code sizes and their scope. This does not constitute
 a new System Disk or Utilities Disk acceptance run.
+
+
+## Bounded choice formatter follow-up
+
+`format.inc` adds a 148-byte transport-independent formatter for a validated
+choice controller. Compiled checks cover empty and long labels, case-normalized
+choices, optional defaults, exact and insufficient widths, invalid label bytes,
+arithmetic overflow, unchanged output on failure, guard bytes, stack balance
+and unchanged controller state. Run `tools/test_shared_ui_format.py` for the
+current case count. This is formatting evidence only; native assembler parity,
+real screen integration, standard text/default rendering and choice-error
+layout are not claimed by this increment. Existing DUMP/CONFIG consumers do not
+include this module and retain their qualified rendering paths.

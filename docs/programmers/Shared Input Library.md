@@ -251,3 +251,29 @@ including narrow fields, long input, visible cursor, cancellation, default
 validation and message dismissal. Library tests alone do not establish terminal
 rendering or utility save/recovery behavior. DUMP/CONFIG's current qualified
 binaries are unchanged by selecting the new library profiles for other clients.
+
+
+### Optional bounded choice formatting
+
+`src/utilities/common/ui/format.inc` supplies `UF_PICK` for a choice controller's
+`UC_PAINT` binding. Include it after selecting the choice controller; it uses
+`UC_UPPER` and assumes `UC_RUN` has validated the choice list and default.
+It is independent of the editor and performs no terminal I/O.
+
+Provide `UF_LABEL` (word pointing to a NUL-terminated printable ASCII label,
+including desired trailing spacing), `UF_WIDTH` (available columns), and
+`UF_BUF` (256 caller-owned bytes). It formats, for example, `Erase? (Y/N) [N]`.
+No default means no bracketed suffix. Choice letters are uppercased.
+
+Success returns carry clear, A=`UI_MORE`, HL=buffer and B=byte length, with a
+NUL terminator after the text. Failure returns carry set and A=`UI_BAD`, leaving
+the buffer untouched. Invalid labels, size arithmetic overflow and insufficient
+width fail rather than truncate. Registers AF/BC/DE/HL may change; choice and
+editor state do not. The formatter adds 148 code bytes and three configuration
+bytes, plus its output buffer.
+
+The caller must check failure, position and clear the prompt row, and emit the
+returned bytes with direct output. Reserve any column that would trigger wrap;
+this routine neither discovers geometry nor draws a cursor. It also does not
+implement `UC_ERROR`: retaining choices alongside a validation diagnostic still
+requires the caller's layout. Test with `tools/test_shared_ui_format.py`.
