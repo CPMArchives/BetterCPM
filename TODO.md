@@ -808,5 +808,6 @@ reconciliation gate precede the corresponding implementation program.
 - [x] Migrate DUP format/copy confirmation to the same one-key adapter as SYSGEN, preserving original safety policy.
 - [x] Adapt ERA confirmation/recovery to the choice-only controller with its existing input policy, and correct exact-file approval target naming.
 - [x] Adapt REN confirmation/collision/recovery choices while preserving legacy echo, retry and application policy.
-- [ ] Assess REN replacement-name input and COPY/MOVE prompts as subsequent consumers; preserve PIP/ED/debugger command-language boundaries.
+- [x] Extract REN replacement-name input into the shared append-only compatibility engine; preserve echo, keys, bounds, sticky overflow and filename validation.
+- [ ] Assess COPY/MOVE prompts as subsequent consumers; preserve PIP/ED/debugger command-language boundaries.
 - [ ] Migrate further production prompts only where utility specifications permit; audit CONFIG's remaining stack margin before enabling additional profiles.

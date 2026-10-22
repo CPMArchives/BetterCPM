@@ -14,6 +14,7 @@ DUMP and CONFIG's compatibility bindings.
 
 | Requirement | Select |
 | --- | --- |
+| Preserve an existing append-only/BS/DEL/Ctrl-U contract | `events.inc` plus `append.inc` (compatibility only) |
 | Preserve the current DUMP/CONFIG editor contract | `input_source()` compatibility profile |
 | Process one key at a time without doing I/O | `input_source(standard=True)` |
 | Add Ctrl-A/F/Y to the standard editor | `input_source(standard=True, words=True)` |
@@ -479,6 +480,31 @@ original full question.
 
 Build 007 is 5,856 bytes (+307 transient bytes), with the same 128-byte stack and
 no resident allocation. The rename ledger begins correspondingly later; its
-bounded refusal remains required. REN's replacement-filename editor has not yet
-been migrated: it is a separate compatibility assessment, not part of this
-choice adapter. See [qualification](../engineering/REN%20Shared%20Input%20Qualification.md).
+bounded refusal remains required. Build 007 left REN's replacement-filename editor unchanged; Build 008
+extracts it separately as described below. See [qualification](../engineering/REN%20Shared%20Input%20Qualification.md).
+
+
+### REN replacement-name compatibility profile
+
+REN Build 008 also uses `ui/append.inc`. This is a separate small, I/O-free
+compatibility event engine for historical append-only fields; use the standard
+editor for new fields. It preserves REN's original BS/DEL last-byte deletion,
+Ctrl-U clear, Ctrl-C abort, empty submission and sticky overflow policy. It does
+not add the standard editor's cursor movement, ESC cancellation, redraw or
+printable-input filtering.
+
+Provide `UA_BUF` (capacity bytes), `UA_LEN`, `UA_FULL`, and `UA_MAX` (one byte
+each). `UA_INIT` takes A=capacity 1..255, clears length/overflow and returns
+`UI_MORE`; zero capacity returns `UI_BAD` without changing state. `UA_KEY` takes
+a raw byte and returns `UI_MORE`, `UI_SEND`, `UI_ABORT` or `UI_LIMIT`, with carry
+clear. AF/BC/DE/HL may be clobbered; no I/O occurs. CR submits even empty input;
+other unassigned bytes append literally, so callers must validate them. There
+is no terminator. `UA_FULL` remains set after a refused append even if the user
+backspaces or submits. The caller must reject such input. Ctrl-U and fresh
+initialization clear that flag. Do not treat `UI_SEND` as proof of validity.
+
+REN aliases its existing `R_IBUF`, `R_ILEN` and `R_IFULL`; only `UA_MAX` adds a
+state byte. Its caller retains BDOS 1 echo, ASCII-only uppercase conversion,
+newlines, blank-to-collision behavior, strict filename parsing and commit/abort.
+Build 008 is 5,884 bytes (+28 over Build 007), with the same 128-byte stack and
+no resident allocation. See [qualification](../engineering/REN%20Name%20Field%20Qualification.md).

@@ -124,7 +124,14 @@ of Enter/ESC aliases. It does not reuse DUP/SYSGEN's any-non-Y-declines policy.
 The developer guide documents caller register/state contracts and the retained
 legacy confirmation reference used for differential tests.
 
-REN's `../reninput.inc` is another choice-only compatibility binding. Unlike the
+REN's `../reninput.inc` provides a choice compatibility binding. Unlike the
 strict any-non-Y-declines adapter, it retries invalid responses and retains
-BDOS 1 echo plus full collision/recovery question repainting. Its filename editor
-remains separate. See the developer guide and REN shared-input qualification.
+BDOS 1 echo plus full collision/recovery question repainting. Its filename field uses the separate `append.inc` compatibility event engine.
+See the developer guide and REN qualification records.
+
+
+`append.inc` is the extracted append-only compatibility engine used by REN.
+It shares event constants, performs no I/O and owns no storage. The caller
+provides `UA_BUF`, `UA_LEN`, `UA_FULL`, `UA_MAX` and handles echo/validation.
+It preserves sticky overflow and literal raw-byte storage; it is not the
+standard profile for new prompts. See the developer guide for entry contracts.
