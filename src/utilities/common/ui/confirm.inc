@@ -1,5 +1,6 @@
 ; One-key compatibility binding for the shared choice-only controller.
-; Caller supplies KEY, which returns one uppercase-folded, unechoed key.
+; Caller supplies KEY, which returns one uppercase-folded key.
+; The consumer binding preserves its specified echo policy.
 ; Prompts are printed by the utility before entry.
 ; Preserve the specification: only Y authorizes; ANY other key declines.
 ; No default, retry, extra prompt, typeahead flush or editor/field buffer.

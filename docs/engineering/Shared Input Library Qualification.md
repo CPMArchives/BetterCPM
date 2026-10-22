@@ -237,3 +237,5 @@ REN Build 007 choice migration has its own [qualification record](REN%20Shared%2
 REN Build 008 replacement-name extraction is qualified separately in [REN Name Field Qualification](REN%20Name%20Field%20Qualification.md).
 
 COPY Build 005 prompts and the MOVE compatibility audit are recorded in [COPY Shared Input Qualification](COPY%20Shared%20Input%20Qualification.md).
+
+PIP Build 028 protected replacement is recorded in [PIP Shared Input Qualification](PIP%20Shared%20Input%20Qualification.md). The [remaining-consumer audit](Shared%20Input%20Remaining%20Consumer%20Audit.md) separates eligible menus, CONFIG constraints and command/data boundaries.

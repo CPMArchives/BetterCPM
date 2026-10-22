@@ -530,3 +530,19 @@ initialize valid state and validate the candidate before committing it.
 Build 005 is 12,010 bytes (+307 transient bytes), with no resident allocation or
 additional text buffer. MOVE currently has no interactive prompt to migrate.
 See [qualification](../engineering/COPY%20Shared%20Input%20Qualification.md).
+
+
+### PIP protected-replacement confirmation
+
+`common/pipinput.inc` selects the same one-key compatibility binding as
+DUP/SYSGEN. Its `PU_KEY` callback preserves PIP's cooked BDOS 1 echo and AND-DF
+folding; only Y/y authorizes and every other byte declines without another read.
+The caller retains the prompt, W bypass, staged-file cleanup and mutation logic.
+PIP's command loop and HEX/device dialogue do not use this binding.
+Build 028 adds 224 transient bytes, no text buffer and no resident allocation.
+See [qualification](../engineering/PIP%20Shared%20Input%20Qualification.md).
+
+The [remaining-consumer audit](../engineering/Shared%20Input%20Remaining%20Consumer%20Audit.md)
+identifies DUP/SYSGEN selection menus as next candidates and records CONFIG's
+64-byte margin against a 220-byte minimum confirmation binding. Preserve the
+explicit command-language and navigator boundaries listed there.
