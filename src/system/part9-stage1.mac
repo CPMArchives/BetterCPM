@@ -1,0 +1,28 @@
+        INCLUDE layout.inc
+        ASEG
+        ORG 0100H
+; First-stage carrier is admitted by Part 7's resident gate before this entry.
+        LD SP,0500H
+        LD HL,0500H
+        LD DE,84
+        LD B,16
+        CALL LY_DISK+15
+        JR NZ,P9_HALT
+        LD HL,0500H+2024
+        LD DE,LY_CID
+        CALL LY_CCMP
+        JR NZ,P9_HALT
+        LD DE,0500H
+        LD BC,2048
+        CALL LY_CCRC
+P9_EXPECT: LD DE,0
+        OR A
+        SBC HL,DE
+        JR NZ,P9_HALT
+        JP 0500H
+P9_HALT:
+        LD A,'!'
+        OUT (1),A
+        HALT
+        JR P9_HALT
+        END
