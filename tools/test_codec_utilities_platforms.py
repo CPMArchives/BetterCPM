@@ -30,6 +30,7 @@ from test_uncr_com import crunch
 from test_unlzh_com import compress
 from test_usq import squeeze
 from test_usq_com import padded
+from test_model4_raw_geometry import read_file as read_fdf_file
 from test_z80pack_sysgen_install import session
 from trs80gp_launch import run as launch
 
@@ -38,6 +39,7 @@ SIMULATOR = Path.home()/'projects/git/z80pack/cpmsim/cpmsim'
 sha = lambda b: hashlib.sha256(b).hexdigest()
 FORMATS = {'z80pack':'bettercpm-default','trs80gp':'bettercpm-mm-80t-ds-data'}
 SYSTEM_DEF = '''diskdef codec-system
+ libdsk:format pcw800
  seclen 512
  tracks 160
  sectrk 10
@@ -108,6 +110,13 @@ def prepare(work, platform, family, system, utility, fmt):
                'LZH':('LZU00000.$$$','ULZ00000.$$$')}[family]
     for name in tempnames:put(work,c,definition,0,name,padded(b'preexisting temporary sentinel'))
     sentinel={name:get(work,c,definition,0,name) for name in tempnames}
+    if platform=='trs80gp':
+        # Independent physical mapping prevents a circular LibDsk readback
+        # from accepting incorrectly seeded raw payloads.
+        expected={'DEFAULT.TXT':padded(b'logged drive defaults'),**sentinel}
+        if family=='SQ':expected['BIG.BIN']=padded(dict(fixtures())['BIG.BIN'])
+        for name,data in expected.items():
+            assert read_fdf_file(c.read_bytes(),fmt,0,name)==data,('invalid seed',name)
     return a,b,c,adef,definition,originals,sentinel
 
 
@@ -118,6 +127,7 @@ def steps(family,platform=None):
         rows.append({'command':cmd,'expected':expected,'prompt':prompt})
     # All six identities/screens in the first family, each invoked from B:.
     if family=='SQ':
+        add('TYPE C:DEFAULT.TXT','logged drive defaults')
         add('RSX LIST','ADM3A')  # Model 4 only; cpmsim filters this provider check.
         for name in DESCRIPTIONS:
             add(f'B:{name} X /VER',version_text(name))
@@ -175,7 +185,7 @@ def execute_model4(work,a,b,c,rows,fmt):
         invocation+=['-iw',expected,'-iw',row['prompt']+' ','-id','500','-it']
     invocation+=['-ix']
     (work/'invocation.json').write_text(json.dumps(invocation,indent=2)+'\n')
-    launch(invocation,cwd=work,timeout=1800)
+    launch(invocation,cwd=work,timeout=3600)
     captures=sorted(work.glob('trs80-text-*.bin'),key=lambda p:int(p.stem.rsplit('-',1)[1]))
     assert len(captures)==len(rows)+1,(len(captures),len(rows))
     evidence=[]

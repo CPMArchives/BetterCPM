@@ -56,22 +56,23 @@
   },
   "final_artifact_mismatch_guard": "PASS: altered final Build 004 COM rejected before campaign",
   "open_release_gates": [
-    "investigate Model 4 SQ data-integrity failure and rerun affected matrix",
-    "clean pinned cpmsim reconstruction",
+    "clean pinned cpmsim reconstruction and relevant release reruns",
     "native ZSM4 codec build qualification",
-    "remaining Utilities inventory and final image/component acceptance",
-    "review/reaccept other utilities changed by shared version query revision",
-    "final artifact hashes and evidence closure"
+    "final Utilities inventory, image integrity and all component acceptance",
+    "review/reaccept other utility receipts affected by shared version-query revision",
+    "final COM/image hash manifest and release evidence closure"
   ],
   "limitations": "Stock CP/M 2.2 exchange/query qualification is not BetterCP/M two-platform or whole-disk release acceptance.",
   "query_amendment": "Exact /HELP and /VER ignore all other arguments; /HELP wins when both occur.",
   "initial_feature_commit": "00e6785",
   "platform_qualification": {
-    "status": "FAIL",
+    "status": "PASS",
     "report": "Compression-Utilities-Platform-evidence.json",
-    "report_sha256": "65f1f7b6a3c9e2b8608c1d0ec00e4dceace6387fbe96fef5a1b7837fd9811655",
+    "report_sha256": "c6d8294847186a39f60a4faa3de3c28b1006abfb91dd157bd4f7500d97603e0b",
     "bundle": "Compression-Utilities-Platform-evidence.tar.gz",
-    "bundle_sha256": "286ff04aeeeb4c7b842335cd15db80fe585a341dc501df253a8c3df31de93bb3",
-    "blocking_finding": "Model 4 SQ campaign corrupts pre-existing C: payloads; cause unestablished"
+    "bundle_sha256": "09f22cb2813b534bf8bb7a5c3a4c01461a0325c1becb6430b3529d3b772b67b3",
+    "round_trips_per_platform": 27,
+    "whole_utilities_disk": "PROVISIONAL",
+    "model4_geometry_fix": "Pin LibDsk pcw800 mapping; independently verify seeded and final FDF file sectors"
   }
 }

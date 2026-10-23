@@ -207,5 +207,5 @@ membership or promote provisional media to a release.
 
 Build 004 compression platform execution is recorded in the
 [platform qualification record](../engineering/Compression%20Utilities%20Platform%20Qualification.md).
-cpmsim passes; Model 4 SQ preservation fails and requires investigation.
+cpmsim and Model 4 component checks pass after pinning host disk geometry.
 Utilities media remain PROVISIONAL; this campaign does not close whole-disk acceptance.

@@ -239,5 +239,7 @@ Utilities disk gates are tracked in the
 [1.0 release checklist](../releases/1.0-ROADMAP.md#compression-utilities--10-feature-freeze-and-release-checklist).
 
 See the [platform qualification record](Compression%20Utilities%20Platform%20Qualification.md):
-cpmsim passes, while a Model 4 SQ data-preservation failure blocks full platform
-acceptance. Query and historical qualification do not waive that finding.
+the corrected cpmsim and Model 4 component matrix passes. The initial Model 4
+data-loss report was traced to unpinned host geometry during test media setup;
+independent FDF-sector readback now guards that path. Query and historical
+results remain separately recorded.

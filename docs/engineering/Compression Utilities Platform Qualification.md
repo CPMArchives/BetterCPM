@@ -2,60 +2,63 @@
 
 ## Verdict
 
-**Blocked by a recorded Model 4 data-integrity failure.** The final Build 004
-commands execute from private Utilities B: beside normal BetterCP/M System A:.
-The z80pack/cpmsim campaign passes all three pairs and 27 round trips. Model 4
-CR/UNCR and LZH/UNLZH pass their respective nine-round-trip matrices. The Model 4
-SQ/USQ campaign completes its 39 commands and seven regular round trips, but
-fails preservation of pre-existing C: data. It does not qualify that pair or
-close the six-command Model 4 release gate.
+**PASS for the six compression command components on both recorded platforms.**
+SQ, USQ, CR, UNCR, LZH and UNLZH Build 004 run from private Utilities B:
+alongside BetterCP/M System A: on z80pack/cpmsim and trs80gp/Model 4. Each
+platform passes 27 round trips, including drive defaults, user area 7, collision
+refusal, malformed/checksum cases, cleanup and unchanged source files. Model 4
+also retains pre-existing output files through the large SQ/USQ case. Exact
+command, System and Utilities image hashes are in the machine-readable record.
 
-Two existing temporary sentinels, SQU00000.$$$ and USQ00000.$$$, are each read
-back as 128 E5 bytes. The C: DEFAULT.TXT fixture and its A: restoration also
-fail the expected payload comparison. The commands report completion; directory
-and filesystem consistency checks alone do not detect these payload failures.
-The seven original A: source fixtures, their restored regular outputs, saved
-large-file source copy, shipped System payloads and reserved System area pass
-independent readback. The cause and exact point of corruption are **not yet
-established**. These observations do not establish whether a codec, file adapter,
-OS disk layer, emulator, or test preparation is responsible.
+The initial Model 4 data-loss finding came from host-side test media preparation.
+LibDsk inferred disk geometry from arbitrary CP/M directory bytes when reading
+and writing the raw data disk. A large first file made later host operations map
+to incorrect sectors. This caused the harness to seed damaged DEFAULT.TXT and
+temporary sentinels before the emulator ran. It was not a guest SQ/USQ data
+corruption defect. The original failure record remains in the evidence bundle
+and is superseded by the corrected run.
 
-The large Model 4 SQ case uses an identical C: source copy to avoid repeated
-floppy-drive switches. After encoding, the test renames that copy SAVED.BIN and
-restores BIG.BIN on C:, retaining both copies and the original A: input. Other
-regular cases use A: input and C: output. Fixtures cover empty/binary data,
-127/128/129-byte boundaries, a 17,001-byte extent crossing and a 70,001-byte
-64-KiB crossing, padded to physical CP/M records. Default logged-drive and user-7
-cases, collision refusals and controlled malformed/checksum cases are included.
-A returned prompt or successful message is not sufficient for acceptance.
+The fix pins LibDsk to the disk's explicit PCW 800K geometry. The harness also
+reads selected files directly from the raw image using the FDF sector map,
+independently of cpmtools/LibDsk, before boot and after execution. A focused
+regression reproduces the incorrect physical readback without the geometry pin
+and passes for all seeded files with it.
 
-Both platforms capture complete extra-argument /HELP and /VER output for all
-six commands and help precedence. The broader forgiving query implementation
-is independently qualified in [Common Utility Query Qualification](Utility%20Query%20Qualification.md).
-Historical interoperability also passes for these same final binaries.
+The [machine-readable qualification](Compression-Utilities-Platform-evidence.json)
+and [console, VRAM and audit bundle](Compression-Utilities-Platform-evidence.tar.gz)
+bind the tested COM files, System and Utilities images, emulator identities,
+command captures, seed/output image hashes, file readbacks and geometry
+regression. Historical interoperability also passes for these same binaries.
+The wider forgiving /HELP and /VER contract is qualified in
+[Common Utility Query Qualification](Utility%20Query%20Qualification.md).
 
-## Evidence and remaining work
+| Platform | Commands | Round trips | Result |
+| --- | ---: | ---: | --- |
+| z80pack/cpmsim | 85 | 27 | PASS |
+| trs80gp/Model 4 | 88 | 27 | PASS |
 
-The [machine-readable record](Compression-Utilities-Platform-evidence.json) and
-[console, VRAM and audit bundle](Compression-Utilities-Platform-evidence.tar.gz)
-retain passing cases, the failed readbacks, exact executable/image identities,
-actual runner snapshots and the independent failure-audit script. Earlier
-incomplete pilots are not accepted results. Completed cases reused during the
-campaign were checked against reconstructed seed disks and retained output and
-capture hashes. Original distribution images were never mounted directly.
+The Model 4 adds a TYPE C:DEFAULT.TXT check immediately before codec queries
+and execution. Each Model 4 pair uses private images. The large SQ case copies
+the original 70,001-byte source onto C: to avoid repeated drive switching,
+renames that copy to SAVED.BIN after encoding, and restores BIG.BIN on C:.
+Both copies and the original A: source are checked. The other six regular
+fixtures cover empty/binary data, 127/128/129-byte boundaries, a 17,001-byte
+extent crossing and the 70,001-byte/64-KiB crossing, with physical CP/M record
+padding. Each family adds a logged-drive default case and a user-7 case.
 
-Investigate and reproduce the Model 4 corruption, correct its cause, then rerun
-the affected matrix with unchanged-source and sentinel assertions enabled.
-Clean pinned cpmsim reconstruction, native ZSM4 build qualification, remaining
-Utilities selections and final whole-image acceptance remain separate open gates.
-The packaged Utilities disk remains PROVISIONAL. Other utilities changed by the
-shared /VER revision need relevant final-artifact component reacceptance; older
-receipts retain their original binary/image scope.
+## Release boundary
+
+These are component results for the exact recorded images. The Utilities disk
+as a whole remains **PROVISIONAL**. Clean pinned cpmsim reconstruction, native
+ZSM4 codec assembly qualification, remaining Utilities selections, relevant
+final-artifact acceptance for other utilities changed by the shared /VER
+revision and final whole-image checks remain open. A changed executable or
+image requires relevant reacceptance.
 
 ## Reproduction
 
 Build isolated System generations with tools/build_distribution.py --target all,
-build all six compression commands into the z80pack artifacts tree, then run:
+build the six compression commands into the artifacts tree, then run:
 
 ```sh
 python3 tools/test_codec_utilities_platforms.py \
@@ -64,7 +67,6 @@ python3 tools/test_codec_utilities_platforms.py \
   --output /private/tmp/codec-platform-campaign
 ```
 
-Use fresh disposable directories and disks. The harness requires cpmtools,
-the existing local cpmsim and trs80gp prerequisites; it records exact emulator
-hashes without claiming a clean pinned reconstruction. The failed Model 4
-SQ case must remain a failure until payload preservation is demonstrated.
+Use fresh disposable directories and disks. The campaign requires cpmtools, the
+existing local cpmsim and trs80gp executables. Emulator hashes are recorded;
+this does not establish a clean pinned cpmsim reconstruction.
