@@ -81,7 +81,7 @@ def main():
     for tail in ['/VER',' /ver  ','/VeR']:
         a=enhanced_execute(tail=tail);assert a['output']==expected and a['services']==[9];count+=1
     for tail in ['/VER x','x /VER','/VER /VER']:
-        a=enhanced_execute(tail=tail);assert a['output']==b'Invalid /VER usage.\r\n' and a['services']==[9];count+=1
+        a=enhanced_execute(tail=tail);assert a['output']==expected and a['services']==[9];count+=1
     for tail in ['/VERIFY','/VERBOSE']:
         a=enhanced_execute(tail=tail,opened=False);assert 15 not in a['services'] and b'DUMP:' in a['output'];count+=1
     report={'status':'PASS','cases':count,'dri_sha256':hashlib.sha256(dri).hexdigest(),'dump_sha256':hashlib.sha256(ours).hexdigest(),'scope':'Actual compiled programs; synthetic public BDOS record/status fixture. Direct RET/stack balance, output and pending character checked; not live platform qualification.'}

@@ -208,7 +208,7 @@ Some syntactically valid commands may subsequently fail because of physical-driv
 
 ## 7. `/VER`
 
-`/VER` uses the common BetterCP/M standalone utility-version mechanism.
+`/VER` uses the common BetterCP/M query mechanism, ignoring other arguments.
 
 ```text
 SYSGEN /VER

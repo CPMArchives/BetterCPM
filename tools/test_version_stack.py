@@ -67,7 +67,7 @@ def main():
                 tail = bytearray(b'/ver')
                 tail[index] = byte
                 out = run(tail)
-                want = (byte | 0x20) == b'/ver'[index]
+                want = byte == 47 if index == 0 else (byte | 0x20) == b'/ver'[index]
                 assert bool(out) == want, (index, byte, out)
         assert address(listing, 'UV_CHECK') > 256
         print(f'PASS: /VER token matching, caller registers and pre-private-stack bound; peak {peak}/32 bytes, reserve {32-peak}')

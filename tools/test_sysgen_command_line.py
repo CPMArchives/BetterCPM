@@ -34,8 +34,7 @@ def main():
         c=runner(image);data=tail.encode()
         c.mem[128]=len(data);c.mem[129:129+len(data)]=data
         c.run(256,limit=100000)
-        expected=(banner('SYSGEN')+'\r\n' if tail=='/VER'
-                  else 'Invalid /VER usage.\r\n')
+        expected=banner('SYSGEN')+'\r\n'
         assert output(c)==expected,(tail,output(c))
     print(f'{len(valid)+len(invalid)} SYSGEN command-tail and no-source-I/O checks pass')
 if __name__=='__main__':main()

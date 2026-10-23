@@ -135,7 +135,7 @@ DUP /VER
 
 Direct operations share the interactive engines and return to the CCP after
 cleanup. FORMAT and COPY retain mandatory Y/N confirmation; no bypass switch
-is defined. CHECK is read-only. `/VER` is standalone and performs no disk work.
+is defined. CHECK is read-only. `/VER` ignores other arguments and performs no disk work.
 
 A formats a disk using the selected logical drive's current BIOS binding.
 Use CONFIG G or I first to choose another format. DUP displays the logical drive,
@@ -216,7 +216,7 @@ incompatible bootstrap geometry, and targets with fewer than 160 reserved
 records. True data-only formats are refused before confirmation or writes;
 a populated compatible SYSTEM format is permitted. Every installation form
 requires `Y` at `Proceed (Y/N)?`; command-line selection does not bypass it.
-`/VER` is standalone and performs no installation.
+`/VER` ignores other arguments and performs no installation.
 
 SYSTEM.SYS contains 161 records (20,608 bytes): one 128-byte header followed
 by the 160-record payload. The header is validated input metadata and is not

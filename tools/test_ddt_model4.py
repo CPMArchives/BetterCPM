@@ -2,7 +2,7 @@
 """Qualify DDT's Model 4 VRAM and physical keyboard on disposable media."""
 import argparse,hashlib,json
 from pathlib import Path
-from build_ddt import ROOT
+from build_ddt import version_text, ROOT
 from add_cpm_file_to_dmk import extract_raw,add_file,FILESYSTEM_FIRST_SECTOR,SECTOR_SIZE,DIRECTORY_ENTRIES
 from build_montezuma_extended_790k import build
 from run_trs80_command import DEFAULT_EMULATOR,key_args
@@ -65,7 +65,7 @@ def main():
     screens={name:bytes(c&127 for c in f.read_bytes()[:1920]) for name,f in zip(stages,files)}
     for name,value in screens.items():
         (w/(name+'.txt')).write_text('\n'.join(value[i:i+80].decode('ascii').rstrip() for i in range(0,1920,80))+'\n')
-    expected={'boot':b'A0>','version':b'DDT 1.0 (Build 001)','prompt':b'-_',
+    expected={'boot':b'A0>','version':version_text().splitlines()[0].encode(),'prompt':b'-_',
               'edit':b'-H100,2X_','arithmetic':b'0120 00E0','interior':b'-H100,20',
               'scroll':b'1'*23+b'_','clear':b'0003 FFFF','substitute':b'0300 41 _',
               'pending':b'0300 41 99_','cancel':b'-_','unchanged':b'0300 41 A',

@@ -45,7 +45,7 @@ def main():
         if tail.strip().upper()=='/VER':assert calls==[9] and bytes(out)==(banner('CONFIG')+'\r\n').encode()
         elif tail.startswith('/STARTUP="Mixed'):assert calls==[] and not out
         elif tail=='/SHOW X':assert bytes(out)==b'Invalid CONFIG usage.\r\n'
-        else:assert calls==[9] and bytes(out)==b'Invalid /VER usage.\r\n'
+        else:assert calls==[9] and bytes(out)==(banner('CONFIG')+'\r\n').encode()
     def zstring(label):
         start=address(listing,label);end=image.index(0,start-256)
         return image[start-256:end]

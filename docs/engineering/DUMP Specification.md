@@ -47,7 +47,7 @@ It must not assume the first CCP-prepared FCB names the file: in
 Validate the entire tail syntactically before opening the file. File-dependent
 position bounds are checked after obtaining its length and before any data
 is displayed. Require exactly one exact
-filename except for standalone `/VER`. Reject missing or extra operands,
+filename except for an exact `/VER` query anywhere in the tail. Reject missing or extra operands,
 wildcards, selectors, unknown switches, malformed values and incompatible
 combinations. Print a diagnostic identifying the offending option or operand
 where applicable, then return to the CCP. Never fail silently. For example:
@@ -60,7 +60,7 @@ Repeated independent flags are harmless. For value options such as `/FROM=`,
 the last valid value wins, but every occurrence must be valid; a later valid
 occurrence does not excuse an earlier malformed one.
 
-`/VER` is standalone. `/BARE` rejects `/P`, `/40`, `/FROM=` and all other
+`/VER` ignores all other arguments. `/BARE` rejects `/P`, `/40`, `/FROM=` and all other
 extensions rather than ignoring them. Deferred `/FIND=` and `/LEN=` are unknown
 switches in this version.
 

@@ -152,7 +152,7 @@ Exact syntax for settings not yet implemented remains part of their implementati
 
 # 6. `/VER`
 
-`/VER` follows the standard BetterCP/M standalone version convention.
+`/VER` follows the standard BetterCP/M version-query convention.
 
 ```text
 CONFIG /VER
@@ -164,7 +164,7 @@ Output:
 BetterCP/M CONFIG 1.0 (Build nnn)
 ```
 
-`/VER` combined with any other CONFIG operation is invalid.
+`/VER` anywhere as an exact token shows identification and ignores other operations.
 
 ---
 

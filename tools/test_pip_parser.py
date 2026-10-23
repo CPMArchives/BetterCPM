@@ -55,7 +55,8 @@ def main():
  bad,parts=scan(tail);assert not bad and len(parts)==64
  out,calls=invocation('/VER');assert banner('PIP') in out and calls==[9],(out,calls)
  out,calls=invocation('A=B[Shello /VER, world\x1a]');assert 'NO FILE' in out and 'Invalid /VER' not in out
- out,calls=invocation('A=B /VER');assert 'Invalid /VER usage.' in out and calls==[9]
+ out,calls=invocation('A=B[Shello /VER world\x1a]');assert 'NO FILE' in out and banner('PIP') not in out
+ out,calls=invocation('A=B /VER');assert banner('PIP') in out and calls==[9]
  out,calls=invocation('',keys=['PRN:=CON:','BAD','']);assert out.count('*')==3 and 'DEVICE UNAVAILABLE' in out and 'INVALID FORMAT' in out
  data=(ROOT/'build/pip-development/PIP.COM').read_bytes();assert data[3:10]==bytes((0xC9,0,0,0xC9,0,0,0x1A))
  info=json.loads((ROOT/'third_party/dri-pip/provenance.json').read_text());assert hashlib.sha256((ROOT/'third_party/dri-pip/pip.plm').read_bytes()).hexdigest()==info['sha256']

@@ -1,4 +1,4 @@
-; Shared standalone /VER recognizer. Exact token only, case insensitive.
+; Shared /VER recognizer; exact query anywhere ignores other arguments. Exact token only, case insensitive.
 ; UV_QUERY: HL/B span, DE banner. CF=handled. Registers otherwise preserved.
 ; UV_CHECK: command-tail wrapper; handled requests warm boot without operations.
 ; Standalone builds load their banner; RCP-derived transient wrappers pass DE.
@@ -36,6 +36,8 @@ UV_SCAN:
         LD A,(HL)
         CP ' '
         JR Z,UV_SPACE
+        CP 9
+        JR Z,UV_SPACE
         INC C
         PUSH BC
         PUSH HL
@@ -49,8 +51,15 @@ UV_MATCH:
         ; V002: the extra PUSH/POP here left only six system-stack bytes
         ; when a transient checked /VER before establishing its own stack.
         LD A,(DE)
+        CP '/'
+        JR NZ,UV_LETTER
+        LD A,(HL)
+        CP '/'
+        JR UV_COMPARED
+UV_LETTER:
         XOR (HL)
         AND 0DFH
+UV_COMPARED:
         JR NZ,UV_NOM
         INC HL
         INC DE
@@ -63,12 +72,16 @@ UV_MATCH:
         LD A,(HL)
         CP ' '
         JR Z,UV_FOUND
+        CP 9
+        JR Z,UV_FOUND
 UV_NOM:
         POP HL
         POP BC
 UV_SKIP:
         LD A,(HL)
         CP ' '
+        JR Z,UV_SPACE
+        CP 9
         JR Z,UV_SPACE
         INC HL
         DJNZ UV_SKIP
@@ -85,24 +98,6 @@ UV_NONE:
 UV_FOUND:
         POP HL
         POP BC
-        LD A,C
-        CP 1
-        JR NZ,UV_BAD
-        ; The first token is /VER; its remaining tail must contain only spaces.
-        LD A,B
-        SUB 4
-        LD B,A
-        INC HL
-        INC HL
-        INC HL
-        INC HL
-        JR Z,UV_PRINT
-UV_REST:
-        LD A,(HL)
-        CP ' '
-        JR NZ,UV_BAD
-        INC HL
-        DJNZ UV_REST
 UV_PRINT:
         POP HL
         POP DE
@@ -117,20 +112,4 @@ UV_PRINT:
         POP BC
         SCF
         RET
-UV_BAD:
-        POP HL
-        POP DE
-        POP BC
-        PUSH BC
-        PUSH DE
-        PUSH HL
-        LD DE,UV_ERROR
-        LD C,9
-        CALL 00005H
-        POP HL
-        POP DE
-        POP BC
-        SCF
-        RET
 UV_WORD: DB '/ver'
-UV_ERROR: DB 'Invalid /VER usage.',13,10,'$'
