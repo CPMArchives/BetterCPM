@@ -1,9 +1,9 @@
 # Engineering assessment Part 13: final synthesis and roadmap
 
-Date: 23 October 2026. Status: final synthesis delivered for maintainer review;
-the first engineering assessment is closed as directed. Parts 1–12 were
-approved. This part changes documentation only and authorizes no further
-prototype implementation.
+Date: 23 October 2026. Status: approved by the maintainer on 23 October 2026;
+the first engineering assessment is closed. Parts 1–12 were approved.
+This part changed documentation only. The maintainer subsequently authorized
+the separately scoped cpmsim prototype-completion work defined below.
 
 ## 1. Conclusion
 
