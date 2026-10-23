@@ -1,0 +1,67 @@
+{
+  "feature_scope": "FROZEN_1.0",
+  "feature_commit": "00e6785",
+  "merged_baseline": "569825d63f0f8d59db61ba86c41bb69434e49291",
+  "version": "1.0",
+  "build": 3,
+  "historical_status": "PASS",
+  "historical_cases": 178,
+  "cpm_command_invocations": 340,
+  "our_commands": {
+    "SQ": {
+      "bytes": 8123,
+      "sha256": "33251f8a7746b7dd585f4664b5ee477fb8c58a5dd533011365760abeac267e82"
+    },
+    "USQ": {
+      "bytes": 5398,
+      "sha256": "731f60a4aebea07ad908481edce02c4644aab9d1c46966bad7205d2dcd604dfb"
+    },
+    "CR": {
+      "bytes": 29443,
+      "sha256": "bfd064bd0fdb54410b9f603187caeb9a310e64c7848d8ec05e0d99bd5bb53c56"
+    },
+    "UNCR": {
+      "bytes": 31206,
+      "sha256": "dcfa927cb0af3dcd86cc161081ccc67c86faa2bb3d89a6af7acdf929a75cf5ef"
+    },
+    "LZH": {
+      "bytes": 17225,
+      "sha256": "6a7084aa8cd3059593966c192185656b89d9a50afbd5b624d549168dbfa07805"
+    },
+    "UNLZH": {
+      "bytes": 12215,
+      "sha256": "9ed3f70dc0b69222bfc5b8106021e68ebf5180fffcf7c7e5863eac2df502ce26"
+    }
+  },
+  "evidence_report": {
+    "file": "Compression-Historical-Interop-evidence.json",
+    "sha256": "d6980c570927e46ef46264d3bacdda2f3d84d5f699591ce6bc582d8902d79a13"
+  },
+  "evidence_bundle": {
+    "file": "Compression-Historical-Interop-evidence.tar.gz",
+    "sha256": "64876bee27320a6d25cbf2603d2c69ae3e752026738044fadfe22e6349ff8469"
+  },
+  "query_qualification": {
+    "z80_cases": 344,
+    "cpm22_commands": 90,
+    "status": "PASS",
+    "test_source_sha256": {
+      "test_codec_versions.py": "f70d3e437e9a2c338303212fee0d4c5a9926e2fba95527c383ea87728ed32e24",
+      "test_codec_versions_cpm.py": "75fc365443339938512b6c7e6fd49a0f1122626b63cc69f693bfadaef9323a42"
+    },
+    "log_sha256": {
+      "queries/z80.log": "1fb8c8b0a1f8c62568b614341108b1df7fbc2d9b5c7bd0b0aace6fd2a7089858",
+      "queries/cpm22.log": "086441769aac67b33f2566d3ad5f1634fa7efce230fb8b084f1da74bd490ed1b",
+      "queries/artifact-mismatch.log": "4a983b1c78c1bed317f979312acd82bb7b707aa42a52b937d9832851411ba52e"
+    }
+  },
+  "final_artifact_mismatch_guard": "PASS: rejects altered COM before campaign",
+  "open_release_gates": [
+    "BetterCP/M z80pack/cpmsim exact release-media execution",
+    "BetterCP/M trs80gp/Model 4 exact release-media execution",
+    "native ZSM4 build qualification",
+    "final Utilities inventory, image integrity and component acceptance",
+    "final COM/image hash manifest and release evidence closure"
+  ],
+  "limitations": "Stock CP/M 2.2 exchange/query qualification is not BetterCP/M two-platform or whole-disk release acceptance."
+}

@@ -42,6 +42,7 @@ LY_RSSEL        EQU     0F3A4H          ; RSX selector overlay entry
 LY_STKL         EQU     004C0H          ; transient loader stack low
 LY_STKT         EQU     00500H          ; transient loader stack top
 LY_LIMIT        EQU     0F400H          ; resident-memory upper limit
+LY_TOPRSV       EQU     00C00H          ; bytes above resident RAM (STAT count)
 LY_RAMEND       EQU     0F400H          ; available RAM end
 LY_HIST         EQU     0D504H          ; persistent command-history base
 LY_TPA          EQU     0D501H          ; exclusive TPA upper bound

@@ -1,0 +1,453 @@
+; Include codec.inc, codec.mac, usq.inc, usq.mac; emit CODEC_CODE and
+; USQ_CODE once each. z80pack z80asm 2.1: -e32 -fb. No allocated storage.
+; All mutable state belongs to IX's context; code may reside in ROM.
+; Private helpers use ordinary registers; no alternate registers or IY.
+; From the repository root: python3 tools/test_usq.py
+; Native ZSM4 assembly is not yet qualified.
+;
+; Caller sequence:
+;   initialize the common prefix and allocate UQ_CONTEXT_SIZE bytes
+;   LD IX,context / CALL USQ_INIT / handle carry
+;   CALL USQ_HEAD / handle carry
+;   inspect UQ_NAME, validate destination and prepare caller output
+;   CALL USQ_RUN / handle carry / flush and close caller output
+; Alternatively use GET (C/CS_END at verified EOF) or END (discard/verify).
+
+USQ_CODE        MACRO
+
+USQ_INIT:
+        CALL    CX_CHECK_BASE
+        RET     C
+        LD      HL,UQ_CONTEXT_SIZE
+        CALL    CX_CHECK_SIZE
+        RET     C
+        PUSH    IX
+        POP     HL
+        LD      DE,CX_PREFIX_SIZE
+        ADD     HL,DE
+        LD      D,H
+        LD      E,L
+        INC     DE
+        LD      (HL),0
+        LD      BC,UQ_CONTEXT_SIZE-CX_PREFIX_SIZE-1
+        LDIR
+        JP      CX_READY
+
+; Private byte reader preserves BC/DE/HL on success. Caller errors and
+; physical truncation latch failure; all callers propagate carry unchanged.
+UQ_READ_BYTE:
+        PUSH    BC
+        PUSH    DE
+        PUSH    HL
+        CALL    CX_CALL_READ
+        POP     HL
+        POP     DE
+        POP     BC
+        RET     NC
+        OR      A
+        JP      NZ,CX_READ_ERROR
+        LD      E,0
+        LD      A,CS_TRUNC
+        JP      CX_FAIL
+
+; Private word reader: DE = LE word; BC/HL preserved on success.
+UQ_READ_WORD:
+        CALL    UQ_READ_BYTE
+        RET     C
+        LD      E,A
+        CALL    UQ_READ_BYTE
+        RET     C
+        LD      D,A
+        OR      A
+        RET
+
+USQ_HEAD:
+        LD      A,CP_READY
+        CALL    CX_CHECK_STATE
+        RET     C
+        CALL    UQ_READ_WORD
+        RET     C
+        LD      A,E
+        CP      076H
+        JP      NZ,UQ_BAD_MAGIC
+        LD      A,D
+        CP      0FFH
+        JP      NZ,UQ_BAD_MAGIC
+        CALL    UQ_READ_WORD
+        RET     C
+        LD      (IX+UQ_EXPECT),E
+        LD      (IX+UQ_EXPECT+1),D
+        PUSH    IX
+        POP     HL
+        LD      DE,UQ_NAME
+        ADD     HL,DE
+        LD      B,UQ_NAME_SIZE
+UQ_HEAD_NAME:
+        CALL    UQ_READ_BYTE
+        RET     C
+        LD      (HL),A
+        OR      A
+        JR      Z,UQ_HEAD_NAMED
+        INC     HL
+        INC     (IX+UQ_NAMLEN)
+        DJNZ    UQ_HEAD_NAME
+        ; The 128th byte was not NUL; restore the last slot's terminator.
+        DEC     HL
+        LD      (HL),0
+        LD      E,UD_NAME
+        JP      UQ_CORRUPT
+UQ_HEAD_NAMED:
+        CALL    UQ_READ_WORD
+        RET     C
+        LD      (IX+UQ_NODES),E
+        LD      (IX+UQ_NODES+1),D
+        LD      A,D
+        OR      A
+        JR      Z,UQ_HEAD_COUNT_OK
+        CP      1
+        JP      NZ,UQ_BAD_NODES
+        LD      A,E
+        OR      A
+        JP      NZ,UQ_BAD_NODES
+UQ_HEAD_COUNT_OK:
+        LD      H,D
+        LD      L,E
+        ADD     HL,HL
+        ADD     HL,HL
+        LD      B,H
+        LD      C,L                     ; byte count = nodes * 4
+        PUSH    IX
+        POP     HL
+        LD      DE,UQ_TREE
+        ADD     HL,DE
+UQ_HEAD_TREE:
+        LD      A,B
+        OR      C
+        JR      Z,UQ_HEAD_VALIDATE
+        CALL    UQ_READ_BYTE
+        RET     C
+        LD      (HL),A
+        INC     HL
+        DEC     BC
+        JR      UQ_HEAD_TREE
+UQ_HEAD_VALIDATE:
+        CALL    UQ_VALIDATE
+        RET     C
+        JP      CX_DATA
+
+UQ_BAD_MAGIC:
+        LD      E,0
+        LD      A,CS_FORMAT
+        JP      CX_FAIL
+UQ_BAD_NODES:
+        LD      E,UD_NODES
+        JP      UQ_CORRUPT
+UQ_BAD_CHILD:
+        LD      E,UD_CHILD
+        JP      UQ_CORRUPT
+UQ_BAD_TREE:
+        LD      E,UD_TREE
+UQ_CORRUPT:
+        LD      A,CS_CORRUPT
+        JP      CX_FAIL
+
+; HL = internal index -> tree address; preserves BC. No context mutation.
+UQ_TREE_ADDRESS:
+        ADD     HL,HL
+        ADD     HL,HL
+        LD      DE,UQ_TREE
+        ADD     HL,DE
+        PUSH    IX
+        POP     DE
+        ADD     HL,DE
+        RET
+
+; Validate a DE child. Leaves must be -1..-257. Internal children must
+; be in range and not yet discovered (reject cycles and shared children).
+; Preserves BC, including on failure; other ordinary registers may change.
+UQ_VALIDATE_CHILD:
+        PUSH    BC
+        LD      A,D
+        AND     080H
+        JR      Z,UQ_VALIDATE_INDEX
+        LD      A,D
+        CP      0FFH
+        JR      Z,UQ_CHILD_OK
+        CP      0FEH
+        JR      NZ,UQ_CHILD_RANGE
+        LD      A,E
+        CP      0FFH
+        JR      NZ,UQ_CHILD_RANGE
+        LD      A,(IX+UQ_FLAGS)
+        OR      UQF_TREE_END
+        LD      (IX+UQ_FLAGS),A
+UQ_CHILD_OK:
+        POP     BC
+        OR      A
+        RET
+UQ_VALIDATE_INDEX:
+        LD      H,D
+        LD      L,E
+        LD      C,(IX+UQ_NODES)
+        LD      B,(IX+UQ_NODES+1)
+        OR      A
+        SBC     HL,BC
+        JR      NC,UQ_CHILD_RANGE
+        LD      H,D
+        LD      L,E
+        LD      BC,UQ_MARKS
+        ADD     HL,BC
+        PUSH    IX
+        POP     BC
+        ADD     HL,BC
+        LD      A,(HL)
+        OR      A
+        JR      NZ,UQ_CHILD_SHARED
+        LD      (HL),1
+        JR      UQ_CHILD_OK
+UQ_CHILD_RANGE:
+        POP     BC
+        JP      UQ_BAD_CHILD
+UQ_CHILD_SHARED:
+        POP     BC
+        JP      UQ_BAD_TREE
+
+; Iterative reachability validation, bounded by 256 nodes and constant
+; stack depth. Marks: 0 unseen, 1 pending, 2 processed. Restarting the
+; sweep permits arbitrary node numbering; no encoder ordering assumed.
+UQ_VALIDATE:
+        LD      A,(IX+UQ_NODES)
+        OR      (IX+UQ_NODES+1)
+        RET     Z                       ; special zero-node empty stream
+        PUSH    IX
+        POP     HL
+        LD      DE,UQ_MARKS
+        ADD     HL,DE
+        LD      (HL),1                  ; discover root
+UQ_VALIDATE_RESTART:
+        LD      BC,0
+        PUSH    IX
+        POP     HL
+        LD      DE,UQ_MARKS
+        ADD     HL,DE
+UQ_VALIDATE_SCAN:
+        LD      A,(HL)
+        CP      1
+        JR      Z,UQ_VALIDATE_NODE
+        INC     HL
+        INC     BC
+        LD      A,(IX+UQ_NODES)
+        CP      C
+        JR      NZ,UQ_VALIDATE_SCAN
+        LD      A,(IX+UQ_NODES+1)
+        CP      B
+        JR      NZ,UQ_VALIDATE_SCAN
+        ; No pending nodes. Every stored node must have been reachable.
+        LD      C,(IX+UQ_NODES)
+        LD      B,(IX+UQ_NODES+1)
+        PUSH    IX
+        POP     HL
+        LD      DE,UQ_MARKS
+        ADD     HL,DE
+UQ_VALIDATE_ALL:
+        LD      A,(HL)
+        CP      2
+        JP      NZ,UQ_BAD_TREE
+        INC     HL
+        DEC     BC
+        LD      A,B
+        OR      C
+        JR      NZ,UQ_VALIDATE_ALL
+        LD      A,(IX+UQ_FLAGS)
+        AND     UQF_TREE_END
+        JP      Z,UQ_BAD_TREE
+        OR      A
+        RET
+UQ_VALIDATE_NODE:
+        LD      (HL),2
+        LD      H,B
+        LD      L,C
+        CALL    UQ_TREE_ADDRESS
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        PUSH    HL
+        CALL    UQ_VALIDATE_CHILD
+        POP     HL
+        RET     C
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        CALL    UQ_VALIDATE_CHILD
+        RET     C
+        JR      UQ_VALIDATE_RESTART
+
+; Decode one Huffman symbol -> DE = 0..256, NC. The validated tree
+; guarantees termination. Only fetch another byte after eight bits.
+UQ_SYMBOL:
+        LD      A,(IX+UQ_NODES)
+        OR      (IX+UQ_NODES+1)
+        JR      NZ,UQ_SYMBOL_ROOT
+        LD      DE,UQ_SPEOF
+        RET
+UQ_SYMBOL_ROOT:
+        LD      HL,0
+UQ_SYMBOL_NODE:
+        CALL    UQ_TREE_ADDRESS
+        LD      A,(IX+UQ_BITSLEFT)
+        OR      A
+        JR      NZ,UQ_SYMBOL_BIT
+        CALL    UQ_READ_BYTE
+        RET     C
+        LD      (IX+UQ_BITBYTE),A
+        LD      (IX+UQ_BITSLEFT),8
+UQ_SYMBOL_BIT:
+        DEC     (IX+UQ_BITSLEFT)
+        LD      A,(IX+UQ_BITBYTE)
+        RRCA
+        LD      (IX+UQ_BITBYTE),A
+        JR      NC,UQ_SYMBOL_LEFT
+        INC     HL
+        INC     HL
+UQ_SYMBOL_LEFT:
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      A,D
+        AND     080H
+        JR      NZ,UQ_SYMBOL_LEAF
+        LD      H,D
+        LD      L,E
+        JR      UQ_SYMBOL_NODE
+UQ_SYMBOL_LEAF:
+        LD      A,E
+        CPL
+        LD      E,A
+        LD      A,D
+        CPL
+        LD      D,A
+        OR      A
+        RET
+
+USQ_GET:
+        LD      A,(IX+CX_PHASE)
+        CP      CP_DONE
+        JP      Z,CX_END
+        LD      A,CP_DATA
+        CALL    CX_CHECK_STATE
+        RET     C
+        LD      A,(IX+UQ_REPEAT)
+        OR      A
+        JR      Z,UQ_GET_SYMBOL
+        DEC     (IX+UQ_REPEAT)
+        LD      A,(IX+UQ_LAST)
+        JP      UQ_EMIT
+UQ_GET_SYMBOL:
+        CALL    UQ_SYMBOL
+        RET     C
+        LD      A,D
+        OR      A
+        JP      NZ,UQ_FINISH
+        LD      A,E
+        CP      UQ_DLE
+        JR      NZ,UQ_GET_LITERAL
+        CALL    UQ_SYMBOL
+        RET     C
+        LD      A,D
+        OR      A
+        JP      NZ,UQ_BAD_REPEAT
+        LD      A,E
+        OR      A
+        JR      NZ,UQ_GET_REPEAT
+        LD      A,UQ_DLE
+        JR      UQ_GET_LITERAL
+UQ_GET_REPEAT:
+        CP      2
+        JP      C,UQ_BAD_REPEAT
+        LD      A,(IX+UQ_FLAGS)
+        AND     UQF_HAVE_LAST
+        JP      Z,UQ_BAD_REPEAT
+        LD      A,E
+        SUB     2                       ; first byte already returned
+        LD      (IX+UQ_REPEAT),A
+        LD      A,(IX+UQ_LAST)
+        JR      UQ_EMIT
+UQ_GET_LITERAL:
+        LD      (IX+UQ_LAST),A
+        LD      C,A
+        LD      A,(IX+UQ_FLAGS)
+        OR      UQF_HAVE_LAST
+        LD      (IX+UQ_FLAGS),A
+        LD      A,C
+UQ_EMIT:
+        LD      C,A
+        LD      E,A
+        LD      D,0
+        LD      L,(IX+UQ_SUM)
+        LD      H,(IX+UQ_SUM+1)
+        ADD     HL,DE
+        LD      (IX+UQ_SUM),L
+        LD      (IX+UQ_SUM+1),H
+        INC     (IX+UQ_COUNT)
+        JR      NZ,UQ_EMIT_RETURN
+        INC     (IX+UQ_COUNT+1)
+        JR      NZ,UQ_EMIT_RETURN
+        INC     (IX+UQ_COUNT+2)
+        JR      NZ,UQ_EMIT_RETURN
+        INC     (IX+UQ_COUNT+3)
+UQ_EMIT_RETURN:
+        LD      A,C
+        OR      A
+        RET
+UQ_BAD_REPEAT:
+        LD      E,UD_REPEAT
+        JP      UQ_CORRUPT
+UQ_FINISH:
+        LD      A,(IX+UQ_FLAGS)
+        OR      UQF_SAW_END
+        LD      (IX+UQ_FLAGS),A
+        LD      L,(IX+UQ_SUM)
+        LD      H,(IX+UQ_SUM+1)
+        LD      E,(IX+UQ_EXPECT)
+        LD      D,(IX+UQ_EXPECT+1)
+        OR      A
+        SBC     HL,DE
+        JP      Z,CX_END
+        LD      E,0
+        LD      A,CS_CHECK
+        JP      CX_FAIL
+
+USQ_RUN:
+        LD      A,(IX+CX_PHASE)
+        CP      CP_DONE
+        JP      Z,CX_DONE
+        LD      A,CP_DATA
+        CALL    CX_CHECK_STATE
+        RET     C
+        CALL    CX_CHECK_WRITE
+        RET     C
+UQ_RUN_LOOP:
+        CALL    USQ_GET
+        JR      C,UQ_DRAIN_RESULT
+        CALL    CX_CALL_WRITE
+        JP      C,CX_WRITE_ERROR
+        JR      UQ_RUN_LOOP
+
+USQ_END:
+        LD      A,(IX+CX_PHASE)
+        CP      CP_DONE
+        JP      Z,CX_DONE
+        LD      A,CP_DATA
+        CALL    CX_CHECK_STATE
+        RET     C
+UQ_END_LOOP:
+        CALL    USQ_GET
+        JR      NC,UQ_END_LOOP
+UQ_DRAIN_RESULT:
+        CP      CS_END
+        JP      Z,CX_DONE
+        SCF
+        RET
+
+        ENDM

@@ -37,3 +37,5 @@ Both development Utilities images pass file readback and filesystem consistency 
 The repository-wide `test_utility_versions.py` did not complete against the existing build directory: unrelated STAT/CONFIG/DUP/TYPE artifacts reached the execution limit, DIR encountered an unsupported opcode, and the PIP development artifact was absent. These are not a passing global regression result. DDT's seven isolated identity/purity cases pass against its freshly built artifact.
 
 A complete current-system rebuild also resolves the stale/missing-artifact version-suite limitation above: all 178 utility identity, resident dispatch, invalid usage and fall-through checks now pass. Earlier evidence archives remain unchanged as records of their original runs.
+
+DDT now also passes [Utilities Disk component release acceptance](DDT%20Utilities%20Release%20Acceptance.md) from packaged B: media beside normal System A: on both platforms. Whole Utilities Disk completion remains separate.

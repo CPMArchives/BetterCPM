@@ -52,19 +52,48 @@ All membership or layout changes require discussion with the maintainer.
 - LINK
 - DDT.COM: initial DRI-compatible debugger adaptation with shared line editing and `/VER`; [engineering specification](../engineering/DDT%20Specification.md). Exact historical reproduction is retained separately as the verification baseline. Model 4 real-screen/physical-keyboard, native/cross and BetterCP/M cpmsim qualification pass; [Model 4 evidence](../engineering/DDT%20Model%204%20Qualification.md).
 - Standalone Z80 disassembler: exact program TBD.
-- Noah’s ARK (`NOAH.COM`): selected archive utility, initially targeting CP/M `.ARK` and `.LBR` containers. [Engineering specification](../engineering/NOAH%20Specification.md) behavioral baseline complete; implementation pending.
-- Compression/expansion functions: NOAH provides explicit SQ/CR selection and
-  standalone compression/EXPAND under its [consolidated engineering specification](../engineering/NOAH%20Specification.md);
-  implementation and the exact initial codec matrix are pending. ZIP and LZH
-  `/LZ` support are future extensions. Familiar SQ/USQ commands or SUBMIT
-  wrappers remain future conveniences, not additional finalized utilities.
+- Noah’s ARK (`NOAH.COM` with `NOAH.OVL`): selected unified archive utility, targeting CP/M `.ARK` and `.LBR` containers. The [engineering specification](../engineering/NOAH%20Specification.md) behavioral baseline is complete; implementation is pending as post-1.0 work.
+- SQ.COM and USQ.COM: standalone Z80 squeeze/unsqueeze commands using the
+  common codec ABI, two-pass SQ input, optional destination drive and temporary
+  output that is published only after successful processing and closes.
+  Usage: `SQ [drive:]file [destination-drive:]` and
+  `USQ [drive:]file [destination-drive:]`. The default destination is the logged
+  drive, in the current user area. SQ uses historical squeezed-file naming;
+  USQ restores the validated embedded name. Existing outputs are refused.
+  Both preserve all bytes in CP/M records, including `1Ah` padding.
+- UNCR.COM: standalone uncruncher for CRUNCH significant revision `20h`
+  with additive checksums. Uses the shared file adapter and safe temporary
+  output, with the same command syntax and destination defaults as USQ.
+  Historical padded extensions and metadata are supported; the raw header
+  field is bounded to 127 bytes. CRUNCH 1.x and other variants are refused.
+- CR.COM: standalone one-pass CRUNCH `20h` encoder with capacity resets,
+  using the shared adapter and safe temporary output. Syntax and destination
+  defaults match SQ. Historical naming replaces the middle extension letter
+  with Z; an absent extension or existing middle Z becomes `.ZZZ`. A source
+  already named `.ZZZ` is refused. The original filename is embedded for UNCR.
+- UNLZH.COM: standalone decoder for CrLZH `10h` and `20h` with additive
+  checksums, using the shared file adapter, bounded embedded names and safe
+  temporary output. Usage: `UNLZH [drive:]file [destination-drive:]`. Existing
+  outputs are refused; the default destination is the logged drive. Embedded
+  filenames with high-bit characters are refused rather than normalized.
+- LZH.COM: standalone one-pass CrLZH `20h` encoder with additive checksums,
+  shared file I/O and safe temporary output. Usage:
+  `LZH [drive:]file [destination-drive:]`; the destination defaults to the
+  logged drive. Historical names progress `ABC` -> `AYC`, `AYC` -> `AYY`,
+  `AYY` -> `YYY`; missing extensions become `.YYY`, and `.YYY` input is
+  refused. Original names, including padded extension slots, are embedded
+  for UNLZH. Existing outputs are refused.
+- Standalone compression commands are implemented.
+  Individual commands are sufficient for release 1.0. A unified archive/codec
+  interface through Noah’s ARK is post-1.0 work.
 - Broader development/userland tools generally belong here; individual additions
   still require selection.
 
 ### Provisional daily Utilities media
 
 `tools/build_utilities_disk.py --build` assembles the currently implemented
-owned components: DUMP.COM, DDT.COM, XSUB.COM and its required BATCHIO.RSX. DDT is the owned adaptation, not the historical reference; its Model 4 screen/input campaign passes on disposable current-system media. It verifies
+owned components: DUMP.COM, DDT.COM, XSUB.COM and its required BATCHIO.RSX,
+SQ.COM, USQ.COM, CR.COM, UNCR.COM, LZH.COM and UNLZH.COM. DDT is the owned adaptation, not the historical reference; its Model 4 screen/input campaign passes on disposable current-system media. DDT also passes [Utilities release acceptance](../engineering/DDT%20Utilities%20Release%20Acceptance.md) from B: beside normal System A: on both platforms. `--ddt-acceptance REPORT` binds that component verdict to the exact artifact and image hashes; it does not promote the whole disk. The builder verifies
 file readback and the filesystem, and produces a 332K raw cpmsim image and an
 80T DS 800K data DMK for Model 4. Reports explicitly list pending selections;
 these are provisional daily media, not a fully qualified Utilities release.
@@ -162,3 +191,15 @@ selected automatically at startup. The unchanged TE VT100 editor passes the
 cpmsim application campaign with a 25-row host window; that configuration is not
 qualified for the 24-row Model 4. See the provider qualification record for the
 supported subset and test limits.
+
+## Compression 1.0 feature freeze
+
+The six selected compression commands are feature-frozen at version 1.0
+Build 003 (`00e6785`, merged in `569825d`). The
+[qualification index](../engineering/Compression-1.0-Qualification.json)
+records final COM hashes and the completed stock CP/M 2.2 historical/query
+campaigns. Package these qualified bytes; a changed artifact needs relevant
+requalification. The [1.0 compression release checklist](1.0-ROADMAP.md#compression-utilities--10-feature-freeze-and-release-checklist)
+keeps both BetterCP/M platform runs, native assembly qualification and final
+Utilities image/component acceptance open. This freeze does not change disk
+membership or promote provisional media to a release.

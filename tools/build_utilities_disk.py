@@ -18,14 +18,18 @@ sys.path.insert(0,str(ROOT/"tools"))
 from fdf_format import select_fdf
 from build_z80pack_image import disk_definition, DEFAULT_FORMAT
 from convert_fdf_image import raw_to_dmk, dmk_to_raw
-COMPONENTS={'DDT.COM':'build/utilities/DDT.COM','DUMP.COM':'build/utilities/DUMP.COM','XSUB.COM':'build/utilities/XSUB.COM','BATCHIO.RSX':'build/rsx/BATCHIO.RSX'}
-PENDING=['Full-screen editor (selection pending)','ZSM4 (release packaging pending)','LINK (release packaging pending)','Z80 disassembler (selection pending)','ARC/BARC and compression tools (design pending)']
+COMPONENTS={'DDT.COM':'build/utilities/DDT.COM','DUMP.COM':'build/utilities/DUMP.COM','XSUB.COM':'build/utilities/XSUB.COM','BATCHIO.RSX':'build/rsx/BATCHIO.RSX','SQ.COM':'build/utilities/SQ.COM','USQ.COM':'build/utilities/USQ.COM','UNCR.COM':'build/utilities/UNCR.COM','CR.COM':'build/utilities/CR.COM','UNLZH.COM':'build/utilities/UNLZH.COM','LZH.COM':'build/utilities/LZH.COM'}
+PENDING=['Full-screen editor (selection pending)','ZSM4 (release packaging pending)','LINK (release packaging pending)','Z80 disassembler (selection pending)','Archive utility (selection pending)']
 sha=lambda data:hashlib.sha256(data).hexdigest()
 
 
-def build(output, artifacts=ROOT):
+def build(output, artifacts=ROOT, ddt_acceptance=None):
     files={name:(artifacts/path).read_bytes() for name,path in COMPONENTS.items()}
     if not all(files.values()):raise ValueError('empty Utilities artifact')
+    accepted=json.loads(ddt_acceptance.read_text()) if ddt_acceptance else None
+    if accepted is not None:
+        if accepted.get('ddt_utilities_acceptance')!='PASS' or accepted.get('ddt_sha256')!=sha(files['DDT.COM']):
+            raise ValueError('DDT acceptance does not match current artifact')
     reports=[]
     output.mkdir(parents=True,exist_ok=True)
     for target in ['z80pack','trs80gp']:
@@ -51,6 +55,15 @@ def build(output, artifacts=ROOT):
             else:image=data
             name=f'BetterCPM-Utilities-{target}-'+('80T-DS-800K.dmk' if native else '332K.dsk')
             reports.append((name,image,{'target':target,'image':name,'sha256':sha(image),'format':fmt.name,'status':'PROVISIONAL','included':[{'name':n,'sha256':sha(d),'bytes':len(d)} for n,d in files.items()],'pending':PENDING,'validation':'file readback and filesystem PASS; native DMK/raw round trip PASS; no whole Utilities release acceptance claimed'}))
+    # Component evidence is valid only for these exact packaged images.
+    for name,data,report in reports:
+        verdict={'status':'PENDING_RELEASE_ACCEPTANCE','sha256':sha(files['DDT.COM'])}
+        if accepted:
+            proof=accepted['platforms'][report['target']]
+            if proof['status']!='PASS' or proof['utilities_sha256']!=sha(data) or proof['ddt_sha256']!=sha(files['DDT.COM']):
+                raise ValueError('DDT acceptance does not match packaged '+name)
+            verdict={'status':'PASS','sha256':sha(files['DDT.COM']),'evidence_sha256':sha(ddt_acceptance.read_bytes())}
+        report['component_acceptance']={'DDT.COM':verdict}
     # Construct and validate both before publishing either named image.
     for name,data,report in reports:
         staged=output/(name+'.tmp');staged.write_bytes(data);staged.replace(output/name)
@@ -64,10 +77,11 @@ def main():
     p.add_argument('--output',type=Path,default=ROOT/'build/utilities-disks')
     p.add_argument('--artifacts',type=Path,default=ROOT)
     p.add_argument('--build',action='store_true',help='freshly build owned Utilities components first')
+    p.add_argument('--ddt-acceptance',type=Path,help='bind a passing DDT campaign to these exact image hashes')
     a=p.parse_args()
     if a.build:
-        for name in ['dump','ddt','batch']:subprocess.run([sys.executable,str(ROOT/'tools'/f'build_{name}.py')],cwd=ROOT,check=True)
-    build(a.output.resolve(),a.artifacts.resolve())
+        for name in ['dump','ddt','batch','sq','usq','uncr','cr','unlzh','lzh']:subprocess.run([sys.executable,str(ROOT/'tools'/f'build_{name}.py')],cwd=ROOT,check=True)
+    build(a.output.resolve(),a.artifacts.resolve(),a.ddt_acceptance)
 
 
 if __name__=='__main__':main()

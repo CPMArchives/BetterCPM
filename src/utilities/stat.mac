@@ -2246,10 +2246,12 @@ MEMREPORT:                              ; report BetterCP/M memory map
         JP      NZ,MEMBAD
         LD      DE,MMEMHEAD
         CALL    PRINT
+        IF LY_TOPRSV NE 0
         LD      HL,LY_LIMIT
         LD      BC,0FFFFH
         LD      DE,MPLATFORM
         CALL    MAPLINE
+        ENDIF
         LD      HL,LY_BUF
         LD      BC,LY_LIMIT-1
         LD      DE,MBUFFERS

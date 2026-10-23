@@ -1,0 +1,1022 @@
+; Independent one-pass CrLZH 20h encoder; no historical restricted source.
+; Adaptive Huffman tree logic follows our independently implemented decoder.
+; First-byte chains skip impossible candidates; monotone distance bounds
+; terminate stale links after ring overwrite without explicit list removal.
+; Test: python3 tools/test_lzh.py
+LZH_CODE MACRO
+LZH_INIT:
+        CALL CX_CHECK_BASE
+        RET C
+        LD HL,LZH_CONTEXT_SIZE
+        CALL CX_CHECK_SIZE
+        RET C
+        CALL CX_CHECK_WRITE
+        RET C
+        PUSH IX
+        POP HL
+        LD DE,16
+        ADD HL,DE
+        LD B,LZH_NAME-16
+        XOR A
+LE_CLEAR_FIXED:
+        LD (HL),A
+        INC HL
+        DJNZ LE_CLEAR_FIXED
+        LD B,LZH_NAME_SIZE
+LE_NAME_LOOP:
+        LD A,(HL)
+        OR A
+        JR Z,LE_NAME_OK
+        INC HL
+        INC (IX+LZH_NAMLEN)
+        DJNZ LE_NAME_LOOP
+        LD E,LHD_NAME
+        LD A,CS_CONFIG
+        JP CX_FAIL
+LE_NAME_OK:
+        PUSH IX
+        POP HL
+        LD DE,LZH_RING
+        ADD HL,DE
+        LD D,H
+        LD E,L
+        INC DE
+        LD (HL),' '
+        LD BC,2047
+        LDIR
+        CALL LE_START_TREE
+        CALL LE_START_CHAINS
+        JP CX_READY
+LE_TREE_ERROR:
+        LD E,LHD_TREE
+        LD A,CS_CORRUPT
+        JP CX_FAIL
+; Preserve all live primary pairs across arbitrary callback clobbering.
+LE_WRITE:
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        CALL CX_CALL_WRITE
+        POP HL
+        POP DE
+        POP BC
+        RET NC
+        JP CX_WRITE_ERROR
+LE_READ:
+        PUSH    BC
+        PUSH    DE
+        PUSH    HL
+        CALL    CX_CALL_READ
+        JR      C,LE_READ_EVENT
+        LD      C,A
+        LD      E,A
+        LD      D,0
+        LD      L,(IX+LZH_SUM)
+        LD      H,(IX+LZH_SUM+1)
+        ADD     HL,DE
+        LD      (IX+LZH_SUM),L
+        LD      (IX+LZH_SUM+1),H
+        INC     (IX+LZH_COUNT)
+        JR      NZ,LE_READ_OK
+        INC     (IX+LZH_COUNT+1)
+        JR      NZ,LE_READ_OK
+        INC     (IX+LZH_COUNT+2)
+        JR      NZ,LE_READ_OK
+        INC     (IX+LZH_COUNT+3)
+        JR      NZ,LE_READ_OK
+        POP     HL
+        POP     DE
+        POP     BC
+        LD      E,LHD_COUNT
+        LD      A,CS_SPACE
+        JP      CX_FAIL
+LE_READ_OK:
+        LD      A,C
+        POP     HL
+        POP     DE
+        POP     BC
+        OR      A
+        RET
+LE_READ_EVENT:
+        POP     HL
+        POP     DE
+        POP     BC
+        OR      A
+        JP      NZ,CX_READ_ERROR
+        SCF
+        RET
+
+
+; Indexed word tables: HL=index, DE=value. Preserve HL/BC; setters also DE.
+; Internal callers validate or construct indices in range before access.
+LE_GET_FREQ:
+        PUSH BC
+        LD BC,LZH_FREQ
+        JP LE_GET_WORD
+LE_GET_SON:
+        PUSH BC
+        LD BC,LZH_SON
+        JP LE_GET_WORD
+LE_GET_PARENT:
+        PUSH BC
+        LD BC,LZH_PARENT
+        JP LE_GET_WORD
+LE_GET_WORD:
+        PUSH HL
+        ADD HL,HL
+        ADD HL,BC
+        PUSH IX
+        POP BC
+        ADD HL,BC
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        POP HL
+        POP BC
+        RET
+LE_SET_FREQ:
+        PUSH BC
+        LD BC,LZH_FREQ
+        JP LE_SET_WORD
+LE_SET_SON:
+        PUSH BC
+        LD BC,LZH_SON
+        JP LE_SET_WORD
+LE_SET_PARENT:
+        PUSH BC
+        LD BC,LZH_PARENT
+        JP LE_SET_WORD
+LE_SET_WORD:
+        PUSH HL
+        ADD HL,HL
+        ADD HL,BC
+        PUSH IX
+        POP BC
+        ADD HL,BC
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        POP HL
+        POP BC
+        RET
+LE_START_TREE:
+        LD BC,0
+LE_START_LEAF:
+        LD H,B
+        LD L,C
+        LD DE,1
+        CALL LE_SET_FREQ
+        LD DE,LZH_T
+        ADD HL,DE
+        EX DE,HL
+        LD H,B
+        LD L,C
+        CALL LE_SET_SON
+        EX DE,HL
+        LD D,B
+        LD E,C
+        CALL LE_SET_PARENT
+        INC BC
+        LD A,B
+        CP 1
+        JR NZ,LE_START_LEAF
+        LD A,C
+        CP 59
+        JR NZ,LE_START_LEAF
+        LD (IX+LZH_I),0
+        LD (IX+LZH_I+1),0
+        LD (IX+LZH_J),59
+        LD (IX+LZH_J+1),1
+LE_START_BRANCH:
+        LD L,(IX+LZH_I)
+        LD H,(IX+LZH_I+1)
+        CALL LE_GET_FREQ
+        LD B,D
+        LD C,E
+        INC HL
+        CALL LE_GET_FREQ
+        EX DE,HL
+        ADD HL,BC
+        EX DE,HL
+        LD L,(IX+LZH_J)
+        LD H,(IX+LZH_J+1)
+        CALL LE_SET_FREQ
+        LD E,(IX+LZH_I)
+        LD D,(IX+LZH_I+1)
+        CALL LE_SET_SON
+        EX DE,HL
+        CALL LE_SET_PARENT
+        INC HL
+        CALL LE_SET_PARENT
+        LD L,(IX+LZH_I)
+        LD H,(IX+LZH_I+1)
+        INC HL
+        INC HL
+        LD (IX+LZH_I),L
+        LD (IX+LZH_I+1),H
+        LD L,(IX+LZH_J)
+        LD H,(IX+LZH_J+1)
+        INC HL
+        LD (IX+LZH_J),L
+        LD (IX+LZH_J+1),H
+        LD DE,LZH_T
+        OR A
+        SBC HL,DE
+        JR NZ,LE_START_BRANCH
+        LD HL,LZH_T
+        LD DE,0FFFFH
+        CALL LE_SET_FREQ
+        LD HL,LZH_ROOT
+        LD DE,0
+        JP LE_SET_PARENT
+
+; HL=node/leaf reference -> NC if <944. Tree node test returns C if <629.
+LE_CHECK_REFERENCE:
+        LD A,H
+        CP 3
+        JR C,LE_REFERENCE_OK
+        JP NZ,LE_TREE_ERROR
+        LD A,L
+        CP 0B0H
+        JP NC,LE_TREE_ERROR
+LE_REFERENCE_OK:
+        OR A
+        RET
+LE_IS_NODE:
+        LD A,H
+        CP 2
+        RET NZ
+        LD A,L
+        CP 075H
+        RET
+; Set parent of a leaf, or both children of an internal sibling pair.
+LE_LINK:
+        CALL LE_CHECK_REFERENCE
+        RET C
+        CALL LE_SET_PARENT
+        CALL LE_IS_NODE
+        JR NC,LE_LINK_DONE
+        INC HL
+        LD A,H
+        CP 2
+        JR NZ,LE_LINK_SECOND
+        LD A,L
+        CP 075H
+        JP NC,LE_TREE_ERROR
+LE_LINK_SECOND:
+        CALL LE_SET_PARENT
+LE_LINK_DONE:
+        XOR A
+        RET
+
+; In-place adaptive-Huffman update, preserving exact equal-weight ordering.
+LE_UPDATE:
+        LD HL,LZH_ROOT
+        CALL LE_GET_FREQ
+        LD A,D
+        CP 080H
+        JR C,LE_UPDATE_BEGIN
+        JP NZ,LE_TREE_ERROR
+        LD A,E
+        OR A
+        JP NZ,LE_TREE_ERROR
+        CALL LE_REBUILD
+        RET C
+LE_UPDATE_BEGIN:
+        LD L,(IX+LZH_SYMBOL)
+        LD H,(IX+LZH_SYMBOL+1)
+        LD DE,LZH_T
+        ADD HL,DE
+        CALL LE_GET_PARENT
+        LD (IX+LZH_CUR),E
+        LD (IX+LZH_CUR+1),D
+        LD (IX+LZH_HOPS),0
+        LD (IX+LZH_HOPS+1),0
+LE_UPDATE_LOOP:
+        LD L,(IX+LZH_CUR)
+        LD H,(IX+LZH_CUR+1)
+        CALL LE_IS_NODE
+        JP NC,LE_TREE_ERROR
+        LD E,(IX+LZH_HOPS)
+        LD D,(IX+LZH_HOPS+1)
+        INC DE
+        LD (IX+LZH_HOPS),E
+        LD (IX+LZH_HOPS+1),D
+        LD A,D
+        CP 2
+        JR C,LE_UPDATE_FREQ
+        JP NZ,LE_UPDATE_BAD
+        LD A,E
+        CP 075H
+        JP NC,LE_UPDATE_BAD
+LE_UPDATE_FREQ:
+        CALL LE_GET_FREQ
+        INC DE
+        LD (IX+LZH_F),E
+        LD (IX+LZH_F+1),D
+        CALL LE_SET_FREQ
+        INC HL
+        CALL LE_GET_FREQ
+        LD B,H
+        LD C,L
+        LD L,(IX+LZH_F)
+        LD H,(IX+LZH_F+1)
+        OR A
+        SBC HL,DE
+        JP C,LE_UPDATE_PARENT
+        JP Z,LE_UPDATE_PARENT
+        LD H,B
+        LD L,C
+LE_UPDATE_SEARCH:
+        INC HL
+        LD A,H
+        CP 2
+        JR C,LE_UPDATE_COMPARE
+        JP NZ,LE_TREE_ERROR
+        LD A,L
+        CP 076H
+        JP NC,LE_TREE_ERROR
+LE_UPDATE_COMPARE:
+        CALL LE_GET_FREQ
+        PUSH HL
+        LD L,(IX+LZH_F)
+        LD H,(IX+LZH_F+1)
+        OR A
+        SBC HL,DE
+        POP HL
+        JR C,LE_UPDATE_FOUND
+        JR Z,LE_UPDATE_FOUND
+        JR LE_UPDATE_SEARCH
+LE_UPDATE_FOUND:
+        DEC HL
+        LD (IX+LZH_K),L
+        LD (IX+LZH_K+1),H
+        CALL LE_GET_FREQ
+        LD L,(IX+LZH_CUR)
+        LD H,(IX+LZH_CUR+1)
+        CALL LE_SET_FREQ
+        CALL LE_GET_SON
+        LD (IX+LZH_LEFT),E
+        LD (IX+LZH_LEFT+1),D
+        LD L,(IX+LZH_K)
+        LD H,(IX+LZH_K+1)
+        LD E,(IX+LZH_F)
+        LD D,(IX+LZH_F+1)
+        CALL LE_SET_FREQ
+        CALL LE_GET_SON
+        LD (IX+LZH_RIGHT),E
+        LD (IX+LZH_RIGHT+1),D
+        LD E,(IX+LZH_LEFT)
+        LD D,(IX+LZH_LEFT+1)
+        CALL LE_SET_SON
+        ; LEFT's children now belong to K; RIGHT's now belong to CUR.
+        LD L,(IX+LZH_LEFT)
+        LD H,(IX+LZH_LEFT+1)
+        LD E,(IX+LZH_K)
+        LD D,(IX+LZH_K+1)
+        CALL LE_LINK
+        RET C
+        LD L,(IX+LZH_CUR)
+        LD H,(IX+LZH_CUR+1)
+        LD E,(IX+LZH_RIGHT)
+        LD D,(IX+LZH_RIGHT+1)
+        CALL LE_SET_SON
+        EX DE,HL
+        CALL LE_LINK
+        RET C
+        LD L,(IX+LZH_K)
+        LD H,(IX+LZH_K+1)
+        LD (IX+LZH_CUR),L
+        LD (IX+LZH_CUR+1),H
+LE_UPDATE_PARENT:
+        LD L,(IX+LZH_CUR)
+        LD H,(IX+LZH_CUR+1)
+        CALL LE_GET_PARENT
+        LD (IX+LZH_CUR),E
+        LD (IX+LZH_CUR+1),D
+        LD A,D
+        OR E
+        JP NZ,LE_UPDATE_LOOP
+        XOR A
+        RET
+LE_UPDATE_BAD:
+        JP LE_TREE_ERROR
+
+; Collect leaves, halve rounded-up frequencies, and reinsert combined nodes.
+LE_REBUILD:
+        LD (IX+LZH_I),0
+        LD (IX+LZH_I+1),0
+        LD (IX+LZH_J),0
+        LD (IX+LZH_J+1),0
+LE_COLLECT:
+        LD L,(IX+LZH_I)
+        LD H,(IX+LZH_I+1)
+        CALL LE_GET_SON
+        EX DE,HL
+        CALL LE_IS_NODE
+        JR C,LE_COLLECT_NEXT
+        CALL LE_CHECK_REFERENCE
+        RET C
+        LD (IX+LZH_TEMP),L
+        LD (IX+LZH_TEMP+1),H
+        LD L,(IX+LZH_I)
+        LD H,(IX+LZH_I+1)
+        CALL LE_GET_FREQ
+        INC DE
+        SRL D
+        RR E
+        LD L,(IX+LZH_J)
+        LD H,(IX+LZH_J+1)
+        CALL LE_SET_FREQ
+        LD E,(IX+LZH_TEMP)
+        LD D,(IX+LZH_TEMP+1)
+        CALL LE_SET_SON
+        INC HL
+        LD (IX+LZH_J),L
+        LD (IX+LZH_J+1),H
+LE_COLLECT_NEXT:
+        LD L,(IX+LZH_I)
+        LD H,(IX+LZH_I+1)
+        INC HL
+        LD (IX+LZH_I),L
+        LD (IX+LZH_I+1),H
+        LD DE,LZH_T
+        OR A
+        SBC HL,DE
+        JR NZ,LE_COLLECT
+        LD L,(IX+LZH_J)
+        LD H,(IX+LZH_J+1)
+        LD DE,LZH_NCHAR
+        OR A
+        SBC HL,DE
+        JP NZ,LE_TREE_ERROR
+        LD (IX+LZH_I),0
+        LD (IX+LZH_I+1),0
+LE_REBUILD_BRANCH:
+        LD L,(IX+LZH_I)
+        LD H,(IX+LZH_I+1)
+        CALL LE_GET_FREQ
+        LD B,D
+        LD C,E
+        INC HL
+        CALL LE_GET_FREQ
+        EX DE,HL
+        ADD HL,BC
+        LD (IX+LZH_F),L
+        LD (IX+LZH_F+1),H
+        LD L,(IX+LZH_J)
+        LD H,(IX+LZH_J+1)
+        DEC HL
+LE_REBUILD_SEARCH:
+        CALL LE_GET_FREQ
+        PUSH HL
+        LD L,(IX+LZH_F)
+        LD H,(IX+LZH_F+1)
+        OR A
+        SBC HL,DE
+        POP HL
+        JR NC,LE_REBUILD_INSERT
+        LD A,H
+        OR L
+        JP Z,LE_TREE_ERROR
+        DEC HL
+        JR LE_REBUILD_SEARCH
+LE_REBUILD_INSERT:
+        INC HL
+        LD (IX+LZH_K),L
+        LD (IX+LZH_K+1),H
+        LD L,(IX+LZH_J)
+        LD H,(IX+LZH_J+1)
+LE_REBUILD_MOVE:
+        LD E,(IX+LZH_K)
+        LD D,(IX+LZH_K+1)
+        OR A
+        SBC HL,DE
+        JR Z,LE_REBUILD_PLACE
+        ADD HL,DE
+        DEC HL
+        CALL LE_GET_FREQ
+        INC HL
+        CALL LE_SET_FREQ
+        DEC HL
+        CALL LE_GET_SON
+        INC HL
+        CALL LE_SET_SON
+        DEC HL
+        JR LE_REBUILD_MOVE
+LE_REBUILD_PLACE:
+        LD L,(IX+LZH_K)
+        LD H,(IX+LZH_K+1)
+        LD E,(IX+LZH_F)
+        LD D,(IX+LZH_F+1)
+        CALL LE_SET_FREQ
+        LD E,(IX+LZH_I)
+        LD D,(IX+LZH_I+1)
+        CALL LE_SET_SON
+        INC DE
+        INC DE
+        LD (IX+LZH_I),E
+        LD (IX+LZH_I+1),D
+        LD L,(IX+LZH_J)
+        LD H,(IX+LZH_J+1)
+        INC HL
+        LD (IX+LZH_J),L
+        LD (IX+LZH_J+1),H
+        LD DE,LZH_T
+        OR A
+        SBC HL,DE
+        JP NZ,LE_REBUILD_BRANCH
+        LD (IX+LZH_I),0
+        LD (IX+LZH_I+1),0
+LE_REBUILD_PARENTS:
+        LD L,(IX+LZH_I)
+        LD H,(IX+LZH_I+1)
+        CALL LE_GET_SON
+        EX DE,HL
+        CALL LE_LINK
+        RET C
+        LD L,(IX+LZH_I)
+        LD H,(IX+LZH_I+1)
+        INC HL
+        LD (IX+LZH_I),L
+        LD (IX+LZH_I+1),H
+        LD DE,LZH_T
+        OR A
+        SBC HL,DE
+        JR NZ,LE_REBUILD_PARENTS
+        LD HL,LZH_ROOT
+        LD DE,0
+        CALL LE_SET_PARENT
+        INC (IX+LZH_REBUILDS)
+        JR NZ,LE_REBUILT
+        INC (IX+LZH_REBUILDS+1)
+LE_REBUILT:
+        XOR A
+        RET
+
+; A=0/1 -> packed MSB-first output. Pairs preserved, NC on success.
+LE_BIT:
+        SLA (IX+LZH_BYTE)
+        OR (IX+LZH_BYTE)
+        LD (IX+LZH_BYTE),A
+        INC (IX+LZH_BITS)
+        LD A,(IX+LZH_BITS)
+        CP 8
+        JR Z,LE_BIT_FLUSH
+        OR A
+        RET
+LE_BIT_FLUSH:
+        LD A,(IX+LZH_BYTE)
+        CALL LE_WRITE
+        RET C
+        LD (IX+LZH_BYTE),0
+        LD (IX+LZH_BITS),0
+        OR A
+        RET
+; HL=symbol. Capture the leaf-to-root path before updating the tree.
+LE_SYMBOL:
+        LD (IX+LZH_SYMBOL),L
+        LD (IX+LZH_SYMBOL+1),H
+        LD DE,LZH_T
+        ADD HL,DE
+        CALL LE_GET_PARENT
+        EX DE,HL
+        LD BC,0
+LE_PATH_WALK:
+        LD A,H
+        CP 2
+        JR NZ,LE_PATH_STEP
+        LD A,L
+        CP 074H
+        JR Z,LE_PATH_READY
+LE_PATH_STEP:
+        CALL LE_IS_NODE
+        JP NC,LE_TREE_ERROR
+        LD A,B
+        CP 2
+        JR C,LE_PATH_STORE
+        JP NZ,LE_TREE_ERROR
+        LD A,C
+        CP 075H
+        JP NC,LE_TREE_ERROR
+LE_PATH_STORE:
+        PUSH HL
+        LD A,L
+        AND 1
+        PUSH AF
+        PUSH IX
+        POP HL
+        LD DE,LZH_PATH
+        ADD HL,DE
+        ADD HL,BC
+        POP AF
+        LD (HL),A
+        POP HL
+        INC BC
+        CALL LE_GET_PARENT
+        EX DE,HL
+        JR LE_PATH_WALK
+LE_PATH_READY:
+        LD (IX+LZH_PATHLEN),C
+        LD (IX+LZH_PATHLEN+1),B
+        PUSH IX
+        POP HL
+        LD DE,LZH_PATH
+        ADD HL,DE
+        ADD HL,BC
+LE_PATH_EMIT:
+        LD A,B
+        OR C
+        JR Z,LE_PATH_DONE
+        DEC HL
+        LD A,(HL)
+        CALL LE_BIT
+        RET C
+        DEC BC
+        JR LE_PATH_EMIT
+LE_PATH_DONE:
+        JP LE_UPDATE
+; Refill the bounded lookahead; physical EOF is normal, callback errors latch.
+LE_FILL:
+        LD A,(IX+LZH_EOF)
+        OR A
+        RET NZ
+LE_FILL_LOOP:
+        LD A,(IX+LZH_LEN)
+        CP 60
+        RET Z
+        CALL LE_READ
+        JR C,LE_FILL_EVENT
+        LD C,A
+        PUSH IX
+        POP HL
+        LD DE,LZH_LOOK
+        ADD HL,DE
+        LD E,(IX+LZH_LEN)
+        LD D,0
+        ADD HL,DE
+        LD (HL),C
+        INC (IX+LZH_LEN)
+        JR LE_FILL_LOOP
+LE_FILL_EVENT:
+        OR A
+        SCF
+        RET NZ
+        LD (IX+LZH_EOF),1
+        OR A
+        RET
+; HL=ring index, returns address, DE scratch.
+LE_RING_ADDR:
+        LD DE,LZH_RING
+        ADD HL,DE
+        PUSH IX
+        POP DE
+        ADD HL,DE
+        RET
+LE_GET_HEAD:
+        PUSH BC
+        LD BC,LZH_HEADS
+        JP LE_GET_WORD
+LE_SET_HEAD:
+        PUSH BC
+        LD BC,LZH_HEADS
+        JP LE_SET_WORD
+LE_GET_NEXT:
+        PUSH BC
+        LD BC,LZH_NEXT
+        JP LE_GET_WORD
+LE_SET_NEXT:
+        PUSH BC
+        LD BC,LZH_NEXT
+        JP LE_SET_WORD
+LE_START_CHAINS:
+        PUSH IX
+        POP HL
+        LD DE,LZH_HEADS
+        ADD HL,DE
+        LD D,H
+        LD E,L
+        INC DE
+        LD (HL),0FFH
+        LD BC,511
+        LDIR
+        LD HL,32
+        LD DE,2047
+        CALL LE_SET_HEAD
+        LD HL,0
+        LD DE,0FFFFH
+LE_CHAIN_INIT:
+        CALL LE_SET_NEXT
+        LD D,H
+        LD E,L
+        INC HL
+        LD A,H
+        CP 8
+        JR NZ,LE_CHAIN_INIT
+        RET
+; Nearest matching byte first. Overwritten links either point at another
+; byte or have nonincreasing distance; all older links are then obsolete.
+LE_FIND:
+        LD (IX+LZH_BEST),0
+        LD (IX+LZH_LASTDIST),0
+        LD (IX+LZH_LASTDIST+1),0
+        PUSH IX
+        POP HL
+        LD DE,LZH_LOOK
+        ADD HL,DE
+        LD B,(HL)
+        LD L,B
+        LD H,0
+        CALL LE_GET_HEAD
+        EX DE,HL
+LE_FIND_CANDIDATE:
+        LD A,H
+        CP 8
+        RET NC
+        LD (IX+LZH_SCANPOS),L
+        LD (IX+LZH_SCANPOS+1),H
+        EX DE,HL
+        LD L,(IX+LZH_WRITEPOS)
+        LD H,(IX+LZH_WRITEPOS+1)
+        OR A
+        SBC HL,DE
+        LD A,H
+        AND 7
+        LD H,A
+        OR L
+        JR NZ,LE_FIND_DISTANCE
+        LD H,8
+LE_FIND_DISTANCE:
+        LD E,(IX+LZH_LASTDIST)
+        LD D,(IX+LZH_LASTDIST+1)
+        PUSH HL
+        OR A
+        SBC HL,DE
+        POP HL
+        RET C
+        RET Z
+        LD (IX+LZH_DISTANCE),L
+        LD (IX+LZH_DISTANCE+1),H
+        LD (IX+LZH_LASTDIST),L
+        LD (IX+LZH_LASTDIST+1),H
+        LD L,(IX+LZH_SCANPOS)
+        LD H,(IX+LZH_SCANPOS+1)
+        CALL LE_RING_ADDR
+        LD A,(HL)
+        CP B
+        RET NZ
+        LD C,1
+LE_MATCH_LOOP:
+        LD A,(IX+LZH_LEN)
+        CP C
+        JR Z,LE_MATCH_END
+        LD A,(IX+LZH_DISTANCE+1)
+        OR A
+        JR NZ,LE_MATCH_RING
+        LD A,C
+        SUB (IX+LZH_DISTANCE)
+        JR C,LE_MATCH_RING
+        LD E,A
+        LD D,0
+        PUSH IX
+        POP HL
+        ADD HL,DE
+        LD DE,LZH_LOOK
+        ADD HL,DE
+        JR LE_MATCH_COMPARE
+LE_MATCH_RING:
+        LD L,(IX+LZH_SCANPOS)
+        LD H,(IX+LZH_SCANPOS+1)
+        LD E,C
+        LD D,0
+        ADD HL,DE
+        LD A,H
+        AND 7
+        LD H,A
+        CALL LE_RING_ADDR
+LE_MATCH_COMPARE:
+        LD A,(HL)
+        PUSH AF
+        PUSH IX
+        POP HL
+        LD DE,LZH_LOOK
+        ADD HL,DE
+        LD E,C
+        LD D,0
+        ADD HL,DE
+        POP AF
+        CP (HL)
+        JR NZ,LE_MATCH_END
+        INC C
+        JR LE_MATCH_LOOP
+LE_MATCH_END:
+        LD A,(IX+LZH_BEST)
+        CP C
+        JR NC,LE_FIND_NEXT
+        LD (IX+LZH_BEST),C
+        LD E,(IX+LZH_DISTANCE)
+        LD D,(IX+LZH_DISTANCE+1)
+        LD (IX+LZH_BESTDIST),E
+        LD (IX+LZH_BESTDIST+1),D
+        LD A,(IX+LZH_LEN)
+        CP C
+        RET Z
+LE_FIND_NEXT:
+        LD L,(IX+LZH_SCANPOS)
+        LD H,(IX+LZH_SCANPOS+1)
+        CALL LE_GET_NEXT
+        EX DE,HL
+        JP LE_FIND_CANDIDATE
+; Position encoding for 20h: canonical prefix of upper six bits, five low bits.
+LE_POSITION:
+        LD L,(IX+LZH_BESTDIST)
+        LD H,(IX+LZH_BESTDIST+1)
+        DEC HL
+        LD A,L
+        AND 31
+        LD (IX+LZH_POSLOW),A
+        LD B,5
+LE_POS_SHIFT:
+        SRL H
+        RR L
+        DJNZ LE_POS_SHIFT
+        LD E,L
+        LD D,0
+        LD HL,LE_POS_LENGTH
+        ADD HL,DE
+        LD B,(HL)
+        LD HL,LE_POS_CODE
+        ADD HL,DE
+        LD C,(HL)
+LE_POS_PREFIX:
+        SLA C
+        LD A,0
+        ADC A,0
+        CALL LE_BIT
+        RET C
+        DJNZ LE_POS_PREFIX
+        LD A,(IX+LZH_POSLOW)
+        ADD A,A
+        ADD A,A
+        ADD A,A
+        LD C,A
+        LD B,5
+LE_POS_LOW:
+        SLA C
+        LD A,0
+        ADC A,0
+        CALL LE_BIT
+        RET C
+        DJNZ LE_POS_LOW
+        OR A
+        RET
+; Commit the chosen input bytes to history, then compact the lookahead.
+LE_CONSUME:
+        PUSH IX
+        POP HL
+        LD DE,LZH_LOOK
+        ADD HL,DE
+        LD B,(IX+LZH_TAKE)
+LE_CONSUME_LOOP:
+        LD C,(HL)
+        PUSH HL
+        LD L,C
+        LD H,0
+        CALL LE_GET_HEAD
+        LD L,(IX+LZH_WRITEPOS)
+        LD H,(IX+LZH_WRITEPOS+1)
+        CALL LE_SET_NEXT
+        LD D,H
+        LD E,L
+        LD L,C
+        LD H,0
+        CALL LE_SET_HEAD
+        EX DE,HL
+        PUSH HL
+        CALL LE_RING_ADDR
+        LD (HL),C
+        POP HL
+        INC HL
+        LD A,H
+        AND 7
+        LD (IX+LZH_WRITEPOS),L
+        LD (IX+LZH_WRITEPOS+1),A
+        POP HL
+        INC HL
+        DJNZ LE_CONSUME_LOOP
+        LD A,(IX+LZH_LEN)
+        SUB (IX+LZH_TAKE)
+        LD (IX+LZH_LEN),A
+        OR A
+        RET Z
+        LD C,A
+        LD B,0
+        PUSH IX
+        POP DE
+        PUSH HL
+        LD HL,LZH_LOOK
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+        LDIR
+        RET
+LZH_RUN:
+        LD A,(IX+CX_PHASE)
+        CP CP_DONE
+        JP Z,CX_DONE
+        LD A,CP_READY
+        CALL CX_CHECK_STATE
+        RET C
+        CALL CX_DATA
+        LD A,076H
+        CALL LE_WRITE
+        RET C
+        LD A,0FDH
+        CALL LE_WRITE
+        RET C
+        PUSH IX
+        POP HL
+        LD DE,LZH_NAME
+        ADD HL,DE
+        LD B,(IX+LZH_NAMLEN)
+        INC B
+LE_HEADER_NAME:
+        LD A,(HL)
+        CALL LE_WRITE
+        RET C
+        INC HL
+        DJNZ LE_HEADER_NAME
+        LD HL,LE_HEADER_INFO
+        LD B,4
+LE_HEADER_FIELDS:
+        LD A,(HL)
+        CALL LE_WRITE
+        RET C
+        INC HL
+        DJNZ LE_HEADER_FIELDS
+LE_RUN_LOOP:
+        CALL LE_FILL
+        RET C
+        LD A,(IX+LZH_LEN)
+        OR A
+        JR Z,LE_FINISH
+        CALL LE_FIND
+        LD A,(IX+LZH_BEST)
+        CP 3
+        JR C,LE_LITERAL
+        LD (IX+LZH_TAKE),A
+        LD L,A
+        LD H,0
+        LD DE,254
+        ADD HL,DE
+        CALL LE_SYMBOL
+        RET C
+        CALL LE_POSITION
+        RET C
+        JR LE_TOKEN_DONE
+LE_LITERAL:
+        LD (IX+LZH_TAKE),1
+        PUSH IX
+        POP HL
+        LD DE,LZH_LOOK
+        ADD HL,DE
+        LD L,(HL)
+        LD H,0
+        CALL LE_SYMBOL
+        RET C
+LE_TOKEN_DONE:
+        CALL LE_CONSUME
+        JP LE_RUN_LOOP
+LE_FINISH:
+        LD HL,256
+        CALL LE_SYMBOL
+        RET C
+LE_PAD:
+        LD A,(IX+LZH_BITS)
+        OR A
+        JR Z,LE_TRAILER
+        XOR A
+        CALL LE_BIT
+        RET C
+        JR LE_PAD
+LE_TRAILER:
+        LD A,(IX+LZH_SUM)
+        CALL LE_WRITE
+        RET C
+        LD A,(IX+LZH_SUM+1)
+        CALL LE_WRITE
+        RET C
+        JP CX_DONE
+LE_HEADER_INFO:
+        DB 020H,020H,0,5
+LE_POS_LENGTH:
+        DB 3,4,4,4,5,5,5,5,5,5,5,5,6,6,6,6
+        DB 6,6,6,6,6,6,6,6,7,7,7,7,7,7,7,7
+        DB 7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7
+        DB 8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8
+LE_POS_CODE:
+        DB 0,32,48,64,80,88,96,104,112,120,128,136,144,148,152,156
+        DB 160,164,168,172,176,180,184,188,192,194,196,198,200,202,204,206
+        DB 208,210,212,214,216,218,220,222,224,226,228,230,232,234,236,238
+        DB 240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255
+        ENDM

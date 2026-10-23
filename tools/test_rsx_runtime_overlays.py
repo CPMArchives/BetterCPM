@@ -33,9 +33,9 @@ def file_stub(work: Path) -> bytes:
         ENDM
 OPEN:   XOR     A
         LD      ({COUNT:04X}H),A
-        LD      (0ED13H),A
+        LD      (0{LAYOUT['FILE']+141:04X}H),A
         LD      A,120
-        LD      (0ED02H),A
+        LD      (0{LAYOUT['FILE']+124:04X}H),A
         XOR     A
         RET
 RESET:  XOR     A
@@ -66,9 +66,9 @@ NEXTREC:
         LD      A,({COUNT:04X}H)
         INC     A
         LD      ({COUNT:04X}H),A
-        LD      A,(0ED13H)
+        LD      A,(0{LAYOUT['FILE']+141:04X}H)
         ADD     A,4
-        LD      (0ED13H),A
+        LD      (0{LAYOUT['FILE']+141:04X}H),A
         XOR     A
         RET
         END

@@ -282,7 +282,9 @@ def boot(target, image, out, root, simulator, emulator):
             raise ValueError('cpmsim boot/system/provider identity missing')
         if ed_identity not in text:
             raise ValueError('installed ED identity missing; see boot.txt')
-        if text.count(identity) != 2:
+        # Styled cold banner separates product and release onto different lines.
+        # Its unique operator hint must appear once; VER supplies the compact identity.
+        if text.count('Type TYPE README.TXT for more') != 1 or text.count(identity) != 1:
             raise ValueError('cold banner missing or repeated on warm boot; see boot.txt')
         if 'Error' in text or 'NOT FOUND' in text:
             raise ValueError('cpmsim command failure; see boot.txt')
