@@ -52,7 +52,7 @@ All membership or layout changes require discussion with the maintainer.
 - LINK
 - DDT.COM: initial DRI-compatible debugger adaptation with shared line editing and `/VER`; [engineering specification](../engineering/DDT%20Specification.md). Exact historical reproduction is retained separately as the verification baseline. Model 4 real-screen/physical-keyboard, native/cross and BetterCP/M cpmsim qualification pass; [Model 4 evidence](../engineering/DDT%20Model%204%20Qualification.md).
 - Standalone Z80 disassembler: exact program TBD.
-- Archive utility: likely LU or NULU; selection TBD. A general ARC/BARC utility with format-specific overlays is also a design candidate; see the archive-utility design item in [TODO](../../TODO.md).
+- Noah’s ARK (`NOAH.COM` with `NOAH.OVL`): selected unified archive utility, targeting CP/M `.ARK` and `.LBR` containers. The [engineering specification](../engineering/NOAH%20Specification.md) behavioral baseline is complete; implementation is pending as post-1.0 work.
 - SQ.COM and USQ.COM: standalone Z80 squeeze/unsqueeze commands using the
   common codec ABI, two-pass SQ input, optional destination drive and temporary
   output that is published only after successful processing and closes.
@@ -85,7 +85,7 @@ All membership or layout changes require discussion with the maintainer.
   for UNLZH. Existing outputs are refused.
 - Standalone compression commands are implemented.
   Individual commands are sufficient for release 1.0. A unified archive/codec
-  interface, including the ARC/BARC design candidate, is post-1.0 work.
+  interface through Noah’s ARK is post-1.0 work.
 - Broader development/userland tools generally belong here; individual additions
   still require selection.
 
