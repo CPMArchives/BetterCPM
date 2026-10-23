@@ -52,7 +52,7 @@ All membership or layout changes require discussion with the maintainer.
 - LINK
 - DDT.COM: initial DRI-compatible debugger adaptation with shared line editing and `/VER`; [engineering specification](../engineering/DDT%20Specification.md). Exact historical reproduction is retained separately as the verification baseline. Model 4 real-screen/physical-keyboard, native/cross and BetterCP/M cpmsim qualification pass; [Model 4 evidence](../engineering/DDT%20Model%204%20Qualification.md).
 - Standalone Z80 disassembler: exact program TBD.
-- Noah’s ARK (`NOAH.COM` with `NOAH.OVL`): selected unified archive utility, targeting CP/M `.ARK` and `.LBR` containers. The [engineering specification](../engineering/NOAH%20Specification.md) behavioral baseline is complete; implementation is pending as post-1.0 work.
+- Noah’s ARK (`NOAH.COM` with `NOAH.OVL`): selected unified archive utility, targeting CP/M `.ARK` and `.LBR` containers. The [engineering specification](../engineering/NOAH%20Specification.md) behavioral baseline is complete; implementation has begun with a development-only LBR reader/listing command; the complete interface remains post-1.0 work. This foundation is not yet included on disk.
 - SQ.COM and USQ.COM: standalone Z80 squeeze/unsqueeze commands using the
   common codec ABI, two-pass SQ input, optional destination drive and temporary
   output that is published only after successful processing and closes.

@@ -1,0 +1,299 @@
+ARCHIVE_CPM_CODE MACRO
+AC_OPEN:
+        PUSH IY
+        CALL AC_WORK
+        LD A,(IY+AP_OPENED)
+        OR A
+        JR Z,AC_OPEN_NEW
+        POP IY
+        LD A,AS_STATE
+        SCF
+        RET
+AC_OPEN_NEW:
+        PUSH IY
+        POP DE
+        LD C,15
+        CALL AC_BDOS
+        CP 0FFH
+        JR Z,AC_OPEN_FAIL
+        LD (IY+AP_OPENED),1
+        LD C,35
+        CALL AC_BDOS
+        OR A
+        JR NZ,AC_OPEN_FAIL
+        LD L,(IY+33)
+        LD H,(IY+34)
+        LD C,(IY+35)
+        LD B,0
+        LD A,7
+AC_SIZE_SHIFT:
+        ADD HL,HL
+        RL C
+        RL B
+        DEC A
+        JR NZ,AC_SIZE_SHIFT
+        LD DE,AS_FILE_SIZE
+        CALL LB_STORE32
+        LD HL,AC_READ
+        LD (IX+AS_READ),L
+        LD (IX+AS_READ+1),H
+        POP IY
+        JP LBR_OPEN
+AC_OPEN_FAIL:
+        POP IY
+        LD (IX+AS_DETAIL),A
+        LD A,AS_IO
+        SCF
+        RET
+AC_CLOSE:
+        PUSH IY
+        CALL AC_WORK
+        LD A,(IY+AP_OPENED)
+        OR A
+        JR Z,AC_CLOSED
+        PUSH IY
+        POP DE
+        LD C,16
+        CALL AC_BDOS
+        CP 0FFH
+        JR Z,AC_OPEN_FAIL
+        LD (IY+AP_OPENED),0
+AC_CLOSED:
+        POP IY
+        JP LBR_CLOSE
+AC_WORK:
+        LD L,(IX+AS_USER)
+        LD H,(IX+AS_USER+1)
+        PUSH HL
+        POP IY
+        RET
+AC_BDOS:
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        PUSH IX
+        PUSH IY
+        CALL 5
+        POP IY
+        POP IX
+        POP HL
+        POP DE
+        POP BC
+        RET
+AC_READ:
+        PUSH IY
+        CALL AC_WORK
+        LD A,(IY+AP_OPENED)
+        OR A
+        LD A,0FFH
+        JP Z,AC_READ_FAIL
+        ; Copy the immutable request into adapter scratch.
+        LD L,(IX+AS_OFFSET)
+        LD H,(IX+AS_OFFSET+1)
+        LD C,(IX+AS_OFFSET+2)
+        LD B,(IX+AS_OFFSET+3)
+        PUSH IX
+        PUSH IY
+        POP IX
+        LD DE,AP_POSITION
+        CALL LB_STORE32
+        POP IX
+        ; The request remains unchanged while adapter scratch advances.
+        LD E,(IX+AS_BUFFER)
+        LD D,(IX+AS_BUFFER+1)
+        PUSH DE
+        PUSH IY
+        POP HL
+        LD DE,AP_OUTPUT
+        ADD HL,DE
+        POP DE
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        INC HL
+        LD A,(IX+AS_COUNT)
+        LD (HL),A
+        INC HL
+        LD A,(IX+AS_COUNT+1)
+        LD (HL),A
+AC_READ_LOOP:
+        PUSH IY
+        POP HL
+        LD DE,AP_LEFT
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD A,D
+        OR E
+        JR NZ,AC_READ_RECORD
+        POP IY
+        OR A
+        RET
+AC_READ_RECORD:
+        PUSH IY
+        POP HL
+        LD DE,AP_POSITION
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        INC HL
+        LD C,(HL)
+        INC HL
+        LD B,(HL)
+        BIT 7,B
+        LD A,0FEH
+        JP NZ,AC_READ_FAIL
+        LD A,E
+        AND 127
+        PUSH HL
+        INC HL
+        INC HL
+        INC HL
+        INC HL
+        INC HL
+        INC HL
+        LD (HL),A
+        POP HL
+        ; BC:DE byte offset >>7 is the CP/M 24-bit random record number.
+        LD A,7
+AC_RECORD_SHIFT:
+        SRL B
+        RR C
+        RR D
+        RR E
+        DEC A
+        JR NZ,AC_RECORD_SHIFT
+        LD (IY+33),E
+        LD (IY+34),D
+        LD (IY+35),C
+        PUSH IY
+        POP HL
+        LD DE,AP_DMA
+        ADD HL,DE
+        EX DE,HL
+        LD C,26
+        CALL AC_BDOS
+        PUSH IY
+        POP DE
+        LD C,33
+        CALL AC_BDOS
+        OR A
+        JP NZ,AC_READ_FAIL
+        ; chunk = min(left, 128-skip).
+        PUSH IY
+        POP HL
+        LD DE,AP_SKIP
+        ADD HL,DE
+        LD E,(HL)
+        LD A,128
+        SUB E
+        LD C,A
+        LD B,0
+        PUSH BC
+        PUSH IY
+        POP HL
+        LD DE,AP_LEFT
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        OR A
+        SBC HL,BC
+        POP BC
+        JR NC,AC_CHUNK_READY
+        ADD HL,BC
+        LD B,H
+        LD C,L
+AC_CHUNK_READY:
+        PUSH IY
+        POP HL
+        LD DE,AP_CHUNK
+        ADD HL,DE
+        LD (HL),C
+        INC HL
+        LD (HL),B
+        PUSH IY
+        POP HL
+        LD DE,AP_OUTPUT
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        PUSH DE
+        PUSH IY
+        POP HL
+        LD DE,AP_SKIP
+        ADD HL,DE
+        LD E,(HL)
+        LD D,0
+        PUSH IY
+        POP HL
+        ADD HL,DE
+        LD DE,AP_DMA
+        ADD HL,DE
+        POP DE
+        LDIR
+        ; Updated output pointer, remaining count and actual count.
+        PUSH IY
+        POP HL
+        LD BC,AP_OUTPUT
+        ADD HL,BC
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        PUSH IY
+        POP HL
+        LD DE,AP_CHUNK
+        ADD HL,DE
+        LD C,(HL)
+        INC HL
+        LD B,(HL)
+        PUSH IY
+        POP HL
+        LD DE,AP_LEFT
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        OR A
+        SBC HL,BC
+        EX DE,HL
+        LD (HL),D
+        DEC HL
+        LD (HL),E
+        LD L,(IX+AS_ACTUAL)
+        LD H,(IX+AS_ACTUAL+1)
+        ADD HL,BC
+        LD (IX+AS_ACTUAL),L
+        LD (IX+AS_ACTUAL+1),H
+        PUSH IY
+        POP HL
+        LD DE,AP_POSITION
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        ADD HL,BC
+        EX DE,HL
+        LD (HL),D
+        DEC HL
+        LD (HL),E
+        JR NC,AC_READ_CONTINUE
+        INC HL
+        INC HL
+        INC (HL)
+        JR NZ,AC_READ_CONTINUE
+        INC HL
+        INC (HL)
+AC_READ_CONTINUE:
+        JP AC_READ_LOOP
+AC_READ_FAIL:
+        POP IY
+        SCF
+        RET
+        ENDM

@@ -3,11 +3,13 @@
 **Program:** `NOAH.COM` with `NOAH.OVL`  
 **Distribution:** BetterCP/M Utilities Disk  
 **Status:** Consolidated behavioral baseline, 2026-10-23. No substantive user-policy decisions remain open; binary interfaces and measured limits must pass the
-implementation gates in section 16. No implementation or qualification is claimed.
+implementation gates in section 16. An initial read-only LBR library and exact-file
+listing command exist; see [implementation scope and checks](../programmers/Archive%20Read%20Library.md).
+Full specification conformance and release qualification are not claimed.
 
 This document supersedes the chronological NOAH decision draft. Settled behavior
 is normative. Editorial defaults below use existing BetterCP/M conventions;
-recommendations in section 17 are explicitly not adopted decisions.
+section 17 records behavioral review closure.
 See the [consolidation audit](NOAH%20Specification%20Consolidation%20Audit.md).
 
 ## 1. Scope and boundaries
@@ -656,7 +658,8 @@ Before implementation is considered reviewable, engineering must:
 
 These are engineering deliverables, not reasons to ask the user to choose register
 assignments, every error string or another sequence of routine syntax defaults.
-The spec remains pre-implementation until these gates are satisfied.
+Initial reader work does not close these gates; full implementation remains
+in progress until the applicable deliverables are satisfied.
 
 ## 17. Behavioral review closure
 
