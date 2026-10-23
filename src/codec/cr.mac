@@ -1,0 +1,531 @@
+; Include codec.inc/mac and cr.inc/mac; emit CODEC_CODE + CR_CODE once.
+; z80pack z80asm -e32. Native ZSM4 assembly not yet qualified.
+; One-pass CRUNCH-20h encoder, deterministic reset on dictionary capacity.
+; Output widths follow decoder insertion timing, including final code/EOF.
+; Test: python3 tools/test_cr.py
+
+CR_CODE MACRO
+CR_INIT:
+        CALL CX_CHECK_BASE
+        RET C
+        LD HL,CR_CONTEXT_SIZE
+        CALL CX_CHECK_SIZE
+        RET C
+        CALL CX_CHECK_WRITE
+        RET C
+        PUSH IX
+        POP HL
+        LD DE,16
+        ADD HL,DE
+        LD B,CR_NAME-16
+        XOR A
+CR_CLEAR_FIXED:
+        LD (HL),A
+        INC HL
+        DJNZ CR_CLEAR_FIXED
+        LD B,CR_NAME_SIZE
+CR_CHECK_NAME:
+        LD A,(HL)
+        OR A
+        JR Z,CR_NAMED
+        INC HL
+        INC (IX+CR_NAMLEN)
+        DJNZ CR_CHECK_NAME
+        LD E,CRD_NAME
+        LD A,CS_CONFIG
+        JP CX_FAIL
+CR_NAMED:
+        PUSH IX
+        POP HL
+        LD DE,CR_KEYS
+        ADD HL,DE
+        LD D,H
+        LD E,L
+        INC DE
+        LD (HL),0
+        LD BC,CR_CONTEXT_SIZE-CR_KEYS-1
+        LDIR
+        JP CX_READY
+
+; Raw WRITE preserves live registers; failures latch their callback reason.
+CR_WRITE:
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        CALL CX_CALL_WRITE
+        POP HL
+        POP DE
+        POP BC
+        RET NC
+        JP CX_WRITE_ERROR
+
+; Raw reader: BC/DE/HL preserved. NC/A=byte; C/A=0 physical EOF;
+; C/nonzero=latched error. Update checksum/count before returning a byte.
+CR_READ:
+        PUSH    BC
+        PUSH    DE
+        PUSH    HL
+        CALL    CX_CALL_READ
+        JR      C,CR_READ_EVENT
+        LD      C,A
+        LD      E,A
+        LD      D,0
+        LD      L,(IX+CR_SUM)
+        LD      H,(IX+CR_SUM+1)
+        ADD     HL,DE
+        LD      (IX+CR_SUM),L
+        LD      (IX+CR_SUM+1),H
+        INC     (IX+CR_COUNT)
+        JR      NZ,CR_READ_OK
+        INC     (IX+CR_COUNT+1)
+        JR      NZ,CR_READ_OK
+        INC     (IX+CR_COUNT+2)
+        JR      NZ,CR_READ_OK
+        INC     (IX+CR_COUNT+3)
+        JR      NZ,CR_READ_OK
+        POP     HL
+        POP     DE
+        POP     BC
+        LD      E,CRD_COUNT
+        LD      A,CS_SPACE
+        JP      CX_FAIL
+CR_READ_OK:
+        LD      A,C
+        POP     HL
+        POP     DE
+        POP     BC
+        OR      A
+        RET
+CR_READ_EVENT:
+        POP     HL
+        POP     DE
+        POP     BC
+        OR      A
+        JP      NZ,CX_READ_ERROR
+        SCF
+        RET
+
+; RLE generator: NC/DE=0..256, carry only on a latched failure.
+; States: 0 next run, 1 DLE escape's zero, 2 run DLE, 3 count, 4 second byte.
+CR_RLE:
+        LD      A,(IX+CR_RLE_STATE)
+        OR      A
+        JR      Z,CR_RLE_NEW
+        CP      1
+        JR      Z,CR_RLE_ZERO
+        CP      2
+        JR      Z,CR_RLE_DLE
+        CP      3
+        JR      Z,CR_RLE_COUNT
+        LD      (IX+CR_RLE_STATE),0
+        LD      A,(IX+CR_LAST)
+        JR      CR_RLE_BYTE
+CR_RLE_ZERO:
+        LD      (IX+CR_RLE_STATE),0
+        XOR     A
+        JR      CR_RLE_BYTE
+CR_RLE_DLE:
+        LD      (IX+CR_RLE_STATE),3
+        LD      A,CR_DLE
+        JR      CR_RLE_BYTE
+CR_RLE_COUNT:
+        LD      (IX+CR_RLE_STATE),0
+        LD      A,(IX+CR_RUNLEN)
+CR_RLE_BYTE:
+        LD      E,A
+        LD      D,0
+        OR      A
+        RET
+CR_RLE_NEW:
+        LD      A,(IX+CR_RLE_FLAGS)
+        AND     CRF_PENDING
+        JR      Z,CR_RLE_FETCH
+        XOR     A
+        LD      (IX+CR_RLE_FLAGS),A
+        LD      A,(IX+CR_PENDING)
+        JR      CR_RLE_FIRST
+CR_RLE_FETCH:
+        LD      A,(IX+CR_RLE_FLAGS)
+        AND     CRF_INPUT_END
+        JR      NZ,CR_RLE_EOF
+        CALL    CR_READ
+        JR      NC,CR_RLE_FIRST
+        OR      A
+        SCF
+        RET     NZ
+CR_RLE_EOF:
+        LD      DE,CR_SPEOF
+        OR      A
+        RET
+CR_RLE_FIRST:
+        LD      (IX+CR_LAST),A
+        CP      CR_DLE
+        JR      NZ,CR_RLE_RUN
+        LD      (IX+CR_RLE_STATE),1
+        JR      CR_RLE_BYTE
+CR_RLE_RUN:
+        LD      (IX+CR_RUNLEN),1
+CR_RLE_LOOK:
+        LD      A,(IX+CR_RUNLEN)
+        CP      255
+        JR      Z,CR_RLE_READY
+        CALL    CR_READ
+        JR      NC,CR_RLE_LOOK_BYTE
+        OR      A
+        SCF
+        RET     NZ
+        LD      (IX+CR_RLE_FLAGS),CRF_INPUT_END
+        JR      CR_RLE_READY
+CR_RLE_LOOK_BYTE:
+        CP      (IX+CR_LAST)
+        JR      NZ,CR_RLE_PENDING
+        INC     (IX+CR_RUNLEN)
+        JR      CR_RLE_LOOK
+CR_RLE_PENDING:
+        LD      (IX+CR_PENDING),A
+        LD      (IX+CR_RLE_FLAGS),CRF_PENDING
+CR_RLE_READY:
+        LD      A,(IX+CR_RUNLEN)
+        CP      2
+        JR      C,CR_RLE_SINGLE
+        LD      (IX+CR_RLE_STATE),4
+        JR      Z,CR_RLE_SINGLE
+        LD      (IX+CR_RLE_STATE),2
+CR_RLE_SINGLE:
+        LD      A,(IX+CR_LAST)
+        JP      CR_RLE_BYTE
+
+; HL=hash slot -> key/suffix/code address. Slots need not be page aligned.
+CR_KEY_PTR:
+        ADD HL,HL
+        LD DE,CR_KEYS
+        JR CR_ADDRESS
+CR_SUFFIX_PTR:
+        LD DE,CR_SUFFIX
+        JR CR_ADDRESS
+CR_CODE_PTR:
+        ADD HL,HL
+        LD DE,CR_CODES
+CR_ADDRESS:
+        ADD HL,DE
+        PUSH IX
+        POP DE
+        ADD HL,DE
+        RET
+
+; Reset LZW only; physical input/RLE, checksum and bit packing stay intact.
+CR_RESET:
+        LD HL,0
+        CALL CR_KEY_PTR
+        LD D,H
+        LD E,L
+        INC DE
+        LD (HL),0FFH
+        LD BC,5003*2-1
+        LDIR
+        LD (IX+CR_NEXT),4
+        LD (IX+CR_NEXT+1),1
+        LD (IX+CR_OUT_NEXT),4
+        LD (IX+CR_OUT_NEXT+1),1
+        LD (IX+CR_LIMIT),0FFH
+        LD (IX+CR_LIMIT+1),1
+        LD (IX+CR_WIDTH),9
+        LD (IX+CR_HAVE_OUT),0
+        XOR A
+        RET
+
+CR_HEADER:
+        LD A,076H
+        CALL CR_WRITE
+        RET C
+        LD A,0FEH
+        CALL CR_WRITE
+        RET C
+        PUSH IX
+        POP HL
+        LD DE,CR_NAME
+        ADD HL,DE
+        LD B,(IX+CR_NAMLEN)
+        INC B
+CR_HEADER_NAME:
+        LD A,(HL)
+        CALL CR_WRITE
+        RET C
+        INC HL
+        DJNZ CR_HEADER_NAME
+        LD A,024H
+        CALL CR_WRITE
+        RET C
+        LD A,020H
+        CALL CR_WRITE
+        RET C
+        XOR A
+        CALL CR_WRITE
+        RET C
+        LD A,5
+        JP CR_WRITE
+
+; Candidate key is CURRENT/TOKEN. Return Z=match with DE=code, NZ=empty
+; with HASH retaining its slot. Carry is a latched internal failure only.
+CR_FIND:
+        LD L,(IX+CR_CURRENT)
+        LD H,(IX+CR_CURRENT+1)
+        LD A,L
+        AND 15
+        LD B,A
+        LD C,4
+CR_HASH_SHIFT:
+        SRL H
+        RR L
+        DEC C
+        JR NZ,CR_HASH_SHIFT
+        LD A,(IX+CR_TOKEN)
+        XOR L
+        LD L,A
+        LD H,B
+        INC HL
+        LD (IX+CR_HASH),L
+        LD (IX+CR_HASH+1),H
+        EX DE,HL
+        LD HL,5003
+        OR A
+        SBC HL,DE
+        LD (IX+CR_DISP),L
+        LD (IX+CR_DISP+1),H
+        LD (IX+CR_PROBES),08BH
+        LD (IX+CR_PROBES+1),013H
+CR_PROBE:
+        LD L,(IX+CR_HASH)
+        LD H,(IX+CR_HASH+1)
+        CALL CR_KEY_PTR
+        LD C,(HL)
+        INC HL
+        LD B,(HL)
+        LD A,B
+        CP 0FFH
+        JR Z,CR_EMPTY
+        CP (IX+CR_CURRENT+1)
+        JR NZ,CR_PROBE_NEXT
+        LD A,C
+        CP (IX+CR_CURRENT)
+        JR NZ,CR_PROBE_NEXT
+        LD L,(IX+CR_HASH)
+        LD H,(IX+CR_HASH+1)
+        CALL CR_SUFFIX_PTR
+        LD A,(IX+CR_TOKEN)
+        CP (HL)
+        JR NZ,CR_PROBE_NEXT
+        LD L,(IX+CR_HASH)
+        LD H,(IX+CR_HASH+1)
+        CALL CR_CODE_PTR
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        XOR A
+        RET
+CR_EMPTY:
+        LD A,1
+        OR A
+        RET
+CR_PROBE_NEXT:
+        LD L,(IX+CR_PROBES)
+        LD H,(IX+CR_PROBES+1)
+        DEC HL
+        LD (IX+CR_PROBES),L
+        LD (IX+CR_PROBES+1),H
+        LD A,H
+        OR L
+        JR Z,CR_HASH_FAILED
+        LD L,(IX+CR_HASH)
+        LD H,(IX+CR_HASH+1)
+        LD E,(IX+CR_DISP)
+        LD D,(IX+CR_DISP+1)
+        OR A
+        SBC HL,DE
+        JR NC,CR_PROBE_SAVE
+        LD DE,5003
+        ADD HL,DE
+CR_PROBE_SAVE:
+        LD (IX+CR_HASH),L
+        LD (IX+CR_HASH+1),H
+        JR CR_PROBE
+CR_HASH_FAILED:
+        LD E,CRD_HASH
+        LD A,CS_CORRUPT
+        JP CX_FAIL
+CR_INSERT:
+        LD L,(IX+CR_HASH)
+        LD H,(IX+CR_HASH+1)
+        CALL CR_KEY_PTR
+        LD A,(IX+CR_CURRENT)
+        LD (HL),A
+        INC HL
+        LD A,(IX+CR_CURRENT+1)
+        LD (HL),A
+        LD L,(IX+CR_HASH)
+        LD H,(IX+CR_HASH+1)
+        CALL CR_SUFFIX_PTR
+        LD A,(IX+CR_TOKEN)
+        LD (HL),A
+        LD L,(IX+CR_HASH)
+        LD H,(IX+CR_HASH+1)
+        CALL CR_CODE_PTR
+        LD A,(IX+CR_NEXT)
+        LD (HL),A
+        INC HL
+        LD A,(IX+CR_NEXT+1)
+        LD (HL),A
+        INC (IX+CR_NEXT)
+        RET NZ
+        INC (IX+CR_NEXT+1)
+        RET
+
+; HL=wire code, write exactly current WIDTH bits, preserving partial byte.
+CR_PUT_CODE:
+        LD (IX+CR_WIRE),L
+        LD (IX+CR_WIRE+1),H
+        LD B,(IX+CR_WIDTH)
+        LD A,16
+        SUB B
+        LD B,A
+CR_CODE_ALIGN:
+        ADD HL,HL
+        DJNZ CR_CODE_ALIGN
+        LD A,(IX+CR_WIDTH)
+        LD (IX+CR_BITSLEFT),A
+CR_CODE_BIT:
+        ADD HL,HL
+        RL (IX+CR_OUTBYTE)
+        INC (IX+CR_OUTBITS)
+        LD A,(IX+CR_OUTBITS)
+        CP 8
+        JR NZ,CR_CODE_MORE
+        LD A,(IX+CR_OUTBYTE)
+        CALL CR_WRITE
+        RET C
+        LD (IX+CR_OUTBITS),0
+        LD (IX+CR_OUTBYTE),0
+CR_CODE_MORE:
+        DEC (IX+CR_BITSLEFT)
+        JR NZ,CR_CODE_BIT
+        XOR A
+        RET
+
+; Emit a data code, then reproduce decoder's insertion/width transition.
+CR_PUT_DATA:
+        CALL CR_PUT_CODE
+        RET C
+        LD A,(IX+CR_HAVE_OUT)
+        OR A
+        JR NZ,CR_ADVANCE
+        LD (IX+CR_HAVE_OUT),1
+        RET
+CR_ADVANCE:
+        LD L,(IX+CR_OUT_NEXT)
+        LD H,(IX+CR_OUT_NEXT+1)
+        INC HL
+        LD (IX+CR_OUT_NEXT),L
+        LD (IX+CR_OUT_NEXT+1),H
+        LD A,(IX+CR_WIDTH)
+        CP 12
+        JR Z,CR_ADVANCED
+        LD E,(IX+CR_LIMIT)
+        LD D,(IX+CR_LIMIT+1)
+        OR A
+        SBC HL,DE
+        JR C,CR_ADVANCED
+        INC (IX+CR_WIDTH)
+        SLA E
+        RL D
+        INC DE
+        LD (IX+CR_LIMIT),E
+        LD (IX+CR_LIMIT+1),D
+CR_ADVANCED:
+        XOR A
+        RET
+
+CR_RUN:
+        LD A,(IX+CX_PHASE)
+        CP CP_DONE
+        JP Z,CX_DONE
+        LD A,CP_READY
+        CALL CX_CHECK_STATE
+        RET C
+        CALL CX_CHECK_WRITE
+        RET C
+        CALL CX_DATA
+        CALL CR_RESET
+        CALL CR_HEADER
+        RET C
+CR_MAIN:
+        CALL CR_RLE
+        RET C
+        LD A,D
+        OR A
+        JP NZ,CR_FINISH
+        LD (IX+CR_TOKEN),E
+        LD A,(IX+CR_HAVE)
+        OR A
+        JR Z,CR_FIRST_TOKEN
+        CALL CR_FIND
+        RET C
+        JR NZ,CR_MISS
+        LD (IX+CR_CURRENT),E
+        LD (IX+CR_CURRENT+1),D
+        JR CR_MAIN
+CR_MISS:
+        CALL CR_INSERT
+        LD L,(IX+CR_CURRENT)
+        LD H,(IX+CR_CURRENT+1)
+        CALL CR_PUT_DATA
+        RET C
+        LD A,(IX+CR_NEXT+1)
+        CP 16
+        JR C,CR_FIRST_TOKEN
+        ; The new entry at saturation is not transmitted. Reset immediately
+        ; after this prefix so decoder reassignment cannot begin.
+        LD HL,257
+        CALL CR_PUT_CODE
+        RET C
+        CALL CR_RESET
+CR_FIRST_TOKEN:
+        LD A,(IX+CR_TOKEN)
+        LD (IX+CR_CURRENT),A
+        LD (IX+CR_CURRENT+1),0
+        LD (IX+CR_HAVE),1
+        JR CR_MAIN
+CR_FINISH:
+        LD A,(IX+CR_HAVE)
+        OR A
+        JR Z,CR_FINISH_EOF
+        LD L,(IX+CR_CURRENT)
+        LD H,(IX+CR_CURRENT+1)
+        CALL CR_PUT_DATA
+        RET C
+CR_FINISH_EOF:
+        LD HL,256
+        CALL CR_PUT_CODE
+        RET C
+        LD A,(IX+CR_OUTBITS)
+        OR A
+        JR Z,CR_CHECKSUM
+        LD B,A
+        LD A,8
+        SUB B
+        LD B,A
+        LD A,(IX+CR_OUTBYTE)
+CR_PAD_BITS:
+        ADD A,A
+        DJNZ CR_PAD_BITS
+        CALL CR_WRITE
+        RET C
+        LD (IX+CR_OUTBITS),0
+CR_CHECKSUM:
+        LD A,(IX+CR_SUM)
+        CALL CR_WRITE
+        RET C
+        LD A,(IX+CR_SUM+1)
+        CALL CR_WRITE
+        RET C
+        JP CX_DONE
+        ENDM
