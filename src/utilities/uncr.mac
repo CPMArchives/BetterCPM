@@ -20,10 +20,16 @@
         INCLUDE uncr.inc
         INCLUDE uncr.mac
         INCLUDE codecfile.mac
+        INCLUDE codecver.inc
 
 UC_START:
         LD      (UC_OLDSP),SP
         LD      SP,UC_STACK_TOP
+        CALL    UC_VERSION
+        JR      NC,UC_START_FILES
+        LD      SP,(UC_OLDSP)
+        RET
+UC_START_FILES:
         XOR     A
         LD      (UC_INPUT_OPEN),A
         LD      (UC_TEMP_OPEN),A
@@ -200,6 +206,8 @@ UC_CODEC_HEADER:
         JR      NZ,UC_ERROR
         LD      DE,UC_HEADER_MSG
         CODEC_FILE_CLEANUP
+
+        CODEC_VERSION_CODE
 
 UC_USAGE:       DB 'Usage: UNCR [drive:]file [destination-drive:]',13,10,'$'
 UC_SUCCESS:     DB 'UNCR: complete.',13,10,'$'

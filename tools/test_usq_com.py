@@ -177,7 +177,10 @@ class Command:
         assert len(tail) <= 127
         self.mem[0x80] = len(tail)
         self.mem[0x81:0x81 + len(tail)] = tail
-        self.mem[0x81 + len(tail)] = 13
+        # A full 127-byte tail fills 0081h..00FFh. Appending CR at 0100h
+        # would overwrite the program entry rather than model CP/M input.
+        if len(tail) < 127:
+            self.mem[0x81 + len(tail)] = 13
         self.reg["SP"].value = 0xE000
         self.reg["IY"].value = 0xBEEF
         for i, name in enumerate(("A_", "B_", "C_", "D_", "E_", "H_", "L_", "F_")):

@@ -22,6 +22,7 @@ The Utilities Disk is being assembled separately from the System Disk. This manu
 - [DDT debugger](#ddt-debugger)
 - [Compression utilities](#compression-utilities)
   - [Shared command rules](#shared-compression-command-rules)
+  - [Version identification](#compression-version-identification)
   - [File handling and recovery](#compression-file-handling-and-recovery)
 
 ## Using the Utilities Disk
@@ -325,8 +326,8 @@ filename, optionally with an A: through P: drive prefix. Source and destination
 use your current user area. The destination is a drive only, such as `C:`;
 you cannot supply a new output filename. Names and drive letters are
 case-insensitive. Wildcards, paths, explicit user/DU operands such as
-`A0:FILE.TXT`, quoted names, switches and extra operands are not accepted.
-There is no `/VER` or overwrite option in these builds.
+`A0:FILE.TXT`, quoted names, other switches and extra operands are not accepted.
+Each command also accepts standalone `/VER`. There is no overwrite option.
 
 With no source prefix, input comes from your logged drive. With no destination
 operand, output also goes to your logged drive, independently of where the
@@ -345,6 +346,26 @@ The command's file operands still use ordinary drive-only syntax. On stock
 CP/M 2.2, arrange for the COM program to be accessible by its normal command
 lookup rules. Change to the desired user area before running a command.
 No screen backend or terminal personality is required. A Z80 processor is required.
+
+### Compression version identification
+
+Run `SQ /VER`, `USQ /VER`, `CR /VER`, `UNCR /VER`, `LZH /VER` or `UNLZH /VER`
+to display that command's version and build without accessing files. Letter case
+does not matter. For example:
+
+```text
+SQ 1.0 (Build 001)
+  - - -
+ | BetterCP/M Utilities
+ | Squeeze File Compression
+```
+
+Each utility has its own build counter. The numbers come from BetterCP/M's
+utility metadata; the individual command pages show the current identification.
+`/VER` must be used alone, apart from surrounding whitespace. Combining it with
+a source name, destination or another option prints `Invalid /VER usage.` and
+returns without performing the command. Ordinary compression and restoration
+retain their existing output without a version banner.
 
 ### Compression file handling and recovery
 

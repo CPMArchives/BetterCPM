@@ -16,10 +16,16 @@
         INCLUDE cr.inc
         INCLUDE cr.mac
         INCLUDE codecfile.mac
+        INCLUDE codecver.inc
 
 UC_START:
         LD      (UC_OLDSP),SP
         LD      SP,UC_STACK_TOP
+        CALL    UC_VERSION
+        JR      NC,UC_START_FILES
+        LD      SP,(UC_OLDSP)
+        RET
+UC_START_FILES:
         XOR     A
         LD      (UC_INPUT_OPEN),A
         LD      (UC_TEMP_OPEN),A
@@ -184,6 +190,8 @@ UC_CODEC_WRITE:
         JR      NZ,UC_ERROR
         LD      DE,UC_WRITE_MSG
         CODEC_FILE_CLEANUP
+
+        CODEC_VERSION_CODE
 
 UC_USAGE:       DB 'Usage: CR [drive:]file [destination-drive:]',13,10,'$'
 UC_SUCCESS:     DB 'CR: complete.',13,10,'$'

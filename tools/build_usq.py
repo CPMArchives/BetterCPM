@@ -7,7 +7,13 @@ import shutil
 import subprocess
 import tempfile
 
+from codec_version import prepare_version, version_text as codec_version_text
+
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def version_text():
+    return codec_version_text("USQ")
 
 
 def build(assembler, destination):
@@ -15,6 +21,7 @@ def build(assembler, destination):
     destination.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="bettercpm-usq-com-build-") as temporary:
         work = Path(temporary)
+        prepare_version("USQ", work)
         for name in ("codec.inc", "codec.mac", "usq.inc", "usq.mac"):
             shutil.copy2(ROOT / "src/codec" / name, work / name)
         shutil.copy2(ROOT / "src/utilities/common/codecfile.mac", work / "codecfile.mac")

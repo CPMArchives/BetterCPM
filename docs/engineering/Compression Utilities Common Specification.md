@@ -4,7 +4,8 @@
 
 Implemented baseline, 2026-10-23: SQ/USQ, CR/UNCR and LZH/UNLZH are six
 independent Z80 commands for CP/M 2.2. This specification describes the source
-at command commit `68497f1` and its codec dependencies. It does not add runtime
+at file/codec command baseline `68497f1`, with the standalone `/VER` adoption
+described below. It does not add runtime
 features. Individual commands are the release 1.0 scope; a unified interface is
 post-1.0 work. Utilities disk images remain provisional, with separate release
 acceptance requirements.
@@ -136,14 +137,14 @@ GET/END bytes, not only bytes accepted by WRITE.
 
 ### Context and standalone image sizes
 
-| Algorithm | Context bytes, including prefix | Baseline COM bytes |
+| Algorithm | Context bytes, including prefix | Build 001 COM bytes |
 | --- | ---: | ---: |
-| SQ | 3524 | 7410 |
-| USQ | 1440 | 4684 |
-| CR | 25207 | 28732 |
-| UNCR | 26582 | 30491 |
-| LZH | 11943 | 16512 |
-| UNLZH | 6646 | 11498 |
+| SQ | 3524 | 7725 |
+| USQ | 1440 | 4999 |
+| CR | 25207 | 29046 |
+| UNCR | 26582 | 30805 |
+| LZH | 11943 | 16826 |
+| UNLZH | 6646 | 11812 |
 
 COM sizes are build snapshots, not fixed ABI constants or universal minimum RAM
 claims. Images include their allocated context, FCBs, buffers and private stack;
@@ -197,7 +198,7 @@ output and error cleanup, beyond this byte-stream sketch.
 
 ## Standalone command contract
 
-All six commands accept exactly:
+File processing in all six commands accepts:
 
 ```text
 COMMAND [drive:]file [destination-drive:]
@@ -208,8 +209,9 @@ to the logged drive; destination independently defaults to the logged drive,
 not the source or program's drive. Both use the current user area. Accept spaces
 or TAB between operands, and a trailing filename dot as no extension. Reject
 empty basenames, overlong fields, spaces within names, wildcards, paths, explicit
-user/DU operands, quotes, extra operands, switches and destination filenames.
-No `/VER`, overwrite switch, wildcard iteration or interactive prompts exist.
+user/DU operands, quotes, extra operands, other switches and destination filenames.
+Standalone `/VER` is the additional identification form. No overwrite switch,
+wildcard iteration or interactive prompts exist.
 
 The parser reads the bounded command tail at 0080h; it does not trust default
 FCBs. It uppercases letters and accepts digits plus `!#$%&'()-@^_{}~` in fields.
@@ -221,6 +223,29 @@ name, not the input extension. USQ validates the complete raw name; UNCR and
 UNLZH take the stem through the first dot and up to three extension slots,
 trim their trailing blanks and ignore subsequent metadata. They still reject
 unsafe names. No decoder restores attributes, timestamps, user areas or drives.
+
+### Standalone /VER
+
+All six commands accept case-insensitive standalone `/VER`, with space/TAB
+padding. Exact `/VER` tokens combined with any other operand/token print
+`Invalid /VER usage.` without running the command. Longer tokens such as
+`/VERIFY` remain normal parser errors. Help is deferred.
+
+Each command's independent 1.0 Build 001 identity is owned by
+`metadata/utility-versions.tsv`. Builders use `tools/codec_version.py` to expand
+`codecver.inc` from metadata plus the shared `version.inc` query. Output is four
+CR/LF-terminated ASCII lines: `NAME version (Build nnn)`, `  - - -`,
+` | BetterCP/M Utilities`, and ` | purpose`. Normal output has no version banner.
+The counter has a minimum of three digits, with no truncation above 999.
+
+Startup saves entry SP and selects its 256-byte private stack before the query.
+The low 128 stack bytes hold a bounded, TAB-normalized copy of the command tail;
+the query frames use the upper half. The original tail remains unchanged.
+Handled requests return directly through restored entry SP, before flags, FCBs,
+codec workspace, source/destination drives or files are initialized. The only
+BDOS operation is function 9 for the identity/error string. No function 25/26,
+provider query, warm boot or codec callback is used on this path. This is command
+startup code; the algorithm macro ABI remains unchanged.
 
 ### CP/M record adapter
 
@@ -298,3 +323,22 @@ executables and preserved input files. Its evidence distinguishes successful
 record comparisons, intentional filename refusals, historical empty-file skips
 and a confirmed CRUNCH 2.4 producer defect. It supplements the format's library
 and native command regressions; it does not broaden supported format variants.
+
+
+## Version-entry qualification
+
+`python3 tools/test_codec_versions.py` executes the six built commands on the
+full Z80 core. It checks 169 valid/mixed/long-token cases, case/space/TAB handling,
+127-byte tails, metadata-driven four-digit builds, deterministic rebuilds,
+console-only handled paths, untouched files/FCBs/context/tail, stack balance,
+index/alternate registers and code immutability. The shared command test model
+now leaves 0100h intact for a full 127-byte tail, rather than appending a CR over
+the program's first instruction.
+
+`python3 tools/test_codec_versions_cpm.py` executes 42 commands under stock
+CP/M 2.2 on disposable disks, verifying every line of all six identities,
+invalid mixed requests, ordinary rejection of longer/unknown option tokens,
+return to prompt, unchanged files and no temporary output. Existing fault-
+injection and SQ/USQ, CR/UNCR, LZH/UNLZH native round-trip tests remain required.
+Historical qualification records continue to identify their original binary
+hashes; a rebuild is not retroactively covered by that evidence.
