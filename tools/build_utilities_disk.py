@@ -18,8 +18,8 @@ sys.path.insert(0,str(ROOT/"tools"))
 from fdf_format import select_fdf
 from build_z80pack_image import disk_definition, DEFAULT_FORMAT
 from convert_fdf_image import raw_to_dmk, dmk_to_raw
-COMPONENTS={'DDT.COM':'build/utilities/DDT.COM','DUMP.COM':'build/utilities/DUMP.COM','XSUB.COM':'build/utilities/XSUB.COM','BATCHIO.RSX':'build/rsx/BATCHIO.RSX','SQ.COM':'build/utilities/SQ.COM','USQ.COM':'build/utilities/USQ.COM'}
-PENDING=['Full-screen editor (selection pending)','ZSM4 (release packaging pending)','LINK (release packaging pending)','Z80 disassembler (selection pending)','Archive utility (selection pending)','CR/UNCR and CrLZH utilities (implementation pending)']
+COMPONENTS={'DDT.COM':'build/utilities/DDT.COM','DUMP.COM':'build/utilities/DUMP.COM','XSUB.COM':'build/utilities/XSUB.COM','BATCHIO.RSX':'build/rsx/BATCHIO.RSX','SQ.COM':'build/utilities/SQ.COM','USQ.COM':'build/utilities/USQ.COM','UNCR.COM':'build/utilities/UNCR.COM'}
+PENDING=['Full-screen editor (selection pending)','ZSM4 (release packaging pending)','LINK (release packaging pending)','Z80 disassembler (selection pending)','Archive utility (selection pending)','CR and CrLZH utilities (implementation pending)']
 sha=lambda data:hashlib.sha256(data).hexdigest()
 
 
@@ -80,7 +80,7 @@ def main():
     p.add_argument('--ddt-acceptance',type=Path,help='bind a passing DDT campaign to these exact image hashes')
     a=p.parse_args()
     if a.build:
-        for name in ['dump','ddt','batch','sq','usq']:subprocess.run([sys.executable,str(ROOT/'tools'/f'build_{name}.py')],cwd=ROOT,check=True)
+        for name in ['dump','ddt','batch','sq','usq','uncr']:subprocess.run([sys.executable,str(ROOT/'tools'/f'build_{name}.py')],cwd=ROOT,check=True)
     build(a.output.resolve(),a.artifacts.resolve(),a.ddt_acceptance)
 
 
