@@ -1,7 +1,7 @@
 # Engineering assessment Part 8: carrier binding and migration
 
-Date: 23 October 2026. Status: bounded assessment complete; awaiting maintainer
-review. Part 7 was approved and Part 8 authorized. Core 1.0 remains
+Date: 23 October 2026. Status: approved by the maintainer on 23 October 2026;
+Part 9 authorized. Part 7 was approved and Part 8 authorized. Core 1.0 remains
 `3b2d2d7f4fe0472438465165f11fb550d79c8662`.
 
 ## 1. Finding and scope
@@ -216,3 +216,9 @@ maintainer wants one. Part 8 itself is complete as a bounded assessment; it
 does not claim the larger migration is complete. Pause here for review and
 Work-credit assessment before starting Part 9. Model 4 window mapping remains
 a separate future investigation.
+
+Maintainer approval was received on 23 October 2026. Part 9 proceeds as a
+separate bounded assessment, followed by another review pause.
+
+Subsequent repository record: Part 8 merged through PR #458 at
+`945bff1508d570414fddac491fd8c0dcbb83aac5`. This does not extend its tested scope.
