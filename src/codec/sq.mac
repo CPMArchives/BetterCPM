@@ -1,0 +1,693 @@
+; Include codec.inc/codec.mac/sq.inc/sq.mac, emit CODEC_CODE + SQ_CODE once.
+; z80pack z80asm 2.1: -e32 -fb. All mutable state is IX-relative; no IY,
+; alternate registers, recursion, OS calls, self-modification or allocation.
+; Test: python3 tools/test_sq.py. Native ZSM4 assembly not yet qualified.
+
+SQ_CODE        MACRO
+
+SQ_INIT:
+        CALL    CX_CHECK_BASE
+        RET     C
+        LD      HL,SQ_CONTEXT_SIZE
+        CALL    CX_CHECK_SIZE
+        RET     C
+        CALL    CX_CHECK_WRITE
+        RET     C
+        CALL    CX_CHECK_REWIND
+        RET     C
+        ; Preserve caller-supplied name while clearing fixed state/arrays.
+        PUSH    IX
+        POP     HL
+        LD      DE,16
+        ADD     HL,DE
+        LD      B,SQ_NAME-16
+        XOR     A
+S_INIT_FIXED:
+        LD      (HL),A
+        INC     HL
+        DJNZ    S_INIT_FIXED
+        LD      B,SQ_NAME_SIZE
+S_INIT_NAME:
+        LD      A,(HL)
+        OR      A
+        JR      Z,S_INIT_NAMED
+        INC     HL
+        INC     (IX+SQ_NAMLEN)
+        DJNZ    S_INIT_NAME
+        LD      E,SD_NAME
+        LD      A,CS_CONFIG
+        JP      CX_FAIL
+S_INIT_NAMED:
+        PUSH    IX
+        POP     HL
+        LD      DE,SQ_WEIGHTS
+        ADD     HL,DE
+        LD      D,H
+        LD      E,L
+        INC     DE
+        LD      (HL),0
+        LD      BC,SQ_CONTEXT_SIZE-SQ_WEIGHTS-1
+        LDIR
+        PUSH    IX
+        POP     HL
+        LD      DE,SQ_PARENTS
+        ADD     HL,DE
+        LD      D,H
+        LD      E,L
+        INC     DE
+        LD      (HL),0FFH
+        LD      BC,513*2-1
+        LDIR
+        JP      CX_READY
+
+; Raw reader: BC/DE/HL preserved. NC/A=byte; C/A=0 physical EOF;
+; C/nonzero=latched error. Update checksum/count before returning a byte.
+S_READ:
+        PUSH    BC
+        PUSH    DE
+        PUSH    HL
+        CALL    CX_CALL_READ
+        JR      C,S_READ_EVENT
+        LD      C,A
+        LD      E,A
+        LD      D,0
+        LD      L,(IX+SQ_SUM)
+        LD      H,(IX+SQ_SUM+1)
+        ADD     HL,DE
+        LD      (IX+SQ_SUM),L
+        LD      (IX+SQ_SUM+1),H
+        INC     (IX+SQ_COUNT)
+        JR      NZ,S_READ_OK
+        INC     (IX+SQ_COUNT+1)
+        JR      NZ,S_READ_OK
+        INC     (IX+SQ_COUNT+2)
+        JR      NZ,S_READ_OK
+        INC     (IX+SQ_COUNT+3)
+        JR      NZ,S_READ_OK
+        POP     HL
+        POP     DE
+        POP     BC
+        LD      E,SD_COUNT
+        LD      A,CS_SPACE
+        JP      CX_FAIL
+S_READ_OK:
+        LD      A,C
+        POP     HL
+        POP     DE
+        POP     BC
+        OR      A
+        RET
+S_READ_EVENT:
+        POP     HL
+        POP     DE
+        POP     BC
+        OR      A
+        JP      NZ,CX_READ_ERROR
+        SCF
+        RET
+
+; RLE generator: NC/DE=0..256, carry only on a latched failure.
+; States: 0 next run, 1 DLE escape's zero, 2 run DLE, 3 count, 4 second byte.
+S_RLE:
+        LD      A,(IX+SQ_RLE_STATE)
+        OR      A
+        JR      Z,S_RLE_NEW
+        CP      1
+        JR      Z,S_RLE_ZERO
+        CP      2
+        JR      Z,S_RLE_DLE
+        CP      3
+        JR      Z,S_RLE_COUNT
+        LD      (IX+SQ_RLE_STATE),0
+        LD      A,(IX+SQ_LAST)
+        JR      S_RLE_BYTE
+S_RLE_ZERO:
+        LD      (IX+SQ_RLE_STATE),0
+        XOR     A
+        JR      S_RLE_BYTE
+S_RLE_DLE:
+        LD      (IX+SQ_RLE_STATE),3
+        LD      A,SQ_DLE
+        JR      S_RLE_BYTE
+S_RLE_COUNT:
+        LD      (IX+SQ_RLE_STATE),0
+        LD      A,(IX+SQ_RUNLEN)
+S_RLE_BYTE:
+        LD      E,A
+        LD      D,0
+        OR      A
+        RET
+S_RLE_NEW:
+        LD      A,(IX+SQ_RLE_FLAGS)
+        AND     SQF_PENDING
+        JR      Z,S_RLE_FETCH
+        XOR     A
+        LD      (IX+SQ_RLE_FLAGS),A
+        LD      A,(IX+SQ_PENDING)
+        JR      S_RLE_FIRST
+S_RLE_FETCH:
+        LD      A,(IX+SQ_RLE_FLAGS)
+        AND     SQF_INPUT_END
+        JR      NZ,S_RLE_EOF
+        CALL    S_READ
+        JR      NC,S_RLE_FIRST
+        OR      A
+        SCF
+        RET     NZ
+S_RLE_EOF:
+        LD      DE,SQ_SPEOF
+        OR      A
+        RET
+S_RLE_FIRST:
+        LD      (IX+SQ_LAST),A
+        CP      SQ_DLE
+        JR      NZ,S_RLE_RUN
+        LD      (IX+SQ_RLE_STATE),1
+        JR      S_RLE_BYTE
+S_RLE_RUN:
+        LD      (IX+SQ_RUNLEN),1
+S_RLE_LOOK:
+        LD      A,(IX+SQ_RUNLEN)
+        CP      255
+        JR      Z,S_RLE_READY
+        CALL    S_READ
+        JR      NC,S_RLE_LOOK_BYTE
+        OR      A
+        SCF
+        RET     NZ
+        LD      (IX+SQ_RLE_FLAGS),SQF_INPUT_END
+        JR      S_RLE_READY
+S_RLE_LOOK_BYTE:
+        CP      (IX+SQ_LAST)
+        JR      NZ,S_RLE_PENDING
+        INC     (IX+SQ_RUNLEN)
+        JR      S_RLE_LOOK
+S_RLE_PENDING:
+        LD      (IX+SQ_PENDING),A
+        LD      (IX+SQ_RLE_FLAGS),SQF_PENDING
+S_RLE_READY:
+        LD      A,(IX+SQ_RUNLEN)
+        CP      2
+        JR      C,S_RLE_SINGLE
+        LD      (IX+SQ_RLE_STATE),4
+        JR      Z,S_RLE_SINGLE
+        LD      (IX+SQ_RLE_STATE),2
+S_RLE_SINGLE:
+        LD      A,(IX+SQ_LAST)
+        JP      S_RLE_BYTE
+
+; Array address helpers: HL=node index -> HL=address, DE preserved.
+S_WEIGHT_ADDR:
+        ADD     HL,HL
+        LD      BC,SQ_WEIGHTS
+        JR      S_ADDR_ADD
+S_PARENT_ADDR:
+        ADD     HL,HL
+        LD      BC,SQ_PARENTS
+        JR      S_ADDR_ADD
+S_CHILD_ADDR:
+        LD      BC,257
+        OR      A
+        SBC     HL,BC
+        ADD     HL,HL
+        ADD     HL,HL
+        LD      BC,SQ_CHILDREN
+S_ADDR_ADD:
+        ADD     HL,BC
+        PUSH    IX
+        POP     BC
+        ADD     HL,BC
+        RET
+
+SQ_SCAN:
+        LD      A,CP_READY
+        CALL    CX_CHECK_STATE
+        RET     C
+S_SCAN_LOOP:
+        CALL    S_RLE
+        RET     C
+        PUSH    DE
+        LD      H,D
+        LD      L,E
+        CALL    S_WEIGHT_ADDR
+        INC     (HL)
+        JR      NZ,S_SCAN_COUNT
+        INC     HL
+        INC     (HL)
+S_SCAN_COUNT:
+        LD      L,(IX+SQ_TOTAL)
+        LD      H,(IX+SQ_TOTAL+1)
+        INC     HL
+        LD      (IX+SQ_TOTAL),L
+        LD      (IX+SQ_TOTAL+1),H
+        LD      A,H
+        CP      080H
+        CALL    Z,S_RESCALE
+        POP     DE
+        LD      A,D
+        OR      A
+        JR      Z,S_SCAN_LOOP
+        LD      L,(IX+SQ_SUM)
+        LD      H,(IX+SQ_SUM+1)
+        LD      (IX+SQ_EXPECT),L
+        LD      (IX+SQ_EXPECT+1),H
+        PUSH    IX
+        POP     HL
+        LD      DE,SQ_COUNT
+        ADD     HL,DE
+        LD      D,H
+        LD      E,L
+        INC     DE
+        INC     DE
+        INC     DE
+        INC     DE
+        LD      BC,4
+        LDIR
+        CALL    S_BUILD_TREE
+        CALL    CX_CALL_REWIND
+        JP      C,CX_REWIND_ERROR
+        XOR     A
+        LD      (IX+SQ_SUM),A
+        LD      (IX+SQ_SUM+1),A
+        LD      (IX+SQ_COUNT),A
+        LD      (IX+SQ_COUNT+1),A
+        LD      (IX+SQ_COUNT+2),A
+        LD      (IX+SQ_COUNT+3),A
+        LD      (IX+SQ_RLE_STATE),A
+        LD      (IX+SQ_RLE_FLAGS),A
+        LD      (IX+SQ_OUTBYTE),A
+        LD      (IX+SQ_OUTMASK),1
+        JP      CX_DATA
+
+; Halve leaf frequencies, rounding up, keeping every used leaf nonzero.
+; Trigger at total=32768; recompute total (at most 16512) without overflow.
+S_RESCALE:
+        PUSH    IX
+        POP     HL
+        LD      DE,SQ_WEIGHTS
+        ADD     HL,DE
+        LD      BC,257
+        XOR     A
+        LD      (IX+SQ_TOTAL),A
+        LD      (IX+SQ_TOTAL+1),A
+S_RESCALE_LOOP:
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      A,E
+        AND     1
+        SRL     D
+        RR      E
+        OR      A
+        JR      Z,S_RESCALE_STORE
+        INC     DE
+S_RESCALE_STORE:
+        LD      (HL),D
+        DEC     HL
+        LD      (HL),E
+        INC     HL
+        INC     HL
+        PUSH    HL
+        LD      L,(IX+SQ_TOTAL)
+        LD      H,(IX+SQ_TOTAL+1)
+        ADD     HL,DE
+        LD      (IX+SQ_TOTAL),L
+        LD      (IX+SQ_TOTAL+1),H
+        POP     HL
+        DEC     BC
+        LD      A,B
+        OR      C
+        JR      NZ,S_RESCALE_LOOP
+        RET
+
+; Find first least nonzero weight among allocated nodes. NC/HL=index,
+; DE=weight. C if none. Consumed nodes have weight zero; parent/children
+; retain the tree. Deterministic ties use lowest full node index.
+S_FIND_MIN:
+        LD      (IX+SQ_MIN_INDEX),0FFH
+        LD      (IX+SQ_MIN_INDEX+1),0FFH
+        LD      (IX+SQ_MIN_WEIGHT),0FFH
+        LD      (IX+SQ_MIN_WEIGHT+1),0FFH
+        PUSH    IX
+        POP     HL
+        LD      DE,SQ_WEIGHTS
+        ADD     HL,DE
+        LD      BC,0
+S_FIND_LOOP:
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        LD      A,D
+        OR      E
+        JR      Z,S_FIND_NEXT
+        LD      A,D
+        CP      (IX+SQ_MIN_WEIGHT+1)
+        JR      C,S_FIND_SAVE
+        JR      NZ,S_FIND_NEXT
+        LD      A,E
+        CP      (IX+SQ_MIN_WEIGHT)
+        JR      NC,S_FIND_NEXT
+S_FIND_SAVE:
+        LD      (IX+SQ_MIN_WEIGHT),E
+        LD      (IX+SQ_MIN_WEIGHT+1),D
+        LD      (IX+SQ_MIN_INDEX),C
+        LD      (IX+SQ_MIN_INDEX+1),B
+S_FIND_NEXT:
+        INC     BC
+        LD      A,(IX+SQ_NEXT)
+        CP      C
+        JR      NZ,S_FIND_LOOP
+        LD      A,(IX+SQ_NEXT+1)
+        CP      B
+        JR      NZ,S_FIND_LOOP
+        LD      L,(IX+SQ_MIN_INDEX)
+        LD      H,(IX+SQ_MIN_INDEX+1)
+        LD      E,(IX+SQ_MIN_WEIGHT)
+        LD      D,(IX+SQ_MIN_WEIGHT+1)
+        LD      A,H
+        CP      0FFH
+        JR      Z,S_FIND_NONE
+        OR      A
+        RET
+S_FIND_NONE:
+        SCF
+        RET
+
+S_BUILD_TREE:
+        LD      (IX+SQ_NEXT),1
+        LD      (IX+SQ_NEXT+1),1         ; 257
+S_BUILD_LOOP:
+        CALL    S_FIND_MIN
+        LD      (IX+SQ_FIRST_INDEX),L
+        LD      (IX+SQ_FIRST_INDEX+1),H
+        LD      (IX+SQ_FIRST_WEIGHT),E
+        LD      (IX+SQ_FIRST_WEIGHT+1),D
+        CALL    S_WEIGHT_ADDR
+        LD      (HL),0
+        INC     HL
+        LD      (HL),0
+        CALL    S_FIND_MIN
+        JR      C,S_BUILD_ROOT
+        CALL    S_WEIGHT_ADDR
+        LD      (HL),0
+        INC     HL
+        LD      (HL),0
+        LD      L,(IX+SQ_FIRST_WEIGHT)
+        LD      H,(IX+SQ_FIRST_WEIGHT+1)
+        ADD     HL,DE
+        LD      D,H
+        LD      E,L
+        LD      L,(IX+SQ_NEXT)
+        LD      H,(IX+SQ_NEXT+1)
+        CALL    S_WEIGHT_ADDR
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      L,(IX+SQ_NEXT)
+        LD      H,(IX+SQ_NEXT+1)
+        CALL    S_CHILD_ADDR
+        LD      E,(IX+SQ_FIRST_INDEX)
+        LD      D,(IX+SQ_FIRST_INDEX+1)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      E,(IX+SQ_MIN_INDEX)
+        LD      D,(IX+SQ_MIN_INDEX+1)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      L,(IX+SQ_FIRST_INDEX)
+        LD      H,(IX+SQ_FIRST_INDEX+1)
+        LD      E,(IX+SQ_NEXT)
+        LD      D,(IX+SQ_NEXT+1)
+        CALL    S_PARENT_ADDR
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        LD      L,(IX+SQ_MIN_INDEX)
+        LD      H,(IX+SQ_MIN_INDEX+1)
+        LD      A,D
+        OR      080H
+        LD      D,A
+        CALL    S_PARENT_ADDR
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     (IX+SQ_NEXT)
+        JP      NZ,S_BUILD_LOOP
+        INC     (IX+SQ_NEXT+1)
+        JP      S_BUILD_LOOP
+S_BUILD_ROOT:
+        LD      L,(IX+SQ_FIRST_INDEX)
+        LD      H,(IX+SQ_FIRST_INDEX+1)
+        LD      (IX+SQ_ROOT),L
+        LD      (IX+SQ_ROOT+1),H
+        LD      DE,256
+        OR      A
+        SBC     HL,DE
+        LD      (IX+SQ_TREE_NODES),L
+        LD      (IX+SQ_TREE_NODES+1),H
+        RET
+
+; Callback output wrapper preserves BC/DE/HL even if callback destroys them.
+S_WRITE:
+        PUSH    BC
+        PUSH    DE
+        PUSH    HL
+        CALL    CX_CALL_WRITE
+        POP     HL
+        POP     DE
+        POP     BC
+        RET     NC
+        JP      CX_WRITE_ERROR
+S_WRITE_WORD:
+        LD      A,E
+        CALL    S_WRITE
+        RET     C
+        LD      A,D
+        JP      S_WRITE
+
+S_HEADER:
+        LD      A,076H
+        CALL    S_WRITE
+        RET     C
+        LD      A,0FFH
+        CALL    S_WRITE
+        RET     C
+        LD      E,(IX+SQ_EXPECT)
+        LD      D,(IX+SQ_EXPECT+1)
+        CALL    S_WRITE_WORD
+        RET     C
+        PUSH    IX
+        POP     HL
+        LD      DE,SQ_NAME
+        ADD     HL,DE
+        LD      B,(IX+SQ_NAMLEN)
+        INC     B
+S_HEADER_NAME:
+        LD      A,(HL)
+        CALL    S_WRITE
+        RET     C
+        INC     HL
+        DJNZ    S_HEADER_NAME
+        LD      E,(IX+SQ_TREE_NODES)
+        LD      D,(IX+SQ_TREE_NODES+1)
+        CALL    S_WRITE_WORD
+        RET     C
+        LD      B,D
+        LD      C,E
+        LD      L,(IX+SQ_ROOT)
+        LD      H,(IX+SQ_ROOT+1)
+S_HEADER_NODE:
+        LD      A,B
+        OR      C
+        RET     Z
+        PUSH    BC
+        PUSH    HL
+        CALL    S_CHILD_ADDR
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        PUSH    HL
+        CALL    S_HEADER_CHILD
+        POP     HL
+        JR      C,S_HEADER_UNWIND
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        CALL    S_HEADER_CHILD
+S_HEADER_UNWIND:
+        POP     HL
+        POP     BC
+        RET     C
+        DEC     HL
+        DEC     BC
+        JR      S_HEADER_NODE
+S_HEADER_CHILD:
+        LD      H,D
+        LD      L,E
+        LD      BC,257
+        OR      A
+        SBC     HL,BC
+        JR      NC,S_HEADER_INTERNAL
+        LD      A,E
+        CPL
+        LD      E,A
+        LD      A,D
+        CPL
+        LD      D,A
+        JP      S_WRITE_WORD
+S_HEADER_INTERNAL:
+        LD      L,(IX+SQ_ROOT)
+        LD      H,(IX+SQ_ROOT+1)
+        OR      A
+        SBC     HL,DE
+        LD      D,H
+        LD      E,L
+        JP      S_WRITE_WORD
+
+; Encode DE symbol by collecting its parent edges, then emitting in reverse.
+; Zero-bit codes are permitted only for the single root leaf (empty input).
+S_ENCODE:
+        LD      H,D
+        LD      L,E
+        LD      BC,0
+S_ENCODE_WALK:
+        PUSH    BC
+        CALL    S_PARENT_ADDR
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        POP     BC
+        LD      A,D
+        CP      0FFH
+        JR      Z,S_ENCODE_ROOT
+        AND     080H
+        RLCA
+        PUSH    DE
+        LD      HL,SQ_PATH
+        ADD     HL,BC
+        PUSH    IX
+        POP     DE
+        ADD     HL,DE
+        LD      (HL),A
+        POP     DE
+        LD      A,D
+        AND     07FH
+        LD      H,A
+        LD      L,E
+        INC     BC
+        JR      S_ENCODE_WALK
+S_ENCODE_ROOT:
+        LD      A,B
+        OR      C
+        JR      NZ,S_ENCODE_PATH
+        ; Only an empty stream has a zero-node tree. Other unparented leaves
+        ; mean pass two introduced a symbol absent during analysis.
+        LD      A,(IX+SQ_TREE_NODES)
+        OR      (IX+SQ_TREE_NODES+1)
+        JP      NZ,S_CHANGED
+        OR      A
+        RET
+S_ENCODE_PATH:
+        LD      (IX+SQ_PATHLEN),C
+        LD      (IX+SQ_PATHLEN+1),B
+        LD      HL,SQ_PATH
+        ADD     HL,BC
+        PUSH    IX
+        POP     DE
+        ADD     HL,DE
+        DEC     HL
+S_ENCODE_BIT:
+        LD      A,(HL)
+        OR      A
+        JR      Z,S_ENCODE_SHIFT
+        LD      A,(IX+SQ_OUTBYTE)
+        OR      (IX+SQ_OUTMASK)
+        LD      (IX+SQ_OUTBYTE),A
+S_ENCODE_SHIFT:
+        LD      A,(IX+SQ_OUTMASK)
+        RLCA
+        LD      (IX+SQ_OUTMASK),A
+        JR      NC,S_ENCODE_NEXT
+        LD      A,(IX+SQ_OUTBYTE)
+        CALL    S_WRITE
+        RET     C
+        XOR     A
+        LD      (IX+SQ_OUTBYTE),A
+S_ENCODE_NEXT:
+        DEC     HL
+        DEC     BC
+        LD      A,B
+        OR      C
+        JR      NZ,S_ENCODE_BIT
+        OR      A
+        RET
+
+SQ_RUN:
+        LD      A,(IX+CX_PHASE)
+        CP      CP_DONE
+        JP      Z,CX_DONE
+        LD      A,CP_DATA
+        CALL    CX_CHECK_STATE
+        RET     C
+        CALL    S_HEADER
+        RET     C
+S_RUN_LOOP:
+        CALL    S_RLE
+        RET     C
+        LD      A,D
+        OR      A
+        JR      NZ,S_RUN_EOF
+        CALL    S_ENCODE
+        RET     C
+        JR      S_RUN_LOOP
+S_RUN_EOF:
+        PUSH    DE
+        LD      L,(IX+SQ_SUM)
+        LD      H,(IX+SQ_SUM+1)
+        LD      E,(IX+SQ_EXPECT)
+        LD      D,(IX+SQ_EXPECT+1)
+        OR      A
+        SBC     HL,DE
+        JR      NZ,S_RUN_CHANGED
+        PUSH    IX
+        POP     HL
+        LD      DE,SQ_COUNT
+        ADD     HL,DE
+        LD      D,H
+        LD      E,L
+        INC     DE
+        INC     DE
+        INC     DE
+        INC     DE
+        LD      B,4
+S_RUN_COMPARE:
+        LD      A,(DE)
+        CP      (HL)
+        JR      NZ,S_RUN_CHANGED
+        INC     DE
+        INC     HL
+        DJNZ    S_RUN_COMPARE
+        POP     DE
+        CALL    S_ENCODE
+        RET     C
+        LD      A,(IX+SQ_OUTMASK)
+        CP      1
+        JR      Z,S_RUN_DONE
+        LD      A,(IX+SQ_OUTBYTE)
+        CALL    S_WRITE
+        RET     C
+S_RUN_DONE:
+        JP      CX_DONE
+S_RUN_CHANGED:
+        POP     DE
+S_CHANGED:
+        LD      E,SD_CHANGED
+        LD      A,CS_CHECK
+        JP      CX_FAIL
+
+        ENDM
