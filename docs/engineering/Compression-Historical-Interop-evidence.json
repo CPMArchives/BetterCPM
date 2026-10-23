@@ -1,0 +1,3841 @@
+{
+  "timestamp_utc": "2026-10-23T11:53:10.001535+00:00",
+  "test_source_sha256": "33a8c1bc729c21e7afe78b2073b96644f5ff7d73b1a732a486e44b8e24d38e28",
+  "result_counts": {
+    "DECODED": 148,
+    "EXPECTED_REFUSAL": 26,
+    "HISTORICAL_SKIP": 3,
+    "HISTORICAL_ENCODER_DEFECT": 1
+  },
+  "implementation_sources": {
+    "src/codec/codec.mac": "faf82ff27d19a35fec9c73d684d9181d91532d70fe8b09d997834feccccf5c77",
+    "src/codec/cr.mac": "bb784bd32aa2f8783a3562de761b59900505bb350e05f2ba937a68500f99aaf1",
+    "src/codec/lzh.mac": "e3f0ef1fc86b8c27e5c394225b3c2227b1428b3d622a1cafb4d2998c7e78d9da",
+    "src/codec/sq.mac": "f507fe6ca4d2d9eba9687cc4d6d59f61ed37802ada8303ce2b7dc68f81e46a5f",
+    "src/codec/uncr.mac": "eea960e4b1877c3bb40f59780df56eaae3dc34b78089629136836d354f347499",
+    "src/codec/unlzh.mac": "4b5eb572f22ba3992e3224a38634885368cd077955f71d8a6c027b7672cd9842",
+    "src/codec/usq.mac": "8e2e258b0799065ff62dfa283dd4f7811fb4813f443cc3907dd12c23e6bd513a",
+    "src/utilities/cr.mac": "9b384ae471b6334868f8f1cd72ef5bbe44ea6e8f06397a931e724d599ead903a",
+    "src/utilities/lzh.mac": "4c7633b5611e1fb7e5542bb4cc3d9af49c137c6c45d8516e77cd09d640015ea3",
+    "src/utilities/sq.mac": "5812c2195b43a6f527a948403540bf6742350d78ede01a609220c58ed1b25c63",
+    "src/utilities/uncr.mac": "a963aee632ae97c8f1d7436c0c9c2e2fafdf1274ae11b9e9955d35f772cd8d62",
+    "src/utilities/unlzh.mac": "65703be423ffa8a790cd121f58214bb8b61d1c86d82c87bd223b276582473925",
+    "src/utilities/usq.mac": "918c793d42ef8e17b92343bd57ad427cf70a85a0139f989351990c61a4f88434"
+  },
+  "status": "PASS",
+  "environment": "stock z80pack 62K CP/M 2.2, Z80, disposable IBM-3740 disks, user 0",
+  "simulator_sha256": "b91a99964db2492b2ad99bde68952a616a12c3d28f342f03341199ba5462a6c4",
+  "boot_template_sha256": "c0e63f206f6875398817207c00eb99f749d73b319c86329d5947fb2482d28945",
+  "historical_artifacts": {
+    "SQ17.COM": {
+      "url": "https://dflund.se/~pi/cpm/files/ftp.mayn.de/pub/cpm/archive/squsq/sq-17.com",
+      "bytes": 16128,
+      "sha256": "e30364aae9a5557d1d11b1320f0a42066b45d16f36bbfe0ad5a0fc558c4dda8b"
+    },
+    "USQ20.COM": {
+      "url": "https://dflund.se/~pi/cpm/files/ftp.mayn.de/pub/cpm/archive/squsq/usq-20.com",
+      "bytes": 12800,
+      "sha256": "0a43d21823206c247b9eaefa4d8fc730e8b377128aa3f2da74b0be8c3e87791d"
+    },
+    "USQ120.COM": {
+      "url": "https://dflund.se/~pi/cpm/files/ftp.mayn.de/pub/cpm/archive/squsq/usq120.com",
+      "bytes": 1920,
+      "sha256": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+    },
+    "CRUNCH.COM": {
+      "url": "https://dflund.se/~pi/cpm/files/ftp.mayn.de/pub/cpm/archive/squsq/crunch24/crunch.com",
+      "bytes": 5888,
+      "sha256": "f29121a2b38b7f49d1b1c00efc8e35cae8793d1acdf9be9e63c64e5f1e48f0b0"
+    },
+    "UNCR.COM": {
+      "url": "https://dflund.se/~pi/cpm/files/ftp.mayn.de/pub/cpm/archive/squsq/crunch24/uncr.com",
+      "bytes": 6400,
+      "sha256": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+    },
+    "CRLZH11.COM": {
+      "url": "https://dflund.se/~pi/cpm/files/ftp.mayn.de/pub/cpm/archive/squsq/crlzh11/crlzh11.com",
+      "bytes": 7680,
+      "sha256": "153c73f20ed995fe08c0086423dd028848d8b64507bbcf87d156528853b1d70e"
+    },
+    "CRLZH20.COM": {
+      "url": "https://dflund.se/~pi/cpm/files/ftp.mayn.de/pub/cpm/archive/squsq/crlzh20/crlzh20.com",
+      "bytes": 7808,
+      "sha256": "365efa8f400c4809d69f5e81d35f7f8a57f81543fd6c48654775a7691d93287d"
+    },
+    "UCRLZH20.COM": {
+      "url": "https://dflund.se/~pi/cpm/files/ftp.mayn.de/pub/cpm/archive/squsq/crlzh20/ucrlzh20.com",
+      "bytes": 8704,
+      "sha256": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+    },
+    "sq111.lbr": {
+      "url": "https://dflund.se/~pi/cpm/files/ftp.mayn.de/pub/cpm/archive/squsq/sq111.lbr",
+      "bytes": 12160,
+      "sha256": "e3e0be5f5f2f334a89e5cf9848bb6d6884550edd295eb723f4cdef3c0727f090"
+    },
+    "usqfst20.lbr": {
+      "url": "https://dflund.se/~pi/cpm/files/ftp.mayn.de/pub/cpm/archive/squsq/usqfst20.lbr",
+      "bytes": 27520,
+      "sha256": "c321f884e9cf1a15c5927f0751f4993eaad37af957ee1429c53f7a9c0748e1b5"
+    }
+  },
+  "our_commands": {
+    "SQ": {
+      "bytes": 7410,
+      "sha256": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35"
+    },
+    "USQ": {
+      "bytes": 4684,
+      "sha256": "c3406d8c7ccac1f33fce0eab2ab8422f65d91938bcea9c38a7ae078bad463e19"
+    },
+    "CR": {
+      "bytes": 28732,
+      "sha256": "184d827867bd28e9df0016d3c17d316c98b93183dd6bbe84e64f90807c9444e6"
+    },
+    "UNCR": {
+      "bytes": 30491,
+      "sha256": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5"
+    },
+    "LZH": {
+      "bytes": 16512,
+      "sha256": "657aecf40c664a4958c9e64d7011bc9e810a4143946cbce116665b03f5d8783f"
+    },
+    "UNLZH": {
+      "bytes": 11498,
+      "sha256": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+    }
+  },
+  "cases": [
+    {
+      "case": "SQ17-to-USQ-EMPTY",
+      "commands": [
+        "HENC B: EMPTY",
+        "CTRL B: B:EMPTY.QQQ",
+        "DEC B:EMPTY.QQQ C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "e30364aae9a5557d1d11b1320f0a42066b45d16f36bbfe0ad5a0fc558c4dda8b",
+        "DEC.COM": "c3406d8c7ccac1f33fce0eab2ab8422f65d91938bcea9c38a7ae078bad463e19",
+        "CTRL.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "EMPTY": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "console": "SQ17-to-USQ-EMPTY.console.txt",
+      "console_sha256": "6d8b3e17dbc8c958de861d026464deb3b2063fa909710152d954611b18964ce5",
+      "encoded_sha256": "be8ee707c7b99c4fa5bcd9de0a28d185b8f9823b932e573758a4148802e4f0a8",
+      "decoded_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decoded_bytes": 0,
+      "historical_control_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ17-to-USQ-ONE-A",
+      "commands": [
+        "HENC B: ONE.A",
+        "CTRL B: B:ONE.AQ",
+        "DEC B:ONE.AQ C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "e30364aae9a5557d1d11b1320f0a42066b45d16f36bbfe0ad5a0fc558c4dda8b",
+        "DEC.COM": "c3406d8c7ccac1f33fce0eab2ab8422f65d91938bcea9c38a7ae078bad463e19",
+        "CTRL.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "ONE.A": "a6b8fd253e264c54cb6b069efc2ae6e1fb1efe07ac94ddbc136b15007b714234"
+      },
+      "console": "SQ17-to-USQ-ONE-A.console.txt",
+      "console_sha256": "03556fb3ada17a847fad59a53fcd6476770681bc5214c412fa31e2edaaa3b54d",
+      "encoded_sha256": "a15ac58b973f44c90e055f3102de824f7cb5e1114d37359de0d02cf93667a3f9",
+      "decoded_sha256": "a6b8fd253e264c54cb6b069efc2ae6e1fb1efe07ac94ddbc136b15007b714234",
+      "decoded_bytes": 128,
+      "historical_control_sha256": "a6b8fd253e264c54cb6b069efc2ae6e1fb1efe07ac94ddbc136b15007b714234",
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ17-to-USQ-TWO-AB",
+      "commands": [
+        "HENC B: TWO.AB",
+        "CTRL B: B:TWO.AQ",
+        "DEC B:TWO.AQ C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "e30364aae9a5557d1d11b1320f0a42066b45d16f36bbfe0ad5a0fc558c4dda8b",
+        "DEC.COM": "c3406d8c7ccac1f33fce0eab2ab8422f65d91938bcea9c38a7ae078bad463e19",
+        "CTRL.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "TWO.AB": "a2ee2df14a36909ccd0cc6708d9506a821b28b5f4c3ec10dbd78ae48b6a0d9d2"
+      },
+      "console": "SQ17-to-USQ-TWO-AB.console.txt",
+      "console_sha256": "0e7d41595290c762a88a4151ea49e43079fdb3b421342fda6e94e64eac9c2e26",
+      "encoded_sha256": "7a44392a80ed2a50e6adc3d7ed62ebf65a795447195bccaeab92b64c42fd31a3",
+      "decoded_sha256": "a2ee2df14a36909ccd0cc6708d9506a821b28b5f4c3ec10dbd78ae48b6a0d9d2",
+      "decoded_bytes": 128,
+      "historical_control_sha256": "a2ee2df14a36909ccd0cc6708d9506a821b28b5f4c3ec10dbd78ae48b6a0d9d2",
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ17-to-USQ-NOEXT",
+      "commands": [
+        "HENC B: NOEXT",
+        "CTRL B: B:NOEXT.QQQ",
+        "DEC B:NOEXT.QQQ C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "e30364aae9a5557d1d11b1320f0a42066b45d16f36bbfe0ad5a0fc558c4dda8b",
+        "DEC.COM": "c3406d8c7ccac1f33fce0eab2ab8422f65d91938bcea9c38a7ae078bad463e19",
+        "CTRL.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "NOEXT": "b429dfd978bc455a61e44e0b1224fe72665d02ded06009e2f2e52e053645b29b"
+      },
+      "console": "SQ17-to-USQ-NOEXT.console.txt",
+      "console_sha256": "6d584178bf8fbd513f02393811cbd1b3f29efa13beba086370851cb1ae70d05e",
+      "encoded_sha256": "e97cdd248e59f28549861e9a1fe74cb246e648eaf29291635381e816721b3622",
+      "decoded_sha256": "b429dfd978bc455a61e44e0b1224fe72665d02ded06009e2f2e52e053645b29b",
+      "decoded_bytes": 128,
+      "historical_control_sha256": "b429dfd978bc455a61e44e0b1224fe72665d02ded06009e2f2e52e053645b29b",
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ17-to-USQ-R127-BIN",
+      "commands": [
+        "HENC B: R127.BIN",
+        "CTRL B: B:R127.BQN",
+        "DEC B:R127.BQN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "e30364aae9a5557d1d11b1320f0a42066b45d16f36bbfe0ad5a0fc558c4dda8b",
+        "DEC.COM": "c3406d8c7ccac1f33fce0eab2ab8422f65d91938bcea9c38a7ae078bad463e19",
+        "CTRL.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "R127.BIN": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62"
+      },
+      "console": "SQ17-to-USQ-R127-BIN.console.txt",
+      "console_sha256": "583029ca999177dcddc883098c5eb950f0b89f3188169050e04749bde0c81a0e",
+      "encoded_sha256": "29a7410a8596738dadd3f66ab8bced87fe7dd00d6a129185f18f3a1b48f4b5ce",
+      "decoded_sha256": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62",
+      "decoded_bytes": 128,
+      "historical_control_sha256": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62",
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ17-to-USQ-R128-BIN",
+      "commands": [
+        "HENC B: R128.BIN",
+        "CTRL B: B:R128.BQN",
+        "DEC B:R128.BQN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "e30364aae9a5557d1d11b1320f0a42066b45d16f36bbfe0ad5a0fc558c4dda8b",
+        "DEC.COM": "c3406d8c7ccac1f33fce0eab2ab8422f65d91938bcea9c38a7ae078bad463e19",
+        "CTRL.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "R128.BIN": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5"
+      },
+      "console": "SQ17-to-USQ-R128-BIN.console.txt",
+      "console_sha256": "ac6503b3ceeeeb22b2aa6ffb6cc25b241863884c1a0fa27444fe5c6379c45de7",
+      "encoded_sha256": "728490ddfe60ebfd476dcea7b911eab8c1cb585e3328097cb8b3a5cf7a36ee0b",
+      "decoded_sha256": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5",
+      "decoded_bytes": 128,
+      "historical_control_sha256": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5",
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ17-to-USQ-R129-BIN",
+      "commands": [
+        "HENC B: R129.BIN",
+        "CTRL B: B:R129.BQN",
+        "DEC B:R129.BQN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "e30364aae9a5557d1d11b1320f0a42066b45d16f36bbfe0ad5a0fc558c4dda8b",
+        "DEC.COM": "c3406d8c7ccac1f33fce0eab2ab8422f65d91938bcea9c38a7ae078bad463e19",
+        "CTRL.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "R129.BIN": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e"
+      },
+      "console": "SQ17-to-USQ-R129-BIN.console.txt",
+      "console_sha256": "cfc5feccdf96cc84f397437d1c72983d83401ddd3b1456ea3964747c88d97e78",
+      "encoded_sha256": "028617ed5eb2899a7f0a0e7d06aa91ce7651f61ec8171ab2bb8ce0bafc7104dd",
+      "decoded_sha256": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e",
+      "decoded_bytes": 256,
+      "historical_control_sha256": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e",
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ17-to-USQ-BINARY-BIN",
+      "commands": [
+        "HENC B: BINARY.BIN",
+        "CTRL B: B:BINARY.BQN",
+        "DEC B:BINARY.BQN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "e30364aae9a5557d1d11b1320f0a42066b45d16f36bbfe0ad5a0fc558c4dda8b",
+        "DEC.COM": "c3406d8c7ccac1f33fce0eab2ab8422f65d91938bcea9c38a7ae078bad463e19",
+        "CTRL.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "BINARY.BIN": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9"
+      },
+      "console": "SQ17-to-USQ-BINARY-BIN.console.txt",
+      "console_sha256": "c17374fccd3d34c4fe8a143b3ab5d2e9a6b61a6298b7eae79822b775fe78a2e1",
+      "encoded_sha256": "b7097aaa86fd7172e026c89c379fe0b1e3f5133d30b5a3a16cd162db7eb7d1d5",
+      "decoded_sha256": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9",
+      "decoded_bytes": 1024,
+      "historical_control_sha256": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9",
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ17-to-USQ-RUNS-DAT",
+      "commands": [
+        "HENC B: RUNS.DAT",
+        "CTRL B: B:RUNS.DQT",
+        "DEC B:RUNS.DQT C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "e30364aae9a5557d1d11b1320f0a42066b45d16f36bbfe0ad5a0fc558c4dda8b",
+        "DEC.COM": "c3406d8c7ccac1f33fce0eab2ab8422f65d91938bcea9c38a7ae078bad463e19",
+        "CTRL.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "RUNS.DAT": "a8d5c7c111966ae292d447347442dde9e93b26a8bbf99f7beac3301cea036833"
+      },
+      "console": "SQ17-to-USQ-RUNS-DAT.console.txt",
+      "console_sha256": "e87c127ea9ddb040e802b027afecd65f4ffd6f6753a48a839b4c582fd43340ed",
+      "encoded_sha256": "880fcdc8d43cf0b4fe5626441d1274ccee9fe1df4d09d11834a17701e06a90d6",
+      "decoded_sha256": "a8d5c7c111966ae292d447347442dde9e93b26a8bbf99f7beac3301cea036833",
+      "decoded_bytes": 20096,
+      "historical_control_sha256": "a8d5c7c111966ae292d447347442dde9e93b26a8bbf99f7beac3301cea036833",
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ17-to-USQ-LEADDLE-BIN",
+      "commands": [
+        "HENC B: LEADDLE.BIN",
+        "CTRL B: B:LEADDLE.BQN",
+        "DEC B:LEADDLE.BQN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "e30364aae9a5557d1d11b1320f0a42066b45d16f36bbfe0ad5a0fc558c4dda8b",
+        "DEC.COM": "c3406d8c7ccac1f33fce0eab2ab8422f65d91938bcea9c38a7ae078bad463e19",
+        "CTRL.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "LEADDLE.BIN": "0206ce9478c9dc85816a5fa4c56365ea5a1939d2cb8d649eb633232cd3d4f549"
+      },
+      "console": "SQ17-to-USQ-LEADDLE-BIN.console.txt",
+      "console_sha256": "1c465fcff7789e8d9881b5bf17153bb65dbdb47d6a9dae8c34c6e270da42774a",
+      "encoded_sha256": "197b53d71ccc6d01e05e8516da36c41213bb4e2d13aee791de6dc723d4af7487",
+      "decoded_sha256": "0206ce9478c9dc85816a5fa4c56365ea5a1939d2cb8d649eb633232cd3d4f549",
+      "decoded_bytes": 20096,
+      "historical_control_sha256": "0206ce9478c9dc85816a5fa4c56365ea5a1939d2cb8d649eb633232cd3d4f549",
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ17-to-USQ-TEXT-TXT",
+      "commands": [
+        "HENC B: TEXT.TXT",
+        "CTRL B: B:TEXT.TQT",
+        "DEC B:TEXT.TQT C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "e30364aae9a5557d1d11b1320f0a42066b45d16f36bbfe0ad5a0fc558c4dda8b",
+        "DEC.COM": "c3406d8c7ccac1f33fce0eab2ab8422f65d91938bcea9c38a7ae078bad463e19",
+        "CTRL.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "TEXT.TXT": "99424d57511ba26b16dc93ce9fac150f4227e52f4c28285c21d948546afd9312"
+      },
+      "console": "SQ17-to-USQ-TEXT-TXT.console.txt",
+      "console_sha256": "a9c2c714818da309ffc665b0cb1ef348a75fb92bc31278b2ae3551ed4ce54d60",
+      "encoded_sha256": "7868bd0a533628b8d1583a08fca30cb0a39fa6a96b38daeaeb0636e35957553f",
+      "decoded_sha256": "99424d57511ba26b16dc93ce9fac150f4227e52f4c28285c21d948546afd9312",
+      "decoded_bytes": 34048,
+      "historical_control_sha256": "99424d57511ba26b16dc93ce9fac150f4227e52f4c28285c21d948546afd9312",
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ17-to-USQ-EXTENT-BIN",
+      "commands": [
+        "HENC B: EXTENT.BIN",
+        "CTRL B: B:EXTENT.BQN",
+        "DEC B:EXTENT.BQN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "e30364aae9a5557d1d11b1320f0a42066b45d16f36bbfe0ad5a0fc558c4dda8b",
+        "DEC.COM": "c3406d8c7ccac1f33fce0eab2ab8422f65d91938bcea9c38a7ae078bad463e19",
+        "CTRL.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "EXTENT.BIN": "c867e94a6a20406a88f01204dcd0c89f827f4800dfb6dd50d6ffb66d260813b7"
+      },
+      "console": "SQ17-to-USQ-EXTENT-BIN.console.txt",
+      "console_sha256": "48cf6f868d509f3809cd61fc867288f31d6085e1e69d907f2a1b932ce7b68398",
+      "encoded_sha256": "910958ab566bda8e053699bfe69410014c78842bd0a9158ad256d0015d801af9",
+      "decoded_sha256": "c867e94a6a20406a88f01204dcd0c89f827f4800dfb6dd50d6ffb66d260813b7",
+      "decoded_bytes": 17024,
+      "historical_control_sha256": "c867e94a6a20406a88f01204dcd0c89f827f4800dfb6dd50d6ffb66d260813b7",
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ17-to-USQ-BIG-BIN",
+      "commands": [
+        "HENC B: BIG.BIN",
+        "CTRL B: B:BIG.BQN",
+        "DEC B:BIG.BQN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "e30364aae9a5557d1d11b1320f0a42066b45d16f36bbfe0ad5a0fc558c4dda8b",
+        "DEC.COM": "c3406d8c7ccac1f33fce0eab2ab8422f65d91938bcea9c38a7ae078bad463e19",
+        "CTRL.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "BIG.BIN": "e95ce14efd774934338be75dabb4d48c728e3eab7d6a368547a9e6138aa9017e"
+      },
+      "console": "SQ17-to-USQ-BIG-BIN.console.txt",
+      "console_sha256": "84a925377a39a743c9069cc3ce964059d2f590e03dab60407de8f1f497ba87c8",
+      "encoded_sha256": "6116d80ade024e94a83d04ef39e56cfac37c1cd097bf3caa9515f25ed94eba9f",
+      "decoded_sha256": "e95ce14efd774934338be75dabb4d48c728e3eab7d6a368547a9e6138aa9017e",
+      "decoded_bytes": 70016,
+      "historical_control_sha256": "e95ce14efd774934338be75dabb4d48c728e3eab7d6a368547a9e6138aa9017e",
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ17-to-USQ-RING-BIN",
+      "commands": [
+        "HENC B: RING.BIN",
+        "CTRL B: B:RING.BQN",
+        "DEC B:RING.BQN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "e30364aae9a5557d1d11b1320f0a42066b45d16f36bbfe0ad5a0fc558c4dda8b",
+        "DEC.COM": "c3406d8c7ccac1f33fce0eab2ab8422f65d91938bcea9c38a7ae078bad463e19",
+        "CTRL.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "RING.BIN": "2b60cf9ea45e81b48a1c303bb7ea281a834b31048c9c97724be350847f559397"
+      },
+      "console": "SQ17-to-USQ-RING-BIN.console.txt",
+      "console_sha256": "a0c6cfae6737dfe19a91dea027b9cb4ecc82dde8d1e1a0b9ec2b875c126d398e",
+      "encoded_sha256": "45c09859f123047454aa0d7d7567d0f9047000aab877e29d48e06bf6ddebc26b",
+      "decoded_sha256": "2b60cf9ea45e81b48a1c303bb7ea281a834b31048c9c97724be350847f559397",
+      "decoded_bytes": 4224,
+      "historical_control_sha256": "2b60cf9ea45e81b48a1c303bb7ea281a834b31048c9c97724be350847f559397",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRUNCH-to-UNCR-EMPTY",
+      "commands": [
+        "HENC EMPTY /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "f29121a2b38b7f49d1b1c00efc8e35cae8793d1acdf9be9e63c64e5f1e48f0b0",
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5",
+        "CTRL.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "EMPTY": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "console": "CRUNCH-to-UNCR-EMPTY.console.txt",
+      "console_sha256": "bf29cc113d8df04ebab89c5d69674b4aad68f84d6ebe09754ab8bd7d8ea8c960",
+      "historical_limitation": "encoder skips empty input; no compressed file to exchange",
+      "result": "HISTORICAL_SKIP"
+    },
+    {
+      "case": "CRUNCH-to-UNCR-ONE-A",
+      "commands": [
+        "HENC ONE.A /Q",
+        "CTRL A:ONE.AZ B: /Q",
+        "DEC A:ONE.AZ C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "f29121a2b38b7f49d1b1c00efc8e35cae8793d1acdf9be9e63c64e5f1e48f0b0",
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5",
+        "CTRL.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "ONE.A": "a6b8fd253e264c54cb6b069efc2ae6e1fb1efe07ac94ddbc136b15007b714234"
+      },
+      "console": "CRUNCH-to-UNCR-ONE-A.console.txt",
+      "console_sha256": "8bd81960fafa129eff73d90290f9b24c3f19929b7d51e5942fcb1b48331817d0",
+      "encoded_sha256": "83b795924b1ff3e56c6e60f83a2cbd1b62749a3dd67e26669948514792963c23",
+      "decoded_sha256": "a6b8fd253e264c54cb6b069efc2ae6e1fb1efe07ac94ddbc136b15007b714234",
+      "decoded_bytes": 128,
+      "historical_control_sha256": "a6b8fd253e264c54cb6b069efc2ae6e1fb1efe07ac94ddbc136b15007b714234",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRUNCH-to-UNCR-TWO-AB",
+      "commands": [
+        "HENC TWO.AB /Q",
+        "CTRL A:TWO.AZ B: /Q",
+        "DEC A:TWO.AZ C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "f29121a2b38b7f49d1b1c00efc8e35cae8793d1acdf9be9e63c64e5f1e48f0b0",
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5",
+        "CTRL.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "TWO.AB": "a2ee2df14a36909ccd0cc6708d9506a821b28b5f4c3ec10dbd78ae48b6a0d9d2"
+      },
+      "console": "CRUNCH-to-UNCR-TWO-AB.console.txt",
+      "console_sha256": "884c2eca8ff17390be637766f33d9b4ed2c1abc59120004c392299a31c4ec9df",
+      "encoded_sha256": "883423fc2e7d4c3445ffddc7da2022d3efcddef69d567610642ad833245f3a85",
+      "decoded_sha256": "a2ee2df14a36909ccd0cc6708d9506a821b28b5f4c3ec10dbd78ae48b6a0d9d2",
+      "decoded_bytes": 128,
+      "historical_control_sha256": "a2ee2df14a36909ccd0cc6708d9506a821b28b5f4c3ec10dbd78ae48b6a0d9d2",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRUNCH-to-UNCR-NOEXT",
+      "commands": [
+        "HENC NOEXT /Q",
+        "CTRL A:NOEXT.ZZZ B: /Q",
+        "DEC A:NOEXT.ZZZ C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "f29121a2b38b7f49d1b1c00efc8e35cae8793d1acdf9be9e63c64e5f1e48f0b0",
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5",
+        "CTRL.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "NOEXT": "b429dfd978bc455a61e44e0b1224fe72665d02ded06009e2f2e52e053645b29b"
+      },
+      "console": "CRUNCH-to-UNCR-NOEXT.console.txt",
+      "console_sha256": "b621ac72092eb5f80f96ad42906cd83af9c9cb9d8781ce5cb32e3f01403995e8",
+      "encoded_sha256": "850668c2f297ba3adf4150ddc8763355ac9db47d1afd4821714757b357cd0152",
+      "decoded_sha256": "b429dfd978bc455a61e44e0b1224fe72665d02ded06009e2f2e52e053645b29b",
+      "decoded_bytes": 128,
+      "historical_control_sha256": "b429dfd978bc455a61e44e0b1224fe72665d02ded06009e2f2e52e053645b29b",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRUNCH-to-UNCR-R127-BIN",
+      "commands": [
+        "HENC R127.BIN /Q",
+        "CTRL A:R127.BZN B: /Q",
+        "DEC A:R127.BZN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "f29121a2b38b7f49d1b1c00efc8e35cae8793d1acdf9be9e63c64e5f1e48f0b0",
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5",
+        "CTRL.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "R127.BIN": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62"
+      },
+      "console": "CRUNCH-to-UNCR-R127-BIN.console.txt",
+      "console_sha256": "e67614805bc18ff0dafed4c19129ba74fbd6d353adddd9103d850be0a00af5e8",
+      "encoded_sha256": "d9bcc58b468f180652d4b62540674d6107f7c808c82ca810885fa70e4303e913",
+      "decoded_sha256": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62",
+      "decoded_bytes": 128,
+      "historical_control_sha256": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRUNCH-to-UNCR-R128-BIN",
+      "commands": [
+        "HENC R128.BIN /Q",
+        "CTRL A:R128.BZN B: /Q",
+        "DEC A:R128.BZN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "f29121a2b38b7f49d1b1c00efc8e35cae8793d1acdf9be9e63c64e5f1e48f0b0",
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5",
+        "CTRL.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "R128.BIN": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5"
+      },
+      "console": "CRUNCH-to-UNCR-R128-BIN.console.txt",
+      "console_sha256": "ba206f94dda17abed1efa970873ecd869a4ebc2fc7b69c1dbb25f83d19e14076",
+      "encoded_sha256": "8901b4655ebbdf76bd50ad1b02afaccec6a051e3a086e839d4c7ebc5f79c6eff",
+      "decoded_sha256": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5",
+      "decoded_bytes": 128,
+      "historical_control_sha256": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRUNCH-to-UNCR-R129-BIN",
+      "commands": [
+        "HENC R129.BIN /Q",
+        "CTRL A:R129.BZN B: /Q",
+        "DEC A:R129.BZN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "f29121a2b38b7f49d1b1c00efc8e35cae8793d1acdf9be9e63c64e5f1e48f0b0",
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5",
+        "CTRL.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "R129.BIN": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e"
+      },
+      "console": "CRUNCH-to-UNCR-R129-BIN.console.txt",
+      "console_sha256": "3ebc3b0753a35473b7e22a354d2e1423d654ca8b060c3828fa49935c5b0c9d6b",
+      "encoded_sha256": "0306b52abd11632471e54fbbc40c9a7569edeaabb45a6b66e82749e09fc9feee",
+      "decoded_sha256": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e",
+      "decoded_bytes": 256,
+      "historical_control_sha256": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRUNCH-to-UNCR-BINARY-BIN",
+      "commands": [
+        "HENC BINARY.BIN /Q",
+        "CTRL A:BINARY.BZN B: /Q",
+        "DEC A:BINARY.BZN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "f29121a2b38b7f49d1b1c00efc8e35cae8793d1acdf9be9e63c64e5f1e48f0b0",
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5",
+        "CTRL.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "BINARY.BIN": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9"
+      },
+      "console": "CRUNCH-to-UNCR-BINARY-BIN.console.txt",
+      "console_sha256": "47668a484ed0bf097eb125f03cfb6d873b9f79fa3c8081026c236d0c2d35a162",
+      "encoded_sha256": "9defcc10cb2f05f6406bbff37063cb90cf5a6a6f76e4b134e30162aba8ae3113",
+      "decoded_sha256": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9",
+      "decoded_bytes": 1024,
+      "historical_control_sha256": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRUNCH-to-UNCR-RUNS-DAT",
+      "commands": [
+        "HENC RUNS.DAT /Q",
+        "CTRL A:RUNS.DZT B: /Q",
+        "DEC A:RUNS.DZT C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "f29121a2b38b7f49d1b1c00efc8e35cae8793d1acdf9be9e63c64e5f1e48f0b0",
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5",
+        "CTRL.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "RUNS.DAT": "a8d5c7c111966ae292d447347442dde9e93b26a8bbf99f7beac3301cea036833"
+      },
+      "console": "CRUNCH-to-UNCR-RUNS-DAT.console.txt",
+      "console_sha256": "bff1cd24ade75b02904460b867b5653bd8f9617e1abea8f36614b451c03ca6cd",
+      "encoded_sha256": "26f33b0f0bed86d550689b9543c61a19274d226443d83fb1e513fa11d10fab53",
+      "decoded_sha256": "a8d5c7c111966ae292d447347442dde9e93b26a8bbf99f7beac3301cea036833",
+      "decoded_bytes": 20096,
+      "historical_control_sha256": "a8d5c7c111966ae292d447347442dde9e93b26a8bbf99f7beac3301cea036833",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRUNCH-to-UNCR-LEADDLE-BIN",
+      "commands": [
+        "HENC LEADDLE.BIN /Q",
+        "CTRL A:LEADDLE.BZN B: /Q",
+        "DEC A:LEADDLE.BZN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "f29121a2b38b7f49d1b1c00efc8e35cae8793d1acdf9be9e63c64e5f1e48f0b0",
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5",
+        "CTRL.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "LEADDLE.BIN": "0206ce9478c9dc85816a5fa4c56365ea5a1939d2cb8d649eb633232cd3d4f549"
+      },
+      "console": "CRUNCH-to-UNCR-LEADDLE-BIN.console.txt",
+      "console_sha256": "6fdbb2f45e69dd22d21794fe50b9fa4fba44bfd58c467b77657cf7ab13658e6a",
+      "historical_encoder_defect": "CRUNCH 2.4 begins repeat stream with unescaped DLE; historical UNCR also fails checksum",
+      "encoded_sha256": "d1176ac6d5603836bc14d90e3d1e96041190303d414850bb494b68b952a17a69",
+      "our_result": "malformed repeat rejected; no output published",
+      "result": "HISTORICAL_ENCODER_DEFECT"
+    },
+    {
+      "case": "CRUNCH-to-UNCR-TEXT-TXT",
+      "commands": [
+        "HENC TEXT.TXT /Q",
+        "CTRL A:TEXT.TZT B: /Q",
+        "DEC A:TEXT.TZT C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "f29121a2b38b7f49d1b1c00efc8e35cae8793d1acdf9be9e63c64e5f1e48f0b0",
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5",
+        "CTRL.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "TEXT.TXT": "99424d57511ba26b16dc93ce9fac150f4227e52f4c28285c21d948546afd9312"
+      },
+      "console": "CRUNCH-to-UNCR-TEXT-TXT.console.txt",
+      "console_sha256": "5dc97dcdf8d8e24156d2e3a42a2f1a1c7b696430b5b02f68821194312e08e95c",
+      "encoded_sha256": "f02a8887fab41758eaa1df487223b65570ee4dda920c2c82320fcf0fab450826",
+      "decoded_sha256": "99424d57511ba26b16dc93ce9fac150f4227e52f4c28285c21d948546afd9312",
+      "decoded_bytes": 34048,
+      "historical_control_sha256": "99424d57511ba26b16dc93ce9fac150f4227e52f4c28285c21d948546afd9312",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRUNCH-to-UNCR-EXTENT-BIN",
+      "commands": [
+        "HENC EXTENT.BIN /Q",
+        "CTRL A:EXTENT.BZN B: /Q",
+        "DEC A:EXTENT.BZN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "f29121a2b38b7f49d1b1c00efc8e35cae8793d1acdf9be9e63c64e5f1e48f0b0",
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5",
+        "CTRL.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "EXTENT.BIN": "c867e94a6a20406a88f01204dcd0c89f827f4800dfb6dd50d6ffb66d260813b7"
+      },
+      "console": "CRUNCH-to-UNCR-EXTENT-BIN.console.txt",
+      "console_sha256": "94ff326345b860bfcb14f340b82da1893386d3bb768e234f24a060052d8bee9b",
+      "encoded_sha256": "62ea0e6ff41be7060e0f9712cc9a1adacd27c780c2fedcec74f50d0565d8f0da",
+      "decoded_sha256": "c867e94a6a20406a88f01204dcd0c89f827f4800dfb6dd50d6ffb66d260813b7",
+      "decoded_bytes": 17024,
+      "historical_control_sha256": "c867e94a6a20406a88f01204dcd0c89f827f4800dfb6dd50d6ffb66d260813b7",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRUNCH-to-UNCR-BIG-BIN",
+      "commands": [
+        "HENC BIG.BIN /Q",
+        "CTRL A:BIG.BZN B: /Q",
+        "DEC A:BIG.BZN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "f29121a2b38b7f49d1b1c00efc8e35cae8793d1acdf9be9e63c64e5f1e48f0b0",
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5",
+        "CTRL.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "BIG.BIN": "e95ce14efd774934338be75dabb4d48c728e3eab7d6a368547a9e6138aa9017e"
+      },
+      "console": "CRUNCH-to-UNCR-BIG-BIN.console.txt",
+      "console_sha256": "cc87ea920e1f972b6725fd0b75c9c3cc2fa09c0680ee078e9fdd746db58d9e17",
+      "encoded_sha256": "48fd0cfcd9f46e298fdde29af63d4d0cbbf280cb25186a4bf75345ca77088f05",
+      "decoded_sha256": "e95ce14efd774934338be75dabb4d48c728e3eab7d6a368547a9e6138aa9017e",
+      "decoded_bytes": 70016,
+      "historical_control_sha256": "e95ce14efd774934338be75dabb4d48c728e3eab7d6a368547a9e6138aa9017e",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRUNCH-to-UNCR-RING-BIN",
+      "commands": [
+        "HENC RING.BIN /Q",
+        "CTRL A:RING.BZN B: /Q",
+        "DEC A:RING.BZN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "f29121a2b38b7f49d1b1c00efc8e35cae8793d1acdf9be9e63c64e5f1e48f0b0",
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5",
+        "CTRL.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "RING.BIN": "2b60cf9ea45e81b48a1c303bb7ea281a834b31048c9c97724be350847f559397"
+      },
+      "console": "CRUNCH-to-UNCR-RING-BIN.console.txt",
+      "console_sha256": "c38b8c0334cd1cb8404b2cebd912fa0a9f85660b4ecf75f3048b390121aa4607",
+      "encoded_sha256": "a8c5fe2afcb3479ef3d5843f6bff825ab83fd613bcd2da67848c5228b67f8d2b",
+      "decoded_sha256": "2b60cf9ea45e81b48a1c303bb7ea281a834b31048c9c97724be350847f559397",
+      "decoded_bytes": 4224,
+      "historical_control_sha256": "2b60cf9ea45e81b48a1c303bb7ea281a834b31048c9c97724be350847f559397",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH11-to-UNLZH-EMPTY",
+      "commands": [
+        "HENC EMPTY /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "153c73f20ed995fe08c0086423dd028848d8b64507bbcf87d156528853b1d70e",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "EMPTY": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "console": "CRLZH11-to-UNLZH-EMPTY.console.txt",
+      "console_sha256": "e983b36595fdda99b3f7d75253a14c54be774f7a68d226e6e9bdd496dd501dc6",
+      "historical_limitation": "encoder skips empty input; no compressed file to exchange",
+      "result": "HISTORICAL_SKIP"
+    },
+    {
+      "case": "CRLZH11-to-UNLZH-ONE-A",
+      "commands": [
+        "HENC ONE.A /Q",
+        "CTRL A:ONE.AY B: /Q",
+        "DEC A:ONE.AY C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "153c73f20ed995fe08c0086423dd028848d8b64507bbcf87d156528853b1d70e",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "ONE.A": "a6b8fd253e264c54cb6b069efc2ae6e1fb1efe07ac94ddbc136b15007b714234"
+      },
+      "console": "CRLZH11-to-UNLZH-ONE-A.console.txt",
+      "console_sha256": "9ba2cfd942fec7a2c73bcaa1f4122935a152c595adafb225950928cd73f938be",
+      "encoded_sha256": "01834c7406c201eb68cbe1943e85bb900a9428889109f766d875e7da7f708808",
+      "decoded_sha256": "a6b8fd253e264c54cb6b069efc2ae6e1fb1efe07ac94ddbc136b15007b714234",
+      "decoded_bytes": 128,
+      "historical_control_sha256": "a6b8fd253e264c54cb6b069efc2ae6e1fb1efe07ac94ddbc136b15007b714234",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH11-to-UNLZH-TWO-AB",
+      "commands": [
+        "HENC TWO.AB /Q",
+        "CTRL A:TWO.AY B: /Q",
+        "DEC A:TWO.AY C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "153c73f20ed995fe08c0086423dd028848d8b64507bbcf87d156528853b1d70e",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "TWO.AB": "a2ee2df14a36909ccd0cc6708d9506a821b28b5f4c3ec10dbd78ae48b6a0d9d2"
+      },
+      "console": "CRLZH11-to-UNLZH-TWO-AB.console.txt",
+      "console_sha256": "94fbac55d7dd273782a0fdb7284a51b832fc9ae73c732389320401533090d714",
+      "encoded_sha256": "834eb59208b60d36fb0bbc8d1d79470aa4d36ac235f63b811e71995e722f9f8f",
+      "decoded_sha256": "a2ee2df14a36909ccd0cc6708d9506a821b28b5f4c3ec10dbd78ae48b6a0d9d2",
+      "decoded_bytes": 128,
+      "historical_control_sha256": "a2ee2df14a36909ccd0cc6708d9506a821b28b5f4c3ec10dbd78ae48b6a0d9d2",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH11-to-UNLZH-NOEXT",
+      "commands": [
+        "HENC NOEXT /Q",
+        "CTRL A:NOEXT.YYY B: /Q",
+        "DEC A:NOEXT.YYY C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "153c73f20ed995fe08c0086423dd028848d8b64507bbcf87d156528853b1d70e",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "NOEXT": "b429dfd978bc455a61e44e0b1224fe72665d02ded06009e2f2e52e053645b29b"
+      },
+      "console": "CRLZH11-to-UNLZH-NOEXT.console.txt",
+      "console_sha256": "b12c28f439ae2468be19cee18e4848b1cd819f2fa65b287aba80a11548f1d5c4",
+      "encoded_sha256": "fdc85d3c155e14820ab95cd06f2b75cbc7c6edbc9806fd51c6709ecbd1f64299",
+      "decoded_sha256": "b429dfd978bc455a61e44e0b1224fe72665d02ded06009e2f2e52e053645b29b",
+      "decoded_bytes": 128,
+      "historical_control_sha256": "b429dfd978bc455a61e44e0b1224fe72665d02ded06009e2f2e52e053645b29b",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH11-to-UNLZH-R127-BIN",
+      "commands": [
+        "HENC R127.BIN /Q",
+        "CTRL A:R127.BYN B: /Q",
+        "DEC A:R127.BYN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "153c73f20ed995fe08c0086423dd028848d8b64507bbcf87d156528853b1d70e",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "R127.BIN": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62"
+      },
+      "console": "CRLZH11-to-UNLZH-R127-BIN.console.txt",
+      "console_sha256": "db1425331c6750c7cbd7b1e3f357e263b039dc80142e3a90b9ff9ef5518f754a",
+      "encoded_sha256": "8e2ca9a98dcac2af3973df3b4358914f966f14fbac1d0bbd1b267041a6e9398f",
+      "decoded_sha256": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62",
+      "decoded_bytes": 128,
+      "historical_control_sha256": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH11-to-UNLZH-R128-BIN",
+      "commands": [
+        "HENC R128.BIN /Q",
+        "CTRL A:R128.BYN B: /Q",
+        "DEC A:R128.BYN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "153c73f20ed995fe08c0086423dd028848d8b64507bbcf87d156528853b1d70e",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "R128.BIN": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5"
+      },
+      "console": "CRLZH11-to-UNLZH-R128-BIN.console.txt",
+      "console_sha256": "8fde681fd870ab241c87f3709a4bd32b97461648212227f733eb07806a10d2f1",
+      "encoded_sha256": "fcb6ae2de596c28d408346b2d0d53a80c786c1fa55cbf3935fbebc1cded505ee",
+      "decoded_sha256": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5",
+      "decoded_bytes": 128,
+      "historical_control_sha256": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH11-to-UNLZH-R129-BIN",
+      "commands": [
+        "HENC R129.BIN /Q",
+        "CTRL A:R129.BYN B: /Q",
+        "DEC A:R129.BYN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "153c73f20ed995fe08c0086423dd028848d8b64507bbcf87d156528853b1d70e",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "R129.BIN": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e"
+      },
+      "console": "CRLZH11-to-UNLZH-R129-BIN.console.txt",
+      "console_sha256": "c00f3f790a66b3ba01404a385bb4cb1af767b05528763c9b68a9648a07f216ec",
+      "encoded_sha256": "0a497aa1b0b3ddbb1dfa00ca052f4adee35a6f843b16521a1abbc8693de583c8",
+      "decoded_sha256": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e",
+      "decoded_bytes": 256,
+      "historical_control_sha256": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH11-to-UNLZH-BINARY-BIN",
+      "commands": [
+        "HENC BINARY.BIN /Q",
+        "CTRL A:BINARY.BYN B: /Q",
+        "DEC A:BINARY.BYN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "153c73f20ed995fe08c0086423dd028848d8b64507bbcf87d156528853b1d70e",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "BINARY.BIN": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9"
+      },
+      "console": "CRLZH11-to-UNLZH-BINARY-BIN.console.txt",
+      "console_sha256": "2216d2898a27d87a1277bbe53d23b7dfe466d22a725b74d6f8864db1e9cac271",
+      "encoded_sha256": "5d6f0ab150aaa87c930fe7167454d021e18cd1a033b1120a05848979d513c3d1",
+      "decoded_sha256": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9",
+      "decoded_bytes": 1024,
+      "historical_control_sha256": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH11-to-UNLZH-RUNS-DAT",
+      "commands": [
+        "HENC RUNS.DAT /Q",
+        "CTRL A:RUNS.DYT B: /Q",
+        "DEC A:RUNS.DYT C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "153c73f20ed995fe08c0086423dd028848d8b64507bbcf87d156528853b1d70e",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "RUNS.DAT": "a8d5c7c111966ae292d447347442dde9e93b26a8bbf99f7beac3301cea036833"
+      },
+      "console": "CRLZH11-to-UNLZH-RUNS-DAT.console.txt",
+      "console_sha256": "28cf99904503b8d1552c9f19af93ff931bbc5fefa498d3864dde2609acae9ed0",
+      "encoded_sha256": "9cf4f3ba8fb7a19b05de41467147d215ec7be4959562313a71972e19316e344d",
+      "decoded_sha256": "a8d5c7c111966ae292d447347442dde9e93b26a8bbf99f7beac3301cea036833",
+      "decoded_bytes": 20096,
+      "historical_control_sha256": "a8d5c7c111966ae292d447347442dde9e93b26a8bbf99f7beac3301cea036833",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH11-to-UNLZH-LEADDLE-BIN",
+      "commands": [
+        "HENC LEADDLE.BIN /Q",
+        "CTRL A:LEADDLE.BYN B: /Q",
+        "DEC A:LEADDLE.BYN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "153c73f20ed995fe08c0086423dd028848d8b64507bbcf87d156528853b1d70e",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "LEADDLE.BIN": "0206ce9478c9dc85816a5fa4c56365ea5a1939d2cb8d649eb633232cd3d4f549"
+      },
+      "console": "CRLZH11-to-UNLZH-LEADDLE-BIN.console.txt",
+      "console_sha256": "af32bbe2b4dd0cbaf5eadd2ad30bf517bf5b98809b820d3329117c91dde3f4e9",
+      "encoded_sha256": "ddac615e0226a5c7d2075ec9a89d3a9b066bd68faa178b5c8ff03077c433aef6",
+      "decoded_sha256": "0206ce9478c9dc85816a5fa4c56365ea5a1939d2cb8d649eb633232cd3d4f549",
+      "decoded_bytes": 20096,
+      "historical_control_sha256": "0206ce9478c9dc85816a5fa4c56365ea5a1939d2cb8d649eb633232cd3d4f549",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH11-to-UNLZH-TEXT-TXT",
+      "commands": [
+        "HENC TEXT.TXT /Q",
+        "CTRL A:TEXT.TYT B: /Q",
+        "DEC A:TEXT.TYT C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "153c73f20ed995fe08c0086423dd028848d8b64507bbcf87d156528853b1d70e",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "TEXT.TXT": "99424d57511ba26b16dc93ce9fac150f4227e52f4c28285c21d948546afd9312"
+      },
+      "console": "CRLZH11-to-UNLZH-TEXT-TXT.console.txt",
+      "console_sha256": "dda82ea3b5705c7c7861c388e79b62bc98eccc9f85fae91190ece23330c49919",
+      "encoded_sha256": "c33e1b523ba409e989c1ddcaadf693b6781e225d01a9c940b2ed3b5dcd0a5906",
+      "decoded_sha256": "99424d57511ba26b16dc93ce9fac150f4227e52f4c28285c21d948546afd9312",
+      "decoded_bytes": 34048,
+      "historical_control_sha256": "99424d57511ba26b16dc93ce9fac150f4227e52f4c28285c21d948546afd9312",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH11-to-UNLZH-EXTENT-BIN",
+      "commands": [
+        "HENC EXTENT.BIN /Q",
+        "CTRL A:EXTENT.BYN B: /Q",
+        "DEC A:EXTENT.BYN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "153c73f20ed995fe08c0086423dd028848d8b64507bbcf87d156528853b1d70e",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "EXTENT.BIN": "c867e94a6a20406a88f01204dcd0c89f827f4800dfb6dd50d6ffb66d260813b7"
+      },
+      "console": "CRLZH11-to-UNLZH-EXTENT-BIN.console.txt",
+      "console_sha256": "1928ff08558db6799190eb4bf564d3f1ec2b941bfa8d4cfffb94e78c4d178964",
+      "encoded_sha256": "676928ca5aff673ee7a0e2cd08414e7b51e1477954734db7a585beea8f913733",
+      "decoded_sha256": "c867e94a6a20406a88f01204dcd0c89f827f4800dfb6dd50d6ffb66d260813b7",
+      "decoded_bytes": 17024,
+      "historical_control_sha256": "c867e94a6a20406a88f01204dcd0c89f827f4800dfb6dd50d6ffb66d260813b7",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH11-to-UNLZH-BIG-BIN",
+      "commands": [
+        "HENC BIG.BIN /Q",
+        "CTRL A:BIG.BYN B: /Q",
+        "DEC A:BIG.BYN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "153c73f20ed995fe08c0086423dd028848d8b64507bbcf87d156528853b1d70e",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "BIG.BIN": "e95ce14efd774934338be75dabb4d48c728e3eab7d6a368547a9e6138aa9017e"
+      },
+      "console": "CRLZH11-to-UNLZH-BIG-BIN.console.txt",
+      "console_sha256": "7bbfb2bbccf8074f058be814d8011929c9c363a0972564081b62fa160d49c4fb",
+      "encoded_sha256": "ba75354aece3e8446ab230587bae4f4baf3e0b03617052219a701968e80c978a",
+      "decoded_sha256": "e95ce14efd774934338be75dabb4d48c728e3eab7d6a368547a9e6138aa9017e",
+      "decoded_bytes": 70016,
+      "historical_control_sha256": "e95ce14efd774934338be75dabb4d48c728e3eab7d6a368547a9e6138aa9017e",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH11-to-UNLZH-RING-BIN",
+      "commands": [
+        "HENC RING.BIN /Q",
+        "CTRL A:RING.BYN B: /Q",
+        "DEC A:RING.BYN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "153c73f20ed995fe08c0086423dd028848d8b64507bbcf87d156528853b1d70e",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "RING.BIN": "2b60cf9ea45e81b48a1c303bb7ea281a834b31048c9c97724be350847f559397"
+      },
+      "console": "CRLZH11-to-UNLZH-RING-BIN.console.txt",
+      "console_sha256": "0b1197ce2330a12c30071b4addfb854de290ceaecd3ea5929e6ff9acbeac99c7",
+      "encoded_sha256": "97a3c37de7a1c7e946a8a69ec1da8628b57857176f83d57985b29171bad20c92",
+      "decoded_sha256": "2b60cf9ea45e81b48a1c303bb7ea281a834b31048c9c97724be350847f559397",
+      "decoded_bytes": 4224,
+      "historical_control_sha256": "2b60cf9ea45e81b48a1c303bb7ea281a834b31048c9c97724be350847f559397",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH20-to-UNLZH-EMPTY",
+      "commands": [
+        "HENC EMPTY /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "365efa8f400c4809d69f5e81d35f7f8a57f81543fd6c48654775a7691d93287d",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "EMPTY": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "console": "CRLZH20-to-UNLZH-EMPTY.console.txt",
+      "console_sha256": "2fb2c39ef07a0ac6e39b925386bfb59c44d4e0aad75e85d4c18c00de73393b55",
+      "historical_limitation": "encoder skips empty input; no compressed file to exchange",
+      "result": "HISTORICAL_SKIP"
+    },
+    {
+      "case": "CRLZH20-to-UNLZH-ONE-A",
+      "commands": [
+        "HENC ONE.A /Q",
+        "CTRL A:ONE.AY B: /Q",
+        "DEC A:ONE.AY C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "365efa8f400c4809d69f5e81d35f7f8a57f81543fd6c48654775a7691d93287d",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "ONE.A": "a6b8fd253e264c54cb6b069efc2ae6e1fb1efe07ac94ddbc136b15007b714234"
+      },
+      "console": "CRLZH20-to-UNLZH-ONE-A.console.txt",
+      "console_sha256": "1325c8c9192e0072037b846aec7f1a22a76049d2df86c38fe74eb9986a0ef4c3",
+      "encoded_sha256": "25aff45da3440d6e0b9581609bec5869ee56e95624b2e6f44f5b715bb3a4894a",
+      "decoded_sha256": "a6b8fd253e264c54cb6b069efc2ae6e1fb1efe07ac94ddbc136b15007b714234",
+      "decoded_bytes": 128,
+      "historical_control_sha256": "a6b8fd253e264c54cb6b069efc2ae6e1fb1efe07ac94ddbc136b15007b714234",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH20-to-UNLZH-TWO-AB",
+      "commands": [
+        "HENC TWO.AB /Q",
+        "CTRL A:TWO.AY B: /Q",
+        "DEC A:TWO.AY C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "365efa8f400c4809d69f5e81d35f7f8a57f81543fd6c48654775a7691d93287d",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "TWO.AB": "a2ee2df14a36909ccd0cc6708d9506a821b28b5f4c3ec10dbd78ae48b6a0d9d2"
+      },
+      "console": "CRLZH20-to-UNLZH-TWO-AB.console.txt",
+      "console_sha256": "5337a07eeb8f0b94b2c83eb17f596eae55d55015f389f1aea77b8702ad6c7d30",
+      "encoded_sha256": "a0879ffbfc4ffde0c6bf8e73322ce5eb1c9fc68484423e5cb182a50a4fb549f4",
+      "decoded_sha256": "a2ee2df14a36909ccd0cc6708d9506a821b28b5f4c3ec10dbd78ae48b6a0d9d2",
+      "decoded_bytes": 128,
+      "historical_control_sha256": "a2ee2df14a36909ccd0cc6708d9506a821b28b5f4c3ec10dbd78ae48b6a0d9d2",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH20-to-UNLZH-NOEXT",
+      "commands": [
+        "HENC NOEXT /Q",
+        "CTRL A:NOEXT.YYY B: /Q",
+        "DEC A:NOEXT.YYY C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "365efa8f400c4809d69f5e81d35f7f8a57f81543fd6c48654775a7691d93287d",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "NOEXT": "b429dfd978bc455a61e44e0b1224fe72665d02ded06009e2f2e52e053645b29b"
+      },
+      "console": "CRLZH20-to-UNLZH-NOEXT.console.txt",
+      "console_sha256": "7aa31fb3e09c9b053c0c84fcea7a562f44bd1395d222d0c5be15d9f414e30b70",
+      "encoded_sha256": "12a3995c6c48cedaf39f5f4d97bd042d9f130342112b539a35a7ec39cd87911a",
+      "decoded_sha256": "b429dfd978bc455a61e44e0b1224fe72665d02ded06009e2f2e52e053645b29b",
+      "decoded_bytes": 128,
+      "historical_control_sha256": "b429dfd978bc455a61e44e0b1224fe72665d02ded06009e2f2e52e053645b29b",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH20-to-UNLZH-R127-BIN",
+      "commands": [
+        "HENC R127.BIN /Q",
+        "CTRL A:R127.BYN B: /Q",
+        "DEC A:R127.BYN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "365efa8f400c4809d69f5e81d35f7f8a57f81543fd6c48654775a7691d93287d",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "R127.BIN": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62"
+      },
+      "console": "CRLZH20-to-UNLZH-R127-BIN.console.txt",
+      "console_sha256": "7b6e2dab6fc3d04068ac5ff229456a97783a6d573b247b7e0a33401e490049e2",
+      "encoded_sha256": "db3d519674580d71f7aea7f8a299548786fb11d5c992c700a22648e4af72bf8a",
+      "decoded_sha256": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62",
+      "decoded_bytes": 128,
+      "historical_control_sha256": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH20-to-UNLZH-R128-BIN",
+      "commands": [
+        "HENC R128.BIN /Q",
+        "CTRL A:R128.BYN B: /Q",
+        "DEC A:R128.BYN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "365efa8f400c4809d69f5e81d35f7f8a57f81543fd6c48654775a7691d93287d",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "R128.BIN": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5"
+      },
+      "console": "CRLZH20-to-UNLZH-R128-BIN.console.txt",
+      "console_sha256": "3c8afe111609285f2c7e326961765b5de1413b4d5f23bfa2cfdf7da3234a02d7",
+      "encoded_sha256": "dbbe5403a013015559b7bfbc13cbb5461402b4b252ecd25db94e69fa714e1ce5",
+      "decoded_sha256": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5",
+      "decoded_bytes": 128,
+      "historical_control_sha256": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH20-to-UNLZH-R129-BIN",
+      "commands": [
+        "HENC R129.BIN /Q",
+        "CTRL A:R129.BYN B: /Q",
+        "DEC A:R129.BYN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "365efa8f400c4809d69f5e81d35f7f8a57f81543fd6c48654775a7691d93287d",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "R129.BIN": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e"
+      },
+      "console": "CRLZH20-to-UNLZH-R129-BIN.console.txt",
+      "console_sha256": "0d39025f44afa1c18180d1b7f64a7db279fddc6d50573351d9a84e5e9717899d",
+      "encoded_sha256": "f49221f65603fe8fa90b20aa6d1deb220ef9f7f8500e7d53f4b60f15a48961ca",
+      "decoded_sha256": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e",
+      "decoded_bytes": 256,
+      "historical_control_sha256": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH20-to-UNLZH-BINARY-BIN",
+      "commands": [
+        "HENC BINARY.BIN /Q",
+        "CTRL A:BINARY.BYN B: /Q",
+        "DEC A:BINARY.BYN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "365efa8f400c4809d69f5e81d35f7f8a57f81543fd6c48654775a7691d93287d",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "BINARY.BIN": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9"
+      },
+      "console": "CRLZH20-to-UNLZH-BINARY-BIN.console.txt",
+      "console_sha256": "5edef38e8417874f8beaf7d762c33e0df77d3023d551ff23ac6bcf13ad5fce1c",
+      "encoded_sha256": "ce3c1ac49c49c60a71f6fa11b4bb07ce4a5a1bd7b95c5c5a6bc7f0755cdcf900",
+      "decoded_sha256": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9",
+      "decoded_bytes": 1024,
+      "historical_control_sha256": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH20-to-UNLZH-RUNS-DAT",
+      "commands": [
+        "HENC RUNS.DAT /Q",
+        "CTRL A:RUNS.DYT B: /Q",
+        "DEC A:RUNS.DYT C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "365efa8f400c4809d69f5e81d35f7f8a57f81543fd6c48654775a7691d93287d",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "RUNS.DAT": "a8d5c7c111966ae292d447347442dde9e93b26a8bbf99f7beac3301cea036833"
+      },
+      "console": "CRLZH20-to-UNLZH-RUNS-DAT.console.txt",
+      "console_sha256": "b970d9aa745d24a556c2dc2e339910f8c80c92177993227af2427f8a0217485e",
+      "encoded_sha256": "988aee292a2dcdaca1ac2501d99e5e9873a3ff788d6680c698bd066d84021091",
+      "decoded_sha256": "a8d5c7c111966ae292d447347442dde9e93b26a8bbf99f7beac3301cea036833",
+      "decoded_bytes": 20096,
+      "historical_control_sha256": "a8d5c7c111966ae292d447347442dde9e93b26a8bbf99f7beac3301cea036833",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH20-to-UNLZH-LEADDLE-BIN",
+      "commands": [
+        "HENC LEADDLE.BIN /Q",
+        "CTRL A:LEADDLE.BYN B: /Q",
+        "DEC A:LEADDLE.BYN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "365efa8f400c4809d69f5e81d35f7f8a57f81543fd6c48654775a7691d93287d",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "LEADDLE.BIN": "0206ce9478c9dc85816a5fa4c56365ea5a1939d2cb8d649eb633232cd3d4f549"
+      },
+      "console": "CRLZH20-to-UNLZH-LEADDLE-BIN.console.txt",
+      "console_sha256": "c02f9eb2bf9715786dcef58505251fd7d3d4bf92d3d053fc14a562e4d7656fc5",
+      "encoded_sha256": "f4d9f83e69bb13880ea06533d1471255708865cb98323089dac4f14ec23a1948",
+      "decoded_sha256": "0206ce9478c9dc85816a5fa4c56365ea5a1939d2cb8d649eb633232cd3d4f549",
+      "decoded_bytes": 20096,
+      "historical_control_sha256": "0206ce9478c9dc85816a5fa4c56365ea5a1939d2cb8d649eb633232cd3d4f549",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH20-to-UNLZH-TEXT-TXT",
+      "commands": [
+        "HENC TEXT.TXT /Q",
+        "CTRL A:TEXT.TYT B: /Q",
+        "DEC A:TEXT.TYT C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "365efa8f400c4809d69f5e81d35f7f8a57f81543fd6c48654775a7691d93287d",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "TEXT.TXT": "99424d57511ba26b16dc93ce9fac150f4227e52f4c28285c21d948546afd9312"
+      },
+      "console": "CRLZH20-to-UNLZH-TEXT-TXT.console.txt",
+      "console_sha256": "9ab6f49482de9e7e4900c2b652b36dbe6594fe213bba932ebb71c3f8b31f664e",
+      "encoded_sha256": "4baeff171efcd9e579602464f8a1c7c1c29b723c5d68bbf7a883a21d1cc879ac",
+      "decoded_sha256": "99424d57511ba26b16dc93ce9fac150f4227e52f4c28285c21d948546afd9312",
+      "decoded_bytes": 34048,
+      "historical_control_sha256": "99424d57511ba26b16dc93ce9fac150f4227e52f4c28285c21d948546afd9312",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH20-to-UNLZH-EXTENT-BIN",
+      "commands": [
+        "HENC EXTENT.BIN /Q",
+        "CTRL A:EXTENT.BYN B: /Q",
+        "DEC A:EXTENT.BYN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "365efa8f400c4809d69f5e81d35f7f8a57f81543fd6c48654775a7691d93287d",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "EXTENT.BIN": "c867e94a6a20406a88f01204dcd0c89f827f4800dfb6dd50d6ffb66d260813b7"
+      },
+      "console": "CRLZH20-to-UNLZH-EXTENT-BIN.console.txt",
+      "console_sha256": "bbd2e0015b81e43dfccf30379dd5bae6dbbe98380f0492d7811de2002cc9f0c6",
+      "encoded_sha256": "f18127cb6f308ea8d5d886243e63fcfceff7099a7e31992d3cf99136f2cd5f2b",
+      "decoded_sha256": "c867e94a6a20406a88f01204dcd0c89f827f4800dfb6dd50d6ffb66d260813b7",
+      "decoded_bytes": 17024,
+      "historical_control_sha256": "c867e94a6a20406a88f01204dcd0c89f827f4800dfb6dd50d6ffb66d260813b7",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH20-to-UNLZH-BIG-BIN",
+      "commands": [
+        "HENC BIG.BIN /Q",
+        "CTRL A:BIG.BYN B: /Q",
+        "DEC A:BIG.BYN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "365efa8f400c4809d69f5e81d35f7f8a57f81543fd6c48654775a7691d93287d",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "BIG.BIN": "e95ce14efd774934338be75dabb4d48c728e3eab7d6a368547a9e6138aa9017e"
+      },
+      "console": "CRLZH20-to-UNLZH-BIG-BIN.console.txt",
+      "console_sha256": "43c8b34d87ed0438cf10dde7f38fcf49dc170d7486dbc206a71cb673c3ae17d4",
+      "encoded_sha256": "4e8a253f6b4597b5763e24615f48c60ab26eb4c4bb7325f5bf83cd8e415a6b4d",
+      "decoded_sha256": "e95ce14efd774934338be75dabb4d48c728e3eab7d6a368547a9e6138aa9017e",
+      "decoded_bytes": 70016,
+      "historical_control_sha256": "e95ce14efd774934338be75dabb4d48c728e3eab7d6a368547a9e6138aa9017e",
+      "result": "DECODED"
+    },
+    {
+      "case": "CRLZH20-to-UNLZH-RING-BIN",
+      "commands": [
+        "HENC RING.BIN /Q",
+        "CTRL A:RING.BYN B: /Q",
+        "DEC A:RING.BYN C:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "HENC.COM": "365efa8f400c4809d69f5e81d35f7f8a57f81543fd6c48654775a7691d93287d",
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858",
+        "CTRL.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "RING.BIN": "2b60cf9ea45e81b48a1c303bb7ea281a834b31048c9c97724be350847f559397"
+      },
+      "console": "CRLZH20-to-UNLZH-RING-BIN.console.txt",
+      "console_sha256": "30162a1db65f538671aef331314bd7a8d3675eb284d778db5e3c9e85caf5b6d9",
+      "encoded_sha256": "f73bd3b1328032457b6232c88c89b4b9f15d7c58c3b450b094f3ae0b1a65bff4",
+      "decoded_sha256": "2b60cf9ea45e81b48a1c303bb7ea281a834b31048c9c97724be350847f559397",
+      "decoded_bytes": 4224,
+      "historical_control_sha256": "2b60cf9ea45e81b48a1c303bb7ea281a834b31048c9c97724be350847f559397",
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ20-EMPTY",
+      "commands": [
+        "ENC EMPTY B:",
+        "HDEC C: B:EMPTY.QQQ"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "0a43d21823206c247b9eaefa4d8fc730e8b377128aa3f2da74b0be8c3e87791d"
+      },
+      "input_sha256": {
+        "EMPTY": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "console": "SQ-to-USQ20-EMPTY.console.txt",
+      "console_sha256": "8199f5b0e83a4561fa3538e05c7e0049be661ddcadf08c3e33307ba572888b48",
+      "encoded_sha256": "ffa65ebfa6043eeb1d842eefedded2525f0a454a38b89bbd59c67035785ee00d",
+      "decoded_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decoded_bytes": 0,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ20-ONE-A",
+      "commands": [
+        "ENC ONE.A B:",
+        "HDEC C: B:ONE.AQ"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "0a43d21823206c247b9eaefa4d8fc730e8b377128aa3f2da74b0be8c3e87791d"
+      },
+      "input_sha256": {
+        "ONE.A": "a6b8fd253e264c54cb6b069efc2ae6e1fb1efe07ac94ddbc136b15007b714234"
+      },
+      "console": "SQ-to-USQ20-ONE-A.console.txt",
+      "console_sha256": "c2b782f554484c5f8a0f049f96840014d7d34a0d6f1b4128468d389ce550dd2a",
+      "encoded_sha256": "a4f5bcbb2d6fdaf6322f8e9166268a699baca7c336f668ea57a9e3f0a7ee2ab4",
+      "decoded_sha256": "a6b8fd253e264c54cb6b069efc2ae6e1fb1efe07ac94ddbc136b15007b714234",
+      "decoded_bytes": 128,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ20-TWO-AB",
+      "commands": [
+        "ENC TWO.AB B:",
+        "HDEC C: B:TWO.AQ"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "0a43d21823206c247b9eaefa4d8fc730e8b377128aa3f2da74b0be8c3e87791d"
+      },
+      "input_sha256": {
+        "TWO.AB": "a2ee2df14a36909ccd0cc6708d9506a821b28b5f4c3ec10dbd78ae48b6a0d9d2"
+      },
+      "console": "SQ-to-USQ20-TWO-AB.console.txt",
+      "console_sha256": "eeb801e27cc77098392af14f99a128529ed3b4af466e67296b329c34ebf44059",
+      "encoded_sha256": "458225c34a32c7315a17fee1a6d4604b1150099fc7f4fca7bff5a4713383bb3b",
+      "decoded_sha256": "a2ee2df14a36909ccd0cc6708d9506a821b28b5f4c3ec10dbd78ae48b6a0d9d2",
+      "decoded_bytes": 128,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ20-NOEXT",
+      "commands": [
+        "ENC NOEXT B:",
+        "HDEC C: B:NOEXT.QQQ"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "0a43d21823206c247b9eaefa4d8fc730e8b377128aa3f2da74b0be8c3e87791d"
+      },
+      "input_sha256": {
+        "NOEXT": "b429dfd978bc455a61e44e0b1224fe72665d02ded06009e2f2e52e053645b29b"
+      },
+      "console": "SQ-to-USQ20-NOEXT.console.txt",
+      "console_sha256": "b7d1a439303800bd773cbee1f615666044dc4abfeb3786f13fb621507c669856",
+      "encoded_sha256": "5e2b939920dd9048f61f50a9a993e1da92569b5bc017d0bdf1d2604591fd9f04",
+      "decoded_sha256": "b429dfd978bc455a61e44e0b1224fe72665d02ded06009e2f2e52e053645b29b",
+      "decoded_bytes": 128,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ20-R127-BIN",
+      "commands": [
+        "ENC R127.BIN B:",
+        "HDEC C: B:R127.BQN"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "0a43d21823206c247b9eaefa4d8fc730e8b377128aa3f2da74b0be8c3e87791d"
+      },
+      "input_sha256": {
+        "R127.BIN": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62"
+      },
+      "console": "SQ-to-USQ20-R127-BIN.console.txt",
+      "console_sha256": "6e738d8a4a385e16cfd72d1170a8bc6d35c48a756acc7400faa01bc3969a6311",
+      "encoded_sha256": "fc22cedcd38f275956691b6cf695a0293ceaeb55c94214847ca9b5047797e1fe",
+      "decoded_sha256": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62",
+      "decoded_bytes": 128,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ20-R128-BIN",
+      "commands": [
+        "ENC R128.BIN B:",
+        "HDEC C: B:R128.BQN"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "0a43d21823206c247b9eaefa4d8fc730e8b377128aa3f2da74b0be8c3e87791d"
+      },
+      "input_sha256": {
+        "R128.BIN": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5"
+      },
+      "console": "SQ-to-USQ20-R128-BIN.console.txt",
+      "console_sha256": "bd2a262f2bdadb491a821c19443a093fd39e7b9ece71acddb28370d6441938f6",
+      "encoded_sha256": "9d47f44940329d7ade2d6bbccd196c936ece041b0707b2f1c8b5b84d8f597d97",
+      "decoded_sha256": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5",
+      "decoded_bytes": 128,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ20-R129-BIN",
+      "commands": [
+        "ENC R129.BIN B:",
+        "HDEC C: B:R129.BQN"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "0a43d21823206c247b9eaefa4d8fc730e8b377128aa3f2da74b0be8c3e87791d"
+      },
+      "input_sha256": {
+        "R129.BIN": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e"
+      },
+      "console": "SQ-to-USQ20-R129-BIN.console.txt",
+      "console_sha256": "a68d60a6ee0f631a206f4eb588ed1d6f2042b97265a66a8d1ce69d99ce1174bd",
+      "encoded_sha256": "da73a879362cf1e45278a8d8ed21b9ebfaad0111e773ce4015ff14e53adeec05",
+      "decoded_sha256": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e",
+      "decoded_bytes": 256,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ20-BINARY-BIN",
+      "commands": [
+        "ENC BINARY.BIN B:",
+        "HDEC C: B:BINARY.BQN"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "0a43d21823206c247b9eaefa4d8fc730e8b377128aa3f2da74b0be8c3e87791d"
+      },
+      "input_sha256": {
+        "BINARY.BIN": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9"
+      },
+      "console": "SQ-to-USQ20-BINARY-BIN.console.txt",
+      "console_sha256": "63b2af73758a02c8ef1348de173d4f2da3aba9d34e764c84cac4c431a5c7f543",
+      "encoded_sha256": "a4f1f6c01ac6443f608e49f30adace37481cddcf92dfdf68804af9b73b5097d5",
+      "decoded_sha256": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9",
+      "decoded_bytes": 1024,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ20-RUNS-DAT",
+      "commands": [
+        "ENC RUNS.DAT B:",
+        "HDEC C: B:RUNS.DQT"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "0a43d21823206c247b9eaefa4d8fc730e8b377128aa3f2da74b0be8c3e87791d"
+      },
+      "input_sha256": {
+        "RUNS.DAT": "a8d5c7c111966ae292d447347442dde9e93b26a8bbf99f7beac3301cea036833"
+      },
+      "console": "SQ-to-USQ20-RUNS-DAT.console.txt",
+      "console_sha256": "a954a26479356851bf2ec94657e9993009a14ee237b94787670019ba6ea32bcd",
+      "encoded_sha256": "e8d887f42352b37591ec7f39a562286a5de02c5fa7ec038720333863441960e8",
+      "decoded_sha256": "a8d5c7c111966ae292d447347442dde9e93b26a8bbf99f7beac3301cea036833",
+      "decoded_bytes": 20096,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ20-LEADDLE-BIN",
+      "commands": [
+        "ENC LEADDLE.BIN B:",
+        "HDEC C: B:LEADDLE.BQN"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "0a43d21823206c247b9eaefa4d8fc730e8b377128aa3f2da74b0be8c3e87791d"
+      },
+      "input_sha256": {
+        "LEADDLE.BIN": "0206ce9478c9dc85816a5fa4c56365ea5a1939d2cb8d649eb633232cd3d4f549"
+      },
+      "console": "SQ-to-USQ20-LEADDLE-BIN.console.txt",
+      "console_sha256": "5534dff1740c9793ccb63b2db869c8cbef5129c62a787377fa25617313e65611",
+      "encoded_sha256": "c9274732a4f79a44ad824fdc879796b115cb330a8e4042d4d1160396fd1d48ec",
+      "decoded_sha256": "0206ce9478c9dc85816a5fa4c56365ea5a1939d2cb8d649eb633232cd3d4f549",
+      "decoded_bytes": 20096,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ20-TEXT-TXT",
+      "commands": [
+        "ENC TEXT.TXT B:",
+        "HDEC C: B:TEXT.TQT"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "0a43d21823206c247b9eaefa4d8fc730e8b377128aa3f2da74b0be8c3e87791d"
+      },
+      "input_sha256": {
+        "TEXT.TXT": "99424d57511ba26b16dc93ce9fac150f4227e52f4c28285c21d948546afd9312"
+      },
+      "console": "SQ-to-USQ20-TEXT-TXT.console.txt",
+      "console_sha256": "58edcb5cc87daf55ceda5fce6c95dd28f51c39cf93bdc8afd1de7b9ec6e79132",
+      "encoded_sha256": "fc986bfcc5644b24a2343b78014473cb38e4f01a476b0be3305f8058cc4de2a6",
+      "decoded_sha256": "99424d57511ba26b16dc93ce9fac150f4227e52f4c28285c21d948546afd9312",
+      "decoded_bytes": 34048,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ20-EXTENT-BIN",
+      "commands": [
+        "ENC EXTENT.BIN B:",
+        "HDEC C: B:EXTENT.BQN"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "0a43d21823206c247b9eaefa4d8fc730e8b377128aa3f2da74b0be8c3e87791d"
+      },
+      "input_sha256": {
+        "EXTENT.BIN": "c867e94a6a20406a88f01204dcd0c89f827f4800dfb6dd50d6ffb66d260813b7"
+      },
+      "console": "SQ-to-USQ20-EXTENT-BIN.console.txt",
+      "console_sha256": "9f063dc344f1ef545ce29c1d7ef440077ff7ed5ff072df5cdf0bf1d3b86e5161",
+      "encoded_sha256": "f5417ad2e4fbe05c998e98cc06b6eda6de5fedc2566ed2baafeb74699d4a3179",
+      "decoded_sha256": "c867e94a6a20406a88f01204dcd0c89f827f4800dfb6dd50d6ffb66d260813b7",
+      "decoded_bytes": 17024,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ20-BIG-BIN",
+      "commands": [
+        "ENC BIG.BIN B:",
+        "HDEC C: B:BIG.BQN"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "0a43d21823206c247b9eaefa4d8fc730e8b377128aa3f2da74b0be8c3e87791d"
+      },
+      "input_sha256": {
+        "BIG.BIN": "e95ce14efd774934338be75dabb4d48c728e3eab7d6a368547a9e6138aa9017e"
+      },
+      "console": "SQ-to-USQ20-BIG-BIN.console.txt",
+      "console_sha256": "52f108519fa93e4078e58e17b7102690c86bfa1640bf352a8e69f0eba04cf967",
+      "encoded_sha256": "1f2b78bc1160a2b52df1ac9eb9a513fef3f03f2f32372643d40a31b6bbaf8ade",
+      "decoded_sha256": "e95ce14efd774934338be75dabb4d48c728e3eab7d6a368547a9e6138aa9017e",
+      "decoded_bytes": 70016,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ20-RING-BIN",
+      "commands": [
+        "ENC RING.BIN B:",
+        "HDEC C: B:RING.BQN"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "0a43d21823206c247b9eaefa4d8fc730e8b377128aa3f2da74b0be8c3e87791d"
+      },
+      "input_sha256": {
+        "RING.BIN": "2b60cf9ea45e81b48a1c303bb7ea281a834b31048c9c97724be350847f559397"
+      },
+      "console": "SQ-to-USQ20-RING-BIN.console.txt",
+      "console_sha256": "688c118533a927cde697de7f88bf46975ff1f91ecade35738e0ee17160e9187f",
+      "encoded_sha256": "db70fcbb09203ab06377454ecb39a41388056cd78b0e2d1d36eac0f36265f94f",
+      "decoded_sha256": "2b60cf9ea45e81b48a1c303bb7ea281a834b31048c9c97724be350847f559397",
+      "decoded_bytes": 4224,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ120-EMPTY",
+      "commands": [
+        "ENC EMPTY B:",
+        "HDEC C: B:EMPTY.QQQ"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "EMPTY": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "console": "SQ-to-USQ120-EMPTY.console.txt",
+      "console_sha256": "894f20cfbefaa18cfe0b39f30a4fbf47255e5d65237e226688f5a9338bf89d75",
+      "encoded_sha256": "ffa65ebfa6043eeb1d842eefedded2525f0a454a38b89bbd59c67035785ee00d",
+      "decoded_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decoded_bytes": 0,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ120-ONE-A",
+      "commands": [
+        "ENC ONE.A B:",
+        "HDEC C: B:ONE.AQ"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "ONE.A": "a6b8fd253e264c54cb6b069efc2ae6e1fb1efe07ac94ddbc136b15007b714234"
+      },
+      "console": "SQ-to-USQ120-ONE-A.console.txt",
+      "console_sha256": "ee444ec5e44858f2990bf033e85f66b98b1717243b34826a60829068cd196ea6",
+      "encoded_sha256": "a4f5bcbb2d6fdaf6322f8e9166268a699baca7c336f668ea57a9e3f0a7ee2ab4",
+      "decoded_sha256": "a6b8fd253e264c54cb6b069efc2ae6e1fb1efe07ac94ddbc136b15007b714234",
+      "decoded_bytes": 128,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ120-TWO-AB",
+      "commands": [
+        "ENC TWO.AB B:",
+        "HDEC C: B:TWO.AQ"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "TWO.AB": "a2ee2df14a36909ccd0cc6708d9506a821b28b5f4c3ec10dbd78ae48b6a0d9d2"
+      },
+      "console": "SQ-to-USQ120-TWO-AB.console.txt",
+      "console_sha256": "caf249f6ca7b4835bda2d5132e63dfb90acc33c16345e619e5f747ddcc1956b1",
+      "encoded_sha256": "458225c34a32c7315a17fee1a6d4604b1150099fc7f4fca7bff5a4713383bb3b",
+      "decoded_sha256": "a2ee2df14a36909ccd0cc6708d9506a821b28b5f4c3ec10dbd78ae48b6a0d9d2",
+      "decoded_bytes": 128,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ120-NOEXT",
+      "commands": [
+        "ENC NOEXT B:",
+        "HDEC C: B:NOEXT.QQQ"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "NOEXT": "b429dfd978bc455a61e44e0b1224fe72665d02ded06009e2f2e52e053645b29b"
+      },
+      "console": "SQ-to-USQ120-NOEXT.console.txt",
+      "console_sha256": "bde3237b9eb04c0e493d77fa67fa455681f3f4658f99195403d24c10d44ca2fd",
+      "encoded_sha256": "5e2b939920dd9048f61f50a9a993e1da92569b5bc017d0bdf1d2604591fd9f04",
+      "decoded_sha256": "b429dfd978bc455a61e44e0b1224fe72665d02ded06009e2f2e52e053645b29b",
+      "decoded_bytes": 128,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ120-R127-BIN",
+      "commands": [
+        "ENC R127.BIN B:",
+        "HDEC C: B:R127.BQN"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "R127.BIN": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62"
+      },
+      "console": "SQ-to-USQ120-R127-BIN.console.txt",
+      "console_sha256": "0c170f0b5a81c46d7d1dc12a3d8e223f25476f76e3984b8e79cd8f1a90dae781",
+      "encoded_sha256": "fc22cedcd38f275956691b6cf695a0293ceaeb55c94214847ca9b5047797e1fe",
+      "decoded_sha256": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62",
+      "decoded_bytes": 128,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ120-R128-BIN",
+      "commands": [
+        "ENC R128.BIN B:",
+        "HDEC C: B:R128.BQN"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "R128.BIN": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5"
+      },
+      "console": "SQ-to-USQ120-R128-BIN.console.txt",
+      "console_sha256": "d9b831a6d7519601f7e360fcbc09da879743886a2756265b46f35a266379a4ef",
+      "encoded_sha256": "9d47f44940329d7ade2d6bbccd196c936ece041b0707b2f1c8b5b84d8f597d97",
+      "decoded_sha256": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5",
+      "decoded_bytes": 128,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ120-R129-BIN",
+      "commands": [
+        "ENC R129.BIN B:",
+        "HDEC C: B:R129.BQN"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "R129.BIN": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e"
+      },
+      "console": "SQ-to-USQ120-R129-BIN.console.txt",
+      "console_sha256": "6c7941344bf8e4c2faf6863e83983d3d2dee81d3b377618c02c985ba0cbf136d",
+      "encoded_sha256": "da73a879362cf1e45278a8d8ed21b9ebfaad0111e773ce4015ff14e53adeec05",
+      "decoded_sha256": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e",
+      "decoded_bytes": 256,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ120-BINARY-BIN",
+      "commands": [
+        "ENC BINARY.BIN B:",
+        "HDEC C: B:BINARY.BQN"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "BINARY.BIN": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9"
+      },
+      "console": "SQ-to-USQ120-BINARY-BIN.console.txt",
+      "console_sha256": "befb63d403dc5f6459c48cfb218a70ac0eb62d6816e1c99a66997964e3ef3c2a",
+      "encoded_sha256": "a4f1f6c01ac6443f608e49f30adace37481cddcf92dfdf68804af9b73b5097d5",
+      "decoded_sha256": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9",
+      "decoded_bytes": 1024,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ120-RUNS-DAT",
+      "commands": [
+        "ENC RUNS.DAT B:",
+        "HDEC C: B:RUNS.DQT"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "RUNS.DAT": "a8d5c7c111966ae292d447347442dde9e93b26a8bbf99f7beac3301cea036833"
+      },
+      "console": "SQ-to-USQ120-RUNS-DAT.console.txt",
+      "console_sha256": "9356f523706b2cd5674c3ac61b93fb41c2843fcc7f6d343a75d73fa90419eaf7",
+      "encoded_sha256": "e8d887f42352b37591ec7f39a562286a5de02c5fa7ec038720333863441960e8",
+      "decoded_sha256": "a8d5c7c111966ae292d447347442dde9e93b26a8bbf99f7beac3301cea036833",
+      "decoded_bytes": 20096,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ120-LEADDLE-BIN",
+      "commands": [
+        "ENC LEADDLE.BIN B:",
+        "HDEC C: B:LEADDLE.BQN"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "LEADDLE.BIN": "0206ce9478c9dc85816a5fa4c56365ea5a1939d2cb8d649eb633232cd3d4f549"
+      },
+      "console": "SQ-to-USQ120-LEADDLE-BIN.console.txt",
+      "console_sha256": "a7ced23537a72c23e3c57c35a805c48ebc774177175110e6558b44c33822f004",
+      "encoded_sha256": "c9274732a4f79a44ad824fdc879796b115cb330a8e4042d4d1160396fd1d48ec",
+      "decoded_sha256": "0206ce9478c9dc85816a5fa4c56365ea5a1939d2cb8d649eb633232cd3d4f549",
+      "decoded_bytes": 20096,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ120-TEXT-TXT",
+      "commands": [
+        "ENC TEXT.TXT B:",
+        "HDEC C: B:TEXT.TQT"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "TEXT.TXT": "99424d57511ba26b16dc93ce9fac150f4227e52f4c28285c21d948546afd9312"
+      },
+      "console": "SQ-to-USQ120-TEXT-TXT.console.txt",
+      "console_sha256": "65ac8c4bc94069cddf0509e21ef66ea9833742d20842e4e5eaf5739bfe00e26c",
+      "encoded_sha256": "fc986bfcc5644b24a2343b78014473cb38e4f01a476b0be3305f8058cc4de2a6",
+      "decoded_sha256": "99424d57511ba26b16dc93ce9fac150f4227e52f4c28285c21d948546afd9312",
+      "decoded_bytes": 34048,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ120-EXTENT-BIN",
+      "commands": [
+        "ENC EXTENT.BIN B:",
+        "HDEC C: B:EXTENT.BQN"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "EXTENT.BIN": "c867e94a6a20406a88f01204dcd0c89f827f4800dfb6dd50d6ffb66d260813b7"
+      },
+      "console": "SQ-to-USQ120-EXTENT-BIN.console.txt",
+      "console_sha256": "077298f4c6d3aad1880213beab02a258e09c99e51b07951a68729b8c6bd40b62",
+      "encoded_sha256": "f5417ad2e4fbe05c998e98cc06b6eda6de5fedc2566ed2baafeb74699d4a3179",
+      "decoded_sha256": "c867e94a6a20406a88f01204dcd0c89f827f4800dfb6dd50d6ffb66d260813b7",
+      "decoded_bytes": 17024,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ120-BIG-BIN",
+      "commands": [
+        "ENC BIG.BIN B:",
+        "HDEC C: B:BIG.BQN"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "BIG.BIN": "e95ce14efd774934338be75dabb4d48c728e3eab7d6a368547a9e6138aa9017e"
+      },
+      "console": "SQ-to-USQ120-BIG-BIN.console.txt",
+      "console_sha256": "4e6f9e7a182524be7d0336459d2a9878dbe0cb58b90c8b90a6f6c3973ad5cb31",
+      "encoded_sha256": "1f2b78bc1160a2b52df1ac9eb9a513fef3f03f2f32372643d40a31b6bbaf8ade",
+      "decoded_sha256": "e95ce14efd774934338be75dabb4d48c728e3eab7d6a368547a9e6138aa9017e",
+      "decoded_bytes": 70016,
+      "result": "DECODED"
+    },
+    {
+      "case": "SQ-to-USQ120-RING-BIN",
+      "commands": [
+        "ENC RING.BIN B:",
+        "HDEC C: B:RING.BQN"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "557484493572b04bb384f72a60f33f13086256c325da7c4fecbbc44cdba67a35",
+        "HDEC.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "RING.BIN": "2b60cf9ea45e81b48a1c303bb7ea281a834b31048c9c97724be350847f559397"
+      },
+      "console": "SQ-to-USQ120-RING-BIN.console.txt",
+      "console_sha256": "bed9a08a612628f23a97e3770603a75326823b238c631c96ffc2a0c74dde71cc",
+      "encoded_sha256": "db70fcbb09203ab06377454ecb39a41388056cd78b0e2d1d36eac0f36265f94f",
+      "decoded_sha256": "2b60cf9ea45e81b48a1c303bb7ea281a834b31048c9c97724be350847f559397",
+      "decoded_bytes": 4224,
+      "result": "DECODED"
+    },
+    {
+      "case": "CR-to-UNCR-EMPTY",
+      "commands": [
+        "ENC EMPTY B:",
+        "HDEC B:EMPTY.ZZZ C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "184d827867bd28e9df0016d3c17d316c98b93183dd6bbe84e64f90807c9444e6",
+        "HDEC.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "EMPTY": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "console": "CR-to-UNCR-EMPTY.console.txt",
+      "console_sha256": "9087ffb5200ade267607ba245f3c737f6dad8509becff77ccd522ab5f56e198a",
+      "encoded_sha256": "697a0868f48ba3c81396671b9a5214abba897a2c46ef249030f571091b3d9201",
+      "decoded_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decoded_bytes": 0,
+      "result": "DECODED"
+    },
+    {
+      "case": "CR-to-UNCR-ONE-A",
+      "commands": [
+        "ENC ONE.A B:",
+        "HDEC B:ONE.AZ C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "184d827867bd28e9df0016d3c17d316c98b93183dd6bbe84e64f90807c9444e6",
+        "HDEC.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "ONE.A": "a6b8fd253e264c54cb6b069efc2ae6e1fb1efe07ac94ddbc136b15007b714234"
+      },
+      "console": "CR-to-UNCR-ONE-A.console.txt",
+      "console_sha256": "63571bc88750477940cc3c8f9ffb18ceaf180f7a72e12499e5e1058f127d5bd8",
+      "encoded_sha256": "83b795924b1ff3e56c6e60f83a2cbd1b62749a3dd67e26669948514792963c23",
+      "decoded_sha256": "a6b8fd253e264c54cb6b069efc2ae6e1fb1efe07ac94ddbc136b15007b714234",
+      "decoded_bytes": 128,
+      "result": "DECODED"
+    },
+    {
+      "case": "CR-to-UNCR-TWO-AB",
+      "commands": [
+        "ENC TWO.AB B:",
+        "HDEC B:TWO.AZ C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "184d827867bd28e9df0016d3c17d316c98b93183dd6bbe84e64f90807c9444e6",
+        "HDEC.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "TWO.AB": "a2ee2df14a36909ccd0cc6708d9506a821b28b5f4c3ec10dbd78ae48b6a0d9d2"
+      },
+      "console": "CR-to-UNCR-TWO-AB.console.txt",
+      "console_sha256": "e844990b6f275cf0b026cc627990dc888ecde3be6605b367a85ae411730601be",
+      "encoded_sha256": "883423fc2e7d4c3445ffddc7da2022d3efcddef69d567610642ad833245f3a85",
+      "decoded_sha256": "a2ee2df14a36909ccd0cc6708d9506a821b28b5f4c3ec10dbd78ae48b6a0d9d2",
+      "decoded_bytes": 128,
+      "result": "DECODED"
+    },
+    {
+      "case": "CR-to-UNCR-NOEXT",
+      "commands": [
+        "ENC NOEXT B:",
+        "HDEC B:NOEXT.ZZZ C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "184d827867bd28e9df0016d3c17d316c98b93183dd6bbe84e64f90807c9444e6",
+        "HDEC.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "NOEXT": "b429dfd978bc455a61e44e0b1224fe72665d02ded06009e2f2e52e053645b29b"
+      },
+      "console": "CR-to-UNCR-NOEXT.console.txt",
+      "console_sha256": "75a87a19b783fdaab463045ecba7ab98dff045fbba85a21877992922e5707972",
+      "encoded_sha256": "850668c2f297ba3adf4150ddc8763355ac9db47d1afd4821714757b357cd0152",
+      "decoded_sha256": "b429dfd978bc455a61e44e0b1224fe72665d02ded06009e2f2e52e053645b29b",
+      "decoded_bytes": 128,
+      "result": "DECODED"
+    },
+    {
+      "case": "CR-to-UNCR-R127-BIN",
+      "commands": [
+        "ENC R127.BIN B:",
+        "HDEC B:R127.BZN C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "184d827867bd28e9df0016d3c17d316c98b93183dd6bbe84e64f90807c9444e6",
+        "HDEC.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "R127.BIN": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62"
+      },
+      "console": "CR-to-UNCR-R127-BIN.console.txt",
+      "console_sha256": "0a21b34926ab326470d59f1977a7fa154b1297909e772fc5a1590f484178c963",
+      "encoded_sha256": "d9bcc58b468f180652d4b62540674d6107f7c808c82ca810885fa70e4303e913",
+      "decoded_sha256": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62",
+      "decoded_bytes": 128,
+      "result": "DECODED"
+    },
+    {
+      "case": "CR-to-UNCR-R128-BIN",
+      "commands": [
+        "ENC R128.BIN B:",
+        "HDEC B:R128.BZN C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "184d827867bd28e9df0016d3c17d316c98b93183dd6bbe84e64f90807c9444e6",
+        "HDEC.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "R128.BIN": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5"
+      },
+      "console": "CR-to-UNCR-R128-BIN.console.txt",
+      "console_sha256": "b8937a6b919632897f0a1919812f7aed8f294bd915a5f0992e4ed236a0b8f311",
+      "encoded_sha256": "8901b4655ebbdf76bd50ad1b02afaccec6a051e3a086e839d4c7ebc5f79c6eff",
+      "decoded_sha256": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5",
+      "decoded_bytes": 128,
+      "result": "DECODED"
+    },
+    {
+      "case": "CR-to-UNCR-R129-BIN",
+      "commands": [
+        "ENC R129.BIN B:",
+        "HDEC B:R129.BZN C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "184d827867bd28e9df0016d3c17d316c98b93183dd6bbe84e64f90807c9444e6",
+        "HDEC.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "R129.BIN": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e"
+      },
+      "console": "CR-to-UNCR-R129-BIN.console.txt",
+      "console_sha256": "447a39c7865d28688aada53f8c592f9f16c66f7e38718b8024cb989c5312d43c",
+      "encoded_sha256": "0306b52abd11632471e54fbbc40c9a7569edeaabb45a6b66e82749e09fc9feee",
+      "decoded_sha256": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e",
+      "decoded_bytes": 256,
+      "result": "DECODED"
+    },
+    {
+      "case": "CR-to-UNCR-BINARY-BIN",
+      "commands": [
+        "ENC BINARY.BIN B:",
+        "HDEC B:BINARY.BZN C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "184d827867bd28e9df0016d3c17d316c98b93183dd6bbe84e64f90807c9444e6",
+        "HDEC.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "BINARY.BIN": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9"
+      },
+      "console": "CR-to-UNCR-BINARY-BIN.console.txt",
+      "console_sha256": "dc89d27519fe6d328551c55f3c33bd8b3e5ae123a9b0c33e6a23f45d291ace12",
+      "encoded_sha256": "9defcc10cb2f05f6406bbff37063cb90cf5a6a6f76e4b134e30162aba8ae3113",
+      "decoded_sha256": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9",
+      "decoded_bytes": 1024,
+      "result": "DECODED"
+    },
+    {
+      "case": "CR-to-UNCR-RUNS-DAT",
+      "commands": [
+        "ENC RUNS.DAT B:",
+        "HDEC B:RUNS.DZT C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "184d827867bd28e9df0016d3c17d316c98b93183dd6bbe84e64f90807c9444e6",
+        "HDEC.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "RUNS.DAT": "a8d5c7c111966ae292d447347442dde9e93b26a8bbf99f7beac3301cea036833"
+      },
+      "console": "CR-to-UNCR-RUNS-DAT.console.txt",
+      "console_sha256": "13aa08a41495b5dcc95612f8cd663ba253052a491f00ed8ee90f5b846741f631",
+      "encoded_sha256": "40a2ca0f2f23185f926e0a2b381dd3408dade13369793bff3f1deadc8a62a81a",
+      "decoded_sha256": "a8d5c7c111966ae292d447347442dde9e93b26a8bbf99f7beac3301cea036833",
+      "decoded_bytes": 20096,
+      "result": "DECODED"
+    },
+    {
+      "case": "CR-to-UNCR-LEADDLE-BIN",
+      "commands": [
+        "ENC LEADDLE.BIN B:",
+        "HDEC B:LEADDLE.BZN C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "184d827867bd28e9df0016d3c17d316c98b93183dd6bbe84e64f90807c9444e6",
+        "HDEC.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "LEADDLE.BIN": "0206ce9478c9dc85816a5fa4c56365ea5a1939d2cb8d649eb633232cd3d4f549"
+      },
+      "console": "CR-to-UNCR-LEADDLE-BIN.console.txt",
+      "console_sha256": "f31132e4b5e630483639859c2357be1fc9e478ce89ac06553b732945d68c628b",
+      "encoded_sha256": "45729cb3240ea8cccc9a350ffab5ad839a5a93a3f24f8f01f36403b85a87ad72",
+      "decoded_sha256": "0206ce9478c9dc85816a5fa4c56365ea5a1939d2cb8d649eb633232cd3d4f549",
+      "decoded_bytes": 20096,
+      "result": "DECODED"
+    },
+    {
+      "case": "CR-to-UNCR-TEXT-TXT",
+      "commands": [
+        "ENC TEXT.TXT B:",
+        "HDEC B:TEXT.TZT C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "184d827867bd28e9df0016d3c17d316c98b93183dd6bbe84e64f90807c9444e6",
+        "HDEC.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "TEXT.TXT": "99424d57511ba26b16dc93ce9fac150f4227e52f4c28285c21d948546afd9312"
+      },
+      "console": "CR-to-UNCR-TEXT-TXT.console.txt",
+      "console_sha256": "cda5b8fdcd289eae2591d4bcd3882b8c7dee194ba2bf4632d8e49bfa08b4f389",
+      "encoded_sha256": "f02a8887fab41758eaa1df487223b65570ee4dda920c2c82320fcf0fab450826",
+      "decoded_sha256": "99424d57511ba26b16dc93ce9fac150f4227e52f4c28285c21d948546afd9312",
+      "decoded_bytes": 34048,
+      "result": "DECODED"
+    },
+    {
+      "case": "CR-to-UNCR-EXTENT-BIN",
+      "commands": [
+        "ENC EXTENT.BIN B:",
+        "HDEC B:EXTENT.BZN C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "184d827867bd28e9df0016d3c17d316c98b93183dd6bbe84e64f90807c9444e6",
+        "HDEC.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "EXTENT.BIN": "c867e94a6a20406a88f01204dcd0c89f827f4800dfb6dd50d6ffb66d260813b7"
+      },
+      "console": "CR-to-UNCR-EXTENT-BIN.console.txt",
+      "console_sha256": "8be7c047646adb077b8f1606264244c246df3715c07ba174d9a9ef4f2641d4a4",
+      "encoded_sha256": "bc74a1d5753e223f2a5861191b5274805b5cfd8fd93b4fcf30e1623db2ad7712",
+      "decoded_sha256": "c867e94a6a20406a88f01204dcd0c89f827f4800dfb6dd50d6ffb66d260813b7",
+      "decoded_bytes": 17024,
+      "result": "DECODED"
+    },
+    {
+      "case": "CR-to-UNCR-BIG-BIN",
+      "commands": [
+        "ENC BIG.BIN B:",
+        "HDEC B:BIG.BZN C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "184d827867bd28e9df0016d3c17d316c98b93183dd6bbe84e64f90807c9444e6",
+        "HDEC.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "BIG.BIN": "e95ce14efd774934338be75dabb4d48c728e3eab7d6a368547a9e6138aa9017e"
+      },
+      "console": "CR-to-UNCR-BIG-BIN.console.txt",
+      "console_sha256": "6a2a531c2ba5e2d5c409052c8d391734879f223b5d7eb9328618f2fced001dff",
+      "encoded_sha256": "b812f41ce134daedf9a3e2fd56f6fe28a523bab9db4eb1dbb81dd5da512a7213",
+      "decoded_sha256": "e95ce14efd774934338be75dabb4d48c728e3eab7d6a368547a9e6138aa9017e",
+      "decoded_bytes": 70016,
+      "result": "DECODED"
+    },
+    {
+      "case": "CR-to-UNCR-RING-BIN",
+      "commands": [
+        "ENC RING.BIN B:",
+        "HDEC B:RING.BZN C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "184d827867bd28e9df0016d3c17d316c98b93183dd6bbe84e64f90807c9444e6",
+        "HDEC.COM": "c834ad4a89b45200e8220ce84a5837dcc876ce4a6326267b342d8c0055fd810c"
+      },
+      "input_sha256": {
+        "RING.BIN": "2b60cf9ea45e81b48a1c303bb7ea281a834b31048c9c97724be350847f559397"
+      },
+      "console": "CR-to-UNCR-RING-BIN.console.txt",
+      "console_sha256": "5526f4174af995b19a4fc2e2d0bc5098297c34bb63ce7199fbabb43a3046ec8f",
+      "encoded_sha256": "a8c5fe2afcb3479ef3d5843f6bff825ab83fd613bcd2da67848c5228b67f8d2b",
+      "decoded_sha256": "2b60cf9ea45e81b48a1c303bb7ea281a834b31048c9c97724be350847f559397",
+      "decoded_bytes": 4224,
+      "result": "DECODED"
+    },
+    {
+      "case": "LZH-to-UCRLZH20-EMPTY",
+      "commands": [
+        "ENC EMPTY B:",
+        "HDEC B:EMPTY.YYY C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "657aecf40c664a4958c9e64d7011bc9e810a4143946cbce116665b03f5d8783f",
+        "HDEC.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "EMPTY": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "console": "LZH-to-UCRLZH20-EMPTY.console.txt",
+      "console_sha256": "ed430722f938c97af0b011084748307069f0542a76f617b2b7846dca948e7d48",
+      "encoded_sha256": "c54512ea03d262c6f2cfe78d5aefc3bd176ec50c3511144a57bd99b441acee25",
+      "decoded_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decoded_bytes": 0,
+      "result": "DECODED"
+    },
+    {
+      "case": "LZH-to-UCRLZH20-ONE-A",
+      "commands": [
+        "ENC ONE.A B:",
+        "HDEC B:ONE.AY C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "657aecf40c664a4958c9e64d7011bc9e810a4143946cbce116665b03f5d8783f",
+        "HDEC.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "ONE.A": "a6b8fd253e264c54cb6b069efc2ae6e1fb1efe07ac94ddbc136b15007b714234"
+      },
+      "console": "LZH-to-UCRLZH20-ONE-A.console.txt",
+      "console_sha256": "d27ffedd599fa055bcd9833ee902de68970bbce215db51e5cf09d0d29d7c4a44",
+      "encoded_sha256": "25aff45da3440d6e0b9581609bec5869ee56e95624b2e6f44f5b715bb3a4894a",
+      "decoded_sha256": "a6b8fd253e264c54cb6b069efc2ae6e1fb1efe07ac94ddbc136b15007b714234",
+      "decoded_bytes": 128,
+      "result": "DECODED"
+    },
+    {
+      "case": "LZH-to-UCRLZH20-TWO-AB",
+      "commands": [
+        "ENC TWO.AB B:",
+        "HDEC B:TWO.AY C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "657aecf40c664a4958c9e64d7011bc9e810a4143946cbce116665b03f5d8783f",
+        "HDEC.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "TWO.AB": "a2ee2df14a36909ccd0cc6708d9506a821b28b5f4c3ec10dbd78ae48b6a0d9d2"
+      },
+      "console": "LZH-to-UCRLZH20-TWO-AB.console.txt",
+      "console_sha256": "1d4f7af431e8a431fcf911b9153805699a48c3bee8f63cf66b356ae2c2c247b1",
+      "encoded_sha256": "a0879ffbfc4ffde0c6bf8e73322ce5eb1c9fc68484423e5cb182a50a4fb549f4",
+      "decoded_sha256": "a2ee2df14a36909ccd0cc6708d9506a821b28b5f4c3ec10dbd78ae48b6a0d9d2",
+      "decoded_bytes": 128,
+      "result": "DECODED"
+    },
+    {
+      "case": "LZH-to-UCRLZH20-NOEXT",
+      "commands": [
+        "ENC NOEXT B:",
+        "HDEC B:NOEXT.YYY C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "657aecf40c664a4958c9e64d7011bc9e810a4143946cbce116665b03f5d8783f",
+        "HDEC.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "NOEXT": "b429dfd978bc455a61e44e0b1224fe72665d02ded06009e2f2e52e053645b29b"
+      },
+      "console": "LZH-to-UCRLZH20-NOEXT.console.txt",
+      "console_sha256": "2a8b2b92f0eb52958a4acb87534326f772d3341042451904296731aec5814cdb",
+      "encoded_sha256": "12a3995c6c48cedaf39f5f4d97bd042d9f130342112b539a35a7ec39cd87911a",
+      "decoded_sha256": "b429dfd978bc455a61e44e0b1224fe72665d02ded06009e2f2e52e053645b29b",
+      "decoded_bytes": 128,
+      "result": "DECODED"
+    },
+    {
+      "case": "LZH-to-UCRLZH20-R127-BIN",
+      "commands": [
+        "ENC R127.BIN B:",
+        "HDEC B:R127.BYN C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "657aecf40c664a4958c9e64d7011bc9e810a4143946cbce116665b03f5d8783f",
+        "HDEC.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "R127.BIN": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62"
+      },
+      "console": "LZH-to-UCRLZH20-R127-BIN.console.txt",
+      "console_sha256": "07508544dcd9d0f429f4b983ddb659ca240c357581fce07df3317679f3e5d867",
+      "encoded_sha256": "db3d519674580d71f7aea7f8a299548786fb11d5c992c700a22648e4af72bf8a",
+      "decoded_sha256": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62",
+      "decoded_bytes": 128,
+      "result": "DECODED"
+    },
+    {
+      "case": "LZH-to-UCRLZH20-R128-BIN",
+      "commands": [
+        "ENC R128.BIN B:",
+        "HDEC B:R128.BYN C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "657aecf40c664a4958c9e64d7011bc9e810a4143946cbce116665b03f5d8783f",
+        "HDEC.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "R128.BIN": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5"
+      },
+      "console": "LZH-to-UCRLZH20-R128-BIN.console.txt",
+      "console_sha256": "094a4ac35745a76969c7f4288ca0523e452661da4587eb994c84ad0c77e2c5df",
+      "encoded_sha256": "dbbe5403a013015559b7bfbc13cbb5461402b4b252ecd25db94e69fa714e1ce5",
+      "decoded_sha256": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5",
+      "decoded_bytes": 128,
+      "result": "DECODED"
+    },
+    {
+      "case": "LZH-to-UCRLZH20-R129-BIN",
+      "commands": [
+        "ENC R129.BIN B:",
+        "HDEC B:R129.BYN C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "657aecf40c664a4958c9e64d7011bc9e810a4143946cbce116665b03f5d8783f",
+        "HDEC.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "R129.BIN": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e"
+      },
+      "console": "LZH-to-UCRLZH20-R129-BIN.console.txt",
+      "console_sha256": "0180a831e31b3466858901c95f4b8a2781c6ec486e04dd173cbd878f9e6ca1c6",
+      "encoded_sha256": "f49221f65603fe8fa90b20aa6d1deb220ef9f7f8500e7d53f4b60f15a48961ca",
+      "decoded_sha256": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e",
+      "decoded_bytes": 256,
+      "result": "DECODED"
+    },
+    {
+      "case": "LZH-to-UCRLZH20-BINARY-BIN",
+      "commands": [
+        "ENC BINARY.BIN B:",
+        "HDEC B:BINARY.BYN C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "657aecf40c664a4958c9e64d7011bc9e810a4143946cbce116665b03f5d8783f",
+        "HDEC.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "BINARY.BIN": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9"
+      },
+      "console": "LZH-to-UCRLZH20-BINARY-BIN.console.txt",
+      "console_sha256": "56bc855585cfc721e18336eb403117a175f8fba7c6fba8aa2c2e02af89587f91",
+      "encoded_sha256": "ce3c1ac49c49c60a71f6fa11b4bb07ce4a5a1bd7b95c5c5a6bc7f0755cdcf900",
+      "decoded_sha256": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9",
+      "decoded_bytes": 1024,
+      "result": "DECODED"
+    },
+    {
+      "case": "LZH-to-UCRLZH20-RUNS-DAT",
+      "commands": [
+        "ENC RUNS.DAT B:",
+        "HDEC B:RUNS.DYT C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "657aecf40c664a4958c9e64d7011bc9e810a4143946cbce116665b03f5d8783f",
+        "HDEC.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "RUNS.DAT": "a8d5c7c111966ae292d447347442dde9e93b26a8bbf99f7beac3301cea036833"
+      },
+      "console": "LZH-to-UCRLZH20-RUNS-DAT.console.txt",
+      "console_sha256": "0f05266ca8d66b497b19c9f6f1d616260ca63e3461a309c25f627fe789432fe0",
+      "encoded_sha256": "988aee292a2dcdaca1ac2501d99e5e9873a3ff788d6680c698bd066d84021091",
+      "decoded_sha256": "a8d5c7c111966ae292d447347442dde9e93b26a8bbf99f7beac3301cea036833",
+      "decoded_bytes": 20096,
+      "result": "DECODED"
+    },
+    {
+      "case": "LZH-to-UCRLZH20-LEADDLE-BIN",
+      "commands": [
+        "ENC LEADDLE.BIN B:",
+        "HDEC B:LEADDLE.BYN C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "657aecf40c664a4958c9e64d7011bc9e810a4143946cbce116665b03f5d8783f",
+        "HDEC.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "LEADDLE.BIN": "0206ce9478c9dc85816a5fa4c56365ea5a1939d2cb8d649eb633232cd3d4f549"
+      },
+      "console": "LZH-to-UCRLZH20-LEADDLE-BIN.console.txt",
+      "console_sha256": "5c3b1c382214799ca97f72fb56fb0ad2f8526576bc25df6b0d0ffe50a9ed12ae",
+      "encoded_sha256": "f4d9f83e69bb13880ea06533d1471255708865cb98323089dac4f14ec23a1948",
+      "decoded_sha256": "0206ce9478c9dc85816a5fa4c56365ea5a1939d2cb8d649eb633232cd3d4f549",
+      "decoded_bytes": 20096,
+      "result": "DECODED"
+    },
+    {
+      "case": "LZH-to-UCRLZH20-TEXT-TXT",
+      "commands": [
+        "ENC TEXT.TXT B:",
+        "HDEC B:TEXT.TYT C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "657aecf40c664a4958c9e64d7011bc9e810a4143946cbce116665b03f5d8783f",
+        "HDEC.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "TEXT.TXT": "99424d57511ba26b16dc93ce9fac150f4227e52f4c28285c21d948546afd9312"
+      },
+      "console": "LZH-to-UCRLZH20-TEXT-TXT.console.txt",
+      "console_sha256": "e469559bfea4a5c6630e0c7d20d22efc5dd4049492eaede1f870d6f197c9df8f",
+      "encoded_sha256": "4baeff171efcd9e579602464f8a1c7c1c29b723c5d68bbf7a883a21d1cc879ac",
+      "decoded_sha256": "99424d57511ba26b16dc93ce9fac150f4227e52f4c28285c21d948546afd9312",
+      "decoded_bytes": 34048,
+      "result": "DECODED"
+    },
+    {
+      "case": "LZH-to-UCRLZH20-EXTENT-BIN",
+      "commands": [
+        "ENC EXTENT.BIN B:",
+        "HDEC B:EXTENT.BYN C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "657aecf40c664a4958c9e64d7011bc9e810a4143946cbce116665b03f5d8783f",
+        "HDEC.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "EXTENT.BIN": "c867e94a6a20406a88f01204dcd0c89f827f4800dfb6dd50d6ffb66d260813b7"
+      },
+      "console": "LZH-to-UCRLZH20-EXTENT-BIN.console.txt",
+      "console_sha256": "999b2390ae632fd2b47a0b0b88c1d852cdabe3b3abefc38cf6798bc2e0dd1e98",
+      "encoded_sha256": "f18127cb6f308ea8d5d886243e63fcfceff7099a7e31992d3cf99136f2cd5f2b",
+      "decoded_sha256": "c867e94a6a20406a88f01204dcd0c89f827f4800dfb6dd50d6ffb66d260813b7",
+      "decoded_bytes": 17024,
+      "result": "DECODED"
+    },
+    {
+      "case": "LZH-to-UCRLZH20-BIG-BIN",
+      "commands": [
+        "ENC BIG.BIN B:",
+        "HDEC B:BIG.BYN C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "657aecf40c664a4958c9e64d7011bc9e810a4143946cbce116665b03f5d8783f",
+        "HDEC.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "BIG.BIN": "e95ce14efd774934338be75dabb4d48c728e3eab7d6a368547a9e6138aa9017e"
+      },
+      "console": "LZH-to-UCRLZH20-BIG-BIN.console.txt",
+      "console_sha256": "4e54e31a7fc598baddc39dea22f981441eb7d2024c9177141ebaea66e5f8ff6d",
+      "encoded_sha256": "4e8a253f6b4597b5763e24615f48c60ab26eb4c4bb7325f5bf83cd8e415a6b4d",
+      "decoded_sha256": "e95ce14efd774934338be75dabb4d48c728e3eab7d6a368547a9e6138aa9017e",
+      "decoded_bytes": 70016,
+      "result": "DECODED"
+    },
+    {
+      "case": "LZH-to-UCRLZH20-RING-BIN",
+      "commands": [
+        "ENC RING.BIN B:",
+        "HDEC B:RING.BYN C: /Q"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "ENC.COM": "657aecf40c664a4958c9e64d7011bc9e810a4143946cbce116665b03f5d8783f",
+        "HDEC.COM": "9ac052b2c5f4ecbab0fe9516f741afa88353ccd1d58ffebbf6ba2b72519b16d2"
+      },
+      "input_sha256": {
+        "RING.BIN": "2b60cf9ea45e81b48a1c303bb7ea281a834b31048c9c97724be350847f559397"
+      },
+      "console": "LZH-to-UCRLZH20-RING-BIN.console.txt",
+      "console_sha256": "1b2f9dd1d82edf7a0944152fd493f130d1e5fa866a9fe3f1f5891fc6a9883a94",
+      "encoded_sha256": "97f4dbd9145b62aeda2328d9c76820ce26dc4bd3e8d9ed5ff7178adb8780b884",
+      "decoded_sha256": "2b60cf9ea45e81b48a1c303bb7ea281a834b31048c9c97724be350847f559397",
+      "decoded_bytes": 4224,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-sq111.lbr-SQ111.DQC-USQ",
+      "commands": [
+        "DEC INPUT.SQ B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "c3406d8c7ccac1f33fce0eab2ab8422f65d91938bcea9c38a7ae078bad463e19"
+      },
+      "input_sha256": {
+        "INPUT.SQ": "05b9d055719df4d2a6a4b099c499072ed626eda31ea16f289607aec2bc9a4c92"
+      },
+      "console": "archive-sq111.lbr-SQ111.DQC-USQ.console.txt",
+      "console_sha256": "4e2da94ab35f0cb3e9db7a717088781e96901d08113ee0aa9c789306d048f429",
+      "historical_sha256": "05b9d055719df4d2a6a4b099c499072ed626eda31ea16f289607aec2bc9a4c92",
+      "decoded_sha256": "744b86f7a51f0ecf8f0f82e12f8b4ca58ee9a0456d4e0e0cb8fcf7376b540e9a",
+      "decoded_bytes": 3456,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-sq111.lbr-SQ111.DQC-USQ20.COM",
+      "commands": [
+        "DEC B: INPUT.SQ"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "0a43d21823206c247b9eaefa4d8fc730e8b377128aa3f2da74b0be8c3e87791d"
+      },
+      "input_sha256": {
+        "INPUT.SQ": "05b9d055719df4d2a6a4b099c499072ed626eda31ea16f289607aec2bc9a4c92"
+      },
+      "console": "archive-sq111.lbr-SQ111.DQC-USQ20.COM.console.txt",
+      "console_sha256": "61aea1dbbb6ef3cfd0c16c755cdfa4f79c8b0eb162d5925b615401e945c1a176",
+      "historical_sha256": "05b9d055719df4d2a6a4b099c499072ed626eda31ea16f289607aec2bc9a4c92",
+      "decoded_sha256": "744b86f7a51f0ecf8f0f82e12f8b4ca58ee9a0456d4e0e0cb8fcf7376b540e9a",
+      "decoded_bytes": 3456,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-sq111.lbr-SQ111.DQC-USQ120.COM",
+      "commands": [
+        "DEC B: INPUT.SQ"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "INPUT.SQ": "05b9d055719df4d2a6a4b099c499072ed626eda31ea16f289607aec2bc9a4c92"
+      },
+      "console": "archive-sq111.lbr-SQ111.DQC-USQ120.COM.console.txt",
+      "console_sha256": "07b79600d3e407784e99ae44e2dbf961186305f66f68b06cd3bd787c8d23b790",
+      "historical_sha256": "05b9d055719df4d2a6a4b099c499072ed626eda31ea16f289607aec2bc9a4c92",
+      "decoded_sha256": "744b86f7a51f0ecf8f0f82e12f8b4ca58ee9a0456d4e0e0cb8fcf7376b540e9a",
+      "decoded_bytes": 3456,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-usqfst20.lbr-UF20.MQC-USQ",
+      "commands": [
+        "DEC INPUT.SQ B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "c3406d8c7ccac1f33fce0eab2ab8422f65d91938bcea9c38a7ae078bad463e19"
+      },
+      "input_sha256": {
+        "INPUT.SQ": "3fc264fd76ffe25cb879fc5d25d8b8a901290dc26145dfc05d0688fe8d4cc4a2"
+      },
+      "console": "archive-usqfst20.lbr-UF20.MQC-USQ.console.txt",
+      "console_sha256": "fc45cd1953b1fc222be1c38bd201d06a77b97e32377a2fd05d5b5120d391eca6",
+      "historical_sha256": "3fc264fd76ffe25cb879fc5d25d8b8a901290dc26145dfc05d0688fe8d4cc4a2",
+      "decoded_sha256": "9296e85b2484cfef1cc75e613c75c30fc1661f37b49b42a0e016a3e755a905bc",
+      "decoded_bytes": 38400,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-usqfst20.lbr-UF20.MQC-USQ20.COM",
+      "commands": [
+        "DEC B: INPUT.SQ"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "0a43d21823206c247b9eaefa4d8fc730e8b377128aa3f2da74b0be8c3e87791d"
+      },
+      "input_sha256": {
+        "INPUT.SQ": "3fc264fd76ffe25cb879fc5d25d8b8a901290dc26145dfc05d0688fe8d4cc4a2"
+      },
+      "console": "archive-usqfst20.lbr-UF20.MQC-USQ20.COM.console.txt",
+      "console_sha256": "22285dde6068c1ca541c83fa4affc8862af17033a02ff86efe454d42f79251b8",
+      "historical_sha256": "3fc264fd76ffe25cb879fc5d25d8b8a901290dc26145dfc05d0688fe8d4cc4a2",
+      "decoded_sha256": "9296e85b2484cfef1cc75e613c75c30fc1661f37b49b42a0e016a3e755a905bc",
+      "decoded_bytes": 38400,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-usqfst20.lbr-UF20.MQC-USQ120.COM",
+      "commands": [
+        "DEC B: INPUT.SQ"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "dd9f96a426ae47d3fe7d3184e95dad6b910ba4c41dedd6e1b1b55235340114cf"
+      },
+      "input_sha256": {
+        "INPUT.SQ": "3fc264fd76ffe25cb879fc5d25d8b8a901290dc26145dfc05d0688fe8d4cc4a2"
+      },
+      "console": "archive-usqfst20.lbr-UF20.MQC-USQ120.COM.console.txt",
+      "console_sha256": "7e0ce7fcd616444ea5fb2333d949cbe5a275199fa8cb7629e3dd20d2a2dd740d",
+      "historical_sha256": "3fc264fd76ffe25cb879fc5d25d8b8a901290dc26145dfc05d0688fe8d4cc4a2",
+      "decoded_sha256": "9296e85b2484cfef1cc75e613c75c30fc1661f37b49b42a0e016a3e755a905bc",
+      "decoded_bytes": 38400,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-CR24-FILETEST",
+      "commands": [
+        "DEC INPUT.MZC B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5"
+      },
+      "input_sha256": {
+        "INPUT.MZC": "78e0b50e1508968d7dc3993745efa6582807829cdb61c8a3cf1cce08aad3b9b1"
+      },
+      "console": "archive-CR24-FILETEST.console.txt",
+      "console_sha256": "9ba21b2685bd4d3080420c222a20a4a40c09cea32d578cf37cd301d46bf81095",
+      "historical_sha256": "78e0b50e1508968d7dc3993745efa6582807829cdb61c8a3cf1cce08aad3b9b1",
+      "decoded_sha256": "554d0544875c8c2ebeb3145d94782c691d8540e3d9b896ca6bcf21765913385c",
+      "decoded_bytes": 193792,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-CR24-RANDTEST",
+      "commands": [
+        "DEC INPUT.MZC B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5"
+      },
+      "input_sha256": {
+        "INPUT.MZC": "27502c5d1d355ba4d465cdb869af6029d01143a484a6245ce5c6da2042c5d60c"
+      },
+      "console": "archive-CR24-RANDTEST.console.txt",
+      "console_sha256": "4b47e7b690adbe93696fe09b582d8055f9f03a8324cec111c7bf6b44da992bd1",
+      "historical_sha256": "27502c5d1d355ba4d465cdb869af6029d01143a484a6245ce5c6da2042c5d60c",
+      "decoded_sha256": "9f883c9ef0bb7dcb993738134d85caad37375d3788c517ce2a943abd3adae960",
+      "decoded_bytes": 169472,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-CR24-DIRTEST",
+      "commands": [
+        "DEC INPUT.MZC B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5"
+      },
+      "input_sha256": {
+        "INPUT.MZC": "f9453cda67e1b26d1f32849d56065ebeef69b62e2d00775f2d891e360faf0919"
+      },
+      "console": "archive-CR24-DIRTEST.console.txt",
+      "console_sha256": "5300fef4a6d5159e5977ba073a3c08366b2cc72dbddb2183c26979c72365fd2a",
+      "historical_sha256": "f9453cda67e1b26d1f32849d56065ebeef69b62e2d00775f2d891e360faf0919",
+      "decoded_sha256": "1248f4829e253fe0333fd1f547c3b429b6244461b8d9310480eb705e0805f89d",
+      "decoded_bytes": 88576,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-CR24-CONSTEST",
+      "commands": [
+        "DEC INPUT.MZC B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5"
+      },
+      "input_sha256": {
+        "INPUT.MZC": "b19c935869bf725a9a92254fbc17ba54ee358a3851773e783efaa279fc130cd3"
+      },
+      "console": "archive-CR24-CONSTEST.console.txt",
+      "console_sha256": "6e6029d6b38587bf05a24f727ca52d249af04f7b4a009127b41ab352fed7b4d0",
+      "historical_sha256": "b19c935869bf725a9a92254fbc17ba54ee358a3851773e783efaa279fc130cd3",
+      "decoded_sha256": "6ec622cc641d7f3a62712619622cd73b653fec4d0358c4bf0636629e26edb5ed",
+      "decoded_bytes": 99712,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-CR24-BDOSTEST",
+      "commands": [
+        "DEC INPUT.MZC B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5"
+      },
+      "input_sha256": {
+        "INPUT.MZC": "6934e85228eb45348cf99f543e4bf31b17413e959514e124a4a2154b6a39a5a7"
+      },
+      "console": "archive-CR24-BDOSTEST.console.txt",
+      "console_sha256": "55879017c2bc37c5e4706451fef88a2457d980bcfa221f0205c55e643a2cec48",
+      "historical_sha256": "6934e85228eb45348cf99f543e4bf31b17413e959514e124a4a2154b6a39a5a7",
+      "decoded_sha256": "ecea22d2e6adc67ae3f2473911036e29581d5944a41ea0510316d8ca906d5cbb",
+      "decoded_bytes": 61440,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-CR24-ENTRYTST",
+      "commands": [
+        "DEC INPUT.MZC B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5"
+      },
+      "input_sha256": {
+        "INPUT.MZC": "d54e77a3e10ebbbfce8de3b047425e8213751346327ae71cc196a7d05a31f3d7"
+      },
+      "console": "archive-CR24-ENTRYTST.console.txt",
+      "console_sha256": "bbc11dfac4340bbf8b5d1359de787b7bb05a10d343e73a968d1642c5b1bd41d1",
+      "historical_sha256": "d54e77a3e10ebbbfce8de3b047425e8213751346327ae71cc196a7d05a31f3d7",
+      "decoded_sha256": "07317a2ecf34c4d92ca0ff7e9bc12ecc653e120ae568b4806c78d38bacf69413",
+      "decoded_bytes": 52096,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-CR24-CCPTEST",
+      "commands": [
+        "DEC INPUT.MZC B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5"
+      },
+      "input_sha256": {
+        "INPUT.MZC": "ce463ce6088058b95fb0565efe05352788a4734e932cd8dc9b0c80efb077c721"
+      },
+      "console": "archive-CR24-CCPTEST.console.txt",
+      "console_sha256": "aa5af949e5f0e5e4e31dc9a900cb663a1270721232d9cf97992edfe9f5bf6b16",
+      "historical_sha256": "ce463ce6088058b95fb0565efe05352788a4734e932cd8dc9b0c80efb077c721",
+      "decoded_sha256": "de9a06920590b7203bfce704a09ce7c8400907cfaa6eb14395f37b4a1d66ea83",
+      "decoded_bytes": 67712,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-CR24-DISKTEST",
+      "commands": [
+        "DEC INPUT.MZC B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5"
+      },
+      "input_sha256": {
+        "INPUT.MZC": "dd5924f5cad97549bc559476212a847488d4f89be0e16b5bc18a451ef34906e9"
+      },
+      "console": "archive-CR24-DISKTEST.console.txt",
+      "console_sha256": "6315e0ada395b8774465062ef885650947dc27bd47fe6edb3776f164750949f6",
+      "historical_sha256": "dd5924f5cad97549bc559476212a847488d4f89be0e16b5bc18a451ef34906e9",
+      "decoded_sha256": "ae5086a584b64de0bbd988634ea7525f02726f854fbffe52d08d5a1526483ba4",
+      "decoded_bytes": 59520,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-CR24-BIOSTEST",
+      "commands": [
+        "DEC INPUT.MZC B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5"
+      },
+      "input_sha256": {
+        "INPUT.MZC": "5375429601ac23b13d12eb749cd634edea2c521b3e901fc0dd5745bd1191437a"
+      },
+      "console": "archive-CR24-BIOSTEST.console.txt",
+      "console_sha256": "44b9ffb0c71f8cd57825861199d1c0ce821958669c0fdc7df4f72a457083ad48",
+      "historical_sha256": "5375429601ac23b13d12eb749cd634edea2c521b3e901fc0dd5745bd1191437a",
+      "decoded_sha256": "2c2933ceac8baf1fd8455d9cd0ff05a25a09580f2b9be9119ac9e547e33d25de",
+      "decoded_bytes": 119680,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-CR24-ERRTEST",
+      "commands": [
+        "DEC INPUT.MZC B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5"
+      },
+      "input_sha256": {
+        "INPUT.MZC": "940f0e0bcfce87b3d0277fb8e43012d7a4ad367c5452579607eecde472acf8a2"
+      },
+      "console": "archive-CR24-ERRTEST.console.txt",
+      "console_sha256": "c3fd54b00924f3476605333eb9bd051f467a05dd2bd9f1ed97902357f5abc653",
+      "historical_sha256": "940f0e0bcfce87b3d0277fb8e43012d7a4ad367c5452579607eecde472acf8a2",
+      "decoded_sha256": "eb7fc2011f5977a3be7de8a3410e2b30f121285c4576fb67d862e4ac438a02b6",
+      "decoded_bytes": 37376,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-CR24-ECOTEST",
+      "commands": [
+        "DEC INPUT.MZC B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5"
+      },
+      "input_sha256": {
+        "INPUT.MZC": "684f894ad6968b4172c2c2b82160b182b9424f8c1911e1aa86a3a4e368b25d4f"
+      },
+      "console": "archive-CR24-ECOTEST.console.txt",
+      "console_sha256": "bf03ac762a0268b0631a1bf3ac8fb21f158872f124f3f3d388c7ac7defe97907",
+      "historical_sha256": "684f894ad6968b4172c2c2b82160b182b9424f8c1911e1aa86a3a4e368b25d4f",
+      "decoded_sha256": "e503bd08e4bb9f31b216d5f4a85f12d71086a12d7ccbd51882772602efd0dedf",
+      "decoded_bytes": 21248,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-CR24-CPUTEST",
+      "commands": [
+        "DEC INPUT.MZC B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5"
+      },
+      "input_sha256": {
+        "INPUT.MZC": "44d780f4dd326e21d2d69f8f37c7feb31073ff1443032c19d6672c12a5d285ab"
+      },
+      "console": "archive-CR24-CPUTEST.console.txt",
+      "console_sha256": "d9b8a937bf7f9369e96fce63bf01fc8e6b0b0e9b13497de400b2c8986ebb33c5",
+      "historical_sha256": "44d780f4dd326e21d2d69f8f37c7feb31073ff1443032c19d6672c12a5d285ab",
+      "decoded_sha256": "58cd5b6918b329633527e2691549a3a6fe4f80233095129365801d186926356b",
+      "decoded_bytes": 20480,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-CR24-SCRATCH",
+      "commands": [
+        "DEC INPUT.MZC B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "40512a137b8a737bf9b3ba84bf0db6c722a1d8a37fe6af88b9d9e19eb56dd0e5"
+      },
+      "input_sha256": {
+        "INPUT.MZC": "8328ef9e7e09c47162d3a4b8efae6c35e5b35001ecc01c765a2c4ea8790e6145"
+      },
+      "console": "archive-CR24-SCRATCH.console.txt",
+      "console_sha256": "354453082cb615c52a586d33223b1f6295d6d40e1d992e5161ca206006cd0460",
+      "historical_sha256": "8328ef9e7e09c47162d3a4b8efae6c35e5b35001ecc01c765a2c4ea8790e6145",
+      "decoded_sha256": "ff548832c7ac64523dda14f354c7dff6ac6ccfebc4d81db0f16d4548457bbffa",
+      "decoded_bytes": 21760,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-LZH10--SOURCE.NYT",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "bf67ec636da212cec33085a47939ea17cffceebe96fa40c5221e1d534b85cade"
+      },
+      "console": "archive-LZH10--SOURCE.NYT.console.txt",
+      "console_sha256": "2d4d8a7a22795fe0bc7a2fc594f1617bb20e138dd48284a904c31ba6a60fad84",
+      "historical_sha256": "bf67ec636da212cec33085a47939ea17cffceebe96fa40c5221e1d534b85cade",
+      "decoded_sha256": "a2c95dae758357a81f05b07ba7bbdae35260529fe43d4b20fa63cfff935c3c9e",
+      "decoded_bytes": 4864,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-LZH10-COMMON.LYB",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "0bc2aff09c2b1f92fc5521ac234f57d5b9aaaea83743a5947ce314981641263c"
+      },
+      "console": "archive-LZH10-COMMON.LYB.console.txt",
+      "console_sha256": "51fc99dfb60c9856ddeae0931e2934ee7785312436c124bff2746f5576a206af",
+      "historical_sha256": "0bc2aff09c2b1f92fc5521ac234f57d5b9aaaea83743a5947ce314981641263c",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH10-CRLZH.RYL",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "bbd13898b790feb860152b5c5a308d9597a34a6c987117a242f590871578343e"
+      },
+      "console": "archive-LZH10-CRLZH.RYL.console.txt",
+      "console_sha256": "af3051d6704d56de773e27bd369643a64d983b12679c6a7b8e44944e4b360f5f",
+      "historical_sha256": "bbd13898b790feb860152b5c5a308d9597a34a6c987117a242f590871578343e",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH10-CRLZH.SYR",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "50b071fdfaba4545f8591f0213d3c3bac2ac231506178e4f0dfd93f716fbb126"
+      },
+      "console": "archive-LZH10-CRLZH.SYR.console.txt",
+      "console_sha256": "68bdb2dc15014bff160fff3e25d199bbd7f180c2eaa539c401fb772117d78fb1",
+      "historical_sha256": "50b071fdfaba4545f8591f0213d3c3bac2ac231506178e4f0dfd93f716fbb126",
+      "decoded_sha256": "81bfa2523926b20d514227fa8d9f0c4fb5752661a47fa80e8344f19378cbd591",
+      "decoded_bytes": 3200,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-LZH10-CRLZH11.CYM",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "ed6d87751afb24594a3918549bd8dbde5e7eba5cce0db8aeb3a985adfe52f223"
+      },
+      "console": "archive-LZH10-CRLZH11.CYM.console.txt",
+      "console_sha256": "0f11bf72139cd134e7b9cc326bdeb4f2d076073f9c088e42f78e4dfcd00c764e",
+      "historical_sha256": "ed6d87751afb24594a3918549bd8dbde5e7eba5cce0db8aeb3a985adfe52f223",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH10-CRLZH11.ZY0",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "682c49c204b7ea9f42d76e602e71dbafb4c91b40a36d70fbb5c02d78f6cb4225"
+      },
+      "console": "archive-LZH10-CRLZH11.ZY0.console.txt",
+      "console_sha256": "74b2e7b574a7441b4fa14c4bd24fee787282aad8a14333b2522494381bd3d960",
+      "historical_sha256": "682c49c204b7ea9f42d76e602e71dbafb4c91b40a36d70fbb5c02d78f6cb4225",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH10-FILE.LYT",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "02db2a9c8fa0b66f03e9981437e680e6430662244c1dcb4808c83c2c6b21877b"
+      },
+      "console": "archive-LZH10-FILE.LYT.console.txt",
+      "console_sha256": "48bfca86f0d0767f4583d31a1b34cfdcba0acca4aee0037d8c3c823e484a60bd",
+      "historical_sha256": "02db2a9c8fa0b66f03e9981437e680e6430662244c1dcb4808c83c2c6b21877b",
+      "decoded_sha256": "37035b99d6caff1c7a14841a74fd51d0b72f8a410df55c37755f0a8691358e56",
+      "decoded_bytes": 3968,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-LZH10-LZH-OVL.AYM",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "0e6f8ff100d9a580cd89d8c02185a79ab4dfd91981f7c213ac68e0f7fd32f3cc"
+      },
+      "console": "archive-LZH10-LZH-OVL.AYM.console.txt",
+      "console_sha256": "c1e0200409c05f9c5caad6ce3747e235dcf7d0c491e072f518874b05f0b0890d",
+      "historical_sha256": "0e6f8ff100d9a580cd89d8c02185a79ab4dfd91981f7c213ac68e0f7fd32f3cc",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH10-LZHREL.DYC",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "53a7b40f53198eb88c1d0c5ba8b1619abd41c535524da56ccc0631610231dfae"
+      },
+      "console": "archive-LZH10-LZHREL.DYC.console.txt",
+      "console_sha256": "35834b348be37c853c9172322bbf3e632bf057666f5b34c04cc842ab5edce07b",
+      "historical_sha256": "53a7b40f53198eb88c1d0c5ba8b1619abd41c535524da56ccc0631610231dfae",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH10-NOTES11.DYC",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "6154cda7d3676712d59891bd4dd52f47cc34e2644167e0e4f8ca4da2a8668f97"
+      },
+      "console": "archive-LZH10-NOTES11.DYC.console.txt",
+      "console_sha256": "0758688c1595f1fb688124fb81671b9e0d4b24d1293f77ca1e8a791cede7f276",
+      "historical_sha256": "6154cda7d3676712d59891bd4dd52f47cc34e2644167e0e4f8ca4da2a8668f97",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH10-PARSEFCB.SYR",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "d7c04c3585de463333cb52074c1ec23242732b869ec8fdad07ed9961f8b1f831"
+      },
+      "console": "archive-LZH10-PARSEFCB.SYR.console.txt",
+      "console_sha256": "cf275a7b3964e082f70651a8524f19a2604cf85e24b1bf308940def8bbb7e769",
+      "historical_sha256": "d7c04c3585de463333cb52074c1ec23242732b869ec8fdad07ed9961f8b1f831",
+      "decoded_sha256": "9f90f864f779d130f4571c602d86d04169286f3d28725a3febf38a3162578c6d",
+      "decoded_bytes": 640,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-LZH10-PATCH11.DYC",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "ee4b4261f16f8948ea61cf3840b85d528c3885f272c474a58d26e9c4833fc0c7"
+      },
+      "console": "archive-LZH10-PATCH11.DYC.console.txt",
+      "console_sha256": "c445642094b08ca0775a711e7ab1a6eaa4529cf4617a3177bcb7eaa13d39fbfe",
+      "historical_sha256": "ee4b4261f16f8948ea61cf3840b85d528c3885f272c474a58d26e9c4833fc0c7",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH10-RELEASE.NYT",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "80d4e3719232ceca69d5e231abe36d8aa14ce206bcb1c98f350aeda63f75dffa"
+      },
+      "console": "archive-LZH10-RELEASE.NYT.console.txt",
+      "console_sha256": "f843d36d4dd448c6d722a54e1c969c2afa7b31eba8983f20a6cb2631197ef12e",
+      "historical_sha256": "80d4e3719232ceca69d5e231abe36d8aa14ce206bcb1c98f350aeda63f75dffa",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH10-UCRLZH11.ZY0",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "9dbb2c3eacae96e56a26f0e2c2bcccdbd92a38bd98b73e0017f61620468a95db"
+      },
+      "console": "archive-LZH10-UCRLZH11.ZY0.console.txt",
+      "console_sha256": "64cf2cc80c5e0c63c32efd4c05cf5274c3667cc3babb5d6bdba7e93108a6a183",
+      "historical_sha256": "9dbb2c3eacae96e56a26f0e2c2bcccdbd92a38bd98b73e0017f61620468a95db",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH10-UNCR1.RYL",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "506d5089b953da0bf18b62a0cc03fc2051e098476ac705febbab6633bb24cd6c"
+      },
+      "console": "archive-LZH10-UNCR1.RYL.console.txt",
+      "console_sha256": "01227125b341d24dc8f39ac765736f1f5ba6c4c559f0f4de19aaf6ffed709dfe",
+      "historical_sha256": "506d5089b953da0bf18b62a0cc03fc2051e098476ac705febbab6633bb24cd6c",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH10-UNCR1.SYR",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "7e289d4898246eefa2d0a9bdce596295ca8f38b1a9f5dd59e55f6640d5a813e7"
+      },
+      "console": "archive-LZH10-UNCR1.SYR.console.txt",
+      "console_sha256": "44a0fe1cf85b4ee12e59c3dfecbcc88a5fa69ca1f47ff8344431b6aa4bbf2efe",
+      "historical_sha256": "7e289d4898246eefa2d0a9bdce596295ca8f38b1a9f5dd59e55f6640d5a813e7",
+      "decoded_sha256": "67a176d9da51fc1d51dfb778ca28150b6a676fec112510bd50406819f752be53",
+      "decoded_bytes": 896,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-LZH10-UNLZH.RYL",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "bd562a76663ac45b6410d5f74d68d7b645d55c69ab592a1696ceed22c202641a"
+      },
+      "console": "archive-LZH10-UNLZH.RYL.console.txt",
+      "console_sha256": "05c59237b620fbdebab564211b0021382c4a3573a5aada650080ac60425a475a",
+      "historical_sha256": "bd562a76663ac45b6410d5f74d68d7b645d55c69ab592a1696ceed22c202641a",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH10-UNLZH.SYR",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "aa2b3c5665fcfd254a771cfc18fd36c6aeff2ae1a86608fccf0b8844c2e3c1f6"
+      },
+      "console": "archive-LZH10-UNLZH.SYR.console.txt",
+      "console_sha256": "e69624026dde1580083163e1c0c5a2ab88fcb2d3b39c63307d734a1bbf0f148e",
+      "historical_sha256": "aa2b3c5665fcfd254a771cfc18fd36c6aeff2ae1a86608fccf0b8844c2e3c1f6",
+      "decoded_sha256": "94a8fea42c102dc3b95c9fc5538f073aebcd20b7732c513226463f74d53ecdb7",
+      "decoded_bytes": 2304,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-LZH10-USAGE11.DYC",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "4b371cd0912995a9c64bdee1a88bbf5805781fae4a5ddc417cd3ad09815cbdd2"
+      },
+      "console": "archive-LZH10-USAGE11.DYC.console.txt",
+      "console_sha256": "9506d9ca9be63a0352c53382041e67d61fdd0689c3dace8819a332c164b05f37",
+      "historical_sha256": "4b371cd0912995a9c64bdee1a88bbf5805781fae4a5ddc417cd3ad09815cbdd2",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH10-USQREL.RYL",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "29f11faac37701ef02fcb503bc881153888910bbe1f793fcfcc6c6832bc15721"
+      },
+      "console": "archive-LZH10-USQREL.RYL.console.txt",
+      "console_sha256": "b699d0f1b66c2cd7e64a1c1212096164392b5fc429f46763ae05b40e801f7c09",
+      "historical_sha256": "29f11faac37701ef02fcb503bc881153888910bbe1f793fcfcc6c6832bc15721",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH10-USQREL.SYR",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "b906fbbff1c337ac7af249eb83cf3e4e8efe35efa1e9337d7d10d71b2cd1f754"
+      },
+      "console": "archive-LZH10-USQREL.SYR.console.txt",
+      "console_sha256": "8347eaec68f543cd9dd836d1da819f282d1aba96246ae021af3732d17fd89d6a",
+      "historical_sha256": "b906fbbff1c337ac7af249eb83cf3e4e8efe35efa1e9337d7d10d71b2cd1f754",
+      "decoded_sha256": "e7debcd2cf2640cfeb8a088ddcfb009de65908a7bac12bd232eaa2741a06ed08",
+      "decoded_bytes": 512,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-LZH20--SOURCE.NYT",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "cccba442a9487674a7af5fb427bb0d09a703e09d5fc21c47af64ee1ff08fb57f"
+      },
+      "console": "archive-LZH20--SOURCE.NYT.console.txt",
+      "console_sha256": "9b62330e3deb197a81307cf5b517cfcdb014cf5ad2dba68f9598128c9eb13ca8",
+      "historical_sha256": "cccba442a9487674a7af5fb427bb0d09a703e09d5fc21c47af64ee1ff08fb57f",
+      "decoded_sha256": "3d7b44d4c99c95ea6e0f56d57d3ed12542868f3e833abbff17938a662472ea02",
+      "decoded_bytes": 5120,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-LZH20-COMMONLZ.LYB",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "34740f51eee65e44a7744687bc1ee0d9a665f291bd6e4d1e1cb573c797535440"
+      },
+      "console": "archive-LZH20-COMMONLZ.LYB.console.txt",
+      "console_sha256": "0d3a77dee817f264cab7ac83f5c06d064dda9fca65fca858c67ca9edf7c28ada",
+      "historical_sha256": "34740f51eee65e44a7744687bc1ee0d9a665f291bd6e4d1e1cb573c797535440",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH20-CRLZH.RYL",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "081e8348b3401d1664571534f82bc22fde7d07e6915db880e17e8bba3de05d9e"
+      },
+      "console": "archive-LZH20-CRLZH.RYL.console.txt",
+      "console_sha256": "7561d5edaf2b3c50abea15c8967669ae66df1155fbee6ae2ed2d77845648c690",
+      "historical_sha256": "081e8348b3401d1664571534f82bc22fde7d07e6915db880e17e8bba3de05d9e",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH20-CRLZH.SYR",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "6262228d6b2127d3470ebceaf7bf4406ec82c300b31b26bcd126ce0d0cb7e7e6"
+      },
+      "console": "archive-LZH20-CRLZH.SYR.console.txt",
+      "console_sha256": "9dc5e2cfe9e9097672eb84034e39728e4a6b3f2a6f31c7fcbfacd3eb25766cc9",
+      "historical_sha256": "6262228d6b2127d3470ebceaf7bf4406ec82c300b31b26bcd126ce0d0cb7e7e6",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH20-CRLZH20.CYG",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "e55a998dc3e7b141783926dbad9b7075a10082edbb6e107f0097a0535a5e968b"
+      },
+      "console": "archive-LZH20-CRLZH20.CYG.console.txt",
+      "console_sha256": "18ace4c14de000e48d486fd2ee407323e7f5a44b529b41cf4a01a86c9c00a37f",
+      "historical_sha256": "e55a998dc3e7b141783926dbad9b7075a10082edbb6e107f0097a0535a5e968b",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH20-CRLZH20.CYM",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "cdd0422425886e50afeee1b6d305df1601edea5bfd0a9329c463f64a6dff6364"
+      },
+      "console": "archive-LZH20-CRLZH20.CYM.console.txt",
+      "console_sha256": "8397d728f9085753dfc3fd035ad97662f7de67650a60f142030d674d6ad54e44",
+      "historical_sha256": "cdd0422425886e50afeee1b6d305df1601edea5bfd0a9329c463f64a6dff6364",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH20-CRLZH20.ZY0",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "7975f7c128408422593fbf9d0dbfc2d92f2703c0d36a72cf15a18727f61f6ea2"
+      },
+      "console": "archive-LZH20-CRLZH20.ZY0.console.txt",
+      "console_sha256": "9530335baac198bc21fd9b281a6d9ddf34da5c5ab94ce532aa32dfe9d85ca980",
+      "historical_sha256": "7975f7c128408422593fbf9d0dbfc2d92f2703c0d36a72cf15a18727f61f6ea2",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH20-CRLZH20Z.CYM",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "2449f4ff469c642e6682e4fcba1fe8ff5ac8eae3b24ebfb716a39f81e597d9d4"
+      },
+      "console": "archive-LZH20-CRLZH20Z.CYM.console.txt",
+      "console_sha256": "0cb408c753ead55f0a05f1a26b87e6403f0701c7379933e1da410fccaed586c4",
+      "historical_sha256": "2449f4ff469c642e6682e4fcba1fe8ff5ac8eae3b24ebfb716a39f81e597d9d4",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH20-CRLZHCF.TYT",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "94429208a2ce76da8e7617f2bdc66cf7ba6583f267f48c660d58c31183aa50ec"
+      },
+      "console": "archive-LZH20-CRLZHCF.TYT.console.txt",
+      "console_sha256": "855130b2ac448713b55dbcabe0f34eb558dde01d8bbd1b45c23d52f838aac3b1",
+      "historical_sha256": "94429208a2ce76da8e7617f2bdc66cf7ba6583f267f48c660d58c31183aa50ec",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH20-CRLZHCF.ZY0",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "04930d48769885d2414ef01096f1429c43994d89ccf01a214a9d5895d0378685"
+      },
+      "console": "archive-LZH20-CRLZHCF.ZY0.console.txt",
+      "console_sha256": "3c89120f4591ffea7890b76814172a450e7aed8e9e2fb7053743a8dc7ca2bba3",
+      "historical_sha256": "04930d48769885d2414ef01096f1429c43994d89ccf01a214a9d5895d0378685",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH20-FILE.LYT",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "88eae855ffad2e6378bdb959f09142e832e4cc0095df701e0091498816e91708"
+      },
+      "console": "archive-LZH20-FILE.LYT.console.txt",
+      "console_sha256": "fec9f9e8ac2e2e66af660b61507c46760f5a044898582035267b17e453e9d29e",
+      "historical_sha256": "88eae855ffad2e6378bdb959f09142e832e4cc0095df701e0091498816e91708",
+      "decoded_sha256": "ef42fec43811df1fe20d8923e4022391f6755512033d5f5808a0ca90c74f5164",
+      "decoded_bytes": 3200,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-LZH20-LZH-OVL.AYM",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "33c4aee4df2dd726e6712929e8bf45b016d2e4e85886a50e08ce76e3da54d39d"
+      },
+      "console": "archive-LZH20-LZH-OVL.AYM.console.txt",
+      "console_sha256": "278d496014188185922ca0403bfd1f2b49e2840018d2d719726558f21d6f9c7a",
+      "historical_sha256": "33c4aee4df2dd726e6712929e8bf45b016d2e4e85886a50e08ce76e3da54d39d",
+      "decoded_sha256": "039f3a46fc263478dfade147ec2fd796820010fc7a3899412ce49050ba33e83c",
+      "decoded_bytes": 7168,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-LZH20-LZHREL.DYC",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "fdc66b20ee2fbaa0dbd31ee40186e5c7aba3626b60074925b9a53bfa063e19a2"
+      },
+      "console": "archive-LZH20-LZHREL.DYC.console.txt",
+      "console_sha256": "ff5fdb3079a189ad763670407016968a4e64463276f53912a7648e0d572f0248",
+      "historical_sha256": "fdc66b20ee2fbaa0dbd31ee40186e5c7aba3626b60074925b9a53bfa063e19a2",
+      "decoded_sha256": "db47f0b02488fce9ab1d2a48caf6cd40c360c5b204aa7f10f630abe4da470c24",
+      "decoded_bytes": 16128,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-LZH20-NOTES20.DYC",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "1182acb7cbcf07ae5bdf2d49bbf47d09f4a130d2d69ba28099ef00361edd26e4"
+      },
+      "console": "archive-LZH20-NOTES20.DYC.console.txt",
+      "console_sha256": "7b15db828c4ba68bd101d91ab0763f646ff34a41eabe116ca3779a23675e7f14",
+      "historical_sha256": "1182acb7cbcf07ae5bdf2d49bbf47d09f4a130d2d69ba28099ef00361edd26e4",
+      "decoded_sha256": "01d9a486250ae94322414c9e395ee5b4db2242d463c2f6675aa504bc4b5b2e9f",
+      "decoded_bytes": 30592,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-LZH20-PARSEFCB.SYR",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "ace9d6ded7bffaa59f4119d1f97a3f1c0d181e25856bcd44f22f1a4ade6cc6b9"
+      },
+      "console": "archive-LZH20-PARSEFCB.SYR.console.txt",
+      "console_sha256": "acbde78d22d097548e017c145b54f9298b18b222c6d1da3efe3a2bb95c085159",
+      "historical_sha256": "ace9d6ded7bffaa59f4119d1f97a3f1c0d181e25856bcd44f22f1a4ade6cc6b9",
+      "decoded_sha256": "9f90f864f779d130f4571c602d86d04169286f3d28725a3febf38a3162578c6d",
+      "decoded_bytes": 640,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-LZH20-PATCH20.DYC",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "8a6c04ed3b3153361ae1e5047f44b5e78203a09fa906d80d475097573e18bfa1"
+      },
+      "console": "archive-LZH20-PATCH20.DYC.console.txt",
+      "console_sha256": "28631b995a9725332e2b773bfa82b1547626e63a537bffcd6511ec9d9a0af027",
+      "historical_sha256": "8a6c04ed3b3153361ae1e5047f44b5e78203a09fa906d80d475097573e18bfa1",
+      "decoded_sha256": "7896c6914c5d8a02ed3c92e893c239dbd5630302d354aceae11003281de92c51",
+      "decoded_bytes": 1152,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-LZH20-RELEASE.NYT",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "5bdf93cc76797a53400ffa2f63c53bf3f5487c5f4eecbf039859573a0fbe579b"
+      },
+      "console": "archive-LZH20-RELEASE.NYT.console.txt",
+      "console_sha256": "548b1a96333ea014c6c96c0138d50114a40b109eedc024953e525f4a34587d21",
+      "historical_sha256": "5bdf93cc76797a53400ffa2f63c53bf3f5487c5f4eecbf039859573a0fbe579b",
+      "decoded_sha256": "7c17f9002c07bc6a4af385846950bdb1da3d73b4df1f274f85eea8ca267d5aaa",
+      "decoded_bytes": 5376,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-LZH20-UCRLZH20.ZY0",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "fc16f46fdfd4513140700242928cbfdcfa9e9079a1386bab37fd3982bdc01051"
+      },
+      "console": "archive-LZH20-UCRLZH20.ZY0.console.txt",
+      "console_sha256": "d4231f4f04ba266f934fc711f8170b3ec140c4cfab87048ee647437aac485652",
+      "historical_sha256": "fc16f46fdfd4513140700242928cbfdcfa9e9079a1386bab37fd3982bdc01051",
+      "decoded_sha256": "6d6ef9fd2a9a2db5551ea685e84fd844693ecd5b0e8e2c666df084bb57fe5fb1",
+      "decoded_bytes": 42496,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-LZH20-UNCR1.RYL",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "52721da24bd7f245910fbf8dba66ecf4c0c68555d240e7a8475198433ce4d7a2"
+      },
+      "console": "archive-LZH20-UNCR1.RYL.console.txt",
+      "console_sha256": "ec31a9773d038ebba72dbd636fb3b9e16747d6d5908c1015db9f44135ccccf03",
+      "historical_sha256": "52721da24bd7f245910fbf8dba66ecf4c0c68555d240e7a8475198433ce4d7a2",
+      "decoded_sha256": "dfc3137d8cafaf68b9f89cf3cad24c9b1cfa2eafad63a2f6361b141b109795f9",
+      "decoded_bytes": 896,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-LZH20-UNCR1.SYR",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "4e288a2ec49f90a1377870b9710660046aaaa6b45234647071795fb7c209b85c"
+      },
+      "console": "archive-LZH20-UNCR1.SYR.console.txt",
+      "console_sha256": "6a45d6fd55b26c74e1c84c481aefec8fdec976fd7911400f89f3a349e35bc109",
+      "historical_sha256": "4e288a2ec49f90a1377870b9710660046aaaa6b45234647071795fb7c209b85c",
+      "decoded_sha256": "67a176d9da51fc1d51dfb778ca28150b6a676fec112510bd50406819f752be53",
+      "decoded_bytes": 896,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-LZH20-UNLZH.RYL",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "b7ab19b3d6e1b61d461e37618ce21beb72dbea50d8d8e3986c22a507d2e234c5"
+      },
+      "console": "archive-LZH20-UNLZH.RYL.console.txt",
+      "console_sha256": "bf887e34a361ba41e2a022934d238269345d9802033a51f28ac47bd8f565522d",
+      "historical_sha256": "b7ab19b3d6e1b61d461e37618ce21beb72dbea50d8d8e3986c22a507d2e234c5",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH20-UNLZH.SYR",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "633be34a85b1fa805a69d195cb9466fe6d6dec492493f1a90dbfb767773b2500"
+      },
+      "console": "archive-LZH20-UNLZH.SYR.console.txt",
+      "console_sha256": "d14228b52c3d4e7ef139ade8f015b2c9674aa2c8bdc9117f3c6b0d3de77a637a",
+      "historical_sha256": "633be34a85b1fa805a69d195cb9466fe6d6dec492493f1a90dbfb767773b2500",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH20-UNLZH20Z.CYM",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "b63a7a547578909d30c559124acd3806a9eb858b008bbb40414b15f27b942621"
+      },
+      "console": "archive-LZH20-UNLZH20Z.CYM.console.txt",
+      "console_sha256": "411f2b0442ddb809c01477026fb0e8b9c3200ce1badaba4a71ad99b761fd0ddf",
+      "historical_sha256": "b63a7a547578909d30c559124acd3806a9eb858b008bbb40414b15f27b942621",
+      "expected_refusal": "unsafe embedded filename",
+      "result": "EXPECTED_REFUSAL"
+    },
+    {
+      "case": "archive-LZH20-USAGE20.DYC",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "e759a95732e98b74a12d65799b91d4495816eaec2dd4bf742f1b1b4b061e4661"
+      },
+      "console": "archive-LZH20-USAGE20.DYC.console.txt",
+      "console_sha256": "b2df2eb86d08ec6a50b6ab6bebb019ecf46bfe13fc54dd3693a0557f2104adc3",
+      "historical_sha256": "e759a95732e98b74a12d65799b91d4495816eaec2dd4bf742f1b1b4b061e4661",
+      "decoded_sha256": "1f200d53ea207d0e4995c6ffd4e0a77d467973b904815324478d30652d73dfe5",
+      "decoded_bytes": 12544,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-LZH20-USQREL.RYL",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "68f61d7d406bb9f453004762e4b6517617950ed3d1cb2f14942be047ac593d45"
+      },
+      "console": "archive-LZH20-USQREL.RYL.console.txt",
+      "console_sha256": "3d8e345bd94f9e343af46d1c63ae2100f8b2777bb5d5d7638475794c8da56ec0",
+      "historical_sha256": "68f61d7d406bb9f453004762e4b6517617950ed3d1cb2f14942be047ac593d45",
+      "decoded_sha256": "9788d202c6aada12195f4e8cbe92ad32db379733711e2cf856ed17a206e9aa11",
+      "decoded_bytes": 512,
+      "result": "DECODED"
+    },
+    {
+      "case": "archive-LZH20-USQREL.SYR",
+      "commands": [
+        "DEC INPUT.LZH B:"
+      ],
+      "status": "PASS",
+      "program_sha256": {
+        "DEC.COM": "b1d6884da173eac090de7ead1c0d8ca4b894b638d9d24da66cb9685f64b2c858"
+      },
+      "input_sha256": {
+        "INPUT.LZH": "be1f60e19837971dd6f922c22f892a10f37a3194746eb8825f58ff1c5bd667c3"
+      },
+      "console": "archive-LZH20-USQREL.SYR.console.txt",
+      "console_sha256": "d55701f3dfae3e00db63ce40c1ab61dfc2458591f2362a49ad4fb7ef15cf8566",
+      "historical_sha256": "be1f60e19837971dd6f922c22f892a10f37a3194746eb8825f58ff1c5bd667c3",
+      "decoded_sha256": "e7debcd2cf2640cfeb8a088ddcfb009de65908a7bac12bd232eaa2741a06ed08",
+      "decoded_bytes": 512,
+      "result": "DECODED"
+    }
+  ]
+}

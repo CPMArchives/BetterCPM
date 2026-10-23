@@ -288,3 +288,13 @@ expect on disposable media. Historical archives are external, authenticated
 fixtures, not newly vendored source. Source-level and host-model checks must not
 be described as independent historical-encoder byte identity or full release
 acceptance. Reproduce tests against the exact binary being released.
+
+
+## Historical executable interoperability qualification
+
+The [historical interoperability campaign](Compression%20Historical%20Interoperability.md)
+now qualifies both directions under stock CP/M 2.2 using unmodified historical
+executables and preserved input files. Its evidence distinguishes successful
+record comparisons, intentional filename refusals, historical empty-file skips
+and a confirmed CRUNCH 2.4 producer defect. It supplements the format's library
+and native command regressions; it does not broaden supported format variants.

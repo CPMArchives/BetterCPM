@@ -170,3 +170,13 @@ FCB reset after close, temporary ownership and source preservation. Stock CP/M
 2.2 tests exercise actual SQ.COM -> USQ.COM record round trips, binary/empty
 files, extent boundaries, destinations and collisions on disposable disks.
 Wire compatibility does not imply an identical historical tree or output file.
+
+
+## Historical executable interoperability qualification
+
+The [historical interoperability campaign](Compression%20Historical%20Interoperability.md)
+now qualifies both directions under stock CP/M 2.2 using unmodified historical
+executables and preserved input files. Its evidence distinguishes successful
+record comparisons, intentional filename refusals, historical empty-file skips
+and a confirmed CRUNCH 2.4 producer defect. It supplements the format's library
+and native command regressions; it does not broaden supported format variants.

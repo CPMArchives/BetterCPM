@@ -218,3 +218,13 @@ contexts. The command campaign adds 47 encoder fault-injection cases and 15
 complete LZH.COM -> UNLZH.COM round trips under stock CP/M 2.2, including extents,
 headers, drives, collisions and cleanup. Rebuilds qualify their exact artifacts;
 these counts are baseline evidence, not a forever-fixed test interface.
+
+
+## Historical executable interoperability qualification
+
+The [historical interoperability campaign](Compression%20Historical%20Interoperability.md)
+now qualifies both directions under stock CP/M 2.2 using unmodified historical
+executables and preserved input files. Its evidence distinguishes successful
+record comparisons, intentional filename refusals, historical empty-file skips
+and a confirmed CRUNCH 2.4 producer defect. It supplements the format's library
+and native command regressions; it does not broaden supported format variants.
