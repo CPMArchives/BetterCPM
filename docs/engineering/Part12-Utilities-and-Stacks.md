@@ -158,13 +158,19 @@ The identified private-utility entry and obsolete-packaging hazards are closed
 in this selected build path. The stack inventory is now concrete, with a
 specific small-margin target; it is not a completed whole-system stack proof.
 
-**Proposed Part 13:** stress and trace the small resident system/BDOS stacks,
+**Superseded next-step proposal:** stress and trace the small resident system/BDOS stacks,
 including monitor-service nesting and disk-error exits. Establish whether the
 six-byte observed BDOS margin is sufficient; repair any demonstrated defect
 without reducing application TPA where feasible. Pause after that bounded
 assessment. If a repair requires an architectural change, seek a separate
 architectural critique rather than inferring safety from a successful smoke
 run.
+
+**Closure update:** the maintainer subsequently directed a final synthesis
+instead of another implementation part. [Part 13](Part13-Final-Assessment-and-Roadmap.md)
+closes the assessment and moves these checks into a separately scoped cpmsim
+prototype-completion workstream. No stack-stress implementation is authorized
+by that synthesis.
 
 Keep native/ROM adoption, native packaging migration, physical installation
 interruption/recovery, and the separate Model 4 F400h–FFFFh hardware-window
