@@ -2,13 +2,20 @@
 
 ## Status and implementation boundary
 
-Implemented baseline, 2026-10-23: SQ/USQ, CR/UNCR and LZH/UNLZH are six
-independent Z80 commands for CP/M 2.2. This specification describes the source
-at file/codec command baseline `68497f1`, with the standalone `/VER` adoption
-described below. It does not add runtime
-features. Individual commands are the release 1.0 scope; a unified interface is
-post-1.0 work. Utilities disk images remain provisional, with separate release
-acceptance requirements.
+The maintainer froze compression features for release 1.0 on 2026-10-23.
+SQ/USQ, CR/UNCR and LZH/UNLZH are six independent Z80 commands using the common
+codec ABI, with safe temporary output, historical naming, `/VER` and the adopted
+short-corner `/HELP`. Final feature baseline: `00e6785`, merged in `569825d`;
+each command identifies as version 1.0 Build 003. The exact final binary hashes
+and historical exchange results are retained in the
+[qualification record](Compression%20Historical%20Interoperability.md).
+
+Individual commands are the release 1.0 scope. A unified interface, new algorithm
+versions, additional format support and convenience features remain post-1.0.
+Qualification defects may still require corrections and retesting. The
+[1.0 release checklist](../releases/1.0-ROADMAP.md#compression-utilities--10-feature-freeze-and-release-checklist)
+tracks the remaining native build, BetterCP/M platform and final disk gates.
+Utilities images remain provisional pending those separate acceptance checks.
 
 The assembly-time macro library has no OS dependencies. The command owns CP/M
 file policy, buffering, filenames, temporary files and publication. Native ZSM4
@@ -332,20 +339,22 @@ and a confirmed CRUNCH 2.4 producer defect. It supplements the format's library
 and native command regressions; it does not broaden supported format variants.
 
 
-## Version-entry qualification
+## Version/help-entry qualification
 
 `python3 tools/test_codec_versions.py` executes the six built commands on the
-full Z80 core. It checks 169 valid/mixed/long-token cases, case/space/TAB handling,
+full Z80 core. The final rerun checks 344 version/help/parser cases, case/space/TAB handling,
 127-byte tails, metadata-driven four-digit builds, deterministic rebuilds,
 console-only handled paths, untouched files/FCBs/context/tail, stack balance,
 index/alternate registers and code immutability. The shared command test model
 now leaves 0100h intact for a full 127-byte tail, rather than appending a CR over
 the program's first instruction.
 
-`python3 tools/test_codec_versions_cpm.py` executes 42 commands under stock
-CP/M 2.2 on disposable disks, verifying every line of all six identities,
+`python3 tools/test_codec_versions_cpm.py` executes 90 commands under stock
+CP/M 2.2 on disposable disks, verifying every line of all six identities and compact help screens,
 invalid mixed requests, ordinary rejection of longer/unknown option tokens,
 return to prompt, unchanged files and no temporary output. Existing fault-
 injection and SQ/USQ, CR/UNCR, LZH/UNLZH native round-trip tests remain required.
-Historical qualification records continue to identify their original binary
-hashes; a rebuild is not retroactively covered by that evidence.
+The final historical qualification record now identifies the Build 003 binary
+hashes. A later rebuild is covered only if its bytes match; changed artifacts
+require relevant retesting. Final query logs are retained with the refreshed
+historical evidence bundle.

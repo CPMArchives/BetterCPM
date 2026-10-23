@@ -23,6 +23,7 @@ import subprocess
 import tempfile
 import urllib.request
 
+from utility_versions import identities
 from test_usq_com import padded
 from test_usq_com_cpm import run
 from test_uncr import decode as decode_cr
@@ -385,6 +386,8 @@ def main():
     parser.add_argument('--archives',type=Path,nargs=2,default=[ROOT/'build/test-fixtures/crlzh'/n for n in ('crlzh11.lbr','crlzh20.lbr')])
     parser.add_argument('--corpus',type=Path,default=ROOT.parent/'cpm-2.2-compatibility-suite/suite/crunched-source')
     parser.add_argument('--output',type=Path,default=ROOT/'build/historical-interop')
+    parser.add_argument('--commands-dir',type=Path,
+                        help='test final COM files here; require byte identity with fresh source builds')
     parser.add_argument('--fetch',action='store_true',help='fetch missing hash-pinned executables/SQ archives into ignored fixture cache')
     parser.add_argument('--only',choices=['SQ','CR','LZH'])
     parser.add_argument('--match',help='run only cases containing this string')
@@ -407,6 +410,20 @@ def main():
         work=Path(temporary)
         commands={c:importlib.import_module('build_'+c.lower()).build(args.assembler,work)
                   for c in ('SQ','USQ','CR','UNCR','LZH','UNLZH')}
+        if args.commands_dir:
+            for command, built in commands.items():
+                final = (args.commands_dir/(command+'.COM')).read_bytes()
+                assert final == built, f'{command}: final artifact differs from fresh build'
+                commands[command] = final
+        source_paths = set((ROOT/'src/codec').glob('*.inc'))
+        source_paths.update((ROOT/'src/codec').glob('*.mac'))
+        source_paths.update((ROOT/'src/utilities/common').glob('codec*'))
+        for command in commands:
+            source_paths.add(ROOT/'src/utilities'/(command.lower()+'.mac'))
+            source_paths.add(ROOT/'tools'/('build_'+command.lower()+'.py'))
+        source_paths.update(ROOT/name for name in (
+            'tools/codec_version.py', 'tools/utility_versions.py',
+            'src/utilities/common/version.inc', 'metadata/utility-versions.tsv'))
         campaign=Campaign(args,commands)
         matrix(campaign,historical)
         if not args.skip_archived:
@@ -417,9 +434,14 @@ def main():
         report={'timestamp_utc':datetime.now(timezone.utc).isoformat(),
                 'test_source_sha256':sha(Path(__file__).read_bytes()),
                 'result_counts':result_counts,
-                'implementation_sources':{str(p.relative_to(ROOT)):sha(p.read_bytes()) for folder in
-                                          ('src/codec','src/utilities') for p in sorted((ROOT/folder).glob('*.mac'))
-                                          if p.stem in ('codec','sq','usq','cr','uncr','lzh','unlzh')},
+                'source_revision':subprocess.check_output(
+                    ['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+                'utility_identities':{c:{'version':identities()[c][0],
+                                         'build':identities()[c][1]} for c in commands},
+                'final_artifacts_verified':bool(args.commands_dir),
+                'assembler_sha256':sha(args.assembler.read_bytes()),
+                'implementation_sources':{str(p.relative_to(ROOT)):sha(p.read_bytes())
+                                          for p in sorted(source_paths)},
                 'status':'PASS' if all(r['status']=='PASS' for r in campaign.rows) else 'FAIL',
                 'environment':'stock z80pack 62K CP/M 2.2, Z80, disposable IBM-3740 disks, user 0',
                 'simulator_sha256':sha(campaign.sim.read_bytes()),
