@@ -1,0 +1,42 @@
+        INCLUDE layout.inc
+        ASEG
+        ORG 08000H
+; Isolated candidate gate; not installed in the production command reloader.
+; HL=record, BC=available bytes, A=0 CPX / 1 CCP. Preserves no registers.
+PG_ENTRY:
+        PUSH AF
+        LD A,B
+        OR A
+        JR NZ,PG_SIZE
+        LD A,C
+        CP 20
+        JR C,PG_POP
+PG_SIZE:
+        PUSH HL
+        LD DE,20
+        ADD HL,DE
+        POP HL
+        JR C,PG_POP
+        LD A,(HL)
+        CP 'B'
+        JR NZ,PG_POP
+        INC HL
+        LD A,(HL)
+        CP 'P'
+        JR NZ,PG_POP
+        INC HL
+        POP AF
+        OR A
+        JR Z,PB_CHECK
+        CP 1
+        JR NZ,PB_BAD
+        INC HL
+        LD A,(HL)
+        DEC HL
+        CP 1
+        JR NZ,PB_BAD
+; @part8-binding@
+PG_POP:
+        POP AF
+        JP PB_BAD
+        END

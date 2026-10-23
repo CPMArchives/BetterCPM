@@ -227,9 +227,11 @@ def main():
     p.add_argument('profile',choices=PROFILES)
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--prepare-only',action='store_true')
+    p.add_argument('--carrier-bindings',action='store_true',help='Part 8 RSX-only migration experiment')
     args=p.parse_args();out=args.output.resolve()
     if out.exists():p.error('output must be new; no cached cross-profile products are admitted')
     if args.profile=='model4-legacy' and not args.prepare_only:p.error('Model 4 build/qualification is outside this cpmsim prototype; use --prepare-only')
+    if args.carrier_bindings and not PROFILES[args.profile][1]:p.error('carrier bindings require a checked cpmsim profile')
     paths=subprocess.check_output(['git','ls-files','-co','--exclude-standard','-z'],cwd=ROOT).decode().split('\0')
     paths=sorted(set(x for x in paths if x and x.split('/')[0] in ('src','tools','metadata','third_party','docs')))
     for rel in paths:
@@ -245,9 +247,9 @@ def main():
         return f'{n:<16}EQU     0{v:04X}H'
     layout=re.sub(r'^(LY_\w+)\s+EQU\s+0([0-9A-F]+)H',moved,layout,flags=re.M)
     (out/'src/system/layout.inc').write_text(layout)
-    private_paths=list((ROOT/'src').rglob('*'))+list((ROOT/'tools').glob('build_*.py'))+[ROOT/'tools'/n for n in ('assessment_checked_profiles.py','assessment_fullram_cpmsim.py','system_layout.py','rsx_container.py')]
+    private_paths=list((ROOT/'src').rglob('*'))+list((ROOT/'tools').glob('build_*.py'))+[ROOT/'tools'/n for n in ('assessment_checked_profiles.py','assessment_carrier_binding.py','assessment_fullram_cpmsim.py','system_layout.py','rsx_container.py')]
     inputs={str(x.relative_to(ROOT)):hashlib.sha256(x.read_bytes()).hexdigest() for x in sorted(private_paths) if x.is_file() and '__pycache__' not in x.parts}
-    contract={'schema':1,'private_epoch':1,'profile':args.profile,'layout_sha256':hashlib.sha256(layout.encode()).hexdigest(),'private_inputs':inputs,'checked':checked,'scratch_bytes':4096 if checked else 3840}
+    contract={'carrier_epoch':1 if args.carrier_bindings else 0,'schema':1,'private_epoch':1,'profile':args.profile,'layout_sha256':hashlib.sha256(layout.encode()).hexdigest(),'private_inputs':inputs,'checked':checked,'scratch_bytes':4096 if checked else 3840}
     identity=hashlib.sha256(json.dumps(contract,sort_keys=True,separators=(',',':')).encode()).hexdigest()[:32]
     profile={'contract':contract,'compatibility_id':identity,'source_revision':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),'status':'assessment prototype; not release qualified'}
     (out/'assessment-profile.json').write_text(json.dumps(profile,indent=2)+'\n')
@@ -261,8 +263,14 @@ def main():
     if checked:
         (out/'assessment-media').rename(out/'unchecked-control-media')
         apply_checked(out,identity)
+        if args.carrier_bindings:
+            from assessment_carrier_binding import apply
+            apply(out)
         shutil.rmtree(out/'build/z80pack')
         run('checked',[sys.executable,str(out/'tools/build_z80pack_image.py'),'--system-tracks-only','--ram-only'])
+        if args.carrier_bindings:
+            from assessment_carrier_binding import finish
+            finish(out)
         sys.path.insert(0,str(out/'tools'))
         from build_distribution import geometry,selected_files,construct,capacity,validate_config_fingerprint,validate_config_cold_patch,validate_files
         manifest=json.loads((out/'metadata/distribution.json').read_text())
