@@ -1,6 +1,6 @@
 # Engineering assessment Part 12: utility dependencies and stack ownership
 
-Date: 23 October 2026. Status: bounded assessment complete; awaiting review.
+Date: 23 October 2026. Status: approved by the maintainer on 23 October 2026.
 The maintainer approved Part 11 and authorized this part. Accepted core 1.0
 remains `3b2d2d7f4fe0472438465165f11fb550d79c8662`.
 
