@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Part 7 isolated build/loader prototype; not a supported release builder.
+"""Isolated checked-profile builds (Parts 7-11); not a supported release builder.
 
 Stages complete source trees. The checked transformations never modify the
 source checkout. Unselected Model 4/ROM products are not deliverables.
@@ -228,7 +228,9 @@ def main():
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--prepare-only',action='store_true')
     p.add_argument('--carrier-bindings',action='store_true',help='Part 8 RSX-only migration experiment')
+    p.add_argument('--streaming-commands',action='store_true',help='Part 11 integrated command loader and checked package')
     args=p.parse_args();out=args.output.resolve()
+    if args.streaming_commands and not args.carrier_bindings:p.error('streaming commands require --carrier-bindings')
     if out.exists():p.error('output must be new; no cached cross-profile products are admitted')
     if args.profile=='model4-legacy' and not args.prepare_only:p.error('Model 4 build/qualification is outside this cpmsim prototype; use --prepare-only')
     if args.carrier_bindings and not PROFILES[args.profile][1]:p.error('carrier bindings require a checked cpmsim profile')
@@ -250,8 +252,18 @@ def main():
     private_paths=list((ROOT/'src').rglob('*'))+list((ROOT/'tools').glob('build_*.py'))+[ROOT/'tools'/n for n in ('assessment_checked_profiles.py','assessment_carrier_binding.py','assessment_fullram_cpmsim.py','system_layout.py','rsx_container.py')]
     inputs={str(x.relative_to(ROOT)):hashlib.sha256(x.read_bytes()).hexdigest() for x in sorted(private_paths) if x.is_file() and '__pycache__' not in x.parts}
     contract={'carrier_epoch':1 if args.carrier_bindings else 0,'schema':1,'private_epoch':1,'profile':args.profile,'layout_sha256':hashlib.sha256(layout.encode()).hexdigest(),'private_inputs':inputs,'checked':checked,'scratch_bytes':4096 if checked else 3840}
+    if args.streaming_commands:
+        # Conservative complete build-input closure, including metadata and
+        # transitive Python imports; avoid the earlier build_*.py-only gap.
+        inputs={str(x.relative_to(ROOT)):hashlib.sha256(x.read_bytes()).hexdigest()
+                for d in ('src','tools','metadata','third_party')
+                for x in sorted((ROOT/d).rglob('*'))
+                if x.is_file() and '__pycache__' not in x.parts}
+        contract.update(carrier_epoch=2,private_epoch=2,package_epoch=2,
+                        command_loader='header-stream-v1',private_inputs=inputs,
+                        assembler_sha256=hashlib.sha256((Path.home()/'bin/z80asm').read_bytes()).hexdigest())
     identity=hashlib.sha256(json.dumps(contract,sort_keys=True,separators=(',',':')).encode()).hexdigest()[:32]
-    profile={'contract':contract,'compatibility_id':identity,'source_revision':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),'status':'assessment prototype; not release qualified'}
+    profile={'contract':contract,'compatibility_id':identity,'source_revision':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),'status':'assessment prototype; not release qualified','source_state':'working-tree private_inputs hashes are authoritative'}
     (out/'assessment-profile.json').write_text(json.dumps(profile,indent=2)+'\n')
     if args.prepare_only:print(out);return
     logs=out/'assessment-build-logs';logs.mkdir(exist_ok=True)
@@ -266,6 +278,9 @@ def main():
         if args.carrier_bindings:
             from assessment_carrier_binding import apply
             apply(out)
+        if args.streaming_commands:
+            from assessment_streaming_integration import apply
+            apply(out)
         shutil.rmtree(out/'build/z80pack')
         run('checked',[sys.executable,str(out/'tools/build_z80pack_image.py'),'--system-tracks-only','--ram-only'])
         if args.carrier_bindings:
@@ -278,6 +293,8 @@ def main():
         media=out/'assessment-media';media.mkdir()
         raw=construct('z80pack',out,media,files,g,manifest['cold_start_command'])
         validate_config_fingerprint('z80pack',raw,files,out);validate_config_cold_patch('z80pack',raw,files,out);validate_files(raw,media,files,g)
+        if args.streaming_commands:
+            run('package',[sys.executable,str(out/'tools/checked_system_package.py'),str(out)])
     print('PROTOTYPE MEDIA: '+str(out/'assessment-media/system.raw'),flush=True)
 
 if __name__=='__main__':main()
