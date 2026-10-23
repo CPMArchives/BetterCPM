@@ -8,7 +8,7 @@
 ; Existing files are preserved; SQU00000.$$$ ... SQU99999.$$$ are searched
 ; before MAKE. Single-task CP/M is assumed (no exclusive MAKE/RENAME).
 ; Fatal BDOS aborts/power loss may leave a temporary for later inspection.
-; Build: python3 tools/build_sq.py; not yet in release disk manifests.
+; Build: python3 tools/build_sq.py; included on the Utilities disk.
 
         ORG     100H
         JP      UC_START

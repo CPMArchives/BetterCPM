@@ -10,7 +10,7 @@
 ; BDOS fatal aborts/power loss can leave a temporary file, never published
 ; as the destination. Such preexisting temporaries are skipped on next run.
 ; A short output record is padded with 1Ah; decoded 1Ah is ordinary data.
-; Build: python3 tools/build_usq.py (z80asm -e32). Not in release manifests.
+; Build: python3 tools/build_usq.py (z80asm -e32); on the Utilities disk.
 
         ORG     100H
         JP      UC_START

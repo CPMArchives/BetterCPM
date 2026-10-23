@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build standalone development USQ.COM; not added to release disk manifests."""
+"""Build standalone USQ.COM for the Utilities disk."""
 import argparse
 import hashlib
 from pathlib import Path

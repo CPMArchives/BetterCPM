@@ -53,19 +53,25 @@ All membership or layout changes require discussion with the maintainer.
 - DDT.COM: initial DRI-compatible debugger adaptation with shared line editing and `/VER`; [engineering specification](../engineering/DDT%20Specification.md). Exact historical reproduction is retained separately as the verification baseline. Model 4 real-screen/physical-keyboard, native/cross and BetterCP/M cpmsim qualification pass; [Model 4 evidence](../engineering/DDT%20Model%204%20Qualification.md).
 - Standalone Z80 disassembler: exact program TBD.
 - Archive utility: likely LU or NULU; selection TBD. A general ARC/BARC utility with format-specific overlays is also a design candidate; see the archive-utility design item in [TODO](../../TODO.md).
-- Compression/expansion functions: incorporate SQ/USQ, CR/UNCR and CrLZH
-  format support into the planned ARC/BARC utility. Familiar commands such as
-  SQ/USQ may also be supplied as separate utilities or SUBMIT wrappers such as
-  `USQ.SUB`; this remains a design question. Command-line selection is to be designed; candidate
-  forms include `ARC /EXPAND README.TQT` and explicit `ARC /USQ README.TQT`.
-  Final utility name, switches and supported format scope remain to be settled.
+- SQ.COM and USQ.COM: standalone Z80 squeeze/unsqueeze commands using the
+  common codec ABI, two-pass SQ input, optional destination drive and temporary
+  output that is published only after successful processing and closes.
+  Usage: `SQ [drive:]file [destination-drive:]` and
+  `USQ [drive:]file [destination-drive:]`. The default destination is the logged
+  drive, in the current user area. SQ uses historical squeezed-file naming;
+  USQ restores the validated embedded name. Existing outputs are refused.
+  Both preserve all bytes in CP/M records, including `1Ah` padding.
+- CR/UNCR and CrLZH support: remaining compression/expansion utilities.
+  Individual commands are sufficient for release 1.0. A unified archive/codec
+  interface, including the ARC/BARC design candidate, is post-1.0 work.
 - Broader development/userland tools generally belong here; individual additions
   still require selection.
 
 ### Provisional daily Utilities media
 
 `tools/build_utilities_disk.py --build` assembles the currently implemented
-owned components: DUMP.COM, DDT.COM, XSUB.COM and its required BATCHIO.RSX. DDT is the owned adaptation, not the historical reference; its Model 4 screen/input campaign passes on disposable current-system media. DDT also passes [Utilities release acceptance](../engineering/DDT%20Utilities%20Release%20Acceptance.md) from B: beside normal System A: on both platforms. `--ddt-acceptance REPORT` binds that component verdict to the exact artifact and image hashes; it does not promote the whole disk. The builder verifies
+owned components: DUMP.COM, DDT.COM, XSUB.COM and its required BATCHIO.RSX,
+SQ.COM and USQ.COM. DDT is the owned adaptation, not the historical reference; its Model 4 screen/input campaign passes on disposable current-system media. DDT also passes [Utilities release acceptance](../engineering/DDT%20Utilities%20Release%20Acceptance.md) from B: beside normal System A: on both platforms. `--ddt-acceptance REPORT` binds that component verdict to the exact artifact and image hashes; it does not promote the whole disk. The builder verifies
 file readback and the filesystem, and produces a 332K raw cpmsim image and an
 80T DS 800K data DMK for Model 4. Reports explicitly list pending selections;
 these are provisional daily media, not a fully qualified Utilities release.
