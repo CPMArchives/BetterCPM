@@ -1,0 +1,887 @@
+; Independent CrLZH 10h/20h decoder. No historical restricted source copied.
+; Include codec.inc/mac and unlzh.inc/mac; emit CODEC_CODE + UNLZH_CODE once.
+; Algorithm: adaptive Huffman LZ77 in the LZHUF/CrLZH format.
+; No allocated storage, alternate-register instructions, IY use or recursion.
+; z80pack z80asm -e32; native ZSM4 not yet qualified. Test: tools/test_unlzh.py.
+UNLZH_CODE MACRO
+UNLZH_INIT:
+        CALL CX_CHECK_BASE
+        RET C
+        LD HL,ULZ_CONTEXT_SIZE
+        CALL CX_CHECK_SIZE
+        RET C
+        PUSH IX
+        POP HL
+        LD DE,16
+        ADD HL,DE
+        LD D,H
+        LD E,L
+        INC DE
+        LD (HL),0
+        LD BC,ULZ_CONTEXT_SIZE-17
+        LDIR
+        JP CX_READY
+LZ_READ:
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        CALL CX_CALL_READ
+        POP HL
+        POP DE
+        POP BC
+        RET NC
+        OR A
+        JP NZ,CX_READ_ERROR
+        LD E,0
+        LD A,CS_TRUNC
+        JP CX_FAIL
+LZ_TREE_ERROR:
+        LD E,ULD_TREE
+        LD A,CS_CORRUPT
+        JP CX_FAIL
+LZ_VARIANT:
+        LD E,A
+        LD A,CS_VARIANT
+        JP CX_FAIL
+UNLZH_HEAD:
+        LD A,CP_READY
+        CALL CX_CHECK_STATE
+        RET C
+        CALL LZ_READ
+        RET C
+        CP 076H
+        JR NZ,LZ_FORMAT
+        CALL LZ_READ
+        RET C
+        CP 0FDH
+        JR NZ,LZ_FORMAT
+        PUSH IX
+        POP HL
+        LD DE,ULZ_HEADER
+        ADD HL,DE
+        LD B,ULZ_HEADER_SIZE
+LZ_HEADER_LOOP:
+        CALL LZ_READ
+        RET C
+        LD (HL),A
+        OR A
+        JR Z,LZ_HEADER_DONE
+        INC HL
+        INC (IX+ULZ_HDRLEN)
+        DJNZ LZ_HEADER_LOOP
+        DEC HL
+        LD (HL),0
+        LD E,ULD_HEADER
+        LD A,CS_SPACE
+        JP CX_FAIL
+LZ_FORMAT:
+        LD E,0
+        LD A,CS_FORMAT
+        JP CX_FAIL
+LZ_HEADER_DONE:
+        CALL LZ_READ
+        RET C
+        LD (IX+ULZ_REF),A
+        CALL LZ_READ
+        RET C
+        LD (IX+ULZ_SIG),A
+        CALL LZ_READ
+        RET C
+        LD (IX+ULZ_CHECK),A
+        CALL LZ_READ
+        RET C
+        LD (IX+ULZ_SPARE),A
+        LD A,(IX+ULZ_SIG)
+        LD B,6
+        CP 010H
+        JR Z,LZ_HEADER_VERSION
+        DEC B
+        CP 020H
+        JP NZ,LZ_VARIANT
+LZ_HEADER_VERSION:
+        LD (IX+ULZ_POSBITS),B
+        LD A,(IX+ULZ_CHECK)
+        OR A
+        JP NZ,LZ_VARIANT
+        PUSH IX
+        POP HL
+        LD DE,ULZ_RING
+        ADD HL,DE
+        LD D,H
+        LD E,L
+        INC DE
+        LD (HL),' '
+        LD BC,2047
+        LDIR
+        CALL LZ_START_TREE
+        JP CX_DATA
+
+; Indexed word tables: HL=index, DE=value. Preserve HL/BC; setters also DE.
+; Internal callers validate or construct indices in range before access.
+LZ_GET_FREQ:
+        PUSH BC
+        LD BC,ULZ_FREQ
+        JP LZ_GET_WORD
+LZ_GET_SON:
+        PUSH BC
+        LD BC,ULZ_SON
+        JP LZ_GET_WORD
+LZ_GET_PARENT:
+        PUSH BC
+        LD BC,ULZ_PARENT
+        JP LZ_GET_WORD
+LZ_GET_WORD:
+        PUSH HL
+        ADD HL,HL
+        ADD HL,BC
+        PUSH IX
+        POP BC
+        ADD HL,BC
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        POP HL
+        POP BC
+        RET
+LZ_SET_FREQ:
+        PUSH BC
+        LD BC,ULZ_FREQ
+        JP LZ_SET_WORD
+LZ_SET_SON:
+        PUSH BC
+        LD BC,ULZ_SON
+        JP LZ_SET_WORD
+LZ_SET_PARENT:
+        PUSH BC
+        LD BC,ULZ_PARENT
+        JP LZ_SET_WORD
+LZ_SET_WORD:
+        PUSH HL
+        ADD HL,HL
+        ADD HL,BC
+        PUSH IX
+        POP BC
+        ADD HL,BC
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        POP HL
+        POP BC
+        RET
+LZ_START_TREE:
+        LD BC,0
+LZ_START_LEAF:
+        LD H,B
+        LD L,C
+        LD DE,1
+        CALL LZ_SET_FREQ
+        LD DE,ULZ_T
+        ADD HL,DE
+        EX DE,HL
+        LD H,B
+        LD L,C
+        CALL LZ_SET_SON
+        EX DE,HL
+        LD D,B
+        LD E,C
+        CALL LZ_SET_PARENT
+        INC BC
+        LD A,B
+        CP 1
+        JR NZ,LZ_START_LEAF
+        LD A,C
+        CP 59
+        JR NZ,LZ_START_LEAF
+        LD (IX+ULZ_I),0
+        LD (IX+ULZ_I+1),0
+        LD (IX+ULZ_J),59
+        LD (IX+ULZ_J+1),1
+LZ_START_BRANCH:
+        LD L,(IX+ULZ_I)
+        LD H,(IX+ULZ_I+1)
+        CALL LZ_GET_FREQ
+        LD B,D
+        LD C,E
+        INC HL
+        CALL LZ_GET_FREQ
+        EX DE,HL
+        ADD HL,BC
+        EX DE,HL
+        LD L,(IX+ULZ_J)
+        LD H,(IX+ULZ_J+1)
+        CALL LZ_SET_FREQ
+        LD E,(IX+ULZ_I)
+        LD D,(IX+ULZ_I+1)
+        CALL LZ_SET_SON
+        EX DE,HL
+        CALL LZ_SET_PARENT
+        INC HL
+        CALL LZ_SET_PARENT
+        LD L,(IX+ULZ_I)
+        LD H,(IX+ULZ_I+1)
+        INC HL
+        INC HL
+        LD (IX+ULZ_I),L
+        LD (IX+ULZ_I+1),H
+        LD L,(IX+ULZ_J)
+        LD H,(IX+ULZ_J+1)
+        INC HL
+        LD (IX+ULZ_J),L
+        LD (IX+ULZ_J+1),H
+        LD DE,ULZ_T
+        OR A
+        SBC HL,DE
+        JR NZ,LZ_START_BRANCH
+        LD HL,ULZ_T
+        LD DE,0FFFFH
+        CALL LZ_SET_FREQ
+        LD HL,ULZ_ROOT
+        LD DE,0
+        JP LZ_SET_PARENT
+
+; HL=node/leaf reference -> NC if <944. Tree node test returns C if <629.
+LZ_CHECK_REFERENCE:
+        LD A,H
+        CP 3
+        JR C,LZ_REFERENCE_OK
+        JP NZ,LZ_TREE_ERROR
+        LD A,L
+        CP 0B0H
+        JP NC,LZ_TREE_ERROR
+LZ_REFERENCE_OK:
+        OR A
+        RET
+LZ_IS_NODE:
+        LD A,H
+        CP 2
+        RET NZ
+        LD A,L
+        CP 075H
+        RET
+; Set parent of a leaf, or both children of an internal sibling pair.
+LZ_LINK:
+        CALL LZ_CHECK_REFERENCE
+        RET C
+        CALL LZ_SET_PARENT
+        CALL LZ_IS_NODE
+        JR NC,LZ_LINK_DONE
+        INC HL
+        LD A,H
+        CP 2
+        JR NZ,LZ_LINK_SECOND
+        LD A,L
+        CP 075H
+        JP NC,LZ_TREE_ERROR
+LZ_LINK_SECOND:
+        CALL LZ_SET_PARENT
+LZ_LINK_DONE:
+        XOR A
+        RET
+
+; Read bits MSB first. BC/DE/HL preserved by BIT; B=count -> DE=bits by BITS.
+LZ_BIT:
+        LD A,(IX+ULZ_BITS)
+        OR A
+        JR NZ,LZ_BIT_HAVE
+        CALL LZ_READ
+        RET C
+        LD (IX+ULZ_BYTE),A
+        LD (IX+ULZ_BITS),8
+LZ_BIT_HAVE:
+        SLA (IX+ULZ_BYTE)
+        LD A,0
+        ADC A,0
+        DEC (IX+ULZ_BITS)
+        OR A
+        RET
+LZ_BITS:
+        LD DE,0
+        LD A,B
+        OR A
+        RET Z
+LZ_BITS_LOOP:
+        CALL LZ_BIT
+        RET C
+        RRA
+        RL E
+        RL D
+        DJNZ LZ_BITS_LOOP
+        OR A
+        RET
+
+LZ_SYMBOL:
+        LD HL,ULZ_ROOT
+        CALL LZ_GET_SON
+        EX DE,HL
+        LD (IX+ULZ_HOPS),0
+        LD (IX+ULZ_HOPS+1),0
+LZ_SYMBOL_WALK:
+        CALL LZ_IS_NODE
+        JR NC,LZ_SYMBOL_LEAF
+        LD E,(IX+ULZ_HOPS)
+        LD D,(IX+ULZ_HOPS+1)
+        INC DE
+        LD (IX+ULZ_HOPS),E
+        LD (IX+ULZ_HOPS+1),D
+        LD A,D
+        CP 2
+        JR C,LZ_SYMBOL_BIT
+        JP NZ,LZ_TREE_ERROR
+        LD A,E
+        CP 075H
+        JP NC,LZ_TREE_ERROR
+LZ_SYMBOL_BIT:
+        CALL LZ_BIT
+        RET C
+        OR A
+        JR Z,LZ_SYMBOL_CHILD
+        INC HL
+LZ_SYMBOL_CHILD:
+        CALL LZ_IS_NODE
+        JP NC,LZ_TREE_ERROR
+        CALL LZ_GET_SON
+        EX DE,HL
+        JR LZ_SYMBOL_WALK
+LZ_SYMBOL_LEAF:
+        LD DE,ULZ_T
+        OR A
+        SBC HL,DE
+        LD A,H
+        CP 1
+        JR C,LZ_SYMBOL_VALID
+        JR NZ,LZ_SYMBOL_BAD
+        LD A,L
+        CP 59
+        JR NC,LZ_SYMBOL_BAD
+LZ_SYMBOL_VALID:
+        LD (IX+ULZ_SYMBOL),L
+        LD (IX+ULZ_SYMBOL+1),H
+        CALL LZ_UPDATE
+        RET C
+        LD L,(IX+ULZ_SYMBOL)
+        LD H,(IX+ULZ_SYMBOL+1)
+        XOR A
+        RET
+LZ_SYMBOL_BAD:
+        LD E,ULD_SYMBOL
+        LD A,CS_CORRUPT
+        JP CX_FAIL
+
+; In-place adaptive-Huffman update, preserving exact equal-weight ordering.
+LZ_UPDATE:
+        LD HL,ULZ_ROOT
+        CALL LZ_GET_FREQ
+        LD A,D
+        CP 080H
+        JR C,LZ_UPDATE_BEGIN
+        JP NZ,LZ_TREE_ERROR
+        LD A,E
+        OR A
+        JP NZ,LZ_TREE_ERROR
+        CALL LZ_REBUILD
+        RET C
+LZ_UPDATE_BEGIN:
+        LD L,(IX+ULZ_SYMBOL)
+        LD H,(IX+ULZ_SYMBOL+1)
+        LD DE,ULZ_T
+        ADD HL,DE
+        CALL LZ_GET_PARENT
+        LD (IX+ULZ_CUR),E
+        LD (IX+ULZ_CUR+1),D
+        LD (IX+ULZ_HOPS),0
+        LD (IX+ULZ_HOPS+1),0
+LZ_UPDATE_LOOP:
+        LD L,(IX+ULZ_CUR)
+        LD H,(IX+ULZ_CUR+1)
+        CALL LZ_IS_NODE
+        JP NC,LZ_TREE_ERROR
+        LD E,(IX+ULZ_HOPS)
+        LD D,(IX+ULZ_HOPS+1)
+        INC DE
+        LD (IX+ULZ_HOPS),E
+        LD (IX+ULZ_HOPS+1),D
+        LD A,D
+        CP 2
+        JR C,LZ_UPDATE_FREQ
+        JP NZ,LZ_UPDATE_BAD
+        LD A,E
+        CP 075H
+        JP NC,LZ_UPDATE_BAD
+LZ_UPDATE_FREQ:
+        CALL LZ_GET_FREQ
+        INC DE
+        LD (IX+ULZ_F),E
+        LD (IX+ULZ_F+1),D
+        CALL LZ_SET_FREQ
+        INC HL
+        CALL LZ_GET_FREQ
+        LD B,H
+        LD C,L
+        LD L,(IX+ULZ_F)
+        LD H,(IX+ULZ_F+1)
+        OR A
+        SBC HL,DE
+        JP C,LZ_UPDATE_PARENT
+        JP Z,LZ_UPDATE_PARENT
+        LD H,B
+        LD L,C
+LZ_UPDATE_SEARCH:
+        INC HL
+        LD A,H
+        CP 2
+        JR C,LZ_UPDATE_COMPARE
+        JP NZ,LZ_TREE_ERROR
+        LD A,L
+        CP 076H
+        JP NC,LZ_TREE_ERROR
+LZ_UPDATE_COMPARE:
+        CALL LZ_GET_FREQ
+        PUSH HL
+        LD L,(IX+ULZ_F)
+        LD H,(IX+ULZ_F+1)
+        OR A
+        SBC HL,DE
+        POP HL
+        JR C,LZ_UPDATE_FOUND
+        JR Z,LZ_UPDATE_FOUND
+        JR LZ_UPDATE_SEARCH
+LZ_UPDATE_FOUND:
+        DEC HL
+        LD (IX+ULZ_K),L
+        LD (IX+ULZ_K+1),H
+        CALL LZ_GET_FREQ
+        LD L,(IX+ULZ_CUR)
+        LD H,(IX+ULZ_CUR+1)
+        CALL LZ_SET_FREQ
+        CALL LZ_GET_SON
+        LD (IX+ULZ_LEFT),E
+        LD (IX+ULZ_LEFT+1),D
+        LD L,(IX+ULZ_K)
+        LD H,(IX+ULZ_K+1)
+        LD E,(IX+ULZ_F)
+        LD D,(IX+ULZ_F+1)
+        CALL LZ_SET_FREQ
+        CALL LZ_GET_SON
+        LD (IX+ULZ_RIGHT),E
+        LD (IX+ULZ_RIGHT+1),D
+        LD E,(IX+ULZ_LEFT)
+        LD D,(IX+ULZ_LEFT+1)
+        CALL LZ_SET_SON
+        ; LEFT's children now belong to K; RIGHT's now belong to CUR.
+        LD L,(IX+ULZ_LEFT)
+        LD H,(IX+ULZ_LEFT+1)
+        LD E,(IX+ULZ_K)
+        LD D,(IX+ULZ_K+1)
+        CALL LZ_LINK
+        RET C
+        LD L,(IX+ULZ_CUR)
+        LD H,(IX+ULZ_CUR+1)
+        LD E,(IX+ULZ_RIGHT)
+        LD D,(IX+ULZ_RIGHT+1)
+        CALL LZ_SET_SON
+        EX DE,HL
+        CALL LZ_LINK
+        RET C
+        LD L,(IX+ULZ_K)
+        LD H,(IX+ULZ_K+1)
+        LD (IX+ULZ_CUR),L
+        LD (IX+ULZ_CUR+1),H
+LZ_UPDATE_PARENT:
+        LD L,(IX+ULZ_CUR)
+        LD H,(IX+ULZ_CUR+1)
+        CALL LZ_GET_PARENT
+        LD (IX+ULZ_CUR),E
+        LD (IX+ULZ_CUR+1),D
+        LD A,D
+        OR E
+        JP NZ,LZ_UPDATE_LOOP
+        XOR A
+        RET
+LZ_UPDATE_BAD:
+        JP LZ_TREE_ERROR
+
+; Collect leaves, halve rounded-up frequencies, and reinsert combined nodes.
+LZ_REBUILD:
+        LD (IX+ULZ_I),0
+        LD (IX+ULZ_I+1),0
+        LD (IX+ULZ_J),0
+        LD (IX+ULZ_J+1),0
+LZ_COLLECT:
+        LD L,(IX+ULZ_I)
+        LD H,(IX+ULZ_I+1)
+        CALL LZ_GET_SON
+        EX DE,HL
+        CALL LZ_IS_NODE
+        JR C,LZ_COLLECT_NEXT
+        CALL LZ_CHECK_REFERENCE
+        RET C
+        LD (IX+ULZ_TEMP),L
+        LD (IX+ULZ_TEMP+1),H
+        LD L,(IX+ULZ_I)
+        LD H,(IX+ULZ_I+1)
+        CALL LZ_GET_FREQ
+        INC DE
+        SRL D
+        RR E
+        LD L,(IX+ULZ_J)
+        LD H,(IX+ULZ_J+1)
+        CALL LZ_SET_FREQ
+        LD E,(IX+ULZ_TEMP)
+        LD D,(IX+ULZ_TEMP+1)
+        CALL LZ_SET_SON
+        INC HL
+        LD (IX+ULZ_J),L
+        LD (IX+ULZ_J+1),H
+LZ_COLLECT_NEXT:
+        LD L,(IX+ULZ_I)
+        LD H,(IX+ULZ_I+1)
+        INC HL
+        LD (IX+ULZ_I),L
+        LD (IX+ULZ_I+1),H
+        LD DE,ULZ_T
+        OR A
+        SBC HL,DE
+        JR NZ,LZ_COLLECT
+        LD L,(IX+ULZ_J)
+        LD H,(IX+ULZ_J+1)
+        LD DE,ULZ_NCHAR
+        OR A
+        SBC HL,DE
+        JP NZ,LZ_TREE_ERROR
+        LD (IX+ULZ_I),0
+        LD (IX+ULZ_I+1),0
+LZ_REBUILD_BRANCH:
+        LD L,(IX+ULZ_I)
+        LD H,(IX+ULZ_I+1)
+        CALL LZ_GET_FREQ
+        LD B,D
+        LD C,E
+        INC HL
+        CALL LZ_GET_FREQ
+        EX DE,HL
+        ADD HL,BC
+        LD (IX+ULZ_F),L
+        LD (IX+ULZ_F+1),H
+        LD L,(IX+ULZ_J)
+        LD H,(IX+ULZ_J+1)
+        DEC HL
+LZ_REBUILD_SEARCH:
+        CALL LZ_GET_FREQ
+        PUSH HL
+        LD L,(IX+ULZ_F)
+        LD H,(IX+ULZ_F+1)
+        OR A
+        SBC HL,DE
+        POP HL
+        JR NC,LZ_REBUILD_INSERT
+        LD A,H
+        OR L
+        JP Z,LZ_TREE_ERROR
+        DEC HL
+        JR LZ_REBUILD_SEARCH
+LZ_REBUILD_INSERT:
+        INC HL
+        LD (IX+ULZ_K),L
+        LD (IX+ULZ_K+1),H
+        LD L,(IX+ULZ_J)
+        LD H,(IX+ULZ_J+1)
+LZ_REBUILD_MOVE:
+        LD E,(IX+ULZ_K)
+        LD D,(IX+ULZ_K+1)
+        OR A
+        SBC HL,DE
+        JR Z,LZ_REBUILD_PLACE
+        ADD HL,DE
+        DEC HL
+        CALL LZ_GET_FREQ
+        INC HL
+        CALL LZ_SET_FREQ
+        DEC HL
+        CALL LZ_GET_SON
+        INC HL
+        CALL LZ_SET_SON
+        DEC HL
+        JR LZ_REBUILD_MOVE
+LZ_REBUILD_PLACE:
+        LD L,(IX+ULZ_K)
+        LD H,(IX+ULZ_K+1)
+        LD E,(IX+ULZ_F)
+        LD D,(IX+ULZ_F+1)
+        CALL LZ_SET_FREQ
+        LD E,(IX+ULZ_I)
+        LD D,(IX+ULZ_I+1)
+        CALL LZ_SET_SON
+        INC DE
+        INC DE
+        LD (IX+ULZ_I),E
+        LD (IX+ULZ_I+1),D
+        LD L,(IX+ULZ_J)
+        LD H,(IX+ULZ_J+1)
+        INC HL
+        LD (IX+ULZ_J),L
+        LD (IX+ULZ_J+1),H
+        LD DE,ULZ_T
+        OR A
+        SBC HL,DE
+        JP NZ,LZ_REBUILD_BRANCH
+        LD (IX+ULZ_I),0
+        LD (IX+ULZ_I+1),0
+LZ_REBUILD_PARENTS:
+        LD L,(IX+ULZ_I)
+        LD H,(IX+ULZ_I+1)
+        CALL LZ_GET_SON
+        EX DE,HL
+        CALL LZ_LINK
+        RET C
+        LD L,(IX+ULZ_I)
+        LD H,(IX+ULZ_I+1)
+        INC HL
+        LD (IX+ULZ_I),L
+        LD (IX+ULZ_I+1),H
+        LD DE,ULZ_T
+        OR A
+        SBC HL,DE
+        JR NZ,LZ_REBUILD_PARENTS
+        LD HL,ULZ_ROOT
+        LD DE,0
+        CALL LZ_SET_PARENT
+        INC (IX+ULZ_REBUILDS)
+        JR NZ,LZ_REBUILT
+        INC (IX+ULZ_REBUILDS+1)
+LZ_REBUILT:
+        XOR A
+        RET
+
+; Fixed position code: eight initial bits include prefix and some low bits.
+; Both formats need at least eight total position bits, so no read-ahead.
+LZ_POSITION:
+        LD B,8
+        CALL LZ_BITS
+        RET C
+        LD (IX+ULZ_I),E
+        LD D,0
+        LD HL,LZ_POS_CODE
+        ADD HL,DE
+        LD A,(HL)
+        LD (IX+ULZ_J),A
+        LD HL,LZ_POS_LEN
+        ADD HL,DE
+        LD A,(HL)
+        LD B,A
+        LD A,(IX+ULZ_POSBITS)
+        SUB 8
+        ADD A,B
+        LD C,A
+        LD B,A
+        CALL LZ_BITS
+        RET C
+        LD L,(IX+ULZ_I)
+        LD H,0
+        LD A,C
+        OR A
+        JR Z,LZ_POSITION_LOW
+LZ_POSITION_SHIFT:
+        ADD HL,HL
+        DEC C
+        JR NZ,LZ_POSITION_SHIFT
+LZ_POSITION_LOW:
+        ADD HL,DE
+        LD A,(IX+ULZ_POSBITS)
+        CP 5
+        LD A,L
+        JR NZ,LZ_POSITION_OLD
+        AND 31
+        JR LZ_POSITION_BASE
+LZ_POSITION_OLD:
+        AND 63
+LZ_POSITION_BASE:
+        LD C,A
+        LD L,(IX+ULZ_J)
+        LD H,0
+        LD B,(IX+ULZ_POSBITS)
+LZ_POSITION_HIGH:
+        ADD HL,HL
+        DJNZ LZ_POSITION_HIGH
+        LD A,L
+        OR C
+        LD L,A
+        RET
+
+UNLZH_GET:
+        LD A,(IX+CX_PHASE)
+        CP CP_DONE
+        JP Z,CX_END
+        LD A,CP_DATA
+        CALL CX_CHECK_STATE
+        RET C
+LZ_GET_LOOP:
+        LD A,(IX+ULZ_COPYLEFT)
+        OR A
+        JR NZ,LZ_COPY
+        CALL LZ_SYMBOL
+        RET C
+        LD A,H
+        OR A
+        JR Z,LZ_LITERAL
+        LD A,L
+        OR A
+        JP Z,LZ_FINISH
+        SUB 254
+        LD (IX+ULZ_COPYLEFT),A
+        CALL LZ_POSITION
+        RET C
+        EX DE,HL
+        LD L,(IX+ULZ_WRITEPOS)
+        LD H,(IX+ULZ_WRITEPOS+1)
+        OR A
+        SBC HL,DE
+        DEC HL
+        LD A,H
+        AND 7
+        LD H,A
+        LD (IX+ULZ_COPYPOS),L
+        LD (IX+ULZ_COPYPOS+1),H
+LZ_COPY:
+        LD L,(IX+ULZ_COPYPOS)
+        LD H,(IX+ULZ_COPYPOS+1)
+        CALL LZ_RING_BYTE
+        LD A,(HL)
+        LD (IX+ULZ_VALUE),A
+        LD L,(IX+ULZ_COPYPOS)
+        LD H,(IX+ULZ_COPYPOS+1)
+        INC HL
+        LD A,H
+        AND 7
+        LD (IX+ULZ_COPYPOS),L
+        LD (IX+ULZ_COPYPOS+1),A
+        DEC (IX+ULZ_COPYLEFT)
+        JR LZ_EMIT
+LZ_LITERAL:
+        LD (IX+ULZ_VALUE),L
+LZ_EMIT:
+        LD L,(IX+ULZ_WRITEPOS)
+        LD H,(IX+ULZ_WRITEPOS+1)
+        CALL LZ_RING_BYTE
+        LD A,(IX+ULZ_VALUE)
+        LD (HL),A
+        LD L,(IX+ULZ_WRITEPOS)
+        LD H,(IX+ULZ_WRITEPOS+1)
+        INC HL
+        LD A,H
+        AND 7
+        LD (IX+ULZ_WRITEPOS),L
+        LD (IX+ULZ_WRITEPOS+1),A
+        LD L,(IX+ULZ_SUM)
+        LD H,(IX+ULZ_SUM+1)
+        LD E,(IX+ULZ_VALUE)
+        LD D,0
+        ADD HL,DE
+        LD (IX+ULZ_SUM),L
+        LD (IX+ULZ_SUM+1),H
+        INC (IX+ULZ_COUNT)
+        JR NZ,LZ_EMITTED
+        INC (IX+ULZ_COUNT+1)
+        JR NZ,LZ_EMITTED
+        INC (IX+ULZ_COUNT+2)
+        JR NZ,LZ_EMITTED
+        INC (IX+ULZ_COUNT+3)
+LZ_EMITTED:
+        LD A,(IX+ULZ_VALUE)
+        OR A
+        RET
+LZ_RING_BYTE:
+        LD DE,ULZ_RING
+        ADD HL,DE
+        PUSH IX
+        POP DE
+        ADD HL,DE
+        RET
+LZ_FINISH:
+        LD (IX+ULZ_BITS),0
+        CALL LZ_READ
+        RET C
+        LD (IX+ULZ_EXPECT),A
+        CALL LZ_READ
+        RET C
+        LD (IX+ULZ_EXPECT+1),A
+        LD L,(IX+ULZ_SUM)
+        LD H,(IX+ULZ_SUM+1)
+        LD E,(IX+ULZ_EXPECT)
+        LD D,(IX+ULZ_EXPECT+1)
+        OR A
+        SBC HL,DE
+        JP Z,CX_END
+        LD E,0
+        LD A,CS_CHECK
+        JP CX_FAIL
+UNLZH_RUN:
+        LD A,(IX+CX_PHASE)
+        CP CP_DONE
+        JP Z,CX_DONE
+        LD A,CP_DATA
+        CALL CX_CHECK_STATE
+        RET C
+        CALL CX_CHECK_WRITE
+        RET C
+LZ_RUN_LOOP:
+        CALL UNLZH_GET
+        JR C,LZ_RUN_END
+        CALL CX_CALL_WRITE
+        JP C,CX_WRITE_ERROR
+        JR LZ_RUN_LOOP
+LZ_RUN_END:
+        CP CS_END
+        JP Z,CX_DONE
+        SCF
+        RET
+UNLZH_END:
+        LD A,(IX+CX_PHASE)
+        CP CP_DONE
+        JP Z,CX_DONE
+        LD A,CP_DATA
+        CALL CX_CHECK_STATE
+        RET C
+LZ_END_LOOP:
+        CALL UNLZH_GET
+        JR NC,LZ_END_LOOP
+        CP CS_END
+        JP Z,CX_DONE
+        SCF
+        RET
+
+; Immutable canonical position-prefix decode tables.
+LZ_POS_CODE:
+        DB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DB 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+        DB 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+        DB 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
+        DB 4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,5
+        DB 6,6,6,6,6,6,6,6,7,7,7,7,7,7,7,7
+        DB 8,8,8,8,8,8,8,8,9,9,9,9,9,9,9,9
+        DB 10,10,10,10,10,10,10,10,11,11,11,11,11,11,11,11
+        DB 12,12,12,12,13,13,13,13,14,14,14,14,15,15,15,15
+        DB 16,16,16,16,17,17,17,17,18,18,18,18,19,19,19,19
+        DB 20,20,20,20,21,21,21,21,22,22,22,22,23,23,23,23
+        DB 24,24,25,25,26,26,27,27,28,28,29,29,30,30,31,31
+        DB 32,32,33,33,34,34,35,35,36,36,37,37,38,38,39,39
+        DB 40,40,41,41,42,42,43,43,44,44,45,45,46,46,47,47
+        DB 48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63
+LZ_POS_LEN:
+        DB 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
+        DB 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
+        DB 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
+        DB 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
+        DB 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
+        DB 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5
+        DB 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5
+        DB 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5
+        DB 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5
+        DB 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
+        DB 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
+        DB 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
+        DB 7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7
+        DB 7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7
+        DB 7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7
+        DB 8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8
+        ENDM

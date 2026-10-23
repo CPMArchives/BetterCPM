@@ -71,7 +71,12 @@ All membership or layout changes require discussion with the maintainer.
   defaults match SQ. Historical naming replaces the middle extension letter
   with Z; an absent extension or existing middle Z becomes `.ZZZ`. A source
   already named `.ZZZ` is refused. The original filename is embedded for UNCR.
-- CrLZH support: remaining compression/expansion utilities.
+- UNLZH.COM: standalone decoder for CrLZH `10h` and `20h` with additive
+  checksums, using the shared file adapter, bounded embedded names and safe
+  temporary output. Usage: `UNLZH [drive:]file [destination-drive:]`. Existing
+  outputs are refused; the default destination is the logged drive. Embedded
+  filenames with high-bit characters are refused rather than normalized.
+- CrLZH encoder: remaining compression utility.
   Individual commands are sufficient for release 1.0. A unified archive/codec
   interface, including the ARC/BARC design candidate, is post-1.0 work.
 - Broader development/userland tools generally belong here; individual additions
@@ -81,7 +86,7 @@ All membership or layout changes require discussion with the maintainer.
 
 `tools/build_utilities_disk.py --build` assembles the currently implemented
 owned components: DUMP.COM, DDT.COM, XSUB.COM and its required BATCHIO.RSX,
-SQ.COM, USQ.COM, CR.COM and UNCR.COM. DDT is the owned adaptation, not the historical reference; its Model 4 screen/input campaign passes on disposable current-system media. DDT also passes [Utilities release acceptance](../engineering/DDT%20Utilities%20Release%20Acceptance.md) from B: beside normal System A: on both platforms. `--ddt-acceptance REPORT` binds that component verdict to the exact artifact and image hashes; it does not promote the whole disk. The builder verifies
+SQ.COM, USQ.COM, CR.COM, UNCR.COM and UNLZH.COM. DDT is the owned adaptation, not the historical reference; its Model 4 screen/input campaign passes on disposable current-system media. DDT also passes [Utilities release acceptance](../engineering/DDT%20Utilities%20Release%20Acceptance.md) from B: beside normal System A: on both platforms. `--ddt-acceptance REPORT` binds that component verdict to the exact artifact and image hashes; it does not promote the whole disk. The builder verifies
 file readback and the filesystem, and produces a 332K raw cpmsim image and an
 80T DS 800K data DMK for Model 4. Reports explicitly list pending selections;
 these are provisional daily media, not a fully qualified Utilities release.
