@@ -1,5 +1,11 @@
 # Part 5: experimental full-RAM cpmsim profile
 
+Status update, 2026-10-23: the maintainer approved Part 5, and PR #452 merged
+this prototype into main at `618ed14`. The accepted core 1.0 baseline is still
+`3b2d2d7`; the adoption blockers and target-qualification limits below remain
+open. See [Part 6](Part6-Profile-Compatibility-Design.md) for the proposed
+compatibility and profile-build contract. The original branch account follows.
+
 This isolated assessment branch starts at accepted core 1.0 commit
 `3b2d2d7f4fe0472438465165f11fb550d79c8662`. It is not a replacement release.
 Part 4 was approved on 2026-10-23. Model 4 upper-RAM mapping is a separate
@@ -60,5 +66,6 @@ has no identity-check overhead yet; it is not a promise that subsequent
 hardening is free. Transaction workspace remains capped at 7000h.
 
 The Part 5 report and evidence bundle retain commands, transcripts, fixtures,
-patch, profile metadata and binary hashes. Pause after reviewing this part;
-do not merge this experimental branch into the core baseline.
+patch, profile metadata and binary hashes. The original review recommendation
+was to pause before adoption; the subsequent merge did not close these gates
+or redefine the pinned core baseline.
