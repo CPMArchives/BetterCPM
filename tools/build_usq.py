@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build standalone development USQ.COM; not added to release disk manifests."""
+"""Build standalone USQ.COM for the Utilities disk."""
 import argparse
 import hashlib
 from pathlib import Path
@@ -17,6 +17,7 @@ def build(assembler, destination):
         work = Path(temporary)
         for name in ("codec.inc", "codec.mac", "usq.inc", "usq.mac"):
             shutil.copy2(ROOT / "src/codec" / name, work / name)
+        shutil.copy2(ROOT / "src/utilities/common/codecfile.mac", work / "codecfile.mac")
         shutil.copy2(ROOT / "src/utilities/usq.mac", work / "command.mac")
         subprocess.run([str(assembler), "-e32", "-fb", "-ousq.bin", "-lusq.lst",
                         "command.mac"], cwd=work, check=True)

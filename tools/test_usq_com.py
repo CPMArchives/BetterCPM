@@ -161,6 +161,7 @@ class Command:
         raise AssertionError(("unexpected BDOS function", fn))
 
     def run(self, command, files, drive=1, user=0, failures=None, late_existing=None):
+        self.lib.set_hooks(5, 0xFFFE, self.hook)
         self.files = dict(files)
         self.original = dict(files)
         self.drive, self.user = drive, user
@@ -181,7 +182,7 @@ class Command:
         self.reg["IY"].value = 0xBEEF
         for i, name in enumerate(("A_", "B_", "C_", "D_", "E_", "H_", "L_", "F_")):
             self.reg[name].value = i + 31
-        result = self.lib.test_run(0x100, 4000000)
+        result = self.lib.test_run(0x100, getattr(self, "instruction_budget", 4000000))
         assert result >= 0, ("CPU error/budget", result, hex(self.reg["PC"].value))
         assert self.exception is None, self.exception
         assert self.reg["SP"].value == 0xE000
