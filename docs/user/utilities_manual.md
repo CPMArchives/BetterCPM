@@ -327,7 +327,7 @@ use your current user area. The destination is a drive only, such as `C:`;
 you cannot supply a new output filename. Names and drive letters are
 case-insensitive. Wildcards, paths, explicit user/DU operands such as
 `A0:FILE.TXT`, quoted names, other switches and extra operands are not accepted.
-Each command also accepts standalone `/VER`. There is no overwrite option.
+Each command also accepts standalone `/HELP` and `/VER`. There is no overwrite option.
 
 With no source prefix, input comes from your logged drive. With no destination
 operand, output also goes to your logged drive, independently of where the
@@ -347,6 +347,17 @@ CP/M 2.2, arrange for the COM program to be accessible by its normal command
 lookup rules. Change to the desired user area before running a command.
 No screen backend or terminal personality is required. A Z80 processor is required.
 
+### Compression help
+
+Use `SQ /HELP`, `USQ /HELP`, `CR /HELP`, `UNCR /HELP`, `LZH /HELP` or
+`UNLZH /HELP` for one screen of syntax, options, an example and essential
+operating rules. Help returns without accessing files. Queries ignore letter
+case and allow surrounding spaces or TABs. `/HELP` must stand alone;
+combining it with other input reports `Invalid /HELP usage.`. An exact `/VER`
+token takes precedence and reports `Invalid /VER usage.` in either order.
+Longer tokens such as `/HELPER` remain syntax errors. Empty or malformed
+commands show short syntax and a hint to use that command's `/HELP`.
+
 ### Compression version identification
 
 Run `SQ /VER`, `USQ /VER`, `CR /VER`, `UNCR /VER`, `LZH /VER` or `UNLZH /VER`
@@ -354,7 +365,7 @@ to display that command's version and build without accessing files. Letter case
 does not matter. For example:
 
 ```text
-SQ 1.0 (Build 001)
+SQ 1.0 (Build 002)
   - - -
  | BetterCP/M Utilities
  | Squeeze File Compression

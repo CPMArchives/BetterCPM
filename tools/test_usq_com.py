@@ -90,7 +90,7 @@ class Command:
             self.dma = de
             return 0
         if fn == 9:
-            for i in range(512):
+            for i in range(0x10000 - de):
                 byte = self.mem[de + i]
                 if byte == 36:
                     return 0

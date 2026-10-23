@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check six compact /VER identities under stock CP/M 2.2 on disposable disks."""
+"""Check six compact /VER identities and complete /HELP screens under stock CP/M 2.2 on disposable disks."""
 import argparse
 import importlib
 import os
@@ -8,7 +8,7 @@ import shutil
 import subprocess
 import tempfile
 
-from codec_version import DESCRIPTIONS, version_text
+from codec_version import DESCRIPTIONS, version_text, help_text
 from test_usq_com_cpm import run
 
 
@@ -43,7 +43,13 @@ def main():
                          (c+' KEEP.BIN /VER','Invalid /VER usage.'),
                          (c+' /VER /VER','Invalid /VER usage.'),
                          (c+' /VERIFY','Usage: '+c),
-                         (c+' /HELP','Usage: '+c)]
+                         (c+' /HELP',title),(c+' /help',title),
+                         (c+' /HELP KEEP.BIN','Invalid /HELP usage.'),
+                         (c+' KEEP.BIN /HELP','Invalid /HELP usage.'),
+                         (c+' /HELP /HELP','Invalid /HELP usage.'),
+                         (c+' /HELP /VER','Invalid /VER usage.'),
+                         (c+' /VER /HELP','Invalid /VER usage.'),
+                         (c+' /HELPER','Usage: '+c),(c,'Use '+c+' /HELP for help.')]
         script='''set timeout 30
 proc await {text} {
  expect {
@@ -67,13 +73,17 @@ await "A>"
         for c in images:
             expected=version_text(c).splitlines()
             count=sum(lines[i:i+4]==expected for i in range(len(lines)-3))
-            assert count==2,(c,count,result.stdout)
+            assert count==4,(c,count,result.stdout)
+        for c in images:
+            expected=help_text(c).splitlines()
+            output=result.stdout.splitlines()
+            assert sum(output[i:i+len(expected)]==expected for i in range(len(output)))==2,(c,result.stdout)
         for name,data in before.items():
             assert get(name)==data,(name,'file changed')
         listing=run('cpmls','-f','ibm-3740',disks/'drivea.dsk').stdout.upper()
         assert '.$$$' not in listing
-        print(f'PASS: {len(commands)} stock CP/M 2.2 version/invalid-token commands;')
-        print('all six complete four-line identities, return to prompt, unchanged files and no temporary output checked.')
+        print(f'PASS: {len(commands)} stock CP/M 2.2 version/help/invalid-token commands;')
+        print('all six identities and complete help screens, return to prompt, unchanged files and no temporary output checked.')
 
 
 if __name__=='__main__':

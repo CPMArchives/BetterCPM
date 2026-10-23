@@ -10,15 +10,26 @@ filename comes from the header, not from replacing Q in the input extension.
 
 ```text
 USQ [drive:]file [destination-drive:]
+USQ /HELP
 USQ /VER
 ```
 
 Give one exact 8.3 source name and an optional destination drive such as `B:`.
 Both use your current user area. Output defaults to the logged drive, not the
 source or command's drive. Wildcards, paths, explicit user/DU file operands,
-output filenames and other switches are not accepted. `/VER` must stand alone. See the
+output filenames and other switches are not accepted. `/HELP` and `/VER` must each stand alone. See the
 [shared command rules](utilities_manual.md#shared-compression-command-rules)
 for program lookup, filename syntax and drive defaults.
+
+## Help
+
+`USQ /HELP` displays a one-screen quick reference with syntax, options, an
+example, drive defaults and important restrictions, then returns without
+accessing files. Letter case and surrounding spaces or TABs do not matter.
+Combining an exact `/HELP` token with other input reports `Invalid /HELP usage.`;
+if an exact `/VER` token is also present, `Invalid /VER usage.` takes precedence.
+Longer tokens such as `/HELPER` are syntax errors. Empty or malformed commands
+show short syntax and `Use USQ /HELP for help.`
 
 ## Version identification
 
@@ -27,7 +38,7 @@ opening files or starting compression/expansion. `/ver` and mixed letter case
 work too. For the current build:
 
 ```text
-USQ 1.0 (Build 001)
+USQ 1.0 (Build 002)
   - - -
  | BetterCP/M Utilities
  | Squeezed File Expansion

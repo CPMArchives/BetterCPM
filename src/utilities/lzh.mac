@@ -199,7 +199,8 @@ UC_CODEC_WRITE:
 
         CODEC_VERSION_CODE
 
-UC_USAGE:       DB 'Usage: LZH [drive:]file [destination-drive:]',13,10,'$'
+UC_USAGE:       DB 'Usage: LZH [drive:]file [destination-drive:]',13,10
+                DB 'Use LZH /HELP for help.',13,10,'$'
 UC_SUCCESS:     DB 'LZH: complete.',13,10,'$'
 UC_NO_INPUT:    DB 'LZH: cannot open input.',13,10,'$'
 UC_ALREADY_MSG: DB 'LZH: cannot compress .YYY names.',13,10,'$'

@@ -193,7 +193,8 @@ UC_CODEC_WRITE:
 
         CODEC_VERSION_CODE
 
-UC_USAGE:       DB 'Usage: CR [drive:]file [destination-drive:]',13,10,'$'
+UC_USAGE:       DB 'Usage: CR [drive:]file [destination-drive:]',13,10
+                DB 'Use CR /HELP for help.',13,10,'$'
 UC_SUCCESS:     DB 'CR: complete.',13,10,'$'
 UC_NO_INPUT:    DB 'CR: cannot open input.',13,10,'$'
 UC_ALREADY_MSG: DB 'CR: cannot crunch .ZZZ names.',13,10,'$'

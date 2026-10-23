@@ -209,7 +209,8 @@ UC_CODEC_HEADER:
 
         CODEC_VERSION_CODE
 
-UC_USAGE:       DB 'Usage: UNCR [drive:]file [destination-drive:]',13,10,'$'
+UC_USAGE:       DB 'Usage: UNCR [drive:]file [destination-drive:]',13,10
+                DB 'Use UNCR /HELP for help.',13,10,'$'
 UC_SUCCESS:     DB 'UNCR: complete.',13,10,'$'
 UC_NO_INPUT:    DB 'UNCR: cannot open input.',13,10,'$'
 UC_BAD_NAME:    DB 'UNCR: unsafe embedded filename.',13,10,'$'

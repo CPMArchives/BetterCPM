@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Execute all six /VER entries on the full Z80 core; forbid non-console BDOS.
+"""Execute all six /VER and /HELP entries on the full Z80 core; forbid non-console BDOS.
 
 Checks exact metadata-owned identification, mixed requests, token boundaries,
 TAB/space handling, maximum tails, unchanged FCB/context/tail, stack/registers,
@@ -14,7 +14,7 @@ import subprocess
 import tempfile
 from unittest.mock import patch
 
-from codec_version import DESCRIPTIONS, version_text
+from codec_version import DESCRIPTIONS, version_text, help_text, usage_text
 from utility_versions import identities
 from test_usq import SHIM
 from test_usq_com import Command, diskkey
@@ -84,10 +84,25 @@ def main():
                          '/VER'+' '*122+'X','X'+' '*122+'/VER'):
                 check(m,tail,'Invalid /VER usage.\r\n')
             for tail in ('/VERIFY','/VERBOSE','/VERX','/VER=X','X/VER','/VER/','/VE',
-                         '/VER.X','/HELP','\x0fVER'):
-                check(m,tail,f'Usage: {command} [drive:]file [destination-drive:]\r\n',False)
+                         '/VER.X','\x0fVER'):
+                check(m,tail,usage_text(command),False)
+            screen = help_text(command)
+            lines = screen.splitlines()
+            assert len(lines) <= 23 and max(map(len, lines)) <= 79
+            assert all(32 <= ord(c) <= 126 or c in '\r\n' for c in screen)
+            for tail in ('/HELP',' /help  ','/HeLp','\t/HeLp\t',
+                         ' '*122+'/HELP','/HELP'+' '*122,'\t'*122+'/help'):
+                check(m,tail,screen)
+            for tail in ('/HELP FILE.BIN','FILE.BIN /HELP','/HELP /HELP',
+                         '/HELP B:','B: /HELP','/HELP /UNKNOWN','/HELP \x0f',
+                         '/HELP\tX','X\t/help','/HELP'+' '*121+'X',
+                         'X'+' '*121+'/HELP'):
+                check(m,tail,'Invalid /HELP usage.\r\n')
+            for tail in ('/HELPER','/HELP.X','/HELP=X','X/HELP','/HEL','/HELP/',
+                         '\x0fHELP','/HELP\x01','/VERX /HELPX','', '   ', '\t'):
+                check(m,tail,usage_text(command),False)
             total+=m.cases
-        # First adoption is metadata-owned Build 001, not a hard-coded width.
+        # Build identity is metadata-owned, not a hard-coded width.
         modified=dict(identities());modified['SQ']=('2.3',1001)
         with patch('codec_version.identities',return_value=modified):
             builder=importlib.import_module('build_sq')
@@ -95,9 +110,11 @@ def main():
             m=VersionCommand(lib,image,(work/'large/sq.lst').read_text(errors='replace'))
             check(m,'/VER',version_text('SQ'))
             assert 'SQ 2.3 (Build 1001)' in m.console
+            check(m,'/HELP',help_text('SQ'))
+            assert 'SQ 2.3 (Build 1001)' in m.console
             total+=m.cases
-        print(f'PASS: {total} full-Z80 version/parser cases across six commands;')
-        print('console-only version paths, bounded tails, unchanged files/FCBs/context, ABI and deterministic metadata expansion checked.')
+        print(f'PASS: {total} full-Z80 version/help/parser cases across six commands;')
+        print('console-only query paths, bounded tails, unchanged files/FCBs/context, ABI and deterministic metadata expansion checked.')
 
 
 if __name__=='__main__':

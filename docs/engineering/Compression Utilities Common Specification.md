@@ -137,14 +137,14 @@ GET/END bytes, not only bytes accepted by WRITE.
 
 ### Context and standalone image sizes
 
-| Algorithm | Context bytes, including prefix | Build 001 COM bytes |
+| Algorithm | Context bytes, including prefix | Build 002 COM bytes |
 | --- | ---: | ---: |
-| SQ | 3524 | 7725 |
-| USQ | 1440 | 4999 |
-| CR | 25207 | 29046 |
-| UNCR | 26582 | 30805 |
-| LZH | 11943 | 16826 |
-| UNLZH | 6646 | 11812 |
+| SQ | 3524 | 8461 |
+| USQ | 1440 | 5718 |
+| CR | 25207 | 29756 |
+| UNCR | 26582 | 31520 |
+| LZH | 11943 | 17541 |
+| UNLZH | 6646 | 12541 |
 
 COM sizes are build snapshots, not fixed ABI constants or universal minimum RAM
 claims. Images include their allocated context, FCBs, buffers and private stack;
@@ -224,14 +224,19 @@ UNLZH take the stem through the first dot and up to three extension slots,
 trim their trailing blanks and ignore subsequent metadata. They still reject
 unsafe names. No decoder restores attributes, timestamps, user areas or drives.
 
-### Standalone /VER
+### Standalone /VER and /HELP
 
 All six commands accept case-insensitive standalone `/VER`, with space/TAB
 padding. Exact `/VER` tokens combined with any other operand/token print
 `Invalid /VER usage.` without running the command. Longer tokens such as
-`/VERIFY` remain normal parser errors. Help is deferred.
+`/VERIFY` remain normal parser errors. Standalone `/HELP` uses the same early
+path and prints a complete quick reference. Exact `/HELP` mixed with other
+input reports `Invalid /HELP usage.`; exact `/VER` takes precedence in either
+order. `/HELPER` is a normal syntax error. Empty/malformed invocations print
+short syntax plus `Use NAME /HELP for help.` See the common
+[help standard](../../specifications/UTILITY-HELP.md).
 
-Each command's independent 1.0 Build 001 identity is owned by
+Each command's independent 1.0 Build 002 identity is owned by
 `metadata/utility-versions.tsv`. Builders use `tools/codec_version.py` to expand
 `codecver.inc` from metadata plus the shared `version.inc` query. Output is four
 CR/LF-terminated ASCII lines: `NAME version (Build nnn)`, `  - - -`,
@@ -243,7 +248,7 @@ The low 128 stack bytes hold a bounded, TAB-normalized copy of the command tail;
 the query frames use the upper half. The original tail remains unchanged.
 Handled requests return directly through restored entry SP, before flags, FCBs,
 codec workspace, source/destination drives or files are initialized. The only
-BDOS operation is function 9 for the identity/error string. No function 25/26,
+BDOS operation is function 9 for the identity/help/error string. No function 25/26,
 provider query, warm boot or codec callback is used on this path. This is command
 startup code; the algorithm macro ABI remains unchanged.
 

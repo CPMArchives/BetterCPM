@@ -1,4 +1,4 @@
-; Compression command /VER entry. Emit once outside execution fall-through.
+; Compression command /VER and /HELP entry. Emit once outside execution fall-through.
 ; Startup establishes the private stack first. The low 128 stack bytes are
 ; scratch for the bounded tail; the query uses the upper half. Normalize TAB
 ; separators in this copy only, preserving the original command tail.
@@ -41,6 +41,10 @@ UC_VERSION_BYTE:
         PUSH IX
         PUSH IY
         CALL UV_QUERY
+        JR C,UC_QUERY_DONE
+        LD DE,UC_HELP_TEXT
+        CALL UH_QUERY
+UC_QUERY_DONE:
         POP IY
         POP IX
         POP HL

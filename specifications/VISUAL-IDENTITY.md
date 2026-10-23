@@ -111,3 +111,6 @@ The same visual grammar should remain recognizable throughout the operating syst
 **Use alignment and white space to establish structure. Suggest boundaries rather than drawing them completely. Add visual elements only when they contribute to clarity, hierarchy, or identity.**
 
 BetterCP/M's identity should be recognizable through a consistent visual grammar—not through excessive branding or decoration.
+
+The common help content and query behavior are defined in
+[Utility Help Screens](UTILITY-HELP.md).

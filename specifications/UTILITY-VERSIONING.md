@@ -48,7 +48,7 @@ Compression command builders share `tools/codec_version.py` and
 normalizes TAB separators to spaces without changing the command tail; the
 query and stack frames occupy the other half of the 256-byte stack. A handled
 request restores entry SP and returns directly, without normal file-state
-initialization, drive/user inquiry, DMA reset or warm boot. Help is not added
-by this change. `tools/test_codec_versions.py` and
+initialization, drive/user inquiry, DMA reset or warm boot. The compression commands also adopt [Utility Help](UTILITY-HELP.md);
+help shares this early query path, with `/VER` precedence for mixed queries. `tools/test_codec_versions.py` and
 `tools/test_codec_versions_cpm.py` qualify the six command entries separately
 from the wider utility suite.

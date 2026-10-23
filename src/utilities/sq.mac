@@ -240,7 +240,8 @@ UC_CODEC_REWIND:
 
         CODEC_VERSION_CODE
 
-UC_USAGE:       DB 'Usage: SQ [drive:]file [destination-drive:]',13,10,'$'
+UC_USAGE:       DB 'Usage: SQ [drive:]file [destination-drive:]',13,10
+                DB 'Use SQ /HELP for help.',13,10,'$'
 UC_SUCCESS:     DB 'SQ: complete.',13,10,'$'
 UC_NO_INPUT:    DB 'SQ: cannot open input.',13,10,'$'
 UC_ALREADY_MSG: DB 'SQ: input name already squeezed.',13,10,'$'
