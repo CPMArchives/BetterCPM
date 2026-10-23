@@ -1,0 +1,639 @@
+; Independent CRUNCH-20h decoder from the format, not a source adaptation.
+; Include codec.inc/mac and uncr.inc/mac; emit CODEC_CODE + UNCR_CODE once.
+; z80pack z80asm -e32; native ZSM4 not yet qualified. No allocated storage.
+; All state in IX context. No alternate-register instructions, IY or recursion.
+; Run tools/test_uncr.py for historical corpus and targeted Z80 execution.
+
+UNCR_CODE MACRO
+UNCR_INIT:
+        CALL CX_CHECK_BASE
+        RET C
+        LD HL,UCN_CONTEXT_SIZE
+        CALL CX_CHECK_SIZE
+        RET C
+        PUSH IX
+        POP HL
+        LD DE,16
+        ADD HL,DE
+        LD D,H
+        LD E,L
+        INC DE
+        LD (HL),0
+        LD BC,UCN_CONTEXT_SIZE-17
+        LDIR
+        JP CX_READY
+
+; All external READ calls preserve private working registers, even on error.
+UN_READ:
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        CALL CX_CALL_READ
+        POP HL
+        POP DE
+        POP BC
+        RET NC
+        OR A
+        JP NZ,CX_READ_ERROR
+        LD E,0
+        LD A,CS_TRUNC
+        JP CX_FAIL
+UNCR_HEAD:
+        LD A,CP_READY
+        CALL CX_CHECK_STATE
+        RET C
+        CALL UN_READ
+        RET C
+        CP 076H
+        JP NZ,UN_FORMAT
+        CALL UN_READ
+        RET C
+        CP 0FEH
+        JP NZ,UN_FORMAT
+        PUSH IX
+        POP HL
+        LD DE,UCN_HEADER
+        ADD HL,DE
+        LD B,UCN_HEADER_SIZE
+UN_HEADER_LOOP:
+        CALL UN_READ
+        RET C
+        LD (HL),A
+        OR A
+        JR Z,UN_HEADER_DONE
+        INC HL
+        INC (IX+UCN_HDRLEN)
+        DJNZ UN_HEADER_LOOP
+        DEC HL
+        LD (HL),0
+        LD E,UND_HEADER
+        LD A,CS_SPACE
+        JP CX_FAIL
+UN_HEADER_DONE:
+        CALL UN_READ
+        RET C
+        LD (IX+UCN_REF),A
+        CALL UN_READ
+        RET C
+        LD (IX+UCN_SIG),A
+        CALL UN_READ
+        RET C
+        LD (IX+UCN_CHECK),A
+        CALL UN_READ
+        RET C
+        LD (IX+UCN_SPARE),A
+        LD A,(IX+UCN_SIG)
+        CP 020H
+        JP NZ,UN_VARIANT
+        LD A,(IX+UCN_CHECK)
+        OR A
+        JP NZ,UN_VARIANT
+        CALL UN_RESET
+        RET C
+        JP CX_DATA
+UN_FORMAT:
+        LD A,CS_FORMAT
+        LD E,0
+        JP CX_FAIL
+UN_VARIANT:
+        LD E,A
+        LD A,CS_VARIANT
+        JP CX_FAIL
+UN_CORRUPT:
+        LD A,CS_CORRUPT
+        JP CX_FAIL
+UN_BAD_CODE:
+        LD E,UND_CODE
+        JP UN_CORRUPT
+UN_BAD_CHAIN:
+        LD E,UND_CHAIN
+        JP UN_CORRUPT
+UN_BAD_HASH:
+        LD E,UND_HASH
+        JP UN_CORRUPT
+UN_BAD_REPEAT:
+        LD E,UND_REPEAT
+        JP UN_CORRUPT
+
+; HL=index -> HL=prefix address. BC/DE preserved.
+UN_PREFIX_PTR:
+        ADD HL,HL
+        PUSH DE
+        LD DE,UCN_PREFIX
+        ADD HL,DE
+        PUSH IX
+        POP DE
+        ADD HL,DE
+        POP DE
+        RET
+; HL=index -> HL=suffix address. BC/DE preserved.
+UN_SUFFIX_PTR:
+        PUSH DE
+        LD DE,UCN_SUFFIX
+        ADD HL,DE
+        PUSH IX
+        POP DE
+        ADD HL,DE
+        POP DE
+        RET
+UN_XLAT_PTR:
+        ADD HL,HL
+        LD DE,UCN_XLAT
+        ADD HL,DE
+        PUSH IX
+        POP DE
+        ADD HL,DE
+        RET
+; HL=offset -> HL=phrase address. BC/DE preserved.
+UN_PHRASE_PTR:
+        PUSH DE
+        LD DE,UCN_PHRASE
+        ADD HL,DE
+        PUSH IX
+        POP DE
+        ADD HL,DE
+        POP DE
+        RET
+
+; Reset only LZW state. Bit/RLE/checksum state survives adaptive reset.
+UN_RESET:
+        LD (IX+UCN_NEXT),0
+        LD (IX+UCN_NEXT+1),0
+        LD (IX+UCN_WIDTH),9
+        LD (IX+UCN_LIMIT),0FFH
+        LD (IX+UCN_LIMIT+1),1
+        RES 2,(IX+UCN_FLAGS)
+        LD (IX+UCN_NEWFLAG),020H
+        ; Initialize all hash slots EMPTY, then guard slot zero as encoder does.
+        LD HL,0
+        CALL UN_XLAT_PTR
+        LD BC,5003
+UN_CLEAR_HASH:
+        LD (HL),0
+        INC HL
+        LD (HL),080H
+        INC HL
+        DEC BC
+        LD A,B
+        OR C
+        JR NZ,UN_CLEAR_HASH
+        LD HL,0
+        CALL UN_XLAT_PTR
+        LD (HL),0FFH
+        INC HL
+        LD (HL),07FH
+        ; Each atomic/reserved entry is hashed, including duplicate specials.
+        LD (IX+UCN_INSERT),0FFH
+        LD (IX+UCN_INSERT+1),0FFH
+        LD (IX+UCN_CHAR),0
+UN_ATOMS:
+        CALL UN_ENTER
+        RET C
+        INC (IX+UCN_CHAR)
+        JR NZ,UN_ATOMS
+        LD (IX+UCN_INSERT+1),07FH
+        LD B,4
+UN_RESERVED:
+        PUSH BC
+        CALL UN_ENTER
+        POP BC
+        RET C
+        DJNZ UN_RESERVED
+        LD (IX+UCN_NEWFLAG),0
+        XOR A
+        RET
+
+; Set hash/probe state from INSERT/CHAR. h=(((pred>>4)^suffix)&255)
+; |((pred&15)<<8), plus one. Subsequent positions subtract 5003-h modulo5003.
+UN_HASH_START:
+        LD L,(IX+UCN_INSERT)
+        LD H,(IX+UCN_INSERT+1)
+        LD A,L
+        AND 15
+        LD B,A
+        LD C,4
+UN_HASH_SHIFT:
+        SRL H
+        RR L
+        DEC C
+        JR NZ,UN_HASH_SHIFT
+        LD A,(IX+UCN_CHAR)
+        XOR L
+        LD L,A
+        LD H,B
+        INC HL
+        LD (IX+UCN_HASH),L
+        LD (IX+UCN_HASH+1),H
+        EX DE,HL
+        LD HL,5003
+        OR A
+        SBC HL,DE
+        LD (IX+UCN_DISP),L
+        LD (IX+UCN_DISP+1),H
+        LD (IX+UCN_PROBES),08BH
+        LD (IX+UCN_PROBES+1),013H
+        RET
+UN_HASH_NEXT:
+        LD L,(IX+UCN_PROBES)
+        LD H,(IX+UCN_PROBES+1)
+        DEC HL
+        LD (IX+UCN_PROBES),L
+        LD (IX+UCN_PROBES+1),H
+        LD A,H
+        OR L
+        JP Z,UN_BAD_HASH
+        LD L,(IX+UCN_HASH)
+        LD H,(IX+UCN_HASH+1)
+        LD E,(IX+UCN_DISP)
+        LD D,(IX+UCN_DISP+1)
+        OR A
+        SBC HL,DE
+        JR NC,UN_HASH_SAVE
+        LD DE,5003
+        ADD HL,DE
+UN_HASH_SAVE:
+        LD (IX+UCN_HASH),L
+        LD (IX+UCN_HASH+1),H
+        XOR A
+        RET
+UN_HASH_LOAD:
+        LD L,(IX+UCN_HASH)
+        LD H,(IX+UCN_HASH+1)
+        CALL UN_XLAT_PTR
+        LD C,(HL)
+        INC HL
+        LD B,(HL)
+        RET
+
+; Write INSERT/CHAR/NEWFLAG to TARGET. New references occupy bit13.
+UN_STORE:
+        LD L,(IX+UCN_TARGET)
+        LD H,(IX+UCN_TARGET+1)
+        CALL UN_PREFIX_PTR
+        LD A,(IX+UCN_INSERT)
+        LD (HL),A
+        INC HL
+        LD A,(IX+UCN_INSERT+1)
+        OR (IX+UCN_NEWFLAG)
+        LD (HL),A
+        LD L,(IX+UCN_TARGET)
+        LD H,(IX+UCN_TARGET+1)
+        CALL UN_SUFFIX_PTR
+        LD A,(IX+UCN_CHAR)
+        LD (HL),A
+        XOR A
+        RET
+UN_ENTER:
+        LD A,(IX+UCN_NEXT+1)
+        CP 16
+        JP NC,UN_BAD_CODE
+        CALL UN_HASH_START
+UN_ENTER_PROBE:
+        CALL UN_HASH_LOAD
+        LD A,B
+        CP 080H
+        JR Z,UN_ENTER_EMPTY
+        CALL UN_HASH_NEXT
+        RET C
+        JR UN_ENTER_PROBE
+UN_ENTER_EMPTY:
+        LD C,(IX+UCN_NEXT)
+        LD B,(IX+UCN_NEXT+1)
+        LD (HL),B
+        DEC HL
+        LD (HL),C
+        LD (IX+UCN_TARGET),C
+        LD (IX+UCN_TARGET+1),B
+        CALL UN_STORE
+        LD L,(IX+UCN_NEXT)
+        LD H,(IX+UCN_NEXT+1)
+        INC HL
+        LD (IX+UCN_NEXT),L
+        LD (IX+UCN_NEXT+1),H
+        LD A,(IX+UCN_WIDTH)
+        CP 12
+        JR Z,UN_ENTER_OK
+        LD E,(IX+UCN_LIMIT)
+        LD D,(IX+UCN_LIMIT+1)
+        OR A
+        SBC HL,DE
+        JR C,UN_ENTER_OK
+        INC (IX+UCN_WIDTH)
+        SLA E
+        RL D
+        INC DE
+        LD (IX+UCN_LIMIT),E
+        LD (IX+UCN_LIMIT+1),D
+UN_ENTER_OK:
+        XOR A
+        RET
+; Full table: simulate encoder probes, reassign first unreferenced slot.
+UN_REASSIGN:
+        CALL UN_HASH_START
+UN_REASSIGN_PROBE:
+        CALL UN_HASH_LOAD
+        LD A,B
+        CP 080H
+        JR Z,UN_ENTER_OK
+        CP 16
+        JR NC,UN_REASSIGN_NEXT
+        LD H,B
+        LD L,C
+        LD (IX+UCN_TARGET),C
+        LD (IX+UCN_TARGET+1),B
+        CALL UN_PREFIX_PTR
+        INC HL
+        BIT 5,(HL)
+        JP Z,UN_STORE
+UN_REASSIGN_NEXT:
+        CALL UN_HASH_NEXT
+        RET C
+        JR UN_REASSIGN_PROBE
+
+; Read current width, MSB first. No read-ahead beyond the current byte.
+UN_CODE:
+        LD DE,0
+        LD B,(IX+UCN_WIDTH)
+UN_CODE_BIT:
+        LD A,(IX+UCN_BITS)
+        OR A
+        JR NZ,UN_CODE_HAVE
+        CALL UN_READ
+        RET C
+        LD (IX+UCN_BYTE),A
+        LD (IX+UCN_BITS),8
+UN_CODE_HAVE:
+        SLA (IX+UCN_BYTE)
+        RL E
+        RL D
+        DEC (IX+UCN_BITS)
+        DJNZ UN_CODE_BIT
+        OR A
+        RET
+
+; Prepare reversed phrase and perform the associated dictionary update
+; before returning bytes. GET may suspend at any byte, including repeats.
+UN_PHRASE:
+        CALL UN_CODE
+        RET C
+        LD A,D
+        CP 1
+        JR NZ,UN_NORMAL
+        LD A,E
+        OR A
+        JP Z,UN_FINISH
+        CP 1
+        JR NZ,UN_NOT_RESET
+        CALL UN_RESET
+        RET C
+        JR UN_PHRASE
+UN_NOT_RESET:
+        CP 4
+        JR C,UN_PHRASE
+UN_NORMAL:
+        LD (IX+UCN_CODE),E
+        LD (IX+UCN_CODE+1),D
+        RES 3,(IX+UCN_FLAGS)
+        LD L,(IX+UCN_NEXT)
+        LD H,(IX+UCN_NEXT+1)
+        OR A
+        SBC HL,DE
+        JP C,UN_BAD_CODE
+        JR NZ,UN_EXISTING
+        ; Only code == NEXT is the legitimate undefined-code exception.
+        BIT 2,(IX+UCN_FLAGS)
+        JP Z,UN_BAD_CODE
+        LD A,(IX+UCN_NEXT+1)
+        CP 16
+        JP NC,UN_BAD_CODE
+        LD L,(IX+UCN_PREV)
+        LD H,(IX+UCN_PREV+1)
+        LD (IX+UCN_INSERT),L
+        LD (IX+UCN_INSERT+1),H
+        LD A,(IX+UCN_FIRST)
+        LD (IX+UCN_CHAR),A
+        LD (IX+UCN_NEWFLAG),020H
+        CALL UN_ENTER
+        RET C
+        LD (IX+UCN_NEWFLAG),0
+        SET 3,(IX+UCN_FLAGS)
+UN_EXISTING:
+        LD L,(IX+UCN_CODE)
+        LD H,(IX+UCN_CODE+1)
+        CALL UN_PREFIX_PTR
+        INC HL
+        SET 5,(HL)
+        LD (IX+UCN_USED),0
+        LD (IX+UCN_USED+1),0
+        LD (IX+UCN_DEPTH),0
+        LD (IX+UCN_DEPTH+1),0
+        LD E,(IX+UCN_CODE)
+        LD D,(IX+UCN_CODE+1)
+UN_WALK:
+        LD A,D
+        OR A
+        JR Z,UN_ATOMIC
+        CP 1
+        JR NZ,UN_WALK_VALID
+        LD A,E
+        CP 4
+        JP C,UN_BAD_CHAIN
+UN_WALK_VALID:
+        LD A,D
+        CP 16
+        JP NC,UN_BAD_CHAIN
+        LD L,(IX+UCN_DEPTH)
+        LD H,(IX+UCN_DEPTH+1)
+        INC HL
+        LD (IX+UCN_DEPTH),L
+        LD (IX+UCN_DEPTH+1),H
+        LD A,H
+        CP 16
+        JP NC,UN_BAD_CHAIN
+        LD (IX+UCN_WALK),E
+        LD (IX+UCN_WALK+1),D
+        LD H,D
+        LD L,E
+        CALL UN_SUFFIX_PTR
+        LD C,(HL)
+        CALL UN_PUSH_CHAR
+        LD L,(IX+UCN_WALK)
+        LD H,(IX+UCN_WALK+1)
+        CALL UN_PREFIX_PTR
+        LD E,(HL)
+        INC HL
+        LD A,(HL)
+        AND 0DFH
+        LD D,A
+        JR UN_WALK
+UN_ATOMIC:
+        LD A,E
+        LD (IX+UCN_FIRST),A
+        LD C,A
+        CALL UN_PUSH_CHAR
+        BIT 3,(IX+UCN_FLAGS)
+        JR NZ,UN_PHRASE_DONE
+        BIT 2,(IX+UCN_FLAGS)
+        JR Z,UN_PHRASE_DONE
+        LD L,(IX+UCN_PREV)
+        LD H,(IX+UCN_PREV+1)
+        LD (IX+UCN_INSERT),L
+        LD (IX+UCN_INSERT+1),H
+        LD A,(IX+UCN_FIRST)
+        LD (IX+UCN_CHAR),A
+        LD A,(IX+UCN_NEXT+1)
+        CP 16
+        JR NC,UN_PHRASE_FULL
+        CALL UN_ENTER
+        RET C
+        JR UN_PHRASE_DONE
+UN_PHRASE_FULL:
+        CALL UN_REASSIGN
+        RET C
+UN_PHRASE_DONE:
+        LD L,(IX+UCN_CODE)
+        LD H,(IX+UCN_CODE+1)
+        LD (IX+UCN_PREV),L
+        LD (IX+UCN_PREV+1),H
+        SET 2,(IX+UCN_FLAGS)
+        XOR A
+        RET
+UN_PUSH_CHAR:
+        LD L,(IX+UCN_USED)
+        LD H,(IX+UCN_USED+1)
+        CALL UN_PHRASE_PTR
+        LD (HL),C
+        INC (IX+UCN_USED)
+        RET NZ
+        INC (IX+UCN_USED+1)
+        RET
+
+UN_FINISH:
+        BIT 1,(IX+UCN_FLAGS)
+        JP NZ,UN_BAD_REPEAT
+        LD (IX+UCN_BITS),0
+        CALL UN_READ
+        RET C
+        LD (IX+UCN_EXPECT),A
+        CALL UN_READ
+        RET C
+        LD (IX+UCN_EXPECT+1),A
+        LD L,(IX+UCN_SUM)
+        LD H,(IX+UCN_SUM+1)
+        LD E,(IX+UCN_EXPECT)
+        LD D,(IX+UCN_EXPECT+1)
+        OR A
+        SBC HL,DE
+        JP Z,CX_END
+        LD A,CS_CHECK
+        LD E,0
+        JP CX_FAIL
+
+UNCR_GET:
+        LD A,(IX+CX_PHASE)
+        CP CP_DONE
+        JP Z,CX_END
+        LD A,CP_DATA
+        CALL CX_CHECK_STATE
+        RET C
+UN_GET_LOOP:
+        LD A,(IX+UCN_REPEAT)
+        OR A
+        JR Z,UN_GET_TOKEN
+        DEC (IX+UCN_REPEAT)
+        LD A,(IX+UCN_LAST)
+        JP UN_OUTPUT
+UN_GET_TOKEN:
+        LD L,(IX+UCN_USED)
+        LD H,(IX+UCN_USED+1)
+        LD A,H
+        OR L
+        JR NZ,UN_GET_HAVE
+        CALL UN_PHRASE
+        RET C
+        JR UN_GET_TOKEN
+UN_GET_HAVE:
+        DEC HL
+        LD (IX+UCN_USED),L
+        LD (IX+UCN_USED+1),H
+        CALL UN_PHRASE_PTR
+        LD A,(HL)
+        BIT 1,(IX+UCN_FLAGS)
+        JR NZ,UN_GET_COUNT
+        CP 090H
+        JR Z,UN_GET_ESCAPE
+        LD (IX+UCN_LAST),A
+        SET 0,(IX+UCN_FLAGS)
+        JR UN_OUTPUT
+UN_GET_ESCAPE:
+        SET 1,(IX+UCN_FLAGS)
+        JR UN_GET_LOOP
+UN_GET_COUNT:
+        RES 1,(IX+UCN_FLAGS)
+        OR A
+        JR Z,UN_LITERAL_DLE
+        CP 2
+        JP C,UN_BAD_REPEAT
+        BIT 0,(IX+UCN_FLAGS)
+        JP Z,UN_BAD_REPEAT
+        DEC A
+        LD (IX+UCN_REPEAT),A
+        JR UN_GET_LOOP
+UN_LITERAL_DLE:
+        ; Historical SEND does not replace its saved history on escaped DLE.
+        LD A,090H
+UN_OUTPUT:
+        PUSH AF
+        LD L,(IX+UCN_SUM)
+        LD H,(IX+UCN_SUM+1)
+        LD E,A
+        LD D,0
+        ADD HL,DE
+        LD (IX+UCN_SUM),L
+        LD (IX+UCN_SUM+1),H
+        INC (IX+UCN_COUNT)
+        JR NZ,UN_OUTPUT_DONE
+        INC (IX+UCN_COUNT+1)
+        JR NZ,UN_OUTPUT_DONE
+        INC (IX+UCN_COUNT+2)
+        JR NZ,UN_OUTPUT_DONE
+        INC (IX+UCN_COUNT+3)
+UN_OUTPUT_DONE:
+        POP AF
+        OR A
+        RET
+UNCR_RUN:
+        LD A,(IX+CX_PHASE)
+        CP CP_DONE
+        JP Z,CX_DONE
+        LD A,CP_DATA
+        CALL CX_CHECK_STATE
+        RET C
+        CALL CX_CHECK_WRITE
+        RET C
+UN_RUN_LOOP:
+        CALL UNCR_GET
+        JR C,UN_RUN_END
+        CALL CX_CALL_WRITE
+        JP C,CX_WRITE_ERROR
+        JR UN_RUN_LOOP
+UN_RUN_END:
+        CP CS_END
+        JP Z,CX_DONE
+        SCF
+        RET
+UNCR_END:
+        LD A,(IX+CX_PHASE)
+        CP CP_DONE
+        JP Z,CX_DONE
+        LD A,CP_DATA
+        CALL CX_CHECK_STATE
+        RET C
+UN_END_LOOP:
+        CALL UNCR_GET
+        JR NC,UN_END_LOOP
+        CP CS_END
+        JP Z,CX_DONE
+        SCF
+        RET
+        ENDM
