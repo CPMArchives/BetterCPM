@@ -1,0 +1,253 @@
+; BetterCP/M standalone UNLZH development utility, Z80 / CP/M 2.2.
+; Usage: UNLZH [drive:]file [destination-drive:]
+; One exact input filename, current user area, destination defaults to the
+; logged drive (not the input drive). No wildcard/user/path syntax.
+; Header fields are bounded by the codec. Names are validated as plain 8.3;
+; three extension slots may contain trailing blanks. Later bytes are metadata.
+; No existing file is erased/replaced. Temporary ULZ00000.$$$ names are
+; searched before MAKE; final existence is rechecked immediately before
+; RENAME. This assumes single-task CP/M; BDOS has no exclusive MAKE/RENAME.
+; Flush/close/checksum errors discard only the temporary file we created.
+; BDOS fatal aborts/power loss can leave a temporary file, never published
+; as the destination. Such preexisting temporaries are skipped on next run.
+; A short output record is padded with 1Ah; decoded 1Ah is ordinary data.
+; Build: python3 tools/build_unlzh.py (z80asm -e32); on the Utilities disk.
+
+        ORG     100H
+        JP      UC_START
+        INCLUDE codec.inc
+        INCLUDE codec.mac
+        INCLUDE unlzh.inc
+        INCLUDE unlzh.mac
+        INCLUDE codecfile.mac
+
+UC_START:
+        LD      (UC_OLDSP),SP
+        LD      SP,UC_STACK_TOP
+        XOR     A
+        LD      (UC_INPUT_OPEN),A
+        LD      (UC_TEMP_OPEN),A
+        LD      (UC_TEMP_LIVE),A
+        LD      (UC_CLEAN_FAILED),A
+        LD      (UC_IN_LEFT),A
+        LD      (UC_OUT_USED),A
+        ; DS reserves bytes but the assembler need not fill them with zero.
+        ; CP/M MAKE preserves EX and CR: initialize every FCB explicitly.
+        LD      HL,UC_INPUT
+        LD      DE,UC_INPUT+1
+        LD      BC,36*5-1
+        LD      (HL),0
+        LDIR
+        LD      HL,UC_TEMP_NAME
+        LD      DE,UC_TEMP+1
+        LD      BC,11
+        LDIR
+        LD      C,25
+        CALL    UC_BDOS
+        INC     A
+        LD      (UC_DRIVE),A
+        LD      (UC_DEST),A
+        CALL    UC_PARSE
+        LD      DE,UC_USAGE
+        JP      C,UC_ERROR
+        LD      DE,UC_INPUT
+        LD      C,15
+        CALL    UC_BDOS
+        CP      0FFH
+        LD      DE,UC_NO_INPUT
+        JP      Z,UC_ERROR
+        LD      A,1
+        LD      (UC_INPUT_OPEN),A
+        LD      IX,UC_CONTEXT
+        CALL    UNLZH_INIT
+        JP      C,UC_CODEC_ERROR
+        CALL    UNLZH_HEAD
+        JP      C,UC_CODEC_ERROR
+        ; Validate the embedded filename before creating any output.
+        LD      A,(UC_CONTEXT+ULZ_HDRLEN)
+        LD      B,A
+        LD      HL,UC_CONTEXT+ULZ_HEADER
+        CALL    UC_HEADER_NAME
+        LD      DE,UC_FINAL
+        CALL    UC_NAME_FCB
+        LD      DE,UC_BAD_NAME
+        JP      C,UC_ERROR
+        LD      A,(UC_DEST)
+        LD      (UC_FINAL),A
+        LD      HL,UC_INPUT
+        LD      DE,UC_FINAL
+        CALL    UC_SAME_NAME
+        LD      DE,UC_SAME_INPUT
+        JP      Z,UC_ERROR
+        LD      DE,UC_FINAL
+        CALL    UC_EXISTS
+        LD      DE,UC_EXISTS_MSG
+        JP      NZ,UC_ERROR
+        CALL    UC_MAKE_TEMP
+        JP      C,UC_ERROR
+        LD      HL,UC_OUT_BUFFER
+        LD      (UC_OUT_PTR),HL
+        CALL    UNLZH_RUN
+        JP      C,UC_CODEC_ERROR
+        CALL    UC_FINAL_RECORD
+        LD      DE,UC_WRITE_MSG
+        JP      C,UC_ERROR
+        LD      DE,UC_TEMP
+        LD      C,16
+        CALL    UC_BDOS
+        CP      0FFH
+        LD      DE,UC_CLOSE_MSG
+        JP      Z,UC_ERROR
+        XOR     A
+        LD      (UC_TEMP_OPEN),A
+        LD      DE,UC_INPUT
+        LD      C,16
+        CALL    UC_BDOS
+        CP      0FFH
+        LD      DE,UC_CLOSE_MSG
+        JP      Z,UC_ERROR
+        XOR     A
+        LD      (UC_INPUT_OPEN),A
+        ; Search can alter DMA; all buffered I/O is already finished.
+        LD      DE,UC_FINAL
+        CALL    UC_EXISTS
+        LD      DE,UC_EXISTS_MSG
+        JP      NZ,UC_ERROR
+        LD      HL,UC_TEMP
+        LD      DE,UC_RENAME
+        LD      BC,12
+        LDIR
+        LD      HL,UC_FINAL
+        LD      DE,UC_RENAME+16
+        LD      BC,12
+        LDIR
+        LD      DE,UC_RENAME
+        LD      C,23
+        CALL    UC_BDOS
+        CP      0FFH
+        LD      DE,UC_RENAME_MSG
+        JP      Z,UC_ERROR
+        XOR     A
+        LD      (UC_TEMP_LIVE),A
+        LD      DE,UC_SUCCESS
+        CALL    UC_PRINT
+        JP      UC_EXIT
+
+        CODEC_FILE_IO
+
+; Reduce the raw header field to the filename: historically the encoder
+; emits exactly three extension slots, with spaces for a short extension,
+; then optional metadata. Do not print or interpret the metadata as a path.
+; HL=header, B=bounded field length -> HL=header, B=trimmed filename length.
+UC_HEADER_NAME:
+        LD      C,0
+UC_HEADER_BASE:
+        LD      A,B
+        OR      A
+        JR      Z,UC_HEADER_READY
+        LD      A,(HL)
+        INC     HL
+        INC     C
+        DEC     B
+        CP      '.'
+        JR      NZ,UC_HEADER_BASE
+        LD      D,3
+UC_HEADER_EXT:
+        LD      A,B
+        OR      A
+        JR      Z,UC_HEADER_TRIM
+        INC     HL
+        INC     C
+        DEC     B
+        DEC     D
+        JR      NZ,UC_HEADER_EXT
+UC_HEADER_TRIM:
+        DEC     HL
+        LD      A,(HL)
+        CP      ' '
+        JR      NZ,UC_HEADER_READY
+        DEC     C
+        JR      UC_HEADER_TRIM
+UC_HEADER_READY:
+        LD      B,C
+        LD      HL,UC_CONTEXT+ULZ_HEADER
+        RET
+
+UC_CODEC_ERROR:
+        ; Status is saved in context; cleanup may clobber ordinary registers.
+        LD      DE,UC_CODEC_MSG
+        CP      CS_READ
+        JR      NZ,UC_CODEC_WRITE
+        LD      DE,UC_READ_MSG
+        JR      UC_ERROR
+UC_CODEC_WRITE:
+        CP      CS_WRITE
+        JR      NZ,UC_CODEC_CHECK
+        LD      DE,UC_WRITE_MSG
+        JR      UC_ERROR
+UC_CODEC_CHECK:
+        CP      CS_CHECK
+        JR      NZ,UC_CODEC_VARIANT
+        LD      DE,UC_CHECK_MSG
+        JR      UC_ERROR
+UC_CODEC_VARIANT:
+        CP      CS_VARIANT
+        JR      NZ,UC_CODEC_HEADER
+        LD      DE,UC_VARIANT_MSG
+        JR      UC_ERROR
+UC_CODEC_HEADER:
+        CP      CS_SPACE
+        JR      NZ,UC_ERROR
+        LD      DE,UC_HEADER_MSG
+        CODEC_FILE_CLEANUP
+
+UC_USAGE:       DB 'Usage: UNLZH [drive:]file [destination-drive:]',13,10,'$'
+UC_SUCCESS:     DB 'UNLZH: complete.',13,10,'$'
+UC_NO_INPUT:    DB 'UNLZH: cannot open input.',13,10,'$'
+UC_BAD_NAME:    DB 'UNLZH: unsafe embedded filename.',13,10,'$'
+UC_SAME_INPUT:  DB 'UNLZH: output would replace input.',13,10,'$'
+UC_EXISTS_MSG:  DB 'UNLZH: output exists; nothing replaced.',13,10,'$'
+UC_CREATE_MSG:  DB 'UNLZH: cannot create temporary output.',13,10,'$'
+UC_READ_MSG:    DB 'UNLZH: input read failed.',13,10,'$'
+UC_WRITE_MSG:   DB 'UNLZH: output write failed.',13,10,'$'
+UC_CLOSE_MSG:   DB 'UNLZH: file close failed.',13,10,'$'
+UC_RENAME_MSG:  DB 'UNLZH: cannot finalize output.',13,10,'$'
+UC_CHECK_MSG:   DB 'UNLZH: checksum mismatch.',13,10,'$'
+UC_HEADER_MSG: DB 'UNLZH: header exceeds 127 bytes.',13,10,'$'
+UC_VARIANT_MSG: DB 'UNLZH: unsupported CrLZH variant.',13,10,'$'
+UC_CODEC_MSG:   DB 'UNLZH: invalid or truncated CrLZH file.',13,10,'$'
+UC_CLEAN_MSG:   DB 'UNLZH: cleanup failed; check temporary files.',13,10,'$'
+UC_LEGAL:       DB '!#$%&',27H,'()-@^_{}~'
+UC_LEGAL_END:
+UC_TEMP_NAME:   DB 'ULZ00000$$$'
+
+        CODEC_CODE
+        UNLZH_CODE
+
+UC_OLDSP:       DW 0
+UC_DRIVE:       DB 0
+UC_DEST:        DB 0
+UC_INPUT_OPEN:  DB 0
+UC_TEMP_OPEN:   DB 0
+UC_TEMP_LIVE:   DB 0
+UC_CLEAN_FAILED: DB 0
+UC_ARG_PTR:     DW 0
+UC_ARG_LEN:     DB 0
+UC_IN_PTR:      DW 0
+UC_IN_LEFT:     DB 0
+UC_OUT_PTR:     DW 0
+UC_OUT_USED:    DB 0
+UC_INPUT:       DS 36
+UC_FINAL:       DS 36
+UC_SEARCH:      DS 36
+UC_RENAME:      DS 36
+UC_TEMP:        DS 36
+UC_CONTEXT:     DB CX_ABI_VERSION,0,CP_RESET,CS_OK,0,0
+                DW UC_READ,UC_WRITE,0,0,ULZ_CONTEXT_SIZE
+                DS ULZ_CONTEXT_SIZE-CX_PREFIX_SIZE
+UC_SEARCH_BUFFER: DS 128
+UC_IN_BUFFER:   DS 128
+UC_OUT_BUFFER:  DS 128
+UC_STACK:       DS 256
+UC_STACK_TOP:
+        END
