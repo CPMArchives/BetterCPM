@@ -28,7 +28,7 @@ def main():
         for tail in ['/VER',' /ver  ','/VER x','x /VER','/VER /VER','/VER /B']:
             c=runner(image);data=tail.encode();c.mem[128]=len(data);c.mem[129:129+len(data)]=data
             c.run(256,limit=100000)
-            if name in ('DUMP','DDT'):
+            if name in ('DUMP','DDT','SQ','USQ','CR','UNCR','LZH','UNLZH'):
                 import importlib
                 identity=importlib.import_module('build_'+name.lower()).version_text()
             else:identity=banner(name)+'\r\n'

@@ -10,14 +10,60 @@ source unchanged until SQ finishes. Use USQ to restore it.
 
 ```text
 SQ [drive:]file [destination-drive:]
+SQ /HELP
+SQ /VER
 ```
 
 Give one exact 8.3 source name and an optional destination drive such as `B:`.
 Both use your current user area. Output defaults to the logged drive, not the
 source or command's drive. Wildcards, paths, explicit user/DU file operands,
-output filenames and switches are not accepted. See the
+output filenames and other switches are not accepted. `/HELP` and `/VER` must each stand alone. See the
 [shared command rules](utilities_manual.md#shared-compression-command-rules)
 for program lookup, filename syntax and drive defaults.
+
+## Help
+
+`SQ /HELP` displays a compact purpose/Usage corner followed by an unframed
+Options list, then returns without accessing files. Examples, defaults and
+restrictions are described below. Letter case and surrounding spaces or TABs
+do not matter.
+Combining an exact `/HELP` token with other input reports `Invalid /HELP usage.`;
+if an exact `/VER` token is also present, `Invalid /VER usage.` takes precedence.
+Longer tokens such as `/HELPER` are syntax errors. Empty or malformed commands
+show short syntax and `Use SQ /HELP for help.`
+
+The help screen is:
+
+```text
+SQ 1.0 (Build 003)
+  - - -
+ | Squeeze compression
+ |
+ |   Usage: SQ [drive:]file [destination-drive:]
+
+   Options:
+     /HELP       Display this help.
+     /VER        Display utility identification.
+```
+
+## Version identification
+
+`SQ /VER` shows the utility identity and returns to the command prompt without
+opening files or starting compression/expansion. `/ver` and mixed letter case
+work too. For the current build:
+
+```text
+SQ 1.0 (Build 003)
+  - - -
+ | BetterCP/M Utilities
+ | Squeeze File Compression
+```
+
+Version and build numbers come from the standard utility metadata. The build
+counter advances with published executable changes; it does not reset at a new
+version. Combining `/VER` with a filename, destination drive or another option
+prints `Invalid /VER usage.` and performs no file operation. Normal file
+processing does not print this identification banner.
 
 ## Output name and supported files
 

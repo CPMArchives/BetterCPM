@@ -17,10 +17,16 @@
         INCLUDE lzh.inc
         INCLUDE lzh.mac
         INCLUDE codecfile.mac
+        INCLUDE codecver.inc
 
 UC_START:
         LD      (UC_OLDSP),SP
         LD      SP,UC_STACK_TOP
+        CALL    UC_VERSION
+        JR      NC,UC_START_FILES
+        LD      SP,(UC_OLDSP)
+        RET
+UC_START_FILES:
         XOR     A
         LD      (UC_INPUT_OPEN),A
         LD      (UC_TEMP_OPEN),A
@@ -191,7 +197,10 @@ UC_CODEC_WRITE:
         LD      DE,UC_WRITE_MSG
         CODEC_FILE_CLEANUP
 
-UC_USAGE:       DB 'Usage: LZH [drive:]file [destination-drive:]',13,10,'$'
+        CODEC_VERSION_CODE
+
+UC_USAGE:       DB 'Usage: LZH [drive:]file [destination-drive:]',13,10
+                DB 'Use LZH /HELP for help.',13,10,'$'
 UC_SUCCESS:     DB 'LZH: complete.',13,10,'$'
 UC_NO_INPUT:    DB 'LZH: cannot open input.',13,10,'$'
 UC_ALREADY_MSG: DB 'LZH: cannot compress .YYY names.',13,10,'$'
