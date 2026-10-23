@@ -191,3 +191,15 @@ selected automatically at startup. The unchanged TE VT100 editor passes the
 cpmsim application campaign with a 25-row host window; that configuration is not
 qualified for the 24-row Model 4. See the provider qualification record for the
 supported subset and test limits.
+
+## Compression 1.0 feature freeze
+
+The six selected compression commands are feature-frozen at version 1.0
+Build 003 (`00e6785`, merged in `569825d`). The
+[qualification index](../engineering/Compression-1.0-Qualification.json)
+records final COM hashes and the completed stock CP/M 2.2 historical/query
+campaigns. Package these qualified bytes; a changed artifact needs relevant
+requalification. The [1.0 compression release checklist](1.0-ROADMAP.md#compression-utilities--10-feature-freeze-and-release-checklist)
+keeps both BetterCP/M platform runs, native assembly qualification and final
+Utilities image/component acceptance open. This freeze does not change disk
+membership or promote provisional media to a release.

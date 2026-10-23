@@ -4,7 +4,8 @@
 
 **PASS for the supported-format exchange matrix**, qualified 2026-10-23 on
 stock z80pack 62K CP/M 2.2 with a Z80 CPU, user area zero and disposable
-IBM-3740 disks. No production codec or command changes were needed.
+IBM-3740 disks. The final version 1.0 Build 003 binaries are feature-frozen; no production
+codec or command changes were needed for this rerun.
 
 The campaign ran **178 cases and 340 CP/M command invocations**. Counts are:
 148 successful decoded-file comparisons, 26 intentional unsafe-name refusals,
@@ -13,17 +14,51 @@ encoder defect. A passing guard/limitation case is not counted as a successful
 file exchange. The historical control pairs add 52 byte-for-byte comparisons.
 
 Evidence: [machine-readable results](Compression-Historical-Interop-evidence.json)
-and [178 console transcripts and run log](Compression-Historical-Interop-evidence.tar.gz).
-The transcript bundle SHA-256 is `2aabb8505f18319ba5ebdda1453eb5ad643d8c49f7ae02aead2aadc752e6c903`. The JSON binds historical
+and [178 console transcripts, run log, query logs and test-source snapshots](Compression-Historical-Interop-evidence.tar.gz).
+The transcript bundle SHA-256 is `64876bee27320a6d25cbf2603d2c69ae3e752026738044fadfe22e6349ff8469`. The JSON binds historical
 and current command hashes, input/output hashes, simulator and boot-template
 hashes, test source and per-case console hashes. This report qualifies those
 artifacts, not every historical executable sharing a version number.
 
-The binaries are those built from the completed command baseline, commit
-`68497f1`, merged into the documentation baseline `c61ba34`. The historical
-programs are executed directly, without patching, rebuilding or substituting
-our implementations. Only their filenames on disposable disks are aliased to
-`HENC`, `CTRL` or `HDEC` to avoid collision with our programs.
+The six final COM files were read from `build/utilities/` and required to match
+fresh builds byte for byte before any campaign command ran (`--commands-dir`).
+Their feature baseline is `00e6785`, merged as `569825d`; each identifies as
+version 1.0 Build 003. This evidence supersedes the pre-`/VER` command-baseline
+run retained in Git history (`aa7b9b9`). The report now also pins the shared
+includes, all codec sources, builders, identity/help generation, utility
+metadata and assembler, alongside the runner's own hash. A source revision
+alone does not identify local test-tool changes; these hashes do.
+
+The historical programs execute directly, without patching, rebuilding or
+substituting our implementations. Only filenames on disposable disks are
+aliased to `HENC`, `CTRL` or `HDEC` to avoid collision with our programs.
+
+## Frozen 1.0 artifact identities
+
+| Command | Version/build | COM bytes | SHA-256 |
+| --- | --- | ---: | --- |
+| SQ | 1.0 / 003 | 8123 | `33251f8a7746b7dd585f4664b5ee477fb8c58a5dd533011365760abeac267e82` |
+| USQ | 1.0 / 003 | 5398 | `731f60a4aebea07ad908481edce02c4644aab9d1c46966bad7205d2dcd604dfb` |
+| CR | 1.0 / 003 | 29443 | `bfd064bd0fdb54410b9f603187caeb9a310e64c7848d8ec05e0d99bd5bb53c56` |
+| UNCR | 1.0 / 003 | 31206 | `dcfa927cb0af3dcd86cc161081ccc67c86faa2bb3d89a6af7acdf929a75cf5ef` |
+| LZH | 1.0 / 003 | 17225 | `6a7084aa8cd3059593966c192185656b89d9a50afbd5b624d549168dbfa07805` |
+| UNLZH | 1.0 / 003 | 12215 | `9ed3f70dc0b69222bfc5b8106021e68ebf5180fffcf7c7e5863eac2df502ce26` |
+
+The [1.0 qualification index](Compression-1.0-Qualification.json) binds these
+artifacts, report and transcript bundle hashes and the outstanding release
+gates. The refreshed query campaign passes 344 full-Z80 cases and 90 stock
+CP/M 2.2 command invocations, including complete identities/help screens,
+bounded and mixed arguments, no file access, state preservation and prompt
+return. Its logs and test sources are included in the bundle. A targeted
+negative check also confirms a one-byte final-COM mismatch is rejected before
+campaign execution; that log records an expected assertion, not a failed
+historical exchange.
+
+Remaining BetterCP/M platform, native-build and final Utilities disk checks
+are open in the [1.0 release checklist](../releases/1.0-ROADMAP.md#compression-utilities--10-feature-freeze-and-release-checklist).
+Stock CP/M 2.2 qualification does not close those gates. Any changed executable
+requires refreshed relevant evidence before release; identical rebuilds retain
+these exact hash identities.
 
 ## Exchange matrix
 
@@ -127,6 +162,7 @@ The default assembler and z80pack paths match the other codec tests; override
 
 ```sh
 python3 tools/test_codec_historical_cpm.py --fetch \
+  --commands-dir build/utilities \
   --corpus /path/to/cpm-2.2-compatibility-suite/suite/crunched-source \
   --archives /path/to/crlzh11.lbr /path/to/crlzh20.lbr
 python3 tools/test_unlzh.py \
@@ -142,6 +178,11 @@ The CrLZH archives are supplied separately, with their existing SHA-256 pins in
 exact URLs and hashes appear in the test and JSON evidence. Fixtures are used
 locally without adding historical binaries, source or license-restricted
 packages to BetterCP/M's distribution.
+
+`--commands-dir DIR` reads the six final COM files and rejects any difference
+from freshly built source outputs before execution. Without it, the campaign
+tests freshly built temporary commands. Final release qualification must select
+the intended distributed files with this option.
 
 `--only SQ`, `--only CR`, or `--only LZH` limits the family. `--match TEXT`
 selects case names; an empty selection fails. `--skip-archived` runs the generated
