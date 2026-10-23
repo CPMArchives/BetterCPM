@@ -44,3 +44,5 @@ def apply(root):
     p=root/'tools/utility_versions.py';s=p.read_text()
     s=replace(s,"    return f'BetterCP/M {name} {version} ({detail})'", "    if name=='SYSGEN':\n        import json\n        ident=json.loads((ROOT/'assessment-profile.json').read_text())['compatibility_id']\n        detail='Assessment P11 '+ident[:8]\n    return f'BetterCP/M {name} {version} ({detail})'")
     p.write_text(s)
+    from assessment_utility_guards import apply as guard_utilities
+    guard_utilities(root)

@@ -1,6 +1,6 @@
 # Engineering assessment Part 11: integrated checked builds and packages
 
-Date: 23 October 2026. Status: bounded assessment complete; awaiting review.
+Date: 23 October 2026. Status: approved by the maintainer; Part 12 authorized.
 Part 10 was approved and Part 11 authorized. Accepted core 1.0 remains
 `3b2d2d7f4fe0472438465165f11fb550d79c8662`.
 
