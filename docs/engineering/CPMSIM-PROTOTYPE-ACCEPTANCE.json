@@ -1,0 +1,407 @@
+{
+  "source_commit": "8e0fcc48b57665ae9355ea643b930daf15407f6b",
+  "status": "PASS",
+  "scope": "Bounded checked cpmsim prototype; separate from normal build integration and target adoption.",
+  "campaigns": [
+    {
+      "job": "audit",
+      "exit_code": 0,
+      "seconds": 0.25
+    },
+    {
+      "job": "traced-fullram",
+      "exit_code": 0,
+      "seconds": 134.47
+    },
+    {
+      "job": "traced-legacy",
+      "exit_code": 0,
+      "seconds": 136.31
+    },
+    {
+      "job": "ordinary-fullram",
+      "exit_code": 0,
+      "seconds": 123.48
+    },
+    {
+      "job": "ordinary-legacy",
+      "exit_code": 0,
+      "seconds": 123.52
+    },
+    {
+      "job": "utilities-fullram",
+      "exit_code": 0,
+      "seconds": 3.52
+    },
+    {
+      "job": "utilities-legacy",
+      "exit_code": 0,
+      "seconds": 3.47
+    },
+    {
+      "job": "live-fullram",
+      "exit_code": 0,
+      "seconds": 15.47
+    },
+    {
+      "job": "live-legacy",
+      "exit_code": 0,
+      "seconds": 16.46
+    },
+    {
+      "job": "packages-fullram",
+      "exit_code": 0,
+      "seconds": 55.9
+    },
+    {
+      "job": "packages-legacy",
+      "exit_code": 0,
+      "seconds": 28.71
+    }
+  ],
+  "source_closure_files": 1040,
+  "repeat_artifacts": 35,
+  "profiles": {
+    "fullram": {
+      "compatibility_id": "25532937c320b7975df520ec184031cb",
+      "source_revision": "8e0fcc48b57665ae9355ea643b930daf15407f6b",
+      "stack_maxima": {
+        "raw_reload": {
+          "used": 10,
+          "low": 128,
+          "top": 256,
+          "sp": 246,
+          "pc": 62600,
+          "case": "normal",
+          "band_bytes": 128
+        },
+        "bdos": {
+          "used": 38,
+          "low": 61458,
+          "top": 61498,
+          "sp": 61460,
+          "pc": 55898,
+          "case": "select-read-ignore-ANSI-reverse",
+          "band_bytes": 40
+        },
+        "stage1": {
+          "used": 10,
+          "low": 1216,
+          "top": 1280,
+          "sp": 1270,
+          "pc": 62600,
+          "case": "normal",
+          "band_bytes": 64
+        },
+        "stream": {
+          "used": 26,
+          "low": 3328,
+          "top": 4096,
+          "sp": 4070,
+          "pc": 61763,
+          "case": "normal",
+          "band_bytes": 768
+        },
+        "system": {
+          "used": 24,
+          "low": 57880,
+          "top": 57912,
+          "sp": 57888,
+          "pc": 3659,
+          "case": "normal",
+          "band_bytes": 32
+        },
+        "ccp": {
+          "used": 24,
+          "low": 47083,
+          "top": 47211,
+          "sp": 47187,
+          "pc": 55145,
+          "case": "select-read-ignore-screen",
+          "band_bytes": 128
+        },
+        "config": {
+          "used": 22,
+          "low": 15872,
+          "top": 16384,
+          "sp": 16362,
+          "pc": 12644,
+          "case": "normal",
+          "band_bytes": 512
+        },
+        "sysgen": {
+          "used": 18,
+          "low": 15616,
+          "top": 16128,
+          "sp": 16110,
+          "pc": 62450,
+          "case": "normal",
+          "band_bytes": 512
+        },
+        "early_manager": {
+          "used": 10,
+          "low": 57318,
+          "top": 57601,
+          "sp": 57591,
+          "pc": 64887,
+          "case": "select-read-ignore-screen",
+          "band_bytes": 283
+        },
+        "manager": {
+          "used": 24,
+          "low": 28416,
+          "top": 28672,
+          "sp": 28648,
+          "pc": 61763,
+          "case": "select-read-ignore-screen",
+          "band_bytes": 256
+        },
+        "reader": {
+          "used": 16,
+          "low": 26133,
+          "top": 26368,
+          "sp": 26352,
+          "pc": 61763,
+          "case": "select-read-ignore-screen",
+          "band_bytes": 235
+        }
+      },
+      "instrumented_rows": 77,
+      "ordinary_rows": 75,
+      "functional_outcomes_equal": true,
+      "disk_free_commit_windows": 194,
+      "utility_gate_cases": 57,
+      "config_preflight_cases": 7,
+      "disabled_native_tools": [
+        "SYSBUILD",
+        "RESPACK",
+        "RLMBUILD"
+      ],
+      "live_cross_profile": {
+        "private_rejections": 3,
+        "native_disabled": 3,
+        "tpa": 57344,
+        "public_STAT_RSX_CPX_CLS": true
+      },
+      "live_rows": 11,
+      "package_rows": 37,
+      "distribution": {
+        "compatibility_id": "25532937c320b7975df520ec184031cb",
+        "files": 30,
+        "test_modules_excluded": true,
+        "sysgen_bytes": 6726,
+        "stage2_bytes": 1301
+      },
+      "product_sha256": {
+        "assessment-media/system.raw": "969de4b5c31d2f03f87d757853c2407da70e827f803aec640b1d63ebed487b5a",
+        "assessment-media/SYSTEM.SYS": "dcdd49d5ff76f31831fbb2757ec9b3e5ba6d381749626bd8674c67597168db35",
+        "build/system/R3PACK.RSX": "0a22f7107647bb6cc7177ceb63d800ce7e0d592fdfe2e33a3d9622ce76dfa0ae",
+        "build/screen-backends/ANSISCRN.RSX": "2f5afc75a19e30fbf2b66201096970a44ab1da9750761804023a9b029f03b33e"
+      }
+    },
+    "legacy": {
+      "compatibility_id": "f5851ceca322f726611592c1cafd3d74",
+      "source_revision": "8e0fcc48b57665ae9355ea643b930daf15407f6b",
+      "stack_maxima": {
+        "raw_reload": {
+          "used": 10,
+          "low": 128,
+          "top": 256,
+          "sp": 246,
+          "pc": 59528,
+          "case": "normal",
+          "band_bytes": 128
+        },
+        "bdos": {
+          "used": 38,
+          "low": 58386,
+          "top": 58426,
+          "sp": 58388,
+          "pc": 52826,
+          "case": "select-read-ignore-ANSI-reverse",
+          "band_bytes": 40
+        },
+        "stage1": {
+          "used": 10,
+          "low": 1216,
+          "top": 1280,
+          "sp": 1270,
+          "pc": 59528,
+          "case": "normal",
+          "band_bytes": 64
+        },
+        "stream": {
+          "used": 26,
+          "low": 3328,
+          "top": 4096,
+          "sp": 4070,
+          "pc": 58691,
+          "case": "normal",
+          "band_bytes": 768
+        },
+        "system": {
+          "used": 24,
+          "low": 54808,
+          "top": 54840,
+          "sp": 54816,
+          "pc": 3659,
+          "case": "normal",
+          "band_bytes": 32
+        },
+        "ccp": {
+          "used": 24,
+          "low": 44011,
+          "top": 44139,
+          "sp": 44115,
+          "pc": 52073,
+          "case": "select-read-ignore-screen",
+          "band_bytes": 128
+        },
+        "config": {
+          "used": 22,
+          "low": 15872,
+          "top": 16384,
+          "sp": 16362,
+          "pc": 12644,
+          "case": "normal",
+          "band_bytes": 512
+        },
+        "sysgen": {
+          "used": 18,
+          "low": 15616,
+          "top": 16128,
+          "sp": 16110,
+          "pc": 59378,
+          "case": "normal",
+          "band_bytes": 512
+        },
+        "early_manager": {
+          "used": 10,
+          "low": 54246,
+          "top": 54529,
+          "sp": 54519,
+          "pc": 61815,
+          "case": "select-read-ignore-screen",
+          "band_bytes": 283
+        },
+        "manager": {
+          "used": 24,
+          "low": 28416,
+          "top": 28672,
+          "sp": 28648,
+          "pc": 58691,
+          "case": "select-read-ignore-screen",
+          "band_bytes": 256
+        },
+        "reader": {
+          "used": 16,
+          "low": 26133,
+          "top": 26368,
+          "sp": 26352,
+          "pc": 58691,
+          "case": "select-read-ignore-screen",
+          "band_bytes": 235
+        }
+      },
+      "instrumented_rows": 77,
+      "ordinary_rows": 75,
+      "functional_outcomes_equal": true,
+      "disk_free_commit_windows": 194,
+      "utility_gate_cases": 57,
+      "config_preflight_cases": 7,
+      "disabled_native_tools": [
+        "SYSBUILD",
+        "RESPACK",
+        "RLMBUILD"
+      ],
+      "live_cross_profile": {
+        "private_rejections": 3,
+        "native_disabled": 3,
+        "tpa": 54272,
+        "public_STAT_RSX_CPX_CLS": true
+      },
+      "live_rows": 11,
+      "package_rows": 15,
+      "distribution": {
+        "compatibility_id": "f5851ceca322f726611592c1cafd3d74",
+        "files": 30,
+        "test_modules_excluded": true,
+        "sysgen_bytes": 6726,
+        "stage2_bytes": 1301
+      },
+      "product_sha256": {
+        "assessment-media/system.raw": "f927eba45de570d94608f76ce1a99c24fffe4b169e0d1230f8ef6d521c32b50a",
+        "assessment-media/SYSTEM.SYS": "9bf90168b42214ee54e23142eae8fa8625374608c414c3e7fa5be13604e705b0",
+        "build/system/R3PACK.RSX": "02b8b666c8c9d50b4aea6a65787eb04e096ad27dc2ec0e2823cecb7118035392",
+        "build/screen-backends/ANSISCRN.RSX": "2f5afc75a19e30fbf2b66201096970a44ab1da9750761804023a9b029f03b33e"
+      }
+    }
+  },
+  "renderer": {
+    "passed": true,
+    "byte_and_relocation_cases": 512,
+    "scope": "Assembled leaf/fallback equivalence: wire bytes, A/Z/C and BC/DE/HL/IX/SP; all 256 bytes at two relocation bases."
+  },
+  "screen_backend_regressions": 4,
+  "ordinary_simulator_sha256": "b2d4384af06dbea8d32bc43eab539bf9e4857e74780577a249d0e8c5e22c955d",
+  "part12_component_comparison": {
+    "build/bdos/bdos.bin": {
+      "old_bytes": 3454,
+      "new_bytes": 3454,
+      "identical": true,
+      "old_sha256": "a42a457961a54352bb428ad2848022547be46454a255def4ba38c0673a1f0ad3",
+      "new_sha256": "a42a457961a54352bb428ad2848022547be46454a255def4ba38c0673a1f0ad3"
+    },
+    "build/z80pack/gateway.bin": {
+      "old_bytes": 248,
+      "new_bytes": 248,
+      "identical": true,
+      "old_sha256": "cdd1c8bae3d683f11ad4cb0e7b9f9e01c908b91914fccad0c2c88a1b794c6ee7",
+      "new_sha256": "cdd1c8bae3d683f11ad4cb0e7b9f9e01c908b91914fccad0c2c88a1b794c6ee7"
+    },
+    "build/z80pack/command-loader/stage1.bin": {
+      "old_bytes": 54,
+      "new_bytes": 54,
+      "identical": false,
+      "old_sha256": "dfb501c695c2be0183bbb635e5bb663fcf8f54d7bac35eef1b58f82d04c5df8c",
+      "new_sha256": "2ac65fc5bdd005171f49a89cf59ccd14fe99b144845280ff40dfcb6e7729f387"
+    },
+    "build/z80pack/command-loader/stage2.bin": {
+      "old_bytes": 1301,
+      "new_bytes": 1301,
+      "identical": true,
+      "old_sha256": "ee1ef2c49624dc55e958e4043bc26cd13790d044da5808a4f6cceba1ea736577",
+      "new_sha256": "ee1ef2c49624dc55e958e4043bc26cd13790d044da5808a4f6cceba1ea736577"
+    },
+    "build/system/rsxresolver.bin": {
+      "old_bytes": 738,
+      "new_bytes": 738,
+      "identical": true,
+      "old_sha256": "709d21254b704f454777d111c02269e95de8eafbfe1c725a98361cb3456a98be",
+      "new_sha256": "709d21254b704f454777d111c02269e95de8eafbfe1c725a98361cb3456a98be"
+    },
+    "build/screen-backends/ANSISCRN.bin": {
+      "old_bytes": 1357,
+      "new_bytes": 1365,
+      "identical": false,
+      "old_sha256": "549cb10f5681ed04b459242feb6d1a0dce359be6c0ec5aead8b9fa5a413a0be4",
+      "new_sha256": "2f4c6aef14d68a874bda267264635d11c7a31405f62434a478793479270db987"
+    },
+    "build/screen-backends/ANSISCRN.RSX": {
+      "old_bytes": 1893,
+      "new_bytes": 1901,
+      "identical": false,
+      "old_sha256": "8fbc30c2be7b22e16362c32adb3a22aacad2c1af8e3fa24a037996d6d8ce5357",
+      "new_sha256": "2f5afc75a19e30fbf2b66201096970a44ab1da9750761804023a9b029f03b33e"
+    }
+  },
+  "observer": {
+    "observer_sha256": "7faf6dae5d0947064e1cbd20958e4ccafdb4b94e086dbaca6759d0257d6a1205",
+    "instrumented_cpu_sha256": "b5c50a651057b84c8e432209405a55251aa8c82f70af6d33800b78fc58a4ae10",
+    "binary_sha256": "8327b10f9de3b5e95342a173bf6fa664a54e64d6211eca85c65f7db1e29849e1",
+    "scope": "Host instruction-boundary PC/SP observer; no guest patch and no instruction-semantics change. No interrupts injected.",
+    "source_file_count": 152,
+    "source_revision": "b7a6fa36a2ee185a73727dc5b56ac1af40679e81"
+  },
+  "main_observed": "c18ff9c2f79f432ae1f3c6b4dfcb5f2ead7a5233"
+}
