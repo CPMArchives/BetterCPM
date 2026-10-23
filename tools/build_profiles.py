@@ -103,7 +103,12 @@ def profile_inputs(profile: BuildProfile, source: Path) -> tuple:
              f'BP_PRIVATE_EPOCH EQU {profile.private_epoch}\n'
              f'BP_CARRIER_EPOCH EQU {profile.carrier_epoch}\n'
              f'BP_PACKAGE_EPOCH EQU {profile.package_epoch}\n'
-             f'BP_RSX_SCRATCH EQU 0{profile.rsx_scratch_bytes:04X}H\n')
+             f'BP_RSX_SCRATCH EQU 0{profile.rsx_scratch_bytes:04X}H\n'
+             '; Checked resident service addresses; implementations must be integrated separately.\n'
+             'LY_CCRC EQU LY_FILE-32\n'
+             'LY_CBACK EQU LY_FILE-2\n'
+             'LY_CCMP EQU LY_BIOS-26\n'
+             'LY_CID EQU LY_BIOS-16\n')
     manifest = {
         'schema': 1, 'profile': profile.name, 'target': profile.target,
         'memory_mode': 'ram', 'checked': profile.checked,

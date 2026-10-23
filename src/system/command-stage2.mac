@@ -1,0 +1,821 @@
+; Maintained checked cpmsim stage 2; promoted from the approved streaming loader.
+        INCLUDE layout.inc
+        INCLUDE profile.inc
+
+; ********************************************************************************
+; *                   BetterCP/M Command-Environment Reloader                    *
+; *                                                                              *
+; * Reconstructs the ordered CPX chain and relocatable CCP after BOOT/WBOOT. CPX *
+; * carriers are opened through Directory Services; BCM2 and BCPX2 headers are   *
+; * normalized into one private loader description before placement and relocation. *
+; ********************************************************************************
+
+RELOADBASE      EQU     00500H
+HISTBASE        EQU     LY_HIST
+BIOPHREAD       EQU     LY_BIOS+51
+DIRLOGIN        EQU     LY_EXT+003H
+FLOPEN          EQU     LY_FILE
+FLNEXT          EQU     LY_FILE+3
+FLRESET         EQU     LY_FILE+6
+SYS_WBOOT       EQU     LY_SYS+023H
+ECB_CPXHEAD     EQU     LY_SYS+086H
+ECB_CCPBASE     EQU     LY_SYS+08CH
+ECB_CCPSIZE     EQU     LY_SYS+08EH
+ECB_TPATOP      EQU     LY_SYS+090H
+ECB_GENERATION  EQU     LY_SYS+092H
+CPTCOUNT        EQU     LY_SYS+094H
+CPTABLE         EQU     LY_SYS+096H
+MODBUF          EQU     LY_BUF
+MOD_LINK        EQU     MODBUF+10
+MOD_SIZE        EQU     MODBUF+12
+MOD_ALLOC       EQU     MODBUF+14
+MOD_ENTRY       EQU     MODBUF+16
+MOD_INIT        EQU     MODBUF+18
+MOD_SHUT        EQU     MODBUF+20
+MOD_RELOCS      EQU     MODBUF+22
+MOD_HEADERSZ    EQU     MODBUF+24
+MOD_PAYLOAD     EQU     MODBUF+26
+MOD_RELTABLE    EQU     MODBUF+28
+CRHEAD          EQU     004BH           ; prospective CPX head for CCP activation
+  ; The directory path is substantially deeper than the old raw-sector reader.
+  ; Grow its private stack downward through the unused fixed-core gap.
+CRSTKTOP        EQU     01000H
+
+        ASEG
+        ORG     RELOADBASE
+
+; ================================================================================
+; =                      Command Environment Reconstruction                      =
+; =                                                                              =
+; = Rebuilds the command environment after BOOT/WBOOT by loading the persistent  =
+; = ordered CPX profile followed by the relocatable CCP beneath the protected core. =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Reloader Entry and Stack
+; -------------------------------------------------------------------------------
+
+CRSTART:                                ; enter command-environment reloader
+  ; Fall through: the entry jump is unnecessary in this fixed carrier.
+
+CRBODY:                                 ; begin reconstruction body
+        LD      SP,CRSTKTOP
+        LD      A,5
+        CALL    LY_BIOS+66              ; reset unfinished monitor output before reconstruction
+  ; 07-Sep-2026 -- a BIOS caller may leave another physical drive selected
+  ; without changing BDOS's cached A: context. Do not reload RCP.CPX from
+  ; that drive using A:'s old DPB. Invalidate before the first file lookup.
+        LD      DE,0FFFFH
+        LD      C,37
+        CALL    LY_BDOS
+        LD      C,0
+        CALL    DIRLOGIN                ; protected file services precede CCP/CPX load
+        JP      NZ,CRFAIL
+        LD      HL,(ECB_TPATOP)
+        LD      (CRBOUND),HL
+        LD      HL,0
+        LD      (ECB_CPXHEAD),HL
+        LD      (CRHEAD),HL
+        LD      HL,CRHEAD              ; first link targets the prospective head
+        LD      (CRPREV),HL
+        LD      A,(CPTCOUNT)
+        CP      9
+        JP      NC,CRFAIL
+        LD      (CRCOUNT),A
+        LD      HL,CPTABLE
+        LD      (CRTPTR),HL
+
+; -------------------------------------------------------------------------------
+; Persistent CPX Profile Walk
+; -------------------------------------------------------------------------------
+
+CRCPXLP:                                ; process next persistent CPX
+        LD      A,(CRCOUNT)
+        OR      A
+        JR      Z,CRCCP
+        LD      HL,(CRTPTR)
+        PUSH    HL
+        LD      DE,8
+        ADD     HL,DE
+        LD      (CRTPTR),HL
+        POP     HL
+        XOR     A                       ; filename extension is CPX
+        CALL    FLOPEN
+        JR      Z,CROPEN
+  ; 08-Sep-2026 -- SYSGEN writes the complete protected system but does not
+  ; copy ordinary files.  A newly installed disk must therefore reach the
+  ; bare CCP when an optional CPX named by the old profile is not yet present.
+  ; A failed optional carrier is now discarded too; the profile remains
+  ; available for CPX UNLOAD from the recovered command environment.
+CRCPXNEXT:                              ; skip missing or failed optional carrier
+        LD      HL,CRCOUNT
+        DEC     (HL)                   ; next profile iteration reloads A
+        JR      CRCPXLP
+
+; ================================================================================
+; =                             CPX Profile Loading                              =
+; =                                                                              =
+; = Opens each configured CPX through Directory Services, tolerates a missing optional =
+; = carrier, and links successfully loaded modules into the runtime CPX chain.   =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Open CPX Carrier
+; -------------------------------------------------------------------------------
+
+CROPEN:                                 ; open configured CPX carrier
+        LD      A,1
+        LD      (CRFILE),A
+        LD      HL,CRCPXMAG
+        LD      (CRMAGPTR),HL
+  ; CRLOAD can consume allocation and write a partial payload before failure.
+  ; None of it is linked or initialized yet. Restore the saved boundary before
+  ; continuing; do not publish pointers into the discarded module. This also
+  ; handles read/reset/relocation/lifecycle validation errors, not just magic.
+        LD      HL,(CRBOUND)
+        PUSH    HL
+        CALL    CRLOAD
+        POP     HL
+        JR      Z,CRACCEPT
+        LD      (CRBOUND),HL
+        LD      DE,CRCPXERR
+        LD      C,9
+        CALL    LY_BDOS                 ; fixed diagnostic; no CPX callback runs
+        JR      CRCPXNEXT
+
+CRACCEPT:                               ; link only a complete valid CPX
+        LD      HL,(CRBASE)
+        LD      (HL),0
+        INC     HL
+        LD      (HL),0
+  ; CRPREV points to CRHEAD for the first module, otherwise to the previous
+  ; module's next-link word. One linking path covers both cases.
+        LD      HL,(CRPREV)
+
+CRLINK:                                 ; link loaded CPX through pending tail
+        LD      DE,(CRBASE)
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+
+CRLINKD:                                ; finish CPX link
+        LD      HL,(CRBASE)
+        LD      (CRPREV),HL
+        LD      HL,CRCOUNT
+        DEC     (HL)                   ; next profile iteration reloads A
+        JR      CRCPXLP
+
+; -------------------------------------------------------------------------------
+; Load CCP Carrier
+; -------------------------------------------------------------------------------
+
+CRCCP:                                  ; load relocatable CCP
+        XOR     A
+        LD      (CRFILE),A
+        LD      A,108
+        LD      (CRSLOT),A
+        LD      HL,CRCCPMAG
+        LD      (CRMAGPTR),HL
+        CALL    CRLOAD
+        JP      NZ,CRFAIL
+        LD      HL,(CRBASE)
+        LD      (ECB_CCPBASE),HL
+        LD      HL,(CRMALLOC)
+        LD      (ECB_CCPSIZE),HL
+        LD      HL,(ECB_GENERATION)
+        INC     HL
+        LD      (ECB_GENERATION),HL
+        JP      SYS_WBOOT
+
+  ; Load one checked BCM2/BCPX2 module below CRBOUND, then relocate at CRBASE.
+
+; ================================================================================
+; =                          Relocatable Module Loader                           =
+; =                                                                              =
+; = Loads checked CCP/CPX command-module carriers below the current boundary,    =
+; = normalizes their headers, validates layout, and calculates runtime placement. =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Carrier Header Load
+; -------------------------------------------------------------------------------
+
+; Checked header-retaining, single-pass command loader.
+; Only prospective/unpublished payload memory may be changed before admission.
+; Fixed header cache + record buffer; all state is inside the verified stage.
+STAGE EQU 01000H
+CR10BUFFER EQU 01600H
+CR10FLOOR EQU 01680H
+
+CRLOAD:
+        LD HL,STAGE
+        CALL CRNEXT128
+        RET NZ
+        LD HL,STAGE
+        LD DE,(CRMAGPTR)
+        LD B,6
+CR9MAG:
+        LD A,(DE)
+        CP (HL)
+        JP NZ,CRBAD
+        INC DE
+        INC HL
+        DJNZ CR9MAG
+        LD A,(CRFILE)
+        OR A
+        JR Z,CR9CCP
+        LD HL,(STAGE+6)
+        DEC HL
+        LD A,H
+        OR L
+        JP NZ,CRBAD
+        LD HL,(STAGE+8)
+        LD A,H
+        OR L
+        JP NZ,CRBAD
+        LD HL,STAGE+10
+        LD DE,CRMLINK
+        LD BC,20
+        LDIR
+        LD HL,(STAGE+30)
+        LD (CR9META),HL
+        LD A,(STAGE+42)
+        LD L,A
+        LD H,0
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,HL
+        LD (CR9EXTRA),HL
+        LD HL,(CRMRELTABLE)
+        LD DE,48
+        OR A
+        SBC HL,DE
+        JP NZ,CRBAD
+        JR CR9NORMAL
+CR9CCP:
+        LD HL,STAGE+6
+        LD DE,CRMLINK
+        LD BC,8
+        LDIR
+        LD HL,(STAGE+14)
+        LD (CRMRELOCS),HL
+        LD HL,1024
+        LD (CRMHEADSZ),HL
+        LD (CRMPAYLOAD),HL
+        LD HL,16
+        LD (CRMRELTABLE),HL
+        LD HL,0
+        LD (CR9EXTRA),HL
+        LD HL,(CRMENTRY)
+        LD A,H
+        OR L
+        JP NZ,CRBAD                ; current CCP handoff enters its base
+CR9NORMAL:
+        LD HL,(CRMSIZE)
+        LD A,H
+        OR L
+        JP Z,CRBAD
+        LD DE,(CRMALLOC)
+        OR A
+        SBC HL,DE
+        JR C,CR9ALLOC
+        JP NZ,CRBAD
+CR9ALLOC:
+        LD HL,(CRMALLOC)
+        LD A,L
+        OR A
+        JP NZ,CRBAD
+        LD A,H
+        OR A
+        JP Z,CRBAD
+        LD HL,(CRMHEADSZ)
+        LD A,L
+        OR A
+        JP NZ,CRBAD
+        LD A,H
+        AND 1
+        JP NZ,CRBAD
+        LD A,H
+        OR A
+        JP Z,CRBAD
+        CP 7
+        JP NC,CRBAD
+        LD DE,(CRMPAYLOAD)
+        OR A
+        SBC HL,DE
+        JP NZ,CRBAD
+        LD HL,(CRMRELOCS)
+        ADD HL,HL
+        JP C,CRBAD
+        LD DE,(CRMRELTABLE)
+        ADD HL,DE
+        JP C,CRBAD
+        EX DE,HL
+        LD HL,(CRMHEADSZ)
+        OR A
+        SBC HL,DE
+        JP C,CRBAD
+        LD HL,(CRMHEADSZ)
+        LD DE,(CRMSIZE)
+        ADD HL,DE
+        JP C,CRBAD
+        LD (CR9BODYEND),HL
+        LD A,(CRFILE)
+        OR A
+        JR Z,CR9SIZE
+        LD DE,(CR9META)
+        OR A
+        SBC HL,DE
+        JP NZ,CRBAD
+        LD HL,(CRMSIZE)
+        LD DE,8
+        OR A
+        SBC HL,DE
+        JP C,CRBAD                ; live CPX descriptor occupies eight bytes
+        LD DE,(CRMENTRY)
+        CALL CR9OFFSET
+        JP NZ,CRBAD
+        LD DE,(CRMINIT)
+        CALL CR9LIFE
+        JP NZ,CRBAD
+        LD DE,(CRMSHUT)
+        CALL CR9LIFE
+        JP NZ,CRBAD
+CR9SIZE:
+        LD HL,(CR9BODYEND)
+        LD DE,(CR9EXTRA)
+        ADD HL,DE
+        JP C,CRBAD
+        LD (CR9BIND),HL
+        LD DE,22
+        ADD HL,DE
+        JP C,CRBAD
+        LD (CR9LENGTH),HL
+        LD DE,127
+        ADD HL,DE
+        JP C,CRBAD
+        LD A,L
+        AND 080H
+        LD L,A
+        LD (CR9ROUND),HL
+        LD HL,(CRBOUND)
+        LD DE,(CRMALLOC)
+        OR A
+        SBC HL,DE
+        JP C,CRBAD
+        LD (CRBASE),HL
+        LD DE,CR10FLOOR
+        OR A
+        SBC HL,DE
+        JP C,CRBAD                ; header/buffer must finish below destination
+        LD HL,(CRMHEADSZ)
+        LD DE,128
+        OR A
+        SBC HL,DE
+        LD (CRLEFT),HL
+        LD HL,STAGE+128
+CR9READ:
+        PUSH HL
+        LD HL,(CRLEFT)
+        LD A,H
+        OR L
+        POP HL
+        JR Z,CR9RELCHECK
+        CALL CRNEXT128
+        RET NZ
+        PUSH HL
+        LD HL,(CRLEFT)
+        LD DE,128
+        OR A
+        SBC HL,DE
+        LD (CRLEFT),HL
+        POP HL
+        JR CR9READ
+CR9RELCHECK:
+        LD HL,0
+        LD (CR9PREV),HL
+        CALL CR9TABLE
+CR9RELP:
+        LD A,B
+        OR C
+        JR Z,CR10STREAM
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        INC HL
+        PUSH HL
+        PUSH BC
+        LD HL,(CRMSIZE)
+        DEC HL
+        OR A
+        SBC HL,DE
+        JP C,CRRLBAD
+        JP Z,CRRLBAD
+        EX DE,HL
+        PUSH HL
+        LD DE,(CR9PREV)
+        OR A
+        SBC HL,DE
+        POP HL
+        JP C,CRRLBAD
+        INC HL
+        INC HL
+        LD (CR9PREV),HL
+        POP BC
+        POP HL
+        DEC BC
+        JR CR9RELP
+; The complete header is retained and its relocation table prevalidated.
+; All payload writes below are to unlinked memory. A failed load leaves
+; CRBOUND unchanged; its caller can reuse the same destination immediately.
+CR10STREAM:
+        LD BC,(CRMHEADSZ)
+        LD DE,STAGE
+        CALL LY_CCRC
+        LD (CR10CRC),HL
+        XOR A
+        LD (CR10AVAIL),A
+        LD HL,(CRBASE)
+        LD BC,(CRMSIZE)
+        LD DE,0
+CR10PAY:
+        CALL CR10BYTE
+        JP C,CRBAD
+        LD (HL),A
+        INC HL
+        ADD A,E
+        LD E,A
+        JR NC,CR10NC
+        INC D
+CR10NC:
+        DEC BC
+        LD A,B
+        OR C
+        JR NZ,CR10PAY
+        LD A,(CRFILE)
+        OR A
+        JR Z,CR10META
+        PUSH HL
+        LD HL,(STAGE+44)
+        OR A
+        SBC HL,DE
+        POP HL
+        JP NZ,CRBAD
+CR10META:
+        LD BC,(CR9EXTRA)
+C10METLP:
+        LD A,B
+        OR C
+        JR Z,C10BINDG
+        CALL CR10BYTE
+        JP C,CRBAD
+        DEC BC
+        JR C10METLP
+C10BINDG:
+        LD HL,CR10BIND
+        LD B,20
+C10BINDL:
+        CALL CR10BYTE
+        JP C,CRBAD
+        LD (HL),A
+        INC HL
+        DJNZ C10BINDL
+        CALL CR10GET
+        JP C,CRBAD
+        LD E,A
+        CALL CR10GET
+        JP C,CRBAD
+        LD D,A
+        LD HL,(CR10CRC)
+        OR A
+        SBC HL,DE
+        JP NZ,CRBAD
+        LD HL,CR10BIND
+        LD A,(HL)
+        CP 'B'
+        JP NZ,CRBAD
+        INC HL
+        LD A,(HL)
+        CP 'P'
+        JP NZ,CRBAD
+        INC HL
+        LD A,(HL)
+        CP 2
+        JP NZ,CRBAD
+        INC HL
+        LD A,(CRFILE)
+        OR A
+        JR NZ,CR9CLASS
+        LD A,(HL)
+        CP 1
+        JP NZ,CRBAD
+CR9CLASS:
+        LD A,(HL)
+        INC HL
+        OR A
+        JR Z,CR9PUBLIC
+        DEC A
+        JP NZ,CRBAD
+        LD DE,LY_CID
+        CALL LY_CCMP
+        JP NZ,CRBAD
+        JR CR9SUM
+CR9PUBLIC:
+        LD B,16
+CR9ZERO:
+        OR (HL)
+        INC HL
+        DJNZ CR9ZERO
+        JP NZ,CRBAD
+CR9SUM:
+        JP CR9COPY
+
+; Return one byte with carry clear; preserve BC, DE and HL.
+; Read exactly one physical record when the buffer is exhausted.
+CR10GET:
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        LD A,(CR10AVAIL)
+        OR A
+        JR NZ,CR10HAVE
+        LD HL,CR10BUFFER
+        CALL CRNEXT128
+        JR NZ,CR10IOBAD
+        LD HL,CR10BUFFER
+        LD (CR10PTR),HL
+        LD A,128
+CR10HAVE:
+        DEC A
+        LD (CR10AVAIL),A
+        LD HL,(CR10PTR)
+        LD A,(HL)
+        INC HL
+        LD (CR10PTR),HL
+        POP HL
+        POP DE
+        POP BC
+        OR A
+        RET
+CR10IOBAD:
+        POP HL
+        POP DE
+        POP BC
+        SCF
+        RET
+
+; Consume one semantic byte and update CRC-16/CCITT-FALSE incrementally.
+; The final CRC word uses CR10GET; CP/M record padding is ignored.
+CR10BYTE:
+        CALL CR10GET
+        RET C
+        PUSH AF
+        PUSH BC
+        PUSH HL
+        LD HL,(CR10CRC)
+        XOR H
+        LD H,A
+        LD B,8
+CR10BIT:
+        ADD HL,HL
+        JR NC,CR10BITNEXT
+        LD A,H
+        XOR 010H
+        LD H,A
+        LD A,L
+        XOR 021H
+        LD L,A
+CR10BITNEXT:
+        DJNZ CR10BIT
+        LD (CR10CRC),HL
+        POP HL
+        POP BC
+        POP AF
+        RET
+
+CR9COPY:
+        LD HL,(CRBASE)
+        LD (CRBOUND),HL           ; publish only after all admission checks
+        LD DE,(CRMLINK)
+        OR A
+        SBC HL,DE
+        LD (CRDELTA),HL
+        CALL CR9TABLE
+CR9APPLY:
+        LD A,B
+        OR C
+        JP Z,CRENTRY
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        INC HL
+        PUSH HL
+        PUSH BC
+        LD HL,(CRBASE)
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        LD BC,(CRDELTA)
+        ADD HL,BC
+        EX DE,HL
+        LD (HL),D
+        DEC HL
+        LD (HL),E
+        POP BC
+        POP HL
+        DEC BC
+        JR CR9APPLY
+CR9TABLE:
+        LD HL,(CRMRELTABLE)
+        LD DE,STAGE
+        ADD HL,DE
+        LD BC,(CRMRELOCS)
+        RET
+CR9LIFE:
+        LD A,D
+        AND E
+        INC A
+        RET Z
+CR9OFFSET:
+        LD HL,(CRMSIZE)
+        OR A
+        SBC HL,DE
+        JP C,CRBAD
+        JP Z,CRBAD
+        XOR A
+        RET
+CRRLBAD:
+        POP BC
+        POP HL
+CRBAD:
+        LD A,1
+        OR A
+        RET
+
+; One actual 128-byte record is required. Never accept a short FL_NEXT block.
+CRNEXT128:
+        LD A,(CRFILE)
+        OR A
+        JR Z,CR9RAW
+        PUSH HL
+        LD B,H
+        LD C,L
+        LD DE,LY_FCB
+        CALL LY_EXT+9
+        POP HL
+        OR A
+        RET NZ
+        LD DE,128
+        ADD HL,DE
+        XOR A
+        RET
+CR9RAW:
+        LD A,(CRSLOT)
+        CP 160
+        JP NC,CRBAD
+        INC A
+        LD (CRSLOT),A
+        DEC A
+        LD E,A
+        LD D,0
+        LD B,1
+        JP LY_DISK+15
+
+CR9META: DW 0
+CR9EXTRA: DW 0
+CR9BODYEND: DW 0
+CR9BIND: DW 0
+CR9LENGTH: DW 0
+CR9ROUND: DW 0
+CR9PREV: DW 0
+
+CR10CRC: DW 0
+CR10PTR: DW 0
+CR10AVAIL: DB 0
+CR10BIND: DS 20
+
+CRENTRY:                                ; publish relocated module entry
+        LD      A,(CRFILE)
+        OR      A
+        JR      Z,CRGOOD
+        LD      DE,(CRMENTRY)
+        LD      HL,(CRMSIZE)
+        OR      A
+        SBC     HL,DE
+        JR      C,CRBAD
+        JR      Z,CRBAD
+        LD      HL,(CRBASE)
+        ADD     HL,DE
+        EX      DE,HL
+        LD      HL,(CRBASE)
+        INC     HL
+        INC     HL
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D                  ; publish validated command entry
+        INC     HL
+        LD      DE,(CRMINIT)
+        CALL    CRLPUB
+        JP      NZ,CRBAD
+        LD      DE,(CRMSHUT)
+        CALL    CRLPUB
+        JP      NZ,CRBAD
+
+CRGOOD:                                 ; finish successful module load
+        XOR     A
+        RET
+
+; -------------------------------------------------------------------------------
+; Lifecycle Entry Validation and Relocation
+; -------------------------------------------------------------------------------
+
+CRLPUB:                                ; validate and publish lifecycle entry
+        LD      A,D
+        AND     E
+        INC     A
+        JR      Z,CRLNONE
+        PUSH    HL
+        LD      HL,(CRMSIZE)
+        OR      A
+        SBC     HL,DE
+        JR      C,CRLPBAD
+        JR      Z,CRLPBAD
+        LD      HL,(CRBASE)
+        ADD     HL,DE
+        EX      DE,HL
+        POP     HL
+        JR      CRLPWRITE
+
+CRLNONE:                               ; publish absent lifecycle entry
+        LD      D,A
+        LD      E,A
+
+CRLPWRITE:                             ; store live lifecycle pointer
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        XOR     A
+        RET
+
+CRLPBAD:                               ; reject out-of-range lifecycle offset
+        POP     HL
+        OR      1
+        RET
+  ; Restart a module stream so its relocation directory can be reread.
+
+; -------------------------------------------------------------------------------
+; Restart Module Stream
+; -------------------------------------------------------------------------------
+
+CRFAIL:                                 ; halt after reconstruction failure
+        LD A,'!'
+        OUT (1),A
+        HALT
+        JR CRFAIL
+
+; ================================================================================
+; =                            Reloader Working State                            =
+; =                                                                              =
+; = Defines carrier signatures and the private module, placement, relocation, CPX =
+; = chain, and file state used while reconstructing the command environment.     =
+; ================================================================================
+; -------------------------------------------------------------------------------
+; Carrier Signatures
+; -------------------------------------------------------------------------------
+
+CRCCPMAG:      DB      'B','C','M','2',2,2 ; CCP carrier signature
+CRCPXMAG:      DB      'B','C','P','X',2,1 ; CPX carrier signature
+CRCPXERR:      DB      'CPX?',13,10,'$'  ; optional carrier reconstruction failed
+
+; -------------------------------------------------------------------------------
+; Loader State
+; -------------------------------------------------------------------------------
+
+CRSECTS:                                ; module sector count
+  ; @command-sector-table@
+
+CRMAGPTR:      DW      0                ; expected signature pointer
+CRTPTR:        DW      0                ; temporary pointer
+CRBOUND:       DW      0                ; upper allocation boundary
+CRBASE:        DW      0                ; module runtime base
+CRPREV:        DW      0                ; pending next-link destination (head or CPX)
+CRDEST:        DW      0                ; payload destination
+CRLEFT:        DW      0                ; payload bytes remaining
+CRSKIP:        DW      0                ; header bytes to skip
+CRMLINK:       DW      0                ; module link origin
+CRMSIZE:       DW      0                ; module executable size
+CRMALLOC:      DW      0                ; module allocation size
+CRMENTRY:      DW      0                ; module entry offset
+CRMINIT:       DW      0
+CRMSHUT:       DW      0
+CRMRELOCS:     DW      0                ; module relocation count
+CRMHEADSZ:     DW      0                ; module header size
+CRMPAYLOAD:    DW      0                ; module payload offset
+CRMRELTABLE:   DW      0                ; module relocation-table offset
+CRDELTA:       DW      0                ; module relocation delta
+CRCOUNT:       DB      0                ; relocation entries remaining
+CRSLOT:        DB      0                ; current CPX profile slot
+CRFIRST:       DB      0                ; first CPX descriptor
+CRMCHECK:      DW      0
+CRFILE:        DB      0                ; module file FCB
+        END

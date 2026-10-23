@@ -13,6 +13,7 @@ from build_profiles import (CONTEXT_ENV, PROFILES, context_environment,
                             profile_inputs, read_context, select_profile,
                             symbols, workspace, write_context)
 from build_distribution import prepare_profile, source_identity
+from checked_build_contract import load_contract
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT/'src/system/layout.inc'
@@ -149,6 +150,41 @@ class BuildProfiles(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn(message, result.stdout)
         self.assertEqual({p.name for p in (root/'build').iterdir()}, {'profile'})
+
+    def test_checked_contract_rejects_source_metadata_and_assembler_drift(self):
+        profile = PROFILES['cpmsim-fullram']
+        root = prepare_profile(Path(self.temporary.name)/'work', 'z80pack',
+                               source_identity(profile), profile)
+        assembler = Path.home()/'bin/z80asm'
+        original = load_contract(root, assembler)
+        for rel in ['src/system/command-stage2.mac', 'tools/checked_build_contract.py',
+                    'metadata/utility-versions.tsv']:
+            path = root/rel;before = path.read_bytes();path.write_bytes(before+b'\n')
+            with self.assertRaisesRegex(ValueError, 'source closure changed'):
+                load_contract(root, assembler)
+            path.write_bytes(before)
+        extra = root/'src/extra.inc';extra.write_text('extra')
+        with self.assertRaisesRegex(ValueError, 'source closure changed'):
+            load_contract(root, assembler)
+        extra.unlink()
+        wrong_assembler = Path(self.temporary.name)/'assembler';wrong_assembler.write_bytes(b'different')
+        with self.assertRaisesRegex(ValueError, 'assembler differs'):
+            load_contract(root, wrong_assembler)
+        self.assertEqual(load_contract(root, assembler), original)
+
+    def test_checked_contract_separates_profiles_without_binding_documentation_revisions(self):
+        work = Path(self.temporary.name)/'work';assembler = Path.home()/'bin/z80asm'
+        contracts = []
+        for profile in PROFILES.values():
+            root = prepare_profile(work, 'z80pack', source_identity(profile), profile)
+            contract = load_contract(root, assembler)
+            statefile = root/'profile-state.json';state = json.loads(statefile.read_text())
+            state['source']['revision'] = 'documentation-only revision'
+            statefile.write_text(json.dumps(state))
+            self.assertEqual(load_contract(root, assembler)['compatibility_id'], contract['compatibility_id'])
+            contracts.append(contract)
+        self.assertNotEqual(contracts[0]['compatibility_id'], contracts[1]['compatibility_id'])
+        self.assertEqual(contracts[0]['contract']['private_inputs'], contracts[1]['contract']['private_inputs'])
 
 
 if __name__ == '__main__':
