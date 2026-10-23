@@ -1,0 +1,284 @@
+; BetterCP/M standalone SQ, Z80 / CP/M 2.2.
+; Usage: SQ [drive:]file [destination-drive:]; destination defaults to logged
+; drive, current user. Exact plain 8.3 names only. XYZ -> XQZ, A -> AQ,
+; no extension -> QQQ. A Q in extension position two is refused.
+; Both passes read every byte in CP/M records, including 1Ah padding.
+; SCAN closes/reopens a fully reset input FCB before temporary creation.
+; Only a successful encode, flush and both closes can publish the output.
+; Existing files are preserved; SQU00000.$$$ ... SQU99999.$$$ are searched
+; before MAKE. Single-task CP/M is assumed (no exclusive MAKE/RENAME).
+; Fatal BDOS aborts/power loss may leave a temporary for later inspection.
+; Build: python3 tools/build_sq.py; not yet in release disk manifests.
+
+        ORG     100H
+        JP      UC_START
+        INCLUDE codec.inc
+        INCLUDE codec.mac
+        INCLUDE sq.inc
+        INCLUDE sq.mac
+        INCLUDE codecfile.mac
+
+UC_START:
+        LD      (UC_OLDSP),SP
+        LD      SP,UC_STACK_TOP
+        XOR     A
+        LD      (UC_INPUT_OPEN),A
+        LD      (UC_TEMP_OPEN),A
+        LD      (UC_TEMP_LIVE),A
+        LD      (UC_CLEAN_FAILED),A
+        LD      (UC_IN_LEFT),A
+        LD      (UC_OUT_USED),A
+        ; DS reserves bytes but the assembler need not fill them with zero.
+        ; CP/M MAKE preserves EX and CR: initialize every FCB explicitly.
+        LD      HL,UC_INPUT
+        LD      DE,UC_INPUT+1
+        LD      BC,36*5-1
+        LD      (HL),0
+        LDIR
+        LD      HL,UC_TEMP_NAME
+        LD      DE,UC_TEMP+1
+        LD      BC,11
+        LDIR
+        LD      C,25
+        CALL    UC_BDOS
+        INC     A
+        LD      (UC_DRIVE),A
+        LD      (UC_DEST),A
+        CALL    UC_PARSE
+        LD      DE,UC_USAGE
+        JP      C,UC_ERROR
+        ; Save the canonical name before OPEN changes FCB allocation/state.
+        LD      HL,UC_INPUT
+        LD      DE,UC_ORIGINAL
+        LD      BC,12
+        LDIR
+        LD      HL,UC_INPUT
+        LD      DE,UC_FINAL
+        LD      BC,12
+        LDIR
+        LD      A,(UC_DEST)
+        LD      (UC_FINAL),A
+        LD      A,(UC_FINAL+10)
+        CP      'Q'
+        LD      DE,UC_ALREADY_MSG
+        JP      Z,UC_ERROR
+        LD      A,(UC_FINAL+9)
+        CP      ' '
+        JR      NZ,UC_EXTENSION
+        LD      A,'Q'
+        LD      (UC_FINAL+9),A
+        LD      (UC_FINAL+11),A
+UC_EXTENSION:
+        LD      A,'Q'
+        LD      (UC_FINAL+10),A
+        LD      HL,UC_INPUT
+        LD      DE,UC_FINAL
+        CALL    UC_SAME_NAME
+        LD      DE,UC_SAME_INPUT
+        JP      Z,UC_ERROR
+        LD      DE,UC_FINAL
+        CALL    UC_EXISTS
+        LD      DE,UC_EXISTS_MSG
+        JP      NZ,UC_ERROR
+        ; Form the embedded original name, without drive or trailing spaces.
+        LD      HL,UC_ORIGINAL+1
+        LD      DE,UC_CONTEXT+SQ_NAME
+        LD      B,8
+UC_BASE_NAME:
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,UC_BASE_SKIP
+        LD      (DE),A
+        INC     DE
+UC_BASE_SKIP:
+        INC     HL
+        DJNZ    UC_BASE_NAME
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,UC_NAME_DONE
+        LD      A,'.'
+        LD      (DE),A
+        INC     DE
+        LD      B,3
+UC_EXT_NAME:
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,UC_NAME_DONE
+        LD      (DE),A
+        INC     DE
+        INC     HL
+        DJNZ    UC_EXT_NAME
+UC_NAME_DONE:
+        XOR     A
+        LD      (DE),A
+        LD      DE,UC_INPUT
+        LD      C,15
+        CALL    UC_BDOS
+        CP      0FFH
+        LD      DE,UC_NO_INPUT
+        JP      Z,UC_ERROR
+        LD      A,1
+        LD      (UC_INPUT_OPEN),A
+        LD      IX,UC_CONTEXT
+        CALL    SQ_INIT
+        JP      C,UC_CODEC_ERROR
+        CALL    SQ_SCAN
+        JP      C,UC_CODEC_ERROR
+        CALL    UC_MAKE_TEMP
+        JP      C,UC_ERROR
+        LD      HL,UC_OUT_BUFFER
+        LD      (UC_OUT_PTR),HL
+        CALL    SQ_RUN
+        JP      C,UC_CODEC_ERROR
+        CALL    UC_FINAL_RECORD
+        LD      DE,UC_WRITE_MSG
+        JP      C,UC_ERROR
+        LD      DE,UC_TEMP
+        LD      C,16
+        CALL    UC_BDOS
+        CP      0FFH
+        LD      DE,UC_CLOSE_MSG
+        JP      Z,UC_ERROR
+        XOR     A
+        LD      (UC_TEMP_OPEN),A
+        LD      DE,UC_INPUT
+        LD      C,16
+        CALL    UC_BDOS
+        CP      0FFH
+        LD      DE,UC_CLOSE_MSG
+        JP      Z,UC_ERROR
+        XOR     A
+        LD      (UC_INPUT_OPEN),A
+        ; Search can alter DMA; all buffered I/O is already finished.
+        LD      DE,UC_FINAL
+        CALL    UC_EXISTS
+        LD      DE,UC_EXISTS_MSG
+        JP      NZ,UC_ERROR
+        LD      HL,UC_TEMP
+        LD      DE,UC_RENAME
+        LD      BC,12
+        LDIR
+        LD      HL,UC_FINAL
+        LD      DE,UC_RENAME+16
+        LD      BC,12
+        LDIR
+        LD      DE,UC_RENAME
+        LD      C,23
+        CALL    UC_BDOS
+        CP      0FFH
+        LD      DE,UC_RENAME_MSG
+        JP      Z,UC_ERROR
+        XOR     A
+        LD      (UC_TEMP_LIVE),A
+        LD      DE,UC_SUCCESS
+        CALL    UC_PRINT
+        JP      UC_EXIT
+
+        CODEC_FILE_IO
+
+UC_REWIND:
+        LD      DE,UC_INPUT
+        LD      C,16
+        CALL    UC_BDOS
+        CP      0FFH
+        JR      Z,UC_REWIND_BAD
+        XOR     A
+        LD      (UC_INPUT_OPEN),A
+        LD      (UC_IN_LEFT),A
+        ; Reset EX, S1, S2, RC, allocation map and CR before reopening.
+        LD      HL,UC_INPUT
+        LD      DE,UC_INPUT+1
+        LD      BC,35
+        LD      (HL),0
+        LDIR
+        LD      HL,UC_ORIGINAL
+        LD      DE,UC_INPUT
+        LD      BC,12
+        LDIR
+        LD      C,15
+        LD      DE,UC_INPUT
+        CALL    UC_BDOS
+        CP      0FFH
+        JR      Z,UC_REWIND_BAD
+        LD      A,1
+        LD      (UC_INPUT_OPEN),A
+        OR      A
+        RET
+UC_REWIND_BAD:
+        LD      A,0FFH
+        SCF
+        RET
+
+UC_CODEC_ERROR:
+        ; Status is saved in context; cleanup may clobber ordinary registers.
+        LD      DE,UC_CODEC_MSG
+        CP      CS_READ
+        JR      NZ,UC_CODEC_WRITE
+        LD      DE,UC_READ_MSG
+        JR      UC_ERROR
+UC_CODEC_WRITE:
+        CP      CS_WRITE
+        JR      NZ,UC_CODEC_CHECK
+        LD      DE,UC_WRITE_MSG
+        JR      UC_ERROR
+UC_CODEC_CHECK:
+        CP      CS_CHECK
+        JR      NZ,UC_CODEC_REWIND
+        LD      DE,UC_CHECK_MSG
+        JR      UC_ERROR
+UC_CODEC_REWIND:
+        CP      CS_REWIND
+        JR      NZ,UC_ERROR
+        LD      DE,UC_REWIND_MSG
+        CODEC_FILE_CLEANUP
+
+UC_USAGE:       DB 'Usage: SQ [drive:]file [destination-drive:]',13,10,'$'
+UC_SUCCESS:     DB 'SQ: complete.',13,10,'$'
+UC_NO_INPUT:    DB 'SQ: cannot open input.',13,10,'$'
+UC_ALREADY_MSG: DB 'SQ: input name already squeezed.',13,10,'$'
+UC_REWIND_MSG:  DB 'SQ: cannot reopen input for second pass.',13,10,'$'
+UC_SAME_INPUT:  DB 'SQ: output would replace input.',13,10,'$'
+UC_EXISTS_MSG:  DB 'SQ: output exists; nothing replaced.',13,10,'$'
+UC_CREATE_MSG:  DB 'SQ: cannot create temporary output.',13,10,'$'
+UC_READ_MSG:    DB 'SQ: input read failed.',13,10,'$'
+UC_WRITE_MSG:   DB 'SQ: output write failed.',13,10,'$'
+UC_CLOSE_MSG:   DB 'SQ: file close failed.',13,10,'$'
+UC_RENAME_MSG:  DB 'SQ: cannot finalize output.',13,10,'$'
+UC_CHECK_MSG:   DB 'SQ: input changed between passes.',13,10,'$'
+UC_CODEC_MSG:   DB 'SQ: encoding failed.',13,10,'$'
+UC_CLEAN_MSG:   DB 'SQ: cleanup failed; check temporary files.',13,10,'$'
+UC_LEGAL:       DB '!#$%&',27H,'()-@^_{}~'
+UC_LEGAL_END:
+UC_TEMP_NAME:   DB 'SQU00000$$$'
+
+        CODEC_CODE
+        SQ_CODE
+
+UC_OLDSP:       DW 0
+UC_DRIVE:       DB 0
+UC_DEST:        DB 0
+UC_INPUT_OPEN:  DB 0
+UC_TEMP_OPEN:   DB 0
+UC_TEMP_LIVE:   DB 0
+UC_CLEAN_FAILED: DB 0
+UC_ARG_PTR:     DW 0
+UC_ARG_LEN:     DB 0
+UC_IN_PTR:      DW 0
+UC_IN_LEFT:     DB 0
+UC_OUT_PTR:     DW 0
+UC_OUT_USED:    DB 0
+UC_INPUT:       DS 36
+UC_FINAL:       DS 36
+UC_SEARCH:      DS 36
+UC_RENAME:      DS 36
+UC_TEMP:        DS 36
+UC_ORIGINAL:    DS 12
+UC_CONTEXT:     DB CX_ABI_VERSION,0,CP_RESET,CS_OK,0,0
+                DW UC_READ,UC_WRITE,UC_REWIND,0,SQ_CONTEXT_SIZE
+                DS SQ_CONTEXT_SIZE-CX_PREFIX_SIZE
+UC_SEARCH_BUFFER: DS 128
+UC_IN_BUFFER:   DS 128
+UC_OUT_BUFFER:  DS 128
+UC_STACK:       DS 256
+UC_STACK_TOP:
+        END

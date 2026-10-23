@@ -23,7 +23,7 @@ EXTRA = ("SQ_INIT", "SQ_SCAN", "SQ_RUN", "REWIND_CB", "S_RESCALE",
          "S_BUILD_TREE", "S_ENCODE", "S_RLE", "S_READ", "S_HEADER", "S_WRITE")
 
 
-def host_decode(raw):
+def host_decode(raw, record_padding=False):
     assert raw[:2] == b"\x76\xff"
     checksum, = struct.unpack_from("<H", raw, 2)
     end = raw.index(0, 4)
@@ -60,7 +60,11 @@ def host_decode(raw):
         else:
             output.append(value)
     assert sum(output) & 65535 == checksum
-    assert offset + (bit + 7) // 8 == len(raw), "unexpected trailing output"
+    used = offset + (bit + 7) // 8
+    if record_padding:
+        assert len(raw) % 128 == 0 and raw[used:] == b"\x1a" * (-used % 128)
+    else:
+        assert used == len(raw), "unexpected trailing output"
     return name, bytes(output)
 
 
