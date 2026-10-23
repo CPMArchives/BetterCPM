@@ -191,3 +191,13 @@ CR's encoded output. Command tests exercise returned I/O failures, safe output,
 metadata, drive/user defaults and collisions. Stock CP/M 2.2 round trips include
 extent rollover and files beyond 64 KiB. These establish the supported `20h`
 contract, not CRUNCH 1.x support or universal historical-file compatibility.
+
+
+## Historical executable interoperability qualification
+
+The [historical interoperability campaign](Compression%20Historical%20Interoperability.md)
+now qualifies both directions under stock CP/M 2.2 using unmodified historical
+executables and preserved input files. Its evidence distinguishes successful
+record comparisons, intentional filename refusals, historical empty-file skips
+and a confirmed CRUNCH 2.4 producer defect. It supplements the format's library
+and native command regressions; it does not broaden supported format variants.
