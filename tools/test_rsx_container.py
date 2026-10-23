@@ -28,11 +28,11 @@ def main():
 NOOP:   XOR A
         RET
 OPEN:   LD A,({LIMIT:04X}H)
-        LD (0ED02H),A
+        LD (0{LAYOUT['FILE']+124:04X}H),A
         XOR A
         RET
 READ:   PUSH BC
-        LD A,(0ED13H)
+        LD A,(0{LAYOUT['FILE']+141:04X}H)
         LD HL,{FAILREC:04X}H
         CP (HL)
         JR Z,BAD
@@ -50,9 +50,9 @@ READ:   PUSH BC
         POP DE
         LD BC,128
         LDIR
-        LD A,(0ED13H)
+        LD A,(0{LAYOUT['FILE']+141:04X}H)
         INC A
-        LD (0ED13H),A
+        LD (0{LAYOUT['FILE']+141:04X}H),A
         XOR A
         RET
 BAD:    POP BC

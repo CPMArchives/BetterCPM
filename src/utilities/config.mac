@@ -6,6 +6,7 @@
 ; * Installed defaults may then be written back to the system image.             *
 ; ********************************************************************************
 
+        INCLUDE layout.inc
         ASEG
         ORG 0100H
 FDBMODE EQU 1
@@ -1257,7 +1258,7 @@ STVALID:                               ; validate complete BCST v1 record
         SBC HL,DE
         RET NZ
         LD HL,(TRACKBF+14)
-        LD DE,0D5C4H
+        LD DE,LY_SYS
         OR A
         SBC HL,DE
         RET NZ
@@ -3078,7 +3079,8 @@ STTEST126:DB 'A 126-byte command can run at cold boot but cannot use Test now.',
 STTESTSUB:DB 'Cannot test while an A0:$$$.SUB command stream is active.',13,10,0
 STTESTBAD:DB 'Unable to create the one-command test stream on A:.',13,10,0
 STMAGIC:DB 'BCST',1,0,16
-STHEADER:DB 'BCST',1,0,16,0,0,126,0,1,0,0,0C4H,0D5H
+STHEADER:DB 'BCST',1,0,16,0,0,126,0,1,0,0
+         DW LY_SYS
 
 SAVETITLE:DB 'Save startup defaults',0
 SAVEHELP:DB '[ A ] Save pending cold-boot changes only',13,10

@@ -103,9 +103,11 @@ def main():
  p.add_argument('--fdf',type=Path,default=ROOT/'third_party/montezuma/DISK.FDF')
  p.add_argument('--system-tracks-only',action='store_true',
                 help='emit reserved system tracks and diskdefs for manifest-driven distribution')
+ p.add_argument('--ram-only',action='store_true',help='build RAM system tracks without ROM artifacts')
  p.add_argument('--resident-only',action='store_true',
                 help='stop after resident artifacts for shifted-layout analysis')
  args=p.parse_args();out=args.output.resolve()
+ if args.ram_only and not args.system_tracks_only:p.error('--ram-only requires --system-tracks-only')
  fmt=select_fdf(args.fdf,args.format)
  record_map=fmt.raw_record_map()
  if fmt.reserved_records < 160:raise SystemExit(f'{fmt.name}: reserved area has {fmt.reserved_records} records; 160 required')
@@ -178,45 +180,48 @@ def main():
  gateway=asm('gateway',read('src/system/gateway.mac').replace('        INCLUDE core.inc',core),L['SYSTEM'],L['BDOS']-L['SYSTEM'])
  if args.resident_only:
   return
- subprocess.run([sys.executable,str(ROOT/'tools/test_rom_ownership_inventory.py'),
-                 '--platform','z80pack','--listing-root',str(out)],check=True)
- subprocess.run([sys.executable,str(ROOT/'tools/test_rom_profile_ram_map.py')],check=True)
- rom=out/'rom'
- subprocess.run([sys.executable,str(ROOT/'tools/build_rom_ram_template.py'),
-                 '--z80pack-build',str(out),'--output',str(rom)],check=True)
- subprocess.run([sys.executable,str(ROOT/'tools/test_rom_ram_template.py'),
-                 '--z80pack-build',str(out),'--template',str(rom)],check=True)
- subprocess.run([sys.executable,str(ROOT/'tools/build_rom_cold_init.py'),
-                 '--assembler',str(args.assembler),'--template',str(rom),
-                 '--output',str(rom)],check=True)
- subprocess.run([sys.executable,str(ROOT/'tools/test_rom_cold_init.py'),
-                 '--template',str(rom),'--initializer',str(rom)],check=True)
- subprocess.run([sys.executable,str(ROOT/'tools/build_rom_pack.py'),
-                 '--z80pack-build',str(out),'--artifacts',str(rom),
-                 '--output',str(rom)],check=True)
- subprocess.run([sys.executable,str(ROOT/'tools/test_rom_pack.py'),
-                 '--z80pack-build',str(out),'--artifacts',str(rom),
-                 '--pack',str(rom)],check=True)
- subprocess.run([sys.executable,str(ROOT/'tools/build_rom_reference_inventory.py'),
-                 '--z80pack-build',str(out),'--pack',str(rom),
-                 '--output',str(rom/'rom-references.json')],check=True)
- subprocess.run([sys.executable,str(ROOT/'tools/test_rom_reference_inventory.py'),
-                 '--z80pack-build',str(out),'--pack',str(rom),
-                 '--inventory',str(rom/'rom-references.json')],check=True)
- subprocess.run([sys.executable,str(ROOT/'tools/build_rom_relocated_image.py'),
-                 '--pack',str(rom),'--inventory',str(rom/'rom-references.json'),
-                 '--output',str(rom)],check=True)
- subprocess.run([sys.executable,str(ROOT/'tools/test_rom_relocated_image.py'),
-                 '--pack',str(rom),'--inventory',str(rom/'rom-references.json'),
-                 '--image',str(rom)],check=True)
+ if not args.ram_only:
+  subprocess.run([sys.executable,str(ROOT/'tools/test_rom_ownership_inventory.py'),
+                  '--platform','z80pack','--listing-root',str(out)],check=True)
+  subprocess.run([sys.executable,str(ROOT/'tools/test_rom_profile_ram_map.py')],check=True)
+  rom=out/'rom'
+  subprocess.run([sys.executable,str(ROOT/'tools/build_rom_ram_template.py'),
+                  '--z80pack-build',str(out),'--output',str(rom)],check=True)
+  subprocess.run([sys.executable,str(ROOT/'tools/test_rom_ram_template.py'),
+                  '--z80pack-build',str(out),'--template',str(rom)],check=True)
+  subprocess.run([sys.executable,str(ROOT/'tools/build_rom_cold_init.py'),
+                  '--assembler',str(args.assembler),'--template',str(rom),
+                  '--output',str(rom)],check=True)
+  subprocess.run([sys.executable,str(ROOT/'tools/test_rom_cold_init.py'),
+                  '--template',str(rom),'--initializer',str(rom)],check=True)
+  subprocess.run([sys.executable,str(ROOT/'tools/build_rom_pack.py'),
+                  '--z80pack-build',str(out),'--artifacts',str(rom),
+                  '--output',str(rom)],check=True)
+  subprocess.run([sys.executable,str(ROOT/'tools/test_rom_pack.py'),
+                  '--z80pack-build',str(out),'--artifacts',str(rom),
+                  '--pack',str(rom)],check=True)
+  subprocess.run([sys.executable,str(ROOT/'tools/build_rom_reference_inventory.py'),
+                  '--z80pack-build',str(out),'--pack',str(rom),
+                  '--output',str(rom/'rom-references.json')],check=True)
+  subprocess.run([sys.executable,str(ROOT/'tools/test_rom_reference_inventory.py'),
+                  '--z80pack-build',str(out),'--pack',str(rom),
+                  '--inventory',str(rom/'rom-references.json')],check=True)
+  subprocess.run([sys.executable,str(ROOT/'tools/build_rom_relocated_image.py'),
+                  '--pack',str(rom),'--inventory',str(rom/'rom-references.json'),
+                  '--output',str(rom)],check=True)
+  subprocess.run([sys.executable,str(ROOT/'tools/test_rom_relocated_image.py'),
+                  '--pack',str(rom),'--inventory',str(rom/'rom-references.json'),
+                  '--image',str(rom)],check=True)
  reload=z80pack_reloader_source(read('src/platform/trs80m4/ccprelod.mac'))
  loader=asm('reloader',reload,L['RELOADER'],L['RELOADER_CAPACITY'])
- build_rom_boot(out,rom,args.assembler.expanduser().resolve(),
-                fmt.raw_tracks,fmt.raw_track_bytes//128)
+ if not args.ram_only:
+  build_rom_boot(out,rom,args.assembler.expanduser().resolve(),
+                 fmt.raw_tracks,fmt.raw_track_bytes//128)
  selector=asm('rsxselect',read('src/platform/z80pack/rsxsel.mac'),L['RSX_SELECTOR'],1024-L['RELOADER_CAPACITY'])
- rom_overlays=rom/'rsx-overlays'
- build_rom_rsx_overlays(rom,rom_overlays,out/'rsxselect.bin',
-                        args.assembler.expanduser().resolve())
+ if not args.ram_only:
+  rom_overlays=rom/'rsx-overlays'
+  build_rom_rsx_overlays(rom,rom_overlays,out/'rsxselect.bin',
+                         args.assembler.expanduser().resolve())
  bootfmt=(f'ZB_TRACKS EQU {fmt.raw_tracks}\n'
           f'ZB_SLOTS EQU {fmt.raw_track_bytes//128}\n')
  boot_source=read('src/platform/z80pack/boot.mac').replace('        INCLUDE bootfmt.inc',bootfmt)
