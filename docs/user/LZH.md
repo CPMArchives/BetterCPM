@@ -23,13 +23,28 @@ for program lookup, filename syntax and drive defaults.
 
 ## Help
 
-`LZH /HELP` displays a one-screen quick reference with syntax, options, an
-example, drive defaults and important restrictions, then returns without
-accessing files. Letter case and surrounding spaces or TABs do not matter.
+`LZH /HELP` displays a compact purpose/Usage corner followed by an unframed
+Options list, then returns without accessing files. Examples, defaults and
+restrictions are described below. Letter case and surrounding spaces or TABs
+do not matter.
 Combining an exact `/HELP` token with other input reports `Invalid /HELP usage.`;
 if an exact `/VER` token is also present, `Invalid /VER usage.` takes precedence.
 Longer tokens such as `/HELPER` are syntax errors. Empty or malformed commands
 show short syntax and `Use LZH /HELP for help.`
+
+The help screen is:
+
+```text
+LZH 1.0 (Build 003)
+  - - -
+ | CrLZH compression
+ |
+ |   Usage: LZH [drive:]file [destination-drive:]
+
+   Options:
+     /HELP       Display this help.
+     /VER        Display utility identification.
+```
 
 ## Version identification
 
@@ -38,7 +53,7 @@ opening files or starting compression/expansion. `/ver` and mixed letter case
 work too. For the current build:
 
 ```text
-LZH 1.0 (Build 002)
+LZH 1.0 (Build 003)
   - - -
  | BetterCP/M Utilities
  | CrLZH File Compression

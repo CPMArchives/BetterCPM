@@ -20,19 +20,13 @@ def version_text(command):
             f' | BetterCP/M Utilities\r\n | {DESCRIPTIONS[command]}\r\n')
 
 
-HELP_DETAILS = {
-    'SQ': ('Compress one file into historical squeezed format.', 'REPORT.TXT',
-           'REPORT.TXT becomes REPORT.TQT. Input is read twice; keep it unchanged.'),
-    'USQ': ('Expand one historical squeezed file.', 'REPORT.TQT',
-            'The original output name is restored from the squeezed header.'),
-    'CR': ('Compress one file into CRUNCH 2.x format.', 'REPORT.TXT',
-           'REPORT.TXT becomes REPORT.TZT. Use UNCR to restore it.'),
-    'UNCR': ('Expand one CRUNCH 2.x file.', 'REPORT.TZT',
-             'CRUNCH 1.x is unsupported. The header supplies the output name.'),
-    'LZH': ('Compress one file into CrLZH 2.x format.', 'REPORT.TXT',
-            'REPORT.TXT becomes REPORT.TYT. Use UNLZH to restore it.'),
-    'UNLZH': ('Expand one CrLZH 1.x or 2.x file.', 'REPORT.TYT',
-              'The header supplies the output name. LHA archives are unsupported.'),
+HELP_PURPOSES = {
+    'SQ': 'Squeeze compression',
+    'USQ': 'Squeeze expansion',
+    'CR': 'CRUNCH compression',
+    'UNCR': 'CRUNCH expansion',
+    'LZH': 'CrLZH compression',
+    'UNLZH': 'CrLZH expansion',
 }
 
 
@@ -42,16 +36,13 @@ def usage_text(command):
 
 
 def help_text(command):
-    purpose, example, detail = HELP_DETAILS[command]
-    return (version_text(command) + '\r\n' + purpose + '\r\n\r\n'
-            + f'Usage: {command} [drive:]file [destination-drive:]\r\n'
-            + f'       {command} /HELP\r\n       {command} /VER\r\n\r\n'
-            + '  /HELP   Display this help.\r\n'
-            + '  /VER    Display utility identification.\r\n\r\n'
-            + f'Example: {command} A:{example} B:\r\n\r\n'
-            + 'Output defaults to the logged drive and current user area.\r\n'
-            + 'Existing output files are refused; the source is retained.\r\n'
-            + 'Wildcards are not supported.\r\n' + detail + '\r\n')
+    version, build = identities()[command]
+    return (f'{command} {version} (Build {build:03d})\r\n  - - -\r\n'
+            f' | {HELP_PURPOSES[command]}\r\n |\r\n'
+            f' |   Usage: {command} [drive:]file [destination-drive:]\r\n\r\n'
+            '   Options:\r\n'
+            '     /HELP       Display this help.\r\n'
+            '     /VER        Display utility identification.\r\n')
 
 
 def prepare_version(command, work):

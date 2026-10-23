@@ -88,6 +88,16 @@ def main():
                 check(m,tail,usage_text(command),False)
             screen = help_text(command)
             lines = screen.splitlines()
+            purposes = {'SQ': 'Squeeze compression', 'USQ': 'Squeeze expansion',
+                        'CR': 'CRUNCH compression', 'UNCR': 'CRUNCH expansion',
+                        'LZH': 'CrLZH compression', 'UNLZH': 'CrLZH expansion'}
+            assert lines == [version_text(command).splitlines()[0], '  - - -',
+                             ' | '+purposes[command], ' |',
+                             f' |   Usage: {command} [drive:]file [destination-drive:]',
+                             '', '   Options:',
+                             '     /HELP       Display this help.',
+                             '     /VER        Display utility identification.']
+            assert all(line == line.rstrip() for line in lines)
             assert len(lines) <= 23 and max(map(len, lines)) <= 79
             assert all(32 <= ord(c) <= 126 or c in '\r\n' for c in screen)
             for tail in ('/HELP',' /help  ','/HeLp','\t/HeLp\t',

@@ -20,14 +20,29 @@ this document does not claim that every current utility implements `/HELP`.
 
 ## Content and presentation
 
-Use the compact identification from [Visual Identity](VISUAL-IDENTITY.md), with
-the same metadata-owned version, build and purpose as `/VER`. Follow it with:
+Use the short implied corner from [Visual Identity](VISUAL-IDENTITY.md).
+The first line is `NAME version (Build nnn)`, using the same metadata-owned
+identity as `/VER`, followed by `  - - -`. Help omits the BetterCP/M Utilities
+branding line and the separate HELP heading. Use a concise purpose phrase.
 
-1. One plain sentence describing the operation.
-2. `Usage:` and invocation forms, including `/HELP` and `/VER`.
-3. Supported options, each with a short explanation.
-4. One or more concrete examples.
-5. Essential defaults, restrictions and safety behavior.
+The exact layout is:
+
+- Purpose: one leading space, `|`, one space, then the purpose.
+- Corner spacer: ` |` on its own line, with no trailing spaces.
+- Syntax: ` |   Usage: NAME [options] [operands]`, using the command's actual
+  accepted operand order. Omit `[options]` when only standalone queries exist.
+- One empty line ends the corner. Do not extend the vertical line alongside
+  the options list.
+- `   Options:` begins the list, indented three spaces.
+- Each option begins with five spaces; align descriptions in a second column.
+  `/HELP       Display this help.` and
+  `/VER        Display utility identification.` are the common final entries.
+  With operational switches, separate those final queries with one blank line;
+  with only these two queries, no extra separator is needed.
+
+Do not repeat query invocation forms under Usage or add an Example section.
+Examples, naming rules, detailed defaults, restrictions and safety explanations
+belong in the manual. The purpose and syntax should make the operation clear.
 
 Use CR/LF-terminated plain ASCII text. No ANSI sequences, color, cursor control,
 terminal personality, decorative full borders or interactive paging are needed.
@@ -46,13 +61,11 @@ Do not replace a useful diagnostic with a full help screen.
 
 ## Initial adoption: compression commands
 
-SQ, USQ, CR, UNCR, LZH and UNLZH use one screen each. Each lists the exact
-source and optional destination-drive syntax, both query options, an example,
-the logged-drive/current-user defaults, refusal to overwrite existing output,
-source retention, and the absence of wildcards. The final line describes a
-relevant naming rule or supported format. SQ also states its two-pass stability
-requirement. Decoder examples use historical compressed extensions but do not
-imply that input extensions determine decoding or the restored name.
+SQ, USQ, CR, UNCR, LZH and UNLZH use one compact screen each: identity,
+short purpose, exact source/optional destination-drive syntax, and the two
+standalone queries. They have no operational switches, so Usage does not show
+`[options]`. Their manual pages retain examples, drive/user defaults, naming and
+format rules, source retention, overwrite refusal and other safety details.
 
 These commands retain their existing short syntax for malformed input and add
 the help hint. Their query entry is shared with `/VER`, before normal file-state
@@ -62,29 +75,40 @@ build preparation, with no filesystem or environment lookup at runtime.
 
 ## Example screen
 
-The SQ screen at initial help adoption is:
+The SQ screen using this layout is:
 
 ```text
-SQ 1.0 (Build 002)
+SQ 1.0 (Build 003)
   - - -
- | BetterCP/M Utilities
- | Squeeze File Compression
+ | Squeeze compression
+ |
+ |   Usage: SQ [drive:]file [destination-drive:]
 
-Compress one file into historical squeezed format.
+   Options:
+     /HELP       Display this help.
+     /VER        Display utility identification.
+```
 
-Usage: SQ [drive:]file [destination-drive:]
-       SQ /HELP
-       SQ /VER
+A utility with more switches would use the following layout. TOOL and its
+operational switches are illustrative, not implemented compression options:
 
-  /HELP   Display this help.
-  /VER    Display utility identification.
+```text
+TOOL 1.0 (Build 002)
+  - - -
+ | File processing utility
+ |
+ |   Usage: TOOL [options] [drive:]file
 
-Example: SQ A:REPORT.TXT B:
+   Options:
+     /A          Process all matching files.
+     /B          Select binary mode.
+     /D drive:   Select the destination drive.
+     /L          List files without processing.
+     /Q          Suppress progress messages.
+     /T          Test input without writing output.
 
-Output defaults to the logged drive and current user area.
-Existing output files are refused; the source is retained.
-Wildcards are not supported.
-REPORT.TXT becomes REPORT.TQT. Input is read twice; keep it unchanged.
+     /HELP       Display this help.
+     /VER        Display utility identification.
 ```
 
 ## Qualification

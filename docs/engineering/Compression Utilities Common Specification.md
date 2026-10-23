@@ -137,14 +137,14 @@ GET/END bytes, not only bytes accepted by WRITE.
 
 ### Context and standalone image sizes
 
-| Algorithm | Context bytes, including prefix | Build 002 COM bytes |
+| Algorithm | Context bytes, including prefix | Build 003 COM bytes |
 | --- | ---: | ---: |
-| SQ | 3524 | 8461 |
-| USQ | 1440 | 5718 |
-| CR | 25207 | 29756 |
-| UNCR | 26582 | 31520 |
-| LZH | 11943 | 17541 |
-| UNLZH | 6646 | 12541 |
+| SQ | 3524 | 8123 |
+| USQ | 1440 | 5398 |
+| CR | 25207 | 29443 |
+| UNCR | 26582 | 31206 |
+| LZH | 11943 | 17225 |
+| UNLZH | 6646 | 12215 |
 
 COM sizes are build snapshots, not fixed ABI constants or universal minimum RAM
 claims. Images include their allocated context, FCBs, buffers and private stack;
@@ -230,15 +230,17 @@ All six commands accept case-insensitive standalone `/VER`, with space/TAB
 padding. Exact `/VER` tokens combined with any other operand/token print
 `Invalid /VER usage.` without running the command. Longer tokens such as
 `/VERIFY` remain normal parser errors. Standalone `/HELP` uses the same early
-path and prints a complete quick reference. Exact `/HELP` mixed with other
-input reports `Invalid /HELP usage.`; exact `/VER` takes precedence in either
+path and prints the compact purpose/Usage corner and unframed Options list.
+Help retains the metadata title and omits the `/VER` branding, repeated query
+syntax, examples and detailed operating rules; those remain in the manual.
+Exact `/HELP` mixed with other input reports `Invalid /HELP usage.`; exact `/VER` takes precedence in either
 order. `/HELPER` is a normal syntax error. Empty/malformed invocations print
 short syntax plus `Use NAME /HELP for help.` See the common
 [help standard](../../specifications/UTILITY-HELP.md).
 
-Each command's independent 1.0 Build 002 identity is owned by
+Each command's independent 1.0 Build 003 identity is owned by
 `metadata/utility-versions.tsv`. Builders use `tools/codec_version.py` to expand
-`codecver.inc` from metadata plus the shared `version.inc` query. Output is four
+`codecver.inc` from metadata plus the shared `version.inc` query. `/VER` output is four
 CR/LF-terminated ASCII lines: `NAME version (Build nnn)`, `  - - -`,
 ` | BetterCP/M Utilities`, and ` | purpose`. Normal output has no version banner.
 The counter has a minimum of three digits, with no truncation above 999.

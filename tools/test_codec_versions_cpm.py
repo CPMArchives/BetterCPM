@@ -73,7 +73,7 @@ await "A>"
         for c in images:
             expected=version_text(c).splitlines()
             count=sum(lines[i:i+4]==expected for i in range(len(lines)-3))
-            assert count==4,(c,count,result.stdout)
+            assert count==2,(c,count,result.stdout)
         for c in images:
             expected=help_text(c).splitlines()
             output=result.stdout.splitlines()

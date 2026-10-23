@@ -90,7 +90,7 @@ Supply exactly one filename. Enhanced modes accept a single drive/user-qualified
 `DUMP /VER` uses the standard BetterCP/M utility identification style:
 
 ```text
-DUMP 1.0 (Build 002)
+DUMP 1.0 (Build 003)
   - - -
  | BetterCP/M Utilities
  | Hexadecimal File Display
@@ -350,9 +350,10 @@ No screen backend or terminal personality is required. A Z80 processor is requir
 ### Compression help
 
 Use `SQ /HELP`, `USQ /HELP`, `CR /HELP`, `UNCR /HELP`, `LZH /HELP` or
-`UNLZH /HELP` for one screen of syntax, options, an example and essential
-operating rules. Help returns without accessing files. Queries ignore letter
-case and allow surrounding spaces or TABs. `/HELP` must stand alone;
+`UNLZH /HELP` for a compact screen with purpose, syntax and the two query options.
+A short corner groups the purpose and Usage line; the Options list is unframed.
+Examples and detailed operating rules are provided in the command pages.
+Help returns without accessing files. Queries ignore letter case and allow surrounding spaces or TABs. `/HELP` must stand alone;
 combining it with other input reports `Invalid /HELP usage.`. An exact `/VER`
 token takes precedence and reports `Invalid /VER usage.` in either order.
 Longer tokens such as `/HELPER` remain syntax errors. Empty or malformed
@@ -365,7 +366,7 @@ to display that command's version and build without accessing files. Letter case
 does not matter. For example:
 
 ```text
-SQ 1.0 (Build 002)
+SQ 1.0 (Build 003)
   - - -
  | BetterCP/M Utilities
  | Squeeze File Compression

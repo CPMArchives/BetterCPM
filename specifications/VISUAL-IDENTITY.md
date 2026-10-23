@@ -114,3 +114,7 @@ BetterCP/M's identity should be recognizable through a consistent visual grammar
 
 The common help content and query behavior are defined in
 [Utility Help Screens](UTILITY-HELP.md).
+
+For adopted `/HELP` screens, the implied corner encloses only the short purpose
+and Usage line. The indented Options list follows without a vertical border.
+Help keeps the version/build title and omits the `/VER` branding line.
