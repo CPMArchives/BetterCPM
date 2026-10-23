@@ -66,9 +66,9 @@ MATCH:  LD      A,(DE)
         LD      (SOURCE),BC
         XOR     A
         LD      (COUNT),A
-        LD      (0ED13H),A
+        LD      (0{LAYOUT['FILE']+141:04X}H),A
         LD      A,120
-        LD      (0ED02H),A
+        LD      (0{LAYOUT['FILE']+124:04X}H),A
         XOR     A
         RET
 NEXTNAME:
@@ -92,7 +92,7 @@ NEXT:   PUSH    HL
         POP     HL
         PUSH    HL
         EX      DE,HL
-        LD      A,(0ED13H)
+        LD      A,(0{LAYOUT['FILE']+141:04X}H)
         LD      L,A
         LD      H,0
         ADD     HL,HL
@@ -112,9 +112,9 @@ NEXT:   PUSH    HL
         LD      A,(COUNT)
         INC     A
         LD      (COUNT),A
-        LD      A,(0ED13H)
+        LD      A,(0{LAYOUT['FILE']+141:04X}H)
         ADD     A,4
-        LD      (0ED13H),A
+        LD      (0{LAYOUT['FILE']+141:04X}H),A
         XOR     A
         RET
 INPUT:  DW      0

@@ -1,0 +1,89 @@
+{
+  "experimental": true,
+  "target": "cpmsim RAM boot only",
+  "core": "3b2d2d7f4fe0472438465165f11fb550d79c8662",
+  "delta": 3072,
+  "changes": {
+    "LY_SYS": {
+      "before": 54724,
+      "after": 57796
+    },
+    "LY_BDOS": {
+      "before": 54972,
+      "after": 58044
+    },
+    "LY_EXT": {
+      "before": 58426,
+      "after": 61498
+    },
+    "LY_DISK": {
+      "before": 58851,
+      "after": 61923
+    },
+    "LY_BIOS": {
+      "before": 59793,
+      "after": 62865
+    },
+    "LY_FILE": {
+      "before": 60550,
+      "after": 63622
+    },
+    "LY_TAB": {
+      "before": 60695,
+      "after": 63767
+    },
+    "LY_RSTA": {
+      "before": 61271,
+      "after": 64343
+    },
+    "LY_DIR": {
+      "before": 61312,
+      "after": 64384
+    },
+    "LY_BUF": {
+      "before": 61440,
+      "after": 64512
+    },
+    "LY_RSX": {
+      "before": 53508,
+      "after": 56580
+    },
+    "LY_CFG": {
+      "before": 61440,
+      "after": 64512
+    },
+    "LY_CPX": {
+      "before": 61449,
+      "after": 64521
+    },
+    "LY_RSSEL": {
+      "before": 62372,
+      "after": 65444
+    },
+    "LY_LIMIT": {
+      "before": 62464,
+      "after": 65536
+    },
+    "LY_RAMEND": {
+      "before": 62464,
+      "after": 65536
+    },
+    "LY_HIST": {
+      "before": 54532,
+      "after": 57604
+    },
+    "LY_TPA": {
+      "before": 54529,
+      "after": 57601
+    }
+  },
+  "upper_reserved_bytes": 0,
+  "status": "experimental; foreign helper-pack identity gate fails",
+  "features": "unchanged",
+  "scope_excludes": [
+    "Model 4 runtime",
+    "ROM",
+    "native build qualification"
+  ],
+  "legacy_control_upper_reserved_bytes": 3072
+}

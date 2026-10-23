@@ -16,35 +16,36 @@
 ; Resident and Reconstructible Regions
 ; -------------------------------------------------------------------------------
 
-LY_SYS          EQU     0D5C4H          ; resident system gateway base
-LY_BDOS         EQU     0D6BCH          ; unified BDOS base
+LY_SYS          EQU     0E1C4H          ; resident system gateway base
+LY_BDOS         EQU     0E2BCH          ; unified BDOS base
 ; Qualified memory savings reserve BIOS routing/monitor space at unchanged TPA.
 ; Rebuild all layout-dependent components together after these bases change.
-LY_EXT          EQU     0E43AH          ; protected extension-services base
-LY_DISK         EQU     0E5E3H          ; resident disk-service base
-LY_BIOS         EQU     0E991H          ; compatibility BIOS base
-LY_FILE         EQU     0EC86H          ; shared file-loader base
-LY_TAB          EQU     0ED17H          ; resident disk-table base
-LY_RSTA         EQU     0EF57H          ; resident-state workspace base
-LY_DIR          EQU     0EF80H          ; directory buffer address
-LY_BUF          EQU     0F000H          ; shared sector/overlay buffer
-LY_RSX          EQU     0D104H          ; optional protected RSX region
+LY_EXT          EQU     0F03AH          ; protected extension-services base
+LY_DISK         EQU     0F1E3H          ; resident disk-service base
+LY_BIOS         EQU     0F591H          ; compatibility BIOS base
+LY_FILE         EQU     0F886H          ; shared file-loader base
+LY_TAB          EQU     0F917H          ; resident disk-table base
+LY_RSTA         EQU     0FB57H          ; resident-state workspace base
+LY_DIR          EQU     0FB80H          ; directory buffer address
+LY_BUF          EQU     0FC00H          ; shared sector/overlay buffer
+LY_RSX          EQU     0DD04H          ; optional protected RSX region
 
 ; -------------------------------------------------------------------------------
 ; Transient and Shared Workspace
 ; -------------------------------------------------------------------------------
 
 LY_LOAD         EQU     00100H          ; transient loader address
-LY_CFG          EQU     0F000H          ; configuration-overlay address
-LY_CPX          EQU     0F009H          ; reconstructible CPX region
+LY_CFG          EQU     0FC00H          ; configuration-overlay address
+LY_CPX          EQU     0FC09H          ; reconstructible CPX region
 LY_RLCAP        EQU     003A4H          ; command-reloader carrier bytes
-LY_RSSEL        EQU     0F3A4H          ; RSX selector overlay entry
+LY_RSSEL        EQU     0FFA4H          ; RSX selector overlay entry
 LY_STKL         EQU     004C0H          ; transient loader stack low
 LY_STKT         EQU     00500H          ; transient loader stack top
-LY_LIMIT        EQU     0F400H          ; resident-memory upper limit
-LY_RAMEND       EQU     0F400H          ; available RAM end
-LY_HIST         EQU     0D504H          ; persistent command-history base
-LY_TPA          EQU     0D501H          ; exclusive TPA upper bound
+LY_LIMIT        EQU     010000H          ; resident-memory upper limit
+LY_TOPRSV       EQU     00000H          ; bytes above resident RAM (16-bit-safe test)
+LY_RAMEND       EQU     010000H          ; available RAM end
+LY_HIST         EQU     0E104H          ; persistent command-history base
+LY_TPA          EQU     0E101H          ; exclusive TPA upper bound
 LY_SECTS        EQU     0000DH          ; resident system sector count
 
 ; -------------------------------------------------------------------------------

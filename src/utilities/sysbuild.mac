@@ -6,13 +6,14 @@
 ; * fixed component capacities, and is reopened and verified record by record.   *
 ; ********************************************************************************
 
+        INCLUDE layout.inc
         INCLUDE sysmeta.inc
         ASEG
         ORG     0100H
 BDOS    EQU     5
 BUFFER  EQU     04000H
 SYSRECS EQU     160                     ; 20 KiB / 128
-SYSBASE EQU     0D5C4H
+SYSBASE EQU     LY_SYS
 
 ; ================================================================================
 ; =                           System Component Packing                           =
@@ -601,7 +602,9 @@ BDOSJUMP:DB 0C3H,0BCH,0D6H              ; live gateway jump template
   ; Version-1 startup record. The 16-bit little-endian word sum, including the
   ; checksum word, is zero. CONFIG replaces this two-record default only after
   ; validating the complete saved configuration.
-STARTDEF:DB 'BCST',1,0,16,0,0,126,0,1,096H,013H,0C4H,0D5H
+STARTDEF:DB 'BCST',1,0,16,0,0,126,0,1
+         DW 0-(016A6H+LY_SYS)           ; additive checksum of disabled BCST
+         DW LY_SYS
         REPT 240
         DB 0
         ENDM

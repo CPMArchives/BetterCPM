@@ -6,6 +6,7 @@
 ; * Package input and disk-to-file export; installation preserves files.        *
 ; ********************************************************************************
 
+        INCLUDE layout.inc
         ASEG
         ORG 0100H
 BDOS    EQU 5
@@ -15,7 +16,7 @@ BUFFER  EQU 03000H
 VERIFY  EQU 03080H
 PKGHEADER EQU 03100H
 SYSRECS EQU 160
-SYSBASE EQU 0D5C4H
+SYSBASE EQU LY_SYS
 
         CALL    UV_CHECK                ; standalone utility identity
         LD SP,03F00H
@@ -1086,7 +1087,8 @@ ABIMSG:DB 'SYSGEN requires BetterCP/M disk BIOS ABI 5.',13,10,0 ; abimsg
 
 MAGIC:  DB 'BDCF',5,4,4,64              ; magic
 
-PKGMAGIC:DB 'BCSY',1,1,160,0,0C4H,0D5H  ; pkgmagic
+PKGMAGIC:DB 'BCSY',1,1,160,0             ; pkgmagic
+         DW LY_SYS
 
 DEST:   DB 0                            ; dest
 
