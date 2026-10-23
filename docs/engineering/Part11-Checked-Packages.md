@@ -209,4 +209,6 @@ before native/ROM adoption. Keep physical installation-interruption testing
 and the separate Model 4 window-banking investigation explicitly scheduled.
 Pause after that bounded qualification assessment.
 
-Part 11 is complete and awaits review. No Part 12 work has begun.
+Part 11 was subsequently approved, and Part 12 completed and approved.
+[Part 13](Part13-Final-Assessment-and-Roadmap.md) closes the assessment and
+records the remaining prototype-completion and adoption work separately.
