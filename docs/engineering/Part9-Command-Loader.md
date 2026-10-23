@@ -1,6 +1,7 @@
 # Engineering assessment Part 9: command-loader architecture
 
-Date: 23 October 2026. Status: bounded assessment complete; awaiting review.
+Date: 23 October 2026. Status: approved by the maintainer; Part 10 authorized.
+Part 9 merged through PR #460 at `c3e1d6bcf7fca8fdf5723f7e32bdf53c70cf6e71`.
 Part 8 was approved and Part 9 authorized. Accepted core 1.0 remains
 `3b2d2d7f4fe0472438465165f11fb550d79c8662`.
 
