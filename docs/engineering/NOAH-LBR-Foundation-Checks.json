@@ -1,0 +1,49 @@
+{
+  "scope": "Initial development-only NOAH LBR read/list foundation; not full spec or native qualification",
+  "tests": [
+    {
+      "command": "python3 tools/test_lbr.py",
+      "status": "passed",
+      "cases": 100,
+      "library_bytes": 948,
+      "context_bytes": 138
+    },
+    {
+      "command": "python3 tools/test_noah.py",
+      "status": "passed",
+      "cases": 42,
+      "deterministic": true,
+      "max_command_stack_bytes_bdos_intercepted": 28
+    }
+  ],
+  "binary": {
+    "path": "build/utilities/NOAH.COM",
+    "bytes": 3374,
+    "sha256": "0fa3dc50374a65c2c76ccb0dac12c23631d27b4c151b432a9729dd436362d1b3"
+  },
+  "source_sha256": {
+    "src/archive/archive.inc": "efc826374294b49578975bcdb9342f2dfff86a5d6d369a67ce012a3100e0eb18",
+    "src/archive/lbr.mac": "32b0ad559d367eebecb52d433714d9a822157a1e525b1134b1a2d3a8225543a0",
+    "src/archive/cpmfile.inc": "3fed2cac0f883beac13b581769af5054a4cd5bffddb211416a31d8406b8c128c",
+    "src/archive/cpmfile.mac": "9e47ecdb9f5354b63bc3074156de85b2226d2d906c524c53a680d97eb9e357db",
+    "src/utilities/noah.mac": "c4a70791eb157a4689bc56a5c87959b7e9920bd0e3820e6df14fe2a8dc1f28f4",
+    "tools/build_noah.py": "c1cf3896bd74f244856109f34e6f7245319ae621c2e8eec2453a0848c2fb6296",
+    "tools/test_lbr.py": "cd416b6e6eb69ed68254028112554aad43fc9e3b6e2bbfc3b600d8bf87711b3a",
+    "tools/test_noah.py": "bf4b929c8306359dfc3b4ea74858c38598e0b1548dd4f5b99d5e95ef5d43cffe",
+    "metadata/utility-versions.tsv": "bf177ceaf057b417e9d1dd47a6e553966c4d47072a9e7cd1285db0b0aca81418"
+  },
+  "pending": [
+    "Historical LBR interoperability fixtures",
+    "Native ZSM4 and native CP/M/platform execution",
+    "CRC/duplicate/overlap audits",
+    "Full selectors and reporting",
+    "Extraction and safe publication",
+    "ARK native formats/codecs",
+    "Archive updates and NOAH.OVL"
+  ],
+  "core_or_release_disk_changes": false,
+  "notes": [
+    "The compact CPU identity runner reports NOAH as not run there because it lacks IY instructions; /VER and invalid combinations pass on the full Z80 core in test_noah.py.",
+    "No native CP/M, Model 4 or native assembler qualification is claimed."
+  ]
+}

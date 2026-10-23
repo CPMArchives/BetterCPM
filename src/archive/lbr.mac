@@ -1,0 +1,539 @@
+; Reusable LUDEF5 read-only LBR iterator/member reader. Emit once.
+; LBR_OPEN validates header/directory bounds, not CRC or the whole archive.
+; LBR_NEXT skips deleted/unused entries, validates each active member's name,
+; padding and bounds, and rejects occupied entries after an unused entry.
+; Enumeration is directory order. Sorting, duplicate/overlap audit, timestamp
+; interpretation, CRC testing and all writes are higher/future operations.
+; LBR_READ: DE=destination, BC=capacity; returns BC=bytes transferred.
+; Destination must not overlap context, adapter workspace or executing code.
+; Stops at logical member boundary; C/AS_END only on a nonzero read at end.
+; NEXT abandons an unread member; CLOSE owns no adapter handle and does no I/O.
+; OPEN reinitializes even after error; other errors are sticky until CLOSE/OPEN.
+LBR_CODE MACRO
+LBR_OPEN:
+        LD A,(IX+AS_ABI)
+        CP AS_ABI_VERSION
+        JP NZ,LB_CONFIG
+        LD A,(IX+AS_RESERVED)
+        OR A
+        JP NZ,LB_CONFIG
+        LD L,(IX+AS_SIZE)
+        LD H,(IX+AS_SIZE+1)
+        LD DE,AS_CONTEXT_SIZE
+        OR A
+        SBC HL,DE
+        JP C,LB_CONFIG
+        PUSH IX
+        POP HL
+        LD E,(IX+AS_SIZE)
+        LD D,(IX+AS_SIZE+1)
+        DEC DE
+        ADD HL,DE
+        JP C,LB_CONFIG
+        LD A,(IX+AS_READ)
+        OR (IX+AS_READ+1)
+        JP Z,LB_CONFIG
+        ; Clear only library-owned state, preserving caller configuration.
+        PUSH IX
+        POP HL
+        LD DE,AS_PHASE
+        ADD HL,DE
+        LD B,AS_CONTEXT_SIZE-AS_PHASE
+        XOR A
+LB_CLEAR:
+        LD (HL),A
+        INC HL
+        DJNZ LB_CLEAR
+        CALL LB_ENTRY_REQUEST
+        CALL LB_TRANSFER
+        RET C
+        ; Control entry: active, eleven spaces, index zero, nonzero length.
+        LD A,(IX+AS_ENTRY)
+        OR A
+        JP NZ,LB_FORMAT
+        PUSH IX
+        POP HL
+        LD DE,AS_ENTRY+1
+        ADD HL,DE
+        LD B,11
+LB_HEADER_NAME:
+        LD A,(HL)
+        CP ' '
+        JP NZ,LB_FORMAT
+        INC HL
+        DJNZ LB_HEADER_NAME
+        LD A,(IX+AS_ENTRY+12)
+        OR (IX+AS_ENTRY+13)
+        JP NZ,LB_FORMAT
+        LD L,(IX+AS_ENTRY+14)
+        LD H,(IX+AS_ENTRY+15)
+        LD A,H
+        OR L
+        JP Z,LB_FORMAT
+        CALL LB_RECORD_BYTES
+        LD DE,AS_DIR_END
+        CALL LB_STORE32
+        ; Entire directory must physically exist, even if entries are unused.
+        LD DE,AS_FILE_SIZE
+        CALL LB_COMPARE32
+        JP C,LB_TRUNC
+        LD (IX+AS_NEXT),32
+        LD (IX+AS_PHASE),AS_READY
+        OR A
+        RET
+LBR_NEXT:
+        CALL LB_REQUIRE_OPEN
+        RET C
+LB_SCAN:
+        LD L,(IX+AS_NEXT)
+        LD H,(IX+AS_NEXT+1)
+        LD C,(IX+AS_NEXT+2)
+        LD B,(IX+AS_NEXT+3)
+        LD DE,AS_DIR_END
+        CALL LB_COMPARE32
+        JR Z,LB_DIRECTORY_END
+        LD DE,AS_OFFSET
+        CALL LB_STORE32
+        CALL LB_ENTRY_REQUEST
+        CALL LB_TRANSFER
+        RET C
+        ; Save stable ID before advancing to the next physical entry.
+        LD L,(IX+AS_NEXT)
+        LD H,(IX+AS_NEXT+1)
+        LD C,(IX+AS_NEXT+2)
+        LD B,(IX+AS_NEXT+3)
+        LD DE,AS_MEMBER+AM_ID
+        CALL LB_STORE32
+        LD DE,32
+        ADD HL,DE
+        JR NC,LB_NEXT_NO_CARRY
+        INC BC
+LB_NEXT_NO_CARRY:
+        LD DE,AS_NEXT
+        CALL LB_STORE32
+        LD A,(IX+AS_ENTRY)
+        CP 0FFH
+        JR NZ,LB_NOT_UNUSED
+        LD (IX+AS_UNUSED_SEEN),1
+        JR LB_SCAN
+LB_NOT_UNUSED:
+        LD B,A
+        LD A,(IX+AS_UNUSED_SEEN)
+        OR A
+        JP NZ,LB_FORMAT
+        LD A,B
+        OR A
+        JR NZ,LB_SCAN
+        CALL LB_MEMBER
+        RET C
+        LD (IX+AS_PHASE),AS_SELECTED
+        OR A
+        RET
+LB_DIRECTORY_END:
+        LD (IX+AS_PHASE),AS_FINISHED
+        LD A,AS_END
+        SCF
+        RET
+LBR_READ:
+        LD A,(IX+AS_PHASE)
+        CP AS_FAILED
+        JP Z,LB_STICKY
+        CP AS_SELECTED
+        JP NZ,LB_STATE
+        LD A,B
+        OR C
+        RET Z
+        ; Requested memory range must not wrap.
+        PUSH DE
+        EX DE,HL
+        ADD HL,BC
+        POP DE
+        JP C,LB_RANGE
+        LD (IX+AS_BUFFER),E
+        LD (IX+AS_BUFFER+1),D
+        ; Clamp to remaining bytes when remaining fits one word.
+        LD A,(IX+AS_LEFT+2)
+        OR (IX+AS_LEFT+3)
+        JR NZ,LB_READ_COUNT
+        LD L,(IX+AS_LEFT)
+        LD H,(IX+AS_LEFT+1)
+        LD A,H
+        OR L
+        JR Z,LB_MEMBER_END
+        OR A
+        SBC HL,BC
+        JR NC,LB_READ_COUNT
+        LD C,(IX+AS_LEFT)
+        LD B,(IX+AS_LEFT+1)
+LB_READ_COUNT:
+        LD (IX+AS_COUNT),C
+        LD (IX+AS_COUNT+1),B
+        LD L,(IX+AS_POSITION)
+        LD H,(IX+AS_POSITION+1)
+        LD C,(IX+AS_POSITION+2)
+        LD B,(IX+AS_POSITION+3)
+        LD DE,AS_OFFSET
+        CALL LB_STORE32
+        CALL LB_TRANSFER
+        RET C
+        ; Callback destroys scratch registers. Recover request from context.
+        LD E,(IX+AS_COUNT)
+        LD D,(IX+AS_COUNT+1)
+        LD L,(IX+AS_POSITION)
+        LD H,(IX+AS_POSITION+1)
+        LD C,(IX+AS_POSITION+2)
+        LD B,(IX+AS_POSITION+3)
+        ADD HL,DE
+        JR NC,LB_READ_POS
+        INC BC
+LB_READ_POS:
+        PUSH DE
+        LD DE,AS_POSITION
+        CALL LB_STORE32
+        POP DE
+        LD L,(IX+AS_LEFT)
+        LD H,(IX+AS_LEFT+1)
+        LD C,(IX+AS_LEFT+2)
+        LD B,(IX+AS_LEFT+3)
+        OR A
+        SBC HL,DE
+        JR NC,LB_READ_LEFT
+        DEC BC
+LB_READ_LEFT:
+        PUSH DE
+        LD DE,AS_LEFT
+        CALL LB_STORE32
+        POP BC
+        OR A
+        RET
+LB_MEMBER_END:
+        LD BC,0
+        LD A,AS_END
+        SCF
+        RET
+LBR_CLOSE:
+        LD (IX+AS_PHASE),AS_CLOSED
+        XOR A
+        LD (IX+AS_STATUS),A
+        LD (IX+AS_DETAIL),A
+        RET
+
+LB_MEMBER:
+        ; Preserve the ID, initialize every other public metadata byte.
+        PUSH IX
+        POP HL
+        LD DE,AS_MEMBER
+        ADD HL,DE
+        LD B,12
+        XOR A
+LB_ZERO_NAME:
+        LD (HL),A
+        INC HL
+        DJNZ LB_ZERO_NAME
+        LD DE,4
+        ADD HL,DE
+        LD B,AM_SIZE-16
+LB_ZERO_META:
+        LD (HL),A
+        INC HL
+        DJNZ LB_ZERO_META
+        ; Validate each padded component independently; lowercase normalized.
+        PUSH IX
+        POP HL
+        LD DE,AS_ENTRY+1
+        ADD HL,DE
+        PUSH IX
+        POP DE
+        PUSH HL
+        LD HL,AS_MEMBER
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+        LD B,8
+        CALL LB_NAME_PART
+        RET C
+        LD B,3
+        CALL LB_NAME_PART
+        RET C
+        LD A,(IX+AS_MEMBER)
+        CP ' '
+        JP Z,LB_FORMAT
+        LD A,(IX+AS_ENTRY+26)
+        CP 128
+        JP NC,LB_FORMAT
+        LD (IX+AS_MEMBER+AM_PAD),A
+        LD L,(IX+AS_ENTRY+14)
+        LD H,(IX+AS_ENTRY+15)
+        LD A,H
+        OR L
+        JR NZ,LB_NONEMPTY
+        LD A,(IX+AS_ENTRY+26)
+        OR A
+        JP NZ,LB_FORMAT
+        ; Empty member's INDEX is explicitly meaningless in LUDEF5.
+        LD BC,0
+        LD HL,0
+        JR LB_LENGTH
+LB_NONEMPTY:
+        CALL LB_RECORD_BYTES
+LB_LENGTH:
+        LD DE,AS_MEMBER+AM_STORED
+        CALL LB_STORE32
+        LD E,(IX+AS_ENTRY+26)
+        LD D,0
+        OR A
+        SBC HL,DE
+        JR NC,LB_LENGTH_READY
+        DEC BC
+LB_LENGTH_READY:
+        LD DE,AS_LEFT
+        CALL LB_STORE32
+        LD DE,AS_MEMBER+AM_LENGTH
+        CALL LB_STORE32
+        LD (IX+AS_MEMBER+AM_FLAGS),1
+        LD A,(IX+AS_ENTRY+16)
+        LD (IX+AS_MEMBER+AM_CRC),A
+        LD B,A
+        LD A,(IX+AS_ENTRY+17)
+        LD (IX+AS_MEMBER+AM_CRC+1),A
+        OR B
+        JR Z,LB_NO_CRC
+        LD (IX+AS_MEMBER+AM_FLAGS),3
+LB_NO_CRC:
+        PUSH IX
+        POP HL
+        LD DE,AS_ENTRY+18
+        ADD HL,DE
+        PUSH IX
+        POP DE
+        PUSH HL
+        LD HL,AS_MEMBER+AM_DATES
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+        LD BC,8
+        LDIR
+        LD A,(IX+AS_ENTRY+14)
+        OR (IX+AS_ENTRY+15)
+        LD HL,0
+        LD BC,0
+        JR Z,LB_OFFSET_READY
+        LD L,(IX+AS_ENTRY+12)
+        LD H,(IX+AS_ENTRY+13)
+        ; A nonempty member may not start inside the directory.
+        CALL LB_RECORD_BYTES
+        LD DE,AS_DIR_END
+        CALL LB_COMPARE32
+        JR C,LB_OFFSET_READY
+        JR Z,LB_OFFSET_READY
+        JP LB_FORMAT
+LB_OFFSET_READY:
+        LD DE,AS_POSITION
+        CALL LB_STORE32
+        LD DE,AS_MEMBER+AM_OFFSET
+        CALL LB_STORE32
+        ; Check physical end including all padding, with 32-bit arithmetic.
+        LD E,(IX+AS_MEMBER+AM_STORED)
+        LD D,(IX+AS_MEMBER+AM_STORED+1)
+        ADD HL,DE
+        PUSH HL
+        LD H,B
+        LD L,C
+        LD E,(IX+AS_MEMBER+AM_STORED+2)
+        LD D,(IX+AS_MEMBER+AM_STORED+3)
+        ADC HL,DE
+        LD B,H
+        LD C,L
+        POP HL
+        LD DE,AS_FILE_SIZE
+        CALL LB_COMPARE32
+        JP C,LB_TRUNC
+        OR A
+        RET
+
+LB_NAME_PART:
+        LD C,0
+LB_NAME_BYTE:
+        LD A,(HL)
+        CP ' '
+        JR NZ,LB_NAME_NONSPACE
+        INC C
+        JR LB_NAME_STORE
+LB_NAME_NONSPACE:
+        BIT 7,A
+        JP NZ,LB_FORMAT
+        CP 21H
+        JP C,LB_FORMAT
+        CP 7FH
+        JP NC,LB_FORMAT
+        PUSH HL
+        PUSH BC
+        LD HL,LB_BAD_CHARS
+        LD B,15
+LB_NAME_BAD:
+        CP (HL)
+        JR Z,LB_NAME_INVALID
+        INC HL
+        DJNZ LB_NAME_BAD
+        POP BC
+        POP HL
+        INC C
+        DEC C
+        JP NZ,LB_FORMAT
+        CP 'a'
+        JR C,LB_NAME_STORE
+        CP 'z'+1
+        JR NC,LB_NAME_STORE
+        SUB 32
+LB_NAME_STORE:
+        LD (DE),A
+        INC HL
+        INC DE
+        DJNZ LB_NAME_BYTE
+        OR A
+        RET
+LB_NAME_INVALID:
+        POP BC
+        POP HL
+        JP LB_FORMAT
+LB_BAD_CHARS: DB '<>.,;:=?*[]/\|"'
+
+; BC:HL = unsigned 32-bit record count converted to bytes (HL input).
+LB_RECORD_BYTES:
+        LD BC,0
+        LD A,7
+LB_SHIFT:
+        ADD HL,HL
+        RL C
+        RL B
+        DEC A
+        JR NZ,LB_SHIFT
+        RET
+; Store BC:HL at context+DE; preserves all input registers.
+LB_STORE32:
+        PUSH AF
+        PUSH DE
+        PUSH HL
+        PUSH BC
+        EX DE,HL
+        PUSH HL
+        PUSH IX
+        POP HL
+        POP BC
+        ADD HL,BC
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        INC HL
+        POP BC
+        LD (HL),C
+        INC HL
+        LD (HL),B
+        POP HL
+        POP DE
+        POP AF
+        RET
+; Compare context dword at DE against BC:HL; carry = field < value.
+; Preserves BC/DE/HL, sets Z on equality.
+LB_COMPARE32:
+        PUSH DE
+        PUSH HL
+        PUSH IX
+        POP HL
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+        INC DE
+        INC DE
+        INC DE
+        LD A,(DE)
+        CP B
+        JR NZ,LB_COMPARE_DONE
+        DEC DE
+        LD A,(DE)
+        CP C
+        JR NZ,LB_COMPARE_DONE
+        DEC DE
+        LD A,(DE)
+        CP H
+        JR NZ,LB_COMPARE_DONE
+        DEC DE
+        LD A,(DE)
+        CP L
+LB_COMPARE_DONE:
+        POP DE
+        RET
+LB_ENTRY_REQUEST:
+        PUSH IX
+        POP HL
+        LD DE,AS_ENTRY
+        ADD HL,DE
+        LD (IX+AS_BUFFER),L
+        LD (IX+AS_BUFFER+1),H
+        LD (IX+AS_COUNT),32
+        LD (IX+AS_COUNT+1),0
+        RET
+LB_TRANSFER:
+        XOR A
+        LD (IX+AS_ACTUAL),A
+        LD (IX+AS_ACTUAL+1),A
+        LD L,(IX+AS_READ)
+        LD H,(IX+AS_READ+1)
+        CALL LB_INDIRECT
+        JR C,LB_IO
+        LD L,(IX+AS_ACTUAL)
+        LD H,(IX+AS_ACTUAL+1)
+        LD E,(IX+AS_COUNT)
+        LD D,(IX+AS_COUNT+1)
+        OR A
+        SBC HL,DE
+        JP NZ,LB_TRUNC
+        OR A
+        RET
+LB_INDIRECT:
+        JP (HL)
+LB_REQUIRE_OPEN:
+        LD A,(IX+AS_PHASE)
+        CP AS_FAILED
+        JR Z,LB_STICKY
+        CP AS_FINISHED
+        JR Z,LB_ITER_END
+        CP AS_READY
+        RET Z
+        CP AS_SELECTED
+        RET Z
+        JR LB_STATE
+LB_ITER_END:
+        LD A,AS_END
+        SCF
+        RET
+LB_CONFIG:
+        ; Invalid allocation: do not write any library state.
+        LD A,AS_CONFIG
+        SCF
+        RET
+LB_IO:
+        LD (IX+AS_DETAIL),A
+        LD A,AS_IO
+        JR LB_FAIL
+LB_FORMAT:
+        LD A,AS_FORMAT
+        JR LB_FAIL
+LB_TRUNC:
+        LD A,AS_TRUNC
+        JR LB_FAIL
+LB_RANGE:
+        LD A,AS_RANGE
+        JR LB_FAIL
+LB_STATE:
+        LD A,AS_STATE
+LB_FAIL:
+        LD (IX+AS_STATUS),A
+        LD (IX+AS_PHASE),AS_FAILED
+        SCF
+        RET
+LB_STICKY:
+        LD A,(IX+AS_STATUS)
+        SCF
+        RET
+        ENDM

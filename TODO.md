@@ -410,7 +410,10 @@ redistributable existing utility; an unchecked item does not by itself block
   records settled commands, LBR deleted-data preservation, safe staged updates,
   standalone SQ/CR/EXPAND and reusable format/codec libraries. From-scratch LBR
   rebuilds copy active members only; ordinary updates preserve deleted material.
-  Behavioral decisions are settled. Satisfy the documented API, provenance, memory and
+  Initial read-only LBR reader/exact-file LIST foundation is implemented and
+  CPU-harness tested; see [scope and checks](docs/programmers/Archive%20Read%20Library.md).
+  It is not on the Utilities Disk yet. Behavioral decisions are settled.
+  Satisfy the documented API, provenance, memory and
   qualification gates; do not equate a finished behavioral spec with implemented
   code. ZIP and `/LZ` are future additions. Separate SQ/USQ-style commands or
   SUBMIT wrappers remain optional future conveniences, not initial requirements.
