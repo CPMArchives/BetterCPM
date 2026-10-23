@@ -46,6 +46,12 @@ bodies, not just utility filenames. CLS was the additional fixed-address case
 found that way. The replacement is limited to transient generation; resident
 RCP source and the release builders remain unchanged.
 
+MONCALL remains a **private BIOS 1.7 interface**. Resolving it through WBOOT
+removes CLS's fixed-address dependency; it does not create a portable CP/M
+screen API or qualify incompatible future BIOS versions. The same ABI
+dependency already exists in the shared screen helpers. These tests establish
+interoperation between the two checked layouts with that interface intact.
+
 The new private gate first checks the page-zero WBOOT opcode and expected BIOS
 address. Only then does it read the resident's 16-byte private ID and compare
 it with the utility's embedded ID. A foreign layout or ID produces a diagnostic
@@ -94,6 +100,11 @@ to its private state. The transaction's effective high address is capped at
 SYSGEN's row describes the marked measurement band, not a newly declared
 256-byte allocation. Its image and package scratch lie below that band; its
 main input buffer begins at 4000h. No stack reservation was changed.
+
+The monitor contract expressly forbids callbacks from recursively invoking
+routed console operations or BDOS, and does not support console use from
+interrupt handlers. Future stress tests must distinguish legal internal call
+nesting from violations of that existing contract.
 
 The live measurements run on the unmodified qualified cpmsim system tracks.
 Small disposable COM probes adopt their own stack, fill the selected unused
