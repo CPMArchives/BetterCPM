@@ -1,6 +1,12 @@
 {
   "source_commit": "8e0fcc48b57665ae9355ea643b930daf15407f6b",
   "status": "PASS",
+  "maintainer_acceptance": {
+    "status": "APPROVED",
+    "date": "2026-10-23",
+    "completion_record_commit": "9703b84aef351412f34a0cf0835cd3d89d5b966a",
+    "scope": "Completed bounded cpmsim prototype and recorded qualification; normal-build integration and other-target adoption remain separate."
+  },
   "scope": "Bounded checked cpmsim prototype; separate from normal build integration and target adoption.",
   "campaigns": [
     {

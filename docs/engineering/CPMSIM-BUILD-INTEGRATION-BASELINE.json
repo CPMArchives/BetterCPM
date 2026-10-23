@@ -1,0 +1,4217 @@
+{
+  "schema": 1,
+  "date": "2026-10-23",
+  "status": "reconciliation checkpoint ready for review; normal-build integration not complete",
+  "branch": "integration/cpmsim-builds",
+  "baseline_commit": "a1204c36b6ec4787c12b11141c4a7baff555631f",
+  "main_commit": "4c37c7f68ca856eb3f17643ecdc8f43fb95289e6",
+  "prototype_approval_commit": "81e181218bffe0aef3f05d66f17e88c82bd19579",
+  "accepted_core_commit": "3b2d2d7f4fe0472438465165f11fb550d79c8662",
+  "prototype_main_merge_base": "9703b84aef351412f34a0cf0835cd3d89d5b966a",
+  "implementation_source_changes_in_checkpoint": [],
+  "input_closure_changes_since_approved": {
+    "metadata/utility-versions.tsv": [
+      "38882ae1c6006cbf786fbb770b88153b52c486c972c49878061b1e5ff5502c25",
+      "4f04b85623040ae732adaaef84b6fa9366c3cbce15f984db17a4e55bc120188e"
+    ],
+    "src/codec/cr.inc": [
+      null,
+      "bfbbcbecdab4ff0020e5855e7e9f832ce8d61a64b0f94c386b7c972122085007"
+    ],
+    "src/codec/cr.mac": [
+      null,
+      "bb784bd32aa2f8783a3562de761b59900505bb350e05f2ba937a68500f99aaf1"
+    ],
+    "src/codec/lzh.inc": [
+      null,
+      "fc0cf2ca93895c2002afcd89328b8f23bd9c85b04038fd3825bdcf71e42a9a26"
+    ],
+    "src/codec/lzh.mac": [
+      null,
+      "e3f0ef1fc86b8c27e5c394225b3c2227b1428b3d622a1cafb4d2998c7e78d9da"
+    ],
+    "src/codec/uncr.inc": [
+      null,
+      "273604aa41590f497ebd8e9a4fcf8cf9687d476a1a3ccdc0fec384be2a886763"
+    ],
+    "src/codec/uncr.mac": [
+      null,
+      "eea960e4b1877c3bb40f59780df56eaae3dc34b78089629136836d354f347499"
+    ],
+    "src/codec/unlzh.inc": [
+      null,
+      "665119b808d9bf0e566927a546b1acee9aa749b024657cf524b705ba586f556b"
+    ],
+    "src/codec/unlzh.mac": [
+      null,
+      "4b5eb572f22ba3992e3224a38634885368cd077955f71d8a6c027b7672cd9842"
+    ],
+    "src/utilities/common/codecver.inc": [
+      null,
+      "4c4554a6a21d21fcf8d2222a6a844362cebadcc6491f6fa1c71a02be55fb2b7f"
+    ],
+    "src/utilities/cr.mac": [
+      null,
+      "c82905f28b10be7ce360ddd60d0e241df41627f4143d59fe3f52470daa70f950"
+    ],
+    "src/utilities/lzh.mac": [
+      null,
+      "791ff5336f124ece802927552db6cdbc831236a39dbfb77006f1020c4a2afba4"
+    ],
+    "src/utilities/sq.mac": [
+      "5812c2195b43a6f527a948403540bf6742350d78ede01a609220c58ed1b25c63",
+      "4c1d1b768e2c22feb8cd4034f1e895beb83bf57a685cfd4775a38987e622e485"
+    ],
+    "src/utilities/uncr.mac": [
+      null,
+      "fd68e215ea0a63dfac7eeee518a74c692e8345e14a1f298f6ee50e767d7a9a82"
+    ],
+    "src/utilities/unlzh.mac": [
+      null,
+      "c0317078f55989af7e4945da9eff5b1b205635db3a82f49885368a6353e049aa"
+    ],
+    "src/utilities/usq.mac": [
+      "918c793d42ef8e17b92343bd57ad427cf70a85a0139f989351990c61a4f88434",
+      "0a70923ffdba62518ebe6c30015fdb511589f55175dad37e87fddd4f311372b0"
+    ],
+    "tools/build_cr.py": [
+      null,
+      "9fa9394751cc94632151d8d49ff84f92e0057e0984ca6fee5375f184d37a4920"
+    ],
+    "tools/build_lzh.py": [
+      null,
+      "ec4d1734ea05f484d34ceb670f3571fa115aafba4f6e6cb57b432b1af2e5367c"
+    ],
+    "tools/build_sq.py": [
+      "f25d632214f9f6181e29eb109b653540869e3d19146f5f3f148202a256385420",
+      "ec8f305bfa12aa74c0521bb355c81208cfe0a35a6632028f0070281601b7bc1d"
+    ],
+    "tools/build_uncr.py": [
+      null,
+      "9689e8fd47970492bd04305e9671ae70d5d87e7b5c0580d7fba099bffebd0c8f"
+    ],
+    "tools/build_unlzh.py": [
+      null,
+      "805bc86b051d2a2c4108af3d95875fb0a277badc2aad774291914134f8168b5d"
+    ],
+    "tools/build_usq.py": [
+      "51779196766a676aed52aa2045c162775e423fe42090ce6bbc7d43564e5ed5c7",
+      "04131ff43e9dba4d0bbf751e45468817ffc5433ce10bf4b1c87c6c12f12d2c8c"
+    ],
+    "tools/build_utilities_disk.py": [
+      "31c18e0a3c3509a05e54d426d422cf76bb7d7370c5af4e5513966d3f14f140e1",
+      "394f878f9822e51d864b1a15cf355b6047f9426fe8760e8b83f1eaf3068140b5"
+    ],
+    "tools/codec_version.py": [
+      null,
+      "5180a0bf96745aeb2a750a88bb1b624fa758e3390899f203fc1703dcc22eef28"
+    ],
+    "tools/test_codec_historical_cpm.py": [
+      null,
+      "4da0e829a170877d1fa532b41abe1e8a5ac343932828a0656cef3f5ef8b31db6"
+    ],
+    "tools/test_codec_versions.py": [
+      null,
+      "f70d3e437e9a2c338303212fee0d4c5a9926e2fba95527c383ea87728ed32e24"
+    ],
+    "tools/test_codec_versions_cpm.py": [
+      null,
+      "75fc365443339938512b6c7e6fd49a0f1122626b63cc69f693bfadaef9323a42"
+    ],
+    "tools/test_cr.py": [
+      null,
+      "a0d1eca8691739c0b98a45ff7fbe0740343a4fa71d21937975efd4473debc7c1"
+    ],
+    "tools/test_cr_com.py": [
+      null,
+      "27694191d1ed1d59669ca510e8fa2bf409378f987c04622d742e6f1ea2c4d957"
+    ],
+    "tools/test_cr_com_cpm.py": [
+      null,
+      "916597712186dab5d79da78a43d213b636ed22d925db06298869f5b8b44dde6c"
+    ],
+    "tools/test_lzh.py": [
+      null,
+      "77b177a2966674d9c78eb0dd3f746ad4d2128dc070f2f11cc3bd6bb5180ca61b"
+    ],
+    "tools/test_lzh_com.py": [
+      null,
+      "d28801e457cfffc4473f075ed4d5564f610926a2c19a1148becc48c0267cfcf0"
+    ],
+    "tools/test_lzh_com_cpm.py": [
+      null,
+      "61195d29464fb0c39a92b4b7de60af7ea86b4fa9c82b1e6742a0dc711656510c"
+    ],
+    "tools/test_uncr.py": [
+      null,
+      "a85ca7545b7b8b3214f530f87469393bfcafa6f5942bd481a8e09175aff34847"
+    ],
+    "tools/test_uncr_com.py": [
+      null,
+      "ea27dc708c13195fdf9dd8793ecde6384100e2aa3baa746847acf9304a8f3678"
+    ],
+    "tools/test_uncr_com_cpm.py": [
+      null,
+      "1796e992becd24ad2c81c31f5ed9756ceabdc12d9036839708c7f19722770d7a"
+    ],
+    "tools/test_unlzh.py": [
+      null,
+      "ff6e4d8672de38b751e853ccad426f0f47bae04690024c16961c63e674791454"
+    ],
+    "tools/test_unlzh_com.py": [
+      null,
+      "601706fc11ec3bde79398945125fbec408e6d8beaa1234eea71e1817263e0f82"
+    ],
+    "tools/test_unlzh_com_cpm.py": [
+      null,
+      "90328e0ac4381b7d9b14f625fc3799e33c4475a9e5e7ac57163f3dcd2d774de1"
+    ],
+    "tools/test_usq_com.py": [
+      "4b7b4c43b979595a190dce0796b98a8df1a28c4935915082919492fd55f26201",
+      "9c9b6c04400c9c0eeff89fd7823de42f1a9bc75735288398471203409c1eee26"
+    ],
+    "tools/test_utility_versions.py": [
+      "a207ff593c4b1d09a247e5b2bf53d62cea786a5e1dd26387119522abd50ba67d",
+      "e18c8c43f1fb3260120ea064598f82262dafa8725157a2fd847b5c537f14de9d"
+    ]
+  },
+  "prototype_modified_staged_input_files": [
+    "src/platform/z80pack/biosplat.inc",
+    "src/system/extens.mac",
+    "src/system/layout.inc",
+    "src/system/r3carr.mac",
+    "src/system/r3coord.mac",
+    "src/system/r3drop.mac",
+    "src/system/r3entry.mac",
+    "src/system/r3final.mac",
+    "src/system/r3keep.mac",
+    "src/system/r3meta.mac",
+    "src/system/r3prof.mac",
+    "src/utilities/config.mac",
+    "src/utilities/respack.mac",
+    "src/utilities/rlmbuild.mac",
+    "src/utilities/stat.mac",
+    "src/utilities/sysbuild.mac",
+    "src/utilities/sysgen-export.inc",
+    "src/utilities/sysgen.mac",
+    "tools/build_ccp.py",
+    "tools/build_config.py",
+    "tools/build_disk_utilities.py",
+    "tools/build_hello_cpx.py",
+    "tools/build_rcp_cpx.py",
+    "tools/build_rcp_transients.py",
+    "tools/build_rsx_module.py",
+    "tools/build_rsx_runtime_overlays.py",
+    "tools/build_rsxloader.py",
+    "tools/build_z80pack_image.py",
+    "tools/utility_versions.py"
+  ],
+  "build_audit": {
+    "profiles": {
+      "cpmsim-fullram": {
+        "compatibility_id": "c49c6144b0676fc856054be08e4773ba",
+        "files": 30,
+        "test_modules_excluded": true,
+        "sysgen_bytes": 6726,
+        "stage2_bytes": 1301
+      },
+      "cpmsim-legacy-checked": {
+        "compatibility_id": "6bf1ad1aeac7e36ac0249050f70da12c",
+        "files": 30,
+        "test_modules_excluded": true,
+        "sysgen_bytes": 6726,
+        "stage2_bytes": 1301
+      }
+    },
+    "repeat_artifacts": [
+      {
+        "path": "assessment-media/system.raw",
+        "sha256": "bd1c1fe9a5626ee16f79dac74c43c522139f95fdfbb82545ab2886b2b79b73e3"
+      },
+      {
+        "path": "assessment-media/SYSTEM.SYS",
+        "sha256": "51da6c72e1fe662fb6743f5e0d7fb70b3f862c1a887f0eb2d0e3b6e41369fe4a"
+      },
+      {
+        "path": "build/z80pack/command-loader/stage1.carrier",
+        "sha256": "7ed6ebbae5430df1073018cc41e1b7e0b2c96a75264cf49305f3810e4980703a"
+      },
+      {
+        "path": "build/z80pack/command-loader/stage2.carrier",
+        "sha256": "221399e743d7469a56bacf4ff5a35ca8c4f481aeaf882ac98e2cd328b126bc2c"
+      },
+      {
+        "path": "build/ccp/ccp.rlm",
+        "sha256": "c04a9a7cdfc6998855f9b3ddcc6ef9f5efbb2e707074aab267926529c7f982bd"
+      },
+      {
+        "path": "src/distribution/README.TXT",
+        "sha256": "a6f581c7d797e227f3b9296d856439373d2354a4dd9b19a6e226f20f251d6c80"
+      },
+      {
+        "path": "src/distribution/STARTUP.SUB",
+        "sha256": "0d4bbe35067aa74b4b677fc450c319b38587738b44de971984b018ad4c8e22cc"
+      },
+      {
+        "path": "build/utilities/DIR.COM",
+        "sha256": "1e7382118f46d451374ab5ac65636361ed98c3dc08e49c60521f85b6600a4a74"
+      },
+      {
+        "path": "build/utilities/ERA.COM",
+        "sha256": "2731fd8e6f98e5d8ce9203531e918dccba7e6ee451d9df529fc8f54e8e4873d7"
+      },
+      {
+        "path": "build/utilities/TYPE.COM",
+        "sha256": "76afd076cf475232ad76505d6ac57378d20bc23e3fc328f85c48b154084284a4"
+      },
+      {
+        "path": "build/utilities/REN.COM",
+        "sha256": "0620802d918ab803e5b17988b8dd5a28459ecf22b857afd4fcbb7d4d5a1a0331"
+      },
+      {
+        "path": "build/utilities/VER.COM",
+        "sha256": "b6cab85eb5061ef1900c508b64160e84632de6c897d03d5dd43d54df9b0171c1"
+      },
+      {
+        "path": "build/utilities/COPY.COM",
+        "sha256": "01b5952694590205c23352f9a153a9f5f5a5fbb9e664af8a47c9aa43c0943d9c"
+      },
+      {
+        "path": "build/utilities/CONFIG.COM",
+        "sha256": "19c985a6a66ad9dbf3e3ad01efc4db6a316103e2b5502bfc9ad3b0e4a0c13ee4"
+      },
+      {
+        "path": "build/utilities/DUP.COM",
+        "sha256": "1ac470563dd48f22522fc9477f9359ea7162e816501356c773e5ecd6ba5f3018"
+      },
+      {
+        "path": "build/utilities/TIME.COM",
+        "sha256": "3425ea5f1f43e8746bb03ea92eae54a6500367bd4ad54588c42dfd832395d455"
+      },
+      {
+        "path": "build/utilities/SYSGEN.COM",
+        "sha256": "fed1ba33177c84446dc48621f5c0fea551d6c97d44249b1bbc6838f479a3e2c3"
+      },
+      {
+        "path": "build/utilities/STAT.COM",
+        "sha256": "3f03915cdc3dcb1f5417ef2f30454ecb898323f209f323efec57fa4c09a5542f"
+      },
+      {
+        "path": "build/utilities/SUBMIT.COM",
+        "sha256": "2dd83bba98809e8ba286b0072c32b4097853d9f274403e59abf1014f2a964695"
+      },
+      {
+        "path": "build/utilities/CPX.COM",
+        "sha256": "6218e30d16e36e2980b5fd3e89338a201e335d6b45cac130d664494e304e8505"
+      },
+      {
+        "path": "build/utilities/RSX.COM",
+        "sha256": "0e48dfb2ae96dc0b3e94629a95a550a8044156e77e000c597bad48fb8e6eaa67"
+      },
+      {
+        "path": "build/catalog/DISK.FDB",
+        "sha256": "4dea7bd989580fc13f61e79d47e92466a440799c41b002f4caba65ec8f893c03"
+      },
+      {
+        "path": "build/cpx/RCP.CPX",
+        "sha256": "3bd253bb3208e04cf992e99556b8a513d055827914ffb0a0f8e01ede1895804d"
+      },
+      {
+        "path": "build/rsx/ZPRTC.RSX",
+        "sha256": "5cc6f936fb7e2bfa41e6390b263ee729d5bde5af1403b69278d1e406856dd2a6"
+      },
+      {
+        "path": "build/system/R3PACK.RSX",
+        "sha256": "e793bf0d71413d4cd7ea7c92d049f9f59df7f0d24a4e7e1606951c2b56fa412b"
+      },
+      {
+        "path": "build/utilities/PIP.COM",
+        "sha256": "1fdcf10af932e726b51d88e253fb5291ec3eece5c56c982fc53b1197394181fb"
+      },
+      {
+        "path": "build/utilities/ED.COM",
+        "sha256": "a1faa59fcdf5fbad43d37e58cd34bdb96706dfbe0025134d4f7cb98a7c03f171"
+      },
+      {
+        "path": "build/z80pack-tools/BYE.COM",
+        "sha256": "1f1c879ea351a1b81c68102f11470d5d1bd1f9a5b2be2ec90b854a609f55f1b5"
+      },
+      {
+        "path": "build/rsx/ADM3A.RSX",
+        "sha256": "8c46e6668d0d1854548362fc3bd96913a0b2cc857f83a26bbd353b0cf14f6dea"
+      },
+      {
+        "path": "build/utilities/ADMTST.COM",
+        "sha256": "6d6d6b508d6ba06091cbf70f7997331d30ca8e69d11c084e3d7e925d8226224b"
+      },
+      {
+        "path": "build/rsx/VT52.RSX",
+        "sha256": "996b7492dc0065ca69b167b265660d98744a883ac12e25e5fd4ba2d7b69f31aa"
+      },
+      {
+        "path": "build/utilities/VT52TST.COM",
+        "sha256": "253a950dbb560e7c285be652bc4b5dfd6e306918181bb3e29c241198169766d2"
+      },
+      {
+        "path": "build/rsx/ANSI.RSX",
+        "sha256": "37e1a3c50f8f6b12349fab950f5fed99e9e22be46098ee5d01141490a6cb2355"
+      },
+      {
+        "path": "build/utilities/ANSITST.COM",
+        "sha256": "dca552aae7dae6b2a9c4eb45d9a3605e8dfc67758b3db09f02a45f911bb58383"
+      },
+      {
+        "path": "build/rsx/ANSISCRN.RSX",
+        "sha256": "94a41ff244913e2f95a1811cacd75e95a1d3c45343cb485b6e22231949b03a17"
+      }
+    ],
+    "source_closure_files": 1073,
+    "metadata_and_transitive_tools_included": true,
+    "changed_input_changes_contract": true
+  },
+  "binary_continuity": [
+    {
+      "profile": "fullram",
+      "path": "build/bdos/bdos.bin",
+      "bytes": 3454,
+      "sha256": "a42a457961a54352bb428ad2848022547be46454a255def4ba38c0673a1f0ad3",
+      "identical_to_approved": true
+    },
+    {
+      "profile": "fullram",
+      "path": "build/z80pack/gateway.bin",
+      "bytes": 248,
+      "sha256": "cdd1c8bae3d683f11ad4cb0e7b9f9e01c908b91914fccad0c2c88a1b794c6ee7",
+      "identical_to_approved": true
+    },
+    {
+      "profile": "fullram",
+      "path": "build/z80pack/command-loader/stage2.bin",
+      "bytes": 1301,
+      "sha256": "ee1ef2c49624dc55e958e4043bc26cd13790d044da5808a4f6cceba1ea736577",
+      "identical_to_approved": true
+    },
+    {
+      "profile": "fullram",
+      "path": "build/system/rsxresolver.bin",
+      "bytes": 738,
+      "sha256": "709d21254b704f454777d111c02269e95de8eafbfe1c725a98361cb3456a98be",
+      "identical_to_approved": true
+    },
+    {
+      "profile": "fullram",
+      "path": "build/screen-backends/ANSISCRN.bin",
+      "bytes": 1365,
+      "sha256": "2f4c6aef14d68a874bda267264635d11c7a31405f62434a478793479270db987",
+      "identical_to_approved": true
+    },
+    {
+      "profile": "legacy",
+      "path": "build/bdos/bdos.bin",
+      "bytes": 3454,
+      "sha256": "29e4e7202bf568686acc0551e72feab3715bb9dc4c9c6838f431c8f6d7322154",
+      "identical_to_approved": true
+    },
+    {
+      "profile": "legacy",
+      "path": "build/z80pack/gateway.bin",
+      "bytes": 248,
+      "sha256": "365bf22a65e44bcc7bfd44329f4ceb5a85d148c1f9f561b6e1b415259fee6b1c",
+      "identical_to_approved": true
+    },
+    {
+      "profile": "legacy",
+      "path": "build/z80pack/command-loader/stage2.bin",
+      "bytes": 1301,
+      "sha256": "64e830f286a75039dec786b6a8124cbcec9d61e5dea52dc43d47bf5aab1930b5",
+      "identical_to_approved": true
+    },
+    {
+      "profile": "legacy",
+      "path": "build/system/rsxresolver.bin",
+      "bytes": 738,
+      "sha256": "dd165cd92dd330d58d63013d78fd65bef5dc795ae0c0ee21dea3b8cdf5b8b6a3",
+      "identical_to_approved": true
+    },
+    {
+      "profile": "legacy",
+      "path": "build/screen-backends/ANSISCRN.bin",
+      "bytes": 1365,
+      "sha256": "2f4c6aef14d68a874bda267264635d11c7a31405f62434a478793479270db987",
+      "identical_to_approved": true
+    }
+  ],
+  "profiles": {
+    "cpmsim-fullram": {
+      "compatibility_id": "c49c6144b0676fc856054be08e4773ba",
+      "source_revision": "a1204c36b6ec4787c12b11141c4a7baff555631f",
+      "contract_sha256": "c49c6144b0676fc856054be08e4773ba8e712da36b9df94ef1016ec960eead55",
+      "clean_image_sha256": "bd1c1fe9a5626ee16f79dac74c43c522139f95fdfbb82545ab2886b2b79b73e3",
+      "clean_image_unchanged_after_tests": true,
+      "unloaded_tpa_bytes": 57344,
+      "screen_pair_tpa_bytes": 54272,
+      "live_loader_results": {
+        "streamed-smoke": {
+          "unloaded_tpa": 57344,
+          "hello_executed": true
+        },
+        "boundary": {
+          "fit_bytes": 57344,
+          "rejected_bytes": 57472,
+          "fit_pattern_and_two_boundaries_checked": true,
+          "returns": [
+            "RET",
+            "JP 0",
+            "BDOS Function 0",
+            "BIOS WBOOT"
+          ]
+        },
+        "streamed-payload": {
+          "rejected": true,
+          "rsx_state_checks": 2,
+          "recovery": true,
+          "tpa": 57344
+        },
+        "streamed-public-id": {
+          "rejected": true,
+          "rsx_state_checks": 2,
+          "recovery": true,
+          "tpa": 57344
+        },
+        "streamed-old-format": {
+          "rejected": true,
+          "rsx_state_checks": 2,
+          "recovery": true,
+          "tpa": 57344
+        },
+        "streamed-truncated-after-payload": {
+          "rejected": true,
+          "rsx_state_checks": 2,
+          "recovery": true,
+          "tpa": 57344
+        },
+        "streamed-late-crc": {
+          "rejected": true,
+          "rsx_state_checks": 2,
+          "recovery": true,
+          "tpa": 57344
+        },
+        "streamed-monitor": {
+          "tpa_screen_pair": 54272,
+          "unloaded_tpa": 57344
+        },
+        "bad-stage2-code": {
+          "halt_before_prompt": true
+        },
+        "bad-stage2-id": {
+          "halt_before_prompt": true
+        },
+        "bad-ccp": {
+          "halt_before_prompt": true
+        }
+      },
+      "utility_results": {
+        "CONFIG": [
+          {
+            "case": "matching",
+            "accepted": true,
+            "private_reads": 16,
+            "bdos_calls": [],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "wrong-bios",
+            "accepted": false,
+            "private_reads": 0,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "wrong-opcode",
+            "accepted": false,
+            "private_reads": 0,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-0",
+            "accepted": false,
+            "private_reads": 1,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-1",
+            "accepted": false,
+            "private_reads": 2,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-2",
+            "accepted": false,
+            "private_reads": 3,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-3",
+            "accepted": false,
+            "private_reads": 4,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-4",
+            "accepted": false,
+            "private_reads": 5,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-5",
+            "accepted": false,
+            "private_reads": 6,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-6",
+            "accepted": false,
+            "private_reads": 7,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-7",
+            "accepted": false,
+            "private_reads": 8,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-8",
+            "accepted": false,
+            "private_reads": 9,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-9",
+            "accepted": false,
+            "private_reads": 10,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-10",
+            "accepted": false,
+            "private_reads": 11,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-11",
+            "accepted": false,
+            "private_reads": 12,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-12",
+            "accepted": false,
+            "private_reads": 13,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-13",
+            "accepted": false,
+            "private_reads": 14,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-14",
+            "accepted": false,
+            "private_reads": 15,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-15",
+            "accepted": false,
+            "private_reads": 16,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          }
+        ],
+        "SYSGEN": [
+          {
+            "case": "matching",
+            "accepted": true,
+            "private_reads": 16,
+            "bdos_calls": [],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "wrong-bios",
+            "accepted": false,
+            "private_reads": 0,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "wrong-opcode",
+            "accepted": false,
+            "private_reads": 0,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-0",
+            "accepted": false,
+            "private_reads": 1,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-1",
+            "accepted": false,
+            "private_reads": 2,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-2",
+            "accepted": false,
+            "private_reads": 3,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-3",
+            "accepted": false,
+            "private_reads": 4,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-4",
+            "accepted": false,
+            "private_reads": 5,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-5",
+            "accepted": false,
+            "private_reads": 6,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-6",
+            "accepted": false,
+            "private_reads": 7,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-7",
+            "accepted": false,
+            "private_reads": 8,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-8",
+            "accepted": false,
+            "private_reads": 9,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-9",
+            "accepted": false,
+            "private_reads": 10,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-10",
+            "accepted": false,
+            "private_reads": 11,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-11",
+            "accepted": false,
+            "private_reads": 12,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-12",
+            "accepted": false,
+            "private_reads": 13,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-13",
+            "accepted": false,
+            "private_reads": 14,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-14",
+            "accepted": false,
+            "private_reads": 15,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-15",
+            "accepted": false,
+            "private_reads": 16,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          }
+        ],
+        "STAT": [
+          {
+            "case": "matching",
+            "accepted": true,
+            "private_reads": 16,
+            "bdos_calls": [
+              25,
+              32
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "wrong-bios",
+            "accepted": false,
+            "private_reads": 0,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "wrong-opcode",
+            "accepted": false,
+            "private_reads": 0,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-0",
+            "accepted": false,
+            "private_reads": 1,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-1",
+            "accepted": false,
+            "private_reads": 2,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-2",
+            "accepted": false,
+            "private_reads": 3,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-3",
+            "accepted": false,
+            "private_reads": 4,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-4",
+            "accepted": false,
+            "private_reads": 5,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-5",
+            "accepted": false,
+            "private_reads": 6,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-6",
+            "accepted": false,
+            "private_reads": 7,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-7",
+            "accepted": false,
+            "private_reads": 8,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-8",
+            "accepted": false,
+            "private_reads": 9,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-9",
+            "accepted": false,
+            "private_reads": 10,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-10",
+            "accepted": false,
+            "private_reads": 11,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-11",
+            "accepted": false,
+            "private_reads": 12,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-12",
+            "accepted": false,
+            "private_reads": 13,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-13",
+            "accepted": false,
+            "private_reads": 14,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-14",
+            "accepted": false,
+            "private_reads": 15,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-15",
+            "accepted": false,
+            "private_reads": 16,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          }
+        ],
+        "CONFIG-preflight": [
+          {
+            "tail": "",
+            "entry_stack_bytes": 20
+          },
+          {
+            "tail": "/VER",
+            "entry_stack_bytes": 24
+          },
+          {
+            "tail": "/SHOW X",
+            "entry_stack_bytes": 24
+          },
+          {
+            "tail": "/STARTUP=\"Mixed /VER /B\"",
+            "entry_stack_bytes": 6
+          },
+          {
+            "tail": "/STARTUP=\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"",
+            "entry_stack_bytes": 6
+          },
+          {
+            "tail": "/STARTUP=\"X\" /VER",
+            "entry_stack_bytes": 24
+          },
+          {
+            "tail": "/PHYSICAL=0,TRACKS=80",
+            "entry_stack_bytes": 24
+          }
+        ],
+        "SYSBUILD": {
+          "disabled": true,
+          "bdos_calls": [
+            9
+          ]
+        },
+        "RESPACK": {
+          "disabled": true,
+          "bdos_calls": [
+            9
+          ]
+        },
+        "RLMBUILD": {
+          "disabled": true,
+          "bdos_calls": [
+            9
+          ]
+        },
+        "live-cross-profile": {
+          "private_rejections": 3,
+          "native_disabled": 3,
+          "tpa": 57344,
+          "public_STAT_RSX_CPX_CLS": true
+        }
+      },
+      "completion_results": {
+        "smoke": {
+          "profile": "c49c6144b0676fc856054be08e4773ba",
+          "untraced": true,
+          "system_raw_sha256": "bd1c1fe9a5626ee16f79dac74c43c522139f95fdfbb82545ab2886b2b79b73e3",
+          "results": {
+            "normal": {
+              "stacks": {},
+              "disk_free_commit_windows": null,
+              "tpa": 57344
+            }
+          }
+        },
+        "lifecycle": {
+          "profile": "c49c6144b0676fc856054be08e4773ba",
+          "untraced": true,
+          "system_raw_sha256": "bd1c1fe9a5626ee16f79dac74c43c522139f95fdfbb82545ab2886b2b79b73e3",
+          "results": {
+            "lifecycle": {
+              "stacks": {},
+              "disk_free_commit_windows": null,
+              "state_preserved": true,
+              "tpa": 57344
+            },
+            "early-refusals": {
+              "stacks": {},
+              "disk_free_commit_windows": null,
+              "refusals": 5,
+              "state_checks": 5,
+              "tpa": 57344
+            }
+          }
+        },
+        "faults": {
+          "profile": "c49c6144b0676fc856054be08e4773ba",
+          "untraced": false,
+          "system_raw_sha256": "bd1c1fe9a5626ee16f79dac74c43c522139f95fdfbb82545ab2886b2b79b73e3",
+          "results": {
+            "select-read-ignore-ADM3A-reverse": {
+              "stacks": {
+                "raw_reload": {
+                  "used": 10,
+                  "low": 128,
+                  "top": 256,
+                  "sp": 246,
+                  "pc": 62600
+                },
+                "bdos": {
+                  "used": 36,
+                  "low": 61458,
+                  "top": 61498,
+                  "sp": 61462,
+                  "pc": 55145
+                },
+                "stage1": {
+                  "used": 10,
+                  "low": 1216,
+                  "top": 1280,
+                  "sp": 1270,
+                  "pc": 62600
+                },
+                "stream": {
+                  "used": 26,
+                  "low": 3328,
+                  "top": 4096,
+                  "sp": 4070,
+                  "pc": 61763
+                },
+                "system": {
+                  "used": 24,
+                  "low": 57880,
+                  "top": 57912,
+                  "sp": 57888,
+                  "pc": 3659
+                },
+                "ccp": {
+                  "used": 24,
+                  "low": 47083,
+                  "top": 47211,
+                  "sp": 47187,
+                  "pc": 55145
+                },
+                "early_manager": {
+                  "used": 10,
+                  "low": 57318,
+                  "top": 57601,
+                  "sp": 57591,
+                  "pc": 64887
+                },
+                "manager": {
+                  "used": 24,
+                  "low": 28416,
+                  "top": 28672,
+                  "sp": 28648,
+                  "pc": 61763
+                },
+                "reader": {
+                  "used": 16,
+                  "low": 26133,
+                  "top": 26368,
+                  "sp": 26352,
+                  "pc": 61763
+                }
+              },
+              "disk_free_commit_windows": 4,
+              "error_seen": true,
+              "caller_resumed": true,
+              "read_only_exit": false,
+              "recovery": true
+            },
+            "select-read-abort-ADM3A-reverse": {
+              "stacks": {
+                "raw_reload": {
+                  "used": 10,
+                  "low": 128,
+                  "top": 256,
+                  "sp": 246,
+                  "pc": 62600
+                },
+                "bdos": {
+                  "used": 36,
+                  "low": 61458,
+                  "top": 61498,
+                  "sp": 61462,
+                  "pc": 55145
+                },
+                "stage1": {
+                  "used": 10,
+                  "low": 1216,
+                  "top": 1280,
+                  "sp": 1270,
+                  "pc": 62600
+                },
+                "stream": {
+                  "used": 26,
+                  "low": 3328,
+                  "top": 4096,
+                  "sp": 4070,
+                  "pc": 61763
+                },
+                "system": {
+                  "used": 24,
+                  "low": 57880,
+                  "top": 57912,
+                  "sp": 57888,
+                  "pc": 3659
+                },
+                "ccp": {
+                  "used": 24,
+                  "low": 47083,
+                  "top": 47211,
+                  "sp": 47187,
+                  "pc": 55145
+                },
+                "early_manager": {
+                  "used": 10,
+                  "low": 57318,
+                  "top": 57601,
+                  "sp": 57591,
+                  "pc": 64887
+                },
+                "manager": {
+                  "used": 24,
+                  "low": 28416,
+                  "top": 28672,
+                  "sp": 28648,
+                  "pc": 61763
+                },
+                "reader": {
+                  "used": 16,
+                  "low": 26133,
+                  "top": 26368,
+                  "sp": 26352,
+                  "pc": 61763
+                }
+              },
+              "disk_free_commit_windows": 4,
+              "error_seen": true,
+              "caller_resumed": false,
+              "read_only_exit": false,
+              "recovery": true
+            },
+            "select-read-ignore-ANSI-region-reverse": {
+              "stacks": {
+                "raw_reload": {
+                  "used": 10,
+                  "low": 128,
+                  "top": 256,
+                  "sp": 246,
+                  "pc": 62600
+                },
+                "bdos": {
+                  "used": 38,
+                  "low": 61458,
+                  "top": 61498,
+                  "sp": 61460,
+                  "pc": 55898
+                },
+                "stage1": {
+                  "used": 10,
+                  "low": 1216,
+                  "top": 1280,
+                  "sp": 1270,
+                  "pc": 62600
+                },
+                "stream": {
+                  "used": 26,
+                  "low": 3328,
+                  "top": 4096,
+                  "sp": 4070,
+                  "pc": 61763
+                },
+                "system": {
+                  "used": 24,
+                  "low": 57880,
+                  "top": 57912,
+                  "sp": 57888,
+                  "pc": 3659
+                },
+                "ccp": {
+                  "used": 20,
+                  "low": 50155,
+                  "top": 50283,
+                  "sp": 50263,
+                  "pc": 62450
+                },
+                "early_manager": {
+                  "used": 10,
+                  "low": 57318,
+                  "top": 57601,
+                  "sp": 57591,
+                  "pc": 64887
+                },
+                "manager": {
+                  "used": 24,
+                  "low": 28416,
+                  "top": 28672,
+                  "sp": 28648,
+                  "pc": 61763
+                },
+                "reader": {
+                  "used": 16,
+                  "low": 26133,
+                  "top": 26368,
+                  "sp": 26352,
+                  "pc": 61763
+                }
+              },
+              "disk_free_commit_windows": 4,
+              "error_seen": true,
+              "caller_resumed": true,
+              "read_only_exit": false,
+              "recovery": true
+            },
+            "select-read-abort-ANSI-region-reverse": {
+              "stacks": {
+                "raw_reload": {
+                  "used": 10,
+                  "low": 128,
+                  "top": 256,
+                  "sp": 246,
+                  "pc": 62600
+                },
+                "bdos": {
+                  "used": 38,
+                  "low": 61458,
+                  "top": 61498,
+                  "sp": 61460,
+                  "pc": 55898
+                },
+                "stage1": {
+                  "used": 10,
+                  "low": 1216,
+                  "top": 1280,
+                  "sp": 1270,
+                  "pc": 62600
+                },
+                "stream": {
+                  "used": 26,
+                  "low": 3328,
+                  "top": 4096,
+                  "sp": 4070,
+                  "pc": 61763
+                },
+                "system": {
+                  "used": 24,
+                  "low": 57880,
+                  "top": 57912,
+                  "sp": 57888,
+                  "pc": 3659
+                },
+                "ccp": {
+                  "used": 20,
+                  "low": 50155,
+                  "top": 50283,
+                  "sp": 50263,
+                  "pc": 62450
+                },
+                "early_manager": {
+                  "used": 10,
+                  "low": 57318,
+                  "top": 57601,
+                  "sp": 57591,
+                  "pc": 64887
+                },
+                "manager": {
+                  "used": 24,
+                  "low": 28416,
+                  "top": 28672,
+                  "sp": 28648,
+                  "pc": 61763
+                },
+                "reader": {
+                  "used": 16,
+                  "low": 26133,
+                  "top": 26368,
+                  "sp": 26352,
+                  "pc": 61763
+                }
+              },
+              "disk_free_commit_windows": 4,
+              "error_seen": true,
+              "caller_resumed": false,
+              "read_only_exit": false,
+              "recovery": true
+            }
+          }
+        }
+      }
+    },
+    "cpmsim-legacy-checked": {
+      "compatibility_id": "6bf1ad1aeac7e36ac0249050f70da12c",
+      "source_revision": "a1204c36b6ec4787c12b11141c4a7baff555631f",
+      "contract_sha256": "6bf1ad1aeac7e36ac0249050f70da12caa4af60670e422a250585d00bee6aec6",
+      "clean_image_sha256": "6d7680305d40e08877200a681f8ad60d61a8479e03475fa9a7faaec0f262df18",
+      "clean_image_unchanged_after_tests": true,
+      "unloaded_tpa_bytes": 54272,
+      "screen_pair_tpa_bytes": 51200,
+      "live_loader_results": {
+        "streamed-smoke": {
+          "unloaded_tpa": 54272,
+          "hello_executed": true
+        },
+        "boundary": {
+          "fit_bytes": 54272,
+          "rejected_bytes": 54400,
+          "fit_pattern_and_two_boundaries_checked": true,
+          "returns": [
+            "RET",
+            "JP 0",
+            "BDOS Function 0",
+            "BIOS WBOOT"
+          ]
+        },
+        "streamed-payload": {
+          "rejected": true,
+          "rsx_state_checks": 2,
+          "recovery": true,
+          "tpa": 54272
+        },
+        "streamed-public-id": {
+          "rejected": true,
+          "rsx_state_checks": 2,
+          "recovery": true,
+          "tpa": 54272
+        },
+        "streamed-old-format": {
+          "rejected": true,
+          "rsx_state_checks": 2,
+          "recovery": true,
+          "tpa": 54272
+        },
+        "streamed-truncated-after-payload": {
+          "rejected": true,
+          "rsx_state_checks": 2,
+          "recovery": true,
+          "tpa": 54272
+        },
+        "streamed-late-crc": {
+          "rejected": true,
+          "rsx_state_checks": 2,
+          "recovery": true,
+          "tpa": 54272
+        },
+        "streamed-monitor": {
+          "tpa_screen_pair": 51200,
+          "unloaded_tpa": 54272
+        },
+        "bad-stage2-code": {
+          "halt_before_prompt": true
+        },
+        "bad-stage2-id": {
+          "halt_before_prompt": true
+        },
+        "bad-ccp": {
+          "halt_before_prompt": true
+        }
+      },
+      "utility_results": {
+        "CONFIG": [
+          {
+            "case": "matching",
+            "accepted": true,
+            "private_reads": 16,
+            "bdos_calls": [],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "wrong-bios",
+            "accepted": false,
+            "private_reads": 0,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "wrong-opcode",
+            "accepted": false,
+            "private_reads": 0,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-0",
+            "accepted": false,
+            "private_reads": 1,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-1",
+            "accepted": false,
+            "private_reads": 2,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-2",
+            "accepted": false,
+            "private_reads": 3,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-3",
+            "accepted": false,
+            "private_reads": 4,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-4",
+            "accepted": false,
+            "private_reads": 5,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-5",
+            "accepted": false,
+            "private_reads": 6,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-6",
+            "accepted": false,
+            "private_reads": 7,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-7",
+            "accepted": false,
+            "private_reads": 8,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-8",
+            "accepted": false,
+            "private_reads": 9,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-9",
+            "accepted": false,
+            "private_reads": 10,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-10",
+            "accepted": false,
+            "private_reads": 11,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-11",
+            "accepted": false,
+            "private_reads": 12,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-12",
+            "accepted": false,
+            "private_reads": 13,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-13",
+            "accepted": false,
+            "private_reads": 14,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-14",
+            "accepted": false,
+            "private_reads": 15,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-15",
+            "accepted": false,
+            "private_reads": 16,
+            "bdos_calls": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "entry_stack_bytes": 24
+          }
+        ],
+        "SYSGEN": [
+          {
+            "case": "matching",
+            "accepted": true,
+            "private_reads": 16,
+            "bdos_calls": [],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "wrong-bios",
+            "accepted": false,
+            "private_reads": 0,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "wrong-opcode",
+            "accepted": false,
+            "private_reads": 0,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-0",
+            "accepted": false,
+            "private_reads": 1,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-1",
+            "accepted": false,
+            "private_reads": 2,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-2",
+            "accepted": false,
+            "private_reads": 3,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-3",
+            "accepted": false,
+            "private_reads": 4,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-4",
+            "accepted": false,
+            "private_reads": 5,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-5",
+            "accepted": false,
+            "private_reads": 6,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-6",
+            "accepted": false,
+            "private_reads": 7,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-7",
+            "accepted": false,
+            "private_reads": 8,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-8",
+            "accepted": false,
+            "private_reads": 9,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-9",
+            "accepted": false,
+            "private_reads": 10,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-10",
+            "accepted": false,
+            "private_reads": 11,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-11",
+            "accepted": false,
+            "private_reads": 12,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-12",
+            "accepted": false,
+            "private_reads": 13,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-13",
+            "accepted": false,
+            "private_reads": 14,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-14",
+            "accepted": false,
+            "private_reads": 15,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-15",
+            "accepted": false,
+            "private_reads": 16,
+            "bdos_calls": [
+              9
+            ],
+            "entry_stack_bytes": 24
+          }
+        ],
+        "STAT": [
+          {
+            "case": "matching",
+            "accepted": true,
+            "private_reads": 16,
+            "bdos_calls": [
+              25,
+              32
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "wrong-bios",
+            "accepted": false,
+            "private_reads": 0,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "wrong-opcode",
+            "accepted": false,
+            "private_reads": 0,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-0",
+            "accepted": false,
+            "private_reads": 1,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-1",
+            "accepted": false,
+            "private_reads": 2,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-2",
+            "accepted": false,
+            "private_reads": 3,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-3",
+            "accepted": false,
+            "private_reads": 4,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-4",
+            "accepted": false,
+            "private_reads": 5,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-5",
+            "accepted": false,
+            "private_reads": 6,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-6",
+            "accepted": false,
+            "private_reads": 7,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-7",
+            "accepted": false,
+            "private_reads": 8,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-8",
+            "accepted": false,
+            "private_reads": 9,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-9",
+            "accepted": false,
+            "private_reads": 10,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-10",
+            "accepted": false,
+            "private_reads": 11,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-11",
+            "accepted": false,
+            "private_reads": 12,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-12",
+            "accepted": false,
+            "private_reads": 13,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-13",
+            "accepted": false,
+            "private_reads": 14,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-14",
+            "accepted": false,
+            "private_reads": 15,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          },
+          {
+            "case": "id-15",
+            "accepted": false,
+            "private_reads": 16,
+            "bdos_calls": [
+              25,
+              32,
+              9
+            ],
+            "entry_stack_bytes": 24
+          }
+        ],
+        "CONFIG-preflight": [
+          {
+            "tail": "",
+            "entry_stack_bytes": 20
+          },
+          {
+            "tail": "/VER",
+            "entry_stack_bytes": 24
+          },
+          {
+            "tail": "/SHOW X",
+            "entry_stack_bytes": 24
+          },
+          {
+            "tail": "/STARTUP=\"Mixed /VER /B\"",
+            "entry_stack_bytes": 6
+          },
+          {
+            "tail": "/STARTUP=\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"",
+            "entry_stack_bytes": 6
+          },
+          {
+            "tail": "/STARTUP=\"X\" /VER",
+            "entry_stack_bytes": 24
+          },
+          {
+            "tail": "/PHYSICAL=0,TRACKS=80",
+            "entry_stack_bytes": 24
+          }
+        ],
+        "SYSBUILD": {
+          "disabled": true,
+          "bdos_calls": [
+            9
+          ]
+        },
+        "RESPACK": {
+          "disabled": true,
+          "bdos_calls": [
+            9
+          ]
+        },
+        "RLMBUILD": {
+          "disabled": true,
+          "bdos_calls": [
+            9
+          ]
+        },
+        "live-cross-profile": {
+          "private_rejections": 3,
+          "native_disabled": 3,
+          "tpa": 54272,
+          "public_STAT_RSX_CPX_CLS": true
+        }
+      },
+      "completion_results": {
+        "smoke": {
+          "profile": "6bf1ad1aeac7e36ac0249050f70da12c",
+          "untraced": true,
+          "system_raw_sha256": "6d7680305d40e08877200a681f8ad60d61a8479e03475fa9a7faaec0f262df18",
+          "results": {
+            "normal": {
+              "stacks": {},
+              "disk_free_commit_windows": null,
+              "tpa": 54272
+            }
+          }
+        },
+        "lifecycle": {
+          "profile": "6bf1ad1aeac7e36ac0249050f70da12c",
+          "untraced": true,
+          "system_raw_sha256": "6d7680305d40e08877200a681f8ad60d61a8479e03475fa9a7faaec0f262df18",
+          "results": {
+            "lifecycle": {
+              "stacks": {},
+              "disk_free_commit_windows": null,
+              "state_preserved": true,
+              "tpa": 54272
+            },
+            "early-refusals": {
+              "stacks": {},
+              "disk_free_commit_windows": null,
+              "refusals": 5,
+              "state_checks": 5,
+              "tpa": 54272
+            }
+          }
+        },
+        "faults": {
+          "profile": "6bf1ad1aeac7e36ac0249050f70da12c",
+          "untraced": false,
+          "system_raw_sha256": "6d7680305d40e08877200a681f8ad60d61a8479e03475fa9a7faaec0f262df18",
+          "results": {
+            "select-read-ignore-ADM3A-reverse": {
+              "stacks": {
+                "raw_reload": {
+                  "used": 10,
+                  "low": 128,
+                  "top": 256,
+                  "sp": 246,
+                  "pc": 59528
+                },
+                "bdos": {
+                  "used": 36,
+                  "low": 58386,
+                  "top": 58426,
+                  "sp": 58390,
+                  "pc": 52073
+                },
+                "stage1": {
+                  "used": 10,
+                  "low": 1216,
+                  "top": 1280,
+                  "sp": 1270,
+                  "pc": 59528
+                },
+                "stream": {
+                  "used": 26,
+                  "low": 3328,
+                  "top": 4096,
+                  "sp": 4070,
+                  "pc": 58691
+                },
+                "system": {
+                  "used": 24,
+                  "low": 54808,
+                  "top": 54840,
+                  "sp": 54816,
+                  "pc": 3659
+                },
+                "ccp": {
+                  "used": 24,
+                  "low": 44011,
+                  "top": 44139,
+                  "sp": 44115,
+                  "pc": 52073
+                },
+                "early_manager": {
+                  "used": 10,
+                  "low": 54246,
+                  "top": 54529,
+                  "sp": 54519,
+                  "pc": 61815
+                },
+                "manager": {
+                  "used": 24,
+                  "low": 28416,
+                  "top": 28672,
+                  "sp": 28648,
+                  "pc": 58691
+                },
+                "reader": {
+                  "used": 16,
+                  "low": 26133,
+                  "top": 26368,
+                  "sp": 26352,
+                  "pc": 58691
+                }
+              },
+              "disk_free_commit_windows": 4,
+              "error_seen": true,
+              "caller_resumed": true,
+              "read_only_exit": false,
+              "recovery": true
+            },
+            "select-read-abort-ADM3A-reverse": {
+              "stacks": {
+                "raw_reload": {
+                  "used": 10,
+                  "low": 128,
+                  "top": 256,
+                  "sp": 246,
+                  "pc": 59528
+                },
+                "bdos": {
+                  "used": 36,
+                  "low": 58386,
+                  "top": 58426,
+                  "sp": 58390,
+                  "pc": 52073
+                },
+                "stage1": {
+                  "used": 10,
+                  "low": 1216,
+                  "top": 1280,
+                  "sp": 1270,
+                  "pc": 59528
+                },
+                "stream": {
+                  "used": 26,
+                  "low": 3328,
+                  "top": 4096,
+                  "sp": 4070,
+                  "pc": 58691
+                },
+                "system": {
+                  "used": 24,
+                  "low": 54808,
+                  "top": 54840,
+                  "sp": 54816,
+                  "pc": 3659
+                },
+                "ccp": {
+                  "used": 24,
+                  "low": 44011,
+                  "top": 44139,
+                  "sp": 44115,
+                  "pc": 52073
+                },
+                "early_manager": {
+                  "used": 10,
+                  "low": 54246,
+                  "top": 54529,
+                  "sp": 54519,
+                  "pc": 61815
+                },
+                "manager": {
+                  "used": 24,
+                  "low": 28416,
+                  "top": 28672,
+                  "sp": 28648,
+                  "pc": 58691
+                },
+                "reader": {
+                  "used": 16,
+                  "low": 26133,
+                  "top": 26368,
+                  "sp": 26352,
+                  "pc": 58691
+                }
+              },
+              "disk_free_commit_windows": 4,
+              "error_seen": true,
+              "caller_resumed": false,
+              "read_only_exit": false,
+              "recovery": true
+            },
+            "select-read-ignore-ANSI-region-reverse": {
+              "stacks": {
+                "raw_reload": {
+                  "used": 10,
+                  "low": 128,
+                  "top": 256,
+                  "sp": 246,
+                  "pc": 59528
+                },
+                "bdos": {
+                  "used": 38,
+                  "low": 58386,
+                  "top": 58426,
+                  "sp": 58388,
+                  "pc": 52826
+                },
+                "stage1": {
+                  "used": 10,
+                  "low": 1216,
+                  "top": 1280,
+                  "sp": 1270,
+                  "pc": 59528
+                },
+                "stream": {
+                  "used": 26,
+                  "low": 3328,
+                  "top": 4096,
+                  "sp": 4070,
+                  "pc": 58691
+                },
+                "system": {
+                  "used": 24,
+                  "low": 54808,
+                  "top": 54840,
+                  "sp": 54816,
+                  "pc": 3659
+                },
+                "ccp": {
+                  "used": 20,
+                  "low": 47083,
+                  "top": 47211,
+                  "sp": 47191,
+                  "pc": 59378
+                },
+                "early_manager": {
+                  "used": 10,
+                  "low": 54246,
+                  "top": 54529,
+                  "sp": 54519,
+                  "pc": 61815
+                },
+                "manager": {
+                  "used": 24,
+                  "low": 28416,
+                  "top": 28672,
+                  "sp": 28648,
+                  "pc": 58691
+                },
+                "reader": {
+                  "used": 16,
+                  "low": 26133,
+                  "top": 26368,
+                  "sp": 26352,
+                  "pc": 58691
+                }
+              },
+              "disk_free_commit_windows": 4,
+              "error_seen": true,
+              "caller_resumed": true,
+              "read_only_exit": false,
+              "recovery": true
+            },
+            "select-read-abort-ANSI-region-reverse": {
+              "stacks": {
+                "raw_reload": {
+                  "used": 10,
+                  "low": 128,
+                  "top": 256,
+                  "sp": 246,
+                  "pc": 59528
+                },
+                "bdos": {
+                  "used": 38,
+                  "low": 58386,
+                  "top": 58426,
+                  "sp": 58388,
+                  "pc": 52826
+                },
+                "stage1": {
+                  "used": 10,
+                  "low": 1216,
+                  "top": 1280,
+                  "sp": 1270,
+                  "pc": 59528
+                },
+                "stream": {
+                  "used": 26,
+                  "low": 3328,
+                  "top": 4096,
+                  "sp": 4070,
+                  "pc": 58691
+                },
+                "system": {
+                  "used": 24,
+                  "low": 54808,
+                  "top": 54840,
+                  "sp": 54816,
+                  "pc": 3659
+                },
+                "ccp": {
+                  "used": 20,
+                  "low": 47083,
+                  "top": 47211,
+                  "sp": 47191,
+                  "pc": 59378
+                },
+                "early_manager": {
+                  "used": 10,
+                  "low": 54246,
+                  "top": 54529,
+                  "sp": 54519,
+                  "pc": 61815
+                },
+                "manager": {
+                  "used": 24,
+                  "low": 28416,
+                  "top": 28672,
+                  "sp": 28648,
+                  "pc": 58691
+                },
+                "reader": {
+                  "used": 16,
+                  "low": 26133,
+                  "top": 26368,
+                  "sp": 26352,
+                  "pc": 58691
+                }
+              },
+              "disk_free_commit_windows": 4,
+              "error_seen": true,
+              "caller_resumed": false,
+              "read_only_exit": false,
+              "recovery": true
+            }
+          }
+        }
+      }
+    }
+  },
+  "qualification_commands": [
+    {
+      "command": [
+        "python3",
+        "tools/qualify_part11_live.py",
+        "/tmp/bettercpm-build-integration-20261023/baseline-fullram",
+        "/tmp/bettercpm-build-integration-20261023/checks/live-fullram"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "tools/qualify_part11_live.py",
+        "/tmp/bettercpm-build-integration-20261023/baseline-legacy",
+        "/tmp/bettercpm-build-integration-20261023/checks/live-legacy"
+      ],
+      "exit_code": 0,
+      "log_sha256": "530f7af858c3b9467afda6f7b5665c233eea943f2a536a0ef15b79d410c9f22b",
+      "stdout": "PASS streamed-smoke\nZ80/8080-Macro-Assembler  Release 2.1\nCopyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt\n0 error(s)\nPASS boundary and warm returns\nPASS streamed-payload\nPASS streamed-public-id\nPASS streamed-old-format\nPASS streamed-truncated-after-payload\nPASS streamed-late-crc\nPASS streamed-monitor\nPASS bad-stage2-code\nPASS bad-stage2-id\nPASS bad-ccp\n"
+    },
+    {
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "tools/qualify_part12_utilities.py",
+        "/tmp/bettercpm-build-integration-20261023/baseline-fullram",
+        "/tmp/bettercpm-build-integration-20261023/baseline-legacy",
+        "--output",
+        "/tmp/bettercpm-build-integration-20261023/checks/utilities-fullram",
+        "--live"
+      ],
+      "exit_code": 0,
+      "log_sha256": "b7d998e7ee91daaf61f80b1678b59f3714081a1e822195b3630f187af942fb79",
+      "stdout": "PASS Part 12 utility gates\n"
+    },
+    {
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "tools/qualify_cpmsim_completion.py",
+        "/tmp/bettercpm-build-integration-20261023/baseline-fullram",
+        "--output",
+        "/tmp/bettercpm-build-integration-20261023/checks/smoke-fullram",
+        "--simulator",
+        "/tmp/bettercpm-assessment-part2-20261023/runtime-tools/cpmsim",
+        "--untraced",
+        "--campaign",
+        "smoke"
+      ],
+      "exit_code": 0,
+      "log_sha256": "e74b68a19b2ed521128cfded3bcf4019b3d946ca3bb26cb815f8780e2de5dc90",
+      "stdout": "PASS normal {}\n"
+    },
+    {
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "tools/qualify_cpmsim_completion.py",
+        "/tmp/bettercpm-build-integration-20261023/baseline-fullram",
+        "--output",
+        "/tmp/bettercpm-build-integration-20261023/checks/lifecycle-fullram",
+        "--simulator",
+        "/tmp/bettercpm-assessment-part2-20261023/runtime-tools/cpmsim",
+        "--untraced",
+        "--campaign",
+        "lifecycle"
+      ],
+      "exit_code": 0,
+      "log_sha256": "7aac7dae68909a97e7081f71762b1de7b632eb48c87e8d680bad6f6998f87f4b",
+      "stdout": "PASS lifecycle {}\nZ80/8080-Macro-Assembler  Release 2.1\nCopyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt\n0 error(s)\nZ80/8080-Macro-Assembler  Release 2.1\nCopyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt\n0 error(s)\nZ80/8080-Macro-Assembler  Release 2.1\nCopyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt\n0 error(s)\nZ80/8080-Macro-Assembler  Release 2.1\nCopyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt\n0 error(s)\nZ80/8080-Macro-Assembler  Release 2.1\nCopyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt\n0 error(s)\nPASS early-refusals {}\n"
+    },
+    {
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "tools/qualify_cpmsim_completion.py",
+        "/tmp/bettercpm-build-integration-20261023/baseline-fullram",
+        "--output",
+        "/tmp/bettercpm-build-integration-20261023/checks/faults-fullram",
+        "--simulator",
+        "/tmp/bettercpm-cpmsim-prototype-final-20261023/trace-simulator-v6/cpmsim/cpmsim",
+        "--campaign",
+        "faults",
+        "--match",
+        "ADM3A-reverse|ANSI-region-reverse"
+      ],
+      "exit_code": 0,
+      "log_sha256": "08e2e78495331f5772b6366d18f4ef82f69792bf152f0ee033b062e06d1d86f3",
+      "stdout": "Z80/8080-Macro-Assembler  Release 2.1\nCopyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt\n0 error(s)\nPASS select-read-ignore-ADM3A-reverse {\"raw_reload\": 10, \"bdos\": 36, \"stage1\": 10, \"stream\": 26, \"system\": 24, \"ccp\": 24, \"early_manager\": 10, \"manager\": 24, \"reader\": 16}\nZ80/8080-Macro-Assembler  Release 2.1\nCopyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt\n0 error(s)\nPASS select-read-abort-ADM3A-reverse {\"raw_reload\": 10, \"bdos\": 36, \"stage1\": 10, \"stream\": 26, \"system\": 24, \"ccp\": 24, \"early_manager\": 10, \"manager\": 24, \"reader\": 16}\nZ80/8080-Macro-Assembler  Release 2.1\nCopyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt\n0 error(s)\nPASS select-read-ignore-ANSI-region-reverse {\"raw_reload\": 10, \"bdos\": 38, \"stage1\": 10, \"stream\": 26, \"system\": 24, \"ccp\": 20, \"early_manager\": 10, \"manager\": 24, \"reader\": 16}\nZ80/8080-Macro-Assembler  Release 2.1\nCopyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt\n0 error(s)\nPASS select-read-abort-ANSI-region-reverse {\"raw_reload\": 10, \"bdos\": 38, \"stage1\": 10, \"stream\": 26, \"system\": 24, \"ccp\": 20, \"early_manager\": 10, \"manager\": 24, \"reader\": 16}\n"
+    },
+    {
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "tools/qualify_part12_utilities.py",
+        "/tmp/bettercpm-build-integration-20261023/baseline-legacy",
+        "/tmp/bettercpm-build-integration-20261023/baseline-fullram",
+        "--output",
+        "/tmp/bettercpm-build-integration-20261023/checks/utilities-legacy",
+        "--live"
+      ],
+      "exit_code": 0,
+      "log_sha256": "b7d998e7ee91daaf61f80b1678b59f3714081a1e822195b3630f187af942fb79",
+      "stdout": "PASS Part 12 utility gates\n"
+    },
+    {
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "tools/qualify_cpmsim_completion.py",
+        "/tmp/bettercpm-build-integration-20261023/baseline-legacy",
+        "--output",
+        "/tmp/bettercpm-build-integration-20261023/checks/smoke-legacy",
+        "--simulator",
+        "/tmp/bettercpm-assessment-part2-20261023/runtime-tools/cpmsim",
+        "--untraced",
+        "--campaign",
+        "smoke"
+      ],
+      "exit_code": 0,
+      "log_sha256": "e74b68a19b2ed521128cfded3bcf4019b3d946ca3bb26cb815f8780e2de5dc90",
+      "stdout": "PASS normal {}\n"
+    },
+    {
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "tools/qualify_cpmsim_completion.py",
+        "/tmp/bettercpm-build-integration-20261023/baseline-legacy",
+        "--output",
+        "/tmp/bettercpm-build-integration-20261023/checks/lifecycle-legacy",
+        "--simulator",
+        "/tmp/bettercpm-assessment-part2-20261023/runtime-tools/cpmsim",
+        "--untraced",
+        "--campaign",
+        "lifecycle"
+      ],
+      "exit_code": 0,
+      "log_sha256": "7aac7dae68909a97e7081f71762b1de7b632eb48c87e8d680bad6f6998f87f4b",
+      "stdout": "PASS lifecycle {}\nZ80/8080-Macro-Assembler  Release 2.1\nCopyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt\n0 error(s)\nZ80/8080-Macro-Assembler  Release 2.1\nCopyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt\n0 error(s)\nZ80/8080-Macro-Assembler  Release 2.1\nCopyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt\n0 error(s)\nZ80/8080-Macro-Assembler  Release 2.1\nCopyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt\n0 error(s)\nZ80/8080-Macro-Assembler  Release 2.1\nCopyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt\n0 error(s)\nPASS early-refusals {}\n"
+    },
+    {
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "tools/qualify_cpmsim_completion.py",
+        "/tmp/bettercpm-build-integration-20261023/baseline-legacy",
+        "--output",
+        "/tmp/bettercpm-build-integration-20261023/checks/faults-legacy",
+        "--simulator",
+        "/tmp/bettercpm-cpmsim-prototype-final-20261023/trace-simulator-v6/cpmsim/cpmsim",
+        "--campaign",
+        "faults",
+        "--match",
+        "ADM3A-reverse|ANSI-region-reverse"
+      ],
+      "exit_code": 0,
+      "log_sha256": "08e2e78495331f5772b6366d18f4ef82f69792bf152f0ee033b062e06d1d86f3",
+      "stdout": "Z80/8080-Macro-Assembler  Release 2.1\nCopyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt\n0 error(s)\nPASS select-read-ignore-ADM3A-reverse {\"raw_reload\": 10, \"bdos\": 36, \"stage1\": 10, \"stream\": 26, \"system\": 24, \"ccp\": 24, \"early_manager\": 10, \"manager\": 24, \"reader\": 16}\nZ80/8080-Macro-Assembler  Release 2.1\nCopyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt\n0 error(s)\nPASS select-read-abort-ADM3A-reverse {\"raw_reload\": 10, \"bdos\": 36, \"stage1\": 10, \"stream\": 26, \"system\": 24, \"ccp\": 24, \"early_manager\": 10, \"manager\": 24, \"reader\": 16}\nZ80/8080-Macro-Assembler  Release 2.1\nCopyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt\n0 error(s)\nPASS select-read-ignore-ANSI-region-reverse {\"raw_reload\": 10, \"bdos\": 38, \"stage1\": 10, \"stream\": 26, \"system\": 24, \"ccp\": 20, \"early_manager\": 10, \"manager\": 24, \"reader\": 16}\nZ80/8080-Macro-Assembler  Release 2.1\nCopyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt\n0 error(s)\nPASS select-read-abort-ANSI-region-reverse {\"raw_reload\": 10, \"bdos\": 38, \"stage1\": 10, \"stream\": 26, \"system\": 24, \"ccp\": 20, \"early_manager\": 10, \"manager\": 24, \"reader\": 16}\n"
+    }
+  ],
+  "runtime_artifacts": {
+    "assembler": {
+      "path": "/Users/nathanael/bin/z80asm",
+      "sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+    },
+    "ordinary_simulator": {
+      "path": "/tmp/bettercpm-assessment-part2-20261023/runtime-tools/cpmsim",
+      "sha256": "b2d4384af06dbea8d32bc43eab539bf9e4857e74780577a249d0e8c5e22c955d"
+    },
+    "observer_simulator": {
+      "path": "/tmp/bettercpm-cpmsim-prototype-final-20261023/trace-simulator-v6/cpmsim/cpmsim",
+      "sha256": "8327b10f9de3b5e95342a173bf6fa664a54e64d6211eca85c65f7db1e29849e1"
+    }
+  },
+  "limits": [
+    "Targeted reconciliation checks, not a complete repeat of prototype acceptance",
+    "Existing assessment builder used to establish reference products",
+    "No new profile CLI or production migration implemented",
+    "Two-byte observed BDOS stack margin remains, not exhaustive path proof",
+    "No Model 4, ROM/XIP, native packaging or compression-utility qualification in this checkpoint"
+  ]
+}
