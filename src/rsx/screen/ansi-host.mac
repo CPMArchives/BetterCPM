@@ -50,6 +50,16 @@ B_RAW:
         ADD HL,DE
         JP (HL)
 B_EMIT:
+        ; This backend is the cpmsim host transport. Ordinary output is a
+        ; leaf: routing every ANSI byte through MONRAW added eight stack bytes
+        ; while a disk-error message still owned the small BDOS stack.
+        ; Keep the basic transport's special 1Ch clear behavior unchanged.
+        LD A,C
+        CP 28
+        JR Z,B_EMIT_CLEAR
+        OUT (1),A
+        RET
+B_EMIT_CLEAR:
         PUSH BC
         PUSH DE
         PUSH HL

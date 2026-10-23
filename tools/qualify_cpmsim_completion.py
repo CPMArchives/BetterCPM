@@ -112,6 +112,9 @@ def fault_source(operation,kind):
  LD C,26
  CALL 5
 {setup}
+ LD DE,SCREENSET
+ LD C,9
+ CALL 5
  LD HL,READY
  CALL PRINT
  LD HL,(1)
@@ -171,21 +174,35 @@ if a.campaign in ('smoke','all'):
 
 if a.campaign in ('faults','all'):
     cases=[('select','read'),('open','read'),('find','read'),('read','read'),('random','read'),('make','read'),('make','write'),('write','write'),('close','write'),('delete','write'),('zero','write'),('extent','write')]
-    for screens in (False,True):
-        for operation,kind in cases:
+    modes=[(None,'',()),('ADM3A','screen',()),
+        ('ADM3A','ADM3A-lower-row',(27,61,52,32)),
+        ('ADM3A','ADM3A-reverse',(27,61,52,32,15)),
+        ('ADM3A','ADM3A-scroll-reverse',(27,61,55,32,15)),
+        ('VT52','VT52-scroll',(27,89,55,32)),
+        ('ANSI','ANSI-reverse',tuple(b'\x1b[21;1H\x1b[7m')),
+        ('ANSI','ANSI-region-reverse',tuple(b'\x1b[5;24r\x1b[24;1H\x1b[1;7m'))]
+    for personality,label,screen_setup in modes:
+        screens=personality is not None
+        for operation,kind in (cases if label in ('','screen') else [('select','read')]):
             for action in ('ignore','abort'):
-                name=f'{operation}-{kind}-{action}'+('-screen' if screens else '')
+                name=f'{operation}-{kind}-{action}'+('-'+label if label else '')
                 if not re.search(a.match,name):continue
                 w=h.case(name);h.put(w,'STACK.DAT',bytes(range(128)))
-                h.put(w,'FAULT.COM',h.asm(w,'fault',fault_source(operation,kind)))
-                commands=['RSX LOAD ANSISCRN','RSX LOAD ADM3A'] if screens else []
-                prompt=b'\x1b[7m \x1b[0m ' if screens else b'>_ '
+                source=fault_source(operation,kind)+'\nSCREENSET: DB '+','.join(map(str,(*screen_setup,36)))+'\n'
+                h.put(w,'FAULT.COM',h.asm(w,'fault',source))
+                commands=['RSX LOAD ANSISCRN','RSX LOAD '+personality] if screens else []
+                prompt=b'\x1b[7m \x1b[0m ' if personality in ('ADM3A','VT52') else b'>_ '
                 # All screen output goes through the admitted real screen pair.
                 if screens:commands=[commands[0],(commands[1].encode()+b'\r',prompt,25)]
-                commands += [(b'FAULT\r',b'Bad Sector',25),(b'I' if action=='ignore' else b'\x03',prompt,25)]
-                if operation=='select':commands += [(b'A:\r',prompt,25)]
-                if screens:commands += [(b'RSX UNLOAD ADM3A\r',b'A0>_ ',25),'RSX UNLOAD ANSISCRN']
-                commands+=['STAT MEM']
+                # Reverse state legitimately survives warm boot and can elide
+                # the ADM3A cursor's SGR transitions. Still wait for the cursor,
+                # not an earlier textual prefix of the editor's redraw.
+                recovery_prompt=b'>  ' if personality=='ADM3A' and 'reverse' in label else prompt
+                commands += [(b'FAULT\r',b'Bad Sector',25),(b'I' if action=='ignore' else b'\x03',recovery_prompt,25)]
+                if operation=='select':commands += [(b'A:\r',recovery_prompt,25)]
+                if screens:commands += [((f'RSX UNLOAD {personality}\r').encode(),b'A0>_ ',25),'RSX UNLOAD ANSISCRN']
+                expected=(L['TPA']-256)//128*128
+                commands += [(b'STAT MEM\r',f'Maximum loadable COM: {expected} bytes'.encode(),25),(b'',b'A0>_ ',25)]
                 t,rows=run(w,commands)
                 assert t.count('Bad Sector')==1 and 'PROBE FAILED' not in t,t
                 # Ignoring a failed directory read does not certify its stale
