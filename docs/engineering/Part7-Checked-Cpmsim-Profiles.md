@@ -1,7 +1,7 @@
 # Engineering Assessment Part 7: checked cpmsim profiles
 
-Date: 2026-10-23. Status: bounded prototype assessment complete; awaiting
-maintainer review. The accepted core 1.0 baseline remains
+Date: 2026-10-23. Status: approved by the maintainer on 2026-10-23;
+Part 8 authorized. The accepted core 1.0 baseline remains
 `3b2d2d7f4fe0472438465165f11fb550d79c8662`.
 
 ## Finding
@@ -25,8 +25,9 @@ compatibility gates. The resident spare space used here is now exhausted.
 ## 1. Scope and repository boundary
 
 The isolated branch is `assessment/part7-checked-profiles`, based on Part 6
-commit `7704c1e31249fe6e8fc5702dd6a08ecf4938ecb1`. No Part 7 change is merged
-into main. Main was observed at `d9e5db00ab4ea020550c12cc5b64afb465c506df`,
+commit `7704c1e31249fe6e8fc5702dd6a08ecf4938ecb1`. At completion, no Part 7
+change had been merged into main. Main was then observed at
+`d9e5db00ab4ea020550c12cc5b64afb465c506df`,
 including subsequent UNCR utility work; that work is preserved and is not part
 of this prototype's tested source snapshot.
 
@@ -228,4 +229,9 @@ no push/pop/call/return or interrupt/NMI accesses it while hidden. All actual
 access paths, including M4SCRN, must obey the rule. No Model 4 banking code or
 hardware qualification was performed in Part 7.
 
-Part 7 ends here for maintainer review and Work-credit assessment.
+Maintainer approval was received on 2026-10-23. Part 8 proceeds as a separate
+bounded assessment, with another review pause.
+
+Subsequent repository record: Part 7 was merged through PR #457 at
+`de30d831ead16cea0f786e7e7d742fc8ec1533d0`. That merge does not extend the
+qualification scope recorded above.
