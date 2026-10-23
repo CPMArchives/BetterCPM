@@ -2,7 +2,7 @@
 
 This manual explains how to use the programs supplied on the BetterCP/M Utilities Disk. For the command prompt, drive and user areas, file management, configuration, and the System Disk commands, see the [BetterCP/M User’s Guide](users_guide.md).
 
-The Utilities Disk is being assembled separately from the System Disk. This manual covers DUMP and the initial DDT debugger adaptation. Chapters for other utilities will be added as those programs are completed and selected for distribution.
+The Utilities Disk is being assembled separately from the System Disk. This manual covers DUMP, the initial DDT debugger adaptation, and the six standalone compression utilities SQ, USQ, CR, UNCR, LZH and UNLZH. Chapters for other utilities will be added as those programs are completed and selected for distribution.
 
 ## Contents
 
@@ -20,6 +20,9 @@ The Utilities Disk is being assembled separately from the System Disk. This manu
   - [Messages and recovery](#messages-and-recovery)
 
 - [DDT debugger](#ddt-debugger)
+- [Compression utilities](#compression-utilities)
+  - [Shared command rules](#shared-compression-command-rules)
+  - [File handling and recovery](#compression-file-handling-and-recovery)
 
 ## Using the Utilities Disk
 
@@ -282,3 +285,111 @@ Escape abandons the active interactive command and returns to the main `-` promp
 DDT relocates below the current BDOS gateway and reduces the debuggee's available memory. This build reserves 20 pages (5120 bytes), compared with the historical debugger's 16 pages. It does not require a loaded screen backend or a monitor personality. Its file is 6528 bytes. The exact 4864-byte historical reference is preserved as a separate engineering baseline and is not the Utilities Disk program.
 
 BetterCP/M cpmsim command/input checks and Model 4/trs80gp screen/physical-keyboard checks pass. The Model 4 campaign verifies cursor editing, scrolling, CLEAR cancellation without committing an operand, A/L and G0/BREAK return on disposable current-system disks. DDT also passes release-placement checks from Utilities B: beside normal System A:, including Model 4 M4SCRN/ADM3A. For example, `B:DDT TINY.COM` loads the debuggee from your current A: drive and returns there after G0 or Ctrl-C. The Utilities images remain provisional pending acceptance of the other selected components.
+
+
+## Compression utilities
+
+SQ/USQ, CR/UNCR and LZH/UNLZH compress and restore individual files. They are
+separate commands for release 1.0. Each encoder keeps its input file and writes
+a compressed file with the original name stored inside it. The matching decoder
+restores that stored name. These commands do not create or browse multi-file
+archives. Compression can make a file larger; no format is promised to be best
+for every file.
+
+| Command page | Purpose | Typical extension change |
+| --- | --- | --- |
+| [SQ](SQ.md) | Squeeze one file; two input passes | `TXT` -> `TQT` |
+| [USQ](USQ.md) | Restore a squeezed file | Restores embedded name |
+| [CR](CR.md) | Crunch one file; one input pass | `TXT` -> `TZT` |
+| [UNCR](UNCR.md) | Restore supported CRUNCH 2.x files | Restores embedded name |
+| [LZH](LZH.md) | Compress one file in CP/M CrLZH format; one input pass | `TXT` -> `TYT` |
+| [UNLZH](UNLZH.md) | Restore old and new supported CP/M CrLZH files | Restores embedded name |
+
+The extension is a naming convention. A decoder checks the contents; changing
+an extension does not convert the format. UNLZH is for CP/M CrLZH, not general
+LHA/`.LZH` archives. Select the decoder that matches the original format.
+
+### Shared compression command rules
+
+```text
+SQ    [drive:]file [destination-drive:]
+USQ   [drive:]file [destination-drive:]
+CR    [drive:]file [destination-drive:]
+UNCR  [drive:]file [destination-drive:]
+LZH   [drive:]file [destination-drive:]
+UNLZH [drive:]file [destination-drive:]
+```
+
+Square brackets mark optional parts; do not type them. Give one exact 8.3
+filename, optionally with an A: through P: drive prefix. Source and destination
+use your current user area. The destination is a drive only, such as `C:`;
+you cannot supply a new output filename. Names and drive letters are
+case-insensitive. Wildcards, paths, explicit user/DU operands such as
+`A0:FILE.TXT`, quoted names, switches and extra operands are not accepted.
+There is no `/VER` or overwrite option in these builds.
+
+With no source prefix, input comes from your logged drive. With no destination
+operand, output also goes to your logged drive, independently of where the
+source file or command program is located. Thus, while logged onto A:,
+`UNLZH B:REPORT.TYT` restores the embedded name on A: in your current user area.
+
+To locate the program itself on BetterCP/M's Utilities B0:, use, for example:
+
+```text
+B0:SQ A:REPORT.TXT B:
+B0:USQ B:REPORT.TQT C:
+```
+
+The `B0:` before SQ/USQ locates the program; it is not a source-file operand.
+The command's file operands still use ordinary drive-only syntax. On stock
+CP/M 2.2, arrange for the COM program to be accessible by its normal command
+lookup rules. Change to the desired user area before running a command.
+No screen backend or terminal personality is required. A Z80 processor is required.
+
+### Compression file handling and recovery
+
+All six commands leave the source file in place and refuse to replace an
+existing output, including an output that would be the input itself. They use
+a temporary file on the destination drive, verify processing, finish writing,
+close the files and rename the temporary only after success. A decoder's
+checksum failure does not publish a restored file. Allow enough free destination
+space; the source remains present throughout the operation.
+
+CP/M stores files as 128-byte records. Encoders preserve every input-record
+byte, including existing padding and `1Ah` text-end characters. Restored partial
+records are padded with `1Ah`; these commands cannot infer a host file's original
+byte length within its last CP/M record. A round trip preserves CP/M record
+contents. An empty source restores as an empty file. Files need not fit in RAM,
+and extent changes and files over 64K are supported by the sequential file I/O.
+Available program memory is still required; loaded extensions can reduce it.
+
+Normal success prints `COMMAND: complete.` and returns to the prompt. These
+commands do not display a progress indicator, percentage or compression ratio,
+and do not ask permission to overwrite. SQ takes two passes: do not edit or
+replace its source between them. Keep input stable for the other commands too.
+
+| Message text after the command prefix | What to do |
+| --- | --- |
+| `Usage: ...` | Check the exact syntax, filename and drive-only destination. |
+| `cannot open input.` | Check source spelling, drive and current user area. |
+| `output exists; nothing replaced.` | Choose another destination drive or move/rename the existing output first. |
+| `output would replace input.` | Use another destination drive; keep the compressed input. |
+| `unsafe embedded filename.` | The stored name cannot safely be used as a plain 8.3 name. Changing the compressed filename does not fix its header. |
+| `cannot create temporary output.` | Check destination availability, free space, write protection and directory capacity. |
+| `input read failed.` | Check the source media; preserve the compressed/original input. |
+| `output write failed.` or `file close failed.` | Check destination media and free space, then retry from the source. |
+| `cannot finalize output.` | The final rename failed; resolve destination/media problems before retrying. |
+| `checksum mismatch.` | The restored bytes failed the stored check. Obtain another copy if possible; no final output was published. |
+| `cleanup failed; check temporary files.` | A close or temporary-file deletion failed. Inspect the destination before retrying. |
+
+A reset, power loss or lower-level system abort can leave a temporary file.
+Existing temporary files are skipped on later runs; they are never assumed to
+belong to a new invocation. Prefixes are `SQU` (SQ), `USQ`, `CRU` (CR), `UCR`
+(UNCR), `LZU` (LZH), and `ULZ` (UNLZH), followed by five digits and `.$$$`.
+Do not treat one as a verified finished file. Remove only a leftover you have
+identified as belonging to the interrupted operation, while retaining its source.
+An additive checksum is a damage check, not a security or authenticity check.
+
+See the individual command pages for naming rules, supported formats and
+command-specific messages. The [engineering specifications](../engineering/Compression%20Utilities%20Common%20Specification.md)
+describe the reusable macro library and qualification boundaries.
