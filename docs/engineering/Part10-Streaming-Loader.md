@@ -1,6 +1,6 @@
 # Engineering assessment Part 10: streaming command reconstruction
 
-Date: 23 October 2026. Status: bounded assessment complete; awaiting review.
+Date: 23 October 2026. Status: approved by the maintainer; Part 11 authorized.
 The maintainer approved Part 9 and authorized this part. Accepted core 1.0
 remains `3b2d2d7f4fe0472438465165f11fb550d79c8662`.
 
@@ -21,7 +21,8 @@ application has finished; the next application can reuse it.
 The recommendation has real costs. Streaming permits incomplete or rejected
 payload bytes in unlinked memory, adds 129 bytes to the second-stage executable,
 and requires more processing in the measured functional runner. Its fixed
-maximum-header reservation also costs more than full staging for tiny HELLO.
+maximum-header reservation also costs more than full staging for the tiny
+HELLO.CPX test fixture, which is excluded from distribution.
 Retain Part 9's full-staging implementation as a reference. Do not call this a
 speed optimization or a production-ready replacement.
 
@@ -95,7 +96,10 @@ boundary and must not be touched.
 
 The fixed maximum-header cache deliberately favors predictable placement and
 simple bounds. It saves 4,864 bytes for CCP and 7,168 for RCP, but **costs 896
-extra bytes for HELLO** compared with Part 9. This is not a universal reduction
+extra bytes for the HELLO.CPX test fixture** compared with Part 9.
+HELLO.CPX and the separate HELLO.RSX are development fixtures; neither is
+selected by the distribution manifest. This is a small-carrier test result,
+not overhead attributable to a distributed component. This is not a universal reduction
 for every carrier. A variable cache could reduce the small-carrier penalty;
 that additional policy is unnecessary to establish the present result.
 
@@ -219,4 +223,4 @@ mixed-version rejection. Carry forward the TPA, partial-write recovery and
 performance checks. Define the remaining native, stack and private-utility
 adoption gates explicitly. Stop after that bounded integration assessment.
 
-Part 10 is complete and awaits review. No Part 11 work has begun.
+Part 10 was approved by the maintainer; Part 11 is authorized.
