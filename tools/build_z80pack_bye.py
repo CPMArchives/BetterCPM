@@ -8,22 +8,25 @@ from build_ccp import assemble
 from utility_versions import identities
 from component_inputs import capture, classify, digest
 from component_identity import title as identity_title, identification
+from component_development import select as select_display
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def title():
+def title(development=None):
     version, build = identities()['BYE']
-    return identity_title('BYE', version, build, style='numeric')
+    if development is None: development = select_display('utility:BYE', Path.home()/'bin/z80asm', root=ROOT)['development']
+    return identity_title('BYE', version, build, style='numeric', development=development)
 
 
-def version_text():
+def version_text(development=None):
     version, revision = identities()['BYE']
-    return identification('BYE', version, revision, 'cpmsim Emulator Exit', style='numeric')
+    if development is None: development = select_display('utility:BYE', Path.home()/'bin/z80asm', root=ROOT)['development']
+    return identification('BYE', version, revision, 'cpmsim Emulator Exit', style='numeric', development=development)
 
 
-def help_text():
-    return (title() + '\r\n  - - -\r\n | Exit the cpmsim emulator\r\n |\r\n'
+def help_text(development=None):
+    return (title(development) + '\r\n  - - -\r\n | Exit the cpmsim emulator\r\n |\r\n'
             ' |   Usage: BYE [options]\r\n\r\n'
             '   Options:\r\n'
             '     /Y          Exit without confirmation.\r\n\r\n'
@@ -31,7 +34,7 @@ def help_text():
             '     /VER        Display utility identification.\r\n')
 
 
-def build(assembler=Path.home() / 'bin/z80asm', output=None, *, baseline=None):
+def build(assembler=Path.home() / 'bin/z80asm', output=None, *, baseline=None, identity_state='auto'):
     output = Path(output or ROOT / 'build/z80pack-tools')
     output.mkdir(parents=True, exist_ok=True)
     assembler = Path(assembler).resolve()
@@ -45,9 +48,10 @@ def build(assembler=Path.home() / 'bin/z80asm', output=None, *, baseline=None):
         except (ValueError, OSError, KeyError) as error:
             return None, str(error)
     before, unsupported = inputs()
+    display = select_display('utility:BYE', assembler, root=ROOT, mode=identity_state)
     source = (ROOT / 'src/platform/z80pack/bye.mac').read_text()
     text = []
-    for label, screen in [('VERTEXT', version_text()), ('HELPTEXT', help_text())]:
+    for label, screen in [('VERTEXT', version_text(display['development'])), ('HELPTEXT', help_text(display['development']))]:
         text.append(label + ':')
         text.extend(f"        DB '{line}',13,10" for line in screen.splitlines())
         text.append("        DB '$'")
@@ -59,7 +63,8 @@ def build(assembler=Path.home() / 'bin/z80asm', output=None, *, baseline=None):
     source = source.replace('; @bye-queries@', help_query + '\n' + query)
     image = assemble(assembler, source, output / 'BYE.COM', output / 'bye.lst', 0x100)
     after, after_error = inputs()
-    if before != after or unsupported != after_error:
+    if (before != after or unsupported != after_error
+            or display != select_display('utility:BYE', assembler, root=ROOT, mode=identity_state)):
         raise RuntimeError('BYE inputs changed during assembly; no build report emitted')
     if (output / 'BYE.COM').read_bytes() != image:
         raise RuntimeError('BYE output changed before build report')
@@ -71,7 +76,7 @@ def build(assembler=Path.home() / 'bin/z80asm', output=None, *, baseline=None):
         'status': 'build-record; qualification not asserted',
         'identity': dict(zip(('version', 'revision'), identities()['BYE'])),
         'artifact': {'name': 'BYE.COM', 'bytes': len(image), 'sha256': digest(image)},
-        'input_record': before,
+        'input_record': before, 'display_selection': display,
         'comparison': classify(before, reference) if before else
             {'state': 'unknown', 'reason': unsupported},
         'provenance': {'repository_commit': commit,
@@ -88,6 +93,7 @@ if __name__ == '__main__':
     p.add_argument('--output', type=Path, default=ROOT / 'build/z80pack-tools')
     p.add_argument('--baseline', type=Path,
                    help='explicit input-record reference; never assigns a revision')
+    p.add_argument('--identity-state', choices=('auto','assigned','development'), default='auto')
     args = p.parse_args()
-    data = build(args.assembler, args.output, baseline=args.baseline)
+    data = build(args.assembler, args.output, baseline=args.baseline, identity_state=args.identity_state)
     print(f'{args.output / "BYE.COM"}: {len(data)} bytes')

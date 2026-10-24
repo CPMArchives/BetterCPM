@@ -41,6 +41,8 @@ def plan(reference, reference_bytes, candidate, candidate_bytes):
     revision = old['assigned_identity']['revision']
     if new['assigned_identity']['revision'] != revision:
         raise ValueError('candidate must be built using the reference revision')
+    if reference.get('display_selection', {}).get('development', False) != candidate.get('display_selection', {}).get('development', False):
+        raise ValueError('reference/candidate display state differs; compare at the same display state')
     changed = reference_bytes != candidate_bytes
     return {
         'schema': 1, 'status': 'revision-proposal; not acceptance',
@@ -71,6 +73,8 @@ def accept(proposal, reference, reference_bytes, candidate, candidate_bytes,
             or record['inputs']['variant'] != proposal['variant']
             or record['fingerprint'] != proposal['candidate_input_fingerprint']):
         raise ValueError('final inputs differ from the reviewed candidate')
+    if final.get('display_selection', {}).get('development', False) != candidate.get('display_selection', {}).get('development', False):
+        raise ValueError('final display state differs from reviewed candidate')
     if not proposal['executable_changed'] and final_bytes != candidate_bytes:
         raise ValueError('retained revision requires identical final executable')
     return {

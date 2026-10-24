@@ -102,6 +102,17 @@ class RevisionTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'identical final'):
             accept(proposal,self.old,self.old_bytes,self.old,self.old_bytes,final,self.new_bytes)
 
+    def test_different_candidate_display_state_refused(self):
+        self.new['display_selection'] = {'development': True}
+        with self.assertRaisesRegex(ValueError, 'display state differs'):
+            plan(self.old,self.old_bytes,self.new,self.new_bytes)
+
+    def test_different_final_display_state_refused(self):
+        final = receipt(self.new_bytes,revision=15,source='new')
+        final['display_selection'] = {'development': True}
+        with self.assertRaisesRegex(ValueError, 'final display state'):
+            self.accept(final,self.new_bytes)
+
 
 if __name__ == '__main__':
     unittest.main()
