@@ -100,6 +100,36 @@ D_EXIT:
  CALL D_RESTORE
  LD SP,(D_OLDSP)
  RET
+D_CANCEL:
+ LD SP,OLDST
+ XOR A
+ LD (D_CAPTURE),A
+ LD (WRTENAB),A
+ LD (HUSH),A
+ LD A,(D_TXLIVE)
+ OR A
+ JR Z,D_CANCEL_DONE
+ LD DE,FCB
+ LD C,16
+ CALL D_BDOS
+ CP 255
+ JR NZ,D_CANCEL_CLOSED
+ LD DE,D_IO_MSG
+ LD C,9
+ CALL D_BDOS
+D_CANCEL_CLOSED:
+ ; Even a failed close cannot authorize publishing this staged partial file.
+ XOR A
+ LD (D_TXLIVE),A
+ LD (FOPEN),A
+ LD DE,D_CANCEL_MSG
+ LD C,9
+ CALL D_BDOS
+ LD HL,D_TEMP
+ CALL D_PRINT_NAME
+D_CANCEL_DONE:
+ JP D_EXIT
+D_CANCEL_MSG: DB 'DASM: cancelled; output not published. Retained stage:',13,10,'$'
 D_EXIT_MSG:
  LD C,9
  CALL D_BDOS
@@ -218,7 +248,7 @@ D_SYMROOM:
  ADD HL,DE
  LD DE,5
  ADD HL,DE
- LD DE,D_BIN
+ LD DE,INITOFF
  OR A
  SBC HL,DE
  JP NC,D_SPACE

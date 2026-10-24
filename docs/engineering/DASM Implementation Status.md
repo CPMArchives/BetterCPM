@@ -25,6 +25,10 @@ qualification is claimed.
 - Private 512-byte stack, BDOS wrapper, startup active-ceiling check, bounded
   8 KiB binary workspace, symbol/control/comment insertion limits, staged
   binary reload, guarded decoder/dump/search accesses and orderly `G` return.
+- Confirmed Ctrl-C abort closes and retains staged output without publishing,
+  checks close failure, restores caller state and exits. Restart is refused
+  while an ASM transaction is pending. Non-Ctrl-C interruption and the wider
+  console-cancellation matrix still require qualification.
 - Binary reads retain all physical CP/M record bytes, including 00/1A/FF.
   `Nhex` explicitly chooses a nonzero logical length up to the readable extent.
 - DASM resolves drive/user/name identities. Individual output saves reject
@@ -82,7 +86,7 @@ CSEG and DSEG yielded `0100 START<TAB>0104 HELLO<TAB><CRLF>` and linked bytes
 | R .DSY | Canonical native converter output |
 | R/S .ALL | Explicitly refused: descriptor-based session transaction is not implemented |
 | U | Fixed comment arena only; arbitrary relocation refused |
-| X | Inherited restart; restart-during-output recovery audit pending |
+| X | Restart refuses a pending output transaction |
 | G | New orderly return restoring caller stack, DMA and user state |
 | Nhex | New explicit logical input length, 1..8192 bytes |
 | /VER, /HELP | Noncreating startup identity/usage queries; detailed interactive help is H |
@@ -122,6 +126,29 @@ inject make/read/write/close/rename failures. It exercises compiled COM code,
 not a Python implementation of DASM or DSYM. The corpus enumerates byte values
 in base, CB, ED, DD, FD, DD-CB and FD-CB contexts, plus raw data. This is broad
 reconstruction coverage, **not every possible instruction stream**.
+
+## Measured development layout
+
+The current DASM image is 14,080 bytes, SHA-256
+`73049f2e30b85bccd31f79ee453f1994abbae43d37c18306bd121a084eaf00f8`.
+Its arena declarations place control storage at 3800..3DFF, live symbol storage at
+3E00..4DFF, input at 4F00..6EFF, comments at 6F00..76FF and temporary staging
+at 7700..96FF. The startup check therefore requires active BDOS entry/ceiling
+word 0006H to be at least **9800H**, including the 256-byte margin. This is a
+fixed-capacity implementation; it refuses a smaller TPA rather than shrinking
+its arenas. The symbol insertion guard ends at INITOFF (4E00H), preserving the unused
+4E00..4EFF gap and the declared 4 KiB symbol budget.
+
+Full-core edge tests accept an 8,192-byte file, refuse 8,193 bytes, reject
+zero/overlong logical lengths, accept the exact 9800H startup ceiling and refuse
+97FFH. A resident-memory canary from the supplied ceiling through D7FFH must
+remain untouched in every command campaign. This supplements, rather than
+replaces, the required resident-module campaign on real platform media.
+
+DSYM is 7,158 bytes, SHA-256
+`14633f5eb500f2b9955a901d97d386b46fda51dd699e4253ebe7aaa07a22ac94`.
+Its fixed table holds at most 255 names of at most 12 characters; it makes its
+own active-TPA check before opening files.
 
 ## Historical baseline
 

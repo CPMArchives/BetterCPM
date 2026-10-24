@@ -35,8 +35,8 @@ class Dasm(Command):
             self.console+='\r\n'+line.decode()+'\r\n'
             return 0
         if fn==2:self.console+=chr(self.reg['E'].value);return 0
-        if fn==11:return 0
-        if fn==1:return ord(self.responses.pop(0))
+        if fn==11:return 255 if self.break_keys else 0
+        if fn==1:return ord((self.break_keys if self.break_keys else self.responses).pop(0))
         if fn==14:self.drive=self.reg['E'].value+1;return 0
         if fn==32:
             if self.reg['E'].value!=255:self.user=self.reg['E'].value
@@ -55,8 +55,8 @@ class Dasm(Command):
             self.mem[at+1:at+12]=bytes(self.mem[de+1:de+12])
         return value
 
-    def execute(self,lines,files=None,*,tpa=0xd000,failures=None,responses=()):
-        self.lines=list(lines);self.responses=list(responses)
+    def execute(self,lines,files=None,*,tpa=0xd000,failures=None,responses=(),break_keys=()):
+        self.lines=list(lines);self.responses=list(responses);self.break_keys=list(break_keys)
         self.lib.set_hooks(5,0xfffe,self.hook)
         self.files=dict(files or {});self.original=dict(self.files)
         self.drive,self.user=1,0
@@ -133,6 +133,17 @@ def main():
         assert any(k[2].endswith('.BAK') and v.startswith(b'KEEP') for k,v in m.files.items()),m.files
         text=m.execute([],tpa=0x2000)
         assert 'insufficient' in text,text
+        text=m.execute(['RTINY.COM','N6','STINY.ASM','P100,106','QL100,106'],
+                       {tiny:bytes.fromhex('3e21d30200c9')},break_keys=['\x03','Y'])
+        assert 'cancelled' in text and out not in m.files,text
+        assert any(k[2].endswith('.$$$') for k in m.files),m.files
+        text=m.execute(['RTINY.COM','N6','STINY.ASM','QL100,106'],
+                       {tiny:bytes.fromhex('3e21d30200c9')},break_keys=['\x03','Y'],
+                       failures={'close_output':1})
+        assert 'I/O failed' in text and out not in m.files,text
+        text=m.execute(['RTINY.COM','N6','STINY.ASM','X','P100,106','QL100,106','Z','G'],
+                       {tiny:bytes.fromhex('3e21d30200c9')})
+        assert 'until ASM Closed' in text and out in m.files,text
         for operation in ['make','write','close_output','rename']:
             for existing in [False,True]:
                 files={tiny:bytes.fromhex('3e21d30200c9')}
