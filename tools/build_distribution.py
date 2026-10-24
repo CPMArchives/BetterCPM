@@ -22,10 +22,10 @@ def digest(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def run(command, cwd, log=None, timeout=900):
+def run(command, cwd, log=None, timeout=900, env=None):
     result = subprocess.run(list(map(str, command)), cwd=cwd, check=False,
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                            timeout=timeout)
+                            timeout=timeout, env=env)
     if log:
         Path(log).write_bytes(result.stdout)
     if result.returncode:
@@ -391,6 +391,7 @@ def publish_named(generation, reports, root=ROOT):
             target = report['target']
             folder = root / ('build/trs80' if target == 'trs80gp'
                              else 'build/z80pack/disks/library')
+            if report.get('profile'):folder=folder/report['profile']
             folder.mkdir(parents=True, exist_ok=True)
             destination = folder / image.name
             source = generation / target / image.name
@@ -416,9 +417,10 @@ def publish_generation(publication, generation, reports):
             try:
                 existing = json.loads((target / 'report.json').read_text())
                 image_hash = digest((target / image.name).read_bytes())
+                package_hash = digest((target/'SYSTEM.SYS').read_bytes()) if 'package_sha256' in report else None
             except (OSError, ValueError) as error:
                 raise ValueError(f'{generation}: existing release is incomplete or unreadable; previous release preserved') from error
-            if existing != report or image_hash != report['sha256']:
+            if existing != report or image_hash != report['sha256'] or package_hash != report.get('package_sha256'):
                 raise ValueError(f'{generation}: existing release differs or failed integrity check; previous release preserved')
         return True
     with tempfile.TemporaryDirectory(prefix='.candidate-', dir=generation.parent) as publish_temp:
@@ -432,7 +434,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--target', choices=['all','z80pack','trs80gp'], default='all')
     p.add_argument('--profile', choices=['default', *PROFILES], default='default',
-                   help='explicit checked RAM profile (currently preparation only)')
+                   help='explicit checked cpmsim RAM distribution profile')
     p.add_argument('--prepare-profile', action='store_true',
                    help='stage profile inputs without assembling or publishing a distribution; requires --work')
     p.add_argument('--output', type=Path, default=ROOT/'build/distribution')
@@ -461,7 +463,27 @@ def main():
                           'context':str(root/'build/profile/context.json')}, indent=2))
         return
     if profile:
-        p.error('checked-profile disk generation awaits normal-build integration; use --prepare-profile')
+        from build_profiles import context_environment
+        identity=source_identity(profile)
+        a.output=a.output.resolve();a.output.mkdir(parents=True,exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix='bettercpm-checked-dist-') as temporary:
+            work=a.work.resolve() if a.work else Path(temporary)/'work'
+            root=prepare_profile(work,a.target,identity,profile,a.reuse_work)
+            publication=work/('candidate-'+Path(temporary).name);publication.mkdir(parents=True)
+            out=publication/'z80pack'
+            command=[sys.executable,str(root/'tools/build_checked_distribution.py'),
+                     '--output',str(out),'--simulator',str(a.simulator.resolve())]
+            if a.reuse_work:command.append('--reuse')
+            environment=context_environment(root/'build/profile/context.json',root/'src/system/layout.inc')
+            run(command,root,work/('checked-'+profile.name+'.log'),timeout=1800,env=environment)
+            report=json.loads((out/'report.json').read_text());image=out/report['image']
+            if source_identity(profile)!=identity:raise ValueError('source changed; checked candidate not published')
+            reports=[(out,image,report)]
+            generation=a.output/('release-'+profile.name+'-'+identity['revision'][:12]+'-'+digest(json.dumps(report,sort_keys=True).encode())[:12])
+            publish_generation(publication,generation,reports)
+            named=publish_named(generation,reports)
+            print('PASS '+str(named[0])+': checked boot and live acceptance')
+        return
     manifest = json.loads(MANIFEST.read_text())
     identity = source_identity()
     a.output = a.output.resolve()

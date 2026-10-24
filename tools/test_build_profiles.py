@@ -118,12 +118,12 @@ class BuildProfiles(unittest.TestCase):
                 prepare_profile(work, 'z80pack', identities[name], profile, True)
             path.write_bytes(before)
 
-    def test_unsupported_and_unfinished_builds_fail_before_creating_output(self):
+    def test_unsupported_builds_fail_before_creating_output(self):
         environment = dict(os.environ);environment.pop(CONTEXT_ENV, None)
         for args in [
                 ['--profile', 'cpmsim-fullram', '--target', 'all', '--prepare-profile'],
                 ['--profile', 'cpmsim-fullram', '--target', 'trs80gp', '--prepare-profile'],
-                ['--profile', 'cpmsim-fullram', '--target', 'z80pack'],
+                ['--profile', 'cpmsim-legacy-checked', '--target', 'trs80gp'],
                 ['--prepare-profile']]:
             work = Path(self.temporary.name)/'not-created'
             result = subprocess.run([sys.executable, str(ROOT/'tools/build_distribution.py'),
