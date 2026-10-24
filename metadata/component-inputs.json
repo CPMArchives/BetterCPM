@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "components": {
+    "utility:BYE": {
+      "status": "pilot",
+      "target": "z80pack",
+      "profile": "default",
+      "build_mode": "cross",
+      "configuration": {"origin": 256, "assembler_flags": ["-fb"]},
+      "files": [
+        "src/platform/z80pack/bye.mac",
+        "src/utilities/common/version.inc",
+        "src/system/layout.inc",
+        "tools/build_z80pack_bye.py",
+        "tools/build_ccp.py",
+        "tools/system_layout.py",
+        "tools/build_profiles.py",
+        "tools/checked_carriers.py",
+        "tools/checked_build_contract.py",
+        "tools/rsx_container.py",
+        "tools/utility_versions.py",
+        "tools/component_registry.py",
+        "tools/component_inputs.py"
+      ]
+    }
+  }
+}
