@@ -5246,13 +5246,7 @@ A0>TIME /VER
 
 The utility displays its identification and exits without performing its ordinary operation.
 
-Do not combine `/VER` with filenames or other options unless the command reference explicitly permits it.
-
-An invalid combination may produce:
-
-```text
-Invalid /VER usage.
-```
+An exact `/VER` token ignores filenames and other options and displays identification without performing the command. Where `/HELP` is implemented, an exact `/HELP` token takes precedence and shows help instead. Longer tokens such as `/VERIFY` are not queries. Quoted startup text and PIP string operands retain their documented literal-data meaning.
 
 The `/VER` convention applies to BetterCP/M utilities. Third-party CP/M programs may use different conventions or provide no version-reporting facility.
 
@@ -8163,7 +8157,7 @@ A0>CONFIG /VER
 
 CONFIG displays its version and build identification without modifying the system.
 
-The option must be used alone.
+`/VER` ignores other command-line arguments.
 
 ##### Limitations
 
@@ -10504,7 +10498,7 @@ A0>:COPY /B /O /V B1:*.DAT C3:
 
 #### A.5 Utility Version Information
 
-Most utility programs accept standalone `/VER`, for example `CONFIG /VER`. Use `:DIR /VER` for the transient DIR identity. `VER` identifies the operating system; `VER /V` adds subsystem detail. See [Section 13.4](#section-13-4) for version conventions and restrictions.
+BetterCP/M-owned utility programs recognize an exact `/VER` token anywhere and ignore other arguments, for example `CONFIG /VER`. Use `:DIR /VER` for the transient DIR identity. `VER` identifies the operating system; `VER /V` adds subsystem detail. See [Section 13.4](#section-13-4) for version conventions and restrictions.
 
 <a id="section-a-6"></a>
 
@@ -12774,11 +12768,11 @@ Do not assume that the original was removed.
 
 ##### `Invalid /VER usage.`
 
-**Meaning:** The `/VER` option was combined with arguments or options that the utility does not permit.
+**Legacy message:** An older build rejected `/VER` combined with other arguments. Current BetterCP/M-owned utilities ignore those other arguments.
 
-Most BetterCP/M utilities require `/VER` to be used alone.
+The common `/VER` contract ignores other arguments. If a utility provides `/HELP` too, an exact `/HELP` token takes precedence. Older binaries may still emit this historical diagnostic; use the current build.
 
-**What to do:** Enter the utility name followed only by `/VER`.
+**What to do:** Use the current utility build. Extra arguments with `/VER` are accepted.
 
 For example:
 

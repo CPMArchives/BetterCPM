@@ -1,4 +1,5 @@
         INCLUDE layout.inc
+        INCLUDE profile.inc
 
 ; ********************************************************************************
 ; *                   BetterCP/M Protected Extension Services                    *
@@ -123,7 +124,11 @@ EX_RLOAD:                               ; load RSX manager overlay
         LD      SP,LY_RSX+03FDH
         PUSH    IX
         PUSH    DE                      ; preserve the public request for result pickup
+        IF BP_CHECKED EQ 1
+        CALL    LY_CFG
+        ELSE
         CALL    RSXCONTROL
+        ENDIF
         POP     DE
         OR      A
         JR      NZ,EX_RMFAIL

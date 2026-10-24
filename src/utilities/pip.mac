@@ -142,10 +142,10 @@ PV_SCAN:
         JR Z,PV_CHAR
         LD A,(HL)
         CP 01AH
-        JR NZ,PV_NEXT
+        JP NZ,PV_NEXT
         XOR A
         LD (PP_STRING),A
-        JR PV_NEXT
+        JP PV_NEXT
 PV_CHAR:
         LD A,(HL)
         CP '['
@@ -160,23 +160,23 @@ PV_CHAR:
         CP 'S'
         JR Z,PV_STRING
         CP 'Q'
-        JR NZ,PV_NEXT
+        JP NZ,PV_NEXT
 PV_STRING:
         LD A,1
         LD (PP_STRING),A
-        JR PV_NEXT
+        JP PV_NEXT
 PV_OPEN:
         LD A,1
         LD (PP_BRACK),A
-        JR PV_NEXT
+        JP PV_NEXT
 PV_CLOSE:
         XOR A
         LD (PP_BRACK),A
-        JR PV_NEXT
+        JP PV_NEXT
 PV_SLASH:
         LD A,(HL)
         CP '/'
-        JR NZ,PV_NEXT
+        JP NZ,PV_NEXT
         LD A,L
         CP 081H
         JR Z,PV_TRY
@@ -184,7 +184,9 @@ PV_SLASH:
         LD A,(HL)
         INC HL
         CP ' '
-        JR NZ,PV_NEXT
+        JR Z,PV_TRY
+        CP 9
+        JP NZ,PV_NEXT
 PV_TRY:
         PUSH HL
         PUSH BC
@@ -210,6 +212,8 @@ PV_MATCH:
         JR Z,PV_FOUND
         LD A,(HL)
         CP ' '
+        JR Z,PV_FOUND
+        CP 9
         JR NZ,PV_MISS
 PV_FOUND:
         POP BC

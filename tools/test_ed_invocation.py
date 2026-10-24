@@ -2,6 +2,7 @@
 """ED front-end grammar and pure /VER: no file calls or DU mutations allowed."""
 from pathlib import Path
 from test_bios import Z80,SENTINEL
+from utility_versions import banner
 from test_vt52_foundation import symbols
 ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'build/ed-development'
@@ -47,7 +48,7 @@ def main():
     for tail in ['/VER',' /ver  ','/VER X','X /VER','/VER /VER']:
         _,_,calls,text=execute(tail,'ED_START')
         assert calls==[9]
-        assert text==('BetterCP/M ED 1.0 (Build 001)\r\n' if tail.strip().upper()=='/VER' else 'Invalid /VER usage.\r\n')
+        assert text==banner('ED')+'\r\n'
     print('PASS: ED invocation, all 16 drives/32 users, output inheritance, invalid selectors/names and pure /VER; no disk access or DU mutation')
 
 

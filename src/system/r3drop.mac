@@ -1,4 +1,5 @@
         INCLUDE layout.inc
+        INCLUDE profile.inc
 ; @rsx-container-slots@
 
 ; ********************************************************************************
@@ -52,7 +53,11 @@ RD_OPERATION:                           ; accept transactional removal
         INC     HL
         LD      D,(HL)
         EX      DE,HL
+        IF BP_CHECKED EQ 1
+        LD      DE,1000H                ; overlay workspace plus manager stack band
+        ELSE
         LD      DE,0F00H                ; overlay workspace plus manager stack band
+        ENDIF
         OR      A
         SBC     HL,DE
         JP      C,RD_BAD
@@ -358,7 +363,11 @@ RD_MAGICLP:                             ; compare carrier signature bytes
         LD      (RD_FMT),A
         CP      1
         JR      Z,RD_ABI
+        IF BP_CHECKED EQ 1
+        CP      3
+        ELSE
         CP      2
+        ENDIF
         JP      NZ,RD_BAD
 RD_ABI:                                 ; select the supported carrier ABI
         INC     HL

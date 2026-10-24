@@ -4,8 +4,9 @@
 
 **PASS for the supported-format exchange matrix**, qualified 2026-10-23 on
 stock z80pack 62K CP/M 2.2 with a Z80 CPU, user area zero and disposable
-IBM-3740 disks. The final version 1.0 Build 003 binaries are feature-frozen; no production
-codec or command changes were needed for this rerun.
+IBM-3740 disks. The final version 1.0 Build 004 binaries are feature-frozen; no production
+codec or file-policy corrections were needed for this rerun. The requested
+forgiving-query amendment changes startup handling and identification only.
 
 The campaign ran **178 cases and 340 CP/M command invocations**. Counts are:
 148 successful decoded-file comparisons, 26 intentional unsafe-name refusals,
@@ -15,7 +16,7 @@ file exchange. The historical control pairs add 52 byte-for-byte comparisons.
 
 Evidence: [machine-readable results](Compression-Historical-Interop-evidence.json)
 and [178 console transcripts, run log, query logs and test-source snapshots](Compression-Historical-Interop-evidence.tar.gz).
-The transcript bundle SHA-256 is `64876bee27320a6d25cbf2603d2c69ae3e752026738044fadfe22e6349ff8469`. The JSON binds historical
+The transcript bundle SHA-256 is `9c5428622097536378a81461dc24c19647444e59694786884f5049606029c796`. The JSON binds historical
 and current command hashes, input/output hashes, simulator and boot-template
 hashes, test source and per-case console hashes. This report qualifies those
 artifacts, not every historical executable sharing a version number.
@@ -23,7 +24,7 @@ artifacts, not every historical executable sharing a version number.
 The six final COM files were read from `build/utilities/` and required to match
 fresh builds byte for byte before any campaign command ran (`--commands-dir`).
 Their feature baseline is `00e6785`, merged as `569825d`; each identifies as
-version 1.0 Build 003. This evidence supersedes the pre-`/VER` command-baseline
+version 1.0 Build 004 after the forgiving query amendment. This evidence supersedes the pre-`/VER` command-baseline
 run retained in Git history (`aa7b9b9`). The report now also pins the shared
 includes, all codec sources, builders, identity/help generation, utility
 metadata and assembler, alongside the runner's own hash. A source revision
@@ -37,24 +38,22 @@ aliased to `HENC`, `CTRL` or `HDEC` to avoid collision with our programs.
 
 | Command | Version/build | COM bytes | SHA-256 |
 | --- | --- | ---: | --- |
-| SQ | 1.0 / 003 | 8123 | `33251f8a7746b7dd585f4664b5ee477fb8c58a5dd533011365760abeac267e82` |
-| USQ | 1.0 / 003 | 5398 | `731f60a4aebea07ad908481edce02c4644aab9d1c46966bad7205d2dcd604dfb` |
-| CR | 1.0 / 003 | 29443 | `bfd064bd0fdb54410b9f603187caeb9a310e64c7848d8ec05e0d99bd5bb53c56` |
-| UNCR | 1.0 / 003 | 31206 | `dcfa927cb0af3dcd86cc161081ccc67c86faa2bb3d89a6af7acdf929a75cf5ef` |
-| LZH | 1.0 / 003 | 17225 | `6a7084aa8cd3059593966c192185656b89d9a50afbd5b624d549168dbfa07805` |
-| UNLZH | 1.0 / 003 | 12215 | `9ed3f70dc0b69222bfc5b8106021e68ebf5180fffcf7c7e5863eac2df502ce26` |
+| SQ | 1.0 / 004 | 8035 | `2517bf6d77631f6f6408a4b2bb7dcca769ae59a7ab0931b4dfe3ffdb2163335d` |
+| USQ | 1.0 / 004 | 5310 | `25fdd2e566cc241a6f7b5623fc4a075a4c1843e45091309315de5bfa7fc247a0` |
+| CR | 1.0 / 004 | 29355 | `8a089b84239004602dfd9ad0c4586c5c94ad73b9f257553521e6004569e381a3` |
+| UNCR | 1.0 / 004 | 31118 | `e77200e4a8c36d3e7d455eeaed96c289a06e82a4756f29023a7850374e760be3` |
+| LZH | 1.0 / 004 | 17137 | `36eff2d7dfa413ce18699d31291107c588fa84deabf957c7b9c27ec033c45eef` |
+| UNLZH | 1.0 / 004 | 12127 | `2f21b8e6c81766c407cccdfb08029d39753f40fad4c43ee47050de9b6cd2e89a` |
 
 The [1.0 qualification index](Compression-1.0-Qualification.json) binds these
 artifacts, report and transcript bundle hashes and the outstanding release
-gates. The refreshed query campaign passes 344 full-Z80 cases and 90 stock
+gates. The refreshed query campaign passes 356 full-Z80 cases and 90 stock
 CP/M 2.2 command invocations, including complete identities/help screens,
 bounded and mixed arguments, no file access, state preservation and prompt
-return. Its logs and test sources are included in the bundle. A targeted
-negative check also confirms a one-byte final-COM mismatch is rejected before
-campaign execution; that log records an expected assertion, not a failed
-historical exchange.
+return. Its logs and test sources are included in the bundle. Final COM files are required to match fresh builds before campaign execution.
 
-Remaining BetterCP/M platform, native-build and final Utilities disk checks
+Separate BetterCP/M two-platform and [native ZSM4/LINK qualification](Compression%20Native%20Build%20Qualification.md)
+now pass for these same executable bytes. Remaining reconstruction and final Utilities disk checks
 are open in the [1.0 release checklist](../releases/1.0-ROADMAP.md#compression-utilities--10-feature-freeze-and-release-checklist).
 Stock CP/M 2.2 qualification does not close those gates. Any changed executable
 requires refreshed relevant evidence before release; identical rebuilds retain

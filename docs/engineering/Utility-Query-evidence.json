@@ -1,0 +1,269 @@
+{
+  "status": "PASS",
+  "contract": "Exact /VER ignores other arguments; existing /HELP ignores other arguments and takes precedence when both are implemented. Literal-data boundaries remain command-specific.",
+  "transient_and_resident_query_cases": 250,
+  "codec_query_cases": 356,
+  "codec_stock_cpm22_queries": 90,
+  "pre_private_stack_peak_bytes": 24,
+  "pre_private_stack_budget_bytes": 32,
+  "focused_regressions": [
+    "query-config-iobyte.log",
+    "query-config_command_line.log",
+    "query-copy_shared_input.log",
+    "query-ddt.log",
+    "query-dump.log",
+    "query-dup_command_line.log",
+    "query-ed_invocation.log",
+    "query-era_shared_choice.log",
+    "query-pip_parser.log",
+    "query-pip_shared_confirmation.log",
+    "query-sysgen_shared_choice.log",
+    "query-sysgen_command_line.log"
+  ],
+  "commands": {
+    "STAT": {
+      "version": "1.0",
+      "build": 3,
+      "bytes": 7017,
+      "sha256": "852a980fb712bb6815be728657b2ce960cc39b231c3ca5e5145ba5c4a7fd55b6"
+    },
+    "COPY": {
+      "version": "1.0",
+      "build": 6,
+      "bytes": 11967,
+      "sha256": "ffc8e59c276324ddaede9c8b2ac39b4d9d398bc9c50466a29c1973f5d10259fc"
+    },
+    "DIR": {
+      "version": "1.0",
+      "build": 7,
+      "bytes": 9746,
+      "sha256": "b82bfeefc12a037c98374c34ea5b8891a9e444ebf5d858443b4bc1b451f1a5e2"
+    },
+    "CONFIG": {
+      "version": "1.0",
+      "build": 16,
+      "bytes": 15491,
+      "sha256": "cdec95b8512904d993d5db4a6a29b2b6f128ad8f44e1e3b89a67d0457a4caa52"
+    },
+    "DUP": {
+      "version": "1.0",
+      "build": 7,
+      "bytes": 8549,
+      "sha256": "a07ef62c7bb16eb9ce22955297c3176d6ec7f880954ce83b91075ebe02ebf54a"
+    },
+    "TIME": {
+      "version": "1.0",
+      "build": 3,
+      "bytes": 1367,
+      "sha256": "eab68816df8abed17290b22059bef156dabb4ec757133b5b61a8822209f662c6"
+    },
+    "SYSGEN": {
+      "version": "1.0",
+      "build": 8,
+      "bytes": 5775,
+      "sha256": "e1256caa7efb393fe9d3505c2bd3478be087f2b374598b87a50b4a5d2f3c4885"
+    },
+    "SUBMIT": {
+      "version": "1.0",
+      "build": 3,
+      "bytes": 3497,
+      "sha256": "0bb03ff8fc5329a86e2ef1e32ee62b9720055d0d9210498b3943085c5fb61fc2"
+    },
+    "XSUB": {
+      "version": "1.0",
+      "build": 3,
+      "bytes": 319,
+      "sha256": "24f654d59d2e00c6894d6e9f38cd3028442aec75ce5ff8aa2c6e1dbb10804697"
+    },
+    "CPX": {
+      "version": "1.0",
+      "build": 3,
+      "bytes": 867,
+      "sha256": "0b0e9fdc17d8c32b7cebfd300b3c2388996afd62f836b67b0c2e0cee3f1efe99"
+    },
+    "RSX": {
+      "version": "1.0",
+      "build": 3,
+      "bytes": 950,
+      "sha256": "c04751ed2653ddc38a5dcc24c8cbce7396abb7b2e9cc1f7ba41b4e375eb9accb"
+    },
+    "USER": {
+      "version": "1.0",
+      "build": 5,
+      "bytes": 5158,
+      "sha256": "3dfe6794fa6eca3da0393985121be98cf2015e196195e90b39a7fe0fbaacf7e3"
+    },
+    "CLS": {
+      "version": "1.0",
+      "build": 6,
+      "bytes": 5158,
+      "sha256": "b7cc8179f74a49b2fd90c8660573a95b05e453eb2d2062704bde756e242c1d80"
+    },
+    "VER": {
+      "version": "1.0",
+      "build": 7,
+      "bytes": 5158,
+      "sha256": "41e0b01a1205698f9feb6a0226744d5cca30f5b9a5d96be417ec017957c5e512"
+    },
+    "RCP": {
+      "version": "1.0",
+      "build": 14,
+      "bytes": 7083,
+      "sha256": "1d31e870e15d7a633c73ef4f26cfd7da241aba37f4f37632cc02e5a0e6ba698d"
+    },
+    "SYSBUILD": {
+      "version": "1.0",
+      "build": 3,
+      "bytes": 1960,
+      "sha256": "7f1317f89f52094df5bec8520ee5a582465b178324d4be9d93b591b446bc548b"
+    },
+    "RESPACK": {
+      "version": "1.0",
+      "build": 3,
+      "bytes": 1152,
+      "sha256": "df38a3f4d6e9759a29556a7ddc551682accd65cab0ae99864a91d34de696a58b"
+    },
+    "RLMBUILD": {
+      "version": "1.0",
+      "build": 3,
+      "bytes": 939,
+      "sha256": "4b723f34e31f5bc94f302cad968c661e3ea04a8febd09920f1be8c8e6e257a02"
+    },
+    "ERA": {
+      "version": "1.0",
+      "build": 5,
+      "bytes": 7854,
+      "sha256": "a4a9df01f8374b59fb1eb0477294dc454128dc579daff3e32cb5f8370a585cbe"
+    },
+    "REN": {
+      "version": "1.0",
+      "build": 9,
+      "bytes": 5841,
+      "sha256": "1d8a2adeae813a9bf17b7ca3b6b71bea6c533f3f18ace1c56bb35ebbfc880a17"
+    },
+    "TYPE": {
+      "version": "1.0",
+      "build": 7,
+      "bytes": 4354,
+      "sha256": "0ac28c044ff426b3a619d5e0c0c77113f360964c3d162a91a434ffb37eed896d"
+    },
+    "PIP": {
+      "version": "1.0",
+      "build": 29,
+      "bytes": 14450,
+      "sha256": "dcef9d4d47c23055dda84a94a2a92fa69f3f22e8506d15f674c146c0bfb961f5"
+    },
+    "ADMTST": {
+      "version": "1.0",
+      "build": 4,
+      "bytes": 1597,
+      "sha256": "42d71b5eae882afe6f171550ce6710681b444bbbe9792c22e7a5beed1ebda5d4"
+    },
+    "VT52TST": {
+      "version": "1.0",
+      "build": 4,
+      "bytes": 963,
+      "sha256": "4c8c7487e735f0b42c860b9e005c1532f111c3cc6369eb60871e586b8669c759"
+    },
+    "ANSITST": {
+      "version": "1.0",
+      "build": 3,
+      "bytes": 668,
+      "sha256": "9205f7f8b7dbf937fdf6834ea9497edcb1341f3321f21398c2da7ce259db4d94"
+    },
+    "ED": {
+      "version": "1.0",
+      "build": 3,
+      "bytes": 8537,
+      "sha256": "fe02f1610c04211a38ad28a055cf224f31c5e226dcb3df21585719514d9d2071"
+    },
+    "DUMP": {
+      "version": "1.0",
+      "build": 4,
+      "bytes": 14134,
+      "sha256": "970bd9ae32b9b51a29ebd2d5b9a63cc500c12f323d583575161229150cb11aeb"
+    },
+    "DDT": {
+      "version": "1.0",
+      "build": 2,
+      "bytes": 6528,
+      "sha256": "83da74cb5cd0e105cee410c10e32e2cb86389036e84fc7620b25b403c3327665"
+    },
+    "SQ": {
+      "version": "1.0",
+      "build": 4,
+      "bytes": 8035,
+      "sha256": "2517bf6d77631f6f6408a4b2bb7dcca769ae59a7ab0931b4dfe3ffdb2163335d"
+    },
+    "USQ": {
+      "version": "1.0",
+      "build": 4,
+      "bytes": 5310,
+      "sha256": "25fdd2e566cc241a6f7b5623fc4a075a4c1843e45091309315de5bfa7fc247a0"
+    },
+    "CR": {
+      "version": "1.0",
+      "build": 4,
+      "bytes": 29355,
+      "sha256": "8a089b84239004602dfd9ad0c4586c5c94ad73b9f257553521e6004569e381a3"
+    },
+    "UNCR": {
+      "version": "1.0",
+      "build": 4,
+      "bytes": 31118,
+      "sha256": "e77200e4a8c36d3e7d455eeaed96c289a06e82a4756f29023a7850374e760be3"
+    },
+    "LZH": {
+      "version": "1.0",
+      "build": 4,
+      "bytes": 17137,
+      "sha256": "36eff2d7dfa413ce18699d31291107c588fa84deabf957c7b9c27ec033c45eef"
+    },
+    "UNLZH": {
+      "version": "1.0",
+      "build": 4,
+      "bytes": 12127,
+      "sha256": "2f21b8e6c81766c407cccdfb08029d39753f40fad4c43ee47050de9b6cd2e89a"
+    }
+  },
+  "source_sha256": {
+    "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+    "src/utilities/common/codecver.inc": "7efb6979f9b403974e4bec08322b9b01562212786daeae6e1cfaab09d732c63f",
+    "src/utilities/pip.mac": "96adf5fcba682a4bfd4198b9d6be3f71988d289126de5a00dea5a8d79e4a9f42",
+    "metadata/utility-versions.tsv": "1d648a20f79a6826a276372aa60d59c4de4f4003cec1e8bc900681905ea2b9d7",
+    "tools/codec_version.py": "81fc4ec9bdb96a9ae5a8f5f9834594075857c5f2867c84be840dc7f8ad807bcc",
+    "tools/test_utility_versions.py": "d5e94342b5a01f8255b8d6587207a93fe4a1d6f8ad3b492e484d59fb986d7e7d",
+    "tools/test_version_stack.py": "2fea2a86e4d4832fdecccb3d16cae56e80a377d67233327f1451e849725e5d7d"
+  },
+  "log_sha256": {
+    "logs/query-all-versions-tests.log": "70fa9352b924e720853a9a418e4e59be93f8d8fed962f35ec24976b099013704",
+    "logs/query-stack-tests.log": "c772faa0ec31c39cc69af836dd84df7b8a8e82718e39fbd1093ad86a24fd569a",
+    "logs/query-config-iobyte.log": "3e140c627ff5a302b6d5569092bb15d2856c69ba38143db36a86b24667071775",
+    "logs/query-config_command_line.log": "682cae11c1f395c1efc598d619a6656b092069dff002eec504b6661ca92969bd",
+    "logs/query-copy_shared_input.log": "adc0e7153b85bf164dd74914e0683f0b68ae949a14474adcb10b4d559ceb91c3",
+    "logs/query-ddt.log": "25a437ffb4bfad63d97be1159120f7593f6361a9952ea460f573986c9b89a1a2",
+    "logs/query-dump.log": "e2c368bc08d64f7304f9b74f8714653a9abb425e537efffdf921dd5dee039789",
+    "logs/query-dup_command_line.log": "760181a9497eb6ae427f04110c54467a121580f83db12e15942edeca19c0432e",
+    "logs/query-ed_invocation.log": "d9979a19fb6fce97845b77e9e38199a53b0b6956a96fb6208563abca44043dea",
+    "logs/query-era_shared_choice.log": "86dda9278fb5989840932e594aa1e1c785f27b0e7e389e52d5173a0e71ed0a03",
+    "logs/query-pip_parser.log": "40d691d57b1e24d3a8a69389ce964898650dcdc6dfacabec94aa3a21e82cbbe4",
+    "logs/query-pip_shared_confirmation.log": "111d02faa9a68a0fb4342700de0096b8e3e37ec6c0db71cffec2bc7ce63f564b",
+    "logs/query-sysgen_shared_choice.log": "d43efbab645d956e4c4af29d27fe1421fe9bf54c1185f7d64ca7e0586d63b6e5",
+    "logs/query-sysgen_command_line.log": "30c409ff6e624caf835713adc7cd2d64ef84d24da6cbf8bd24945429b7b5dba3"
+  },
+  "limits": "Query and focused functional qualification; does not replace final platform/component acceptance for every changed utility.",
+  "focused_test_source_sha256": {
+    "test_config_command_line.py": "cc5303a20567ad445d376b42884ce9c510918f1803f0afcac4ae3287795621f4",
+    "test_config_iobyte.py": "37d0e78b5d0653a5b6166b90e557843c41c3812800d54008501115a013984cc2",
+    "test_copy_shared_input.py": "801e9595fd3123fab77879e9f40b7b3bf25a0a893c7cfbd7e883183b809d2c78",
+    "test_ddt.py": "8a1d223d3bd948ff3444ce6e390240d95440db53b809bc931896fa897b0f4196",
+    "test_dump.py": "396279d5546c1749d93aad46d20b9cb95c7727527c9fa4f2f315a80322d63724",
+    "test_dup_command_line.py": "c91c5b58aa16b6f6475ed60fcb45dfa0ab82ea6a2b9583804de9f8740eb9b31a",
+    "test_ed_invocation.py": "223af6aa3fb3c0820b569f5794f226035b0e04308e69221c9d45d612c86f9df9",
+    "test_era_shared_choice.py": "c22940e2d5dba99a4e71b85bd87b7eb0901144988119922e871e4e9c83f7331e",
+    "test_pip_parser.py": "1484d5e8f58f082899525b889fdb2b429eff252856ff6fce6dcea4155d02030c",
+    "test_pip_shared_confirmation.py": "6f22b2f2f7aec27681698349e0298c3982c0dad75dae2a3690c2868c0d00c132",
+    "test_sysgen_shared_choice.py": "988fb40ec063be20e9b4786202739eb1f770da75bf6fb747211c75c2506ab1b0",
+    "test_sysgen_command_line.py": "8d06de2b96b98104de02558d551b1b336e5938314bf270f5036af8e0143457ad"
+  }
+}

@@ -15,12 +15,16 @@ def main():
     p.add_argument('--assembler',type=Path,default=Path.home()/'bin/z80asm')
     args=p.parse_args();OUT.mkdir(parents=True,exist_ok=True)
     (ROOT/'build/rsx').mkdir(parents=True,exist_ok=True)
-    listing=(ROOT/'build/bios/bios.lst').read_text(errors='replace')
+    from checked_carriers import selected_contract
+    checked = selected_contract(args.assembler)
+    listing = '' if checked else (ROOT/'build/bios/bios.lst').read_text(errors='replace')
     bindings=''
-    for name in ['M4CURSOR','M4COLUMN']:
+    for name in ([] if checked else ['M4CURSOR','M4COLUMN']):
         value=int(re.search(r'^([0-9a-f]{4})\s+.*\b'+name+':',listing,re.M)[1],16)
         bindings+=f'{name} EQU 0{value:04X}H\n'
     for name,source,bits,entry in [('M4SCRN','model4.mac',1,'S_ENTRY'),('ANSISCRN','ansi-host.mac',2,'SB_ENTRY')]:
+        if checked and name == 'M4SCRN':
+            continue
         text=(ROOT/'src/rsx/screen'/source).read_text(errors='replace').replace('        INCLUDE backend.inc',bindings)
         code=assemble(args.assembler,text,OUT/(name+'.bin'),OUT/(name+'.lst'),0x8000)
         alt=assemble(args.assembler,text.replace('08000H','08101H'),OUT/(name+'-alt.bin'),OUT/(name+'-alt.lst'),0x8101)

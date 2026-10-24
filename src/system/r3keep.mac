@@ -1,4 +1,5 @@
         INCLUDE layout.inc
+        INCLUDE profile.inc
 ; @rsx-container-slots@
 
 ; ********************************************************************************
@@ -108,7 +109,11 @@ KE_MLOOP:                               ; validate framing signature
         INC     HL
         DJNZ    KE_MLOOP
         LD      A,(HL)
+        IF BP_CHECKED EQ 1
+        CP      3
+        ELSE
         CP      2
+        ENDIF
         JP      NZ,KE_BAD
         LD      HL,(KE_BASE)
         LD      DE,30

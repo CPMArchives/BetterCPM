@@ -1,4 +1,4 @@
-"""Part 11 cpmsim package v2 and its build-owned installer admission gate.
+"""Checked cpmsim package v2 and its build-owned installer admission gate.
 
 Integrity/binding, not authentication. Normalized editable fields stay owned by
 CONFIG/SYSGEN; every other byte of the 160-record payload is build-bound.
@@ -44,26 +44,35 @@ def raw_payload(root,path):
 
 def prepare(root,out,payload,symbols):
     from system_layout import LAYOUT as L
-    profile=json.loads((root/'assessment-profile.json').read_text())
+    from checked_carriers import selected_contract
+    profile=selected_contract()
+    if not profile:raise ValueError('checked package requires a prepared profile')
     resident=payload[1024:7680];at=resident.index(b'BDCF'+bytes((5,4,4,64)))
     physical,logical=struct.unpack_from('<HH',resident,at+8)
     masks=[(128,256),(1024+physical-L['SYSTEM'],24)]+[(1024+logical-L['SYSTEM']+i*80+16,64) for i in range(4)]+[(1024+symbols['IO_COLD']+1-L['SYSTEM'],1)]
-    cid=1024+symbols.get('Z_ID',0)-L['SYSTEM'] if 'Z_ID' in symbols else None
-    from system_layout import SYMBOLS
-    cid=1024+SYMBOLS['LY_CID']-L['SYSTEM']
+    cid=1024+L['BIOS']-16-L['SYSTEM']
     assert payload[cid:cid+16]==bytes.fromhex(profile['compatibility_id'])
     contract={'schema':2,'profile':profile['contract']['profile'],'compatibility_id':profile['compatibility_id'],'system_base':L['SYSTEM'],'masks':masks,'normalized_crc':crc(normalize(payload,masks)),'a_binding_offset':1024+logical-L['SYSTEM']+16,'resident_id_offset':cid,'required_files':{}}
     for name,rel in [('RCP.CPX','build/cpx/RCP.CPX'),('R3PACK.RSX','build/system/R3PACK.RSX')]:
         b=(root/rel).read_bytes();contract['required_files'][name]={'bytes':len(b),'crc16':crc(b)}
     (out/'checked-package.json').write_text(json.dumps(contract,indent=2)+'\n')
     (out/'package-guard.inc').write_text(assembly(contract))
+    state={'build_contract':profile,'payload_sha256':hashlib.sha256(payload).hexdigest(),
+           'contract_sha256':hashlib.sha256((out/'checked-package.json').read_bytes()).hexdigest(),
+           'guard_sha256':hashlib.sha256((out/'package-guard.inc').read_bytes()).hexdigest()}
+    (out/'package-inputs.json').write_text(json.dumps(state,indent=2)+'\n')
 
 def guard_source(root):
-    p=root/'build/z80pack/package-guard.inc'
-    if p.exists():return p.read_text()
-    # Early common-utility build cannot install anything. Final target build
-    # replaces this with the gate generated from actual complete system bytes.
-    return '\n'.join(n+':' for n in ('P11HCHK','P11FCRC','P11CHECK','P11FILES','P11HEAD','P11FBAD'))+'\n LD A,1\n OR A\n RET\n'
+    from checked_carriers import selected_contract
+    contract=selected_contract()
+    if not contract:raise ValueError('checked package guard requires a prepared profile')
+    out=root/'build/z80pack'
+    state=json.loads((out/'package-inputs.json').read_text())
+    if state['build_contract']!=contract:raise ValueError('foreign/stale package guard')
+    for name,key in [('checked-package.json','contract_sha256'),('package-guard.inc','guard_sha256')]:
+        if hashlib.sha256((out/name).read_bytes()).hexdigest()!=state[key]:
+            raise ValueError('changed package guard input: '+name)
+    return (out/'package-guard.inc').read_text()
 
 def assembly(c):
     ident=','.join(str(x) for x in bytes.fromhex(c['compatibility_id']))
@@ -277,15 +286,7 @@ P11SUM: DW 0
     text+='P11ID: DB '+ident+'\n';return text
 
 def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('root',type=Path);a=p.parse_args();root=a.root.resolve()
-    c=json.loads((root/'build/z80pack/checked-package.json').read_text())
-    data=make(raw_payload(root,root/'assessment-media/system.raw'),c);validate(data,c)
-    (root/'assessment-media/SYSTEM.SYS').write_bytes(data)
-    manifest=json.loads((root/'metadata/distribution.json').read_text())
-    selected=[x for x in manifest['system_disk'] if 'z80pack' in x['targets'] and x['status']=='implemented']
-    assert not {'HELLO.RSX','HELLO.CPX','STATEFUL.RSX'} & {x['name'] for x in selected}
-    files={x['name']:{'artifact':x['artifact'],'bytes':(root/x['artifact']).stat().st_size,'sha256':hashlib.sha256((root/x['artifact']).read_bytes()).hexdigest()} for x in selected}
-    report={'profile':c['profile'],'compatibility_id':c['compatibility_id'],'package_schema':2,'files':files,'system_sha256':hashlib.sha256((root/'assessment-media/system.raw').read_bytes()).hexdigest(),'package_sha256':hashlib.sha256(data).hexdigest()}
-    (root/'assessment-media/manifest.json').write_text(json.dumps(report,indent=2)+'\n')
-    print('PASS checked cpmsim package v2: '+c['compatibility_id'])
+    from build_checked_package import main as build
+    build()
+
 if __name__=='__main__':main()

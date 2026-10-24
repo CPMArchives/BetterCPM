@@ -1,11 +1,13 @@
-"""Canonical protected-memory addresses, shared by both assemblers and tests."""
+"""Selected protected-memory addresses, shared by assemblers and host helpers."""
 from pathlib import Path
 import re
+from build_profiles import selected_context, symbols
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/system/layout.inc"
-SYMBOLS = {name: int(value, 16) for name, value in re.findall(
-    r"^(LY_\w+)\s+EQU\s+0([0-9A-F]+)H", SOURCE.read_text(), re.MULTILINE)}
+CONTEXT = selected_context(SOURCE)
+LAYOUT_TEXT = CONTEXT[1] if CONTEXT else SOURCE.read_text(encoding='ascii')
+SYMBOLS = symbols(LAYOUT_TEXT)
 ALIASES = dict(SYSTEM="LY_SYS", BDOS="LY_BDOS", FILE="LY_FILE",
     RSX="LY_RSX", EXTENSIONS="LY_EXT", TABLES="LY_TAB", RELOADER="LY_LOAD",
     RSX_STATE="LY_RSTA", STACK_LOW="LY_STKL", STACK_TOP="LY_STKT",
@@ -18,14 +20,25 @@ LAYOUT.update(PDS_DESCRIPTOR=LAYOUT["SYSTEM"] + 0x80,
               PDS_SIZE=LAYOUT["SYSTEM"] - LAYOUT["HISTORY"])
 
 def expand_layout(text: str) -> str:
-    """Inline the canonical include for host z80asm and native ZSM4."""
+    """Inline selected generated inputs, or the unchanged canonical default."""
     from rsx_container import constants
     text = text.replace('; @rsx-container-slots@', constants())
     from utility_versions import expand_versions
     text = expand_versions(text)
     text = re.sub(r"^\s*INCLUDE\s+layout\.inc\s*$",
-                  lambda _: SOURCE.read_text(encoding="ascii").rstrip(),
+                  lambda _: LAYOUT_TEXT.rstrip(),
         text, flags=re.MULTILINE | re.IGNORECASE)
+    if re.search(r'^\s*INCLUDE\s+profile\.inc\s*$', text, re.MULTILINE | re.IGNORECASE):
+        text = re.sub(r'^\s*INCLUDE\s+profile\.inc\s*$',
+                      lambda _: CONTEXT[2].rstrip() if CONTEXT else 'BP_CHECKED EQU 0', text,
+                      flags=re.MULTILINE | re.IGNORECASE)
+    for name in ('checked-load.inc', 'checked-crc.inc', 'checked-identity.inc'):
+        text = re.sub(r'^\s*INCLUDE\s+'+re.escape(name)+r'\s*$',
+                      lambda _, name=name: (ROOT/'src/platform/z80pack'/name).read_text(encoding='ascii'),
+                      text, flags=re.MULTILINE | re.IGNORECASE)
+    text = re.sub(r'^\s*INCLUDE\s+private-utility\.inc\s*$',
+                  lambda _: (ROOT/'src/utilities/common/private-utility.inc').read_text(),
+                  text, flags=re.MULTILINE | re.IGNORECASE)
     if '; @bounded-filespec@' in text:
         text = text.replace('; @bounded-filespec@',
             (ROOT / 'src/utilities/common/filespec.inc').read_text(encoding='ascii'))

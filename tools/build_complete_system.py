@@ -3,6 +3,7 @@
 import subprocess
 import sys
 from pathlib import Path
+from system_layout import CONTEXT
 ROOT = Path(__file__).resolve().parents[1]
 COMPONENTS = (
     "fdf_catalog",
@@ -15,6 +16,8 @@ COMPONENTS = (
     "trs80_boot", "adm3a", "screen_backends", "vt52", "ansi", "system_package",
 )
 if __name__ == "__main__":
+    if CONTEXT:
+        raise SystemExit('Checked-profile full-system integration is pending; build individual layout components for now.')
     for component in COMPONENTS:
         subprocess.run([sys.executable, str(ROOT / "tools" / f"build_{component}.py")],
                        cwd=ROOT, check=True)

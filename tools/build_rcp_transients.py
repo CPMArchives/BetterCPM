@@ -271,6 +271,9 @@ def transient_source() -> str:
                      else "               DB 13,10" for line in lines)
     banner_data = banner_data.replace('; @release-banner@', data)
     text = text.replace("BC_VERSION:", banner_data + "BC_VERSION:", 1)
+    from system_layout import CONTEXT
+    if CONTEXT:
+        text=text.replace('        JP      LY_BIOS+66', '        LD HL,(1)\n        LD DE,63\n        ADD HL,DE\n        JP (HL)')
     return text
 
 

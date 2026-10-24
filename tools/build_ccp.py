@@ -25,6 +25,8 @@ DEFAULT_GATEWAY = LAYOUT["TPA"]
 
 def assemble(assembler: Path, text: str, output: Path, listing: Path,
              origin: int) -> bytes:
+    from checked_carriers import selected_contract
+    selected_contract(assembler)  # Verify the actual assembler before any output.
     with tempfile.TemporaryDirectory(prefix="bettercpm-ccp-") as temporary:
         staged = Path(temporary) / SOURCE.name
         staged.write_text(expand_layout(text), encoding="ascii")
@@ -120,7 +122,11 @@ def main() -> None:
     for index, offset in enumerate(offsets):
         struct.pack_into("<H", header, 16 + index * 2, offset)
     module = BUILD / "ccp.rlm"
-    module.write_bytes(header + data)
+    from checked_carriers import selected_contract, command_carrier
+    contract = selected_contract(args.assembler)
+    carrier = bytes(header) + data
+    module.write_bytes(command_carrier(carrier, 'CCP', 'ccp', contract)
+                       if contract else carrier)
     print(f"{hashlib.sha256(data).hexdigest()}  {output.relative_to(ROOT)}")
     print(f"CCP bytes: {len(data)}")
     print(f"CCP allocation: {allocation_size} bytes; calculated base: "

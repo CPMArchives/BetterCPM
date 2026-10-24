@@ -14,7 +14,8 @@ NOAH /EXTRACT archives [destination:pattern]
 
 `/T` and `/X` are aliases. Operation switches may appear before or after operands;
 identical repetitions are accepted, contradictory operations rejected. `/Y`, `/R`
-and `/SYS` apply to extraction only. `/VER` and `/HELP` remain standalone. `/Q`,
+and `/SYS` apply to extraction only. Exact `/VER` and `/HELP` tokens may occur
+anywhere in the tail; `/HELP` takes precedence and both ignore other arguments. `/Q`,
 codec/EXPAND modes and archive modification commands remain unsupported, with
 usage diagnostics before archive I/O rather than partial interpretation.
 
@@ -162,3 +163,20 @@ an unsuccessful attempt to set protection as successful qualification.
 
 Exact source/binary hashes and scope limits are recorded in
 [the Build 003 check record](NOAH-Selectors-Overwrite-Checks.json).
+
+
+### Build 004 merge reconciliation
+
+PR #479 is reconciled with main `1b1a0ec`, preserving the selector/overwrite
+increment and main's forgiving utility-query handling. All other utility build
+numbers retain main's values; the combined NOAH revision advances to Build 004.
+Its help text and tests describe queries consistently, without restoring the
+old rejection of valid wildcard/DU selectors. The Build 003 results above remain
+historical evidence for that earlier binary.
+
+Requalification passed 123 library cases, 137 full-Z80 command/adapter cases and
+17 stock CP/M emulator commands. The 19,681-byte binary repeats identically;
+the observed harness stack maximum remains 32 bytes with BDOS intercepted.
+Native BetterCP/M/Model 4 qualification remains pending. Exact merge inputs and
+binary/source hashes are recorded in
+[the merge check record](NOAH-Selectors-Merge-Checks.json).

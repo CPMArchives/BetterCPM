@@ -60,16 +60,9 @@ def prepare_version(command, work):
         lines.append("        DB '$'")
     source = (common / 'codecver.inc').read_text()
     source = source.replace('; @codec-version-text@', '\n'.join(lines))
-    # The help recognizer has the same exact-token/standalone contract, with
-    # a five-byte keyword. Keep the version recognizer first for mixed queries.
-    # Fail visibly if the shared query changes shape: the fifth keyword byte
-    # needs a fifth advance after matching, as well as a longer comparison.
-    for fragment in ('LD C,4', 'SUB 4', '        JR Z,UV_PRINT', "'/ver'"):
-        if query.count(fragment) != 1:
-            raise ValueError('shared version query changed: ' + fragment)
+    # Exact query tokens anywhere in the tail ignore all other arguments.
+    # Help is dispatched first when both /HELP and /VER are present.
     help_query = query.replace('UV_', 'UH_').replace('LD C,4', 'LD C,5')
-    help_query = help_query.replace('SUB 4', 'SUB 5')
-    help_query = help_query.replace('        JR Z,UH_PRINT', '        INC HL\n        JR Z,UH_PRINT')
-    help_query = help_query.replace("'/ver'", "'/help'").replace('/VER', '/HELP')
+    help_query = help_query.replace("'/ver'", "'/help'")
     source = source.replace('; @codec-version-query@', query + '\n' + help_query)
     (work / 'codecver.inc').write_text(source)

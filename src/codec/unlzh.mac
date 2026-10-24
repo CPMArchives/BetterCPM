@@ -2,7 +2,7 @@
 ; Include codec.inc/mac and unlzh.inc/mac; emit CODEC_CODE + UNLZH_CODE once.
 ; Algorithm: adaptive Huffman LZ77 in the LZHUF/CrLZH format.
 ; No allocated storage, alternate-register instructions, IY use or recursion.
-; z80pack z80asm -e32; native ZSM4 not yet qualified. Test: tools/test_unlzh.py.
+; z80pack z80asm -e32; native ZSM4 parity: tools/qualify_codec_native.py. Test: tools/test_unlzh.py.
 UNLZH_CODE MACRO
 UNLZH_INIT:
         CALL CX_CHECK_BASE

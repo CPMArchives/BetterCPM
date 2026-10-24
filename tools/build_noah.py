@@ -23,7 +23,7 @@ def build(assembler, destination):
     texts = {
         'NH_VERSION': version_text(),
         'NH_USAGE': 'NOAH: Invalid or unsupported usage.\r\nUsage: NOAH [/LIST|/TEST] archives [member]\r\n       NOAH /EXTRACT archives [destination:pattern]\r\nUse NOAH /HELP for current scope.\r\n',
-        'NH_HELP': 'NOAH LBR reader development build\r\nUsage: NOAH [/LIST|/TEST] archives [member]\r\n       NOAH /EXTRACT archives [destination:pattern]\r\nAliases: /T /X. /VER and /HELP are standalone.\r\nShared archive filespecs: wildcards, DU sets and attribute predicates.\r\nArchive order: drive, user, filename; frozen limit 512 archives.\r\nMember names are 8.3 patterns; README means exact extensionless README.\r\nExtraction destination is one DU, default caller DU.\r\nOverwrite: Y/N/All/Cancel, default No; ESC or Ctrl-C cancels.\r\n/Y approves ordinary replacement; /R and /SYS enable separate protection prompts.\r\n/Y always skips protected outputs; input archives are never replaced.\r\nARK, codecs, archive updates, /Q and recovery UI are pending.\r\nLIST does not test contents. TEST/EXTRACT audit structure and CRCs.\r\n',
+        'NH_HELP': 'NOAH LBR reader development build\r\nUsage: NOAH [/LIST|/TEST] archives [member]\r\n       NOAH /EXTRACT archives [destination:pattern]\r\nAliases: /T /X. /VER and /HELP ignore other arguments; /HELP takes precedence.\r\nShared archive filespecs: wildcards, DU sets and attribute predicates.\r\nArchive order: drive, user, filename; frozen limit 512 archives.\r\nMember names are 8.3 patterns; README means exact extensionless README.\r\nExtraction destination is one DU, default caller DU.\r\nOverwrite: Y/N/All/Cancel, default No; ESC or Ctrl-C cancels.\r\n/Y approves ordinary replacement; /R and /SYS enable separate protection prompts.\r\n/Y always skips protected outputs; input archives are never replaced.\r\nARK, codecs, archive updates, /Q and recovery UI are pending.\r\nLIST does not test contents. TEST/EXTRACT audit structure and CRCs.\r\n',
     }
     emitted = []
     for label, text in texts.items():
@@ -58,7 +58,10 @@ def build(assembler, destination):
         (work / 'noahgrammar.inc').write_text(grammar)
         source = (ROOT / 'src/utilities/noah.mac').read_text()
         query = (ROOT / 'src/utilities/common/version.inc').read_text()
-        source = source.replace('; @noah-version-query@', query[query.index('\nUV_QUERY:') + 1:])
+        query = query[query.index('\nUV_QUERY:') + 1:]
+        help_query = query.replace('UV_', 'UH_').replace('LD C,4', 'LD C,5')
+        help_query = help_query.replace("'/ver'", "'/help'")
+        source = source.replace('; @noah-version-query@', query + '\n' + help_query)
         (work / 'command.mac').write_text(source.replace('; @noah-text@', '\n'.join(emitted)))
         try:
             subprocess.run([str(assembler), '-e32', '-sn', '-fb', '-onoah.bin', '-lnoah.lst', 'command.mac'], cwd=work, check=True)

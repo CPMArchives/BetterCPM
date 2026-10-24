@@ -39,16 +39,16 @@ def main():
         for c in images:
             title=version_text(c).split('\r\n')[0]
             commands += [(c+' /VER',title),(c+' /ver',title),
-                         (c+' /VER KEEP.BIN','Invalid /VER usage.'),
-                         (c+' KEEP.BIN /VER','Invalid /VER usage.'),
-                         (c+' /VER /VER','Invalid /VER usage.'),
+                         (c+' /VER KEEP.BIN',title),
+                         (c+' KEEP.BIN /VER',title),
+                         (c+' /VER /VER',title),
                          (c+' /VERIFY','Usage: '+c),
                          (c+' /HELP',title),(c+' /help',title),
-                         (c+' /HELP KEEP.BIN','Invalid /HELP usage.'),
-                         (c+' KEEP.BIN /HELP','Invalid /HELP usage.'),
-                         (c+' /HELP /HELP','Invalid /HELP usage.'),
-                         (c+' /HELP /VER','Invalid /VER usage.'),
-                         (c+' /VER /HELP','Invalid /VER usage.'),
+                         (c+' /HELP KEEP.BIN',title),
+                         (c+' KEEP.BIN /HELP',title),
+                         (c+' /HELP /HELP',title),
+                         (c+' /HELP /VER',title),
+                         (c+' /VER /HELP',title),
                          (c+' /HELPER','Usage: '+c),(c,'Use '+c+' /HELP for help.')]
         script='''set timeout 30
 proc await {text} {
@@ -73,11 +73,11 @@ await "A>"
         for c in images:
             expected=version_text(c).splitlines()
             count=sum(lines[i:i+4]==expected for i in range(len(lines)-3))
-            assert count==2,(c,count,result.stdout)
+            assert count==5,(c,count,result.stdout)
         for c in images:
             expected=help_text(c).splitlines()
             output=result.stdout.splitlines()
-            assert sum(output[i:i+len(expected)]==expected for i in range(len(output)))==2,(c,result.stdout)
+            assert sum(output[i:i+len(expected)]==expected for i in range(len(output)))==7,(c,result.stdout)
         for name,data in before.items():
             assert get(name)==data,(name,'file changed')
         listing=run('cpmls','-f','ibm-3740',disks/'drivea.dsk').stdout.upper()

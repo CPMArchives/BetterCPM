@@ -79,10 +79,9 @@ def main():
             for tail in ('/VER',' /ver  ','/VeR','\t/VeR\t',' '*123+'/VER','/VER'+' '*123,
                          '\t'*123+'/ver'):
                 check(m,tail,version_text(command))
-            for tail in ('/VER FILE.BIN','FILE.BIN /VER','/VER /VER','/VER /HELP',
-                         '/HELP /VER','/VER \x0f','/VER B:','/VER\tX','X\t/ver',
+            for tail in ('/VER FILE.BIN','FILE.BIN /VER','/VER /VER','/VER \x0f','/VER B:','/VER\tX','X\t/ver',
                          '/VER'+' '*122+'X','X'+' '*122+'/VER'):
-                check(m,tail,'Invalid /VER usage.\r\n')
+                check(m,tail,version_text(command))
             for tail in ('/VERIFY','/VERBOSE','/VERX','/VER=X','X/VER','/VER/','/VE',
                          '/VER.X','\x0fVER'):
                 check(m,tail,usage_text(command),False)
@@ -106,8 +105,9 @@ def main():
             for tail in ('/HELP FILE.BIN','FILE.BIN /HELP','/HELP /HELP',
                          '/HELP B:','B: /HELP','/HELP /UNKNOWN','/HELP \x0f',
                          '/HELP\tX','X\t/help','/HELP'+' '*121+'X',
-                         'X'+' '*121+'/HELP'):
-                check(m,tail,'Invalid /HELP usage.\r\n')
+                         'X'+' '*121+'/HELP','/VER /HELP','/HELP /VER',
+                         'FILE /VER X /HELP Y','/HELP /HELP /VER'):
+                check(m,tail,screen)
             for tail in ('/HELPER','/HELP.X','/HELP=X','X/HELP','/HEL','/HELP/',
                          '\x0fHELP','/HELP\x01','/VERX /HELPX','', '   ', '\t'):
                 check(m,tail,usage_text(command),False)

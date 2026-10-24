@@ -1,9 +1,15 @@
 # Checked cpmsim prototype: completion and acceptance record
 
 Date: 23 October 2026. Status: implementation and bounded qualification complete;
-ready for maintainer acceptance. This is the separately authorized follow-up to
+approved by the maintainer on 23 October 2026. This is the separately authorized follow-up to
 approved [Part 13](Part13-Final-Assessment-and-Roadmap.md), not another assessment
 part. The first engineering assessment remains closed.
+
+The approval accepts implementation snapshot
+`8e0fcc48b57665ae9355ea643b930daf15407f6b` and the completion record at
+`9703b84aef351412f34a0cf0835cd3d89d5b966a`, including the measured stack margins
+and documented scope. The qualified products and their private IDs are unchanged.
+Normal-build integration and other-target adoption remain separate work.
 
 ## Result
 
