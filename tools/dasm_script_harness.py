@@ -12,12 +12,13 @@ import tempfile
 
 def scripted(image, lines, assembler=Path.home()/'bin/z80asm'):
     assert image[0]==0xc3
-    assert len(image)<0x9f00
+    base=0xb800
+    assert len(image)<base-0x100
     entry=int.from_bytes(image[1:3],'little')
     script=b''.join(bytes([len(line)])+line.encode('ascii') for line in lines)+b'\0'
     assert all(0<len(line)<=126 for line in lines)
     source=f''' ASEG
- ORG 0A000H
+ ORG {base}
 START: LD (OLDSP),SP
  LD HL,(6)
  LD (OLDBDOS),HL
@@ -65,5 +66,6 @@ SCRIPT:
         subprocess.run([str(assembler),'-e32','-fb','-o'+str(w/'h.bin'),str(w/'h.mac')],
                        check=True,capture_output=True)
         wrapper=(w/'h.bin').read_bytes()
-        if len(wrapper)>=0xa000:wrapper=wrapper[0xa000:]
-    return b'\xc3\x00\xa0'+image[3:]+bytes(0x9f00-len(image))+wrapper
+        if len(wrapper)>=base:wrapper=wrapper[base:]
+    assert base+len(wrapper)<=0xc000, 'script harness exceeds its reserved region'
+    return b'\xc3'+base.to_bytes(2,'little')+image[3:]+bytes(base-0x100-len(image))+wrapper

@@ -18,7 +18,7 @@ def source(reference=False):
     if not reference:
         text = text.replace('INCLUDE dasmsafe.inc',
                             (ROOT/'src/utilities/common/dasmsafe.inc').read_text())
-        for include in ('dasmrebase.inc','printnum.inc','dasmsymbol.inc','dasmfile.inc','dasmprolog.inc','zsm4words.inc','duselect.inc','filespec.inc'):
+        for include in ('dasmsession.inc','dasmcrc.inc','dasmtables.inc','dasmaddress.inc','dasmrebase.inc','printnum.inc','dasmsymbol.inc','dasmfile.inc','dasmprolog.inc','zsm4words.inc','duselect.inc','filespec.inc'):
             text=text.replace('INCLUDE '+include,(ROOT/'src/utilities/common'/include).read_text())
         text=text.replace('\tORG\t$/100H*100H+100H',
                           ' REPT 100H-($ MOD 100H)\n DB 0FFH\n ENDM')
@@ -27,7 +27,8 @@ def source(reference=False):
     def move(match):
         definitions.append(match[0])
         return ''
-    text=re.sub(r'(?m)^(?:CTLTBL|SYMTAB|INITOFF|COMTBL|D_BIN|D_BIN_LIMIT|D_CMT_LIMIT|D_STAGE|D_MEM_END)\s+EQU[^\n]*\n',move,text)
+    text=re.sub(r'(?m)^(?:CTLTBL|SYMTAB|INITOFF|COMTBL|D_BIN|D_BIN_LIMIT|D_CMT_LIMIT|D_STAGE|D_MEM_END|D_DESC)\s+EQU[^\n]*\n',move,text)
+    definitions.sort(key=lambda line: line.lstrip().startswith('D_DESC '))
     text=re.sub(r'(?m)^\s*END\s*$', '\n'+''.join(definitions)+'\n END\n',text)
     return text
 

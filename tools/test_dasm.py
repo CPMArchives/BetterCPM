@@ -144,7 +144,7 @@ def main():
             text=m.execute(['RTINY.SYM','G'],{diskkey(1,'TINY.SYM'):bad})
             assert 'invalid metadata' in text,text
         text=m.execute(['STINY.ALL','G'])
-        assert 'unavailable' in text and not m.created,text
+        assert 'outside loaded input' in text and not m.created,text
         text=m.execute(['L100','G'])
         assert 'outside' in text,text
         for data in [b'0100 START\r\n',b'0000 ZERO\r\nFFFF LAST\r\n']:
@@ -287,6 +287,109 @@ def main():
             text=m.execute(['RTINY.COM','N1','STINY.ASM','P100,101','QL100,101','Z','G'],
                            {tiny:b'\xc9'},break_keys=[key]+(['N'] if key=='\x03' else []))
             assert out not in m.files and any(k[2].endswith('.$$$') for k in m.files),text
+        for origin,payload in ((0,b'\xc9'),(0x1200,bytes.fromhex('210112c9')),
+                               (0xfffc,bytes.fromhex('2101ffc9')),(0xffff,b'\xc9')):
+            end=origin+len(payload)
+            text=m.execute(['RTINY.COM',f'N{len(payload):X}',f'O{origin:X}',
+                            'STINY.ASM',f'P{origin:X},{end:X}',f'QL{origin:X},{end:X}','Z','G'],{tiny:payload})
+            asm=m.files[out].split(b'\x1a',1)[0]
+            assert 'outside loaded input' not in text,(origin,text,asm)
+            path=w/'origin.asm';path.write_bytes(asm)
+            result=subprocess.run([str(Path.home()/'bin/z80asm'),'-e12','-fb','-o'+str(w/'origin.bin'),str(path)],capture_output=True)
+            assert result.returncode==0,(origin,result.stdout,asm)
+            assert (w/'origin.bin').read_bytes()==payload,(origin,asm,(w/'origin.bin').read_bytes())
+        text=m.execute(['RTINY.COM','N2','OFFFF','STINY.ASM','P100,102','QL100,102','Z','G'],{tiny:b'\0\xc9'})
+        assert 'outside loaded input' in text and b'ORG\t0100H' in m.files[out],text
+        text=m.execute(['RTINY.COM','N1','OFFFF','STINY.ASM','PFFFF,10000','QLFFFF,10001','Z','G'],{tiny:b'\xc9'})
+        assert b'0C9H' not in m.files[out] and 'Command Error' in text,text
+        ctl=diskkey(1,'OUT.CTL'); doc=diskkey(1,'OUT.DOC')
+        text=m.execute(['CFFFF,H','C100,B','C200,W','C200,K','SOUT.CTL',
+                        ';FFFF,Last Byte',';100,First',';200,Middle',';100,Changed',';200,','SOUT.DOC','G'])
+        assert m.files[ctl].split(b'\x1a',1)[0]==b'0100,B\r\nFFFF,H\r\n',(text,m.files)
+        assert m.files[doc].split(b'\x1a',1)[0]==b'FFFF Last Byte\r\n0100 Changed\r\n',(text,m.files)
+        text=m.execute(['ROUT.CTL','ROUT.DOC','SNEW.CTL','SNEW.DOC','G'],
+                       {ctl:b'FFFF,H\r\n0100,B\r\n',doc:b'FFFF Last Byte\r\n0100 Changed\r\n'})
+        assert m.files[diskkey(1,'NEW.CTL')].split(b'\x1a',1)[0]==b'0100,B\r\nFFFF,H\r\n',text
+        assert m.files[diskkey(1,'NEW.DOC')].split(b'\x1a',1)[0]==b'0100 Changed\r\nFFFF Last Byte\r\n',text
+        text=m.execute(['RTINY.COM','N1','OFFFF',';FFFF,Last Byte','CFFFF,H','STINY.ASM',
+                        'PFFFF,10000','QLFFFF,10000','Z','G'],{tiny:b'\xc9'})
+        assert b'Last Byte' in m.files[out] and b'0C9H' in m.files[out],(text,m.files[out])
+        comments=[f';{i:04X},'+('x'*74) for i in range(26)]
+        text=m.execute(comments+[';0000,'+('y'*74),';001A,'+('z'*74),'SOUT.DOC','G'])
+        data=m.files[doc].split(b'\x1a',1)[0]
+        assert b'0000 '+b'y'*74 in data and b'001A ' not in data and 'capacity exceeded' in text,text
+        session=diskkey(1,'TINY.ALL')
+        payload=bytes.fromhex('210112c9')
+        text=m.execute(['RTINY.COM','N4','O1200','E1200,.START','EFFFF,.LAST',
+                        'C1200,I',';1200,Case Preserved','STINY.ALL','G'],{tiny:payload})
+        assert 'session saved' in text,(text,m.files)
+        saved=dict(m.files)
+        import zlib
+        descriptor=saved[session]
+        assert len(descriptor)==128 and descriptor[:5]==b'BCDS\x01',descriptor
+        assert int.from_bytes(descriptor[124:],'little')==zlib.crc32(descriptor[:124])
+        assert int.from_bytes(descriptor[25:29],'little')==zlib.crc32(payload)
+        assert descriptor[8:12]==bytes.fromhex('00120400')
+        text=m.execute(['RTINY.COM','RTINY.ALL','SOUT.SYM','SOUT.DOC','SOUT.CTL',
+                        'STINY.ASM','P1200,1204','QL1200,1204','Z','G'],saved)
+        assert 'complete session validated and loaded' in text,(text,m.files)
+        assert m.files[diskkey(1,'OUT.SYM')].split(b'\x1a',1)[0]==b'FFFF LAST\r\n1200 START\r\n',text
+        assert m.files[doc].split(b'\x1a',1)[0]==b'1200 Case Preserved\r\n',text
+        assert m.files[ctl].split(b'\x1a',1)[0]==b'1200,I\r\n',text
+        assert b'ORG\t1200H' in m.files[out],m.files[out]
+        # Every failed component/hash/descriptor load retains the prior live table.
+        for corruption in ('descriptor','binary','component','version'):
+            files=dict(saved)
+            if corruption=='binary':files[tiny]=b'BAD!'
+            elif corruption=='component':
+                component=next(k for k in files if k[2].endswith('.DOC'))
+                files[component]=b'1300 Wrong\r\n'
+            else:
+                bad=bytearray(descriptor);bad[4 if corruption=='version' else 127]^=1
+                files[session]=bytes(bad)
+            text=m.execute(['RTINY.COM','E100,.KEEP','RTINY.ALL','SOUT.SYM','G'],files)
+            assert 'invalid or mismatched session' in text,(corruption,text)
+            assert m.files[diskkey(1,'OUT.SYM')].split(b'\x1a',1)[0]==b'0100 KEEP\r\n',(corruption,text)
+        for component_index in range(3):
+            files=dict(saved); bad=bytearray(descriptor)
+            at=29+19*component_index
+            bad[at+12]=32
+            bad[124:128]=zlib.crc32(bad[:124]).to_bytes(4,'little')
+            files[session]=bytes(bad)
+            text=m.execute(['RTINY.COM','E100,.KEEP','RTINY.ALL','SOUT.SYM','G'],files)
+            assert 'invalid or mismatched session' in text,text
+            assert m.files[diskkey(1,'OUT.SYM')].split(b'\x1a',1)[0]==b'0100 KEEP\r\n',text
+        for operation,limit in (('make',4),('write',4),('close_output',5),('rename',5)):
+            for nth in range(1,limit+1):
+                text=m.execute(['RTINY.COM','N4','E100,.NEW','STINY.ALL','G'],saved,
+                               responses=['Y'],failures={operation:nth})
+                assert 'session saved' not in text,(operation,nth,text)
+                if operation!='make' or nth!=1:assert 'Recovery files:' in text,text
+                assert all(m.files[k]==v for k,v in saved.items() if k!=session),(operation,nth)
+                assert m.files.get(session)==descriptor or any(k[2].endswith('.BAK') and v==descriptor for k,v in m.files.items()),(operation,nth,text)
+        # Replacing a descriptor never overwrites its old component graph.
+        text=m.execute(['RTINY.COM','N4','E100,.NEW','STINY.ALL','G'],saved,responses=['Y'])
+        assert 'session saved' in text,text
+        assert m.files[session]!=descriptor
+        assert all(m.files[k]==v for k,v in saved.items() if k!=session)
+        assert any(k[2].endswith('.BAK') and v==descriptor for k,v in m.files.items())
+        source31=diskkey(1,'TINY.COM',16); session31=diskkey(2,'STATE.ALL',31)
+        text=m.execute(['RA16:TINY.COM','N4','E100,.START','SB31:STATE.ALL','G'],{source31:payload})
+        assert 'session saved' in text,text
+        user_saved=dict(m.files)
+        text=m.execute(['RA16:TINY.COM','RB31:STATE.ALL','SOUT.SYM','G'],user_saved)
+        assert 'complete session validated and loaded' in text and b'0100 START' in m.files[diskkey(1,'OUT.SYM')],text
+        text=m.execute(['RTINY.DOC','SOUT.DOC','G'],{diskkey(1,'TINY.DOC'):b'0100   Mixed Case  \r\n'})
+        assert m.files[doc].split(b'\x1a',1)[0]==b'0100   Mixed Case  \r\n',m.files[doc]
+        dense=b''.join(f'{i:04X},H\r\n'.encode() for i in range(511))
+        text=m.execute(['RTINY.CTL','CFFFF,H','SOUT.CTL','G'],{diskkey(1,'TINY.CTL'):dense})
+        assert m.files[ctl].split(b'\x1a',1)[0]==dense and 'capacity exceeded' in text,text[-800:]
+        dense=b''.join(bytes([0xc3,(0x2000+i)&255,(0x2000+i)>>8]) for i in range(520))
+        text=m.execute(['RTINY.COM',f'N{len(dense):X}','E100,.KEEP',f'B100,{256+len(dense):X}','SOUT.SYM','G'],{tiny:dense})
+        assert 'capacity exceeded' in text and m.files[diskkey(1,'OUT.SYM')].split(b'\x1a',1)[0]==b'0100 KEEP\r\n',text[-1200:]
+        dense=(b'ABCDEFGH\0')*300
+        text=m.execute(['RTINY.COM',f'N{len(dense):X}','C100,I',f'A100,{256+len(dense):X}','SOUT.CTL','G'],{tiny:dense})
+        assert 'capacity exceeded' in text and m.files[ctl].split(b'\x1a',1)[0]==b'0100,I\r\n',text[-1200:]
         for operation in ['make','write','close_output','rename']:
             for existing in [False,True]:
                 files={tiny:bytes.fromhex('3e21d30200c9')}

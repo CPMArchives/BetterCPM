@@ -30,7 +30,25 @@ read-only output requests leave no phantom pending transaction. DSYM now uses
 shared single-DU parsing and restores the caller's user after each file operation,
 with line-number and imported/coalesced/rejected diagnostics.
 
-The current host campaign passes **101 DASM and 51 DSYM full-core cases**, plus
+Logical origin is now selected with `Ohex`; the buffer bias is private. P and
+explicit listing ranges accept the end-exclusive `10000`, reject overflow and
+validate both bounds before changing PC or writing source. The final four bytes
+at the top of the address space use literal DB output. FFFF is a usable control,
+comment and symbol address, with type/length zero as the table terminator.
+The S classification also emits initialized DB bytes in exact reconstruction.
+Automatic A/B analysis snapshots its control/symbol tables and restores them on
+capacity or range refusal, including dense-label and dense-data campaigns.
+
+Version-1 `.ALL` save/load now uses the descriptor described in
+[DASM Session Format](DASM%20Session%20Format.md). It records logical origin and
+length, canonical binary identity/logical CRC32 and three unique component
+identities/physical record counts/CRCs. Saves preflight the descriptor destination,
+publish new component generations and publish the descriptor last. Loads stage
+all three validated tables before committing any. Fault tests cover each create,
+write, close and rename, binary/component/descriptor corruption and cross-user
+session save/load. Retained new scratch and component identities are reported.
+
+The current host campaign passes **145 DASM and 51 DSYM full-core cases**, plus
 **71 USQ regression cases** after the optional shared file-I/O hook was added.
 These changes are not covered by the earlier native receipts below. They require
 a fresh native build and both-platform campaign before acceptance.
@@ -57,8 +75,8 @@ a fresh native build and both-platform campaign before acceptance.
   binary reload, guarded decoder/dump/search accesses and orderly `G` return.
 - Confirmed Ctrl-C abort closes and retains staged output without publishing,
   checks close failure, restores caller state and exits. Restart is refused
-  while an ASM transaction is pending. Non-Ctrl-C interruption and the wider
-  console-cancellation matrix still require qualification.
+  while an ASM transaction is pending. Ordinary-key interruption and declined Ctrl-C invalidate pending source output.
+  The wider native console-cancellation matrix still requires qualification.
 - Binary reads retain all physical CP/M record bytes, including 00/1A/FF.
   `Nhex` explicitly chooses a nonzero logical length up to the readable extent.
 - DASM resolves drive/user/name identities. Individual output saves reject
@@ -81,8 +99,8 @@ a fresh native build and both-platform campaign before acceptance.
 ## Development command contract
 
 All numeric command arguments below use hexadecimal, as upstream does. The
-loaded binary is explicitly named with `.COM`; other arbitrary input suffixes
-are not yet accepted. A minimal reconstruction is:
+startup binary operand may use any exact 8.3 suffix; interactive R uses `.COM`
+to select binary input. Empty binary input is refused explicitly. A minimal reconstruction is:
 
 ```text
 DASM
@@ -110,11 +128,11 @@ CSEG and DSEG yielded `0100 START<TAB>0104 HELLO<TAB><CRLF>` and linked bytes
 | A, B | Inherited data recognition and automatic symbol generation, bounded insertion; broader behavioral qualification pending |
 | E, K, ;address,text | Symbol/comment editing retained with validation; reserved-word validation implemented; remaining atomic-validation audit pending |
 | Caddress,type | Control classifications retained; imports sorted with conflict rejection |
-| O, I | Rebase validated in two passes; logical-origin redesign remains pending |
+| O, I | Checked logical origin; two-pass signed-magnitude symbol rebasing |
 | P, Sname.ASM, Z | Absolute source prologue, staged listing output and explicit publication |
 | R/S .SYM/.CTL/.DOC | Individual component operations; normalized/sorted imports; remaining session work pending |
 | R .DSY | Canonical native converter output |
-| R/S .ALL | Explicitly refused: descriptor-based session transaction is not implemented |
+| R/S .ALL | Versioned, checksummed descriptor; unique components; validated staged load |
 | U | Fixed comment arena only; arbitrary relocation refused |
 | X | Restart refuses a pending output transaction |
 | G | New orderly return restoring caller stack, DMA and user state |
@@ -195,15 +213,13 @@ the archived COM byte-for-byte; the archived binary remains unmodified.
 
 ## Remaining acceptance work, in priority order
 
-1. Complete validated metadata normalization, name/conflict/reserved-word rules,
-   ordering and line-number diagnostics. Audit invalid edit/rebase commands for
-   mutation before complete validation. Complete multi-role alias protection.
-2. Implement session descriptor publication last, unique component generations,
-   binary/component hashes and all-or-nothing validated load. Keep `.ALL`
-   unavailable until this exists; individual safe saves are not a substitute.
-3. Complete wrap-safe logical addressing, empty-input policy, cancellation and
-   restart recovery, exact capacity edges, resident-module canaries and active
-   TPA diagnostics on both platform personalities.
+1. Native qualification of the current metadata, origin/range and session
+   implementation. Complete diagnostic precision for conflicts found during
+   metadata sorting and the remaining automatic-analysis edge audit.
+2. Run the session publication-state and corrupted-component cases on actual
+   filesystem/emulator media, beyond the independent full-core fault model.
+3. Complete resident-module canaries, active TPA diagnostics and ordinary console
+   cancellation/pagination/backspace on both platform personalities.
 4. Add verified LINK success evidence: failed LINK runs still emit valid-looking
    SYM pairs, including unresolved names at 0000H. Current DSYM cannot detect
    that from SYM alone. DSYM now has shared DU selection and line/count diagnostics;
