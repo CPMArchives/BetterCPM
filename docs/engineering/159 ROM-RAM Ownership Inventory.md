@@ -115,3 +115,14 @@ initializer and 668 bytes spare. After the 22-byte initializer, the pack uses
 432 immutable-ROM and 322 live-RAM targets; all 773 layout words are accounted
 for. These measured assertions replace the previous counts without changing
 the accepted allocation or public interface.
+
+## Native toolchain qualification correction — 2026-10-24
+
+BDOS implementation 1.10 corrects explicit physical-extent Make handling for
+DRI LINK. Its live state and private stack move down two bytes; the extension
+live state moves down one byte after a register-equivalent compact clear path
+accommodates the longer version string. The authoritative TSV is refreshed
+against emitted anchors. State sizes, stack reservation, relocation totals and
+ROM/RAM ownership classes are unchanged. This records source/address upkeep;
+it does not transfer an older ROM/XIP execution receipt to the changed core.
+See [toolchain qualification](Utilities%20Toolchain%20Qualification.md).
