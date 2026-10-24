@@ -15,7 +15,8 @@ Individual commands are the release 1.0 scope. A unified interface, new algorith
 versions, additional format support and convenience features remain post-1.0.
 Qualification defects may still require corrections and retesting. The
 [1.0 release checklist](../releases/1.0-ROADMAP.md#compression-utilities--10-feature-freeze-and-release-checklist)
-tracks the remaining reconstruction and final disk gates.
+tracks the remaining final disk and artifact gates.
+[Pinned emulator reconstruction and compression reruns](CPMSIM%20Reconstruction%20Qualification.md) pass.
 Utilities images remain provisional pending those separate acceptance checks.
 
 The assembly-time macro library has no OS dependencies. The command owns CP/M

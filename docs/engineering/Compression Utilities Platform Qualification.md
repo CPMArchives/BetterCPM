@@ -50,8 +50,9 @@ padding. Each family adds a logged-drive default case and a user-7 case.
 
 These are component results for the exact recorded images. The Utilities disk
 as a whole remains **PROVISIONAL**. [Native ZSM4/LINK qualification](Compression%20Native%20Build%20Qualification.md)
-now passes with identical Build 004 bytes. Clean pinned cpmsim reconstruction,
-remaining Utilities selections, relevant
+now passes with identical Build 004 bytes. [Pinned cpmsim reconstruction and
+compression requalification](CPMSIM%20Reconstruction%20Qualification.md) also pass.
+Remaining Utilities selections, relevant
 final-artifact acceptance for other utilities changed by the shared /VER
 revision and final whole-image checks remain open. A changed executable or
 image requires relevant reacceptance.
@@ -71,3 +72,7 @@ python3 tools/test_codec_utilities_platforms.py \
 Use fresh disposable directories and disks. The campaign requires cpmtools, the
 existing local cpmsim and trs80gp executables. Emulator hashes are recorded;
 this does not establish a clean pinned cpmsim reconstruction.
+
+The later pinned-runtime receipt passes 86 commands and 27 round trips on the
+same System/Utilities images. This original platform receipt remains unchanged;
+its local-emulator provenance is superseded by the linked reconstruction record.

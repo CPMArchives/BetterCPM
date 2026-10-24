@@ -1,0 +1,31 @@
+{
+  "repository": "https://github.com/udo-munk/z80pack.git",
+  "commit": "91fd28eb04e675c2127df88ed3f40675e15282e2",
+  "upstream_confirmation": "https://github.com/udo-munk/z80pack/commit/91fd28eb04e675c2127df88ed3f40675e15282e2",
+  "geometry_interface": 2,
+  "patches": [
+    {
+      "file": "0001-disk-geometry.patch",
+      "sha256": "44644855fc50d650ea0c476c2fb419a04f25e57ac536590ca03a85a252f6b3a2"
+    },
+    {
+      "file": "0002-raw-fdf-backend.patch",
+      "sha256": "8fabbc3344f4183c302affe02cfb6f29107106d711e672e7a962581563fdd9be"
+    },
+    {
+      "file": "0003-rom-qualification.patch",
+      "sha256": "ab5acdba64a4ac2bfe8518e7df354be2c171653515d2763821debcae886be3f9"
+    }
+  ],
+  "profiles": {
+    "runtime": [
+      "0001-disk-geometry.patch",
+      "0002-raw-fdf-backend.patch"
+    ],
+    "qualification": [
+      "0001-disk-geometry.patch",
+      "0002-raw-fdf-backend.patch",
+      "0003-rom-qualification.patch"
+    ]
+  }
+}

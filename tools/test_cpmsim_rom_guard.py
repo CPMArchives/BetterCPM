@@ -46,20 +46,8 @@ def run_probe(simulator: Path, work: Path, name: str, code: bytes,
 
 
 def build_guarded_simulator(source: Path, work: Path) -> Path:
-    staged = work / "z80pack"
-    for relative in ("cpmsim", "z80core", "iodevices"):
-        ignored = ("*.o", "*.d", ".DS_Store")
-        if relative == "cpmsim":
-            ignored += ("disks", "roms", "auxiliary*.txt", "printer.txt", "cpmsim")
-        shutil.copytree(source / relative, staged / relative,
-                        ignore=shutil.ignore_patterns(*ignored))
-    subprocess.run(["patch", "-p1", "-i", str(PATCH)], cwd=staged, check=True,
-                   stdout=subprocess.DEVNULL)
-    subprocess.run(["make"], cwd=staged / "cpmsim/srctools", check=True,
-                   stdout=subprocess.DEVNULL)
-    subprocess.run(["make", "ROM_QUALIFY=YES", "build"],
-                   cwd=staged / "cpmsim/srcsim", check=True,
-                   stdout=subprocess.DEVNULL)
+    from build_qualified_cpmsim import build
+    staged = build(source, work / "reconstructed", "qualification")
     return staged / "cpmsim/cpmsim"
 
 

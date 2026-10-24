@@ -202,7 +202,8 @@ records final COM hashes and the completed stock CP/M 2.2 historical/query
 campaigns. Package these qualified bytes; a changed artifact needs relevant
 requalification. The [1.0 compression release checklist](1.0-ROADMAP.md#compression-utilities--10-feature-freeze-and-release-checklist)
 records completed BetterCP/M platform and native assembly qualification;
-clean pinned emulator reconstruction and final Utilities image/component acceptance remain open. This freeze does not change disk
+[clean pinned emulator reconstruction](../engineering/CPMSIM%20Reconstruction%20Qualification.md)
+also passes, while final Utilities image/component acceptance remains open. This freeze does not change disk
 membership or promote provisional media to a release.
 
 Build 004 compression platform execution is recorded in the

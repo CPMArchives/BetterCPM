@@ -822,3 +822,8 @@ reconciliation gate precede the corresponding implementation program.
 - [ ] Migrate further production prompts only where utility specifications permit; audit CONFIG's remaining stack margin before enabling additional profiles.
 
 - [x] Migrate CONFIG remaining menus, physical attachment and save approvals to shared choices; retain dual validation profiles and existing stack/workspace after bounded code-size savings.
+
+- [x] Reconstruct pinned cpmsim runtime/ROM qualification profiles and helpers;
+  prove working-tree isolation and rerun compression, disk interchange and XIP
+  checks (2026-10-24). See [evidence](docs/engineering/CPMSIM%20Reconstruction%20Qualification.md).
+  Final release-media and other component acceptance remain separate.

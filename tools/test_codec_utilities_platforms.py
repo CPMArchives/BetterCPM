@@ -249,13 +249,16 @@ def verify_system_payloads(work, private, definition, system, platform):
 
 
 def main():
+    global SIMULATOR
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--system',type=Path,required=True)
     parser.add_argument('--artifacts',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--simulator',type=Path,default=SIMULATOR)
     parser.add_argument('--only',choices=['z80pack','trs80gp'])
     parser.add_argument('--resume',action='store_true',help='reuse completed cases only after checking commands, images and captures')
     args=parser.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=args.resume)
+    SIMULATOR=args.simulator.resolve()
     previous=json.loads((out/'report.json').read_text()) if args.resume else {}
     source_digest=sha(Path(__file__).read_bytes())
     snapshots=out/'source-snapshots';snapshots.mkdir(exist_ok=True)

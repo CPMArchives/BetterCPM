@@ -56,7 +56,6 @@
   },
   "final_artifact_mismatch_guard": "PASS: altered final Build 004 COM rejected before campaign",
   "open_release_gates": [
-    "clean pinned cpmsim reconstruction and relevant release reruns",
     "final Utilities inventory, image integrity and all component acceptance",
     "review/reaccept other utility receipts affected by shared version-query revision",
     "final COM/image hash manifest and release evidence closure"
@@ -92,5 +91,19 @@
     "report_sha256": "da64c9c97608eba5a7f751477be0a000a7e5888cc4e62e958fb1f645ae940e49",
     "bundle": "Compression-Native-Build-evidence.tar.gz",
     "bundle_sha256": "1e9f922a68d4bebdc3f11abf7e6a6ab54e7b4e26c53fcdbd42bc9d6013617cd5"
+  },
+  "pinned_cpmsim_qualification": {
+    "status": "PASS",
+    "report": "CPMSIM-Reconstruction-evidence.json",
+    "report_sha256": "5477f36bbbb6c4170406d364e792912ca7f5b557e224cf6cf4d324224250585c",
+    "bundle": "CPMSIM-Reconstruction-evidence.tar.gz",
+    "bundle_sha256": "b6bd52792f69f07b1ec50bdce2b1fba58acb6b4760748bf7a6aeef9b371e6758",
+    "runtime_sha256": "3a41c74a8e70562fefc9d4e6c0e532259bb82b83518f7bfc259230699fe82c05",
+    "qualification_sha256": "61ad39b8be562505b66090ab4557a9335b0d90eb29c1498d6f8bd161e6e4046c",
+    "platform_commands": 86,
+    "round_trips": 27,
+    "historical_cases": 178,
+    "query_commands": 90,
+    "native_parity_commands": 6
   }
 }
