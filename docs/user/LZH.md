@@ -17,7 +17,7 @@ LZH /VER
 Give one exact 8.3 source name and an optional destination drive such as `B:`.
 Both use your current user area. Output defaults to the logged drive, not the
 source or command's drive. Wildcards, paths, explicit user/DU file operands,
-output filenames and other switches are not accepted. `/HELP` and `/VER` must each stand alone. See the
+output filenames and other switches are not accepted. `/HELP` and `/VER` ignore other arguments. See the
 [shared command rules](utilities_manual.md#shared-compression-command-rules)
 for program lookup, filename syntax and drive defaults.
 
@@ -27,15 +27,15 @@ for program lookup, filename syntax and drive defaults.
 Options list, then returns without accessing files. Examples, defaults and
 restrictions are described below. Letter case and surrounding spaces or TABs
 do not matter.
-Combining an exact `/HELP` token with other input reports `Invalid /HELP usage.`;
-if an exact `/VER` token is also present, `Invalid /VER usage.` takes precedence.
+An exact `/HELP` token anywhere in the command ignores other arguments and
+shows help. If `/VER` is also present, help takes precedence in either order.
 Longer tokens such as `/HELPER` are syntax errors. Empty or malformed commands
 show short syntax and `Use LZH /HELP for help.`
 
 The help screen is:
 
 ```text
-LZH 1.0 (Build 003)
+LZH 1.0 (Build 004)
   - - -
  | CrLZH compression
  |
@@ -53,7 +53,7 @@ opening files or starting compression/expansion. `/ver` and mixed letter case
 work too. For the current build:
 
 ```text
-LZH 1.0 (Build 003)
+LZH 1.0 (Build 004)
   - - -
  | BetterCP/M Utilities
  | CrLZH File Compression
@@ -61,8 +61,9 @@ LZH 1.0 (Build 003)
 
 Version and build numbers come from the standard utility metadata. The build
 counter advances with published executable changes; it does not reset at a new
-version. Combining `/VER` with a filename, destination drive or another option
-prints `Invalid /VER usage.` and performs no file operation. Normal file
+version. An exact `/VER` token anywhere in the command shows identification and ignores
+other arguments, unless `/HELP` is also present, in which case help is shown.
+Normal file
 processing does not print this identification banner.
 
 ## Output name and supported files

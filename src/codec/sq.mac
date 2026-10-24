@@ -1,7 +1,7 @@
 ; Include codec.inc/codec.mac/sq.inc/sq.mac, emit CODEC_CODE + SQ_CODE once.
 ; z80pack z80asm 2.1: -e32 -fb. All mutable state is IX-relative; no IY,
 ; alternate registers, recursion, OS calls, self-modification or allocation.
-; Test: python3 tools/test_sq.py. Native ZSM4 assembly not yet qualified.
+; Test: python3 tools/test_sq.py. Native ZSM4 parity: tools/qualify_codec_native.py.
 
 SQ_CODE        MACRO
 

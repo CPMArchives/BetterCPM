@@ -1,4 +1,5 @@
         INCLUDE layout.inc
+        INCLUDE profile.inc
 ; @rsx-container-slots@
 
 ; ********************************************************************************
@@ -310,7 +311,11 @@ RF_SAFE:                                ; prefetch the resolver before committin
         LD      E,(HL)
         INC     HL
         LD      D,(HL)
+        IF BP_CHECKED EQ 1
+        LD      HL,0B00H
+        ELSE
         LD      HL,0A00H
+        ENDIF
         ADD     HL,DE
         EX      DE,HL
         LD      HL,CFGB
@@ -333,7 +338,11 @@ RF_SAFE:                                ; prefetch the resolver before committin
         LD      HL,(RF_CREQ)
         LD      (RF_HREQ+4),HL
         LD      HL,(RF_SCRATCH)
+        IF BP_CHECKED EQ 1
+        LD      BC,0B00H
+        ELSE
         LD      BC,0A00H
+        ENDIF
         ADD     HL,BC
         LD      (CFGB+03F6H),HL         ; prefetched resolver, no post-commit IO
         LD      HL,CFGB+03DFH           ; post-commit resolver continuation

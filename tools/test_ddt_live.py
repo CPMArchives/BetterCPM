@@ -53,7 +53,7 @@ def main():
                  (b'T1\r',b'\r\n-',10),(b'XP\r',b'P=0105 ',10),(b'100\r',b'\r\n-',10),(b'U1\r',b'\r\n-',10),(b'G0\r',prompt,10),(b'DDT\r',b'\r\n-',10),(b'\x03',prompt,10)]
     raw=session(a.simulator,disks,commands,transcript_path=work/'transcript.bin',initial_prompt=prompt)
     assert raw.count(version_text().encode())>=4
-    assert b'Invalid /VER usage.' in raw
+    assert b'Invalid /VER usage.' not in raw
     assert hashlib.sha256(original.read_bytes()).hexdigest()==before
     readback=work/'TINY-after.COM';run('cpmcp','-f',fmt,image,'0:TINY.COM',readback)
     assert readback.read_bytes()[:6]==fixture.read_bytes()

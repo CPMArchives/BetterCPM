@@ -4,7 +4,7 @@ from pathlib import Path
 import argparse,re,struct,subprocess,sys,json,hashlib
 from build_ccp import assemble
 from fdf_format import select_fdf
-from system_layout import LAYOUT as L
+from system_layout import LAYOUT as L, CONTEXT
 from cpm_tools_bundle import files as cpm_tools_files
 from build_z80pack_rom_boot import build as build_rom_boot, z80pack_reloader_source
 from build_rom_rsx_overlays import build as build_rom_rsx_overlays
@@ -49,6 +49,8 @@ diskdef bettercpm-ccs-40ds
  os 2.2
 end
 '''
+ # Pin LibDsk geometry: arbitrary CP/M directory bytes are not a boot BPB.
+ # A large first file can otherwise be mistaken for an out-and-back format.
  diskdefs+='''diskdef bettercpm-mm-standard-system
  seclen 256
  tracks 40
@@ -60,6 +62,7 @@ end
  os 2.2
 end
 diskdef bettercpm-mm-80t-ds-data
+ libdsk:format pcw800
  seclen 512
  tracks 160
  sectrk 10
@@ -107,7 +110,13 @@ def main():
  p.add_argument('--resident-only',action='store_true',
                 help='stop after resident artifacts for shifted-layout analysis')
  args=p.parse_args();out=args.output.resolve()
+ if CONTEXT and not (args.resident_only and args.ram_only):
+  p.error('checked-profile disk generation is pending; only --resident-only --ram-only --system-tracks-only is supported')
  if args.ram_only and not args.system_tracks_only:p.error('--ram-only requires --system-tracks-only')
+ checked_constants=''
+ if CONTEXT:
+  from checked_build_contract import load_contract,assembly_constants
+  checked_constants=assembly_constants(load_contract(ROOT,args.assembler))
  fmt=select_fdf(args.fdf,args.format)
  record_map=fmt.raw_record_map()
  if fmt.reserved_records < 160:raise SystemExit(f'{fmt.name}: reserved area has {fmt.reserved_records} records; 160 required')
@@ -117,7 +126,7 @@ def main():
  disks=out/'disks'
  if disks.exists():raise SystemExit(f'{disks} exists; use a new --output to preserve test media')
  def asm(name,text,base,limit):
-  data=assemble(args.assembler,normalized(text),out/(name+'.bin'),out/(name+'.lst'),base)
+  data=assemble(args.assembler,checked_constants+normalized(text),out/(name+'.bin'),out/(name+'.lst'),base)
   if not data or len(data)>limit:raise ValueError(f'{name}: {len(data)} bytes exceeds {limit}')
   return data
  def read(path):return (ROOT/path).read_text()

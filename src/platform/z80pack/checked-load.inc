@@ -1,4 +1,4 @@
-; Part 7 prototype. All executable bytes are checked before entry.
+; Checked RAM profile. Executable carriers are checked before entry.
 ; Initial RSX control runs in CFG; it leaves the live resolver in place.
 PL_RELOAD:
         LD SP,0100H

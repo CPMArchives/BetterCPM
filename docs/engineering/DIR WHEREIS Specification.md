@@ -506,9 +506,8 @@ DIR /WHEREIS *.COM[$RO]
 
 is valid.
 
-`/VER` retains the established standalone-only DIR contract: `DIR /VER` is
-valid; combining it with `/WHEREIS`, operands or other switches produces the
-existing invalid-usage diagnostic before searching.
+An exact `/VER` token anywhere displays the DIR identity and ignores other
+arguments, including `/WHEREIS` and filespecs, before searching.
 
 ---
 

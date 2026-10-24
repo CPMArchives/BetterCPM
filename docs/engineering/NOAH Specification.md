@@ -127,9 +127,12 @@ COMPACT+REMOVE and EXTRACT+EXPAND combinations. COMPACT+ADD may also select one
 compatible codec. Global approval/output/protection options retain their own
 scope. `/LIST /ADD`, `/SQ /CR`, standalone EXPAND+SQ and any unlisted operation
 combination are errors, not first/last-switch-wins behavior. Reject irrelevant
-options instead of silently ignoring them. `/VER` and `/HELP` are standalone;
-they do not require an archive or overlay. HELP may state built-in supported
-capabilities without opening `NOAH.OVL`.
+options instead of silently ignoring them. Exact, case-insensitive `/VER` and
+`/HELP` tokens are exceptions: anywhere in the command tail they ignore other
+arguments and require no archive or overlay. Space and TAB delimit tokens;
+`/HELP` takes precedence when both queries occur. HELP may state built-in
+supported capabilities without opening `NOAH.OVL`, following the common
+[help](../../specifications/UTILITY-HELP.md) and [version](../../specifications/UTILITY-VERSIONING.md) contracts.
 
 ### 2.3 Archive recognition and creation
 

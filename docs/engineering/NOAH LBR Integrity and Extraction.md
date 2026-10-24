@@ -16,8 +16,7 @@ NOAH /X [drive:]archive [destination-drive:]
 ```
 
 One exact archive, current user area, all active members. Destination defaults to
-logged drive/current user, not the archive's drive. `/VER` and `/HELP` remain
-standalone. Existing outputs are explicitly reported/skipped; overwrite prompts,
+logged drive/current user, not the archive's drive. `/VER` and `/HELP` ignore other arguments; `/HELP` takes precedence. Existing outputs are explicitly reported/skipped; overwrite prompts,
 `/Y`, `/R`, `/SYS`, member filters and full DU/batch selectors are not implemented
 in this increment. Unsupported forms are rejected before archive I/O. Their final
 specified behavior is unchanged; the current development subset is not a silent
@@ -144,7 +143,11 @@ updates and NOAH.OVL remain pending. The overall specification and the archive
 library's future capability/write interfaces are not declared complete.
 
 Current measurements: 1,560 reader/audit code bytes, 138-byte reader context,
-224-byte audit workspace and 6,953-byte NOAH.COM (Build 002). Maximum observed
+224-byte audit workspace and 7,060-byte NOAH.COM (Build 003). Maximum observed
 command-stack use is 30 bytes with BDOS intercepted; native BDOS/BIOS stack
 qualification remains separate. The machine-readable [check record](NOAH-LBR-Integrity-Extraction-Checks.json)
 retains source/binary hashes and coverage accounting.
+
+After integration with the common query contract, all 123 library cases,
+90 command/adapter cases and seven stock CP/M commands pass for Build 003.
+The build-number table preserves main’s existing compression Build 004 entries.

@@ -2,7 +2,7 @@
 """Accept packaged DDT from Utilities B: on disposable release media."""
 import argparse,hashlib,json,shutil,subprocess
 from pathlib import Path
-from build_ddt import ROOT
+from build_ddt import ROOT, version_text
 from build_utilities_disk import build as utilities
 from build_z80pack_image import disk_definition,DEFAULT_FORMAT
 from fdf_format import select_fdf
@@ -12,7 +12,7 @@ from build_montezuma_extended_790k import build as dmk
 from test_z80pack_sysgen_install import session
 from trs80gp_launch import run as launch
 from run_trs80_command import DEFAULT_EMULATOR,key_args
-SHA='4b72c62b846dc3aaff673bf6b2fa3569c8fdc9887ca7927b3bf6ce3c357b6e46'
+SHA='83da74cb5cd0e105cee410c10e32e2cb86389036e84fc7620b25b403c3327665'
 TINY=bytes.fromhex('3e05320003c9')
 sha=lambda b:hashlib.sha256(b).hexdigest()
 
@@ -41,7 +41,7 @@ def cpmsim(w,system,utility,artifacts):
            (b'100\r',ready,30),(b'U1\r',ready,30),(b'G0\r',prompt,30),
            (b'B:DDT\r',ready,30),(b'\x03',prompt,30)]
     text=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,steps,w/'transcript.bin')
-    assert b'Invalid /VER usage.' in text and b'DDT 1.0 (Build 001)' in text
+    assert b'Invalid /VER usage.' not in text and version_text().encode() in text
     assert b.read_bytes()==before,'Utilities changed'
     command(w,'cpmcp','-f','bettercpm-default',a,'0:TINY.COM',w/'TINY-after.COM')
     assert (w/'TINY-after.COM').read_bytes()[:len(TINY)]==TINY
@@ -71,7 +71,7 @@ def model4(w,system,utility):
     captures=sorted(w.glob('trs80-text*'),key=lambda p:int(p.stem.rsplit('-',1)[1]));assert len(captures)==len(stages)
     screens={n:bytes(c&127 for c in p.read_bytes()[:1920]) for n,p in zip(stages,captures)}
     for n,t in screens.items():(w/(n+'.txt')).write_text('\n'.join(t[i:i+80].decode('ascii').rstrip() for i in range(0,1920,80))+'\n')
-    expected={'boot':b'A0>','providers':b'ADM3A','version':b'DDT 1.0 (Build 001)','loaded':b'-_',
+    expected={'boot':b'A0>','providers':b'ADM3A','version':version_text().splitlines()[0].encode(),'loaded':b'-_',
               'debuggee':b'0105  RET','editing':b'0120 00E0','provisional':b'0300 41 99_',
               'cancel':b'-_','uncommitted':b'0300 41 A','breakpoint':b'*0102',
               'stepped':b'0300 05','return':b'A0>','restart':b'-_','break':b'A0>'}

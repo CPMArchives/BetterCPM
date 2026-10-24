@@ -23,7 +23,7 @@ def build(assembler, destination):
     texts = {
         'NH_VERSION': version_text(),
         'NH_USAGE': 'NOAH: Invalid or unsupported usage.\r\nUsage: NOAH [/LIST|/TEST] [drive:]file\r\n       NOAH /EXTRACT [drive:]file [destination-drive:]\r\nUse NOAH /HELP for current scope.\r\n',
-        'NH_HELP': 'NOAH LBR reader development build\r\nUsage: NOAH [/LIST|/TEST] [drive:]file\r\n       NOAH /EXTRACT [drive:]file [destination-drive:]\r\nAliases: /T /X. /VER and /HELP are standalone.\r\nOne exact archive, current user only; all active members.\r\nExisting outputs are reported and skipped; no overwrites yet.\r\nARK, full selectors, overwrite UI, updates and overlays are pending.\r\nLIST does not test contents. TEST/EXTRACT audit structure and CRCs.\r\n',
+        'NH_HELP': 'NOAH LBR reader development build\r\nUsage: NOAH [/LIST|/TEST] [drive:]file\r\n       NOAH /EXTRACT [drive:]file [destination-drive:]\r\nAliases: /T /X. /VER and /HELP ignore other arguments; /HELP takes precedence.\r\nOne exact archive, current user only; all active members.\r\nExisting outputs are reported and skipped; no overwrites yet.\r\nARK, full selectors, overwrite UI, updates and overlays are pending.\r\nLIST does not test contents. TEST/EXTRACT audit structure and CRCs.\r\n',
     }
     emitted = []
     for label, text in texts.items():
@@ -42,7 +42,10 @@ def build(assembler, destination):
         shutil.copy2(ROOT / 'src/utilities/common/noahextract.inc', work / 'noahextract.inc')
         source = (ROOT / 'src/utilities/noah.mac').read_text()
         query = (ROOT / 'src/utilities/common/version.inc').read_text()
-        source = source.replace('; @noah-version-query@', query[query.index('\nUV_QUERY:') + 1:])
+        query = query[query.index('\nUV_QUERY:') + 1:]
+        help_query = query.replace('UV_', 'UH_').replace('LD C,4', 'LD C,5')
+        help_query = help_query.replace("'/ver'", "'/help'")
+        source = source.replace('; @noah-version-query@', query + '\n' + help_query)
         (work / 'command.mac').write_text(source.replace('; @noah-text@', '\n'.join(emitted)))
         subprocess.run([str(assembler), '-e32', '-sn', '-fb', '-onoah.bin', '-lnoah.lst', 'command.mac'], cwd=work, check=True)
         image = (work / 'noah.bin').read_bytes()

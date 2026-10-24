@@ -148,12 +148,17 @@ def tests(m):
     for tail in ('/VER', ' /ver  ', '\t/VER\t', ' ' * 123 + '/VER', '/VER' + ' ' * 123):
         assert m.run(tail, {}) == version_text(), (tail, repr(m.console), repr(version_text()))
         assert [f for f, _ in m.events] == [9]
-    for tail in ('/VER FILE', 'FILE /VER', '/VER /VER'):
-        assert m.run(tail, {}) == 'Invalid /VER usage.\r\n'
+    for tail in ('/VER FILE', 'FILE /VER', '/VER /VER', 'FILE\t/ver', '/VER /UNKNOWN'):
+        assert m.run(tail, {}) == version_text()
         assert [f for f, _ in m.events] == [9]
-    assert 'LBR reader development build' in m.run('/HELP', {})
-    assert [f for f, _ in m.events] == [9]
-    for tail in ('', '/HELP X', '*.LBR', 'B7:TEXTS.LBR',
+    help_output = m.run('/HELP', {})
+    assert 'LBR reader development build' in help_output
+    for tail in ('/HELP', '/HELP X', 'X /help', '/HELP /HELP', '/VER /HELP',
+                 '/HELP /VER', 'FILE\t/HeLp\t/UNKNOWN', ' ' * 122 + '/HELP'):
+        assert m.run(tail, {}) == help_output, tail
+        assert [f for f, _ in m.events] == [9]
+        m.intact()
+    for tail in ('', '*.LBR', 'B7:TEXTS.LBR',
                  'A:TEXTS.LBR OTHER', '/LIST', 'ABC.LONG', '.LBR', 'TOOLONG99.LBR',
                  'A..LBR', 'A/B.LBR', '/VERBOSE', 'Q:TEXTS.LBR', '/L', '/LISTX',
                  '/HEL', '/HELPX', '/HELP\0', 'X' * 127, '/TEST FILE C:',

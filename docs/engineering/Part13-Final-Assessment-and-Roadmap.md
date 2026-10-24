@@ -173,7 +173,7 @@ subsequent authorization, not additional parts of this assessment.
 
 | Order | Workstream | Completion or decision criterion |
 | --- | --- | --- |
-| 1 | Finish the bounded checked cpmsim prototype — completed subsequently | [Completion record](CPMSIM-PROTOTYPE-COMPLETION.md): targeted qualification, demonstrated defect repaired, frozen reproducible snapshot ready for maintainer acceptance |
+| 1 | Finish the bounded checked cpmsim prototype — completed subsequently | [Completion record](CPMSIM-PROTOTYPE-COMPLETION.md): targeted qualification, demonstrated defect repaired, frozen reproducible snapshot approved by the maintainer on 23 October 2026 |
 | 2 | Integrate the accepted design into normal build tooling | Reconcile current main; replace assessment-only staging transformations with an explicit profile/layout interface; retain consistent private binding and supported legacy behavior |
 | 3 | Qualify adoption by target | Separate Model 4, ROM/XIP and native-build/package work; actual target execution, supported media/configuration coverage and documented installation recovery |
 | 4 | Recover Model 4 upper RAM | Prototype mapping-safe code/state/stack placement and coordinated screen access; measure net TPA after all costs; preserve boot, console, disk and recovery behavior |

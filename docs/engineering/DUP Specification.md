@@ -105,7 +105,7 @@ DUP /FORMAT B: /CHECK B:
 DUP /COPY A: B: /VER
 ```
 
-`/VER` remains standalone.
+`/VER` ignores all other arguments and returns identification without copying.
 
 Unknown options or malformed operands are errors and return to the CCP without performing media operations.
 
