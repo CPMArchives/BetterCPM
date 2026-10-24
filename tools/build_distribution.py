@@ -11,6 +11,8 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from build_profiles import (CONTEXT_ENV, PROFILES, profile_inputs, read_context,
+                            select_profile, workspace, write_context)
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / 'metadata/distribution.json'
@@ -31,7 +33,7 @@ def run(command, cwd, log=None, timeout=900):
     return result.stdout
 
 
-def source_identity():
+def source_identity(profile=None):
     """Hash actual build inputs, not filesystem timestamps or prebuilt media."""
     files = {}
     for folder in ('src', 'tools', 'metadata', 'third_party'):
@@ -39,8 +41,11 @@ def source_identity():
             if path.is_file() and '__pycache__' not in path.parts:
                 files[str(path.relative_to(ROOT))] = digest(path.read_bytes())
     revision = run(['git', 'rev-parse', 'HEAD'], ROOT).decode().strip()
-    return {'revision': revision, 'inputs': files,
-            'assembler_sha256': digest((Path.home() / 'bin/z80asm').read_bytes())}
+    identity = {'revision': revision, 'inputs': files,
+                'assembler_sha256': digest((Path.home() / 'bin/z80asm').read_bytes())}
+    if profile:
+        identity['profile'] = profile_inputs(profile, ROOT/'src/system/layout.inc')[0]
+    return identity
 
 
 def stage_sources(destination):
@@ -49,8 +54,46 @@ def stage_sources(destination):
                         ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
 
 
+def prepare_profile(work, target, identity, profile, reuse=False):
+    """Stage unchanged sources and generated inputs; never publish a disk."""
+    root = workspace(work, target, profile)
+    stamp = root/'profile-state.json'
+    if identity.get('profile') != profile_inputs(profile, ROOT/'src/system/layout.inc')[0]:
+        raise ValueError('profile preparation identity does not match requested profile')
+    if reuse:
+        state = json.loads(stamp.read_text())
+        if state['source'] != identity:
+            raise ValueError(f'{profile.name}: cached profile inputs differ; prepare without --reuse-work in a fresh --work')
+        staged_inputs = {str(p.relative_to(root))
+                         for folder in ('src', 'tools', 'metadata', 'third_party')
+                         for p in (root/folder).rglob('*')
+                         if p.is_file() and '__pycache__' not in p.parts and p.suffix != '.pyc'}
+        if staged_inputs != set(identity['inputs']):
+            raise ValueError(f'{profile.name}: cached source file set changed; prepare again')
+        expected_artifacts = staged_inputs | {
+            'build/profile/context.json', 'build/profile/layout.inc', 'build/profile/profile.inc'}
+        if set(state['artifacts']) != expected_artifacts:
+            raise ValueError(f'{profile.name}: incomplete cached profile input inventory')
+        for name, expected in state['artifacts'].items():
+            if digest((root/name).read_bytes()) != expected:
+                raise ValueError(f'{profile.name}: cached profile input changed: {name}')
+        read_context(root/'build/profile/context.json', root/'src/system/layout.inc')
+        return root
+    if root.exists():
+        raise ValueError(f'{root} exists; select a fresh --work or use --reuse-work')
+    root.mkdir(parents=True)
+    stage_sources(root)
+    write_context(profile, root/'src/system/layout.inc')
+    artifacts = {str(p.relative_to(root)): digest(p.read_bytes())
+                 for p in sorted(root.rglob('*')) if p.is_file()}
+    stamp.write_text(json.dumps({'source': identity, 'artifacts': artifacts}, indent=2)+'\n')
+    return root
+
+
 def current_build(work, target, identity, reuse):
-    root = work / target
+    if 'profile' in identity:
+        raise ValueError('checked-profile disk generation awaits normal-build integration; use --prepare-profile')
+    root = workspace(work, target)
     stamp = root / 'build-state.json'
     if reuse:
         state = json.loads(stamp.read_text())
@@ -388,6 +431,10 @@ def publish_generation(publication, generation, reports):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--target', choices=['all','z80pack','trs80gp'], default='all')
+    p.add_argument('--profile', choices=['default', *PROFILES], default='default',
+                   help='explicit checked RAM profile (currently preparation only)')
+    p.add_argument('--prepare-profile', action='store_true',
+                   help='stage profile inputs without assembling or publishing a distribution; requires --work')
     p.add_argument('--output', type=Path, default=ROOT/'build/distribution')
     p.add_argument('--work', type=Path, help='persistent isolated build cache (fresh directory)')
     p.add_argument('--reuse-work', action='store_true', help='reuse only hash-verified identical source/artifacts')
@@ -396,6 +443,25 @@ def main():
     a = p.parse_args()
     if a.reuse_work and not a.work:
         p.error('--reuse-work requires --work')
+    if os.environ.get(CONTEXT_ENV):
+        p.error(f'run distribution selection without inherited {CONTEXT_ENV}; select --profile explicitly')
+    profile = None
+    if a.profile != 'default':
+        try:
+            profile = select_profile(a.profile, a.target)
+        except ValueError as error:
+            p.error(str(error))
+    if a.prepare_profile:
+        if not profile or not a.work:
+            p.error('--prepare-profile requires an explicit --profile and --work')
+        root = prepare_profile(a.work.resolve(), a.target, source_identity(profile),
+                               profile, a.reuse_work)
+        print(json.dumps({'status':'profile inputs prepared; no distribution generated',
+                          'workspace':str(root), 'profile':profile.name,
+                          'context':str(root/'build/profile/context.json')}, indent=2))
+        return
+    if profile:
+        p.error('checked-profile disk generation awaits normal-build integration; use --prepare-profile')
     manifest = json.loads(MANIFEST.read_text())
     identity = source_identity()
     a.output = a.output.resolve()

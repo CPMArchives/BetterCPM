@@ -1,4 +1,5 @@
         INCLUDE layout.inc
+        INCLUDE profile.inc
 
 ; ********************************************************************************
 ; *                    BetterCP/M CP/M 2.2 Compatibility BIOS                    *
@@ -373,5 +374,9 @@ MC_BASE:
 ; integration is qualified. MONRAW must never re-enter IOBYTE or MC_CALL.
 MP_MON: DW 0
 MP_MON_END:
+        IF BP_CHECKED EQ 1
+        DS LY_CCRC-$
+        INCLUDE checked-crc.inc
+        ENDIF
         .DEPHASE
         END

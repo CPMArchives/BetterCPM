@@ -9,7 +9,7 @@ import sys
 import subprocess
 import tempfile
 from pathlib import Path
-from system_layout import LAYOUT, expand_layout
+from system_layout import LAYOUT, expand_layout, CONTEXT
 from build_bios import build_bios
 from build_system import build_support
 from cpm_tools_bundle import files as cpm_tools_files
@@ -239,6 +239,8 @@ def main() -> None:
     parser.add_argument("--output", type=Path,
                         default=BUILD / "BetterCPM-Extended-80T-DS-System-790K.dmk")
     args = parser.parse_args()
+    if CONTEXT:
+        parser.error('cpmsim RAM profiles cannot build Model 4 boot products')
     resident_path = ROOT / "build/system/resident.bin"
     command_path = ROOT / "build/ccp/ccp.rlm"
     basic_cpx_path = ROOT / "build/cpx/RCP.CPX"

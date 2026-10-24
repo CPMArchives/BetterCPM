@@ -1,4 +1,5 @@
         INCLUDE layout.inc
+        INCLUDE profile.inc
 ; @rsx-container-slots@
 
 ; ********************************************************************************
@@ -490,7 +491,11 @@ PF_MAGLOOP:                             ; compare carrier signature
         LD      (PF_FMT),A
         CP      1
         JR      Z,PF_ABI
+        IF BP_CHECKED EQ 1
+        CP      3
+        ELSE
         CP      2
+        ENDIF
         JP      NZ,PF_BAD
 
 PF_ABI:                                 ; validate carrier ABI

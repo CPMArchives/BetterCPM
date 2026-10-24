@@ -1,4 +1,5 @@
         INCLUDE layout.inc
+        INCLUDE profile.inc
         INCLUDE bioslinks.inc
         INCLUDE bootfmt.inc
 
@@ -788,4 +789,7 @@ ZP_OFFSET:     DW 0                     ; raw-track byte offset
 ZP_TBYT:       DW 0                     ; raw-track byte count
 ZP_END:                                ; exclusive end of mutable disk state
 
+        IF BP_CHECKED EQ 1
+        INCLUDE checked-identity.inc
+        ENDIF
         END

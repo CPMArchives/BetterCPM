@@ -1,3 +1,5 @@
+        INCLUDE layout.inc
+        INCLUDE profile.inc
 ; Phase-3 in-memory BRSX carrier validator and fact extractor.
 ;
 ; DE -> request:
@@ -87,8 +89,15 @@ RX_MAGLP:
         INC     HL
         DJNZ    RX_MAGLP
         LD      A,(HL)
+        IF BP_CHECKED EQ 1
+        CP      3
+        ELSE
         CP      2
+        ENDIF
         JP      NZ,RX_BAD
+        IF BP_CHECKED EQ 1
+        DEC     A                       ; internal normalized facts retain format 2
+        ENDIF
         LD      (RX_FMT),A
         INC     HL
         LD      DE,RX_ABI
@@ -238,6 +247,10 @@ RX_NAMELP:
         JR      C,RX_SIZEOK
         JP      NZ,RX_BAD
 RX_SIZEOK:
+        IF BP_CHECKED EQ 1
+        CALL    RX_BIND
+        JP      NZ,RX_BAD
+        ENDIF
 
 ; Validate the payload checksum before exposing pointers into the carrier.
         LD      HL,(RX_PAYLOAD)
@@ -377,6 +390,64 @@ RX_BAD:
         OR      A
         RET
 
+        IF BP_CHECKED EQ 1
+; Binding record must fit completely before any facts are published.
+RX_BIND:
+        LD HL,(RX_METAOFF)
+        LD DE,32
+        ADD HL,DE
+        JP C,RX_BAD
+        LD DE,(RX_LENGTH)
+        OR A
+        SBC HL,DE
+        JR C,RX_BFIT
+        JP NZ,RX_BAD
+RX_BFIT:
+        LD HL,(RX_CARRIER)
+        LD DE,(RX_METAOFF)
+        ADD HL,DE
+        JP C,RX_BAD
+        LD DE,12
+        ADD HL,DE
+        JP C,RX_BAD
+        LD A,(HL)
+        CP 4
+        RET NZ
+        INC HL
+        LD A,(HL)
+        CP 18
+        RET NZ
+        INC HL
+        JP PB_CHECK
+; Part 8 candidate ABI-1 binding: HL -> schema, class, 16-byte identity.
+; Returns A=0/Z on acceptance. AF,BC,DE,HL clobbered. No state writes.
+; Public is class 0 + zero ID; private is class 1 + exact resident ID.
+PB_CHECK:
+        LD A,(HL)
+        CP 1
+        JR NZ,PB_BAD
+        INC HL
+        LD A,(HL)
+        INC HL
+        OR A
+        JR Z,PB_PUBLIC
+        DEC A
+        JR NZ,PB_BAD
+        LD DE,LY_CID
+        JP LY_CCMP
+PB_PUBLIC:
+        LD B,16
+PB_ZERO:
+        OR (HL)
+        INC HL
+        DJNZ PB_ZERO
+        RET
+PB_BAD:
+        LD A,0FFH
+        OR A
+        RET
+
+        ENDIF
 RX_MAG:      DB      'B','R','S','X'
 RX_ABI:        DB      2,1,0
 RX_BMET:       DB      'B','M','E','T'

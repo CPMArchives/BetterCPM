@@ -1,4 +1,5 @@
         INCLUDE layout.inc
+        INCLUDE profile.inc
 ; Phase-3 BRSX metadata normalizer.
 ;
 ; DE -> request:
@@ -88,7 +89,11 @@ RXM_MAGLP:
         INC     HL
         DJNZ    RXM_MAGLP
         LD      A,(HL)
+        IF BP_CHECKED EQ 1
+        CP      2
+        ELSE
         CP      1
+        ENDIF
         JP      NZ,RXM_BAD
         INC     HL
         LD      A,(HL)
@@ -100,6 +105,11 @@ RXM_MAGLP:
         JP      NZ,RXM_BAD
         INC     HL
         LD      A,(HL)
+        IF BP_CHECKED EQ 1
+        OR      A
+        JP      Z,RXM_BAD
+        DEC     A                       ; mandatory first binding was checked by R3CARR
+        ENDIF
         LD      (RXM_NREC),A
         INC     HL
         LD      E,(HL)
@@ -109,7 +119,11 @@ RXM_MAGLP:
         CP      2
         JP      NC,RXM_BAD      ; v1 metadata fits one 512-byte window
         LD      A,E
+        IF BP_CHECKED EQ 1
+        CP      32
+        ELSE
         CP      12
+        ENDIF
         JP      C,RXM_BAD
         LD      (RXM_MLEN),DE
         LD      HL,(RXM_BASE)
@@ -133,6 +147,10 @@ RXM_FITS:
         OR      (HL)
         JP      NZ,RXM_BAD
         INC     HL
+        IF BP_CHECKED EQ 1
+        LD      DE,20
+        ADD     HL,DE
+        ENDIF
         LD      (RXM_RECPTR),HL
         XOR     A
         LD      (RXM_NSVC),A
