@@ -37,13 +37,13 @@ UC_VERSION_BYTE:
         LD HL,UC_STACK
         LD A,(80H)
         LD B,A
-        LD DE,UC_VERSION_TEXT
+        LD DE,UC_HELP_TEXT
         PUSH IX
         PUSH IY
-        CALL UV_QUERY
-        JR C,UC_QUERY_DONE
-        LD DE,UC_HELP_TEXT
         CALL UH_QUERY
+        JR C,UC_QUERY_DONE
+        LD DE,UC_VERSION_TEXT
+        CALL UV_QUERY
 UC_QUERY_DONE:
         POP IY
         POP IX

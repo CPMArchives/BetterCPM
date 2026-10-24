@@ -13,7 +13,7 @@ def main():
     for tail in ['/VER',' /ver  ','/VeR','/VER x','x /VER','/VER /VER','/VER /B']:
         c=runner(image);data=tail.encode();c.mem[128]=len(data);c.mem[129:129+len(data)]=data
         before=bytes(c.mem[:128]);c.run(256,limit=100000)
-        expected=version_text() if tail.strip().upper()=='/VER' else 'Invalid /VER usage.\r\n'
+        expected=version_text()
         assert output(c)==expected,(tail,output(c))
         assert bytes(c.mem[:128])==before,'version query altered page zero'
     # The combined transcription preserves all core bytes before adaptation.

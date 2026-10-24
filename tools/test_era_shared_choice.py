@@ -89,7 +89,7 @@ def main():
         assert name not in listing,name
     for tail in ['/VER',' /ver  ','/VER x','x /VER','/VER /VER','/VER /B']:
         c=runner(image);data=tail.encode();c.mem[128]=len(data);c.mem[129:129+len(data)]=data;c.run(256,limit=100000)
-        assert output(c)==(banner('ERA')+'\r\n' if tail.strip().upper()=='/VER' else 'Invalid /VER usage.\r\n')
+        assert output(c)==(banner('ERA')+'\r\n')
     report={'status':'PASS','confirmation_differential_cases':256,'recovery_cases':256,'context_transitions':3,'exact_prompt_target_cases':1,'version_cases':6,
             'bytes':len(image),'sha256':hashlib.sha256(image).hexdigest(),
             'scope':'Retained pre-migration E_YN linked to unchanged production console helpers; all byte inputs, retry/echo/cancel, no typeahead flush, register/stack preservation, no editor modules.'}

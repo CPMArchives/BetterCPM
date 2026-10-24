@@ -49,6 +49,8 @@ diskdef bettercpm-ccs-40ds
  os 2.2
 end
 '''
+ # Pin LibDsk geometry: arbitrary CP/M directory bytes are not a boot BPB.
+ # A large first file can otherwise be mistaken for an out-and-back format.
  diskdefs+='''diskdef bettercpm-mm-standard-system
  seclen 256
  tracks 40
@@ -60,6 +62,7 @@ end
  os 2.2
 end
 diskdef bettercpm-mm-80t-ds-data
+ libdsk:format pcw800
  seclen 512
  tracks 160
  sectrk 10

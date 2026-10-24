@@ -79,7 +79,7 @@ If DUMP is on B0: and is not otherwise found by your command environment, use `B
 | `/40` | Show eight bytes per row in a layout that fits a 40-column screen. |
 | `/FROM=offset` | Begin at the row containing the specified hexadecimal byte position. |
 | `/BARE` | Use the original CP/M hex-only display and interruption behavior. |
-| `/VER` | Show DUMP’s version and build, then return. Use this option alone. |
+| `/VER` | Show DUMP’s version and build, then return. Other arguments are ignored. |
 
 Options may appear before or after the filename and are case-insensitive. `/P`, `/40`, and `/FROM=` may be combined. `/BARE` cannot be combined with them. Repeating a flag is harmless. If `/FROM=` occurs more than once, the last value selects the starting position, but every supplied value must be valid and within the file.
 
@@ -90,7 +90,7 @@ Supply exactly one filename. Enhanced modes accept a single drive/user-qualified
 `DUMP /VER` uses the standard BetterCP/M utility identification style:
 
 ```text
-DUMP 1.0 (Build 003)
+DUMP 1.0 (Build 004)
   - - -
  | BetterCP/M Utilities
  | Hexadecimal File Display
@@ -244,7 +244,7 @@ Messages in the paged viewer occupy the bottom row, temporarily replacing the hi
 | Situation | What to do |
 | --- | --- |
 | Missing file | Check its spelling, drive, and user area. An unqualified operand refers to your current drive/user, not necessarily DUMP’s location. |
-| Unknown or incompatible option | Correct the command. `/VER` must stand alone; `/BARE` cannot be combined with enhanced options. |
+| Unknown or incompatible option | Correct the command. `/VER` ignores other arguments; `/BARE` cannot be combined with enhanced options when no query is present. |
 | Invalid position | Use a hexadecimal byte position within the file. In Go To, edit the retained input or cancel with ESC. |
 | Missing screen support | Load the appropriate screen backend, or omit `/P` for continuous output. |
 | Screen too narrow | Try `/40` if at least 37 columns are available; otherwise use a suitable display. |
@@ -327,7 +327,7 @@ use your current user area. The destination is a drive only, such as `C:`;
 you cannot supply a new output filename. Names and drive letters are
 case-insensitive. Wildcards, paths, explicit user/DU operands such as
 `A0:FILE.TXT`, quoted names, other switches and extra operands are not accepted.
-Each command also accepts standalone `/HELP` and `/VER`. There is no overwrite option.
+Each command also accepts `/HELP` and `/VER` queries. There is no overwrite option.
 
 With no source prefix, input comes from your logged drive. With no destination
 operand, output also goes to your logged drive, independently of where the
@@ -353,9 +353,8 @@ Use `SQ /HELP`, `USQ /HELP`, `CR /HELP`, `UNCR /HELP`, `LZH /HELP` or
 `UNLZH /HELP` for a compact screen with purpose, syntax and the two query options.
 A short corner groups the purpose and Usage line; the Options list is unframed.
 Examples and detailed operating rules are provided in the command pages.
-Help returns without accessing files. Queries ignore letter case and allow surrounding spaces or TABs. `/HELP` must stand alone;
-combining it with other input reports `Invalid /HELP usage.`. An exact `/VER`
-token takes precedence and reports `Invalid /VER usage.` in either order.
+Help returns without accessing files. Queries ignore letter case and use spaces or TABs as separators. An exact `/HELP` token anywhere
+shows help and ignores all other arguments, including `/VER`.
 Longer tokens such as `/HELPER` remain syntax errors. Empty or malformed
 commands show short syntax and a hint to use that command's `/HELP`.
 
@@ -366,7 +365,7 @@ to display that command's version and build without accessing files. Letter case
 does not matter. For example:
 
 ```text
-SQ 1.0 (Build 003)
+SQ 1.0 (Build 004)
   - - -
  | BetterCP/M Utilities
  | Squeeze File Compression
@@ -374,9 +373,9 @@ SQ 1.0 (Build 003)
 
 Each utility has its own build counter. The numbers come from BetterCP/M's
 utility metadata; the individual command pages show the current identification.
-`/VER` must be used alone, apart from surrounding whitespace. Combining it with
-a source name, destination or another option prints `Invalid /VER usage.` and
-returns without performing the command. Ordinary compression and restoration
+An exact `/VER` token anywhere shows identification and ignores other
+arguments. If `/HELP` is also present, help takes precedence in either order.
+Ordinary compression and restoration
 retain their existing output without a version banner.
 
 ### Compression file handling and recovery

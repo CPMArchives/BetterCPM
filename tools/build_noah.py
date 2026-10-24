@@ -41,7 +41,10 @@ def build(assembler, destination):
             shutil.copy2(ROOT / 'src/archive' / name, work / name)
         source = (ROOT / 'src/utilities/noah.mac').read_text()
         query = (ROOT / 'src/utilities/common/version.inc').read_text()
-        source = source.replace('; @noah-version-query@', query[query.index('\nUV_QUERY:') + 1:])
+        query = query[query.index('\nUV_QUERY:') + 1:]
+        help_query = query.replace('UV_', 'UH_').replace('LD C,4', 'LD C,5')
+        help_query = help_query.replace("'/ver'", "'/help'")
+        source = source.replace('; @noah-version-query@', query + '\n' + help_query)
         (work / 'command.mac').write_text(source.replace('; @noah-text@', '\n'.join(emitted)))
         subprocess.run([str(assembler), '-e32', '-sn', '-fb', '-onoah.bin', '-lnoah.lst', 'command.mac'], cwd=work, check=True)
         image = (work / 'noah.bin').read_bytes()

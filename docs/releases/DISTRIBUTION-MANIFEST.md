@@ -195,7 +195,8 @@ supported subset and test limits.
 ## Compression 1.0 feature freeze
 
 The six selected compression commands are feature-frozen at version 1.0
-Build 003 (`00e6785`, merged in `569825d`). The
+Build 004 after the forgiving query amendment to baseline `00e6785`
+(merged in `569825d`). The
 [qualification index](../engineering/Compression-1.0-Qualification.json)
 records final COM hashes and the completed stock CP/M 2.2 historical/query
 campaigns. Package these qualified bytes; a changed artifact needs relevant
@@ -203,3 +204,8 @@ requalification. The [1.0 compression release checklist](1.0-ROADMAP.md#compress
 keeps both BetterCP/M platform runs, native assembly qualification and final
 Utilities image/component acceptance open. This freeze does not change disk
 membership or promote provisional media to a release.
+
+Build 004 compression platform execution is recorded in the
+[platform qualification record](../engineering/Compression%20Utilities%20Platform%20Qualification.md).
+cpmsim and Model 4 component checks pass after pinning host disk geometry.
+Utilities media remain PROVISIONAL; this campaign does not close whole-disk acceptance.

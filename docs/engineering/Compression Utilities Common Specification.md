@@ -5,8 +5,9 @@
 The maintainer froze compression features for release 1.0 on 2026-10-23.
 SQ/USQ, CR/UNCR and LZH/UNLZH are six independent Z80 commands using the common
 codec ABI, with safe temporary output, historical naming, `/VER` and the adopted
-short-corner `/HELP`. Final feature baseline: `00e6785`, merged in `569825d`;
-each command identifies as version 1.0 Build 003. The exact final binary hashes
+short-corner `/HELP`. Initial feature baseline: `00e6785`, merged in `569825d`, followed by the
+maintainer-directed forgiving query amendment. Each command now identifies
+as version 1.0 Build 004. The exact final binary hashes
 and historical exchange results are retained in the
 [qualification record](Compression%20Historical%20Interoperability.md).
 
@@ -144,14 +145,14 @@ GET/END bytes, not only bytes accepted by WRITE.
 
 ### Context and standalone image sizes
 
-| Algorithm | Context bytes, including prefix | Build 003 COM bytes |
+| Algorithm | Context bytes, including prefix | Build 004 COM bytes |
 | --- | ---: | ---: |
-| SQ | 3524 | 8123 |
-| USQ | 1440 | 5398 |
-| CR | 25207 | 29443 |
-| UNCR | 26582 | 31206 |
-| LZH | 11943 | 17225 |
-| UNLZH | 6646 | 12215 |
+| SQ | 3524 | 8035 |
+| USQ | 1440 | 5310 |
+| CR | 25207 | 29355 |
+| UNCR | 26582 | 31118 |
+| LZH | 11943 | 17137 |
+| UNLZH | 6646 | 12127 |
 
 COM sizes are build snapshots, not fixed ABI constants or universal minimum RAM
 claims. Images include their allocated context, FCBs, buffers and private stack;
@@ -233,19 +234,15 @@ unsafe names. No decoder restores attributes, timestamps, user areas or drives.
 
 ### Standalone /VER and /HELP
 
-All six commands accept case-insensitive standalone `/VER`, with space/TAB
-padding. Exact `/VER` tokens combined with any other operand/token print
-`Invalid /VER usage.` without running the command. Longer tokens such as
-`/VERIFY` remain normal parser errors. Standalone `/HELP` uses the same early
-path and prints the compact purpose/Usage corner and unframed Options list.
-Help retains the metadata title and omits the `/VER` branding, repeated query
-syntax, examples and detailed operating rules; those remain in the manual.
-Exact `/HELP` mixed with other input reports `Invalid /HELP usage.`; exact `/VER` takes precedence in either
-order. `/HELPER` is a normal syntax error. Empty/malformed invocations print
-short syntax plus `Use NAME /HELP for help.` See the common
-[help standard](../../specifications/UTILITY-HELP.md).
+All six commands recognize case-insensitive exact `/HELP` and `/VER` tokens
+anywhere in the bounded tail, with space/TAB separators. Both queries ignore
+all other arguments and do no command work. `/HELP` takes precedence if both
+occur. No invalid-query-usage diagnostic is emitted. Longer tokens such as
+`/HELPER` and `/VERIFY` are ordinary parser input. Empty/malformed invocations
+without an exact query print short syntax plus `Use NAME /HELP for help.`
+See the common [help standard](../../specifications/UTILITY-HELP.md).
 
-Each command's independent 1.0 Build 003 identity is owned by
+Each command's independent 1.0 Build 004 identity is owned by
 `metadata/utility-versions.tsv`. Builders use `tools/codec_version.py` to expand
 `codecver.inc` from metadata plus the shared `version.inc` query. `/VER` output is four
 CR/LF-terminated ASCII lines: `NAME version (Build nnn)`, `  - - -`,
@@ -342,7 +339,7 @@ and native command regressions; it does not broaden supported format variants.
 ## Version/help-entry qualification
 
 `python3 tools/test_codec_versions.py` executes the six built commands on the
-full Z80 core. The final rerun checks 344 version/help/parser cases, case/space/TAB handling,
+full Z80 core. The final rerun checks 356 version/help/parser cases, case/space/TAB handling,
 127-byte tails, metadata-driven four-digit builds, deterministic rebuilds,
 console-only handled paths, untouched files/FCBs/context/tail, stack balance,
 index/alternate registers and code immutability. The shared command test model
@@ -351,10 +348,16 @@ the program's first instruction.
 
 `python3 tools/test_codec_versions_cpm.py` executes 90 commands under stock
 CP/M 2.2 on disposable disks, verifying every line of all six identities and compact help screens,
-invalid mixed requests, ordinary rejection of longer/unknown option tokens,
+mixed requests ignoring other arguments, ordinary rejection of longer/unknown option tokens,
 return to prompt, unchanged files and no temporary output. Existing fault-
 injection and SQ/USQ, CR/UNCR, LZH/UNLZH native round-trip tests remain required.
-The final historical qualification record now identifies the Build 003 binary
+The final historical qualification record now identifies the Build 004 binary
 hashes. A later rebuild is covered only if its bytes match; changed artifacts
 require relevant retesting. Final query logs are retained with the refreshed
 historical evidence bundle.
+
+See the [platform qualification record](Compression%20Utilities%20Platform%20Qualification.md):
+the corrected cpmsim and Model 4 component matrix passes. The initial Model 4
+data-loss report was traced to unpinned host geometry during test media setup;
+independent FDF-sector readback now guards that path. Query and historical
+results remain separately recorded.

@@ -2,16 +2,18 @@
 
 ## Common contract
 
-BetterCP/M-owned utilities adopting this standard accept standalone,
-case-insensitive `/HELP`. Surrounding spaces and TABs are allowed. Recognition
-uses the bounded command tail and exact tokens: `/HELPER`, `/HELP.X` and
-`X/HELP` are ordinary parser input, not help requests. An exact `/HELP` token
-combined with any operand or another token prints `Invalid /HELP usage.` and
-returns without command operations. An exact `/VER` token takes precedence
-anywhere in a mixed request, including `/HELP /VER`; the version contract
-therefore reports `Invalid /VER usage.` in either order.
+BetterCP/M-owned utilities adopting this standard recognize case-insensitive
+exact `/HELP` and `/VER` tokens anywhere in the bounded command tail, separated
+by spaces or TABs. Each query ignores all other arguments: operands, unknown
+switches and repeated query tokens do not cause errors or command operations.
+`/HELP` takes precedence when both queries appear, in either order, in a
+utility providing both queries. This does not add help screens where absent. Thus
+`LZH /HELP X`, `LZH FILE.BIN /HELP`, `LZH /VER X` and `LZH X /VER` simply show
+the requested screen. `/HELP /VER` and `/VER /HELP` both show help.
+Longer tokens such as `/HELPER`, `/HELP.X`, `X/HELP` and `/VERIFY` are not
+queries; absent an exact query token, they remain ordinary parser input.
 
-Help and invalid query requests return to the caller before file operations,
+Query requests return to the caller before file operations,
 drive/user inquiry or changes, DMA changes, codec/provider initialization, or
 terminal-backend setup. They may use console string output only. They preserve
 the command tail and the caller's return path. Adopted third-party utilities
@@ -30,7 +32,7 @@ The exact layout is:
 - Purpose: one leading space, `|`, one space, then the purpose.
 - Corner spacer: ` |` on its own line, with no trailing spaces.
 - Syntax: ` |   Usage: NAME [options] [operands]`, using the command's actual
-  accepted operand order. Omit `[options]` when only standalone queries exist.
+  accepted operand order. Omit `[options]` when only identification/help queries exist.
 - One empty line ends the corner. Do not extend the vertical line alongside
   the options list.
 - `   Options:` begins the list, indented three spaces.
@@ -63,7 +65,7 @@ Do not replace a useful diagnostic with a full help screen.
 
 SQ, USQ, CR, UNCR, LZH and UNLZH use one compact screen each: identity,
 short purpose, exact source/optional destination-drive syntax, and the two
-standalone queries. They have no operational switches, so Usage does not show
+queries. They have no operational switches, so Usage does not show
 `[options]`. Their manual pages retain examples, drive/user defaults, naming and
 format rules, source retention, overwrite refusal and other safety details.
 
@@ -78,7 +80,7 @@ build preparation, with no filesystem or environment lookup at runtime.
 The SQ screen using this layout is:
 
 ```text
-SQ 1.0 (Build 003)
+SQ 1.0 (Build 004)
   - - -
  | Squeeze compression
  |
@@ -120,3 +122,6 @@ that query paths use console output only and preserve files, drive/user, FCBs,
 workspace, command tail, caller stack and required registers. Execute the
 transient commands under CP/M 2.2 as well as the CPU test harness. Continue the
 utility's ordinary functional regression tests after adding query dispatch.
+
+The common forgiving query implementation and regression evidence are recorded
+in [Common Utility Query Qualification](../docs/engineering/Utility%20Query%20Qualification.md).

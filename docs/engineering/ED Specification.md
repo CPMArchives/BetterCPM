@@ -71,7 +71,7 @@ If source, documentation, and shipped binary disagree, the official CP/M 2.2 bin
 BetterCP/M adds exactly two user-visible extensions:
 
 1. **simple `DU:` addressing** for ED filespecs;
-2. **standalone `/VER`**.
+2. **`/VER` queries**.
 
 No other enhancements are part of this specification.
 
@@ -848,7 +848,7 @@ BetterCP/M ED 1.0 (Build nnn)
 
 and exits.
 
-`/VER` is standalone-only.
+`/VER` as an exact token ignores other arguments.
 
 Invalid:
 

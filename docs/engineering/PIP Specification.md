@@ -3,7 +3,7 @@
 Status: implementation complete at Build 026, subject to the named final
 qualification results in [PIP Completion Qualification](PIP%20Completion%20Qualification.md).
 The implementation retains DRI PIP 1.5 assignment syntax and transfer behavior,
-adds BetterCP/M DU operands and standalone `/VER`, and ships on both System
+adds BetterCP/M DU operands and `/VER` queries, and ships on both System
 Disks. Historical increment notes below remain as development evidence; the
 completion report supersedes their pending/development-only status statements.
 
@@ -62,7 +62,7 @@ completion report supersedes their pending/development-only status statements.
   not accidentally remove a same-named unrelated source-user file.
 
 `tools/build_pip.py` writes only `build/pip-development/PIP.COM`. It provides
-standalone /VER, a nonmutating interactive `*` loop, and assignment/source-span
+/VER queries, a nonmutating interactive `*` loop, and assignment/source-span
 framing that respects bracket parameters and S/Q strings delimited by 1Ah.
 /VER recognition ignores occurrences inside parameter strings. The framing
 scanner can represent the full 127-byte command-tail limit, including 64
@@ -588,7 +588,7 @@ BetterCP/M PIP 1.0 (Build nnn)
 
 and exits.
 
-`/VER` is standalone-only.
+`/VER` as an exact token outside bracketed string data ignores other arguments.
 
 It is not a PIP transfer parameter and is invalid when combined with a transfer command.
 

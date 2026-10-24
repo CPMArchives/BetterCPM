@@ -149,6 +149,10 @@ NH_QUERY_STORE:
         LD HL,NH_STACK
         LD A,(80H)
         LD B,A
+        ; Help takes precedence; both queries ignore all other tail tokens.
+        LD DE,NH_HELP
+        CALL UH_QUERY
+        RET C
         LD DE,NH_VERSION
         JP UV_QUERY
 NH_PRINT_FIELD:
