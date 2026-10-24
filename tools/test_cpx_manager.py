@@ -39,7 +39,7 @@ def main() -> None:
         b"A0>CPX UNLOAD RCP", b"HELLO.CPX",
         b"A0>HELLO", b"Hello from HELLO.CPX", b"A0>CPX UNLOAD HELLO",
         b"No CPXs loaded", f"TPA available: {(LAYOUT['TPA'] - 0x100) // 1024 - 0}K".encode(),
-        b"Command Processor Extension facility: API 1.0; implementation 1.3",
+        b"Command Processor Extension facility: API 2.0; implementation 2.0",
         b"A0>HELLO",
         b"Hello from BetterCP/M",
     )

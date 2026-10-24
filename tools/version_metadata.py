@@ -70,7 +70,7 @@ def render() -> str:
         annotated(f"BCV_SYSTEM:     DB      {quoted(RESIDENT_IDENTITIES['BetterCP/M'])}",
                   "system name"),
         annotated(f"BCV_RELEASE:    DB      {quoted(system['implementation_version'])}",
-                  "system release"),
+                  "core OS version"),
     ))
     for row in components:
         stem = LABELS[row["component"]]

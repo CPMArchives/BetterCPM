@@ -55,7 +55,7 @@ def main() -> None:
         f"TPA available: {(LAYOUT['TPA'] - 0x100) // 1024 - 0}K".encode(), b"HELLO : BDOS 198",
         f"TPA available: {(LAYOUT['TPA'] - 0x100) // 1024 - 2}K".encode(), b"Hello from HELLO.RSX",
         b"RSX function 198 returned 5253h",
-        b"Resident System Extension facility: API 1.0; implementation 1.2",
+        b"Resident System Extension facility: API 2.0; implementation 2.0",
     ))
 
     second = run(("RSX LOAD HELLO", "RSX LOAD ECHO.RSX", "RSX2TST",

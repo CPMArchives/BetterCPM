@@ -1,9 +1,9 @@
 component	identity	interface_version	implementation_version	status	notes
-BetterCP/M	System release	-	0.90	completed baseline	System release identity; not an aggregate API version
-CCP	Command environment	1.0	1.4	completed	CCP-owned stack and disposable warm-boot loader
-CPX	Command Processor Extension facility	1.0	1.3	completed	Versioned name-based profile control
+BetterCP/M	Core OS	-	1.0	completed baseline	Last frozen core milestone only: 3b2d2d7; current subsystem rows are post-1.0 development and do not redefine core 1.0; next core version and package core selection undecided
+CCP	Command environment	2.0	2.0	completed	Checked BCM2 carrier and streaming command reload; command calling convention unchanged; legacy format retained in default profile
+CPX	Command Processor Extension facility	2.0	2.0	completed	Checked BCPX2 carrier admission with CRC and public/private build binding; BCPX1 retained in default profile
 BDOS	Basic Disk Operating System	1.2	1.9	completed	Directory-full extent rollover retains caller FCB and returns sequential 1/random 5; memory-neutral shared paths; public interface unchanged
-RSX	Resident System Extension facility	1.0	1.5	completed	On-demand manager and stack; active allocation reported in TPA
-BIOS	Basic Input/Output System	1.7	1.13	completed	Disk ABI 5; shared geometry/length helpers and repacked resident allocation; restored MM CLEAR/ESC and Ctrl-CLEAR/DEL
+RSX	Resident System Extension facility	2.0	2.0	completed	Checked BRSX3/BMET2 admission, streamed reconstruction and private pack binding; BRSX2 retained in default profile
+BIOS	Basic Input/Output System	1.7	1.14	completed	Checked cpmsim reload, CRC and private identity services; public BIOS and disk ABI unchanged
 TIME provider	Optional callable resident clock service	1.0	-	planned	Hardware providers use the adopted TIME ABI; implementation version begins with the first qualified provider
 Extended Services RSX	BetterCP/M extended-services namespace	-	-	planned	Assign separate API and implementation versions when completed

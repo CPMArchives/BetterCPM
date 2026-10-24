@@ -1,0 +1,7 @@
+{
+  "schema": 1,
+  "name": "BetterCP/M release package",
+  "version": "1.0",
+  "status": "in-progress",
+  "notes": "Release-package target; documentation and Utilities Disk completion remain separate from the frozen core OS milestone."
+}

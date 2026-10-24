@@ -248,7 +248,7 @@ def release_banner() -> str:
     edge = ' - - -' + ' ' * (width - 12) + '- - - '
     side = '|' + ' ' * (width - 2) + '|'
     lines = [edge, side, '|' + 'BetterCP/M'.center(width - 2) + '|',
-             ('Release ' + release).center(width).rstrip(), '',
+             ('Core OS ' + release).center(width).rstrip(), '',
              'CP/M 2.2 Compatible System'.center(width).rstrip(), '',
              'Type TYPE README.TXT for more'.center(width).rstrip(),
              side, edge]
