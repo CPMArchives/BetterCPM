@@ -2135,7 +2135,7 @@ BC_MVERR:      DB      13,10,'COPY MADE; SOURCE NOT ERASED',13,10,'$' ; MOVE err
 BC_CUSAGE:     DB      13,10,'COPY source destination OR destination=source [/O]',13,10,'$' ; COPY/MOVE usage message
 BC_RQMARK:     DB      13,10,'?',13,10,'$' ; rename wildcard-error message
 BC_NOSPACE:    DB      13,10,'NO SPACE',13,10,'$' ; disk-full message
-BC_VERSION:    DB      13,10,'BetterCP/M 0.90',13,10,'$' ; version heading
+BC_VERSION:    DB      13,10,'BetterCP/M 1.0',13,10,'$' ; version heading
 BC_VAPI:       DB      ': API ','$'     ; API-version label
 BC_VIMPL:      DB      '; implementation ','$' ; implementation-version label
 

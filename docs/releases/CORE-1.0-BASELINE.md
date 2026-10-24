@@ -77,3 +77,25 @@ this baseline.
 Future core corrections must be recorded against a new explicit commit and
 receive appropriate regression checks; the assessment must retain the original
 baseline and identify any later comparison revision separately.
+
+
+## Version metadata clarification — 24 October 2026
+
+The current core OS metadata and visible OS banners now identify BetterCP/M
+1.0. BDOS, BIOS, CCP, CPX and RSX retain their independently assigned API and
+implementation versions. The release-package target is separately recorded as
+1.0, in progress, in `metadata/release-package.json`.
+
+The frozen commit and its original bytes remain unchanged. Its historical
+0.90 banner is retained in archived artifacts and qualification records; the
+metadata correction does not retag or rebuild that baseline. The completed
+cpmsim follow-up work is recorded separately and is not assigned a new OS
+version by this correction.
+
+Validation of the correction: the subsystem matrix/generated includes agree;
+compiled VER banner/concise/invalid-option paths pass; shared query handling
+retains its observed 24/32-byte entry-stack bound. RCP and its transient bodies
+assemble with valid relocations, and the cpmsim resident assembly fits its
+existing allocations. The emitted runtime descriptor reports core 1.0 and
+retains descriptor ABI 1 with three subsystem entries. These checks do not
+requalify or relabel archived distribution artifacts.

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import json
 from pathlib import Path
 
 from version_metadata import (CPX_INCLUDE, INCLUDE, RSX_INCLUDE, render,
@@ -11,7 +12,7 @@ from version_metadata import (CPX_INCLUDE, INCLUDE, RSX_INCLUDE, render,
 ROOT = Path(__file__).resolve().parents[1]
 MATRIX = ROOT / "metadata/subsystem-versions.tsv"
 EXPECTED = {
-    "BetterCP/M": ("-", "0.90", "completed baseline"),
+    "BetterCP/M": ("-", "1.0", "completed baseline"),
     "CCP": ("1.0", "1.4", "completed"),
     "CPX": ("1.0", "1.3", "completed"),
     "BDOS": ("1.2", "1.9", "completed"),
@@ -42,6 +43,9 @@ def main() -> None:
             "src/utilities/cpxvers.inc is stale")
     require(RSX_INCLUDE.read_text(encoding="ascii") == render_manager("RSX", "RS_VERSION"),
             "src/utilities/rsxvers.inc is stale")
+    package = json.loads((ROOT / 'metadata/release-package.json').read_text())
+    require(package['version'] == '1.0' and package['status'] == 'in-progress',
+            'release-package target/completion must remain distinct from core OS version')
     banner = f"BetterCP/M {rows['BetterCP/M']['implementation_version']}"
     # The visible system banner is owned by the resident command package; the
     # compact core CCP contains no user-facing sign-on text.

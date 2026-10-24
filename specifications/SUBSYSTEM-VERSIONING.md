@@ -9,12 +9,18 @@ runtime behavior.
 
 ## Version identities
 
-BetterCP/M has a system release version. Each completed subsystem also has an
-implementation version. A subsystem that exposes a defined boundary to other
-components, extensions, applications, or machine-specific code additionally
+BetterCP/M has a core OS version and a separate release-package version.
+Each completed subsystem also has an implementation version. A subsystem that
+exposes a defined boundary to other components, extensions, applications, or machine-specific code additionally
 has an interface version.
 
-- **System release version** identifies a complete BetterCP/M distribution.
+- **Core OS version** identifies the operating system as a whole. The accepted
+  core 1.0 baseline is `3b2d2d7`; its milestone does not imply completion of a
+  distribution package.
+- **Release-package version** identifies the assembled distribution of the OS,
+  utilities and documentation. Package 1.0 remains in progress independently
+  of the completed core 1.0 milestone. `metadata/release-package.json` owns its
+  version and completion status.
 - **Interface version** identifies a public contract: entry points, calling
   conventions, data structures, binary formats, or other externally observable
   requirements.
@@ -23,8 +29,8 @@ has an interface version.
 
 An implementation version may change without changing its interface version.
 An interface version changes only when its public contract changes. Code must
-not infer the version or presence of one subsystem from the BetterCP/M system
-release version or from the version of another subsystem.
+not infer the version or presence of one subsystem from the BetterCP/M core
+OS version or from the version of another subsystem.
 
 ## Number format and increments
 
@@ -58,8 +64,9 @@ particular:
   format;
 - the BIOS owns the BIOS API presented to the system above it.
 
-Build and regression records should report the system release plus the
-interface and implementation versions of affected subsystems. A concise record
+Build and regression records should report the core OS version, package
+version/status where relevant, plus the interface and implementation versions
+of affected subsystems. A concise record
 may take this form:
 
 ```text
@@ -69,8 +76,9 @@ RSX manager impl 1.0 / API 1.0
 ```
 
 The normative current assignments are maintained in
-`metadata/subsystem-versions.tsv`. Source banners, binary metadata, build
-manifests, and release notes must agree with that matrix when they expose a
+`metadata/subsystem-versions.tsv`; its BetterCP/M row owns the core OS version.
+Release-package completion is not inferred from that row. Source banners,
+binary metadata, build manifests, and release notes must agree with that matrix when they expose a
 version. A change to a subsystem version and the corresponding matrix entry
 belong in the same change set.
 
