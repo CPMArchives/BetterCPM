@@ -1,0 +1,239 @@
+{
+  "schema": 1,
+  "dasm_acceptance": "PASS",
+  "scope": "Model 4/trs80gp and z80pack/cpmsim emulators; no physical hardware or whole Utilities release claim",
+  "binaries": {
+    "DASM.COM": {
+      "sha256": "8034d629ee464d33659684c39493022bd48c7cb1227952428c751fbf169b66e9",
+      "bytes": 20736
+    },
+    "DSYM.COM": {
+      "sha256": "8cd2d1e09fc60432a3345e1321b54a92316f18fb7ef30b9e8c8da18c2f63f98a",
+      "bytes": 10386
+    },
+    "DLINK.COM": {
+      "sha256": "2bc9912e769b6d8e6635afa47d6ca6121a53ba60870cac7330b441ff0dbed8f7",
+      "bytes": 6216
+    }
+  },
+  "external_tools": {
+    "ZSM4.COM": {
+      "version": "4.7",
+      "sha256": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8"
+    },
+    "LINK.COM": {
+      "version": "1.3",
+      "sha256": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677"
+    }
+  },
+  "host_full_core_cases": {
+    "DASM": 161,
+    "DSYM": 73,
+    "DLINK": 40,
+    "USQ_regression": 71
+  },
+  "platforms": {
+    "z80pack": {
+      "status": "PASS",
+      "gates": {
+        "runtime_profile": {
+          "status": "PASS",
+          "report": "dasm-v5-runtime/report.json",
+          "report_sha256": "dcc14fc8dbaeaa2adeb345cd09e73eea9a602ffda98ad854500b43044ce1f8b2",
+          "tested_utilities_sha256": "b4161c1f94be5b81528b40abf24a0e63db3528e95168a4b5463b40112ebecaa4",
+          "final_media_execution": true
+        },
+        "real_utility": {
+          "status": "PASS",
+          "report": "dasm-v4-utility2-z80pack/report.json",
+          "report_sha256": "63483dd3fac380b48dcf043ba22651c719eb9dbc256ad8b80b8e3c3b74a46759",
+          "tested_utilities_sha256": "cd215afbd1e15d50636e5208447e52d14c9d4d623572194da58d4f2915fae6b5",
+          "final_media_execution": false
+        },
+        "integration": {
+          "status": "PASS",
+          "report": "dasm-v5-integration-z80pack/report.json",
+          "report_sha256": "9a5176a46c3ebee4d083567f7ee75d9ea88c5327d11b0a6c0a384d3fd6d0cd44",
+          "tested_utilities_sha256": "b4161c1f94be5b81528b40abf24a0e63db3528e95168a4b5463b40112ebecaa4",
+          "final_media_execution": true
+        },
+        "checked_link": {
+          "status": "PASS",
+          "report": "dasm-v5-link-z80pack/report.json",
+          "report_sha256": "14fe02c795ee63abe5b07bcb30bd46955f170150a78e60d26fe002bee4ecc3a9",
+          "tested_utilities_sha256": "b4161c1f94be5b81528b40abf24a0e63db3528e95168a4b5463b40112ebecaa4",
+          "final_media_execution": true
+        },
+        "analysis": {
+          "status": "PASS",
+          "report": "dasm-v4-analysis-z80pack/report.json",
+          "report_sha256": "1b10f7615f93a714ece48cfbba70ec67cf3be7802c2d5f040840014bf6afd7f1",
+          "tested_utilities_sha256": "cd215afbd1e15d50636e5208447e52d14c9d4d623572194da58d4f2915fae6b5",
+          "final_media_execution": false
+        },
+        "corpus": {
+          "status": "PASS",
+          "report": "dasm-v4-corpus-z80pack/report.json",
+          "report_sha256": "61554acf65f2862429515635bcc4a979a56af8a21fd79ca45edeec712ab899c9",
+          "tested_utilities_sha256": "cd215afbd1e15d50636e5208447e52d14c9d4d623572194da58d4f2915fae6b5",
+          "final_media_execution": false
+        },
+        "capacity": {
+          "status": "PASS",
+          "report": "dasm-v4-capacity-z80pack/report.json",
+          "report_sha256": "6ba1d88223acb429ca1c0a357d4fba610db2c855046001fa3cfadf1e585dab42",
+          "tested_utilities_sha256": "cd215afbd1e15d50636e5208447e52d14c9d4d623572194da58d4f2915fae6b5",
+          "final_media_execution": false
+        },
+        "filesystem": {
+          "status": "PASS",
+          "report": "dasm-v5-failures2-z80pack/report.json",
+          "report_sha256": "7a46c2b3c5504ff5e4d182b2f325cf8b25c47f1f53d0f2a074d2cd4a5e1d4a36",
+          "tested_utilities_sha256": "b4161c1f94be5b81528b40abf24a0e63db3528e95168a4b5463b40112ebecaa4",
+          "final_media_execution": true
+        },
+        "console": {
+          "status": "PASS",
+          "report": "dasm-v5-console-z80pack/report.json",
+          "report_sha256": "c752f99f5acc47a85d3e714b1060407cc0ccc290186dda9b61f1bd55cd29a6ec",
+          "tested_utilities_sha256": "b4161c1f94be5b81528b40abf24a0e63db3528e95168a4b5463b40112ebecaa4",
+          "final_media_execution": true
+        },
+        "session_rejection": {
+          "status": "PASS",
+          "report": "dasm-v4-session-rejection/report.json",
+          "report_sha256": "8da2f4e2760a73ac4e86efbfd780d042e42d2c7d91a4194d0bc9e8b8b1c9cbbf",
+          "tested_utilities_sha256": "cd215afbd1e15d50636e5208447e52d14c9d4d623572194da58d4f2915fae6b5",
+          "final_media_execution": false
+        },
+        "insufficient_tpa": {
+          "status": "PASS",
+          "report": "dasm-v4-low-tpa/report.json",
+          "report_sha256": "26e3fbc53011106d38b91f9585aeac75cc52dd586ab9c7d3d604ed33bcef0b2b",
+          "tested_utilities_sha256": "cd215afbd1e15d50636e5208447e52d14c9d4d623572194da58d4f2915fae6b5",
+          "final_media_execution": false
+        }
+      },
+      "utilities_sha256": "b4161c1f94be5b81528b40abf24a0e63db3528e95168a4b5463b40112ebecaa4",
+      "retained_dependencies": {
+        "DASM.COM": "8034d629ee464d33659684c39493022bd48c7cb1227952428c751fbf169b66e9",
+        "DSYM.COM": "8cd2d1e09fc60432a3345e1321b54a92316f18fb7ef30b9e8c8da18c2f63f98a",
+        "ZSM4.COM": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8",
+        "LINK.COM": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677"
+      },
+      "normal_active_ceiling": "CF01",
+      "normal_input_capacity": 8192,
+      "resident_profile": "ZPRTC",
+      "system_sha256": "b9a616bafec41dc4c3206e5054712c88ead80624fde0e56b5899c09d1be7c7d1"
+    },
+    "trs80gp": {
+      "status": "PASS",
+      "gates": {
+        "runtime_profile": {
+          "status": "PASS",
+          "report": "dasm-v5-runtime/report.json",
+          "report_sha256": "dcc14fc8dbaeaa2adeb345cd09e73eea9a602ffda98ad854500b43044ce1f8b2",
+          "tested_utilities_sha256": "9af91fe09fdffeee5c84240ad444ea0312d1e03f96293768c047487e94da0e57",
+          "final_media_execution": true
+        },
+        "real_utility": {
+          "status": "PASS",
+          "report": "dasm-v4-utility2-trs80gp/report.json",
+          "report_sha256": "f1a22478442a32ec6bfef78cf52ede6c97564f05cc9bf56a8b15938435d8f37f",
+          "tested_utilities_sha256": "d2717193bd7d3a70bf143fc1a20175c520e3aabbed702509f9f3fd2f93410d74",
+          "final_media_execution": false
+        },
+        "integration": {
+          "status": "PASS",
+          "report": "dasm-v5-integration-trs80gp/report.json",
+          "report_sha256": "04e69dc882456bd04c4a049aec5ac851e40302c88108bbff3c83d8fe4565b267",
+          "tested_utilities_sha256": "9af91fe09fdffeee5c84240ad444ea0312d1e03f96293768c047487e94da0e57",
+          "final_media_execution": true
+        },
+        "checked_link": {
+          "status": "PASS",
+          "report": "dasm-v5-link-trs80gp/report.json",
+          "report_sha256": "c63a40c84f4e3f0478c3b60876e98264a6105b1cb0856c0178808d59573bd94e",
+          "tested_utilities_sha256": "9af91fe09fdffeee5c84240ad444ea0312d1e03f96293768c047487e94da0e57",
+          "final_media_execution": true
+        },
+        "analysis": {
+          "status": "PASS",
+          "report": "dasm-v4-analysis-trs80gp/report.json",
+          "report_sha256": "613053054be399374de36acc1fefd1edecc80cfa3e9c6c06b0751802aec5f483",
+          "tested_utilities_sha256": "d2717193bd7d3a70bf143fc1a20175c520e3aabbed702509f9f3fd2f93410d74",
+          "final_media_execution": false
+        },
+        "corpus": {
+          "status": "PASS",
+          "report": "dasm-v4-corpus-trs80gp/report.json",
+          "report_sha256": "64516030e12b57cc54eb579d9f1e9d96305088c7d13b482e187a023c45488bf5",
+          "tested_utilities_sha256": "d2717193bd7d3a70bf143fc1a20175c520e3aabbed702509f9f3fd2f93410d74",
+          "final_media_execution": false
+        },
+        "capacity": {
+          "status": "PASS",
+          "report": "dasm-v4-capacity-trs80gp/report.json",
+          "report_sha256": "d4a806daa949b597c23c2100baecec9e825a72ac2f118f00e57364d3d346d2fb",
+          "tested_utilities_sha256": "d2717193bd7d3a70bf143fc1a20175c520e3aabbed702509f9f3fd2f93410d74",
+          "final_media_execution": false
+        },
+        "filesystem": {
+          "status": "PASS",
+          "report": "dasm-v5-failures2-trs80gp/report.json",
+          "report_sha256": "ed91eb9b6c09abe27267316e6d203fcb440d4197502adc79edf126dc7527bd87",
+          "tested_utilities_sha256": "9af91fe09fdffeee5c84240ad444ea0312d1e03f96293768c047487e94da0e57",
+          "final_media_execution": true
+        },
+        "console": {
+          "status": "PASS",
+          "report": "dasm-v5-console-trs80gp/report.json",
+          "report_sha256": "d763b1a538644cbe160070fa4aedfa76c948e6e445baa9f9533404b214544ec8",
+          "tested_utilities_sha256": "9af91fe09fdffeee5c84240ad444ea0312d1e03f96293768c047487e94da0e57",
+          "final_media_execution": true
+        },
+        "session_rejection": {
+          "status": "PASS",
+          "report": "dasm-v4-session-rejection/report.json",
+          "report_sha256": "8da2f4e2760a73ac4e86efbfd780d042e42d2c7d91a4194d0bc9e8b8b1c9cbbf",
+          "tested_utilities_sha256": "d2717193bd7d3a70bf143fc1a20175c520e3aabbed702509f9f3fd2f93410d74",
+          "final_media_execution": false
+        },
+        "insufficient_tpa": {
+          "status": "PASS",
+          "report": "dasm-v4-low-tpa/report.json",
+          "report_sha256": "26e3fbc53011106d38b91f9585aeac75cc52dd586ab9c7d3d604ed33bcef0b2b",
+          "tested_utilities_sha256": "d2717193bd7d3a70bf143fc1a20175c520e3aabbed702509f9f3fd2f93410d74",
+          "final_media_execution": false
+        }
+      },
+      "utilities_sha256": "9af91fe09fdffeee5c84240ad444ea0312d1e03f96293768c047487e94da0e57",
+      "retained_dependencies": {
+        "DASM.COM": "8034d629ee464d33659684c39493022bd48c7cb1227952428c751fbf169b66e9",
+        "DSYM.COM": "8cd2d1e09fc60432a3345e1321b54a92316f18fb7ef30b9e8c8da18c2f63f98a",
+        "ZSM4.COM": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8",
+        "LINK.COM": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677"
+      },
+      "normal_active_ceiling": "CA01",
+      "normal_input_capacity": 8192,
+      "resident_profile": "M4SCRN+ADM3A",
+      "system_sha256": "578bc34cb377537e47a7e9bb1f019b20ffd9b98abc36e8acee74dfb56056eb43"
+    }
+  },
+  "stack_observed_high_water_bytes": 44,
+  "evidence_archive": {
+    "name": "DASM-Qualification-Evidence.tar.gz",
+    "bytes": 6013341,
+    "sha256": "d3ecbcf447cb5b78ca90efc8b5a7f6201efaf2e0f5b506b298f43d3b0cd97791",
+    "manifest_entries": 1213
+  },
+  "repository_commit": "b06adf4b5184abb7c1cee9e1e760364c175c90ab",
+  "evidence_policy": "Integration, corrected launcher, filesystem, console and runtime-profile gates execute final media. Retained DASM gates are accepted only with identical DASM/DSYM/ZSM4/LINK bytes, the same System image, and independently audited inventories; each tested media hash is explicit.",
+  "limits": [
+    "8 KiB input; fixed bounded metadata arenas",
+    "BDOS active ceiling at least B200H; normal Model 4 M4SCRN+ADM3A and z80pack ZPRTC profiles",
+    "Fault-model injections cover individual BDOS failures and publication transitions; native media witnesses cover directory/data full, read-only file/media and cancellation",
+    "Single-byte LINK workaround adds explicit 1Ah outside the declared logical interval; physical padding checked separately",
+    "Owned binaries retain 1.0 (001-dev); external ZSM4/LINK retain upstream identities"
+  ]
+}

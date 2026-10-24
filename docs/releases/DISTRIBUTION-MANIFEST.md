@@ -57,8 +57,8 @@ All membership or layout changes require discussion with the maintainer.
 - DSYM.COM: native conversion of complete verified final-address LINK reports.
 - DLINK.COM: checked transient capture using the unchanged B0:LINK.COM 1.3.
 - DASM.TXT and DASMCOPY.TXT: invocation, limits, recovery and historical credits.
-  These are development Utilities members; full release qualification remains
-  pending. See [implementation status](../engineering/DASM%20Implementation%20Status.md)
+  These development Utilities members pass both-platform component qualification.
+  The whole Utilities release remains provisional. See [qualification evidence](../engineering/DASM%20Qualification.md), [implementation status](../engineering/DASM%20Implementation%20Status.md)
   and [engineering specification](../engineering/DASM%20Specification.md).
 - The host package includes `BetterCPM-DASM-SOURCE.tar.gz`, a complete tracked
   source snapshot with per-file hashes, `DASM-Provenance.json` and
@@ -277,7 +277,9 @@ modification. Preserve upstream provenance and credits with the adaptation.
 ZSM4 compatibility, native symbol conversion, file safety, memory ownership
 and round-trip acceptance on both platforms. This resolves disassembler
 selection in earlier checkpoints. A [development implementation](../engineering/DASM%20Implementation%20Status.md)
-and native symbol converter now exist; full specification acceptance,
-packaging and disk qualification remain pending. Existing Utilities images and their acceptance evidence are
-unchanged. ZSM4 and Digital Research LINK retain their third-party identities
+and native symbol converter now pass both-platform emulator qualification.
+The [qualification receipt](../engineering/DASM-Qualification.json) binds the
+implemented tool set to the packaged artifacts; the complete Utilities release
+remains provisional. DLINK preserves the BIOS vector and redirects only the two
+verified exit operands in LINK's loaded memory copy; LINK.COM on disk is unchanged. ZSM4 and Digital Research LINK retain their third-party identities
 and versions.

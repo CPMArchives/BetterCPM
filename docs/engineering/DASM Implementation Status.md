@@ -1,9 +1,10 @@
 # DASM implementation and qualification status
 
-Development checkpoint, 2026-10-25. This is **not release acceptance** and does
-not supersede [the specification](DASM%20Specification.md). DASM, DSYM and DLINK are now provisional Utilities members; their final
-release acceptance is still pending. No physical Model 4 hardware
-qualification is claimed.
+Component qualification **PASS**, 2026-10-25. See [DASM Qualification](DASM%20Qualification.md)
+and its machine-readable receipt for the exact binaries, media and evidence.
+This does not supersede [the specification](DASM%20Specification.md) or constitute
+a whole Utilities Disk release. DASM, DSYM and DLINK retain `1.0 (001-dev)`.
+Physical Model 4 hardware is not qualified.
 
 ## Current source checkpoint (after qualified baseline)
 
@@ -54,8 +55,8 @@ session save/load. Retained new scratch and component identities are reported.
 
 The current host campaign passes **161 DASM, 73 DSYM and 40 DLINK full-core cases**, plus
 **71 USQ regression cases** after the optional shared file-I/O hook was added.
-These changes are not covered by the earlier native receipts below. They require
-a fresh native build and both-platform campaign before acceptance.
+The current hashes pass the final both-platform qualification above. The earlier
+native receipts below remain historical evidence and do not qualify changed binaries.
 
 ## Implemented
 
@@ -81,7 +82,7 @@ a fresh native build and both-platform campaign before acceptance.
 - Confirmed Ctrl-C abort closes and retains staged output without publishing,
   checks close failure, restores caller state and exits. Restart is refused
   while an ASM transaction is pending. Ordinary-key interruption and declined Ctrl-C invalidate pending source output.
-  The wider native console-cancellation matrix still requires qualification.
+  The live-console campaign passes on both targets, including a post-cancellation CCP command on Model 4.
 - Binary reads retain all physical CP/M record bytes, including 00/1A/FF.
   `Nhex` explicitly chooses a nonzero logical length up to the readable extent.
 - DASM resolves drive/user/name identities. Individual output saves reject
@@ -128,14 +129,14 @@ CSEG and DSEG yielded `0100 START<TAB>0104 HELLO<TAB><CRLF>` and linked bytes
 
 | Commands | Current behavior |
 | --- | --- |
-| H, ?, DS, C, ; | Inherited help/statistics/table inspection; broader UI qualification pending |
-| L, QL, D, F | Retained listing/dump/search with input bounds; pagination/cancel campaign pending |
-| A, B | Inherited data recognition and automatic symbol generation, bounded insertion; broader behavioral qualification pending |
-| E, K, ;address,text | Symbol/comment editing retained with validation; reserved-word validation implemented; remaining atomic-validation audit pending |
+| H, ?, DS, C, ; | Inherited help/statistics/table inspection; interactive H lists supported commands |
+| L, QL, D, F | Retained listing/dump/search with input bounds; native pagination/cancel campaign passes |
+| A, B | Inherited data recognition and automatic symbol generation, bounded insertion; capacity refusal preserves prior analysis |
+| E, K, ;address,text | Symbol/comment editing retained with validation; reserved-word validation implemented; atomic validation before mutation |
 | Caddress,type | Control classifications retained; imports sorted with conflict rejection |
 | O, I | Checked logical origin; two-pass signed-magnitude symbol rebasing |
 | P, Sname.ASM, Z | Absolute source prologue, staged listing output and explicit publication |
-| R/S .SYM/.CTL/.DOC | Individual component operations; normalized/sorted imports; remaining session work pending |
+| R/S .SYM/.CTL/.DOC | Individual component operations; normalized/sorted imports; session graphs qualified below |
 | R .DSY | Canonical native converter output |
 | R/S .ALL | Versioned, checksummed descriptor; unique components; validated staged load |
 | U | Fixed comment arena only; arbitrary relocation refused |
@@ -217,31 +218,26 @@ are FF; archived bytes are 00 except one 4B. All preceding instruction and
 initialized data bytes match. This reproduces the executable portion, **not**
 the archived COM byte-for-byte; the archived binary remains unmodified.
 
-## Remaining acceptance work, in priority order
+## Acceptance and limits
 
-1. Native qualification of the current metadata, origin/range and session
-   implementation. Complete diagnostic precision for conflicts found during
-   metadata sorting and the remaining automatic-analysis edge audit.
-2. Run the session publication-state and corrupted-component cases on actual
-   filesystem/emulator media, beyond the independent full-core fault model.
-3. Complete resident-module canaries, active TPA diagnostics and ordinary console
-   cancellation/pagination/backspace on both platform personalities.
-4. Qualify the new DLINK capture and strict DSYM report workflow on both targets.
-   The native z80pack multi-module/negative campaign passes. Complete its Model 4
-   campaign and the remaining native caller-state/media-failure witnesses.
-5. Complete the specified full file-failure/media-full/recovery matrix and
-   terminal interaction campaign on both targets. The automated BDOS fault
-   harness does not replace actual filesystem/emulator tests.
-6. The [baseline functional receipts](DASM%20Development%20Qualification.md) bind
-   the current candidate on fresh current System pairs. Requalify after the
-   remaining implementation changes, retain the new owned numeric identities, notices and complete source package.
-   Rebuild and qualify the actual provisional Utilities artifacts.
+The final report records passing native builds, linked-symbol conversion,
+opcode/data and real-utility reconstruction, four logical origins, session
+validation/corruption, fixed-capacity and insufficient-memory cases, live console
+operation and real filesystem refusal/recovery on both emulator targets.
+The evidence archive preserves work-volume states and independent filesystem audits.
+Host injections cover individual BDOS failures and publication transitions;
+those are distinguished from native media witnesses.
 
-These are outstanding requirements, not silently relaxed acceptance criteria.
+The implementation supports 8 KiB input with bounded metadata arenas. Full-address-space
+input, disk-backed paging and the alternate TDL output mode remain outside the
+default qualified ZSM4 contract. Hardware qualification and a whole Utilities
+release are separate. TED remains pending; ZSM4/LINK retain upstream ownership,
+versions and unchanged distributed bytes. DLINK's verified in-memory exit adaptation
+is documented in [Symbol Conversion](DASM%20Symbol%20Conversion.md).
 
 ### Direct-console cancellation correction
 
-DASM work output and confirmed break input use BDOS direct-console function 6, so cooked-console Ctrl-C cannot bypass staged-output cleanup during a listing. DSYM polls for cancellation during input and output; DLINK intercepts child console input, status and output, and refuses to publish a successful log after cancellation. Cleanup restores caller state before diagnostic output. The CP/M command-line editor remains the operating system’s function 10. Final packaged native console qualification is recorded separately.
+DASM work output and confirmed break input use BDOS direct-console function 6, so cooked-console Ctrl-C cannot bypass staged-output cleanup during a listing. DSYM polls for cancellation during input and output; DLINK intercepts child console input, status and output, and refuses to publish a successful log after cancellation. Cleanup restores caller state before diagnostic output. The CP/M command-line editor remains the operating system’s function 10. Final packaged native console qualification passes and is recorded in the final report.
 
 ### Input-buffer and stack boundary
 
