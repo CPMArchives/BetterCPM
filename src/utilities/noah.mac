@@ -1,5 +1,6 @@
-; NOAH development: exact LBR LIST/TEST and new-file extraction.
-; Full selectors, overwrites, ARK, archive updates and overlays are pending.
+; NOAH development: LBR LIST/TEST/EXTRACT with shared source selectors,
+; member filters, frozen batches and authorized staged replacement.
+; ARK, codecs, archive updates and overlays remain pending.
 ; No distribution inclusion until the corresponding qualification is complete.
         ORG 100H
         JP NH_START
@@ -18,6 +19,7 @@ NH_START:
         LD (NH_MODE),A
         LD (NH_DEST),A
         LD (NH_ABORTED),A
+        LD (NS_CAPTURED),A
         LD HL,81H
         LD A,(80H)
         CP 128
@@ -38,49 +40,8 @@ NH_START:
         CALL NH_PRINT
         JP NH_RETURN
 NH_NOT_HELP:
-        CALL NH_IS_TEST
-        JR NZ,NH_NOT_TEST
-        LD A,1
-        LD (NH_MODE),A
-        JR NH_MODE_OPERAND
-NH_NOT_TEST:
-        CALL NH_IS_EXTRACT
-        JR NZ,NH_NOT_EXTRACT
-        LD A,2
-        LD (NH_MODE),A
-        JR NH_MODE_OPERAND
-NH_NOT_EXTRACT:
-        CALL NH_IS_LIST
-        JR NZ,NH_FILENAME
-NH_MODE_OPERAND:
-        CALL NH_TOKEN
-        JP C,NH_USAGE_ERROR
-NH_FILENAME:
-        LD (NH_ARG),DE
-        LD (NH_LENGTH),A
-        CALL NH_TOKEN
-        JR C,NH_ARGUMENTS_DONE
-        LD C,A
-        LD A,(NH_MODE)
-        CP 2
-        JP NZ,NH_USAGE_ERROR
-        LD A,C
-        CP 2
-        JP NZ,NH_USAGE_ERROR
-        LD A,(DE)
-        CALL NH_UPPER
-        SUB 'A'
-        CP 16
-        JP NC,NH_USAGE_ERROR
-        INC A
-        LD (NH_DEST),A
-        INC DE
-        LD A,(DE)
-        CP ':'
-        JP NZ,NH_USAGE_ERROR
-        CALL NH_TOKEN
-        JP NC,NH_USAGE_ERROR
-NH_ARGUMENTS_DONE:
+        JP NS_RUN
+NH_ARCHIVE:
         ; Explicitly initialize all context/adapter storage (DS is not zero).
         LD HL,NH_CONTEXT
         LD DE,NH_CONTEXT+1
@@ -93,12 +54,7 @@ NH_ARGUMENTS_DONE:
         LD HL,NH_ADAPTER
         LD (IX+AS_USER),L
         LD (IX+AS_USER+1),H
-        LD HL,(NH_ARG)
-        LD A,(NH_LENGTH)
-        LD B,A
-        LD DE,NH_ADAPTER
-        CALL NH_PARSE_NAME
-        JP C,NH_USAGE_ERROR
+        CALL NS_QUEUE_FCB
         CALL AC_OPEN
         JP C,NH_FAILED
         LD A,(NH_MODE)
@@ -108,8 +64,20 @@ NH_ARGUMENTS_DONE:
         LD (IX+AS_READ),L
         LD (IX+AS_READ+1),H
         LD IY,NH_AUDIT
-        CALL LBR_AUDIT
+        LD HL,NS_MEMBER_FILTER
+        CALL LBR_AUDIT_SELECTED
         JP C,NH_FAILED
+        LD HL,NH_AUDIT+LA_UNCHECKED
+        LD B,4
+        XOR A
+NH_COVERAGE_SCAN:
+        OR (HL)
+        INC HL
+        DJNZ NH_COVERAGE_SCAN
+        JR Z,NH_COVERAGE_KNOWN
+        LD A,1
+        LD (NS_WARNINGS),A
+NH_COVERAGE_KNOWN:
         LD DE,NH_AUDIT_OK
         CALL NH_PRINT
         LD HL,NH_AUDIT+LA_CHECKED
@@ -117,6 +85,10 @@ NH_ARGUMENTS_DONE:
         LD DE,NH_UNCHECKED
         CALL NH_PRINT
         LD HL,NH_AUDIT+LA_UNCHECKED
+        CALL NH_PRINT_COUNT
+        LD DE,NH_NOT_SELECTED
+        CALL NH_PRINT
+        LD HL,NH_AUDIT+LA_NOT_SELECTED
         CALL NH_PRINT_COUNT
         LD DE,NH_NEWLINE
         CALL NH_PRINT
@@ -132,6 +104,10 @@ NH_LIST_START:
 NH_LIST_LOOP:
         CALL LBR_NEXT
         JR C,NH_LIST_END
+        CALL NS_MEMBER_MATCH
+        JP NZ,NH_LIST_LOOP
+        LD HL,NS_MATCHED
+        CALL NX_INC_COUNT
         LD HL,NH_CONTEXT+AS_MEMBER
         LD B,8
         CALL NH_PRINT_FIELD
@@ -171,6 +147,22 @@ NH_LIST_END:
         JP NZ,NH_FAILED
         CALL AC_CLOSE
         JR C,NH_CLOSE_FAILED
+        LD A,(NS_MATCHED)
+        LD B,A
+        LD A,(NS_MATCHED+1)
+        OR B
+        LD B,A
+        LD A,(NS_MATCHED+2)
+        OR B
+        LD B,A
+        LD A,(NS_MATCHED+3)
+        OR B
+        JR NZ,NH_MATCHES_REPORTED
+        LD A,1
+        LD (NS_WARNINGS),A
+        LD DE,NS_NO_MEMBERS
+        CALL NH_PRINT
+NH_MATCHES_REPORTED:
         LD A,(NH_MODE)
         CP 1
         LD DE,NH_DONE
@@ -181,6 +173,8 @@ NH_LIST_FOOTER:
         JR NH_DMA
 NH_FAILED:
         LD (NH_ERROR),A
+        LD A,1
+        LD (NS_ARC_FAILED),A
         LD A,(NH_ABORTED)
         OR A
         JR Z,NH_FAILED_IO
@@ -198,13 +192,14 @@ NH_CLOSE:
         CALL AC_CLOSE
         JR NC,NH_DMA
 NH_CLOSE_FAILED:
+        LD A,1
+        LD (NS_ARC_FAILED),A
         LD DE,NH_CLOSE_ERROR
         CALL NH_PRINT
 NH_DMA:
-        LD DE,80H
-        LD C,26
-        CALL AC_BDOS
+        JP NS_ARCHIVE_DONE
 NH_RETURN:
+        CALL NS_RESTORE
         POP IY
         POP IX
         LD SP,(NH_OLDSP)
@@ -509,8 +504,10 @@ NH_TEST_WORD: DB '/TEST',0
 NH_T_WORD: DB '/T',0
 NH_EXTRACT_WORD: DB '/EXTRACT',0
 NH_X_WORD: DB '/X',0
-NH_AUDIT_OK: DB 'Structure/readability checked. CRCs verified (hex): ', '$'
+NH_AUDIT_OK: DB 'Structure/selected readability checked.',13,10
+        DB 'CRCs verified (hex): ', '$'
 NH_UNCHECKED: DB '; unavailable/ambiguous: ', '$'
+NH_NOT_SELECTED: DB 13,10,'Members not selected (hex): ', '$'
 NH_TEST_DONE: DB 'Integrity checks complete; see CRC coverage above.',13,10,'$'
 NH_CRC_MISSING: DB '  CRC unavailable/ambiguous.',13,10,'$'
 NH_CRC_VERIFIED: DB '  CRC verified.',13,10,'$'
@@ -522,6 +519,9 @@ NH_DONE: DB 'Listing complete. Contents and CRCs not tested.',13,10,'$'
 NH_BAD_ARCHIVE: DB 'NOAH: Archive/read error ', '$'
 NH_CLOSE_ERROR: DB 'NOAH: Input close failed.',13,10,'$'
 NH_NEWLINE: DB 13,10,'$'
+        INCLUDE noahselect.inc
+        INCLUDE noahinput.inc
+        INCLUDE noahpublish.inc
         INCLUDE noahextract.inc
         LBR_CODE
         LBR_AUDIT_CODE
@@ -532,11 +532,16 @@ NH_LENGTH: DB 0
 NH_ERROR: DB 0
 NH_MODE: DB 0
 NH_DEST: DB 0
+NH_DUSER: DB 0
 NH_ABORTED: DB 0
 NH_CONTEXT: DS AS_CONTEXT_SIZE
 NH_ADAPTER: DS AP_SIZE
 NH_AUDIT: DS LA_SIZE
+        NOAH_SELECTION_DATA
+        NOAH_INPUT_DATA
+        NOAH_PUBLISH_DATA
         NOAH_EXTRACT_DATA
+        INCLUDE noahgrammar.inc
 NH_STACK: DS 256
 NH_STACK_TOP:
         END

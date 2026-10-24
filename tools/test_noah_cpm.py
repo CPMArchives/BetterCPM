@@ -36,12 +36,15 @@ def main():
             path = work / 'import.bin'
             path.write_bytes(data)
             run('cpmcp', '-f', 'ibm-3740', disks / f'drive{drive}.dsk', path, f'0:{name}')
-        def get(drive, name):
+        def get(drive, name, user=0):
             path = work / 'export.bin'
             path.unlink(missing_ok=True)
-            run('cpmcp', '-f', 'ibm-3740', disks / f'drive{drive}.dsk', f'0:{name}', path)
+            run('cpmcp', '-f', 'ibm-3740', disks / f'drive{drive}.dsk', f'{user}:{name}', path)
             return path.read_bytes()
         put('a', 'NOAH.COM', (work / 'NOAH.COM').read_bytes())
+        # Test-only helper: SET 7,(0065h), then BDOS 30 on CCP FCB 005Ch.
+        # The stock template has no STAT.COM; require the later RO prompt.
+        put('a', 'PROTECT.COM', bytes.fromhex('216500cbfe115c000e1ecd0500c9'))
         good = with_crcs(archive([entry(b'README  TXT', pad=3),
                                  entry(b'EMPTY      ', records=0)], bytes(range(128))))
         large = bytes(range(256)) * 273 + b'\x1a\0\xffEND'
@@ -56,14 +59,24 @@ def main():
         put('b', 'README00.BAK', b'KEEP RECOVERY FILE')
         recovery = get('b', 'README00.BAK')
         originals = {name: get('a', name) for name in fixtures}
-        commands = [('NOAH /TEST GOOD.LBR', 'Structure/readability checked.'),
+        commands = [('NOAH /TEST GOOD.LBR', 'Structure/selected readability checked.'),
                     ('NOAH /X GOOD.LBR B:', 'Unprocessed (hex): 00000000'),
-                    ('NOAH /X GOOD.LBR B:', 'skipped: 00000002'),
+                    ('NOAH /X GOOD.LBR B:', 'skipped: 00000002', 'NN'),
+                    ('NOAH /X /Y GOOD.LBR B:', 'Unprocessed (hex): 00000000'),
+                    ('NOAH /X A0:GOOD.LBR B3:README.TXT', 'Unprocessed (hex): 00000000'),
+                    ('NOAH /LIST A0:GOOD.LBR README', 'No members matched.'),
+                    ('PROTECT B:README.TXT', 'A>'),
+                    ('NOAH /X /R GOOD.LBR B:README.TXT', 'Unprocessed (hex): 00000000', 'Y', 'is protected [RO]. Replace? Y/N [N]: '),
                     ('NOAH /TEST BAD.LBR', 'NOAH: Archive/read error 08'),
                     ('NOAH /X BAD.LBR B:', 'NOAH: Archive/read error 08'),
-                    ('NOAH /TEST BIG.LBR', 'Structure/readability checked.'),
-                    ('NOAH /X BIG.LBR B:', 'Unprocessed (hex): 00000000')]
-        script = '''set timeout 60
+                    ('NOAH /TEST BIG.LBR', 'Structure/selected readability checked.'),
+                    ('NOAH /X BIG.LBR B:', 'Unprocessed (hex): 00000000'),
+                    ('NOAH /X /Y BIG.LBR B:', 'Unprocessed (hex): 00000000'),
+                    ('NOAH /TEST A0:*.LBR README.TXT', 'selected 0003; processed 0003; failed 0001'),
+                    ('PROTECT GOOD.LBR', 'A>'),
+                    ('NOAH /LIST A0:*.LBR[$RO] README.*', 'selected 0001; processed 0001; failed 0000'),
+                    ('NOAH /X A0:GOOD.LBR B4:README.TXT', 'Unprocessed (hex): 00000000')]
+        script = '''set timeout 15
 proc await {text} {
  expect {
   -exact $text {return}
@@ -74,8 +87,17 @@ proc await {text} {
 spawn [lindex $argv 0] -z -d [lindex $argv 1]
 await "A>"
 '''
-        for command, text in commands:
-            script += f'send -- "{command}\\r"\nawait "{text}"\nawait "A>"\n'
+        for item in commands:
+            command, text = item[:2]
+            answers = item[2] if len(item) >= 3 else ''
+            question = item[3] if len(item) >= 4 else '[N]: '
+            script += 'send -- {' + command + '}\nsend -- \"\\r\"\n'
+            for answer in answers:
+                script += 'await {' + question + '}\n'
+                script += f'send -- "{answer}"\n'
+            script += f'await "{text}"\n'
+            if text != 'A>': script += 'await "A>"\n'
+
         script += 'send -- "\\034"\nexpect eof\n'
         (work / 'test.exp').write_text(script)
         env = dict(os.environ)
@@ -85,13 +107,17 @@ await "A>"
         assert result.returncode == 0, result.stdout + result.stderr
         assert get('b', 'README.TXT') == bytes(range(125)) + b'\x1a' * 3
         assert get('b', 'EMPTY') == b''
+        assert get('b', 'README.TXT', 3) == bytes(range(125)) + b'\x1a' * 3
+        assert get('b', 'README.TXT', 4) == bytes(range(125)) + b'\x1a' * 3
         assert get('b', 'BIG.BIN') == storage
         assert get('b', 'README00.BAK') == recovery
         for name, data in originals.items():
             assert get('a', name) == data, ('archive modified', name)
         listing = run('cpmls', '-f', 'ibm-3740', disks / 'driveb.dsk').stdout.upper()
         assert '.TMP' not in listing and listing.count('.BAK') == 1, listing
-        print('PASS: 7 stock CP/M 2.2 NOAH commands; >64K/extent extraction, binary/pad bytes,')
+        for drive in 'ab':
+            run('fsck.cpm', '-n', '-f', 'ibm-3740', disks / f'drive{drive}.dsk')
+        print(f'PASS: {len(commands)} stock CP/M 2.2 commands; selectors, prompts, protected replacement, cross-user and >64K extraction;')
         print('CRC rejection, empty output, collisions, recovery-file and source preservation verified.')
 
 

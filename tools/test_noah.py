@@ -30,7 +30,7 @@ class Noah(Command):
             match = re.search(rf'^([0-9a-f]{{4}}).*\b{name}:\s', listing, re.M | re.I)
             assert match, name
             self.symbols[old] = int(match[1], 16)
-        for name in ('AC_OPEN', 'AC_CLOSE', 'LBR_NEXT', 'LBR_READ', 'NH_CONTEXT', 'NX_TEMP', 'NX_VERIFY'):
+        for name in ('AC_OPEN', 'AC_CLOSE', 'LBR_NEXT', 'LBR_READ', 'NH_CONTEXT', 'NX_TEMP', 'NX_VERIFY', 'NI_WAIT', 'NS_YES'):
             match = re.search(rf'\b{name}[ \t]+([0-9a-f]{{4}})\b', listing, re.I)
             assert match, name
             self.symbols[name] = int(match[1], 16)
@@ -45,19 +45,124 @@ class Noah(Command):
         self.cancel_poll = kwargs.pop('cancel_poll', None)
         self.tamper = kwargs.pop('tamper', False)
         self.polls = 0
-        self.write_allowed = bool(args and args[0].split() and args[0].split()[0].upper() in ('/X', '/EXTRACT'))
-        result = super().run(*args, **kwargs)
+        self.keys = list(kwargs.pop('keys', '').encode('ascii'))
+        self.attrs = dict(kwargs.pop('attributes', {}))
+        self.extent_attrs = dict(kwargs.pop('extent_attributes', {}))
+        self.answers = []
+        self.search_items = []
+        self.search_cursor = 0
+        self.partial_attributes = kwargs.pop('partial_attributes', False)
+        self.rename_moves_on_failure = kwargs.pop('rename_moves_on_failure', False)
+        self.delete_removes_on_failure = kwargs.pop('delete_removes_on_failure', False)
+        self.write_allowed = bool(args and any(t.upper() in ('/X', '/EXTRACT') for t in args[0].split()))
+        try:
+            result = super().run(*args, **kwargs)
+        except AssertionError as error:
+            raise AssertionError((args[0], str(error))) from error
         minimum = C.c_ushort.in_dll(self.lib, 'minimum_sp').value
         self.max_stack = max(self.max_stack, self.symbols['UC_STACK_TOP'] - minimum)
         assert self.max_stack < 128, 'stack overlaps version-tail scratch'
         return result
 
+    def fail(self, operation):
+        self.attempts[operation] = self.attempts.get(operation, 0) + 1
+        choice = self.failures.get(operation)
+        if isinstance(choice, (tuple, list, set)):
+            return self.attempts[operation] in choice
+        return choice is not None and (choice == 0 or self.attempts[operation] == choice)
+
     def bdos(self, fn, de):
         writes = (19, 21, 22, 23)
         assert self.write_allowed or fn not in writes, ('not a read-only operation', fn)
-        assert fn in (2, 6, 9, 15, 16, 17, 19, 20, 21, 22, 23, 25, 26, 33, 35), fn
+        assert fn in (2, 6, 9, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 30, 32, 33, 35), fn
+        if fn == 14:
+            self.events.append((fn, de))
+            self.drive = (de & 255) + 1
+            return 0
+        if fn == 32:
+            self.events.append((fn, de))
+            previous = self.user
+            if de & 255 != 255:
+                assert de & 255 < 32
+                self.user = de & 255
+            return previous
+        if fn in (17, 18):
+            self.events.append((fn, de))
+            if fn == 17:
+                key = self.fcbkey(de)
+                self.searches[key] = self.searches.get(key, 0) + 1
+                if self.late_existing and key == self.late_existing[0] and self.searches[key] == 2:
+                    self.files[key] = self.late_existing[1]
+                drive = self.mem[de] or self.drive
+                pattern = bytes(b & 127 for b in self.mem[de + 1:de + 12])
+                self.search_items = []
+                for identity, content in self.files.items():
+                    d, u, name = identity
+                    base, dot, ext = name.partition('.')
+                    canonical = (base.ljust(8) + ext.ljust(3)).encode('ascii')
+                    if d != drive or u != self.user or not all(p == 63 or p == c for p, c in zip(pattern, canonical)):
+                        continue
+                    records = len(padded(content)) // 128
+                    for extent in range(max(1, (records + 127) // 128)):
+                        item = bytearray(32)
+                        item[0] = u
+                        item[1:12] = canonical
+                        mask = self.extent_attrs.get(identity, {}).get(extent, self.attrs.get(identity, 0))
+                        for bit in range(3):
+                            if mask & (1 << bit): item[9 + bit] |= 128
+                        item[12] = extent & 31
+                        item[14] = extent >> 5
+                        item[15] = max(0, min(128, records - extent * 128))
+                        self.search_items.append(bytes(item))
+                self.search_items.reverse()  # Physical order is deliberately not lexical.
+                self.search_cursor = 0
+            if self.search_cursor == len(self.search_items):
+                return 255
+            item = self.search_items[self.search_cursor]
+            slot = self.search_cursor % 4
+            self.search_cursor += 1
+            self.mem[self.dma:self.dma + 128] = bytes([0xE5]) * 128
+            self.mem[self.dma + slot * 32:self.dma + slot * 32 + 32] = item
+            return slot
+        if fn == 30:
+            self.events.append((fn, de))
+            key = self.fcbkey(de)
+            mask = sum((1 << bit) for bit in range(3) if self.mem[de + 9 + bit] & 128)
+            failed = self.fail('attributes')
+            if not failed or self.partial_attributes:
+                assert key in self.files
+                self.attrs[key] = mask
+                self.extent_attrs.pop(key, None)
+            return 255 if failed else 2
+        if fn == 23:
+            self.events.append((fn, de))
+            old, new = self.fcbkey(de), self.fcbkey(de, 16)
+            if self.attrs.get(old, 0) & 1:
+                return 255
+            failed = self.fail('rename')
+            if failed and not self.rename_moves_on_failure:
+                return 255
+            self.files[new] = self.files.pop(old)
+            self.attrs[new] = self.attrs.pop(old, 0)
+            self.renamed.append((old, new))
+            return 255 if failed else 3
+        if fn == 19 and self.delete_removes_on_failure:
+            self.events.append((fn, de))
+            key = self.fcbkey(de)
+            failed = self.fail('delete')
+            self.files.pop(key, None)
+            self.attrs.pop(key, None)
+            self.deleted.append(key)
+            return 255 if failed else 0
+        if fn == 19 and self.attrs.get(self.fcbkey(de), 0) & 1:
+            return 255
         if fn == 6:
             self.events.append((fn, de))
+            if self.mem[self.symbols['NI_WAIT']]:
+                assert not self.mem[self.symbols['NS_YES']], '/Y waited for input'
+                key = self.keys.pop(0) if self.keys else 13
+                self.answers.append(key)
+                return key
             self.polls += 1
             return 3 if self.polls == self.cancel_poll else 0
         if fn == 20 and self.fail('verify_read'):
@@ -153,15 +258,14 @@ def tests(m):
         assert [f for f, _ in m.events] == [9]
     assert 'LBR reader development build' in m.run('/HELP', {})
     assert [f for f, _ in m.events] == [9]
-    for tail in ('', '/HELP X', '*.LBR', 'B7:TEXTS.LBR',
-                 'A:TEXTS.LBR OTHER', '/LIST', 'ABC.LONG', '.LBR', 'TOOLONG99.LBR',
+    for tail in ('', '/HELP X', '/LIST', 'ABC.LONG', '.LBR', 'TOOLONG99.LBR',
                  'A..LBR', 'A/B.LBR', '/VERBOSE', 'Q:TEXTS.LBR', '/L', '/LISTX',
                  '/HEL', '/HELPX', '/HELP\0', 'X' * 127, '/TEST FILE C:',
-                 '/EXTRACT FILE C: EXTRA', '/X FILE B7:', '/X FILE Q:', '/X FILE *.TXT'):
+                 '/EXTRACT FILE C: EXTRA',  '/X FILE Q:'):
         assert 'Usage:' in m.run(tail, {source: raw}), tail
         assert not any(fn in (15, 33, 35) for fn, _ in m.events)
         m.intact()
-    assert 'error' in m.run('MISSING.LBR', {})
+    assert 'No archives matched' in m.run('MISSING.LBR', {})
     assert 'error' in m.run('BAD.ARK', {diskkey(1, 'BAD.ARK'): b'\x1a\x02invalid ARK'})
     for failure in ('open', 'size', 'read', 'close_input'):
         output = m.run('B:TEXTS.LBR', {source: raw}, user=7, failures={failure: 1})
@@ -186,7 +290,7 @@ def extraction_tests(m):
                             entry(b'BINARY  BIN', 2, 1)], payload))
     for tail in ('/TEST B:TEXTS.LBR', '/T B:TEXTS.LBR'):
         output = m.run(tail, {source: raw}, user=7)
-        assert 'Structure/readability checked' in output, output
+        assert 'Structure/selected readability checked' in output, output
         assert 'verified (hex): 00000003; unavailable/ambiguous: 00000001' in output
         assert not m.created and not m.deleted and not m.renamed
         m.intact()
@@ -205,12 +309,12 @@ def extraction_tests(m):
     # Existing destinations, including the archive itself, are never replaced.
     existing = diskkey(1, 'README.TXT', 7)
     output = m.run('/X B:TEXTS.LBR', {source: raw, existing: b'KEEP ORIGINAL'}, user=7)
-    assert 'A:README.TXT: exists; skipped.' in output
+    assert 'A7:README.TXT: replacement declined; skipped.' in output, output
     assert 'skipped: 00000001' in output
     m.intact()
     same = with_crcs(archive([entry(b'TEXTS   LBR')], bytes(128)))
     output = m.run('/X B:TEXTS.LBR B:', {source: same}, user=7)
-    assert 'exists; skipped' in output and not m.created
+    assert 'selected input archive; skipped' in output and not m.created
     m.intact()
     # Recovery namespace respects both TMP and BAK, and can never equal final.
     single = with_crcs(archive([entry(b'README  TXT')], bytes(range(128))))
@@ -260,7 +364,7 @@ def extraction_tests(m):
     # A publication failure retains a VERIFIED temporary and names it.
     output = m.run('/X B:TEXTS.LBR', {source: single}, user=7, failures={'rename': 1})
     temp = diskkey(1, 'README00.TMP', 7)
-    assert 'Temporary retained: A:README00.TMP' in output and temp in m.files
+    assert 'Temporary retained: A7:README00.TMP' in output and temp in m.files
     assert m.files[temp] == bytes(range(128)) and diskkey(1, 'README.TXT', 7) not in m.files
     m.intact()
     # A target appearing at publication is preserved, along with verified TMP.
@@ -287,13 +391,182 @@ def extraction_tests(m):
             assert 'failed: 00000000' in output and 'Unprocessed (hex): 00000001' in output
         m.intact()
     output = m.run('/TEST B:TEXTS.LBR', {source: single}, user=7, cancel_poll=1)
-    assert 'cancelled' in output and 'Structure/readability checked' not in output
+    assert 'cancelled' in output and 'Structure/selected readability checked' not in output
     # Optional timestamps are not silently claimed restored on CP/M 2.2.
     stamped = bytearray(single)
     stamped[32 + 18] = 1
     output = m.run('/X B:TEXTS.LBR', {source: with_crcs(stamped)}, user=7)
     assert 'Timestamp not restored' in output
     m.intact()
+
+
+def selector_overwrite_tests(m):
+    one = with_crcs(archive([entry(b'README  TXT')], b'R' * 128))
+    other = with_crcs(archive([entry(b'README  TXT')], b'S' * 128))
+    source = diskkey(2, 'TEXTS.LBR', 7)
+    target = diskkey(1, 'README.TXT', 7)
+    # Shared DU scope, all users of one drive before next drive, lexical names.
+    files = {diskkey(3, 'ZZ.LBR', 1): one, diskkey(2, 'Z.LBR', 2): one,
+             diskkey(2, 'A.LBR', 2): one, diskkey(2, 'B.LBR', 1): one,
+             diskkey(2, 'IGNORED.BIN', 1): one}
+    output = m.run('/LIST [C[1],B[1-2]]:*.LBR README.TXT', files, user=7)
+    headings = [line for line in output.splitlines() if line.startswith('Archive ')]
+    assert headings == ['Archive B1:B.LBR', 'Archive B2:A.LBR', 'Archive B2:Z.LBR', 'Archive C1:ZZ.LBR'], headings
+    assert 'selected 0004; processed 0004; failed 0000' in output
+    assert m.user == 7 and m.drive == 1
+    m.intact()
+    output = m.run('/LIST B[1,1-2]:*.LBR README', files, user=7)
+    assert 'No members matched' in output and 'README   TXT' not in output
+    assert output.count('Archive ') == 3  # overlapping selectors do not duplicate.
+    # Attribute selection is per archive, not a member-name reinterpretation.
+    arc = diskkey(2, 'ARC.LBR', 1)
+    sys = diskkey(2, 'SYS.LBR', 1)
+    plain = diskkey(2, 'PLAIN.LBR', 1)
+    output = m.run('B1:*.LBR[$SYS,$ARC] README.*', {arc: one, sys: one, plain: one},
+                   attributes={arc: 4, sys: 2})
+    assert 'Archive B1:ARC.LBR' in output and 'Archive B1:SYS.LBR' in output
+    assert 'PLAIN.LBR' not in output
+    m.intact()
+    # One logical archive even when it occupies several CP/M extents; an
+    # attribute predicate can match a later extent without duplicating it.
+    big = one + bytes(17000)
+    output = m.run('/LIST B7:TEXTS.LBR[$RO]', {source: big}, user=7,
+                   extent_attributes={source: {0: 0, 1: 1}})
+    assert output.count('Archive B7:TEXTS.LBR') == 1 and 'Listing complete' in output
+    # Cross-user reader ownership: destination has an unrelated same-name file.
+    misleading = diskkey(2, 'TEXTS.LBR', 3)
+    output = m.run('/X B7:TEXTS.LBR C3:README.*', {source: one, misleading: other}, user=5)
+    assert m.files[diskkey(3, 'README.TXT', 3)] == b'R' * 128
+    assert m.user == 5 and m.drive == 1 and 'failed: 00000000' in output
+    m.intact()
+    # Nonselected corrupt payload does not become a selected-file checksum fail;
+    # directory structure/overlaps still apply to the whole archive.
+    filtered = bytearray(with_crcs(archive([entry(b'README  TXT'), entry(b'BAD     BIN', 2)], b'R'*128+b'B'*128)))
+    filtered[-1] ^= 1
+    output = m.run('/TEST B7:TEXTS.LBR README.TXT', {source: bytes(filtered)}, user=7)
+    assert 'Integrity checks complete' in output and 'error' not in output
+    # Y/N/All/Cancel uses shared choice handling and N default.
+    for keys in ('Y', 'y', 'zY'):
+        output = m.run('/X B7:TEXTS.LBR', {source: one, target: b'OLD'}, user=7, keys=keys)
+        assert m.files[target] == b'R' * 128 and m.files[source] == one
+        assert not any(k[2].endswith(('.BAK', '.TMP')) for k in m.files)
+        assert not m.opened and 'failed: 00000000' in output
+        if keys.startswith('z'): assert output.count('Replace? Y/N/A/C [N]:') == 2
+    for keys in ('N', '\r', '\x1b', 'C', '\x03'):
+        output = m.run('/X B7:TEXTS.LBR', {source: one, target: b'OLD'}, user=7, keys=keys)
+        assert m.files[target] == b'OLD' and not m.created and not m.renamed
+        if keys not in ('N', '\r'): assert 'cancelled' in output
+        m.intact()
+    # All persists across archives but never spills into protection approval.
+    two = diskkey(2, 'Z.LBR', 7)
+    output = m.run('/X B7:*.LBR /R', {source: one, two: other, target: b'OLD'}, user=7, keys='A')
+    assert m.files[target] == b'S' * 128 and m.answers == [ord('A')]
+    for mask, flags in ((1, '/R'), (2, '/SYS'), (3, '/R /SYS')):
+        for keys in ('Y', 'N', '\r'):
+            output = m.run(f'/X {flags} B7:TEXTS.LBR', {source: one, target: b'OLD'},
+                           user=7, keys=keys, attributes={target: mask | 4})
+            assert m.files[target] == (b'R' * 128 if keys == 'Y' else b'OLD'), output
+            assert m.attrs[target] & 3 == mask
+            assert m.files[source] == one
+        output = m.run(f'/X /Y {flags} B7:TEXTS.LBR', {source: one, target: b'OLD'},
+                       user=7, attributes={target: mask})
+        assert m.files[target] == b'OLD' and not m.answers and not m.created
+        assert 'protected; skipped' in output
+    output = m.run('/X /Y B7:TEXTS.LBR', {source: one, target: b'OLD'}, user=7)
+    assert m.files[target] == b'R' * 128 and not m.answers
+    output = m.run('/X B7:TEXTS.LBR', {source: one, target: b'OLD'}, user=7, attributes={target: 1})
+    assert 'protected; skipped' in output and not m.answers and not m.created
+    # A later protected archive collision asks independently after ordinary All.
+    protected = diskkey(1, 'SECOND.TXT', 7)
+    mixed = with_crcs(archive([entry(b'README  TXT'), entry(b'SECOND  TXT', 2)], b'R'*128+b'T'*128))
+    output = m.run('/X /R B7:TEXTS.LBR', {source: mixed, target: b'OLD', protected: b'KEEP'},
+                   user=7, attributes={protected: 1}, keys='AN')
+    assert m.answers == [ord('A'), ord('N')]
+    assert m.files[target] == b'R'*128 and m.files[protected] == b'KEEP'
+    # Any selected input is protected from /Y replacement, even a future input.
+    attacker = with_crcs(archive([entry(b'Z       LBR')], bytes(128)))
+    output = m.run('/X /Y B7:*.LBR B7:', {source: attacker, two: other}, user=7)
+    assert m.files[two] == other and 'selected input archive; skipped' in output
+    # Every rollback boundary preserves original bytes and old protection.
+    for failure, nth in (('rename', 1), ('rename', 2), ('attributes', 1), ('attributes', 2), ('attributes', 3)):
+        output = m.run('/X /R B7:TEXTS.LBR', {source: one, target: b'OLD'}, user=7,
+                       keys='Y', attributes={target: 1}, failures={failure: nth}, partial_attributes=True)
+        assert m.files[target] == b'OLD', (failure, nth, output, m.files)
+        assert m.attrs[target] & 1 and m.files[source] == one
+        assert 'failed: 00000001' in output
+    # Backup cleanup failure keeps the verified new output, retains the original
+    # BAK, restores its protection and reports a warning without rollback.
+    output = m.run('/X /R B7:TEXTS.LBR', {source: one, target: b'OLD'}, user=7,
+                   keys='Y', attributes={target: 1}, failures={'delete': 1})
+    backup = diskkey(1, 'README00.BAK', 7)
+    assert m.files[target] == b'R'*128 and m.files[backup] == b'OLD'
+    assert m.attrs[target] & 1 and m.attrs[backup] & 1
+    assert 'backup cleanup failed' in output and 'Extracted (hex): 00000001' in output
+    # Failed rename-back stops the batch and preserves verified TMP plus original
+    # BAK, including its RO state. The next archive is never processed.
+    output = m.run('/X /R B7:*.LBR', {source: one, two: other, target: b'OLD'},
+                   user=7, keys='Y', attributes={target: 1}, failures={'rename': (2, 3)})
+    assert 'Recovery required; stop' in output and 'processed 0001' in output
+    assert m.files[backup] == b'OLD' and m.attrs[backup] & 1
+    assert m.files[diskkey(1, 'README00.TMP', 7)] == b'R'*128
+    assert target not in m.files and m.files[source] == one and m.files[two] == other
+    # Reported rename failure can still have changed the namespace. Preserve
+    # both versions and report uncertain recovery instead of overwriting a name.
+    for nth in (1, 2):
+        output = m.run('/X /R B7:*.LBR', {source: one, two: other, target: b'OLD'},
+                       user=7, keys='Y', attributes={target: 1}, failures={'rename': nth},
+                       rename_moves_on_failure=True)
+        assert 'Recovery required; stop' in output and 'processed 0001' in output
+        assert m.files[backup] == b'OLD' and m.files[source] == one and m.files[two] == other
+        if nth == 1:
+            assert m.files[diskkey(1, 'README00.TMP', 7)] == b'R'*128
+        else:
+            assert m.files[target] == b'R'*128 and m.attrs[backup] & 1
+            assert diskkey(1, 'README00.TMP', 7) not in m.files
+            assert 'Temporary retained:' not in output
+    output = m.run('/X B7:*.LBR', {source: one, two: other}, user=7,
+                   failures={'rename': 1}, rename_moves_on_failure=True)
+    assert 'Recovery required; stop' in output and 'processed 0001' in output
+    assert m.files[target] == b'R'*128 and 'Temporary retained:' not in output
+    assert 'Original protection may need restoration' not in output
+    output = m.run('/X /R B7:TEXTS.LBR', {source: one, target: b'OLD'}, user=7,
+                   keys='Y', attributes={target: 1}, failures={'delete': 1},
+                   delete_removes_on_failure=True)
+    assert 'backup not found' in output and m.files[target] == b'R'*128 and backup not in m.files
+    # A created library matching the input wildcard is not added to the frozen
+    # selection midway through the command.
+    nested = with_crcs(archive([entry(b'NEW     LBR', records=len(one)//128)], one))
+    output = m.run('/X /Y A0:*.LBR', {diskkey(1, 'BASE.LBR'): nested})
+    assert m.files[diskkey(1, 'NEW.LBR')] == one and output.count('Archive ') == 1
+    # Higher BetterCP/M user areas retain full 0..31 identities in parsing,
+    # source I/O ownership, destination writes and caller restoration.
+    high = diskkey(2, 'HIGH.LBR', 31)
+    output = m.run('/X B31:HIGH.LBR C17:', {high: one}, user=2)
+    assert m.files[diskkey(3, 'README.TXT', 17)] == b'R'*128
+    assert m.user == 2 and m.drive == 1 and 'Archive B31:HIGH.LBR' in output
+    mixed_files = {diskkey(1, 'BAD.LBR'): b'not an archive', diskkey(2, 'GOOD.LBR'): one}
+    output = m.run('/TEST [A0,B0]:*.LBR', mixed_files, user=7)
+    assert 'Archive/read error' in output and 'Integrity checks complete' in output
+    assert 'selected 0002; processed 0002; failed 0001' in output
+    m.intact()
+    # A bounded selection fails as a whole before any archive open or output.
+    crowded = {diskkey(2, f'F{i:07d}.LBR', 0): one for i in range(513)}
+    m.instruction_budget = 30000000
+    output = m.run('/X /Y B0:*.LBR', crowded, user=7)
+    del m.instruction_budget
+    assert 'exceeds 512' in output and not any(fn == 15 for fn, _ in m.events)
+    assert not m.created and not m.renamed and not m.deleted
+    assert m.user == 7 and m.drive == 1
+    m.intact()
+    output = m.run('/X B7:TEXTS.LBR C3:NOFILE.*', {source: one}, user=7)
+    assert 'No members matched' in output and not m.created
+    m.intact()
+    # Syntax, domain and multi-DU destination errors must precede any mutation.
+    for tail in ('/X B7:*.LBR [A0,B1]:', '/X E:*.LBR', '/TEST /Y B7:*.LBR',
+                 '/X B7:*.LBR README[$RO]', '/X /LIST B7:*.LBR'):
+        output = m.run(tail, {source: one, target: b'OLD'}, user=7, keys='Y')
+        assert 'Usage:' in output and not m.created and not m.deleted and not m.renamed, (tail, output)
+        m.intact()
 
 
 def main():
@@ -320,6 +593,7 @@ def main():
         m = Noah(C.CDLL(str(work / 'core.so')), image, (work / 'noah.lst').read_text(errors='replace'))
         tests(m)
         extraction_tests(m)
+        selector_overwrite_tests(m)
         print(f'PASS: {m.cases} NOAH command/adapter cases; {len(image)} bytes; deterministic build.')
         print(f'Maximum measured command stack: {m.max_stack} bytes (BDOS intercepted).')
 

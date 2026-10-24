@@ -4,7 +4,8 @@
 **Distribution:** BetterCP/M Utilities Disk  
 **Status:** Consolidated behavioral baseline, 2026-10-23. No substantive user-policy decisions remain open; binary interfaces and measured limits must pass the
 implementation gates in section 16. LBR reader/listing, integrity audit and new-file
-extraction increments exist; see [current implementation scope and checks](NOAH%20LBR%20Integrity%20and%20Extraction.md).
+extraction increments, shared selectors and authorized overwrites exist; see
+[current implementation scope and checks](NOAH%20Selectors%20and%20Overwrite.md).
 Full specification conformance and release qualification are not claimed.
 
 This document supersedes the chronological NOAH decision draft. Settled behavior
