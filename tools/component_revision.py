@@ -21,8 +21,8 @@ def verify(report, artifact):
         raise ValueError('report component differs from input record')
     if report.get('identity') != inputs['assigned_identity']:
         raise ValueError('report identity differs from input record')
-    if inputs['inputs']['variant']['build_mode'] != 'cross':
-        raise ValueError('native assignment records are not supported yet')
+    if inputs['inputs']['variant']['build_mode'] not in ('cross','native'):
+        raise ValueError('unsupported build mode')
     if report.get('artifact', {}).get('sha256') != digest(artifact):
         raise ValueError('artifact checksum differs from build report')
     if report['artifact'].get('bytes') != len(artifact):
@@ -101,10 +101,14 @@ def main():
         parser.add_argument('--' + name, type=Path, required=True)
     for name in ('proposal', 'final-report', 'final-artifact'):
         parser.add_argument('--' + name, type=Path)
+    parser.add_argument('--install-baseline', type=Path,
+                        help='explicitly update this baseline catalog after verified acceptance')
     args = parser.parse_args()
     if args.operation == 'accept' and any(getattr(args, name) is None for name in
                                          ('proposal', 'final_report', 'final_artifact')):
         parser.error('accept requires --proposal, --final-report and --final-artifact')
+    if args.install_baseline and args.operation != 'accept':
+        parser.error('--install-baseline is only valid for accept')
     try:
         evidence = (read(args.reference_report), args.reference_artifact.read_bytes(),
                     read(args.candidate_report), args.candidate_artifact.read_bytes())
@@ -116,6 +120,15 @@ def main():
         # Preserve old proposals/acceptance records: no implicit overwrite.
         with args.output.open('x', encoding='utf-8') as output:
             output.write(json.dumps(result, indent=2, sort_keys=True) + '\n')
+        if args.install_baseline:
+            catalog = read(args.install_baseline) if args.install_baseline.exists() else {'schema':1,'records':{}}
+            if catalog['schema'] != 1:raise ValueError('unsupported baseline catalog')
+            record=result['input_record'];variant=record['inputs']['variant']
+            key='|'.join((result['component'],variant['target'],variant['profile'],variant['build_mode']))
+            catalog['records'][key]=record
+            temporary=args.install_baseline.with_suffix('.tmp')
+            temporary.write_text(json.dumps(catalog,indent=2,sort_keys=True)+'\n')
+            temporary.replace(args.install_baseline)
     except (ValueError, OSError, KeyError, TypeError) as error:
         parser.exit(2, str(error) + '\n')
 

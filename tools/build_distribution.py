@@ -478,6 +478,12 @@ def main():
             run(command,root,work/('checked-'+profile.name+'.log'),timeout=1800,env=environment)
             report=json.loads((out/'report.json').read_text());image=out/report['image']
             if source_identity(profile)!=identity:raise ValueError('source changed; checked candidate not published')
+            from release_metadata import disk_record
+            report['source']=identity
+            from component_tracking import record_collection
+            record_collection(root,report['target'],report['source'])
+            report['release_record']=disk_record(report,image.read_bytes(),root=root)
+            (out/'report.json').write_text(json.dumps(report,indent=2)+'\n')
             reports=[(out,image,report)]
             generation=a.output/('release-'+profile.name+'-'+identity['revision'][:12]+'-'+digest(json.dumps(report,sort_keys=True).encode())[:12])
             publish_generation(publication,generation,reports)
@@ -524,6 +530,10 @@ def main():
                       'included':included, 'omitted':omitted, **totals,
                       'validation':{'filesystem':'PASS','file_integrity':'PASS','config_fingerprint':'PASS','boot':boot_result},
                       'issues':['Utilities/CPM Tools media and additional on-disk documentation deferred']}
+            from release_metadata import disk_record
+            from component_tracking import record_collection
+            record_collection(root,report['target'],report['source'])
+            report['release_record']=disk_record(report,image.read_bytes(),root=root)
             (out/'report.json').write_text(json.dumps(report,indent=2)+'\n')
             shutil.copy2(root/'build.log',out/'build.log')
             reports.append((out,image,report))

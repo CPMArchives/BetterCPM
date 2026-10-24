@@ -8,11 +8,6 @@ def identities():
     return utility_identities()
 
 def display_development(owner):
-    from component_inputs import ROOT as input_root
-    import json
-    plans = json.loads((input_root/'metadata/component-inputs.json').read_text())['components']
-    if owner not in plans:
-        return False  # Assigned identity only; automatic input tracking is not implemented for this owner.
     from component_build import selected_display
     return selected_display(owner)['development']
 
